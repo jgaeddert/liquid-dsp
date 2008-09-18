@@ -2,6 +2,8 @@
 //
 //
 
+#include <stdio.h>
+
 #include "modem_common.h"
 #include "modem.h"
 #include "modem_internal.h"
@@ -66,7 +68,6 @@ void modem_init(modem _mod, unsigned int _bits_per_symbol)
 
     _mod->alpha = 0.0f;
 
-    _mod->M = 0;
     _mod->symbol_map = NULL;
 
     _mod->state = 0.0f;
