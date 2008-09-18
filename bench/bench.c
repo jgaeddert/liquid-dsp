@@ -2,7 +2,7 @@
 //
 // This file is used in conjunction with benchinclude.h (generated with
 // benchmarkgen.py) to produce an executable for benchmarking the various
-// signal processing algorithms in sigprocc.
+// signal processing algorithms in liquid.
 //
 
 
@@ -46,7 +46,7 @@ typedef struct {
 //   bench_t benchmarks[NUM_BENCHMARKS]
 //   #define NUM_PACKAGES
 //   package_t packages[NUM_PACKAGES]
-#include "../benchinclude.h"
+#include "benchinclude.h"
 
 // helper functions:
 void print_help();
