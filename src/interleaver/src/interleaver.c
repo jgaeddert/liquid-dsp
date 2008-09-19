@@ -63,9 +63,19 @@ void interleaver_debug_print(interleaver _q)
 
     for (i=0; i<n; i++) {
         printf("%u\t|", i);
-        for (j=0; j<t[i]; j++)
-            printf(" ");
-        printf("*\n");
+        for (j=0; j<n; j++) {
+            if (j==t[i])
+                printf("*");
+            else if (j==i)
+                printf("\\");
+            else if ((j%10)==0)
+                printf("|");
+            else if ((i%10)==0)
+                printf("-");
+            else
+                printf(" ");
+        }
+        printf("\n");
     }
     printf("\n");
 }
