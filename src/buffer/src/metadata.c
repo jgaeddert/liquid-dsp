@@ -31,17 +31,20 @@ metadata metadata_create(unsigned int _n, ...)
     m->num_keys = _n;
     m->keys = (struct key_s *) malloc((m->num_keys)*sizeof(struct key_s));
 
-    va_list ap;
-    va_start(ap, _n);
+    va_list argptr;
+    va_start(argptr, _n);
     unsigned int i;
     for (i=0; i<_n; i++) {
         // create new key
         m->keys[i].uuid = i;
 
-        strcpy(m->keys[i].name, "hello");
-        m->keys[i].value = (float)(i+2.0f);
+        char* name = va_arg(argptr, char *);
+        double value = va_arg(argptr, double);
+
+        strcpy(m->keys[i].name, name);
+        m->keys[i].value = (float)(value);
     }
-    va_end(ap);
+    va_end(argptr);
 
     return m;
 }
