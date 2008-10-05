@@ -19,6 +19,10 @@ int main() {
     CONTEND_LESS_THAN(1,1);
     CONTEND_LESS_THAN(1,2);
 
+    CONTEND_DELTA(1.0f, 1.0f, 0.1f);
+    CONTEND_DELTA(1.0f, 2.0f, 0.1f);
+
+
     int x = 3, y = 5;
 
     CONTEND_INEQUALITY(x,y);

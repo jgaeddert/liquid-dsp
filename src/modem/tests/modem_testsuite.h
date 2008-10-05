@@ -1,7 +1,7 @@
 #ifndef __MODEMTEST_H__
 #define __MODEMTEST_H__
 
-#include "autotest.h"
+#include "../../../autotest/autotest.h"
 #include "../src/modem.h"
 #include "../src/modem_internal.h"
 
@@ -17,17 +17,19 @@ void test_modem_pam() {
         for (i=0; i<mod->M; i++) {
             modulate(mod, i, &x);
             demodulate(demod, x, &s);
-            TS_ASSERT_EQUALS(s, i);
+            CONTEND_EQUALITY(s, i);
 
             get_demodulator_phase_error(demod, &phase_error);
-            TS_ASSERT_DELTA(phase_error, 0.0f, 1e-6f);
+            CONTEND_DELTA(phase_error, 0.0f, 1e-6f);
             get_demodulator_evm(demod, &evm);
-            TS_ASSERT_DELTA(evm, 0.0f, 1e-6f);
+            CONTEND_DELTA(evm, 0.0f, 1e-6f);
         }
 
         free_modem(mod);
         free_modem(demod);
     }
+
+    autotest_print_results();
 }
 
 

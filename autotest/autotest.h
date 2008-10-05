@@ -7,8 +7,11 @@
 #ifndef __LIQUID_AUTOTEST_H__
 #define __LIQUID_AUTOTEST_H__
 
-static unsigned int _autotest_num_passed;
-static unsigned int _autotest_num_failed;
+#include <stdio.h>
+#include <math.h>
+
+static unsigned int _autotest_num_passed=0;
+static unsigned int _autotest_num_failed=0;
 
 static inline void test_failed(
     const char * _file,
@@ -60,6 +63,12 @@ static void autotest_print_results(void)
      if ((X)>=(Y)) test_failed(F,L,EX,">",EY); else test_passed();
 #  define _CONTEND_LESS_THAN(F,L,X,Y)       TEST_LESS_THAN(F,L,#X,(X),#Y,(Y))
 #  define CONTEND_LESS_THAN(X,Y)            _CONTEND_LESS_THAN(__FILE__,__LINE__,X,Y)
+
+// CONTEND_DELTA
+#  define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)    \
+     if (fabs((X)-(Y))>D) test_failed(F,L,"abs(" #X "-" #Y ")","<",ED); else test_passed();
+#  define _CONTEND_DELTA(F,L,X,Y,D)         TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
+#  define CONTEND_DELTA(X,Y,D)              _CONTEND_DELTA(__FILE__,__LINE__,X,Y,D)
 
 #endif // __LIQUID_AUTOTEST_H__
 
