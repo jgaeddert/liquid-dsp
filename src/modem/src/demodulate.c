@@ -283,7 +283,7 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
             _demod->phase_error += M_PI;
         break;
     case MOD_QPSK:
-        _demod->phase_error = cargf(_demod->state) - M_PI/4;
+        _demod->phase_error = cargf(_demod->state);
 
         // fold phase error angle onto Q1 projection, 0 <= phase_error <= pi/2
         if (_demod->phase_error < 0 )
