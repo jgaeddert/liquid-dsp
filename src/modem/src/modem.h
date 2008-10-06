@@ -44,6 +44,8 @@ unsigned int modem_get_bps(modem _mod);
 void modulate(modem _mod, unsigned int symbol_in, complex *y);
 
 void demodulate(modem _demod, complex x, unsigned int *symbol_out);
+void get_demodulator_phase_error(modem _demod, float* _phi);
+void get_demodulator_evm(modem _demod, float* _evm);
 
 #endif // __LIQUID_MODEM_H__
 

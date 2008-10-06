@@ -2,10 +2,14 @@
 // Modem testsuite, main program
 //
 
-#include "modem_testsuite.h"
+#include "../../../autotest/autotest.h"
+#include "modem_autotest.h"
 
 int main() {
-    test_modem_pam();
+    
+    autotest_mod_demod();
+
+    autotest_print_results();
     printf("autotest complete.\n");
     return 0;
 }

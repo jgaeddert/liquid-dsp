@@ -152,11 +152,11 @@ void demodulate_arb(modem _demod, complex x, unsigned int *symbol_out);
 void demodulate_bpsk(modem _demod, complex x, unsigned int *symbol_out);
 void demodulate_qpsk(modem _demod, complex x, unsigned int *symbol_out);
 
-/// get demodulator phase error
-void get_demodulator_phase_error(modem _demod, float* _phi);
+// get demodulator phase error
+//void get_demodulator_phase_error(modem _demod, float* _phi);
 
-/// get error vector magnitude
-void get_demodulator_evm(modem _demod, float* _evm);
+// get error vector magnitude
+//void get_demodulator_evm(modem _demod, float* _evm);
 
 // demodulator helper functions
 
