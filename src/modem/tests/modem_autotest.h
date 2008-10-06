@@ -11,12 +11,28 @@ typedef struct {
     unsigned int bps;
 } mod_set;
 
-#define NUM_MODEMS 17
+#define NUM_MODEMS 25
 mod_set modem_test[NUM_MODEMS] = {
-    {MOD_BPSK,1}, {MOD_QPSK,2},
-    {MOD_PSK,1},  {MOD_PSK,2},  {MOD_PSK,3},  {MOD_PSK,4},  {MOD_PSK,5},
-    {MOD_DPSK,1}, {MOD_DPSK,2}, {MOD_DPSK,3}, {MOD_DPSK,4}, {MOD_DPSK,5},
-    {MOD_QAM,2},  {MOD_QAM,3},  {MOD_QAM,4},  {MOD_QAM,5},  {MOD_QAM,6}
+    // specific: binary phase-shift keying
+    {MOD_BPSK,1},
+
+    // specific: quadrature phase-shift keying
+    {MOD_QPSK,2},
+
+    // generic: amplitude-shift keying
+    {MOD_PAM,1},  {MOD_PAM,2},  {MOD_PAM,3},  {MOD_PAM,4},
+
+    // generic: phase-shift keying
+    {MOD_PSK,1},  {MOD_PSK,2},  {MOD_PSK,3},  {MOD_PSK,4},
+    {MOD_PSK,5},  {MOD_PSK,6},
+
+    // generic: differential phase-shift keying
+    {MOD_DPSK,1}, {MOD_DPSK,2}, {MOD_DPSK,3}, {MOD_DPSK,4},
+    {MOD_DPSK,5}, {MOD_PSK,6},
+
+    // generic: quadrature amplitude-shift keying
+    {MOD_QAM,2},  {MOD_QAM,3},  {MOD_QAM,4},  {MOD_QAM,5},
+    {MOD_QAM,6},  {MOD_QAM,7},  {MOD_QAM,8}
 };
 
 // Help function to keep code base small
