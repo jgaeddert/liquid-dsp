@@ -89,10 +89,10 @@ struct modem_s {
     /// Complete symbol map
     complex * symbol_map;
 
-    float state;        ///< received state vector
+    complex state;      ///< received state vector
     float state_theta;  ///< received state vector, angle
 
-    float res;          ///< residual error vector
+    complex res;        ///< residual error vector
 
     float phase_error;  ///< phase error after demodulation
     float evm;          ///< error vector magnitude (EVM)
