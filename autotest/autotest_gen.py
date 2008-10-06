@@ -166,14 +166,14 @@ def writeOutputFile( filename = outputFileName ):
     f.write("#define NUM_AUTOTESTS " + str(len(benchmark_functions)) + "\n\n");
 
     #
-    # benchmarks array
+    # autotests array
     #
-    f.write("// array of benchmarks\n");
-    f.write("bench_t benchmarks[NUM_AUTOTESTS] = {\n")
+    f.write("// array of autotests\n");
+    f.write("struct autotest_s autotests[NUM_AUTOTESTS] = {\n")
     for i in range(len(benchmark_functions)):
         bf = benchmark_functions[i]
         # append benchmark function to array
-        f.write(" "*4 + "{" + str(i) + ",&" + bf.function_name + ",\"" + bf.short_name + "\",0,0.0f,0.0f}")
+        f.write(" "*4 + "{" + str(i) + ",&" + bf.function_name + ",\"" + bf.short_name + "\",0,0,0,0}")
         if not i == len(benchmark_functions)-1:
             f.write(",\n")
     f.write("\n};\n")
@@ -183,7 +183,7 @@ def writeOutputFile( filename = outputFileName ):
     f.write("#define NUM_PACKAGES " + str(len(packages)) + "\n\n");
 
     f.write("// array of packages\n");
-    f.write("package_t packages[NUM_PACKAGES] = {\n")
+    f.write("struct package_s packages[NUM_PACKAGES] = {\n")
     for i in range(len(packages)):
         p = packages[i];
         # append packages to array
@@ -194,7 +194,7 @@ def writeOutputFile( filename = outputFileName ):
 
 
     # include guard
-    f.write("#endif // __BENCHINCLUDE_H__\n");
+    f.write("#endif // __AUTOTEST_INCLUDE_H__\n");
 
     f.close()
     

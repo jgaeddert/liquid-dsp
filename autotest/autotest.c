@@ -41,11 +41,10 @@ typedef struct package_s * package;
 //
 // defines the following symbols:
 //   #define NUM_AUTOTESTS
-//   bench_t benchmarks[NUM_AUTOTESTS]
+//   struct autotest_s autotests[NUM_AUTOTESTS]
 //   #define NUM_PACKAGES
-//   package_t packages[NUM_PACKAGES]
-//#include "../benchinclude.h"
-#include "autotest_include.example.h"
+//   struct package_s packages[NUM_PACKAGES]
+#include "autotest_include.h"
 
 // helper functions:
 void print_help();
@@ -197,7 +196,7 @@ void execute_package(package _p, bool _verbose)
 void print_autotest_results(autotest _test)
 {
     float percent_passed = 100.0f * (float) (_test->num_passed) / (float) (_test->num_checks);
-    printf("\tpassed\t%lu\t%lu\t(%0.1f%%)\n",
+    printf("\tpassed\t%lu\t/ %lu\t checks (%0.1f%%)\n",
             _test->num_passed,
             _test->num_checks,
             percent_passed);
