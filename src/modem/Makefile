@@ -32,4 +32,4 @@ check: autotest
 	./autotest
 
 clean:
-	rm -f *.o *_test
+	rm -f *.o *_test autotest
