@@ -10,9 +10,12 @@ test_autotest.o: test_autotest.c
 autotest: test_autotest.o
 	gcc -Wall test_autotest.o -o autotest
 
-example: autotest.c
+autotest_include.h:
+	python autotest_gen.py autotest_example.h
+
+example: autotest.c autotest_include.h
 	gcc -Wall autotest.c -o example
 
 clean:
-	rm -rf *.o autotest example
+	rm -rf *.o autotest autotest_include.h example
 
