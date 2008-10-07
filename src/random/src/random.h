@@ -14,7 +14,14 @@
 void randnf(float * i, float * q);
 
 // Weibull
-void rand_weibullf(float _alpha, float _beta, float _gamma);
+//   f(x) = a*(x-g)^(b-1)*exp{-(a/b)*(x-g)^b}  x >= g
+//          0                                  else
+//   where
+//     a = alpha : scaling parameter
+//     b = beta  : shape parameter
+//     g = gamma : location (threshold) parameter
+//
+float rand_weibullf(float _alpha, float _beta, float _gamma);
 
 // Gamma
 void rand_gammaf();
