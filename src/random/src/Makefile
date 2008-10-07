@@ -8,7 +8,7 @@ main_random.o: main_random.c
 	gcc -Wall -c main_random.c -o main_random.o
 
 random: random.o main_random.o
-	gcc -Wall random.o main_random.o -o random_test
+	gcc -Wall random.o main_random.o -lm -o random_test
 
 scramble:
 	gcc -Wall -c scramble.c -o scramble.o
