@@ -1,6 +1,9 @@
 
 all: clean scramble
 
+random.o: random.c
+	gcc -Wall -c random.c -o random.o
+
 scramble:
 	gcc -Wall -c scramble.c -o scramble.o
 	gcc -Wall -c main_scramble.c -o main_scramble.o
