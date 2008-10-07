@@ -40,6 +40,10 @@ liquid/
             doc/
                 figures/
                 refman.tex
+            examples/
+                example1.c
+                example2.c
+                Makefile
             src/
                 object1.h   <-- internal header
                 object1.1.c <-- internal source
