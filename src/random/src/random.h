@@ -8,10 +8,22 @@
 #include <stdlib.h>
 
 // Uniform random number generator, (0,1]
-inline static float randf() { return (float) rand() / (float) RAND_MAX; };
+#define randf() ((float) rand() / (float) RAND_MAX)
 
 // Gaussian random number generator, N(0,1)
 void randnf(float * i, float * q);
+
+// Weibull
+void rand_weibullf(float _alpha, float _beta, float _gamma);
+
+// Gamma
+void rand_gammaf();
+
+// Nakagami-m
+void rand_nakagamimf(float _m, float _omega);
+
+// Rice-K
+void rand_ricekf(float _K, float _omega);
 
 #endif /* __LIQUID_RANDOM_H__ */
 
