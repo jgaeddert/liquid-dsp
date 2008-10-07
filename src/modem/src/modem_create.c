@@ -3,6 +3,9 @@
 //
 
 #include <stdio.h>
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 
 #include "modem_common.h"
 #include "modem.h"
@@ -272,7 +275,7 @@ modem modem_create_arb_rotated(
 
 void modem_arb_init(modem _mod, complex *_symbol_map, unsigned int _len)
 {
-#ifdef SIGPROCC_VALIDATE_INPUT
+#ifdef LIQUID_VALIDATE_INPUT
     if ( (_mod->scheme != MOD_ARB) && (_mod->scheme != MOD_ARB_MIRRORED) &&
          (_mod->scheme != MOD_ARB_ROTATED) )
     {
@@ -286,7 +289,7 @@ void modem_arb_init(modem _mod, complex *_symbol_map, unsigned int _len)
 
     unsigned int i;
     for (i=0; i<_len; i++) {
-#ifdef SIGPROCC_VALIDATE_INPUT
+#ifdef LIQUID_VALIDATE_INPUT
         if ((_mod->scheme == MOD_ARB_MIRRORED) || (_mod->scheme == MOD_ARB_ROTATED)) {
             // symbols should only exist in first quadrant
             if ( crealf(_symbol_map[i]) <= 0 || cimagf(_symbol_map[i]) <= 0 )
@@ -326,7 +329,7 @@ void modem_arb_init_file(modem _mod, char* filename) {
             exit(-1);
         }
 
-#ifdef SIGPROCC_VALIDATE_INPUT
+#ifdef LIQUID_VALIDATE_INPUT
         if ((_mod->scheme == MOD_ARB_MIRRORED) || (_mod->scheme == MOD_ARB_ROTATED)) {
         // symbols should only exist in first quadrant
             if ( sym_i < 0.0f || sym_q < 0.0f )

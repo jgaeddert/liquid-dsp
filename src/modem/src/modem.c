@@ -2,6 +2,7 @@
 //
 //
 
+#include <stdlib.h>
 #include "modem_internal.h"
 
 // Generate random symbol

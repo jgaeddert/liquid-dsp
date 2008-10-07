@@ -1,16 +1,9 @@
 //
-//
+// Internal modem header file
 //
 
 #ifndef __MODEM_INTERNAL_H__
 #define __MODEM_INTERNAL_H__
-
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
 
 #include <complex.h>
 #undef I
