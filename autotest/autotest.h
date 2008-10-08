@@ -9,10 +9,13 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
 
 static unsigned long int _autotest_num_checks=0;
 static unsigned long int _autotest_num_passed=0;
 static unsigned long int _autotest_num_failed=0;
+
+static bool _autotest_verbose = true;
 
 static inline void test_failed(
     const char * _file,
@@ -23,8 +26,10 @@ static inline void test_failed(
     const char * _exprR,
     double _valueR)
 {
-    printf("  TEST FAILED: %s line %u : expected %s (%0.2E) %s %s (%0.2E)\n",
-            _file, _line, _exprL, _valueL, _qualifier, _exprR, _valueR);
+    if (_autotest_verbose) {
+        printf("  TEST FAILED: %s line %u : expected %s (%0.2E) %s %s (%0.2E)\n",
+                _file, _line, _exprL, _valueL, _qualifier, _exprR, _valueR);
+    }
     _autotest_num_checks++;
     _autotest_num_failed++;
 }

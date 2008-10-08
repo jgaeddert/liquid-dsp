@@ -101,9 +101,11 @@ int main(int argc, char *argv[])
             return 0;
         case 'v':
             verbose = true;
+            _autotest_verbose = true;
             break;
         case 'q':
             verbose = false;
+            _autotest_verbose = false;
             break;
         case 'h':
             print_help();
