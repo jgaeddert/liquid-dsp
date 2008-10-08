@@ -18,7 +18,7 @@ scramble:
 autotest.o: tests/autotest.c
 	gcc -Wall -c tests/autotest.c -o autotest.o
 
-autotest: autotest.o
+autotest: autotest.o random.o
 	gcc -Wall autotest.o random.o -lm -o autotest
 
 check: autotest

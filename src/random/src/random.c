@@ -41,4 +41,17 @@ float rand_weibullf(float _alpha, float _beta, float _gamma)
     return _gamma + powf(-_beta/_alpha*logf(randf()), 1/_beta);
 }
 
+// Rice-K
+float rand_ricekf(float _K, float _omega)
+{
+    float x, y;
+    float s = sqrtf((_omega*_K)/(_K+1));
+    float sig = sqrtf(0.5f*_omega/(_K+1));
+    randnf(&x, &y);
+    x *= sig;
+    y *= sig;
+    y += s;
+    return sqrtf(x*x + y*y);
+}
+
 

@@ -30,7 +30,7 @@ void rand_gammaf();
 void rand_nakagamimf(float _m, float _omega);
 
 // Rice-K
-void rand_ricekf(float _K, float _omega);
+float rand_ricekf(float _K, float _omega);
 
 #endif /* __LIQUID_RANDOM_H__ */
 

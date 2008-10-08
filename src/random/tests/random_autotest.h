@@ -68,5 +68,27 @@ void autotest_rand_weibullf()
     CONTEND_DELTA(m2, 0.42920f, tol);
 }
 
+// Rice-K
+void autotest_rand_ricekf()
+{
+    unsigned long int N=100000; // number of trials
+    unsigned long int i;
+    float x, m1=0.0f, m2=0.0f;
+    float tol=0.01f;
+    float K=2.0f, omega=1.0f;
+
+    // uniform
+    for (i=0; i<N; i++) {
+        x = rand_ricekf(K, omega);
+        m1 += x;
+        m2 += x*x;
+    }
+    m1 /= (float) N;
+    m2 = (m2 / (float)N);
+
+    CONTEND_DELTA(m1, 0.92749f, tol);
+    CONTEND_DELTA(m2, omega, tol);
+}
+
 #endif 
 
