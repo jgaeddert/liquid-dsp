@@ -1,5 +1,5 @@
 
-all: nco_test
+all: nco_test autotest
 
 nco.o: src/nco.c
 	gcc -Wall -c src/nco.c -o nco.o
