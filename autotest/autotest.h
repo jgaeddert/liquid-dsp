@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <math.h>
 
+static unsigned long int _autotest_num_checks=0;
 static unsigned long int _autotest_num_passed=0;
 static unsigned long int _autotest_num_failed=0;
 
@@ -24,11 +25,13 @@ static inline void test_failed(
 {
     printf("  TEST FAILED: %s line %u : expected %s (%0.2E) %s %s (%0.2E)\n",
             _file, _line, _exprL, _valueL, _qualifier, _exprR, _valueR);
+    _autotest_num_checks++;
     _autotest_num_failed++;
 }
 
 static inline void test_passed()
 {
+    _autotest_num_checks++;
     _autotest_num_passed++;
 }
 
@@ -36,12 +39,11 @@ static void autotest_print_results(void)
 {
     printf("==================================\n");
     if (_autotest_num_failed==0) {
-        printf(" PASSED ALL %lu TESTS\n", _autotest_num_passed);
+        printf(" PASSED ALL %lu CHECKS\n", _autotest_num_passed);
     } else {
-        unsigned long int total_tests = _autotest_num_passed + _autotest_num_failed;
-        double percent_failed = (double) _autotest_num_failed / (double) total_tests;
-        printf(" FAILED %lu / %lu TESTS (%.1f%%)\n",
-                _autotest_num_failed, total_tests, 100.0*percent_failed);
+        double percent_failed = (double) _autotest_num_failed / (double) _autotest_num_checks;
+        printf(" FAILED %lu / %lu CHECKS (%.1f%%)\n",
+                _autotest_num_failed, _autotest_num_checks, 100.0*percent_failed);
     }
     printf("==================================\n");
 }
@@ -75,6 +77,12 @@ static void autotest_print_results(void)
      if (fabs((X)-(Y))>D) test_failed(F,L,"abs(" #X "-" #Y ")",fabs(X-Y),"<",ED,D); else test_passed();
 #  define _CONTEND_DELTA(F,L,X,Y,D)         TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
 #  define CONTEND_DELTA(X,Y,D)              _CONTEND_DELTA(__FILE__,__LINE__,X,Y,D)
+
+// CONTEND_EXPRESSION
+#  define TEST_EXPRESSION(F,L,EX,X)         \
+     if (!X) test_failed(F,L,#X,(X),"is","1",1); else test_passed();
+#  define _CONTEND_EXPRESSION(F,L,X)        TEST_EXPRESSION(F,L,#X,(X))
+#  define CONTEND_EXPRESSION(X)             _CONTEND_EXPRESSION(__FILE__,__LINE__,X)
 
 #endif // __LIQUID_AUTOTEST_H__
 

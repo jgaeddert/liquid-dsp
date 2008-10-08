@@ -7,7 +7,7 @@
 
 #include "autotest.h"
 
-void autotest_example_01()
+void autotest_general()
 {
     CONTEND_EQUALITY(1,1);
     CONTEND_EQUALITY(1,2);
@@ -22,7 +22,7 @@ void autotest_example_01()
     CONTEND_LESS_THAN(1,2);
 }
 
-void autotest_example_02()
+void autotest_variables()
 {
     int x = 3, y = 5;
 
@@ -30,7 +30,13 @@ void autotest_example_02()
     CONTEND_INEQUALITY(x,y);
 }
 
-void autotest_example_03()
+void autotest_expressions()
+{
+    CONTEND_EXPRESSION(1==1);
+    CONTEND_EXPRESSION(1==2);
+}
+
+void autotest_no_tests()
 {
     int x = 3, y = 5, z;
     z = x + y;
