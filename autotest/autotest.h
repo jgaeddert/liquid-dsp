@@ -51,38 +51,38 @@ static void autotest_print_results(void)
 // CONTEND_EQUALITY
 #  define TEST_EQUALITY(F,L,EX,X,EY,Y)      \
      if ((X)!=(Y)) test_failed(F,L,EX,X,"==",EY,Y); else test_passed();
-#  define _CONTEND_EQUALITY(F,L,X,Y)        TEST_EQUALITY(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_EQUALITY(X,Y)             _CONTEND_EQUALITY(__FILE__,__LINE__,X,Y)
+#  define CONTEND_EQUALITY_FL(F,L,X,Y)      TEST_EQUALITY(F,L,#X,(X),#Y,(Y))
+#  define CONTEND_EQUALITY(X,Y)             CONTEND_EQUALITY_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_INEQUALITY
 #  define TEST_INEQUALITY(F,L,EX,X,EY,Y)    \
      if ((X)==(Y)) test_failed(F,L,EX,X,"!=",EY,Y); else test_passed();
-#  define _CONTEND_INEQUALITY(F,L,X,Y)      TEST_INEQUALITY(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_INEQUALITY(X,Y)           _CONTEND_INEQUALITY(__FILE__,__LINE__,X,Y)
+#  define CONTEND_INEQUALITY_FL(F,L,X,Y)    TEST_INEQUALITY(F,L,#X,(X),#Y,(Y))
+#  define CONTEND_INEQUALITY(X,Y)           CONTEND_INEQUALITY_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_GREATER_THAN
 #  define TEST_GREATER_THAN(F,L,EX,X,EY,Y)    \
      if ((X)<=(Y)) test_failed(F,L,EX,X,">",EY,Y); else test_passed();
-#  define _CONTEND_GREATER_THAN(F,L,X,Y)    TEST_GREATER_THAN(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_GREATER_THAN(X,Y)         _CONTEND_GREATER_THAN(__FILE__,__LINE__,X,Y)
+#  define CONTEND_GREATER_THAN_FL(F,L,X,Y)  TEST_GREATER_THAN(F,L,#X,(X),#Y,(Y))
+#  define CONTEND_GREATER_THAN(X,Y)         CONTEND_GREATER_THAN_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_LESS_THAN
 #  define TEST_LESS_THAN(F,L,EX,X,EY,Y)    \
      if ((X)>=(Y)) test_failed(F,L,EX,X,">",EY,Y); else test_passed();
-#  define _CONTEND_LESS_THAN(F,L,X,Y)       TEST_LESS_THAN(F,L,#X,(X),#Y,(Y))
-#  define CONTEND_LESS_THAN(X,Y)            _CONTEND_LESS_THAN(__FILE__,__LINE__,X,Y)
+#  define CONTEND_LESS_THAN_FL(F,L,X,Y)     TEST_LESS_THAN(F,L,#X,(X),#Y,(Y))
+#  define CONTEND_LESS_THAN(X,Y)            CONTEND_LESS_THAN_FL(__FILE__,__LINE__,X,Y)
 
 // CONTEND_DELTA
 #  define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)    \
      if (fabs((X)-(Y))>D) test_failed(F,L,"abs(" #X "-" #Y ")",fabs(X-Y),"<",ED,D); else test_passed();
-#  define _CONTEND_DELTA(F,L,X,Y,D)         TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
-#  define CONTEND_DELTA(X,Y,D)              _CONTEND_DELTA(__FILE__,__LINE__,X,Y,D)
+#  define CONTEND_DELTA_FL(F,L,X,Y,D)       TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
+#  define CONTEND_DELTA(X,Y,D)              CONTEND_DELTA_FL(__FILE__,__LINE__,X,Y,D)
 
 // CONTEND_EXPRESSION
 #  define TEST_EXPRESSION(F,L,EX,X)         \
      if (!X) test_failed(F,L,#X,(X),"is","1",1); else test_passed();
-#  define _CONTEND_EXPRESSION(F,L,X)        TEST_EXPRESSION(F,L,#X,(X))
-#  define CONTEND_EXPRESSION(X)             _CONTEND_EXPRESSION(__FILE__,__LINE__,X)
+#  define CONTEND_EXPRESSION_FL(F,L,X)      TEST_EXPRESSION(F,L,#X,(X))
+#  define CONTEND_EXPRESSION(X)             CONTEND_EXPRESSION_FL(__FILE__,__LINE__,X)
 
 #endif // __LIQUID_AUTOTEST_H__
 
