@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <getopt.h>
 
-// define benchmark function pointer
+// define autotest function pointer
 typedef void(*autotest_function) (void);
 
 // define autotest_s
@@ -22,6 +22,7 @@ struct autotest_s {
     long unsigned int num_checks;
     long unsigned int num_passed;
     long unsigned int num_failed;
+    float percent_passed;
     bool pass;
 };
 
@@ -30,8 +31,8 @@ typedef struct autotest_s * autotest;
 // define package_s
 struct package_s {
     unsigned int id;
-    unsigned int benchmark_index;
-    unsigned int num_benchmarks;
+    unsigned int autotest_index;
+    unsigned int num_autotests;
     const char* name;
 };
 
@@ -56,32 +57,30 @@ void print_package_results(package _p);
 // main function
 int main(int argc, char *argv[])
 {
-#if 0
+
     // initialize timing variables
     unsigned int i, j;
 
     // options
-    enum {RUN_ALL, RUN_SINGLE_BENCH, RUN_SINGLE_PACKAGE} mode = RUN_ALL;
-    unsigned int benchmark_id = 0;
+    enum {RUN_ALL, RUN_SINGLE_TEST, RUN_SINGLE_PACKAGE} mode = RUN_ALL;
+    unsigned int autotest_id = 0;
     unsigned int package_id = 0;
     bool verbose = true;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"n:b:p:lhvq")) != EOF){
+    while((d = getopt(argc,argv,"t:lvq")) != EOF){
         switch (d) {
-        case 'n':
-            num_trials = atoi(optarg);
-            break;
-        case 'b':
-            benchmark_id = atoi(optarg);
-            if (benchmark_id >= NUM_BENCHMARKS) {
-                printf("error, cannot run benchmark %u; index exceeded\n", benchmark_id);
+        case 't':
+            autotest_id = atoi(optarg);
+            if (autotest_id >= NUM_AUTOTESTS) {
+                printf("error, cannot run autotest %u; index exceeded\n", autotest_id);
                 return -1;
             } else {
-                mode = RUN_SINGLE_BENCH;
+                mode = RUN_SINGLE_TEST;
             }
             break;
+#if 0
         case 'p':
             package_id = atoi(optarg);
             if (package_id >= NUM_PACKAGES) {
@@ -91,12 +90,13 @@ int main(int argc, char *argv[])
                 mode = RUN_SINGLE_PACKAGE;
             }
             break;
+#endif
         case 'l':
-            // list packages, benchmarks and exit
+            // list packages, autotests and exit
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
-                for (j=packages[i].benchmark_index; j<packages[i].num_benchmarks+packages[i].benchmark_index; j++)
-                    printf("    %u: %s\n", benchmarks[j].id, benchmarks[j].name);
+                for (j=packages[i].autotest_index; j<packages[i].num_autotests+packages[i].autotest_index; j++)
+                    printf("    %u: %s\n", autotests[j].id, autotests[j].name);
             }
             return 0;
         case 'v':
@@ -114,39 +114,31 @@ int main(int argc, char *argv[])
         }
     }
 
-    // run empty loop; a bug was found that sometimes the first package run
-    // resulted in a longer execution time than what the benchmark really
-    // reflected.  This loop prevents that from happening.
-    for (i=0; i<1e6; i++) {
-        // do nothing
-    }
-
     switch (mode) {
     case RUN_ALL:
-        for (i=0; i<NUM_PACKAGES; i++)
-            execute_package( &packages[i], verbose );
+        //for (i=0; i<NUM_PACKAGES; i++)
+        //    execute_package( &packages[i], verbose );
+
+        for (i=0; i<NUM_AUTOTESTS; i++)
+            execute_autotest( &autotests[i], verbose );
 
         //for (i=0; i<NUM_PACKAGES; i++)
         //    print_package_results( &packages[i] );
         break;
-    case RUN_SINGLE_BENCH:
-        execute_benchmark( &benchmarks[benchmark_id], verbose );
-        //print_benchmark_results( &benchmarks[benchmark_id] );
+    case RUN_SINGLE_TEST:
+        execute_autotest( &autotests[autotest_id], verbose );
+        //print_autotest_results( &autotests[autotest_id] );
         return 0;
     case RUN_SINGLE_PACKAGE:
+        printf("RUN_SINGLE_PACKAGE: option not yet supported\n");
+        return 0;
+        /*
         execute_package( &packages[package_id], verbose );
         //print_package_results( &packages[package_id] );
         break;
+        */
     }
 
-    return 0;
-#endif
-
-    // run all tests
-    unsigned int i;
-    for (i=0; i<NUM_AUTOTESTS; i++) {
-        execute_autotest( &autotests[i], true );
-    }
     autotest_print_results();
     return 0;
 }
@@ -154,12 +146,11 @@ int main(int argc, char *argv[])
 void print_help()
 {
     // help
-    printf("bench options:\n");
+    printf("autotest options:\n");
     printf("  -h : prints this help file\n");
-    printf("  -n<num_trials>\n");
-    printf("  -b<benchmark_index>\n");
-    printf("  -p<package_index>\n");
-    printf("  -l : lists available benchmarks\n");
+    printf("  -t <autotest_index>\n");
+//    printf("  -p<package_index>\n");
+//    printf("  -l : lists available autotests\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
 }
@@ -175,6 +166,11 @@ void execute_autotest(autotest _test, bool _verbose)
     _test->num_passed = _autotest_num_passed - autotest_num_passed_init;
     _test->num_failed = _autotest_num_failed - autotest_num_failed_init;
     _test->num_checks = _test->num_passed + _test->num_failed;
+    _test->pass = (_test->num_failed==0) ? true : false;
+    if (_test->num_checks > 0)
+        _test->percent_passed = 100.0f * (float) (_test->num_passed) / (float) (_test->num_checks);
+    else
+        _test->percent_passed = 0.0f;
 
     if (_verbose)
         print_autotest_results(_test);
@@ -187,19 +183,24 @@ void execute_package(package _p, bool _verbose)
         printf("%u: %s\n", _package->id, _package->name);
     
     unsigned int i;
-    for (i=0; i<_package->num_benchmarks; i++) {
-        execute_benchmark( &benchmarks[ i + _package->benchmark_index ], _verbose );
+    for (i=0; i<_package->num_autotests; i++) {
+        execute_autotest( &autotests[ i + _package->autotest_index ], _verbose );
     }
 }
 */
 
 void print_autotest_results(autotest _test)
 {
-    float percent_passed = 100.0f * (float) (_test->num_passed) / (float) (_test->num_checks);
-    printf("\tpassed\t%lu\t/ %lu\t checks (%0.1f%%)\n",
+    if (_test->pass)
+        printf("\tPASS:");
+    else
+        printf("\tFAIL:");
+
+    printf("\tpassed\t%lu\t/ %lu\t checks (%0.1f%%)\t%s\n",
             _test->num_passed,
             _test->num_checks,
-            percent_passed);
+            _test->percent_passed,
+            _test->name);
 }
 
 /*
@@ -207,8 +208,8 @@ void print_package_results(package _p)
 {
     unsigned int i;
     printf("%u: %s:\n", _package->id, _package->name);
-    for (i=_package->benchmark_index; i<(_package->benchmark_index+_package->num_benchmarks); i++)
-        print_benchmark_results( &benchmarks[i] );
+    for (i=_package->autotest_index; i<(_package->autotest_index+_package->num_autotests); i++)
+        print_autotest_results( &autotests[i] );
 
     printf("\n");
 }

@@ -30,4 +30,10 @@ void autotest_example_02()
     CONTEND_INEQUALITY(x,y);
 }
 
+void autotest_example_03()
+{
+    int x = 3, y = 5, z;
+    z = x + y;
+}
+
 #endif // __AUTOTEST_EXAMPLE_H__
