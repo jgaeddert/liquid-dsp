@@ -10,6 +10,20 @@
 #include "nco.h"
 
 int main() {
+    struct nco_s nco_struct;
+    nco p = &nco_struct;
+    nco_init(p);
+    nco_set_phase(p, 0.0f);
+    nco_set_frequency(p, M_PI/4);
+
+    unsigned int i;
+    float s, c;
+    for (i=0; i<8; i++) {
+        nco_sincos(p, &s, &c);
+        printf("exp(j*%0.3f)\t= %0.5f\t+ j%0.5f\n", p->theta, c, s);
+        nco_step(p);
+    }
+
     printf("done.\n");
     return 0;
 }

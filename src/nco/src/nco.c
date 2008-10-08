@@ -10,34 +10,34 @@
 
 void nco_init(nco _nco)
 {
-    _nco.theta = 0.0f;
-    _nco.d_theta = 0.0f;
+    _nco->theta = 0.0f;
+    _nco->d_theta = 0.0f;
 }
 
 void nco_set_phase(nco _nco, float _phi)
 {
-    _nco.theta = _phi;
+    _nco->theta = _phi;
     nco_constrain_phase(_nco);
 }
 
 void nco_adjust_phase(nco _nco, float _dphi)
 {
-    _nco.theta += _dphi;
+    _nco->theta += _dphi;
     nco_constrain_phase(_nco);
 }
 
 void nco_step(nco _nco)
 {
-    _nco.theta += _nco.d_theta;
+    _nco->theta += _nco->d_theta;
     nco_constrain_phase(_nco);
 }
 
 void nco_constrain_phase(nco _nco)
 {
-    if (_nco.theta > M_PI)
-        _nco.theta -= 2.0f*M_PI;
-    else if (_nco.theta < -M_PI)
-        _nco.theta += 2.0f*M_PI;
+    if (_nco->theta > M_PI)
+        _nco->theta -= 2.0f*M_PI;
+    else if (_nco->theta < -M_PI)
+        _nco->theta += 2.0f*M_PI;
 }
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
@@ -55,8 +55,8 @@ void nco_mix_block_up(
         nco_step(_nco);
     }
 #else
-    float theta =   _nco.theta;
-    float d_theta = _nco.theta;
+    float theta =   _nco->theta;
+    float d_theta = _nco->theta;
     for (i=0; i<_N; i++) {
         //sigprocc_rotate(_xi[i], _xq[i], theta, &_yi[i], &_yq[i]);
         _y[i] = _x[i] * cexpf(I*theta);
