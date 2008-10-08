@@ -44,17 +44,11 @@ void nco_constrain_phase(nco _nco)
 void nco_mix_block_up(
     nco _nco,
     complex float *_x,
-    unsigned int _N,
-    complex float *_y)
+    complex float *_y,
+    unsigned int _N)
 {
     unsigned int i;
 
-#if 0
-    for (i=0; i<_N; i++) {
-        nco_mix_up(_nco, _xi[i], _xq[i], &_yi[i], &_yq[i]);
-        nco_step(_nco);
-    }
-#else
     float theta =   _nco->theta;
     float d_theta = _nco->theta;
     for (i=0; i<_N; i++) {
@@ -72,6 +66,33 @@ void nco_mix_block_up(
         theta += 2*M_PI;
 
     nco_set_phase(_nco, theta);
-#endif
+}
+
+// Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
+void nco_mix_block_down(
+    nco _nco,
+    complex float *_x,
+    complex float *_y,
+    unsigned int _N)
+{
+    unsigned int i;
+
+    float theta =   _nco->theta;
+    float d_theta = _nco->theta;
+    for (i=0; i<_N; i++) {
+        //sigprocc_rotate(_xi[i], _xq[i], theta, &_yi[i], &_yq[i]);
+        _y[i] = _x[i] * cexpf(-I*theta);
+        
+        // nco_step(_nco);
+        theta += d_theta;
+    }
+
+    // nco_constrain_phase(_nco);
+    while (theta > M_PI)
+        theta -= 2*M_PI;
+    while (theta < -M_PI)
+        theta += 2*M_PI;
+
+    nco_set_phase(_nco, theta);
 }
 

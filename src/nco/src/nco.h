@@ -63,8 +63,14 @@ nco_mix_down(nco _nco, complex float _x, complex float *_y) {
 void nco_mix_block_up(
     nco _nco,
     complex float *_x,
-    unsigned int _N,
-    complex float *_y);
+    complex float *_y,
+    unsigned int _N);
+
+void nco_mix_block_down(
+    nco _nco,
+    complex float *_x,
+    complex float *_y,
+    unsigned int _N);
 
 #endif /* __LIQUID_NCO_H__ */
 
