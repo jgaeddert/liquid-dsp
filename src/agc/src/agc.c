@@ -1,0 +1,111 @@
+//
+// Automatic gain control
+//
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include "agc.h"
+#include "agc_internal.h"
+
+agc agc_create(float _etarget, float _BT)
+{
+    agc _agc = (agc) malloc(sizeof(struct agc_s));
+    agc_init(_agc);
+    agc_set_target(_agc, _etarget);
+    agc_set_bandwidth(_agc, _BT);
+    return _agc;
+}
+
+void agc_free(agc _agc)
+{
+    free(_agc);
+}
+
+void agc_init(agc _agc)
+{
+    //_agc->e = 1.0f;
+    _agc->e_target = 1.0f;
+
+    // set gain variables
+    _agc->g = 1.0f;
+    _agc->g_min = 0.0f;
+    _agc->g_max = 1000.0f;
+
+    // prototype loop filter
+    agc_set_bandwidth(_agc, 0.01f);
+
+    // initialize loop filter state variables
+    _agc->e_prime = 1.0f;
+    _agc->e_hat = 1.0f;
+    _agc->tmp2 = 1.0f;
+}
+
+void agc_set_target(agc _agc, float _e_target)
+{
+    // check to ensure _e_target is reasonable
+
+    _agc->e_target = _e_target;
+
+    ///\todo auto-adjust gain to compensate?
+}
+
+void agc_set_bandwidth(agc _agc, float _BT)
+{
+    // check to ensure _BT is reasonable
+    if ( _BT <= 0 ) {
+        perror("\n");
+        exit(-1);
+    } else if ( _BT > 0.5f ) {
+        perror("\n");
+        exit(-1);
+    }
+
+    _agc->BT = _BT;
+    float theta = _agc->BT * M_PI * 0.5f;
+
+    // calculate coefficients from first-order butterworth
+    // prototype using bilinear z-transform
+    float sin_theta = sinf(theta);
+    float cos_theta = cosf(theta);
+    _agc->beta = sin_theta / (sin_theta + cos_theta);
+    _agc->alpha = (sin_theta - cos_theta)/(sin_theta + cos_theta);
+
+    // reduce feedback parameter by emperical value to prevent ringing
+    _agc->alpha *= 1-expf( logf(_agc->BT)*0.5f + 0.8f );
+}
+
+void agc_apply_gain(
+    agc _agc,
+    float complex _x,
+    float complex *_y)
+{
+    // estimate energy
+    float e = cabsf(_x) * (_agc->g) / (_agc->e_target);
+    if ( e <= 0.0f ) {
+        printf("warning! agc_apply_gain(), input level not valid!\n");
+        *_y = _x * _agc->g;
+        return;
+    } else {
+        _agc->e = logf( e );
+    }
+
+    // filter estimate using first-order loop filter
+    _agc->e_prime = _agc->e - _agc->alpha * _agc->tmp2;
+    _agc->e_hat = (_agc->e_prime + _agc->tmp2) * _agc->beta;
+    _agc->tmp2 = _agc->e_prime;
+
+    // compute new gain value
+    _agc->g *= expf( -_agc->e_hat );
+
+    // limit gain
+    if ( _agc->g > _agc->g_max )
+        _agc->g = _agc->g_max;
+    else if ( _agc->g < _agc->g_min )
+        _agc->g = _agc->g_min;
+
+    // apply gain to input
+    *_y = _x * _agc->g;
+}
+
