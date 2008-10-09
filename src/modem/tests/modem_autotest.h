@@ -1,5 +1,5 @@
-#ifndef __MODEM_OPTS_AUTOTEST_H__
-#define __MODEM_OPTS_AUTOTEST_H__
+#ifndef __MODEM_AUTOTEST_H__
+#define __MODEM_AUTOTEST_H__
 
 #include "../../../autotest/autotest.h"
 #include "../src/modem.h"
