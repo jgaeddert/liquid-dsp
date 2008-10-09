@@ -17,8 +17,8 @@ modem_q32* modem_create_q32(
     }
 
     switch (_scheme) {
-    case MOD_PAM:
-        return modem_create_pam_q32(_bits_per_symbol);
+    case MOD_ASK:
+        return modem_create_ask_q32(_bits_per_symbol);
     case MOD_QAM:
         return modem_create_qam_q32(_bits_per_symbol);
     case MOD_PSK:
@@ -81,11 +81,11 @@ void modem_init_q32(modem_q32* _mod, unsigned int _bits_per_symbol)
     _mod->d_phi = 0;
 }
 
-modem_q32* modem_create_pam_q32(
+modem_q32* modem_create_ask_q32(
     unsigned int _bits_per_symbol)
 {
     modem_q32* mod = (modem_q32*) malloc( sizeof(modem_q32) );
-    mod->scheme = MOD_PAM;
+    mod->scheme = MOD_ASK;
     
     modem_init_q32(mod, _bits_per_symbol);
 
@@ -436,8 +436,8 @@ void modulate_q32(
     q32_t *Q_out)
 {
     switch (_mod->scheme) {
-    case MOD_PAM:
-        modulate_pam_q32(_mod, symbol_in, I_out, Q_out);
+    case MOD_ASK:
+        modulate_ask_q32(_mod, symbol_in, I_out, Q_out);
         break;
     case MOD_QAM:
         modulate_qam_q32(_mod, symbol_in, I_out, Q_out);
@@ -469,7 +469,7 @@ void modulate_q32(
     }
 }
 
-void modulate_pam_q32(
+void modulate_ask_q32(
     modem_q32 *_mod,
     unsigned int symbol_in,
     q32_t *I_out,
@@ -634,8 +634,8 @@ void demodulate_q32(
     unsigned int *symbol_out)
 {
     switch (_demod->scheme) {
-    case MOD_PAM:
-        demodulate_pam_q32(_demod, I_in, Q_in, symbol_out);
+    case MOD_ASK:
+        demodulate_ask_q32(_demod, I_in, Q_in, symbol_out);
         return;
     case MOD_QAM:
         demodulate_qam_q32(_demod, I_in, Q_in, symbol_out);
@@ -668,7 +668,7 @@ void demodulate_q32(
 
 }
 
-void demodulate_pam_q32(
+void demodulate_ask_q32(
     modem_q32 *_demod,
     q32_t I_in,
     q32_t Q_in,
@@ -922,7 +922,7 @@ void get_demodulator_phase_error_q32(modem_q32* _demod, q32_t* _phi)
             _demod->phase_error -= liquid_Q32_PI_BY_2;
         _demod->phase_error -= liquid_Q32_PI_BY_4;
         break;
-    case MOD_PAM:
+    case MOD_ASK:
         if (_demod->state_i > 0)
             _demod->phase_error =  _demod->state_q;
         else
@@ -949,7 +949,7 @@ void get_demodulator_evm_q32(modem_q32* _demod, q32_t* _evm)
     case MOD_BPSK:
     case MOD_QPSK:
     case MOD_DPSK:
-    case MOD_PAM:
+    case MOD_ASK:
     case MOD_QAM:
     case MOD_ARB:
     case MOD_ARB_MIRRORED:

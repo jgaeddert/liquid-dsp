@@ -13,8 +13,8 @@ void demodulate(
     unsigned int *symbol_out)
 {
     switch (_demod->scheme) {
-    case MOD_PAM:
-        demodulate_pam(_demod, x, symbol_out);
+    case MOD_ASK:
+        demodulate_ask(_demod, x, symbol_out);
         return;
     case MOD_QAM:
         demodulate_qam(_demod, x, symbol_out);
@@ -43,7 +43,7 @@ void demodulate(
 
 }
 
-void demodulate_pam(
+void demodulate_ask(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -294,7 +294,7 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
             _demod->phase_error -= M_PI / 2.0f;
         _demod->phase_error -= M_PI / 4.0f;
         break;
-    case MOD_PAM:
+    case MOD_ASK:
         _demod->phase_error = (crealf(_demod->state) > 0.0f) ?
              cimagf(_demod->state) :
             -cimagf(_demod->state);
@@ -337,7 +337,7 @@ void get_demodulator_evm(modem _demod, float* _evm)
         _demod->evm = 1.0f + r*r - 2.0f*r*cos(_demod->phase_error);
         _demod->evm = sqrtf( fabsf(_demod->evm) );
         break;
-    case MOD_PAM:
+    case MOD_ASK:
     case MOD_QAM:
     case MOD_ARB:
     case MOD_ARB_MIRRORED:

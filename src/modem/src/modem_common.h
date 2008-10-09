@@ -19,8 +19,8 @@ typedef enum {
     MOD_BPSK,           // Specific: binary PSK
     MOD_QPSK,           // specific: quaternary PSK
     MOD_DPSK,           // differential PSK
-    MOD_PAM,            // pulse amplitude modulation (PAM)
-    MOD_QAM,            // quadrature amplitude modulation (QAM)
+    MOD_ASK,            // amplitude-shift keying
+    MOD_QAM,            // quadrature amplitude-shift keying (QAM)
     MOD_ARB,            // arbitrary QAM
 
     /* \brief Arbitrary QAM, only the constellation points in the first

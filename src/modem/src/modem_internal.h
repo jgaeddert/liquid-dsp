@@ -39,12 +39,12 @@
 #define RQAM2048_ALPHA  1/sqrt(1706)
 #define RQAM4096_ALPHA  QAM4096_ALPHA
 
-// PAM
-#define PAM2_ALPHA      1
-#define PAM4_ALPHA      1/sqrt(5)
-#define PAM8_ALPHA      1/sqrt(21)
-#define PAM16_ALPHA     1/sqrt(85)
-#define PAM32_ALPHA     1/sqrt(341)
+// ASK
+#define ASK2_ALPHA      1
+#define ASK4_ALPHA      1/sqrt(5)
+#define ASK8_ALPHA      1/sqrt(21)
+#define ASK16_ALPHA     1/sqrt(85)
+#define ASK32_ALPHA     1/sqrt(341)
 
 /** \brief modem structure used for both modulation and demodulation 
  *
@@ -101,7 +101,7 @@ struct modem_s {
 
 
 // generic modem create routines
-modem modem_create_pam(unsigned int _bits_per_symbol);
+modem modem_create_ask(unsigned int _bits_per_symbol);
 modem modem_create_qam(unsigned int _bits_per_symbol);
 modem modem_create_psk(unsigned int _bits_per_symbol);
 modem modem_create_dpsk(unsigned int _bits_per_symbol);
@@ -120,7 +120,7 @@ void modem_arb_scale(modem _mod);
 void modem_arb_balance_iq(modem _mod);
 
 // generic modem modulate routines
-void modulate_pam(modem _mod, unsigned int symbol_in, float complex *y);
+void modulate_ask(modem _mod, unsigned int symbol_in, float complex *y);
 void modulate_qam(modem _mod, unsigned int symbol_in, float complex *y);
 void modulate_psk(modem _mod, unsigned int symbol_in, float complex *y);
 void modulate_dpsk(modem _mod, unsigned int symbol_in, float complex *y);
@@ -133,7 +133,7 @@ void modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
 
 // generic modem demodulate routines
-void demodulate_pam(modem _demod, float complex x, unsigned int *symbol_out);
+void demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);
 void demodulate_qam(modem _demod, float complex x, unsigned int *symbol_out);
 void demodulate_psk(modem _demod, float complex x, unsigned int *symbol_out);
 void demodulate_dpsk(modem _demod, float complex x, unsigned int *symbol_out);

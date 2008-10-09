@@ -12,8 +12,8 @@ void modulate(
     float complex *y)
 {
     switch (_mod->scheme) {
-    case MOD_PAM:
-        modulate_pam(_mod, symbol_in, y);
+    case MOD_ASK:
+        modulate_ask(_mod, symbol_in, y);
         break;
     case MOD_QAM:
         modulate_qam(_mod, symbol_in, y);
@@ -41,7 +41,7 @@ void modulate(
     }
 }
 
-void modulate_pam(
+void modulate_ask(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)

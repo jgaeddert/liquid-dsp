@@ -24,8 +24,8 @@ modem modem_create(
     }
 
     switch (_scheme) {
-    case MOD_PAM:
-        return modem_create_pam(_bits_per_symbol);
+    case MOD_ASK:
+        return modem_create_ask(_bits_per_symbol);
     case MOD_QAM:
         return modem_create_qam(_bits_per_symbol);
     case MOD_PSK:
@@ -84,11 +84,11 @@ void modem_init(modem _mod, unsigned int _bits_per_symbol)
     _mod->d_phi = 0.0f;
 }
 
-modem modem_create_pam(
+modem modem_create_ask(
     unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_PAM;
+    mod->scheme = MOD_ASK;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -96,11 +96,11 @@ modem modem_create_pam(
     mod->M_i = mod->M;
 
     switch (mod->M) {
-    case 2:     mod->alpha = PAM2_ALPHA;     break;
-    case 4:     mod->alpha = PAM4_ALPHA;     break;
-    case 8:     mod->alpha = PAM8_ALPHA;     break;
-    case 16:    mod->alpha = PAM16_ALPHA;    break;
-    case 32:    mod->alpha = PAM32_ALPHA;    break;
+    case 2:     mod->alpha = ASK2_ALPHA;     break;
+    case 4:     mod->alpha = ASK4_ALPHA;     break;
+    case 8:     mod->alpha = ASK8_ALPHA;     break;
+    case 16:    mod->alpha = ASK16_ALPHA;    break;
+    case 32:    mod->alpha = ASK32_ALPHA;    break;
     default:
         // calculate alpha dynamically
         // NOTE: this is only an approximation

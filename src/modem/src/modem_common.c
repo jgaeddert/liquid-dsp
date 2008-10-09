@@ -10,7 +10,7 @@ const char* modulation_scheme_str[10] = {
     "bpsk",
     "qpsk",
     "dpsk",
-    "pam",
+    "ask",
     "qam",
     "arb",
     "arb (mirrored)",

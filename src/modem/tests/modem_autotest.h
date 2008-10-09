@@ -20,7 +20,7 @@ mod_set modem_test[NUM_MODEMS] = {
     {MOD_QPSK,2},
 
     // generic: amplitude-shift keying
-    {MOD_PAM,1},  {MOD_PAM,2},  {MOD_PAM,3},  {MOD_PAM,4},
+    {MOD_ASK,1},  {MOD_ASK,2},  {MOD_ASK,3},  {MOD_ASK,4},
 
     // generic: phase-shift keying
     {MOD_PSK,1},  {MOD_PSK,2},  {MOD_PSK,3},  {MOD_PSK,4},

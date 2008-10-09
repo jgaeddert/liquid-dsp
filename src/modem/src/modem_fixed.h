@@ -77,7 +77,7 @@ void modem_init_q32(modem_q32* _mod, unsigned int _bits_per_symbol);
 void free_modem_q32(modem_q32 * _mod);
 
 // generic modem create routines
-modem_q32* modem_create_pam_q32(unsigned int _bits_per_symbol);
+modem_q32* modem_create_ask_q32(unsigned int _bits_per_symbol);
 modem_q32* modem_create_qam_q32(unsigned int _bits_per_symbol);
 modem_q32* modem_create_psk_q32(unsigned int _bits_per_symbol);
 modem_q32* modem_create_dpsk_q32(unsigned int _bits_per_symbol);
@@ -106,7 +106,7 @@ void modem_arb_balance_iq_q32(modem_q32 *_mod);
 void modulate_q32(modem_q32* _mod, unsigned int symbol_in, q32_t *I_out, q32_t *Q_out);
 
 // generic modem modulate routines
-void modulate_pam_q32(modem_q32* _mod, unsigned int symbol_in, q32_t *I_out, q32_t *Q_out);
+void modulate_ask_q32(modem_q32* _mod, unsigned int symbol_in, q32_t *I_out, q32_t *Q_out);
 void modulate_qam_q32(modem_q32* _mod, unsigned int symbol_in, q32_t *I_out, q32_t *Q_out);
 void modulate_psk_q32(modem_q32* _mod, unsigned int symbol_in, q32_t *I_out, q32_t *Q_out);
 void modulate_dpsk_q32(modem_q32* _mod, unsigned int symbol_in, q32_t *I_out, q32_t *Q_out);
@@ -121,7 +121,7 @@ void modulate_qpsk_q32(modem_q32* _mod, unsigned int symbol_in, q32_t *I_out, q3
 void demodulate_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int *symbol_out);
 
 // generic modem demodulate routines
-void demodulate_pam_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int *symbol_out);
+void demodulate_ask_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int *symbol_out);
 void demodulate_qam_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int *symbol_out);
 void demodulate_psk_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int *symbol_out);
 void demodulate_dpsk_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int *symbol_out);
