@@ -39,7 +39,7 @@ mod_set modem_test[NUM_MODEMS] = {
 void modem_test_mod_demod(modem _mod, modem _demod)
 {
     unsigned int i, s, M=1<<modem_get_bps(_mod);
-    complex x;
+    float complex x;
     float phase_error, evm;
     for (i=0; i<M; i++) {
         modulate(_mod, i, &x);

@@ -20,7 +20,7 @@ int main() {
     unsigned int s; // demodulated symbol
     unsigned int num_symbols = 1<<bps;
     //float I, Q;
-    complex x;
+    float complex x;
     unsigned int num_errors = 0;
 
     for (i=0; i<num_symbols; i++) {

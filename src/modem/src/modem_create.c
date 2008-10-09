@@ -238,7 +238,7 @@ modem modem_create_arb(
     modem_init(mod, _bits_per_symbol);
 
     mod->M = mod->M;
-    mod->symbol_map = (complex*) calloc( mod->M, sizeof(complex) );
+    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
 
     return mod;
 }
@@ -253,7 +253,7 @@ modem modem_create_arb_mirrored(
 
     /// \bug
     mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
-    mod->symbol_map = (complex*) calloc( mod->M, sizeof(complex) );
+    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
 
     return mod;
 }
@@ -268,12 +268,12 @@ modem modem_create_arb_rotated(
 
     /// \bug
     mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
-    mod->symbol_map = (complex*) calloc( mod->M, sizeof(complex) );
+    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
 
     return mod;
 }
 
-void modem_arb_init(modem _mod, complex *_symbol_map, unsigned int _len)
+void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
     if ( (_mod->scheme != MOD_ARB) && (_mod->scheme != MOD_ARB_MIRRORED) &&

@@ -9,7 +9,7 @@
 
 void demodulate(
     modem _demod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     switch (_demod->scheme) {
@@ -45,7 +45,7 @@ void demodulate(
 
 void demodulate_pam(
     modem _demod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     unsigned int s;
@@ -58,7 +58,7 @@ void demodulate_pam(
 
 void demodulate_qam(
     modem _demod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     unsigned int s_i, s_q;
@@ -75,7 +75,7 @@ void demodulate_qam(
 
 void demodulate_psk(
     modem _demod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     unsigned int s;
@@ -94,7 +94,7 @@ void demodulate_psk(
 
 void demodulate_bpsk(
     modem _demod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     *symbol_out = (crealf(x) > 0 ) ? 0 : 1;
@@ -103,7 +103,7 @@ void demodulate_bpsk(
 
 void demodulate_qpsk(
     modem _demod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     *symbol_out  = (crealf(x) > 0 ) ? 0 : 1;
@@ -113,7 +113,7 @@ void demodulate_qpsk(
 
 void demodulate_dpsk(
     modem _demod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     unsigned int s;
@@ -135,7 +135,7 @@ void demodulate_dpsk(
 
 void demodulate_arb(
     modem _mod,
-    complex x,
+    float complex x,
     unsigned int *symbol_out)
 {
     //printf("demodulate_arb() invoked with I=%d, Q=%d\n", x);

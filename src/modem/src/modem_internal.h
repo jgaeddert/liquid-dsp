@@ -80,12 +80,12 @@ struct modem_s {
     float ref[MAX_MOD_BITS_PER_SYMBOL];
 
     /// Complete symbol map
-    complex * symbol_map;
+    float complex * symbol_map;
 
-    complex state;      ///< received state vector
+    float complex state;      ///< received state vector
     float state_theta;  ///< received state vector, angle
 
-    complex res;        ///< residual error vector
+    float complex res;        ///< residual error vector
 
     float phase_error;  ///< phase error after demodulation
     float evm;          ///< error vector magnitude (EVM)
@@ -120,30 +120,30 @@ void modem_arb_scale(modem _mod);
 void modem_arb_balance_iq(modem _mod);
 
 // generic modem modulate routines
-void modulate_pam(modem _mod, unsigned int symbol_in, complex *y);
-void modulate_qam(modem _mod, unsigned int symbol_in, complex *y);
-void modulate_psk(modem _mod, unsigned int symbol_in, complex *y);
-void modulate_dpsk(modem _mod, unsigned int symbol_in, complex *y);
-void modulate_arb(modem _mod, unsigned int symbol_in, complex *y);
-//void modulate_arb_mirrored(modem _mod, unsigned int symbol_in, complex *y);
-//void modulate_arb_rotated(modem _mod, unsigned int symbol_in, complex *y);
+void modulate_pam(modem _mod, unsigned int symbol_in, float complex *y);
+void modulate_qam(modem _mod, unsigned int symbol_in, float complex *y);
+void modulate_psk(modem _mod, unsigned int symbol_in, float complex *y);
+void modulate_dpsk(modem _mod, unsigned int symbol_in, float complex *y);
+void modulate_arb(modem _mod, unsigned int symbol_in, float complex *y);
+//void modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y);
+//void modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y);
 
 // specific modem modulate routines
-void modulate_bpsk(modem _mod, unsigned int symbol_in, complex *y);
-void modulate_qpsk(modem _mod, unsigned int symbol_in, complex *y);
+void modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
+void modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
 
 // generic modem demodulate routines
-void demodulate_pam(modem _demod, complex x, unsigned int *symbol_out);
-void demodulate_qam(modem _demod, complex x, unsigned int *symbol_out);
-void demodulate_psk(modem _demod, complex x, unsigned int *symbol_out);
-void demodulate_dpsk(modem _demod, complex x, unsigned int *symbol_out);
-void demodulate_arb(modem _demod, complex x, unsigned int *symbol_out);
-//void demodulate_arb_mirrored(modem _demod, complex x, unsigned int *symbol_out);
-//void demodulate_arb_rotated(modem _demod, complex x, unsigned int *symbol_out);
+void demodulate_pam(modem _demod, float complex x, unsigned int *symbol_out);
+void demodulate_qam(modem _demod, float complex x, unsigned int *symbol_out);
+void demodulate_psk(modem _demod, float complex x, unsigned int *symbol_out);
+void demodulate_dpsk(modem _demod, float complex x, unsigned int *symbol_out);
+void demodulate_arb(modem _demod, float complex x, unsigned int *symbol_out);
+//void demodulate_arb_mirrored(modem _demod, float complex x, unsigned int *symbol_out);
+//void demodulate_arb_rotated(modem _demod, float complex x, unsigned int *symbol_out);
 
 // specific modem demodulate routines
-void demodulate_bpsk(modem _demod, complex x, unsigned int *symbol_out);
-void demodulate_qpsk(modem _demod, complex x, unsigned int *symbol_out);
+void demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
+void demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
 
 // get demodulator phase error
 //void get_demodulator_phase_error(modem _demod, float* _phi);

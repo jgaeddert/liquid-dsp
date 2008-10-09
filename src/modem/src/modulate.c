@@ -9,7 +9,7 @@
 void modulate(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     switch (_mod->scheme) {
     case MOD_PAM:
@@ -44,7 +44,7 @@ void modulate(
 void modulate_pam(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     symbol_in = gray_decode(symbol_in);
     *y = (2*(int)symbol_in - (int)(_mod->M) + 1) * _mod->alpha;
@@ -53,7 +53,7 @@ void modulate_pam(
 void modulate_qam(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     unsigned int s_i, s_q;
     s_i = symbol_in >> _mod->m_q;
@@ -69,7 +69,7 @@ void modulate_qam(
 void modulate_psk(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     symbol_in = gray_decode(symbol_in);
     ///\todo: combine into single statement
@@ -80,7 +80,7 @@ void modulate_psk(
 void modulate_bpsk(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     *y = symbol_in ? -1.0f : 1.0f;
 }
@@ -88,7 +88,7 @@ void modulate_bpsk(
 void modulate_qpsk(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     *y  = symbol_in & 0x01 ? -0.707106781f   : 0.707106781f;
     *y += symbol_in & 0x02 ? -0.707106781f*J : 0.707106781f*J;
@@ -97,7 +97,7 @@ void modulate_qpsk(
 void modulate_dpsk(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     symbol_in = gray_decode(symbol_in);
     float d_theta = symbol_in * 2 * _mod->alpha;
@@ -113,7 +113,7 @@ void modulate_dpsk(
 void modulate_arb(
     modem _mod,
     unsigned int symbol_in,
-    complex *y)
+    float complex *y)
 {
     if (symbol_in >= _mod->M) {
         perror("ERROR: modulate_arb(), input symbol exceeds maximum\n");
@@ -124,7 +124,7 @@ void modulate_arb(
 }
 
 #if 0
-void modulate_arb_mirrored(modem _mod, unsigned int symbol_in, complex *y)
+void modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y)
 {
     if (symbol_in >= _mod->M) {
         perror("ERROR: modulate_arb_mirrored(), input symbol exceeds maximum\n");
@@ -154,7 +154,7 @@ void modulate_arb_mirrored(modem _mod, unsigned int symbol_in, complex *y)
 #endif
 
 #if 0
-void modulate_arb_rotated(modem _mod, unsigned int symbol_in, complex *y)
+void modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y)
 {
     if (symbol_in >= _mod->M) {
         perror("ERROR: modulate_arb_rotated(), input symbol exceeds maximum\n");

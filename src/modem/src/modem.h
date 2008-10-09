@@ -28,7 +28,7 @@ modem modem_create(modulation_scheme, unsigned int _bits_per_symbol);
 void free_modem(modem _mod);
 
 // Initialize arbitrary modem constellation
-void modem_arb_init(modem _mod, complex *_symbol_map, unsigned int _len);
+void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len);
 
 // Initialize arbitrary modem constellation on data from external file
 void modem_arb_init_file(modem _mod, char* filename);
@@ -41,9 +41,9 @@ unsigned int modem_get_bps(modem _mod);
 
 // generic modulate function; simply queries modem scheme and calls
 // appropriate subroutine
-void modulate(modem _mod, unsigned int symbol_in, complex *y);
+void modulate(modem _mod, unsigned int symbol_in, float complex *y);
 
-void demodulate(modem _demod, complex x, unsigned int *symbol_out);
+void demodulate(modem _demod, float complex x, unsigned int *symbol_out);
 void get_demodulator_phase_error(modem _demod, float* _phi);
 void get_demodulator_evm(modem _demod, float* _evm);
 
