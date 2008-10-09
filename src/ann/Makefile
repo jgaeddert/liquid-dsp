@@ -14,7 +14,7 @@ main_ann.o: src/main_ann.c src/ann_internal.h
 	gcc -Wall -c src/main_ann.c -o main_ann.o
 
 ann_test: ann_neuron.o ann_layer.o ann.o main_ann.o
-	gcc -Wall ann_neuron.o ann_layer.o ann.o main_ann.o -o ann_test
+	gcc -Wall ann_neuron.o ann_layer.o ann.o main_ann.o -lm -o ann_test
 
 clean:
 	rm -f *.o *_test
