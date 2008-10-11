@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"t:lvq")) != EOF){
+    while((d = getopt(argc,argv,"t:p:lvq")) != EOF){
         switch (d) {
         case 't':
             autotest_id = atoi(optarg);
@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
                 mode = RUN_SINGLE_TEST;
             }
             break;
-#if 0
         case 'p':
             package_id = atoi(optarg);
             if (package_id >= NUM_PACKAGES) {
@@ -90,7 +89,6 @@ int main(int argc, char *argv[])
                 mode = RUN_SINGLE_PACKAGE;
             }
             break;
-#endif
         case 'l':
             // list packages, autotests and exit
             for (i=0; i<NUM_PACKAGES; i++) {
@@ -118,27 +116,20 @@ int main(int argc, char *argv[])
 
     switch (mode) {
     case RUN_ALL:
-        //for (i=0; i<NUM_PACKAGES; i++)
-        //    execute_package( &packages[i], verbose );
+        for (i=0; i<NUM_PACKAGES; i++)
+            execute_package( &packages[i], verbose );
 
-        for (i=0; i<NUM_AUTOTESTS; i++)
-            execute_autotest( &autotests[i], verbose );
-
-        //for (i=0; i<NUM_PACKAGES; i++)
-        //    print_package_results( &packages[i] );
+        for (i=0; i<NUM_PACKAGES; i++)
+            print_package_results( &packages[i] );
         break;
     case RUN_SINGLE_TEST:
         execute_autotest( &autotests[autotest_id], verbose );
-        //print_autotest_results( &autotests[autotest_id] );
-        return 0;
-    case RUN_SINGLE_PACKAGE:
-        printf("RUN_SINGLE_PACKAGE: option not yet supported\n");
-        return 0;
-        /*
-        execute_package( &packages[package_id], verbose );
-        //print_package_results( &packages[package_id] );
+        print_autotest_results( &autotests[autotest_id] );
         break;
-        */
+    case RUN_SINGLE_PACKAGE:
+        execute_package( &packages[package_id], verbose );
+        print_package_results( &packages[package_id] );
+        break;
     }
 
     autotest_print_results();
@@ -151,8 +142,8 @@ void print_help()
     printf("autotest options:\n");
     printf("  -h : prints this help file\n");
     printf("  -t <autotest_index>\n");
-//    printf("  -p<package_index>\n");
-//    printf("  -l : lists available autotests\n");
+    printf("  -p <package_index>\n");
+    printf("  -l : lists available autotests\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
 }
@@ -178,18 +169,16 @@ void execute_autotest(autotest _test, bool _verbose)
         print_autotest_results(_test);
 }
 
-/*
 void execute_package(package _p, bool _verbose)
 {
     if (_verbose)
-        printf("%u: %s\n", _package->id, _package->name);
+        printf("%u: %s\n", _p->id, _p->name);
     
     unsigned int i;
-    for (i=0; i<_package->num_autotests; i++) {
-        execute_autotest( &autotests[ i + _package->autotest_index ], _verbose );
+    for (i=0; i<_p->num_autotests; i++) {
+        execute_autotest( &autotests[ i + _p->autotest_index ], _verbose );
     }
 }
-*/
 
 void print_autotest_results(autotest _test)
 {
@@ -205,14 +194,12 @@ void print_autotest_results(autotest _test)
             _test->name);
 }
 
-/*
 void print_package_results(package _p)
 {
     unsigned int i;
-    printf("%u: %s:\n", _package->id, _package->name);
-    for (i=_package->autotest_index; i<(_package->autotest_index+_package->num_autotests); i++)
+    printf("%u: %s:\n", _p->id, _p->name);
+    for (i=_p->autotest_index; i<(_p->autotest_index+_p->num_autotests); i++)
         print_autotest_results( &autotests[i] );
 
     printf("\n");
 }
-*/
