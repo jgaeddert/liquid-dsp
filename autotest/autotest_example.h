@@ -36,6 +36,16 @@ void autotest_expressions()
     CONTEND_EXPRESSION(1==2);
 }
 
+void autotest_same_data()
+{
+    float x[] = {1, 2, 3, 4, 5};
+    float y[] = {1, 2, 3, 4, 5};
+    float z[] = {0, 2, 3, 4, 5};
+
+    CONTEND_SAME_DATA(x,y,5);
+    CONTEND_SAME_DATA(x,z,5);
+}
+
 void autotest_no_tests()
 {
     int x = 3, y = 5, z;

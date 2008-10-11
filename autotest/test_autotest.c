@@ -27,6 +27,10 @@ int main() {
 
     CONTEND_INEQUALITY(x,y);
 
+    float a[] = {1, 2, 3, 4};
+    float b[] = {0, 2, 3, 4};
+    CONTEND_SAME_DATA(a,b,4*sizeof(float));
+
     autotest_print_results();
 
     printf("done.\n");
