@@ -128,12 +128,13 @@ static inline void _autotest_print_array(uint8_t * _x, unsigned int _n)
 }
 
 // CONTEND_SAME_DATA
-//    test_failed_expr(F,L,abs(" #X "-" #Y ")",fabs(X-Y),"<",ED,D);
 #  define TEST_SAME_DATA(F,L,EX,X,EY,Y,EN,N)                        \
     if (!_autotest_same_data((uint8_t*)(X),(uint8_t*)(Y),(N))) {    \
         test_failed_msg(F,L,EX "[] != " EY "[] for " EN " bytes");  \
-        _autotest_print_array((uint8_t*)(X),N);                     \
-        _autotest_print_array((uint8_t*)(Y),N);                     \
+        if (_autotest_verbose) {                                    \
+            _autotest_print_array((uint8_t*)(X),N);                 \
+            _autotest_print_array((uint8_t*)(Y),N);                 \
+        }                                                           \
     } else {                                                        \
         test_passed();                                              \
     }
