@@ -38,12 +38,12 @@ void autotest_expressions()
 
 void autotest_same_data()
 {
-    float x[] = {1, 2, 3, 4, 5};
-    float y[] = {1, 2, 3, 4, 5};
-    float z[] = {0, 2, 3, 4, 5};
+    float x[] = {1, 2, 3, 4};
+    float y[] = {1, 2, 3, 4};
+    float z[] = {0, 2, 3, 4};
 
-    CONTEND_SAME_DATA(x,y,5);
-    CONTEND_SAME_DATA(x,z,5);
+    CONTEND_SAME_DATA(x,y,4*sizeof(float));
+    CONTEND_SAME_DATA(x,z,4*sizeof(float));
 }
 
 void autotest_no_tests()
