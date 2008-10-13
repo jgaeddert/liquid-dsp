@@ -1,5 +1,5 @@
 //
-// Circular buffer
+// Buffers
 //
 
 #ifndef __MODULE_BUFFER_H__

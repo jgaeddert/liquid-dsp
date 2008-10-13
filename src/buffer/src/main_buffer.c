@@ -11,7 +11,8 @@ int main() {
     float *r; // reader
     unsigned int n=3;
 
-    buffer cb = buffer_create(CIRCULAR, 10);
+    //buffer cb = buffer_create(CIRCULAR, 10);
+    buffer cb = buffer_create(STATIC, 10);
 
     buffer_write(cb, v, 4);
     buffer_read(cb, &r, &n);

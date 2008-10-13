@@ -128,14 +128,29 @@ void buffer_s_read(buffer _b, float ** _v, unsigned int *_n)
 
 void buffer_release(buffer _b, unsigned int _n)
 {
+    if (_b->type == CIRCULAR)
+        buffer_c_release(_b, _n);
+    else
+        buffer_s_release(_b, _n);
+}
+
+
+void buffer_c_release(buffer _b, unsigned int _n)
+{
     // advance read_index by _n making sure not to step on write_index
     if (_n > _b->num_elements) {
-        printf("error: buffer_release(), cannot release more elements in buffer than exist\n");
+        printf("error: buffer_c_release(), cannot release more elements in buffer than exist\n");
         return;
     }
 
     _b->read_index = (_b->read_index + _n) % _b->len;
     _b->num_elements -= _n;
+}
+
+
+void buffer_s_release(buffer _b, unsigned int _n)
+{
+    buffer_clear(_b);
 }
 
 void buffer_write(buffer _b, float * _v, unsigned int _n)

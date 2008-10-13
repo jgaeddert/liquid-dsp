@@ -16,5 +16,8 @@ void buffer_s_read(buffer _b, float ** _v, unsigned int * _n);
 void buffer_c_write(buffer _b, float * _v, unsigned int _n);
 void buffer_s_write(buffer _b, float * _v, unsigned int _n);
 
+void buffer_c_release(buffer _b, unsigned int _n);
+void buffer_s_release(buffer _b, unsigned int _n);
+
 #endif // __LIQUID_BUFFER_INTERNAL_H__
 
