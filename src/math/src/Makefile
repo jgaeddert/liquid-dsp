@@ -1,5 +1,5 @@
 
-all: clean firdes decim2 cbuff kaiser matrix
+all: clean firdes decim2 kaiser matrix
 
 kaiser:
 	gcc -Wall -c kaiser.c -o kaiser.o
@@ -15,12 +15,6 @@ decim2: firdes
 	gcc -Wall -c decim2.c -o decim2.o
 	gcc -Wall -c main_decim2.c -o main_decim2.o
 	gcc -Wall decim2.o firdes.o main_decim2.o -lm -o decim2_test
-
-cbuff:
-	gcc -Wall -c cbuff.c -o cbuff.o
-	gcc -Wall -c main_cbuff.c -o main_cbuff.o
-	gcc -Wall cbuff.o main_cbuff.o -o cbuff_test
-
 
 matrix:
 	gcc -Wall -c matrix.c -o matrix.o
