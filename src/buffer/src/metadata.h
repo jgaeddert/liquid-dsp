@@ -7,7 +7,11 @@
 
 typedef struct metadata_s * metadata;
 
-metadata metadata_create(unsigned int _n, ...);
+metadata metadata_create();
+
+void metadata_add_key(metadata _m, char * _name, float _value);
+void metadata_set_key(metadata _m, char * _name, float _value);
+float metadata_get_key(metadata _m, char *_name);
 
 void metadata_destroy(metadata _m);
 
