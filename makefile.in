@@ -35,11 +35,12 @@ all: libliquid.a $(SHARED_LIB)
 
 install:
 	@echo "installing..."
-	mkdir -p ${exec_prefix}/lib
-	install -m 644 -p $(SHARED_LIB) libliquid.a ${exec_prefix}/lib
-	#mkdir -p ${prefix}/include
-	#install -m 644 -p /api/liquid_apis.h
-
+	mkdir -p @libdir@
+	install -m 644 -p $(SHARED_LIB) libliquid.a @libdir@
+	@REBIND@
+	mkdir -p @includedir@
+	install -m 644 -p include/liquid.h @includedir@
+	
 libliquid.a: $(LIBS)
 	ar rv $@ $^
 	ranlib libliquid.a
