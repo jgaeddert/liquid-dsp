@@ -82,7 +82,7 @@ void interleaver_debug_print(interleaver _q)
 
 void interleaver_init_block(interleaver _q)
 {
-    unsigned int i,M,N,L=_q->len;
+    unsigned int i,M=0,N,L=_q->len;
     // decompose into [M x N]
     L = _q->len;
     for (i=0; i<8*sizeof(unsigned int); i++) {
