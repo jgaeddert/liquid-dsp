@@ -5,7 +5,7 @@
 all: modem_test autotest
 
 CC = gcc
-CFLAGS = -Wall -std=c99 -O3
+CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = modem.o modem_create.o modem_common.o modulate.o demodulate.o
 
