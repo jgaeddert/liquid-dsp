@@ -1,0 +1,53 @@
+dnl 
+dnl Liquid SDR library configure
+dnl Process with autoconf to generate configure script
+dnl
+
+AC_INIT(src/modem/src/modem.c)
+AC_CONFIG_HEADER(config.h)
+SO_NAME=0
+VERSION=0.1.0
+AC_SUBST(SO_NAME)
+AC_SUBST(VERSION)
+
+dnl Check for necessary programs
+
+dnl Check for necessary libraries
+AC_CHECK_LIB(c, malloc)
+AC_CHECK_LIB(m, sinf)
+
+dnl Check for necessary header files
+AC_CHECK_HEADERS(stdio.h stdlib.h complex.h string.h)
+if test -z "$HAVE_stdio.h"
+then
+    AC_MSG_ERROR([Need stdio.h!])
+fi
+
+dnl Check for necessary library functions
+AC_CHECK_FUNCS(memset memcpy memmove)
+
+dnl Check canonical system
+AC_CANONICAL_SYSTEM
+case $target_cpu in
+i386|i486|i586|i686)
+    ARCH_OPTION="-march=$target_cpu";;
+powerpc*)
+    ARCH_OPTION="-fno-common -faltivec";;
+*)
+esac
+
+case $target_os in
+darwin*)
+    SH_LIB=libliquid.dylib
+    REBIND=""
+    ;;
+*)
+    SH_LIB=libliquid.so
+    REBIND=ldconfig
+    ;;
+esac
+AC_SUBST(SH_LIB)
+AC_SUBST(REBIND)
+AC_SUBST(ARCH_OPTION)
+
+AC_OUTPUT(makefile)

@@ -2,10 +2,12 @@
 # Makefile for liquid SDR libraries
 #
 
-prefix = /usr/local
-exec_prefix = ${prefix}
+srcdir = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+VPATH = @srcdir@
 
-CC = gcc
+CC = @CC@
 LIBS_AGC = agc.o
 LIBS_ANN = ann.o ann_layer.o ann_neuron.o
 LIBS_BUFFER = cbuffer.o sbuffer.o metadata.o port.o
@@ -24,10 +26,9 @@ LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_FEC) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_RANDOM)
 
-CFLAGS = -g -O2 -Wall
+CFLAGS = -g -O2 -Wall @ARCH_OPTION@
 
-SHARED_LIB = libliquid.dylib # darwin
-#SHARED_LIB = libliquid.so # linux et al
+SHARED_LIB = @SH_LIB@
 
 all: libliquid.a $(SHARED_LIB)
 
@@ -42,9 +43,11 @@ libliquid.a: $(LIBS)
 	ar rv $@ $^
 	ranlib libliquid.a
 
+# darwin
 libliquid.dylib: $(LIBS)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^
 
+# linux, et al
 libliquid.so: $(LIBS)
 	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive -lc
 
@@ -81,3 +84,7 @@ $(LIBS_RANDOM) : %.o : src/random/src/%.c
 
 clean:
 	rm -f *.o $(SHARED_LIB) *.a
+
+distclean: clean
+	rm -f config.log config.cache config.status config.h makefile
+	rm -rf autom4te.cache
