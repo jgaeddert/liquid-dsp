@@ -45,7 +45,7 @@ typedef struct package_s * package;
 //   struct autotest_s autotests[NUM_AUTOTESTS]
 //   #define NUM_PACKAGES
 //   struct package_s packages[NUM_PACKAGES]
-#include "autotest_include.h"
+#include "../autotest_include.h"
 
 // helper functions:
 void print_help();

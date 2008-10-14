@@ -27,11 +27,17 @@ LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_RANDOM)
 
+TESTS = \
+	src/fec/tests/checksum_autotest.h \
+	src/modem/tests/modem_autotest.h \
+	src/nco/tests/nco_autotest.h \
+	src/random/tests/random_autotest.h
+
 CFLAGS = -g -O2 -Wall @ARCH_OPTION@
 
 SHARED_LIB = @SH_LIB@
 
-all: libliquid.a $(SHARED_LIB)
+all: libliquid.a $(SHARED_LIB) xautotest
 
 install:
 	@echo "installing..."
@@ -86,6 +92,11 @@ $(LIBS_NCO) : %.o : src/nco/src/%.c
 $(LIBS_RANDOM) : %.o : src/random/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+autotest_include.h: $(TESTS)
+	python autotest/autotest_gen.py $(TESTS)
+
+xautotest: autotest_include.h autotest/autotest.c $(LIBS)
+	$(CC) $(CFLAGS) $(LIBS) -lm autotest/autotest.c -o xautotest
 
 clean:
 	rm -f *.o $(SHARED_LIB) *.a
