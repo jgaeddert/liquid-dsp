@@ -98,6 +98,9 @@ autotest_include.h: $(TESTS)
 xautotest: autotest_include.h autotest/autotest.c $(LIBS)
 	$(CC) $(CFLAGS) $(LIBS) -lm autotest/autotest.c -o xautotest
 
+check: xautotest
+	./xautotest -v
+
 clean:
 	rm -f *.o $(SHARED_LIB) *.a
 
