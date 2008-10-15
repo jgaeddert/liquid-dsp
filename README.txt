@@ -5,15 +5,22 @@
 ======================================================================================
 
 Modules:
-    math: transcendental functions (sin,cos,tan,atan), others: gamma, besseli
+    agc: automatic gain control
+    ann: artificial neural networks
+    buffer: internal buffering, circular/static
+    fec: forward error correction (basic), checksum, etc.
+    fft: fast Fourier transform (basic), simple implementation
     filters: fir, iir, polyphase, design, remez, etc.
-    matrix: lu_decomp, inv, gauss_elim, 
-    polynomial: roots, etc.
-    optim: newton_raphson, ga, gradient
+    interleaver: bit- and symbol-level
+    math: transcendental functions (sin,cos,tan,atan), others: gamma, besseli
     modem: modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
+    matrix: lu_decomp, inv, gauss_elim, 
     nco: mix, pll
-    buffers: circular
+    optim: newton_raphson, ga, gradient
+    polynomial: roots, etc.
+    random: random number generators
     sequence: lfsr, complementary_code
+    utility: useful miscellany
 
 Additional:
     benchmarking tool
@@ -28,15 +35,16 @@ liquid/
     doc/
         Makefile
         liquid.tex
+    include/
+        header1.h           <-- external header, defines
+                                all APIsfor external use
+        header2.h
     src/
         include/            <-- initially empty directory
         module1/
             configure
             Makefile
             README
-            api/
-                module1.h   <-- external header, defines
-                                all APIs for external use
             doc/
                 figures/
                 refman.tex
