@@ -165,8 +165,8 @@ void execute_autotest(autotest _test, bool _verbose)
     else
         _test->percent_passed = 0.0f;
 
-    if (_verbose)
-        print_autotest_results(_test);
+    //if (_verbose)
+    //    print_autotest_results(_test);
 }
 
 void execute_package(package _p, bool _verbose)
