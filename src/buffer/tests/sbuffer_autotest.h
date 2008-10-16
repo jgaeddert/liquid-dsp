@@ -32,8 +32,6 @@ void autotest_buffer_static()
     CONTEND_EQUALITY(n,8);
     CONTEND_SAME_DATA(r,test2,8*sizeof(float));
 
-    buffer_print(cb);
-
     buffer_destroy(cb);
 }
 

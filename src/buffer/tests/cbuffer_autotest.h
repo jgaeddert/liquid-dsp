@@ -32,8 +32,6 @@ void autotest_buffer_circular()
     CONTEND_EQUALITY(n,10);
     CONTEND_SAME_DATA(r,test2,10*sizeof(float));
 
-    buffer_print(cb);
-
     buffer_destroy(cb);
 }
 
