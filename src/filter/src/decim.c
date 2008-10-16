@@ -4,6 +4,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "decim_internal.h"
 #include "firdes.h"
