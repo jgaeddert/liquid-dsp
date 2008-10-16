@@ -25,7 +25,7 @@ void autotest_buffer_static()
     CONTEND_EQUALITY(n,4);
     CONTEND_SAME_DATA(r,test1,4*sizeof(float));
 
-    buffer_release(cb, NULL);
+    buffer_release(cb, 0);
     buffer_write(cb, v, 8);
     n = 8;
     buffer_read(cb, &r, &n);
