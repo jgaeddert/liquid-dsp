@@ -19,8 +19,10 @@ float kaiser(unsigned int _n, unsigned int _N, float _beta)
 
 void fir_kaiser_window(unsigned int _n, float _fc, float _atten_dB, float *_h) {
     // chooise kaiser beta parameter (approximate)
-    // TODO find better method for initial estimation
-    float beta = (_atten_dB - 16.0f) / 8.0f;
+    float beta = 
+        -1.5637e-05f * _atten_dB * _atten_dB +
+         1.1656e-01f * _atten_dB +
+        -1.3230e+00f;
 
     if (beta < 2.0f) beta = 2.0f;
     else if (beta > 12.0f)  beta = 12.0f;
