@@ -10,11 +10,11 @@ VPATH = @srcdir@
 CC = @CC@
 LIBS_AGC = agc.o
 LIBS_ANN = ann.o ann_layer.o ann_neuron.o
-LIBS_BUFFER = cbuffer.o sbuffer.o metadata.o port.o
+LIBS_BUFFER = cbuffer.o sbuffer.o buffer.o metadata.o port.o
 LIBS_FEC = checksum.o
 LIBS_FFT = fft_create_plan.o fft_execute.o
 LIBS_FILTER = filter_common.o fir_filter.o rrcos.o window.o firdes.o \
-			  decim.o decim2.o decim_create.o
+			  decim.o decim2.o decim_create.o decim_execute.o
 LIBS_INTERLEAVER = interleaver.o
 LIBS_MATH = math.o
 LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o

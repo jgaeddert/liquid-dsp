@@ -18,6 +18,13 @@ typedef enum {
     INTERP_HALFBAND
 } interp_type;
 
+typedef enum {
+    SQUARE=0,
+    RCOS,
+    RRCOS,
+    W_KAISER,
+} filter_prototype;
+
 // esimate required filter length given
 //   _b    : transition bandwidth (0 < _b < 0.5)
 //   _slsl : sidelobe suppression level [dB]

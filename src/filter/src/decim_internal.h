@@ -23,12 +23,20 @@ void decim_destroy(decim _d);
 void decim_print(decim _d);
 
 // Execute
-void decim_execute(decim _d, float * _x, unsigned int _x_len, float * _y, unsigned int _y_len);
+void decim_execute(
+    decim _d,
+    float * _x,
+    unsigned int _x_len,
+    unsigned int * _nr,
+    float * _y,
+    unsigned int _y_len,
+    unsigned int * _nw);
 
 // 
 // internal
 //
 
+#include "../../buffer/src/buffer_internal.h"
 #define DECIM_FACTOR_MAX 2048
 struct decim_s {
     decim_type type;
@@ -40,12 +48,30 @@ struct decim_s {
     float b;        // filter bandwidth (0 < b < 0.5)
     float t;        // transition bandwidth (0 < t < 0.5), t = 1/D
     float slsl;     // sidelobe suppression level [dB] (slsl < 0)
+
+    unsigned int branch;
+
+    buffer * buffers;
+    unsigned int num_buffers;
 };
 
 void decim_debug_print(decim _d);
 
 decim decim_create_generic(unsigned int _D, float _fc, float _b, float _slsl);
 decim decim_create_halfband(float _fc, float _b, float _slsl);
+
+void decim_dotprod(float * _h, unsigned int _h_len, float *_x, float *_y);
+float dotprod(float * _x, float * _y, unsigned int _n);
+
+// Execute generic decimator
+void decim_execute_generic(
+    decim _d,
+    float * _x,
+    unsigned int _x_len,
+    unsigned int * _nr,
+    float * _y,
+    unsigned int _y_len,
+    unsigned int * _nw);
 
 
 #endif // __LIQUID_DECIM_INTERNAL_H__
