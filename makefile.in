@@ -29,6 +29,8 @@ LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_RANDOM)
 
 TESTS = \
+	src/buffer/tests/cbuffer_autotest.h \
+	src/buffer/tests/sbuffer_autotest.h \
 	src/fec/tests/checksum_autotest.h \
 	src/filter/tests/decim_autotest.h \
 	src/modem/tests/modem_autotest.h \
