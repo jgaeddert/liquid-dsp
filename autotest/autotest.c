@@ -187,7 +187,7 @@ void print_autotest_results(autotest _test)
     else
         printf("\tFAIL:");
 
-    printf("\tpassed\t%lu\t/ %lu\t checks (%0.1f%%)\t%s\n",
+    printf("\tpassed\t%lu\t/ %lu\t checks (%5.1f%%)\t%s\n",
             _test->num_passed,
             _test->num_checks,
             _test->percent_passed,

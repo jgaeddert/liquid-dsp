@@ -63,7 +63,7 @@ static void autotest_print_results(void)
         printf(" PASSED ALL %lu CHECKS\n", _autotest_num_passed);
     } else {
         double percent_failed = (double) _autotest_num_failed / (double) _autotest_num_checks;
-        printf(" FAILED %lu / %lu CHECKS (%.1f%%)\n",
+        printf(" FAILED %lu / %lu CHECKS (%7.2f%%)\n",
                 _autotest_num_failed, _autotest_num_checks, 100.0*percent_failed);
     }
     printf("==================================\n");
