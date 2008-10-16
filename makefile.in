@@ -30,6 +30,7 @@ LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 
 TESTS = \
 	src/fec/tests/checksum_autotest.h \
+	src/filter/tests/decim_autotest.h \
 	src/modem/tests/modem_autotest.h \
 	src/nco/tests/nco_autotest.h \
 	src/random/tests/random_autotest.h

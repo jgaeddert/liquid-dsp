@@ -30,18 +30,19 @@ decim decim_create(unsigned int _d, float _fc, float _b, float _slsl)
     return NULL;
 }
 
-decim decim_create_generic(unsigned int _d, float _fc, float _b, float _slsl)
+decim decim_create_generic(unsigned int _D, float _fc, float _t, float _slsl)
 {
-    unsigned int h_len = estimate_req_filter_len(_b, _slsl);
+    unsigned int h_len = estimate_req_filter_len(_t, _slsl);
     validate_filter_length(&h_len);
 
     decim d = (decim) malloc(sizeof(struct decim_s));
     d->h_len = h_len;
     d->h = (float*) malloc((d->h_len)*sizeof(float));
 
+    d->D = _D;
     d->fc = _fc;
-    d->b = _b;
-    d->t = 1.0f / ((float)(d->D));
+    d->t = _t;
+    d->b = 1.0f / ((float)(d->D));
     d->slsl = _slsl;
 
     // use windowed sinc fir filter design
@@ -50,20 +51,28 @@ decim decim_create_generic(unsigned int _d, float _fc, float _b, float _slsl)
     return d;
 }
 
-decim decim_create_halfband(float _fc, float _b, float _slsl)
+decim decim_create_halfband(float _fc, float _t, float _slsl)
 {
-    unsigned int h_len = estimate_req_filter_len(_b, _slsl);
+    unsigned int h_len = estimate_req_filter_len(_t, _slsl);
     validate_filter_length(&h_len);
 
     decim d = (decim) malloc(sizeof(struct decim_s));
+
+    // ensure h_len = 2*n + 1, where n is even
+    h_len += (h_len%2) ? 0 : 1;
+    h_len += ((h_len-1)%4) ? 2 : 0;
+    h_len -= (h_len>FIR_FILTER_LEN_MAX) ? 4 : 0;
     d->h_len = h_len;
     d->h = (float*) malloc((d->h_len)*sizeof(float));
 
-    // use windowed sinc fir filter design
-    //fir_design_windowed_sinc(d->h, d->h_len);
-
+    d->D = 2;
     d->fc = _fc;
-    d->b = _b;
+    d->t = _t;
+    d->b = 0.5f;
+    d->slsl = _slsl;
+
+    // use windowed sinc fir filter design
+    fir_kaiser_window(d->h_len, d->b, d->slsl, d->h);
 
     return d;
 }

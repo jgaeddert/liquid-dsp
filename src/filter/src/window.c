@@ -36,7 +36,7 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _atten_dB, float *_h) {
         // kaiser window
         h2 = kaiser(i,_n,beta);
 
-        printf("t = %f, h1 = %f, h2 = %f\n", t, h1, h2);
+        //printf("t = %f, h1 = %f, h2 = %f\n", t, h1, h2);
 
         // composite
         _h[i] = h1*h2;

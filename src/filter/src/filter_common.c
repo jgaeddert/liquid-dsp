@@ -12,7 +12,7 @@
 //   _slsl : sidelobe suppression level [dB]
 unsigned int estimate_req_filter_len(float _b, float _slsl)
 {
-    if (_b >= 0.5f || _b <= 0.0f) {
+    if (_b > 0.5f || _b <= 0.0f) {
         printf("error: estimate_req_filter_len(), invalid bandwidth : %f\n", _b);
         exit(0);
     }
@@ -22,7 +22,12 @@ unsigned int estimate_req_filter_len(float _b, float _slsl)
         exit(0);
     }
 
-    unsigned int h_len = (unsigned int) round((_slsl-8)/(14*_b));
+    unsigned int h_len;
+    if (_slsl < 8) {
+        h_len = 2;
+    } else {
+        h_len = (unsigned int) round((_slsl-8)/(14*_b));
+    }
     validate_filter_length(&h_len);
     return h_len;
 }

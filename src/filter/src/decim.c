@@ -8,6 +8,27 @@
 #include "decim_internal.h"
 #include "firdes.h"
 
+// Print
+void decim_print(decim _d)
+{
+    printf("decimator object:\n");
+    printf("\tD\t: %u\n", _d->D);
+    printf("\tfc\t: %5.2f\n", _d->fc);
+    printf("\tb\t: %5.2f\n", _d->b);
+    printf("\tt\t: %5.2f\n", _d->t);
+    printf("\tslsl\t: %5.2f\n", _d->slsl);
+    printf("\th\t: %u taps\n", _d->h_len);
+}
+
+// Debug print
+void decim_debug_print(decim _d)
+{
+    decim_print(_d);
+    unsigned int i;
+    for (i=0; i<_d->h_len; i++)
+        printf("  h(%u) = %E;\n", i+1, _d->h[i]);
+}
+
 // additional function prototypes
 void decim_dotprod(float * _h, unsigned int _h_len, float *_x, float *_y);
 
