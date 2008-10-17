@@ -11,24 +11,24 @@ int main() {
     float *r; // reader
     unsigned int n=3;
 
-    //buffer cb = buffer_create(CIRCULAR, 10);
-    buffer cb = buffer_create(STATIC, 10);
+    //buffer cb = fbuffer_create(CIRCULAR, 10);
+    fbuffer cb = fbuffer_create(STATIC, 10);
 
-    buffer_write(cb, v, 4);
-    buffer_read(cb, &r, &n);
+    fbuffer_write(cb, v, 4);
+    fbuffer_read(cb, &r, &n);
     printf("buffer read %u elements\n", n);
     unsigned int i;
     for (i=0;i<n;i++)
         printf("  %u : %f\n", i, r[i]);
 
-    buffer_release(cb, 2);
+    fbuffer_release(cb, 2);
 
-    buffer_write(cb, v, 8);
+    fbuffer_write(cb, v, 8);
 
-    buffer_debug_print(cb);
-    buffer_print(cb);
+    fbuffer_debug_print(cb);
+    fbuffer_print(cb);
 
-    buffer_destroy(cb);
+    fbuffer_destroy(cb);
 
     printf("done.\n");
     return 0;

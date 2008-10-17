@@ -1,5 +1,5 @@
 //
-//
+// Buffers, defined by macro
 //
 
 #include <stdio.h>
@@ -53,7 +53,7 @@ void X(_print)(X() _b)
         printf("circular ");
     else
         printf("static ");
-    printf("X() [%u elements] :\n", _b->num_elements);
+    printf("buffer [%u elements] :\n", _b->num_elements);
     unsigned int i;
     for (i=0; i<_b->num_elements; i++) {
         printf("%u", i);
@@ -68,7 +68,7 @@ void X(_debug_print)(X() _b)
         printf("circular ");
     else
         printf("static ");
-    printf("X() [%u elements] :\n", _b->num_elements);
+    printf("buffer [%u elements] :\n", _b->num_elements);
     unsigned int i;
     for (i=0; i<_b->len; i++) {
         // print read index pointer
@@ -79,16 +79,14 @@ void X(_debug_print)(X() _b)
         if (i==_b->write_index)
             printf("<w>");
 
-        // print X() value
-        //printf("\t%u\t: %f\n", i, _b->v[i]);
+        // print buffer value
         BUFFER_PRINT_LINE(_b,i)
         printf("\n");
     }
     printf("----------------------------------\n");
 
-    // print excess X() memory
+    // print excess buffer memory
     for (i=_b->len; i<_b->N; i++) {
-        //printf("\t%u\t: %f\n", i, _b->v[i]);
         BUFFER_PRINT_LINE(_b,i)
     }
 }
@@ -144,7 +142,7 @@ void X(_c_release)(X() _b, unsigned int _n)
 {
     // advance read_index by _n making sure not to step on write_index
     if (_n > _b->num_elements) {
-        printf("error: buffer_c_release(), cannot release more elements in X() than exist\n");
+        printf("error: buffer_c_release(), cannot release more elements in buffer than exist\n");
         return;
     }
 
