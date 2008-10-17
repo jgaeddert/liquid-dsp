@@ -16,10 +16,10 @@ metadata: src/metadata.c src/main_metadata.c
 	gcc -Wall -c src/main_metadata.c -o main_metadata.o
 	gcc -Wall metadata.o main_metadata.o -lm -o metadata_test
 
-port: cbuffer metadata src/port.c src/port.h
+port: cbuffer metadata src/port.c src/port.h buffer.o
 	gcc -Wall -c src/port.c -o port.o
 	gcc -Wall -c src/main_port.c -o main_port.o
-	gcc -Wall port.o main_port.o cbuffer.o -lm -o port_test
+	gcc -Wall port.o main_port.o buffer.o -lm -o port_test
 
 buffer.o: src/buffer.c src/buffer.h src/buffer_internal.h
 	gcc -Wall -c src/buffer.c -o buffer.o
