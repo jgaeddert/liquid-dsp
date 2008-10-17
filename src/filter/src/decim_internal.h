@@ -51,7 +51,7 @@ struct decim_s {
 
     unsigned int branch;
 
-    buffer * buffers;
+    fbuffer * buffers;
     unsigned int num_buffers;
 };
 

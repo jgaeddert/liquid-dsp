@@ -52,8 +52,8 @@ decim decim_create_generic(unsigned int _D, float _fc, float _t, float _slsl)
 
     // create buffer
     d->num_buffers = 1;
-    d->buffers = (buffer*) malloc(1*sizeof(buffer));
-    d->buffers[0] = buffer_create(CIRCULAR, d->h_len);
+    d->buffers = (fbuffer*) malloc(1*sizeof(fbuffer));
+    d->buffers[0] = fbuffer_create(CIRCULAR, d->h_len);
     // TODO: fill buffer with zeros
 
     return d;
@@ -86,9 +86,9 @@ decim decim_create_halfband(float _fc, float _t, float _slsl)
 
     // create buffers
     d->num_buffers = 2;
-    d->buffers = (buffer*) malloc(2*sizeof(buffer));
-    d->buffers[0] = buffer_create(CIRCULAR, d->h_len);
-    d->buffers[1] = buffer_create(CIRCULAR, d->h_len);
+    d->buffers = (fbuffer*) malloc(2*sizeof(fbuffer));
+    d->buffers[0] = fbuffer_create(CIRCULAR, d->h_len);
+    d->buffers[1] = fbuffer_create(CIRCULAR, d->h_len);
     // TODO: fill buffer with zeros
 
     return d;
@@ -99,7 +99,7 @@ void decim_destroy(decim _d)
 {
     unsigned int i;
     for (i=0; i<_d->num_buffers; i++)
-        buffer_destroy(_d->buffers[i]);
+        fbuffer_destroy(_d->buffers[i]);
     free(_d->buffers);
     free(_d->h);
     free(_d);
