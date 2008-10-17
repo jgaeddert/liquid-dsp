@@ -6,7 +6,7 @@
 #include "../src/buffer_internal.h"
 
 //
-// AUTOTEST:
+// AUTOTEST: circular float buffer
 //
 void autotest_fbuffer_circular()
 {
@@ -33,6 +33,37 @@ void autotest_fbuffer_circular()
     CONTEND_SAME_DATA(r,test2,10*sizeof(float));
 
     fbuffer_destroy(cb);
+}
+
+
+//
+// AUTOTEST: circular complex float buffer
+//
+void autotest_cfbuffer_circular()
+{
+    float complex v[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    float complex test1[] = {1, 2, 3, 4};
+    float complex test2[] = {3, 4, 1, 2, 3, 4, 5, 6, 7, 8};
+    float complex *r; // reader
+    unsigned int n;
+
+    cfbuffer cb = cfbuffer_create(CIRCULAR,10);
+
+    cfbuffer_write(cb, v, 4);
+    n = 4;
+    cfbuffer_read(cb, &r, &n);
+
+    CONTEND_EQUALITY(n,4);
+    CONTEND_SAME_DATA(r,test1,4*sizeof(float complex));
+
+    cfbuffer_release(cb, 2);
+    cfbuffer_write(cb, v, 8);
+    n = 10;
+    cfbuffer_read(cb, &r, &n);
+    CONTEND_EQUALITY(n,10);
+    CONTEND_SAME_DATA(r,test2,10*sizeof(float complex));
+
+    cfbuffer_destroy(cb);
 }
 
 
