@@ -13,8 +13,8 @@ typedef enum {
 } buffer_type;
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
-#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(buffer, name)
-#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cbuffer, name)
+#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(fbuffer, name)
+#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfbuffer, name)
 
 // large macro
 //   X: name-mangling macro

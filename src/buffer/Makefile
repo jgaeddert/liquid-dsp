@@ -24,6 +24,12 @@ port: cbuffer metadata src/port.c src/port.h buffer.o
 buffer.o: src/buffer.c src/buffer.h src/buffer_internal.h
 	gcc -Wall -c src/buffer.c -o buffer.o
 
+fbuffer.o: src/buffer.c src/buffer.h src/buffer_internal.h src/fbuffer.c src/buffer_macros.h
+	gcc -Wall -c src/fbuffer.c -o fbuffer.o
+
+cfbuffer.o: src/buffer.c src/buffer.h src/buffer_internal.h src/cfbuffer.c src/buffer_macros.h
+	gcc -Wall -c src/fbuffer.c -o fbuffer.o
+
 main_buffer.o: src/buffer.h src/main_buffer.c
 	gcc -Wall -c src/main_buffer.c -o main_buffer.o
 

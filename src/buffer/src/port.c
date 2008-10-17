@@ -11,7 +11,7 @@
 #include "buffer.h"
 
 struct port_s {
-    buffer buffer;
+    cfbuffer buffer;
     //metadata m;
     //char name[64];
 
@@ -23,7 +23,7 @@ struct port_s {
 port port_create(unsigned int _n)
 {
     port p = (port) malloc(sizeof(struct port_s));
-    p->buffer = buffer_create(CIRCULAR,_n);
+    p->buffer = cfbuffer_create(CIRCULAR,_n);
 
     // create mutex(es) here
 
@@ -32,7 +32,7 @@ port port_create(unsigned int _n)
 
 void port_destroy(port _p)
 {
-    buffer_destroy(_p->buffer);
+    cfbuffer_destroy(_p->buffer);
     free(_p);
 }
 
@@ -44,7 +44,7 @@ void port_print(port _p)
 void port_produce(port _p, float * _v, unsigned int _n)
 {
     // lock mutex (write)
-    buffer_write(_p->buffer, _v, _n);
+    cfbuffer_write(_p->buffer, _v, _n);
     // unlock mutex (write)
 
     // 1. check to see if request for samples
@@ -58,7 +58,7 @@ void port_consume(port _p, float ** _v, unsigned int _n)
 
     // try to read _n values :
     //   - if _n values are not available, wait
-    buffer_read(_p->buffer, _v, &_n);
+    cfbuffer_read(_p->buffer, _v, &_n);
 
     // wait procedure:
     //   1. submit request for _n samples; locks mutex (request)
@@ -67,7 +67,7 @@ void port_consume(port _p, float ** _v, unsigned int _n)
 
 void port_release(port _p, unsigned int _n)
 {
-    buffer_release(_p->buffer, _n);
+    cfbuffer_release(_p->buffer, _n);
     // unlock mutex (read)
 }
 
