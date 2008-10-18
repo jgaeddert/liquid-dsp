@@ -1,5 +1,5 @@
 //
-// Finite impulse response filter design
+// Useful mathematical formulae
 //
 
 // ln( gamma(z) )

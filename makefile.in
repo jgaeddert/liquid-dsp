@@ -16,7 +16,7 @@ LIBS_FFT = fft_create_plan.o fft_execute.o
 LIBS_FILTER = filter_common.o fir_filter.o rrcos.o window.o firdes.o \
 			  decim.o decim2.o decim_create.o decim_execute.o
 LIBS_INTERLEAVER = interleaver.o
-LIBS_MATH = math.o
+LIBS_MATH = math.o dotprod.o
 LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o
 LIBS_NCO = nco.o
 #LIBS_OPTIM = 
@@ -33,6 +33,8 @@ TESTS = \
 	src/buffer/tests/sbuffer_autotest.h \
 	src/fec/tests/checksum_autotest.h \
 	src/filter/tests/decim_autotest.h \
+	src/filter/tests/firdes_autotest.h \
+	src/filter/tests/fir_filter_autotest.h \
 	src/modem/tests/modem_autotest.h \
 	src/nco/tests/nco_autotest.h \
 	src/random/tests/random_autotest.h
