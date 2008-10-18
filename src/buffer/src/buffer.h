@@ -15,6 +15,7 @@ typedef enum {
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(fbuffer, name)
 #define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfbuffer, name)
+#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(uibuffer, name)
 
 // large macro
 //   X: name-mangling macro
@@ -35,6 +36,7 @@ void X(_write)(X() _b, T * _v, unsigned int _n);
 // Define APIs
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT, float)
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, float complex)
+LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
 
 #endif // __MODULE_BUFFER_H__
 

@@ -47,6 +47,14 @@
         printf("\t: %f + %f", \
             crealf(buffer_fast_access(B,I)), \
             cimagf(buffer_fast_access(B,I)));
+// 
+// Unsigned int buffer
+//
+#elif defined(BUFFER_TYPE_UINT)
+#   define X(name) CONCAT(uibuffer, name)
+#   define T unsigned int
+#   define BUFFER_PRINT_LINE(B,I) \
+        printf("\t: %u", buffer_fast_access(B,I));
 #else
 #   error "invalid buffer type defined"
 #endif
