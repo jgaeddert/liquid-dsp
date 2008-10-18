@@ -10,9 +10,11 @@
 
 struct X(_s) {
     T * v;
-    unsigned int len;
-    unsigned int N;
-    unsigned int num_elements;
+    unsigned int len;           // length of buffer
+    unsigned int N;             // number of elements allocated
+                                // in memory
+    unsigned int num_elements;  // number of elements currently
+                                // in the buffer
 
     unsigned int read_index;
     unsigned int write_index;
@@ -96,6 +98,14 @@ void X(_clear)(X() _b)
     _b->read_index = 0;
     _b->write_index = 0;
     _b->num_elements = 0;
+}
+
+void X(_zero)(X() _b)
+{
+    _b->read_index = 0;
+    _b->write_index = 0;
+    _b->num_elements = _b->len;
+    memset(_b->v, 0, (_b->num_elements)*sizeof(T));
 }
 
 void X(_read)(X() _b, T ** _v, unsigned int *_n)

@@ -9,6 +9,7 @@
     T v[] = {1, 2, 3, 4, 5, 6, 7, 8};           \
     T test1[] = {1, 2, 3, 4};                   \
     T test2[] = {1, 2, 3, 4, 5, 6, 7, 8};       \
+    T test3[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; \
     T *r;                                       \
     unsigned int n;                             \
                                                 \
@@ -27,6 +28,12 @@
     X(_read)(cb, &r, &n);                       \
     CONTEND_EQUALITY(n,8);                      \
     CONTEND_SAME_DATA(r,test2,8*sizeof(T));     \
+                                                \
+    X(_zero)(cb);                               \
+    n = 10;                                     \
+    X(_read)(cb, &r, &n);                       \
+    CONTEND_EQUALITY(n,10);                     \
+    CONTEND_SAME_DATA(r,test3,10*sizeof(T));    \
                                                 \
     X(_destroy)(cb);
 
