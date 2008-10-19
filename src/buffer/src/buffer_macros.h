@@ -36,7 +36,7 @@
 #   define X(name) CONCAT(fbuffer, name)
 #   define T float
 #   define BUFFER_PRINT_LINE(B,I) \
-        printf("\t: %f", buffer_fast_access(B,I));
+        printf("\t: %f", B->v[I]);
 //
 // Complex float buffer
 //
@@ -44,9 +44,7 @@
 #   define X(name) CONCAT(cfbuffer, name)
 #   define T float complex
 #   define BUFFER_PRINT_LINE(B,I) \
-        printf("\t: %f + %f", \
-            crealf(buffer_fast_access(B,I)), \
-            cimagf(buffer_fast_access(B,I)));
+        printf("\t: %f + %f", crealf(B->v[I]), cimagf(B->v[I]));
 // 
 // Unsigned int buffer
 //
@@ -54,7 +52,7 @@
 #   define X(name) CONCAT(uibuffer, name)
 #   define T unsigned int
 #   define BUFFER_PRINT_LINE(B,I) \
-        printf("\t: %u", buffer_fast_access(B,I));
+        printf("\t: %u", B->v[I]);
 #else
 #   error "invalid buffer type defined"
 #endif

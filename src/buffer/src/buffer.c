@@ -59,7 +59,7 @@ void X(_print)(X() _b)
     unsigned int i;
     for (i=0; i<_b->num_elements; i++) {
         printf("%u", i);
-        BUFFER_PRINT_LINE(_b,i)
+        BUFFER_PRINT_LINE(_b,(_b->read_index+i)%(_b->len))
         printf("\n");
     }
 }
@@ -90,6 +90,7 @@ void X(_debug_print)(X() _b)
     // print excess buffer memory
     for (i=_b->len; i<_b->N; i++) {
         BUFFER_PRINT_LINE(_b,i)
+        printf("\n");
     }
 }
 
@@ -210,6 +211,31 @@ void X(_s_write)(X() _b, T * _v, unsigned int _n)
 }
 
 //void X(_force_write)(X() _b, T * _v, unsigned int _n)
+
+void X(_push)(X() _b, T _v)
+{
+    // push value (force write)
+    if (_b->type == CIRCULAR)
+        X(_c_push)(_b, _v);
+    else
+        X(_s_push)(_b, _v);
+}
+
+void X(_c_push)(X() _b, T _v)
+{
+    _b->v[_b->write_index] = _v;
+    if (_b->num_elements < _b->len) {
+        _b->num_elements++;
+    } else {
+        _b->read_index = (_b->read_index+1) % _b->len;
+    }
+    _b->write_index = (_b->write_index+1) % _b->len;
+}
+
+void X(_s_push)(X() _b, T _v)
+{
+
+}
 
 void X(_linearize)(X() _b)
 {

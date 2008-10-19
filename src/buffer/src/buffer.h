@@ -31,7 +31,8 @@ void X(_clear)(X() _b);                                 \
 void X(_zero)(X() _b);                                  \
 void X(_read)(X() _b, T ** _v, unsigned int *_n);       \
 void X(_release)(X() _b, unsigned int _n);              \
-void X(_write)(X() _b, T * _v, unsigned int _n);
+void X(_write)(X() _b, T * _v, unsigned int _n);        \
+void X(_push)(X() _b, T _v);
 //void X(_force_write)(X() _b, T * _v, unsigned int _n);
 
 // Define APIs

@@ -16,7 +16,9 @@ void X(_s_read)(X() _b, T ** _v, unsigned int *_n);     \
 void X(_c_write)(X() _b, T * _v, unsigned int _n);      \
 void X(_s_write)(X() _b, T * _v, unsigned int _n);      \
 void X(_c_release)(X() _b, unsigned int _n);            \
-void X(_s_release)(X() _b, unsigned int _n);
+void X(_s_release)(X() _b, unsigned int _n);            \
+void X(_c_push)(X() _b, T _v);                          \
+void X(_s_push)(X() _b, T _v);
 
 LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_FLOAT, float)
 LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_CFLOAT, float complex)

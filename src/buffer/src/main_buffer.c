@@ -11,8 +11,21 @@ int main() {
     float *r; // reader
     unsigned int n=3;
 
-    //buffer cb = fbuffer_create(CIRCULAR, 10);
-    fbuffer cb = fbuffer_create(STATIC, 10);
+    fbuffer cb = fbuffer_create(CIRCULAR, 10);
+    //fbuffer cb = fbuffer_create(STATIC, 10);
+
+    fbuffer_zero(cb);
+    fbuffer_push(cb, 1);
+    fbuffer_push(cb, 2);
+    fbuffer_push(cb, 3);
+    fbuffer_debug_print(cb);
+    return 0;
+    unsigned int j;
+    for (j=0; j<10; j++)
+        fbuffer_push(cb, 100 + j);
+
+    fbuffer_debug_print(cb);
+    return 0;
 
     fbuffer_write(cb, v, 4);
     fbuffer_read(cb, &r, &n);
