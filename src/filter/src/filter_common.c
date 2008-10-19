@@ -26,7 +26,7 @@ unsigned int estimate_req_filter_len(float _b, float _slsl)
     if (_slsl < 8) {
         h_len = 2;
     } else {
-        h_len = (unsigned int) round((_slsl-8)/(14*_b));
+        h_len = (unsigned int) lroundf((_slsl-8)/(14*_b));
     }
     validate_filter_length(&h_len);
     return h_len;
