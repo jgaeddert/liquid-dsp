@@ -119,7 +119,7 @@ void X(_read)(X() _b, T ** _v, unsigned int *_n)
 
 void X(_c_read)(X() _b, T ** _v, unsigned int *_n)
 {
-    printf("buffer_read() trying to read %u elements (%u available)\n", *_n, _b->num_elements);
+    //printf("buffer_read() trying to read %u elements (%u available)\n", *_n, _b->num_elements);
     if (*_n > _b->num_elements) {
         printf("error: buffer_read(), cannot read more elements than are available\n");
         *_v = NULL;
@@ -135,7 +135,7 @@ void X(_c_read)(X() _b, T ** _v, unsigned int *_n)
 
 void X(_s_read)(X() _b, T ** _v, unsigned int *_n)
 {
-    printf("buffer_s_read() reading %u elements\n", _b->num_elements);
+    //printf("buffer_s_read() reading %u elements\n", _b->num_elements);
     *_v = _b->v;
     *_n = _b->num_elements;
 }
