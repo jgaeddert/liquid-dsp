@@ -14,7 +14,12 @@ fir_filter fir_filter_create(float * _h, unsigned int _n)
     fir_filter f = (fir_filter) malloc(sizeof(struct fir_filter_s));
     f->h_len = _n;
     f->h = (float*) malloc((f->h_len)*sizeof(float));
-    memcpy(f->h, _h, (f->h_len)*sizeof(float));
+
+    // load filter in reverse order
+    unsigned int i;
+    for (i=_n; i>0; i--)
+        f->h[i-1] = _h[_n-i];
+
     return f;
 }
 

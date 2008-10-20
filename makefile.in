@@ -28,7 +28,7 @@ LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_RANDOM)
 
-TESTS = \
+AUTOTESTS = \
 	src/buffer/tests/cbuffer_autotest.h \
 	src/buffer/tests/sbuffer_autotest.h \
 	src/fec/tests/checksum_autotest.h \
@@ -98,14 +98,21 @@ $(LIBS_NCO) : %.o : src/nco/src/%.c
 $(LIBS_RANDOM) : %.o : src/random/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-autotest_include.h: $(TESTS)
-	python autotest/autotest_gen.py $(TESTS)
+#
+# Autotests
+#
+autotest_include.h: $(AUTOTESTS)
+	python autotest/autotest_gen.py $(AUTOTESTS)
 
 xautotest: autotest_include.h autotest/autotest.c $(LIBS)
 	$(CC) $(CFLAGS) $(LIBS) -lm autotest/autotest.c -o xautotest
 
 check: xautotest
 	./xautotest -v
+
+#
+# Examples
+#
 
 clean:
 	rm -f *.o $(SHARED_LIB) *.a

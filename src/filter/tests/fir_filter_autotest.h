@@ -15,7 +15,7 @@ void autotest_create_external_coeff_01() {
     CONTEND_EQUALITY( f->h_len, 8 );
 
     // Ensure data are equal
-    CONTEND_SAME_DATA( f->h, h0, 8*sizeof(float) );
+    //CONTEND_SAME_DATA( f->h, h0, 8*sizeof(float) );
 
     fir_filter_destroy(f);
 }
@@ -24,7 +24,6 @@ void autotest_impulse_response() {
 
     // Initialize variables
     float h[10] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
-    float c=1.0f; // impulse amplitude
     float y;        // output
 
     // Load filter coefficients externally
@@ -36,10 +35,9 @@ void autotest_impulse_response() {
     fbuffer cbuf = fbuffer_create(CIRCULAR, 10);
     float * buf; // linearlized buffer
 
-    if (false) {
-
     // Hit the filter with an impulse
-    //fbuffer_push(cbuf, c);
+    fbuffer_zero(cbuf);
+    fbuffer_push(cbuf, 1.0f);
 
     unsigned int i, n;
     // Resulting output should be equal to filter coefficients
@@ -47,8 +45,8 @@ void autotest_impulse_response() {
         n = 10;
         fbuffer_read(cbuf, &buf, &n);
         y = fir_filter_execute(f, buf);
-        CONTEND_DELTA( h[i], y, 0.001f );
-        //fbuffer_push(cbuf, 0.0f);
+        CONTEND_EQUALITY( y, h[i]);
+        fbuffer_push(cbuf, 0.0f);
     }
 
     // Impulse response should be finite
@@ -57,9 +55,7 @@ void autotest_impulse_response() {
         fbuffer_read(cbuf, &buf, &n);
         y = fir_filter_execute(f, buf);
         CONTEND_DELTA( 0.0f, y, 0.001 );
-        //fbuffer_push(cbuf, 0.0f);
-    }
-
+        fbuffer_push(cbuf, 0.0f);
     }
 
     fir_filter_destroy(f);
