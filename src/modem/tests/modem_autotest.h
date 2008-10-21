@@ -61,7 +61,8 @@ void autotest_mod_demod()
     unsigned int i;
     for (i=0; i<NUM_MODEMS; i++) {
         // print modem type (for debugging)
-        printf("Testing %d-%s:\n", 1<<(modem_test[i].bps), modulation_scheme_str[modem_test[i].ms]);
+        if (_autotest_verbose)
+            printf("Testing %d-%s:\n", 1<<(modem_test[i].bps), modulation_scheme_str[modem_test[i].ms]);
 
         // generate mod/demod
         modem mod = modem_create(modem_test[i].ms, modem_test[i].bps);

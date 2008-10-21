@@ -67,6 +67,7 @@ void autotest_matched_response() {
     // Initialize variables
     float h[10] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
     float y;        // output
+    /*
     float test[] = {
        0.10000,
        0.29000,
@@ -88,6 +89,7 @@ void autotest_matched_response() {
        0.29000,
        0.10000
     };
+    */
 
     // Load filter coefficients externally
     fir_filter f = fir_filter_create(h, 10);
@@ -106,7 +108,7 @@ void autotest_matched_response() {
         n = 10;
         fbuffer_read(cbuf, &buf, &n);
         y = fir_filter_execute(f, buf);
-        printf("h[%d] = %f\n", i, y);
+        //printf("h[%d] = %f\n", i, y);
         fbuffer_push(cbuf, h[i]);
     }
 
