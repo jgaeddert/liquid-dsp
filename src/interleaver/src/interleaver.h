@@ -2,6 +2,9 @@
 // Block interleaver, operates on bytes
 //
 
+#ifndef __LIQUID_INTERLEAVER_H__
+#define __LIQUID_INTERLEAVER_H__
+
 typedef struct interleaver_s * interleaver;
 
 interleaver interleaver_create(unsigned int _n);
@@ -23,3 +26,4 @@ void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned in
 void interleaver_compute_bit_permutation(interleaver _q, unsigned int *_p);
 void interleaver_debug_print(interleaver _i);
 
+#endif // __LIQUID_INTERLEAVER_H__

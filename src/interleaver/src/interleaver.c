@@ -6,16 +6,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "interleaver.h"
+#include "interleaver_internal.h"
 
 struct interleaver_s {
     unsigned int * p;   // byte permutation
     unsigned int len;   // number of bytes
 };
-
-// internal functions
-void interleaver_permute_forward(unsigned char * _x, unsigned int * _p, unsigned int _n, unsigned char _mask);
-void interleaver_permute_backward(unsigned char * _x, unsigned int * _p, unsigned int _n, unsigned char _mask);
 
 interleaver interleaver_create(unsigned int _n)
 {

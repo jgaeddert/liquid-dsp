@@ -35,6 +35,7 @@ AUTOTESTS = \
 	src/filter/tests/decim_autotest.h \
 	src/filter/tests/firdes_autotest.h \
 	src/filter/tests/fir_filter_autotest.h \
+	src/interleaver/tests/interleaver_autotest.h \
 	src/modem/tests/modem_autotest.h \
 	src/nco/tests/nco_autotest.h \
 	src/random/tests/random_autotest.h
