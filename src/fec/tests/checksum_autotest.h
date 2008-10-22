@@ -2,7 +2,7 @@
 #define __CHECKSUM_AUTOTEST_H__
 
 #include "../../../autotest/autotest.h"
-#include "../src/checksum.h"
+#include "../src/fec.h"
 
 //
 // AUTOTEST: basic checksum

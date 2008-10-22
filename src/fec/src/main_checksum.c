@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "checksum.h"
+#include "fec.h"
 
 int main() {
     unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
