@@ -15,6 +15,13 @@ void fir_design_windowed_sinc(unsigned int _n, float _fc, float _slsl, float *_h
 //
 void fir_design_halfband_windowed_sinc(float * _h, unsigned int _n);
 
+// Design FIR using kaiser window
+//  _n      : filter length
+//  _fc     : cutoff frequency
+//  _slsl   : sidelobe suppression level (dB attenuation)
+//  _h      : output coefficient buffer
+void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h);
+
 // Design FIR doppler filter
 //  _n      : filter length
 //  _fd     : normalized doppler frequency (0 < _fd < 0.5)
