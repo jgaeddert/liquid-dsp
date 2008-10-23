@@ -79,9 +79,28 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h) {
 //  _n      : filter length
 //  _fd     : normalized doppler frequency (0 < _fd < 0.5)
 //  _K      : Rice fading factor (K >= 0)
+//  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void fir_design_doppler(unsigned int _n, float _fd, float _K, float *_h)
+void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, float *_h)
 {
-    // use ifft/window method?
+    float t, J, r, w;
+    float beta = 4; // kaiser window parameter
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        // time sample
+        t = (float)i - (float)(_n-1)/2;
+
+        // Bessel
+        J = 1.5*besselj_0(2*M_PI*_fd*t*cosf(_theta));
+
+        // Rice-K component
+        r = 1.5*_K/(_K+1)*cos(2*M_PI*_fd*t*cosf(_theta));
+
+        // Window
+        w = kaiser(i, _n, beta);
+
+        // composite
+        _h[i] = (J+r)*w;
+    }
 }
 
