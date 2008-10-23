@@ -2,30 +2,18 @@
 # Makefile for math module
 #
 
-all: kaiser_test firdes_test decim2_test
+all: matrix_test
 
 CC = gcc
 CFLAGS = -Wall -std=c99 -O3
 LDFLAGS = -lm
-OBJS = kaiser.o firdes.o decim2.o
+OBJS = math.o dotprod.o matrix.o
 
 $(OBJS) : %.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-kaiser_test: $(OBJS) src/main_kaiser.c
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) src/main_kaiser.c -o $@
-
-firdes_test: $(OBJS) src/main_firdes.c
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) src/main_firdes.c -o $@
-
-decim2_test: $(OBJS) src/main_decim2.c
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) src/main_decim2.c -o $@
-
-autotest: $(OBJS) tests/autotest.c
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) tests/autotest.c -o $@
-
-check: autotest
-	./autotest
+matrix_test: $(OBJS) src/main_matrix.c src/math.h
+	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) src/main_matrix.c -o $@
 
 clean:
-	rm -f *.o *_test autotest
+	rm -f *.o *_test
