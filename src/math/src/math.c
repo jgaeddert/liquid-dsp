@@ -26,6 +26,13 @@ float factorialf(unsigned int _n) {
 #define NUM_BESSELJ0_ITERATIONS 16
 float besselj_0(float _z)
 {
+    // large signal approximation, see
+    // Gross, F. B "New Approximations to J0 and J1 Bessel Functions,"
+    //   IEEE Trans. on Antennas and Propagation, vol. 43, no. 8,
+    //   August, 1995
+    if (fabsf(_z) > 10.0f)
+        return copysign(sqrtf(2/(M_PI*fabsf(_z)))*cosf(fabsf(_z)-M_PI/4),_z);
+
     unsigned int k;
     float t, y=0.0f;
     for (k=0; k<NUM_BESSELJ0_ITERATIONS; k++) {
