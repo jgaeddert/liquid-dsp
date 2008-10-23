@@ -31,7 +31,7 @@ float besselj_0(float _z)
     //   IEEE Trans. on Antennas and Propagation, vol. 43, no. 8,
     //   August, 1995
     if (fabsf(_z) > 10.0f)
-        return copysign(sqrtf(2/(M_PI*fabsf(_z)))*cosf(fabsf(_z)-M_PI/4),_z);
+        return sqrtf(2/(M_PI*fabsf(_z)))*cosf(fabsf(_z)-M_PI/4);
 
     unsigned int k;
     float t, y=0.0f;

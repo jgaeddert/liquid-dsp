@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-//#include <stdio.h>
-
 #include "firdes.h"
 #include "window.h"
 #include "../../math/src/math.h" // sincf()
@@ -91,16 +89,18 @@ void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, floa
         t = (float)i - (float)(_n-1)/2;
 
         // Bessel
-        J = 1.5*besselj_0(2*M_PI*_fd*t*cosf(_theta));
+        J = 1.5*besselj_0(fabsf(2*M_PI*_fd*t));
 
         // Rice-K component
-        r = 1.5*_K/(_K+1)*cos(2*M_PI*_fd*t*cosf(_theta));
+        r = 1.5*_K/(_K+1)*cosf(2*M_PI*_fd*t*cosf(_theta));
 
         // Window
         w = kaiser(i, _n, beta);
 
         // composite
         _h[i] = (J+r)*w;
+
+        //printf("t=%f, J=%f, r=%f, w=%f\n", t, J, r, w);
     }
 }
 
