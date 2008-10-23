@@ -18,5 +18,4 @@ extern unsigned char crc32_tab[256];
 unsigned char reverse_byte(unsigned char _x);
 unsigned int reverse_uint32(unsigned int _x);
 
-
 #endif

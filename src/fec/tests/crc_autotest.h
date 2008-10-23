@@ -34,5 +34,23 @@ void autotest_reverse_uint()
     CONTEND_EQUALITY(reverse_uint32(b),r);
 }
 
+//
+// AUTOTEST: crc32
+//
+void autotest_crc32()
+{
+    unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
+    unsigned int key = crc32_generate_key(data, 4);
+
+    // contend data/key are valid
+    CONTEND_EXPRESSION(crc32_validate_message(data, 4, key));
+
+    // corrupt data
+    data[0]++;
+
+    // contend data/key are invalid
+    CONTEND_EXPRESSION(!crc32_validate_message(data, 4, key));
+}
+
 #endif 
 

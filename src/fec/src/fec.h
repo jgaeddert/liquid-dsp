@@ -16,8 +16,9 @@ bool checksum_validate(unsigned char *_data, unsigned int _n, unsigned char _key
 //
 // CRC
 //
-void crc32_generate_key(unsigned char *_data, unsigned int _n, unsigned char * _key);
-bool crc32_validate(unsigned char *_data, unsigned int _n, unsigned char * _key);
+//void crc_generate_key(unsigned char *_msg, unsigned int _msg_len, unsigned char *_key, unsigned int _key_len);
+unsigned int crc32_generate_key(unsigned char *_data, unsigned int _n);
+bool crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int _key);
 
 
 
