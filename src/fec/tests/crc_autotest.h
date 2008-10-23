@@ -19,5 +19,20 @@ void autotest_reverse_byte()
     CONTEND_EQUALITY(reverse_byte(b),r);
 }
 
+//
+// AUTOTEST: reverse uint32_t
+//
+void autotest_reverse_uint()
+{
+    // 0110 0010 1101 1001 0011 1011 1111 0000
+    unsigned int b = 0x62D93BF0;
+
+    // 0000 1111 1101 1100 1001 1011 0100 0110
+    unsigned int r = 0x0FDC9B46;
+
+    // 
+    CONTEND_EQUALITY(reverse_uint32(b),r);
+}
+
 #endif 
 
