@@ -21,7 +21,7 @@ unsigned char checksum_generate_key(unsigned char *_data, unsigned int _n)
     return key;
 }
 
-bool checksum_validate(unsigned char *_data, unsigned int _n, unsigned char _key)
+bool checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key)
 {
     unsigned int i, sum=0;
     for (i=0; i<_n; i++)

@@ -11,7 +11,7 @@
 // checksum
 //
 unsigned char checksum_generate_key(unsigned char *_data, unsigned int _n);
-bool checksum_validate(unsigned char *_data, unsigned int _n, unsigned char _key);
+bool checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key);
 
 //
 // CRC
