@@ -46,7 +46,7 @@ CFLAGS = -g -O2 -Wall @ARCH_OPTION@
 
 SHARED_LIB = @SH_LIB@
 
-all: libliquid.a $(SHARED_LIB) xautotest
+all: libliquid.a $(SHARED_LIB)
 
 install:
 	@echo "installing..."
