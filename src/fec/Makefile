@@ -1,23 +1,27 @@
+#
+# FEC makefile (local)
+#
 
-all: checksum_test crc_test
+OBJS = checksum.o crc.o fec_rep.o
+TESTS = checksum_test crc_test fec_rep3_test
 
-checksum.o: src/checksum.c src/fec.h src/fec_internal.h
-	gcc -Wall -c src/checksum.c -o checksum.o
+all: $(TESTS)
 
-main_checksum.o: src/main_checksum.c src/fec.h src/fec_internal.h
-	gcc -Wall -c src/main_checksum.c -o main_checksum.o
+CC = gcc
+CFLAGS = -Wall -O3
+LDFLAGS = -lm
 
-checksum_test: checksum.o main_checksum.o
-	gcc -Wall checksum.o main_checksum.o -o checksum_test
+# 
+# Object targets
+#
+$(OBJS) : %.o : src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-crc.o: src/crc.c src/fec.h src/fec_internal.h
-	gcc -Wall -c src/crc.c -o crc.o
-
-main_crc.o: src/main_crc.c src/fec.h src/fec_internal.h
-	gcc -Wall -c src/main_crc.c -o main_crc.o
-
-crc_test: crc.o main_crc.o
-	gcc -Wall crc.o main_crc.o -o crc_test
+# 
+# Tests: src/main_mytest.c -> mytest_test
+#
+$(TESTS) : %_test : src/main_%.c $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f *.o *_test
+	rm -f $(OBJS) $(TESTS)
