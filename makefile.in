@@ -33,6 +33,7 @@ AUTOTESTS = \
 	src/buffer/tests/sbuffer_autotest.h \
 	src/fec/tests/checksum_autotest.h \
 	src/fec/tests/crc_autotest.h \
+	src/fft/tests/fft_autotest.h \
 	src/filter/tests/decim_autotest.h \
 	src/filter/tests/firdes_autotest.h \
 	src/filter/tests/fir_filter_autotest.h \

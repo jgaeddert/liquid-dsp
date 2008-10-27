@@ -13,8 +13,8 @@ int main() {
 
     unsigned int i;
     for (i=0; i<n; i++)
-        x[i] = (float)i;
-        //x[i] = (float)i - _Complex_I*(float)i;
+        //x[i] = (float)i;
+        x[i] = (float)i - _Complex_I*(float)i;
 
     fftplan pf = fft_create_plan(n, x, y, FFT_FORWARD);
     fftplan pr = fft_create_plan(n, y, z, FFT_REVERSE);

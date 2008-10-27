@@ -7,16 +7,13 @@
 
 void fft_execute(fftplan _p)
 {
-    unsigned int i, j;
-    float phi;
-    for (i=0; i<_p->n; i++) {
-        _p->y[i] = 0.0f;
-        for (j=0; j<_p->n; j++) {
-            phi = 2*M_PI*i*j / (float) (_p->n);
-            if (_p->direction == FFT_FORWARD)
-                _p->y[i] += _p->x[j] * cexpf(_Complex_I*phi);
-            else
-                _p->y[i] += _p->x[j] * cexpf(-_Complex_I*phi);
+    unsigned int k, n, N=_p->n;
+    float phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
+    for (k=0; k<N; k++) {
+        _p->y[k] = 0.0f;
+        for (n=0; n<N; n++) {
+            phi = 2*M_PI*d*((float)n)*((float)k) / (float) (N);
+            _p->y[k] += _p->x[n] * cexpf(_Complex_I*phi);
         }
     }
 }
