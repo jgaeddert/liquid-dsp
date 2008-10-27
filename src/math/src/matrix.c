@@ -6,13 +6,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include "matrix_internal.h"
 
 #define DEBUG 0
 
-matrix matrix_create(unsigned int _M, unsigned int _N)
+struct X(_s) {
+    unsigned int M; // number of rows
+    unsigned int N; // number of columns
+    unsigned int L; // size, M*N
+    T * v;          // memory
+};
+
+X() X(_create)(unsigned int _M, unsigned int _N)
 {
-    matrix x = (matrix) malloc(sizeof(struct matrix_s));
+    X() x = (X()) malloc(sizeof(struct X(_s)));
     x->M = _M;
     x->N = _N;
     x->L = (x->M) * (x->N);
@@ -21,32 +27,32 @@ matrix matrix_create(unsigned int _M, unsigned int _N)
             _M, _N, MATRIX_MAX_SIZE);
         exit(0);
     }
-    x->v = (float*) malloc((x->L)*sizeof(float));
+    x->v = (T*) malloc((x->L)*sizeof(T));
     return x;
 }
 
-void matrix_destroy(matrix _x)
+void X(_destroy)(X() _x)
 {
     // TODO: ensure free operation is done safely
     free(_x->v);
     free(_x);
 }
 
-matrix matrix_copy(matrix _x)
+X() X(_copy)(X() _x)
 {
-    //matrix y = matrix_create(_x->M, _x->N);
-    //memcpy(y->v,_x->v,(_x->M)*(_x->N)*sizeof(float));
+    //X() y = matrix_create(_x->M, _x->N);
+    //memcpy(y->v,_x->v,(_x->M)*(_x->N)*sizeof(T));
     //return y;
 
     // same as above, but copies all internal variables by default
-    matrix y = (matrix) malloc(sizeof(struct matrix_s));
-    memcpy(y, _x, sizeof(struct matrix_s));
-    y->v = (float*) malloc((y->M)*(y->N)*sizeof(float));
-    memcpy(y->v, _x->v, (y->M)*(y->N)*sizeof(float));
+    X() y = (X()) malloc(sizeof(struct X(_s)));
+    memcpy(y, _x, sizeof(struct X(_s)));
+    y->v = (T*) malloc((y->M)*(y->N)*sizeof(T));
+    memcpy(y->v, _x->v, (y->M)*(y->N)*sizeof(T));
     return y;
 }
 
-void matrix_print(matrix _x)
+void X(_print)(X() _x)
 {
     unsigned int m, n;
     //for (n=0; n<_x->N; n++)
@@ -56,25 +62,26 @@ void matrix_print(matrix _x)
         //printf("%u:\t", m);
         printf("\t");
         for (n=0; n<_x->N; n++) {
-            printf("%4.2f\t", matrix_fast_access(_x,m,n));
+            MATRIX_PRINT_ELEMENT(_x,m,n)
+            printf("  ");
         }
         printf("\n");
     }
     printf("\n");
 }
 
-void matrix_clear(matrix _x)
+void X(_clear)(X() _x)
 {
-    memset(_x->v, 0x00, (_x->M)*(_x->N)*sizeof(float));
+    memset(_x->v, 0x00, (_x->M)*(_x->N)*sizeof(T));
 }
 
-void matrix_dim(matrix _x, unsigned int *_M, unsigned int *_N)
+void X(_dim)(X() _x, unsigned int *_M, unsigned int *_N)
 {
     *_M = _x->M;
     *_N = _x->N;
 }
 
-void matrix_assign(matrix _x, unsigned int _m, unsigned int _n, float _value)
+void X(_assign)(X() _x, unsigned int _m, unsigned int _n, T _value)
 {
     if (_m >= _x->M) {
         printf("error: matrix_assign(), row index out of range\n");
@@ -88,7 +95,7 @@ void matrix_assign(matrix _x, unsigned int _m, unsigned int _n, float _value)
     matrix_fast_access(_x,_m,_n) = _value;
 }
 
-float matrix_access(matrix _x, unsigned int _m, unsigned int _n)
+T X(_access)(X() _x, unsigned int _m, unsigned int _n)
 {
     if (_m >= _x->M) {
         printf("error: matrix_access(), row index out of range\n");
@@ -102,7 +109,7 @@ float matrix_access(matrix _x, unsigned int _m, unsigned int _n)
     return matrix_fast_access(_x,_m,_n);
 }
 
-void matrix_multiply(matrix _x, matrix _y, matrix _z)
+void X(_multiply)(X() _x, X() _y, X() _z)
 {
     // ensure lengths are valid
     if (!matrix_valid_size(_z,_x->M,_y->N)) {
@@ -114,7 +121,7 @@ void matrix_multiply(matrix _x, matrix _y, matrix _z)
     for (m=0; m<_z->M; m++) {
         for (n=0; n<_z->N; n++) {
             // z(i,j) = dotprod( x(i,:), y(:,j) )
-            float sum=0.0f;
+            T sum=0.0f;
 #if DEBUG
                 printf("z(%u,%u) = ", m, n);
 #endif
@@ -133,12 +140,12 @@ void matrix_multiply(matrix _x, matrix _y, matrix _z)
     }
 }
 
-void matrix_transpose(matrix _x)
+void X(_transpose)(X() _x)
 {
     // quick and dirty implementation:
     //   - create new matrix
     //   - copy values
-    matrix t = matrix_copy(_x);
+    X() t = X(_copy)(_x);
 
     unsigned int tmp = _x->N;
     _x->N = _x->M;
@@ -151,10 +158,10 @@ void matrix_transpose(matrix _x)
         }
     }
 
-    matrix_destroy(t);
+    X(_destroy)(t);
 }
 
-void matrix_invert(matrix _x)
+void X(_invert)(X() _x)
 {
     // test that matrix is square
     if (!matrix_is_square(_x)) {
@@ -167,7 +174,7 @@ void matrix_invert(matrix _x)
 
 // decompose matrix into product of  lower/upper triangular matrices
 // using Crout's algorithm
-void matrix_lu_decompose(matrix _x, matrix L, matrix U)
+void X(_lu_decompose)(X() _x, X() L, X() U)
 {
     // test that matrices are square and of proper size
     if (!matrix_is_square(_x) || !matrix_is_square(L) || !matrix_is_square(U)) {
@@ -178,13 +185,13 @@ void matrix_lu_decompose(matrix _x, matrix L, matrix U)
         return;
     }
 
-    matrix_clear(L);
-    matrix_clear(U);
+    X(_clear)(L);
+    X(_clear)(U);
 
     unsigned int N = _x->N;
 
-    matrix a = L;
-    matrix b = U;
+    X() a = L;
+    X() b = U;
 
     unsigned int i;
     for (i=0; i<N; i++)
@@ -193,7 +200,7 @@ void matrix_lu_decompose(matrix _x, matrix L, matrix U)
     unsigned int j, k;
     for (j=0; j<N; j++) {
         for (i=0; i<j; i++) {
-            float sum=0.0f;
+            T sum=0.0f;
             if (i>0) {
                 for (k=0; k<i-1; k++) {
                     sum += matrix_fast_access(a,i,k)*matrix_fast_access(b,k,j);

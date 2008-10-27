@@ -5,32 +5,33 @@
 #ifndef __LIQUID_MATRIX_H__
 #define __LIQUID_MATRIX_H__
 
-typedef struct matrix_s * matrix;
+#include <complex.h>
 
-matrix matrix_create(unsigned int _M, unsigned int _N);
+#define LIQUID_CONCAT(prefix, name) prefix ## name
+#define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(fmatrix, name)
+#define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfmatrix, name)
 
-matrix matrix_copy(matrix _x);
+// large macro
+//   X: name-mangling macro
+//   T: data type
+#define LIQUID_MATRIX_DEFINE_API(X,T)                       \
+typedef struct X(_s) * X();                                 \
+X() X(_create)(unsigned int _M, unsigned int _N);           \
+X() X(_copy)(X() _x);                                       \
+void X(_destroy)(X() _x);                                   \
+void X(_print)(X() _x);                                     \
+void X(_clear)(X() _x);                                     \
+void X(_dim)(X() _x, unsigned int *_M, unsigned int *_N);   \
+void X(_assign)(X() _x, unsigned int _m, unsigned int _n,   \
+    T _value);                                              \
+T X(_access)(X() _x, unsigned int _m, unsigned int _n);     \
+void X(_multiply)(X() _x, X() _y, X() _z);                  \
+void X(_transpose)(X() _x);                                 \
+void X(_invert)(X() _x);                                    \
+void X(_lu_decompose)(X() _x, X() _lower, X() _upper);
+//void X(_add)(X() _x, X() _y, X() _z);
 
-void matrix_destroy(matrix _x);
-
-void matrix_print(matrix _x);
-
-void matrix_clear(matrix _x);
-
-void matrix_dim(matrix _x, unsigned int *_M, unsigned int *_N);
-
-void matrix_assign(matrix _x, unsigned int _m, unsigned int _n, float _value);
-
-float matrix_access(matrix _x, unsigned int _m, unsigned int _n);
-
-//void matrix_add(matrix _x, matrix _y, matrix _z);
-
-void matrix_multiply(matrix _x, matrix _y, matrix _z);
-
-void matrix_transpose(matrix _x);
-
-void matrix_invert(matrix _x);
-
-void matrix_lu_decompose(matrix _x, matrix _lower, matrix _upper);
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT, float)
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, float complex)
 
 #endif // __LIQUID_MATRIX_H__

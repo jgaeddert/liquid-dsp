@@ -9,13 +9,6 @@
 
 #define MATRIX_MAX_SIZE 1024
 
-struct matrix_s {
-    unsigned int M; // number of rows
-    unsigned int N; // number of columns
-    unsigned int L; // size, M*N
-    float * v;      // memory
-};
-
 // fast access to matrix element, read/write
 #define matrix_fast_access(x,m,n) (x->v[m*(x->N)+n])
 
