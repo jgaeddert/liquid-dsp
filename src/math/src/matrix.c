@@ -6,28 +6,30 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include "matrix.h"
+#include "matrix_internal.h"
 
 #define DEBUG 0
-
-struct matrix_s {
-    unsigned int M;
-    unsigned int N;
-    float * v;
-};
-
-#define matrix_fast_access(x,m,n) (x->v[m*(x->N)+n])
-
-#define matrix_is_square(x) ( ((x->M)==(x->N)) ? true : false )
-#define matrix_valid_size(x,m,n) ( ((x->M)==m && (x->N)==n) ? true : false )
 
 matrix matrix_create(unsigned int _M, unsigned int _N)
 {
     matrix x = (matrix) malloc(sizeof(struct matrix_s));
     x->M = _M;
     x->N = _N;
-    x->v = (float*) malloc(_M*_N*sizeof(float));
+    x->L = (x->M) * (x->N);
+    if (x->L > MATRIX_MAX_SIZE) {
+        printf("error: matrix_create(%u, %u), maximum size (%u) exceeded\n",
+            _M, _N, MATRIX_MAX_SIZE);
+        exit(0);
+    }
+    x->v = (float*) malloc((x->L)*sizeof(float));
     return x;
+}
+
+void matrix_destroy(matrix _x)
+{
+    // TODO: ensure free operation is done safely
+    free(_x->v);
+    free(_x);
 }
 
 matrix matrix_copy(matrix _x)
@@ -42,12 +44,6 @@ matrix matrix_copy(matrix _x)
     y->v = (float*) malloc((y->M)*(y->N)*sizeof(float));
     memcpy(y->v, _x->v, (y->M)*(y->N)*sizeof(float));
     return y;
-}
-
-void matrix_destroy(matrix _x)
-{
-    free(_x->v);
-    free(_x);
 }
 
 void matrix_print(matrix _x)

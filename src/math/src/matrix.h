@@ -2,6 +2,9 @@
 // Matrix method prototypes
 //
 
+#ifndef __LIQUID_MATRIX_H__
+#define __LIQUID_MATRIX_H__
+
 typedef struct matrix_s * matrix;
 
 matrix matrix_create(unsigned int _M, unsigned int _N);
@@ -30,4 +33,4 @@ void matrix_invert(matrix _x);
 
 void matrix_lu_decompose(matrix _x, matrix _lower, matrix _upper);
 
-
+#endif // __LIQUID_MATRIX_H__
