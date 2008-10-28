@@ -22,7 +22,7 @@ LIBS_NCO = nco.o
 #LIBS_OPTIM = 
 LIBS_RANDOM = random.o scramble.o
 #LIBS_SEQUENCE = 
-#LIBS_UTILITY = 
+LIBS_UTILITY = count_bits.o pack_bytes.o
 
 INCLUDE_HEADERS = \
 	src/agc/src/agc.h \
@@ -45,11 +45,13 @@ INCLUDE_HEADERS = \
 	src/modem/src/modem.h \
 	src/nco/src/nco.h \
 	src/random/src/random.h \
-	src/random/src/scramble.h
+	src/random/src/scramble.h \
+	src/utility/src/utility.h
 
 LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
-	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_RANDOM)
+	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_RANDOM) \
+	   $(LIBS_UTILITY)
 
 AUTOTESTS = \
 	src/buffer/tests/cbuffer_autotest.h \
@@ -125,6 +127,9 @@ $(LIBS_NCO) : %.o : src/nco/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_RANDOM) : %.o : src/random/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(LIBS_UTILITY) : %.o : src/utility/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 #
