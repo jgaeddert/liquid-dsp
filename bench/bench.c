@@ -46,7 +46,7 @@ typedef struct {
 //   bench_t benchmarks[NUM_BENCHMARKS]
 //   #define NUM_PACKAGES
 //   package_t packages[NUM_PACKAGES]
-#include "benchinclude.h"
+#include "../bench_include.h"
 
 // helper functions:
 void print_help();

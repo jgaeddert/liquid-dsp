@@ -70,7 +70,11 @@ AUTOTESTS = \
 	src/utility/tests/count_bits_autotest.h \
 	src/utility/tests/pack_bytes_autotest.h
 
+BENCHMARKS = \
+	src/modem/bench/modem_benchmark.h
+
 CFLAGS = -g -O2 -Wall @ARCH_OPTION@
+LDFLAGS = -lm
 
 SHARED_LIB = @SH_LIB@
 
@@ -141,16 +145,35 @@ autotest_include.h: $(AUTOTESTS)
 	python autotest/autotest_gen.py $(AUTOTESTS)
 
 xautotest: autotest_include.h autotest/autotest.c $(LIBS)
-	$(CC) $(CFLAGS) $(LIBS) -lm autotest/autotest.c -o xautotest
+	$(CC) $(CFLAGS) $(LIBS) $(LDFLAGS) autotest/autotest.c -o xautotest
 
 check: xautotest
 	./xautotest -v
+
+check-clean:
+	rm -f autotest_include.h xautotest
+
+# 
+# Benchmarks
+#
+benchmark_include.h: $(BENCHMAKRKS)
+	python bench/benchmarkgen.py $(BENCHMARKS)
+
+# ignore optimization flags
+benchmark: benchmark_include.h bench/bench.c $(LIBS)
+	$(CC) -Wall $(LIBS) $(LDFLAGS) bench/bench.c -o benchmark
+
+bench: benchmark
+	./benchmark
+
+bench-clean:
+	rm -f benchinclude.h benchmark
 
 #
 # Examples
 #
 
-clean:
+clean: check-clean bench-clean
 	rm -f *.o $(SHARED_LIB) *.a
 
 distclean: clean

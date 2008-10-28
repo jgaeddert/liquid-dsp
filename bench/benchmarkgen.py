@@ -19,7 +19,7 @@ import glob
 import string
 import os.path
 
-outputFileName = "benchinclude.h"
+outputFileName = "bench_include.h"
 included_headers = []
 listed_headers = []
 packages = []
@@ -128,11 +128,20 @@ def parseHeader( filename ):
         # search for "void benchmark_"
         base_index = string.find(line, function_key)
         if base_index >= 0:
-            end_index = string.find(line, "(")
+            line_sub = line[len(function_key)+1:len(line)]
+
+            # search for space or "("
+            end_index = string.find(line_sub, " ")
             if end_index < 0:
-                end_index = len(line)-1
-            function_name = line[base_index+5:end_index]
-            short_name = line[base_index+len(function_key):end_index]
+                # no whitespace found
+                end_index = string.find(line_sub, "(")
+
+            if end_index < 0:
+                # no "(" found: assume we should read entire line
+                end_index = len(line_sub)-1
+
+            function_name = line[base_index+5:end_index+len(function_key)+1]
+            short_name = line[base_index+len(function_key):end_index+len(function_key)+1]
             f = BenchmarkFunction(function_name, short_name, filename, this_line_number)
             f.Print()
             benchmark_functions.append(f)
