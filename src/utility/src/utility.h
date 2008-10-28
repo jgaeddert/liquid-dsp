@@ -1,8 +1,13 @@
 //
-// Utilities (mostly for debugging)
+// Miscellaneous utilities
 //
 
-void print_buffer(float * _v, unsigned int _n);
+#ifndef __LIQUID_UTILITY_H__
+#define __LIQUID_UTILITY_H__
 
-//void save_buffer_to_matlab_file(FILE*, ...)
+extern unsigned int c_ones[256];
+extern unsigned int leading_zeros[256];
+
+#endif // __LIQUID_UTILITY_H__
+
 
