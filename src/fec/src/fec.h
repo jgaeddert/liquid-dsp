@@ -26,7 +26,7 @@ bool crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int 
 //
 //typedef struct fec_rep3_s * fec_rep3;
 void fec_rep3_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsigned char * _msg_enc);
-void fec_rep3_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char * _msg_dec);
+unsigned int fec_rep3_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char * _msg_dec);
 
 
 #endif

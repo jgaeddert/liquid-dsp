@@ -8,7 +8,7 @@
 #include "fec.h"
 
 int main() {
-    unsigned int n=4;
+    unsigned int n=4, num_errors_detected;
     unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
 
     unsigned char msg_enc[3*n];
@@ -24,7 +24,8 @@ int main() {
     msg_enc[3] = ~msg_enc[3];
 
     // decode message
-    fec_rep3_decode(msg_enc, n, msg_dec);
+    num_errors_detected =
+        fec_rep3_decode(msg_enc, n, msg_dec);
 
     unsigned int i;
 
@@ -48,7 +49,8 @@ int main() {
     for (i=0; i<n; i++)
         num_errors += (data[i]==msg_dec[i]) ? 0 : 1;
 
-    printf("number of symbol errors: %d\n", num_errors);
+    printf("number of symbol errors detected: %d\n", num_errors_detected);
+    printf("number of symbol errors received: %d\n", num_errors);
 
     return 0;
 }
