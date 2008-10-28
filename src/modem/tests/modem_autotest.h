@@ -5,78 +5,78 @@
 #include "../src/modem.h"
 //#include "../src/modem_internal.h"
 
-// Structure for holding modulation schemes
-typedef struct {
-    modulation_scheme ms;
-    unsigned int bps;
-} mod_set;
-
-#define NUM_MODEMS 25
-mod_set modem_test[NUM_MODEMS] = {
-    // specific: binary phase-shift keying
-    {MOD_BPSK,1},
-
-    // specific: quadrature phase-shift keying
-    {MOD_QPSK,2},
-
-    // generic: amplitude-shift keying
-    {MOD_ASK,1},  {MOD_ASK,2},  {MOD_ASK,3},  {MOD_ASK,4},
-
-    // generic: phase-shift keying
-    {MOD_PSK,1},  {MOD_PSK,2},  {MOD_PSK,3},  {MOD_PSK,4},
-    {MOD_PSK,5},  {MOD_PSK,6},
-
-    // generic: differential phase-shift keying
-    {MOD_DPSK,1}, {MOD_DPSK,2}, {MOD_DPSK,3}, {MOD_DPSK,4},
-    {MOD_DPSK,5}, {MOD_PSK,6},
-
-    // generic: quadrature amplitude-shift keying
-    {MOD_QAM,2},  {MOD_QAM,3},  {MOD_QAM,4},  {MOD_QAM,5},
-    {MOD_QAM,6},  {MOD_QAM,7},  {MOD_QAM,8}
-};
-
 // Help function to keep code base small
-void modem_test_mod_demod(modem _mod, modem _demod)
+void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
 {
-    unsigned int i, s, M=1<<modem_get_bps(_mod);
+    // generate mod/demod
+    modem mod = modem_create(_ms, _bps);
+    modem demod = modem_create(_ms, _bps);
+
+    // run the test
+    unsigned int i, s, M=1<<_bps;
     float complex x;
     float phase_error, evm;
     for (i=0; i<M; i++) {
-        modulate(_mod, i, &x);
-        demodulate(_demod, x, &s);
+        modulate(mod, i, &x);
+        demodulate(demod, x, &s);
         CONTEND_EQUALITY(s, i);
 
-        get_demodulator_phase_error(_demod, &phase_error);
+        get_demodulator_phase_error(demod, &phase_error);
         CONTEND_DELTA(phase_error, 0.0f, 1e-6f);
-        get_demodulator_evm(_demod, &evm);
+        get_demodulator_evm(demod, &evm);
         CONTEND_DELTA(evm, 0.0f, 1e-6f);
     }
+
+    // clean it up
+    free_modem(mod);
+    free_modem(demod);
 }
 
 //
-// AUTOTEST: mod_demod, tests modulating and demodulating symbols
+// AUTOTESTS: Specific PSK
 //
-void autotest_mod_demod()
-{
-    unsigned int i;
-    for (i=0; i<NUM_MODEMS; i++) {
-        // print modem type (for debugging)
-        if (_autotest_verbose)
-            printf("Testing %d-%s:\n", 1<<(modem_test[i].bps), modulation_scheme_str[modem_test[i].ms]);
+void autotest_mod_demod_bpsk()  {   modem_test_mod_demod(MOD_BPSK, 1);  }
+void autotest_mod_demod_qpsk()  {   modem_test_mod_demod(MOD_QPSK, 2);  }
 
-        // generate mod/demod
-        modem mod = modem_create(modem_test[i].ms, modem_test[i].bps);
-        modem demod = modem_create(modem_test[i].ms, modem_test[i].bps);
+//
+// AUTOTESTS: generic ASK
+//
+void autotest_mod_demod_ask2()  {   modem_test_mod_demod(MOD_PSK, 1);   }
+void autotest_mod_demod_ask4()  {   modem_test_mod_demod(MOD_PSK, 2);   }
+void autotest_mod_demod_ask8()  {   modem_test_mod_demod(MOD_PSK, 3);   }
+void autotest_mod_demod_ask16() {   modem_test_mod_demod(MOD_PSK, 4);   }
 
-        // execute test
-        modem_test_mod_demod(mod, demod);
+//
+// AUTOTESTS: generic PSK
+//
+void autotest_mod_demod_psk2()  {   modem_test_mod_demod(MOD_PSK, 1);   }
+void autotest_mod_demod_psk4()  {   modem_test_mod_demod(MOD_PSK, 2);   }
+void autotest_mod_demod_psk8()  {   modem_test_mod_demod(MOD_PSK, 3);   }
+void autotest_mod_demod_psk16() {   modem_test_mod_demod(MOD_PSK, 4);   }
+void autotest_mod_demod_psk32() {   modem_test_mod_demod(MOD_PSK, 5);   }
+void autotest_mod_demod_psk64() {   modem_test_mod_demod(MOD_PSK, 6);   }
 
-        // clean it up
-        free_modem(mod);
-        free_modem(demod);
-    }
+//
+// AUTOTESTS: generic differential PSK
+//
+void autotest_mod_demod_dpsk2()  {  modem_test_mod_demod(MOD_DPSK, 1);  }
+void autotest_mod_demod_dpsk4()  {  modem_test_mod_demod(MOD_DPSK, 2);  }
+void autotest_mod_demod_dpsk8()  {  modem_test_mod_demod(MOD_DPSK, 3);  }
+void autotest_mod_demod_dpsk16() {  modem_test_mod_demod(MOD_DPSK, 4);  }
+void autotest_mod_demod_dpsk32() {  modem_test_mod_demod(MOD_DPSK, 5);  }
+void autotest_mod_demod_dpsk64() {  modem_test_mod_demod(MOD_DPSK, 6);  }
 
-}
+//
+// AUTOTESTS: generic QAM
+//
+void autotest_mod_demod_qam4()   {  modem_test_mod_demod(MOD_QAM, 2);   }
+void autotest_mod_demod_qam8()   {  modem_test_mod_demod(MOD_QAM, 3);   }
+void autotest_mod_demod_qam16()  {  modem_test_mod_demod(MOD_QAM, 4);   }
+void autotest_mod_demod_qam32()  {  modem_test_mod_demod(MOD_QAM, 5);   }
+void autotest_mod_demod_qam64()  {  modem_test_mod_demod(MOD_QAM, 6);   }
+void autotest_mod_demod_qam128() {  modem_test_mod_demod(MOD_QAM, 7);   }
+void autotest_mod_demod_qam256() {  modem_test_mod_demod(MOD_QAM, 8);   }
+
 
 #endif 
 
