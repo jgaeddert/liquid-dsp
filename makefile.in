@@ -24,6 +24,29 @@ LIBS_RANDOM = random.o scramble.o
 #LIBS_SEQUENCE = 
 #LIBS_UTILITY = 
 
+INCLUDE_HEADERS = \
+	src/agc/src/agc.h \
+	src/buffer/src/buffer.h \
+	src/buffer/src/metadata.h \
+	src/buffer/src/port.h \
+	src/fec/src/fec.h \
+	src/fft/src/fft.h \
+	src/filter/src/decim2.h \
+	src/filter/src/filter_common.h \
+	src/filter/src/fir_filter.h \
+	src/filter/src/firdes.h \
+	src/filter/src/rrcos.h \
+	src/filter/src/window.h \
+	src/interleaver/src/interleaver.h \
+	src/math/src/dotprod.h \
+	src/math/src/math.h \
+	src/math/src/matrix.h \
+	src/modem/src/modem_common.h \
+	src/modem/src/modem.h \
+	src/nco/src/nco.h \
+	src/random/src/random.h \
+	src/random/src/scramble.h
+
 LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_RANDOM)
@@ -55,7 +78,9 @@ install:
 	install -m 644 -p $(SHARED_LIB) libliquid.a @libdir@
 	@REBIND@
 	mkdir -p @includedir@
-	install -m 644 -p include/liquid.h @includedir@
+	mkdir -p @includedir@/liquid
+	install -m 644 -p include/liquid.h @includedir@/liquid
+	install -m 644 -p $(INCLUDE_HEADERS) @includedir@/liquid
 	
 libliquid.a: $(LIBS)
 	ar r $@ $^
