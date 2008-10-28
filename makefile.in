@@ -66,7 +66,9 @@ AUTOTESTS = \
 	src/math/tests/math_autotest.h \
 	src/modem/tests/modem_autotest.h \
 	src/nco/tests/nco_autotest.h \
-	src/random/tests/random_autotest.h
+	src/random/tests/random_autotest.h \
+	src/utility/tests/count_bits_autotest.h \
+	src/utility/tests/pack_bytes_autotest.h
 
 CFLAGS = -g -O2 -Wall @ARCH_OPTION@
 
