@@ -72,7 +72,8 @@ AUTOTESTS = \
 
 BENCHMARKS = \
 	src/fft/bench/fft_benchmark.h \
-	src/modem/bench/modem_benchmark.h \
+	src/modem/bench/modem_modulate_benchmark.h \
+	src/modem/bench/modem_demodulate_benchmark.h \
 	src/nco/bench/nco_benchmark.h
 
 CFLAGS = -g -O2 -Wall @ARCH_OPTION@
