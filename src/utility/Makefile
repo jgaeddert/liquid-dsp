@@ -1,5 +1,5 @@
 # 
-# Makefile for math module
+# Makefile for utility module
 #
 
 
