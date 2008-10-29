@@ -71,7 +71,8 @@ AUTOTESTS = \
 	src/utility/tests/pack_bytes_autotest.h
 
 BENCHMARKS = \
-	src/modem/bench/modem_benchmark.h
+	src/modem/bench/modem_benchmark.h \
+	src/nco/bench/nco_benchmark.h
 
 CFLAGS = -g -O2 -Wall @ARCH_OPTION@
 LDFLAGS = -lm

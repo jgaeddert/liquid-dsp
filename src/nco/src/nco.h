@@ -18,6 +18,9 @@ struct nco_s {
 
 typedef struct nco_s * nco;
 
+nco nco_create();
+void nco_destroy(nco _nco);
+
 void nco_init(nco _nco);
 
 static inline void nco_set_frequency(nco _nco, float _f) {

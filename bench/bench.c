@@ -56,7 +56,7 @@ void print_benchmark_results(bench_t* _benchmark);
 void print_package_results(package_t* _package);
 double calculate_execution_time(struct rusage, struct rusage);
 
-unsigned long int num_trials = 1<<20;
+unsigned long int num_trials = 1<<12;
 
 // main function
 int main(int argc, char *argv[])

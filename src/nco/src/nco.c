@@ -8,6 +8,18 @@
 
 #include "nco.h"
 
+nco nco_create()
+{
+    nco p = (nco) malloc(sizeof(struct nco_s));
+    nco_init(p);
+    return p;
+}
+
+void nco_destroy(nco _nco)
+{
+    free(_nco);
+}
+
 void nco_init(nco _nco)
 {
     _nco->theta = 0.0f;
