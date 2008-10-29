@@ -54,6 +54,7 @@ LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_UTILITY)
 
 AUTOTESTS = \
+	src/agc/tests/agc_autotest.h \
 	src/buffer/tests/cbuffer_autotest.h \
 	src/buffer/tests/sbuffer_autotest.h \
 	src/fec/tests/checksum_autotest.h \
