@@ -71,6 +71,7 @@ AUTOTESTS = \
 	src/utility/tests/pack_bytes_autotest.h
 
 BENCHMARKS = \
+	src/fft/bench/fft_benchmark.h \
 	src/modem/bench/modem_benchmark.h \
 	src/nco/bench/nco_benchmark.h
 
