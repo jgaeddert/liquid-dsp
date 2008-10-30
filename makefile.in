@@ -21,7 +21,7 @@ LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o
 LIBS_NCO = nco.o
 LIBS_OPTIM = pattern_set.o
 LIBS_RANDOM = random.o scramble.o
-LIBS_SEQUENCE = sequence.o
+LIBS_SEQUENCE = sequence.o msequence.o
 LIBS_UTILITY = count_bits.o pack_bytes.o
 
 INCLUDE_HEADERS = \
