@@ -7,31 +7,31 @@
 
 // Binary sequence (generic)
 
-typedef struct binary_sequence_s * binary_sequence;
+typedef struct bsequence_s * bsequence;
 
 // Create a binary sequence of a specific length
-binary_sequence binary_sequence_create(unsigned int num_bits);
+bsequence bsequence_create(unsigned int num_bits);
 
 // Free memory in a binary sequence
-void binary_sequence_destroy(binary_sequence _bs);
+void bsequence_destroy(bsequence _bs);
 
 // Clear binary sequence (set to 0's)
-void binary_sequence_clear(binary_sequence _bs);
+void bsequence_clear(bsequence _bs);
 
 // Print sequence to the screen
-void binary_sequence_print(binary_sequence _bs);
+void bsequence_print(bsequence _bs);
 
 // Push bit into to back of a binary sequence
-void binary_sequence_push(binary_sequence _bs, unsigned int b);
+void bsequence_push(bsequence _bs, unsigned int b);
 
 // Correlates two binary sequences together
-int binary_sequence_correlate(binary_sequence _bs1, binary_sequence _bs2);
+int bsequence_correlate(bsequence _bs1, bsequence _bs2);
 
 // Binary addition of two bit sequences
-void binary_sequence_add(binary_sequence _bs1, binary_sequence _bs2, binary_sequence _bs3);
+void bsequence_add(bsequence _bs1, bsequence _bs2, bsequence _bs3);
 
 // Accumulates the 1's in a binary sequence
-unsigned int binary_sequence_accumulate(binary_sequence _bs);
+unsigned int bsequence_accumulate(bsequence _bs);
 
 
 // M-Sequence
@@ -65,8 +65,8 @@ unsigned int msequence_generate_symbol(msequence _ms, unsigned int _bps);
 // Reset msequence shift register to original state
 void msequence_reset(msequence _ms);
 
-// Initializes a binary_sequence object on a maximum length P/N sequence
-void binary_sequence_init_msequence(binary_sequence _bs, msequence _ms);
+// Initializes a bsequence object on a maximum length P/N sequence
+void bsequence_init_msequence(bsequence _bs, msequence _ms);
 
 #endif  // __LIQUID_SEQUENCE_H__
 

@@ -7,9 +7,8 @@
 
 #include <inttypes.h>
 #include "sequence.h"
-#include "../../utility/src/utility.h" // for count_ones
 
-struct binary_sequence_s {
+struct bsequence_s {
     uint8_t * s;                // sequence array, memory pointer
     unsigned int num_bits;      // number of bits in sequence
     unsigned int num_bits_msb;  // number of bits in most-significant block

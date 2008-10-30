@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "sequence_internal.h"
+#include "../../utility/src/utility.h" // for count_ones
 
 struct msequence_s msequence_default[13] = {
 //   m,     g,      a,      n,      v,      b
@@ -73,20 +74,20 @@ void msequence_reset(msequence _ms)
 }
 
 
-void binary_sequence_init_msequence(
-    binary_sequence _bs,
+void bsequence_init_msequence(
+    bsequence _bs,
     msequence _ms)
 {
-    if (_ms->n > SIGPROCC_MAX_MSEQUENCE_LENGTH) {
-        perror("error: binary_sequence_init_msequence(), msequence length exceeds maximum\n");
+    if (_ms->n > LIQUID_MAX_MSEQUENCE_LENGTH) {
+        perror("error: bsequence_init_msequence(), msequence length exceeds maximum\n");
         exit(-1);
     }
 
     // clear binary sequence
-    binary_sequence_clear(_bs);
+    bsequence_clear(_bs);
 
     unsigned int i;
     for (i=0; i<(_ms->n); i++)
-        binary_sequence_push(_bs, msequence_advance(_ms));
+        bsequence_push(_bs, msequence_advance(_ms));
 }
 
