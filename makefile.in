@@ -71,6 +71,7 @@ AUTOTESTS = \
 	src/nco/tests/nco_autotest.h \
 	src/random/tests/random_autotest.h \
 	src/sequence/tests/msequence_autotest.h \
+	src/sequence/tests/complementary_codes_autotest.h \
 	src/utility/tests/count_bits_autotest.h \
 	src/utility/tests/pack_bytes_autotest.h
 

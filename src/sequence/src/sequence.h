@@ -36,7 +36,6 @@ unsigned int bsequence_accumulate(bsequence _bs);
 // accessor functions
 unsigned int bsequence_get_length(bsequence _bs);
 
-
 // M-Sequence
 
 #define LIQUID_MAX_MSEQUENCE_LENGTH   4095
@@ -76,6 +75,13 @@ void bsequence_init_msequence(bsequence _bs, msequence _ms);
 
 // accessor methods
 unsigned int msequence_get_length(msequence _ms);
+
+
+// Complementary codes
+
+//typedef struct csequence_s * csequence;
+
+void bsequence_create_ccodes(bsequence _a, bsequence _b);
 
 #endif  // __LIQUID_SEQUENCE_H__
 

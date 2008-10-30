@@ -155,3 +155,46 @@ unsigned int bsequence_get_length(bsequence _bs)
 {
     return _bs->num_bits;
 }
+
+void bsequence_create_ccodes(bsequence _a, bsequence _b)
+{
+    // make sure sequences are the same length
+    if (_a->num_bits != _b->num_bits) {
+        printf("error: bsequence_create_ccodes(), sequence lengths must match\n");
+        exit(1);
+    } else if (_a->num_bits < 8) {
+        printf("error: bsequence_create_ccodes(), sequence too short\n");
+        exit(1);
+    } else if ( (_a->num_bits)%8 != 0 ) {
+        printf("error: bsequence_create_ccodes(), sequence must be multiple of 8\n");
+        exit(1);
+    }
+
+    bsequence_clear(_a);
+    bsequence_clear(_b);
+
+    _a->s[ _a->s_len - 1 ] = 0xb8;
+    _b->s[ _b->s_len - 1 ] = 0xb7;
+
+    unsigned int i, n=1;
+    unsigned int i_n1, i_n0, s_len = _a->s_len;
+    while (8*n < _a->num_bits) {
+
+        i_n1 = s_len - n;
+        i_n0 = s_len - 2*n;
+
+        // a -> [a  b]
+        // b -> [a ~b]
+        memmove(&(_a->s[i_n0]), &(_a->s[i_n1]), n*sizeof(uint8_t));
+        memmove(&(_b->s[i_n0]), &(_a->s[i_n1]), n*sizeof(uint8_t));
+
+        memmove(&(_a->s[i_n1]), &(_b->s[i_n1]), n*sizeof(uint8_t));
+        memmove(&(_b->s[i_n1]), &(_b->s[i_n1]), n*sizeof(uint8_t));
+
+        // complement lower half
+        for (i=0; i<n; i++)
+            _b->s[s_len-i-1] ^= 0xff;
+
+        n += n;
+    }
+}
