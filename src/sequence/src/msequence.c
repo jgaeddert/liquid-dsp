@@ -11,6 +11,9 @@
 #include "sequence_internal.h"
 #include "../../utility/src/utility.h" // for count_ones
 
+#define LIQUID_MIN_MSEQUENCE_M  2
+#define LIQUID_MAX_MSEQUENCE_M  12
+
 struct msequence_s msequence_default[13] = {
 //   m,     g,      a,      n,      v,      b
     {0,     0,      1,      0,      1,      0}, // dummy placeholder
@@ -27,6 +30,22 @@ struct msequence_s msequence_default[13] = {
     {11,    0x0402, 0x0400, 2047,   0x0400, 0},
     {12,    0x0829, 0x0800, 4095,   0x0800, 0}
 };
+
+msequence msequence_create(unsigned int _m)
+{
+    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M) {
+        printf("error: msequence_create(), m not in range\n");
+        exit(1);
+    }
+    msequence ms = (msequence) malloc(sizeof(struct msequence_s));
+    *ms = msequence_default[_m];
+    return ms;
+}
+
+void msequence_destroy(msequence _ms)
+{
+    free(_ms);
+}
 
 void msequence_init(msequence _ms, unsigned int _m, unsigned int _g, unsigned int _a)
 {
@@ -89,5 +108,10 @@ void bsequence_init_msequence(
     unsigned int i;
     for (i=0; i<(_ms->n); i++)
         bsequence_push(_bs, msequence_advance(_ms));
+}
+
+unsigned int msequence_get_length(msequence _ms)
+{
+    return _ms->n;
 }
 

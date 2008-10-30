@@ -46,7 +46,7 @@ bsequence bsequence_create(unsigned int _num_bits)
     return bs;
 }
 
-void free_bsequence(bsequence _bs) {
+void bsequence_destroy(bsequence _bs) {
     free( _bs->s );
     free( _bs );
 }
@@ -151,3 +151,7 @@ unsigned int bsequence_accumulate(bsequence _bs)
     return r;
 }
 
+unsigned int bsequence_get_length(bsequence _bs)
+{
+    return _bs->num_bits;
+}

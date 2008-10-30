@@ -33,6 +33,9 @@ void bsequence_add(bsequence _bs1, bsequence _bs2, bsequence _bs3);
 // Accumulates the 1's in a binary sequence
 unsigned int bsequence_accumulate(bsequence _bs);
 
+// accessor functions
+unsigned int bsequence_get_length(bsequence _bs);
+
 
 // M-Sequence
 
@@ -53,6 +56,9 @@ unsigned int bsequence_accumulate(bsequence _bs);
 
 typedef struct msequence_s * msequence;
 
+msequence msequence_create(unsigned int _m);
+void msequence_destroy(msequence _m);
+
 // Initialize msequence generator
 void msequence_init(msequence _ms, unsigned int _m, unsigned int _g, unsigned int _a);
 
@@ -67,6 +73,9 @@ void msequence_reset(msequence _ms);
 
 // Initializes a bsequence object on a maximum length P/N sequence
 void bsequence_init_msequence(bsequence _bs, msequence _ms);
+
+// accessor methods
+unsigned int msequence_get_length(msequence _ms);
 
 #endif  // __LIQUID_SEQUENCE_H__
 
