@@ -21,7 +21,7 @@ LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o
 LIBS_NCO = nco.o
 LIBS_OPTIM = pattern_set.o
 LIBS_RANDOM = random.o scramble.o
-#LIBS_SEQUENCE = 
+LIBS_SEQUENCE = sequence.o
 LIBS_UTILITY = count_bits.o pack_bytes.o
 
 INCLUDE_HEADERS = \
@@ -47,12 +47,13 @@ INCLUDE_HEADERS = \
 	src/optim/src/optim.h \
 	src/random/src/random.h \
 	src/random/src/scramble.h \
+	src/sequence/src/sequence.h \
 	src/utility/src/utility.h
 
 LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_OPTIM) \
-	   $(LIBS_RANDOM) $(LIBS_UTILITY)
+	   $(LIBS_RANDOM) $(LIBS_SEQUENCE) $(LIBS_UTILITY)
 
 AUTOTESTS = \
 	src/agc/tests/agc_autotest.h \
@@ -142,6 +143,9 @@ $(LIBS_OPTIM) : %.o : src/optim/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_RANDOM) : %.o : src/random/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(LIBS_SEQUENCE) : %.o : src/sequence/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_UTILITY) : %.o : src/utility/src/%.c
