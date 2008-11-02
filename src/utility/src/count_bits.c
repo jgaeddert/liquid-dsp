@@ -61,6 +61,7 @@ unsigned int count_ones_static(unsigned int _x) {
 
 unsigned int count_leading_zeros(unsigned int _x) 
 {
+#if 0
     // look for first non-zero byte in _x
 
     int i, B, clz=0;
@@ -73,6 +74,9 @@ unsigned int count_leading_zeros(unsigned int _x)
             clz += 8;
     }   
     return (SIZEOF_UNSIGNED_INT*8);
+#else
+    return SIZEOF_UNSIGNED_INT*8 - msb_index(_x);
+#endif
 }
 
 unsigned int msb_index(unsigned int _x)
@@ -86,20 +90,23 @@ unsigned int msb_index(unsigned int _x)
     );
     return bits + 1;
 #elif 0
+    // slow method; look one bit at a time
     for (bits = 0; _x != 0 && bits < 32; _x >>= 1, ++bits)
         ;
     return bits;
 #else
+    // look for first non-zero byte
     unsigned int i, b;
-    bits = 0;
-    for (i=0; i<SIZEOF_UNSIGNED_INT; i++) {
-        b = (_x >> (SIZEOF_UNSIGNED_INT-i-1)*8) & 0xff;
-        bits += leading_zeros[b];
+    bits = 8*SIZEOF_UNSIGNED_INT;
+    for (i=SIZEOF_UNSIGNED_INT*8; i>0; i-=8) {
+        b = (_x >> (i-8)) & 0xFF;
         if ( b )
-            return 32-bits;
+            return bits - leading_zeros[b];
+        else
+            bits -= 8;
     }
-    return 32-bits;
-        
+    return 0;
+
 #endif
 }
 
