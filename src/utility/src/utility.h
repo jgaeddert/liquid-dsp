@@ -31,7 +31,7 @@ unsigned int count_ones_static(unsigned int _x);
 extern unsigned int leading_zeros[256];
 
 // Count leading zeros in an integer
-unsigned int count_leading_zeros(int _x);
+unsigned int count_leading_zeros(unsigned int _x);
 
 // Most-significant bit index
 unsigned int msb_index(unsigned int _x);

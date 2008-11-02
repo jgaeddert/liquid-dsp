@@ -4,6 +4,21 @@
 #include "../../../autotest/autotest.h"
 #include "../src/utility.h"
 
+// 
+// AUTOTEST: count number of ones in an integer
+//
+void autotest_count_ones() {
+    CONTEND_EQUALITY( count_ones(0x0000), 0 );
+    CONTEND_EQUALITY( count_ones(0x0001), 1 );
+    CONTEND_EQUALITY( count_ones(0x0003), 2 );
+    CONTEND_EQUALITY( count_ones(0xFFFF), 16 );
+    CONTEND_EQUALITY( count_ones(0x00FF), 8 );
+    CONTEND_EQUALITY( count_ones(0x5555), 8 );
+}
+
+// 
+// AUTOTEST: count number of leading zeros in an integer
+//
 void autotest_count_leading_zeros() {
     // NOTE: this tests assumes a 4-byte integer
 
@@ -50,10 +65,13 @@ void autotest_count_leading_zeros() {
     CONTEND_EQUALITY( count_leading_zeros(0x80000000),  0 );
 }
 
+// 
+// AUTOTEST: find location of most-significant bit
+//
 void autotest_msb_index() {
     // NOTE: this tests assumes a 4-byte integer
 
-    //CONTEND_EQUALITY( msb_index(0x00000000),  0 );
+    CONTEND_EQUALITY( msb_index(0x00000000),  0 );
 
     CONTEND_EQUALITY( msb_index(0x00000001),  1 );
     CONTEND_EQUALITY( msb_index(0x00000002),  2 );
