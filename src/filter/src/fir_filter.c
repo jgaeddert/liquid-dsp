@@ -51,7 +51,7 @@ void fir_filter_print(fir_filter _f)
 
 float fir_filter_execute(fir_filter _f, float * _v)
 {
-    return dotprod_fff(_f->h, _v, _f->h_len);
+    return fdotprod(_f->h, _v, _f->h_len);
 }
 
 

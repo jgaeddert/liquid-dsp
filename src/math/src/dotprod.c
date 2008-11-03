@@ -2,25 +2,23 @@
 // Generic dot product
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <math.h>
 
-#include "dotprod.h"
-
-float dotprod_fff(float *_x, float *_y, unsigned int _n)
+T X()(T *_x, T *_y, unsigned int _n)
 {
-    float r=0.0f;
+    T r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _x[i] * _y[i];
     return r;
 }
 
-float dotprod4_fff(float *_x, float *_y, unsigned int _n)
+T X(4)(T *_x, T *_y, unsigned int _n)
 {
     // BUG: need to ensure length of _n is a multiple of 4
-    float r=0.0f;
+    T r=0;
     unsigned int i;
     for (i=0; i<_n; i+=4) {
         r += _x[i]   * _y[i];
