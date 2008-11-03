@@ -6,8 +6,11 @@
 #define __LIQUID_FFT_INTERNAL_H__
 
 #include <complex.h>
+#include "fft.h"
 
-typedef struct fftplan_s * fftplan;
+// fft size below which twiddle factors
+// are stored in look-up table (very fast)
+#define FFT_SIZE_TWIDDLE    16
 
 struct fftplan_s {
     unsigned int n;
@@ -18,11 +21,8 @@ struct fftplan_s {
     int direction;
 };
 
-#define FFT_FORWARD 0
-#define FFT_REVERSE 1
-fftplan fft_create_plan(unsigned int _n, float complex * _x, float complex * _y, int _dir);
-void fft_destroy_plan(fftplan _p);
-void fft_execute(fftplan _p);
+void fft_execute_dft(fftplan _p);
+void fft_execute_twiddle_table(fftplan _p);
 
 #endif // __LIQUID_FFT_INTERNAL_H__
 
