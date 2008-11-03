@@ -18,7 +18,6 @@ fftplan fft_create_plan(unsigned int _n, float complex * _x, float complex * _y,
     fftplan p = (fftplan) malloc(_n*sizeof(struct fftplan_s));
 
     p->n = _n;
-    p->len = p->n;
     p->x = _x;
     p->y = _y;
 
