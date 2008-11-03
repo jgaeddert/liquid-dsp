@@ -84,6 +84,7 @@ unsigned int msb_index(unsigned int _x)
     unsigned int bits;
 
 #if defined __i386__ || defined __amd64__ || defined __x86_64__
+    if (!_x) return 0;
     __asm volatile("bsrl %1,%0\n"
         : "=r" (bits)
         : "c" (_x)
