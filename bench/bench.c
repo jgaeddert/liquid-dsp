@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"n:b:p:lhvq")) != EOF){
+    while((d = getopt(argc,argv,"n:b:p:lLhvq")) != EOF){
         switch (d) {
         case 'n':
             num_trials = atoi(optarg);
@@ -96,6 +96,11 @@ int main(int argc, char *argv[])
             }
             break;
         case 'l':
+            // list only packages and exit
+            for (i=0; i<NUM_PACKAGES; i++)
+                printf("%u: %s\n", packages[i].id, packages[i].name);
+            return 0;
+        case 'L':
             // list packages, benchmarks and exit
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);

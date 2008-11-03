@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"t:p:lvq")) != EOF){
+    while((d = getopt(argc,argv,"t:p:lLvq")) != EOF){
         switch (d) {
         case 't':
             autotest_id = atoi(optarg);
@@ -90,6 +90,11 @@ int main(int argc, char *argv[])
             }
             break;
         case 'l':
+            // list only packages and exit
+            for (i=0; i<NUM_PACKAGES; i++)
+                printf("%u: %s\n", packages[i].id, packages[i].name);
+            return 0;
+        case 'L':
             // list packages, autotests and exit
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
