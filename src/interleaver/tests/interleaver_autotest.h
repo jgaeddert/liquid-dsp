@@ -19,8 +19,7 @@ void autotest_interleaver_general()
     for (i=0; i<n; i++)
         x[i] = rand() & 0xFF;
 
-    interleaver q = interleaver_create(n);
-    interleaver_init_block(q);
+    interleaver q = interleaver_create(n, INT_BLOCK);
 
     interleaver_interleave(q,x,y);
     interleaver_deinterleave(q,y,z);

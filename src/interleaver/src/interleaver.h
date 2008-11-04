@@ -6,8 +6,15 @@
 #define __LIQUID_INTERLEAVER_H__
 
 typedef struct interleaver_s * interleaver;
+typedef enum {
+    INT_BLOCK=0,
+    INT_SEQUENCE
+} interleaver_type;
 
-interleaver interleaver_create(unsigned int _n);
+// create interleaver
+//   _n     : number of bytes
+//   _type  : type of re-ordering
+interleaver interleaver_create(unsigned int _n, interleaver_type _type);
 
 void interleaver_destroy(interleaver _i);
 

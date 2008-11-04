@@ -7,22 +7,34 @@
 #include <string.h>
 
 #include "interleaver_internal.h"
+#include "../../sequence/src/sequence.h"
+#include "../../utility/src/utility.h"
 
 struct interleaver_s {
     unsigned int * p;   // byte permutation
     unsigned int len;   // number of bytes
+    interleaver_type type;
 };
 
-interleaver interleaver_create(unsigned int _n)
+interleaver interleaver_create(unsigned int _n, interleaver_type _type)
 {
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
     q->len = _n;
+    q->type = _type;
     q->p = (unsigned int *) malloc((q->len)*sizeof(unsigned int));
 
     // initialize here
-    unsigned int i;
-    for (i=0; i<q->len; i++)
-        q->p[i] = i;
+    switch (q->type) {
+    case INT_BLOCK:
+        interleaver_init_block(q);
+        break;
+    case INT_SEQUENCE:
+        interleaver_init_sequence(q);
+        break;
+    default:
+        printf("error: interleaver_create(), invalid type\n");
+        exit(1);
+    }
 
     return q;
 }
@@ -115,7 +127,23 @@ void interleaver_init_block(interleaver _q)
 
 void interleaver_init_sequence(interleaver _q)
 {
+    // generate msequence
+    // m = ceil( log2( _q->len ) )
+    unsigned int m = msb_index(_q->len);
+    if (_q->len == (1<<(m-1)) )
+        m--;
+    msequence ms = msequence_create(m);
+    unsigned int n = msequence_get_length(ms);
 
+    unsigned int i, index=0;
+    for (i=0; i<_q->len; i++) {
+        _q->p[i] = index;
+        //_q->p[(i+3)%(_q->len)] = index;
+
+        do {
+            index = ((index<<1) | msequence_advance(ms)) & n;
+        } while (index >= _q->len);
+    }
 }
 
 void interleaver_interleave(interleaver _q, unsigned char * _x, unsigned char * _y)

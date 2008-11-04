@@ -29,8 +29,7 @@ int main() {
     return 0;
 #else
     unsigned int n=9;
-    interleaver q = interleaver_create(n);
-    interleaver_init_block(q);
+    interleaver q = interleaver_create(n, INT_SEQUENCE);
     interleaver_print(q);
     interleaver_debug_print(q);
 
