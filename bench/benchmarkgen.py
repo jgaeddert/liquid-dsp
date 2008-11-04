@@ -19,7 +19,7 @@ import glob
 import string
 import os.path
 
-outputFileName = "bench_include.h"
+outputFileName = "benchmark_include.h"
 included_headers = []
 listed_headers = []
 packages = []

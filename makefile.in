@@ -172,7 +172,7 @@ check-clean:
 # 
 # Benchmarks
 #
-benchmark_include.h: $(BENCHMAKRKS)
+benchmark_include.h: $(BENCHMARKS) bench/benchmarkgen.py
 	python bench/benchmarkgen.py $(BENCHMARKS)
 
 # ignore optimization flags
@@ -183,7 +183,7 @@ bench: benchmark
 	./benchmark
 
 bench-clean:
-	rm -f benchinclude.h benchmark
+	rm -f bench_include.h benchmark
 
 #
 # Examples
