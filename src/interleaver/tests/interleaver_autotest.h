@@ -7,9 +7,9 @@
 #include "../src/interleaver.h"
 
 // 
-// AUTOTEST: interleave/deinterleave
+// AUTOTESTS: interleave/deinterleave
 //
-void autotest_interleaver_general()
+void autotest_interleaver_block_8()
 {
     unsigned int i, n = 8;
     unsigned char x[n];
@@ -26,6 +26,25 @@ void autotest_interleaver_general()
 
     CONTEND_SAME_DATA(x, z, n);
 }
+
+void autotest_interleaver_sequence_8()
+{
+    unsigned int i, n = 8;
+    unsigned char x[n];
+    unsigned char y[n];
+    unsigned char z[n];
+
+    for (i=0; i<n; i++)
+        x[i] = rand() & 0xFF;
+
+    interleaver q = interleaver_create(n, INT_SEQUENCE);
+
+    interleaver_interleave(q,x,y);
+    interleaver_deinterleave(q,y,z);
+
+    CONTEND_SAME_DATA(x, z, n);
+}
+
 
 #endif 
 
