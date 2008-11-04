@@ -46,8 +46,8 @@ void benchmark_fft_4        FFT_BENCH_API(4,        FFT_FORWARD)
 void benchmark_fft_8        FFT_BENCH_API(8,        FFT_FORWARD)
 void benchmark_fft_16       FFT_BENCH_API(16,       FFT_FORWARD)
 void benchmark_fft_32       FFT_BENCH_API(32,       FFT_FORWARD)
-//void xbenchmark_fft_64       FFT_BENCH_API(64,       FFT_FORWARD)
-//void xbenchmark_fft_128      FFT_BENCH_API(128,      FFT_FORWARD)
+void benchmark_fft_64       FFT_BENCH_API(64,       FFT_FORWARD)
+void benchmark_fft_128      FFT_BENCH_API(128,      FFT_FORWARD)
 
 // Non radix-2
 void benchmark_fft_10       FFT_BENCH_API(10,       FFT_FORWARD)

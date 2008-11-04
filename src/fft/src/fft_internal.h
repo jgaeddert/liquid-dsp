@@ -41,7 +41,7 @@ void fft_execute_dft(fftplan _p);
 void fft_execute_lut(fftplan _p);
 
 // execute radix-2 fft
-//void fft_execute_radix2(fftplan _p);
+void fft_execute_radix2(fftplan _p);
 
 // miscellaneous functions
 unsigned int reverse_index(unsigned int _i, unsigned int _n);

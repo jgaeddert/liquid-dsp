@@ -9,8 +9,8 @@ void fft_execute(fftplan _p)
 {
     if (_p->n <= FFT_SIZE_LUT)
         fft_execute_lut(_p);
-    //else if (_p->is_radix2)
-    //    fft_execute_radix2(_p);
+    else if (_p->is_radix2)
+        fft_execute_radix2(_p);
     else
         fft_execute_dft(_p);
 }
@@ -42,6 +42,31 @@ void fft_execute_lut(fftplan _p)
 
 void fft_execute_radix2(fftplan _p)
 {
-    // execute butterflies...
+    // swap values
+    unsigned int i,j,k;
+    for (i=0; i<_p->n; i++)
+        _p->y[i] = _p->x[ _p->index_rev[i] ];
+
+    float complex t, yp, *y=_p->y;
+    float phi, d_phi;
+    unsigned int n1=0, n2=1;
+    for (i=0; i<_p->m; i++) {
+        n1 = n2;
+        n2 *= 2;
+
+        d_phi = (_p->direction == FFT_FORWARD) ? -2*M_PI/n2 : 2*M_PI/n2;
+        phi = 0;
+
+        for (j=0; j<n1; j++) {
+            t = cexpf(_Complex_I*phi);
+            phi += d_phi;
+
+            for (k=j; k<_p->n; k+=n2) {
+                yp = y[k+n1]*t;
+                y[k+n1] = y[k] - yp;
+                y[k] += yp;
+            }
+        }
+    }
 }
 
