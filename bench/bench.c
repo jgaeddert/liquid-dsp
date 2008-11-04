@@ -26,6 +26,7 @@ typedef struct {
     unsigned int id;
     benchmark_function_t api;
     const char* name;
+    unsigned int name_len;
     unsigned int num_trials;
     float extime;
     float rate;
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
                 for (j=packages[i].benchmark_index; j<packages[i].num_benchmarks+packages[i].benchmark_index; j++)
-                    printf("    %u: %s\n", benchmarks[j].id, benchmarks[j].name);
+                    printf("    %u:\t%s\n", benchmarks[j].id, benchmarks[j].name);
             }
             return 0;
         case 'v':
@@ -190,7 +191,33 @@ void execute_package(package_t* _package, bool _verbose)
 
 void print_benchmark_results(bench_t* _b)
 {
-    // format output to use units
+    // format time output to use units
+    float extime_format = _b->extime;
+    char *extime_units = "";
+    if (extime_format < 1e-9) {
+        extime_format *= 1e12;
+        extime_units = "ps";
+    } else if (extime_format < 1e-6) {
+        extime_format *= 1e9;
+        extime_units = "ns";
+    } else if (extime_format < 1e-3) {
+        extime_format *= 1e6;
+        extime_units = "us";
+    } else if (extime_format < 1) {
+        extime_format *= 1e3;
+        extime_units = "ms";
+    } else if (extime_format < 60) {
+        //extime_format *= 1e3;
+        extime_units = "s";
+    } else if (extime_format < 3600) {
+        extime_format *= 60;
+        extime_units = "m";
+    } else {
+        extime_format *= 3600;
+        extime_units = "h";
+    }
+
+    // format rate output to use units
     float rate_format = _b->rate;
     char *rate_units = "";
     if (rate_format > 1e9) {
@@ -203,8 +230,8 @@ void print_benchmark_results(bench_t* _b)
         rate_format /= 1e3;
         rate_units = "k ";
     }
-    printf("    %u: %s: %d trials in %.4f sec (%.3f %strials/s)\n",
-        _b->id, _b->name, _b->num_trials, _b->extime, rate_format, rate_units);
+    printf("    %u:\t%s: %8d trials in %5.1f %s (%8.3f %strials/s)\n",
+        _b->id, _b->name, _b->num_trials, extime_format, extime_units, rate_format, rate_units);
 }
 
 void print_package_results(package_t* _package)
