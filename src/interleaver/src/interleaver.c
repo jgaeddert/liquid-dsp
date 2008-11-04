@@ -13,18 +13,18 @@
 struct interleaver_s {
     unsigned int * p;   // byte permutation
     unsigned int len;   // number of bytes
-    interleaver_type type;
 };
 
 interleaver interleaver_create(unsigned int _n, interleaver_type _type)
 {
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
     q->len = _n;
-    q->type = _type;
     q->p = (unsigned int *) malloc((q->len)*sizeof(unsigned int));
 
+    if (_n < 3) _type = INT_BLOCK;
+
     // initialize here
-    switch (q->type) {
+    switch (_type) {
     case INT_BLOCK:
         interleaver_init_block(q);
         break;
@@ -134,11 +134,12 @@ void interleaver_init_sequence(interleaver _q)
         m--;
     msequence ms = msequence_create(m);
     unsigned int n = msequence_get_length(ms);
+    unsigned int nby2 = n/2;
 
     unsigned int i, index=0;
     for (i=0; i<_q->len; i++) {
-        _q->p[i] = index;
-        //_q->p[(i+3)%(_q->len)] = index;
+        // assign adding initial offset
+        _q->p[(i+nby2)%(_q->len)] = index;
 
         do {
             index = ((index<<1) | msequence_advance(ms)) & n;
