@@ -20,7 +20,7 @@ int main() {
     float s, c;
     for (i=0; i<8; i++) {
         nco_sincos(p, &s, &c);
-        printf("exp(j*%0.3f)\t= %0.5f\t+ j%0.5f\n", p->theta, c, s);
+        printf("  exp(j*%8.5f) = %8.5f + j %8.5f\n", p->theta, c, s);
         nco_step(p);
     }
 
