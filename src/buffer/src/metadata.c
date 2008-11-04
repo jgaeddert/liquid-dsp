@@ -69,7 +69,7 @@ void metadata_print(metadata _m)
     unsigned int i;
     printf("metadata [%u keys] :\n", _m->num_keys);
     for (i=0; i<_m->num_keys; i++)
-        printf(" %u\t: %6.2f\t(%s)\n", _m->keys[i].uuid, _m->keys[i].value, _m->keys[i].name);
+        printf(" %4u  : %6.2f\t(%s)\n", _m->keys[i].uuid, _m->keys[i].value, _m->keys[i].name);
 }
 
 void metadata_update(metadata _m, const char * _name, float _val)

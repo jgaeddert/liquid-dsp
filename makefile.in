@@ -79,6 +79,7 @@ AUTOTESTS = \
 BENCHMARKS = \
 	src/agc/bench/agc_benchmark.h \
 	src/fft/bench/fft_benchmark.h \
+	src/interleaver/bench/interleaver_benchmark.h \
 	src/modem/bench/modem_modulate_benchmark.h \
 	src/modem/bench/modem_demodulate_benchmark.h \
 	src/nco/bench/nco_benchmark.h
