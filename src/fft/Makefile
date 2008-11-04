@@ -11,7 +11,7 @@ LDFLAGS = -lm
 OBJS = fft_create_plan.o fft_execute.o
 
 $(TESTS) : %_test : src/main_%.c $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $< -o $@
+	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $< -o $@
 
 $(OBJS) : %.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@

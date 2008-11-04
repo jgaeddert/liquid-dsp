@@ -58,11 +58,11 @@ void fft_init_lut(fftplan _p)
 {
     unsigned int k, n, N = _p->n;
     _p->twiddle = (float complex*) malloc(N*N*sizeof(float complex));
-    float phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
+    double phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
     for (k=0; k<N; k++) {
         for (n=0; n<N; n++) {
-            phi = 2*M_PI*d*((float)n)*((float)k) / (float) (N);
-            _p->twiddle[k*N + n] = cexpf(_Complex_I*phi);
+            phi = 2*M_PI*d*((double)n)*((double)k) / (double) (N);
+            _p->twiddle[k*N + n] = cexp(_Complex_I*phi);
         }   
     }   
 }

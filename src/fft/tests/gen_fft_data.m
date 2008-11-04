@@ -9,7 +9,7 @@ printf('// %d-point fft data\n', n);
 
 printf('float complex x%d[] = {\n',n);
 for i=1:n,
-    printf('%12.6f + %12.6f*J', real(x(i)), imag(x(i)));
+    printf('%16.12f + %16.12f*J', real(x(i)), imag(x(i)));
     if i==n,
         printf('\n};\n');
     else,
@@ -21,7 +21,7 @@ printf('\n');
 
 printf('float complex test%d[] = {\n',n);
 for i=1:n,
-    printf('%12.6f + %12.6f*J', real(y(i)), imag(y(i)));
+    printf('%16.12f + %16.12f*J', real(y(i)), imag(y(i)));
     if i==n,
         printf('\n};\n');
     else,
