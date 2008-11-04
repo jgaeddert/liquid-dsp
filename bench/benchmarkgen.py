@@ -24,7 +24,7 @@ included_headers = []
 listed_headers = []
 packages = []
 benchmark_functions = []
-version_number = "0.1.0"
+version_number = "0.2.0"
 
 def main():
     '''The main program'''
@@ -165,6 +165,7 @@ def writeOutputFile( filename = outputFileName ):
     # include guard
     f.write("#ifndef __BENCHINCLUDE_H__\n");
     f.write("#define __BENCHINCLUDE_H__\n\n");
+    f.write("#define BENCHMARK_VERSION " + "\"" + version_number + "\"" + "\n\n");
     f.write("// header files from which this file was generated:\n")
     for h in included_headers:
         # write header, if not already written

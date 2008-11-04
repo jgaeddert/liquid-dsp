@@ -43,6 +43,7 @@ typedef struct {
 // include auto-generated benchmark header
 //
 // defines the following symbols:
+//   #define BENCHMARK_VERSION
 //   #define NUM_BENCHMARKS
 //   bench_t benchmarks[NUM_BENCHMARKS]
 //   #define NUM_PACKAGES
@@ -155,12 +156,14 @@ int main(int argc, char *argv[])
 void print_help()
 {
     // help
+    printf("liquid benchmark version %s\n\n", BENCHMARK_VERSION);
     printf("bench options:\n");
     printf("  -h : prints this help file\n");
     printf("  -n<num_trials>\n");
-    printf("  -b<benchmark_index>\n");
     printf("  -p<package_index>\n");
-    printf("  -l : lists available benchmarks\n");
+    printf("  -b<benchmark_index>\n");
+    printf("  -l : lists available packages\n");
+    printf("  -L : lists all available benchmarks\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
 }
@@ -206,15 +209,8 @@ void print_benchmark_results(bench_t* _b)
     } else if (extime_format < 1) {
         extime_format *= 1e3;
         extime_units = "ms";
-    } else if (extime_format < 60) {
-        //extime_format *= 1e3;
-        extime_units = "s";
-    } else if (extime_format < 3600) {
-        extime_format *= 60;
-        extime_units = "m";
     } else {
-        extime_format *= 3600;
-        extime_units = "h";
+        extime_units = "s";
     }
 
     // format rate output to use units
@@ -230,7 +226,7 @@ void print_benchmark_results(bench_t* _b)
         rate_format /= 1e3;
         rate_units = "k ";
     }
-    printf("    %u:\t%s: %8d trials in %5.1f %s (%8.3f %strials/s)\n",
+    printf("    %u:\t%30s: %8d trials in %7.2f %s (%8.3f %strials/s)\n",
         _b->id, _b->name, _b->num_trials, extime_format, extime_units, rate_format, rate_units);
 }
 
