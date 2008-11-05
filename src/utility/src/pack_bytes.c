@@ -8,9 +8,9 @@
 #include "utility.h"
 
 void pack_bytes(
-    char * input,
+    unsigned char * input,
     unsigned int input_length,
-    char * output,
+    unsigned char * output,
     unsigned int output_length,
     unsigned int * num_written)
 {
@@ -24,7 +24,7 @@ void pack_bytes(
     
     unsigned int i;
     unsigned int N = 0;         // number of bytes written to output
-    char byte = 0;
+    unsigned char byte = 0;
     
     for (i=0; i<input_length; i++) {
         byte |= input[i] & 0x01;
@@ -46,15 +46,15 @@ void pack_bytes(
 
 
 void unpack_bytes(
-    char * input,
+    unsigned char * input,
     unsigned int input_length,
-    char * output,
+    unsigned char * output,
     unsigned int output_length,
     unsigned int * num_written)
 {
     unsigned int i;
     unsigned int N = 0;
-    char byte;
+    unsigned char byte;
 
     if ( output_length < 8*input_length ) {
         perror("error: unpack_bytes(), output too short\n");
@@ -77,10 +77,10 @@ void unpack_bytes(
 }
 
 void repack_bytes(
-    char * input,
+    unsigned char * input,
     unsigned int input_sym_size,
     unsigned int input_length,
-    char * output,
+    unsigned char * output,
     unsigned int output_sym_size,
     unsigned int output_length,
     unsigned int * num_written)
@@ -94,8 +94,8 @@ void repack_bytes(
     }
     
     unsigned int i;
-    char sym_in = 0;
-    char sym_out = 0;
+    unsigned char sym_in = 0;
+    unsigned char sym_out = 0;
 
     // there is probably a more efficient way to do this, but...
     unsigned int total_bits = input_length*input_sym_size;
