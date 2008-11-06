@@ -83,7 +83,8 @@ BENCHMARKS = \
 	src/interleaver/bench/interleaver_benchmark.h \
 	src/modem/bench/modem_modulate_benchmark.h \
 	src/modem/bench/modem_demodulate_benchmark.h \
-	src/nco/bench/nco_benchmark.h
+	src/nco/bench/nco_benchmark.h \
+	src/random/bench/random_benchmark.h
 
 CFLAGS = -g -O2 -Wall @ARCH_OPTION@
 LDFLAGS = -lm
