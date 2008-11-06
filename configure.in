@@ -4,11 +4,21 @@ dnl Process with autoconf to generate configure script
 dnl
 
 AC_INIT(src/modem/src/modem.c)
-AC_CONFIG_HEADER(config.h)
 SO_NAME=0
 VERSION=0.1.0
 AC_SUBST(SO_NAME)
 AC_SUBST(VERSION)
+
+dnl Autoheader
+AC_CONFIG_HEADER(config.h)
+AH_TOP([
+#ifndef __LIQUID_CONFIG_H__
+#define __LIQUID_CONFIG_H__
+])
+AH_BOTTOM([
+#endif // __LIQUID_CONFIG_H__
+])
+
 
 dnl Check for necessary programs
 
@@ -17,7 +27,7 @@ AC_CHECK_LIB(c, malloc)
 AC_CHECK_LIB(m, sinf)
 
 dnl Check for necessary header files
-AC_CHECK_HEADERS(stdio.h stdlib.h complex.h string.h)
+AC_CHECK_HEADERS(stdio.h stdlib.h stdbool.h complex.h string.h getopt.h sys/resource.h)
 if test -z "$HAVE_stdio.h"
 then
     AC_MSG_ERROR([Need stdio.h!])
@@ -25,6 +35,10 @@ fi
 
 dnl Check for necessary library functions
 AC_CHECK_FUNCS(memset memcpy memmove)
+
+dnl Check size of certain variables
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(unsigned int)
 
 dnl Check canonical system
 AC_CANONICAL_SYSTEM

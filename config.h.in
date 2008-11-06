@@ -1,7 +1,15 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
+
+#ifndef __LIQUID_CONFIG_H__
+#define __LIQUID_CONFIG_H__
+
+
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#undef HAVE_GETOPT_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -24,6 +32,9 @@
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
+/* Define to 1 if you have the <stdbool.h> header file. */
+#undef HAVE_STDBOOL_H
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -38,6 +49,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/resource.h> header file. */
+#undef HAVE_SYS_RESOURCE_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
@@ -63,5 +77,15 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of `unsigned int', as computed by sizeof. */
+#undef SIZEOF_UNSIGNED_INT
+
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+
+#endif // __LIQUID_CONFIG_H__
+
