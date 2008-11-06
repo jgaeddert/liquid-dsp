@@ -52,6 +52,7 @@ typedef struct {
 
 // helper functions:
 void print_help();
+void estimate_cpu_speed(void);
 void execute_benchmark(bench_t* _benchmark, bool _verbose);
 void execute_package(package_t* _package, bool _verbose);
 void print_benchmark_results(bench_t* _benchmark);
@@ -71,13 +72,18 @@ int main(int argc, char *argv[])
     unsigned int benchmark_id = 0;
     unsigned int package_id = 0;
     bool verbose = true;
+    bool autoscale = true;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"n:b:p:lLhvq")) != EOF){
+    while((d = getopt(argc,argv,"en:b:p:lLhvq")) != EOF){
         switch (d) {
+        case 'e':
+            estimate_cpu_speed();
+            return 0;
         case 'n':
             num_trials = atoi(optarg);
+            autoscale = false;
             break;
         case 'b':
             benchmark_id = atoi(optarg);
@@ -132,6 +138,9 @@ int main(int argc, char *argv[])
         // do nothing
     }
 
+    if (autoscale)
+        estimate_cpu_speed();
+
     switch (mode) {
     case RUN_ALL:
         for (i=0; i<NUM_PACKAGES; i++)
@@ -159,6 +168,7 @@ void print_help()
     printf("liquid benchmark version %s\n\n", BENCHMARK_VERSION);
     printf("bench options:\n");
     printf("  -h : prints this help file\n");
+    printf("  -e : estimate cpu clock frequency and exit\n");
     printf("  -n<num_trials>\n");
     printf("  -p<package_index>\n");
     printf("  -b<benchmark_index>\n");
@@ -166,6 +176,44 @@ void print_help()
     printf("  -L : lists all available benchmarks\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
+}
+
+// run basic benchmark to estimate CPU clock frequency
+void estimate_cpu_speed(void)
+{
+    printf("  estimating cpu clock frequency...\n");
+    unsigned long int i, n = 1<<4;
+    struct rusage start, finish;
+    double extime;
+    
+    do {
+        // trials
+        n <<= 1;
+        unsigned int x=0;
+        getrusage(RUSAGE_SELF, &start);
+        for (i=0; i<n; i++) {
+            // perform mindless task
+            x <<= 1;
+            x |= 1;
+            x &= 0xff;
+            x ^= 0xff;
+        }
+        getrusage(RUSAGE_SELF, &finish);
+
+        extime = calculate_execution_time(start, finish);
+    } while (extime < 0.5 && n < (1<<28));
+
+    // estimate cpu clock frequency
+    double cpu_clock = 23.9 * n / extime;
+
+    printf("  performed %ld trials in %5.1f ms\n", n, extime * 1e3);
+    printf("  estimated clock speed: %E Hz\n", cpu_clock);
+
+    unsigned long int min_trials = 256;
+    num_trials = (unsigned long int) ( cpu_clock / 20e3 );
+    num_trials = (num_trials < min_trials) ? min_trials : num_trials;
+
+    printf("  setting number of trials to %ld\n", num_trials);
 }
 
 void execute_benchmark(bench_t* _benchmark, bool _verbose)
