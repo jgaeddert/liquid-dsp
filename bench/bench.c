@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include <sys/resource.h>
 
 // define benchmark function pointer
 typedef void(*benchmark_function_t) (
