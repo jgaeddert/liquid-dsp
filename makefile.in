@@ -11,12 +11,13 @@ CC = @CC@
 LIBS_AGC = agc.o
 LIBS_ANN = ann.o ann_layer.o ann_neuron.o
 LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o metadata.o port.o
+LIBS_DOTPROD = fdotprod.o cfdotprod.o
 LIBS_FEC = checksum.o crc.o fec_rep.o
 LIBS_FFT = fft_create_plan.o fft_execute.o
 LIBS_FILTER = filter_common.o fir_filter.o rrcos.o window.o firdes.o \
 			  decim.o decim2.o decim_create.o decim_execute.o
 LIBS_INTERLEAVER = interleaver.o
-LIBS_MATH = math.o fmatrix.o cfmatrix.o fdotprod.o cfdotprod.o
+LIBS_MATH = math.o fmatrix.o cfmatrix.o
 LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o
 LIBS_NCO = nco.o
 LIBS_OPTIM = pattern_set.o
@@ -29,6 +30,7 @@ INCLUDE_HEADERS = \
 	src/buffer/src/buffer.h \
 	src/buffer/src/metadata.h \
 	src/buffer/src/port.h \
+	src/dotprod/src/dotprod.h \
 	src/fec/src/fec.h \
 	src/fft/src/fft.h \
 	src/filter/src/decim2.h \
@@ -38,7 +40,6 @@ INCLUDE_HEADERS = \
 	src/filter/src/rrcos.h \
 	src/filter/src/window.h \
 	src/interleaver/src/interleaver.h \
-	src/math/src/dotprod.h \
 	src/math/src/math.h \
 	src/math/src/matrix.h \
 	src/modem/src/modem_common.h \
@@ -50,7 +51,7 @@ INCLUDE_HEADERS = \
 	src/sequence/src/sequence.h \
 	src/utility/src/utility.h
 
-LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) \
+LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) $(LIBS_DOTPROD) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_OPTIM) \
 	   $(LIBS_RANDOM) $(LIBS_SEQUENCE) $(LIBS_UTILITY)
@@ -120,6 +121,9 @@ $(LIBS_ANN) : %.o : src/ann/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_BUFFER) : %.o : src/buffer/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(LIBS_DOTPROD) : %.o : src/dotprod/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_FEC) : %.o : src/fec/src/%.c

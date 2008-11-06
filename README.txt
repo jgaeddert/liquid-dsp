@@ -8,6 +8,7 @@ Modules:
     agc: automatic gain control
     ann: artificial neural networks
     buffer: internal buffering, circular/static
+    dotprod: dot products (real, complex)
     fec: forward error correction (basic), checksum, etc.
     fft: fast Fourier transform (basic), simple implementation
     filters: fir, iir, polyphase, design, remez, etc.

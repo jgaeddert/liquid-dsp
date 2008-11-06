@@ -2,9 +2,10 @@
 // Generic dot product
 //
 
-//#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "dotprod.h"
 
 // basic dot product
 

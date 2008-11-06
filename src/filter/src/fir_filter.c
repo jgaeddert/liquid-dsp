@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "fir_filter.h"
-#include "../../math/src/dotprod.h"
+#include "../../dotprod/src/dotprod.h"
 
 fir_filter fir_filter_create(float * _h, unsigned int _n)
 {
