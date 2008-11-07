@@ -274,7 +274,7 @@ void print_benchmark_results(bench_t* _b)
         rate_format /= 1e3;
         rate_units = "k ";
     }
-    printf("    %u:\t%30s: %8d trials in %7.2f %s (%8.3f %strials/s)\n",
+    printf("    %u:\t%22s: %8d trials in %7.2f %2s (%8.3f %strials/s)\n",
         _b->id, _b->name, _b->num_trials, extime_format, extime_units, rate_format, rate_units);
 }
 
