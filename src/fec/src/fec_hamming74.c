@@ -11,6 +11,9 @@
 #define HAMMING74_H1    0x33
 #define HAMMING74_H2    0x0f
 
+#define fec_hamming74_decode_symbol(_s) \
+    (((0x10 & _s) >> 1) | ((0x07 & _s) >> 0))
+
 static unsigned char hamming74_enc[] = {
     0x00,   0x69,   0x2a,   0x43,
     0x4c,   0x25,   0x66,   0x0f,
@@ -45,7 +48,7 @@ void fec_hamming74_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsign
 unsigned int
 fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec)
 {
-    unsigned int i, j=0, num_errors=0;
+    unsigned int i, num_errors=0;
     unsigned char r0, r1, z0, z1, s0, s1;
     for (i=0; i<_msg_len; i++) {
         r0 = _msg_enc[2*i+0];
@@ -74,15 +77,13 @@ fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned ch
         //printf("  decoded symbols[%u]   : 0x%.1x%.1x\n", i, s0, s1);
 
         _msg_dec[i] = (s0 << 4) | s1;
-
-        j += 2;
     }
     return num_errors;
 }
 
 // internal
 
-#define bdotprod(x,y) (((c_ones[(x)&(y)]&0xff) % 2) & 0x01)
+#define bdotprod(x,y) ((c_ones[(x)&(y)]&0xff) % 2)
 unsigned char fec_hamming74_compute_syndrome(unsigned char _r)
 {
     return
@@ -91,7 +92,3 @@ unsigned char fec_hamming74_compute_syndrome(unsigned char _r)
         (bdotprod(_r,HAMMING74_H2) << 2);
 }
 
-unsigned char fec_hamming74_decode_symbol(unsigned char _s)
-{
-    return ((0x10 & _s) >> 1) | ((0x07 & _s) >> 0);
-}

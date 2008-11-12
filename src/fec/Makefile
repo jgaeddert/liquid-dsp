@@ -34,4 +34,4 @@ $(TESTS) : %_test : src/main_%.c $(OBJS) $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TESTS)
+	rm -f $(OBJS) $(TESTS) $(DEPS)
