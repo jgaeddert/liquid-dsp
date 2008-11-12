@@ -21,12 +21,12 @@ int main() {
 
     printf("original message:         \t");
     for (i=0; i<n; i++)
-        printf("%X ", (unsigned int) (data[i]));
+        printf("%.2x ", (unsigned int) (data[i]));
     printf("\n");
 
     printf("encoded message:          \t");
     for (i=0; i<2*n; i++)
-        printf("%X ", (unsigned int) (msg_enc[i]));
+        printf("%.2x ", (unsigned int) (msg_enc[i]));
     printf("\n");
 
     // corrupt encoded message
@@ -41,7 +41,7 @@ int main() {
 
     printf("corrupted message:        \t");
     for (i=0; i<2*n; i++)
-        printf("%X ", (unsigned int) (msg_enc[i]));
+        printf("%.2x ", (unsigned int) (msg_enc[i]));
     printf("\n");
 
     // decode message
@@ -50,7 +50,7 @@ int main() {
 
     printf("decoded message:          \t");
     for (i=0; i<n; i++)
-        printf("%X ", (unsigned int) (msg_dec[i]));
+        printf("%.2x ", (unsigned int) (msg_dec[i]));
     printf("\n");
 
     // count symbol errors

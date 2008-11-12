@@ -1,5 +1,5 @@
 //
-// 1/2-rate (8,4) Hamming code
+// 1/2-rate (7,4) Hamming code
 //
 
 #include <stdio.h>
@@ -19,14 +19,14 @@ static unsigned char hamming74_enc[] = {
 };
 
 static unsigned char hamming74_bflip[] = {
-    0x00,   // 0
+    0x00,   // 0 (not used)
     0x40,   // 1
-    0x20,   // 
-    0x10,   // 
-    0x08,   // 
-    0x04,   // 
-    0x02,   // 
-    0x01,   // 
+    0x20,   // 2
+    0x10,   // 3
+    0x08,   // 4
+    0x04,   // 5
+    0x02,   // 6
+    0x01,   // 7
 };
 
 void fec_hamming74_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsigned char *_msg_enc)
@@ -51,31 +51,33 @@ fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned ch
         r0 = _msg_enc[2*i+0];
         r1 = _msg_enc[2*i+1];
 
-        printf("%u :\n", i);
+        //printf("%u :\n", i);
 
         // compute syndromes
         z0 = fec_hamming74_compute_syndrome(r0);
         z1 = fec_hamming74_compute_syndrome(r1);
 
-        //if (z0 || z0)
-        printf("  syndrome[%u]          : %d, %d\n", i, (int)z0, (int)z1);
-        printf("  input symbols[%u]     : 0x%.2x, 0x%.2x\n", i, r0, r1);
+        //printf("  syndrome[%u]          : %d, %d\n", i, (int)z0, (int)z1);
+        //printf("  input symbols[%u]     : 0x%.2x, 0x%.2x\n", i, r0, r1);
 
         if (z0) r0 ^= hamming74_bflip[z0];
         if (z1) r1 ^= hamming74_bflip[z1];
 
-        printf("  corrected symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
+        num_errors += (z0) ? 1 : 0;
+        num_errors += (z1) ? 1 : 0;
+
+        //printf("  corrected symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
 
         s0 = fec_hamming74_decode_symbol(r0);
         s1 = fec_hamming74_decode_symbol(r1);
 
-        printf("  decoded symbols[%u]   : 0x%.1x%.1x\n", i, s0, s1);
+        //printf("  decoded symbols[%u]   : 0x%.1x%.1x\n", i, s0, s1);
 
         _msg_dec[i] = (s0 << 4) | s1;
 
         j += 2;
     }
-    return 0;
+    return num_errors;
 }
 
 // internal
@@ -83,7 +85,6 @@ fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned ch
 #define bdotprod(x,y) (((c_ones[(x)&(y)]&0xff) % 2) & 0x01)
 unsigned char fec_hamming74_compute_syndrome(unsigned char _r)
 {
-    printf("  r : 0x%.2X\n", (int)_r);
     return
         (bdotprod(_r,HAMMING74_H0) << 0) |
         (bdotprod(_r,HAMMING74_H1) << 1) |
