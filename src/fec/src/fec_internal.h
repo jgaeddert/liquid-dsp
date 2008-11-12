@@ -18,4 +18,16 @@ extern unsigned char crc32_tab[256];
 unsigned char reverse_byte(unsigned char _x);
 unsigned int reverse_uint32(unsigned int _x);
 
+// 
+// Hamming(8,4)
+//
+unsigned char fec_hamming84_compute_syndrome(unsigned char _r);
+unsigned char fec_hamming84_decode_symbol(unsigned char _r);
+
+// 
+// Hamming(7,4)
+//
+unsigned char fec_hamming74_compute_syndrome(unsigned char _r);
+unsigned char fec_hamming74_decode_symbol(unsigned char _r);
+
 #endif
