@@ -3,9 +3,9 @@
 #
 
 OBJS = fbuffer.o cfbuffer.o uibuffer.o metadata.o port.o
-TESTS = metadata_test fbuffer_test cfbuffer_test
+EXAMPLES = metadata_example fbuffer_example cfbuffer_example
 
-all: $(TESTS)
+all: $(EXAMPLES)
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -18,10 +18,10 @@ $(OBJS) : %.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # 
-# Tests: src/main_mytest.c -> mytest_test
+# Tests: src/main_mytest.c -> mytest_example
 #
-$(TESTS) : %_test : src/main_%.c $(OBJS)
+$(EXAMPLES) : %_example : examples/%_example.c $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TESTS)
+	rm -f $(OBJS) $(EXAMPLES)

@@ -6,7 +6,7 @@
 #include <complex.h>
 #define J _Complex_I
 
-#include "buffer.h"
+#include "../src/buffer.h"
 
 
 int main() {

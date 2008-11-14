@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "metadata.h"
+#include "../src/metadata.h"
 
 int main() {
 
