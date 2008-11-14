@@ -188,11 +188,11 @@ void execute_package(package _p, bool _verbose)
 void print_autotest_results(autotest _test)
 {
     if (_test->pass)
-        printf("\tPASS:");
+        printf("    PASS    ");
     else
-        printf("\tFAIL:");
+        printf("  <<FAIL>>  ");
 
-    printf("\tpassed\t%lu\t/ %lu\t checks (%5.1f%%)\t%s\n",
+    printf("passed %4lu / %4lu checks (%5.1f%%) : %s\n",
             _test->num_passed,
             _test->num_checks,
             _test->percent_passed,
