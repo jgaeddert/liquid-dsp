@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include "fec.h"
 
+extern unsigned char c_ones_mod2[256];
+
 // checksum
 
 //

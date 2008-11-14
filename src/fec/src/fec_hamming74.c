@@ -83,7 +83,7 @@ fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned ch
 
 // internal
 
-#define bdotprod(x,y) ((c_ones[(x)&(y)]&0xff) % 2)
+#define bdotprod(x,y) c_ones_mod2[(x)&(y)]
 unsigned char fec_hamming74_compute_syndrome(unsigned char _r)
 {
     return
