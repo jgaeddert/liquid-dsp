@@ -191,7 +191,7 @@ bench: benchmark
 	./benchmark
 
 bench-clean:
-	rm -f bench_include.h benchmark
+	rm -f benchmark_include.h benchmark
 
 #
 # Examples
