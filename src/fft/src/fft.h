@@ -15,5 +15,7 @@ fftplan fft_create_plan(unsigned int _n, float complex * _x, float complex * _y,
 void fft_destroy_plan(fftplan _p);
 void fft_execute(fftplan _p);
 
+void fft_shift(float complex *_x, unsigned int _n);
+
 #endif // __LIQUID_FFT_H__
 

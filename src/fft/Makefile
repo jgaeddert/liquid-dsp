@@ -8,7 +8,7 @@ all: $(TESTS)
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = fft_create_plan.o fft_execute.o
+OBJS = fft_create_plan.o fft_execute.o fft_shift.o
 
 $(TESTS) : %_test : src/main_%.c $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $< -o $@

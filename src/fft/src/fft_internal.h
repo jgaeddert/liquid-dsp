@@ -46,5 +46,11 @@ void fft_execute_radix2(fftplan _p);
 // miscellaneous functions
 unsigned int reverse_index(unsigned int _i, unsigned int _n);
 
+//
+// fft_shift
+//
+//void fft_shift_odd(float complex *_x, unsigned int _n);
+//void fft_shift_even(float complex *_x, unsigned int _n);
+
 #endif // __LIQUID_FFT_INTERNAL_H__
 
