@@ -28,9 +28,6 @@ void interleaver_interleave(interleaver _i, unsigned char * _x, unsigned char * 
 
 void interleaver_deinterleave(interleaver _i, unsigned char * _y, unsigned char * _x);
 
-void interleaver_circshift_left(unsigned char *_x, unsigned int _n, unsigned int _s);
-void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned int _s);
-void interleaver_compute_bit_permutation(interleaver _q, unsigned int *_p);
 void interleaver_debug_print(interleaver _i);
 
 #endif // __LIQUID_INTERLEAVER_H__

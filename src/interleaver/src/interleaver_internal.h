@@ -11,13 +11,12 @@ struct interleaver_s {
     unsigned int * p;   // byte permutation
     unsigned int len;   // number of bytes
 
-    // sequence
+    unsigned char * t;  // temporary buffer
 };
 
 //void interleaver_circshift_left(unsigned char *_x, unsigned int _n, unsigned int _s);
 //void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned int _s);
-//void interleaver_compute_bit_permutation(interleaver _q, unsigned int *_p);
-//void interleaver_debug_print(interleaver _i);
+void interleaver_compute_bit_permutation(interleaver _q, unsigned int *_p);
 
 
 // 

@@ -15,6 +15,7 @@ interleaver interleaver_create(unsigned int _n, interleaver_type _type)
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
     q->len = _n;
     q->p = (unsigned int *) malloc((q->len)*sizeof(unsigned int));
+    q->t = (unsigned char*) malloc((q->len)*sizeof(unsigned char));
 
     if (_n < 3) _type = INT_BLOCK;
 
@@ -37,6 +38,7 @@ interleaver interleaver_create(unsigned int _n, interleaver_type _type)
 void interleaver_destroy(interleaver _q)
 {
     free(_q->p);
+    free(_q->t);
     free(_q);
 }
 

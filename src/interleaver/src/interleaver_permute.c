@@ -85,7 +85,6 @@ void interleaver_circshift_R4(unsigned char *_x, unsigned int _n)
     _x[0] = tmp | tail;
 }
 
-
 #if 0
 #define HEAD_TO_TAIL(x,m,mask) (((x)&(mask))>>m) // mask and shift right (head to tail)
 #define TAIL_TO_HEAD(x,m,mask) (((x)&(mask))<<m) // mask and shift left (tail to head)
