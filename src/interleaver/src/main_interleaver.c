@@ -44,11 +44,17 @@ int main() {
     interleaver_deinterleave(q,y,z);
     //interleaver_print(q);
 
+    unsigned int num_errors=0;
     printf("x\ty\tz\n");
-    for (i=0; i<n; i++)
+    for (i=0; i<n; i++) {
         printf("%u\t%u\t%u\n", (unsigned int) (x[i]), (unsigned int) (y[i]), (unsigned int) (z[i]));
         //printf("y[%u] = %u\n", i, (unsigned int) (y[i]));
         //printf("y[%u] = %#0x\n", i, (unsigned int) (y[i]));
+        num_errors += (x[i]==z[i]) ? 0 : 1;
+    }
+    printf("errors: %u / %u\n", num_errors, n);
+
+    interleaver_destroy(q);
 
     /*
 

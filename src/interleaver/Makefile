@@ -8,7 +8,7 @@ TESTS = interleaver_test
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = interleaver.o interleaver_create.o
+OBJS = interleaver.o interleaver_create.o interleaver_permute.o
 HEADERS = src/interleaver.h src/interleaver_internal.h
 all: $(TESTS)
 
