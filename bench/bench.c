@@ -18,8 +18,6 @@ typedef void(*benchmark_function_t) (
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations);
-//  int argc
-//  char * argv[]
 
 // define bench_t
 typedef struct {
@@ -60,6 +58,7 @@ void print_package_results(package_t* _package);
 double calculate_execution_time(struct rusage, struct rusage);
 
 unsigned long int num_trials = 1<<12;
+float runtime=50e-3f;
 
 // main function
 int main(int argc, char *argv[])
@@ -76,7 +75,7 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"en:b:p:lLhvq")) != EOF){
+    while((d = getopt(argc,argv,"en:b:p:t:lLhvq")) != EOF){
         switch (d) {
         case 'e':
             estimate_cpu_speed();
@@ -102,6 +101,13 @@ int main(int argc, char *argv[])
             } else {
                 mode = RUN_SINGLE_PACKAGE;
             }
+            break;
+        case 't':
+            runtime = atof(optarg)*1e-3;
+            if (runtime < 1e-3f)    runtime = 1e-3f;
+            else if (runtime > 2.f) runtime = 2.0f;
+            printf("minimum runtime: %d ms\n", (int) roundf(runtime*1e3));
+
             break;
         case 'l':
             // list only packages and exit
@@ -138,8 +144,8 @@ int main(int argc, char *argv[])
         // do nothing
     }
 
-    if (autoscale)
-        estimate_cpu_speed();
+    //if (autoscale)
+    //    estimate_cpu_speed();
 
     switch (mode) {
     case RUN_ALL:
@@ -172,6 +178,7 @@ void print_help()
     printf("  -n<num_trials>\n");
     printf("  -p<package_index>\n");
     printf("  -b<benchmark_index>\n");
+    printf("  -t<time> minimum execution time (ms)\n");
     printf("  -l : lists available packages\n");
     printf("  -L : lists all available benchmarks\n");
     printf("  -v : verbose\n");
@@ -218,11 +225,20 @@ void estimate_cpu_speed(void)
 
 void execute_benchmark(bench_t* _benchmark, bool _verbose)
 {
-    unsigned long int n = num_trials;
+    unsigned long int base_trials, n;
     struct rusage start, finish;
 
-    _benchmark->api(&start, &finish, &n);
-    _benchmark->extime = calculate_execution_time(start, finish);
+    // continue increasing number of trials until minimum
+    // runtime has been achieved
+    base_trials = 256;
+    do {
+        base_trials += base_trials/2;
+        n = base_trials;
+        _benchmark->api(&start, &finish, &n);
+        _benchmark->extime = calculate_execution_time(start, finish);
+        //printf("        extime : %f / %lu\n", _benchmark->extime, n);
+    } while (_benchmark->extime < runtime);
+
     _benchmark->num_trials = n;
     _benchmark->rate = (float)(_benchmark->num_trials) / _benchmark->extime;
     if (_verbose)
