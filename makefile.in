@@ -89,7 +89,8 @@ BENCHMARKS = \
 	src/nco/bench/nco_benchmark.h \
 	src/random/bench/random_benchmark.h
 
-CFLAGS = -g -O2 -Wall @ARCH_OPTION@
+CFLAGS = -g -O2 -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+BENCH_FLAGS = -g -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
 LDFLAGS = -lm
 
 SHARED_LIB = @SH_LIB@
@@ -115,6 +116,8 @@ libliquid.dylib: $(LIBS)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^
 
 # linux, et al
+# TODO change -lc to -lc_p if using profiler
+# 	   (see http://www.cs.utah.edu/dept/old/texinfo/as/gprof.html)
 libliquid.so: $(LIBS)
 	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive -lc
 
@@ -186,7 +189,7 @@ benchmark_include.h: $(BENCHMARKS) bench/benchmarkgen.py
 
 # ignore optimization flags
 benchmark: benchmark_include.h bench/bench.c $(LIBS)
-	$(CC) -Wall $(LIBS) $(LDFLAGS) bench/bench.c -o benchmark
+	$(CC) $(BENCH_FLAGS) $(LIBS) $(LDFLAGS) bench/bench.c -o benchmark
 
 bench: benchmark
 	./benchmark

@@ -19,6 +19,19 @@ AH_BOTTOM([
 #endif // __LIQUID_CONFIG_H__
 ])
 
+dnl Configure options
+
+AC_ARG_ENABLE(debug,
+    AS_HELP_STRING([--enable-debug],[debug]),
+    [DEBUG_OPTION="-DDEBUG"],
+    [DEBUG_OPTION=""]
+)
+
+AC_ARG_ENABLE(profile,
+    AS_HELP_STRING([--enable-profile],[profile]),
+    [PROFILE_OPTION="-pg -DPROF"],
+    [PROFILE_OPTION=""],
+)
 
 dnl Check for necessary programs
 
@@ -63,5 +76,9 @@ esac
 AC_SUBST(SH_LIB)
 AC_SUBST(REBIND)
 AC_SUBST(ARCH_OPTION)
+
+AC_SUBST(DEBUG_OPTION)
+AC_SUBST(PROFILE_OPTION)
+AC_SUBST(PROFILE_TARGET)
 
 AC_OUTPUT(makefile)

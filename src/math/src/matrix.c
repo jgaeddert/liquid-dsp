@@ -7,8 +7,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define DEBUG 0
-
 struct X(_s) {
     unsigned int M; // number of rows
     unsigned int N; // number of columns
@@ -122,19 +120,13 @@ void X(_multiply)(X() _x, X() _y, X() _z)
         for (n=0; n<_z->N; n++) {
             // z(i,j) = dotprod( x(i,:), y(:,j) )
             T sum=0.0f;
-#if DEBUG
+#ifdef DEBUG
                 printf("z(%u,%u) = ", m, n);
 #endif
             for (i=0; i<_z->M; i++) {
                 sum += matrix_fast_access(_x,m,i) *
                        matrix_fast_access(_y,i,n);
-#if DEBUG
-                printf("(%4.2f*%4.2f)+",matrix_fast_access(_x,m,i),matrix_fast_access(_y,i,n));
-#endif
             }
-#if DEBUG
-            printf(" = %4.2f\n",sum);
-#endif
             matrix_fast_access(_z,m,n) = sum;
         }
     }
