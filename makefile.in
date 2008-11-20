@@ -116,10 +116,9 @@ libliquid.dylib: $(LIBS)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^
 
 # linux, et al
-# TODO change -lc to -lc_p if using profiler
-# 	   (see http://www.cs.utah.edu/dept/old/texinfo/as/gprof.html)
+#   CLIB: -lc_p (--enable-profile), -lc (--disable-profile)
 libliquid.so: $(LIBS)
-	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive -lc
+	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive @CLIB@
 
 $(LIBS_AGC) : %.o : src/agc/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
