@@ -30,6 +30,7 @@
 #include "random.h"
 #include "rrcos.h"
 #include "scramble.h"
+#include "utility.h"
 #include "window.h"
 
 #endif // __LIQUID_H__
