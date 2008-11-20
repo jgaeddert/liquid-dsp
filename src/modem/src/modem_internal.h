@@ -92,7 +92,11 @@ struct modem_s {
 
     float d_phi;
 
+    // modulate function pointer
+    void (*modulate_func)(modem _mod, unsigned int symbol_in, float complex *y);
 
+    // demodulate function pointer
+    void (*demodulate_func)(modem _demod, float complex x, unsigned int *symbol_out);
 };
 /**
   Here is a full modem example:

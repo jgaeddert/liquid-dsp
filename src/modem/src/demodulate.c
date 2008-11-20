@@ -12,35 +12,7 @@ void demodulate(
     float complex x,
     unsigned int *symbol_out)
 {
-    switch (_demod->scheme) {
-    case MOD_ASK:
-        demodulate_ask(_demod, x, symbol_out);
-        return;
-    case MOD_QAM:
-        demodulate_qam(_demod, x, symbol_out);
-        return;
-    case MOD_PSK:
-        demodulate_psk(_demod, x, symbol_out);
-        return;
-    case MOD_BPSK:
-        demodulate_bpsk(_demod, x, symbol_out);
-        return;
-    case MOD_QPSK:
-        demodulate_qpsk(_demod, x, symbol_out);
-        return;
-    case MOD_DPSK:
-        demodulate_dpsk(_demod, x, symbol_out);
-        return;
-    case MOD_ARB:
-    case MOD_ARB_MIRRORED:
-    case MOD_ARB_ROTATED:
-        demodulate_arb(_demod, x, symbol_out);
-        return;
-    default:
-        perror("ERROR: demodulate, unknown/unsupported demodulation scheme\n");
-        break;
-    }
-
+    _demod->demodulate_func(_demod, x, symbol_out);
 }
 
 void demodulate_ask(

@@ -11,34 +11,7 @@ void modulate(
     unsigned int symbol_in,
     float complex *y)
 {
-    switch (_mod->scheme) {
-    case MOD_ASK:
-        modulate_ask(_mod, symbol_in, y);
-        break;
-    case MOD_QAM:
-        modulate_qam(_mod, symbol_in, y);
-        break;
-    case MOD_PSK:
-        modulate_psk(_mod, symbol_in, y);
-        break;
-    case MOD_BPSK:
-        modulate_bpsk(_mod, symbol_in, y);
-        break;
-    case MOD_QPSK:
-        modulate_qpsk(_mod, symbol_in, y);
-        break;
-    case MOD_DPSK:
-        modulate_dpsk(_mod, symbol_in, y);
-        break;
-    case MOD_ARB:
-    case MOD_ARB_MIRRORED:
-    case MOD_ARB_ROTATED:
-        modulate_arb(_mod, symbol_in, y);
-        break;
-    default:
-        perror("ERROR: modulate, unknown/unsupported modulation scheme\n");
-        break;
-    }
+    _mod->modulate_func(_mod, symbol_in, y);
 }
 
 void modulate_ask(
