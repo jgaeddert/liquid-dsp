@@ -8,7 +8,7 @@
 (   struct rusage *_start, \
     struct rusage *_finish, \
     unsigned long int *_num_iterations) \
-{ modem_modulate_bench(_start, _finish, _num_iterations, MS, BPS); }
+{ modem_demodulate_bench(_start, _finish, _num_iterations, MS, BPS); }
 
 // Helper function to keep code base small
 void modem_demodulate_bench(
