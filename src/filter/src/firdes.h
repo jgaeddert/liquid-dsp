@@ -30,4 +30,10 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h);
 //  _h      : output coefficient buffer
 void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, float *_h);
 
+// Design optimum FIR root-nyquist filter
+//  _n      : filter length
+//  _k      : samples/symbol (_k > 1)
+//  _slsl   : sidelobe suppression level
+void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h);
+
 #endif // __LIQUID_FIRDES_H__

@@ -104,3 +104,21 @@ void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, floa
     }
 }
 
+// Design optimum FIR root-nyquist filter
+//  _n      : filter length
+//  _k      : samples/symbol
+//  _beta   : excess bandwidth factor
+void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h)
+{
+    // validate inputs:
+    //    _k >= 2
+    //    _slsl < 0
+
+    // begin with prototype
+    float fc = 1/((float)_k);
+    //fir_design_windowed_sinc(_n, fc, _slsl, _h);
+
+    // begin optimization:
+}
+
+
