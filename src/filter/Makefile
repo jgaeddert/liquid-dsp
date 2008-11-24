@@ -5,13 +5,13 @@
 TESTS = fir_filter_test
 
 CC = gcc
-CFLAGS = -Wall -std=c99 -O3
+CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = decim.o decim2.o decim_create.o decim_execute.o \
 	   filter_common.o fir_filter.o firdes.o \
-	   nyquist.o rrcos.o window.o
+	   nyquist.o rrcos.o window.o lf2.o
 HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \
-		  src/fir_filter.h src/firdes.h \
+		  src/fir_filter.h src/firdes.h src/filter.h \
 		  src/polyphase.h src/rrcos.h src/window.h
 
 all: $(TESTS)

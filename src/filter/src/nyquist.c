@@ -3,6 +3,8 @@
 //
 
 #include <string.h>
+#include <stdio.h>
+#include <math.h>
 
 // FIR matched filter root mean-square inter-symbol interference
 float fir_mf_rms_isi(unsigned int _n, unsigned int _k, float *_h)
@@ -19,7 +21,7 @@ float fir_mf_rms_isi(unsigned int _n, unsigned int _k, float *_h)
         printf("n is odd\n");
 
     // compute auto-correlation
-    vect_rxxf(_h, _n, hxx);
+    //vect_rxxf(_h, _n, hxx);
 
     unsigned int i, p=0, xxx=0;
     for (i=xxx; i<hxx_len; i+= _k) {

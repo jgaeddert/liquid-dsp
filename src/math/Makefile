@@ -7,7 +7,7 @@ TESTS = matrix_test cfmatrix_test
 all: $(TESTS)
 
 CC = gcc
-CFLAGS = -Wall -std=c99 -O3
+CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = math.o fmatrix.o cfmatrix.o
 HEADERS = src/math.h src/matrix.h src/matrix_internal.h
