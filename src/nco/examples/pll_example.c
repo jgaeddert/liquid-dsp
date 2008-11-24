@@ -3,20 +3,22 @@
 //
 
 #include <stdio.h>
+#include <time.h>
 
 #include "../src/nco.h"
-
 #include "../../random/src/random.h" // noise generator
 
+// DEBUG: print every output line in octave-friendly format
 //#define DEBUG
 
 int main() {
+    srand( time(NULL) );
     // parameters
-    float phase_offset = M_PI/4; //0.1f;
-    float frequency_offset = M_PI/8; //0.0f;
+    float phase_offset = M_PI/4;
+    float frequency_offset = M_PI/8;
     float SNRdB = 40.0f;
-    float pll_bandwidth = 1e-1f;
-    unsigned int n=100;     // number of iterations
+    float pll_bandwidth = 1e-2f;
+    unsigned int n=250;     // number of iterations
     unsigned int d=10;      // print every "d" lines
 
     // objects
@@ -31,6 +33,11 @@ int main() {
 
     float noise_power = powf(10.0f, -SNRdB/20.0f);
 
+    // print parameters
+    printf("PLL example :\n");
+    printf("frequency offset: %6.3f, phase offset: %6.3f, SNR: %6.2fdB, pll b/w: %6.3f\n",
+            frequency_offset, phase_offset, SNRdB, pll_bandwidth);
+
     // run loop
     unsigned int i;
     float phase_error;
@@ -43,7 +50,7 @@ int main() {
         // add complex white noise
         r += crandnf() * noise_power;
 
-        // imperfect error estimation
+        // error estimation
         phase_error = cargf(r*conjf(v));
 
         // perfect error estimation

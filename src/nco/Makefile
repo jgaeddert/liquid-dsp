@@ -3,8 +3,7 @@
 #
 
 
-#EXAMPLES = nco_test
-EXAMPLES = pll_example
+EXAMPLES = nco_example pll_example
 
 all: $(EXAMPLES)
 

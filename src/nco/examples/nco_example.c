@@ -7,7 +7,7 @@
 //   $ ./ncotest
 
 #include <stdio.h>
-#include "nco.h"
+#include "../src/nco.h"
 
 int main() {
     struct nco_s nco_struct;
