@@ -24,6 +24,22 @@ void randnf(float * i, float * q)
     *q = x * cosf(2*M_PI*u2);
 }
 
+// Complex Gauss
+float complex crandnf()
+{
+    // generate two uniform random numbers
+    float u1, u2;
+
+    // ensure u1 does not equal zero
+    do {
+        u1 = randf();
+    } while (u1 == 0.0f);
+
+    u2 = randf();
+
+    return sqrtf(-2*logf(u1)) * cexpf(2*M_PI*u2);
+}
+
 // Weibull
 float rand_weibullf(float _alpha, float _beta, float _gamma)
 {
