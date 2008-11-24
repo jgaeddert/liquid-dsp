@@ -75,5 +75,17 @@ void nco_mix_block_down(
     complex float *_y,
     unsigned int _N);
 
-#endif /* __LIQUID_NCO_H__ */
+//
+// Phase-locked loop
+//
+
+typedef struct pll_s * pll;
+pll pll_create(void);
+void pll_destroy(pll _p);
+void pll_print(pll _p);
+
+void pll_set_bandwidth(pll _p, float _bt);
+void pll_execute(pll _p, float complex _x, float complex *_y, float _e);
+
+#endif // __LIQUID_NCO_H__
 
