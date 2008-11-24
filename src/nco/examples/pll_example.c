@@ -8,13 +8,15 @@
 
 #include "../../random/src/random.h" // noise generator
 
+//#define DEBUG
+
 int main() {
     // parameters
-    float phase_offset = 0.1f;
-    float frequency_offset = 0.0f;
+    float phase_offset = M_PI/4; //0.1f;
+    float frequency_offset = M_PI/8; //0.0f;
     float SNRdB = 40.0f;
-    float pll_bandwidth = 1e-4f;
-    unsigned int n=200;     // number of iterations
+    float pll_bandwidth = 1e-1f;
+    unsigned int n=100;     // number of iterations
     unsigned int d=10;      // print every "d" lines
 
     // objects
@@ -39,14 +41,18 @@ int main() {
         v = nco_cexpf(nco_rx);
 
         // add complex white noise
-        //r += crandnf() * noise_power;
-
-        // perfect error estimation
-        phase_error = nco_tx->theta - nco_rx->theta;
+        r += crandnf() * noise_power;
 
         // imperfect error estimation
-        //phase_error = cargf(r*v);
+        phase_error = cargf(r*conjf(v));
 
+        // perfect error estimation
+        //phase_error = nco_tx->theta - nco_rx->theta;
+
+#ifdef DEBUG
+        // print every line in a format that octave can read
+        printf("phi(%u) = %10.6f;\n", i+1, phase_error);
+#else
         if ((i+1)%d == 0 || i==n-1) {
             printf("  %4u: e_hat : %6.3f, freq error : %6.3f, phase error : %6.3f\n",
                     i+1,                                // iteration
@@ -54,6 +60,7 @@ int main() {
                     nco_tx->d_theta - nco_rx->d_theta,  // true phase error
                     nco_tx->theta - nco_rx->theta);     // true frequency error
         }
+#endif
 
         // update NCO objects
         nco_step(nco_tx);
