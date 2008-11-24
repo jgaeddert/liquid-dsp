@@ -5,8 +5,6 @@
 #ifndef __LIQUID_NCO_H__
 #define __LIQUID_NCO_H__
 
-//#include <stdio.h>
-//#include <stdlib.h>
 #include <math.h>
 #include <complex.h>
 
@@ -47,6 +45,7 @@ static inline void nco_sincos(nco _nco, float* _s, float* _c) {
     *_c = cosf(_nco->theta);
 }
 
+#define nco_cexpf(_nco) (cexpf(_Complex_I*(_nco->theta)))
 
 // mixing functions
 
@@ -85,7 +84,8 @@ void pll_destroy(pll _p);
 void pll_print(pll _p);
 
 void pll_set_bandwidth(pll _p, float _bt);
-void pll_execute(pll _p, float complex _x, float complex *_y, float _e);
+//void pll_execute(pll _p, float complex _x, float complex *_y, float _e);
+void pll_step(pll _p, nco _nco, float _e);
 
 #endif // __LIQUID_NCO_H__
 
