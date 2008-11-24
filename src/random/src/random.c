@@ -30,6 +30,7 @@ float complex crandnf()
     // generate two uniform random numbers
     float u1, u2;
 
+#if 0
     // ensure u1 does not equal zero
     do {
         u1 = randf();
@@ -38,6 +39,11 @@ float complex crandnf()
     u2 = randf();
 
     return sqrtf(-2*logf(u1)) * cexpf(2*M_PI*u2);
+#else
+
+    randnf(&u1, &u2);
+    return u1 + _Complex_I*u2;
+#endif
 }
 
 // Weibull
