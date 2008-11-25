@@ -19,10 +19,20 @@ void lf2_print(lf2 _f);
 void lf2_init(lf2 _f);
 
 // set bandwidth-time product
+void lf2_set_damping_factor(lf2 _f, float _xi);
+
+// set bandwidth-time product
 void lf2_set_bandwidth(lf2 _f, float _bt);
 
 // push input value and compute output
 void lf2_advance(lf2 _f, float _v, float *_v_hat);
+
+// 
+// internal
+//
+
+// generate filter coefficients
+void lf2_generate_filter(lf2 _f);
 
 #endif // __LIQUID_FILTER_H__
 
