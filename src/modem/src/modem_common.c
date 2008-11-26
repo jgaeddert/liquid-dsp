@@ -3,6 +3,7 @@
 //
 
 #include "modem_common.h"
+#include "../../utility/src/utility.h"
 
 const char* modulation_scheme_str[10] = {
     "unknown",
@@ -45,8 +46,7 @@ unsigned int count_bit_errors(
     unsigned int _s1,
     unsigned int _s2)
 {
-    //return count_ones(_s1^_s2);
-    return 0;
+    return count_ones(_s1^_s2);
 }
 
 

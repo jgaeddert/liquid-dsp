@@ -2,24 +2,27 @@
 # Makefile for modem module
 #
 
-all: modem_test autotest
+EXAMPLES = modem_example
+
+all: $(EXAMPLES)
 
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = modem.o modem_create.o modem_common.o modulate.o demodulate.o
 
+UTILITY_DEPS = count_bits.o
+DEPS = $(UTILITY_DEPS)
+
+$(UTILITY_DEPS) :
+	cd ../utility ; make $@
+	cp ../utility/$@ .
+
 $(OBJS) : %.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-modem_test: $(OBJS) src/main_modem.c
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) src/main_modem.c -o $@
-
-autotest: $(OBJS) tests/autotest.c
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) tests/autotest.c -o $@
-
-check: autotest
-	./autotest
+$(EXAMPLES) : %_example : examples/%_example.c $(OBJS) $(DEPS)
+	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
 	rm -f *.o *_test autotest

@@ -8,7 +8,7 @@
 //   $ ./modemtest
 
 #include <stdio.h>
-#include "modem.h"
+#include "../src/modem.h"
 
 int main() {
     // create mod/demod objects
@@ -26,7 +26,7 @@ int main() {
     for (i=0; i<num_symbols; i++) {
         modulate(mod, i, &x);
         demodulate(demod, x, &s);
-        num_errors += ( i != s );
+        num_errors += count_bit_errors(i,s);
     }
     printf("num errors: %u\n", num_errors);
 
