@@ -14,13 +14,14 @@ int main() {
     nco p = &nco_struct;
     nco_init(p);
     nco_set_phase(p, 0.0f);
-    nco_set_frequency(p, M_PI/4);
+    nco_set_frequency(p, M_PI/10);
 
     unsigned int i;
     float s, c;
-    for (i=0; i<8; i++) {
+    for (i=0; i<11; i++) {
         nco_sincos(p, &s, &c);
-        printf("  exp(j*%8.5f) = %8.5f + j %8.5f\n", p->theta, c, s);
+        printf("  %3u: exp(j*%8.5f) = %8.5f + j %8.5f\n",
+                i, p->theta, c, s);
         nco_step(p);
     }
 

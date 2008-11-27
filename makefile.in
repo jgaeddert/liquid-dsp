@@ -73,6 +73,7 @@ AUTOTESTS = \
 	src/math/tests/math_autotest.h \
 	src/modem/tests/modem_autotest.h \
 	src/nco/tests/nco_autotest.h \
+	src/nco/tests/pll_autotest.h \
 	src/random/tests/random_autotest.h \
 	src/sequence/tests/msequence_autotest.h \
 	src/sequence/tests/complementary_codes_autotest.h \
