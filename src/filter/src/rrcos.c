@@ -21,7 +21,7 @@
   allocated externally.  The length of the filter is always
 
   \f[
-    h_{len} = 2 k m
+    h_{len} = 2 k m + 1
   \f]
 
   The filter coefficients themselves are derived from the following equation
@@ -87,7 +87,7 @@ void design_rrc_filter(
 
     float nf, kf, mf;
 
-    h_len = 2*k*m;
+    h_len = 2*k*m + 1;
 
     // Calculate filter coefficients
     for (n=0; n<h_len; n++) {
