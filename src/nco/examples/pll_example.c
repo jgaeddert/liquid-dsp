@@ -77,6 +77,9 @@ int main() {
     }
 #ifdef DEBUG
     fprintf(debug_file, "plot(phi);\n");
+    fprintf(debug_file, "xlabel('time [sample]');\n");
+    fprintf(debug_file, "ylabel('phase error [radians]')\n");
+    fprintf(debug_file, "grid on;\n");
     fclose(debug_file);
 #endif
 
