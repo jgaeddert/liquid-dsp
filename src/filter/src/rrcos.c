@@ -4,8 +4,9 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "rrcos.h"
+//#include "firdes.h"
 
 /** \brief Calculate square-root raised-cosine filter coefficients
 
@@ -54,32 +55,32 @@
 
   \f]
 
-  \param[in]  k         samples per symbol
-  \param[in]  m         symbol delay
-  \param[in]  beta      excess bandwidth/rolloff factor ( 0 < beta < 1 )
-  \param[in]  h         pointer to filter coefficients
+  \param[in]  _k         samples per symbol
+  \param[in]  _m         symbol delay
+  \param[in]  _beta      excess bandwidth/rolloff factor ( 0 < _beta < 1 )
+  \param[in]  _h         pointer to filter coefficients
 
  */
 
 void design_rrc_filter(
-  unsigned int k,      // samples per symbol
-  unsigned int m,      // delay
-  float beta,          // rolloff factor ( 0 < beta <= 1 )
-  float dt,
-  float * h            // pointer to filter coefficients
+  unsigned int _k,
+  unsigned int _m,
+  float _beta,
+  float _dt,
+  float * _h
 )
 {
     unsigned int h_len;
 
-    if ( k < 1 ) {
-        printf("ERROR: design_rrc_filter: k must be greater than 0\n");
-        return;
-    } else if ( m < 1 ) {
-        printf("ERROR: design_rrc_filter: m must be greater than 0\n");
-        return;
-    } else if ( (beta < 0.0f) || (beta > 1.0f) ) {
-        printf("ERROR: design_rrc_filter: beta must be in [0,1]\n");
-        return;
+    if ( _k < 1 ) {
+        printf("error: design_rrc_filter(): k must be greater than 0\n");
+        exit(0);
+    } else if ( _m < 1 ) {
+        printf("error: design_rrc_filter(): m must be greater than 0\n");
+        exit(0);
+    } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
+        printf("error: design_rrc_filter(): beta must be in [0,1]\n");
+        exit(0);
     } else;
 
     unsigned int n;
@@ -87,40 +88,40 @@ void design_rrc_filter(
 
     float nf, kf, mf;
 
-    h_len = 2*k*m + 1;
+    h_len = 2*_k*_m + 1;
 
     // Calculate filter coefficients
     for (n=0; n<h_len; n++) {
         nf = (float) n;
-        kf = (float) k;
-        mf = (float) m;
+        kf = (float) _k;
+        mf = (float) _m;
 
-        z = (nf+dt)/kf-mf;
-        t1 = cosf((1+beta)*M_PI*z);
-        t2 = sinf((1-beta)*M_PI*z);
+        z = (nf+_dt)/kf-mf;
+        t1 = cosf((1+_beta)*M_PI*z);
+        t2 = sinf((1-_beta)*M_PI*z);
 
         // Check for special condition where z equals zero
         if ( fabsf(z) < 1e-3 ) {
-            t4 = 4*beta/(M_PI*sqrtf(T)*(1-(16*beta*beta*z*z)));
-            h[n] = t4*( 1 + (1-beta)*M_PI/(4*beta) );
+            t4 = 4*_beta/(M_PI*sqrtf(T)*(1-(16*_beta*_beta*z*z)));
+            _h[n] = t4*( 1 + (1-_beta)*M_PI/(4*_beta) );
         } else {
-            t3 = 1/((4*beta*z));
+            t3 = 1/((4*_beta*z));
 
-            float g = 1-16*beta*beta*z*z;
+            float g = 1-16*_beta*_beta*z*z;
             g *= g;
 
-            // Check for special condition where 16*beta^2*z^2 equals 1
+            // Check for special condition where 16*_beta^2*z^2 equals 1
             if ( g < 1e-3 ) {
                 float g1, g2, g3, g4;
-                g1 = -(1+beta)*M_PI*sinf((1+beta)*M_PI/(4*beta));
-                g2 = cosf((1-beta)*M_PI/(4*beta))*(1-beta)*M_PI;
-                g3 = -sinf((1-beta)*M_PI/(4*beta))*4*beta;
+                g1 = -(1+_beta)*M_PI*sinf((1+_beta)*M_PI/(4*_beta));
+                g2 = cosf((1-_beta)*M_PI/(4*_beta))*(1-_beta)*M_PI;
+                g3 = -sinf((1-_beta)*M_PI/(4*_beta))*4*_beta;
                 g4 = -2*M_PI;
 
-                h[n] = (g1+g2+g3)/g4;
+                _h[n] = (g1+g2+g3)/g4;
             } else {
-                t4 = 4*beta/(M_PI*sqrtf(T)*(1-(16*beta*beta*z*z)));
-                h[n] = t4*( t1 + (t2*t3) );
+                t4 = 4*_beta/(M_PI*sqrtf(T)*(1-(16*_beta*_beta*z*z)));
+                _h[n] = t4*( t1 + (t2*t3) );
             }
         }
     }

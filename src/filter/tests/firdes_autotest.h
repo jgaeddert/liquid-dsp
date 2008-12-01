@@ -2,7 +2,6 @@
 #define __FIRDES_AUTOTEST_H__
 
 #include "../src/firdes.h"
-#include "../src/rrcos.h"
 
 void autotest_design_rrcos_filter() {
 

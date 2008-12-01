@@ -37,7 +37,6 @@ INCLUDE_HEADERS = \
 	src/filter/src/filter_common.h \
 	src/filter/src/filter.h \
 	src/filter/src/firdes.h \
-	src/filter/src/rrcos.h \
 	src/filter/src/window.h \
 	src/interleaver/src/interleaver.h \
 	src/math/src/math.h \
