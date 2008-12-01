@@ -54,4 +54,8 @@ float fir_filter_execute(fir_filter _f, float * _v)
     return fdotprod_run(_f->h, _v, _f->h_len);
 }
 
+unsigned int fir_filter_get_length(fir_filter _f)
+{
+    return _f->h_len;
+}
 
