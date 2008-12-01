@@ -29,7 +29,7 @@ lf2 lf2_create(float _bt)
     lf2 f = (lf2) malloc(sizeof(struct lf2_s));
 
     // reset internal state
-    lf2_init(f);
+    lf2_reset(f);
 
     // set bandwidth
     lf2_set_bandwidth(f, _bt);
@@ -47,13 +47,8 @@ void lf2_print(lf2 _f)
     printf("loop filter : b = %6.4e\n", _f->BT);
 }
 
-void lf2_init(lf2 _f)
+void lf2_reset(lf2 _f)
 {
-    // set default bandwidth, compute coefficients as necessary
-    _f->BT = 0.01f;
-    _f->xi = 1/sqrtf(2);
-    lf2_generate_filter(_f);
-
     // reset internal filter state variables
     _f->tmp2 = 0.0f;
     _f->q = 0.0f;

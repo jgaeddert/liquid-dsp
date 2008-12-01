@@ -66,8 +66,8 @@ lf2 lf2_create(float _bt);
 void lf2_destroy(lf2 _f);
 void lf2_print(lf2 _f);
 
-// initialize lf2 ojbect, set to default bandwidth, reset state
-void lf2_init(lf2 _f);
+// reset filter state
+void lf2_reset(lf2 _f);
 
 // set bandwidth-time product
 void lf2_set_damping_factor(lf2 _f, float _xi);
