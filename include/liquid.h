@@ -1,13 +1,14 @@
 //
-//
+// Liquid:
+// digital signal processing for software-defined radio
 //
 
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
-#include <stdlib.h>
-#include <complex.h>
-#include <stdbool.h>
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
 
 #include "agc.h"
 #include "buffer.h"
@@ -32,5 +33,9 @@
 #include "scramble.h"
 #include "utility.h"
 #include "window.h"
+
+#ifdef __cplusplus
+}       // extern "C"
+#endif  // __cplusplus
 
 #endif // __LIQUID_H__
