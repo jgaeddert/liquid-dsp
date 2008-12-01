@@ -115,7 +115,7 @@ void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl
     //    _slsl < 0
 
     // begin with prototype
-    float fc = 1/((float)_k);
+    //float fc = 1/((float)_k);
     //fir_design_windowed_sinc(_n, fc, _slsl, _h);
 
     // begin optimization:
