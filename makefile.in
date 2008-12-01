@@ -35,7 +35,7 @@ INCLUDE_HEADERS = \
 	src/fft/src/fft.h \
 	src/filter/src/decim2.h \
 	src/filter/src/filter_common.h \
-	src/filter/src/fir_filter.h \
+	src/filter/src/filter.h \
 	src/filter/src/firdes.h \
 	src/filter/src/rrcos.h \
 	src/filter/src/window.h \

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "fir_filter.h"
+#include "filter.h"
 #include "../../dotprod/src/dotprod.h"
 
 fir_filter fir_filter_create(float * _h, unsigned int _n)
@@ -44,9 +44,9 @@ void fir_filter_destroy(fir_filter _f)
 void fir_filter_print(fir_filter _f)
 {
     printf("filter coefficients:\n");
-    unsigned int i;
-    for (i=0; i<_f->h_len; i++)
-        printf(" %u\t: %6.2E\n", i, _f->h[i]);
+    unsigned int i, n = _f->h_len;
+    for (i=0; i<n; i++)
+        printf(" %3u : %12.4E\n", i, _f->h[n-i-1]);
 }
 
 float fir_filter_execute(fir_filter _f, float * _v)

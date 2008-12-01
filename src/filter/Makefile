@@ -2,7 +2,7 @@
 # Makefile for sequence module
 #
 
-TESTS = fir_filter_test
+EXAMPLES = fir_filter_example
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -11,10 +11,10 @@ OBJS = decim.o decim2.o decim_create.o decim_execute.o \
 	   filter_common.o fir_filter.o firdes.o \
 	   nyquist.o rrcos.o window.o lf2.o
 HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \
-		  src/fir_filter.h src/firdes.h src/filter.h \
+		  src/filter.h src/firdes.h src/filter.h \
 		  src/polyphase.h src/rrcos.h src/window.h
 
-all: $(TESTS)
+all: $(EXAMPLES)
 
 MATH_DEPS = math.o
 BUFFER_DEPS = fbuffer.o
@@ -36,8 +36,8 @@ $(DOTPROD_DEPS) :
 $(OBJS) : %.o : src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TESTS): %_test : src/main_%.c $(OBJS) $(HEADERS) $(DEPS)
+$(EXAMPLES): % : examples/%.c $(OBJS) $(HEADERS) $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(DEPS) $(TESTS)
+	rm -f $(OBJS) $(DEPS) $(EXAMPLES)

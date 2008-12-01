@@ -1,7 +1,7 @@
 #ifndef __FIR_FILTER_AUTOTEST_H__
 #define __FIR_FILTER_AUTOTEST_H__
 
-#include "../src/fir_filter.h"
+#include "../src/filter.h"
 
 void autotest_create_external_coeff_01() {
 
