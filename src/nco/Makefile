@@ -14,16 +14,11 @@ OBJS = nco.o pll.o
 HEADERS = src/nco.h
 
 FILTER_DEPS = lf2.o
-RANDOM_DEPS = random.o
-DEPS = $(FILTER_DEPS) $(RANDOM_DEPS)
+DEPS = $(FILTER_DEPS)
 
 $(FILTER_DEPS) :
 	cd ../filter ; make $@
 	cp ../filter/$@ .
-
-$(RANDOM_DEPS) :
-	cd ../random ; make $@
-	cp ../random/$@ .
 
 $(OBJS) : %.o : src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@

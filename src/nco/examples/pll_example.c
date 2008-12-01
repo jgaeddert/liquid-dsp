@@ -1,12 +1,15 @@
 //
-//
+// pll_example.c
+// 
+// Demonstrates a basic phase-locked loop to track the
+// phase of a sinusoid.
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "../src/nco.h"
-#include "../../random/src/random.h" // noise generator
 
 // DEBUG: print every output line in octave-friendly format
 #define DEBUG
@@ -16,7 +19,6 @@ int main() {
     // parameters
     float phase_offset = M_PI/2;
     float frequency_offset = 0.0f;
-    float SNRdB = 40.0f;
     float pll_bandwidth = 1e-2f;
     unsigned int n=250;     // number of iterations
     unsigned int d=10;      // print every "d" lines
@@ -36,12 +38,10 @@ int main() {
     nco_set_frequency(nco_tx, frequency_offset);
     pll_set_bandwidth(pll_rx, pll_bandwidth);
 
-    float noise_power = powf(10.0f, -SNRdB/20.0f);
-
     // print parameters
     printf("PLL example :\n");
-    printf("frequency offset: %6.3f, phase offset: %6.3f, SNR: %6.2fdB, pll b/w: %6.3f\n",
-            frequency_offset, phase_offset, SNRdB, pll_bandwidth);
+    printf("frequency offset: %6.3f, phase offset: %6.3f, pll b/w: %6.3f\n",
+            frequency_offset, phase_offset, pll_bandwidth);
 
     // run loop
     unsigned int i;
@@ -51,9 +51,6 @@ int main() {
         // received complex signal
         r = nco_cexpf(nco_tx);
         v = nco_cexpf(nco_rx);
-
-        // add complex white noise
-        r += crandnf() * noise_power;
 
         // error estimation
         phase_error = cargf(r*conjf(v));
