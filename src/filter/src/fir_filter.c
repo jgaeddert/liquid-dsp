@@ -46,7 +46,7 @@ void fir_filter_print(fir_filter _f)
     printf("filter coefficients:\n");
     unsigned int i, n = _f->h_len;
     for (i=0; i<n; i++)
-        printf(" %3u : %12.4E\n", i, _f->h[n-i-1]);
+        printf(" h(%u) = %12.4E;\n", i+1, _f->h[n-i-1]);
 }
 
 float fir_filter_execute(fir_filter _f, float * _v)

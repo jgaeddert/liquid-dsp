@@ -10,7 +10,9 @@ VPATH = @srcdir@
 CC = @CC@
 LIBS_AGC = agc.o
 LIBS_ANN = ann.o ann_layer.o ann_neuron.o
-LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o metadata.o port.o
+LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
+			  fwindow.o cfwindow.o \
+			  metadata.o port.o
 LIBS_DOTPROD = fdotprod.o cfdotprod.o
 LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec_rep.o fec_hamming74.o
 LIBS_FFT = fft_create_plan.o fft_execute.o fft_shift.o

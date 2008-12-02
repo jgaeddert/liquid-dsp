@@ -2,8 +2,10 @@
 # Buffer makefile (local)
 #
 
-OBJS = fbuffer.o cfbuffer.o uibuffer.o metadata.o port.o
-EXAMPLES = metadata_example fbuffer_example cfbuffer_example
+OBJS = fbuffer.o cfbuffer.o uibuffer.o metadata.o port.o \
+	   fwindow.o cfwindow.o
+EXAMPLES = metadata_example fbuffer_example cfbuffer_example \
+		   fwindow_example
 
 all: $(EXAMPLES)
 

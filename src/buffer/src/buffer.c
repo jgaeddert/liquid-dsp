@@ -120,12 +120,15 @@ void X(_read)(X() _b, T ** _v, unsigned int *_n)
 void X(_c_read)(X() _b, T ** _v, unsigned int *_n)
 {
     //printf("buffer_read() trying to read %u elements (%u available)\n", *_n, _b->num_elements);
+#if 0
     if (*_n > _b->num_elements) {
         printf("error: buffer_read(), cannot read more elements than are available\n");
         *_v = NULL;
         *_n = 0;
         return;
-    } else if (*_n > (_b->len - _b->read_index)) {
+    } else
+#endif
+    if (*_n > (_b->len - _b->read_index)) {
         //
         X(_linearize)(_b);
     }
