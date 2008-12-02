@@ -60,17 +60,15 @@ void decim_execute_generic(
     unsigned int _y_len,
     unsigned int * _nw)
 {
-    unsigned int nr=0, nw=0, len;
+    unsigned int nr=0, nw=0;
     float * r;
-    fbuffer b = _d->buffers[0];
+    fwindow b = _d->buffers[0];
     
     // consume entire input or entire output
     while ((_x_len >= _d->D) && (_y_len > 0)) {
         // 
-        fbuffer_release(b, _d->D);
-        fbuffer_write(b, &_x[nr], _d->D);
-        len = _d->h_len;
-        fbuffer_read(b, &r, &len);
+        fwindow_write(b, &_x[nr], _d->D);
+        fwindow_read(b, &r);
 
         // compute result
         _y[nw] = dotprod(_d->h, r, _d->h_len);

@@ -13,12 +13,12 @@
 void decim_print(decim _d)
 {
     printf("decimator object:\n");
-    printf("\tD\t: %u\n", _d->D);
-    printf("\tfc\t: %5.2f\n", _d->fc);
-    printf("\tb\t: %5.2f\n", _d->b);
-    printf("\tt\t: %5.2f\n", _d->t);
-    printf("\tslsl\t: %5.2f\n", _d->slsl);
-    printf("\th\t: %u taps\n", _d->h_len);
+    printf("  D    : %5u\n", _d->D);
+    printf("  fc   : %5.2f\n", _d->fc);
+    printf("  b    : %5.2f\n", _d->b);
+    printf("  t    : %5.2f\n", _d->t);
+    printf("  slsl : %5.2f\n", _d->slsl);
+    printf("  n    : %5u\n", _d->h_len);
 }
 
 // Debug print

@@ -36,7 +36,7 @@ void decim_execute(
 // internal
 //
 
-#include "../../buffer/src/buffer_internal.h"
+#include "../../buffer/src/window_internal.h"
 #define DECIM_FACTOR_MAX 2048
 struct decim_s {
     decim_type type;
@@ -51,7 +51,7 @@ struct decim_s {
 
     unsigned int branch;
 
-    fbuffer * buffers;
+    fwindow * buffers;
     unsigned int num_buffers;
 };
 

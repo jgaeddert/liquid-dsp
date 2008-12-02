@@ -17,7 +17,7 @@ HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \
 all: $(EXAMPLES)
 
 MATH_DEPS = math.o
-BUFFER_DEPS = fbuffer.o
+BUFFER_DEPS = fwindow.o
 DOTPROD_DEPS = fdotprod.o
 DEPS = $(MATH_DEPS) $(BUFFER_DEPS) $(DOTPROD_DEPS)
 
