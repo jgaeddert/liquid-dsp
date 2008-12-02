@@ -59,6 +59,7 @@ AUTOTESTS = \
 	src/agc/tests/agc_autotest.h \
 	src/buffer/tests/cbuffer_autotest.h \
 	src/buffer/tests/sbuffer_autotest.h \
+	src/dotprod/tests/fdotprod_autotest.h \
 	src/fec/tests/checksum_autotest.h \
 	src/fec/tests/crc_autotest.h \
 	src/fec/tests/fec_autotest.h \
