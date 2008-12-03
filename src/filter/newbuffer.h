@@ -1,12 +1,16 @@
 //
+// New buffer prototype
 //
-//
+
+#include <stdbool.h>
 
 typedef struct buffer_s * buffer;
 typedef enum {
     error_none=0,
     error_buffer_unlocked,
-    error_buffer_locked
+    error_buffer_locked,
+    error_buffer_overwritten,
+    error_buffer_overread
 } liquid_error;
 
 struct buffer_s {
@@ -28,6 +32,7 @@ struct buffer_s {
 };
 
 // create/destroy/print methods
+// NOTE _n is suggested starting size; buffer will realloc when necessary
 buffer buffer_create(unsigned int _n);
 void buffer_destroy(buffer _b);
 void buffer_print(buffer _b);
@@ -44,7 +49,7 @@ int buffer_consumer_release_array(buffer_b);
 
 // producer methods
 //int buffer_producer_lockn_array(buffer _b, float **_v, unsigned int _n);
-int buffer_producer_lock_array(buffer _b, float **_v, unsigned int *_n);
-int buffer_producer_write(buffer _b, unsigned int _n);
+int buffer_producer_lock_array(buffer _b, unsigned int *_n);
+int buffer_producer_write(buffer _b, float *_v, unsigned int _n);
 int buffer_producer_release_array(buffer_b);
 
