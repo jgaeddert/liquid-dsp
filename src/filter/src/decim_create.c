@@ -7,7 +7,6 @@
 #include <stdio.h>
 
 #include "decim_internal.h"
-#include "window.h"
 #include "firdes.h"
 
 // Create decimator object

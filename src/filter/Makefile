@@ -12,7 +12,7 @@ OBJS = decim.o decim2.o decim_create.o decim_execute.o \
 	   nyquist.o rrcos.o window.o lf2.o
 HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \
 		  src/filter.h src/firdes.h src/filter.h \
-		  src/polyphase.h src/window.h
+		  src/polyphase.h
 
 all: $(EXAMPLES)
 

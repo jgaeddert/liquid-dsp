@@ -3,6 +3,7 @@
 //
 
 #include <math.h>
+#include "firdes.h"
 #include "../../math/src/math.h"
 
 //

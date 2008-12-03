@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "firdes.h"
-#include "window.h"
 #include "../../math/src/math.h" // sincf()
 
 //

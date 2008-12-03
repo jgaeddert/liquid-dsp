@@ -50,4 +50,9 @@ void design_rrc_filter(
     float * _h
 );
 
+// 
+// Windowing functions
+//
+float kaiser(unsigned int _n, unsigned int _N, float _beta);
+
 #endif // __LIQUID_FIRDES_H__

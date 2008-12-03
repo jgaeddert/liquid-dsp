@@ -30,6 +30,7 @@ LIBS_UTILITY = count_bits.o pack_bytes.o
 INCLUDE_HEADERS = \
 	src/agc/src/agc.h \
 	src/buffer/src/buffer.h \
+	src/buffer/src/window.h \
 	src/buffer/src/metadata.h \
 	src/buffer/src/port.h \
 	src/dotprod/src/dotprod.h \
@@ -39,7 +40,6 @@ INCLUDE_HEADERS = \
 	src/filter/src/filter_common.h \
 	src/filter/src/filter.h \
 	src/filter/src/firdes.h \
-	src/filter/src/window.h \
 	src/interleaver/src/interleaver.h \
 	src/math/src/math.h \
 	src/math/src/matrix.h \
