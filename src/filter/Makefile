@@ -2,7 +2,8 @@
 # Makefile for sequence module
 #
 
-EXAMPLES = fir_filter_example interp_example decim_example
+EXAMPLES = fir_filter_example interp_example decim_example \
+		   matched_filter_example
 
 CC = gcc
 CFLAGS = -Wall -O3

@@ -44,7 +44,7 @@ void autotest_decim_generic()
 
     unsigned int i, n=0;
     for (i=0; i<4; i++) {
-        decim_execute(q, &x[n], &y[i]);
+        decim_execute(q, &x[n], &y[i], D-1);
         n+=D;
     }   
 

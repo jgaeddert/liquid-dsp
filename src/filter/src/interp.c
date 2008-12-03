@@ -44,7 +44,6 @@ void interp_print(interp _q)
 
 void interp_execute(interp _q, float _x, float *_y)
 {
-    printf("interp_execute(%8.5f)\n", _x);
     float * r; // read pointer
 
     unsigned int i;

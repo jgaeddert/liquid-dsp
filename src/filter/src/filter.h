@@ -91,7 +91,7 @@ struct decim_s {
 decim decim_create(unsigned int _M, float *_h, unsigned int _h_len);
 void decim_destroy(decim _q);
 void decim_print(decim _q);
-void decim_execute(decim _q, float *_x, float *_y);
+void decim_execute(decim _q, float *_x, float *_y, unsigned int _index);
 
 //
 // 2nd-Order Loop Filter

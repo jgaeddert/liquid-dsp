@@ -43,11 +43,16 @@ void decim_print(decim _q)
     fwindow_print(_q->w);
 }
 
-void decim_execute(decim _q, float *_x, float *_y)
+void decim_execute(decim _q, float *_x, float *_y, unsigned int _index)
 {
     float * r; // read pointer
-    fwindow_write(_q->w, _x, _q->D);
-    fwindow_read(_q->w, &r);
-    *_y = fdotprod_run(_q->h, r, _q->h_len);
+    unsigned int i;
+    for (i=0; i<_q->D; i++) {
+        fwindow_push(_q->w, _x[i]);
+        if (i==_index) {
+            fwindow_read(_q->w, &r);
+            *_y = fdotprod_run(_q->h, r, _q->h_len);
+        }
+    }
 }
 
