@@ -55,6 +55,25 @@ struct fir_filter_s {
     fir_prototype p;
 };
 
+// 
+// Interpolator
+//
+#include "../../buffer/src/window.h"
+typedef struct interp_s * interp;
+struct interp_s {
+    float * h;
+    unsigned int h_len;
+    unsigned int M;
+
+    fir_prototype p;
+    fwindow w;
+};
+
+interp interp_create(unsigned int _M, float *_h, unsigned int _h_len);
+void interp_destroy(interp _q);
+void interp_print(interp _q);
+void interp_execute(interp _q, float _x, float *_y);
+
 
 //
 // 2nd-Order Loop Filter
