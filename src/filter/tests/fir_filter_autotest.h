@@ -24,7 +24,7 @@ void autotest_impulse_response() {
     float x[30] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    x[9] = 1.0f;
+    x[0] = 1.0f;
     float y;       // output
 
     // Load filter coefficients externally
@@ -33,13 +33,13 @@ void autotest_impulse_response() {
     unsigned int i;
     // Resulting output should be equal to filter coefficients
     for (i=0; i<10; i++) {
-        y = fir_filter_execute(f, &x[i]);
+        y = fir_filter_execute(f, x[i]);
         CONTEND_EQUALITY( y, h[i]);
     }
 
     // Impulse response should be finite
     for (i=10; i<20; i++) {
-        y = fir_filter_execute(f, &x[i]);
+        y = fir_filter_execute(f, x[i]);
         CONTEND_DELTA( 0.0f, y, 0.001 );
     }
 
@@ -52,8 +52,7 @@ void autotest_noise_01()
     float h[10] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
 
     // noise signal
-    float x[41] = {         // length: 32+9
-        0,0,0,0,0,0,0,0,0,  // nine zeros (filter delay)
+    float x[32] = {
         0.704280,     0.093701,    -0.812560,    -1.062200, 
        -0.163140,    -0.358630,     1.343000,    -0.929300, 
         0.912920,    -0.286200,    -2.225000,     0.500690, 
@@ -85,7 +84,7 @@ void autotest_noise_01()
     unsigned int i;
     // 
     for (i=0; i<32; i++) {
-        y = fir_filter_execute(f, &x[i]);
+        y = fir_filter_execute(f, x[i]);
         CONTEND_DELTA( test[i], y, 0.001 );
     }
 

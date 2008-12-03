@@ -20,6 +20,9 @@ fir_filter fir_filter_create(float * _h, unsigned int _n)
     for (i=_n; i>0; i--)
         f->h[i-1] = _h[_n-i];
 
+    f->w = fwindow_create(f->h_len);
+    fwindow_clear(f->w);
+
     return f;
 }
 
@@ -37,6 +40,7 @@ fir_filter fir_filter_create_prototype(unsigned int _n)
 
 void fir_filter_destroy(fir_filter _f)
 {
+    fwindow_destroy(_f->w);
     free(_f->h);
     free(_f);
 }
@@ -49,9 +53,13 @@ void fir_filter_print(fir_filter _f)
         printf(" h(%u) = %12.4E;\n", i+1, _f->h[n-i-1]);
 }
 
-float fir_filter_execute(fir_filter _f, float * _v)
+//float fir_filter_execute(fir_filter _f, float * _v)
+float fir_filter_execute(fir_filter _f, float _x)
 {
-    return fdotprod_run(_f->h, _v, _f->h_len);
+    fwindow_push(_f->w, _x);
+    float *r;
+    fwindow_read(_f->w, &r);
+    return fdotprod_run(_f->h, r, _f->h_len);
 }
 
 unsigned int fir_filter_get_length(fir_filter _f)

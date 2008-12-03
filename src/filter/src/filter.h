@@ -5,6 +5,8 @@
 #ifndef __LIQUID_FILTER_H__
 #define __LIQUID_FILTER_H__
 
+#include "../../buffer/src/window.h"
+
 //
 // Finite impulse response filter
 //
@@ -33,7 +35,8 @@ void fir_filter_destroy(fir_filter _f);
 
 void fir_filter_print(fir_filter _f);
 
-float fir_filter_execute(fir_filter _f, float * _v);
+//float fir_filter_execute(fir_filter _f, float * _v);
+float fir_filter_execute(fir_filter _f, float _x);
 
 // accessor functions
 unsigned int fir_filter_get_length(fir_filter _f);
@@ -52,13 +55,14 @@ struct fir_filter_s {
     float * h;
     unsigned int h_len;
 
+    fwindow w;
+
     fir_prototype p;
 };
 
 // 
 // Interpolator
 //
-#include "../../buffer/src/window.h"
 typedef struct interp_s * interp;
 struct interp_s {
     float * h;
