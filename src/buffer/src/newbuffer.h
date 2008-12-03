@@ -15,7 +15,7 @@ typedef enum {
 
 struct buffer_s {
     float * v;
-    unsigned int n;
+    unsigned int len;
     unsigned int N;
 
     // consumer
@@ -42,14 +42,12 @@ void buffer_debug_print(buffer _b);
 unsigned int buffer_get_length(buffer _b);
 
 // consumer methods
-//int buffer_consumer_lockn_array(buffer _b, float **_v, unsigned int _n);
-int buffer_consumer_lock_array(buffer _b, float **_v, unsigned int *_n);
-int buffer_consumer_read(buffer _b, unsigned int _n);
-int buffer_consumer_release_array(buffer_b);
+int buffer_consumer_lock_array(buffer _b, unsigned int *_n);
+int buffer_consumer_read(buffer _b, float *_v, unsigned int _n);
+int buffer_consumer_release_array(buffer _b);
 
 // producer methods
-//int buffer_producer_lockn_array(buffer _b, float **_v, unsigned int _n);
 int buffer_producer_lock_array(buffer _b, unsigned int *_n);
 int buffer_producer_write(buffer _b, float *_v, unsigned int _n);
-int buffer_producer_release_array(buffer_b);
+int buffer_producer_release_array(buffer _b);
 

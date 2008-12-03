@@ -5,7 +5,7 @@
 OBJS = fbuffer.o cfbuffer.o uibuffer.o metadata.o port.o \
 	   fwindow.o cfwindow.o newbuffer.o
 EXAMPLES = metadata_example fbuffer_example cfbuffer_example \
-		   fwindow_example
+		   fwindow_example newbuffer_example
 
 all: $(EXAMPLES)
 
