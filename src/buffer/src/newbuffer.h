@@ -9,7 +9,7 @@ typedef enum {
     error_none=0,
     error_buffer_unlocked,
     error_buffer_locked,
-    error_buffer_overwritten,
+    error_buffer_overwrite,
     error_buffer_overread
 } liquid_error;
 
@@ -17,6 +17,8 @@ struct buffer_s {
     float * v;
     unsigned int len;
     unsigned int N;
+
+    unsigned int num_elements;
 
     // consumer
     unsigned int read_index;

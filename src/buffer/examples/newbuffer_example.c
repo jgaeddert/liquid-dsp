@@ -7,7 +7,8 @@
 #include "../src/newbuffer.h"
 
 int main() {
-    float v[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    float v[] =  {1, 2, 3, 4, 5, 6, 7, 8};
+    float v0[] = {0, 0, 0, 0, 0, 0, 0, 0};
     float r[10]; // reader
     unsigned int i, n;
 
@@ -15,7 +16,7 @@ int main() {
 
     // write elements to the array
     buffer_producer_lock_array(b, &n);
-    printf("buffer: producer locked %u elements\n", n);
+    //printf("buffer: producer locked %u elements\n", n);
     buffer_producer_write(b, v, 4);
     // b : 1 2 3 4
     buffer_producer_write(b, v, 4);
@@ -24,7 +25,7 @@ int main() {
 
     // read all available elements
     buffer_consumer_lock_array(b, &n);
-    printf("buffer: consumer locked %u elements\n", n);
+    //printf("buffer: consumer locked %u elements\n", n);
     for (i=0; i<n; i++)
         printf("  v[%2u] : %f\n", i, r[i]);
     buffer_consumer_read(b, r, 3);
@@ -32,7 +33,27 @@ int main() {
     buffer_consumer_release_array(b);
 
     // print buffer state
-    buffer_debug_print(b);
+    buffer_print(b);
+
+
+
+    // write elements to the array
+    buffer_producer_lock_array(b, &n);
+    buffer_producer_write(b, v0, 4);
+    // b : 4 1 2 3 4 0 0 0 0
+    buffer_producer_release_array(b);
+
+    // read all available elements
+    buffer_consumer_lock_array(b, &n);
+    //printf("buffer: consumer locked %u elements\n", n);
+    for (i=0; i<n; i++)
+        printf("  v[%2u] : %f\n", i, r[i]);
+    buffer_consumer_read(b, r, 3);
+    // b : 3 4 0 0 0 0
+    buffer_consumer_release_array(b);
+
+    // print buffer state
+    buffer_print(b);
 
     buffer_destroy(b);
 
