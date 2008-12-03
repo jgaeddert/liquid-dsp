@@ -19,6 +19,15 @@ typedef enum {
     FIR_GAUSS
 } fir_prototype;
 
+struct fir_filter_s {
+    float * h;
+    unsigned int h_len;
+
+    fwindow w;
+
+    fir_prototype p;
+};
+
 //  filter type     : out   : coeff : in
 //  ----------------+-------+-------+-----
 //  fir_filter_rrr  : REAL  : REAL  : REAL
@@ -49,16 +58,18 @@ unsigned int fir_filter_get_length(fir_filter _f);
 // DEFINE_FIR_FITER_API(X,O,C,I)
 
 //
-// internal
+// FIR Polyphase filter bank
 //
-struct fir_filter_s {
-    float * h;
+typedef struct firpfb_s * firpfb;
+struct firpfb_s {
+    fir_filter * f;
+    unsigned int num_filters;
     unsigned int h_len;
-
-    fwindow w;
-
-    fir_prototype p;
 };
+firpfb firpfb_create(unsigned int _num_filters, float *_h, unsigned int _h_len);
+void firpfb_destroy(firpfb _b);
+void firpfb_print(firpfb _b);
+void firpfb_execute(firpfb _b, unsigned int _i, float _x, float *_y);
 
 // 
 // Interpolator
