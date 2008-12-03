@@ -2,12 +2,12 @@
 # Makefile for sequence module
 #
 
-EXAMPLES = fir_filter_example interp_example
+EXAMPLES = fir_filter_example interp_example decim_example
 
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = decim.o decim2.o decim_create.o decim_execute.o \
+OBJS = decim.o \
 	   filter_common.o fir_filter.o firdes.o \
 	   nyquist.o rrcos.o window.o lf2.o interp.o
 HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \

@@ -2,41 +2,52 @@
 // Decimator
 //
 
-#include <math.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "decim_internal.h"
-#include "firdes.h"
+#include "filter.h"
 
-// Print
-void decim_print(decim _d)
+#include "../../dotprod/src/dotprod.h"
+
+decim decim_create(unsigned int _D, float *_h, unsigned int _h_len)
 {
-    printf("decimator object:\n");
-    printf("  D    : %5u\n", _d->D);
-    printf("  fc   : %5.2f\n", _d->fc);
-    printf("  b    : %5.2f\n", _d->b);
-    printf("  t    : %5.2f\n", _d->t);
-    printf("  slsl : %5.2f\n", _d->slsl);
-    printf("  n    : %5u\n", _d->h_len);
-}
+    decim q = (decim) malloc(sizeof(struct decim_s));
+    q->h_len = _h_len;
+    q->h = (float*) malloc((q->h_len)*sizeof(float));
 
-// Debug print
-void decim_debug_print(decim _d)
-{
-    decim_print(_d);
+    // load filter in reverse order
     unsigned int i;
-    for (i=0; i<_d->h_len; i++)
-        printf("  h(%u) = %E;\n", i+1, _d->h[i]);
+    for (i=0; i<q->h_len; i++)
+        q->h[i] = _h[_h_len-i-1];
+
+    q->D = _D;
+
+    q->w = fwindow_create(q->h_len);
+    fwindow_clear(q->w);
+
+    return q;
 }
 
-// Execute
-void xdecim_execute(decim _d, float * _x, unsigned int _x_len, float * _y, unsigned int _y_len)
+void decim_destroy(decim _q)
 {
-    unsigned int i, n=0;
-    for (i=0; i<(_x_len-_d->h_len); i+=2) {
-        decim_dotprod(_d->h, _d->h_len, &_x[i], &_y[n]);
-        n++;
-    }
+    fwindow_destroy(_q->w);
+    free(_q->h);
+    free(_q);
+}
+
+void decim_print(decim _q)
+{
+    printf("decim [%u] :\n", _q->D);
+    printf("  window:\n");
+    fwindow_print(_q->w);
+}
+
+void decim_execute(decim _q, float *_x, float *_y)
+{
+    float * r; // read pointer
+    fwindow_write(_q->w, _x, _q->D);
+    fwindow_read(_q->w, &r);
+    *_y = fdotprod_run(_q->h, r, _q->h_len);
 }
 

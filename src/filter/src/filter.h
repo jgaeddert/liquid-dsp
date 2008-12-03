@@ -74,6 +74,24 @@ void interp_destroy(interp _q);
 void interp_print(interp _q);
 void interp_execute(interp _q, float _x, float *_y);
 
+// 
+// Decimator (basic)
+//
+typedef struct decim_s * decim;
+decim decim_create(unsigned int _D, float *_h, unsigned int _h_len);
+struct decim_s {
+    float * h;
+    unsigned int h_len;
+    unsigned int D;
+
+    fir_prototype p;
+    fwindow w;
+};
+
+decim decim_create(unsigned int _M, float *_h, unsigned int _h_len);
+void decim_destroy(decim _q);
+void decim_print(decim _q);
+void decim_execute(decim _q, float *_x, float *_y);
 
 //
 // 2nd-Order Loop Filter
