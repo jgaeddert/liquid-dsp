@@ -35,8 +35,8 @@ void fir_filter_destroy(fir_filter _f);
 
 void fir_filter_print(fir_filter _f);
 
-//float fir_filter_execute(fir_filter _f, float * _v);
-float fir_filter_execute(fir_filter _f, float _x);
+void fir_filter_push(fir_filter _f, float _x);
+void fir_filter_execute(fir_filter _f, float *_y);
 
 // accessor functions
 unsigned int fir_filter_get_length(fir_filter _f);

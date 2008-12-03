@@ -33,13 +33,15 @@ void autotest_impulse_response() {
     unsigned int i;
     // Resulting output should be equal to filter coefficients
     for (i=0; i<10; i++) {
-        y = fir_filter_execute(f, x[i]);
+        fir_filter_push(f, x[i]);
+        fir_filter_execute(f, &y);
         CONTEND_EQUALITY( y, h[i]);
     }
 
     // Impulse response should be finite
     for (i=10; i<20; i++) {
-        y = fir_filter_execute(f, x[i]);
+        fir_filter_push(f, x[i]);
+        fir_filter_execute(f, &y);
         CONTEND_DELTA( 0.0f, y, 0.001 );
     }
 
@@ -84,7 +86,8 @@ void autotest_noise_01()
     unsigned int i;
     // 
     for (i=0; i<32; i++) {
-        y = fir_filter_execute(f, x[i]);
+        fir_filter_push(f, x[i]);
+        fir_filter_execute(f, &y);
         CONTEND_DELTA( test[i], y, 0.001 );
     }
 

@@ -53,13 +53,16 @@ void fir_filter_print(fir_filter _f)
         printf(" h(%u) = %12.4E;\n", i+1, _f->h[n-i-1]);
 }
 
-//float fir_filter_execute(fir_filter _f, float * _v)
-float fir_filter_execute(fir_filter _f, float _x)
+void fir_filter_push(fir_filter _f, float _x)
 {
     fwindow_push(_f->w, _x);
+}
+
+void fir_filter_execute(fir_filter _f, float *_y)
+{
     float *r;
     fwindow_read(_f->w, &r);
-    return fdotprod_run(_f->h, r, _f->h_len);
+    *_y = fdotprod_run(_f->h, r, _f->h_len);
 }
 
 unsigned int fir_filter_get_length(fir_filter _f)
