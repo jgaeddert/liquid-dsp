@@ -2,7 +2,7 @@
 # Makefile for random module
 #
 
-EXAMPLES = main_random main_scramble
+EXAMPLES = random_example scramble_example
 
 CC = gcc
 CFLAGS = -Wall -O3
