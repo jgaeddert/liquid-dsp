@@ -7,7 +7,7 @@
 #include "random.h"
 
 // Gauss
-void randnf(float * i, float * q)
+float randnf()
 {
     // generate two uniform random numbers
     float u1, u2;
@@ -19,9 +19,8 @@ void randnf(float * i, float * q)
 
     u2 = randf();
 
-    float x = sqrtf(-2*logf(u1));
-    *i = x * sinf(2*M_PI*u2);
-    *q = x * cosf(2*M_PI*u2);
+    return sqrtf(-2*logf(u1)) * sinf(2*M_PI*u2);
+    //return sqrtf(-2*logf(u1)) * cosf(2*M_PI*u2);
 }
 
 // Complex Gauss
@@ -30,7 +29,6 @@ float complex crandnf()
     // generate two uniform random numbers
     float u1, u2;
 
-#if 0
     // ensure u1 does not equal zero
     do {
         u1 = randf();
@@ -38,12 +36,7 @@ float complex crandnf()
 
     u2 = randf();
 
-    return sqrtf(-2*logf(u1)) * cexpf(2*M_PI*u2);
-#else
-
-    randnf(&u1, &u2);
-    return u1 + _Complex_I*u2;
-#endif
+    return sqrtf(-2*logf(u1)) * cexpf(_Complex_I*2*M_PI*u2);
 }
 
 // Weibull
@@ -66,14 +59,13 @@ float rand_weibullf(float _alpha, float _beta, float _gamma)
 // Rice-K
 float rand_ricekf(float _K, float _omega)
 {
-    float x, y;
+    float complex x, y;
     float s = sqrtf((_omega*_K)/(_K+1));
     float sig = sqrtf(0.5f*_omega/(_K+1));
-    randnf(&x, &y);
-    x *= sig;
-    y *= sig;
-    y += s;
-    return sqrtf(x*x + y*y);
+    x = crandnf();
+    y = _Complex_I*( crealf(x)*sig + s ) +
+                   ( cimagf(x)*sig     );
+    return cabsf(y);
 }
 
 

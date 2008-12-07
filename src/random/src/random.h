@@ -12,7 +12,7 @@
 #define randf() ((float) rand() / (float) RAND_MAX)
 
 // Gaussian random number generator, N(0,1)
-void randnf(float * i, float * q);
+float randnf();
 float complex crandnf();
 
 // Weibull

@@ -30,15 +30,38 @@ void autotest_randnf()
 {
     unsigned long int N=100000; // number of trials
     unsigned long int i;
-    float x, y, m1=0.0f, m2=0.0f;
+    float x, m1=0.0f, m2=0.0f;
     float tol=0.01f;
 
     // uniform
     for (i=0; i<N; i++) {
-        randnf(&x, &y);
+        x = randnf();
         m1 += x;
         m2 += x*x;
     }
+    m1 /= (float) N;
+    m2 = (m2 / (float)N) - m1*m1;
+
+    CONTEND_DELTA(m1, 0.0f, tol);
+    CONTEND_DELTA(m2, 1.0f, tol);
+}
+
+// complex Gauss
+void autotest_crandnf()
+{
+    unsigned long int N=100000; // number of trials
+    unsigned long int i;
+    float complex x;
+    float m1=0.0f, m2=0.0f;
+    float tol=0.01f;
+
+    // uniform
+    for (i=0; i<N; i++) {
+        x = crandnf();
+        m1 += crealf(x) + cimagf(x);
+        m2 += crealf(x)*crealf(x) + cimagf(x)*cimagf(x);
+    }
+    N *= 2; // double N for real and imag components
     m1 /= (float) N;
     m2 = (m2 / (float)N) - m1*m1;
 

@@ -35,16 +35,39 @@ void benchmark_random_normal(
     struct rusage *_finish,
     unsigned long int *_num_iterations)
 {
-    float x, y;
+    float x;
     unsigned long int i;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        randnf(&x, &y);
-        randnf(&x, &y);
-        randnf(&x, &y);
-        randnf(&x, &y);
+        x = randnf();
+        x = randnf();
+        x = randnf();
+        x = randnf();
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+}
+
+// 
+// BENCHMARK: complex normal
+//
+void benchmark_random_complex_normal(
+    struct rusage *_start,
+    struct rusage *_finish,
+    unsigned long int *_num_iterations)
+{
+    float complex x;
+    unsigned long int i;
+
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        x = crandnf();
+        x = crandnf();
+        x = crandnf();
+        x = crandnf();
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
