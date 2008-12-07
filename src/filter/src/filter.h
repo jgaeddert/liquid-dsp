@@ -138,5 +138,5 @@ void lf2_advance(lf2 _f, float _v, float *_v_hat);
 void lf2_generate_filter(lf2 _f);
 
 
-#endif // __FIR_FILTER_H__
+#endif // __LIQUID_FILTER_H__
 

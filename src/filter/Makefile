@@ -1,5 +1,5 @@
 # 
-# Makefile for sequence module
+# Makefile for filter module
 #
 
 EXAMPLES = fir_filter_example interp_example decim_example \
