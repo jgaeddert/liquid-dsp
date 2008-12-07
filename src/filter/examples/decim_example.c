@@ -26,10 +26,17 @@ int main() {
         n+=D;
     }
 
+    printf("h(t) :\n");
     for (i=0; i<4; i++)
-        printf("  y(%u) = %8.4f;\n", i+1, y[i]);
+        printf("  h(%2u) = %8.4f;\n", i+1, h[i]);
 
-    decim_print(q);
+    printf("x(t) :\n");
+    for (i=0; i<16; i++)
+        printf("  x(%2u) = %8.4f;\n", i+1, x[i]);
+
+    printf("y(t) :\n");
+    for (i=0; i<4; i++)
+        printf("  y(%2u) = %8.4f;\n", i+1, y[i]);
 
     decim_destroy(q);
     printf("done.\n");
