@@ -1,28 +1,29 @@
+# 
+# Makefile for random module
+#
 
-all: clean scramble random autotest
+EXAMPLES = main_random main_scramble
 
-random.o: src/random.c
-	gcc -Wall -c src/random.c -o random.o
+CC = gcc
+CFLAGS = -Wall -O3
+LDFLAGS = -lm
+OBJS = random.o scramble.o
+HEADERS = src/random.h src/scramble.h
 
-main_random.o: src/main_random.c
-	gcc -Wall -c src/main_random.c -o main_random.o
+all: $(EXAMPLES)
 
-random: random.o main_random.o
-	gcc -Wall random.o main_random.o -lm -o random_test
+MATH_DEPS = 
+DEPS = $(MATH_DEPS)
 
-scramble:
-	gcc -Wall -c src/scramble.c -o scramble.o
-	gcc -Wall -c src/main_scramble.c -o main_scramble.o
-	gcc -Wall scramble.o main_scramble.o -lm -o scramble_test
+$(MATH_DEPS) :
+	cd ../math ; make $@
+	cp ../math/$@ .
 
-autotest.o: tests/autotest.c
-	gcc -Wall -c tests/autotest.c -o autotest.o
+$(OBJS) : %.o : src/%.c $(HEADERS)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-autotest: autotest.o random.o
-	gcc -Wall autotest.o random.o -lm -o autotest
-
-check: autotest
-	./autotest
+$(EXAMPLES): % : examples/%.c $(OBJS) $(HEADERS) $(DEPS)
+	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f *.o *_test autotest
+	rm -f $(OBJS) $(DEPS) $(EXAMPLES)

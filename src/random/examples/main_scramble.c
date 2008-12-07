@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "scramble.h"
+#include "../src/scramble.h"
 
 int main() {
     unsigned int N=8;

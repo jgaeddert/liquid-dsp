@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "random.h"
+#include "../src/random.h"
 
 int main() {
     unsigned long int N=100000; // number of trials
