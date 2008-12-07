@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "filter.h"
+#include "filter_internal.h"
 #include "../../dotprod/src/dotprod.h"
 
 fir_filter fir_filter_create(float * _h, unsigned int _n)

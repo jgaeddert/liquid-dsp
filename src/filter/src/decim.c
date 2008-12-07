@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "filter.h"
+#include "filter_internal.h"
 
 #include "../../dotprod/src/dotprod.h"
 

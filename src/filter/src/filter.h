@@ -5,8 +5,6 @@
 #ifndef __LIQUID_FILTER_H__
 #define __LIQUID_FILTER_H__
 
-#include "../../buffer/src/window.h"
-
 //
 // Finite impulse response filter
 //
@@ -18,15 +16,6 @@ typedef enum {
     FIR_RCOS,
     FIR_GAUSS
 } fir_prototype;
-
-struct fir_filter_s {
-    float * h;
-    unsigned int h_len;
-
-    fwindow w;
-
-    fir_prototype p;
-};
 
 //  filter type     : out   : coeff : in
 //  ----------------+-------+-------+-----
@@ -61,11 +50,6 @@ unsigned int fir_filter_get_length(fir_filter _f);
 // FIR Polyphase filter bank
 //
 typedef struct firpfb_s * firpfb;
-struct firpfb_s {
-    fir_filter * f;
-    unsigned int num_filters;
-    unsigned int h_len;
-};
 firpfb firpfb_create(unsigned int _num_filters, float *_h, unsigned int _h_len);
 void firpfb_destroy(firpfb _b);
 void firpfb_print(firpfb _b);
@@ -75,15 +59,6 @@ void firpfb_execute(firpfb _b, unsigned int _i, float _x, float *_y);
 // Interpolator
 //
 typedef struct interp_s * interp;
-struct interp_s {
-    float * h;
-    unsigned int h_len;
-    unsigned int M;
-
-    fir_prototype p;
-    fwindow w;
-};
-
 interp interp_create(unsigned int _M, float *_h, unsigned int _h_len);
 void interp_destroy(interp _q);
 void interp_print(interp _q);
@@ -94,15 +69,6 @@ void interp_execute(interp _q, float _x, float *_y);
 //
 typedef struct decim_s * decim;
 decim decim_create(unsigned int _D, float *_h, unsigned int _h_len);
-struct decim_s {
-    float * h;
-    unsigned int h_len;
-    unsigned int D;
-
-    fir_prototype p;
-    fwindow w;
-};
-
 decim decim_create(unsigned int _M, float *_h, unsigned int _h_len);
 void decim_destroy(decim _q);
 void decim_print(decim _q);

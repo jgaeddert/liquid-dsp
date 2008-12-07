@@ -12,12 +12,13 @@ extern "C" {
 
 #include "agc.h"
 #include "buffer.h"
+#include "window.h"
 #include "decim2.h"
 #include "dotprod.h"
 #include "fec.h"
 #include "fft.h"
 #include "filter_common.h"
-#include "fir_filter.h"
+#include "filter.h"
 #include "firdes.h"
 #include "interleaver.h"
 #include "liquid.h"
@@ -29,10 +30,8 @@ extern "C" {
 #include "nco.h"
 #include "port.h"
 #include "random.h"
-#include "rrcos.h"
 #include "scramble.h"
 #include "utility.h"
-#include "window.h"
 
 #ifdef __cplusplus
 }       // extern "C"

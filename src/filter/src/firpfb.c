@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "filter.h"
+#include "filter_internal.h"
 #include "../../dotprod/src/dotprod.h"
 
 firpfb firpfb_create(unsigned int _num_filters, float * _h, unsigned int _h_len)
