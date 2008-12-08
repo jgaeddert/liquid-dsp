@@ -47,22 +47,30 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CFLOAT, float complex)
 #define FIRPFB_MANGLE_CFLOAT(name) FILTER_CONCAT(cfirpfb,name)
 
 #define LIQUID_FIRPFB_DEFINE_API(X,T) \
-typedef struct X(_s) * firpfb; \
+typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
 void X(_destroy)(X() _b); \
 void X(_print)(X() _b); \
 void X(_execute)(X() _b, unsigned int _i, T _x, T *_y);
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_FLOAT, float)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CFLOAT, float complex)
 
 // 
 // Interpolator
 //
-typedef struct interp_s * interp;
-interp interp_create(unsigned int _M, float *_h, unsigned int _h_len);
-void interp_destroy(interp _q);
-void interp_print(interp _q);
-void interp_execute(interp _q, float _x, float *_y);
+#define INTERP_MANGLE_FLOAT(name)  FILTER_CONCAT(interp,name)
+#define INTERP_MANGLE_CFLOAT(name) FILTER_CONCAT(cinterp,name)
+
+#define LIQUID_INTERP_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(unsigned int _M, T *_h, unsigned int _h_len); \
+void X(_destroy)(X() _q); \
+void X(_print)(X() _q); \
+void X(_execute)(X() _q, T _x, T *_y);
+
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_FLOAT, float)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CFLOAT, float complex)
 
 // 
 // Decimator (basic)
