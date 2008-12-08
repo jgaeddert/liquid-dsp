@@ -5,6 +5,10 @@
 #ifndef __LIQUID_FILTER_H__
 #define __LIQUID_FILTER_H__
 
+#include <complex.h>
+
+#define FILTER_CONCAT(prefix,name) prefix ## name
+
 //
 // Finite impulse response filter
 //
@@ -17,43 +21,39 @@ typedef enum {
     FIR_GAUSS
 } fir_prototype;
 
-//  filter type     : out   : coeff : in
-//  ----------------+-------+-------+-----
-//  fir_filter_rrr  : REAL  : REAL  : REAL
-//  fir_filter_ccc  : CPLX  : CPLX  : CPLX
-//  fir_filter_ccr  : CPLX  : CPLX  : REAL
-
-typedef struct fir_filter_s * fir_filter;
-
-fir_filter fir_filter_create(float * _h, unsigned int _n);
-
-//fir_filter fir_filter_create_prototype(unsigned int _n);
-
-void fir_filter_destroy(fir_filter _f);
-
-void fir_filter_print(fir_filter _f);
-
-void fir_filter_push(fir_filter _f, float _x);
-void fir_filter_execute(fir_filter _f, float *_y);
-
-// accessor functions
-unsigned int fir_filter_get_length(fir_filter _f);
+#define FIR_FILTER_MANGLE_FLOAT(name)  FILTER_CONCAT(fir_filter,name)
+#define FIR_FILTER_MANGLE_CFLOAT(name) FILTER_CONCAT(cfir_filter,name)
 
 // Macro:
 //  X   : name-mangling macro
-//  O   : output type
-//  C   : coefficients type
-//  I   : input type
-// DEFINE_FIR_FITER_API(X,O,C,I)
+//  T   : coefficients type
+#define LIQUID_FIR_FILTER_DEFINE_API(X,T) \
+typedef struct X(_s) * X();   \
+X() X(_create)(T * _h, unsigned int _n); \
+void X(_destroy)(X() _f); \
+void X(_print)(X() _f); \
+void X(_push)(X() _f, T _x); \
+void X(_execute)(X() _f, T *_y); \
+unsigned int X(_get_length)(X() _f);
+
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_FLOAT, float)
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CFLOAT, float complex)
+
 
 //
 // FIR Polyphase filter bank
 //
-typedef struct firpfb_s * firpfb;
-firpfb firpfb_create(unsigned int _num_filters, float *_h, unsigned int _h_len);
-void firpfb_destroy(firpfb _b);
-void firpfb_print(firpfb _b);
-void firpfb_execute(firpfb _b, unsigned int _i, float _x, float *_y);
+#define FIRPFB_MANGLE_FLOAT(name)  FILTER_CONCAT(firpfb,name)
+#define FIRPFB_MANGLE_CFLOAT(name) FILTER_CONCAT(cfirpfb,name)
+
+#define LIQUID_FIRPFB_DEFINE_API(X,T) \
+typedef struct X(_s) * firpfb; \
+X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
+void X(_destroy)(X() _b); \
+void X(_print)(X() _b); \
+void X(_execute)(X() _b, unsigned int _i, T _x, T *_y);
+
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_FLOAT, float)
 
 // 
 // Interpolator
