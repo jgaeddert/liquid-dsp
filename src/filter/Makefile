@@ -2,7 +2,8 @@
 # Makefile for filter module
 #
 
-EXAMPLES = fir_filter_example interp_example decim_example \
+EXAMPLES = fir_filter_example iir_filter_example \
+		   interp_example decim_example \
 		   matched_filter_example firpfb_example
 
 CC = gcc

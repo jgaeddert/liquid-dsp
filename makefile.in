@@ -74,6 +74,7 @@ AUTOTESTS = \
 	src/filter/tests/decim_autotest.h \
 	src/filter/tests/firdes_autotest.h \
 	src/filter/tests/fir_filter_autotest.h \
+	src/filter/tests/iir_filter_autotest.h \
 	src/filter/tests/interp_autotest.h \
 	src/interleaver/tests/interleaver_autotest.h \
 	src/math/tests/math_autotest.h \

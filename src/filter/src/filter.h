@@ -52,7 +52,7 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CFLOAT, float complex)
 //  T   : coefficients type
 #define LIQUID_IIR_FILTER_DEFINE_API(X,T) \
 typedef struct X(_s) * X();   \
-X() X(_create)(T * _b, T * _a,  unsigned int _n); \
+X() X(_create)(T * _b, unsigned int _nb, T * _a,  unsigned int _na); \
 void X(_destroy)(X() _f); \
 void X(_print)(X() _f); \
 void X(_clear)(X() _f); \
