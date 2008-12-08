@@ -6,7 +6,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "filter.h"
 #include "../../dotprod/src/dotprod.h"
 #include "../../buffer/src/window.h"
 
@@ -15,11 +14,6 @@
 //  T           coefficients type
 //  W           window type
 //  DOTPROD     dot product API
-
-#define FIR_FILTER(name)    FILTER_CONCAT(fir_filter,name)
-#define T                   float
-#define WINDOW(name)        FILTER_CONCAT(fwindow,name)
-#define DOTPROD(name)       FILTER_CONCAT(fdotprod,name)
 
 struct FIR_FILTER(_s) {
     T * h;

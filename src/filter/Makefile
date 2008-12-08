@@ -9,8 +9,8 @@ CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = decim.o \
-	   filter_common.o fir_filter.o firdes.o \
-	   nyquist.o rrcos.o window.o lf2.o interp.o firpfb.o
+	   filter_common.o filter.f.o firdes.o \
+	   nyquist.o rrcos.o window.o lf2.o interp.o
 HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \
 		  src/filter.h src/firdes.h src/filter.h \
 		  src/polyphase.h

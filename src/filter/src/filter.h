@@ -75,12 +75,18 @@ LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CFLOAT, float complex)
 // 
 // Decimator (basic)
 //
-typedef struct decim_s * decim;
-decim decim_create(unsigned int _D, float *_h, unsigned int _h_len);
-decim decim_create(unsigned int _M, float *_h, unsigned int _h_len);
-void decim_destroy(decim _q);
-void decim_print(decim _q);
-void decim_execute(decim _q, float *_x, float *_y, unsigned int _index);
+#define DECIM_MANGLE_FLOAT(name)    FILTER_CONCAT(decim,name)
+#define DECIM_MANGLE_CFLOAT(name)   FILTER_CONCAT(cdecim,name)
+
+#define LIQUID_DECIM_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(unsigned int _D, T *_h, unsigned int _h_len); \
+void X(_destroy)(X() _q); \
+void X(_print)(X() _q); \
+void X(_execute)(X() _q, T *_x, T *_y, unsigned int _index);
+
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_FLOAT, float)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CFLOAT, float complex)
 
 //
 // 2nd-Order Loop Filter
