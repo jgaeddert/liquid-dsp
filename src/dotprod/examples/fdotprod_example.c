@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "dotprod.h"
+#include "../src/dotprod.h"
 
 int main() {
     float x[] = {1, 2, 3, 4, 5};

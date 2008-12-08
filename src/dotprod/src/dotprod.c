@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dotprod.h"
+#include "dotprod_internal.h"
 
 // basic dot product
 
@@ -32,13 +32,9 @@ T X(_run4)(T *_x, T *_y, unsigned int _n)
     return r;
 }
 
+//
 // structured dot product
-
-struct X(_s) {
-    // single-threaded operation
-    T * v;
-    unsigned int n;
-};
+//
 
 X() X(_create)(T * _v, unsigned int _n)
 {

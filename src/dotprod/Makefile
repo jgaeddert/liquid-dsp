@@ -2,9 +2,9 @@
 # Makefile for dotprod module
 #
 
-TESTS = fdotprod_test cfdotprod_test
+EXAMPLES = fdotprod_example cfdotprod_example
 
-all: $(TESTS)
+all: $(EXAMPLES)
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -12,11 +12,11 @@ LDFLAGS = -lm
 OBJS = fdotprod.o cfdotprod.o
 HEADERS = src/dotprod.h
 
-$(TESTS) : %_test : src/main_%.c $(OBJS)
+$(EXAMPLES) : % : examples/%.c $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $< -o $@
 
 $(OBJS) : %.o : src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TESTS)
+	rm -f $(OBJS) $(EXAMPLES)
