@@ -88,7 +88,8 @@ AUTOTESTS = \
 
 BENCHMARKS = \
 	src/agc/bench/agc_benchmark.h \
-	src/dotprod/bench/dotprod_benchmark.h \
+	src/dotprod/bench/fdotprod_benchmark.h \
+	src/dotprod/bench/cfdotprod_benchmark.h \
 	src/fec/bench/fec_benchmark.h \
 	src/fft/bench/fft_benchmark.h \
 	src/interleaver/bench/interleaver_benchmark.h \
