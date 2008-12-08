@@ -41,6 +41,29 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CFLOAT, float complex)
 
 
 //
+// Infinite impulse response filter
+//
+
+#define IIR_FILTER_MANGLE_FLOAT(name)  FILTER_CONCAT(iir_filter,name)
+#define IIR_FILTER_MANGLE_CFLOAT(name) FILTER_CONCAT(ciir_filter,name)
+
+// Macro:
+//  X   : name-mangling macro
+//  T   : coefficients type
+#define LIQUID_IIR_FILTER_DEFINE_API(X,T) \
+typedef struct X(_s) * X();   \
+X() X(_create)(T * _b, T * _a,  unsigned int _n); \
+void X(_destroy)(X() _f); \
+void X(_print)(X() _f); \
+void X(_clear)(X() _f); \
+void X(_execute)(X() _f, T _x, T *_y); \
+unsigned int X(_get_length)(X() _f);
+
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_FLOAT, float)
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CFLOAT, float complex)
+
+
+//
 // FIR Polyphase filter bank
 //
 #define FIRPFB_MANGLE_FLOAT(name)  FILTER_CONCAT(firpfb,name)
