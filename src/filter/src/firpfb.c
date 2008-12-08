@@ -12,8 +12,8 @@
 // defined:
 //  FIRPFB()    name-mangling macro
 //  T           data type
-//  WINDOW()
-//  DOTPROD()
+//  WINDOW()    window macro
+//  DOTPROD()   dotprod macro
 
 struct FIRPFB(_s) {
     T * h;

@@ -17,6 +17,6 @@
 // source files
 #include "fir_filter.c"
 #include "firpfb.c"
-//#include "interp.c"
-//#include "decim.c"
+#include "interp.c"
+#include "decim.c"
 

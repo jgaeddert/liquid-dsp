@@ -6,15 +6,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "filter_internal.h"
+#include "../../dotprod/src/dotprod_internal.h"
+#include "../../buffer/src/window.h"
 
-#include "../../dotprod/src/dotprod.h"
+// defined:
+//  DECIM()     name-mangling macro
+//  T           data type
+//  WINDOW()    window macro
+//  DOTPROD()   dotprod macro
 
-decim decim_create(unsigned int _D, float *_h, unsigned int _h_len)
+struct DECIM(_s) {
+    T * h;
+    unsigned int h_len;
+    unsigned int D;
+
+    fir_prototype p;
+    WINDOW() w;
+    //DOTPROD() dp;
+};
+
+DECIM() DECIM(_create)(unsigned int _D, T *_h, unsigned int _h_len)
 {
-    decim q = (decim) malloc(sizeof(struct decim_s));
+    DECIM() q = (decim) malloc(sizeof(struct DECIM(_s)));
     q->h_len = _h_len;
-    q->h = (float*) malloc((q->h_len)*sizeof(float));
+    q->h = (T*) malloc((q->h_len)*sizeof(T));
 
     // load filter in reverse order
     unsigned int i;
@@ -23,35 +38,35 @@ decim decim_create(unsigned int _D, float *_h, unsigned int _h_len)
 
     q->D = _D;
 
-    q->w = fwindow_create(q->h_len);
-    fwindow_clear(q->w);
+    q->w = WINDOW(_create)(q->h_len);
+    WINDOW(_clear)(q->w);
 
     return q;
 }
 
-void decim_destroy(decim _q)
+void DECIM(_destroy)(DECIM() _q)
 {
-    fwindow_destroy(_q->w);
+    WINDOW(_destroy)(_q->w);
     free(_q->h);
     free(_q);
 }
 
-void decim_print(decim _q)
+void DECIM(_print)(DECIM() _q)
 {
-    printf("decim [%u] :\n", _q->D);
+    printf("DECIM() [%u] :\n", _q->D);
     printf("  window:\n");
-    fwindow_print(_q->w);
+    WINDOW(_print)(_q->w);
 }
 
-void decim_execute(decim _q, float *_x, float *_y, unsigned int _index)
+void DECIM(_execute)(DECIM() _q, T *_x, T *_y, unsigned int _index)
 {
-    float * r; // read pointer
+    T * r; // read pointer
     unsigned int i;
     for (i=0; i<_q->D; i++) {
-        fwindow_push(_q->w, _x[i]);
+        WINDOW(_push)(_q->w, _x[i]);
         if (i==_index) {
-            fwindow_read(_q->w, &r);
-            *_y = fdotprod_run(_q->h, r, _q->h_len);
+            WINDOW(_read)(_q->w, &r);
+            *_y = DOTPROD(_run)(_q->h, r, _q->h_len);
         }
     }
 }
