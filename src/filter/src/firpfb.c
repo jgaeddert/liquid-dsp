@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "../../buffer/src/window.h"
-#include "../../dotprod/src/dotprod.h"
+#include "../../dotprod/src/dotprod_internal.h"
 
 // defined:
 //  FIRPFB()    name-mangling macro
@@ -65,7 +65,6 @@ void FIRPFB(_destroy)(FIRPFB() _b)
 void FIRPFB(_print)(FIRPFB() _b)
 {
     printf("fir polyphase filterbank [%u] :\n", _b->num_filters);
-#if 0
     unsigned int i,n,s=8;
 
     for (i=0; i<_b->num_filters; i++)
@@ -74,11 +73,10 @@ void FIRPFB(_print)(FIRPFB() _b)
 
     for (n=0; n<_b->h_len; n++) {
         for (i=0; i<_b->num_filters; i++) {
-            printf(" %*.*f", s-1, s-3-1, _b->f[i]->h[n]);
+            printf(" %*.*f", s-1, s-3-1, _b->dp[i]->v[n]);
         }
         printf("\n");
     }
-#endif
 }
 
 void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, T _x, T *_y)

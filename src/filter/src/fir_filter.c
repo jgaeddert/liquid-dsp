@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../../dotprod/src/dotprod.h"
+#include "../../dotprod/src/dotprod_internal.h"
 #include "../../buffer/src/window.h"
 
 // defined:
