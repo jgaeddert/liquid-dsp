@@ -39,6 +39,8 @@ IIR_FILTER() IIR_FILTER(_create)(T * _b, unsigned int _nb, T * _a, unsigned int 
     f->b = (T *) malloc((f->na)*sizeof(T));
     f->a = (T *) malloc((f->nb)*sizeof(T));
 
+    T a0 = _a[0];
+
     unsigned int i;
 #if 0
     // read values in reverse order
@@ -49,10 +51,10 @@ IIR_FILTER() IIR_FILTER(_create)(T * _b, unsigned int _nb, T * _a, unsigned int 
         f->a[i] = _a[f->na - i - 1];
 #else
     for (i=0; i<f->nb; i++)
-        f->b[i] = _b[i];
+        f->b[i] = _b[i] / a0;
 
     for (i=0; i<f->na; i++)
-        f->a[i] = _a[i];
+        f->a[i] = _a[i] / a0;
 #endif
 
     f->v = (T *) malloc((f->n)*sizeof(T));
