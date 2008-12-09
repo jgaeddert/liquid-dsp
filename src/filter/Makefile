@@ -14,7 +14,9 @@ OBJS = filter.f.o \
 	   nyquist.o rrcos.o window.o lf2.o
 HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \
 		  src/filter.h src/firdes.h src/filter.h \
-		  src/polyphase.h
+		  src/polyphase.h \
+		  src/iir_filter.c src/fir_filter.c src/decim.c src/interp.c \
+		  src/firpfb.c
 
 all: $(EXAMPLES)
 

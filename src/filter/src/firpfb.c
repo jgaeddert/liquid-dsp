@@ -14,6 +14,7 @@
 //  T           data type
 //  WINDOW()    window macro
 //  DOTPROD()   dotprod macro
+//  PRINTVAL()  print macro
 
 struct FIRPFB(_s) {
     T * h;
@@ -50,6 +51,10 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len)
 
     b->h_len = h_sub_len;
 
+    // create window buffer
+    b->w = WINDOW(_create)(b->h_len);
+    WINDOW(_clear)(b->w);
+
     return b;
 }
 
@@ -59,28 +64,42 @@ void FIRPFB(_destroy)(FIRPFB() _b)
     for (i=0; i<_b->num_filters; i++)
         DOTPROD(_destroy)(_b->dp[i]);
     free(_b->dp);
+    WINDOW(_destroy)(_b->w);
     free(_b);
 }
 
 void FIRPFB(_print)(FIRPFB() _b)
 {
     printf("fir polyphase filterbank [%u] :\n", _b->num_filters);
-    unsigned int i,n,s=8;
+    unsigned int i,n;
 
     for (i=0; i<_b->num_filters; i++)
-        printf("%*u",s,i);
+        printf("%13u",i);
     printf("\n");
 
     for (n=0; n<_b->h_len; n++) {
         for (i=0; i<_b->num_filters; i++) {
-            printf(" %*.*f", s-1, s-3-1, _b->dp[i]->v[n]);
+            printf(" ");
+            PRINTVAL(_b->dp[i]->v[n]);
         }
         printf("\n");
     }
 }
 
+void FIRPFB(_push)(FIRPFB() _b, T _x)
+{
+    // push value into window buffer
+    WINDOW(_push)(_b->w, _x);
+}
+
 void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, T _x, T *_y)
 {
+    // read buffer
+    T *r;
+    WINDOW(_read)(_b->w, &r);
+
+    // execute dot product
+    *_y = DOTPROD(_execute)(_b->dp[_i], r);
 }
 
 

@@ -9,19 +9,24 @@
 //#include "../../dotprod/src/dotprod_internal.h"
 
 // defined:
-//  IIR_FILTER  name-mangling macro
-//  T           coefficients type
-//  PRINTLINE   print macro
+//  IIR_FILTER()    name-mangling macro
+//  T               coefficients type
+//  WINDOW()        window macro
+//  DOTPROD()       dotprod macro
+//  PRINTVAL()      print macro
 
 struct IIR_FILTER(_s) {
     T * b;          // feedforward coefficients
     T * a;          // feedback coefficients
     T * v;          // internal filter state
     unsigned int n; // filter length
-    unsigned int i; // state index
 
     unsigned int nb;
     unsigned int na;
+
+    WINDOW() w;
+    //DOTPROD() dpa;
+    //DOTPROD() dpb;
 };
 
 IIR_FILTER() IIR_FILTER(_create)(T * _b, unsigned int _nb, T * _a, unsigned int _na)
@@ -34,15 +39,28 @@ IIR_FILTER() IIR_FILTER(_create)(T * _b, unsigned int _nb, T * _a, unsigned int 
     f->b = (T *) malloc((f->na)*sizeof(T));
     f->a = (T *) malloc((f->nb)*sizeof(T));
 
-    memcpy(f->b, _b, (f->n)*sizeof(T));
-    memcpy(f->a, _a, (f->n)*sizeof(T));
+    unsigned int i;
+#if 0
+    // read values in reverse order
+    for (i=0; i<f->nb; i++)
+        f->b[i] = _b[f->nb - i - 1];
+
+    for (i=0; i<f->na; i++)
+        f->a[i] = _a[f->na - i - 1];
+#else
+    for (i=0; i<f->nb; i++)
+        f->b[i] = _b[i];
+
+    for (i=0; i<f->na; i++)
+        f->a[i] = _a[i];
+#endif
 
     f->v = (T *) malloc((f->n)*sizeof(T));
-    unsigned int i;
     for (i=0; i<f->n; i++)
         f->v[i] = 0;
 
-    f->i = 0;
+    f->w = WINDOW(_create)(f->n);
+    WINDOW(_clear)(f->w);
     
     return f;
 }
@@ -55,6 +73,7 @@ IIR_FILTER() IIR_FILTER(_create_prototype)(unsigned int _n)
 
 void IIR_FILTER(_destroy)(IIR_FILTER() _f)
 {
+    WINDOW(_destroy)(_f->w);
     free(_f->b);
     free(_f->a);
     free(_f->v);
@@ -68,17 +87,17 @@ void IIR_FILTER(_print)(IIR_FILTER() _f)
 
     printf("  b :");
     for (i=0; i<_f->nb; i++)
-        printf("%12.4e", _f->b[i]);
+        PRINTVAL(_f->b[i]);
     printf("\n");
 
     printf("  a :");
     for (i=0; i<_f->na; i++)
-        printf("%12.4e", _f->a[i]);
+        PRINTVAL(_f->a[i]);
     printf("\n");
 
     printf("  v :");
     for (i=0; i<_f->n; i++)
-        printf("%12.4e", _f->v[i]);
+        PRINTVAL(_f->v[i]);
     printf("\n");
 }
 
@@ -88,27 +107,26 @@ void IIR_FILTER(_clear)(IIR_FILTER() _f)
     unsigned int i;
     for (i=0; i<_f->n; i++)
         _f->v[i] = 0;
-
-    _f->i = 0;
 }
 
 void IIR_FILTER(_execute)(IIR_FILTER() _f, T _x, T *_y)
 {
     unsigned int i;
 
-    T v0 = _x;
-
-    for (i=1; i<_f->na; i++)
-        v0 += _f->a[i] * _f->v[i];
-
-    T y0 = 0;
-
-    for (i=0; i<_f->nb; i++)
-        y0 += _f->b[i] * _f->v[i];
-
-    // update state
+    // advance buffer
     for (i=_f->n-1; i>0; i--)
         _f->v[i] = _f->v[i-1];
+
+    // compute new v
+    T v0 = _x;
+    for (i=1; i<_f->na; i++)
+        v0 -= _f->a[i] * _f->v[i];
+    _f->v[0] = v0;
+
+    // compute new y
+    T y0 = 0;
+    for (i=0; i<_f->nb; i++)
+        y0 += _f->b[i] * _f->v[i];
 
     // set return value
     *_y = y0;

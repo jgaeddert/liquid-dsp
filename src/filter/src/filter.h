@@ -74,6 +74,7 @@ typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
 void X(_destroy)(X() _b); \
 void X(_print)(X() _b); \
+void X(_push)(X() _b, T _x); \
 void X(_execute)(X() _b, unsigned int _i, T _x, T *_y);
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_FLOAT, float)

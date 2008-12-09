@@ -10,10 +10,11 @@
 #include "../../buffer/src/window.h"
 
 // defined:
-//  FIR_FILTER  name-mangling macro
-//  T           coefficients type
-//  W           window type
-//  DOTPROD     dot product API
+//  FIR_FILTER()    name-mangling macro
+//  T               coefficients type
+//  WINDOW()        window macro
+//  DOTPROD()       dotprod macro
+//  PRINTVAL()      print macro
 
 struct FIR_FILTER(_s) {
     T * h;
@@ -63,9 +64,12 @@ void FIR_FILTER(_destroy)(FIR_FILTER() _f)
 void FIR_FILTER(_print)(FIR_FILTER() _f)
 {
     printf("filter coefficients:\n");
-    //unsigned int i, n = _f->h_len;
-    //for (i=0; i<n; i++)
-    //    printf(" h(%u) = %12.4E;\n", i+1, _f->h[n-i-1]);
+    unsigned int i, n = _f->h_len;
+    for (i=0; i<n; i++) {
+        printf("  h(%3u) = ", i+1);
+        PRINTVAL(_f->h[n-i-1]);
+        printf("\n");
+    }
 }
 
 void FIR_FILTER(_push)(FIR_FILTER() _f, T _x)

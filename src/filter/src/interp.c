@@ -14,6 +14,7 @@
 //  T           data type
 //  WINDOW()    window macro
 //  DOTPROD()   dotprod macro
+//  PRINTVAL()  print macro
 
 struct INTERP(_s) {
     T * h;

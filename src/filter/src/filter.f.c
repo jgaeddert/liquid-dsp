@@ -10,6 +10,7 @@
 #define FIRPFB(name)        FILTER_CONCAT(firpfb,name)
 #define INTERP(name)        FILTER_CONCAT(interp,name)
 #define DECIM(name)         FILTER_CONCAT(decim,name)
+#define PRINTVAL(x)         printf("%12.4e", x)
 
 #define T                   float
 #define WINDOW(name)        FILTER_CONCAT(fwindow,name)
