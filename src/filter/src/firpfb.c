@@ -92,7 +92,7 @@ void FIRPFB(_push)(FIRPFB() _b, T _x)
     WINDOW(_push)(_b->w, _x);
 }
 
-void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, T _x, T *_y)
+void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, T *_y)
 {
     // read buffer
     T *r;
