@@ -144,8 +144,8 @@ int main(int argc, char *argv[])
         // do nothing
     }
 
-    //if (autoscale)
-    //    estimate_cpu_speed();
+    if (autoscale)
+        estimate_cpu_speed();
 
     switch (mode) {
     case RUN_ALL:
@@ -217,7 +217,7 @@ void estimate_cpu_speed(void)
     printf("  estimated clock speed: %E Hz\n", cpu_clock);
 
     unsigned long int min_trials = 256;
-    num_trials = (unsigned long int) ( cpu_clock / 20e3 );
+    num_trials = (unsigned long int) ( cpu_clock / 80e3 );
     num_trials = (num_trials < min_trials) ? min_trials : num_trials;
 
     printf("  setting number of trials to %ld\n", num_trials);
@@ -225,19 +225,11 @@ void estimate_cpu_speed(void)
 
 void execute_benchmark(bench_t* _benchmark, bool _verbose)
 {
-    unsigned long int base_trials, n;
+    unsigned long int n=num_trials;
     struct rusage start, finish;
 
-    // continue increasing number of trials until minimum
-    // runtime has been achieved
-    base_trials = 256;
-    do {
-        base_trials += base_trials/2;
-        n = base_trials;
-        _benchmark->api(&start, &finish, &n);
-        _benchmark->extime = calculate_execution_time(start, finish);
-        //printf("        extime : %f / %lu\n", _benchmark->extime, n);
-    } while (_benchmark->extime < runtime);
+    _benchmark->api(&start, &finish, &n);
+    _benchmark->extime = calculate_execution_time(start, finish);
 
     _benchmark->num_trials = n;
     _benchmark->rate = (float)(_benchmark->num_trials) / _benchmark->extime;
