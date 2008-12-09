@@ -14,8 +14,8 @@ void iir_filter_bench(
     float b[_n], a[_n], y;
     unsigned int i;
     for (i=0; i<_n; i++) {
-        b[_n] = 1.0f;
-        a[_n] = 1.0f;
+        b[i] = 1.0f;
+        a[i] = 1.0f;
     }
 
     iir_filter f = iir_filter_create(b,_n,a,_n);
