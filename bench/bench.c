@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
                 for (j=packages[i].benchmark_index; j<packages[i].num_benchmarks+packages[i].benchmark_index; j++)
-                    printf("    %u:\t%s\n", benchmarks[j].id, benchmarks[j].name);
+                    printf("    %-3u: %-22s\n", benchmarks[j].id, benchmarks[j].name);
             }
             return 0;
         case 'v':
@@ -282,7 +282,7 @@ void print_benchmark_results(bench_t* _b)
         rate_format /= 1e3;
         rate_units = "k ";
     }
-    printf("    %u:\t%22s: %8d trials in %7.2f %2s (%8.3f %strials/s)\n",
+    printf("    %-3u: %-22s: %8d trials in %7.3f %2s (%7.3f %strials/s)\n",
         _b->id, _b->name, _b->num_trials, extime_format, extime_units, rate_format, rate_units);
 }
 
