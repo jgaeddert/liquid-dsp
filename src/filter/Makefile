@@ -12,9 +12,7 @@ LDFLAGS = -lm
 OBJS = filter.f.o filter.cf.o \
 	   filter_common.o firdes.o \
 	   nyquist.o rrcos.o window.o lf2.o
-HEADERS = src/decim2.h src/decim_internal.h src/filter_common.h \
-		  src/filter.h src/firdes.h src/filter.h \
-		  src/polyphase.h \
+HEADERS = src/filter_common.h src/filter.h src/firdes.h \
 		  src/iir_filter.c src/fir_filter.c src/decim.c src/interp.c \
 		  src/firpfb.c
 
