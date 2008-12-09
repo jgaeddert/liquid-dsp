@@ -28,7 +28,7 @@ struct DECIM(_s) {
 
 DECIM() DECIM(_create)(unsigned int _D, T *_h, unsigned int _h_len)
 {
-    DECIM() q = (decim) malloc(sizeof(struct DECIM(_s)));
+    DECIM() q = (DECIM()) malloc(sizeof(struct DECIM(_s)));
     q->h_len = _h_len;
     q->h = (T*) malloc((q->h_len)*sizeof(T));
 

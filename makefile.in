@@ -17,7 +17,7 @@ LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
 LIBS_DOTPROD = fdotprod.o cfdotprod.o
 LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec_rep.o fec_hamming74.o
 LIBS_FFT = fft_create_plan.o fft_execute.o fft_shift.o
-LIBS_FILTER = filter.f.o \
+LIBS_FILTER = filter.f.o filter.cf.o \
 			  filter_common.o rrcos.o window.o firdes.o \
 			  lf2.o
 LIBS_INTERLEAVER = interleaver.o interleaver_create.o interleaver_permute.o

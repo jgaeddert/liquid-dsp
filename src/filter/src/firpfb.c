@@ -29,7 +29,7 @@ struct FIRPFB(_s) {
 
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len)
 {
-    FIRPFB() b = (firpfb) malloc(sizeof(struct FIRPFB(_s)));
+    FIRPFB() b = (FIRPFB()) malloc(sizeof(struct FIRPFB(_s)));
     b->num_filters = _num_filters;
     b->h_len = _h_len;
 

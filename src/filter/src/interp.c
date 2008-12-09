@@ -28,7 +28,7 @@ struct INTERP(_s) {
 
 INTERP() INTERP(_create)(unsigned int _M, T *_h, unsigned int _h_len)
 {
-    INTERP() q = (interp) malloc(sizeof(struct INTERP(_s)));
+    INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
     q->h_len = _h_len;
     q->h = (T*) malloc((q->h_len)*sizeof(T));
     // load filter in reverse order
@@ -39,7 +39,7 @@ INTERP() INTERP(_create)(unsigned int _M, T *_h, unsigned int _h_len)
     q->M = _M;
 
     q->w = WINDOW(_create)(q->h_len);
-    fwindow_clear(q->w);
+    WINDOW(_clear)(q->w);
 
     return q;
 }
