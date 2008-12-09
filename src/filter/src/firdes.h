@@ -55,4 +55,17 @@ void design_rrc_filter(
 //
 float kaiser(unsigned int _n, unsigned int _N, float _beta);
 
+//
+// IIR filter design
+//
+
+void butterf(unsigned int _n, float * _a);
+
+// Chebyshev type-I filter design
+//  _n  :   filter order
+//  _ep :   epsilon, passband ripple
+//  _b  :   numerator coefficient array (length 1)
+//  _a  :   denominator coefficient array (length _n+1)
+void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
+
 #endif // __LIQUID_FIRDES_H__

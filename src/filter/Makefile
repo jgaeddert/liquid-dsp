@@ -4,13 +4,14 @@
 
 EXAMPLES = fir_filter_example iir_filter_example \
 		   interp_example decim_example \
-		   matched_filter_example firpfb_example
+		   matched_filter_example firpfb_example \
+		   cheby1_example
 
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = filter.f.o filter.cf.o \
-	   filter_common.o firdes.o \
+	   filter_common.o firdes.o cheby1.o butter.o \
 	   nyquist.o rrcos.o window.o lf2.o
 HEADERS = src/filter_common.h src/filter.h src/firdes.h \
 		  src/iir_filter.c src/fir_filter.c src/decim.c src/interp.c \
