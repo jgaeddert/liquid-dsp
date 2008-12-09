@@ -21,7 +21,7 @@ LIBS_FILTER = filter.f.o filter.cf.o \
 			  filter_common.o rrcos.o window.o firdes.o \
 			  lf2.o
 LIBS_INTERLEAVER = interleaver.o interleaver_create.o interleaver_permute.o
-LIBS_MATH = math.o fmatrix.o cfmatrix.o
+LIBS_MATH = lmath.o fmatrix.o cfmatrix.o
 LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o
 LIBS_NCO = nco.o pll.o
 LIBS_OPTIM = pattern_set.o
@@ -44,7 +44,7 @@ INCLUDE_HEADERS = \
 	src/filter/src/filter.h \
 	src/filter/src/firdes.h \
 	src/interleaver/src/interleaver.h \
-	src/math/src/math.h \
+	src/math/src/lmath.h \
 	src/math/src/matrix.h \
 	src/modem/src/modem_common.h \
 	src/modem/src/modem.h \

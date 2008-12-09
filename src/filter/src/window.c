@@ -4,7 +4,7 @@
 
 #include <math.h>
 #include "firdes.h"
-#include "../../math/src/math.h"
+#include "../../math/src/lmath.h"
 
 //
 float kaiser(unsigned int _n, unsigned int _N, float _beta)

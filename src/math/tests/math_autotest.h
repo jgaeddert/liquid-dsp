@@ -2,7 +2,7 @@
 #define __MATH_AUTOTEST_H__
 
 #include "../../../autotest/autotest.h"
-#include "../src/math.h"
+#include "../src/lmath.h"
 
 // 
 // AUTOTEST: Gamma

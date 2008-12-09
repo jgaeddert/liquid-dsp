@@ -18,7 +18,7 @@ HEADERS = src/filter_common.h src/filter.h src/firdes.h \
 
 all: $(EXAMPLES)
 
-MATH_DEPS = math.o
+MATH_DEPS = lmath.o
 BUFFER_DEPS = fwindow.o cfwindow.o
 DOTPROD_DEPS = fdotprod.o cfdotprod.o
 DEPS = $(MATH_DEPS) $(BUFFER_DEPS) $(DOTPROD_DEPS)

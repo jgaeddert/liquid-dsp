@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "firdes.h"
-#include "../../math/src/math.h" // sincf()
+#include "../../math/src/lmath.h" // sincf()
 
 //
 void fir_design_halfband_windowed_sinc(float * _h, unsigned int _n)
