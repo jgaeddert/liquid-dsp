@@ -14,8 +14,8 @@ void fdotprod_bench(
     float x[_n], h[_n], y;
     unsigned int i;
     for (i=0; i<_n; i++) {
-        x[_n] = 1.0f;
-        h[_n] = 1.0f;
+        x[i] = 1.0f;
+        h[i] = 1.0f;
     }
 
     // start trials
