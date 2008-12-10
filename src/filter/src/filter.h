@@ -75,7 +75,8 @@ X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
 void X(_destroy)(X() _b); \
 void X(_print)(X() _b); \
 void X(_push)(X() _b, T _x); \
-void X(_execute)(X() _b, unsigned int _i, T *_y);
+void X(_execute)(X() _b, unsigned int _i, T *_y); \
+void X(_clear)(X() _b);
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_FLOAT, float)
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CFLOAT, float complex)
@@ -123,7 +124,10 @@ typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _k, unsigned int _num_filters, T * _h, unsigned int _h_len); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
-void X(_execute)(X() _q);
+void X(_execute)(X() _q); \
+void X(_set_lf_bw)(X() _q, float _bt); \
+void X(_clear)(X() _q); \
+void X(_estimate_timing)(X() _q, T * _x, unsigned int _n);
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_FLOAT, float)
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CFLOAT, float complex)

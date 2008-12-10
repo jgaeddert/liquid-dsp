@@ -102,4 +102,8 @@ void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, T *_y)
     *_y = DOTPROD(_execute)(_b->dp[_i], r);
 }
 
+void FIRPFB(_clear)(FIRPFB() _b)
+{
+    WINDOW(_clear)(_b->w);
+}
 
