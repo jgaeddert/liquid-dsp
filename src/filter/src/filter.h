@@ -112,6 +112,22 @@ void X(_execute)(X() _q, T *_x, T *_y, unsigned int _index);
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_FLOAT, float)
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CFLOAT, float complex)
 
+// 
+// Symbol timing recovery (symbol synchronizer)
+//
+#define SYMSYNC_MANGLE_FLOAT(name)  FILTER_CONCAT(symsync,name)
+#define SYMSYNC_MANGLE_CFLOAT(name) FILTER_CONCAT(csymsync,name)
+
+#define LIQUID_SYMSYNC_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(unsigned int _k, unsigned int _num_filters, T * _h, unsigned int _h_len); \
+void X(_destroy)(X() _q); \
+void X(_print)(X() _q); \
+void X(_execute)(X() _q);
+
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_FLOAT, float)
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CFLOAT, float complex)
+
 //
 // 2nd-Order Loop Filter
 //

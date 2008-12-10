@@ -10,6 +10,8 @@
 #define FIRPFB(name)        FILTER_CONCAT(cfirpfb,name)
 #define INTERP(name)        FILTER_CONCAT(cinterp,name)
 #define DECIM(name)         FILTER_CONCAT(cdecim,name)
+#define SYMSYNC(name)       FILTER_CONCAT(csymsync,name)
+
 #define PRINTVAL(x)         printf("%12.4e + %12.4ej", crealf(x), cimagf(x))
 
 #define T                   float complex
@@ -22,4 +24,5 @@
 #include "firpfb.c"
 #include "interp.c"
 #include "decim.c"
+#include "symsync.c"
 
