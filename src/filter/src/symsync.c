@@ -31,6 +31,8 @@ struct SYMSYNC(_s) {
     fir_prototype p;
 
     // loop filter
+    float delay;    // filter delay
+    float zeta;     // loop filter correction factor
     float bt;
     float xi, ac, alpha, beta;
     float q, q_hat, q_prime;
@@ -65,6 +67,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, T * _h, u
 
     // reset state and initialize loop filter
     q->ac = 1.0f;
+    q->delay = 0.5f * (float) _h_len;
     SYMSYNC(_clear)(q);
     SYMSYNC(_set_lf_bw)(q, 0.05f);
 
@@ -96,6 +99,13 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
     // set loop filter bandwidth
     _q->bt = _bt;
     _q->xi = 1.0f/sqrtf(2.0f);
+
+    // compensate for filter delay (empirical relationship)
+    _q->zeta = _q->delay + 1.0f;
+    _q->bt = (_q->bt) / sqrtf(_q->zeta);
+    _q->xi = 2 * (_q->xi) * (_q->beta);
+
+    // compute filter coefficients
     _q->beta = 2*(_q->bt)/(_q->xi + 1.0f/(4*(_q->xi)));
     _q->alpha = 2*(_q->xi)*(_q->beta);
 }
