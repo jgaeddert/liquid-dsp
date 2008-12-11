@@ -114,6 +114,22 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_FLOAT, float)
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CFLOAT, float complex)
 
 // 
+// Arbitrary resampler
+//
+#define RESAMP_MANGLE_FLOAT(name)   FILTER_CONCAT(resamp,name)
+#define RESAMP_MANGLE_CFLOAT(name)  FILTER_CONCAT(cresamp,name)
+
+#define LIQUID_RESAMP_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(float _r); \
+void X(_destroy)(X() _q); \
+void X(_print)(X() _q); \
+void X(_execute)(X() _q);
+
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_FLOAT, float)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CFLOAT, float complex)
+
+// 
 // Symbol timing recovery (symbol synchronizer)
 //
 #define SYMSYNC_MANGLE_FLOAT(name)  FILTER_CONCAT(symsync,name)

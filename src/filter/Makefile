@@ -14,7 +14,7 @@ OBJS = filter.f.o filter.cf.o \
 	   nyquist.o rrcos.o window.o lf2.o
 HEADERS = src/filter_common.h src/filter.h src/firdes.h \
 		  src/iir_filter.c src/fir_filter.c src/decim.c src/interp.c \
-		  src/firpfb.c src/symsync.c
+		  src/firpfb.c src/symsync.c src/resamp.c
 
 all: $(EXAMPLES)
 

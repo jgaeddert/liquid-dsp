@@ -10,6 +10,7 @@
 #define FIRPFB(name)        FILTER_CONCAT(firpfb,name)
 #define INTERP(name)        FILTER_CONCAT(interp,name)
 #define DECIM(name)         FILTER_CONCAT(decim,name)
+#define RESAMP(name)        FILTER_CONCAT(resamp,name)
 #define SYMSYNC(name)       FILTER_CONCAT(symsync,name)
 
 #define PRINTVAL(x)         printf("%12.4e", x)
@@ -24,5 +25,6 @@
 #include "firpfb.c"
 #include "interp.c"
 #include "decim.c"
+#include "resamp.c"
 #include "symsync.c"
 
