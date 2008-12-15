@@ -40,9 +40,10 @@ void firhilb_bench(
     unsigned long int *_num_iterations) \
 { firhilb_bench(_start, _finish, _num_iterations, H_LEN); }
 
-void benchmark_firhilb_m3   FIRHILB_BENCHMARK_API(4*3+1)
-void benchmark_firhilb_m5   FIRHILB_BENCHMARK_API(4*5+1)
-void benchmark_firhilb_m9   FIRHILB_BENCHMARK_API(4*9+1)
+void benchmark_firhilb_h13      FIRHILB_BENCHMARK_API(13)   // m=3
+void benchmark_firhilb_h21      FIRHILB_BENCHMARK_API(21)   // m=5
+void benchmark_firhilb_h37      FIRHILB_BENCHMARK_API(37)   // m=9
+void benchmark_firhilb_h53      FIRHILB_BENCHMARK_API(53)   // m=13
 
 #endif // __LIQUID_FIRHILB_BENCHMARK_H__
 
