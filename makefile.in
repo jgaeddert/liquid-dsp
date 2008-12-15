@@ -94,6 +94,7 @@ BENCHMARKS = \
 	src/dotprod/bench/cfdotprod_benchmark.h \
 	src/filter/bench/iir_filter_benchmark.h \
 	src/filter/bench/interp_benchmark.h \
+	src/filter/bench/firhilb_benchmark.h \
 	src/filter/bench/decim_benchmark.h \
 	src/fec/bench/fec_benchmark.h \
 	src/fft/bench/fft_benchmark.h \

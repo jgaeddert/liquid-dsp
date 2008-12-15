@@ -31,8 +31,6 @@ struct FIRHILB(_s) {
 
     WINDOW() wi;
     WINDOW() wq;
-
-    DOTPROD() dpq;
 };
 
 FIRHILB() FIRHILB(_create)(unsigned int _h_len)
