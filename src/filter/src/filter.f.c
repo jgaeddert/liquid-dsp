@@ -6,6 +6,7 @@
 
 // 
 #define FIR_FILTER(name)    FILTER_CONCAT(fir_filter,name)
+#define FIRHILB(name)       FILTER_CONCAT(firhilb,name)
 #define IIR_FILTER(name)    FILTER_CONCAT(iir_filter,name)
 #define FIRPFB(name)        FILTER_CONCAT(firpfb,name)
 #define INTERP(name)        FILTER_CONCAT(interp,name)
@@ -21,6 +22,7 @@
 
 // source files
 #include "fir_filter.c"
+#include "firhilb.c"
 #include "iir_filter.c"
 #include "firpfb.c"
 #include "interp.c"

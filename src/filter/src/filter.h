@@ -39,6 +39,22 @@ unsigned int X(_get_length)(X() _f);
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_FLOAT, float)
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CFLOAT, float complex)
 
+//
+// FIR Hilbert transform
+//
+
+#define FIRHILB_MANGLE_FLOAT(name)  FILTER_CONCAT(firhilb, name)
+//#define FIRHILB_MANGLE_DOUBLE(name) FILTER_CONCAT(dfirhilb, name)
+
+#define LIQUID_FIRHILB_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(unsigned int _h_len); \
+void X(_destroy)(X() _f); \
+void X(_print)(X() _f); \
+void X(_execute)(X() _f, T * _x, T complex * _y);
+
+LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float)
+//LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double)
 
 //
 // Infinite impulse response filter
