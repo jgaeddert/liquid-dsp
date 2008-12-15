@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "fft.h"
+#include "../src/fft.h"
 
 int main() {
     unsigned int n=16;

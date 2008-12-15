@@ -2,19 +2,19 @@
 # Makefile for fft module
 #
 
-TESTS = fft_test
-all: $(TESTS)
+EXAMPLES = fft_example asgram_example
+all: $(EXAMPLES)
 
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = fft_create_plan.o fft_execute.o fft_shift.o
+OBJS = fft_create_plan.o fft_execute.o fft_shift.o asgram.o
 
-$(TESTS) : %_test : src/main_%.c $(OBJS)
+$(EXAMPLES) : % : examples/%.c $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $< -o $@
 
 $(OBJS) : %.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TESTS)
+	rm -f $(OBJS) $(EXAMPLES)

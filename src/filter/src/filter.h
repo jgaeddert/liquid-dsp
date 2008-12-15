@@ -40,7 +40,7 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_FLOAT, float)
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CFLOAT, float complex)
 
 //
-// FIR Hilbert transform
+// FIR Hilbert transform (2:1 real-to-complex decimator)
 //
 
 #define FIRHILB_MANGLE_FLOAT(name)  FILTER_CONCAT(firhilb, name)
