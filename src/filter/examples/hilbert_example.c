@@ -11,12 +11,14 @@
 #define DEBUG
 
 int main() {
-    unsigned int m=3;
+    unsigned int m=5;
     unsigned int h_len = 4*m+1; // filter length
-    float fc=0.13f;
-    unsigned int N=64;
+    float fc=0.17f;
+    unsigned int N=256;
 
     firhilb f = firhilb_create(h_len);
+
+    firhilb_print(f);
 
 #ifdef DEBUG
     FILE*fid = fopen("hilbert_example.m","w");
@@ -35,12 +37,13 @@ int main() {
 
         firhilb_execute(f, x, &y);
 
-        printf("y(%3u) = %8.4f + j*%8.4f;\n", n+1, crealf(y), cimagf(y));
 
 #ifdef DEBUG
         fprintf(fid,"x(%3u) = %8.4f;\n", 2*n+1, x[0]);
         fprintf(fid,"x(%3u) = %8.4f;\n", 2*n+2, x[1]);
         fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", n+1, crealf(y), cimagf(y));
+#else
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", n+1, crealf(y), cimagf(y));
 #endif
 
         n++;
