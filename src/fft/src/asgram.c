@@ -77,7 +77,7 @@ void asgram_execute(asgram _q)
     for (i=0; i<_q->n; i++)
         _q->psd[i] = 20*log10f(cabsf(_q->y[i]));
 
-    float maxval=-1e12f, maxfreq=-0.5f;
+    float maxval=-99.9f, maxfreq=-0.0f;
     unsigned int j;
     printf(" > ");
     for (i=0; i<_q->n; i++) {
@@ -96,7 +96,7 @@ void asgram_execute(asgram _q)
     printf(" < ");
 
     // print peak
-    printf("pk %4.1fdB [%5.2f]", maxval, maxfreq);
+    printf("pk:%5.1fdB [%5.2f]", maxval, maxfreq);
 
     // print scale
     printf("\n");
