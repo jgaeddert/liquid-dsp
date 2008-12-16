@@ -29,7 +29,8 @@ struct FIRHILB(_s) {
 
     unsigned int m;
 
-    WINDOW() wi;
+    T * wi;
+    unsigned int wi_index;
     WINDOW() wq;
 };
 
@@ -66,18 +67,21 @@ FIRHILB() FIRHILB(_create)(unsigned int _h_len)
     for (i=1; i<f->h_len; i+=2)
         f->hq[j++] = f->h[f->h_len - i - 1];
 
-    f->wi = WINDOW(_create)(2*(f->m)+1);
-    f->wq = WINDOW(_create)(2*(f->m));
-    WINDOW(_clear)(f->wi);
+    f->wq = WINDOW(_create)(2*(f->m)+1);
     WINDOW(_clear)(f->wq);
+
+    f->wi = (float*)malloc((f->m+1)*sizeof(float));
+    for (i=0; i<f->m+1; i++)
+        f->wi[i] = 0;
+    f->wi_index = 0;
 
     return f;
 }
 
 void FIRHILB(_destroy)(FIRHILB() _f)
 {
-    WINDOW(_destroy)(_f->wi);
     WINDOW(_destroy)(_f->wq);
+    free(_f->wi);
     free(_f->h);
     free(_f->hq);
     free(_f);
@@ -98,8 +102,11 @@ void FIRHILB(_print)(FIRHILB() _f)
 
 void FIRHILB(_clear)(FIRHILB() _f)
 {
-    WINDOW(_clear)(_f->wi);
     WINDOW(_clear)(_f->wq);
+    unsigned int i;
+    for (i=0; i<_f->m+1; i++)
+        _f->wi[i] = 0;
+    _f->wi_index = 0;
 }
 
 void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, T complex *_y)
@@ -114,9 +121,9 @@ void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, T complex *_y)
     yq = DOTPROD(_run)(_f->hq, r, _f->hq_len);
 
     // compute in-phase component
-    WINDOW(_push)(_f->wi, _x[1]);
-    WINDOW(_read)(_f->wi, &r);
-    yi = r[(_f->m)];
+    yi = _f->wi[_f->wi_index];
+    _f->wi[_f->wi_index] = _x[1];
+    _f->wi_index = (_f->wi_index+1) % (_f->m + 1);
 
     // set return value
     *_y = yi + _Complex_I * yq;
@@ -129,9 +136,9 @@ void FIRHILB(_interp_execute)(FIRHILB() _f, T complex _x, T *_y)
     // TODO macro for crealf, cimagf?
     
     // compute first branch (delay)
-    WINDOW(_push)(_f->wi, cimagf(_x));
-    WINDOW(_read)(_f->wi, &r);
-    _y[0] = r[(_f->m)];
+    _y[0] = _f->wi[_f->wi_index];
+    _f->wi[_f->wi_index] = cimagf(_x);
+    _f->wi_index = (_f->wi_index+1) % (_f->m + 1);
 
     // compute second branch (filter)
     WINDOW(_push)(_f->wq, crealf(_x));
