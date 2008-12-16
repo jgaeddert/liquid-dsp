@@ -51,6 +51,7 @@ typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _h_len); \
 void X(_destroy)(X() _f); \
 void X(_print)(X() _f); \
+void X(_clear)(X() _f); \
 void X(_execute)(X() _f, T * _x, T complex * _y);
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float)

@@ -96,6 +96,12 @@ void FIRHILB(_print)(FIRHILB() _f)
     }
 }
 
+void FIRHILB(_clear)(FIRHILB() _f)
+{
+    WINDOW(_clear)(_f->wi);
+    WINDOW(_clear)(_f->wq);
+}
+
 void FIRHILB(_execute)(FIRHILB() _f, T * _x, T complex *_y)
 {
     T * r;
