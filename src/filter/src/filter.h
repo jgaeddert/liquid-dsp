@@ -46,13 +46,17 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CFLOAT, float complex)
 #define FIRHILB_MANGLE_FLOAT(name)  FILTER_CONCAT(firhilb, name)
 //#define FIRHILB_MANGLE_DOUBLE(name) FILTER_CONCAT(dfirhilb, name)
 
+// NOTES:
+//   Although firhilb is a placeholder for both the decimation and
+//   interpolation, separate objects should be used for each task.
 #define LIQUID_FIRHILB_DEFINE_API(X,T) \
 typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _h_len); \
 void X(_destroy)(X() _f); \
 void X(_print)(X() _f); \
 void X(_clear)(X() _f); \
-void X(_execute)(X() _f, T * _x, T complex * _y);
+void X(_decim_execute)(X() _f, T * _x, T complex * _y); \
+void X(_interp_execute)(X() _f, T complex _x, T * _y);
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double)

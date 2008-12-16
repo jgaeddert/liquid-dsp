@@ -102,7 +102,7 @@ void FIRHILB(_clear)(FIRHILB() _f)
     WINDOW(_clear)(_f->wq);
 }
 
-void FIRHILB(_execute)(FIRHILB() _f, T * _x, T complex *_y)
+void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, T complex *_y)
 {
     T * r;
     T yi, yq;
@@ -120,5 +120,23 @@ void FIRHILB(_execute)(FIRHILB() _f, T * _x, T complex *_y)
 
     // set return value
     *_y = yi + _Complex_I * yq;
+}
+
+void FIRHILB(_interp_execute)(FIRHILB() _f, T complex _x, T *_y)
+{
+    T * r;  // read pointer
+
+    // TODO macro for crealf, cimagf?
+    
+    // compute first branch (delay)
+    WINDOW(_push)(_f->wi, cimagf(_x));
+    WINDOW(_read)(_f->wi, &r);
+    _y[0] = r[(_f->m)];
+
+    // compute second branch (filter)
+    WINDOW(_push)(_f->wq, crealf(_x));
+    WINDOW(_read)(_f->wq, &r);
+    //yq = DOTPROD(_execute)(_f->dpq, r);
+    _y[1] = DOTPROD(_run)(_f->hq, r, _f->hq_len);
 }
 

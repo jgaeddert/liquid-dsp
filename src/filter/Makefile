@@ -5,7 +5,7 @@
 EXAMPLES = fir_filter_example iir_filter_example \
 		   interp_example decim_example \
 		   matched_filter_example firpfb_example \
-		   hilbert_example
+		   hilbert_decim_example hilbert_interp_example
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -43,4 +43,4 @@ $(EXAMPLES): % : examples/%.c $(OBJS) $(HEADERS) $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(DEPS) $(EXAMPLES)
+	rm -f $(OBJS) $(DEPS) $(EXAMPLES) *.m
