@@ -22,8 +22,10 @@ void fft_shift(float complex *_x, unsigned int _n);
 //
 typedef struct asgram_s * asgram;
 asgram asgram_create(float complex *_x, unsigned int _n);
+void asgram_set_scale(asgram _q, float _scale);
+void asgram_set_offset(asgram _q, float _offset);
 void asgram_destroy(asgram _q);
-void asgram_execute(asgram _q, float complex *_x);
+void asgram_execute(asgram _q);
 
 #endif // __LIQUID_FFT_H__
 

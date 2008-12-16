@@ -46,6 +46,16 @@ asgram asgram_create(float complex * _x, unsigned int _n)
     return q;
 }
 
+void asgram_set_scale(asgram _q, float _scale)
+{
+    _q->scale = _scale;
+}
+
+void asgram_set_offset(asgram _q, float _offset)
+{
+    _q->offset = _offset;
+}
+
 void asgram_destroy(asgram _q)
 {
     free(_q->y);
@@ -54,7 +64,7 @@ void asgram_destroy(asgram _q)
     free(_q);
 }
 
-void asgram_execute(asgram _q, float complex *_x)
+void asgram_execute(asgram _q)
 {
     // copy x and execute fft plan
     fft_execute(_q->p);

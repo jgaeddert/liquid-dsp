@@ -17,6 +17,8 @@ int main() {
     // initialize objects
     float complex x[nfft];
     asgram q = asgram_create(x,nfft);
+    asgram_set_scale(q,10);
+    asgram_set_offset(q,20);
 
     unsigned int i,n;
     float theta=0.0f, dtheta=0.0f;
@@ -32,7 +34,7 @@ int main() {
         }
 
         // execute the spectrogram
-        asgram_execute(q,x);
+        asgram_execute(q);
 
         // sleep
         usleep(msdelay*1000);
