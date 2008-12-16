@@ -21,7 +21,7 @@ void fft_shift(float complex *_x, unsigned int _n);
 // ascii spectrogram
 //
 typedef struct asgram_s * asgram;
-asgram asgram_create(unsigned int _n);
+asgram asgram_create(float complex *_x, unsigned int _n);
 void asgram_destroy(asgram _q);
 void asgram_execute(asgram _q, float complex *_x);
 

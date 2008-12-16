@@ -15,8 +15,8 @@ int main() {
     unsigned int msdelay=100;
 
     // initialize objects
-    asgram q = asgram_create(nfft);
     float complex x[nfft];
+    asgram q = asgram_create(x,nfft);
 
     unsigned int i,n;
     float theta=0.0f, dtheta=0.0f;
@@ -27,7 +27,7 @@ int main() {
             x[i] = 0.1f*cexpf(_Complex_I*theta);
 
             theta += dtheta;
-            dtheta = M_PI*sinf(phi);
+            dtheta = 0.9f*M_PI*sinf(phi);
             phi += dphi;
         }
 
