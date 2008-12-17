@@ -29,6 +29,7 @@ void autotest_firhilb_decim()
     firhilb ht = firhilb_create(21);
     float tol=0.001f;
 
+    // run decimator
     unsigned int i;
     for (i=0; i<16; i++)
         firhilb_decim_execute(ht, &x[2*i], &y[i]);
@@ -36,14 +37,16 @@ void autotest_firhilb_decim()
     if (_autotest_verbose) {
         printf("hilbert transform decimator output:\n");
         for (i=0; i<16; i++)
-            printf("y(%3u) = %8.5f + j*%8.5f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+            printf("  y(%3u) = %8.5f + j*%8.5f;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
 
+    // run validation
     for (i=0; i<16; i++) {
         CONTEND_DELTA(crealf(y[i]), crealf(test[i]), tol);
         CONTEND_DELTA(cimagf(y[i]), cimagf(test[i]), tol);
     }
 
+    // clean up filter object
     firhilb_destroy(ht);
 }
 
@@ -53,23 +56,25 @@ void autotest_firhilb_decim()
 void autotest_firhilb_interp()
 {
     float complex x[16] = {
-         0.7071+J* 0.7071, -0.7071+J* 0.7071, -0.7071+J*-0.7071,  0.7071+J*-0.7071,
-         0.7071+J* 0.7071, -0.7071+J* 0.7071, -0.7071+J*-0.7071,  0.7071+J*-0.7071,
-         0.7071+J* 0.7071, -0.7071+J* 0.7071, -0.7071+J*-0.7071,  0.7071+J*-0.7071,
-         0.7071+J* 0.7071, -0.7071+J* 0.7071, -0.7071+J*-0.7071,  0.7071+J*-0.7071
+         1.0000+J* 0.0000,  0.0000+J* 1.0000, -1.0000+J* 0.0000, -0.0000+J*-1.0000,
+         1.0000+J*-0.0000,  0.0000+J* 1.0000, -1.0000+J* 0.0000, -0.0000+J*-1.0000,
+         1.0000+J*-0.0000,  0.0000+J* 1.0000, -1.0000+J* 0.0000, -0.0000+J*-1.0000,
+         1.0000+J*-0.0000, -0.0000+J* 1.0000, -1.0000+J* 0.0000, -0.0000+J*-1.0000
     };
 
     float test[32] = {
-        -0.0000,  0.0000,  0.0020,  0.0028,  0.0101,  0.0115,  0.0296,  0.0303,
-         0.0730,  0.0730,  0.7497,  0.6338, -0.0730, -0.7370, -1.0290, -0.7183,
-        -0.0101,  0.7040,  0.9975,  0.7067,  0.0000, -0.7067, -0.9995, -0.7067,
-        -0.0000,  0.7067,  0.9995,  0.7067,  0.0000, -0.7067, -0.9995, -0.7067
+         0.0000, -0.0055, -0.0000, -0.0231, -0.0000, -0.0605, -0.0000, -0.1459,
+        -0.0000, -0.5604, -0.0000,  0.7669,  1.0000,  0.7294,  0.0000, -0.7008,
+        -1.0000, -0.7064, -0.0000,  0.7064,  1.0000,  0.7064,  0.0000, -0.7064,
+        -1.0000, -0.7064, -0.0000,  0.7064,  1.0000,  0.7064,  0.0000, -0.7064
     };
+
 
     float y[32];
     firhilb ht = firhilb_create(21);
     float tol=0.001f;
 
+    // run interpolator
     unsigned int i;
     for (i=0; i<16; i++)
         firhilb_interp_execute(ht, x[i], &y[2*i]);
@@ -77,14 +82,15 @@ void autotest_firhilb_interp()
     if (_autotest_verbose) {
         printf("hilbert transform interpolator output:\n");
         for (i=0; i<32; i++)
-            printf("y(%3u) = %8.5f;\n", i+1, y[i]);
+            printf("  y(%3u) = %8.5f;\n", i+1, y[i]);
     }
 
-    // 
-    for (i=21; i<32; i++) {
+    // run validation
+    for (i=0; i<32; i++) {
         CONTEND_DELTA(y[i], test[i], tol);
     }
 
+    // clean up filter object
     firhilb_destroy(ht);
 }
 
