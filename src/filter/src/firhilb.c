@@ -135,15 +135,16 @@ void FIRHILB(_interp_execute)(FIRHILB() _f, T complex _x, T *_y)
 
     // TODO macro for crealf, cimagf?
     
-    // compute first branch (delay)
-    _y[0] = _f->wi[_f->wi_index];
-    _f->wi[_f->wi_index] = cimagf(_x);
-    _f->wi_index = (_f->wi_index+1) % (_f->m);
-
-    // compute second branch (filter)
+    // compute first branch (filter)
     WINDOW(_push)(_f->wq, crealf(_x));
     WINDOW(_read)(_f->wq, &r);
     //yq = DOTPROD(_execute)(_f->dpq, r);
-    _y[1] = DOTPROD(_run)(_f->hq, r, _f->hq_len);
+    _y[0] = DOTPROD(_run)(_f->hq, r, _f->hq_len);
+
+    // compute second branch (delay)
+    _f->wi[_f->wi_index] = cimagf(_x);
+    _f->wi_index = (_f->wi_index+1) % (_f->m);
+    _y[1] = _f->wi[_f->wi_index];
+
 }
 
