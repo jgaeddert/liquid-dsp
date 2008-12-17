@@ -9,6 +9,8 @@
 #include "agc.h"
 #include "agc_internal.h"
 
+#undef AGC_LOG
+
 agc agc_create(float _etarget, float _BT)
 {
     agc _agc = (agc) malloc(sizeof(struct agc_s));
@@ -30,8 +32,8 @@ void agc_init(agc _agc)
 
     // set gain variables
     _agc->g = 1.0f;
-    _agc->g_min = 0.0f;
-    _agc->g_max = 1000.0f;
+    _agc->g_min = 1e-6f;
+    _agc->g_max = 1e+6f;
 
     // prototype loop filter
     agc_set_bandwidth(_agc, 0.01f);
@@ -81,14 +83,19 @@ void agc_apply_gain(
     float complex _x,
     float complex *_y)
 {
-    // estimate energy
+    // estimate normalized energy, should be equal to 1.0 when locked
     float e = cabsf(_x) * (_agc->g) / (_agc->e_target);
     if ( e <= 0.0f ) {
         printf("warning! agc_apply_gain(), input level not valid!\n");
         *_y = _x * _agc->g;
         return;
     } else {
+        // generate error signal
+#ifdef AGC_LOG
         _agc->e = logf( e );
+#else
+        _agc->e = e - 1;
+#endif
     }
 
     // filter estimate using first-order loop filter
