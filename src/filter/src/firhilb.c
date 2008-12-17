@@ -67,11 +67,11 @@ FIRHILB() FIRHILB(_create)(unsigned int _h_len)
     for (i=1; i<f->h_len; i+=2)
         f->hq[j++] = f->h[f->h_len - i - 1];
 
-    f->wq = WINDOW(_create)(2*(f->m)+1);
+    f->wq = WINDOW(_create)(2*(f->m));
     WINDOW(_clear)(f->wq);
 
-    f->wi = (float*)malloc((f->m+1)*sizeof(float));
-    for (i=0; i<f->m+1; i++)
+    f->wi = (float*)malloc((f->m)*sizeof(float));
+    for (i=0; i<f->m; i++)
         f->wi[i] = 0;
     f->wi_index = 0;
 
@@ -104,7 +104,7 @@ void FIRHILB(_clear)(FIRHILB() _f)
 {
     WINDOW(_clear)(_f->wq);
     unsigned int i;
-    for (i=0; i<_f->m+1; i++)
+    for (i=0; i<_f->m; i++)
         _f->wi[i] = 0;
     _f->wi_index = 0;
 }
@@ -117,13 +117,13 @@ void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, T complex *_y)
     // compute quadrature component
     WINDOW(_push)(_f->wq, _x[0]);
     WINDOW(_read)(_f->wq, &r);
-    //yq = DOTPROD(_execute)(_f->dpq, r);
+    // TODO yq = DOTPROD(_execute)(_f->dpq, r);
     yq = DOTPROD(_run)(_f->hq, r, _f->hq_len);
 
     // compute in-phase component
     yi = _f->wi[_f->wi_index];
     _f->wi[_f->wi_index] = _x[1];
-    _f->wi_index = (_f->wi_index+1) % (_f->m + 1);
+    _f->wi_index = (_f->wi_index+1) % (_f->m);
 
     // set return value
     *_y = yi + _Complex_I * yq;
@@ -138,7 +138,7 @@ void FIRHILB(_interp_execute)(FIRHILB() _f, T complex _x, T *_y)
     // compute first branch (delay)
     _y[0] = _f->wi[_f->wi_index];
     _f->wi[_f->wi_index] = cimagf(_x);
-    _f->wi_index = (_f->wi_index+1) % (_f->m + 1);
+    _f->wi_index = (_f->wi_index+1) % (_f->m);
 
     // compute second branch (filter)
     WINDOW(_push)(_f->wq, crealf(_x));
