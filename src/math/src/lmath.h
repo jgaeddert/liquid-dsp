@@ -33,5 +33,11 @@ float kaiser(unsigned int _n, unsigned int _N, float _beta);
 // Hamming window
 float hamming(unsigned int _n, unsigned int _N);
 
+// Hann window
+float hann(unsigned int _n, unsigned int _N);
+
+// Blackman-harris window
+float blackmanharris(unsigned int _n, unsigned int _N);
+
 
 #endif // __LIQUID_MATH_H__

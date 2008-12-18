@@ -90,4 +90,22 @@ float hamming(unsigned int _n, unsigned int _N)
     return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
 }
 
+// Hann window
+float hann(unsigned int _n, unsigned int _N)
+{
+    return 0.5f - 0.5f*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
+}
+
+// Blackman-harris window
+float blackmanharris(unsigned int _n, unsigned int _N)
+{
+    float a0 = 0.35875;
+    float a1 = 0.48829;
+    float a2 = 0.14128;
+    float a3 = 0.01168;
+    float t = 2*M_PI*(float)_n / ((float)(_N-1));
+
+    return a0 - a1*cosf(t) + a2*cosf(2*t) - a3*cosf(3*t);
+}
+
 
