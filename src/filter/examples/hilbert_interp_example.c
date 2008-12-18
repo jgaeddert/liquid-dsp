@@ -14,7 +14,7 @@ int main() {
     unsigned int m=13;
     unsigned int h_len = 4*m+1; // filter length
     float fc=0.17f;
-    unsigned int N=256;
+    unsigned int N=128;
 
     firhilb f = firhilb_create(h_len);
 

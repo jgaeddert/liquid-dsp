@@ -14,7 +14,7 @@ int main() {
     unsigned int m=5;
     unsigned int h_len = 4*m+1; // filter length
     float fc=0.17f;
-    unsigned int N=256;
+    unsigned int N=128;
 
     firhilb f = firhilb_create(h_len);
 
@@ -26,10 +26,10 @@ int main() {
     fprintf(fid,"h_len=%u;\nN=%u;\n", h_len, N);
 #endif
 
-    unsigned int i, n=0;
+    unsigned int i;
     float x[2], theta=0.0f, dtheta=2*M_PI*fc;
     float complex y;
-    for (i=0; i<N; i+=2) {
+    for (i=0; i<N; i++) {
         x[0] = cosf(theta);
         theta += dtheta;
         x[1] = cosf(theta);
@@ -39,14 +39,12 @@ int main() {
 
 
 #ifdef DEBUG
-        fprintf(fid,"x(%3u) = %8.4f;\n", 2*n+1, x[0]);
-        fprintf(fid,"x(%3u) = %8.4f;\n", 2*n+2, x[1]);
-        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", n+1, crealf(y), cimagf(y));
+        fprintf(fid,"x(%3u) = %8.4f;\n", 2*i+1, x[0]);
+        fprintf(fid,"x(%3u) = %8.4f;\n", 2*i+2, x[1]);
+        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y), cimagf(y));
 #else
-        printf("y(%3u) = %8.4f + j*%8.4f;\n", n+1, crealf(y), cimagf(y));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y), cimagf(y));
 #endif
-
-        n++;
     }
 
 #ifdef DEBUG
