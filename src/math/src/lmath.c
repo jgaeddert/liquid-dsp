@@ -77,6 +77,7 @@ float sincf(float _x) {
 // Kaiser window
 float kaiser(unsigned int _n, unsigned int _N, float _beta)
 {
+    // TODO add reference
     float t = (float)_n - (float)(_N-1)/2;
     float r = 2.0f*t/(float)(_N);
     float a = besseli_0(_beta*sqrtf(1-r*r));
@@ -87,18 +88,23 @@ float kaiser(unsigned int _n, unsigned int _N, float _beta)
 // Hamming window
 float hamming(unsigned int _n, unsigned int _N)
 {
+    // TODO add reference
     return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
 }
 
 // Hann window
 float hann(unsigned int _n, unsigned int _N)
 {
+    // TODO test this function
+    // TODO add reference
     return 0.5f - 0.5f*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
 }
 
 // Blackman-harris window
 float blackmanharris(unsigned int _n, unsigned int _N)
 {
+    // TODO test this function
+    // TODO add reference
     float a0 = 0.35875;
     float a1 = 0.48829;
     float a2 = 0.14128;
