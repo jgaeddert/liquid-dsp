@@ -12,6 +12,7 @@
 #define INTERP(name)        FILTER_CONCAT(interp,name)
 #define DECIM(name)         FILTER_CONCAT(decim,name)
 #define RESAMP(name)        FILTER_CONCAT(resamp,name)
+#define RESAMP2(name)       FILTER_CONCAT(resamp2,name)
 #define SYMSYNC(name)       FILTER_CONCAT(symsync,name)
 
 #define PRINTVAL(x)         printf("%12.4e", x)
@@ -28,5 +29,6 @@
 #include "interp.c"
 #include "decim.c"
 #include "resamp.c"
+#include "resamp2.c"
 #include "symsync.c"
 

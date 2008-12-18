@@ -121,7 +121,7 @@ LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_FLOAT, float)
 LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CFLOAT, float complex)
 
 // 
-// Decimator (basic)
+// Decimator
 //
 #define DECIM_MANGLE_FLOAT(name)    FILTER_CONCAT(decim,name)
 #define DECIM_MANGLE_CFLOAT(name)   FILTER_CONCAT(cdecim,name)
@@ -135,6 +135,24 @@ void X(_execute)(X() _q, T *_x, T *_y, unsigned int _index);
 
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_FLOAT, float)
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CFLOAT, float complex)
+
+// 
+// Half-band resampler
+//
+#define RESAMP2_MANGLE_FLOAT(name)   FILTER_CONCAT(resamp2,name)
+#define RESAMP2_MANGLE_CFLOAT(name)  FILTER_CONCAT(cresamp2,name)
+
+#define LIQUID_RESAMP2_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(unsigned int _h_len); \
+void X(_destroy)(X() _q); \
+void X(_print)(X() _q); \
+void X(_decim_execute)(X() _f, T * _x, T * _y); \
+void X(_interp_execute)(X() _f, T _x, T * _y);
+
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_FLOAT, float)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CFLOAT, float complex)
+
 
 // 
 // Arbitrary resampler
