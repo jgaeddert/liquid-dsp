@@ -10,6 +10,11 @@
 #include "metadata.h"
 #include "buffer.h"
 
+// Defined
+//  X()         :   name-mangling macro
+//  T           :   data type
+//  BUFFER()    :   buffer macro
+
 struct port_s {
     fbuffer buffer;
     //metadata m;
