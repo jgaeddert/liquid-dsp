@@ -96,6 +96,7 @@ BENCHMARKS = \
 	src/filter/bench/interp_benchmark.h \
 	src/filter/bench/firhilb_benchmark.h \
 	src/filter/bench/decim_benchmark.h \
+	src/filter/bench/resamp2_benchmark.h \
 	src/fec/bench/fec_benchmark.h \
 	src/fft/bench/fft_benchmark.h \
 	src/interleaver/bench/interleaver_benchmark.h \
