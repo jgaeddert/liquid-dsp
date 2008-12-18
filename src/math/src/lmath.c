@@ -70,3 +70,24 @@ float sincf(float _x) {
     return sinf(M_PI*_x)/(M_PI*_x);
 }
 
+// 
+// Windowing functions
+//
+
+// Kaiser window
+float kaiser(unsigned int _n, unsigned int _N, float _beta)
+{
+    float t = (float)_n - (float)(_N-1)/2;
+    float r = 2.0f*t/(float)(_N);
+    float a = besseli_0(_beta*sqrtf(1-r*r));
+    float b = besseli_0(_beta);
+    return a / b;
+}
+
+// Hamming window
+float hamming(unsigned int _n, unsigned int _N)
+{
+    return 0.53836 - 0.46164*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
+}
+
+

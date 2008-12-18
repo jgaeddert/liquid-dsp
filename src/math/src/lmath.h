@@ -23,4 +23,15 @@ float besseli_0(float _z);
 // sin(pi x) / (pi x)
 float sincf(float _x);
 
+// 
+// Windowing functions
+//
+
+// Kaiser window
+float kaiser(unsigned int _n, unsigned int _N, float _beta);
+
+// Hamming window
+float hamming(unsigned int _n, unsigned int _N);
+
+
 #endif // __LIQUID_MATH_H__
