@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../../buffer/src/window.h"
 #include "../../dotprod/src/dotprod_internal.h"
+#include "../../buffer/src/buffer.h"
 
 // defined:
 //  SYMSYNC()   name-mangling macro

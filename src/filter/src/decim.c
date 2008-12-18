@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "../../dotprod/src/dotprod_internal.h"
-#include "../../buffer/src/window.h"
+#include "../../buffer/src/buffer.h"
 
 // defined:
 //  DECIM()     name-mangling macro

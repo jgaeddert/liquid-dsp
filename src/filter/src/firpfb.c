@@ -6,8 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../../buffer/src/window.h"
 #include "../../dotprod/src/dotprod_internal.h"
+#include "../../buffer/src/buffer.h"
 
 // defined:
 //  FIRPFB()    name-mangling macro

@@ -11,7 +11,7 @@
 
 #include "../../math/src/lmath.h"
 #include "../../dotprod/src/dotprod_internal.h"
-#include "../../buffer/src/window.h"
+#include "../../buffer/src/buffer.h"
 
 // defined:
 //  FIRHILB()       name-mangling macro

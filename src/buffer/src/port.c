@@ -6,17 +6,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "port.h"
-#include "metadata.h"
 #include "buffer.h"
+#include "metadata.h"
 
 // Defined
-//  X()         :   name-mangling macro
+//  PORT()      :   name-mangling macro
 //  T           :   data type
 //  BUFFER()    :   buffer macro
 
-struct port_s {
-    fbuffer buffer;
+struct PORT(_s) {
+    BUFFER() buffer;
     //metadata m;
     //char name[64];
 
@@ -25,31 +24,31 @@ struct port_s {
 };
 
 
-port port_create(unsigned int _n)
+PORT() PORT(_create)(unsigned int _n)
 {
-    port p = (port) malloc(sizeof(struct port_s));
-    p->buffer = fbuffer_create(CIRCULAR,_n);
+    PORT() p = (PORT()) malloc(sizeof(struct PORT(_s)));
+    p->buffer = BUFFER(_create)(CIRCULAR,_n);
 
     // create mutex(es) here
 
     return p;
 }
 
-void port_destroy(port _p)
+void PORT(_destroy)(PORT() _p)
 {
-    fbuffer_destroy(_p->buffer);
+    BUFFER(_destroy)(_p->buffer);
     free(_p);
 }
 
-void port_print(port _p)
+void PORT(_print)(PORT() _p)
 {
 
 }
 
-void port_produce(port _p, float * _v, unsigned int _n)
+void PORT(_produce)(PORT() _p, T * _v, unsigned int _n)
 {
     // lock mutex (write)
-    fbuffer_write(_p->buffer, _v, _n);
+    BUFFER(_write)(_p->buffer, _v, _n);
     // unlock mutex (write)
 
     // 1. check to see if request for samples
@@ -57,22 +56,22 @@ void port_produce(port _p, float * _v, unsigned int _n)
     //    - if request is met unlock mutex (request)
 }
 
-void port_consume(port _p, float ** _v, unsigned int _n)
+void PORT(_consume)(PORT() _p, T ** _v, unsigned int _n)
 {
     // lock mutex (read)
 
     // try to read _n values :
     //   - if _n values are not available, wait
-    fbuffer_read(_p->buffer, _v, &_n);
+    BUFFER(_read)(_p->buffer, _v, &_n);
 
     // wait procedure:
     //   1. submit request for _n samples; locks mutex (request)
     //   2. wait for mutex to be unlocked
 }
 
-void port_release(port _p, unsigned int _n)
+void PORT(_release)(PORT() _p, unsigned int _n)
 {
-    fbuffer_release(_p->buffer, _n);
+    BUFFER(_release)(_p->buffer, _n);
     // unlock mutex (read)
 }
 

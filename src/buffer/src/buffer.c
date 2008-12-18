@@ -8,7 +8,7 @@
 
 #include "buffer_internal.h"
 
-struct X(_s) {
+struct BUFFER(_s) {
     T * v;
     unsigned int len;           // length of buffer
     unsigned int N;             // number of elements allocated
@@ -24,9 +24,9 @@ struct X(_s) {
     // mutex/semaphore
 };
 
-X() X(_create)(buffer_type _type, unsigned int _n)
+BUFFER() BUFFER(_create)(buffer_type _type, unsigned int _n)
 {
-    X() b = (X()) malloc(sizeof(struct X(_s)));
+    BUFFER() b = (BUFFER()) malloc(sizeof(struct BUFFER(_s)));
     b->type = _type;
     b->len = _n;
 
@@ -43,13 +43,13 @@ X() X(_create)(buffer_type _type, unsigned int _n)
     return b;
 }
 
-void X(_destroy)(X() _b)
+void BUFFER(_destroy)(BUFFER() _b)
 {
     free(_b->v);
     free(_b);
 }
 
-void X(_print)(X() _b)
+void BUFFER(_print)(BUFFER() _b)
 {
     if (_b->type == CIRCULAR)
         printf("circular ");
@@ -64,7 +64,7 @@ void X(_print)(X() _b)
     }
 }
 
-void X(_debug_print)(X() _b)
+void BUFFER(_debug_print)(BUFFER() _b)
 {
     if (_b->type == CIRCULAR)
         printf("circular ");
@@ -94,14 +94,14 @@ void X(_debug_print)(X() _b)
     }
 }
 
-void X(_clear)(X() _b)
+void BUFFER(_clear)(BUFFER() _b)
 {
     _b->read_index = 0;
     _b->write_index = 0;
     _b->num_elements = 0;
 }
 
-void X(_zero)(X() _b)
+void BUFFER(_zero)(BUFFER() _b)
 {
     _b->read_index = 0;
     _b->write_index = 0;
@@ -109,15 +109,15 @@ void X(_zero)(X() _b)
     memset(_b->v, 0, (_b->num_elements)*sizeof(T));
 }
 
-void X(_read)(X() _b, T ** _v, unsigned int *_n)
+void BUFFER(_read)(BUFFER() _b, T ** _v, unsigned int *_n)
 {
     if (_b->type == CIRCULAR)
-        X(_c_read)(_b, _v, _n);
+        BUFFER(_c_read)(_b, _v, _n);
     else
-        X(_s_read)(_b, _v, _n);
+        BUFFER(_s_read)(_b, _v, _n);
 }
 
-void X(_c_read)(X() _b, T ** _v, unsigned int *_n)
+void BUFFER(_c_read)(BUFFER() _b, T ** _v, unsigned int *_n)
 {
     //printf("buffer_read() trying to read %u elements (%u available)\n", *_n, _b->num_elements);
 #if 0
@@ -130,29 +130,29 @@ void X(_c_read)(X() _b, T ** _v, unsigned int *_n)
 #endif
     if (*_n > (_b->len - _b->read_index)) {
         //
-        X(_linearize)(_b);
+        BUFFER(_linearize)(_b);
     }
     *_v = _b->v + _b->read_index;
     *_n = _b->num_elements;
 }
 
-void X(_s_read)(X() _b, T ** _v, unsigned int *_n)
+void BUFFER(_s_read)(BUFFER() _b, T ** _v, unsigned int *_n)
 {
     //printf("buffer_s_read() reading %u elements\n", _b->num_elements);
     *_v = _b->v;
     *_n = _b->num_elements;
 }
 
-void X(_release)(X() _b, unsigned int _n)
+void BUFFER(_release)(BUFFER() _b, unsigned int _n)
 {
     if (_b->type == CIRCULAR)
-        X(_c_release)(_b, _n);
+        BUFFER(_c_release)(_b, _n);
     else
-        X(_s_release)(_b, _n);
+        BUFFER(_s_release)(_b, _n);
 }
 
 
-void X(_c_release)(X() _b, unsigned int _n)
+void BUFFER(_c_release)(BUFFER() _b, unsigned int _n)
 {
     // advance read_index by _n making sure not to step on write_index
     if (_n > _b->num_elements) {
@@ -165,20 +165,20 @@ void X(_c_release)(X() _b, unsigned int _n)
 }
 
 
-void X(_s_release)(X() _b, unsigned int _n)
+void BUFFER(_s_release)(BUFFER() _b, unsigned int _n)
 {
-    X(_clear)(_b);
+    BUFFER(_clear)(_b);
 }
 
-void X(_write)(X() _b, T * _v, unsigned int _n)
+void BUFFER(_write)(BUFFER() _b, T * _v, unsigned int _n)
 {
     if (_b->type == CIRCULAR)
-        X(_c_write)(_b, _v, _n);
+        BUFFER(_c_write)(_b, _v, _n);
     else
-        X(_s_write)(_b, _v, _n);
+        BUFFER(_s_write)(_b, _v, _n);
 }
 
-void X(_c_write)(X() _b, T * _v, unsigned int _n)
+void BUFFER(_c_write)(BUFFER() _b, T * _v, unsigned int _n)
 {
     //
     if (_n > (_b->len - _b->num_elements)) {
@@ -202,7 +202,7 @@ void X(_c_write)(X() _b, T * _v, unsigned int _n)
     }
 }
 
-void X(_s_write)(X() _b, T * _v, unsigned int _n)
+void BUFFER(_s_write)(BUFFER() _b, T * _v, unsigned int _n)
 {
     if (_n > (_b->len - _b->num_elements)) {
         printf("error: buffer_s_write(), cannot write more elements than are available\n");
@@ -213,18 +213,18 @@ void X(_s_write)(X() _b, T * _v, unsigned int _n)
     _b->num_elements += _n;
 }
 
-//void X(_force_write)(X() _b, T * _v, unsigned int _n)
+//void BUFFER(_force_write)(BUFFER() _b, T * _v, unsigned int _n)
 
-void X(_push)(X() _b, T _v)
+void BUFFER(_push)(BUFFER() _b, T _v)
 {
     // push value (force write)
     if (_b->type == CIRCULAR)
-        X(_c_push)(_b, _v);
+        BUFFER(_c_push)(_b, _v);
     else
-        X(_s_push)(_b, _v);
+        BUFFER(_s_push)(_b, _v);
 }
 
-void X(_c_push)(X() _b, T _v)
+void BUFFER(_c_push)(BUFFER() _b, T _v)
 {
     _b->v[_b->write_index] = _v;
     if (_b->num_elements < _b->len) {
@@ -235,12 +235,12 @@ void X(_c_push)(X() _b, T _v)
     _b->write_index = (_b->write_index+1) % _b->len;
 }
 
-void X(_s_push)(X() _b, T _v)
+void BUFFER(_s_push)(BUFFER() _b, T _v)
 {
 
 }
 
-void X(_linearize)(X() _b)
+void BUFFER(_linearize)(BUFFER() _b)
 {
     // check to see if anything needs to be done
     if ( (_b->len - _b->read_index) > _b->num_elements)

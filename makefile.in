@@ -12,8 +12,7 @@ LIBS_AGC = agc.o
 LIBS_ANN = ann.o ann_layer.o ann_neuron.o
 LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
 			  newbuffer.o \
-			  fwindow.o cfwindow.o \
-			  metadata.o port.o
+			  metadata.o
 LIBS_CHANNEL = channel.o
 LIBS_DOTPROD = fdotprod.o cfdotprod.o
 LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec_rep.o fec_hamming74.o
@@ -34,9 +33,7 @@ INCLUDE_HEADERS = \
 	src/agc/src/agc.h \
 	src/buffer/src/buffer.h \
 	src/buffer/src/newbuffer.h \
-	src/buffer/src/window.h \
 	src/buffer/src/metadata.h \
-	src/buffer/src/port.h \
 	src/channel/src/channel.h \
 	src/dotprod/src/dotprod.h \
 	src/fec/src/fec.h \

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "filter_internal.h"
+#include "filter.h"
 
 struct lf2_s {
     float BT;       // bandwidth-time product
