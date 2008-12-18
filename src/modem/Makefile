@@ -25,4 +25,4 @@ $(EXAMPLES) : %_example : examples/%_example.c $(OBJS) $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f *.o *_test autotest
+	rm -f $(OBJS) $(EXAMPLES) $(DEPS)

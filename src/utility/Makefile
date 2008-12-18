@@ -8,7 +8,7 @@ TESTS = symbol_errors_test
 all: $(TESTS)
 
 CC = gcc
-CFLAGS = -Wall -std=c99 -O3
+CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = count_bits.o pack_bytes.o
 HEADERS = src/utility.h
@@ -20,4 +20,4 @@ $(TESTS): %_test : src/main_%.c $(OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f *.o *_test
+	rm -f $(OBJS) $(TESTS)

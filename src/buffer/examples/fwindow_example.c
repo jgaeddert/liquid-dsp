@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "../src/window.h"
+#include "../src/buffer.h"
 
 int main() {
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
