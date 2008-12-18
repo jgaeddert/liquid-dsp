@@ -14,6 +14,7 @@ LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
 			  newbuffer.o \
 			  fwindow.o cfwindow.o \
 			  metadata.o port.o
+LIBS_CHANNEL = channel.o
 LIBS_DOTPROD = fdotprod.o cfdotprod.o
 LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec_rep.o fec_hamming74.o
 LIBS_FFT = fft_create_plan.o fft_execute.o fft_shift.o asgram.o
@@ -36,6 +37,7 @@ INCLUDE_HEADERS = \
 	src/buffer/src/window.h \
 	src/buffer/src/metadata.h \
 	src/buffer/src/port.h \
+	src/channel/src/channel.h \
 	src/dotprod/src/dotprod.h \
 	src/fec/src/fec.h \
 	src/fft/src/fft.h \
@@ -57,7 +59,8 @@ INCLUDE_HEADERS = \
 LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) $(LIBS_DOTPROD) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_OPTIM) \
-	   $(LIBS_RANDOM) $(LIBS_SEQUENCE) $(LIBS_UTILITY)
+	   $(LIBS_RANDOM) $(LIBS_SEQUENCE) $(LIBS_UTILITY) \
+	   $(LIBS_CHANNEL)
 
 AUTOTESTS = \
 	src/agc/tests/agc_autotest.h \
@@ -142,6 +145,9 @@ $(LIBS_ANN) : %.o : src/ann/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_BUFFER) : %.o : src/buffer/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(LIBS_CHANNEL) : %.o : src/channel/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_DOTPROD) : %.o : src/dotprod/src/%.c
