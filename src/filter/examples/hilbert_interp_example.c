@@ -11,7 +11,7 @@
 #define DEBUG
 
 int main() {
-    unsigned int m=13;
+    unsigned int m=5;
     unsigned int h_len = 4*m+1; // filter length
     float fc=0.17f;
     unsigned int N=128;
