@@ -4,17 +4,19 @@
 
 OBJS = fbuffer.o cfbuffer.o uibuffer.o \
 	   metadata.o \
-	   newbuffer.o
+	   newbuffer.o \
+	   gport.o
 EXAMPLES = fbuffer_example cfbuffer_example \
 		   fwindow_example \
 		   newbuffer_example \
-		   metadata_example
+		   metadata_example \
+		   gport_example
 
 all: $(EXAMPLES)
 
 CC = gcc
 CFLAGS = -Wall -O3
-LDFLAGS = -lm
+LDFLAGS = -lm -pthread
 
 # 
 # Buffer object targets

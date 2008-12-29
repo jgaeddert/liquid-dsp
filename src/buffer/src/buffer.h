@@ -98,6 +98,25 @@ LIQUID_PORT_DEFINE_API(PORT_MANGLE_FLOAT, float)
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, float complex)
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_UINT, unsigned int)
 
+//
+// Generic port
+//
+typedef struct gport_s * gport;
+gport gport_create(unsigned int _n, unsigned int _sizeof);
+void gport_destroy(gport _p);
+void gport_print(gport _p);
+
+// producer methods
+void gport_producer_lock(gport _p, unsigned int _n, void ** _w);
+unsigned int gport_producer_get_num_locked(gport _p);
+void gport_producer_add(gport _p, unsigned int _n);
+void gport_producer_unlock(gport _p);
+
+// consumer methods
+void gport_consumer_lock(gport _p, unsigned int _n, void ** _r);
+unsigned int gport_consumer_get_num_locked(gport _p);
+void gport_consumer_release(gport _p, unsigned int _n);
+void gport_consumer_unlock(gport _p);
 
 #endif // __MODULE_BUFFER_H__
 
