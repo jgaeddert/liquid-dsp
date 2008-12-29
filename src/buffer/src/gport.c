@@ -23,6 +23,7 @@ struct gport_s {
     pthread_mutex_t producer_mutex;
     unsigned int num_write_elements_locked;
     unsigned int num_write_elements_available;
+    unsigned int num_write_elements_requested;
     pthread_mutex_t producer_waiting;
 
     // consumer
@@ -31,6 +32,7 @@ struct gport_s {
     pthread_mutex_t consumer_mutex;
     unsigned int num_read_elements_locked;
     unsigned int num_read_elements_available;
+    unsigned int num_read_elements_requested;
     pthread_mutex_t consumer_waiting;
 
     // other
@@ -52,12 +54,14 @@ gport gport_create(unsigned int _n, unsigned int _sizeof)
     pthread_mutex_init(&(p->producer_waiting),NULL);
     p->write_index = 0;
     p->num_write_elements_available = p->n;
+    p->num_write_elements_requested = 0;
 
     // consumer
     pthread_mutex_init(&(p->consumer_mutex),NULL);
     pthread_mutex_init(&(p->consumer_waiting),NULL);
     p->read_index = 0;
     p->num_read_elements_available = 0;
+    p->num_read_elements_requested = 0;
 
     // internal
     pthread_mutex_init(&(p->internal_mutex),NULL);
@@ -100,9 +104,9 @@ void gport_print(gport _p)
 void * gport_producer_lock(gport _p, unsigned int _n)
 {
     // lock main producer mutex: only one producer at a time
-    printf("gport: producer waiting for lock...\n");
+    //printf("gport: producer waiting for lock...\n");
     pthread_mutex_lock(&(_p->producer_mutex));
-    printf("gport: producer locked\n");
+    //printf("gport: producer locked\n");
 
     // TODO wait for _n elements to become available
     while (_n > _p->num_write_elements_available) {
@@ -115,9 +119,9 @@ void * gport_producer_lock(gport _p, unsigned int _n)
 
 void gport_producer_unlock(gport _p, unsigned int _n)
 {
-    // TODO validate number added
-
     pthread_mutex_lock(&(_p->internal_mutex));
+
+    // TODO validate number added
 
     _p->num_write_elements_available -= _n;
     _p->num_read_elements_available += _n;
@@ -135,7 +139,7 @@ void gport_producer_unlock(gport _p, unsigned int _n)
 
     pthread_mutex_unlock(&(_p->internal_mutex));
 
-    printf("gport: producer unlocked\n");
+    //printf("gport: producer unlocked\n");
     pthread_mutex_unlock(&(_p->producer_mutex));
 }
 
@@ -145,9 +149,9 @@ void gport_producer_unlock(gport _p, unsigned int _n)
 void * gport_consumer_lock(gport _p, unsigned int _n)
 {
     // lock main consumer mutex: only one consumer at a time
-    printf("gport: consumer waiting for lock...\n");
+    //printf("gport: consumer waiting for lock...\n");
     pthread_mutex_lock(&(_p->consumer_mutex));
-    printf("gport: consumer locked\n");
+    //printf("gport: consumer locked\n");
 
     while (_n > _p->num_read_elements_available) {
         printf("warning/todo: gport_consumer_lock(), wait for _n elements to become available\n");
@@ -181,7 +185,7 @@ void gport_consumer_unlock(gport _p, unsigned int _n)
 
     pthread_mutex_unlock(&(_p->internal_mutex));
 
-    printf("gport: consumer unlocked\n");
+    //printf("gport: consumer unlocked\n");
     pthread_mutex_unlock(&(_p->consumer_mutex));
 }
 
