@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <pthread.h>
 
 #include "buffer.h"
@@ -30,6 +31,9 @@ struct gport_s {
     unsigned int num_read_elements_locked;
     unsigned int num_read_elements_available;
     pthread_mutex_t consumer_waiting;
+
+    // other
+    pthread_mutex_t internal_mutex;
 };
 
 gport gport_create(unsigned int _n, unsigned int _sizeof)
@@ -54,6 +58,9 @@ gport gport_create(unsigned int _n, unsigned int _sizeof)
     p->read_index = 0;
     p->num_read_elements_available = 0;
 
+    // internal
+    pthread_mutex_init(&(p->internal_mutex),NULL);
+
     return p;
 }
 
@@ -67,6 +74,8 @@ void gport_destroy(gport _p)
     pthread_mutex_destroy(&(_p->consumer_mutex));
     pthread_mutex_destroy(&(_p->consumer_waiting));
 
+    // other
+    pthread_mutex_destroy(&(_p->internal_mutex));
     free(_p->v);
     free(_p);
 }
@@ -97,22 +106,23 @@ void * gport_producer_lock(gport _p, unsigned int _n)
     // TODO wait for _n elements to become available
     while (_n > _p->num_write_elements_available) {
         printf("warning/todo: gport_producer_lock(), wait for _n elements to become available\n");
-        usleep(1000000);
+        usleep(100000);
     }
 
-    return _p->v + _p->write_index;
-}
-
-unsigned int gport_producer_get_num_locked(gport _p)
-{
+    return _p->v + (_p->write_index)*(_p->size);
 }
 
 void gport_producer_add(gport _p, unsigned int _n)
 {
     // TODO validate number added
 
+    pthread_mutex_lock(&(_p->internal_mutex));
+
     _p->num_write_elements_available -= _n;
     _p->num_read_elements_available += _n;
+    _p->write_index = (_p->write_index + _n) % _p->n;
+
+    pthread_mutex_unlock(&(_p->internal_mutex));
 }
 
 void gport_producer_unlock(gport _p)
@@ -133,23 +143,23 @@ void * gport_consumer_lock(gport _p, unsigned int _n)
 
     while (_n > _p->num_read_elements_available) {
         printf("warning/todo: gport_consumer_lock(), wait for _n elements to become available\n");
-        usleep(1000000);
+        usleep(100000);
     }
 
-    return _p->v + _p->read_index;
+    return _p->v + (_p->read_index)*(_p->size);
 }
-
-unsigned int gport_consumer_get_num_locked(gport _p)
-{
-}
-
 
 void gport_consumer_release(gport _p, unsigned int _n)
 {
     // TODO validate number released
 
+    pthread_mutex_lock(&(_p->internal_mutex));
+
     _p->num_read_elements_available -= _n;
     _p->num_write_elements_available += _n;
+    _p->read_index = (_p->read_index + _n) % _p->n;
+
+    pthread_mutex_unlock(&(_p->internal_mutex));
 }
 
 void gport_consumer_unlock(gport _p)
