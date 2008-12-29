@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <string.h>
 
@@ -19,21 +18,19 @@ struct gport_s {
 
     // producer
     unsigned int write_index;
-    //bool producer_lock;
     pthread_mutex_t producer_mutex;
-    unsigned int num_write_elements_locked;
+    //unsigned int num_write_elements_locked;
     unsigned int num_write_elements_available;
-    unsigned int num_write_elements_requested;
+    //unsigned int num_write_elements_requested;
     pthread_cond_t producer_data_ready;
     bool producer_waiting;
 
     // consumer
     unsigned int read_index;
-    //bool consumer_lock;
     pthread_mutex_t consumer_mutex;
-    unsigned int num_read_elements_locked;
+    //unsigned int num_read_elements_locked;
     unsigned int num_read_elements_available;
-    unsigned int num_read_elements_requested;
+    //unsigned int num_read_elements_requested;
     pthread_cond_t consumer_data_ready;
     bool consumer_waiting;
 
@@ -52,21 +49,21 @@ gport gport_create(unsigned int _n, unsigned int _sizeof)
     p->v = (void*) malloc((p->N)*(p->size));
 
     // producer
-    pthread_mutex_init(&(p->producer_mutex),NULL);
+    pthread_mutex_init(&p->producer_mutex,NULL);
     p->write_index = 0;
     p->num_write_elements_available = p->n;
-    p->num_write_elements_requested = 0;
-    pthread_cond_init(&(p->producer_data_ready),NULL);
+    //p->num_write_elements_requested = 0;
+    pthread_cond_init(&p->producer_data_ready,NULL);
 
     // consumer
-    pthread_mutex_init(&(p->consumer_mutex),NULL);
+    pthread_mutex_init(&p->consumer_mutex,NULL);
     p->read_index = 0;
     p->num_read_elements_available = 0;
-    p->num_read_elements_requested = 0;
-    pthread_cond_init(&(p->consumer_data_ready),NULL);
+    //p->num_read_elements_requested = 0;
+    pthread_cond_init(&p->consumer_data_ready,NULL);
 
     // internal
-    pthread_mutex_init(&(p->internal_mutex),NULL);
+    pthread_mutex_init(&p->internal_mutex,NULL);
 
     return p;
 }
@@ -74,22 +71,24 @@ gport gport_create(unsigned int _n, unsigned int _sizeof)
 void gport_destroy(gport _p)
 {
     // producer
-    pthread_mutex_destroy(&(_p->producer_mutex));
-    pthread_cond_destroy(&(_p->producer_data_ready));
+    pthread_mutex_destroy(&_p->producer_mutex);
+    pthread_cond_destroy(&_p->producer_data_ready);
 
     // consumer
-    pthread_mutex_destroy(&(_p->consumer_mutex));
-    pthread_cond_destroy(&(_p->consumer_data_ready));
+    pthread_mutex_destroy(&_p->consumer_mutex);
+    pthread_cond_destroy(&_p->consumer_data_ready);
 
     // other
-    pthread_mutex_destroy(&(_p->internal_mutex));
+    pthread_mutex_destroy(&_p->internal_mutex);
     free(_p->v);
     free(_p);
 }
 
 void gport_print(gport _p)
 {
-    printf("gport: [%u @ %u]\n", _p->n, _p->size);
+    pthread_mutex_lock(&_p->internal_mutex);
+
+    printf("gport: [%u @ %u bytes]\n", _p->n, _p->size);
     unsigned int i,j,n=0;
     unsigned char * s = (unsigned char*) (_p->v);
     for (i=0; i<_p->n; i++) {
@@ -99,6 +98,8 @@ void gport_print(gport _p)
         }
         printf("\n");
     }
+
+    pthread_mutex_unlock(&_p->internal_mutex);
 }
 
 // producer methods
@@ -107,29 +108,29 @@ void * gport_producer_lock(gport _p, unsigned int _n)
 {
     // lock main producer mutex: only one producer at a time
     //printf("gport: producer waiting for lock...\n");
-    pthread_mutex_lock(&(_p->producer_mutex));
+    pthread_mutex_lock(&_p->producer_mutex);
     //printf("gport: producer locked\n");
 
-    pthread_mutex_lock(&(_p->internal_mutex));
+    pthread_mutex_lock(&_p->internal_mutex);
 
     // TODO wait for _n elements to become available
     while (_n > _p->num_write_elements_available) {
-        printf("warning/todo: gport_producer_lock(), wait for _n elements to become available\n");
+        //printf("warning/todo: gport_producer_lock(), wait for _n elements to become available\n");
         //usleep(100000);
         _p->producer_waiting = true;
         pthread_cond_wait(&(_p->producer_data_ready),&(_p->internal_mutex));
-        printf("gport: producer received signal: data ready\n");
+        //printf("gport: producer received signal: data ready\n");
     }
     _p->producer_waiting = false;
 
-    pthread_mutex_unlock(&(_p->internal_mutex));
+    pthread_mutex_unlock(&_p->internal_mutex);
 
     return _p->v + (_p->write_index)*(_p->size);
 }
 
 void gport_producer_unlock(gport _p, unsigned int _n)
 {
-    pthread_mutex_lock(&(_p->internal_mutex));
+    pthread_mutex_lock(&_p->internal_mutex);
 
     // TODO validate number added
 
@@ -138,7 +139,7 @@ void gport_producer_unlock(gport _p, unsigned int _n)
 
     // copy overflow from residual memory
     if (_p->write_index + _n > _p->n) {
-        printf("gport: producer copying overflow (%u elements)\n", 0);
+        //printf("gport: producer copying overflow (%u elements)\n", 0);
 
         memmove(_p->v,
                 _p->v + (_p->n)*(_p->size),
@@ -149,14 +150,14 @@ void gport_producer_unlock(gport _p, unsigned int _n)
 
     // if consumer is waiting for data, signal its availability
     if (_p->consumer_waiting) {
-        printf("gport: producer sending signal: data ready\n");
+        //printf("gport: producer sending signal: data ready\n");
         pthread_cond_signal(&(_p->consumer_data_ready));
     }
 
-    pthread_mutex_unlock(&(_p->internal_mutex));
+    pthread_mutex_unlock(&_p->internal_mutex);
 
     //printf("gport: producer unlocked\n");
-    pthread_mutex_unlock(&(_p->producer_mutex));
+    pthread_mutex_unlock(&_p->producer_mutex);
 }
 
 
@@ -166,29 +167,29 @@ void * gport_consumer_lock(gport _p, unsigned int _n)
 {
     // lock main consumer mutex: only one consumer at a time
     //printf("gport: consumer waiting for lock...\n");
-    pthread_mutex_lock(&(_p->consumer_mutex));
+    pthread_mutex_lock(&_p->consumer_mutex);
     //printf("gport: consumer locked\n");
 
-    pthread_mutex_lock(&(_p->internal_mutex));
+    pthread_mutex_lock(&_p->internal_mutex);
 
     while (_n > _p->num_read_elements_available) {
-        printf("warning/todo: gport_consumer_lock(), wait for _n elements to become available\n");
+        //printf("warning/todo: gport_consumer_lock(), wait for _n elements to become available\n");
         //usleep(100000);
         _p->consumer_waiting = true;
         pthread_cond_wait(&(_p->consumer_data_ready),&(_p->internal_mutex));
-        printf("gport: consumer received signal: data ready\n");
+        //printf("gport: consumer received signal: data ready\n");
     }
     _p->consumer_waiting = false;
 
     // copy underflow to residual memory
     if (_n > (_p->n - _p->read_index)) {
-        printf("gport: consumer copying underflow\n");
+        //printf("gport: consumer copying underflow\n");
 
         memmove(_p->v + (_p->n)*(_p->size),
                 _p->v,
                 (_n - (_p->n - _p->read_index))*(_p->size));
     }
-    pthread_mutex_unlock(&(_p->internal_mutex));
+    pthread_mutex_unlock(&_p->internal_mutex);
 
     return _p->v + (_p->read_index)*(_p->size);
 }
@@ -197,7 +198,7 @@ void gport_consumer_unlock(gport _p, unsigned int _n)
 {
     // TODO validate number released
 
-    pthread_mutex_lock(&(_p->internal_mutex));
+    pthread_mutex_lock(&_p->internal_mutex);
 
     _p->num_read_elements_available -= _n;
     _p->num_write_elements_available += _n;
@@ -205,13 +206,13 @@ void gport_consumer_unlock(gport _p, unsigned int _n)
 
     // if producer is waiting for data, signal its availability
     if (_p->producer_waiting) {
-        printf("gport: consumer sending signal: data ready\n");
+        //printf("gport: consumer sending signal: data ready\n");
         pthread_cond_signal(&(_p->producer_data_ready));
     }
 
-    pthread_mutex_unlock(&(_p->internal_mutex));
+    pthread_mutex_unlock(&_p->internal_mutex);
 
     //printf("gport: consumer unlocked\n");
-    pthread_mutex_unlock(&(_p->consumer_mutex));
+    pthread_mutex_unlock(&_p->consumer_mutex);
 }
 
