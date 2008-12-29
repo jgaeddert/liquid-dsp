@@ -7,12 +7,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <string.h>
 
 #include "buffer.h"
 
 struct gport_s {
     void * v;
-    unsigned int n;     // buffer size
+    unsigned int n;     // buffer size (elements)
     unsigned int N;     // num elements allocated
     unsigned int size;  // sizeof(element)
 
@@ -120,6 +121,16 @@ void gport_producer_unlock(gport _p, unsigned int _n)
 
     _p->num_write_elements_available -= _n;
     _p->num_read_elements_available += _n;
+
+    // copy overflow from residual memory
+    if (_p->write_index + _n > _p->n) {
+        printf("gport: producer copying overflow (%u elements)\n", 0);
+
+        memmove(_p->v,
+                _p->v + (_p->n)*(_p->size),
+                ((_p->write_index + _n)-(_p->n))*(_p->size));
+    }
+
     _p->write_index = (_p->write_index + _n) % _p->n;
 
     pthread_mutex_unlock(&(_p->internal_mutex));
@@ -142,6 +153,18 @@ void * gport_consumer_lock(gport _p, unsigned int _n)
         printf("warning/todo: gport_consumer_lock(), wait for _n elements to become available\n");
         usleep(100000);
     }
+
+    pthread_mutex_lock(&(_p->internal_mutex));
+
+    // copy underflow to residual memory
+    if (_n > (_p->n - _p->read_index)) {
+        printf("gport: consumer copying underflow\n");
+
+        memmove(_p->v + (_p->n)*(_p->size),
+                _p->v,
+                (_n - (_p->n - _p->read_index))*(_p->size));
+    }
+    pthread_mutex_unlock(&(_p->internal_mutex));
 
     return _p->v + (_p->read_index)*(_p->size);
 }

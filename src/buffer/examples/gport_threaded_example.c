@@ -28,7 +28,7 @@ int main()
     void * status;
     
     // create port: interface between threads
-    gport p = gport_create(PRODUCER_SIZE*CONSUMER_SIZE, sizeof(unsigned int));
+    gport p = gport_create(PRODUCER_SIZE+CONSUMER_SIZE, sizeof(unsigned int));
     
     // set thread attributes
     pthread_attr_init(&thread_attr);
