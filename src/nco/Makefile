@@ -27,4 +27,4 @@ $(EXAMPLES) : %_example : examples/%_example.c $(OBJS) $(HEADERS) $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(DEPS) $(EXAMPLES)
+	rm -f $(OBJS) $(DEPS) $(EXAMPLES) *.m

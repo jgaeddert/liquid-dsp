@@ -13,6 +13,7 @@
 
 // DEBUG: print every output line in octave-friendly format
 #define DEBUG
+#define DEBUG_FILENAME "pll_example.m"
 
 int main() {
     srand( time(NULL) );
@@ -23,7 +24,7 @@ int main() {
     unsigned int n=250;     // number of iterations
     unsigned int d=10;      // print every "d" lines
 #ifdef DEBUG
-    FILE * debug_file = fopen("debug_pll_phase.m","w");
+    FILE * debug_file = fopen(DEBUG_FILENAME,"w");
     fprintf(debug_file, "clear all;\n");
     fprintf(debug_file, "phi=zeros(1,%u);\n",n);
 #endif
@@ -81,6 +82,8 @@ int main() {
     fprintf(debug_file, "ylabel('phase error [radians]')\n");
     fprintf(debug_file, "grid on;\n");
     fclose(debug_file);
+
+    printf("output written to %s.\n", DEBUG_FILENAME);
 #endif
 
     nco_destroy(nco_tx);
