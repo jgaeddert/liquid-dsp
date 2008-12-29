@@ -11,8 +11,27 @@ int main() {
     // options
     unsigned int n=16;
 
+    // create port
     gport p = gport_create(n,sizeof(int));
+
+    // producer
+    int * w;
+    unsigned int i;
+    w = (int*) gport_producer_lock(p,8);
+    for (i=0; i<8; i++)
+        w[i] = i;
+    gport_producer_add(p,8);
+    gport_producer_unlock(p);
+
+    // consumer
+    int * r;
+    r = (int*) gport_consumer_lock(p,4);
+    for (i=0; i<4; i++)
+        printf(" r(%2u) = %d\n",i,r[i]);
+    gport_consumer_release(p,2);
+    gport_consumer_unlock(p);
     
+    // print status
     gport_print(p);
 
     gport_destroy(p);

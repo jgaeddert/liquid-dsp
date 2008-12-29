@@ -10,7 +10,7 @@ EXAMPLES = fbuffer_example cfbuffer_example \
 		   fwindow_example \
 		   newbuffer_example \
 		   metadata_example \
-		   gport_example
+		   gport_example gport_threaded_example
 
 all: $(EXAMPLES)
 
