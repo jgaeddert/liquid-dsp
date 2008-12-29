@@ -20,16 +20,14 @@ int main() {
     w = (int*) gport_producer_lock(p,8);
     for (i=0; i<8; i++)
         w[i] = i;
-    gport_producer_add(p,8);
-    gport_producer_unlock(p);
+    gport_producer_unlock(p,8);
 
     // consumer
     int * r;
     r = (int*) gport_consumer_lock(p,4);
     for (i=0; i<4; i++)
         printf(" r(%2u) = %d\n",i,r[i]);
-    gport_consumer_release(p,2);
-    gport_consumer_unlock(p);
+    gport_consumer_unlock(p,2);
     
     // print status
     gport_print(p);

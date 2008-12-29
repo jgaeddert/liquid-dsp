@@ -112,7 +112,7 @@ void * gport_producer_lock(gport _p, unsigned int _n)
     return _p->v + (_p->write_index)*(_p->size);
 }
 
-void gport_producer_add(gport _p, unsigned int _n)
+void gport_producer_unlock(gport _p, unsigned int _n)
 {
     // TODO validate number added
 
@@ -123,10 +123,7 @@ void gport_producer_add(gport _p, unsigned int _n)
     _p->write_index = (_p->write_index + _n) % _p->n;
 
     pthread_mutex_unlock(&(_p->internal_mutex));
-}
 
-void gport_producer_unlock(gport _p)
-{
     printf("gport: producer unlocked\n");
     pthread_mutex_unlock(&(_p->producer_mutex));
 }
@@ -149,7 +146,7 @@ void * gport_consumer_lock(gport _p, unsigned int _n)
     return _p->v + (_p->read_index)*(_p->size);
 }
 
-void gport_consumer_release(gport _p, unsigned int _n)
+void gport_consumer_unlock(gport _p, unsigned int _n)
 {
     // TODO validate number released
 
@@ -160,10 +157,7 @@ void gport_consumer_release(gport _p, unsigned int _n)
     _p->read_index = (_p->read_index + _n) % _p->n;
 
     pthread_mutex_unlock(&(_p->internal_mutex));
-}
 
-void gport_consumer_unlock(gport _p)
-{
     printf("gport: consumer unlocked\n");
     pthread_mutex_unlock(&(_p->consumer_mutex));
 }

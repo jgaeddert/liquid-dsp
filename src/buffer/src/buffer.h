@@ -108,13 +108,11 @@ void gport_print(gport _p);
 
 // producer methods
 void * gport_producer_lock(gport _p, unsigned int _n);
-void gport_producer_add(gport _p, unsigned int _n);
-void gport_producer_unlock(gport _p);
+void gport_producer_unlock(gport _p, unsigned int _n);
 
 // consumer methods
 void * gport_consumer_lock(gport _p, unsigned int _n);
-void gport_consumer_release(gport _p, unsigned int _n);
-void gport_consumer_unlock(gport _p);
+void gport_consumer_unlock(gport _p, unsigned int _n);
 
 #endif // __MODULE_BUFFER_H__
 

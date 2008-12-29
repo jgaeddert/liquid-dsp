@@ -65,13 +65,11 @@ void producer_handler ( void *_ptr )
         for (j=0; j<PRODUCER_SIZE; j++)
             w[j] = n++;
 
-        gport_producer_add(p,PRODUCER_SIZE);
-
         printf("  producer waiting %u ms\n", PRODUCER_TIMER);
         usleep(PRODUCER_TIMER*1000);
 
         printf("  producer unlocking port\n");
-        gport_producer_unlock(p);
+        gport_producer_unlock(p,PRODUCER_SIZE);
     }
     
     printf("  producer exiting thread\n");
@@ -92,11 +90,8 @@ void consumer_handler ( void *_ptr )
         for (j=0; j<CONSUMER_SIZE; j++)
             printf("  %3u: %d\n", n++, r[j]);
 
-        printf("  consumer releasing %u samples\n", CONSUMER_SIZE);
-        gport_consumer_release(p,CONSUMER_SIZE);
-
         printf("  consumer unlocking port\n");
-        gport_consumer_unlock(p);
+        gport_consumer_unlock(p, CONSUMER_SIZE);
     }
 
     printf("  consumer exiting thread\n");
