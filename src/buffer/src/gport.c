@@ -82,7 +82,7 @@ void gport_print(gport _p)
 {
     pthread_mutex_lock(&_p->internal_mutex);
 
-    printf("gport: [%u @ %u bytes]\n", _p->n, _p->size);
+    printf("gport: [%u @ %u bytes]\n", _p->n, (unsigned int)(_p->size));
     unsigned int i,j,n=0;
     unsigned char * s = (unsigned char*) (_p->v);
     for (i=0; i<_p->n; i++) {

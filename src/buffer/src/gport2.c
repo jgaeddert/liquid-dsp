@@ -111,7 +111,7 @@ void gport2_produce(gport2 _p, void * _w, unsigned int _n)
     // copy data circularly if necessary
     if (_p->write_index + _n > _p->n) {
         // overflow: copy data circularly
-        unsigned int b = _p->write_index + _n - _p->n;
+        unsigned int b = _p->n - _p->write_index;
 
         // copy lower section: 'b' elements
         memmove(_p->v + (_p->write_index)*(_p->size),
