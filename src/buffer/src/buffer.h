@@ -5,6 +5,7 @@
 #ifndef __MODULE_BUFFER_H__
 #define __MODULE_BUFFER_H__
 
+#include <unistd.h>
 #include <complex.h>
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
@@ -113,6 +114,19 @@ void gport_producer_unlock(gport _p, unsigned int _n);
 // consumer methods
 void * gport_consumer_lock(gport _p, unsigned int _n);
 void gport_consumer_unlock(gport _p, unsigned int _n);
+
+//
+// Generic port (2)
+//
+typedef struct gport2_s * gport2;
+gport2 gport2_create(unsigned int _n, size_t _size);
+void gport2_destroy(gport2 _p);
+void gport2_print(gport2 _p);
+
+// produce/consume methods
+void gport2_produce(gport2 _p, void * _w, unsigned int _n);
+void gport2_consume(gport2 _p, void * _r, unsigned int _n);
+
 
 #endif // __MODULE_BUFFER_H__
 

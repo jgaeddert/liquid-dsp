@@ -5,12 +5,13 @@
 OBJS = fbuffer.o cfbuffer.o uibuffer.o \
 	   metadata.o \
 	   newbuffer.o \
-	   gport.o
+	   gport.o gport2.o
 EXAMPLES = fbuffer_example cfbuffer_example \
 		   fwindow_example \
 		   newbuffer_example \
 		   metadata_example \
-		   gport_example gport_threaded_example
+		   gport_example  gport_threaded_example  \
+		   gport2_example gport2_threaded_example
 
 all: $(EXAMPLES)
 
