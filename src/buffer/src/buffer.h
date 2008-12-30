@@ -103,7 +103,7 @@ LIQUID_PORT_DEFINE_API(PORT_MANGLE_UINT, unsigned int)
 // Generic port
 //
 typedef struct gport_s * gport;
-gport gport_create(unsigned int _n, unsigned int _sizeof);
+gport gport_create(unsigned int _n, size_t _size);
 void gport_destroy(gport _p);
 void gport_print(gport _p);
 

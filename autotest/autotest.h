@@ -120,7 +120,7 @@ static inline void _autotest_print_array(uint8_t * _x, unsigned int _n)
     unsigned int i;
     printf("   {");
     for (i=0; i<_n; i++) {
-        printf("%2x, ", (unsigned int)(_x[i]));
+        printf("%.2x, ", (unsigned int)(_x[i]));
         if ( ((i+1)%16 == 0) && (i != (_n-1)) )
             printf("\n    ");
     }

@@ -14,23 +14,19 @@ struct gport_s {
     void * v;
     unsigned int n;     // buffer size (elements)
     unsigned int N;     // num elements allocated
-    unsigned int size;  // sizeof(element)
+    size_t size;        // sizeof(element)
 
     // producer
     unsigned int write_index;
     pthread_mutex_t producer_mutex;
-    //unsigned int num_write_elements_locked;
     unsigned int num_write_elements_available;
-    //unsigned int num_write_elements_requested;
     pthread_cond_t producer_data_ready;
     bool producer_waiting;
 
     // consumer
     unsigned int read_index;
     pthread_mutex_t consumer_mutex;
-    //unsigned int num_read_elements_locked;
     unsigned int num_read_elements_available;
-    //unsigned int num_read_elements_requested;
     pthread_cond_t consumer_data_ready;
     bool consumer_waiting;
 
@@ -38,28 +34,26 @@ struct gport_s {
     pthread_mutex_t internal_mutex;
 };
 
-gport gport_create(unsigned int _n, unsigned int _sizeof)
+gport gport_create(unsigned int _n, size_t _size)
 {
     gport p = (gport) malloc(sizeof(struct gport_s));
     p->v = NULL;
 
     p->n = _n;
     p->N = 2*(p->n)-1;
-    p->size = _sizeof;
+    p->size = _size;
     p->v = (void*) malloc((p->N)*(p->size));
 
     // producer
     pthread_mutex_init(&p->producer_mutex,NULL);
     p->write_index = 0;
     p->num_write_elements_available = p->n;
-    //p->num_write_elements_requested = 0;
     pthread_cond_init(&p->producer_data_ready,NULL);
 
     // consumer
     pthread_mutex_init(&p->consumer_mutex,NULL);
     p->read_index = 0;
     p->num_read_elements_available = 0;
-    //p->num_read_elements_requested = 0;
     pthread_cond_init(&p->consumer_data_ready,NULL);
 
     // internal

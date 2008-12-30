@@ -13,24 +13,19 @@
 struct gport2_s {
     void * v;
     unsigned int n;     // buffer size (elements)
-    unsigned int N;     // num elements allocated
     size_t size;        // sizeof(element)
 
     // producer
     unsigned int write_index;
     pthread_mutex_t producer_mutex;
-    //unsigned int num_write_elements_locked;
     unsigned int num_write_elements_available;
-    //unsigned int num_write_elements_requested;
     pthread_cond_t producer_data_ready;
     bool producer_waiting;
 
     // consumer
     unsigned int read_index;
     pthread_mutex_t consumer_mutex;
-    //unsigned int num_read_elements_locked;
     unsigned int num_read_elements_available;
-    //unsigned int num_read_elements_requested;
     pthread_cond_t consumer_data_ready;
     bool consumer_waiting;
 
@@ -44,9 +39,8 @@ gport2 gport2_create(unsigned int _n, size_t _size)
     p->v = NULL;
 
     p->n = _n;
-    p->N = 2*(p->n)-1;
     p->size = _size;
-    p->v = (void*) malloc((p->N)*(p->size));
+    p->v = (void*) malloc((p->n)*(p->size));
 
     // producer
     pthread_mutex_init(&p->producer_mutex,NULL);
@@ -114,11 +108,12 @@ void gport2_produce(gport2 _p, void * _w, unsigned int _n)
     }
     _p->producer_waiting = false;
 
-    // copy overflow from residual memory (if necessary)
+    // copy data circularly if necessary
     if (_p->write_index + _n > _p->n) {
+        // overflow: copy data circularly
         unsigned int b = _p->write_index + _n - _p->n;
 
-        // copy lower section
+        // copy lower section: 'b' elements
         memmove(_p->v + (_p->write_index)*(_p->size),
                 _w,
                 b*(_p->size));
@@ -158,11 +153,12 @@ void gport2_consume(gport2 _p, void * _r, unsigned int _n)
     }
     _p->consumer_waiting = false;
 
-    // copy underflow from residual memory (if necessary)
+    // copy data circularly if necessary
     if (_n > _p->n - _p->read_index) {
-        unsigned int b = _n - (_p->n - _p->read_index);
+        // underflow: copy data circularly
+        unsigned int b = _p->n - _p->read_index;
 
-        // copy lower section
+        // copy lower section: 'b' elements
         memmove(_r,
                 _p->v + (_p->read_index)*(_p->size),
                 b*(_p->size));
