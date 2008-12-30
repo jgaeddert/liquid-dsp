@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "buffer.h"
 #include "metadata.h"
 
 // Defined
@@ -15,63 +14,37 @@
 //  BUFFER()    :   buffer macro
 
 struct PORT(_s) {
-    BUFFER() buffer;
-    //metadata m;
-    //char name[64];
-
-    // mutex
-
+    gport2 gp;
 };
 
 
 PORT() PORT(_create)(unsigned int _n)
 {
     PORT() p = (PORT()) malloc(sizeof(struct PORT(_s)));
-    p->buffer = BUFFER(_create)(CIRCULAR,_n);
-
-    // create mutex(es) here
+    p->gp = gport2_create(_n,sizeof(T));
 
     return p;
 }
 
 void PORT(_destroy)(PORT() _p)
 {
-    BUFFER(_destroy)(_p->buffer);
+    gport2_destroy(_p->gp);
     free(_p);
 }
 
 void PORT(_print)(PORT() _p)
 {
-
+    gport2_print(_p->gp);
 }
 
-void PORT(_produce)(PORT() _p, T * _v, unsigned int _n)
+void PORT(_produce)(PORT() _p, T * _w, unsigned int _n)
 {
-    // lock mutex (write)
-    BUFFER(_write)(_p->buffer, _v, _n);
-    // unlock mutex (write)
-
-    // 1. check to see if request for samples
-    // 2. if request has been made
-    //    - if request is met unlock mutex (request)
+    gport2_produce(_p->gp,(void*)_w,_n);
 }
 
-void PORT(_consume)(PORT() _p, T ** _v, unsigned int _n)
+void PORT(_consume)(PORT() _p, T * _r, unsigned int _n)
 {
-    // lock mutex (read)
-
-    // try to read _n values :
-    //   - if _n values are not available, wait
-    BUFFER(_read)(_p->buffer, _v, &_n);
-
-    // wait procedure:
-    //   1. submit request for _n samples; locks mutex (request)
-    //   2. wait for mutex to be unlocked
+    gport2_consume(_p->gp,(void*)_r,_n);
 }
 
-void PORT(_release)(PORT() _p, unsigned int _n)
-{
-    BUFFER(_release)(_p->buffer, _n);
-    // unlock mutex (read)
-}
 

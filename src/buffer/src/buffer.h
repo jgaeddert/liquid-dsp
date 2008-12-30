@@ -91,9 +91,8 @@ typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _n); \
 void X(_destroy)(X() _p); \
 void X(_print)(X() _p); \
-void X(_produce)(X() _p, T * _v, unsigned int _n); \
-void X(_consume)(X() _p, T ** _v, unsigned int _n); \
-void X(_release)(X() _p, unsigned int _n);
+void X(_produce)(X() _p, T * _w, unsigned int _n); \
+void X(_consume)(X() _p, T * _r, unsigned int _n); \
 
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_FLOAT, float)
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, float complex)

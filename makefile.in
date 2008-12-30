@@ -11,7 +11,6 @@ CC = @CC@
 LIBS_AGC = agc.o
 LIBS_ANN = ann.o ann_layer.o ann_neuron.o
 LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
-			  newbuffer.o \
 			  metadata.o \
 			  gport.o gport2.o
 LIBS_CHANNEL = channel.o
@@ -33,7 +32,6 @@ LIBS_UTILITY = count_bits.o pack_bytes.o
 INCLUDE_HEADERS = \
 	src/agc/src/agc.h \
 	src/buffer/src/buffer.h \
-	src/buffer/src/newbuffer.h \
 	src/buffer/src/metadata.h \
 	src/channel/src/channel.h \
 	src/dotprod/src/dotprod.h \
