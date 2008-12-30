@@ -38,7 +38,7 @@ void gport_threaded_bench(
 {
     // initialize port
     gport_threaded_bench_data_t data;
-    data.p = gport_create(2*_n,sizeof(int));
+    data.p = gport_create(8*_n,sizeof(int));
     data.producer_size = _n;
     data.consumer_size = _n;
     data.num_trials = *_num_iterations;
