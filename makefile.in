@@ -91,6 +91,8 @@ AUTOTESTS = \
 
 BENCHMARKS = \
 	src/agc/bench/agc_benchmark.h \
+	src/buffer/bench/gport_benchmark.h \
+	src/buffer/bench/gport_threaded_benchmark.h \
 	src/dotprod/bench/fdotprod_benchmark.h \
 	src/dotprod/bench/cfdotprod_benchmark.h \
 	src/filter/bench/iir_filter_benchmark.h \
