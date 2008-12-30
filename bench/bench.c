@@ -217,7 +217,7 @@ void estimate_cpu_speed(void)
     printf("  estimated clock speed: %E Hz\n", cpu_clock);
 
     unsigned long int min_trials = 256;
-    num_trials = (unsigned long int) ( cpu_clock / 80e3 );
+    num_trials = (unsigned long int) ( cpu_clock / 10e3 );
     num_trials = (num_trials < min_trials) ? min_trials : num_trials;
 
     printf("  setting number of trials to %ld\n", num_trials);
