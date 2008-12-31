@@ -9,18 +9,18 @@ int main() {
     float x[] = {1, 2, 3, 4, 5};
     float y[] = {1, 1, 1, 1, 1};
 
-    float z = fdotprod_run(x,y,5);
-    printf("fdotprod:  %8.2f\n", z);
+    float z = dotprod_rrrf_run(x,y,5);
+    printf("dotprod:  %8.2f\n", z);
 
-    float z4 = fdotprod_run4(x,y,5);
-    printf("fdotprod4: %8.2f\n", z4);
+    float z4 = dotprod_rrrf_run4(x,y,5);
+    printf("dotprod4: %8.2f\n", z4);
 
     printf("---\n");
 
-    fdotprod q = fdotprod_create(x,5);
-    float zq = fdotprod_execute(q,y);
-    printf("fdotprodq: %8.2f\n", zq);
-    fdotprod_destroy(q);
+    dotprod_rrrf q = dotprod_rrrf_create(x,5);
+    float zq = dotprod_rrrf_execute(q,y);
+    printf("dotprodq: %8.2f\n", zq);
+    dotprod_rrrf_destroy(q);
     return 0;
 }
 

@@ -18,7 +18,7 @@
 
 #define T                   float complex
 #define WINDOW(name)        FILTER_CONCAT(cfwindow,name)
-#define DOTPROD(name)       FILTER_CONCAT(cfdotprod,name)
+#define DOTPROD(name)       FILTER_CONCAT(dotprod_cccf,name)
 
 // source files
 #include "fir_filter.c"

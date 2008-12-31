@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../../dotprod/src/dotprod_internal.h"
+#include "../../dotprod/src/dotprod.h"
 #include "../../buffer/src/buffer.h"
 
 // defined:
@@ -80,7 +80,7 @@ void FIRPFB(_print)(FIRPFB() _b)
     for (n=0; n<_b->h_len; n++) {
         for (i=0; i<_b->num_filters; i++) {
             printf(" ");
-            PRINTVAL(_b->dp[i]->v[n]);
+            //PRINTVAL(_b->dp[i]->v[n]);
         }
         printf("\n");
     }

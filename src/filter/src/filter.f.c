@@ -19,7 +19,7 @@
 
 #define T                   float
 #define WINDOW(name)        FILTER_CONCAT(fwindow,name)
-#define DOTPROD(name)       FILTER_CONCAT(fdotprod,name)
+#define DOTPROD(name)       FILTER_CONCAT(dotprod_rrrf,name)
 
 // source files
 #include "fir_filter.c"

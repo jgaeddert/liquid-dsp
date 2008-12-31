@@ -10,7 +10,7 @@
 #include "firdes.h"
 
 #include "../../math/src/lmath.h"
-#include "../../dotprod/src/dotprod_internal.h"
+#include "../../dotprod/src/dotprod.h"
 #include "../../buffer/src/buffer.h"
 
 // defined:

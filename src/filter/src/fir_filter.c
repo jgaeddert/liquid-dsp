@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../../dotprod/src/dotprod_internal.h"
+#include "../../dotprod/src/dotprod.h"
 #include "../../buffer/src/buffer.h"
 
 // defined:

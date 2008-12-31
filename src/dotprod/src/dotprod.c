@@ -5,22 +5,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dotprod_internal.h"
+struct X(_s) {
+    TC * h;
+    unsigned int n;
+};
 
 // basic dot product
 
-T X(_run)(T *_x, T *_y, unsigned int _n)
+TO X(_run)(TC *_h, TI *_x, unsigned int _n)
 {
-    T r=0;
+    TO r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
-        r += _x[i] * _y[i];
+        r += _h[i] * _x[i];
     return r;
 }
 
-T X(_run4)(T *_x, T *_y, unsigned int _n)
+TO X(_run4)(TC *_h, TI *_x, unsigned int _n)
 {
-    T r=0;
+    TO r=0;
 
     // t = 4*(floor(_n/4))
     unsigned int t=(_n>>2)<<2; 
@@ -28,15 +31,15 @@ T X(_run4)(T *_x, T *_y, unsigned int _n)
     // compute dotprod in groups of 4
     unsigned int i;
     for (i=0; i<t; i+=4) {
-        r += _x[i]   * _y[i];
-        r += _x[i+1] * _y[i+1];
-        r += _x[i+2] * _y[i+2];
-        r += _x[i+3] * _y[i+3];
+        r += _h[i]   * _x[i];
+        r += _h[i+1] * _x[i+1];
+        r += _h[i+2] * _x[i+2];
+        r += _h[i+3] * _x[i+3];
     }
 
     // clean up remaining
     for ( ; i<_n; i++)
-        r += _x[i] * _y[i];
+        r += _h[i] * _x[i];
 
     return r;
 }
@@ -45,23 +48,23 @@ T X(_run4)(T *_x, T *_y, unsigned int _n)
 // structured dot product
 //
 
-X() X(_create)(T * _v, unsigned int _n)
+X() X(_create)(TC * _h, unsigned int _n)
 {
     X() q = (X()) malloc(sizeof(struct X(_s)));
     q->n = _n;
-    q->v = (T*) malloc((q->n)*sizeof(T));
-    memmove(q->v, _v, (q->n)*sizeof(T));
+    q->h = (TC*) malloc((q->n)*sizeof(TC));
+    memmove(q->h, _h, (q->n)*sizeof(TC));
     return q;
 }
 
 void X(_destroy)(X() _q)
 {
-    free(_q->v);
+    free(_q->h);
     free(_q);
 }
 
-T X(_execute)(X() _q, T * _v)
+TO X(_execute)(X() _q, TI * _x)
 {
-    return X(_run)(_q->v, _v, _q->n);
+    return X(_run)(_q->h, _x, _q->n);
 }
 
