@@ -63,7 +63,7 @@ AUTOTESTS = \
 	src/buffer/tests/cbuffer_autotest.h \
 	src/buffer/tests/sbuffer_autotest.h \
 	src/buffer/tests/gport2_autotest.h \
-	src/dotprod/tests/fdotprod_autotest.h \
+	src/dotprod/tests/dotprod_rrrf_autotest.h \
 	src/fec/tests/checksum_autotest.h \
 	src/fec/tests/crc_autotest.h \
 	src/fec/tests/fec_autotest.h \
@@ -94,8 +94,8 @@ BENCHMARKS = \
 	src/buffer/bench/gport_threaded_benchmark.h \
 	src/buffer/bench/gport2_benchmark.h \
 	src/buffer/bench/gport2_threaded_benchmark.h \
-	src/dotprod/bench/fdotprod_benchmark.h \
-	src/dotprod/bench/cfdotprod_benchmark.h \
+	src/dotprod/bench/dotprod_rrrf_benchmark.h \
+	src/dotprod/bench/dotprod_cccf_benchmark.h \
 	src/filter/bench/iir_filter_benchmark.h \
 	src/filter/bench/interp_benchmark.h \
 	src/filter/bench/firhilb_benchmark.h \
