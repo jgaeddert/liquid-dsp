@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "../src/filter.h"
 #include "../src/firdes.h"
@@ -14,16 +15,24 @@
 int main() {
     // options
     unsigned int k=2;
-    unsigned int m=3;
+    unsigned int m=5;
     float beta=0.3f;
-    unsigned int num_filters=16;
+    unsigned int num_filters=64;
     unsigned int num_symbols=256;
+
+    float bt=0.2f;      // loop filter bandwidth
+    float dt=0.5f;      // fractional sample offset
+    unsigned int ds=1;  // additional symbol delay
+    
+    // use random data or 101010 phasing pattern
+    bool random_data=false;
+
+
 
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rrc_filter(k,m,beta,0.25f,h);
-    //design_rrc_filter(k,m,beta,0,h);
+    design_rrc_filter(k,m,beta,dt,h);
 
     // create interpolator
     interp q = interp_create(k,h,h_len);
@@ -34,7 +43,7 @@ int main() {
     design_rrc_filter(k*num_filters,m,beta,0,H);
     // create symbol synchronizer
     symsync d = symsync_create(k, num_filters, H, H_len);
-    symsync_print(d);
+    symsync_set_lf_bw(d,bt);
 
     unsigned int i, n=0;
     unsigned int num_samples = k*num_symbols;
@@ -55,8 +64,10 @@ int main() {
 #endif
 
     for (i=0; i<num_symbols; i++) {
-        //x[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
-        x[i] = rand() % 2 ? 1.0f : -1.0f;   // random signal
+        if (random_data)
+            x[i] = rand() % 2 ? 1.0f : -1.0f;   // random signal
+        else
+            x[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
     }
 
     // run interpolator
@@ -67,8 +78,7 @@ int main() {
 
     // run symbol synchronizer
     unsigned int num_symbols_sync;
-    //symsync_execute(d, &y[1], num_samples-1, z, &num_symbols_sync); // additional sample of delay
-    symsync_execute(d, y, num_samples, z, &num_symbols_sync);
+    symsync_execute(d, &y[ds], num_samples-ds, z, &num_symbols_sync);
 
     printf("h(t) :\n");
     for (i=0; i<h_len; i++) {

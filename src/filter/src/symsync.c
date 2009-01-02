@@ -103,18 +103,6 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, T * _h, u
     fprintf(q->fid,"alpha = %12.5e\n",q->alpha);
     fprintf(q->fid,"beta = %12.5e\n",q->beta);
     fprintf(q->fid,"\n\n");
-
-    for (i=0; i<_h_len; i++) {
-        printf("h(%3u) = ", i+1);
-        PRINTVAL(_h[i]);
-        printf(";\n");
-    }
-    for (i=0; i<_h_len; i++) {
-        printf("dh(%3u) = ", i+1);
-        PRINTVAL(dh[i]);
-        printf(";\n");
-    }
-
 #endif
 
     return q;
@@ -135,7 +123,7 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
     fprintf(_q->fid, "if length(i_stuff>0), plot(t(i_stuff),b_soft(i_stuff),'bx'); end;\n");
     fprintf(_q->fid, "hold off;\n");
     fprintf(_q->fid, "axis([t(1) t(end) -1 num_filters]);\n");
-    fprintf(_q->fid, "legend('b (soft)','b',0);\n");
+    fprintf(_q->fid, "legend('b','b (soft)',0);\n");
     fprintf(_q->fid, "%% done.\n");
     fclose(_q->fid);
     printf("symsync: internal results written to %s.\n", SYMSYNC_DEBUG_FILENAME);
@@ -168,13 +156,11 @@ void SYMSYNC(_execute)(SYMSYNC() _q, T * _x, unsigned int _nx, T * _y, unsigned 
         switch (_q->state) {
         case SHIFT:
             // 'shift' sample into state registers (normal operation)
-            printf("symsync: shift\n");
             FIRPFB(_push)(_q->mf, _x[i]);
             FIRPFB(_push)(_q->dmf,_x[i]);
             i++;
             break;
         case SKIP:
-            printf("symsync: skip\n");
             // 'skip' input sample (shift in two values)
             // shift in first value
             FIRPFB(_push)(_q->mf, _x[i]);
@@ -184,7 +170,6 @@ void SYMSYNC(_execute)(SYMSYNC() _q, T * _x, unsigned int _nx, T * _y, unsigned 
             //break;
             continue;
         case SKIP_PRIME:
-            printf("symsync: skip (prime)\n");
             // 'skip' input sample (shift in two values)
             FIRPFB(_push)(_q->mf, _x[i]);
             FIRPFB(_push)(_q->dmf,_x[i]);
@@ -192,7 +177,6 @@ void SYMSYNC(_execute)(SYMSYNC() _q, T * _x, unsigned int _nx, T * _y, unsigned 
             _q->state = SHIFT;
             break;
         case STUFF:
-            printf("symsync: stuff\n");
             // 'stuff' input sample (effectively repeat sample)
             _q->state = SHIFT;
             break;
