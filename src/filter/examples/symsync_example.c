@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../src/filter.h"
 #include "../src/firdes.h"
@@ -16,7 +17,7 @@ int main() {
     unsigned int m=3;
     float beta=0.3f;
     unsigned int num_filters=4;
-    unsigned int num_symbols=16;
+    unsigned int num_symbols=32;
 
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
@@ -44,10 +45,17 @@ int main() {
     FILE* fid = fopen(DEBUG_FILENAME,"w");
     fprintf(fid,"%% debug_symsync_example.m, auto-generated file\n\n");
     fprintf(fid,"close all;\nclear all;\n\n");
+
+    fprintf(fid,"k=%u;\n",k);
+    fprintf(fid,"m=%u;\n",m);
+    fprintf(fid,"beta=%12.8f;\n",beta);
+    fprintf(fid,"num_filters=%u;\n",num_filters);
+    fprintf(fid,"num_symbols=%u;\n",num_symbols);
 #endif
 
     for (i=0; i<num_symbols; i++) {
-        x[i] = (i%2) ? 1.0f : -1.0f;
+        //x[i] = (i%2) ? 1.0f : -1.0f;
+        x[i] = rand() % 2 ? 1.0f : -1.0f;
     }
 
     // run interpolator
@@ -94,6 +102,17 @@ int main() {
 
 #ifdef DEBUG
     fprintf(fid,"\n\n");
+    fprintf(fid,"zp = filter(h,1,y);\n");
+    fprintf(fid,"figure;\nhold on;\n");
+    fprintf(fid,"plot([0:length(x)-1],          x,'ob');\n");
+    fprintf(fid,"plot([0:length(y)-1]/2  -m,    y,'-','Color',[0.8 0.8 0.8]);\n");
+    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  zp/2,'-b');\n");
+    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,z/2,'xr');\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"xlabel('symbol index');\n");
+    fprintf(fid,"ylabel('symbol/signal');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"legend('sym in','interp','mf','sym out',0);\n");
     fclose(fid);
 
     printf("results written to %s.\n", DEBUG_FILENAME);
