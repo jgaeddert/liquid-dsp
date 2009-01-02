@@ -6,7 +6,8 @@ EXAMPLES = fir_filter_example iir_filter_example \
 		   interp_example decim_example \
 		   matched_filter_example firpfb_example \
 		   hilbert_decim_example hilbert_interp_example \
-		   cresamp2_decim_example cresamp2_interp_example
+		   cresamp2_decim_example cresamp2_interp_example \
+		   symsync_example
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -21,8 +22,8 @@ HEADERS = src/filter_common.h src/filter.h src/firdes.h \
 all: $(EXAMPLES)
 
 MATH_DEPS = lmath.o
-BUFFER_DEPS = fbuffer.o cfbuffer.o
-DOTPROD_DEPS = fdotprod.o cfdotprod.o
+BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
+DOTPROD_DEPS = dotprod_rrrf.o dotprod_cccf.o dotprod_crcf.o
 DEPS = $(MATH_DEPS) $(BUFFER_DEPS) $(DOTPROD_DEPS)
 
 $(MATH_DEPS) :

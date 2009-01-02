@@ -39,6 +39,7 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len)
     // generate bank of sub-samped filters
     // length of each sub-sampled filter
     unsigned int h_sub_len = _h_len / b->num_filters;
+    printf("firpfb: h_len: %u, h_sub_len: %u\n", _h_len, h_sub_len);
     T h_sub[h_sub_len];
     unsigned int i, n;
     for (i=0; i<b->num_filters; i++) {
@@ -80,7 +81,7 @@ void FIRPFB(_print)(FIRPFB() _b)
     for (n=0; n<_b->h_len; n++) {
         for (i=0; i<_b->num_filters; i++) {
             printf(" ");
-            //PRINTVAL(_b->dp[i]->v[n]);
+            PRINTVAL(_b->dp[i]->h[n]);
         }
         printf("\n");
     }

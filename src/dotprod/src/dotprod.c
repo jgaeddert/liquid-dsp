@@ -5,10 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if 0
 struct X(_s) {
     TC * h;
     unsigned int n;
 };
+#endif
 
 // basic dot product
 

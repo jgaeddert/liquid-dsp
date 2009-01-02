@@ -188,3 +188,53 @@ void gport2_consume(gport2 _p, void * _r, unsigned int _n)
     pthread_mutex_unlock(&(_p->consumer_mutex));
 }
 
+void gport2_consume_available(gport2 _p, void * _r, unsigned int _nmax, unsigned int *_nc)
+{
+    pthread_mutex_lock(&(_p->consumer_mutex));
+    pthread_mutex_lock(&(_p->internal_mutex));
+
+    while (_p->num_read_elements_available == 0) {
+        _p->consumer_waiting = true;
+        pthread_cond_wait(&(_p->consumer_data_ready),&(_p->internal_mutex));
+    }
+    _p->consumer_waiting = false;
+
+    unsigned int n = (_p->num_read_elements_available > _nmax) ?
+        _nmax : _p->num_read_elements_available;
+    *_nc = n;
+
+    // copy data circularly if necessary
+    if (n > _p->n - _p->read_index) {
+        // underflow: copy data circularly
+        unsigned int b = _p->n - _p->read_index;
+
+        // copy lower section: 'b' elements
+        memmove(_r,
+                _p->v + (_p->read_index)*(_p->size),
+                b*(_p->size));
+
+        // copy upper section
+        memmove(_r + b*(_p->size),
+                _p->v,
+                (n-b)*(_p->size));
+
+    } else {
+        memmove(_r,
+                _p->v + (_p->read_index)*(_p->size),
+                n*(_p->size));
+    }
+
+    _p->num_read_elements_available -= n;
+    _p->num_write_elements_available += n;
+
+    _p->read_index = (_p->read_index + n) % _p->n;
+
+    // signal producer
+    if (_p->producer_waiting) {
+        pthread_cond_signal(&(_p->producer_data_ready));
+    }
+
+    pthread_mutex_unlock(&(_p->internal_mutex));
+    pthread_mutex_unlock(&(_p->consumer_mutex));
+}
+

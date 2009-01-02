@@ -22,6 +22,10 @@ TO X(_run)(TC *_h, TI *_x, unsigned int _n);        \
 TO X(_run4)(TC *_h, TI *_x, unsigned int _n);       \
                                                     \
 typedef struct X(_s) * X();                         \
+struct X(_s) {      \
+    TC * h;         \
+    unsigned int n; \
+};                  \
 X() X(_create)(TC * _v, unsigned int _n);           \
 void X(_destroy)(X() _q);                           \
 TO X(_execute)(X() _q, TI * _v);

@@ -125,6 +125,7 @@ void gport2_print(gport2 _p);
 // produce/consume methods
 void gport2_produce(gport2 _p, void * _w, unsigned int _n);
 void gport2_consume(gport2 _p, void * _r, unsigned int _n);
+void gport2_consume_available(gport2 _p, void * _r, unsigned int _nmax, unsigned int *_nc);
 
 
 #endif // __MODULE_BUFFER_H__

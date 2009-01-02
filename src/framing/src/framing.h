@@ -40,3 +40,4 @@ void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
 bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 
 #endif // __LIQUID_FRAMING_H__
+

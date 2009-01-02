@@ -181,7 +181,7 @@ typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _k, unsigned int _num_filters, T * _h, unsigned int _h_len); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
-void X(_execute)(X() _q); \
+void X(_execute)(X() _q, T * _x, unsigned int _nx, T * _y, unsigned int *_ny); \
 void X(_set_lf_bw)(X() _q, float _bt); \
 void X(_clear)(X() _q); \
 void X(_estimate_timing)(X() _q, T * _x, unsigned int _n);
