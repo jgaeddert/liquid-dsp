@@ -16,13 +16,14 @@ int main() {
     unsigned int k=2;
     unsigned int m=3;
     float beta=0.3f;
-    unsigned int num_filters=4;
-    unsigned int num_symbols=32;
+    unsigned int num_filters=16;
+    unsigned int num_symbols=256;
 
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rrc_filter(k,m,beta,0,h);
+    design_rrc_filter(k,m,beta,0.25f,h);
+    //design_rrc_filter(k,m,beta,0,h);
 
     // create interpolator
     interp q = interp_create(k,h,h_len);
@@ -54,8 +55,8 @@ int main() {
 #endif
 
     for (i=0; i<num_symbols; i++) {
-        //x[i] = (i%2) ? 1.0f : -1.0f;
-        x[i] = rand() % 2 ? 1.0f : -1.0f;
+        //x[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
+        x[i] = rand() % 2 ? 1.0f : -1.0f;   // random signal
     }
 
     // run interpolator
@@ -66,6 +67,7 @@ int main() {
 
     // run symbol synchronizer
     unsigned int num_symbols_sync;
+    //symsync_execute(d, &y[1], num_samples-1, z, &num_symbols_sync); // additional sample of delay
     symsync_execute(d, y, num_samples, z, &num_symbols_sync);
 
     printf("h(t) :\n");
@@ -78,7 +80,7 @@ int main() {
 
     printf("x(t) :\n");
     for (i=0; i<num_symbols; i++) {
-        printf("  x(%2u) = %8.4f;\n", i+1, x[i]);
+        //printf("  x(%2u) = %8.4f;\n", i+1, x[i]);
 #ifdef DEBUG
         fprintf(fid,"x(%3u) = %12.5f;\n", i+1, x[i]);
 #endif
@@ -86,7 +88,7 @@ int main() {
 
     printf("y(t) :\n");
     for (i=0; i<num_samples; i++) {
-        printf("  y(%2u) = %8.4f;\n", i+1, y[i]);
+        //printf("  y(%2u) = %8.4f;\n", i+1, y[i]);
 #ifdef DEBUG
         fprintf(fid,"y(%3u) = %12.5f;\n", i+1, y[i]);
 #endif

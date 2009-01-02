@@ -10,7 +10,7 @@ EXAMPLES = fir_filter_example iir_filter_example \
 		   symsync_example
 
 CC = gcc
-CFLAGS = -Wall -O3
+CFLAGS = -Wall -O3 -DSYMSYNC_DEBUG
 LDFLAGS = -lm
 OBJS = filter.f.o filter.cf.o \
 	   filter_common.o firdes.o \
