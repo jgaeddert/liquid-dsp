@@ -16,7 +16,8 @@ HEADERS = src/framing.h
 BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
 DOTPROD_DEPS = dotprod_rrrf.o #dotprod_cccf.o dotprod_crcf.o
 SEQUENCE_DEPS = bsequence.o msequence.o count_bits.o
-DEPS = $(BUFFER_DEPS) $(DOTPROD_DEPS) $(SEQUENCE_DEPS)
+RANDOM_DEPS = random.o
+DEPS = $(BUFFER_DEPS) $(DOTPROD_DEPS) $(SEQUENCE_DEPS) $(RANDOM_DEPS)
 
 $(BUFFER_DEPS) :
 	cd ../buffer ; make $@
@@ -29,6 +30,10 @@ $(DOTPROD_DEPS) :
 $(SEQUENCE_DEPS) :
 	cd ../sequence ; make $@
 	cp ../sequence/$@ .
+
+$(RANDOM_DEPS) :
+	cd ../random ; make $@
+	cp ../random/$@ .
 
 $(OBJS) : %.o : src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
