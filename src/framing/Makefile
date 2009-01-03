@@ -3,7 +3,7 @@
 #
 
 
-EXAMPLES = framing_example
+EXAMPLES = framing_example cframing_example
 
 all: $(EXAMPLES)
 
@@ -14,7 +14,7 @@ OBJS = framing.f.o framing.cf.o
 HEADERS = src/framing.h
 
 BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
-DOTPROD_DEPS = dotprod_rrrf.o dotprod_crcf.o #dotprod_cccf.o
+DOTPROD_DEPS = dotprod_rrrf.o dotprod_crcf.o dotprod_cccf.o
 SEQUENCE_DEPS = bsequence.o msequence.o count_bits.o
 RANDOM_DEPS = random.o
 DEPS = $(BUFFER_DEPS) $(DOTPROD_DEPS) $(SEQUENCE_DEPS) $(RANDOM_DEPS)

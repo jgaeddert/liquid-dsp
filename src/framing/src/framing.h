@@ -51,12 +51,13 @@ bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 // Macro:
 //  X   : name-mangling macro
 //  T   : data type
-#define LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC,T)        \
-typedef struct FRAMESYNC(_s) * FRAMESYNC();             \
-                                                        \
-FRAMESYNC() FRAMESYNC(_create)(unsigned int _n);        \
-void FRAMESYNC(_destroy)(FRAMESYNC() _fs);              \
-void FRAMESYNC(_print)(FRAMESYNC() _fs);                \
+#define LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC,T)            \
+typedef struct FRAMESYNC(_s) * FRAMESYNC();                 \
+                                                            \
+FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, T * _v);    \
+FRAMESYNC() FRAMESYNC(_create_msequence)(msequence _ms);    \
+void FRAMESYNC(_destroy)(FRAMESYNC() _fs);                  \
+void FRAMESYNC(_print)(FRAMESYNC() _fs);                    \
 T FRAMESYNC(_correlate)(FRAMESYNC() _fs, T _sym);
 
 LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_FLOAT, float)

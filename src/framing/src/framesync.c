@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include "framing.h"
 #include "../../buffer/src/buffer.h"        // WINDOW()
@@ -12,28 +13,53 @@
 #include "../../sequence/src/sequence.h"    // p/n sequence
 
 struct FRAMESYNC(_s) {
-    unsigned int n; // header length
+    unsigned int n; // sequence length
     WINDOW() sym;   // received symbols
     WINDOW() sym2;  // received symbols squared
     DOTPROD() dp;   // dot product
     T rxy;          // cross correlation
 };
 
-FRAMESYNC() FRAMESYNC(_create)(unsigned int _n)
+FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, T * _v)
 {
     FRAMESYNC() fs = (FRAMESYNC()) malloc(sizeof(struct FRAMESYNC(_s)));
-    //fs->n = _n;
-    fs->n = 63;
+    fs->n = _n;
 
     fs->sym  = WINDOW(_create)(fs->n);
     fs->sym2 = WINDOW(_create)(fs->n);
 
-    float h[fs->n];
-    msequence ms = msequence_create(6);
+    T h[fs->n];
+    memmove(h, _v, (fs->n)*sizeof(T));
+
+    // compute signal energy and normalize
+    unsigned int i;
+    float e=0.0f;
+    for (i=0; i<fs->n; i++)
+        e += ABS(h[i]) * ABS(h[i]);
+
+    e = sqrtf(e/(fs->n));
+
+    for (i=0; i<fs->n; i++)
+        h[i] /= e;
+
+    fs->dp = DOTPROD(_create)(h,fs->n);
+
+    return fs;
+}
+
+FRAMESYNC() FRAMESYNC(_create_msequence)(msequence _ms)
+{
+    FRAMESYNC() fs = (FRAMESYNC()) malloc(sizeof(struct FRAMESYNC(_s)));
+    fs->n = msequence_get_length(_ms);
+
+    fs->sym  = WINDOW(_create)(fs->n);
+    fs->sym2 = WINDOW(_create)(fs->n);
+
+    T h[fs->n];
+
     unsigned int i;
     for (i=0; i<fs->n; i++)
-        h[i] = msequence_advance(ms) ? 1.0f : -1.0f;
-    msequence_destroy(ms);
+        h[i] = msequence_advance(_ms) ? 1.0f : -1.0f;
 
     fs->dp = DOTPROD(_create)(h,fs->n);
 
@@ -65,7 +91,7 @@ T FRAMESYNC(_correlate)(FRAMESYNC() _fs, T _sym)
     WINDOW(_read)(_fs->sym2, &r);
     float e=0.0f;
     for (i=0; i<_fs->n; i++)
-        e += r[i];
+        e += ABS(r[i]) * ABS(r[i]);
     e /= _fs->n;
 
     WINDOW(_read)(_fs->sym, &r);

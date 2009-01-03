@@ -10,6 +10,7 @@
 #define PRINTVAL(x)         printf("%12.4e", x)
 
 #define T                   float
+#define ABS(X)              fabsf(X)
 #define WINDOW(name)        FRAMING_CONCAT(fwindow,name)
 #define DOTPROD(name)       FRAMING_CONCAT(dotprod_rrrf,name)
 
