@@ -6,6 +6,7 @@
 #define __LIQUID_FRAMING_H__
 
 #include <stdbool.h>
+#include <complex.h>
 
 #include "../../sequence/src/sequence.h"   // p/n sequence
 #include "../../fec/src/fec.h"             // crc, fec
@@ -59,6 +60,7 @@ void FRAMESYNC(_print)(FRAMESYNC() _fs);                \
 T FRAMESYNC(_correlate)(FRAMESYNC() _fs, T _sym);
 
 LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_FLOAT, float)
+LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CFLOAT, float complex)
 
 #endif // __LIQUID_FRAMING_H__
 

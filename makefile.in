@@ -20,6 +20,7 @@ LIBS_FFT = fft_create_plan.o fft_execute.o fft_shift.o asgram.o
 LIBS_FILTER = filter.f.o filter.cf.o \
 			  filter_common.o rrcos.o firdes.o \
 			  lf2.o
+LIBS_FRAMING = framing.f.o framing.cf.o
 LIBS_INTERLEAVER = interleaver.o interleaver_create.o interleaver_permute.o
 LIBS_MATH = lmath.o fmatrix.o cfmatrix.o
 LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o
@@ -56,7 +57,8 @@ LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) $(LIBS_DOTPROD) \
 	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
 	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_OPTIM) \
 	   $(LIBS_RANDOM) $(LIBS_SEQUENCE) $(LIBS_UTILITY) \
-	   $(LIBS_CHANNEL)
+	   $(LIBS_CHANNEL) \
+	   $(LIBS_FRAMING)
 
 AUTOTESTS = \
 	src/agc/tests/agc_autotest.h \
@@ -162,6 +164,9 @@ $(LIBS_FFT) : %.o : src/fft/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_FILTER) : %.o : src/filter/src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(LIBS_FRAMING) : %.o : src/framing/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_INTERLEAVER) : %.o : src/interleaver/src/%.c
