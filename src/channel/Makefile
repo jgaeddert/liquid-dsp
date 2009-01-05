@@ -12,8 +12,8 @@ HEADERS = src/channel.h
 
 all: $(EXAMPLES)
 
-DOTPROD_DEPS = fdotprod.o cfdotprod.o
-BUFFER_DEPS = fwindow.o cfwindow.o
+DOTPROD_DEPS = dotprod_rrrf.o dotprod_cccf.o
+BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
 FILTER_DEPS = filter.f.o filter.cf.o
 RANDOM_DEPS = random.o
 MATH_DEPS = lmath.o
