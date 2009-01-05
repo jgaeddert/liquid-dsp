@@ -38,16 +38,9 @@ bool checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned c
 unsigned int crc32_generate_key(unsigned char *_data, unsigned int _n);
 bool crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int _key);
 
+// 
+// FEC
 //
-// 1/2-rate (8,4) Hamming code
-//
-void fec_hamming84_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsigned char *_msg_enc);
-unsigned int
-     fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec);
-
-void fec_hamming74_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsigned char *_msg_enc);
-unsigned int
-     fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec);
 
 typedef enum {
     FEC_UNKNOWN=0,

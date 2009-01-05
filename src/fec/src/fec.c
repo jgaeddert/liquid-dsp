@@ -34,9 +34,9 @@ float fec_get_rate(fec_scheme _scheme)
 {
     switch (_scheme) {
     case FEC_UNKNOWN:   return 0;
-    case FEC_REP3:      return 1/3;
-    case FEC_HAMMING74: return 1/2;
-    case FEC_HAMMING84: return 1/2;
+    case FEC_REP3:      return 1./3.;
+    case FEC_HAMMING74: return 1./2.;
+    case FEC_HAMMING84: return 1./2.;
     default:
         printf("error: fec_get_rate(), unknown/unsupported scheme: %d\n", _scheme);
         exit(0);
@@ -52,7 +52,7 @@ fec fec_create(fec_scheme _scheme, unsigned int _msg_len, void *_opts)
     case FEC_REP3:
         return fec_rep3_create(_msg_len, _opts);
     case FEC_HAMMING74:
-        //return fec_hamming74_create(_msg_len, _opts);
+        return fec_hamming74_create(_msg_len, _opts);
     case FEC_HAMMING84:
         //return fec_hamming84_create(_msg_len, _opts);
     default:
@@ -69,7 +69,7 @@ void fec_destroy(fec _q)
 
 void fec_print(fec _q)
 {
-    printf("fec: %s [%u->%u, rate: %3.2f]\n",
+    printf("fec: %s [%u->%u, rate: %4.3f]\n",
         fec_scheme_str[_q->scheme],
         _q->dec_msg_len,
         _q->enc_msg_len,

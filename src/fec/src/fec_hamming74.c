@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "fec_internal.h"
 #include "../../utility/src/utility.h"
@@ -32,11 +33,31 @@ static unsigned char hamming74_bflip[] = {
     0x01,   // 7
 };
 
-void fec_hamming74_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsigned char *_msg_enc)
+fec fec_hamming74_create(unsigned int _msg_len, void * _opts)
+{
+    fec q = (fec) malloc(sizeof(struct fec_s));
+
+    q->scheme = FEC_HAMMING74;
+    q->dec_msg_len = _msg_len;
+    q->enc_msg_len = fec_get_enc_msg_length(q->scheme,_msg_len);
+    q->rate = fec_get_rate(q->scheme);
+
+    q->encode_func = &fec_hamming74_encode;
+    q->decode_func = &fec_hamming74_decode;
+
+    return q;
+}
+
+void fec_hamming74_destroy(fec _q)
+{
+    free(_q);
+}
+
+void fec_hamming74_encode(fec _q, unsigned char *_msg_dec, unsigned char *_msg_enc)
 {
     unsigned int i, j=0;
     unsigned char s0, s1;
-    for (i=0; i<_msg_len; i++) {
+    for (i=0; i<_q->dec_msg_len; i++) {
         s0 = (_msg_dec[i] >> 4) & 0x0f;
         s1 = (_msg_dec[i] >> 0) & 0x0f;
         _msg_enc[j+0] = hamming74_enc[s0];
@@ -45,12 +66,12 @@ void fec_hamming74_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsign
     }
 }
 
-unsigned int
-fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec)
+//unsigned int
+void fec_hamming74_decode(fec _q, unsigned char *_msg_enc, unsigned char *_msg_dec)
 {
     unsigned int i, num_errors=0;
     unsigned char r0, r1, z0, z1, s0, s1;
-    for (i=0; i<_msg_len; i++) {
+    for (i=0; i<_q->dec_msg_len; i++) {
         r0 = _msg_enc[2*i+0];
         r1 = _msg_enc[2*i+1];
 
@@ -78,7 +99,7 @@ fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned ch
 
         _msg_dec[i] = (s0 << 4) | s1;
     }
-    return num_errors;
+    //return num_errors;
 }
 
 // internal

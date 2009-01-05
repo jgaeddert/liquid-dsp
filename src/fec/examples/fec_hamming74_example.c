@@ -7,27 +7,22 @@
 #include "../src/fec.h"
 
 int main() {
-    unsigned int n=4, num_errors_detected;
-    unsigned char data[] = {0xb5, 0x62, 0x3F, 0x52};
+    unsigned int n=4;
+    unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
+    fec_scheme fs = FEC_HAMMING74;
 
-    unsigned char msg_enc[2*n];
+    // create arrays
+    unsigned int n_enc = fec_get_enc_msg_length(fs,n);
     unsigned char msg_dec[n];
+    unsigned char msg_enc[n_enc];
+
+    // create object
+    fec q = fec_create(fs,n,NULL);
+    fec_print(q);
 
     // encode message
-    fec_hamming74_encode(data, n, msg_enc);
+    fec_encode(q, data, msg_enc);
     
-    unsigned int i;
-
-    printf("original message:         \t");
-    for (i=0; i<n; i++)
-        printf("%.2x ", (unsigned int) (data[i]));
-    printf("\n");
-
-    printf("encoded message:          \t");
-    for (i=0; i<2*n; i++)
-        printf("%.2x ", (unsigned int) (msg_enc[i]));
-    printf("\n");
-
     // corrupt encoded message
     msg_enc[0] ^= 0x04; // position 5
     msg_enc[1] ^= 0x04; //
@@ -38,27 +33,45 @@ int main() {
     msg_enc[6] ^= 0x20; //
     msg_enc[7] ^= 0x10; //
 
-    printf("corrupted message:        \t");
-    for (i=0; i<2*n; i++)
-        printf("%.2x ", (unsigned int) (msg_enc[i]));
-    printf("\n");
-
     // decode message
-    num_errors_detected =
-        fec_hamming74_decode(msg_enc, n, msg_dec);
+    fec_decode(q, msg_enc, msg_dec);
 
-    printf("decoded message:          \t");
+    unsigned int i;
+
+    printf("original message:           ");
     for (i=0; i<n; i++)
-        printf("%.2x ", (unsigned int) (msg_dec[i]));
+        printf("%.2X ", (unsigned int) (data[i]));
     printf("\n");
 
-    // count symbol errors
-    unsigned int num_errors=0;
-    for (i=0; i<n; i++)
-        num_errors += (data[i]==msg_dec[i]) ? 0 : 1;
+    printf("encoded/corrupted message:  ");
+    for (i=0; i<n_enc; i++)
+        printf("%.2X ", (unsigned int) (msg_enc[i]));
+    printf("\n");
 
-    printf("number of symbol errors detected: %d\n", num_errors_detected);
-    printf("number of symbol errors received: %d\n", num_errors);
+    printf("decoded message:            ");
+    for (i=0; i<n; i++)
+        printf("%.2X ", (unsigned int) (msg_dec[i]));
+    printf("\n");
+
+    // count bit errors
+    unsigned int j, num_sym_errors=0, num_bit_errors=0;
+    unsigned char e;
+    for (i=0; i<n; i++) {
+        num_sym_errors += (data[i] == msg_dec[i]) ? 0 : 1;
+
+        e = data[i] ^ msg_dec[i];
+        for (j=0; j<8; j++) {
+            num_bit_errors += e & 0x01;
+            e >>= 1;
+        }
+    }
+
+    //printf("number of symbol errors detected: %d\n", num_errors_detected);
+    printf("number of symbol errors received: %u\n", num_sym_errors);
+    printf("number of bit errors received:    %u\n", num_bit_errors);
+
+    // clean up objects
+    fec_destroy(q);
 
     return 0;
 }

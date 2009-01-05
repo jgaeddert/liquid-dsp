@@ -49,5 +49,10 @@ unsigned char fec_hamming84_decode_symbol(unsigned char _r);
 
 // Hamming(7,4)
 unsigned char fec_hamming74_compute_syndrome(unsigned char _r);
+fec fec_hamming74_create(unsigned int _msg_len, void *_opts);
+void fec_hamming74_destroy(fec _q);
+void fec_hamming74_print(fec _q);
+void fec_hamming74_encode(fec _q, unsigned char * _msg_dec, unsigned char * _msg_enc);
+void fec_hamming74_decode(fec _q, unsigned char * _msg_enc, unsigned char * _msg_dec);
 
 #endif

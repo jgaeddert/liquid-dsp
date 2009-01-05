@@ -7,30 +7,14 @@
 #include <string.h>
 #include "fec_internal.h"
 
-struct fec_rep3_s {
-    unsigned int dec_msg_len;   // decoded message length
-    unsigned int enc_msg_len;   // encoded message length
-    float rate;
-};
-
-unsigned int fec_rep3_get_enc_msg_length(unsigned int _msg_len)
-{
-    return 3*_msg_len;
-}
-
-float fec_rep3_get_rate()
-{
-    return 1/3.0f;
-}
-
 fec fec_rep3_create(unsigned int _msg_len, void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     q->scheme = FEC_REP3;
     q->dec_msg_len = _msg_len;
-    q->enc_msg_len = fec_rep3_get_enc_msg_length(_msg_len);
-    q->rate = fec_rep3_get_rate();
+    q->enc_msg_len = fec_get_enc_msg_length(q->scheme,_msg_len);
+    q->rate = fec_get_rate(q->scheme);
 
     q->encode_func = &fec_rep3_encode;
     q->decode_func = &fec_rep3_decode;
