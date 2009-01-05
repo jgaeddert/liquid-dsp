@@ -1,70 +1,51 @@
 #ifndef __LIQUID_FEC_AUTOTEST_H__
 #define __LIQUID_FEC_AUTOTEST_H__
 
+#include <stdlib.h>
+
 #include "../../../autotest/autotest.h"
 #include "../src/fec.h"
 
-//
-// AUTOTEST: Hamming (7,4) codec
-//
-void autotest_hamming74_codec()
+// Helper function to keep code base small
+void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
 {
-    unsigned int n=4, num_errors_detected;
-    unsigned char msg[] = {0xb5, 0x62, 0x3F, 0x52};
+    // generate fec object
+    fec q = fec_create(_fs,_n,_opts);
 
-    unsigned char msg_enc[2*n];
-    unsigned char msg_dec[n];
+    // create arrays
+    unsigned int n_enc = fec_get_enc_msg_length(_fs,_n);
+    unsigned char msg[_n];          // original message
+    unsigned char msg_enc[n_enc];   // encoded message
+    unsigned char msg_dec[_n];      // decoded message
+
+    // initialze message
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        msg[i] = rand() & 0xff;
+        msg_dec[i] = 0;
+    }
 
     // encode message
-    fec_hamming74_encode(msg, n, msg_enc);
-    
-    // corrupt encoded message, flip one bit in
-    // each encoded byte
-    msg_enc[0] ^= 0x04;
-    msg_enc[1] ^= 0x04;
-    msg_enc[2] ^= 0x02;
-    msg_enc[3] ^= 0x01;
-    msg_enc[4] ^= 0x80;
-    msg_enc[5] ^= 0x40;
-    msg_enc[6] ^= 0x20;
-    msg_enc[7] ^= 0x10;
+    fec_encode(q,msg,msg_enc);
+
+    // channel: add error(s)
+    msg_enc[0] ^= 0x01;
 
     // decode message
-    num_errors_detected =
-        fec_hamming74_decode(msg_enc, n, msg_dec);
+    fec_decode(q,msg_enc,msg_dec);
 
-    // validate data are the same
-    CONTEND_SAME_DATA(msg, msg_dec, n);
+    // validate output
+    CONTEND_SAME_DATA(msg,msg_dec,_n);
+
+    // clean up objects
+    fec_destroy(q);
 }
 
+// 
+// AUTOTESTS: basic encode/decode functionality
 //
-// AUTOTEST: repeat/3 codec
-//
-void autotest_rep3_codec()
-{
-    unsigned int n=4, num_errors_detected;
-    unsigned char msg[] = {0xb5, 0x62, 0x3F, 0x52};
-
-    unsigned char msg_enc[3*n];
-    unsigned char msg_dec[n];
-
-    // encode message
-    fec_rep3_encode(msg, n, msg_enc);
-    
-    // corrupt encoded message, flip all bits in
-    // first encoded block
-    msg_enc[0] ^= 0xff;
-    msg_enc[1] ^= 0xff;
-    msg_enc[2] ^= 0xff;
-    msg_enc[3] ^= 0xff;
-
-    // decode message
-    num_errors_detected =
-        fec_rep3_decode(msg_enc, n, msg_dec);
-
-    // validate data are the same
-    CONTEND_SAME_DATA(msg, msg_dec, n);
-}
+void autotest_rep3_generic()        { fec_test_codec(FEC_REP3,64,NULL);      }
+void autotest_hamming74_generic()   { fec_test_codec(FEC_HAMMING74,64,NULL); }
 
 #endif 
 

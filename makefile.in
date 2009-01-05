@@ -15,7 +15,7 @@ LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
 			  gport.o gport2.o
 LIBS_CHANNEL = channel.o
 LIBS_DOTPROD = dotprod_rrrf.o dotprod_cccf.o dotprod_crcf.o
-LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec_rep.o fec_hamming74.o
+LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec.o fec_rep.o fec_hamming74.o
 LIBS_FFT = fft_create_plan.o fft_execute.o fft_shift.o asgram.o
 LIBS_FILTER = filter.f.o filter.cf.o \
 			  filter_common.o rrcos.o firdes.o \
@@ -70,6 +70,8 @@ AUTOTESTS = \
 	src/fec/tests/checksum_autotest.h \
 	src/fec/tests/crc_autotest.h \
 	src/fec/tests/fec_autotest.h \
+	src/fec/tests/fec_rep3_autotest.h \
+	src/fec/tests/fec_hamming74_autotest.h \
 	src/fft/tests/fft_autotest.h \
 	src/fft/tests/fft_radix2_autotest.h \
 	src/fft/tests/fft_shift_autotest.h \
