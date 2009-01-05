@@ -2,99 +2,68 @@
 #define __LIQUID_FEC_BENCHMARK_H__
 
 #include <sys/resource.h>
+#include <stdlib.h>
+
 #include "../src/fec.h"
 
 #define BSIZE   64
 
-//
-// BENCHMARK: Repeat/3 codec
-//
-void benchmark_rep3_encode(
+#define FEC_ENCODE_BENCH_API(FS,N, OPT) \
+(   struct rusage *_start,              \
+    struct rusage *_finish,             \
+    unsigned long int *_num_iterations) \
+{ fec_encode_bench(_start, _finish, _num_iterations, FS, N, OPT); }
+
+// Helper function to keep code base small
+void fec_encode_bench(
     struct rusage *_start,
     struct rusage *_finish,
-    unsigned long int *_num_iterations)
+    unsigned long int *_num_iterations,
+    fec_scheme _fs,
+    unsigned int _n,
+    void * _opts)
 {
-    unsigned long int i;
-    unsigned int n=BSIZE;
-    unsigned char msg_dec[n], msg_enc[3*n];
+    // generate fec object
+    fec q = fec_create(_fs,_n,_opts);
 
+    // create arrays
+    unsigned int n_enc = fec_get_enc_msg_length(_fs,_n);
+    unsigned char msg[_n];          // original message
+    unsigned char msg_enc[n_enc];   // encoded message
+
+    // initialze message
+    unsigned long int i;
+    for (i=0; i<_n; i++) {
+        msg[i] = rand() & 0xff;
+    }
+
+    // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        fec_rep3_encode(msg_dec, n, msg_enc);
-        fec_rep3_encode(msg_dec, n, msg_enc);
-        fec_rep3_encode(msg_dec, n, msg_enc);
-        fec_rep3_encode(msg_dec, n, msg_enc);
+        fec_encode(q,msg,msg_enc);
+        fec_encode(q,msg,msg_enc);
+        fec_encode(q,msg,msg_enc);
+        fec_encode(q,msg,msg_enc);
     }
     getrusage(RUSAGE_SELF, _finish);
-
     *_num_iterations *= 4;
-}
 
-void benchmark_rep3_decode(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
-{
-    unsigned long int i;
-    unsigned int n=BSIZE;
-    unsigned char msg_dec[n], msg_enc[3*n];
-
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
-        fec_rep3_decode(msg_enc, n, msg_dec);
-        fec_rep3_decode(msg_enc, n, msg_dec);
-        fec_rep3_decode(msg_enc, n, msg_dec);
-        fec_rep3_decode(msg_enc, n, msg_dec);
-    }
-    getrusage(RUSAGE_SELF, _finish);
-
-    *_num_iterations *= 4;
+    // clean up objects
+    fec_destroy(q);
 }
 
 //
-// BENCHMARK: Hamming (7,4) codec
+// BENCHMARKS
 //
-void benchmark_hamming74_encode(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
-{
-    unsigned long int i;
-    unsigned int n=BSIZE;
-    unsigned char msg_dec[n], msg_enc[2*n];
+void benchmark_fec_rep3_n4          FEC_ENCODE_BENCH_API(FEC_REP3, 4,   NULL)
+void benchmark_fec_rep3_n16         FEC_ENCODE_BENCH_API(FEC_REP3, 16,  NULL)
+void benchmark_fec_rep3_n64         FEC_ENCODE_BENCH_API(FEC_REP3, 64,  NULL)
+void benchmark_fec_rep3_n256        FEC_ENCODE_BENCH_API(FEC_REP3, 256, NULL)
 
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
-        fec_hamming74_encode(msg_dec, n, msg_enc);
-        fec_hamming74_encode(msg_dec, n, msg_enc);
-        fec_hamming74_encode(msg_dec, n, msg_enc);
-        fec_hamming74_encode(msg_dec, n, msg_enc);
-    }
-    getrusage(RUSAGE_SELF, _finish);
-
-    *_num_iterations *= 4;
-}
-
-void benchmark_hamming74_decode(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
-{
-    unsigned long int i;
-    unsigned int n=BSIZE;
-    unsigned char msg_dec[n], msg_enc[2*n];
-
-    getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
-        fec_hamming74_decode(msg_enc, n, msg_dec);
-        fec_hamming74_decode(msg_enc, n, msg_dec);
-        fec_hamming74_decode(msg_enc, n, msg_dec);
-        fec_hamming74_decode(msg_enc, n, msg_dec);
-    }
-    getrusage(RUSAGE_SELF, _finish);
-
-    *_num_iterations *= 4;
-}
+void benchmark_fec_hamming74_n4     FEC_ENCODE_BENCH_API(FEC_HAMMING74, 4,   NULL)
+void benchmark_fec_hamming74_n16    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 16,  NULL)
+void benchmark_fec_hamming74_n64    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
+void benchmark_fec_hamming74_n256   FEC_ENCODE_BENCH_API(FEC_HAMMING74, 256, NULL)
 
 #endif // __LIQUID_FEC_BENCHMARK_H__
 
