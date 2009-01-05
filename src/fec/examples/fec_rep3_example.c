@@ -7,14 +7,20 @@
 #include "../src/fec.h"
 
 int main() {
-    unsigned int n=4, num_errors_detected;
+    unsigned int n=4;
     unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
 
-    unsigned char msg_enc[3*n];
+    // create arrays
+    unsigned int n_enc = fec_rep3_get_enc_msg_length(n);
     unsigned char msg_dec[n];
+    unsigned char msg_enc[n_enc];
+
+    // create object
+    fec_rep3 q = fec_rep3_create(n,NULL);
+    fec_rep3_print(q);
 
     // encode message
-    fec_rep3_encode(data, n, msg_enc);
+    fec_rep3_encode(q, data, msg_enc);
     
     // corrupt encoded message
     msg_enc[0] = ~msg_enc[0];
@@ -23,33 +29,44 @@ int main() {
     msg_enc[3] = ~msg_enc[3];
 
     // decode message
-    num_errors_detected =
-        fec_rep3_decode(msg_enc, n, msg_dec);
+    fec_rep3_decode(q, msg_enc, msg_dec);
 
     unsigned int i;
 
     printf("original message:         \t");
     for (i=0; i<n; i++)
-        printf("%X ", (unsigned int) (data[i]));
+        printf("%.2X ", (unsigned int) (data[i]));
     printf("\n");
 
     printf("encoded/corrupted message:\t");
-    for (i=0; i<3*n; i++)
-        printf("%X ", (unsigned int) (msg_enc[i]));
+    for (i=0; i<n_enc; i++)
+        printf("%.2X ", (unsigned int) (msg_enc[i]));
     printf("\n");
 
     printf("decoded message:          \t");
     for (i=0; i<n; i++)
-        printf("%X ", (unsigned int) (msg_dec[i]));
+        printf("%.2X ", (unsigned int) (msg_dec[i]));
     printf("\n");
 
-    // count symbol errors
-    unsigned int num_errors=0;
-    for (i=0; i<n; i++)
-        num_errors += (data[i]==msg_dec[i]) ? 0 : 1;
+    // count bit errors
+    unsigned int j, num_sym_errors=0, num_bit_errors=0;
+    unsigned char e;
+    for (i=0; i<n; i++) {
+        num_sym_errors += (data[i] == msg_dec[i]) ? 0 : 1;
 
-    printf("number of symbol errors detected: %d\n", num_errors_detected);
-    printf("number of symbol errors received: %d\n", num_errors);
+        e = data[i] ^ msg_dec[i];
+        for (j=0; j<8; j++) {
+            num_bit_errors += e & 0x01;
+            e >>= 1;
+        }
+    }
+
+    //printf("number of symbol errors detected: %d\n", num_errors_detected);
+    printf("number of symbol errors received: %u\n", num_sym_errors);
+    printf("number of bit errors received:    %u\n", num_bit_errors);
+
+    // clean up objects
+    fec_rep3_destroy(q);
 
     return 0;
 }
