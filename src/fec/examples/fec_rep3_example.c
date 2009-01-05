@@ -9,18 +9,19 @@
 int main() {
     unsigned int n=4;
     unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
+    fec_scheme fs = FEC_REP3;
 
     // create arrays
-    unsigned int n_enc = fec_rep3_get_enc_msg_length(n);
+    unsigned int n_enc = fec_get_enc_msg_length(fs,n);
     unsigned char msg_dec[n];
     unsigned char msg_enc[n_enc];
 
     // create object
-    fec_rep3 q = fec_rep3_create(n,NULL);
-    fec_rep3_print(q);
+    fec q = fec_create(fs,n,NULL);
+    fec_print(q);
 
     // encode message
-    fec_rep3_encode(q, data, msg_enc);
+    fec_encode(q, data, msg_enc);
     
     // corrupt encoded message
     msg_enc[0] = ~msg_enc[0];
@@ -29,21 +30,21 @@ int main() {
     msg_enc[3] = ~msg_enc[3];
 
     // decode message
-    fec_rep3_decode(q, msg_enc, msg_dec);
+    fec_decode(q, msg_enc, msg_dec);
 
     unsigned int i;
 
-    printf("original message:         \t");
+    printf("original message:           ");
     for (i=0; i<n; i++)
         printf("%.2X ", (unsigned int) (data[i]));
     printf("\n");
 
-    printf("encoded/corrupted message:\t");
+    printf("encoded/corrupted message:  ");
     for (i=0; i<n_enc; i++)
         printf("%.2X ", (unsigned int) (msg_enc[i]));
     printf("\n");
 
-    printf("decoded message:          \t");
+    printf("decoded message:            ");
     for (i=0; i<n; i++)
         printf("%.2X ", (unsigned int) (msg_dec[i]));
     printf("\n");
@@ -66,7 +67,7 @@ int main() {
     printf("number of bit errors received:    %u\n", num_bit_errors);
 
     // clean up objects
-    fec_rep3_destroy(q);
+    fec_destroy(q);
 
     return 0;
 }

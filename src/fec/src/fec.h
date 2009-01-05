@@ -49,24 +49,25 @@ void fec_hamming74_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsign
 unsigned int
      fec_hamming74_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec);
 
-#define LIQUID_FEC_MANGLE_REP3(name)        FEC_CONCAT(fec_rep3,name)
-#define LIQUID_FEC_MANGLE_HAMMING74(name)   FEC_CONCAT(fec_hamming74,name)
+typedef enum {
+    FEC_UNKNOWN=0,
+    FEC_REP3,
+    FEC_HAMMING74,
+    FEC_HAMMING84
+} fec_scheme;
 
-// Macro: fec codec
-//  FEC :   name-mangling macro
-//
-#define LIQUID_FEC_CODEC_DEFINE_API(FEC) \
-typedef struct FEC(_s) * FEC(); \
-unsigned int FEC(_get_enc_msg_length)(unsigned int _msg_len); \
-float FEC(_get_rate)(); \
-FEC() FEC(_create)(unsigned int _enc_len, void* _opts); \
-void FEC(_destroy)(FEC() _fec); \
-void FEC(_print)(FEC() _fec); \
-void FEC(_encode)(FEC() _fec, unsigned char * _msg_dec, unsigned char * _msg_enc); \
-void FEC(_decode)(FEC() _fec, unsigned char * _msg_enc, unsigned char * _msg_dec);
+typedef struct fec_s * fec;
 
-LIQUID_FEC_CODEC_DEFINE_API(LIQUID_FEC_MANGLE_REP3)
-//LIQUID_FEC_CODEC_DEFINE_API(LIQUID_FEC_MANGLE_HAMMING74)
+// object-independent methods
+unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len);
+float fec_get_rate(fec_scheme _scheme);
+
+fec fec_create(fec_scheme _scheme, unsigned int _msg_len, void *_opts);
+void fec_destroy(fec _q);
+void fec_print(fec _q);
+
+void fec_encode(fec _q, unsigned char * _msg_dec, unsigned char * _msg_enc);
+void fec_decode(fec _q, unsigned char * _msg_enc, unsigned char * _msg_dec);
 
 #endif // __LIQUID_FEC_H__
 

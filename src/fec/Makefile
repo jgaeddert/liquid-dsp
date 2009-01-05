@@ -2,7 +2,11 @@
 # FEC makefile (local)
 #
 
-OBJS = c_ones_mod2.o checksum.o crc.o fec_rep.o fec_hamming74.o
+OBJS = c_ones_mod2.o checksum.o crc.o \
+	   fec.o \
+	   fec_rep.o \
+	   fec_hamming74.o
+
 EXAMPLES = checksum_example \
 		   crc_example \
 		   fec_rep3_example \
