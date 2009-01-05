@@ -4,8 +4,7 @@
 
 #include <stdio.h>
 
-//#include "fec_internal.h"
-#include "fec.h"
+#include "../src/fec.h"
 
 int main() {
     unsigned int n=4, num_errors_detected;

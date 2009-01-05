@@ -3,9 +3,13 @@
 #
 
 OBJS = c_ones_mod2.o checksum.o crc.o fec_rep.o fec_hamming74.o
-TESTS = checksum_test crc_test fec_rep3_test fec_hamming74_test
+EXAMPLES = checksum_example \
+		   crc_example \
+		   fec_rep3_example \
+		   fec_hamming74_example
 
-all: $(TESTS) c_ones_mod2_gentab
+all: $(EXAMPLES) 
+#c_ones_mod2_gentab
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -28,13 +32,13 @@ $(UTILITY_DEPS) :
 	cp ../utility/$@ .
 
 # 
-# Tests: src/main_mytest.c -> mytest_test
+# Examples
 #
-$(TESTS) : %_test : src/main_%.c $(OBJS) $(DEPS)
+$(EXAMPLES) : % : examples/%.c $(OBJS) $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 c_ones_mod2_gentab: src/c_ones_mod2_gentab.c
 	$(CC) $(CFLAGS) src/c_ones_mod2_gentab.c -o c_ones_mod2_gentab
 
 clean:
-	rm -f $(OBJS) $(TESTS) $(DEPS)
+	rm -f $(OBJS) $(EXAMPLES) $(DEPS)
