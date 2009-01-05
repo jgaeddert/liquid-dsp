@@ -24,7 +24,7 @@ void modem_modulate_bench(
     float complex x;
     unsigned int symbol_in = 0;
     
-    unsigned int i;
+    unsigned long int i;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
