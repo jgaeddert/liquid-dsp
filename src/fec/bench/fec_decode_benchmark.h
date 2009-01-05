@@ -6,8 +6,6 @@
 
 #include "../src/fec.h"
 
-#define BSIZE   64
-
 #define FEC_DECODE_BENCH_API(FS,N, OPT) \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
