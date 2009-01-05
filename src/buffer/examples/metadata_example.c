@@ -16,7 +16,7 @@ int main() {
 
     metadata_print(m);
 
-    metadata_update(m, "bps", 4.0f);
+    metadata_update_key(m, "bps", 4.0f);
     metadata_print(m);
 
     metadata_destroy(m);
