@@ -1,5 +1,5 @@
-#ifndef __LIQUID_FEC_BENCHMARK_H__
-#define __LIQUID_FEC_BENCHMARK_H__
+#ifndef __LIQUID_FEC_ENCODE_BENCHMARK_H__
+#define __LIQUID_FEC_ENCODE_BENCHMARK_H__
 
 #include <sys/resource.h>
 #include <stdlib.h>
@@ -55,15 +55,15 @@ void fec_encode_bench(
 //
 // BENCHMARKS
 //
-void benchmark_fec_rep3_n4          FEC_ENCODE_BENCH_API(FEC_REP3, 4,   NULL)
-void benchmark_fec_rep3_n16         FEC_ENCODE_BENCH_API(FEC_REP3, 16,  NULL)
-void benchmark_fec_rep3_n64         FEC_ENCODE_BENCH_API(FEC_REP3, 64,  NULL)
-void benchmark_fec_rep3_n256        FEC_ENCODE_BENCH_API(FEC_REP3, 256, NULL)
+void benchmark_fec_enc_rep3_n4          FEC_ENCODE_BENCH_API(FEC_REP3, 4,   NULL)
+void benchmark_fec_enc_rep3_n16         FEC_ENCODE_BENCH_API(FEC_REP3, 16,  NULL)
+void benchmark_fec_enc_rep3_n64         FEC_ENCODE_BENCH_API(FEC_REP3, 64,  NULL)
+void benchmark_fec_enc_rep3_n256        FEC_ENCODE_BENCH_API(FEC_REP3, 256, NULL)
 
-void benchmark_fec_hamming74_n4     FEC_ENCODE_BENCH_API(FEC_HAMMING74, 4,   NULL)
-void benchmark_fec_hamming74_n16    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 16,  NULL)
-void benchmark_fec_hamming74_n64    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
-void benchmark_fec_hamming74_n256   FEC_ENCODE_BENCH_API(FEC_HAMMING74, 256, NULL)
+void benchmark_fec_enc_hamming74_n4     FEC_ENCODE_BENCH_API(FEC_HAMMING74, 4,   NULL)
+void benchmark_fec_enc_hamming74_n16    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 16,  NULL)
+void benchmark_fec_enc_hamming74_n64    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
+void benchmark_fec_enc_hamming74_n256   FEC_ENCODE_BENCH_API(FEC_HAMMING74, 256, NULL)
 
-#endif // __LIQUID_FEC_BENCHMARK_H__
+#endif // __LIQUID_FEC_ENCODE_BENCHMARK_H__
 

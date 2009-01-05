@@ -106,7 +106,8 @@ BENCHMARKS = \
 	src/filter/bench/firhilb_benchmark.h \
 	src/filter/bench/decim_benchmark.h \
 	src/filter/bench/resamp2_benchmark.h \
-	src/fec/bench/fec_benchmark.h \
+	src/fec/bench/fec_encode_benchmark.h \
+	src/fec/bench/fec_decode_benchmark.h \
 	src/fft/bench/fft_benchmark.h \
 	src/interleaver/bench/interleaver_benchmark.h \
 	src/modem/bench/modem_modulate_benchmark.h \
