@@ -41,6 +41,7 @@ INCLUDE_HEADERS = \
 	src/filter/src/filter_common.h \
 	src/filter/src/filter.h \
 	src/filter/src/firdes.h \
+	src/framing/src/framing.h \
 	src/interleaver/src/interleaver.h \
 	src/math/src/lmath.h \
 	src/math/src/matrix.h \

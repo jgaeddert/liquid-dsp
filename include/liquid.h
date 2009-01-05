@@ -18,6 +18,7 @@ extern "C" {
 #include "filter_common.h"
 #include "filter.h"
 #include "firdes.h"
+#include "framing.h"
 #include "interleaver.h"
 #include "lmath.h"
 #include "matrix.h"
@@ -27,6 +28,7 @@ extern "C" {
 #include "nco.h"
 #include "random.h"
 #include "scramble.h"
+#include "sequence.h"
 #include "utility.h"
 
 #ifdef __cplusplus
