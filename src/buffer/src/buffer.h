@@ -117,6 +117,11 @@ void gport_consumer_unlock(gport _p, unsigned int _n);
 //
 // Generic port (2)
 //
+enum {
+    GPORT2_SIGNAL_NULL=0,           // no signal
+    GPORT2_SIGNAL_METADATA_UPDATE,  // metadata 
+    GPORT2_SIGNAL_EOM               // end of message
+};
 typedef struct gport2_s * gport2;
 gport2 gport2_create(unsigned int _n, size_t _size);
 void gport2_destroy(gport2 _p);
@@ -127,6 +132,8 @@ void gport2_produce(gport2 _p, void * _w, unsigned int _n);
 void gport2_consume(gport2 _p, void * _r, unsigned int _n);
 void gport2_consume_available(gport2 _p, void * _r, unsigned int _nmax, unsigned int *_nc);
 
+// signaling methods
+void gport2_signal(gport2 _p, int _message);
 
 #endif // __MODULE_BUFFER_H__
 
