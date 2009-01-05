@@ -3,7 +3,7 @@
 #
 
 
-EXAMPLES = framing_example cframing_example
+EXAMPLES = framesync_example cframesync_example
 
 all: $(EXAMPLES)
 
