@@ -5,7 +5,7 @@
 EXAMPLES = agc_example
 
 CC = gcc
-CFLAGS = -Wall -O3 -DAGC_LOG
+CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = agc.o
 HEADERS = src/agc.h src/agc_internal.h

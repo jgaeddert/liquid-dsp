@@ -9,6 +9,8 @@
 #include "agc.h"
 #include "agc_internal.h"
 
+#define AGC_LOG
+
 agc agc_create(float _etarget, float _BT)
 {
     agc _agc = (agc) malloc(sizeof(struct agc_s));
