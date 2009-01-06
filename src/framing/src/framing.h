@@ -8,9 +8,10 @@
 #include <stdbool.h>
 #include <complex.h>
 
-#include "../../sequence/src/sequence.h"   // p/n sequence
-#include "../../fec/src/fec.h"             // crc, fec
-#include "../../random/src/scramble.h"     // data randomizer
+#include "../../sequence/src/sequence.h"    // p/n sequence
+#include "../../fec/src/fec.h"              // crc, fec
+#include "../../random/src/scramble.h"      // data randomizer
+#include "../../modem/src/modem_common.h"   // modulation_scheme
 
 #define FRAMING_CONCAT(prefix,name) prefix ## name
 
@@ -41,6 +42,13 @@ void frame_destroy(frame _f);
 
 void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
 bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
+
+struct framing_mod_bps {
+    modulation_scheme ms; 
+    unsigned int bps;
+};
+
+extern const struct framing_mod_bps framing_mod_bps_tab[32];
 
 //
 // Frame synchronizer
