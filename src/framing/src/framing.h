@@ -12,6 +12,7 @@
 #include "../../fec/src/fec.h"              // crc, fec
 #include "../../random/src/scramble.h"      // data randomizer
 #include "../../modem/src/modem_common.h"   // modulation_scheme
+#include "../../fec/src/fec.h"              // fec_scheme
 
 #define FRAMING_CONCAT(prefix,name) prefix ## name
 
@@ -34,11 +35,48 @@ struct frame_s {
     bsequence pn; // p/n synchronization sequence
     bsequence rx; // received sequence
     unsigned char crc32_key[4];
+
+    unsigned int src0;
+    unsigned int src1;
+    unsigned int dst0;
+    unsigned int dst1;
+    modulation_scheme ms;
+    unsigned int bps;
+    fec_scheme fec_inner;
+    fec_scheme fec_outer;
+    unsigned int intlv_inner;
+    unsigned int intlv_outer;
+
+    unsigned int protocol;
+    unsigned int msg_length;
+    unsigned int num_symbols;
 };
+
+typedef enum {
+    FRAME_UNKNOWN=0,
+
+    FRAME_SRC0,
+    FRAME_SRC1,
+    FRAME_DST0,
+    FRAME_DST1,
+    FRAME_MOD_SCHEME,
+    FRAME_MOD_BPS,
+    FRAME_FEC_INNER_SCHEME,
+    FRAME_FEC_OUTER_SCHEME,
+    FRAME_INTLV_INNER_SCHEME,
+    FRAME_INTLV_OUTER_SCHEME,
+    FRAME_PROTOCOL,
+    FRAME_MSG_LENGTH,
+    FRAME_NUM_SYMBOLS
+} frame_keyid;
+
 typedef struct frame_s * frame;
 
 frame frame_create();
 void frame_destroy(frame _f);
+void frame_print(frame _f);
+
+void frame_setkey(frame _f, frame_keyid _id, unsigned int _value);
 
 void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
 bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
