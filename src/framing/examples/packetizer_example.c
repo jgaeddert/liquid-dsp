@@ -11,8 +11,8 @@ int main() {
     // 
     unsigned int n=16;
 
-    //packetizer p = packetizer_create(n,FEC_REP3,FEC_HAMMING74);
-    packetizer p = packetizer_create(n,FEC_NONE, FEC_NONE);
+    packetizer p = packetizer_create(n,FEC_REP3,FEC_HAMMING74);
+    //packetizer p = packetizer_create(n,FEC_NONE, FEC_NONE);
     unsigned int packet_len = packetizer_get_packet_length(p);
 
     unsigned char msg[n];

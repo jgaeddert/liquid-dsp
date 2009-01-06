@@ -135,10 +135,10 @@ void packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg
 
     interleaver_deinterleave(_p->intlv0, _p->intlv0_dst, _p->intlv0_src);
 
-    fec_decode(_p->fec0, _p->fec0_dst, _p->fec1_src);
+    fec_decode(_p->fec0, _p->fec0_dst, _p->fec0_src);
 
     // TODO strip crc32, validate
 
-    memmove(_msg, _p->fec1_src, _p->dec_msg_len);
+    memmove(_msg, _p->fec0_src, _p->dec_msg_len);
 }
 
