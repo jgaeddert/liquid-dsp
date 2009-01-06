@@ -22,7 +22,7 @@ void autotest_dc_gain_control() {
     unsigned int i;
     float complex x = energy_start, y;
     for (i=0; i<256; i++) {
-        agc_apply_gain(g, x, &y);
+        agc_execute(g, x, &y);
     }
 
     // Check results
@@ -30,7 +30,7 @@ void autotest_dc_gain_control() {
     CONTEND_DELTA( cimagf(y), 0.0f,             tol );
     CONTEND_DELTA( agc_get_gain(g), g_target,   tol );
 
-    agc_free(g);
+    agc_destroy(g);
 }
 
 // 
@@ -55,13 +55,13 @@ void autotest_ac_gain_control() {
     for (i=0; i<256; i++) {
         x = cexpf(_Complex_I*theta) * energy_start;
         theta += dtheta;
-        agc_apply_gain(g, x, &y);
+        agc_execute(g, x, &y);
     }
 
     // Check results
     CONTEND_DELTA( agc_get_gain(g), g_target, tol );
 
-    agc_free(g);
+    agc_destroy(g);
 }
 
 

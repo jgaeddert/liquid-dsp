@@ -18,16 +18,16 @@ void benchmark_agc(
 
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        agc_apply_gain(g, x, &y);
-        agc_apply_gain(g, x, &y);
-        agc_apply_gain(g, x, &y);
-        agc_apply_gain(g, x, &y);
+        agc_execute(g, x, &y);
+        agc_execute(g, x, &y);
+        agc_execute(g, x, &y);
+        agc_execute(g, x, &y);
     }
     getrusage(RUSAGE_SELF, _finish);
 
     *_num_iterations *= 4;
 
-    agc_free(g);
+    agc_destroy(g);
 }
 
 #endif // __AGC_BENCHMARK_H__

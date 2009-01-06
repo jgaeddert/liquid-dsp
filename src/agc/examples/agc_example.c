@@ -35,7 +35,7 @@ int main() {
         if ( ((i+1)%d)==0 || i+1==n )
             printf("%3u: %8.3f\n", i+1, cabsf(y));
 
-        agc_apply_gain(p, x, &y);
+        agc_execute(p, x, &y);
     }
 
 #ifdef DEBUG
@@ -52,7 +52,7 @@ int main() {
     printf("results written to agc_example.m\n");
 #endif
 
-    agc_free(p);
+    agc_destroy(p);
 
     printf("done.\n");
     return 0;

@@ -9,8 +9,6 @@
 #include "agc.h"
 #include "agc_internal.h"
 
-#undef AGC_LOG
-
 agc agc_create(float _etarget, float _BT)
 {
     agc _agc = (agc) malloc(sizeof(struct agc_s));
@@ -20,9 +18,14 @@ agc agc_create(float _etarget, float _BT)
     return _agc;
 }
 
-void agc_free(agc _agc)
+void agc_destroy(agc _agc)
 {
     free(_agc);
+}
+
+void agc_print(agc _agc)
+{
+    printf("agc [rssi: %12.4fdB]:\n", 10*log10(_agc->e_target / _agc->g));
 }
 
 void agc_init(agc _agc)
@@ -75,13 +78,14 @@ void agc_set_bandwidth(agc _agc, float _BT)
     _agc->alpha = (sin_theta - cos_theta)/(sin_theta + cos_theta);
 
     // reduce feedback parameter by emperical value to prevent ringing
-    _agc->alpha *= 1-expf( logf(_agc->BT)*0.5f + 0.8f );
+#ifdef AGC_LOG
+    _agc->alpha *= 1-expf( logf(_agc->BT)*0.5f + 0.95f );
+#else
+    _agc->alpha *= 1-expf( logf(_agc->BT)*0.5f + 0.70f );
+#endif
 }
 
-void agc_apply_gain(
-    agc _agc,
-    float complex _x,
-    float complex *_y)
+void agc_execute(agc _agc, float complex _x, float complex *_y)
 {
     // estimate normalized energy, should be equal to 1.0 when locked
     float e = cabsf(_x) * (_agc->g) / (_agc->e_target);
@@ -114,5 +118,15 @@ void agc_apply_gain(
 
     // apply gain to input
     *_y = _x * _agc->g;
+}
+
+float agc_get_signal_level(agc _agc)
+{
+    return (_agc->e_target / _agc->g);
+}
+
+float agc_get_gain(agc _agc)
+{
+    return _agc->g;
 }
 

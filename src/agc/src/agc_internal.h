@@ -10,7 +10,7 @@
 // Automatic Gain Control
 //
 //-----------------------------------------------------------------------------
-/** \brief Automatic gain control signal processor
+/* \brief Automatic gain control signal processor
  *
  * The automatic gain control (AGC) signal processor is a variable gain
  * amplifier to automatically scale an input signal to match a target
@@ -52,18 +52,6 @@ struct agc_s {
     float e_hat;        // filtered energy estimate
     float tmp2;
 };
-
-// Return signal level in dB relative to target
-float agc_get_signal_level(agc _agc)
-{
-    return 10*log10f( _agc->e_target / _agc->g );
-}
-
-// Return gain in dB relative to target energy
-float agc_get_gain(agc _agc)
-{
-    return 10*log10f( _agc->g );
-}
 
 #endif // __LIQUID_AGC_INTERNAL_H__
 
