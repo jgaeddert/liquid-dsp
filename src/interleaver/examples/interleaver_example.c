@@ -4,7 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h> // for rand()
-#include "interleaver.h"
+
+#include "../src/interleaver.h"
 
 int main() {
 #if 0

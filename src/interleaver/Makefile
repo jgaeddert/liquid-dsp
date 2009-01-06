@@ -3,14 +3,14 @@
 #
 
 
-TESTS = interleaver_test
+EXAMPLES = interleaver_example
 
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = interleaver.o interleaver_create.o interleaver_permute.o
 HEADERS = src/interleaver.h src/interleaver_internal.h
-all: $(TESTS)
+all: $(EXAMPLES)
 
 $(OBJS) : %.o : src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -28,8 +28,8 @@ $(UTILITY_DEPS) :
 	cd ../utility ; make $@
 	cp ../utility/$@ .
 
-$(TESTS): %_test : src/main_%.c $(OBJS) $(HEADERS) $(DEPS)
+$(EXAMPLES): % : examples/%.c $(OBJS) $(HEADERS) $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(DEPS) $(TESTS)
+	rm -f $(OBJS) $(DEPS) $(EXAMPLES)
