@@ -3,21 +3,23 @@
 #
 
 
-EXAMPLES = frame_example framesync_example cframesync_example
+EXAMPLES = frame_example framesync_example cframesync_example packetizer_example
 
 all: $(EXAMPLES)
 
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = framing.o framesync.f.o framesync.cf.o
-HEADERS = src/framing.h
+OBJS = framing.o packetizer.o framesync.f.o framesync.cf.o
+HEADERS = src/framing.h src/framing_internal.h
 
 BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
 DOTPROD_DEPS = dotprod_rrrf.o dotprod_crcf.o dotprod_cccf.o
+FEC_DEPS = fec.o fec_rep.o fec_hamming74.o c_ones_mod2.o
+INTLV_DEPS = interleaver.o interleaver_create.o interleaver_permute.o
 SEQUENCE_DEPS = bsequence.o msequence.o count_bits.o
 RANDOM_DEPS = random.o
-DEPS = $(BUFFER_DEPS) $(DOTPROD_DEPS) $(SEQUENCE_DEPS) $(RANDOM_DEPS)
+DEPS = $(BUFFER_DEPS) $(DOTPROD_DEPS) $(FEC_DEPS) $(INTLV_DEPS) $(SEQUENCE_DEPS) $(RANDOM_DEPS)
 
 $(BUFFER_DEPS) :
 	cd ../buffer ; make $@
@@ -26,6 +28,14 @@ $(BUFFER_DEPS) :
 $(DOTPROD_DEPS) :
 	cd ../dotprod ; make $@
 	cp ../dotprod/$@ .
+
+$(INTLV_DEPS) :
+	cd ../interleaver ; make $@
+	cp ../interleaver/$@ .
+
+$(FEC_DEPS) :
+	cd ../fec ; make $@
+	cp ../fec/$@ .
 
 $(SEQUENCE_DEPS) :
 	cd ../sequence ; make $@

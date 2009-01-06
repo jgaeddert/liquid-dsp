@@ -81,13 +81,6 @@ void frame_setkey(frame _f, frame_keyid _id, unsigned int _value);
 void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
 bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 
-struct framing_mod_bps {
-    modulation_scheme ms; 
-    unsigned int bps;
-};
-
-extern const struct framing_mod_bps framing_mod_bps_tab[32];
-
 //
 // Frame synchronizer
 //
@@ -108,6 +101,22 @@ T FRAMESYNC(_correlate)(FRAMESYNC() _fs, T _sym);
 
 LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_FLOAT, float)
 LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CFLOAT, float complex)
+
+
+// 
+// Packetizer
+//
+
+typedef struct packetizer_s * packetizer;
+
+packetizer packetizer_create(unsigned int _dec_msg_len, fec_scheme _fec0, fec_scheme _fec1);
+void packetizer_destroy(packetizer _p);
+void packetizer_print(packetizer _p);
+
+unsigned int packetizer_get_packet_length(packetizer _p);
+
+void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char * _pkt);
+void packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);
 
 #endif // __LIQUID_FRAMING_H__
 
