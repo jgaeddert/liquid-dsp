@@ -5,53 +5,18 @@
 #ifndef __LIQUID_FRAMING_H__
 #define __LIQUID_FRAMING_H__
 
+#include "sequence.h"
+#include "modem_common.h"
+#include "fec.h"
+
 #include <stdbool.h>
 #include <complex.h>
-
-#include "../../sequence/src/sequence.h"    // p/n sequence
-#include "../../fec/src/fec.h"              // crc, fec
-#include "../../random/src/scramble.h"      // data randomizer
-#include "../../modem/src/modem_common.h"   // modulation_scheme
-#include "../../fec/src/fec.h"              // fec_scheme
 
 #define FRAMING_CONCAT(prefix,name) prefix ## name
 
 //
 // Frame descriptor
 //
-struct frame_s {
-    // options
-    unsigned int phasing_pattern_length;
-    unsigned int pn_sequence_length;
-    unsigned int header_length;
-
-    // header length, with crc and encoded
-    unsigned int header_length_enc;
-
-    // entire frame header length
-    unsigned int frame_header_length;
-
-    // private member objects
-    bsequence pn; // p/n synchronization sequence
-    bsequence rx; // received sequence
-    unsigned char crc32_key[4];
-
-    unsigned int src0;
-    unsigned int src1;
-    unsigned int dst0;
-    unsigned int dst1;
-    modulation_scheme ms;
-    unsigned int bps;
-    fec_scheme fec_inner;
-    fec_scheme fec_outer;
-    unsigned int intlv_inner;
-    unsigned int intlv_outer;
-
-    unsigned int protocol;
-    unsigned int msg_length;
-    unsigned int num_symbols;
-};
-
 typedef enum {
     FRAME_UNKNOWN=0,
 
