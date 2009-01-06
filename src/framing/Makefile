@@ -10,7 +10,7 @@ all: $(EXAMPLES)
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = framing.f.o framing.cf.o
+OBJS = framing.o framesync.f.o framesync.cf.o
 HEADERS = src/framing.h
 
 BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
