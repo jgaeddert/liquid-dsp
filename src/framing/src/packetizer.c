@@ -88,7 +88,7 @@ void packetizer_destroy(packetizer _p)
 void packetizer_print(packetizer _p)
 {
     printf("packetizer [dec: %u, enc: %u]\n", _p->dec_msg_len, _p->enc_msg_len);
-    printf("    crc32           %-16u\n",0); // crc-key
+    printf("    crc32           %-16u\n",4); // crc-key
     printf("    fec (outer)     %-16u\n",_p->fec0_enc_msg_len);
     printf("    intlv (outer)   %-16u\n",_p->intlv0_len);
     printf("    fec (inner)     %-16u\n",_p->fec1_enc_msg_len);
@@ -109,9 +109,9 @@ void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
     _p->crc32_key = crc32_generate_key(_p->buffer_0, _p->dec_msg_len);
     unsigned int crc32_key = _p->crc32_key;
     _p->buffer_0[_p->dec_msg_len+0] = (crc32_key & 0x000000ff) >> 0;
-    _p->buffer_0[_p->dec_msg_len+1] = (crc32_key & 0x0000ff00) >> 4;
-    _p->buffer_0[_p->dec_msg_len+2] = (crc32_key & 0x00ff0000) >> 8;
-    _p->buffer_0[_p->dec_msg_len+3] = (crc32_key & 0xff000000) >> 12;
+    _p->buffer_0[_p->dec_msg_len+1] = (crc32_key & 0x0000ff00) >> 8;
+    _p->buffer_0[_p->dec_msg_len+2] = (crc32_key & 0x00ff0000) >> 16;
+    _p->buffer_0[_p->dec_msg_len+3] = (crc32_key & 0xff000000) >> 24;
 
     fec_encode(_p->fec0, _p->fec0_src, _p->fec0_dst);
 
@@ -137,7 +137,17 @@ void packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg
 
     fec_decode(_p->fec0, _p->fec0_dst, _p->fec0_src);
 
-    // TODO strip crc32, validate
+    // strip crc32, validate message
+    unsigned int crc32_key = 0;
+    crc32_key |= _p->fec0_src[_p->dec_msg_len+0] << 0;
+    crc32_key |= _p->fec0_src[_p->dec_msg_len+1] << 8;
+    crc32_key |= _p->fec0_src[_p->dec_msg_len+2] << 16;
+    crc32_key |= _p->fec0_src[_p->dec_msg_len+3] << 24;
+
+    if (crc32_validate_message(_p->fec0_src, _p->dec_msg_len, crc32_key))
+        printf("packetizer_decode, crc passed\n");
+    else
+        printf("ERROR: packetizer_decode, crc failed\n");
 
     memmove(_msg, _p->fec0_src, _p->dec_msg_len);
 }

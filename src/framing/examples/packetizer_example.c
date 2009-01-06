@@ -11,8 +11,7 @@ int main() {
     // 
     unsigned int n=16;
 
-    packetizer p = packetizer_create(n,FEC_REP3,FEC_HAMMING74);
-    //packetizer p = packetizer_create(n,FEC_NONE, FEC_NONE);
+    packetizer p = packetizer_create(n,FEC_HAMMING74,FEC_HAMMING74);
     unsigned int packet_len = packetizer_get_packet_length(p);
 
     unsigned char msg[n];
@@ -29,8 +28,7 @@ int main() {
     packetizer_print(p);
 
     // add errors
-    //for (i=0; i<packet_len; i++)
-    //    packet[i] ^= (rand() % 100) == 0 ? 1 : 0;
+    packet[0] ^= 0x03;
 
     packetizer_decode(p,packet,msg_dec);
 
