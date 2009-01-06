@@ -15,7 +15,7 @@ HEADERS = src/framing.h src/framing_internal.h
 
 BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
 DOTPROD_DEPS = dotprod_rrrf.o dotprod_crcf.o dotprod_cccf.o
-FEC_DEPS = fec.o fec_rep.o fec_hamming74.o c_ones_mod2.o
+FEC_DEPS = fec.o fec_pass.o fec_rep.o fec_hamming74.o c_ones_mod2.o crc.o
 INTLV_DEPS = interleaver.o interleaver_create.o interleaver_permute.o
 SEQUENCE_DEPS = bsequence.o msequence.o count_bits.o
 RANDOM_DEPS = random.o
