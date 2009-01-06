@@ -36,6 +36,13 @@ struct fec_s {
 
 extern const char * fec_scheme_str[4];
 
+// Pass
+fec fec_pass_create(unsigned int _msg_len, void *_opts);
+void fec_pass_destroy(fec _q);
+void fec_pass_print(fec _q);
+void fec_pass_encode(fec _q, unsigned char * _msg_dec, unsigned char * _msg_enc);
+void fec_pass_decode(fec _q, unsigned char * _msg_enc, unsigned char * _msg_dec);
+
 // Repeat (3)
 fec fec_rep3_create(unsigned int _msg_len, void *_opts);
 void fec_rep3_destroy(fec _q);

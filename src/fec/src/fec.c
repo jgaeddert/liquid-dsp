@@ -20,6 +20,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 {
     switch (_scheme) {
     case FEC_UNKNOWN:   return 0;
+    case FEC_NONE:      return _msg_len;
     case FEC_REP3:      return 3*_msg_len;
     case FEC_HAMMING74: return 2*_msg_len;
     case FEC_HAMMING84: return 2*_msg_len;
@@ -34,6 +35,7 @@ float fec_get_rate(fec_scheme _scheme)
 {
     switch (_scheme) {
     case FEC_UNKNOWN:   return 0;
+    case FEC_NONE:      return 1.;
     case FEC_REP3:      return 1./3.;
     case FEC_HAMMING74: return 1./2.;
     case FEC_HAMMING84: return 1./2.;
@@ -49,6 +51,8 @@ fec fec_create(fec_scheme _scheme, unsigned int _msg_len, void *_opts)
     switch (_scheme) {
     case FEC_UNKNOWN:
         return NULL;
+    case FEC_NONE:
+        return fec_pass_create(_msg_len, NULL);
     case FEC_REP3:
         return fec_rep3_create(_msg_len, _opts);
     case FEC_HAMMING74:

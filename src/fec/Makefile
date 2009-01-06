@@ -4,6 +4,7 @@
 
 OBJS = c_ones_mod2.o checksum.o crc.o \
 	   fec.o \
+	   fec_pass.o \
 	   fec_rep.o \
 	   fec_hamming74.o
 

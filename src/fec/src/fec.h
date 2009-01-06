@@ -44,6 +44,7 @@ bool crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int 
 
 typedef enum {
     FEC_UNKNOWN=0,
+    FEC_NONE,
     FEC_REP3,
     FEC_HAMMING74,
     FEC_HAMMING84
