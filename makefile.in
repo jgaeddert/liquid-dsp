@@ -171,7 +171,7 @@ $(LIBS_FILTER) : %.o : src/filter/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_FRAMING) : %.o : src/framing/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -Isrc/modem/src/ -Isrc/fec/src/ -Isrc/sequence/src/ -c $< -o $@
 
 $(LIBS_INTERLEAVER) : %.o : src/interleaver/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
