@@ -81,7 +81,7 @@ void packetizer_print(packetizer _p);
 unsigned int packetizer_get_packet_length(packetizer _p);
 
 void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char * _pkt);
-void packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);
+bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);
 
 #endif // __LIQUID_FRAMING_H__
 

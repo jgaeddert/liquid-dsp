@@ -124,7 +124,7 @@ void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
     memmove(_pkt, _p->intlv1_dst, _p->enc_msg_len);
 }
 
-void packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg)
+bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg)
 {
 
     memmove(_p->intlv1_dst, _pkt, _p->enc_msg_len);
@@ -144,11 +144,8 @@ void packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg
     crc32_key |= _p->fec0_src[_p->dec_msg_len+2] << 16;
     crc32_key |= _p->fec0_src[_p->dec_msg_len+3] << 24;
 
-    if (crc32_validate_message(_p->fec0_src, _p->dec_msg_len, crc32_key))
-        printf("packetizer_decode, crc passed\n");
-    else
-        printf("ERROR: packetizer_decode, crc failed\n");
-
     memmove(_msg, _p->fec0_src, _p->dec_msg_len);
+
+    return crc32_validate_message(_p->fec0_src, _p->dec_msg_len, crc32_key);
 }
 
