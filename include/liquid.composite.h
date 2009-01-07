@@ -576,7 +576,7 @@ bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 typedef struct FRAMESYNC(_s) * FRAMESYNC();                 \
                                                             \
 FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, T * _v);    \
-FRAMESYNC() FRAMESYNC(_create_msequence)(msequence _ms);    \
+FRAMESYNC() FRAMESYNC(_create_msequence)(unsigned int _g);  \
 void FRAMESYNC(_destroy)(FRAMESYNC() _fs);                  \
 void FRAMESYNC(_print)(FRAMESYNC() _fs);                    \
 T FRAMESYNC(_correlate)(FRAMESYNC() _fs, T _sym);
@@ -591,7 +591,7 @@ LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CFLOAT, float complex)
 
 typedef struct packetizer_s * packetizer;
 
-packetizer packetizer_create(unsigned int _dec_msg_len, fec_scheme _fec0, fec_scheme _fec1);
+packetizer packetizer_create(unsigned int _dec_msg_len, int _fec0, int _fec1);
 void packetizer_destroy(packetizer _p);
 void packetizer_print(packetizer _p);
 

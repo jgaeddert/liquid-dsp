@@ -8,6 +8,7 @@
 #include <complex.h>
 
 #include "../src/framing.h"
+#include "../../sequence/src/sequence.h"// msequence
 #include "../../random/src/random.h"    // awgn
 
 int main() {
@@ -18,8 +19,8 @@ int main() {
 
     // create objects
     float snr = powf(10.0f, snr_db/10.0f); // TODO: scale snr for complex signal?
+    cframesync fs = cframesync_create_msequence(LIQUID_MSEQUENCE_N63);
     msequence ms = msequence_create(6);
-    cframesync fs = cframesync_create_msequence(ms);
 
     unsigned int i;
     float complex s, rxy;

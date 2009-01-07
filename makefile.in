@@ -116,9 +116,9 @@ BENCHMARKS = \
 	src/nco/bench/nco_benchmark.h \
 	src/random/bench/random_benchmark.h
 
-CFLAGS = -g -O2 -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+CFLAGS = -g -O2 -Wall -I. @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
 BENCH_FLAGS = -g -Wall -pthread @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
-AUTOTEST_FLAGS = -Isrc/modem/src/ -Isrc/fec/src/ -Isrc/sequence/src/
+AUTOTEST_FLAGS = $(CFLAGS)
 LDFLAGS = -lm
 
 SHARED_LIB = @SH_LIB@
@@ -173,7 +173,7 @@ $(LIBS_FILTER) : %.o : src/filter/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_FRAMING) : %.o : src/framing/src/%.c
-	$(CC) $(CFLAGS) -Isrc/modem/src/ -Isrc/fec/src/ -Isrc/sequence/src/ -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(LIBS_INTERLEAVER) : %.o : src/interleaver/src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -206,7 +206,7 @@ autotest_include.h: $(AUTOTESTS)
 	python autotest/autotest_gen.py $(AUTOTESTS)
 
 xautotest: autotest_include.h autotest/autotest.c $(LIBS)
-	$(CC) $(AUTOTEST_FLAGS) $(CFLAGS) $(LIBS) $(LDFLAGS) autotest/autotest.c -o xautotest
+	$(CC) $(AUTOTEST_FLAGS) $(LIBS) $(LDFLAGS) autotest/autotest.c -o xautotest
 
 check: xautotest
 	./xautotest -v

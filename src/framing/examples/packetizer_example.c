@@ -7,6 +7,8 @@
 
 #include "../src/framing.h"
 
+#include "../../fec/src/fec.h"
+
 int main() {
     // 
     unsigned int n=16;

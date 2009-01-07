@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "../src/framing.h"
+#include "../../sequence/src/sequence.h"// msequence
 #include "../../random/src/random.h"    // awgn
 
 int main() {
@@ -16,8 +17,8 @@ int main() {
 
     // create objects
     float snr = powf(10.0f, snr_db/10.0f);
+    framesync fs = framesync_create_msequence(LIQUID_MSEQUENCE_N63);
     msequence ms = msequence_create(6);
-    framesync fs = framesync_create_msequence(ms);
 
     unsigned int i;
     float s, rxy;

@@ -9,10 +9,12 @@
 
 #include "framing_internal.h"
 
+#include "../../fec/src/fec.h"
+
 packetizer packetizer_create(
     unsigned int _n,
-    fec_scheme _fec0,
-    fec_scheme _fec1)
+    int _fec0,
+    int _fec1)
 {
     packetizer p = (packetizer) malloc(sizeof(struct packetizer_s));
 
