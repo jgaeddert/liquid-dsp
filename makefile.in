@@ -82,6 +82,7 @@ AUTOTESTS = \
 	src/filter/tests/fir_filter_autotest.h \
 	src/filter/tests/iir_filter_autotest.h \
 	src/filter/tests/interp_autotest.h \
+	src/framing/tests/packetizer_autotest.h \
 	src/interleaver/tests/interleaver_autotest.h \
 	src/math/tests/math_autotest.h \
 	src/modem/tests/modem_autotest.h \
@@ -117,6 +118,7 @@ BENCHMARKS = \
 
 CFLAGS = -g -O2 -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
 BENCH_FLAGS = -g -Wall -pthread @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+AUTOTEST_FLAGS = -Isrc/modem/src/ -Isrc/fec/src/ -Isrc/sequence/src/
 LDFLAGS = -lm
 
 SHARED_LIB = @SH_LIB@
@@ -204,7 +206,7 @@ autotest_include.h: $(AUTOTESTS)
 	python autotest/autotest_gen.py $(AUTOTESTS)
 
 xautotest: autotest_include.h autotest/autotest.c $(LIBS)
-	$(CC) $(CFLAGS) $(LIBS) $(LDFLAGS) autotest/autotest.c -o xautotest
+	$(CC) $(AUTOTEST_FLAGS) $(CFLAGS) $(LIBS) $(LDFLAGS) autotest/autotest.c -o xautotest
 
 check: xautotest
 	./xautotest -v
