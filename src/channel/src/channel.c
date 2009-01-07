@@ -6,8 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "channel.h"
-#include "../../filter/src/filter.h"
+#include "channel_internal.h"
+
 #include "../../random/src/random.h"
 
 channel channel_create()

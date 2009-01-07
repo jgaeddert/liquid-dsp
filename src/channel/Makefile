@@ -8,8 +8,8 @@ EXAMPLES = fading_channel_example \
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = channel.o
-HEADERS = src/channel.h
+OBJS = channel.o awgn_channel.o
+HEADERS = src/channel.h src/channel_internal.h
 
 all: $(EXAMPLES)
 

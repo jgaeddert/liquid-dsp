@@ -13,7 +13,7 @@ LIBS_ANN = ann.o ann_layer.o ann_neuron.o
 LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
 			  metadata.o \
 			  gport.o gport2.o
-LIBS_CHANNEL = channel.o
+LIBS_CHANNEL = awgn_channel.o channel.o
 LIBS_DOTPROD = dotprod_rrrf.o dotprod_cccf.o dotprod_crcf.o
 LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec.o fec_pass.o fec_rep.o fec_hamming74.o
 LIBS_FFT = fft_create_plan.o fft_execute.o fft_shift.o asgram.o
