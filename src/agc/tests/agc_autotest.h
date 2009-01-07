@@ -24,11 +24,12 @@ void autotest_dc_gain_control() {
     for (i=0; i<256; i++) {
         agc_execute(g, x, &y);
     }
+    float gain = 10*log10( agc_get_gain(g) );
 
     // Check results
     CONTEND_DELTA( crealf(y), energy_target,    tol );
     CONTEND_DELTA( cimagf(y), 0.0f,             tol );
-    CONTEND_DELTA( agc_get_gain(g), g_target,   tol );
+    CONTEND_DELTA( gain,      g_target,         tol );
 
     agc_destroy(g);
 }
@@ -57,9 +58,10 @@ void autotest_ac_gain_control() {
         theta += dtheta;
         agc_execute(g, x, &y);
     }
+    float gain = 10*log10( agc_get_gain(g) );
 
     // Check results
-    CONTEND_DELTA( agc_get_gain(g), g_target, tol );
+    CONTEND_DELTA( gain,      g_target,         tol );
 
     agc_destroy(g);
 }
