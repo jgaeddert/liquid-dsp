@@ -14,6 +14,17 @@ struct awgn_channel_s {
     float nstd;
 };
 
+struct ricek_channel_s {
+    unsigned int h_len;
+    float K;
+    float omega;
+    float sig;
+    float s;
+    float fd;
+    float theta;
+    cfir_filter f;
+};
+
 struct channel_s {
     float K;        // Rice-K fading
     //float omega;    // Mean power (omega=1)

@@ -3,12 +3,13 @@
 #
 
 EXAMPLES = fading_channel_example \
-		   fading_generator_example
+		   fading_generator_example \
+		   ricek_channel_example
 
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = channel.o awgn_channel.o
+OBJS = awgn_channel.o ricek_channel.o channel.o
 HEADERS = src/channel.h src/channel_internal.h
 
 all: $(EXAMPLES)
