@@ -66,6 +66,7 @@ AUTOTESTS = \
 	src/buffer/tests/cbuffer_autotest.h \
 	src/buffer/tests/sbuffer_autotest.h \
 	src/buffer/tests/gport2_autotest.h \
+	src/channel/tests/channel_autotest.h \
 	src/dotprod/tests/dotprod_rrrf_autotest.h \
 	src/fec/tests/checksum_autotest.h \
 	src/fec/tests/crc_autotest.h \

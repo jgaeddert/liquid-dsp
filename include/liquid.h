@@ -12,6 +12,7 @@ extern "C" {
 
 #include "agc.h"
 #include "buffer.h"
+#include "channel.h"
 #include "dotprod.h"
 #include "fec.h"
 #include "fft.h"
