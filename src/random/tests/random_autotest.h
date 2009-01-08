@@ -7,10 +7,10 @@
 // uniform
 void autotest_randf()
 {
-    unsigned long int N=100000; // number of trials
+    unsigned long int N=250000; // number of trials
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.01f;
+    float tol=0.02f;
 
     // uniform
     for (i=0; i<N; i++) {
@@ -28,10 +28,10 @@ void autotest_randf()
 // Gauss
 void autotest_randnf()
 {
-    unsigned long int N=100000; // number of trials
+    unsigned long int N=250000; // number of trials
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.01f;
+    float tol=0.02f;
 
     // uniform
     for (i=0; i<N; i++) {
@@ -49,11 +49,11 @@ void autotest_randnf()
 // complex Gauss
 void autotest_crandnf()
 {
-    unsigned long int N=100000; // number of trials
+    unsigned long int N=250000; // number of trials
     unsigned long int i;
     float complex x;
     float m1=0.0f, m2=0.0f;
-    float tol=0.01f;
+    float tol=0.02f;
 
     // uniform
     for (i=0; i<N; i++) {
@@ -72,10 +72,10 @@ void autotest_crandnf()
 // Weibull
 void autotest_rand_weibullf()
 {
-    unsigned long int N=100000; // number of trials
+    unsigned long int N=250000; // number of trials
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.01f;
+    float tol=0.02f;
     float alpha=1.0f, beta=2.0f, gamma=6.0f;
 
     // uniform
@@ -94,10 +94,10 @@ void autotest_rand_weibullf()
 // Rice-K
 void autotest_rand_ricekf()
 {
-    unsigned long int N=100000; // number of trials
+    unsigned long int N=250000; // number of trials
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.01f;
+    float tol=0.02f;
     float K=2.0f, omega=1.0f;
 
     // uniform
