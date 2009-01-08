@@ -31,6 +31,12 @@ typedef enum {
     FRAME_NUM_SYMBOLS
 } frame_keyid;
 
+typedef struct {
+    unsigned int uuid;
+    unsigned int num_bits;
+    unsigned int value;
+} frameheader_key;
+
 typedef struct frame_s * frame;
 
 frame frame_create();
@@ -68,13 +74,14 @@ LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CFLOAT, float complex)
 // Packetizer
 //
 
-typedef struct packetizer_s * packetizer;
+unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1);
 
+typedef struct packetizer_s * packetizer;
 packetizer packetizer_create(unsigned int _dec_msg_len, int _fec0, int _fec1);
 void packetizer_destroy(packetizer _p);
 void packetizer_print(packetizer _p);
 
-unsigned int packetizer_get_packet_length(packetizer _p);
+void packetizer_set_scheme(packetizer _p, int _fec0, int _fec1);
 
 void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char * _pkt);
 bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);

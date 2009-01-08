@@ -34,8 +34,6 @@ struct fec_s {
     void (*decode_func)(fec _q, unsigned char * _msg_enc, unsigned char * _msg_dec);
 };
 
-extern const char * fec_scheme_str[4];
-
 // Pass
 fec fec_pass_create(unsigned int _msg_len, void *_opts);
 void fec_pass_destroy(fec _q);

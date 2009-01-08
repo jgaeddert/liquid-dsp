@@ -50,6 +50,8 @@ typedef enum {
     FEC_HAMMING84
 } fec_scheme;
 
+extern const char * fec_scheme_str[5];
+
 typedef struct fec_s * fec;
 
 // object-independent methods

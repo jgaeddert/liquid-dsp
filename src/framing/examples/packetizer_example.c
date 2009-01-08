@@ -12,9 +12,11 @@
 int main() {
     // 
     unsigned int n=16;
+    fec_scheme fec0 = FEC_HAMMING74;
+    fec_scheme fec1 = FEC_REP3;
 
-    packetizer p = packetizer_create(n,FEC_HAMMING74,FEC_HAMMING74);
-    unsigned int packet_len = packetizer_get_packet_length(p);
+    unsigned int packet_len = packetizer_get_packet_length(n,fec0,fec1);
+    packetizer p = packetizer_create(n,fec0,fec1);
 
     unsigned char msg[n];
     unsigned char msg_dec[n];

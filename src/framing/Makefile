@@ -8,7 +8,7 @@ EXAMPLES = frame_example framesync_example cframesync_example packetizer_example
 all: $(EXAMPLES)
 
 CC = gcc
-CFLAGS = -Wall -O3 -I../modem/src -I../sequence/src -I../fec/src
+CFLAGS = -Wall -O3
 LDFLAGS = -lm
 OBJS = framing.o packetizer.o framesync.f.o framesync.cf.o
 HEADERS = src/framing.h src/framing_internal.h

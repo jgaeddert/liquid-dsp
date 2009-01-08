@@ -11,6 +11,11 @@
 
 #include "../../fec/src/fec.h"
 
+unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1)
+{
+    return fec_get_enc_msg_length(_fec1, fec_get_enc_msg_length(_fec0, _n+4));
+}
+
 packetizer packetizer_create(
     unsigned int _n,
     int _fec0,
@@ -18,29 +23,30 @@ packetizer packetizer_create(
 {
     packetizer p = (packetizer) malloc(sizeof(struct packetizer_s));
 
-    bool buffer_switch = true;
-
     p->dec_msg_len = _n;
 
-    // fec (inner)
+    // set schemes
     p->fec0_scheme = _fec0;
+    p->intlv0_scheme = INT_BLOCK;
+    p->fec1_scheme = _fec1;
+    p->intlv1_scheme = INT_BLOCK;
+
+    // compute plan: lengths of buffers, etc.
     p->fec0_dec_msg_len = p->dec_msg_len + 4;
     p->fec0_enc_msg_len = fec_get_enc_msg_length(p->fec0_scheme, p->fec0_dec_msg_len);
-    p->fec0 = fec_create(p->fec0_scheme, p->fec0_dec_msg_len, NULL);
 
-    // intlv (inner)
     p->intlv0_len = p->fec0_enc_msg_len;
-    p->intlv0 = interleaver_create(p->intlv0_len, INT_BLOCK);
 
-    // fec (outer)
-    p->fec1_scheme = _fec1;
     p->fec1_dec_msg_len = p->fec0_enc_msg_len;
     p->fec1_enc_msg_len = fec_get_enc_msg_length(p->fec1_scheme, p->fec1_dec_msg_len);
-    p->fec1 = fec_create(p->fec1_scheme, p->fec1_dec_msg_len, NULL);
 
-    // intlv (outer)
     p->intlv1_len = p->fec1_enc_msg_len;
-    p->intlv1 = interleaver_create(p->intlv1_len, INT_BLOCK);
+
+    // create objects
+    p->fec0 = fec_create(p->fec0_scheme, p->fec0_dec_msg_len, NULL);
+    p->intlv0 = interleaver_create(p->intlv0_len, p->intlv0_scheme);
+    p->fec1 = fec_create(p->fec1_scheme, p->fec1_dec_msg_len, NULL);
+    p->intlv1 = interleaver_create(p->intlv1_len, p->intlv0_scheme);
 
     p->enc_msg_len = p->intlv1_len;
 
@@ -49,22 +55,7 @@ packetizer packetizer_create(
     p->buffer_0 = (unsigned char*) malloc(p->buffer_len);
     p->buffer_1 = (unsigned char*) malloc(p->buffer_len);
 
-    // set buffers
-    p->fec0_src = buffer_switch ? p->buffer_0 : p->buffer_1;
-    p->fec0_dst = buffer_switch ? p->buffer_1 : p->buffer_0;
-    buffer_switch = !buffer_switch;
-
-    p->intlv0_src = buffer_switch ? p->buffer_0 : p->buffer_1;
-    p->intlv0_dst = buffer_switch ? p->buffer_1 : p->buffer_0;
-    buffer_switch = !buffer_switch;
-
-    p->fec1_src = buffer_switch ? p->buffer_0 : p->buffer_1;
-    p->fec1_dst = buffer_switch ? p->buffer_1 : p->buffer_0;
-    buffer_switch = !buffer_switch;
-
-    p->intlv1_src = buffer_switch ? p->buffer_0 : p->buffer_1;
-    p->intlv1_dst = buffer_switch ? p->buffer_1 : p->buffer_0;
-    buffer_switch = !buffer_switch;
+    packetizer_set_buffers(p);
 
     return p;
 }
@@ -90,16 +81,11 @@ void packetizer_destroy(packetizer _p)
 void packetizer_print(packetizer _p)
 {
     printf("packetizer [dec: %u, enc: %u]\n", _p->dec_msg_len, _p->enc_msg_len);
-    printf("    crc32           %-16u\n",4); // crc-key
-    printf("    fec (outer)     %-16u\n",_p->fec0_enc_msg_len);
-    printf("    intlv (outer)   %-16u\n",_p->intlv0_len);
-    printf("    fec (inner)     %-16u\n",_p->fec1_enc_msg_len);
-    printf("    intlv (inner)   %-16u\n",_p->intlv1_len);
-}
-
-unsigned int packetizer_get_packet_length(packetizer _p)
-{
-    return _p->enc_msg_len;
+    printf("    crc32           +%-9u %-16s\n",4,"crc32"); // crc-key
+    printf("    fec (outer)     %-10u %-16s\n",_p->fec0_enc_msg_len,fec_scheme_str[_p->fec0_scheme]);
+    printf("    intlv (outer)   %-10u %-16s\n",_p->intlv0_len,"?");
+    printf("    fec (inner)     %-10u %-16s\n",_p->fec1_enc_msg_len,fec_scheme_str[_p->fec1_scheme]);
+    printf("    intlv (inner)   %-10u %-16s\n",_p->intlv1_len,"?");
 }
 
 void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
@@ -149,5 +135,46 @@ bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg
     memmove(_msg, _p->fec0_src, _p->dec_msg_len);
 
     return crc32_validate_message(_p->fec0_src, _p->dec_msg_len, crc32_key);
+}
+
+void packetizer_set_scheme(packetizer _p, int _fec0, int _fec1)
+{
+    //
+}
+
+// 
+// internal methods
+//
+
+void packetizer_set_buffers(packetizer _p)
+{
+    bool buffer_switch = true;
+
+    // fec (outer)
+    _p->fec0_src = buffer_switch ? _p->buffer_0 : _p->buffer_1;
+    _p->fec0_dst = buffer_switch ? _p->buffer_1 : _p->buffer_0;
+    buffer_switch = !buffer_switch;
+
+    // interleaver (outer)
+    _p->intlv0_src = buffer_switch ? _p->buffer_0 : _p->buffer_1;
+    _p->intlv0_dst = buffer_switch ? _p->buffer_1 : _p->buffer_0;
+    buffer_switch = !buffer_switch;
+
+    // fec (inner)
+    _p->fec1_src = buffer_switch ? _p->buffer_0 : _p->buffer_1;
+    _p->fec1_dst = buffer_switch ? _p->buffer_1 : _p->buffer_0;
+    buffer_switch = !buffer_switch;
+
+    // interleaver (inner)
+    _p->intlv1_src = buffer_switch ? _p->buffer_0 : _p->buffer_1;
+    _p->intlv1_dst = buffer_switch ? _p->buffer_1 : _p->buffer_0;
+    buffer_switch = !buffer_switch;
+}
+
+void packetizer_realloc_buffers(packetizer _p, unsigned int _len)
+{
+    _p->buffer_len = _len;
+    _p->buffer_0 = (unsigned char*) realloc(_p->buffer_0, _p->buffer_len);
+    _p->buffer_1 = (unsigned char*) realloc(_p->buffer_1, _p->buffer_len);
 }
 

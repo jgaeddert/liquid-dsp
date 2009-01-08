@@ -92,5 +92,11 @@ struct packetizer_s {
     unsigned char * buffer_1;
 };
 
+// set fec/intlv input/output pointers
+void packetizer_set_buffers(packetizer _p);
+
+// reallocate memory for buffers
+void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
+
 #endif // __LIQUID_FRAMING_INTERNAL_H__
 

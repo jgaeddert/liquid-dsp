@@ -9,8 +9,9 @@
 
 // object-independent methods
 
-const char * fec_scheme_str[4] = {
+const char * fec_scheme_str[5] = {
     "unknown",
+    "none",
     "repeat(3)",
     "hamming(7,4)",
     "hamming(8,4)"
