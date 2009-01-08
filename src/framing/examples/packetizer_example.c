@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "../src/framing.h"
 
@@ -17,23 +18,25 @@ int main() {
 
     unsigned int packet_len = packetizer_get_packet_length(n,fec0,fec1);
     packetizer p = packetizer_create(n,fec0,fec1);
+    packetizer_print(p);
 
     unsigned char msg[n];
     unsigned char msg_dec[n];
     unsigned char packet[packet_len];
+    bool crc_pass;
 
     unsigned int i;
     for (i=0; i<n; i++) {
         msg[i] = rand() % 256;
+        msg_dec[i] = 0;
     }
 
     packetizer_encode(p,msg,packet);
 
-    packetizer_print(p);
-
     // add errors
     packet[0] ^= 0x03;
 
+    crc_pass =
     packetizer_decode(p,packet,msg_dec);
 
     // print
@@ -45,14 +48,17 @@ int main() {
     for (i=0; i<n; i++) printf("%.2X ", msg_dec[i]);
     printf("\n");
 
-
     // count errors
     unsigned int num_sym_errors = 0;
     for (i=0; i<n; i++) {
         num_sym_errors += (msg[i] == msg_dec[i]) ? 0 : 1;
     }
 
-    printf("decoded packet errors: %3u / %3u\n", num_sym_errors, n);
+    printf("decoded packet errors: %3u / %3u  ", num_sym_errors, n);
+    if (crc_pass)
+        printf("(crc passed)\n");
+    else
+        printf("(crc failed)\n");
 
     printf("done.\n");
     return 0;

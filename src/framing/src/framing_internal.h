@@ -49,51 +49,37 @@ struct frame_s {
 };
 
 
+//
+// packetizer
+//
 
-struct packetizer_s {
+struct fecintlv_plan {
     unsigned int dec_msg_len;
     unsigned int enc_msg_len;
 
+    // fec codec
+    fec_scheme fs;
+    fec f;
+
+    // interleaver
+    unsigned int intlv_scheme;
+    interleaver q;
+};
+
+struct packetizer_s {
+    unsigned int msg_len;
+    unsigned int packet_len;
+
     unsigned int crc32_key;
 
-    // fec (outer)
-    fec_scheme fec0_scheme;
-    fec fec0;
-    unsigned int fec0_dec_msg_len;
-    unsigned int fec0_enc_msg_len;
-    unsigned char * fec0_src;
-    unsigned char * fec0_dst;
-
-    // interleaver (outer)
-    interleaver intlv0;
-    unsigned int intlv0_scheme;
-    unsigned int intlv0_len;
-    unsigned char * intlv0_src;
-    unsigned char * intlv0_dst;
-
-    // fec (inner)
-    fec_scheme fec1_scheme;
-    fec fec1;
-    unsigned int fec1_dec_msg_len;
-    unsigned int fec1_enc_msg_len;
-    unsigned char * fec1_src;
-    unsigned char * fec1_dst;
-
-    // interleaver (inner)
-    interleaver intlv1;
-    unsigned int intlv1_scheme;
-    unsigned int intlv1_len;
-    unsigned char * intlv1_src;
-    unsigned char * intlv1_dst;
+    struct fecintlv_plan * plan;
+    unsigned int plan_len;
 
     // buffers
     unsigned int buffer_len;
     unsigned char * buffer_0;
     unsigned char * buffer_1;
 };
-
-// set fec/intlv input/output pointers
-void packetizer_set_buffers(packetizer _p);
 
 // reallocate memory for buffers
 void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
