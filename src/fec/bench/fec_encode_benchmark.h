@@ -22,7 +22,7 @@ void fec_encode_bench(
     void * _opts)
 {
     // generate fec object
-    fec q = fec_create(_fs,_n,_opts);
+    fec q = fec_create(_fs,_opts);
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(_fs,_n);
@@ -38,10 +38,10 @@ void fec_encode_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        fec_encode(q,msg,msg_enc);
-        fec_encode(q,msg,msg_enc);
-        fec_encode(q,msg,msg_enc);
-        fec_encode(q,msg,msg_enc);
+        fec_encode(q,_n,msg,msg_enc);
+        fec_encode(q,_n,msg,msg_enc);
+        fec_encode(q,_n,msg,msg_enc);
+        fec_encode(q,_n,msg,msg_enc);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

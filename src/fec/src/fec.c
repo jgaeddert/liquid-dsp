@@ -47,19 +47,19 @@ float fec_get_rate(fec_scheme _scheme)
     return 0;
 }
 
-fec fec_create(fec_scheme _scheme, unsigned int _msg_len, void *_opts)
+fec fec_create(fec_scheme _scheme, void *_opts)
 {
     switch (_scheme) {
     case FEC_UNKNOWN:
         return NULL;
     case FEC_NONE:
-        return fec_pass_create(_msg_len, NULL);
+        return fec_pass_create(NULL);
     case FEC_REP3:
-        return fec_rep3_create(_msg_len, _opts);
+        return fec_rep3_create(_opts);
     case FEC_HAMMING74:
-        return fec_hamming74_create(_msg_len, _opts);
+        return fec_hamming74_create(_opts);
     case FEC_HAMMING84:
-        //return fec_hamming84_create(_msg_len, _opts);
+        //return fec_hamming84_create(_opts);
     default:
         printf("error: fec_create(), unknown/unsupported scheme: %d\n", _scheme);
         exit(0);
@@ -74,21 +74,19 @@ void fec_destroy(fec _q)
 
 void fec_print(fec _q)
 {
-    printf("fec: %s [%u->%u, rate: %4.3f]\n",
+    printf("fec: %s [rate: %4.3f]\n",
         fec_scheme_str[_q->scheme],
-        _q->dec_msg_len,
-        _q->enc_msg_len,
         _q->rate);
 }
 
-void fec_encode(fec _q, unsigned char * _msg_dec, unsigned char * _msg_enc)
+void fec_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc)
 {
-    _q->encode_func(_q, _msg_dec, _msg_enc);
+    _q->encode_func(_q, _dec_msg_len, _msg_dec, _msg_enc);
 }
 
-void fec_decode(fec _q, unsigned char * _msg_enc, unsigned char * _msg_dec)
+void fec_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec)
 {
-    _q->decode_func(_q, _msg_enc, _msg_dec);
+    _q->decode_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
 }
 
 

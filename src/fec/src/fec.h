@@ -58,12 +58,12 @@ typedef struct fec_s * fec;
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len);
 float fec_get_rate(fec_scheme _scheme);
 
-fec fec_create(fec_scheme _scheme, unsigned int _msg_len, void *_opts);
+fec fec_create(fec_scheme _scheme, void *_opts);
 void fec_destroy(fec _q);
 void fec_print(fec _q);
 
-void fec_encode(fec _q, unsigned char * _msg_dec, unsigned char * _msg_enc);
-void fec_decode(fec _q, unsigned char * _msg_enc, unsigned char * _msg_dec);
+void fec_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
+void fec_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
 
 #endif // __LIQUID_FEC_H__
 

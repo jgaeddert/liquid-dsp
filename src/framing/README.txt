@@ -12,11 +12,11 @@ header              128 (256 enc)
     dst0            8               Ultimate destination node id
     dst1            8               Immediate destination node id
     mod scheme,bps  8               Modulation scheme (including bits/symbol)
-    inner int/fec   3/5             Inner FEC and interleaving scheme
     outer int/fec   3/5             Outer FEC and interleaving scheme
+    inner int/fec   3/5             Inner FEC and interleaving scheme
     protocol        8               Protocol ID
-    msg len/bytes   16              Packet length (bytes)
-    num symbols     16              Number of symbols
+    msg len/bytes   16              Uncoded packet length (bytes)
+    num packets     16              Number of packets in frame
 
 The header includes a mandatory 32-bit crc with 1/2 rate forward error-
 correction code totaling 256 bits (32 bytes) of encoded data.

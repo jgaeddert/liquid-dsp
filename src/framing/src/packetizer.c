@@ -47,7 +47,7 @@ packetizer packetizer_create(
         p->plan[i].enc_msg_len = fec_get_enc_msg_length(p->plan[i].fs, p->plan[i].dec_msg_len);
 
         // create objects
-        p->plan[i].f = fec_create(p->plan[i].fs, n0, NULL);
+        p->plan[i].f = fec_create(p->plan[i].fs, NULL);
         p->plan[i].q = interleaver_create(p->plan[i].enc_msg_len, p->plan[i].intlv_scheme);
 
         // update length
@@ -107,7 +107,7 @@ void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
     // execute fec/interleaver plans
     unsigned int i;
     for (i=0; i<_p->plan_len; i++) {
-        fec_encode(_p->plan[i].f, _p->buffer_0, _p->buffer_1);
+        fec_encode(_p->plan[i].f, _p->plan[i].dec_msg_len, _p->buffer_0, _p->buffer_1);
         interleaver_interleave(_p->plan[i].q, _p->buffer_1, _p->buffer_0);
     }
 
@@ -123,7 +123,7 @@ bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg
     unsigned int i;
     for (i=_p->plan_len; i>0; i--) {
         interleaver_deinterleave(_p->plan[i-1].q, _p->buffer_0, _p->buffer_1);
-        fec_decode(_p->plan[i-1].f, _p->buffer_1, _p->buffer_0);
+        fec_decode(_p->plan[i-1].f, _p->plan[i-1].dec_msg_len, _p->buffer_1, _p->buffer_0);
     }
 
     // strip crc32, validate message

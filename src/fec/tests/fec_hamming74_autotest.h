@@ -19,11 +19,11 @@ void autotest_hamming74_codec()
     unsigned char msg_enc[n_enc];
 
     // create object
-    fec q = fec_create(fs,n,NULL);
+    fec q = fec_create(fs,NULL);
     fec_print(q);
 
     // encode message
-    fec_encode(q, msg, msg_enc);
+    fec_encode(q, n, msg, msg_enc);
     
     // corrupt encoded message
     msg_enc[0] ^= 0x04; // position 5
@@ -36,10 +36,13 @@ void autotest_hamming74_codec()
     msg_enc[7] ^= 0x10; //
 
     // decode message
-    fec_decode(q, msg_enc, msg_dec);
+    fec_decode(q, n, msg_enc, msg_dec);
 
     // validate data are the same
     CONTEND_SAME_DATA(msg, msg_dec, n);
+
+    // clean up objects
+    fec_destroy(q);
 }
 
 #endif // __LIQUID_FEC_HAMMING74_AUTOTEST_H__

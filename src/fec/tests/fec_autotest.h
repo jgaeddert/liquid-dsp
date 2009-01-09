@@ -10,7 +10,7 @@
 void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
 {
     // generate fec object
-    fec q = fec_create(_fs,_n,_opts);
+    fec q = fec_create(_fs,_opts);
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(_fs,_n);
@@ -26,13 +26,13 @@ void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
     }
 
     // encode message
-    fec_encode(q,msg,msg_enc);
+    fec_encode(q,_n,msg,msg_enc);
 
     // channel: add error(s)
     msg_enc[0] ^= 0x01;
 
     // decode message
-    fec_decode(q,msg_enc,msg_dec);
+    fec_decode(q,_n,msg_enc,msg_dec);
 
     // validate output
     CONTEND_SAME_DATA(msg,msg_dec,_n);

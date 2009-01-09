@@ -17,11 +17,11 @@ int main() {
     unsigned char msg_enc[n_enc];
 
     // create object
-    fec q = fec_create(fs,n,NULL);
+    fec q = fec_create(fs,NULL);
     fec_print(q);
 
     // encode message
-    fec_encode(q, data, msg_enc);
+    fec_encode(q, n, data, msg_enc);
     
     // corrupt encoded message
     msg_enc[0] = ~msg_enc[0];
@@ -30,7 +30,7 @@ int main() {
     msg_enc[3] = ~msg_enc[3];
 
     // decode message
-    fec_decode(q, msg_enc, msg_dec);
+    fec_decode(q, n, msg_enc, msg_dec);
 
     unsigned int i;
 
