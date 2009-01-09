@@ -27,12 +27,12 @@ bsequence bsequence_create(unsigned int _num_bits)
     bs->num_bits = _num_bits;
     
     // initialize array length
-    div_t d = div( bs->num_bits, sizeof(uint8_t)*8 );
+    div_t d = div( bs->num_bits, sizeof(unsigned char)*8 );
     bs->s_len = d.quot;
     bs->s_len += (d.rem > 0) ? 1 : 0;
 
     // number of bits in MSB block
-    bs->num_bits_msb = (d.rem == 0) ? sizeof(uint8_t)*8 : (unsigned int) d.rem;
+    bs->num_bits_msb = (d.rem == 0) ? sizeof(unsigned char)*8 : (unsigned int) d.rem;
 
     // bit mask for MSB block
     bs->bit_mask_msb = 0xff;
@@ -41,7 +41,7 @@ bsequence bsequence_create(unsigned int _num_bits)
         bs->bit_mask_msb >>= 1;
 
     // initialze array with zeros
-    bs->s = (uint8_t*) calloc( bs->s_len, sizeof(uint8_t) );
+    bs->s = (unsigned char*) calloc( bs->s_len, sizeof(unsigned char) );
 
     return bs;
 }
@@ -53,7 +53,7 @@ void bsequence_destroy(bsequence _bs) {
 
 void bsequence_clear(bsequence _bs)
 {
-    memset( _bs->s, 0x00, (_bs->s_len)*sizeof(uint8_t) );
+    memset( _bs->s, 0x00, (_bs->s_len)*sizeof(unsigned char) );
 }
 
 void bsequence_print(bsequence _bs)
@@ -185,11 +185,11 @@ void bsequence_create_ccodes(bsequence _a, bsequence _b)
 
         // a -> [a  b]
         // b -> [a ~b]
-        memmove(&(_a->s[i_n0]), &(_a->s[i_n1]), n*sizeof(uint8_t));
-        memmove(&(_b->s[i_n0]), &(_a->s[i_n1]), n*sizeof(uint8_t));
+        memmove(&(_a->s[i_n0]), &(_a->s[i_n1]), n*sizeof(unsigned char));
+        memmove(&(_b->s[i_n0]), &(_a->s[i_n1]), n*sizeof(unsigned char));
 
-        memmove(&(_a->s[i_n1]), &(_b->s[i_n1]), n*sizeof(uint8_t));
-        memmove(&(_b->s[i_n1]), &(_b->s[i_n1]), n*sizeof(uint8_t));
+        memmove(&(_a->s[i_n1]), &(_b->s[i_n1]), n*sizeof(unsigned char));
+        memmove(&(_b->s[i_n1]), &(_b->s[i_n1]), n*sizeof(unsigned char));
 
         // complement lower half
         for (i=0; i<n; i++)

@@ -5,14 +5,13 @@
 #ifndef __LIQUID_SEQUENCE_INTERNAL_H__
 #define __LIQUID_SEQUENCE_INTERNAL_H__
 
-#include <inttypes.h>
 #include "sequence.h"
 
 struct bsequence_s {
-    uint8_t * s;                // sequence array, memory pointer
+    unsigned char * s;          // sequence array, memory pointer
     unsigned int num_bits;      // number of bits in sequence
     unsigned int num_bits_msb;  // number of bits in most-significant block
-    uint8_t bit_mask_msb;       // bit mask for most-significant block
+    unsigned char bit_mask_msb; // bit mask for most-significant block
     unsigned int s_len;         // length of array, number of allocated blocks
 };
 
