@@ -11,7 +11,7 @@
 #include "../../buffer/src/buffer.h"
 
 #ifndef SYMSYNC_DEBUG
-#define SYMSYNC_DEBUG=0
+#define SYMSYNC_DEBUG 0
 #endif
 
 #define SYMSYNC_DEBUG_FILENAME "debug_symsync_internal.m"

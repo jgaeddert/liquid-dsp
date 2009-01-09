@@ -206,8 +206,8 @@ $(LIBS_UTILITY) : %.o : src/utility/src/%.c
 autotest_include.h: $(AUTOTESTS)
 	python autotest/autotest_gen.py $(AUTOTESTS)
 
-xautotest: autotest_include.h autotest/autotest.c libliquid.a
-	$(CC) $(AUTOTEST_FLAGS) libliquid.a $(LDFLAGS) autotest/autotest.c -o xautotest
+xautotest: autotest_include.h autotest/autotest.c $(SHARED_LIB)
+	$(CC) $(AUTOTEST_FLAGS) $(SHARED_LIB) $(LDFLAGS) autotest/autotest.c -o xautotest
 
 check: xautotest
 	./xautotest -v
@@ -222,8 +222,8 @@ benchmark_include.h: $(BENCHMARKS) bench/benchmarkgen.py
 	python bench/benchmarkgen.py $(BENCHMARKS)
 
 # ignore optimization flags
-benchmark: benchmark_include.h bench/bench.c libliquid.a
-	$(CC) $(BENCH_FLAGS) libliquid.a $(LDFLAGS) bench/bench.c -o benchmark
+benchmark: benchmark_include.h bench/bench.c $(SHARED_LIB)
+	$(CC) $(BENCH_FLAGS) $(SHARED_LIB) $(LDFLAGS) bench/bench.c -o benchmark
 
 bench: benchmark
 	./benchmark
