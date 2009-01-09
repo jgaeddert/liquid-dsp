@@ -10,7 +10,10 @@
 #include "../../dotprod/src/dotprod.h"
 #include "../../buffer/src/buffer.h"
 
-//#define SYMSYNC_DEBUG
+#ifndef SYMSYNC_DEBUG
+#define SYMSYNC_DEBUG=0
+#endif
+
 #define SYMSYNC_DEBUG_FILENAME "debug_symsync_internal.m"
 
 // defined:
@@ -50,7 +53,7 @@ struct SYMSYNC(_s) {
 
     enum {SHIFT,SKIP,SKIP_PRIME,STUFF} state;
 
-#ifdef SYMSYNC_DEBUG
+#if SYMSYNC_DEBUG
     FILE* fid;
     unsigned int n_debug;
 #endif
@@ -86,7 +89,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, T * _h, u
     SYMSYNC(_clear)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
 
-#ifdef SYMSYNC_DEBUG
+#if SYMSYNC_DEBUG
     q->n_debug = 0;
     q->fid = fopen(SYMSYNC_DEBUG_FILENAME, "w");
     fprintf(q->fid, "%% %s, auto-generated file\n\n", SYMSYNC_DEBUG_FILENAME);
@@ -110,7 +113,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, T * _h, u
 
 void SYMSYNC(_destroy)(SYMSYNC() _q)
 {
-#ifdef SYMSYNC_DEBUG
+#if SYMSYNC_DEBUG
     fprintf(_q->fid, "\n\n");
     fprintf(_q->fid, "t=0:%u;\n",_q->n_debug-1);
     fprintf(_q->fid, "i_skip  = find(state==%d);\n", SKIP);
@@ -295,7 +298,7 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, T mf, T dmf)
     // assert(_q->b >= 0);
     // assert(_q->b < _q->num_filters);
 
-#ifdef SYMSYNC_DEBUG
+#if SYMSYNC_DEBUG
     fprintf(_q->fid,"b_soft(%4u) = %12.5e;\n",_q->n_debug+1,_q->b_soft);
     fprintf(_q->fid,"b(%4u) = %d;\n",_q->n_debug+1,_q->b);
     fprintf(_q->fid,"state(%4u) = %d;\n", _q->n_debug+1,(int)(_q->state));
