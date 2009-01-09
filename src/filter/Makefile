@@ -24,7 +24,8 @@ all: $(EXAMPLES)
 MATH_DEPS = lmath.o
 BUFFER_DEPS = fbuffer.o cfbuffer.o gport.o gport2.o
 DOTPROD_DEPS = dotprod_rrrf.o dotprod_cccf.o dotprod_crcf.o
-DEPS = $(MATH_DEPS) $(BUFFER_DEPS) $(DOTPROD_DEPS)
+RANDOM_DEPS = random.o
+DEPS = $(MATH_DEPS) $(BUFFER_DEPS) $(DOTPROD_DEPS) $(RANDOM_DEPS)
 
 $(MATH_DEPS) :
 	cd ../math ; make $@
@@ -37,6 +38,10 @@ $(BUFFER_DEPS) :
 $(DOTPROD_DEPS) :
 	cd ../dotprod ; make $@
 	cp ../dotprod/$@ .
+
+$(RANDOM_DEPS) :
+	cd ../random ; make $@
+	cp ../random/$@ .
 
 $(OBJS) : %.o : src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
