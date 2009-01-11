@@ -14,6 +14,7 @@
 #define RESAMP(name)        FILTER_CONCAT(resamp,name)
 #define RESAMP2(name)       FILTER_CONCAT(resamp2,name)
 #define SYMSYNC(name)       FILTER_CONCAT(symsync,name)
+#define SYMSYNC2(name)      FILTER_CONCAT(symsync2,name)
 
 #define PRINTVAL(x)         printf("%12.4e", x)
 
@@ -31,4 +32,5 @@
 #include "resamp.c"
 #include "resamp2.c"
 #include "symsync.c"
+#include "symsync2.c"
 

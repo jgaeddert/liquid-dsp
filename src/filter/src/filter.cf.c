@@ -13,6 +13,7 @@
 #define RESAMP(name)        FILTER_CONCAT(cresamp,name)
 #define RESAMP2(name)       FILTER_CONCAT(cresamp2,name)
 #define SYMSYNC(name)       FILTER_CONCAT(csymsync,name)
+#define SYMSYNC2(name)      FILTER_CONCAT(csymsync2,name)
 
 #define PRINTVAL(x)         printf("%12.4e + %12.4ej", crealf(x), cimagf(x))
 
@@ -29,4 +30,5 @@
 #include "resamp.c"
 #include "resamp2.c"
 #include "symsync.c"
+#include "symsync2.c"
 

@@ -189,6 +189,26 @@ void X(_estimate_timing)(X() _q, T * _x, unsigned int _n);
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_FLOAT, float)
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CFLOAT, float complex)
 
+
+// 
+// Symbol timing recovery (symbol synchronizer, 2 samples/symbol in/out)
+//
+#define SYMSYNC2_MANGLE_FLOAT(name)  FILTER_CONCAT(symsync2,name)
+#define SYMSYNC2_MANGLE_CFLOAT(name) FILTER_CONCAT(csymsync2,name)
+
+#define LIQUID_SYMSYNC2_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
+void X(_destroy)(X() _q); \
+void X(_print)(X() _q); \
+void X(_execute)(X() _q, T * _x, unsigned int _nx, T * _y, unsigned int *_ny); \
+void X(_set_lf_bw)(X() _q, float _bt); \
+void X(_clear)(X() _q); \
+void X(_estimate_timing)(X() _q, T * _x, unsigned int _n);
+
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_FLOAT, float)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CFLOAT, float complex)
+
 //
 // 2nd-Order Loop Filter
 //
