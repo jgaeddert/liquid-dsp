@@ -233,6 +233,8 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
     else
         _q->eta = expf(-0.054050f*_q->delay +0.288521f);
 
+    _q->eta = sqrtf(_q->eta);
+
     // compute filter coefficients
     _q->beta = 2*(_q->bt)/(_q->xi + 1.0f/(4*(_q->xi)));
     _q->alpha = 2*(_q->xi)*(_q->beta);
