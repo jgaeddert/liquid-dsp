@@ -7,10 +7,10 @@ EXAMPLES = fir_filter_example iir_filter_example \
 		   matched_filter_example firpfb_example \
 		   hilbert_decim_example hilbert_interp_example \
 		   cresamp2_decim_example cresamp2_interp_example \
-		   symsync_example
+		   symsync_example csymsync_example
 
 CC = gcc
-CFLAGS = -Wall -O3 -DSYMSYNC_DEBUG=1
+CFLAGS = -Wall -O3 -DSYMSYNC_DEBUG
 LDFLAGS = -lm
 OBJS = filter.f.o filter.cf.o \
 	   filter_common.o firdes.o \

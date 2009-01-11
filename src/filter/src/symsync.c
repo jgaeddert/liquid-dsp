@@ -219,10 +219,12 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
     _q->xi = 1.0f/sqrtf(2.0f);
 
     // compensate for filter delay (empirical relationship)
-    _q->zeta = _q->delay + 1.0f;
+    //_q->zeta = _q->delay + 1.0f;
     //_q->bt = (_q->bt) / (1 + log10f(_q->zeta));
     //_q->xi = 2 * (_q->xi) * (_q->zeta);
 
+    // TODO: formulate empirical relationship based upon simulation
+    // of symbol synchronizer
     if (_q->delay < 1)
         _q->eta = 1.0f;
     else if (_q->delay < 11)
