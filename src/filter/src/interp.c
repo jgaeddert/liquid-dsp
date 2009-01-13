@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "firdes.h"
+
 #include "../../dotprod/src/dotprod.h"
 #include "../../buffer/src/buffer.h"
 
@@ -40,6 +42,33 @@ INTERP() INTERP(_create)(unsigned int _M, T *_h, unsigned int _h_len)
 
     q->w = WINDOW(_create)(q->h_len);
     WINDOW(_clear)(q->w);
+
+    return q;
+}
+
+INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
+{
+    struct fir_prototype_s * s = (struct fir_prototype_s*) _opt;
+    unsigned int h_len = 2*(s->k)*(s->m) + 1;
+    float h[h_len];
+
+    switch (_p) {
+    case FIR_RRCOS:
+        design_rrc_filter(s->k, s->m, s->beta, s->dt, h);
+        break;
+    default:
+        printf("error: interp_create_prototype(), unknown/unsupported prototype\n");
+        exit(0);
+    }
+
+    // copy filter into type-specific array
+    T ht[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        ht[i] = h[i];
+
+    unsigned int M = s->k;
+    INTERP() q = INTERP(_create)(M, ht, h_len);
 
     return q;
 }

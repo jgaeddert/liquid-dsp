@@ -21,6 +21,13 @@ typedef enum {
     FIR_GAUSS
 } fir_prototype;
 
+struct fir_prototype_s {
+    unsigned int k;
+    unsigned int m;
+    float beta;
+    float dt;
+};
+
 #define FIR_FILTER_MANGLE_FLOAT(name)  FILTER_CONCAT(fir_filter,name)
 #define FIR_FILTER_MANGLE_CFLOAT(name) FILTER_CONCAT(cfir_filter,name)
 
@@ -113,6 +120,7 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CFLOAT, float complex)
 #define LIQUID_INTERP_DEFINE_API(X,T) \
 typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _M, T *_h, unsigned int _h_len); \
+X() X(_create_prototype)(fir_prototype _p, void * _opt); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
 void X(_execute)(X() _q, T _x, T *_y);
