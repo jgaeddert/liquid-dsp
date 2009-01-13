@@ -138,15 +138,18 @@ int main() {
 #endif
 
     fprintf(fid,"tsym=2:2:length(z);\n");
+    fprintf(fid,"tsym0=tsym(1:floor(0.25*length(tsym)));\n");
+    fprintf(fid,"tsym1=tsym(ceil(0.25*length(tsym)):length(tsym));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(z/k,'-b');\n");
-    fprintf(fid,"plot(z(tsym)/k,'rx');\n");
+    fprintf(fid,"plot(z/k,'-','Color',[0.3 0.3 0.3]);\n");
+    fprintf(fid,"plot(z(tsym0)/k,'bx');\n");
+    fprintf(fid,"plot(z(tsym1)/k,'rx');\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square; grid on;\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature');\n");
-    fprintf(fid,"legend(['z'],['sym'],1);\n");
+    fprintf(fid,"legend(['z'],['sym (first 25%%)'],['sym (last 75%%)'],1);\n");
     fclose(fid);
 
     printf("results written to %s.\n", DEBUG_FILENAME);
