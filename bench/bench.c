@@ -50,7 +50,8 @@ typedef struct {
 
 // helper functions:
 void print_help();
-void estimate_cpu_speed(void);
+void estimate_cpu_clock(void);
+void set_num_trials_from_cpu_speed(void);
 void execute_benchmark(bench_t* _benchmark, bool _verbose);
 void execute_package(package_t* _package, bool _verbose);
 void print_benchmark_results(bench_t* _benchmark);
@@ -59,6 +60,7 @@ double calculate_execution_time(struct rusage, struct rusage);
 
 unsigned long int num_trials = 1<<12;
 float runtime=50e-3f;
+float cpu_clock = 1.0f; // cpu clock speed (Hz)
 
 // main function
 int main(int argc, char *argv[])
@@ -72,14 +74,23 @@ int main(int argc, char *argv[])
     unsigned int package_id = 0;
     bool verbose = true;
     bool autoscale = true;
+    bool cpu_clock_detect = true;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"en:b:p:t:lLhvq")) != EOF){
+    while((d = getopt(argc,argv,"ec:n:b:p:t:lLhvq")) != EOF){
         switch (d) {
         case 'e':
-            estimate_cpu_speed();
+            estimate_cpu_clock();
             return 0;
+        case 'c':
+            cpu_clock = atof(optarg);
+            if (cpu_clock < 0) {
+                printf("error: cpu clock speed is negative (%f)\n", cpu_clock);
+                return -1;
+            }
+            cpu_clock_detect = false;
+            break;
         case 'n':
             num_trials = atoi(optarg);
             autoscale = false;
@@ -144,8 +155,11 @@ int main(int argc, char *argv[])
         // do nothing
     }
 
+    if (cpu_clock_detect)
+        estimate_cpu_clock();
+
     if (autoscale)
-        estimate_cpu_speed();
+        set_num_trials_from_cpu_speed();
 
     switch (mode) {
     case RUN_ALL:
@@ -175,6 +189,7 @@ void print_help()
     printf("bench options:\n");
     printf("  -h : prints this help file\n");
     printf("  -e : estimate cpu clock frequency and exit\n");
+    printf("  -c : set cpu clock frequency (Hz)\n");
     printf("  -n<num_trials>\n");
     printf("  -p<package_index>\n");
     printf("  -b<benchmark_index>\n");
@@ -186,7 +201,7 @@ void print_help()
 }
 
 // run basic benchmark to estimate CPU clock frequency
-void estimate_cpu_speed(void)
+void estimate_cpu_clock(void)
 {
     printf("  estimating cpu clock frequency...\n");
     unsigned long int i, n = 1<<4;
@@ -211,11 +226,14 @@ void estimate_cpu_speed(void)
     } while (extime < 0.5 && n < (1<<28));
 
     // estimate cpu clock frequency
-    double cpu_clock = 23.9 * n / extime;
+    cpu_clock = 23.9 * n / extime;
 
     printf("  performed %ld trials in %5.1f ms\n", n, extime * 1e3);
     printf("  estimated clock speed: %E Hz\n", cpu_clock);
+}
 
+void set_num_trials_from_cpu_speed(void)
+{
     unsigned long int min_trials = 256;
     num_trials = (unsigned long int) ( cpu_clock / 10e3 );
     num_trials = (num_trials < min_trials) ? min_trials : num_trials;
@@ -282,8 +300,9 @@ void print_benchmark_results(bench_t* _b)
         rate_format /= 1e3;
         rate_units = "k ";
     }
-    printf("    %-3u: %-22s: %8d trials in %7.3f %2s (%7.3f %strials/s)\n",
-        _b->id, _b->name, _b->num_trials, extime_format, extime_units, rate_format, rate_units);
+    float cycles_per_trial = cpu_clock / (_b->rate);
+    printf("    %-3u: %-22s: %8d trials in %7.3f %2s (%7.3f %st/s, %6.1f cycles/t)\n",
+        _b->id, _b->name, _b->num_trials, extime_format, extime_units, rate_format, rate_units, cycles_per_trial);
 }
 
 void print_package_results(package_t* _package)
