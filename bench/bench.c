@@ -54,6 +54,8 @@ void estimate_cpu_clock(void);
 void set_num_trials_from_cpu_speed(void);
 void execute_benchmark(bench_t* _benchmark, bool _verbose);
 void execute_package(package_t* _package, bool _verbose);
+
+char convert_units(float * _s);
 void print_benchmark_results(bench_t* _benchmark);
 void print_package_results(package_t* _package);
 double calculate_execution_time(struct rusage, struct rusage);
@@ -266,43 +268,43 @@ void execute_package(package_t* _package, bool _verbose)
     }
 }
 
+// convert raw value into metric units,
+//   example: "0.01397s" -> "13.97 ms"
+char convert_units(float * _v)
+{
+    char unit;
+    if (*_v < 1e-9)     {   (*_v) *= 1e12;  unit = 'p';}
+    else if (*_v < 1e-6){   (*_v) *= 1e9;   unit = 'n';}
+    else if (*_v < 1e-3){   (*_v) *= 1e6;   unit = 'u';}
+    else if (*_v < 1e+0){   (*_v) *= 1e3;   unit = 'm';}
+    else if (*_v < 1e3) {   (*_v) *= 1e+0;  unit = ' ';}
+    else if (*_v < 1e6) {   (*_v) *= 1e-3;  unit = 'k';}
+    else if (*_v < 1e9) {   (*_v) *= 1e-6;  unit = 'M';}
+    else if (*_v < 1e12){   (*_v) *= 1e-9;  unit = 'G';}
+    else                {   (*_v) *= 1e-12; unit = 'T';}
+
+    return unit;
+}
+
 void print_benchmark_results(bench_t* _b)
 {
-    // format time output to use units
+    // format time (seconds)
     float extime_format = _b->extime;
-    char *extime_units = "";
-    if (extime_format < 1e-9) {
-        extime_format *= 1e12;
-        extime_units = "ps";
-    } else if (extime_format < 1e-6) {
-        extime_format *= 1e9;
-        extime_units = "ns";
-    } else if (extime_format < 1e-3) {
-        extime_format *= 1e6;
-        extime_units = "us";
-    } else if (extime_format < 1) {
-        extime_format *= 1e3;
-        extime_units = "ms";
-    } else {
-        extime_units = "s";
-    }
+    char extime_units = convert_units(&extime_format);
 
-    // format rate output to use units
+    // format rate (trials/second)
     float rate_format = _b->rate;
-    char *rate_units = "";
-    if (rate_format > 1e9) {
-        rate_format /= 1e9;
-        rate_units = "G ";
-    } else if (rate_format > 1e6) {
-        rate_format /= 1e6;
-        rate_units = "M ";
-    } else if (rate_format > 1e3) {
-        rate_format /= 1e3;
-        rate_units = "k ";
-    }
+    char rate_units = convert_units(&rate_format);
+
+    // format processor efficiency (cycles/trial)
     float cycles_per_trial = cpu_clock / (_b->rate);
-    printf("    %-3u: %-22s: %8d trials in %7.3f %2s (%7.3f %st/s, %6.1f cycles/t)\n",
-        _b->id, _b->name, _b->num_trials, extime_format, extime_units, rate_format, rate_units, cycles_per_trial);
+    char cycles_units = convert_units(&cycles_per_trial);
+
+    printf("    %-3u: %-22s: %8d trials in %7.3f %cs (%7.3f %c t/s, %6.2f %c cycles/t)\n",
+        _b->id, _b->name, _b->num_trials,
+        extime_format, extime_units,
+        rate_format, rate_units,
+        cycles_per_trial, cycles_units);
 }
 
 void print_package_results(package_t* _package)
