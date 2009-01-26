@@ -231,7 +231,10 @@ void estimate_cpu_clock(void)
     cpu_clock = 23.9 * n / extime;
 
     printf("  performed %ld trials in %5.1f ms\n", n, extime * 1e3);
-    printf("  estimated clock speed: %E Hz\n", cpu_clock);
+    
+    float clock_format = cpu_clock;
+    char clock_units = convert_units(&clock_format);
+    printf("  estimated clock speed: %7.3f %cHz\n", clock_format, clock_units);
 }
 
 void set_num_trials_from_cpu_speed(void)
@@ -288,6 +291,10 @@ char convert_units(float * _v)
 
 void print_benchmark_results(bench_t* _b)
 {
+    // format trials (iterations)
+    float trials_format = (float)(_b->num_trials);
+    char trials_units = convert_units(&trials_format);
+
     // format time (seconds)
     float extime_format = _b->extime;
     char extime_units = convert_units(&extime_format);
@@ -300,8 +307,9 @@ void print_benchmark_results(bench_t* _b)
     float cycles_per_trial = cpu_clock / (_b->rate);
     char cycles_units = convert_units(&cycles_per_trial);
 
-    printf("    %-3u: %-22s: %8d trials in %7.3f %cs (%7.3f %c t/s, %6.2f %c cycles/t)\n",
-        _b->id, _b->name, _b->num_trials,
+    printf("    %-3u: %-22s: %6.2f %c trials in %6.2f %cs (%7.3f %c t/s, %6.2f %c cycles/t)\n",
+        _b->id, _b->name,
+        trials_format, trials_units,
         extime_format, extime_units,
         rate_format, rate_units,
         cycles_per_trial, cycles_units);
