@@ -10,7 +10,7 @@ all: $(TESTS)
 CC = gcc
 CFLAGS = -Wall -O3
 LDFLAGS = -lm
-OBJS = count_bits.o pack_bytes.o
+OBJS = count_bits.o pack_bytes.o msb_index.port.o
 HEADERS = src/utility.h
 
 $(OBJS) : %.o : src/%.c $(HEADERS)

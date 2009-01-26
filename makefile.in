@@ -28,7 +28,7 @@ LIBS_NCO = nco.o pll.o
 LIBS_OPTIM = pattern_set.o
 LIBS_RANDOM = random.o scramble.o
 LIBS_SEQUENCE = bsequence.o msequence.o
-LIBS_UTILITY = count_bits.o pack_bytes.o
+LIBS_UTILITY = count_bits.o pack_bytes.o msb_index.o # msb_index.x86.o
 
 INCLUDE_HEADERS = \
 	src/agc/src/agc.h \
