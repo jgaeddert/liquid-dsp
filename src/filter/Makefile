@@ -3,6 +3,7 @@
 #
 
 EXAMPLES = fir_filter_example iir_filter_example \
+		   firdes_kaiser_example \
 		   interp_example decim_example \
 		   matched_filter_example firpfb_example \
 		   hilbert_decim_example hilbert_interp_example \

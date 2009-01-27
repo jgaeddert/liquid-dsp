@@ -45,13 +45,15 @@ void fir_design_halfband_windowed_sinc(float * _h, unsigned int _n)
 //  _h      : output coefficient buffer
 void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h) {
     // chooise kaiser beta parameter (approximate)
-    float beta = 
-        -1.5637e-05f * _slsl * _slsl +
-         1.1656e-01f * _slsl +
-        -1.3230e+00f;
-
-    if (beta < 2.0f) beta = 2.0f;
-    else if (beta > 12.0f)  beta = 12.0f;
+    // from:
+    //  P.P. Vaidyanathan, "Multirate Systems and Filter Banks
+    float beta;
+    if (_slsl > 50.0f)
+        beta = 0.1102f*(_slsl - 8.7f);
+    else if (_slsl > 21.0f)
+        beta = 0.5842*powf(_slsl - 21, 0.4f) + 0.07886f*(_slsl - 21);
+    else
+        beta = 0.0f;
 
     float t, h1, h2; 
     unsigned int i;
