@@ -23,14 +23,11 @@ int main() {
 
 #if DEBUG
     FILE*fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% fir_filter_example.m: auto-generated file\n\n");
+    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\n",h_len);
     fprintf(fid,"fc=%12.4e;\n",fc);
     fprintf(fid,"slsl=%12.4e;\n",slsl);
-
-    for (i=0; i<h_len; i++)
-        fprintf(fid,"h(%4u) = %12.4e;\n", i+1, h[i]);
 #endif
 
     for (i=0; i<h_len; i++) {
@@ -50,7 +47,7 @@ int main() {
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"title(['Filter design/Kaiser window f_c: %f, S_L: %f, h: %u']);\n",
             fc, -slsl, h_len);
-    fprintf(fid,"axis([-0.5 0.5 -slsl-40 20]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -slsl-40 10]);\n");
 
     fclose(fid);
     printf("results written to %s\n", DEBUG_FILENAME);
