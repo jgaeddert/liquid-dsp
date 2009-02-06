@@ -15,13 +15,13 @@
 int main() {
     // options
     unsigned int k=2;
-    unsigned int m=5;
+    unsigned int m=3;
     float beta=0.3f;
     unsigned int num_filters=64;
     unsigned int num_symbols=256;
 
-    float bt=0.1f;      // loop filter bandwidth
-    float dt=0.5f;      // fractional sample offset
+    float bt=0.05f;     // loop filter bandwidth
+    float dt=0.3f;      // fractional sample offset
     unsigned int ds=1;  // additional symbol delay
     
     // use random data or 101010 phasing pattern
@@ -130,8 +130,8 @@ int main() {
     fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b');\n");
     fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z/k),  'xr');\n");
     fprintf(fid,"hold off;\n");
-    fprintf(fid,"xlabel('symbol index');\n");
-    fprintf(fid,"ylabel('symbol/signal');\n");
+    fprintf(fid,"xlabel('Symbol Index');\n");
+    fprintf(fid,"ylabel('Output Signal');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"legend('sym in','interp','mf','sym out',0);\n");
 
@@ -139,12 +139,12 @@ int main() {
     fprintf(fid,"t1=ceil(0.25*length(z)):length(z);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(z(t0)/k,'bx');\n");
-    fprintf(fid,"plot(z(t1)/k,'rx');\n");
+    fprintf(fid,"plot(z(t0)/k,'x','Color',[0.6 0.6 0.6]);\n");
+    fprintf(fid,"plot(z(t1)/k,'x','Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square; grid on;\n");
-    fprintf(fid,"xlabel('in-phase');\n");
-    fprintf(fid,"ylabel('quadrature');\n");
+    fprintf(fid,"xlabel('In-phase');\n");
+    fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"legend(['first 25%%'],['last 75%%'],1);\n");
     fclose(fid);
 

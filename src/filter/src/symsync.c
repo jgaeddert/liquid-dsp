@@ -120,13 +120,16 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
     fprintf(_q->fid, "i_stuff = find(state==%d);\n", STUFF);
     fprintf(_q->fid, "figure;\n");
     fprintf(_q->fid, "hold on;\n");
-    fprintf(_q->fid, "plot(t,b,'Color',[0.8 0.8 0.8]);\n");
-    fprintf(_q->fid, "plot(t,b_soft);\n");
+    fprintf(_q->fid, "plot(t,b,'Color',[0.5 0.5 0.5]);\n");
+    fprintf(_q->fid, "plot(t,b_soft,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
     fprintf(_q->fid, "if length(i_skip>0),  plot(t(i_skip), b_soft(i_skip),'rx'); end;\n");
     fprintf(_q->fid, "if length(i_stuff>0), plot(t(i_stuff),b_soft(i_stuff),'bx'); end;\n");
     fprintf(_q->fid, "hold off;\n");
+    fprintf(_q->fid, "grid on;\n");
     fprintf(_q->fid, "axis([t(1) t(end) -1 num_filters]);\n");
     fprintf(_q->fid, "legend('b','b (soft)',0);\n");
+    fprintf(_q->fid, "xlabel('Symbol Index')\n");
+    fprintf(_q->fid, "ylabel('Polyphase Filter Index')\n");
     fprintf(_q->fid, "%% done.\n");
     fclose(_q->fid);
     printf("symsync: internal results written to %s.\n", SYMSYNC_DEBUG_FILENAME);
