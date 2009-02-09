@@ -5,6 +5,10 @@
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
+#ifndef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <complex.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -1107,5 +1111,8 @@ void repack_bytes(
     unsigned int output_length,
     unsigned int *num_written);
 
+#ifndef __cplusplus
+} /* extern "C" */
+#endif /* __cplusplus */
 
 #endif // __LIQUID_H__

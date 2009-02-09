@@ -1,0 +1,220 @@
+% ------------------------------------------------------------------
+%
+%   TITLE: LIQUID documentation
+% AUTHORS: Joseph D. Gaeddert et al.
+% CREATED: February 7, 2009
+% REVISED: 
+%     URL: http://computing.ece.vt.edu/~jgaeddert/
+%          https://ganymede.ece.vt.edu/trac/backup/browser/latex/prelim/
+%
+% ------------------------------------------------------------------
+ 
+\documentclass[11pt,twoside]{report}
+% ------------------- DOCUMENT VARIABLES -------------------
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{8.5in}
+\setlength{\evensidemargin}{0in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\topmargin}{0in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.1in}
+
+% ------------------- BIBLIOGRAPHY STYLE -------------------
+\usepackage{natbib}
+%\bibliographystyle{plain} % note the change here
+\bibliographystyle{IEEEtran}
+\bibpunct{[}{]}{,}{n}{}{;}  % define bibliography punctuation
+% The six mandatory arguments for \bibpunct are:
+%   1. opening bracket: '(', '[', '{', or '<'
+%   2. closing bracket: ')', ']', '}', or '>'
+%   3. separator between multiple citations: ';' or ','
+%   4. citation style: 'n' for numerical style, 's' for numerical superscript style, or 'a' for author–year style
+%   5. punctuation between the author names and the year
+%   6. punctuation between years or numbers when common author lists are suppressed: ',' or ';' 
+
+% ------------------- GRAPHICS PACKAGES -------------------
+%\usepackage{epsf}
+%\usepackage{graphicx}
+\ifx\pdfoutput\undefined
+\usepackage{graphicx}
+\else
+\usepackage[pdftex]{graphicx}
+\fi
+\usepackage{epsfig}
+\usepackage{epstopdf}
+\usepackage{colortbl}
+\usepackage{color}
+
+%\usepackage{tabularx}
+\usepackage{ctable} % \toprule, \midrule, \bottomrule
+\setlength{\heavyrulewidth}{0.1em} % modify thickness of \toprule, \bottomrule
+\newcommand{\otoprule}{\midrule[\heavyrulewidth]}
+\usepackage{subfigure}
+\usepackage{multirow} % for tables
+%\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{fancyvrb}
+\usepackage{acronym}
+
+% tabular: \hline (thin) \hline\hline (thick)
+% from: http://www.faqs.org/faqs/tex-faq/ (see #44)
+\setlength{\doublerulesep}{\arrayrulewidth}
+
+%--------- NEW COMMANDS -------------------
+\newcommand{\NA}{\scriptsize{NA}}
+\newcommand{\E}{\scriptsize{E}}
+\newcommand{\tRMS}{\ensuremath{\tau_{rms}}}
+\newcommand{\tmED}{\ensuremath{\bar{\tau}}}
+\newcommand{\Np}{\ensuremath{N_p}}
+\newcommand{\ua}{\ensuremath{\uparrow}}
+\newcommand{\da}{\ensuremath{\downarrow}}
+\newcommand{\sinc}{\textup{sinc}}
+\newcommand{\etal}{{\it et al.}}
+\newcommand{\wavt}{W@VT}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\ciren}{C{\sc iren}}
+
+%--------- CAPTION OPTIONS -------------------
+\usepackage[small,bf]{caption}
+\setcaptionwidth{15cm}
+\setlength{\belowcaptionskip}{0.5cm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             MAIN DOCUMENT
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% ------------------- DEFINE LISTINGS -------------------
+\input{highlight.sty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             TITLE PAGE
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\thispagestyle{empty}
+\pagenumbering{roman}
+\begin{center}
+
+{\huge On the Use of Polyphase Filterbanks for Reducing Power Consumption
+in Dynamic Spectrum Agile Software-Defined Radios}
+
+\vfill
+
+Joseph D. Gaeddert
+
+\vfill
+
+Preliminary examination report submitted to the Faculty of the \\
+Virginia Polytechnic Institute and State University \\
+in partial fulfillment of the requirements for the degree of
+
+\vfill
+
+Doctor of Philosophy \\
+in \\
+Electrical Engineering
+
+\vfill
+
+Dr. Jeffrey H. Reed, Chair \\
+Dr. Charles Bostian \\
+Dr. Claudio da Silva \\
+Dr. Robert P. Gilles \\
+Dr. Krishnan Ramu \\
+\vfill
+
+January 30, 2009 \\
+Blacksburg, Virginia
+
+\vfill
+
+{\it Keywords:}
+polyphase filterbanks,
+OFDM/OQAM,
+power consumption,
+cognitive radio,
+software-defined radio,
+dynamic spectrum access
+\\
+
+\end{center}
+
+\pagebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             TABLE OF CONTENTS
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tableofcontents
+\pagebreak
+
+%\listoffigures
+%\pagebreak
+
+%\listoftables
+%\pagebreak
+
+\section*{List of Abbreviations}
+\begin{acronym}
+  \acro{3G}{$3^{rd}$ generation}
+  \acro{API}{application program interface}
+  \acro{AWGN}{additive white Gauss noise}
+  \acro{BER}{bit error rate}
+  \acro{CE}{cognitive engine}
+  \acro{CIREN}{cognitively intrepid radio emergency network}
+  \acro{CPU}{central processing unit}
+  \acro{CR}{cognitive radio}
+  \acro{DSA}{dynamic spectrum access}
+  \acro{DSP}{digital signal processing}
+  \acro{EQ}{equalizer}
+  \acro{FEC}{forward error correction}
+  \acro{FIR}{finite impulse response}
+  \acro{FRS}{family radio service}
+  \acro{GPP}{general purpose processor}
+  \acro{OFDM}{orthogonal frequency division multiplexing}
+  \acro{OQAM}{offset quadrature amplitude modulation}
+  \acro{QAM}{quadrature amplitude modulation}
+  \acro{QoS}{quality of service}
+  \acro{PSK}{phase-shift keying}
+  \acro{PTP}{point-to-point}
+  \acro{SDR}{software-defined radio}
+  \acro{SNR}{signal-to-noise ratio}
+  \acro{VB}{voice broadcast}
+  \acro{VLSI}{very large scale integration}
+  \acro{WCDMA}{wideband code divisional multiple access}
+\end{acronym}
+
+\pagenumbering{arabic}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             SECTIONS
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% modem, filter, etc.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             BIBLIOGRAPHY
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoublepage
+%\bibliography{../IEEEtranBST/IEEEabrv,liquid}
+
+
+% In LaTeX, each appendix is a "chapter"
+\appendix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             APPENDIX A
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+
