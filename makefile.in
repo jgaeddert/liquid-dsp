@@ -12,6 +12,7 @@ CC = @CC@
 # Liquid modules
 modules		:=	\
 	buffer		\
+	filter		\
 	modem 		\
 	utility
 
@@ -24,8 +25,8 @@ examples	:=
 autotests	:=
 benchmarks	:=
 
-objects		= $(subst .c,.o,$(sources))
-dependencies	= $(subst .c,.d,$(sources))
+objects		= $(patsubst %.c,%.o,$(sources))
+dependencies	= $(patsubst %.c,%.d,$(sources))
 
 include_dirs	:= . include
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
