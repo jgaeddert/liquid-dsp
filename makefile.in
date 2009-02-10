@@ -25,7 +25,7 @@ benchmarks	:=
 objects		= $(subst .c,.o,$(sources))
 dependencies	= $(subst .c,.d,$(sources))
 
-include_dirs	:= . include
+include_dirs	:= include
 CFLAGS		+= $(addprefix -I ,$(include_dirs))
 vpath %.h $(include_dirs)
 
@@ -77,8 +77,11 @@ libliquid.so: $(libraries)
 autotest_include.h: $(autotests)
 	python autotest/autotest_gen.py $(autotests)
 
-xautotest: autotest_include.h autotest/autotest.c $(SHARED_LIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SHARED_LIB) autotest/autotest.c -o $@
+xautotest.o: autotest_include.h autotest/autotest.c
+	$(CC) $(CFLAGS) autotest/autotest.c -c -o $@
+
+xautotest: xautotest.o $(objects)
+	$(CC) $(LDFLAGS) xautotest.o $(objects) -o $@
 
 check: xautotest
 	./xautotest -v
