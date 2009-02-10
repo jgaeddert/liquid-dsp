@@ -25,7 +25,7 @@ benchmarks	:=
 objects		= $(subst .c,.o,$(sources))
 dependencies	= $(subst .c,.d,$(sources))
 
-include_dirs	:= include
+include_dirs	:= . include
 CFLAGS		+= $(addprefix -I ,$(include_dirs))
 vpath %.h $(include_dirs)
 
@@ -67,7 +67,22 @@ libliquid.dylib: $(libraries)
 libliquid.so: $(LIBS)
 	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
 
+# Dependencies
+%.d: %.c
+	gcc -M $< | sed 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@.tmp
+	mv $@.tmp $@
 
+# Autotests
+autotest_include.h: $(autotests)
+	python autotest/autotest_gen.py $(autotests)
+
+xautotest: autotest_include.h autotest/autotest.c libliquid.a
+	$(CC) $(CFLAGS) libliquid.a autotest/autotest.c -o $@
+
+check: xautotest
+	./xautotest -v
+
+# Clean
 .PHONY: clean
 clean:
 	$(RM) $(objects)
@@ -77,7 +92,4 @@ clean:
 	$(RM) $(extra_clean)
 	$(RM) $(SHARED_LIB)
 
-%.d: %.c
-	gcc -M $< | sed 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@.tmp
-	mv $@.tmp $@
 

@@ -1,8 +1,13 @@
 #ifndef __MODEM_AUTOTEST_H__
 #define __MODEM_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/modem.h"
+//#include "../../../autotest/autotest.h"
+//#include "../src/modem.h"
+//#include "../src/modem_internal.h"
+
+#include "autotest/autotest.h"
+//#include "liquid.composite.h"
+#include "src/modem/src/modem.h"
 //#include "../src/modem_internal.h"
 
 // Help function to keep code base small
