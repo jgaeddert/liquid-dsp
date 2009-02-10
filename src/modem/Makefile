@@ -2,27 +2,18 @@
 # Makefile for modem module
 #
 
-EXAMPLES = modem_example
 
-all: $(EXAMPLES)
+local_dir	:= src/modem
+local_lib	:= libmodem.a
+local_src	:= \
+	src/modem.c \
+	src/modem_create.c \
+	src/modem_common.c \
+	src/modulate.c \
+	src/demodulate.c
 
-CC = gcc
-CFLAGS = -Wall -O3
-LDFLAGS = -lm
-OBJS = modem.o modem_create.o modem_common.o modulate.o demodulate.o
+# accumulate
+libraries	+= $(local_lib)
+sources		+= $(local_src)
 
-UTILITY_DEPS = count_bits.o
-DEPS = $(UTILITY_DEPS)
-
-$(UTILITY_DEPS) :
-	cd ../utility ; make $@
-	cp ../utility/$@ .
-
-$(OBJS) : %.o : src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(EXAMPLES) : %_example : examples/%_example.c $(OBJS) $(DEPS)
-	$(CC) $(CFLAGS) $(OBJS) $(DEPS) $(LDFLAGS) $< -o $@
-
-clean:
-	rm -f $(OBJS) $(EXAMPLES) $(DEPS)
+include ../../common.mk

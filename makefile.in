@@ -8,236 +8,66 @@ exec_prefix = @exec_prefix@
 VPATH = @srcdir@
 
 CC = @CC@
-LIBS_AGC = agc.o
-LIBS_ANN = ann.o ann_layer.o ann_neuron.o
-LIBS_BUFFER = fbuffer.o cfbuffer.o uibuffer.o \
-			  metadata.o \
-			  gport.o gport2.o
-LIBS_CHANNEL = awgn_channel.o ricek_channel.o channel.o
-LIBS_DOTPROD = dotprod_rrrf.o dotprod_cccf.o dotprod_crcf.o
-LIBS_FEC = c_ones_mod2.o checksum.o crc.o fec.o fec_pass.o fec_rep.o fec_hamming74.o
-LIBS_FFT = fft_create_plan.o fft_execute.o fft_shift.o asgram.o
-LIBS_FILTER = filter.f.o filter.cf.o \
-			  filter_common.o rrcos.o firdes.o \
-			  lf2.o
-LIBS_FRAMING = framesync.f.o framesync.cf.o packetizer.o
-LIBS_INTERLEAVER = interleaver.o interleaver_create.o interleaver_permute.o
-LIBS_MATH = lmath.o fmatrix.o cfmatrix.o
-LIBS_MODEM = modem.o modulate.o demodulate.o modem_common.o modem_create.o
-LIBS_NCO = nco.o pll.o
-LIBS_OPTIM = pattern_set.o
-LIBS_RANDOM = random.o scramble.o
-LIBS_SEQUENCE = bsequence.o msequence.o
-LIBS_UTILITY = count_bits.o pack_bytes.o msb_index.o # msb_index.x86.o
 
-INCLUDE_HEADERS = \
-	src/agc/src/agc.h \
-	src/buffer/src/buffer.h \
-	src/buffer/src/metadata.h \
-	src/channel/src/channel.h \
-	src/dotprod/src/dotprod.h \
-	src/fec/src/fec.h \
-	src/fft/src/fft.h \
-	src/filter/src/filter_common.h \
-	src/filter/src/filter.h \
-	src/filter/src/firdes.h \
-	src/framing/src/framing.h \
-	src/interleaver/src/interleaver.h \
-	src/math/src/lmath.h \
-	src/math/src/matrix.h \
-	src/modem/src/modem_common.h \
-	src/modem/src/modem.h \
-	src/nco/src/nco.h \
-	src/optim/src/optim.h \
-	src/random/src/random.h \
-	src/random/src/scramble.h \
-	src/sequence/src/sequence.h \
-	src/utility/src/utility.h
+# non-recursive make
+modules		:= src/utility
 
-LIBS = $(LIBS_AGC) $(LIBS_ANN) $(LIBS_BUFFER) $(LIBS_DOTPROD) \
-	   $(LIBS_FEC) $(LIBS_FFT) $(LIBS_FILTER) $(LIBS_INTERLEAVER) \
-	   $(LIBS_MATH) $(LIBS_MODEM) $(LIBS_NCO) $(LIBS_OPTIM) \
-	   $(LIBS_RANDOM) $(LIBS_SEQUENCE) $(LIBS_UTILITY) \
-	   $(LIBS_CHANNEL) \
-	   $(LIBS_FRAMING)
+# Collect information in these variables
+programs	:=
+sources		:=
+libraries	:=
+extra_clean	:=
+examples	:=
+autotests	:=
+benchmarks	:=
 
-AUTOTESTS = \
-	src/agc/tests/agc_autotest.h \
-	src/buffer/tests/cbuffer_autotest.h \
-	src/buffer/tests/sbuffer_autotest.h \
-	src/buffer/tests/gport2_autotest.h \
-	src/channel/tests/channel_autotest.h \
-	src/dotprod/tests/dotprod_rrrf_autotest.h \
-	src/fec/tests/checksum_autotest.h \
-	src/fec/tests/crc_autotest.h \
-	src/fec/tests/fec_autotest.h \
-	src/fec/tests/fec_rep3_autotest.h \
-	src/fec/tests/fec_hamming74_autotest.h \
-	src/fft/tests/fft_autotest.h \
-	src/fft/tests/fft_radix2_autotest.h \
-	src/fft/tests/fft_shift_autotest.h \
-	src/filter/tests/decim_autotest.h \
-	src/filter/tests/firdes_autotest.h \
-	src/filter/tests/firhilb_autotest.h \
-	src/filter/tests/firpfb_autotest.h \
-	src/filter/tests/fir_filter_autotest.h \
-	src/filter/tests/iir_filter_autotest.h \
-	src/filter/tests/interp_autotest.h \
-	src/framing/tests/packetizer_autotest.h \
-	src/interleaver/tests/interleaver_autotest.h \
-	src/math/tests/math_autotest.h \
-	src/modem/tests/modem_autotest.h \
-	src/nco/tests/nco_autotest.h \
-	src/nco/tests/pll_autotest.h \
-	src/random/tests/random_autotest.h \
-	src/sequence/tests/msequence_autotest.h \
-	src/sequence/tests/complementary_codes_autotest.h \
-	src/utility/tests/count_bits_autotest.h \
-	src/utility/tests/pack_bytes_autotest.h
+objects		= $(subst .c,.o,$(sources))
+dependencies	= $(subst .c,.d,$(sources))
 
-BENCHMARKS = \
-	src/agc/bench/agc_benchmark.h \
-	src/buffer/bench/gport_benchmark.h \
-	src/buffer/bench/gport_threaded_benchmark.h \
-	src/buffer/bench/gport2_benchmark.h \
-	src/buffer/bench/gport2_threaded_benchmark.h \
-	src/dotprod/bench/dotprod_rrrf_benchmark.h \
-	src/dotprod/bench/dotprod_cccf_benchmark.h \
-	src/filter/bench/iir_filter_benchmark.h \
-	src/filter/bench/interp_benchmark.h \
-	src/filter/bench/firhilb_benchmark.h \
-	src/filter/bench/decim_benchmark.h \
-	src/filter/bench/resamp2_benchmark.h \
-	src/fec/bench/fec_encode_benchmark.h \
-	src/fec/bench/fec_decode_benchmark.h \
-	src/fft/bench/fft_benchmark.h \
-	src/interleaver/bench/interleaver_benchmark.h \
-	src/modem/bench/modem_modulate_benchmark.h \
-	src/modem/bench/modem_demodulate_benchmark.h \
-	src/nco/bench/nco_benchmark.h \
-	src/random/bench/random_benchmark.h
+include_dirs	:= include
+CFLAGS		+= $(addprefix -I ,$(include_dirs))
+vpath %.h $(include_dirs)
 
-CFLAGS = -g -O2 -Wall -I. @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
-BENCH_FLAGS = -g -Wall -pthread @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
-AUTOTEST_FLAGS = $(CFLAGS)
-LDFLAGS = -lm
+CFLAGS		+= -g -O2 -Wall -I. @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
 
-SHARED_LIB = @SH_LIB@
+MV	:= mv -f
+RM	:= rm -f
+SED	:= sed
 
+all:
+
+include src/utility/module.mk
+include src/modem/module.mk
+
+SHARED_LIB	= @SH_LIB@
+.PHONY: all
 all: libliquid.a $(SHARED_LIB)
 
-install:
-	@echo "installing..."
-	mkdir -p @libdir@
-	install -m 644 -p $(SHARED_LIB) libliquid.a @libdir@
-	@REBIND@
-	mkdir -p @includedir@
-	mkdir -p @includedir@/liquid
-	install -m 644 -p include/liquid.h @includedir@/liquid
-	install -m 644 -p $(INCLUDE_HEADERS) @includedir@/liquid
-	
-libliquid.a: $(LIBS)
-	ar r $@ $^
-	ranlib libliquid.a
+.PHONY: libraries
+libraries: $(libraries)
 
+# Liquid library definition
+libliquid.a: $(objects)
+	ar r $@ $^
+	ranlib $@
+
+#
+# gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 # darwin
-libliquid.dylib: $(LIBS)
+libliquid.dylib: $(libraries)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^
 
 # linux, et al
-#   CLIB: -lc_p (--enable-profile), -lc (--disable-profile)
 libliquid.so: $(LIBS)
-	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive @CLIB@
+	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
 
-$(LIBS_AGC) : %.o : src/agc/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
 
-$(LIBS_ANN) : %.o : src/ann/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+.PHONY: clean
+clean:
+	rm -f $(objects) $(programs) $(libraries) $(dependencies) \
+		$(extra_clean) $(SHARED_LIB)
 
-$(LIBS_BUFFER) : %.o : src/buffer/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+%.d: %.c
+	gcc -M $< | sed 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@.tmp
+	mv $@.tmp $@
 
-$(LIBS_CHANNEL) : %.o : src/channel/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_DOTPROD) : %.o : src/dotprod/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_FEC) : %.o : src/fec/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_FFT) : %.o : src/fft/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_FILTER) : %.o : src/filter/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_FRAMING) : %.o : src/framing/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_INTERLEAVER) : %.o : src/interleaver/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_MATH) : %.o : src/math/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_MODEM) : %.o : src/modem/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_NCO) : %.o : src/nco/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_OPTIM) : %.o : src/optim/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_RANDOM) : %.o : src/random/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_SEQUENCE) : %.o : src/sequence/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIBS_UTILITY) : %.o : src/utility/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-#
-# Autotests
-#
-autotest_include.h: $(AUTOTESTS)
-	python autotest/autotest_gen.py $(AUTOTESTS)
-
-xautotest: autotest_include.h autotest/autotest.c $(LIBS)
-	$(CC) $(AUTOTEST_FLAGS) $(LIBS) $(LDFLAGS) autotest/autotest.c -o xautotest
-
-check: xautotest
-	./xautotest -v
-
-check-clean:
-	rm -f autotest_include.h xautotest
-
-# 
-# Benchmarks
-#
-benchmark_include.h: $(BENCHMARKS) bench/benchmarkgen.py
-	python bench/benchmarkgen.py $(BENCHMARKS)
-
-# ignore optimization flags
-benchmark: benchmark_include.h bench/bench.c $(LIBS)
-	$(CC) $(BENCH_FLAGS) $(LIBS) $(LDFLAGS) bench/bench.c -o benchmark
-
-bench: benchmark
-	./benchmark
-
-bench-clean:
-	rm -f benchmark_include.h benchmark
-
-#
-# Examples
-#
-
-clean: check-clean bench-clean
-	rm -f *.o $(SHARED_LIB) *.a
-
-distclean: clean
-	rm -f config.log config.cache config.status config.h makefile
-	rm -rf autom4te.cache

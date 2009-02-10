@@ -3,21 +3,10 @@
 #
 
 
-TESTS = symbol_errors_test
+local_lib	:=	libutility.a
+local_src	:=		\
+	src/count_bits.c 	\
+	src/pack_bytes.c 	\
+	src/msb_index.c
 
-all: $(TESTS)
-
-CC = gcc
-CFLAGS = -Wall -O3
-LDFLAGS = -lm
-OBJS = count_bits.o pack_bytes.o msb_index.port.o
-HEADERS = src/utility.h
-
-$(OBJS) : %.o : src/%.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(TESTS): %_test : src/main_%.c $(OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $< -o $@
-
-clean:
-	rm -f $(OBJS) $(TESTS)
+include ../../common.mk

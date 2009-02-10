@@ -9,6 +9,12 @@
 #include "liquid.composite.h"
 
 int main() {
+
+    modem m = modem_create(MOD_QPSK, 2);
+
+    free_modem(m);
+
     printf("done.\n");
+    return 0;
 }
 

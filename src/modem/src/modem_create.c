@@ -7,8 +7,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "modem_common.h"
-#include "modem.h"
 #include "modem_internal.h"
 
 modem modem_create(
