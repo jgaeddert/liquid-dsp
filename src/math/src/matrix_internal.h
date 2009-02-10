@@ -5,7 +5,7 @@
 #ifndef __LIQUID_MATRIX_INTERNAL_H__
 #define __LIQUID_MATRIX_INTERNAL_H__
 
-#include "matrix.h"
+#include "liquid.h"
 
 #define MATRIX_MAX_SIZE 1024
 

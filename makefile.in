@@ -12,9 +12,10 @@ CC = @CC@
 # Liquid modules
 modules		:=	\
 	buffer		\
-	filter		\
+	math		\
 	modem 		\
 	utility
+#	filter		\
 
 # Collect information in these variables
 programs	:=
