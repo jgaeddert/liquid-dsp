@@ -25,7 +25,7 @@ benchmarks	:=
 objects		= $(subst .c,.o,$(sources))
 dependencies	= $(subst .c,.d,$(sources))
 
-include_dirs	:= include
+include_dirs	:= . include
 CFLAGS		+= $(addprefix -I ,$(include_dirs))
 vpath %.h $(include_dirs)
 
@@ -86,9 +86,12 @@ xautotest: xautotest.o $(objects)
 check: xautotest
 	./xautotest -v
 
+check-clean:
+	$(RM) autotest_include.h xautotest.o xautotest
+
 # Clean
 .PHONY: clean
-clean:
+clean: check-clean
 	$(RM) $(objects)
 	$(RM) $(programs)
 	$(RM) $(libraries)
