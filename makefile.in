@@ -31,6 +31,7 @@ vpath %.h $(include_dirs)
 
 # -g : debugging info
 CFLAGS		+= -g -O2 -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+LDFLAGS		+= -lm
 
 MV	:= mv -f
 RM	:= rm -f
@@ -64,7 +65,7 @@ libliquid.dylib: $(libraries)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^
 
 # linux, et al
-libliquid.so: $(LIBS)
+libliquid.so: $(libraries)
 	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
 
 # Dependencies
@@ -76,8 +77,8 @@ libliquid.so: $(LIBS)
 autotest_include.h: $(autotests)
 	python autotest/autotest_gen.py $(autotests)
 
-xautotest: autotest_include.h autotest/autotest.c libliquid.a
-	$(CC) $(CFLAGS) libliquid.a autotest/autotest.c -o $@
+xautotest: autotest_include.h autotest/autotest.c $(SHARED_LIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHARED_LIB) autotest/autotest.c -o $@
 
 check: xautotest
 	./xautotest -v
