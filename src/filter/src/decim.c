@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../dotprod/src/dotprod.h"
-#include "../../buffer/src/buffer.h"
+#include "liquid.composite.h"
 
 // defined:
 //  DECIM()     name-mangling macro

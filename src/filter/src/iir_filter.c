@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-//#include "../../dotprod/src/dotprod_internal.h"
+//#include "liquid.composite.h"
 
 // defined:
 //  IIR_FILTER()    name-mangling macro

@@ -7,8 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../../dotprod/src/dotprod.h"
-#include "../../buffer/src/buffer.h"
+#include "liquid.composite.h"
 
 #ifndef SYMSYNC_DEBUG
 #define SYMSYNC_DEBUG 0

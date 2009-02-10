@@ -7,11 +7,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "firdes.h"
+//#include "firdes.h"
 
-#include "../../math/src/lmath.h"
-#include "../../dotprod/src/dotprod.h"
-#include "../../buffer/src/buffer.h"
+#include "liquid.composite.h"
 
 // defined:
 //  RESAMP2()       name-mangling macro

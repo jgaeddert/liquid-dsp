@@ -6,8 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../../dotprod/src/dotprod.h"
-#include "../../buffer/src/buffer.h"
+#include "liquid.composite.h"
 
 // defined:
 //  FIRPFB()    name-mangling macro

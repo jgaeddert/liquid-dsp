@@ -5,8 +5,7 @@
 #ifndef __LIQUID_FILTER_INTERNAL_H__
 #define __LIQUID_FILTER_INTERNAL_H__
 
-#include "filter.h"
-#include "../../buffer/src/window.h"
+#include "liquid.composite.h"
 
 //
 // Finite impulse response filter

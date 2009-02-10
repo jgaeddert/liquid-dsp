@@ -6,10 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "firdes.h"
+//#include "firdes.h"
 
-#include "../../dotprod/src/dotprod.h"
-#include "../../buffer/src/buffer.h"
+#include "liquid.composite.h"
 
 // defined:
 //  INTERP()    name-mangling macro
