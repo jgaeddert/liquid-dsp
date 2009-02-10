@@ -9,8 +9,7 @@
 #undef I
 #define J _Complex_I
 
-#include "modem_common.h"
-#include "modem.h"
+#include "liquid.composite.h"
 
 // PSK
 #define PSK_ALPHA       1

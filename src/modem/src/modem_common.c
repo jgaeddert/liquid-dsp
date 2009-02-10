@@ -2,7 +2,7 @@
 //
 //
 
-#include "modem_common.h"
+#include "liquid.composite.h"
 #include "../../utility/src/utility.h"
 
 const char* modulation_scheme_str[10] = {

@@ -8,7 +8,6 @@ exec_prefix = @exec_prefix@
 VPATH = @srcdir@
 
 CC = @CC@
-AR = @AR@
 
 # Liquid modules
 modules		:= modem utility
@@ -36,6 +35,8 @@ LDFLAGS		+= -lm
 MV	:= mv -f
 RM	:= rm -f
 SED	:= sed
+AR	:= ar r
+RANLIB	:= ranlib
 
 all:
 
@@ -55,8 +56,8 @@ libraries: $(libraries)
 
 # Liquid library definition
 libliquid.a: $(objects)
-	ar r $@ $^
-	ranlib $@
+	$(AR) $@ $^
+	$(RANLIB) $@
 
 #
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
