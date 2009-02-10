@@ -8,9 +8,10 @@ exec_prefix = @exec_prefix@
 VPATH = @srcdir@
 
 CC = @CC@
+AR = @AR@
 
-# non-recursive make
-modules		:= src/utility
+# Liquid modules
+modules		:= modem utility
 
 # Collect information in these variables
 programs	:=
@@ -28,7 +29,8 @@ include_dirs	:= include
 CFLAGS		+= $(addprefix -I ,$(include_dirs))
 vpath %.h $(include_dirs)
 
-CFLAGS		+= -g -O2 -Wall -I. @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+# -g : debugging info
+CFLAGS		+= -g -O2 -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
 
 MV	:= mv -f
 RM	:= rm -f
@@ -36,8 +38,12 @@ SED	:= sed
 
 all:
 
-include src/utility/module.mk
-include src/modem/module.mk
+#
+# Generate list of module.mk includes, e.g.
+#    include src/utility/module.mk
+#    include src/modem/module.mk
+#
+include $(patsubst %,src/%/module.mk,$(modules))
 
 SHARED_LIB	= @SH_LIB@
 .PHONY: all
@@ -64,8 +70,12 @@ libliquid.so: $(LIBS)
 
 .PHONY: clean
 clean:
-	rm -f $(objects) $(programs) $(libraries) $(dependencies) \
-		$(extra_clean) $(SHARED_LIB)
+	$(RM) $(objects)
+	$(RM) $(programs)
+	$(RM) $(libraries)
+	$(RM) $(dependencies)
+	$(RM) $(extra_clean)
+	$(RM) $(SHARED_LIB)
 
 %.d: %.c
 	gcc -M $< | sed 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@.tmp
