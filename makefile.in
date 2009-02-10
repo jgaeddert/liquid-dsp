@@ -97,6 +97,7 @@ check-clean:
 	$(RM) autotest_include.h xautotest.o xautotest
 
 # Benchmarks
+.PHONY: bench
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS) -pthread
 
@@ -109,13 +110,15 @@ benchmark.o: benchmark_include.h bench/bench.c
 benchmark: benchmark.o $(objects)
 	$(CC) $(BENCH_LDFLAGS) benchmark.o $(objects) -o benchmark
 
-.PHONY: bench
-bench:
+bench: benchmark
 	./benchmark
+
+bench-clean:
+	$(RM) benchmark_include.h benchmark.o benchmark
 
 # Clean
 .PHONY: clean
-clean: check-clean
+clean: check-clean bench-clean
 	$(RM) $(objects)
 	$(RM) $(programs)
 	$(RM) $(libraries)
