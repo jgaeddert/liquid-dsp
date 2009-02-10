@@ -307,6 +307,66 @@ void asgram_set_offset(asgram _q, float _offset);
 void asgram_destroy(asgram _q);
 void asgram_execute(asgram _q);
 
+//
+// Filter design
+//
+
+// Design FIR filter using window method
+//  _n      : filter length (odd)
+//  _fc     : filter cutoff (0 < _fc < 1)
+//  _slsl   : sidelobe suppression level (_slsl < 0)
+//  _h      : output coefficient buffer
+void fir_design_windowed_sinc(unsigned int _n, float _fc, float _slsl, float *_h);
+
+//
+void fir_design_halfband_windowed_sinc(float * _h, unsigned int _n);
+
+// Design FIR using kaiser window
+//  _n      : filter length
+//  _fc     : cutoff frequency
+//  _slsl   : sidelobe suppression level (dB attenuation)
+//  _h      : output coefficient buffer
+void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h);
+
+// Design FIR doppler filter
+//  _n      : filter length
+//  _fd     : normalized doppler frequency (0 < _fd < 0.5)
+//  _K      : Rice fading factor (K >= 0)
+//  _theta  : LoS component angle of arrival
+//  _h      : output coefficient buffer
+void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, float *_h);
+
+// Design optimum FIR root-nyquist filter
+//  _n      : filter length
+//  _k      : samples/symbol (_k > 1)
+//  _slsl   : sidelobe suppression level
+void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h);
+// Design root-Nyquist raised-cosine filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_rrc_filter(
+    unsigned int _k,
+    unsigned int _m,
+    float _beta,
+    float _dt,
+    float * _h
+);
+
+//
+// IIR filter design
+//
+
+void butterf(unsigned int _n, float * _a);
+
+// Chebyshev type-I filter design
+//  _n  :   filter order
+//  _ep :   epsilon, passband ripple
+//  _b  :   numerator coefficient array (length 1)
+//  _a  :   denominator coefficient array (length _n+1)
+void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
 
 
 //
@@ -325,6 +385,13 @@ typedef enum {
     FIR_RCOS,
     FIR_GAUSS
 } fir_prototype;
+
+struct fir_prototype_s {
+    unsigned int k;
+    unsigned int m;
+    float beta;
+    float dt; 
+};
 
 #define FIR_FILTER_MANGLE_FLOAT(name)  LIQUID_CONCAT(fir_filter,name)
 #define FIR_FILTER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfir_filter,name)
@@ -493,6 +560,26 @@ void X(_estimate_timing)(X() _q, T * _x, unsigned int _n);
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_FLOAT, float)
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CFLOAT, float complex)
+
+// 
+// Symbol timing recovery (symbol synchronizer, 2 samples/symbol in/out)
+//
+#define SYMSYNC2_MANGLE_FLOAT(name)  LIQUID_CONCAT(symsync2,name)
+#define SYMSYNC2_MANGLE_CFLOAT(name) LIQUID_CONCAT(csymsync2,name)
+
+#define LIQUID_SYMSYNC2_DEFINE_API(X,T) \
+typedef struct X(_s) * X(); \
+X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
+void X(_destroy)(X() _q); \
+void X(_print)(X() _q); \
+void X(_execute)(X() _q, T * _x, unsigned int _nx, T * _y, unsigned int *_ny); \
+void X(_set_lf_bw)(X() _q, float _bt); \
+void X(_clear)(X() _q); \
+void X(_estimate_timing)(X() _q, T * _x, unsigned int _n);
+
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_FLOAT, float)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CFLOAT, float complex)
+
 
 //
 // 2nd-Order Loop Filter
