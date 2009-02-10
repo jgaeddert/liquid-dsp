@@ -2,7 +2,7 @@
 #define __LIQUID_FIRHILB_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "../src/filter.h"
+#include "liquid.h"
 
 // Helper function to keep code base small
 void firhilb_decim_bench(

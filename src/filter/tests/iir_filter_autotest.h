@@ -1,7 +1,8 @@
 #ifndef __IIR_FILTER_AUTOTEST_H__
 #define __IIR_FILTER_AUTOTEST_H__
 
-#include "../src/filter.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 void autotest_impulse_response_order3()
 {

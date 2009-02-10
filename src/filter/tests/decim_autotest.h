@@ -1,8 +1,8 @@
 #ifndef __DECIM_AUTOTEST_H__
 #define __DECIM_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/filter.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // 
 // AUTOTEST: old decim function

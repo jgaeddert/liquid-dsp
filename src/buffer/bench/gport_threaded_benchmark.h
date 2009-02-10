@@ -10,7 +10,7 @@
 #include <string.h>
 #include <sys/resource.h>
 
-#include "liquid.composite.h"
+#include "liquid.h"
 
 // prototype for thread routines
 void producer_handler ( void *ptr );

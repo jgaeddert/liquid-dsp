@@ -2,7 +2,7 @@
 #define __LIQUID_RESAMP2_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "../src/filter.h"
+#include "liquid.h"
 
 typedef enum {
     RESAMP2_DECIM,

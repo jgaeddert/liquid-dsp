@@ -2,7 +2,7 @@
 #define __LIQUID_GPORT_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "liquid.composite.h"
+#include "liquid.h"
 
 #define GPORT_BENCH_API(N)              \
 (   struct rusage *_start,              \

@@ -1,7 +1,8 @@
 #ifndef __FIRDES_AUTOTEST_H__
 #define __FIRDES_AUTOTEST_H__
 
-#include "../src/firdes.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 void autotest_design_rrcos_filter() {
 

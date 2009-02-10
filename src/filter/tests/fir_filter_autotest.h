@@ -1,7 +1,8 @@
 #ifndef __FIR_FILTER_AUTOTEST_H__
 #define __FIR_FILTER_AUTOTEST_H__
 
-#include "../src/filter.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 void autotest_create_external_coeff_01() {
 

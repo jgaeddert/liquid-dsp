@@ -2,7 +2,7 @@
 #define __MODEM_AUTOTEST_H__
 
 #include "autotest/autotest.h"
-#include "liquid.composite.h"
+#include "liquid.h"
 
 // Help function to keep code base small
 void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)

@@ -1,8 +1,8 @@
 #ifndef __INTERP_AUTOTEST_H__
 #define __INTERP_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/filter.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 //
 // AUTOTEST: 

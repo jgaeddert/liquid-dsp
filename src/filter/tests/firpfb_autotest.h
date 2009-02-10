@@ -1,7 +1,8 @@
 #ifndef __LIQUID_FIRPFB_AUTOTEST_H__
 #define __LIQUID_FIRPFB_AUTOTEST_H__
 
-#include "../src/filter.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 void autotest_firpfb_impulse_response()
 {

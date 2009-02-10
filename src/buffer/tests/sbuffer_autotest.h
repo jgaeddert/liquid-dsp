@@ -3,7 +3,7 @@
 //
 
 #include "autotest/autotest.h"
-#include "liquid.composite.h"
+#include "liquid.h"
 
 #define SBUFFER_AUTOTEST_DEFINE_API(X,T)        \
     T v[] = {1, 2, 3, 4, 5, 6, 7, 8};           \

@@ -1,8 +1,8 @@
 #ifndef __LIQUID_FIRHILB_AUTOTEST_H__
 #define __LIQUID_FIRHILB_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/filter.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 #define J _Complex_I
 

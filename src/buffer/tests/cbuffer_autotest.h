@@ -3,7 +3,7 @@
 //
 
 #include "autotest/autotest.h"
-#include "liquid.composite.h"
+#include "liquid.h"
 
 // 
 // Macro
