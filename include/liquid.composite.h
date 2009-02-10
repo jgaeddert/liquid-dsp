@@ -5,7 +5,7 @@
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
-#ifndef __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
@@ -1111,7 +1111,7 @@ void repack_bytes(
     unsigned int output_length,
     unsigned int *num_written);
 
-#ifndef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
 
