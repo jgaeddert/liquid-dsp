@@ -13,10 +13,10 @@ CC = @CC@
 modules		:=	\
 	buffer		\
 	dotprod		\
+	filter		\
 	math		\
 	modem 		\
 	utility
-#	filter		\
 
 # Collect information in these variables
 programs	:=
