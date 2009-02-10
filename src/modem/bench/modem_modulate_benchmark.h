@@ -2,7 +2,7 @@
 #define __LIQUID_MODEM_BENCH_H__
 
 #include <sys/resource.h>
-#include "../src/modem.h"
+#include "liquid.composite.h"
 
 #define MODEM_MODULATE_BENCH_API(MS,BPS) \
 (   struct rusage *_start, \

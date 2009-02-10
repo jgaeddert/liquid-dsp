@@ -28,11 +28,13 @@ objects		= $(subst .c,.o,$(sources))
 dependencies	= $(subst .c,.d,$(sources))
 
 include_dirs	:= . include
-CFLAGS		+= $(addprefix -I ,$(include_dirs))
+INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
+CFLAGS		+= $(INCLUDE_CFLAGS)
 vpath %.h $(include_dirs)
 
 # -g : debugging info
-CFLAGS		+= -g -O2 -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+CFLAGS		+= -g -O2 -Wall $(CONFIG_CFLAGS)
 LDFLAGS		+= -lm
 ARFLAGS		= r
 
@@ -93,6 +95,23 @@ check: xautotest
 
 check-clean:
 	$(RM) autotest_include.h xautotest.o xautotest
+
+# Benchmarks
+BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
+BENCH_LDFLAGS	= $(LDFLAGS) -pthread
+
+benchmark_include.h: $(benchmarks)
+	python bench/benchmarkgen.py $(benchmarks)
+
+benchmark.o: benchmark_include.h bench/bench.c
+	$(CC) $(BENCH_CFLAGS) -c bench/bench.c -o benchmark.o
+
+benchmark: benchmark.o $(objects)
+	$(CC) $(BENCH_LDFLAGS) benchmark.o $(objects) -o benchmark
+
+.PHONY: bench
+bench:
+	./benchmark
 
 # Clean
 .PHONY: clean
