@@ -3,7 +3,7 @@
 //
 
 #include <complex.h>
-#include "dotprod.h"
+#include "dotprod_internal.h"
 
 #define X(name) DOTPROD_CONCAT(dotprod_cccf,name)
 #define TO float complex

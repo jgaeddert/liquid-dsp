@@ -12,6 +12,7 @@ CC = @CC@
 # Liquid modules
 modules		:=	\
 	buffer		\
+	dotprod		\
 	math		\
 	modem 		\
 	utility

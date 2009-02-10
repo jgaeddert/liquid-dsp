@@ -2,7 +2,7 @@
 #define __LIQUID_dotprod_cccf_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "../src/dotprod.h"
+#include "liquid.h"
 
 // Helper function to keep code base small
 void dotprod_cccf_bench(

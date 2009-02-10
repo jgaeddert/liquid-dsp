@@ -1,8 +1,8 @@
 #ifndef __DOTPROD_AUTOTEST_H__
 #define __DOTPROD_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/dotprod.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // 
 // AUTOTEST: basic dot product
