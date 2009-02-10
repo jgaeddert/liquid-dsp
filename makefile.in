@@ -34,11 +34,12 @@ vpath %.h $(include_dirs)
 # -g : debugging info
 CFLAGS		+= -g -O2 -Wall @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
 LDFLAGS		+= -lm
+ARFLAGS		= r
 
 MV	:= mv -f
 RM	:= rm -f
 SED	:= sed
-AR	:= ar r
+AR	:= ar
 RANLIB	:= ranlib
 
 all:
@@ -59,7 +60,7 @@ libraries: $(libraries)
 
 # Liquid library definition
 libliquid.a: $(objects)
-	$(AR) $@ $^
+	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
 #

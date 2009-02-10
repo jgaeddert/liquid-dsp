@@ -72,5 +72,5 @@ examples	+= $(local_examples)
 
 # Build the local library and local object files
 $(local_lib): $(local_objs)
-	$(AR) $@ $^
+	$(AR) $(ARFLAGS) $@ $^
 
