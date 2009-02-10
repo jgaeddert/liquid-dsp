@@ -2,8 +2,8 @@
 // Circular buffer autotest
 //
 
-#include "../../../autotest/autotest.h"
-#include "../src/buffer_internal.h"
+#include "autotest/autotest.h"
+#include "liquid.composite.h"
 
 // 
 // Macro

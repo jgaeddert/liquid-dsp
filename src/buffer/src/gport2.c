@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <string.h>
 
-#include "buffer.h"
+#include "buffer_internal.h"
 
 struct gport2_s {
     void * v;

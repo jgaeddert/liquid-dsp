@@ -1,8 +1,8 @@
 #ifndef __GPORT2_AUTOTEST_H__
 #define __GPORT2_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/buffer.h"
+#include "autotest/autotest.h"
+#include "liquid.composite.h"
 
 // 
 // AUTOTEST: basic gport2 functionality

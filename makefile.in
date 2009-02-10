@@ -10,7 +10,10 @@ VPATH = @srcdir@
 CC = @CC@
 
 # Liquid modules
-modules		:= modem utility
+modules		:=	\
+	buffer		\
+	modem 		\
+	utility
 
 # Collect information in these variables
 programs	:=

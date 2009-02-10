@@ -14,7 +14,7 @@ EXAMPLES = fbuffer_example cfbuffer_example \
 all: $(EXAMPLES)
 
 CC = gcc
-CFLAGS = -Wall -O3
+CFLAGS = -Wall -O3 -I ../.. -I ../../include
 LDFLAGS = -lm -pthread
 
 # 
