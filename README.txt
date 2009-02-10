@@ -32,9 +32,9 @@ Source code organization
 liquid/
     README
     configure
-    Makefile
+    makefile                <-- top-level makefile; build here
     doc/
-        Makefile
+        makefile
         liquid.tex
     include/
         header1.h           <-- external header, defines
@@ -43,8 +43,7 @@ liquid/
     src/
         include/            <-- initially empty directory
         module1/
-            configure
-            Makefile
+            module.mk       <-- module makefile
             README
             doc/
                 figures/
