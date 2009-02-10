@@ -8,7 +8,7 @@
 
 //#include "firdes.h"
 
-#include "liquid.composite.h"
+#include "filter_internal.h"
 
 // defined:
 //  INTERP()    name-mangling macro

@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#include "firdes.h"
-
 /** \brief Calculate square-root raised-cosine filter coefficients
 
   design_rrc_filter calculates the coefficients for a square-root raised-cosine

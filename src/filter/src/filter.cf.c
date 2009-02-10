@@ -2,7 +2,7 @@
 // Filter API: complex floating-point
 //
 
-#include "liquid.composite.h"
+#include "filter_internal.h"
 
 // 
 #define FIR_FILTER(name)    LIQUID_CONCAT(cfir_filter,name)

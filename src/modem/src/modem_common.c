@@ -2,8 +2,7 @@
 //
 //
 
-#include "liquid.composite.h"
-#include "../../utility/src/utility.h"
+#include "liquid.h"
 
 const char* modulation_scheme_str[10] = {
     "unknown",

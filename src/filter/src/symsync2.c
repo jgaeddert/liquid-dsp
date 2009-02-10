@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "liquid.composite.h"
+#include "filter_internal.h"
 
 #ifndef SYMSYNC2_DEBUG
 #define SYMSYNC2_DEBUG 0

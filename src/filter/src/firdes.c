@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "firdes.h"
-#include "../../math/src/lmath.h" // sincf(), kaiser()
+#include "liquid.h"
 
 //
 void fir_design_halfband_windowed_sinc(float * _h, unsigned int _n)

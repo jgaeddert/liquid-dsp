@@ -5,7 +5,7 @@
 #ifndef __LIQUID_BUFFER_INTERNAL_H__
 #define __LIQUID_BUFFER_INTERNAL_H__
 
-#include "liquid.composite.h"
+#include "liquid.h"
 
 //
 // Buffers

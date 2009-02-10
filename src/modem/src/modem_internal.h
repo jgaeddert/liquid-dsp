@@ -9,7 +9,7 @@
 #undef I
 #define J _Complex_I
 
-#include "liquid.composite.h"
+#include "liquid.h"
 
 // PSK
 #define PSK_ALPHA       1

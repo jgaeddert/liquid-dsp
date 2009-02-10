@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "liquid.composite.h"
+#include "filter_internal.h"
 
 // defined:
 //  FIR_FILTER()    name-mangling macro
