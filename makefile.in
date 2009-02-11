@@ -26,6 +26,8 @@ modules		:=	\
 	random		\
 	sequence	\
 	utility
+#	ann
+#	optim
 
 # Collect information in these variables
 programs	:=
@@ -80,7 +82,7 @@ libliquid.a: $(objects)
 #
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
 # darwin
-libliquid.dylib: $(libraries)
+libliquid.dylib: $(objects)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^
 
 # linux, et al
