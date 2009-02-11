@@ -13,7 +13,8 @@ void autotest_bsequence_init_msequence() {
     bsequence bs;
     bs = bsequence_create( msequence_get_length(ms) );
     bsequence_init_msequence(bs, ms);
-    bsequence_print(bs);
+    if (_autotest_verbose)
+        bsequence_print(bs);
 
     CONTEND_EQUALITY( bsequence_get_length(bs), msequence_get_length(ms) )
 

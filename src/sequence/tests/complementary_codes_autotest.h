@@ -16,8 +16,10 @@ void autotest_ccodes() {
     bsequence_create_ccodes(a, b);
 
     // print
-    bsequence_print(a);
-    bsequence_print(b);
+    if (_autotest_verbose) {
+        bsequence_print(a);
+        bsequence_print(b);
+    }
     
     // clean up memory
     bsequence_destroy(a);

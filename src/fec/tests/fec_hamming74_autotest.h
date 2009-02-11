@@ -20,7 +20,8 @@ void autotest_hamming74_codec()
 
     // create object
     fec q = fec_create(fs,NULL);
-    fec_print(q);
+    if (_autotest_verbose)
+        fec_print(q);
 
     // encode message
     fec_encode(q, n, msg, msg_enc);
