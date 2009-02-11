@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#include "../../../autotest/autotest.h"
-#include "../src/fec.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // Helper function to keep code base small
 void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)

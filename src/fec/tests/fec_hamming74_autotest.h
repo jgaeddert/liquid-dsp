@@ -1,8 +1,8 @@
 #ifndef __LIQUID_FEC_HAMMING74_AUTOTEST_H__
 #define __LIQUID_FEC_HAMMING74_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/fec.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 //
 // AUTOTEST: Hamming (7,4) codec

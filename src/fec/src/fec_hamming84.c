@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #include "fec_internal.h"
-#include "../../utility/src/utility.h"
 
 #define HAMMING84_H0    0xaa
 #define HAMMING84_H1    0x66
@@ -36,8 +35,8 @@ void fec_hamming84_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsign
     }
 }
 
-unsigned int
-fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec)
+//unsigned int
+void fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec)
 {
     unsigned int i, j=0, num_errors=0;
     unsigned char r0, r1, z0, z1, s0, s1;
@@ -56,7 +55,10 @@ fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned ch
         if (z0) r0 ^= hamming84_bflip[z0];
         if (z1) r1 ^= hamming84_bflip[z1];
 
-        printf("corrected symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
+        num_errors += (z0) ? 1 : 0;
+        num_errors += (z1) ? 1 : 0;
+
+        //printf("corrected symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
 
         s0 = fec_hamming84_decode_symbol(r0);
         s1 = fec_hamming84_decode_symbol(r1);
@@ -65,7 +67,7 @@ fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned ch
 
         j += 2;
     }
-    return 0;
+    //return num_errors;
 }
 
 // internal

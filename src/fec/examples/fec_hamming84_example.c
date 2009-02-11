@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "../src/fec.h"
+#include "liquid.h"
 
 int main() {
     unsigned int n=4, num_errors_detected;

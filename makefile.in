@@ -15,6 +15,7 @@ modules		:=	\
 	buffer		\
 	channel		\
 	dotprod		\
+	fec		\
 	filter		\
 	fft		\
 	math		\

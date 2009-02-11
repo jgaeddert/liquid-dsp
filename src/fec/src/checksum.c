@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "fec.h"
+#include "fec_internal.h"
 
 unsigned char checksum_generate_key(unsigned char *_data, unsigned int _n)
 {

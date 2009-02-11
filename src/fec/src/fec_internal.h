@@ -5,8 +5,7 @@
 #ifndef __LIQUID_FEC_INTERNAL_H__
 #define __LIQUID_FEC_INTERNAL_H__
 
-#include <stdbool.h>
-#include "fec.h"
+#include "liquid.h"
 
 extern unsigned char c_ones_mod2[256];
 

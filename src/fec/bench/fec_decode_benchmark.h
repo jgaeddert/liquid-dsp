@@ -4,7 +4,7 @@
 #include <sys/resource.h>
 #include <stdlib.h>
 
-#include "../src/fec.h"
+#include "liquid.h"
 
 #define FEC_DECODE_BENCH_API(FS,N, OPT) \
 (   struct rusage *_start,              \

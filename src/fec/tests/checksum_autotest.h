@@ -1,8 +1,8 @@
 #ifndef __CHECKSUM_AUTOTEST_H__
 #define __CHECKSUM_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/fec.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 //
 // AUTOTEST: basic checksum

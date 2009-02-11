@@ -1,8 +1,10 @@
 #ifndef __CRC_AUTOTEST_H__
 #define __CRC_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/fec_internal.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
+
+#include "../src/fec_internal.h" // reverse_byte, etc.
 
 //
 // AUTOTEST: reverse byte
