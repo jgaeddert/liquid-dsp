@@ -7,7 +7,8 @@
 
 #include <complex.h>
 #include <stdbool.h>
-#include "fft.h"
+
+#include "liquid.h"
 
 // fft size below which twiddle factors
 // are stored in look-up table (very fast)

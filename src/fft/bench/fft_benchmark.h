@@ -4,7 +4,8 @@
 #include <sys/resource.h>
 #include <string.h>
 #include <complex.h>
-#include "../src/fft.h"
+
+#include "liquid.h"
 
 #define FFT_BENCH_API(N,D) \
 (   struct rusage *_start, \

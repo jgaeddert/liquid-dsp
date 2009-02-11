@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "../src/fft.h"
+#include "liquid.h"
 
 int main() {
     unsigned int n=16;

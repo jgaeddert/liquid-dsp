@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "fft.h"
+#include "liquid.h"
 
 struct asgram_s {
     float complex * x;  // pointer to input array

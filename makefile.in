@@ -14,6 +14,7 @@ modules		:=	\
 	buffer		\
 	dotprod		\
 	filter		\
+	fft		\
 	math		\
 	modem 		\
 	utility

@@ -1,8 +1,8 @@
 #ifndef __FFT_SHIFT_AUTOTEST_H__
 #define __FFT_SHIFT_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/fft.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 void autotest_fft_shift_4()
 {

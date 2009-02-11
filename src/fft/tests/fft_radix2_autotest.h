@@ -1,8 +1,8 @@
 #ifndef __FFT_RADIX2_AUTOTEST_H__
 #define __FFT_RADIX2_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/fft.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 #include "fft_helper.h"
 #include "fft_radix2_data.h"

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "../src/fft.h"
+#include "liquid.h"
 
 int main() {
     // options

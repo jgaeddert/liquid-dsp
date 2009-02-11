@@ -1,7 +1,7 @@
 #ifndef __FFT_AUTOTEST_HELPER_H__
 #define __FFT_AUTOTEST_HELPER_H__
 
-#include "../src/fft.h"
+#include "liquid.h"
 
 // autotest helper function
 void fft_test(float complex *_x, float complex *_test, unsigned int _n)
