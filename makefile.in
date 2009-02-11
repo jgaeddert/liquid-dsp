@@ -18,6 +18,7 @@ modules		:=	\
 	fft		\
 	math		\
 	modem 		\
+	random		\
 	nco 		\
 	utility
 

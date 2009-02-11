@@ -1,8 +1,8 @@
 #ifndef __RANDOM_AUTOTEST_H__
 #define __RANDOM_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/random.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // uniform
 void autotest_randf()

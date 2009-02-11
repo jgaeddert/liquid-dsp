@@ -4,7 +4,7 @@
 
 #include <math.h>
 #include <stdio.h>
-#include "random.h"
+#include "liquid.h"
 
 // Gauss
 float randnf()

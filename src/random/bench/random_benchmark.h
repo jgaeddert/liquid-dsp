@@ -2,7 +2,7 @@
 #define __LIQUID_RANDOM_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "../src/random.h"
+#include "liquid.h"
 
 // 
 // BENCHMARK: uniform
