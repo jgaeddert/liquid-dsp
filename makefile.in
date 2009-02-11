@@ -16,8 +16,9 @@ modules		:=	\
 	channel		\
 	dotprod		\
 	fec		\
-	filter		\
 	fft		\
+	filter		\
+	interleaver	\
 	math		\
 	modem 		\
 	nco 		\

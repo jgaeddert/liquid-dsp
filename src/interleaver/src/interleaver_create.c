@@ -7,8 +7,6 @@
 #include <string.h>
 
 #include "interleaver_internal.h"
-#include "../../sequence/src/sequence.h"
-#include "../../utility/src/utility.h"
 
 interleaver interleaver_create(unsigned int _n, interleaver_type _type)
 {

@@ -2,7 +2,7 @@
 #define __LIQUID_INTERLEAVER_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "../src/interleaver.h"
+#include "liquid.h"
 
 #define INTERLEAVER_BENCH_API(N,T) \
 (   struct rusage *_start, \

@@ -9,8 +9,6 @@
 #include <math.h> // debug_print
 
 #include "interleaver_internal.h"
-#include "../../sequence/src/sequence.h"
-#include "../../utility/src/utility.h"
 
 void interleaver_print(interleaver _q)
 {

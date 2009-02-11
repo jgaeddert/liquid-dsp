@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#include "../../../autotest/autotest.h"
-#include "../src/interleaver.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // 
 // AUTOTESTS: interleave/deinterleave
