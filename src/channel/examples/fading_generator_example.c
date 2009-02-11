@@ -7,9 +7,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include "../../filter/src/firdes.h"
-#include "../../filter/src/filter.h"
-#include "../../random/src/random.h"
+#include "liquid.h"
 
 #define DEBUG
 #define DEBUG_FILENAME "debug_fading_generator_example.m"

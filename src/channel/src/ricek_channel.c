@@ -9,9 +9,6 @@
 
 #include "channel_internal.h"
 
-#include "../../random/src/random.h"
-#include "../../filter/src/firdes.h"
-
 ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, float _theta)
 {
     ricek_channel q = (ricek_channel) malloc(sizeof(struct ricek_channel_s));

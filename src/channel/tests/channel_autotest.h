@@ -1,8 +1,8 @@
 #ifndef __AWGN_CHANNEL_AUTOTEST_H__
 #define __AWGN_CHANNEL_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/channel.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // 
 // AUTOTEST: AWGN channel

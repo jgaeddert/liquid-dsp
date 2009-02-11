@@ -13,6 +13,7 @@ CC = @CC@
 modules		:=	\
 	agc		\
 	buffer		\
+	channel		\
 	dotprod		\
 	filter		\
 	fft		\

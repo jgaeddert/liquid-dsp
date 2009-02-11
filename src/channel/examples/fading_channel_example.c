@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "../src/channel.h"
+#include "liquid.h"
 
 int main()
 {

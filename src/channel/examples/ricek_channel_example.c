@@ -7,7 +7,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include "../src/channel.h"
+#include "liquid.h"
 
 #define DEBUG
 #define DEBUG_FILENAME "debug_ricek_channel_example.m"

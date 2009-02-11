@@ -8,8 +8,6 @@
 
 #include "channel_internal.h"
 
-#include "../../random/src/random.h"
-
 channel channel_create()
 {
     channel q = (channel) malloc(sizeof(struct channel_s));

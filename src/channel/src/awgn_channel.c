@@ -8,8 +8,6 @@
 
 #include "channel_internal.h"
 
-#include "../../random/src/random.h"
-
 awgn_channel awgn_channel_create(float _nvar)
 {
     awgn_channel q = (awgn_channel) malloc(sizeof(struct awgn_channel_s));
