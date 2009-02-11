@@ -1,8 +1,8 @@
 #ifndef __PACK_BYTES_AUTOTEST_H__
 #define __PACK_BYTES_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/utility.h"
+#include "autotest/autotest.h"
+#include "liquid.internal.h"
 
 void autotest_pack_bytes_01() {
     unsigned char output[8];

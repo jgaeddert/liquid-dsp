@@ -1,8 +1,8 @@
 #ifndef __COUNT_BITS_AUTOTEST_H__
 #define __COUNT_BITS_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/utility.h"
+#include "autotest/autotest.h"
+#include "liquid.internal.h"
 
 // 
 // AUTOTEST: count number of ones in an integer

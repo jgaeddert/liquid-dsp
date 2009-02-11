@@ -72,7 +72,7 @@ void fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsign
 
 // internal
 
-#define bdotprod(x,y) (((c_ones[(x)&(y)]&0xff) % 2) & 0x01)
+#define bdotprod(x,y) c_ones_mod2[(x)&(y)]
 unsigned char fec_hamming84_compute_syndrome(unsigned char _r)
 {
     printf("  r : 0x%.2X\n", (int)_r);

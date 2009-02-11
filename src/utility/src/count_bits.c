@@ -2,7 +2,7 @@
 // Bit-counting utilities
 //
 
-#include "utility.h"
+#include "liquid.internal.h"
 
 unsigned int c_ones[256] = {
     0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,

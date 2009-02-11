@@ -13,7 +13,7 @@
 //  0x80000000  :   32
 //
 
-#include "utility.h"
+#include "liquid.internal.h"
 
 unsigned int msb_index(unsigned int _x)
 {

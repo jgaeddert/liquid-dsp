@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "utility.h"
+#include "liquid.internal.h"
 
 void pack_bytes(
     unsigned char * input,
