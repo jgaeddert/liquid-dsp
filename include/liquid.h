@@ -282,6 +282,8 @@ typedef enum {
     FEC_HAMMING84
 } fec_scheme;
 
+extern const char * fec_scheme_str[5];
+
 typedef struct fec_s * fec;
 
 // object-independent methods
@@ -699,7 +701,7 @@ packetizer packetizer_create(unsigned int _dec_msg_len, int _fec0, int _fec1);
 void packetizer_destroy(packetizer _p);
 void packetizer_print(packetizer _p);
 
-unsigned int packetizer_get_packet_length(packetizer _p);
+unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1);
 
 void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char * _pkt);
 bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);

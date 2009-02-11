@@ -19,6 +19,7 @@ modules		:=	\
 	fft		\
 	filter		\
 	interleaver	\
+	framing		\
 	math		\
 	modem 		\
 	nco 		\

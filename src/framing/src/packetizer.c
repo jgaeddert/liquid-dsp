@@ -9,8 +9,6 @@
 
 #include "framing_internal.h"
 
-#include "../../fec/src/fec.h"
-
 unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1)
 {
     return fec_get_enc_msg_length(_fec1, fec_get_enc_msg_length(_fec0, _n+4));

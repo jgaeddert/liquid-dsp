@@ -7,13 +7,7 @@
 
 #include <stdbool.h>
 
-#include "../../sequence/src/sequence.h"
-#include "../../random/src/scramble.h"      // data randomizer
-#include "../../fec/src/fec.h"              // fec_scheme
-#include "../../interleaver/src/interleaver.h"
-#include "../../modem/src/modem_common.h"
-
-#include "framing.h"
+#include "liquid.h"
 
 struct frame_s {
     // options

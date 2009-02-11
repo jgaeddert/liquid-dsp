@@ -1,8 +1,8 @@
 #ifndef __PACKETIZER_AUTOTEST_H__
 #define __PACKETIZER_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/framing.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // Help function to keep code base small
 void packetizer_test_codec(unsigned int _n, fec_scheme _fec0, fec_scheme _fec1)

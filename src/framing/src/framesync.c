@@ -7,10 +7,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "framing.h"
-#include "../../buffer/src/buffer.h"        // WINDOW()
-#include "../../dotprod/src/dotprod.h"      // DOTPROD()
-#include "../../sequence/src/sequence.h"    // p/n sequence
+//#include "liquid.h"
 
 struct FRAMESYNC(_s) {
     unsigned int n; // sequence length
