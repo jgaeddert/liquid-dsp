@@ -11,6 +11,7 @@ CC = @CC@
 
 # Liquid modules
 modules		:=	\
+	agc		\
 	buffer		\
 	dotprod		\
 	filter		\

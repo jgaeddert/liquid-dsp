@@ -1,8 +1,8 @@
 #ifndef __AGC_AUTOTEST_H__
 #define __AGC_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/agc.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // 
 // Test DC gain control

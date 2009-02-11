@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "../src/agc.h"
+#include "liquid.h"
 
 #define DEBUG // writes results to agc_example.m
 

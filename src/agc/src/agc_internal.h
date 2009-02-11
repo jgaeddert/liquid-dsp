@@ -5,6 +5,8 @@
 #ifndef __LIQUID_AGC_INTERNAL_H__
 #define __LIQUID_AGC_INTERNAL_H__
 
+#include "liquid.h"
+
 //-----------------------------------------------------------------------------
 //
 // Automatic Gain Control

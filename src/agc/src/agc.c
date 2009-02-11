@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "agc.h"
 #include "agc_internal.h"
 
 #define AGC_LOG

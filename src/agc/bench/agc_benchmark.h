@@ -2,7 +2,8 @@
 #define __AGC_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "../src/agc.h"
+
+#include "liquid.h"
 
 void benchmark_agc(
     struct rusage *_start,
