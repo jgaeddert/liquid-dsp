@@ -104,40 +104,43 @@ install:
 	install -m 644 -p include/liquid.h $(prefix)/include/liquid
 
 # Autotests
+.PHONY: autotest
+autotest_prog	= xautotest
 autotest_include.h: $(autotests)
 	python autotest/autotest_gen.py $(autotests)
 
-xautotest.o: autotest_include.h autotest/autotest.c
+$(autotest_prog).o: autotest_include.h autotest/autotest.c
 	$(CC) $(CFLAGS) autotest/autotest.c -c -o $@
 
-xautotest: xautotest.o $(objects)
-	$(CC) $(LDFLAGS) xautotest.o $(objects) -o $@
+$(autotest_prog): $(autotest_prog).o $(objects)
+	$(CC) $(LDFLAGS) $^ -o $@
 
-check: xautotest
-	./xautotest -v
+check: $(autotest_prog)
+	./$(autotest_prog) -v
 
 check-clean:
-	$(RM) autotest_include.h xautotest.o xautotest
+	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 
 # Benchmarks
 .PHONY: bench
+bench_prog	= benchmark
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS) -pthread
 
 benchmark_include.h: $(benchmarks)
 	python bench/benchmarkgen.py $(benchmarks)
 
-benchmark.o: benchmark_include.h bench/bench.c
-	$(CC) $(BENCH_CFLAGS) -c bench/bench.c -o benchmark.o
+$(bench_prog).o: benchmark_include.h bench/bench.c
+	$(CC) $(BENCH_CFLAGS) -c bench/bench.c -o $(bench_prog).o
 
-benchmark: benchmark.o $(objects)
-	$(CC) $(BENCH_LDFLAGS) benchmark.o $(objects) -o benchmark
+$(bench_prog): $(bench_prog).o $(objects)
+	$(CC) $(BENCH_LDFLAGS) $^ -o $(bench_prog)
 
-bench: benchmark
-	./benchmark
+bench: $(bench_prog)
+	./$(bench_prog)
 
 bench-clean:
-	$(RM) benchmark_include.h benchmark.o benchmark
+	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
 # Clean
 .PHONY: clean
