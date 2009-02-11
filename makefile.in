@@ -86,6 +86,15 @@ libliquid.so: $(libraries)
 	gcc -M $< | sed 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@.tmp
 	mv $@.tmp $@
 
+# Install
+install:
+	@echo "installing..."
+	mkdir -p $(exec_prefix)/lib
+	install -m 644 -p $(SHARED_LIB) libliquid.a $(exec_prefix)/lib
+	mkdir -p $(prefix)/include
+	mkdir -p $(prefix)/include/liquid
+	install -m 644 -p include/liquid.h $(prefix)/include/liquid
+
 # Autotests
 autotest_include.h: $(autotests)
 	python autotest/autotest_gen.py $(autotests)
