@@ -9,7 +9,6 @@
 #include <math.h>
 
 #include "sequence_internal.h"
-#include "../../utility/src/utility.h" // for count_ones
 
 bsequence bsequence_create(unsigned int _num_bits)
 {

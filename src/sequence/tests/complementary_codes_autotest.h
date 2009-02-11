@@ -1,8 +1,8 @@
 #ifndef __COMPLEMENTARY_CODES_AUTOTEST_H__
 #define __COMPLEMENTARY_CODES_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/sequence.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // 
 // AUTOTEST: validate autocorrelation properties of

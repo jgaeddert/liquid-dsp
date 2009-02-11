@@ -18,8 +18,9 @@ modules		:=	\
 	fft		\
 	math		\
 	modem 		\
-	random		\
 	nco 		\
+	random		\
+	sequence	\
 	utility
 
 # Collect information in these variables

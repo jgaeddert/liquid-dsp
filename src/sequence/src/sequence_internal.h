@@ -5,7 +5,7 @@
 #ifndef __LIQUID_SEQUENCE_INTERNAL_H__
 #define __LIQUID_SEQUENCE_INTERNAL_H__
 
-#include "sequence.h"
+#include "liquid.h"
 
 struct bsequence_s {
     unsigned char * s;          // sequence array, memory pointer

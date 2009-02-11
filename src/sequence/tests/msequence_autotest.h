@@ -1,8 +1,8 @@
 #ifndef __MSEQUENCE_AUTOTEST_H__
 #define __MSEQUENCE_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/sequence.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // test initialization of binary sequence on m-sequence
 void autotest_bsequence_init_msequence() {

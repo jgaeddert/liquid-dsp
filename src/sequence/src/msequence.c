@@ -9,7 +9,6 @@
 #include <math.h>
 
 #include "sequence_internal.h"
-#include "../../utility/src/utility.h" // for count_ones
 
 #define LIQUID_MIN_MSEQUENCE_M  2
 #define LIQUID_MAX_MSEQUENCE_M  12
