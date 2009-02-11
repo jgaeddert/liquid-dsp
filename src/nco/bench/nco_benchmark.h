@@ -3,7 +3,8 @@
 
 #include <sys/resource.h>
 #include <string.h>
-#include "../src/nco.h"
+
+#include "liquid.h"
 
 void benchmark_nco_sincos(
     struct rusage *_start,

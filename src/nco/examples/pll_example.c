@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../src/nco.h"
+#include "liquid.h"
 
 // DEBUG: print every output line in octave-friendly format
 #define DEBUG

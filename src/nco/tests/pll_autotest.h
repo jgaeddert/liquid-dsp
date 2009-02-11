@@ -2,8 +2,8 @@
 #define __LIQUID_NCO_AUTOTEST_H__
 
 #include <complex.h>
-#include "../../../autotest/autotest.h"
-#include "../src/nco.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 //
 // Helper function: run loop

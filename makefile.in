@@ -17,6 +17,7 @@ modules		:=	\
 	fft		\
 	math		\
 	modem 		\
+	nco 		\
 	utility
 
 # Collect information in these variables

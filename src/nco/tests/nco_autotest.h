@@ -2,8 +2,8 @@
 #define __AUTOTEST_NCO__
 
 #include <complex.h>
-#include "../../../autotest/autotest.h"
-#include "../src/nco.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 //
 // test floating point precision nco
