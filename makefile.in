@@ -10,6 +10,19 @@ VPATH = @srcdir@
 CC = @CC@
 
 # Liquid modules
+#
+# Each processing library is held in a module containing
+# its own makefile 'module.mk' included by this top-level
+# makefile.
+#
+# Each module's 'module.mk' contains the following:
+#    local_dir     : local directory, e.g. src/mymodule
+#    local_lib     : local library, e.g. libmymodule.a
+#    local_s_files : source files e.g. '.c'
+#    local_h_files : internal header files
+#    local_t_files : autotest script headers
+#    local_b_files : benchmark script headers
+#    local_e_files : example files
 modules		:=	\
 	agc		\
 	buffer		\
@@ -29,7 +42,10 @@ modules		:=	\
 #	ann
 #	optim
 
-# Collect information in these variables
+# Target collection
+#
+# Information about targets for each module is collected
+# in these variables
 programs	:=
 sources		:=
 libraries	:=
@@ -61,7 +77,7 @@ RANLIB	:= ranlib
 all:
 
 #
-# Generate list of module.mk includes, e.g.
+# Generate list of module.mk includes from $(modules), e.g.
 #    include src/utility/module.mk
 #    include src/modem/module.mk
 #
@@ -79,9 +95,9 @@ libliquid.a: $(objects)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
+# darwin
 #
 # gcc -dynamiclib -install_name libliquid.dylib -o libliquid.dylib libmodem.a libutility.a 
-# darwin
 libliquid.dylib: $(objects)
 	$(CC) -dynamiclib -install_name $@ -o $@ $^
 
@@ -94,7 +110,9 @@ libliquid.so: $(libraries)
 	gcc -M $< | sed 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@.tmp
 	mv $@.tmp $@
 
-# Install
+# TARGET: install
+#
+# Installs the libraries and header files in the host system
 install:
 	@echo "installing..."
 	mkdir -p $(exec_prefix)/lib
@@ -106,18 +124,24 @@ install:
 # Autotests
 .PHONY: autotest
 autotest_prog	= xautotest
+
+# run the autotest generator script to create autotest_include.h
 autotest_include.h: $(autotests)
 	python autotest/autotest_gen.py $(autotests)
 
+# compile the autotest program without linking
 $(autotest_prog).o: autotest_include.h autotest/autotest.c
 	$(CC) $(CFLAGS) autotest/autotest.c -c -o $@
 
+# link the autotest program with the objects
 $(autotest_prog): $(autotest_prog).o $(objects)
 	$(CC) $(LDFLAGS) $^ -o $@
 
+# run the autotest program
 check: $(autotest_prog)
 	./$(autotest_prog) -v
 
+# clean the generated files
 check-clean:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 
@@ -127,18 +151,23 @@ bench_prog	= benchmark
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS) -pthread
 
+# run the benchmark generator scrip to create benchmark_include.h
 benchmark_include.h: $(benchmarks)
 	python bench/benchmarkgen.py $(benchmarks)
 
+# compile the benchmark program without linking
 $(bench_prog).o: benchmark_include.h bench/bench.c
 	$(CC) $(BENCH_CFLAGS) -c bench/bench.c -o $(bench_prog).o
 
+# link the benchmark program with the library objects
 $(bench_prog): $(bench_prog).o $(objects)
 	$(CC) $(BENCH_LDFLAGS) $^ -o $(bench_prog)
 
+# run the benchmark program
 bench: $(bench_prog)
 	./$(bench_prog)
 
+# clean up the generated files
 bench-clean:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 

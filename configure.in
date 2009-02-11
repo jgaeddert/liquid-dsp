@@ -3,7 +3,7 @@ dnl Liquid SDR library configure
 dnl Process with autoconf to generate configure script
 dnl
 
-AC_INIT(src/modem/src/modem.c)
+AC_INIT(include/liquid.h)
 SO_NAME=0
 VERSION=0.1.0
 AC_SUBST(SO_NAME)
