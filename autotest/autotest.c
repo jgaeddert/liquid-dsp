@@ -124,16 +124,20 @@ int main(int argc, char *argv[])
         for (i=0; i<NUM_PACKAGES; i++)
             execute_package( &packages[i], verbose );
 
-        for (i=0; i<NUM_PACKAGES; i++)
-            print_package_results( &packages[i] );
+        for (i=0; i<NUM_PACKAGES; i++) {
+            if (verbose)
+                print_package_results( &packages[i] );
+        }
         break;
     case RUN_SINGLE_TEST:
         execute_autotest( &autotests[autotest_id], verbose );
-        print_autotest_results( &autotests[autotest_id] );
+        if (verbose)
+            print_autotest_results( &autotests[autotest_id] );
         break;
     case RUN_SINGLE_PACKAGE:
         execute_package( &packages[package_id], verbose );
-        print_package_results( &packages[package_id] );
+        if (verbose)
+            print_package_results( &packages[package_id] );
         break;
     }
 
