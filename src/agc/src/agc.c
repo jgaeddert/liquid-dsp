@@ -10,6 +10,11 @@
 
 #define AGC_LOG
 
+#define AGC_RECURSIVE   0
+#define AGC_COMPARATIVE 1
+
+#define AGC_TYPE    AGC_COMPARATIVE
+
 agc agc_create(float _etarget, float _BT)
 {
     agc _agc = (agc) malloc(sizeof(struct agc_s));
@@ -94,14 +99,15 @@ void agc_execute(agc _agc, float complex _x, float complex *_y)
         printf("warning! agc_apply_gain(), input level not valid!\n");
         *_y = _x * _agc->g;
         return;
-    } else {
-        // generate error signal
-#ifdef AGC_LOG
-        _agc->e = logf( e );
-#else
-        _agc->e = e - 1;
-#endif
     }
+
+#if AGC_TYPE == AGC_RECURSIVE
+    // generate error signal
+#  ifdef AGC_LOG
+    _agc->e = logf( e );
+#  else
+    _agc->e = e - 1;
+#  endif
 
     // filter estimate using first-order loop filter
     _agc->e_prime = _agc->e - _agc->alpha * _agc->tmp2;
@@ -110,6 +116,22 @@ void agc_execute(agc _agc, float complex _x, float complex *_y)
 
     // compute new gain value
     _agc->g *= expf( -_agc->e_hat );
+
+#elif AGC_TYPE == AGC_COMPARATIVE
+    // generate error signal
+    float e_hat = (_agc->g)*cabsf(_x);
+    if ( e_hat > _agc->e_target ) {
+        // attack
+        _agc->g *= 1 - 0.1f*( (e_hat-_agc->e_target) / _agc->e_target );
+        //_agc->g *= 0.9f;
+    } else {
+        // release
+        _agc->g *= 1 + 0.1f*( (_agc->e_target-e_hat) / e_hat);
+        //_agc->g *= 1.1f;
+    }
+#else
+#  error "invalid AGC_TYPE macro"
+#endif
 
     // limit gain
     if ( _agc->g > _agc->g_max )
