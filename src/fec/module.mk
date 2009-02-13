@@ -66,8 +66,8 @@ local_e_files	:=			\
 	checksum_example.c		\
 	crc_example.c			\
 	fec_hamming74_example.c		\
-	fec_hamming84_example.c		\
 	fec_rep3_example.c
+#	fec_hamming84_example.c		\
 
 include common.mk
 

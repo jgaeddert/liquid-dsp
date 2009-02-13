@@ -171,9 +171,18 @@ bench: $(bench_prog)
 bench-clean:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
+# Examples
+.PHONY: examples
+example_progs   = $(patsubst %.c,%,$(examples))
+tests:$(example_progs)
+$(example_progs): % : %.c libliquid.a
+	$(CC) $(CFLAGS) libliquid.a $< -o $@
+examples-clean:
+	$(RM) $(example_progs)
+
 # Clean
 .PHONY: clean
-clean: check-clean bench-clean
+clean: check-clean bench-clean examples-clean
 	$(RM) $(objects)
 	$(RM) $(programs)
 	$(RM) $(libraries)

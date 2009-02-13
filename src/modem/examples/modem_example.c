@@ -8,7 +8,7 @@
 //   $ ./modemtest
 
 #include <stdio.h>
-#include "../src/modem.h"
+#include "liquid.h"
 
 int main() {
     // create mod/demod objects

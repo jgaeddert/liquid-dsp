@@ -4,9 +4,7 @@
 
 #include <stdio.h>
 
-#include "../src/filter.h"
-#include "../src/firdes.h"
-#include "../../random/src/random.h"
+#include "liquid.h"
 
 #define DEBUG 1
 #define DEBUG_FILENAME "firdes_kaiser_example.m"

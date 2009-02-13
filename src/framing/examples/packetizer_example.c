@@ -6,9 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../src/framing.h"
-
-#include "../../fec/src/fec.h"
+#include "liquid.h"
 
 int main() {
     // 

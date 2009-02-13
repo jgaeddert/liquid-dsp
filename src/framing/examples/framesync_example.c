@@ -6,9 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../src/framing.h"
-#include "../../sequence/src/sequence.h"// msequence
-#include "../../random/src/random.h"    // awgn
+#include "liquid.h"
 
 int main() {
     // options
