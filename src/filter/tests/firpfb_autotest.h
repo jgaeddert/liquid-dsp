@@ -42,19 +42,19 @@ void autotest_firpfb_impulse_response()
     };
 
     // Load filter coefficients externally
-    firpfb f = firpfb_create(4, h, 48);
+    firpfb_rrrf f = firpfb_rrrf_create(4, h, 48);
     
     unsigned int i;
     for (i=0; i<12; i++)
-        firpfb_push(f,noise[i]);
+        firpfb_rrrf_push(f,noise[i]);
 
     float y;
     for (i=0; i<4; i++) {
-        firpfb_execute(f,i,&y);
+        firpfb_rrrf_execute(f,i,&y);
         CONTEND_DELTA(test[i],y,tol);
     }
     
-    firpfb_destroy(f);
+    firpfb_rrrf_destroy(f);
 }
 
 #endif // __LIQUID_FIRPFB_AUTOTEST_H__

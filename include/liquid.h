@@ -476,20 +476,25 @@ LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, float complex, float comple
 //
 // FIR Polyphase filter bank
 //
-#define FIRPFB_MANGLE_FLOAT(name)  LIQUID_CONCAT(firpfb,name)
-#define FIRPFB_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfirpfb,name)
+#define FIRPFB_MANGLE_RRRF(name)  LIQUID_CONCAT(firpfb_rrrf,name)
+#define FIRPFB_MANGLE_CCCF(name)  LIQUID_CONCAT(firpfb_cccf,name)
 
-#define LIQUID_FIRPFB_DEFINE_API(X,T) \
+// Macro:
+//   X  : name-mangling macro
+//   TO : output data type
+//   TC : coefficients data type
+//   TI : input data type
+#define LIQUID_FIRPFB_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
+X() X(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len); \
 void X(_destroy)(X() _b); \
 void X(_print)(X() _b); \
-void X(_push)(X() _b, T _x); \
-void X(_execute)(X() _b, unsigned int _i, T *_y); \
+void X(_push)(X() _b, TI _x); \
+void X(_execute)(X() _b, unsigned int _i, TO *_y); \
 void X(_clear)(X() _b);
 
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_FLOAT, float)
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CFLOAT, float complex)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF, float, float, float)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, float complex, float complex, float complex)
 
 // 
 // Interpolator

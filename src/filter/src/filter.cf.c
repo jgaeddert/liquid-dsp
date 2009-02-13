@@ -7,7 +7,7 @@
 // 
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_cccf,name)
 #define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_cccf,name)
-#define FIRPFB(name)        LIQUID_CONCAT(cfirpfb,name)
+#define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccf,name)
 #define INTERP(name)        LIQUID_CONCAT(cinterp,name)
 #define DECIM(name)         LIQUID_CONCAT(cdecim,name)
 #define RESAMP(name)        LIQUID_CONCAT(cresamp,name)
@@ -34,4 +34,3 @@
 #include "resamp2.c"
 #include "symsync.c"
 #include "symsync2.c"
-
