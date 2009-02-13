@@ -452,23 +452,25 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float)
 // Infinite impulse response filter
 //
 
-#define IIR_FILTER_MANGLE_FLOAT(name)  LIQUID_CONCAT(iir_filter,name)
-#define IIR_FILTER_MANGLE_CFLOAT(name) LIQUID_CONCAT(ciir_filter,name)
+#define IIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(iir_filter_rrrf,name)
+#define IIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(iir_filter_cccf,name)
 
 // Macro:
-//  X   : name-mangling macro
-//  T   : coefficients type
-#define LIQUID_IIR_FILTER_DEFINE_API(X,T) \
+//   X  : name-mangling macro
+//   TO : output data type
+//   TC : coefficients data type
+//   TI : input data type
+#define LIQUID_IIR_FILTER_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X();   \
-X() X(_create)(T * _b, unsigned int _nb, T * _a,  unsigned int _na); \
+X() X(_create)(TC * _b, unsigned int _nb, TC * _a,  unsigned int _na); \
 void X(_destroy)(X() _f); \
 void X(_print)(X() _f); \
 void X(_clear)(X() _f); \
-void X(_execute)(X() _f, T _x, T *_y); \
+void X(_execute)(X() _f, TI _x, TO *_y); \
 unsigned int X(_get_length)(X() _f);
 
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_FLOAT, float)
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CFLOAT, float complex)
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF, float, float, float)
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, float complex, float complex, float complex)
 
 
 //

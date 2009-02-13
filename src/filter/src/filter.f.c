@@ -7,7 +7,7 @@
 // 
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_rrrf,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilb,name)
-#define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter,name)
+#define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_rrrf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb,name)
 #define INTERP(name)        LIQUID_CONCAT(interp,name)
 #define DECIM(name)         LIQUID_CONCAT(decim,name)

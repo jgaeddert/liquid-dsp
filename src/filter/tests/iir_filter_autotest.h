@@ -17,7 +17,7 @@ void autotest_impulse_response_order3()
         0.1952621458756350,
         0.0976310729378175};
 
-    iir_filter f = iir_filter_create(b,3,a,3);
+    iir_filter_rrrf f = iir_filter_rrrf_create(b,3,a,3);
 
     // initialize oracle; expected output (generated with octave)
     float test[15] = {
@@ -45,12 +45,12 @@ void autotest_impulse_response_order3()
     for (i=0; i<15; i++) {
         v = (i==0) ? 1.0f : 0.0f;
 
-        iir_filter_execute(f, v, &y);
+        iir_filter_rrrf_execute(f, v, &y);
 
         CONTEND_DELTA(test[i], y, tol);
     }
 
-    iir_filter_destroy(f);
+    iir_filter_rrrf_destroy(f);
 }
 
 
@@ -67,7 +67,7 @@ void autotest_step_response_order3()
         0.1952621458756350,
         0.0976310729378175};
 
-    iir_filter f = iir_filter_create(b,3,a,3);
+    iir_filter_rrrf f = iir_filter_rrrf_create(b,3,a,3);
 
     float test[15] = {
        0.0976310729378175,
@@ -92,12 +92,12 @@ void autotest_step_response_order3()
 
     // hit filter with step, compare output
     for (i=0; i<15; i++) {
-        iir_filter_execute(f, 1.0f, &y);
+        iir_filter_rrrf_execute(f, 1.0f, &y);
 
         CONTEND_DELTA(test[i], y, tol );
     }
 
-    iir_filter_destroy(f);
+    iir_filter_rrrf_destroy(f);
 }
 
 #endif // __IIR_FILTER_AUTOTEST_H__

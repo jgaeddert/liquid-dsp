@@ -10,15 +10,17 @@
 
 // defined:
 //  IIR_FILTER()    name-mangling macro
-//  T               coefficients type
+//  TO              output type
+//  TC              coefficients type
+//  TI              input type
 //  WINDOW()        window macro
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
 struct IIR_FILTER(_s) {
-    T * b;          // feedforward coefficients
-    T * a;          // feedback coefficients
-    T * v;          // internal filter state
+    TC * b;         // feedforward coefficients
+    TC * a;         // feedback coefficients
+    TI * v;         // internal filter state
     unsigned int n; // filter length
 
     unsigned int nb;
@@ -29,17 +31,17 @@ struct IIR_FILTER(_s) {
     //DOTPROD() dpb;
 };
 
-IIR_FILTER() IIR_FILTER(_create)(T * _b, unsigned int _nb, T * _a, unsigned int _na)
+IIR_FILTER() IIR_FILTER(_create)(TC * _b, unsigned int _nb, TC * _a, unsigned int _na)
 {
     IIR_FILTER() f = (IIR_FILTER()) malloc(sizeof(struct IIR_FILTER(_s)));
     f->nb = _nb;
     f->na = _na;
     f->n = (f->na > f->nb) ? f->na : f->nb;
 
-    f->b = (T *) malloc((f->na)*sizeof(T));
-    f->a = (T *) malloc((f->nb)*sizeof(T));
+    f->b = (TC *) malloc((f->na)*sizeof(TC));
+    f->a = (TC *) malloc((f->nb)*sizeof(TC));
 
-    T a0 = _a[0];
+    TC a0 = _a[0];
 
     unsigned int i;
 #if 0
@@ -57,7 +59,7 @@ IIR_FILTER() IIR_FILTER(_create)(T * _b, unsigned int _nb, T * _a, unsigned int 
         f->a[i] = _a[i] / a0;
 #endif
 
-    f->v = (T *) malloc((f->n)*sizeof(T));
+    f->v = (TI *) malloc((f->n)*sizeof(TI));
     for (i=0; i<f->n; i++)
         f->v[i] = 0;
 
@@ -111,7 +113,7 @@ void IIR_FILTER(_clear)(IIR_FILTER() _f)
         _f->v[i] = 0;
 }
 
-void IIR_FILTER(_execute)(IIR_FILTER() _f, T _x, T *_y)
+void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y)
 {
     unsigned int i;
 
@@ -120,13 +122,13 @@ void IIR_FILTER(_execute)(IIR_FILTER() _f, T _x, T *_y)
         _f->v[i] = _f->v[i-1];
 
     // compute new v
-    T v0 = _x;
+    TI v0 = _x;
     for (i=1; i<_f->na; i++)
         v0 -= _f->a[i] * _f->v[i];
     _f->v[0] = v0;
 
     // compute new y
-    T y0 = 0;
+    TO y0 = 0;
     for (i=0; i<_f->nb; i++)
         y0 += _f->b[i] * _f->v[i];
 
