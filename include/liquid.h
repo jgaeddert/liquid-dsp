@@ -405,6 +405,7 @@ struct fir_prototype_s {
 };
 
 #define FIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(fir_filter_rrrf,name)
+#define FIR_FILTER_MANGLE_CRCF(name)  LIQUID_CONCAT(fir_filter_crcf,name)
 #define FIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(fir_filter_cccf,name)
 
 // Macro:
@@ -422,6 +423,7 @@ void X(_execute)(X() _f, TO *_y); \
 unsigned int X(_get_length)(X() _f);
 
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_RRRF, float, float, float)
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CRCF, float complex, float, float complex)
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, float complex, float complex, float complex)
 
 //
@@ -453,6 +455,7 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float)
 //
 
 #define IIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(iir_filter_rrrf,name)
+#define IIR_FILTER_MANGLE_CRCF(name)  LIQUID_CONCAT(iir_filter_crcf,name)
 #define IIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(iir_filter_cccf,name)
 
 // Macro:
@@ -470,6 +473,7 @@ void X(_execute)(X() _f, TI _x, TO *_y); \
 unsigned int X(_get_length)(X() _f);
 
 LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF, float, float, float)
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CRCF, float complex, float, float complex)
 LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, float complex, float complex, float complex)
 
 
@@ -477,6 +481,7 @@ LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, float complex, float comple
 // FIR Polyphase filter bank
 //
 #define FIRPFB_MANGLE_RRRF(name)  LIQUID_CONCAT(firpfb_rrrf,name)
+#define FIRPFB_MANGLE_CRCF(name)  LIQUID_CONCAT(firpfb_crcf,name)
 #define FIRPFB_MANGLE_CCCF(name)  LIQUID_CONCAT(firpfb_cccf,name)
 
 // Macro:
@@ -493,13 +498,15 @@ void X(_push)(X() _b, TI _x); \
 void X(_execute)(X() _b, unsigned int _i, TO *_y); \
 void X(_clear)(X() _b);
 
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF, float, float, float)
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF, float,         float,          float)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CRCF, float complex, float,          float complex)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, float complex, float complex,  float complex)
 
 // 
 // Interpolator
 //
 #define INTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(interp_rrrf,name)
+#define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
 #define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
 
 #define LIQUID_INTERP_DEFINE_API(X,TO,TC,TI) \
@@ -509,13 +516,15 @@ void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
 void X(_execute)(X() _q, TI _x, TO *_y);
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float, float, float)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float,         float,          float)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF, float complex, float,          float complex)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, float complex, float complex,  float complex)
 
 // 
 // Decimator
 //
 #define DECIM_MANGLE_RRRF(name) LIQUID_CONCAT(decim_rrrf,name)
+#define DECIM_MANGLE_CRCF(name) LIQUID_CONCAT(decim_crcf,name)
 #define DECIM_MANGLE_CCCF(name) LIQUID_CONCAT(decim_cccf,name)
 
 #define LIQUID_DECIM_DEFINE_API(X,TO,TC,TI) \
@@ -525,13 +534,15 @@ void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
 void X(_execute)(X() _q, TI *_x, TO *_y, unsigned int _index);
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF, float, float, float)
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF, float,           float,          float)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF, float complex,   float,          float complex)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, float complex,   float complex,  float complex)
 
 // 
 // Half-band resampler
 //
 #define RESAMP2_MANGLE_RRRF(name)   LIQUID_CONCAT(resamp2_rrrf,name)
+#define RESAMP2_MANGLE_CRCF(name)   LIQUID_CONCAT(resamp2_crcf,name)
 #define RESAMP2_MANGLE_CCCF(name)   LIQUID_CONCAT(resamp2_cccf,name)
 
 #define LIQUID_RESAMP2_DEFINE_API(X,TO,TC,TI) \
@@ -542,14 +553,16 @@ void X(_print)(X() _q); \
 void X(_decim_execute)(X() _f, TI * _x, TO * _y); \
 void X(_interp_execute)(X() _f, TI _x, TO * _y);
 
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF, float, float, float)
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF, float,           float,          float)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCF, float complex,   float,          float complex)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, float complex,   float complex,  float complex)
 
 
 // 
 // Arbitrary resampler
 //
 #define RESAMP_MANGLE_RRRF(name)    LIQUID_CONCAT(resamp_rrrf,name)
+#define RESAMP_MANGLE_CRCF(name)    LIQUID_CONCAT(resamp_crcf,name)
 #define RESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(resamp_cccf,name)
 
 #define LIQUID_RESAMP_DEFINE_API(X,TO,TC,TI) \
@@ -559,13 +572,15 @@ void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
 void X(_execute)(X() _q);
 
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF, float, float, float)
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF, float,         float,          float)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CRCF, float complex, float,          float complex)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, float complex, float complex,  float complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer)
 //
 #define SYMSYNC_MANGLE_RRRF(name)   LIQUID_CONCAT(symsync_rrrf,name)
+#define SYMSYNC_MANGLE_CRCF(name)   LIQUID_CONCAT(symsync_crcf,name)
 #define SYMSYNC_MANGLE_CCCF(name)   LIQUID_CONCAT(symsync_cccf,name)
 
 #define LIQUID_SYMSYNC_DEFINE_API(X,TO,TC,TI) \
@@ -578,14 +593,16 @@ void X(_set_lf_bw)(X() _q, float _bt); \
 void X(_clear)(X() _q); \
 void X(_estimate_timing)(X() _q, TI * _x, unsigned int _n);
 
-LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF, float, float, float)
-LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF, float,           float,          float)
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF, float complex,   float,          float complex)
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, float complex,   float complex,  float complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer, 2 samples/symbol in/out)
 //
 #define SYMSYNC2_MANGLE_RRRF(name)  LIQUID_CONCAT(symsync2_rrrf,name)
-#define SYMSYNC2_MANGLE_CCCF(name) LIQUID_CONCAT(symsync2_cccf,name)
+#define SYMSYNC2_MANGLE_CRCF(name)  LIQUID_CONCAT(symsync2_crcf,name)
+#define SYMSYNC2_MANGLE_CCCF(name)  LIQUID_CONCAT(symsync2_cccf,name)
 
 #define LIQUID_SYMSYNC2_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
@@ -597,8 +614,9 @@ void X(_set_lf_bw)(X() _q, float _bt); \
 void X(_clear)(X() _q); \
 void X(_estimate_timing)(X() _q, TI * _x, unsigned int _n);
 
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float, float, float)
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float,         float,          float)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF, float complex, float,          float complex)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, float complex, float complex,  float complex)
 
 
 //
