@@ -11,7 +11,7 @@
 #define INTERP(name)        LIQUID_CONCAT(interp_cccf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(cresamp,name)
-#define RESAMP2(name)       LIQUID_CONCAT(cresamp2,name)
+#define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
 #define SYMSYNC2(name)      LIQUID_CONCAT(csymsync2,name)
 

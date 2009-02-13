@@ -531,19 +531,19 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, float complex, float complex, float c
 // 
 // Half-band resampler
 //
-#define RESAMP2_MANGLE_FLOAT(name)   LIQUID_CONCAT(resamp2,name)
-#define RESAMP2_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cresamp2,name)
+#define RESAMP2_MANGLE_RRRF(name)   LIQUID_CONCAT(resamp2_rrrf,name)
+#define RESAMP2_MANGLE_CCCF(name)   LIQUID_CONCAT(resamp2_cccf,name)
 
-#define LIQUID_RESAMP2_DEFINE_API(X,T) \
+#define LIQUID_RESAMP2_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _h_len); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
-void X(_decim_execute)(X() _f, T * _x, T * _y); \
-void X(_interp_execute)(X() _f, T _x, T * _y);
+void X(_decim_execute)(X() _f, TI * _x, TO * _y); \
+void X(_interp_execute)(X() _f, TI _x, TO * _y);
 
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_FLOAT, float)
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CFLOAT, float complex)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF, float, float, float)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, float complex, float complex, float complex)
 
 
 // 

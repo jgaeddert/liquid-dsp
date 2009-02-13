@@ -12,7 +12,7 @@
 #define INTERP(name)        LIQUID_CONCAT(interp_rrrf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_rrrf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp,name)
-#define RESAMP2(name)       LIQUID_CONCAT(resamp2,name)
+#define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrf,name)
 #define SYMSYNC2(name)      LIQUID_CONCAT(symsync2,name)
 

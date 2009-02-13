@@ -11,23 +11,25 @@
 
 // defined:
 //  RESAMP2()       name-mangling macro
-//  T               coefficients type
+//  TO              output data type
+//  TC              coefficient data type
+//  TI              input data type
 //  WINDOW()        window macro
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
 struct RESAMP2(_s) {
-    T * h;              // filter prototype
+    TC * h;              // filter prototype
     unsigned int m;     // 
     unsigned int h_len; // h_len = 4*m+1
 
     // lower branch (filter)
-    T * h1;
+    TC * h1;
     WINDOW() w1;
     unsigned int h1_len;
 
     // upper branch (delay line)
-    T * w0;
+    TI * w0;
     unsigned int w0_index;
 };
 
@@ -43,10 +45,10 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len)
         f->m = 2;
 
     f->h_len = 4*(f->m) + 1;
-    f->h = (T *) malloc((f->h_len)*sizeof(T));
+    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
 
     f->h1_len = 2*(f->m);
-    f->h1 = (T *) malloc((f->h1_len)*sizeof(T));
+    f->h1 = (TC *) malloc((f->h1_len)*sizeof(TC));
 
     // design filter prototype
     unsigned int i;
@@ -67,7 +69,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len)
     f->w1 = WINDOW(_create)(2*(f->m));
     WINDOW(_clear)(f->w1);
 
-    f->w0 = (T*)malloc((f->m)*sizeof(T));
+    f->w0 = (TI*)malloc((f->m)*sizeof(TI));
     for (i=0; i<f->m; i++)
         f->w0[i] = 0;
     f->w0_index = 0;
@@ -110,10 +112,10 @@ void RESAMP2(_clear)(RESAMP2() _f)
     _f->w0_index = 0;
 }
 
-void RESAMP2(_decim_execute)(RESAMP2() _f, T * _x, T *_y)
+void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
 {
-    T * r;
-    T y0, y1;
+    TI * r;
+    TO y0, y1;
 
     // compute filter branch
     WINDOW(_push)(_f->w1, _x[0]);
@@ -130,9 +132,9 @@ void RESAMP2(_decim_execute)(RESAMP2() _f, T * _x, T *_y)
     *_y = y0 + y1;
 }
 
-void RESAMP2(_interp_execute)(RESAMP2() _f, T _x, T *_y)
+void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
 {
-    T * r;  // read pointer
+    TI * r;  // read pointer
 
     // TODO macro for crealf, cimagf?
     
