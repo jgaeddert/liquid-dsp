@@ -18,17 +18,19 @@
 // defined:
 //  SYMSYNC()   name-mangling macro
 //  FIRPFB()    firpfb macro
-//  T           data type
+//  TO          output data type
+//  TC          coefficient data type
+//  TI          input data type
 //  WINDOW()    window macro
 //  DOTPROD()   dotprod macro
 //  PRINTVAL()  print macro
 
 // internal prototypes
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, T mf, T dmf);
+void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf);
 
 struct SYMSYNC(_s) {
-    T * h;
-    T * dh;
+    TC * h;
+    TC * dh;
     unsigned int k; // samples/symbol
     unsigned int h_len;
     unsigned int num_filters;
@@ -58,7 +60,7 @@ struct SYMSYNC(_s) {
 #endif
 };
 
-SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, T * _h, unsigned int _h_len)
+SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, unsigned int _h_len)
 {
     SYMSYNC() q = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
     q->k = _k;
@@ -68,7 +70,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, T * _h, u
     q->h_len = (_h_len-1)/q->num_filters;
     
     // compute derivative filter
-    T dh[_h_len];
+    TC dh[_h_len];
     unsigned int i;
     for (i=0; i<_h_len; i++) {
         if (i==0) {
@@ -147,11 +149,11 @@ void SYMSYNC(_print)(SYMSYNC() _q)
     FIRPFB(_print)(_q->dmf);
 }
 
-void SYMSYNC(_execute)(SYMSYNC() _q, T * _x, unsigned int _nx, T * _y, unsigned int *_ny)
+void SYMSYNC(_execute)(SYMSYNC() _q, TI * _x, unsigned int _nx, TO * _y, unsigned int *_ny)
 {
     //
-    T mf;   // matched filter output
-    T dmf;  // derivative matched filter output
+    TO mf;   // matched filter output
+    TO dmf;  // derivative matched filter output
 
     unsigned int ny=0;
 
@@ -259,11 +261,11 @@ void SYMSYNC(_clear)(SYMSYNC() _q)
     _q->v = 0;
 }
 
-void SYMSYNC(_estimate_timing)(SYMSYNC() _q, T * _v, unsigned int _n)
+void SYMSYNC(_estimate_timing)(SYMSYNC() _q, TI * _v, unsigned int _n)
 {
 }
 
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, T mf, T dmf)
+void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
 {
     //  1.  compute timing error signal
     _q->q = -( crealf(mf)*crealf(dmf) + cimagf(mf)*cimagf(dmf) )/2;

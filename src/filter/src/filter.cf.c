@@ -12,7 +12,7 @@
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(cresamp,name)
 #define RESAMP2(name)       LIQUID_CONCAT(cresamp2,name)
-#define SYMSYNC(name)       LIQUID_CONCAT(csymsync,name)
+#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
 #define SYMSYNC2(name)      LIQUID_CONCAT(csymsync2,name)
 
 #define PRINTVAL(x)         printf("%12.4e + %12.4ej", crealf(x), cimagf(x))
