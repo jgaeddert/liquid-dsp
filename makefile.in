@@ -134,8 +134,9 @@ $(autotest_prog).o: autotest_include.h autotest/autotest.c
 	$(CC) $(CFLAGS) autotest/autotest.c -c -o $@
 
 # link the autotest program with the objects
-$(autotest_prog): $(autotest_prog).o $(objects)
-	$(CC) $(LDFLAGS) $^ -o $@
+# NOTE: linked libraries must come _after_ the target program
+$(autotest_prog): $(autotest_prog).o libliquid.a
+	$(CC) $^ $(LDFLAGS) -o $@
 
 # run the autotest program
 check: $(autotest_prog)
@@ -160,8 +161,9 @@ $(bench_prog).o: benchmark_include.h bench/bench.c
 	$(CC) $(BENCH_CFLAGS) -c bench/bench.c -o $(bench_prog).o
 
 # link the benchmark program with the library objects
-$(bench_prog): $(bench_prog).o $(objects)
-	$(CC) $(BENCH_LDFLAGS) $^ -o $(bench_prog)
+# NOTE: linked libraries must come _after_ the target program
+$(bench_prog): $(bench_prog).o libliquid.a
+	$(CC) $^ $(BENCH_LDFLAGS) -o $(bench_prog)
 
 # run the benchmark program
 bench: $(bench_prog)
@@ -173,10 +175,14 @@ bench-clean:
 
 # Examples
 .PHONY: examples
-example_progs   = $(patsubst %.c,%,$(examples))
+include examples/examples.mk
+example_objs	= $(patsubst %.c,%.o,$(examples))
+example_progs	= $(patsubst %.c,%,  $(examples))
 tests:$(example_progs)
-$(example_progs): % : %.c libliquid.a
-	$(CC) $(CFLAGS) libliquid.a $< -o $@
+
+# NOTE: linked libraries must come _after_ the target program
+$(example_progs): $(example_objs)
+	$(CC) $(CFLAGS) $< $(LDFLAGS) libliquid.a -o $@
 examples-clean:
 	$(RM) $(example_progs)
 

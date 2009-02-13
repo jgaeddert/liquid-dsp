@@ -17,7 +17,7 @@ libraries	+= $(local_lib)
 sources		+= $(local_src)
 autotests	+= $(local_tests)
 benchmarks	+= $(local_bench)
-examples	+= $(local_examples)
+#examples	+= $(local_examples)
 
 # Build the local library and local object files
 $(local_lib): $(local_objs)
