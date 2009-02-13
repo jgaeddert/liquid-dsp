@@ -12,7 +12,7 @@ void autotest_interp_generic()
     float h[] = {0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0}; 
     unsigned int h_len = 9; // filter length
     unsigned int M = 4;     // interp factor
-    interp q = interp_create(4,h,h_len);
+    interp_rrrf q = interp_rrrf_create(4,h,h_len);
 
     float x[] = {1.0, -1.0, 1.0, 1.0};
     float y[16];
@@ -25,7 +25,7 @@ void autotest_interp_generic()
 
     unsigned int i, n=0;
     for (i=0; i<4; i++) {
-        interp_execute(q, x[i], &y[n]);
+        interp_rrrf_execute(q, x[i], &y[n]);
         n+=M;
     }   
 
@@ -37,9 +37,9 @@ void autotest_interp_generic()
     }
 
     if (_autotest_verbose)
-        interp_print(q);
+        interp_rrrf_print(q);
 
-    interp_destroy(q);
+    interp_rrrf_destroy(q);
 }
 
 #endif 

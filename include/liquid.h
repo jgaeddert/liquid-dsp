@@ -499,18 +499,18 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, float complex, float complex, float
 // 
 // Interpolator
 //
-#define INTERP_MANGLE_FLOAT(name)  LIQUID_CONCAT(interp,name)
-#define INTERP_MANGLE_CFLOAT(name) LIQUID_CONCAT(cinterp,name)
+#define INTERP_MANGLE_RRRF(name)  LIQUID_CONCAT(interp_rrrf,name)
+#define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
 
-#define LIQUID_INTERP_DEFINE_API(X,T) \
+#define LIQUID_INTERP_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _M, T *_h, unsigned int _h_len); \
+X() X(_create)(unsigned int _M, TC *_h, unsigned int _h_len); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
-void X(_execute)(X() _q, T _x, T *_y);
+void X(_execute)(X() _q, TI _x, TO *_y);
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_FLOAT, float)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CFLOAT, float complex)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float, float, float)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, float complex, float complex, float complex)
 
 // 
 // Decimator

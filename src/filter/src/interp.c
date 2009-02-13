@@ -12,13 +12,15 @@
 
 // defined:
 //  INTERP()    name-mangling macro
-//  T           data type
+//  TO          output data type
+//  TC          coefficient data type
+//  TI          input data type
 //  WINDOW()    window macro
 //  DOTPROD()   dotprod macro
 //  PRINTVAL()  print macro
 
 struct INTERP(_s) {
-    T * h;
+    TC * h;
     unsigned int h_len;
     unsigned int M;
 
@@ -27,11 +29,11 @@ struct INTERP(_s) {
     //DOTPROD() dp;
 };
 
-INTERP() INTERP(_create)(unsigned int _M, T *_h, unsigned int _h_len)
+INTERP() INTERP(_create)(unsigned int _M, TC *_h, unsigned int _h_len)
 {
     INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
     q->h_len = _h_len;
-    q->h = (T*) malloc((q->h_len)*sizeof(T));
+    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
     // load filter in reverse order
     unsigned int i;
     for (i=0; i<q->h_len; i++)
@@ -61,7 +63,7 @@ INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
     }
 
     // copy filter into type-specific array
-    T ht[h_len];
+    TC ht[h_len];
     unsigned int i;
     for (i=0; i<h_len; i++)
         ht[i] = h[i];
@@ -86,9 +88,9 @@ void INTERP(_print)(INTERP() _q)
     WINDOW(_print)(_q->w);
 }
 
-void INTERP(_execute)(INTERP() _q, T _x, T *_y)
+void INTERP(_execute)(INTERP() _q, TI _x, TO *_y)
 {
-    T * r; // read pointer
+    TI * r; // read pointer
 
     unsigned int i;
     for (i=0; i<_q->M; i++) {
