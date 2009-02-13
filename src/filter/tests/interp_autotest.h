@@ -7,7 +7,7 @@
 //
 // AUTOTEST: 
 //
-void autotest_interp_generic()
+void autotest_interp_rrrf_generic()
 {
     float h[] = {0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0}; 
     unsigned int h_len = 9; // filter length
@@ -40,6 +40,67 @@ void autotest_interp_generic()
         interp_rrrf_print(q);
 
     interp_rrrf_destroy(q);
+}
+
+void autotest_interp_crcf_generic()
+{
+    // h = [0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0];
+    float h[] = {0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25, 0}; 
+    unsigned int h_len = 9; // filter length
+    unsigned int M = 4;     // interp factor
+    interp_crcf q = interp_crcf_create(4,h,h_len);
+
+    //  x = [1+j*0.2, -0.2+j*1.3, 0.5+j*0.3, 1.1-j*0.2]
+    float x[4] = {
+      1.0000e+00+  2.0000e-01*_Complex_I, 
+     -2.0000e-01+  1.3000e+00*_Complex_I, 
+      5.0000e-01+  3.0000e-01*_Complex_I, 
+      1.1000e+00+ -2.0000e-01*_Complex_I
+    };
+        
+    float complex y[16];
+
+    // z = [x(1) 0 0 0 x(2) 0 0 0 x(3) 0 0 0 x(4) 0 0 0];
+    // test = filter(h,1,z)
+    float complex test[16] = {
+      0.0000+  0.0000*_Complex_I, 
+      0.2500+  0.0500*_Complex_I, 
+      0.5000+  0.1000*_Complex_I, 
+      0.7500+  0.1500*_Complex_I, 
+      1.0000+  0.2000*_Complex_I, 
+      0.7000+  0.4750*_Complex_I, 
+      0.4000+  0.7500*_Complex_I, 
+      0.1000+  1.0250*_Complex_I, 
+     -0.2000+  1.3000*_Complex_I, 
+     -0.0250+  1.0500*_Complex_I, 
+      0.1500+  0.8000*_Complex_I, 
+      0.3250+  0.5500*_Complex_I, 
+      0.5000+  0.3000*_Complex_I, 
+      0.6500+  0.1750*_Complex_I, 
+      0.8000+  0.0500*_Complex_I, 
+      0.9500+ -0.0750*_Complex_I
+    };
+
+    float tol = 1e-6;
+
+    unsigned int i, n=0;
+    for (i=0; i<4; i++) {
+        interp_crcf_execute(q, x[i], &y[n]);
+        n+=M;
+    }   
+
+    for (i=0; i<16; i++) {
+        CONTEND_DELTA( crealf(y[i]), crealf(test[i]), tol);
+        CONTEND_DELTA( cimagf(y[i]), cimagf(test[i]), tol);
+
+        if (_autotest_verbose)
+            printf("  y(%u) = %8.4f + j%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+    }
+
+    if (_autotest_verbose)
+        interp_crcf_print(q);
+
+    interp_crcf_destroy(q);
 }
 
 #endif 
