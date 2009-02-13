@@ -181,9 +181,12 @@ example_progs	= $(patsubst %.c,%,  $(examples))
 tests:$(example_progs)
 
 # NOTE: linked libraries must come _after_ the target program
-$(example_progs): $(example_objs)
+$(example_progs): % : %.o
 	$(CC) $(CFLAGS) $< $(LDFLAGS) libliquid.a -o $@
+
+# clean examples
 examples-clean:
+	$(RM) $(example_objs)
 	$(RM) $(example_progs)
 
 # Clean
