@@ -5,7 +5,7 @@
 #include "filter_internal.h"
 
 // 
-#define FIR_FILTER(name)    LIQUID_CONCAT(cfir_filter,name)
+#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_cccf,name)
 #define IIR_FILTER(name)    LIQUID_CONCAT(ciir_filter,name)
 #define FIRPFB(name)        LIQUID_CONCAT(cfirpfb,name)
 #define INTERP(name)        LIQUID_CONCAT(cinterp,name)
@@ -17,7 +17,10 @@
 
 #define PRINTVAL(x)         printf("%12.4e + %12.4ej", crealf(x), cimagf(x))
 
-#define T                   float complex
+#define T                   float complex   // general
+#define TO                  float complex   // output
+#define TC                  float complex   // coefficients
+#define TI                  float complex   // input
 #define WINDOW(name)        LIQUID_CONCAT(cfwindow,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
 

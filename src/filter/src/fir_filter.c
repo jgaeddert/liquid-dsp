@@ -16,7 +16,7 @@
 //  PRINTVAL()      print macro
 
 struct FIR_FILTER(_s) {
-    T * h;
+    TC * h;
     unsigned int h_len;
 
     WINDOW() w;
@@ -24,11 +24,11 @@ struct FIR_FILTER(_s) {
     fir_prototype p;
 };
 
-FIR_FILTER() FIR_FILTER(_create)(T * _h, unsigned int _n)
+FIR_FILTER() FIR_FILTER(_create)(TC * _h, unsigned int _n)
 {
     FIR_FILTER() f = (FIR_FILTER()) malloc(sizeof(struct FIR_FILTER(_s)));
     f->h_len = _n;
-    f->h = (T *) malloc((f->h_len)*sizeof(T));
+    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
 
     // load filter in reverse order
     unsigned int i;
@@ -46,7 +46,7 @@ FIR_FILTER() FIR_FILTER(_create_prototype)(unsigned int _n)
     printf("warning: fir_filter_create_prototype(), not yet implemented\n");
     FIR_FILTER() f = (FIR_FILTER()) malloc(sizeof(struct FIR_FILTER(_s)));
     f->h_len = _n;
-    f->h = (T *) malloc((f->h_len)*sizeof(T));
+    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
 
     // use remez here
 
@@ -71,14 +71,14 @@ void FIR_FILTER(_print)(FIR_FILTER() _f)
     }
 }
 
-void FIR_FILTER(_push)(FIR_FILTER() _f, T _x)
+void FIR_FILTER(_push)(FIR_FILTER() _f, TI _x)
 {
     WINDOW(_push)(_f->w, _x);
 }
 
-void FIR_FILTER(_execute)(FIR_FILTER() _f, T *_y)
+void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y)
 {
-    T *r;
+    TI *r;
     WINDOW(_read)(_f->w, &r);
     *_y = DOTPROD(_run)(_f->h, r, _f->h_len);
 }

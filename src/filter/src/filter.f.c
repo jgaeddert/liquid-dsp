@@ -5,7 +5,7 @@
 #include "filter_internal.h"
 
 // 
-#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter,name)
+#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_rrrf,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilb,name)
 #define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb,name)
@@ -18,7 +18,10 @@
 
 #define PRINTVAL(x)         printf("%12.4e", x)
 
-#define T                   float
+#define T                   float   // general
+#define TO                  float   // output
+#define TC                  float   // coefficients
+#define TI                  float   // input
 #define WINDOW(name)        LIQUID_CONCAT(fwindow,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
 
@@ -33,4 +36,3 @@
 #include "resamp2.c"
 #include "symsync.c"
 #include "symsync2.c"
-

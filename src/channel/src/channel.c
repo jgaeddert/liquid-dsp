@@ -25,8 +25,8 @@ channel channel_create()
 
 void channel_destroy(channel _q)
 {
-    cfir_filter_destroy(_q->f_ricek);
-    fir_filter_destroy(_q->f_lognorm);
+    fir_filter_cccf_destroy(_q->f_ricek);
+    fir_filter_rrrf_destroy(_q->f_lognorm);
     free(_q);
 }
 
@@ -42,8 +42,8 @@ void channel_execute(channel _q, float complex _x, float complex *_y)
 
     // advance fading filter
     r = crandnf();
-    cfir_filter_push(_q->f_ricek, r);
-    cfir_filter_execute(_q->f_ricek, &x);
+    fir_filter_cccf_push(_q->f_ricek, r);
+    fir_filter_cccf_execute(_q->f_ricek, &x);
 
     // TODO: compensate for filter
 
@@ -53,8 +53,8 @@ void channel_execute(channel _q, float complex _x, float complex *_y)
 
     // advance shadowing filter
     r = randnf();
-    fir_filter_push(_q->f_lognorm, r);
-    fir_filter_execute(_q->f_lognorm, &z);
+    fir_filter_rrrf_push(_q->f_lognorm, r);
+    fir_filter_rrrf_execute(_q->f_lognorm, &z);
 
 
     // additive white gaussian noise

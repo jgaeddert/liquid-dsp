@@ -53,18 +53,18 @@ ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, flo
         hc[i] = h[i];
 
     // create filter
-    q->f = cfir_filter_create(hc, q->h_len);
+    q->f = fir_filter_cccf_create(hc, q->h_len);
 
     // load with complex values
     for (i=0; i<q->h_len; i++)
-        cfir_filter_push(q->f, crandnf());
+        fir_filter_cccf_push(q->f, crandnf());
 
     return q;
 }
 
 void ricek_channel_destroy(ricek_channel _q)
 {
-    cfir_filter_destroy(_q->f);
+    fir_filter_cccf_destroy(_q->f);
     free(_q);
 }
 
@@ -78,8 +78,8 @@ void ricek_channel_execute(ricek_channel _q, float complex _x, float complex *_y
     float complex r, z;
 
     // advance fading filter
-    cfir_filter_push(_q->f, crandnf());
-    cfir_filter_execute(_q->f, &r);
+    fir_filter_cccf_push(_q->f, crandnf());
+    fir_filter_cccf_execute(_q->f, &r);
 
     // generate complex fading envelope
     z = ( crealf(r)*(_q->sig) + _q->s ) +
