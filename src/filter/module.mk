@@ -13,8 +13,8 @@ local_lib	:= libfilter.a
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
-	filter.f.c		\
-	filter.cf.c		\
+	filter_rrrf.c		\
+	filter_cccf.c		\
 	filter_common.c		\
 	firdes.c		\
 	rrcos.c			\
