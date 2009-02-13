@@ -584,21 +584,21 @@ LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, float complex, float complex, flo
 // 
 // Symbol timing recovery (symbol synchronizer, 2 samples/symbol in/out)
 //
-#define SYMSYNC2_MANGLE_FLOAT(name)  LIQUID_CONCAT(symsync2,name)
-#define SYMSYNC2_MANGLE_CFLOAT(name) LIQUID_CONCAT(csymsync2,name)
+#define SYMSYNC2_MANGLE_RRRF(name)  LIQUID_CONCAT(symsync2_rrrf,name)
+#define SYMSYNC2_MANGLE_CCCF(name) LIQUID_CONCAT(symsync2_cccf,name)
 
-#define LIQUID_SYMSYNC2_DEFINE_API(X,T) \
+#define LIQUID_SYMSYNC2_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _num_filters, T * _h, unsigned int _h_len); \
+X() X(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
-void X(_execute)(X() _q, T * _x, unsigned int _nx, T * _y, unsigned int *_ny); \
+void X(_execute)(X() _q, TI * _x, unsigned int _nx, TO * _y, unsigned int *_ny); \
 void X(_set_lf_bw)(X() _q, float _bt); \
 void X(_clear)(X() _q); \
-void X(_estimate_timing)(X() _q, T * _x, unsigned int _n);
+void X(_estimate_timing)(X() _q, TI * _x, unsigned int _n);
 
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_FLOAT, float)
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CFLOAT, float complex)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float, float, float)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, float complex, float complex, float complex)
 
 
 //

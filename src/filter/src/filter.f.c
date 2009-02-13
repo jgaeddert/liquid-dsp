@@ -14,7 +14,7 @@
 #define RESAMP(name)        LIQUID_CONCAT(resamp,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrf,name)
-#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2,name)
+#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_rrrf,name)
 
 #define PRINTVAL(x)         printf("%12.4e", x)
 
