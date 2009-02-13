@@ -10,13 +10,15 @@
 
 // defined:
 //  DECIM()     name-mangling macro
-//  T           data type
+//  TO          output data type
+//  TC          coefficients data type
+//  TI          input data type
 //  WINDOW()    window macro
 //  DOTPROD()   dotprod macro
 //  PRINTVAL()  print macro
 
 struct DECIM(_s) {
-    T * h;
+    TC * h;
     unsigned int h_len;
     unsigned int D;
 
@@ -25,11 +27,11 @@ struct DECIM(_s) {
     //DOTPROD() dp;
 };
 
-DECIM() DECIM(_create)(unsigned int _D, T *_h, unsigned int _h_len)
+DECIM() DECIM(_create)(unsigned int _D, TC *_h, unsigned int _h_len)
 {
     DECIM() q = (DECIM()) malloc(sizeof(struct DECIM(_s)));
     q->h_len = _h_len;
-    q->h = (T*) malloc((q->h_len)*sizeof(T));
+    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
 
     // load filter in reverse order
     unsigned int i;
@@ -58,9 +60,9 @@ void DECIM(_print)(DECIM() _q)
     WINDOW(_print)(_q->w);
 }
 
-void DECIM(_execute)(DECIM() _q, T *_x, T *_y, unsigned int _index)
+void DECIM(_execute)(DECIM() _q, TI *_x, TO *_y, unsigned int _index)
 {
-    T * r; // read pointer
+    TI * r; // read pointer
     unsigned int i;
     for (i=0; i<_q->D; i++) {
         WINDOW(_push)(_q->w, _x[i]);

@@ -515,18 +515,18 @@ LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, float complex, float complex, float
 // 
 // Decimator
 //
-#define DECIM_MANGLE_FLOAT(name)    LIQUID_CONCAT(decim,name)
-#define DECIM_MANGLE_CFLOAT(name)   LIQUID_CONCAT(cdecim,name)
+#define DECIM_MANGLE_RRRF(name) LIQUID_CONCAT(decim_rrrf,name)
+#define DECIM_MANGLE_CCCF(name) LIQUID_CONCAT(decim_cccf,name)
 
-#define LIQUID_DECIM_DEFINE_API(X,T) \
+#define LIQUID_DECIM_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _D, T *_h, unsigned int _h_len); \
+X() X(_create)(unsigned int _D, TC *_h, unsigned int _h_len); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
-void X(_execute)(X() _q, T *_x, T *_y, unsigned int _index);
+void X(_execute)(X() _q, TI *_x, TO *_y, unsigned int _index);
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_FLOAT, float)
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CFLOAT, float complex)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF, float, float, float)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, float complex, float complex, float complex)
 
 // 
 // Half-band resampler

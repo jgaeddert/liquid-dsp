@@ -10,7 +10,7 @@
 #define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_rrrf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_rrrf,name)
-#define DECIM(name)         LIQUID_CONCAT(decim,name)
+#define DECIM(name)         LIQUID_CONCAT(decim_rrrf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync,name)
