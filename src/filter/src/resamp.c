@@ -9,12 +9,14 @@
 #include "filter_internal.h"
 
 // defined:
+//  TO          output data type
+//  TC          coefficient data type
+//  TI          input data type
 //  RESAMP()    name-mangling macro
-//  T           data type
 //  FIRPFB()    firpfb macro
 
 struct RESAMP(_s) {
-    T * h;
+    TC * h;
     unsigned int h_len;
 
     float r;        // rate

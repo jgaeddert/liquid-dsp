@@ -10,7 +10,7 @@
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_cccf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
-#define RESAMP(name)        LIQUID_CONCAT(cresamp,name)
+#define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
 #define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_cccf,name)

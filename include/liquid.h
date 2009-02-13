@@ -549,18 +549,18 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, float complex, float complex, flo
 // 
 // Arbitrary resampler
 //
-#define RESAMP_MANGLE_FLOAT(name)   LIQUID_CONCAT(resamp,name)
-#define RESAMP_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cresamp,name)
+#define RESAMP_MANGLE_RRRF(name)    LIQUID_CONCAT(resamp_rrrf,name)
+#define RESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(resamp_cccf,name)
 
-#define LIQUID_RESAMP_DEFINE_API(X,T) \
+#define LIQUID_RESAMP_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
 X() X(_create)(float _r); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
 void X(_execute)(X() _q);
 
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_FLOAT, float)
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CFLOAT, float complex)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF, float, float, float)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, float complex, float complex, float complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer)
