@@ -51,7 +51,7 @@ void autotest_interp_crcf_generic()
     interp_crcf q = interp_crcf_create(4,h,h_len);
 
     //  x = [1+j*0.2, -0.2+j*1.3, 0.5+j*0.3, 1.1-j*0.2]
-    float x[4] = {
+    float complex x[4] = {
       1.0000e+00+  2.0000e-01*_Complex_I, 
      -2.0000e-01+  1.3000e+00*_Complex_I, 
       5.0000e-01+  3.0000e-01*_Complex_I, 
