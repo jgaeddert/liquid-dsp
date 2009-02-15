@@ -218,8 +218,8 @@ void SYMSYNC2(_execute)(SYMSYNC2() _q, TI * _x, unsigned int _nx, TO * _y, unsig
             SYMSYNC2(_advance_internal_loop)(_q, mf, dmf);
 
             // store result
-            _y[ny++] = _q->mf_buffer[0];
-            _y[ny++] = _q->mf_buffer[1];
+            _y[ny++] = _q->mf_buffer[0] / _q->k;
+            _y[ny++] = _q->mf_buffer[1] / _q->k;
         }
 
         SYMSYNC2(_advance_filterbank_index)(_q);

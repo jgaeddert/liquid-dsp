@@ -201,7 +201,7 @@ void SYMSYNC(_execute)(SYMSYNC() _q, TI * _x, unsigned int _nx, TO * _y, unsigne
             // compute MF/dMF outputs
             FIRPFB(_execute)(_q->mf,  _q->b, &mf);
             FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
-            _y[ny++] = mf;
+            _y[ny++] = mf / _q->k;
 
             // run loop
             //  1.  compute timing error signal
