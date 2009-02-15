@@ -14,6 +14,7 @@ local_lib	:= libframing.a
 #
 local_s_files	:=		\
 	framesync_rrrf.c	\
+	framesync_crcf.c	\
 	framesync_cccf.c	\
 	framing.c		\
 	packetizer.c

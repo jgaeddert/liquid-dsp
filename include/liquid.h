@@ -696,6 +696,7 @@ bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 // Frame synchronizer
 //
 #define FRAMESYNC_MANGLE_RRRF(name)     LIQUID_CONCAT(framesync_rrrf,name)
+#define FRAMESYNC_MANGLE_CRCF(name)     LIQUID_CONCAT(framesync_crcf,name)
 #define FRAMESYNC_MANGLE_CCCF(name)     LIQUID_CONCAT(framesync_cccf,name)
 
 // Macro:
@@ -712,8 +713,9 @@ void FRAMESYNC(_destroy)(FRAMESYNC() _fs);                  \
 void FRAMESYNC(_print)(FRAMESYNC() _fs);                    \
 TO FRAMESYNC(_correlate)(FRAMESYNC() _fs, TI _sym);
 
-LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_RRRF, float, float, float)
-LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_RRRF, float,           float,          float)
+LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CRCF, float complex,   float,          float complex)
+LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CCCF, float complex,   float complex,  float complex)
 
 
 // 
