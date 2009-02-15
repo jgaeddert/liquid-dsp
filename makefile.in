@@ -2,12 +2,29 @@
 # Makefile for liquid SDR libraries
 #
 
+# paths
 srcdir = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 VPATH = @srcdir@
+include_dirs	:= . include
+vpath %.h $(include_dirs)
 
+# programs
 CC = @CC@
+MV	:= mv -f
+RM	:= rm -f
+SED	:= sed
+AR	:= ar
+RANLIB	:= ranlib
+
+# flags
+INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
+CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
+# -g : debugging info
+CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall $(CONFIG_CFLAGS)
+LDFLAGS		+= -lm
+ARFLAGS		= r
 
 # Liquid modules
 #
@@ -57,22 +74,6 @@ benchmarks	:=
 objects		= $(patsubst %.c,%.o,$(sources))
 dependencies	= $(patsubst %.c,%.d,$(sources))
 
-include_dirs	:= . include
-INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
-CFLAGS		+= $(INCLUDE_CFLAGS)
-vpath %.h $(include_dirs)
-
-# -g : debugging info
-CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
-CFLAGS		+= -g -O2 -Wall $(CONFIG_CFLAGS)
-LDFLAGS		+= -lm
-ARFLAGS		= r
-
-MV	:= mv -f
-RM	:= rm -f
-SED	:= sed
-AR	:= ar
-RANLIB	:= ranlib
 
 all:
 
@@ -91,6 +92,7 @@ all: libliquid.a $(SHARED_LIB)
 libraries: $(libraries)
 
 # Liquid library definition
+# TODO: link from module libraries, not object files (for compactness)
 libliquid.a: $(objects)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
