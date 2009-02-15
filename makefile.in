@@ -199,6 +199,7 @@ clean: check-clean bench-clean examples-clean
 	$(RM) $(libraries)
 	$(RM) $(dependencies)
 	$(RM) $(extra_clean)
+	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
 
 

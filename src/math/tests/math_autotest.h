@@ -1,8 +1,8 @@
 #ifndef __MATH_AUTOTEST_H__
 #define __MATH_AUTOTEST_H__
 
-#include "../../../autotest/autotest.h"
-#include "../src/lmath.h"
+#include "autotest/autotest.h"
+#include "liquid.h"
 
 // 
 // AUTOTEST: Gamma
