@@ -5,7 +5,7 @@
 #ifndef __LIQUID_INTERLEAVER_INTERNAL_H__
 #define __LIQUID_INTERLEAVER_INTERNAL_H__
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 struct interleaver_s {
     unsigned int * p;   // byte permutation

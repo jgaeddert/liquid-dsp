@@ -6,11 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "nco.h"
-
-// TODO include filter_internal.h to gain direct access to
-//      lf2 private members
-#include "../../filter/src/filter.h"
+#include "liquid.h"
 
 struct pll_s {
     // loop filter
