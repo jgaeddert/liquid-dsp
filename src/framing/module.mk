@@ -46,7 +46,8 @@ local_t_files	:=		\
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:=
+local_b_files	:=		\
+	framesync_rrrf_benchmark.h
 
 
 # local_e_files
