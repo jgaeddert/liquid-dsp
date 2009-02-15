@@ -35,7 +35,8 @@ local_h_files	:= framing_internal.h
 # within $(local_dir)
 #
 local_t_files	:=		\
-	packetizer_autotest.h
+	packetizer_autotest.h	\
+	framesync_autotest.h
 
 
 # local_b_files
