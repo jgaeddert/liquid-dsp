@@ -5,11 +5,11 @@
 #include "liquid.h"
 
 // 
-// AUTOTEST: simple correlation
+// AUTOTEST: framesync_rrrf/simple correlation
 //
 void autotest_framesync_rrrf_15()
 {
-    // generate sequence
+    // generate sequence (15-bit msequence)
     float h[15] = {
          1.0,  1.0,  1.0,  1.0, 
         -1.0,  1.0, -1.0,  1.0, 
@@ -42,6 +42,48 @@ void autotest_framesync_rrrf_15()
 
     // clean it up
     framesync_rrrf_destroy(fs);
+}
+
+// 
+// AUTOTEST: framesync_crcf/simple correlation
+//
+void autotest_framesync_crcf_15()
+{
+    // generate sequence (15-bit msequence)
+    float h[15] = {
+         1.0,  1.0,  1.0,  1.0, 
+        -1.0,  1.0, -1.0,  1.0, 
+         1.0, -1.0, -1.0,  1.0, 
+        -1.0, -1.0, -1.0
+    };
+    float tol = 1e-3f;
+
+    // generate synchronizer
+    framesync_crcf fs = framesync_crcf_create(15,h);
+
+    // 
+    // run tests
+    //
+    unsigned int i;
+    float complex rxy;
+
+    // fill buffer with sequence
+    for (i=0; i<15; i++)
+        rxy = framesync_crcf_correlate(fs,h[i]);
+
+    // correlation should be 1.0
+    CONTEND_DELTA( crealf(rxy), 1.0f, tol );
+    CONTEND_DELTA( cimagf(rxy), 0.0f, tol );
+
+    // all other cross-correlations should be exactly -1/15
+    for (i=0; i<14; i++) {
+        rxy = framesync_crcf_correlate(fs,h[i]);
+        CONTEND_DELTA( crealf(rxy), -1.0f/15.0f, tol );
+        CONTEND_DELTA( cimagf(rxy), 0.0f,        tol );
+    }
+
+    // clean it up
+    framesync_crcf_destroy(fs);
 }
 
 #endif 
