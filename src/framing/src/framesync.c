@@ -14,10 +14,10 @@ struct FRAMESYNC(_s) {
     WINDOW() sym;   // received symbols
     WINDOW() sym2;  // received symbols squared
     DOTPROD() dp;   // dot product
-    T rxy;          // cross correlation
+    TO rxy;         // cross correlation
 };
 
-FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, T * _v)
+FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, TC * _v)
 {
     FRAMESYNC() fs = (FRAMESYNC()) malloc(sizeof(struct FRAMESYNC(_s)));
     fs->n = _n;
@@ -25,8 +25,8 @@ FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, T * _v)
     fs->sym  = WINDOW(_create)(fs->n);
     fs->sym2 = WINDOW(_create)(fs->n);
 
-    T h[fs->n];
-    memmove(h, _v, (fs->n)*sizeof(T));
+    TC h[fs->n];
+    memmove(h, _v, (fs->n)*sizeof(TC));
 
     // compute signal energy and normalize
     unsigned int i;
@@ -71,7 +71,7 @@ FRAMESYNC() FRAMESYNC(_create_msequence)(unsigned int _g)
     fs->sym  = WINDOW(_create)(fs->n);
     fs->sym2 = WINDOW(_create)(fs->n);
 
-    T h[fs->n];
+    TC h[fs->n];
 
     unsigned int i;
     for (i=0; i<fs->n; i++)
@@ -97,14 +97,14 @@ void FRAMESYNC(_print)(FRAMESYNC() _fs)
 
 }
 
-T FRAMESYNC(_correlate)(FRAMESYNC() _fs, T _sym)
+TO FRAMESYNC(_correlate)(FRAMESYNC() _fs, TI _sym)
 {
     // push symbol into buffers
     WINDOW(_push)(_fs->sym,  _sym);
     WINDOW(_push)(_fs->sym2, _sym*_sym);
 
     // compute dotprod, energy
-    T * r;
+    TI * r;
     unsigned int i;
     WINDOW(_read)(_fs->sym2, &r);
     float e=0.0f;

@@ -695,23 +695,25 @@ bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 //
 // Frame synchronizer
 //
-#define FRAMESYNC_MANGLE_FLOAT(name)    LIQUID_CONCAT(framesync,name)
-#define FRAMESYNC_MANGLE_CFLOAT(name)   LIQUID_CONCAT(cframesync,name)
+#define FRAMESYNC_MANGLE_RRRF(name)     LIQUID_CONCAT(framesync_rrrf,name)
+#define FRAMESYNC_MANGLE_CCCF(name)     LIQUID_CONCAT(framesync_cccf,name)
 
 // Macro:
-//  X   : name-mangling macro
-//  T   : data type
-#define LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC,T)            \
+//   X  : name-mangling macro
+//   TO : output data type
+//   TC : coefficients data type
+//   TI : input data type
+#define LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC,TO,TC,TI)     \
 typedef struct FRAMESYNC(_s) * FRAMESYNC();                 \
                                                             \
-FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, T * _v);    \
+FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, TC * _v);   \
 FRAMESYNC() FRAMESYNC(_create_msequence)(unsigned int _g);  \
 void FRAMESYNC(_destroy)(FRAMESYNC() _fs);                  \
 void FRAMESYNC(_print)(FRAMESYNC() _fs);                    \
-T FRAMESYNC(_correlate)(FRAMESYNC() _fs, T _sym);
+TO FRAMESYNC(_correlate)(FRAMESYNC() _fs, TI _sym);
 
-LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_FLOAT, float)
-LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CFLOAT, float complex)
+LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_RRRF, float, float, float)
+LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CCCF, float complex, float complex, float complex)
 
 
 // 
