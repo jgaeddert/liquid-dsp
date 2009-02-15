@@ -13,8 +13,8 @@ local_lib	:= libframing.a
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=		\
-	framesync.cf.c		\
-	framesync.f.c		\
+	framesync_rrrf.c	\
+	framesync_cccf.c	\
 	framing.c		\
 	packetizer.c
 
