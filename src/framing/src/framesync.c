@@ -101,17 +101,18 @@ TO FRAMESYNC(_correlate)(FRAMESYNC() _fs, TI _sym)
 {
     // push symbol into buffers
     WINDOW(_push)(_fs->sym,  _sym);
-    WINDOW(_push)(_fs->sym2, _sym*_sym);
+    WINDOW(_push)(_fs->sym2, ABS(_sym)*ABS(_sym));
 
     // compute dotprod, energy
-    TI * r;
+    TI * r2;
     unsigned int i;
-    WINDOW(_read)(_fs->sym2, &r);
+    WINDOW(_read)(_fs->sym2, &r2);
     float e=0.0f;
     for (i=0; i<_fs->n; i++)
-        e += ABS(r[i]) * ABS(r[i]);
+        e += r2[i];
     e /= _fs->n;
 
+    TI * r;
     WINDOW(_read)(_fs->sym, &r);
     _fs->rxy = DOTPROD(_execute)(_fs->dp, r) / (sqrtf(e) * _fs->n);
 
