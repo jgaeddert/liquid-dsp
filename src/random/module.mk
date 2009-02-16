@@ -44,14 +44,5 @@ local_t_files	:= random_autotest.h
 local_b_files	:= random_benchmark.h
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=		\
-	random_example.c	\
-	scramble_example.c
-
 include common.mk
 

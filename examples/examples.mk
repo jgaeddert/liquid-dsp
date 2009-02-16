@@ -47,7 +47,9 @@ local_src	:=			\
 	nco_example.c			\
 	packetizer_example.c		\
 	pll_example.c			\
-	ricek_channel_example.c
+	random_example.c		\
+	ricek_channel_example.c		\
+	scramble_example.c
 #	metadata_example.c		\
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
