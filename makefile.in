@@ -39,7 +39,6 @@ ARFLAGS		= r
 #    local_h_files : internal header files
 #    local_t_files : autotest script headers
 #    local_b_files : benchmark script headers
-#    local_e_files : example files
 modules		:=	\
 	agc		\
 	buffer		\
@@ -67,7 +66,6 @@ programs	:=
 sources		:=
 libraries	:=
 extra_clean	:=
-examples	:=
 autotests	:=
 benchmarks	:=
 
@@ -177,12 +175,13 @@ bench-clean:
 
 # Examples
 .PHONY: examples
+include examples/examples.mk
 example_objs	= $(patsubst %.c,%.o,$(examples))
 example_progs	= $(patsubst %.c,%,  $(examples))
 examples: $(example_progs)
 
 # NOTE: linked libraries must come _after_ the target program
-$(example_progs): % : %.o
+$(example_progs): % : %.o libliquid.a
 	$(CC) $(CFLAGS) $< $(LDFLAGS) libliquid.a -o $@
 
 # clean examples
