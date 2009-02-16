@@ -654,10 +654,6 @@ void lf2_generate_filter(lf2 _f);
 // Framing
 //
 
-//#include "sequence.h"
-//#include "modem_common.h"
-//#include "fec.h"
-
 #define LIQUID_CONCAT(prefix,name) prefix ## name
 
 //
@@ -691,6 +687,25 @@ void frame_setkey(frame _f, frame_keyid _id, unsigned int _value);
 
 void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
 bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
+
+//
+// Frame assembler
+//
+typedef struct frameassembler_s * frameassembler;
+frameassembler frameassembler_create();
+void frameassembler_destroy(frameassembler _fa);
+void frameassembler_print(frameassembler _fa);
+
+// set
+void frameassembler_set_ramp_len(frameassembler _fa, unsigned int _ramp_len);
+void frameassembler_set_phasing_len(frameassembler _fa, unsigned int _phasing_len);
+void frameassembler_set_pn_len(frameassembler _fa, unsigned int _pn_len);
+void frameassembler_set_mod_scheme(frameassembler _fa, unsigned int _ms, unsigned int _bps);
+void frameassembler_set_header(frameassembler _fa, unsigned char * _header, unsigned int _header_len);
+unsigned int frameassembler_get_header_len(frameassembler _fa);
+
+void frameassembler_write_header(frameassembler _fa, float complex * _v);
+void frameassembler_write_footer(frameassembler _fa, float complex * _v);
 
 //
 // Frame synchronizer

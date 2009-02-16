@@ -42,6 +42,22 @@ struct frame_s {
     unsigned int num_symbols;
 };
 
+struct frameassembler_s {
+    // options
+    unsigned int ramp_up_down_length;   // symbols
+    unsigned int phasing_pattern_length;// symbols
+    unsigned int pn_sequence_length;    // symbols
+    unsigned int header_length;         // bytes
+
+    // header length with crc, encoded
+    unsigned int header_length_enc;
+
+    // total frame header length (symbols)
+    unsigned int frame_header_length;
+
+    unsigned char header_crc32_key[4];
+};
+
 
 //
 // packetizer
