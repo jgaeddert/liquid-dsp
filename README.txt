@@ -12,7 +12,7 @@ BUILD:
 INSTALL:
     # make install
 
-TEST: (required python)
+TEST: (requires python)
     $ make check
 
 BENCHMARK: (requires python)
