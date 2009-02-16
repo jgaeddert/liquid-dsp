@@ -63,26 +63,5 @@ local_b_files	:=			\
 	resamp2_benchmark.h
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=			\
-	cresamp2_decim_example.c	\
-	cresamp2_interp_example.c	\
-	csymsync2_example.c		\
-	csymsync_example.c		\
-	decim_example.c			\
-	fir_filter_example.c		\
-	firdes_kaiser_example.c		\
-	firpfb_example.c		\
-	hilbert_decim_example.c		\
-	hilbert_interp_example.c	\
-	iir_filter_example.c		\
-	interp_example.c		\
-	matched_filter_example.c	\
-	symsync_example.c
-
 include common.mk
 

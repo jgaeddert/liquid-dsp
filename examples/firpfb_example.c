@@ -4,8 +4,7 @@
 
 #include <stdio.h>
 
-#include "../src/filter.h"
-#include "../src/firdes.h"
+#include "liquid.h"
 
 int main() {
     // filter parameters
@@ -20,20 +19,20 @@ int main() {
     design_rrc_filter(k*n,m,beta,0,h);
 
     // polyphase matched filter
-    firpfb mf = firpfb_create(n,h,h_len);
-    firpfb_print(mf);
+    firpfb_rrrf mf = firpfb_rrrf_create(n,h,h_len);
+    firpfb_rrrf_print(mf);
 
     // polyphase derivative matched filter
     float hp[h_len-1];
     unsigned int i;
     for (i=0; i<h_len-1; i++)
         hp[i] = h[i+1] - h[i];
-    firpfb dmf = firpfb_create(n,hp,h_len-1);
-    firpfb_print(dmf);
+    firpfb_rrrf dmf = firpfb_rrrf_create(n,hp,h_len-1);
+    firpfb_rrrf_print(dmf);
 
     // memory clean-up
-    firpfb_destroy(mf);
-    firpfb_destroy(dmf);
+    firpfb_rrrf_destroy(mf);
+    firpfb_rrrf_destroy(dmf);
     printf("done.\n");
     return 0;
 }

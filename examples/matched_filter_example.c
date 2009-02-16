@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../src/filter.h"
-#include "../src/firdes.h"
+#include "liquid.h"
 
 #undef DEBUG
 
@@ -22,8 +21,8 @@ int main() {
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     design_rrc_filter(k,m,beta,0,h);
-    interp q  = interp_create(k,h,h_len);
-    decim d   = decim_create(k,h,h_len);
+    interp_rrrf q  = interp_rrrf_create(k,h,h_len);
+    decim_rrrf d   = decim_rrrf_create(k,h,h_len);
 
     // generate signal
     float sym_in, buff[k], sym_out;
@@ -38,11 +37,11 @@ int main() {
         // generate random symbol
         sym_in = (rand() % 2) ? 1.0f : -1.0f;
 
-        // interpolate
-        interp_execute(q, sym_in, buff);
+        // interp_rrrfolate
+        interp_rrrf_execute(q, sym_in, buff);
 
-        // decimate
-        decim_execute(d, buff, &sym_out, 0);
+        // decim_rrrfate
+        decim_rrrf_execute(d, buff, &sym_out, 0);
 
         // normalize output
         sym_out /= k;
@@ -64,8 +63,8 @@ int main() {
 #endif
     
     // clean it up
-    interp_destroy(q);
-    decim_destroy(d);
+    interp_rrrf_destroy(q);
+    decim_rrrf_destroy(d);
     printf("done.\n");
     return 0;
 }

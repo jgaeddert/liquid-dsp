@@ -1,12 +1,12 @@
 //
-// Example: Hilbert transform: 1:2 complex-to-real interp.
+// Halfband interpolator (complex)
 //
 
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
 
-#include "../src/filter.h"
+#include "liquid.h"
 
 #define DEBUG
 
@@ -16,33 +16,32 @@ int main() {
     float fc=0.17f;
     unsigned int N=128;
 
-    firhilb f = firhilb_create(h_len);
+    resamp2_cccf f = resamp2_cccf_create(h_len);
 
-    firhilb_print(f);
+    resamp2_cccf_print(f);
 
 #ifdef DEBUG
-    FILE*fid = fopen("hilbert_interp_example.m","w");
+    FILE*fid = fopen("resamp2_cccf_interp_example.m","w");
     fprintf(fid,"%% hilbert example\nclear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\nN=%u;\n", h_len, N);
 #endif
 
     unsigned int i;
-    float y[2], theta=0.0f, dtheta=2*M_PI*fc;
-    float complex x;
+    float theta=0.0f, dtheta=2*M_PI*fc;
+    float complex x, y[2];
     for (i=0; i<N; i++) {
-
         x = cexpf(_Complex_I*theta);
         theta += dtheta;
 
-        firhilb_interp_execute(f, x, y);
+        resamp2_cccf_interp_execute(f, x, y);
 
 #ifdef DEBUG
-        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(x), cimagf(x));
-        fprintf(fid,"y(%3u) = %8.4f;\n", 2*i+1, y[0]);
-        fprintf(fid,"y(%3u) = %8.4f;\n", 2*i+2, y[1]);
+        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1,   crealf(x),    cimagf(x));
+        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
+        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
 #else
-        printf("y(%3u) = %8.4f;\n", 2*i+1, y[0]);
-        printf("y(%3u) = %8.4f;\n", 2*i+2, y[1]);
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
 #endif
     }
 
@@ -53,13 +52,13 @@ int main() {
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"figure; plot(f/2,X,'Color',[0.5 0.5 0.5],f,Y,'LineWidth',2);\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original/complex','transformed/interpolated',1);");
+    fprintf(fid,"legend('original','interpolated',1);");
 
     fclose(fid);
-    printf("results written to hilbert_interp_example.m\n");
+    printf("results written to resamp2_cccf_interp_example.m\n");
 #endif
 
-    firhilb_destroy(f);
+    resamp2_cccf_destroy(f);
     printf("done.\n");
     return 0;
 }

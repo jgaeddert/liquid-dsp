@@ -6,11 +6,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../src/filter.h"
-#include "../src/firdes.h"
+#include "liquid.h"
 
 #define DEBUG
-#define DEBUG_FILENAME "symsync_example.m"
+#define DEBUG_FILENAME "symsync_rrrf_example.m"
 
 int main() {
     // options
@@ -29,21 +28,21 @@ int main() {
 
 
 
-    // design interpolating filter
+    // design interp_rrrfolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     design_rrc_filter(k,m,beta,dt,h);
 
-    // create interpolator
-    interp q = interp_create(k,h,h_len);
+    // create interp_rrrfolator
+    interp_rrrf q = interp_rrrf_create(k,h,h_len);
 
     // design polyphase filter
     unsigned int H_len = 2*num_filters*k*m + 1;
     float H[H_len];
     design_rrc_filter(k*num_filters,m,beta,0,H);
     // create symbol synchronizer
-    symsync d = symsync_create(k, num_filters, H, H_len);
-    symsync_set_lf_bw(d,bt);
+    symsync_rrrf d = symsync_rrrf_create(k, num_filters, H, H_len);
+    symsync_rrrf_set_lf_bw(d,bt);
 
     unsigned int i, n=0;
     unsigned int num_samples = k*num_symbols;
@@ -70,15 +69,15 @@ int main() {
             x[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
     }
 
-    // run interpolator
+    // run interp_rrrfolator
     for (i=0; i<num_symbols; i++) {
-        interp_execute(q, x[i], &y[n]);
+        interp_rrrf_execute(q, x[i], &y[n]);
         n+=k;
     }
 
     // run symbol synchronizer
     unsigned int num_symbols_sync;
-    symsync_execute(d, &y[ds], num_samples-ds, z, &num_symbols_sync);
+    symsync_rrrf_execute(d, &y[ds], num_samples-ds, z, &num_symbols_sync);
 
     printf("h(t) :\n");
     for (i=0; i<h_len; i++) {
@@ -124,15 +123,15 @@ int main() {
     fprintf(fid,"xlabel('symbol index');\n");
     fprintf(fid,"ylabel('symbol/signal');\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"legend('sym in','interp','mf','sym out',0);\n");
+    fprintf(fid,"legend('sym in','interp_rrrf','mf','sym out',0);\n");
     fclose(fid);
 
     printf("results written to %s.\n", DEBUG_FILENAME);
 #endif
 
     // clean it up
-    interp_destroy(q);
-    symsync_destroy(d);
+    interp_rrrf_destroy(q);
+    symsync_rrrf_destroy(d);
     printf("done.\n");
     return 0;
 }

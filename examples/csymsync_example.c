@@ -6,11 +6,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../src/filter.h"
-#include "../src/firdes.h"
+#include "liquid.h"
 
 #define DEBUG
-#define DEBUG_FILENAME "csymsync_example.m"
+#define DEBUG_FILENAME "symsync_crcf_example.m"
 
 int main() {
     // options
@@ -34,23 +33,17 @@ int main() {
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     design_rrc_filter(k,m,beta,dt,h);
-    float complex hc[h_len];
-    for (i=0; i<h_len; i++)
-        hc[i] = h[i];
 
     // create interpolator
-    cinterp q = cinterp_create(k,hc,h_len);
+    interp_crcf q = interp_crcf_create(k,h,h_len);
 
     // design polyphase filter
     unsigned int H_len = 2*num_filters*k*m + 1;
     float H[H_len];
     design_rrc_filter(k*num_filters,m,beta,0,H);
-    float complex Hc[H_len];
-    for (i=0; i<H_len; i++)
-        Hc[i] = H[i];
     // create symbol synchronizer
-    csymsync d = csymsync_create(k, num_filters, Hc, H_len);
-    csymsync_set_lf_bw(d,bt);
+    symsync_crcf d = symsync_crcf_create(k, num_filters, H, H_len);
+    symsync_crcf_set_lf_bw(d,bt);
 
     unsigned int num_samples = k*num_symbols;
     float complex x[num_symbols];
@@ -81,13 +74,13 @@ int main() {
 
     // run interpolator
     for (i=0; i<num_symbols; i++) {
-        cinterp_execute(q, x[i], &y[n]);
+        interp_crcf_execute(q, x[i], &y[n]);
         n+=k;
     }
 
     // run symbol synchronizer
     unsigned int num_symbols_sync;
-    csymsync_execute(d, &y[ds], num_samples-ds, z, &num_symbols_sync);
+    symsync_crcf_execute(d, &y[ds], num_samples-ds, z, &num_symbols_sync);
 
     printf("h(t) :\n");
     for (i=0; i<h_len; i++) {
@@ -152,8 +145,8 @@ int main() {
 #endif
 
     // clean it up
-    cinterp_destroy(q);
-    csymsync_destroy(d);
+    interp_crcf_destroy(q);
+    symsync_crcf_destroy(d);
     printf("done.\n");
     return 0;
 }
