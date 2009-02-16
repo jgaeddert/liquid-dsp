@@ -17,7 +17,7 @@ int main() {
 
     // create objects
     float snr = powf(10.0f, snr_db/10.0f); // TODO: scale snr for complex signal?
-    cframesync fs = cframesync_create_msequence(LIQUID_MSEQUENCE_N63);
+    framesync_crcf fs = framesync_crcf_create_msequence(LIQUID_MSEQUENCE_N63);
     msequence ms = msequence_create(6);
 
     unsigned int i;
@@ -30,13 +30,13 @@ int main() {
         s += crandnf() / snr;
 
         // correlate
-        rxy = cframesync_correlate(fs,s);
+        rxy = framesync_crcf_correlate(fs,s);
 
         printf("%4u: mag: %12.8f, angle: %5.2f\n",i,cabsf(rxy),cargf(rxy));
     }
 
     // clean it up
-    cframesync_destroy(fs);
+    framesync_crcf_destroy(fs);
     msequence_destroy(ms);
 
     printf("done.\n");

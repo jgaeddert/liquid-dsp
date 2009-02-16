@@ -35,6 +35,8 @@ local_src	:=			\
 	fec_hamming84_example.c		\
 	fec_rep3_example.c		\
 	fft_example.c			\
+	framesync_crcf_example.c	\
+	framesync_rrrf_example.c	\
 	gport2_example.c		\
 	gport_example.c			\
 	gport_threaded_example.c	\

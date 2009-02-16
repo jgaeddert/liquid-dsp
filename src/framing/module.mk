@@ -49,17 +49,5 @@ local_t_files	:=		\
 local_b_files	:=		\
 	framesync_rrrf_benchmark.h
 
-
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=		\
-	cframesync_example.c	\
-	frame_example.c		\
-	framesync_example.c	\
-	packetizer_example.c
-
 include common.mk
 
