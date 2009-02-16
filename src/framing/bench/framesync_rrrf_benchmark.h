@@ -40,7 +40,10 @@ void framesync_rrrf_bench(
 }
 
 // specific modems
-void benchmark_framesync_rrrf_4     FRAMESYNC_RRRF_BENCH_API(4)
+void benchmark_framesync_rrrf_16    FRAMESYNC_RRRF_BENCH_API(16)
+void benchmark_framesync_rrrf_32    FRAMESYNC_RRRF_BENCH_API(32)
+void benchmark_framesync_rrrf_64    FRAMESYNC_RRRF_BENCH_API(64)
+void benchmark_framesync_rrrf_128   FRAMESYNC_RRRF_BENCH_API(128)
 
 #endif // __LIQUID_FRAMESYNC_RRRF_BENCH_H__
 
