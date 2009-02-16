@@ -25,8 +25,8 @@ int main() {
     unsigned int i;
     float h[h_len];
     fir_design_doppler(h_len,fd,K,theta,h);
-    fir_filter fi = fir_filter_create(h,h_len);
-    fir_filter fq = fir_filter_create(h,h_len);
+    fir_filter_rrrf fi = fir_filter_rrrf_create(h,h_len);
+    fir_filter_rrrf fq = fir_filter_rrrf_create(h,h_len);
 #ifdef DEBUG
     FILE*fid = fopen(DEBUG_FILENAME,"w");
     fprintf(fid,"%% %s, auto-generated file\n\n",DEBUG_FILENAME);
@@ -45,8 +45,8 @@ int main() {
     for (i=0; i<h_len; i++) {
         x = crandnf();
 
-        fir_filter_push(fi, crealf(x));
-        fir_filter_push(fq, cimagf(x));
+        fir_filter_rrrf_push(fi, crealf(x));
+        fir_filter_rrrf_push(fq, cimagf(x));
 
         t += h[i]*h[i];
     }
@@ -55,12 +55,12 @@ int main() {
     for (i=0; i<n; i++) {
         x = crandnf();
 
-        fir_filter_push(fi, crealf(x));
-        fir_filter_push(fq, cimagf(x));
+        fir_filter_rrrf_push(fi, crealf(x));
+        fir_filter_rrrf_push(fq, cimagf(x));
 
         // compute outputs
-        fir_filter_execute(fi, &yi);
-        fir_filter_execute(fq, &yq);
+        fir_filter_rrrf_execute(fi, &yi);
+        fir_filter_rrrf_execute(fq, &yq);
 
         yi /= t;
         yq /= t;
@@ -100,8 +100,8 @@ int main() {
 #endif
 
     // clean up objects
-    fir_filter_destroy(fi);
-    fir_filter_destroy(fq);
+    fir_filter_rrrf_destroy(fi);
+    fir_filter_rrrf_destroy(fq);
 
     printf("done.\n");
     return 0;
