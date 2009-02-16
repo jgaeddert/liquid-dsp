@@ -1,17 +1,32 @@
 ======================================================================================
 
-  Liquid Software Radio
+  Liquid : Software-Defined Radio Digital Signal Processing Library
 
 ======================================================================================
 
-Modules:
+BUILD:
+    $ ./reconf
+    $ ./configure
+    $ make
+
+INSTALL:
+    # make install
+
+TEST: (required python)
+    $ make check
+
+BENCHMARK: (requires python)
+    $ make bench
+    
+
+Modules: description
     agc: automatic gain control
     ann: artificial neural networks
-    buffer: internal buffering, circular/static
+    buffer: internal buffering, circular/static, ports
     dotprod: dot products (real, complex)
     fec: forward error correction (basic), checksum, etc.
     fft: fast Fourier transform (basic), simple implementation
-    filters: fir, iir, polyphase, design, remez, etc.
+    filters: fir, iir, polyphase, hilbert, interp, decim, design, remez, etc.
     interleaver: bit- and symbol-level
     math: transcendental functions (sin,cos,tan,atan), others: gamma, besseli
     modem: modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
@@ -30,28 +45,23 @@ Additional:
 
 Source code organization
 liquid/
-    README
-    configure
-    makefile                <-- top-level makefile; build here
+    README.txt              <-- this file
+    configure               <-- configuration shell script
+    makefile.in             <-- top-level makefile prototype
+    reconf                  <-- bootstrapping shell script
     doc/
         makefile
         liquid.tex
     include/
-        header1.h           <-- external header, defines
+        liquid.h            <-- external header, defines
                                 all APIsfor external use
-        header2.h
+        liquid.internal.h   <-- internal header
     src/
         include/            <-- initially empty directory
         module1/
-            module.mk       <-- module makefile
+            module.mk       <-- top-level included makefile for
+                                building this specific module
             README
-            doc/
-                figures/
-                refman.tex
-            examples/
-                example1.c
-                example2.c
-                Makefile
             src/
                 object1.h   <-- internal header
                 object1.1.c <-- internal source
@@ -67,11 +77,15 @@ liquid/
                 ...
         module2/
             ...
+    examples/
+        example.mk          <-- top-level included makefile
+        example1.c
+        example2.c
 
 Documentation organization
     Introduction
     Usage
-        #include "liquid/module1.h"
+        #include "liquid.h"
     ...
     Module1
         Object1.1
