@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../src/buffer.h"
+#include "liquid.h"
 
 int main() {
     // options

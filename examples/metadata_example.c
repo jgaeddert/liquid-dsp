@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "../src/metadata.h"
+#include "liquid.h"
 
 int main() {
 

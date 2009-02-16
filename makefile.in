@@ -190,6 +190,7 @@ $(example_progs): % : %.o
 examples-clean:
 	$(RM) $(example_objs)
 	$(RM) $(example_progs)
+	$(RM) examples/*.m
 
 # Clean
 .PHONY: clean

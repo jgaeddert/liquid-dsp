@@ -6,7 +6,7 @@
 #include <complex.h>
 #define J _Complex_I
 
-#include "../src/buffer.h"
+#include "liquid.h"
 
 
 int main() {

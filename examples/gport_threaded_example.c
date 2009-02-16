@@ -1,5 +1,5 @@
 //
-// gport2 (generic port) example (threaded)
+// generic port (gport) example (threaded)
 //
 
 #include <unistd.h>     // Symbolic Constants
@@ -10,7 +10,7 @@
 #include <pthread.h>    // POSIX Threads
 #include <string.h>     // String handling
 
-#include "../src/buffer.h"
+#include "liquid.h"
 
 // prototype for thread routines
 void producer_handler ( void *ptr );
@@ -28,7 +28,7 @@ int main()
     void * status;
     
     // create port: interface between threads
-    gport2 p = gport2_create(PRODUCER_SIZE+CONSUMER_SIZE, sizeof(unsigned int));
+    gport p = gport_create(PRODUCER_SIZE+CONSUMER_SIZE, sizeof(unsigned int));
     
     // set thread attributes
     pthread_attr_init(&thread_attr);
@@ -45,7 +45,7 @@ int main()
     pthread_join(producer_thread, &status);
     pthread_join(consumer_thread, &status);
 
-    gport2_destroy(p);
+    gport_destroy(p);
 
     printf("done.\n");
     return 0;
@@ -53,19 +53,23 @@ int main()
 
 void producer_handler ( void *_ptr )
 {
-    gport2 p = (gport2) _ptr;
+    gport p = (gport) _ptr;
     unsigned int i, j, n=0;
-    int w[PRODUCER_SIZE];
+    int * w;
 
     for (i=0; i<CONSUMER_SIZE; i++) {
+        printf("  producer waiting for %u samples...\n", PRODUCER_SIZE);
+        w = (int*) gport_producer_lock(p,PRODUCER_SIZE);
+
+        printf("  producer writing %u samples...\n", PRODUCER_SIZE);
         for (j=0; j<PRODUCER_SIZE; j++)
             w[j] = n++;
 
-        printf("  producer waiting for %u samples...\n", PRODUCER_SIZE);
-        gport2_produce(p,(void*)w,PRODUCER_SIZE);
-
         printf("  producer waiting %u ms\n", PRODUCER_TIMER);
         usleep(PRODUCER_TIMER*1000);
+
+        printf("  producer unlocking port\n");
+        gport_producer_unlock(p,PRODUCER_SIZE);
     }
     
     printf("  producer exiting thread\n");
@@ -75,16 +79,19 @@ void producer_handler ( void *_ptr )
 
 void consumer_handler ( void *_ptr )
 {
-    gport2 p = (gport2) _ptr;
+    gport p = (gport) _ptr;
     unsigned int i, j, n=0;
-    int r[CONSUMER_SIZE];
+    int * r;
 
     for (i=0; i<PRODUCER_SIZE; i++) {
         printf("  consumer waiting for %u samples...\n", CONSUMER_SIZE);
-        gport2_consume(p,(void*)r,CONSUMER_SIZE);
+        r = (int*) gport_consumer_lock(p,CONSUMER_SIZE);
 
         for (j=0; j<CONSUMER_SIZE; j++)
             printf("  %3u: %d\n", n++, r[j]);
+
+        printf("  consumer unlocking port\n");
+        gport_consumer_unlock(p, CONSUMER_SIZE);
     }
 
     printf("  consumer exiting thread\n");
