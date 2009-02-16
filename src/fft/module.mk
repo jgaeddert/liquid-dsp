@@ -50,14 +50,5 @@ local_b_files	:=		\
 	fft_benchmark.h
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:= 		\
-	asgram_example.c	\
-	fft_example.c
-
 include common.mk
 
