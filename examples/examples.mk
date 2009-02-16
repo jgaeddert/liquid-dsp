@@ -42,6 +42,7 @@ local_src	:=			\
 	gport_threaded_example.c	\
 	gport2_threaded_example.c	\
 	interleaver_example.c		\
+	matrix_example.c		\
 	modem_example.c			\
 	packetizer_example.c		\
 	ricek_channel_example.c

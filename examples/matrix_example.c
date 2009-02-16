@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "../src/matrix.h"
+#include "liquid.h"
 
 int main() {
 

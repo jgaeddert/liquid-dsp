@@ -46,15 +46,5 @@ local_t_files	:= 		\
 local_b_files	:=
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=		\
-	cfmatrix_example.c	\
-	fmatrix_example.c	\
-	kaiser_example.c
-
 include common.mk
 
