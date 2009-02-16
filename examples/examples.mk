@@ -7,12 +7,17 @@ local_src	:=			\
 	agc_example.c			\
 	buffer_example.c		\
 	cfbuffer_example.c		\
+	checksum_example.c		\
+	crc_example.c			\
 	dotprod_rrrf_example.c		\
 	dotprod_cccf_example.c		\
 	fbuffer_example.c		\
 	fwindow_example.c		\
 	fading_channel_example.c	\
 	fading_generator_example.c	\
+	fec_hamming74_example.c		\
+	fec_hamming84_example.c		\
+	fec_rep3_example.c		\
 	gport2_example.c		\
 	gport_example.c			\
 	gport_threaded_example.c	\
