@@ -1,20 +1,35 @@
-/*
- * modem_example.c
- *
- */
+// file: modem_test.c
+//
+// Tests simple modulation/demodulation without noise or phase
+// offset, counting the number of resulting symbol errors.
+//
+// Complile and run:
+//   $ gcc modem_test.c -lliquid -o modemtest
+//   $ ./modemtest
 
 #include <stdio.h>
-#include <stdlib.h>
-
 #include "liquid.h"
 
 int main() {
+    // create mod/demod objects
+    unsigned int bps=4;
+    modem mod = modem_create(MOD_QAM, bps);
+    modem demod = modem_create(MOD_QAM, bps);
 
-    modem m = modem_create(MOD_QPSK, 2);
+    unsigned int i; // modulated symbol
+    unsigned int s; // demodulated symbol
+    unsigned int num_symbols = 1<<bps;
+    float complex x;
+    unsigned int num_errors = 0;
 
-    free_modem(m);
+    for (i=0; i<num_symbols; i++) {
+        modulate(mod, i, &x);
+        demodulate(demod, x, &s);
+        num_errors += count_bit_errors(i,s);
+    }
+    printf("num errors: %u\n", num_errors);
 
-    printf("done.\n");
+    free_modem(mod);
+    free_modem(demod);
     return 0;
 }
-
