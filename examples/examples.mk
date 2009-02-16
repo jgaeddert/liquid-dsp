@@ -11,9 +11,9 @@ local_src	:=			\
 	fwindow_example.c		\
 	gport2_example.c		\
 	gport_example.c			\
+	gport_threaded_example.c	\
+	gport2_threaded_example.c	\
 	modem_example.c
-#	gport_threaded_example.c	\
-#	gport2_threaded_example.c	\
 #	metadata_example.c		\
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))

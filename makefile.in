@@ -179,10 +179,11 @@ include examples/examples.mk
 example_objs	= $(patsubst %.c,%.o,$(examples))
 example_progs	= $(patsubst %.c,%,  $(examples))
 examples: $(example_progs)
+EXAMPLES_LDFLAGS = $(LDFLAGS) -pthread
 
 # NOTE: linked libraries must come _after_ the target program
 $(example_progs): % : %.o libliquid.a
-	$(CC) $(CFLAGS) $< $(LDFLAGS) libliquid.a -o $@
+	$(CC) $(CFLAGS) $< $(EXAMPLES_LDFLAGS) libliquid.a -o $@
 
 # clean examples
 examples-clean:

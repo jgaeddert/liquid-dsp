@@ -41,13 +41,5 @@ local_t_files	:= agc_autotest.h
 #
 local_b_files	:= agc_benchmark.h
 
-
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:= agc_example.c
-
 include common.mk
 
