@@ -46,15 +46,5 @@ local_t_files	:=		\
 local_b_files	:=		\
 	nco_benchmark.h
 
-
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=		\
-	nco_example.c		\
-	pll_example.c
-
 include common.mk
 

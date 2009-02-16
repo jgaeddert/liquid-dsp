@@ -44,7 +44,9 @@ local_src	:=			\
 	interleaver_example.c		\
 	matrix_example.c		\
 	modem_example.c			\
+	nco_example.c			\
 	packetizer_example.c		\
+	pll_example.c			\
 	ricek_channel_example.c
 #	metadata_example.c		\
 
