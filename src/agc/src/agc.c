@@ -13,7 +13,7 @@
 #define AGC_RECURSIVE   0
 #define AGC_COMPARATIVE 1
 
-#define AGC_TYPE    AGC_COMPARATIVE
+#define AGC_TYPE        AGC_RECURSIVE
 
 agc agc_create(float _etarget, float _BT)
 {
