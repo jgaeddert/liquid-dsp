@@ -47,13 +47,5 @@ local_b_files	:=			\
 	interleaver_benchmark.h
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=			\
-	interleaver_example.c
-
 include common.mk
 
