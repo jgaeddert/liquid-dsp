@@ -177,10 +177,9 @@ bench-clean:
 
 # Examples
 .PHONY: examples
-include examples/examples.mk
 example_objs	= $(patsubst %.c,%.o,$(examples))
 example_progs	= $(patsubst %.c,%,  $(examples))
-tests:$(example_progs)
+examples: $(example_progs)
 
 # NOTE: linked libraries must come _after_ the target program
 $(example_progs): % : %.o
