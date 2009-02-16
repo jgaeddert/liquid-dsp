@@ -7,6 +7,8 @@ local_src	:=			\
 	agc_example.c			\
 	buffer_example.c		\
 	cfbuffer_example.c		\
+	dotprod_rrrf_example.c		\
+	dotprod_cccf_example.c		\
 	fbuffer_example.c		\
 	fwindow_example.c		\
 	fading_channel_example.c	\

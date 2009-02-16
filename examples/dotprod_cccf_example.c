@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "../src/dotprod.h"
+#include "liquid.h"
 
 int main() {
     float complex x[] = {1, 2, 3, 4, 5};

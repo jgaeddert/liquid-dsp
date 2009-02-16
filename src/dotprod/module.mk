@@ -49,14 +49,5 @@ local_b_files	:=			\
 	dotprod_rrrf_benchmark.h
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=			\
-	fdotprod_example.c		\
-	cfdotprod_example.c
-
 include common.mk
 
