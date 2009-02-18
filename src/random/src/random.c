@@ -4,7 +4,15 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "liquid.h"
+
+#define randf_inline() ((float) rand() / (float) RAND_MAX)
+
+float randf() {
+    return randf_inline();
+}
 
 // Gauss
 float randnf()

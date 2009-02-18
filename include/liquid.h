@@ -13,7 +13,6 @@ extern "C" {
 #include <unistd.h>
 #include <stdbool.h>
 #include <math.h>
-#include <stdlib.h>
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
@@ -1064,7 +1063,9 @@ typedef float(*optim_obj_function)(optim_ps _ps, void *_p, optim_target_function
 
 
 // Uniform random number generator, (0,1]
-#define randf() ((float) rand() / (float) RAND_MAX)
+float randf();
+float randf_pdf(float _x);
+float randf_cdf(float _x);
 
 // Gaussian random number generator, N(0,1)
 float randnf();
@@ -1085,12 +1086,12 @@ float rand_pdf_weibullf(float _x, float _a, float _b, float _g);
 float rand_cdf_weibullf(float _x, float _a, float _b, float _g);
 
 // Gamma
-void rand_gammaf();
+//void rand_gammaf();
 
 // Nakagami-m
-void rand_nakagamimf(float _m, float _omega);
-float rand_pdf_nakagamimf(float _x, float _m, float _omega);
-float rand_cdf_nakagamimf(float _x, float _m, float _omega);
+//void rand_nakagamimf(float _m, float _omega);
+//float rand_pdf_nakagamimf(float _x, float _m, float _omega);
+//float rand_cdf_nakagamimf(float _x, float _m, float _omega);
 
 // Rice-K
 float rand_ricekf(float _K, float _omega);
