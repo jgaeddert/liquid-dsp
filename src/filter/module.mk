@@ -40,11 +40,12 @@ local_h_files	:=
 local_t_files	:= 			\
 	decim_autotest.h		\
 	firdes_autotest.h		\
-	fir_filter_autotest.h		\
+	fir_filter_rrrf_autotest.h	\
 	fir_filter_crcf_autotest.h	\
 	firhilb_autotest.h		\
 	firpfb_autotest.h		\
 	iir_filter_autotest.h		\
+	iir_filter_crcf_autotest.h	\
 	interp_autotest.h
 
 
