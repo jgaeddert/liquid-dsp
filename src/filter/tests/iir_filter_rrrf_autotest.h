@@ -1,5 +1,5 @@
-#ifndef __IIR_FILTER_AUTOTEST_H__
-#define __IIR_FILTER_AUTOTEST_H__
+#ifndef __IIR_FILTER_RRRF_AUTOTEST_H__
+#define __IIR_FILTER_RRRF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -100,5 +100,5 @@ void autotest_step_response_order3()
     iir_filter_rrrf_destroy(f);
 }
 
-#endif // __IIR_FILTER_AUTOTEST_H__
+#endif // __IIR_FILTER_RRRF_AUTOTEST_H__
 

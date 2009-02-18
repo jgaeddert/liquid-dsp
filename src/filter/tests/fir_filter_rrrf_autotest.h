@@ -1,5 +1,5 @@
-#ifndef __FIR_FILTER_AUTOTEST_H__
-#define __FIR_FILTER_AUTOTEST_H__
+#ifndef __FIR_FILTER_RRRF_AUTOTEST_H__
+#define __FIR_FILTER_RRRF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -96,5 +96,5 @@ void autotest_noise_01()
 }
 
 
-#endif // __FIR_FILTER_AUTOTEST_H__
+#endif // __FIR_FILTER_RRRF_AUTOTEST_H__
 
