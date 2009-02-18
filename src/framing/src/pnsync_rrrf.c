@@ -5,7 +5,7 @@
 #include "framing_internal.h"
 
 // 
-#define FRAMESYNC(name)     LIQUID_CONCAT(framesync_rrrf,name)
+#define PNSYNC(name)        LIQUID_CONCAT(pnsync_rrrf,name)
 
 #define PRINTVAL(x)         printf("%12.4e", x)
 
@@ -17,5 +17,5 @@
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
 
 // source files
-#include "framesync.c"
+#include "pnsync.c"
 

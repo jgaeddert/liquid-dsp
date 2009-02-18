@@ -13,9 +13,9 @@ local_lib	:= libframing.a
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=		\
-	framesync_rrrf.c	\
-	framesync_crcf.c	\
-	framesync_cccf.c	\
+	pnsync_rrrf.c		\
+	pnsync_crcf.c		\
+	pnsync_cccf.c		\
 	framing.c		\
 	packetizer.c
 
@@ -36,7 +36,7 @@ local_h_files	:= framing_internal.h
 #
 local_t_files	:=		\
 	packetizer_autotest.h	\
-	framesync_autotest.h
+	pnsync_autotest.h
 
 
 # local_b_files
@@ -47,7 +47,7 @@ local_t_files	:=		\
 # $(local_dir)
 #
 local_b_files	:=		\
-	framesync_rrrf_benchmark.h
+	pnsync_rrrf_benchmark.h
 
 include common.mk
 

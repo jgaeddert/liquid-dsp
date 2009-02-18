@@ -1,13 +1,13 @@
-#ifndef __FRAMESYNC_AUTOTEST_H__
-#define __FRAMESYNC_AUTOTEST_H__
+#ifndef __PNSYNC_AUTOTEST_H__
+#define __PNSYNC_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
 
 // 
-// AUTOTEST: framesync_rrrf/simple correlation
+// AUTOTEST: pnsync_rrrf/simple correlation
 //
-void autotest_framesync_rrrf_15()
+void autotest_pnsync_rrrf_15()
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -19,7 +19,7 @@ void autotest_framesync_rrrf_15()
     float tol = 1e-3f;
 
     // generate synchronizer
-    framesync_rrrf fs = framesync_rrrf_create(15,h);
+    pnsync_rrrf fs = pnsync_rrrf_create(15,h);
 
     // 
     // run tests
@@ -29,25 +29,25 @@ void autotest_framesync_rrrf_15()
 
     // fill buffer with sequence
     for (i=0; i<15; i++)
-        rxy = framesync_rrrf_correlate(fs,h[i]);
+        rxy = pnsync_rrrf_correlate(fs,h[i]);
 
     // correlation should be 1.0
     CONTEND_DELTA( rxy, 1.0f, tol );
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
-        rxy = framesync_rrrf_correlate(fs,h[i]);
+        rxy = pnsync_rrrf_correlate(fs,h[i]);
         CONTEND_DELTA( rxy, -1.0f/15.0f, tol );
     }
 
     // clean it up
-    framesync_rrrf_destroy(fs);
+    pnsync_rrrf_destroy(fs);
 }
 
 // 
-// AUTOTEST: framesync_crcf/simple correlation
+// AUTOTEST: pnsync_crcf/simple correlation
 //
-void autotest_framesync_crcf_15()
+void autotest_pnsync_crcf_15()
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -59,7 +59,7 @@ void autotest_framesync_crcf_15()
     float tol = 1e-3f;
 
     // generate synchronizer
-    framesync_crcf fs = framesync_crcf_create(15,h);
+    pnsync_crcf fs = pnsync_crcf_create(15,h);
 
     // 
     // run tests
@@ -69,7 +69,7 @@ void autotest_framesync_crcf_15()
 
     // fill buffer with sequence
     for (i=0; i<15; i++)
-        rxy = framesync_crcf_correlate(fs,h[i]);
+        rxy = pnsync_crcf_correlate(fs,h[i]);
 
     // correlation should be 1.0
     CONTEND_DELTA( crealf(rxy), 1.0f, tol );
@@ -77,20 +77,20 @@ void autotest_framesync_crcf_15()
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
-        rxy = framesync_crcf_correlate(fs,h[i]);
+        rxy = pnsync_crcf_correlate(fs,h[i]);
         CONTEND_DELTA( crealf(rxy), -1.0f/15.0f, tol );
         CONTEND_DELTA( cimagf(rxy), 0.0f,        tol );
     }
 
     // clean it up
-    framesync_crcf_destroy(fs);
+    pnsync_crcf_destroy(fs);
 }
 
 // 
-// AUTOTEST: framesync_crcf/simple correlation with phase
+// AUTOTEST: pnsync_crcf/simple correlation with phase
 //           offset
 //
-void autotest_framesync_crcf_phase_15()
+void autotest_pnsync_crcf_phase_15()
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -103,7 +103,7 @@ void autotest_framesync_crcf_phase_15()
     float theta = 0.3f;
 
     // generate synchronizer
-    framesync_crcf fs = framesync_crcf_create(15,h);
+    pnsync_crcf fs = pnsync_crcf_create(15,h);
 
     // 
     // run tests
@@ -113,7 +113,7 @@ void autotest_framesync_crcf_phase_15()
 
     // fill buffer with sequence
     for (i=0; i<15; i++)
-        rxy = framesync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta));
+        rxy = pnsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta));
 
     // correlation should be 1.0
     CONTEND_DELTA( crealf(rxy), 1.0f*cosf(theta), tol );
@@ -121,13 +121,13 @@ void autotest_framesync_crcf_phase_15()
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
-        rxy = framesync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta));
+        rxy = pnsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta));
         CONTEND_DELTA( crealf(rxy), -1.0f/15.0f*cosf(theta), tol );
         CONTEND_DELTA( cimagf(rxy), -1.0f/15.0f*sinf(theta), tol );
     }
 
     // clean it up
-    framesync_crcf_destroy(fs);
+    pnsync_crcf_destroy(fs);
 }
 
 #endif 

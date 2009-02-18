@@ -707,29 +707,29 @@ void frameassembler_write_header(frameassembler _fa, float complex * _v);
 void frameassembler_write_footer(frameassembler _fa, float complex * _v);
 
 //
-// Frame synchronizer
+// P/N synchronizer
 //
-#define FRAMESYNC_MANGLE_RRRF(name)     LIQUID_CONCAT(framesync_rrrf,name)
-#define FRAMESYNC_MANGLE_CRCF(name)     LIQUID_CONCAT(framesync_crcf,name)
-#define FRAMESYNC_MANGLE_CCCF(name)     LIQUID_CONCAT(framesync_cccf,name)
+#define PNSYNC_MANGLE_RRRF(name)    LIQUID_CONCAT(pnsync_rrrf,name)
+#define PNSYNC_MANGLE_CRCF(name)    LIQUID_CONCAT(pnsync_crcf,name)
+#define PNSYNC_MANGLE_CCCF(name)    LIQUID_CONCAT(pnsync_cccf,name)
 
 // Macro:
 //   X  : name-mangling macro
 //   TO : output data type
 //   TC : coefficients data type
 //   TI : input data type
-#define LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC,TO,TC,TI)     \
-typedef struct FRAMESYNC(_s) * FRAMESYNC();                 \
-                                                            \
-FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, TC * _v);   \
-FRAMESYNC() FRAMESYNC(_create_msequence)(unsigned int _g);  \
-void FRAMESYNC(_destroy)(FRAMESYNC() _fs);                  \
-void FRAMESYNC(_print)(FRAMESYNC() _fs);                    \
-TO FRAMESYNC(_correlate)(FRAMESYNC() _fs, TI _sym);
+#define LIQUID_PNSYNC_DEFINE_API(PNSYNC,TO,TC,TI)       \
+typedef struct PNSYNC(_s) * PNSYNC();                   \
+                                                        \
+PNSYNC() PNSYNC(_create)(unsigned int _n, TC * _v);     \
+PNSYNC() PNSYNC(_create_msequence)(unsigned int _g);    \
+void PNSYNC(_destroy)(PNSYNC() _fs);                    \
+void PNSYNC(_print)(PNSYNC() _fs);                      \
+TO PNSYNC(_correlate)(PNSYNC() _fs, TI _sym);
 
-LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_RRRF, float,           float,          float)
-LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CRCF, float complex,   float,          float complex)
-LIQUID_FRAMESYNC_DEFINE_API(FRAMESYNC_MANGLE_CCCF, float complex,   float complex,  float complex)
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_RRRF, float,           float,          float)
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF, float complex,   float,          float complex)
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF, float complex,   float complex,  float complex)
 
 
 // 

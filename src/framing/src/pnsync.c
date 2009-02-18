@@ -1,5 +1,5 @@
 //
-// Frame synchronizer
+// P/N synchronizer
 //
 
 #include <stdio.h>
@@ -9,7 +9,7 @@
 
 //#include "liquid.h"
 
-struct FRAMESYNC(_s) {
+struct PNSYNC(_s) {
     unsigned int n; // sequence length
     WINDOW() sym;   // received symbols
     WINDOW() sym2;  // received symbols squared
@@ -17,9 +17,9 @@ struct FRAMESYNC(_s) {
     TO rxy;         // cross correlation
 };
 
-FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, TC * _v)
+PNSYNC() PNSYNC(_create)(unsigned int _n, TC * _v)
 {
-    FRAMESYNC() fs = (FRAMESYNC()) malloc(sizeof(struct FRAMESYNC(_s)));
+    PNSYNC() fs = (PNSYNC()) malloc(sizeof(struct PNSYNC(_s)));
     fs->n = _n;
 
     fs->sym  = WINDOW(_create)(fs->n);
@@ -44,7 +44,7 @@ FRAMESYNC() FRAMESYNC(_create)(unsigned int _n, TC * _v)
     return fs;
 }
 
-FRAMESYNC() FRAMESYNC(_create_msequence)(unsigned int _g)
+PNSYNC() PNSYNC(_create_msequence)(unsigned int _g)
 {
     unsigned int m;
     switch (_g) {
@@ -65,7 +65,7 @@ FRAMESYNC() FRAMESYNC(_create_msequence)(unsigned int _g)
     }
     msequence ms = msequence_create(m);
 
-    FRAMESYNC() fs = (FRAMESYNC()) malloc(sizeof(struct FRAMESYNC(_s)));
+    PNSYNC() fs = (PNSYNC()) malloc(sizeof(struct PNSYNC(_s)));
     fs->n = msequence_get_length(ms);
 
     fs->sym  = WINDOW(_create)(fs->n);
@@ -84,7 +84,7 @@ FRAMESYNC() FRAMESYNC(_create_msequence)(unsigned int _g)
     return fs;
 }
 
-void FRAMESYNC(_destroy)(FRAMESYNC() _fs)
+void PNSYNC(_destroy)(PNSYNC() _fs)
 {
     WINDOW(_destroy)(_fs->sym);
     WINDOW(_destroy)(_fs->sym2);
@@ -92,12 +92,12 @@ void FRAMESYNC(_destroy)(FRAMESYNC() _fs)
     free(_fs);
 }
 
-void FRAMESYNC(_print)(FRAMESYNC() _fs)
+void PNSYNC(_print)(PNSYNC() _fs)
 {
 
 }
 
-TO FRAMESYNC(_correlate)(FRAMESYNC() _fs, TI _sym)
+TO PNSYNC(_correlate)(PNSYNC() _fs, TI _sym)
 {
     // push symbol into buffers
     WINDOW(_push)(_fs->sym,  _sym);
