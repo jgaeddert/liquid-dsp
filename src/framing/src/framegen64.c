@@ -159,7 +159,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
 
     // p/n sequence
     for (i=0; i<FRAME64_PN_LEN; i++) {
-        interp_crcf_execute(_fg->interp, _fg->phasing[i], &_y[n]);
+        interp_crcf_execute(_fg->interp, _fg->pn_sequence[i], &_y[n]);
         n+=2;
     }
 
