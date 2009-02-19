@@ -17,6 +17,8 @@ local_s_files	:=		\
 	pnsync_crcf.c		\
 	pnsync_cccf.c		\
 	framing.c		\
+	framegen64.c		\
+	framesync64.c		\
 	packetizer.c
 
 # local_h_files

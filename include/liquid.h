@@ -688,23 +688,21 @@ void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
 bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 
 //
-// Frame assembler
+// Basic frame generator (64 bytes data payload)
 //
-typedef struct frameassembler_s * frameassembler;
-frameassembler frameassembler_create();
-void frameassembler_destroy(frameassembler _fa);
-void frameassembler_print(frameassembler _fa);
+typedef struct framegen64_s * framegen64;
+framegen64 framegen64_create();
+void framegen64_destroy(framegen64 _fg);
+void framegen64_print(framegen64 _fg);
+void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex * _y);
 
-// set
-void frameassembler_set_ramp_len(frameassembler _fa, unsigned int _ramp_len);
-void frameassembler_set_phasing_len(frameassembler _fa, unsigned int _phasing_len);
-void frameassembler_set_pn_len(frameassembler _fa, unsigned int _pn_len);
-void frameassembler_set_mod_scheme(frameassembler _fa, unsigned int _ms, unsigned int _bps);
-void frameassembler_set_header(frameassembler _fa, unsigned char * _header, unsigned int _header_len);
-unsigned int frameassembler_get_header_len(frameassembler _fa);
+// Basic frame synchronizer (64 bytes data payload)
+typedef struct framesync64_s * framesync64;
+framesync64 framesync64_create( /* callback */);
+void framesync64_destroy(framesync64 _fg);
+void framesync64_print(framesync64 _fg);
+void framesync64_execute(framesync64 _fg, float complex * _x, unsigned int _x_len);
 
-void frameassembler_write_header(frameassembler _fa, float complex * _v);
-void frameassembler_write_footer(frameassembler _fa, float complex * _v);
 
 //
 // P/N synchronizer
