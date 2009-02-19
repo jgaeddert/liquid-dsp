@@ -691,14 +691,24 @@ bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 // Basic frame generator (64 bytes data payload)
 //
 typedef struct framegen64_s * framegen64;
-framegen64 framegen64_create();
+framegen64 framegen64_create(
+    //unsigned int _k,
+    unsigned int _m,
+    float _beta);
 void framegen64_destroy(framegen64 _fg);
 void framegen64_print(framegen64 _fg);
 void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex * _y);
+void framegen64_flush(framegen64 _fg, unsigned int _n, float complex * _y);
 
 // Basic frame synchronizer (64 bytes data payload)
+typedef int framesync64_callback(unsigned char * _payload);
 typedef struct framesync64_s * framesync64;
-framesync64 framesync64_create( /* callback */);
+framesync64 framesync64_create(
+    //unsigned int _k,
+    unsigned int _m,
+    float _beta,
+    framesync64_callback _callback
+    );
 void framesync64_destroy(framesync64 _fg);
 void framesync64_print(framesync64 _fg);
 void framesync64_execute(framesync64 _fg, float complex * _x, unsigned int _x_len);
