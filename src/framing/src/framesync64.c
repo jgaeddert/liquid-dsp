@@ -23,10 +23,14 @@ struct framesync64_s {
 
     // synchronizer objects
     agc agc_rx;
-    symsync_crcf mfsync;
+    symsync_crcf mfdecim;
     pll pll_rx;
     nco nco_rx;
     pnsync_crcf fsync;
+
+    // status variables
+    bool frame_detected;
+    unsigned int num_symbols_collected;
 
     framesync64_callback *callback;
 };
@@ -37,14 +41,14 @@ framesync64 framesync64_create(
     float _beta,
     framesync64_callback _callback)
 {
-    framesync64 fg = (framesync64) malloc(sizeof(struct framesync64_s));
-    //fg->callback = _callback;
+    framesync64 fs = (framesync64) malloc(sizeof(struct framesync64_s));
+    //fs->callback = _callback;
 
     //
-    fg->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
-    fg->pll_rx = pll_create();
-    fg->nco_rx = nco_create();
-    pll_set_bandwidth(fg->pll_rx, FRAMESYNC64_PLL_BW_0);
+    fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
+    fs->pll_rx = pll_create();
+    fs->nco_rx = nco_create();
+    pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
 
     // pnsync
     unsigned int i;
@@ -52,7 +56,7 @@ framesync64 framesync64_create(
     float pn_sequence[64];
     for (i=0; i<64; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
-    fg->fsync = pnsync_crcf_create(pn_sequence, 64);
+    fs->fsync = pnsync_crcf_create(64, pn_sequence);
     msequence_destroy(ms);
 
     // design symsync (k=2)
@@ -60,34 +64,41 @@ framesync64 framesync64_create(
     unsigned int H_len = 2*2*npfb*_m + 1;
     float H[H_len];
     design_rrc_filter(2*npfb,_m,_beta,0,H);
-    fg->mfsync =  symsync_crcf_create(2, npfb, H, H_len-1);
-    symsync_crcf_set_lf_bw(fg->mfsync, FRAMESYNC64_SYMSYNC_BW_0);
+    fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
+    symsync_crcf_set_lf_bw(fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_0);
 
     // create decoder
-    fg->dec = fec_create(FEC_HAMMING74, NULL);
+    fs->dec = fec_create(FEC_HAMMING74, NULL);
 
     // create demod
-    fg->demod = modem_create(MOD_QPSK, 2);
+    fs->demod = modem_create(MOD_QPSK, 2);
 
-    return fg;
+    // set status flags
+    fs->frame_detected = false;
+    fs->num_symbols_collected = 0;
+
+    return fs;
 }
 
-void framesync64_destroy(framesync64 _fg)
+void framesync64_destroy(framesync64 _fs)
 {
-    symsync_crcf_destroy(_fg->mfsync);
-    fec_destroy(_fg->dec);
-    agc_destroy(_fg->agc_rx);
-    pll_destroy(_fg->pll_rx);
-    nco_destroy(_fg->nco_rx);
-    pnsync_crcf_destroy(_fg->fsync);
-    free(_fg->demod);
-    free(_fg);
+    symsync_crcf_destroy(_fs->mfdecim);
+    fec_destroy(_fs->dec);
+    agc_destroy(_fs->agc_rx);
+    pll_destroy(_fs->pll_rx);
+    nco_destroy(_fs->nco_rx);
+    pnsync_crcf_destroy(_fs->fsync);
+    free(_fs->demod);
+    free(_fs);
 }
 
-void framesync64_print(framesync64 _fg)
+void framesync64_print(framesync64 _fs)
 {
     printf("framesync:\n");
 }
 
+void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
+{
 
+}
 

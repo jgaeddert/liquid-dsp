@@ -711,7 +711,7 @@ framesync64 framesync64_create(
     );
 void framesync64_destroy(framesync64 _fg);
 void framesync64_print(framesync64 _fg);
-void framesync64_execute(framesync64 _fg, float complex * _x, unsigned int _x_len);
+void framesync64_execute(framesync64 _fg, float complex * _x, unsigned int _n);
 
 
 //
