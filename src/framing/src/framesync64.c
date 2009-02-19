@@ -22,6 +22,10 @@
 #define FRAME64_PN_LEN      64
 //#define FRAME64_RAMP_DN_LEN 64
 
+#define DEBUG
+#define DEBUG_FILENAME      "framesync64_internal_debug.m"
+#define DEBUG_BUFFER_LEN    2048
+
 // Internal
 void framesync64_open_bandwidth(framesync64 _fs);
 void framesync64_close_bandwidth(framesync64 _fs);
@@ -63,6 +67,12 @@ struct framesync64_s {
     unsigned char payload_sym[512];
     unsigned char payload_enc[128];
     unsigned char payload[64];
+
+#ifdef DEBUG
+    FILE*fid;
+    fwindow debug_agc_rssi;
+    cfwindow debug_rxy;
+#endif
 };
 
 framesync64 framesync64_create(
@@ -107,6 +117,11 @@ framesync64 framesync64_create(
     fs->state = FRAMESYNC64_STATE_SEEKPN;
     fs->num_symbols_collected = 0;
 
+#ifdef DEBUG
+    fs->debug_agc_rssi  =  fwindow_create(DEBUG_BUFFER_LEN);
+    fs->debug_rxy       = cfwindow_create(DEBUG_BUFFER_LEN);
+#endif
+
     return fs;
 }
 
@@ -119,6 +134,45 @@ void framesync64_destroy(framesync64 _fs)
     nco_destroy(_fs->nco_rx);
     pnsync_crcf_destroy(_fs->fsync);
     free(_fs->demod);
+#ifdef DEBUG
+    unsigned int i;
+    FILE* fid = fopen(DEBUG_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file", DEBUG_FILENAME);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+
+    // write agc_rssi
+    fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    float * r;
+    fwindow_read(_fs->debug_agc_rssi, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(20*log10(agc_rssi))\n");
+    fprintf(fid,"ylabel('RSSI [dB]');\n");
+
+    // write rxy
+    fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    float complex * rc;
+    cfwindow_read(_fs->debug_rxy, &rc);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(abs(rxy))\n");
+    fprintf(fid,"ylabel('|r_{xy}|');\n");
+
+    fprintf(fid,"\n\n");
+    fclose(fid);
+
+    printf("framesync64/debug: results written to %s\n", DEBUG_FILENAME);
+
+    // clean up debug windows
+    fwindow_destroy(_fs->debug_agc_rssi);
+    cfwindow_destroy(_fs->debug_rxy);
+#endif
     free(_fs);
 }
 
@@ -141,6 +195,13 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     for (i=0; i<_n; i++) {
         // agc
         agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
+#ifdef DEBUG
+        fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
+#endif
+        //continue;
+
+        // override agc
+        agc_rx_out = _x[i];
 
         // symbol synchronizer
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
@@ -151,8 +212,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             demodulate(_fs->demod, nco_rx_out, &demod_sym);
             get_demodulator_phase_error(_fs->demod, &phase_error);
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
-
-            printf("agc rssi: %8.4f\n", agc_get_signal_level(_fs->agc_rx));
 
             //
             switch (_fs->state) {
