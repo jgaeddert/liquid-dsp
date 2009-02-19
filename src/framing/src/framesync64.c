@@ -28,7 +28,6 @@ void framesync64_close_bandwidth(framesync64 _fs);
 void framesync64_decode_header(framesync64 _fs);
 void framesync64_decode_payload(framesync64 _fs);
 
-void framesync64_byte_to_syms(unsigned char _byte, unsigned char * _syms);
 void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte);
 
 struct framesync64_s {
@@ -214,20 +213,50 @@ void framesync64_close_bandwidth(framesync64 _fs)
 
 void framesync64_decode_header(framesync64 _fs)
 {
+    unsigned int i;
+    for (i=0; i<64; i++)
+        framesync64_syms_to_byte(&(_fs->header_sym[i]), &(_fs->header_enc[4*i]));
 
+    fec_decode(_fs->dec, 32, _fs->header_enc, _fs->header);
+
+    // strip off crc32
+    unsigned int header_key=0;
+    header_key |= ( _fs->header[28] << 24 );
+    header_key |= ( _fs->header[29] << 16 );
+    header_key |= ( _fs->header[30] <<  8 );
+    header_key |= ( _fs->header[31]       );
+    _fs->header_key = header_key;
+
+    // strip off crc32
+    unsigned int payload_key=0;
+    payload_key |= ( _fs->header[0] << 24 );
+    payload_key |= ( _fs->header[1] << 16 );
+    payload_key |= ( _fs->header[2] <<  8 );
+    payload_key |= ( _fs->header[3]       );
+    _fs->payload_key = payload_key;
+
+    // validate crc
+    if (crc32_validate_message(_fs->header,32,_fs->header_key))
+        printf("header crc: valid\n");
+    else
+        printf("header crc: INVALID\n");
 }
 
 void framesync64_decode_payload(framesync64 _fs)
 {
+    unsigned int i;
+    for (i=0; i<128; i++)
+        framesync64_syms_to_byte(&(_fs->payload_sym[i]), &(_fs->payload_enc[4*i]));
 
-}
+    fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
 
-void framesync64_byte_to_syms(unsigned char _byte, unsigned char * _syms)
-{
-    _syms[0] = (_byte >> 6) & 0x03;
-    _syms[1] = (_byte >> 4) & 0x03;
-    _syms[2] = (_byte >> 2) & 0x03;
-    _syms[3] = (_byte     ) & 0x03;
+    // validate crc
+    if (crc32_validate_message(_fs->payload,64,_fs->payload_key))
+        printf("payload crc: valid\n");
+    else
+        printf("payload crc: INVALID\n");
+
+    // invoke callback method
 }
 
 void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte)
