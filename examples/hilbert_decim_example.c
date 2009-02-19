@@ -50,9 +50,10 @@ int main() {
 #ifdef DEBUG
     fprintf(fid,"nfft=512;\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*hamming(length(x))',nfft))));\n");
-    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*hamming(length(y))',nfft))));\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f,X,'Color',[0.5 0.5 0.5],f/2,Y,'LineWidth',2);\n");
+    fprintf(fid,"Y=20*log10(abs(        (fft(y.*hamming(length(y))',nfft))));\n");
+    fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
+    fprintf(fid,"fd=[0:(nfft-1)]/(2*nfft);\n");
+    fprintf(fid,"figure; plot(f,X,'Color',[0.5 0.5 0.5],fd,Y,'LineWidth',2);\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original/real','transformed/decimated',1);");
 

@@ -48,10 +48,11 @@ int main() {
 
 #ifdef DEBUG
     fprintf(fid,"nfft=512;\n");
-    fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*hamming(length(x))',nfft))));\n");
+    fprintf(fid,"X=20*log10(abs(        (fft(x.*hamming(length(x))',nfft))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*hamming(length(y))',nfft))));\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f/2,X,'Color',[0.5 0.5 0.5],f,Y,'LineWidth',2);\n");
+    fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
+    fprintf(fid,"fi=[0:(nfft-1)]/(2*nfft);\n");
+    fprintf(fid,"figure; plot(fi,X,'Color',[0.5 0.5 0.5],f,Y,'LineWidth',2);\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original/complex','transformed/interpolated',1);");
 
