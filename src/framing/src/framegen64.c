@@ -4,7 +4,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "liquid.h"
 
@@ -19,8 +21,8 @@ void framegen64_byte_to_syms(unsigned char _byte, unsigned char * _syms);
 void framegen64_syms_to_byte(unsigned char * _syms, unsigned char * _byte);
 
 struct framegen64_s {
-    modem mod_preamble;
     modem mod;
+    fec enc;
 
     // buffers: preamble (BPSK)
     float ramp_up[FRAME64_RAMP_UP_LEN];
@@ -29,8 +31,14 @@ struct framegen64_s {
     float ramp_dn[FRAME64_RAMP_DN_LEN];
 
     // header (QPSK)
-    
+    unsigned char header[32];
+    unsigned char header_enc[64];
+    unsigned char header_sym[256];
+
     // payload (QPSK)
+    unsigned char payload[64];
+    unsigned char payload_enc[128];
+    unsigned char payload_sym[512];
 
     // pulse-shaping filter
     interp_crcf interp;
@@ -73,12 +81,20 @@ framegen64 framegen64_create(
     design_rrc_filter(2,_m,_beta,0,h);
     fg->interp = interp_crcf_create(2, h, h_len);
 
+    // create FEC encoder
+    fg->enc = fec_create(FEC_HAMMING74, NULL);
+
+    // create modulator
+    fg->mod = modem_create(MOD_QPSK, 2);
+
     return fg;
 }
 
 void framegen64_destroy(framegen64 _fg)
 {
     interp_crcf_destroy(_fg->interp);
+    fec_destroy(_fg->enc);
+    free_modem(_fg->mod);
     free(_fg);
 }
 
@@ -90,16 +106,77 @@ void framegen64_print(framegen64 _fg)
 void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex * _y)
 {
     // scramble payload
-    // encode payload
-    // modulate
+    memcpy(_fg->payload, _payload, 64);
+    scramble_data(_fg->payload, 64);
 
-    unsigned int i, n=0;
+    // compute crc32 on payload, append to header
+    unsigned int payload_key = crc32_generate_key(_fg->payload, 64);
+    _fg->header[0] = (payload_key >> 24) & 0xff;
+    _fg->header[1] = (payload_key >> 16) & 0xff;
+    _fg->header[2] = (payload_key >>  8) & 0xff;
+    _fg->header[3] = (payload_key      ) & 0xff;
+
+    // encode payload
+    fec_encode(_fg->enc, 64, _fg->payload, _fg->payload_enc);
+
+    // compute crc32 on header, append
+    unsigned int i;
+    for (i=4; i<28; i++)
+        _fg->header[i] = rand() & 0xff;
+    unsigned int header_key = crc32_generate_key(_fg->header, 28);
+    _fg->header[28] = (header_key >> 28) & 0xff;
+    _fg->header[29] = (header_key >> 16) & 0xff;
+    _fg->header[30] = (header_key >>  8) & 0xff;
+    _fg->header[31] = (header_key      ) & 0xff;
+
+    // scramble header
+    scramble_data(_fg->header, 32);
+
+    // encode header
+    fec_encode(_fg->enc, 32, _fg->header, _fg->header_enc);
+
+    unsigned int n=0;
 
     // ramp up
     for (i=0; i<FRAME64_RAMP_UP_LEN; i++) {
         interp_crcf_execute(_fg->interp, _fg->ramp_up[i], &_y[n]);
         n+=2;
     }
+
+    // phasing
+    for (i=0; i<FRAME64_PHASING_LEN; i++) {
+        interp_crcf_execute(_fg->interp, _fg->phasing[i], &_y[n]);
+        n+=2;
+    }
+
+    // p/n sequence
+    for (i=0; i<FRAME64_PN_LEN; i++) {
+        interp_crcf_execute(_fg->interp, _fg->phasing[i], &_y[n]);
+        n+=2;
+    }
+
+    float complex x;
+    // header
+    for (i=0; i<256; i++) {
+        modulate(_fg->mod, _fg->header_sym[i], &x);
+        interp_crcf_execute(_fg->interp, x, &_y[n]);
+        n+=2;
+    }
+
+    // payload
+    for (i=0; i<256; i++) {
+        modulate(_fg->mod, _fg->payload_sym[i], &x);
+        interp_crcf_execute(_fg->interp, x, &_y[n]);
+        n+=2;
+    }
+
+    // ramp down
+    for (i=0; i<FRAME64_RAMP_DN_LEN; i++) {
+        interp_crcf_execute(_fg->interp, _fg->ramp_dn[i], &_y[n]);
+        n+=2;
+    }
+
+    assert(n==2048);
 }
 
 void framegen64_flush(framegen64 _fg, unsigned int _n, float complex * _y)
