@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "liquid.h"
 
-#define DEBUG_FILENAME  "framegen64_example.m"
+#define DEBUG_FILENAME  "framesync64_example.m"
 
 static int callback(unsigned char * _payload);
 
@@ -30,12 +30,13 @@ int main() {
     framegen64_execute(fg, payload, frame_rx);
 
     // add channel impairments
+    for (i=0; i<2048; i++)
+        frame_rx[i] += crandnf()*0.01f;
 
     // synchronize/receive the frame
     framesync64_execute(fs, frame_rx, 2048);
 
     // write frame to output file
-#if 0
     FILE* fid = fopen(DEBUG_FILENAME, "w");
     fprintf(fid,"%% %s: auto-generated file\n", DEBUG_FILENAME);
     fprintf(fid,"\n\n");
@@ -49,7 +50,6 @@ int main() {
     fprintf(fid,"plot(t,real(frame),t,imag(frame));\n");
     fclose(fid);
     printf("results written to %s\n", DEBUG_FILENAME);
-#endif
 
     framegen64_destroy(fg);
     framesync64_destroy(fs);
