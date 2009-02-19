@@ -17,6 +17,11 @@
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
 #define FRAMESYNC64_PLL_BW_1        (1e-4f)
 
+//#define FRAME64_RAMP_UP_LEN 64
+//#define FRAME64_PHASING_LEN 64
+#define FRAME64_PN_LEN      64
+//#define FRAME64_RAMP_DN_LEN 64
+
 struct framesync64_s {
     modem demod;
     fec dec;
@@ -29,10 +34,25 @@ struct framesync64_s {
     pnsync_crcf fsync;
 
     // status variables
-    bool frame_detected;
+    enum {
+        FRAMESYNC64_STATE_SEEKPN=0,
+        FRAMESYNC64_STATE_RXHEADER,
+        FRAMESYNC64_STATE_RXPAYLOAD,
+        FRAMESYNC64_STATE_RESET
+    } state;
     unsigned int num_symbols_collected;
 
     framesync64_callback *callback;
+
+    // header
+    unsigned char header_sym[32];
+    unsigned char header_enc[32];
+    unsigned char header[32];
+
+    // payload
+    unsigned char payload_sym[512];
+    unsigned char payload_enc[128];
+    unsigned char payload[64];
 };
 
 framesync64 framesync64_create(
@@ -53,10 +73,10 @@ framesync64 framesync64_create(
     // pnsync
     unsigned int i;
     msequence ms = msequence_create(6);
-    float pn_sequence[64];
-    for (i=0; i<64; i++)
+    float pn_sequence[FRAME64_PN_LEN];
+    for (i=0; i<FRAME64_PN_LEN; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
-    fs->fsync = pnsync_crcf_create(64, pn_sequence);
+    fs->fsync = pnsync_crcf_create(FRAME64_PN_LEN, pn_sequence);
     msequence_destroy(ms);
 
     // design symsync (k=2)
@@ -74,7 +94,7 @@ framesync64 framesync64_create(
     fs->demod = modem_create(MOD_QPSK, 2);
 
     // set status flags
-    fs->frame_detected = false;
+    fs->state = FRAMESYNC64_STATE_SEEKPN;
     fs->num_symbols_collected = 0;
 
     return fs;
@@ -94,11 +114,52 @@ void framesync64_destroy(framesync64 _fs)
 
 void framesync64_print(framesync64 _fs)
 {
-    printf("framesync:\n");
+    printf("framesync64:\n");
 }
 
 void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 {
+    unsigned int i, j, nw;
+    float complex agc_rx_out;
+    float complex mfdecim_out[4];
+    float complex nco_rx_out;
+    float phase_error;
+    unsigned int demod_sym;
+    unsigned int n = _fs->num_symbols_collected;
 
+    for (i=0; i<_n; i++) {
+        // agc
+        agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
+
+        // symbol synchronizer
+        symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
+
+        for (j=0; j<nw; j++) {
+            // mix down, demodulate, run PLL
+            nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
+            demodulate(_fs->demod, nco_rx_out, &demod_sym);
+            get_demodulator_phase_error(_fs->demod, &phase_error);
+            pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
+
+            //
+            switch (_fs->state) {
+            case FRAMESYNC64_STATE_SEEKPN:
+                //
+                break;
+            case FRAMESYNC64_STATE_RXHEADER:
+                //
+                break;
+            case FRAMESYNC64_STATE_RXPAYLOAD:
+                //
+                break;
+            case FRAMESYNC64_STATE_RESET:
+                //
+                break;
+            default:;
+            }
+
+            n++;
+        }
+    }
 }
 
