@@ -135,6 +135,14 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
     // encode header
     fec_encode(_fg->enc, 32, _fg->header, _fg->header_enc);
 
+    // generate header symbols
+    for (i=0; i<64; i++)
+        framegen64_byte_to_syms(_fg->header_enc[i], &(_fg->header_sym[4*i]));
+
+    // generate payload symbols
+    for (i=0; i<128; i++)
+        framegen64_byte_to_syms(_fg->payload_enc[i], &(_fg->payload_sym[4*i]));
+
     unsigned int n=0;
 
     // ramp up
@@ -164,7 +172,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
     }
 
     // payload
-    for (i=0; i<256; i++) {
+    for (i=0; i<512; i++) {
         modulate(_fg->mod, _fg->payload_sym[i], &x);
         interp_crcf_execute(_fg->interp, x, &_y[n]);
         n+=2;
