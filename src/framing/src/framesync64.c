@@ -22,6 +22,15 @@
 #define FRAME64_PN_LEN      64
 //#define FRAME64_RAMP_DN_LEN 64
 
+// Internal
+void framesync64_open_bandwidth(framesync64 _fs);
+void framesync64_close_bandwidth(framesync64 _fs);
+void framesync64_decode_header(framesync64 _fs);
+void framesync64_decode_payload(framesync64 _fs);
+
+void framesync64_byte_to_syms(unsigned char _byte, unsigned char * _syms);
+void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte);
+
 struct framesync64_s {
     modem demod;
     fec dec;
@@ -41,6 +50,8 @@ struct framesync64_s {
         FRAMESYNC64_STATE_RESET
     } state;
     unsigned int num_symbols_collected;
+    unsigned int header_key;
+    unsigned int payload_key;
 
     framesync64_callback *callback;
 
@@ -124,6 +135,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     float complex mfdecim_out[4];
     float complex nco_rx_out;
     float phase_error;
+    float complex rxy;
     unsigned int demod_sym;
     unsigned int n = _fs->num_symbols_collected;
 
@@ -145,21 +157,86 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             switch (_fs->state) {
             case FRAMESYNC64_STATE_SEEKPN:
                 //
+                rxy = pnsync_crcf_correlate(_fs->fsync, nco_rx_out);
+                if (cabsf(rxy) > 0.6f) {
+                    // close bandwidth
+                    framesync64_close_bandwidth(_fs);
+                    nco_adjust_phase(_fs->nco_rx, -cargf(rxy));
+                    _fs->state = FRAMESYNC64_STATE_RXHEADER;
+                }
                 break;
             case FRAMESYNC64_STATE_RXHEADER:
-                //
+                _fs->header_sym[n] = (unsigned char) demod_sym;
+                n++;
+                if (n==256) {
+                    n = 0;
+                    _fs->state = FRAMESYNC64_STATE_RXPAYLOAD;
+                    framesync64_decode_header(_fs);
+                }
                 break;
             case FRAMESYNC64_STATE_RXPAYLOAD:
-                //
+                _fs->payload_sym[n] = (unsigned char) demod_sym;
+                n++;
+                if (n==512) {
+                    n = 0;
+                    _fs->state = FRAMESYNC64_STATE_RESET;
+                    framesync64_decode_payload(_fs);
+                }
                 break;
             case FRAMESYNC64_STATE_RESET:
-                //
+                // open bandwidth
+                framesync64_open_bandwidth(_fs);
+                _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 break;
             default:;
             }
-
-            n++;
         }
     }
+}
+
+// 
+// internal
+//
+
+void framesync64_open_bandwidth(framesync64 _fs)
+{
+    agc_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_1);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_1);
+    pll_set_bandwidth(_fs->pll_rx, FRAMESYNC64_PLL_BW_1);
+}
+
+void framesync64_close_bandwidth(framesync64 _fs)
+{
+    agc_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_0);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_0);
+    pll_set_bandwidth(_fs->pll_rx, FRAMESYNC64_PLL_BW_0);
+}
+
+void framesync64_decode_header(framesync64 _fs)
+{
+
+}
+
+void framesync64_decode_payload(framesync64 _fs)
+{
+
+}
+
+void framesync64_byte_to_syms(unsigned char _byte, unsigned char * _syms)
+{
+    _syms[0] = (_byte >> 6) & 0x03;
+    _syms[1] = (_byte >> 4) & 0x03;
+    _syms[2] = (_byte >> 2) & 0x03;
+    _syms[3] = (_byte     ) & 0x03;
+}
+
+void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte)
+{
+    unsigned char b=0;
+    b |= (_syms[0] << 6) & 0xc0;
+    b |= (_syms[1] << 4) & 0x30;
+    b |= (_syms[2] << 2) & 0x0c;
+    b |= (_syms[3]     ) & 0x03;
+    *_byte = b;
 }
 
