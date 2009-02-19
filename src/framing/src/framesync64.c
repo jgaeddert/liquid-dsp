@@ -22,7 +22,7 @@
 #define FRAME64_PN_LEN      64
 //#define FRAME64_RAMP_DN_LEN 64
 
-#define DEBUG
+//#define DEBUG
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN    2048
 
@@ -69,9 +69,9 @@ struct framesync64_s {
     unsigned char payload[64];
 
 #ifdef DEBUG
+    FILE*fid;
     fwindow debug_agc_rssi;
     cfwindow debug_rxy;
-    cfwindow debug_symsync;
 #endif
 };
 
@@ -93,10 +93,10 @@ framesync64 framesync64_create(
     // pnsync
     unsigned int i;
     msequence ms = msequence_create(6);
-    float pn_sequence[64];
-    for (i=0; i<64; i++)
+    float pn_sequence[FRAME64_PN_LEN];
+    for (i=0; i<FRAME64_PN_LEN; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
-    fs->fsync = pnsync_crcf_create(64, pn_sequence);
+    fs->fsync = pnsync_crcf_create(FRAME64_PN_LEN, pn_sequence);
     msequence_destroy(ms);
 
     // design symsync (k=2)
@@ -120,7 +120,6 @@ framesync64 framesync64_create(
 #ifdef DEBUG
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_rxy       = cfwindow_create(DEBUG_BUFFER_LEN);
-    fs->debug_symsync   = cfwindow_create(DEBUG_BUFFER_LEN);
 #endif
 
     return fs;
@@ -137,8 +136,6 @@ void framesync64_destroy(framesync64 _fs)
     free(_fs->demod);
 #ifdef DEBUG
     unsigned int i;
-    float * r;
-    float complex * rc;
     FILE* fid = fopen(DEBUG_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file", DEBUG_FILENAME);
     fprintf(fid,"\n\n");
@@ -147,6 +144,7 @@ void framesync64_destroy(framesync64 _fs)
 
     // write agc_rssi
     fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    float * r;
     fwindow_read(_fs->debug_agc_rssi, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
@@ -155,19 +153,9 @@ void framesync64_destroy(framesync64 _fs)
     fprintf(fid,"plot(20*log10(agc_rssi))\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
 
-    // write symsync
-    fprintf(fid,"symsync = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
-    cfwindow_read(_fs->debug_symsync, &rc);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"symsync(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(symsync,'x')\n");
-    fprintf(fid,"xlabel('I');\n");
-    fprintf(fid,"ylabel('Q');\n");
-
     // write rxy
     fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    float complex * rc;
     cfwindow_read(_fs->debug_rxy, &rc);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
@@ -184,7 +172,6 @@ void framesync64_destroy(framesync64 _fs)
     // clean up debug windows
     fwindow_destroy(_fs->debug_agc_rssi);
     cfwindow_destroy(_fs->debug_rxy);
-    cfwindow_destroy(_fs->debug_symsync);
 #endif
     free(_fs);
 }
@@ -207,7 +194,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
     for (i=0; i<_n; i++) {
         // agc
-        //agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
+        agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
 #ifdef DEBUG
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
@@ -220,26 +207,17 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
 
         for (j=0; j<nw; j++) {
-#ifdef DEBUG
-            cfwindow_push(_fs->debug_symsync, mfdecim_out[j]);
-#endif
             // mix down, demodulate, run PLL
             nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             demodulate(_fs->demod, nco_rx_out, &demod_sym);
             get_demodulator_phase_error(_fs->demod, &phase_error);
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
-#ifdef DEBUG
-            //cfwindow_push(_fs->debug_pll, nco_rx_out);
-#endif
 
             //
             switch (_fs->state) {
             case FRAMESYNC64_STATE_SEEKPN:
                 //
                 rxy = pnsync_crcf_correlate(_fs->fsync, nco_rx_out);
-#ifdef DEBUG
-                cfwindow_push(_fs->debug_rxy, rxy);
-#endif
                 if (cabsf(rxy) > 0.6f) {
                     printf("pnsync found\n");
                     // close bandwidth
@@ -264,9 +242,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                     n = 0;
                     _fs->state = FRAMESYNC64_STATE_RESET;
                     framesync64_decode_payload(_fs);
-                    printf("done with state rx payload\n");
-                    printf("i=%u\n",i);
-                    return;
                 }
                 break;
             case FRAMESYNC64_STATE_RESET:
@@ -274,8 +249,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 framesync64_open_bandwidth(_fs);
                 _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 _fs->num_symbols_collected = 0;
-                n=0;
-                printf("done with state reset\n");
                 break;
             default:;
             }
@@ -304,8 +277,8 @@ void framesync64_close_bandwidth(framesync64 _fs)
 void framesync64_decode_header(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<64; i++)
-        framesync64_syms_to_byte(&(_fs->header_sym[i]), &(_fs->header_enc[4*i]));
+    for (i=0; i<64; i++);
+        //framesync64_syms_to_byte(&(_fs->header_sym[i]), &(_fs->header_enc[4*i]));
 
     fec_decode(_fs->dec, 32, _fs->header_enc, _fs->header);
 
@@ -330,15 +303,13 @@ void framesync64_decode_header(framesync64 _fs)
         printf("header crc: valid\n");
     else
         printf("header crc: INVALID\n");
-
-    printf("done with decode_header()\n");
 }
 
 void framesync64_decode_payload(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<128; i++)
-        framesync64_syms_to_byte(&(_fs->payload_sym[i]), &(_fs->payload_enc[4*i]));
+    for (i=0; i<128; i++);
+        //framesync64_syms_to_byte(&(_fs->payload_sym[i]), &(_fs->payload_enc[4*i]));
 
     fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
 
@@ -349,7 +320,6 @@ void framesync64_decode_payload(framesync64 _fs)
         printf("payload crc: INVALID\n");
 
     // invoke callback method
-    printf("done with decode_payload()\n");
 }
 
 void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte)
