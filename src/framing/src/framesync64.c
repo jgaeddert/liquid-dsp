@@ -152,12 +152,15 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             get_demodulator_phase_error(_fs->demod, &phase_error);
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
 
+            printf("agc rssi: %8.4f\n", agc_get_signal_level(_fs->agc_rx));
+
             //
             switch (_fs->state) {
             case FRAMESYNC64_STATE_SEEKPN:
                 //
                 rxy = pnsync_crcf_correlate(_fs->fsync, nco_rx_out);
                 if (cabsf(rxy) > 0.6f) {
+                    printf("pnsync found\n");
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, -cargf(rxy));
@@ -186,6 +189,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 // open bandwidth
                 framesync64_open_bandwidth(_fs);
                 _fs->state = FRAMESYNC64_STATE_SEEKPN;
+                _fs->num_symbols_collected = 0;
                 break;
             default:;
             }
