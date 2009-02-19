@@ -22,7 +22,7 @@
 #define FRAME64_PN_LEN      64
 //#define FRAME64_RAMP_DN_LEN 64
 
-//#define DEBUG
+#define DEBUG
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN    2048
 
@@ -277,8 +277,8 @@ void framesync64_close_bandwidth(framesync64 _fs)
 void framesync64_decode_header(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<64; i++);
-        //framesync64_syms_to_byte(&(_fs->header_sym[i]), &(_fs->header_enc[4*i]));
+    for (i=0; i<64; i++)
+        framesync64_syms_to_byte(&(_fs->header_sym[4*i]), &(_fs->header_enc[i]));
 
     fec_decode(_fs->dec, 32, _fs->header_enc, _fs->header);
 
@@ -308,8 +308,8 @@ void framesync64_decode_header(framesync64 _fs)
 void framesync64_decode_payload(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<128; i++);
-        //framesync64_syms_to_byte(&(_fs->payload_sym[i]), &(_fs->payload_enc[4*i]));
+    for (i=0; i<128; i++)
+        framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_enc[i]));
 
     fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
 
