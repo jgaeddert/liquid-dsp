@@ -18,7 +18,7 @@
 #define FRAMEGEN64_PHASING_0    ( 0.70711f + 0.70711f*_Complex_I)
 #define FRAMEGEN64_PHASING_1    (-0.70711f - 0.70711f*_Complex_I)
 
-#define DEBUG
+//#define DEBUG
 
 // internal
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
@@ -125,7 +125,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
 
     // compute crc32 on payload, append to header
     unsigned int payload_key = crc32_generate_key(_fg->payload, 64);
-    printf("tx: payload_key: 0x%8x\n", payload_key);
+    //printf("tx: payload_key: 0x%8x\n", payload_key);
     _fg->header[0] = (payload_key >> 24) & 0xff;
     _fg->header[1] = (payload_key >> 16) & 0xff;
     _fg->header[2] = (payload_key >>  8) & 0xff;
@@ -139,7 +139,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
 
     // compute crc32 on header, append
     unsigned int header_key = crc32_generate_key(_fg->header, 28);
-    printf("tx: header_key:  0x%8x\n", header_key);
+    //printf("tx: header_key:  0x%8x\n", header_key);
     _fg->header[28] = (header_key >> 24) & 0xff;
     _fg->header[29] = (header_key >> 16) & 0xff;
     _fg->header[30] = (header_key >>  8) & 0xff;

@@ -18,12 +18,9 @@
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
 #define FRAMESYNC64_PLL_BW_1        (1e-4f)
 
-//#define FRAME64_RAMP_UP_LEN 64
-//#define FRAME64_PHASING_LEN 64
 #define FRAME64_PN_LEN      64
-//#define FRAME64_RAMP_DN_LEN 64
 
-#define DEBUG
+//#define DEBUG
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN    2048
 
@@ -333,7 +330,7 @@ void framesync64_decode_header(framesync64 _fs)
     header_key |= ( _fs->header[30] <<  8 );
     header_key |= ( _fs->header[31]       );
     _fs->header_key = header_key;
-    printf("rx: header_key:  0x%8x\n", header_key);
+    //printf("rx: header_key:  0x%8x\n", header_key);
 
     // strip off crc32
     unsigned int payload_key=0;
@@ -342,7 +339,7 @@ void framesync64_decode_header(framesync64 _fs)
     payload_key |= ( _fs->header[2] <<  8 );
     payload_key |= ( _fs->header[3]       );
     _fs->payload_key = payload_key;
-    printf("rx: payload_key: 0x%8x\n", payload_key);
+    //printf("rx: payload_key: 0x%8x\n", payload_key);
 
     // validate crc
     if (crc32_validate_message(_fs->header,28,_fs->header_key))
