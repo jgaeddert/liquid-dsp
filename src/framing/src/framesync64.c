@@ -227,6 +227,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             demodulate(_fs->demod, nco_rx_out, &demod_sym);
             get_demodulator_phase_error(_fs->demod, &phase_error);
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
+            nco_step(_fs->nco_rx);
 #ifdef DEBUG
             cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
