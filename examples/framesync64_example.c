@@ -19,6 +19,7 @@ int main() {
 
     // channel
     float phi=0.0f;
+    float gamma=1.0f;  // channel gain
 
     // data payload
     unsigned char payload[64];
@@ -36,6 +37,7 @@ int main() {
     for (i=0; i<2048; i++) {
         frame_rx[i] *= cexpf(_Complex_I*phi);
         frame_rx[i] += crandnf()*0.01f;
+        frame_rx[i] *= gamma;
     }
 
     // synchronize/receive the frame
@@ -49,10 +51,10 @@ int main() {
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n\n");
     for (i=0; i<2048; i++)
-        fprintf(fid, "frame(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
+        fprintf(fid, "frame_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
 
     fprintf(fid,"t=0:2047;\n");
-    fprintf(fid,"plot(t,real(frame),t,imag(frame));\n");
+    fprintf(fid,"plot(t,real(frame_rx),t,imag(frame_rx));\n");
     fclose(fid);
     printf("results written to %s\n", DEBUG_FILENAME);
 
