@@ -18,8 +18,12 @@ int main() {
     framesync64 fs = framesync64_create(m,beta,callback);
 
     // channel
-    float phi=0.0f;
-    float gamma=1.0f;  // channel gain
+    float phi=0.3f;
+    float dphi=1e-2f;
+    float gamma=0.1f;  // channel gain
+    nco nco_channel = nco_create();
+    nco_set_phase(nco_channel, phi);
+    nco_set_frequency(nco_channel, dphi);
 
     // data payload
     unsigned char payload[64];
@@ -38,6 +42,9 @@ int main() {
         frame_rx[i] *= cexpf(_Complex_I*phi);
         frame_rx[i] += crandnf()*0.01f;
         frame_rx[i] *= gamma;
+        frame_rx[i] *= nco_cexpf(nco_channel);
+
+        nco_step(nco_channel);
     }
 
     // synchronize/receive the frame
@@ -60,6 +67,7 @@ int main() {
 
     framegen64_destroy(fg);
     framesync64_destroy(fs);
+    nco_destroy(nco_channel);
 
     printf("done.\n");
     return 0;
