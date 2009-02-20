@@ -60,8 +60,8 @@ struct framesync64_s {
     framesync64_callback *callback;
 
     // header
-    unsigned char header_sym[32];
-    unsigned char header_enc[32];
+    unsigned char header_sym[256];
+    unsigned char header_enc[64];
     unsigned char header[32];
 
     // payload
