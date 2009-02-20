@@ -301,34 +301,8 @@ void framesync64_close_bandwidth(framesync64 _fs)
 void framesync64_decode_header(framesync64 _fs)
 {
     unsigned int i;
-    /*
-    printf("header rx syms:\n");
-    for (i=0; i<64; i++) {
-        printf("%4u:", i);
-        printf("  %2x ", _fs->header_sym[4*i+0]);
-        printf("  %2x ", _fs->header_sym[4*i+1]);
-        printf("  %2x ", _fs->header_sym[4*i+2]);
-        printf("  %2x ", _fs->header_sym[4*i+3]);
-        printf("\n");
-    }
-    */
-
-    /*
     for (i=0; i<64; i++)
         framesync64_syms_to_byte(_fs->header_sym+(4*i), _fs->header_enc+i);
-    _fs->header_enc[8]  = 0x3c;
-    _fs->header_enc[9]  = 0x4c;
-    _fs->header_enc[10] = 0x3c;
-    */
-
-    for (i=0; i<64; i++) {
-        unsigned char byte=0;
-        byte |= (_fs->header_sym[4*i+0] & 0x03) << 6;
-        byte |= (_fs->header_sym[4*i+1] & 0x03) << 4;
-        byte |= (_fs->header_sym[4*i+2] & 0x03) << 2;
-        byte |= (_fs->header_sym[4*i+3] & 0x03) << 0;
-        _fs->header_enc[i] = byte;
-    }
 
 #ifdef DEBUG
     printf("header ENCODED (rx):\n");
@@ -353,7 +327,7 @@ void framesync64_decode_header(framesync64 _fs)
     }
     printf("\n");
 #endif
-/*
+
     // strip off crc32
     unsigned int header_key=0;
     header_key |= ( _fs->header[28] << 24 );
@@ -371,7 +345,6 @@ void framesync64_decode_header(framesync64 _fs)
     payload_key |= ( _fs->header[3]       );
     _fs->payload_key = payload_key;
     printf("rx: payload_key: 0x%8x\n", payload_key);
-    */
 
     // validate crc
     if (crc32_validate_message(_fs->header,32,_fs->header_key))
