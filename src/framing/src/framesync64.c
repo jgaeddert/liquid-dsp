@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.h"
@@ -14,8 +15,8 @@
 #define FRAMESYNC64_AGC_BW_0        (1e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-6f)
 
-#define FRAMESYNC64_PLL_BW_0        (1e-2f)
-#define FRAMESYNC64_PLL_BW_1        (1e-4f)
+#define FRAMESYNC64_PLL_BW_0        (0.0f)//(1e-2f)
+#define FRAMESYNC64_PLL_BW_1        (0.0f)//(1e-4f)
 
 //#define FRAME64_RAMP_UP_LEN 64
 //#define FRAME64_PHASING_LEN 64
@@ -237,14 +238,15 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             case FRAMESYNC64_STATE_SEEKPN:
                 //
                 rxy = pnsync_crcf_correlate(_fs->fsync, nco_rx_out);
+                rxy *= cexpf(-M_PI/4*_Complex_I);
 #ifdef DEBUG
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
                 if (cabsf(rxy) > 0.6f) {
-                    printf("pnsync found\n");
+                    printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
-                    nco_adjust_phase(_fs->nco_rx, -cargf(rxy));
+                    //nco_adjust_phase(_fs->nco_rx, -cargf(rxy));
                     _fs->state = FRAMESYNC64_STATE_RXHEADER;
                 }
                 break;
@@ -299,11 +301,59 @@ void framesync64_close_bandwidth(framesync64 _fs)
 void framesync64_decode_header(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<64; i++)
-        framesync64_syms_to_byte(&(_fs->header_sym[4*i]), &(_fs->header_enc[i]));
+    /*
+    printf("header rx syms:\n");
+    for (i=0; i<64; i++) {
+        printf("%4u:", i);
+        printf("  %2x ", _fs->header_sym[4*i+0]);
+        printf("  %2x ", _fs->header_sym[4*i+1]);
+        printf("  %2x ", _fs->header_sym[4*i+2]);
+        printf("  %2x ", _fs->header_sym[4*i+3]);
+        printf("\n");
+    }
+    */
 
+    /*
+    for (i=0; i<64; i++)
+        framesync64_syms_to_byte(_fs->header_sym+(4*i), _fs->header_enc+i);
+    _fs->header_enc[8]  = 0x3c;
+    _fs->header_enc[9]  = 0x4c;
+    _fs->header_enc[10] = 0x3c;
+    */
+
+    for (i=0; i<64; i++) {
+        unsigned char byte=0;
+        byte |= (_fs->header_sym[4*i+0] & 0x03) << 6;
+        byte |= (_fs->header_sym[4*i+1] & 0x03) << 4;
+        byte |= (_fs->header_sym[4*i+2] & 0x03) << 2;
+        byte |= (_fs->header_sym[4*i+3] & 0x03) << 0;
+        _fs->header_enc[i] = byte;
+    }
+
+#ifdef DEBUG
+    printf("header ENCODED (rx):\n");
+    for (i=0; i<64; i++) {
+        printf("%2x ", _fs->header_enc[i]);
+        if (!((i+1)%16)) printf("\n");
+    }
+    printf("\n");
+#endif
+
+    // decode header
     fec_decode(_fs->dec, 32, _fs->header_enc, _fs->header);
 
+    // unscramble header
+    //unscramble_data(_fs->header, 32);
+
+#ifdef DEBUG
+    printf("header (rx):\n");
+    for (i=0; i<32; i++) {
+        printf("%2x ", _fs->header[i]);
+        if (!((i+1)%8)) printf("\n");
+    }
+    printf("\n");
+#endif
+/*
     // strip off crc32
     unsigned int header_key=0;
     header_key |= ( _fs->header[28] << 24 );
@@ -311,6 +361,7 @@ void framesync64_decode_header(framesync64 _fs)
     header_key |= ( _fs->header[30] <<  8 );
     header_key |= ( _fs->header[31]       );
     _fs->header_key = header_key;
+    printf("rx: header_key:  0x%8x\n", header_key);
 
     // strip off crc32
     unsigned int payload_key=0;
@@ -319,12 +370,14 @@ void framesync64_decode_header(framesync64 _fs)
     payload_key |= ( _fs->header[2] <<  8 );
     payload_key |= ( _fs->header[3]       );
     _fs->payload_key = payload_key;
+    printf("rx: payload_key: 0x%8x\n", payload_key);
+    */
 
     // validate crc
     if (crc32_validate_message(_fs->header,32,_fs->header_key))
-        printf("header crc: valid\n");
+        printf("header crc:  valid\n");
     else
-        printf("header crc: INVALID\n");
+        printf("header crc:  INVALID\n");
 }
 
 void framesync64_decode_payload(framesync64 _fs)
@@ -333,13 +386,26 @@ void framesync64_decode_payload(framesync64 _fs)
     for (i=0; i<128; i++)
         framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_enc[i]));
 
+    // decode payload
     fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
+
+    // unscramble payload
+    //unscramble_data(_fs->payload, 64);
 
     // validate crc
     if (crc32_validate_message(_fs->payload,64,_fs->payload_key))
         printf("payload crc: valid\n");
     else
         printf("payload crc: INVALID\n");
+
+#ifdef DEBUG
+    printf("payload (rx):\n");
+    for (i=0; i<64; i++) {
+        printf("%2x ", _fs->payload[i]);
+        if (!((i+1)%8)) printf("\n");
+    }
+    printf("\n");
+#endif
 
     // invoke callback method
 }

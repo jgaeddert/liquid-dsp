@@ -18,10 +18,11 @@
 #define FRAMEGEN64_PHASING_0    ( 0.70711f + 0.70711f*_Complex_I)
 #define FRAMEGEN64_PHASING_1    (-0.70711f - 0.70711f*_Complex_I)
 
+#define DEBUG
+
 // internal
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
 void framegen64_byte_to_syms(unsigned char _byte, unsigned char * _syms);
-void framegen64_syms_to_byte(unsigned char * _syms, unsigned char * _byte);
 
 struct framegen64_s {
     modem mod;
@@ -108,12 +109,25 @@ void framegen64_print(framegen64 _fg)
 
 void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex * _y)
 {
+    unsigned int i;
+    for (i=0; i<32; i++)
+        _fg->header[i] = 0xc0 | i;
+
     // scramble payload
     memcpy(_fg->payload, _payload, 64);
-    scramble_data(_fg->payload, 64);
+#ifdef DEBUG
+    printf("payload (tx):\n");
+    for (i=0; i<64; i++) {
+        printf("%2x ", _fg->payload[i]);
+        if (!((i+1)%8)) printf("\n");
+    }
+    printf("\n");
+#endif
+    //scramble_data(_fg->payload, 64);
 
     // compute crc32 on payload, append to header
     unsigned int payload_key = crc32_generate_key(_fg->payload, 64);
+    printf("tx: payload_key: 0x%8x\n", payload_key);
     _fg->header[0] = (payload_key >> 24) & 0xff;
     _fg->header[1] = (payload_key >> 16) & 0xff;
     _fg->header[2] = (payload_key >>  8) & 0xff;
@@ -123,24 +137,51 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
     fec_encode(_fg->enc, 64, _fg->payload, _fg->payload_enc);
 
     // compute crc32 on header, append
-    unsigned int i;
-    for (i=4; i<28; i++)
-        _fg->header[i] = rand() & 0xff;
     unsigned int header_key = crc32_generate_key(_fg->header, 28);
-    _fg->header[28] = (header_key >> 28) & 0xff;
+    printf("tx: header_key:  0x%8x\n", header_key);
+    _fg->header[28] = (header_key >> 24) & 0xff;
     _fg->header[29] = (header_key >> 16) & 0xff;
     _fg->header[30] = (header_key >>  8) & 0xff;
     _fg->header[31] = (header_key      ) & 0xff;
 
+#ifdef DEBUG
+    printf("header (tx):\n");
+    for (i=0; i<32; i++) {
+        printf("%2x ", _fg->header[i]);
+        if (!((i+1)%8)) printf("\n");
+    }
+    printf("\n");
+#endif
+
     // scramble header
-    scramble_data(_fg->header, 32);
+    //scramble_data(_fg->header, 32);
 
     // encode header
     fec_encode(_fg->enc, 32, _fg->header, _fg->header_enc);
 
+#ifdef DEBUG
+    printf("header ENCODED (tx):\n");
+    for (i=0; i<64; i++) {
+        printf("%2x ", _fg->header_enc[i]);
+        if (!((i+1)%16)) printf("\n");
+    }
+    printf("\n");
+#endif
+
     // generate header symbols
-    for (i=0; i<64; i++)
+    //printf("header tx syms:\n");
+    for (i=0; i<64; i++) {
         framegen64_byte_to_syms(_fg->header_enc[i], &(_fg->header_sym[4*i]));
+        /*
+        printf("%4u:",i);
+        printf("  %2x ", _fg->header_sym[4*i+0]);
+        printf("  %2x ", _fg->header_sym[4*i+1]);
+        printf("  %2x ", _fg->header_sym[4*i+2]);
+        printf("  %2x ", _fg->header_sym[4*i+3]);
+        printf("\n");
+        */
+    }
+
 
     // generate payload symbols
     for (i=0; i<128; i++)
@@ -212,15 +253,5 @@ void framegen64_byte_to_syms(unsigned char _byte, unsigned char * _syms)
     _syms[1] = (_byte >> 4) & 0x03;
     _syms[2] = (_byte >> 2) & 0x03;
     _syms[3] = (_byte     ) & 0x03;
-}
-
-void framegen64_syms_to_byte(unsigned char * _syms, unsigned char * _byte)
-{
-    unsigned char b=0;
-    b |= (_syms[0] << 6) & 0xc0;
-    b |= (_syms[1] << 4) & 0x30;
-    b |= (_syms[2] << 2) & 0x0c;
-    b |= (_syms[3]     ) & 0x03;
-    *_byte = b;
 }
 

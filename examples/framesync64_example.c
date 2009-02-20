@@ -17,6 +17,9 @@ int main() {
     framegen64 fg = framegen64_create(m,beta);
     framesync64 fs = framesync64_create(m,beta,callback);
 
+    // channel
+    float phi=0.0f;
+
     // data payload
     unsigned char payload[64];
 
@@ -31,7 +34,7 @@ int main() {
 
     // add channel impairments
     for (i=0; i<2048; i++) {
-        frame_rx[i] *= cexpf(_Complex_I*0.3f);
+        frame_rx[i] *= cexpf(_Complex_I*phi);
         frame_rx[i] += crandnf()*0.01f;
     }
 
