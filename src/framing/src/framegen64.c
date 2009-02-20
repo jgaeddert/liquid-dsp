@@ -15,6 +15,9 @@
 #define FRAME64_PN_LEN      64
 #define FRAME64_RAMP_DN_LEN 64
 
+#define FRAMEGEN64_PHASING_0    ( 0.70711f + 0.70711f*_Complex_I)
+#define FRAMEGEN64_PHASING_1    (-0.70711f - 0.70711f*_Complex_I)
+
 // internal
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
 void framegen64_byte_to_syms(unsigned char _byte, unsigned char * _syms);
@@ -25,10 +28,10 @@ struct framegen64_s {
     fec enc;
 
     // buffers: preamble (BPSK)
-    float ramp_up[FRAME64_RAMP_UP_LEN];
-    float phasing[FRAME64_PHASING_LEN];
-    float pn_sequence[FRAME64_PN_LEN];
-    float ramp_dn[FRAME64_RAMP_DN_LEN];
+    float complex ramp_up[FRAME64_RAMP_UP_LEN];
+    float complex phasing[FRAME64_PHASING_LEN];
+    float complex pn_sequence[FRAME64_PN_LEN];
+    float complex ramp_dn[FRAME64_RAMP_DN_LEN];
 
     // header (QPSK)
     unsigned char header[32];
@@ -55,24 +58,24 @@ framegen64 framegen64_create(
 
     // generate ramp_up
     for (i=0; i<FRAME64_RAMP_UP_LEN; i++) {
-        fg->ramp_up[i] = (i%2) ? 1.0f : -1.0f;
+        fg->ramp_up[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
         fg->ramp_up[i] *= kaiser(i,2*FRAME64_RAMP_UP_LEN,8.0f);
     }
 
     // generate ramp_dn
     for (i=0; i<FRAME64_RAMP_DN_LEN; i++) {
-        fg->ramp_dn[i] = (i%2) ? 1.0f : -1.0f;
+        fg->ramp_dn[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
         fg->ramp_dn[i] *= kaiser(i+FRAME64_RAMP_DN_LEN,2*FRAME64_RAMP_DN_LEN,8.0f);
     }
 
     // generate phasing pattern
     for (i=0; i<FRAME64_PHASING_LEN; i++)
-        fg->phasing[i] = (i%2) ? 1.0f : -1.0f;
+        fg->phasing[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
 
     // generate pn sequence
     msequence ms = msequence_create(6);
     for (i=0; i<64; i++)
-        fg->pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
+        fg->pn_sequence[i] = (msequence_advance(ms)) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
     msequence_destroy(ms);
 
     // create pulse-shaping filter (k=2)
