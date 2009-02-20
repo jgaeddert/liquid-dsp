@@ -107,11 +107,10 @@ void framegen64_print(framegen64 _fg)
     printf("framegen:\n");
 }
 
-void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex * _y)
+void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char * _payload, float complex * _y)
 {
     unsigned int i;
-    for (i=0; i<32; i++)
-        _fg->header[i] = 0x00;
+    memcpy(_fg->header, _header, 24);
 
     memcpy(_fg->payload, _payload, 64);
 #ifdef DEBUG
@@ -126,10 +125,10 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
     // compute crc32 on payload, append to header
     unsigned int payload_key = crc32_generate_key(_fg->payload, 64);
     //printf("tx: payload_key: 0x%8x\n", payload_key);
-    _fg->header[0] = (payload_key >> 24) & 0xff;
-    _fg->header[1] = (payload_key >> 16) & 0xff;
-    _fg->header[2] = (payload_key >>  8) & 0xff;
-    _fg->header[3] = (payload_key      ) & 0xff;
+    _fg->header[24] = (payload_key >> 24) & 0xff;
+    _fg->header[25] = (payload_key >> 16) & 0xff;
+    _fg->header[26] = (payload_key >>  8) & 0xff;
+    _fg->header[27] = (payload_key      ) & 0xff;
 
     // scramble payload data
     scramble_data(_fg->payload, 64);

@@ -8,8 +8,9 @@
 
 #define DEBUG_FILENAME  "framesync64_example.m"
 
-static int callback(unsigned char * _payload);
+static int callback(unsigned char * _header, unsigned char * _payload);
 
+unsigned char header[24];
 unsigned char payload[64];
 
 int main() {
@@ -29,13 +30,15 @@ int main() {
 
     // data payload
     unsigned int i;
-    // initialize data
+    // initialize header, payload
+    for (i=0; i<24; i++)
+        header[i] = i;
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
 
     // generate the frame
     float complex frame_rx[2048];
-    framegen64_execute(fg, payload, frame_rx);
+    framegen64_execute(fg, header, payload, frame_rx);
 
     // add channel impairments
     for (i=0; i<2048; i++) {
@@ -73,15 +76,22 @@ int main() {
     return 0;
 }
 
-static int callback(unsigned char * _rx_payload)
+static int callback(unsigned char * _rx_header, unsigned char * _rx_payload)
 {
     printf("callback invoked\n");
 
     // validate payload
-    unsigned int i, num_errors=0;
+    unsigned int i;
+    unsigned int num_header_errors=0;
+    for (i=0; i<24; i++)
+        num_header_errors += (_rx_header[i] == header[i]) ? 0 : 1;
+    printf("num header errors:  %u\n", num_header_errors);
+
+    unsigned int num_payload_errors=0;
     for (i=0; i<64; i++)
-        num_errors += (_rx_payload[i] == payload[i]) ? 0 : 1;
-    printf("num errors: %u\n", num_errors);
+        num_payload_errors += (_rx_payload[i] == payload[i]) ? 0 : 1;
+    printf("num payload errors: %u\n", num_payload_errors);
+
     return 0;
 }
 

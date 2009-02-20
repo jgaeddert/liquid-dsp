@@ -261,6 +261,9 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                     n = 0;
                     _fs->state = FRAMESYNC64_STATE_RESET;
                     framesync64_decode_payload(_fs);
+
+                    // invoke callback method
+                    _fs->callback(_fs->header, _fs->payload);
                 }
                 break;
             case FRAMESYNC64_STATE_RESET:
@@ -334,10 +337,10 @@ void framesync64_decode_header(framesync64 _fs)
 
     // strip off crc32
     unsigned int payload_key=0;
-    payload_key |= ( _fs->header[0] << 24 );
-    payload_key |= ( _fs->header[1] << 16 );
-    payload_key |= ( _fs->header[2] <<  8 );
-    payload_key |= ( _fs->header[3]       );
+    payload_key |= ( _fs->header[24] << 24 );
+    payload_key |= ( _fs->header[25] << 16 );
+    payload_key |= ( _fs->header[26] <<  8 );
+    payload_key |= ( _fs->header[27]       );
     _fs->payload_key = payload_key;
     //printf("rx: payload_key: 0x%8x\n", payload_key);
 
@@ -375,8 +378,6 @@ void framesync64_decode_payload(framesync64 _fs)
     printf("\n");
 #endif
 
-    // invoke callback method
-    _fs->callback(_fs->payload);
 }
 
 void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte)
