@@ -15,26 +15,28 @@ agc agc_create(float _etarget, float _BT)
     agc_set_target(_agc, _etarget);
     agc_set_bandwidth(_agc, _BT);
 
-    unsigned int h_len = 11;
-    float h[h_len];
+    // normalized windowing function
+    float w[11] = {
+       0.014792,
+       0.042634,
+       0.081587,
+       0.122933,
+       0.154722,
+       0.166667,
+       0.154722,
+       0.122933,
+       0.081587,
+       0.042634,
+       0.014792
+    };
 
-    // compute normalized windowing function
     unsigned int i;
-    float sum=0.0f;
-    for (i=0; i<h_len; i++) {
-        h[i] = kaiser(i,h_len,5.0f);
-        sum += h[i];
-    }
+    //for (i=0; i<11; i++)
+    //    printf("w(%4u) = %8.4f;\n", i+1, w[i]);
 
-    for (i=0; i<h_len; i++)
-        h[i] /= sum;
+    _agc->f = fir_filter_rrrf_create(w,11);
 
-    for (i=0; i<h_len; i++)
-        printf("w(%4u) = %8.4f;\n", i+1, h[i]);
-
-    _agc->f = fir_filter_rrrf_create(h,h_len);
-
-    for (i=0; i<h_len; i++)
+    for (i=0; i<11; i++)
         fir_filter_rrrf_push(_agc->f, 1.0f);
 
     return _agc;
