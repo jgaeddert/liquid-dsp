@@ -53,6 +53,8 @@ struct agc_s {
     float e_prime;
     float e_hat;        // filtered energy estimate
     float tmp2;
+
+    fir_filter_rrrf f;
 };
 
 #endif // __LIQUID_AGC_INTERNAL_H__

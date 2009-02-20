@@ -20,6 +20,7 @@ local_src	:=			\
 	symsync_rrrf_example.c		\
 					\
 	agc_example.c			\
+	agc_qpsk_example.c		\
 	asgram_example.c		\
 	buffer_example.c		\
 	cfbuffer_example.c		\

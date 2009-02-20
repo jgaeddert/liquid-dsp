@@ -8,6 +8,13 @@
 
 #include "agc_internal.h"
 
+#define AGC_LOG
+
+#define AGC_RECURSIVE   0
+#define AGC_COMPARATIVE 1
+
+#define AGC_TYPE        AGC_RECURSIVE
+
 agc agc_create(float _etarget, float _BT)
 {
     agc _agc = (agc) malloc(sizeof(struct agc_s));
@@ -18,7 +25,6 @@ agc agc_create(float _etarget, float _BT)
     unsigned int h_len = 11;
     float h[h_len];
 
-    // compute normalized windowing function
     unsigned int i;
     float sum=0.0f;
     for (i=0; i<h_len; i++) {
@@ -26,11 +32,11 @@ agc agc_create(float _etarget, float _BT)
         sum += h[i];
     }
 
-    for (i=0; i<h_len; i++)
-        h[i] /= sum;
+    //for (i=0; i<h_len; i++)
+    //    h[i] /= sum;
 
     for (i=0; i<h_len; i++)
-        printf("w(%4u) = %8.4f;\n", i+1, h[i]);
+        printf("agc:h(%4u) = %8.4f;\n", i+1, h[i]);
 
     _agc->f = fir_filter_rrrf_create(h,h_len);
 
@@ -111,18 +117,29 @@ void agc_set_bandwidth(agc _agc, float _BT)
 void agc_execute(agc _agc, float complex _x, float complex *_y)
 {
     // estimate normalized energy, should be equal to 1.0 when locked
-    float e2 = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
-    fir_filter_rrrf_push(_agc->f, e2);
+    float e = cabsf(_x) * (_agc->g) / (_agc->e_target);
+    fir_filter_rrrf_push(_agc->f, e);
     float e_hat;
     fir_filter_rrrf_execute(_agc->f, &e_hat);
-    e_hat = sqrtf(e_hat);// * (_agc->g) / (_agc->e_target);
+    //e_hat *= 10;
 
+#if 0
+    // generate error signal
+    if ( e_hat > _agc->e_target ) {
+        // attack
+        _agc->g *= 1 - 0.1f*( (e_hat-_agc->e_target) / _agc->e_target );
+        //_agc->g *= 0.9f;
+    } else {
+        // release
+        _agc->g *= 1 + 0.1f*( (_agc->e_target-e_hat) / e_hat);
+        //_agc->g *= 1.1f;
+    }
+#else
     // ideal gain
     float g = _agc->e_target / e_hat;
 
-    // accumulated gain
     _agc->g = 0.9f*(_agc->g) + 0.1f*g;
-    //_agc->g = g;
+#endif
 
     // limit gain
     if ( _agc->g > _agc->g_max )
@@ -133,6 +150,60 @@ void agc_execute(agc _agc, float complex _x, float complex *_y)
     // apply gain to input
     *_y = _x * _agc->g;
 }
+
+#if 0
+void xagc_execute(agc _agc, float complex _x, float complex *_y)
+{
+    // estimate normalized energy, should be equal to 1.0 when locked
+    float e = cabsf(_x) * (_agc->g) / (_agc->e_target);
+    if ( e <= 0.0f ) {
+        printf("warning! agc_apply_gain(), input level not valid!\n");
+        *_y = _x * _agc->g;
+        return;
+    }
+
+#if AGC_TYPE == AGC_RECURSIVE
+    // generate error signal
+#  ifdef AGC_LOG
+    _agc->e = logf( e );
+#  else
+    _agc->e = e - 1;
+#  endif
+
+    // filter estimate using first-order loop filter
+    _agc->e_prime = _agc->e - _agc->alpha * _agc->tmp2;
+    _agc->e_hat = (_agc->e_prime + _agc->tmp2) * _agc->beta;
+    _agc->tmp2 = _agc->e_prime;
+
+    // compute new gain value
+    _agc->g *= expf( -_agc->e_hat );
+
+#elif AGC_TYPE == AGC_COMPARATIVE
+    // generate error signal
+    float e_hat = (_agc->g)*cabsf(_x);
+    if ( e_hat > _agc->e_target ) {
+        // attack
+        _agc->g *= 1 - 0.1f*( (e_hat-_agc->e_target) / _agc->e_target );
+        //_agc->g *= 0.9f;
+    } else {
+        // release
+        _agc->g *= 1 + 0.1f*( (_agc->e_target-e_hat) / e_hat);
+        //_agc->g *= 1.1f;
+    }
+#else
+#  error "invalid AGC_TYPE macro"
+#endif
+
+    // limit gain
+    if ( _agc->g > _agc->g_max )
+        _agc->g = _agc->g_max;
+    else if ( _agc->g < _agc->g_min )
+        _agc->g = _agc->g_min;
+
+    // apply gain to input
+    *_y = _x * _agc->g;
+}
+#endif
 
 float agc_get_signal_level(agc _agc)
 {
