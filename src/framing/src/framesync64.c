@@ -72,6 +72,7 @@ struct framesync64_s {
     FILE*fid;
     fwindow debug_agc_rssi;
     cfwindow debug_rxy;
+    cfwindow debug_nco_rx_out;
 #endif
 };
 
@@ -120,6 +121,7 @@ framesync64 framesync64_create(
 #ifdef DEBUG
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_rxy       = cfwindow_create(DEBUG_BUFFER_LEN);
+    fs->debug_nco_rx_out= cfwindow_create(DEBUG_BUFFER_LEN);
 #endif
 
     return fs;
@@ -136,6 +138,8 @@ void framesync64_destroy(framesync64 _fs)
     free(_fs->demod);
 #ifdef DEBUG
     unsigned int i;
+    float * r;
+    float complex * rc;
     FILE* fid = fopen(DEBUG_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file", DEBUG_FILENAME);
     fprintf(fid,"\n\n");
@@ -144,7 +148,6 @@ void framesync64_destroy(framesync64 _fs)
 
     // write agc_rssi
     fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
-    float * r;
     fwindow_read(_fs->debug_agc_rssi, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
@@ -155,7 +158,6 @@ void framesync64_destroy(framesync64 _fs)
 
     // write rxy
     fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
-    float complex * rc;
     cfwindow_read(_fs->debug_rxy, &rc);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
@@ -163,6 +165,18 @@ void framesync64_destroy(framesync64 _fs)
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(abs(rxy))\n");
     fprintf(fid,"ylabel('|r_{xy}|');\n");
+
+    // write nco_rx_out
+    fprintf(fid,"nco_rx_out = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    cfwindow_read(_fs->debug_nco_rx_out, &rc);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"nco_rx_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(nco_rx_out,'x')\n");
+    fprintf(fid,"ylabel('I');\n");
+    fprintf(fid,"ylabel('Q');\n");
+    fprintf(fid,"axis square;\n");
 
     fprintf(fid,"\n\n");
     fclose(fid);
@@ -172,6 +186,7 @@ void framesync64_destroy(framesync64 _fs)
     // clean up debug windows
     fwindow_destroy(_fs->debug_agc_rssi);
     cfwindow_destroy(_fs->debug_rxy);
+    cfwindow_destroy(_fs->debug_nco_rx_out);
 #endif
     free(_fs);
 }
@@ -212,12 +227,18 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             demodulate(_fs->demod, nco_rx_out, &demod_sym);
             get_demodulator_phase_error(_fs->demod, &phase_error);
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
+#ifdef DEBUG
+            cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
+#endif
 
             //
             switch (_fs->state) {
             case FRAMESYNC64_STATE_SEEKPN:
                 //
                 rxy = pnsync_crcf_correlate(_fs->fsync, nco_rx_out);
+#ifdef DEBUG
+                cfwindow_push(_fs->debug_rxy, rxy);
+#endif
                 if (cabsf(rxy) > 0.6f) {
                     printf("pnsync found\n");
                     // close bandwidth

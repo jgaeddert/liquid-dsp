@@ -30,8 +30,10 @@ int main() {
     framegen64_execute(fg, payload, frame_rx);
 
     // add channel impairments
-    for (i=0; i<2048; i++)
+    for (i=0; i<2048; i++) {
+        frame_rx[i] *= cexpf(_Complex_I*0.3f);
         frame_rx[i] += crandnf()*0.01f;
+    }
 
     // synchronize/receive the frame
     framesync64_execute(fs, frame_rx, 2048);
