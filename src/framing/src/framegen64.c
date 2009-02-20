@@ -111,9 +111,8 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
 {
     unsigned int i;
     for (i=0; i<32; i++)
-        _fg->header[i] = 0xc0 | i;
+        _fg->header[i] = 0x00;
 
-    // scramble payload
     memcpy(_fg->payload, _payload, 64);
 #ifdef DEBUG
     printf("payload (tx):\n");
@@ -123,7 +122,6 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
     }
     printf("\n");
 #endif
-    //scramble_data(_fg->payload, 64);
 
     // compute crc32 on payload, append to header
     unsigned int payload_key = crc32_generate_key(_fg->payload, 64);
@@ -132,6 +130,9 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
     _fg->header[1] = (payload_key >> 16) & 0xff;
     _fg->header[2] = (payload_key >>  8) & 0xff;
     _fg->header[3] = (payload_key      ) & 0xff;
+
+    // scramble payload data
+    scramble_data(_fg->payload, 64);
 
     // encode payload
     fec_encode(_fg->enc, 64, _fg->payload, _fg->payload_enc);
@@ -153,8 +154,8 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
     printf("\n");
 #endif
 
-    // scramble header
-    //scramble_data(_fg->header, 32);
+    // scramble header data
+    scramble_data(_fg->header, 32);
 
     // encode header
     fec_encode(_fg->enc, 32, _fg->header, _fg->header_enc);

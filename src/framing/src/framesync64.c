@@ -316,8 +316,8 @@ void framesync64_decode_header(framesync64 _fs)
     // decode header
     fec_decode(_fs->dec, 32, _fs->header_enc, _fs->header);
 
-    // unscramble header
-    //unscramble_data(_fs->header, 32);
+    // unscramble header data
+    unscramble_data(_fs->header, 32);
 
 #ifdef DEBUG
     printf("header (rx):\n");
@@ -362,8 +362,8 @@ void framesync64_decode_payload(framesync64 _fs)
     // decode payload
     fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
 
-    // unscramble payload
-    //unscramble_data(_fs->payload, 64);
+    // unscramble payload data
+    unscramble_data(_fs->payload, 64);
 
     // validate crc
     if (crc32_validate_message(_fs->payload,64,_fs->payload_key))
