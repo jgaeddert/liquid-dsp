@@ -347,7 +347,7 @@ void framesync64_decode_header(framesync64 _fs)
     printf("rx: payload_key: 0x%8x\n", payload_key);
 
     // validate crc
-    if (crc32_validate_message(_fs->header,32,_fs->header_key))
+    if (crc32_validate_message(_fs->header,28,_fs->header_key))
         printf("header crc:  valid\n");
     else
         printf("header crc:  INVALID\n");
