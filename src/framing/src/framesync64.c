@@ -54,7 +54,7 @@ struct framesync64_s {
     unsigned int header_key;
     unsigned int payload_key;
 
-    framesync64_callback *callback;
+    framesync64_callback callback;
 
     // header
     unsigned char header_sym[256];
@@ -81,7 +81,7 @@ framesync64 framesync64_create(
     framesync64_callback _callback)
 {
     framesync64 fs = (framesync64) malloc(sizeof(struct framesync64_s));
-    //fs->callback = _callback;
+    fs->callback = _callback;
 
     //
     fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
@@ -376,6 +376,7 @@ void framesync64_decode_payload(framesync64 _fs)
 #endif
 
     // invoke callback method
+    _fs->callback(_fs->payload);
 }
 
 void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte)

@@ -10,6 +10,8 @@
 
 static int callback(unsigned char * _payload);
 
+unsigned char payload[64];
+
 int main() {
     // create framegen64 object
     unsigned int m=3;
@@ -26,8 +28,6 @@ int main() {
     nco_set_frequency(nco_channel, dphi);
 
     // data payload
-    unsigned char payload[64];
-
     unsigned int i;
     // initialize data
     for (i=0; i<64; i++)
@@ -73,9 +73,15 @@ int main() {
     return 0;
 }
 
-static int callback(unsigned char * _payload)
+static int callback(unsigned char * _rx_payload)
 {
     printf("callback invoked\n");
+
+    // validate payload
+    unsigned int i, num_errors=0;
+    for (i=0; i<64; i++)
+        num_errors += (_rx_payload[i] == payload[i]) ? 0 : 1;
+    printf("num errors: %u\n", num_errors);
     return 0;
 }
 

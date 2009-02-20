@@ -701,7 +701,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _payload, float complex 
 void framegen64_flush(framegen64 _fg, unsigned int _n, float complex * _y);
 
 // Basic frame synchronizer (64 bytes data payload)
-typedef int framesync64_callback(unsigned char * _payload);
+typedef int (*framesync64_callback)(unsigned char * _payload);
 typedef struct framesync64_s * framesync64;
 framesync64 framesync64_create(
     //unsigned int _k,
