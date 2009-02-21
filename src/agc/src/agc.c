@@ -93,21 +93,8 @@ void agc_set_bandwidth(agc _agc, float _BT)
     }
 
     _agc->BT = _BT;
-    float theta = _agc->BT * M_PI * 0.5f;
-
-    // calculate coefficients from first-order butterworth
-    // prototype using bilinear z-transform
-    float sin_theta = sinf(theta);
-    float cos_theta = cosf(theta);
-    _agc->beta = sin_theta / (sin_theta + cos_theta);
-    _agc->alpha = (sin_theta - cos_theta)/(sin_theta + cos_theta);
-
-    // reduce feedback parameter by emperical value to prevent ringing
-#ifdef AGC_LOG
-    _agc->alpha *= 1-expf( logf(_agc->BT)*0.5f + 0.95f );
-#else
-    _agc->alpha *= 1-expf( logf(_agc->BT)*0.5f + 0.70f );
-#endif
+    _agc->alpha = sqrtf(_agc->BT);
+    _agc->beta = 1 - _agc->alpha;
 }
 
 void agc_execute(agc _agc, float complex _x, float complex *_y)
@@ -123,7 +110,7 @@ void agc_execute(agc _agc, float complex _x, float complex *_y)
     float g = _agc->e_target / e_hat;
 
     // accumulated gain
-    _agc->g = 0.99f*(_agc->g) + 0.01f*g;
+    _agc->g = (_agc->beta)*(_agc->g) + (_agc->alpha)*g;
     //_agc->g = g;
 
     // limit gain
