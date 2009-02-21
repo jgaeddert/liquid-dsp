@@ -15,12 +15,12 @@
 #define FRAMESYNC64_AGC_BW_0        (1e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-6f)
 
-#define FRAMESYNC64_PLL_BW_0        (1e-2f)
-#define FRAMESYNC64_PLL_BW_1        (1e-4f)
+#define FRAMESYNC64_PLL_BW_0        (3e-3f)
+#define FRAMESYNC64_PLL_BW_1        (1e-3f)
 
 #define FRAME64_PN_LEN      64
 
-//#define DEBUG
+#define DEBUG
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN    2048
 
@@ -34,6 +34,7 @@ void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte);
 
 struct framesync64_s {
     modem demod;
+    modem bpsk;
     fec dec;
 
     // synchronizer objects
@@ -71,6 +72,7 @@ struct framesync64_s {
     fwindow debug_agc_rssi;
     cfwindow debug_rxy;
     cfwindow debug_nco_rx_out;
+    fwindow debug_nco_phase;
 #endif
 };
 
@@ -111,6 +113,7 @@ framesync64 framesync64_create(
 
     // create demod
     fs->demod = modem_create(MOD_QPSK, 2);
+    fs->bpsk = modem_create(MOD_BPSK, 1);
 
     // set status flags
     fs->state = FRAMESYNC64_STATE_SEEKPN;
@@ -120,6 +123,7 @@ framesync64 framesync64_create(
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_rxy       = cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_nco_rx_out= cfwindow_create(DEBUG_BUFFER_LEN);
+    fs->debug_nco_phase= fwindow_create(DEBUG_BUFFER_LEN);
 #endif
 
     return fs;
@@ -133,7 +137,8 @@ void framesync64_destroy(framesync64 _fs)
     pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
     pnsync_crcf_destroy(_fs->fsync);
-    free(_fs->demod);
+    free_modem(_fs->bpsk);
+    free_modem(_fs->demod);
 #ifdef DEBUG
     unsigned int i;
     float * r;
@@ -177,6 +182,17 @@ void framesync64_destroy(framesync64 _fs)
     fprintf(fid,"axis square;\n");
     fprintf(fid,"axis([-1.2 1.2 -1.2 1.2]);\n");
 
+    // write nco_phase
+    fprintf(fid,"nco_phase = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    fwindow_read(_fs->debug_nco_phase, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"nco_phase(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(nco_phase)\n");
+    fprintf(fid,"ylabel('nco phase [radians]');\n");
+
+
     fprintf(fid,"\n\n");
     fclose(fid);
 
@@ -208,11 +224,13 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
     for (i=0; i<_n; i++) {
         // agc
-        agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
+        if (_fs->state == FRAMESYNC64_STATE_SEEKPN)
+            agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
+        else
+            agc_rx_out = _x[i] * agc_get_gain(_fs->agc_rx);
 #ifdef DEBUG
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
-        //continue;
 
         // symbol synchronizer
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
@@ -220,11 +238,20 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         for (j=0; j<nw; j++) {
             // mix down, demodulate, run PLL
             nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
-            demodulate(_fs->demod, nco_rx_out, &demod_sym);
-            get_demodulator_phase_error(_fs->demod, &phase_error);
+            if (_fs->state == FRAMESYNC64_STATE_SEEKPN) {
+                demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
+                get_demodulator_phase_error(_fs->bpsk, &phase_error);
+            } else {
+                demodulate(_fs->demod, nco_rx_out, &demod_sym);
+                get_demodulator_phase_error(_fs->demod, &phase_error);
+            }
+
+            phase_error *= 10*log10(agc_get_signal_level(_fs->agc_rx)) > -19.0f ? 1.0f : 0.1f;
+
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
             nco_step(_fs->nco_rx);
 #ifdef DEBUG
+            fwindow_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
             cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
 
@@ -236,7 +263,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 #ifdef DEBUG
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
-                if (cabsf(rxy) > 0.6f) {
+                if (cabsf(rxy) > 0.4f) {
                     rxy *= cexpf(3*M_PI/4*_Complex_I);
                     printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
@@ -246,24 +273,26 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 }
                 break;
             case FRAMESYNC64_STATE_RXHEADER:
-                _fs->header_sym[n] = (unsigned char) demod_sym;
-                n++;
-                if (n==256) {
-                    n = 0;
+                _fs->header_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
+                _fs->num_symbols_collected++;
+                if (_fs->num_symbols_collected==256) {
+                    _fs->num_symbols_collected = 0;
                     _fs->state = FRAMESYNC64_STATE_RXPAYLOAD;
                     framesync64_decode_header(_fs);
                 }
                 break;
             case FRAMESYNC64_STATE_RXPAYLOAD:
-                _fs->payload_sym[n] = (unsigned char) demod_sym;
-                n++;
-                if (n==512) {
-                    n = 0;
-                    _fs->state = FRAMESYNC64_STATE_RESET;
+                _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
+                _fs->num_symbols_collected++;
+                if (_fs->num_symbols_collected==512) {
+                    _fs->num_symbols_collected = 0;
                     framesync64_decode_payload(_fs);
 
                     // invoke callback method
                     _fs->callback(_fs->header, _fs->payload);
+
+                    //_fs->state = FRAMESYNC64_STATE_RESET;
+                    _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 }
                 break;
             case FRAMESYNC64_STATE_RESET:
@@ -276,6 +305,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             }
         }
     }
+    printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
 }
 
 // 
