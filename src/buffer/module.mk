@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/buffer
+local_dir	:= $(modulesdir)/buffer
 local_lib	:= libbuffer.a
 
 # local_s_files

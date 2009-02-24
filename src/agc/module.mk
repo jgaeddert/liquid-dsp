@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/agc
+local_dir	:= $(modulesdir)/agc
 local_lib	:= libagc.a
 
 # local_s_files

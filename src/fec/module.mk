@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/fec
+local_dir	:= $(modulesdir)/fec
 local_lib	:= libfec.a
 
 # local_s_files

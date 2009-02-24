@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/dotprod
+local_dir	:= $(modulesdir)/dotprod
 local_lib	:= libdotprod.a
 
 # local_s_files

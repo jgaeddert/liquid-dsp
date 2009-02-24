@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/channel
+local_dir	:= $(modulesdir)/channel
 local_lib	:= libchannel.a
 
 # local_s_files

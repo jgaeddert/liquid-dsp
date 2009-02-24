@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/modem
+local_dir	:= $(modulesdir)/modem
 local_lib	:= libmodem.a
 
 # local_s_files

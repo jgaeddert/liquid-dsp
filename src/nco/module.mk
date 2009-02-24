@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/nco
+local_dir	:= $(modulesdir)/nco
 local_lib	:= libnco.a
 
 # local_s_files

@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/sequence
+local_dir	:= $(modulesdir)/sequence
 local_lib	:= libsequence.a
 
 # local_s_files

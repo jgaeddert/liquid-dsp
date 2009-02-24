@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/fft
+local_dir	:= $(modulesdir)/fft
 local_lib	:= libfft.a
 
 # local_s_files

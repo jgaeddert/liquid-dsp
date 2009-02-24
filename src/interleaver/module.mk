@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/interleaver
+local_dir	:= $(modulesdir)/interleaver
 local_lib	:= libinterleaver.a
 
 # local_s_files

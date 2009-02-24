@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/filter
+local_dir	:= $(modulesdir)/filter
 local_lib	:= libfilter.a
 
 # local_s_files

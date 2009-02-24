@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/math
+local_dir	:= $(modulesdir)/math
 local_lib	:= liblmath.a
 
 # local_s_files

@@ -2,7 +2,7 @@
 # Common makefile
 #
 
-local_src	:= $(addprefix $(local_dir)/src/, $(local_s_files))
+local_src	:= $(addprefix $(local_dir)/$(modulesdir)/, $(local_s_files))
 local_objs	:= $(patsubst %.c,%.o,$(local_src))
 local_bench	:= $(addprefix $(local_dir)/bench/, $(local_b_files))
 local_tests	:= $(addprefix $(local_dir)/tests/, $(local_t_files))

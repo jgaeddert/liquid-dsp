@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/framing
+local_dir	:= $(modulesdir)/framing
 local_lib	:= libframing.a
 
 # local_s_files

@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/utility
+local_dir	:= $(modulesdir)/utility
 local_lib	:= libutility.a
 
 # local_s_files

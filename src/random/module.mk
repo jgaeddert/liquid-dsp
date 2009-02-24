@@ -4,7 +4,7 @@
 
 # local_dir: local library directory
 # 
-local_dir	:= src/random
+local_dir	:= $(modulesdir)/random
 local_lib	:= librandom.a
 
 # local_s_files
