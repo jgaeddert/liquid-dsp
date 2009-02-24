@@ -229,6 +229,13 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF, float, float, float)
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCF, float complex, float complex, float complex)
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, float complex, float, float complex)
 
+// 
+// Estimation
+//
+
+float estimate_freqoffset(float complex * _x, unsigned int _n);
+//float estimate_phaseoffset(float complex * _x, unsigned int _n);
+//float estimate_timingoffset(float complex * _x, unsigned int _n);
 
 //
 // FEC, etc.

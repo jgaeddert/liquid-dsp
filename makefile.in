@@ -45,6 +45,7 @@ modules		:=	\
 	buffer		\
 	channel		\
 	dotprod		\
+	estimation	\
 	fec		\
 	fft		\
 	filter		\
