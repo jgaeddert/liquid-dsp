@@ -10,19 +10,19 @@
 #include "liquid.h"
 
 #define FRAMESYNC64_SYMSYNC_BW_0    (0.01f)
-#define FRAMESYNC64_SYMSYNC_BW_1    (0.001f)
+#define FRAMESYNC64_SYMSYNC_BW_1    (0.01f)
 
-#define FRAMESYNC64_AGC_BW_0        (1e-3f)
-#define FRAMESYNC64_AGC_BW_1        (1e-6f)
+#define FRAMESYNC64_AGC_BW_0        (1e-2f)
+#define FRAMESYNC64_AGC_BW_1        (1e-4f)
 
-#define FRAMESYNC64_PLL_BW_0        (3e-3f)
-#define FRAMESYNC64_PLL_BW_1        (1e-3f)
+#define FRAMESYNC64_PLL_BW_0        (1e-2f)
+#define FRAMESYNC64_PLL_BW_1        (1e-4f)
 
 #define FRAME64_PN_LEN      64
 
 #define DEBUG
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
-#define DEBUG_BUFFER_LEN    2048
+#define DEBUG_BUFFER_LEN    4096
 
 // Internal
 void framesync64_open_bandwidth(framesync64 _fs);
@@ -69,10 +69,11 @@ struct framesync64_s {
 
 #ifdef DEBUG
     FILE*fid;
-    fwindow debug_agc_rssi;
+    fwindow  debug_agc_rssi;
+    cfwindow debug_x;
     cfwindow debug_rxy;
     cfwindow debug_nco_rx_out;
-    fwindow debug_nco_phase;
+    fwindow  debug_nco_phase;
 #endif
 };
 
@@ -87,6 +88,7 @@ framesync64 framesync64_create(
 
     //
     fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
+    agc_set_gain_limits(fs->agc_rx, 1e-2, 1e3);
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
     pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
@@ -121,9 +123,10 @@ framesync64 framesync64_create(
 
 #ifdef DEBUG
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_BUFFER_LEN);
+    fs->debug_x         = cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_rxy       = cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_nco_rx_out= cfwindow_create(DEBUG_BUFFER_LEN);
-    fs->debug_nco_phase= fwindow_create(DEBUG_BUFFER_LEN);
+    fs->debug_nco_phase=   fwindow_create(DEBUG_BUFFER_LEN);
 #endif
 
     return fs;
@@ -156,8 +159,18 @@ void framesync64_destroy(framesync64 _fs)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(20*log10(agc_rssi))\n");
+    fprintf(fid,"plot(10*log10(agc_rssi))\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
+
+    // write x
+    fprintf(fid,"x = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    cfwindow_read(_fs->debug_x, &rc);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
+    fprintf(fid,"ylabel('received signal, x');\n");
 
     // write rxy
     fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
@@ -201,6 +214,7 @@ void framesync64_destroy(framesync64 _fs)
     // clean up debug windows
     fwindow_destroy(_fs->debug_agc_rssi);
     cfwindow_destroy(_fs->debug_rxy);
+    cfwindow_destroy(_fs->debug_x);
     cfwindow_destroy(_fs->debug_nco_rx_out);
 #endif
     free(_fs);
@@ -220,15 +234,12 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     float phase_error;
     float complex rxy;
     unsigned int demod_sym;
-    unsigned int n = _fs->num_symbols_collected;
 
     for (i=0; i<_n; i++) {
         // agc
-        if (_fs->state == FRAMESYNC64_STATE_SEEKPN)
-            agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
-        else
-            agc_rx_out = _x[i] * agc_get_gain(_fs->agc_rx);
+        agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
 #ifdef DEBUG
+        cfwindow_push(_fs->debug_x, _x[i]);
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
 
@@ -239,14 +250,18 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             // mix down, demodulate, run PLL
             nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             if (_fs->state == FRAMESYNC64_STATE_SEEKPN) {
+            //if (false) {
                 demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->bpsk, &phase_error);
+                phase_error -= M_PI/4;
+                if (phase_error < - M_PI/2)
+                    phase_error += M_PI;
             } else {
                 demodulate(_fs->demod, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 
-            phase_error *= 10*log10(agc_get_signal_level(_fs->agc_rx)) > -19.0f ? 1.0f : 0.1f;
+            phase_error *= 10*log10(agc_get_signal_level(_fs->agc_rx)) > -25.0f ? 1.0f : 0.01f;
 
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
             nco_step(_fs->nco_rx);
@@ -293,6 +308,9 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
                     //_fs->state = FRAMESYNC64_STATE_RESET;
                     _fs->state = FRAMESYNC64_STATE_SEEKPN;
+                    printf("framesync64 exiting prematurely\n");
+                    framesync64_destroy(_fs);
+                    exit(0);
                 }
                 break;
             case FRAMESYNC64_STATE_RESET:
@@ -300,6 +318,8 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 framesync64_open_bandwidth(_fs);
                 _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 _fs->num_symbols_collected = 0;
+                //_fs->nco_rx->theta=0.0f;
+                //_fs->nco_rx->d_theta=0.0f;
                 break;
             default:;
             }
@@ -376,7 +396,7 @@ void framesync64_decode_header(framesync64 _fs)
 
     // validate crc
     if (crc32_validate_message(_fs->header,28,_fs->header_key))
-        printf("header crc:  valid\n");
+        printf("header crc:  valid ***************\n");
     else
         printf("header crc:  INVALID\n");
 }
@@ -395,7 +415,7 @@ void framesync64_decode_payload(framesync64 _fs)
 
     // validate crc
     if (crc32_validate_message(_fs->payload,64,_fs->payload_key))
-        printf("payload crc: valid\n");
+        printf("payload crc:  valid ***************\n");
     else
         printf("payload crc: INVALID\n");
 

@@ -18,7 +18,7 @@ pll pll_create()
     pll p = (pll) malloc(sizeof(struct pll_s));
     
     p->f = lf2_create(0.0f);
-    lf2_set_damping_factor(p->f, 1.5f);
+    lf2_set_damping_factor(p->f, 2.5f);
 
     return p;
 }

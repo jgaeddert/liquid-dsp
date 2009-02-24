@@ -37,7 +37,7 @@ agc agc_create(float _etarget, float _BT)
     _agc->f = fir_filter_rrrf_create(w,11);
 
     for (i=0; i<11; i++)
-        fir_filter_rrrf_push(_agc->f, 1.0f);
+        fir_filter_rrrf_push(_agc->f, 0.0f);
 
     return _agc;
 }
@@ -79,6 +79,17 @@ void agc_set_target(agc _agc, float _e_target)
     _agc->e_target = _e_target;
 
     ///\todo auto-adjust gain to compensate?
+}
+
+void agc_set_gain_limits(agc _agc, float _g_min, float _g_max)
+{
+    if (_g_min > _g_max) {
+        printf("error: agc_set_gain_limits(), _g_min < _g_max\n");
+        exit(0);
+    }
+
+    _agc->g_min = _g_min;
+    _agc->g_max = _g_max;
 }
 
 void agc_set_bandwidth(agc _agc, float _BT)

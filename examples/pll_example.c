@@ -20,7 +20,7 @@ int main() {
     // parameters
     float phase_offset = M_PI/2;
     float frequency_offset = 0.0f;
-    float pll_bandwidth = 1e-2f;
+    float pll_bandwidth = 1e-3f;
     unsigned int n=250;     // number of iterations
     unsigned int d=10;      // print every "d" lines
 #ifdef DEBUG

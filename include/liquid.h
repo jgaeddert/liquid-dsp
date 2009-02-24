@@ -32,6 +32,9 @@ void agc_init(agc _agc);
 // Set target energy
 void agc_set_target(agc _agc, float _e_target);
 
+// set gain limits
+void agc_set_gain_limits(agc _agc, float _gmin, float _gmax);
+
 // Set loop filter bandwidth; attack/release time
 void agc_set_bandwidth(agc _agc, float _BT);
 

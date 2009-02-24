@@ -14,6 +14,7 @@ unsigned char header[24];
 unsigned char payload[64];
 
 int main() {
+    srand( time(NULL) );
     // create framegen64 object
     unsigned int m=3;
     float beta=0.7f;
@@ -22,7 +23,7 @@ int main() {
 
     // channel
     float phi=0.3f;
-    float dphi=1e-2f;
+    float dphi=0.0f;
     float gamma=0.1f;  // channel gain
     nco nco_channel = nco_create();
     nco_set_phase(nco_channel, phi);
@@ -38,6 +39,13 @@ int main() {
 
     // generate the frame
     float complex frame_rx[2048];
+    
+    // push noise
+    for (i=0; i<2048; i++) {
+        frame_rx[i] = crandnf()*0.01f*gamma;
+    }
+    framesync64_execute(fs, frame_rx, 2048);
+
     framegen64_execute(fg, header, payload, frame_rx);
 
     // add channel impairments
