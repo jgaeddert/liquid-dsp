@@ -60,8 +60,8 @@ void agc_init(agc _agc)
 
     // set gain variables
     _agc->g = 1.0f;
-    _agc->g_min = 1e-2f;
-    _agc->g_max = 1e+2f;
+    _agc->g_min = 1e-6f;
+    _agc->g_max = 1e+6f;
 
     // prototype loop filter
     agc_set_bandwidth(_agc, 0.01f);
