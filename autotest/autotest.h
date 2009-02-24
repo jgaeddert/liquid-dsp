@@ -95,7 +95,10 @@ static void autotest_print_results(void)
 
 // CONTEND_DELTA
 #  define TEST_DELTA(F,L,EX,X,EY,Y,ED,D)    \
-     if (fabs((X)-(Y))>D) test_failed_expr(F,L,"abs(" #X "-" #Y ")",fabs(X-Y),"<",ED,D); else test_passed();
+    if (fabs((X)-(Y))>D)                    \
+        test_failed_expr(F,L,"abs(" #X "-" #Y ")",fabs(X-Y),"<",ED,D); \
+    else                                    \
+        test_passed();
 #  define CONTEND_DELTA_FL(F,L,X,Y,D)       TEST_DELTA(F,L,#X,(X),#Y,(Y),#D,(D))
 #  define CONTEND_DELTA(X,Y,D)              CONTEND_DELTA_FL(__FILE__,__LINE__,X,Y,D)
 
