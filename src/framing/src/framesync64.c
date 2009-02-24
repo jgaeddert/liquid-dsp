@@ -10,10 +10,10 @@
 #include "liquid.h"
 
 #define FRAMESYNC64_SYMSYNC_BW_0    (0.01f)
-#define FRAMESYNC64_SYMSYNC_BW_1    (0.01f)
+#define FRAMESYNC64_SYMSYNC_BW_1    (0.001f)
 
 #define FRAMESYNC64_AGC_BW_0        (1e-2f)
-#define FRAMESYNC64_AGC_BW_1        (1e-4f)
+#define FRAMESYNC64_AGC_BW_1        (1e-9f)
 
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
 #define FRAMESYNC64_PLL_BW_1        (1e-4f)
@@ -308,9 +308,11 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
                     //_fs->state = FRAMESYNC64_STATE_RESET;
                     _fs->state = FRAMESYNC64_STATE_SEEKPN;
+#ifdef DEBUG
                     printf("framesync64 exiting prematurely\n");
                     framesync64_destroy(_fs);
                     exit(0);
+#endif
                 }
                 break;
             case FRAMESYNC64_STATE_RESET:
