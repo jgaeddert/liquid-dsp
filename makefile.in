@@ -84,6 +84,11 @@ all:
 #
 include $(patsubst %,$(modulesdir)/%/module.mk,$(modules))
 
+# Dependencies
+%.d: %.c
+	$(CC) $(CFLAGS) -MM -MG $< | $(SED) 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@
+include $(dependencies)
+
 SHARED_LIB	= @SH_LIB@
 .PHONY: all
 all: libliquid.a $(SHARED_LIB)
@@ -106,11 +111,6 @@ libliquid.dylib: $(objects)
 # linux, et al
 libliquid.so: $(libraries)
 	$(CC) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
-
-# Dependencies
-%.d: %.c
-	gcc -M $< | sed 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@.tmp
-	mv $@.tmp $@
 
 # TARGET: install
 #
