@@ -172,8 +172,8 @@ BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS) -pthread
 
 # run the benchmark generator scrip to create benchmark_include.h
-benchmark_include.h: $(benchmarks)
-	python bench/benchmarkgen.py $(benchmarks)
+benchmark_include.h: $(benchmark_headers)
+	python bench/benchmarkgen.py $(benchmark_headers)
 
 # compile the benchmark program without linking
 $(bench_prog).o: benchmark_include.h bench/bench.c

@@ -12,10 +12,10 @@ local_tests	:= $(addprefix $(local_dir)/tests/, $(local_t_files))
 # This is a list of target accumulated by the project-level
 # makefile.
 #
-libraries	+= $(local_lib)
-sources		+= $(local_src)
-autotests	+= $(local_tests)
-benchmarks	+= $(local_bench)
+libraries		+= $(local_lib)
+sources			+= $(local_src)
+autotest_headers	+= $(local_tests)
+benchmark_headers	+= $(local_bench)
 
 # Build the local library and local object files
 $(local_lib): $(local_objs)
