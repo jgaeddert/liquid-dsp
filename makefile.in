@@ -64,12 +64,12 @@ modules		:=	\
 #
 # Information about targets for each module is collected
 # in these variables
-programs	:=
-sources		:=
-libraries	:=
-extra_clean	:=
-autotests	:=
-benchmarks	:=
+programs		:=
+sources			:=
+libraries		:=
+extra_clean		:=
+autotest_headers	:=
+benchmark_headers	:=
 
 objects		= $(patsubst %.c,%.o,$(sources))
 dependencies	= $(patsubst %.c,%.d,$(sources))
@@ -77,6 +77,8 @@ dependencies	= $(patsubst %.c,%.d,$(sources))
 
 all:
 
+
+# Include module.mk
 #
 # Generate list of module.mk includes from $(modules), e.g.
 #    include $(modulesdir)/utility/module.mk
@@ -84,11 +86,18 @@ all:
 #
 include $(patsubst %,$(modulesdir)/%/module.mk,$(modules))
 
+
 # Dependencies
+#
+# Use compiler's -M flags (and equivalent) to parse source files
+# and create a list of dependencies.  Each list is stored in a
+# .d file and included, below.
+#
 %.d: %.c
 	$(CC) $(CFLAGS) -MM -MG $< | $(SED) 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@
 include $(dependencies)
 
+# Shared library
 SHARED_LIB	= @SH_LIB@
 .PHONY: all
 all: libliquid.a $(SHARED_LIB)
@@ -124,12 +133,15 @@ install:
 	install -m 644 -p include/liquid.h $(prefix)/include/liquid
 
 # Autotests
+#
+# Autotests are used to check the validity and accuracy of the
+# DSP libraries.
 .PHONY: autotest
 autotest_prog	= xautotest
 
 # run the autotest generator script to create autotest_include.h
-autotest_include.h: $(autotests)
-	python autotest/autotest_gen.py $(autotests)
+autotest_include.h: $(autotest_headers)
+	python autotest/autotest_gen.py $(autotest_headers)
 
 # compile the autotest program without linking
 $(autotest_prog).o: autotest_include.h autotest/autotest.c
@@ -148,7 +160,12 @@ check: $(autotest_prog)
 check-clean:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 
+
+
 # Benchmarks
+#
+# Benchmarks measure the relative speed of the DSP algorithms running
+# on the target platform.
 .PHONY: bench
 bench_prog	= benchmark
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
@@ -175,13 +192,23 @@ bench: $(bench_prog)
 bench-clean:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
+
 # Examples
 .PHONY: examples
 include examples/examples.mk
-example_objs	= $(patsubst %.c,%.o,$(examples))
-example_progs	= $(patsubst %.c,%,  $(examples))
+example_objs	= $(patsubst %.c,%.o,$(example_src))
+example_deps	= $(patsubst %.c,%.d,$(example_src))
+example_progs	= $(patsubst %.c,%,  $(example_src))
 examples: $(example_progs)
 EXAMPLES_LDFLAGS = $(LDFLAGS) -pthread
+
+# Dependencies
+#$(example_deps): $(example_src)
+#	$(CC) $(CFLAGS) -MM -MG $< | $(SED) 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@
+#include $(example_deps)
+
+$(example_objs): $(example_src)
+	$(CC) $(CFLAGS) $< -c -o $@
 
 # NOTE: linked libraries must come _after_ the target program
 $(example_progs): % : %.o libliquid.a

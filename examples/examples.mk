@@ -57,5 +57,5 @@ local_src	:=			\
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
 
-examples	= $(local_examples)
+example_src	= $(local_examples)
 
