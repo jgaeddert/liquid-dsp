@@ -32,7 +32,7 @@ float randnf()
 }
 
 // Complex Gauss
-float complex crandnf()
+void crandnf(float complex * _y)
 {
     // generate two uniform random numbers
     float u1, u2;
@@ -44,7 +44,15 @@ float complex crandnf()
 
     u2 = randf();
 
-    return sqrtf(-2*logf(u1)) * cexpf(_Complex_I*2*M_PI*u2);
+    *_y = sqrtf(-2*logf(u1)) * cexpf(_Complex_I*2*M_PI*u2);
+}
+
+// Internal complex Gauss (inline)
+float complex icrandnf()
+{
+    float complex y;
+    crandnf(&y);
+    return y;
 }
 
 // Weibull
@@ -70,7 +78,7 @@ float rand_ricekf(float _K, float _omega)
     float complex x, y;
     float s = sqrtf((_omega*_K)/(_K+1));
     float sig = sqrtf(0.5f*_omega/(_K+1));
-    x = crandnf();
+    crandnf(&x);
     y = _Complex_I*( crealf(x)*sig + s ) +
                    ( cimagf(x)*sig     );
     return cabsf(y);

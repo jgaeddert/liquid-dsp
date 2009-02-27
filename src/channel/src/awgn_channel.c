@@ -29,7 +29,7 @@ void awgn_channel_print(awgn_channel _q)
 
 void awgn_channel_execute(awgn_channel _q, float complex _x, float complex *_y)
 {
-    *_y = _x + crandnf() * (_q->nstd);
+    *_y = _x + icrandnf() * (_q->nstd);
 }
 
 void awgn_channel_set_noise_variance(awgn_channel _q, float _nvar)

@@ -83,10 +83,10 @@ void X(_assign)(X() _x, unsigned int _m, unsigned int _n, T _value)
 {
     if (_m >= _x->M) {
         printf("error: matrix_assign(), row index out of range\n");
-        return;
+        exit(0);
     } else if (_n >= _x->N) {
         printf("error: matrix_assign(), column index out of range\n");
-        return;
+        exit(0);
     }
 
     //_x->v[_m*(_x->N) + _n] = _value;
@@ -97,10 +97,10 @@ void X(_access)(X() _x, unsigned int _m, unsigned int _n, T * _y)
 {
     if (_m >= _x->M) {
         printf("error: matrix_access(), row index out of range\n");
-        return 0.0f;
+        exit(0);
     } else if (_n >= _x->N) {
         printf("error: matrix_access(), column index out of range\n");
-        return 0.0f;
+        exit(0);
     }
 
     //return _x->v[_m*(_x->N) + _n];

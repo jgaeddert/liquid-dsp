@@ -5,8 +5,7 @@
 #ifndef __LIQUID_CHANNEL_INTERNAL_H__
 #define __LIQUID_CHANNEL_INTERNAL_H__
 
-#include <complex.h>
-#include "liquid.h"
+#include "liquid.internal.h"
 
 struct awgn_channel_s {
     float nvar;

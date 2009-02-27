@@ -10,15 +10,16 @@
 #ifndef __LIQUID_INTERNAL_H__
 #define __LIQUID_INTERNAL_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 // Configuration file
 #include "config.h"
 
 #include <complex.h>
 #include "liquid.h"
+
+//
+// Random
+//
+float complex icrandnf();
 
 //
 // Miscellaneous utilities
@@ -58,10 +59,5 @@ unsigned int count_leading_zeros(unsigned int _x);
 
 // Most-significant bit index
 unsigned int msb_index(unsigned int _x);
-
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif /* __cplusplus */
 
 #endif // __LIQUID_INTERNAL_H__

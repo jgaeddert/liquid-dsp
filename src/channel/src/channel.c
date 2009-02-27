@@ -41,7 +41,7 @@ void channel_execute(channel _q, float complex _x, float complex *_y)
     float z;
 
     // advance fading filter
-    r = crandnf();
+    r = icrandnf();
     fir_filter_cccf_push(_q->f_ricek, r);
     fir_filter_cccf_execute(_q->f_ricek, &x);
 
@@ -59,7 +59,7 @@ void channel_execute(channel _q, float complex _x, float complex *_y)
 
     // additive white gaussian noise
     float complex n;
-    n = crandnf();  // TODO: noise power?
+    n = icrandnf();  // TODO: noise power?
 
     // set return value
     *_y = (_x * y * z) + n;

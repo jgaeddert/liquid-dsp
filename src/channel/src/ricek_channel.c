@@ -57,7 +57,7 @@ ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, flo
 
     // load with complex values
     for (i=0; i<q->h_len; i++)
-        fir_filter_cccf_push(q->f, crandnf());
+        fir_filter_cccf_push(q->f, icrandnf());
 
     return q;
 }
@@ -78,7 +78,7 @@ void ricek_channel_execute(ricek_channel _q, float complex _x, float complex *_y
     float complex r, z;
 
     // advance fading filter
-    fir_filter_cccf_push(_q->f, crandnf());
+    fir_filter_cccf_push(_q->f, icrandnf());
     fir_filter_cccf_execute(_q->f, &r);
 
     // generate complex fading envelope
