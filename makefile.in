@@ -52,6 +52,7 @@ modules		:=	\
 	interleaver	\
 	framing		\
 	math		\
+	matrix		\
 	modem 		\
 	nco 		\
 	random		\

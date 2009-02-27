@@ -13,8 +13,6 @@ local_lib	:= liblmath.a
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
-	cfmatrix.c		\
-	fmatrix.c		\
 	lmath.c
 
 # local_h_files
