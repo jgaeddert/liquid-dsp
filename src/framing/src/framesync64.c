@@ -275,7 +275,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             switch (_fs->state) {
             case FRAMESYNC64_STATE_SEEKPN:
                 //
-                rxy = pnsync_crcf_correlate(_fs->fsync, nco_rx_out);
+                pnsync_crcf_correlate(_fs->fsync, nco_rx_out, &rxy);
 #ifdef DEBUG
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif

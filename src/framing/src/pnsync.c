@@ -97,7 +97,7 @@ void PNSYNC(_print)(PNSYNC() _fs)
 
 }
 
-TO PNSYNC(_correlate)(PNSYNC() _fs, TI _sym)
+void PNSYNC(_correlate)(PNSYNC() _fs, TI _sym, TO *_y)
 {
     // push symbol into buffers
     WINDOW(_push)(_fs->sym,  _sym);
@@ -114,8 +114,9 @@ TO PNSYNC(_correlate)(PNSYNC() _fs, TI _sym)
 
     TI * r;
     WINDOW(_read)(_fs->sym, &r);
-    _fs->rxy = DOTPROD(_execute)(_fs->dp, r) / (sqrtf(e) * _fs->n);
+    DOTPROD(_execute)(_fs->dp, r, &(_fs->rxy));
+    _fs->rxy /= (sqrtf(e) * _fs->n);
 
-    return _fs->rxy;
+    *_y = _fs->rxy;
 }
 

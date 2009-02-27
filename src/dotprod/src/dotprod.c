@@ -14,16 +14,16 @@ struct X(_s) {
 
 // basic dot product
 
-TO X(_run)(TC *_h, TI *_x, unsigned int _n)
+void X(_run)(TC *_h, TI *_x, unsigned int _n, TO * _y)
 {
     TO r=0;
     unsigned int i;
     for (i=0; i<_n; i++)
         r += _h[i] * _x[i];
-    return r;
+    *_y = r;
 }
 
-TO X(_run4)(TC *_h, TI *_x, unsigned int _n)
+void X(_run4)(TC *_h, TI *_x, unsigned int _n, TO * _y)
 {
     TO r=0;
 
@@ -43,7 +43,7 @@ TO X(_run4)(TC *_h, TI *_x, unsigned int _n)
     for ( ; i<_n; i++)
         r += _h[i] * _x[i];
 
-    return r;
+    *_y = r;
 }
 
 //
@@ -65,8 +65,8 @@ void X(_destroy)(X() _q)
     free(_q);
 }
 
-TO X(_execute)(X() _q, TI * _x)
+void X(_execute)(X() _q, TI * _x, TO * _y)
 {
-    return X(_run)(_q->h, _x, _q->n);
+    X(_run)(_q->h, _x, _q->n, _y);
 }
 

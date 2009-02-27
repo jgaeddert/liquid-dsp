@@ -80,7 +80,7 @@ void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y)
 {
     TI *r;
     WINDOW(_read)(_f->w, &r);
-    *_y = DOTPROD(_run)(_f->h, r, _f->h_len);
+    DOTPROD(_run)(_f->h, r, _f->h_len, _y);
 }
 
 unsigned int FIR_FILTER(_get_length)(FIR_FILTER() _f)

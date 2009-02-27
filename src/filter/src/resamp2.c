@@ -121,7 +121,7 @@ void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
     WINDOW(_push)(_f->w1, _x[0]);
     WINDOW(_read)(_f->w1, &r);
     // TODO yq = DOTPROD(_execute)(_f->dpq, r);
-    y1 = DOTPROD(_run)(_f->h1, r, _f->h1_len);
+    DOTPROD(_run)(_f->h1, r, _f->h1_len, &y1);
 
     // compute delay branch
     y0 = _f->w0[_f->w0_index];
@@ -147,7 +147,7 @@ void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
     WINDOW(_push)(_f->w1, _x);
     WINDOW(_read)(_f->w1, &r);
     //yq = DOTPROD(_execute)(_f->dpq, r);
-    _y[1] = DOTPROD(_run)(_f->h1, r, _f->h1_len);
+    DOTPROD(_run)(_f->h1, r, _f->h1_len, &_y[1]);
 
 }
 

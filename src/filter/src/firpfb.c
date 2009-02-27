@@ -100,7 +100,7 @@ void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, TO *_y)
     WINDOW(_read)(_b->w, &r);
 
     // execute dot product
-    *_y = DOTPROD(_execute)(_b->dp[_i], r);
+    DOTPROD(_execute)(_b->dp[_i], r, _y);
 }
 
 void FIRPFB(_clear)(FIRPFB() _b)

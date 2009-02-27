@@ -116,7 +116,7 @@ void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, T complex *_y)
     WINDOW(_push)(_f->wq, _x[0]);
     WINDOW(_read)(_f->wq, &r);
     // TODO yq = DOTPROD(_execute)(_f->dpq, r);
-    yq = DOTPROD(_run)(_f->hq, r, _f->hq_len);
+    DOTPROD(_run)(_f->hq, r, _f->hq_len, &yq);
 
     // compute in-phase component (delay branch)
     yi = _f->wi[_f->wi_index];
@@ -142,7 +142,7 @@ void FIRHILB(_interp_execute)(FIRHILB() _f, T complex _x, T *_y)
     WINDOW(_push)(_f->wq, crealf(_x));
     WINDOW(_read)(_f->wq, &r);
     //yq = DOTPROD(_execute)(_f->dpq, r);
-    _y[1] = DOTPROD(_run)(_f->hq, r, _f->hq_len);
+    DOTPROD(_run)(_f->hq, r, _f->hq_len, &_y[1]);
 
 }
 

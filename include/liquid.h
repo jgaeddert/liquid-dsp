@@ -10,11 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 typedef float liquid_float_complex[2];
-
 #else
 #include <complex.h>
 typedef float complex liquid_float_complex;
-
 #endif /* __cplusplus */
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
@@ -218,8 +216,8 @@ void channel_execute(channel _c, liquid_float_complex _x, liquid_float_complex *
 //   TC : coefficients data type
 //   TI : input data type
 #define LIQUID_DOTPROD_DEFINE_API(X,TO,TC,TI)       \
-TO X(_run)(TC *_h, TI *_x, unsigned int _n);        \
-TO X(_run4)(TC *_h, TI *_x, unsigned int _n);       \
+void X(_run)(TC *_h, TI *_x, unsigned int _n, TO *_y);        \
+void X(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);       \
                                                     \
 typedef struct X(_s) * X();                         \
 struct X(_s) {      \
@@ -228,7 +226,7 @@ struct X(_s) {      \
 };                  \
 X() X(_create)(TC * _v, unsigned int _n);           \
 void X(_destroy)(X() _q);                           \
-TO X(_execute)(X() _q, TI * _v);
+void X(_execute)(X() _q, TI * _v, TO * _y);
 
 // Define APIs
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF, float, float, float)
@@ -450,16 +448,16 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, liquid_float_complex, liqui
 // NOTES:
 //   Although firhilb is a placeholder for both the decimation and
 //   interpolation, separate objects should be used for each task.
-#define LIQUID_FIRHILB_DEFINE_API(X,T) \
+#define LIQUID_FIRHILB_DEFINE_API(X,T,TC) \
 typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _h_len); \
 void X(_destroy)(X() _f); \
 void X(_print)(X() _f); \
 void X(_clear)(X() _f); \
-void X(_decim_execute)(X() _f, T * _x, T complex * _y); \
-void X(_interp_execute)(X() _f, T complex _x, T * _y);
+void X(_decim_execute)(X() _f, T * _x, TC * _y); \
+void X(_interp_execute)(X() _f, TC _x, T * _y);
 
-LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float)
+LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double)
 
 //
@@ -746,7 +744,7 @@ PNSYNC() PNSYNC(_create)(unsigned int _n, TC * _v);     \
 PNSYNC() PNSYNC(_create_msequence)(unsigned int _g);    \
 void PNSYNC(_destroy)(PNSYNC() _fs);                    \
 void PNSYNC(_print)(PNSYNC() _fs);                      \
-TO PNSYNC(_correlate)(PNSYNC() _fs, TI _sym);
+void PNSYNC(_correlate)(PNSYNC() _fs, TI _sym, TO * _y);
 
 LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_RRRF, float,           float,          float)
 LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
@@ -858,7 +856,7 @@ void X(_clear)(X() _x);                                     \
 void X(_dim)(X() _x, unsigned int *_M, unsigned int *_N);   \
 void X(_assign)(X() _x, unsigned int _m, unsigned int _n,   \
     T _value);                                              \
-T X(_access)(X() _x, unsigned int _m, unsigned int _n);     \
+void X(_access)(X() _x, unsigned int _m, unsigned int _n, T * _y);     \
 void X(_multiply)(X() _x, X() _y, X() _z);                  \
 void X(_transpose)(X() _x);                                 \
 void X(_invert)(X() _x);                                    \
@@ -1003,27 +1001,27 @@ float nco_cos(nco _nco);
 
 void nco_sincos(nco _nco, float* _s, float* _c);
 
-liquid_float_complex nco_cexpf(nco _nco);
+void nco_cexpf(nco _nco, liquid_float_complex * _y);
 
 // mixing functions
 
 // Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
-void nco_mix_up(nco _nco, complex float _x, complex float *_y);
+void nco_mix_up(nco _nco, liquid_float_complex _x, liquid_float_complex *_y);
 
 // Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
-void nco_mix_down(nco _nco, complex float _x, complex float *_y);
+void nco_mix_down(nco _nco, liquid_float_complex _x, liquid_float_complex *_y);
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
 void nco_mix_block_up(
     nco _nco,
-    complex float *_x,
-    complex float *_y,
+    liquid_float_complex *_x,
+    liquid_float_complex *_y,
     unsigned int _N);
 
 void nco_mix_block_down(
     nco _nco,
-    complex float *_x,
-    complex float *_y,
+    liquid_float_complex *_x,
+    liquid_float_complex *_y,
     unsigned int _N);
 
 //
@@ -1079,7 +1077,7 @@ float randf_cdf(float _x);
 
 // Gaussian random number generator, N(0,1)
 float randnf();
-liquid_float_complex crandnf();
+//liquid_float_complex crandnf();
 float randn_pdf(float _x, float _eta, float _sig);
 float randn_cdf(float _x, float _eta, float _sig);
 

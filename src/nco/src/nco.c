@@ -61,9 +61,9 @@ void nco_sincos(nco _nco, float* _s, float* _c)
     *_c = cosf(_nco->theta);
 }
 
-float complex nco_cexpf(nco _nco)
+void nco_cexpf(nco _nco, float complex * _y)
 {
-    return cexpf(_Complex_I*(_nco->theta));
+    *_y = cexpf(_Complex_I*(_nco->theta));
 }
 
 // mixing functions

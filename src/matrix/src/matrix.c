@@ -93,7 +93,7 @@ void X(_assign)(X() _x, unsigned int _m, unsigned int _n, T _value)
     matrix_fast_access(_x,_m,_n) = _value;
 }
 
-T X(_access)(X() _x, unsigned int _m, unsigned int _n)
+void X(_access)(X() _x, unsigned int _m, unsigned int _n, T * _y)
 {
     if (_m >= _x->M) {
         printf("error: matrix_access(), row index out of range\n");
@@ -104,7 +104,7 @@ T X(_access)(X() _x, unsigned int _m, unsigned int _n)
     }
 
     //return _x->v[_m*(_x->N) + _n];
-    return matrix_fast_access(_x,_m,_n);
+    *_y = matrix_fast_access(_x,_m,_n);
 }
 
 void X(_multiply)(X() _x, X() _y, X() _z)

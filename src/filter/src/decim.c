@@ -68,7 +68,7 @@ void DECIM(_execute)(DECIM() _q, TI *_x, TO *_y, unsigned int _index)
         WINDOW(_push)(_q->w, _x[i]);
         if (i==_index) {
             WINDOW(_read)(_q->w, &r);
-            *_y = DOTPROD(_run)(_q->h, r, _q->h_len);
+            DOTPROD(_run)(_q->h, r, _q->h_len, _y);
         }
     }
 }

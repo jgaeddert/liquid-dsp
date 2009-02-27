@@ -100,7 +100,7 @@ void INTERP(_execute)(INTERP() _q, TI _x, TO *_y)
             WINDOW(_push)(_q->w,0);
 
         WINDOW(_read)(_q->w,&r);
-        _y[i] = DOTPROD(_run)(_q->h, r, _q->h_len);
+        DOTPROD(_run)(_q->h, r, _q->h_len, &_y[i]);
     }
 }
 
