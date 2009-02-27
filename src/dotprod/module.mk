@@ -33,8 +33,7 @@ local_h_files	:=
 # within $(local_dir)
 #
 local_t_files	:= 			\
-	dotprod_rrrf_autotest.h		\
-	dotprod_crcf_autotest.h
+	dotprod_rrrf_autotest.h
 
 
 # local_b_files

@@ -31,6 +31,11 @@ float randnf()
     //return sqrtf(-2*logf(u1)) * cosf(2*M_PI*u2);
 }
 
+void awgn(float *_x, float _nstd)
+{
+    *_x += randnf()*_nstd;
+}
+
 // Complex Gauss
 void crandnf(float complex * _y)
 {
@@ -53,6 +58,11 @@ float complex icrandnf()
     float complex y;
     crandnf(&y);
     return y;
+}
+
+void cawgn(float complex *_x, float _nstd)
+{
+    *_x += icrandnf()*_nstd;
 }
 
 // Weibull

@@ -27,10 +27,10 @@ int main() {
         // advance
         s = msequence_advance(ms) ? 1.0f : -1.0f;
         s *= cexpf(_Complex_I*phi); // phasor rotation
-        s += crandnf() / snr;
+        s += (randnf() + _Complex_I*randnf()) / snr;
 
         // correlate
-        rxy = pnsync_crcf_correlate(fs,s);
+        pnsync_crcf_correlate(fs,s,&rxy);
 
         printf("%4u: mag: %12.8f, angle: %5.2f\n",i,cabsf(rxy),cargf(rxy));
     }

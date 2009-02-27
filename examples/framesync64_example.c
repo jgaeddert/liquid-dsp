@@ -44,7 +44,7 @@ int main() {
     
     // push noise
     for (i=0; i<2048; i++) {
-        frame_rx[i] = crandnf()*0.01f*gamma;
+        frame_rx[i] = (randnf() + _Complex_I*randnf())*0.01f*gamma;
     }
     framesync64_execute(fs, frame_rx, 2048);
 
@@ -53,9 +53,9 @@ int main() {
     // add channel impairments
     for (i=0; i<2048; i++) {
         frame_rx[i] *= cexpf(_Complex_I*phi);
-        frame_rx[i] += crandnf()*0.01f;
+        frame_rx[i] += (randnf() + _Complex_I*randnf())*0.01f;
         frame_rx[i] *= gamma;
-        frame_rx[i] *= nco_cexpf(nco_channel);
+        nco_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
 
         nco_step(nco_channel);
     }

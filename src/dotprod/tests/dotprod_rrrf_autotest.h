@@ -9,7 +9,8 @@
 //
 void autotest_dotprod_rrrf_basic()
 {
-    float tol = 1e-6;
+    float tol = 1e-6;   // error tolerance
+    float y;            // return value
 
     float h[16] = {
         1, -1, 1, -1, 1, -1, 1, -1,
@@ -17,27 +18,37 @@ void autotest_dotprod_rrrf_basic()
 
     float x0[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     float test0 = 0;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x0,16),  test0, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x0,16), test0, tol);
+    dotprod_rrrf_run(h,x0,16,&y);
+    CONTEND_DELTA(y,  test0, tol);
+    dotprod_rrrf_run4(h,x0,16,&y);
+    CONTEND_DELTA(y,  test0, tol);
 
     float x1[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
     float test1 = 0;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x1,16),  test1, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x1,16), test1, tol);
+    dotprod_rrrf_run(h,x1,16,&y);
+    CONTEND_DELTA(y,  test1, tol);
+    dotprod_rrrf_run4(h,x1,16,&y);
+    CONTEND_DELTA(y,  test1, tol);
 
     float x2[16] = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
     float test2 = -8;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x2,16),  test2, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x2,16), test2, tol);
+    dotprod_rrrf_run(h,x2,16,&y);
+    CONTEND_DELTA(y,  test2, tol);
+    dotprod_rrrf_run4(h,x2,16,&y);
+    CONTEND_DELTA(y,  test2, tol);
 
     float x3[16] = {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0};
     float test3 = 8;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x3,16),  test3, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x3,16), test3, tol);
+    dotprod_rrrf_run(h,x3,16,&y);
+    CONTEND_DELTA(y,  test3, tol);
+    dotprod_rrrf_run4(h,x3,16,&y);
+    CONTEND_DELTA(y,  test3, tol);
 
     float test4 = 16;
-    CONTEND_DELTA(dotprod_rrrf_run(h,h,16),  test4, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,h,16), test4, tol);
+    dotprod_rrrf_run(h,h,16,&y);
+    CONTEND_DELTA(y,  test4, tol);
+    dotprod_rrrf_run4(h,h,16,&y);
+    CONTEND_DELTA(y,  test4, tol);
 
 }
 
@@ -47,6 +58,7 @@ void autotest_dotprod_rrrf_basic()
 void autotest_dotprod_rrrf_uneven()
 {
     float tol = 1e-6;
+    float y;
 
     float h[16] = {
         1, -1, 1, -1, 1, -1, 1, -1,
@@ -55,28 +67,28 @@ void autotest_dotprod_rrrf_uneven()
     float x[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
     float test1 = 1;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,1),  test1, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x,1), test1, tol);
+    dotprod_rrrf_run(h,x,1,&y);
+    CONTEND_DELTA(y,  test1, tol);
 
     float test2 = 0;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,2),  test2, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x,2), test2, tol);
+    dotprod_rrrf_run(h,x,2,&y);
+    CONTEND_DELTA(y, test2, tol);
 
     float test3 = 1;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,3),  test3, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x,3), test3, tol);
+    dotprod_rrrf_run(h,x,3,&y);
+    CONTEND_DELTA(y, test3, tol);
 
     float test11 = 1;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,11),  test11, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x,11), test11, tol);
+    dotprod_rrrf_run(h,x,11,&y);
+    CONTEND_DELTA(y, test11, tol);
 
     float test13 = 1;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,13),  test13, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x,13), test13, tol);
+    dotprod_rrrf_run(h,x,13,&y);
+    CONTEND_DELTA(y, test13, tol);
 
     float test15 = 1;
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,15),  test15, tol);
-    CONTEND_DELTA(dotprod_rrrf_run4(h,x,15), test15, tol);
+    dotprod_rrrf_run(h,x,15,&y);
+    CONTEND_DELTA(y, test15, tol);
 
 }
 
@@ -86,6 +98,7 @@ void autotest_dotprod_rrrf_uneven()
 void autotest_dotprod_rrrf_struct()
 {
     float tol = 1e-6;
+    float y;
 
     float h[16] = {
         1, -1, 1, -1, 1, -1, 1, -1,
@@ -96,19 +109,23 @@ void autotest_dotprod_rrrf_struct()
 
     float x0[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     float test0 = 0;
-    CONTEND_DELTA(dotprod_rrrf_execute(dp,x0),  test0, tol);
+    dotprod_rrrf_execute(dp,x0,&y);
+    CONTEND_DELTA(y,  test0, tol);
 
     float x1[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
     float test1 = 0;
-    CONTEND_DELTA(dotprod_rrrf_execute(dp,x1),  test1, tol);
+    dotprod_rrrf_execute(dp,x1,&y);
+    CONTEND_DELTA(y,  test1, tol);
 
     float x2[16] = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
     float test2 = -8;
-    CONTEND_DELTA(dotprod_rrrf_execute(dp,x2),  test2, tol);
+    dotprod_rrrf_execute(dp,x2,&y);
+    CONTEND_DELTA(y,  test2, tol);
 
     float *x3 = h;
     float test3 = 16;
-    CONTEND_DELTA(dotprod_rrrf_execute(dp,x3),  test3, tol);
+    dotprod_rrrf_execute(dp,x3,&y);
+    CONTEND_DELTA(y,  test3, tol);
 
     // clean-up
     dotprod_rrrf_destroy(dp);
@@ -135,8 +152,10 @@ void autotest_dotprod_rrrf_rand01()
 
     float test = 3.66411513609863;
     float tol = 1e-3f;
+    float y;
 
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,16),test,tol);
+    dotprod_rrrf_run(h,x,16,&y);
+    CONTEND_DELTA(y,test,tol);
 }
 
 // 
@@ -160,8 +179,10 @@ void autotest_dotprod_rrrf_rand02()
 
     float test = -8.17832326680587;
     float tol = 1e-3f;
+    float y;
 
-    CONTEND_DELTA(dotprod_rrrf_run(h,x,16),test,tol);
+    dotprod_rrrf_run(h,x,16,&y);
+    CONTEND_DELTA(y,test,tol);
 }
 
 #endif 

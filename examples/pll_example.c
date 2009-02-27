@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 
 #include "liquid.h"
@@ -50,8 +51,8 @@ int main() {
     float complex r, v;
     for (i=0; i<n; i++) {
         // received complex signal
-        r = nco_cexpf(nco_tx);
-        v = nco_cexpf(nco_rx);
+        nco_cexpf(nco_tx,&r);
+        nco_cexpf(nco_rx,&v);
 
         // error estimation
         phase_error = cargf(r*conjf(v));

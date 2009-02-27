@@ -57,7 +57,7 @@ void autotest_crandnf()
 
     // uniform
     for (i=0; i<N; i++) {
-        x = crandnf();
+        crandnf(&x);
         m1 += crealf(x) + cimagf(x);
         m2 += crealf(x)*crealf(x) + cimagf(x)*cimagf(x);
     }

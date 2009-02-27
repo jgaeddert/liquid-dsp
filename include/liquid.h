@@ -1077,7 +1077,9 @@ float randf_cdf(float _x);
 
 // Gaussian random number generator, N(0,1)
 float randnf();
+void awgn(float *_x, float _nstd);
 void crandnf(liquid_float_complex *_y);
+void cawgn(liquid_float_complex *_x, float _nstd);
 float randn_pdf(float _x, float _eta, float _sig);
 float randn_cdf(float _x, float _eta, float _sig);
 

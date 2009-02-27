@@ -21,8 +21,8 @@ void dotprod_cccf_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        y = dotprod_cccf_run(x,h,_n);
-        y = dotprod_cccf_run(x,h,_n);
+        dotprod_cccf_run(x,h,_n,&y);
+        dotprod_cccf_run(x,h,_n,&y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 2;

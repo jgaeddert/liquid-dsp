@@ -29,14 +29,14 @@ void autotest_pnsync_rrrf_15()
 
     // fill buffer with sequence
     for (i=0; i<15; i++)
-        rxy = pnsync_rrrf_correlate(fs,h[i]);
+        pnsync_rrrf_correlate(fs,h[i],&rxy);
 
     // correlation should be 1.0
     CONTEND_DELTA( rxy, 1.0f, tol );
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
-        rxy = pnsync_rrrf_correlate(fs,h[i]);
+        pnsync_rrrf_correlate(fs,h[i],&rxy);
         CONTEND_DELTA( rxy, -1.0f/15.0f, tol );
     }
 
@@ -69,7 +69,7 @@ void autotest_pnsync_crcf_15()
 
     // fill buffer with sequence
     for (i=0; i<15; i++)
-        rxy = pnsync_crcf_correlate(fs,h[i]);
+        pnsync_crcf_correlate(fs,h[i],&rxy);
 
     // correlation should be 1.0
     CONTEND_DELTA( crealf(rxy), 1.0f, tol );
@@ -77,7 +77,7 @@ void autotest_pnsync_crcf_15()
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
-        rxy = pnsync_crcf_correlate(fs,h[i]);
+        pnsync_crcf_correlate(fs,h[i],&rxy);
         CONTEND_DELTA( crealf(rxy), -1.0f/15.0f, tol );
         CONTEND_DELTA( cimagf(rxy), 0.0f,        tol );
     }
@@ -113,7 +113,7 @@ void autotest_pnsync_crcf_phase_15()
 
     // fill buffer with sequence
     for (i=0; i<15; i++)
-        rxy = pnsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta));
+        pnsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta),&rxy);
 
     // correlation should be 1.0
     CONTEND_DELTA( crealf(rxy), 1.0f*cosf(theta), tol );
@@ -121,7 +121,7 @@ void autotest_pnsync_crcf_phase_15()
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
-        rxy = pnsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta));
+        pnsync_crcf_correlate(fs,h[i]*cexpf(_Complex_I*theta),&rxy);
         CONTEND_DELTA( crealf(rxy), -1.0f/15.0f*cosf(theta), tol );
         CONTEND_DELTA( cimagf(rxy), -1.0f/15.0f*sinf(theta), tol );
     }

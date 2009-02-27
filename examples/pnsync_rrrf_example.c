@@ -27,7 +27,7 @@ int main() {
         s += randnf() / snr;
 
         // correlate
-        rxy = pnsync_rrrf_correlate(fs,s);
+        pnsync_rrrf_correlate(fs,s,&rxy);
 
         printf("%4u: %12.8f\n",i,rxy);
     }

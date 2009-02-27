@@ -43,7 +43,7 @@ int main() {
     float sig = sqrtf(0.5f*omega/(K+1));
     float t=0.0f;
     for (i=0; i<h_len; i++) {
-        x = crandnf();
+        crandnf(&x);
 
         fir_filter_rrrf_push(fi, crealf(x));
         fir_filter_rrrf_push(fq, cimagf(x));
@@ -53,7 +53,7 @@ int main() {
     t = sqrtf(t);
 
     for (i=0; i<n; i++) {
-        x = crandnf();
+        crandnf(&x);
 
         fir_filter_rrrf_push(fi, crealf(x));
         fir_filter_rrrf_push(fq, cimagf(x));

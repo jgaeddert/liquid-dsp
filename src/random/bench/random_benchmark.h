@@ -64,10 +64,10 @@ void benchmark_random_complex_normal(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = crandnf();
-        x = crandnf();
-        x = crandnf();
-        x = crandnf();
+        crandnf(&x);
+        crandnf(&x);
+        crandnf(&x);
+        crandnf(&x);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

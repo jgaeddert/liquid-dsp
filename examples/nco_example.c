@@ -7,6 +7,7 @@
 //   $ ./ncotest
 
 #include <stdio.h>
+#include <math.h>
 #include "liquid.h"
 
 int main() {

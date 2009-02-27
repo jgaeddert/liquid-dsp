@@ -16,8 +16,8 @@ void pll_run_loop(nco _nco_tx, nco _nco_rx, pll _pll_rx, unsigned int _n)
     float complex r, v;
     for (i=0; i<_n; i++) {
         // received complex signal
-        r = nco_cexpf(_nco_tx);
-        v = nco_cexpf(_nco_rx);
+        nco_cexpf(_nco_tx,&r);
+        nco_cexpf(_nco_rx,&v);
 
         // error estimation
         phase_error = cargf(r*conjf(v));

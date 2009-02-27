@@ -28,10 +28,10 @@ void pnsync_rrrf_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        rxy = pnsync_rrrf_correlate(fs,1.0f);
-        rxy = pnsync_rrrf_correlate(fs,1.0f);
-        rxy = pnsync_rrrf_correlate(fs,1.0f);
-        rxy = pnsync_rrrf_correlate(fs,1.0f);
+        pnsync_rrrf_correlate(fs,1.0f,&rxy);
+        pnsync_rrrf_correlate(fs,1.0f,&rxy);
+        pnsync_rrrf_correlate(fs,1.0f,&rxy);
+        pnsync_rrrf_correlate(fs,1.0f,&rxy);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
