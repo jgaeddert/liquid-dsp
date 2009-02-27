@@ -31,7 +31,7 @@ void autotest_dotprod_crcf_rand01()
     float complex test = -3.35346556487224 + 11.78023318618137*_Complex_I;
     float tol = 1e-3f;
 
-    y = dotprod_crcf_run(h,x,16);
+    dotprod_crcf_run(h,x,16,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
 }
@@ -65,7 +65,7 @@ void autotest_dotprod_crcf_rand02()
     float complex test = 2.11053363855085 - 2.04167493441477*_Complex_I;
     float tol = 1e-3f;
 
-    y = dotprod_crcf_run(h,x,16);
+    dotprod_crcf_run(h,x,16,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
 }
