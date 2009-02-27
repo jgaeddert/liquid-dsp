@@ -6,7 +6,6 @@
 #define __LIQUID_H__
 
 #include <complex.h>
-#include <unistd.h>
 #include <math.h>
 
 #ifdef __cplusplus
@@ -136,7 +135,7 @@ LIQUID_PORT_DEFINE_API(PORT_MANGLE_UINT, unsigned int)
 // Generic port
 //
 typedef struct gport_s * gport;
-gport gport_create(unsigned int _n, size_t _size);
+gport gport_create(unsigned int _n, unsigned int _size);
 void gport_destroy(gport _p);
 void gport_print(gport _p);
 
@@ -157,7 +156,7 @@ enum {
     GPORT2_SIGNAL_EOM               // end of message
 };
 typedef struct gport2_s * gport2;
-gport2 gport2_create(unsigned int _n, size_t _size);
+gport2 gport2_create(unsigned int _n, unsigned int _size);
 void gport2_destroy(gport2 _p);
 void gport2_print(gport2 _p);
 

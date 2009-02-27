@@ -33,13 +33,13 @@ struct gport2_s {
     pthread_mutex_t internal_mutex;
 };
 
-gport2 gport2_create(unsigned int _n, size_t _size)
+gport2 gport2_create(unsigned int _n, unsigned int _size)
 {
     gport2 p = (gport2) malloc(sizeof(struct gport2_s));
     p->v = NULL;
 
     p->n = _n;
-    p->size = _size;
+    p->size = (size_t)_size;
     p->v = (void*) malloc((p->n)*(p->size));
 
     // producer

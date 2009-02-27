@@ -34,14 +34,14 @@ struct gport_s {
     pthread_mutex_t internal_mutex;
 };
 
-gport gport_create(unsigned int _n, size_t _size)
+gport gport_create(unsigned int _n, unsigned int _size)
 {
     gport p = (gport) malloc(sizeof(struct gport_s));
     p->v = NULL;
 
     p->n = _n;
     p->N = 2*(p->n)-1;
-    p->size = _size;
+    p->size = (size_t)_size;
     p->v = (void*) malloc((p->N)*(p->size));
 
     // producer
