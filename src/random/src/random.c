@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define randf_inline() ((float) rand() / (float) RAND_MAX)
 

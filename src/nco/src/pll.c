@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 struct pll_s {
     // loop filter

@@ -5,6 +5,7 @@
 #ifndef __LIQUID_AGC_INTERNAL_H__
 #define __LIQUID_AGC_INTERNAL_H__
 
+#include <complex.h>
 #include "liquid.h"
 
 //-----------------------------------------------------------------------------

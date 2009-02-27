@@ -5,6 +5,7 @@
 #ifndef __LIQUID_CHANNEL_INTERNAL_H__
 #define __LIQUID_CHANNEL_INTERNAL_H__
 
+#include <complex.h>
 #include "liquid.h"
 
 struct awgn_channel_s {

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 nco nco_create()
 {

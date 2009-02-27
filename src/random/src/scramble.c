@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void scramble_data(unsigned char * _x, unsigned int _len)
 {

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <complex.h>
 
 #include "liquid.h"
 

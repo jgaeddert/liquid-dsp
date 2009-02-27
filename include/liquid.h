@@ -5,10 +5,16 @@
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
-#include <complex.h>
+//#include <complex.h>
 
 #ifdef __cplusplus
 extern "C" {
+typedef float liquid_float_complex[2];
+
+#else
+#include <complex.h>
+typedef float complex liquid_float_complex;
+
 #endif /* __cplusplus */
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
@@ -36,7 +42,7 @@ void agc_set_gain_limits(agc _agc, float _gmin, float _gmax);
 void agc_set_bandwidth(agc _agc, float _BT);
 
 // Apply gain to input, update tracking loop
-void agc_execute(agc _agc, float complex _x, float complex *_y);
+void agc_execute(agc _agc, liquid_float_complex _x, liquid_float_complex *_y);
 
 // Return signal level in dB relative to target
 float agc_get_signal_level(agc _agc);
@@ -80,7 +86,7 @@ void X(_push)(X() _b, T _v);
 
 // Define buffer APIs
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT, float)
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, float complex)
+LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
 
 
@@ -106,7 +112,7 @@ void X(_write)(X() _b, T * _v, unsigned int _n);
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT, float)
-LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, float complex)
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT, unsigned int)
 
 
@@ -127,7 +133,7 @@ void X(_produce)(X() _p, T * _w, unsigned int _n); \
 void X(_consume)(X() _p, T * _r, unsigned int _n); \
 
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_FLOAT, float)
-LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, float complex)
+LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_UINT, unsigned int)
 
 //
@@ -177,7 +183,7 @@ typedef struct awgn_channel_s * awgn_channel;
 awgn_channel awgn_channel_create(float _nvar);
 void awgn_channel_destroy(awgn_channel _q);
 void awgn_channel_print(awgn_channel _q);
-void awgn_channel_execute(awgn_channel _q, float complex _x, float complex *_y);
+void awgn_channel_execute(awgn_channel _q, liquid_float_complex _x, liquid_float_complex *_y);
 void awgn_channel_set_noise_variance(awgn_channel _q, float _nvar);
 
 // Rice-K channel
@@ -185,7 +191,7 @@ typedef struct ricek_channel_s * ricek_channel;
 ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, float _theta);
 void ricek_channel_destroy(ricek_channel _q);
 void ricek_channel_print(ricek_channel _q);
-void ricek_channel_execute(ricek_channel _q, float complex _x, float complex *_y);
+void ricek_channel_execute(ricek_channel _q, liquid_float_complex _x, liquid_float_complex *_y);
 
 // Log-normal channel
 typedef struct lognorm_channel_s * lognorm_channel;
@@ -195,7 +201,7 @@ typedef struct channel_s * channel;
 channel channel_create();
 void channel_destroy(channel _c);
 void channel_print(channel _c);
-void channel_execute(channel _c, float complex _x, float complex *_y);
+void channel_execute(channel _c, liquid_float_complex _x, liquid_float_complex *_y);
 
 //
 // Dot product
@@ -226,16 +232,16 @@ TO X(_execute)(X() _q, TI * _v);
 
 // Define APIs
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF, float, float, float)
-LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCF, float complex, float complex, float complex)
-LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, float complex, float, float complex)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 // 
 // Estimation
 //
 
-float estimate_freqoffset(float complex * _x, unsigned int _n);
-//float estimate_phaseoffset(float complex * _x, unsigned int _n);
-//float estimate_timingoffset(float complex * _x, unsigned int _n);
+float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
+//float estimate_phaseoffset(liquid_float_complex * _x, unsigned int _n);
+//float estimate_timingoffset(liquid_float_complex * _x, unsigned int _n);
 
 //
 // FEC, etc.
@@ -308,17 +314,17 @@ typedef struct fftplan_s * fftplan;
 
 #define FFT_FORWARD 0
 #define FFT_REVERSE 1
-fftplan fft_create_plan(unsigned int _n, float complex * _x, float complex * _y, int _dir);
+fftplan fft_create_plan(unsigned int _n, liquid_float_complex * _x, liquid_float_complex * _y, int _dir);
 void fft_destroy_plan(fftplan _p);
 void fft_execute(fftplan _p);
 
-void fft_shift(float complex *_x, unsigned int _n);
+void fft_shift(liquid_float_complex *_x, unsigned int _n);
 
 //
 // ascii spectrogram
 //
 typedef struct asgram_s * asgram;
-asgram asgram_create(float complex *_x, unsigned int _n);
+asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
 void asgram_set_scale(asgram _q, float _scale);
 void asgram_set_offset(asgram _q, float _offset);
 void asgram_destroy(asgram _q);
@@ -429,8 +435,8 @@ void X(_execute)(X() _f, TO *_y); \
 unsigned int X(_get_length)(X() _f);
 
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_RRRF, float, float, float)
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CRCF, float complex, float, float complex)
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
 
 //
 // FIR Hilbert transform
@@ -479,8 +485,8 @@ void X(_execute)(X() _f, TI _x, TO *_y); \
 unsigned int X(_get_length)(X() _f);
 
 LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF, float, float, float)
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CRCF, float complex, float, float complex)
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, float complex, float complex, float complex)
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
 
 
 //
@@ -505,8 +511,8 @@ void X(_execute)(X() _b, unsigned int _i, TO *_y); \
 void X(_clear)(X() _b);
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF, float,         float,          float)
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CRCF, float complex, float,          float complex)
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, float complex, float complex,  float complex)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
 
 // 
 // Interpolator
@@ -523,8 +529,8 @@ void X(_print)(X() _q); \
 void X(_execute)(X() _q, TI _x, TO *_y);
 
 LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float,         float,          float)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF, float complex, float,          float complex)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, float complex, float complex,  float complex)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
 
 // 
 // Decimator
@@ -541,8 +547,8 @@ void X(_print)(X() _q); \
 void X(_execute)(X() _q, TI *_x, TO *_y, unsigned int _index);
 
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF, float,           float,          float)
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF, float complex,   float,          float complex)
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, float complex,   float complex,  float complex)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
 
 // 
 // Half-band resampler
@@ -560,8 +566,8 @@ void X(_decim_execute)(X() _f, TI * _x, TO * _y); \
 void X(_interp_execute)(X() _f, TI _x, TO * _y);
 
 LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF, float,           float,          float)
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCF, float complex,   float,          float complex)
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, float complex,   float complex,  float complex)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
 
 
 // 
@@ -579,8 +585,8 @@ void X(_print)(X() _q); \
 void X(_execute)(X() _q);
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF, float,         float,          float)
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CRCF, float complex, float,          float complex)
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, float complex, float complex,  float complex)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer)
@@ -600,8 +606,8 @@ void X(_clear)(X() _q); \
 void X(_estimate_timing)(X() _q, TI * _x, unsigned int _n);
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF, float,           float,          float)
-LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF, float complex,   float,          float complex)
-LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, float complex,   float complex,  float complex)
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer, 2 samples/symbol in/out)
@@ -621,8 +627,8 @@ void X(_clear)(X() _q); \
 void X(_estimate_timing)(X() _q, TI * _x, unsigned int _n);
 
 LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float,         float,          float)
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF, float complex, float,          float complex)
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, float complex, float complex,  float complex)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
 
 
 //
@@ -704,8 +710,8 @@ framegen64 framegen64_create(
     float _beta);
 void framegen64_destroy(framegen64 _fg);
 void framegen64_print(framegen64 _fg);
-void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char * _payload, float complex * _y);
-void framegen64_flush(framegen64 _fg, unsigned int _n, float complex * _y);
+void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char * _payload, liquid_float_complex * _y);
+void framegen64_flush(framegen64 _fg, unsigned int _n, liquid_float_complex * _y);
 
 // Basic frame synchronizer (64 bytes data payload)
 typedef int (*framesync64_callback)(unsigned char * _header, unsigned char * _payload);
@@ -718,7 +724,7 @@ framesync64 framesync64_create(
     );
 void framesync64_destroy(framesync64 _fg);
 void framesync64_print(framesync64 _fg);
-void framesync64_execute(framesync64 _fg, float complex * _x, unsigned int _n);
+void framesync64_execute(framesync64 _fg, liquid_float_complex * _x, unsigned int _n);
 
 
 //
@@ -743,8 +749,8 @@ void PNSYNC(_print)(PNSYNC() _fs);                      \
 TO PNSYNC(_correlate)(PNSYNC() _fs, TI _sym);
 
 LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_RRRF, float,           float,          float)
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF, float complex,   float,          float complex)
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF, float complex,   float complex,  float complex)
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
 
 
 // 
@@ -860,7 +866,7 @@ void X(_lu_decompose)(X() _x, X() _lower, X() _upper);
 //void X(_add)(X() _x, X() _y, X() _z);
 
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT, float)
-LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, float complex)
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 
 
 //
@@ -939,7 +945,7 @@ modem modem_create(modulation_scheme, unsigned int _bits_per_symbol);
 void modem_destroy(modem _mod);
 
 // Initialize arbitrary modem constellation
-void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len);
+void modem_arb_init(modem _mod, liquid_float_complex *_symbol_map, unsigned int _len);
 
 // Initialize arbitrary modem constellation on data from external file
 void modem_arb_init_file(modem _mod, char* filename);
@@ -952,9 +958,9 @@ unsigned int modem_get_bps(modem _mod);
 
 // generic modulate function; simply queries modem scheme and calls
 // appropriate subroutine
-void modulate(modem _mod, unsigned int symbol_in, float complex *y);
+void modulate(modem _mod, unsigned int symbol_in, liquid_float_complex *y);
 
-void demodulate(modem _demod, float complex x, unsigned int *symbol_out);
+void demodulate(modem _demod, liquid_float_complex x, unsigned int *symbol_out);
 void get_demodulator_phase_error(modem _demod, float* _phi);
 void get_demodulator_evm(modem _demod, float* _evm);
 
@@ -997,7 +1003,7 @@ float nco_cos(nco _nco);
 
 void nco_sincos(nco _nco, float* _s, float* _c);
 
-float complex nco_cexpf(nco _nco);
+liquid_float_complex nco_cexpf(nco _nco);
 
 // mixing functions
 
@@ -1030,7 +1036,7 @@ void pll_destroy(pll _p);
 void pll_print(pll _p);
 
 void pll_set_bandwidth(pll _p, float _bt);
-//void pll_execute(pll _p, float complex _x, float complex *_y, float _e);
+//void pll_execute(pll _p, liquid_float_complex _x, liquid_float_complex *_y, float _e);
 void pll_step(pll _p, nco _nco, float _e);
 
 
@@ -1073,7 +1079,7 @@ float randf_cdf(float _x);
 
 // Gaussian random number generator, N(0,1)
 float randnf();
-float complex crandnf();
+liquid_float_complex crandnf();
 float randn_pdf(float _x, float _eta, float _sig);
 float randn_cdf(float _x, float _eta, float _sig);
 

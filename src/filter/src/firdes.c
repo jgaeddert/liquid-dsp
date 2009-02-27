@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 //
 void fir_design_halfband_windowed_sinc(float * _h, unsigned int _n)
