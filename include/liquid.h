@@ -6,7 +6,6 @@
 #define __LIQUID_H__
 
 #include <complex.h>
-#include <math.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -993,31 +992,20 @@ void nco_adjust_phase(nco _nco, float _dphi);
 void nco_step(nco _nco);
 void nco_constrain_phase(nco _nco);
 
-#define nco_sin(_nco) (sinf(_nco->theta))
-#define nco_cos(_nco) (cosf(_nco->theta))
-//static inline float nco_sin(nco _nco) {return sinf(_nco->theta);}
-//static inline float nco_cos(nco _nco) {return cosf(_nco->theta);}
+float nco_sin(nco _nco);
+float nco_cos(nco _nco);
 
-static inline void nco_sincos(nco _nco, float* _s, float* _c) {
-    *_s = sinf(_nco->theta);
-    *_c = cosf(_nco->theta);
-}
+void nco_sincos(nco _nco, float* _s, float* _c);
 
-#define nco_cexpf(_nco) (cexpf(_Complex_I*(_nco->theta)))
+float complex nco_cexpf(nco _nco);
 
 // mixing functions
 
 // Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
-static inline void
-nco_mix_up(nco _nco, complex float _x, complex float *_y) {
-    *_y = _x * cexpf(_Complex_I*(_nco->theta));
-}
+void nco_mix_up(nco _nco, complex float _x, complex float *_y);
 
 // Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
-static inline void
-nco_mix_down(nco _nco, complex float _x, complex float *_y) {
-    *_y = _x * cexpf(-_Complex_I*(_nco->theta));
-}
+void nco_mix_down(nco _nco, complex float _x, complex float *_y);
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
 void nco_mix_block_up(

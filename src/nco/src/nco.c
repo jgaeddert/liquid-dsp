@@ -52,6 +52,35 @@ void nco_constrain_phase(nco _nco)
         _nco->theta += 2.0f*M_PI;
 }
 
+float nco_sin(nco _nco) {return sinf(_nco->theta);}
+float nco_cos(nco _nco) {return cosf(_nco->theta);}
+
+void nco_sincos(nco _nco, float* _s, float* _c)
+{
+    *_s = sinf(_nco->theta);
+    *_c = cosf(_nco->theta);
+}
+
+float complex nco_cexpf(nco _nco)
+{
+    return cexpf(_Complex_I*(_nco->theta));
+}
+
+// mixing functions
+
+// Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
+void nco_mix_up(nco _nco, complex float _x, complex float *_y)
+{
+    *_y = _x * cexpf(_Complex_I*(_nco->theta));
+}
+
+// Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
+void nco_mix_down(nco _nco, complex float _x, complex float *_y)
+{
+    *_y = _x * cexpf(-_Complex_I*(_nco->theta));
+}
+
+
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
 void nco_mix_block_up(
     nco _nco,
