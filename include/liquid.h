@@ -9,14 +9,22 @@
 
 #ifdef __cplusplus
 extern "C" {
-typedef float liquid_float_complex[2];
+#   define LIQUID_USE_COMPLEX_H 0
 #else
-#include <complex.h>
-typedef float complex liquid_float_complex;
+#   define LIQUID_USE_COMPLEX_H 1
 #endif /* __cplusplus */
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
+
+#if LIQUID_USE_COMPLEX_H==1
+#   include <complex.h>
+#   define LIQUID_DEFINE_COMPLEX(R,C) typedef R _Complex C
+#else
+#   define LIQUID_DEFINE_COMPLEX(R,C) typedef R C[2]
+#endif
+
+LIQUID_DEFINE_COMPLEX(float, liquid_float_complex);
 
 // 
 // Automatic gain control
