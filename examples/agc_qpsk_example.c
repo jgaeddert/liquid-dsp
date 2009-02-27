@@ -70,7 +70,7 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", DEBUG_FILENAME);
 
-    free_modem(mod);
+    modem_destroy(mod);
     agc_destroy(p);
     interp_crcf_destroy(interp);
 

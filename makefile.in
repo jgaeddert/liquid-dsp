@@ -208,7 +208,7 @@ EXAMPLES_LDFLAGS = $(LDFLAGS) -pthread
 #	$(CC) $(CFLAGS) -MM -MG $< | $(SED) 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@
 #include $(example_deps)
 
-$(example_objs): $(example_src)
+$(example_objs): %.o : %.c
 	$(CC) $(CFLAGS) $< -c -o $@
 
 # NOTE: linked libraries must come _after_ the target program

@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
 #include "liquid.h"
 
 #define DEBUG_FILENAME  "framesync64_example.m"
