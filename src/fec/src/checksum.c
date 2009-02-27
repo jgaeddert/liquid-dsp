@@ -2,7 +2,6 @@
 // Checksum
 //
 
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -21,7 +20,7 @@ unsigned char checksum_generate_key(unsigned char *_data, unsigned int _n)
     return key;
 }
 
-bool checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key)
+int checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key)
 {
     unsigned int i, sum=0;
     for (i=0; i<_n; i++)

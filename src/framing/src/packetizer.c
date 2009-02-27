@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include "framing_internal.h"
@@ -112,7 +111,7 @@ void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
     memmove(_pkt, _p->buffer_0, _p->packet_len);
 }
 
-bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg)
+int packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg)
 {
 
     memmove(_p->buffer_0, _pkt, _p->packet_len);

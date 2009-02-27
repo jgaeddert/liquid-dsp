@@ -56,7 +56,7 @@ void crc32_generate_key(unsigned char *_msg, unsigned int _n, unsigned char *_ke
 }
 #endif
 
-bool crc32_validate_message(unsigned char *_msg, unsigned int _n, unsigned int _key)
+int crc32_validate_message(unsigned char *_msg, unsigned int _n, unsigned int _key)
 {
     return crc32_generate_key(_msg,_n)==_key;
 }

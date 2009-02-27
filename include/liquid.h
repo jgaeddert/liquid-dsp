@@ -5,14 +5,13 @@
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
 
+#include <complex.h>
+#include <unistd.h>
+#include <math.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include <complex.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <math.h>
 
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
@@ -257,7 +256,7 @@ CRC() CRC(_create)(); \
 void CRC(_destroy)(CRC() _crc); \
 void CRC(_print)(CRC() _crc); \
 void CRC(_generate_key)(CRC() _crc, unsigned char * _msg, unsigned int _msg_len); \
-bool CRC(_validate_key)(CRC() _crc, unsigned char * _msg, unsigned int _msg_len);
+int  CRC(_validate_key)(CRC() _crc, unsigned char * _msg, unsigned int _msg_len);
 
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CRC32)
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CHECKSUM32)
@@ -266,14 +265,14 @@ LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CHECKSUM32)
 // checksum
 //
 unsigned char checksum_generate_key(unsigned char *_data, unsigned int _n);
-bool checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key);
+int  checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key);
 
 //
 // CRC
 //
 //void crc_generate_key(unsigned char *_msg, unsigned int _msg_len, unsigned char *_key, unsigned int _key_len);
 unsigned int crc32_generate_key(unsigned char *_data, unsigned int _n);
-bool crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int _key);
+int  crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int _key);
 
 // 
 // FEC
@@ -695,7 +694,7 @@ void frame_print(frame _f);
 void frame_setkey(frame _f, frame_keyid _id, unsigned int _value);
 
 void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
-bool frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
+int  frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
 
 //
 // Basic frame generator (64 bytes data payload)
@@ -763,7 +762,7 @@ void packetizer_print(packetizer _p);
 unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1);
 
 void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char * _pkt);
-bool packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);
+int  packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);
 
 
 //
