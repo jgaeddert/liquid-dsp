@@ -37,7 +37,7 @@ void modem_demodulate_bench(
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    free_modem(demod);
+    modem_destroy(demod);
 }
 
 // specific modems

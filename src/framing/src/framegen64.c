@@ -98,7 +98,7 @@ void framegen64_destroy(framegen64 _fg)
 {
     interp_crcf_destroy(_fg->interp);
     fec_destroy(_fg->enc);
-    free_modem(_fg->mod);
+    modem_destroy(_fg->mod);
     free(_fg);
 }
 

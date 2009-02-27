@@ -412,7 +412,7 @@ void modem_arb_balance_iq(modem _mod)
     }
 }
 
-void free_modem(modem _mod)
+void modem_destroy(modem _mod)
 {
     free(_mod->symbol_map);
     free(_mod);

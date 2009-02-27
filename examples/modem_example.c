@@ -29,7 +29,7 @@ int main() {
     }
     printf("num errors: %u\n", num_errors);
 
-    free_modem(mod);
-    free_modem(demod);
+    modem_destroy(mod);
+    modem_destroy(demod);
     return 0;
 }

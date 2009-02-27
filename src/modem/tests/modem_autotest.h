@@ -27,8 +27,8 @@ void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
     }
 
     // clean it up
-    free_modem(mod);
-    free_modem(demod);
+    modem_destroy(mod);
+    modem_destroy(demod);
 }
 
 //

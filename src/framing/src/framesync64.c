@@ -140,8 +140,8 @@ void framesync64_destroy(framesync64 _fs)
     pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
     pnsync_crcf_destroy(_fs->fsync);
-    free_modem(_fs->bpsk);
-    free_modem(_fs->demod);
+    modem_destroy(_fs->bpsk);
+    modem_destroy(_fs->demod);
 #ifdef DEBUG
     unsigned int i;
     float * r;

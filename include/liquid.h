@@ -939,7 +939,7 @@ typedef struct modem_s * modem;
 // create modulation scheme, allocating memory as necessary
 modem modem_create(modulation_scheme, unsigned int _bits_per_symbol);
 
-void free_modem(modem _mod);
+void modem_destroy(modem _mod);
 
 // Initialize arbitrary modem constellation
 void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len);
