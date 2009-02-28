@@ -19,5 +19,16 @@
 // is matrix valid size?
 #define matrix_valid_size(x,m,n) ( ((x->M)==m && (x->N)==n) ? true : false )
 
+#define MATRIX_VALIDATE_INPUT(f,x,m,n)                      \
+    if (m >= x->M) {                                        \
+        printf("error: %s,%s, invalid row index: %u\n",     \
+            MATRIX_NAME,f,m);                               \
+        exit(0);                                            \
+    } else if (n >= x->N) {                                 \
+        printf("error: %s,%s, invalid col index: %u\n",     \
+            MATRIX_NAME,f,n);                               \
+        exit(0);                                            \
+    }
+        
 
 #endif // __LIQUID_MATRIX_INTERNAL_H__

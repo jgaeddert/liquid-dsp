@@ -81,13 +81,7 @@ void MATRIX(_dim)(MATRIX() _x, unsigned int *_M, unsigned int *_N)
 
 void MATRIX(_assign)(MATRIX() _x, unsigned int _m, unsigned int _n, T _value)
 {
-    if (_m >= _x->M) {
-        printf("error: matrix_assign(), row index out of range\n");
-        exit(0);
-    } else if (_n >= _x->N) {
-        printf("error: matrix_assign(), column index out of range\n");
-        exit(0);
-    }
+    MATRIX_VALIDATE_INPUT("assign()",_x,_m,_n)
 
     //_x->v[_m*(_x->N) + _n] = _value;
     matrix_fast_access(_x,_m,_n) = _value;
@@ -95,13 +89,7 @@ void MATRIX(_assign)(MATRIX() _x, unsigned int _m, unsigned int _n, T _value)
 
 void MATRIX(_access)(MATRIX() _x, unsigned int _m, unsigned int _n, T * _value)
 {
-    if (_m >= _x->M) {
-        printf("error: matrix_access(), row index out of range\n");
-        exit(0);
-    } else if (_n >= _x->N) {
-        printf("error: matrix_access(), column index out of range\n");
-        exit(0);
-    }
+    MATRIX_VALIDATE_INPUT("access()",_x,_m,_n)
 
     //return _x->v[_m*(_x->N) + _n];
     *_value = matrix_fast_access(_x,_m,_n);
