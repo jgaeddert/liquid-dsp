@@ -7,16 +7,16 @@
 #include <string.h>
 #include <stdbool.h>
 
-struct X(_s) {
+struct MATRIX(_s) {
     unsigned int M; // number of rows
     unsigned int N; // number of columns
     unsigned int L; // size, M*N
     T * v;          // memory
 };
 
-X() X(_create)(unsigned int _M, unsigned int _N)
+MATRIX() MATRIX(_create)(unsigned int _M, unsigned int _N)
 {
-    X() x = (X()) malloc(sizeof(struct X(_s)));
+    MATRIX() x = (MATRIX()) malloc(sizeof(struct MATRIX(_s)));
     x->M = _M;
     x->N = _N;
     x->L = (x->M) * (x->N);
@@ -29,28 +29,28 @@ X() X(_create)(unsigned int _M, unsigned int _N)
     return x;
 }
 
-void X(_destroy)(X() _x)
+void MATRIX(_destroy)(MATRIX() _x)
 {
     // TODO: ensure free operation is done safely
     free(_x->v);
     free(_x);
 }
 
-X() X(_copy)(X() _x)
+MATRIX() MATRIX(_copy)(MATRIX() _x)
 {
-    //X() y = matrix_create(_x->M, _x->N);
+    //MATRIX() y = matrix_create(_x->M, _x->N);
     //memcpy(y->v,_x->v,(_x->M)*(_x->N)*sizeof(T));
     //return y;
 
     // same as above, but copies all internal variables by default
-    X() y = (X()) malloc(sizeof(struct X(_s)));
-    memcpy(y, _x, sizeof(struct X(_s)));
+    MATRIX() y = (MATRIX()) malloc(sizeof(struct MATRIX(_s)));
+    memcpy(y, _x, sizeof(struct MATRIX(_s)));
     y->v = (T*) malloc((y->M)*(y->N)*sizeof(T));
     memcpy(y->v, _x->v, (y->M)*(y->N)*sizeof(T));
     return y;
 }
 
-void X(_print)(X() _x)
+void MATRIX(_print)(MATRIX() _x)
 {
     unsigned int m, n;
     //for (n=0; n<_x->N; n++)
@@ -68,18 +68,18 @@ void X(_print)(X() _x)
     printf("\n");
 }
 
-void X(_clear)(X() _x)
+void MATRIX(_clear)(MATRIX() _x)
 {
     memset(_x->v, 0x00, (_x->M)*(_x->N)*sizeof(T));
 }
 
-void X(_dim)(X() _x, unsigned int *_M, unsigned int *_N)
+void MATRIX(_dim)(MATRIX() _x, unsigned int *_M, unsigned int *_N)
 {
     *_M = _x->M;
     *_N = _x->N;
 }
 
-void X(_assign)(X() _x, unsigned int _m, unsigned int _n, T _value)
+void MATRIX(_assign)(MATRIX() _x, unsigned int _m, unsigned int _n, T _value)
 {
     if (_m >= _x->M) {
         printf("error: matrix_assign(), row index out of range\n");
@@ -93,7 +93,7 @@ void X(_assign)(X() _x, unsigned int _m, unsigned int _n, T _value)
     matrix_fast_access(_x,_m,_n) = _value;
 }
 
-void X(_access)(X() _x, unsigned int _m, unsigned int _n, T * _y)
+void MATRIX(_access)(MATRIX() _x, unsigned int _m, unsigned int _n, T * _value)
 {
     if (_m >= _x->M) {
         printf("error: matrix_access(), row index out of range\n");
@@ -104,10 +104,10 @@ void X(_access)(X() _x, unsigned int _m, unsigned int _n, T * _y)
     }
 
     //return _x->v[_m*(_x->N) + _n];
-    *_y = matrix_fast_access(_x,_m,_n);
+    *_value = matrix_fast_access(_x,_m,_n);
 }
 
-void X(_multiply)(X() _x, X() _y, X() _z)
+void MATRIX(_multiply)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
 {
     // ensure lengths are valid
     if (!matrix_valid_size(_z,_x->M,_y->N)) {
@@ -132,12 +132,12 @@ void X(_multiply)(X() _x, X() _y, X() _z)
     }
 }
 
-void X(_transpose)(X() _x)
+void MATRIX(_transpose)(MATRIX() _x)
 {
     // quick and dirty implementation:
     //   - create new matrix
     //   - copy values
-    X() t = X(_copy)(_x);
+    MATRIX() t = MATRIX(_copy)(_x);
 
     unsigned int tmp = _x->N;
     _x->N = _x->M;
@@ -150,10 +150,10 @@ void X(_transpose)(X() _x)
         }
     }
 
-    X(_destroy)(t);
+    MATRIX(_destroy)(t);
 }
 
-void X(_invert)(X() _x)
+void MATRIX(_invert)(MATRIX() _x)
 {
     // test that matrix is square
     if (!matrix_is_square(_x)) {
@@ -166,7 +166,7 @@ void X(_invert)(X() _x)
 
 // decompose matrix into product of  lower/upper triangular matrices
 // using Crout's algorithm
-void X(_lu_decompose)(X() _x, X() L, X() U)
+void MATRIX(_lu_decompose)(MATRIX() _x, MATRIX() L, MATRIX() U)
 {
     // test that matrices are square and of proper size
     if (!matrix_is_square(_x) || !matrix_is_square(L) || !matrix_is_square(U)) {
@@ -177,13 +177,13 @@ void X(_lu_decompose)(X() _x, X() L, X() U)
         return;
     }
 
-    X(_clear)(L);
-    X(_clear)(U);
+    MATRIX(_clear)(L);
+    MATRIX(_clear)(U);
 
     unsigned int N = _x->N;
 
-    X() a = L;
-    X() b = U;
+    MATRIX() a = L;
+    MATRIX() b = U;
 
     unsigned int i;
     for (i=0; i<N; i++)

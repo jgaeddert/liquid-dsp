@@ -864,7 +864,8 @@ void X(_clear)(X() _x);                                     \
 void X(_dim)(X() _x, unsigned int *_M, unsigned int *_N);   \
 void X(_assign)(X() _x, unsigned int _m, unsigned int _n,   \
     T _value);                                              \
-void X(_access)(X() _x, unsigned int _m, unsigned int _n, T * _y);     \
+void X(_access)(X() _x, unsigned int _m, unsigned int _n,   \
+    T * _value);                                            \
 void X(_multiply)(X() _x, X() _y, X() _z);                  \
 void X(_transpose)(X() _x);                                 \
 void X(_invert)(X() _x);                                    \
