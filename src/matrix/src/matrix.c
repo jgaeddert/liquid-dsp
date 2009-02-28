@@ -95,12 +95,48 @@ void MATRIX(_access)(MATRIX() _x, unsigned int _m, unsigned int _n, T * _value)
     *_value = matrix_fast_access(_x,_m,_n);
 }
 
+void MATRIX(_add)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
+{
+    if ( (_x->M != _y->M) || (_x->M != _z->M) ||
+         (_x->N != _y->N) || (_x->N != _z->N) )
+    {
+        printf("error: %s_add(), invalid dimensions\n", MATRIX_NAME);
+        exit(0);
+    }
+
+    unsigned int i, j;
+    for (i=0; i<_x->M; i++) {
+        for (j=0; j<_x->N; j++) {
+            matrix_fast_access(_z,i,j) =
+                matrix_fast_access(_x,i,j) + matrix_fast_access(_y,i,j);
+        }
+    }
+}
+
+void MATRIX(_sub)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
+{
+    if ( (_x->M != _y->M) || (_x->M != _z->M) ||
+         (_x->N != _y->N) || (_x->N != _z->N) )
+    {
+        printf("error: %s_sub(), invalid dimensions\n", MATRIX_NAME);
+        exit(0);
+    }
+
+    unsigned int i, j;
+    for (i=0; i<_x->M; i++) {
+        for (j=0; j<_x->N; j++) {
+            matrix_fast_access(_z,i,j) =
+                matrix_fast_access(_x,i,j) - matrix_fast_access(_y,i,j);
+        }
+    }
+}
+
 void MATRIX(_multiply)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
 {
     // ensure lengths are valid
     if (!matrix_valid_size(_z,_x->M,_y->N)) {
         printf("error: matrix_multiply(), invalid dimensions\n");
-        return;
+        exit(0);
     }
 
     unsigned int m, n, i;

@@ -866,11 +866,12 @@ void X(_assign)(X() _x, unsigned int _m, unsigned int _n,   \
     T _value);                                              \
 void X(_access)(X() _x, unsigned int _m, unsigned int _n,   \
     T * _value);                                            \
+void X(_add)(X() _x, X() _y, X() _z);                       \
+void X(_sub)(X() _x, X() _y, X() _z);                       \
 void X(_multiply)(X() _x, X() _y, X() _z);                  \
 void X(_transpose)(X() _x);                                 \
 void X(_invert)(X() _x);                                    \
 void X(_lu_decompose)(X() _x, X() _lower, X() _upper);
-//void X(_add)(X() _x, X() _y, X() _z);
 
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT, float)
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
