@@ -54,6 +54,7 @@ modules		:=	\
 	math		\
 	matrix		\
 	modem 		\
+	multicarrier	\
 	nco 		\
 	random		\
 	sequence	\

@@ -972,6 +972,29 @@ void demodulate(modem _demod, liquid_float_complex x, unsigned int *symbol_out);
 void get_demodulator_phase_error(modem _demod, float* _phi);
 void get_demodulator_evm(modem _demod, float* _evm);
 
+//
+// Multicarrier
+//
+
+// FIR polyphase filterbank channelizer
+typedef struct firpfbch_s * firpfbch;
+
+#define FIRPFBCH_NYQUIST        0
+#define FIRPFBCH_ROOTNYQUIST    1
+
+#define FIRPFBCH_ANALYZER       0
+#define FIRPFBCH_SYTHESIZER     1
+// TODO: use filter prototype object
+// _num_channels:   number of channels
+// _slsl        :   sidelobe suppression level
+// _nyquist     :   0: nyquist, 1: root nyquist
+// _dir         :   0: analyzer, 1: synthesizer
+firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, int _dir);
+void firpfbch_destroy(firpfbch _c);
+void firpfbch_print(firpfbch _c);
+
+void firpfbch_synthesizer_execute(float complex * _x, float complex * _X);
+void firpfbch_analyzer_execute(float complex * _X, float complex * _x);
 
 
 // 
