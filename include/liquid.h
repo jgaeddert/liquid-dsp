@@ -983,7 +983,7 @@ typedef struct firpfbch_s * firpfbch;
 #define FIRPFBCH_ROOTNYQUIST    1
 
 #define FIRPFBCH_ANALYZER       0
-#define FIRPFBCH_SYTHESIZER     1
+#define FIRPFBCH_SYNTHESIZER    1
 // TODO: use filter prototype object
 // _num_channels:   number of channels
 // _slsl        :   sidelobe suppression level
@@ -993,8 +993,9 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
 void firpfbch_destroy(firpfbch _c);
 void firpfbch_print(firpfbch _c);
 
-void firpfbch_synthesizer_execute(float complex * _x, float complex * _X);
-void firpfbch_analyzer_execute(float complex * _X, float complex * _x);
+void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y);
+void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X);
+void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x);
 
 
 // 

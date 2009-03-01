@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "liquid.internal.h"
 
@@ -48,7 +49,7 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
 #endif
 
     // create firpfb object
-    c->firpfb_crcf = firpfb_crcf_create(c->num_channels,h,h_len);
+    c->bank = firpfb_crcf_create(c->num_channels,h,h_len);
 
     // allocate memory for buffers
     c->x = (float complex*) malloc((c->num_channels)*sizeof(float complex));
@@ -56,23 +57,22 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
 
     // create fft plan
     // TODO: FIXME!
-    float complex * fft_in=NULL;
-    float complex * fft_out=NULL;
     if (_dir == FIRPFBCH_ANALYZER) {
-        c->dir = FFT_REVERSE;
+        c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
     } else if (_dir == FIRPFBCH_SYNTHESIZER) {
-        c->dir = FFT_FORWARD;
+        c->fft = fft_create_plan(c->num_channels, c->x, c->X, FFT_REVERSE);
     } else {
         printf("error: firpfbch_create(), unknown channelizer type\n");
         exit(0);
     }
-    c->fft = fftplan_create(c->num_channels, fft_in, fft_out, c->dir);
 
     return c;
 }
 
 void firpfbch_destroy(firpfbch _c)
 {
+    firpfb_crcf_destroy(_c->bank);
+    fft_destroy_plan(_c->fft);
     free(_c->x);
     free(_c->X);
     free(_c);
@@ -80,18 +80,52 @@ void firpfbch_destroy(firpfbch _c)
 
 void firpfbch_print(firpfbch _c)
 {
-
+    printf("firpfbch: [%u taps]\n", 0);
 }
 
-void firpfbch_synthesizer_execute(float complex * _x, float complex * _X)
+
+void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y)
 {
 
 }
 
-void firpfbch_analyzer_execute(float complex * _X, float complex * _x)
+void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X)
 {
+    unsigned int i;
 
+    // copy samples into time-domain buffer (_c->x)
+    memmove(_c->x, _x, (_c->num_channels)*sizeof(float complex));
+
+    // execute fft, store in freq-domain buffer (_c->X)
+    fft_execute(_c->fft);
+
+    // push samples into filter bank
+    for (i=0; i<_c->num_channels; i++)
+        firpfb_crcf_push(_c->bank, _c->X[i]);
+
+    // execute filterbank, putting samples into output buffer
+    for (i=0; i<_c->num_channels; i++)
+        firpfb_crcf_execute(_c->bank, i, &(_X[i]));
 }
 
+void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x)
+{
+    unsigned int i;
+
+    // push samples into filter bank
+    for (i=0; i<_c->num_channels; i++)
+        firpfb_crcf_push(_c->bank, _X[i]);
+
+    // execute filterbank, putting samples into freq-domain buffer (_c->X) in
+    // reverse order
+    for (i=0; i<_c->num_channels; i++)
+        firpfb_crcf_execute(_c->bank, _c->num_channels-i-1, &(_c->X[i]));
+    
+    // execute inverse fft, store in time-domain buffer (_c->x)
+    fft_execute(_c->fft);
+
+    // copy results to output buffer
+    memmove(_x, _c->x, (_c->num_channels)*sizeof(float complex));
+}
 
 
