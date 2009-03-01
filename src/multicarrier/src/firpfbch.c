@@ -10,12 +10,14 @@
 
 //#define DEBUG
 
+#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_crcf,name)
+
 struct firpfbch_s {
     unsigned int num_channels;
     float complex * x;  // time-domain buffer
     float complex * X;  // freq-domain buffer
     
-    firpfb_crcf bank;
+    FIR_FILTER() * bank;
     fftplan fft;
     unsigned int type;  // synthesis/analysis
     unsigned int ftype; // filter type (nyquist, etc.)
@@ -26,38 +28,36 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
     firpfbch c = (firpfbch) malloc(sizeof(struct firpfbch_s));
     c->num_channels = _num_channels;
 
+    // create bank of filters
+    c->bank = (FIR_FILTER()*) malloc((c->num_channels)*sizeof(FIR_FILTER()));
+
     // design filter
     unsigned int h_len;
-#if 0
-    if (_nyquist==FIRPFBCH_NYQUIST) {
-        c->type = FIRPFBCH_NYQUIST;
-    } else if (_nyquist==FIRPFBCH_ROOTNYQUIST) {
-        c->type = FIRPFBCH_ROOTNYQUIST;
 
-        // use root-raised cosine for now
-        unsigned int m=4;
-        float beta=0.7f;
-    } else {
-        printf("error: firpfbch_create(), unknown filter type\n");
-        exit(0);
-    }
-#else
     // design filter using kaiser window and be done with it
     // TODO: use filter prototype object
     h_len = (c->num_channels)*4;
     float h[h_len+1];
-    float fc = 1/(float)(c->num_channels);
+    float fc = 1/(float)(c->num_channels);  // cutoff frequency
     fir_kaiser_window(h_len+1, fc, 60, h);
-#endif
+
+    // generate bank of sub-samped filters
+    // length of each sub-sampled filter
+    unsigned int h_sub_len = h_len / c->num_channels;
+    float h_sub[h_sub_len];
+    unsigned int i, n;
+    for (i=0; i<c->num_channels; i++) {
+        for (n=0; n<h_sub_len; n++) {
+            h_sub[n] = h[i + n*(c->num_channels)];
+        }   
+
+        c->bank[i] = FIR_FILTER(_create)(h_sub, h_sub_len);
+    }   
 
 #ifdef DEBUG
-    unsigned int i;
     for (i=0; i<h_len+1; i++)
         printf("h(%4u) = %12.4e;\n", i+1, h[i]);
 #endif
-
-    // create firpfb object
-    c->bank = firpfb_crcf_create(c->num_channels,h,h_len);
 
     // allocate memory for buffers
     c->x = (float complex*) malloc((c->num_channels)*sizeof(float complex));
@@ -79,7 +79,11 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
 
 void firpfbch_destroy(firpfbch _c)
 {
-    firpfb_crcf_destroy(_c->bank);
+    unsigned int i;
+    for (i=0; i<_c->num_channels; i++)
+        fir_filter_crcf_destroy(_c->bank[i]);
+    free(_c->bank);
+
     fft_destroy_plan(_c->fft);
     free(_c->x);
     free(_c->X);
@@ -108,26 +112,25 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
     fft_execute(_c->fft);
 
     // push samples into filter bank
-    for (i=0; i<_c->num_channels; i++)
-        firpfb_crcf_push(_c->bank, _c->X[i]);
-
     // execute filterbank, putting samples into output buffer
-    for (i=0; i<_c->num_channels; i++)
-        firpfb_crcf_execute(_c->bank, i, &(_X[i]));
+    for (i=0; i<_c->num_channels; i++) {
+        fir_filter_crcf_push(_c->bank[i], _c->X[i]);
+        fir_filter_crcf_execute(_c->bank[i], &(_X[i]));
+    }
 }
 
 void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x)
 {
-    unsigned int i;
+    unsigned int i, b;
 
     // push samples into filter bank
-    for (i=0; i<_c->num_channels; i++)
-        firpfb_crcf_push(_c->bank, _X[i]);
-
     // execute filterbank, putting samples into freq-domain buffer (_c->X) in
     // reverse order
-    for (i=0; i<_c->num_channels; i++)
-        firpfb_crcf_execute(_c->bank, _c->num_channels-i-1, &(_c->X[i]));
+    for (i=0; i<_c->num_channels; i++) {
+        b = _c->num_channels-i-1;
+        fir_filter_crcf_push(_c->bank[b], _X[i]);
+        fir_filter_crcf_execute(_c->bank[b], &(_c->X[i]));
+    }
     
     // execute inverse fft, store in time-domain buffer (_c->x)
     fft_execute(_c->fft);
