@@ -48,10 +48,10 @@ int main() {
         }
 
         // execute analysis filter bank
-        firpfbch_analyzer_execute(c0, x0, X);
+        firpfbch_execute(c0, x0, X);
 
         // execute synthesis filter bank
-        firpfbch_synthesizer_execute(c1, X, x1);
+        firpfbch_execute(c1, X, x1);
 
         // write output to file
         for (j=0; j<num_channels; j++) {

@@ -20,10 +20,9 @@ struct firpfbch_s {
     FIR_FILTER() * bank;
     fftplan fft;
     unsigned int type;  // synthesis/analysis
-    unsigned int ftype; // filter type (nyquist, etc.)
 };
 
-firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, int _dir)
+firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, int _type)
 {
     firpfbch c = (firpfbch) malloc(sizeof(struct firpfbch_s));
     c->num_channels = _num_channels;
@@ -64,10 +63,10 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
     c->X = (float complex*) malloc((c->num_channels)*sizeof(float complex));
 
     // create fft plan
-    // TODO: FIXME!
-    if (_dir == FIRPFBCH_ANALYZER) {
+    c->type = _type;
+    if (c->type == FIRPFBCH_ANALYZER) {
         c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
-    } else if (_dir == FIRPFBCH_SYNTHESIZER) {
+    } else if (c->type == FIRPFBCH_SYNTHESIZER) {
         c->fft = fft_create_plan(c->num_channels, c->x, c->X, FFT_FORWARD);
     } else {
         printf("error: firpfbch_create(), unknown channelizer type\n");
@@ -95,11 +94,6 @@ void firpfbch_print(firpfbch _c)
     printf("firpfbch: [%u taps]\n", 0);
 }
 
-
-void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y)
-{
-
-}
 
 void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X)
 {
@@ -139,4 +133,11 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * 
     memmove(_x, _c->x, (_c->num_channels)*sizeof(float complex));
 }
 
+void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y)
+{
+    if (_c->type == FIRPFBCH_ANALYZER)
+        firpfbch_analyzer_execute(_c,_x,_y);
+    else
+        firpfbch_synthesizer_execute(_c,_x,_y);
+}
 

@@ -988,14 +988,14 @@ typedef struct firpfbch_s * firpfbch;
 // _num_channels:   number of channels
 // _slsl        :   sidelobe suppression level
 // _nyquist     :   0: nyquist, 1: root nyquist
-// _dir         :   0: analyzer, 1: synthesizer
-firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, int _dir);
+// _type        :   0: analyzer, 1: synthesizer
+firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, int _type);
 void firpfbch_destroy(firpfbch _c);
 void firpfbch_print(firpfbch _c);
 
 void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y);
-void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X);
-void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x);
+//void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X);
+//void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x);
 
 
 // 
