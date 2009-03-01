@@ -10,10 +10,10 @@
 struct cvsd_s {
     unsigned int num_bits;
     unsigned char bitref;   // historical bit reference
-    unsigned char bitmask;
-    float ref;
+    unsigned char bitmask;  // historical bit reference mask
+    float ref;              // internal reference
 
-    float zeta;             // step factor
+    float zeta;             // delta step factor
     float delta;            // current step size
     float delta_min;        // minimum delta
     float delta_max;        // maximum delta
@@ -21,10 +21,10 @@ struct cvsd_s {
 
 cvsd cvsd_create()
 {
-    cvsd q = (cvsd) malloc(sizeof(cvsd_s));
+    cvsd q = (cvsd) malloc(sizeof(struct cvsd_s));
     q->num_bits = 3;
     q->bitref = 0;
-    q->bitmask = 1<<(q->num_bits) - 1;
+    q->bitmask = (1<<(q->num_bits)) - 1;
 
     q->ref = 0.0f;
     q->zeta = 2.0f;
@@ -64,12 +64,16 @@ unsigned char cvsd_encode(cvsd _q, float _audio_sample)
     else
         _q->delta /= _q->zeta;  // decrease delta
 
-    // ensure delta is in valid range
+    // limit delta
     _q->delta = (_q->delta > _q->delta_max) ? _q->delta_max : _q->delta;
     _q->delta = (_q->delta < _q->delta_min) ? _q->delta_min : _q->delta;
 
-    // update reference value
+    // update reference
     _q->ref += (bit) ? -_q->delta : _q->delta;
+
+    // limite reference
+    _q->ref = (_q->ref >  1.0f) ?  1.0f : _q->ref;
+    _q->ref = (_q->ref < -1.0f) ? -1.0f : _q->ref;
 
     return bit;
 }
@@ -77,7 +81,29 @@ unsigned char cvsd_encode(cvsd _q, float _audio_sample)
 // decode single sample
 float cvsd_decode(cvsd _q, unsigned char _bit)
 {
+    // append bit into register
+    _q->bitref <<= 1;
+    _q->bitref |= (_bit & 0x01);
+    _q->bitref &= _q->bitmask;
 
+    // update delta
+    if (_q->bitref == 0 || _q->bitref == _q->bitmask)
+        _q->delta *= _q->zeta;  // increase delta
+    else
+        _q->delta /= _q->zeta;  // decrease delta
+
+    // limit delta
+    _q->delta = (_q->delta > _q->delta_max) ? _q->delta_max : _q->delta;
+    _q->delta = (_q->delta < _q->delta_min) ? _q->delta_min : _q->delta;
+
+    // update reference
+    _q->ref += (_bit&0x01) ? -_q->delta : _q->delta;
+
+    // limit reference
+    _q->ref = (_q->ref >  1.0f) ?  1.0f : _q->ref;
+    _q->ref = (_q->ref < -1.0f) ? -1.0f : _q->ref;
+
+    return _q->ref;
 }
 
 // encode 8 samples
@@ -100,7 +126,7 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio)
     unsigned char bit;
     unsigned int i;
     for (i=0; i<8; i++) {
-        bit = (_data >> 8-i-1) & 0x01;
+        bit = (_data >> (8-i-1)) & 0x01;
         _audio[i] = cvsd_decode(_q, bit);
     }
 }
