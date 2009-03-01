@@ -57,6 +57,23 @@ float agc_get_signal_level(agc _agc);
 float agc_get_gain(agc _agc);
 
 
+//
+// Audio
+//
+
+// CVSD: continuously variable slope delta
+typedef struct cvsd_s * cvsd;
+cvsd cvsd_create();
+void cvsd_destroy(cvsd _q);
+void cvsd_print(cvsd _q);
+
+// encode/decode single sample
+unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
+float           cvsd_decode(cvsd _q, unsigned char _bit);
+
+// encode/decode 8 samples
+void cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
+void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 
 //
 // Buffers

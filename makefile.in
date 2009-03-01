@@ -42,6 +42,7 @@ ARFLAGS		= r
 #    local_b_files : benchmark script headers
 modules		:=	\
 	agc		\
+	audio		\
 	buffer		\
 	channel		\
 	dotprod		\
