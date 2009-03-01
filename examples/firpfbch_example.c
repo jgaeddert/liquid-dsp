@@ -13,11 +13,13 @@ int main() {
     // options
     unsigned int num_channels=8;
     float slsl=60;
-    unsigned int num_frames=16;  // num frames
+    unsigned int num_frames=25;  // num frames
 
     // create objects
     firpfbch c0 = firpfbch_create(num_channels, slsl, FIRPFBCH_NYQUIST, FIRPFBCH_ANALYZER);
     firpfbch c1 = firpfbch_create(num_channels, slsl, FIRPFBCH_NYQUIST, FIRPFBCH_SYNTHESIZER);
+
+    //firpfbch_print(c0);
 
     FILE*fid = fopen(DEBUG_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
@@ -46,10 +48,10 @@ int main() {
         }
 
         // execute analysis filter bank
-        firpfbch_execute(c0, x0, X);
+        firpfbch_analyzer_execute(c0, x0, X);
 
         // execute synthesis filter bank
-        firpfbch_execute(c1, X, x1);
+        firpfbch_synthesizer_execute(c1, X, x1);
 
         // write output to file
         for (j=0; j<num_channels; j++) {
@@ -66,6 +68,7 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", DEBUG_FILENAME);
 
+    nco_destroy(nco_tx);
     firpfbch_destroy(c0);
     firpfbch_destroy(c1);
 
