@@ -8,6 +8,8 @@
 
 #include "liquid.internal.h"
 
+//#define DEBUG
+
 struct firpfbch_s {
     unsigned int num_channels;
     float complex * x;  // time-domain buffer
@@ -43,9 +45,15 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
     // design filter using kaiser window and be done with it
     // TODO: use filter prototype object
     h_len = (c->num_channels)*4;
-    float h[h_len];
+    float h[h_len+1];
     float fc = 1/(float)(c->num_channels);
-    fir_kaiser_window(h_len, fc, -60, h);
+    fir_kaiser_window(h_len+1, fc, 60, h);
+#endif
+
+#ifdef DEBUG
+    unsigned int i;
+    for (i=0; i<h_len+1; i++)
+        printf("h(%4u) = %12.4e;\n", i+1, h[i]);
 #endif
 
     // create firpfb object
@@ -60,7 +68,7 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
     if (_dir == FIRPFBCH_ANALYZER) {
         c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
     } else if (_dir == FIRPFBCH_SYNTHESIZER) {
-        c->fft = fft_create_plan(c->num_channels, c->x, c->X, FFT_REVERSE);
+        c->fft = fft_create_plan(c->num_channels, c->x, c->X, FFT_FORWARD);
     } else {
         printf("error: firpfbch_create(), unknown channelizer type\n");
         exit(0);
