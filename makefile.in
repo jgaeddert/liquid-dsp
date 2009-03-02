@@ -57,6 +57,7 @@ modules		:=	\
 	modem 		\
 	multicarrier	\
 	nco 		\
+	quantization	\
 	random		\
 	sequence	\
 	utility

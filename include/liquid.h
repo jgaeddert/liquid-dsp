@@ -1123,6 +1123,29 @@ void optim_ps_access(optim_ps _ps, unsigned int _i, float **_x, float **_y);
 typedef void(*optim_target_function)(float *_x, float *_y, void *_p);
 typedef float(*optim_obj_function)(optim_ps _ps, void *_p, optim_target_function _f);
 
+//
+// Quantization
+//
+
+float compress_mulaw(float _x, float _mu);
+float expand_mulaw(float _x, float _mu);
+
+//float compress_alaw(float _x, float _a);
+//float expand_alaw(float _x, float _a);
+
+#define COMPANDER_LINEAR    0
+#define COMPANDER_MULAW     1
+#define COMPANDER_ALAW      2
+
+typedef struct quantizer_rf_s * quantizer_rf;
+quantizer_rf quantizer_rf_create(int _compander_type, float _range, unsigned int _num_bits);
+void quantizer_rf_destroy(quantizer_rf _q);
+void quantizer_rf_print(quantizer_rf _q);
+
+void quantizer_rf_adc(quantizer_rf _q, float _x, unsigned int * _sample);
+void quantizer_rf_dac(quantizer_rf _q, unsigned int _sample, float * _x);
+
+
 
 //
 // Random number generators
