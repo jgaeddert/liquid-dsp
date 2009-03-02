@@ -6,10 +6,10 @@
 
 void autotest_compand_float() {
     float x = -1.0f;
-    float mu=2.0f;
-    unsigned int n=20;
+    float mu=255.0f;
+    unsigned int n=30;
 
-    float dx = 1/(float)(n+1);
+    float dx = 2/(float)(n);
     float y;
     float x_hat;
     float tol = 1e-6f;
@@ -32,10 +32,10 @@ void autotest_compand_float() {
 
 void autotest_compand_cfloat() {
     float complex x = -0.707f - 0.707f*_Complex_I;
-    float mu=2.0f;
-    unsigned int n=20;
+    float mu=255.0f;
+    unsigned int n=30;
 
-    float complex dx = (0.707f +0.707f* _Complex_I)/(float)(n+2);
+    float complex dx = 2*(0.707f +0.707f* _Complex_I)/(float)(n);
     float complex y;
     float complex z;
     float tol = 1e-6f;

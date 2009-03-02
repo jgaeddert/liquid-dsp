@@ -43,23 +43,29 @@ float expand_mulaw(float _y, float _mu)
 void compress_cf_mulaw(float complex _x, float _mu, float complex * _y)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if ( _mu <= 0.0f ) {
+    if ( cabsf(_x) > 1.0f ) {
+        printf("error: compress_cf_mulaw(), input out of range (%12.4e)\n", cabsf(_x));
+        exit(1);
+    } else if ( _mu <= 0.0f ) {
         printf("error: compress_mulaw(), mu out of range\n");
         exit(1);
     }
 #endif
-    *_y = compress_mulaw(crealf(_x), _mu) + _Complex_I*compress_mulaw(cimagf(_x),_mu);
+    *_y = cexpf(_Complex_I*cargf(_x)) * logf(1 + _mu*cabsf(_x)) / logf(1 + _mu);
 }
 
 void expand_cf_mulaw(float complex _y, float _mu, float complex * _x)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if ( _mu <= 0.0f ) {
+    if ( cabsf(_y) > 1.0f ) {
+        printf("error: expand_cf_mulaw(), input out of range (%12.4e)\n", cabsf(_y));
+        exit(1);
+    } else if ( _mu <= 0.0f ) {
         printf("error: expand_mulaw(), mu out of range\n");
         exit(1);
     }
 #endif
-    *_x = expand_mulaw(crealf(_y), _mu) + _Complex_I*expand_mulaw(cimagf(_y),_mu);
+    *_x = cexpf(_Complex_I*cargf(_y)) * (1/_mu)*( powf(1+_mu,cabsf(_y)) - 1);
 }
 
 /*
