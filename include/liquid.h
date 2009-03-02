@@ -75,8 +75,10 @@ void cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
 void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 
 // FBASC: filterbank audio synthesizer codec
+#define FBASC_ENCODER   0
+#define FBASC_DECODER   1
 typedef struct fbasc_s * fbasc;
-fbasc fbasc_create();
+fbasc fbasc_create(int _type);
 void fbasc_destroy(fbasc _q);
 void fbasc_print(fbasc _q);
 

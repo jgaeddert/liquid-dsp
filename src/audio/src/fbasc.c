@@ -34,6 +34,7 @@ struct fbasc_s {
 
     // common objects
     firhilb hilbert_transform;
+    int channelizer_type;
     firpfbch channelizer;
     float complex * X; // channelized matrix
     unsigned char * data;   // 
@@ -54,9 +55,21 @@ struct fbasc_s {
 //  _bytes_per_frame    :   number of encoded data bytes per frame
 //
 // FIXME: only build objects necessary for codec type (analysis vs. synthesis)
-fbasc fbasc_create()
+fbasc fbasc_create(int _type)
 {
     fbasc q = (fbasc) malloc(sizeof(struct fbasc_s));
+    q->type = _type;
+    switch (q->type) {
+    case FBASC_ENCODER:
+        q->channelizer_type = FIRPFBCH_ANALYZER;
+        break;
+    case FBASC_DECODER:
+        q->channelizer_type = FIRPFBCH_SYNTHESIZER;
+        break;
+    default:
+        printf("error: fbasc_create(), unknown type: %d\n", _type);
+        exit(1);
+    }
 
     // initialize parametric values/lengths
     q->num_channels = 32;           // num filters in bank
