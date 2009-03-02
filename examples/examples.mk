@@ -27,6 +27,7 @@ local_src	:=			\
 	checksum_example.c		\
 	compand_example.c		\
 	crc_example.c			\
+	cvsd_sine_example.c		\
 	dotprod_rrrf_example.c		\
 	dotprod_cccf_example.c		\
 	fbuffer_example.c		\

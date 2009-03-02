@@ -27,7 +27,7 @@ cvsd cvsd_create()
     q->bitmask = (1<<(q->num_bits)) - 1;
 
     q->ref = 0.0f;
-    q->zeta = 2.0f;
+    q->zeta = 1.5f;
     q->delta = 0.01f;
     q->delta_min = 0.01f;
     q->delta_max = 1.0f;
@@ -69,9 +69,9 @@ unsigned char cvsd_encode(cvsd _q, float _audio_sample)
     _q->delta = (_q->delta < _q->delta_min) ? _q->delta_min : _q->delta;
 
     // update reference
-    _q->ref += (bit) ? -_q->delta : _q->delta;
+    _q->ref += (bit) ? _q->delta : -_q->delta;
 
-    // limite reference
+    // limit reference
     _q->ref = (_q->ref >  1.0f) ?  1.0f : _q->ref;
     _q->ref = (_q->ref < -1.0f) ? -1.0f : _q->ref;
 
@@ -97,7 +97,7 @@ float cvsd_decode(cvsd _q, unsigned char _bit)
     _q->delta = (_q->delta < _q->delta_min) ? _q->delta_min : _q->delta;
 
     // update reference
-    _q->ref += (_bit&0x01) ? -_q->delta : _q->delta;
+    _q->ref += (_bit&0x01) ? _q->delta : -_q->delta;
 
     // limit reference
     _q->ref = (_q->ref >  1.0f) ?  1.0f : _q->ref;

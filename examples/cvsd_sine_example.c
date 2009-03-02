@@ -1,0 +1,65 @@
+//
+//
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include "liquid.h"
+
+#define DEBUG_FILENAME "cvsd_sine_example.m"
+
+int main() {
+    // options
+    unsigned int n=256;
+
+    // create cvsd codecs
+    cvsd cvsd_encoder = cvsd_create();
+    cvsd cvsd_decoder = cvsd_create();
+
+    // open debug file
+    FILE * fid = fopen(DEBUG_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+
+    fprintf(fid,"n=%u;\n", n);
+    fprintf(fid,"x=zeros(1,n);\n");
+    fprintf(fid,"y=zeros(1,n);\n");
+
+    float phi=0.0f;
+    float dphi=0.1f;
+    unsigned int i;
+    unsigned char b;
+    float x,y;
+    for (i=0; i<n; i++) {
+        x = 0.5f*sinf(phi);
+        b = cvsd_encode(cvsd_encoder, x);
+        y = cvsd_decode(cvsd_decoder, b);
+
+        printf("%1u ", b);
+        if ( ((i+1)%16) == 0 )
+            printf("\n");
+
+        fprintf(fid,"x(%3u) = %12.4e;\n", i+1, x);
+        fprintf(fid,"y(%3u) = %12.4e;\n", i+1, y);
+
+        phi += dphi;
+    }
+
+    // plot results
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:n,x,1:n,y);\n");
+    fprintf(fid,"xlabel('time [sample index]');\n");
+    fprintf(fid,"ylabel('signal');\n");
+    fprintf(fid,"legend('audio input','cvsd output',1);\n");
+
+    // close debug file
+    fclose(fid);
+    printf("results wrtten to %s\n", DEBUG_FILENAME);
+    printf("done.\n");
+    return 0;
+}
+
