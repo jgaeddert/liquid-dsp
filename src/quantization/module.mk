@@ -29,7 +29,7 @@ local_h_files	:=
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:= compand_autotest.h
+local_t_files	:= compand_autotest.h quantize_autotest.h
 
 
 # local_b_files
