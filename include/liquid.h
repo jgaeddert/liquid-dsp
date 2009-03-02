@@ -1,11 +1,10 @@
-//
-//
-//
+/*
+ * Copyright (c) 2007, 2009 Joseph Gaeddert
+ * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ */
 
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
-
-//#include <complex.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -122,7 +121,7 @@ LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
 
 
-// Windows
+// Windowing functions
 #define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(fwindow, name)
 #define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfwindow, name)
 #define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(uiwindow, name)
