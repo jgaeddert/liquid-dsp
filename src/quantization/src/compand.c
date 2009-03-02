@@ -16,12 +16,12 @@ float compress_mulaw(float _x, float _mu)
     if (fabsf(_x) > 1.0f) {
         printf("error: compress_mulaw(), input out of range\n");
         exit(1);
-    } else if ( _mu <= 0.0f || _mu >= 1.0f ) {
+    } else if ( _mu <= 0.0f ) {
         printf("error: compress_mulaw(), mu out of range\n");
         exit(1);
     }
 #endif
-    float y = logf(1 + _mu*logf(fabsf(_x))) / logf(1 + _mu);
+    float y = logf(1 + _mu*fabsf(_x)) / logf(1 + _mu);
     return copysignf(y, _x);
 }
 
@@ -31,7 +31,7 @@ float expand_mulaw(float _y, float _mu)
     if (fabsf(_y) > 1.0f) {
         printf("error: expand_mulaw(), input out of range\n");
         exit(1);
-    } else if ( _mu <= 0.0f || _mu >= 1.0f ) {
+    } else if ( _mu <= 0.0f ) {
         printf("error: expand_mulaw(), mu out of range\n");
         exit(1);
     }
@@ -46,7 +46,7 @@ void compress_cf_mulaw(float complex _x, float _mu, float complex * _y)
     if (cabsf(_x) > 1.0f) {
         printf("error: compress_mulaw(), input out of range\n");
         exit(1);
-    } else if ( _mu <= 0.0f || _mu >= 1.0f ) {
+    } else if ( _mu <= 0.0f ) {
         printf("error: compress_mulaw(), mu out of range\n");
         exit(1);
     }
@@ -60,7 +60,7 @@ void expand_cf_mulaw(float complex _y, float _mu, float complex * _x)
     if (cabsf(_y) > 1.0f) {
         printf("error: expand_mulaw(), input out of range\n");
         exit(1);
-    } else if ( _mu <= 0.0f || _mu >= 1.0f ) {
+    } else if ( _mu <= 0.0f ) {
         printf("error: expand_mulaw(), mu out of range\n");
         exit(1);
     }
