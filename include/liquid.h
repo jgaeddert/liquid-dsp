@@ -1133,6 +1133,10 @@ float expand_mulaw(float _x, float _mu);
 //float compress_alaw(float _x, float _a);
 //float expand_alaw(float _x, float _a);
 
+// inline quantizer: 'analog' signal in [-1, 1]
+unsigned int quantize_adc(float _x, unsigned int _num_bits);
+float quantize_dac(unsigned int _s, unsigned int _num_bits);
+
 #define COMPANDER_LINEAR    0
 #define COMPANDER_MULAW     1
 #define COMPANDER_ALAW      2

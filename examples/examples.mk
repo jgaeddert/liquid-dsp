@@ -52,6 +52,7 @@ local_src	:=			\
 	pll_example.c			\
 	pnsync_crcf_example.c		\
 	pnsync_rrrf_example.c		\
+	quantize_example.c		\
 	random_example.c		\
 	ricek_channel_example.c		\
 	scramble_example.c
