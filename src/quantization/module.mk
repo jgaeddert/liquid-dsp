@@ -39,7 +39,7 @@ local_t_files	:= compand_autotest.h quantize_autotest.h
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:= quantizer_benchmark.h
+local_b_files	:= quantizer_benchmark.h compander_benchmark.h
 
 
 include common.mk
