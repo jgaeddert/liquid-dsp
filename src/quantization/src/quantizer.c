@@ -26,7 +26,7 @@ unsigned int quantize_adc(float _x, unsigned int _num_bits)
 #endif
     unsigned int n = _num_bits-1;   // 
     unsigned int N = 1<<n;          // 2^n
-    unsigned int r = fabsf(_x) * (N-1);
+    unsigned int r = roundf(fabsf(_x) * (N-1));
 
     // if negative set MSB to 1
     if (_x < 0)

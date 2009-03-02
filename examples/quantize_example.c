@@ -9,7 +9,7 @@
 
 int main() {
     float x=-1.0f, y;
-    unsigned int i, q, num_bits = 4;
+    unsigned int i, q, num_bits = 8;
 
     printf("  analog   ADC     DAC\n");
     printf("  ------   ---     ---\n");
