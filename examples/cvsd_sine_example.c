@@ -33,6 +33,7 @@ int main() {
     unsigned int i;
     unsigned char b;
     float x,y;
+    float rmse=0.0f;
     for (i=0; i<n; i++) {
         x = 0.5f*sinf(phi);
         b = cvsd_encode(cvsd_encoder, x);
@@ -45,8 +46,13 @@ int main() {
         fprintf(fid,"x(%3u) = %12.4e;\n", i+1, x);
         fprintf(fid,"y(%3u) = %12.4e;\n", i+1, y);
 
+        rmse += (x-y)*(x-y);
         phi += dphi;
     }
+
+    rmse = sqrtf(rmse/n);
+    printf("\n");
+    printf("signal/distortion: %8.2f dB\n", -20*log10f(rmse));
 
     // plot results
     fprintf(fid,"\n\n");
