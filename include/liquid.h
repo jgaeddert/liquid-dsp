@@ -1130,6 +1130,9 @@ typedef float(*optim_obj_function)(optim_ps _ps, void *_p, optim_target_function
 float compress_mulaw(float _x, float _mu);
 float expand_mulaw(float _x, float _mu);
 
+void compress_cf_mulaw(liquid_float_complex _x, float _mu, liquid_float_complex * _y);
+void expand_cf_mulaw(liquid_float_complex _y, float _mu, liquid_float_complex * _x);
+
 //float compress_alaw(float _x, float _a);
 //float expand_alaw(float _x, float _a);
 
