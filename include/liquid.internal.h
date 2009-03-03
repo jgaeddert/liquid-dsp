@@ -17,6 +17,14 @@
 #include "liquid.h"
 
 //
+// Debugging macros
+//
+#define DEBUG_PRINTF_FLOAT(F,STR,I,V)       \
+    fprintf(F,"%s(%4u) = %12.4e;\n",STR,I+1,V)
+#define DEBUG_PRINTF_CFLOAT(F,STR,I,V)      \
+    fprintf(F,"%s(%4u) = %12.4e +j*%12.4e;\n",STR,I+1,crealf(V),cimagf(V))
+
+//
 // Random
 //
 float complex icrandnf();

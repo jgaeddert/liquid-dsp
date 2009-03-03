@@ -9,6 +9,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG
+#define DEBUG_FILE stdout
 
 //  description         value   units
 //  -----------         -----   -----
@@ -138,7 +139,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     unsigned int i;
 #ifdef DEBUG
     for (i=0; i<10; i++)
-        printf("x(%4u) = %12.4f;\n", i+1, _audio[i]);
+        DEBUG_PRINTF_FLOAT(DEBUG_FILE,"x",i,_audio[i]);
 #endif
 
     // 1. push samples through Hilbert transform (decimator)
@@ -146,9 +147,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         firhilb_decim_execute(_q->hilbert_transform, &_audio[2*i], &(_q->ht_decim_out[i]));
 #ifdef DEBUG
     for (i=0; i<20; i++)
-        printf("ht(%4u) = %12.4f + j*%12.4f;\n", i+1,
-                crealf(_q->ht_decim_out[i]),
-                cimagf(_q->ht_decim_out[i]));
+        DEBUG_PRINTF_CFLOAT(DEBUG_FILE,"ht",i,_q->ht_decim_out[i]);
 #endif
 
     // 2. channelize complex input
@@ -165,8 +164,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 #ifdef DEBUG
     printf("channel energy:\n");
     for (i=0; i<_q->num_channels; i++)
-        printf("  %3u: %12.2f\n", i, _q->channel_energy[i]);
-    printf("\n");
+        DEBUG_PRINTF_FLOAT(DEBUG_FILE,"e",i, _q->channel_energy[i]);
 #endif
 
 }
