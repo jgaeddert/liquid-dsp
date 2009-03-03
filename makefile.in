@@ -161,7 +161,7 @@ check: $(autotest_prog)
 	./$(autotest_prog) -v
 
 # clean the generated files
-check-clean:
+clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 
 
@@ -193,7 +193,7 @@ bench: $(bench_prog)
 	./$(bench_prog)
 
 # clean up the generated files
-bench-clean:
+clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
 
@@ -219,20 +219,29 @@ $(example_progs): % : %.o libliquid.a
 	$(CC) $(CFLAGS) $< $(EXAMPLES_LDFLAGS) libliquid.a -o $@
 
 # clean examples
-examples-clean:
+clean-examples:
 	$(RM) $(example_objs)
 	$(RM) $(example_progs)
 	$(RM) examples/*.m
 
 # Clean
 .PHONY: clean
-clean: check-clean bench-clean examples-clean
-	$(RM) $(objects)
+
+# clean modules
+# NOTE: $(patsubst clean-%,%,$@) strips "clean-" from target
+clean-modules: $(addprefix clean-,$(modules))
+
+$(addprefix clean-,$(modules)):
+	@echo cleaning module $(patsubst clean-%,%,$@)
+	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.o
+	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.d
+
+clean: clean-check clean-bench clean-examples clean-modules
 	$(RM) $(programs)
 	$(RM) $(libraries)
-	$(RM) $(dependencies)
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
-
+#	$(RM) $(objects)
+#	$(RM) $(dependencies)
 
