@@ -383,7 +383,7 @@ void asgram_execute(asgram _q);
 #define FIR_RRCOS       6
 #define FIR_NYQUIST     7
 #define FIR_ROOTNYQUIST 8
-struct fir_prototype {
+struct fir_prototype_s {
     int type;               // bandpass, etc.
     int prototype;          // kaiser, rrcos, etc.
     float fc;               // cutoff frequency
@@ -1044,7 +1044,7 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
 void firpfbch_destroy(firpfbch _c);
 void firpfbch_print(firpfbch _c);
 
-void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y);
+void firpfbch_execute(firpfbch _c, liquid_float_complex * _x, liquid_float_complex * _y);
 //void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X);
 //void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x);
 
