@@ -1,11 +1,7 @@
 # 
 # Makefile for matrix module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/matrix
-local_lib	:= liblmatrix.a
+module_name     := matrix
 
 # local_s_files
 #

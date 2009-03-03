@@ -1,11 +1,7 @@
 # 
 # Makefile for buffer module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/buffer
-local_lib	:= libbuffer.a
+module_name     := buffer
 
 # local_s_files
 #

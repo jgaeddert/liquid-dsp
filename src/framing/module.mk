@@ -1,11 +1,7 @@
 # 
 # Makefile for framing module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/framing
-local_lib	:= libframing.a
+module_name     := framing
 
 # local_s_files
 #

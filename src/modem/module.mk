@@ -1,11 +1,7 @@
 # 
 # Makefile for modem module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/modem
-local_lib	:= libmodem.a
+module_name     := modem
 
 # local_s_files
 #

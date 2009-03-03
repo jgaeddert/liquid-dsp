@@ -1,11 +1,7 @@
 # 
 # Makefile for quantization module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/quantization
-local_lib	:= libquantization.a
+module_name     := quantization
 
 # local_s_files
 #

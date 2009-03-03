@@ -1,11 +1,7 @@
 # 
 # Makefile for agc module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/agc
-local_lib	:= libagc.a
+module_name	:= agc
 
 # local_s_files
 #

@@ -1,11 +1,7 @@
 # 
 # Makefile for utility module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/utility
-local_lib	:= libutility.a
+module_name     := utility
 
 # local_s_files
 #

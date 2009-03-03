@@ -1,11 +1,7 @@
 # 
 # Makefile for multicarrier module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/multicarrier
-local_lib	:= libmulticarrier.a
+module_name     := multicarrier
 
 # local_s_files
 #

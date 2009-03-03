@@ -1,6 +1,9 @@
 # 
-# Common makefile
+# Common module makefile
 #
+
+local_dir       := $(modulesdir)/$(module_name)
+local_lib       := lib$(module_name).a
 
 local_src	:= $(addprefix $(local_dir)/$(modulesdir)/, $(local_s_files))
 local_objs	:= $(patsubst %.c,%.o,$(local_src))

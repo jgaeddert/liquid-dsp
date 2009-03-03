@@ -1,11 +1,7 @@
 # 
 # Makefile for channel module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/channel
-local_lib	:= libchannel.a
+module_name     := channel
 
 # local_s_files
 #

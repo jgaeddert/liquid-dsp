@@ -1,11 +1,7 @@
 # 
 # Makefile for sequence module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/sequence
-local_lib	:= libsequence.a
+module_name     := sequence
 
 # local_s_files
 #

@@ -1,11 +1,7 @@
 # 
 # Makefile for fft module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/fft
-local_lib	:= libfft.a
+module_name     := fft
 
 # local_s_files
 #

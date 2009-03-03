@@ -1,11 +1,7 @@
 # 
 # Makefile for audio module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/audio
-local_lib	:= libaudio.a
+module_name	:= audio
 
 # local_s_files
 #

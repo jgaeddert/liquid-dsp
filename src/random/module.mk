@@ -1,11 +1,7 @@
 # 
 # Makefile for random module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/random
-local_lib	:= librandom.a
+module_name     := random
 
 # local_s_files
 #

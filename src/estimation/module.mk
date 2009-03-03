@@ -1,11 +1,7 @@
 # 
 # Makefile for estimation module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/estimation
-local_lib	:= libestimation.a
+module_name     := estimation
 
 # local_s_files
 #

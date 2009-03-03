@@ -1,11 +1,7 @@
 # 
 # Makefile for interleaver module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/interleaver
-local_lib	:= libinterleaver.a
+module_name     := interleaver
 
 # local_s_files
 #

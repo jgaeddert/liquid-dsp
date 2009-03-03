@@ -1,11 +1,7 @@
 # 
 # Makefile for nco module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/nco
-local_lib	:= libnco.a
+module_name     := nco
 
 # local_s_files
 #

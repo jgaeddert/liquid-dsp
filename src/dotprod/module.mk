@@ -1,11 +1,7 @@
 # 
 # Makefile for dotprod module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/dotprod
-local_lib	:= libdotprod.a
+module_name     := dotprod
 
 # local_s_files
 #

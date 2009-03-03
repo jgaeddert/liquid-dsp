@@ -1,11 +1,7 @@
 # 
 # Makefile for fec module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/fec
-local_lib	:= libfec.a
+module_name     := fec
 
 # local_s_files
 #

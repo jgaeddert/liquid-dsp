@@ -1,11 +1,7 @@
 # 
 # Makefile for filter module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/filter
-local_lib	:= libfilter.a
+module_name     := filter
 
 # local_s_files
 #

@@ -1,11 +1,7 @@
 # 
 # Makefile for lmath module
 #
-
-# local_dir: local library directory
-# 
-local_dir	:= $(modulesdir)/math
-local_lib	:= liblmath.a
+module_name     := math
 
 # local_s_files
 #
