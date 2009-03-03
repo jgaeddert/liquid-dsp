@@ -371,6 +371,41 @@ void asgram_execute(asgram _q);
 // Filter design
 //
 
+// generic prototypes
+#define FIR_TEMPLATE    0   // Remez, e.g.
+#define FIR_LOWPASS     1
+#define FIR_HIGHPASS    2
+#define FIR_BANDPASS    3
+#define FIR_BANDREJECT  4
+
+// specific prototypes
+#define FIR_RCOS        5
+#define FIR_RRCOS       6
+#define FIR_NYQUIST     7
+#define FIR_ROOTNYQUIST 8
+struct fir_prototype {
+    int type;               // bandpass, etc.
+    int prototype;          // kaiser, rrcos, etc.
+    float fc;               // cutoff frequency
+
+    float bt;               // transition bandwidth
+    float slsl;             // sidelobe suppression level
+    unsigned int num_taps;  // filter length
+
+    unsigned int k;         // samples/symbol
+    unsigned int m;         // symbol delay
+    float beta;             // excess bandwidth factor
+    float dt;               // phase offset
+};
+
+typedef struct fir_prototype_s * fir_prototype;
+
+void fir_prototype_design_length();
+void fir_prototype_design_bt();
+void fir_prototype_design_slsl();
+
+void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
+
 // Design FIR filter using window method
 //  _n      : filter length (odd)
 //  _fc     : filter cutoff (0 < _fc < 1)
@@ -437,21 +472,6 @@ void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
 //
 // Finite impulse response filter
 //
-
-// FIR filter prototypes
-typedef enum {
-    FIR_NONE=0,
-    FIR_RRCOS,
-    FIR_RCOS,
-    FIR_GAUSS
-} fir_prototype;
-
-struct fir_prototype_s {
-    unsigned int k;
-    unsigned int m;
-    float beta;
-    float dt; 
-};
 
 #define FIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(fir_filter_rrrf,name)
 #define FIR_FILTER_MANGLE_CRCF(name)  LIQUID_CONCAT(fir_filter_crcf,name)

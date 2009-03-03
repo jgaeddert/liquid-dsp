@@ -47,6 +47,7 @@ INTERP() INTERP(_create)(unsigned int _M, TC *_h, unsigned int _h_len)
     return q;
 }
 
+#if 0
 INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
 {
     struct fir_prototype_s * s = (struct fir_prototype_s*) _opt;
@@ -73,6 +74,7 @@ INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
 
     return q;
 }
+#endif
 
 void INTERP(_destroy)(INTERP() _q)
 {
