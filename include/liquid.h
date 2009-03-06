@@ -324,8 +324,16 @@ typedef enum {
     FEC_NONE,
     FEC_REP3,
     FEC_HAMMING74,
-    FEC_HAMMING84
+    FEC_HAMMING84,
+
+    // codecs not defined internally
+    FEC_CONV_V27,
+    FEC_CONV_V29,
+    FEC_CONV_V39,
+    FEC_CONV_V615
 } fec_scheme;
+
+struct fec_conv_opts {int puncture;};
 
 extern const char * fec_scheme_str[5];
 
