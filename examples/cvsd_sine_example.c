@@ -13,10 +13,12 @@
 int main() {
     // options
     unsigned int n=256;
+    unsigned int nbits=3;
+    float zeta=1.5f;
 
     // create cvsd codecs
-    cvsd cvsd_encoder = cvsd_create();
-    cvsd cvsd_decoder = cvsd_create();
+    cvsd cvsd_encoder = cvsd_create(nbits, zeta);
+    cvsd cvsd_decoder = cvsd_create(nbits, zeta);
 
     // open debug file
     FILE * fid = fopen(DEBUG_FILENAME,"w");

@@ -19,15 +19,22 @@ struct cvsd_s {
     float delta_max;        // maximum delta
 };
 
-cvsd cvsd_create()
+cvsd cvsd_create(unsigned int _num_bits, float _zeta)
 {
+    if (_num_bits == 0) {
+        printf("error: cvsd_create(), _num_bits must be positive\n");
+        exit(1);
+    } else if (_zeta <= 1.0f) {
+        printf("error: cvsd_create(), zeta must be greater than 1\n");
+        exit(1);
+    }
     cvsd q = (cvsd) malloc(sizeof(struct cvsd_s));
-    q->num_bits = 3;
+    q->num_bits = _num_bits;
     q->bitref = 0;
     q->bitmask = (1<<(q->num_bits)) - 1;
 
     q->ref = 0.0f;
-    q->zeta = 1.5f;
+    q->zeta = _zeta;
     q->delta = 0.01f;
     q->delta_min = 0.01f;
     q->delta_max = 1.0f;

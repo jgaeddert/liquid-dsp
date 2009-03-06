@@ -62,7 +62,7 @@ float agc_get_gain(agc _agc);
 
 // CVSD: continuously variable slope delta
 typedef struct cvsd_s * cvsd;
-cvsd cvsd_create();
+cvsd cvsd_create(unsigned int _num_bits, float _zeta);
 void cvsd_destroy(cvsd _q);
 void cvsd_print(cvsd _q);
 
