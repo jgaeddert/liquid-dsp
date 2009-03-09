@@ -16,14 +16,16 @@
 unsigned int quantize_adc(float _x, unsigned int _num_bits)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if (fabsf(_x) > 1.0f) {
-        printf("error: quantize_adc(), input out of range\n");
-        exit(1);
-    } else if (_num_bits > QUANTIZER_MAX_BITS) {
+    if (_num_bits > QUANTIZER_MAX_BITS) {
         printf("error: quantize_adc(), maximum bits exceeded\n");
         exit(1);
     }
 #endif
+
+    // clip input
+    _x = (_x >  1.0f) ?  1.0f : _x;
+    _x = (_x < -1.0f) ? -1.0f : _x;
+
     unsigned int n = _num_bits-1;   // 
     unsigned int N = 1<<n;          // 2^n
     unsigned int r = roundf(fabsf(_x) * (N-1));
