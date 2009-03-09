@@ -200,17 +200,21 @@ clean-bench:
 # Examples
 .PHONY: examples
 include examples/examples.mk
+example_objs	= $(patsubst %.c,%.o,$(example_src))
 example_progs	= $(patsubst %.c,%,  $(example_src))
 examples: $(example_progs)
 EXAMPLES_LDFLAGS = $(LDFLAGS) -pthread
 
 # NOTE: linked libraries must come _after_ the target program
-$(example_progs): % : %.c libliquid.a
-	$(CC) $(CFLAGS) $< $(EXAMPLES_LDFLAGS) libliquid.a -o $(patsubst examples/%,bin/%,$@)
+$(example_objs): %.o : %.c %.d
+
+$(example_progs): % : %.o libliquid.a
 
 # clean examples
 clean-examples:
-	$(RM) bin/*
+	$(RM) examples/*.o
+	$(RM) examples/*.d
+	$(RM) $(example_progs)
 
 # Clean
 .PHONY: clean
