@@ -16,7 +16,7 @@ int main() {
     unsigned int samples_per_frame=1024;
     unsigned int bytes_per_frame=256;
 
-    unsigned int num_frames=4;
+    unsigned int num_frames=32;
 
     // create fbasc codecs
     fbasc fbasc_encoder = fbasc_create(FBASC_ENCODER, num_channels, samples_per_frame, bytes_per_frame);
@@ -34,15 +34,13 @@ int main() {
     float x[samples_per_frame];
     unsigned char framedata[bytes_per_frame];
     for (i=0; i<num_frames; i++) {
-        dphi = 0.2f;
+        dphi = 2*M_PI * 4 / (float)num_channels;
         for (j=0; j<samples_per_frame; j++) {
-            x[j] = 0.5f*sinf(phi);
+            x[j] = 0.5f*cosf(phi);
             phi += dphi;
         }
 
         fbasc_encode(fbasc_encoder, x, framedata);
-
-        phi += dphi;
     }
 
     // plot results
