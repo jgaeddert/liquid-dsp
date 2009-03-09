@@ -13,6 +13,7 @@
 int main() {
     // options
     float mu=255.0f;
+    int n=31;
 
     // open debug file
     FILE * fid = fopen(DEBUG_FILENAME,"w");
@@ -20,41 +21,39 @@ int main() {
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
 
-    float dr = 0.1f;    // radius step size
-    float dtheta=0.1f;  // phase step size
-    unsigned int n=0;
     float complex x, y, z;
-    float r=0.0f, theta;
-    while (r < 1.0f) {
-        theta = 0.0f;
+    int i, j;
 
-        while (theta < 2*M_PI) {
-            x = r*cosf(theta) + _Complex_I*r*sinf(theta);
+    for (i=0; i<n+1; i++) {
+        for (j=0; j<n+1; j++) {
+            x = (float)(2*i - n)/(float)(n) + _Complex_I*(float)(2*j-n)/(float)(n);
             compress_cf_mulaw(x,mu,&y);
             expand_cf_mulaw(y,mu,&z);
-            //printf("%8.4f > %8.4f > %8.4f\n", x, y, z);
 
-            fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(x), cimagf(x));
-            fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(y), cimagf(y));
-            fprintf(fid,"z(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(z), cimagf(z));
+            if (i==j) {
+                printf("%8.4f + j*%8.4f > ", crealf(x), cimagf(x));
+                printf("%8.4f + j*%8.4f > ", crealf(y), cimagf(y));
+                printf("%8.4f + j*%8.4f\n",  crealf(z), cimagf(z));
+            }
 
-            n++;
-            theta += dtheta;
+            fprintf(fid,"x(%3d,%3d) = %12.4e + j*%12.4e;\n", i+1, j+1, crealf(x), cimagf(x));
+            fprintf(fid,"y(%3d,%3d) = %12.4e + j*%12.4e;\n", i+1, j+1, crealf(y), cimagf(y));
         }
-
-        r += dr;
     }
+
+    for (i=0; i<n+1; i++)
+        fprintf(fid,"t(%3d) = %12.4e;\n", i+1, (float)(2*i-n)/(float)(n));
 
     // plot results
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot3(real(x),imag(x),real(y),'bx',real(x),imag(x),imag(y),'rx');\n");
+    fprintf(fid,"mesh(t,t,real(y));\n");
     fprintf(fid,"xlabel('x: real');\n");
     fprintf(fid,"ylabel('x: imag');\n");
-    fprintf(fid,"legend('y: real','y: imag',1);\n");
     fprintf(fid,"box off;\n");
     fprintf(fid,"view(3);\n");
-    fprintf(fid,"axis([-1 1 -1 1 -1 1]);\n");
+    fprintf(fid,"title('real[y]');\n");
+    //fprintf(fid,"axis([-1 1 -1 1 -1 1]);\n");
 
     // close debug file
     fclose(fid);
