@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include "liquid.internal.h"
 
@@ -124,6 +125,7 @@ void fbasc_destroy(fbasc _q)
 
     // analysis
     free(_q->x);
+    free(_q->y);
     free(_q->ht_decim_out);
     free(_q->channel_energy);
 
@@ -166,7 +168,8 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         for (i=0; i<_q->num_channels; i++)
             _q->channel_energy[i] += crealf( _q->y[i] * conj(_q->y[i]) );
 
-        // 4. TODO: move channelized data to matrix
+        // 4. move channelized data to matrix
+        memmove(&_q->X[b*(_q->num_channels)], _q->y, (_q->num_channels)*sizeof(float complex));
     }
 
     // normalize channel energy
