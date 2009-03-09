@@ -164,6 +164,10 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         // 2. channelize complex input
         firpfbch_execute(_q->channelizer, _q->x, _q->y);
 
+        // scale by number of channels
+        for (i=0; i<_q->num_channels; i++)
+            _q->y[i] /= (float)(_q->num_channels);
+
         // 3. compute energy on each channel
         for (i=0; i<_q->num_channels; i++)
             _q->channel_energy[i] += crealf( _q->y[i] * conj(_q->y[i]) );
@@ -181,10 +185,71 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         DEBUG_PRINTF_FLOAT(DEBUG_FILE,"e",i, _q->channel_energy[i]);
 #endif
 
+    // encode using basic quantizer (4 bits for in-phase, quadrature)
+    float complex z;
+    unsigned int bi, bq;
+    for (i=0; i<_q->cplx_samples_per_frame; i++) {
+        // compress using mu-law encoder
+        compress_cf_mulaw(_q->X[i], 255.0f, &z);
+
+        // quantize
+        bi = quantize_adc(crealf(z), 4);
+        bq = quantize_adc(cimagf(z), 4);
+
+        _frame[i] = ((bi & 0x0f) << 4) | (bq & 0x0f);
+    }
 }
 
 void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 {
+    unsigned int i;
+
+    // clear energy...
+    for (i=0; i<_q->num_channels; i++)
+        _q->channel_energy[i] = 0.0f;
+
+    // decode using basic quantizer (4 bits for in-phase, quadrature)
+    float complex z;
+    unsigned int bi, bq;
+    for (i=0; i<_q->cplx_samples_per_frame; i++) {
+        // quantize
+        bi = (_frame[i] >> 4) & 0x0f;
+        bq = (_frame[i]     ) & 0x0f;
+
+        z = quantize_dac(bi,4) + _Complex_I*quantize_dac(bq,4);
+
+        expand_cf_mulaw(z, 255.0f, &_q->X[i]);
+    }
+
+    unsigned int b;     // block counter
+    unsigned int n=0;   // output sample counter
+    for (b=0; b<_q->blocks_per_frame; b++) {
+        // move channelized data input freq-domain buffer
+        memmove(_q->y, &_q->X[b*(_q->num_channels)], (_q->num_channels)*sizeof(float complex));
+
+        // compute energy
+        for (i=0; i<_q->num_channels; i++)
+            _q->channel_energy[i] += crealf( _q->y[i] * conj(_q->y[i]) );
+
+        // run reverse channelizer
+        firpfbch_execute(_q->channelizer, _q->y, _q->x);
+
+        // run through Hilbert transform (interpolator)
+        for (i=0; i<_q->num_channels; i++) {
+            firhilb_interp_execute(_q->hilbert_transform, _q->x[i], &_audio[n]);
+            n+=2;
+        }
+    }
+
+    // normalize channel energy
+    for (i=0; i<_q->num_channels; i++)
+        _q->channel_energy[i] = sqrtf(_q->channel_energy[i] / _q->cplx_samples_per_channel);
+#ifdef DEBUG
+    printf("decoder: channel energy:\n");
+    for (i=0; i<_q->num_channels; i++)
+        DEBUG_PRINTF_FLOAT(DEBUG_FILE,"e",i, _q->channel_energy[i]);
+#endif
+
 
 }
 
