@@ -38,16 +38,18 @@ struct fbasc_s {
     unsigned int cplx_samples_per_frame;// 512
     unsigned int samples_per_channel;   // 32
     unsigned int cplx_samples_per_channel;   // complex samples/ch.
+    unsigned int blocks_per_frame;      // 512/32 = 16
 
     // common objects
     firhilb hilbert_transform;
     int channelizer_type;
     firpfbch channelizer;
-    float complex * X; // channelized matrix
+    float complex * X; // channelized matrix (length: cplx_samples_per_frame)
     unsigned char * data;   // 
 
     // analysis
-    float complex * x;
+    float complex * x;  // time-domain (length: num_channels)
+    float complex * y;  // freq-domain (length: num_channels)
     float complex * ht_decim_out;
     float * channel_energy;
 
@@ -91,6 +93,7 @@ fbasc fbasc_create(
     q->samples_per_channel = (q->samples_per_frame) / (q->num_channels);
     q->cplx_samples_per_channel = (q->samples_per_channel) / 2;
     q->cplx_samples_per_frame = (q->samples_per_frame)/2;
+    q->blocks_per_frame = (q->cplx_samples_per_frame) / (q->num_channels);
 
     // create Hilbert transform
     q->hilbert_transform = firhilb_create(37);
@@ -100,7 +103,8 @@ fbasc fbasc_create(
 
     // analysis
     q->X = (float complex*) malloc( (q->samples_per_frame)*sizeof(float complex) );
-    q->x = (float complex*) malloc( (q->samples_per_frame)*sizeof(float complex) );
+    q->x = (float complex*) malloc( (q->num_channels)*sizeof(float complex) );
+    q->y = (float complex*) malloc( (q->num_channels)*sizeof(float complex) );
     q->ht_decim_out = (float complex*) malloc( (q->cplx_samples_per_frame)*sizeof(float complex) );
     q->channel_energy = (float*) malloc( (q->num_channels)*sizeof(float) );
 
@@ -142,23 +146,30 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         DEBUG_PRINTF_FLOAT(DEBUG_FILE,"x",i,_audio[i]);
 #endif
 
-    // 1. push samples through Hilbert transform (decimator)
-    for (i=0; i<_q->cplx_samples_per_frame; i++)
-        firhilb_decim_execute(_q->hilbert_transform, &_audio[2*i], &(_q->ht_decim_out[i]));
-#ifdef DEBUG
-    for (i=0; i<20; i++)
-        DEBUG_PRINTF_CFLOAT(DEBUG_FILE,"ht",i,_q->ht_decim_out[i]);
-#endif
-
-    // 2. channelize complex input
-    for (i=0; i<_q->cplx_samples_per_frame; i+=_q->cplx_samples_per_channel)
-        firpfbch_execute(_q->channelizer, &(_q->ht_decim_out[i]), &(_q->X[i]));
-
-    // 3. compute energy on each channel
+    // clear energy...
     for (i=0; i<_q->num_channels; i++)
         _q->channel_energy[i] = 0.0f;
-    for (i=0; i<_q->cplx_samples_per_frame; i++)
-        _q->channel_energy[i%(_q->num_channels)] += (_q->X[i]) * conj(_q->X[i]);
+
+    unsigned int b;     // block counter
+    unsigned int n=0;   // input sample counter
+    for (b=0; b<_q->blocks_per_frame; b++) {
+        // 1. push samples through Hilbert transform (decimator)
+        for (i=0; i<_q->num_channels; i++) {
+            firhilb_decim_execute(_q->hilbert_transform, &_audio[n], &(_q->x[i]));
+            n+=2;
+        }
+
+        // 2. channelize complex input
+        firpfbch_execute(_q->channelizer, _q->x, _q->y);
+
+        // 3. compute energy on each channel
+        for (i=0; i<_q->num_channels; i++)
+            _q->channel_energy[i] += crealf( _q->y[i] * conj(_q->y[i]) );
+
+        // 4. TODO: move channelized data to matrix
+    }
+
+    // normalize channel energy
     for (i=0; i<_q->num_channels; i++)
         _q->channel_energy[i] = sqrtf(_q->channel_energy[i] / _q->cplx_samples_per_channel);
 #ifdef DEBUG
