@@ -35,7 +35,7 @@ int main() {
     // create nco: sweeps entire range of frequencies over the evaluation interval
     nco nco_tx = nco_create();
     nco_set_frequency(nco_tx, 0.0f);
-    float df = -2*M_PI/(num_channels*num_frames);
+    float df = 2*M_PI/(num_channels*num_frames);
     for (i=0; i<num_frames; i++) {
 
         // generate frame of data
