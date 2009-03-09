@@ -48,14 +48,11 @@ struct fbasc_s {
     float complex * X; // channelized matrix (length: cplx_samples_per_frame)
     unsigned char * data;   // 
 
-    // analysis
+    // analysis/synthesis
     float complex * x;  // time-domain (length: num_channels)
     float complex * y;  // freq-domain (length: num_channels)
-    float complex * ht_decim_out;
     float * channel_energy;
-
-    // synthesis
-
+    float mu;
 };
 
 // create options
@@ -90,6 +87,12 @@ fbasc fbasc_create(
     q->samples_per_frame = _samples_per_frame;
     q->bytes_per_frame = _bytes_per_frame;
 
+    // TODO: make scalable
+    if (q->bytes_per_frame != q->samples_per_frame / 2) {
+        printf("FIXME: error: fbasc_create(), bytes_per_frame must be half of samples_per_frame\n");
+        exit(1);
+    }
+
     // initialize derived values/lengths
     q->samples_per_channel = (q->samples_per_frame) / (q->num_channels);
     q->cplx_samples_per_channel = (q->samples_per_channel) / 2;
@@ -102,12 +105,12 @@ fbasc fbasc_create(
     // create polyphase filterbank channelizers
     q->channelizer = firpfbch_create(q->num_channels, 60.0f, FIRPFBCH_NYQUIST, q->channelizer_type);
 
-    // analysis
+    // analysis/synthesis
     q->X = (float complex*) malloc( (q->samples_per_frame)*sizeof(float complex) );
     q->x = (float complex*) malloc( (q->num_channels)*sizeof(float complex) );
     q->y = (float complex*) malloc( (q->num_channels)*sizeof(float complex) );
-    q->ht_decim_out = (float complex*) malloc( (q->cplx_samples_per_frame)*sizeof(float complex) );
     q->channel_energy = (float*) malloc( (q->num_channels)*sizeof(float) );
+    q->mu = 255.0f;
 
     return q;
 }
@@ -126,7 +129,6 @@ void fbasc_destroy(fbasc _q)
     // analysis
     free(_q->x);
     free(_q->y);
-    free(_q->ht_decim_out);
     free(_q->channel_energy);
 
     // synthesis
@@ -190,7 +192,8 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     unsigned int bi, bq;
     for (i=0; i<_q->cplx_samples_per_frame; i++) {
         // compress using mu-law encoder
-        compress_cf_mulaw(_q->X[i], 255.0f, &z);
+        // TODO: ensure proper scaling
+        compress_cf_mulaw(_q->X[i], _q->mu, &z);
 
         // quantize
         bi = quantize_adc(crealf(z), 4);
@@ -218,7 +221,9 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 
         z = quantize_dac(bi,4) + _Complex_I*quantize_dac(bq,4);
 
-        expand_cf_mulaw(z, 255.0f, &_q->X[i]);
+        // expand using mu-law decoder
+        // TODO: ensure proper scaling
+        expand_cf_mulaw(z, _q->mu, &_q->X[i]);
     }
 
     unsigned int b;     // block counter
