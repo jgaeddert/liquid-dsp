@@ -65,9 +65,9 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
     // create fft plan
     c->type = _type;
     if (c->type == FIRPFBCH_ANALYZER) {
-        c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
+        c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_FORWARD);
     } else if (c->type == FIRPFBCH_SYNTHESIZER) {
-        c->fft = fft_create_plan(c->num_channels, c->x, c->X, FFT_FORWARD);
+        c->fft = fft_create_plan(c->num_channels, c->x, c->X, FFT_REVERSE);
     } else {
         printf("error: firpfbch_create(), unknown channelizer type\n");
         exit(0);
