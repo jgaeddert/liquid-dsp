@@ -139,7 +139,13 @@ void fbasc_destroy(fbasc _q)
 
 void fbasc_print(fbasc _q)
 {
-    printf("filterbank audio synthesizer codec: [%u channels]\n", _q->num_channels);
+    printf("filterbank audio synthesizer codec:\n");
+    printf("    channels:       %u\n", _q->num_channels);
+    printf("    type:           %s\n", 
+        _q->type == FBASC_ENCODER ? "encoder" : "decoder");
+    printf("    samples/frame:  %u\n", _q->samples_per_frame);
+    printf("    bytes/frame:    %u\n", _q->bytes_per_frame);
+    printf("    ht length:      %u taps\n", 37);
 }
 
 void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
