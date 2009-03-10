@@ -271,14 +271,6 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF, float, float, float)
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
-// 
-// Estimation
-//
-
-float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
-//float estimate_phaseoffset(liquid_float_complex * _x, unsigned int _n);
-//float estimate_timingoffset(liquid_float_complex * _x, unsigned int _n);
-
 //
 // Equalization
 //
@@ -290,9 +282,20 @@ float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
 typedef struct X(_s) * X();                         \
 X() X(_create)(unsigned int _p);                    \
 void X(_destroy)(X() _eq);                          \
-void X(_print)(X() _eq);
+void X(_print)(X() _eq);                            \
+void X(_execute)(X() _eq);
 
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
+
+
+// 
+// Estimation
+//
+
+float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
+//float estimate_phaseoffset(liquid_float_complex * _x, unsigned int _n);
+//float estimate_timingoffset(liquid_float_complex * _x, unsigned int _n);
+
 
 //
 // FEC, etc.

@@ -46,6 +46,7 @@ modules		:=	\
 	buffer		\
 	channel		\
 	dotprod		\
+	equalization	\
 	estimation	\
 	fec		\
 	fft		\
