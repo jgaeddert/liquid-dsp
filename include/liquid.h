@@ -281,6 +281,21 @@ float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
 //float estimate_timingoffset(liquid_float_complex * _x, unsigned int _n);
 
 //
+// Equalization
+//
+
+// recursive least-squares (RLS)
+#define EQRLS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqrls_rrrf,name)
+
+#define LIQUID_EQRLS_DEFINE_API(X,T)                \
+typedef struct X(_s) * X();                         \
+X() X(_create)(unsigned int _p);                    \
+void X(_destroy)(X() _eq);                          \
+void X(_print)(X() _eq);
+
+LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
+
+//
 // FEC, etc.
 //
 
