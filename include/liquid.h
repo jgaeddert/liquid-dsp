@@ -244,10 +244,9 @@ void channel_execute(channel _c, liquid_float_complex _x, liquid_float_complex *
 // Dot product
 //
 
-#define DOTPROD_CONCAT(prefix,name) prefix ## name
-#define DOTPROD_MANGLE_RRRF(name)   DOTPROD_CONCAT(dotprod_rrrf,name)
-#define DOTPROD_MANGLE_CCCF(name)   DOTPROD_CONCAT(dotprod_cccf,name)
-#define DOTPROD_MANGLE_CRCF(name)   DOTPROD_CONCAT(dotprod_crcf,name)
+#define DOTPROD_MANGLE_RRRF(name)   LIQUID_CONCAT(dotprod_rrrf,name)
+#define DOTPROD_MANGLE_CCCF(name)   LIQUID_CONCAT(dotprod_cccf,name)
+#define DOTPROD_MANGLE_CRCF(name)   LIQUID_CONCAT(dotprod_crcf,name)
 
 // large macro
 //   X  : name-mangling macro
