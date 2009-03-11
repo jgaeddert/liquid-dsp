@@ -85,7 +85,8 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("P0:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            printf("%6.3f ", square_matrix_direct_access(_eq->P0,p,r,c));
+            PRINTVAL(square_matrix_direct_access(_eq->P0,p,r,c));
+            //printf("%6.3f ", square_matrix_direct_access(_eq->P0,p,r,c));
         }
         printf("\n");
     }
@@ -93,7 +94,8 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("P1:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            printf("%6.3f ", square_matrix_direct_access(_eq->P1,p,r,c));
+            PRINTVAL(square_matrix_direct_access(_eq->P1,p,r,c));
+            //printf("%6.3f ", square_matrix_direct_access(_eq->P1,p,r,c));
         }
         printf("\n");
     }
@@ -101,7 +103,8 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("gxl:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            printf("%6.3f ", square_matrix_direct_access(_eq->gxl,p,r,c));
+            PRINTVAL(square_matrix_direct_access(_eq->gxl,p,r,c));
+            //printf("%6.3f ", square_matrix_direct_access(_eq->gxl,p,r,c));
         }
         printf("\n");
     }
@@ -141,9 +144,6 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
     T * x;
     WINDOW(_read)(_eq->buffer, &x);
 #ifdef DEBUG
-    printf("x: ");
-    for (i=0; i<p; i++)
-        printf("%8.4f ", x[i]);
     printf("\n");
 #endif
 
@@ -154,27 +154,32 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
 
     // compute error (a priori)
     T alpha = _d - d_hat;
-    DEBUG_PRINTF_CFLOAT(stdout,"    d",0,_d);
-    DEBUG_PRINTF_CFLOAT(stdout,"d_hat",0,d_hat);
-    DEBUG_PRINTF_CFLOAT(stdout,"error",0,alpha);
-    //printf("error: %8.4f\n", alpha);
-    printf("\n");
 
     //
     if (_eq->n < _eq->p)
         return;
 
     // compute gain vector
-    for (r=0; r<p; r++) {
-        _eq->xP0[r] = 0;
-        for (c=0; c<p; c++) {
-            _eq->xP0[r] += x[c] * square_matrix_direct_access(_eq->P0,p,r,c);
+    for (c=0; c<p; c++) {
+        _eq->xP0[c] = 0;
+        for (r=0; r<p; r++) {
+            _eq->xP0[c] += x[r] * square_matrix_direct_access(_eq->P0,p,r,c);
         }
     }
+
 #ifdef DEBUG
+    printf("x: ");
+    for (i=0; i<p; i++)
+        PRINTVAL(x[i]);
+    printf("\n");
+
+    DEBUG_PRINTF_CFLOAT(stdout,"    d",0,_d);
+    DEBUG_PRINTF_CFLOAT(stdout,"d_hat",0,d_hat);
+    DEBUG_PRINTF_CFLOAT(stdout,"error",0,alpha);
+
     printf("xP0: ");
     for (c=0; c<p; c++)
-        printf("%8.4f ", _eq->xP0[c]);
+        PRINTVAL(_eq->xP0[c]);
     printf("\n");
 #endif
     // zeta = lambda + [x.']*[P0]*[conj(x)]
@@ -183,7 +188,9 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
         _eq->zeta += _eq->xP0[c] * conj(x[c]);
     _eq->zeta += _eq->lambda;
 #ifdef DEBUG
-    printf("zeta : %8.4f\n", _eq->zeta);
+    printf("zeta : ");
+    PRINTVAL(_eq->zeta);
+    printf("\n");
 #endif
     for (r=0; r<p; r++) {
         _eq->g[r] = 0;
@@ -195,7 +202,8 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
 #ifdef DEBUG
     printf("g: ");
     for (i=0; i<p; i++)
-        printf("%6.3f ", _eq->g[i]);
+        PRINTVAL(_eq->g[i]);
+        //printf("%6.3f ", _eq->g[i]);
     printf("\n");
 #endif
 
@@ -223,6 +231,23 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
     // update weighting vector
     for (i=0; i<p; i++)
         _eq->w1[i] = _eq->w0[i] + alpha*(_eq->g[i]);
+
+#ifdef DEBUG
+    printf("w0: \n");
+    for (i=0; i<p; i++) {
+        PRINTVAL(_eq->w0[i]);
+        printf("\n");
+    }
+    printf("w1: \n");
+    for (i=0; i<p; i++) {
+        PRINTVAL(_eq->w1[i]);
+        printf("\n");
+    EQRLS(_print)(_eq);
+    }
+    //if (_eq->n == 7)
+    //    exit(0);
+
+#endif
 
     // copy old values
     memmove(_eq->w0, _eq->w1,   p*sizeof(T));

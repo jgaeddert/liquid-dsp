@@ -14,4 +14,6 @@
 //#define TI float
 #define IS_COMPLEX      0
 
+#define PRINTVAL(V)     printf("%5.2f ", V);
+
 #include "eqrls.c"

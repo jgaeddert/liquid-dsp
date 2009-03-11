@@ -10,4 +10,6 @@
 
 #define T               float complex
 
+#define PRINTVAL(V)     printf("%5.2f+j%5.2f ", crealf(V), cimagf(V));
+
 #include "eqrls.c"

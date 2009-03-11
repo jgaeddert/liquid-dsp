@@ -52,7 +52,7 @@ int main() {
     // create channel filter (random delay taps)
     h[0] = 1.0f;
     for (i=1; i<h_len; i++)
-        h[i] = randnf() * 0.1f;
+        h[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
     fir_filter_cccf f = fir_filter_cccf_create(h,h_len);
 
     // generate random data signal
@@ -108,7 +108,7 @@ int main() {
 
         PRINT_COMPLEX(fid,  "d",    i+1,    d[i]);
         PRINT_COMPLEX(fid,  "y",    i+1,    y[i]);
-        PRINT_COMPLEX(fid,  "dhat", i+1,    d_hat[i]);
+        PRINT_COMPLEX(fid,  "d_hat",i+1,    d_hat[i]);
         fprintf(fid, "\n");
 
         // compute mse
@@ -127,20 +127,36 @@ int main() {
     fprintf(fid,"W=20*log10(abs(fftshift(fft(w,nfft))));\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"plot(f,H,'-r',f,W,'-b');\n");
     fprintf(fid,"xlabel('Normalied Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"legend('channel','equalizer',0);\n");
-    fprintf(fid,"subplot(2,1,2);\n");
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"stem(0:(h_len-1),h,'-r');\n");
-    fprintf(fid,"stem(0:(p-1),    w,'-b');\n");
+    fprintf(fid,"stem(0:(h_len-1),real(h),'-r');\n");
+    fprintf(fid,"stem(0:(p-1),    real(w),'-b');\n");
     fprintf(fid,"hold off;\n");
-    fprintf(fid,"xlabel('');\n");
-    fprintf(fid,"ylabel('Filter Coefficients');\n");
+    fprintf(fid,"ylabel('Real Coefficients');\n");
     fprintf(fid,"legend('channel','equalizer',0);\n");
     fprintf(fid,"axis([-0.25 max(h_len,p)-0.75 -0.5 1.5]);\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"stem(0:(h_len-1),imag(h),'-r');\n");
+    fprintf(fid,"stem(0:(p-1),    imag(w),'-b');\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"ylabel('Imag Coefficients');\n");
+    fprintf(fid,"legend('channel','equalizer',0);\n");
+    fprintf(fid,"axis([-0.25 max(h_len,p)-0.75 -0.5 1.5]);\n");
+
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(y,'xr',d_hat,'xb');\n");
+    fprintf(fid,"axis('square');\n");
+    fprintf(fid,"xlabel('in-phase');\n");
+    fprintf(fid,"ylabel('quadrature');\n");
+    fprintf(fid,"legend('received','equalized',1');\n");
 
     fclose(fid);
     printf("results written to %s.\n",DEBUG_FILENAME);
