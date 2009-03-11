@@ -8,7 +8,9 @@ module_name     := equalization
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:= equalizer_rrrf.c
+local_s_files	:=		\
+	equalizer_rrrf.c	\
+	equalizer_cccf.c
 
 # local_h_files
 #

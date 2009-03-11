@@ -32,6 +32,7 @@ local_src	:=			\
 	dotprod_rrrf_example.c		\
 	dotprod_cccf_example.c		\
 	eqrls_rrrf_example.c		\
+	eqrls_cccf_example.c		\
 	fbuffer_example.c		\
 	fwindow_example.c		\
 	fading_channel_example.c	\

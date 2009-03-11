@@ -154,7 +154,11 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
 
     // compute error (a priori)
     T alpha = _d - d_hat;
-    printf("error: %8.4f\n", alpha);
+    DEBUG_PRINTF_CFLOAT(stdout,"    d",0,_d);
+    DEBUG_PRINTF_CFLOAT(stdout,"d_hat",0,d_hat);
+    DEBUG_PRINTF_CFLOAT(stdout,"error",0,alpha);
+    //printf("error: %8.4f\n", alpha);
+    printf("\n");
 
     //
     if (_eq->n < _eq->p)

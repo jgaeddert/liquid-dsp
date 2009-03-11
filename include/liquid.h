@@ -277,6 +277,7 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liqu
 
 // recursive least-squares (RLS)
 #define EQRLS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqrls_rrrf,name)
+#define EQRLS_MANGLE_CCCF(name)     LIQUID_CONCAT(eqrls_cccf,name)
 
 #define LIQUID_EQRLS_DEFINE_API(X,T)                \
 typedef struct X(_s) * X();                         \
@@ -288,6 +289,7 @@ void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
 void X(_train)(X() _eq, T * _w, T * _x, T * _d, unsigned int _n);
 
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
+LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_CCCF, liquid_float_complex);
 
 
 // 
