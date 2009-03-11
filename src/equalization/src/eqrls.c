@@ -9,6 +9,8 @@
 // direct access to element X(i,j) of DxD square matrix
 #define square_matrix_direct_access(X,D,i,j) ((X)[(j)*(D)+(i)])
 
+//#define DEBUG
+
 struct EQRLS(_s) {
     unsigned int p;     // filter order
     float lambda;       // RLS forgetting factor
@@ -24,6 +26,8 @@ struct EQRLS(_s) {
     T * gxl;            // [pxp]
     T * gxlP0;          // [pxp]
 
+    unsigned int n;     // counter
+
     WINDOW() buffer;
 };
 
@@ -35,6 +39,7 @@ EQRLS() EQRLS(_create)(unsigned int _p)
     eq->p = _p;
     eq->lambda = 0.99f;
     eq->delta = 0.1f;
+    eq->n=0;
 
     //
     eq->w0 = (T*) malloc((eq->p)*sizeof(T));
@@ -84,6 +89,33 @@ void EQRLS(_print)(EQRLS() _eq)
 {
     printf("equalizer (RLS):\n");
     printf("    order:      %u\n", _eq->p);
+
+#ifdef DEBUG
+    unsigned int r,c,p=_eq->p;
+    printf("P0:\n");
+    for (r=0; r<p; r++) {
+        for (c=0; c<p; c++) {
+            printf("%6.3f ", square_matrix_direct_access(_eq->P0,p,r,c));
+        }
+        printf("\n");
+    }
+
+    printf("P1:\n");
+    for (r=0; r<p; r++) {
+        for (c=0; c<p; c++) {
+            printf("%6.3f ", square_matrix_direct_access(_eq->P1,p,r,c));
+        }
+        printf("\n");
+    }
+
+    printf("gxl:\n");
+    for (r=0; r<p; r++) {
+        for (c=0; c<p; c++) {
+            printf("%6.3f ", square_matrix_direct_access(_eq->gxl,p,r,c));
+        }
+        printf("\n");
+    }
+#endif
 }
 
 void EQRLS(_reset)(EQRLS() _eq)
@@ -103,7 +135,16 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
     // push value into buffer
     WINDOW(_push)(_eq->buffer, _x);
     T * x;
+    _eq->n++;
+    if (_eq->n < _eq->p)
+        return;
     WINDOW(_read)(_eq->buffer, &x);
+#ifdef DEBUG
+    printf("x: ");
+    for (i=0; i<p; i++)
+        printf("%8.4f ", x[i]);
+    printf("\n");
+#endif
 
     // compute d_hat (dot product)
     T d_hat;
@@ -111,16 +152,44 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
 
     // compute error (a priori)
     T alpha = _d - d_hat;
+#ifdef DEBUG
+    printf("error: %8.4f\n", alpha);
+#endif
 
     // compute gain vector
-    for (c=0; c<p; c++) {
-        _eq->xP0[c] = 0;
-        for (r=0; r<p; r++)
-            _eq->xP0[c] += x[c] * square_matrix_direct_access(_eq->P0,p,r,c);
+    for (r=0; r<p; r++) {
+        _eq->xP0[r] = 0;
+        for (c=0; c<p; c++) {
+            _eq->xP0[r] += x[c] * square_matrix_direct_access(_eq->P0,p,r,c);
+        }
     }
+#ifdef DEBUG
+    printf("xP0: ");
+    for (c=0; c<p; c++)
+        printf("%8.4f ", _eq->xP0[c]);
+    printf("\n");
+#endif
+    // zeta = lambda + [x.']*[P0]*[conj(x)]
     _eq->zeta = 0;
     for (c=0; c<p; c++)
         _eq->zeta += _eq->xP0[c] * conj(x[c]);
+    _eq->zeta += _eq->lambda;
+#ifdef DEBUG
+    printf("zeta : %8.4f\n", _eq->zeta);
+#endif
+    for (r=0; r<p; r++) {
+        _eq->g[r] = 0;
+        for (c=0; c<p; c++) {
+            _eq->g[r] += square_matrix_direct_access(_eq->P0,p,r,c) * conj(x[c]);
+        }
+        _eq->g[r] /= _eq->zeta;
+    }
+#ifdef DEBUG
+    printf("g: ");
+    for (i=0; i<p; i++)
+        printf("%6.3f ", _eq->g[i]);
+    printf("\n");
+#endif
 
     // update recursion matrix
     for (r=0; r<p; r++) {
@@ -154,5 +223,8 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
 
     // copy output weight vector...
     // TODO: reverse?
+    for (i=0; i<p; i++)
+        _w[i] = _eq->w1[p-i-1];
+    
 }
 
