@@ -152,9 +152,7 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
 
     // compute error (a priori)
     T alpha = _d - d_hat;
-#ifdef DEBUG
     printf("error: %8.4f\n", alpha);
-#endif
 
     // compute gain vector
     for (r=0; r<p; r++) {
@@ -228,3 +226,28 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
     
 }
 
+//
+//  _w  :   initial weights / output weights
+//  _x  :   received sample vector
+//  _d  :   desired output vector
+//  _n  :   vector length
+void EQRLS(_train)(EQRLS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
+{
+    if (_n < _eq->p) {
+        printf("warning: eqrls_xxxt_train(), traning sequence less than filter order\n");
+        return;
+    }
+
+    unsigned int i;
+
+    // reset equalizer state
+    //EQRLS(_reset)(_eq);
+
+    // copy initial weights into buffer
+    //memmove(_eq->w0, _w, (_eq->p)*sizeof(T));
+    for (i=0; i<_eq->p; i++)
+        _eq->w0[i] = _w[_eq->p - i - 1];
+
+    for (i=0; i<_n; i++)
+        EQRLS(_execute)(_eq, _x[i], _d[i], _w);
+}

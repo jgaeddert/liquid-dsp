@@ -284,6 +284,7 @@ X() X(_create)(unsigned int _p);                    \
 void X(_destroy)(X() _eq);                          \
 void X(_print)(X() _eq);                            \
 void X(_reset)(X() _eq);                            \
+void X(_train)(X() _eq, T * _w, T * _x, T * _d, unsigned int _n);   \
 void X(_execute)(X() _eq, T _x, T _d, T * _w);
 
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
