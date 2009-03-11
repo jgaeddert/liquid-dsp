@@ -54,17 +54,7 @@ EQRLS() EQRLS(_create)(unsigned int _p)
 
     eq->buffer = WINDOW(_create)(eq->p);
 
-    unsigned int i, j;
-    // initialize...
-    for (i=0; i<eq->p; i++) {
-        for (j=0; j<eq->p; j++) {
-            if (i==j)   eq->P0[(eq->p)*i + j] = 1.0f / (eq->delta);
-            else        eq->P0[(eq->p)*i + j] = 0.0f;
-        }
-    }
-
-    for (i=0; i<eq->p; i++)
-        eq->w0[i] = 0.0f;
+    EQRLS(_reset)(eq);
 
     return eq;
 }
@@ -120,7 +110,19 @@ void EQRLS(_print)(EQRLS() _eq)
 
 void EQRLS(_reset)(EQRLS() _eq)
 {
-    //
+    unsigned int i, j;
+    // initialize...
+    for (i=0; i<_eq->p; i++) {
+        for (j=0; j<_eq->p; j++) {
+            if (i==j)   _eq->P0[(_eq->p)*i + j] = 1.0f / (_eq->delta);
+            else        _eq->P0[(_eq->p)*i + j] = 0.0f;
+        }
+    }
+
+    for (i=0; i<_eq->p; i++)
+        _eq->w0[i] = 0.0f;
+
+    WINDOW(_clear)(_eq->buffer);
 }
 
 //
@@ -241,7 +243,7 @@ void EQRLS(_train)(EQRLS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
     unsigned int i;
 
     // reset equalizer state
-    //EQRLS(_reset)(_eq);
+    EQRLS(_reset)(_eq);
 
     // copy initial weights into buffer
     //memmove(_eq->w0, _w, (_eq->p)*sizeof(T));
