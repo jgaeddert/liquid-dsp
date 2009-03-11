@@ -1,6 +1,6 @@
 // file: eqrls_rrrf_example.c
 //
-// Tests RLS equalizer
+// Tests recursive least-squares equalizer
 //
 // Complile and run:
 //   $ gcc eqrls_rrrf_example.c -lliquid -o eqrls_rrrf_example
@@ -16,16 +16,16 @@ int main() {
     // options
     unsigned int n=32;      // number of symbols to observe
     unsigned int ntrain=16; // number of training symbols
+    unsigned int h_len = 4; // channel filter length
     unsigned int p=6;       // equalizer order
 
+    // bookkeeping variables
     float d[n];     // data sequence
     float y[n];     // received data sequence (filtered by channel)
     float d_hat[n]; // recovered data sequence
+    float h[h_len]; // channel filter coefficients
     float w[p];     // equalizer filter coefficients
     unsigned int i;
-
-    unsigned int h_len = 4;
-    float h[4] = {1.0f, -0.1f, 0.2f, 0.05f};
 
     // open output file
     FILE * fid = fopen(DEBUG_FILENAME,"w");
@@ -41,7 +41,10 @@ int main() {
     // create equalizer
     eqrls_rrrf eq = eqrls_rrrf_create(p);
 
-    // create channel filter
+    // create channel filter (random delay taps)
+    h[0] = 1.0f;
+    for (i=1; i<h_len; i++)
+        h[i] = randnf() * 0.1f;
     fir_filter_rrrf f = fir_filter_rrrf_create(h,h_len);
 
     // generate random data signal
@@ -71,11 +74,13 @@ int main() {
     //
     // print results
     //
+    printf("channel:\n");
     for (i=0; i<h_len; i++) {
         printf("h(%3u) = %8.4f\n", i+1, h[i]);
         fprintf(fid,"h(%3u) = %12.4e;\n", i+1, h[i]);
     }
 
+    printf("equalizer:\n");
     for (i=0; i<p; i++) {
         printf("w(%3u) = %8.4f\n", i+1, w[i]);
         fprintf(fid,"w(%3u) = %12.4e;\n", i+1, w[i]);
@@ -132,5 +137,6 @@ int main() {
 
     fir_filter_rrrf_destroy(f);
     eqrls_rrrf_destroy(eq);
+    fir_filter_rrrf_destroy(feq);
     return 0;
 }

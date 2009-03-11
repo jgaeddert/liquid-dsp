@@ -114,13 +114,13 @@ void EQRLS(_reset)(EQRLS() _eq)
     // initialize...
     for (i=0; i<_eq->p; i++) {
         for (j=0; j<_eq->p; j++) {
-            if (i==j)   _eq->P0[(_eq->p)*i + j] = 1.0f / (_eq->delta);
-            else        _eq->P0[(_eq->p)*i + j] = 0.0f;
+            if (i==j)   _eq->P0[(_eq->p)*i + j] = 1 / (_eq->delta);
+            else        _eq->P0[(_eq->p)*i + j] = 0;
         }
     }
 
     for (i=0; i<_eq->p; i++)
-        _eq->w0[i] = 0.0f;
+        _eq->w0[i] = 0;
 
     WINDOW(_clear)(_eq->buffer);
 }
@@ -129,17 +129,16 @@ void EQRLS(_reset)(EQRLS() _eq)
 //  _x  :   received sample
 //  _d  :   desired output
 //  _w  :   output weights
-void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
+void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
 {
     unsigned int i,r,c;
     unsigned int p=_eq->p;
 
+    _eq->n++;
+
     // push value into buffer
     WINDOW(_push)(_eq->buffer, _x);
     T * x;
-    _eq->n++;
-    if (_eq->n < _eq->p)
-        return;
     WINDOW(_read)(_eq->buffer, &x);
 #ifdef DEBUG
     printf("x: ");
@@ -151,10 +150,15 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
     // compute d_hat (dot product)
     T d_hat;
     DOTPROD(_run)(_eq->w0, x, p, &d_hat);
+    *_d_hat = d_hat;
 
     // compute error (a priori)
     T alpha = _d - d_hat;
     printf("error: %8.4f\n", alpha);
+
+    //
+    if (_eq->n < _eq->p)
+        return;
 
     // compute gain vector
     for (r=0; r<p; r++) {
@@ -212,7 +216,6 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
     for (i=0; i<p*p; i++)
         _eq->P1[i] = _eq->P0[i] / _eq->lambda - _eq->gxlP0[i];
 
-
     // update weighting vector
     for (i=0; i<p; i++)
         _eq->w1[i] = _eq->w0[i] + alpha*(_eq->g[i]);
@@ -221,11 +224,6 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
     memmove(_eq->w0, _eq->w1,   p*sizeof(T));
     memmove(_eq->P0, _eq->P1, p*p*sizeof(T));
 
-    // copy output weight vector...
-    // TODO: reverse?
-    for (i=0; i<p; i++)
-        _w[i] = _eq->w1[p-i-1];
-    
 }
 
 //
@@ -235,21 +233,24 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _w)
 //  _n  :   vector length
 void EQRLS(_train)(EQRLS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
 {
-    if (_n < _eq->p) {
+    unsigned int i, p=_eq->p;
+    if (_n < p) {
         printf("warning: eqrls_xxxt_train(), traning sequence less than filter order\n");
         return;
     }
-
-    unsigned int i;
 
     // reset equalizer state
     EQRLS(_reset)(_eq);
 
     // copy initial weights into buffer
-    //memmove(_eq->w0, _w, (_eq->p)*sizeof(T));
-    for (i=0; i<_eq->p; i++)
-        _eq->w0[i] = _w[_eq->p - i - 1];
+    for (i=0; i<p; i++)
+        _eq->w0[i] = _w[p - i - 1];
 
+    T d_hat;
     for (i=0; i<_n; i++)
-        EQRLS(_execute)(_eq, _x[i], _d[i], _w);
+        EQRLS(_execute)(_eq, _x[i], _d[i], &d_hat);
+
+    // copy output weight vector...
+    for (i=0; i<p; i++)
+        _w[i] = _eq->w1[p-i-1];
 }
