@@ -4,16 +4,15 @@
 
 #include "liquid.internal.h"
 
+#define EQLMS(name)     LIQUID_CONCAT(eqlms_rrrf,name)
 #define EQRLS(name)     LIQUID_CONCAT(eqrls_rrrf,name)
+
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
 #define WINDOW(name)    LIQUID_CONCAT(fwindow,name)
-//#define MATRIX(name)    LIQUID_CONCAT(fmatrix,name)
+
 #define T               float
-//#define TO float
-//#define TC float
-//#define TI float
-#define IS_COMPLEX      0
 
 #define PRINTVAL(V)     printf("%5.2f ", V);
 
+#include "eqlms.c"
 #include "eqrls.c"

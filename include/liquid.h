@@ -275,6 +275,23 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liqu
 // Equalization
 //
 
+// least mean-squares (LMS)
+#define EQLMS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqlms_rrrf,name)
+#define EQLMS_MANGLE_CCCF(name)     LIQUID_CONCAT(eqlms_cccf,name)
+
+#define LIQUID_EQLMS_DEFINE_API(X,T)                \
+typedef struct X(_s) * X();                         \
+X() X(_create)(unsigned int _p);                    \
+void X(_destroy)(X() _eq);                          \
+void X(_print)(X() _eq);                            \
+void X(_reset)(X() _eq);                            \
+void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
+void X(_train)(X() _eq, T * _w, T * _x, T * _d, unsigned int _n);
+
+LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_RRRF, float);
+LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
+
+
 // recursive least-squares (RLS)
 #define EQRLS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqrls_rrrf,name)
 #define EQRLS_MANGLE_CCCF(name)     LIQUID_CONCAT(eqrls_cccf,name)

@@ -31,6 +31,7 @@ local_src	:=			\
 	cvsd_sine_example.c		\
 	dotprod_rrrf_example.c		\
 	dotprod_cccf_example.c		\
+	eqlms_rrrf_example.c		\
 	eqrls_rrrf_example.c		\
 	eqrls_cccf_example.c		\
 	fbuffer_example.c		\
