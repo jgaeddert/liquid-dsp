@@ -17,7 +17,7 @@ int main() {
     unsigned int n=128;     // number of symbols to observe
     unsigned int ntrain=64; // number of training symbols
     unsigned int h_len = 4; // channel filter length
-    unsigned int p=6;       // equalizer order
+    unsigned int p=8;       // equalizer order
 
     // bookkeeping variables
     float d[n];     // data sequence

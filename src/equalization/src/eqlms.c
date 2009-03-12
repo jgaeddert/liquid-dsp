@@ -17,6 +17,7 @@ struct EQLMS(_s) {
 
     unsigned int n;     // input counter
     WINDOW() buffer;    // input buffer
+    fwindow ex2_buffer; // input energy buffer
 };
 
 EQLMS() EQLMS(_create)(unsigned int _p)
@@ -25,12 +26,13 @@ EQLMS() EQLMS(_create)(unsigned int _p)
 
     // set filter order, other params
     eq->p = _p;
-    eq->mu = 0.1f;
+    eq->mu = 0.5f;
     eq->n=0;
 
     eq->w0 = (T*) malloc((eq->p)*sizeof(T));
     eq->w1 = (T*) malloc((eq->p)*sizeof(T));
     eq->buffer = WINDOW(_create)(eq->p);
+    eq->ex2_buffer = fwindow_create(eq->p);
 
     EQLMS(_reset)(eq);
 
@@ -43,6 +45,7 @@ void EQLMS(_destroy)(EQLMS() _eq)
     free(_eq->w1);
 
     WINDOW(_destroy)(_eq->buffer);
+    fwindow_destroy(_eq->ex2_buffer);
     free(_eq);
 }
 
@@ -59,6 +62,7 @@ void EQLMS(_reset)(EQLMS() _eq)
         _eq->w0[i] = 0;
 
     WINDOW(_clear)(_eq->buffer);
+    fwindow_clear(_eq->ex2_buffer);
 }
 
 //
@@ -73,6 +77,9 @@ void EQLMS(_execute)(EQLMS() _eq, T _x, T _d, T * _d_hat)
     // push value into buffer
     WINDOW(_push)(_eq->buffer, _x);
     T * x;
+
+    // push |x|^2
+    fwindow_push(_eq->ex2_buffer, crealf(_x*conj(_x)));
 
     // check to see if buffer is full, return if not
     _eq->n++;
@@ -90,10 +97,17 @@ void EQLMS(_execute)(EQLMS() _eq, T _x, T _d, T * _d_hat)
     // compute error (a priori)
     T alpha = _d - d_hat;
 
+    // compute signal energy
+    float *x2, ex2=0.0f;
+    fwindow_read(_eq->ex2_buffer, &x2);
+    for (i=0; i<p; i++)
+        ex2 += x2[i];
+    printf("ex2: %f\n", ex2);
+
     // update weighting vector
     // w[n+1] = w[n] + mu*conj(d-d_hat)*x[n]
     for (i=0; i<p; i++)
-        _eq->w1[i] = _eq->w0[i] + (_eq->mu)*conj(alpha)*x[i];
+        _eq->w1[i] = _eq->w0[i] + (_eq->mu)*conj(alpha)*x[i]/ex2;
 
 #ifdef DEBUG
     printf("w0: \n");
