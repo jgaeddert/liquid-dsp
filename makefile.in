@@ -207,14 +207,13 @@ examples: $(example_progs)
 EXAMPLES_LDFLAGS = $(LDFLAGS) -pthread
 
 # NOTE: linked libraries must come _after_ the target program
-$(example_objs): %.o : %.c %.d
+$(example_objs): %.o : %.c libliquid.a
 
 $(example_progs): % : %.o libliquid.a
 
 # clean examples
 clean-examples:
 	$(RM) examples/*.o
-	$(RM) examples/*.d
 	$(RM) $(example_progs)
 
 # Clean
