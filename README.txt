@@ -12,28 +12,34 @@ BUILD:
 INSTALL:
     # make install
 
-TEST: (requires python)
+TEST: (requires python to generate header file)
     $ make check
 
-BENCHMARK: (requires python)
+BENCHMARK: (requires python to generate header file)
     $ make bench
     
 
 Modules: description
     agc: automatic gain control
     ann: artificial neural networks
-    buffer: internal buffering, circular/static, ports
+    audio: source audio encoders/decoders: cvsd, filterbanks...
+    buffer: internal buffering, circular/static, ports (threaded)
+    channel: communications channel modeling: additive noise, multipath fading...
     dotprod: dot products (real, complex)
-    fec: forward error correction (basic), checksum, etc.
+    equalization: adaptive equalizers: LMS, RLS, blind...
+    estimation: parametric estimation: frequency offset, timing offset, fading...
+    fec: forward error correction (basic), checksum, crc, etc.
     fft: fast Fourier transform (basic), simple implementation
-    filters: fir, iir, polyphase, hilbert, interp, decim, design, remez, etc.
+    filter: fir, iir, polyphase, hilbert, interp, decim, design, remez, etc.
     interleaver: bit- and symbol-level
-    math: transcendental functions (sin,cos,tan,atan), others: gamma, besseli
+    math: transcendental functions not in the C standard library (gamma, besseli, etc.)
+    matrix: basic math, lu_decomp, inv, gauss_elim, 
     modem: modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
-    matrix: lu_decomp, inv, gauss_elim, 
-    nco: mix, pll
+    multicarrier: OFDM/OQAM, OFDM...
+    nco: numerically-controlled oscillator: mix, pll
     optim: newton_raphson, ga, gradient
-    polynomial: roots, etc.
+    [polynomial]: roots, etc.
+    quantization: analog/digital converters, companding...
     random: random number generators
     sequence: lfsr, complementary_code
     utility: useful miscellany
@@ -46,7 +52,8 @@ Additional:
 Source code organization
 liquid/
     README.txt              <-- this file
-    configure               <-- configuration shell script
+    common.mk               <-- common makefile for building each module
+    configure.in            <-- configuration shell script prototype
     makefile.in             <-- top-level makefile prototype
     reconf                  <-- bootstrapping shell script
     doc/
@@ -85,7 +92,7 @@ liquid/
 Documentation organization
     Introduction
     Usage
-        #include "liquid.h"
+        #include <liquid/liquid.h>
     ...
     Module1
         Object1.1
