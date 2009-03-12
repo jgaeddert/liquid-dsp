@@ -152,5 +152,6 @@ void EQLMS(_train)(EQLMS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
 
     // copy output weight vector...
     for (i=0; i<p; i++)
-        _w[i] = _eq->w1[p-i-1];
+        _w[i] = conj(_eq->w1[p-i-1]);
 }
+
