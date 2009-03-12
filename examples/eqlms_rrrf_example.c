@@ -14,9 +14,9 @@
 
 int main() {
     // options
-    unsigned int n=128;     // number of symbols to observe
-    unsigned int ntrain=64; // number of training symbols
-    unsigned int h_len = 4; // channel filter length
+    unsigned int n=512;     // number of symbols to observe
+    unsigned int ntrain=256;// number of training symbols
+    unsigned int h_len=4  ; // channel filter length
     unsigned int p=8;       // equalizer order
 
     // bookkeeping variables
@@ -88,14 +88,6 @@ int main() {
 
     float e, mse=0.0f;
     for (i=0; i<n; i++) {
-        if (i==ntrain)
-            printf("----------\n");
-
-        printf("d(%3u) = %8.4f; ", i, d[i]);
-        printf("y(%3u) = %8.4f; ", i, y[i]);
-        printf("d_hat(%3u) = %8.4f; ", i, d_hat[i]);
-        printf("\n");
-
         fprintf(fid,"d(%3u) = %12.4e; ", i+1, d[i]);
         fprintf(fid,"y(%3u) = %12.4e; ", i+1, y[i]);
         fprintf(fid,"d_hat(%3u) = %12.4e; ", i+1, d_hat[i]);
