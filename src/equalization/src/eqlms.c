@@ -126,6 +126,14 @@ void EQLMS(_execute)(EQLMS() _eq, T _x, T _d, T * _d_hat)
     memmove(_eq->w0, _eq->w1,   p*sizeof(T));
 }
 
+void EQLMS(_get_weights)(EQLMS() _eq, T * _w)
+{
+    // copy output weight vector
+    unsigned int i, p=_eq->p;
+    for (i=0; i<p; i++)
+        _w[i] = conj(_eq->w1[p-i-1]);
+}
+
 //
 //  _w  :   initial weights / output weights
 //  _x  :   received sample vector
@@ -150,8 +158,7 @@ void EQLMS(_train)(EQLMS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
     for (i=0; i<_n; i++)
         EQLMS(_execute)(_eq, _x[i], _d[i], &d_hat);
 
-    // copy output weight vector...
-    for (i=0; i<p; i++)
-        _w[i] = conj(_eq->w1[p-i-1]);
+    // copy output weight vector
+    EQLMS(_get_weights)(_eq, _w);
 }
 

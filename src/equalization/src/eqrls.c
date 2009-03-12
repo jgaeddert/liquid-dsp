@@ -252,6 +252,14 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
 
 }
 
+void EQRLS(_get_weights)(EQRLS() _eq, T * _w)
+{
+    // copy output weight vector
+    unsigned int i, p=_eq->p;
+    for (i=0; i<p; i++)
+        _w[i] = _eq->w1[p-i-1];
+}
+
 //
 //  _w  :   initial weights / output weights
 //  _x  :   received sample vector
@@ -276,7 +284,6 @@ void EQRLS(_train)(EQRLS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
     for (i=0; i<_n; i++)
         EQRLS(_execute)(_eq, _x[i], _d[i], &d_hat);
 
-    // copy output weight vector...
-    for (i=0; i<p; i++)
-        _w[i] = _eq->w1[p-i-1];
+    // copy output weight vector
+    EQRLS(_get_weights)(_eq, _w);
 }

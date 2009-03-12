@@ -286,6 +286,7 @@ void X(_destroy)(X() _eq);                          \
 void X(_print)(X() _eq);                            \
 void X(_reset)(X() _eq);                            \
 void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
+void X(_get_weights)(X() _eq, T * _w);              \
 void X(_train)(X() _eq, T * _w, T * _x, T * _d, unsigned int _n);
 
 LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_RRRF, float);
@@ -303,6 +304,7 @@ void X(_destroy)(X() _eq);                          \
 void X(_print)(X() _eq);                            \
 void X(_reset)(X() _eq);                            \
 void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
+void X(_get_weights)(X() _eq, T * _w);              \
 void X(_train)(X() _eq, T * _w, T * _x, T * _d, unsigned int _n);
 
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
