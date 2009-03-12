@@ -284,6 +284,7 @@ typedef struct X(_s) * X();                         \
 X() X(_create)(unsigned int _p);                    \
 void X(_destroy)(X() _eq);                          \
 void X(_print)(X() _eq);                            \
+void X(_set_bw)(X() _eq, float _lambda);            \
 void X(_reset)(X() _eq);                            \
 void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
 void X(_get_weights)(X() _eq, T * _w);              \
@@ -302,6 +303,7 @@ typedef struct X(_s) * X();                         \
 X() X(_create)(unsigned int _p);                    \
 void X(_destroy)(X() _eq);                          \
 void X(_print)(X() _eq);                            \
+void X(_set_bw)(X() _eq, float _mu);                \
 void X(_reset)(X() _eq);                            \
 void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
 void X(_get_weights)(X() _eq, T * _w);              \

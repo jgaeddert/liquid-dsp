@@ -55,6 +55,16 @@ void EQLMS(_print)(EQLMS() _eq)
     printf("    order:      %u\n", _eq->p);
 }
 
+void EQLMS(_set_bw)(EQLMS() _eq, float _mu)
+{
+    if (_mu < 0.0f) {
+        printf("error: eqlms_xxxt_set_bw(), learning rate must be positive\n");
+        exit(1);
+    }
+
+    _eq->mu = _mu;
+}
+
 void EQLMS(_reset)(EQLMS() _eq)
 {
     unsigned int i;
