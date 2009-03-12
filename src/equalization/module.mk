@@ -27,7 +27,8 @@ local_h_files	:=
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:= 
+local_t_files	:=		\
+	eqrls_rrrf_autotest.h
 
 
 # local_b_files

@@ -1,0 +1,65 @@
+#ifndef __EQRLS_RRRF_AUTOTEST_H__
+#define __EQRLS_RRRF_AUTOTEST_H__
+
+#include "autotest/autotest.h"
+#include "liquid.h"
+
+void autotest_eqrls_rrrf_01()
+{
+    unsigned int h_len=4;   // channel filter length
+    unsigned int p=6;       // equalizer order
+    float tol=1e-2f;        // error tolerance
+
+    unsigned int n=64;      // number of symbols to observe
+
+    // bookkeeping variables
+    float y[n];     // received data sequence (filtered by channel)
+    //float d_hat[n]; // recovered data sequence
+    float h[h_len]; // channel filter coefficients
+    float w[p];     // equalizer filter coefficients
+    unsigned int i;
+
+    // create equalizer
+    eqrls_rrrf eq = eqrls_rrrf_create(p);
+
+    // create channel filter
+    h[0] = 1.0f;
+    for (i=1; i<h_len; i++)
+        h[i] = 0.0f;
+    fir_filter_rrrf f = fir_filter_rrrf_create(h,h_len);
+
+    // data sequence
+    float d[64] = {
+        -1.0, -1.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0, 
+        -1.0,  1.0,  1.0, -1.0, -1.0,  1.0, -1.0,  1.0, 
+         1.0, -1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0, 
+        -1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0, -1.0,
+         1.0,  1.0, -1.0, -1.0,  1.0, -1.0,  1.0, -1.0, 
+        -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 
+         1.0, -1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0, 
+        -1.0,  1.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0
+    };
+
+    // filter data signal through channel
+    for (i=0; i<n; i++) {
+        fir_filter_rrrf_push(f,d[i]);
+        fir_filter_rrrf_execute(f,&y[i]);
+    }
+
+    // run equalizer
+    for (i=0; i<p; i++)
+        w[i] = 0;
+    eqrls_rrrf_train(eq, w, y, d, n);
+
+    fir_filter_rrrf_destroy(f);
+    eqrls_rrrf_destroy(eq);
+
+    //
+    CONTEND_DELTA(w[0], 1.0f, tol);
+    for (i=1; i<p; i++)
+        CONTEND_DELTA(w[i], 0.0f, tol);
+}
+
+
+#endif // __EQRLS_RRRF_AUTOTEST_H__
+
