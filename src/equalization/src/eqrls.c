@@ -16,19 +16,20 @@ struct EQRLS(_s) {
     float lambda;       // RLS forgetting factor
     float delta;        // RLS initialization factor
 
+    // internal matrices
     T * w0, * w1;       // weights [px1]
     T * P0, * P1;       // recursion matrix [pxp]
     T * g;              // gain vector [px1]
 
+    // temporary matrices
     T * xP0;            // [1xp]
     T zeta;             // constant
 
     T * gxl;            // [pxp]
     T * gxlP0;          // [pxp]
 
-    unsigned int n;     // counter
-
-    WINDOW() buffer;
+    unsigned int n;     // input counter
+    WINDOW() buffer;    // input buffer
 };
 
 EQRLS() EQRLS(_create)(unsigned int _p)
@@ -137,27 +138,23 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
     unsigned int i,r,c;
     unsigned int p=_eq->p;
 
-    _eq->n++;
-
     // push value into buffer
     WINDOW(_push)(_eq->buffer, _x);
     T * x;
-    WINDOW(_read)(_eq->buffer, &x);
-#ifdef DEBUG
-    printf("\n");
-#endif
 
-    // compute d_hat (dot product)
+    // check to see if buffer is full, return if not
+    _eq->n++;
+    if (_eq->n < _eq->p)
+        return;
+
+    // compute d_hat (dot product, estimated output)
     T d_hat;
+    WINDOW(_read)(_eq->buffer, &x);
     DOTPROD(_run)(_eq->w0, x, p, &d_hat);
     *_d_hat = d_hat;
 
     // compute error (a priori)
     T alpha = _d - d_hat;
-
-    //
-    if (_eq->n < _eq->p)
-        return;
 
     // compute gain vector
     for (c=0; c<p; c++) {
