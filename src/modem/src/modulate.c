@@ -6,7 +6,7 @@
 #include <math.h>
 #include "modem_internal.h"
 
-void modulate(
+void modem_modulate(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -14,7 +14,7 @@ void modulate(
     _mod->modulate_func(_mod, symbol_in, y);
 }
 
-void modulate_ask(
+void modem_modulate_ask(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -23,7 +23,7 @@ void modulate_ask(
     *y = (2*(int)symbol_in - (int)(_mod->M) + 1) * _mod->alpha;
 }
 
-void modulate_qam(
+void modem_modulate_qam(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -39,7 +39,7 @@ void modulate_qam(
          (2*(int)s_q - (int)(_mod->M_q) + 1) * _mod->alpha * J;
 }
 
-void modulate_psk(
+void modem_modulate_psk(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -50,7 +50,7 @@ void modulate_psk(
     *y = cexpf(J*theta);
 }
 
-void modulate_bpsk(
+void modem_modulate_bpsk(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -58,7 +58,7 @@ void modulate_bpsk(
     *y = symbol_in ? -1.0f : 1.0f;
 }
 
-void modulate_qpsk(
+void modem_modulate_qpsk(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -67,7 +67,7 @@ void modulate_qpsk(
     *y += symbol_in & 0x02 ? -0.707106781f*J : 0.707106781f*J;
 }
 
-void modulate_dpsk(
+void modem_modulate_dpsk(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -83,7 +83,7 @@ void modulate_dpsk(
     //printf("mod: state_theta = %f\n", _mod->state_theta);
 }
 
-void modulate_arb(
+void modem_modulate_arb(
     modem _mod,
     unsigned int symbol_in,
     float complex *y)
@@ -97,7 +97,7 @@ void modulate_arb(
 }
 
 #if 0
-void modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y)
+void modem_modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y)
 {
     if (symbol_in >= _mod->M) {
         perror("ERROR: modulate_arb_mirrored(), input symbol exceeds maximum\n");
@@ -127,7 +127,7 @@ void modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y)
 #endif
 
 #if 0
-void modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y)
+void modem_modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y)
 {
     if (symbol_in >= _mod->M) {
         perror("ERROR: modulate_arb_rotated(), input symbol exceeds maximum\n");

@@ -29,10 +29,10 @@ void modem_modulate_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        modulate(mod, symbol_in, &x);
-        modulate(mod, symbol_in, &x);
-        modulate(mod, symbol_in, &x);
-        modulate(mod, symbol_in, &x);
+        modem_modulate(mod, symbol_in, &x);
+        modem_modulate(mod, symbol_in, &x);
+        modem_modulate(mod, symbol_in, &x);
+        modem_modulate(mod, symbol_in, &x);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

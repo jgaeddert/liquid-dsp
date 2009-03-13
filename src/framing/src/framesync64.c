@@ -252,13 +252,13 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             if (_fs->state == FRAMESYNC64_STATE_SEEKPN) {
             //if (false) {
-                demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
+                modem_demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->bpsk, &phase_error);
                 phase_error -= M_PI/4;
                 if (phase_error < - M_PI/2)
                     phase_error += M_PI;
             } else {
-                demodulate(_fs->demod, nco_rx_out, &demod_sym);
+                modem_demodulate(_fs->demod, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 

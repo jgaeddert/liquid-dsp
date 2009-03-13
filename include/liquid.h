@@ -1067,9 +1067,9 @@ unsigned int modem_get_bps(modem _mod);
 
 // generic modulate function; simply queries modem scheme and calls
 // appropriate subroutine
-void modulate(modem _mod, unsigned int symbol_in, liquid_float_complex *y);
+void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
 
-void demodulate(modem _demod, liquid_float_complex x, unsigned int *symbol_out);
+void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
 void get_demodulator_phase_error(modem _demod, float* _phi);
 void get_demodulator_evm(modem _demod, float* _evm);
 

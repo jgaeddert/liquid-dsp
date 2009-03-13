@@ -211,14 +211,14 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     float complex x;
     // header
     for (i=0; i<256; i++) {
-        modulate(_fg->mod, _fg->header_sym[i], &x);
+        modem_modulate(_fg->mod, _fg->header_sym[i], &x);
         interp_crcf_execute(_fg->interp, x, &_y[n]);
         n+=2;
     }
 
     // payload
     for (i=0; i<512; i++) {
-        modulate(_fg->mod, _fg->payload_sym[i], &x);
+        modem_modulate(_fg->mod, _fg->payload_sym[i], &x);
         interp_crcf_execute(_fg->interp, x, &_y[n]);
         n+=2;
     }

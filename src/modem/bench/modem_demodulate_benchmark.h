@@ -29,10 +29,10 @@ void modem_demodulate_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        demodulate(demod, x, &symbol_out);
-        demodulate(demod, x, &symbol_out);
-        demodulate(demod, x, &symbol_out);
-        demodulate(demod, x, &symbol_out);
+        modem_demodulate(demod, x, &symbol_out);
+        modem_demodulate(demod, x, &symbol_out);
+        modem_demodulate(demod, x, &symbol_out);
+        modem_demodulate(demod, x, &symbol_out);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

@@ -23,8 +23,8 @@ int main() {
     unsigned int num_errors = 0;
 
     for (i=0; i<num_symbols; i++) {
-        modulate(mod, i, &x);
-        demodulate(demod, x, &s);
+        modem_modulate(mod, i, &x);
+        modem_demodulate(demod, x, &s);
         num_errors += count_bit_errors(i,s);
     }
     printf("num errors: %u\n", num_errors);

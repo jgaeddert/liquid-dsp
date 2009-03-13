@@ -16,8 +16,8 @@ void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
     float complex x;
     float phase_error, evm;
     for (i=0; i<M; i++) {
-        modulate(mod, i, &x);
-        demodulate(demod, x, &s);
+        modem_modulate(mod, i, &x);
+        modem_demodulate(demod, x, &s);
         CONTEND_EQUALITY(s, i);
 
         get_demodulator_phase_error(demod, &phase_error);

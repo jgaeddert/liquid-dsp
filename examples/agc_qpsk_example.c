@@ -43,7 +43,7 @@ int main() {
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         sym = modem_gen_rand_sym(mod);
-        modulate(mod, sym, &s);
+        modem_modulate(mod, sym, &s);
         s *= gamma;
 
         interp_crcf_execute(interp, s, &x[n]);

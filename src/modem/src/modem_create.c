@@ -112,8 +112,8 @@ modem modem_create_ask(
     for (k=0; k<(mod->m); k++)
         mod->ref[k] = (1<<k) * mod->alpha;
 
-    mod->modulate_func = &modulate_ask;
-    mod->demodulate_func = &demodulate_ask;
+    mod->modulate_func = &modem_modulate_ask;
+    mod->demodulate_func = &modem_demodulate_ask;
 
     return mod;
 }
@@ -169,8 +169,8 @@ modem modem_create_qam(
     for (k=0; k<(mod->m); k++)
         mod->ref[k] = (1<<k) * mod->alpha;
 
-    mod->modulate_func = &modulate_qam;
-    mod->demodulate_func = &demodulate_qam;
+    mod->modulate_func = &modem_modulate_qam;
+    mod->demodulate_func = &modem_demodulate_qam;
 
     return mod;
 }
@@ -191,8 +191,8 @@ modem modem_create_psk(
 
     mod->d_phi = M_PI*(1.0f - 1.0f/(float)(mod->M));
 
-    mod->modulate_func = &modulate_psk;
-    mod->demodulate_func = &demodulate_psk;
+    mod->modulate_func = &modem_modulate_psk;
+    mod->demodulate_func = &modem_demodulate_psk;
 
     return mod;
 }
@@ -204,8 +204,8 @@ modem modem_create_bpsk()
 
     modem_init(mod, 1);
 
-    mod->modulate_func = &modulate_bpsk;
-    mod->demodulate_func = &demodulate_bpsk;
+    mod->modulate_func = &modem_modulate_bpsk;
+    mod->demodulate_func = &modem_demodulate_bpsk;
 
     return mod;
 }
@@ -217,8 +217,8 @@ modem modem_create_qpsk()
 
     modem_init(mod, 2);
 
-    mod->modulate_func = &modulate_qpsk;
-    mod->demodulate_func = &demodulate_qpsk;
+    mod->modulate_func = &modem_modulate_qpsk;
+    mod->demodulate_func = &modem_demodulate_qpsk;
 
     return mod;
 }
@@ -242,8 +242,8 @@ modem modem_create_dpsk(
     mod->state = 1.0f;
     mod->state_theta = 0.0f;
 
-    mod->modulate_func = &modulate_dpsk;
-    mod->demodulate_func = &demodulate_dpsk;
+    mod->modulate_func = &modem_modulate_dpsk;
+    mod->demodulate_func = &modem_demodulate_dpsk;
 
     return mod;
 }
@@ -259,8 +259,8 @@ modem modem_create_arb(
     mod->M = mod->M;
     mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
 
-    mod->modulate_func = &modulate_arb;
-    mod->demodulate_func = &demodulate_arb;
+    mod->modulate_func = &modem_modulate_arb;
+    mod->demodulate_func = &modem_demodulate_arb;
 
     return mod;
 }
@@ -277,8 +277,8 @@ modem modem_create_arb_mirrored(
     mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
     mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
 
-    mod->modulate_func = &modulate_arb;
-    mod->demodulate_func = &demodulate_arb;
+    mod->modulate_func = &modem_modulate_arb;
+    mod->demodulate_func = &modem_demodulate_arb;
 
     return mod;
 }
@@ -295,8 +295,8 @@ modem modem_create_arb_rotated(
     mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
     mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
 
-    mod->modulate_func = &modulate_arb;
-    mod->demodulate_func = &demodulate_arb;
+    mod->modulate_func = &modem_modulate_arb;
+    mod->demodulate_func = &modem_demodulate_arb;
 
     return mod;
 }

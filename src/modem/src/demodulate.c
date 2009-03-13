@@ -7,7 +7,7 @@
 #include "modem_internal.h"
 
 
-void demodulate(
+void modem_demodulate(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -15,7 +15,7 @@ void demodulate(
     _demod->demodulate_func(_demod, x, symbol_out);
 }
 
-void demodulate_ask(
+void modem_demodulate_ask(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -23,12 +23,12 @@ void demodulate_ask(
     unsigned int s;
     _demod->state = x;
     float res_i;
-    demodulate_linear_array_ref(crealf(x), _demod->m, _demod->ref, &s, &res_i);
+    modem_demodulate_linear_array_ref(crealf(x), _demod->m, _demod->ref, &s, &res_i);
     _demod->res = res_i + J*cimagf(x);
     *symbol_out = gray_encode(s);
 }
 
-void demodulate_qam(
+void modem_demodulate_qam(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -36,8 +36,8 @@ void demodulate_qam(
     unsigned int s_i, s_q;
     _demod->state = x;
     float res_i, res_q;
-    demodulate_linear_array_ref(crealf(x), _demod->m_i, _demod->ref, &s_i, &res_i);
-    demodulate_linear_array_ref(cimagf(x), _demod->m_q, _demod->ref, &s_q, &res_q);
+    modem_demodulate_linear_array_ref(crealf(x), _demod->m_i, _demod->ref, &s_i, &res_i);
+    modem_demodulate_linear_array_ref(cimagf(x), _demod->m_q, _demod->ref, &s_q, &res_q);
     _demod->res = res_i + J*res_q;
     s_i = gray_encode(s_i);
     s_q = gray_encode(s_q);
@@ -45,7 +45,7 @@ void demodulate_qam(
 }
 
 
-void demodulate_psk(
+void modem_demodulate_psk(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -60,11 +60,11 @@ void demodulate_psk(
     if (theta < -M_PI)
         theta += 2*M_PI;
 
-    demodulate_linear_array_ref(theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
+    modem_demodulate_linear_array_ref(theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
     *symbol_out = gray_encode(s);
 }
 
-void demodulate_bpsk(
+void modem_demodulate_bpsk(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -73,7 +73,7 @@ void demodulate_bpsk(
     _demod->state = x;
 }
 
-void demodulate_qpsk(
+void modem_demodulate_qpsk(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -83,7 +83,7 @@ void demodulate_qpsk(
     _demod->state = x;
 }
 
-void demodulate_dpsk(
+void modem_demodulate_dpsk(
     modem _demod,
     float complex x,
     unsigned int *symbol_out)
@@ -101,16 +101,16 @@ void demodulate_dpsk(
     else if (d_theta < -M_PI)
         d_theta += 2*M_PI;
 
-    demodulate_linear_array_ref(d_theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
+    modem_demodulate_linear_array_ref(d_theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
     *symbol_out = gray_encode(s);
 }
 
-void demodulate_arb(
+void modem_demodulate_arb(
     modem _mod,
     float complex x,
     unsigned int *symbol_out)
 {
-    //printf("demodulate_arb() invoked with I=%d, Q=%d\n", x);
+    //printf("modem_demodulate_arb() invoked with I=%d, Q=%d\n", x);
     
     unsigned int i, s=0;
     float d, d_min = 1e9;
@@ -133,9 +133,9 @@ void demodulate_arb(
 }
 
 #if 0
-void demodulate_arb_mirrored(modem _mod, float I_in, float Q_in, unsigned int *symbol_out)
+void modem_demodulate_arb_mirrored(modem _mod, float I_in, float Q_in, unsigned int *symbol_out)
 {
-    //printf("demodulate_arb_mirrored() invoked with I=%d, Q=%d\n", x);
+    //printf("modem_demodulate_arb_mirrored() invoked with I=%d, Q=%d\n", x);
     
     unsigned int i;
     unsigned int s_quad=0;
@@ -181,7 +181,7 @@ void demodulate_arb_mirrored(modem _mod, float I_in, float Q_in, unsigned int *s
 #endif
 
 #if 0
-void demodulate_arb_rotated(modem _mod, float I_in, float Q_in, unsigned int *symbol_out)
+void modem_modem_demodulate_arb_rotated(modem _mod, float I_in, float Q_in, unsigned int *symbol_out)
 {
     //printf("demodulate_arb_rotated() invoked with I=%d, Q=%d\n", x);
     
@@ -324,7 +324,7 @@ void get_demodulator_evm(modem _demod, float* _evm)
 }
 
 
-void demodulate_linear_array(
+void modem_demodulate_linear_array(
     float _v,
     unsigned int _m,
     float _alpha,
@@ -345,7 +345,7 @@ void demodulate_linear_array(
     *_res = _v;
 }
 
-void demodulate_linear_array_ref(
+void modem_demodulate_linear_array_ref(
     float _v,
     unsigned int _m,
     float *_ref,
