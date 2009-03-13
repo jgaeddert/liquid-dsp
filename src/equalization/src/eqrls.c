@@ -141,9 +141,9 @@ void EQRLS(_reset)(EQRLS() _eq)
 }
 
 //
-//  _x  :   received sample
-//  _d  :   desired output
-//  _w  :   output weights
+//  _x      :   received sample
+//  _d      :   desired output
+//  _d_hat  :   filtered output
 void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
 {
     unsigned int i,r,c;

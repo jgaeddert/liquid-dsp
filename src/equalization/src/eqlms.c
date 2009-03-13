@@ -27,7 +27,6 @@ EQLMS() EQLMS(_create)(unsigned int _p)
     // set filter order, other params
     eq->p = _p;
     eq->mu = 0.5f;
-    eq->n=0;
 
     eq->w0 = (T*) malloc((eq->p)*sizeof(T));
     eq->w1 = (T*) malloc((eq->p)*sizeof(T));
@@ -73,12 +72,13 @@ void EQLMS(_reset)(EQLMS() _eq)
 
     WINDOW(_clear)(_eq->buffer);
     fwindow_clear(_eq->ex2_buffer);
+    _eq->n=0;
 }
 
 //
-//  _x  :   received sample
-//  _d  :   desired output
-//  _w  :   output weights
+//  _x      :   received sample
+//  _d      :   desired output
+//  _d_hat  :   filtered output
 void EQLMS(_execute)(EQLMS() _eq, T _x, T _d, T * _d_hat)
 {
     unsigned int i;
