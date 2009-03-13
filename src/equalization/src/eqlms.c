@@ -112,10 +112,9 @@ void EQLMS(_execute)(EQLMS() _eq, T _x, T _d, T * _d_hat)
     fwindow_read(_eq->ex2_buffer, &x2);
     for (i=0; i<p; i++)
         ex2 += x2[i];
-    printf("ex2: %f\n", ex2);
 
     // update weighting vector
-    // w[n+1] = w[n] + mu*conj(d-d_hat)*x[n]
+    // w[n+1] = w[n] + mu*conj(d-d_hat)*x[n]/(x[n]' * conj(x[n]))
     for (i=0; i<p; i++)
         _eq->w1[i] = _eq->w0[i] + (_eq->mu)*conj(alpha)*x[i]/ex2;
 
