@@ -1042,7 +1042,7 @@ unsigned int gray_decode(unsigned int symbol_in);
 
 
 //
-//
+// Linear modem
 //
 
 // define struct pointer
@@ -1052,6 +1052,7 @@ typedef struct modem_s * modem;
 modem modem_create(modulation_scheme, unsigned int _bits_per_symbol);
 
 void modem_destroy(modem _mod);
+void modem_print(modem _mod);
 
 // Initialize arbitrary modem constellation
 void modem_arb_init(modem _mod, liquid_float_complex *_symbol_map, unsigned int _len);

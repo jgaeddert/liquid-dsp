@@ -16,6 +16,8 @@ int main() {
     modem mod = modem_create(MOD_QAM, bps);
     modem demod = modem_create(MOD_QAM, bps);
 
+    modem_print(mod);
+
     unsigned int i; // modulated symbol
     unsigned int s; // demodulated symbol
     unsigned int num_symbols = 1<<bps;
