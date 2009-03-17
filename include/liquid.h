@@ -1074,6 +1074,17 @@ void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
 void get_demodulator_phase_error(modem _demod, float* _phi);
 void get_demodulator_evm(modem _demod, float* _evm);
 
+// 
+// Analog modems
+//
+
+typedef struct freqmodem_s * freqmodem;
+freqmodem freqmodem_create();
+void freqmodem_destroy(freqmodem _fm);
+void freqmodem_print(freqmodem _fm);
+void freqmodem_modulate(freqmodem _fm, float _x, liquid_float_complex *_y);
+void freqmodem_demodulate(freqmodem _fm, liquid_float_complex *_y, float *_x);
+
 //
 // Multicarrier
 //

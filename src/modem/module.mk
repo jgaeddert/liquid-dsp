@@ -13,7 +13,8 @@ local_s_files	:=		\
 	modem_create.c		\
 	modem_common.c		\
 	modem_modulate.c	\
-	modem_demodulate.c
+	modem_demodulate.c	\
+	freqmodem.c
 
 # local_h_files
 #
