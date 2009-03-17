@@ -8,7 +8,12 @@ module_name     := modem
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:= modem.c modem_create.c modem_common.c modulate.c demodulate.c
+local_s_files	:=		\
+	modem.c			\
+	modem_create.c		\
+	modem_common.c		\
+	modem_modulate.c	\
+	modem_demodulate.c
 
 # local_h_files
 #
