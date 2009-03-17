@@ -12,7 +12,7 @@ BIB_FLAGS =
 
 # Listings used in this document
 LISTINGS = \
-	listings/modem_example.c.tex
+	listings/nco.c++.tex
 
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
@@ -41,7 +41,9 @@ $(projName).bbl: $(projName).aux $(projName).bib
 
 # main project file (.pdf)
 # TODO list figures as dependencies
-$(projName).pdf: $(projName).bbl $(projName).tex listings
+#$(projName).pdf: $(projName).bbl $(projName).tex listings
+# TODO use above line for bibliography (ignore for now)
+$(projName).pdf: $(projName).tex listings
 	$(TEX) $(TEX_FLAGS) $(projName)
 	$(TEX) $(TEX_FLAGS) $(projName)
 

@@ -200,6 +200,24 @@ Key points
 
 \section{Tutorial}
 
+\section{Sandbox}
+
+\subsection{Why C?}
+A commonly asked question is ``why C and not C++?''
+The answer is simple: {\em portability}.
+Our aim is to provide a lightweight DSP library for software-defined radio
+that does not rely on a miriad of dependencies.
+While C++ is a fine language for many purposes (and theoretically runs just as
+fast as C), it is not as portable to embedded platforms as C.
+Furthermore, the majority of functions simply perform complex operations on a
+data sequence and do not require a high-level object-oriented programming
+interface.
+This we will leave to framework developers and interface builders.
+
+\subsection{Building/Linking with C++}
+Here is an example:
+\input{listings/nco.c++.tex}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %             BIBLIOGRAPHY
