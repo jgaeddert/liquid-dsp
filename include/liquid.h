@@ -16,9 +16,16 @@ extern "C" {
 #define LIQUID_CONCAT(prefix, name) prefix ## name
 #define LIQUID_VALIDATE_INPUT
 
+/* 
+ * Default: use the C99 complex data type, otherwise
+ * define complex type compatible with the C++ complex standard,
+ * otherwise resort to defining binary compatible array.
+ */
 #if LIQUID_USE_COMPLEX_H==1
 #   include <complex.h>
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef R _Complex C
+#elif defined _GLIBCXX_COMPLEX
+#   define LIQUID_DEFINE_COMPLEX(R,C) typedef std::complex<R> C
 #else
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef R C[2]
 #endif
