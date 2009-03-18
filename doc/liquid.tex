@@ -197,6 +197,22 @@ Key points
 
 
 \section{Quick Start Guide}
+To build:
+\begin{verbatim}
+cd /path/to/liquid/
+./reconf
+./configure
+make
+sudo make install
+\end{verbatim}
+You may also want to build and run the optional validation program via
+\begin{verbatim}
+make check
+\end{verbatim}
+and the benchmarking tool,
+\begin{verbatim}
+make bench
+\end{verbatim}
 
 \section{Tutorial}
 
@@ -217,6 +233,17 @@ This we will leave to framework developers and interface builders.
 \subsection{Building/Linking with C++}
 Here is an example:
 \input{listings/nco.c++.tex}
+
+\section{History}
+{\em liquid} was created by J. Gaeddert out of necessity to perform complex
+digital signal processing algorithms on embedded devices
+without relying on dealing
+with proprietary and otherwise cumbersome frameworks.
+This was a critical step in his PhD thesis to adapt DSP algorithms in
+cognitive dynamic-spectrum radios to optimally manage finite radio resources.
+Was he successful?
+Put it this way: at the time this document was written he still has not
+graduated.\footnote{Come back in a year and ask again... {\em sigh}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
