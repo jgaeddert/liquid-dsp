@@ -21,7 +21,7 @@
 
 #define FRAME64_PN_LEN      64
 
-#define DEBUG
+//#define DEBUG
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN    4096
 
@@ -36,6 +36,7 @@ void framesync64_syms_to_byte(unsigned char * _syms, unsigned char * _byte);
 struct framesync64_s {
     modem demod;
     modem bpsk;
+    interleaver intlv;
     fec dec;
 
     // synchronizer objects
@@ -66,6 +67,7 @@ struct framesync64_s {
     // payload
     unsigned char payload_sym[512];
     unsigned char payload_enc[128];
+    unsigned char payload_intlv[128];
     unsigned char payload[64];
 
 #ifdef DEBUG
@@ -111,6 +113,9 @@ framesync64 framesync64_create(
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
     symsync_crcf_set_lf_bw(fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_0);
 
+    // create (de)interleaver
+    fs->intlv = interleaver_create(128, INT_BLOCK);
+
     // create decoder
     fs->dec = fec_create(FEC_HAMMING74, NULL);
 
@@ -137,6 +142,7 @@ void framesync64_destroy(framesync64 _fs)
 {
     symsync_crcf_destroy(_fs->mfdecim);
     fec_destroy(_fs->dec);
+    interleaver_destroy(_fs->intlv);
     agc_destroy(_fs->agc_rx);
     pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
@@ -408,8 +414,11 @@ void framesync64_decode_payload(framesync64 _fs)
 {
     unsigned int i;
     for (i=0; i<128; i++)
-        framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_enc[i]));
+        framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_intlv[i]));
 
+    // deinterleave payload
+    interleaver_deinterleave(_fs->intlv, _fs->payload_intlv, _fs->payload_enc);
+    
     // decode payload
     fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
 

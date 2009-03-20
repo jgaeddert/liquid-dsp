@@ -28,6 +28,7 @@ void framegen64_byte_to_syms(unsigned char _byte, unsigned char * _syms);
 struct framegen64_s {
     modem mod;
     fec enc;
+    interleaver intlv;
 
     // buffers: preamble (BPSK)
     float complex ramp_up[FRAME64_RAMP_UP_LEN];
@@ -43,6 +44,7 @@ struct framegen64_s {
     // payload (QPSK)
     unsigned char payload[64];
     unsigned char payload_enc[128];
+    unsigned char payload_intlv[128];
     unsigned char payload_sym[512];
 
     // pulse-shaping filter
@@ -89,6 +91,9 @@ framegen64 framegen64_create(
     // create FEC encoder
     fg->enc = fec_create(FEC_HAMMING74, NULL);
 
+    // create interleaver
+    fg->intlv = interleaver_create(128, INT_BLOCK);
+
     // create modulator
     fg->mod = modem_create(MOD_QPSK, 2);
 
@@ -99,6 +104,7 @@ void framegen64_destroy(framegen64 _fg)
 {
     interp_crcf_destroy(_fg->interp);
     fec_destroy(_fg->enc);
+    interleaver_destroy(_fg->intlv);
     modem_destroy(_fg->mod);
     free(_fg);
 }
@@ -136,6 +142,9 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
 
     // encode payload
     fec_encode(_fg->enc, 64, _fg->payload, _fg->payload_enc);
+
+    // interleave payload
+    interleaver_interleave(_fg->intlv, _fg->payload_enc, _fg->payload_intlv);
 
     // compute crc32 on header, append
     unsigned int header_key = crc32_generate_key(_fg->header, 28);
@@ -186,7 +195,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
 
     // generate payload symbols
     for (i=0; i<128; i++)
-        framegen64_byte_to_syms(_fg->payload_enc[i], &(_fg->payload_sym[4*i]));
+        framegen64_byte_to_syms(_fg->payload_intlv[i], &(_fg->payload_sym[4*i]));
 
     unsigned int n=0;
 
