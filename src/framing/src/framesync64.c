@@ -23,7 +23,7 @@
 
 //#define DEBUG
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
-#define DEBUG_BUFFER_LEN    4096
+#define DEBUG_BUFFER_LEN    8192
 
 // Internal
 void framesync64_open_bandwidth(framesync64 _fs);
@@ -91,7 +91,7 @@ framesync64 framesync64_create(
 
     //
     fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
-    agc_set_gain_limits(fs->agc_rx, 1e-2, 1e3);
+    agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
     pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
@@ -268,7 +268,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 
-            phase_error *= 10*log10(agc_get_signal_level(_fs->agc_rx)) > -25.0f ? 1.0f : 0.01f;
+            phase_error *= 10*log10(agc_get_signal_level(_fs->agc_rx)) > -10.0f ? 1.0f : 0.01f;
 
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
             nco_step(_fs->nco_rx);
@@ -287,7 +287,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 #endif
                 if (cabsf(rxy) > 0.4f) {
                     rxy *= cexpf(3*M_PI/4*_Complex_I);
-                    printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
+                    //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, cargf(rxy));
@@ -313,9 +313,10 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                     // invoke callback method
                     _fs->callback(_fs->header, _fs->payload);
 
-                    //_fs->state = FRAMESYNC64_STATE_RESET;
-                    _fs->state = FRAMESYNC64_STATE_SEEKPN;
-#ifdef DEBUG
+                    _fs->state = FRAMESYNC64_STATE_RESET;
+                    //_fs->state = FRAMESYNC64_STATE_SEEKPN;
+//#ifdef DEBUG
+#if 0
                     printf("framesync64 exiting prematurely\n");
                     framesync64_destroy(_fs);
                     exit(0);
@@ -334,7 +335,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             }
         }
     }
-    printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
+    //printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
 }
 
 // 
@@ -404,10 +405,11 @@ void framesync64_decode_header(framesync64 _fs)
     //printf("rx: payload_key: 0x%8x\n", payload_key);
 
     // validate crc
-    if (crc32_validate_message(_fs->header,28,_fs->header_key))
-        printf("header crc:  valid ***************\n");
-    else
+    if (crc32_validate_message(_fs->header,28,_fs->header_key)) {
+        //printf("header crc:  valid ***************\n");
+    } else {
         printf("header crc:  INVALID\n");
+    }
 }
 
 void framesync64_decode_payload(framesync64 _fs)
@@ -426,10 +428,11 @@ void framesync64_decode_payload(framesync64 _fs)
     unscramble_data(_fs->payload, 64);
 
     // validate crc
-    if (crc32_validate_message(_fs->payload,64,_fs->payload_key))
-        printf("payload crc:  valid ***************\n");
-    else
+    if (crc32_validate_message(_fs->payload,64,_fs->payload_key)) {
+        //printf("payload crc:  valid ***************\n");
+    } else {
         printf("payload crc: INVALID\n");
+    }
 
 #ifdef DEBUG
     printf("payload (rx):\n");
