@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <complex.h>
@@ -56,6 +57,8 @@ struct framesync64_s {
     unsigned int num_symbols_collected;
     unsigned int header_key;
     unsigned int payload_key;
+    bool header_valid;
+    bool payload_valid;
 
     framesync64_callback callback;
 
@@ -285,7 +288,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 #ifdef DEBUG
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
-                if (cabsf(rxy) > 0.4f) {
+                if (cabsf(rxy) > 0.7f) {
                     rxy *= cexpf(3*M_PI/4*_Complex_I);
                     //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
@@ -311,7 +314,8 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                     framesync64_decode_payload(_fs);
 
                     // invoke callback method
-                    _fs->callback(_fs->header, _fs->payload);
+                    _fs->callback(_fs->header,  _fs->header_valid,
+                                  _fs->payload, _fs->payload_valid);
 
                     _fs->state = FRAMESYNC64_STATE_RESET;
                     //_fs->state = FRAMESYNC64_STATE_SEEKPN;
@@ -405,11 +409,7 @@ void framesync64_decode_header(framesync64 _fs)
     //printf("rx: payload_key: 0x%8x\n", payload_key);
 
     // validate crc
-    if (crc32_validate_message(_fs->header,28,_fs->header_key)) {
-        //printf("header crc:  valid ***************\n");
-    } else {
-        printf("header crc:  INVALID\n");
-    }
+    _fs->header_valid = crc32_validate_message(_fs->header,28,_fs->header_key);
 }
 
 void framesync64_decode_payload(framesync64 _fs)
@@ -428,11 +428,7 @@ void framesync64_decode_payload(framesync64 _fs)
     unscramble_data(_fs->payload, 64);
 
     // validate crc
-    if (crc32_validate_message(_fs->payload,64,_fs->payload_key)) {
-        //printf("payload crc:  valid ***************\n");
-    } else {
-        printf("payload crc: INVALID\n");
-    }
+    _fs->payload_valid = crc32_validate_message(_fs->payload,64,_fs->payload_key);
 
 #ifdef DEBUG
     printf("payload (rx):\n");

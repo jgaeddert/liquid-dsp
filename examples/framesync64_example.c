@@ -10,7 +10,8 @@
 
 #define DEBUG_FILENAME  "framesync64_example.m"
 
-static int callback(unsigned char * _header, unsigned char * _payload);
+static int callback(unsigned char * _header,  int _header_valid,
+                    unsigned char * _payload, int _payload_valid);
 
 unsigned char header[24];
 unsigned char payload[64];
@@ -86,21 +87,25 @@ int main() {
     return 0;
 }
 
-static int callback(unsigned char * _rx_header, unsigned char * _rx_payload)
+static int callback(unsigned char * _rx_header,  int _rx_header_valid,
+                    unsigned char * _rx_payload, int _rx_payload_valid)
 {
     printf("callback invoked\n");
+
+    printf("header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
+    printf("payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");
 
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
     for (i=0; i<24; i++)
         num_header_errors += (_rx_header[i] == header[i]) ? 0 : 1;
-    printf("num header errors:  %u\n", num_header_errors);
+    printf("num header errors   : %u\n", num_header_errors);
 
     unsigned int num_payload_errors=0;
     for (i=0; i<64; i++)
         num_payload_errors += (_rx_payload[i] == payload[i]) ? 0 : 1;
-    printf("num payload errors: %u\n", num_payload_errors);
+    printf("num payload errors  : %u\n", num_payload_errors);
 
     return 0;
 }
