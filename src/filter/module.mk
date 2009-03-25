@@ -57,7 +57,8 @@ local_b_files	:=			\
 	firhilb_benchmark.h		\
 	iir_filter_benchmark.h		\
 	interp_benchmark.h		\
-	resamp2_benchmark.h
+	resamp2_benchmark.h		\
+	symsync_benchmark.h
 
 
 include common.mk
