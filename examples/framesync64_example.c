@@ -11,7 +11,8 @@
 #define DEBUG_FILENAME  "framesync64_example.m"
 
 static int callback(unsigned char * _header,  int _header_valid,
-                    unsigned char * _payload, int _payload_valid);
+                    unsigned char * _payload, int _payload_valid,
+                    void * _userdata);
 
 unsigned char header[24];
 unsigned char payload[64];
@@ -22,7 +23,7 @@ int main() {
     unsigned int m=3;
     float beta=0.7f;
     framegen64 fg = framegen64_create(m,beta);
-    framesync64 fs = framesync64_create(m,beta,callback);
+    framesync64 fs = framesync64_create(m,beta,callback,NULL);
 
     // channel
     float phi=0.3f;
@@ -88,7 +89,8 @@ int main() {
 }
 
 static int callback(unsigned char * _rx_header,  int _rx_header_valid,
-                    unsigned char * _rx_payload, int _rx_payload_valid)
+                    unsigned char * _rx_payload, int _rx_payload_valid,
+                    void * _userdata)
 {
     printf("callback invoked\n");
 

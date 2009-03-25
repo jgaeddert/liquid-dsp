@@ -831,12 +831,14 @@ typedef int (*framesync64_callback)(
     unsigned char * _header,
     int _header_valid,
     unsigned char * _payload,
-    int _payload_valid);
+    int _payload_valid,
+    void * _userdata);
 typedef struct framesync64_s * framesync64;
 framesync64 framesync64_create(
     unsigned int _m,
     float _beta,
-    framesync64_callback _callback
+    framesync64_callback _callback,
+    void * _userdata
     );
 void framesync64_destroy(framesync64 _fg);
 void framesync64_print(framesync64 _fg);

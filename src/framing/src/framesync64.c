@@ -61,6 +61,7 @@ struct framesync64_s {
     bool payload_valid;
 
     framesync64_callback callback;
+    void * userdata;
 
     // header
     unsigned char header_sym[256];
@@ -87,10 +88,12 @@ framesync64 framesync64_create(
 //    unsigned int _k,
     unsigned int _m,
     float _beta,
-    framesync64_callback _callback)
+    framesync64_callback _callback,
+    void * _userdata)
 {
     framesync64 fs = (framesync64) malloc(sizeof(struct framesync64_s));
     fs->callback = _callback;
+    fs->userdata = _userdata;
 
     //
     fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
@@ -315,7 +318,8 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
                     // invoke callback method
                     _fs->callback(_fs->header,  _fs->header_valid,
-                                  _fs->payload, _fs->payload_valid);
+                                  _fs->payload, _fs->payload_valid,
+                                  _fs->userdata);
 
                     _fs->state = FRAMESYNC64_STATE_RESET;
                     //_fs->state = FRAMESYNC64_STATE_SEEKPN;
