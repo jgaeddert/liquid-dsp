@@ -28,6 +28,7 @@ typedef struct {
     unsigned int num_trials;
     float extime;
     float rate;
+    float cycles_per_trial;
 } bench_t;
 
 // define package_t
@@ -64,6 +65,9 @@ unsigned long int num_trials = 1<<12;
 float runtime=50e-3f;
 float cpu_clock = 1.0f; // cpu clock speed (Hz)
 
+FILE * fid; // output file id
+void output_bench_to_file(FILE * _fid, bench_t * _benchmark);
+
 // main function
 int main(int argc, char *argv[])
 {
@@ -77,10 +81,12 @@ int main(int argc, char *argv[])
     bool verbose = true;
     bool autoscale = true;
     bool cpu_clock_detect = true;
+    bool output_to_file = false;
+    char filename[128];
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ec:n:b:p:t:lLhvq")) != EOF){
+    while((d = getopt(argc,argv,"ec:n:b:p:t:lLhvqo:")) != EOF){
         switch (d) {
         case 'e':
             estimate_cpu_clock();
@@ -141,6 +147,10 @@ int main(int argc, char *argv[])
         case 'q':
             verbose = false;
             break;
+        case 'o':
+            output_to_file = true;
+            strcpy(filename, optarg);
+            break;
         case 'h':
             print_help();
             return 0;
@@ -181,6 +191,20 @@ int main(int argc, char *argv[])
         break;
     }
 
+    if (output_to_file) {
+        fid = fopen(filename,"w");
+        if (!fid) {
+            printf("error: could not open file %s for writing\n", filename);
+            return 1;
+        }
+
+        for (i=0; i<NUM_BENCHMARKS; i++)
+            output_bench_to_file(fid, &benchmarks[i]);
+
+        fclose(fid);
+        printf("results written to %s\n", filename);
+    }
+
     return 0;
 }
 
@@ -200,6 +224,7 @@ void print_help()
     printf("  -L : lists all available benchmarks\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
+    printf("  -o<output filename>\n");
 }
 
 // run basic benchmark to estimate CPU clock frequency
@@ -256,6 +281,7 @@ void execute_benchmark(bench_t* _benchmark, bool _verbose)
 
     _benchmark->num_trials = n;
     _benchmark->rate = (float)(_benchmark->num_trials) / _benchmark->extime;
+    _benchmark->cycles_per_trial = cpu_clock / (_benchmark->rate);
     if (_verbose)
         print_benchmark_results(_benchmark);
 }
@@ -304,15 +330,15 @@ void print_benchmark_results(bench_t* _b)
     char rate_units = convert_units(&rate_format);
 
     // format processor efficiency (cycles/trial)
-    float cycles_per_trial = cpu_clock / (_b->rate);
-    char cycles_units = convert_units(&cycles_per_trial);
+    float cycles_format = _b->cycles_per_trial;
+    char cycles_units = convert_units(&cycles_format);
 
     printf("    %-3u: %-22s: %6.2f %c trials in %6.2f %cs (%7.3f %c t/s, %6.2f %c cycles/t)\n",
         _b->id, _b->name,
         trials_format, trials_units,
         extime_format, extime_units,
         rate_format, rate_units,
-        cycles_per_trial, cycles_units);
+        cycles_format, cycles_units);
 }
 
 void print_package_results(package_t* _package)
@@ -331,5 +357,16 @@ double calculate_execution_time(struct rusage _start, struct rusage _finish)
         + 1e-6*(_finish.ru_utime.tv_usec - _start.ru_utime.tv_usec)
         + _finish.ru_stime.tv_sec - _start.ru_stime.tv_sec
         + 1e-6*(_finish.ru_stime.tv_usec - _start.ru_stime.tv_usec);
+}
+
+void output_bench_to_file(FILE * _fid, bench_t * _benchmark)
+{
+    fprintf(_fid,"%-5u %-30s %12u %12.4e %12.4e %12.4e\n",
+                 _benchmark->id,
+                 _benchmark->name,
+                 _benchmark->num_trials,
+                 _benchmark->extime,
+                 _benchmark->rate,
+                 _benchmark->cycles_per_trial);
 }
 
