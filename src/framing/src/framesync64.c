@@ -45,7 +45,7 @@ struct framesync64_s {
     symsync_crcf mfdecim;
     pll pll_rx;
     nco nco_rx;
-    pnsync_crcf fsync;
+    bsync_rrrf fsync;
 
     // status variables
     enum {
@@ -102,13 +102,13 @@ framesync64 framesync64_create(
     fs->nco_rx = nco_create();
     pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
 
-    // pnsync
+    // bsync (p/n synchronizer)
     unsigned int i;
     msequence ms = msequence_create(6);
     float pn_sequence[FRAME64_PN_LEN];
     for (i=0; i<FRAME64_PN_LEN; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
-    fs->fsync = pnsync_crcf_create(FRAME64_PN_LEN, pn_sequence);
+    fs->fsync = bsync_rrrf_create(FRAME64_PN_LEN, pn_sequence);
     msequence_destroy(ms);
 
     // design symsync (k=2)
@@ -152,7 +152,7 @@ void framesync64_destroy(framesync64 _fs)
     agc_destroy(_fs->agc_rx);
     pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
-    pnsync_crcf_destroy(_fs->fsync);
+    bsync_rrrf_destroy(_fs->fsync);
     modem_destroy(_fs->bpsk);
     modem_destroy(_fs->demod);
 #ifdef DEBUG
@@ -245,7 +245,8 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     float complex mfdecim_out[4];
     float complex nco_rx_out;
     float phase_error;
-    float complex rxy;
+    //float complex rxy;
+    float rxy;
     unsigned int demod_sym;
 
     for (i=0; i<_n; i++) {
@@ -287,7 +288,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             switch (_fs->state) {
             case FRAMESYNC64_STATE_SEEKPN:
                 //
-                pnsync_crcf_correlate(_fs->fsync, nco_rx_out, &rxy);
+                bsync_rrrf_correlate(_fs->fsync, nco_rx_out, &rxy);
 #ifdef DEBUG
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
