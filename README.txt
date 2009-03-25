@@ -17,7 +17,14 @@ TEST: (requires python to generate header file)
 
 BENCHMARK: (requires python to generate header file)
     $ make bench
-    
+
+Using oprofile (http://...) with the benchmark tool to profile liquid
+    # opcontrol --setup --no-vmlinux
+    # opcontrol --reset
+    # opcontrol --start
+    $ ./benchmark -p0 -c2.0e9 -n1000000
+    # opcontrol --shutdown
+    # opannotate --source | vim -
 
 Modules: description
     agc: automatic gain control
