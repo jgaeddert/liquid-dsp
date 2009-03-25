@@ -33,6 +33,11 @@ void pll_print(pll _p)
     printf("  pll : bandwidth=%8.4f\n", 0.0f);
 }
 
+void pll_reset(pll _p)
+{
+    lf2_reset(_p->f);
+}
+
 void pll_set_bandwidth(pll _p, float _bt)
 {
     lf2_set_bandwidth(_p->f, _bt);

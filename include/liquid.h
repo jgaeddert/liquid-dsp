@@ -1190,6 +1190,7 @@ typedef struct pll_s * pll;
 pll pll_create(void);
 void pll_destroy(pll _p);
 void pll_print(pll _p);
+void pll_reset(pll _p);
 
 void pll_set_bandwidth(pll _p, float _bt);
 //void pll_execute(pll _p, liquid_float_complex _x, liquid_float_complex *_y, float _e);
