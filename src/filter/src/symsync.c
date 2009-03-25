@@ -51,6 +51,7 @@ struct SYMSYNC(_s) {
     unsigned int v;
     float b_soft;
     int b;
+    float k_inv;
 
     enum {SHIFT,SKIP,SKIP_PRIME,STUFF} state;
 
@@ -64,6 +65,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
 {
     SYMSYNC() q = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
     q->k = _k;
+    q->k_inv = 1.0f / (float)(q->k);
     q->num_filters = _num_filters;
 
     // TODO: validate length
@@ -201,7 +203,7 @@ void SYMSYNC(_execute)(SYMSYNC() _q, TI * _x, unsigned int _nx, TO * _y, unsigne
             // compute MF/dMF outputs
             FIRPFB(_execute)(_q->mf,  _q->b, &mf);
             FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
-            _y[ny++] = mf / _q->k;
+            _y[ny++] = mf * _q->k_inv;
 
             // run loop
             //  1.  compute timing error signal
