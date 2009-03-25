@@ -871,6 +871,32 @@ LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF, liquid_float_complex,   float,     
 LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
 
 
+//
+// Binary P/N synchronizer
+//
+#define BSYNC_MANGLE_RRRF(name)     LIQUID_CONCAT(bsync_rrrf,name)
+#define BSYNC_MANGLE_CRCF(name)     LIQUID_CONCAT(bsync_crcf,name)
+#define BSYNC_MANGLE_CCCF(name)     LIQUID_CONCAT(bsync_cccf,name)
+
+// Macro:
+//   X  : name-mangling macro
+//   TO : output data type
+//   TC : coefficients data type
+//   TI : input data type
+#define LIQUID_BSYNC_DEFINE_API(BSYNC,TO,TC,TI)         \
+typedef struct BSYNC(_s) * BSYNC();                     \
+                                                        \
+BSYNC() BSYNC(_create)(unsigned int _n, TC * _v);       \
+BSYNC() BSYNC(_create_msequence)(unsigned int _g);      \
+void BSYNC(_destroy)(BSYNC() _fs);                      \
+void BSYNC(_print)(BSYNC() _fs);                        \
+void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO * _y);
+
+LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_RRRF, float,                   float,                  float)
+//LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CRCF, liquid_float_complex,    float,                  liquid_float_complex)
+//LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF, liquid_float_complex,    liquid_float_complex,   liquid_float_complex)
+
+
 // 
 // Packetizer
 //

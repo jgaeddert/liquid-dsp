@@ -34,6 +34,7 @@ local_h_files	:= framing_internal.h
 #
 local_t_files	:=		\
 	packetizer_autotest.h	\
+	bsync_autotest.h	\
 	pnsync_autotest.h
 
 
