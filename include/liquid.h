@@ -893,8 +893,8 @@ void BSYNC(_print)(BSYNC() _fs);                        \
 void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO * _y);
 
 LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_RRRF, float,                   float,                  float)
-//LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CRCF, liquid_float_complex,    float,                  liquid_float_complex)
-//LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF, liquid_float_complex,    liquid_float_complex,   liquid_float_complex)
+LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CRCF, liquid_float_complex,    float,                  liquid_float_complex)
+LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF, liquid_float_complex,    liquid_float_complex,   liquid_float_complex)
 
 
 // 

@@ -44,12 +44,11 @@ void autotest_bsync_rrrf_15()
     bsync_rrrf_destroy(fs);
 }
 
-#if 0
 
 // 
 // AUTOTEST: bsync_crcf/simple correlation
 //
-void xautotest_bsync_crcf_15()
+void autotest_bsync_crcf_15()
 {
     // generate sequence (15-bit msequence)
     float h[15] = {
@@ -131,8 +130,6 @@ void xautotest_bsync_crcf_phase_15()
     // clean it up
     bsync_crcf_destroy(fs);
 }
-
-#endif
 
 #endif 
 

@@ -17,6 +17,10 @@
 #define WINDOW(name)        LIQUID_CONCAT(fwindow,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
 
+#undef  TO_COMPLEX
+#undef  TC_COMPLEX
+#undef  TI_COMPLEX
+
 // source files
 #include "pnsync.c"
 #include "bsync.c"
