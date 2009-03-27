@@ -842,6 +842,7 @@ framesync64 framesync64_create(
     );
 void framesync64_destroy(framesync64 _fg);
 void framesync64_print(framesync64 _fg);
+void framesync64_reset(framesync64 _fg);
 void framesync64_execute(framesync64 _fg, liquid_float_complex * _x, unsigned int _n);
 
 

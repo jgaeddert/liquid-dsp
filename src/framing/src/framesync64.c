@@ -238,6 +238,14 @@ void framesync64_print(framesync64 _fs)
     printf("framesync64:\n");
 }
 
+void framesync64_reset(framesync64 _fs)
+{
+    symsync_crcf_clear(_fs->mfdecim);
+    pll_reset(_fs->pll_rx);
+    nco_set_phase(_fs->nco_rx, 0.0f);
+    nco_set_frequency(_fs->nco_rx, 0.0f);
+}
+
 void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 {
     unsigned int i, j, nw;
