@@ -55,6 +55,7 @@ local_t_files	:= 			\
 local_b_files	:=			\
 	decim_benchmark.h		\
 	firhilb_benchmark.h		\
+	fir_filter_benchmark.h		\
 	iir_filter_benchmark.h		\
 	interp_benchmark.h		\
 	resamp2_benchmark.h		\
