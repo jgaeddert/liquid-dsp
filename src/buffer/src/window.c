@@ -25,6 +25,8 @@ WINDOW() WINDOW(_create)(unsigned int _n)
     w->v = (T*) malloc((w->N)*sizeof(T));
     w->read_index = 0;
 
+    WINDOW(_clear)(w);
+
     return w;
 }
 

@@ -33,7 +33,8 @@ local_h_files	:= buffer_internal.h
 local_t_files	:= 		\
 	cbuffer_autotest.h	\
 	sbuffer_autotest.h	\
-	gport2_autotest.h
+	gport2_autotest.h	\
+	window_autotest.h
 
 
 # local_b_files
