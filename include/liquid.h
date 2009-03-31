@@ -638,6 +638,7 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, liquid_float_complex, liquid_float_
 #define LIQUID_INTERP_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _M, TC *_h, unsigned int _h_len); \
+X() X(_create_rrc)(unsigned int _k, unsigned int _m, float _beta, float _dt); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
 void X(_execute)(X() _q, TI _x, TO *_y);

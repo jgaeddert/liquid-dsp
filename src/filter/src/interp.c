@@ -47,6 +47,23 @@ INTERP() INTERP(_create)(unsigned int _M, TC *_h, unsigned int _h_len)
     return q;
 }
 
+
+INTERP() INTERP(_create_rrc)(unsigned int _k, unsigned int _m, float _beta, float _dt)
+{
+    // generate rrc filter
+    unsigned int h_len = 2*_k*_m + 1;
+    float h[h_len];
+    design_rrc_filter(_k,_m,_beta,_dt,h);
+
+    // copy coefficients to type-specific array (e.g. float complex)
+    unsigned int i;
+    TC ht[h_len];
+    for (i=0; i<h_len; i++)
+        ht[i] = h[i];
+
+    return INTERP(_create)(_k, ht, h_len);
+}
+
 #if 0
 INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
 {
