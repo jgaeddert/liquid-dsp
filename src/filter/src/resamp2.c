@@ -1,5 +1,5 @@
 //
-// FIR Hilbert transform
+// Halfband resampler (interpolator/decimator)
 //
 
 #include <stdio.h>
