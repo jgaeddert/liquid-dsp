@@ -23,13 +23,9 @@ void MATRIX(_print)(T * _X, unsigned int _R, unsigned int _C)
 void MATRIX(_add)(unsigned int _R, unsigned int _C,
                   T * _X, T * _Y, T * _Z)
 {
-    unsigned int r, c;
-    for (r=0; r<_R; r++) {
-        for (c=0; c<_C; c++) {
-            matrix_access(_Z,_R,_C,r,c) =
-                matrix_access(_X,_R,_C,r,c) + matrix_access(_Y,_R,_C,r,c);
-        }
-    }
+    unsigned int i;
+    for (i=0; i<(_R*_C); i++)
+        _Z[i] = _X[i] + _Y[i];
 }
 
 /*
