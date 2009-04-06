@@ -995,13 +995,14 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 //   X: name-mangling macro
 //   T: data type
 #define LIQUID_MATRIX_DEFINE_API(X,T)                       \
+void X(_print)(T * _X, unsigned int _R, unsigned int _C);   \
 void X(_add)(unsigned int _R, unsigned int _C,              \
         T * _x, T * _y, T * _z);                            \
 void X(_sub)(unsigned int _R, unsigned int _C,              \
         T * _x, T * _y, T * _z);                            \
 void X(_mul)(T * _X, unsigned int _XR, unsigned int _XC,    \
              T * _Y, unsigned int _YR, unsigned int _YC,    \
-             T * _Z);                                       \
+             T * _Z, unsigned int _ZR, unsigned int _ZC);   \
 void X(_div)(T * _X, unsigned int _XR, unsigned int _XC,    \
              T * _Y, unsigned int _YR, unsigned int _YC,    \
              T * _Z);                                       \

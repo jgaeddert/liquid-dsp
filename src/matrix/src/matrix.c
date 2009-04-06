@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
-
 
 void MATRIX(_print)(T * _X, unsigned int _R, unsigned int _C)
 {
@@ -28,31 +26,41 @@ void MATRIX(_add)(unsigned int _R, unsigned int _C,
         _Z[i] = _X[i] + _Y[i];
 }
 
-/*
-void MATRIX(_multiply)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
+void MATRIX(_sub)(unsigned int _R, unsigned int _C,
+                  T * _X, T * _Y, T * _Z)
+{
+    unsigned int i;
+    for (i=0; i<(_R*_C); i++)
+        _Z[i] = _X[i] - _Y[i];
+}
+
+void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
+                  T * _Y, unsigned int _YR, unsigned int _YC,
+                  T * _Z, unsigned int _ZR, unsigned int _ZC)
 {
     // ensure lengths are valid
-    if (!matrix_valid_size(_z,_x->M,_y->N)) {
+    if (_ZR != _XR || _ZC != _YC) {
         printf("error: matrix_multiply(), invalid dimensions\n");
         exit(0);
     }
 
-    unsigned int m, n, i;
-    for (m=0; m<_z->M; m++) {
-        for (n=0; n<_z->N; n++) {
+    unsigned int r, c, i;
+    for (r=0; r<_ZR; r++) {
+        for (c=0; c<_ZC; c++) {
             // z(i,j) = dotprod( x(i,:), y(:,j) )
             T sum=0.0f;
-#ifdef DEBUG
-                printf("z(%u,%u) = ", m, n);
-#endif
-            for (i=0; i<_z->M; i++) {
-                sum += matrix_fast_access(_x,m,i) *
-                       matrix_fast_access(_y,i,n);
+            for (i=0; i<_ZC; i++) {
+                sum += matrix_access(_X,_XR,_XC,r,i) *
+                       matrix_access(_Y,_YR,_YC,i,c);
             }
-            matrix_fast_access(_z,m,n) = sum;
+            matrix_access(_Z,_ZR,_ZC,r,c) = sum;
+#ifdef DEBUG
+            printf("z(%u,%u) = ", r, c);
+            MATRIX_PRINT_ELEMENT(_Z,_ZR,_ZC,r,c);
+            printf("\n");
+#endif
         }
     }
 }
-*/
 
 

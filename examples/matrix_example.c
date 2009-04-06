@@ -20,7 +20,7 @@ int main() {
 
     // compute z = x * y
     printf("z = x * y :\n");
-    //fmatrix_multiply(x,2,3,y,3,3,z,2,3);
+    fmatrix_mul(x,2,3,y,3,3,z,2,3);
     fmatrix_print(z,2,3);
 
     /*
