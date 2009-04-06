@@ -27,8 +27,8 @@ local_h_files	:=
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:=
-#	matrix_autotest.h
+local_t_files	:=		\
+	fmatrix_autotest.h
 
 
 # local_b_files

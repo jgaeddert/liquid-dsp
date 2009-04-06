@@ -7,34 +7,23 @@
 
 int main() {
 
-    fmatrix x = fmatrix_create(2,3);
-    fmatrix_assign(x, 0, 0, 1.0f);
-    fmatrix_assign(x, 0, 1, 2.0f);
-    fmatrix_assign(x, 0, 2, 3.0f);
-    fmatrix_assign(x, 1, 0, 4.0f);
-    fmatrix_assign(x, 1, 1, 5.0f);
-    fmatrix_assign(x, 1, 2, 6.0f);
-    fmatrix_print(x);
+    float x[6] = {
+        1, 2, 3,
+        4, 5, 6};
 
-    fmatrix y = fmatrix_create(3,3);
-    fmatrix_assign(y, 0, 0, 1.0f);
-    fmatrix_assign(y, 0, 1, 2.0f);
-    fmatrix_assign(y, 0, 2, 3.0f);
-    fmatrix_assign(y, 1, 0, 4.0f);
-    fmatrix_assign(y, 1, 1, 5.0f);
-    fmatrix_assign(y, 1, 2, 6.0f);
-    fmatrix_assign(y, 2, 0, 7.0f);
-    fmatrix_assign(y, 2, 1, 8.0f);
-    fmatrix_assign(y, 2, 2, 9.0f);
-    fmatrix_print(y);
+    float y[9] = {
+        1, 2, 3,
+        4, 5, 6,
+        7, 8, 9};
 
-    fmatrix z = fmatrix_create(2,3);
+    float z[6];
 
     // compute z = x * y
     printf("z = x * y :\n");
-    fmatrix_multiply(x,y,z);
-    fmatrix_print(z);
+    //fmatrix_multiply(x,2,3,y,3,3,z,2,3);
+    fmatrix_print(z,2,3);
 
+    /*
     // compute z = y * x'
     fmatrix_transpose(x);
     printf("x' : \n");
@@ -47,6 +36,7 @@ int main() {
     fmatrix_destroy(x);
     fmatrix_destroy(y);
     fmatrix_destroy(z);
+    */
 
     printf("done.\n");
     return 0;

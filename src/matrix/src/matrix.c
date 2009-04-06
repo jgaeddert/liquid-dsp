@@ -7,130 +7,32 @@
 #include <string.h>
 #include <stdbool.h>
 
-struct MATRIX(_s) {
-    unsigned int M; // number of rows
-    unsigned int N; // number of columns
-    unsigned int L; // size, M*N
-    T * v;          // memory
-};
 
-MATRIX() MATRIX(_create)(unsigned int _M, unsigned int _N)
+void MATRIX(_print)(T * _X, unsigned int _R, unsigned int _C)
 {
-    MATRIX() x = (MATRIX()) malloc(sizeof(struct MATRIX(_s)));
-    x->M = _M;
-    x->N = _N;
-    x->L = (x->M) * (x->N);
-    if (x->L > MATRIX_MAX_SIZE) {
-        printf("error: matrix_create(%u, %u), maximum size (%u) exceeded\n",
-            _M, _N, MATRIX_MAX_SIZE);
-        exit(0);
-    }
-    x->v = (T*) malloc((x->L)*sizeof(T));
-    return x;
-}
-
-void MATRIX(_destroy)(MATRIX() _x)
-{
-    // TODO: ensure free operation is done safely
-    free(_x->v);
-    free(_x);
-}
-
-MATRIX() MATRIX(_copy)(MATRIX() _x)
-{
-    //MATRIX() y = matrix_create(_x->M, _x->N);
-    //memcpy(y->v,_x->v,(_x->M)*(_x->N)*sizeof(T));
-    //return y;
-
-    // same as above, but copies all internal variables by default
-    MATRIX() y = (MATRIX()) malloc(sizeof(struct MATRIX(_s)));
-    memcpy(y, _x, sizeof(struct MATRIX(_s)));
-    y->v = (T*) malloc((y->M)*(y->N)*sizeof(T));
-    memcpy(y->v, _x->v, (y->M)*(y->N)*sizeof(T));
-    return y;
-}
-
-void MATRIX(_print)(MATRIX() _x)
-{
-    unsigned int m, n;
-    //for (n=0; n<_x->N; n++)
-    //    printf("\t%u", n);
-    printf("matrix [%ux%u] :\n",_x->M,_x->N);
-    for (m=0; m<_x->M; m++) {
-        //printf("%u:\t", m);
-        printf("\t");
-        for (n=0; n<_x->N; n++) {
-            MATRIX_PRINT_ELEMENT(_x,m,n)
-            printf("  ");
+    printf("matrix [%u x %u] : \n", _R, _C);
+    unsigned int r,c;
+    for (r=0; r<_R; r++) {
+        for (c=0; c<_C; c++) {
+            MATRIX_PRINT_ELEMENT(_X,_R,_C,r,c);
         }
         printf("\n");
     }
-    printf("\n");
 }
 
-void MATRIX(_clear)(MATRIX() _x)
+void MATRIX(_add)(unsigned int _R, unsigned int _C,
+                  T * _X, T * _Y, T * _Z)
 {
-    memset(_x->v, 0x00, (_x->M)*(_x->N)*sizeof(T));
-}
-
-void MATRIX(_dim)(MATRIX() _x, unsigned int *_M, unsigned int *_N)
-{
-    *_M = _x->M;
-    *_N = _x->N;
-}
-
-void MATRIX(_assign)(MATRIX() _x, unsigned int _m, unsigned int _n, T _value)
-{
-    MATRIX_VALIDATE_INPUT("assign()",_x,_m,_n)
-
-    //_x->v[_m*(_x->N) + _n] = _value;
-    matrix_fast_access(_x,_m,_n) = _value;
-}
-
-void MATRIX(_access)(MATRIX() _x, unsigned int _m, unsigned int _n, T * _value)
-{
-    MATRIX_VALIDATE_INPUT("access()",_x,_m,_n)
-
-    //return _x->v[_m*(_x->N) + _n];
-    *_value = matrix_fast_access(_x,_m,_n);
-}
-
-void MATRIX(_add)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
-{
-    if ( (_x->M != _y->M) || (_x->M != _z->M) ||
-         (_x->N != _y->N) || (_x->N != _z->N) )
-    {
-        printf("error: %s_add(), invalid dimensions\n", MATRIX_NAME);
-        exit(0);
-    }
-
-    unsigned int i, j;
-    for (i=0; i<_x->M; i++) {
-        for (j=0; j<_x->N; j++) {
-            matrix_fast_access(_z,i,j) =
-                matrix_fast_access(_x,i,j) + matrix_fast_access(_y,i,j);
+    unsigned int r, c;
+    for (r=0; r<_R; r++) {
+        for (c=0; c<_C; c++) {
+            matrix_access(_Z,_R,_C,r,c) =
+                matrix_access(_X,_R,_C,r,c) + matrix_access(_Y,_R,_C,r,c);
         }
     }
 }
 
-void MATRIX(_sub)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
-{
-    if ( (_x->M != _y->M) || (_x->M != _z->M) ||
-         (_x->N != _y->N) || (_x->N != _z->N) )
-    {
-        printf("error: %s_sub(), invalid dimensions\n", MATRIX_NAME);
-        exit(0);
-    }
-
-    unsigned int i, j;
-    for (i=0; i<_x->M; i++) {
-        for (j=0; j<_x->N; j++) {
-            matrix_fast_access(_z,i,j) =
-                matrix_fast_access(_x,i,j) - matrix_fast_access(_y,i,j);
-        }
-    }
-}
-
+/*
 void MATRIX(_multiply)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
 {
     // ensure lengths are valid
@@ -155,79 +57,6 @@ void MATRIX(_multiply)(MATRIX() _x, MATRIX() _y, MATRIX() _z)
         }
     }
 }
+*/
 
-void MATRIX(_transpose)(MATRIX() _x)
-{
-    // quick and dirty implementation:
-    //   - create new matrix
-    //   - copy values
-    MATRIX() t = MATRIX(_copy)(_x);
-
-    unsigned int tmp = _x->N;
-    _x->N = _x->M;
-    _x->M = tmp;
-
-    unsigned int m, n;
-    for (m=0; m<_x->M; m++) {
-        for (n=0; n<_x->N; n++) {
-            matrix_fast_access(_x,m,n) = matrix_fast_access(t,n,m);
-        }
-    }
-
-    MATRIX(_destroy)(t);
-}
-
-void MATRIX(_invert)(MATRIX() _x)
-{
-    // test that matrix is square
-    if (!matrix_is_square(_x)) {
-        printf("error: matrix_invert(), matrix is not square\n");
-        return;
-    }
-
-    // LU decomposition
-}
-
-// decompose matrix into product of  lower/upper triangular matrices
-// using Crout's algorithm
-void MATRIX(_lu_decompose)(MATRIX() _x, MATRIX() L, MATRIX() U)
-{
-    // test that matrices are square and of proper size
-    if (!matrix_is_square(_x) || !matrix_is_square(L) || !matrix_is_square(U)) {
-        printf("error: matrix_lu_decompose(), matrices must be square\n");
-        return;
-    } else if (!matrix_valid_size(L,_x->M,_x->N) || !matrix_valid_size(U,_x->M,_x->N)) {
-        printf("error: matrix_lu_decompose(), L, U matrices must match input matrix\n");
-        return;
-    }
-
-    MATRIX(_clear)(L);
-    MATRIX(_clear)(U);
-
-    unsigned int N = _x->N;
-
-    MATRIX() a = L;
-    MATRIX() b = U;
-
-    unsigned int i;
-    for (i=0; i<N; i++)
-        matrix_fast_access(a,i,i) = 1.0f;
-
-    unsigned int j, k;
-    for (j=0; j<N; j++) {
-        for (i=0; i<j; i++) {
-            T sum=0.0f;
-            if (i>0) {
-                for (k=0; k<i-1; k++) {
-                    sum += matrix_fast_access(a,i,k)*matrix_fast_access(b,k,j);
-                }
-            }
-            matrix_fast_access(b,i,j) = matrix_fast_access(a,i,j) - sum;
-        }
-
-        for (i=j; i<N; i++) {
-            //
-        }
-    }
-}
 

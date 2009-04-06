@@ -995,6 +995,25 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 //   X: name-mangling macro
 //   T: data type
 #define LIQUID_MATRIX_DEFINE_API(X,T)                       \
+void X(_add)(unsigned int _R, unsigned int _C,              \
+        T * _x, T * _y, T * _z);                            \
+void X(_sub)(unsigned int _R, unsigned int _C,              \
+        T * _x, T * _y, T * _z);                            \
+void X(_mul)(T * _X, unsigned int _XR, unsigned int _XC,    \
+             T * _Y, unsigned int _YR, unsigned int _YC,    \
+             T * _Z);                                       \
+void X(_div)(T * _X, unsigned int _XR, unsigned int _XC,    \
+             T * _Y, unsigned int _YR, unsigned int _YC,    \
+             T * _Z);                                       \
+void X(_trans)(T * _X, unsigned int _XR, unsigned int _XC); \
+void X(_inv)(T * _X, unsigned int _XR, unsigned int _XC);
+
+#define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
+
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT, float)
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
+
+#if 0
 typedef struct X(_s) * X();                                 \
 X() X(_create)(unsigned int _M, unsigned int _N);           \
 X() X(_copy)(X() _x);                                       \
@@ -1007,15 +1026,8 @@ void X(_assign)(X() _x, unsigned int _m, unsigned int _n,   \
 void X(_access)(X() _x, unsigned int _m, unsigned int _n,   \
     T * _value);                                            \
 void X(_add)(X() _x, X() _y, X() _z);                       \
-void X(_sub)(X() _x, X() _y, X() _z);                       \
-void X(_multiply)(X() _x, X() _y, X() _z);                  \
-void X(_transpose)(X() _x);                                 \
-void X(_invert)(X() _x);                                    \
 void X(_lu_decompose)(X() _x, X() _lower, X() _upper);
-
-LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT, float)
-LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
-
+#endif
 
 //
 // Polynomials
