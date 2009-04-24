@@ -45,6 +45,9 @@ WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n)
 {
     // TODO: only create new window if old is too small
     
+    if (_n == _w->len)
+        return _w;
+
     // create new window
     WINDOW() w = WINDOW(_create)(_n);
 
