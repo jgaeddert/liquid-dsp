@@ -41,6 +41,36 @@ WINDOW() WINDOW(_create)(unsigned int _n)
     return w;
 }
 
+WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n)
+{
+    // TODO: only create new window if old is too small
+    
+    // create new window
+    WINDOW() w = WINDOW(_create)(_n);
+
+    // copy old values
+    T* r;
+    WINDOW(_read)(_w, &r);
+    //memmove(w->v, ...);
+    unsigned int i;
+    if (_n > _w->len) {
+        // new buffer is larger; push zeros, then old values
+        for (i=0; i<(_n-_w->len); i++)
+            WINDOW(_push)(w, 0);
+        for (i=0; i<_w->len; i++)
+            WINDOW(_push)(w, r[i]);
+    } else {
+        // new buffer is shorter; push latest old values
+        for (i=(_w->len-_n); i<_w->len; i++)
+            WINDOW(_push)(w, r[i]);
+    }
+
+    // destroy old window
+    WINDOW(_destroy)(_w);
+
+    return w;
+}
+
 void WINDOW(_destroy)(WINDOW() _w)
 {
     free(_w->v);

@@ -146,6 +146,7 @@ LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
                                                         \
 typedef struct X(_s) * X();                             \
 X() X(_create)(unsigned int _n);                        \
+X() X(_recreate)(X() _w, unsigned int _n);              \
 void X(_destroy)(X() _w);                               \
 void X(_print)(X() _w);                                 \
 void X(_debug_print)(X() _w);                           \

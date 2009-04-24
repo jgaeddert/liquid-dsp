@@ -18,7 +18,10 @@ void autotest_fwindow()
     float test2[10] = {0,0,1,1,1,1,9,8,7,6};
     float test3[10] = {1,1,9,8,7,6,3,3,3,3};
     float test4[10] = {7,6,3,3,3,3,5,5,5,5};
-    float test5[10] = {0,0,0,0,0,0,0,0,0,0};
+    float test5[6]  = {3,3,5,5,5,5};
+    float test6[6]  = {5,5,5,5,6,7};
+    float test7[10] = {0,0,0,0,5,5,5,5,6,7};
+    float test8[10] = {0,0,0,0,0,0,0,0,0,0};
 
     // create window
     // 0 0 0 0 0 0 0 0 0 0
@@ -63,21 +66,43 @@ void autotest_fwindow()
 
     fwindow_read(w, &r);
     CONTEND_SAME_DATA(r,test4,10*sizeof(float));
-    fwindow_debug_print(w);
+    if (_autotest_verbose)
+        fwindow_debug_print(w);
+
+    // recreate window (truncate to last 6 elements)
+    // 3 3 5 5 5 5
+    w = fwindow_recreate(w,6);
+    fwindow_read(w, &r);
+    CONTEND_SAME_DATA(r,test5,6*sizeof(float));
+
+    // push 2 more elements
+    // 5 5 5 5 6 7
+    fwindow_push(w, 6);
+    fwindow_push(w, 7);
+    fwindow_read(w, &r);
+    CONTEND_SAME_DATA(r,test6,6*sizeof(float));
+
+    // recreate window (extend to 10 elements)
+    // 0 0 0 0 5 5 5 5 6 7
+    w = fwindow_recreate(w,10);
+    fwindow_read(w,&r);
+    CONTEND_SAME_DATA(r,test7,10*sizeof(float));
 
     // clear
     // 0 0 0 0 0 0 0 0 0 0
     fwindow_clear(w);
 
     fwindow_read(w, &r);
-    CONTEND_SAME_DATA(r,test5,10*sizeof(float));
+    CONTEND_SAME_DATA(r,test8,10*sizeof(float));
 
-    // manual print
-    printf("manual output:\n");
-    for (i=0; i<10; i++)
-        printf("%6u : %f\n", i, r[i]);
+    if (_autotest_verbose) {
+        // manual print
+        printf("manual output:\n");
+        for (i=0; i<10; i++)
+            printf("%6u : %f\n", i, r[i]);
 
-    fwindow_debug_print(w);
+        fwindow_debug_print(w);
+    }
 
     fwindow_destroy(w);
 
