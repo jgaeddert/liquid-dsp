@@ -13,6 +13,8 @@
 #define T float
 #define BUFFER_PRINT_LINE(B,I) \
     printf("\t: %f", B->v[I]);
+#define BUFFER_PRINT_VALUE(V) \
+    printf("\t: %12.4e", V);
 
 #include "buffer.c"
 #include "window.c"

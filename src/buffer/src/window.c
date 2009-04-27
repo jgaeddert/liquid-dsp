@@ -88,11 +88,7 @@ void WINDOW(_print)(WINDOW() _w)
     WINDOW(_read)(_w, &r);
     for (i=0; i<_w->len; i++) {
         printf("%4u", i);
-#if T == float
-        printf("%12.8f", r[i]);
-#elif T == float complex
-        printf("%12.8f + j%12.8f", crealf(r[i]),cimagf(r[i]));
-#endif
+        BUFFER_PRINT_VALUE(r[i]);
         printf("\n");
     }
 }
