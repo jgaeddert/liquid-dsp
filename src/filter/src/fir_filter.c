@@ -78,50 +78,7 @@ FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f, TC * _h, unsigned int _n)
         _f->h = (TC*) realloc(_f->h, (_f->h_len)*sizeof(TC));
 
 #if FIR_FILTER_USE_DOTPROD
-#   if 0
-        printf("\n\nold window:\n");
-        WINDOW(_print)(_f->w);
-#   endif
-        // create new window
-        WINDOW() w_tmp = WINDOW(_create)(_f->h_len);
-
-        // copy old values
-        TC * r;
-        WINDOW(_read)(_f->w, &r);
-        if (_n > h_len_old) {
-            // extend window
-            unsigned int t = (_n-h_len_old)/2;
-            for (i=0; i<t; i++)
-                WINDOW(_push)(w_tmp, 0);
-            for (i=0; i<h_len_old; i++)
-                WINDOW(_push)(w_tmp, r[i]);
-            for (i=0; i<t; i++)
-                WINDOW(_push)(w_tmp, 0);
-        } else {
-            // reduce window
-            unsigned int t = (_n-h_len_old)/2;
-            for (i=0; i<_n; i++)
-                WINDOW(_push)(w_tmp,r[i+t]);
-        }
-
-        // destroy old window
-        WINDOW(_destroy)(_f->w);
-        _f->w = w_tmp;
-#   if 0
-        printf("\n\nnew window:\n");
-        WINDOW(_print)(_f->w);
-#   endif
-#else
-#   error "unsupported mode: use FIR_FILTER_USE_DOTPROD"
-#endif
-    }
-
-    // load filter in reverse order
-    for (i=_n; i>0; i--)
-        _f->h[i-1] = _h[_n-i];
-
-#if FIR_FILTER_USE_DOTPROD
-    // TODO: (bug) ensure window has proper state
+        _f->w = WINDOW(_recreate)(_f->w, _f->h_len);
 #else
     _f->v = (TI*) realloc(_f->v, (_f->h_len)*sizeof(TI));
     // TODO: (bug) ensure window has proper state
@@ -135,6 +92,11 @@ FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f, TC * _h, unsigned int _n)
 
     _f->i = (_f->i) % (_f->h_len);
 #endif
+    }
+
+    // load filter in reverse order
+    for (i=_n; i>0; i--)
+        _f->h[i-1] = _h[_n-i];
 
     return _f;
 }

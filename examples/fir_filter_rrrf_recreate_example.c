@@ -4,12 +4,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "liquid.h"
 
 #define DEBUG_FILENAME "fir_filter_rrrf_recreate_example.m"
 
 int main() {
+    srand(time(NULL));
     // options
     unsigned int k=4;
     unsigned int m0=2;
@@ -39,9 +41,10 @@ int main() {
         fprintf(fid,"h1(%4u) = %12.4e;\n", i+1, h1[i]);
 
     float x, y;
+    unsigned int ix=0, iy=0;
     for (i=0; i<n/2; i++) {
         // generate random BPSK signal
-        if ((i%k)==0)
+        if ((ix%k)==0)
             x = rand()%2 ? 1.0f : -1.0f;
         else
             x = 0.0f;
@@ -49,17 +52,34 @@ int main() {
         fir_filter_rrrf_push(f, x);
         fir_filter_rrrf_execute(f, &y); 
 
-        fprintf(fid,"x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
-        printf("x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
+        ix++;
+        iy++;
+        fprintf(fid,"x(%4u) = %12.4e; y(%4u) = %12.4e;\n", ix+1, x, iy+1, y);
+        printf("x(%4u) = %12.4e; y(%4u) = %12.4e;\n", ix+1, x, iy+1, y);
     }
 
     // recreate filter
     printf("re-creating filter...\n");
     f = fir_filter_rrrf_recreate(f,h1,h1_len);
 
-    for (; i<n; i++) {
+    // push additional inputs to compensate for increased filter delay
+    if (h1_len > h0_len) {
+        unsigned int t = (h1_len - h0_len)/2;
+        for (i=0; i<t; i++) {
+            if ((ix%k)==0)
+                x = rand()%2 ? 1.0f : -1.0f;
+            else
+                x = 0.0f;
+            ix++;
+            fir_filter_rrrf_push(f, x);
+            fprintf(fid,"x(%4u) = %12.4e;\n", ix+1, x);
+            printf("x(%4u) = %12.4e;\n", ix+1, x);
+        }
+    }
+
+    for (i=0; i<n/2; i++) {
         // generate random BPSK signal
-        if ((i%k)==0)
+        if ((ix%k)==0)
             x = rand()%2 ? 1.0f : -1.0f;
         else
             x = 0.0f;
@@ -67,21 +87,33 @@ int main() {
         fir_filter_rrrf_push(f, x);
         fir_filter_rrrf_execute(f, &y); 
 
-        fprintf(fid,"x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
-        printf("x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
+        ix++;
+        iy++;
+        fprintf(fid,"x(%4u) = %12.4e; y(%4u) = %12.4e;\n", ix+1, x, iy+1, y);
+        printf("x(%4u) = %12.4e; y(%4u) = %12.4e;\n", ix+1, x, iy+1, y);
     }
 
 #if 0
-    fprintf(fid,"nfft=512;\n");
-    fprintf(fid,"w=hamming(length(x))';\n");
-    fprintf(fid,"H=20*log10(abs(fftshift(fft(h,   nfft))));\n");
-    fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*w,nfft))));\n");
-    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*w,nfft))));\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f,X,'Color',[0.3 0.3 0.3],f,Y,'LineWidth',2,f,H,'-b','LineWidth',2);\n");
-    fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('noise','filtered noise','filter prototype',1);");
+    fprintf(fid,"t = 0:(length(x)-1);\n");
+    fprintf(fid,"t0 = t - (h0_len/2);\n");
+    fprintf(fid,"t1 = t - (h1_len/2);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,y,'-b',t,x,'rx');\n");
 #endif
+
+    fprintf(fid,"n  = round(length(y)/2);\n");
+    fprintf(fid,"w  = hamming(n).';\n");
+    fprintf(fid,"y0 = y(1:n);\n");
+    fprintf(fid,"y1 = y((length(y)-n+1):end);\n");
+    fprintf(fid,"nfft = 1024;\n");
+    fprintf(fid,"f = [0:nfft-1]/nfft - 0.5;\n");
+    fprintf(fid,"Y0 = 20*log10(abs(fftshift(fft(y0.*w,nfft))));\n");
+    fprintf(fid,"Y1 = 20*log10(abs(fftshift(fft(y1.*w,nfft))));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,Y0,'-',f,Y1,'-');\n");
+    fprintf(fid,"xlabel('Normalized Frequency');\n");
+    fprintf(fid,"ylabel('Power spectral density [dB]');\n");
+    fprintf(fid,"legend('filter 0','filter 1',1);\n");
 
     fclose(fid);
     printf("results written to %s\n", DEBUG_FILENAME);
