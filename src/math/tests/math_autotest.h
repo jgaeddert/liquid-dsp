@@ -66,5 +66,14 @@ void autotest_besseli_0()
     CONTEND_DELTA(besseli_0(3.0f), 4.88079258586503f, tol);
 }
 
+// 
+// AUTOTEST: sincf
+//
+void autotest_sincf()
+{
+    float tol = 1e-3f;
+    CONTEND_DELTA(sincf(0.0f), 1.0f, tol);
+}
+
 #endif 
 
