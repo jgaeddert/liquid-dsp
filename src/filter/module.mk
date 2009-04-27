@@ -14,6 +14,7 @@ local_s_files	:= 			\
 	filter_cccf.c			\
 	filter_common.c			\
 	firdes.c			\
+	rcos.c				\
 	rrcos.c				\
 	lf2.c
 #	nyquist.c

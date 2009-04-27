@@ -494,6 +494,21 @@ void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, floa
 //  _k      : samples/symbol (_k > 1)
 //  _slsl   : sidelobe suppression level
 void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h);
+
+// Design Nyquist raised-cosine filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_rcos_filter(
+    unsigned int _k,
+    unsigned int _m,
+    float _beta,
+    float _dt,
+    float * _h
+);
+
 // Design root-Nyquist raised-cosine filter
 //  _k      : samples/symbol
 //  _m      : symbol delay

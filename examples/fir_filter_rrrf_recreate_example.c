@@ -10,17 +10,23 @@
 
 int main() {
     // options
-    //float fc=0.3f;
-    //float slsl=30.0f;
+    unsigned int k=4;
+    unsigned int m0=1;
+    unsigned int m1=4;
+    float beta=0.33f;
     unsigned int n=256;
 
     unsigned int i;
-    unsigned int h0_len = 7;
-    unsigned int h1_len = 31;
+    unsigned int h0_len = 2*k*m0 + 1;
+    unsigned int h1_len = 2*k*m1 + 1;
     float h0[h0_len];
     float h1[h1_len];
+    /*
     fir_kaiser_window(h0_len,0.7f,20.0f,h0);
     fir_kaiser_window(h1_len,0.1f,60.0f,h1);
+    */
+    design_rcos_filter(k,m0,beta,0,h0);
+    design_rcos_filter(k,m1,beta,0,h1);
     fir_filter_rrrf f = fir_filter_rrrf_create(h0,h0_len);
     //fir_filter_rrrf_print(f);
 
@@ -51,7 +57,7 @@ int main() {
     printf("re-creating filter...\n");
     f = fir_filter_rrrf_recreate(f,h1,h1_len);
 
-    for (i; i<n; i++) {
+    for (; i<n; i++) {
         // generate noise
         x = randnf();
 
