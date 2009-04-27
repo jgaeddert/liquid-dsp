@@ -67,6 +67,40 @@ FIR_FILTER() FIR_FILTER(_create_prototype)(unsigned int _n)
     return f;
 }
 
+FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f, TC * _h, unsigned int _n)
+{
+    if (_n != _f->h_len) {
+        // reallocate memory
+        _f->h_len = _n;
+        _f->h = (TC*) realloc(_f->h, (_f->h_len)*sizeof(TC));
+    }
+
+    // load filter in reverse order
+    unsigned int i;
+    for (i=_n; i>0; i--)
+        _f->h[i-1] = _h[_n-i];
+
+#if FIR_FILTER_USE_DOTPROD
+    _f->w = WINDOW(_recreate)(_f->w, _f->h_len);
+    // TODO: (bug) ensure window has proper state
+#else
+    _f->v = (TI*) realloc(_f->v, (_f->h_len)*sizeof(TI));
+    // TODO: (bug) ensure window has proper state
+    for (i=_n; i<_f->h_len; i++)
+        _f->v[i] = 0;
+
+    if (_n > _f->h_len)
+        _f->i += (_n - _f->h_len)/2;
+    else
+        _f->i += _f->h_len + (_f->h_len - _n)/2;
+
+    _f->i = (_f->i) % (_f->h_len);
+#endif
+
+    return _f;
+}
+
+
 void FIR_FILTER(_destroy)(FIR_FILTER() _f)
 {
 #if FIR_FILTER_USE_DOTPROD

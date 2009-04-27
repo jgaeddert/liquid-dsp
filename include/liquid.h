@@ -543,6 +543,7 @@ void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
 #define LIQUID_FIR_FILTER_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X();   \
 X() X(_create)(TC * _h, unsigned int _n); \
+X() X(_recreate)(X() _f, TC * _h, unsigned int _n); \
 void X(_destroy)(X() _f); \
 void X(_print)(X() _f); \
 void X(_push)(X() _f, TI _x); \
