@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "liquid.h"
 
@@ -11,9 +12,9 @@
 int main() {
     // options
     unsigned int k=4;
-    unsigned int m0=1;
-    unsigned int m1=4;
-    float beta=0.33f;
+    unsigned int m0=2;
+    unsigned int m1=6;
+    float beta=0.3f;
     unsigned int n=256;
 
     unsigned int i;
@@ -21,10 +22,6 @@ int main() {
     unsigned int h1_len = 2*k*m1 + 1;
     float h0[h0_len];
     float h1[h1_len];
-    /*
-    fir_kaiser_window(h0_len,0.7f,20.0f,h0);
-    fir_kaiser_window(h1_len,0.1f,60.0f,h1);
-    */
     design_rcos_filter(k,m0,beta,0,h0);
     design_rcos_filter(k,m1,beta,0,h1);
     fir_filter_rrrf f = fir_filter_rrrf_create(h0,h0_len);
@@ -43,8 +40,11 @@ int main() {
 
     float x, y;
     for (i=0; i<n/2; i++) {
-        // generate noise
-        x = randnf();
+        // generate random BPSK signal
+        if ((i%k)==0)
+            x = rand()%2 ? 1.0f : -1.0f;
+        else
+            x = 0.0f;
 
         fir_filter_rrrf_push(f, x);
         fir_filter_rrrf_execute(f, &y); 
@@ -58,8 +58,11 @@ int main() {
     f = fir_filter_rrrf_recreate(f,h1,h1_len);
 
     for (; i<n; i++) {
-        // generate noise
-        x = randnf();
+        // generate random BPSK signal
+        if ((i%k)==0)
+            x = rand()%2 ? 1.0f : -1.0f;
+        else
+            x = 0.0f;
 
         fir_filter_rrrf_push(f, x);
         fir_filter_rrrf_execute(f, &y); 
