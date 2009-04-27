@@ -10,6 +10,7 @@ local_src	:=			\
 	symsync_crcf_example.c		\
 	decim_rrrf_example.c		\
 	fir_filter_rrrf_example.c	\
+	fir_filter_rrrf_recreate_example.c	\
 	firdes_kaiser_example.c		\
 	firpfb_rrrf_example.c		\
 	hilbert_decim_example.c		\
