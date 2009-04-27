@@ -84,9 +84,15 @@ void WINDOW(_print)(WINDOW() _w)
 {
     printf("window [%u elements] :\n", _w->len);
     unsigned int i;
+    T * r;
+    WINDOW(_read)(_w, &r);
     for (i=0; i<_w->len; i++) {
-        printf("%u", i);
-        BUFFER_PRINT_LINE(_w,(_w->read_index+i)%(_w->len))
+        printf("%4u", i);
+#if T == float
+        printf("%12.8f", r[i]);
+#elif T == float complex
+        printf("%12.8f + j%12.8f", crealf(r[i]),cimagf(r[i]));
+#endif
         printf("\n");
     }
 }
