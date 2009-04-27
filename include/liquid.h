@@ -676,6 +676,7 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, liquid_float_complex,   liquid_float_
 #define LIQUID_RESAMP2_DEFINE_API(X,TO,TC,TI) \
 typedef struct X(_s) * X(); \
 X() X(_create)(unsigned int _h_len); \
+X() X(_recreate)(X() _q, unsigned int _h_len); \
 void X(_destroy)(X() _q); \
 void X(_print)(X() _q); \
 void X(_decim_execute)(X() _f, TI * _x, TO * _y); \

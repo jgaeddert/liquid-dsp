@@ -77,6 +77,57 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len)
     return f;
 }
 
+RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
+{
+    // change filter length as necessary
+    // h_len = 2*(2*m) + 1
+    unsigned int m1 = (_h_len-1)/4;
+    if (m1 < 2)
+        m1 = 2;
+
+    if (m1 == _f->m)
+        return _f;
+
+    // compute new lengths
+    _f->m = m1;
+    _f->h_len = 4*(_f->m) + 1;
+    _f->h1_len = 2*(_f->m);
+
+    // re-allocate memory
+    _f->h  = (TC*) realloc(_f->h,  (_f->h_len)*sizeof(TC));
+    _f->h1 = (TC*) realloc(_f->h1, (_f->h1_len)*sizeof(TC));
+    _f->w0 = (TI*) realloc(_f->w0, (_f->m)*sizeof(TI));
+    _f->w1 = WINDOW(_recreate)(_f->w1, 2*(_f->m));
+
+    // design filter prototype
+    unsigned int i;
+    float t, h1, h2;
+    float beta = 6.0f;
+    for (i=0; i<_f->h_len; i++) {
+        t = (float)i - (float)(_f->h_len-1)/2.0f;
+        h1 = sincf(t/2.0f);
+        h2 = kaiser(i,_f->h_len,beta);
+        _f->h[i] = h1*h2;
+    }
+
+    // resample, alternate sign, reverse direction
+    unsigned int j=0;
+    for (i=1; i<_f->h_len; i+=2)
+        _f->h1[j++] = _f->h[_f->h_len - i - 1];
+
+    /*
+    f->w1 = WINDOW(_create)(2*(f->m));
+    WINDOW(_clear)(f->w1);
+
+    f->w0 = (TI*)malloc((f->m)*sizeof(TI));
+    for (i=0; i<f->m; i++)
+        f->w0[i] = 0;
+    f->w0_index = 0;
+    */
+
+    return _f;
+}
+
 void RESAMP2(_destroy)(RESAMP2() _f)
 {
     WINDOW(_destroy)(_f->w1);
