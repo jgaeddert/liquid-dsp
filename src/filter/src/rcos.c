@@ -47,7 +47,11 @@ void design_rcos_filter(
         t2 = sincf(z);
         t3 = 1 - 4.0f*_beta*_beta*z*z;
 
-        _h[n] = t1*t2/t3;
+        // check for special condition where 4*_beta^2*z^2  equals 1
+        if ( fabsf(t3) < 1e-3f )
+            _h[n] = 0.0f;
+        else
+            _h[n] = t1*t2/t3;
     }
 }
 
