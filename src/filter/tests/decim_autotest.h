@@ -1,31 +1,13 @@
-#ifndef __DECIM_RRRF_AUTOTEST_H__
-#define __DECIM_RRRF_AUTOTEST_H__
+#ifndef __LIQUID_DECIM_AUTOTEST_H__
+#define __LIQUID_DECIM_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// 
-// AUTOTEST: old decim function
-//
-#if 0
-void xautotest_decim_generic()
-{
-    decim d = decim_create(2, 0.0f, 0.1f, 40.0f);
-
-    if (_autotest_verbose)
-        decim_debug_print(d);
-
-    CONTEND_LESS_THAN(d->h_len,FIR_FILTER_LEN_MAX+1);
-    CONTEND_EQUALITY(d->fc, 0.0f);
-
-    decim_destroy(d);
-}
-#endif
-
 //
 // AUTOTEST: 
 //
-void autotest_decim_generic()
+void autotest_decim_rrrf_generic()
 {
     float h[] = {0.5, 0.5, 0.5, 0.5};
     unsigned int h_len = 4; // filter length
@@ -58,5 +40,5 @@ void autotest_decim_generic()
     decim_rrrf_destroy(q);
 }
 
-#endif 
+#endif // __LIQUID_DECIM_AUTOTEST_H__
 
