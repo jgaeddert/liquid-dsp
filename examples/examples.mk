@@ -6,6 +6,7 @@ local_dir	:= examples
 local_src	:=			\
 	resamp2_crcf_decim_example.c	\
 	resamp2_crcf_interp_example.c	\
+	resamp2_crcf_interp_recreate_example.c	\
 	symsync2_crcf_example.c		\
 	symsync_crcf_example.c		\
 	decim_rrrf_example.c		\
