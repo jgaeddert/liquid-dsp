@@ -19,9 +19,9 @@
 //  PRINTVAL()      print macro
 
 struct RESAMP2(_s) {
-    TC * h;              // filter prototype
-    unsigned int m;     // 
-    unsigned int h_len; // h_len = 4*m+1
+    TC * h;             // filter prototype
+    unsigned int m;     // primitive filter length
+    unsigned int h_len; // actual filter length: h_len = 4*m+1
 
     // lower branch (filter)
     TC * h1;
@@ -79,13 +79,16 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len)
 
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
 {
+    unsigned int i;
     // change filter length as necessary
     // h_len = 2*(2*m) + 1
+    unsigned int m0 = _f->m;        // old m value
     unsigned int m1 = (_h_len-1)/4;
     if (m1 < 2)
         m1 = 2;
 
-    if (m1 == _f->m)
+    // TODO: redesign filter anyway
+    if (m1 == m0)
         return _f;
 
     // compute new lengths
@@ -96,11 +99,56 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
     // re-allocate memory
     _f->h  = (TC*) realloc(_f->h,  (_f->h_len)*sizeof(TC));
     _f->h1 = (TC*) realloc(_f->h1, (_f->h1_len)*sizeof(TC));
-    _f->w0 = (TI*) realloc(_f->w0, (_f->m)*sizeof(TI));
+    printf("old window:\n");
+    WINDOW(_print)(_f->w1);
     _f->w1 = WINDOW(_recreate)(_f->w1, 2*(_f->m));
+    printf("new window:\n");
+    WINDOW(_print)(_f->w1);
+
+    // inefficient but effective
+    TI* w0_tmp = (TI*) malloc(m0*sizeof(TI));       // create temporary array
+    //memmove(w0_tmp, _f->w0, m0*sizeof(TI));         // copy old values
+    for (i=0; i<m0; i++)
+        w0_tmp[i] = _f->w0[(i+_f->w0_index)%(m0)];  // copy old values (reorder)
+    printf("  old values:\n");
+    for (i=0; i<m0; i++) {
+        printf("  %4u : ", i);
+        PRINTVAL(w0_tmp[i]);
+        printf("\n");
+    }
+    _f->w0 = realloc(_f->w0, (_f->m)*sizeof(TI));   // reallocate memory
+    if (_f->w0 == NULL) {
+        printf("error: could not reallocate delay line memory array\n");
+        exit(0);
+    }
+    if (m1 > m0) {
+        printf("  resamp2_xxxf_recreate(): extending filter\n");
+        unsigned int t = m1-m0;
+        // pad beginning with zeros
+        for (i=0; i<t; i++)
+            _f->w0[i] = 0;
+        // push all old values
+        for (i=0; i<m0; i++)
+            _f->w0[i+t] = w0_tmp[i];
+        _f->w0_index = 0;
+    } else {
+        printf("  resamp2_xxxf_recreate(): reducing filter\n");
+        unsigned int t = m0-m1;
+        // push most recent old values
+        for (i=0; i<m1; i++)
+            _f->w0[i] = w0_tmp[i+t];
+        _f->w0_index = 0;
+    }
+
+    printf("  new values:\n");
+    for (i=0; i<m1; i++) {
+        printf("  %4u : ", i);
+        PRINTVAL(_f->w0[(i+_f->w0_index)%(m1)]);
+        printf("\n");
+    }
+    free(w0_tmp);       // free temporary memory block
 
     // design filter prototype
-    unsigned int i;
     float t, h1, h2;
     float beta = 6.0f;
     for (i=0; i<_f->h_len; i++) {
@@ -114,16 +162,6 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
     unsigned int j=0;
     for (i=1; i<_f->h_len; i+=2)
         _f->h1[j++] = _f->h[_f->h_len - i - 1];
-
-    /*
-    f->w1 = WINDOW(_create)(2*(f->m));
-    WINDOW(_clear)(f->w1);
-
-    f->w0 = (TI*)malloc((f->m)*sizeof(TI));
-    for (i=0; i<f->m; i++)
-        f->w0[i] = 0;
-    f->w0_index = 0;
-    */
 
     return _f;
 }

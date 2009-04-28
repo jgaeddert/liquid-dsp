@@ -11,12 +11,12 @@
 #define OUTPUT_FILENAME "resamp2_crcf_interp_recreate_example.m"
 
 int main() {
-    unsigned int m0=2;
-    unsigned int m1=5;
+    unsigned int m0=5;
+    unsigned int m1=4;
     unsigned int h0_len = 4*m0+1; // initial filter length
     unsigned int h1_len = 4*m1+1; // filter length (after recreate)
-    float fc=0.17f;
-    unsigned int N=128;
+    float fc=0.10f;
+    unsigned int N=32;
 
     resamp2_cccf f = resamp2_cccf_create(h0_len);
 
@@ -31,6 +31,7 @@ int main() {
 
     unsigned int i;
     float theta=0.0f, dtheta=2*M_PI*fc;
+    unsigned int ix=0, iy=0;
     float complex x, y[2];
     for (i=0; i<N/2; i++) {
         x = cexpf(_Complex_I*theta);
@@ -38,32 +39,37 @@ int main() {
 
         resamp2_cccf_interp_execute(f, x, y);
 
-        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1,   crealf(x),    cimagf(x));
-        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
-        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
+        ix++;
+        iy++;
+        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", ix+1,   crealf(x),    cimagf(x));
+        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+1, crealf(y[0]), cimagf(y[0]));
+        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+2, crealf(y[1]), cimagf(y[1]));
 
-        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
-        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+1, crealf(y[0]), cimagf(y[0]));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+2, crealf(y[1]), cimagf(y[1]));
     }
 
     // re-create interpolator
+    printf("recreating filter...\n");
     f = resamp2_cccf_recreate(f,h1_len);
 
     // TODO: push additional values?
 
 
-    for (; i<N; i++) {
+    for (i=0; i<N/2; i++) {
         x = cexpf(_Complex_I*theta);
         theta += dtheta;
 
         resamp2_cccf_interp_execute(f, x, y);
 
-        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1,   crealf(x),    cimagf(x));
-        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
-        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
+        ix++;
+        iy++;
+        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", ix+1,   crealf(x),    cimagf(x));
+        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+1, crealf(y[0]), cimagf(y[0]));
+        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+2, crealf(y[1]), cimagf(y[1]));
 
-        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
-        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+1, crealf(y[0]), cimagf(y[0]));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*iy+2, crealf(y[1]), cimagf(y[1]));
     }
 
 
