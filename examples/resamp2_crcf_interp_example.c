@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define DEBUG
+#define OUTPUT_FILENAME "resamp2_crcf_interp_example.m"
 
 int main() {
     unsigned int m=5;
@@ -20,11 +20,10 @@ int main() {
 
     resamp2_cccf_print(f);
 
-#ifdef DEBUG
-    FILE*fid = fopen("resamp2_cccf_interp_example.m","w");
-    fprintf(fid,"%% hilbert example\nclear all;\nclose all;\n\n");
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\nN=%u;\n", h_len, N);
-#endif
 
     unsigned int i;
     float theta=0.0f, dtheta=2*M_PI*fc;
@@ -35,17 +34,14 @@ int main() {
 
         resamp2_cccf_interp_execute(f, x, y);
 
-#ifdef DEBUG
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1,   crealf(x),    cimagf(x));
         fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
         fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
-#else
+
         printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(y[0]), cimagf(y[0]));
         printf("y(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(y[1]), cimagf(y[1]));
-#endif
     }
 
-#ifdef DEBUG
     fprintf(fid,"nfft=512;\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*hamming(length(x))',nfft))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*hamming(length(y))',nfft))));\n");
@@ -55,8 +51,7 @@ int main() {
     fprintf(fid,"legend('original','interpolated',1);");
 
     fclose(fid);
-    printf("results written to resamp2_cccf_interp_example.m\n");
-#endif
+    printf("results written to %s\n",OUTPUT_FILENAME);
 
     resamp2_cccf_destroy(f);
     printf("done.\n");
