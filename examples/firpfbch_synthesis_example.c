@@ -15,8 +15,8 @@ int main() {
     unsigned int num_symbols=5;     // num symbols
     unsigned int num_flush=5;       // num symbols to flush buffers
 
-    unsigned int num_channels=8;
-    float gain[8] = {1, 1, 1, 0, 1, 0, 0, 1}; // channel gains
+    unsigned int num_channels=16;
+    float gain[16] = {1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,0};
 
     unsigned int num_frames = num_symbols+num_flush;
 
@@ -27,7 +27,7 @@ int main() {
     fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
-    fprintf(fid,"num_frames=%u;\n", num_frames);
+    fprintf(fid,"num_symbols=%u;\n", num_symbols);
 
     fprintf(fid,"X = zeros(%u,%u);\n", num_channels, num_frames);
     fprintf(fid,"y = zeros(1,%u);\n",  num_channels * num_frames);
@@ -63,7 +63,8 @@ int main() {
 
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fft(y,nfft)));\n");
+    fprintf(fid,"Y = Y - 20*log10(num_channels * num_symbols);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Y,'LineWidth',2,'Color',[0.25 0.5 0.5]);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");

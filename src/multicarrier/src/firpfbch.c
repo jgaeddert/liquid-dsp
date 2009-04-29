@@ -46,7 +46,7 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
     h_len = (c->num_channels)*4;
     float h[h_len+1];
     float fc = 1/(float)(c->num_channels);  // cutoff frequency
-    fir_kaiser_window(h_len+1, fc, 60, h);
+    fir_kaiser_window(h_len+1, fc, _slsl, h);
 
     // generate bank of sub-samped filters
     // length of each sub-sampled filter
