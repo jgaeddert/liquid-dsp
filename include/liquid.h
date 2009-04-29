@@ -1180,6 +1180,15 @@ void firpfbch_execute(firpfbch _c, liquid_float_complex * _x, liquid_float_compl
 //void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X);
 //void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x);
 
+// FIR OFDM/OQAM
+typedef struct ofdmoqam_s * ofdmoqam;
+#define OFDMOQAM_ANALYZER       FIRPFBCH_ANALYZER
+#define OFDMOQAM_SYNTHESIZER    FIRPFBCH_SYNTHESIZER
+ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type);
+void ofdmoqam_destroy(ofdmoqam _c);
+void ofdmoqam_print(ofdmoqam _c);
+void ofdmoqam_execute(ofdmoqam _c, liquid_float_complex * _x, liquid_float_complex * _y);
+
 
 // 
 // Numerically-controlled oscillator

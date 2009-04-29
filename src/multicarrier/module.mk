@@ -8,7 +8,9 @@ module_name     := multicarrier
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:= firpfbch.c
+local_s_files	:=		\
+	firpfbch.c		\
+	ofdmoqam.c
 
 # local_h_files
 #
