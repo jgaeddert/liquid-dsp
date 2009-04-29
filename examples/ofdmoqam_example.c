@@ -12,22 +12,18 @@
 
 int main() {
     // options
-    float slsl=60;
-    unsigned int num_symbols=5;     // num symbols
-    unsigned int num_flush=5;       // num symbols to flush buffers
+    unsigned int num_symbols=32;    // num symbols
+    unsigned int num_flush=4;       // num symbols to flush buffers
+    unsigned int m=2;               // ofdm/oqam symbol delay
 
-    unsigned int num_channels=8;    // for now, must be even number
-    float gain[8] = {1,1,1,1,1,1,1,1};
+    unsigned int num_channels=4;    // for now, must be even number
+    float gain[4] = {1,1,1,1};
 
     unsigned int num_frames = num_symbols+num_flush;
 
-    // create synthesizer objects
-    firpfbch cs0 = firpfbch_create(num_channels, slsl, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER);
-    firpfbch cs1 = firpfbch_create(num_channels, slsl, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER);
-
-    // create analyzer objects
-    firpfbch ca0 = firpfbch_create(num_channels, slsl, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER);
-    firpfbch ca1 = firpfbch_create(num_channels, slsl, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER);
+    // create synthesizer/analyzer objects
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, OFDMOQAM_SYNTHESIZER);
+    ofdmoqam ca = ofdmoqam_create(num_channels, m, OFDMOQAM_ANALYZER);
 
     // modem
     modem mod = modem_create(MOD_QAM,4);
@@ -48,16 +44,6 @@ int main() {
     float complex y[num_channels];  // interpolated time-domain samples
     float complex Y[num_channels];  // received symbols
 
-    float complex X0[num_channels]; // even channel input
-    float complex X1[num_channels]; // odd channel input
-    float complex Xi, Xq;
-
-    float complex y0[num_channels]; // even channel output
-    float complex y1[num_channels]; // odd channel output
-    float complex y_prime[num_channels];
-    for (i=0; i<num_channels; i++)
-        y_prime[i] = 0;
-
     float g;
     for (i=0; i<num_frames; i++) {
 
@@ -69,35 +55,13 @@ int main() {
             X[j] *= g;
         }
 
-        // prepare signal
-        for (j=0; j<num_channels; j++) {
-            Xi = crealf(X[j]);
-            Xq = cimagf(X[j])*_Complex_I;
-            if ((j%2)==0) { // even channel
-                X0[j] = Xi;
-                X1[j] = Xq;
-            } else {        // odd channel
-                X0[j] = Xq;
-                X1[j] = Xi;
-            }
-        }
+        // execute synthesyzer
+        ofdmoqam_execute(cs, X, y);
 
-        // execute synthesis filter banks
-        firpfbch_execute(cs0, X0, y0);
-        firpfbch_execute(cs1, X1, y1);
-        memmove(&y_prime[num_channels/2],y1,(num_channels/2)*sizeof(float complex));
-        for (j=0; j<num_channels; j++)
-            y[j] = y0[j] + y_prime[j];
-        memmove(&y_prime[0],             y1,(num_channels/2)*sizeof(float complex));
-
-
-        //
         // channel
-        //
 
-        // execute analysis filter banks
-        firpfbch_execute(ca0, y, Y);
-        firpfbch_execute(ca1, y, Y);
+        // execute analyzer
+        ofdmoqam_execute(ca, y, Y);
 
         // write output to file
         for (j=0; j<num_channels; j++) {
@@ -130,10 +94,8 @@ int main() {
     printf("results written to %s\n", DEBUG_FILENAME);
 
     // destroy objects
-    firpfbch_destroy(cs0);
-    firpfbch_destroy(cs1);
-    firpfbch_destroy(ca0);
-    firpfbch_destroy(ca1);
+    ofdmoqam_destroy(cs);
+    ofdmoqam_destroy(ca);
     modem_destroy(mod);
 
     printf("done.\n");

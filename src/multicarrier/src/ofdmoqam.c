@@ -41,6 +41,9 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type)
 
     // allocate memory for time-delay buffer
     c->x_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
+    unsigned int i;
+    for (i=0; i<c->num_channels; i++)
+        c->x_prime[i] = 0;
 
     // create filterbank channelizers
     c->type = _type;
@@ -104,13 +107,13 @@ void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * 
     memmove(_c->x0, _x, (_c->num_channels)*sizeof(float complex));
 
     // delay the lower branch
-    memmove(_c->x_prime +_c->num_channels/2, _c->x0, (_c->num_channels/2)*sizeof(float complex));
+    memmove(_c->x_prime + _c->num_channels/2, _x, (_c->num_channels/2)*sizeof(float complex));
 
     // copy delayed lower branch partition
     memmove(_c->x1, _c->x_prime, (_c->num_channels)*sizeof(float complex));
 
     // finish delay operation
-    memmove(_c->x_prime, _c->x1 + _c->num_channels/2, (_c->num_channels/2)*sizeof(float complex));
+    memmove(_c->x_prime, _x + _c->num_channels/2, (_c->num_channels/2)*sizeof(float complex));
 
     // execute analysis filter banks
     firpfbch_execute(_c->c0, _c->x0, _c->X0);
