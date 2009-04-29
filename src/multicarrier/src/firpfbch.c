@@ -43,10 +43,18 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
 
     // design filter using kaiser window and be done with it
     // TODO: use filter prototype object
-    h_len = (c->num_channels)*4;
+    unsigned int m=2;
+    h_len = 2*m*(c->num_channels);
     float h[h_len+1];
-    float fc = 1/(float)(c->num_channels);  // cutoff frequency
-    fir_kaiser_window(h_len+1, fc, _slsl, h);
+    if (_nyquist == FIRPFBCH_NYQUIST) {
+        float fc = 1/(float)(c->num_channels);  // cutoff frequency
+        fir_kaiser_window(h_len+1, fc, _slsl, h);
+    } else if (_nyquist == FIRPFBCH_ROOTNYQUIST) {
+        design_rrc_filter((c->num_channels),m,0.99f,0.0f,h);
+    } else {
+        printf("error: firpfbch_create(), unsupported nyquist flag: %d\n", _nyquist);
+        exit(0);
+    }
 
     // generate bank of sub-samped filters
     // length of each sub-sampled filter
