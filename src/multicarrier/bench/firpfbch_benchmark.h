@@ -1,0 +1,53 @@
+#ifndef __LIQUID_FIRPFBCH_BENCH_H__
+#define __LIQUID_FIRPFBCH_BENCH_H__
+
+#include <sys/resource.h>
+#include "liquid.h"
+
+#define FIRPFBCH_EXECUTE_BENCH_API(NUM_CHANNELS,TYPE)   \
+(   struct rusage *_start,                              \
+    struct rusage *_finish,                             \
+    unsigned long int *_num_iterations)                 \
+{ firpfbch_execute_bench(_start, _finish, _num_iterations, NUM_CHANNELS, TYPE); }
+
+// Helper function to keep code base small
+void firpfbch_execute_bench(
+    struct rusage *_start,
+    struct rusage *_finish,
+    unsigned long int *_num_iterations,
+    unsigned int _num_channels,
+    int _type)
+{
+    // initialize channelizer
+    firpfbch c = firpfbch_create(_num_channels, 60.0f, FIRPFBCH_NYQUIST, _type);
+
+    unsigned long int i;
+
+    float complex x[_num_channels];
+    float complex y[_num_channels];
+    for (i=0; i<_num_channels; i++)
+        x[i] = 1.0f + _Complex_I*1.0f;
+
+    // start trials
+    *_num_iterations /= 16;
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        firpfbch_execute(c,x,y);
+        firpfbch_execute(c,x,y);
+        firpfbch_execute(c,x,y);
+        firpfbch_execute(c,x,y);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+
+    firpfbch_destroy(c);
+}
+
+//
+void benchmark_firpfbch_execute_n4      FIRPFBCH_EXECUTE_BENCH_API(4,   FIRPFBCH_ANALYZER)
+void benchmark_firpfbch_execute_n16     FIRPFBCH_EXECUTE_BENCH_API(16,  FIRPFBCH_ANALYZER)
+void benchmark_firpfbch_execute_n64     FIRPFBCH_EXECUTE_BENCH_API(64,  FIRPFBCH_ANALYZER)
+void benchmark_firpfbch_execute_n256    FIRPFBCH_EXECUTE_BENCH_API(256, FIRPFBCH_ANALYZER)
+
+#endif // __LIQUID_FIRPFBCH_BENCH_H__
+
