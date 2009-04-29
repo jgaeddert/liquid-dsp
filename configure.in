@@ -52,6 +52,9 @@ AC_CHECK_HEADERS(pthread.h fec.h fftw3.h)
 AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
              [AC_MSG_WARN(Need POSIX thread library!)],
              [])
+AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
+             [AC_MSG_WARN(fftw3 library useful but not required)],
+             [])
 
 dnl Check size of certain variables
 AC_CHECK_SIZEOF(int)
