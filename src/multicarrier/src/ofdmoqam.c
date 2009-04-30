@@ -47,6 +47,7 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type)
 
     // create filterbank channelizers
     c->type = _type;
+    // TODO: use actual prototype (get rid of _slsl input)
     c->c0 = firpfbch_create(_num_channels, 60.0f, FIRPFBCH_ROOTNYQUIST, _type);
     c->c1 = firpfbch_create(_num_channels, 60.0f, FIRPFBCH_ROOTNYQUIST, _type);
 
@@ -79,12 +80,12 @@ void ofdmoqam_synthesizer_execute(ofdmoqam _c, float complex * _X, float complex
     // prepare signal
     for (i=0; i<_c->num_channels; i+=2) {
         // even channels
-        _c->X0[i]   = crealf(_X[i]);
-        _c->X1[i]   = cimagf(_X[i])*_Complex_I;
+        _c->X0[i]   = cimagf(_X[i])*_Complex_I;
+        _c->X1[i]   = crealf(_X[i]);
 
         // odd channels
-        _c->X0[i+1] = cimagf(_X[i+1])*_Complex_I;
-        _c->X1[i+1] = crealf(_X[i+1]);
+        _c->X0[i+1] = crealf(_X[i+1]);
+        _c->X1[i+1] = cimagf(_X[i+1])*_Complex_I;
     }
 
     // execute synthesis filter banks

@@ -14,66 +14,77 @@ void autotest_ofdmoqam_synthesis()
     unsigned int num_channels=4;
     unsigned int num_symbols=16;
     unsigned int m=2;
-    float tol=0.05f;
+    float tol=0.05f;    // high tolerance due to prototyping filter mismatch
 
     unsigned int i, j;
-    unsigned int msg[64] = {
-       0,   0,   3,   1,
-       1,   2,   1,   1,
-       3,   1,   0,   0,
-       1,   3,   2,   2,
-       3,   2,   0,   3,
-       3,   1,   1,   0,
-       1,   0,   3,   1,
-       0,   0,   3,   2,
-
-       0,   0,   0,   0,
-       0,   0,   0,   0,
-       0,   0,   0,   0,
-       0,   0,   0,   0,
-       0,   0,   0,   0,
-       0,   0,   0,   0,
-       0,   0,   0,   0,
-       0,   0,   0,   0
+    float complex x[64] = {
+      1.00000000+  1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+     -1.00000000+  1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      1.00000000+ -1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+     -1.00000000+  1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      1.00000000+ -1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      1.00000000+ -1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+     -1.00000000+  1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      1.00000000+  1.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I
     };
 
-    float complex sym[64];
-    for (i=0; i<64; i++)
-        sym[i] = cexpf(_Complex_I*M_PI*((float)msg[i] + 0.5f));
-
     float complex y_test[64] = {
-     -0.0073+ -0.0073*_Complex_I,   0.0000+ -0.0000*_Complex_I, 
-      0.0129+ -0.0129*_Complex_I,  -0.0000+ -0.0000*_Complex_I, 
-     -0.0233+ -0.0306*_Complex_I,   0.0004+ -0.0018*_Complex_I, 
-      0.1312+ -0.1586*_Complex_I,   0.0009+ -0.0000*_Complex_I, 
-      0.4596+  0.4548*_Complex_I,   0.0009+  0.7071*_Complex_I, 
-     -0.0177+ -0.1948*_Complex_I,  -0.3535+ -0.0000*_Complex_I, 
-     -0.6545+  0.0975*_Complex_I,   0.3535+  0.0036*_Complex_I, 
-      0.4492+  0.2978*_Complex_I,  -0.0009+  0.0000*_Complex_I, 
-      0.3517+  0.6384*_Complex_I,  -0.0009+ -0.7080*_Complex_I, 
-     -0.0306+ -0.0177*_Complex_I,  -0.0004+ -0.0000*_Complex_I, 
-     -0.5232+ -0.4436*_Complex_I,   0.0004+  0.7071*_Complex_I, 
-      0.0129+  0.2770*_Complex_I,  -0.0009+  0.0000*_Complex_I, 
-      0.4798+ -0.4565*_Complex_I,   0.0004+ -0.7044*_Complex_I, 
-      0.1385+  0.0000*_Complex_I,   0.3544+ -0.0000*_Complex_I, 
-     -0.0378+  0.4492*_Complex_I,   0.3522+ -0.7098*_Complex_I, 
-      0.0258+ -0.2899*_Complex_I,  -0.3535+  0.0000*_Complex_I, 
-     -0.0306+  0.4186*_Complex_I,  -0.3553+  0.7026*_Complex_I, 
-      0.1514+ -0.1643*_Complex_I,   0.3531+  0.0000*_Complex_I, 
-      0.4492+ -0.0306*_Complex_I,  -0.3527+  0.7080*_Complex_I, 
-      0.1514+ -0.0129*_Complex_I,   0.0004+ -0.0000*_Complex_I, 
-     -0.0306+  0.0000*_Complex_I,   0.0009+  0.0027*_Complex_I, 
-      0.0129+ -0.0000*_Complex_I,   0.0004+ -0.0000*_Complex_I, 
-     -0.0000+ -0.0000*_Complex_I,   0.0000+  0.0009*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
-      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I
+     -0.02054200+  0.00000000*_Complex_I,   0.00126040+  0.00000000*_Complex_I, 
+      0.03643500+ -0.02054200*_Complex_I,  -0.00253100+  0.00126040*_Complex_I, 
+     -0.06595200+  0.03643500*_Complex_I,   0.00125830+ -0.00253100*_Complex_I, 
+      0.39171000+ -0.10704000*_Complex_I,   1.00250000+  0.00377910*_Complex_I, 
+      1.33650000+  0.46458000*_Complex_I,   0.99873000+  0.99746000*_Complex_I, 
+      0.03643500+  1.20460000*_Complex_I,  -1.00000000+  1.00120000*_Complex_I, 
+     -1.42300000+  0.81985000*_Complex_I,  -1.00130000+  1.00500000*_Complex_I, 
+     -0.00000000+  1.25000000*_Complex_I,   1.00130000+  0.99620000*_Complex_I, 
+      1.42300000+  0.07286900*_Complex_I,   1.00130000+ -0.99874000*_Complex_I, 
+      0.00000000+ -1.42300000*_Complex_I,  -1.00130000+ -1.00130000*_Complex_I, 
+     -1.46400000+ -0.00000000*_Complex_I,  -0.99874000+  1.00130000*_Complex_I, 
+      0.07286900+  1.46400000*_Complex_I,   0.99620000+  0.99874000*_Complex_I, 
+      1.29100000+ -0.07286900*_Complex_I,   1.00380000+ -0.99620000*_Complex_I, 
+      0.78342000+ -1.29100000*_Complex_I,   1.00380000+ -1.00380000*_Complex_I, 
+      1.25000000+ -0.78342000*_Complex_I,   0.99620000+ -1.00380000*_Complex_I, 
+      0.07286900+ -1.29100000*_Complex_I,  -0.99874000+ -0.99368000*_Complex_I, 
+     -1.44350000+  0.00000000*_Complex_I,  -1.00000000+  0.99368000*_Complex_I, 
+      0.03643500+  1.27050000*_Complex_I,   0.99873000+  1.00500000*_Complex_I, 
+      1.35700000+  0.81985000*_Complex_I,   1.00250000+  1.00120000*_Complex_I, 
+      0.39171000+  1.18400000*_Complex_I,   0.00125830+  0.99746000*_Complex_I, 
+     -0.08649500+  0.46458000*_Complex_I,  -0.00253100+  0.00377910*_Complex_I, 
+      0.03643500+ -0.08649500*_Complex_I,   0.00126040+ -0.00253100*_Complex_I, 
+      0.00000000+  0.03643500*_Complex_I,   0.00000000+  0.00126040*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I, 
+      0.00000000+  0.00000000*_Complex_I,   0.00000000+  0.00000000*_Complex_I
     };
 
     // derived values
@@ -81,28 +92,21 @@ void autotest_ofdmoqam_synthesis()
     // 
     ofdmoqam c = ofdmoqam_create(num_channels, m, OFDMOQAM_SYNTHESIZER);
 
-    FILE*fid = fopen(OFDMOQAM_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OFDMOQAM_FILENAME);
-
     float complex y[64];
     for (i=0; i<64; i++)
-        y[i] = 0.0f;
+        y[i] = 333.3f;
 
     // compute output
     unsigned int n=0;
     for (i=0; i<num_symbols; i++) {
-        ofdmoqam_execute(c, &sym[n], &y[n]);
+        ofdmoqam_execute(c, &x[n], &y[n]);
         n += num_channels;
     }
 
-    fprintf(fid,"y = zeros(1,%u);\n", 64);
-    for (i=0; i<64; i++)
-        fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-
     // compare output
     for (i=0; i<64; i++) {
-        //CONTEND_DELTA( crealf(y[i]), crealf(y_test[i]), tol );
-        //CONTEND_DELTA( cimagf(y[i]), cimagf(y_test[i]), tol );
+        CONTEND_DELTA( crealf(y[i]), crealf(y_test[i]), tol );
+        CONTEND_DELTA( cimagf(y[i]), cimagf(y_test[i]), tol );
 
         float e = cabsf(y[i] - y_test[i]);
         printf("%3u : %8.4f + j%8.4f       ::       %8.4f + j%8.4f (e = %8.4f)\n",
@@ -111,8 +115,6 @@ void autotest_ofdmoqam_synthesis()
             crealf(y_test[i]), cimagf(y_test[i]),
             e);
     }
-
-    fclose(fid);
 
     // destroy objects
     ofdmoqam_destroy(c);
