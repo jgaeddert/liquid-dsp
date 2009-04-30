@@ -27,7 +27,9 @@ local_h_files	:= multicarrier_internal.h
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:= firpfbch_autotest.h
+local_t_files	:=		\
+	firpfbch_autotest.h	\
+	ofdmoqam_autotest.h
 
 
 # local_b_files
