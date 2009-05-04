@@ -41,7 +41,7 @@ void autotest_firpfbch_analysis_x()
         if (_autotest_verbose) {
             printf("e[%2u] : ", i);
             for (j=0; j<num_channels; j++)
-                printf("%6.4f ",cabsf(y[j]));
+                printf("%6.4f ",cabsf(y[j])/(float)num_channels);
             printf("\n");
         }
 
