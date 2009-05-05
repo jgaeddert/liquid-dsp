@@ -66,10 +66,11 @@ int main(int argc, char *argv[])
     unsigned int autotest_id = 0;
     unsigned int package_id = 0;
     bool verbose = true;
+    bool stop_on_fail = false;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"t:p:lLvq")) != EOF){
+    while((d = getopt(argc,argv,"t:p:lLvqs")) != EOF){
         switch (d) {
         case 't':
             autotest_id = atoi(optarg);
@@ -102,6 +103,9 @@ int main(int argc, char *argv[])
                     printf("    %u: %s\n", autotests[j].id, autotests[j].name);
             }
             return 0;
+        case 's':
+            stop_on_fail = true;
+            break;
         case 'v':
             verbose = true;
             _autotest_verbose = true;
@@ -119,12 +123,18 @@ int main(int argc, char *argv[])
         }
     }
 
+    unsigned int n=0;
     switch (mode) {
     case RUN_ALL:
-        for (i=0; i<NUM_PACKAGES; i++)
+        for (i=0; i<NUM_PACKAGES; i++) {
             execute_package( &packages[i], verbose );
 
-        for (i=0; i<NUM_PACKAGES; i++) {
+            n++;
+            if (stop_on_fail && _autotest_num_failed > 0)
+                break;
+        }
+
+        for (i=0; i<n; i++) {
             if (verbose)
                 print_package_results( &packages[i] );
         }
@@ -153,6 +163,7 @@ void print_help()
     printf("  -t <autotest_index>\n");
     printf("  -p <package_index>\n");
     printf("  -l : lists available autotests\n");
+    printf("  -s : stop on fail\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
 }
