@@ -1169,10 +1169,15 @@ typedef struct firpfbch_s * firpfbch;
 #define FIRPFBCH_SYNTHESIZER    1
 // TODO: use filter prototype object
 // _num_channels:   number of channels
-// _slsl        :   sidelobe suppression level
+// _m           :   filter delay (length = 2*k*m)
+// _beta        :   sidelobe suppression level (nyquist), excess bandwidth (root nyquist)
 // _nyquist     :   0: nyquist, 1: root nyquist
 // _type        :   0: analyzer, 1: synthesizer
-firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, int _type);
+firpfbch firpfbch_create(unsigned int _num_channels,
+                         unsigned int _m,
+                         float _beta,
+                         int _nyquist,
+                         int _type);
 void firpfbch_destroy(firpfbch _c);
 void firpfbch_print(firpfbch _c);
 

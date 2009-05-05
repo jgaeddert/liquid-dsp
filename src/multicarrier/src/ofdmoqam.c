@@ -12,6 +12,9 @@
 
 struct ofdmoqam_s {
     unsigned int num_channels;
+    unsigned int m;
+    float beta;
+
     float complex * x0; // time-domain buffer
     float complex * x1; // time-domain buffer
 
@@ -30,6 +33,9 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type)
 {
     ofdmoqam c = (ofdmoqam) malloc(sizeof(struct ofdmoqam_s));
     c->num_channels = _num_channels;
+    c->m = _m;
+    c->type = _type;
+    c->beta = 0.99f;
 
     // allocate memory for time-domain buffers
     c->x0 = (float complex*) malloc((c->num_channels)*sizeof(float complex));
@@ -46,10 +52,9 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type)
         c->x_prime[i] = 0;
 
     // create filterbank channelizers
-    c->type = _type;
     // TODO: use actual prototype (get rid of _slsl input)
-    c->c0 = firpfbch_create(_num_channels, 60.0f, FIRPFBCH_ROOTNYQUIST, _type);
-    c->c1 = firpfbch_create(_num_channels, 60.0f, FIRPFBCH_ROOTNYQUIST, _type);
+    c->c0 = firpfbch_create(_num_channels, c->m, c->beta, FIRPFBCH_ROOTNYQUIST, c->type);
+    c->c1 = firpfbch_create(_num_channels, c->m, c->beta, FIRPFBCH_ROOTNYQUIST, c->type);
 
     return c;
 }

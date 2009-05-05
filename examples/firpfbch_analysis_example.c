@@ -14,12 +14,13 @@
 
 int main() {
     // options
-    unsigned int num_channels=8;
-    float slsl=60;
-    unsigned int num_frames=50;  // num frames
+    unsigned int num_channels=8;    // number of channels
+    unsigned int m=2;               // filter delay
+    float slsl=-60;                 // sidelobe suppression level
+    unsigned int num_frames=25;     // num frames
 
     // create objects
-    firpfbch c = firpfbch_create(num_channels, slsl, FIRPFBCH_NYQUIST, FIRPFBCH_ANALYZER);
+    firpfbch c = firpfbch_create(num_channels, m, slsl, FIRPFBCH_NYQUIST, FIRPFBCH_ANALYZER);
 
     //firpfbch_print(c);
 

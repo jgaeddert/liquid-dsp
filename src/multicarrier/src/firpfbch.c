@@ -18,6 +18,8 @@
 
 struct firpfbch_s {
     unsigned int num_channels;
+    unsigned int m;
+    float beta;
     float complex * x;  // time-domain buffer
     float complex * X;  // freq-domain buffer
     
@@ -30,7 +32,11 @@ struct firpfbch_s {
     unsigned int type;  // synthesis/analysis
 };
 
-firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, int _type)
+firpfbch firpfbch_create(unsigned int _num_channels,
+                         unsigned int _m,
+                         float _beta,
+                         int _nyquist,
+                         int _type)
 {
     firpfbch c = (firpfbch) malloc(sizeof(struct firpfbch_s));
     c->num_channels = _num_channels;
@@ -44,17 +50,22 @@ firpfbch firpfbch_create(unsigned int _num_channels, float _slsl, int _nyquist, 
 
     // design filter using kaiser window and be done with it
     // TODO: use filter prototype object
-    unsigned int m=2;
-    h_len = 2*m*(c->num_channels);
+    if (_m < 1) {
+        printf("error: firpfbch_create(), invalid filter delay (must be greater than 1)\n");
+        exit(1);
+    }
+    c->m = _m;
+    c->beta = _beta;
+    h_len = 2*(c->m)*(c->num_channels);
     float h[h_len+1];
     if (_nyquist == FIRPFBCH_NYQUIST) {
         float fc = 1/(float)(c->num_channels);  // cutoff frequency
-        fir_kaiser_window(h_len+1, fc, _slsl, h);
+        fir_kaiser_window(h_len+1, fc, c->beta, h);
     } else if (_nyquist == FIRPFBCH_ROOTNYQUIST) {
-        design_rrc_filter((c->num_channels),m,0.99f,0.0f,h);
+        design_rrc_filter((c->num_channels),(c->m),(c->beta),0.0f,h);
     } else {
         printf("error: firpfbch_create(), unsupported nyquist flag: %d\n", _nyquist);
-        exit(0);
+        exit(1);
     }
 
     // generate bank of sub-samped filters

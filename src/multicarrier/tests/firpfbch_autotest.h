@@ -10,13 +10,14 @@
 void autotest_firpfbch_analysis_x()
 {
     unsigned int num_channels=8;
-    float slsl=60;
+    unsigned int m=2;
+    float slsl=-60.0f;
     float tol=0.05f;
 
     float f;
     nco nco_synth = nco_create();
 
-    firpfbch c = firpfbch_create(num_channels, slsl, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER);
+    firpfbch c = firpfbch_create(num_channels, m, slsl, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER);
 
     unsigned int i, j, k;
     float complex x[num_channels], y[num_channels];
@@ -60,10 +61,11 @@ void autotest_firpfbch_analysis_x()
 // AUTOTEST: validate synthesis correctness
 //
 void autotest_firpfbch_synthesis() {
-    unsigned int num_channels = 4;
-    unsigned int num_symbols = 8;
-    //unsigned int m=2; // filter delay
-    float tol=0.05f;    // high tolerance due to nyquist filter mismatch
+    unsigned int num_channels = 4;  // number of channels
+    unsigned int num_symbols = 8;   // number of symbols per channel
+    unsigned int m=2;               // filter delay
+    float beta=0.99f;               // excess bandwidth factor
+    float tol=0.05f;                // error tolerance
 
     unsigned int i;
 
@@ -106,7 +108,11 @@ void autotest_firpfbch_synthesis() {
       1.63970000+ -0.00000000*_Complex_I,  -2.00000000+  1.98990000*_Complex_I
     };
 
-    firpfbch c = firpfbch_create(num_channels, 60.0f, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER);
+    firpfbch c = firpfbch_create(num_channels,
+                                 m,
+                                 beta,
+                                 FIRPFBCH_ROOTNYQUIST,
+                                 FIRPFBCH_SYNTHESIZER);
 
     float complex y[32];
     for (i=0; i<32; i++)
