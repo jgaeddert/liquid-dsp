@@ -46,6 +46,7 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h) {
     // chooise kaiser beta parameter (approximate)
     // from:
     //  P.P. Vaidyanathan, "Multirate Systems and Filter Banks
+    _slsl = fabsf(_slsl);
     float beta;
     if (_slsl > 50.0f)
         beta = 0.1102f*(_slsl - 8.7f);

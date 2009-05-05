@@ -29,7 +29,8 @@ struct firpfbch_s {
 #else
     fftplan fft;
 #endif
-    unsigned int type;  // synthesis/analysis
+    int nyquist;    // nyquist/root-nyquist
+    int type;       // synthesis/analysis
 };
 
 firpfbch firpfbch_create(unsigned int _num_channels,
@@ -40,6 +41,9 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 {
     firpfbch c = (firpfbch) malloc(sizeof(struct firpfbch_s));
     c->num_channels = _num_channels;
+    c->m = _m;
+    c->beta = _beta;
+    c->nyquist = _nyquist;
     c->type = _type;
 
     // create bank of filters
@@ -54,14 +58,12 @@ firpfbch firpfbch_create(unsigned int _num_channels,
         printf("error: firpfbch_create(), invalid filter delay (must be greater than 1)\n");
         exit(1);
     }
-    c->m = _m;
-    c->beta = _beta;
     h_len = 2*(c->m)*(c->num_channels);
     float h[h_len+1];
-    if (_nyquist == FIRPFBCH_NYQUIST) {
+    if (c->nyquist == FIRPFBCH_NYQUIST) {
         float fc = 1/(float)(c->num_channels);  // cutoff frequency
         fir_kaiser_window(h_len+1, fc, c->beta, h);
-    } else if (_nyquist == FIRPFBCH_ROOTNYQUIST) {
+    } else if (c->nyquist == FIRPFBCH_ROOTNYQUIST) {
         design_rrc_filter((c->num_channels),(c->m),(c->beta),0.0f,h);
     } else {
         printf("error: firpfbch_create(), unsupported nyquist flag: %d\n", _nyquist);
@@ -69,11 +71,11 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     }
 
     // generate bank of sub-samped filters
+    unsigned int i, n;
     if (c->type == FIRPFBCH_SYNTHESIZER) {
         // length of each sub-sampled filter
         unsigned int h_sub_len = h_len / c->num_channels;
         float h_sub[h_sub_len];
-        unsigned int i, n;
         for (i=0; i<c->num_channels; i++) {
             for (n=0; n<h_sub_len; n++) {
                 h_sub[n] = h[i + n*(c->num_channels)];
@@ -84,7 +86,6 @@ firpfbch firpfbch_create(unsigned int _num_channels,
         // length of each sub-sampled filter
         unsigned int h_sub_len = h_len / c->num_channels;
         float h_sub[h_sub_len+1];
-        unsigned int i, n;
         for (i=0; i<c->num_channels; i++) {
             h_sub[0] = 0.0f;    // NOTE: this additional zero is required to
                                 //       align filterbank channelizer output
