@@ -139,12 +139,12 @@ void firpfbch_print(firpfbch _c)
 }
 
 
-void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X)
+void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _y)
 {
     unsigned int i;
 
-    // copy samples into time-domain buffer (_c->x)
-    memmove(_c->x, _x, (_c->num_channels)*sizeof(float complex));
+    // copy samples into ifft input buffer (_c->X)
+    memmove(_c->X, _x, (_c->num_channels)*sizeof(float complex));
 
     // execute inverse fft, store in time-domain buffer (_c->x)
 #if HAVE_FFTW3_H
@@ -157,7 +157,10 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
     // execute filterbank, putting samples into output buffer
     for (i=0; i<_c->num_channels; i++) {
         fir_filter_crcf_push(_c->bank[i], _c->x[i]);
-        fir_filter_crcf_execute(_c->bank[i], &(_x[i]));
+        fir_filter_crcf_execute(_c->bank[i], &(_y[i]));
+
+        // invoke scaling factor
+        _y[i] /= (float)(_c->num_channels);
     }
 }
 
