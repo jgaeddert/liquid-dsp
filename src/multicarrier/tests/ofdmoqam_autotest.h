@@ -9,7 +9,7 @@
 // 
 // AUTOTEST: test sub-band energy
 //
-void autotest_ofdmoqam_synthesis()
+void xautotest_ofdmoqam_synthesis()
 {
     unsigned int num_channels=4;
     unsigned int num_symbols=16;
