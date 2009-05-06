@@ -197,7 +197,7 @@ void autotest_firpfbch_analysis_noise() {
 // 
 // AUTOTEST: test sub-band energy
 //
-void xautotest_firpfbch_analysis_x()
+void autotest_firpfbch_analysis_energy()
 {
     unsigned int num_channels=8;
     unsigned int m=2;
@@ -217,7 +217,9 @@ void xautotest_firpfbch_analysis_x()
         f = 2*M_PI * i / (float)num_channels;
         nco_set_frequency(nco_synth, f);
 
-        for (j=0; j<20; j++) {
+        // generate tone centered on sub-channel (need to generate
+        // enough frames to flush buffers of other channels)
+        for (j=0; j<4*m; j++) {
             // generate frame of data
             for (k=0; k<num_channels; k++) {
                 nco_cexpf(nco_synth, &x[k]);
