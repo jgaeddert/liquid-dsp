@@ -12,21 +12,26 @@
 
 int main() {
     // options
+    unsigned int num_channels=14;    // for now, must be even number
     unsigned int num_symbols=32;    // num symbols
-    unsigned int num_flush=4;       // num symbols to flush buffers
     unsigned int m=2;               // ofdm/oqam symbol delay
+    modulation_scheme ms = MOD_QAM; // modulation scheme
+    unsigned int bps = 4;           // modulation depth (bits/symbol)
 
-    unsigned int num_channels=4;    // for now, must be even number
-    float gain[4] = {1,1,1,1};
+    // number of frames (compensate for filter delay)
+    unsigned int num_frames = num_symbols + 2*m;
 
-    unsigned int num_frames = num_symbols+num_flush;
+    unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
     ofdmoqam cs = ofdmoqam_create(num_channels, m, OFDMOQAM_SYNTHESIZER);
     ofdmoqam ca = ofdmoqam_create(num_channels, m, OFDMOQAM_ANALYZER);
 
     // modem
-    modem mod = modem_create(MOD_QAM,4);
+    modem mod = modem_create(ms,bps);
+
+    modem mod0 = modem_create(MOD_QAM,4);
+    modem mod1 = modem_create(MOD_QPSK,2);
 
     FILE*fid = fopen(DEBUG_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
@@ -35,7 +40,7 @@ int main() {
     fprintf(fid,"num_symbols=%u;\n", num_symbols);
 
     fprintf(fid,"X = zeros(%u,%u);\n", num_channels, num_frames);
-    fprintf(fid,"y = zeros(1,%u);\n",  num_channels * num_frames);
+    fprintf(fid,"y = zeros(1,%u);\n",  num_samples);
     fprintf(fid,"Y = zeros(%u,%u);\n", num_channels, num_frames);
 
     unsigned int i, j, n=0;
@@ -49,9 +54,20 @@ int main() {
 
         // generate frame data
         for (j=0; j<num_channels; j++) {
-            g = (i<num_symbols) ? gain[j] : 0.0f;
+            g = (i<num_symbols) ? 1.0f : 0.0f;
             s = modem_gen_rand_sym(mod);
             modem_modulate(mod,s,&X[j]);
+
+#if 0
+            if ((j%2)==0) {
+                s = modem_gen_rand_sym(mod0);
+                modem_modulate(mod0,s,&X[j]);
+            } else {
+                s = modem_gen_rand_sym(mod1);
+                modem_modulate(mod1,s,&X[j]);
+            }
+#endif
+
             X[j] *= g;
         }
 
@@ -79,16 +95,17 @@ int main() {
 
     // print results
     fprintf(fid,"\n\n");
-    fprintf(fid,"return\n");
-    fprintf(fid,"nfft=1024;\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Y = 20*log10(abs(fft(y,nfft)));\n");
-    fprintf(fid,"Y = Y - 20*log10(num_channels * num_symbols);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,Y,'LineWidth',2,'Color',[0.25 0.5 0.5]);\n");
-    fprintf(fid,"xlabel('Normalized Frequency');\n");
-    fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"x = X(:,1:%u);\n", num_symbols);
+    fprintf(fid,"y = Y(:,%u:%u);\n", 2*m+1, num_symbols + 2*m);
+    fprintf(fid,"for i=1:num_channels,\n");
+    fprintf(fid,"    figure;\n");
+    fprintf(fid,"    subplot(2,1,1);\n");
+    fprintf(fid,"    plot(1:num_symbols,real(x(i,:)),'-x',1:num_symbols,real(y(i,:)),'-x');\n");
+    fprintf(fid,"    title(['channel ' num2str(i-1)]);\n");
+    fprintf(fid,"    subplot(2,1,2);\n");
+    fprintf(fid,"    plot(1:num_symbols,imag(x(i,:)),'-x',1:num_symbols,imag(y(i,:)),'-x');\n");
+    fprintf(fid,"    pause(0.2);\n");
+    fprintf(fid,"end;\n");
 
     fclose(fid);
     printf("results written to %s\n", DEBUG_FILENAME);
@@ -97,6 +114,9 @@ int main() {
     ofdmoqam_destroy(cs);
     ofdmoqam_destroy(ca);
     modem_destroy(mod);
+
+    modem_destroy(mod0);
+    modem_destroy(mod1);
 
     printf("done.\n");
     return 0;

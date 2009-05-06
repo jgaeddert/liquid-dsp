@@ -37,6 +37,15 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type)
     c->type = _type;
     c->beta = 0.99f;
 
+    // validate input
+    if ( ((c->num_channels)%2) != 0 ) {
+        printf("error: ofdmoqam_create(), invalid channel number %u (must be even)\n", c->num_channels);
+        exit(1);
+    } else if (c->m < 1) {
+        printf("error: ofdmoqam_create(), invalid filter delay %u (must be greater than 1)\n", c->m);
+        exit(1);
+    }
+
     // allocate memory for time-domain buffers
     c->x0 = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     c->x1 = (float complex*) malloc((c->num_channels)*sizeof(float complex));
@@ -81,6 +90,7 @@ void ofdmoqam_print(ofdmoqam _c)
 void ofdmoqam_synthesizer_execute(ofdmoqam _c, float complex * _X, float complex * _x)
 {
     unsigned int i;
+    unsigned int k2 = (_c->num_channels)/2;
 
     // prepare signal
     for (i=0; i<_c->num_channels; i+=2) {
@@ -98,28 +108,30 @@ void ofdmoqam_synthesizer_execute(ofdmoqam _c, float complex * _X, float complex
     firpfbch_execute(_c->c1, _c->X1, _c->x1);
 
     // delay the upper branch
-    memmove(_c->x_prime + _c->num_channels/2, _c->x0, (_c->num_channels/2)*sizeof(float complex));
+    memmove(_c->x_prime + k2, _c->x0, k2*sizeof(float complex));
 
     for (i=0; i<_c->num_channels; i++)
         _x[i] = _c->x_prime[i] + _c->x1[i];
 
     // finish delay operation
-    memmove(_c->x_prime, _c->x0 + _c->num_channels/2, (_c->num_channels/2)*sizeof(float complex));
+    memmove(_c->x_prime, _c->x0 + k2, k2*sizeof(float complex));
 }
 
 void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * _X)
 {
     unsigned int i;
+    unsigned int k2 = (_c->num_channels)/2;
+
     memmove(_c->x0, _x, (_c->num_channels)*sizeof(float complex));
 
     // delay the lower branch
-    memmove(_c->x_prime + _c->num_channels/2, _x, (_c->num_channels/2)*sizeof(float complex));
+    memmove(_c->x_prime + k2, _x, k2*sizeof(float complex));
 
     // copy delayed lower branch partition
     memmove(_c->x1, _c->x_prime, (_c->num_channels)*sizeof(float complex));
 
     // finish delay operation
-    memmove(_c->x_prime, _x + _c->num_channels/2, (_c->num_channels/2)*sizeof(float complex));
+    memmove(_c->x_prime, _x + k2, k2*sizeof(float complex));
 
     // execute analysis filter banks
     firpfbch_execute(_c->c0, _c->x0, _c->X0);
