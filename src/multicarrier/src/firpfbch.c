@@ -107,11 +107,19 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     c->X = (float complex*) malloc((c->num_channels)*sizeof(float complex));
 
     // create fft plan
+    if (c->type == FIRPFBCH_SYNTHESIZER) {
 #if HAVE_FFTW3_H
     c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_BACKWARD, FFTW_ESTIMATE);
 #else
     c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
 #endif
+    } else {
+#if HAVE_FFTW3_H
+    c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_FORWARD, FFTW_ESTIMATE);
+#else
+    c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_FORWARD);
+#endif
+    }
 
     return c;
 }
