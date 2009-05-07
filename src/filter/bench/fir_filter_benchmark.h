@@ -11,7 +11,7 @@ void fir_filter_rrrf_bench(
     unsigned long int *_num_iterations,
     unsigned int _n)
 {
-    float b[_n], a[_n], y;
+    float b[_n], y;
     unsigned int i;
     for (i=0; i<_n; i++)
         b[i] = 1.0f;
