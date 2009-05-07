@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <string.h>
 
-#include "buffer_internal.h"
+#include "liquid.internal.h"
 
 struct gport_s {
     void * v;

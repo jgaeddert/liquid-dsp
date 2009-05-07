@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "buffer_internal.h"
+#include "liquid.internal.h"
 
 struct BUFFER(_s) {
     T * v;

@@ -15,14 +15,6 @@ local_s_files	:= 	\
 	gport.c		\
 	gport2.c
 
-# local_h_files
-#
-# This is a list of local header files upon which the objects
-# depend.  These files are also located under the src/
-# subdirectory within $(local_dir)
-#
-local_h_files	:= buffer_internal.h
-
 # local_t_files
 #
 # This is a list of local autotest scripts (header files) which

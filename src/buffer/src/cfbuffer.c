@@ -2,7 +2,7 @@
 // Complex Float buffer
 //
 
-#include "buffer_internal.h"
+#include "liquid.internal.h"
 
 #define BUFFER_TYPE_CFLOAT
 

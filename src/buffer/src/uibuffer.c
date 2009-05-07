@@ -2,7 +2,7 @@
 // Buffer: unsigned int
 //
 
-#include "buffer_internal.h"
+#include "liquid.internal.h"
 
 #define BUFFER_TYPE_UINT
 

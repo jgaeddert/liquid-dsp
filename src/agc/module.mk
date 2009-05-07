@@ -10,14 +10,6 @@ module_name	:= agc
 #
 local_s_files	:= agc.c
 
-# local_h_files
-#
-# This is a list of local header files upon which the objects
-# depend.  These files are also located under the src/
-# subdirectory within $(local_dir)
-#
-local_h_files	:= agc_internal.h
-
 # local_t_files
 #
 # This is a list of local autotest scripts (header files) which

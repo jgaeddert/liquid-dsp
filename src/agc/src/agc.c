@@ -6,7 +6,30 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "agc_internal.h"
+#include "liquid.internal.h"
+
+struct agc_s {
+    float e;            // estimated signal energy
+    float e_target;     // target signal energy
+
+    // gain variables
+    float g;            // current gain value
+    float g_min;        // minimum gain value
+    float g_max;        // maximum gain value
+
+    // loop filter parameters
+    float BT;           // bandwidth-time constant
+    float alpha;        // feed-back gain
+    float beta;         // feed-forward gain
+
+    // loop filter state variables
+    float e_prime;
+    float e_hat;        // filtered energy estimate
+    float tmp2;
+
+    fir_filter_rrrf f;
+};
+
 
 agc agc_create(float _etarget, float _BT)
 {

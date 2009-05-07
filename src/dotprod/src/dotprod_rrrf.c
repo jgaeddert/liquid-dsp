@@ -2,7 +2,7 @@
 // Floating-point dot product
 //
 
-#include "dotprod_internal.h"
+#include "liquid.internal.h"
 
 #define X(name) LIQUID_CONCAT(dotprod_rrrf,name)
 #define TO float
