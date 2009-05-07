@@ -35,10 +35,12 @@ int main() {
     float x[samples_per_frame], y[samples_per_frame];
     unsigned char framedata[bytes_per_frame];
     for (i=0; i<num_frames; i++) {
-        dphi = M_PI * 3 / (float)num_channels;
+        //dphi = M_PI * 3 / (float)num_channels;
+        dphi = 0;
         for (j=0; j<samples_per_frame; j++) {
             x[j] = (i==0) ? 0.5f*cosf(phi) : 0.0f;
             phi += dphi;
+            dphi += 0.002f;
 
             x[j] *= kaiser(j,samples_per_frame,10.0f);
         }

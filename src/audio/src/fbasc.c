@@ -245,6 +245,10 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
         // run reverse channelizer
         firpfbch_execute(_q->channelizer, _q->y, _q->x);
 
+        // scale by number of channels
+        for (i=0; i<_q->num_channels; i++)
+            _q->x[i] *= (float)(_q->num_channels);
+
         // run through Hilbert transform (interpolator)
         for (i=0; i<_q->num_channels; i++) {
             firhilb_interp_execute(_q->hilbert_transform, _q->x[i], &_audio[n]);
