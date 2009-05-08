@@ -22,8 +22,8 @@ void eqrls_cccf_train_bench(
     
     unsigned long int i;
 
-    float complex y=1.0f + 1.0f*_Complex_I;
-    float complex d=1.0f - 1.0f*_Complex_I;
+    float complex y;
+    float complex d;
     float complex z;
 
     // reduce number of iterations relative to speed (keeps execution
@@ -33,6 +33,13 @@ void eqrls_cccf_train_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
+        // periodically initializing the input and training sequence
+        // to a random number helps prevent the RLS algorithm's
+        // internal matrices don't explode, and adds negligible time
+        // to the benchmark
+        crandnf(&y);
+        crandnf(&d);
+
         eqrls_cccf_execute(eq, y, d, &z);
         eqrls_cccf_execute(eq, y, d, &z);
         eqrls_cccf_execute(eq, y, d, &z);
