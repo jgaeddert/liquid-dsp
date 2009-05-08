@@ -38,7 +38,6 @@ void eqrls_cccf_train_bench(
         // internal matrices don't explode, and adds negligible time
         // to the benchmark
         crandnf(&y);
-        crandnf(&d);
 
         eqrls_cccf_execute(eq, y, d, &z);
         eqrls_cccf_execute(eq, y, d, &z);
