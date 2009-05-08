@@ -3,9 +3,14 @@
 
 #include <iostream>
 #include <math.h>
-#include <complex>
 
 #include <liquid/liquid.h>
+
+// NOTE: the definition for liquid_float_complex will change
+//       depending upon whether the standard C++ <complex>
+//       header file is included before or after including
+//       <liquid/liquid.h>
+#include <complex>
 
 int main() {
     // create nco object

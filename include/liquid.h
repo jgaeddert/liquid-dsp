@@ -29,6 +29,7 @@ extern "C" {
 #else
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef R C[2]
 #endif
+//#   define LIQUID_DEFINE_COMPLEX(R,C) typedef C struct {R real; R imag;};
 
 LIQUID_DEFINE_COMPLEX(float, liquid_float_complex);
 
