@@ -22,6 +22,7 @@ struct ofdmoqam_s {
     float complex * X1; // freq-domain buffer
 
     float complex * x_prime;
+    float complex * x_tilda;
     
     firpfbch c0;
     firpfbch c1;
@@ -60,6 +61,11 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type)
     for (i=0; i<c->num_channels; i++)
         c->x_prime[i] = 0;
 
+    // allocate memory for analyzer delay buffer
+    c->x_tilda = (float complex*) malloc((c->num_channels)*sizeof(float complex));
+    for (i=0; i<c->num_channels; i++)
+        c->x_tilda[i] = 0;
+
     // create filterbank channelizers
     // TODO: use actual prototype (get rid of _slsl input)
     c->c0 = firpfbch_create(_num_channels, c->m, c->beta, FIRPFBCH_ROOTNYQUIST, c->type);
@@ -77,6 +83,9 @@ void ofdmoqam_destroy(ofdmoqam _c)
     free(_c->c1);
     free(_c->x1);
     free(_c->X1);
+
+    free(_c->x_prime);
+    free(_c->x_tilda);
 
     free(_c);
 }
@@ -137,13 +146,17 @@ void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * 
     firpfbch_execute(_c->c0, _c->x0, _c->X0);
     firpfbch_execute(_c->c1, _c->x1, _c->X1);
 
+    // re-combine channels, delay upper branch by one symbol
     for (i=0; i<_c->num_channels; i+=2) {
-        _X[i]   = crealf(_c->X0[i])
+        _X[i]   = crealf(_c->x_tilda[i])
                 + cimagf(_c->X1[i])*_Complex_I;
 
-        _X[i+1] = cimagf(_c->X0[i+1])*_Complex_I
+        _X[i+1] = cimagf(_c->x_tilda[i+1])*_Complex_I
                 + crealf(_c->X1[i+1]);
     }
+
+    // complete upper-branch delay operation
+    memmove(_c->x_tilda, _c->X0, (_c->num_channels)*sizeof(float complex));
 }
 
 void ofdmoqam_execute(ofdmoqam _c, float complex * _x, float complex * _y)

@@ -12,14 +12,14 @@
 
 int main() {
     // options
-    unsigned int num_channels=14;    // for now, must be even number
+    unsigned int num_channels=6;    // for now, must be even number
     unsigned int num_symbols=32;    // num symbols
     unsigned int m=2;               // ofdm/oqam symbol delay
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 4;           // modulation depth (bits/symbol)
 
     // number of frames (compensate for filter delay)
-    unsigned int num_frames = num_symbols + 2*m;
+    unsigned int num_frames = num_symbols + 2*m + 1;
 
     unsigned int num_samples = num_channels * num_frames;
 
@@ -96,7 +96,7 @@ int main() {
     // print results
     fprintf(fid,"\n\n");
     fprintf(fid,"x = X(:,1:%u);\n", num_symbols);
-    fprintf(fid,"y = Y(:,%u:%u);\n", 2*m+1, num_symbols + 2*m);
+    fprintf(fid,"y = Y(:,%u:%u);\n", 2*m+2, num_symbols + 2*m+1);
     fprintf(fid,"for i=1:num_channels,\n");
     fprintf(fid,"    figure;\n");
     fprintf(fid,"    subplot(2,1,1);\n");
