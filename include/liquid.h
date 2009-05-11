@@ -34,7 +34,7 @@ extern "C" {
 LIQUID_DEFINE_COMPLEX(float, liquid_float_complex);
 
 // 
-// Automatic gain control
+// MODULE : agc (automatic gain control)
 //
 typedef struct agc_s * agc;
 
@@ -65,7 +65,12 @@ float agc_get_gain(agc _agc);
 
 
 //
-// Audio
+// MODULE : ann (artificial neural network)
+//
+typedef struct ann_s * ann;
+
+//
+// MODULE : audio
 //
 
 // CVSD: continuously variable slope delta
@@ -98,7 +103,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame);
 void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio);
 
 //
-// Buffers
+// MODULE : buffer
 //
 
 // Buffer
@@ -221,7 +226,7 @@ void gport2_signal(gport2 _p, int _message);
 
 
 //
-// Channel
+// MODULE : channel
 //
 
 // AWGN channel
@@ -250,7 +255,7 @@ void channel_print(channel _c);
 void channel_execute(channel _c, liquid_float_complex _x, liquid_float_complex *_y);
 
 //
-// Dot product
+// MODULE : dotprod (vector dot product)
 //
 
 #define DOTPROD_MANGLE_RRRF(name)   LIQUID_CONCAT(dotprod_rrrf,name)
@@ -281,7 +286,7 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCF, liquid_float_complex, liquid_floa
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 //
-// Equalization
+// MODULE : equalization
 //
 
 // least mean-squares (LMS)
@@ -323,7 +328,7 @@ LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_CCCF, liquid_float_complex);
 
 
 // 
-// Estimation
+// MODULE : estimation
 //
 
 float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
@@ -332,7 +337,7 @@ float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
 
 
 //
-// FEC, etc.
+// MODULE : fec (forward error correction)
 //
 
 
@@ -360,7 +365,7 @@ unsigned char checksum_generate_key(unsigned char *_data, unsigned int _n);
 int  checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key);
 
 //
-// CRC
+// crc (cyclic redundancy check)
 //
 //void crc_generate_key(unsigned char *_msg, unsigned int _msg_len, unsigned char *_key, unsigned int _key_len);
 unsigned int crc32_generate_key(unsigned char *_data, unsigned int _n);
@@ -403,7 +408,7 @@ void fec_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, uns
 
 
 //
-// fft : inefficient but effective
+// MODULE : fft (fast Fourier transform)
 //
 
 typedef struct fftplan_s * fftplan;
@@ -427,7 +432,7 @@ void asgram_destroy(asgram _q);
 void asgram_execute(asgram _q);
 
 //
-// Filter design
+// MODULE : filter
 //
 
 // generic prototypes
@@ -536,11 +541,6 @@ void butterf(unsigned int _n, float * _a);
 //  _b  :   numerator coefficient array (length 1)
 //  _a  :   denominator coefficient array (length _n+1)
 void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
-
-
-//
-// Filters
-//
 
 
 //
@@ -797,7 +797,7 @@ void lf2_generate_filter(lf2 _f);
 
 
 //
-// Framing
+// MODULE : framing
 //
 
 #define LIQUID_CONCAT(prefix,name) prefix ## name
@@ -935,7 +935,7 @@ int  packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg
 
 
 //
-// Block interleaver, operates on bytes
+// MODULE : interleaver
 //
 
 typedef struct interleaver_s * interleaver;
@@ -965,7 +965,7 @@ void interleaver_debug_print(interleaver _i);
 
 
 //
-// Useful mathematical formulae
+// MODULE : math
 //
 
 // ln( gamma(z) )
@@ -1004,7 +1004,7 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 
 
 //
-// Matrix method prototypes
+// MODULE : matrix
 //
 
 #define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(fmatrix, name)
@@ -1061,7 +1061,7 @@ void polynomial_destroy(polynomial _p);
 
 
 //
-// Modulator/demodulator common header (type independent)
+// MODULE : modem (modulator/demodulator)
 //
 
 // Maximum number of allowed bits per symbol
@@ -1157,7 +1157,7 @@ void freqmodem_modulate(freqmodem _fm, float _x, liquid_float_complex *_y);
 void freqmodem_demodulate(freqmodem _fm, liquid_float_complex *_y, float *_x);
 
 //
-// Multicarrier
+// MODULE : multicarrier
 //
 
 // FIR polyphase filterbank channelizer
@@ -1197,7 +1197,7 @@ void ofdmoqam_execute(ofdmoqam _c, liquid_float_complex * _x, liquid_float_compl
 
 
 // 
-// Numerically-controlled oscillator
+// MODULE : nco (numerically-controlled oscillator)
 //
 
 
@@ -1273,7 +1273,7 @@ void pll_step(pll _p, nco _nco, float _e);
 
 
 //
-// Optimization
+// MODULE : optimization
 //
 
 // optim pattern set (struct)
@@ -1298,7 +1298,7 @@ typedef void(*optim_target_function)(float *_x, float *_y, void *_p);
 typedef float(*optim_obj_function)(optim_ps _ps, void *_p, optim_target_function _f);
 
 //
-// Quantization
+// MODULE : quantization
 //
 
 float compress_mulaw(float _x, float _mu);
@@ -1329,7 +1329,7 @@ void quantizer_rf_dac(quantizer_rf _q, unsigned int _sample, float * _x);
 
 
 //
-// Random number generators
+// MODULE : random (number generators)
 //
 
 
@@ -1380,7 +1380,7 @@ void scramble_data(unsigned char * _x, unsigned int _len);
 void unscramble_data(unsigned char * _x, unsigned int _len);
 
 //
-// Binary sequencing
+// MODULE : sequence
 //
 
 // Binary sequence (generic)
@@ -1461,6 +1461,9 @@ unsigned int msequence_get_length(msequence _ms);
 
 void bsequence_create_ccodes(bsequence _a, bsequence _b);
 
+// 
+// MODULE : utility
+//
 
 // packs bytes with one bit of information into a byte
 void pack_bytes(
