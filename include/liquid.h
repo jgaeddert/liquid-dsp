@@ -1195,6 +1195,18 @@ void ofdmoqam_destroy(ofdmoqam _c);
 void ofdmoqam_print(ofdmoqam _c);
 void ofdmoqam_execute(ofdmoqam _c, liquid_float_complex * _x, liquid_float_complex * _y);
 
+// Discrete multi-tone (OFDM)
+typedef struct ofdm_s * ofdm;
+#define OFDM_ANALYZER           FIRPFBCH_ANALYZER
+#define OFDM_SYNTHESIZER        FIRPFBCH_SYNTHESIZER
+ofdm ofdm_create(unsigned int   _num_channels,
+                 unsigned int   _cp_len,
+                 unsigned int   _taper_len,
+                 int            _type);
+void ofdm_destroy(ofdm _c);
+void ofdm_print(ofdm _c);
+void ofdm_execute(ofdm _c, liquid_float_complex * _x, liquid_float_complex *_y);
+
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
