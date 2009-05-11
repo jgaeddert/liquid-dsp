@@ -71,8 +71,6 @@ FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f, TC * _h, unsigned int _n)
 {
     unsigned int i;
     if (_n != _f->h_len) {
-        unsigned int h_len_old = _f->h_len;
-
         // reallocate memory
         _f->h_len = _n;
         _f->h = (TC*) realloc(_f->h, (_f->h_len)*sizeof(TC));
