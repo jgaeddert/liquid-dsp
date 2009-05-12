@@ -29,8 +29,11 @@ void firpfbch_execute_bench(
     for (i=0; i<_num_channels; i++)
         x[i] = 1.0f + _Complex_I*1.0f;
 
+    // scale number of iterations to keep execution time
+    // relatively linear
+    *_num_iterations /= _num_channels;
+
     // start trials
-    *_num_iterations /= 16;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         firpfbch_execute(c,x,y);
