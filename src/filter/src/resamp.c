@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "filter_internal.h"
-
 // defined:
 //  TO          output data type
 //  TC          coefficient data type

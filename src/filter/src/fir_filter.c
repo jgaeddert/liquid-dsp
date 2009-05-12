@@ -6,8 +6,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "filter_internal.h"
-
 #define FIR_FILTER_USE_DOTPROD 1
 
 // defined:

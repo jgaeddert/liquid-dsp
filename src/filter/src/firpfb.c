@@ -6,8 +6,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "filter_internal.h"
-
 // defined:
 //  FIRPFB()    name-mangling macro
 //  TO          output data type

@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "filter_internal.h"
-
 // defined:
 //  DECIM()     name-mangling macro
 //  TO          output data type

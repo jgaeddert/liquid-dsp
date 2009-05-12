@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "liquid.internal.h"
-
 // defined:
 //  RESAMP2()       name-mangling macro
 //  TO              output data type
