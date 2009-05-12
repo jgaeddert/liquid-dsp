@@ -40,7 +40,9 @@ local_t_files	:=			\
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:= firpfbch_benchmark.h
+local_b_files	:=			\
+	firpfbch_benchmark.h		\
+	ofdmoqam_benchmark.h
 
 
 include common.mk
