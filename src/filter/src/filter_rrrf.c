@@ -11,6 +11,7 @@
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_rrrf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_rrrf,name)
+#define QMFB(name)          LIQUID_CONCAT(qmfb_rrrf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrf,name)
@@ -32,6 +33,7 @@
 #include "firpfb.c"
 #include "interp.c"
 #include "decim.c"
+#include "qmfb.c"
 #include "resamp.c"
 #include "resamp2.c"
 #include "symsync.c"

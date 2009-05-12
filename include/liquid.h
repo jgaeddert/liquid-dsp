@@ -684,6 +684,28 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF, liquid_float_complex,   float,       
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
 
 // 
+// quadrature mirror filter banks
+//
+#define QMFB_MANGLE_RRRF(name)      LIQUID_CONCAT(qmfb_rrrf,name)
+#define QMFB_MANGLE_CRCF(name)      LIQUID_CONCAT(qmfb_crcf,name)
+#define QMFB_MANGLE_CCCF(name)      LIQUID_CONCAT(qmfb_cccf,name)
+
+#define LIQUID_QMFB_DEFINE_API(QMFB,TO,TC,TI)               \
+typedef struct QMFB(_s) * QMFB();                           \
+QMFB()  QMFB(_create)(unsigned int _m);                     \
+QMFB()  QMFB(_recreate)(QMFB() _q, unsigned int _m);        \
+void    QMFB(_destroy)(QMFB() _q);                          \
+void    QMFB(_print)(QMFB() _q);                            \
+void    QMFB(_execute)(QMFB() _q,                           \
+                       liquid_float_complex * _x,           \
+                       liquid_float_complex * _y0,          \
+                       liquid_float_complex * _y1);
+
+LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_RRRF, float, float, float)
+LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+
+// 
 // Half-band resampler
 //
 #define RESAMP2_MANGLE_RRRF(name)   LIQUID_CONCAT(resamp2_rrrf,name)
