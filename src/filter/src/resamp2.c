@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "filter_internal.h"
+#include "liquid.internal.h"
 
 // defined:
 //  RESAMP2()       name-mangling macro
