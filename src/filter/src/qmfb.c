@@ -158,3 +158,17 @@ void QMFB(_interp_execute)(QMFB() _f, TI _x, TO *_y)
 
 }
 
+void QMFB(_analysis_execute)(QMFB() _q,
+                             float complex * _x,
+                             float complex * _y0,
+                             float complex * _y1)
+{
+}
+
+void QMFB(_synthesis_execute)(QMFB() _q,
+                             float complex _y0,
+                             float complex _y1,
+                             float complex * _x)
+{
+}
+

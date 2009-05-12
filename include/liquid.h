@@ -696,10 +696,14 @@ QMFB()  QMFB(_create)(unsigned int _m);                     \
 QMFB()  QMFB(_recreate)(QMFB() _q, unsigned int _m);        \
 void    QMFB(_destroy)(QMFB() _q);                          \
 void    QMFB(_print)(QMFB() _q);                            \
-void    QMFB(_execute)(QMFB() _q,                           \
+void    QMFB(_analysis_execute)(QMFB() _q,                  \
                        liquid_float_complex * _x,           \
                        liquid_float_complex * _y0,          \
-                       liquid_float_complex * _y1);
+                       liquid_float_complex * _y1);         \
+void    QMFB(_synthesis_execute)(QMFB() _q,                 \
+                       liquid_float_complex _y0,            \
+                       liquid_float_complex _y1,            \
+                       liquid_float_complex * _x);
 
 LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_RRRF, float, float, float)
 LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
