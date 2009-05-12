@@ -117,6 +117,7 @@ void QMFB(_clear)(QMFB() _f)
     _f->w0_index = 0;
 }
 
+#if 0
 void QMFB(_decim_execute)(QMFB() _f, TI * _x, TO *_y)
 {
     TI * r;
@@ -155,18 +156,45 @@ void QMFB(_interp_execute)(QMFB() _f, TI _x, TO *_y)
     DOTPROD(_run4)(_f->h1, r, _f->h1_len, &_y[1]);
 
 }
+#endif
 
 void QMFB(_analysis_execute)(QMFB() _q,
-                             float complex * _x,
-                             float complex * _y0,
-                             float complex * _y1)
+                             TI   _x0,
+                             TI   _x1,
+                             TO * _y0,
+                             TO * _y1)
 {
+    TI * r; // read pointer
+
+    // compute quadrature component (filter branch)
+    WINDOW(_push)(_q->w1, _x0);
+    WINDOW(_read)(_q->w1, &r);
+    // TODO yq = DOTPROD(_execute)(_f->dpq, r);
+    DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
+
+    // compute in-phase component (delay branch)
+    *_y0 = _q->w0[_q->w0_index];
+    _q->w0[_q->w0_index] = _x1;
+    _q->w0_index = (_q->w0_index+1) % (_q->m);
 }
 
 void QMFB(_synthesis_execute)(QMFB() _q,
-                             float complex _y0,
-                             float complex _y1,
-                             float complex * _x)
+                              TI   _x0,
+                              TI   _x1,
+                              TO * _y0,
+                              TO * _y1)
 {
+    TI * r; // read pointer
+    
+    // compute first branch (delay)
+    *_y0 = _q->w0[_q->w0_index];
+    _q->w0[_q->w0_index] = _x0;
+    _q->w0_index = (_q->w0_index+1) % (_q->m);
+
+    // compute second branch (filter)
+    WINDOW(_push)(_q->w1, _x1);
+    WINDOW(_read)(_q->w1, &r);
+    //yq = DOTPROD(_execute)(_f->dpq, r);
+    DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
 }
 
