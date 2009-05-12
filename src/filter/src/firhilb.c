@@ -7,10 +7,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-//#include "firdes.h"
-
-#include "filter_internal.h"
-
 // defined:
 //  FIRHILB()       name-mangling macro
 //  T               coefficients type
