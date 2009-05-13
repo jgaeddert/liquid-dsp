@@ -35,7 +35,7 @@ int main() {
 
     // generate time-domain signal (windowed sinusoidal pulse)
     float theta=0.0f;
-    float d_theta = 0.22f*(2*M_PI);
+    float d_theta = 0.122f*(2*M_PI);
     for (i=0; i<n; i++) {
         if (i<num_samples) {
             x[2*i+0] = cexpf(_Complex_I*theta) * kaiser(2*i+0,2*num_samples,10.0f);
@@ -64,20 +64,26 @@ int main() {
         //printf("y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y), cimagf(y));
     }
 
-    fprintf(fid,"nfft=512;\n");
-#if 0
-    fprintf(fid,"X=20*log10(abs((fft(x.*hamming(2*n)',nfft))));\n");
-    fprintf(fid,"Y0=20*log10(abs((fft(y(1,:).*hamming(n)',nfft))));\n");
-    fprintf(fid,"Y1=20*log10(abs((fft(y(2,:).*hamming(n)',nfft))));\n");
-#else
-    fprintf(fid,"X=20*log10(abs((fft(x,nfft))));\n");
-    fprintf(fid,"Y0=20*log10(abs((fft(y(1,:),nfft))));\n");
-    fprintf(fid,"Y1=20*log10(abs((fft(y(2,:),nfft))));\n");
-#endif
-    fprintf(fid,"f=[0:(nfft-1)]/nfft;\n");
-    fprintf(fid,"figure; plot(f,X,'Color',[0.5 0.5 0.5],f/2,Y0,'LineWidth',2,0.5+f/2,Y1,'LineWidth',2);\n");
+    // plot results
+    fprintf(fid,"nfft=512; %% must be even number\n");
+    fprintf(fid,"X=20*log10(abs(fftshift(fft(x/n,nfft))));\n");
+    fprintf(fid,"Y0=20*log10(abs(fftshift(fft(y(1,:)/n,nfft))));\n");
+    fprintf(fid,"Y1=20*log10(abs(fftshift(fft(y(2,:)/n,nfft))));\n");
+
+    // Y1 needs to be split into two regions
+    fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"t0 = [1]:[nfft/2];\n");
+    fprintf(fid,"t1 = [nfft/2+1]:[nfft];\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"    plot(f,X,'Color',[0.5 0.5 0.5]);\n");
+    fprintf(fid,"    plot(f/2,Y0,'LineWidth',2,'Color',[0 0.5 0]);\n");
+    fprintf(fid,"    plot(f(t0)/2+0.5,Y1(t0),'LineWidth',2,'Color',[0.5 0 0]);\n");
+    fprintf(fid,"    plot(f(t1)/2-0.5,Y1(t1),'LineWidth',2,'Color',[0.5 0 0]);\n");
+    fprintf(fid,"hold off;\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original','Y_0','Y_1',1);");
+    fprintf(fid,"axis([-0.5 0.5 -140 20]);\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
