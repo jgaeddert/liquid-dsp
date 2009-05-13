@@ -17,9 +17,10 @@
 //  PRINTVAL()      print macro
 
 struct QMFB(_s) {
-    TC * h;             // filter prototype
+    float * h;          // filter prototype
     unsigned int m;     // primitive filter length
     unsigned int h_len; // actual filter length: h_len = 4*m+1
+    float beta;         // filter bandwidth/sidelobe suppression
 
     // lower branch (filter)
     TC * h1;
@@ -31,35 +32,26 @@ struct QMFB(_s) {
     unsigned int w0_index;
 };
 
-QMFB() QMFB(_create)(unsigned int _m)
+QMFB() QMFB(_create)(unsigned int _m, float _slsl)
 {
     QMFB() f = (QMFB()) malloc(sizeof(struct QMFB(_s)));
 
     // compute filter length
     // h_len = 2*(2*m) + 1
     f->m = _m;
-    if (f->m < 2)
-        f->m = 2;
+    f->beta = -fabsf(_slsl);
 
     f->h_len = 4*(f->m) + 1;
-    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
+    f->h = (float*) malloc((f->h_len)*sizeof(float));
 
     f->h1_len = 2*(f->m);
     f->h1 = (TC *) malloc((f->h1_len)*sizeof(TC));
 
     // design filter prototype
-    unsigned int i;
-    float t, h1, h2;
-    float beta = 6.0f;
-    for (i=0; i<f->h_len; i++) {
-        t = (float)i - (float)(f->h_len-1)/2.0f;
-        h1 = sincf(t/2.0f);
-        h2 = kaiser(i,f->h_len,beta);
-        f->h[i] = h1*h2;
-    }
+    fir_kaiser_window(f->h_len, 0.5f, f->beta, f->h);
 
-    // resample, alternate sign, reverse direction
-    unsigned int j=0;
+    // resample, reverse direction
+    unsigned int i, j=0;
     for (i=1; i<f->h_len; i+=2)
         f->h1[j++] = f->h[f->h_len - i - 1];
 
@@ -97,13 +89,15 @@ void QMFB(_print)(QMFB() _f)
     unsigned int i;
     for (i=0; i<_f->h_len; i++) {
         printf("  h(%4u) = ", i+1);
-        PRINTVAL(_f->h[i]);
+        //PRINTVAL(_f->h[i]);
+        printf("%8.4f", _f->h[i]);
         printf(";\n");
     }
     printf("---\n");
     for (i=0; i<_f->h1_len; i++) {
         printf("  h1(%4u) = ", i+1);
-        PRINTVAL(_f->h1[i]);
+        //PRINTVAL(_f->h1[i]);
+        printf("%8.4f", _f->h1[i]);
         printf(";\n");
     }
 }
