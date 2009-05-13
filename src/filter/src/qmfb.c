@@ -93,7 +93,7 @@ void QMFB(_destroy)(QMFB() _f)
 
 void QMFB(_print)(QMFB() _f)
 {
-    printf("fir half-band resampler: [%u]\n", _f->h_len);
+    printf("quadrature mirror filterbank: [%u taps]\n", _f->h_len);
     unsigned int i;
     for (i=0; i<_f->h_len; i++) {
         printf("  h(%4u) = ", i+1);
@@ -165,17 +165,22 @@ void QMFB(_analysis_execute)(QMFB() _q,
                              TO * _y1)
 {
     TI * r; // read pointer
+    TO z0, z1;
 
     // compute quadrature component (filter branch)
     WINDOW(_push)(_q->w1, _x0);
     WINDOW(_read)(_q->w1, &r);
     // TODO yq = DOTPROD(_execute)(_f->dpq, r);
-    DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
+    //DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
+    DOTPROD(_run)(_q->h1, r, _q->h1_len, &z1);
 
     // compute in-phase component (delay branch)
-    *_y0 = _q->w0[_q->w0_index];
+    z0 = _q->w0[_q->w0_index];
     _q->w0[_q->w0_index] = _x1;
     _q->w0_index = (_q->w0_index+1) % (_q->m);
+
+    *_y0 = z0 + z1;
+    *_y1 = z0 - z1;
 }
 
 void QMFB(_synthesis_execute)(QMFB() _q,
@@ -185,9 +190,10 @@ void QMFB(_synthesis_execute)(QMFB() _q,
                               TO * _y1)
 {
     TI * r; // read pointer
+    TO z0, z1;
     
     // compute first branch (delay)
-    *_y0 = _q->w0[_q->w0_index];
+    z0 = _q->w0[_q->w0_index];
     _q->w0[_q->w0_index] = _x0;
     _q->w0_index = (_q->w0_index+1) % (_q->m);
 
@@ -195,6 +201,10 @@ void QMFB(_synthesis_execute)(QMFB() _q,
     WINDOW(_push)(_q->w1, _x1);
     WINDOW(_read)(_q->w1, &r);
     //yq = DOTPROD(_execute)(_f->dpq, r);
-    DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
+    //DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
+    DOTPROD(_run)(_q->h1, r, _q->h1_len, &z1);
+
+    *_y0 = z0 + z1;
+    *_y1 = z0 - z1;
 }
 
