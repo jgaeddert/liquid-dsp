@@ -11,9 +11,14 @@
 #define OUTPUT_FILENAME "qmfb_crcf_analysis_example.m"
 
 int main() {
-    unsigned int m=5;   // filter delay
-    unsigned int n=64;  // number of samples
+    unsigned int m=5;               // filter delay
+    unsigned int num_samples=64;    // number of samples
 
+    // derived values
+    unsigned int n = num_samples + m;   // extend length of analysis to
+                                        // incorporate filter delay
+
+    // create filterbank
     qmfb_crcf f = qmfb_crcf_create(m);
 
     qmfb_crcf_print(f);
@@ -27,20 +32,28 @@ int main() {
 
     unsigned int i;
     float complex x[2*n], y[2][n];
+
+    // generate time-domain signal (windowed sinusoidal pulse)
     float theta=0.0f;
     float d_theta = 0.22f*(2*M_PI);
-
     for (i=0; i<n; i++) {
-        x[2*i+0] = cexpf(_Complex_I*theta);
-        theta += d_theta;
-        x[2*i+1] = cexpf(_Complex_I*theta);
-        theta += d_theta;
+        if (i<num_samples) {
+            x[2*i+0] = cexpf(_Complex_I*theta) * kaiser(2*i+0,2*num_samples,10.0f);
+            theta += d_theta;
+            x[2*i+1] = cexpf(_Complex_I*theta) * kaiser(2*i+1,2*num_samples,10.0f);
+            theta += d_theta;
+        } else {
+            x[2*i+0] = 0.0f;
+            x[2*i+1] = 0.0f;
+        }
     }
 
+    // compute QMF sub-channel output
     for (i=0; i<n; i++) {
         qmfb_crcf_analysis_execute(f, x[2*i+0], x[2*i+1], y[0]+i, y[1]+i);
     }
 
+    // output results
     for (i=0; i<n; i++) {
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(x[2*i+0]), cimagf(x[2*i+0]));
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(x[2*i+1]), cimagf(x[2*i+1]));
@@ -64,7 +77,7 @@ int main() {
     fprintf(fid,"f=[0:(nfft-1)]/nfft;\n");
     fprintf(fid,"figure; plot(f,X,'Color',[0.5 0.5 0.5],f/2,Y0,'LineWidth',2,0.5+f/2,Y1,'LineWidth',2);\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original','decimated',1);");
+    fprintf(fid,"legend('original','Y_0','Y_1',1);");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
