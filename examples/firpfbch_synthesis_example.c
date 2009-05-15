@@ -21,7 +21,7 @@ int main() {
     unsigned int num_samples = num_frames*num_channels;
 
     // create synthesizer object
-    firpfbch c = firpfbch_create(num_channels, m, slsl, FIRPFBCH_NYQUIST, FIRPFBCH_SYNTHESIZER);
+    firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, FIRPFBCH_SYNTHESIZER);
 
     FILE*fid = fopen(DEBUG_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);

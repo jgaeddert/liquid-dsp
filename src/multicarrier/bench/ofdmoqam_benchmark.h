@@ -21,7 +21,9 @@ void ofdmoqam_execute_bench(
     int _type)
 {
     // initialize channelizer
-    ofdmoqam c = ofdmoqam_create(_num_channels, _m, _type);
+    float beta  = 0.99f;
+    float dt    = 0.0f;
+    ofdmoqam c = ofdmoqam_create(_num_channels, _m, beta, dt, _type);
 
     unsigned long int i;
 

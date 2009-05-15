@@ -49,6 +49,7 @@ void autotest_firpfbch_synthesis() {
     firpfbch c = firpfbch_create(num_channels,
                                  m,
                                  beta,
+                                 0.0f,
                                  FIRPFBCH_NYQUIST,
                                  FIRPFBCH_SYNTHESIZER);
 
@@ -137,6 +138,7 @@ void autotest_firpfbch_synthesis_noise() {
     firpfbch c = firpfbch_create(num_channels,
                                  m,
                                  beta,
+                                 0.0f,
                                  FIRPFBCH_NYQUIST,
                                  FIRPFBCH_SYNTHESIZER);
 

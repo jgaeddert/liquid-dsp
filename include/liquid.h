@@ -1205,6 +1205,7 @@ typedef struct firpfbch_s * firpfbch;
 firpfbch firpfbch_create(unsigned int _num_channels,
                          unsigned int _m,
                          float _beta,
+                         float _dt,
                          int _nyquist,
                          int _type);
 void firpfbch_destroy(firpfbch _c);
@@ -1218,7 +1219,7 @@ void firpfbch_execute(firpfbch _c, liquid_float_complex * _x, liquid_float_compl
 typedef struct ofdmoqam_s * ofdmoqam;
 #define OFDMOQAM_ANALYZER       FIRPFBCH_ANALYZER
 #define OFDMOQAM_SYNTHESIZER    FIRPFBCH_SYNTHESIZER
-ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, int _type);
+ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, float _beta, float _dt, int _type);
 void ofdmoqam_destroy(ofdmoqam _c);
 void ofdmoqam_print(ofdmoqam _c);
 void ofdmoqam_execute(ofdmoqam _c, liquid_float_complex * _x, liquid_float_complex * _y);

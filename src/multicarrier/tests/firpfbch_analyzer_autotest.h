@@ -58,6 +58,7 @@ void autotest_firpfbch_analysis() {
     firpfbch c = firpfbch_create(num_channels,
                                  m,
                                  beta,
+                                 0.0f,
                                  FIRPFBCH_NYQUIST,
                                  FIRPFBCH_ANALYZER);
 
@@ -154,6 +155,7 @@ void autotest_firpfbch_analysis_noise() {
     firpfbch c = firpfbch_create(num_channels,
                                  m,
                                  beta,
+                                 0.0f,
                                  FIRPFBCH_NYQUIST,
                                  FIRPFBCH_ANALYZER);
 
@@ -207,7 +209,7 @@ void autotest_firpfbch_analysis_energy()
     float f;
     nco nco_synth = nco_create();
 
-    firpfbch c = firpfbch_create(num_channels, m, slsl, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER);
+    firpfbch c = firpfbch_create(num_channels, m, slsl, 0.0f, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER);
 
     unsigned int i, j, k;
     float complex x[num_channels], y[num_channels];

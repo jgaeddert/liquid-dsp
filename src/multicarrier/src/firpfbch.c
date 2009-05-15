@@ -20,6 +20,7 @@ struct firpfbch_s {
     unsigned int num_channels;
     unsigned int m;
     float beta;
+    float dt;
     float complex * x;  // time-domain buffer
     float complex * X;  // freq-domain buffer
     
@@ -36,15 +37,17 @@ struct firpfbch_s {
 firpfbch firpfbch_create(unsigned int _num_channels,
                          unsigned int _m,
                          float _beta,
+                         float _dt,
                          int _nyquist,
                          int _type)
 {
     firpfbch c = (firpfbch) malloc(sizeof(struct firpfbch_s));
     c->num_channels = _num_channels;
-    c->m = _m;
-    c->beta = _beta;
-    c->nyquist = _nyquist;
-    c->type = _type;
+    c->m            = _m;
+    c->beta         = _beta;
+    c->dt           = _dt;
+    c->nyquist      = _nyquist;
+    c->type         = _type;
 
     // create bank of filters
     c->bank = (FIR_FILTER()*) malloc((c->num_channels)*sizeof(FIR_FILTER()));
@@ -64,7 +67,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
         float fc = 1/(float)(c->num_channels);  // cutoff frequency
         fir_kaiser_window(h_len+1, fc, c->beta, h);
     } else if (c->nyquist == FIRPFBCH_ROOTNYQUIST) {
-        design_rrc_filter((c->num_channels),(c->m),(c->beta),0.0f,h);
+        design_rrc_filter(c->num_channels, c->m, c->beta, c->dt, h);
     } else {
         printf("error: firpfbch_create(), unsupported nyquist flag: %d\n", _nyquist);
         exit(1);

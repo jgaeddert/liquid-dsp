@@ -103,7 +103,7 @@ fbasc fbasc_create(
     q->hilbert_transform = firhilb_create(37);
 
     // create polyphase filterbank channelizers
-    q->channelizer = firpfbch_create(q->num_channels, 2, 60.0f, FIRPFBCH_NYQUIST, q->channelizer_type);
+    q->channelizer = firpfbch_create(q->num_channels, 2, 60.0f, 0.0f, FIRPFBCH_NYQUIST, q->channelizer_type);
 
     // analysis/synthesis
     q->X = (float complex*) malloc( (q->samples_per_frame)*sizeof(float complex) );

@@ -15,6 +15,8 @@ int main() {
     unsigned int num_channels=6;    // for now, must be even number
     unsigned int num_symbols=32;    // num symbols
     unsigned int m=2;               // ofdm/oqam symbol delay
+    float beta = 0.99f;             // excess bandwidth factor
+    float dt   = 0.8f;              // timing offset (fractional sample) 
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 4;           // modulation depth (bits/symbol)
 
@@ -24,8 +26,8 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    ofdmoqam cs = ofdmoqam_create(num_channels, m, OFDMOQAM_SYNTHESIZER);
-    ofdmoqam ca = ofdmoqam_create(num_channels, m, OFDMOQAM_ANALYZER);
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_SYNTHESIZER);
+    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_ANALYZER);
 
     // modem
     modem mod = modem_create(ms,bps);

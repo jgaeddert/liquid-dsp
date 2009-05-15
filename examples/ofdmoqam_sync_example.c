@@ -15,11 +15,14 @@
 int main() {
     // options
     unsigned int num_channels=32;   // must be even number
-    unsigned int num_symbols=4;     // num symbols (needs to be even)
+    unsigned int num_guard_channels=4;
+    unsigned int num_symbols=16;    // num symbols (needs to be even)
     unsigned int m=2;               // ofdm/oqam symbol delay
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 4;           // modulation depth (bits/symbol)
     float df=0.1*M_PI;              // carrier offset
+    float beta=0.99f;               // excess bandwidth factor
+    float dt=0.0f;                  // timing offset
     float noise_std=0.01f;          // noise standard deviation
 
     // number of frames (compensate for filter delay, add some
@@ -29,8 +32,8 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    ofdmoqam cs = ofdmoqam_create(num_channels, m, OFDMOQAM_SYNTHESIZER);
-    ofdmoqam ca = ofdmoqam_create(num_channels, m, OFDMOQAM_ANALYZER);
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt,   OFDMOQAM_SYNTHESIZER);
+    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, 0.0f, OFDMOQAM_ANALYZER);
 
     // modem
     modem mod = modem_create(ms,bps);
@@ -58,23 +61,16 @@ int main() {
 
     // delay lines
     unsigned int d=num_channels*num_symbols/2;
-    cfwindow w0 = cfwindow_create(3*d);
-    cfwindow w1 = cfwindow_create(2*d);
+    cfwindow w0 = cfwindow_create(d+num_channels/2);
+    cfwindow w1 = cfwindow_create(d);
     float complex * r0;
     float complex * r1;
     float complex rxx[num_channels];
 
     // generate random symbols
-    for (i=0; i<num_symbols/2; i++) {
+    for (i=0; i<num_symbols; i++) {
         for (j=0; j<num_channels; j++) {
             s[i][j] = modem_gen_rand_sym(mod);
-        }
-    }
-
-    // repeat symbols (time-domain correlation)
-    for (i=0; i<num_symbols/2; i++) {
-        for (j=0; j<num_channels; j++) {
-            s[i + num_symbols/2][j] = s[i][j];
         }
     }
 
@@ -87,6 +83,12 @@ int main() {
             } else {
                 X[j] = 0.0f;
             }
+
+            if ((j%2)!=0)
+                X[j] = 0.0f;
+
+            if ((j>=num_channels/2-num_guard_channels/2) && (j<num_channels/2+num_guard_channels/2))
+                X[j] = 0.0f;
         }
 
         // execute synthesyzer
@@ -109,7 +111,7 @@ int main() {
 
             cfwindow_read(w0,&r0);
             cfwindow_read(w1,&r1);
-            dotprod_cccf_run(r0,r1,2*d,&rxx[j]);
+            dotprod_cccf_run(r0,r1,d,&rxx[j]);
         }
 
         // execute analyzer
