@@ -16,7 +16,7 @@ int main() {
     unsigned int num_symbols=32;    // num symbols
     unsigned int m=2;               // ofdm/oqam symbol delay
     float beta = 0.99f;             // excess bandwidth factor
-    float dt   = 0.8f;              // timing offset (fractional sample) 
+    float dt   = 0.0f;              // timing offset (fractional sample) 
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 4;           // modulation depth (bits/symbol)
 
