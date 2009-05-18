@@ -1,5 +1,9 @@
 //
-// quadrature mirror filterbank synthesizer
+// quadrature mirror filterbank synthesizer example
+//
+// Uses a quadrature mirror filterbank to synthesize a
+// signal using its upper and lower frequency band
+// decompositions.
 //
 
 #include <stdio.h>
@@ -11,9 +15,9 @@
 #define OUTPUT_FILENAME "qmfb_crcf_synthesis_example.m"
 
 int main() {
-    unsigned int m=5;               // filter delay
-    float slsl = -60.0f;            // sidelobe suppression level
-    unsigned int num_samples=64;    // number of samples
+    unsigned int m=5;                   // filter delay
+    float slsl = -60.0f;                // sidelobe suppression level
+    unsigned int num_samples=64;        // number of samples
 
     // derived values
     unsigned int n = num_samples + m;   // extend length of synthesis to
@@ -21,7 +25,6 @@ int main() {
 
     // create filterbank
     qmfb_crcf f = qmfb_crcf_create(m, slsl);
-
     qmfb_crcf_print(f);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -37,11 +40,10 @@ int main() {
     // generate time-domain signal (windowed sinusoidal pulses)
     nco nco_0 = nco_create();
     nco nco_1 = nco_create();
-    nco_set_frequency(nco_0, 0.122*M_PI);
-    nco_set_frequency(nco_1, 0.379*M_PI);
+    nco_set_frequency(nco_0, 0.122*2*M_PI);
+    nco_set_frequency(nco_1, 0.779*2*M_PI);
     float complex y0,y1;
-    for (i=0; i<n; i++) {
-        if (i<num_samples) {
+    for (i=0; i<num_samples; i++) {
             // compute y0 (low channel pulse)
             nco_cexpf(nco_0, &y0);
             y[0][i] = y0 * kaiser(i,num_samples,10.0f);
@@ -51,19 +53,19 @@ int main() {
             nco_cexpf(nco_1, &y1);
             y[1][i] = y1 * kaiser(i,num_samples,10.0f);
             nco_step(nco_1);
-        } else {
-            y[0][i] = 0.0f;
-            y[1][i] = 0.0f;
-        }
+    }
+    // pad end with zeros
+    for (i=num_samples; i<n; i++) {
+        y[0][i] = 0.0f;
+        y[1][i] = 0.0f;
     }
 
     // compute QMF sub-channel output
     for (i=0; i<n; i++) {
-        //qmfb_crcf_synthesis_execute(f, x[2*i+0], x[2*i+1], y[0]+i, y[1]+i);
         qmfb_crcf_synthesis_execute(f, y[0][i], y[1][i], &x[2*i+0], &x[2*i+1]);
     }
 
-    // output results
+    // write results to output file
     for (i=0; i<n; i++) {
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(x[2*i+0]), cimagf(x[2*i+0]));
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(x[2*i+1]), cimagf(x[2*i+1]));
