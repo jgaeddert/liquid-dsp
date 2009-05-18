@@ -477,9 +477,6 @@ void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
 //  _h      : output coefficient buffer
 void fir_design_windowed_sinc(unsigned int _n, float _fc, float _slsl, float *_h);
 
-//
-void fir_design_halfband_windowed_sinc(float * _h, unsigned int _n);
-
 // Design FIR using kaiser window
 //  _n      : filter length
 //  _fc     : cutoff frequency
@@ -499,7 +496,7 @@ void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, floa
 //  _n      : filter length
 //  _k      : samples/symbol (_k > 1)
 //  _slsl   : sidelobe suppression level
-void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h);
+//void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h);
 
 // Design Nyquist raised-cosine filter
 //  _k      : samples/symbol
@@ -582,13 +579,13 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, liquid_float_complex, liqui
 // NOTES:
 //   Although firhilb is a placeholder for both the decimation and
 //   interpolation, separate objects should be used for each task.
-#define LIQUID_FIRHILB_DEFINE_API(X,T,TC) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _h_len); \
-void X(_destroy)(X() _f); \
-void X(_print)(X() _f); \
-void X(_clear)(X() _f); \
-void X(_decim_execute)(X() _f, T * _x, TC * _y); \
+#define LIQUID_FIRHILB_DEFINE_API(X,T,TC)               \
+typedef struct X(_s) * X();                             \
+X() X(_create)(unsigned int _h_len);                    \
+void X(_destroy)(X() _f);                               \
+void X(_print)(X() _f);                                 \
+void X(_clear)(X() _f);                                 \
+void X(_decim_execute)(X() _f, T * _x, TC * _y);        \
 void X(_interp_execute)(X() _f, TC _x, T * _y);
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
@@ -607,13 +604,13 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //   TO : output data type
 //   TC : coefficients data type
 //   TI : input data type
-#define LIQUID_IIR_FILTER_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X();   \
+#define LIQUID_IIR_FILTER_DEFINE_API(X,TO,TC,TI)        \
+typedef struct X(_s) * X();                             \
 X() X(_create)(TC * _b, unsigned int _nb, TC * _a,  unsigned int _na); \
-void X(_destroy)(X() _f); \
-void X(_print)(X() _f); \
-void X(_clear)(X() _f); \
-void X(_execute)(X() _f, TI _x, TO *_y); \
+void X(_destroy)(X() _f);                               \
+void X(_print)(X() _f);                                 \
+void X(_clear)(X() _f);                                 \
+void X(_execute)(X() _f, TI _x, TO *_y);                \
 unsigned int X(_get_length)(X() _f);
 
 LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF, float, float, float)
