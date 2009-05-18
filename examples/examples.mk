@@ -64,6 +64,7 @@ local_src	:=			\
 	pnsync_crcf_example.c		\
 	pnsync_rrrf_example.c		\
 	qmfb_crcf_analysis_example.c	\
+	qmfb_crcf_synthesis_example.c	\
 	quantize_example.c		\
 	random_example.c		\
 	ricek_channel_example.c		\
