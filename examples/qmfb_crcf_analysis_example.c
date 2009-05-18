@@ -34,18 +34,21 @@ int main() {
     unsigned int i;
     float complex x[2*n], y[2][n];
 
-    // generate time-domain signal (windowed sinusoidal pulse)
-    float theta=0.0f;
-    float d_theta = 0.122f*(2*M_PI);
-    for (i=0; i<n; i++) {
-        if (i<num_samples) {
-            x[2*i+0] = cexpf(_Complex_I*theta) * kaiser(2*i+0,2*num_samples,10.0f);
-            theta += d_theta;
-            x[2*i+1] = cexpf(_Complex_I*theta) * kaiser(2*i+1,2*num_samples,10.0f);
-            theta += d_theta;
+    // generate time-domain signal (windowed sinusoidal pulses)
+    nco nco_0 = nco_create();
+    nco nco_1 = nco_create();
+    nco_set_frequency(nco_0, 0.122*M_PI);
+    nco_set_frequency(nco_1, 0.779*M_PI);
+    float complex x0,x1;
+    for (i=0; i<2*n; i++) {
+        if (i<2*num_samples) {
+            nco_cexpf(nco_0, &x0);
+            nco_cexpf(nco_1, &x1);
+            x[i] = (x0 + x1) * kaiser(i,2*num_samples,10.0f);
+            nco_step(nco_0);
+            nco_step(nco_1);
         } else {
-            x[2*i+0] = 0.0f;
-            x[2*i+1] = 0.0f;
+            x[i] = 0.0f;
         }
     }
 
@@ -59,18 +62,23 @@ int main() {
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", 2*i+1, crealf(x[2*i+0]), cimagf(x[2*i+0]));
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", 2*i+2, crealf(x[2*i+1]), cimagf(x[2*i+1]));
 
-        fprintf(fid,"y(1,%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[0][i]), cimagf(y[0][i]));
-        fprintf(fid,"y(2,%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[1][i]), cimagf(y[1][i]));
-
-        //printf("y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y), cimagf(y));
+        fprintf(fid,"y(1,%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[0][i]),  cimagf(y[0][i]));
+        fprintf(fid,"y(2,%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[1][i]),  cimagf(y[1][i]));
     }
 
-    // plot results
+    // plot time-domain results
+    fprintf(fid,"t0=0:(2*n-1);\n");
+    fprintf(fid,"t1=0:(n-1);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(3,1,1); plot(t0,real(x),t0,imag(x)); ylabel('x(t)');\n");
+    fprintf(fid,"subplot(3,1,2); plot(t1,real(y(1,:)),t1,imag(y(1,:))); ylabel('y_0(t)');\n");
+    fprintf(fid,"subplot(3,1,3); plot(t1,real(y(2,:)),t1,imag(y(2,:))); ylabel('y_1(t)');\n");
+
+    // plot freq-domain results
     fprintf(fid,"nfft=512; %% must be even number\n");
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x/n,nfft))));\n");
     fprintf(fid,"Y0=20*log10(abs(fftshift(fft(y(1,:)/n,nfft))));\n");
     fprintf(fid,"Y1=20*log10(abs(fftshift(fft(y(2,:)/n,nfft))));\n");
-
     // Y1 needs to be split into two regions
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"t0 = [1]:[nfft/2];\n");
@@ -90,6 +98,8 @@ int main() {
     printf("results written to %s\n", OUTPUT_FILENAME);
 
     qmfb_crcf_destroy(f);
+    nco_destroy(nco_0);
+    nco_destroy(nco_1);
     printf("done.\n");
     return 0;
 }
