@@ -59,6 +59,7 @@ local_b_files	:=			\
 	fir_filter_benchmark.h		\
 	iir_filter_benchmark.h		\
 	interp_benchmark.h		\
+	qmfb_benchmark.h		\
 	resamp2_benchmark.h		\
 	symsync_benchmark.h
 
