@@ -23,7 +23,7 @@ struct FIR_FILTER(_s) {
     WINDOW() w;
 #else
     TI * v;
-    unsigned int i;
+    unsigned int v_index;
 #endif
 
     fir_prototype p;
@@ -42,13 +42,11 @@ FIR_FILTER() FIR_FILTER(_create)(TC * _h, unsigned int _n)
 
 #if FIR_FILTER_USE_DOTPROD
     f->w = WINDOW(_create)(f->h_len);
-    WINDOW(_clear)(f->w);
 #else
     f->v = malloc((f->h_len)*sizeof(TI));
-    for (i=0; i<f->h_len; i++)
-        f->v[i] = 0;
-    f->i = 0;
 #endif
+
+    FIR_FILTER(_clear)(f);
 
     return f;
 }
@@ -82,11 +80,11 @@ FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f, TC * _h, unsigned int _n)
         _f->v[i] = 0;
 
     if (_n > _f->h_len)
-        _f->i += (_n - _f->h_len)/2;
+        _f->v_index += (_n - _f->h_len)/2;
     else
-        _f->i += _f->h_len + (_f->h_len - _n)/2;
+        _f->v_index += _f->h_len + (_f->h_len - _n)/2;
 
-    _f->i = (_f->i) % (_f->h_len);
+    _f->v_index = (_f->v_index) % (_f->h_len);
 #endif
     }
 
@@ -109,6 +107,18 @@ void FIR_FILTER(_destroy)(FIR_FILTER() _f)
     free(_f);
 }
 
+void FIR_FILTER(_clear)(FIR_FILTER() _f)
+{
+#if FIR_FILTER_USE_DOTPROD
+    WINDOW(_clear)(_f->w);
+#else
+    unsigned int i;
+    for (i=0; i<_f->h_len; i++)
+        _f->v[i] = 0;
+    _f->v_index = 0;
+#endif
+}
+
 void FIR_FILTER(_print)(FIR_FILTER() _f)
 {
     printf("filter coefficients:\n");
@@ -125,9 +135,9 @@ void FIR_FILTER(_push)(FIR_FILTER() _f, TI _x)
 #if FIR_FILTER_USE_DOTPROD
     WINDOW(_push)(_f->w, _x);
 #else
-    _f->v[ _f->i ] = _x;
-    (_f->i)++;
-    _f->i = (_f->i) % (_f->h_len);
+    _f->v[ _f->v_index ] = _x;
+    (_f->v_index)++;
+    _f->v_index = (_f->v_index) % (_f->h_len);
 #endif
 }
 
@@ -141,7 +151,7 @@ void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y)
     TO y = 0;
     unsigned int i;
     for (i=0; i<_f->h_len; i++)
-        y += _f->v[ (i+_f->i)%(_f->h_len) ] * _f->h[i];
+        y += _f->v[ (i+_f->v_index)%(_f->h_len) ] * _f->h[i];
     *_y = y;
 #endif
 }

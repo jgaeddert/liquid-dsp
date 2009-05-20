@@ -553,14 +553,15 @@ void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
 //   TO : output data type
 //   TC : coefficients data type
 //   TI : input data type
-#define LIQUID_FIR_FILTER_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X();   \
-X() X(_create)(TC * _h, unsigned int _n); \
-X() X(_recreate)(X() _f, TC * _h, unsigned int _n); \
-void X(_destroy)(X() _f); \
-void X(_print)(X() _f); \
-void X(_push)(X() _f, TI _x); \
-void X(_execute)(X() _f, TO *_y); \
+#define LIQUID_FIR_FILTER_DEFINE_API(X,TO,TC,TI)            \
+typedef struct X(_s) * X();                                 \
+X() X(_create)(TC * _h, unsigned int _n);                   \
+X() X(_recreate)(X() _f, TC * _h, unsigned int _n);         \
+void X(_destroy)(X() _f);                                   \
+void X(_clear)(X() _f);                                     \
+void X(_print)(X() _f);                                     \
+void X(_push)(X() _f, TI _x);                               \
+void X(_execute)(X() _f, TO *_y);                           \
 unsigned int X(_get_length)(X() _f);
 
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_RRRF, float, float, float)
@@ -1206,8 +1207,8 @@ firpfbch firpfbch_create(unsigned int _num_channels,
                          int _nyquist,
                          int _type);
 void firpfbch_destroy(firpfbch _c);
+void firpfbch_clear(firpfbch _c);
 void firpfbch_print(firpfbch _c);
-
 void firpfbch_execute(firpfbch _c, liquid_float_complex * _x, liquid_float_complex * _y);
 //void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X);
 //void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x);

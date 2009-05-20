@@ -58,7 +58,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     // design filter using kaiser window and be done with it
     // TODO: use filter prototype object
     if (_m < 1) {
-        printf("error: firpfbch_create(), invalid filter delay (must be greater than 1)\n");
+        printf("error: firpfbch_create(), invalid filter delay (must be greater than 0)\n");
         exit(1);
     }
     h_len = 2*(c->m)*(c->num_channels);
@@ -75,8 +75,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 
     // generate bank of sub-samped filters
     unsigned int i, n;
-    // length of each sub-sampled filter
-    unsigned int h_sub_len = h_len / c->num_channels;
+    unsigned int h_sub_len = 2*(c->m);  // length of each sub-sampled filter
     float h_sub[h_sub_len];
     for (i=0; i<c->num_channels; i++) {
         for (n=0; n<h_sub_len; n++) {
@@ -99,10 +98,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     // allocate memory for buffers
     c->x = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     c->X = (float complex*) malloc((c->num_channels)*sizeof(float complex));
-    for (i=0; i<c->num_channels; i++) {
-        c->x[i] = 0.0f;
-        c->X[i] = 0.0f;
-    }
+    firpfbch_clear(c);
 
     // create fft plan
 #if HAVE_FFTW3_H
@@ -131,6 +127,16 @@ void firpfbch_destroy(firpfbch _c)
     free(_c);
 }
 
+void firpfbch_clear(firpfbch _c)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_channels; i++) {
+        fir_filter_crcf_clear(_c->bank[i]);
+        _c->x[i] = 0;
+        _c->X[i] = 0;
+    }
+}
+
 void firpfbch_print(firpfbch _c)
 {
     printf("firpfbch: [%u taps]\n", 0);
@@ -141,18 +147,18 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
 {
     unsigned int i;
 
-    // copy samples into ifft input buffer (_c->X)
+    // copy samples into ifft input buffer _c->X
     memmove(_c->X, _x, (_c->num_channels)*sizeof(float complex));
 
-    // execute inverse fft, store in time-domain buffer (_c->x)
+    // execute inverse fft, store in buffer _c->x
 #if HAVE_FFTW3_H
     fftwf_execute(_c->fft);
 #else
     fft_execute(_c->fft);
 #endif
 
-    // push samples into filter bank
-    // execute filterbank, putting samples into output buffer
+    // push samples into filter bank and execute, putting
+    // samples into output buffer _y
     for (i=0; i<_c->num_channels; i++) {
         fir_filter_crcf_push(_c->bank[i], _c->x[i]);
         fir_filter_crcf_execute(_c->bank[i], &(_y[i]));
@@ -164,13 +170,20 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
 
 void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * _y)
 {
+    // NOTE: The analyzer is different from the synthesizer in
+    //       that the invocation of the commutator results in a
+    //       delay from the first input sample to the resulting
+    //       partitions.  As a result, the inverse DFT is
+    //       invoked after the first filter is run, after which
+    //       the remaining filters are executed.
+
     unsigned int i, b;
 
     // push first value and compute output
     fir_filter_crcf_push(_c->bank[0], _x[0]);
     fir_filter_crcf_execute(_c->bank[0], &(_c->X[0]));
 
-    // execute inverse fft, store in time-domain buffer (_c->x)
+    // execute inverse fft, store in buffer _c->x
 #if HAVE_FFTW3_H
     fftwf_execute(_c->fft);
 #else
@@ -180,9 +193,9 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     // copy results to output buffer
     memmove(_y, _c->x, (_c->num_channels)*sizeof(float complex));
 
-    // push remaining samples into filter bank
-    // execute filterbank, putting samples into freq-domain buffer (_c->X) in
-    // reverse order
+    // push remaining samples into filter bank and execute in
+    // *reverse* order, putting result into the inverse DFT
+    // input buffer _c->X
     for (i=1; i<_c->num_channels; i++) {
         b = _c->num_channels-i;
         fir_filter_crcf_push(_c->bank[b], _x[i]);
