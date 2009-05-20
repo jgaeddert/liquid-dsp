@@ -4,6 +4,8 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
+#define FIR_FILTER_CRCF_AUTOTEST_VERBOSE 0
+
 void autotest_fir_filter_crcf_noise_01()
 {
     // Initialize variables
@@ -49,20 +51,41 @@ void autotest_fir_filter_crcf_noise_01()
       7.3318e-01+  7.6641e-01*_Complex_I,   1.3472e+00+ -1.0757e-01*_Complex_I
     };
 
-    float complex y;    // ouput
+    float complex y[32];    // ouput
 
 
     // Load filter coefficients externally
     fir_filter_crcf f = fir_filter_crcf_create(h, 10);
 
     unsigned int i;
-    // 
+    // compute output
     for (i=0; i<32; i++) {
         fir_filter_crcf_push(f, x[i]);
-        fir_filter_crcf_execute(f, &y);
-        CONTEND_DELTA( crealf(test[i]), crealf(y), 0.001 );
-        CONTEND_DELTA( cimagf(test[i]), cimagf(y), 0.001 );
+        fir_filter_crcf_execute(f, &y[i]);
     }
+
+    // run check
+    for (i=0; i<32; i++) {
+        CONTEND_DELTA( crealf(test[i]), crealf(y[i]), 0.001 );
+        CONTEND_DELTA( cimagf(test[i]), cimagf(y[i]), 0.001 );
+    }
+
+#if FIR_FILTER_CRCF_AUTOTEST_VERBOSE
+    printf("x = zeros(1,32); y = zeros(1,32); z = zeros(1,32);\n");
+    printf("h = zeros(1,10);\n");
+    for (i=0; i<10; i++)
+        printf("h(%3u) = %8.4f;\n", i+1, h[i]);
+
+    for (i=0; i<32; i++) {
+        printf("x(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(x[i]), cimagf(x[i]));
+        printf("y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        printf("z(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(test[i]), cimagf(test[i]));
+    }
+    printf("z_hat = filter(h,1,x);\n");
+    printf("figure;\n");
+    printf("subplot(2,1,1); plot(1:32,real(y),1:32,real(z),'x',1:32,real(z_hat),'s');\n");
+    printf("subplot(2,1,2); plot(1:32,imag(y),1:32,imag(z),'x',1:32,imag(z_hat),'s');\n");
+#endif
 
     fir_filter_crcf_destroy(f);
 }
