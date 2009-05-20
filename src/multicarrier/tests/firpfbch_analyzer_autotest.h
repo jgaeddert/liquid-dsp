@@ -15,43 +15,42 @@ void autotest_firpfbch_analysis() {
     float tol=0.05f;                // error tolerance
 
     unsigned int i;
-
     float complex x[32] = {
-         3.198e-02+ 0.000e+00*_Complex_I, -8.915e-19+ 1.735e-18*_Complex_I, 
-         0.000e+00+ 5.437e-18*_Complex_I,  1.025e-17+ 1.041e-17*_Complex_I, 
-         1.620e-01+-5.952e-17*_Complex_I, -1.187e-16+ 2.776e-17*_Complex_I, 
-         0.000e+00+ 4.134e-17*_Complex_I, -5.762e-17+ 5.551e-17*_Complex_I, 
-         2.500e-01+-1.837e-16*_Complex_I, -1.741e-16+ 6.939e-17*_Complex_I, 
-         0.000e+00+ 2.688e-16*_Complex_I, -1.060e-16+ 2.429e-16*_Complex_I, 
-         1.620e-01+-1.786e-16*_Complex_I, -1.611e-16+-6.245e-17*_Complex_I, 
-         0.000e+00+-4.081e-17*_Complex_I, -2.417e-17+ 7.633e-17*_Complex_I, 
-         3.198e-02+-4.699e-17*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-         0.000e+00+ 0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-         0.000e+00+-0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-         0.000e+00+ 0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-         0.000e+00+-0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-         0.000e+00+ 0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-         0.000e+00+ 0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-         0.000e+00+ 0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I
+         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
+         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
+         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
+         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
+        -1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
+         1.000e+00+-1.000e+00*_Complex_I,  1.000e+00+ 1.000e+00*_Complex_I, 
+         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
+        -1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
+        -1.000e+00+-1.000e+00*_Complex_I,  1.000e+00+-1.000e+00*_Complex_I, 
+         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
+        -1.000e+00+ 1.000e+00*_Complex_I,  1.000e+00+ 1.000e+00*_Complex_I, 
+         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
+         1.000e+00+ 1.000e+00*_Complex_I,  1.000e+00+-1.000e+00*_Complex_I, 
+         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
+         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
+         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I
     };
 
     float complex y_test[32] = {
-         0.000e+00+ 0.000e+00*_Complex_I,  0.000e+00+ 0.000e+00*_Complex_I, 
-        -0.000e+00+ 0.000e+00*_Complex_I,  0.000e+00+-0.000e+00*_Complex_I, 
-         5.691e-19+-1.136e-18*_Complex_I,  1.142e-18+ 5.361e-21*_Complex_I, 
-         1.225e-18+ 9.058e-20*_Complex_I,  6.521e-19+ 1.040e-18*_Complex_I, 
-         3.198e-02+-1.872e-18*_Complex_I,  3.198e-02+-8.044e-18*_Complex_I, 
-         3.198e-02+-3.595e-18*_Complex_I,  3.198e-02+ 1.764e-18*_Complex_I, 
-         1.620e-01+-2.720e-17*_Complex_I,  1.620e-01+ 1.437e-17*_Complex_I, 
-         1.620e-01+-1.083e-16*_Complex_I,  1.620e-01+-1.764e-16*_Complex_I, 
-         2.500e-01+ 1.824e-16*_Complex_I,  2.500e-01+-2.960e-16*_Complex_I, 
-         2.500e-01+-2.089e-16*_Complex_I,  2.500e-01+-5.042e-16*_Complex_I, 
-         1.620e-01+ 1.402e-16*_Complex_I,  1.620e-01+-2.311e-16*_Complex_I, 
-         1.620e-01+-2.570e-16*_Complex_I,  1.620e-01+-4.259e-16*_Complex_I, 
-         3.198e-02+-7.371e-17*_Complex_I,  3.198e-02+ 2.396e-17*_Complex_I, 
-         3.198e-02+-1.239e-16*_Complex_I,  3.198e-02+-2.610e-17*_Complex_I, 
-         8.836e-18+-1.602e-18*_Complex_I,  1.030e-17+-8.002e-18*_Complex_I, 
-        -9.580e-18+ 9.447e-18*_Complex_I, -1.105e-17+ 1.562e-19*_Complex_I
+        -7.831e-18+-7.831e-18*_Complex_I, -7.831e-18+-7.831e-18*_Complex_I, 
+        -7.831e-18+-7.831e-18*_Complex_I, -7.831e-18+-7.831e-18*_Complex_I, 
+         5.123e-02+ 3.123e-02*_Complex_I, -5.123e-02+-1.610e-01*_Complex_I, 
+        -2.435e-01+ 1.610e-01*_Complex_I,  2.435e-01+-3.123e-02*_Complex_I, 
+         5.061e-01+ 1.205e+00*_Complex_I,  1.789e+00+ 2.059e+00*_Complex_I, 
+         2.478e+00+-1.892e-01*_Complex_I, -7.724e-01+ 9.244e-01*_Complex_I, 
+        -1.215e-01+-1.280e+00*_Complex_I,  6.738e-02+ 1.933e+00*_Complex_I, 
+         4.281e+00+ 1.120e+00*_Complex_I, -2.273e-01+ 2.227e+00*_Complex_I, 
+        -1.295e+00+ 1.459e-01*_Complex_I, -4.442e+00+ 2.485e+00*_Complex_I, 
+         1.647e+00+-1.136e-01*_Complex_I,  9.023e-02+ 1.483e+00*_Complex_I, 
+         3.894e-01+-1.761e-01*_Complex_I, -7.794e-01+ 4.154e+00*_Complex_I, 
+         1.226e+00+-1.761e-01*_Complex_I,  3.164e+00+ 1.983e-01*_Complex_I, 
+        -1.823e+00+-9.375e-01*_Complex_I, -3.074e+00+-2.958e+00*_Complex_I, 
+        -5.617e-01+-6.780e-01*_Complex_I,  1.459e+00+ 5.733e-01*_Complex_I, 
+         2.586e-01+ 2.457e+00*_Complex_I, -1.881e+00+-1.246e+00*_Complex_I, 
+         9.363e-02+-7.253e-02*_Complex_I, -2.471e+00+ 2.862e+00*_Complex_I
     };
 
     // create channelizer
@@ -69,7 +68,6 @@ void autotest_firpfbch_analysis() {
         firpfbch_execute(c, &x[n], &y[n]);
         n += num_channels;
     }
-
 #if 0
     // print formatted results (octave)
     printf("y=zeros(%u,%u);\n", num_channels, num_symbols);
@@ -86,8 +84,8 @@ void autotest_firpfbch_analysis() {
     // plot results
     printf("for i=1:4,\n");
     printf("    figure;\n");
-    printf("    subplot(2,1,1); plot(1:8,real(y(i,:)),1:8,real(y_test(i,:)));\n");
-    printf("    subplot(2,1,2); plot(1:8,imag(y(i,:)),1:8,imag(y_test(i,:)));\n");
+    printf("    subplot(2,1,1); plot(1:8,real(y_test(i,:)),1:8,real(y(i,:)));\n");
+    printf("    subplot(2,1,2); plot(1:8,imag(y_test(i,:)),1:8,imag(y(i,:)));\n");
     printf("end;\n");
 #endif
 
@@ -103,7 +101,7 @@ void autotest_firpfbch_analysis() {
 //
 // AUTOTEST: validate analysis correctness
 //
-void autotest_firpfbch_analysis_noise() {
+void xautotest_firpfbch_analysis_noise() {
     unsigned int num_channels = 4;  // number of channels
     unsigned int m=2;               // filter delay
     float beta=-40.0f;              // excess bandwidth factor
@@ -199,7 +197,7 @@ void autotest_firpfbch_analysis_noise() {
 // 
 // AUTOTEST: test sub-band energy
 //
-void autotest_firpfbch_analysis_energy()
+void xautotest_firpfbch_analysis_energy()
 {
     unsigned int num_channels=8;
     unsigned int m=2;

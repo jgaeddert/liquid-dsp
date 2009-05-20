@@ -75,29 +75,20 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 
     // generate bank of sub-samped filters
     unsigned int i, n;
-    if (c->type == FIRPFBCH_SYNTHESIZER) {
-        // length of each sub-sampled filter
-        unsigned int h_sub_len = h_len / c->num_channels;
-        float h_sub[h_sub_len];
-        for (i=0; i<c->num_channels; i++) {
-            for (n=0; n<h_sub_len; n++) {
-                h_sub[n] = h[i + n*(c->num_channels)];
-            }   
-            c->bank[i] = FIR_FILTER(_create)(h_sub, h_sub_len);
-        }
-    } else {
-        // length of each sub-sampled filter
-        unsigned int h_sub_len = h_len / c->num_channels;
-        float h_sub[h_sub_len+1];
-        for (i=0; i<c->num_channels; i++) {
-            h_sub[0] = 0.0f;    // NOTE: this additional zero is required to
-                                //       align filterbank channelizer output
-                                //       with traditional heterodyne channelizer
-            for (n=0; n<h_sub_len; n++) {
-                h_sub[n+1] = h[i + 1 + n*(c->num_channels)];
-            }   
-            c->bank[i] = FIR_FILTER(_create)(h_sub, h_sub_len+1);
-        }
+    // length of each sub-sampled filter
+    unsigned int h_sub_len = h_len / c->num_channels;
+    float h_sub[h_sub_len];
+    for (i=0; i<c->num_channels; i++) {
+        for (n=0; n<h_sub_len; n++) {
+            h_sub[n] = h[i + n*(c->num_channels)];
+        }   
+        c->bank[i] = FIR_FILTER(_create)(h_sub, h_sub_len);
+
+#ifdef DEBUG
+        printf("h_sub[%u] :\n", i);
+        for (n=0; n<h_sub_len; n++)
+            printf("  h[%3u] = %8.4f\n", n, h_sub[n]);
+#endif
     }
 
 #ifdef DEBUG
@@ -108,21 +99,17 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     // allocate memory for buffers
     c->x = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     c->X = (float complex*) malloc((c->num_channels)*sizeof(float complex));
+    for (i=0; i<c->num_channels; i++) {
+        c->x[i] = 0.0f;
+        c->X[i] = 0.0f;
+    }
 
     // create fft plan
-    if (c->type == FIRPFBCH_SYNTHESIZER) {
 #if HAVE_FFTW3_H
     c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_BACKWARD, FFTW_ESTIMATE);
 #else
     c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
 #endif
-    } else {
-#if HAVE_FFTW3_H
-    c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_FORWARD, FFTW_ESTIMATE);
-#else
-    c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_FORWARD);
-#endif
-    }
 
     return c;
 }
@@ -179,15 +166,10 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
 {
     unsigned int i, b;
 
-    // push samples into filter bank
-    // execute filterbank, putting samples into freq-domain buffer (_c->X) in
-    // reverse order
-    for (i=0; i<_c->num_channels; i++) {
-        b = _c->num_channels-i-1;
-        fir_filter_crcf_push(_c->bank[b], _x[i]);
-        fir_filter_crcf_execute(_c->bank[b], &(_c->X[i]));
-    }
-    
+    // push first value and compute output
+    fir_filter_crcf_push(_c->bank[0], _x[0]);
+    fir_filter_crcf_execute(_c->bank[0], &(_c->X[0]));
+
     // execute inverse fft, store in time-domain buffer (_c->x)
 #if HAVE_FFTW3_H
     fftwf_execute(_c->fft);
@@ -197,7 +179,17 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
 
     // copy results to output buffer
     memmove(_y, _c->x, (_c->num_channels)*sizeof(float complex));
+
+    // push remaining samples into filter bank
+    // execute filterbank, putting samples into freq-domain buffer (_c->X) in
+    // reverse order
+    for (i=1; i<_c->num_channels; i++) {
+        b = _c->num_channels-i;
+        fir_filter_crcf_push(_c->bank[b], _x[i]);
+        fir_filter_crcf_execute(_c->bank[b], &(_c->X[b]));
+    }
 }
+
 
 void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y)
 {
