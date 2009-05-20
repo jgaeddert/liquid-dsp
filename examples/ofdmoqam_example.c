@@ -99,9 +99,11 @@ int main() {
     fprintf(fid,"    figure;\n");
     fprintf(fid,"    subplot(2,1,1);\n");
     fprintf(fid,"    plot(1:num_symbols,real(x(i,:)),'-x',1:num_symbols,real(y(i,:)),'-x');\n");
+    fprintf(fid,"    ylabel('Re');\n");
     fprintf(fid,"    title(['channel ' num2str(i-1)]);\n");
     fprintf(fid,"    subplot(2,1,2);\n");
     fprintf(fid,"    plot(1:num_symbols,imag(x(i,:)),'-x',1:num_symbols,imag(y(i,:)),'-x');\n");
+    fprintf(fid,"    ylabel('Im');\n");
     fprintf(fid,"    pause(0.2);\n");
     fprintf(fid,"end;\n");
 
