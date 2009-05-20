@@ -58,7 +58,6 @@ local_src	:=			\
 	modem_example.c			\
 	nco_example.c			\
 	ofdmoqam_example.c		\
-	ofdmoqam_sync_example.c		\
 	packetizer_example.c		\
 	pll_example.c			\
 	pnsync_crcf_example.c		\
