@@ -790,6 +790,36 @@ LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float,         float,          
 LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
 LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
 
+//
+// Finite impulse response Farrow filter
+//
+
+#define FIR_FARROW_MANGLE_RRRF(name)  LIQUID_CONCAT(fir_farrow_rrrf,name)
+#define FIR_FARROW_MANGLE_CRCF(name)  LIQUID_CONCAT(fir_farrow_crcf,name)
+//#define FIR_FARROW_MANGLE_CCCF(name)  LIQUID_CONCAT(fir_farrow_cccf,name)
+
+// Macro:
+//   X  : name-mangling macro
+//   TO : output data type
+//   TC : coefficients data type
+//   TI : input data type
+#define LIQUID_FIR_FILTER_DEFINE_API(X,TO,TC,TI)            \
+typedef struct X(_s) * X();                                 \
+X() X(_create)(unsigned int _n,                             \
+               unsigned int _p,                             \
+               float _beta);                                \
+void X(_destroy)(X() _f);                                   \
+void X(_clear)(X() _f);                                     \
+void X(_print)(X() _f);                                     \
+void X(_push)(X() _f, TI _x);                               \
+void X(_set_delay)(X() _f, float _mu);                      \
+void X(_execute)(X() _f, TO *_y);                           \
+unsigned int X(_get_length)(X() _f);
+
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+//LIQUID_FIR_FILTER_DEFINE_API(FIR_FARROW_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+
 
 //
 // 2nd-Order Loop Filter
