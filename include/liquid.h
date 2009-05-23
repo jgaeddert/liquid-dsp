@@ -803,7 +803,7 @@ LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_fl
 //   TO : output data type
 //   TC : coefficients data type
 //   TI : input data type
-#define LIQUID_FIR_FILTER_DEFINE_API(X,TO,TC,TI)            \
+#define LIQUID_FIR_FARROW_DEFINE_API(X,TO,TC,TI)            \
 typedef struct X(_s) * X();                                 \
 X() X(_create)(unsigned int _n,                             \
                unsigned int _p,                             \
@@ -816,9 +816,9 @@ void X(_set_delay)(X() _f, float _mu);                      \
 void X(_execute)(X() _f, TO *_y);                           \
 unsigned int X(_get_length)(X() _f);
 
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-//LIQUID_FIR_FILTER_DEFINE_API(FIR_FARROW_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
+LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+//LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
 
 
 //
