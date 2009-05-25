@@ -64,3 +64,18 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
 }
 
 
+// compute matrix transpose
+void MATRIX(_trans)(T * _X, unsigned int _XR, unsigned int _XC)
+{
+    T y[_XR*_XC];
+    memmove(y,_X,_XR*_XC*sizeof(T));
+
+    unsigned int r,c;
+    for (r=0; r<_XR; r++) {
+        for (c=0; c<_XC; c++) {
+            matrix_access(_X,_XC,_XR,c,r) = matrix_access(y,_XR,_XC,r,c);
+        }
+    }
+}
+
+
