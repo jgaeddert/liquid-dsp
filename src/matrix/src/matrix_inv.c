@@ -5,6 +5,8 @@
 #include "liquid.internal.h"
 
 void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC);
+void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, unsigned int _c);
+void MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r1, unsigned int _r2);
 
 void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
 {
@@ -64,10 +66,57 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
 // Gauss-Jordan elmination
 void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 {
-    unsigned int r, c, i;
+    unsigned int r, c;
+
+    // TODO: choose pivot rows carefully
+    for (r=0; r<_XR; r++)
+        MATRIX(_pivot)(_X,_XR,_XC,r,r);
+
+    // scale by diagonal
+    T g;
     for (r=0; r<_XR; r++) {
+        g = 1 / matrix_access(_X,_XR,_XC,r,r);
+        for (c=0; c<_XC; c++)
+            matrix_access(_X,_XR,_XC,r,c) *= g;
+    }
+}
+
+// pivot on element _r, _c
+void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, unsigned int _c)
+{
+    T v = matrix_access(_X,_XR,_XC,_r,_c);
+    if (v==0) {
+        printf("warning: pivoting on zero\n");
+        return;
+    }
+    unsigned int r,c;
+
+    // pivot using back-substitution
+    T g;    // multiplier
+    for (r=0; r<_XR; r++) {
+
+        // skip over pivot row
+        if (r == _r)
+            continue;
+
+        // compute multiplier
+        g = matrix_access(_X,_XR,_XC,r,_c) / v;
+
+        // back-substitution
         for (c=0; c<_XC; c++) {
+            matrix_access(_X,_XR,_XC,r,c) = g*matrix_access(_X,_XR,_XC,_r,c) -
+                                              matrix_access(_X,_XR,_XC, r,c);
         }
     }
 }
 
+void MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r1, unsigned int _r2)
+{
+    unsigned int c;
+    T v_tmp;
+    for (c=0; c<_XC; c++) {
+        v_tmp = matrix_access(_X,_XR,_XC,_r1,c);
+        matrix_access(_X,_XR,_XC,_r1,c) = matrix_access(_X,_XR,_XC,_r2,c);
+        matrix_access(_X,_XR,_XC,_r2,c) = v_tmp;
+    }
+}
