@@ -13,4 +13,5 @@
         cimagf(matrix_access(X,R,C,r,c)));
 
 #include "matrix.c"
+#include "matrix_inv.c"
 

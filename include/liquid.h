@@ -1111,9 +1111,13 @@ void X(_lu_decompose)(X() _x, X() _lower, X() _upper);
 
 typedef struct polynomial_s * polynomial;
 
-polynomial polynomial_create(unsigned int _order);
-
-void polynomial_destroy(polynomial _p);
+polynomial  polynomial_create(float * _c, unsigned int _order);
+polynomial  polynomial_fit(float * _x,
+                           float * _y,
+                           unsigned int _n,
+                           unsigned int _order);
+void        polynomial_desotry(polynomial _p);
+void        polynomial_print(polynomial _p);
 
 
 //

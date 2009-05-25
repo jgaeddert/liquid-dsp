@@ -38,6 +38,9 @@ int main() {
     fmatrix_destroy(z);
     */
 
+    fmatrix_inv(y,3,3);
+    fmatrix_print(y,3,3);
+
     printf("done.\n");
     return 0;
 }
