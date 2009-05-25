@@ -60,6 +60,7 @@ local_src	:=			\
 	ofdmoqam_example.c		\
 	packetizer_example.c		\
 	pll_example.c			\
+	polyfit_example.c		\
 	pnsync_crcf_example.c		\
 	pnsync_rrrf_example.c		\
 	qmfb_crcf_analysis_example.c	\
