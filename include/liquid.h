@@ -67,7 +67,34 @@ float agc_get_gain(agc _agc);
 //
 // MODULE : ann (artificial neural network)
 //
-typedef struct ann_s * ann;
+
+#define ANN_MANGLE_FLOAT(name)  LIQUID_CONCAT(ann, name)
+
+// large macro
+//   ANN    : name-mangling macro
+//   T      : primitive data type
+#define LIQUID_ANN_DEFINE_API(ANN,T)                            \
+                                                                \
+typedef struct ANN(_s) * ANN();                                 \
+ANN() ANN(_create)(unsigned int * _structure,                   \
+                   unsigned int _num_layers);                   \
+void  ANN(_destroy)(ANN() _q);                                  \
+void  ANN(_print)(ANN() _q);                                    \
+void  ANN(_evaluate)(ANN() _q,                                  \
+                     T * _x,                                    \
+                     T * _y);                                   \
+void  ANN(_train)(ANN() _q,                                     \
+                  T * _x,                                       \
+                  unsigned int _nx,                             \
+                  T * _y,                                       \
+                  unsigned int _ny,                             \
+                  T _emin,                                      \
+                  unsigned int _tmax);
+// void ANN(_prune)(ANN() _q, ...);
+
+// Define ann APIs
+LIQUID_ANN_DEFINE_API(ANN_MANGLE_FLOAT, float)
+
 
 //
 // MODULE : audio
