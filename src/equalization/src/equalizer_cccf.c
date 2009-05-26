@@ -9,6 +9,7 @@
 
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_cccf,name)
 #define WINDOW(name)    LIQUID_CONCAT(cfwindow,name)
+#define MATRIX(name)    LIQUID_CONCAT(cfmatrix,name)
 
 #define T               float complex
 

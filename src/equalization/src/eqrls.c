@@ -223,6 +223,7 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
         }
     }
     // multiply two [pxp] matrices: gxlP0 = gxl * P0
+#if 1
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
             T sum=0;
@@ -233,6 +234,12 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
             square_matrix_direct_access(_eq->gxlP0,p,r,c) = sum;
         }
     }
+#else
+    MATRIX(_mul)(_eq->gxl,  p,p,
+                 _eq->P0,   p,p,
+                 _eq->gxlP0,p,p);
+#endif
+
     for (i=0; i<p*p; i++)
         _eq->P1[i] = _eq->P0[i] / _eq->lambda - _eq->gxlP0[i];
 

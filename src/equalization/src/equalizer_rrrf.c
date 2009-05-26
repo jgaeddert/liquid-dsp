@@ -9,6 +9,7 @@
 
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
 #define WINDOW(name)    LIQUID_CONCAT(fwindow,name)
+#define MATRIX(name)    LIQUID_CONCAT(fmatrix,name)
 
 #define T               float
 
