@@ -9,10 +9,19 @@
 
 int main() {
     // options
-    unsigned int structure[3] = {2, 4, 2};
+    unsigned int structure[3] = {2, 4, 3};
+
+    float x[2] = {0,0};
+    float y[3];
 
     ann q = ann_create(structure, 3);
     ann_print(q);
+
+    ann_evaluate(q,x,y);
+
+    unsigned int i;
+    for (i=0; i<3; i++)
+        printf("y[%3u] = %12.8f\n", i, y[i]);
 
 #if 0
     FILE* fid = fopen(DEBUG_FILENAME,"w");
