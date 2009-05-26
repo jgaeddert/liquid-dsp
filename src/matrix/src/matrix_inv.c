@@ -12,9 +12,6 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
         exit(0);
     }
 
-    printf("\n\nmatrix inversion on :\n");
-    MATRIX(_print)(_X,_XR,_XC);
-
     // X:
     //  x11 x12 ... x1n
     //  x21 x22 ... x2n
@@ -41,8 +38,6 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
         for (c=0; c<_XC; c++)
             matrix_access(x,xr,xc,r,_XC+c) = (r==c) ? 1 : 0;
     }
-
-    MATRIX(_print)(x,xr,xc);
 
     // perform Gauss-Jordan elimination on x
     // x:

@@ -9,7 +9,8 @@ module_name     := math
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
-	lmath.c
+	lmath.c			\
+	poly.c
 
 # local_h_files
 #

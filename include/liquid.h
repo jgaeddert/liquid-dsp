@@ -1059,6 +1059,20 @@ float hann(unsigned int _n, unsigned int _N);
 float blackmanharris(unsigned int _n, unsigned int _N);
 
 
+// polynomials
+
+// evaluate polynomial _p (order _k-1) at value _x
+float polyval(float * _p, unsigned int _k, float _x);
+
+// least-squares polynomial fit (order _k-1)
+void polyfit(float * _x,
+             float * _y,
+             unsigned int _n,
+             float * _p,
+             unsigned int _k);
+
+
+
 //
 // MODULE : matrix
 //
@@ -1104,20 +1118,6 @@ void X(_access)(X() _x, unsigned int _m, unsigned int _n,   \
 void X(_add)(X() _x, X() _y, X() _z);                       \
 void X(_lu_decompose)(X() _x, X() _lower, X() _upper);
 #endif
-
-//
-// Polynomials
-//
-
-typedef struct polynomial_s * polynomial;
-
-polynomial  polynomial_create(float * _c, unsigned int _order);
-polynomial  polynomial_fit(float * _x,
-                           float * _y,
-                           unsigned int _n,
-                           unsigned int _order);
-void        polynomial_desotry(polynomial _p);
-void        polynomial_print(polynomial _p);
 
 
 //
