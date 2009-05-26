@@ -48,7 +48,7 @@ QMFB() QMFB(_create)(unsigned int _m, float _slsl)
     f->h1 = (TC *) malloc((f->h1_len)*sizeof(TC));
 
     // design filter prototype
-    fir_kaiser_window(f->h_len, 0.5f, f->beta, f->h);
+    fir_kaiser_window(f->h_len, 0.5f, f->beta, 0, f->h);
 
     // resample, reverse direction
     unsigned int i, j=0;

@@ -65,7 +65,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     float h[h_len+1];
     if (c->nyquist == FIRPFBCH_NYQUIST) {
         float fc = 1/(float)(c->num_channels);  // cutoff frequency
-        fir_kaiser_window(h_len+1, fc, c->beta, h);
+        fir_kaiser_window(h_len+1, fc, c->beta, 0.0f, h);
     } else if (c->nyquist == FIRPFBCH_ROOTNYQUIST) {
         design_rrc_filter(c->num_channels, c->m, c->beta, c->dt, h);
     } else {

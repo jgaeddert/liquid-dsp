@@ -13,7 +13,7 @@
 //  _fc     : cutoff frequency
 //  _slsl   : sidelobe suppression level (dB attenuation)
 //  _h      : output coefficient buffer
-void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h) {
+void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float *_h) {
     // chooise kaiser beta parameter (approximate)
     // from:
     //  P.P. Vaidyanathan, "Multirate Systems and Filter Banks
@@ -29,13 +29,13 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h) {
     float t, h1, h2; 
     unsigned int i;
     for (i=0; i<_n; i++) {
-        t = (float)i - (float)(_n-1)/2;
+        t = (float)i - (float)(_n-1)/2 + _mu;
      
         // sinc prototype
         h1 = sincf(_fc*t);
 
         // kaiser window
-        h2 = kaiser(i,_n,beta);
+        h2 = kaiser(i,_n,beta,_mu);
 
         //printf("t = %f, h1 = %f, h2 = %f\n", t, h1, h2);
 
@@ -67,7 +67,7 @@ void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, floa
         r = 1.5*_K/(_K+1)*cosf(2*M_PI*_fd*t*cosf(_theta));
 
         // Window
-        w = kaiser(i, _n, beta);
+        w = kaiser(i, _n, beta, 0);
 
         // composite
         _h[i] = (J+r)*w;

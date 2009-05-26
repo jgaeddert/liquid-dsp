@@ -482,7 +482,7 @@ void fir_design_windowed_sinc(unsigned int _n, float _fc, float _slsl, float *_h
 //  _fc     : cutoff frequency
 //  _slsl   : sidelobe suppression level (dB attenuation)
 //  _h      : output coefficient buffer
-void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float *_h);
+void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float *_h);
 
 // Design FIR doppler filter
 //  _n      : filter length
@@ -1047,7 +1047,7 @@ float sincf(float _x);
 //
 
 // Kaiser window
-float kaiser(unsigned int _n, unsigned int _N, float _beta);
+float kaiser(unsigned int _n, unsigned int _N, float _beta, float _dt);
 
 // Hamming window
 float hamming(unsigned int _n, unsigned int _N);

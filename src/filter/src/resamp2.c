@@ -55,7 +55,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len)
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
-        h2 = kaiser(i,f->h_len,beta);
+        h2 = kaiser(i,f->h_len,beta,0);
         f->h[i] = h1*h2;
     }
 
@@ -152,7 +152,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
     for (i=0; i<_f->h_len; i++) {
         t = (float)i - (float)(_f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
-        h2 = kaiser(i,_f->h_len,beta);
+        h2 = kaiser(i,_f->h_len,beta,0);
         _f->h[i] = h1*h2;
     }
 

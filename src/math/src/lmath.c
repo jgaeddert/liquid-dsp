@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-//#include "liquid.h"
+#include "liquid.internal.h"
 
 float lngammaf(float _z) {
     float g = 0.5*( logf(2*M_PI)-log(_z) );
@@ -75,10 +75,10 @@ float sincf(float _x) {
 //
 
 // Kaiser window
-float kaiser(unsigned int _n, unsigned int _N, float _beta)
+float kaiser(unsigned int _n, unsigned int _N, float _beta, float _mu)
 {
     // TODO add reference
-    float t = (float)_n - (float)(_N-1)/2;
+    float t = (float)_n - (float)(_N-1)/2 + _mu;
     float r = 2.0f*t/(float)(_N);
     float a = besseli_0(_beta*sqrtf(1-r*r));
     float b = besseli_0(_beta);

@@ -51,7 +51,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _h_len)
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
-        h2 = kaiser(i,f->h_len,beta);
+        h2 = kaiser(i,f->h_len,beta,0);
         s  = sinf(M_PI*t/2);
         f->h[i] = s*h1*h2;
     }
