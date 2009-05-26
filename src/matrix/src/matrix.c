@@ -39,7 +39,7 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
                   T * _Z, unsigned int _ZR, unsigned int _ZC)
 {
     // ensure lengths are valid
-    if (_ZR != _XR || _ZC != _YC) {
+    if (_ZR != _XR || _ZC != _YC || _XC != _YR ) {
         printf("error: matrix_multiply(), invalid dimensions\n");
         exit(0);
     }
@@ -49,7 +49,7 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
         for (c=0; c<_ZC; c++) {
             // z(i,j) = dotprod( x(i,:), y(:,j) )
             T sum=0.0f;
-            for (i=0; i<_ZC; i++) {
+            for (i=0; i<_XC; i++) {
                 sum += matrix_access(_X,_XR,_XC,r,i) *
                        matrix_access(_Y,_YR,_YC,i,c);
             }
