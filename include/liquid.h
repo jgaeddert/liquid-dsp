@@ -267,18 +267,18 @@ void channel_execute(channel _c, liquid_float_complex _x, liquid_float_complex *
 //   TO : output data type
 //   TC : coefficients data type
 //   TI : input data type
-#define LIQUID_DOTPROD_DEFINE_API(X,TO,TC,TI)       \
-void X(_run)(TC *_h, TI *_x, unsigned int _n, TO *_y);        \
-void X(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);       \
-                                                    \
-typedef struct X(_s) * X();                         \
-struct X(_s) {      \
-    TC * h;         \
-    unsigned int n; \
-};                  \
-X() X(_create)(TC * _v, unsigned int _n);           \
-void X(_destroy)(X() _q);                           \
-void X(_execute)(X() _q, TI * _v, TO * _y);
+#define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)             \
+void DOTPROD(_run)(TC *_h, TI *_x, unsigned int _n, TO *_y);    \
+void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);   \
+                                                                \
+typedef struct DOTPROD(_s) * DOTPROD();                         \
+struct DOTPROD(_s) {                                            \
+    TC * h;                                                     \
+    unsigned int n;                                             \
+};                                                              \
+DOTPROD() DOTPROD(_create)(TC * _v, unsigned int _n);           \
+void DOTPROD(_destroy)(DOTPROD() _q);                           \
+void DOTPROD(_execute)(DOTPROD() _q, TI * _v, TO * _y);
 
 // Define APIs
 LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF, float, float, float)
@@ -347,13 +347,17 @@ float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
 
 // Macro: crc/checksum
 //  CRC : name-mangling macro
-#define LIQUID_CRC_DEFINE_API(CRC) \
-typedef struct CRC(_s) * CRC(); \
-CRC() CRC(_create)(); \
-void CRC(_destroy)(CRC() _crc); \
-void CRC(_print)(CRC() _crc); \
-void CRC(_generate_key)(CRC() _crc, unsigned char * _msg, unsigned int _msg_len); \
-int  CRC(_validate_key)(CRC() _crc, unsigned char * _msg, unsigned int _msg_len);
+#define LIQUID_CRC_DEFINE_API(CRC)                              \
+typedef struct CRC(_s) * CRC();                                 \
+CRC() CRC(_create)();                                           \
+void CRC(_destroy)(CRC() _crc);                                 \
+void CRC(_print)(CRC() _crc);                                   \
+void CRC(_generate_key)(CRC() _crc,                             \
+                        unsigned char * _msg,                   \
+                        unsigned int _msg_len);                 \
+int  CRC(_validate_key)(CRC() _crc,                             \
+                        unsigned char * _msg,                   \
+                        unsigned int _msg_len);
 
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CRC32)
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CHECKSUM32)
@@ -605,13 +609,16 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //   TO : output data type
 //   TC : coefficients data type
 //   TI : input data type
-#define LIQUID_IIR_FILTER_DEFINE_API(X,TO,TC,TI)        \
-typedef struct X(_s) * X();                             \
-X() X(_create)(TC * _b, unsigned int _nb, TC * _a,  unsigned int _na); \
-void X(_destroy)(X() _f);                               \
-void X(_print)(X() _f);                                 \
-void X(_clear)(X() _f);                                 \
-void X(_execute)(X() _f, TI _x, TO *_y);                \
+#define LIQUID_IIR_FILTER_DEFINE_API(X,TO,TC,TI)                \
+typedef struct X(_s) * X();                                     \
+X() X(_create)(TC * _b,                                         \
+               unsigned int _nb,                                \
+               TC * _a,                                         \
+               unsigned int _na);                               \
+void X(_destroy)(X() _f);                                       \
+void X(_print)(X() _f);                                         \
+void X(_clear)(X() _f);                                         \
+void X(_execute)(X() _f, TI _x, TO *_y);                        \
 unsigned int X(_get_length)(X() _f);
 
 LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF, float, float, float)
@@ -631,13 +638,15 @@ LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, liquid_float_complex, liqui
 //   TO : output data type
 //   TC : coefficients data type
 //   TI : input data type
-#define LIQUID_FIRPFB_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len); \
-void X(_destroy)(X() _b); \
-void X(_print)(X() _b); \
-void X(_push)(X() _b, TI _x); \
-void X(_execute)(X() _b, unsigned int _i, TO *_y); \
+#define LIQUID_FIRPFB_DEFINE_API(X,TO,TC,TI)                    \
+typedef struct X(_s) * X();                                     \
+X() X(_create)(unsigned int _num_filters,                       \
+               TC * _h,                                         \
+               unsigned int _h_len);                            \
+void X(_destroy)(X() _b);                                       \
+void X(_print)(X() _b);                                         \
+void X(_push)(X() _b, TI _x);                                   \
+void X(_execute)(X() _b, unsigned int _i, TO *_y);              \
 void X(_clear)(X() _b);
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF, float,         float,          float)
@@ -651,12 +660,17 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, liquid_float_complex, liquid_float_
 #define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
 #define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
 
-#define LIQUID_INTERP_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _M, TC *_h, unsigned int _h_len); \
-X() X(_create_rrc)(unsigned int _k, unsigned int _m, float _beta, float _dt); \
-void X(_destroy)(X() _q); \
-void X(_print)(X() _q); \
+#define LIQUID_INTERP_DEFINE_API(X,TO,TC,TI)                    \
+typedef struct X(_s) * X();                                     \
+X() X(_create)(unsigned int _M,                                 \
+              TC *_h,                                           \
+              unsigned int _h_len);                             \
+X() X(_create_rrc)(unsigned int _k,                             \
+                   unsigned int _m,                             \
+                   float _beta,                                 \
+                   float _dt);                                  \
+void X(_destroy)(X() _q);                                       \
+void X(_print)(X() _q);                                         \
 void X(_execute)(X() _q, TI _x, TO *_y);
 
 LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float,         float,          float)
@@ -670,12 +684,17 @@ LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, liquid_float_complex, liquid_float_
 #define DECIM_MANGLE_CRCF(name) LIQUID_CONCAT(decim_crcf,name)
 #define DECIM_MANGLE_CCCF(name) LIQUID_CONCAT(decim_cccf,name)
 
-#define LIQUID_DECIM_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _D, TC *_h, unsigned int _h_len); \
-void X(_destroy)(X() _q); \
-void X(_print)(X() _q); \
-void X(_execute)(X() _q, TI *_x, TO *_y, unsigned int _index);
+#define LIQUID_DECIM_DEFINE_API(DECIM,TO,TC,TI)                 \
+typedef struct DECIM(_s) * DECIM();                             \
+DECIM() DECIM(_create)(unsigned int _D,                         \
+                       TC *_h,                                  \
+                       unsigned int _h_len);                    \
+void    DECIM(_destroy)(DECIM() _q);                            \
+void    DECIM(_print)(DECIM() _q);                              \
+void    DECIM(_execute)(DECIM() _q,                             \
+                        TI *_x,                                 \
+                        TO *_y,                                 \
+                        unsigned int _index);
 
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF, float,           float,          float)
 LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
@@ -716,14 +735,19 @@ LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_flo
 #define RESAMP2_MANGLE_CRCF(name)   LIQUID_CONCAT(resamp2_crcf,name)
 #define RESAMP2_MANGLE_CCCF(name)   LIQUID_CONCAT(resamp2_cccf,name)
 
-#define LIQUID_RESAMP2_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _h_len); \
-X() X(_recreate)(X() _q, unsigned int _h_len); \
-void X(_destroy)(X() _q); \
-void X(_print)(X() _q); \
-void X(_decim_execute)(X() _f, TI * _x, TO * _y); \
-void X(_interp_execute)(X() _f, TI _x, TO * _y);
+#define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
+typedef     struct RESAMP2(_s) * RESAMP2();                     \
+RESAMP2()   RESAMP2(_create)(unsigned int _h_len);              \
+RESAMP2()   RESAMP2(_recreate)(RESAMP2() _q,                    \
+                               unsigned int _h_len);            \
+void        RESAMP2(_destroy)(RESAMP2() _q);                    \
+void        RESAMP2(_print)(RESAMP2() _q);                      \
+void        RESAMP2(_decim_execute)(RESAMP2() _f,               \
+                                    TI * _x,                    \
+                                    TO * _y);                   \
+void        RESAMP2(_interp_execute)(RESAMP2() _f,              \
+                                     TI _x,                     \
+                                     TO * _y);
 
 LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF, float,           float,          float)
 LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
