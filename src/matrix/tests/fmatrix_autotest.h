@@ -52,4 +52,44 @@ void autotest_fmatrix_ops() {
     CONTEND_SAME_DATA(z,ztest,sizeof(z));
 }
 
+// 
+// AUTOTEST: 
+//
+void autotest_fmatrix_mul() {
+    float x[15]= {
+       4,  -3,  -1,
+       1,   1,   0,
+       2,  -1,   0,
+       1,   1,  -2,
+      -5,   1,  -3};
+
+    float y[15] = {
+       0,  -3,   1,  -5,   2,
+       5,  -1,   4,   3,  -3,
+       2,  -6,  -1,   1,  -3};
+
+    float z0[25];
+    float z0_test[25] = {
+      -17,   -3,   -7,  -30,   20,
+        5,   -4,    5,   -2,   -1,
+       -5,   -5,   -2,  -13,    7,
+        1,    8,    7,   -4,    5,
+       -1,   32,    2,   25,   -4};
+
+    float z1[9];
+    float z1_test[9] = {
+      -16,   -7,    4,
+       45,  -20,   -2,
+       16,  -13,    5};
+
+    fmatrix_mul(x,5,3,y,3,5,z0,5,5);
+    fmatrix_print(z0,5,5);
+    CONTEND_SAME_DATA(z0,z0_test,5*5*sizeof(float));
+
+    fmatrix_mul(y,3,5,x,5,3,z1,3,3);
+    fmatrix_print(z1,3,3);
+    CONTEND_SAME_DATA(z1,z1_test,3*3*sizeof(float));
+
+}
+
 #endif // __LIQUID_FMATRIX_AUTOTEST_H__
