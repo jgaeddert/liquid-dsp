@@ -84,6 +84,11 @@ void ANN(_print)(ANN() _q)
     for (i=0; i<_q->num_layers; i++)
         printf("%3u",_q->structure[i]);
     printf("]\n");
+    printf("    num weights : %u\n", _q->num_weights);
+    printf("    num inputs  : %u\n", _q->num_inputs);
+    printf("    num outputs : %u\n", _q->num_outputs);
+    printf("    num nodes   : %u\n", _q->num_nodes);
+    printf("    num layers  : %u\n", _q->num_layers);
 }
 
 // Evaluates the network _q at _input and stores the result in _output
