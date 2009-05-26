@@ -4,10 +4,6 @@
 
 #include "liquid.internal.h"
 
-void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC);
-void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r, unsigned int _c);
-void MATRIX(_swaprows)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r1, unsigned int _r2);
-
 void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
 {
     // ensure lengths are valid

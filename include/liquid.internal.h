@@ -59,6 +59,33 @@ LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_CFLOAT, float complex)
 LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_UINT, unsigned int)
 
 
+//
+// MODULE : matrix
+//
+
+#define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(fmatrix, name)
+#define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfmatrix, name)
+
+// large macro
+//   X: name-mangling macro
+//   T: data type
+#define LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX,T)         \
+void MATRIX(_gjelim)(T * _X,                                \
+                unsigned int _XR,                           \
+                unsigned int _XC);                          \
+void MATRIX(_pivot)(T * _X,                                 \
+               unsigned int _XR,                            \
+               unsigned int _XC,                            \
+               unsigned int _r,                             \
+               unsigned int _c);                            \
+void MATRIX(_swaprows)(T * _X,                              \
+                  unsigned int _XR,                         \
+                  unsigned int _XC,                         \
+                  unsigned int _r1,                         \
+                  unsigned int _r2);
+
+LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT, float)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 
 
 //
