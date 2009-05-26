@@ -7,12 +7,28 @@
 //#include <math.h>
 #include "liquid.h"
 
+#define OUTPUT_FILENAME "polyfit_example.m"
+
 int main() {
 
-    unsigned int n=5;       // number of samples
-    unsigned int order=2;   // polynomial order
-    float x[6] = {-2, -1, 0, 1, 2};
-    float y[6] = { 4,  1, 0, 1, 4};
+    unsigned int n=15;      // number of samples
+    unsigned int order=3;   // polynomial order
+    float x[n];
+    float y[n];
+
+    FILE * fid = fopen(OUTPUT_FILENAME, "w");
+    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\nclose all;\n\n");
+
+    unsigned int i;
+    for (i=0; i<n; i++) {
+        float v = (float)(i) - (float)(n)/2 + 0.5f;
+        x[i] = v;
+        y[i] = v*v + 0.1*v*v*v + randnf();
+
+        printf("x : %12.8f, y : %12.8f\n", x[i], y[i]);
+        fprintf(fid,"x(%3u) = %12.4e; y(%3u) = %12.4e;\n", i+1, x[i], i+1, y[i]);
+    }
 
     // derived values
     unsigned int k=order+1;
@@ -62,53 +78,21 @@ int main() {
     float a[k];
     fmatrix_mul(G,k,k,Xty,k,1,a,k,1);
 
-    unsigned int i;
-    for (i=0; i<k; i++)
+    for (i=0; i<k; i++) {
         printf("a[%3u] = %12.8f\n", i, a[i]);
-
-    return 0;
-
-    float s[16] = {
-        1,2,3,4,
-        5,5,7,8,
-        6,4,8,7,
-        1,0,3,1};
-    float s_inv[16];
-    memmove(s_inv,s,16*sizeof(float));
-    fmatrix_inv(s_inv,4,4);
-
-    float i4[16];
-    fmatrix_mul(s,4,4,s_inv,4,4,i4,4,4);
-
-    printf("s:\n");
-    fmatrix_print(s,4,4);
-    printf("inv(s):\n");
-    fmatrix_print(s_inv,4,4);
-    printf("s*inv(s):\n");
-    fmatrix_print(i4,4,4);
-
-#if 0
-    // pivot test (matrix inversion)
-    float t[32] = {
-        1,2,3,4,  1,0,0,0,
-        5,5,7,8,  0,1,0,0,
-        6,4,8,7,  0,0,1,0,
-        1,0,3,1,  0,0,0,1};
-
-    unsigned int i;
-    for (i=0; i<4; i++) {
-        fmatrix_pivot(t,4,8,i,i);
-        fmatrix_print(t,4,8);
+        fprintf(fid,"p(%3u) = %12.4e;\n", i+1, a[k-i-1]);
     }
+    
+    fprintf(fid,"xmin = min(x);\n");
+    fprintf(fid,"xmax = max(x);\n");
+    fprintf(fid,"dx   = (xmax-xmin)/99;\n");
+    fprintf(fid,"xt   = xmin:dx:xmax;\n");
+    fprintf(fid,"yt   = polyval(p,xt);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(x,y,'x', xt,yt,'-');\n");
 
-    unsigned int j;
-    for (i=0; i<4; i++) {
-        float v = matrix_access(t,4,8,i,i);
-        for (j=0; j<8; j++)
-            matrix_access(t,4,8,i,j) /= v;
-    }
-    fmatrix_print(t,4,8);
-#endif
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     printf("done.\n");
     return 0;
