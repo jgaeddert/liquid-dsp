@@ -15,6 +15,8 @@
 
 #define LIQUID_ANN_MAX_NETWORK_SIZE 1024
 
+#define DEBUG_ANN 0
+
 struct ANN(_s) {
     // weights
     T * w;
@@ -121,8 +123,10 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
         //_q->y_hat[i] = tanhf( _x[i]*w0 + w1 );
         _q->y_hat[i] =  _x[i]*w0 + w1;
 
+#if DEBUG_ANN
         printf("w[%3u] = %12.8f\n", 2*i+0, w0);
         printf("w[%3u] = %12.8f\n", 2*i+1, w1);
+#endif
     }
 
     unsigned int j;     // layer sub-node index
@@ -134,18 +138,21 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
     // traverse each hidden layer
     for (i=1; i<_q->num_layers; i++) {
 
+#if DEBUG_ANN
         printf("layer %u :\n", i);
 
         printf("  input:\n");
         for (t=0; t<_q->structure[i-1]; t++)
             printf("  y_hat[%3u] = %12.8f\n", k+t, _q->y_hat[k+t]);
         printf("\n");
+#endif
 
         // traverse each node in this layer
         for (j=0; j<_q->structure[i]; j++) {
             // number of weights for this node (not including bias)
             unsigned int nw = _q->structure[i-1];
 
+#if DEBUG_ANN
             printf("  k : %u\n", k);
             printf("  n : %u\n", n);
             printf("  m : %u\n", m);
@@ -154,23 +161,31 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
             for (t=0; t<nw; t++)
                 printf("    w[%2u] %12.8f * y_hat[%2u] %12.8f\n", n+t, _q->w[n+t], k+t,_q->y_hat[k+t]);
             printf("    w[%2u] %12.8f\n", n+t, _q->w[n+t]);
+#endif
 
             // compute 
             DOTPROD(_run)(&(_q->y_hat[k]), &(_q->w[n]), nw, &v);
+#if DEBUG_ANN
             printf("  bias index : %u\n", n+nw);
+#endif
             v += _q->w[n+nw]; // add bias
 
             if (i != _q->num_layers-1) {
                 // activation function
+                _q->y_hat[m] = tanhf(v);
             } else {
                 // no activation function
+                _q->y_hat[m] = v;
             }
-            _q->y_hat[m] = v;
+#if DEBUG_ANN
             printf("  v = %12.8f\n", v);
+#endif
 
             n += _q->structure[i-1] + 1;
             m++;
+#if DEBUG_ANN
             printf("\n");
+#endif
         }
         k += _q->structure[i-1];
     }
