@@ -43,16 +43,23 @@ ANN() ANN(_create)(
         unsigned int * _structure,
         unsigned int _num_layers)
 {
+    unsigned int i;
     if (_num_layers < 2) {
-        perror("error: ann_create(), must have at least 2 layers\n");
-        return NULL;
+        printf("error: ann_create(), must have at least 2 layers\n");
+        exit(1);
+    }
+
+    for (i=0; i<_num_layers; i++) {
+        if (_structure[i] < 1) {
+            printf("error: ann_create(), layer %u has no nodes\n", i);
+            exit(1);
+        }
     }
 
     ann q;
     q = (ANN()) malloc( sizeof(struct ANN(_s)) );
 
     // Initialize structural variables
-    unsigned int i;
     q->num_layers = _num_layers;
     q->structure = (unsigned int*) malloc( sizeof(unsigned int)*_num_layers );
     for (i=0; i<q->num_layers; i++)
@@ -120,8 +127,8 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
     for (i=0; i<_q->num_inputs; i++) {
         w0 = _q->w[2*i+0];
         w1 = _q->w[2*i+1];
-        //_q->y_hat[i] = tanhf( _x[i]*w0 + w1 );
-        _q->y_hat[i] =  _x[i]*w0 + w1;
+        _q->y_hat[i] = tanhf( _x[i]*w0 + w1 );
+        //_q->y_hat[i] =  _x[i]*w0 + w1;
 
 #if DEBUG_ANN
         printf("w[%3u] = %12.8f\n", 2*i+0, w0);
