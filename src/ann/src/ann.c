@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -141,7 +142,9 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
     unsigned int n=2*_q->num_inputs;   // weight index
     unsigned int m=  _q->num_inputs;   // node output index (y_hat)
 
+#if DEBUG_ANN
     unsigned int t;     // temporary counter
+#endif
     // traverse each hidden layer
     for (i=1; i<_q->num_layers; i++) {
 
