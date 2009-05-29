@@ -11,13 +11,14 @@
 
 int main() {
     // options
-    unsigned int h_len=37;
-    float fc=0.4f;
-    float slsl=40.0f;
+    unsigned int h_len=37;  // filter length
+    float fc=0.4f;          // filter cutoff frequency
+    float slsl=40.0f;       // sidelobe suppression level
+    float mu=0.0f;          // fractional timing offset
 
     unsigned int i;
     float h[h_len];
-    fir_kaiser_window(h_len,fc,slsl,h);
+    fir_kaiser_window(h_len,fc,slsl,mu,h);
 
 #if DEBUG
     FILE*fid = fopen(DEBUG_FILENAME,"w");

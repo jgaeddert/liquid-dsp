@@ -46,7 +46,7 @@ int main() {
         x0[i] = randnf() + randnf()*_Complex_I;
 
         if (i<num_symbols*num_channels) {
-            x0[i] *= kaiser(i,num_symbols*num_channels,beta);
+            x0[i] *= kaiser(i,num_symbols*num_channels,0.0f,beta);
         } else {
             x0[i] *= 0.0f;
         }

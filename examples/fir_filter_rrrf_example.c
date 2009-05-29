@@ -6,48 +6,42 @@
 
 #include "liquid.h"
 
-#define DEBUG 1
-#define DEBUG_FILENAME "fir_filter_rrrf_example.m"
+#define OUTPUT_FILENAME "fir_filter_rrrf_example.m"
 
 int main() {
     // options
-    unsigned int h_len=31;
-    float fc=0.3f;
-    float slsl=30.0f;
-    unsigned int n=64;
+    unsigned int h_len=17;  // filter length
+    float fc=0.3f;          // filter cutoff
+    float slsl=30.0f;       // sidelobe suppression level
+    float mu=0.0f;          // timing offset
+    unsigned int n=64;      // number of random input samples
 
     unsigned int i;
     float h[h_len];
-    fir_kaiser_window(h_len,fc,slsl,h);
+    fir_kaiser_window(h_len,fc,slsl,mu,h);
     fir_filter_rrrf f = fir_filter_rrrf_create(h,h_len);
     //fir_filter_rrrf_print(f);
 
-#if DEBUG
-    FILE*fid = fopen(DEBUG_FILENAME,"w");
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\nn=%u;\n", h_len, n);
 
     for (i=0; i<h_len; i++)
         fprintf(fid,"h(%4u) = %12.4e;\n", i+1, h[i]);
-#endif
 
     float x, y;
-    for (i=0; i<n; i++) {
+    for (i=0; i<n+h_len; i++) {
         // generate noise
-        x = randnf();
+        x = (i<n) ? randnf()/sqrtf(n/2) : 0.0f;
 
         fir_filter_rrrf_push(f, x);
         fir_filter_rrrf_execute(f, &y); 
 
-#if DEBUG
         fprintf(fid,"x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
-#else
         printf("x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
-#endif
     }   
 
-#if DEBUG
     fprintf(fid,"nfft=512;\n");
     fprintf(fid,"w=hamming(length(x))';\n");
     fprintf(fid,"H=20*log10(abs(fftshift(fft(h,   nfft))));\n");
@@ -59,9 +53,7 @@ int main() {
     fprintf(fid,"legend('noise','filtered noise','filter prototype',1);");
 
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
-#endif
-
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     fir_filter_rrrf_destroy(f);
 

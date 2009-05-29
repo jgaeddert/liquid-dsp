@@ -42,7 +42,7 @@ int main() {
             phi += dphi;
             dphi += 0.002f;
 
-            x[j] *= kaiser(j,samples_per_frame,10.0f);
+            x[j] *= kaiser(j,samples_per_frame,0.0f,10.0f);
         }
 
         fbasc_encode(fbasc_encoder, x, framedata);

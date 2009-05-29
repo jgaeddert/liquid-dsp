@@ -46,7 +46,7 @@ int main() {
     for (i=0; i<2*num_samples; i++) {
         nco_cexpf(nco_0, &x0);
         nco_cexpf(nco_1, &x1);
-        x[i] = (x0 + x1) * kaiser(i,2*num_samples,10.0f);
+        x[i] = (x0 + x1) * kaiser(i,2*num_samples,0.0f,10.0f);
         nco_step(nco_0);
         nco_step(nco_1);
     }
