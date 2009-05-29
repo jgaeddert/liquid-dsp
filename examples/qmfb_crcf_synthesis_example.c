@@ -46,12 +46,12 @@ int main() {
     for (i=0; i<num_samples; i++) {
             // compute y0 (low channel pulse)
             nco_cexpf(nco_0, &y0);
-            y[0][i] = y0 * kaiser(i,num_samples,0.0f,10.0f);
+            y[0][i] = y0 * kaiser(i,num_samples,10.0f,0.0f);
             nco_step(nco_0);
 
             // compute y1 (upper channel pulse)
             nco_cexpf(nco_1, &y1);
-            y[1][i] = y1 * kaiser(i,num_samples,0.0f,10.0f);
+            y[1][i] = y1 * kaiser(i,num_samples,10.0f,0.0f);
             nco_step(nco_1);
     }
     // pad end with zeros
