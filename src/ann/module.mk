@@ -27,7 +27,8 @@ module_name     := ann
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 			\
-	ann.c
+	ann.c				\
+	activation_functions.c
 
 # local_t_files
 #

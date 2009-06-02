@@ -45,6 +45,18 @@
     fprintf(F,"%s(%4u) = %12.4e +j*%12.4e;\n",STR,I+1,crealf(V),cimagf(V))
 
 //
+// MODULE: ann
+//
+
+// logistic activation function
+float ann_af_logistic(float _mu, float _x);
+float ann_df_logistic(float _mu, float _x);
+
+// mu-law activation function
+float ann_af_mulaw(float _mu, float _x);
+float ann_df_mulaw(float _mu, float _x);
+
+//
 // MODULE: buffer
 //
 
