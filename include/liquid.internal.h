@@ -39,9 +39,9 @@
 //
 // Debugging macros
 //
-#define DEBUG_PRINTF_FLOAT(F,STR,I,V)       \
+#define DEBUG_PRINTF_FLOAT(F,STR,I,V)                           \
     fprintf(F,"%s(%4u) = %12.4e;\n",STR,I+1,V)
-#define DEBUG_PRINTF_CFLOAT(F,STR,I,V)      \
+#define DEBUG_PRINTF_CFLOAT(F,STR,I,V)                          \
     fprintf(F,"%s(%4u) = %12.4e +j*%12.4e;\n",STR,I+1,crealf(V),cimagf(V))
 
 //
@@ -52,16 +52,16 @@
 
 #define buffer_fast_access(c,i) (c->v[(c->read_index+i)%(c->len)])
 
-#define LIQUID_BUFFER_DEFINE_INTERNAL_API(X,T)          \
-void X(_linearize)(X() _b);                             \
-void X(_c_read)(X() _b, T ** _v, unsigned int *_n);     \
-void X(_s_read)(X() _b, T ** _v, unsigned int *_n);     \
-void X(_c_write)(X() _b, T * _v, unsigned int _n);      \
-void X(_s_write)(X() _b, T * _v, unsigned int _n);      \
-void X(_c_release)(X() _b, unsigned int _n);            \
-void X(_s_release)(X() _b, unsigned int _n);            \
-void X(_c_push)(X() _b, T _v);                          \
-void X(_s_push)(X() _b, T _v);
+#define LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER,T)             \
+void BUFFER(_linearize)(BUFFER() _b);                           \
+void BUFFER(_c_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
+void BUFFER(_s_read)(BUFFER() _b, T ** _v, unsigned int *_n);   \
+void BUFFER(_c_write)(BUFFER() _b, T * _v, unsigned int _n);    \
+void BUFFER(_s_write)(BUFFER() _b, T * _v, unsigned int _n);    \
+void BUFFER(_c_release)(BUFFER() _b, unsigned int _n);          \
+void BUFFER(_s_release)(BUFFER() _b, unsigned int _n);          \
+void BUFFER(_c_push)(BUFFER() _b, T _v);                        \
+void BUFFER(_s_push)(BUFFER() _b, T _v);
 
 LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_FLOAT, float)
 LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_CFLOAT, float complex)
@@ -71,8 +71,8 @@ LIQUID_BUFFER_DEFINE_INTERNAL_API(BUFFER_MANGLE_UINT, unsigned int)
 
 #define window_fast_access(c,i) (c->v[(c->read_index+i)%(c->len)])
 
-#define LIQUID_WINDOW_DEFINE_INTERNAL_API(X,T)          \
-void X(_linearize)(X() _b);
+#define LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW,T)             \
+void WINDOW(_linearize)(WINDOW() _b);
 
 LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_FLOAT, float)
 LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_CFLOAT, float complex)
@@ -87,21 +87,21 @@ LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_UINT, unsigned int)
 #define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfmatrix, name)
 
 // large macro
-//   X: name-mangling macro
-//   T: data type
-#define LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX,T)         \
-void MATRIX(_gjelim)(T * _X,                                \
-                unsigned int _XR,                           \
-                unsigned int _XC);                          \
-void MATRIX(_pivot)(T * _X,                                 \
-               unsigned int _XR,                            \
-               unsigned int _XC,                            \
-               unsigned int _r,                             \
-               unsigned int _c);                            \
-void MATRIX(_swaprows)(T * _X,                              \
-                  unsigned int _XR,                         \
-                  unsigned int _XC,                         \
-                  unsigned int _r1,                         \
+//   MATRIX : name-mangling macro
+//   T      : data type
+#define LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX,T)             \
+void MATRIX(_gjelim)(T * _x,                                    \
+                unsigned int _rx,                               \
+                unsigned int _cx);                              \
+void MATRIX(_pivot)(T * _x,                                     \
+               unsigned int _rx,                                \
+               unsigned int _cx,                                \
+               unsigned int _r,                                 \
+               unsigned int _c);                                \
+void MATRIX(_swaprows)(T * _x,                                  \
+                  unsigned int _rx,                             \
+                  unsigned int _cx,                             \
+                  unsigned int _r1,                             \
                   unsigned int _r2);
 
 LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT, float)

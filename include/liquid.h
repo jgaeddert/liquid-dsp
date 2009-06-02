@@ -159,22 +159,22 @@ typedef enum {
 } buffer_type;
 
 // large macro
-//   X: name-mangling macro
-//   T: data type
-#define LIQUID_BUFFER_DEFINE_API(X,T)                   \
-                                                        \
-typedef struct X(_s) * X();                             \
-X() X(_create)(buffer_type _type, unsigned int _n);     \
-void X(_destroy)(X() _b);                               \
-void X(_print)(X() _b);                                 \
-void X(_debug_print)(X() _b);                           \
-void X(_clear)(X() _b);                                 \
-void X(_zero)(X() _b);                                  \
-void X(_read)(X() _b, T ** _v, unsigned int *_nr);      \
-void X(_release)(X() _b, unsigned int _n);              \
-void X(_write)(X() _b, T * _v, unsigned int _n);        \
-void X(_push)(X() _b, T _v);
-//void X(_force_write)(X() _b, T * _v, unsigned int _n);
+//   BUFFER : name-mangling macro
+//   T      : data type
+#define LIQUID_BUFFER_DEFINE_API(BUFFER,T)                      \
+                                                                \
+typedef struct BUFFER(_s) * BUFFER();                           \
+BUFFER() BUFFER(_create)(buffer_type _type, unsigned int _n);   \
+void BUFFER(_destroy)(BUFFER() _b);                             \
+void BUFFER(_print)(BUFFER() _b);                               \
+void BUFFER(_debug_print)(BUFFER() _b);                         \
+void BUFFER(_clear)(BUFFER() _b);                               \
+void BUFFER(_zero)(BUFFER() _b);                                \
+void BUFFER(_read)(BUFFER() _b, T ** _v, unsigned int *_nr);    \
+void BUFFER(_release)(BUFFER() _b, unsigned int _n);            \
+void BUFFER(_write)(BUFFER() _b, T * _v, unsigned int _n);      \
+void BUFFER(_push)(BUFFER() _b, T _v);
+//void BUFFER(_force_write)(BUFFER() _b, T * _v, unsigned int _n);
 
 // Define buffer APIs
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT, float)
@@ -188,20 +188,20 @@ LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
 #define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(uiwindow, name)
 
 // large macro
-//   X  :   name-mangling macro
+//   WINDOW  :   name-mangling macro
 //   T  :   data type
-#define LIQUID_WINDOW_DEFINE_API(X,T)                   \
-                                                        \
-typedef struct X(_s) * X();                             \
-X() X(_create)(unsigned int _n);                        \
-X() X(_recreate)(X() _w, unsigned int _n);              \
-void X(_destroy)(X() _w);                               \
-void X(_print)(X() _w);                                 \
-void X(_debug_print)(X() _w);                           \
-void X(_clear)(X() _w);                                 \
-void X(_read)(X() _w, T ** _v);                         \
-void X(_push)(X() _b, T _v);                            \
-void X(_write)(X() _b, T * _v, unsigned int _n);
+#define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                      \
+                                                                \
+typedef struct WINDOW(_s) * WINDOW();                           \
+WINDOW() WINDOW(_create)(unsigned int _n);                      \
+WINDOW() WINDOW(_recreate)(WINDOW() _w, unsigned int _n);       \
+void WINDOW(_destroy)(WINDOW() _w);                             \
+void WINDOW(_print)(WINDOW() _w);                               \
+void WINDOW(_debug_print)(WINDOW() _w);                         \
+void WINDOW(_clear)(WINDOW() _w);                               \
+void WINDOW(_read)(WINDOW() _w, T ** _v);                       \
+void WINDOW(_push)(WINDOW() _b, T _v);                          \
+void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
 
 // Define window APIs
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT, float)
@@ -215,15 +215,15 @@ LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT, unsigned int)
 #define PORT_MANGLE_UINT(name)      LIQUID_CONCAT(uiport,name)
 
 // Macro
-//  X: name-mangling macro
-//  T: data type
-#define LIQUID_PORT_DEFINE_API(X,T) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _n); \
-void X(_destroy)(X() _p); \
-void X(_print)(X() _p); \
-void X(_produce)(X() _p, T * _w, unsigned int _n); \
-void X(_consume)(X() _p, T * _r, unsigned int _n); \
+//  PORT    : name-mangling macro
+//  T       : data type
+#define LIQUID_PORT_DEFINE_API(PORT,T)                          \
+typedef struct PORT(_s) * PORT();                               \
+PORT() PORT(_create)(unsigned int _n);                          \
+void PORT(_destroy)(PORT() _p);                                 \
+void PORT(_print)(PORT() _p);                                   \
+void PORT(_produce)(PORT() _p, T * _w, unsigned int _n);        \
+void PORT(_consume)(PORT() _p, T * _r, unsigned int _n);
 
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_FLOAT, float)
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, liquid_float_complex)
@@ -305,10 +305,10 @@ void channel_execute(channel _c, liquid_float_complex _x, liquid_float_complex *
 #define DOTPROD_MANGLE_CRCF(name)   LIQUID_CONCAT(dotprod_crcf,name)
 
 // large macro
-//   X  : name-mangling macro
-//   TO : output data type
-//   TC : coefficients data type
-//   TI : input data type
+//   DOTPROD    : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
 #define LIQUID_DOTPROD_DEFINE_API(DOTPROD,TO,TC,TI)             \
 void DOTPROD(_run)(TC *_h, TI *_x, unsigned int _n, TO *_y);    \
 void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);   \
@@ -335,16 +335,23 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liqu
 #define EQLMS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqlms_rrrf,name)
 #define EQLMS_MANGLE_CCCF(name)     LIQUID_CONCAT(eqlms_cccf,name)
 
-#define LIQUID_EQLMS_DEFINE_API(X,T)                \
-typedef struct X(_s) * X();                         \
-X() X(_create)(unsigned int _p);                    \
-void X(_destroy)(X() _eq);                          \
-void X(_print)(X() _eq);                            \
-void X(_set_bw)(X() _eq, float _lambda);            \
-void X(_reset)(X() _eq);                            \
-void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
-void X(_get_weights)(X() _eq, T * _w);              \
-void X(_train)(X() _eq, T * _w, T * _x, T * _d, unsigned int _n);
+#define LIQUID_EQLMS_DEFINE_API(EQLMS,T)                        \
+typedef struct EQLMS(_s) * EQLMS();                             \
+EQLMS() EQLMS(_create)(unsigned int _p);                        \
+void EQLMS(_destroy)(EQLMS() _eq);                              \
+void EQLMS(_print)(EQLMS() _eq);                                \
+void EQLMS(_set_bw)(EQLMS() _eq, float _lambda);                \
+void EQLMS(_reset)(EQLMS() _eq);                                \
+void EQLMS(_execute)(EQLMS() _eq,                               \
+                     T _x,                                      \
+                     T _d,                                      \
+                     T * _d_hat);                               \
+void EQLMS(_get_weights)(EQLMS() _eq, T * _w);                  \
+void EQLMS(_train)(EQLMS() _eq,                                 \
+                   T * _w,                                      \
+                   T * _x,                                      \
+                   T * _d,                                      \
+                   unsigned int _n);
 
 LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_RRRF, float);
 LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
@@ -354,16 +361,23 @@ LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
 #define EQRLS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqrls_rrrf,name)
 #define EQRLS_MANGLE_CCCF(name)     LIQUID_CONCAT(eqrls_cccf,name)
 
-#define LIQUID_EQRLS_DEFINE_API(X,T)                \
-typedef struct X(_s) * X();                         \
-X() X(_create)(unsigned int _p);                    \
-void X(_destroy)(X() _eq);                          \
-void X(_print)(X() _eq);                            \
-void X(_set_bw)(X() _eq, float _mu);                \
-void X(_reset)(X() _eq);                            \
-void X(_execute)(X() _eq, T _x, T _d, T * _d_hat);  \
-void X(_get_weights)(X() _eq, T * _w);              \
-void X(_train)(X() _eq, T * _w, T * _x, T * _d, unsigned int _n);
+#define LIQUID_EQRLS_DEFINE_API(EQRLS,T)                        \
+typedef struct EQRLS(_s) * EQRLS();                             \
+EQRLS() EQRLS(_create)(unsigned int _p);                        \
+void EQRLS(_destroy)(EQRLS() _eq);                              \
+void EQRLS(_print)(EQRLS() _eq);                                \
+void EQRLS(_set_bw)(EQRLS() _eq, float _mu);                    \
+void EQRLS(_reset)(EQRLS() _eq);                                \
+void EQRLS(_execute)(EQRLS() _eq,                               \
+                     T _x,                                      \
+                     T _d,                                      \
+                     T * _d_hat);                               \
+void EQRLS(_get_weights)(EQRLS() _eq, T * _w);                  \
+void EQRLS(_train)(EQRLS() _eq,                                 \
+                   T * _w,                                      \
+                   T * _x,                                      \
+                   T * _d,                                      \
+                   unsigned int _n);
 
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_RRRF, float);
 LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_CCCF, liquid_float_complex);
@@ -595,20 +609,22 @@ void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
 #define FIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(fir_filter_cccf,name)
 
 // Macro:
-//   X  : name-mangling macro
-//   TO : output data type
-//   TC : coefficients data type
-//   TI : input data type
-#define LIQUID_FIR_FILTER_DEFINE_API(X,TO,TC,TI)            \
-typedef struct X(_s) * X();                                 \
-X() X(_create)(TC * _h, unsigned int _n);                   \
-X() X(_recreate)(X() _f, TC * _h, unsigned int _n);         \
-void X(_destroy)(X() _f);                                   \
-void X(_clear)(X() _f);                                     \
-void X(_print)(X() _f);                                     \
-void X(_push)(X() _f, TI _x);                               \
-void X(_execute)(X() _f, TO *_y);                           \
-unsigned int X(_get_length)(X() _f);
+//   FIR_FILTER : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER,TO,TC,TI)       \
+typedef struct FIR_FILTER(_s) * FIR_FILTER();                   \
+FIR_FILTER() FIR_FILTER(_create)(TC * _h, unsigned int _n);     \
+FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f,             \
+                                   TC * _h,                     \
+                                   unsigned int _n);            \
+void FIR_FILTER(_destroy)(FIR_FILTER() _f);                     \
+void FIR_FILTER(_clear)(FIR_FILTER() _f);                       \
+void FIR_FILTER(_print)(FIR_FILTER() _f);                       \
+void FIR_FILTER(_push)(FIR_FILTER() _f, TI _x);                 \
+void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y);             \
+unsigned int FIR_FILTER(_get_length)(FIR_FILTER() _f);
 
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_RRRF, float, float, float)
 LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
@@ -626,14 +642,14 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, liquid_float_complex, liqui
 // NOTES:
 //   Although firhilb is a placeholder for both the decimation and
 //   interpolation, separate objects should be used for each task.
-#define LIQUID_FIRHILB_DEFINE_API(X,T,TC)               \
-typedef struct X(_s) * X();                             \
-X() X(_create)(unsigned int _h_len);                    \
-void X(_destroy)(X() _f);                               \
-void X(_print)(X() _f);                                 \
-void X(_clear)(X() _f);                                 \
-void X(_decim_execute)(X() _f, T * _x, TC * _y);        \
-void X(_interp_execute)(X() _f, TC _x, T * _y);
+#define LIQUID_FIRHILB_DEFINE_API(FIRHILB,T,TC)                 \
+typedef struct FIRHILB(_s) * FIRHILB();                         \
+FIRHILB() FIRHILB(_create)(unsigned int _h_len);                \
+void FIRHILB(_destroy)(FIRHILB() _f);                           \
+void FIRHILB(_print)(FIRHILB() _f);                             \
+void FIRHILB(_clear)(FIRHILB() _f);                             \
+void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, TC * _y);    \
+void FIRHILB(_interp_execute)(FIRHILB() _f, TC _x, T * _y);
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double)
@@ -647,21 +663,21 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 #define IIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(iir_filter_cccf,name)
 
 // Macro:
-//   X  : name-mangling macro
-//   TO : output data type
-//   TC : coefficients data type
-//   TI : input data type
-#define LIQUID_IIR_FILTER_DEFINE_API(X,TO,TC,TI)                \
-typedef struct X(_s) * X();                                     \
-X() X(_create)(TC * _b,                                         \
+//   IIR_FILTER : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER,TO,TC,TI)       \
+typedef struct IIR_FILTER(_s) * IIR_FILTER();                   \
+IIR_FILTER() IIR_FILTER(_create)(TC * _b,                       \
                unsigned int _nb,                                \
                TC * _a,                                         \
                unsigned int _na);                               \
-void X(_destroy)(X() _f);                                       \
-void X(_print)(X() _f);                                         \
-void X(_clear)(X() _f);                                         \
-void X(_execute)(X() _f, TI _x, TO *_y);                        \
-unsigned int X(_get_length)(X() _f);
+void IIR_FILTER(_destroy)(IIR_FILTER() _f);                     \
+void IIR_FILTER(_print)(IIR_FILTER() _f);                       \
+void IIR_FILTER(_clear)(IIR_FILTER() _f);                       \
+void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y);      \
+unsigned int IIR_FILTER(_get_length)(IIR_FILTER() _f);
 
 LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF, float, float, float)
 LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
@@ -676,20 +692,20 @@ LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, liquid_float_complex, liqui
 #define FIRPFB_MANGLE_CCCF(name)  LIQUID_CONCAT(firpfb_cccf,name)
 
 // Macro:
-//   X  : name-mangling macro
-//   TO : output data type
-//   TC : coefficients data type
-//   TI : input data type
-#define LIQUID_FIRPFB_DEFINE_API(X,TO,TC,TI)                    \
-typedef struct X(_s) * X();                                     \
-X() X(_create)(unsigned int _num_filters,                       \
+//   FIRPFB : name-mangling macro
+//   TO     : output data type
+//   TC     : coefficients data type
+//   TI     : input data type
+#define LIQUID_FIRPFB_DEFINE_API(FIRPFB,TO,TC,TI)               \
+typedef struct FIRPFB(_s) * FIRPFB();                           \
+FIRPFB() FIRPFB(_create)(unsigned int _num_filters,             \
                TC * _h,                                         \
                unsigned int _h_len);                            \
-void X(_destroy)(X() _b);                                       \
-void X(_print)(X() _b);                                         \
-void X(_push)(X() _b, TI _x);                                   \
-void X(_execute)(X() _b, unsigned int _i, TO *_y);              \
-void X(_clear)(X() _b);
+void FIRPFB(_destroy)(FIRPFB() _b);                             \
+void FIRPFB(_print)(FIRPFB() _b);                               \
+void FIRPFB(_push)(FIRPFB() _b, TI _x);                         \
+void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, TO *_y);    \
+void FIRPFB(_clear)(FIRPFB() _b);
 
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF, float,         float,          float)
 LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
@@ -702,18 +718,18 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, liquid_float_complex, liquid_float_
 #define INTERP_MANGLE_CRCF(name)  LIQUID_CONCAT(interp_crcf,name)
 #define INTERP_MANGLE_CCCF(name)  LIQUID_CONCAT(interp_cccf,name)
 
-#define LIQUID_INTERP_DEFINE_API(X,TO,TC,TI)                    \
-typedef struct X(_s) * X();                                     \
-X() X(_create)(unsigned int _M,                                 \
+#define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
+typedef struct INTERP(_s) * INTERP();                           \
+INTERP() INTERP(_create)(unsigned int _M,                       \
               TC *_h,                                           \
               unsigned int _h_len);                             \
-X() X(_create_rrc)(unsigned int _k,                             \
+INTERP() INTERP(_create_rrc)(unsigned int _k,                   \
                    unsigned int _m,                             \
                    float _beta,                                 \
                    float _dt);                                  \
-void X(_destroy)(X() _q);                                       \
-void X(_print)(X() _q);                                         \
-void X(_execute)(X() _q, TI _x, TO *_y);
+void INTERP(_destroy)(INTERP() _q);                             \
+void INTERP(_print)(INTERP() _q);                               \
+void INTERP(_execute)(INTERP() _q, TI _x, TO *_y);
 
 LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float,         float,          float)
 LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
@@ -749,21 +765,21 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, liquid_float_complex,   liquid_float_
 #define QMFB_MANGLE_CRCF(name)      LIQUID_CONCAT(qmfb_crcf,name)
 //#define QMFB_MANGLE_CCCF(name)      LIQUID_CONCAT(qmfb_cccf,name)
 
-#define LIQUID_QMFB_DEFINE_API(QMFB,TO,TC,TI)               \
-typedef struct QMFB(_s) * QMFB();                           \
-QMFB()  QMFB(_create)(unsigned int _m, float _slsl);        \
-QMFB()  QMFB(_recreate)(QMFB() _q, unsigned int _m);        \
-void    QMFB(_destroy)(QMFB() _q);                          \
-void    QMFB(_print)(QMFB() _q);                            \
-void    QMFB(_analysis_execute)(QMFB() _q,                  \
-                                TI   _x0,                   \
-                                TI   _x1,                   \
-                                TO * _y0,                   \
-                                TO * _y1);                  \
-void    QMFB(_synthesis_execute)(QMFB() _q,                 \
-                                 TI   _y0,                  \
-                                 TI   _y1,                  \
-                                 TO * _x0,                  \
+#define LIQUID_QMFB_DEFINE_API(QMFB,TO,TC,TI)                   \
+typedef struct QMFB(_s) * QMFB();                               \
+QMFB()  QMFB(_create)(unsigned int _m, float _slsl);            \
+QMFB()  QMFB(_recreate)(QMFB() _q, unsigned int _m);            \
+void    QMFB(_destroy)(QMFB() _q);                              \
+void    QMFB(_print)(QMFB() _q);                                \
+void    QMFB(_analysis_execute)(QMFB() _q,                      \
+                                TI   _x0,                       \
+                                TI   _x1,                       \
+                                TO * _y0,                       \
+                                TO * _y1);                      \
+void    QMFB(_synthesis_execute)(QMFB() _q,                     \
+                                 TI   _y0,                      \
+                                 TI   _y1,                      \
+                                 TO * _x0,                      \
                                  TO * _x1);
 
 LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_RRRF, float, float, float)
@@ -803,12 +819,12 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, liquid_float_complex,   liquid_fl
 #define RESAMP_MANGLE_CRCF(name)    LIQUID_CONCAT(resamp_crcf,name)
 #define RESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(resamp_cccf,name)
 
-#define LIQUID_RESAMP_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X(); \
-X() X(_create)(float _r); \
-void X(_destroy)(X() _q); \
-void X(_print)(X() _q); \
-void X(_execute)(X() _q);
+#define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
+typedef     struct RESAMP(_s) * RESAMP();                       \
+RESAMP()    RESAMP(_create)(float _r);                          \
+void        RESAMP(_destroy)(RESAMP() _q);                      \
+void        RESAMP(_print)(RESAMP() _q);                        \
+void        RESAMP(_execute)(RESAMP() _q);
 
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF, float,         float,          float)
 LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
@@ -821,15 +837,24 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, liquid_float_complex, liquid_float_
 #define SYMSYNC_MANGLE_CRCF(name)   LIQUID_CONCAT(symsync_crcf,name)
 #define SYMSYNC_MANGLE_CCCF(name)   LIQUID_CONCAT(symsync_cccf,name)
 
-#define LIQUID_SYMSYNC_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, unsigned int _h_len); \
-void X(_destroy)(X() _q); \
-void X(_print)(X() _q); \
-void X(_execute)(X() _q, TI * _x, unsigned int _nx, TO * _y, unsigned int *_ny); \
-void X(_set_lf_bw)(X() _q, float _bt); \
-void X(_clear)(X() _q); \
-void X(_estimate_timing)(X() _q, TI * _x, unsigned int _n);
+#define LIQUID_SYMSYNC_DEFINE_API(SYMSYNC,TO,TC,TI)             \
+typedef struct SYMSYNC(_s) * SYMSYNC();                         \
+SYMSYNC()   SYMSYNC(_create)(unsigned int _k,                   \
+                             unsigned int _num_filters,         \
+                             TC * _h,                           \
+                             unsigned int _h_len);              \
+void        SYMSYNC(_destroy)(SYMSYNC() _q);                    \
+void        SYMSYNC(_print)(SYMSYNC() _q);                      \
+void        SYMSYNC(_execute)(SYMSYNC() _q,                     \
+                              TI * _x,                          \
+                              unsigned int _nx,                 \
+                              TO * _y,                          \
+                              unsigned int *_ny);               \
+void        SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);       \
+void        SYMSYNC(_clear)(SYMSYNC() _q);                      \
+void        SYMSYNC(_estimate_timing)(SYMSYNC() _q,             \
+                                      TI * _x,                  \
+                                      unsigned int _n);
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF, float,           float,          float)
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
@@ -842,15 +867,23 @@ LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_fl
 #define SYMSYNC2_MANGLE_CRCF(name)  LIQUID_CONCAT(symsync2_crcf,name)
 #define SYMSYNC2_MANGLE_CCCF(name)  LIQUID_CONCAT(symsync2_cccf,name)
 
-#define LIQUID_SYMSYNC2_DEFINE_API(X,TO,TC,TI) \
-typedef struct X(_s) * X(); \
-X() X(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len); \
-void X(_destroy)(X() _q); \
-void X(_print)(X() _q); \
-void X(_execute)(X() _q, TI * _x, unsigned int _nx, TO * _y, unsigned int *_ny); \
-void X(_set_lf_bw)(X() _q, float _bt); \
-void X(_clear)(X() _q); \
-void X(_estimate_timing)(X() _q, TI * _x, unsigned int _n);
+#define LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2,TO,TC,TI)           \
+typedef struct SYMSYNC2(_s) * SYMSYNC2();                       \
+SYMSYNC2()  SYMSYNC2(_create)(unsigned int _num_filters,        \
+                              TC * _h,                          \
+                              unsigned int _h_len);             \
+void        SYMSYNC2(_destroy)(SYMSYNC2() _q);                  \
+void        SYMSYNC2(_print)(SYMSYNC2() _q);                    \
+void        SYMSYNC2(_execute)(SYMSYNC2() _q,                   \
+                               TI * _x,                         \
+                               unsigned int _nx,                \
+                               TO * _y,                         \
+                               unsigned int *_ny);              \
+void        SYMSYNC2(_set_lf_bw)(SYMSYNC2() _q, float _bt);     \
+void        SYMSYNC2(_clear)(SYMSYNC2() _q);                    \
+void        SYMSYNC2(_estimate_timing)(SYMSYNC2() _q,           \
+                                       TI * _x,                 \
+                                       unsigned int _n);
 
 LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float,         float,          float)
 LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
@@ -865,22 +898,22 @@ LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_fl
 //#define FIR_FARROW_MANGLE_CCCF(name)  LIQUID_CONCAT(fir_farrow_cccf,name)
 
 // Macro:
-//   X  : name-mangling macro
-//   TO : output data type
-//   TC : coefficients data type
-//   TI : input data type
-#define LIQUID_FIR_FARROW_DEFINE_API(X,TO,TC,TI)            \
-typedef struct X(_s) * X();                                 \
-X() X(_create)(unsigned int _n,                             \
-               unsigned int _p,                             \
-               float _beta);                                \
-void X(_destroy)(X() _f);                                   \
-void X(_clear)(X() _f);                                     \
-void X(_print)(X() _f);                                     \
-void X(_push)(X() _f, TI _x);                               \
-void X(_set_delay)(X() _f, float _mu);                      \
-void X(_execute)(X() _f, TO *_y);                           \
-unsigned int X(_get_length)(X() _f);
+//   FIR_FARROW : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW,TO,TC,TI)       \
+typedef struct FIR_FARROW(_s) * FIR_FARROW();                   \
+FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,               \
+               unsigned int _p,                                 \
+               float _beta);                                    \
+void FIR_FARROW(_destroy)(FIR_FARROW() _f);                     \
+void FIR_FARROW(_clear)(FIR_FARROW() _f);                       \
+void FIR_FARROW(_print)(FIR_FARROW() _f);                       \
+void FIR_FARROW(_push)(FIR_FARROW() _f, TI _x);                 \
+void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu);        \
+void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y);             \
+unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f);
 
 LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
 LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
@@ -996,17 +1029,17 @@ void framesync64_execute(framesync64 _fg, liquid_float_complex * _x, unsigned in
 #define PNSYNC_MANGLE_CCCF(name)    LIQUID_CONCAT(pnsync_cccf,name)
 
 // Macro:
-//   X  : name-mangling macro
-//   TO : output data type
-//   TC : coefficients data type
-//   TI : input data type
-#define LIQUID_PNSYNC_DEFINE_API(PNSYNC,TO,TC,TI)       \
-typedef struct PNSYNC(_s) * PNSYNC();                   \
-                                                        \
-PNSYNC() PNSYNC(_create)(unsigned int _n, TC * _v);     \
-PNSYNC() PNSYNC(_create_msequence)(unsigned int _g);    \
-void PNSYNC(_destroy)(PNSYNC() _fs);                    \
-void PNSYNC(_print)(PNSYNC() _fs);                      \
+//   PNSYNC : name-mangling macro
+//   TO     : output data type
+//   TC     : coefficients data type
+//   TI     : input data type
+#define LIQUID_PNSYNC_DEFINE_API(PNSYNC,TO,TC,TI)               \
+typedef struct PNSYNC(_s) * PNSYNC();                           \
+                                                                \
+PNSYNC() PNSYNC(_create)(unsigned int _n, TC * _v);             \
+PNSYNC() PNSYNC(_create_msequence)(unsigned int _g);            \
+void PNSYNC(_destroy)(PNSYNC() _fs);                            \
+void PNSYNC(_print)(PNSYNC() _fs);                              \
 void PNSYNC(_correlate)(PNSYNC() _fs, TI _sym, TO * _y);
 
 LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_RRRF, float,           float,          float)
@@ -1022,17 +1055,17 @@ LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_floa
 #define BSYNC_MANGLE_CCCF(name)     LIQUID_CONCAT(bsync_cccf,name)
 
 // Macro:
-//   X  : name-mangling macro
-//   TO : output data type
-//   TC : coefficients data type
-//   TI : input data type
-#define LIQUID_BSYNC_DEFINE_API(BSYNC,TO,TC,TI)         \
-typedef struct BSYNC(_s) * BSYNC();                     \
-                                                        \
-BSYNC() BSYNC(_create)(unsigned int _n, TC * _v);       \
-BSYNC() BSYNC(_create_msequence)(unsigned int _g);      \
-void BSYNC(_destroy)(BSYNC() _fs);                      \
-void BSYNC(_print)(BSYNC() _fs);                        \
+//   BSYNC  : name-mangling macro
+//   TO     : output data type
+//   TC     : coefficients data type
+//   TI     : input data type
+#define LIQUID_BSYNC_DEFINE_API(BSYNC,TO,TC,TI)                 \
+typedef struct BSYNC(_s) * BSYNC();                             \
+                                                                \
+BSYNC() BSYNC(_create)(unsigned int _n, TC * _v);               \
+BSYNC() BSYNC(_create_msequence)(unsigned int _g);              \
+void BSYNC(_destroy)(BSYNC() _fs);                              \
+void BSYNC(_print)(BSYNC() _fs);                                \
 void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO * _y);
 
 LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_RRRF, float,                   float,                  float)
@@ -1147,43 +1180,35 @@ void polyfit(float * _x,
 #define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfmatrix, name)
 
 // large macro
-//   X: name-mangling macro
-//   T: data type
-#define LIQUID_MATRIX_DEFINE_API(X,T)                       \
-void X(_print)(T * _X, unsigned int _R, unsigned int _C);   \
-void X(_add)(unsigned int _R, unsigned int _C,              \
-        T * _x, T * _y, T * _z);                            \
-void X(_sub)(unsigned int _R, unsigned int _C,              \
-        T * _x, T * _y, T * _z);                            \
-void X(_mul)(T * _X, unsigned int _XR, unsigned int _XC,    \
-             T * _Y, unsigned int _YR, unsigned int _YC,    \
-             T * _Z, unsigned int _ZR, unsigned int _ZC);   \
-void X(_div)(T * _X, unsigned int _XR, unsigned int _XC,    \
-             T * _Y, unsigned int _YR, unsigned int _YC,    \
-             T * _Z);                                       \
-void X(_trans)(T * _X, unsigned int _XR, unsigned int _XC); \
-void X(_inv)(T * _X, unsigned int _XR, unsigned int _XC);
+//   MATRIX : name-mangling macro
+//   T      : data type
+#define LIQUID_MATRIX_DEFINE_API(MATRIX,T)                      \
+void MATRIX(_print)(T * _x,                                     \
+                    unsigned int _rx,                           \
+                    unsigned int _cx);                          \
+void MATRIX(_add)(unsigned int _r, unsigned int _c,             \
+                  T * _x,                                       \
+                  T * _y,                                       \
+                  T * _z);                                      \
+void MATRIX(_sub)(unsigned int _r, unsigned int _c,             \
+                  T * _x,                                       \
+                  T * _y,                                       \
+                  T * _z);                                      \
+void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
+                  T * _y, unsigned int _ry, unsigned int _cy,   \
+                  T * _z, unsigned int _rz, unsigned int _cz);  \
+void MATRIX(_div)(T * _x, unsigned int _rx, unsigned int _cx,   \
+                  T * _y, unsigned int _ry, unsigned int _cy,   \
+                  T * _z, unsigned int _rz, unsigned int _cz);  \
+void MATRIX(_trans)(T * _x, unsigned int _rx, unsigned int _cx);\
+void MATRIX(_inv)(T * _x,                                       \
+                  unsigned int _rx,                             \
+                  unsigned int _cx);
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT, float)
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
-
-#if 0
-typedef struct X(_s) * X();                                 \
-X() X(_create)(unsigned int _M, unsigned int _N);           \
-X() X(_copy)(X() _x);                                       \
-void X(_destroy)(X() _x);                                   \
-void X(_print)(X() _x);                                     \
-void X(_clear)(X() _x);                                     \
-void X(_dim)(X() _x, unsigned int *_M, unsigned int *_N);   \
-void X(_assign)(X() _x, unsigned int _m, unsigned int _n,   \
-    T _value);                                              \
-void X(_access)(X() _x, unsigned int _m, unsigned int _n,   \
-    T * _value);                                            \
-void X(_add)(X() _x, X() _y, X() _z);                       \
-void X(_lu_decompose)(X() _x, X() _lower, X() _upper);
-#endif
 
 
 //
