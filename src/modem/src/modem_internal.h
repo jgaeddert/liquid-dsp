@@ -26,8 +26,6 @@
 #define __MODEM_INTERNAL_H__
 
 #include <complex.h>
-#undef I
-#define J _Complex_I
 
 #include "liquid.h"
 
@@ -101,13 +99,13 @@ struct modem_s {
     /// Complete symbol map
     float complex * symbol_map;
 
-    float complex state;      ///< received state vector
-    float state_theta;  ///< received state vector, angle
+    float complex state;        // received state vector
+    float state_theta;          // received state vector, angle
 
-    float complex res;        ///< residual error vector
+    float complex res;          // residual error vector
 
-    float phase_error;  ///< phase error after demodulation
-    float evm;          ///< error vector magnitude (EVM)
+    float phase_error;          // phase error after demodulation
+    float evm;                  // error vector magnitude (EVM)
 
     float d_phi;
 
@@ -117,10 +115,6 @@ struct modem_s {
     // demodulate function pointer
     void (*demodulate_func)(modem _demod, float complex x, unsigned int *symbol_out);
 };
-/**
-  Here is a full modem example:
-  \example modem_test_qam16.c
-  */
 
 
 // generic modem create routines

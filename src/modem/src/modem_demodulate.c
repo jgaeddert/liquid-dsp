@@ -44,7 +44,7 @@ void modem_demodulate_ask(
     _demod->state = x;
     float res_i;
     modem_demodulate_linear_array_ref(crealf(x), _demod->m, _demod->ref, &s, &res_i);
-    _demod->res = res_i + J*cimagf(x);
+    _demod->res = res_i + _Complex_I*cimagf(x);
     *symbol_out = gray_encode(s);
 }
 
@@ -58,7 +58,7 @@ void modem_demodulate_qam(
     float res_i, res_q;
     modem_demodulate_linear_array_ref(crealf(x), _demod->m_i, _demod->ref, &s_i, &res_i);
     modem_demodulate_linear_array_ref(cimagf(x), _demod->m_q, _demod->ref, &s_q, &res_q);
-    _demod->res = res_i + J*res_q;
+    _demod->res = res_i + _Complex_I*res_q;
     s_i = gray_encode(s_i);
     s_q = gray_encode(s_q);
     *symbol_out = ( s_i << _demod->m_q ) + s_q;

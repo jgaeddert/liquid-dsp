@@ -56,7 +56,7 @@ void modem_modulate_qam(
     s_q = gray_decode(s_q);
 
     *y = (2*(int)s_i - (int)(_mod->M_i) + 1) * _mod->alpha +
-         (2*(int)s_q - (int)(_mod->M_q) + 1) * _mod->alpha * J;
+         (2*(int)s_q - (int)(_mod->M_q) + 1) * _mod->alpha * _Complex_I;
 }
 
 void modem_modulate_psk(
@@ -67,7 +67,7 @@ void modem_modulate_psk(
     symbol_in = gray_decode(symbol_in);
     ///\todo: combine into single statement
     float theta = symbol_in * 2 * _mod->alpha;
-    *y = cexpf(J*theta);
+    *y = cexpf(_Complex_I*theta);
 }
 
 void modem_modulate_bpsk(
@@ -83,8 +83,8 @@ void modem_modulate_qpsk(
     unsigned int symbol_in,
     float complex *y)
 {
-    *y  = symbol_in & 0x01 ? -0.707106781f   : 0.707106781f;
-    *y += symbol_in & 0x02 ? -0.707106781f*J : 0.707106781f*J;
+    *y  =             (symbol_in & 0x01) ? -0.707106781f : 0.707106781f;
+    *y += _Complex_I*((symbol_in & 0x02) ? -0.707106781f : 0.707106781f);
 }
 
 void modem_modulate_dpsk(
@@ -97,7 +97,7 @@ void modem_modulate_dpsk(
     _mod->state_theta += d_theta;
     _mod->state_theta -= (_mod->state_theta > 2*M_PI) ? 2*M_PI : 0.0f;
     ///\todo: combine into single statement
-    *y = cexpf(J*(_mod->state_theta));
+    *y = cexpf(_Complex_I*(_mod->state_theta));
 
     _mod->state = *y;
     //printf("mod: state_theta = %f\n", _mod->state_theta);

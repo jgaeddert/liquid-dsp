@@ -369,7 +369,7 @@ void modem_arb_init_file(modem _mod, char* filename) {
     float sym_i, sym_q;
     for (i=0; i<_mod->M; i++) {
         results = fscanf(f, "%f %f\n", &sym_i, &sym_q);
-        _mod->symbol_map[i] = sym_i + J*sym_q;
+        _mod->symbol_map[i] = sym_i + _Complex_I*sym_q;
 
         // ensure proper number of symbols were read
         if (results < 2) {
