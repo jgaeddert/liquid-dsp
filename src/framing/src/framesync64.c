@@ -34,17 +34,18 @@
 #define FRAMESYNC64_SYMSYNC_BW_0    (0.01f)
 #define FRAMESYNC64_SYMSYNC_BW_1    (0.001f)
 
-#define FRAMESYNC64_AGC_BW_0        (1e-2f)
+#define FRAMESYNC64_AGC_BW_0        (1e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-9f)
 
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
-#define FRAMESYNC64_PLL_BW_1        (1e-4f)
+#define FRAMESYNC64_PLL_BW_1        (1e-2f)
 
 #define FRAME64_PN_LEN      64
 
 //#define DEBUG
+//#define DEBUG_PRINT
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
-#define DEBUG_BUFFER_LEN    8192
+#define DEBUG_BUFFER_LEN    (8192)
 
 // Internal
 void framesync64_open_bandwidth(framesync64 _fs);
@@ -66,6 +67,8 @@ struct framesync64_s {
     pll pll_rx;
     nco nco_rx;
     bsync_rrrf fsync;
+
+    unsigned int agc_timer;
 
     // status variables
     enum {
@@ -117,6 +120,7 @@ framesync64 framesync64_create(
 
     //
     fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
+    fs->agc_timer = 0;
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
@@ -262,6 +266,7 @@ void framesync64_reset(framesync64 _fs)
 {
     symsync_crcf_clear(_fs->mfdecim);
     pll_reset(_fs->pll_rx);
+    agc_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_0);
     nco_set_phase(_fs->nco_rx, 0.0f);
     nco_set_frequency(_fs->nco_rx, 0.0f);
 }
@@ -275,6 +280,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     float phase_error;
     //float complex rxy;
     float rxy;
+    float complex crxy;
     unsigned int demod_sym;
 
     for (i=0; i<_n; i++) {
@@ -285,7 +291,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
 
-        if (10*log10(agc_get_signal_level(_fs->agc_rx)) < -10.0f)
+        if (10*log10(agc_get_signal_level(_fs->agc_rx)) < -17.0f)
             continue;
 
         // symbol synchronizer
@@ -323,12 +329,12 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 #ifdef DEBUG
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
-                if (cabsf(rxy) > 0.7f) {
-                    rxy *= cexpf(3*M_PI/4*_Complex_I);
+                if (fabsf(rxy) > 0.7f) {
+                    crxy = rxy * cexpf(3*M_PI/4*_Complex_I);
                     //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
-                    nco_adjust_phase(_fs->nco_rx, cargf(rxy));
+                    nco_adjust_phase(_fs->nco_rx, cargf(crxy));
                     _fs->state = FRAMESYNC64_STATE_RXHEADER;
                 }
                 break;
@@ -368,8 +374,10 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 framesync64_open_bandwidth(_fs);
                 _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 _fs->num_symbols_collected = 0;
-                //_fs->nco_rx->theta=0.0f;
-                //_fs->nco_rx->d_theta=0.0f;
+
+                _fs->nco_rx->theta=0.0f;
+                _fs->nco_rx->d_theta=0.0f;
+                pll_reset(_fs->pll_rx);
                 break;
             default:;
             }
@@ -402,7 +410,7 @@ void framesync64_decode_header(framesync64 _fs)
     for (i=0; i<64; i++)
         framesync64_syms_to_byte(_fs->header_sym+(4*i), _fs->header_enc+i);
 
-#ifdef DEBUG
+#ifdef DEBUG_PRINT
     printf("header ENCODED (rx):\n");
     for (i=0; i<64; i++) {
         printf("%2x ", _fs->header_enc[i]);
@@ -417,7 +425,7 @@ void framesync64_decode_header(framesync64 _fs)
     // unscramble header data
     unscramble_data(_fs->header, 32);
 
-#ifdef DEBUG
+#ifdef DEBUG_PRINT
     printf("header (rx):\n");
     for (i=0; i<32; i++) {
         printf("%2x ", _fs->header[i]);
@@ -466,7 +474,7 @@ void framesync64_decode_payload(framesync64 _fs)
     // validate crc
     _fs->payload_valid = crc32_validate_message(_fs->payload,64,_fs->payload_key);
 
-#ifdef DEBUG
+#ifdef DEBUG_PRINT
     printf("payload (rx):\n");
     for (i=0; i<64; i++) {
         printf("%2x ", _fs->payload[i]);
