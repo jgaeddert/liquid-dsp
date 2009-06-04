@@ -61,8 +61,8 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
 
     // load filter in reverse order
     unsigned int i;
-    for (i=_n; i>0; i--)
-        f->h[i-1] = _h[_n-i];
+    //for (i=_n; i>0; i--)
+    //    f->h[i-1] = _h[_n-i];
 
 #if FIR_FARROW_USE_DOTPROD
     f->w = WINDOW(_create)(f->h_len);
@@ -71,6 +71,22 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
 #endif
 
     FIR_FARROW(_clear)(f);
+
+    unsigned int j;
+    float x, mu, h0, h1;
+    //float mu_vect[_p+1];
+    for (i=0; i<_n; i++) {
+        printf("i : %3u / %3u\n", i, _n);
+        x = (float)(i) - (float)(_n-1)/2.0f;
+        for (j=0; j<=_p; j++) {
+            mu = ((float)j - (float)_p)/((float)_p) + 0.5f;
+
+            h0 = sincf(x + mu);
+            h1 = kaiser(i,_n,10.0f,mu);
+            printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f\n",
+                    j, x, mu, h0, h1);
+        }
+    }
 
     return f;
 }
