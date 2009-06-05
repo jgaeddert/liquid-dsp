@@ -91,7 +91,7 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
         for (j=0; j<=_p; j++) {
             mu = ((float)j - (float)_p)/((float)_p) + 0.5f;
 
-            h0 = sincf((f->fc)*x + mu);
+            h0 = sincf((f->fc)*(x + mu));
             h1 = kaiser(i,_n,10.0f,mu);
             printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
                     j, x, mu, h0, h1, h0*h1);
