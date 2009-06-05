@@ -913,7 +913,8 @@ void FIR_FARROW(_print)(FIR_FARROW() _f);                       \
 void FIR_FARROW(_push)(FIR_FARROW() _f, TI _x);                 \
 void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu);        \
 void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y);             \
-unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f);
+unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f);          \
+void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h);
 
 LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
 LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)

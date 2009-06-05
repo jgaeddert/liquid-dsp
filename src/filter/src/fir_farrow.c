@@ -37,11 +37,14 @@
 
 struct FIR_FARROW(_s) {
     TC * h;
-    unsigned int h_len;
+    unsigned int h_len; // filter length
+    unsigned int Q;     // polynomial order
 
     float mu;       // fractional sample delay
     TC * c;         // polynomial coefficients matrix [n x p]
     float * mu_p;   // mu^p vector
+
+    float * P;      // polynomail matrix
 
 #if FIR_FARROW_USE_DOTPROD
     WINDOW() w;
@@ -58,6 +61,9 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
     FIR_FARROW() f = (FIR_FARROW()) malloc(sizeof(struct FIR_FARROW(_s)));
     f->h_len = _n;
     f->h = (TC *) malloc((f->h_len)*sizeof(TC));
+    f->Q = _p;
+
+    // TODO: validate input
 
     // load filter in reverse order
     unsigned int i;
@@ -70,13 +76,16 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
     f->v = malloc((f->h_len)*sizeof(TI));
 #endif
 
+    // allocate memory for polynomial matrix
+    f->P = (float*) malloc((f->h_len)*(f->Q+1)*sizeof(float));
+
     FIR_FARROW(_clear)(f);
 
-    unsigned int j;
+    unsigned int j, n=0;
     float x, mu, h0, h1;
-    float mu_vect[_p+1];
-    float hp_vect[_p+1];
-    float p[_p+1];
+    float mu_vect[f->Q+1];
+    float hp_vect[f->Q+1];
+    float p[f->Q];
     for (i=0; i<_n; i++) {
         printf("i : %3u / %3u\n", i, _n);
         x = (float)(i) - (float)(_n-1)/2.0f;
@@ -91,61 +100,19 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
             mu_vect[j] = mu;
             hp_vect[j] = h0*h1;
         }
-        polyfit(mu_vect,hp_vect,_p+1,p,_p);
+        polyfit(mu_vect,hp_vect,f->Q+1,p,f->Q+1);
         printf("  polynomial : ");
         for (j=0; j<=_p; j++)
             printf("%8.4f,", p[j]);
         printf("\n");
+
+        // copy coefficients to internal matrix
+        memmove(f->P+n, p, (f->Q+1)*sizeof(float));
+        n += f->Q+1;
     }
 
     return f;
 }
-
-#if 0
-FIR_FARROW() FIR_FARROW(_create_prototype)(unsigned int _n)
-{
-    printf("warning: fir_filter_create_prototype(), not yet implemented\n");
-    FIR_FARROW() f = (FIR_FARROW()) malloc(sizeof(struct FIR_FARROW(_s)));
-    f->h_len = _n;
-    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
-
-    // use remez here
-
-    return f;
-}
-
-FIR_FARROW() FIR_FARROW(_recreate)(FIR_FARROW() _f, TC * _h, unsigned int _n)
-{
-    unsigned int i;
-    if (_n != _f->h_len) {
-        // reallocate memory
-        _f->h_len = _n;
-        _f->h = (TC*) realloc(_f->h, (_f->h_len)*sizeof(TC));
-
-#if FIR_FARROW_USE_DOTPROD
-        _f->w = WINDOW(_recreate)(_f->w, _f->h_len);
-#else
-    _f->v = (TI*) realloc(_f->v, (_f->h_len)*sizeof(TI));
-    // TODO: (bug) ensure window has proper state
-    for (i=_n; i<_f->h_len; i++)
-        _f->v[i] = 0;
-
-    if (_n > _f->h_len)
-        _f->v_index += (_n - _f->h_len)/2;
-    else
-        _f->v_index += _f->h_len + (_f->h_len - _n)/2;
-
-    _f->v_index = (_f->v_index) % (_f->h_len);
-#endif
-    }
-
-    // load filter in reverse order
-    for (i=_n; i>0; i--)
-        _f->h[i-1] = _h[_n-i];
-
-    return _f;
-}
-#endif
 
 void FIR_FARROW(_destroy)(FIR_FARROW() _f)
 {
@@ -155,6 +122,7 @@ void FIR_FARROW(_destroy)(FIR_FARROW() _f)
     free(_f->v);
 #endif
     free(_f->h);
+    free(_f->P);
     free(_f);
 }
 
@@ -192,6 +160,19 @@ void FIR_FARROW(_push)(FIR_FARROW() _f, TI _x)
 #endif
 }
 
+void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
+{
+    // TODO: validate input
+
+    unsigned int i, n=0;
+    for (i=0; i<_f->h_len; i++) {
+        _f->h[i] = polyval(_f->P+n, _f->Q+1, _mu);
+        n += _f->Q+1;
+
+        printf("  h[%3u] = %12.8f\n", i, _f->h[i]);
+    }
+}
+
 void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y)
 {
 #if FIR_FARROW_USE_DOTPROD
@@ -210,5 +191,10 @@ void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y)
 unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f)
 {
     return _f->h_len;
+}
+
+void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h)
+{
+    memmove(_h, _f->h, (_f->h_len)*sizeof(float));
 }
 

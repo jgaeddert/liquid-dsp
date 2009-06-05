@@ -17,12 +17,21 @@ int main() {
     //float mu=0.0f;          // timing offset
     unsigned int nfft=64;      // 
 
+    // coefficients array
+    float h[h_len];
+
     fir_farrow_rrrf f = fir_farrow_rrrf_create(h_len, p, slsl);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
     fprintf(fid,"clear all;\nclose all;\n\n");
     //fprintf(fid,"h_len=%u;\nn=%u;\n", h_len, n);
+
+    unsigned int i=0, j;
+    fir_farrow_rrrf_set_delay(f,0.0f);
+    fir_farrow_rrrf_get_coefficients(f,h);
+    for (j=0; j<h_len; j++)
+        fprintf(fid,"  h(%3u,%3u) = %12.4e;\n", i+1, j+1, h[j]);
 
    
 #if 0
