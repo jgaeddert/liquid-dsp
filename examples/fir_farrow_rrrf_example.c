@@ -11,7 +11,7 @@
 int main() {
     // options
     unsigned int h_len=19;  // filter length
-    unsigned int p=3;       // polynomial order
+    unsigned int p=5;       // polynomial order
     float fc=0.9f;          // filter cutoff
     float slsl=60.0f;       // sidelobe suppression level
     unsigned int m=7;       // number of delays to evaluate
