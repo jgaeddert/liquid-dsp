@@ -38,7 +38,8 @@ local_s_files	:= 		\
 # within $(local_dir)
 #
 local_t_files	:= 		\
-	math_autotest.h
+	math_autotest.h		\
+	polynomial_autotest.h
 
 
 # local_b_files
