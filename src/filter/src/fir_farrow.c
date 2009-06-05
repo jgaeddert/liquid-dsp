@@ -38,13 +38,11 @@
 struct FIR_FARROW(_s) {
     TC * h;
     unsigned int h_len; // filter length
+    float fc;           // filter cutoff
     unsigned int Q;     // polynomial order
 
     float mu;       // fractional sample delay
-    TC * c;         // polynomial coefficients matrix [n x p]
-    float * mu_p;   // mu^p vector
-
-    float * P;      // polynomail matrix
+    float * P;      // polynomail coefficients matrix [n x p]
 
 #if FIR_FARROW_USE_DOTPROD
     WINDOW() w;
@@ -62,6 +60,7 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
     f->h_len = _n;
     f->h = (TC *) malloc((f->h_len)*sizeof(TC));
     f->Q = _p;
+    f->fc = 0.9f;
 
     // TODO: validate input
 
@@ -92,7 +91,7 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
         for (j=0; j<=_p; j++) {
             mu = ((float)j - (float)_p)/((float)_p) + 0.5f;
 
-            h0 = sincf(x + mu);
+            h0 = sincf((f->fc)*x + mu);
             h1 = kaiser(i,_n,10.0f,mu);
             printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
                     j, x, mu, h0, h1, h0*h1);
@@ -109,6 +108,15 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
         // copy coefficients to internal matrix
         memmove(f->P+n, p, (f->Q+1)*sizeof(float));
         n += f->Q+1;
+    }
+
+    // print coefficients
+    n=0;
+    for (i=0; i<f->h_len; i++) {
+        printf("%3u : ", i);
+        for (j=0; j<f->Q+1; j++)
+            printf("%12.4e ", f->P[n++]);
+        printf("\n");
     }
 
     return f;
@@ -166,7 +174,7 @@ void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
 
     unsigned int i, n=0;
     for (i=0; i<_f->h_len; i++) {
-        _f->h[i] = polyval(_f->P+n, _f->Q+1, _mu);
+        _f->h[i] = polyval(_f->P+n, _f->Q, _mu);
         n += _f->Q+1;
 
         //printf("  h[%3u] = %12.8f\n", i, _f->h[i]);
