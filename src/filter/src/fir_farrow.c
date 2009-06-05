@@ -74,7 +74,9 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
 
     unsigned int j;
     float x, mu, h0, h1;
-    //float mu_vect[_p+1];
+    float mu_vect[_p+1];
+    float hp_vect[_p+1];
+    float p[_p+1];
     for (i=0; i<_n; i++) {
         printf("i : %3u / %3u\n", i, _n);
         x = (float)(i) - (float)(_n-1)/2.0f;
@@ -83,9 +85,17 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
 
             h0 = sincf(x + mu);
             h1 = kaiser(i,_n,10.0f,mu);
-            printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f\n",
-                    j, x, mu, h0, h1);
+            printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
+                    j, x, mu, h0, h1, h0*h1);
+
+            mu_vect[j] = mu;
+            hp_vect[j] = h0*h1;
         }
+        polyfit(mu_vect,hp_vect,_p+1,p,_p);
+        printf("  polynomial : ");
+        for (j=0; j<=_p; j++)
+            printf("%8.4f,", p[j]);
+        printf("\n");
     }
 
     return f;
