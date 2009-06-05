@@ -291,7 +291,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
 
-        if (10*log10(agc_get_signal_level(_fs->agc_rx)) < -17.0f)
+        if (10*log10(agc_get_signal_level(_fs->agc_rx)) < -15.0f)
             continue;
 
         // symbol synchronizer
