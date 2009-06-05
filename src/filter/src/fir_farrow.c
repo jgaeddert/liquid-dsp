@@ -169,7 +169,7 @@ void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
         _f->h[i] = polyval(_f->P+n, _f->Q+1, _mu);
         n += _f->Q+1;
 
-        printf("  h[%3u] = %12.8f\n", i, _f->h[i]);
+        //printf("  h[%3u] = %12.8f\n", i, _f->h[i]);
     }
 }
 

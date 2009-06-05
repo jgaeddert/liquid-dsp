@@ -14,8 +14,8 @@ int main() {
     unsigned int p=3;
     float fc=0.9f;          // filter cutoff
     float slsl=60.0f;       // sidelobe suppression level
-    //float mu=0.0f;          // timing offset
     unsigned int nfft=64;      // 
+    unsigned int m=5;       // number of delays to evaluate
 
     // coefficients array
     float h[h_len];
@@ -25,26 +25,39 @@ int main() {
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
     fprintf(fid,"clear all;\nclose all;\n\n");
-    //fprintf(fid,"h_len=%u;\nn=%u;\n", h_len, n);
+    fprintf(fid,"m = %u;\n", m);
+    fprintf(fid,"h_len = %u;\n", h_len);
+    fprintf(fid,"h = zeros(%u,%u);\n", m, h_len);
+    fprintf(fid,"mu = zeros(1,%u);\n", m);
 
-    unsigned int i=0, j;
-    fir_farrow_rrrf_set_delay(f,0.0f);
-    fir_farrow_rrrf_get_coefficients(f,h);
-    for (j=0; j<h_len; j++)
-        fprintf(fid,"  h(%3u,%3u) = %12.4e;\n", i+1, j+1, h[j]);
+    unsigned int i, j;
+    float mu_vect[m];
+    for (i=0; i<m; i++) {
+        mu_vect[i] = ((float)i)/((float)m-1) - 0.5f;
+        printf("mu[%3u] = %12.8f\n", i, mu_vect[i]);
+        fprintf(fid,"mu(%3u) = %12.8f;\n", i+1, mu_vect[i]);
+    }
+
+    for (i=0; i<m; i++) {
+        fir_farrow_rrrf_set_delay(f,mu_vect[i]);
+        fir_farrow_rrrf_get_coefficients(f,h);
+        for (j=0; j<h_len; j++)
+            fprintf(fid,"  h(%3u,%3u) = %12.4e;\n", i+1, j+1, h[j]);
+    }
 
    
-#if 0
+    // compute delay, print results
     fprintf(fid,"nfft=512;\n");
-    fprintf(fid,"w=hamming(length(x))';\n");
-    fprintf(fid,"H=20*log10(abs(fftshift(fft(h,   nfft))));\n");
-    fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*w,nfft))));\n");
-    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*w,nfft))));\n");
-    fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f,X,'Color',[0.3 0.3 0.3],f,Y,'LineWidth',2,f,H,'-b','LineWidth',2);\n");
-    fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('noise','filtered noise','filter prototype',1);");
-#endif
+    fprintf(fid,"g = 0:(h_len-1);\n");
+    fprintf(fid,"D = zeros(m,nfft);\n");
+    fprintf(fid,"for i=1:m,\n");
+    fprintf(fid,"    d = real( fft(h(i,:).*g,2*nfft) ./ fft(h(i,:),2*nfft) );\n");
+    fprintf(fid,"    D(i,:) = d(1:nfft);\n");
+    fprintf(fid,"end;\n");
+
+    fprintf(fid,"f = [0:(nfft-1)]/(2*nfft);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,D,'-k','LineWidth',2);\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
