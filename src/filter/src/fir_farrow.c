@@ -28,6 +28,8 @@
 
 #define FIR_FARROW_USE_DOTPROD 1
 
+#define FIR_FARROW_DEBUG 0
+
 // defined:
 //  FIR_FARROW()    name-mangling macro
 //  T               coefficients type
@@ -43,6 +45,7 @@ struct FIR_FARROW(_s) {
 
     float mu;       // fractional sample delay
     float * P;      // polynomail coefficients matrix [n x p]
+    float gamma;    // inverse of DC response (normalization factor)
 
 #if FIR_FARROW_USE_DOTPROD
     WINDOW() w;
@@ -86,30 +89,37 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
     float hp_vect[f->Q+1];
     float p[f->Q];
     for (i=0; i<_n; i++) {
+#if FIR_FARROW_DEBUG
         printf("i : %3u / %3u\n", i, _n);
+#endif
         x = (float)(i) - (float)(_n-1)/2.0f;
         for (j=0; j<=_p; j++) {
             mu = ((float)j - (float)_p)/((float)_p) + 0.5f;
 
             h0 = sincf((f->fc)*(x + mu));
             h1 = kaiser(i,_n,10.0f,mu);
+#if FIR_FARROW_DEBUG
             printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
                     j, x, mu, h0, h1, h0*h1);
+#endif
 
             mu_vect[j] = mu;
             hp_vect[j] = h0*h1;
         }
         polyfit(mu_vect,hp_vect,f->Q+1,p,f->Q+1);
+#if FIR_FARROW_DEBUG
         printf("  polynomial : ");
         for (j=0; j<=_p; j++)
             printf("%8.4f,", p[j]);
         printf("\n");
+#endif
 
         // copy coefficients to internal matrix
         memmove(f->P+n, p, (f->Q+1)*sizeof(float));
         n += f->Q+1;
     }
 
+#if FIR_FARROW_DEBUG
     // print coefficients
     n=0;
     for (i=0; i<f->h_len; i++) {
@@ -118,6 +128,15 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
             printf("%12.4e ", f->P[n++]);
         printf("\n");
     }
+#endif
+
+    // normalize DC gain
+    f->gamma = 1.0f;                // initialize gamma to 1
+    FIR_FARROW(_set_delay)(f,0.0f); // compute filter taps with zero delay
+    f->gamma = 0.0f;                // clear gamma
+    for (i=0; i<f->h_len; i++)      // compute DC response
+        f->gamma += f->h[i];
+    f->gamma = 1.0f / (f->gamma);   // invert result
 
     return f;
 }
@@ -148,8 +167,20 @@ void FIR_FARROW(_clear)(FIR_FARROW() _f)
 
 void FIR_FARROW(_print)(FIR_FARROW() _f)
 {
-    printf("filter coefficients:\n");
-    unsigned int i, n = _f->h_len;
+    printf("fir_farrow [len : %u, poly-order : %u]\n", _f->h_len, _f->Q);
+    printf("polynomial coefficients:\n");
+
+    // print coefficients
+    unsigned int i, j, n=0;
+    for (i=0; i<_f->h_len; i++) {
+        printf("  %3u : ", i);
+        for (j=0; j<_f->Q+1; j++)
+            printf("%12.4e ", _f->P[n++]);
+        printf("\n");
+    }
+
+    printf("filter coefficients (mu=%8.4f):\n", _f->mu);
+    n = _f->h_len;
     for (i=0; i<n; i++) {
         printf("  h(%3u) = ", i+1);
         PRINTVAL(_f->h[n-i-1]);
@@ -174,7 +205,12 @@ void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
 
     unsigned int i, n=0;
     for (i=0; i<_f->h_len; i++) {
+        // compute filter tap from polynomial
         _f->h[i] = polyval(_f->P+n, _f->Q, _mu);
+
+        // normalize filter by inverse of DC response
+        _f->h[i] *= _f->gamma;
+
         n += _f->Q+1;
 
         //printf("  h[%3u] = %12.8f\n", i, _f->h[i]);
