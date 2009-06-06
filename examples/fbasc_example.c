@@ -29,7 +29,7 @@ int main() {
     fprintf(fid,"close all\n");
 
     float phi=0.0f;
-    float dphi;
+    float dphi=0.0f;
     unsigned int i, j;
     unsigned int n=0;   // output file sample counter
     float x[samples_per_frame], y[samples_per_frame];
@@ -42,7 +42,7 @@ int main() {
             phi += dphi;
             dphi += 0.002f;
 
-            x[j] *= kaiser(j,samples_per_frame,0.0f,10.0f);
+            x[j] *= kaiser(j,samples_per_frame,10.0f,0.0f);
         }
 
         fbasc_encode(fbasc_encoder, x, framedata);
