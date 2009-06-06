@@ -28,13 +28,9 @@
 
 #include "liquid.internal.h"
 
-// Design FIR using kaiser window
-//  _n      : filter length
-//  _fc     : cutoff frequency
-//  _slsl   : sidelobe suppression level (dB attenuation)
-//  _h      : output coefficient buffer
-void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float *_h) {
-    // chooise kaiser beta parameter (approximate)
+// returns the Kaiser window beta factor : sidelobe suppression level
+float kaiser_beta_slsl(float _slsl)
+{
     // from:
     //  P.P. Vaidyanathan, "Multirate Systems and Filter Banks
     _slsl = fabsf(_slsl);
@@ -45,6 +41,18 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float
         beta = 0.5842*powf(_slsl - 21, 0.4f) + 0.07886f*(_slsl - 21);
     else
         beta = 0.0f;
+
+    return beta;
+}
+
+// Design FIR using kaiser window
+//  _n      : filter length
+//  _fc     : cutoff frequency
+//  _slsl   : sidelobe suppression level (dB attenuation)
+//  _h      : output coefficient buffer
+void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float *_h) {
+    // chooise kaiser beta parameter (approximate)
+    float beta = kaiser_beta_slsl(_slsl);
 
     float t, h1, h2; 
     unsigned int i;

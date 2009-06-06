@@ -530,6 +530,9 @@ void fir_prototype_design_slsl();
 
 void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
 
+// returns the Kaiser window beta factor : sidelobe suppression level
+float kaiser_beta_slsl(float _slsl);
+
 // Design FIR filter using window method
 //  _n      : filter length (odd)
 //  _fc     : filter cutoff (0 < _fc < 1)
