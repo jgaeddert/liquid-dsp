@@ -589,6 +589,12 @@ void design_rrc_filter(
     float * _h
 );
 
+// Compute group delay for an FIR filter
+//  _h      : filter coefficients array
+//  _n      : filter length
+//  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
+float fir_group_delay(float * _h, unsigned int _n, float _fc);
+
 //
 // IIR filter design
 //

@@ -44,6 +44,8 @@ int main() {
         fir_farrow_rrrf_get_coefficients(f,h);
         for (j=0; j<h_len; j++)
             fprintf(fid,"  h(%3u,%3u) = %12.4e;\n", i+1, j+1, h[j]);
+
+        printf("group delay (mu = %12.8f) : %12.8f\n", mu_vect[i], fir_group_delay(h,h_len,0.0f));
     }
 
    
