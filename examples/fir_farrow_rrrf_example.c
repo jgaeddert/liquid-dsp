@@ -14,7 +14,7 @@ int main() {
     unsigned int p=5;       // polynomial order
     //float fc=0.9f;          // filter cutoff
     float slsl=60.0f;       // sidelobe suppression level
-    unsigned int m=7;       // number of delays to evaluate
+    unsigned int m=9;       // number of delays to evaluate
 
     // coefficients array
     float h[h_len];
@@ -35,17 +35,26 @@ int main() {
     float mu_vect[m];
     for (i=0; i<m; i++) {
         mu_vect[i] = ((float)i)/((float)m-1) - 0.5f;
-        printf("mu[%3u] = %12.8f\n", i, mu_vect[i]);
+        //printf("mu[%3u] = %12.8f\n", i, mu_vect[i]);
         fprintf(fid,"mu(%3u) = %12.8f;\n", i+1, mu_vect[i]);
     }
 
+    fir_farrow_rrrf_print(f);
+    printf("Farrow filter group delay error for certain frequencies:\n");
+    printf("%8s %8s  : %8.4f   %8.4f   %8.4f\n", "mu", "delay", 0.0f, 0.2f, 0.4f);
     for (i=0; i<m; i++) {
         fir_farrow_rrrf_set_delay(f,mu_vect[i]);
         fir_farrow_rrrf_get_coefficients(f,h);
         for (j=0; j<h_len; j++)
             fprintf(fid,"  h(%3u,%3u) = %12.4e;\n", i+1, j+1, h[j]);
 
-        printf("group delay (mu = %12.8f) : %12.8f\n", mu_vect[i], fir_group_delay(h,h_len,0.0f));
+        //printf("group delay (mu = %12.8f) : %12.8f\n", mu_vect[i], fir_group_delay(h,h_len,0.0f));
+        printf("%8.4f ", mu_vect[i]);
+        printf("%8.4f  : ", tao + mu_vect[i]);
+        printf("%8.1e   ", tao + mu_vect[i] - fir_group_delay(h,h_len,0.0f));
+        printf("%8.1e   ", tao + mu_vect[i] - fir_group_delay(h,h_len,0.2f));
+        printf("%8.1e   ", tao + mu_vect[i] - fir_group_delay(h,h_len,0.4f));
+        printf("\n");
     }
 
    
@@ -59,7 +68,7 @@ int main() {
     fprintf(fid,"for i=1:m,\n");
     fprintf(fid,"    d = real( fft(h(i,:).*g,2*nfft) ./ fft(h(i,:),2*nfft) );\n");
     fprintf(fid,"    D(i,:) = d(1:nfft);\n");
-    fprintf(fid,"    D_ideal(i,:) = tao - mu(i);\n");
+    fprintf(fid,"    D_ideal(i,:) = tao + mu(i);\n");
     fprintf(fid,"    H_prime = 20*log10(abs(fftshift(fft(h(i,:),2*nfft))));\n");
     fprintf(fid,"    H(i,:) = H_prime([nfft+1]:[2*nfft]);\n");
     fprintf(fid,"end;\n");

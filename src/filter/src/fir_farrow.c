@@ -88,6 +88,7 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
     float mu_vect[f->Q+1];
     float hp_vect[f->Q+1];
     float p[f->Q];
+    float beta = kaiser_beta_slsl(80.0f);
     for (i=0; i<_n; i++) {
 #if FIR_FARROW_DEBUG
         printf("i : %3u / %3u\n", i, _n);
@@ -97,7 +98,7 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
             mu = ((float)j - (float)_p)/((float)_p) + 0.5f;
 
             h0 = sincf((f->fc)*(x + mu));
-            h1 = kaiser(i,_n,10.0f,mu);
+            h1 = kaiser(i,_n,beta,mu);
 #if FIR_FARROW_DEBUG
             printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
                     j, x, mu, h0, h1, h0*h1);
@@ -205,8 +206,9 @@ void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
 
     unsigned int i, n=0;
     for (i=0; i<_f->h_len; i++) {
-        // compute filter tap from polynomial
-        _f->h[i] = polyval(_f->P+n, _f->Q, _mu);
+        // compute filter tap from polynomial using negative
+        // value for _mu
+        _f->h[i] = polyval(_f->P+n, _f->Q, -_mu);
 
         // normalize filter by inverse of DC response
         _f->h[i] *= _f->gamma;
