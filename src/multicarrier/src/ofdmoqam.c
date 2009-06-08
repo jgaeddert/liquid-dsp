@@ -83,19 +83,17 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
 
     // allocate memory for time-delay buffer
     c->x_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
-    unsigned int i;
-    for (i=0; i<c->num_channels; i++)
-        c->x_prime[i] = 0;
 
     // allocate memory for analyzer delay buffer
     c->x_tilda = (float complex*) malloc((c->num_channels)*sizeof(float complex));
-    for (i=0; i<c->num_channels; i++)
-        c->x_tilda[i] = 0;
 
     // create filterbank channelizers
     // TODO: use actual prototype (get rid of _slsl input)
     c->c0 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type);
     c->c1 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type);
+
+    // clear buffers, etc.
+    ofdmoqam_clear(c);
 
     return c;
 }
@@ -119,6 +117,24 @@ void ofdmoqam_destroy(ofdmoqam _c)
 void ofdmoqam_print(ofdmoqam _c)
 {
     printf("ofdmoqam: [%u taps]\n", 0);
+}
+
+void ofdmoqam_clear(ofdmoqam _c)
+{
+    // clear filterbank channelizers
+    firpfbch_clear(_c->c0);
+    firpfbch_clear(_c->c1);
+
+    // clear buffers
+    unsigned int i;
+    for (i=0; i<_c->num_channels; i++) {
+        _c->x0[i] = 0.0f;
+        _c->x1[i] = 0.0f;
+        _c->X0[i] = 0.0f;
+        _c->X1[i] = 0.0f;
+        _c->x_prime[i] = 0.0f;
+        _c->x_tilda[i] = 0.0f;
+    }
 }
 
 

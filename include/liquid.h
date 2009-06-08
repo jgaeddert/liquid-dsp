@@ -1355,6 +1355,7 @@ typedef struct ofdmoqam_s * ofdmoqam;
 ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, float _beta, float _dt, int _type);
 void ofdmoqam_destroy(ofdmoqam _c);
 void ofdmoqam_print(ofdmoqam _c);
+void ofdmoqam_clear(ofdmoqam _c);
 void ofdmoqam_execute(ofdmoqam _c, liquid_float_complex * _x, liquid_float_complex * _y);
 
 // Discrete multi-tone (OFDM)
