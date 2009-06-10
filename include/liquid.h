@@ -780,6 +780,7 @@ QMFB()  QMFB(_create)(unsigned int _m, float _slsl);            \
 QMFB()  QMFB(_recreate)(QMFB() _q, unsigned int _m);            \
 void    QMFB(_destroy)(QMFB() _q);                              \
 void    QMFB(_print)(QMFB() _q);                                \
+void    QMFB(_clear)(QMFB() _q);                                \
 void    QMFB(_analysis_execute)(QMFB() _q,                      \
                                 TI   _x0,                       \
                                 TI   _x1,                       \
