@@ -26,9 +26,6 @@
 #include <string.h>
 #include <stdio.h>
 
-// direct access to element X(i,j) of DxD square matrix
-#define square_matrix_direct_access(X,D,i,j) ((X)[(j)*(D)+(i)])
-
 //#define DEBUG
 
 struct EQRLS(_s) {
@@ -106,8 +103,7 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("P0:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            PRINTVAL(square_matrix_direct_access(_eq->P0,p,r,c));
-            //printf("%6.3f ", square_matrix_direct_access(_eq->P0,p,r,c));
+            PRINTVAL(matrix_access(_eq->P0,p,r,c));
         }
         printf("\n");
     }
@@ -115,8 +111,7 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("P1:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            PRINTVAL(square_matrix_direct_access(_eq->P1,p,r,c));
-            //printf("%6.3f ", square_matrix_direct_access(_eq->P1,p,r,c));
+            PRINTVAL(matrix_access(_eq->P1,p,p,r,c));
         }
         printf("\n");
     }
@@ -124,8 +119,7 @@ void EQRLS(_print)(EQRLS() _eq)
     printf("gxl:\n");
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
-            PRINTVAL(square_matrix_direct_access(_eq->gxl,p,r,c));
-            //printf("%6.3f ", square_matrix_direct_access(_eq->gxl,p,r,c));
+            PRINTVAL(matrix_access(_eq->gxl,p,p,r,c));
         }
         printf("\n");
     }
@@ -191,7 +185,7 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
     for (c=0; c<p; c++) {
         _eq->xP0[c] = 0;
         for (r=0; r<p; r++) {
-            _eq->xP0[c] += x[r] * square_matrix_direct_access(_eq->P0,p,r,c);
+            _eq->xP0[c] += x[r] * matrix_access(_eq->P0,p,p,r,c);
         }
     }
 
@@ -223,7 +217,7 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
     for (r=0; r<p; r++) {
         _eq->g[r] = 0;
         for (c=0; c<p; c++) {
-            _eq->g[r] += square_matrix_direct_access(_eq->P0,p,r,c) * conj(x[c]);
+            _eq->g[r] += matrix_access(_eq->P0,p,p,r,c) * conj(x[c]);
         }
         _eq->g[r] /= _eq->zeta;
     }
@@ -239,26 +233,13 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
     for (r=0; r<p; r++) {
         for (c=0; c<p; c++) {
             // gxl = [g] * [x.'] / lambda
-            square_matrix_direct_access(_eq->gxl,p,r,c) = _eq->g[r] * x[c] / _eq->lambda;
+            matrix_access(_eq->gxl,p,p,r,c) = _eq->g[r] * x[c] / _eq->lambda;
         }
     }
     // multiply two [pxp] matrices: gxlP0 = gxl * P0
-#if 1
-    for (r=0; r<p; r++) {
-        for (c=0; c<p; c++) {
-            T sum=0;
-            for (i=0; i<p; i++) {
-                sum += square_matrix_direct_access(_eq->gxl,  p, r, i) *
-                       square_matrix_direct_access(_eq->P0,   p, i, c);
-            }
-            square_matrix_direct_access(_eq->gxlP0,p,r,c) = sum;
-        }
-    }
-#else
     MATRIX(_mul)(_eq->gxl,  p,p,
                  _eq->P0,   p,p,
                  _eq->gxlP0,p,p);
-#endif
 
     for (i=0; i<p*p; i++)
         _eq->P1[i] = _eq->P0[i] / _eq->lambda - _eq->gxlP0[i];
