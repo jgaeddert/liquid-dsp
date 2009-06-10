@@ -49,10 +49,11 @@ struct ITQMFB(_s) {
 
     unsigned int num_layers;
     unsigned int num_banks;
+    unsigned int num_channels;
 
     // QMFB input/output buffer(s)
-    TI * buffer;
-    unsigned int buffer_len;
+    TI * buffer0;
+    TI * buffer1;
 
     QMFB() * bank;
 };
@@ -62,13 +63,15 @@ ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl)
     ITQMFB() f = (ITQMFB()) malloc(sizeof(struct ITQMFB(_s)));
 
     f->num_layers = _n;
-    f->num_banks  = 1<<(_n-1);
+    f->num_channels = 1<<_n;
+    f->num_banks  = f->num_channels - 1;
 
     // allocate memory for banks
     f->bank = (QMFB()*) malloc((f->num_banks)*sizeof(QMFB()));
 
     // allocate memory for buffers
-    f->buffer = (TI*) malloc((1)*sizeof(TI));
+    f->buffer0 = (TI*) malloc((f->num_channels)*sizeof(TI));
+    f->buffer1 = (TI*) malloc((f->num_channels)*sizeof(TI));
 
     // create banks
     unsigned int i;
@@ -93,13 +96,16 @@ void ITQMFB(_destroy)(ITQMFB() _f)
     for (i=0; i<_f->num_banks; i++)
         QMFB(_destroy)(_f->bank[i]);
     free(_f->bank);
-    free(_f->buffer);
+    free(_f->buffer0);
+    free(_f->buffer1);
     free(_f);
 }
 
 void ITQMFB(_print)(ITQMFB() _f)
 {
     printf("iterative tree quadrature mirror filterbank:\n");
+    printf("    num channels    :   %u\n", _f->num_channels);
+    printf("    num banks       :   %u\n", _f->num_banks);
 }
 
 void ITQMFB(_clear)(ITQMFB() _f)
@@ -107,23 +113,65 @@ void ITQMFB(_clear)(ITQMFB() _f)
     unsigned int i;
     for (i=0; i<_f->num_banks; i++)
         QMFB(_clear)(_f->bank[i]);
-    for (i=0; i<_f->buffer_len; i++)
-        _f->buffer[i] = 0;
+
+    // clear buffers (not really necessary)
+    for (i=0; i<_f->num_channels; i++) {
+        _f->buffer0[i] = 0;
+        _f->buffer1[i] = 0;
+    }
 }
 
 void ITQMFB(_analysis_execute)(ITQMFB() _q,
-                             TI   _x0,
-                             TI   _x1,
-                             TO * _y0,
-                             TO * _y1)
+                               TO * _x,
+                               TO * _y)
 {
+    unsigned int i,j,k,t,n=0;
+    unsigned int num_inputs=_q->num_channels;
+    unsigned int num_outputs;
+    unsigned int i0a, i0b, i1a, i1b;
+    TO * b0;    // input buffer
+    TO * b1;    // output buffer
+    memmove(_q->buffer0,_x,(_q->num_channels)*sizeof(TO));
+    for (i=0; i<_q->num_layers; i++) {
+        k = 1<<i;
+        printf("----------\n");
+        printf("layer  : %3u (%3u banks in this layer)\n", i, k);
+        num_outputs = num_inputs/2;
+
+        // set input/output buffers
+        b0 = (i%2)==0 ? _q->buffer0 : _q->buffer1;
+        b1 = (i%2)==0 ? _q->buffer1 : _q->buffer0;
+
+        for (j=0; j<_q->num_channels; j++)
+            printf("  b0[%3u] = %12.8f + j*%12.8f\n", j+1, crealf(b0[j]), cimagf(b0[j]));
+
+        for (j=0; j<k; j++) {
+            printf("  bank : %3u (%3u inputs > %3u outputs)\n", n,num_inputs,num_outputs);
+
+            for (t=0; t<num_outputs; t++) {
+                i0a = j*num_inputs + 2*t+0;
+                i0b = j*num_inputs + 2*t+1;
+                i1a = j*num_inputs + t;
+                i1b = j*num_inputs + t + num_outputs;
+                printf("    executing bank %3u (%3u,%3u) > (%3u,%3u)\n", n,
+                            i0a, i0b, i1a, i1b);
+                QMFB(_analysis_execute)(_q->bank[n], b0[i0a], b0[i0b], b1+i1a, b1+i1b);
+            }
+            
+            n++;
+        }
+        num_inputs >>= 1;
+        for (j=0; j<_q->num_channels; j++)
+            printf("  b1[%3u] = %12.8f + j*%12.8f\n", j+1, crealf(b1[j]), cimagf(b1[j]));
+
+    }
+
+    memmove(_y,b1,(_q->num_channels)*sizeof(TO));
 }
 
 void ITQMFB(_synthesis_execute)(ITQMFB() _q,
-                              TI   _x0,
-                              TI   _x1,
-                              TO * _y0,
-                              TO * _y1)
+                                TO * _y,
+                                TO * _x)
 {
 }
 

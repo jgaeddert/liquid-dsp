@@ -56,6 +56,7 @@ local_src	:=			\
 	gport_threaded_example.c	\
 	gport2_threaded_example.c	\
 	interleaver_example.c		\
+	itqmfb_crcf_example.c		\
 	matrix_example.c		\
 	modem_example.c			\
 	nco_example.c			\

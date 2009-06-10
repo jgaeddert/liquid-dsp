@@ -810,15 +810,11 @@ ITQMFB()    ITQMFB(_recreate)(ITQMFB() _q, unsigned int _m);    \
 void        ITQMFB(_destroy)(ITQMFB() _q);                      \
 void        ITQMFB(_print)(ITQMFB() _q);                        \
 void        ITQMFB(_analysis_execute)(ITQMFB() _q,              \
-                                TI   _x0,                       \
-                                TI   _x1,                       \
-                                TO * _y0,                       \
-                                TO * _y1);                      \
+                                TO * _x,                        \
+                                TO * _y);                       \
 void        ITQMFB(_synthesis_execute)(ITQMFB() _q,             \
-                                 TI   _y0,                      \
-                                 TI   _y1,                      \
-                                 TO * _x0,                      \
-                                 TO * _x1);
+                                 TO * _y,                       \
+                                 TO * _x);
 
 LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_RRRF, float, float, float)
 LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
