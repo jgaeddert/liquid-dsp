@@ -30,6 +30,7 @@
 #define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_crcf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_crcf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_crcf,name)
+#define ITQMFB(name)        LIQUID_CONCAT(itqmfb_crcf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_crcf,name)
 #define QMFB(name)          LIQUID_CONCAT(qmfb_crcf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_crcf,name)
@@ -52,6 +53,7 @@
 #include "iir_filter.c"
 #include "firpfb.c"
 #include "interp.c"
+#include "itqmfb.c"
 #include "decim.c"
 #include "qmfb.c"
 #include "resamp.c"
