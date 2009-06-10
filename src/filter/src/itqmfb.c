@@ -41,6 +41,8 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
+#define ITQMFB_DEBUG 0
+
 struct ITQMFB(_s) {
     float * h;          // filter prototype
     unsigned int m;     // primitive filter length
@@ -142,8 +144,10 @@ void ITQMFB(_analysis_execute)(ITQMFB() _q,
         b0 = (i%2)==0 ? _q->buffer0 : _q->buffer1;
         b1 = (i%2)==0 ? _q->buffer1 : _q->buffer0;
 
+#if ITQMFB_DEBUG
         for (j=0; j<_q->num_channels; j++)
             printf("  b0[%3u] = %12.8f + j*%12.8f\n", j+1, crealf(b0[j]), cimagf(b0[j]));
+#endif
 
         for (j=0; j<k; j++) {
             printf("  bank : %3u (%3u inputs > %3u outputs)\n", n,num_inputs,num_outputs);
@@ -161,8 +165,10 @@ void ITQMFB(_analysis_execute)(ITQMFB() _q,
             n++;
         }
         num_inputs >>= 1;
+#if ITQMFB_DEBUG
         for (j=0; j<_q->num_channels; j++)
             printf("  b1[%3u] = %12.8f + j*%12.8f\n", j+1, crealf(b1[j]), cimagf(b1[j]));
+#endif
 
     }
 
@@ -173,5 +179,53 @@ void ITQMFB(_synthesis_execute)(ITQMFB() _q,
                                 TO * _y,
                                 TO * _x)
 {
+    printf("\n\n\nsynthesis:\n");
+    unsigned int i,j,k,t,n=0;
+    unsigned int num_inputs=1;
+    unsigned int num_outputs;
+    unsigned int i0a, i0b, i1a, i1b;
+
+    TO * b0;    // input buffer
+    TO * b1;    // output buffer
+    memmove(_q->buffer0,_y,(_q->num_channels)*sizeof(TO));
+    for (i=0; i<_q->num_layers; i++) {
+        k = 1<<(_q->num_layers - i - 1);
+        printf("----------\n");
+        printf("layer  : %3u (%3u banks in this layer)\n", i, k);
+        num_outputs = num_inputs*2;
+
+        // set input/output buffers
+        b0 = (i%2)==0 ? _q->buffer0 : _q->buffer1;
+        b1 = (i%2)==0 ? _q->buffer1 : _q->buffer0;
+
+#if ITQMFB_DEBUG
+        for (j=0; j<_q->num_channels; j++)
+            printf("  b0[%3u] = %12.8f + j*%12.8f\n", j+1, crealf(b0[j]), cimagf(b0[j]));
+#endif
+
+        for (j=0; j<k; j++) {
+            printf("  bank : %3u (%3u inputs > %3u outputs)\n", n,num_inputs,num_outputs);
+
+            for (t=0; t<num_inputs; t++) {
+                i0a = j*num_outputs + t;
+                i0b = j*num_outputs + t + num_inputs;
+                i1a = j*num_outputs + 2*t+0;
+                i1b = j*num_outputs + 2*t+1;
+                printf("    executing bank %3u (%3u,%3u) > (%3u,%3u)\n", n,
+                            i0a, i0b, i1a, i1b);
+                QMFB(_synthesis_execute)(_q->bank[n], b0[i0a], b0[i0b], b1+i1a, b1+i1b);
+            }
+            
+            n++;
+        }
+        num_inputs <<= 1;
+#if ITQMFB_DEBUG
+        for (j=0; j<_q->num_channels; j++)
+            printf("  b1[%3u] = %12.8f + j*%12.8f\n", j+1, crealf(b1[j]), cimagf(b1[j]));
+#endif
+
+    }
+
+    memmove(_x,b1,(_q->num_channels)*sizeof(TO));
 }
 
