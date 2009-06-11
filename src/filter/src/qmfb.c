@@ -59,7 +59,7 @@ QMFB() QMFB(_create)(unsigned int _m, float _beta)
     f->m = _m;
     f->beta = _beta;
 
-    f->h_len = 4*(f->m) + 1;
+    f->h_len = 4*(f->m);
     f->h = (float*) malloc((f->h_len)*sizeof(float));
 
     f->h_sub_len = 2*(f->m);
@@ -70,13 +70,11 @@ QMFB() QMFB(_create)(unsigned int _m, float _beta)
     design_rrc_filter(2,f->m,f->beta,0,f->h);
 
     // resample, reverse direction
-    unsigned int i, j=0;
-    for (i=1; i<f->h_len; i+=2)
-        f->h1[j++] = f->h[f->h_len - i - 1];
-
+    unsigned int i;
     for (i=0; i<f->h_sub_len; i++) {
         f->h0[i] = f->h[2*i+0];
         f->h1[i] = f->h[2*i+1];
+        printf("%3u/%3u > %3u/%3u\n", i,f->h_sub_len, f->h_len - (2*i+0)-1, f->h_len);
     }
 
     f->w0 = WINDOW(_create)(2*(f->m));
@@ -96,12 +94,11 @@ QMFB() QMFB(_recreate)(QMFB() _f, unsigned int _h_len)
 
 void QMFB(_destroy)(QMFB() _f)
 {
+    WINDOW(_destroy)(_f->w0);
     WINDOW(_destroy)(_f->w1);
     free(_f->h);
     free(_f->h0);
     free(_f->h1);
-    free(_f->w0);
-    free(_f->w0);
     free(_f);
 }
 
@@ -144,25 +141,22 @@ void QMFB(_analysis_execute)(QMFB() _q,
                              TO * _y0,
                              TO * _y1)
 {
-#if 0
     TI * r; // read pointer
     TO z0, z1;
 
-    // compute lower branch (filter component)
-    WINDOW(_push)(_q->w1, _x0);
+    // compute lower branch
+    WINDOW(_push)(_q->w1, _x1);
     WINDOW(_read)(_q->w1, &r);
-    // TODO yq = DOTPROD(_execute)(_f->dpq, r);
-    //DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
-    DOTPROD(_run)(_q->h1, r, _q->h1_len, &z1);
+    DOTPROD(_run)(_q->h1, r, _q->h_sub_len, &z1);
 
-    // compute upper branch (delay component)
-    z0 = _q->w0[_q->w0_index];
-    _q->w0[_q->w0_index] = _x1;
-    _q->w0_index = (_q->w0_index+1) % (_q->m);
+    // compute upper branch
+    WINDOW(_push)(_q->w0, _x0);
+    WINDOW(_read)(_q->w0, &r);
+    DOTPROD(_run)(_q->h0, r, _q->h_sub_len, &z0);
 
+    // compute output partition
     *_y0 = z0 + z1;
     *_y1 = z0 - z1;
-#endif
 }
 
 void QMFB(_synthesis_execute)(QMFB() _q,
@@ -171,22 +165,18 @@ void QMFB(_synthesis_execute)(QMFB() _q,
                               TO * _y0,
                               TO * _y1)
 {
-#if 0
     TI * r; // read pointer
 
     // NOTE: ifft([_x0 _x1]) = [(_x0+_x1)/2 (_x0-_x1)/2]
-    
-    // compute upper branch (delay component)
-    *_y0 = _q->w0[_q->w0_index];
-    _q->w0[_q->w0_index] = (_x0 + _x1)/2;
-    _q->w0_index = (_q->w0_index+1) % (_q->m);
 
-    // compute lower branch (filter component)
-    WINDOW(_push)(_q->w1, (_x0 - _x1)/2);
+    // compute upper branch
+    WINDOW(_push)(_q->w0, (_x0 - _x1)/2);
+    WINDOW(_read)(_q->w0, &r);
+    DOTPROD(_run)(_q->h0, r, _q->h_sub_len, _y1);
+    
+    // compute lower branch
+    WINDOW(_push)(_q->w1, (_x0 + _x1)/2);
     WINDOW(_read)(_q->w1, &r);
-    //yq = DOTPROD(_execute)(_f->dpq, r);
-    //DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
-    DOTPROD(_run)(_q->h1, r, _q->h1_len, _y1);
-#endif
+    DOTPROD(_run)(_q->h1, r, _q->h_sub_len, _y0);
 }
 

@@ -16,7 +16,7 @@
 
 int main() {
     unsigned int m=5;                   // filter delay
-    float slsl = -60.0f;                // sidelobe suppression level
+    float beta = 0.3f;                  // sidelobe suppression level
     unsigned int num_samples=64;        // number of samples
 
     // derived values
@@ -24,7 +24,7 @@ int main() {
                                         // incorporate filter delay
 
     // create filterbank
-    qmfb_crcf f = qmfb_crcf_create(m, slsl);
+    qmfb_crcf f = qmfb_crcf_create(m, beta);
     qmfb_crcf_print(f);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
