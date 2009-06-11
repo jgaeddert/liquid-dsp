@@ -131,8 +131,8 @@ void ITQMFB(_analysis_execute)(ITQMFB() _q,
     unsigned int num_inputs=_q->num_channels;
     unsigned int num_outputs;
     unsigned int i0a, i0b, i1a, i1b;
-    TO * b0;    // input buffer
-    TO * b1;    // output buffer
+    TO * b0 = NULL;    // input buffer
+    TO * b1 = NULL;    // output buffer
     memmove(_q->buffer0,_x,(_q->num_channels)*sizeof(TO));
     for (i=0; i<_q->num_layers; i++) {
         k = 1<<i;
@@ -185,8 +185,8 @@ void ITQMFB(_synthesis_execute)(ITQMFB() _q,
     unsigned int num_outputs;
     unsigned int i0a, i0b, i1a, i1b;
 
-    TO * b0;    // input buffer
-    TO * b1;    // output buffer
+    TO * b0 = NULL;    // input buffer
+    TO * b1 = NULL;    // output buffer
     memmove(_q->buffer0,_y,(_q->num_channels)*sizeof(TO));
     for (i=0; i<_q->num_layers; i++) {
         k = 1<<(_q->num_layers - i - 1);
