@@ -66,6 +66,7 @@ local_src	:=			\
 	polyfit_example.c		\
 	pnsync_crcf_example.c		\
 	pnsync_rrrf_example.c		\
+	prqmfb_crcf_example.c		\
 	qmfb_crcf_analysis_example.c	\
 	qmfb_crcf_synthesis_example.c	\
 	quantize_example.c		\
