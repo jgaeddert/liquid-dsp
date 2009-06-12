@@ -13,14 +13,16 @@
 int main() {
     // options
     unsigned int num_channels=16;
-    unsigned int samples_per_frame=256;
-    unsigned int bytes_per_frame=samples_per_frame/2;
+    unsigned int samples_per_frame=512;
+    unsigned int bytes_per_frame=samples_per_frame;
 
     unsigned int num_frames=2;
 
     // create fbasc codecs
     fbasc fbasc_encoder = fbasc_create(FBASC_ENCODER, num_channels, samples_per_frame, bytes_per_frame);
     fbasc fbasc_decoder = fbasc_create(FBASC_DECODER, num_channels, samples_per_frame, bytes_per_frame);
+
+    fbasc_print(fbasc_encoder);
 
     // open debug file
     FILE * fid = fopen(DEBUG_FILENAME,"w");
@@ -29,20 +31,16 @@ int main() {
     fprintf(fid,"close all\n");
 
     float phi=0.0f;
-    float dphi=0.0f;
+    float dphi=0.03f;
     unsigned int i, j;
     unsigned int n=0;   // output file sample counter
     float x[samples_per_frame], y[samples_per_frame];
     unsigned char framedata[bytes_per_frame];
     for (i=0; i<num_frames; i++) {
-        //dphi = M_PI * 3 / (float)num_channels;
-        dphi = 0;
         for (j=0; j<samples_per_frame; j++) {
-            x[j] = (i==0) ? 0.5f*cosf(phi) : 0.0f;
+            x[j] = (i==0) ? cosf(2.0f*M_PI*phi) : 0.0f;
             phi += dphi;
-            dphi += 0.002f;
-
-            x[j] *= kaiser(j,samples_per_frame,10.0f,0.0f);
+            x[j] *= 0.5f*kaiser(j,samples_per_frame,10.0f,0);
         }
 
         fbasc_encode(fbasc_encoder, x, framedata);
