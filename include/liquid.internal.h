@@ -109,7 +109,19 @@ void    QMFB(_synthesis_execute)(QMFB() _q,                     \
 
 LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_RRRF, float, float, float)
 LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-//LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+
+
+#define LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB,TO,TC,TI)      \
+void    ITQMFB(_analysis_execute)(ITQMFB() _q,                  \
+                                  TO * _x,                      \
+                                  TO * _y);                     \
+void    ITQMFB(_synthesis_execute)(ITQMFB() _q,                 \
+                                   TO * _y,                     \
+                                   TO * _x);
+
+LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_RRRF, float, float, float)
+LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+
 
 //
 // MODULE : matrix

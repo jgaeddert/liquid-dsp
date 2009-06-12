@@ -803,18 +803,21 @@ LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_flo
 #define ITQMFB_MANGLE_CRCF(name)      LIQUID_CONCAT(itqmfb_crcf,name)
 //#define ITQMFB_MANGLE_CCCF(name)      LIQUID_CONCAT(itqmfb_cccf,name)
 
+#define LIQUID_ITQMFB_ANALYZER      0
+#define LIQUID_ITQMFB_SYNTHESIZER   1
+
 #define LIQUID_ITQMFB_DEFINE_API(ITQMFB,TO,TC,TI)               \
 typedef struct ITQMFB(_s) * ITQMFB();                           \
-ITQMFB()    ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl);        \
+ITQMFB()    ITQMFB(_create)(unsigned int _n,                    \
+                            unsigned int _m,                    \
+                            float _slsl,                        \
+                            int _type);                         \
 ITQMFB()    ITQMFB(_recreate)(ITQMFB() _q, unsigned int _m);    \
 void        ITQMFB(_destroy)(ITQMFB() _q);                      \
 void        ITQMFB(_print)(ITQMFB() _q);                        \
-void        ITQMFB(_analysis_execute)(ITQMFB() _q,              \
-                                TO * _x,                        \
-                                TO * _y);                       \
-void        ITQMFB(_synthesis_execute)(ITQMFB() _q,             \
-                                 TO * _y,                       \
-                                 TO * _x);
+void        ITQMFB(_execute)(ITQMFB() _q,                       \
+                             TO * _x,                           \
+                             TO * _y);
 
 LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_RRRF, float, float, float)
 LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)

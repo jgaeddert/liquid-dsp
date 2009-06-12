@@ -48,6 +48,7 @@ struct ITQMFB(_s) {
     unsigned int m;     // primitive filter length
     unsigned int h_len; // actual filter length: h_len = 4*m+1
     float beta;         // filter bandwidth/sidelobe suppression
+    int type;           // analyzer/synthesizer
 
     unsigned int num_layers;
     unsigned int num_banks;
@@ -60,13 +61,14 @@ struct ITQMFB(_s) {
     QMFB() * bank;
 };
 
-ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl)
+ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl, int _type)
 {
     ITQMFB() f = (ITQMFB()) malloc(sizeof(struct ITQMFB(_s)));
 
     f->num_layers = _n;
     f->num_channels = 1<<_n;
     f->num_banks  = f->num_channels - 1;
+    f->type = _type;
 
     // allocate memory for banks
     f->bank = (QMFB()*) malloc((f->num_banks)*sizeof(QMFB()));
@@ -78,7 +80,7 @@ ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl)
     // create banks
     unsigned int i;
     for (i=0; i<f->num_banks; i++)
-        f->bank[i] = QMFB(_create)(_m, _slsl, 0);
+        f->bank[i] = QMFB(_create)(_m, _slsl, _type);
 
     return f;
 }
@@ -123,6 +125,16 @@ void ITQMFB(_clear)(ITQMFB() _f)
     }
 }
 
+void ITQMFB(_execute)(ITQMFB() _q,
+                      TO * _x,
+                      TO * _y)
+{
+    if (_q->type == LIQUID_ITQMFB_ANALYZER)
+        ITQMFB(_analysis_execute)(_q, _x, _y);
+    else
+        ITQMFB(_synthesis_execute)(_q, _x, _y);
+}
+
 void ITQMFB(_analysis_execute)(ITQMFB() _q,
                                TO * _x,
                                TO * _y)
@@ -136,8 +148,10 @@ void ITQMFB(_analysis_execute)(ITQMFB() _q,
     memmove(_q->buffer0,_x,(_q->num_channels)*sizeof(TO));
     for (i=0; i<_q->num_layers; i++) {
         k = 1<<i;
+#if ITQMFB_DEBUG
         printf("----------\n");
         printf("layer  : %3u (%3u banks in this layer)\n", i, k);
+#endif
         num_outputs = num_inputs/2;
 
         // set input/output buffers
@@ -150,15 +164,19 @@ void ITQMFB(_analysis_execute)(ITQMFB() _q,
 #endif
 
         for (j=0; j<k; j++) {
+#if ITQMFB_DEBUG
             printf("  bank : %3u (%3u inputs > %3u outputs)\n", n,num_inputs,num_outputs);
+#endif
 
             for (t=0; t<num_outputs; t++) {
                 i0a = j*num_inputs + 2*t+0;
                 i0b = j*num_inputs + 2*t+1;
                 i1a = j*num_inputs + t;
                 i1b = j*num_inputs + t + num_outputs;
+#if ITQMFB_DEBUG
                 printf("    executing bank %3u (%3u,%3u) > (%3u,%3u)\n", n,
                             i0a, i0b, i1a, i1b);
+#endif
                 QMFB(_analysis_execute)(_q->bank[n], b0[i0a], b0[i0b], b1+i1a, b1+i1b);
             }
             
@@ -179,7 +197,9 @@ void ITQMFB(_synthesis_execute)(ITQMFB() _q,
                                 TO * _y,
                                 TO * _x)
 {
+#if ITQMFB_DEBUG
     printf("\n\n\nsynthesis:\n");
+#endif
     unsigned int i,j,k,t,n=0;
     unsigned int num_inputs=1;
     unsigned int num_outputs;
@@ -190,8 +210,10 @@ void ITQMFB(_synthesis_execute)(ITQMFB() _q,
     memmove(_q->buffer0,_y,(_q->num_channels)*sizeof(TO));
     for (i=0; i<_q->num_layers; i++) {
         k = 1<<(_q->num_layers - i - 1);
+#if ITQMFB_DEBUG
         printf("----------\n");
         printf("layer  : %3u (%3u banks in this layer)\n", i, k);
+#endif
         num_outputs = num_inputs*2;
 
         // set input/output buffers
@@ -204,15 +226,19 @@ void ITQMFB(_synthesis_execute)(ITQMFB() _q,
 #endif
 
         for (j=0; j<k; j++) {
+#if ITQMFB_DEBUG
             printf("  bank : %3u (%3u inputs > %3u outputs)\n", n,num_inputs,num_outputs);
+#endif
 
             for (t=0; t<num_inputs; t++) {
                 i0a = j*num_outputs + t;
                 i0b = j*num_outputs + t + num_inputs;
                 i1a = j*num_outputs + 2*t+0;
                 i1b = j*num_outputs + 2*t+1;
+#if ITQMFB_DEBUG
                 printf("    executing bank %3u (%3u,%3u) > (%3u,%3u)\n", n,
                             i0a, i0b, i1a, i1b);
+#endif
                 QMFB(_synthesis_execute)(_q->bank[n], b0[i0a], b0[i0b], b1+i1a, b1+i1b);
             }
             

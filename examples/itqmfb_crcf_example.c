@@ -24,13 +24,15 @@ int main() {
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"n=%u;\n", n);
+    fprintf(fid,"num_samples=%u;\n", num_samples);
     fprintf(fid,"x = zeros(1,%u);\n", num_samples);
     fprintf(fid,"y = zeros(%u,%u);\n",num_channels,num_frames);
 
 
     // create filterbank
-    itqmfb_crcf f = itqmfb_crcf_create(n, m, slsl);
-    itqmfb_crcf_print(f);
+    itqmfb_crcf qa = itqmfb_crcf_create(n, m, slsl, LIQUID_ITQMFB_ANALYZER);
+    itqmfb_crcf qs = itqmfb_crcf_create(n, m, slsl, LIQUID_ITQMFB_SYNTHESIZER);
+    itqmfb_crcf_print(qa);
 
     float complex x[num_samples];
     float complex y[num_samples];
@@ -50,15 +52,12 @@ int main() {
 
     // execute analyzer
     for (i=0; i<num_frames; i++) {
-        itqmfb_crcf_analysis_execute(f,x+i*num_channels,y+i*num_channels);
+        itqmfb_crcf_execute(qa,x+i*num_channels,y+i*num_channels);
     }
-
-    // clear filterbank
-    itqmfb_crcf_clear(f);
 
     // execute synthesizer
     for (i=0; i<num_frames; i++) {
-        itqmfb_crcf_synthesis_execute(f,y+i*num_channels,z+i*num_channels);
+        itqmfb_crcf_execute(qs,y+i*num_channels,z+i*num_channels);
     }
 
     // write results to file
@@ -71,11 +70,19 @@ int main() {
         }
     }
 
+    // plot results
+    fprintf(fid,"t=0:(num_samples-1);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"    plot(t,real(x),t,imag(x));\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"    plot(t,real(z),t,imag(z));\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    itqmfb_crcf_destroy(f);
+    itqmfb_crcf_destroy(qa);
+    itqmfb_crcf_destroy(qs);
     printf("done.\n");
     return 0;
 }
