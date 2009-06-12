@@ -25,44 +25,41 @@
 #include "liquid.h"
 
 // Helper function to keep code base small
-void qmfb_crcf_synthesis_bench(
+void qmfb_crcf_bench(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations,
-    unsigned int _m)
+    unsigned int _M,
+    unsigned int _h_len)
 {
-    qmfb_crcf q = qmfb_crcf_create(_m, -60.0f);
+    float h[_h_len];
+    unsigned int i;
+    for (i=0; i<_h_len; i++)
+        h[i] = 1.0f;
 
-    float complex x0 = 1.0f + 1.0f*_Complex_I;
-    float complex x1 = 1.0f - 1.0f*_Complex_I;
-    float complex y0;
-    float complex y1;
+    qmfb_crcf q = qmfb_crcf_create(_M,h,_h_len);
 
+    float x[_M], y;
     // start trials
-    unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        qmfb_crcf_synthesis_execute(q,x0,x1,&y0,&y1);
-        qmfb_crcf_synthesis_execute(q,x0,x1,&y0,&y1);
-        qmfb_crcf_synthesis_execute(q,x0,x1,&y0,&y1);
-        qmfb_crcf_synthesis_execute(q,x0,x1,&y0,&y1);
+        decim_rrrf_execute(q,x,&y,0);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    qmfb_crcf_destroy(q);
+    decim_rrrf_destroy(q);
 }
 
-#define QMFB_SYNTHESIS_BENCHMARK_API(M)     \
-(   struct rusage *_start,                  \
-    struct rusage *_finish,                 \
-    unsigned long int *_num_iterations)     \
-{ qmfb_crcf_synthesis_bench(_start, _finish, _num_iterations, M); }
+#define QMFB_CRCF_BENCHMARK_API(M,H_LEN)    \
+(   struct rusage *_start,              \
+    struct rusage *_finish,             \
+    unsigned long int *_num_iterations) \
+{ qmfb_crcf_bench(_start, _finish, _num_iterations, M, H_LEN); }
 
-void benchmark_qmfb_crcf_synth_m3   QMFB_SYNTHESIS_BENCHMARK_API(3)
-void benchmark_qmfb_crcf_synth_m5   QMFB_SYNTHESIS_BENCHMARK_API(5)
-void benchmark_qmfb_crcf_synth_m9   QMFB_SYNTHESIS_BENCHMARK_API(9)
-void benchmark_qmfb_crcf_synth_m13  QMFB_SYNTHESIS_BENCHMARK_API(13)
+void benchmark_decim_m2_h8      QMFB_CRCF_BENCHMARK_API(2,8)
+void benchmark_decim_m4_h16     QMFB_CRCF_BENCHMARK_API(4,16)
+void benchmark_decim_m8_h64     QMFB_CRCF_BENCHMARK_API(8,64)
 
-#endif // __LIQUID_QMFB_BENCHMARK_H__
+#endif // __LIQUID_BENCH_BENCHMARK_H__
 

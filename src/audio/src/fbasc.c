@@ -5,11 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "liquid.internal.h"
 
-#define FBASC_DEBUG 0
+#define FBASC_DEBUG 1
 #define DEBUG_FILE  stdout
 
 //  description         value   units
@@ -30,6 +31,7 @@ struct fbasc_s {
     int type;                       // encoder/decoder
     unsigned int num_channels;      // 16
     unsigned int samples_per_frame; // 256
+    unsigned int bytes_per_header;  // 8 (num_channels/2)
     unsigned int bytes_per_frame;   // <fixed>
 
     // derived values
@@ -64,7 +66,7 @@ fbasc fbasc_create(
 
     if (q->type == FBASC_ENCODER) {
         q->channelizer_type = LIQUID_ITQMFB_ANALYZER;
-    } else if (q->type = FBASC_DECODER) {
+    } else if (q->type == FBASC_DECODER) {
         q->channelizer_type = LIQUID_ITQMFB_SYNTHESIZER;
     } else {
         printf("error: fbasc_create(), unknown type: %d\n", _type);
@@ -79,7 +81,8 @@ fbasc fbasc_create(
     // override to default values
     q->num_channels = 16;
     q->samples_per_frame = 512;
-    q->bytes_per_frame = 512;
+    q->bytes_per_header = (q->num_channels)/2;
+    q->bytes_per_frame = q->samples_per_frame + q->bytes_per_header;
 
     // initialize derived values/lengths
     q->samples_per_channel = (q->samples_per_frame) / (q->num_channels);
@@ -97,6 +100,11 @@ fbasc fbasc_create(
 
     return q;
 }
+
+void fbasc_compute_bit_partition(float * _e,
+                                 unsigned int * _k,
+                                 unsigned int _n,
+                                 unsigned int _num_bits);
 
 void fbasc_destroy(fbasc _q)
 {
@@ -151,8 +159,18 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 #if FBASC_DEBUG
     printf("channel energy:\n");
     for (i=0; i<_q->num_channels; i++)
-        DEBUG_PRINTF_FLOAT(DEBUG_FILE,"e",i, _q->channel_energy[i]);
+        printf("  e[%3u] = %12.8f\n", i, _q->channel_energy[i]);
+    //    DEBUG_PRINTF_FLOAT(DEBUG_FILE,"e",i, _q->channel_energy[i]);
 #endif
+
+    // compute bit partitioning
+    unsigned int k[_q->num_channels];
+    fbasc_compute_bit_partition(_q->channel_energy,
+                                k,
+                                _q->num_channels,
+                                16);
+
+    // TODO: write partition to header
 
     // encode using basic quantizer
     float z;
@@ -220,5 +238,66 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 void fbasc_encode_run_analyzer(fbasc _q)
 {
 
+}
+
+void fbasc_compute_bit_partition(float * _e,
+                                 unsigned int * _k,
+                                 unsigned int _n,
+                                 unsigned int _num_bits)
+{
+    float e[_n];
+    memmove(e,_e,_n*sizeof(float));
+
+    unsigned int i, j;
+
+    // allocate bit resolution per channel (8 bits maximum)
+    float e_sum;
+    bool allocated[_n];
+    for (i=0; i<_n; i++) {
+        allocated[i] = false;
+        _k[i] = 0;
+    }
+    unsigned int bits_available = _num_bits;
+    for (i=0; i<_n; i++) {
+        // stop if no more bits are available
+        if (bits_available == 0)
+            break;
+
+        // compute normalized energy sum
+        e_sum = 0.0f;
+        for (j=0; j<_n; j++)
+            e_sum += allocated[j] ? 0.0f : e[j];
+        for (j=0; j<_n; j++)
+            e[j] /= e_sum;
+
+        // allocate maximum
+        unsigned int i_max=0;
+        float v_max=0;
+        bool init = false;
+        for (j=0; j<_n; j++) {
+            if (allocated[j]) {
+                continue;
+            } else if (!init) {
+                i_max = j;
+                v_max = e[j];
+                init = true;
+            } else if (e[j] > v_max) {
+                i_max = j;
+                v_max = e[j];
+            }
+        }
+        allocated[i_max] = true;
+        _k[i_max] = (unsigned int)(v_max*bits_available);
+        if (_k[i_max] < 1)
+            _k[i_max] = 1;
+        else if (_k[i_max] > 8)
+            _k[i_max] = 8;
+        bits_available -= _k[i_max];
+    }
+#if FBASC_DEBUG
+    printf("bit resolution:\n");
+    for (i=0; i<_n; i++)
+        printf("  b[%3u] = %3u (%12.8f)\n", i, _k[i], _e[i]);
+#endif
 }
 
