@@ -47,12 +47,12 @@ int main() {
 
     // compute QMF analysis sub-channel output
     for (i=0; i<n; i+=2) {
-        qmfb_crcf_analysis_execute(qmfa, x[i+0], x[i+1], &y[i+0], &y[i+1]);
+        qmfb_crcf_execute(qmfa, x[i+0], x[i+1], &y[i+0], &y[i+1]);
     }
 
     // compute QMF synthesis output
     for (i=0; i<n; i+=2) {
-        qmfb_crcf_synthesis_execute(qmfs, y[i+0], y[i+1], &z[i+0], &z[i+1]);
+        qmfb_crcf_execute(qmfs, y[i+0], y[i+1], &z[i+0], &z[i+1]);
     }
 
     // write results to output file
@@ -72,8 +72,14 @@ int main() {
     fprintf(fid,"t  = 0:(n-1);\n");
     fprintf(fid,"td = 0:(n/2-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1), plot(t,real(x),'-x',t-h_len+2,real(z),'-o');\n");
-    fprintf(fid,"subplot(2,1,2), plot(t,imag(x),'-x',t-h_len+2,imag(z),'-o');\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"    plot(t,real(x),'-x',t-h_len+2,real(z),'-o');\n");
+    fprintf(fid,"    ylabel('real');\n");
+    fprintf(fid,"    legend('original','reconstructed',0);\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"    plot(t,imag(x),'-x',t-h_len+2,imag(z),'-o');\n");
+    fprintf(fid,"    ylabel('imag');\n");
+    fprintf(fid,"    legend('original','reconstructed',0);\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

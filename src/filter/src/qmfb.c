@@ -99,18 +99,20 @@ QMFB() QMFB(_create)(unsigned int _m, float _beta, int _type)
     // resample, reverse direction
     unsigned int i;
     for (i=0; i<f->h_sub_len; i++) {
-        if (f->type == 0) {
+        if (f->type == LIQUID_QMFB_ANALYZER) {
             // analysis
             f->h0[f->h_sub_len-i-1] = h_prim[i];
             f->h1[f->h_sub_len-i-1] = h_prim[f->h_sub_len-i-1] * ((i%2)==0 ? 1.0f : -1.0f);
-        } else {
+        } else if (f->type == LIQUID_QMFB_SYNTHESIZER) {
             // synthesis
             f->h0[f->h_sub_len-i-1] = h_prim[f->h_sub_len-i-1];
             f->h1[f->h_sub_len-i-1] = h_prim[i] * ((i%2)==1 ? 1.0f : -1.0f);
             //f->h0[i] = h_prim[f->h_sub_len-i-1];
             //f->h1[i] = h_prim[i] * ((i%2)==1 ? 1.0f : -1.0f);
+        } else {
+            printf("error: qmfb_xxxt_create(), unknown type %d\n", f->type);
+            exit(0);
         }
-        //printf("%3u / %3u > %3u / %3u\n", i, f->h_sub_len, );
     }
 
     f->w0 = WINDOW(_create)(f->h_sub_len);
@@ -173,6 +175,18 @@ void QMFB(_clear)(QMFB() _f)
 }
 
 
+void QMFB(_execute)(QMFB() _q,
+                    TI   _x0,
+                    TI   _x1,
+                    TO * _y0,
+                    TO * _y1)
+{
+    if (_q->type == LIQUID_QMFB_ANALYZER)
+        QMFB(_analysis_execute)(_q,_x0,_x1,_y0,_y1);
+    else
+        QMFB(_synthesis_execute)(_q,_x0,_x1,_y0,_y1);
+}
+
 void QMFB(_analysis_execute)(QMFB() _q,
                              TI   _x0,
                              TI   _x1,
@@ -216,17 +230,17 @@ void QMFB(_synthesis_execute)(QMFB() _q,
     DOTPROD(_run)(_q->h0, r, _q->h_sub_len, &y0a);
     WINDOW(_push)(_q->w0, 0);
     WINDOW(_read)(_q->w0, &r);
-    DOTPROD(_run)(_q->h0, r, _q->h_sub_len, &y0b);
+    DOTPROD(_run)(_q->h0, r, _q->h_sub_len, &y1a);
     
     // compute lower branch
     WINDOW(_push)(_q->w1, _x1);
     WINDOW(_read)(_q->w1, &r);
-    DOTPROD(_run)(_q->h1, r, _q->h_sub_len, &y1a);
+    DOTPROD(_run)(_q->h1, r, _q->h_sub_len, &y0b);
     WINDOW(_push)(_q->w1, 0);
     WINDOW(_read)(_q->w1, &r);
     DOTPROD(_run)(_q->h1, r, _q->h_sub_len, &y1b);
     
-    *_y0 = (y0a + y1a)*2.0f;
-    *_y1 = (y0b + y1b)*2.0f;
+    *_y0 = (y0a + y0b)*2.0f;
+    *_y1 = (y1a + y1b)*2.0f;
 }
 

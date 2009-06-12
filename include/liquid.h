@@ -774,6 +774,9 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, liquid_float_complex,   liquid_float_
 #define QMFB_MANGLE_CRCF(name)      LIQUID_CONCAT(qmfb_crcf,name)
 //#define QMFB_MANGLE_CCCF(name)      LIQUID_CONCAT(qmfb_cccf,name)
 
+#define LIQUID_QMFB_ANALYZER    0
+#define LIQUID_QMFB_SYNTHESIZER 1
+
 #define LIQUID_QMFB_DEFINE_API(QMFB,TO,TC,TI)                   \
 typedef struct QMFB(_s) * QMFB();                               \
 QMFB()  QMFB(_create)(unsigned int _m, float _beta, int _type); \
@@ -781,16 +784,11 @@ QMFB()  QMFB(_recreate)(QMFB() _q, unsigned int _m);            \
 void    QMFB(_destroy)(QMFB() _q);                              \
 void    QMFB(_print)(QMFB() _q);                                \
 void    QMFB(_clear)(QMFB() _q);                                \
-void    QMFB(_analysis_execute)(QMFB() _q,                      \
-                                TI   _x0,                       \
-                                TI   _x1,                       \
-                                TO * _y0,                       \
-                                TO * _y1);                      \
-void    QMFB(_synthesis_execute)(QMFB() _q,                     \
-                                 TI   _y0,                      \
-                                 TI   _y1,                      \
-                                 TO * _x0,                      \
-                                 TO * _x1);
+void    QMFB(_execute)(QMFB() _q,                               \
+                       TI   _x0,                                \
+                       TI   _x1,                                \
+                       TO * _y0,                                \
+                       TO * _y1);
 
 LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_RRRF, float, float, float)
 LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
