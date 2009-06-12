@@ -779,7 +779,9 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, liquid_float_complex,   liquid_float_
 
 #define LIQUID_QMFB_DEFINE_API(QMFB,TO,TC,TI)                   \
 typedef struct QMFB(_s) * QMFB();                               \
-QMFB()  QMFB(_create)(unsigned int _m, float _beta, int _type); \
+QMFB()  QMFB(_create)(unsigned int _h_len,                      \
+                      float _beta,                              \
+                      int _type);                               \
 QMFB()  QMFB(_recreate)(QMFB() _q, unsigned int _m);            \
 void    QMFB(_destroy)(QMFB() _q);                              \
 void    QMFB(_print)(QMFB() _q);                                \

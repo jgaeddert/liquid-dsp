@@ -11,26 +11,25 @@
 #define OUTPUT_FILENAME "prqmfb_crcf_example.m"
 
 int main() {
-    unsigned int m=5;                   // filter delay
+    unsigned int h_len=20;              // filter length
     float beta = 0.3f;                  // sidelobe suppression level
     unsigned int num_samples=64;        // number of samples
 
     // derived values
-    unsigned int n = num_samples + 2*m;   // extend length of synthesis to
-                                        // incorporate filter delay
+    unsigned int n = num_samples + 2*h_len;
 
     // ensure even number
     n += (n%2) == 1 ? 1 : 0;
 
     // create filterbank
-    qmfb_crcf qmfa = qmfb_crcf_create(m, beta, 0);
-    qmfb_crcf qmfs = qmfb_crcf_create(m, beta, 1);
+    qmfb_crcf qmfa = qmfb_crcf_create(h_len, beta, LIQUID_QMFB_ANALYZER);
+    qmfb_crcf qmfs = qmfb_crcf_create(h_len, beta, LIQUID_QMFB_SYNTHESIZER);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"n=%u;\n", n);
-    fprintf(fid,"h_len=%u;\n", 20);
+    fprintf(fid,"h_len=%u;\n", h_len);
     fprintf(fid,"x = zeros(1,%u);\n", n);
     fprintf(fid,"y = zeros(2,%u);\n", n/2);
     fprintf(fid,"z = zeros(1,%u);\n", n);
@@ -67,8 +66,7 @@ int main() {
         fprintf(fid,"z(%3u) = %8.4f + j*%8.4f;\n", i+2, crealf(z[i+1]), cimagf(z[i+1]));
     }
 
-    // plot time-domain results
-//    fprintf(fid,"return;\n");
+    // plot results
     fprintf(fid,"t  = 0:(n-1);\n");
     fprintf(fid,"td = 0:(n/2-1);\n");
     fprintf(fid,"figure;\n");

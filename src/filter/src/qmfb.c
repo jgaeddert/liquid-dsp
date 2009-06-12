@@ -52,14 +52,14 @@ struct QMFB(_s) {
     unsigned int h_sub_len;
 };
 
-QMFB() QMFB(_create)(unsigned int _m, float _beta, int _type)
+QMFB() QMFB(_create)(unsigned int _h_len, float _beta, int _type)
 {
-    QMFB() f = (QMFB()) malloc(sizeof(struct QMFB(_s)));
+    QMFB() q = (QMFB()) malloc(sizeof(struct QMFB(_s)));
 
     // compute filter length
-    f->m = _m;
-    f->beta = _beta;
-    f->type = _type;
+    q->h_len = _h_len;
+    q->beta = _beta;
+    q->type = _type;
 
     float h_prim[20] = {
         0.1605476e+0,
@@ -82,47 +82,54 @@ QMFB() QMFB(_create)(unsigned int _m, float _beta, int _type)
        -0.7449561e-2,
         0.1293440e-1,
        -0.4995356e-2};
-    f->m = 5;
+    q->m = 5;
 
-    //f->h_len = 4*(f->m);
-    f->h_len = 40;
-    f->h = (float*) malloc((f->h_len)*sizeof(float));
+#if 0
+    // use rrc filter
+    design_rrc_filter(2,5,f->beta,0,h_prim);
+    unsigned int j;
+    for (j=0; j<20; j++)
+        h_prim[j] *= 0.5f;
+#endif
 
-    //f->h_sub_len = 2*(f->m);
-    f->h_sub_len = 20;
-    f->h0 = (TC *) malloc((f->h_sub_len)*sizeof(TC));
-    f->h1 = (TC *) malloc((f->h_sub_len)*sizeof(TC));
+    //q->h_len = 4*(q->m);
+    q->h_len = 20;
+    q->h = (float*) malloc((q->h_len)*sizeof(float));
 
-    // design filter prototype
-    design_rrc_filter(2,f->m,f->beta,0,f->h);
+    //q->h_sub_len = 2*(q->m);
+    q->h_sub_len = 20;
+    q->h0 = (TC *) malloc((q->h_sub_len)*sizeof(TC));
+    q->h1 = (TC *) malloc((q->h_sub_len)*sizeof(TC));
 
-    // resample, reverse direction
-    unsigned int i;
-    for (i=0; i<f->h_sub_len; i++) {
-        if (f->type == LIQUID_QMFB_ANALYZER) {
+    // compute analysis/synthesis filters: paraconjugation of primitive
+    // filter, also reverse direction for convolution
+    unsigned int i, n;
+    for (i=0; i<q->h_sub_len; i++) {
+        // inverted filter coefficient index
+        n = q->h_sub_len-i-1;
+
+        if (q->type == LIQUID_QMFB_ANALYZER) {
             // analysis
-            f->h0[f->h_sub_len-i-1] = h_prim[i];
-            f->h1[f->h_sub_len-i-1] = h_prim[f->h_sub_len-i-1] * ((i%2)==0 ? 1.0f : -1.0f);
-        } else if (f->type == LIQUID_QMFB_SYNTHESIZER) {
+            q->h0[n] =      h_prim[i];
+            q->h1[n] = conj(h_prim[n]) * ((i%2)==0 ? 1.0f : -1.0f);
+        } else if (q->type == LIQUID_QMFB_SYNTHESIZER) {
             // synthesis
-            f->h0[f->h_sub_len-i-1] = h_prim[f->h_sub_len-i-1];
-            f->h1[f->h_sub_len-i-1] = h_prim[i] * ((i%2)==1 ? 1.0f : -1.0f);
-            //f->h0[i] = h_prim[f->h_sub_len-i-1];
-            //f->h1[i] = h_prim[i] * ((i%2)==1 ? 1.0f : -1.0f);
+            q->h0[n] = conj(h_prim[n]);
+            q->h1[n] = conj(h_prim[i]) * ((n%2)==0 ? 1.0f : -1.0f);
         } else {
-            printf("error: qmfb_xxxt_create(), unknown type %d\n", f->type);
+            printf("error: qmfb_xxxt_create(), unknown type %d\n", q->type);
             exit(0);
         }
     }
 
-    f->w0 = WINDOW(_create)(f->h_sub_len);
-    f->w1 = WINDOW(_create)(f->h_sub_len);
-    WINDOW(_clear)(f->w0);
-    WINDOW(_clear)(f->w1);
-    return f;
+    q->w0 = WINDOW(_create)(q->h_sub_len);
+    q->w1 = WINDOW(_create)(q->h_sub_len);
+    WINDOW(_clear)(q->w0);
+    WINDOW(_clear)(q->w1);
+    return q;
 }
 
-QMFB() QMFB(_recreate)(QMFB() _f, unsigned int _h_len)
+QMFB() QMFB(_recreate)(QMFB() _q, unsigned int _h_len)
 {
     // TODO implement this method
     printf("error: qmfb_xxxt_recreate(), method not supported yet\n");
@@ -130,48 +137,42 @@ QMFB() QMFB(_recreate)(QMFB() _f, unsigned int _h_len)
     return NULL;
 }
 
-void QMFB(_destroy)(QMFB() _f)
+void QMFB(_destroy)(QMFB() _q)
 {
-    WINDOW(_destroy)(_f->w0);
-    WINDOW(_destroy)(_f->w1);
-    free(_f->h);
-    free(_f->h0);
-    free(_f->h1);
-    free(_f);
+    WINDOW(_destroy)(_q->w0);
+    WINDOW(_destroy)(_q->w1);
+    free(_q->h);
+    free(_q->h0);
+    free(_q->h1);
+    free(_q);
 }
 
-void QMFB(_print)(QMFB() _f)
+void QMFB(_print)(QMFB() _q)
 {
-    printf("quadrature mirror filterbank: [%u taps]\n", _f->h_sub_len);
+    printf("quadrature mirror filterbank (%s): [%u taps]\n", 
+           _q->type == LIQUID_QMFB_ANALYZER ? "analysis" : "synthesis",
+           _q->h_sub_len);
     unsigned int i;
-#if 0
-    for (i=0; i<_f->h_len; i++) {
-        printf("  h(%4u) = ", i+1);
-        //PRINTVAL(_f->h[i]);
-        printf("%8.4f", _f->h[i]);
-        printf(";\n");
-    }
-#endif
     printf("---\n");
-    for (i=0; i<_f->h_sub_len; i++) {
+    for (i=0; i<_q->h_sub_len; i++) {
         printf("  h0(%4u) = ", i+1);
-        //PRINTVAL(_f->h1[i]);
-        printf("%12.8f", _f->h0[i]);
+        //PRINTVAL(_q->h1[i]);
+        printf("%12.8f", _q->h0[i]);
         printf(";\n");
     }
     printf("---\n");
-    for (i=0; i<_f->h_sub_len; i++) {
+    for (i=0; i<_q->h_sub_len; i++) {
         printf("  h1(%4u) = ", i+1);
-        //PRINTVAL(_f->h1[i]);
-        printf("%12.8f", _f->h1[i]);
+        //PRINTVAL(_q->h1[i]);
+        printf("%12.8f", _q->h1[i]);
         printf(";\n");
     }
 }
 
-void QMFB(_clear)(QMFB() _f)
+void QMFB(_clear)(QMFB() _q)
 {
-    WINDOW(_clear)(_f->w0);
-    WINDOW(_clear)(_f->w1);
+    WINDOW(_clear)(_q->w0);
+    WINDOW(_clear)(_q->w1);
 }
 
 
@@ -219,6 +220,8 @@ void QMFB(_synthesis_execute)(QMFB() _q,
                               TO * _y0,
                               TO * _y1)
 {
+    // TODO: make this interpolator implementation more efficient
+
     TI * r; // read pointer
     TO y0a, y0b, y1a, y1b;
 
