@@ -23,14 +23,14 @@ int main() {
     n += (n%2) == 1 ? 1 : 0;
 
     // create filterbank
-    qmfb_crcf qmfa = qmfb_crcf_create(m, beta);
-    qmfb_crcf qmfs = qmfb_crcf_create(m, beta);
+    qmfb_crcf qmfa = qmfb_crcf_create(m, beta, 0);
+    qmfb_crcf qmfs = qmfb_crcf_create(m, beta, 1);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"n=%u;\n", n);
-    fprintf(fid,"m=%u;\n", m);
+    fprintf(fid,"h_len=%u;\n", 20);
     fprintf(fid,"x = zeros(1,%u);\n", n);
     fprintf(fid,"y = zeros(2,%u);\n", n/2);
     fprintf(fid,"z = zeros(1,%u);\n", n);
@@ -40,8 +40,9 @@ int main() {
 
     // generate time-domain signal (windowed noise)
     for (i=0; i<n; i++) {
-        //x[i] = (i<num_samples) ? kaiser(i,num_samples,10.0f,0)*randnf() : 0.0f;
-        x[i] = (i==4) ? 1.0f : 0.0f;
+        x[i] = (i<num_samples) ? kaiser(i,num_samples,10.0f,0)*randnf() : 0.0f;
+        x[i] *= cexpf(_Complex_I*2*M_PI*randf());
+        //x[i] = (i==4) ? 1.0f : 0.0f;
     }
 
     // compute QMF analysis sub-channel output
@@ -67,13 +68,12 @@ int main() {
     }
 
     // plot time-domain results
-    fprintf(fid,"return;\n");
-    fprintf(fid,"t0=0:(2*n-1);\n");
-    fprintf(fid,"t1=0:(n-1);\n");
+//    fprintf(fid,"return;\n");
+    fprintf(fid,"t  = 0:(n-1);\n");
+    fprintf(fid,"td = 0:(n/2-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(3,1,1); plot(t1,real(y(1,:)),t1,imag(y(1,:))); ylabel('y_0(t)');\n");
-    fprintf(fid,"subplot(3,1,2); plot(t1,real(y(2,:)),t1,imag(y(2,:))); ylabel('y_1(t)');\n");
-    fprintf(fid,"subplot(3,1,3); plot(t0,real(x),t0,imag(x));           ylabel('x(t),composite');\n");
+    fprintf(fid,"subplot(2,1,1), plot(t,real(x),'-x',t-h_len+2,real(z),'-o');\n");
+    fprintf(fid,"subplot(2,1,2), plot(t,imag(x),'-x',t-h_len+2,imag(z),'-o');\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

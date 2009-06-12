@@ -78,7 +78,7 @@ ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl)
     // create banks
     unsigned int i;
     for (i=0; i<f->num_banks; i++)
-        f->bank[i] = QMFB(_create)(_m, _slsl);
+        f->bank[i] = QMFB(_create)(_m, _slsl, 0);
 
     return f;
 }
