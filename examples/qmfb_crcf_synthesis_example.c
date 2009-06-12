@@ -15,17 +15,17 @@
 #define OUTPUT_FILENAME "qmfb_crcf_synthesis_example.m"
 
 int main() {
-    unsigned int m=5;                   // filter delay
+    unsigned int h_len=20;              // filter length
     float beta = 0.3f;                  // sidelobe suppression level
     unsigned int num_samples=64;        // number of samples
 
     // derived values
-    unsigned int n = num_samples + m;   // extend length of synthesis to
+    unsigned int n = num_samples + h_len;   // extend length of synthesis to
                                         // incorporate filter delay
 
     // create filterbank
-    qmfb_crcf f = qmfb_crcf_create(m, beta);
-    qmfb_crcf_print(f);
+    qmfb_crcf q = qmfb_crcf_create(h_len, beta, LIQUID_QMFB_SYNTHESIZER);
+    qmfb_crcf_print(q);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
@@ -62,7 +62,7 @@ int main() {
 
     // compute QMF sub-channel output
     for (i=0; i<n; i++) {
-        qmfb_crcf_synthesis_execute(f, y[0][i], y[1][i], &x[2*i+0], &x[2*i+1]);
+        qmfb_crcf_execute(q, y[0][i], y[1][i], &x[2*i+0], &x[2*i+1]);
     }
 
     // write results to output file
@@ -105,7 +105,7 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    qmfb_crcf_destroy(f);
+    qmfb_crcf_destroy(q);
     nco_destroy(nco_0);
     nco_destroy(nco_1);
     printf("done.\n");
