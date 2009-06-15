@@ -13,6 +13,8 @@
 #define FBASC_DEBUG 1
 #define DEBUG_FILE  stdout
 
+#define FBASC_COMPRESS 1
+
 //  description         value   units
 //  -----------         -----   -----
 //  sample rate         16      kHz
@@ -81,7 +83,7 @@ fbasc fbasc_create(
     // override to default values
     q->num_channels = 16;
     q->samples_per_frame = 512;
-    q->bytes_per_header = (q->num_channels)/2;
+    q->bytes_per_header = q->num_channels;
     q->bytes_per_frame = q->samples_per_frame + q->bytes_per_header;
 
     // initialize derived values/lengths
@@ -130,7 +132,7 @@ void fbasc_print(fbasc _q)
 
 void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 {
-    unsigned int i;
+    unsigned int i, j;
 #if FBASC_DEBUG
     for (i=0; i<10; i++)
         DEBUG_PRINTF_FLOAT(DEBUG_FILE,"x",i,_audio[i]);
@@ -170,42 +172,81 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
                                 _q->num_channels,
                                 16);
 
+
     // TODO: write partition to header
+    unsigned int s=0;
+    for (i=0; i<_q->bytes_per_header; i++) {
+        _frame[s] = k[i];
+        s++;
+    }
 
     // encode using basic quantizer
-    float z;
+    float sample, z;
     unsigned int bi, bq;
-    for (i=0; i<_q->samples_per_frame; i++) {
-        // compress using mu-law encoder
-        // TODO: ensure proper scaling
-        z = compress_mulaw(_q->X[i], _q->mu);
+    for (i=0; i<_q->samples_per_channel; i++) {
+        for (j=0; j<_q->num_channels; j++) {
 
-        // quantize
-        bi = quantize_adc(z, 8);
+            if (k[j] > 1) {
+                // compress using mu-law encoder
+                // TODO: ensure proper scaling
+                sample = _q->X[i*(_q->num_channels)+j];
+#if FBASC_COMPRESS
+                z = compress_mulaw(sample, _q->mu);
+#else
+                z = sample;
+#endif
+                // quantize
+                bi = quantize_adc(z, k[j]);
+            } else {
+                bi = 0;
+            }
 
-        _frame[i] = bi;
+            _frame[s] = bi;
+            s++;
+        }
     }
 }
 
 void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 {
-    unsigned int i;
+    unsigned int i, j;
 
     // clear energy...
     for (i=0; i<_q->num_channels; i++)
         _q->channel_energy[i] = 0.0f;
 
+    // get bit partitioning
+    unsigned int k[_q->num_channels];
+    unsigned int s=0;
+    for (i=0; i<_q->num_channels; i++) {
+        k[s] = _frame[i];
+        s++;
+        printf("rx b[%3u] = %3u\n", i, _frame[i]);
+    }
+
     // decode using basic quantizer
-    float z;
+    float sample, z;
     unsigned int bi, bq;
-    for (i=0; i<_q->samples_per_frame; i++) {
-        // quantize
-        bi = _frame[i];
+    for (i=0; i<_q->samples_per_channel; i++) {
+        for (j=0; j<_q->num_channels; j++) {
+            if (k[j] > 1) {
+                // quantize
+                bi = _frame[s];
 
-        z = quantize_dac(bi,8);
+                z = quantize_dac(bi,k[j]);
+            } else {
+                z = 0.0f;
+            }
 
-        // expand using mu-law decoder
-        _q->X[i] = expand_mulaw(z, _q->mu);
+            s++;
+#if FBASC_COMPRESS
+            // expand using mu-law decoder
+            sample = expand_mulaw(z, _q->mu);
+#else
+            sample = z;
+#endif
+            _q->X[i*(_q->num_channels)+j] = sample;
+        }
     }
 
     unsigned int b;     // block counter

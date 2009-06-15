@@ -9,7 +9,7 @@
 
 int main() {
     unsigned int num_steps=30;
-    unsigned int num_bits=3;
+    unsigned int num_bits=1;
 
     unsigned int i, q;
     float x=-1.5f, y, dx=3.0f/((float)num_steps);
@@ -24,7 +24,7 @@ int main() {
         // digital to analog converter
         y = quantize_dac(q,num_bits);
 
-        printf("%8.4f,  0x%2.2x, %8.4f\n", x, q, y);
+        printf("%8.4f,  0x%8.8x, %8.4f\n", x, q, y);
         x += dx;
     }
     printf("done.\n");

@@ -42,6 +42,11 @@ unsigned int quantize_adc(float _x, unsigned int _num_bits)
     }
 #endif
 
+    if (_num_bits == 0)
+        return 0;
+    if (_num_bits == 1)
+        return (_x < 0) ? 0 : 1;
+
     // clip input
     _x = (_x >  1.0f) ?  1.0f : _x;
     _x = (_x < -1.0f) ? -1.0f : _x;
@@ -65,6 +70,11 @@ float quantize_dac(unsigned int _s, unsigned int _num_bits)
         exit(1);
     }
 #endif
+    if (_num_bits == 0)
+        return 0.0f;
+    if (_num_bits == 1)
+        return (_s == 0) ? -1.0f : 1.0f;
+
     unsigned int n = _num_bits-1;   //
     unsigned int N = 1<<n;          // 2^n
     float r = (float)(_s & (N-1)) / (float) (N-1);
