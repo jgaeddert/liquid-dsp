@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -44,19 +45,20 @@ unsigned int quantize_adc(float _x, unsigned int _num_bits)
 
     if (_num_bits == 0)
         return 0;
-    if (_num_bits == 1)
-        return (_x < 0) ? 0 : 1;
-
-    // clip input
-    _x = (_x >  1.0f) ?  1.0f : _x;
-    _x = (_x < -1.0f) ? -1.0f : _x;
 
     unsigned int n = _num_bits-1;   // 
     unsigned int N = 1<<n;          // 2^n
-    unsigned int r = roundf(fabsf(_x) * (N-1));
+
+    // scale
+    bool neg = (_x < 0);
+    unsigned int r = floorf(fabsf(_x)*N);
+
+    // clip
+    if (r >= N)
+        r = N-1;
 
     // if negative set MSB to 1
-    if (_x < 0)
+    if (neg)
         r |= N;
 
     return r;
@@ -72,12 +74,10 @@ float quantize_dac(unsigned int _s, unsigned int _num_bits)
 #endif
     if (_num_bits == 0)
         return 0.0f;
-    if (_num_bits == 1)
-        return (_s == 0) ? -1.0f : 1.0f;
 
     unsigned int n = _num_bits-1;   //
     unsigned int N = 1<<n;          // 2^n
-    float r = (float)(_s & (N-1)) / (float) (N-1);
+    float r = ((float)(_s & (N-1))+0.5f) / (float) (N);
 
     // check MSB, return negative if 1
     return (_s & N) ? -r : r;

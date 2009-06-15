@@ -9,7 +9,7 @@
 
 int main() {
     unsigned int num_steps=30;
-    unsigned int num_bits=1;
+    unsigned int num_bits=3;
 
     unsigned int i, q;
     float x=-1.5f, y, dx=3.0f/((float)num_steps);
