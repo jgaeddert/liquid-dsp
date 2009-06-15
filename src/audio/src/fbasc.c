@@ -170,7 +170,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     fbasc_compute_bit_partition(_q->channel_energy,
                                 k,
                                 _q->num_channels,
-                                16);
+                                8);
 
 
     // TODO: write partition to header
@@ -178,6 +178,13 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     for (i=0; i<_q->bytes_per_header; i++) {
         _frame[s] = k[i];
         s++;
+    }
+
+    // compute scaling factor
+    float g[_q->num_channels];
+    for (i=0; i<_q->num_channels; i++) {
+        g[i] = (float)(1<<(8-k[i]));
+        printf("g[%3u] = %12.8f\n", i, g[i]);
     }
 
     // encode using basic quantizer
@@ -189,7 +196,9 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
             if (k[j] > 1) {
                 // compress using mu-law encoder
                 // TODO: ensure proper scaling
-                sample = _q->X[i*(_q->num_channels)+j];
+                sample = _q->X[i*(_q->num_channels)+j] * g[j];
+                if (fabsf(sample) > 1)
+                    printf("sample = %12.8f, k[j] = %3u\n", sample, k[j]);
 #if FBASC_COMPRESS
                 z = compress_mulaw(sample, _q->mu);
 #else
@@ -224,6 +233,11 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
         printf("rx b[%3u] = %3u\n", i, _frame[i]);
     }
 
+    // compute scaling factor
+    float g[_q->num_channels];
+    for (i=0; i<_q->num_channels; i++)
+        g[i] = (float)(1<<(8-k[i]));
+
     // decode using basic quantizer
     float sample, z;
     unsigned int bi, bq;
@@ -241,7 +255,7 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
             s++;
 #if FBASC_COMPRESS
             // expand using mu-law decoder
-            sample = expand_mulaw(z, _q->mu);
+            sample = expand_mulaw(z, _q->mu) / g[j];
 #else
             sample = z;
 #endif
