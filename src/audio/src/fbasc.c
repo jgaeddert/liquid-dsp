@@ -186,12 +186,13 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     // compute scaling factor
     float g[_q->num_channels];
     for (i=0; i<_q->num_channels; i++) {
-        g[i] = 1.0f;
+        g[i] = (float)(1<<(8-k[i])) * (_q->num_channels);
         printf("g[%3u] = %12.8f\n", i, g[i]);
     }
 
     // encode using basic quantizer
     float sample, z;
+    float max_sample=0.0f;
     unsigned int bi, bq;
     for (i=0; i<_q->samples_per_channel; i++) {
         for (j=0; j<_q->num_channels; j++) {
@@ -202,6 +203,8 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
                 sample = _q->X[i*(_q->num_channels)+j] * g[j];
                 if (fabsf(sample) > 1)
                     printf("sample = %12.8f, k[j] = %3u\n", sample, k[j]);
+                if (fabsf(sample) > max_sample)
+                    max_sample = fabsf(sample);
 #if FBASC_COMPRESS
                 z = compress_mulaw(sample, _q->mu);
 #else
@@ -217,6 +220,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
             s++;
         }
     }
+    printf("max sample: %12.8f\n", max_sample);
 }
 
 void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
@@ -239,7 +243,8 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
     // compute scaling factor
     float g[_q->num_channels];
     for (i=0; i<_q->num_channels; i++)
-        g[i] = 1.0f;
+        g[i] = (float)(1<<(8-k[i])) * (_q->num_channels);
+        //g[i] = 1.0f;
 
     // decode using basic quantizer
     float sample, z;
@@ -346,30 +351,32 @@ void fbasc_compute_bit_allocation(unsigned int _n,
     // compute bit partitions
     float log2p;
     int bk;
+    float bkf;
     unsigned int n=_n;
-    unsigned int num_bits = _num_bits;
+    unsigned int available_bits = _num_bits;
     float b;
     for (i=0; i<_n; i++) {
         log2p = 0.0f;
-        b = (float)(num_bits) / (float)(n);
+        b = (float)(available_bits) / (float)(n);
         // compute 'entropy' metric
         for (j=i; j<_n; j++)
             log2p += (e[j] == 0.0f) ? -60.0f : log2(e[j]);
         log2p /= n;
 
-        bk = (int)roundf(b + 0.5f*e[i] - 0.5f*log2p);
+        bkf = b + 0.5f*log2f(e[i]) - 0.5f*log2p;
+        bk  = (int)roundf(bkf);
 
-        bk = (bk > _max_bits)    ? _max_bits    : bk;
-        bk = (bk > num_bits)     ? num_bits     : bk;
-        bk = (bk < 0)            ? 0            : bk;
+        bk = (bk > _max_bits)       ? _max_bits         : bk;
+        bk = (bk > available_bits)  ? available_bits    : bk;
+        bk = (bk < 0)               ? 0                 : bk;
 
 #if FBASC_DEBUG
-        printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.8f, bk = %3d\n",
-               idx[i], e[i], b, log2p, bk);
+        printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.8f, bk = %8.4f(%3d)\n",
+               idx[i], e[i], b, log2p, bkf, bk);
 #endif
         _k[idx[i]] = bk;
 
-        num_bits -= bk;
+        available_bits -= bk;
         n--;
     }
 

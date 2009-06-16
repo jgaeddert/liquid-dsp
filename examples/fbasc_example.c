@@ -41,6 +41,7 @@ int main() {
             x[j] = (i==0) ? cosf(2.0f*M_PI*phi) : 0.0f;
             phi += dphi;
             x[j] *= 0.5f*kaiser(j,samples_per_frame,10.0f,0);
+            //x[j] = randnf()*0.1f;
         }
 
         fbasc_encode(fbasc_encoder, x, framedata);
