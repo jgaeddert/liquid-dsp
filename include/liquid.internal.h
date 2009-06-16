@@ -57,6 +57,22 @@ float ann_af_mulaw(float _mu, float _x);
 float ann_df_mulaw(float _mu, float _x);
 
 //
+// MODULE: audio
+//
+
+// compute optimum bit allocation for sub-band coder
+// _n           :   number of channels
+// _e           :   energy array [_n x 1]
+// _num_bits    :   total number of bits available
+// _max_bits    :   maximum number of bits per channel
+// _k           :   resulting bit allocation array [_n x 1]
+void fbasc_compute_bit_allocation(unsigned int _n,
+                                  float * _e,
+                                  unsigned int _num_bits,
+                                  unsigned int _max_bits,
+                                  unsigned int * _k);
+
+//
 // MODULE: buffer
 //
 

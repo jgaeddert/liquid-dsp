@@ -103,11 +103,6 @@ fbasc fbasc_create(
     return q;
 }
 
-void fbasc_compute_bit_partition(float * _e,
-                                 unsigned int * _k,
-                                 unsigned int _n,
-                                 unsigned int _num_bits);
-
 void fbasc_destroy(fbasc _q)
 {
     // destroy channelizer
@@ -133,10 +128,6 @@ void fbasc_print(fbasc _q)
 void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 {
     unsigned int i, j;
-#if FBASC_DEBUG
-    for (i=0; i<10; i++)
-        DEBUG_PRINTF_FLOAT(DEBUG_FILE,"x",i,_audio[i]);
-#endif
 
     // clear energy...
     for (i=0; i<_q->num_channels; i++)
@@ -157,23 +148,35 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 
     // normalize channel energy
     for (i=0; i<_q->num_channels; i++)
-        _q->channel_energy[i] = sqrtf(_q->channel_energy[i] / _q->samples_per_channel);
+        _q->channel_energy[i] = _q->channel_energy[i] / _q->samples_per_channel;
+
+    // find maximum
+    unsigned int i_max=0;
+    float e_max=0.0f;
+    for (i=0; i<_q->num_channels; i++) {
+        if (i==0 || _q->channel_energy[i] > e_max) {
+            i_max = i;
+            e_max = _q->channel_energy[i];
+        }
+    }
+
 #if FBASC_DEBUG
     printf("channel energy:\n");
     for (i=0; i<_q->num_channels; i++)
         printf("  e[%3u] = %12.8f\n", i, _q->channel_energy[i]);
     //    DEBUG_PRINTF_FLOAT(DEBUG_FILE,"e",i, _q->channel_energy[i]);
+    printf("max channel energy: %12.8f\n", e_max);
 #endif
 
     // compute bit partitioning
     unsigned int k[_q->num_channels];
-    fbasc_compute_bit_partition(_q->channel_energy,
-                                k,
-                                _q->num_channels,
-                                8);
+    fbasc_compute_bit_allocation(_q->num_channels,
+                                 _q->channel_energy,
+                                 16,
+                                 8,
+                                 k);
 
-
-    // TODO: write partition to header
+    // write partition to header
     unsigned int s=0;
     for (i=0; i<_q->bytes_per_header; i++) {
         _frame[s] = k[i];
@@ -183,7 +186,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     // compute scaling factor
     float g[_q->num_channels];
     for (i=0; i<_q->num_channels; i++) {
-        g[i] = (float)(1<<(8-k[i]));
+        g[i] = 1.0f;
         printf("g[%3u] = %12.8f\n", i, g[i]);
     }
 
@@ -236,7 +239,7 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
     // compute scaling factor
     float g[_q->num_channels];
     for (i=0; i<_q->num_channels; i++)
-        g[i] = (float)(1<<(8-k[i]));
+        g[i] = 1.0f;
 
     // decode using basic quantizer
     float sample, z;
@@ -278,7 +281,7 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 
     // normalize channel energy
     for (i=0; i<_q->num_channels; i++)
-        _q->channel_energy[i] = sqrtf(_q->channel_energy[i] / _q->samples_per_channel);
+        _q->channel_energy[i] = _q->channel_energy[i] / _q->samples_per_channel;
 #ifdef DEBUG
     printf("decoder: channel energy:\n");
     for (i=0; i<_q->num_channels; i++)
@@ -295,64 +298,80 @@ void fbasc_encode_run_analyzer(fbasc _q)
 
 }
 
-void fbasc_compute_bit_partition(float * _e,
-                                 unsigned int * _k,
-                                 unsigned int _n,
-                                 unsigned int _num_bits)
+void fbasc_compute_bit_allocation(unsigned int _n,
+                                  float * _e,
+                                  unsigned int _num_bits,
+                                  unsigned int _max_bits,
+                                  unsigned int * _k)
 {
-    float e[_n];
-    memmove(e,_e,_n*sizeof(float));
+    float e[_n];            // sorted energy variances
+    unsigned int idx[_n];   // sorted indices
 
     unsigned int i, j;
-
-    // allocate bit resolution per channel (8 bits maximum)
-    float e_sum;
-    bool allocated[_n];
     for (i=0; i<_n; i++) {
-        allocated[i] = false;
-        _k[i] = 0;
+        e[i] = _e[i];
+        idx[i] = i;
     }
-    unsigned int bits_available = _num_bits;
+
+    // sort (inefficient, but easy to implement)
+    float e_tmp;
+    unsigned int i_tmp;
     for (i=0; i<_n; i++) {
-        // stop if no more bits are available
-        if (bits_available == 0)
-            break;
-
-        // compute normalized energy sum
-        e_sum = 0.0f;
-        for (j=0; j<_n; j++)
-            e_sum += allocated[j] ? 0.0f : e[j];
-        for (j=0; j<_n; j++)
-            e[j] /= e_sum;
-
-        // allocate maximum
-        unsigned int i_max=0;
-        float v_max=0;
-        bool init = false;
         for (j=0; j<_n; j++) {
-            if (allocated[j]) {
-                continue;
-            } else if (!init) {
-                i_max = j;
-                v_max = e[j];
-                init = true;
-            } else if (e[j] > v_max) {
-                i_max = j;
-                v_max = e[j];
+            if ( (i!=j) && (e[i] > e[j]) ) {
+                // swap values
+                e_tmp = e[i];
+                e[i] = e[j];
+                e[j] = e_tmp;
+
+                i_tmp = idx[i];
+                idx[i] = idx[j];
+                idx[j] = i_tmp;
             }
         }
-        allocated[i_max] = true;
-        _k[i_max] = (unsigned int)(v_max*bits_available);
-        if (_k[i_max] < 1)
-            _k[i_max] = 1;
-        else if (_k[i_max] > 8)
-            _k[i_max] = 8;
-        bits_available -= _k[i_max];
     }
-#if FBASC_DEBUG
-    printf("bit resolution:\n");
+
+#if 0
+    printf("original:\n");
     for (i=0; i<_n; i++)
-        printf("  b[%3u] = %3u (%12.8f)\n", i, _k[i], _e[i]);
+        printf("e[%3u] = %12.8f\n",i,_e[i]);
+    printf("\n\n");
+
+    printf("sorted:\n");
+    for (i=0; i<_n; i++)
+        printf("e[%3u] = %12.8f\n", idx[i], e[i]);
+    printf("\n\n");
 #endif
+
+    // compute bit partitions
+    float log2p;
+    int bk;
+    unsigned int n=_n;
+    unsigned int num_bits = _num_bits;
+    float b;
+    for (i=0; i<_n; i++) {
+        log2p = 0.0f;
+        b = (float)(num_bits) / (float)(n);
+        // compute 'entropy' metric
+        for (j=i; j<_n; j++)
+            log2p += (e[j] == 0.0f) ? -60.0f : log2(e[j]);
+        log2p /= n;
+
+        bk = (int)roundf(b + 0.5f*e[i] - 0.5f*log2p);
+
+        bk = (bk > _max_bits)    ? _max_bits    : bk;
+        bk = (bk > num_bits)     ? num_bits     : bk;
+        bk = (bk < 0)            ? 0            : bk;
+
+#if FBASC_DEBUG
+        printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.8f, bk = %3d\n",
+               idx[i], e[i], b, log2p, bk);
+#endif
+        _k[idx[i]] = bk;
+
+        num_bits -= bk;
+        n--;
+    }
+
 }
 
