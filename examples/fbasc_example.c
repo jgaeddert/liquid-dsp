@@ -38,7 +38,8 @@ int main() {
     unsigned char framedata[bytes_per_frame];
     for (i=0; i<num_frames; i++) {
         for (j=0; j<samples_per_frame; j++) {
-            x[j] = (i==0) ? cosf(2.0f*M_PI*phi) : 0.0f;
+            x[j] = (i==0) ? 0.5f*cosf(2.0f*M_PI*phi) + 0.5f*cosf(2.0f*M_PI*phi*0.57f) : 0.0f;
+            //x[j] = (i==0) ? cosf(2.0f*M_PI*phi) : 0.0f;
             phi += dphi;
             x[j] *= 0.5f*kaiser(j,samples_per_frame,10.0f,0);
             //x[j] = randnf()*0.1f;

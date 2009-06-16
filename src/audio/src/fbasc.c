@@ -178,15 +178,18 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 
     // write partition to header
     unsigned int s=0;
+    unsigned int k_max=0;
     for (i=0; i<_q->bytes_per_header; i++) {
         _frame[s] = k[i];
         s++;
+
+        k_max = (k[i] > k_max) ? k[i] : k_max;
     }
 
     // compute scaling factor
     float g[_q->num_channels];
     for (i=0; i<_q->num_channels; i++) {
-        g[i] = (float)(1<<(8-k[i])) * (_q->num_channels);
+        g[i] = (float)(1<<(k_max-k[i]));
         printf("g[%3u] = %12.8f\n", i, g[i]);
     }
 
@@ -234,16 +237,18 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
     // get bit partitioning
     unsigned int k[_q->num_channels];
     unsigned int s=0;
+    unsigned int k_max=0;
     for (i=0; i<_q->num_channels; i++) {
         k[s] = _frame[i];
         s++;
         printf("rx b[%3u] = %3u\n", i, _frame[i]);
+        k_max = (k[i] > k_max) ? k[i] : k_max;
     }
 
     // compute scaling factor
     float g[_q->num_channels];
     for (i=0; i<_q->num_channels; i++)
-        g[i] = (float)(1<<(8-k[i])) * (_q->num_channels);
+        g[i] = (float)(1<<(k_max-k[i]));
         //g[i] = 1.0f;
 
     // decode using basic quantizer
