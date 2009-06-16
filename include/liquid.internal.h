@@ -72,6 +72,9 @@ void fbasc_compute_bit_allocation(unsigned int _n,
                                   unsigned int _max_bits,
                                   unsigned int * _k);
 
+void fbasc_encode_frame(fbasc _q);
+void fbasc_decode_frame(fbasc _q);
+
 //
 // MODULE: buffer
 //
