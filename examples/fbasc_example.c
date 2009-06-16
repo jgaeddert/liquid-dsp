@@ -41,7 +41,7 @@ int main() {
             x[j] = (i==0) ? 0.5f*cosf(2.0f*M_PI*phi) + 0.5f*cosf(2.0f*M_PI*phi*0.57f) : 0.0f;
             //x[j] = (i==0) ? cosf(2.0f*M_PI*phi) : 0.0f;
             phi += dphi;
-            x[j] *= 0.5f*kaiser(j,samples_per_frame,10.0f,0);
+            x[j] *= 0.1f*kaiser(j,samples_per_frame,10.0f,0);
             //x[j] = randnf()*0.1f;
         }
 
@@ -62,10 +62,10 @@ int main() {
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1), plot(x);\n");
     fprintf(fid,"ylabel('input');\n");
-    fprintf(fid,"axis([1 length(x) -0.5 0.5]);\n");
+    //fprintf(fid,"axis([1 length(x) -0.5 0.5]);\n");
     fprintf(fid,"subplot(2,1,2), plot(y);\n");
     fprintf(fid,"ylabel('encoded/decoded');\n");
-    fprintf(fid,"axis([1 length(y) -0.5 0.5]);\n");
+    //fprintf(fid,"axis([1 length(y) -0.5 0.5]);\n");
 
     // close debug file
     fclose(fid);
