@@ -32,16 +32,21 @@ void autotest_quantize_float_n8() {
     float dx = 2/(float)(num_steps);
     unsigned int q;
     float x_hat;
-    float tol = 1e-2f;
+    float tol = 1.0f / (float)(1<<num_bits);
 
     unsigned int i;
     for (i=0; i<num_steps; i++) {
         q = quantize_adc(x,num_bits);
+
+        // ensure only num_bits written to value q
+        CONTEND_EQUALITY(q>>num_bits, 0);
+
         x_hat = quantize_dac(q,num_bits);
 
         if (_autotest_verbose)
             printf("%8.4f > 0x%2.2x > %8.4f\n", x, q, x_hat);
 
+        // ensure original value is recovered withing tolerance
         CONTEND_DELTA(x,x_hat,tol);
 
         x += dx;
