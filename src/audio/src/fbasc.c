@@ -10,9 +10,7 @@
 
 #include "liquid.internal.h"
 
-#define FBASC_DEBUG 0
-
-#define FBASC_COMPRESS 1
+#define FBASC_DEBUG     0
 
 //  description         value   units
 //  -----------         -----   -----
@@ -36,7 +34,8 @@ struct fbasc_s {
     unsigned int bytes_per_frame;   // <fixed>
     unsigned int bits_per_block;
     unsigned int max_bits_per_sample;
-    unsigned int * bk;
+    unsigned int * bk;              // bits per subchannel
+    float * gk;                     // subchannel gain
 
     // derived values
     unsigned int samples_per_channel;   // samples_per_frame/num_channels (16)
@@ -102,6 +101,7 @@ fbasc fbasc_create(
     // analysis/synthesis
     q->X = (float*) malloc( (q->samples_per_frame)*sizeof(float) );
     q->channel_energy = (float*) malloc( (q->num_channels)*sizeof(float) );
+    q->gk = (float*) malloc( (q->num_channels)*sizeof(float) );
     q->mu = 255.0f;
 
     // data
@@ -120,6 +120,7 @@ void fbasc_destroy(fbasc _q)
     free(_q->X);
     free(_q->data);
     free(_q->bk);
+    free(_q->gk);
 
     // free memory structure
     free(_q);
@@ -180,31 +181,30 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         k_max = (_q->bk[i] > k_max) ? _q->bk[i] : k_max;
     }
 
-    // compute scaling factor
-    float g[_q->num_channels];
-    for (i=0; i<_q->num_channels; i++) {
-        g[i] = (float)(1<<(k_max-_q->bk[i]));
-        //printf("g[%3u] = %12.8f\n", i, g[i]);
-    }
+    // compute scaling factor: gk = 2^(max(bk) - bk)
+    for (i=0; i<_q->num_channels; i++)
+        _q->gk[i] = (float)(1<<(k_max-_q->bk[i]));
 
     // encode using basic quantizer
     float sample, z;
+#if FBASC_DEBUG
     float max_sample=0.0f;
+#endif
     unsigned int b;
     for (i=0; i<_q->samples_per_channel; i++) {
         for (j=0; j<_q->num_channels; j++) {
 
             if (_q->bk[j] > 1) {
+                // acquire sample, applying proper gain
+                sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j];
+
                 // compress using mu-law encoder
-                // TODO: ensure proper scaling
-                sample = _q->X[i*(_q->num_channels)+j] * g[j];
-#if FBASC_COMPRESS
                 z = compress_mulaw(sample, _q->mu);
-#else
-                z = sample;
-#endif
+
+#if FBASC_DEBUG
                 if (fabsf(z) > max_sample)
                     max_sample = fabsf(z);
+#endif
                 // quantize
                 b = quantize_adc(z, _q->bk[j]);
             } else {
@@ -218,6 +218,11 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 #if FBASC_DEBUG
     printf("max sample: %12.8f\n", max_sample);
 #endif
+
+    // TODO: pack frame
+
+
+
 }
 
 void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
@@ -237,10 +242,9 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
         k_max = (_q->bk[i] > k_max) ? _q->bk[i] : k_max;
     }
 
-    // compute scaling factor
-    float g[_q->num_channels];
+    // compute scaling factor: gk = 2^-(max(bk) - bk)
     for (i=0; i<_q->num_channels; i++)
-        g[i] = (float)(1<<(k_max-_q->bk[i]));
+        _q->gk[i] = 1.0f / (float)(1<<(k_max-_q->bk[i]));
 
     // decode using basic quantizer
     float sample, z;
@@ -257,13 +261,12 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
             }
 
             s++;
-#if FBASC_COMPRESS
+
             // expand using mu-law decoder
             sample = expand_mulaw(z, _q->mu);
-#else
-            sample = z;
-#endif
-            _q->X[i*(_q->num_channels)+j] = sample / g[j];
+
+            // store sample, applying proper gain
+            _q->X[i*(_q->num_channels)+j] = sample * _q->gk[j];
         }
     }
 
@@ -279,6 +282,7 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 
 // internal
 
+// TODO: document this method
 void fbasc_compute_bit_allocation(unsigned int _n,
                                   float * _e,
                                   unsigned int _num_bits,
@@ -312,7 +316,7 @@ void fbasc_compute_bit_allocation(unsigned int _n,
         }
     }
 
-    // compute bit partitions
+    // compute bit allocation
     float log2p;
     int bk;
     float bkf;
@@ -327,7 +331,7 @@ void fbasc_compute_bit_allocation(unsigned int _n,
             log2p += (e[j] == 0.0f) ? -60.0f : log2f(e[j]);
         log2p /= n;
 
-        bkf = b + 0.5f*log2f(e[i]) - 0.5f*log2p;
+        bkf = (e[i]==0.0f) ? 1.0f : b + 0.5f*log2f(e[i]) - 0.5f*log2p;
         bk  = (int)roundf(bkf);
 
         bk = (bk > _max_bits)       ? _max_bits         : bk;
