@@ -28,7 +28,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "sequence_internal.h"
+#include "liquid.internal.h"
 
 bsequence bsequence_create(unsigned int _num_bits)
 {
