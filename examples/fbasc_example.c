@@ -67,6 +67,13 @@ int main() {
     fprintf(fid,"ylabel('encoded/decoded');\n");
     //fprintf(fid,"axis([1 length(y) -0.5 0.5]);\n");
 
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"nfft = 1024;\n");
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,nfft))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
+    fprintf(fid,"plot(f,X,f,Y);\n");
+
     // close debug file
     fclose(fid);
     printf("results wrtten to %s\n", DEBUG_FILENAME);
