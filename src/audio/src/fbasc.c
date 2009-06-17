@@ -194,7 +194,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     for (i=0; i<_q->samples_per_channel; i++) {
         for (j=0; j<_q->num_channels; j++) {
 
-            if (_q->bk[j] > 1) {
+            if (_q->bk[j] > 0) {
                 // acquire sample, applying proper gain
                 sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j];
 
@@ -251,7 +251,7 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
     unsigned int b;
     for (i=0; i<_q->samples_per_channel; i++) {
         for (j=0; j<_q->num_channels; j++) {
-            if (_q->bk[j] > 1) {
+            if (_q->bk[j] > 0) {
                 // quantize
                 b = _frame[s];
 
