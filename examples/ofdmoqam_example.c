@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define DEBUG_FILENAME "ofdmoqam_example.m"
+#define OUTPUT_FILENAME "ofdmoqam_example.m"
 
 int main() {
     // options
@@ -16,7 +16,7 @@ int main() {
     unsigned int num_symbols=32;    // num symbols
     unsigned int m=2;               // ofdm/oqam symbol delay
     float beta = 0.99f;             // excess bandwidth factor
-    float dt   = 0.0f;              // timing offset (fractional sample) 
+    float dt   = 0.3f;              // timing offset (fractional sample) 
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 4;           // modulation depth (bits/symbol)
 
@@ -35,8 +35,8 @@ int main() {
     modem mod0 = modem_create(MOD_QAM,4);
     modem mod1 = modem_create(MOD_QPSK,2);
 
-    FILE*fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
     fprintf(fid,"num_symbols=%u;\n", num_symbols);
@@ -108,7 +108,7 @@ int main() {
     fprintf(fid,"end;\n");
 
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     // destroy objects
     ofdmoqam_destroy(cs);
