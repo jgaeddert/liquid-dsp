@@ -56,6 +56,9 @@ void gport2_threaded_bench(
     unsigned long int *_num_iterations,
     unsigned int _n)
 {
+    // adjust number of iterations
+    *_num_iterations = (*_num_iterations *_n)/10;
+
     // initialize port
     gport2_threaded_bench_data_t data;
     data.p = gport2_create(8*_n,sizeof(int));
