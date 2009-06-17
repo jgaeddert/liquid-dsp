@@ -157,8 +157,21 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     }
 
     // normalize channel energy
-    for (i=0; i<_q->num_channels; i++)
+    float max_var = 0.0f;
+    for (i=0; i<_q->num_channels; i++) {
         _q->channel_energy[i] = _q->channel_energy[i] / _q->samples_per_channel;
+        max_var = _q->channel_energy[i] > max_var ? _q->channel_energy[i] : max_var;
+    }
+    //printf("max variance: %16.12f\n", max_var);
+
+    // compute nominal gain
+    int gi = (int)(-log2f(max_var)) - 16;
+    gi = gi > 255 ? 255 : gi;
+    gi = gi <   0 ?   0 : gi;
+    float g = (float)(1<<gi);
+#if FBASC_DEBUG
+    printf("  enc: nominal gain : %12.4e (gi = %3u)\n", g, gi);
+#endif
 
 #if FBASC_DEBUG
     printf("channel energy:\n");
@@ -175,6 +188,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 
     // write partition to header
     unsigned int s=0;
+    _frame[s++] = gi;
     unsigned int k_max=0;
     for (i=0; i<_q->bytes_per_header; i++) {
         _frame[s++] = _q->bk[i];
@@ -196,7 +210,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 
             if (_q->bk[j] > 0) {
                 // acquire sample, applying proper gain
-                sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j];
+                sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j] * g;
 
                 // compress using mu-law encoder
                 z = compress_mulaw(sample, _q->mu);
@@ -235,6 +249,12 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 
     // get bit partitioning
     unsigned int s=0;
+    // compute nominal gain
+    unsigned int gi = _frame[s++];
+    float g = (float)(1<<gi);
+#if FBASC_DEBUG
+    printf("  dec: nominal gain : %12.4e (gi = %3u)\n", g, gi);
+#endif
     unsigned int k_max=0;
     for (i=0; i<_q->num_channels; i++) {
         _q->bk[i] = _frame[s];
@@ -266,7 +286,7 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
             sample = expand_mulaw(z, _q->mu);
 
             // store sample, applying proper gain
-            _q->X[i*(_q->num_channels)+j] = sample * _q->gk[j];
+            _q->X[i*(_q->num_channels)+j] = sample * _q->gk[j] / g;
         }
     }
 

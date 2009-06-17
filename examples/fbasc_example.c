@@ -14,7 +14,7 @@ int main() {
     // options
     unsigned int num_channels=16;
     unsigned int samples_per_frame=512;
-    unsigned int bytes_per_frame=samples_per_frame + num_channels;
+    unsigned int bytes_per_frame=samples_per_frame + num_channels + 1;
 
     unsigned int num_frames=2;
 
