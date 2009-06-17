@@ -1334,6 +1334,27 @@ void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
 void get_demodulator_phase_error(modem _demod, float* _phi);
 void get_demodulator_evm(modem _demod, float* _evm);
 
+//
+// Continuous phase modems
+//
+typedef enum {
+    CPMOD_FSK,
+    CPMOD_MSK
+} cpmodem_scheme;
+
+typedef struct cpmodem_s * cpmodem;
+cpmodem cpmodem_create(cpmodem_scheme _ms,
+                       unsigned int _bps,
+                       unsigned int _k);
+void cpmodem_destroy(cpmodem _mod);
+void cpmodem_print(cpmodem _mod);
+void cpmodem_modulate(cpmodem _mod,
+                      unsigned int _s,
+                      liquid_float_complex *_y);
+void cpmodem_demodulate(cpmodem _mod,
+                        liquid_float_complex _x,
+                        unsigned int * _s);
+
 // 
 // Analog modems
 //
