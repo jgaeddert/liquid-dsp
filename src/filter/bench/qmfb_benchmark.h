@@ -29,37 +29,42 @@ void qmfb_crcf_bench(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations,
-    unsigned int _M,
     unsigned int _h_len)
 {
-    float h[_h_len];
-    unsigned int i;
-    for (i=0; i<_h_len; i++)
-        h[i] = 1.0f;
 
-    qmfb_crcf q = qmfb_crcf_create(_M,h,_h_len);
+    float beta=0.3f;
 
-    float x[_M], y;
+    qmfb_crcf q = qmfb_crcf_create(_h_len,beta,LIQUID_QMFB_ANALYZER);
+
+    float complex x0 =  1.0f;
+    float complex x1 = -1.0f;
+    float complex y0, y1;
+
     // start trials
+    unsigned long int i;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        decim_rrrf_execute(q,x,&y,0);
+        qmfb_crcf_execute(q,x0,x1,&y0,&y1);
+        qmfb_crcf_execute(q,x0,x1,&y0,&y1);
+        qmfb_crcf_execute(q,x0,x1,&y0,&y1);
+        qmfb_crcf_execute(q,x0,x1,&y0,&y1);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    decim_rrrf_destroy(q);
+    qmfb_crcf_destroy(q);
 }
 
-#define QMFB_CRCF_BENCHMARK_API(M,H_LEN)    \
+#define QMFB_CRCF_BENCHMARK_API(H_LEN)  \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ qmfb_crcf_bench(_start, _finish, _num_iterations, M, H_LEN); }
+{ qmfb_crcf_bench(_start, _finish, _num_iterations, H_LEN); }
 
-void benchmark_decim_m2_h8      QMFB_CRCF_BENCHMARK_API(2,8)
-void benchmark_decim_m4_h16     QMFB_CRCF_BENCHMARK_API(4,16)
-void benchmark_decim_m8_h64     QMFB_CRCF_BENCHMARK_API(8,64)
+void benchmark_qmfb_crcf_h8     QMFB_CRCF_BENCHMARK_API(8)
+void benchmark_qmfb_crcf_h16    QMFB_CRCF_BENCHMARK_API(16)
+void benchmark_qmfb_crcf_h32    QMFB_CRCF_BENCHMARK_API(32)
+void benchmark_qmfb_crcf_h64    QMFB_CRCF_BENCHMARK_API(64)
 
 #endif // __LIQUID_BENCH_BENCHMARK_H__
 
