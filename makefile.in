@@ -235,6 +235,19 @@ clean-examples:
 	$(RM) examples/*.o
 	$(RM) $(example_progs)
 
+# 
+# Tasks list
+#
+tasks_filename = todo_list.txt
+
+$(tasks_filename) : todolistgen.py $(sources)
+	python todolistgen.py $(sources)
+
+taskslist: $(tasks_filename)
+
+clean-tasks:
+	$(RM) $(tasks_filename)
+
 # Clean
 .PHONY: clean
 
