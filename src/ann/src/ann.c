@@ -224,3 +224,45 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
     memmove(_y, &_q->y_hat[_q->num_nodes - _q->num_outputs], (_q->num_outputs)*sizeof(float));
 }
 
+// train network
+//
+// _q       :   network object
+// _x       :   input training pattern array [_n x nx]
+// _y       :   output training pattern array [_n x ny]
+// _n       :   number of training patterns
+// _emax    :   maximum error tolerance
+// _nmax    :   maximum number of iterations
+void ANN(_train)(ANN() _q,
+                 T * _x,
+                 T * _y,
+                 unsigned int _n,
+                 T _emax,
+                 unsigned int _nmax)
+{
+    // TODO: implement ANN(_train) method
+
+    // for now, just compute error
+    T y_hat[_q->num_outputs];
+    float d, e;
+    float rmse=0.0f;
+    unsigned int i, j;
+    for (i=0; i<_n; i++) {
+        // evaluate network
+        ANN(_evaluate)(_q, &_x[i*(_q->num_inputs)], y_hat);
+
+        // compute error
+        e = 0.0f;
+        for (j=0; j<_q->num_outputs; j++) {
+            printf("y[%3u] = %12.8f (expected %12.8f)\n",
+                    i, y_hat[j],_y[i*(_q->num_outputs)+j]);
+            d = y_hat[j] - _y[i*(_q->num_outputs) + j];
+            e += d*d;
+        }
+        rmse += e / (_q->num_outputs);
+    }
+
+    rmse = sqrtf(rmse / _n);
+
+    printf("rmse : %12.8f\n", rmse);
+}
+

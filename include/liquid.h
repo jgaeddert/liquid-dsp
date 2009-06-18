@@ -100,11 +100,10 @@ void  ANN(_evaluate)(ANN() _q,                                  \
                      T * _y);                                   \
 void  ANN(_train)(ANN() _q,                                     \
                   T * _x,                                       \
-                  unsigned int _nx,                             \
                   T * _y,                                       \
-                  unsigned int _ny,                             \
-                  T _emin,                                      \
-                  unsigned int _tmax);
+                  unsigned int _n,                              \
+                  T _emax,                                      \
+                  unsigned int _nmax);
 // void ANN(_prune)(ANN() _q, ...);
 
 // Define ann APIs
