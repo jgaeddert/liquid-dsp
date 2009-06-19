@@ -48,6 +48,10 @@
 // MODULE: ann
 //
 
+// linear activation function
+float ann_af_linear(float _mu, float _x);
+float ann_df_linear(float _mu, float _x);
+
 // logistic activation function
 float ann_af_logistic(float _mu, float _x);
 float ann_df_logistic(float _mu, float _x);
@@ -55,6 +59,18 @@ float ann_df_logistic(float _mu, float _x);
 // mu-law activation function
 float ann_af_mulaw(float _mu, float _x);
 float ann_df_mulaw(float _mu, float _x);
+
+// large macro (internal)
+//   ANN    : name-mangling macro
+//   T      : primitive data type
+#define LIQUID_ANN_DEFINE_INTERNAL_API(ANN,T)                   \
+void  ANN(_train_bp)(ANN() _q,                                  \
+                  T * _x,                                       \
+                  T * _y);
+
+// Define ann APIs
+LIQUID_ANN_DEFINE_INTERNAL_API(ANN_MANGLE_FLOAT, float)
+
 
 //
 // MODULE: audio

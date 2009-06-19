@@ -40,8 +40,7 @@
 
 struct ANN(_s) {
     // weights
-    T * w;
-    T * dw;
+    T * w;      // weights vector
     unsigned int num_weights;
 
     // network structure
@@ -51,12 +50,15 @@ struct ANN(_s) {
     unsigned int num_layers;
     unsigned int num_nodes;
 
-    // 
-    T * y_hat;
-
     // activation function (derivative) pointer
     T(*activation_func)(T);
     T(*d_activation_func)(T);
+
+    // backpropagation
+    T * dw;     // gradient weights vector [num_weights]
+    T * y_hat;  // 
+    //T * e;      // output node error vector [num_nodes]
+
 };
 
 // Creates a network
@@ -101,11 +103,14 @@ ANN() ANN(_create)(
         exit(1);
     }
 
-    q->w = (T*) malloc( (q->num_weights)*sizeof(T) );
+    q->w  = (T*) malloc( (q->num_weights)*sizeof(T) );
+    q->dw = (T*) malloc( (q->num_weights)*sizeof(T) );
     q->y_hat = (T*) malloc( (q->num_nodes)*sizeof(T) );
 
-    for (i=0; i<q->num_weights; i++)
+    for (i=0; i<q->num_weights; i++) {
         q->w[i] = ((i%2)==0) ? 1.0 : -1.0;
+        q->dw[i] = 0.0f;
+    }
 
     return q;
 }
@@ -114,6 +119,7 @@ void ANN(_destroy)(ANN() _q)
 {
     free(_q->structure);
     free(_q->w);
+    free(_q->dw);
     free(_q->y_hat);
     free(_q);
 }
@@ -265,4 +271,24 @@ void ANN(_train)(ANN() _q,
 
     printf("rmse : %12.8f\n", rmse);
 }
+
+// Train using backpropagation
+// _q       :   network object
+// _x       :   input training pattern array [_n x nx]
+// _y       :   output training pattern array [_n x ny]
+void ANN(_train_bp)(ANN() _q,
+                    T * _x,
+                    T * _y)
+{
+    //unsigned int i;
+
+    // evaluate network
+    T y_hat[_q->num_outputs];
+    ANN(_evaluate)(_q, _x, y_hat);
+
+    // compute node error
+    // starting at output layer and working backwards
+    //for (i=_q->
+}
+
 

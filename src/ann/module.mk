@@ -28,7 +28,8 @@ module_name     := ann
 #
 local_s_files	:= 			\
 	ann.c				\
-	activation_functions.c
+	activation_functions.c		\
+	node.c
 
 # local_t_files
 #

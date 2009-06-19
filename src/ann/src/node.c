@@ -19,7 +19,7 @@
  */
 
 //
-// Artificial neural network activation functions
+// Artificial neural network (node definitions)
 //
 
 #include <stdio.h>
@@ -30,44 +30,40 @@
 
 #include "liquid.internal.h"
 
-// 
-// linear activation function
-//
-float ann_af_linear(float _mu, float _x)
-{
-    return _mu*_x;
-}
+#define ANN(name)       LIQUID_CONCAT(ann,name)
+#define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
+#define T               float
 
-float ann_df_linear(float _mu, float _x)
-{
-    return _mu;
-}
+#define LIQUID_ANN_MAX_NETWORK_SIZE 1024
 
-// 
-// logistic activation function
-//
-float ann_af_logistic(float _mu, float _x)
-{
-    return 1.0f / (1 + expf(-_mu*_x));
-}
+#define DEBUG_ANN 0
 
-float ann_df_logistic(float _mu, float _x)
-{
-    float y = ann_af_logistic(_mu,_x);
-    return _mu*y*(1-y);
-}
+struct ANN(_node_s) {
+    T * w;      // weights vector pointer
+    T * x;      // input vector pointer
+    T * y;      // output vector pointer
+    unsigned int num_inputs;
 
-// 
-// mu-law activation function
-//
-float ann_af_mulaw(float _mu, float _x)
-{
-    float y = logf(1 + _mu*fabsf(_x)) / logf(1 + _mu);
-    return copysignf(y, _x);
-}
+    // activation function (derivative) pointer
+    T(*activation_func)(float,T);
+    T(*d_activation_func)(float,T);
 
-float ann_df_mulaw(float _mu, float _x)
+    float mu;   // activation function gain
+};
+
+typedef struct ANN(_node_s) * ANN(_node);
+
+void ANN(_node_evaluate)(ANN(_node) _n)
 {
-    return _mu/( logf(1+_mu)*(1+_mu*_x) );
+    T y;
+
+    // compute output (dot product with input)
+    DOTPROD(_run)(_n->x, _n->w, _n->num_inputs, &y);
+
+    // add bias
+    y += _n->w[_n->num_inputs];
+
+    // apply activation function
+    _n->y[0] = _n->activation_func(_n->mu, y);
 }
 
