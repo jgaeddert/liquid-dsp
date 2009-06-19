@@ -12,25 +12,21 @@ int main() {
 
     // create network structure:
     //      2 inputs, 4 hidden neurons, 1 output
-    unsigned int structure[3] = {2, 4, 1};
+    unsigned int structure[3] = {3, 4, 2};
 
     // binary input sequence
-    float x[8] = {
-        0,0,
-        0,1,
-        1,0,
-        1,1};
+    float x[3] = {0.1,0.2,0.3};
 
     // binary output sequence
-    float y[4] = {
-        0,
-        1,
-        1,
-        0};
+    float y[2];
 
     // create network
     ann q = ann_create(structure, 3);
     ann_print(q);
+
+    ann_evaluate(q,x,y);
+    printf("y = %12.8f : %12.8f\n", y[0], y[1]);
+    return 0;
 
     unsigned int i;
     float y_hat;

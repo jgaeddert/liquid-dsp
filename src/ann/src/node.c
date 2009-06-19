@@ -63,8 +63,11 @@ void NODE(_print)(NODE() _n)
 {
     printf("node [%u inputs]:\n", _n->num_inputs);
     unsigned int i;
+    for (i=0; i<_n->num_inputs; i++)
+        printf("  x[%3u] = %12.8f\n", i, _n->x[i]);
     for (i=0; i<_n->num_inputs+1; i++)
         printf("  w[%3u] = %12.8f\n", i, _n->w[i]);
+    printf("  y = %12.8f\n", _n->y[0]);
 }
 
 void NODE(_evaluate)(NODE() _n)

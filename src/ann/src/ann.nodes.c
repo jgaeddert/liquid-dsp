@@ -111,6 +111,12 @@ ANN() ANN(_create)(
     q->dw = (T*) malloc( (q->num_weights)*sizeof(T) );
     q->y_hat = (T*) malloc( (q->num_nodes+q->num_inputs)*sizeof(T) );
 
+    for (i=0; i<q->num_weights; i++) {
+        q->w[i] = ((i%2)==0) ? 1.0 : -1.0;
+        q->w[i] = i;
+        q->dw[i] = 0.0f;
+    }
+
     // create nodes
     q->nodes = (NODE()*) malloc((q->num_nodes)*sizeof(NODE()));
     unsigned int nw = 0;
@@ -134,11 +140,6 @@ ANN() ANN(_create)(
             n++;
         }
         nx += (i==0) ? 0 : q->structure[i-1];
-    }
-
-    for (i=0; i<q->num_weights; i++) {
-        q->w[i] = ((i%2)==0) ? 1.0 : -1.0;
-        q->dw[i] = 0.0f;
     }
 
     return q;
@@ -184,12 +185,30 @@ void ANN(_print)(ANN() _q)
 // Evaluates the network _q at _input and stores the result in _output
 void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
 {
+    // copy input elements to head of buffer
+    memmove(_q->y_hat, _x, (_q->num_inputs)*sizeof(T));
+
+#if 0
+    unsigned int i,j,t,n=0;
+    printf("\n\n\n");
+    for (i=0; i<_q->num_layers; i++) {
+        printf("------------------\n");
+        printf("evaluating layer %3u\n", i);
+        for (j=0; j<_q->structure[i]; j++) {
+            NODE(_evaluate)(_q->nodes[n]);
+            NODE(_print)(_q->nodes[n]);
+            n++;
+        }
+    }
+#else
     unsigned int i;
-    for (i=0; i<_q->num_nodes; i++)
+    for (i=0; i<_q->num_nodes; i++) {
         NODE(_evaluate)(_q->nodes[i]);
+    }
+#endif
 
     // copy output
-    memmove(_y, &_q->y_hat[_q->num_nodes - _q->num_outputs], (_q->num_outputs)*sizeof(float));
+    memmove(_y, &_q->y_hat[_q->num_nodes + _q->num_inputs - _q->num_outputs], (_q->num_outputs)*sizeof(float));
 }
 
 // train network
