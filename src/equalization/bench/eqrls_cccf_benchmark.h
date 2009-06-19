@@ -48,7 +48,8 @@ void eqrls_cccf_train_bench(
 
     // reduce number of iterations relative to speed (keeps execution
     // time from exploding)
-    *_num_iterations /= _h_len * logf(_h_len);
+    *_num_iterations /= _h_len * _h_len;
+    *_num_iterations = (*_num_iterations < 4) ? 4 : *_num_iterations;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);

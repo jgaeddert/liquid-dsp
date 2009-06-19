@@ -37,6 +37,9 @@ void eqlms_cccf_train_bench(
     unsigned long int *_num_iterations,
     unsigned int _h_len)
 {
+    // scale number of iterations appropriately
+    *_num_iterations /= _h_len;
+
     eqlms_cccf eq = eqlms_cccf_create(_h_len);
     
     unsigned long int i;
