@@ -72,6 +72,34 @@ void  ANN(_train_bp)(ANN() _q,                                  \
 LIQUID_ANN_DEFINE_INTERNAL_API(ANN_MANGLE_FLOAT, float)
 
 
+#define NODE_MANGLE_FLOAT(name)  LIQUID_CONCAT(node, name)
+// large macro (internal)
+//   NODE   : name-mangling macro
+//   T      : primitive data type
+#define LIQUID_NODE_DEFINE_INTERNAL_API(NODE,T)                 \
+                                                                \
+typedef struct NODE(_s) * NODE();                               \
+struct NODE(_s) {                                               \
+    T *w, *x, *y;                                               \
+    unsigned int num_inputs;                                    \
+    T(*activation_func)(float,T);                               \
+    T(*d_activation_func)(float,T);                             \
+    float mu;                                                   \
+};                                                              \
+NODE() NODE(_create)(float * _w,                                \
+                     float * _x,                                \
+                     float * _y,                                \
+                     unsigned int _num_inputs,                  \
+                     int _activation_func,                      \
+                     float _mu);                                \
+void   NODE(_destroy)(NODE() _n);                               \
+void   NODE(_print)(NODE() _n);                                 \
+void   NODE(_evaluate)(NODE() _n);
+
+// Define ann APIs
+LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
+
+
 //
 // MODULE: audio
 //

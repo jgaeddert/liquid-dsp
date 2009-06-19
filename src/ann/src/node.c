@@ -30,30 +30,41 @@
 
 #include "liquid.internal.h"
 
-#define ANN(name)       LIQUID_CONCAT(ann,name)
+#define NODE(name)      LIQUID_CONCAT(node,name)
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
 #define T               float
 
-#define LIQUID_ANN_MAX_NETWORK_SIZE 1024
+#define DEBUG_NODE  0
 
-#define DEBUG_ANN 0
+NODE() NODE(_create)(float * _w,
+                     float * _x,
+                     float * _y,
+                     unsigned int _num_inputs,
+                     int _activation_func,
+                     float _mu)
+{
+    NODE() n = (NODE()) malloc(sizeof(struct NODE(_s)));
+    n->w = _w;
+    n->x = _x;
+    n->y = _y;
+    n->num_inputs = _num_inputs;
+    n->activation_func = ann_af_linear;
+    n->d_activation_func = ann_df_linear;
+    n->mu = _mu;
+    return n;
+}
 
-struct ANN(_node_s) {
-    T * w;      // weights vector pointer
-    T * x;      // input vector pointer
-    T * y;      // output vector pointer
-    unsigned int num_inputs;
+void NODE(_destroy)(NODE() _n)
+{
+    free(_n);
+}
 
-    // activation function (derivative) pointer
-    T(*activation_func)(float,T);
-    T(*d_activation_func)(float,T);
+void NODE(_print)(NODE() _n)
+{
+    printf("node [%u inputs]:\n", _n->num_inputs);
+}
 
-    float mu;   // activation function gain
-};
-
-typedef struct ANN(_node_s) * ANN(_node);
-
-void ANN(_node_evaluate)(ANN(_node) _n)
+void NODE(_evaluate)(NODE() _n)
 {
     T y;
 
