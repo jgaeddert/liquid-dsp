@@ -109,19 +109,31 @@ ANN() ANN(_create)(
     // allocate memory for weights, buffers
     q->w  = (T*) malloc( (q->num_weights)*sizeof(T) );
     q->dw = (T*) malloc( (q->num_weights)*sizeof(T) );
-    q->y_hat = (T*) malloc( (q->num_nodes)*sizeof(T) );
+    q->y_hat = (T*) malloc( (q->num_nodes+q->num_inputs)*sizeof(T) );
 
     // create nodes
     q->nodes = (NODE()*) malloc((q->num_nodes)*sizeof(NODE()));
-    T * w = q->w;
-    T * x = q->y_hat;
-    T * y = q->y_hat + q->num_inputs;
-    unsigned int j;
+    unsigned int nw = 0;
+    unsigned int nx = 0;
+    unsigned int ny = q->num_inputs;
+    unsigned int j, n=0;
     for (i=0; i<q->num_layers; i++) {
+        printf("layer %3u\n", i);
         for (j=0; j<q->structure[i]; j++) {
-            //q->nodes[i] = NODE(_create)();
-            w += (i==0) ? 2 : q->structure[i]+1;
+            printf("  [%3u] nw : %3u, nx : %3u, inputs : %3u, ny : %3u\n",
+                    n, nw, nx, (i==0) ? 1 : q->structure[i-1], ny);
+            q->nodes[n] = NODE(_create)(q->w + nw,
+                                        q->y_hat + nx,
+                                        q->y_hat + ny,
+                                        (i==0) ? 1 : q->structure[i-1],
+                                        0,
+                                        1.0f);
+            nw += (i==0) ? 2 : q->structure[i-1]+1;
+            nx += (i==0) ? 1 : 0;
+            ny++;
+            n++;
         }
+        nx += (i==0) ? 0 : q->structure[i-1];
     }
 
     for (i=0; i<q->num_weights; i++) {
@@ -164,91 +176,17 @@ void ANN(_print)(ANN() _q)
 
     for (i=0; i<_q->num_weights; i++)
         printf("  w[%4u] = %12.8f\n", i, _q->w[i]);
+
+    for (i=0; i<_q->num_nodes; i++)
+        node_print(_q->nodes[i]);
 }
 
 // Evaluates the network _q at _input and stores the result in _output
 void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
 {
-    T v;
-
-    unsigned int i;     // (hidden) layer index
-
-    T w0, w1;
-    // compute first layer outputs
-    for (i=0; i<_q->num_inputs; i++) {
-        w0 = _q->w[2*i+0];
-        w1 = _q->w[2*i+1];
-        _q->y_hat[i] = tanhf( _x[i]*w0 + w1 );
-        //_q->y_hat[i] =  _x[i]*w0 + w1;
-
-#if DEBUG_ANN
-        printf("w[%3u] = %12.8f\n", 2*i+0, w0);
-        printf("w[%3u] = %12.8f\n", 2*i+1, w1);
-#endif
-    }
-
-    unsigned int j;     // layer sub-node index
-    unsigned int k=0;   // node input index (y_hat)
-    unsigned int n=2*_q->num_inputs;   // weight index
-    unsigned int m=  _q->num_inputs;   // node output index (y_hat)
-
-#if DEBUG_ANN
-    unsigned int t;     // temporary counter
-#endif
-    // traverse each hidden layer
-    for (i=1; i<_q->num_layers; i++) {
-
-#if DEBUG_ANN
-        printf("layer %u :\n", i);
-
-        printf("  input:\n");
-        for (t=0; t<_q->structure[i-1]; t++)
-            printf("  y_hat[%3u] = %12.8f\n", k+t, _q->y_hat[k+t]);
-        printf("\n");
-#endif
-
-        // traverse each node in this layer
-        for (j=0; j<_q->structure[i]; j++) {
-            // number of weights for this node (not including bias)
-            unsigned int nw = _q->structure[i-1];
-
-#if DEBUG_ANN
-            printf("  k : %u\n", k);
-            printf("  n : %u\n", n);
-            printf("  m : %u\n", m);
-            printf("  nw: %u\n", nw);
-
-            for (t=0; t<nw; t++)
-                printf("    w[%2u] %12.8f * y_hat[%2u] %12.8f\n", n+t, _q->w[n+t], k+t,_q->y_hat[k+t]);
-            printf("    w[%2u] %12.8f\n", n+t, _q->w[n+t]);
-#endif
-
-            // compute 
-            DOTPROD(_run)(&(_q->y_hat[k]), &(_q->w[n]), nw, &v);
-#if DEBUG_ANN
-            printf("  bias index : %u\n", n+nw);
-#endif
-            v += _q->w[n+nw]; // add bias
-
-            if (i != _q->num_layers-1) {
-                // activation function
-                _q->y_hat[m] = tanhf(v);
-            } else {
-                // no activation function
-                _q->y_hat[m] = v;
-            }
-#if DEBUG_ANN
-            printf("  v = %12.8f\n", v);
-#endif
-
-            n += _q->structure[i-1] + 1;
-            m++;
-#if DEBUG_ANN
-            printf("\n");
-#endif
-        }
-        k += _q->structure[i-1];
-    }
+    unsigned int i;
+    for (i=0; i<_q->num_nodes; i++)
+        NODE(_evaluate)(_q->nodes[i]);
 
     // copy output
     memmove(_y, &_q->y_hat[_q->num_nodes - _q->num_outputs], (_q->num_outputs)*sizeof(float));
