@@ -34,7 +34,7 @@ struct X(_s) {
 
 // basic dot product
 
-void X(_run)(TC *_h, TI *_x, unsigned int _n, TO * _y)
+void DOTPROD(_run)(TC *_h, TI *_x, unsigned int _n, TO * _y)
 {
     TO r=0;
     unsigned int i;
@@ -43,7 +43,7 @@ void X(_run)(TC *_h, TI *_x, unsigned int _n, TO * _y)
     *_y = r;
 }
 
-void X(_run4)(TC *_h, TI *_x, unsigned int _n, TO * _y)
+void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO * _y)
 {
     TO r=0;
 
@@ -70,23 +70,23 @@ void X(_run4)(TC *_h, TI *_x, unsigned int _n, TO * _y)
 // structured dot product
 //
 
-X() X(_create)(TC * _h, unsigned int _n)
+DOTPROD() DOTPROD(_create)(TC * _h, unsigned int _n)
 {
-    X() q = (X()) malloc(sizeof(struct X(_s)));
+    DOTPROD() q = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));
     q->n = _n;
     q->h = (TC*) malloc((q->n)*sizeof(TC));
     memmove(q->h, _h, (q->n)*sizeof(TC));
     return q;
 }
 
-void X(_destroy)(X() _q)
+void DOTPROD(_destroy)(DOTPROD() _q)
 {
     free(_q->h);
     free(_q);
 }
 
-void X(_execute)(X() _q, TI * _x, TO * _y)
+void DOTPROD(_execute)(DOTPROD() _q, TI * _x, TO * _y)
 {
-    X(_run)(_q->h, _x, _q->n, _y);
+    DOTPROD(_run)(_q->h, _x, _q->n, _y);
 }
 
