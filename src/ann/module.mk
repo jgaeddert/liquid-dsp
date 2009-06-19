@@ -38,7 +38,8 @@ local_s_files	:= 			\
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:=
+local_t_files	:=			\
+	ann_autotest.h
 
 
 # local_b_files
