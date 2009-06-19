@@ -1,5 +1,5 @@
 //
-// artificial neural network (ann) example
+// artificial neural network (ann) eXclusive OR example
 //
 
 #include <stdio.h>
@@ -11,22 +11,37 @@ int main() {
     // options
 
     // create network structure:
-    //      2 inputs, 4 hidden neurons, 3 outputs
-    unsigned int structure[3] = {2, 4, 3};
+    //      2 inputs, 4 hidden neurons, 1 output
+    unsigned int structure[3] = {2, 4, 1};
 
-    float x[2] = {0,0};
-    float y[3];
+    // binary input sequence
+    float x[8] = {
+        0,0,
+        0,1,
+        1,0,
+        1,1};
 
+    // binary output sequence
+    float y[4] = {
+        0,
+        1,
+        1,
+        0};
+
+    // create network
     ann q = ann_create(structure, 3);
     ann_print(q);
 
-    ann_evaluate(q,x,y);
-
     unsigned int i;
-    for (i=0; i<3; i++)
-        printf("y[%3u] = %12.8f\n", i, y[i]);
+    float y_hat;
+    // evaluate network
+    for (i=0; i<4; i++) {
+        ann_evaluate(q,&x[2*i],&y_hat);
+        printf("%3.1f %3.1f > %3.1f (%12.8f)\n",
+                x[2*i+0], x[2*i+1], y[i], y_hat);
+    }
 
-    unsigned int num_training_patterns = 1;
+    unsigned int num_training_patterns = 4;
     float error_tolerance = 0.0f;
     unsigned int max_trials = 1;
     ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
