@@ -58,6 +58,20 @@ float ann_df_logistic(float _mu, float _x)
 }
 
 // 
+// tanh activation function
+//
+float ann_af_tanh(float _mu, float _x)
+{
+    return tanhf(_mu*_x);
+}
+
+float ann_df_tanh(float _mu, float _x)
+{
+    float sechf = 1.0f/coshf(_mu*_x);
+    return _mu*sechf*sechf;
+}
+
+// 
 // mu-law activation function
 //
 float ann_af_mulaw(float _mu, float _x)

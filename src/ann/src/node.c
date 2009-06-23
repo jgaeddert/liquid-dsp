@@ -48,8 +48,8 @@ NODE() NODE(_create)(float * _w,
     n->x = _x;
     n->y = _y;
     n->num_inputs = _num_inputs;
-    n->activation_func = ann_af_linear;
-    n->d_activation_func = ann_df_linear;
+    n->activation_func = ann_af_tanh;
+    n->d_activation_func = ann_df_tanh;
     n->mu = _mu;
     return n;
 }
@@ -64,23 +64,36 @@ void NODE(_print)(NODE() _n)
     printf("node [%u inputs]:\n", _n->num_inputs);
     unsigned int i;
     for (i=0; i<_n->num_inputs; i++)
-        printf("  x[%3u] = %12.8f\n", i, _n->x[i]);
-    for (i=0; i<_n->num_inputs+1; i++)
-        printf("  w[%3u] = %12.8f\n", i, _n->w[i]);
+        printf("  w[%3u] = %12.8f : x[%3u] = %12.8f\n", i, _n->w[i], i, _n->x[i]);
+    printf("  w[%3u] = %12.8f (bias)\n", i, _n->w[i]);
+    printf("  v = %12.8f\n", _n->v);
     printf("  y = %12.8f\n", _n->y[0]);
 }
 
 void NODE(_evaluate)(NODE() _n)
 {
-    T y;
-
     // compute output (dot product with input)
-    DOTPROD(_run)(_n->x, _n->w, _n->num_inputs, &y);
+    DOTPROD(_run)(_n->x, _n->w, _n->num_inputs, &(_n->v));
 
     // add bias
-    y += _n->w[_n->num_inputs];
+    _n->v += _n->w[_n->num_inputs];
 
     // apply activation function
-    _n->y[0] = _n->activation_func(_n->mu, y);
+    _n->y[0] = _n->activation_func(_n->mu, _n->v);
+}
+
+// TODO: update NODE(_train) to work for more than just output layer
+void NODE(_train)(NODE() _n, T _d, float _eta)
+{
+    T y = _n->y[0]; // actual output
+    T e = _d - y;   // error
+    T g = _n->d_activation_func(_n->mu, _n->v); // local gradient
+    T dw;   // weight gradient
+
+    unsigned int i;
+    for (i=0; i<_n->num_inputs; i++) {
+        dw = - _eta * e * g * y;
+        _n->w[i] += dw;
+    }
 }
 

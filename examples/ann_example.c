@@ -22,9 +22,9 @@ int main() {
 
     // create network
     ann q = ann_create(structure, 3);
-    ann_print(q);
 
     ann_evaluate(q,x,y);
+    ann_print(q);
     printf("y = %12.8f : %12.8f\n", y[0], y[1]);
     return 0;
 

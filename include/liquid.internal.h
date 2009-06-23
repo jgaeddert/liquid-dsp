@@ -56,6 +56,10 @@ float ann_df_linear(float _mu, float _x);
 float ann_af_logistic(float _mu, float _x);
 float ann_df_logistic(float _mu, float _x);
 
+// logistic activation function
+float ann_af_tanh(float _mu, float _x);
+float ann_df_tanh(float _mu, float _x);
+
 // mu-law activation function
 float ann_af_mulaw(float _mu, float _x);
 float ann_df_mulaw(float _mu, float _x);
@@ -81,6 +85,7 @@ LIQUID_ANN_DEFINE_INTERNAL_API(ANN_MANGLE_FLOAT, float)
 typedef struct NODE(_s) * NODE();                               \
 struct NODE(_s) {                                               \
     T *w, *x, *y;                                               \
+    T v, *dw, delta;   \
     unsigned int num_inputs;                                    \
     T(*activation_func)(float,T);                               \
     T(*d_activation_func)(float,T);                             \
@@ -94,7 +99,8 @@ NODE() NODE(_create)(float * _w,                                \
                      float _mu);                                \
 void   NODE(_destroy)(NODE() _n);                               \
 void   NODE(_print)(NODE() _n);                                 \
-void   NODE(_evaluate)(NODE() _n);
+void   NODE(_evaluate)(NODE() _n);                              \
+void   NODE(_train)(NODE() _n, T _d, float _eta);
 
 // Define ann APIs
 LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
