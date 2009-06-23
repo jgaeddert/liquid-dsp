@@ -82,16 +82,17 @@ int main() {
     // plot results
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(x,'x','Color',[0.7 0.7 0.7]);\n");
     fprintf(fid,"hold on;\n");
     fprintf(fid,"for i=1:n,\n");
     fprintf(fid,"    plot([x(i) s_hat(kmin(i))],'-','Color',[0.7 0.7 0.7]);\n");
     fprintf(fid,"end;\n");
-    fprintf(fid,"plot(x,'x','Color',[0.7 0.7 0.7]);\n");
     fprintf(fid,"plot(s,'or');\n");
     fprintf(fid,"plot(s_hat,'sg');\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('y');\n");
+    fprintf(fid,"axis square;\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

@@ -73,7 +73,8 @@ void kmeans(float complex * _x,
         for (j=0; j<_k; j++) {
             if (n_hat[j] == 0) {
                 // TODO: figure out what to do here (no associated samples)
-                _s[j] = 0;
+                //_s[j] = 0;
+                crandnf(_s+j);
             } else {
                 // compute centroid (sample mean)
                 _s[j] = s_hat[j] / n_hat[j];
