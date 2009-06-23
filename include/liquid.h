@@ -109,6 +109,11 @@ void  ANN(_train)(ANN() _q,                                     \
 // Define ann APIs
 LIQUID_ANN_DEFINE_API(ANN_MANGLE_FLOAT, float)
 
+// K-means (2-dimensional)
+void kmeans(liquid_float_complex * _x,
+            unsigned int _n,
+            liquid_float_complex * _s,
+            unsigned int _k);
 
 //
 // MODULE : audio

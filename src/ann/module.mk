@@ -29,6 +29,7 @@ module_name     := ann
 local_s_files	:= 			\
 	ann.nodes.c			\
 	activation_functions.c		\
+	kmeans.c			\
 	node.c
 
 # local_t_files
