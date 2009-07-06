@@ -17,7 +17,7 @@
 # along with liquid.  If not, see <http://www.gnu.org/licenses/>.
 
 # 
-# Makefile for lmath module
+# Makefile for math module
 #
 module_name     := math
 
@@ -27,7 +27,7 @@ module_name     := math
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
-	lmath.c			\
+	math.c			\
 	poly.c
 
 # local_t_files
