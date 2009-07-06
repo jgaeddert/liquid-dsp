@@ -23,4 +23,7 @@ invoked.
 You might get a warning like "Clock skew detected.  Your build may be
 incomplete."  Not sure why this is.
 
+^ This above error had to do with system time; 'make' uses system time
+to determine which files need updating.
+
 
