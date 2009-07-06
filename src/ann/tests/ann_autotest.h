@@ -27,7 +27,7 @@
 //
 // AUTOTEST: ann node
 //
-void autotest_ann_node()
+void xautotest_ann_node()
 {
     float w[4] = {1,2,3,4}; // weights vector
     float x[3] = {5,1,3};   // input vector
