@@ -125,12 +125,14 @@ framesync64 framesync64_create(
     fs->callback = _callback;
     fs->userdata = _userdata;
 
-    //
+    // agc, rssi, squelch
     fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
+    agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
     fs->squelch_threshold = FRAMESYNC64_SQUELCH_THRESH;
     fs->squelch_timeout = FRAMESYNC64_SQUELCH_TIMEOUT;
     fs->squelch_timer = fs->squelch_timeout;
-    agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
+
+    // pll, nco
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
     pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
@@ -300,11 +302,25 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
 
-        // squelch
-        if (_fs->rssi < _fs->squelch_threshold) {
-            // decay nco frequency
-            _fs->nco_rx->d_theta *= 0.99f;
-            continue;
+        // squelch: try to pass agc output to synchronizer only if
+        // 1. received signal strength indicator has exceeded squelch threshold
+        //    any time within the past <squelch_timeout> samples
+        // 2. mode is FRAMESYNC64_STATE_SEEKPN (seek p/n sequence)
+        if (_fs->rssi < _fs->squelch_threshold &&
+            _fs->state == FRAMESYNC64_STATE_SEEKPN)
+        {
+            if (_fs->squelch_timer > 0) {
+                // signal low, but we haven't reached timout yet; decrement
+                // counter and continue
+                _fs->squelch_timer--;
+            } else {
+                // squelch timeout: signal has been too low for too long
+                _fs->nco_rx->d_theta *= 0.99f;  // decay nco frequency
+                continue;
+            }
+        } else {
+            // signal high: reset timer and continue
+            _fs->squelch_timer = _fs->squelch_timeout;
         }
 
         // symbol synchronizer
