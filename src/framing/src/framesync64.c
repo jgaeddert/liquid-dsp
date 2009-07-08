@@ -40,7 +40,7 @@
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
 #define FRAMESYNC64_PLL_BW_1        (1e-3f)
 
-#define FRAMESYNC64_SQUELCH_THRESH  (-15.0f)
+#define FRAMESYNC64_SQUELCH_THRESH  (-12.0f)
 #define FRAMESYNC64_SQUELCH_TIMEOUT (64)
 
 #define FRAME64_PN_LEN              (64)
@@ -315,7 +315,12 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 _fs->squelch_timer--;
             } else {
                 // squelch timeout: signal has been too low for too long
+                /*
+                _fs->nco_rx->theta   *= 0.99f;  // decay nco phase
                 _fs->nco_rx->d_theta *= 0.99f;  // decay nco frequency
+                */
+                nco_set_phase(_fs->nco_rx, 0.0f);       // clear nco phase
+                nco_set_frequency(_fs->nco_rx, 0.0f);   // clear nco frequency
                 continue;
             }
         } else {
