@@ -40,12 +40,15 @@
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
 #define FRAMESYNC64_PLL_BW_1        (1e-3f)
 
-#define FRAME64_PN_LEN      64
+#define FRAMESYNC64_SQUELCH_THRESH  (-15.0f)
+#define FRAMESYNC64_SQUELCH_TIMEOUT (64)
 
-//#define DEBUG
+#define FRAME64_PN_LEN              (64)
+
+#define DEBUG
 //#define DEBUG_PRINT
-#define DEBUG_FILENAME      "framesync64_internal_debug.m"
-#define DEBUG_BUFFER_LEN    (8192)
+#define DEBUG_FILENAME              "framesync64_internal_debug.m"
+#define DEBUG_BUFFER_LEN            (4096)
 
 // Internal
 void framesync64_open_bandwidth(framesync64 _fs);
@@ -68,7 +71,11 @@ struct framesync64_s {
     nco nco_rx;
     bsync_rrrf fsync;
 
-    unsigned int agc_timer;
+    // squelch
+    float rssi;     // received signal strength indicator [dB]
+    float squelch_threshold;
+    unsigned int squelch_timeout;
+    unsigned int squelch_timer;
 
     // status variables
     enum {
@@ -120,7 +127,9 @@ framesync64 framesync64_create(
 
     //
     fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
-    fs->agc_timer = 0;
+    fs->squelch_threshold = FRAMESYNC64_SQUELCH_THRESH;
+    fs->squelch_timeout = FRAMESYNC64_SQUELCH_TIMEOUT;
+    fs->squelch_timer = fs->squelch_timeout;
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
@@ -285,13 +294,18 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     for (i=0; i<_n; i++) {
         // agc
         agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
+        _fs->rssi = 10*log10(agc_get_signal_level(_fs->agc_rx));
 #ifdef DEBUG
         cfwindow_push(_fs->debug_x, _x[i]);
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
 
-        if (10*log10(agc_get_signal_level(_fs->agc_rx)) < -15.0f)
+        // squelch
+        if (_fs->rssi < _fs->squelch_threshold) {
+            // decay nco frequency
+            _fs->nco_rx->d_theta *= 0.99f;
             continue;
+        }
 
         // symbol synchronizer
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
@@ -312,8 +326,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 modem_demodulate(_fs->demod, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
-
-            //phase_error *= 10*log10(agc_get_signal_level(_fs->agc_rx)) > -15.0f ? 1.0f : 0.01f;
 
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
             nco_step(_fs->nco_rx);
