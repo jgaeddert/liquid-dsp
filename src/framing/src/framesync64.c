@@ -38,11 +38,11 @@
 #define FRAMESYNC64_AGC_BW_1        (1e-9f)
 
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
-#define FRAMESYNC64_PLL_BW_1        (1e-2f)
+#define FRAMESYNC64_PLL_BW_1        (1e-3f)
 
 #define FRAME64_PN_LEN      64
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_PRINT
 #define DEBUG_FILENAME      "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN    (8192)
@@ -334,7 +334,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                     // printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
-                    nco_adjust_phase(_fs->nco_rx, cargf(rxy));
+                    nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
                     _fs->state = FRAMESYNC64_STATE_RXHEADER;
                 }
                 break;
@@ -392,19 +392,15 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
 void framesync64_open_bandwidth(framesync64 _fs)
 {
-    return;
     agc_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_0);
     symsync_crcf_set_lf_bw(_fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_0);
-    pll_reset(_fs->pll_rx);
     pll_set_bandwidth(_fs->pll_rx, FRAMESYNC64_PLL_BW_0);
 }
 
 void framesync64_close_bandwidth(framesync64 _fs)
 {
-    return;
     agc_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_1);
-    pll_reset(_fs->pll_rx);
     pll_set_bandwidth(_fs->pll_rx, FRAMESYNC64_PLL_BW_1);
 }
 
