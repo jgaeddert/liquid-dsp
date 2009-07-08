@@ -280,7 +280,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     float phase_error;
     //float complex rxy;
     float rxy;
-    float complex crxy;
     unsigned int demod_sym;
 
     for (i=0; i<_n; i++) {
@@ -332,13 +331,10 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
                 if (fabsf(rxy) > 0.7f) {
-                    //crxy = rxy * cexpf(3*M_PI/4*_Complex_I);
-                    printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
+                    // printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
-                    //nco_adjust_phase(_fs->nco_rx, cargf(crxy));
-                    if (rxy > 0)
-                        nco_adjust_phase(_fs->nco_rx, M_PI);
+                    nco_adjust_phase(_fs->nco_rx, cargf(rxy));
                     _fs->state = FRAMESYNC64_STATE_RXHEADER;
                 }
                 break;
