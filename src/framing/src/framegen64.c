@@ -36,8 +36,8 @@
 #define FRAME64_PN_LEN      64
 #define FRAME64_RAMP_DN_LEN 64
 
-#define FRAMEGEN64_PHASING_0    ( 0.70711f + 0.70711f*_Complex_I)
-#define FRAMEGEN64_PHASING_1    (-0.70711f - 0.70711f*_Complex_I)
+#define FRAMEGEN64_PHASING_0    ( 1.0f) //( 0.70711f + 0.70711f*_Complex_I)
+#define FRAMEGEN64_PHASING_1    (-1.0f) //(-0.70711f - 0.70711f*_Complex_I)
 
 //#define DEBUG
 
