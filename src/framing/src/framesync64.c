@@ -35,7 +35,7 @@
 #define FRAMESYNC64_SYMSYNC_BW_1    (0.001f)
 
 #define FRAMESYNC64_AGC_BW_0        (1e-3f)
-#define FRAMESYNC64_AGC_BW_1        (1e-9f)
+#define FRAMESYNC64_AGC_BW_1        (1e-5f)
 
 #define FRAMESYNC64_PLL_BW_0        (1e-2f)
 #define FRAMESYNC64_PLL_BW_1        (1e-3f)
@@ -315,13 +315,14 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 _fs->squelch_timer--;
             } else {
                 // squelch timeout: signal has been too low for too long
-                /*
+#if 0
                 _fs->nco_rx->theta   *= 0.99f;  // decay nco phase
                 _fs->nco_rx->d_theta *= 0.99f;  // decay nco frequency
-                */
+#else
                 nco_set_phase(_fs->nco_rx, 0.0f);       // clear nco phase
                 nco_set_frequency(_fs->nco_rx, 0.0f);   // clear nco frequency
-                continue;
+#endif
+                //continue;
             }
         } else {
             // signal high: reset timer and continue
@@ -348,12 +349,17 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 
+            if (_fs->rssi < _fs->squelch_threshold)
+                phase_error *= 0.01f;
+
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
             nco_step(_fs->nco_rx);
 #ifdef DEBUG
             fwindow_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
             cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
+            if (_fs->rssi < _fs->squelch_threshold)
+                continue;
 
             //
             switch (_fs->state) {
@@ -366,6 +372,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 if (fabsf(rxy) > 0.7f) {
                     // printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
+                    pll_reset(_fs->pll_rx);
                     framesync64_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
                     _fs->state = FRAMESYNC64_STATE_RXHEADER;
