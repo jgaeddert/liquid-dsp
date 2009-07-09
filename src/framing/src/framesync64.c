@@ -41,7 +41,7 @@
 #define FRAMESYNC64_PLL_BW_1        (1e-3f)
 
 #define FRAMESYNC64_SQUELCH_THRESH  (-12.0f)
-#define FRAMESYNC64_SQUELCH_TIMEOUT (64)
+#define FRAMESYNC64_SQUELCH_TIMEOUT (32)
 
 #define FRAME64_PN_LEN              (64)
 
@@ -302,27 +302,29 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
 #endif
 
-        // squelch: try to pass agc output to synchronizer only if
-        // 1. received signal strength indicator has exceeded squelch threshold
-        //    any time within the past <squelch_timeout> samples
+        // squelch: block agc output from synchronizer only if
+        // 1. received signal strength indicator has not exceeded squelch
+        //    threshold at any time within the past <squelch_timeout> samples
         // 2. mode is FRAMESYNC64_STATE_SEEKPN (seek p/n sequence)
         if (_fs->rssi < _fs->squelch_threshold &&
             _fs->state == FRAMESYNC64_STATE_SEEKPN)
         {
-            if (_fs->squelch_timer > 0) {
+            if (_fs->squelch_timer > 1) {
                 // signal low, but we haven't reached timout yet; decrement
                 // counter and continue
                 _fs->squelch_timer--;
-            } else {
+            } else if (_fs->squelch_timer == 1) {
                 // squelch timeout: signal has been too low for too long
-#if 0
-                _fs->nco_rx->theta   *= 0.99f;  // decay nco phase
-                _fs->nco_rx->d_theta *= 0.99f;  // decay nco frequency
-#else
-                nco_set_phase(_fs->nco_rx, 0.0f);       // clear nco phase
-                nco_set_frequency(_fs->nco_rx, 0.0f);   // clear nco frequency
-#endif
-                //continue;
+
+                //printf("squelch enabled\n");
+                _fs->squelch_timer = 0;
+                //framesync64_reset(_fs);
+                nco_set_phase(_fs->nco_rx, 0.0f);
+                nco_set_frequency(_fs->nco_rx, 0.0f);
+                continue;
+            } else {
+                // squelch enabled: ignore sample (wait for high signal)
+                continue;
             }
         } else {
             // signal high: reset timer and continue
@@ -339,11 +341,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             //if (false) {
                 modem_demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->bpsk, &phase_error);
-                /*
-                phase_error -= M_PI/4;
-                if (phase_error < - M_PI/2)
-                    phase_error += M_PI;
-                */
             } else {
                 modem_demodulate(_fs->demod, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->demod, &phase_error);
