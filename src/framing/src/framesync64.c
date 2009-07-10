@@ -31,13 +31,13 @@
 
 #include "liquid.h"
 
-#define FRAMESYNC64_SYMSYNC_BW_0    (0.01f)
+#define FRAMESYNC64_SYMSYNC_BW_0    (0.03f)
 #define FRAMESYNC64_SYMSYNC_BW_1    (0.001f)
 
 #define FRAMESYNC64_AGC_BW_0        (1e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-5f)
 
-#define FRAMESYNC64_PLL_BW_0        (1e-2f)
+#define FRAMESYNC64_PLL_BW_0        (2e-3f)
 #define FRAMESYNC64_PLL_BW_1        (1e-3f)
 
 #define FRAMESYNC64_SQUELCH_THRESH  (-12.0f)
@@ -111,6 +111,7 @@ struct framesync64_s {
     cfwindow debug_rxy;
     cfwindow debug_nco_rx_out;
     fwindow  debug_nco_phase;
+    fwindow  debug_nco_freq;
 #endif
 };
 
@@ -174,6 +175,7 @@ framesync64 framesync64_create(
     fs->debug_rxy       = cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_nco_rx_out= cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_nco_phase=   fwindow_create(DEBUG_BUFFER_LEN);
+    fs->debug_nco_freq =   fwindow_create(DEBUG_BUFFER_LEN);
 #endif
 
     return fs;
@@ -253,6 +255,16 @@ void framesync64_destroy(framesync64 _fs)
     fprintf(fid,"plot(nco_phase)\n");
     fprintf(fid,"ylabel('nco phase [radians]');\n");
 
+    // write nco_freq
+    fprintf(fid,"nco_freq = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    fwindow_read(_fs->debug_nco_freq, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"nco_freq(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(nco_freq)\n");
+    fprintf(fid,"ylabel('nco freq');\n");
+
 
     fprintf(fid,"\n\n");
     fclose(fid);
@@ -321,6 +333,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 //framesync64_reset(_fs);
                 nco_set_phase(_fs->nco_rx, 0.0f);
                 nco_set_frequency(_fs->nco_rx, 0.0f);
+                symsync_crcf_clear(_fs->mfdecim);
                 continue;
             } else {
                 // squelch enabled: ignore sample (wait for high signal)
@@ -346,13 +359,19 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 
-            if (_fs->rssi < _fs->squelch_threshold)
-                phase_error *= 0.01f;
+            //if (_fs->rssi < _fs->squelch_threshold)
+            //    phase_error *= 0.01f;
 
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
+            /*
+            float fmax = 0.05f;
+            if (_fs->nco_rx->d_theta >  fmax) _fs->nco_rx->d_theta =  fmax;
+            if (_fs->nco_rx->d_theta < -fmax) _fs->nco_rx->d_theta = -fmax;
+            */
             nco_step(_fs->nco_rx);
 #ifdef DEBUG
             fwindow_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
+            fwindow_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
             cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
             if (_fs->rssi < _fs->squelch_threshold)
