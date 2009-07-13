@@ -49,8 +49,8 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_REP3:      return 3*_msg_len;
     case FEC_HAMMING74: return 2*_msg_len;
     case FEC_HAMMING84: return 2*_msg_len;
+    case FEC_CONV_V27:  return 2*_msg_len + 1;
 #if 0
-    case FEC_CONV_V27:  return 2*_msg_len + 6;
     case FEC_CONV_V29:  return 2*_msg_len + 8;
     case FEC_CONV_V39:  return 3*_msg_len + 8;
     case FEC_CONV_V615: return 6*_msg_len + 14;
@@ -70,8 +70,8 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_REP3:      return 1./3.;
     case FEC_HAMMING74: return 1./2.;
     case FEC_HAMMING84: return 1./2.;
-#if 0
     case FEC_CONV_V27:  return 1./2.;
+#if 0
     case FEC_CONV_V29:  return 1./2.;
     case FEC_CONV_V39:  return 1./3.;
     case FEC_CONV_V615: return 1./5.;
@@ -98,9 +98,9 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         //return fec_hamming84_create(_opts);
         printf("error: fec_create(), unsupported scheme: fec_hamming84\n");
         exit(0);
-#if 0
     case FEC_CONV_V27:
         return fec_conv27_create(_opts);
+#if 0
     case FEC_CONV_V29:
         return fec_conv29_create(_opts);
     case FEC_CONV_V39:

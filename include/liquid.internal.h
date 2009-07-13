@@ -180,6 +180,12 @@ struct fec_s {
     //unsigned int enc_msg_len;
     float rate;
 
+    // convolutional : internal memory structure
+    unsigned int num_framebits;
+    unsigned char * dec_bits;
+    unsigned char * enc_bits;
+    void * vp;
+
     // encode/decode function pointers
     void (*encode_func)(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
     void (*decode_func)(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
@@ -218,6 +224,7 @@ void fec_conv27_destroy(fec _q);
 void fec_conv27_print(fec _q);
 void fec_conv27_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
 void fec_conv27_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
+void fec_conv27_setlength(fec _q, unsigned int _dec_msg_len);
 
 
 

@@ -43,6 +43,7 @@ local_src	:=			\
 	fading_channel_example.c	\
 	fading_generator_example.c	\
 	fbasc_example.c			\
+	fec_conv27_example.c		\
 	fec_hamming74_example.c		\
 	fec_hamming84_example.c		\
 	fec_rep3_example.c		\
