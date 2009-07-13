@@ -211,6 +211,14 @@ void fec_hamming74_print(fec _q);
 void fec_hamming74_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
 void fec_hamming74_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
 
+// Convolutional: r1/2 K=7
+unsigned char fec_conv27_compute_syndrome(unsigned char _r);
+fec fec_conv27_create(void *_opts);
+void fec_conv27_destroy(fec _q);
+void fec_conv27_print(fec _q);
+void fec_conv27_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
+void fec_conv27_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
+
 
 
 //
