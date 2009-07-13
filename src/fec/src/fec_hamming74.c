@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "fec_internal.h"
+#include "liquid.internal.h"
 
 #define HAMMING74_H0    0x55
 #define HAMMING74_H1    0x33

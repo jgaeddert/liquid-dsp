@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "fec_internal.h"
+#include "liquid.internal.h"
 
 fec fec_pass_create(void * _opts)
 {

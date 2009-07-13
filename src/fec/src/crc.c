@@ -22,7 +22,7 @@
 // Cyclic redundancy check
 // 
 
-#include "fec_internal.h"
+#include "liquid.internal.h"
 
 // slow implementation
 unsigned char reverse_byte(unsigned char _x)

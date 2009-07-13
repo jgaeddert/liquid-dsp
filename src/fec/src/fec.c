@@ -25,16 +25,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "fec_internal.h"
+#include "liquid.internal.h"
 
 // object-independent methods
 
-const char * fec_scheme_str[5] = {
+const char * fec_scheme_str[9] = {
     "unknown",
     "none",
     "repeat(3)",
     "hamming(7,4)",
-    "hamming(8,4)"
+    "hamming(8,4)",
+    "convolutional r1/2 K7",
+    "convolutional r1/2 K9",
+    "convolutional r1/3 K9",
+    "convolutional r1/6 K16"
 };
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
@@ -45,6 +49,12 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_REP3:      return 3*_msg_len;
     case FEC_HAMMING74: return 2*_msg_len;
     case FEC_HAMMING84: return 2*_msg_len;
+#if 0
+    case FEC_CONV_V27:  return 2*_msg_len + 6;
+    case FEC_CONV_V29:  return 2*_msg_len + 8;
+    case FEC_CONV_V39:  return 3*_msg_len + 8;
+    case FEC_CONV_V615: return 6*_msg_len + 14;
+#endif
     default:
         printf("error: fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
         exit(0);
@@ -60,6 +70,12 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_REP3:      return 1./3.;
     case FEC_HAMMING74: return 1./2.;
     case FEC_HAMMING84: return 1./2.;
+#if 0
+    case FEC_CONV_V27:  return 1./2.;
+    case FEC_CONV_V29:  return 1./2.;
+    case FEC_CONV_V39:  return 1./3.;
+    case FEC_CONV_V615: return 1./5.;
+#endif
     default:
         printf("error: fec_get_rate(), unknown/unsupported scheme: %d\n", _scheme);
         exit(0);
@@ -80,6 +96,18 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         return fec_hamming74_create(_opts);
     case FEC_HAMMING84:
         //return fec_hamming84_create(_opts);
+        printf("error: fec_create(), unsupported scheme: fec_hamming84\n");
+        exit(0);
+#if 0
+    case FEC_CONV_V27:
+        return fec_conv27_create(_opts);
+    case FEC_CONV_V29:
+        return fec_conv29_create(_opts);
+    case FEC_CONV_V39:
+        return fec_conv39_create(_opts);
+    case FEC_CONV_V615:
+        return fec_conv615_create(_opts);
+#endif
     default:
         printf("error: fec_create(), unknown/unsupported scheme: %d\n", _scheme);
         exit(0);

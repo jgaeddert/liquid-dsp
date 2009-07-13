@@ -397,7 +397,7 @@ float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
 
 
 //
-// MODULE : fec (forward error correction)
+// MODULE : fec (forward error-correction)
 //
 
 
@@ -455,7 +455,7 @@ typedef enum {
 
 struct fec_conv_opts {int puncture;};
 
-extern const char * fec_scheme_str[5];
+extern const char * fec_scheme_str[9];
 
 typedef struct fec_s * fec;
 
