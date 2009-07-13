@@ -107,6 +107,7 @@ struct framesync64_s {
 #ifdef DEBUG
     FILE*fid;
     fwindow  debug_agc_rssi;
+    cfwindow debug_agc_out;
     cfwindow debug_x;
     cfwindow debug_rxy;
     cfwindow debug_nco_rx_out;
@@ -171,6 +172,7 @@ framesync64 framesync64_create(
 
 #ifdef DEBUG
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_BUFFER_LEN);
+    fs->debug_agc_out   = cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_x         = cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_rxy       = cfwindow_create(DEBUG_BUFFER_LEN);
     fs->debug_nco_rx_out= cfwindow_create(DEBUG_BUFFER_LEN);
@@ -211,6 +213,17 @@ void framesync64_destroy(framesync64 _fs)
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(10*log10(agc_rssi))\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
+
+    // write agc out
+    fprintf(fid,"agc_out = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
+    cfwindow_read(_fs->debug_agc_out, &rc);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"agc_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(agc_out),real(agc_out), 1:length(agc_out),imag(agc_out));\n");
+    fprintf(fid,"ylabel('agc-out');\n");
+
 
     // write x
     fprintf(fid,"x = zeros(1,%u);\n", DEBUG_BUFFER_LEN);
@@ -273,6 +286,7 @@ void framesync64_destroy(framesync64 _fs)
 
     // clean up debug windows
     fwindow_destroy(_fs->debug_agc_rssi);
+    cfwindow_destroy(_fs->debug_agc_out);
     cfwindow_destroy(_fs->debug_rxy);
     cfwindow_destroy(_fs->debug_x);
     cfwindow_destroy(_fs->debug_nco_rx_out);
@@ -312,6 +326,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 #ifdef DEBUG
         cfwindow_push(_fs->debug_x, _x[i]);
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
+        cfwindow_push(_fs->debug_agc_out, agc_rx_out);
 #endif
 
         // squelch: block agc output from synchronizer only if
