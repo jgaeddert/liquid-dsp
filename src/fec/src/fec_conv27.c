@@ -27,7 +27,7 @@
 
 #include "liquid.internal.h"
 
-#define VERBOSE_FEC_CONV27 1
+#define VERBOSE_FEC_CONV27 0
 
 #if HAVE_FEC_H  // (config.h)
 #include "fec.h"
@@ -128,6 +128,11 @@ void fec_conv27_decode(fec _q,
     }
     printf("..\n");
 #endif
+
+    // invoke hard-decision scaling
+    unsigned int k;
+    for (k=0; k<16*_dec_msg_len+8; k++)
+        _q->enc_bits[k] *= 255;
 
     // run decoder
     init_viterbi27(_q->vp,0);
