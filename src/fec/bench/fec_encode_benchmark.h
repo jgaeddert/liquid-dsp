@@ -41,6 +41,9 @@ void fec_encode_bench(
     unsigned int _n,
     void * _opts)
 {
+    // normalize number of iterations
+    *_num_iterations /= _n;
+
     // generate fec object
     fec q = fec_create(_fs,_opts);
 
@@ -82,6 +85,11 @@ void benchmark_fec_enc_hamming74_n4     FEC_ENCODE_BENCH_API(FEC_HAMMING74, 4,  
 void benchmark_fec_enc_hamming74_n16    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 16,  NULL)
 void benchmark_fec_enc_hamming74_n64    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
 void benchmark_fec_enc_hamming74_n256   FEC_ENCODE_BENCH_API(FEC_HAMMING74, 256, NULL)
+
+void benchmark_fec_enc_conv27_n4        FEC_ENCODE_BENCH_API(FEC_CONV_V27, 4,   NULL)
+void benchmark_fec_enc_conv27_n16       FEC_ENCODE_BENCH_API(FEC_CONV_V27, 16,  NULL)
+void benchmark_fec_enc_conv27_n64       FEC_ENCODE_BENCH_API(FEC_CONV_V27, 64,  NULL)
+void benchmark_fec_enc_conv27_n256      FEC_ENCODE_BENCH_API(FEC_CONV_V27, 256, NULL)
 
 #endif // __LIQUID_FEC_ENCODE_BENCHMARK_H__
 

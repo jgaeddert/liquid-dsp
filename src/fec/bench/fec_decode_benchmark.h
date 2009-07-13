@@ -41,6 +41,9 @@ void fec_decode_bench(
     unsigned int _n,
     void * _opts)
 {
+    // normalize number of iterations
+    *_num_iterations /= _n;
+
     // generate fec object
     fec q = fec_create(_fs,_opts);
 
@@ -62,6 +65,9 @@ void fec_decode_bench(
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         fec_decode(q,_n,msg_enc,msg_dec);
+        fec_decode(q,_n,msg_enc,msg_dec);
+        fec_decode(q,_n,msg_enc,msg_dec);
+        fec_decode(q,_n,msg_enc,msg_dec);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -82,6 +88,11 @@ void benchmark_fec_dec_hamming74_n4     FEC_DECODE_BENCH_API(FEC_HAMMING74, 4,  
 void benchmark_fec_dec_hamming74_n16    FEC_DECODE_BENCH_API(FEC_HAMMING74, 16,  NULL)
 void benchmark_fec_dec_hamming74_n64    FEC_DECODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
 void benchmark_fec_dec_hamming74_n256   FEC_DECODE_BENCH_API(FEC_HAMMING74, 256, NULL)
+
+void benchmark_fec_dec_conv27_n4        FEC_DECODE_BENCH_API(FEC_CONV_V27,  4,      NULL)
+void benchmark_fec_dec_conv27_n16       FEC_DECODE_BENCH_API(FEC_CONV_V27,  16,     NULL)
+void benchmark_fec_dec_conv27_n64       FEC_DECODE_BENCH_API(FEC_CONV_V27,  64,     NULL)
+void benchmark_fec_dec_conv27_n256      FEC_DECODE_BENCH_API(FEC_CONV_V27,  256,    NULL)
 
 #endif // __LIQUID_FEC_DECODE_BENCHMARK_H__
 
