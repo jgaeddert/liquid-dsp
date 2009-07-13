@@ -48,6 +48,7 @@ local_t_files	:=			\
 	checksum_autotest.h		\
 	crc_autotest.h			\
 	fec_autotest.h			\
+	fec_conv27_autotest.h		\
 	fec_hamming74_autotest.h	\
 	fec_rep3_autotest.h
 
