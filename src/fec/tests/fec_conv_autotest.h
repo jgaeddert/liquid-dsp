@@ -22,7 +22,7 @@
 #define __LIQUID_FEC_CONV_AUTOTEST_H__
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 //
 // AUTOTEST: convolutional codecs
@@ -30,6 +30,11 @@
 void conv_test(fec_scheme _fs,
                unsigned int _dec_msg_len)
 {
+#if HAVE_FEC_H==0
+    printf("warning: convolutional codes unavailable\n");
+    return;
+#endif
+
     unsigned char msg[_dec_msg_len];
     unsigned int i;
     for (i=0; i<_dec_msg_len; i++)
