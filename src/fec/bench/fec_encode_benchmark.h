@@ -41,6 +41,17 @@ void fec_encode_bench(
     unsigned int _n,
     void * _opts)
 {
+#if HAVE_FEC_H==0
+    if ( _fs == FEC_CONV_V27 ||
+         _fs == FEC_CONV_V29 ||
+         _fs == FEC_CONV_V39 ||
+         _fs == FEC_CONV_V615)
+    {
+        printf("warning: convolutional codes unavailable (install libfec)\n");
+        return;
+    }
+#endif
+
     // normalize number of iterations
     *_num_iterations /= _n;
 
