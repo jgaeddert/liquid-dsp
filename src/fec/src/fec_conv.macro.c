@@ -19,30 +19,16 @@
  */
 
 //
-// 1/2-rate K=7 convolutional code
+// convolutional code (macros)
 //
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "liquid.internal.h"
-
-#define VERBOSE_FEC_CONV    0
-
-#define FEC_CONV(name)      LIQUID_CONCAT(fec_conv27,name)
-#define create_viterbi      create_viterbi27
-#define init_viterbi        init_viterbi27
-#define update_viterbi_blk  update_viterbi27_blk
-#define chainback_viterbi   chainback_viterbi27
-#define delete_viterbi      delete_viterbi27
-
 #if HAVE_FEC_H  // (config.h)
 #include "fec.h"
 
-const unsigned int R=2;
-const unsigned int K=7;
-const int convpoly[2] = {V27POLYA,V27POLYB};
-unsigned int mode = FEC_CONV_V27;
+#define VERBOSE_FEC_CONV    0
 
 fec FEC_CONV(_create)(void * _opts)
 {
