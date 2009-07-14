@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #if HAVE_FEC_H  // (config.h)
 #include "fec.h"
@@ -63,7 +64,9 @@ void FEC_CONV(_encode)(fec _q,
                        unsigned char *_msg_dec,
                        unsigned char *_msg_enc)
 {
-    unsigned int i,j,r,sr=0,n=0;
+    unsigned int i,j,r; // bookkeeping
+    unsigned int sr=0;  // convolutional shift register
+    unsigned int n=0;   // output bit counter
 
     unsigned char bit;
     unsigned char byte_in;
@@ -71,11 +74,15 @@ void FEC_CONV(_encode)(fec _q,
 
     for (i=0; i<_dec_msg_len; i++) {
         byte_in = _msg_dec[i];
+
+        // break byte into individual bits
         for (j=0; j<8; j++) {
+            // shift bit starting with most significant
             bit = (byte_in >> (7-j)) & 0x01;
             sr = (sr << 1) | bit;
 
-            for (r=0; r<R; r++) {
+            // compute parity bits for each polynomial
+            for (r=0; r<FEC_CONV(_R); r++) {
                 byte_out = (byte_out<<1) | parity(sr & convpoly[r]);
                 _msg_enc[n/8] = byte_out;
                 n++;
@@ -84,10 +91,12 @@ void FEC_CONV(_encode)(fec _q,
     }
 
     // tail bits
-    for (i=0; i<8; i++) {
+    for (i=0; i<FEC_CONV(_K); i++) {
+        // shift register: push zeros
         sr = (sr << 1);
 
-        for (r=0; r<R; r++) {
+        // compute parity bits for each polynomial
+        for (r=0; r<FEC_CONV(_R); r++) {
             byte_out = (byte_out<<1) | parity(sr & convpoly[r]);
             _msg_enc[n/8] = byte_out;
             n++;
@@ -95,6 +104,14 @@ void FEC_CONV(_encode)(fec _q,
     }
 
     // ensure even number of bytes
+    while (n%8) {
+        // shift zeros
+        byte_out <<= 1;
+        _msg_enc[n/8] = byte_out;
+        n++;
+    }
+
+    assert(n == 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
 }
 
 //unsigned int

@@ -30,8 +30,9 @@
 #define update_viterbi_blk  update_viterbi27_blk
 #define chainback_viterbi   chainback_viterbi27
 #define delete_viterbi      delete_viterbi27
-#define R                   (2)
-#define K                   (7)
+
+#define fec_conv27_R        (2)
+#define fec_conv27_K        (7)
 #define fec_conv27_mode     FEC_CONV_V27
 
 // tail bits = R*K = 14 (round up to 16 bits = 2 bytes)
@@ -43,7 +44,8 @@
 #  define V27POLYB  (0x00)
 #endif  // HAVE_FEC_H (config.h)
 
-const int convpoly[R] = {V27POLYA,V27POLYB};
+const int convpoly[fec_conv27_R] = {V27POLYA,
+                                    V27POLYB};
 
 #include "fec_conv.macro.c"
 

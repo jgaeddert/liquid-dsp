@@ -35,10 +35,10 @@ const char * fec_scheme_str[9] = {
     "repeat(3)",
     "hamming(7,4)",
     "hamming(8,4)",
-    "convolutional r1/2 K7",
-    "convolutional r1/2 K9",
-    "convolutional r1/3 K9",
-    "convolutional r1/6 K16"
+    "convolutional r1/2 K=7",
+    "convolutional r1/2 K=9",
+    "convolutional r1/3 K=9",
+    "convolutional r1/6 K=16"
 };
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
@@ -49,11 +49,11 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_REP3:      return 3*_msg_len;
     case FEC_HAMMING74: return 2*_msg_len;
     case FEC_HAMMING84: return 2*_msg_len;
-    case FEC_CONV_V27:  return 2*_msg_len + 2;
+    case FEC_CONV_V27:  return 2*_msg_len + 2;  // K/r=14, round up to 2 bytes
 #if 0
-    case FEC_CONV_V29:  return 2*_msg_len + 8;
-    case FEC_CONV_V39:  return 3*_msg_len + 8;
-    case FEC_CONV_V615: return 6*_msg_len + 14;
+    case FEC_CONV_V29:  return 2*_msg_len + 3;  // K/r=18, round up to 3 bytes
+    case FEC_CONV_V39:  return 3*_msg_len + 4;  // K/r=27, round up to 4 bytes
+    case FEC_CONV_V615: return 6*_msg_len + 12; // K/r=90, round up to 12 bytes
 #endif
     default:
         printf("error: fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
@@ -74,7 +74,7 @@ float fec_get_rate(fec_scheme _scheme)
 #if 0
     case FEC_CONV_V29:  return 1./2.;
     case FEC_CONV_V39:  return 1./3.;
-    case FEC_CONV_V615: return 1./5.;
+    case FEC_CONV_V615: return 1./6.;
 #endif
     default:
         printf("error: fec_get_rate(), unknown/unsupported scheme: %d\n", _scheme);
