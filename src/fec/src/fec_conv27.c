@@ -27,20 +27,32 @@
 
 #include "liquid.internal.h"
 
-#define VERBOSE_FEC_CONV27 0
+#define VERBOSE_FEC_CONV    0
+
+#define FEC_CONV(name)      LIQUID_CONCAT(fec_conv27,name)
+#define create_viterbi      create_viterbi27
+#define init_viterbi        init_viterbi27
+#define update_viterbi_blk  update_viterbi27_blk
+#define chainback_viterbi   chainback_viterbi27
+#define delete_viterbi      delete_viterbi27
 
 #if HAVE_FEC_H  // (config.h)
 #include "fec.h"
 
-fec fec_conv27_create(void * _opts)
+const unsigned int R=2;
+const unsigned int K=7;
+const int convpoly[2] = {V27POLYA,V27POLYB};
+unsigned int mode = FEC_CONV_V27;
+
+fec FEC_CONV(_create)(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
-    q->scheme = FEC_CONV_V27;
+    q->scheme = mode;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_conv27_encode;
-    q->decode_func = &fec_conv27_decode;
+    q->encode_func = &FEC_CONV(_encode);
+    q->decode_func = &FEC_CONV(_decode);
 
     // convolutional-specific decoding
     q->num_framebits = 0;
@@ -51,21 +63,21 @@ fec fec_conv27_create(void * _opts)
     return q;
 }
 
-void fec_conv27_destroy(fec _q)
+void FEC_CONV(_destroy)(fec _q)
 {
     // delete viterbi decoder
     if (_q->vp != NULL)
-        delete_viterbi27(_q->vp);
+        delete_viterbi(_q->vp);
 
     free(_q);
 }
 
-void fec_conv27_encode(fec _q,
+void FEC_CONV(_encode)(fec _q,
                        unsigned int _dec_msg_len,
                        unsigned char *_msg_dec,
                        unsigned char *_msg_enc)
 {
-    unsigned int i,j,sr=0,n=0;
+    unsigned int i,j,k,sr=0,n=0;
 
     unsigned char bit;
     unsigned char byte_in;
@@ -77,13 +89,11 @@ void fec_conv27_encode(fec _q,
             bit = (byte_in >> (7-j)) & 0x01;
             sr = (sr << 1) | bit;
 
-            byte_out = (byte_out<<1) | parity(sr & V27POLYA);
-            _msg_enc[n/8] = byte_out;
-            n++;
-
-            byte_out = (byte_out<<1) | parity(sr & V27POLYB);
-            _msg_enc[n/8] = byte_out;
-            n++;
+            for (k=0; k<R; k++) {
+                byte_out = (byte_out<<1) | parity(sr & convpoly[k]);
+                _msg_enc[n/8] = byte_out;
+                n++;
+            }
         }
     }
 
@@ -91,34 +101,32 @@ void fec_conv27_encode(fec _q,
     for (i=0; i<8; i++) {
         sr = (sr << 1);
 
-        byte_out = (byte_out<<1) | parity(sr & V27POLYA);
-        _msg_enc[n/8] = byte_out;
-        n++;
-
-        byte_out = (byte_out<<1) | parity(sr & V27POLYB);
-        _msg_enc[n/8] = byte_out;
-        n++;
+        for (k=0; k<R; k++) {
+            byte_out = (byte_out<<1) | parity(sr & convpoly[k]);
+            _msg_enc[n/8] = byte_out;
+            n++;
+        }
     }
 }
 
 //unsigned int
-void fec_conv27_decode(fec _q,
+void FEC_CONV(_decode)(fec _q,
                        unsigned int _dec_msg_len,
                        unsigned char *_msg_enc,
                        unsigned char *_msg_dec)
 {
     // re-allocate resources if necessary
-    fec_conv27_setlength(_q, _dec_msg_len);
+    FEC_CONV(_setlength)(_q, _dec_msg_len);
 
     // unpack bytes
     unsigned int num_written;
     unpack_bytes(_msg_enc,          // encoded message (bytes)
-                 _dec_msg_len*2+1,  // encoded message length (#bytes)
+                 _dec_msg_len*2+2,  // encoded message length (#bytes)
                  _q->enc_bits,      // encoded messsage (bits)
-                 16*_dec_msg_len+8, // encoded message length (#bits)
+                 16*_dec_msg_len+16,// encoded message length (#bits)
                  &num_written);
 
-#if VERBOSE_FEC_CONV27
+#if VERBOSE_FEC_CONV
     unsigned int i;
     printf("msg encoded (bits):\n");
     for (i=0; i<16*(_dec_msg_len)+6; i++) {
@@ -135,18 +143,18 @@ void fec_conv27_decode(fec _q,
         _q->enc_bits[k] *= 255;
 
     // run decoder
-    init_viterbi27(_q->vp,0);
-    update_viterbi27_blk(_q->vp, _q->enc_bits, _q->num_framebits+6);
-    chainback_viterbi27(_q->vp,  _msg_dec,     _q->num_framebits, 0);
+    init_viterbi(_q->vp,0);
+    update_viterbi_blk(_q->vp, _q->enc_bits, _q->num_framebits+6);
+    chainback_viterbi(_q->vp,  _msg_dec,     _q->num_framebits, 0);
 
-#if VERBOSE_FEC_CONV27
+#if VERBOSE_FEC_CONV
     for (i=0; i<_dec_msg_len; i++)
         printf("%.2x ", _msg_dec[i]);
     printf("\n");
 #endif
 }
 
-void fec_conv27_setlength(fec _q, unsigned int _dec_msg_len)
+void FEC_CONV(_setlength)(fec _q, unsigned int _dec_msg_len)
 {
     // re-allocate resources as necessary
     unsigned int num_framebits = 8*_dec_msg_len;
@@ -155,7 +163,7 @@ void fec_conv27_setlength(fec _q, unsigned int _dec_msg_len)
     if (num_framebits == _q->num_framebits)
         return;
 
-#if VERBOSE_FEC_CONV27
+#if VERBOSE_FEC_CONV
     printf("creating viterbi decoder, %u frame bits\n", num_framebits);
 #endif
 
@@ -164,11 +172,11 @@ void fec_conv27_setlength(fec _q, unsigned int _dec_msg_len)
 
     // delete old decoder if necessary
     if (_q->vp != NULL)
-        delete_viterbi27(_q->vp);
+        delete_viterbi(_q->vp);
 
     // re-create / re-allocate memory buffers
-    _q->vp = create_viterbi27(_q->num_framebits);
-    _q->enc_bits = (unsigned char*) realloc(_q->enc_bits, (16*_dec_msg_len+8)*sizeof(unsigned char));
+    _q->vp = create_viterbi(_q->num_framebits);
+    _q->enc_bits = (unsigned char*) realloc(_q->enc_bits, (16*_dec_msg_len+16)*sizeof(unsigned char));
     _q->dec_bits = (unsigned char*) realloc(_q->dec_bits, (_dec_msg_len)*sizeof(unsigned char));
 }
 
@@ -176,21 +184,27 @@ void fec_conv27_setlength(fec _q, unsigned int _dec_msg_len)
 
 #else   // HAVE_FEC_H (config.h)
 
-fec fec_conv27_create(void * _opts)
+fec FEC_CONV(_create)(void * _opts)
 {
     return NULL;
 }
 
-void fec_conv27_destroy(fec _q)
+void FEC_CONV(_destroy)(fec _q)
 {
 }
 
-void fec_conv27_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_dec, unsigned char *_msg_enc)
+void FEC_CONV(_encode)(fec _q,
+                       unsigned int _dec_msg_len,
+                       unsigned char *_msg_dec,
+                       unsigned char *_msg_enc)
 {
 }
 
 //unsigned int
-void fec_conv27_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_enc, unsigned char *_msg_dec)
+void FEC_CONV(_decode)(fec _q,
+                       unsigned int _dec_msg_len,
+                       unsigned char *_msg_enc,
+                       unsigned char *_msg_dec)
 {
 }
 
