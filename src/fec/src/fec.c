@@ -49,11 +49,11 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_REP3:      return 3*_msg_len;
     case FEC_HAMMING74: return 2*_msg_len;
     case FEC_HAMMING84: return 2*_msg_len;
-    case FEC_CONV_V27:  return 2*_msg_len + 2;  // K/r=14, round up to 2 bytes
+    case FEC_CONV_V27:  return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
 #if 0
-    case FEC_CONV_V29:  return 2*_msg_len + 3;  // K/r=18, round up to 3 bytes
-    case FEC_CONV_V39:  return 3*_msg_len + 4;  // K/r=27, round up to 4 bytes
-    case FEC_CONV_V615: return 6*_msg_len + 12; // K/r=90, round up to 12 bytes
+    case FEC_CONV_V29:  return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
+    case FEC_CONV_V39:  return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
+    case FEC_CONV_V615: return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
 #endif
     default:
         printf("error: fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);

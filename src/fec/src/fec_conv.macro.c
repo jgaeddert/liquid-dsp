@@ -42,8 +42,7 @@ fec FEC_CONV(_create)(void * _opts)
     q->decode_func = &FEC_CONV(_decode);
 
     // convolutional-specific decoding
-    q->num_framebits = 0;
-    q->dec_bits = NULL;
+    q->num_dec_bytes = 0;
     q->enc_bits = NULL;
     q->vp = NULL;
 
@@ -91,7 +90,7 @@ void FEC_CONV(_encode)(fec _q,
     }
 
     // tail bits
-    for (i=0; i<FEC_CONV(_K); i++) {
+    for (i=0; i<FEC_CONV(_K)-1; i++) {
         // shift register: push zeros
         sr = (sr << 1);
 
@@ -125,16 +124,16 @@ void FEC_CONV(_decode)(fec _q,
 
     // unpack bytes
     unsigned int num_written;
-    unpack_bytes(_msg_enc,          // encoded message (bytes)
-                 _dec_msg_len*2+2,  // encoded message length (#bytes)
-                 _q->enc_bits,      // encoded messsage (bits)
-                 16*_dec_msg_len+16,// encoded message length (#bits)
+    unpack_bytes(_msg_enc,              // encoded message (bytes)
+                 _q->num_enc_bytes,     // encoded message length (#bytes)
+                 _q->enc_bits,          // encoded messsage (bits)
+                 _q->num_enc_bytes*8,   // encoded message length (#bits)
                  &num_written);
 
 #if VERBOSE_FEC_CONV
     unsigned int i;
     printf("msg encoded (bits):\n");
-    for (i=0; i<16*(_dec_msg_len)+6; i++) {
+    for (i=0; i<8*_q->num_enc_bytes; i++) {
         printf("%1u", _q->enc_bits[i]);
         if (((i+1)%8)==0)
             printf(" ");
@@ -144,13 +143,13 @@ void FEC_CONV(_decode)(fec _q,
 
     // invoke hard-decision scaling
     unsigned int k;
-    for (k=0; k<16*_dec_msg_len+8; k++)
+    for (k=0; k<8*_q->num_enc_bytes; k++)
         _q->enc_bits[k] *= 255;
 
     // run decoder
     init_viterbi(_q->vp,0);
-    update_viterbi_blk(_q->vp, _q->enc_bits, _q->num_framebits+6);
-    chainback_viterbi(_q->vp,  _msg_dec,     _q->num_framebits, 0);
+    update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+6);
+    chainback_viterbi(_q->vp,  _msg_dec,     8*_q->num_dec_bytes,0);
 
 #if VERBOSE_FEC_CONV
     for (i=0; i<_dec_msg_len; i++)
@@ -162,27 +161,30 @@ void FEC_CONV(_decode)(fec _q,
 void FEC_CONV(_setlength)(fec _q, unsigned int _dec_msg_len)
 {
     // re-allocate resources as necessary
-    unsigned int num_framebits = 8*_dec_msg_len;
+    unsigned int num_dec_bytes = _dec_msg_len;
 
     // return if length has not changed
-    if (num_framebits == _q->num_framebits)
+    if (num_dec_bytes == _q->num_dec_bytes)
         return;
 
+
 #if VERBOSE_FEC_CONV
-    printf("creating viterbi decoder, %u frame bits\n", num_framebits);
+    printf("(re)creating viterbi decoder, %u frame bytes\n", num_dec_bytes);
 #endif
 
     // reset number of framebits
-    _q->num_framebits = num_framebits;
+    _q->num_dec_bytes = num_dec_bytes;
+    _q->num_enc_bytes = fec_get_enc_msg_length(FEC_CONV(_mode),
+                                               _dec_msg_len);
 
     // delete old decoder if necessary
     if (_q->vp != NULL)
         delete_viterbi(_q->vp);
 
     // re-create / re-allocate memory buffers
-    _q->vp = create_viterbi(_q->num_framebits);
-    _q->enc_bits = (unsigned char*) realloc(_q->enc_bits, (16*_dec_msg_len+16)*sizeof(unsigned char));
-    _q->dec_bits = (unsigned char*) realloc(_q->dec_bits, (_dec_msg_len)*sizeof(unsigned char));
+    _q->vp = create_viterbi(8*_q->num_dec_bytes);
+    _q->enc_bits = (unsigned char*) realloc(_q->enc_bits,
+                                            _q->num_enc_bytes*8*sizeof(unsigned char));
 }
 
 

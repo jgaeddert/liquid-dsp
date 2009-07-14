@@ -181,8 +181,8 @@ struct fec_s {
     float rate;
 
     // convolutional : internal memory structure
-    unsigned int num_framebits;
-    unsigned char * dec_bits;
+    unsigned int num_dec_bytes;
+    unsigned int num_enc_bytes;
     unsigned char * enc_bits;
     void * vp;
 
