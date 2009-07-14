@@ -26,10 +26,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define VERBOSE_FEC_CONV    0
+
 #if HAVE_FEC_H  // (config.h)
 #include "fec.h"
-
-#define VERBOSE_FEC_CONV    0
 
 fec FEC_CONV(_create)(void * _opts)
 {
@@ -138,7 +138,7 @@ void FEC_CONV(_decode)(fec _q,
         if (((i+1)%8)==0)
             printf(" ");
     }
-    printf("..\n");
+    printf("\n");
 #endif
 
     // invoke hard-decision scaling
@@ -148,8 +148,8 @@ void FEC_CONV(_decode)(fec _q,
 
     // run decoder
     init_viterbi(_q->vp,0);
-    update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+6);
-    chainback_viterbi(_q->vp,  _msg_dec,     8*_q->num_dec_bytes,0);
+    update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+FEC_CONV(_K)-1);
+    chainback_viterbi(_q->vp, _msg_dec, 8*_q->num_dec_bytes, 0);
 
 #if VERBOSE_FEC_CONV
     for (i=0; i<_dec_msg_len; i++)
