@@ -28,7 +28,7 @@
 
 #include <math.h> // debug_print
 
-#include "interleaver_internal.h"
+#include "liquid.internal.h"
 
 void interleaver_print(interleaver _q)
 {

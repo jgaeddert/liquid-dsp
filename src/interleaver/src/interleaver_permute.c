@@ -26,9 +26,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "interleaver_internal.h"
+#include "liquid.internal.h"
 
-void interleaver_permute_forward(unsigned char * _x, unsigned int * _p, unsigned int _n)
+void interleaver_permute_forward(unsigned char * _x,
+                                 unsigned int * _p,
+                                 unsigned int _n)
 {
     unsigned char tmp[_n];
     unsigned int i;
@@ -38,7 +40,9 @@ void interleaver_permute_forward(unsigned char * _x, unsigned int * _p, unsigned
     memcpy(_x, tmp, _n);
 }
 
-void interleaver_permute_reverse(unsigned char * _x, unsigned int * _p, unsigned int _n)
+void interleaver_permute_reverse(unsigned char * _x,
+                                 unsigned int * _p,
+                                 unsigned int _n)
 {
     unsigned char tmp[_n];
     unsigned int i;
@@ -48,7 +52,10 @@ void interleaver_permute_reverse(unsigned char * _x, unsigned int * _p, unsigned
 }
 
 
-void interleaver_permute_forward_mask(unsigned char * _x, unsigned int * _p, unsigned int _n, unsigned char _mask)
+void interleaver_permute_forward_mask(unsigned char * _x,
+                                      unsigned int * _p,
+                                      unsigned int _n,
+                                      unsigned char _mask)
 {
     unsigned char tmp[_n];
     unsigned int i;
@@ -58,7 +65,10 @@ void interleaver_permute_forward_mask(unsigned char * _x, unsigned int * _p, uns
     memcpy(_x, tmp, _n);
 }
 
-void interleaver_permute_reverse_mask(unsigned char * _x, unsigned int * _p, unsigned int _n, unsigned char _mask)
+void interleaver_permute_reverse_mask(unsigned char * _x,
+                                      unsigned int * _p,
+                                      unsigned int _n,
+                                      unsigned char _mask)
 {
     unsigned char tmp[_n];
     unsigned int i;

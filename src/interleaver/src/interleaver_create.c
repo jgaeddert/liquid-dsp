@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "interleaver_internal.h"
+#include "liquid.internal.h"
 
 interleaver interleaver_create(unsigned int _n, interleaver_type _type)
 {
