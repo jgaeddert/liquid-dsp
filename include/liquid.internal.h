@@ -218,15 +218,36 @@ void fec_hamming74_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _ms
 void fec_hamming74_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
 
 // Convolutional: r1/2 K=7
-unsigned char fec_conv27_compute_syndrome(unsigned char _r);
-fec fec_conv27_create(void *_opts);
-void fec_conv27_destroy(fec _q);
-void fec_conv27_print(fec _q);
-void fec_conv27_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
-void fec_conv27_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
-void fec_conv27_setlength(fec _q, unsigned int _dec_msg_len);
+//                r1/2 K=9
+//                r1/3 K=9
+//                r1/6 K=15
+#define FEC_CONV27_MANGLE(name)     LIQUID_CONCAT(fec_conv27,name)
+#define FEC_CONV29_MANGLE(name)     LIQUID_CONCAT(fec_conv29,name)
+#define FEC_CONV39_MANGLE(name)     LIQUID_CONCAT(fec_conv39,name)
+#define FEC_CONV615_MANGLE(name)    LIQUID_CONCAT(fec_conv615,name)
 
+// large macro
+//   CONVFEC    : name-mangling macro
+#define LIQUID_FEC_CONV_DEFINE_API(CONVFEC)                     \
+                                                                \
+fec  CONVFEC(_create)(void *_opts);                             \
+void CONVFEC(_destroy)(fec _q);                                 \
+void CONVFEC(_print)(fec _q);                                   \
+void CONVFEC(_encode)(fec _q,                                   \
+                       unsigned int _dec_msg_len,               \
+                       unsigned char * _msg_dec,                \
+                       unsigned char * _msg_enc);               \
+void CONVFEC(_decode)(fec _q,                                   \
+                       unsigned int _dec_msg_len,               \
+                       unsigned char * _msg_enc,                \
+                       unsigned char * _msg_dec);               \
+void CONVFEC(_setlength)(fec _q,                                \
+                          unsigned int _dec_msg_len);
 
+LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27_MANGLE)
+LIQUID_FEC_CONV_DEFINE_API(FEC_CONV29_MANGLE)
+LIQUID_FEC_CONV_DEFINE_API(FEC_CONV39_MANGLE)
+LIQUID_FEC_CONV_DEFINE_API(FEC_CONV615_MANGLE)
 
 //
 // MODULE : filter

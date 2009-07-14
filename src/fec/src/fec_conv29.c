@@ -19,31 +19,31 @@
  */
 
 //
-// 1/2-rate K=7 convolutional code
+// 1/2-rate K=9 convolutional code
 //
 
 #include "liquid.internal.h"
 
-#define FEC_CONV(name)      LIQUID_CONCAT(fec_conv27,name)
-#define create_viterbi      create_viterbi27
-#define init_viterbi        init_viterbi27
-#define update_viterbi_blk  update_viterbi27_blk
-#define chainback_viterbi   chainback_viterbi27
-#define delete_viterbi      delete_viterbi27
+#define FEC_CONV(name)      LIQUID_CONCAT(fec_conv29,name)
+#define create_viterbi      create_viterbi29
+#define init_viterbi        init_viterbi29
+#define update_viterbi_blk  update_viterbi29_blk
+#define chainback_viterbi   chainback_viterbi29
+#define delete_viterbi      delete_viterbi29
 
-#define fec_conv27_R        (2)
-#define fec_conv27_K        (7)
-#define fec_conv27_mode     FEC_CONV_V27
+#define fec_conv29_R        (2)
+#define fec_conv29_K        (9)
+#define fec_conv29_mode     FEC_CONV_V29
 
 #if HAVE_FEC_H  // (config.h)
 #  include "fec.h"
 #else
-#  define V27POLYA  (0x00)
-#  define V27POLYB  (0x00)
+#  define V29POLYA  (0x00)
+#  define V29POLYB  (0x00)
 #endif  // HAVE_FEC_H (config.h)
 
-const int FEC_CONV(_poly)[FEC_CONV(_R)] = {V27POLYA,
-                                           V27POLYB};
+const int FEC_CONV(_poly)[FEC_CONV(_R)] = {V29POLYA,
+                                           V29POLYB};
 
 #include "fec_conv.macro.c"
 

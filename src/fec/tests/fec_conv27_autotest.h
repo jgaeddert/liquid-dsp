@@ -18,8 +18,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FEC_REP3_AUTOTEST_H__
-#define __LIQUID_FEC_REP3_AUTOTEST_H__
+#ifndef __LIQUID_FEC_CONV27_AUTOTEST_H__
+#define __LIQUID_FEC_CONV27_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -27,7 +27,7 @@
 //
 // AUTOTEST: convolutional codec (r1/2, K=7)
 //
-void autotest_rep3_codec()
+void autotest_conv27_codec()
 {
     unsigned int n=4;
     unsigned char msg[] = {0x25, 0x62, 0x3F, 0x52};
@@ -59,5 +59,5 @@ void autotest_rep3_codec()
     fec_destroy(q);
 }
 
-#endif // __LIQUID_FEC_REP3_AUTOTEST_H__
+#endif // __LIQUID_FEC_CONV27_AUTOTEST_H__
 

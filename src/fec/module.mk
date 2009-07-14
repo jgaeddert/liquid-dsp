@@ -32,6 +32,7 @@ local_s_files	:=			\
 	crc.c				\
 	fec.c				\
 	fec_conv27.c			\
+	fec_conv29.c			\
 	fec_hamming74.c			\
 	fec_hamming84.c			\
 	fec_pass.c			\
