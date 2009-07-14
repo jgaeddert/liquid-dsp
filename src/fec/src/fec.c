@@ -38,7 +38,7 @@ const char * fec_scheme_str[9] = {
     "convolutional r1/2 K=7",
     "convolutional r1/2 K=9",
     "convolutional r1/3 K=9",
-    "convolutional r1/6 K=16"
+    "convolutional r1/6 K=15"
 };
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)

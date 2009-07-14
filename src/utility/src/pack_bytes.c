@@ -110,6 +110,9 @@ void repack_bytes(
     req_output_length += ( d.rem > 0 ) ? 1 : 0;
     if ( output_length < req_output_length ) {
         perror("error: repack_bytes(), output too short\n");
+        printf("  %u %u-bit symbols cannot be packed into %u %u-bit elements\n",
+                input_length, input_sym_size,
+                output_length, output_sym_size);
         exit(-1);
     }
     
