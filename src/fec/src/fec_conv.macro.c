@@ -34,7 +34,7 @@ fec FEC_CONV(_create)(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
-    q->scheme = mode;
+    q->scheme = FEC_CONV(_mode);
     q->rate = fec_get_rate(q->scheme);
 
     q->encode_func = &FEC_CONV(_encode);
@@ -63,7 +63,7 @@ void FEC_CONV(_encode)(fec _q,
                        unsigned char *_msg_dec,
                        unsigned char *_msg_enc)
 {
-    unsigned int i,j,k,sr=0,n=0;
+    unsigned int i,j,r,sr=0,n=0;
 
     unsigned char bit;
     unsigned char byte_in;
@@ -75,8 +75,8 @@ void FEC_CONV(_encode)(fec _q,
             bit = (byte_in >> (7-j)) & 0x01;
             sr = (sr << 1) | bit;
 
-            for (k=0; k<R; k++) {
-                byte_out = (byte_out<<1) | parity(sr & convpoly[k]);
+            for (r=0; r<R; r++) {
+                byte_out = (byte_out<<1) | parity(sr & convpoly[r]);
                 _msg_enc[n/8] = byte_out;
                 n++;
             }
@@ -87,12 +87,14 @@ void FEC_CONV(_encode)(fec _q,
     for (i=0; i<8; i++) {
         sr = (sr << 1);
 
-        for (k=0; k<R; k++) {
-            byte_out = (byte_out<<1) | parity(sr & convpoly[k]);
+        for (r=0; r<R; r++) {
+            byte_out = (byte_out<<1) | parity(sr & convpoly[r]);
             _msg_enc[n/8] = byte_out;
             n++;
         }
     }
+
+    // ensure even number of bytes
 }
 
 //unsigned int
