@@ -84,14 +84,16 @@ framegen64 framegen64_create(
     for (i=0; i<FRAME64_RAMP_UP_LEN; i++) {
         fg->ramp_up[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
         //fg->ramp_up[i] *= kaiser(i,2*FRAME64_RAMP_UP_LEN,8.0f,0.0f);
-        fg->ramp_up[i] *= (float)(i) / (float)(FRAME64_RAMP_UP_LEN);
+        //fg->ramp_up[i] *= (float)(i) / (float)(FRAME64_RAMP_UP_LEN);
+        fg->ramp_up[i] *= 0.5f*(1.0f - cosf(M_PI * (float)(i) / (float)(FRAME64_RAMP_UP_LEN)));
     }
 
     // generate ramp_dn
     for (i=0; i<FRAME64_RAMP_DN_LEN; i++) {
         fg->ramp_dn[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
         //fg->ramp_dn[i] *= kaiser(i+FRAME64_RAMP_DN_LEN,2*FRAME64_RAMP_DN_LEN,8.0f,0.0f);
-        fg->ramp_dn[i] *= (float)(FRAME64_RAMP_DN_LEN-i-1) / (float)(FRAME64_RAMP_DN_LEN);
+        //fg->ramp_dn[i] *= (float)(FRAME64_RAMP_DN_LEN-i-1) / (float)(FRAME64_RAMP_DN_LEN);
+        fg->ramp_dn[i] *= 0.5f*(1.0f + cos(M_PI * (float)(i) / (float)(FRAME64_RAMP_DN_LEN)));
     }
 
     // generate phasing pattern
