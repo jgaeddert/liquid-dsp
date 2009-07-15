@@ -107,10 +107,10 @@ void autotest_repack_bytes_01() {
         0x03    // 11
     };
 
-    unsigned char output[8];
+    unsigned char output[6];
     unsigned int N;
 
-    repack_bytes( input, 3, 4, output, 2, 8, &N );
+    repack_bytes( input, 3, 4, output, 2, 6, &N );
 
     CONTEND_EQUALITY( N, 6 );
     CONTEND_SAME_DATA( output, output_test, 6 );
@@ -131,10 +131,10 @@ void autotest_repack_bytes_02() {
         0x04    // 100
     };
 
-    unsigned char output[8];
+    unsigned char output[5];
     unsigned int N;
 
-    repack_bytes( input, 5, 3, output, 3, 8, &N );
+    repack_bytes( input, 5, 3, output, 3, 5, &N );
 
     CONTEND_EQUALITY( N, 5 );
     CONTEND_SAME_DATA( output, output_test, 5 );
@@ -155,14 +155,39 @@ void autotest_repack_bytes_03() {
         0x04    // 00100
     };
 
-    unsigned char output[8];
+    unsigned char output[3];
     unsigned int N;
 
-    repack_bytes( input, 3, 5, output, 5, 8, &N );
+    repack_bytes( input, 3, 5, output, 5, 3, &N );
 
     CONTEND_EQUALITY( N, 3 );
     CONTEND_SAME_DATA( output, output_test, 3 );
 }
+
+void autotest_repack_bytes_04_uneven() {
+    unsigned char input[3] = {
+        0x07,   // 111
+        0x07,   // 111
+        0x07    // 111(0)
+    };
+
+    unsigned char output_test[] = {
+        0x03,   // 11
+        0x03,   // 11
+        0x03,   // 11
+        0x03,   // 11
+        0x02    // 10
+    };
+
+    unsigned char output[5];
+    unsigned int N;
+
+    repack_bytes( input, 3, 3, output, 2, 5, &N );
+
+    CONTEND_EQUALITY( N, 5 );
+    CONTEND_SAME_DATA( output, output_test, 5 );
+}
+
 
 
 #endif // __PACK_BYTES_AUTOTEST_H__

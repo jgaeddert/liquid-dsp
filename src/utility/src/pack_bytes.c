@@ -151,6 +151,13 @@ void repack_bytes(
         n = (n+1) % output_sym_size;
 
     }
+
+    // if uneven, push zeros into remaining output symbol
+    if (i_out != req_output_length) {
+        for (i=n; i<output_sym_size; i++)
+            sym_out <<= 1;
+        output[i_out++] = sym_out;
+    }
     
     *num_written = i_out;
 }
