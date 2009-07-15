@@ -16,10 +16,10 @@ int main() {
     unsigned int k=2;
     unsigned int m=3;
     float beta=0.3f;
-    unsigned int num_filters=64;
-    unsigned int num_symbols=256;
+    unsigned int num_filters=16;
+    unsigned int num_symbols=1000;
 
-    float bt=0.05f;     // loop filter bandwidth
+    float bt=0.01f;     // loop filter bandwidth
     float dt=0.3f;      // fractional sample offset
     unsigned int ds=1;  // additional symbol delay
     

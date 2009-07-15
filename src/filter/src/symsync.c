@@ -28,10 +28,16 @@
 #include <math.h>
 
 #ifndef SYMSYNC_DEBUG
-#define SYMSYNC_DEBUG 0
+#define SYMSYNC_DEBUG 1
 #endif
 
-#define SYMSYNC_DEBUG_FILENAME "debug_symsync_internal.m"
+#define SYMSYNC_DEBUG_FILENAME  "symsync_internal_debug.m"
+#define DEBUG_BUFFER_LEN        (2048)
+
+#if SYMSYNC_DEBUG
+void SYMSYNC(_output_debug_file)(SYMSYNC() _q);
+#endif
+
 
 // defined:
 //  SYMSYNC()   name-mangling macro
@@ -74,8 +80,10 @@ struct SYMSYNC(_s) {
     enum {SHIFT,SKIP,SKIP_PRIME,STUFF} state;
 
 #if SYMSYNC_DEBUG
-    FILE* fid;
-    unsigned int n_debug;
+    FILE * fid;
+    fwindow  debug_bsoft;
+    uiwindow debug_b;
+    uiwindow debug_state;
 #endif
 };
 
@@ -111,22 +119,9 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
     SYMSYNC(_set_lf_bw)(q, 0.01f);
 
 #if SYMSYNC_DEBUG
-    q->n_debug = 0;
-    q->fid = fopen(SYMSYNC_DEBUG_FILENAME, "w");
-    fprintf(q->fid, "%% %s, auto-generated file\n\n", SYMSYNC_DEBUG_FILENAME);
-
-    fprintf(q->fid,"num_filters = %u\n",q->num_filters);
-    fprintf(q->fid,"k = %u\n",q->k);
-    fprintf(q->fid,"\n\n");
-
-    fprintf(q->fid,"bt = %12.5e\n",q->bt);
-    fprintf(q->fid,"xi = %12.5e\n",q->xi);
-    fprintf(q->fid,"zeta = %12.5e\n",q->zeta);
-    fprintf(q->fid,"delay = %12.5e\n",q->delay);
-    fprintf(q->fid,"eta = %12.5e\n",q->eta);
-    fprintf(q->fid,"alpha = %12.5e\n",q->alpha);
-    fprintf(q->fid,"beta = %12.5e\n",q->beta);
-    fprintf(q->fid,"\n\n");
+    q->debug_bsoft =  fwindow_create(DEBUG_BUFFER_LEN);
+    q->debug_b     = uiwindow_create(DEBUG_BUFFER_LEN);
+    q->debug_state = uiwindow_create(DEBUG_BUFFER_LEN);
 #endif
 
     return q;
@@ -135,27 +130,8 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
 void SYMSYNC(_destroy)(SYMSYNC() _q)
 {
 #if SYMSYNC_DEBUG
-    fprintf(_q->fid, "\n\n");
-    fprintf(_q->fid, "t=0:%u;\n",_q->n_debug-1);
-    fprintf(_q->fid, "i_skip  = find(state==%d);\n", SKIP);
-    fprintf(_q->fid, "i_stuff = find(state==%d);\n", STUFF);
-    fprintf(_q->fid, "figure;\n");
-    fprintf(_q->fid, "hold on;\n");
-    fprintf(_q->fid, "plot(t,b,'Color',[0.5 0.5 0.5]);\n");
-    fprintf(_q->fid, "plot(t,b_soft,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
-    fprintf(_q->fid, "if length(i_skip>0),  plot(t(i_skip), b_soft(i_skip),'rx'); end;\n");
-    fprintf(_q->fid, "if length(i_stuff>0), plot(t(i_stuff),b_soft(i_stuff),'bx'); end;\n");
-    fprintf(_q->fid, "hold off;\n");
-    fprintf(_q->fid, "grid on;\n");
-    fprintf(_q->fid, "axis([t(1) t(end) -1 num_filters]);\n");
-    fprintf(_q->fid, "legend('b','b (soft)',0);\n");
-    fprintf(_q->fid, "xlabel('Symbol Index')\n");
-    fprintf(_q->fid, "ylabel('Polyphase Filter Index')\n");
-    fprintf(_q->fid, "%% done.\n");
-    fclose(_q->fid);
-    printf("symsync: internal results written to %s.\n", SYMSYNC_DEBUG_FILENAME);
+    SYMSYNC(_output_debug_file)(_q);
 #endif
-
     FIRPFB(_destroy)(_q->mf);
     FIRPFB(_destroy)(_q->dmf);
     free(_q);
@@ -327,10 +303,80 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
     // assert(_q->b < _q->num_filters);
 
 #if SYMSYNC_DEBUG
-    fprintf(_q->fid,"b_soft(%4u) = %12.5e;\n",_q->n_debug+1,_q->b_soft);
-    fprintf(_q->fid,"b(%4u) = %d;\n",_q->n_debug+1,_q->b);
-    fprintf(_q->fid,"state(%4u) = %d;\n", _q->n_debug+1,(int)(_q->state));
-    _q->n_debug++;
+    fwindow_push(_q->debug_bsoft,  _q->b_soft);
+    uiwindow_push(_q->debug_b,     _q->b);
+    uiwindow_push(_q->debug_state, _q->state);
 #endif
 }
+
+//
+// internal debugging
+//
+
+#if SYMSYNC_DEBUG
+void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
+{
+    FILE * fid = fopen(SYMSYNC_DEBUG_FILENAME, "w");
+    fprintf(fid, "%% %s, auto-generated file\n\n", SYMSYNC_DEBUG_FILENAME);
+
+    fprintf(fid,"num_filters = %u\n",_q->num_filters);
+    fprintf(fid,"k = %u\n",_q->k);
+    fprintf(fid,"\n\n");
+
+    fprintf(fid,"bt = %12.5e\n",_q->bt);
+    fprintf(fid,"xi = %12.5e\n",_q->xi);
+    fprintf(fid,"zeta = %12.5e\n",_q->zeta);
+    fprintf(fid,"delay = %12.5e\n",_q->delay);
+    fprintf(fid,"eta = %12.5e\n",_q->eta);
+    fprintf(fid,"alpha = %12.5e\n",_q->alpha);
+    fprintf(fid,"beta = %12.5e\n",_q->beta);
+    fprintf(fid,"\n\n");
+
+    fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
+    float * r;
+    unsigned int * rui;
+    unsigned int i;
+
+    // print bsoft buffer
+    fprintf(fid,"b_soft = zeros(1,n);\n");
+    fwindow_read(_q->debug_bsoft, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"b_soft(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+    // print b (filterbank index) buffer
+    fprintf(fid,"b = zeros(1,n);\n");
+    uiwindow_read(_q->debug_b, &rui);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"b(%4u) = %4u;\n", i+1, rui[i]);
+    fprintf(fid,"\n\n");
+
+    // print state buffer
+    fprintf(fid,"state = zeros(1,n);\n");
+    uiwindow_read(_q->debug_state, &rui);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"state(%4u) = %4u;\n", i+1, rui[i]);
+    fprintf(fid,"\n\n");
+
+    fprintf(fid,"\n\n");
+    fprintf(fid,"t=1:n;\n");
+    fprintf(fid,"i_skip  = find(state==%d);\n", SKIP);
+    fprintf(fid,"i_stuff = find(state==%d);\n", STUFF);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"plot(t,b,'Color',[0.5 0.5 0.5]);\n");
+    fprintf(fid,"plot(t,b_soft,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"if length(i_skip>0),  plot(t(i_skip), b_soft(i_skip),'rx'); end;\n");
+    fprintf(fid,"if length(i_stuff>0), plot(t(i_stuff),b_soft(i_stuff),'bx'); end;\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([t(1) t(end) -1 num_filters]);\n");
+    fprintf(fid,"legend('b','b (soft)',0);\n");
+    fprintf(fid,"xlabel('Symbol Index')\n");
+    fprintf(fid,"ylabel('Polyphase Filter Index')\n");
+    fprintf(fid,"%% done.\n");
+    fclose(fid);
+    printf("symsync: internal results written to %s.\n", SYMSYNC_DEBUG_FILENAME);
+}
+#endif
 
