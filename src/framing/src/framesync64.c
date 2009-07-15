@@ -31,8 +31,8 @@
 
 #include "liquid.h"
 
-#define FRAMESYNC64_SYMSYNC_BW_0    (0.03f)
-#define FRAMESYNC64_SYMSYNC_BW_1    (0.001f)
+#define FRAMESYNC64_SYM_BW_0        (0.03f)
+#define FRAMESYNC64_SYM_BW_1        (0.001f)
 
 #define FRAMESYNC64_AGC_BW_0        (1e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-5f)
@@ -70,6 +70,11 @@ struct framesync64_s {
     pll pll_rx;
     nco nco_rx;
     bsync_rrrf fsync;
+
+    // synchronizer bandwidths
+    float agc_bw0, agc_bw1; // automatic gain control
+    float pll_bw0, pll_bw1; // phase-locked loop
+    float sym_bw0, sym_bw1; // symbol timing recovery
 
     // squelch
     float rssi;     // received signal strength indicator [dB]
@@ -154,7 +159,6 @@ framesync64 framesync64_create(
     float H[H_len];
     design_rrc_filter(2*npfb,_m,_beta,0,H);
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
-    symsync_crcf_set_lf_bw(fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_0);
 
     // create (de)interleaver
     fs->intlv = interleaver_create(128, INT_BLOCK);
@@ -169,6 +173,18 @@ framesync64 framesync64_create(
     // set status flags
     fs->state = FRAMESYNC64_STATE_SEEKPN;
     fs->num_symbols_collected = 0;
+
+    // set open/closed bandwidth values
+    framesync64_set_agc_bw0(fs,FRAMESYNC64_AGC_BW_0);
+    framesync64_set_agc_bw1(fs,FRAMESYNC64_AGC_BW_1);
+    framesync64_set_pll_bw0(fs,FRAMESYNC64_PLL_BW_0);
+    framesync64_set_pll_bw1(fs,FRAMESYNC64_PLL_BW_1);
+    framesync64_set_sym_bw0(fs,FRAMESYNC64_SYM_BW_0);
+    framesync64_set_sym_bw1(fs,FRAMESYNC64_SYM_BW_1);
+    framesync64_set_squelch_threshold(fs,FRAMESYNC64_SQUELCH_THRESH);
+
+    // open bandwidth
+    framesync64_open_bandwidth(fs);
 
 #ifdef DEBUG
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_BUFFER_LEN);
@@ -457,22 +473,33 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     //printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
 }
 
+void framesync64_set_agc_bw0(framesync64 _fs, float _agc_bw0) { _fs->agc_bw0 = _agc_bw0;}
+void framesync64_set_agc_bw1(framesync64 _fs, float _agc_bw1) { _fs->agc_bw1 = _agc_bw1;}
+void framesync64_set_pll_bw0(framesync64 _fs, float _pll_bw0) { _fs->pll_bw0 = _pll_bw0;}
+void framesync64_set_pll_bw1(framesync64 _fs, float _pll_bw1) { _fs->pll_bw1 = _pll_bw1;}
+void framesync64_set_sym_bw0(framesync64 _fs, float _sym_bw0) { _fs->sym_bw0 = _sym_bw0;}
+void framesync64_set_sym_bw1(framesync64 _fs, float _sym_bw1) { _fs->sym_bw1 = _sym_bw1;}
+void framesync64_set_squelch_threshold(framesync64 _fs, float _squelch_threshold)
+{
+    _fs->squelch_threshold = _squelch_threshold;
+}
+
 // 
 // internal
 //
 
 void framesync64_open_bandwidth(framesync64 _fs)
 {
-    agc_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_0);
-    symsync_crcf_set_lf_bw(_fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_0);
-    pll_set_bandwidth(_fs->pll_rx, FRAMESYNC64_PLL_BW_0);
+    agc_set_bandwidth(_fs->agc_rx, _fs->agc_bw0);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw0);
+    pll_set_bandwidth(_fs->pll_rx, _fs->pll_bw0);
 }
 
 void framesync64_close_bandwidth(framesync64 _fs)
 {
-    agc_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_1);
-    symsync_crcf_set_lf_bw(_fs->mfdecim, FRAMESYNC64_SYMSYNC_BW_1);
-    pll_set_bandwidth(_fs->pll_rx, FRAMESYNC64_PLL_BW_1);
+    agc_set_bandwidth(_fs->agc_rx, _fs->agc_bw1);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw1);
+    pll_set_bandwidth(_fs->pll_rx, _fs->pll_bw1);
 }
 
 void framesync64_decode_header(framesync64 _fs)

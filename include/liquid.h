@@ -1057,10 +1057,18 @@ framesync64 framesync64_create(
     framesync64_callback _callback,
     void * _userdata
     );
-void framesync64_destroy(framesync64 _fg);
-void framesync64_print(framesync64 _fg);
-void framesync64_reset(framesync64 _fg);
-void framesync64_execute(framesync64 _fg, liquid_float_complex * _x, unsigned int _n);
+void framesync64_destroy(framesync64 _fs);
+void framesync64_print(framesync64 _fs);
+void framesync64_reset(framesync64 _fs);
+void framesync64_execute(framesync64 _fs, liquid_float_complex * _x, unsigned int _n);
+
+void framesync64_set_agc_bw0(framesync64 _fs, float _agc_bw0);
+void framesync64_set_agc_bw1(framesync64 _fs, float _agc_bw1);
+void framesync64_set_pll_bw0(framesync64 _fs, float _pll_bw0);
+void framesync64_set_pll_bw1(framesync64 _fs, float _pll_bw1);
+void framesync64_set_sym_bw0(framesync64 _fs, float _sym_bw0);
+void framesync64_set_sym_bw1(framesync64 _fs, float _sym_bw1);
+void framesync64_set_squelch_threshold(framesync64 _fs, float _squelch_threshold);
 
 
 //
