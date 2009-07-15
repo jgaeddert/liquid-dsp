@@ -31,21 +31,21 @@
 
 #include "liquid.h"
 
-#define FRAMESYNC64_SYM_BW_0        (0.03f)
+#define FRAMESYNC64_SYM_BW_0        (0.01f)
 #define FRAMESYNC64_SYM_BW_1        (0.001f)
 
-#define FRAMESYNC64_AGC_BW_0        (1e-3f)
+#define FRAMESYNC64_AGC_BW_0        (3e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-5f)
 
 #define FRAMESYNC64_PLL_BW_0        (2e-3f)
 #define FRAMESYNC64_PLL_BW_1        (1e-3f)
 
-#define FRAMESYNC64_SQUELCH_THRESH  (-12.0f)
+#define FRAMESYNC64_SQUELCH_THRESH  (-15.0f)
 #define FRAMESYNC64_SQUELCH_TIMEOUT (32)
 
 #define FRAME64_PN_LEN              (64)
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_PRINT
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (4096)
@@ -154,7 +154,7 @@ framesync64 framesync64_create(
     msequence_destroy(ms);
 
     // design symsync (k=2)
-    unsigned int npfb = 16;
+    unsigned int npfb = 32;
     unsigned int H_len = 2*2*npfb*_m + 1;
     float H[H_len];
     design_rrc_filter(2*npfb,_m,_beta,0,H);
