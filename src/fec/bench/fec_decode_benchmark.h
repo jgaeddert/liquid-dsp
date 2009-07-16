@@ -24,7 +24,7 @@
 #include <sys/resource.h>
 #include <stdlib.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define FEC_DECODE_BENCH_API(FS,N, OPT) \
 (   struct rusage *_start,              \
@@ -41,8 +41,29 @@ void fec_decode_bench(
     unsigned int _n,
     void * _opts)
 {
+#if HAVE_FEC_H == 0
+    if ( _fs == FEC_CONV_V27 ||
+         _fs == FEC_CONV_V29 ||
+         _fs == FEC_CONV_V39 ||
+         _fs == FEC_CONV_V615)
+    {
+        printf("warning: convolutional codes unavailable (install libfec)\n");
+        getrusage(RUSAGE_SELF, _start);
+        memmove((void*)_finish,(void*)_start,sizeof(struct rusage));
+        return;
+    }
+#endif
+
     // normalize number of iterations
     *_num_iterations /= _n;
+    switch (_fs) {
+    case FEC_CONV_V27:  *_num_iterations /= 20;     break;
+    case FEC_CONV_V29:  *_num_iterations /= 50;     break;
+    case FEC_CONV_V39:  *_num_iterations /= 200;    break;
+    case FEC_CONV_V615: *_num_iterations /= 500;    break;
+    default:;
+    }
+    if (*_num_iterations < 4) *_num_iterations = 4;
 
     // generate fec object
     fec q = fec_create(_fs,_opts);
@@ -93,6 +114,12 @@ void benchmark_fec_dec_conv27_n4        FEC_DECODE_BENCH_API(FEC_CONV_V27,  4,  
 void benchmark_fec_dec_conv27_n16       FEC_DECODE_BENCH_API(FEC_CONV_V27,  16,     NULL)
 void benchmark_fec_dec_conv27_n64       FEC_DECODE_BENCH_API(FEC_CONV_V27,  64,     NULL)
 void benchmark_fec_dec_conv27_n256      FEC_DECODE_BENCH_API(FEC_CONV_V27,  256,    NULL)
+
+void benchmark_fec_dec_conv29_n64       FEC_DECODE_BENCH_API(FEC_CONV_V29,  64, NULL)
+
+void benchmark_fec_dec_conv39_n64       FEC_DECODE_BENCH_API(FEC_CONV_V39,  64, NULL)
+
+void benchmark_fec_dec_conv615_n64      FEC_DECODE_BENCH_API(FEC_CONV_V615, 64, NULL)
 
 #endif // __LIQUID_FEC_DECODE_BENCHMARK_H__
 
