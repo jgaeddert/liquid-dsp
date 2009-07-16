@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define VERBOSE_FEC_CONV    1
+#define VERBOSE_FEC_CONV    0
 
 #define FEC_CONV_ERASURE    127
 
@@ -98,7 +98,7 @@ void FEC_CONV(_encode)(fec _q,
             p = (p+1) % FEC_CONV(_P);
         }
     }
-    printf("\n");
+    //printf("\n");
     //printf("*** n = %u\n", n);
 
     // tail bits
@@ -128,7 +128,7 @@ void FEC_CONV(_encode)(fec _q,
         n++;
     }
 
-    printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
+    //printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
     assert(n == 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
 }
 

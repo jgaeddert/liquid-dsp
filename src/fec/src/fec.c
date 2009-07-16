@@ -82,7 +82,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     unsigned int n = num_bits_in + K - 1;
     unsigned int num_bits_out = n + (n+p-1)/p;
     unsigned int num_bytes_out = num_bits_out/8 + (num_bits_out%8 ? 1 : 0);
-#if 1
+#if 0
     printf("msg len :       %3u\n", _msg_len);
     printf("num bits in :   %3u\n", num_bits_in);
     printf("n (constraint): %3u\n", n);
