@@ -32,6 +32,7 @@ local_s_files	:=			\
 	crc.c				\
 	fec.c				\
 	fec_conv27.c			\
+	fec_conv27p23.c			\
 	fec_conv29.c			\
 	fec_conv39.c			\
 	fec_conv615.c			\

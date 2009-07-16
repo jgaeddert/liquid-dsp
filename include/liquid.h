@@ -446,11 +446,14 @@ typedef enum {
     FEC_HAMMING74,
     FEC_HAMMING84,
 
-    // codecs not defined internally
-    FEC_CONV_V27,
-    FEC_CONV_V29,
-    FEC_CONV_V39,
-    FEC_CONV_V615
+    // codecs not defined internally (see http://www.ka9q.net/code/fec/)
+    FEC_CONV_V27,       // r1/2, K=7
+    FEC_CONV_V29,       // r1/2, K=9
+    FEC_CONV_V39,       // r1/3, K=9
+    FEC_CONV_V615,      // r1/6, K=15
+
+    // punctured (perforated) codes
+    FEC_CONV_V27P23     // r2/3, K=7, dfree=6
 } fec_scheme;
 
 struct fec_conv_opts {int puncture;};

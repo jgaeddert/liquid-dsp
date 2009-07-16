@@ -186,9 +186,17 @@ struct fec_s {
     unsigned char * enc_bits;
     void * vp;
 
-    // encode/decode function pointers
-    void (*encode_func)(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
-    void (*decode_func)(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
+    // encode function pointer
+    void (*encode_func)(fec _q,
+                        unsigned int _dec_msg_len,
+                        unsigned char * _msg_dec,
+                        unsigned char * _msg_enc);
+
+    // decode function pointer
+    void (*decode_func)(fec _q,
+                        unsigned int _dec_msg_len,
+                        unsigned char * _msg_enc,
+                        unsigned char * _msg_dec);
 };
 
 // Pass
@@ -226,6 +234,10 @@ void fec_hamming74_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _ms
 #define FEC_CONV39_MANGLE(name)     LIQUID_CONCAT(fec_conv39,name)
 #define FEC_CONV615_MANGLE(name)    LIQUID_CONCAT(fec_conv615,name)
 
+// Convolutional (punctured) :
+//      r2/3, K=7
+#define FEC_CONV27P23_MANGLE(name)  LIQUID_CONCAT(fec_conv27p23,name)
+
 // large macro
 //   CONVFEC    : name-mangling macro
 #define LIQUID_FEC_CONV_DEFINE_API(CONVFEC)                     \
@@ -248,6 +260,8 @@ LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27_MANGLE)
 LIQUID_FEC_CONV_DEFINE_API(FEC_CONV29_MANGLE)
 LIQUID_FEC_CONV_DEFINE_API(FEC_CONV39_MANGLE)
 LIQUID_FEC_CONV_DEFINE_API(FEC_CONV615_MANGLE)
+
+LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27P23_MANGLE)
 
 //
 // MODULE : filter
