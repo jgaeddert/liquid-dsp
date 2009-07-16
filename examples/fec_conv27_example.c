@@ -10,7 +10,7 @@
 int main() {
     unsigned int n=4;
     unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
-    fec_scheme fs = FEC_CONV_V27;
+    fec_scheme fs = FEC_CONV_V27P23;
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);

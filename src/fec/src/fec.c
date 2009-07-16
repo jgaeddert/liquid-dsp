@@ -44,6 +44,9 @@ const char * fec_scheme_str[9] = {
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 {
+    unsigned int K=0;   // constraint length
+    unsigned int p=0;   // puncture rate
+
     switch (_scheme) {
     case FEC_UNKNOWN:   return 0;
     case FEC_NONE:      return _msg_len;
@@ -55,7 +58,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V29:  return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
     case FEC_CONV_V39:  return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
     case FEC_CONV_V615: return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
-    case FEC_CONV_V27P23: return 0;
+    case FEC_CONV_V27P23:   K=7; p=2; break;
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
@@ -69,7 +72,16 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
         printf("error: fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
         exit(0);
     }
-    return 0;
+    unsigned int num_bits_in = _msg_len*8;
+    unsigned int n = num_bits_in + K - 1;
+    unsigned int num_bits_out = n + (n+p-1)/p;
+    unsigned int num_bytes_out = num_bits_out/8 + (num_bits_out%8 ? 1 : 0);
+    printf("msg len :       %3u\n", _msg_len);
+    printf("num bits in :   %3u\n", num_bits_in);
+    printf("n (constraint): %3u\n", n);
+    printf("num bits out:   %3u\n", num_bits_out);
+    printf("num bytes out:  %3u\n", num_bytes_out);
+    return num_bytes_out;
 }
 
 float fec_get_rate(fec_scheme _scheme)

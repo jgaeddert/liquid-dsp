@@ -66,6 +66,7 @@ void FEC_CONV(_encode)(fec _q,
     unsigned int i,j,r; // bookkeeping
     unsigned int sr=0;  // convolutional shift register
     unsigned int n=0;   // output bit counter
+    unsigned int p=0;   // puncturing matrix column index
 
     unsigned char bit;
     unsigned char byte_in;
