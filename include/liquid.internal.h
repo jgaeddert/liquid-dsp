@@ -185,6 +185,9 @@ struct fec_s {
     unsigned int num_enc_bytes;
     unsigned char * enc_bits;
     void * vp;
+    unsigned int r;     // primitive rate (inverted)
+    unsigned int K;     // constraint length
+    unsigned int p;     // puncturing rate (e.g. p=3 for 3/4)
 
     // encode function pointer
     void (*encode_func)(fec _q,
