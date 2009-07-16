@@ -47,7 +47,7 @@ const int FEC_CONV(_poly)[FEC_CONV(_R)] = {V27POLYA,
                                            V27POLYB};
 
 // puncturing matrix : 
-const int FEC_CONV(_puncturing_matrix)[FEC_CONV(_P)][FEC_CONV(_R)] = {
+const int FEC_CONV(_puncturing_matrix)[FEC_CONV(_R)][FEC_CONV(_P)] = {
     {1, 1, 1, 1},
     {1, 0, 0, 0}
 };

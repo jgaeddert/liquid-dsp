@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define VERBOSE_FEC_CONV    0
+#define VERBOSE_FEC_CONV    1
 
 #define FEC_CONV_ERASURE    127
 
@@ -86,7 +86,7 @@ void FEC_CONV(_encode)(fec _q,
             // compute parity bits for each polynomial
             for (r=0; r<FEC_CONV(_R); r++) {
                 // enable output determined by puncturing matrix
-                if (FEC_CONV(_puncturing_matrix)[p][r]) {
+                if (FEC_CONV(_puncturing_matrix)[r][p]) {
                     byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
                     _msg_enc[n/8] = byte_out;
                     n++;
@@ -98,6 +98,8 @@ void FEC_CONV(_encode)(fec _q,
             p = (p+1) % FEC_CONV(_P);
         }
     }
+    printf("\n");
+    //printf("*** n = %u\n", n);
 
     // tail bits
     for (i=0; i<FEC_CONV(_K)-1; i++) {
@@ -106,7 +108,7 @@ void FEC_CONV(_encode)(fec _q,
 
         // compute parity bits for each polynomial
         for (r=0; r<FEC_CONV(_R); r++) {
-            if (FEC_CONV(_puncturing_matrix)[p][r]) {
+            if (FEC_CONV(_puncturing_matrix)[r][p]) {
                 byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
                 _msg_enc[n/8] = byte_out;
                 n++;
@@ -116,6 +118,7 @@ void FEC_CONV(_encode)(fec _q,
         // update puncturing matrix column index
         p = (p+1) % FEC_CONV(_P);
     }
+    //printf("+++ n = %u\n", n);
 
     // ensure even number of bytes
     while (n%8) {
@@ -150,7 +153,7 @@ void FEC_CONV(_decode)(fec _q,
     for (i=0; i<num_enc_bits; i+=FEC_CONV(_R)) {
         //
         for (r=0; r<FEC_CONV(_R); r++) {
-            if (FEC_CONV(_puncturing_matrix)[p][r]) {
+            if (FEC_CONV(_puncturing_matrix)[r][p]) {
                 // push bit from input
                 bit = (byte_in >> (7-k)) & 0x01;
                 _q->enc_bits[i+r] = bit ? 255 : 0;
