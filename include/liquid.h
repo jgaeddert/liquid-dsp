@@ -458,7 +458,7 @@ typedef enum {
 
 struct fec_conv_opts {int puncture;};
 
-extern const char * fec_scheme_str[9];
+extern const char * fec_scheme_str[10];
 
 typedef struct fec_s * fec;
 

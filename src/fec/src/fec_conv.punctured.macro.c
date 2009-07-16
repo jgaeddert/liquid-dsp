@@ -26,7 +26,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define VERBOSE_FEC_CONV    0
+#define VERBOSE_FEC_CONV    1
+
+#define FEC_CONV_ERASURE    127
 
 #if HAVE_FEC_H  // (config.h)
 #include "fec.h"
@@ -83,10 +85,17 @@ void FEC_CONV(_encode)(fec _q,
 
             // compute parity bits for each polynomial
             for (r=0; r<FEC_CONV(_R); r++) {
-                byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
-                _msg_enc[n/8] = byte_out;
-                n++;
+                // enable output determined by puncturing matrix
+                if (FEC_CONV(_puncturing_matrix)[p][r]) {
+                    byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
+                    _msg_enc[n/8] = byte_out;
+                    n++;
+                } else {
+                }
             }
+
+            // update puncturing matrix column index
+            p = (p+1) % FEC_CONV(_P);
         }
     }
 
@@ -97,10 +106,15 @@ void FEC_CONV(_encode)(fec _q,
 
         // compute parity bits for each polynomial
         for (r=0; r<FEC_CONV(_R); r++) {
-            byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
-            _msg_enc[n/8] = byte_out;
-            n++;
+            if (FEC_CONV(_puncturing_matrix)[p][r]) {
+                byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
+                _msg_enc[n/8] = byte_out;
+                n++;
+            }
         }
+
+        // update puncturing matrix column index
+        p = (p+1) % FEC_CONV(_P);
     }
 
     // ensure even number of bytes
@@ -123,29 +137,46 @@ void FEC_CONV(_decode)(fec _q,
     // re-allocate resources if necessary
     FEC_CONV(_setlength)(_q, _dec_msg_len);
 
-    // unpack bytes
-    unsigned int num_written;
-    unpack_bytes(_msg_enc,              // encoded message (bytes)
-                 _q->num_enc_bytes,     // encoded message length (#bytes)
-                 _q->enc_bits,          // encoded messsage (bits)
-                 _q->num_enc_bytes*8,   // encoded message length (#bits)
-                 &num_written);
+    // unpack bytes, adding erasures at punctured indices
+    unsigned int num_dec_bits = _q->num_dec_bytes * 8 + FEC_CONV(_K) - 1;
+    unsigned int num_enc_bits = num_dec_bits * FEC_CONV(_R);
+    unsigned int i,r;
+    unsigned int n=0;   // input byte index
+    unsigned int k=0;   // intput bit index (0<=k<8)
+    unsigned int p=0;   // puncturing matrix column index
+    unsigned char bit;
+    unsigned char byte_in = _msg_enc[n];
+    for (i=0; i<num_enc_bits; i+=FEC_CONV(_R)) {
+        //
+        for (r=0; r<FEC_CONV(_R); r++) {
+            if (FEC_CONV(_puncturing_matrix)[p][r]) {
+                // push bit from input
+                bit = (byte_in >> (7-k)) & 0x01;
+                _q->enc_bits[i+r] = bit ? 255 : 0;
+                k++;
+                if (k==8) {
+                    k = 0;
+                    n++;
+                    byte_in = _msg_enc[n];
+                }
+            } else {
+                // push erasure
+                _q->enc_bits[i+r] = 127; //FEC_CONV_ERASURE;
+            }
+        }
+        p = (p+1)%FEC_CONV(_P);
+    }
 
 #if VERBOSE_FEC_CONV
-    unsigned int i;
+    unsigned int ii;
     printf("msg encoded (bits):\n");
-    for (i=0; i<8*_q->num_enc_bytes; i++) {
-        printf("%1u", _q->enc_bits[i]);
-        if (((i+1)%8)==0)
-            printf(" ");
+    for (ii=0; ii<num_enc_bits; ii++) {
+        printf("%3u ", _q->enc_bits[ii]);
+        if (((ii+1)%8)==0)
+            printf("\n");
     }
     printf("\n");
 #endif
-
-    // invoke hard-decision scaling
-    unsigned int k;
-    for (k=0; k<8*_q->num_enc_bytes; k++)
-        _q->enc_bits[k] *= 255;
 
     // run decoder
     init_viterbi(_q->vp,0);
@@ -153,8 +184,8 @@ void FEC_CONV(_decode)(fec _q,
     chainback_viterbi(_q->vp, _msg_dec, 8*_q->num_dec_bytes, 0);
 
 #if VERBOSE_FEC_CONV
-    for (i=0; i<_dec_msg_len; i++)
-        printf("%.2x ", _msg_dec[i]);
+    for (ii=0; ii<_dec_msg_len; ii++)
+        printf("%.2x ", _msg_dec[ii]);
     printf("\n");
 #endif
 }
@@ -168,15 +199,24 @@ void FEC_CONV(_setlength)(fec _q, unsigned int _dec_msg_len)
     if (num_dec_bytes == _q->num_dec_bytes)
         return;
 
-
-#if VERBOSE_FEC_CONV
-    printf("(re)creating viterbi decoder, %u frame bytes\n", num_dec_bytes);
-#endif
-
     // reset number of framebits
     _q->num_dec_bytes = num_dec_bytes;
     _q->num_enc_bytes = fec_get_enc_msg_length(FEC_CONV(_mode),
                                                _dec_msg_len);
+
+    // puncturing: need to expand to full length (decoder
+    //             injects erasures at punctured values)
+    unsigned int num_dec_bits = 8*_q->num_dec_bytes;
+    unsigned int n = num_dec_bits + FEC_CONV(_K) - 1;
+    unsigned int num_enc_bits = n*FEC_CONV(_R);
+#if VERBOSE_FEC_CONV
+    printf("(re)creating viterbi decoder, %u frame bytes\n", num_dec_bytes);
+    printf("  num decoded bytes         :   %u\n", _q->num_dec_bytes);
+    printf("  num encoded bytes         :   %u\n", _q->num_enc_bytes);
+    printf("  num decoded bits          :   %u\n", num_dec_bits);
+    printf("  num decoded bits (padded) :   %u\n", n);
+    printf("  num encoded bits (full)   :   %u\n", num_enc_bits);
+#endif
 
     // delete old decoder if necessary
     if (_q->vp != NULL)
@@ -185,7 +225,7 @@ void FEC_CONV(_setlength)(fec _q, unsigned int _dec_msg_len)
     // re-create / re-allocate memory buffers
     _q->vp = create_viterbi(8*_q->num_dec_bytes);
     _q->enc_bits = (unsigned char*) realloc(_q->enc_bits,
-                                            _q->num_enc_bytes*8*sizeof(unsigned char));
+                                            num_enc_bits*sizeof(unsigned char));
 }
 
 

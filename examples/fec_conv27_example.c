@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "liquid.h"
 
@@ -16,6 +17,7 @@ int main() {
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
     unsigned char msg_dec[n];
     unsigned char msg_enc[n_enc];
+    unsigned char msg_cor[n_enc];
 
     // create object
     fec q = fec_create(fs,NULL);
@@ -25,34 +27,42 @@ int main() {
     fec_encode(q, n, data, msg_enc);
 
     // corrupt encoded message
-    msg_enc[0] ^= 0x04; // position 5
-    msg_enc[1] ^= 0x04; //
-    msg_enc[2] ^= 0x02; //
-    msg_enc[3] ^= 0x01; //
-    msg_enc[4] ^= 0x80; //
-    msg_enc[5] ^= 0x40; //
-    msg_enc[6] ^= 0x20; //
-    msg_enc[7] ^= 0x10; //
-
+    memmove(msg_cor, msg_enc, n_enc);
+    msg_cor[0] ^= 0x04; // position 5
+    /*
+    msg_cor[1] ^= 0x04; //
+    msg_cor[2] ^= 0x02; //
+    msg_cor[3] ^= 0x01; //
+    msg_cor[4] ^= 0x80; //
+    msg_cor[5] ^= 0x40; //
+    msg_cor[6] ^= 0x20; //
+    msg_cor[7] ^= 0x10; //
+    */
 
     // decode message
-    fec_decode(q, n, msg_enc, msg_dec);
+    fec_decode(q, n, msg_cor, msg_dec);
 
     unsigned int i;
 
-    printf("original message:           ");
+    printf("original message:       ");
     for (i=0; i<n; i++)
         printf("%.2X ", (unsigned int) (data[i]));
     printf("\n");
 
-    printf("encoded/corrupted message:  ");
+    printf("encoded message:        ");
     for (i=0; i<n_enc; i++)
         printf("%.2X ", (unsigned int) (msg_enc[i]));
     printf("\n");
 
-    printf("decoded message:            ");
+    printf("corrupted message:      ");
+    for (i=0; i<n_enc; i++)
+        printf("%.2X ", (unsigned int) (msg_cor[i]));
+    printf("\n");
+
+    printf("decoded message:        ");
     for (i=0; i<n; i++)
         printf("%.2X ", (unsigned int) (msg_dec[i]));
+    printf("\n");
     printf("\n");
 
     // count bit errors

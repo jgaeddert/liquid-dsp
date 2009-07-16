@@ -29,7 +29,7 @@
 
 // object-independent methods
 
-const char * fec_scheme_str[9] = {
+const char * fec_scheme_str[10] = {
     "unknown",
     "none",
     "repeat(3)",
