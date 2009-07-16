@@ -236,7 +236,11 @@ void fec_hamming74_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _ms
 
 // Convolutional (punctured) :
 //      r2/3, K=7
+//      r3/4, K=7
+//      r4/5, K=7
 #define FEC_CONV27P23_MANGLE(name)  LIQUID_CONCAT(fec_conv27p23,name)
+#define FEC_CONV27P34_MANGLE(name)  LIQUID_CONCAT(fec_conv27p34,name)
+#define FEC_CONV27P45_MANGLE(name)  LIQUID_CONCAT(fec_conv27p45,name)
 
 // large macro
 //   CONVFEC    : name-mangling macro
@@ -262,6 +266,8 @@ LIQUID_FEC_CONV_DEFINE_API(FEC_CONV39_MANGLE)
 LIQUID_FEC_CONV_DEFINE_API(FEC_CONV615_MANGLE)
 
 LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27P23_MANGLE)
+LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27P34_MANGLE)
+LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27P45_MANGLE)
 
 //
 // MODULE : filter

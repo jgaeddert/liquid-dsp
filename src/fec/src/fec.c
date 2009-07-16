@@ -29,7 +29,7 @@
 
 // object-independent methods
 
-const char * fec_scheme_str[10] = {
+const char * fec_scheme_str[12] = {
     "unknown",
     "none",
     "repeat(3)",
@@ -39,7 +39,9 @@ const char * fec_scheme_str[10] = {
     "convolutional r1/2 K=9",
     "convolutional r1/3 K=9",
     "convolutional r1/6 K=15",
-    "convolutional r2/3 K=7 (punctured)"
+    "convolutional r2/3 K=7 (punctured)",
+    "convolutional r3/4 K=7 (punctured)",
+    "convolutional r4/5 K=7 (punctured)"
 };
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
@@ -59,12 +61,16 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V39:  return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
     case FEC_CONV_V615: return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
     case FEC_CONV_V27P23:   K=7; p=2; break;
+    case FEC_CONV_V27P34:   K=7; p=3; break;
+    case FEC_CONV_V27P45:   K=7; p=4; break;
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
     case FEC_CONV_V39:
     case FEC_CONV_V615:
     case FEC_CONV_V27P23:
+    case FEC_CONV_V27P34:
+    case FEC_CONV_V27P45:
         printf("error: fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)\n");
         exit(0);
 #endif
@@ -76,11 +82,14 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     unsigned int n = num_bits_in + K - 1;
     unsigned int num_bits_out = n + (n+p-1)/p;
     unsigned int num_bytes_out = num_bits_out/8 + (num_bits_out%8 ? 1 : 0);
+#if 1
     printf("msg len :       %3u\n", _msg_len);
     printf("num bits in :   %3u\n", num_bits_in);
     printf("n (constraint): %3u\n", n);
-    printf("num bits out:   %3u\n", num_bits_out);
+    printf("num bits out:   %3u", num_bits_out);
+    printf(" = n+(n+p-1)/p = %u+(%u+%u-1)/%u\n", n,n,p,p);
     printf("num bytes out:  %3u\n", num_bytes_out);
+#endif
     return num_bytes_out;
 }
 
@@ -98,6 +107,8 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_CONV_V39:  return 1./3.;
     case FEC_CONV_V615: return 1./6.;
     case FEC_CONV_V27P23:   return 2./3.;
+    case FEC_CONV_V27P34:   return 3./4.;
+    case FEC_CONV_V27P45:   return 4./5.;
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
@@ -140,12 +151,18 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         return fec_conv615_create(_opts);
     case FEC_CONV_V27P23:
         return fec_conv27p23_create(_opts);
+    case FEC_CONV_V27P34:
+        return fec_conv27p34_create(_opts);
+    case FEC_CONV_V27P45:
+        return fec_conv27p45_create(_opts);
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
     case FEC_CONV_V39:
     case FEC_CONV_V615:
     case FEC_CONV_V27P23:
+    case FEC_CONV_V27P34:
+    case FEC_CONV_V27P45:
         printf("error: fec_create(), convolutional codes unavailable (install libfec)\n");
         exit(0);
 #endif

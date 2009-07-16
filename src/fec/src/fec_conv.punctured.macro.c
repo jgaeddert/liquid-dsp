@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define VERBOSE_FEC_CONV    1
+#define VERBOSE_FEC_CONV    0
 
 #define FEC_CONV_ERASURE    127
 
@@ -125,6 +125,7 @@ void FEC_CONV(_encode)(fec _q,
         n++;
     }
 
+    printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
     assert(n == 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
 }
 
@@ -180,6 +181,7 @@ void FEC_CONV(_decode)(fec _q,
 
     // run decoder
     init_viterbi(_q->vp,0);
+    // TODO : check to see if this shouldn't be num_enc_bits (punctured)
     update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+FEC_CONV(_K)-1);
     chainback_viterbi(_q->vp, _msg_dec, 8*_q->num_dec_bytes, 0);
 
