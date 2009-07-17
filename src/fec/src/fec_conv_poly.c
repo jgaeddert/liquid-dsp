@@ -19,31 +19,37 @@
  */
 
 //
-// 1/2-rate K=9 convolutional code
+// convolutional code polynomials
 //
 
 #include "liquid.internal.h"
 
-#define FEC_CONV(name)      LIQUID_CONCAT(fec_conv29,name)
-#define create_viterbi      create_viterbi29
-#define init_viterbi        init_viterbi29
-#define update_viterbi_blk  update_viterbi29_blk
-#define chainback_viterbi   chainback_viterbi29
-#define delete_viterbi      delete_viterbi29
+#if HAVE_FEC_H == 1
+#include <fec.h>
 
-#define fec_conv29_R        (2)
-#define fec_conv29_K        (9)
-#define fec_conv29_mode     FEC_CONV_V29
+int fec_conv27_poly[2]  = {V27POLYA,
+                           V27POLYB};
 
-#if HAVE_FEC_H  // (config.h)
-#  include "fec.h"
+int fec_conv29_poly[2]  = {V29POLYA,
+                           V29POLYB};
+
+int fec_conv39_poly[3]  = {V39POLYA,
+                           V39POLYB,
+                           V39POLYC};
+
+int fec_conv615_poly[6] = {V615POLYA,
+                           V615POLYB,
+                           V615POLYC,
+                           V615POLYD,
+                           V615POLYE,
+                           V615POLYF};
+
 #else
-#  define V29POLYA  (0x00)
-#  define V29POLYB  (0x00)
-#endif  // HAVE_FEC_H (config.h)
 
-const int FEC_CONV(_poly)[FEC_CONV(_R)] = {V29POLYA,
-                                           V29POLYB};
+int fec_conv27_poly[2]  = {0,0};
+int fec_conv29_poly[2]  = {0,0};
+int fec_conv39_poly[3]  = {0,0,0};
+int fec_conv615_poly[6] = {0,0,0,0,0,0};
 
-#include "fec_conv.macro.c"
+#endif
 

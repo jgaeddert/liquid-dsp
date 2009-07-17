@@ -184,10 +184,20 @@ struct fec_s {
     unsigned int num_dec_bytes;
     unsigned int num_enc_bytes;
     unsigned char * enc_bits;
-    void * vp;
-    unsigned int r;     // primitive rate (inverted)
-    unsigned int K;     // constraint length
-    unsigned int p;     // puncturing rate (e.g. p=3 for 3/4)
+    void * vp;      // decoder object
+    int * poly;     // polynomial
+    unsigned int R; // primitive rate, inverted (e.g. R=3 for 1/3)
+    unsigned int K; // constraint length
+    unsigned int p; // puncturing rate (e.g. p=3 for 3/4)
+    int * puncturing_matrix;
+
+    // viterbi decoder function pointers
+    void*(*create_viterbi)(int);
+    //void (*set_viterbi_polynomial)(int*);
+    int  (*init_viterbi)(void*,int);
+    int  (*update_viterbi_blk)(void*,unsigned char*,int);
+    int  (*chainback_viterbi)(void*,unsigned char*,unsigned int,unsigned int);
+    void (*delete_viterbi)(void*);
 
     // encode function pointer
     void (*encode_func)(fec _q,
@@ -232,6 +242,38 @@ void fec_hamming74_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _ms
 //                r1/2 K=9
 //                r1/3 K=9
 //                r1/6 K=15
+
+// convolutional code polynomials
+extern int fec_conv27_poly[2];
+extern int fec_conv29_poly[2];
+extern int fec_conv39_poly[3];
+extern int fec_conv615_poly[6];
+
+// convolutional code puncturing matrices  [r x p]
+extern int fec_conv27p23_matrix[4];     // [2 x 2]
+extern int fec_conv27p34_matrix[6];     // [2 x 3]
+extern int fec_conv27p45_matrix[8];     // [2 x 4]
+
+fec fec_conv_create(fec_scheme);
+void fec_conv_destroy(fec _q);
+void fec_conv_print(fec _q);
+void fec_conv_encode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char * _msg_dec,
+                     unsigned char * _msg_enc);
+void fec_conv_decode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char * _msg_enc,
+                     unsigned char * _msg_dec);
+void fec_conv_setlength(fec _q,
+                        unsigned int _dec_msg_len);
+
+// internal initialization methods (sets r, K, viterbi methods)
+void fec_conv_init_v27(fec _q);
+void fec_conv_init_v29(fec _q);
+void fec_conv_init_v39(fec _q);
+void fec_conv_init_v615(fec _q);
+
 #define FEC_CONV27_MANGLE(name)     LIQUID_CONCAT(fec_conv27,name)
 #define FEC_CONV29_MANGLE(name)     LIQUID_CONCAT(fec_conv29,name)
 #define FEC_CONV39_MANGLE(name)     LIQUID_CONCAT(fec_conv39,name)

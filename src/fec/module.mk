@@ -31,13 +31,11 @@ local_s_files	:=			\
 	checksum.c			\
 	crc.c				\
 	fec.c				\
-	fec_conv27.c			\
+	fec_conv.c			\
+	fec_conv_poly.c			\
 	fec_conv27p23.c			\
 	fec_conv27p34.c			\
 	fec_conv27p45.c			\
-	fec_conv29.c			\
-	fec_conv39.c			\
-	fec_conv615.c			\
 	fec_hamming74.c			\
 	fec_hamming84.c			\
 	fec_pass.c			\

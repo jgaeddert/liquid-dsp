@@ -142,13 +142,10 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         exit(0);
 #if HAVE_FEC_H
     case FEC_CONV_V27:
-        return fec_conv27_create(_opts);
     case FEC_CONV_V29:
-        return fec_conv29_create(_opts);
     case FEC_CONV_V39:
-        return fec_conv39_create(_opts);
     case FEC_CONV_V615:
-        return fec_conv615_create(_opts);
+        return fec_conv_create(_scheme);
     case FEC_CONV_V27P23:
         return fec_conv27p23_create(_opts);
     case FEC_CONV_V27P34:
