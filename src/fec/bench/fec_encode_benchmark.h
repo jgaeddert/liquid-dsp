@@ -110,5 +110,9 @@ void benchmark_fec_enc_conv39_n256      FEC_ENCODE_BENCH_API(FEC_CONV_V39, 256, 
 
 void benchmark_fec_enc_conv615_n256     FEC_ENCODE_BENCH_API(FEC_CONV_V615,256, NULL)
 
+void benchmark_fec_enc_conv27p23_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P23,64, NULL)
+void benchmark_fec_enc_conv27p34_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P34,64, NULL)
+void benchmark_fec_enc_conv27p45_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P45,64, NULL)
+
 #endif // __LIQUID_FEC_ENCODE_BENCHMARK_H__
 
