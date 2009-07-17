@@ -55,7 +55,8 @@ void fec_encode_bench(
 #endif
 
     // normalize number of iterations
-    *_num_iterations /= _n;
+    if (_fs > 3)
+        *_num_iterations /= _n;
 
     // generate fec object
     fec q = fec_create(_fs,_opts);
@@ -89,26 +90,13 @@ void fec_encode_bench(
 //
 // BENCHMARKS
 //
-void benchmark_fec_enc_rep3_n4          FEC_ENCODE_BENCH_API(FEC_REP3, 4,   NULL)
-void benchmark_fec_enc_rep3_n16         FEC_ENCODE_BENCH_API(FEC_REP3, 16,  NULL)
-void benchmark_fec_enc_rep3_n64         FEC_ENCODE_BENCH_API(FEC_REP3, 64,  NULL)
-void benchmark_fec_enc_rep3_n256        FEC_ENCODE_BENCH_API(FEC_REP3, 256, NULL)
-
-void benchmark_fec_enc_hamming74_n4     FEC_ENCODE_BENCH_API(FEC_HAMMING74, 4,   NULL)
-void benchmark_fec_enc_hamming74_n16    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 16,  NULL)
+void benchmark_fec_enc_rep3_n64         FEC_ENCODE_BENCH_API(FEC_REP3,      64,  NULL)
 void benchmark_fec_enc_hamming74_n64    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
-void benchmark_fec_enc_hamming74_n256   FEC_ENCODE_BENCH_API(FEC_HAMMING74, 256, NULL)
 
-void benchmark_fec_enc_conv27_n4        FEC_ENCODE_BENCH_API(FEC_CONV_V27, 4,   NULL)
-void benchmark_fec_enc_conv27_n16       FEC_ENCODE_BENCH_API(FEC_CONV_V27, 16,  NULL)
-void benchmark_fec_enc_conv27_n64       FEC_ENCODE_BENCH_API(FEC_CONV_V27, 64,  NULL)
-void benchmark_fec_enc_conv27_n256      FEC_ENCODE_BENCH_API(FEC_CONV_V27, 256, NULL)
-
-void benchmark_fec_enc_conv29_n256      FEC_ENCODE_BENCH_API(FEC_CONV_V29, 256, NULL)
-
-void benchmark_fec_enc_conv39_n256      FEC_ENCODE_BENCH_API(FEC_CONV_V39, 256, NULL)
-
-void benchmark_fec_enc_conv615_n256     FEC_ENCODE_BENCH_API(FEC_CONV_V615,256, NULL)
+void benchmark_fec_enc_conv27_n64       FEC_ENCODE_BENCH_API(FEC_CONV_V27,  64,  NULL)
+void benchmark_fec_enc_conv29_n64       FEC_ENCODE_BENCH_API(FEC_CONV_V29,  64,  NULL)
+void benchmark_fec_enc_conv39_n64       FEC_ENCODE_BENCH_API(FEC_CONV_V39,  64,  NULL)
+void benchmark_fec_enc_conv615_n64      FEC_ENCODE_BENCH_API(FEC_CONV_V615, 64,  NULL)
 
 void benchmark_fec_enc_conv27p23_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P23,64, NULL)
 void benchmark_fec_enc_conv27p34_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P34,64, NULL)
