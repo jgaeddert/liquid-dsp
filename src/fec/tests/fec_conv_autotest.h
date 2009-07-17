@@ -88,5 +88,12 @@ void autotest_conv27p56_codec() { conv_test(FEC_CONV_V27P56,8); }
 void autotest_conv27p67_codec() { conv_test(FEC_CONV_V27P67,8); }
 void autotest_conv27p78_codec() { conv_test(FEC_CONV_V27P78,8); }
 
+void autotest_conv29p23_codec() { conv_test(FEC_CONV_V29P23,8); }
+void autotest_conv29p34_codec() { conv_test(FEC_CONV_V29P34,8); }
+void autotest_conv29p45_codec() { conv_test(FEC_CONV_V29P45,8); }
+void autotest_conv29p56_codec() { conv_test(FEC_CONV_V29P56,8); }
+void autotest_conv29p67_codec() { conv_test(FEC_CONV_V29P67,8); }
+void autotest_conv29p78_codec() { conv_test(FEC_CONV_V29P78,8); }
+
 #endif // __LIQUID_FEC_CONV_AUTOTEST_H__
 

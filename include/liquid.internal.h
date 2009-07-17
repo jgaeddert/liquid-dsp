@@ -257,6 +257,13 @@ extern int fec_conv27p56_matrix[10];    // [2 x 5]
 extern int fec_conv27p67_matrix[12];    // [2 x 6]
 extern int fec_conv27p78_matrix[14];    // [2 x 7]
 
+extern int fec_conv29p23_matrix[4];     // [2 x 2]
+extern int fec_conv29p34_matrix[6];     // [2 x 3]
+extern int fec_conv29p45_matrix[8];     // [2 x 4]
+extern int fec_conv29p56_matrix[10];    // [2 x 5]
+extern int fec_conv29p67_matrix[12];    // [2 x 6]
+extern int fec_conv29p78_matrix[14];    // [2 x 7]
+
 fec fec_conv_create(fec_scheme _fs);
 void fec_conv_destroy(fec _q);
 void fec_conv_print(fec _q);
@@ -300,6 +307,13 @@ void fec_conv_init_v27p45(fec _q);
 void fec_conv_init_v27p56(fec _q);
 void fec_conv_init_v27p67(fec _q);
 void fec_conv_init_v27p78(fec _q);
+
+void fec_conv_init_v29p23(fec _q);
+void fec_conv_init_v29p34(fec _q);
+void fec_conv_init_v29p45(fec _q);
+void fec_conv_init_v29p56(fec _q);
+void fec_conv_init_v29p67(fec _q);
+void fec_conv_init_v29p78(fec _q);
 
 //
 // MODULE : filter

@@ -50,6 +50,13 @@ fec fec_conv_punctured_create(fec_scheme _fs)
     case FEC_CONV_V27P56:   fec_conv_init_v27p56(q);    break;
     case FEC_CONV_V27P67:   fec_conv_init_v27p67(q);    break;
     case FEC_CONV_V27P78:   fec_conv_init_v27p78(q);    break;
+
+    case FEC_CONV_V29P23:   fec_conv_init_v29p23(q);    break;
+    case FEC_CONV_V29P34:   fec_conv_init_v29p34(q);    break;
+    case FEC_CONV_V29P45:   fec_conv_init_v29p45(q);    break;
+    case FEC_CONV_V29P56:   fec_conv_init_v29p56(q);    break;
+    case FEC_CONV_V29P67:   fec_conv_init_v29p67(q);    break;
+    case FEC_CONV_V29P78:   fec_conv_init_v29p78(q);    break;
     default:
         printf("error: fec_conv_punctured_create(), invalid type\n");
         exit(0);
@@ -303,6 +310,62 @@ void fec_conv_init_v27p78(fec _q)
 
     _q->P = 7;
     _q->puncturing_matrix = fec_conv27p78_matrix;
+}
+
+
+void fec_conv_init_v29p23(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v29(_q);
+
+    _q->P = 2;
+    _q->puncturing_matrix = fec_conv29p23_matrix;
+}
+
+void fec_conv_init_v29p34(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v29(_q);
+
+    _q->P = 3;
+    _q->puncturing_matrix = fec_conv29p34_matrix;
+}
+
+void fec_conv_init_v29p45(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v29(_q);
+
+    _q->P = 4;
+    _q->puncturing_matrix = fec_conv29p45_matrix;
+}
+
+void fec_conv_init_v29p56(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v29(_q);
+
+    _q->P = 5;
+    _q->puncturing_matrix = fec_conv29p56_matrix;
+}
+
+
+void fec_conv_init_v29p67(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v29(_q);
+
+    _q->P = 6;
+    _q->puncturing_matrix = fec_conv29p67_matrix;
+}
+
+void fec_conv_init_v29p78(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v29(_q);
+
+    _q->P = 7;
+    _q->puncturing_matrix = fec_conv29p78_matrix;
 }
 
 
