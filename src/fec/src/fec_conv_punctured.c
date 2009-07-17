@@ -19,29 +19,38 @@
  */
 
 //
-// punctured convolutional code (macros)
+// convolutional code (macros)
 //
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-#define VERBOSE_FEC_CONV    0
+#include "liquid.internal.h"
 
-#define FEC_CONV_ERASURE    127
+#define VERBOSE_FEC_CONV_PUNCTURED    0
 
-#if HAVE_FEC_H  // (config.h)
+#if HAVE_FEC_H == 1 // (config.h)
 #include "fec.h"
 
-fec FEC_CONV(_create)(void * _opts)
+fec fec_conv_punctured_create(fec_scheme _fs)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
-    q->scheme = FEC_CONV(_mode);
+    q->scheme = _fs;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &FEC_CONV(_encode);
-    q->decode_func = &FEC_CONV(_decode);
+    q->encode_func = &fec_conv_punctured_encode;
+    q->decode_func = &fec_conv_punctured_decode;
+
+    switch (q->scheme) {
+    case FEC_CONV_V27P23:   fec_conv_init_v27p23(q);    break;
+    case FEC_CONV_V27P34:   fec_conv_init_v27p34(q);    break;
+    case FEC_CONV_V27P45:   fec_conv_init_v27p45(q);    break;
+    default:
+        printf("error: fec_conv_punctured_create(), invalid type\n");
+        exit(0);
+    }
 
     // convolutional-specific decoding
     q->num_dec_bytes = 0;
@@ -51,19 +60,19 @@ fec FEC_CONV(_create)(void * _opts)
     return q;
 }
 
-void FEC_CONV(_destroy)(fec _q)
+void fec_conv_punctured_destroy(fec _q)
 {
     // delete viterbi decoder
     if (_q->vp != NULL)
-        delete_viterbi(_q->vp);
+        _q->delete_viterbi(_q->vp);
 
     free(_q);
 }
 
-void FEC_CONV(_encode)(fec _q,
-                       unsigned int _dec_msg_len,
-                       unsigned char *_msg_dec,
-                       unsigned char *_msg_enc)
+void fec_conv_punctured_encode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char *_msg_dec,
+                     unsigned char *_msg_enc)
 {
     unsigned int i,j,r; // bookkeeping
     unsigned int sr=0;  // convolutional shift register
@@ -84,10 +93,10 @@ void FEC_CONV(_encode)(fec _q,
             sr = (sr << 1) | bit;
 
             // compute parity bits for each polynomial
-            for (r=0; r<FEC_CONV(_R); r++) {
+            for (r=0; r<_q->R; r++) {
                 // enable output determined by puncturing matrix
-                if (FEC_CONV(_puncturing_matrix)[r][p]) {
-                    byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
+                if (_q->puncturing_matrix[r*(_q->P)+p]) {
+                    byte_out = (byte_out<<1) | parity(sr & _q->poly[r]);
                     _msg_enc[n/8] = byte_out;
                     n++;
                 } else {
@@ -95,28 +104,28 @@ void FEC_CONV(_encode)(fec _q,
             }
 
             // update puncturing matrix column index
-            p = (p+1) % FEC_CONV(_P);
+            p = (p+1) % _q->P;
         }
     }
     //printf("\n");
     //printf("*** n = %u\n", n);
 
     // tail bits
-    for (i=0; i<FEC_CONV(_K)-1; i++) {
+    for (i=0; i<_q->K-1; i++) {
         // shift register: push zeros
         sr = (sr << 1);
 
         // compute parity bits for each polynomial
-        for (r=0; r<FEC_CONV(_R); r++) {
-            if (FEC_CONV(_puncturing_matrix)[r][p]) {
-                byte_out = (byte_out<<1) | parity(sr & FEC_CONV(_poly)[r]);
+        for (r=0; r<_q->R; r++) {
+            if (_q->puncturing_matrix[r*(_q->P)+p]) {
+                byte_out = (byte_out<<1) | parity(sr & _q->poly[r]);
                 _msg_enc[n/8] = byte_out;
                 n++;
             }
         }
 
         // update puncturing matrix column index
-        p = (p+1) % FEC_CONV(_P);
+        p = (p+1) % _q->P;
     }
     //printf("+++ n = %u\n", n);
 
@@ -129,31 +138,31 @@ void FEC_CONV(_encode)(fec _q,
     }
 
     //printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
-    assert(n == 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
+    assert(n == 8*fec_get_enc_msg_length(_q->scheme,_dec_msg_len));
 }
 
 //unsigned int
-void FEC_CONV(_decode)(fec _q,
-                       unsigned int _dec_msg_len,
-                       unsigned char *_msg_enc,
-                       unsigned char *_msg_dec)
+void fec_conv_punctured_decode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char *_msg_enc,
+                     unsigned char *_msg_dec)
 {
     // re-allocate resources if necessary
-    FEC_CONV(_setlength)(_q, _dec_msg_len);
+    fec_conv_punctured_setlength(_q, _dec_msg_len);
 
     // unpack bytes, adding erasures at punctured indices
-    unsigned int num_dec_bits = _q->num_dec_bytes * 8 + FEC_CONV(_K) - 1;
-    unsigned int num_enc_bits = num_dec_bits * FEC_CONV(_R);
+    unsigned int num_dec_bits = _q->num_dec_bytes * 8 + _q->K - 1;
+    unsigned int num_enc_bits = num_dec_bits * _q->R;
     unsigned int i,r;
     unsigned int n=0;   // input byte index
     unsigned int k=0;   // intput bit index (0<=k<8)
     unsigned int p=0;   // puncturing matrix column index
     unsigned char bit;
     unsigned char byte_in = _msg_enc[n];
-    for (i=0; i<num_enc_bits; i+=FEC_CONV(_R)) {
+    for (i=0; i<num_enc_bits; i+=_q->R) {
         //
-        for (r=0; r<FEC_CONV(_R); r++) {
-            if (FEC_CONV(_puncturing_matrix)[r][p]) {
+        for (r=0; r<_q->R; r++) {
+            if (_q->puncturing_matrix[r*(_q->P)+p]) {
                 // push bit from input
                 bit = (byte_in >> (7-k)) & 0x01;
                 _q->enc_bits[i+r] = bit ? 255 : 0;
@@ -168,10 +177,10 @@ void FEC_CONV(_decode)(fec _q,
                 _q->enc_bits[i+r] = 127; //FEC_CONV_ERASURE;
             }
         }
-        p = (p+1)%FEC_CONV(_P);
+        p = (p+1) % _q->P;
     }
 
-#if VERBOSE_FEC_CONV
+#if VERBOSE_FEC_CONV_PUNCTURED
     unsigned int ii;
     printf("msg encoded (bits):\n");
     for (ii=0; ii<num_enc_bits; ii++) {
@@ -183,19 +192,19 @@ void FEC_CONV(_decode)(fec _q,
 #endif
 
     // run decoder
-    init_viterbi(_q->vp,0);
+    _q->init_viterbi(_q->vp,0);
     // TODO : check to see if this shouldn't be num_enc_bits (punctured)
-    update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+FEC_CONV(_K)-1);
-    chainback_viterbi(_q->vp, _msg_dec, 8*_q->num_dec_bytes, 0);
+    _q->update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+_q->K-1);
+    _q->chainback_viterbi(_q->vp, _msg_dec, 8*_q->num_dec_bytes, 0);
 
-#if VERBOSE_FEC_CONV
+#if VERBOSE_FEC_CONV_PUNCTURED
     for (ii=0; ii<_dec_msg_len; ii++)
         printf("%.2x ", _msg_dec[ii]);
     printf("\n");
 #endif
 }
 
-void FEC_CONV(_setlength)(fec _q, unsigned int _dec_msg_len)
+void fec_conv_punctured_setlength(fec _q, unsigned int _dec_msg_len)
 {
     // re-allocate resources as necessary
     unsigned int num_dec_bytes = _dec_msg_len;
@@ -206,15 +215,15 @@ void FEC_CONV(_setlength)(fec _q, unsigned int _dec_msg_len)
 
     // reset number of framebits
     _q->num_dec_bytes = num_dec_bytes;
-    _q->num_enc_bytes = fec_get_enc_msg_length(FEC_CONV(_mode),
+    _q->num_enc_bytes = fec_get_enc_msg_length(_q->scheme,
                                                _dec_msg_len);
 
     // puncturing: need to expand to full length (decoder
     //             injects erasures at punctured values)
     unsigned int num_dec_bits = 8*_q->num_dec_bytes;
-    unsigned int n = num_dec_bits + FEC_CONV(_K) - 1;
-    unsigned int num_enc_bits = n*FEC_CONV(_R);
-#if VERBOSE_FEC_CONV
+    unsigned int n = num_dec_bits + _q->K - 1;
+    unsigned int num_enc_bits = n*(_q->R);
+#if VERBOSE_FEC_CONV_PUNCTURED
     printf("(re)creating viterbi decoder, %u frame bytes\n", num_dec_bytes);
     printf("  num decoded bytes         :   %u\n", _q->num_dec_bytes);
     printf("  num encoded bytes         :   %u\n", _q->num_enc_bytes);
@@ -225,39 +234,73 @@ void FEC_CONV(_setlength)(fec _q, unsigned int _dec_msg_len)
 
     // delete old decoder if necessary
     if (_q->vp != NULL)
-        delete_viterbi(_q->vp);
+        _q->delete_viterbi(_q->vp);
 
     // re-create / re-allocate memory buffers
-    _q->vp = create_viterbi(8*_q->num_dec_bytes);
+    _q->vp = _q->create_viterbi(8*_q->num_dec_bytes);
     _q->enc_bits = (unsigned char*) realloc(_q->enc_bits,
                                             num_enc_bits*sizeof(unsigned char));
+
 }
+
+// 
+// internal
+//
+
+void fec_conv_init_v27p23(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v27(_q);
+
+    _q->P = 2;
+    _q->puncturing_matrix = fec_conv27p23_matrix;
+}
+
+void fec_conv_init_v27p34(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v27(_q);
+
+    _q->P = 3;
+    _q->puncturing_matrix = fec_conv27p34_matrix;
+}
+
+
+void fec_conv_init_v27p45(fec _q)
+{
+    // initialize R, K, polynomial, and viterbi methods
+    fec_conv_init_v27(_q);
+
+    _q->P = 4;
+    _q->puncturing_matrix = fec_conv27p45_matrix;
+}
+
 
 
 
 #else   // HAVE_FEC_H (config.h)
 
-fec FEC_CONV(_create)(void * _opts)
+fec fec_conv_create(fec_scheme _fs)
 {
     return NULL;
 }
 
-void FEC_CONV(_destroy)(fec _q)
+void fec_conv_destroy(fec _q)
 {
 }
 
-void FEC_CONV(_encode)(fec _q,
-                       unsigned int _dec_msg_len,
-                       unsigned char *_msg_dec,
-                       unsigned char *_msg_enc)
+void fec_conv_encode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char *_msg_dec,
+                     unsigned char *_msg_enc)
 {
 }
 
 //unsigned int
-void FEC_CONV(_decode)(fec _q,
-                       unsigned int _dec_msg_len,
-                       unsigned char *_msg_enc,
-                       unsigned char *_msg_dec)
+void fec_conv_decode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char *_msg_enc,
+                     unsigned char *_msg_dec)
 {
 }
 

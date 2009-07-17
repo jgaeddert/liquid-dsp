@@ -188,7 +188,7 @@ struct fec_s {
     int * poly;     // polynomial
     unsigned int R; // primitive rate, inverted (e.g. R=3 for 1/3)
     unsigned int K; // constraint length
-    unsigned int p; // puncturing rate (e.g. p=3 for 3/4)
+    unsigned int P; // puncturing rate (e.g. p=3 for 3/4)
     int * puncturing_matrix;
 
     // viterbi decoder function pointers
@@ -254,7 +254,7 @@ extern int fec_conv27p23_matrix[4];     // [2 x 2]
 extern int fec_conv27p34_matrix[6];     // [2 x 3]
 extern int fec_conv27p45_matrix[8];     // [2 x 4]
 
-fec fec_conv_create(fec_scheme);
+fec fec_conv_create(fec_scheme _fs);
 void fec_conv_destroy(fec _q);
 void fec_conv_print(fec _q);
 void fec_conv_encode(fec _q,
@@ -274,45 +274,26 @@ void fec_conv_init_v29(fec _q);
 void fec_conv_init_v39(fec _q);
 void fec_conv_init_v615(fec _q);
 
-#define FEC_CONV27_MANGLE(name)     LIQUID_CONCAT(fec_conv27,name)
-#define FEC_CONV29_MANGLE(name)     LIQUID_CONCAT(fec_conv29,name)
-#define FEC_CONV39_MANGLE(name)     LIQUID_CONCAT(fec_conv39,name)
-#define FEC_CONV615_MANGLE(name)    LIQUID_CONCAT(fec_conv615,name)
+// punctured convolutional codes
+fec fec_conv_punctured_create(fec_scheme _fs);
+void fec_conv_punctured_destroy(fec _q);
+void fec_conv_punctured_print(fec _q);
+void fec_conv_punctured_encode(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char * _msg_dec,
+                               unsigned char * _msg_enc);
+void fec_conv_punctured_decode(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char * _msg_enc,
+                               unsigned char * _msg_dec);
+void fec_conv_punctured_setlength(fec _q,
+                                  unsigned int _dec_msg_len);
 
-// Convolutional (punctured) :
-//      r2/3, K=7
-//      r3/4, K=7
-//      r4/5, K=7
-#define FEC_CONV27P23_MANGLE(name)  LIQUID_CONCAT(fec_conv27p23,name)
-#define FEC_CONV27P34_MANGLE(name)  LIQUID_CONCAT(fec_conv27p34,name)
-#define FEC_CONV27P45_MANGLE(name)  LIQUID_CONCAT(fec_conv27p45,name)
-
-// large macro
-//   CONVFEC    : name-mangling macro
-#define LIQUID_FEC_CONV_DEFINE_API(CONVFEC)                     \
-                                                                \
-fec  CONVFEC(_create)(void *_opts);                             \
-void CONVFEC(_destroy)(fec _q);                                 \
-void CONVFEC(_print)(fec _q);                                   \
-void CONVFEC(_encode)(fec _q,                                   \
-                       unsigned int _dec_msg_len,               \
-                       unsigned char * _msg_dec,                \
-                       unsigned char * _msg_enc);               \
-void CONVFEC(_decode)(fec _q,                                   \
-                       unsigned int _dec_msg_len,               \
-                       unsigned char * _msg_enc,                \
-                       unsigned char * _msg_dec);               \
-void CONVFEC(_setlength)(fec _q,                                \
-                          unsigned int _dec_msg_len);
-
-LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27_MANGLE)
-LIQUID_FEC_CONV_DEFINE_API(FEC_CONV29_MANGLE)
-LIQUID_FEC_CONV_DEFINE_API(FEC_CONV39_MANGLE)
-LIQUID_FEC_CONV_DEFINE_API(FEC_CONV615_MANGLE)
-
-LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27P23_MANGLE)
-LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27P34_MANGLE)
-LIQUID_FEC_CONV_DEFINE_API(FEC_CONV27P45_MANGLE)
+// internal initialization methods (sets r, K, viterbi methods,
+// and puncturing matrix)
+void fec_conv_init_v27p23(fec _q);
+void fec_conv_init_v27p34(fec _q);
+void fec_conv_init_v27p45(fec _q);
 
 //
 // MODULE : filter

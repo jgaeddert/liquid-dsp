@@ -147,11 +147,9 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_CONV_V615:
         return fec_conv_create(_scheme);
     case FEC_CONV_V27P23:
-        return fec_conv27p23_create(_opts);
     case FEC_CONV_V27P34:
-        return fec_conv27p34_create(_opts);
     case FEC_CONV_V27P45:
-        return fec_conv27p45_create(_opts);
+        return fec_conv_punctured_create(_scheme);
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
