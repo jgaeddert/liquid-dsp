@@ -361,10 +361,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
                 //printf("squelch enabled\n");
                 _fs->squelch_timer = 0;
-                //framesync64_reset(_fs);
-                nco_set_phase(_fs->nco_rx, 0.0f);
-                nco_set_frequency(_fs->nco_rx, 0.0f);
-                symsync_crcf_clear(_fs->mfdecim);
+                framesync64_reset(_fs);
                 continue;
             } else {
                 // squelch enabled: ignore sample (wait for high signal)

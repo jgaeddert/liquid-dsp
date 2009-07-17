@@ -29,7 +29,7 @@
 
 // object-independent methods
 
-const char * fec_scheme_str[12] = {
+const char * fec_scheme_str[15] = {
     "unknown",
     "none",
     "repeat(3)",
@@ -41,7 +41,10 @@ const char * fec_scheme_str[12] = {
     "convolutional r1/6 K=15",
     "convolutional r2/3 K=7 (punctured)",
     "convolutional r3/4 K=7 (punctured)",
-    "convolutional r4/5 K=7 (punctured)"
+    "convolutional r4/5 K=7 (punctured)",
+    "convolutional r5/6 K=7 (punctured)",
+    "convolutional r6/7 K=7 (punctured)",
+    "convolutional r7/8 K=7 (punctured)"
 };
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
@@ -63,6 +66,9 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V27P23:   K=7; p=2; break;
     case FEC_CONV_V27P34:   K=7; p=3; break;
     case FEC_CONV_V27P45:   K=7; p=4; break;
+    case FEC_CONV_V27P56:   K=7; p=5; break;
+    case FEC_CONV_V27P67:   K=7; p=6; break;
+    case FEC_CONV_V27P78:   K=7; p=7; break;
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
@@ -109,6 +115,9 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_CONV_V27P23:   return 2./3.;
     case FEC_CONV_V27P34:   return 3./4.;
     case FEC_CONV_V27P45:   return 4./5.;
+    case FEC_CONV_V27P56:   return 5./6.;
+    case FEC_CONV_V27P67:   return 6./7.;
+    case FEC_CONV_V27P78:   return 7./8.;
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
@@ -149,6 +158,9 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_CONV_V27P23:
     case FEC_CONV_V27P34:
     case FEC_CONV_V27P45:
+    case FEC_CONV_V27P56:
+    case FEC_CONV_V27P67:
+    case FEC_CONV_V27P78:
         return fec_conv_punctured_create(_scheme);
 #else
     case FEC_CONV_V27:
@@ -158,6 +170,9 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_CONV_V27P23:
     case FEC_CONV_V27P34:
     case FEC_CONV_V27P45:
+    case FEC_CONV_V27P56:
+    case FEC_CONV_V27P67:
+    case FEC_CONV_V27P78:
         printf("error: fec_create(), convolutional codes unavailable (install libfec)\n");
         exit(0);
 #endif

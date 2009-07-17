@@ -455,12 +455,15 @@ typedef enum {
     // punctured (perforated) codes
     FEC_CONV_V27P23,    // r2/3, K=7, dfree=6
     FEC_CONV_V27P34,    // r3/4, K=7, dfree=5
-    FEC_CONV_V27P45     // r4/5, K=7, dfree=4
+    FEC_CONV_V27P45,    // r4/5, K=7, dfree=4
+    FEC_CONV_V27P56,    // r5/6, K=7, dfree=4
+    FEC_CONV_V27P67,    // r6/7, K=7, dfree=3
+    FEC_CONV_V27P78     // r7/8, K=7, dfree=3
 } fec_scheme;
 
 struct fec_conv_opts {int puncture;};
 
-extern const char * fec_scheme_str[12];
+extern const char * fec_scheme_str[15];
 
 typedef struct fec_s * fec;
 

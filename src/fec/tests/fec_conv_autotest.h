@@ -54,8 +54,9 @@ void conv_test(fec_scheme _fs,
     fec_encode(q, _dec_msg_len, msg, msg_enc);
     
     // corrupt encoded message
-    for (i=0; i<_enc_msg_len; i++)
-        msg_enc[i] ^= 0x01;
+    //for (i=0; i<_enc_msg_len; i++)
+    //    msg_enc[i] ^= 0x01;
+    msg_enc[0] ^= 0x01;
 
     // decode message
     fec_decode(q, _dec_msg_len, msg_enc, msg_dec);
@@ -78,6 +79,14 @@ void autotest_conv27_codec()    { conv_test(FEC_CONV_V27,   8); }
 void autotest_conv29_codec()    { conv_test(FEC_CONV_V29,   8); }
 void autotest_conv39_codec()    { conv_test(FEC_CONV_V39,   8); }
 void autotest_conv615_codec()   { conv_test(FEC_CONV_V615,  8); }
+
+// punctured codes
+void autotest_conv27p23_codec() { conv_test(FEC_CONV_V27P23,8); }
+void autotest_conv27p34_codec() { conv_test(FEC_CONV_V27P34,8); }
+void autotest_conv27p45_codec() { conv_test(FEC_CONV_V27P45,8); }
+void autotest_conv27p56_codec() { conv_test(FEC_CONV_V27P56,8); }
+void autotest_conv27p67_codec() { conv_test(FEC_CONV_V27P67,8); }
+void autotest_conv27p78_codec() { conv_test(FEC_CONV_V27P78,8); }
 
 #endif // __LIQUID_FEC_CONV_AUTOTEST_H__
 

@@ -38,3 +38,21 @@ int fec_conv27p45_matrix[8] = {
     1, 0, 0, 0
 };
 
+// 5/6-rate K=7 punctured convolutional code
+int fec_conv27p56_matrix[10] = {
+    1, 1, 0, 1, 0,
+    1, 0, 1, 0, 1
+};
+
+// 6/7-rate K=7 punctured convolutional code
+int fec_conv27p67_matrix[12] = {
+    1, 1, 1, 0, 1, 0,
+    1, 0, 0, 1, 0, 1
+};
+
+// 7/8-rate K=7 punctured convolutional code
+int fec_conv27p78_matrix[14] = {
+    1, 1, 1, 1, 0, 1, 0,
+    1, 0, 0, 0, 1, 0, 1
+};
+
