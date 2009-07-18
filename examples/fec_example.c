@@ -72,6 +72,8 @@ int main(int argc, char*argv[]) {
             } else if (strcmp(optarg, "h74")==0) {
                 fs = FEC_HAMMING74;
             } else {
+                printf("error: unknown modulation scheme \"%s\"\n\n",optarg);
+                usage();
                 exit(-1);
             }
             break;
@@ -166,6 +168,7 @@ int main(int argc, char*argv[]) {
 
 void usage()
 {
+    printf("fec_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  c     : coding scheme, [h74], r3, v27, v29, v39, v615,\n");
     printf("          v27p23, v27p34, v27p45, v27p56, v27p67, v27p78,\n");
