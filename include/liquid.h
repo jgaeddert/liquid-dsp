@@ -1085,6 +1085,66 @@ void framesync64_set_sym_bw0(framesync64 _fs, float _sym_bw0);
 void framesync64_set_sym_bw1(framesync64 _fs, float _sym_bw1);
 void framesync64_set_squelch_threshold(framesync64 _fs, float _squelch_threshold);
 
+//
+// Flexible frame
+//
+typedef struct flexframegen_s * flexframegen;
+typedef struct {
+    unsigned int ramp_len;
+    unsigned int phasing_len;
+    unsigned int pn_len;
+    unsigned int payload_len;
+    unsigned int mod_scheme;
+    unsigned int mod_bps;
+    unsigned int codec;
+    int use_interleaver;
+    unsigned int m;
+    float beta;
+} flexframegenopts_s;
+flexframegen flexframegen_create();
+//void flexframegen_init(flexframegenopts_s * _opts);
+void flexframegen_destroy(flexframegen _fg);
+void flexframegen_print(flexframegen _fg);
+void flexframegen_execute(flexframegen _fg,
+                          flexframegenopts_s _opts,
+                          unsigned char * _header,
+                          unsigned char * _payload,
+                          liquid_float_complex * _y);
+void flexframegen_flush(flexframegen _fg,
+                        unsigned int _n,
+                        liquid_float_complex * _y);
+
+typedef struct flexframesync_s * flexframesync;
+typedef struct {
+    float squelch_threshold;
+    float agc_bw0, agc_bw1;
+    float sym_bw0, sym_bw1;
+    float pll_bw0, pll_bw1;
+    float rxy_threshold;
+    unsigned int pn_len;
+    unsigned int m;
+    float beta;
+    unsigned int symsync_npfb;
+    // unsigned int eqtaps_num;
+} flexframesyncopts_s;
+
+// callback
+typedef int (*flexframesync_callback)(
+        unsigned char * _header,
+        int _header_valid,
+        unsigned char * _payload,
+        unsigned int _payload_len,
+        int _payload_valid,
+        flexframegenopts_s * _txopts,
+        void * _userdata);
+flexframesync flexframesync_create();
+void flexframesync_init(flexframesyncopts_s * _opts);
+void flexframesync_destroy(flexframesync _fg);
+void flexframesync_print(flexframesync _fg);
+void flexframesync_execute(flexframesync _fg,
+                           liquid_float_complex * _x,
+                           unsigned int _n);
+
 
 //
 // P/N synchronizer
