@@ -32,6 +32,8 @@ local_s_files	:=		\
 	pnsync_cccf.c		\
 	framegen64.c		\
 	framesync64.c		\
+	flexframegen.c		\
+	flexframesync.c		\
 	packetizer.c
 
 # local_t_files

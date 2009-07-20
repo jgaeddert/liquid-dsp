@@ -1071,6 +1071,7 @@ void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props);
 void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props);
 void flexframegen_destroy(flexframegen _fg);
 void flexframegen_print(flexframegen _fg);
+void flexframegen_getframelen(flexframegen _fg);
 void flexframegen_execute(flexframegen _fg,
                           unsigned char * _header,
                           unsigned char * _payload,
@@ -1098,7 +1099,7 @@ typedef struct {
     //void * userdata;
 } flexframesyncprops_s;
 typedef struct flexframesync_s * flexframesync;
-flexframesync flexframesync_create(flexframegenprops_s * _props,
+flexframesync flexframesync_create(flexframesyncprops_s * _props,
                                    flexframesync_callback _callback,
                                    void * _userdata);
 void flexframesync_destroy(flexframesync _fs);
