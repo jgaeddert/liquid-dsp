@@ -57,8 +57,6 @@ void flexframesync_close_bandwidth(flexframesync _fs);
 void flexframesync_decode_header(flexframesync _fs);
 void flexframesync_decode_payload(flexframesync _fs);
 
-void flexframesync_syms_to_byte(unsigned char * _syms, unsigned char * _byte);
-
 struct flexframesync_s {
     modem demod;
     modem bpsk;
@@ -72,17 +70,6 @@ struct flexframesync_s {
     nco nco_rx;
     bsync_rrrf fsync;
 
-    // synchronizer bandwidths
-    float agc_bw0, agc_bw1; // automatic gain control
-    float pll_bw0, pll_bw1; // phase-locked loop
-    float sym_bw0, sym_bw1; // symbol timing recovery
-
-    // squelch
-    float rssi;     // received signal strength indicator [dB]
-    float squelch_threshold;
-    unsigned int squelch_timeout;
-    unsigned int squelch_timer;
-
     // status variables
     enum {
         FLEXFRAMESYNC_STATE_SEEKPN=0,
@@ -92,23 +79,23 @@ struct flexframesync_s {
     } state;
     unsigned int num_symbols_collected;
     unsigned int header_key;
-    unsigned int payload_key;
     bool header_valid;
-    bool payload_valid;
-
-    flexframesync_callback callback;
-    void * userdata;
 
     // header
-    unsigned char header_sym[256];
-    unsigned char header_enc[64];
-    unsigned char header[32];
+    unsigned char header_sym[128];
+    unsigned char header_enc[32];
+    unsigned char header[15];
 
     // payload
-    unsigned char payload_sym[512];
-    unsigned char payload_enc[128];
-    unsigned char payload_intlv[128];
-    unsigned char payload[64];
+    unsigned char * payload_sym;
+    unsigned char * payload;
+
+    // properties
+    flexframesyncprops_s props;
+
+    // callback
+    flexframesync_callback callback;
+    void * userdata;
 
 #ifdef DEBUG_FLEXFRAMESYNC
     FILE*fid;
@@ -329,6 +316,7 @@ void flexframesync_reset(flexframesync _fs)
 
 void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n)
 {
+#if 0
     unsigned int i, j, nw;
     float complex agc_rx_out;
     float complex mfdecim_out[4];
@@ -471,17 +459,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         }
     }
     //printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
-}
-
-void flexframesync_set_agc_bw0(flexframesync _fs, float _agc_bw0) { _fs->agc_bw0 = _agc_bw0;}
-void flexframesync_set_agc_bw1(flexframesync _fs, float _agc_bw1) { _fs->agc_bw1 = _agc_bw1;}
-void flexframesync_set_pll_bw0(flexframesync _fs, float _pll_bw0) { _fs->pll_bw0 = _pll_bw0;}
-void flexframesync_set_pll_bw1(flexframesync _fs, float _pll_bw1) { _fs->pll_bw1 = _pll_bw1;}
-void flexframesync_set_sym_bw0(flexframesync _fs, float _sym_bw0) { _fs->sym_bw0 = _sym_bw0;}
-void flexframesync_set_sym_bw1(flexframesync _fs, float _sym_bw1) { _fs->sym_bw1 = _sym_bw1;}
-void flexframesync_set_squelch_threshold(flexframesync _fs, float _squelch_threshold)
-{
-    _fs->squelch_threshold = _squelch_threshold;
+#endif
 }
 
 // 
@@ -490,23 +468,30 @@ void flexframesync_set_squelch_threshold(flexframesync _fs, float _squelch_thres
 
 void flexframesync_open_bandwidth(flexframesync _fs)
 {
-    agc_set_bandwidth(_fs->agc_rx, _fs->agc_bw0);
-    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw0);
-    pll_set_bandwidth(_fs->pll_rx, _fs->pll_bw0);
+    agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw0);
+    pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw0);
 }
 
 void flexframesync_close_bandwidth(flexframesync _fs)
 {
-    agc_set_bandwidth(_fs->agc_rx, _fs->agc_bw1);
-    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw1);
-    pll_set_bandwidth(_fs->pll_rx, _fs->pll_bw1);
+    agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
+    pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
 }
 
 void flexframesync_decode_header(flexframesync _fs)
 {
     unsigned int i;
-    for (i=0; i<64; i++)
-        flexframesync_syms_to_byte(_fs->header_sym+(4*i), _fs->header_enc+i);
+    unsigned char b;
+    for (i=0; i<32; i++) {
+        b = 0;
+        b |= (_fs->header_sym[0] << 6) & 0xc0;
+        b |= (_fs->header_sym[1] << 4) & 0x30;
+        b |= (_fs->header_sym[2] << 2) & 0x0c;
+        b |= (_fs->header_sym[3]     ) & 0x03;
+        _fs->header_enc[i] = b;
+    }
 
 #ifdef DEBUG_FLEXFRAMESYNC_PRINT
     printf("header ENCODED (rx):\n");
@@ -541,21 +526,13 @@ void flexframesync_decode_header(flexframesync _fs)
     _fs->header_key = header_key;
     //printf("rx: header_key:  0x%8x\n", header_key);
 
-    // strip off crc32
-    unsigned int payload_key=0;
-    payload_key |= ( _fs->header[24] << 24 );
-    payload_key |= ( _fs->header[25] << 16 );
-    payload_key |= ( _fs->header[26] <<  8 );
-    payload_key |= ( _fs->header[27]       );
-    _fs->payload_key = payload_key;
-    //printf("rx: payload_key: 0x%8x\n", payload_key);
-
     // validate crc
     _fs->header_valid = crc32_validate_message(_fs->header,28,_fs->header_key);
 }
 
 void flexframesync_decode_payload(flexframesync _fs)
 {
+#if 0
     unsigned int i;
     for (i=0; i<128; i++)
         flexframesync_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_intlv[i]));
@@ -581,15 +558,8 @@ void flexframesync_decode_payload(flexframesync _fs)
     printf("\n");
 #endif
 
+#endif
+
 }
 
-void flexframesync_syms_to_byte(unsigned char * _syms, unsigned char * _byte)
-{
-    unsigned char b=0;
-    b |= (_syms[0] << 6) & 0xc0;
-    b |= (_syms[1] << 4) & 0x30;
-    b |= (_syms[2] << 2) & 0x0c;
-    b |= (_syms[3]     ) & 0x03;
-    *_byte = b;
-}
 
