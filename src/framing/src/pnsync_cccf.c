@@ -22,7 +22,7 @@
 // Framing API: floating-point
 //
 
-#include "framing_internal.h"
+#include "liquid.internal.h"
 
 // 
 #define PNSYNC(name)        LIQUID_CONCAT(pnsync_cccf,name)

@@ -348,6 +348,44 @@ LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, floa
 
 
 //
+// MODULE : framing
+//
+
+// packetizer
+
+struct fecintlv_plan {
+    unsigned int dec_msg_len;
+    unsigned int enc_msg_len;
+
+    // fec codec
+    fec_scheme fs;
+    fec f;
+
+    // interleaver
+    unsigned int intlv_scheme;
+    interleaver q;
+};
+
+struct packetizer_s {
+    unsigned int msg_len;
+    unsigned int packet_len;
+
+    unsigned int crc32_key;
+
+    struct fecintlv_plan * plan;
+    unsigned int plan_len;
+
+    // buffers
+    unsigned int buffer_len;
+    unsigned char * buffer_0;
+    unsigned char * buffer_1;
+};
+
+// reallocate memory for buffers
+void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
+
+
+//
 // MODULE : interleaver
 //
 

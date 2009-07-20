@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "framing_internal.h"
+#include "liquid.internal.h"
 
 unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1)
 {
