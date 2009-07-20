@@ -124,22 +124,22 @@ int main(int argc, char*argv[]) {
 
     printf("original message:  [%3u] ",n);
     for (i=0; i<n; i++)
-        printf("%.2X ", (unsigned int) (data[i]));
+        printf(" %.2X", (unsigned int) (data[i]));
     printf("\n");
 
     printf("encoded message:   [%3u] ",n_enc);
     for (i=0; i<n_enc; i++)
-        printf("%.2X ", (unsigned int) (msg_enc[i]));
+        printf(" %.2X", (unsigned int) (msg_enc[i]));
     printf("\n");
 
     printf("corrupted message: [%3u] ",n_enc);
     for (i=0; i<n_enc; i++)
-        printf("%.2X ", (unsigned int) (msg_cor[i]));
+        printf("%c%.2X", msg_cor[i]==msg_enc[i] ? ' ' : '*', (unsigned int) (msg_cor[i]));
     printf("\n");
 
     printf("decoded message:   [%3u] ",n);
     for (i=0; i<n; i++)
-        printf("%.2X ", (unsigned int) (msg_dec[i]));
+        printf("%c%.2X", msg_dec[i] == data[i] ? ' ' : '*', (unsigned int) (msg_dec[i]));
     printf("\n");
     printf("\n");
 
