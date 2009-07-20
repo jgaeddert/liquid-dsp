@@ -351,6 +351,10 @@ LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, floa
 // MODULE : framing
 //
 
+// flexframegen
+void flexframegen_compute_payload_len(flexframegen _fg);
+void flexframegen_compute_frame_len(flexframegen _fg);
+
 // packetizer
 
 struct fecintlv_plan {

@@ -55,6 +55,10 @@ struct flexframegen_s {
 
     // properties
     flexframegenprops_s props;
+
+    unsigned int pnsequence_len;    //
+    unsigned int payload_len;       // number of symbols
+    unsigned int frame_len;         // number of symbols
 };
 
 flexframegen flexframegen_create(flexframegenprops_s * _props)
@@ -64,6 +68,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     unsigned int i;
 
     // generate pn sequence
+    fg->pnsequence_len = 64;
     msequence ms = msequence_create(6);
     for (i=0; i<64; i++)
         fg->pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
@@ -75,6 +80,9 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     fg->intlv_header = interleaver_create(32, INT_BLOCK);
 
     // initialize
+    memmove(&fg->props, _props, sizeof(flexframegenprops_s));
+    flexframegen_compute_payload_len(fg);
+    flexframegen_compute_frame_len(fg);
 
     return fg;
 }
@@ -89,13 +97,17 @@ void flexframegen_destroy(flexframegen _fg)
 
 void flexframegen_print(flexframegen _fg)
 {
-    printf("flexframegen:\n");
-    printf("    ramp up len     :   %u\n", _fg->props.rampup_len);
+    printf("flexframegen [%u]:\n", _fg->frame_len);
+    printf("    ramp up len         :   %u\n", _fg->props.rampup_len);
+    printf("    phasing len         :   %u\n", _fg->props.phasing_len);
+    printf("    p/n sequence len    :   %u\n", _fg->pnsequence_len);
+    printf("    payload len         :   %u\n", _fg->payload_len);
+    printf("    ramp dn len         :   %u\n", _fg->props.rampdn_len);
 }
 
 unsigned int flexframegen_getframelen(flexframegen _fg)
 {
-    return 0;
+    return _fg->frame_len;
 }
 
 void flexframegen_execute(flexframegen _fg,
@@ -104,4 +116,31 @@ void flexframegen_execute(flexframegen _fg,
                           float complex * _y)
 {
 }
+
+//
+// internal
+//
+
+void flexframegen_compute_payload_len(flexframegen _fg)
+{
+    _fg->payload_len = 8*(_fg->props.payload_len);
+    _fg->payload_len /= _fg->props.mod_bps;
+    _fg->payload_len += _fg->payload_len % _fg->props.mod_bps;
+}
+
+void flexframegen_compute_frame_len(flexframegen _fg)
+{
+    _fg->frame_len = 0;
+
+    _fg->frame_len += _fg->props.rampup_len;    // ramp up length
+    _fg->frame_len += _fg->props.phasing_len;   // phasing length
+    _fg->frame_len += _fg->pnsequence_len;      // p/n sequence length
+
+    // payload length
+    flexframegen_compute_payload_len(_fg);
+    _fg->frame_len += _fg->payload_len;
+
+    _fg->frame_len += _fg->props.rampdn_len;    // ramp down length
+}
+
 

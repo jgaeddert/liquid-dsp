@@ -30,6 +30,7 @@ int main() {
     fgprops.mod_scheme = MOD_PSK;
     fgprops.mod_bps = 3;
     fgprops.rampdn_len = 16;
+    printf("creating flexframegen...\n");
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
 
