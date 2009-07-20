@@ -1012,40 +1012,6 @@ void lf2_generate_filter(lf2 _f);
 // MODULE : framing
 //
 
-#define LIQUID_CONCAT(prefix,name) prefix ## name
-
-//
-// Frame descriptor
-//
-typedef enum {
-    FRAME_UNKNOWN=0,
-
-    FRAME_SRC0,
-    FRAME_SRC1,
-    FRAME_DST0,
-    FRAME_DST1,
-    FRAME_MOD_SCHEME,
-    FRAME_MOD_BPS,
-    FRAME_FEC_INNER_SCHEME,
-    FRAME_FEC_OUTER_SCHEME,
-    FRAME_INTLV_INNER_SCHEME,
-    FRAME_INTLV_OUTER_SCHEME,
-    FRAME_PROTOCOL,
-    FRAME_MSG_LENGTH,
-    FRAME_NUM_SYMBOLS
-} frame_keyid;
-
-typedef struct frame_s * frame;
-
-frame frame_create();
-void frame_destroy(frame _f);
-void frame_print(frame _f);
-
-void frame_setkey(frame _f, frame_keyid _id, unsigned int _value);
-
-void frame_encode(frame _f, unsigned char * _header, unsigned char *_out);
-int  frame_decode(frame _f, unsigned char * _in, unsigned char * _header);
-
 //
 // Basic frame generator (64 bytes data payload)
 //
@@ -1086,65 +1052,63 @@ void framesync64_set_sym_bw1(framesync64 _fs, float _sym_bw1);
 void framesync64_set_squelch_threshold(framesync64 _fs, float _squelch_threshold);
 
 //
-// Flexible frame
+// Flexible frame : adjustable payload, mod scheme, etc., but bring
+//                  your own error correction, redundancy check
 //
-typedef struct flexframegen_s * flexframegen;
+
+// frame generator
 typedef struct {
-    unsigned int ramp_len;
+    unsigned int rampup_len;
     unsigned int phasing_len;
-    unsigned int pn_len;
     unsigned int payload_len;
     unsigned int mod_scheme;
     unsigned int mod_bps;
-    unsigned int codec;
-    int use_interleaver;
-    unsigned int m;
-    float beta;
-} flexframegenopts_s;
-flexframegen flexframegen_create();
-//void flexframegen_init(flexframegenopts_s * _opts);
+    unsigned int rampdn_len;
+} flexframegenprops_s;
+typedef struct flexframegen_s * flexframegen;
+flexframegen flexframegen_create(flexframegenprops_s * _props);
+void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props);
+void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props);
 void flexframegen_destroy(flexframegen _fg);
 void flexframegen_print(flexframegen _fg);
 void flexframegen_execute(flexframegen _fg,
-                          flexframegenopts_s _opts,
                           unsigned char * _header,
                           unsigned char * _payload,
                           liquid_float_complex * _y);
 void flexframegen_flush(flexframegen _fg,
-                        unsigned int _n,
-                        liquid_float_complex * _y);
+                            unsigned int _n,
+                            liquid_float_complex * _y);
 
-typedef struct flexframesync_s * flexframesync;
+// frame synchronizer
+typedef int (*flexframesync_callback)(unsigned char * _header,
+                                      int _header_valid,
+                                      unsigned char * _payload,
+                                      unsigned int _payload_len,
+                                      void * _userdata);
 typedef struct {
-    float squelch_threshold;
-    float agc_bw0, agc_bw1;
-    float sym_bw0, sym_bw1;
-    float pll_bw0, pll_bw1;
-    float rxy_threshold;
-    unsigned int pn_len;
-    unsigned int m;
-    float beta;
-    unsigned int symsync_npfb;
-    // unsigned int eqtaps_num;
-} flexframesyncopts_s;
-
-// callback
-typedef int (*flexframesync_callback)(
-        unsigned char * _header,
-        int _header_valid,
-        unsigned char * _payload,
-        unsigned int _payload_len,
-        int _payload_valid,
-        flexframegenopts_s * _txopts,
-        void * _userdata);
-flexframesync flexframesync_create();
-void flexframesync_init(flexframesyncopts_s * _opts);
-void flexframesync_destroy(flexframesync _fg);
-void flexframesync_print(flexframesync _fg);
-void flexframesync_execute(flexframesync _fg,
+    float agc_bw0, agc_bw1;     // automatic gain control bandwidth
+    float sym_bw0, sym_bw1;     // symbol synchronizer bandwidth
+    float pll_bw0, pll_bw1;     // phase-locked loop bandwidth
+    unsigned int k;             // decimation rate
+    unsigned int npfb;          // number of filters in symbol sync.
+    unsigned int m;             // filter length
+    float beta;                 // excess bandwidth
+    float squelch_threshold;    // squelch enable/disable threshold
+    //flexframesync_callback callback;
+    //void * userdata;
+} flexframesyncprops_s;
+typedef struct flexframesync_s * flexframesync;
+flexframesync flexframesync_create(flexframegenprops_s * _props,
+                                   flexframesync_callback _callback,
+                                   void * _userdata);
+void flexframesync_destroy(flexframesync _fs);
+void flexframesync_getprops(flexframesync _fs, flexframesyncprops_s * _props);
+void flexframesync_setprops(flexframesync _fs, flexframesyncprops_s * _props);
+void flexframesync_print(flexframesync _fs);
+void flexframesync_reset(flexframesync _fs);
+void flexframesync_execute(flexframesync _fs,
                            liquid_float_complex * _x,
                            unsigned int _n);
-
 
 //
 // P/N synchronizer
