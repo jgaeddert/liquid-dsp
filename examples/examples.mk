@@ -48,6 +48,7 @@ local_src	:=			\
 	firpfbch_example.c		\
 	firpfbch_analysis_example.c	\
 	firpfbch_synthesis_example.c	\
+	flexframesync_example.c		\
 	framegen64_example.c		\
 	framesync64_example.c		\
 	gport2_example.c		\

@@ -1071,7 +1071,7 @@ void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props);
 void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props);
 void flexframegen_destroy(flexframegen _fg);
 void flexframegen_print(flexframegen _fg);
-void flexframegen_getframelen(flexframegen _fg);
+unsigned int flexframegen_getframelen(flexframegen _fg);
 void flexframegen_execute(flexframegen _fg,
                           unsigned char * _header,
                           unsigned char * _payload,

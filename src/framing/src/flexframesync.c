@@ -31,25 +31,25 @@
 
 #include "liquid.internal.h"
 
-#define FLEXFRAMESYNC_SYM_BW_0        (0.01f)
-#define FLEXFRAMESYNC_SYM_BW_1        (0.001f)
+#define FLEXFRAMESYNC_SYM_BW_0          (0.01f)
+#define FLEXFRAMESYNC_SYM_BW_1          (0.001f)
 
-#define FLEXFRAMESYNC_AGC_BW_0        (3e-3f)
-#define FLEXFRAMESYNC_AGC_BW_1        (1e-5f)
+#define FLEXFRAMESYNC_AGC_BW_0          (3e-3f)
+#define FLEXFRAMESYNC_AGC_BW_1          (1e-5f)
 
-#define FLEXFRAMESYNC_PLL_BW_0        (2e-3f)
-#define FLEXFRAMESYNC_PLL_BW_1        (1e-3f)
+#define FLEXFRAMESYNC_PLL_BW_0          (2e-3f)
+#define FLEXFRAMESYNC_PLL_BW_1          (1e-3f)
 
-#define FLEXFRAMESYNC_SQUELCH_THRESH  (-15.0f)
-#define FLEXFRAMESYNC_SQUELCH_TIMEOUT (32)
+#define FLEXFRAMESYNC_SQUELCH_THRESH    (-15.0f)
+#define FLEXFRAMESYNC_SQUELCH_TIMEOUT   (32)
 
-#define FRAME64_PN_LEN              (64)
+#define FRAME64_PN_LEN                  (64)
 
 
 #define DEBUG_FLEXFRAMESYNC
-//#define DEBUG_FLEXFRAMESYNC_PRINT
-#define DEBUG_FLEXFRAMESYNC_FILENAME              "flexframesync_internal_debug.m"
-#define DEBUG_FLEXFRAMESYNC_BUFFER_LEN            (4096)
+#define DEBUG_FLEXFRAMESYNC_PRINT
+#define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
+#define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)
 
 // Internal
 void flexframesync_open_bandwidth(flexframesync _fs);
@@ -130,6 +130,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->callback = _callback;
     fs->userdata = _userdata;
 
+#if 0
     // agc, rssi, squelch
     fs->agc_rx = agc_create(1.0f, FLEXFRAMESYNC_AGC_BW_0);
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
@@ -173,7 +174,6 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->num_symbols_collected = 0;
 
     // set open/closed bandwidth values
-#if 0
     flexframesync_set_agc_bw0(fs,FLEXFRAMESYNC_AGC_BW_0);
     flexframesync_set_agc_bw1(fs,FLEXFRAMESYNC_AGC_BW_1);
     flexframesync_set_pll_bw0(fs,FLEXFRAMESYNC_PLL_BW_0);
@@ -181,10 +181,10 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     flexframesync_set_sym_bw0(fs,FLEXFRAMESYNC_SYM_BW_0);
     flexframesync_set_sym_bw1(fs,FLEXFRAMESYNC_SYM_BW_1);
     flexframesync_set_squelch_threshold(fs,FLEXFRAMESYNC_SQUELCH_THRESH);
-#endif
 
     // open bandwidth
     flexframesync_open_bandwidth(fs);
+#endif
 
 #ifdef DEBUG_FLEXFRAMESYNC
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
@@ -201,6 +201,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
 
 void flexframesync_destroy(flexframesync _fs)
 {
+#if 0
     symsync_crcf_destroy(_fs->mfdecim);
     fec_destroy(_fs->dec);
     interleaver_destroy(_fs->intlv);
@@ -210,6 +211,8 @@ void flexframesync_destroy(flexframesync _fs)
     bsync_rrrf_destroy(_fs->fsync);
     modem_destroy(_fs->bpsk);
     modem_destroy(_fs->demod);
+#endif
+
 #ifdef DEBUG_FLEXFRAMESYNC
     unsigned int i;
     float * r;

@@ -93,6 +93,11 @@ void flexframegen_print(flexframegen _fg)
     printf("    ramp up len     :   %u\n", _fg->props.rampup_len);
 }
 
+unsigned int flexframegen_getframelen(flexframegen _fg)
+{
+    return 0;
+}
+
 void flexframegen_execute(flexframegen _fg,
                           unsigned char * _header,
                           unsigned char * _payload,
