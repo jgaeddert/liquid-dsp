@@ -46,15 +46,15 @@
 #define FRAME64_PN_LEN                  (64)
 
 
-#define DEBUG_FLEXFRAMESYNC
-#define DEBUG_FLEXFRAMESYNC_PRINT
+#define DEBUG_FLEXFRAMESYNC             1
+#define DEBUG_FLEXFRAMESYNC_PRINT       1
 #define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
 #define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)
 
 // Internal
 void flexframesync_open_bandwidth(flexframesync _fs);
 void flexframesync_close_bandwidth(flexframesync _fs);
-void flexframesync_decode_header(flexframesync _fs);
+//void flexframesync_decode_header(flexframesync _fs);
 void flexframesync_decode_payload(flexframesync _fs);
 
 struct flexframesync_s {
@@ -82,6 +82,9 @@ struct flexframesync_s {
     bool header_valid;
 
     // header
+    modem mod_header;
+    fec fec_header;
+    interleaver intlv_header;
     unsigned char header_sym[128];
     unsigned char header_enc[32];
     unsigned char header[15];
@@ -116,6 +119,11 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     flexframesync fs = (flexframesync) malloc(sizeof(struct flexframesync_s));
     fs->callback = _callback;
     fs->userdata = _userdata;
+
+    // header objects
+    fs->fec_header = fec_create(FEC_CONV_V29, NULL);
+    fs->mod_header = modem_create(MOD_QPSK, 2);
+    fs->intlv_header = interleaver_create(32, INT_BLOCK);
 
 #if 0
     // agc, rssi, squelch
@@ -199,6 +207,10 @@ void flexframesync_destroy(flexframesync _fs)
     modem_destroy(_fs->bpsk);
     modem_destroy(_fs->demod);
 #endif
+    // destroy header objects
+    fec_destroy(_fs->fec_header);
+    modem_destroy(_fs->mod_header);
+    interleaver_destroy(_fs->intlv_header);
 
 #ifdef DEBUG_FLEXFRAMESYNC
     unsigned int i;
@@ -480,6 +492,7 @@ void flexframesync_close_bandwidth(flexframesync _fs)
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
 }
 
+#if 0
 void flexframesync_decode_header(flexframesync _fs)
 {
     unsigned int i;
@@ -529,6 +542,7 @@ void flexframesync_decode_header(flexframesync _fs)
     // validate crc
     _fs->header_valid = crc32_validate_message(_fs->header,28,_fs->header_key);
 }
+#endif
 
 void flexframesync_decode_payload(flexframesync _fs)
 {
@@ -562,4 +576,60 @@ void flexframesync_decode_payload(flexframesync _fs)
 
 }
 
+// 
+// internal
+//
+void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header)
+{
+    unsigned int i;
+
+    // de-interleave
+    interleaver_deinterleave(_fs->intlv_header, _fs->header_enc, _fs->header_enc);
+
+    // run decoder
+    fec_decode(_fs->fec_header, 15, _fs->header_enc, _fs->header);
+
+    // unscramble header
+    unscramble_data(_fs->header, 15);
+
+    // strip off crc32
+    unsigned int header_key=0;
+    header_key |= ( _fs->header[11] << 24 );
+    header_key |= ( _fs->header[12] << 16 );
+    header_key |= ( _fs->header[13] <<  8 );
+    header_key |= ( _fs->header[14]       );
+    _fs->header_key = header_key;
+
+    // validate crc
+    _fs->header_valid = crc32_validate_message(_fs->header,11,_fs->header_key);
+
+    // strip off modulation scheme/depth
+    unsigned int mod_scheme = (_fs->header[10] >> 4) & 0x0f;
+    unsigned int mod_depth  = (_fs->header[10]     ) & 0x0f;
+
+    // strip off payload length
+    unsigned int payload_len = (_fs->header[8] << 8) | (_fs->header[9]);
+
+    // TODO: copy user data
+    
+#if DEBUG_FLEXFRAMESYNC_PRINT
+    // print results
+    printf("flexframesync_decode_header():\n");
+    printf("    mod scheme  : %u\n", mod_scheme);
+    printf("    mod depth   : %u\n", mod_depth);
+    printf("    payload len : %u\n", payload_len);
+    printf("    header key  : 0x%.8x\n", header_key);
+    printf("    header crc  : %s\n", _fs->header_valid ? "pass" : "FAIL");
+
+    printf("    user data   :");
+    for (i=0; i<8; i++)
+        printf(" %.2x", _fs->header[i]);
+    printf("\n");
+#endif
+}
+
+void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc)
+{
+    memmove(_fs->header_enc, _header_enc, 32);
+}
 

@@ -4,9 +4,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "liquid.h"
+#include "liquid.internal.h"
 
 #define OUTPUT_FILENAME  "flexframesync_example.m"
 
@@ -63,6 +65,13 @@ int main() {
         header[i] = i;
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
+
+    // internal test : encode/decode header
+    unsigned char header_enc[32];
+    flexframegen_encode_header(fg, header);
+    flexframegen_tmp_getheaderenc(fg, header_enc);
+    flexframesync_tmp_setheaderenc(fs, header_enc);
+    flexframesync_decode_header(fs, NULL);
 
     // generate the frame
     unsigned int frame_len = flexframegen_getframelen(fg);

@@ -31,7 +31,8 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FLEXFRAMEGEN
+#define DEBUG_FLEXFRAMEGEN          1
+#define DEBUG_FLEXFRAMEGEN_PRINT    1
 
 struct flexframegen_s {
     // buffers: preamble (BPSK)
@@ -115,6 +116,7 @@ void flexframegen_execute(flexframegen _fg,
                           unsigned char * _payload,
                           float complex * _y)
 {
+    // flexframegen_encode_header(_fg);
 }
 
 //
@@ -143,4 +145,55 @@ void flexframegen_compute_frame_len(flexframegen _fg)
     _fg->frame_len += _fg->props.rampdn_len;    // ramp down length
 }
 
+void flexframegen_encode_header(flexframegen _fg,
+                                unsigned char * _user_header)
+{
+    unsigned int i;
+    // copy 8 bytes of user data
+    for (i=0; i<8; i++)
+        _fg->header[i] = _user_header[i];
+
+    // add payload length
+    _fg->header[8] = (_fg->props.payload_len >> 8) & 0xff;
+    _fg->header[9] = (_fg->props.payload_len     ) & 0xff;
+
+    // add modulation scheme/depth (pack into single byte)
+    _fg->header[10]  = (_fg->props.mod_scheme << 4) & 0xf0;
+    _fg->header[10] |= (_fg->props.mod_bps) & 0x0f;
+
+    // compute crc
+    unsigned int header_key = crc32_generate_key(_fg->header, 11);
+    _fg->header[11] = (header_key >> 24) & 0xff;
+    _fg->header[12] = (header_key >> 16) & 0xff;
+    _fg->header[13] = (header_key >>  8) & 0xff;
+    _fg->header[14] = (header_key      ) & 0xff;
+
+    // scramble header
+    scramble_data(_fg->header, 15);
+
+    // run encoder
+    fec_encode(_fg->fec_header, 15, _fg->header, _fg->header_enc);
+
+    // interleave header bits
+    interleaver_interleave(_fg->intlv_header, _fg->header_enc, _fg->header_enc);
+
+#if DEBUG_FLEXFRAMEGEN_PRINT
+    // print results
+    printf("flexframegen_encode_header():\n");
+    printf("    mod scheme  : %u\n", _fg->props.mod_scheme);
+    printf("    mod depth   : %u\n", _fg->props.mod_bps);
+    printf("    payload len : %u\n", _fg->props.payload_len);
+    printf("    header key  : 0x%.8x\n", header_key);
+
+    printf("    user data   :");
+    for (i=0; i<8; i++)
+        printf(" %.2x", _user_header[i]);
+    printf("\n");
+#endif
+}
+
+void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc)
+{
+    memmove(_header_enc, _fg->header_enc, 32);
+}
 
