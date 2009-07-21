@@ -420,7 +420,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 if (fabsf(rxy) > 0.7f) {
                     printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     printf("frame detected: exiting prematurely\n");
-                    exit(0);
                     // close bandwidth
                     pll_reset(_fs->pll_rx);
                     flexframesync_close_bandwidth(_fs);
@@ -429,20 +428,23 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXHEADER:
+                printf("collecting symbols...\n");
                 _fs->header_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
-                if (_fs->num_symbols_collected==256) {
+                if (_fs->num_symbols_collected==128) {
                     _fs->num_symbols_collected = 0;
                     _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
                     flexframesync_decode_header(_fs,_fs->header);
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
-                _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
+                printf("collecting payload symbols...\n");
+                //_fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
-                if (_fs->num_symbols_collected==512) {
+                if (_fs->num_symbols_collected==1) {
+                    printf("finished collecting symbols\n");
                     _fs->num_symbols_collected = 0;
-                    flexframesync_decode_payload(_fs);
+                    //flexframesync_decode_payload(_fs);
 
                     // invoke callback method
                     _fs->callback(_fs->header,  _fs->header_valid,
@@ -461,13 +463,15 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 break;
             case FLEXFRAMESYNC_STATE_RESET:
                 // open bandwidth
-                flexframesync_open_bandwidth(_fs);
                 _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
+                /*
+                flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;
 
                 _fs->nco_rx->theta=0.0f;
                 _fs->nco_rx->d_theta=0.0f;
                 pll_reset(_fs->pll_rx);
+                */
                 break;
             default:;
             }
@@ -489,9 +493,11 @@ void flexframesync_open_bandwidth(flexframesync _fs)
 
 void flexframesync_close_bandwidth(flexframesync _fs)
 {
+    /*
     agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
+    */
 }
 
 #if 0

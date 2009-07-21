@@ -188,8 +188,10 @@ static int callback(unsigned char * _rx_header,
     printf("num header errors   : %u\n", num_header_errors);
 
     unsigned int num_payload_errors=0;
+    /*
     for (i=0; i<64; i++)
         num_payload_errors += (_rx_payload[i] == fd->payload[i]) ? 0 : 1;
+        */
     printf("num payload errors  : %u\n", num_payload_errors);
 
     return 0;
