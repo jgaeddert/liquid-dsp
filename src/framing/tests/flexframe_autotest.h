@@ -52,12 +52,14 @@ void autotest_flexframe_decode_header()
         header[i] = i;
 
     // internal test : encode/decode header
+    /*
     float complex header_modulated[128];
     flexframegen_encode_header(fg, header);
     flexframegen_modulate_header(fg, header_modulated);
 
     flexframesync_demodulate_header(fs, header_modulated);
     flexframesync_decode_header(fs, NULL);
+    */
 
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);

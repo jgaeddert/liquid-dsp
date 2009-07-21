@@ -58,10 +58,6 @@ void flexframesync_close_bandwidth(flexframesync _fs);
 void flexframesync_decode_payload(flexframesync _fs);
 
 struct flexframesync_s {
-    modem demod;
-    modem bpsk;
-    interleaver intlv;
-    fec dec;
 
     // synchronizer objects
     agc agc_rx;
@@ -85,11 +81,14 @@ struct flexframesync_s {
     modem mod_header;
     fec fec_header;
     interleaver intlv_header;
+    float complex header_samples[128];
     unsigned char header_sym[128];
     unsigned char header_enc[32];
     unsigned char header[15];
 
     // payload
+    modem mod_payload;
+    float complex * payload_samples;
     unsigned char * payload_sym;
     unsigned char * payload;
 
@@ -628,13 +627,13 @@ void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header
 #endif
 }
 
-void flexframesync_demodulate_header(flexframesync _fs, float complex * _x)
+void flexframesync_demodulate_header(flexframesync _fs)
 {
     unsigned int i, sym;
 
     // run demodulator
     for (i=0; i<128; i++) {
-        modem_demodulate(_fs->mod_header, _x[i], &sym);
+        modem_demodulate(_fs->mod_header, _fs->header_samples[i], &sym);
         _fs->header_sym[i] = (unsigned char)sym;
     }
 
@@ -650,8 +649,10 @@ void flexframesync_demodulate_header(flexframesync _fs, float complex * _x)
     }
 }
 
+#if 0
 void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc)
 {
     memmove(_fs->header_enc, _header_enc, 32);
 }
+#endif
 

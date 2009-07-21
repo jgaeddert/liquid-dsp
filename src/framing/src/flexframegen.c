@@ -48,11 +48,13 @@ struct flexframegen_s {
     unsigned char header[15];
     unsigned char header_enc[32];
     unsigned char header_sym[128];
+    float complex header_samples[128];
 
     // payload
     modem mod_payload;
     unsigned char * payload;
     unsigned char * payload_sym;
+    float complex * payload_samples;
 
     // properties
     flexframegenprops_s props;
@@ -119,7 +121,8 @@ void flexframegen_execute(flexframegen _fg,
                           unsigned char * _payload,
                           float complex * _y)
 {
-    // flexframegen_encode_header(_fg);
+    flexframegen_encode_header(_fg, _header);
+    flexframegen_modulate_header(_fg);
 }
 
 //
@@ -195,7 +198,7 @@ void flexframegen_encode_header(flexframegen _fg,
 #endif
 }
 
-void flexframegen_modulate_header(flexframegen _fg, float complex * _y)
+void flexframegen_modulate_header(flexframegen _fg)
 {
     unsigned int i;
 
@@ -209,11 +212,13 @@ void flexframegen_modulate_header(flexframegen _fg, float complex * _y)
 
     // modulate symbols
     for (i=0; i<128; i++)
-        modem_modulate(_fg->mod_header, _fg->header_sym[i], &_y[i]);
+        modem_modulate(_fg->mod_header, _fg->header_sym[i], &_fg->header_samples[i]);
 }
 
+#if 0
 void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc)
 {
     memmove(_header_enc, _fg->header_enc, 32);
 }
+#endif
 

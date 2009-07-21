@@ -355,12 +355,12 @@ LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, floa
 void flexframegen_compute_payload_len(flexframegen _fg);
 void flexframegen_compute_frame_len(flexframegen _fg);
 void flexframegen_encode_header(flexframegen _fg, unsigned char * _user_header);
-void flexframegen_modulate_header(flexframegen _fg, liquid_float_complex * _y);
-void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
+void flexframegen_modulate_header(flexframegen _fg);
+//void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
 
-void flexframesync_demodulate_header(flexframesync _fs, liquid_float_complex * _x);
+void flexframesync_demodulate_header(flexframesync _fs);
 void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header);
-void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc);
+//void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc);
 
 // packetizer
 
