@@ -28,12 +28,12 @@ int main() {
 
     // create flexframegen object
     flexframegenprops_s fgprops;
-    fgprops.rampup_len = 16;
-    fgprops.phasing_len = 50;
-    fgprops.payload_len = 256;
+    fgprops.rampup_len = 64;
+    fgprops.phasing_len = 64;
+    fgprops.payload_len = 64;
     fgprops.mod_scheme = MOD_PSK;
     fgprops.mod_bps = 3;
-    fgprops.rampdn_len = 16;
+    fgprops.rampdn_len = 64;
     printf("creating flexframegen...\n");
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);

@@ -350,7 +350,7 @@ void flexframesync_reset(flexframesync _fs)
 
 void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n)
 {
-    unsigned int i, j, nw;
+    unsigned int i, j, k, nw;
     float complex agc_rx_out;
     float complex mfdecim_out[4];
     float complex nco_rx_out;
@@ -445,18 +445,21 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     // close bandwidth
                     pll_reset(_fs->pll_rx);
                     flexframesync_close_bandwidth(_fs);
-                    nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
+                    //nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
+                    printf(">>> STATE_RXHEADER\n");
                     _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXHEADER:
-                printf("collecting symbols...\n");
-                _fs->header_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
+                //_fs->header_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
+                _fs->header_samples[_fs->num_symbols_collected] = nco_rx_out;
                 _fs->num_symbols_collected++;
                 if (_fs->num_symbols_collected==128) {
                     _fs->num_symbols_collected = 0;
-                    _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
+                    flexframesync_demodulate_header(_fs);
                     flexframesync_decode_header(_fs,_fs->header);
+                    printf(">>> STATE_RXPAYLOAD\n");
+                    _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
@@ -473,6 +476,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                                   _fs->payload, 0,
                                   _fs->userdata);
 
+                    printf(">>> STATE_RESET\n");
                     _fs->state = FLEXFRAMESYNC_STATE_RESET;
                     //_fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
 //#ifdef DEBUG_FLEXFRAMESYNC
