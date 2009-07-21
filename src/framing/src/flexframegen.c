@@ -121,8 +121,42 @@ void flexframegen_execute(flexframegen _fg,
                           unsigned char * _payload,
                           float complex * _y)
 {
+    // write frame
+    // TODO: write frame in pieces so as not to require excessively large output buffer
+    unsigned int i, n=0;
+
+    // ramp up
+    for (i=0; i<_fg->props.rampup_len; i++)
+        _y[n++] = ((i%2) ? 1.0f : -1.0f) * 0.5f * ((float)(i) / (float)(_fg->props.rampup_len));
+
+    // phasing pattern
+    // TODO: ensure proper transitioning between ramp/up and phasing
+    for (i=0; i<_fg->props.phasing_len; i++)
+        _y[n++] = (i%2) ? 1.0f : -1.0f;
+
+    // p/n sequence
+    for (i=0; i<64; i++)
+        _y[n++] = _fg->pn_sequence[i];
+
+    // header
     flexframegen_encode_header(_fg, _header);
     flexframegen_modulate_header(_fg);
+    memmove(&_y[n], _fg->header_samples, 128*sizeof(float complex));
+    n += 128;
+
+    // payload
+    //flexframegen_modulate_payload(_fg);
+    for (i=0; i<_fg->payload_len; i++)
+        _y[n++] = randnf();
+    printf("payload len : %u\n", _fg->payload_len);
+
+    // ramp down
+    for (i=0; i<_fg->props.rampup_len; i++)
+        _y[n++] = ((i%2) ? 1.0f : -1.0f) * 0.5f * ((float)(_fg->props.rampdn_len-i) / (float)(_fg->props.rampdn_len));
+
+    printf("  n         : %u\n", n);
+    printf("  frame len : %u\n", _fg->frame_len);
+    assert(n == _fg->frame_len);
 }
 
 //
@@ -143,6 +177,7 @@ void flexframegen_compute_frame_len(flexframegen _fg)
     _fg->frame_len += _fg->props.rampup_len;    // ramp up length
     _fg->frame_len += _fg->props.phasing_len;   // phasing length
     _fg->frame_len += _fg->pnsequence_len;      // p/n sequence length
+    _fg->frame_len += 128;                      // header length
 
     // payload length
     flexframegen_compute_payload_len(_fg);

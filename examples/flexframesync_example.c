@@ -67,15 +67,20 @@ int main() {
         payload[i] = rand() & 0xff;
 
     // internal test : encode/decode header
+#if 0
     float complex header_modulated[128];
     flexframegen_encode_header(fg, header);
     flexframegen_modulate_header(fg, header_modulated);
 
     flexframesync_demodulate_header(fs, header_modulated);
     flexframesync_decode_header(fs, NULL);
+#endif
 
     // generate the frame
     unsigned int frame_len = flexframegen_getframelen(fg);
+
+    float complex frame[frame_len];
+    flexframegen_execute(fg, header, payload, frame);
 #if 0
     float complex frame_rx[2048];
     
