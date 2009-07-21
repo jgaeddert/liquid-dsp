@@ -441,16 +441,16 @@ int  crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int 
 
 typedef enum {
     FEC_UNKNOWN=0,
-    FEC_NONE,
-    FEC_REP3,
-    FEC_HAMMING74,
-    FEC_HAMMING84,
+    FEC_NONE,           // no error-correction
+    FEC_REP3,           // simple repeat code, r1/3
+    FEC_HAMMING74,      // Hamming (7,4) block code, r1/2 (really 4/7)
+    FEC_HAMMING84,      // Hamming (7,4) with extra parity bit, r1/2
 
     // codecs not defined internally (see http://www.ka9q.net/code/fec/)
-    FEC_CONV_V27,       // r1/2, K=7
-    FEC_CONV_V29,       // r1/2, K=9
-    FEC_CONV_V39,       // r1/3, K=9
-    FEC_CONV_V615,      // r1/6, K=15
+    FEC_CONV_V27,       // r1/2, K=7, dfree=10
+    FEC_CONV_V29,       // r1/2, K=9, dfree=12
+    FEC_CONV_V39,       // r1/3, K=9, dfree=18
+    FEC_CONV_V615,      // r1/6, K=15, dfree<=57 (Heller 1968)
 
     // punctured (perforated) codes
     FEC_CONV_V27P23,    // r2/3, K=7, dfree=6
@@ -460,12 +460,12 @@ typedef enum {
     FEC_CONV_V27P67,    // r6/7, K=7, dfree=3
     FEC_CONV_V27P78,    // r7/8, K=7, dfree=3
 
-    FEC_CONV_V29P23,    // r2/3, K=7, dfree=6
-    FEC_CONV_V29P34,    // r3/4, K=7, dfree=5
-    FEC_CONV_V29P45,    // r4/5, K=7, dfree=4
-    FEC_CONV_V29P56,    // r5/6, K=7, dfree=4
-    FEC_CONV_V29P67,    // r6/7, K=7, dfree=3
-    FEC_CONV_V29P78     // r7/8, K=7, dfree=3
+    FEC_CONV_V29P23,    // r2/3, K=9, dfree=7
+    FEC_CONV_V29P34,    // r3/4, K=9, dfree=6
+    FEC_CONV_V29P45,    // r4/5, K=9, dfree=5
+    FEC_CONV_V29P56,    // r5/6, K=9, dfree=5
+    FEC_CONV_V29P67,    // r6/7, K=9, dfree=4
+    FEC_CONV_V29P78     // r7/8, K=9, dfree=4
 } fec_scheme;
 
 struct fec_conv_opts {int puncture;};
