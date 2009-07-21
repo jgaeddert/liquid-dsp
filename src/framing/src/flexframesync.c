@@ -66,6 +66,12 @@ struct flexframesync_s {
     nco nco_rx;
     bsync_rrrf fsync;
 
+    //
+    float rssi;
+    float squelch_threshold;
+    unsigned int squelch_timeout;
+    unsigned int squelch_timer;
+
     // status variables
     enum {
         FLEXFRAMESYNC_STATE_SEEKPN=0,
@@ -76,6 +82,9 @@ struct flexframesync_s {
     unsigned int num_symbols_collected;
     unsigned int header_key;
     bool header_valid;
+
+    // preamble phasing
+    modem mod_preamble;
 
     // header
     modem mod_header;
@@ -124,7 +133,6 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->mod_header = modem_create(MOD_QPSK, 2);
     fs->intlv_header = interleaver_create(32, INT_BLOCK);
 
-#if 0
     // agc, rssi, squelch
     fs->agc_rx = agc_create(1.0f, FLEXFRAMESYNC_AGC_BW_0);
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
@@ -153,20 +161,15 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     design_rrc_filter(2*npfb,3,0.7f,0,H);
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
-    // create (de)interleaver
-    fs->intlv = interleaver_create(128, INT_BLOCK);
-
-    // create decoder
-    fs->dec = fec_create(FEC_HAMMING74, NULL);
-
-    // create demod
-    fs->demod = modem_create(MOD_QPSK, 2);
-    fs->bpsk = modem_create(MOD_BPSK, 1);
+    // 
+    fs->mod_preamble = modem_create(MOD_BPSK, 1);
+    fs->mod_payload = modem_create(MOD_PSK, 3);
 
     // set status flags
     fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
     fs->num_symbols_collected = 0;
 
+#if 0
     // set open/closed bandwidth values
     flexframesync_set_agc_bw0(fs,FLEXFRAMESYNC_AGC_BW_0);
     flexframesync_set_agc_bw1(fs,FLEXFRAMESYNC_AGC_BW_1);
@@ -327,7 +330,6 @@ void flexframesync_reset(flexframesync _fs)
 
 void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n)
 {
-#if 0
     unsigned int i, j, nw;
     float complex agc_rx_out;
     float complex mfdecim_out[4];
@@ -382,11 +384,11 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             if (_fs->state == FLEXFRAMESYNC_STATE_SEEKPN) {
             //if (false) {
-                modem_demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->bpsk, &phase_error);
+                modem_demodulate(_fs->mod_preamble, nco_rx_out, &demod_sym);
+                get_demodulator_phase_error(_fs->mod_preamble, &phase_error);
             } else {
-                modem_demodulate(_fs->demod, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->demod, &phase_error);
+                modem_demodulate(_fs->mod_payload, nco_rx_out, &demod_sym);
+                get_demodulator_phase_error(_fs->mod_payload, &phase_error);
             }
 
             //if (_fs->rssi < _fs->squelch_threshold)
@@ -416,7 +418,9 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
                 if (fabsf(rxy) > 0.7f) {
-                    // printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
+                    printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
+                    printf("frame detected: exiting prematurely\n");
+                    exit(0);
                     // close bandwidth
                     pll_reset(_fs->pll_rx);
                     flexframesync_close_bandwidth(_fs);
@@ -430,7 +434,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 if (_fs->num_symbols_collected==256) {
                     _fs->num_symbols_collected = 0;
                     _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
-                    flexframesync_decode_header(_fs);
+                    flexframesync_decode_header(_fs,_fs->header);
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
@@ -442,7 +446,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 
                     // invoke callback method
                     _fs->callback(_fs->header,  _fs->header_valid,
-                                  _fs->payload, _fs->payload_valid,
+                                  _fs->payload, 0,
                                   _fs->userdata);
 
                     _fs->state = FLEXFRAMESYNC_STATE_RESET;
@@ -470,7 +474,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         }
     }
     //printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
-#endif
 }
 
 // 

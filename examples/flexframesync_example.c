@@ -88,6 +88,22 @@ int main() {
     float complex frame[frame_len];
     flexframegen_execute(fg, header, payload, frame);
 
+    // interpolate, push through synchronizer
+    float complex x;
+    float complex y[2];
+    for (i=0; i<frame_len+2*m; i++) {
+        // compensate for filter delay
+        x = (i<frame_len) ? frame[i] : 0.0f;
+
+        // run interpolator
+        interp_crcf_execute(interp, x, y);
+
+        // channel
+
+        // push through sync
+        flexframesync_execute(fs, y, 2);
+    }
+
     // write to file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
