@@ -43,7 +43,7 @@
 #define FLEXFRAMESYNC_SQUELCH_THRESH    (-15.0f)
 #define FLEXFRAMESYNC_SQUELCH_TIMEOUT   (32)
 
-#define FRAME64_PN_LEN                  (64)
+#define FLEXFRAMESYNC_PN_LEN            (64)
 
 
 #define DEBUG_FLEXFRAMESYNC             1
@@ -100,6 +100,9 @@ struct flexframesync_s {
     float complex * payload_samples;
     unsigned char * payload_sym;
     unsigned char * payload;
+    unsigned int payload_samples_numalloc;
+    unsigned int payload_sym_numalloc;
+    unsigned int payload_numalloc;
 
     // properties
     flexframesyncprops_s props;
@@ -128,6 +131,9 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->callback = _callback;
     fs->userdata = _userdata;
 
+    // set default properties
+    flexframesync_set_default_props(fs);
+
     // header objects
     fs->fec_header = fec_create(FEC_CONV_V29, NULL);
     fs->mod_header = modem_create(MOD_QPSK, 2);
@@ -143,15 +149,15 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     // pll, nco
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
-    pll_set_bandwidth(fs->pll_rx, FLEXFRAMESYNC_PLL_BW_0);
+    pll_set_bandwidth(fs->pll_rx, FLEXFRAMESYNC_PLL_BW_1);
 
     // bsync (p/n synchronizer)
     unsigned int i;
     msequence ms = msequence_create(6);
-    float pn_sequence[FRAME64_PN_LEN];
-    for (i=0; i<FRAME64_PN_LEN; i++)
+    float pn_sequence[FLEXFRAMESYNC_PN_LEN];
+    for (i=0; i<FLEXFRAMESYNC_PN_LEN; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
-    fs->fsync = bsync_rrrf_create(FRAME64_PN_LEN, pn_sequence);
+    fs->fsync = bsync_rrrf_create(FLEXFRAMESYNC_PN_LEN, pn_sequence);
     msequence_destroy(ms);
 
     // design symsync (k=2)
@@ -168,6 +174,14 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     // set status flags
     fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
     fs->num_symbols_collected = 0;
+
+    // payload buffers
+    fs->payload_samples = NULL;
+    fs->payload_sym = NULL;
+    fs->payload = NULL;
+    fs->payload_samples_numalloc = 0;
+    fs->payload_sym_numalloc = 0;
+    fs->payload_numalloc = 0;
 
 #if 0
     // set open/closed bandwidth values
@@ -213,6 +227,12 @@ void flexframesync_destroy(flexframesync _fs)
     fec_destroy(_fs->fec_header);
     modem_destroy(_fs->mod_header);
     interleaver_destroy(_fs->intlv_header);
+
+    // free payload objects
+    modem_destroy(_fs->mod_payload);
+    free(_fs->payload_samples);
+    free(_fs->payload_sym);
+    free(_fs->payload);
 
 #ifdef DEBUG_FLEXFRAMESYNC
     unsigned int i;
@@ -386,6 +406,9 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             //if (false) {
                 modem_demodulate(_fs->mod_preamble, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->mod_preamble, &phase_error);
+            } else if (_fs->state == FLEXFRAMESYNC_STATE_RXHEADER) {
+                modem_demodulate(_fs->mod_header, nco_rx_out, &demod_sym);
+                get_demodulator_phase_error(_fs->mod_header, &phase_error);
             } else {
                 modem_demodulate(_fs->mod_payload, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->mod_payload, &phase_error);
@@ -406,8 +429,8 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             fwindow_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
             cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
-            if (_fs->rssi < _fs->squelch_threshold)
-                continue;
+            //if (_fs->rssi < _fs->squelch_threshold)
+            //    continue;
 
             //
             switch (_fs->state) {
@@ -419,7 +442,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 #endif
                 if (fabsf(rxy) > 0.7f) {
                     printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
-                    printf("frame detected: exiting prematurely\n");
                     // close bandwidth
                     pll_reset(_fs->pll_rx);
                     flexframesync_close_bandwidth(_fs);
@@ -493,8 +515,8 @@ void flexframesync_open_bandwidth(flexframesync _fs)
 
 void flexframesync_close_bandwidth(flexframesync _fs)
 {
-    /*
     agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
+    /*
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
     */
@@ -587,6 +609,26 @@ void flexframesync_decode_payload(flexframesync _fs)
 // 
 // internal
 //
+
+void flexframesync_set_default_props(flexframesync _fs)
+{
+    _fs->props.agc_bw0 = FLEXFRAMESYNC_AGC_BW_0;
+    _fs->props.agc_bw1 = FLEXFRAMESYNC_AGC_BW_1;
+
+    _fs->props.sym_bw0 = FLEXFRAMESYNC_SYM_BW_0;
+    _fs->props.sym_bw1 = FLEXFRAMESYNC_SYM_BW_1;
+
+    _fs->props.pll_bw0 = FLEXFRAMESYNC_PLL_BW_0;
+    _fs->props.pll_bw1 = FLEXFRAMESYNC_PLL_BW_1;
+
+    _fs->props.k = 2;
+    _fs->props.npfb = 32;
+    _fs->props.m = 3;
+    _fs->props.beta = 0.7f;
+
+    _fs->props.squelch_threshold = FLEXFRAMESYNC_SQUELCH_THRESH;
+}
+
 void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header)
 {
     unsigned int i;
