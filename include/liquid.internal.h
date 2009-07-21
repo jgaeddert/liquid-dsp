@@ -354,6 +354,7 @@ LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, floa
 // flexframegen
 void flexframegen_compute_payload_len(flexframegen _fg);
 void flexframegen_compute_frame_len(flexframegen _fg);
+void flexframegen_configure_payload_buffers(flexframegen _fg);
 void flexframegen_encode_header(flexframegen _fg, unsigned char * _user_header);
 void flexframegen_modulate_header(flexframegen _fg);
 void flexframegen_modulate_payload(flexframegen _fg);

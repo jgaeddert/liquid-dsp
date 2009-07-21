@@ -81,6 +81,19 @@ int main() {
 
     float complex frame[frame_len];
     flexframegen_execute(fg, header, payload, frame);
+
+    // write to file
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+    for (i=0; i<frame_len; i++)
+        fprintf(fid,"frame(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(frame[i]), cimagf(frame[i]));
+    fprintf(fid,"frame_len=%u;\n", frame_len);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:frame_len,real(frame),1:frame_len,imag(frame));\n");
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 #if 0
     float complex frame_rx[2048];
     

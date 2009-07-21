@@ -55,6 +55,9 @@ struct flexframegen_s {
     unsigned char * payload;
     unsigned char * payload_sym;
     float complex * payload_samples;
+    unsigned int payload_numalloc;
+    unsigned int payload_sym_numalloc;
+    unsigned int payload_samples_numalloc;
 
     // properties
     flexframegenprops_s props;
@@ -87,6 +90,18 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     flexframegen_compute_payload_len(fg);
     flexframegen_compute_frame_len(fg);
 
+    // create payload objects
+    fg->mod_payload = modem_create(fg->props.mod_scheme, fg->props.mod_bps);
+
+    // 
+    fg->payload = NULL;
+    fg->payload_numalloc = 0;
+    fg->payload_sym = NULL;
+    fg->payload_sym_numalloc = 0;
+    fg->payload_samples = NULL;
+    fg->payload_samples_numalloc = 0;
+    flexframegen_configure_payload_buffers(fg);
+
     return fg;
 }
 
@@ -96,6 +111,14 @@ void flexframegen_destroy(flexframegen _fg)
     fec_destroy(_fg->fec_header);
     interleaver_destroy(_fg->intlv_header);
     modem_destroy(_fg->mod_header);
+
+    // free internal payload buffers
+    free(_fg->payload);
+    free(_fg->payload_sym);
+    free(_fg->payload_samples);
+
+    // free payload objects
+    free(_fg->mod_payload);
 
     // destroy frame generator
     free(_fg);
@@ -145,10 +168,10 @@ void flexframegen_execute(flexframegen _fg,
     n += 128;
 
     // payload
-    //flexframegen_modulate_payload(_fg);
-    for (i=0; i<_fg->payload_len; i++)
-        _y[n++] = randnf();
-    printf("payload len : %u\n", _fg->payload_len);
+    memmove(_fg->payload, _payload, _fg->props.payload_len);
+    flexframegen_modulate_payload(_fg);
+    memmove(&_y[n], _fg->payload_samples, (_fg->payload_len)*sizeof(float complex));
+    n += _fg->payload_len;
 
     // ramp down
     for (i=0; i<_fg->props.rampup_len; i++)
@@ -184,6 +207,31 @@ void flexframegen_compute_frame_len(flexframegen _fg)
     _fg->frame_len += _fg->payload_len;
 
     _fg->frame_len += _fg->props.rampdn_len;    // ramp down length
+}
+
+void flexframegen_configure_payload_buffers(flexframegen _fg)
+{
+    flexframegen_compute_frame_len(_fg);
+
+    if (_fg->payload_numalloc != _fg->props.payload_len) {
+        _fg->payload = (unsigned char*) realloc(_fg->payload, _fg->props.payload_len);
+        _fg->payload_numalloc = _fg->props.payload_len;
+        printf("reallocating payload (payload data) : %u\n", _fg->payload_numalloc);
+    }
+
+    if (_fg->payload_sym_numalloc != _fg->payload_len) {
+        _fg->payload_sym = (unsigned char*) realloc(_fg->payload_sym, _fg->payload_len);
+        _fg->payload_sym_numalloc = _fg->payload_len;
+        printf("reallocating payload_sym (payload symbols) : %u\n", _fg->payload_sym_numalloc);
+    }
+
+    if (_fg->payload_samples_numalloc != _fg->payload_len) {
+        _fg->payload_samples = (float complex*) realloc(_fg->payload_samples, _fg->payload_len*sizeof(float complex));
+        _fg->payload_samples_numalloc = _fg->payload_len;
+        printf("reallocating payload_samples (modulated payload symbols) : %u\n",
+                _fg->payload_samples_numalloc);
+    }
+
 }
 
 void flexframegen_encode_header(flexframegen _fg,
@@ -248,6 +296,22 @@ void flexframegen_modulate_header(flexframegen _fg)
     // modulate symbols
     for (i=0; i<128; i++)
         modem_modulate(_fg->mod_header, _fg->header_sym[i], &_fg->header_samples[i]);
+}
+
+void flexframegen_modulate_payload(flexframegen _fg)
+{
+    unsigned int i;
+
+    memset(_fg->payload_sym, 0x00, _fg->props.payload_len);
+
+    unsigned int num_written;
+    repack_bytes(_fg->payload,     8, _fg->props.payload_len,
+                 _fg->payload_sym,  _fg->props.mod_bps,   _fg->payload_len,
+                 &num_written);
+
+    // modulate symbols
+    for (i=0; i<_fg->payload_len; i++)
+        modem_modulate(_fg->mod_payload, _fg->payload_sym[i], &_fg->payload_samples[i]);
 }
 
 #if 0
