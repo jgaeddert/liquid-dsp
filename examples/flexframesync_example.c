@@ -18,8 +18,10 @@ static int callback(unsigned char * _rx_header,
                     unsigned int _rx_payload_len,
                     void * _userdata);
 
-unsigned char header[24];
-unsigned char payload[64];
+typedef struct {
+    unsigned char * header;
+    unsigned char * payload;
+} framedata;
 
 int main() {
     srand( time(NULL) );
@@ -28,13 +30,18 @@ int main() {
     flexframegenprops_s fgprops;
     fgprops.rampup_len = 16;
     fgprops.phasing_len = 50;
-    fgprops.payload_len = 64;
+    fgprops.payload_len = 256;
     fgprops.mod_scheme = MOD_PSK;
     fgprops.mod_bps = 3;
     fgprops.rampdn_len = 16;
     printf("creating flexframegen...\n");
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
+
+    // frame data
+    unsigned char header[8];
+    unsigned char payload[fgprops.payload_len];
+    framedata fd = {header, payload};
 
     // create interpolator
     unsigned int m=3;
@@ -47,7 +54,7 @@ int main() {
     // create flexframesync object
     printf("creating flexframesync...\n");
     flexframesyncprops_s fsprops;
-    flexframesync fs = flexframesync_create(NULL,callback,NULL);
+    flexframesync fs = flexframesync_create(NULL,callback,(void*)&fd);
     printf("done.\n");
 
     // channel
@@ -58,12 +65,11 @@ int main() {
     nco_set_phase(nco_channel, phi);
     nco_set_frequency(nco_channel, dphi);
 
-    // data payload
     unsigned int i;
     // initialize header, payload
-    for (i=0; i<24; i++)
+    for (i=0; i<8; i++)
         header[i] = i;
-    for (i=0; i<64; i++)
+    for (i=0; i<fgprops.payload_len; i++)
         payload[i] = rand() & 0xff;
 
     // internal test : encode/decode header
@@ -152,6 +158,8 @@ static int callback(unsigned char * _rx_header,
 {
     printf("callback invoked\n");
 
+    framedata * fd = (framedata*)_userdata;
+
     printf("header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
     //printf("payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");
     printf("payload length      : %u\n", _rx_payload_len);
@@ -160,12 +168,12 @@ static int callback(unsigned char * _rx_header,
     unsigned int i;
     unsigned int num_header_errors=0;
     for (i=0; i<24; i++)
-        num_header_errors += (_rx_header[i] == header[i]) ? 0 : 1;
+        num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
     printf("num header errors   : %u\n", num_header_errors);
 
     unsigned int num_payload_errors=0;
     for (i=0; i<64; i++)
-        num_payload_errors += (_rx_payload[i] == payload[i]) ? 0 : 1;
+        num_payload_errors += (_rx_payload[i] == fd->payload[i]) ? 0 : 1;
     printf("num payload errors  : %u\n", num_payload_errors);
 
     return 0;
