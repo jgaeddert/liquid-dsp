@@ -67,10 +67,11 @@ int main() {
         payload[i] = rand() & 0xff;
 
     // internal test : encode/decode header
-    unsigned char header_enc[32];
+    float complex header_modulated[128];
     flexframegen_encode_header(fg, header);
-    flexframegen_tmp_getheaderenc(fg, header_enc);
-    flexframesync_tmp_setheaderenc(fs, header_enc);
+    flexframegen_modulate_header(fg, header_modulated);
+
+    flexframesync_demodulate_header(fs, header_modulated);
     flexframesync_decode_header(fs, NULL);
 
     // generate the frame

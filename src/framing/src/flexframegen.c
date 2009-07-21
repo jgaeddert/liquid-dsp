@@ -57,7 +57,7 @@ struct flexframegen_s {
     // properties
     flexframegenprops_s props;
 
-    unsigned int pnsequence_len;    //
+    unsigned int pnsequence_len;    // p/n sequence length
     unsigned int payload_len;       // number of symbols
     unsigned int frame_len;         // number of symbols
 };
@@ -90,9 +90,12 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
 void flexframegen_destroy(flexframegen _fg)
 {
+    // destroy header objects
     fec_destroy(_fg->fec_header);
     interleaver_destroy(_fg->intlv_header);
     modem_destroy(_fg->mod_header);
+
+    // destroy frame generator
     free(_fg);
 }
 
@@ -190,6 +193,23 @@ void flexframegen_encode_header(flexframegen _fg,
         printf(" %.2x", _user_header[i]);
     printf("\n");
 #endif
+}
+
+void flexframegen_modulate_header(flexframegen _fg, float complex * _y)
+{
+    unsigned int i;
+
+    // unpack header symbols
+    for (i=0; i<32; i++) {
+        _fg->header_sym[4*i+0] = (_fg->header_enc[i] >> 6) & 0x03;
+        _fg->header_sym[4*i+1] = (_fg->header_enc[i] >> 4) & 0x03;
+        _fg->header_sym[4*i+2] = (_fg->header_enc[i] >> 2) & 0x03;
+        _fg->header_sym[4*i+3] = (_fg->header_enc[i]     ) & 0x03;
+    }
+
+    // modulate symbols
+    for (i=0; i<128; i++)
+        modem_modulate(_fg->mod_header, _fg->header_sym[i], &_y[i]);
 }
 
 void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc)

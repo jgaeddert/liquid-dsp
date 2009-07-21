@@ -1,0 +1,66 @@
+/*
+ * Copyright (c) 2007, 2009 Joseph Gaeddert
+ * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ *
+ * This file is part of liquid.
+ *
+ * liquid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * liquid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef __LIQUID_FLEXFRAME_AUTOTEST_H__
+#define __LIQUID_FLEXFRAME_AUTOTEST_H__
+
+#include "autotest/autotest.h"
+#include "liquid.internal.h"
+
+// 
+// AUTOTEST: encode, modulate, demodulate, decode header
+//
+void autotest_flexframe_decode_header()
+{
+    unsigned int i;
+
+    // create flexframegen object
+    flexframegenprops_s fgprops;
+    fgprops.rampup_len = 16;
+    fgprops.phasing_len = 50;
+    fgprops.payload_len = 64;
+    fgprops.mod_scheme = MOD_PSK;
+    fgprops.mod_bps = 3;
+    fgprops.rampdn_len = 16;
+    flexframegen fg = flexframegen_create(&fgprops);
+    flexframegen_print(fg);
+
+    // create flexframesync object
+    flexframesyncprops_s fsprops;
+    flexframesync fs = flexframesync_create(NULL,NULL,NULL);
+
+    // initialize header, payload
+    unsigned char header[8];
+    for (i=0; i<8; i++)
+        header[i] = i;
+
+    // internal test : encode/decode header
+    float complex header_modulated[128];
+    flexframegen_encode_header(fg, header);
+    flexframegen_modulate_header(fg, header_modulated);
+
+    flexframesync_demodulate_header(fs, header_modulated);
+    flexframesync_decode_header(fs, NULL);
+
+    flexframegen_destroy(fg);
+    flexframesync_destroy(fs);
+}
+
+#endif // __LIQUID_FLEXFRAME_AUTOTEST_H__

@@ -628,6 +628,28 @@ void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header
 #endif
 }
 
+void flexframesync_demodulate_header(flexframesync _fs, float complex * _x)
+{
+    unsigned int i, sym;
+
+    // run demodulator
+    for (i=0; i<128; i++) {
+        modem_demodulate(_fs->mod_header, _x[i], &sym);
+        _fs->header_sym[i] = (unsigned char)sym;
+    }
+
+    // pack header symbols
+    unsigned char byte;
+    for (i=0; i<32; i++) {
+        byte = 0;
+        byte |= (_fs->header_sym[4*i+0] << 6);
+        byte |= (_fs->header_sym[4*i+1] << 4);
+        byte |= (_fs->header_sym[4*i+2] << 2);
+        byte |= (_fs->header_sym[4*i+3]     );
+        _fs->header_enc[i] = byte;
+    }
+}
+
 void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc)
 {
     memmove(_fs->header_enc, _header_enc, 32);
