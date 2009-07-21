@@ -170,6 +170,8 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     // 
     fs->mod_preamble = modem_create(MOD_BPSK, 1);
     fs->mod_payload = modem_create(MOD_PSK, 3);
+    // TODO: fix hard-coded value
+    fs->payload_samples = (float complex*) malloc(1024*sizeof(float complex));
 
     // set status flags
     fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
@@ -445,7 +447,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     // close bandwidth
                     pll_reset(_fs->pll_rx);
                     flexframesync_close_bandwidth(_fs);
-                    //nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
+                    nco_adjust_phase(_fs->nco_rx, cargf(rxy));
                     printf(">>> STATE_RXHEADER\n");
                     _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
                 }
@@ -463,10 +465,11 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
-                printf("collecting payload symbols...\n");
+                //printf("collecting payload symbols...\n");
                 //_fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
-                if (_fs->num_symbols_collected==1) {
+                // TODO: fix hard-coded value
+                if (_fs->num_symbols_collected==172) {
                     printf("finished collecting symbols\n");
                     _fs->num_symbols_collected = 0;
                     //flexframesync_decode_payload(_fs);
@@ -688,6 +691,10 @@ void flexframesync_demodulate_header(flexframesync _fs)
 
     // run demodulator
     for (i=0; i<128; i++) {
+#if 0
+        float complex s = _fs->header_samples[i];
+        printf("s(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(s), cimagf(s));
+#endif
         modem_demodulate(_fs->mod_header, _fs->header_samples[i], &sym);
         _fs->header_sym[i] = (unsigned char)sym;
     }
