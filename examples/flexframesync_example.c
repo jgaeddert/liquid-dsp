@@ -57,6 +57,7 @@ int main() {
     // create flexframesync object with default properties
     //flexframesyncprops_s fsprops;
     flexframesync fs = flexframesync_create(NULL,callback,(void*)&fd);
+    flexframesync_print(fs);
 
     // channel
     float phi=0.0f;
@@ -67,7 +68,7 @@ int main() {
     float n0    = -18.0f;                        // noise level
     float nstd  = powf(10.0f, n0/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+n0)/10.0f); // channel gain
-    float mu    = 0.1f; // fractional sample delay
+    float mu    = 0.3f; // fractional sample delay
     fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,60.0f);
     fir_farrow_crcf_set_delay(delay_filter,mu);
 
@@ -198,9 +199,7 @@ int main() {
     printf("results written to %s\n", OUTPUT_FILENAME);
 #endif
 
-    printf("deleting flexframegen...\n");
     flexframegen_destroy(fg);
-    printf("deleting flexframesync...\n");
     flexframesync_destroy(fs);
     nco_destroy(nco_channel);
 

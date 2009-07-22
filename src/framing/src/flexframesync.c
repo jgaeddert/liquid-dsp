@@ -476,8 +476,11 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     if (_fs->header_valid) {
                         _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
                     } else {
-                        printf("***** header invalid!\n");
-                        // TODO : invoke callback anyway?
+                        //printf("***** header invalid!\n");
+                        // invoke callback anyway, but escape ignore rest of payload
+                        _fs->callback(_fs->header,  _fs->header_valid,
+                                      NULL,         0,
+                                      _fs->userdata);
                         _fs->state = FLEXFRAMESYNC_STATE_RESET;
                     }
                 }
