@@ -45,6 +45,14 @@
     fprintf(F,"%s(%4u) = %12.4e +j*%12.4e;\n",STR,I+1,crealf(V),cimagf(V))
 
 //
+// MODULE: agc
+//
+
+// initialize agc object
+void agc_init(agc _agc);
+
+
+//
 // MODULE: ann
 //
 

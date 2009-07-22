@@ -57,9 +57,6 @@ agc agc_create(float _etarget, float _BT);
 void agc_destroy(agc _agc);
 void agc_print(agc _agc);
 
-// Initialize AGC object
-void agc_init(agc _agc);
-
 // Set target energy
 void agc_set_target(agc _agc, float _e_target);
 
