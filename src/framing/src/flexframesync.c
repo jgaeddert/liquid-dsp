@@ -77,7 +77,7 @@ struct flexframesync_s {
     unsigned int header_key;
     bool header_valid;
 
-    // preamble phasing
+    // preamble
     modem mod_preamble;
     unsigned int pnsequence_len;
 
@@ -105,7 +105,7 @@ struct flexframesync_s {
     unsigned int payload_sym_numalloc;
     unsigned int payload_numalloc;
 
-    // properties
+    // generic user-configurable properties
     flexframesyncprops_s props;
 
     // callback
@@ -225,24 +225,20 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
 
 void flexframesync_destroy(flexframesync _fs)
 {
-#if 0
-    symsync_crcf_destroy(_fs->mfdecim);
-    fec_destroy(_fs->dec);
-    interleaver_destroy(_fs->intlv);
+    // destroy synchronizer objects
     agc_destroy(_fs->agc_rx);
     pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
     bsync_rrrf_destroy(_fs->fsync);
-    modem_destroy(_fs->bpsk);
-    modem_destroy(_fs->demod);
-#endif
+    symsync_crcf_destroy(_fs->mfdecim);
+
+    // destroy preamble objects
+    modem_destroy(_fs->mod_preamble);
+
     // destroy header objects
     fec_destroy(_fs->fec_header);
     modem_destroy(_fs->mod_header);
     interleaver_destroy(_fs->intlv_header);
-
-    //
-    symsync_crcf_destroy(_fs->mfdecim);
 
     // free payload objects
     modem_destroy(_fs->mod_payload);
