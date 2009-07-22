@@ -51,12 +51,6 @@
 #define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
 #define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)
 
-// Internal
-void flexframesync_open_bandwidth(flexframesync _fs);
-void flexframesync_close_bandwidth(flexframesync _fs);
-//void flexframesync_decode_header(flexframesync _fs);
-void flexframesync_decode_payload(flexframesync _fs);
-
 struct flexframesync_s {
 
     // synchronizer objects
@@ -473,16 +467,16 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
-                //_fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
+                _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
                 // TODO: fix hard-coded value
-                if (_fs->num_symbols_collected==172) {
+                if (_fs->num_symbols_collected==_fs->num_payload_symbols) {
                     _fs->num_symbols_collected = 0;
-                    //flexframesync_decode_payload(_fs);
+                    flexframesync_assemble_payload(_fs);
 
                     // invoke callback method
                     _fs->callback(_fs->header,  _fs->header_valid,
-                                  _fs->payload, 0,
+                                  _fs->payload, _fs->payload_len,
                                   _fs->userdata);
 
                     _fs->state = FLEXFRAMESYNC_STATE_RESET;
@@ -534,94 +528,6 @@ void flexframesync_close_bandwidth(flexframesync _fs)
     */
 }
 
-#if 0
-void flexframesync_decode_header(flexframesync _fs)
-{
-    unsigned int i;
-    unsigned char b;
-    for (i=0; i<32; i++) {
-        b = 0;
-        b |= (_fs->header_sym[0] << 6) & 0xc0;
-        b |= (_fs->header_sym[1] << 4) & 0x30;
-        b |= (_fs->header_sym[2] << 2) & 0x0c;
-        b |= (_fs->header_sym[3]     ) & 0x03;
-        _fs->header_enc[i] = b;
-    }
-
-#ifdef DEBUG_FLEXFRAMESYNC_PRINT
-    printf("header ENCODED (rx):\n");
-    for (i=0; i<64; i++) {
-        printf("%2x ", _fs->header_enc[i]);
-        if (!((i+1)%16)) printf("\n");
-    }
-    printf("\n");
-#endif
-
-    // decode header
-    fec_decode(_fs->dec, 32, _fs->header_enc, _fs->header);
-
-    // unscramble header data
-    unscramble_data(_fs->header, 32);
-
-#ifdef DEBUG_FLEXFRAMESYNC_PRINT
-    printf("header (rx):\n");
-    for (i=0; i<32; i++) {
-        printf("%2x ", _fs->header[i]);
-        if (!((i+1)%8)) printf("\n");
-    }
-    printf("\n");
-#endif
-
-    // strip off crc32
-    unsigned int header_key=0;
-    header_key |= ( _fs->header[28] << 24 );
-    header_key |= ( _fs->header[29] << 16 );
-    header_key |= ( _fs->header[30] <<  8 );
-    header_key |= ( _fs->header[31]       );
-    _fs->header_key = header_key;
-    //printf("rx: header_key:  0x%8x\n", header_key);
-
-    // validate crc
-    _fs->header_valid = crc32_validate_message(_fs->header,28,_fs->header_key);
-}
-#endif
-
-void flexframesync_decode_payload(flexframesync _fs)
-{
-#if 0
-    unsigned int i;
-    for (i=0; i<128; i++)
-        flexframesync_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_intlv[i]));
-
-    // deinterleave payload
-    interleaver_deinterleave(_fs->intlv, _fs->payload_intlv, _fs->payload_enc);
-    
-    // decode payload
-    fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
-
-    // unscramble payload data
-    unscramble_data(_fs->payload, 64);
-
-    // validate crc
-    _fs->payload_valid = crc32_validate_message(_fs->payload,64,_fs->payload_key);
-
-#ifdef DEBUG_FLEXFRAMESYNC_PRINT
-    printf("payload (rx):\n");
-    for (i=0; i<64; i++) {
-        printf("%2x ", _fs->payload[i]);
-        if (!((i+1)%8)) printf("\n");
-    }
-    printf("\n");
-#endif
-
-#endif
-
-}
-
-// 
-// internal
-//
-
 void flexframesync_set_default_props(flexframesync _fs)
 {
     _fs->props.agc_bw0 = FLEXFRAMESYNC_AGC_BW_0;
@@ -643,28 +549,35 @@ void flexframesync_set_default_props(flexframesync _fs)
 
 void flexframesync_configure_payload_buffers(flexframesync _fs)
 {
+    //printf("flexframesync : payload symbols : %u\n", _fs->num_payload_symbols);
+
     // compute payload length (symbols)
     _fs->num_payload_symbols = 8*(_fs->payload_len);
     _fs->num_payload_symbols /= _fs->bps_payload;
     _fs->num_payload_symbols += _fs->num_payload_symbols % _fs->bps_payload;
 
-    //printf("flexframesync : payload symbols : %u\n", _fs->num_payload_symbols);
+    // required payload allocation size, considering the total number of
+    // bits might not divide evenly by the modulation depth
+    unsigned int payload_numalloc_req;
+    payload_numalloc_req  = _fs->num_payload_symbols * _fs->bps_payload;
+    payload_numalloc_req /= 8;
+    payload_numalloc_req += payload_numalloc_req % _fs->bps_payload;
 
-    if (_fs->payload_numalloc < _fs->payload_len) {
-        _fs->payload = (unsigned char*) realloc(_fs->payload, _fs->payload_len);
-        _fs->payload_numalloc = _fs->payload_len;
-        //printf("    flexframsync: reallocating payload (payload data) : %u\n", _fs->payload_numalloc);
+    if (_fs->payload_numalloc < payload_numalloc_req) {
+        _fs->payload_numalloc = payload_numalloc_req;
+        _fs->payload = (unsigned char*) realloc(_fs->payload, _fs->payload_numalloc);
+        printf("    flexframsync: reallocating payload (payload data) : %u\n", _fs->payload_numalloc);
     }
 
     if (_fs->payload_sym_numalloc < _fs->num_payload_symbols) {
-        _fs->payload_sym = (unsigned char*) realloc(_fs->payload_sym, _fs->num_payload_symbols);
         _fs->payload_sym_numalloc = _fs->num_payload_symbols;
+        _fs->payload_sym = (unsigned char*) realloc(_fs->payload_sym, _fs->payload_sym_numalloc);
         //printf("reallocating payload_sym (payload symbols) : %u\n", _fs->payload_sym_numalloc);
     }
 
     if (_fs->payload_samples_numalloc < _fs->num_payload_symbols) {
-        _fs->payload_samples = (float complex*) realloc(_fs->payload_samples, _fs->num_payload_symbols*sizeof(float complex));
         _fs->payload_samples_numalloc = _fs->num_payload_symbols;
+        _fs->payload_samples = (float complex*) realloc(_fs->payload_samples, _fs->payload_samples_numalloc*sizeof(float complex));
         //printf("reallocating payload_samples (modulated payload symbols) : %u\n",
         //        _fs->payload_samples_numalloc);
     }
@@ -761,6 +674,16 @@ void flexframesync_demodulate_header(flexframesync _fs)
         _fs->header_enc[i] = byte;
     }
 }
+
+void flexframesync_assemble_payload(flexframesync _fs)
+{
+    // pack (8-bit) bytes from (bps_payload-bit) symbols
+    unsigned int num_written;
+    repack_bytes(_fs->payload_sym, _fs->bps_payload, _fs->num_payload_symbols,
+                 _fs->payload,     8,                _fs->payload_numalloc,
+                 &num_written);
+}
+
 
 #if 0
 void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc)

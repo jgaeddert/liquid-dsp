@@ -31,8 +31,8 @@ int main() {
     fgprops.rampup_len = 64;
     fgprops.phasing_len = 64;
     fgprops.payload_len = 64;
-    fgprops.mod_scheme = MOD_QAM;
-    fgprops.mod_bps = 4;
+    fgprops.mod_scheme = MOD_PSK;
+    fgprops.mod_bps = 3;
     fgprops.rampdn_len = 64;
     printf("creating flexframegen...\n");
     flexframegen fg = flexframegen_create(&fgprops);
@@ -53,14 +53,14 @@ int main() {
 
     // create flexframesync object
     printf("creating flexframesync...\n");
-    flexframesyncprops_s fsprops;
+    //flexframesyncprops_s fsprops;
     flexframesync fs = flexframesync_create(NULL,callback,(void*)&fd);
     printf("done.\n");
 
     // channel
     float phi=0.3f;
     float dphi=0.0f;
-    float gamma=0.1f;  // channel gain
+    //float gamma=0.1f;  // channel gain
     nco nco_channel = nco_create();
     nco_set_phase(nco_channel, phi);
     nco_set_frequency(nco_channel, dphi);
@@ -98,7 +98,9 @@ int main() {
         // run interpolator
         interp_crcf_execute(interp, x, y);
 
-        // channel
+        // TODO: add Farrow filter to emulate sample timing offset
+
+        // TODO: add channel impairments
 
         // push through sync
         flexframesync_execute(fs, y, 2);

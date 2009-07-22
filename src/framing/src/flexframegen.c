@@ -63,7 +63,7 @@ struct flexframegen_s {
     flexframegenprops_s props;
 
     unsigned int pnsequence_len;    // p/n sequence length
-    unsigned int payload_len;       // number of symbols
+    unsigned int num_payload_symbols;   // number of symbols
     unsigned int frame_len;         // number of symbols
 };
 
@@ -130,7 +130,11 @@ void flexframegen_print(flexframegen _fg)
     printf("    ramp up len         :   %u\n", _fg->props.rampup_len);
     printf("    phasing len         :   %u\n", _fg->props.phasing_len);
     printf("    p/n sequence len    :   %u\n", _fg->pnsequence_len);
-    printf("    payload len         :   %u\n", _fg->payload_len);
+    printf("    payload len         :   %u bytes\n", _fg->props.payload_len);
+    printf("    modulation scheme   :   %u-%s\n",
+        1<<_fg->props.mod_bps,
+        modulation_scheme_str[_fg->props.mod_scheme]);
+    printf("    num payload symbols :   %u\n", _fg->num_payload_symbols);
     printf("    ramp dn len         :   %u\n", _fg->props.rampdn_len);
 }
 
@@ -170,8 +174,8 @@ void flexframegen_execute(flexframegen _fg,
     // payload
     memmove(_fg->payload, _payload, _fg->props.payload_len);
     flexframegen_modulate_payload(_fg);
-    memmove(&_y[n], _fg->payload_samples, (_fg->payload_len)*sizeof(float complex));
-    n += _fg->payload_len;
+    memmove(&_y[n], _fg->payload_samples, (_fg->num_payload_symbols)*sizeof(float complex));
+    n += _fg->num_payload_symbols;
 
     // ramp down
     for (i=0; i<_fg->props.rampup_len; i++)
@@ -190,9 +194,9 @@ void flexframegen_execute(flexframegen _fg,
 
 void flexframegen_compute_payload_len(flexframegen _fg)
 {
-    _fg->payload_len = 8*(_fg->props.payload_len);
-    _fg->payload_len /= _fg->props.mod_bps;
-    _fg->payload_len += _fg->payload_len % _fg->props.mod_bps;
+    _fg->num_payload_symbols = 8*(_fg->props.payload_len);
+    _fg->num_payload_symbols /= _fg->props.mod_bps;
+    _fg->num_payload_symbols += _fg->num_payload_symbols % _fg->props.mod_bps;
 }
 
 void flexframegen_compute_frame_len(flexframegen _fg)
@@ -206,7 +210,7 @@ void flexframegen_compute_frame_len(flexframegen _fg)
 
     // payload length
     flexframegen_compute_payload_len(_fg);
-    _fg->frame_len += _fg->payload_len;
+    _fg->frame_len += _fg->num_payload_symbols;
 
     _fg->frame_len += _fg->props.rampdn_len;    // ramp down length
 }
@@ -221,15 +225,15 @@ void flexframegen_configure_payload_buffers(flexframegen _fg)
         //printf("reallocating payload (payload data) : %u\n", _fg->payload_numalloc);
     }
 
-    if (_fg->payload_sym_numalloc != _fg->payload_len) {
-        _fg->payload_sym = (unsigned char*) realloc(_fg->payload_sym, _fg->payload_len);
-        _fg->payload_sym_numalloc = _fg->payload_len;
+    if (_fg->payload_sym_numalloc != _fg->num_payload_symbols) {
+        _fg->payload_sym = (unsigned char*) realloc(_fg->payload_sym, _fg->num_payload_symbols);
+        _fg->payload_sym_numalloc = _fg->num_payload_symbols;
         //printf("reallocating payload_sym (payload symbols) : %u\n", _fg->payload_sym_numalloc);
     }
 
-    if (_fg->payload_samples_numalloc != _fg->payload_len) {
-        _fg->payload_samples = (float complex*) realloc(_fg->payload_samples, _fg->payload_len*sizeof(float complex));
-        _fg->payload_samples_numalloc = _fg->payload_len;
+    if (_fg->payload_samples_numalloc != _fg->num_payload_symbols) {
+        _fg->payload_samples = (float complex*) realloc(_fg->payload_samples, _fg->num_payload_symbols*sizeof(float complex));
+        _fg->payload_samples_numalloc = _fg->num_payload_symbols;
         //printf("reallocating payload_samples (modulated payload symbols) : %u\n",
         //        _fg->payload_samples_numalloc);
     }
@@ -308,11 +312,11 @@ void flexframegen_modulate_payload(flexframegen _fg)
 
     unsigned int num_written;
     repack_bytes(_fg->payload,     8, _fg->props.payload_len,
-                 _fg->payload_sym,  _fg->props.mod_bps,   _fg->payload_len,
+                 _fg->payload_sym,  _fg->props.mod_bps,   _fg->num_payload_symbols,
                  &num_written);
 
     // modulate symbols
-    for (i=0; i<_fg->payload_len; i++)
+    for (i=0; i<_fg->num_payload_symbols; i++)
         modem_modulate(_fg->mod_payload, _fg->payload_sym[i], &_fg->payload_samples[i]);
 }
 
