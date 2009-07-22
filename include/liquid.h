@@ -1498,6 +1498,11 @@ static inline void nco_adjust_frequency(nco _nco, float _df) {
     _nco->d_theta += _df;
 }
 
+static inline void nco_reset(nco _nco) {
+    _nco->theta   = 0.0f;
+    _nco->d_theta = 0.0f;
+}
+
 void nco_set_phase(nco _nco, float _phi);
 void nco_adjust_phase(nco _nco, float _dphi);
 
