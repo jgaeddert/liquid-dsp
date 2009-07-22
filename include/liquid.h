@@ -1543,6 +1543,7 @@ void pll_print(pll _p);
 void pll_reset(pll _p);
 
 void pll_set_bandwidth(pll _p, float _bt);
+void pll_set_damping_factor(pll _p, float _xi);
 //void pll_execute(pll _p, liquid_float_complex _x, liquid_float_complex *_y, float _e);
 void pll_step(pll _p, nco _nco, float _e);
 

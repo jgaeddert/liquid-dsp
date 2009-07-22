@@ -150,6 +150,9 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
     pll_set_bandwidth(fs->pll_rx, FLEXFRAMESYNC_PLL_BW_1);
+    pll_set_damping_factor(fs->pll_rx, 4.0f);   // increasing damping factor
+                                                // reduces oscillations,
+                                                // improves stability
 
     // bsync (p/n synchronizer)
     unsigned int i;

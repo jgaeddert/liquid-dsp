@@ -63,6 +63,12 @@ void pll_set_bandwidth(pll _p, float _bt)
     lf2_set_bandwidth(_p->f, _bt);
 }
 
+
+void pll_set_damping_factor(pll _p, float _xi)
+{
+    lf2_set_damping_factor(_p->f, _xi);
+}
+
 #if 0
 void pll_execute(pll _p, float complex _x, float complex *_y, float _e)
 {

@@ -45,7 +45,7 @@
 
 #define FRAME64_PN_LEN              (64)
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_PRINT
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (4096)
@@ -143,6 +143,9 @@ framesync64 framesync64_create(
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
     pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
+    pll_set_damping_factor(fs->pll_rx, 4.0f);   // increasing damping factor
+                                                // reduces oscillations,
+                                                // improves stability
 
     // bsync (p/n synchronizer)
     unsigned int i;
