@@ -32,7 +32,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_FLEXFRAMEGEN          1
-#define DEBUG_FLEXFRAMEGEN_PRINT    1
+#define DEBUG_FLEXFRAMEGEN_PRINT    0
 
 struct flexframegen_s {
     // buffers: preamble (BPSK)
@@ -177,8 +177,10 @@ void flexframegen_execute(flexframegen _fg,
     for (i=0; i<_fg->props.rampup_len; i++)
         _y[n++] = ((i%2) ? 1.0f : -1.0f) * ((float)(_fg->props.rampdn_len-i) / (float)(_fg->props.rampdn_len));
 
+#if DEBUG_FLEXFRAMEGEN_PRINT
     printf("  n         : %u\n", n);
     printf("  frame len : %u\n", _fg->frame_len);
+#endif
     assert(n == _fg->frame_len);
 }
 
@@ -216,20 +218,20 @@ void flexframegen_configure_payload_buffers(flexframegen _fg)
     if (_fg->payload_numalloc != _fg->props.payload_len) {
         _fg->payload = (unsigned char*) realloc(_fg->payload, _fg->props.payload_len);
         _fg->payload_numalloc = _fg->props.payload_len;
-        printf("reallocating payload (payload data) : %u\n", _fg->payload_numalloc);
+        //printf("reallocating payload (payload data) : %u\n", _fg->payload_numalloc);
     }
 
     if (_fg->payload_sym_numalloc != _fg->payload_len) {
         _fg->payload_sym = (unsigned char*) realloc(_fg->payload_sym, _fg->payload_len);
         _fg->payload_sym_numalloc = _fg->payload_len;
-        printf("reallocating payload_sym (payload symbols) : %u\n", _fg->payload_sym_numalloc);
+        //printf("reallocating payload_sym (payload symbols) : %u\n", _fg->payload_sym_numalloc);
     }
 
     if (_fg->payload_samples_numalloc != _fg->payload_len) {
         _fg->payload_samples = (float complex*) realloc(_fg->payload_samples, _fg->payload_len*sizeof(float complex));
         _fg->payload_samples_numalloc = _fg->payload_len;
-        printf("reallocating payload_samples (modulated payload symbols) : %u\n",
-                _fg->payload_samples_numalloc);
+        //printf("reallocating payload_samples (modulated payload symbols) : %u\n",
+        //        _fg->payload_samples_numalloc);
     }
 
 }
