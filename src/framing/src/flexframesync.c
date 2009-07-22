@@ -643,8 +643,7 @@ void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header
 #if DEBUG_FLEXFRAMESYNC_PRINT
     // print results
     printf("flexframesync_decode_header():\n");
-    printf("    mod scheme  : %u\n", mod_scheme);
-    printf("    mod depth   : %u\n", mod_depth);
+    printf("    mod scheme  : %u-%s\n", 1<<mod_depth, modulation_scheme_str[mod_scheme]);
     printf("    payload len : %u\n", payload_len);
     printf("    header key  : 0x%.8x\n", header_key);
     printf("    header crc  : %s\n", _fs->header_valid ? "pass" : "FAIL");

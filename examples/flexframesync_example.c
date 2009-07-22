@@ -52,7 +52,7 @@ int main() {
     design_rrc_filter(2,m,beta,0,h);
     interp_crcf interp = interp_crcf_create(2,h,h_len);
 
-    // create flexframesync object
+    // create flexframesync object with default properties
     printf("creating flexframesync...\n");
     //flexframesyncprops_s fsprops;
     flexframesync fs = flexframesync_create(NULL,callback,(void*)&fd);
@@ -93,6 +93,13 @@ int main() {
     float complex x;
     float complex y[2];
     float complex z[2];
+    float complex noise;
+    for (i=0; i<512; i++) {
+        noise = 0.0f;
+        cawgn(&noise, 0.01f);
+        // push noise through sync
+        flexframesync_execute(fs, &noise, 1);
+    }
     for (i=0; i<frame_len+2*m; i++) {
         // compensate for filter delay
         x = (i<frame_len) ? frame[i] : 0.0f;
@@ -110,6 +117,10 @@ int main() {
         nco_step(nco_channel);
         nco_mix_up(nco_channel, y[1], &z[1]);
         nco_step(nco_channel);
+
+        // add noise
+        cawgn(&z[0], 0.01f);
+        cawgn(&z[1], 0.01f);
 
         // push through sync
         flexframesync_execute(fs, z, 2);
