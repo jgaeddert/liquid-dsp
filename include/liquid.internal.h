@@ -371,7 +371,7 @@ void flexframegen_modulate_payload(flexframegen _fg);
 void flexframesync_set_default_props(flexframesync _fs);
 void flexframesync_configure_payload_buffers(flexframesync _fs);
 void flexframesync_demodulate_header(flexframesync _fs);
-void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header);
+void flexframesync_decode_header(flexframesync _fs);
 void flexframesync_assemble_payload(flexframesync _fs);
 void flexframesync_open_bandwidth(flexframesync _fs);
 void flexframesync_close_bandwidth(flexframesync _fs);

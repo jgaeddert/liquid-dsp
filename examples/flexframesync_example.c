@@ -28,7 +28,7 @@ int main() {
     srand( time(NULL) );
 
     // channel options
-    float SNRdB = 22.0f;
+    float SNRdB = 12.0f;
 
     // create flexframegen object
     flexframegenprops_s fgprops;
@@ -219,8 +219,9 @@ static int callback(unsigned char * _rx_header,
     framedata * fd = (framedata*)_userdata;
 
     printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
-    //printf("payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");
     printf("    payload length      : %u\n", _rx_payload_len);
+    if (!_rx_header_valid)
+        return 0;
 
     // validate payload
     unsigned int i;

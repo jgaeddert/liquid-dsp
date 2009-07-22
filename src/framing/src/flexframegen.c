@@ -240,6 +240,7 @@ void flexframegen_configure_payload_buffers(flexframegen _fg)
 
 }
 
+// TODO : flexframegen_encode_header() ignore second argument and use internal array
 void flexframegen_encode_header(flexframegen _fg,
                                 unsigned char * _user_header)
 {

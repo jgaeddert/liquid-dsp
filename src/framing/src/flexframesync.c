@@ -133,6 +133,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->userdata = _userdata;
 
     // set default properties
+    // TODO : read properties from user input
     flexframesync_set_default_props(fs);
 
     // header objects
@@ -177,18 +178,18 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     // 
     fs->mod_preamble = modem_create(MOD_BPSK, 1);
 
-    // flexible frame properties
+    // flexible frame properties (default values to be over-written
+    // when frame header is received and decoded)
     fs->ms_payload  = MOD_PSK;
-    fs->bps_payload = 2;
-    fs->payload_len = 64;
-
-    fs->mod_payload = modem_create(fs->ms_payload, fs->bps_payload);
+    fs->bps_payload = 1;
+    fs->payload_len = 0;
 
     // set status flags
     fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
     fs->num_symbols_collected = 0;
 
-    // payload buffers
+    // payload buffers, objects
+    fs->mod_payload = modem_create(fs->ms_payload, fs->bps_payload);
     fs->payload_samples = NULL;
     fs->payload_sym = NULL;
     fs->payload = NULL;
@@ -196,19 +197,8 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->payload_sym_numalloc = 0;
     fs->payload_numalloc = 0;
 
-#if 0
-    // set open/closed bandwidth values
-    flexframesync_set_agc_bw0(fs,FLEXFRAMESYNC_AGC_BW_0);
-    flexframesync_set_agc_bw1(fs,FLEXFRAMESYNC_AGC_BW_1);
-    flexframesync_set_pll_bw0(fs,FLEXFRAMESYNC_PLL_BW_0);
-    flexframesync_set_pll_bw1(fs,FLEXFRAMESYNC_PLL_BW_1);
-    flexframesync_set_sym_bw0(fs,FLEXFRAMESYNC_SYM_BW_0);
-    flexframesync_set_sym_bw1(fs,FLEXFRAMESYNC_SYM_BW_1);
-    flexframesync_set_squelch_threshold(fs,FLEXFRAMESYNC_SQUELCH_THRESH);
-
     // open bandwidth
     flexframesync_open_bandwidth(fs);
-#endif
 
 #ifdef DEBUG_FLEXFRAMESYNC
     fs->debug_agc_rssi  =  fwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
@@ -365,6 +355,7 @@ void flexframesync_reset(flexframesync _fs)
     nco_reset(_fs->nco_rx);
 }
 
+// TODO: break flexframesync_execute method into manageable pieces
 void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n)
 {
     unsigned int i, j, nw;
@@ -472,7 +463,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 if (_fs->num_symbols_collected==128) {
                     _fs->num_symbols_collected = 0;
                     flexframesync_demodulate_header(_fs);
-                    flexframesync_decode_header(_fs,_fs->header);
+                    flexframesync_decode_header(_fs);
                     if (_fs->header_valid) {
                         _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
                     } else {
@@ -524,6 +515,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 // internal
 //
 
+// open bandwidth of synchronizer objects (acquisition mode)
 void flexframesync_open_bandwidth(flexframesync _fs)
 {
     agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
@@ -531,6 +523,7 @@ void flexframesync_open_bandwidth(flexframesync _fs)
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw0);
 }
 
+// close bandwidth of synchronizer objects (tracking mode)
 void flexframesync_close_bandwidth(flexframesync _fs)
 {
     agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
@@ -538,6 +531,7 @@ void flexframesync_close_bandwidth(flexframesync _fs)
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
 }
 
+// set default user-configurable properties
 void flexframesync_set_default_props(flexframesync _fs)
 {
     _fs->props.agc_bw0 = FLEXFRAMESYNC_AGC_BW_0;
@@ -549,10 +543,11 @@ void flexframesync_set_default_props(flexframesync _fs)
     _fs->props.pll_bw0 = FLEXFRAMESYNC_PLL_BW_0;
     _fs->props.pll_bw1 = FLEXFRAMESYNC_PLL_BW_1;
 
-    _fs->props.k = 2;
-    _fs->props.npfb = 32;
-    _fs->props.m = 3;
-    _fs->props.beta = 0.7f;
+    // symbol timing recovery
+    _fs->props.k = 2;       // samples per symbol
+    _fs->props.npfb = 32;   // number of filters in filter-bank
+    _fs->props.m = 3;       // filter length
+    _fs->props.beta = 0.7f; // excess bandwidth factor
 
     _fs->props.squelch_threshold = FLEXFRAMESYNC_SQUELCH_THRESH;
 }
@@ -593,7 +588,7 @@ void flexframesync_configure_payload_buffers(flexframesync _fs)
     }
 }
 
-void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header)
+void flexframesync_decode_header(flexframesync _fs)
 {
     // de-interleave
     interleaver_deinterleave(_fs->intlv_header, _fs->header_enc, _fs->header_enc);
@@ -622,8 +617,6 @@ void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header
     // strip off payload length
     unsigned int payload_len = (_fs->header[8] << 8) | (_fs->header[9]);
     _fs->payload_len = payload_len;
-
-    // TODO: copy user data
 
     // configure payload receiver
     if (_fs->header_valid) {
@@ -664,10 +657,6 @@ void flexframesync_demodulate_header(flexframesync _fs)
 
     // run demodulator
     for (i=0; i<128; i++) {
-#if 0
-        float complex s = _fs->header_samples[i];
-        printf("s(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(s), cimagf(s));
-#endif
         modem_demodulate(_fs->mod_header, _fs->header_samples[i], &sym);
         _fs->header_sym[i] = (unsigned char)sym;
     }
@@ -693,11 +682,4 @@ void flexframesync_assemble_payload(flexframesync _fs)
                  &num_written);
 }
 
-
-#if 0
-void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc)
-{
-    memmove(_fs->header_enc, _header_enc, 32);
-}
-#endif
 

@@ -327,6 +327,7 @@ void framesync64_reset(framesync64 _fs)
     nco_set_frequency(_fs->nco_rx, 0.0f);
 }
 
+// TODO: break framesync64_execute method into manageable pieces
 void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 {
     unsigned int i, j, nw;
