@@ -47,7 +47,7 @@
 
 
 #define DEBUG_FLEXFRAMESYNC             1
-#define DEBUG_FLEXFRAMESYNC_PRINT       1
+#define DEBUG_FLEXFRAMESYNC_PRINT       0
 #define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
 #define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)
 
@@ -79,6 +79,7 @@ struct flexframesync_s {
 
     // preamble phasing
     modem mod_preamble;
+    unsigned int pnsequence_len;
 
     // header
     modem mod_header;
@@ -155,12 +156,15 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
                                                 // improves stability
 
     // bsync (p/n synchronizer)
+    // TODO : add separate method to configure p/n sequence
     unsigned int i;
+    fs->pnsequence_len = FLEXFRAMESYNC_PN_LEN;
+    // TODO : adjust msequence based on p/n sequence length
     msequence ms = msequence_create(6);
-    float pn_sequence[FLEXFRAMESYNC_PN_LEN];
-    for (i=0; i<FLEXFRAMESYNC_PN_LEN; i++)
+    float pn_sequence[fs->pnsequence_len];
+    for (i=0; i<fs->pnsequence_len; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
-    fs->fsync = bsync_rrrf_create(FLEXFRAMESYNC_PN_LEN, pn_sequence);
+    fs->fsync = bsync_rrrf_create(fs->pnsequence_len, pn_sequence);
     msequence_destroy(ms);
 
     // design symsync (k=2)
@@ -346,15 +350,20 @@ void flexframesync_destroy(flexframesync _fs)
 void flexframesync_print(flexframesync _fs)
 {
     printf("flexframesync:\n");
+    printf("    p/n sequence len    :   %u\n", _fs->pnsequence_len);
+    printf("    modulation scheme   :   %u-%s\n",
+        1<<(_fs->bps_payload),
+        modulation_scheme_str[_fs->ms_payload]);
+    printf("    payload len         :   %u bytes\n", _fs->payload_len);
+    printf("    num payload symbols :   %u\n", _fs->num_payload_symbols);
 }
 
 void flexframesync_reset(flexframesync _fs)
 {
     symsync_crcf_clear(_fs->mfdecim);
     pll_reset(_fs->pll_rx);
-    agc_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
-    nco_set_phase(_fs->nco_rx, 0.0f);
-    nco_set_frequency(_fs->nco_rx, 0.0f);
+    //agc_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
+    nco_reset(_fs->nco_rx);
 }
 
 void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n)
@@ -488,26 +497,22 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                                   _fs->userdata);
 
                     _fs->state = FLEXFRAMESYNC_STATE_RESET;
-                    //_fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
 //#ifdef DEBUG_FLEXFRAMESYNC
 #if 0
                     printf("flexframesync exiting prematurely\n");
                     flexframesync_destroy(_fs);
                     exit(0);
 #endif
+                } else {
+                    break;
                 }
-                break;
             case FLEXFRAMESYNC_STATE_RESET:
                 // open bandwidth
                 _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
-                /*
                 flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;
 
-                _fs->nco_rx->theta=0.0f;
-                _fs->nco_rx->d_theta=0.0f;
-                pll_reset(_fs->pll_rx);
-                */
+                //flexframesync_reset(_fs);
                 break;
             default:;
             }
@@ -530,10 +535,8 @@ void flexframesync_open_bandwidth(flexframesync _fs)
 void flexframesync_close_bandwidth(flexframesync _fs)
 {
     agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
-    /*
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
-    */
 }
 
 void flexframesync_set_default_props(flexframesync _fs)
@@ -574,7 +577,7 @@ void flexframesync_configure_payload_buffers(flexframesync _fs)
     if (_fs->payload_numalloc < payload_numalloc_req) {
         _fs->payload_numalloc = payload_numalloc_req;
         _fs->payload = (unsigned char*) realloc(_fs->payload, _fs->payload_numalloc);
-        printf("    flexframsync: reallocating payload (payload data) : %u\n", _fs->payload_numalloc);
+        //printf("    flexframsync: reallocating payload (payload data) : %u\n", _fs->payload_numalloc);
     }
 
     if (_fs->payload_sym_numalloc < _fs->num_payload_symbols) {

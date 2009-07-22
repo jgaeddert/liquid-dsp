@@ -27,6 +27,9 @@ typedef struct {
 int main() {
     srand( time(NULL) );
 
+    // channel options
+    float SNRdB = 12.0f;
+
     // create flexframegen object
     flexframegenprops_s fgprops;
     fgprops.rampup_len = 64;
@@ -35,7 +38,6 @@ int main() {
     fgprops.mod_scheme = MOD_PSK;
     fgprops.mod_bps = 3;
     fgprops.rampdn_len = 64;
-    printf("creating flexframegen...\n");
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
 
@@ -53,18 +55,18 @@ int main() {
     interp_crcf interp = interp_crcf_create(2,h,h_len);
 
     // create flexframesync object with default properties
-    printf("creating flexframesync...\n");
     //flexframesyncprops_s fsprops;
     flexframesync fs = flexframesync_create(NULL,callback,(void*)&fd);
-    printf("done.\n");
 
     // channel
     float phi=0.0f;
     float dphi=0.02f;
-    //float gamma=0.1f;  // channel gain
     nco nco_channel = nco_create();
     nco_set_phase(nco_channel, phi);
     nco_set_frequency(nco_channel, dphi);
+    float n0    = -18.0f;                        // noise level
+    float nstd  = powf(10.0f, n0/10.0f);         // noise std. dev.
+    float gamma = powf(10.0f, (SNRdB+n0)/10.0f); // channel gain
 
     unsigned int i;
     // initialize header, payload
@@ -96,10 +98,12 @@ int main() {
     float complex noise;
     for (i=0; i<512; i++) {
         noise = 0.0f;
-        cawgn(&noise, 0.01f);
+        cawgn(&noise, nstd);
         // push noise through sync
         flexframesync_execute(fs, &noise, 1);
     }
+    unsigned int j;
+    for (j=0; j<3; j++) {
     for (i=0; i<frame_len+2*m; i++) {
         // compensate for filter delay
         x = (i<frame_len) ? frame[i] : 0.0f;
@@ -110,20 +114,22 @@ int main() {
         // TODO: add Farrow filter to emulate sample timing offset
 
         // TODO: add channel impairments
-        //nco_mix_block_up(nco_channel, y, z, 2);
-        //z[0] = y[0] * cexpf(_Complex_I*phi);
-        //z[1] = y[1] * cexpf(_Complex_I*phi);
         nco_mix_up(nco_channel, y[0], &z[0]);
         nco_step(nco_channel);
         nco_mix_up(nco_channel, y[1], &z[1]);
         nco_step(nco_channel);
 
+        // apply channel gain
+        z[0] *= gamma;
+        z[1] *= gamma;
+
         // add noise
-        cawgn(&z[0], 0.01f);
-        cawgn(&z[1], 0.01f);
+        cawgn(&z[0], nstd);
+        cawgn(&z[1], nstd);
 
         // push through sync
         flexframesync_execute(fs, z, 2);
+    }
     }
 
     // write to file
@@ -198,21 +204,21 @@ static int callback(unsigned char * _rx_header,
 
     framedata * fd = (framedata*)_userdata;
 
-    printf("header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
+    printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
     //printf("payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");
-    printf("payload length      : %u\n", _rx_payload_len);
+    printf("    payload length      : %u\n", _rx_payload_len);
 
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
-    for (i=0; i<24; i++)
+    for (i=0; i<8; i++)
         num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
-    printf("num header errors   : %u\n", num_header_errors);
+    printf("    num header errors   : %u\n", num_header_errors);
 
     unsigned int num_payload_errors=0;
     for (i=0; i<_rx_payload_len; i++)
         num_payload_errors += (_rx_payload[i] == fd->payload[i]) ? 0 : 1;
-    printf("num payload errors  : %u\n", num_payload_errors);
+    printf("    num payload errors  : %u\n", num_payload_errors);
 
     return 0;
 }
