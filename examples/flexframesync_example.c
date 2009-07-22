@@ -28,7 +28,7 @@ int main() {
     srand( time(NULL) );
 
     // channel options
-    float SNRdB = 12.0f;
+    float SNRdB = 22.0f;
 
     // create flexframegen object
     flexframegenprops_s fgprops;
@@ -67,6 +67,9 @@ int main() {
     float n0    = -18.0f;                        // noise level
     float nstd  = powf(10.0f, n0/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+n0)/10.0f); // channel gain
+    float mu    = 0.1f; // fractional sample delay
+    fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,60.0f);
+    fir_farrow_crcf_set_delay(delay_filter,mu);
 
     unsigned int i;
     // initialize header, payload
@@ -111,9 +114,7 @@ int main() {
         // run interpolator
         interp_crcf_execute(interp, x, y);
 
-        // TODO: add Farrow filter to emulate sample timing offset
-
-        // TODO: add channel impairments
+        // add channel impairments
         nco_mix_up(nco_channel, y[0], &z[0]);
         nco_step(nco_channel);
         nco_mix_up(nco_channel, y[1], &z[1]);
@@ -127,9 +128,22 @@ int main() {
         cawgn(&z[0], nstd);
         cawgn(&z[1], nstd);
 
+        // emulate sample timing offset with Farrow filter
+        fir_farrow_crcf_push(delay_filter, z[0]);
+        fir_farrow_crcf_execute(delay_filter, &z[0]);
+        fir_farrow_crcf_push(delay_filter, z[1]);
+        fir_farrow_crcf_execute(delay_filter, &z[1]);
+
         // push through sync
         flexframesync_execute(fs, z, 2);
     }
+    }
+    // flush frame
+    for (i=0; i<512; i++) {
+        noise = 0.0f;
+        cawgn(&noise, nstd);
+        // push noise through sync
+        flexframesync_execute(fs, &noise, 1);
     }
 
     // write to file

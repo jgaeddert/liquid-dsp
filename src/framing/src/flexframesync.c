@@ -241,6 +241,9 @@ void flexframesync_destroy(flexframesync _fs)
     modem_destroy(_fs->mod_header);
     interleaver_destroy(_fs->intlv_header);
 
+    //
+    symsync_crcf_destroy(_fs->mfdecim);
+
     // free payload objects
     modem_destroy(_fs->mod_payload);
     free(_fs->payload_samples);
