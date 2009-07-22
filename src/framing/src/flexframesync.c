@@ -47,7 +47,7 @@
 
 
 #define DEBUG_FLEXFRAMESYNC             1
-#define DEBUG_FLEXFRAMESYNC_PRINT       0
+#define DEBUG_FLEXFRAMESYNC_PRINT       1
 #define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
 #define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)
 
@@ -449,7 +449,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 if (fabsf(rxy) > 0.7f) {
                     //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
-                    pll_reset(_fs->pll_rx);
                     flexframesync_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, cargf(rxy));
                     _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
@@ -463,7 +462,13 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     _fs->num_symbols_collected = 0;
                     flexframesync_demodulate_header(_fs);
                     flexframesync_decode_header(_fs,_fs->header);
-                    _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
+                    if (_fs->header_valid) {
+                        _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
+                    } else {
+                        printf("***** header invalid!\n");
+                        // TODO : invoke callback anyway?
+                        _fs->state = FLEXFRAMESYNC_STATE_RESET;
+                    }
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:

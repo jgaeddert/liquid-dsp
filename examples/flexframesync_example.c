@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <time.h>
 
 #include "liquid.h"
@@ -58,8 +59,8 @@ int main() {
     printf("done.\n");
 
     // channel
-    float phi=0.3f;
-    float dphi=0.0f;
+    float phi=0.0f;
+    float dphi=0.02f;
     //float gamma=0.1f;  // channel gain
     nco nco_channel = nco_create();
     nco_set_phase(nco_channel, phi);
@@ -91,6 +92,7 @@ int main() {
     // interpolate, push through synchronizer
     float complex x;
     float complex y[2];
+    float complex z[2];
     for (i=0; i<frame_len+2*m; i++) {
         // compensate for filter delay
         x = (i<frame_len) ? frame[i] : 0.0f;
@@ -101,9 +103,16 @@ int main() {
         // TODO: add Farrow filter to emulate sample timing offset
 
         // TODO: add channel impairments
+        //nco_mix_block_up(nco_channel, y, z, 2);
+        //z[0] = y[0] * cexpf(_Complex_I*phi);
+        //z[1] = y[1] * cexpf(_Complex_I*phi);
+        nco_mix_up(nco_channel, y[0], &z[0]);
+        nco_step(nco_channel);
+        nco_mix_up(nco_channel, y[1], &z[1]);
+        nco_step(nco_channel);
 
         // push through sync
-        flexframesync_execute(fs, y, 2);
+        flexframesync_execute(fs, z, 2);
     }
 
     // write to file
