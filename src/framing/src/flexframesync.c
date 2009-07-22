@@ -339,6 +339,15 @@ void flexframesync_destroy(flexframesync _fs)
 void flexframesync_print(flexframesync _fs)
 {
     printf("flexframesync:\n");
+    printf("    agc b/w open/closed :   %8.2e / %8.2e\n", _fs->props.agc_bw0, _fs->props.agc_bw1);
+    printf("    sym b/w open/closed :   %8.2e / %8.2e\n", _fs->props.sym_bw0, _fs->props.sym_bw1);
+    printf("    pll b/w open/closed :   %8.2e / %8.2e\n", _fs->props.pll_bw0, _fs->props.pll_bw1);
+    printf("    samples/symbol      :   %u\n", _fs->props.k);
+    printf("    filter length       :   %u\n", _fs->props.m);
+    printf("    num filter (ppfb)   :   %u\n", _fs->props.npfb);
+    printf("    filter excess b/w   :   %6.4f\n", _fs->props.beta);
+    printf("    squelch threshold   :   %6.2f dB\n", _fs->props.squelch_threshold);
+    printf("    ----\n");
     printf("    p/n sequence len    :   %u\n", _fs->pnsequence_len);
     printf("    modulation scheme   :   %u-%s\n",
         1<<(_fs->bps_payload),
