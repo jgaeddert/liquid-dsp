@@ -95,7 +95,13 @@ struct flexframesync_s {
     unsigned char header_enc[32];
     unsigned char header[15];
 
+    // header properties
+    modulation_scheme ms_payload;
+    unsigned int bps_payload;
+    unsigned int payload_len;
+
     // payload
+    unsigned int num_payload_symbols;
     modem mod_payload;
     float complex * payload_samples;
     unsigned char * payload_sym;
@@ -169,9 +175,13 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
 
     // 
     fs->mod_preamble = modem_create(MOD_BPSK, 1);
-    fs->mod_payload = modem_create(MOD_PSK, 3);
-    // TODO: fix hard-coded value
-    fs->payload_samples = (float complex*) malloc(1024*sizeof(float complex));
+
+    // flexible frame properties
+    fs->ms_payload  = MOD_PSK;
+    fs->bps_payload = 2;
+    fs->payload_len = 64;
+
+    fs->mod_payload = modem_create(fs->ms_payload, fs->bps_payload);
 
     // set status flags
     fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
@@ -352,7 +362,7 @@ void flexframesync_reset(flexframesync _fs)
 
 void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n)
 {
-    unsigned int i, j, k, nw;
+    unsigned int i, j, nw;
     float complex agc_rx_out;
     float complex mfdecim_out[4];
     float complex nco_rx_out;
@@ -636,6 +646,35 @@ void flexframesync_set_default_props(flexframesync _fs)
     _fs->props.squelch_threshold = FLEXFRAMESYNC_SQUELCH_THRESH;
 }
 
+void flexframesync_configure_payload_buffers(flexframesync _fs)
+{
+    // compute payload length (symbols)
+    _fs->num_payload_symbols = 8*(_fs->payload_len);
+    _fs->num_payload_symbols /= _fs->bps_payload;
+    _fs->num_payload_symbols += _fs->num_payload_symbols % _fs->bps_payload;
+
+    printf("flexframesync : payload symbols : %u\n", _fs->num_payload_symbols);
+
+    if (_fs->payload_numalloc < _fs->payload_len) {
+        _fs->payload = (unsigned char*) realloc(_fs->payload, _fs->payload_len);
+        _fs->payload_numalloc = _fs->payload_len;
+        printf("    flexframsync: reallocating payload (payload data) : %u\n", _fs->payload_numalloc);
+    }
+
+    if (_fs->payload_sym_numalloc < _fs->num_payload_symbols) {
+        _fs->payload_sym = (unsigned char*) realloc(_fs->payload_sym, _fs->num_payload_symbols);
+        _fs->payload_sym_numalloc = _fs->num_payload_symbols;
+        printf("reallocating payload_sym (payload symbols) : %u\n", _fs->payload_sym_numalloc);
+    }
+
+    if (_fs->payload_samples_numalloc < _fs->num_payload_symbols) {
+        _fs->payload_samples = (float complex*) realloc(_fs->payload_samples, _fs->num_payload_symbols*sizeof(float complex));
+        _fs->payload_samples_numalloc = _fs->num_payload_symbols;
+        printf("reallocating payload_samples (modulated payload symbols) : %u\n",
+                _fs->payload_samples_numalloc);
+    }
+}
+
 void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header)
 {
     unsigned int i;
@@ -668,6 +707,21 @@ void flexframesync_decode_header(flexframesync _fs, unsigned char * _user_header
     unsigned int payload_len = (_fs->header[8] << 8) | (_fs->header[9]);
 
     // TODO: copy user data
+
+    // configure payload receiver
+    if (_fs->header_valid) {
+        // configure modem
+        if (mod_scheme != _fs->ms_payload || mod_depth != _fs->bps_payload) {
+            printf("flexframesync : configuring payload modem : %u-%s\n",
+                    1<<mod_depth,
+                    modulation_scheme_str[mod_scheme]);
+            _fs->ms_payload = mod_scheme;
+            _fs->bps_payload = mod_depth;
+            modem_destroy(_fs->mod_payload);
+            _fs->mod_payload = modem_create(_fs->ms_payload, _fs->bps_payload);
+        }
+        flexframesync_configure_payload_buffers(_fs);
+    }
     
 #if DEBUG_FLEXFRAMESYNC_PRINT
     // print results
