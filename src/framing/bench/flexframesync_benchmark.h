@@ -24,6 +24,13 @@
 #include <sys/resource.h>
 #include "liquid.h"
 
+typedef struct {
+    unsigned char * header;
+    unsigned char * payload;
+    unsigned int num_frames_tx;
+    unsigned int num_frames_rx;
+} framedata;
+
 static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
@@ -31,6 +38,8 @@ static int callback(unsigned char * _rx_header,
                     void * _userdata)
 {
     //printf("callback invoked\n");
+    framedata * fd = (framedata*) _userdata;
+    fd->num_frames_rx++;
     return 0;
 }
 
@@ -62,6 +71,7 @@ void benchmark_flexframesync(
         header[i] = i;
     for (i=0; i<fgprops.payload_len; i++)
         payload[i] = rand() & 0xff;
+    framedata fd = {header, payload, 0, 0};
 
     // create interpolator
     unsigned int m=3;
@@ -73,7 +83,7 @@ void benchmark_flexframesync(
 
     // create flexframesync object with default properties
     //flexframesyncprops_s fsprops;
-    flexframesync fs = flexframesync_create(NULL,callback,NULL);
+    flexframesync fs = flexframesync_create(NULL,callback,(void*)&fd);
     flexframesync_print(fs);
 
     // generate the frame
@@ -99,6 +109,12 @@ void benchmark_flexframesync(
         flexframesync_execute(fs, frame_interp, 2*frame_interp_len);
     }
     getrusage(RUSAGE_SELF, _finish);
+
+
+    fd.num_frames_tx = *_num_iterations;
+    printf("  frames received  :   %6u / %6u\n",
+            fd.num_frames_rx,
+            fd.num_frames_tx);
 
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
