@@ -178,7 +178,7 @@ void flexframegen_execute(flexframegen _fg,
     n += _fg->num_payload_symbols;
 
     // ramp down
-    for (i=0; i<_fg->props.rampup_len; i++)
+    for (i=0; i<_fg->props.rampdn_len; i++)
         _y[n++] = ((i%2) ? 1.0f : -1.0f) * ((float)(_fg->props.rampdn_len-i) / (float)(_fg->props.rampdn_len));
 
 #if DEBUG_FLEXFRAMEGEN_PRINT
