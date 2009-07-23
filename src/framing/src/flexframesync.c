@@ -149,7 +149,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
         flexframesync_setprops(fs, &flexframesyncprops_default);
 
     // header objects
-    fs->fec_header = fec_create(FEC_CONV_V29, NULL);
+    fs->fec_header = fec_create(FEC_CONV_V27, NULL);
     fs->mod_header = modem_create(MOD_QPSK, 2);
     fs->intlv_header = interleaver_create(32, INT_BLOCK);
 

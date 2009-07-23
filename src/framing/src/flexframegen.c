@@ -92,7 +92,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_QPSK, 2);
-    fg->fec_header = fec_create(FEC_CONV_V29, NULL);
+    fg->fec_header = fec_create(FEC_CONV_V27, NULL);
     fg->intlv_header = interleaver_create(32, INT_BLOCK);
 
     // initialize properties

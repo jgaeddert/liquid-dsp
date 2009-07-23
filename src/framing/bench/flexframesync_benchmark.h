@@ -39,7 +39,8 @@ static int callback(unsigned char * _rx_header,
 {
     //printf("callback invoked\n");
     framedata * fd = (framedata*) _userdata;
-    fd->num_frames_rx++;
+    if (_rx_header_valid)
+        fd->num_frames_rx++;
     return 0;
 }
 
