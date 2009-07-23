@@ -194,9 +194,8 @@ void flexframegen_execute(flexframegen _fg,
 
 void flexframegen_compute_payload_len(flexframegen _fg)
 {
-    _fg->num_payload_symbols = 8*(_fg->props.payload_len);
-    _fg->num_payload_symbols /= _fg->props.mod_bps;
-    _fg->num_payload_symbols += _fg->num_payload_symbols % _fg->props.mod_bps;
+    div_t d = div(8*_fg->props.payload_len, _fg->props.mod_bps);
+    _fg->num_payload_symbols = d.quot + (d.rem ? 1 : 0);
 }
 
 void flexframegen_compute_frame_len(flexframegen _fg)

@@ -568,17 +568,16 @@ void flexframesync_configure_payload_buffers(flexframesync _fs)
 {
     //printf("flexframesync : payload symbols : %u\n", _fs->num_payload_symbols);
 
+    div_t d;
+
     // compute payload length (symbols)
-    _fs->num_payload_symbols = 8*(_fs->payload_len);
-    _fs->num_payload_symbols /= _fs->bps_payload;
-    _fs->num_payload_symbols += _fs->num_payload_symbols % _fs->bps_payload;
+    d = div(8*_fs->payload_len, _fs->bps_payload);
+    _fs->num_payload_symbols = d.quot + (d.rem ? 1 : 0);
 
     // required payload allocation size, considering the total number of
     // bits might not divide evenly by the modulation depth
-    unsigned int payload_numalloc_req;
-    payload_numalloc_req  = _fs->num_payload_symbols * _fs->bps_payload;
-    payload_numalloc_req /= 8;
-    payload_numalloc_req += payload_numalloc_req % _fs->bps_payload;
+    d = div(_fs->num_payload_symbols*_fs->bps_payload, 8);
+    unsigned int payload_numalloc_req = d.quot + (d.rem ? 1 : 0);
 
     if (_fs->payload_numalloc < payload_numalloc_req) {
         _fs->payload_numalloc = payload_numalloc_req;
