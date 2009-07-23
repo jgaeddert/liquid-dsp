@@ -202,6 +202,7 @@ int main() {
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
     nco_destroy(nco_channel);
+    interp_crcf_destroy(interp);
 
     printf("done.\n");
     return 0;

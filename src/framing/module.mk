@@ -58,6 +58,7 @@ local_t_files	:=		\
 # $(local_dir)
 #
 local_b_files	:=		\
+	flexframesync_benchmark.h	\
 	pnsync_rrrf_benchmark.h
 
 include common.mk
