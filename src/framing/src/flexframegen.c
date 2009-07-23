@@ -34,6 +34,16 @@
 #define DEBUG_FLEXFRAMEGEN          1
 #define DEBUG_FLEXFRAMEGEN_PRINT    0
 
+// default flexframegen properties
+static flexframegenprops_s flexframegenprops_default = {
+    0,          // rampup_len
+    0,          // phasing_len
+    0,          // payload_len
+    MOD_BPSK,   // mod_scheme
+    1,          // mod_bps
+    0           // rampdn_len
+};
+
 struct flexframegen_s {
     // buffers: preamble (BPSK)
     float complex * ramp_up;
@@ -85,10 +95,11 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     fg->fec_header = fec_create(FEC_CONV_V29, NULL);
     fg->intlv_header = interleaver_create(32, INT_BLOCK);
 
-    // initialize
-    memmove(&fg->props, _props, sizeof(flexframegenprops_s));
-    flexframegen_compute_payload_len(fg);
-    flexframegen_compute_frame_len(fg);
+    // initialize properties
+    if (_props != NULL)
+        flexframegen_setprops(fg, _props);
+    else
+        flexframegen_setprops(fg, &flexframegenprops_default);
 
     // create payload objects
     fg->mod_payload = modem_create(fg->props.mod_scheme, fg->props.mod_bps);
@@ -122,6 +133,23 @@ void flexframegen_destroy(flexframegen _fg)
 
     // destroy frame generator
     free(_fg);
+}
+
+void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props)
+{
+    memmove(_props, &_fg->props, sizeof(flexframegenprops_s));
+}
+
+void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props)
+{
+    // TODO : flexframegen_setprops() validate input
+    if (_props->mod_bps == 0) {
+        printf("error: flexframegen_setprops(), modulation depth must be greater than 0\n");
+        exit(1);
+    }
+    memmove(&_fg->props, _props, sizeof(flexframegenprops_s));
+    flexframegen_compute_payload_len(_fg);
+    flexframegen_compute_frame_len(_fg);
 }
 
 void flexframegen_print(flexframegen _fg)

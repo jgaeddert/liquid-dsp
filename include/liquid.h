@@ -1064,9 +1064,9 @@ typedef struct {
 } flexframegenprops_s;
 typedef struct flexframegen_s * flexframegen;
 flexframegen flexframegen_create(flexframegenprops_s * _props);
+void flexframegen_destroy(flexframegen _fg);
 void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props);
 void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props);
-void flexframegen_destroy(flexframegen _fg);
 void flexframegen_print(flexframegen _fg);
 unsigned int flexframegen_getframelen(flexframegen _fg);
 void flexframegen_execute(flexframegen _fg,

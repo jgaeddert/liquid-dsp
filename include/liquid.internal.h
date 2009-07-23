@@ -368,7 +368,6 @@ void flexframegen_modulate_header(flexframegen _fg);
 void flexframegen_modulate_payload(flexframegen _fg);
 //void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
 
-void flexframesync_set_default_props(flexframesync _fs);
 void flexframesync_configure_payload_buffers(flexframesync _fs);
 void flexframesync_demodulate_header(flexframesync _fs);
 void flexframesync_decode_header(flexframesync _fs);

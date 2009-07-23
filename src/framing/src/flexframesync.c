@@ -31,16 +31,6 @@
 
 #include "liquid.internal.h"
 
-#define FLEXFRAMESYNC_SYM_BW_0          (0.01f)
-#define FLEXFRAMESYNC_SYM_BW_1          (0.001f)
-
-#define FLEXFRAMESYNC_AGC_BW_0          (3e-3f)
-#define FLEXFRAMESYNC_AGC_BW_1          (1e-5f)
-
-#define FLEXFRAMESYNC_PLL_BW_0          (2e-3f)
-#define FLEXFRAMESYNC_PLL_BW_1          (1e-3f)
-
-#define FLEXFRAMESYNC_SQUELCH_THRESH    (-15.0f)
 #define FLEXFRAMESYNC_SQUELCH_TIMEOUT   (32)
 
 #define FLEXFRAMESYNC_PN_LEN            (64)
@@ -50,6 +40,25 @@
 #define DEBUG_FLEXFRAMESYNC_PRINT       0
 #define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
 #define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)
+
+static flexframesyncprops_s flexframesyncprops_default = {
+    // automatic gain control
+    3e-3f,      // agc_bw0
+    1e-5f,      // agc_bw1
+    // symbol timing recovery
+    0.01f,      // sym_bw0
+    0.001f,     // sym_bw1
+    // phase-locked loop
+    2e-3f,      // pll_bw0
+    1e-3f,      // pll_bw1
+    // symbol timing recovery
+    2,          // k
+    32,         // npfb
+    3,          // m
+    0.7f,       // beta
+    // squelch
+    -15.0f      // squelch_threshold
+};
 
 struct flexframesync_s {
 
@@ -132,9 +141,12 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->callback = _callback;
     fs->userdata = _userdata;
 
-    // set default properties
-    // TODO : read properties from user input
-    flexframesync_set_default_props(fs);
+    // set properties (initial memmove to prevent internal warnings)
+    memmove(&fs->props, &flexframesyncprops_default, sizeof(flexframesyncprops_s));
+    if (_props != NULL)
+        flexframesync_setprops(fs,_props);
+    else
+        flexframesync_setprops(fs, &flexframesyncprops_default);
 
     // header objects
     fs->fec_header = fec_create(FEC_CONV_V29, NULL);
@@ -142,16 +154,16 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->intlv_header = interleaver_create(32, INT_BLOCK);
 
     // agc, rssi, squelch
-    fs->agc_rx = agc_create(1.0f, FLEXFRAMESYNC_AGC_BW_0);
+    fs->agc_rx = agc_create(1.0f, fs->props.agc_bw0);
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
-    fs->squelch_threshold = FLEXFRAMESYNC_SQUELCH_THRESH;
+    fs->squelch_threshold = fs->props.squelch_threshold;
     fs->squelch_timeout = FLEXFRAMESYNC_SQUELCH_TIMEOUT;
     fs->squelch_timer = fs->squelch_timeout;
 
     // pll, nco
     fs->pll_rx = pll_create();
     fs->nco_rx = nco_create();
-    pll_set_bandwidth(fs->pll_rx, FLEXFRAMESYNC_PLL_BW_1);
+    pll_set_bandwidth(fs->pll_rx, fs->props.pll_bw0);
     pll_set_damping_factor(fs->pll_rx, 4.0f);   // increasing damping factor
                                                 // reduces oscillations,
                                                 // improves stability
@@ -170,9 +182,10 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
 
     // design symsync (k=2)
     unsigned int npfb = 32;
-    unsigned int H_len = 2*2*npfb*3 + 1;// 2*2*npfb*_m + 1;
+    unsigned int m=3;
+    unsigned int H_len = 2*2*npfb*m + 1;// 2*2*npfb*_m + 1;
     float H[H_len];
-    design_rrc_filter(2*npfb,3,0.7f,0,H);
+    design_rrc_filter(2*npfb,m,0.7f,0,H);
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
     // 
@@ -336,6 +349,26 @@ void flexframesync_destroy(flexframesync _fs)
     free(_fs);
 }
 
+void flexframesync_getprops(flexframesync _fs, flexframesyncprops_s * _props)
+{
+    memmove(_props, &_fs->props, sizeof(flexframesyncprops_s));
+}
+
+void flexframesync_setprops(flexframesync _fs, flexframesyncprops_s * _props)
+{
+    // TODO : flexframesync_setprops() validate input
+
+    if (_props->k       != _fs->props.k     ||
+        _props->npfb    != _fs->props.npfb  ||
+        _props->m       != _fs->props.m     ||
+        _props->beta    != _fs->props.beta)
+    {
+        printf("warning: flexframesync_setprops(), ignoring filter change\n");
+        // TODO : destroy/recreate filter
+    }
+    memmove(&_fs->props, _props, sizeof(flexframesyncprops_s));
+}
+
 void flexframesync_print(flexframesync _fs)
 {
     printf("flexframesync:\n");
@@ -344,7 +377,7 @@ void flexframesync_print(flexframesync _fs)
     printf("    pll b/w open/closed :   %8.2e / %8.2e\n", _fs->props.pll_bw0, _fs->props.pll_bw1);
     printf("    samples/symbol      :   %u\n", _fs->props.k);
     printf("    filter length       :   %u\n", _fs->props.m);
-    printf("    num filter (ppfb)   :   %u\n", _fs->props.npfb);
+    printf("    num filters (ppfb)  :   %u\n", _fs->props.npfb);
     printf("    filter excess b/w   :   %6.4f\n", _fs->props.beta);
     printf("    squelch threshold   :   %6.2f dB\n", _fs->props.squelch_threshold);
     printf("    ----\n");
@@ -541,27 +574,6 @@ void flexframesync_close_bandwidth(flexframesync _fs)
     agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
-}
-
-// set default user-configurable properties
-void flexframesync_set_default_props(flexframesync _fs)
-{
-    _fs->props.agc_bw0 = FLEXFRAMESYNC_AGC_BW_0;
-    _fs->props.agc_bw1 = FLEXFRAMESYNC_AGC_BW_1;
-
-    _fs->props.sym_bw0 = FLEXFRAMESYNC_SYM_BW_0;
-    _fs->props.sym_bw1 = FLEXFRAMESYNC_SYM_BW_1;
-
-    _fs->props.pll_bw0 = FLEXFRAMESYNC_PLL_BW_0;
-    _fs->props.pll_bw1 = FLEXFRAMESYNC_PLL_BW_1;
-
-    // symbol timing recovery
-    _fs->props.k = 2;       // samples per symbol
-    _fs->props.npfb = 32;   // number of filters in filter-bank
-    _fs->props.m = 3;       // filter length
-    _fs->props.beta = 0.7f; // excess bandwidth factor
-
-    _fs->props.squelch_threshold = FLEXFRAMESYNC_SQUELCH_THRESH;
 }
 
 void flexframesync_configure_payload_buffers(flexframesync _fs)
