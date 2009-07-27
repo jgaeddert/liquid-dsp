@@ -99,6 +99,12 @@ struct flexframesync_s {
     unsigned char header_enc[32];
     unsigned char header[15];
 
+    // SINDR estimate (signal to interference, noise,
+    // and distortion ratio)
+    float evm;          // instantaneous error vector magnitude
+    float evm_hat;      // averaged EVM
+    float SINDRdB_hat;  // estimated SINDR (dB)
+
     // header properties
     modulation_scheme ms_payload;
     unsigned int bps_payload;
@@ -210,7 +216,8 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->payload_sym_numalloc = 0;
     fs->payload_numalloc = 0;
 
-    // open bandwidth
+    // reset, open bandwidth
+    flexframesync_reset(fs);
     flexframesync_open_bandwidth(fs);
 
 #ifdef DEBUG_FLEXFRAMESYNC
@@ -395,6 +402,10 @@ void flexframesync_reset(flexframesync _fs)
     pll_reset(_fs->pll_rx);
     //agc_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
     nco_reset(_fs->nco_rx);
+
+    // SINDR estimate
+    _fs->evm_hat = 0.0f;
+    _fs->SINDRdB_hat = 0.0f;
 }
 
 // TODO: break flexframesync_execute method into manageable pieces
@@ -502,7 +513,16 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 //_fs->header_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->header_samples[_fs->num_symbols_collected] = nco_rx_out;
                 _fs->num_symbols_collected++;
+
+                // SINDR estimation
+                get_demodulator_evm(_fs->mod_header, &_fs->evm);
+                _fs->evm_hat += _fs->evm;
                 if (_fs->num_symbols_collected==128) {
+                    _fs->evm_hat /= 128.0f;
+                    _fs->SINDRdB_hat = -10*log10f(_fs->evm_hat);
+#if DEBUG_FLEXFRAMESYNC_PRINT
+                    printf("SINDR   :   %12.8f dB\n", _fs->SINDRdB_hat);
+#endif
                     _fs->num_symbols_collected = 0;
                     flexframesync_demodulate_header(_fs);
                     flexframesync_decode_header(_fs);
@@ -547,6 +567,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;
 
+                // Don't actually reset the synchronizer
                 //flexframesync_reset(_fs);
                 break;
             default:;
