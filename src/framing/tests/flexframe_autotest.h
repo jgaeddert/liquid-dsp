@@ -44,7 +44,7 @@ void autotest_flexframe_decode_header()
         flexframegen_print(fg);
 
     // create flexframesync object
-    flexframesyncprops_s fsprops;
+    //flexframesyncprops_s fsprops;
     flexframesync fs = flexframesync_create(NULL,NULL,NULL);
 
     // initialize header, payload
