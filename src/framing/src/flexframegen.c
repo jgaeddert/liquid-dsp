@@ -182,7 +182,8 @@ void flexframegen_execute(flexframegen _fg,
 
     // ramp up
     for (i=0; i<_fg->props.rampup_len; i++)
-        _y[n++] = ((i%2) ? 1.0f : -1.0f) * kaiser(i, 2*_fg->props.rampup_len, 10.0f, 0.0f);
+        _y[n++] = ((i%2) ? 1.0f : -1.0f) * 0.5f * (1.0f - cos(M_PI*(float)(i)/(float)(_fg->props.rampup_len)));
+        //_y[n++] = ((i%2) ? 1.0f : -1.0f) * kaiser(i, 2*_fg->props.rampup_len, 10.0f, 0.0f);
         //_y[n++] = ((i%2) ? 1.0f : -1.0f) * ((float)(i) / (float)(_fg->props.rampup_len));
 
     // phasing pattern
@@ -208,7 +209,8 @@ void flexframegen_execute(flexframegen _fg,
 
     // ramp down
     for (i=0; i<_fg->props.rampdn_len; i++)
-        _y[n++] = ((i%2) ? 1.0f : -1.0f) * (1.0f - kaiser(i, 2*_fg->props.rampdn_len, 10.0f, 0.0f));
+        _y[n++] = ((i%2) ? 1.0f : -1.0f) * 0.5f * (1.0f + cos(M_PI*(float)(i)/(float)(_fg->props.rampup_len)));
+        //_y[n++] = ((i%2) ? 1.0f : -1.0f) * (1.0f - kaiser(i, 2*_fg->props.rampdn_len, 10.0f, 0.0f));
         //_y[n++] = ((i%2) ? 1.0f : -1.0f) * ((float)(_fg->props.rampdn_len-i) / (float)(_fg->props.rampdn_len));
 
 #if DEBUG_FLEXFRAMEGEN_PRINT
