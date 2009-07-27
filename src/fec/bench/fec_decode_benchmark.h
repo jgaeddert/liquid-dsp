@@ -55,7 +55,9 @@ void fec_decode_bench(
 #endif
 
     // normalize number of iterations
-    *_num_iterations /= _n;
+    if (_fs != FEC_NONE)
+        *_num_iterations /= _n;
+
     switch (_fs) {
     case FEC_CONV_V27:  *_num_iterations /= 20;     break;
     case FEC_CONV_V29:  *_num_iterations /= 50;     break;
@@ -68,6 +70,14 @@ void fec_decode_bench(
     case FEC_CONV_V27P67:
     case FEC_CONV_V27P78:
         *_num_iterations /= 20;
+        break;
+    case FEC_CONV_V29P23:
+    case FEC_CONV_V29P34:
+    case FEC_CONV_V29P45:
+    case FEC_CONV_V29P56:
+    case FEC_CONV_V29P67:
+    case FEC_CONV_V29P78:
+        *_num_iterations /= 50;
         break;
     default:;
     }
@@ -108,6 +118,8 @@ void fec_decode_bench(
 //
 // BENCHMARKS
 //
+void benchmark_fec_dec_none_n64         FEC_DECODE_BENCH_API(FEC_NONE,      64,  NULL)
+
 void benchmark_fec_dec_rep3_n64         FEC_DECODE_BENCH_API(FEC_REP3,      64,  NULL)
 void benchmark_fec_dec_hamming74_n64    FEC_DECODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
 
@@ -122,6 +134,13 @@ void benchmark_fec_dec_conv27p45_n64    FEC_DECODE_BENCH_API(FEC_CONV_V27P45,64,
 void benchmark_fec_dec_conv27p56_n64    FEC_DECODE_BENCH_API(FEC_CONV_V27P56,64, NULL)
 void benchmark_fec_dec_conv27p67_n64    FEC_DECODE_BENCH_API(FEC_CONV_V27P67,64, NULL)
 void benchmark_fec_dec_conv27p78_n64    FEC_DECODE_BENCH_API(FEC_CONV_V27P78,64, NULL)
+
+void benchmark_fec_dec_conv29p23_n64    FEC_DECODE_BENCH_API(FEC_CONV_V29P23,64, NULL)
+void benchmark_fec_dec_conv29p34_n64    FEC_DECODE_BENCH_API(FEC_CONV_V29P34,64, NULL)
+void benchmark_fec_dec_conv29p45_n64    FEC_DECODE_BENCH_API(FEC_CONV_V29P45,64, NULL)
+void benchmark_fec_dec_conv29p56_n64    FEC_DECODE_BENCH_API(FEC_CONV_V29P56,64, NULL)
+void benchmark_fec_dec_conv29p67_n64    FEC_DECODE_BENCH_API(FEC_CONV_V29P67,64, NULL)
+void benchmark_fec_dec_conv29p78_n64    FEC_DECODE_BENCH_API(FEC_CONV_V29P78,64, NULL)
 
 #endif // __LIQUID_FEC_DECODE_BENCHMARK_H__
 
