@@ -48,7 +48,7 @@ void autotest_ccodes() {
 
     unsigned int i;
     signed int raa, rbb;
-    for (i=0; i<n-1; i++) {
+    for (i=0; i<n; i++) {
         // correlate like sequences
         raa = bsequence_correlate(a,ax);
         rbb = bsequence_correlate(b,bx);
