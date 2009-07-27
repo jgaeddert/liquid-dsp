@@ -46,7 +46,7 @@ static flexframesyncprops_s flexframesyncprops_default = {
     3e-3f,      // agc_bw0
     1e-5f,      // agc_bw1
     // symbol timing recovery
-    0.01f,      // sym_bw0
+    0.02f,      // sym_bw0
     0.001f,     // sym_bw1
     // phase-locked loop
     2e-3f,      // pll_bw0

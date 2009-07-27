@@ -33,7 +33,7 @@ int main() {
     // create flexframegen object
     flexframegenprops_s fgprops;
     fgprops.rampup_len = 64;
-    fgprops.phasing_len = 64;
+    fgprops.phasing_len = 256;
     fgprops.payload_len = 64;
     fgprops.mod_scheme = MOD_PSK;
     fgprops.mod_bps = 3;
@@ -138,13 +138,18 @@ int main() {
         // push through sync
         flexframesync_execute(fs, z, 2);
     }
-    }
     // flush frame
-    for (i=0; i<512; i++) {
+    for (i=0; i<64; i++) {
         noise = 0.0f;
         cawgn(&noise, nstd);
         // push noise through sync
-        flexframesync_execute(fs, &noise, 1);
+        interp_crcf_execute(interp, noise, y);
+        fir_farrow_crcf_push(delay_filter, y[0]);
+        fir_farrow_crcf_execute(delay_filter, &z[0]);
+        fir_farrow_crcf_push(delay_filter, y[1]);
+        fir_farrow_crcf_execute(delay_filter, &z[1]);
+        flexframesync_execute(fs, z, 2);
+    }
     }
 
     // write to file
