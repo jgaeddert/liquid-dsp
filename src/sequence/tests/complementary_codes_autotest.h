@@ -40,10 +40,34 @@ void autotest_ccodes() {
         bsequence_print(a);
         bsequence_print(b);
     }
+
+    // generate test sequences
+    bsequence ax = bsequence_create(n);
+    bsequence bx = bsequence_create(n);
+    bsequence_create_ccodes(ax, bx);
+
+    unsigned int i;
+    signed int raa, rbb;
+    for (i=0; i<n-1; i++) {
+        // correlate like sequences
+        raa = bsequence_correlate(a,ax);
+        rbb = bsequence_correlate(b,bx);
+
+        if (_autotest_verbose)
+            printf("    %3u : raa + rbb = %d\n", i, raa+rbb);
+
+        if (i==0) { CONTEND_EQUALITY(raa+rbb,2*n);  }
+        else      { CONTEND_EQUALITY(raa+rbb,0);    }
+
+        bsequence_circshift(ax);
+        bsequence_circshift(bx);
+    }
     
     // clean up memory
     bsequence_destroy(a);
     bsequence_destroy(b);
+    bsequence_destroy(ax);
+    bsequence_destroy(bx);
 }
 
 #endif 

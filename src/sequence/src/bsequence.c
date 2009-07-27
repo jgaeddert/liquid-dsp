@@ -114,6 +114,14 @@ void bsequence_push(bsequence _bs, unsigned int b)
     (_bs->s)[_bs->s_len-1] |= ( b & 0x01 );
 }
 
+void bsequence_circshift(bsequence _bs)
+{
+    // extract most-significant (left-most) bit
+    unsigned char msb_mask = 1 << (_bs->num_bits_msb-1);
+    unsigned int b = (_bs->s[0] & msb_mask) >> (_bs->num_bits_msb-1);
+    bsequence_push(_bs, b);
+}
+
 signed int bsequence_correlate(bsequence _bs1, bsequence _bs2)
 {
     signed int rxy = 0;

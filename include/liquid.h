@@ -1681,6 +1681,9 @@ void bsequence_print(bsequence _bs);
 // Push bit into to back of a binary sequence
 void bsequence_push(bsequence _bs, unsigned int b);
 
+// circular shift (left)
+void bsequence_circshift(bsequence _bs);
+
 // Correlates two binary sequences together
 int bsequence_correlate(bsequence _bs1, bsequence _bs2);
 
