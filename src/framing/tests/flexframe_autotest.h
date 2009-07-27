@@ -40,7 +40,8 @@ void autotest_flexframe_decode_header()
     fgprops.mod_bps = 3;
     fgprops.rampdn_len = 16;
     flexframegen fg = flexframegen_create(&fgprops);
-    flexframegen_print(fg);
+    if (_autotest_verbose)
+        flexframegen_print(fg);
 
     // create flexframesync object
     flexframesyncprops_s fsprops;
