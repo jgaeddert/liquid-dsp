@@ -80,9 +80,9 @@ void fec_conv_punctured_destroy(fec _q)
 }
 
 void fec_conv_punctured_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_dec,
-                     unsigned char *_msg_enc)
+                               unsigned int _dec_msg_len,
+                               unsigned char *_msg_dec,
+                               unsigned char *_msg_enc)
 {
     unsigned int i,j,r; // bookkeeping
     unsigned int sr=0;  // convolutional shift register
@@ -153,9 +153,9 @@ void fec_conv_punctured_encode(fec _q,
 
 //unsigned int
 void fec_conv_punctured_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_enc,
-                     unsigned char *_msg_dec)
+                               unsigned int _dec_msg_len,
+                               unsigned char *_msg_enc,
+                               unsigned char *_msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_punctured_setlength(_q, _dec_msg_len);
@@ -371,27 +371,27 @@ void fec_conv_init_v29p78(fec _q)
 
 #else   // HAVE_FEC_H (config.h)
 
-fec fec_conv_create(fec_scheme _fs)
+fec fec_conv_punctured_create(fec_scheme _fs)
 {
     return NULL;
 }
 
-void fec_conv_destroy(fec _q)
+void fec_conv_punctured_destroy(fec _q)
 {
 }
 
-void fec_conv_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_dec,
-                     unsigned char *_msg_enc)
+void fec_conv_punctured_encode(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char *_msg_dec,
+                               unsigned char *_msg_enc)
 {
 }
 
 //unsigned int
-void fec_conv_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_enc,
-                     unsigned char *_msg_dec)
+void fec_conv_punctured_decode(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char *_msg_enc,
+                               unsigned char *_msg_dec)
 {
 }
 

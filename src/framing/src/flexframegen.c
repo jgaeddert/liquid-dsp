@@ -92,7 +92,11 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_QPSK, 2);
+#if !defined HAVE_FEC_H || HAVE_FEC_H==0
+    fg->fec_header = fec_create(FEC_HAMMING74, NULL);
+#else
     fg->fec_header = fec_create(FEC_CONV_V27, NULL);
+#endif
     fg->intlv_header = interleaver_create(32, INT_BLOCK);
 
     // initialize properties
@@ -300,6 +304,10 @@ void flexframegen_encode_header(flexframegen _fg,
 
     // run encoder
     fec_encode(_fg->fec_header, 15, _fg->header, _fg->header_enc);
+#if !defined HAVE_FEC_H || HAVE_FEC_H==0
+    _fg->header_enc[30] = 0xa7;
+    _fg->header_enc[31] = 0x9e;
+#endif
 
     // interleave header bits
     interleaver_interleave(_fg->intlv_header, _fg->header_enc, _fg->header_enc);

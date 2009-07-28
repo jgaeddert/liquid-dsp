@@ -30,7 +30,7 @@
 void conv_test(fec_scheme _fs,
                unsigned int _dec_msg_len)
 {
-#if HAVE_FEC_H==0
+#if !defined HAVE_FEC_H || HAVE_FEC_H==0
     printf("warning: convolutional codes unavailable\n");
     return;
 #endif
