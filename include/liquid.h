@@ -134,16 +134,19 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 #define FBASC_ENCODER   0
 #define FBASC_DECODER   1
 typedef struct fbasc_s * fbasc;
-fbasc fbasc_create(
-        int _type,
-        unsigned int _num_channels,
-        unsigned int _samples_per_frame,
-        unsigned int _bytes_per_frame);
+fbasc fbasc_create(int _type,
+                   unsigned int _num_channels,
+                   unsigned int _samples_per_frame,
+                   unsigned int _bytes_per_frame);
 void fbasc_destroy(fbasc _q);
 void fbasc_print(fbasc _q);
 
-void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame);
-void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio);
+void fbasc_encode(fbasc _q,
+                  float * _audio,
+                  unsigned char * _frame);
+void fbasc_decode(fbasc _q,
+                  unsigned char * _frame,
+                  float * _audio);
 
 //
 // MODULE : buffer
@@ -260,9 +263,16 @@ void gport2_destroy(gport2 _p);
 void gport2_print(gport2 _p);
 
 // produce/consume methods
-void gport2_produce(gport2 _p, void * _w, unsigned int _n);
-void gport2_consume(gport2 _p, void * _r, unsigned int _n);
-void gport2_consume_available(gport2 _p, void * _r, unsigned int _nmax, unsigned int *_nc);
+void gport2_produce(gport2 _p,
+                    void * _w,
+                    unsigned int _n);
+void gport2_consume(gport2 _p,
+                    void * _r,
+                    unsigned int _n);
+void gport2_consume_available(gport2 _p,
+                              void * _r,
+                              unsigned int _nmax,
+                              unsigned int *_nc);
 
 // signaling methods
 void gport2_signal(gport2 _p, int _message);
@@ -277,15 +287,22 @@ typedef struct awgn_channel_s * awgn_channel;
 awgn_channel awgn_channel_create(float _nvar);
 void awgn_channel_destroy(awgn_channel _q);
 void awgn_channel_print(awgn_channel _q);
-void awgn_channel_execute(awgn_channel _q, liquid_float_complex _x, liquid_float_complex *_y);
+void awgn_channel_execute(awgn_channel _q,
+                          liquid_float_complex _x,
+                          liquid_float_complex *_y);
 void awgn_channel_set_noise_variance(awgn_channel _q, float _nvar);
 
 // Rice-K channel
 typedef struct ricek_channel_s * ricek_channel;
-ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, float _theta);
+ricek_channel ricek_channel_create(unsigned int _h_len,
+                                   float _K,
+                                   float _fd,
+                                   float _theta);
 void ricek_channel_destroy(ricek_channel _q);
 void ricek_channel_print(ricek_channel _q);
-void ricek_channel_execute(ricek_channel _q, liquid_float_complex _x, liquid_float_complex *_y);
+void ricek_channel_execute(ricek_channel _q,
+                           liquid_float_complex _x,
+                           liquid_float_complex *_y);
 
 // Log-normal channel
 typedef struct lognorm_channel_s * lognorm_channel;
@@ -295,7 +312,9 @@ typedef struct channel_s * channel;
 channel channel_create();
 void channel_destroy(channel _c);
 void channel_print(channel _c);
-void channel_execute(channel _c, liquid_float_complex _x, liquid_float_complex *_y);
+void channel_execute(channel _c,
+                     liquid_float_complex _x,
+                     liquid_float_complex *_y);
 
 //
 // MODULE : dotprod (vector dot product)
@@ -422,15 +441,20 @@ LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CHECKSUM32)
 //
 // checksum
 //
-unsigned char checksum_generate_key(unsigned char *_data, unsigned int _n);
-int  checksum_validate_message(unsigned char *_data, unsigned int _n, unsigned char _key);
+unsigned char checksum_generate_key(unsigned char *_data,
+                                    unsigned int _n);
+int checksum_validate_message(unsigned char *_data,
+                              unsigned int _n,
+                              unsigned char _key);
 
 //
 // crc (cyclic redundancy check)
 //
-//void crc_generate_key(unsigned char *_msg, unsigned int _msg_len, unsigned char *_key, unsigned int _key_len);
-unsigned int crc32_generate_key(unsigned char *_data, unsigned int _n);
-int  crc32_validate_message(unsigned char *_data, unsigned int _n, unsigned int _key);
+unsigned int crc32_generate_key(unsigned char *_data,
+                                unsigned int _n);
+int crc32_validate_message(unsigned char *_data,
+                           unsigned int _n,
+                           unsigned int _key);
 
 // 
 // FEC
@@ -479,8 +503,14 @@ fec fec_create(fec_scheme _scheme, void *_opts);
 void fec_destroy(fec _q);
 void fec_print(fec _q);
 
-void fec_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc);
-void fec_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec);
+void fec_encode(fec _q,
+                unsigned int _dec_msg_len,
+                unsigned char * _msg_dec,
+                unsigned char * _msg_enc);
+void fec_decode(fec _q,
+                unsigned int _dec_msg_len,
+                unsigned char * _msg_enc,
+                unsigned char * _msg_dec);
 
 
 //
@@ -491,7 +521,10 @@ typedef struct fftplan_s * fftplan;
 
 #define FFT_FORWARD 0
 #define FFT_REVERSE 1
-fftplan fft_create_plan(unsigned int _n, liquid_float_complex * _x, liquid_float_complex * _y, int _dir);
+fftplan fft_create_plan(unsigned int _n,
+                        liquid_float_complex * _x,
+                        liquid_float_complex * _y,
+                        int _dir);
 void fft_destroy_plan(fftplan _p);
 void fft_execute(fftplan _p);
 
@@ -1013,32 +1046,35 @@ void lf2_generate_filter(lf2 _f);
 // Basic frame generator (64 bytes data payload)
 //
 typedef struct framegen64_s * framegen64;
-framegen64 framegen64_create(
-    unsigned int _m,
-    float _beta);
+framegen64 framegen64_create(unsigned int _m,
+                             float _beta);
 void framegen64_destroy(framegen64 _fg);
 void framegen64_print(framegen64 _fg);
-void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char * _payload, liquid_float_complex * _y);
-void framegen64_flush(framegen64 _fg, unsigned int _n, liquid_float_complex * _y);
+void framegen64_execute(framegen64 _fg,
+                        unsigned char * _header,
+                        unsigned char * _payload,
+                        liquid_float_complex * _y);
+void framegen64_flush(framegen64 _fg,
+                      unsigned int _n,
+                      liquid_float_complex * _y);
 
 // Basic frame synchronizer (64 bytes data payload)
-typedef int (*framesync64_callback)(
-    unsigned char * _header,
-    int _header_valid,
-    unsigned char * _payload,
-    int _payload_valid,
-    void * _userdata);
+typedef int (*framesync64_callback)(unsigned char * _header,
+                                    int _header_valid,
+                                    unsigned char * _payload,
+                                    int _payload_valid,
+                                    void * _userdata);
 typedef struct framesync64_s * framesync64;
-framesync64 framesync64_create(
-    unsigned int _m,
-    float _beta,
-    framesync64_callback _callback,
-    void * _userdata
-    );
+framesync64 framesync64_create(unsigned int _m,
+                               float _beta,
+                               framesync64_callback _callback,
+                               void * _userdata);
 void framesync64_destroy(framesync64 _fs);
 void framesync64_print(framesync64 _fs);
 void framesync64_reset(framesync64 _fs);
-void framesync64_execute(framesync64 _fs, liquid_float_complex * _x, unsigned int _n);
+void framesync64_execute(framesync64 _fs,
+                         liquid_float_complex * _x,
+                         unsigned int _n);
 
 void framesync64_set_agc_bw0(framesync64 _fs, float _agc_bw0);
 void framesync64_set_agc_bw1(framesync64 _fs, float _agc_bw1);
@@ -1074,8 +1110,8 @@ void flexframegen_execute(flexframegen _fg,
                           unsigned char * _payload,
                           liquid_float_complex * _y);
 void flexframegen_flush(flexframegen _fg,
-                            unsigned int _n,
-                            liquid_float_complex * _y);
+                        unsigned int _n,
+                        liquid_float_complex * _y);
 
 // frame synchronizer
 typedef int (*flexframesync_callback)(unsigned char * _header,
@@ -1408,6 +1444,7 @@ void cpmodem_demodulate(cpmodem _mod,
 // Analog modems
 //
 
+// TODO : complete analog modems
 typedef struct freqmodem_s * freqmodem;
 freqmodem freqmodem_create();
 void freqmodem_destroy(freqmodem _fm);
@@ -1450,11 +1487,17 @@ void firpfbch_execute(firpfbch _c, liquid_float_complex * _x, liquid_float_compl
 typedef struct ofdmoqam_s * ofdmoqam;
 #define OFDMOQAM_ANALYZER       FIRPFBCH_ANALYZER
 #define OFDMOQAM_SYNTHESIZER    FIRPFBCH_SYNTHESIZER
-ofdmoqam ofdmoqam_create(unsigned int _num_channels, unsigned int _m, float _beta, float _dt, int _type);
+ofdmoqam ofdmoqam_create(unsigned int _num_channels,
+                         unsigned int _m,
+                         float _beta,
+                         float _dt,
+                         int _type);
 void ofdmoqam_destroy(ofdmoqam _c);
 void ofdmoqam_print(ofdmoqam _c);
 void ofdmoqam_clear(ofdmoqam _c);
-void ofdmoqam_execute(ofdmoqam _c, liquid_float_complex * _x, liquid_float_complex * _y);
+void ofdmoqam_execute(ofdmoqam _c,
+                      liquid_float_complex * _x,
+                      liquid_float_complex * _y);
 
 // Discrete multi-tone (OFDM)
 typedef struct ofdm_s * ofdm;
@@ -1466,7 +1509,9 @@ ofdm ofdm_create(unsigned int   _num_channels,
                  int            _type);
 void ofdm_destroy(ofdm _c);
 void ofdm_print(ofdm _c);
-void ofdm_execute(ofdm _c, liquid_float_complex * _x, liquid_float_complex *_y);
+void ofdm_execute(ofdm _c,
+                  liquid_float_complex * _x,
+                  liquid_float_complex *_y);
 
 
 // 
@@ -1522,17 +1567,15 @@ void nco_mix_up(nco _nco, liquid_float_complex _x, liquid_float_complex *_y);
 void nco_mix_down(nco _nco, liquid_float_complex _x, liquid_float_complex *_y);
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
-void nco_mix_block_up(
-    nco _nco,
-    liquid_float_complex *_x,
-    liquid_float_complex *_y,
-    unsigned int _N);
+void nco_mix_block_up(nco _nco,
+                      liquid_float_complex *_x,
+                      liquid_float_complex *_y,
+                      unsigned int _N);
 
-void nco_mix_block_down(
-    nco _nco,
-    liquid_float_complex *_x,
-    liquid_float_complex *_y,
-    unsigned int _N);
+void nco_mix_block_down(nco _nco,
+                        liquid_float_complex *_x,
+                        liquid_float_complex *_y,
+                        unsigned int _N);
 
 //
 // Phase-locked loop
@@ -1617,7 +1660,13 @@ float randf();
 float randf_pdf(float _x);
 float randf_cdf(float _x);
 
-// Gaussian random number generator, N(0,1)
+// Gauss random number generator, N(0,1)
+//   f(x) = 1/sqrt(2*pi*sigma^2) * exp{-(x-eta)^2/(2*sigma^2)}
+//
+//   where
+//     eta   = mean
+//     sigma = standard deviation
+//
 float randnf();
 void awgn(float *_x, float _nstd);
 void crandnf(liquid_float_complex *_y);
@@ -1651,10 +1700,7 @@ float rand_pdf_ricekf(float _x, float _K, float _omega);
 float rand_cdf_ricekf(float _x, float _K, float _omega);
 
 
-//
-// Data scrambler
-//
-
+// Data scrambler : whiten data sequence
 void scramble_data(unsigned char * _x, unsigned int _len);
 void unscramble_data(unsigned char * _x, unsigned int _len);
 
@@ -1748,33 +1794,31 @@ void bsequence_create_ccodes(bsequence _a, bsequence _b);
 //
 
 // packs bytes with one bit of information into a byte
-void pack_bytes(
-    unsigned char * input,
-    unsigned int input_length,
-    unsigned char * output,
-    unsigned int output_length,
-    unsigned int *num_written);
+void pack_bytes(unsigned char * input,
+                unsigned int input_length,
+                unsigned char * output,
+                unsigned int output_length,
+                unsigned int *num_written);
 
 // unpacks bytes with 8 bits of information
-void unpack_bytes(
-    unsigned char * input,
-    unsigned int input_length,
-    unsigned char * output,
-    unsigned int output_length,
-    unsigned int *num_written);
+void unpack_bytes(unsigned char * input,
+                  unsigned int input_length,
+                  unsigned char * output,
+                  unsigned int output_length,
+                  unsigned int *num_written);
 
 // repacks bytes with arbitrary symbol sizes
-void repack_bytes(
-    unsigned char * input,
-    unsigned int input_sym_size,
-    unsigned int input_length,
-    unsigned char * output,
-    unsigned int output_sym_size,
-    unsigned int output_length,
-    unsigned int *num_written);
+void repack_bytes(unsigned char * input,
+                  unsigned int input_sym_size,
+                  unsigned int input_length,
+                  unsigned char * output,
+                  unsigned int output_sym_size,
+                  unsigned int output_length,
+                  unsigned int *num_written);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
 
 #endif // __LIQUID_H__
+
