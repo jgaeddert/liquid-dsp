@@ -108,6 +108,9 @@ void benchmark_random_weibull(
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         x = rand_weibullf(alpha,beta,gamma);
+        x = rand_weibullf(alpha,beta,gamma);
+        x = rand_weibullf(alpha,beta,gamma);
+        x = rand_weibullf(alpha,beta,gamma);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
