@@ -1500,6 +1500,7 @@ void ofdmoqam_execute(ofdmoqam _c,
                       liquid_float_complex * _y);
 
 // Discrete multi-tone (OFDM)
+#if 0
 typedef struct ofdm_s * ofdm;
 #define OFDM_ANALYZER           FIRPFBCH_ANALYZER
 #define OFDM_SYNTHESIZER        FIRPFBCH_SYNTHESIZER
@@ -1512,7 +1513,34 @@ void ofdm_print(ofdm _c);
 void ofdm_execute(ofdm _c,
                   liquid_float_complex * _x,
                   liquid_float_complex *_y);
+#endif
 
+// OFDM frame (symbol) generator
+typedef struct ofdmframegen_s * ofdmframegen;
+ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
+                                 unsigned int  _cp_len);
+                                 //unsigned int  _taper_len);
+void ofdmframegen_destroy(ofdmframegen _q);
+void ofdmframegen_print(ofdmframegen _q);
+void ofdmframegen_execute(ofdmframegen _q,
+                          liquid_float_complex * _x,
+                          liquid_float_complex *_y);
+
+// OFDM frame (symbol) synchronizer
+typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
+                                      unsigned int _n,
+                                      void * _userdata);
+typedef struct ofdmframesync_s * ofdmframesync;
+ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
+                                   unsigned int  _cp_len,
+                                   //unsigned int  _taper_len,
+                                   ofdmframesync_callback _callback,
+                                   void * _userdata);
+void ofdmframesync_destroy(ofdmframesync _q);
+void ofdmframesync_print(ofdmframesync _q);
+void ofdmframesync_execute(ofdmframesync _q,
+                           liquid_float_complex * _x,
+                           unsigned int _n);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)

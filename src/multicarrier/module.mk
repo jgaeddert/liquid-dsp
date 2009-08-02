@@ -28,6 +28,8 @@ module_name     := multicarrier
 #
 local_s_files	:=		\
 	firpfbch.c		\
+	ofdmframegen.c		\
+	ofdmframesync.c		\
 	ofdmoqam.c
 
 # local_t_files
