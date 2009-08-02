@@ -60,7 +60,7 @@ int main() {
 
     //ofdmframesync_execute(fs,z,frame_len);
     ofdmframesync_execute(fs,x,frame_len);
-    //ofdmframesync_execute(fs,z,frame_len);
+    ofdmframesync_execute(fs,z,cp_len);
 
     //
     for (i=0; i<num_subcarriers; i++)

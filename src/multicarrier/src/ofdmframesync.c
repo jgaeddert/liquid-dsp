@@ -73,6 +73,8 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     // cyclic prefix correlation windows
     q->wcp    = cfwindow_create(q->cp_len);
     q->wdelay = cfwindow_create(q->cp_len + q->num_subcarriers);
+    cfwindow_clear(q->wcp);
+    cfwindow_clear(q->wdelay);
     return q;
 }
 
@@ -113,7 +115,7 @@ void ofdmframesync_cpcorrelate(ofdmframesync _q,
                                float complex _x)
 {
     cfwindow_push(_q->wcp,    _x);
-    cfwindow_push(_q->wdelay, _x);
+    cfwindow_push(_q->wdelay, conj(_x));
 
     float complex * rcp;    // read pointer: cyclic prefix
     float complex * rdelay; // read pointer: delay line
@@ -124,10 +126,8 @@ void ofdmframesync_cpcorrelate(ofdmframesync _q,
     // increment delay pointer
     rdelay += _q->num_subcarriers;
 
-    float complex rxy=0.0f;
-    unsigned int i;
-    for (i=0; i<_q->cp_len; i++)
-        rxy += rcp[i] * conj(rdelay[i]); // conj?
+    float complex rxy;
+    dotprod_cccf_run(rcp,rdelay,_q->cp_len,&rxy);
     rxy /= (float)(_q->cp_len);
 
     // TODO : push rxy into buffer?
