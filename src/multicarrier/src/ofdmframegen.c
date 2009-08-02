@@ -32,14 +32,17 @@
 #   include <fftw3.h>
 #endif
 
-#define DEBUG_OFDMFRAMEGEN 1
+#define DEBUG_OFDMFRAMEGEN                  1
+#define OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS    (8)
 
 struct ofdmframegen_s {
     unsigned int num_subcarriers;
     unsigned int cp_len;
 
-    float complex * x; // time-domain buffer
-    float complex * X; // freq-domain buffer
+    float complex * x;      // time-domain buffer
+    float complex * X;      // freq-domain buffer
+
+    float complex * xcp;    // cyclic prefix pointer (not allocated)
 
 #if HAVE_FFTW3_H
     fftwf_plan fft;
@@ -53,6 +56,20 @@ ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
 {
     ofdmframegen q = (ofdmframegen) malloc(sizeof(struct ofdmframegen_s));
 
+    // error-checking
+    if (_num_subcarriers < OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS) {
+        printf("error: ofdmframegen_create(), num_subcarriers (%u) below minimum (%u)\n",
+                _num_subcarriers, OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS);
+        exit(1);
+    } else if (_cp_len > _num_subcarriers) {
+        printf("error: ofdmframegen_create(), cp_len (%u) must be less than number of subcarriers(%u)\n",
+                _cp_len, _num_subcarriers);
+        exit(1);
+    }
+
+    q->num_subcarriers = _num_subcarriers;
+    q->cp_len = _cp_len;
+
     // allocate memory for buffers
     q->x = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->X = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -62,6 +79,9 @@ ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
 #else
     q->fft = fft_create_plan(q->num_subcarriers, q->X, q->x, FFT_REVERSE);
 #endif
+
+    // set cyclic prefix array pointer
+    q->xcp = &(q->x[q->num_subcarriers - q->cp_len]);
 
     return q;
 }
@@ -81,7 +101,11 @@ void ofdmframegen_destroy(ofdmframegen _q)
 
 void ofdmframegen_print(ofdmframegen _q)
 {
-    printf("ofdmframegen: [%u taps]\n", 0);
+    printf("ofdmframegen:\n");
+    printf("    num subcarriers     :   %u\n", _q->num_subcarriers);
+    printf("    cyclic prefix len   :   %u (%6.2f%%)\n",
+                    _q->cp_len,
+                    100.0f*(float)(_q->cp_len)/(float)(_q->num_subcarriers));
 }
 
 void ofdmframegen_clear(ofdmframegen _q)
@@ -92,5 +116,20 @@ void ofdmframegen_execute(ofdmframegen _q,
                           float complex * _x,
                           float complex * _y)
 {
+    // move frequency data to internal buffer
+    memmove(_q->X, _x, (_q->num_subcarriers)*sizeof(float complex));
+
+    // execute inverse fft, store in buffer _q->x
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+
+    // copy cyclic prefix
+    memmove(_y, _q->xcp, (_q->cp_len)*sizeof(float complex));
+
+    // copy remainder of signal
+    memmove(&_y[_q->cp_len], _q->x, (_q->num_subcarriers)*sizeof(float complex));
 }
 
