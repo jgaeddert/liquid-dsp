@@ -83,7 +83,7 @@ ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
 #else
     q->fft = fft_create_plan(q->num_subcarriers, q->X, q->x, FFT_REVERSE);
 #endif
-    q->zeta = 1.0f / (float)(q->num_subcarriers);
+    q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
 
     // set cyclic prefix array pointer
     q->xcp = &(q->x[q->num_subcarriers - q->cp_len]);
