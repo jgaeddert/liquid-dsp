@@ -53,11 +53,6 @@ int main() {
     for (i=0; i<frame_len; i++)
         z[i] = 0.0f;
 
-    for (i=0; i<frame_len; i++) {
-        x[i] = (i<num_subcarriers) ? randnf() + _Complex_I*randnf()
-                                   : x[i-num_subcarriers];
-    }
-
     //ofdmframesync_execute(fs,z,frame_len);
     ofdmframesync_execute(fs,x,frame_len);
     ofdmframesync_execute(fs,z,cp_len);
