@@ -20,6 +20,9 @@ int main() {
     unsigned int num_subcarriers=512;// 
     unsigned int cp_len=64;         // cyclic prefix length
     //unsigned int num_symbols=2;     // number of ofdm symbols
+    modulation_scheme ms = MOD_QAM;
+    unsigned int bps     = 4;
+    float nstd = 0.03f; // noise standard deviation
 
     // 
     unsigned int frame_len = num_subcarriers + cp_len;
@@ -29,6 +32,8 @@ int main() {
     // create synthesizer/analyzer objects
     ofdmframegen fg = ofdmframegen_create(num_subcarriers, cp_len);
     ofdmframegen_print(fg);
+
+    modem mod = modem_create(ms,bps);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -50,9 +55,10 @@ int main() {
     float complex x[frame_len];         // time-domain symbol
     float complex y[3*frame_len];       // time-domain samples (with noise)
 
+    unsigned int s;
     for (i=0; i<num_subcarriers; i++) {
-        X[i] = 0.707f*(rand()&1 ? 1.0f : -1.0f) +
-               0.707f*(rand()&1 ? 1.0f : -1.0f)*_Complex_I;
+        s = modem_gen_rand_sym(mod);
+        modem_modulate(mod,s,&X[i]);
     }
 
     ofdmframegen_execute(fg,X,x);
@@ -62,7 +68,7 @@ int main() {
 
     // add noise
     for (i=0; i<3*frame_len; i++)
-        cawgn(&y[i],0.1f);
+        cawgn(&y[i],nstd);
 
     //ofdmframesync_execute(fs,z,frame_len);
     ofdmframesync_execute(fs,y,3*frame_len);

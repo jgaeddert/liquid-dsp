@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
@@ -53,6 +54,9 @@ struct ofdmframesync_s {
     float rxy_max;
     bool  cp_detected;
     bool  cp_ignore;
+
+    cfwindow wsym;
+    float zeta;
 
 #if HAVE_FFTW3_H
     fftwf_plan fft;
@@ -97,15 +101,17 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     q->X = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
 #if HAVE_FFTW3_H
-    q->fft = fftwf_plan_dft_1d(q->num_subcarriers, q->X, q->x, FFTW_BACKWARD, FFTW_ESTIMATE);
+    q->fft = fftwf_plan_dft_1d(q->num_subcarriers, q->x, q->X, FFTW_FORWARD, FFTW_ESTIMATE);
 #else
-    q->fft = fft_create_plan(q->num_subcarriers, q->X, q->x, FFT_REVERSE);
+    q->fft = fft_create_plan(q->num_subcarriers, q->x, q->X, FFT_FORWARD);
 #endif
 
     // cyclic prefix correlation windows
     q->wcp    = cfwindow_create(q->cp_len);
     q->wdelay = cfwindow_create(q->cp_len + q->num_subcarriers);
+    q->wsym   = cfwindow_create(q->num_subcarriers);
     q->rxy_threshold = 0.5f*(float)(q->cp_len);
+    q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
     
 #if DEBUG_OFDMFRAMESYNC
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -156,6 +162,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     cfwindow_destroy(_q->wcp);
     cfwindow_destroy(_q->wdelay);
+    cfwindow_destroy(_q->wsym);
     free(_q);
 }
 
@@ -208,8 +215,11 @@ void ofdmframesync_execute(ofdmframesync _q,
                 _q->rxy_max = 0.0f;
                 _q->cp_detected = false;
                 _q->cp_ignore   = true;
+                return;
             }
         }
+
+        cfwindow_push(_q->wsym, _x[i]*_q->zeta);
     }
 }
 
@@ -217,7 +227,7 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
 {
     // read samples from buffer
     float complex *rc;
-    cfwindow_read(_q->wdelay,&rc);
+    cfwindow_read(_q->wsym,&rc);
 
     // copy to fft buffer
     memmove(_q->x, rc, (_q->num_subcarriers)*sizeof(float complex));
