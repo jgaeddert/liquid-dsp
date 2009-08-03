@@ -67,8 +67,10 @@ int main() {
     for (i=0; i<frame_len; i++) y[i+2*frame_len]= 0.0f;
 
     // add noise
-    for (i=0; i<3*frame_len; i++)
+    for (i=0; i<3*frame_len; i++) {
         cawgn(&y[i],nstd);
+        y[i] *= cexpf(_Complex_I*0.01f);
+    }
 
     //ofdmframesync_execute(fs,z,frame_len);
     ofdmframesync_execute(fs,y,3*frame_len);
