@@ -247,6 +247,12 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
     fft_execute(_q->fft);
 #endif
 
+    // TODO : compensate for fractional time delay
+    //float dt = (float)(d) / (float)(_q->num_subcarriers);
+    float dt = 0.0f;
+    for (i=0; i<_q->num_subcarriers; i++)
+        _q->X[i] *= cexpf(_Complex_I*2.0f*M_PI*dt*i);
+
     // TODO : ofdmframesync: scale?
 
     if (_q->callback != NULL)
