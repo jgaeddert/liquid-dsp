@@ -49,6 +49,7 @@ struct ofdmframegen_s {
 #else
     fftplan fft;
 #endif
+    float zeta;             // fft scaling factor
 };
 
 ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
@@ -60,6 +61,9 @@ ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
     if (_num_subcarriers < OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS) {
         printf("error: ofdmframegen_create(), num_subcarriers (%u) below minimum (%u)\n",
                 _num_subcarriers, OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS);
+        exit(1);
+    } else if (_cp_len < 1) {
+        printf("error: ofdmframegen_create(), cp_len must be greater than 0\n");
         exit(1);
     } else if (_cp_len > _num_subcarriers) {
         printf("error: ofdmframegen_create(), cp_len (%u) must be less than number of subcarriers(%u)\n",
@@ -79,6 +83,7 @@ ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
 #else
     q->fft = fft_create_plan(q->num_subcarriers, q->X, q->x, FFT_REVERSE);
 #endif
+    q->zeta = 1.0f / (float)(q->num_subcarriers);
 
     // set cyclic prefix array pointer
     q->xcp = &(q->x[q->num_subcarriers - q->cp_len]);
@@ -125,6 +130,11 @@ void ofdmframegen_execute(ofdmframegen _q,
 #else
     fft_execute(_q->fft);
 #endif
+
+    // scaling
+    unsigned int i;
+    for (i=0; i<_q->num_subcarriers; i++)
+        _q->x[i] *= _q->zeta;
 
     // copy cyclic prefix
     memmove(_y, _q->xcp, (_q->cp_len)*sizeof(float complex));

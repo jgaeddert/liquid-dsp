@@ -32,6 +32,8 @@
 #   include <fftw3.h>
 #endif
 
+#define OFDMFRAMESYNC_MIN_NUM_SUBCARRIERS   (8)
+
 #define DEBUG_OFDMFRAMESYNC             1
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (1024)
@@ -63,6 +65,21 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
                                    void * _userdata)
 {
     ofdmframesync q = (ofdmframesync) malloc(sizeof(struct ofdmframesync_s));
+
+    // error-checking
+    if (_num_subcarriers < OFDMFRAMESYNC_MIN_NUM_SUBCARRIERS) {
+        printf("error: ofdmframesync_create(), num_subcarriers (%u) below minimum (%u)\n",
+                _num_subcarriers, OFDMFRAMESYNC_MIN_NUM_SUBCARRIERS);
+        exit(1);
+    } else if (_cp_len < 1) {
+        printf("error: ofdmframesync_create(), cp_len must be greater than 0\n");
+        exit(1);
+    } else if (_cp_len > _num_subcarriers) {
+        printf("error: ofdmframesync_create(), cp_len (%u) must be less than number of subcarriers(%u)\n",
+                _cp_len, _num_subcarriers);
+        exit(1);
+    }
+
     q->num_subcarriers = _num_subcarriers;
     q->cp_len = _cp_len;
 
