@@ -13,8 +13,8 @@
 
 int main() {
     // options
-    unsigned int num_subcarriers=64;// 
-    unsigned int cp_len=16;         // cyclic prefix length
+    unsigned int num_subcarriers=512;// 
+    unsigned int cp_len=64;         // cyclic prefix length
     //unsigned int num_symbols=2;     // number of ofdm symbols
 
     // 
@@ -41,8 +41,8 @@ int main() {
 
     unsigned int i;
     float complex X[num_subcarriers];   // channelized symbols
-    float complex x[frame_len];         // time-domain samples
-    float complex z[frame_len];         // zeros
+    float complex x[frame_len];         // time-domain symbol
+    float complex y[3*frame_len];       // time-domain samples (with noise)
 
     for (i=0; i<num_subcarriers; i++) {
         X[i] = 0.707f*(rand()&1 ? 1.0f : -1.0f) +
@@ -50,12 +50,16 @@ int main() {
     }
 
     ofdmframegen_execute(fg,X,x);
-    for (i=0; i<frame_len; i++)
-        z[i] = 0.0f;
+    for (i=0; i<frame_len; i++) y[i]            = 0.0f;
+    for (i=0; i<frame_len; i++) y[i+frame_len]  = x[i];
+    for (i=0; i<frame_len; i++) y[i+2*frame_len]= 0.0f;
+
+    // add noise
+    for (i=0; i<3*frame_len; i++)
+        cawgn(&y[i],0.1f);
 
     //ofdmframesync_execute(fs,z,frame_len);
-    ofdmframesync_execute(fs,x,frame_len);
-    ofdmframesync_execute(fs,z,cp_len);
+    ofdmframesync_execute(fs,y,3*frame_len);
 
     //
     for (i=0; i<num_subcarriers; i++)
@@ -65,11 +69,17 @@ int main() {
     for (i=0; i<frame_len; i++)
         fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
 
+    //
+    for (i=0; i<3*frame_len; i++)
+        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+
     // print results
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"t=0:(frame_len-1);\n");
-    fprintf(fid,"plot(t,real(x),t,imag(x));\n");
+    //fprintf(fid,"plot(t,real(x),t,imag(x));\n");
+    fprintf(fid,"ty=0:(3*frame_len-1);\n");
+    fprintf(fid,"plot(ty,real(y),ty,imag(y));\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
