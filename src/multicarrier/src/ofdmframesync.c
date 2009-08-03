@@ -55,8 +55,8 @@ struct ofdmframesync_s {
     bool  cp_detected;
     bool  cp_ignore;
 
-    cfwindow wsym;
-    float zeta;
+    float zeta;         // scaling factor
+    float nu_hat;       // carrier frequency offset estimation
 
 #if HAVE_FFTW3_H
     fftwf_plan fft;
@@ -109,9 +109,8 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     // cyclic prefix correlation windows
     q->wcp    = cfwindow_create(q->cp_len);
     q->wdelay = cfwindow_create(q->cp_len + q->num_subcarriers);
-    q->wsym   = cfwindow_create(q->num_subcarriers);
-    q->rxy_threshold = 0.5f*(float)(q->cp_len);
     q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
+    q->rxy_threshold = 0.5f*(float)(q->cp_len)*(q->zeta);
     
 #if DEBUG_OFDMFRAMESYNC
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -162,7 +161,6 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     cfwindow_destroy(_q->wcp);
     cfwindow_destroy(_q->wdelay);
-    cfwindow_destroy(_q->wsym);
     free(_q);
 }
 
@@ -207,6 +205,8 @@ void ofdmframesync_execute(ofdmframesync _q,
             } else {
                 // maximum correlation found: receive payload
                 printf("max |rxy| found: %12.4f at i=%u\n", cabsf(rxy),i);
+                _q->nu_hat = -cargf(rxy)/((float)(_q->num_subcarriers));
+                printf("  df_hat = %12.8f\n", _q->nu_hat);
 
                 ofdmframesync_rxpayload(_q);
     
@@ -215,11 +215,8 @@ void ofdmframesync_execute(ofdmframesync _q,
                 _q->rxy_max = 0.0f;
                 _q->cp_detected = false;
                 _q->cp_ignore   = true;
-                return;
             }
         }
-
-        cfwindow_push(_q->wsym, _x[i]*_q->zeta);
     }
 }
 
@@ -227,10 +224,21 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
 {
     // read samples from buffer
     float complex *rc;
-    cfwindow_read(_q->wsym,&rc);
+    cfwindow_read(_q->wdelay,&rc);
+
+    // compensate for sample delay
+    rc += _q->cp_len-1;
 
     // copy to fft buffer
     memmove(_q->x, rc, (_q->num_subcarriers)*sizeof(float complex));
+
+    // compensate for frequency offset
+    unsigned int i;
+    float phi=0.0f;
+    for (i=0; i<_q->num_subcarriers; i++) {
+        _q->x[i] *= cexpf(-_Complex_I*phi);
+        phi += _q->nu_hat;
+    }
 
     // execute fft
 #if HAVE_FFTW3_H
@@ -248,8 +256,8 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
 float complex ofdmframesync_cpcorrelate(ofdmframesync _q,
                                         float complex _x)
 {
-    cfwindow_push(_q->wcp,    _x);
-    cfwindow_push(_q->wdelay, conj(_x));
+    cfwindow_push(_q->wcp,   conj(_x));
+    cfwindow_push(_q->wdelay,     _x*_q->zeta);
 
     float complex * rcp;    // read pointer: cyclic prefix
     float complex * rdelay; // read pointer: delay line

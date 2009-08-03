@@ -22,7 +22,9 @@ int main() {
     //unsigned int num_symbols=2;     // number of ofdm symbols
     modulation_scheme ms = MOD_QAM;
     unsigned int bps     = 4;
-    float nstd = 0.03f; // noise standard deviation
+    float nstd = 0.01f; // noise standard deviation
+    float  phi = 0.0f;  // phase offset
+    float dphi = 0.005f; // frequency offset
 
     // 
     unsigned int frame_len = num_subcarriers + cp_len;
@@ -66,10 +68,12 @@ int main() {
     for (i=0; i<frame_len; i++) y[i+frame_len]  = x[i];
     for (i=0; i<frame_len; i++) y[i+2*frame_len]= 0.0f;
 
-    // add noise
+    // add noise, carrier offset
+    float theta = phi;
     for (i=0; i<3*frame_len; i++) {
         cawgn(&y[i],nstd);
-        y[i] *= cexpf(_Complex_I*0.01f);
+        y[i] *= cexpf(_Complex_I*theta);
+        theta += dphi;
     }
 
     //ofdmframesync_execute(fs,z,frame_len);
