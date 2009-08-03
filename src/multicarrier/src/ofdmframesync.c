@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "liquid.internal.h"
@@ -50,11 +51,8 @@ struct ofdmframesync_s {
     cfwindow wdelay;
     float rxy_threshold;
     float rxy_max;
-    enum {
-        OFDMFRAMESYNC_STATE_SEEKCP=0,
-        OFDMFRAMESYNC_STATE_SEEKCPMAX,
-        OFDMFRAMESYNC_STATE_RXPAYLOAD
-    } state;
+    bool  cp_detected;
+    bool  cp_ignore;
 
 #if HAVE_FFTW3_H
     fftwf_plan fft;
@@ -113,7 +111,8 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
 
-    q->state = OFDMFRAMESYNC_STATE_SEEKCP;
+    q->cp_detected = false;
+    q->cp_ignore   = false;
 
     q->callback = _callback;
     q->userdata = _userdata;
@@ -165,56 +164,75 @@ void ofdmframesync_print(ofdmframesync _q)
     printf("ofdmframesync:\n");
 }
 
-void ofdmframesync_clear(ofdmframesync _q)
+void ofdmframesync_reset(ofdmframesync _q)
 {
+    _q->cp_detected = false;
+    _q->rxy_max = 0.0f;
 }
 
 void ofdmframesync_execute(ofdmframesync _q,
                            float complex * _x,
                            unsigned int _n)
 {
+
     unsigned int i;
     float complex rxy;
     for (i=0; i<_n; i++) {
+        if (_q->cp_ignore)
+            return;
         rxy = ofdmframesync_cpcorrelate(_q, _x[i]);
 #ifdef DEBUG_OFDMFRAMESYNC
         cfwindow_push(_q->debug_rxy, rxy);
 #endif
-        switch (_q->state) {
-        case OFDMFRAMESYNC_STATE_SEEKCP:
-            // TODO : push rxy into buffer?
-            //printf("|rxy| = %12.8f\n", cabsf(rxy));
+        if (!_q->cp_detected) {
+            // cyclic prefix has not been detected; check threshold
             if (cabsf(rxy) > _q->rxy_threshold) {
-                _q->state = OFDMFRAMESYNC_STATE_SEEKCPMAX;
+                // cyclic prefix detected
+                _q->cp_detected = true;
                 _q->rxy_max = cabsf(rxy);
             }
-        break;
-        case OFDMFRAMESYNC_STATE_SEEKCPMAX:
-            if (cabsf(rxy) < _q->rxy_max) {
-                printf("max |rxy| found : %12.8f\n", _q->rxy_max);
-                printf("i = %u\n", i);
-                _q->state = OFDMFRAMESYNC_STATE_RXPAYLOAD;
-
-                float complex *rc;
-                cfwindow_read(_q->wdelay,&rc);
-                memmove(_q->x, rc, (_q->num_subcarriers)*sizeof(float complex));
-                // execute fft
-
-#if HAVE_FFTW3_H
-                fftwf_execute(_q->fft);
-#else
-                fft_execute(_q->fft);
-#endif
-                // TODO : ofdmframesync: invoke callback
+        } else {
+            // cyclic prefix has been detected; wait for optimal
+            // symbol time
+            if (cabsf(rxy) > _q->rxy_max) {
+                // maximum has not yet been found
+                _q->rxy_max = cabsf(rxy);
             } else {
-                _q->rxy_max = cabsf(rxy);
+                // maximum correlation found: receive payload
+                printf("max |rxy| found: %12.4f at i=%u\n", cabsf(rxy),i);
+
+                ofdmframesync_rxpayload(_q);
+    
+                // TODO : ofdmframesync_execute(), wait before resetting
+                // reset state
+                _q->rxy_max = 0.0f;
+                _q->cp_detected = false;
+                _q->cp_ignore   = true;
             }
-        break;
-        case OFDMFRAMESYNC_STATE_RXPAYLOAD:
-        break;
-        default:;
         }
     }
+}
+
+void ofdmframesync_rxpayload(ofdmframesync _q)
+{
+    // read samples from buffer
+    float complex *rc;
+    cfwindow_read(_q->wdelay,&rc);
+
+    // copy to fft buffer
+    memmove(_q->x, rc, (_q->num_subcarriers)*sizeof(float complex));
+
+    // execute fft
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+
+    // TODO : ofdmframesync: scale?
+
+    if (_q->callback != NULL)
+        _q->callback(_q->X, _q->num_subcarriers, _q->userdata);
 }
 
 float complex ofdmframesync_cpcorrelate(ofdmframesync _q,

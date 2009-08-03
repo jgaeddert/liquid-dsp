@@ -506,6 +506,7 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 
 float complex ofdmframesync_cpcorrelate(ofdmframesync _q,
                                         float complex _x);
+void ofdmframesync_rxpayload(ofdmframesync _q);
 
 //
 // MODULE: random

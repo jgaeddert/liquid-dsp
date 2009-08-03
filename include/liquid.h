@@ -1538,6 +1538,7 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
                                    void * _userdata);
 void ofdmframesync_destroy(ofdmframesync _q);
 void ofdmframesync_print(ofdmframesync _q);
+void ofdmframesync_reset(ofdmframesync _q);
 void ofdmframesync_execute(ofdmframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);

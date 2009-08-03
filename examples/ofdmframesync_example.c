@@ -11,6 +11,10 @@
 
 #define OUTPUT_FILENAME "ofdmframesync_example.m"
 
+static int callback(float complex * _X,
+                    unsigned int _n,
+                    void * _userdata);
+
 int main() {
     // options
     unsigned int num_subcarriers=512;// 
@@ -26,9 +30,6 @@ int main() {
     ofdmframegen fg = ofdmframegen_create(num_subcarriers, cp_len);
     ofdmframegen_print(fg);
 
-    ofdmframesync fs = ofdmframesync_create(num_subcarriers,cp_len,NULL,NULL);
-    ofdmframesync_print(fs);
-
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
@@ -38,6 +39,11 @@ int main() {
 
     fprintf(fid,"X = zeros(1,num_subcarriers);\n");
     fprintf(fid,"x = zeros(1,frame_len);\n");
+    fprintf(fid,"y = zeros(1,3*frame_len);\n");
+    fprintf(fid,"Y = zeros(1,num_subcarriers);\n");
+
+    ofdmframesync fs = ofdmframesync_create(num_subcarriers,cp_len,callback,(void*)(fid));
+    ofdmframesync_print(fs);
 
     unsigned int i;
     float complex X[num_subcarriers];   // channelized symbols
@@ -80,6 +86,11 @@ int main() {
     //fprintf(fid,"plot(t,real(x),t,imag(x));\n");
     fprintf(fid,"ty=0:(3*frame_len-1);\n");
     fprintf(fid,"plot(ty,real(y),ty,imag(y));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(Y,'x');\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"xlabel('in phase');\n");
+    fprintf(fid,"ylabel('quadrature phase');\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
@@ -89,6 +100,19 @@ int main() {
     ofdmframesync_destroy(fs);
 
     printf("done.\n");
+    return 0;
+}
+
+static int callback(float complex * _X,
+                    unsigned int _n,
+                    void * _userdata)
+{
+    printf("**** callback invoked\n");
+    FILE * fid = (FILE*)_userdata;
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        fprintf(fid,"Y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_X[i]), cimagf(_X[i]));
+
     return 0;
 }
 
