@@ -22,9 +22,9 @@ int main() {
     //unsigned int num_symbols=2;     // number of ofdm symbols
     modulation_scheme ms = MOD_QAM;
     unsigned int bps     = 4;
-    float nstd = 0.01f; // noise standard deviation
-    float  phi = 0.0f;  // phase offset
-    float dphi = 0.005f; // frequency offset
+    float nstd  = 0.01f;    // noise standard deviation
+    float phi   = 0.0f;     // phase offset
+    float dphi  = 0.005f;   // frequency offset
 
     // 
     unsigned int frame_len = num_subcarriers + cp_len;
@@ -76,7 +76,6 @@ int main() {
         theta += dphi;
     }
 
-    //ofdmframesync_execute(fs,z,frame_len);
     ofdmframesync_execute(fs,y,3*frame_len);
 
     //
@@ -110,6 +109,7 @@ int main() {
     // destroy objects
     ofdmframegen_destroy(fg);
     ofdmframesync_destroy(fs);
+    modem_destroy(mod);
 
     printf("done.\n");
     return 0;

@@ -50,13 +50,18 @@ struct ofdmframesync_s {
     // delay correlator
     cfwindow wcp;
     cfwindow wdelay;
+    float complex rxy;
+    float rxy_magnitude;
     float rxy_threshold;
     float rxy_max;
     bool  cp_detected;
     bool  cp_ignore;
+    unsigned int cp_excess_delay;
+    unsigned int cp_timer;
 
     float zeta;         // scaling factor
     float nu_hat;       // carrier frequency offset estimation
+    float dt_hat;       // symbol timing offset estimation
 
 #if HAVE_FFTW3_H
     fftwf_plan fft;
@@ -173,6 +178,8 @@ void ofdmframesync_reset(ofdmframesync _q)
 {
     _q->cp_detected = false;
     _q->rxy_max = 0.0f;
+    _q->cp_excess_delay = 0;
+    _q->cp_timer = _q->num_subcarriers;
 }
 
 void ofdmframesync_execute(ofdmframesync _q,
@@ -181,40 +188,49 @@ void ofdmframesync_execute(ofdmframesync _q,
 {
 
     unsigned int i;
-    float complex rxy;
     for (i=0; i<_n; i++) {
-        if (_q->cp_ignore)
-            return;
-        rxy = ofdmframesync_cpcorrelate(_q, _x[i]);
+        cfwindow_push(_q->wcp,   conj(_x[i]));
+        cfwindow_push(_q->wdelay,     _x[i]*_q->zeta);
+
+        if (_q->cp_timer > 0) {
+            // not enough samples gathered to merit running correlator
+            _q->cp_timer--;
+            continue;
+        }
+
+        ofdmframesync_cpcorrelate(_q);
+        _q->rxy_magnitude = cabsf(_q->rxy);
 #ifdef DEBUG_OFDMFRAMESYNC
-        cfwindow_push(_q->debug_rxy, rxy);
+        cfwindow_push(_q->debug_rxy, _q->rxy);
 #endif
         if (!_q->cp_detected) {
             // cyclic prefix has not been detected; check threshold
-            if (cabsf(rxy) > _q->rxy_threshold) {
+            if (_q->rxy_magnitude > _q->rxy_threshold) {
                 // cyclic prefix detected
                 _q->cp_detected = true;
-                _q->rxy_max = cabsf(rxy);
+                _q->rxy_max = _q->rxy_magnitude;
             }
         } else {
             // cyclic prefix has been detected; wait for optimal
             // symbol time
-            if (cabsf(rxy) > _q->rxy_max) {
+            if (_q->rxy_magnitude > _q->rxy_max) {
                 // maximum has not yet been found
-                _q->rxy_max = cabsf(rxy);
+                _q->rxy_max = _q->rxy_magnitude;
+                _q->cp_excess_delay = 0;
             } else {
                 // maximum correlation found: receive payload
-                printf("max |rxy| found: %12.4f at i=%u\n", cabsf(rxy),i);
-                _q->nu_hat = -cargf(rxy)/((float)(_q->num_subcarriers));
-                printf("  df_hat = %12.8f\n", _q->nu_hat);
+                printf("max |rxy| found: %12.4f at i=%u\n", _q->rxy_magnitude,i);
+                _q->nu_hat = -cargf(_q->rxy)/((float)(_q->num_subcarriers));
+                printf("  nu_hat = %12.8f\n", _q->nu_hat);
 
                 ofdmframesync_rxpayload(_q);
     
                 // TODO : ofdmframesync_execute(), wait before resetting
                 // reset state
-                _q->rxy_max = 0.0f;
+                _q->rxy_max     = 0.0f;
                 _q->cp_detected = false;
                 _q->cp_ignore   = true;
+                _q->cp_timer    = _q->num_subcarriers;
             }
         }
     }
@@ -253,18 +269,12 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
     for (i=0; i<_q->num_subcarriers; i++)
         _q->X[i] *= cexpf(_Complex_I*2.0f*M_PI*dt*i);
 
-    // TODO : ofdmframesync: scale?
-
     if (_q->callback != NULL)
         _q->callback(_q->X, _q->num_subcarriers, _q->userdata);
 }
 
-float complex ofdmframesync_cpcorrelate(ofdmframesync _q,
-                                        float complex _x)
+void ofdmframesync_cpcorrelate(ofdmframesync _q)
 {
-    cfwindow_push(_q->wcp,   conj(_x));
-    cfwindow_push(_q->wdelay,     _x*_q->zeta);
-
     float complex * rcp;    // read pointer: cyclic prefix
     float complex * rdelay; // read pointer: delay line
 
@@ -272,10 +282,6 @@ float complex ofdmframesync_cpcorrelate(ofdmframesync _q,
     cfwindow_read(_q->wdelay, &rdelay);
 
     // TODO : cpcorrelate uses unnecessary cycles: should rather store _correlation_ in buffers
-    float complex rxy;
-    dotprod_cccf_run(rcp,rdelay,_q->cp_len,&rxy);
-    //rxy /= (float)(_q->cp_len);
-
-    return rxy;
+    dotprod_cccf_run(rcp,rdelay,_q->cp_len,&_q->rxy);
 }
 

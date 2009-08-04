@@ -504,8 +504,7 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 // MODULE : multicarrier
 //
 
-float complex ofdmframesync_cpcorrelate(ofdmframesync _q,
-                                        float complex _x);
+void ofdmframesync_cpcorrelate(ofdmframesync _q);
 void ofdmframesync_rxpayload(ofdmframesync _q);
 
 //
