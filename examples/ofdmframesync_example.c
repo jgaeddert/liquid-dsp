@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 
 #include "liquid.h"
 
@@ -16,13 +17,15 @@ static int callback(float complex * _X,
                     void * _userdata);
 
 int main() {
+    srand(time(NULL));
+
     // options
     unsigned int num_subcarriers=512;// 
     unsigned int cp_len=64;         // cyclic prefix length
     //unsigned int num_symbols=2;     // number of ofdm symbols
     modulation_scheme ms = MOD_QAM;
     unsigned int bps     = 4;
-    float nstd  = 0.01f;    // noise standard deviation
+    float nstd  = 0.1f;    // noise standard deviation
     float phi   = 0.0f;     // phase offset
     float dphi  = 0.005f;   // frequency offset
 

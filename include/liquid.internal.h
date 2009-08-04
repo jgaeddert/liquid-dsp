@@ -505,6 +505,7 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 //
 
 void ofdmframesync_cpcorrelate(ofdmframesync _q);
+void ofdmframesync_findrxypeak(ofdmframesync _q);
 void ofdmframesync_rxpayload(ofdmframesync _q);
 
 //

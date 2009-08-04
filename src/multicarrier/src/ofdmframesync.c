@@ -38,7 +38,7 @@
 
 #define DEBUG_OFDMFRAMESYNC             1
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
-#define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (1024)
+#define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (1728)
 
 struct ofdmframesync_s {
     unsigned int num_subcarriers;
@@ -51,13 +51,13 @@ struct ofdmframesync_s {
     cfwindow wcp;
     cfwindow wdelay;
     float complex rxy;
+    float complex * rxy_buffer;
     float rxy_magnitude;
     float rxy_threshold;
-    float rxy_max;
     bool  cp_detected;
-    bool  cp_ignore;
     unsigned int cp_excess_delay;
     unsigned int cp_timer;
+    unsigned int rxy_buffer_index;
 
     float zeta;         // scaling factor
     float nu_hat;       // carrier frequency offset estimation
@@ -116,13 +116,13 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     q->wdelay = cfwindow_create(q->cp_len + q->num_subcarriers);
     q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
     q->rxy_threshold = 0.5f*(float)(q->cp_len)*(q->zeta);
+    q->rxy_buffer = (float complex*) malloc((q->cp_len)*sizeof(float complex));
     
 #if DEBUG_OFDMFRAMESYNC
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
 
     q->cp_detected = false;
-    q->cp_ignore   = false;
 
     q->callback = _callback;
     q->userdata = _userdata;
@@ -158,6 +158,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     free(_q->x);
     free(_q->X);
+    free(_q->rxy_buffer);
 #if HAVE_FFTW3_H
     fftwf_destroy_plan(_q->fft);
 #else
@@ -176,10 +177,9 @@ void ofdmframesync_print(ofdmframesync _q)
 
 void ofdmframesync_reset(ofdmframesync _q)
 {
-    _q->cp_detected = false;
-    _q->rxy_max = 0.0f;
+    _q->cp_detected     = false;
     _q->cp_excess_delay = 0;
-    _q->cp_timer = _q->num_subcarriers;
+    _q->cp_timer        = _q->num_subcarriers;
 }
 
 void ofdmframesync_execute(ofdmframesync _q,
@@ -192,34 +192,34 @@ void ofdmframesync_execute(ofdmframesync _q,
         cfwindow_push(_q->wcp,   conj(_x[i]));
         cfwindow_push(_q->wdelay,     _x[i]*_q->zeta);
 
+        ofdmframesync_cpcorrelate(_q);
+        _q->rxy_magnitude = cabsf(_q->rxy);
+#ifdef DEBUG_OFDMFRAMESYNC
+        cfwindow_push(_q->debug_rxy, _q->rxy);
+#endif
         if (_q->cp_timer > 0) {
             // not enough samples gathered to merit running correlator
             _q->cp_timer--;
             continue;
         }
 
-        ofdmframesync_cpcorrelate(_q);
-        _q->rxy_magnitude = cabsf(_q->rxy);
-#ifdef DEBUG_OFDMFRAMESYNC
-        cfwindow_push(_q->debug_rxy, _q->rxy);
-#endif
         if (!_q->cp_detected) {
             // cyclic prefix has not been detected; check threshold
             if (_q->rxy_magnitude > _q->rxy_threshold) {
                 // cyclic prefix detected
                 _q->cp_detected = true;
-                _q->rxy_max = _q->rxy_magnitude;
+                _q->rxy_buffer_index = 0;
             }
         } else {
-            // cyclic prefix has been detected; wait for optimal
-            // symbol time
-            if (_q->rxy_magnitude > _q->rxy_max) {
-                // maximum has not yet been found
-                _q->rxy_max = _q->rxy_magnitude;
-                _q->cp_excess_delay = 0;
+            // cyclic prefix has been detected; store correlation in buffer
+            if (_q->rxy_buffer_index != _q->cp_len) {
+                // buffer is not yet full
+                _q->rxy_buffer[_q->rxy_buffer_index] = _q->rxy;
+                _q->rxy_buffer_index++;
             } else {
-                // maximum correlation found: receive payload
-                printf("max |rxy| found: %12.4f at i=%u\n", _q->rxy_magnitude,i);
+                // buffer is full: look for maximum
+                ofdmframesync_findrxypeak(_q);
+                printf("max |rxy| found: %12.4f at i=%u\n", cabsf(_q->rxy),i-_q->cp_len+_q->cp_excess_delay);
                 _q->nu_hat = -cargf(_q->rxy)/((float)(_q->num_subcarriers));
                 printf("  nu_hat = %12.8f\n", _q->nu_hat);
 
@@ -227,9 +227,7 @@ void ofdmframesync_execute(ofdmframesync _q,
     
                 // TODO : ofdmframesync_execute(), wait before resetting
                 // reset state
-                _q->rxy_max     = 0.0f;
                 _q->cp_detected = false;
-                _q->cp_ignore   = true;
                 _q->cp_timer    = _q->num_subcarriers;
             }
         }
@@ -243,7 +241,7 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
     cfwindow_read(_q->wdelay,&rc);
 
     // compensate for sample delay
-    rc += _q->cp_len-1;
+    rc += _q->cp_excess_delay;
 
     // copy to fft buffer
     memmove(_q->x, rc, (_q->num_subcarriers)*sizeof(float complex));
@@ -283,5 +281,20 @@ void ofdmframesync_cpcorrelate(ofdmframesync _q)
 
     // TODO : cpcorrelate uses unnecessary cycles: should rather store _correlation_ in buffers
     dotprod_cccf_run(rcp,rdelay,_q->cp_len,&_q->rxy);
+}
+
+void ofdmframesync_findrxypeak(ofdmframesync _q)
+{
+    unsigned int i;
+    float rxy_peak = 0.0f;
+    float rxy_magnitude;
+    for (i=0; i<_q->cp_len; i++) {
+        rxy_magnitude = cabsf(_q->rxy_buffer[i]);
+        if (rxy_magnitude > rxy_peak) {
+            rxy_peak = rxy_magnitude;
+            _q->cp_excess_delay = i;
+        }
+    }
+    _q->rxy = _q->rxy_buffer[_q->cp_excess_delay];
 }
 
