@@ -54,6 +54,7 @@ local_t_files	:=			\
 #
 local_b_files	:=			\
 	firpfbch_benchmark.h		\
+	ofdmframesync_benchmark.h	\
 	ofdmoqam_benchmark.h
 
 
