@@ -116,9 +116,12 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     q->wcp    = cfwindow_create(q->cp_len);
     q->wdelay = cfwindow_create(q->cp_len + q->num_subcarriers);
     q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
-    q->rxy_threshold = 0.5f*(float)(q->cp_len)*(q->zeta);
+    q->rxy_threshold = 0.75f*(float)(q->cp_len)*(q->zeta);
     q->rxy_buffer = (float complex*) malloc((q->cp_len)*sizeof(float complex));
     
+#if DEBUG_OFDMFRAMESYNC_PRINT
+    printf("rxy threshold : %12.8f\n", q->rxy_threshold);
+#endif
 #if DEBUG_OFDMFRAMESYNC
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
@@ -180,7 +183,7 @@ void ofdmframesync_reset(ofdmframesync _q)
 {
     _q->cp_detected     = false;
     _q->cp_excess_delay = 0;
-    _q->cp_timer        = _q->num_subcarriers;
+    _q->cp_timer        = _q->num_subcarriers - _q->cp_len;
 }
 
 void ofdmframesync_execute(ofdmframesync _q,
@@ -224,7 +227,9 @@ void ofdmframesync_execute(ofdmframesync _q,
 #if DEBUG_OFDMFRAMESYNC_PRINT
                 printf("max |rxy| found: %12.4f at i=%u\n",
                         cabsf(_q->rxy),
-                        i-_q->cp_len+_q->cp_excess_delay);
+                        i);
+                        //i-_q->cp_len+_q->cp_excess_delay);
+                printf("  excess delay : %u\n", _q->cp_excess_delay);
                 printf("  nu_hat = %12.8f\n", _q->nu_hat);
 #endif
 
@@ -233,7 +238,7 @@ void ofdmframesync_execute(ofdmframesync _q,
                 // TODO : ofdmframesync_execute(), wait before resetting
                 // reset state
                 _q->cp_detected = false;
-                _q->cp_timer    = _q->num_subcarriers;
+                _q->cp_timer    = _q->num_subcarriers - _q->cp_len;
             }
         }
     }
