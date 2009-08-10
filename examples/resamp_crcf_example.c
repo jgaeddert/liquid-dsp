@@ -12,7 +12,7 @@
 
 int main() {
     unsigned int h_len = 13;    // filter length
-    float r=1.0f/1.13f;              // resampling rate
+    float r=5.3f;              // resampling rate
     float slsl=-60.0f;          // sidelobe suppression level
     unsigned int npfb=8;       // number of filters in bank
     unsigned int n=128;         // number of input samples
@@ -31,14 +31,13 @@ int main() {
 
     unsigned int i, j, k=0;
     float theta=0.0f, dtheta=2*M_PI*fc;
-    float complex x, y[2];
+    float complex x, y[20];
     unsigned int num_written;
     for (i=0; i<n; i++) {
         x = cexpf(_Complex_I*theta);
         theta += dtheta;
 
         resamp_crcf_execute(f, x, y, &num_written);
-        k += num_written;
 
         printf("%3u : x = %12.8f + j*%12.8f,", i, crealf(x),cimagf(x));
         //for (j=0; j<num_written; j++)
@@ -47,7 +46,8 @@ int main() {
 
         fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1,   crealf(x),    cimagf(x));
         for (j=0; j<num_written; j++)
-            fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", k+1, crealf(y[j]), cimagf(y[j]));
+            fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", k+j+1, crealf(y[j]), cimagf(y[j]));
+        k += num_written;
     }
 
     fprintf(fid,"nfft=512;\n");

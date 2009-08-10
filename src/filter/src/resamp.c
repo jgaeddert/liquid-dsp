@@ -40,7 +40,8 @@ struct RESAMP(_s) {
 
     float r;        // rate
     float tau;      // accumulated timing phase (0 <= tau <= 1)
-    unsigned int b; // filterbank index
+    float bf;       // soft filterbank index
+    int b;          // filterbank index
 
     unsigned int npfb;
     FIRPFB() f;
@@ -56,7 +57,7 @@ RESAMP() RESAMP(_create)(float _r,
     // validate input
     if (_r > 2.0f) {
         printf("error: input rate too large...\n");
-        exit(1);
+        //exit(1);
     }
 
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
@@ -79,6 +80,7 @@ RESAMP() RESAMP(_create)(float _r,
     //exit(0);
 
     q->tau = 0.0f;
+    q->bf  = 0.0f;
     q->b   = 0;
 
     return q;
@@ -101,18 +103,22 @@ void RESAMP(_execute)(RESAMP() _q,
                       TO * _y,
                       unsigned int *_num_written)
 {
+    FIRPFB(_push)(_q->f, _x);
     unsigned int n=0;
-    do {
-        printf("  [%2u] : tau : %12.8f, b : %4u\n", n, _q->tau, _q->b);
-        FIRPFB(_push)(_q->f, _x);
+    //while (_q->bf < (float)(_q->npfb)) {
+    while (_q->tau < 1.0f) {
+        _q->bf = _q->tau * (float)(_q->npfb);
+        _q->b  = _q->npfb - (int)floorf(_q->bf) - 1;
+        printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
-        _q->tau += _q->r;    // assumes r < 1.0
-        _q->b = (unsigned int)roundf(_q->tau * _q->npfb);
+
+        _q->tau += 1.0f/_q->r;    // assumes r < 1.0
         n++;
-    } while (_q->b < _q->npfb);
+    }
 
     _q->tau -= 1.0f;
-    _q->b = (unsigned int)roundf(_q->tau * _q->npfb);
+    _q->bf  -= (float)(_q->npfb);
+    _q->b   -= _q->npfb;
     *_num_written = n;
 }
 
