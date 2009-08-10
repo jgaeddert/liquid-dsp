@@ -65,14 +65,18 @@ RESAMP() RESAMP(_create)(float _r,
     // design filter
     q->h_len = _h_len;
     q->npfb  = _npfb;
-    unsigned int n = _h_len*_npfb+1;
+    unsigned int n = 2*_h_len*_npfb+1;
     float hf[n];
     TC h[n];
-    fir_kaiser_window(n,_r,_slsl,0.0f,hf);
+    fir_kaiser_window(n,0.5f/((float)(q->npfb)),_slsl,0.0f,hf);
     unsigned int i;
     for (i=0; i<n; i++)
         h[i] = hf[i];
     q->f = FIRPFB(_create)(_npfb,h,n-1);
+
+    for (i=0; i<n; i++)
+        PRINTVAL_TC(stdout,"h",i,h[i]);
+    //exit(0);
 
     q->tau = 0.0f;
     q->b   = 0;
@@ -89,6 +93,7 @@ void RESAMP(_destroy)(RESAMP() _q)
 void RESAMP(_print)(RESAMP() _q)
 {
     printf("resampler [rate: %f]\n", _q->r);
+    FIRPFB(_print)(_q->f);
 }
 
 void RESAMP(_execute)(RESAMP() _q,
@@ -96,27 +101,18 @@ void RESAMP(_execute)(RESAMP() _q,
                       TO * _y,
                       unsigned int *_num_written)
 {
-    FIRPFB(_push)(_q->f, _x);
-    FIRPFB(_execute)(_q->f, _q->b, &_y[0]);
-    *_num_written = 1;
-
-    printf("tau : %12.8f, b : %3u\n", _q->tau, _q->b);
-    _q->tau += _q->r - 1.0f;    // assumes r > 1.0
-
-    _q->b = (unsigned int)roundf(_q->tau * _q->npfb);
-
-    if (_q->b >= _q->npfb) {
-        printf("extending...\n");
-        _q->tau -= 1.0f;
-        _q->b   -= _q->npfb;
+    unsigned int n=0;
+    do {
+        printf("  [%2u] : tau : %12.8f, b : %4u\n", n, _q->tau, _q->b);
         FIRPFB(_push)(_q->f, _x);
-
-        FIRPFB(_execute)(_q->f, _q->b, &_y[1]);
-        *_num_written++;
-
-        printf("tau : %12.8f, b : %3u\n", _q->tau, _q->b);
-        _q->tau += _q->r - 1.0f;    // assumes r > 1.0
-
+        FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
+        _q->tau += _q->r;    // assumes r < 1.0
         _q->b = (unsigned int)roundf(_q->tau * _q->npfb);
-    }
+        n++;
+    } while (_q->b < _q->npfb);
+
+    _q->tau -= 1.0f;
+    _q->b = (unsigned int)roundf(_q->tau * _q->npfb);
+    *_num_written = n;
 }
+

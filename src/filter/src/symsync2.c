@@ -28,7 +28,7 @@
 #include <math.h>
 
 #ifndef SYMSYNC2_DEBUG
-#define SYMSYNC2_DEBUG 0
+#define SYMSYNC2_DEBUG 1
 #endif
 
 #define SYMSYNC2_DEBUG_FILENAME "debug_symsync2_internal.m"

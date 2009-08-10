@@ -11,12 +11,12 @@
 #define OUTPUT_FILENAME "resamp_crcf_example.m"
 
 int main() {
-    unsigned int h_len = 21;    // filter length
-    float r=1.17f;              // resampling rate
+    unsigned int h_len = 13;    // filter length
+    float r=1.0f/1.13f;              // resampling rate
     float slsl=-60.0f;          // sidelobe suppression level
-    unsigned int npfb=16;       // number of filters in bank
+    unsigned int npfb=8;       // number of filters in bank
     unsigned int n=128;         // number of input samples
-    float fc=0.17f;             // sine carrier
+    float fc=0.079f;             // sine carrier
 
     resamp_crcf f = resamp_crcf_create(r,h_len,slsl,npfb);
 

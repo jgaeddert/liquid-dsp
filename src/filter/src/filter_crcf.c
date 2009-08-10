@@ -39,6 +39,7 @@
 #define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_crcf,name)
 
 #define PRINTVAL(x)         printf("%12.4e + %12.4ej", crealf(x), cimagf(x))
+#define PRINTVAL_TC(F,STR,I,V)  DEBUG_PRINTF_FLOAT(F,STR,I,V)
 
 #define T                   float complex   // general
 #define TO                  float complex   // output

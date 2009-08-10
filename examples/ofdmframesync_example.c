@@ -25,7 +25,7 @@ int main() {
     //unsigned int num_symbols=2;     // number of ofdm symbols
     modulation_scheme ms = MOD_QAM;
     unsigned int bps     = 4;
-    float nstd  = 0.1f;    // noise standard deviation
+    float nstd  = 0.01f;    // noise standard deviation
     float phi   = 0.0f;     // phase offset
     float dphi  = 0.005f;   // frequency offset
 
