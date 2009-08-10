@@ -5,6 +5,7 @@
 local_dir	:= examples
 local_src	:=			\
 	bit_alloc_test.c		\
+	resamp_crcf_example.c		\
 	resamp2_crcf_decim_example.c	\
 	resamp2_crcf_interp_example.c	\
 	resamp2_crcf_interp_recreate_example.c	\
