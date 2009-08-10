@@ -12,7 +12,7 @@
 
 int main() {
     unsigned int h_len = 13;    // filter length
-    float r=5.3f;              // resampling rate
+    float r=1.3f;              // resampling rate
     float slsl=-60.0f;          // sidelobe suppression level
     unsigned int npfb=8;       // number of filters in bank
     unsigned int n=128;         // number of input samples
@@ -54,9 +54,10 @@ int main() {
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*hamming(length(x))',nfft))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*hamming(length(y))',nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f,X,'Color',[0.5 0.5 0.5],f/r,Y,'LineWidth',2);\n");
+    fprintf(fid,"figure; plot(f/r,X,'Color',[0.5 0.5 0.5],f,Y,'LineWidth',2);\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original','interpolated',1);");
+    fprintf(fid,"axis([-0.5 0.5 -80 40]);\n");
 
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);

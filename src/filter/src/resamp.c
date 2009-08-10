@@ -42,6 +42,7 @@ struct RESAMP(_s) {
     float tau;      // accumulated timing phase (0 <= tau <= 1)
     float bf;       // soft filterbank index
     int b;          // filterbank index
+    float g;        // gain
 
     unsigned int npfb;
     FIRPFB() f;
@@ -74,6 +75,12 @@ RESAMP() RESAMP(_create)(float _r,
     for (i=0; i<n; i++)
         h[i] = hf[i];
     q->f = FIRPFB(_create)(_npfb,h,n-1);
+
+    // set gain
+    q->g = 0.;
+    for (i=0; i<n; i++)
+        q->g += h[i];
+    q->g = (q->npfb)/(q->g);
 
     for (i=0; i<n; i++)
         PRINTVAL_TC(stdout,"h",i,h[i]);
@@ -115,6 +122,10 @@ void RESAMP(_execute)(RESAMP() _q,
         _q->tau += 1.0f/_q->r;    // assumes r < 1.0
         n++;
     }
+
+    unsigned int i;
+    for (i=0; i<n; i++)
+        _y[i] *= _q->g;
 
     _q->tau -= 1.0f;
     _q->bf  -= (float)(_q->npfb);
