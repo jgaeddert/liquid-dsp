@@ -36,6 +36,7 @@ import getopt
 import glob
 import string
 import os.path
+from datetime import date
 
 outputFileName = "todolist.txt"
 included_files = []
@@ -174,7 +175,43 @@ def writeOutputFile( filename = outputFileName ):
 def writeOutputHTMLFile( filename = outputFileName ):
     '''Write output HTML file'''
     f = open(outputFileName, "w")
-    f.write("// auto-generated file, do not edit\n")
+    f.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n")
+    f.write("\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
+    f.write("<!-- auto-generated file, do not edit -->\n")
+    f.write("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">\n")
+    f.write("<head>\n")
+    f.write("<!-- <style type=\"text/css\" media=\"all\">@import url(http://computing.ece.vt.edu/~jgaeddert/web.css);</style> -->\n")
+    f.write("<title>jgaeddert</title>\n")
+    f.write("<meta name=\"description\" content=\"Gaeddert Virginia Tech\" />\n")
+    f.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n")
+    f.write("<!-- <link rel=\"Shortcut Icon\" type=\"image/png\" href=\"img/favicon.png\" /> -->\n")
+    f.write("</head>\n")
+    f.write("<body>\n")
+    f.write("    <h1>liquid // todolist</h1>\n")
+
+    basepath = "https://ganymede.ece.vt.edu/trac/liquid/browser/liquid/trunk/"
+
+    # write list
+    for p in packages:
+        long_filename = basepath + p.file_name
+        f.write("    <p><a href=\"" + long_filename + "\">" + p.file_name + "</a></p>\n")
+        f.write("    <ul>\n");
+        for t in p.tasks:
+            f.write("      <li>" + "[<a href=\"" + long_filename + "#L" + str(t.line_number) + "\">" +
+                    str(t.line_number) + "</a>] : " + t.task + "</li>\n")
+        f.write("    </ul>\n");
+
+    # write footer
+    f.write("    <p>\n")
+    f.write("    Validate:\n")
+    f.write("    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n")
+    f.write("    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n")
+    f.write("    </p>\n")
+    f.write("    <p>Last updated: <em>" + 
+                    date.today().strftime("%A, %d %B %Y %I:%M%p") +
+                    "</em></p>\n")
+    f.write("</body>\n")
+    f.write("</html>\n")
     f.close()
 
 def writeOutputTextFile( filename = outputFileName ):

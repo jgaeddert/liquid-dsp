@@ -246,8 +246,13 @@ todolist_sources	= $(sources)			\
 			  $(autotest_headers)		\
 			  $(benchmark_headers)
 
+# .txt
 $(todolist_filename) : todolistgen.py $(todolist_sources)
-	python todolistgen.py -o $(todolist_filename) $(todolist_sources)
+	python todolistgen.py -o $@ $(todolist_sources)
+
+# .html
+todolist.html : todolistgen.py $(todolist_sources)
+	python todolistgen.py -o $@ $(todolist_sources)
 
 todolist: $(todolist_filename) $(todolist_sources)
 
