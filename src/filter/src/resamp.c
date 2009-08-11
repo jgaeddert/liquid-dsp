@@ -82,8 +82,8 @@ RESAMP() RESAMP(_create)(float _r,
         q->g += h[i];
     q->g = (q->npfb)/(q->g);
 
-    for (i=0; i<n; i++)
-        PRINTVAL_TC(stdout,"h",i,h[i]);
+    //for (i=0; i<n; i++)
+    //    PRINTVAL_TC(stdout,"h",i,h[i]);
     //exit(0);
 
     q->tau = 0.0f;
@@ -115,7 +115,8 @@ void RESAMP(_execute)(RESAMP() _q,
     //while (_q->bf < (float)(_q->npfb)) {
     while (_q->tau < 1.0f) {
         _q->bf = _q->tau * (float)(_q->npfb);
-        _q->b  = _q->npfb - (int)floorf(_q->bf) - 1;
+        //_q->b  = _q->npfb - (int)floorf(_q->bf) - 1;
+        _q->b  = (int)floorf(_q->bf);
         printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
 

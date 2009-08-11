@@ -55,10 +55,10 @@ void autotest_firpfb_impulse_response()
 
     // expected filter outputs
     float test[4] = {
-      -0.22400,
-       0.38609,
-       0.99844,
-       1.56917
+        2.05558467194397f,
+        1.56922189602661f,
+        0.998479744645138,
+        0.386125857849177
     };
 
     // Load filter coefficients externally

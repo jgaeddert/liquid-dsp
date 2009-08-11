@@ -62,7 +62,8 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len
     unsigned int i, n;
     for (i=0; i<b->num_filters; i++) {
         for (n=0; n<h_sub_len; n++) {
-            h_sub[n] = _h[i + n*(b->num_filters)];
+            // load filter in reverse order
+            h_sub[h_sub_len-n-1] = _h[i + n*(b->num_filters)];
         }
 
         b->dp[i] = DOTPROD(_create)(h_sub,h_sub_len);
@@ -109,7 +110,7 @@ void FIRPFB(_print)(FIRPFB() _b)
     for (i=0; i<_b->num_filters; i++) {
         for (n=0; n<_b->h_len; n++) {
             printf(" ");
-            PRINTVAL_TC(stdout,"h",n,_b->dp[i]->h[n]);
+            //PRINTVAL_TC(stdout,"h",n,_b->dp[i]->h[n]);
         }
         printf("\n");
     }
