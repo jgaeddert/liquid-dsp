@@ -163,7 +163,22 @@ def parseFile( filename ):
     header_file.close()
 
 def writeOutputFile( filename = outputFileName ):
-    '''Write output file'''
+    '''Parse file type, write appropriate file'''
+    substr = filename.split('.')
+    ext = substr[len(substr)-1]
+    if ext.lower() == 'html':
+        writeOutputHTMLFile(filename)
+    else:
+        writeOutputTextFile(filename)
+
+def writeOutputHTMLFile( filename = outputFileName ):
+    '''Write output HTML file'''
+    f = open(outputFileName, "w")
+    f.write("// auto-generated file, do not edit\n")
+    f.close()
+
+def writeOutputTextFile( filename = outputFileName ):
+    '''Write output text file'''
     f = open(outputFileName, "w")
 
     # write header
