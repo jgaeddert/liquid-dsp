@@ -27,14 +27,11 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifndef SYMSYNC_DEBUG
-#define SYMSYNC_DEBUG 1
-#endif
-
-#define SYMSYNC_DEBUG_FILENAME  "symsync_internal_debug.m"
+#define DEBUG_SYMSYNC 1
+#define DEBUG_SYMSYNC_FILENAME  "symsync_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (2048)
 
-#if SYMSYNC_DEBUG
+#if DEBUG_SYMSYNC
 void SYMSYNC(_output_debug_file)(SYMSYNC() _q);
 #endif
 
@@ -79,7 +76,7 @@ struct SYMSYNC(_s) {
 
     enum {SHIFT,SKIP,SKIP_PRIME,STUFF} state;
 
-#if SYMSYNC_DEBUG
+#if DEBUG_SYMSYNC
     FILE * fid;
     fwindow  debug_bsoft;
     uiwindow debug_b;
@@ -118,7 +115,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
     SYMSYNC(_clear)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
 
-#if SYMSYNC_DEBUG
+#if DEBUG_SYMSYNC
     q->debug_bsoft =  fwindow_create(DEBUG_BUFFER_LEN);
     q->debug_b     = uiwindow_create(DEBUG_BUFFER_LEN);
     q->debug_state = uiwindow_create(DEBUG_BUFFER_LEN);
@@ -129,7 +126,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
 
 void SYMSYNC(_destroy)(SYMSYNC() _q)
 {
-#if SYMSYNC_DEBUG
+#if DEBUG_SYMSYNC
     SYMSYNC(_output_debug_file)(_q);
 #endif
     FIRPFB(_destroy)(_q->mf);
@@ -304,7 +301,7 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
     // assert(_q->b >= 0);
     // assert(_q->b < _q->num_filters);
 
-#if SYMSYNC_DEBUG
+#if DEBUG_SYMSYNC
     fwindow_push(_q->debug_bsoft,  _q->b_soft);
     uiwindow_push(_q->debug_b,     _q->b);
     uiwindow_push(_q->debug_state, _q->state);
@@ -315,11 +312,11 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
 // internal debugging
 //
 
-#if SYMSYNC_DEBUG
+#if DEBUG_SYMSYNC
 void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
 {
-    FILE * fid = fopen(SYMSYNC_DEBUG_FILENAME, "w");
-    fprintf(fid, "%% %s, auto-generated file\n\n", SYMSYNC_DEBUG_FILENAME);
+    FILE * fid = fopen(DEBUG_SYMSYNC_FILENAME, "w");
+    fprintf(fid, "%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);
 
     fprintf(fid,"num_filters = %u\n",_q->num_filters);
     fprintf(fid,"k = %u\n",_q->k);
@@ -378,7 +375,7 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
     fprintf(fid,"ylabel('Polyphase Filter Index')\n");
     fprintf(fid,"%% done.\n");
     fclose(fid);
-    printf("symsync: internal results written to %s.\n", SYMSYNC_DEBUG_FILENAME);
+    printf("symsync: internal results written to %s.\n", DEBUG_SYMSYNC_FILENAME);
 }
 #endif
 

@@ -27,11 +27,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifndef SYMSYNC2_DEBUG
-#define SYMSYNC2_DEBUG 1
-#endif
-
-#define SYMSYNC2_DEBUG_FILENAME "debug_symsync2_internal.m"
+#define DEBUG_SYMSYNC2          1
+#define DEBUG_SYMSYNC2_FILENAME "symsync2_internal_debug.m"
 
 // defined:
 //  SYMSYNC2()  name-mangling macro
@@ -80,7 +77,7 @@ struct SYMSYNC2(_s) {
 
     TO mf_buffer[2];
 
-#if SYMSYNC2_DEBUG
+#if DEBUG_SYMSYNC2
     FILE* fid;
     unsigned int n_debug;
 #endif
@@ -116,10 +113,10 @@ SYMSYNC2() SYMSYNC2(_create)(unsigned int _num_filters, TC * _h, unsigned int _h
     SYMSYNC2(_clear)(q);
     SYMSYNC2(_set_lf_bw)(q, 0.01f);
 
-#if SYMSYNC2_DEBUG
+#if DEBUG_SYMSYNC2
     q->n_debug = 0;
-    q->fid = fopen(SYMSYNC2_DEBUG_FILENAME, "w");
-    fprintf(q->fid, "%% %s, auto-generated file\n\n", SYMSYNC2_DEBUG_FILENAME);
+    q->fid = fopen(DEBUG_SYMSYNC2_FILENAME, "w");
+    fprintf(q->fid, "%% %s, auto-generated file\n\n", DEBUG_SYMSYNC2_FILENAME);
 
     fprintf(q->fid,"num_filters = %u\n",q->num_filters);
     fprintf(q->fid,"k = %u\n",q->k);
@@ -140,7 +137,7 @@ SYMSYNC2() SYMSYNC2(_create)(unsigned int _num_filters, TC * _h, unsigned int _h
 
 void SYMSYNC2(_destroy)(SYMSYNC2() _q)
 {
-#if SYMSYNC2_DEBUG
+#if DEBUG_SYMSYNC2
     fprintf(_q->fid, "\n\n");
     fprintf(_q->fid, "t=0:%u;\n",_q->n_debug-1);
     fprintf(_q->fid, "i_skip  = find(state==%d);\n", SYMSYNC2_SKIP);
@@ -156,7 +153,7 @@ void SYMSYNC2(_destroy)(SYMSYNC2() _q)
     fprintf(_q->fid, "legend('b','b (soft)',0);\n");
     fprintf(_q->fid, "%% done.\n");
     fclose(_q->fid);
-    printf("symsync: internal results written to %s.\n", SYMSYNC2_DEBUG_FILENAME);
+    printf("symsync: internal results written to %s.\n", DEBUG_SYMSYNC2_FILENAME);
 #endif
 
     FIRPFB(_destroy)(_q->mf);
@@ -342,7 +339,7 @@ void SYMSYNC2(_advance_filterbank_index)(SYMSYNC2() _q)
     // assert(_q->b >= 0);
     // assert(_q->b < _q->num_filters);
 
-#if SYMSYNC2_DEBUG
+#if DEBUG_SYMSYNC2
     fprintf(_q->fid,"b_soft(%4u) = %12.5e;\n",_q->n_debug+1,_q->b_soft);
     fprintf(_q->fid,"b(%4u) = %d;\n",_q->n_debug+1,_q->b);
     fprintf(_q->fid,"state(%4u) = %d;\n", _q->n_debug+1,(int)(_q->state));
