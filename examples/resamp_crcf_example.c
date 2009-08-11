@@ -12,7 +12,7 @@
 
 int main() {
     unsigned int h_len = 13;    // filter semi-length (delay)
-    float r=1.3f;               // resampling rate
+    float r=0.9f;               // resampling rate
     float slsl=-60.0f;          // sidelobe suppression level
     unsigned int npfb=16;       // number of filters in bank
     unsigned int n=128;         // number of input samples
@@ -43,9 +43,9 @@ int main() {
         //    printf("");
         printf("\n");
 
-        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1,   crealf(x),    cimagf(x));
+        fprintf(fid,"x(%3u) = %12.4e + j*%12.e;\n", i+1,   crealf(x),    cimagf(x));
         for (j=0; j<num_written; j++)
-            fprintf(fid,"y(%3u) = %8.4f + j*%8.4f;\n", k+j+1, crealf(y[j]), cimagf(y[j]));
+            fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", k+j+1, crealf(y[j]), cimagf(y[j]));
         k += num_written;
     }
 
@@ -56,7 +56,11 @@ int main() {
     fprintf(fid,"X=20*log10(abs(fftshift(fft(x.*hamming(length(x))',nfft)*1.85/length(x))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*hamming(length(y))',nfft)*1.85/length(y))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
-    fprintf(fid,"figure; plot(f/r,X,'Color',[0.5 0.5 0.5],f,Y,'LineWidth',2);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"if r>1, fx = f/r; fy = f;   %% interpolated\n");
+    fprintf(fid,"else,   fx = f;   fy = f*r; %% decimated\n");
+    fprintf(fid,"end;\n");
+    fprintf(fid,"plot(fx,X,'Color',[0.5 0.5 0.5],fy,Y,'LineWidth',2);\n");
     fprintf(fid,"grid on;\nxlabel('normalized frequency');\nylabel('PSD [dB]');\n");
     fprintf(fid,"legend('original','resampled',1);");
     fprintf(fid,"axis([-0.5 0.5 -80 10]);\n");
