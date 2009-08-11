@@ -27,6 +27,8 @@
 #include <string.h>
 #include <math.h>
 
+#define DEBUG_RESAMP_PRINT  1
+
 // defined:
 //  TO          output data type
 //  TC          coefficient data type
@@ -117,16 +119,15 @@ void RESAMP(_execute)(RESAMP() _q,
         _q->bf = _q->tau * (float)(_q->npfb);
         //_q->b  = _q->npfb - (int)floorf(_q->bf) - 1;
         _q->b  = (int)floorf(_q->bf);
+#if DEBUG_RESAMP_PRINT
         printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
+#endif
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
+        _y[n] *= _q->g;
 
         _q->tau += 1.0f/_q->r;    // assumes r < 1.0
         n++;
     }
-
-    unsigned int i;
-    for (i=0; i<n; i++)
-        _y[i] *= _q->g;
 
     _q->tau -= 1.0f;
     _q->bf  -= (float)(_q->npfb);
