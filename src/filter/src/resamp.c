@@ -110,6 +110,14 @@ void RESAMP(_print)(RESAMP() _q)
     FIRPFB(_print)(_q->f);
 }
 
+void RESAMP(_reset)(RESAMP() _q)
+{
+    FIRPFB(_clear)(_q->f);
+    _q->tau = 0.0f;
+    _q->bf  = 0.0f;
+    _q->b   = 0;
+}
+
 void RESAMP(_setrate)(RESAMP() _q, float _rate)
 {
     // TODO : validate rate, validate this method

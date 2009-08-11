@@ -914,6 +914,7 @@ RESAMP()    RESAMP(_create)(float _r,                           \
                             unsigned int _npfb);                \
 void        RESAMP(_destroy)(RESAMP() _q);                      \
 void        RESAMP(_print)(RESAMP() _q);                        \
+void        RESAMP(_reset)(RESAMP() _q);                        \
 void        RESAMP(_setrate)(RESAMP() _q, float _rate);         \
 void        RESAMP(_execute)(RESAMP() _q,                       \
                              TI _x,                             \
