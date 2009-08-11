@@ -61,13 +61,13 @@ struct SYMSYNC(_s) {
 
     fir_prototype p;
 
-    // loop filter
-    float delay;    // filter delay
-    float zeta;     // loop filter correction factor
-    float eta;      // additional correction factor
-    float bt;
-    float xi, ac, alpha, beta;
-    float q, q_hat, q_prime, tmp2;
+    // timing error loop filter
+    float bt;       // filter bandwidth
+    float alpha;    // percent of old error sample to retain
+    float beta;     // percent of new error sample to retain
+    float q;        // instantaneous timing error estimate
+    float q_hat;    // filtered timing error estimate
+    float q_prime;  // buffered timing error estimate
 
     unsigned int v;
     float b_soft;
@@ -110,8 +110,6 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
     q->dmf = FIRPFB(_create)(q->num_filters, dh, _h_len);
 
     // reset state and initialize loop filter
-    q->ac = 1.0f;
-    q->delay = 0.5f* (float) (_h_len-1) / (float)(q->num_filters);
     SYMSYNC(_clear)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
 
@@ -213,28 +211,9 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
 {
     // set loop filter bandwidth
     _q->bt = _bt;
-    _q->xi = 1.0f/sqrtf(2.0f);
 
-    // compensate for filter delay (empirical relationship)
-    //_q->zeta = _q->delay + 1.0f;
-    //_q->bt = (_q->bt) / (1 + log10f(_q->zeta));
-    //_q->xi = 2 * (_q->xi) * (_q->zeta);
-
-    // TODO: formulate empirical relationship based upon simulation
-    // of symbol synchronizer
-    if (_q->delay < 1)
-        _q->eta = 1.0f;
-    else if (_q->delay < 11)
-        //_q->eta = expf(-0.044335f*_q->delay -0.022152f);
-        _q->eta = expf(-0.027502f*_q->delay + 0.010818f);
-    else
-        _q->eta = expf(-0.054050f*_q->delay +0.288521f);
-
-    _q->eta = sqrtf(_q->eta);
-
-    // compute filter coefficients
-    _q->beta = 2*(_q->bt)/(_q->xi + 1.0f/(4*(_q->xi)));
-    _q->alpha = 2*(_q->xi)*(_q->beta);
+    _q->alpha = 1.00f - (_q->bt);   // percent of old sample to retain
+    _q->beta  = 0.22f * (_q->bt);   // percent of new sample to retain
 }
 
 void SYMSYNC(_clear)(SYMSYNC() _q)
@@ -244,10 +223,8 @@ void SYMSYNC(_clear)(SYMSYNC() _q)
     FIRPFB(_clear)(_q->dmf);
 
     // reset loop filter states
-    _q->q = 0.0f;
     _q->q_hat = 0.0f;
     _q->q_prime = 0.0f;
-    _q->tmp2 = 0.0f;
     _q->b_soft = 0.0f;
     _q->b = 0;
     _q->state = SHIFT;
@@ -265,12 +242,12 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
     if      (_q->q >  1.0f) _q->q =  1.0f;
     else if (_q->q < -1.0f) _q->q = -1.0f;
 
-    //  2.  filter error signal
-    _q->q_prime = (_q->q)*(_q->beta) + (_q->tmp2)*(_q->eta);
-    _q->q_hat = (_q->alpha)*(_q->q) + _q->q_prime;
-    _q->tmp2 = _q->q_prime;
+    //  2.  filter error signal: retain large percent (alpha) of
+    //      old estimate and small percent (beta) of new estimate
+    _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
+    _q->q_prime = _q->q_hat;
 
-    //  3.  increment filter bank index
+    //  3.  increment filter bank index (accumulator)
     _q->b_soft -= (_q->q_hat)*(_q->num_filters);
     _q->b = (int) roundf(_q->b_soft);
 
@@ -322,11 +299,6 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
     fprintf(fid,"k = %u\n",_q->k);
     fprintf(fid,"\n\n");
 
-    fprintf(fid,"bt = %12.5e\n",_q->bt);
-    fprintf(fid,"xi = %12.5e\n",_q->xi);
-    fprintf(fid,"zeta = %12.5e\n",_q->zeta);
-    fprintf(fid,"delay = %12.5e\n",_q->delay);
-    fprintf(fid,"eta = %12.5e\n",_q->eta);
     fprintf(fid,"alpha = %12.5e\n",_q->alpha);
     fprintf(fid,"beta = %12.5e\n",_q->beta);
     fprintf(fid,"\n\n");
