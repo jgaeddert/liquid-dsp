@@ -37,7 +37,7 @@ import glob
 import string
 import os.path
 
-outputFileName = "todo_list.txt"
+outputFileName = "todolist.txt"
 included_files = []
 listed_files = []
 packages = []

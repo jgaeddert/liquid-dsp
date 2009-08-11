@@ -236,17 +236,23 @@ clean-examples:
 	$(RM) $(example_progs)
 
 # 
-# Tasks list
+# todolist (tasks list)
 #
-tasks_filename = todo_list.txt
+todolist_filename = todolist.txt
 
-$(tasks_filename) : todolistgen.py $(sources)
-	python todolistgen.py $(sources)
+todolist_sources	= $(sources)			\
+			  include/liquid.h		\
+			  include/liquid.internal.h	\
+			  $(autotest_headers)		\
+			  $(benchmark_headers)
 
-taskslist: $(tasks_filename)
+$(todolist_filename) : todolistgen.py $(todolist_sources)
+	python todolistgen.py -o $(todolist_filename) $(todolist_sources)
 
-clean-tasks:
-	$(RM) $(tasks_filename)
+todolist: $(todolist_filename) $(todolist_sources)
+
+clean-todolist:
+	$(RM) $(todolist_filename)
 
 # Clean
 .PHONY: clean
