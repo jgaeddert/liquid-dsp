@@ -31,8 +31,8 @@
 
 #include "liquid.h"
 
-#define FRAMESYNC64_SYM_BW_0        (0.01f)
-#define FRAMESYNC64_SYM_BW_1        (0.001f)
+#define FRAMESYNC64_SYM_BW_0        (0.08f)
+#define FRAMESYNC64_SYM_BW_1        (0.01f)
 
 #define FRAMESYNC64_AGC_BW_0        (3e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-5f)
