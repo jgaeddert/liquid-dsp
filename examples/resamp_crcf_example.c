@@ -13,12 +13,13 @@
 int main() {
     unsigned int h_len = 13;    // filter semi-length (delay)
     float r=0.9f;               // resampling rate
+    float bw=0.5f;              // filter bandwidth
     float slsl=-60.0f;          // sidelobe suppression level
     unsigned int npfb=16;       // number of filters in bank
     unsigned int n=128;         // number of input samples
     float fc=0.079f;            // sine carrier frequency
 
-    resamp_crcf f = resamp_crcf_create(r,h_len,slsl,npfb);
+    resamp_crcf f = resamp_crcf_create(r,h_len,bw,slsl,npfb);
     resamp_crcf_print(f);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");

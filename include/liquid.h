@@ -909,10 +909,12 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, liquid_float_complex,   liquid_fl
 typedef     struct RESAMP(_s) * RESAMP();                       \
 RESAMP()    RESAMP(_create)(float _r,                           \
                             unsigned int _h_len,                \
+                            float _fc,                          \
                             float _slsl,                        \
                             unsigned int _npfb);                \
 void        RESAMP(_destroy)(RESAMP() _q);                      \
 void        RESAMP(_print)(RESAMP() _q);                        \
+void        RESAMP(_setrate)(RESAMP() _q, float _rate);         \
 void        RESAMP(_execute)(RESAMP() _q,                       \
                              TI _x,                             \
                              TO * _y,                           \

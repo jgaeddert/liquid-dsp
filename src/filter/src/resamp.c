@@ -39,12 +39,15 @@
 struct RESAMP(_s) {
     TC * h;
     unsigned int h_len;
+    float slsl;
+    float fc;
 
     float r;        // rate
     float tau;      // accumulated timing phase (0 <= tau <= 1)
     float bf;       // soft filterbank index
     int b;          // filterbank index
-    float g;        // gain
+    float g;        // filter compensation gain
+    float del;      // fractional delay step
 
     unsigned int npfb;
     FIRPFB() f;
@@ -54,25 +57,24 @@ struct RESAMP(_s) {
 
 RESAMP() RESAMP(_create)(float _r,
                          unsigned int _h_len,
+                         float _fc,
                          float _slsl,
                          unsigned int _npfb)
 {
-    // validate input
-    if (_r > 2.0f) {
-        printf("error: input rate too large...\n");
-        //exit(1);
-    }
+    // TODO: validate input
 
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
-    q->r = _r;
-
-    // design filter
+    q->r     = _r;
+    q->slsl  = _slsl;
+    q->fc    = _fc;
     q->h_len = _h_len;
     q->npfb  = _npfb;
+
+    // design filter
     unsigned int n = 2*_h_len*_npfb+1;
     float hf[n];
     TC h[n];
-    fir_kaiser_window(n,0.5f/((float)(q->npfb)),_slsl,0.0f,hf);
+    fir_kaiser_window(n,q->fc/((float)(q->npfb)),q->slsl,0.0f,hf);
     unsigned int i;
     for (i=0; i<n; i++)
         h[i] = hf[i];
@@ -91,6 +93,7 @@ RESAMP() RESAMP(_create)(float _r,
     q->tau = 0.0f;
     q->bf  = 0.0f;
     q->b   = 0;
+    q->del = 1.0f / q->r;
 
     return q;
 }
@@ -105,6 +108,13 @@ void RESAMP(_print)(RESAMP() _q)
 {
     printf("resampler [rate: %f]\n", _q->r);
     FIRPFB(_print)(_q->f);
+}
+
+void RESAMP(_setrate)(RESAMP() _q, float _rate)
+{
+    // TODO : validate rate, validate this method
+    _q->r = _rate;
+    _q->del = 1.0f / _q->r;
 }
 
 void RESAMP(_execute)(RESAMP() _q,
@@ -125,7 +135,7 @@ void RESAMP(_execute)(RESAMP() _q,
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
         _y[n] *= _q->g;
 
-        _q->tau += 1.0f/_q->r;    // assumes r < 1.0
+        _q->tau += _q->del;
         n++;
     }
 
