@@ -1000,8 +1000,9 @@ LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_fl
 #define LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW,TO,TC,TI)       \
 typedef struct FIR_FARROW(_s) * FIR_FARROW();                   \
 FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,               \
-               unsigned int _p,                                 \
-               float _beta);                                    \
+                                 unsigned int _p,               \
+                                 float _fc,                     \
+                                 float _beta);                  \
 void FIR_FARROW(_destroy)(FIR_FARROW() _f);                     \
 void FIR_FARROW(_clear)(FIR_FARROW() _f);                       \
 void FIR_FARROW(_print)(FIR_FARROW() _f);                       \

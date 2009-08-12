@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define FIR_FARROW_USE_DOTPROD 1
 
@@ -41,11 +42,12 @@ struct FIR_FARROW(_s) {
     TC * h;
     unsigned int h_len; // filter length
     float fc;           // filter cutoff
+    float slsl;         // sidelobe suppression level
     unsigned int Q;     // polynomial order
 
-    float mu;       // fractional sample delay
-    float * P;      // polynomail coefficients matrix [n x p]
-    float gamma;    // inverse of DC response (normalization factor)
+    float mu;           // fractional sample delay
+    float * P;          // polynomail coefficients matrix [n x p]
+    float gamma;        // inverse of DC response (normalization factor)
 
 #if FIR_FARROW_USE_DOTPROD
     WINDOW() w;
@@ -57,18 +59,22 @@ struct FIR_FARROW(_s) {
 
 FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
                                  unsigned int _p,
-                                 float _beta)
+                                 float _fc,
+                                 float _slsl)
 {
     FIR_FARROW() f = (FIR_FARROW()) malloc(sizeof(struct FIR_FARROW(_s)));
     f->h_len = _n;
-    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
-    f->Q = _p;
-    f->fc = 0.9f;
+    f->Q     = _p;
+    f->slsl  = _slsl;
+    f->fc    = _fc;
 
     // TODO: validate input
 
+    // allocate memory for filter coefficients
+    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
+
     // load filter in reverse order
-    unsigned int i;
+    //unsigned int i;
     //for (i=_n; i>0; i--)
     //    f->h[i-1] = _h[_n-i];
 
@@ -83,61 +89,8 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
 
     FIR_FARROW(_clear)(f);
 
-    unsigned int j, n=0;
-    float x, mu, h0, h1;
-    float mu_vect[f->Q+1];
-    float hp_vect[f->Q+1];
-    float p[f->Q];
-    float beta = kaiser_beta_slsl(80.0f);
-    for (i=0; i<_n; i++) {
-#if FIR_FARROW_DEBUG
-        printf("i : %3u / %3u\n", i, _n);
-#endif
-        x = (float)(i) - (float)(_n-1)/2.0f;
-        for (j=0; j<=_p; j++) {
-            mu = ((float)j - (float)_p)/((float)_p) + 0.5f;
-
-            h0 = sincf((f->fc)*(x + mu));
-            h1 = kaiser(i,_n,beta,mu);
-#if FIR_FARROW_DEBUG
-            printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
-                    j, x, mu, h0, h1, h0*h1);
-#endif
-
-            mu_vect[j] = mu;
-            hp_vect[j] = h0*h1;
-        }
-        polyfit(mu_vect,hp_vect,f->Q+1,p,f->Q+1);
-#if FIR_FARROW_DEBUG
-        printf("  polynomial : ");
-        for (j=0; j<=_p; j++)
-            printf("%8.4f,", p[j]);
-        printf("\n");
-#endif
-
-        // copy coefficients to internal matrix
-        memmove(f->P+n, p, (f->Q+1)*sizeof(float));
-        n += f->Q+1;
-    }
-
-#if FIR_FARROW_DEBUG
-    // print coefficients
-    n=0;
-    for (i=0; i<f->h_len; i++) {
-        printf("%3u : ", i);
-        for (j=0; j<f->Q+1; j++)
-            printf("%12.4e ", f->P[n++]);
-        printf("\n");
-    }
-#endif
-
-    // normalize DC gain
-    f->gamma = 1.0f;                // initialize gamma to 1
-    FIR_FARROW(_set_delay)(f,0.0f); // compute filter taps with zero delay
-    f->gamma = 0.0f;                // clear gamma
-    for (i=0; i<f->h_len; i++)      // compute DC response
-        f->gamma += f->h[i];
-    f->gamma = 1.0f / (f->gamma);   // invert result
+    // generate polynomials
+    FIR_FARROW(_genpoly)(f);
 
     return f;
 }
@@ -242,5 +195,69 @@ unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f)
 void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h)
 {
     memmove(_h, _f->h, (_f->h_len)*sizeof(float));
+}
+
+// 
+// internal
+//
+
+void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
+{
+    unsigned int i, j, n=0;
+    float x, mu, h0, h1;
+    float mu_vect[_q->Q+1];
+    float hp_vect[_q->Q+1];
+    float p[_q->Q];
+    float beta = kaiser_beta_slsl(_q->slsl);
+    for (i=0; i<_q->h_len; i++) {
+#if FIR_FARROW_DEBUG
+        printf("i : %3u / %3u\n", i, _n);
+#endif
+        x = (float)(i) - (float)(_q->h_len-1)/2.0f;
+        for (j=0; j<=_q->Q; j++) {
+            mu = ((float)j - (float)_q->Q)/((float)_q->Q) + 0.5f;
+
+            h0 = sincf((_q->fc)*(x + mu));
+            h1 = kaiser(i,_q->h_len,beta,mu);
+#if FIR_FARROW_DEBUG
+            printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
+                    j, x, mu, h0, h1, h0*h1);
+#endif
+
+            mu_vect[j] = mu;
+            hp_vect[j] = h0*h1;
+        }
+        polyfit(mu_vect,hp_vect,_q->Q+1,p,_q->Q+1);
+#if FIR_FARROW_DEBUG
+        printf("  polynomial : ");
+        for (j=0; j<=_p; j++)
+            printf("%8.4f,", p[j]);
+        printf("\n");
+#endif
+
+        // copy coefficients to internal matrix
+        memmove(_q->P+n, p, (_q->Q+1)*sizeof(float));
+        n += _q->Q+1;
+    }
+
+#if FIR_FARROW_DEBUG
+    // print coefficients
+    n=0;
+    for (i=0; i<_q->h_len; i++) {
+        printf("%3u : ", i);
+        for (j=0; j<_q->Q+1; j++)
+            printf("%12.4e ", _q->P[n++]);
+        printf("\n");
+    }
+#endif
+
+    // normalize DC gain
+    _q->gamma = 1.0f;                // initialize gamma to 1
+    FIR_FARROW(_set_delay)(_q,0.0f); // compute filter taps with zero delay
+    _q->gamma = 0.0f;                // clear gamma
+    for (i=0; i<_q->h_len; i++)      // compute DC response
+        _q->gamma += _q->h[i];
+    _q->gamma = 1.0f / (_q->gamma);   // invert result
+
 }
 

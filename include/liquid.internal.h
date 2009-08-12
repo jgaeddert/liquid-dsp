@@ -345,6 +345,13 @@ void fec_conv_init_v29p78(fec _q);
 // MODULE : filter
 //
 
+#define LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW,TO,TC,TI)  \
+void FIR_FARROW(_genpoly)(FIR_FARROW() _q);
+
+LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
+LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+
+
 #define LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB,TO,TC,TI)          \
 void    QMFB(_analysis_execute)(QMFB() _q,                      \
                                 TI   _x0,                       \
