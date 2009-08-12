@@ -12,7 +12,7 @@ int main() {
     // options
     unsigned int h_len=19;  // filter length
     unsigned int p=5;       // polynomial order
-    //float fc=0.9f;          // filter cutoff
+    float fc=0.9f;          // filter cutoff
     float slsl=60.0f;       // sidelobe suppression level
     unsigned int m=9;       // number of delays to evaluate
 
@@ -20,7 +20,7 @@ int main() {
     float h[h_len];
     float tao = ((float)h_len-1)/2.0f;  // nominal filter delay
 
-    fir_farrow_rrrf f = fir_farrow_rrrf_create(h_len, p, slsl);
+    fir_farrow_rrrf f = fir_farrow_rrrf_create(h_len, p, fc, slsl);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
