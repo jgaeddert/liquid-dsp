@@ -46,7 +46,6 @@ struct RESAMP(_s) {
     float tau;      // accumulated timing phase (0 <= tau <= 1)
     float bf;       // soft filterbank index
     int b;          // filterbank index
-    float g;        // filter compensation gain
     float del;      // fractional delay step
 
     unsigned int npfb;
@@ -75,16 +74,18 @@ RESAMP() RESAMP(_create)(float _r,
     float hf[n];
     TC h[n];
     fir_kaiser_window(n,q->fc/((float)(q->npfb)),q->slsl,0.0f,hf);
-    unsigned int i;
-    for (i=0; i<n; i++)
-        h[i] = hf[i];
-    q->f = FIRPFB(_create)(_npfb,h,n-1);
 
-    // set gain
-    q->g = 0.;
+    // normalize filter coefficients by DC gain
+    unsigned int i;
+    float gain=0.0f;
     for (i=0; i<n; i++)
-        q->g += h[i];
-    q->g = (q->npfb)/(q->g);
+        gain += hf[i];
+    gain = (q->npfb)/(gain);
+
+    // copy to type-specific array
+    for (i=0; i<n; i++)
+        h[i] = hf[i]*gain;
+    q->f = FIRPFB(_create)(_npfb,h,n-1);
 
     //for (i=0; i<n; i++)
     //    PRINTVAL_TC(stdout,"h",i,h[i]);
@@ -141,7 +142,6 @@ void RESAMP(_execute)(RESAMP() _q,
         printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
 #endif
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
-        _y[n] *= _q->g;
 
         _q->tau += _q->del;
         n++;
