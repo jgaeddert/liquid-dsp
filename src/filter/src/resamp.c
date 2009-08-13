@@ -133,17 +133,17 @@ void RESAMP(_execute)(RESAMP() _q,
 {
     FIRPFB(_push)(_q->f, _x);
     unsigned int n=0;
-    //while (_q->bf < (float)(_q->npfb)) {
-    while (_q->tau < 1.0f) {
-        _q->bf = _q->tau * (float)(_q->npfb);
-        //_q->b  = _q->npfb - (int)floorf(_q->bf) - 1;
-        _q->b  = (int)floorf(_q->bf);
+    
+    //while (_q->tau < 1.0f) {
+    while (_q->b < _q->npfb) {
 #if DEBUG_RESAMP_PRINT
         printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
 #endif
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
 
         _q->tau += _q->del;
+        _q->bf = _q->tau * (float)(_q->npfb);
+        _q->b  = (int)roundf(_q->bf);
         n++;
     }
 
