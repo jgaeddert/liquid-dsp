@@ -56,7 +56,7 @@ int main() {
         fprintf(fid,"x(%3u) = %12.4e + j*%12.e;\n", i+1,   crealf(x),    cimagf(x));
 
         for (j=0; j<num_written; j++) {
-            printf("[%3u] : %12.4e + j*%12.4e;\n", k+j, crealf(y[j]), cimagf(y[j]));
+            printf("[%3u] : %12.8f + j*%12.8f\n", k+j, crealf(y[j]), cimagf(y[j]));
             fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", k+j+1, crealf(y[j]), cimagf(y[j]));
         }
         k += num_written;
