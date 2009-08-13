@@ -93,24 +93,11 @@ void FIRPFB(_print)(FIRPFB() _b)
     printf("fir polyphase filterbank [%u] :\n", _b->num_filters);
     unsigned int i,n;
 
-    for (i=0; i<_b->num_filters; i++)
-        printf("%13u",i);
-    printf("\n");
-
-#if 0
-    for (n=0; n<_b->h_len; n++) {
-        for (i=0; i<_b->num_filters; i++) {
-            printf(" ");
-            PRINTVAL(_b->dp[i]->h[n]);
-        }
-        printf("\n");
-    }
-#endif
-
     for (i=0; i<_b->num_filters; i++) {
+        printf("bank %u:\n",i);
         for (n=0; n<_b->h_len; n++) {
-            printf(" ");
-            //PRINTVAL_TC(stdout,"h",n,_b->dp[i]->h[n]);
+            printf("  ");
+            PRINTVAL_TC(stdout,"h",n,_b->dp[i]->h[n]);
         }
         printf("\n");
     }
