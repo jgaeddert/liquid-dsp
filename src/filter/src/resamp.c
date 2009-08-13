@@ -27,7 +27,7 @@
 #include <string.h>
 #include <math.h>
 
-#define DEBUG_RESAMP_PRINT  1
+#define DEBUG_RESAMP_PRINT  0
 
 // defined:
 //  TO          output data type

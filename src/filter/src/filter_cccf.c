@@ -53,7 +53,7 @@
 #include "interp.c"
 #include "decim.c"
 //#include "qmfb.c"
-#include "resamp.c"
+//#include "resamp.c"
 #include "resamp2.c"
 #include "symsync.c"
 #include "symsync2.c"
