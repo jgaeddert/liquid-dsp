@@ -37,10 +37,7 @@ void resamp2_cccf_bench(
     unsigned int _h_len,
     resamp2_type _type)
 {
-    float h[_h_len];
-    unsigned int i;
-    for (i=0; i<_h_len; i++)
-        h[i] = 1.0f;
+    unsigned long int i;
 
     resamp2_cccf q = resamp2_cccf_create(_h_len);
 
