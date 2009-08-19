@@ -29,7 +29,7 @@
 
 #define DEBUG_SYMSYNC 1
 #define DEBUG_SYMSYNC_FILENAME  "symsync_internal_debug.m"
-#define DEBUG_BUFFER_LEN        (2048)
+#define DEBUG_BUFFER_LEN        (1024)
 
 #if DEBUG_SYMSYNC
 void SYMSYNC(_output_debug_file)(SYMSYNC() _q);
@@ -74,12 +74,19 @@ struct SYMSYNC(_s) {
     int b;
     float k_inv;
 
+    // control
+    float r;        // rate
+    float tau;
+    float del;
+
     enum {SHIFT,SKIP,SKIP_PRIME,STUFF} state;
 
 #if DEBUG_SYMSYNC
     FILE * fid;
     fwindow  debug_bsoft;
     uiwindow debug_b;
+    fwindow  debug_delta;
+    fwindow  debug_q_hat;
     uiwindow debug_state;
 #endif
 };
@@ -116,6 +123,8 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
 #if DEBUG_SYMSYNC
     q->debug_bsoft =  fwindow_create(DEBUG_BUFFER_LEN);
     q->debug_b     = uiwindow_create(DEBUG_BUFFER_LEN);
+    q->debug_delta =  fwindow_create(DEBUG_BUFFER_LEN);
+    q->debug_q_hat =  fwindow_create(DEBUG_BUFFER_LEN);
     q->debug_state = uiwindow_create(DEBUG_BUFFER_LEN);
 #endif
 
@@ -140,70 +149,20 @@ void SYMSYNC(_print)(SYMSYNC() _q)
     FIRPFB(_print)(_q->dmf);
 }
 
-void SYMSYNC(_execute)(SYMSYNC() _q, TI * _x, unsigned int _nx, TO * _y, unsigned int *_ny)
+void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny);
+
+void SYMSYNC(_execute)(SYMSYNC() _q,
+                       TI * _x,
+                       unsigned int _nx,
+                       TO * _y,
+                       unsigned int *_ny)
 {
-    //
-    TO mf;   // matched filter output
-    TO dmf;  // derivative matched filter output
-
-    unsigned int ny=0;
-
-    unsigned int i=0;
-    //for (i=0; i<_nx; i++) {
-    while (i < _nx) {
-        switch (_q->state) {
-        case SHIFT:
-            // 'shift' sample into state registers (normal operation)
-            FIRPFB(_push)(_q->mf, _x[i]);
-            FIRPFB(_push)(_q->dmf,_x[i]);
-            i++;
-            break;
-        case SKIP:
-            // 'skip' input sample (shift in two values)
-            // shift in first value
-            FIRPFB(_push)(_q->mf, _x[i]);
-            FIRPFB(_push)(_q->dmf,_x[i]);
-            i++;
-            _q->state = SKIP_PRIME;
-            //break;
-            continue;
-        case SKIP_PRIME:
-            // 'skip' input sample (shift in two values)
-            FIRPFB(_push)(_q->mf, _x[i]);
-            FIRPFB(_push)(_q->dmf,_x[i]);
-            i++;
-            _q->state = SHIFT;
-            break;
-        case STUFF:
-            // 'stuff' input sample (effectively repeat sample)
-            _q->state = SHIFT;
-            break;
-        default:
-            break;
-        }
-
-        // increment output counter
-        _q->v++;
-
-        // enable output
-        if (_q->v >= _q->k) {
-            _q->v -= _q->k;
-
-            // compute MF/dMF outputs
-            FIRPFB(_execute)(_q->mf,  _q->b, &mf);
-            FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
-            _y[ny++] = mf * _q->k_inv;
-
-            // run loop
-            //  1.  compute timing error signal
-            //  2.  filter error signal
-            //  3.  increment filter bank index
-            //  4.  quantize filter bank index
-            SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
-        }
+    unsigned int i, ny=0, k=0;
+    for (i=0; i<_nx; i++) {
+        SYMSYNC(_step)(_q, _x[i], &_y[ny], &k);
+        ny += k;
+        //printf("%u\n",k);
     }
-
-    // return
     *_ny = ny;
 }
 
@@ -229,6 +188,11 @@ void SYMSYNC(_clear)(SYMSYNC() _q)
     _q->b = 0;
     _q->state = SHIFT;
     _q->v = 0;
+
+    _q->tau = 0.0f;
+    _q->q_hat   = 0.0f;
+    _q->q_prime = 0.0f;
+    _q->del = (float)(_q->k);
 }
 
 void SYMSYNC(_estimate_timing)(SYMSYNC() _q, TI * _v, unsigned int _n)
@@ -239,14 +203,28 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
 {
     //  1.  compute timing error signal, clipping large levels
     _q->q = -( crealf(mf)*crealf(dmf) + cimagf(mf)*cimagf(dmf) )/2;
+#if 0
     if      (_q->q >  1.0f) _q->q =  1.0f;
     else if (_q->q < -1.0f) _q->q = -1.0f;
+#else
+    _q->q = tanhf(_q->q);
+#endif
 
     //  2.  filter error signal: retain large percent (alpha) of
     //      old estimate and small percent (beta) of new estimate
+    /*
     _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
     _q->q_prime = _q->q_hat;
 
+    _q->del -= _q->q_hat;
+    */
+
+    _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
+    _q->q_prime = _q->q_hat;
+    _q->del = (float)(_q->k) + _q->q_hat;
+    printf("del : %12.8f, q_hat : %12.8f\n", _q->del, _q->q_hat);
+
+#if 0
     //  3.  increment filter bank index (accumulator)
     _q->b_soft -= (_q->q_hat)*(_q->num_filters);
     _q->b = (int) roundf(_q->b_soft);
@@ -277,12 +255,8 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
     }
     // assert(_q->b >= 0);
     // assert(_q->b < _q->num_filters);
-
-#if DEBUG_SYMSYNC
-    fwindow_push(_q->debug_bsoft,  _q->b_soft);
-    uiwindow_push(_q->debug_b,     _q->b);
-    uiwindow_push(_q->debug_state, _q->state);
 #endif
+
 }
 
 //
@@ -322,6 +296,21 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
         fprintf(fid,"b(%4u) = %4u;\n", i+1, rui[i]);
     fprintf(fid,"\n\n");
 
+    // print delta buffer (timing frequency)
+    fprintf(fid,"delta = zeros(1,n);\n");
+    fwindow_read(_q->debug_delta, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"delta(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+    // print filtered error signal
+    fprintf(fid,"q_hat = zeros(1,n);\n");
+    fwindow_read(_q->debug_q_hat, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"q_hat(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+
     // print state buffer
     fprintf(fid,"state = zeros(1,n);\n");
     uiwindow_read(_q->debug_state, &rui);
@@ -350,4 +339,48 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
     printf("symsync: internal results written to %s.\n", DEBUG_SYMSYNC_FILENAME);
 }
 #endif
+
+void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
+{
+    FIRPFB(_push)(_q->mf,  _x);
+    FIRPFB(_push)(_q->dmf, _x);
+
+    TO mf;
+    TO dmf;
+
+    unsigned int n = 0;
+
+    while (_q->b < _q->num_filters) {
+#if DEBUG_SYMSYNC
+        fwindow_push(_q->debug_bsoft,  _q->b_soft);
+        uiwindow_push(_q->debug_b,     _q->b);
+        fwindow_push(_q->debug_delta,  _q->del);
+        fwindow_push(_q->debug_q_hat,  _q->q_hat);
+        uiwindow_push(_q->debug_state, _q->state);
+       // printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->b_soft);
+#endif
+        // compute filterbank outputs
+        FIRPFB(_execute)(_q->mf,  _q->b, &mf);
+        FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
+        mf *= _q->k_inv;
+
+        // store output
+        _y[n] = mf;
+        printf("mf : %12.8f + j*%12.8f\n", crealf(mf), cimagf(mf));
+
+        // apply loop filter
+        SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
+
+        _q->tau     += _q->del;
+        _q->b_soft  =  _q->tau * (float)(_q->num_filters);
+        _q->b       =  (int)roundf(_q->b_soft);
+
+        n++;
+    }
+
+    _q->tau     -= 1.0f;
+    _q->b_soft  -= (float)(_q->num_filters);
+    _q->b       -= _q->num_filters;
+    *_ny = n;
+}
 

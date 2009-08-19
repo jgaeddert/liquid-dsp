@@ -19,9 +19,9 @@ int main() {
     unsigned int num_filters=16;
     unsigned int num_symbols=1000;
 
-    float bt=0.01f;     // loop filter bandwidth
-    float dt=0.3f;      // fractional sample offset
-    unsigned int ds=1;  // additional symbol delay
+    float bt=0.02f;     // loop filter bandwidth
+    float dt=0.1f;      // fractional sample offset
+    unsigned int ds=0;  // additional symbol delay
     
     // use random data or 101010 phasing pattern
     bool random_data=true;
@@ -107,8 +107,10 @@ int main() {
     }
 
     printf("z(t) :\n");
-    for (i=0; i<num_symbols_sync; i++) {
+    for (i=num_symbols_sync-10; i<num_symbols_sync; i++)
         printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
+    for (i=0; i<num_symbols_sync; i++) {
+        //printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
 #ifdef DEBUG
         fprintf(fid,"z(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(z[i]), cimagf(z[i]));
 #endif
