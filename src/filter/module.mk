@@ -34,6 +34,7 @@ local_s_files	:= 			\
 	fir_group_delay.c		\
 	firdes.c			\
 	rcos.c				\
+	rkaiser.c			\
 	rrcos.c				\
 	lf2.c
 #	nyquist.c
