@@ -27,7 +27,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define DEBUG_SYMSYNC 1
+#define DEBUG_SYMSYNC           1
+#define DEBUG_SYMSYNC_PRINT     0
 #define DEBUG_SYMSYNC_FILENAME  "symsync_internal_debug.m"
 #define DEBUG_BUFFER_LEN        (1024)
 
@@ -222,7 +223,9 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
     _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
     _q->q_prime = _q->q_hat;
     _q->del = (float)(_q->k) + _q->q_hat;
+#if DEBUG_SYMSYNC_PRINT
     printf("del : %12.8f, q_hat : %12.8f\n", _q->del, _q->q_hat);
+#endif
 
 #if 0
     //  3.  increment filter bank index (accumulator)
@@ -366,7 +369,9 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
 
         // store output
         _y[n] = mf;
+#if DEBUG_SYMSYNC_PRINT
         printf("mf : %12.8f + j*%12.8f\n", crealf(mf), cimagf(mf));
+#endif
 
         // apply loop filter
         SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
