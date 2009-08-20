@@ -203,7 +203,7 @@ void SYMSYNC(_estimate_timing)(SYMSYNC() _q, TI * _v, unsigned int _n)
 void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
 {
     //  1.  compute timing error signal, clipping large levels
-    _q->q = -( crealf(mf)*crealf(dmf) + cimagf(mf)*cimagf(dmf) )/2;
+    _q->q = ( crealf(mf)*crealf(dmf) + cimagf(mf)*cimagf(dmf) )/2;
 #if 0
     if      (_q->q >  1.0f) _q->q =  1.0f;
     else if (_q->q < -1.0f) _q->q = -1.0f;
