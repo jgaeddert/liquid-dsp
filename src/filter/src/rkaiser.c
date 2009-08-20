@@ -28,6 +28,10 @@
 
 #include "liquid.internal.h"
 
+#if HAVE_FFTW3_H
+#   include <fftw3.h>
+#endif
+
 void design_rkaiser_filter(
   unsigned int _k,
   unsigned int _m,
