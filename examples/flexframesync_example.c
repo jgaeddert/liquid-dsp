@@ -69,7 +69,7 @@ int main() {
     float nstd  = powf(10.0f, n0/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+n0)/10.0f); // channel gain
     float mu    = 0.3f; // fractional sample delay
-    fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,60.0f);
+    fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,0.9f,60.0f);
     fir_farrow_crcf_set_delay(delay_filter,mu);
 
     unsigned int i;
