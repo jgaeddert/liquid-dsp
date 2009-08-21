@@ -345,6 +345,7 @@ void fec_conv_init_v29p78(fec _q);
 // MODULE : filter
 //
 
+// fir_farrow
 #define LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW,TO,TC,TI)  \
 void FIR_FARROW(_genpoly)(FIR_FARROW() _q);
 
@@ -352,6 +353,7 @@ LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW_MANGLE_RRRF, float, float, floa
 LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 
+// qmfb
 #define LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB,TO,TC,TI)          \
 void    QMFB(_analysis_execute)(QMFB() _q,                      \
                                 TI   _x0,                       \
@@ -368,6 +370,7 @@ LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_RRRF, float, float, float)
 LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 
+// itqmfb
 #define LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB,TO,TC,TI)      \
 void    ITQMFB(_analysis_execute)(ITQMFB() _q,                  \
                                   TO * _x,                      \
@@ -378,6 +381,20 @@ void    ITQMFB(_synthesis_execute)(ITQMFB() _q,                 \
 
 LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_RRRF, float, float, float)
 LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+
+// symsync
+#define LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC,TO,TC,TI)    \
+void SYMSYNC(_step)(SYMSYNC() _q,                               \
+                    TI _x,                                      \
+                    TO *_y,                                     \
+                    unsigned int *_ny);                         \
+void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,              \
+                                     TO _mf,                    \
+                                     TO _dmf);
+
+LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_RRRF, float, float, float)
+LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+
 
 
 //
