@@ -39,7 +39,7 @@
 #define FRAMEGEN64_PHASING_0    ( 1.0f) //( 0.70711f + 0.70711f*_Complex_I)
 #define FRAMEGEN64_PHASING_1    (-1.0f) //(-0.70711f - 0.70711f*_Complex_I)
 
-//#define DEBUG
+#define DEBUG_FRAMEGEN64    1
 
 // internal
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
@@ -144,7 +144,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     memcpy(_fg->header, _header, 24);
 
     memcpy(_fg->payload, _payload, 64);
-#ifdef DEBUG
+#if DEBUG_FRAMEGEN64
     printf("payload (tx):\n");
     for (i=0; i<64; i++) {
         printf("%2x ", _fg->payload[i]);
@@ -160,6 +160,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     _fg->header[25] = (payload_key >> 16) & 0xff;
     _fg->header[26] = (payload_key >>  8) & 0xff;
     _fg->header[27] = (payload_key      ) & 0xff;
+    printf("tx: payload_key: 0x%8x\n", payload_key);
 
     // scramble payload data
     scramble_data(_fg->payload, 64);
@@ -177,8 +178,9 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     _fg->header[29] = (header_key >> 16) & 0xff;
     _fg->header[30] = (header_key >>  8) & 0xff;
     _fg->header[31] = (header_key      ) & 0xff;
+    printf("tx: header_key:  0x%8x\n", header_key);
 
-#ifdef DEBUG
+#if DEBUG_FRAMEGEN64
     printf("header (tx):\n");
     for (i=0; i<32; i++) {
         printf("%2x ", _fg->header[i]);
@@ -193,7 +195,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     // encode header
     fec_encode(_fg->enc, 32, _fg->header, _fg->header_enc);
 
-#ifdef DEBUG
+#if DEBUG_FRAMEGEN64
     printf("header ENCODED (tx):\n");
     for (i=0; i<64; i++) {
         printf("%2x ", _fg->header_enc[i]);
