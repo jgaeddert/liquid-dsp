@@ -160,7 +160,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     _fg->header[25] = (payload_key >> 16) & 0xff;
     _fg->header[26] = (payload_key >>  8) & 0xff;
     _fg->header[27] = (payload_key      ) & 0xff;
-    printf("tx: payload_key: 0x%8x\n", payload_key);
+    //printf("tx: payload_key: 0x%8x\n", payload_key);
 
     // scramble payload data
     scramble_data(_fg->payload, 64);
@@ -178,7 +178,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     _fg->header[29] = (header_key >> 16) & 0xff;
     _fg->header[30] = (header_key >>  8) & 0xff;
     _fg->header[31] = (header_key      ) & 0xff;
-    printf("tx: header_key:  0x%8x\n", header_key);
+    //printf("tx: header_key:  0x%8x\n", header_key);
 
 #if DEBUG_FRAMEGEN64
     printf("header (tx):\n");

@@ -435,7 +435,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
                 if (fabsf(rxy) > 0.7f) {
-                    printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
+                    //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
@@ -559,7 +559,7 @@ void framesync64_decode_header(framesync64 _fs)
     header_key |= ( _fs->header[30] <<  8 );
     header_key |= ( _fs->header[31]       );
     _fs->header_key = header_key;
-    printf("rx: header_key:  0x%8x\n", header_key);
+    //printf("rx: header_key:  0x%8x\n", header_key);
 
     // strip off crc32
     unsigned int payload_key=0;
@@ -568,7 +568,7 @@ void framesync64_decode_header(framesync64 _fs)
     payload_key |= ( _fs->header[26] <<  8 );
     payload_key |= ( _fs->header[27]       );
     _fs->payload_key = payload_key;
-    printf("rx: payload_key: 0x%8x\n", payload_key);
+    //printf("rx: payload_key: 0x%8x\n", payload_key);
 
     // validate crc
     _fs->header_valid = crc32_validate_message(_fs->header,28,_fs->header_key);
