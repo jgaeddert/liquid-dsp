@@ -27,7 +27,7 @@ int main() {
 
     // channel
     float phi=0.3f;
-    float dphi=0.0f;
+    float dphi=0.05f;
     float gamma=0.1f;  // channel gain
     nco nco_channel = nco_create();
     nco_set_phase(nco_channel, phi);

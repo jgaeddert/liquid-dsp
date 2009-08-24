@@ -32,13 +32,13 @@
 #include "liquid.h"
 
 #define FRAMESYNC64_SYM_BW_0        (0.08f)
-#define FRAMESYNC64_SYM_BW_1        (0.01f)
+#define FRAMESYNC64_SYM_BW_1        (0.05f)
 
 #define FRAMESYNC64_AGC_BW_0        (3e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-5f)
 
 #define FRAMESYNC64_PLL_BW_0        (2e-3f)
-#define FRAMESYNC64_PLL_BW_1        (1e-3f)
+#define FRAMESYNC64_PLL_BW_1        (1e-4f)
 
 #define FRAMESYNC64_SQUELCH_THRESH  (-15.0f)
 #define FRAMESYNC64_SQUELCH_TIMEOUT (32)
@@ -286,7 +286,7 @@ void framesync64_destroy(framesync64 _fs)
         fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(framesyms,'x','MarkerSize',3)\n");
+    fprintf(fid,"plot(framesyms,'x','MarkerSize',1)\n");
     fprintf(fid,"xlabel('I');\n");
     fprintf(fid,"ylabel('Q');\n");
     fprintf(fid,"title('Frame Symbols');\n");
@@ -434,22 +434,15 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 #if DEBUG_FRAMESYNC64
                 cfwindow_push(_fs->debug_rxy, rxy);
 #endif
-#if DEBUG_FRAMESYNC64
-                cfwindow_push(_fs->debug_framesyms, nco_rx_out);
-#endif
                 if (fabsf(rxy) > 0.7f) {
-                    // printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
+                    printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
-                    pll_reset(_fs->pll_rx);
                     framesync64_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
                     _fs->state = FRAMESYNC64_STATE_RXHEADER;
                 }
                 break;
             case FRAMESYNC64_STATE_RXHEADER:
-#if DEBUG_FRAMESYNC64
-                cfwindow_push(_fs->debug_framesyms, nco_rx_out);
-#endif
                 _fs->header_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
                 if (_fs->num_symbols_collected==256) {
@@ -460,7 +453,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 break;
             case FRAMESYNC64_STATE_RXPAYLOAD:
 #if DEBUG_FRAMESYNC64
-                //cfwindow_push(_fs->debug_framesyms, nco_rx_out);
+                cfwindow_push(_fs->debug_framesyms, nco_rx_out);
 #endif
                 _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
