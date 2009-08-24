@@ -39,7 +39,7 @@
 #define FRAMEGEN64_PHASING_0    ( 1.0f) //( 0.70711f + 0.70711f*_Complex_I)
 #define FRAMEGEN64_PHASING_1    (-1.0f) //(-0.70711f - 0.70711f*_Complex_I)
 
-#define DEBUG_FRAMEGEN64    1
+#define DEBUG_FRAMEGEN64    0
 
 // internal
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);

@@ -46,7 +46,7 @@
 #define FRAME64_PN_LEN              (64)
 
 #define DEBUG_FRAMESYNC64           1
-#define DEBUG_FRAMESYNC64_PRINT     1
+#define DEBUG_FRAMESYNC64_PRINT     0
 #define DEBUG_FILENAME              "framesync64_internal_debug.m"
 #define DEBUG_BUFFER_LEN            (4096)
 
