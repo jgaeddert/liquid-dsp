@@ -46,8 +46,8 @@ static flexframesyncprops_s flexframesyncprops_default = {
     3e-3f,      // agc_bw0
     1e-5f,      // agc_bw1
     // symbol timing recovery
-    0.05f,      // sym_bw0
-    0.01f,      // sym_bw1
+    0.08f,      // sym_bw0
+    0.05f,      // sym_bw1
     // phase-locked loop
     2e-3f,      // pll_bw0
     1e-3f,      // pll_bw1
@@ -134,6 +134,7 @@ struct flexframesync_s {
     cfwindow debug_x;
     cfwindow debug_rxy;
     cfwindow debug_nco_rx_out;
+    cfwindow debug_framesyms;
     fwindow  debug_nco_phase;
     fwindow  debug_nco_freq;
 #endif
@@ -230,6 +231,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->debug_x         = cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
     fs->debug_rxy       = cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
     fs->debug_nco_rx_out= cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_framesyms = cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
     fs->debug_nco_phase=   fwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
     fs->debug_nco_freq =   fwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
 #endif
@@ -322,7 +324,20 @@ void flexframesync_destroy(flexframesync _fs)
     fprintf(fid,"xlabel('I');\n");
     fprintf(fid,"ylabel('Q');\n");
     fprintf(fid,"axis square;\n");
-    fprintf(fid,"axis([-1.2 1.2 -1.2 1.2]);\n");
+    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
+
+    // write frame symbols
+    fprintf(fid,"framesyms = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    cfwindow_read(_fs->debug_framesyms, &rc);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(framesyms,'x','MarkerSize',1)\n");
+    fprintf(fid,"xlabel('I');\n");
+    fprintf(fid,"ylabel('Q');\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
 
     // write nco_phase
     fprintf(fid,"nco_phase = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
@@ -356,6 +371,7 @@ void flexframesync_destroy(flexframesync _fs)
     cfwindow_destroy(_fs->debug_rxy);
     cfwindow_destroy(_fs->debug_x);
     cfwindow_destroy(_fs->debug_nco_rx_out);
+    cfwindow_destroy(_fs->debug_framesyms);
 #endif
     free(_fs);
 }
@@ -543,6 +559,10 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 }
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
+#ifdef DEBUG_FLEXFRAMESYNC
+            cfwindow_push(_fs->debug_framesyms, nco_rx_out);
+#endif
+            //if (_fs->rssi < _fs->squelch_threshold)
                 _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
                 // TODO: fix hard-coded value
