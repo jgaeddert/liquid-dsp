@@ -10,6 +10,7 @@
 #define OUTPUT_FILENAME "autocorr_cccf_example.m"
 
 int main() {
+    srand(time(NULL));
     unsigned int n=32;  // number of training symbols
     float SNRdB=16.0f;  // signal-to-noise ratio (dB)
 
