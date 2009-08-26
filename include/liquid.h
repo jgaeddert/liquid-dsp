@@ -673,6 +673,32 @@ void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
 
 
 //
+// auto-correlator (delay cross-correlation)
+//
+
+#define AUTOCORR_MANGLE_CCCF(name)  LIQUID_CONCAT(autocorr_cccf,name)
+
+// Macro:
+//   AUTOCORR   : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_AUTOCORR_DEFINE_API(AUTOCORR,TO,TC,TI)           \
+typedef struct AUTOCORR(_s) * AUTOCORR();                       \
+AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,         \
+                             unsigned int _delay);              \
+void AUTOCORR(_destroy)(AUTOCORR() _f);                         \
+void AUTOCORR(_clear)(AUTOCORR() _f);                           \
+void AUTOCORR(_print)(AUTOCORR() _f);                           \
+void AUTOCORR(_push)(AUTOCORR() _f, TI _x);                     \
+void AUTOCORR(_execute)(AUTOCORR() _f, TO *_rxx);
+
+LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
+
+//
 // Finite impulse response filter
 //
 

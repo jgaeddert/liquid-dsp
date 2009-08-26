@@ -25,6 +25,7 @@
 #include "liquid.internal.h"
 
 // 
+#define AUTOCORR(name)      LIQUID_CONCAT(autocorr_crcf,name)
 #define FIR_FARROW(name)    LIQUID_CONCAT(fir_farrow_crcf,name)
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_crcf,name)
 #define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_crcf,name)
@@ -49,6 +50,7 @@
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
 
 // source files
+//#include "autocorr.c"
 #include "fir_farrow.c"
 #include "fir_filter.c"
 #include "iir_filter.c"
