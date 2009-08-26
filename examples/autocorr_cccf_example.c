@@ -11,7 +11,7 @@
 
 int main() {
     unsigned int n=32;  // number of training symbols
-    //float SNRdB = 10.f; //
+    float SNRdB=16.0f;  // signal-to-noise ratio (dB)
 
     // objects
     unsigned int num_samples = 3*n;
@@ -37,8 +37,9 @@ int main() {
         x[i] = (i<2*n) ? s[i%n] : 0.0f;
 
     // add noise
+    float nstd = powf(10.0f, -SNRdB/20.0f);
     for (i=0; i<num_samples; i++)
-        cawgn(&x[i],1.0f);
+        cawgn(&x[i],nstd);
         
     // write signal to output file
     for (i=0; i<num_samples; i++)
@@ -55,12 +56,17 @@ int main() {
 
     fprintf(fid, "\n\n");
 
-    fprintf(fid, "t=1:%u;\n",num_samples);
-    fprintf(fid, "figure;\n");
-    fprintf(fid, "plot(t,real(x),t,imag(x));\n");
+    fprintf(fid,"t=1:%u;\n",num_samples);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,real(x),t,imag(x));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('received signal');\n");
+    fprintf(fid,"legend('real','imag',0);\n");
 
-    fprintf(fid, "figure;\n");
-    fprintf(fid, "plot(t,abs(rxx));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,abs(rxx));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('auto-correlation magnitude');\n");
 
     fclose(fid);
 
