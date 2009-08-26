@@ -1,5 +1,7 @@
 //
+// autocorr_cccf_example.c
 //
+// Test auto-correlation functionality
 //
 
 #include <stdio.h>
@@ -10,7 +12,7 @@
 #define OUTPUT_FILENAME "autocorr_cccf_example.m"
 
 int main() {
-    srand(time(NULL));
+    // options
     unsigned int n=32;  // number of training symbols
     float SNRdB=16.0f;  // signal-to-noise ratio (dB)
 
@@ -20,14 +22,16 @@ int main() {
     modem mod = modem_create(MOD_QPSK,2);
 
     FILE* fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid, "%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid, "clear all;\nclose all;\n\n");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+    fprintf(fid,"num_samples = %u;\n", num_samples);
 
     unsigned int i;
 
     // buffers
-    float complex s[n]; // training sequence
-    float complex x[num_samples];
+    float complex s[n];             // training sequence
+    float complex x[num_samples];   // received signal
 
     // generate random training sequence
     for (i=0; i<n; i++)
@@ -55,22 +59,22 @@ int main() {
         fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rxx), cimagf(rxx));
     }
 
-    fprintf(fid, "\n\n");
-
-    fprintf(fid,"t=1:%u;\n",num_samples);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"t=1:num_samples;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,real(x),t,imag(x));\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('received signal');\n");
     fprintf(fid,"legend('real','imag',0);\n");
 
+    fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,abs(rxx));\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('auto-correlation magnitude');\n");
 
+    fprintf(fid,"\n\n");
     fclose(fid);
-
     printf("data written to %s\n", OUTPUT_FILENAME);
 
     // clean it up
