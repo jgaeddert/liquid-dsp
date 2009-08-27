@@ -1593,6 +1593,32 @@ void ofdmframesync_execute(ofdmframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
+
+// ofdmframe64gen
+typedef struct ofdmframe64gen_s * ofdmframe64gen;
+ofdmframe64gen ofdmframe64gen_create();
+void ofdmframe64gen_destroy(ofdmframe64gen _q);
+void ofdmframe64gen_print(ofdmframe64gen _q);
+void ofdmframe64gen_writepreamble(ofdmframe64gen _q, liquid_float_complex *_y);
+void ofdmframe64gen_writeheader(ofdmframe64gen _q, liquid_float_complex *_y);
+void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
+                                liquid_float_complex *_x,
+                                liquid_float_complex *_y);
+
+// ofdmframe64sync
+typedef int (*ofdmframe64sync_callback)(liquid_float_complex * _y,
+                                        unsigned int _n,
+                                        void * _userdata);
+typedef struct ofdmframe64sync_s * ofdmframe64sync;
+ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
+                                       void * _userdata);
+void ofdmframe64sync_destroy(ofdmframe64sync _q);
+void ofdmframe64sync_print(ofdmframe64sync _q);
+void ofdmframe64sync_reset(ofdmframe64sync _q);
+void ofdmframe64sync_execute(ofdmframe64sync _q,
+                            liquid_float_complex * _x,
+                           unsigned int _n);
+
 // 
 // MODULE : nco (numerically-controlled oscillator)
 //
