@@ -48,6 +48,8 @@ struct ofdmframe64gen_s {
     float complex * St;     // short PLCP array pointer (time-domain)
     float complex * Lt;     // long PLCP array pointer (time-domain)
 
+    msequence ms_pilot;
+
 #if HAVE_FFTW3_H
     fftwf_plan fft;
 #else
@@ -78,6 +80,9 @@ ofdmframe64gen ofdmframe64gen_create()
     q->St = ofdmframe64_plcp_St;
     q->Lt = ofdmframe64_plcp_Lt;
 
+    // set pilot sequence
+    q->ms_pilot = msequence_create(8);
+
     return q;
 }
 
@@ -85,6 +90,7 @@ void ofdmframe64gen_destroy(ofdmframe64gen _q)
 {
     free(_q->x);
     free(_q->X);
+    msequence_destroy(_q->ms_pilot);
 
 #if HAVE_FFTW3_H
     fftwf_destroy_plan(_q->fft);
@@ -103,19 +109,20 @@ void ofdmframe64gen_print(ofdmframe64gen _q)
                     100.0f*(float)(_q->cp_len)/(float)(_q->num_subcarriers));
 }
 
-void ofdmframe64gen_clear(ofdmframe64gen _q)
+void ofdmframe64gen_reset(ofdmframe64gen _q)
 {
+    msequence_reset(_q->ms_pilot);
 }
 
 void ofdmframe64gen_writeshortsequence(ofdmframe64gen _q,
                                        float complex * _y)
 {
     // move cyclic prefix (double)
-    memmove(_y, _q->St+64-2*16, 2*16*sizeof(float complex));
+    memmove(_y+0,       _q->St+32,  32*sizeof(float complex));
 
     // move remainder of signal (twice)
-    memmove(_y+2*16,    _q->St, 64*sizeof(float complex));
-    memmove(_y+2*16+64, _q->St, 64*sizeof(float complex));
+    memmove(_y+32,      _q->St,     64*sizeof(float complex));
+    memmove(_y+32+64,   _q->St,     64*sizeof(float complex));
 }
 
 
@@ -123,11 +130,11 @@ void ofdmframe64gen_writelongsequence(ofdmframe64gen _q,
                                       float complex * _y)
 {
     // move cyclic prefix (double)
-    memmove(_y, _q->Lt+64-2*16, 2*16*sizeof(float complex));
+    memmove(_y+0,       _q->Lt+32,  32*sizeof(float complex));
 
     // move remainder of signal (twice)
-    memmove(_y+2*16,    _q->Lt, 64*sizeof(float complex));
-    memmove(_y+2*16+64, _q->Lt, 64*sizeof(float complex));
+    memmove(_y+32,      _q->Lt,     64*sizeof(float complex));
+    memmove(_y+32+64,   _q->Lt,     64*sizeof(float complex));
 }
 
 void ofdmframe64gen_writeheader(ofdmframe64gen _q,
@@ -139,6 +146,8 @@ void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
                                 float complex * _x,
                                 float complex * _y)
 {
+    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
+
     // move frequency data to internal buffer
     unsigned int i, j=0;
     for (i=0; i<64; i++) {
@@ -148,7 +157,7 @@ void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
         } else if (i==9 || i==25 || i==39 || i==55) {
             // pilot subcarrier
             // TODO : use p/n sequence for pilot
-            _q->X[i] = 1.0f * _q->zeta;
+            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->zeta;
         } else {
             // data subcarrier
             _q->X[i] = _x[j++] * _q->zeta;

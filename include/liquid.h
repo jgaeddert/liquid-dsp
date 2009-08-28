@@ -1603,6 +1603,7 @@ typedef struct ofdmframe64gen_s * ofdmframe64gen;
 ofdmframe64gen ofdmframe64gen_create();
 void ofdmframe64gen_destroy(ofdmframe64gen _q);
 void ofdmframe64gen_print(ofdmframe64gen _q);
+void ofdmframe64gen_reset(ofdmframe64gen _q);
 // short PLCP training sequence (160 samples)
 void ofdmframe64gen_writeshortsequence(ofdmframe64gen _q,
                                        liquid_float_complex *_y);

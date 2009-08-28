@@ -64,6 +64,8 @@ struct ofdmframe64sync_s {
     float nu_hat;       // carrier frequency offset estimation
     float dt_hat;       // symbol timing offset estimation
 
+    msequence ms_pilot;
+
 #if HAVE_FFTW3_H
     fftwf_plan fft;
 #else
@@ -111,6 +113,9 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 
     q->cp_detected = false;
 
+    // pilot sequence generator
+    q->ms_pilot = msequence_create(8);
+
     q->callback = _callback;
     q->userdata = _userdata;
 
@@ -152,6 +157,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     fft_destroy_plan(_q->fft);
 #endif
 
+    msequence_destroy(_q->ms_pilot);
     cfwindow_destroy(_q->wcp);
     cfwindow_destroy(_q->wdelay);
     free(_q);
@@ -167,6 +173,9 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     _q->cp_detected     = false;
     _q->cp_excess_delay = 0;
     _q->cp_timer        = _q->num_subcarriers - _q->cp_len;
+
+    // reset pilot sequence generator
+    msequence_reset(_q->ms_pilot);
 }
 
 void ofdmframe64sync_execute(ofdmframe64sync _q,
