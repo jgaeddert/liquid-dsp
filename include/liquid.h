@@ -1599,8 +1599,14 @@ typedef struct ofdmframe64gen_s * ofdmframe64gen;
 ofdmframe64gen ofdmframe64gen_create();
 void ofdmframe64gen_destroy(ofdmframe64gen _q);
 void ofdmframe64gen_print(ofdmframe64gen _q);
-void ofdmframe64gen_writepreamble(ofdmframe64gen _q, liquid_float_complex *_y);
-void ofdmframe64gen_writeheader(ofdmframe64gen _q, liquid_float_complex *_y);
+// short PLCP training sequence (160 samples)
+void ofdmframe64gen_writeshortsequence(ofdmframe64gen _q,
+                                       liquid_float_complex *_y);
+// long PLCP training sequence (160 samples)
+void ofdmframe64gen_writelongsequence(ofdmframe64gen _q,
+                                      liquid_float_complex *_y);
+void ofdmframe64gen_writeheader(ofdmframe64gen _q,
+                                liquid_float_complex *_y);
 void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
                                 liquid_float_complex *_x,
                                 liquid_float_complex *_y);

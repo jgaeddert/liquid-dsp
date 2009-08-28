@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <assert.h>
 
 #include "liquid.internal.h"
@@ -34,6 +35,52 @@
 #endif
 
 #define DEBUG_OFDMFRAME64GEN                1
+
+const float complex plcp_short[64] = {
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+     -1.4720+ -1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+     -1.4720+ -1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      1.4720+  1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      1.4720+  1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      1.4720+  1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      1.4720+  1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      1.4720+  1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+     -1.4720+ -1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      1.4720+  1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+     -1.4720+ -1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+     -1.4720+ -1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      1.4720+  1.4720*_Complex_I,   0.0000+  0.0000*_Complex_I, 
+      0.0000+  0.0000*_Complex_I,   0.0000+  0.0000*_Complex_I
+};
+
+const float complex plcp_long[64] = {
+     0.0,  1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0, 
+    -1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0,  1.0, 
+     1.0, -1.0, -1.0,  1.0, -1.0,  1.0, -1.0,  1.0, 
+     1.0,  1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 
+     0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0,  1.0, 
+    -1.0, -1.0,  1.0,  1.0, -1.0,  1.0, -1.0,  1.0, 
+     1.0,  1.0,  1.0,  1.0,  1.0, -1.0, -1.0,  1.0, 
+     1.0, -1.0,  1.0, -1.0,  1.0,  1.0,  1.0,  1.0
+};
 
 struct ofdmframe64gen_s {
     unsigned int num_subcarriers;
@@ -101,10 +148,45 @@ void ofdmframe64gen_clear(ofdmframe64gen _q)
 {
 }
 
-void ofdmframe64gen_writepreamble(ofdmframe64gen _q,
-                                  float complex * _y)
+void ofdmframe64gen_writeshortsequence(ofdmframe64gen _q,
+                                       float complex * _y)
 {
+    //
+    memmove(_q->X, plcp_short, 64*sizeof(float complex));
 
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+
+    // move cyclic prefix (double)
+    memmove(_y, _q->x+64-2*16, 2*16*sizeof(float complex));
+
+    // move remainder of signal (twice)
+    memmove(_y+2*16,    _q->x, 64*sizeof(float complex));
+    memmove(_y+2*16+64, _q->x, 64*sizeof(float complex));
+}
+
+
+void ofdmframe64gen_writelongsequence(ofdmframe64gen _q,
+                                      float complex * _y)
+{
+    //
+    memmove(_q->X, plcp_long, 64*sizeof(float complex));
+
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+
+    // move cyclic prefix (double)
+    memmove(_y, _q->x+64-2*16, 2*16*sizeof(float complex));
+
+    // move remainder of signal (twice)
+    memmove(_y+2*16,    _q->x, 64*sizeof(float complex));
+    memmove(_y+2*16+64, _q->x, 64*sizeof(float complex));
 }
 
 void ofdmframe64gen_writeheader(ofdmframe64gen _q,
@@ -125,11 +207,13 @@ void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
         } else if (i==9 || i==25 || i==39 || i==55) {
             // pilot subcarrier
             // TODO : use p/n sequence for pilot
-            _q->X[i] = 1.0f * _q->zeta;
+            _q->X[i] = 1.0f;// * _q->zeta;
         } else {
             // data subcarrier
-            _q->X[i] = _x[j++] * _q->zeta;
+            _q->X[i] = _x[j++];// * _q->zeta;
         }
+
+        //printf("X[%3u] = %12.8f + j*%12.8f;\n",i+1,crealf(_q->X[i]),cimagf(_q->X[i]));
     }
     assert(j==48);
 
