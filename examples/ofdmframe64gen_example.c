@@ -29,7 +29,9 @@ int main() {
     modem mod = modem_create(ms,bps);
 
     // create auto-correlator
-    autocorr_cccf ac = autocorr_cccf_create(16,64);
+    autocorr_cccf ac0 = autocorr_cccf_create(64,16);
+    autocorr_cccf ac1 = autocorr_cccf_create(64,64);
+    autocorr_cccf ac2 = autocorr_cccf_create(16,64);
 
     // create cross-correlator
     float complex h[64];
@@ -44,18 +46,24 @@ int main() {
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"y   = [];\n");
-    fprintf(fid,"ryy = [];\n");
+    fprintf(fid,"r0  = [];\n");
+    fprintf(fid,"r1  = [];\n");
+    fprintf(fid,"r2  = [];\n");
 
     unsigned int n=0;
-    float complex r, rxy;
+    float complex r0, r1, r2, rxy;
 
     // write short sequence
     ofdmframe64gen_writeshortsequence(fg,y);
     for (i=0; i<160; i++) {
-        autocorr_cccf_push(ac,y[i]);
-        autocorr_cccf_execute(ac,&r);
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"r(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r),    cimagf(r));
+        autocorr_cccf_push(ac0,y[i]);   autocorr_cccf_execute(ac0,&r0);
+        autocorr_cccf_push(ac1,y[i]);   autocorr_cccf_execute(ac1,&r1);
+        autocorr_cccf_push(ac2,y[i]);   autocorr_cccf_execute(ac1,&r2);
+        
+        fprintf(fid,"y(%3u)  = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
+        fprintf(fid,"r0(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r0),   cimagf(r0));
+        fprintf(fid,"r1(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r1),   cimagf(r1));
+        fprintf(fid,"r2(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r2),   cimagf(r2));
         fir_filter_cccf_push(xcorr,y[i]);
         fir_filter_cccf_execute(xcorr,&rxy);
         fprintf(fid,"rxy(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(rxy), cimagf(rxy));
@@ -65,10 +73,14 @@ int main() {
     // write long sequence
     ofdmframe64gen_writelongsequence(fg,y);
     for (i=0; i<160; i++) {
-        autocorr_cccf_push(ac,y[i]);
-        autocorr_cccf_execute(ac,&r);
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"r(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r),    cimagf(r));
+        autocorr_cccf_push(ac0,y[i]);   autocorr_cccf_execute(ac0,&r0);
+        autocorr_cccf_push(ac1,y[i]);   autocorr_cccf_execute(ac1,&r1);
+        autocorr_cccf_push(ac2,y[i]);   autocorr_cccf_execute(ac2,&r2);
+        
+        fprintf(fid,"y(%3u)  = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
+        fprintf(fid,"r0(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r0),   cimagf(r0));
+        fprintf(fid,"r1(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r1),   cimagf(r1));
+        fprintf(fid,"r2(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r2),   cimagf(r2));
         fir_filter_cccf_push(xcorr,y[i]);
         fir_filter_cccf_execute(xcorr,&rxy);
         fprintf(fid,"rxy(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(rxy), cimagf(rxy));
@@ -83,10 +95,14 @@ int main() {
     }
     ofdmframe64gen_writesymbol(fg,x,y);
     for (i=0; i<80; i++) {
-        autocorr_cccf_push(ac,y[i]);
-        autocorr_cccf_execute(ac,&r);
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"r(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r),    cimagf(r));
+        autocorr_cccf_push(ac0,y[i]);   autocorr_cccf_execute(ac0,&r0);
+        autocorr_cccf_push(ac1,y[i]);   autocorr_cccf_execute(ac1,&r1);
+        autocorr_cccf_push(ac2,y[i]);   autocorr_cccf_execute(ac2,&r2);
+        
+        fprintf(fid,"y(%3u)  = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
+        fprintf(fid,"r0(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r0),   cimagf(r0));
+        fprintf(fid,"r1(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r1),   cimagf(r1));
+        fprintf(fid,"r2(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r2),   cimagf(r2));
         fir_filter_cccf_push(xcorr,y[i]);
         fir_filter_cccf_execute(xcorr,&rxy);
         fprintf(fid,"rxy(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(rxy), cimagf(rxy));
@@ -105,8 +121,8 @@ int main() {
 
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"t=0:(length(r)-1);\n");
-    fprintf(fid,"plot(t,abs(r),t,abs(rxy));\n");
+    fprintf(fid,"t=0:(length(r0)-1);\n");
+    fprintf(fid,"plot(t,abs(r0),t,abs(r1),t,abs(r2),t,abs(rxy));\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
@@ -114,7 +130,9 @@ int main() {
     // destroy objects
     ofdmframe64gen_destroy(fg);
     modem_destroy(mod);
-    autocorr_cccf_destroy(ac);
+    autocorr_cccf_destroy(ac0);
+    autocorr_cccf_destroy(ac1);
+    autocorr_cccf_destroy(ac2);
     fir_filter_cccf_destroy(xcorr);
 
     printf("done.\n");
