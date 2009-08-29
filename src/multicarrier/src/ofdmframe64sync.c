@@ -49,16 +49,9 @@ struct ofdmframe64sync_s {
     float complex * X; // freq-domain buffer
 
     // delay correlator
-    cfwindow wcp;
-    cfwindow wdelay;
+    autocorr_cccf delay_correlator;
     float complex rxy;
     float complex * rxy_buffer;
-    float rxy_magnitude;
-    float rxy_threshold;
-    bool  cp_detected;
-    unsigned int cp_excess_delay;
-    unsigned int cp_timer;
-    unsigned int rxy_buffer_index;
 
     float zeta;         // scaling factor
     float nu_hat;       // carrier frequency offset estimation
@@ -98,20 +91,13 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 #endif
 
     // cyclic prefix correlation windows
-    q->wcp    = cfwindow_create(q->cp_len);
-    q->wdelay = cfwindow_create(q->cp_len + q->num_subcarriers);
+    q->delay_correlator = autocorr_cccf_create(64,64);
     q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
-    q->rxy_threshold = 0.75f*(float)(q->cp_len)*(q->zeta);
     q->rxy_buffer = (float complex*) malloc((q->cp_len)*sizeof(float complex));
     
-#if DEBUG_OFDMFRAME64SYNC_PRINT
-    printf("rxy threshold : %12.8f\n", q->rxy_threshold);
-#endif
 #if DEBUG_OFDMFRAME64SYNC
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
 #endif
-
-    q->cp_detected = false;
 
     // pilot sequence generator
     q->ms_pilot = msequence_create(8);
@@ -158,8 +144,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
 #endif
 
     msequence_destroy(_q->ms_pilot);
-    cfwindow_destroy(_q->wcp);
-    cfwindow_destroy(_q->wdelay);
+    autocorr_cccf_destroy(_q->delay_correlator);
     free(_q);
 }
 
@@ -170,10 +155,6 @@ void ofdmframe64sync_print(ofdmframe64sync _q)
 
 void ofdmframe64sync_reset(ofdmframe64sync _q)
 {
-    _q->cp_detected     = false;
-    _q->cp_excess_delay = 0;
-    _q->cp_timer        = _q->num_subcarriers - _q->cp_len;
-
     // reset pilot sequence generator
     msequence_reset(_q->ms_pilot);
 }
@@ -182,88 +163,11 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
                            float complex * _x,
                            unsigned int _n)
 {
-
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        cfwindow_push(_q->wcp,   conj(_x[i]));
-        cfwindow_push(_q->wdelay,     _x[i]*_q->zeta);
-
-        ofdmframe64sync_cpcorrelate(_q);
-        _q->rxy_magnitude = cabsf(_q->rxy);
-#if DEBUG_OFDMFRAME64SYNC
-        cfwindow_push(_q->debug_rxy, _q->rxy);
-#endif
-        if (_q->cp_timer > 0) {
-            // not enough samples gathered to merit running correlator
-            _q->cp_timer--;
-            continue;
-        }
-
-        if (!_q->cp_detected) {
-            // cyclic prefix has not been detected; check threshold
-            if (_q->rxy_magnitude > _q->rxy_threshold) {
-                // cyclic prefix detected
-                _q->cp_detected = true;
-                _q->rxy_buffer_index = 0;
-            }
-        } else {
-            // cyclic prefix has been detected; store correlation in buffer
-            if (_q->rxy_buffer_index != _q->cp_len) {
-                // buffer is not yet full
-                _q->rxy_buffer[_q->rxy_buffer_index] = _q->rxy;
-                _q->rxy_buffer_index++;
-            } else {
-                // buffer is full: look for maximum
-                ofdmframe64sync_findrxypeak(_q);
-                _q->nu_hat = -cargf(_q->rxy)/((float)(_q->num_subcarriers));
-#if DEBUG_OFDMFRAME64SYNC_PRINT
-                printf("max |rxy| found: %12.4f at i=%u\n",
-                        cabsf(_q->rxy),
-                        i);
-                        //i-_q->cp_len+_q->cp_excess_delay);
-                printf("  excess delay : %u\n", _q->cp_excess_delay);
-                printf("  nu_hat = %12.8f\n", _q->nu_hat);
-#endif
-
-                ofdmframe64sync_rxpayload(_q);
-    
-                // TODO : ofdmframe64sync_execute(), wait before resetting
-                // reset state
-                _q->cp_detected = false;
-                _q->cp_timer    = _q->num_subcarriers - _q->cp_len;
-            }
-        }
-    }
 }
 
 void ofdmframe64sync_rxpayload(ofdmframe64sync _q)
 {
-    // read samples from buffer
-    float complex *rc;
-    cfwindow_read(_q->wdelay,&rc);
-
-    // compensate for sample delay
-    rc += _q->cp_excess_delay;
-
-    // copy to fft buffer
-    memmove(_q->x, rc, (_q->num_subcarriers)*sizeof(float complex));
-
-    // compensate for frequency offset
     unsigned int i;
-    float phi=0.0f;
-    for (i=0; i<_q->num_subcarriers; i++) {
-        _q->x[i] *= cexpf(-_Complex_I*phi);
-        phi += _q->nu_hat;
-    }
-
-    // execute fft
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
-
-    // TODO : compensate for fractional time delay
     //float dt = (float)(d) / (float)(_q->num_subcarriers);
     float dt = 0.0f;
     for (i=0; i<_q->num_subcarriers; i++)
@@ -275,28 +179,9 @@ void ofdmframe64sync_rxpayload(ofdmframe64sync _q)
 
 void ofdmframe64sync_cpcorrelate(ofdmframe64sync _q)
 {
-    float complex * rcp;    // read pointer: cyclic prefix
-    float complex * rdelay; // read pointer: delay line
-
-    cfwindow_read(_q->wcp,    &rcp);
-    cfwindow_read(_q->wdelay, &rdelay);
-
-    // TODO : cpcorrelate uses unnecessary cycles: should rather store _correlation_ in buffers
-    dotprod_cccf_run(rcp,rdelay,_q->cp_len,&_q->rxy);
 }
 
 void ofdmframe64sync_findrxypeak(ofdmframe64sync _q)
 {
-    unsigned int i;
-    float rxy_peak = 0.0f;
-    float rxy_magnitude;
-    for (i=0; i<_q->cp_len; i++) {
-        rxy_magnitude = cabsf(_q->rxy_buffer[i]);
-        if (rxy_magnitude > rxy_peak) {
-            rxy_peak = rxy_magnitude;
-            _q->cp_excess_delay = i;
-        }
-    }
-    _q->rxy = _q->rxy_buffer[_q->cp_excess_delay];
 }
 
