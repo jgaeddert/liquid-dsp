@@ -65,6 +65,7 @@ local_src	:=			\
 	modem_example.c			\
 	nco_example.c			\
 	ofdmframe64gen_example.c	\
+	ofdmframe64sync_example.c	\
 	ofdmframegen_example.c		\
 	ofdmframesync_example.c		\
 	ofdmoqam_example.c		\
