@@ -92,12 +92,14 @@ void nco_cexpf(nco _nco, float complex * _y)
 void nco_mix_up(nco _nco, complex float _x, complex float *_y)
 {
     *_y = _x * cexpf(_Complex_I*(_nco->theta));
+    nco_step(_nco);
 }
 
 // Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
 void nco_mix_down(nco _nco, complex float _x, complex float *_y)
 {
     *_y = _x * cexpf(-_Complex_I*(_nco->theta));
+    nco_step(_nco);
 }
 
 
