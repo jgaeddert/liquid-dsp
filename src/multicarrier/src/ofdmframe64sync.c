@@ -120,7 +120,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     unsigned int i;
     float complex h[64];
     for (i=0; i<64; i++)
-        h[i] = ofdmframe64_plcp_Lt[i];
+        h[64-i-1] = conjf(ofdmframe64_plcp_Lt[i]);
     q->cross_correlator = fir_filter_cccf_create(h,64);
     
 #if DEBUG_OFDMFRAME64SYNC

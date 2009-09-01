@@ -36,7 +36,7 @@ int main() {
     // create cross-correlator
     float complex h[64];
     for (i=0; i<64; i++)
-        h[i] = ofdmframe64_plcp_Lt[i];
+        h[64-i-1] = conjf(ofdmframe64_plcp_Lt[i]);
     fir_filter_cccf xcorr = fir_filter_cccf_create(h,64);
 
     float complex x[48];    // data buffer

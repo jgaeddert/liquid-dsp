@@ -10,7 +10,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "ofdmframe64gen_example.m"
+#define OUTPUT_FILENAME "ofdmframe64sync_example.m"
 
 int main() {
     srand(time(NULL));
