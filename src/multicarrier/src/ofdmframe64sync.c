@@ -172,6 +172,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xy}|');\n");
 
+    fprintf(fid,"s = [2:27 39:64];\n");
     fprintf(fid,"Lt0 = zeros(1,64);\n");
     fprintf(fid,"Lt1 = zeros(1,64);\n");
     for (i=0; i<64; i++) {
@@ -181,8 +182,8 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     fprintf(fid,"Lf0 = fft(Lt0);\n");
     fprintf(fid,"Lf1 = fft(Lt1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(Lf0),imag(Lf0),'x','MarkerSize',1,...\n");
-    fprintf(fid,"     real(Lf1),imag(Lf1),'x','MarkerSize',1);\n");
+    fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
+    fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"axis([-10 10 -10 10]);\n");
     fprintf(fid,"xlabel('in-phase');\n");
@@ -273,7 +274,9 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     cfwindow_push(_q->debug_rxx,rxx);
 #endif
 
-    if (cabsf(rxx) > 40.0f) {
+    if (cabsf(rxx) > 48.0f) {
+        // TODO : wait for auto-correlation to peak before changing state
+
         printf("rxx = %12.8f (angle : %12.8f);\n", cabsf(rxx),cargf(rxx)/16.0f);
         nco_set_frequency(_q->nco_rx, cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
@@ -293,7 +296,7 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
     cfwindow_push(_q->debug_rxy,rxy);
 #endif
 
-    if (cabsf(rxy) > 40.0f) {
+    if (cabsf(rxy) > 48.0f) {
         printf("rxy = %12.8f (angle : %12.8f);\n", cabsf(rxy),cargf(rxy));
         //nco_set_phase(_q->nco_rx, -cargf(rxy));
 
@@ -318,7 +321,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
     cfwindow_push(_q->debug_rxy,rxy);
 #endif
 
-    if (cabsf(rxy) > 40.0f) {
+    if (cabsf(rxy) > 48.0f) {
         printf("rxy = %12.8f (angle : %12.8f);\n", cabsf(rxy),cargf(rxy));
         //nco_set_phase(_q->nco_rx, -cargf(rxy));
 
