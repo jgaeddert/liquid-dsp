@@ -247,6 +247,19 @@ float ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q)
     return cargf(r) / 64.0f;
 }
 
+void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q,
+                                          float _nu_hat)
+{
+    // mix Lt0,Lt1 by nu_hat (compensate for fine CFO estimation)
+    unsigned int i;
+    float theta=0.0f;
+    for (i=0; i<64; i++) {
+        _q->Lt0[i] *= cexpf(_Complex_I*theta);
+        _q->Lt1[i] *= cexpf(_Complex_I*theta);
+        theta += _nu_hat;
+    }
+}
+
 
 void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
                                        float complex _x)
@@ -320,8 +333,10 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 #if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("nu_hat = %12.8f;\n", _q->nco_rx->d_theta);
 #endif
+        // correct for CFO in PLCP long sequences
+        ofdmframe64sync_correct_cfo_plcplong(_q, nu_hat);
 
-        // TODO : mix Lt0,Lt1 by nu_hat, compute DFT, estimate channel gains
+        // TODO : compute DFT, estimate channel gains
     }
 }
 
