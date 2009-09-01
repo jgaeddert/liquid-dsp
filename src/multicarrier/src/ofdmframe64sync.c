@@ -146,52 +146,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 void ofdmframe64sync_destroy(ofdmframe64sync _q)
 {
 #if DEBUG_OFDMFRAME64SYNC
-    FILE * fid = fopen(DEBUG_OFDMFRAME64SYNC_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
-    unsigned int i;
-    float complex * rc;
-
-    fprintf(fid,"rxx = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxx, &rc);
-    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),abs(rxx));\n");
-    fprintf(fid,"xlabel('sample index');\n");
-    fprintf(fid,"ylabel('|r_{xx}|');\n");
-
-    fprintf(fid,"rxy = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxy, &rc);
-    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),abs(rxy));\n");
-    fprintf(fid,"xlabel('sample index');\n");
-    fprintf(fid,"ylabel('|r_{xy}|');\n");
-
-    fprintf(fid,"s = [2:27 39:64];\n");
-    fprintf(fid,"Lt0 = zeros(1,64);\n");
-    fprintf(fid,"Lt1 = zeros(1,64);\n");
-    for (i=0; i<64; i++) {
-        fprintf(fid,"Lt0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt0[i]), cimagf(_q->Lt0[i]));
-        fprintf(fid,"Lt1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt1[i]), cimagf(_q->Lt1[i]));
-    }
-    fprintf(fid,"Lf0 = fft(Lt0)*sqrt(1/64*52/64);\n");
-    fprintf(fid,"Lf1 = fft(Lt1)*sqrt(1/64*52/64);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
-    fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
-    fprintf(fid,"xlabel('in-phase');\n");
-    fprintf(fid,"ylabel('quadrature phase');\n");
-
-    fclose(fid);
-    printf("ofdmframe64sync/debug: results written to %s\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
-
+    //ofdmframe64sync_debug_print(_q);
     cfwindow_destroy(_q->debug_rxx);
     cfwindow_destroy(_q->debug_rxy);
 #endif
@@ -238,29 +193,87 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     }
 }
 
-float ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q)
+void ofdmframe64sync_execute(ofdmframe64sync _q,
+                             float complex * _x,
+                             unsigned int _n)
 {
-    float complex r=0.0f;
     unsigned int i;
-    for (i=0; i<64; i++)
-        r += _q->Lt0[i] * conjf(_q->Lt1[i]);
+    float complex x;
+    for (i=0; i<_n; i++) {
+        x = _x[i];
 
-    return cargf(r) / 64.0f;
-}
+        // TODO: apply gain
+        
+        // TODO: apply NCO
+        nco_mix_up(_q->nco_rx, x, &x);
 
-void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q,
-                                          float _nu_hat)
-{
-    // mix Lt0,Lt1 by nu_hat (compensate for fine CFO estimation)
-    unsigned int i;
-    float theta=0.0f;
-    for (i=0; i<64; i++) {
-        _q->Lt0[i] *= cexpf(_Complex_I*theta);
-        _q->Lt1[i] *= cexpf(_Complex_I*theta);
-        theta += _nu_hat;
+        switch (_q->state) {
+        case OFDMFRAME64SYNC_STATE_PLCPSHORT:
+            ofdmframe64sync_execute_plcpshort(_q,x);
+            break;
+        case OFDMFRAME64SYNC_STATE_PLCPLONG0:
+            ofdmframe64sync_execute_plcplong0(_q,x);
+            break;
+        case OFDMFRAME64SYNC_STATE_PLCPLONG1:
+            ofdmframe64sync_execute_plcplong1(_q,x);
+            break;
+        default:;
+        }
     }
 }
 
+//
+// internal
+//
+
+void ofdmframe64sync_debug_print(ofdmframe64sync _q)
+{
+    FILE * fid = fopen(DEBUG_OFDMFRAME64SYNC_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    unsigned int i;
+    float complex * rc;
+
+    fprintf(fid,"rxx = zeros(1,n);\n");
+    cfwindow_read(_q->debug_rxx, &rc);
+    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(0:(n-1),abs(rxx));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('|r_{xx}|');\n");
+
+    fprintf(fid,"rxy = zeros(1,n);\n");
+    cfwindow_read(_q->debug_rxy, &rc);
+    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(0:(n-1),abs(rxy));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('|r_{xy}|');\n");
+
+    fprintf(fid,"s = [2:27 39:64];\n");
+    fprintf(fid,"Lt0 = zeros(1,64);\n");
+    fprintf(fid,"Lt1 = zeros(1,64);\n");
+    for (i=0; i<64; i++) {
+        fprintf(fid,"Lt0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt0[i]), cimagf(_q->Lt0[i]));
+        fprintf(fid,"Lt1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt1[i]), cimagf(_q->Lt1[i]));
+    }
+    fprintf(fid,"Lf0 = fft(Lt0)*sqrt(1/64*52/64);\n");
+    fprintf(fid,"Lf1 = fft(Lt1)*sqrt(1/64*52/64);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
+    fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
+    fprintf(fid,"xlabel('in-phase');\n");
+    fprintf(fid,"ylabel('quadrature phase');\n");
+
+    fclose(fid);
+    printf("ofdmframe64sync/debug: results written to %s\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
+}
 
 void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
                                        float complex _x)
@@ -330,51 +343,40 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 
         // TODO : change state to...
 
-        // TODO : run fine CFO estimation
-        float nu_hat = ofdmframe64sync_estimate_cfo_plcplong(_q);
-        nco_adjust_frequency(_q->nco_rx, nu_hat);
+        // run fine CFO estimation and correct offset for
+        // PLCP long sequences
+        ofdmframe64sync_estimate_cfo_plcplong(_q);
+        nco_adjust_frequency(_q->nco_rx, _q->nu_hat);
 #if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("nu_hat = %12.8f;\n", _q->nco_rx->d_theta);
 #endif
-        // correct for CFO in PLCP long sequences
-        ofdmframe64sync_correct_cfo_plcplong(_q, nu_hat);
+        ofdmframe64sync_correct_cfo_plcplong(_q);
 
         // TODO : compute DFT, estimate channel gains
     }
 }
 
-void ofdmframe64sync_execute(ofdmframe64sync _q,
-                           float complex * _x,
-                           unsigned int _n)
+void ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q)
 {
+    float complex r=0.0f;
     unsigned int i;
-    float complex x;
-    for (i=0; i<_n; i++) {
-        x = _x[i];
+    for (i=0; i<64; i++)
+        r += _q->Lt0[i] * conjf(_q->Lt1[i]);
 
-        // TODO: apply gain
-        
-        // TODO: apply NCO
-        nco_mix_up(_q->nco_rx, x, &x);
-
-        switch (_q->state) {
-        case OFDMFRAME64SYNC_STATE_PLCPSHORT:
-            ofdmframe64sync_execute_plcpshort(_q,x);
-            break;
-        case OFDMFRAME64SYNC_STATE_PLCPLONG0:
-            ofdmframe64sync_execute_plcplong0(_q,x);
-            break;
-        case OFDMFRAME64SYNC_STATE_PLCPLONG1:
-            ofdmframe64sync_execute_plcplong1(_q,x);
-            break;
-        default:;
-        }
-    }
+    _q->nu_hat = cargf(r) / 64.0f;
 }
 
-//
-// internal
-//
+void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q)
+{
+    // mix Lt0,Lt1 by nu_hat (compensate for fine CFO estimation)
+    unsigned int i;
+    float theta=0.0f;
+    for (i=0; i<64; i++) {
+        _q->Lt0[i] *= cexpf(_Complex_I*theta);
+        _q->Lt1[i] *= cexpf(_Complex_I*theta);
+        theta += _q->nu_hat;
+    }
+}
 
 void ofdmframe64sync_rxpayload(ofdmframe64sync _q)
 {
@@ -386,13 +388,5 @@ void ofdmframe64sync_rxpayload(ofdmframe64sync _q)
 
     if (_q->callback != NULL)
         _q->callback(_q->X, _q->num_subcarriers, _q->userdata);
-}
-
-void ofdmframe64sync_cpcorrelate(ofdmframe64sync _q)
-{
-}
-
-void ofdmframe64sync_findrxypeak(ofdmframe64sync _q)
-{
 }
 

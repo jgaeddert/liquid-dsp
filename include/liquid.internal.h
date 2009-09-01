@@ -532,6 +532,15 @@ void ofdmframesync_cpcorrelate(ofdmframesync _q);
 void ofdmframesync_findrxypeak(ofdmframesync _q);
 void ofdmframesync_rxpayload(ofdmframesync _q);
 
+// ofdmframe64sync
+void ofdmframe64sync_debug_print(ofdmframe64sync _q);
+void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q, float complex _x);
+void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q, float complex _x);
+void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q, float complex _x);
+void ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q);
+void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q);
+void ofdmframe64sync_rxpayload(ofdmframe64sync _q);
+
 //
 // MODULE: random
 //
