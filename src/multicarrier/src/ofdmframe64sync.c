@@ -117,7 +117,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 
     // cyclic prefix correlation windows
     q->delay_correlator = autocorr_cccf_create(64,16);
-    q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
+    q->zeta = sqrtf(1.0f / 64.0f * 52.0f / 64.0f);
 
     //
     unsigned int i;
@@ -179,13 +179,13 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
         fprintf(fid,"Lt0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt0[i]), cimagf(_q->Lt0[i]));
         fprintf(fid,"Lt1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt1[i]), cimagf(_q->Lt1[i]));
     }
-    fprintf(fid,"Lf0 = fft(Lt0);\n");
-    fprintf(fid,"Lf1 = fft(Lt1);\n");
+    fprintf(fid,"Lf0 = fft(Lt0)*sqrt(1/64*52/64);\n");
+    fprintf(fid,"Lf1 = fft(Lt1)*sqrt(1/64*52/64);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
     fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
     fprintf(fid,"axis square;\n");
-    fprintf(fid,"axis([-10 10 -10 10]);\n");
+    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
 
