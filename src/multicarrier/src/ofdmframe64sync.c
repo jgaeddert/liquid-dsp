@@ -50,6 +50,7 @@ struct ofdmframe64sync_s {
 
     // gain correction...
     float complex g[64];
+    float complex theta_hat;
 
     // carrier offset correction
     nco nco_rx;
@@ -324,7 +325,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
         // TODO : wait for auto-correlation to peak before changing state
 
         printf("rxx = %12.8f (angle : %12.8f);\n", cabsf(rxx),cargf(rxx)/16.0f);
-        nco_set_frequency(_q->nco_rx, cargf(rxx)/16.0f);
+        nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
     }
 }
@@ -463,7 +464,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     _q->symbol_timer = 0;
 
     // copy buffer and execute FFT
-    memmove(_q->x, _q->symbol+16, 64*sizeof(float complex));
+    memmove(_q->x, _q->symbol+15, 64*sizeof(float complex));
 #if HAVE_FFTW3_H
     fftwf_execute(_q->fft);
 #else
@@ -472,9 +473,12 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
     // gain correction
     unsigned int i;
-    for (i=0; i<64; i++)
+    for (i=0; i<64; i++) {
         _q->X[i] *= _q->g[i];
         //_q->X[i] *= _q->zeta;
+        if (i==9 || i==25 || i==39 || i==55)
+            printf("  pilot phase : %12.8f (%12.8f + j*%12.8f)\n",cargf(_q->X[i]), crealf(_q->X[i]), cimagf(_q->X[i]));
+    }
 
     // TODO: compensate for phase/time shift
 #if DEBUG_OFDMFRAME64SYNC
