@@ -259,10 +259,12 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"Lt1 = zeros(1,64);\n");
     for (i=0; i<64; i++) {
         fprintf(fid,"Lt0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt0[i]), cimagf(_q->Lt0[i]));
+        fprintf(fid,"Lf0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lf0[i]), cimagf(_q->Lf0[i]));
         fprintf(fid,"Lt1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt1[i]), cimagf(_q->Lt1[i]));
+        fprintf(fid,"Lf1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lf1[i]), cimagf(_q->Lf1[i]));
     }
-    fprintf(fid,"Lf0 = fft(Lt0)*sqrt(1/64*52/64);\n");
-    fprintf(fid,"Lf1 = fft(Lt1)*sqrt(1/64*52/64);\n");
+    //fprintf(fid,"Lf0 = fft(Lt0)*sqrt(1/64*52/64);\n");
+    //fprintf(fid,"Lf1 = fft(Lt1)*sqrt(1/64*52/64);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
     fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
@@ -378,13 +380,20 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
     memmove(_q->Lf1, _q->X, 64*sizeof(float complex));
 
     unsigned int i;
+    float complex g0,g1;
     for (i=0; i<64; i++) {
         if (i==0 || (i>26 && i<38)) {
             // disabled subcarrier
             _q->g[i] = 0.0f;
         } else {
-            _q->g[i] = 0.5f / cabsf(_q->Lf0[i]) + 0.5f / cabsf(_q->Lf1[i]);
+            // compute subcarrier gain by averaging error of each
+            // long sequence
+            g0 = ofdmframe64_plcp_Lf[i] * (_q->Lf0[i]);
+            g1 = ofdmframe64_plcp_Lf[i] * (_q->Lf1[i]);
+            _q->g[i] = 2.0f/(g0+g1);
         }
+        _q->Lf0[i] *= _q->g[i];
+        _q->Lf1[i] *= _q->g[i];
     }
 }
 

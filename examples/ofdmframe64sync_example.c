@@ -48,14 +48,9 @@ int main() {
     nco_set_frequency(nco_rx,cfo);
     nco_set_phase(nco_rx,cpo);
     float nstd = powf(10.0f, -SNRdB/20.0f);
-    p = 4;
     float complex h[p];
-    h[0] =  1.0f;
-    h[1] = -0.1f;
-    h[2] =  0.2f;
-    h[3] =  0.05f;
     for (i=0; i<p; i++) {
-        //h[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.2f;
+        h[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.2f;
         printf("h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
         fprintf(fid,"h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
     }
