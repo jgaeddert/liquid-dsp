@@ -19,11 +19,32 @@
  */
 
 //
-//
+// ofdmframe64 physical layer convergence procedure (PLCP) data
 //
 
 #include "liquid.internal.h"
 
+// PLCP short sequence (frequency domain)
+const float complex ofdmframe64_plcp_Sf[64] = {
+      0.0000+  0.0000*_Complex_I,   0.0f,   0.0f,   0.0f,
+      0.0000+  0.0000*_Complex_I,   0.0f,   0.0f,   0.0f,
+      1.4720+  1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+     -1.4720+ -1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      1.4720+  1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+     -1.4720+ -1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+     -1.4720+ -1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      1.4720+  1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      0.0000+  0.0000*_Complex_I,   0.0f,   0.0f,   0.0f,
+     -1.4720+ -1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+     -1.4720+ -1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      1.4720+  1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      1.4720+  1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      1.4720+  1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      1.4720+  1.4720*_Complex_I,   0.0f,   0.0f,   0.0f,
+      0.0000+  0.0000*_Complex_I,   0.0f,   0.0f,   0.0f
+};
+
+// PLCP short sequence (time domain)
 const float complex ofdmframe64_plcp_St[64] = {
       0.4083+  0.4083*_Complex_I,   1.1755+ -0.0208*_Complex_I, 
      -0.1196+ -0.6969*_Complex_I,  -1.2670+  0.1123*_Complex_I, 
@@ -59,6 +80,19 @@ const float complex ofdmframe64_plcp_St[64] = {
      -0.6969+ -0.1196*_Complex_I,  -0.0208+  1.1755*_Complex_I
 };
 
+// PLCP long sequence (frequency domain)
+const float complex ofdmframe64_plcp_Lf[64] = {
+      0.00,   1.00,  -1.00,  -1.00,   1.00,   1.00,  -1.00,   1.00, 
+     -1.00,   1.00,  -1.00,  -1.00,  -1.00,  -1.00,  -1.00,   1.00, 
+      1.00,  -1.00,  -1.00,   1.00,  -1.00,   1.00,  -1.00,   1.00, 
+      1.00,   1.00,   1.00,   0.00,   0.00,   0.00,   0.00,   0.00, 
+      0.00,   0.00,   0.00,   0.00,   0.00,   0.00,   1.00,   1.00, 
+     -1.00,  -1.00,   1.00,   1.00,  -1.00,   1.00,  -1.00,   1.00, 
+      1.00,   1.00,   1.00,   1.00,   1.00,  -1.00,  -1.00,   1.00, 
+      1.00,  -1.00,   1.00,  -1.00,   1.00,   1.00,   1.00,   1.00
+};
+
+// PLCP long sequence (time domain)
 const float complex ofdmframe64_plcp_Lt[64] = {
       1.3868+  0.0000*_Complex_I,  -0.0455+ -1.0679*_Complex_I, 
       0.3528+ -0.9866*_Complex_I,   0.8594+  0.7349*_Complex_I, 

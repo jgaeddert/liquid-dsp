@@ -539,7 +539,12 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q, float complex _x);
 void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q, float complex _x);
 void ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q);
 void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q);
+void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q);
 void ofdmframe64sync_rxpayload(ofdmframe64sync _q);
+extern const float complex ofdmframe64_plcp_Sf[64];
+extern const float complex ofdmframe64_plcp_St[64];
+extern const float complex ofdmframe64_plcp_Lf[64];
+extern const float complex ofdmframe64_plcp_Lt[64];
 
 //
 // MODULE: random

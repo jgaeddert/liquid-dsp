@@ -62,8 +62,8 @@ struct ofdmframe64sync_s {
     dotprod_cccf cross_correlator;
     float complex rxy;
     cfwindow rxy_buffer;
-    float complex Lt0[64];  // received PLCP long sequence (first)
-    float complex Lt1[64];  // received PLCP long sequence (second)
+    float complex Lt0[64], Lf0[64]; // received PLCP long sequence (first)
+    float complex Lt1[64], Lf1[64]; // received PLCP long sequence (second)
 
     float zeta;         // scaling factor
     float nu_hat;       // carrier frequency offset estimation
@@ -146,7 +146,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 void ofdmframe64sync_destroy(ofdmframe64sync _q)
 {
 #if DEBUG_OFDMFRAME64SYNC
-    //ofdmframe64sync_debug_print(_q);
+    ofdmframe64sync_debug_print(_q);
     cfwindow_destroy(_q->debug_rxx);
     cfwindow_destroy(_q->debug_rxy);
 #endif
@@ -353,6 +353,38 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         ofdmframe64sync_correct_cfo_plcplong(_q);
 
         // TODO : compute DFT, estimate channel gains
+        ofdmframe64sync_estimate_gain_plcplong(_q);
+    }
+}
+
+void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
+{
+    // first PLCP long sequence
+    memmove(_q->x, _q->Lt0, 64*sizeof(float complex));
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+    memmove(_q->Lf0, _q->X, 64*sizeof(float complex));
+
+    // second PLCP long sequence
+    memmove(_q->x, _q->Lt1, 64*sizeof(float complex));
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+    memmove(_q->Lf1, _q->X, 64*sizeof(float complex));
+
+    unsigned int i;
+    for (i=0; i<64; i++) {
+        if (i==0 || (i>26 && i<38)) {
+            // disabled subcarrier
+            _q->g[i] = 0.0f;
+        } else {
+            _q->g[i] = 0.5f / cabsf(_q->Lf0[i]) + 0.5f / cabsf(_q->Lf1[i]);
+        }
     }
 }
 
