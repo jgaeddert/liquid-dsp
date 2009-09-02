@@ -20,7 +20,7 @@ int main() {
     modulation_scheme ms = MOD_QPSK;
     unsigned int bps = 2;
     float cfo=0.2f;         // carrier frequency offset
-    float cpo=M_PI/2.0f;    // carrier phase offset
+    float cpo=M_PI/7.0f;    // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int p=4;       // number of multi-path channel taps
 

@@ -65,6 +65,10 @@ struct ofdmframe64sync_s {
     float complex Lt0[64], Lf0[64]; // received PLCP long sequence (first)
     float complex Lt1[64], Lf1[64]; // received PLCP long sequence (second)
 
+    // timer
+    unsigned int symbol_timer;
+    float complex symbol[80];
+
     float zeta;         // scaling factor
     float nu_hat;       // carrier frequency offset estimation
     float dt_hat;       // symbol timing offset estimation
@@ -84,12 +88,14 @@ struct ofdmframe64sync_s {
     enum {
         OFDMFRAME64SYNC_STATE_PLCPSHORT=0,
         OFDMFRAME64SYNC_STATE_PLCPLONG0,
-        OFDMFRAME64SYNC_STATE_PLCPLONG1
+        OFDMFRAME64SYNC_STATE_PLCPLONG1,
+        OFDMFRAME64SYNC_STATE_RXPAYLOAD
     } state;
 
 #if DEBUG_OFDMFRAME64SYNC
     cfwindow debug_rxy;
     cfwindow debug_rxx;
+    cfwindow debug_framesyms;
 #endif
 };
 
@@ -130,6 +136,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 #if DEBUG_OFDMFRAME64SYNC
     q->debug_rxx = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_framesyms = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     // pilot sequence generator
@@ -149,6 +156,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     ofdmframe64sync_debug_print(_q);
     cfwindow_destroy(_q->debug_rxx);
     cfwindow_destroy(_q->debug_rxy);
+    cfwindow_destroy(_q->debug_framesyms);
 #endif
 
     free(_q->x);
@@ -186,11 +194,16 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     for (i=0; i<64; i++) {
         // clear PLCP long buffers
         _q->Lt0[i] = 0.0f;
+        _q->Lf0[i] = 0.0f;
         _q->Lt1[i] = 0.0f;
+        _q->Lf1[i] = 0.0f;
 
         // reset gain
         _q->g[i] = 1.0f;
     }
+
+    // reset symbol timer
+    _q->symbol_timer = 0;
 }
 
 void ofdmframe64sync_execute(ofdmframe64sync _q,
@@ -216,6 +229,9 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
             break;
         case OFDMFRAME64SYNC_STATE_PLCPLONG1:
             ofdmframe64sync_execute_plcplong1(_q,x);
+            break;
+        case OFDMFRAME64SYNC_STATE_RXPAYLOAD:
+            ofdmframe64sync_execute_rxpayload(_q,x);
             break;
         default:;
         }
@@ -263,8 +279,6 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
         fprintf(fid,"Lt1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt1[i]), cimagf(_q->Lt1[i]));
         fprintf(fid,"Lf1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lf1[i]), cimagf(_q->Lf1[i]));
     }
-    //fprintf(fid,"Lf0 = fft(Lt0)*sqrt(1/64*52/64);\n");
-    //fprintf(fid,"Lf1 = fft(Lt1)*sqrt(1/64*52/64);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
     fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
@@ -272,7 +286,24 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
+    fprintf(fid,"title('PLCP Long Sequence');\n");
 
+    // frame symbols
+    fprintf(fid,"framesyms = zeros(1,n);\n");
+    cfwindow_read(_q->debug_framesyms, &rc);
+    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(framesyms),imag(framesyms),'x','MarkerSize',1);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
+    fprintf(fid,"xlabel('in-phase');\n");
+    fprintf(fid,"ylabel('quadrature phase');\n");
+    fprintf(fid,"title('Frame Symbols');\n");
+
+    for (i=0; i<64; i++)
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->x[i]), cimagf(_q->x[i]));
+ 
     fclose(fid);
     printf("ofdmframe64sync/debug: results written to %s\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
 }
@@ -343,8 +374,6 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         // store sequence
         memmove(_q->Lt1, rc, 64*sizeof(float complex));
 
-        // TODO : change state to...
-
         // run fine CFO estimation and correct offset for
         // PLCP long sequences
         ofdmframe64sync_estimate_cfo_plcplong(_q);
@@ -354,8 +383,11 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 #endif
         ofdmframe64sync_correct_cfo_plcplong(_q);
 
-        // TODO : compute DFT, estimate channel gains
+        // compute DFT, estimate channel gains
         ofdmframe64sync_estimate_gain_plcplong(_q);
+
+        // change state
+        _q->state = OFDMFRAME64SYNC_STATE_RXPAYLOAD;
     }
 }
 
@@ -419,13 +451,36 @@ void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q)
     }
 }
 
-void ofdmframe64sync_rxpayload(ofdmframe64sync _q)
+void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 {
+    _q->symbol[_q->symbol_timer] = _x;
+    _q->symbol_timer++;
+    if (_q->symbol_timer < 80)
+        return;
+
+    printf("receiving symbol...\n");
+    // reset timer
+    _q->symbol_timer = 0;
+
+    // copy buffer and execute FFT
+    memmove(_q->x, _q->symbol+16, 64*sizeof(float complex));
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+
+    // gain correction
     unsigned int i;
-    //float dt = (float)(d) / (float)(_q->num_subcarriers);
-    float dt = 0.0f;
-    for (i=0; i<_q->num_subcarriers; i++)
-        _q->X[i] *= cexpf(_Complex_I*2.0f*M_PI*dt*i);
+    for (i=0; i<64; i++)
+        _q->X[i] *= _q->g[i];
+        //_q->X[i] *= _q->zeta;
+
+    // TODO: compensate for phase/time shift
+#if DEBUG_OFDMFRAME64SYNC
+    for (i=0; i<64; i++)
+        cfwindow_push(_q->debug_framesyms,_q->X[i]);
+#endif
 
     if (_q->callback != NULL)
         _q->callback(_q->X, _q->num_subcarriers, _q->userdata);
