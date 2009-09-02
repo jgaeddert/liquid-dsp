@@ -50,7 +50,7 @@ int main() {
     float nstd = powf(10.0f, -SNRdB/20.0f);
     float complex h[p];
     for (i=0; i<p; i++) {
-        h[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.2f;
+        h[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.05f;
         printf("h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
         fprintf(fid,"h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
     }

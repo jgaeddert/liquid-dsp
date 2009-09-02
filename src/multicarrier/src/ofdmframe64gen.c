@@ -154,7 +154,7 @@ void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
         if (i==0 || (i>26 && i<38)) {
             // disabled subcarrier
             _q->X[i] = 0.0f;
-        } else if (i==9 || i==25 || i==39 || i==55) {
+        } else if (i==11 || i==25 || i==39 || i==53) {
             // pilot subcarrier
             // TODO : use p/n sequence for pilot
             _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->zeta;

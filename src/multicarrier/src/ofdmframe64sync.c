@@ -144,10 +144,10 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 
     // pilot sequence generator
     q->ms_pilot = msequence_create(8);
-    q->x_phase[0] = -23.0f;
+    q->x_phase[0] = -21.0f;
     q->x_phase[1] =  -7.0f;
     q->x_phase[2] =   7.0f;
-    q->x_phase[3] =  23.0f;
+    q->x_phase[3] =  21.0f;
 
     q->callback = _callback;
     q->userdata = _userdata;
@@ -465,7 +465,6 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     if (_q->symbol_timer < 80)
         return;
 
-    printf("receiving symbol...\n");
     // reset timer
     _q->symbol_timer = 0;
 
@@ -482,29 +481,27 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     for (i=0; i<64; i++) {
         _q->X[i] *= _q->g[i];
     }
-    _q->y_phase[0] = cargf(_q->X[9]);
-    _q->y_phase[1] = cargf(_q->X[25]);
-    _q->y_phase[2] = cargf(_q->X[39]);
-    _q->y_phase[3] = cargf(_q->X[55]);
+    _q->y_phase[0] = cargf(_q->X[11]);  // -21
+    _q->y_phase[1] = cargf(_q->X[25]);  //  -7
+    _q->y_phase[2] = cargf(_q->X[39]);  //   7
+    _q->y_phase[3] = cargf(_q->X[53]);  //  21
 
     // try to unwrap phase
     float dy;
     for (i=1; i<4; i++) {
         dy = _q->y_phase[i] - _q->y_phase[i-1];
-        if (dy > M_PI)
-            _q->y_phase[i] -= 2*M_PI;
-        else if (dy < -M_PI)
-            _q->y_phase[i] += 2*M_PI;
+        if (dy > M_PI)          _q->y_phase[i] -= 2*M_PI;
+        else if (dy < -M_PI)    _q->y_phase[i] += 2*M_PI;
     }
 
+    // pilot phase correction
     unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
-
-    for (i=0; i<4; i++) {
-        if (pilot_phase==0)
+    if (pilot_phase==0) {
+        for (i=0; i<4; i++)
             _q->y_phase[i] -= M_PI;
-        printf("x(%u)=%6.3f;y(%u)=%6.3f;\n",i+1,_q->x_phase[i],i+1,_q->y_phase[i]);
     }
 
+    // fit phase to 1st-order polynomial (2 coefficients)
     polyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
     // compensate for phase/time shift
