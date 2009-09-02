@@ -50,7 +50,9 @@ struct ofdmframe64sync_s {
 
     // gain correction...
     float complex g[64];
-    float complex theta_hat;
+    float x_phase[4];       // 
+    float y_phase[4];       // 
+    float p_phase[2];       // polynomial fit to phase
 
     // carrier offset correction
     nco nco_rx;
@@ -142,6 +144,10 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 
     // pilot sequence generator
     q->ms_pilot = msequence_create(8);
+    q->x_phase[0] = -23.0f;
+    q->x_phase[1] =  -7.0f;
+    q->x_phase[2] =   7.0f;
+    q->x_phase[3] =  23.0f;
 
     q->callback = _callback;
     q->userdata = _userdata;
@@ -464,23 +470,52 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     _q->symbol_timer = 0;
 
     // copy buffer and execute FFT
-    memmove(_q->x, _q->symbol+15, 64*sizeof(float complex));
+    memmove(_q->x, _q->symbol+16, 64*sizeof(float complex));
 #if HAVE_FFTW3_H
     fftwf_execute(_q->fft);
 #else
     fft_execute(_q->fft);
 #endif
 
-    // gain correction
+    // gain correction (equalizer)
     unsigned int i;
     for (i=0; i<64; i++) {
         _q->X[i] *= _q->g[i];
-        //_q->X[i] *= _q->zeta;
-        if (i==9 || i==25 || i==39 || i==55)
-            printf("  pilot phase : %12.8f (%12.8f + j*%12.8f)\n",cargf(_q->X[i]), crealf(_q->X[i]), cimagf(_q->X[i]));
+    }
+    _q->y_phase[0] = cargf(_q->X[9]);
+    _q->y_phase[1] = cargf(_q->X[25]);
+    _q->y_phase[2] = cargf(_q->X[39]);
+    _q->y_phase[3] = cargf(_q->X[55]);
+
+    // try to unwrap phase
+    float dy;
+    for (i=1; i<4; i++) {
+        dy = _q->y_phase[i] - _q->y_phase[i-1];
+        if (dy > M_PI)
+            _q->y_phase[i] -= 2*M_PI;
+        else if (dy < -M_PI)
+            _q->y_phase[i] += 2*M_PI;
     }
 
-    // TODO: compensate for phase/time shift
+    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
+
+    for (i=0; i<4; i++) {
+        if (pilot_phase==0)
+            _q->y_phase[i] -= M_PI;
+        printf("x(%u)=%6.3f;y(%u)=%6.3f;\n",i+1,_q->x_phase[i],i+1,_q->y_phase[i]);
+    }
+
+    polyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
+
+    // compensate for phase/time shift
+    float theta;
+    for (i=0; i<64; i++) {
+        theta = polyval(_q->p_phase, 2, (float)(i)-32.0f);
+        _q->X[i] *= cexpf(-_Complex_I*theta);
+    }
+
+    // TODO: perform additional polynomial gain compensation
+
 #if DEBUG_OFDMFRAME64SYNC
     for (i=0; i<64; i++)
         cfwindow_push(_q->debug_framesyms,_q->X[i]);
