@@ -359,26 +359,39 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
         memmove(_q->Lt0, rc, 64*sizeof(float complex));
 
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG1;
+        _q->symbol_timer = 0;
     }
 }
 
 void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
                                        float complex _x)
 {
-    // TODO: run counter; do not compute cross-correlation on second sequence until counter hits 64 samples
-    // run cross-correlator
+    // push sample into cross-correlator buffer
     float complex rxy, *rc;
     cfwindow_push(_q->rxy_buffer, _x);
-    cfwindow_read(_q->rxy_buffer, &rc);
-    dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
 
 #if DEBUG_OFDMFRAME64SYNC
+    cfwindow_read(_q->rxy_buffer, &rc);
+    dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
     cfwindow_push(_q->debug_rxy,rxy);
 #endif
 
+    _q->symbol_timer++;
+    if (_q->symbol_timer < 64)
+        return;
+
+    // reset timer
+    _q->symbol_timer = 0;
+
+    // run cross-correlator
+    cfwindow_read(_q->rxy_buffer, &rc);
+    dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
+
+    // at this point we expect the cross-correlator output to be
+    // high; if it's not, then the symbol 
+
     if (cabsf(rxy) > 48.0f) {
         printf("rxy = %12.8f (angle : %12.8f);\n", cabsf(rxy),cargf(rxy));
-        //nco_set_phase(_q->nco_rx, -cargf(rxy));
 
         // store sequence
         memmove(_q->Lt1, rc, 64*sizeof(float complex));
@@ -397,6 +410,9 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 
         // change state
         _q->state = OFDMFRAME64SYNC_STATE_RXPAYLOAD;
+    } else {
+        // cross-correlator output not sufficiently high: reset synchronizer
+        ofdmframe64sync_reset(_q);
     }
 }
 

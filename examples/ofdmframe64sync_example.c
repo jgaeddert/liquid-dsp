@@ -39,10 +39,10 @@ int main() {
     float cpo=M_PI/7.0f;    // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int p=4;       // number of multi-path channel taps
-    float fstd=0.1f;        // multi-path channel taps standard deviation
+    float fstd=0.2f;        // multi-path channel taps standard deviation
 
     unsigned int i;
-    unsigned int num_zeros=2*p;
+    unsigned int num_zeros=p;
     unsigned int num_samples = 160+160+80*num_symbols+num_zeros;
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -51,7 +51,7 @@ int main() {
     fprintf(fid,"n = %u;\n", num_samples);
     fprintf(fid,"y = zeros(1,n);\n");
     fprintf(fid,"z = zeros(1,n);\n");
-    fprintf(fid,"h = zeros(1,%u);\n", p);
+    fprintf(fid,"h = zeros(1,%u);\n", p+1);
 
     // create modems
     modem mod   = modem_create(ms,bps);
@@ -70,13 +70,13 @@ int main() {
     nco_set_frequency(nco_rx,cfo);
     nco_set_phase(nco_rx,cpo);
     float nstd = powf(10.0f, -SNRdB/20.0f);
-    float complex h[p];
-    for (i=0; i<p; i++) {
+    float complex h[p+1];
+    for (i=0; i<p+1; i++) {
         h[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.707f*fstd;
         printf("h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
         fprintf(fid,"h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
     }
-    fir_filter_cccf fchannel = fir_filter_cccf_create(h,p);
+    fir_filter_cccf fchannel = fir_filter_cccf_create(h,p+1);
 
     float complex x[48];            // data buffer
     float complex y[num_samples];   // framegen output buffer
