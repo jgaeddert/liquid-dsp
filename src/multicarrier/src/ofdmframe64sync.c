@@ -27,6 +27,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -71,6 +72,7 @@ struct ofdmframe64sync_s {
     // timer
     unsigned int symbol_timer;
     float complex symbol[80];
+    float complex data[48];
 
     float zeta;         // scaling factor
     float nu_hat;       // carrier frequency offset estimation
@@ -513,12 +515,29 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
     // TODO: perform additional polynomial gain compensation
 
+    // strip data subcarriers
+    unsigned int j=0;
+    for (i=0; i<64; i++) {
+        if (i==0 || (i>26 && i<38)) {
+            // disabled subcarrier
+            _q->X[i] = 0.0f;
+        } else if (i==11 || i==25 || i==39 || i==53) {
+            // pilot subcarrier : use p/n sequence for pilot phase
+            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->zeta;
+        } else {
+            // data subcarrier
+            _q->data[j++] = _q->X[i];
+        }
+
+    }
+    assert(j==48);
+
 #if DEBUG_OFDMFRAME64SYNC
     for (i=0; i<64; i++)
         cfwindow_push(_q->debug_framesyms,_q->X[i]);
 #endif
 
     if (_q->callback != NULL)
-        _q->callback(_q->X, _q->num_subcarriers, _q->userdata);
+        _q->callback(_q->data, _q->userdata);
 }
 

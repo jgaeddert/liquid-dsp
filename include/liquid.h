@@ -1618,7 +1618,6 @@ void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
 
 // ofdmframe64sync
 typedef int (*ofdmframe64sync_callback)(liquid_float_complex * _y,
-                                        unsigned int _n,
                                         void * _userdata);
 typedef struct ofdmframe64sync_s * ofdmframe64sync;
 ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
