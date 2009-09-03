@@ -1,5 +1,10 @@
 //
+// ofdmframe64sync_example.c
 //
+// This example demonstrates the ofdmframe64 synchronizer with
+// arbitrary linear data modulation under a multi-path fading
+// channel exhibiting additive white Gauss noise and carrier
+// frequency offset.
 //
 
 #include <stdio.h>
@@ -15,6 +20,7 @@
 // static data sequence
 static unsigned int data_tx[48];
 
+// static callback function invoked when each symbol received
 static int callback(float complex * _y, void * _userdata)
 {
     unsigned int data_rx[48];
@@ -42,8 +48,8 @@ int main() {
     float fstd=0.2f;        // multi-path channel taps standard deviation
 
     unsigned int i;
-    unsigned int num_zeros=p;
-    unsigned int num_samples = 160+160+80*num_symbols+num_zeros;
+    unsigned int num_zeros=50;
+    unsigned int num_samples = 160+160+80*num_symbols+2*num_zeros;
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -83,6 +89,10 @@ int main() {
     float complex z[num_samples];   // framegen output buffer
 
     unsigned int n=0;
+
+    // initialize with noise
+    for (i=0; i<num_zeros; i++)
+        y[n++] = 0.0f;
 
     // write short sequence
     ofdmframe64gen_writeshortsequence(fg,&y[n]);
