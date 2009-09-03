@@ -28,7 +28,7 @@ module_name     := multicarrier
 #
 local_s_files	:=		\
 	firpfbch.c		\
-	ofdmframe64.data.c	\
+	ofdmframe64.common.c	\
 	ofdmframe64gen.c	\
 	ofdmframe64sync.c	\
 	ofdmframegen.c		\
