@@ -313,6 +313,9 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     for (i=0; i<64; i++)
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->x[i]), cimagf(_q->x[i]));
  
+    for (i=0; i<64; i++)
+        fprintf(fid,"G(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->g[i]), cimagf(_q->g[i]));
+ 
     fclose(fid);
     printf("ofdmframe64sync/debug: results written to %s\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
 }
