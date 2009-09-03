@@ -536,13 +536,13 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
     // strip data subcarriers
     unsigned int j=0;
+    int sctype;
     for (i=0; i<64; i++) {
-        if (i==0 || (i>26 && i<38)) {
+        sctype = ofdmframe64_getsctype(i);
+        if (sctype==OFDMFRAME64_SCTYPE_NULL) {
             // disabled subcarrier
-            _q->X[i] = 0.0f;
-        } else if (i==11 || i==25 || i==39 || i==53) {
+        } else if (sctype==OFDMFRAME64_SCTYPE_PILOT) {
             // pilot subcarrier : use p/n sequence for pilot phase
-            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->zeta;
         } else {
             // data subcarrier
             _q->data[j++] = _q->X[i];
@@ -552,8 +552,8 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     assert(j==48);
 
 #if DEBUG_OFDMFRAME64SYNC
-    for (i=0; i<64; i++)
-        cfwindow_push(_q->debug_framesyms,_q->X[i]);
+    for (i=0; i<48; i++)
+        cfwindow_push(_q->debug_framesyms,_q->data[i]);
 #endif
 
     if (_q->callback != NULL)

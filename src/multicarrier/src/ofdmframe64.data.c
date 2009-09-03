@@ -24,6 +24,16 @@
 
 #include "liquid.internal.h"
 
+int ofdmframe64_getsctype(unsigned int _id)
+{
+    if (_id==0 || (_id>26 && _id<38))
+        return OFDMFRAME64_SCTYPE_NULL;
+    else if (_id==11 || _id==25 || _id==39 || _id==53)
+        return OFDMFRAME64_SCTYPE_PILOT;
+    else
+        return OFDMFRAME64_SCTYPE_DATA;
+}
+
 // PLCP short sequence (frequency domain)
 const float complex ofdmframe64_plcp_Sf[64] = {
       0.0000+  0.0000*_Complex_I,   0.0f,   0.0f,   0.0f,

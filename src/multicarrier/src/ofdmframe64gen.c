@@ -150,13 +150,14 @@ void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
 
     // move frequency data to internal buffer
     unsigned int i, j=0;
+    int sctype;
     for (i=0; i<64; i++) {
-        if (i==0 || (i>26 && i<38)) {
+        sctype = ofdmframe64_getsctype(i);
+        if (sctype==OFDMFRAME64_SCTYPE_NULL) {
             // disabled subcarrier
             _q->X[i] = 0.0f;
-        } else if (i==11 || i==25 || i==39 || i==53) {
+        } else if (sctype==OFDMFRAME64_SCTYPE_PILOT) {
             // pilot subcarrier
-            // TODO : use p/n sequence for pilot
             _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->zeta;
         } else {
             // data subcarrier

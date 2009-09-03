@@ -532,6 +532,11 @@ void ofdmframesync_cpcorrelate(ofdmframesync _q);
 void ofdmframesync_findrxypeak(ofdmframesync _q);
 void ofdmframesync_rxpayload(ofdmframesync _q);
 
+#define OFDMFRAME64_SCTYPE_NULL     0
+#define OFDMFRAME64_SCTYPE_PILOT    1
+#define OFDMFRAME64_SCTYPE_DATA     2
+int ofdmframe64_getsctype(unsigned int _id);
+
 // ofdmframe64sync
 void ofdmframe64sync_debug_print(ofdmframe64sync _q);
 void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q, float complex _x);
