@@ -1595,7 +1595,9 @@ void ofdmframesync_execute(ofdmframesync _q,
 
 
 // data arrays
+const extern liquid_float_complex ofdmframe64_plcp_Sf[64];
 const extern liquid_float_complex ofdmframe64_plcp_St[64];
+const extern liquid_float_complex ofdmframe64_plcp_Lf[64];
 const extern liquid_float_complex ofdmframe64_plcp_Lt[64];
 
 // ofdmframe64gen
