@@ -38,7 +38,7 @@
 #define OFDMFRAME64SYNC_MIN_NUM_SUBCARRIERS   (8)
 
 #define DEBUG_OFDMFRAME64SYNC             1
-#define DEBUG_OFDMFRAME64SYNC_PRINT       1
+#define DEBUG_OFDMFRAME64SYNC_PRINT       0
 #define DEBUG_OFDMFRAME64SYNC_FILENAME    "ofdmframe64sync_internal_debug.m"
 #define DEBUG_OFDMFRAME64SYNC_BUFFER_LEN  (1024)
 
@@ -335,7 +335,9 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     if (cabsf(rxx) > 48.0f) {
         // TODO : wait for auto-correlation to peak before changing state
 
+#if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("rxx = %12.8f (angle : %12.8f);\n", cabsf(rxx),cargf(rxx)/16.0f);
+#endif
         nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
     }
@@ -355,7 +357,9 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
 #endif
 
     if (cabsf(rxy) > 48.0f) {
+#if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("rxy = %12.8f (angle : %12.8f);\n", cabsf(rxy),cargf(rxy));
+#endif
         //nco_set_phase(_q->nco_rx, -cargf(rxy));
 
         // store sequence
@@ -394,7 +398,9 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
     // high; if it's not, then the symbol 
 
     if (cabsf(rxy) > 48.0f) {
+#if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("rxy = %12.8f (angle : %12.8f);\n", cabsf(rxy),cargf(rxy));
+#endif
 
         // store sequence
         memmove(_q->Lt1, rc, 64*sizeof(float complex));
