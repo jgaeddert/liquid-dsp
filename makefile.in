@@ -98,7 +98,6 @@ benchmark_headers	:=
 objects		= $(patsubst %.c,%.o,$(sources))
 dependencies	= $(patsubst %.c,%.d,$(sources))
 
-
 all:
 
 
@@ -110,6 +109,10 @@ all:
 #
 include $(patsubst %,$(modulesdir)/%/module.mk,$(modules))
 
+# additional sources
+extra_sources := libliquid.c
+
+sources += $(extra_sources)
 
 # Dependencies
 #

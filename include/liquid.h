@@ -17,9 +17,35 @@
  * You should have received a copy of the GNU General Public License
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef __LIQUID_H__
 #define __LIQUID_H__
+
+/*
+ * Make sure the version and version number macros weren't defined by
+ * some prevoiusly included header file.
+ */
+#ifdef LIQUID_VERSION
+#  undef LIQUID_VERSION
+#endif
+#ifdef LIQUID_VERSION_NUMBER
+#  undef LIQUID_VERSION_NUMBER
+#endif
+
+/*
+ * Compile-time version numbers
+ * 
+ * LIQUID_VERSION = "X.Y.Z"
+ * LIQUID_VERSION_NUMBER = (X*1000000 + Y*1000 + Z)
+ */
+#define LIQUID_VERSION          "0.1.0"
+#define LIQUID_VERSION_NUMBER   1000
+
+/*
+ * Run-time library version numbers
+ */
+extern const char liquid_version[];
+const char * liquid_libversion(void);
+int liquid_libversion_number(void);
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,6 +58,8 @@ extern "C" {
 #define LIQUID_VALIDATE_INPUT
 
 /* 
+ * Compile-time complex data type definitions
+ *
  * Default: use the C99 complex data type, otherwise
  * define complex type compatible with the C++ complex standard,
  * otherwise resort to defining binary compatible array.
