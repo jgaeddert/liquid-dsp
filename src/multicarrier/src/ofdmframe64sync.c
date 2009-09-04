@@ -253,6 +253,7 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
 
 void ofdmframe64sync_debug_print(ofdmframe64sync _q)
 {
+#if DEBUG_OFDMFRAME64SYNC
     FILE * fid = fopen(DEBUG_OFDMFRAME64SYNC_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
     fprintf(fid,"close all;\n");
@@ -318,6 +319,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
  
     fclose(fid);
     printf("ofdmframe64sync/debug: results written to %s\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
+#endif
 }
 
 void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
