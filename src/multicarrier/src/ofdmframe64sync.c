@@ -518,9 +518,10 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     // try to unwrap phase
     float dy;
     for (i=1; i<4; i++) {
-        dy = _q->y_phase[i] - _q->y_phase[i-1];
-        if (dy > M_PI)          _q->y_phase[i] -= 2*M_PI;
-        else if (dy < -M_PI)    _q->y_phase[i] += 2*M_PI;
+        while ((_q->y_phase[i] - _q->y_phase[i-1]) >  M_PI)
+            _q->y_phase[i] -= 2*M_PI;
+        while ((_q->y_phase[i] - _q->y_phase[i-1]) < -M_PI)
+            _q->y_phase[i] += 2*M_PI;
     }
 
     // pilot phase correction
