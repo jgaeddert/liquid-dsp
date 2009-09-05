@@ -998,7 +998,7 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, liquid_float_complex, liquid_float_
 //
 #define SYMSYNC_MANGLE_RRRF(name)   LIQUID_CONCAT(symsync_rrrf,name)
 #define SYMSYNC_MANGLE_CRCF(name)   LIQUID_CONCAT(symsync_crcf,name)
-#define SYMSYNC_MANGLE_CCCF(name)   LIQUID_CONCAT(symsync_cccf,name)
+//#define SYMSYNC_MANGLE_CCCF(name)   LIQUID_CONCAT(symsync_cccf,name)
 
 #define LIQUID_SYMSYNC_DEFINE_API(SYMSYNC,TO,TC,TI)             \
 typedef struct SYMSYNC(_s) * SYMSYNC();                         \
@@ -1021,7 +1021,7 @@ void        SYMSYNC(_estimate_timing)(SYMSYNC() _q,             \
 
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF, float,           float,          float)
 LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
-LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
+//LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer, 2 samples/symbol in/out)

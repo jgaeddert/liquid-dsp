@@ -77,8 +77,8 @@ ofdmframe64gen ofdmframe64gen_create()
 
     // set cyclic prefix array pointer
     q->xcp = &(q->x[q->num_subcarriers - q->cp_len]);
-    q->St = ofdmframe64_plcp_St;
-    q->Lt = ofdmframe64_plcp_Lt;
+    q->St = (float complex*) ofdmframe64_plcp_St;
+    q->Lt = (float complex*) ofdmframe64_plcp_Lt;
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);

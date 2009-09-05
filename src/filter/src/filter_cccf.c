@@ -34,7 +34,7 @@
 //#define QMFB(name)          LIQUID_CONCAT(qmfb_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
-#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
+//#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
 #define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_cccf,name)
 
 #define PRINTVAL(x)         printf("%12.4e + %12.4ej", crealf(x), cimagf(x))
@@ -57,5 +57,5 @@
 //#include "qmfb.c"
 //#include "resamp.c"
 #include "resamp2.c"
-#include "symsync.c"
+//#include "symsync.c"
 #include "symsync2.c"

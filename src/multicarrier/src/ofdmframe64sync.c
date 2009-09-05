@@ -516,7 +516,6 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     _q->y_phase[3] = cargf(_q->X[53]);  //  21
 
     // try to unwrap phase
-    float dy;
     for (i=1; i<4; i++) {
         while ((_q->y_phase[i] - _q->y_phase[i-1]) >  M_PI)
             _q->y_phase[i] -= 2*M_PI;
