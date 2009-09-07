@@ -359,6 +359,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
         _q->nu_hat0 = -cargf(rxx)/16.0f;
         nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
+        _q->symbol_timer = 0;
     }
 }
 
@@ -375,6 +376,8 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
     cfwindow_push(_q->debug_rxy,rxy);
 #endif
 
+    _q->symbol_timer++;
+
     if (cabsf(rxy) > 48.0f) {
 #if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("rxy = %12.8f (angle : %12.8f);\n", cabsf(rxy),cargf(rxy));
@@ -387,6 +390,9 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG1;
         _q->symbol_timer = 0;
     }
+
+    if (_q->symbol_timer > 160)
+        ofdmframe64sync_reset(_q);
 }
 
 void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
