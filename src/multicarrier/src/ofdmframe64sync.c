@@ -47,6 +47,10 @@ struct ofdmframe64sync_s {
     float complex * x; // time-domain buffer
     float complex * X; // freq-domain buffer
 
+    // initial gain correction / signal detection
+    agc sigdet;
+    float g;
+
     // gain correction...
     float complex G[64];
     float x_phase[4];       // 
@@ -121,7 +125,8 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->fft = fft_create_plan(q->num_subcarriers, q->x, q->X, FFT_FORWARD);
 #endif
 
-    // gain correction...
+    // initial gain correction / signal detection
+    q->sigdet = agc_create(1.0f, 0.1f);
 
     // carrier offset correction
     q->nco_rx = nco_create();
@@ -179,6 +184,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     fft_destroy_plan(_q->fft);
 #endif
 
+    agc_destroy(_q->sigdet);
     msequence_destroy(_q->ms_pilot);
     autocorr_cccf_destroy(_q->delay_correlator);
     dotprod_cccf_destroy(_q->cross_correlator);
@@ -196,6 +202,8 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     // reset pilot sequence generator
     msequence_reset(_q->ms_pilot);
 
+    _q->g = 1.0f;
+    agc_reset(_q->sigdet);
     _q->state = OFDMFRAME64SYNC_STATE_PLCPSHORT;
     _q->rxx_max = 0.0f;
     nco_set_frequency(_q->nco_rx, 0.0f);
@@ -227,9 +235,10 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
         cfwindow_push(_q->debug_x,x);
 #endif
 
-        // TODO: apply gain
+        // coarse gain correction
+        x *= _q->g;
         
-        // apply NCO
+        // carrier frequency offset estimation
         nco_mix_up(_q->nco_rx, x, &x);
 
         switch (_q->state) {
@@ -337,9 +346,15 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
 void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
                                        float complex _x)
 {
+    // run AGC, clip output
+    float complex y;
+    agc_execute(_q->sigdet, _x, &y);
+    if (cabsf(y) > 4.0f)
+        y = 4.0f*cexpf(_Complex_I*cargf(y));
+
     // run auto-correlator
     float complex rxx;
-    autocorr_cccf_push(_q->delay_correlator, _x);
+    autocorr_cccf_push(_q->delay_correlator, y);
     autocorr_cccf_execute(_q->delay_correlator, &rxx);
 
 #if DEBUG_OFDMFRAME64SYNC
@@ -356,6 +371,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
         nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
         _q->symbol_timer = 0;
+        _q->g = agc_get_gain(_q->sigdet);
     }
 }
 
