@@ -205,6 +205,7 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     _q->g = 1.0f;
     agc_reset(_q->sigdet);
     _q->state = OFDMFRAME64SYNC_STATE_PLCPSHORT;
+    autocorr_cccf_clear(_q->delay_correlator);
     _q->rxx_max = 0.0f;
     nco_set_frequency(_q->nco_rx, 0.0f);
     nco_set_phase(_q->nco_rx, 0.0f);
@@ -349,8 +350,8 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     // run AGC, clip output
     float complex y;
     agc_execute(_q->sigdet, _x, &y);
-    if (cabsf(y) > 4.0f)
-        y = 4.0f*cexpf(_Complex_I*cargf(y));
+    if (cabsf(y) > 2.0f)
+        y = 2.0f*cexpf(_Complex_I*cargf(y));
 
     // run auto-correlator
     float complex rxx;
@@ -594,8 +595,11 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
             printf("exiting prematurely\n");
             ofdmframe64sync_destroy(_q);
             exit(0);
+        } else if (retval == 1) {
             printf("resetting synchronizer\n");
             ofdmframe64sync_reset(_q);
+        } else {
+            // do nothing
         }
     }
 }
