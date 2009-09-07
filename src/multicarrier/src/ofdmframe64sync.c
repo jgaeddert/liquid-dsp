@@ -35,10 +35,8 @@
 #   include <fftw3.h>
 #endif
 
-#define OFDMFRAME64SYNC_MIN_NUM_SUBCARRIERS   (8)
-
 #define DEBUG_OFDMFRAME64SYNC             1
-#define DEBUG_OFDMFRAME64SYNC_PRINT       0
+#define DEBUG_OFDMFRAME64SYNC_PRINT       1
 #define DEBUG_OFDMFRAME64SYNC_FILENAME    "ofdmframe64sync_internal_debug.m"
 #define DEBUG_OFDMFRAME64SYNC_BUFFER_LEN  (1024)
 
@@ -75,7 +73,8 @@ struct ofdmframe64sync_s {
     float complex data[48];
 
     float zeta;         // scaling factor
-    float nu_hat;       // carrier frequency offset estimation
+    float nu_hat0;      // carrier frequency offset estimation (coarse)
+    float nu_hat1;      // carrier frequency offset estimation (fine)
     float dt_hat;       // symbol timing offset estimation
 
     msequence ms_pilot;
@@ -98,8 +97,9 @@ struct ofdmframe64sync_s {
     } state;
 
 #if DEBUG_OFDMFRAME64SYNC
-    cfwindow debug_rxy;
+    cfwindow debug_x;
     cfwindow debug_rxx;
+    cfwindow debug_rxy;
     cfwindow debug_framesyms;
 #endif
 };
@@ -139,6 +139,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->rxy_buffer = cfwindow_create(64);
     
 #if DEBUG_OFDMFRAME64SYNC
+    q->debug_x   = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxx = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
@@ -163,6 +164,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
 {
 #if DEBUG_OFDMFRAME64SYNC
     ofdmframe64sync_debug_print(_q);
+    cfwindow_destroy(_q->debug_x);
     cfwindow_destroy(_q->debug_rxx);
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
@@ -223,10 +225,13 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
     float complex x;
     for (i=0; i<_n; i++) {
         x = _x[i];
+#if DEBUG_OFDMFRAME64SYNC
+        cfwindow_push(_q->debug_x,x);
+#endif
 
         // TODO: apply gain
         
-        // TODO: apply NCO
+        // apply NCO
         nco_mix_up(_q->nco_rx, x, &x);
 
         switch (_q->state) {
@@ -261,6 +266,17 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
     unsigned int i;
     float complex * rc;
+
+    fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat0 + _q->nu_hat1);
+
+    fprintf(fid,"x = zeros(1,n);\n");
+    cfwindow_read(_q->debug_x, &rc);
+    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(0:(n-1),real(x),0:(n-1),imag(x));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('received signal, x');\n");
 
     fprintf(fid,"rxx = zeros(1,n);\n");
     cfwindow_read(_q->debug_rxx, &rc);
@@ -340,6 +356,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
 #if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("rxx = %12.8f (angle : %12.8f);\n", cabsf(rxx),cargf(rxx)/16.0f);
 #endif
+        _q->nu_hat0 = -cargf(rxx)/16.0f;
         nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
     }
@@ -410,7 +427,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         // run fine CFO estimation and correct offset for
         // PLCP long sequences
         ofdmframe64sync_estimate_cfo_plcplong(_q);
-        nco_adjust_frequency(_q->nco_rx, _q->nu_hat);
+        nco_adjust_frequency(_q->nco_rx, _q->nu_hat1);
 #if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("nu_hat = %12.8f;\n", _q->nco_rx->d_theta);
 #endif
@@ -456,8 +473,8 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
         } else {
             // compute subcarrier gain by averaging error of each
             // long sequence
-            g0 = ofdmframe64_plcp_Lf[i] * (_q->Lf0[i]);
-            g1 = ofdmframe64_plcp_Lf[i] * (_q->Lf1[i]);
+            g0 = _q->Lf0[i] * conj(ofdmframe64_plcp_Lf[i]);
+            g1 = _q->Lf1[i] * conj(ofdmframe64_plcp_Lf[i]);
             _q->g[i] = 2.0f/(g0+g1);
         }
         _q->Lf0[i] *= _q->g[i];
@@ -472,18 +489,18 @@ void ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q)
     for (i=0; i<64; i++)
         r += _q->Lt0[i] * conjf(_q->Lt1[i]);
 
-    _q->nu_hat = cargf(r) / 64.0f;
+    _q->nu_hat1 = cargf(r) / 64.0f;
 }
 
 void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q)
 {
-    // mix Lt0,Lt1 by nu_hat (compensate for fine CFO estimation)
+    // mix Lt0,Lt1 by nu_hat1 (compensate for fine CFO estimation)
     unsigned int i;
     float theta=0.0f;
     for (i=0; i<64; i++) {
         _q->Lt0[i] *= cexpf(_Complex_I*theta);
         _q->Lt1[i] *= cexpf(_Complex_I*theta);
-        theta += _q->nu_hat;
+        theta += _q->nu_hat1;
     }
 }
 
@@ -564,7 +581,15 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
         cfwindow_push(_q->debug_framesyms,_q->data[i]);
 #endif
 
-    if (_q->callback != NULL)
-        _q->callback(_q->data, _q->userdata);
+    if (_q->callback != NULL) {
+        int retval = _q->callback(_q->data, _q->userdata);
+        if (retval == -1) {
+            printf("exiting prematurely\n");
+            ofdmframe64sync_destroy(_q);
+            exit(0);
+            printf("resetting synchronizer\n");
+            ofdmframe64sync_reset(_q);
+        }
+    }
 }
 
