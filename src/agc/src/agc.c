@@ -96,6 +96,14 @@ void agc_print(agc _agc)
     printf("agc [rssi: %12.4fdB]:\n", 10*log10(_agc->e_target / _agc->g));
 }
 
+void agc_reset(agc _agc)
+{
+    fir_filter_rrrf_clear(_agc->f);
+    _agc->e_prime = 1.0f;
+    _agc->e_hat = 1.0f;
+    _agc->tmp2 = 1.0f;
+}
+
 void agc_init(agc _agc)
 {
     //_agc->e = 1.0f;
