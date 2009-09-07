@@ -48,7 +48,7 @@ struct ofdmframe64sync_s {
     float complex * X; // freq-domain buffer
 
     // gain correction...
-    float complex g[64];
+    float complex G[64];
     float x_phase[4];       // 
     float y_phase[4];       // 
     float p_phase[2];       // polynomial fit to phase
@@ -64,8 +64,8 @@ struct ofdmframe64sync_s {
     dotprod_cccf cross_correlator;
     float complex rxy;
     cfwindow rxy_buffer;
-    float complex Lt0[64], Lf0[64]; // received PLCP long sequence (first)
-    float complex Lt1[64], Lf1[64]; // received PLCP long sequence (second)
+    float complex Lt0[64];  // received PLCP long sequence (first)
+    float complex Lt1[64];  // received PLCP long sequence (second)
 
     // timer
     unsigned int symbol_timer;
@@ -205,12 +205,10 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     for (i=0; i<64; i++) {
         // clear PLCP long buffers
         _q->Lt0[i] = 0.0f;
-        _q->Lf0[i] = 0.0f;
         _q->Lt1[i] = 0.0f;
-        _q->Lf1[i] = 0.0f;
 
         // reset gain
-        _q->g[i] = 1.0f;
+        _q->G[i] = 1.0f;
     }
 
     // reset symbol timer
@@ -269,6 +267,10 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
 
     fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat0 + _q->nu_hat1);
 
+    // gain vector
+    for (i=0; i<64; i++)
+        fprintf(fid,"G(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G[i]), cimagf(_q->G[i]));
+ 
     fprintf(fid,"x = zeros(1,n);\n");
     cfwindow_read(_q->debug_x, &rc);
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
@@ -301,10 +303,10 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"Lt1 = zeros(1,64);\n");
     for (i=0; i<64; i++) {
         fprintf(fid,"Lt0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt0[i]), cimagf(_q->Lt0[i]));
-        fprintf(fid,"Lf0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lf0[i]), cimagf(_q->Lf0[i]));
         fprintf(fid,"Lt1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt1[i]), cimagf(_q->Lt1[i]));
-        fprintf(fid,"Lf1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lf1[i]), cimagf(_q->Lf1[i]));
     }
+    fprintf(fid,"Lf0 = fft(Lt0).*G;\n");
+    fprintf(fid,"Lf1 = fft(Lt1).*G;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
     fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
@@ -312,7 +314,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
-    fprintf(fid,"title('PLCP Long Sequence');\n");
+    fprintf(fid,"title('PLCP Long Sequence (after gain correction)');\n");
 
     // frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
@@ -327,12 +329,6 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"ylabel('quadrature phase');\n");
     fprintf(fid,"title('Frame Symbols');\n");
 
-    for (i=0; i<64; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->x[i]), cimagf(_q->x[i]));
- 
-    for (i=0; i<64; i++)
-        fprintf(fid,"G(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->g[i]), cimagf(_q->g[i]));
- 
     fclose(fid);
     printf("ofdmframe64sync/debug: results written to %s\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
 #endif
@@ -391,7 +387,7 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
         _q->symbol_timer = 0;
     }
 
-    if (_q->symbol_timer > 160)
+    if (_q->symbol_timer > 320)
         ofdmframe64sync_reset(_q);
 }
 
@@ -452,39 +448,28 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 
 void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
 {
-    // first PLCP long sequence
-    memmove(_q->x, _q->Lt0, 64*sizeof(float complex));
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
-    memmove(_q->Lf0, _q->X, 64*sizeof(float complex));
-
-    // second PLCP long sequence
-    memmove(_q->x, _q->Lt1, 64*sizeof(float complex));
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
-    memmove(_q->Lf1, _q->X, 64*sizeof(float complex));
-
+    // average PLCP sequences (should be phase-aligned) and
+    // store into fft time-domain buffer
     unsigned int i;
-    float complex g0,g1;
+    for (i=0; i<64; i++)
+        _q->x[i] = 0.5f*(_q->Lt0[i] + _q->Lt1[i]);
+
+    // execute ifft
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+
     for (i=0; i<64; i++) {
         if (i==0 || (i>26 && i<38)) {
             // disabled subcarrier
-            _q->g[i] = 0.0f;
+            _q->G[i] = 0.0f;
         } else {
             // compute subcarrier gain by averaging error of each
             // long sequence
-            g0 = _q->Lf0[i] * conj(ofdmframe64_plcp_Lf[i]);
-            g1 = _q->Lf1[i] * conj(ofdmframe64_plcp_Lf[i]);
-            _q->g[i] = 2.0f/(g0+g1);
+            _q->G[i] = 1.0f / (_q->X[i] * conj(ofdmframe64_plcp_Lf[i]));
         }
-        _q->Lf0[i] *= _q->g[i];
-        _q->Lf1[i] *= _q->g[i];
     }
 }
 
@@ -531,7 +516,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     // gain correction (equalizer)
     unsigned int i;
     for (i=0; i<64; i++) {
-        _q->X[i] *= _q->g[i];
+        _q->X[i] *= _q->G[i];
     }
     _q->y_phase[0] = cargf(_q->X[11]);  // -21
     _q->y_phase[1] = cargf(_q->X[25]);  //  -7
