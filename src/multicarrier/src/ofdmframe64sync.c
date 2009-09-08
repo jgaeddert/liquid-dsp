@@ -492,30 +492,35 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
     memmove(_q->Lf1, _q->X, 64*sizeof(float complex));
 
     unsigned int i;
-    float complex p0=0.0f, p1=0.0f;
+    float g0, theta0;
+    float g1, theta1;
     for (i=0; i<64; i++) {
         if (i==0 || (i>26 && i<38)) {
             // disabled subcarrier
             _q->G0[i] = 0.0f;
             _q->G1[i] = 0.0f;
+            _q->G[i]  = 0.0f;
         } else {
             // compute subcarrier gains
             _q->G0[i] = 1.0f / (_q->Lf0[i] * conj(ofdmframe64_plcp_Lf[i]));
             _q->G1[i] = 1.0f / (_q->Lf1[i] * conj(ofdmframe64_plcp_Lf[i]));
 
-            // accumulate cross phase term, removing modulation
-            p0 += _q->Lf0[i] * _q->G1[i] * conj(ofdmframe64_plcp_Lf[i]);
-            p1 += _q->Lf1[i] * _q->G0[i] * conj(ofdmframe64_plcp_Lf[i]);
+            // average amplitude, phase of subcarrier gains (note
+            // that residual phase offset is taken care of by pilot
+            // subcarriers)
+            g0 = cabsf(_q->G0[i]);
+            g1 = cabsf(_q->G1[i]);
+            theta0 = cargf(_q->G0[i]);
+            theta1 = cargf(_q->G1[i]);
+            if (theta0 < 0) theta0 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
+            if (theta1 < 0) theta1 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
+            _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*0.5f*(theta0+theta1));
         }
-        //_q->G[i] = 0.5f*(_q->G0[i] + _q->G1[i]);
-    }
-    float theta = 0.5f*(cargf(p1)-cargf(p0));
-    printf("theta : %12.8f\n", theta); // NOTE: is this phase error relative to CFO estimation error?
-
-    // average gain terms, removing phase offset
-    for (i=0; i<64; i++) {
-        _q->G[i] = 0.5f*( _q->G0[i]*cexpf( _Complex_I*theta) +
-                          _q->G1[i]*cexpf(-_Complex_I*theta) );
+#if DEBUG_OFDMFRAME64SYNC
+        // correct long sequence (plotting purposes only)
+        _q->Lf0[i] *= _q->G[i];
+        _q->Lf1[i] *= _q->G[i];
+#endif
     }
 }
 
