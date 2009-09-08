@@ -68,8 +68,9 @@ struct ofdmframe64sync_s {
     dotprod_cccf cross_correlator;
     float complex rxy;
     cfwindow rxy_buffer;
-    float complex Lt0[64];  // received PLCP long sequence (first)
-    float complex Lt1[64];  // received PLCP long sequence (second)
+    float complex Lt0[64], Lf0[64]; // received PLCP long sequence (first)
+    float complex Lt1[64], Lf1[64]; // received PLCP long sequence (second)
+    float complex G0[64], G1[64];
 
     // timer
     unsigned int symbol_timer;
@@ -277,9 +278,12 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
 
     fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat0 + _q->nu_hat1);
 
-    // gain vector
-    for (i=0; i<64; i++)
+    // gain vectors
+    for (i=0; i<64; i++) {
         fprintf(fid,"G(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G[i]), cimagf(_q->G[i]));
+        fprintf(fid,"G0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
+        fprintf(fid,"G1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
+    }
  
     fprintf(fid,"x = zeros(1,n);\n");
     cfwindow_read(_q->debug_x, &rc);
@@ -313,10 +317,12 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"Lt1 = zeros(1,64);\n");
     for (i=0; i<64; i++) {
         fprintf(fid,"Lt0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt0[i]), cimagf(_q->Lt0[i]));
+        fprintf(fid,"Lf0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lf0[i]), cimagf(_q->Lf0[i]));
         fprintf(fid,"Lt1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lt1[i]), cimagf(_q->Lt1[i]));
+        fprintf(fid,"Lf1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Lf1[i]), cimagf(_q->Lf1[i]));
     }
-    fprintf(fid,"Lf0 = fft(Lt0).*G;\n");
-    fprintf(fid,"Lf1 = fft(Lt1).*G;\n");
+    //fprintf(fid,"Lf0 = fft(Lt0).*G;\n");
+    //fprintf(fid,"Lf1 = fft(Lt1).*G;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
     fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
@@ -350,6 +356,8 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     // run AGC, clip output
     float complex y;
     agc_execute(_q->sigdet, _x, &y);
+    //if (agc_get_signal_level(_q->sigdet) < -15.0f)
+    //    return;
     if (cabsf(y) > 2.0f)
         y = 2.0f*cexpf(_Complex_I*cargf(y));
 
@@ -465,28 +473,49 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 
 void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
 {
-    // average PLCP sequences (should be phase-aligned) and
-    // store into fft time-domain buffer
-    unsigned int i;
-    for (i=0; i<64; i++)
-        _q->x[i] = 0.5f*(_q->Lt0[i] + _q->Lt1[i]);
-
-    // execute ifft
+    // first PLCP long sequence
+    memmove(_q->x, _q->Lt0, 64*sizeof(float complex));
 #if HAVE_FFTW3_H
     fftwf_execute(_q->fft);
 #else
     fft_execute(_q->fft);
 #endif
+    memmove(_q->Lf0, _q->X, 64*sizeof(float complex));
 
+    // second PLCP long sequence
+    memmove(_q->x, _q->Lt1, 64*sizeof(float complex));
+#if HAVE_FFTW3_H
+    fftwf_execute(_q->fft);
+#else
+    fft_execute(_q->fft);
+#endif
+    memmove(_q->Lf1, _q->X, 64*sizeof(float complex));
+
+    unsigned int i;
+    float complex p0=0.0f, p1=0.0f;
     for (i=0; i<64; i++) {
         if (i==0 || (i>26 && i<38)) {
             // disabled subcarrier
-            _q->G[i] = 0.0f;
+            _q->G0[i] = 0.0f;
+            _q->G1[i] = 0.0f;
         } else {
-            // compute subcarrier gain by averaging error of each
-            // long sequence
-            _q->G[i] = 1.0f / (_q->X[i] * conj(ofdmframe64_plcp_Lf[i]));
+            // compute subcarrier gains
+            _q->G0[i] = 1.0f / (_q->Lf0[i] * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G1[i] = 1.0f / (_q->Lf1[i] * conj(ofdmframe64_plcp_Lf[i]));
+
+            // accumulate cross phase term, removing modulation
+            p0 += _q->Lf0[i] * _q->G1[i] * conj(ofdmframe64_plcp_Lf[i]);
+            p1 += _q->Lf1[i] * _q->G0[i] * conj(ofdmframe64_plcp_Lf[i]);
         }
+        //_q->G[i] = 0.5f*(_q->G0[i] + _q->G1[i]);
+    }
+    float theta = 0.5f*(cargf(p1)-cargf(p0));
+    printf("theta : %12.8f\n", theta); // NOTE: is this phase error relative to CFO estimation error?
+
+    // average gain terms, removing phase offset
+    for (i=0; i<64; i++) {
+        _q->G[i] = 0.5f*( _q->G0[i]*cexpf( _Complex_I*theta) +
+                          _q->G1[i]*cexpf(-_Complex_I*theta) );
     }
 }
 
