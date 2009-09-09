@@ -514,7 +514,14 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
             theta1 = cargf(_q->G1[i]);
             if (theta0 < 0) theta0 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
             if (theta1 < 0) theta1 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
+#if 0
+            // average amplitude and phase
             _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*0.5f*(theta0+theta1));
+#else
+            // average amplitude; retain phase from first estimate
+            _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*theta0);
+#endif
+            //_q->G[i] = _q->G0[i]; // use only first estimate
         }
 #if DEBUG_OFDMFRAME64SYNC
         // correct long sequence (plotting purposes only)
