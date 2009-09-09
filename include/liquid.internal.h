@@ -45,7 +45,7 @@
     fprintf(F,"%s(%4u) = %12.4e +j*%12.4e;\n",STR,I+1,crealf(V),cimagf(V))
 
 //
-// MODULE: agc
+// MODULE : agc
 //
 
 // initialize agc object
@@ -53,7 +53,7 @@ void agc_init(agc _agc);
 
 
 //
-// MODULE: ann
+// MODULE : ann
 //
 
 // linear activation function
@@ -115,7 +115,7 @@ LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
 
 
 //
-// MODULE: audio
+// MODULE : audio
 //
 
 // compute optimum bit allocation for sub-band coder
@@ -134,7 +134,7 @@ void fbasc_encode_frame(fbasc _q);
 void fbasc_decode_frame(fbasc _q);
 
 //
-// MODULE: buffer
+// MODULE : buffer
 //
 
 // Buffers
@@ -166,6 +166,41 @@ void WINDOW(_linearize)(WINDOW() _b);
 LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_FLOAT, float)
 LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_CFLOAT, float complex)
 LIQUID_WINDOW_DEFINE_INTERNAL_API(WINDOW_MANGLE_UINT, unsigned int)
+
+//
+// MODULE : channel
+//
+
+struct awgn_channel_s {
+    float nvar;
+    float nstd;
+};
+
+struct ricek_channel_s {
+    unsigned int h_len;
+    float K;
+    float omega;
+    float sig;
+    float s;
+    float fd;
+    float theta;
+    fir_filter_cccf f;
+};
+
+struct channel_s {
+    float K;        // Rice-K fading
+    //float omega;    // Mean power (omega=1)
+    float fd;       // Maximum doppler frequency
+    float theta;    // Line-of-sight angle of arrival
+    float std;      // log-normal shadowing std. dev.
+    float n0;       // AWGN std. dev.
+
+    fir_filter_cccf f_ricek;     // doppler filter (Rice-K fading)
+    fir_filter_rrrf f_lognorm;   // doppler filter (Log-normal shadowing)
+
+    // internal
+    float s, sig;
+};
 
 
 //
@@ -342,6 +377,54 @@ void fec_conv_init_v29p67(fec _q);
 void fec_conv_init_v29p78(fec _q);
 
 //
+// MODULE : fft (fast discrete Fourier transform)
+//
+
+// fft size below which twiddle factors
+// are stored in look-up table (very fast)
+#define FFT_SIZE_LUT    16
+
+struct fftplan_s {
+    unsigned int n;             // fft size
+    float complex * twiddle;    // twiddle factors
+    float complex * x;          // input array
+    float complex * y;          // output array
+    int direction;              // forward/reverse
+
+    // radix-2
+    int is_radix2;              // radix-2 flag
+    unsigned int * index_rev;   // input indices (reversed)
+    unsigned int m;             // log2(n)
+};
+
+// initialization
+void fft_init_lut(fftplan _p);
+void fft_init_radix2(fftplan _p);
+
+// execution
+
+// execute basic dft (slow, but guarantees
+// correct output)
+void fft_execute_dft(fftplan _p);
+
+// execute basic dft using look-up table for
+// twiddle factors (fast for small fft sizes)
+void fft_execute_lut(fftplan _p);
+
+// execute radix-2 fft
+void fft_execute_radix2(fftplan _p);
+
+// miscellaneous functions
+unsigned int reverse_index(unsigned int _i, unsigned int _n);
+
+//
+// fft_shift
+//
+//void fft_shift_odd(float complex *_x, unsigned int _n);
+//void fft_shift_even(float complex *_x, unsigned int _n);
+
+
+//
 // MODULE : filter
 //
 
@@ -496,6 +579,11 @@ void interleaver_circshift_R4(unsigned char *_x, unsigned int _n);
 // MODULE : matrix
 //
 
+#define MATRIX_MAX_SIZE 1024
+
+// fast access to matrix element, read/write
+#define matrix_fast_access(X,r,c,R,C) ((X)[(r)*(C)+(c)])
+
 #define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(fmatrix, name)
 #define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfmatrix, name)
 
@@ -521,8 +609,180 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT, float)
 LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 
 //
-// MODULE: modem
+// MODULE : modem
 //
+
+// PSK
+#define PSK_ALPHA       1
+
+// 'Square' QAM
+#define QAM4_ALPHA      1/sqrt(2)
+#define QAM8_ALPHA      1/sqrt(6)
+#define QAM16_ALPHA     1/sqrt(10)
+#define QAM32_ALPHA     1/sqrt(20)
+#define QAM64_ALPHA     1/sqrt(42)
+#define QAM128_ALPHA    1/sqrt(82)
+#define QAM256_ALPHA    1/sqrt(170)
+#define QAM1024_ALPHA   1/sqrt(682)
+#define QAM4096_ALPHA   1/sqrt(2730)
+
+// Rectangular QAM
+#define RQAM4_ALPHA     QAM4_ALPHA
+#define RQAM8_ALPHA     QAM8_ALPHA
+#define RQAM16_ALPHA    QAM16_ALPHA
+#define RQAM32_ALPHA    1/sqrt(26)
+#define RQAM64_ALPHA    QAM64_ALPHA
+#define RQAM128_ALPHA   1/sqrt(106)
+#define RQAM256_ALPHA   QAM256_ALPHA
+#define RQAM512_ALPHA   1/sqrt(426)
+#define RQAM1024_ALPHA  QAM1024_ALPHA
+#define RQAM2048_ALPHA  1/sqrt(1706)
+#define RQAM4096_ALPHA  QAM4096_ALPHA
+
+// ASK
+#define ASK2_ALPHA      1
+#define ASK4_ALPHA      1/sqrt(5)
+#define ASK8_ALPHA      1/sqrt(21)
+#define ASK16_ALPHA     1/sqrt(85)
+#define ASK32_ALPHA     1/sqrt(341)
+
+/** \brief modem structure used for both modulation and demodulation 
+ *
+ * The modem structure implements a variety of common modulation schemes,
+ * including (differential) phase-shift keying, and (quadrature) amplitude
+ * modulation.
+ *
+ * While the same modem structure may be used for both modulation and
+ * demodulation for most schemes, it is important to use separate objects
+ * for differential-mode modems (e.g. MOD_DPSK) as the internal state
+ * will change after each symbol.  It is usually good practice to keep
+ * separate instances of modulators and demodulators.
+ */
+struct modem_s {
+    modulation_scheme scheme;
+
+    unsigned int m;     ///< bits per symbol
+    unsigned int M;     ///< total symbols, \f$M=2^m\f$
+
+    unsigned int m_i;   ///< bits per symbol, in-phase
+    unsigned int M_i;   ///< total symbols, in-phase, \f$M_i=2^{m_i}\f$
+    unsigned int m_q;   ///< bits per symbol, quadrature
+    unsigned int M_q;   ///< total symbols, quadrature, \f$M_q=2^{m_q}\f$
+
+    float alpha;        ///< scaling factor to ensure \f$E\{|\bar{r}|^2\}=1\f$
+
+    /** \brief Reference vector for demodulating linear arrays
+     *
+     * By storing these values in an array they do not need to be
+     * calculated during run-time.  This speeds up the demodulation by
+     * approximately 8%.
+     */
+    float ref[MAX_MOD_BITS_PER_SYMBOL];
+
+    /// Complete symbol map
+    float complex * symbol_map;
+
+    float complex state;        // received state vector
+    float state_theta;          // received state vector, angle
+
+    float complex res;          // residual error vector
+
+    float phase_error;          // phase error after demodulation
+    float evm;                  // error vector magnitude (EVM)
+
+    float d_phi;
+
+    // modulate function pointer
+    void (*modulate_func)(modem _mod, unsigned int symbol_in, float complex *y);
+
+    // demodulate function pointer
+    void (*demodulate_func)(modem _demod, float complex x, unsigned int *symbol_out);
+};
+
+
+// generic modem create routines
+modem modem_create_ask(unsigned int _bits_per_symbol);
+modem modem_create_qam(unsigned int _bits_per_symbol);
+modem modem_create_psk(unsigned int _bits_per_symbol);
+modem modem_create_dpsk(unsigned int _bits_per_symbol);
+modem modem_create_arb(unsigned int _bits_per_symbol);
+modem modem_create_arb_mirrored(unsigned int _bits_per_symbol);
+modem modem_create_arb_rotated(unsigned int _bits_per_symbol);
+
+// specific modem create routines
+modem modem_create_bpsk(void);
+modem modem_create_qpsk(void);
+
+/// Scale arbitrary modem energy to unity
+void modem_arb_scale(modem _mod);
+
+/// Balance I/Q
+void modem_arb_balance_iq(modem _mod);
+
+// generic modem modulate routines
+void modem_modulate_ask(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_qam(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_psk(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_dpsk(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_arb(modem _mod, unsigned int symbol_in, float complex *y);
+//void modem_modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y);
+//void modem_modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y);
+
+// specific modem modulate routines
+void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
+
+// generic modem demodulate routines
+void modem_demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_qam(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_psk(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_dpsk(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_arb(modem _demod, float complex x, unsigned int *symbol_out);
+//void modem_demodulate_arb_mirrored(modem _demod, float complex x, unsigned int *symbol_out);
+//void modem_demodulate_arb_rotated(modem _demod, float complex x, unsigned int *symbol_out);
+
+// specific modem demodulate routines
+void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
+
+// get demodulator phase error
+//void get_demodulator_phase_error(modem _demod, float* _phi);
+
+// get error vector magnitude
+//void get_demodulator_evm(modem _demod, float* _evm);
+
+// demodulator helper functions
+
+/** \brief Demodulates a linear symbol constellation using dynamic threshold calculation
+ *
+ * \param[in]   _v      value
+ * \param[in]   _m      bits per symbol
+ * \param[in]   _alpha  scaling factor
+ * \param[out]  _s      demodulated symbol
+ * \param[out]  _res    residual
+ */
+void modem_demodulate_linear_array(
+    float _v,
+    unsigned int _m,
+    float _alpha,
+    unsigned int *_s,
+    float *_res);
+
+/** \brief Demodulates a linear symbol constellation using refereneced lookup table
+ *
+ * \param[in]   _v      value
+ * \param[in]   _m      bits per symbol
+ * \param[in]   _ref    array of thresholds
+ * \param[out]  _s      demodulated symbol
+ * \param[out]  _res    residual
+ */
+void modem_demodulate_linear_array_ref(
+    float _v,
+    unsigned int _m,
+    float *_ref,
+    unsigned int *_s,
+    float *_res);
+
 
 //
 // MODULE : multicarrier
@@ -552,7 +812,7 @@ extern const float complex ofdmframe64_plcp_Lf[64];
 extern const float complex ofdmframe64_plcp_Lt[64];
 
 //
-// MODULE: random
+// MODULE : random
 //
 float complex icrandnf();
 

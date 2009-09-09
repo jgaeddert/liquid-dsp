@@ -23,7 +23,7 @@
 //
 
 #include <stdlib.h>
-#include "modem_internal.h"
+#include "liquid.internal.h"
 
 // Generate random symbol
 unsigned int modem_gen_rand_sym(modem _mod)

@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "channel_internal.h"
+#include "liquid.internal.h"
 
 ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, float _theta)
 {

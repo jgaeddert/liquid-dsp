@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "fft_internal.h"
+#include "liquid.internal.h"
 
 void fft_destroy_plan(fftplan _p)
 {
@@ -50,7 +50,7 @@ fftplan fft_create_plan(unsigned int _n, float complex * _x, float complex * _y,
     p->twiddle = NULL;
     p->index_rev = NULL;
 
-    p->is_radix2 = false;
+    p->is_radix2 = 0;   // false
 
     // check to see if _n is radix 2
     unsigned int i, d=0, m=0, t=p->n;
@@ -65,7 +65,7 @@ fftplan fft_create_plan(unsigned int _n, float complex * _x, float complex * _y,
         fft_init_lut(p);
     } else if (d==1) {
         // radix-2
-        p->is_radix2 = true;
+        p->is_radix2 = 1;   // true
         p->m = m;
         fft_init_radix2(p);
     }

@@ -22,7 +22,7 @@
 // Floating-point matrix
 // 
 
-#include "matrix_internal.h"
+#include "liquid.internal.h"
 
 #define MATRIX(name)    LIQUID_CONCAT(fmatrix, name)
 #define MATRIX_NAME     "fmatrix"

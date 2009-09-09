@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "modem_internal.h"
+#include "liquid.internal.h"
 
 void modem_modulate(
     modem _mod,

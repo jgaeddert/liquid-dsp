@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "channel_internal.h"
+#include "liquid.internal.h"
 
 channel channel_create()
 {

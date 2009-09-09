@@ -26,7 +26,7 @@
 #include <complex.h>
 #include <math.h>
 
-#include "firdes.h"
+#include "liquid.internal.h"
 
 void cheby1f(unsigned int _n, float _ep, float * _b, float * _a)
 {

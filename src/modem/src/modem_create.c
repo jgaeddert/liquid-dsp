@@ -27,7 +27,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "modem_internal.h"
+#include "liquid.internal.h"
 
 modem modem_create(
     modulation_scheme _scheme,

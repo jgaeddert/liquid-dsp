@@ -23,7 +23,7 @@
 //
 
 //#include <math.h>
-#include "fft_internal.h"
+#include "liquid.internal.h"
 
 void fft_shift(float complex *_x, unsigned int _n)
 {

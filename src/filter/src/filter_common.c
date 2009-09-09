@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "filter_common.h"
+#include "liquid.internal.h"
 
 // esimate required filter length given
 //   _b    : transition bandwidth (0 < b < 0.5)

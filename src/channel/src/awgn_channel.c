@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "channel_internal.h"
+#include "liquid.internal.h"
 
 awgn_channel awgn_channel_create(float _nvar)
 {

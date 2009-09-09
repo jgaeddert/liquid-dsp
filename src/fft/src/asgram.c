@@ -28,7 +28,7 @@
 #include <math.h>
 
 #include <complex.h>
-#include "liquid.h"
+#include "liquid.internal.h"
 
 struct asgram_s {
     float complex * x;  // pointer to input array
