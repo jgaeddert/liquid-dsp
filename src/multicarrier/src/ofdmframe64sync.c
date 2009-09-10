@@ -40,24 +40,34 @@
 #define DEBUG_OFDMFRAME64SYNC_FILENAME    "ofdmframe64sync_internal_debug.m"
 #define DEBUG_OFDMFRAME64SYNC_BUFFER_LEN  (1024)
 
+// auto-correlation integration length
+#define OFDMFRAME64SYNC_AUTOCORR_LEN      (96)
+
 struct ofdmframe64sync_s {
     unsigned int num_subcarriers;
     unsigned int cp_len;
 
-    float complex * x; // time-domain buffer
-    float complex * X; // freq-domain buffer
+    // fast Fourier transform
+    float complex * x;      // FFT time-domain buffer
+    float complex * X;      // FFT freq-domain buffer
+#if HAVE_FFTW3_H
+    fftwf_plan fft;
+#else
+    fftplan fft;
+#endif
 
     // initial gain correction / signal detection
-    agc sigdet;
-    float g;
+    agc sigdet;             // automatic gain control for signal detection
+    float g;                // flat gain estimation
 
-    // gain correction...
-    float complex G[64];
-    float x_phase[4];       // 
-    float y_phase[4];       // 
-    float p_phase[2];       // polynomial fit to phase
+    // equalization
+    msequence ms_pilot;     // P/N sequence pilot phase generator
+    float complex G[64];    // complex channel gain correction
+    float x_phase[4];       // pilot subcarrier index
+    float y_phase[4];       // pilot subcarrier phase
+    float p_phase[2];       // polynomial fit
 
-    // carrier offset correction
+    // numerically-controlled oscillator for carrier offset correction
     nco nco_rx;
 
     // PLCP SHORT : delay correlator
@@ -73,32 +83,23 @@ struct ofdmframe64sync_s {
     float complex G0[64], G1[64];
 
     // timer
-    unsigned int symbol_timer;
-    float complex symbol[80];
-    float complex data[48];
+    unsigned int timer;
+    float complex symbol[80];   // symbol data buffer
+    float complex data[48];     // synchronized data subcarriers
 
-    float zeta;         // scaling factor
     float nu_hat0;      // carrier frequency offset estimation (coarse)
     float nu_hat1;      // carrier frequency offset estimation (fine)
-    float dt_hat;       // symbol timing offset estimation
 
-    msequence ms_pilot;
-
-#if HAVE_FFTW3_H
-    fftwf_plan fft;
-#else
-    fftplan fft;
-#endif
-
+    // callback function and scaling factor
     ofdmframe64sync_callback callback;
     void * userdata;
 
-    // state
+    // receiver state
     enum {
-        OFDMFRAME64SYNC_STATE_PLCPSHORT=0,
-        OFDMFRAME64SYNC_STATE_PLCPLONG0,
-        OFDMFRAME64SYNC_STATE_PLCPLONG1,
-        OFDMFRAME64SYNC_STATE_RXPAYLOAD
+        OFDMFRAME64SYNC_STATE_PLCPSHORT=0,  // seek PLCP short sequence
+        OFDMFRAME64SYNC_STATE_PLCPLONG0,    // seek first PLCP long seq.
+        OFDMFRAME64SYNC_STATE_PLCPLONG1,    // seek second PLCP long seq.
+        OFDMFRAME64SYNC_STATE_RXPAYLOAD     // receive payload symbols
     } state;
 
 #if DEBUG_OFDMFRAME64SYNC
@@ -133,10 +134,9 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->nco_rx = nco_create();
 
     // cyclic prefix correlation windows
-    q->delay_correlator = autocorr_cccf_create(64,16);
-    q->zeta = sqrtf(1.0f / 64.0f * 52.0f / 64.0f);
+    q->delay_correlator = autocorr_cccf_create(OFDMFRAME64SYNC_AUTOCORR_LEN,16);
 
-    //
+    // cross-correlator
     unsigned int i;
     float complex h[64];
     for (i=0; i<64; i++)
@@ -222,7 +222,7 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     }
 
     // reset symbol timer
-    _q->symbol_timer = 0;
+    _q->timer = 0;
 }
 
 void ofdmframe64sync_execute(ofdmframe64sync _q,
@@ -370,7 +370,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     cfwindow_push(_q->debug_rxx,rxx);
 #endif
 
-    if (cabsf(rxx) > 48.0f) {
+    if (cabsf(rxx) > 0.75f*OFDMFRAME64SYNC_AUTOCORR_LEN) {
         // TODO : wait for auto-correlation to peak before changing state
 
 #if DEBUG_OFDMFRAME64SYNC_PRINT
@@ -379,7 +379,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
         _q->nu_hat0 = -cargf(rxx)/16.0f;
         nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
-        _q->symbol_timer = 0;
+        _q->timer = 0;
         _q->g = agc_get_gain(_q->sigdet);
     }
 }
@@ -397,7 +397,7 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
     cfwindow_push(_q->debug_rxy,rxy);
 #endif
 
-    _q->symbol_timer++;
+    _q->timer++;
 
     if (cabsf(rxy) > 48.0f) {
 #if DEBUG_OFDMFRAME64SYNC_PRINT
@@ -406,13 +406,14 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
         //nco_set_phase(_q->nco_rx, -cargf(rxy));
 
         // store sequence
+        // TODO : back off PLCP long by a sample or 2 to help ensure no ISI
         memmove(_q->Lt0, rc, 64*sizeof(float complex));
 
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG1;
-        _q->symbol_timer = 0;
+        _q->timer = 0;
     }
 
-    if (_q->symbol_timer > 320)
+    if (_q->timer > 320)
         ofdmframe64sync_reset(_q);
 }
 
@@ -429,14 +430,15 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
     cfwindow_push(_q->debug_rxy,rxy);
 #endif
 
-    _q->symbol_timer++;
-    if (_q->symbol_timer < 64)
+    _q->timer++;
+    if (_q->timer < 64)
         return;
 
     // reset timer
-    _q->symbol_timer = 0;
+    _q->timer = 0;
 
     // run cross-correlator
+    // TODO : back off PLCP long by a sample or 2 to help ensure no ISI
     cfwindow_read(_q->rxy_buffer, &rc);
     dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
 
@@ -521,7 +523,7 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
             // average amplitude; retain phase from first estimate
             _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*theta0);
 #endif
-            //_q->G[i] = _q->G0[i]; // use only first estimate
+            _q->G[i] = _q->G0[i]; // use only first estimate
         }
 #if DEBUG_OFDMFRAME64SYNC
         // correct long sequence (plotting purposes only)
@@ -555,16 +557,19 @@ void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q)
 
 void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 {
-    _q->symbol[_q->symbol_timer] = _x;
-    _q->symbol_timer++;
-    if (_q->symbol_timer < 80)
+    _q->symbol[_q->timer] = _x;
+    _q->timer++;
+    if (_q->timer < 80)
         return;
 
     // reset timer
-    _q->symbol_timer = 0;
+    _q->timer = 0;
 
     // copy buffer and execute FFT
-    memmove(_q->x, _q->symbol+16, 64*sizeof(float complex));
+    // NOTE: the -1 is used for backoff to help ensure that the FFT window
+    //       does not overlap the next OFDM symbol
+    // TODO: compensate equalizer phase for timing backoff
+    memmove(_q->x, _q->symbol+_q->cp_len-1, 64*sizeof(float complex));
 #if HAVE_FFTW3_H
     fftwf_execute(_q->fft);
 #else

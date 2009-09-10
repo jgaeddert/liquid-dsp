@@ -1,0 +1,97 @@
+##
+## OFDM frame (64 subcarriers)
+##
+
+\section{General description}
+The ofdmframe64 describes a simple 802.11a-like PHY (physical layer)
+implementation.  It consists of an orthogonal frequency-divisional
+multiplexing (OFDM) scheme with 64 subcarriers, 12 of which are
+disabled, and 4 are used as pilots.
+The cyclic prefix is fixed at 16 samples.
+The frame begins with a physical layer convergence procedure (PLCP)
+consisting of several short sequences
+(used for signal detection, and coarse frequency offset estimation)
+followed by several long sequences
+(used for timing acquisition, fine frequency offset estimation and
+channel estimation).
+The remainder of the frame consists of symbols with data stored on the
+remaining 48 subcarriers.
+
+
+\section{PLCP short sequences}
+The PLCP short sequences consist of a single OFDM symbol with 12
+subcarriers enabled.
+This corresponds to four repetitions in the time domain and is used
+primarily for signal detection and coarse carrier frequency offset
+estimation.
+The 
+
+  Sf(f)_{-26,26} = 1/sqrt(2)*{   0, 0,
+                               1+j, 0, 0, 0,
+                              -1-j, 0, 0, 0,
+                               1+j, 0, 0, 0,
+                              -1-j, 0, 0, 0,
+                              -1-j, 0, 0, 0,
+                               1+j, 0, 0, 0,
+                                 0, 0, 0, 0,
+                              -1-j, 0, 0, 0,
+                              -1-j, 0, 0, 0,
+                               1+j, 0, 0, 0,
+                               1+j, 0, 0, 0,
+                               1+j, 0, 0, 0,
+                               1+j, 0, 0 }
+
+with the time series transformed by
+
+  St(t) = ifft( Sf(f) ) * sqrt(64*64/12) 
+
+The scaling factor is used to ensure that the time series has a unity
+expected variance (corresponding to unity average power).
+
+\section{PLCP long sequences}
+
+  Lf(f)_{-26,26} = {    1, 1,
+                       -1,-1, 1, 1,-1, 1,-1, 1,
+                        1, 1, 1, 1, 1,-1,-1, 1,
+                        1,-1, 1,-1, 1, 1, 1, 1,
+                        0,
+                        1,-1,-1, 1, 1,-1, 1,-1,
+                        1,-1,-1,-1,-1,-1, 1, 1,
+                       -1,-1, 1,-1, 1,-1, 1, 1,
+                        1, 1 }
+
+with the time series transformed by
+
+  Lt(t) = ifft( Lf(f) ) / sqrt(64*64/52)
+
+\section{Pilot subcarriers}
+Pilot subcarriers are injected into data symbols at indices -21, -7,
+7, and 21.
+
+\section{Data symbols}
+
+\section{Synchronization Procedure}
+Synchronization is performed in several steps:
+    - auto-correlate the received signal (delay of 16 samples) to find
+      PLCP short sequence
+    - once auto-correlation magnitude exceeds threshold, estimate
+      coarse CFO ( nu_hat0 = arg(rxx)/16 ) and adjust input NCO
+    - estimate coarse gain and lock AGC
+    - cross-correlate received signal to find both PLCP long sequences
+    - once both PLCP long sequences have been found, estimate channel
+      gain (invert recevied symbol with known symbol), estimate fine
+      CFO ( nu_hat1 = arg( ... ) /64 ) and adjust input NCO
+
+At this point the synchronizer is ready to receive data symbols.
+The procedure for extracting data symbols is as follows:
+    - buffer 80 samples (64 + 16) and run FFT on last 64
+    - apply channel subcarrier gain as determined by channel
+      estimation procedure via PLCP long sequences
+    - Extract pilot subcarriers {-21, -7, 7, 21} and de-rotate
+      accoring to pilot P/N sequence
+    - Unwrap phase of pilot subcarriers and fit to first-order
+      polynomial; this corresponds to fractional sample timing offset
+    - de-rotate phase of all data subcarriers according to polynomial
+      fit of pilot phases
+    - copy all 48 data subcarriers to buffer and invoke callback
+
