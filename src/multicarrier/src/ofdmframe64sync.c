@@ -77,10 +77,14 @@ struct ofdmframe64sync_s {
     // PLCP LONG: cross correlator
     dotprod_cccf cross_correlator;
     float complex rxy;
+    float complex rxy0;
+    float complex rxy1;
     cfwindow rxy_buffer;
+    cfwindow Lt_buffer;
     float complex Lt0[64], Lf0[64]; // received PLCP long sequence (first)
     float complex Lt1[64], Lf1[64]; // received PLCP long sequence (second)
     float complex G0[64], G1[64];
+    int backoff;
 
     // timer
     unsigned int timer;
@@ -143,6 +147,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
         h[i] = conjf(ofdmframe64_plcp_Lt[i]);
     q->cross_correlator = dotprod_cccf_create(h,64);
     q->rxy_buffer = cfwindow_create(64);
+    q->Lt_buffer = cfwindow_create(160);
     
 #if DEBUG_OFDMFRAME64SYNC
     q->debug_x   = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
@@ -157,6 +162,8 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->x_phase[1] =  -7.0f;
     q->x_phase[2] =   7.0f;
     q->x_phase[3] =  21.0f;
+
+    q->backoff = 2;
 
     q->callback = _callback;
     q->userdata = _userdata;
@@ -179,6 +186,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     free(_q->x);
     free(_q->X);
     cfwindow_destroy(_q->rxy_buffer);
+    cfwindow_destroy(_q->Lt_buffer);
 #if HAVE_FFTW3_H
     fftwf_destroy_plan(_q->fft);
 #else
@@ -389,6 +397,7 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
 {
     // run cross-correlator
     float complex rxy, *rc;
+    cfwindow_push(_q->Lt_buffer, _x);
     cfwindow_push(_q->rxy_buffer, _x);
     cfwindow_read(_q->rxy_buffer, &rc);
     dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
@@ -407,7 +416,7 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
 
         // store sequence
         // TODO : back off PLCP long by a sample or 2 to help ensure no ISI
-        memmove(_q->Lt0, rc, 64*sizeof(float complex));
+        //memmove(_q->Lt0, rc, 64*sizeof(float complex));
 
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG1;
         _q->timer = 0;
@@ -422,6 +431,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 {
     // push sample into cross-correlator buffer
     float complex rxy, *rc;
+    cfwindow_push(_q->Lt_buffer, _x);
     cfwindow_push(_q->rxy_buffer, _x);
 
 #if DEBUG_OFDMFRAME64SYNC
@@ -451,16 +461,49 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 #endif
 
         // store sequence
-        memmove(_q->Lt1, rc, 64*sizeof(float complex));
+        //memmove(_q->Lt1, rc, 64*sizeof(float complex));
+        cfwindow_read(_q->Lt_buffer, &rc);
+        // estimate frequency offset
+        unsigned int j;
+        float complex rxx=0.0f;
+        for (j=0; j<32+64; j++)
+            rxx += rc[j] * conj(rc[j+64]);
+        _q->nu_hat1 = cargf(rxx)/64.0f;
+        // correct frequency offset
+        float theta=0.0f;
+        for (j=0; j<160; j++) {
+            rc[j] *= cexpf(_Complex_I*theta);
+            theta += _q->nu_hat1;
+        }
+        // compute cross-correlation
+        dotprod_cccf_execute(_q->cross_correlator, rc+32, &_q->rxy0);
+        dotprod_cccf_execute(_q->cross_correlator, rc+32+64, &_q->rxy1);
+        printf("|rxy0| = %12.8f\n", cabsf(_q->rxy0));
+        printf("|rxy1| = %12.8f\n", cabsf(_q->rxy1));
+
+        memmove(_q->Lt0, rc+32-_q->backoff,     64*sizeof(float complex));
+        memmove(_q->Lt1, rc+32+64-_q->backoff,  64*sizeof(float complex));
+
+        // correct phase term, backoff
+        float theta0 = cargf(_q->rxy0);
+        float theta1 = cargf(_q->rxy1);
+        for (j=0; j<64; j++) {
+            _q->Lt0[j] *= cexpf(_Complex_I*theta0);
+            _q->Lt1[j] *= cexpf(_Complex_I*theta1);
+            //theta0 += -2.0f*M_PI*(float)(backoff)/64.0f;
+            //theta1 += -2.0f*M_PI*(float)(backoff)/64.0f;
+        }
 
         // run fine CFO estimation and correct offset for
         // PLCP long sequences
-        ofdmframe64sync_estimate_cfo_plcplong(_q);
+        //ofdmframe64sync_estimate_cfo_plcplong(_q);
         nco_adjust_frequency(_q->nco_rx, _q->nu_hat1);
 #if DEBUG_OFDMFRAME64SYNC_PRINT
-        printf("nu_hat = %12.8f;\n", _q->nco_rx->d_theta);
+        printf("nu_hat0 = %12.8f;\n", _q->nu_hat0);
+        printf("nu_hat1 = %12.8f;\n", _q->nu_hat1);
+        printf("nu_hat  = %12.8f;\n", _q->nco_rx->d_theta);
 #endif
-        ofdmframe64sync_correct_cfo_plcplong(_q);
+        //ofdmframe64sync_correct_cfo_plcplong(_q);
 
         // compute DFT, estimate channel gains
         ofdmframe64sync_estimate_gain_plcplong(_q);
@@ -516,14 +559,14 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
             theta1 = cargf(_q->G1[i]);
             if (theta0 < 0) theta0 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
             if (theta1 < 0) theta1 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
-#if 0
+#if 1
             // average amplitude and phase
             _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*0.5f*(theta0+theta1));
 #else
             // average amplitude; retain phase from first estimate
             _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*theta0);
 #endif
-            _q->G[i] = _q->G0[i]; // use only first estimate
+            //_q->G[i] = _q->G0[i]; // use only first estimate
         }
 #if DEBUG_OFDMFRAME64SYNC
         // correct long sequence (plotting purposes only)
@@ -569,7 +612,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     // NOTE: the -1 is used for backoff to help ensure that the FFT window
     //       does not overlap the next OFDM symbol
     // TODO: compensate equalizer phase for timing backoff
-    memmove(_q->x, _q->symbol+_q->cp_len-1, 64*sizeof(float complex));
+    memmove(_q->x, _q->symbol+_q->cp_len-_q->backoff, 64*sizeof(float complex));
 #if HAVE_FFTW3_H
     fftwf_execute(_q->fft);
 #else
