@@ -506,7 +506,9 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         //ofdmframe64sync_correct_cfo_plcplong(_q);
 
         // compute DFT, estimate channel gains
+        // TODO : determine when synchronizer should use flat gain estimation
         ofdmframe64sync_estimate_gain_plcplong(_q);
+        //ofdmframe64sync_estimate_gain_plcplong_flat(_q);
 
         // change state
         _q->state = OFDMFRAME64SYNC_STATE_RXPAYLOAD;
@@ -516,7 +518,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
     }
 }
 
-void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
+void ofdmframe64sync_compute_plcplong0(ofdmframe64sync _q)
 {
     // first PLCP long sequence
     memmove(_q->x, _q->Lt0, 64*sizeof(float complex));
@@ -526,7 +528,10 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
     fft_execute(_q->fft);
 #endif
     memmove(_q->Lf0, _q->X, 64*sizeof(float complex));
+}
 
+void ofdmframe64sync_compute_plcplong1(ofdmframe64sync _q)
+{
     // second PLCP long sequence
     memmove(_q->x, _q->Lt1, 64*sizeof(float complex));
 #if HAVE_FFTW3_H
@@ -535,6 +540,13 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
     fft_execute(_q->fft);
 #endif
     memmove(_q->Lf1, _q->X, 64*sizeof(float complex));
+}
+ 
+void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
+{
+    // compute FFT on PLCP long sequences
+    ofdmframe64sync_compute_plcplong0(_q);
+    ofdmframe64sync_compute_plcplong1(_q);
 
     unsigned int i;
     float g0, theta0;
@@ -568,6 +580,51 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
 #endif
             //_q->G[i] = _q->G0[i]; // use only first estimate
         }
+#if DEBUG_OFDMFRAME64SYNC
+        // correct long sequence (plotting purposes only)
+        _q->Lf0[i] *= _q->G[i];
+        _q->Lf1[i] *= _q->G[i];
+#endif
+    }
+}
+
+void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q)
+{
+    // compute FFT on PLCP long sequences
+    ofdmframe64sync_compute_plcplong0(_q);
+    ofdmframe64sync_compute_plcplong1(_q);
+
+    unsigned int i;
+    int sctype;
+    float g=0.0f;
+    float phi = (float)(_q->backoff) * 2.0f * M_PI / 64.0f;
+    for (i=0; i<64; i++) {
+        sctype = ofdmframe64_getsctype(i);
+        if (sctype != OFDMFRAME64_SCTYPE_NULL) {
+#if DEBUG_OFDMFRAME64SYNC
+            // compute individual subcarrier gain, compensating for
+            // fft backoff (plotting purposes only)
+            _q->G0[i] = 1.0f / (_q->Lf0[i] * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G1[i] = 1.0f / (_q->Lf1[i] * conj(ofdmframe64_plcp_Lf[i]));
+#endif
+
+            // average amplitude of subcarriers (note that residual
+            // phase offset is taken care of by pilot subcarriers)
+            g += cabsf(_q->Lf0[i]) + cabsf(_q->Lf1[i]);
+        } else {
+            _q->G0[i] = 0.0f;
+            _q->G1[i] = 0.0f;
+        }
+    }
+    
+    // average signal level over all 52 enabled subcarriers (both
+    // PLCP long sequences), invert
+    g = (2.0f * 52.0f) / g;
+
+    for (i=0; i<64; i++) {
+        // compute flat subcarrier gain, compensating for
+        // fft timing backoff
+        _q->G[i] = g * cexpf(_Complex_I*i*phi);
 #if DEBUG_OFDMFRAME64SYNC
         // correct long sequence (plotting purposes only)
         _q->Lf0[i] *= _q->G[i];
