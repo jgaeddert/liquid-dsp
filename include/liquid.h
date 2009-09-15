@@ -221,8 +221,8 @@ LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
 #define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(uiwindow, name)
 
 // large macro
-//   WINDOW  :   name-mangling macro
-//   T  :   data type
+//   WINDOW : name-mangling macro
+//   T      : data type
 #define LIQUID_WINDOW_DEFINE_API(WINDOW,T)                      \
                                                                 \
 typedef struct WINDOW(_s) * WINDOW();                           \
@@ -384,6 +384,9 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liqu
 #define EQLMS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqlms_rrrf,name)
 #define EQLMS_MANGLE_CCCF(name)     LIQUID_CONCAT(eqlms_cccf,name)
 
+// large macro
+//   EQLMS  : name-mangling macro
+//   T      : data type
 #define LIQUID_EQLMS_DEFINE_API(EQLMS,T)                        \
 typedef struct EQLMS(_s) * EQLMS();                             \
 EQLMS() EQLMS(_create)(unsigned int _p);                        \
@@ -410,6 +413,9 @@ LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
 #define EQRLS_MANGLE_RRRF(name)     LIQUID_CONCAT(eqrls_rrrf,name)
 #define EQRLS_MANGLE_CCCF(name)     LIQUID_CONCAT(eqrls_cccf,name)
 
+// large macro
+//   EQRLS  : name-mangling macro
+//   T      : data type
 #define LIQUID_EQRLS_DEFINE_API(EQRLS,T)                        \
 typedef struct EQRLS(_s) * EQRLS();                             \
 EQRLS() EQRLS(_create)(unsigned int _p);                        \
@@ -486,7 +492,7 @@ int crc32_validate_message(unsigned char *_data,
                            unsigned int _key);
 
 // 
-// FEC
+// MODULE : FEC (forward error correction)
 //
 
 typedef enum {
@@ -559,9 +565,7 @@ void fft_execute(fftplan _p);
 
 void fft_shift(liquid_float_complex *_x, unsigned int _n);
 
-//
 // ascii spectrogram
-//
 typedef struct asgram_s * asgram;
 asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
 void asgram_set_scale(asgram _q, float _scale);
