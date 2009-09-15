@@ -1531,7 +1531,7 @@ void cpmodem_modulate(cpmodem _mod,
                       unsigned int _s,
                       liquid_float_complex *_y);
 void cpmodem_demodulate(cpmodem _mod,
-                        liquid_float_complex _x,
+                        liquid_float_complex *_x,
                         unsigned int * _s);
 
 // 

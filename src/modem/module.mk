@@ -32,6 +32,7 @@ local_s_files	:=		\
 	modem_common.c		\
 	modem_modulate.c	\
 	modem_demodulate.c	\
+	cpmodem.c		\
 	freqmodem.c
 
 # local_t_files
