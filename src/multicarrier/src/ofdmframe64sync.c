@@ -381,7 +381,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     //if (agc_get_signal_level(_q->sigdet) < -15.0f)
     //    return;
     if (cabsf(y) > 2.0f)
-        y = 2.0f*cexpf(_Complex_I*cargf(y));
+        y = 2.0f*liquid_crotf_vect(cargf(y));
 
     // run auto-correlator
     float complex rxx;
@@ -486,7 +486,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         // correct frequency offset
         float theta=0.0f;
         for (j=0; j<160; j++) {
-            rc[j] *= cexpf(_Complex_I*theta);
+            rc[j] *= liquid_crotf_vect(theta);
             theta += _q->nu_hat1;
         }
         // compute cross-correlation
@@ -502,8 +502,8 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         float theta0 = cargf(_q->rxy0);
         float theta1 = cargf(_q->rxy1);
         for (j=0; j<64; j++) {
-            _q->Lt0[j] *= cexpf(_Complex_I*theta0);
-            _q->Lt1[j] *= cexpf(_Complex_I*theta1);
+            _q->Lt0[j] *= liquid_crotf_vect(theta0);
+            _q->Lt1[j] *= liquid_crotf_vect(theta1);
             //theta0 += -2.0f*M_PI*(float)(backoff)/64.0f;
             //theta1 += -2.0f*M_PI*(float)(backoff)/64.0f;
         }
@@ -574,8 +574,8 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
             _q->G[i]  = 0.0f;
         } else {
             // compute subcarrier gains
-            _q->G0[i] = 1.0f / (_q->Lf0[i] * cexpf(_Complex_I*i*phi) * conj(ofdmframe64_plcp_Lf[i]));
-            _q->G1[i] = 1.0f / (_q->Lf1[i] * cexpf(_Complex_I*i*phi) * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G0[i] = 1.0f / (_q->Lf0[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G1[i] = 1.0f / (_q->Lf1[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
 
             // average amplitude, phase of subcarrier gains (note
             // that residual phase offset is taken care of by pilot
@@ -588,17 +588,17 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
             if (theta1 < 0) theta1 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
 #if 1
             // average amplitude and phase
-            _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*0.5f*(theta0+theta1));
+            _q->G[i] = 0.5f*(g0+g1)*liquid_crotf_vect(0.5f*(theta0+theta1));
 #else
             // average amplitude; retain phase from first estimate
-            _q->G[i] = 0.5f*(g0+g1)*cexpf(_Complex_I*theta0);
+            _q->G[i] = 0.5f*(g0+g1)*liquid_crotf_vect(theta0);
 #endif
             //_q->G[i] = _q->G0[i]; // use only first estimate
         }
 #if DEBUG_OFDMFRAME64SYNC
         // correct long sequence (plotting purposes only)
-        _q->Lf0[i] *= _q->G[i]*cexpf(_Complex_I*i*phi);
-        _q->Lf1[i] *= _q->G[i]*cexpf(_Complex_I*i*phi);
+        _q->Lf0[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
+        _q->Lf1[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
 #endif
     }
 }
@@ -619,8 +619,8 @@ void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q)
 #if DEBUG_OFDMFRAME64SYNC
             // compute individual subcarrier gain, compensating for
             // fft backoff (plotting purposes only)
-            _q->G0[i] = 1.0f / (_q->Lf0[i] * cexpf(_Complex_I*i*phi) * conj(ofdmframe64_plcp_Lf[i]));
-            _q->G1[i] = 1.0f / (_q->Lf1[i] * cexpf(_Complex_I*i*phi) * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G0[i] = 1.0f / (_q->Lf0[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G1[i] = 1.0f / (_q->Lf1[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
 #endif
 
             // average amplitude of subcarriers (note that residual
@@ -642,8 +642,8 @@ void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q)
 #if DEBUG_OFDMFRAME64SYNC
         // correct long sequence (plotting purposes only)
         // compensating for fft timing backoff
-        _q->Lf0[i] *= _q->G[i]*cexpf(_Complex_I*i*phi);
-        _q->Lf1[i] *= _q->G[i]*cexpf(_Complex_I*i*phi);
+        _q->Lf0[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
+        _q->Lf1[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
 #endif
     }
 }
@@ -664,8 +664,8 @@ void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q)
     unsigned int i;
     float theta=0.0f;
     for (i=0; i<64; i++) {
-        _q->Lt0[i] *= cexpf(_Complex_I*theta);
-        _q->Lt1[i] *= cexpf(_Complex_I*theta);
+        _q->Lt0[i] *= liquid_crotf_vect(theta);
+        _q->Lt1[i] *= liquid_crotf_vect(theta);
         theta += _q->nu_hat1;
     }
 }
@@ -695,7 +695,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     unsigned int i;
     float phi = (float)(_q->backoff)*2.0f*M_PI/64.0f;
     for (i=0; i<64; i++) {
-        _q->X[i] *= _q->G[i]*cexpf(_Complex_I*i*phi);
+        _q->X[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
     }
     _q->y_phase[0] = cargf(_q->X[11]);  // -21
     _q->y_phase[1] = cargf(_q->X[25]);  //  -7
@@ -724,7 +724,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     float theta;
     for (i=0; i<64; i++) {
         theta = polyval(_q->p_phase, 2, (float)(i)-32.0f);
-        _q->X[i] *= cexpf(-_Complex_I*theta);
+        _q->X[i] *= liquid_crotf_vect(-theta);
     }
 
     // TODO: perform additional polynomial gain compensation
