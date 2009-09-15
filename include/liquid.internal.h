@@ -576,6 +576,16 @@ void interleaver_circshift_R4(unsigned char *_x, unsigned int _n);
 
 
 //
+// MODULE : math
+//
+
+// complex rotation vector: cexpf(_Complex_I*THETA)
+#define liquid_crotf_vect(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
+
+// complex rotation by cexpf(_Complex_I*THETA)
+#define liquid_crotf(X,THETA) ((X)*liquid_crotf_vect(THETA))
+
+//
 // MODULE : matrix
 //
 

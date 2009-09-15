@@ -83,7 +83,8 @@ void nco_sincos(nco _nco, float* _s, float* _c)
 
 void nco_cexpf(nco _nco, float complex * _y)
 {
-    *_y = cexpf(_Complex_I*(_nco->theta));
+    // set _y[0] to [cos(theta) + _Complex_I*sin(theta)]
+    *_y = liquid_crotf_vect(_nco->theta);
 }
 
 // mixing functions
@@ -91,14 +92,16 @@ void nco_cexpf(nco _nco, float complex * _y)
 // Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
 void nco_mix_up(nco _nco, complex float _x, complex float *_y)
 {
-    *_y = _x * cexpf(_Complex_I*(_nco->theta));
+    // multiply _x by [cos(theta) + _Complex_I*sin(theta)]
+    *_y = _x * liquid_crotf_vect(_nco->theta);
     nco_step(_nco);
 }
 
 // Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
 void nco_mix_down(nco _nco, complex float _x, complex float *_y)
 {
-    *_y = _x * cexpf(-_Complex_I*(_nco->theta));
+    // multiply _x by [cos(-theta) + _Complex_I*sin(-theta)]
+    *_y = _x * liquid_crotf_vect(-_nco->theta);
     nco_step(_nco);
 }
 
@@ -115,8 +118,8 @@ void nco_mix_block_up(
     float theta =   _nco->theta;
     float d_theta = _nco->theta;
     for (i=0; i<_N; i++) {
-        //sigprocc_rotate(_xi[i], _xq[i], theta, &_yi[i], &_yq[i]);
-        _y[i] = _x[i] * cexpf(I*theta);
+        // multiply _x[i] by [cos(theta) + _Complex_I*sin(theta)]
+        _y[i] = _x[i] * liquid_crotf_vect(theta);
         
         // nco_step(_nco);
         theta += d_theta;
@@ -143,8 +146,8 @@ void nco_mix_block_down(
     float theta =   _nco->theta;
     float d_theta = _nco->theta;
     for (i=0; i<_N; i++) {
-        //sigprocc_rotate(_xi[i], _xq[i], theta, &_yi[i], &_yq[i]);
-        _y[i] = _x[i] * cexpf(-I*theta);
+        // multiply _x[i] by [cos(-theta) + _Complex_I*sin(-theta)]
+        _y[i] = _x[i] * liquid_crotf_vect(-theta);
         
         // nco_step(_nco);
         theta += d_theta;
