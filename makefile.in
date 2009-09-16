@@ -204,6 +204,7 @@ benchmark_include.h: $(benchmark_headers) include/liquid.h
 
 # compile the benchmark program without linking
 $(bench_prog).o: benchmark_include.h bench/bench.c
+	$(RM) bench/benchmark_include.h
 	$(CC) $(BENCH_CFLAGS) -c bench/bench.c -o $(bench_prog).o
 
 # link the benchmark program with the library objects
