@@ -49,26 +49,29 @@ struct decim_crcf_opts {
 };
 
 void benchmark_decim_crcf(
-    struct decim_crcf_opts _opts,
+    void * _opts,
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations)
 {
+    // retrieve options
+    struct decim_crcf_opts * opts = (struct decim_crcf_opts*) _opts;
+
     unsigned long int i;
     // DSP initiazation goes here
-    float h[_opts.n];
-    for (i=0; i<_opts.n; i++)
+    float h[opts->n];
+    for (i=0; i<opts->n; i++)
         h[i] = 0.0f;
-    decim_crcf decim = decim_crcf_create(_opts.D,h,_opts.n);
+    decim_crcf decim = decim_crcf_create(opts->D,h,opts->n);
 
-    float complex x[_opts.D];
+    float complex x[opts->D];
     float complex y;
-    for (i=0; i<_opts.D; i++)
+    for (i=0; i<opts->D; i++)
         x[i] = 1.0f;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // DSP execution goes here
-        decim_crcf_execute(decim,x,&y,_opts.D-1);
+        decim_crcf_execute(decim,x,&y,opts->D-1);
     }
     getrusage(RUSAGE_SELF, _finish);
 
@@ -94,12 +97,12 @@ int main() {
     double cpuclock=2.4e9;
     double cycles_per_trial;
     struct decim_crcf_opts opts;
-    for (D=2; D<10; D+=2) {
+    for (D=2; D<=8; D*=2) {
         printf("***** D = %u\n",D);
         for (n=5; n<31; n+=4) {
             opts.D = D;
             opts.n = n;
-            benchmark_decim_crcf(opts,&start,&finish,&num_trials);
+            benchmark_decim_crcf((void*)(&opts),&start,&finish,&num_trials);
             extime = calculate_execution_time(start,finish);
             cycles_per_trial = cpuclock * extime / (double)(num_trials);
             printf("n : %3u, D : %3u, cycles/trial : %6.2f\n", n,D,cycles_per_trial);
