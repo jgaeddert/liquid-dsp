@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include <string.h>
+#include <math.h>
 #include <sys/resource.h>
 
 // define benchmark function pointer
@@ -67,7 +69,7 @@ typedef struct {
 //   bench_t benchmarks[NUM_BENCHMARKS]
 //   #define NUM_PACKAGES
 //   package_t packages[NUM_PACKAGES]
-#include "../benchmark_include.h"
+#include "benchmark_include.h"
 
 // helper functions:
 void print_help();

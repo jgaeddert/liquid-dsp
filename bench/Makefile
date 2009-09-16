@@ -2,15 +2,28 @@
 # Benchmark example
 #
 
-all: bench
+CC	:= gcc
+#MV	:= mv -f
+RM	:= rm -f
+#SED	:= sed
+#AR	:= ar
+#RANLIB	:= ranlib
+
+CFLAGS	:= -I . -Wall
+LDFLAGS := -lm -lc
+
+all: benchmark
 
 benchinclude.h: benchmarkgen.py bench_example.h
 	python benchmarkgen.py bench_example.h
 
-bench: bench.c benchinclude.h
-	gcc -Wall bench.c -o bench
+benchmark.o: bench.c benchinclude.h
+	$(CC) $(CFLAGS) -c bench.c -o $@
+
+benchmark: benchmark.o
+	$(CC) $^ $(LDFLAGS) -o $@
 
 clean:
-	rm -f benchinclude.h *.o bench
+	$(RM) benchinclude.h benchmark.o benchmark
 
 
