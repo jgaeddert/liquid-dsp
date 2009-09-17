@@ -38,6 +38,7 @@
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_crcf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
 #define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_crcf,name)
+#define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_crcf,name)
 
 #define PRINTVAL(x)         printf("%12.4e + %12.4ej", crealf(x), cimagf(x))
 #define PRINTVAL_TC(F,STR,I,V)  DEBUG_PRINTF_FLOAT(F,STR,I,V)
@@ -63,3 +64,4 @@
 #include "resamp2.c"
 #include "symsync.c"
 #include "symsync2.c"
+#include "symsynclp.c"

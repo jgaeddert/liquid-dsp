@@ -1068,6 +1068,39 @@ LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float,         float,          
 LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
 LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
 
+
+// 
+// Symbol timing recovery (symbol synchronizer) using interpolating
+// polynomials of the Lagrange form
+//
+#define SYMSYNCLP_MANGLE_RRRF(name)  LIQUID_CONCAT(symsynclp_rrrf,name)
+#define SYMSYNCLP_MANGLE_CRCF(name)  LIQUID_CONCAT(symsynclp_crcf,name)
+
+#define LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP,TO,TC,TI)         \
+typedef struct SYMSYNCLP(_s) * SYMSYNCLP();                     \
+SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k, /*samp/symbol*/ \
+                               unsigned int _p, /*poly order*/  \
+                               TC * _h,                         \
+                               unsigned int _h_len);            \
+void SYMSYNCLP(_destroy)(SYMSYNCLP() _q);                       \
+void SYMSYNCLP(_print)(SYMSYNCLP() _q);                         \
+void SYMSYNCLP(_clear)(SYMSYNCLP() _q);                         \
+void SYMSYNCLP(_execute)(SYMSYNCLP() _q,                        \
+                         TI _x,                                 \
+                         TO * _y,                               \
+                         unsigned int *_num_written);           \
+void SYMSYNCLP(_set_lf_bw)(SYMSYNCLP() _q, float _bt);
+
+LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
+LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
+
+
 //
 // Finite impulse response Farrow filter
 //

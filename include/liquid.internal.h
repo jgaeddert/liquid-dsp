@@ -479,6 +479,25 @@ LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_RRRF, float, float, float)
 LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 
+// symsynclp
+#define LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP,TO,TC,TI)\
+void SYMSYNCLP(_step)(SYMSYNCLP() _q,                           \
+                      TI _x,                                    \
+                      TO *_y,                                   \
+                      unsigned int *_ny);                       \
+void SYMSYNCLP(_advance_internal_loop)(SYMSYNCLP() _q,          \
+                                       TO _mf,                  \
+                                       TO _dmf);
+
+LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_RRRF,
+                                     float,
+                                     float,
+                                     float)
+LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
+                                     liquid_float_complex,
+                                     float,
+                                     liquid_float_complex)
+
 
 //
 // MODULE : framing
