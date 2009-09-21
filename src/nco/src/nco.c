@@ -25,13 +25,20 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
 nco nco_create()
 {
     nco p = (nco) malloc(sizeof(struct nco_s));
-    nco_init(p);
+
+    // initialize sine table
+    unsigned int i;
+    for (i=0; i<256; i++)
+        p->sintab[i] = sinf(2.0f*M_PI*(float)(i)/256.0f);
+
+    nco_reset(p);
     return p;
 }
 
@@ -40,10 +47,27 @@ void nco_destroy(nco _nco)
     free(_nco);
 }
 
-void nco_init(nco _nco)
+void nco_reset(nco _nco)
 {
     _nco->theta = 0.0f;
     _nco->d_theta = 0.0f;
+
+    // reset sine table index
+    _nco->index = 0;
+
+    // set internal sine, cosine values
+    _nco->sine = 0.0f;
+    _nco->cosine = 1.0f;
+}
+
+void nco_set_frequency(nco _nco, float _f)
+{
+    _nco->d_theta = _f;
+}
+
+void nco_adjust_frequency(nco _nco, float _df)
+{
+    _nco->d_theta += _df;
 }
 
 void nco_set_phase(nco _nco, float _phi)
@@ -64,6 +88,9 @@ void nco_step(nco _nco)
     nco_constrain_phase(_nco);
 }
 
+float nco_get_phase(nco _q) { return _q->theta; }
+float nco_get_frequency(nco _q) { return _q->d_theta; }
+
 void nco_constrain_phase(nco _nco)
 {
     if (_nco->theta > M_PI)
@@ -72,13 +99,30 @@ void nco_constrain_phase(nco _nco)
         _nco->theta += 2.0f*M_PI;
 }
 
+void nco_compute_sincos(nco _nco)
+{
+    // assume phase is constrained to be in (-pi,pi)
+
+    // compute index
+    // NOTE : 40.743665 ~ 256 / (2*pi)
+    // NOTE : add 512 to ensure positive value, add 0.5 for rounding precision
+    _nco->index = ((unsigned int)((_nco->theta)*40.743665f + 512.0f + 0.5f))&0xff;
+    assert(_nco->index < 256);
+    
+    _nco->sine = _nco->sintab[_nco->index];
+    _nco->cosine = _nco->sintab[(_nco->index+64)&0xff];
+}
+
+// TODO : use sine table
 float nco_sin(nco _nco) {return sinf(_nco->theta);}
 float nco_cos(nco _nco) {return cosf(_nco->theta);}
 
 void nco_sincos(nco _nco, float* _s, float* _c)
 {
-    *_s = sinf(_nco->theta);
-    *_c = cosf(_nco->theta);
+    // compute sine, cosine from sine table
+    nco_compute_sincos(_nco);
+    *_s = _nco->sine;
+    *_c = _nco->cosine;
 }
 
 void nco_cexpf(nco _nco, float complex * _y)

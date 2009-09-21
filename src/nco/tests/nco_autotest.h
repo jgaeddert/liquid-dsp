@@ -29,10 +29,8 @@
 // test floating point precision nco
 //
 void autotest_nco_basic() {
-    struct nco_s nco_struct;
-    nco p = &nco_struct;
+    nco p = nco_create();
 
-    nco_init(p);
     unsigned int i;     // loop index
     float s, c;         // sine/cosine result
     float tol=1e-4f;    // error tolerance
@@ -88,9 +86,7 @@ void autotest_nco_mixing() {
     float tol = 0.00001f;
 
     // initialize nco object
-    struct nco_s nco_struct;
-    nco p = &nco_struct;
-    nco_init(p);
+    nco p = nco_create();
     nco_set_frequency(p, f);
     nco_set_phase(p, phi);
 

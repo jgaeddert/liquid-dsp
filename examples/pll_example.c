@@ -68,8 +68,8 @@ int main() {
             printf("  %4u: e_hat : %6.3f, freq error : %6.3f, phase error : %6.3f\n",
                     i+1,                                // iteration
                     phase_error,                        // estimated phase error
-                    nco_tx->d_theta - nco_rx->d_theta,  // true phase error
-                    nco_tx->theta - nco_rx->theta);     // true frequency error
+                    nco_get_frequency(nco_tx) - nco_get_frequency(nco_rx),  // true frequency error
+                    nco_get_phase(nco_tx) - nco_get_phase(nco_rx));     // true phase error
         }
 
         // update NCO objects

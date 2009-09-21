@@ -843,6 +843,24 @@ extern const float complex ofdmframe64_plcp_St[64];
 extern const float complex ofdmframe64_plcp_Lf[64];
 extern const float complex ofdmframe64_plcp_Lt[64];
 
+// 
+// MODULE : nco (numerically-controlled oscillator)
+//
+
+
+// Numerically-controlled oscillator, floating point phase precision
+struct nco_s {
+    float theta;        // NCO phase
+    float d_theta;      // NCO frequency
+    float sintab[256];  // sine table
+    unsigned int index; // table index
+    float sine;
+    float cosine;
+};
+
+void nco_constrain_phase(nco _nco);
+void nco_compute_sincos(nco _nco);
+
 //
 // MODULE : random
 //

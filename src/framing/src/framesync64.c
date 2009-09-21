@@ -29,7 +29,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define FRAMESYNC64_SYM_BW_0        (0.08f)
 #define FRAMESYNC64_SYM_BW_1        (0.05f)

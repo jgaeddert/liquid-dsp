@@ -1706,50 +1706,30 @@ void ofdmframe64sync_print(ofdmframe64sync _q);
 void ofdmframe64sync_reset(ofdmframe64sync _q);
 void ofdmframe64sync_execute(ofdmframe64sync _q,
                             liquid_float_complex * _x,
-                           unsigned int _n);
+                            unsigned int _n);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
 //
 
-
-// Numerically-controlled oscillator, floating point phase precision
-struct nco_s {
-    float theta;        // NCO phase
-    float d_theta;      // NCO frequency
-};
-
 typedef struct nco_s * nco;
 
 nco nco_create();
 void nco_destroy(nco _nco);
-
-void nco_init(nco _nco);
-
-static inline void nco_set_frequency(nco _nco, float _f) {
-    _nco->d_theta = _f;
-}
-
-static inline void nco_adjust_frequency(nco _nco, float _df) {
-    _nco->d_theta += _df;
-}
-
-static inline void nco_reset(nco _nco) {
-    _nco->theta   = 0.0f;
-    _nco->d_theta = 0.0f;
-}
-
+void nco_print(nco _nco);
+void nco_reset(nco _nco);
+void nco_set_frequency(nco _nco, float _f);
+void nco_adjust_frequency(nco _nco, float _df);
 void nco_set_phase(nco _nco, float _phi);
 void nco_adjust_phase(nco _nco, float _dphi);
-
 void nco_step(nco _nco);
-void nco_constrain_phase(nco _nco);
+
+float nco_get_phase(nco _nco);
+float nco_get_frequency(nco _nco);
 
 float nco_sin(nco _nco);
 float nco_cos(nco _nco);
-
 void nco_sincos(nco _nco, float* _s, float* _c);
-
 void nco_cexpf(nco _nco, liquid_float_complex * _y);
 
 // mixing functions
