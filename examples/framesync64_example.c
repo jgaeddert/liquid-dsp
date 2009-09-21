@@ -29,7 +29,7 @@ int main() {
     float phi=0.3f;
     float dphi=0.05f;
     float gamma=0.1f;  // channel gain
-    nco nco_channel = nco_create();
+    nco nco_channel = nco_create(LIQUID_VCO);
     nco_set_phase(nco_channel, phi);
     nco_set_frequency(nco_channel, dphi);
 

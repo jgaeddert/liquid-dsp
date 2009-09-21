@@ -62,7 +62,7 @@ int main() {
     // channel
     float phi=0.0f;
     float dphi=0.02f;
-    nco nco_channel = nco_create();
+    nco nco_channel = nco_create(LIQUID_VCO);
     nco_set_phase(nco_channel, phi);
     nco_set_frequency(nco_channel, dphi);
     float n0    = -18.0f;                        // noise level

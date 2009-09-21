@@ -32,7 +32,7 @@ void benchmark_nco_sincos(
     unsigned long int *_num_iterations)
 {
     float s, c;
-    nco p = nco_create();
+    nco p = nco_create(LIQUID_NCO);
     nco_set_phase(p, 0.0f);
     nco_set_frequency(p, 0.1f);
 
@@ -56,7 +56,7 @@ void benchmark_nco_mix_up(
     float complex x[16],  y[16];
     memset(x, 0, 16*sizeof(float complex));
 
-    nco p = nco_create();
+    nco p = nco_create(LIQUID_NCO);
     nco_set_phase(p, 0.0f);
     nco_set_frequency(p, 0.1f);
 
@@ -84,7 +84,7 @@ void benchmark_nco_mix_block_up(
     float complex x[16], y[16];
     memset(x, 0, 16*sizeof(float complex));
 
-    nco p = nco_create();
+    nco p = nco_create(LIQUID_NCO);
     nco_set_phase(p, 0.0f);
     nco_set_frequency(p, 0.1f);
 

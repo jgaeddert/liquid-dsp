@@ -11,7 +11,7 @@
 #include "liquid.h"
 
 int main() {
-    nco p = nco_create();
+    nco p = nco_create(LIQUID_NCO);
     nco_set_phase(p, 0.0f);
     nco_set_frequency(p, M_PI/10);
 

@@ -1712,9 +1712,15 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
 // MODULE : nco (numerically-controlled oscillator)
 //
 
+
+typedef enum {
+    LIQUID_NCO=0,
+    LIQUID_VCO
+} liquid_ncotype;
+
 typedef struct nco_s * nco;
 
-nco nco_create();
+nco nco_create(liquid_ncotype _type);
 void nco_destroy(nco _nco);
 void nco_print(nco _nco);
 void nco_reset(nco _nco);

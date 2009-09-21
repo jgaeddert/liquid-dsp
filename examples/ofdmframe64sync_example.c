@@ -72,7 +72,7 @@ int main() {
     ofdmframe64sync_print(fs);
 
     // channel impairments
-    nco nco_rx = nco_create();
+    nco nco_rx = nco_create(LIQUID_VCO);
     nco_set_frequency(nco_rx,cfo);
     nco_set_phase(nco_rx,cpo);
     float nstd = powf(10.0f, -SNRdB/20.0f);

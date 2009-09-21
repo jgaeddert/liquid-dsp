@@ -38,8 +38,8 @@ int main() {
     float complex x[2*n], y[2][n];
 
     // generate time-domain signal (windowed sinusoidal pulses)
-    nco nco_0 = nco_create();
-    nco nco_1 = nco_create();
+    nco nco_0 = nco_create(LIQUID_VCO);
+    nco nco_1 = nco_create(LIQUID_VCO);
     nco_set_frequency(nco_0, 0.122*M_PI);
     nco_set_frequency(nco_1, 0.779*M_PI);
     float complex x0,x1;

@@ -37,7 +37,7 @@ int main() {
     float complex x[num_channels], y[num_channels];
 
     // create nco: sweeps entire range of frequencies over the evaluation interval
-    nco nco_tx = nco_create();
+    nco nco_tx = nco_create(LIQUID_VCO);
     nco_set_frequency(nco_tx, 0.0f);
     float df = 2*M_PI/(num_channels*num_frames);
     printf("fr/ch:");

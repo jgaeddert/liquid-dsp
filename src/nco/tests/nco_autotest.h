@@ -29,7 +29,7 @@
 // test floating point precision nco
 //
 void autotest_nco_basic() {
-    nco p = nco_create();
+    nco p = nco_create(LIQUID_NCO);
 
     unsigned int i;     // loop index
     float s, c;         // sine/cosine result
@@ -82,11 +82,11 @@ void autotest_nco_mixing() {
     float f = 0.1f;
     float phi = M_PI;
 
-    // error tolerance
-    float tol = 0.00001f;
+    // error tolerance (high for NCO)
+    float tol = 0.05f;
 
     // initialize nco object
-    nco p = nco_create();
+    nco p = nco_create(LIQUID_NCO);
     nco_set_frequency(p, f);
     nco_set_phase(p, phi);
 
@@ -104,6 +104,7 @@ void autotest_nco_mixing() {
         // assert mixer output is correct
         CONTEND_DELTA(crealf(nco_cplx_out), 1.0f, tol);
         CONTEND_DELTA(cimagf(nco_cplx_out), 0.0f, tol);
+        //printf("%3u : %12.8f + j*%12.8f\n", i, crealf(nco_cplx_out), cimagf(nco_cplx_out));
 
         // step nco
         nco_step(p);

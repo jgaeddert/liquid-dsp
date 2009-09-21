@@ -225,7 +225,7 @@ void xautotest_firpfbch_analysis_energy()
     float tol=0.05f;
 
     float f;
-    nco nco_synth = nco_create();
+    nco nco_synth = nco_create(LIQUID_VCO);
 
     firpfbch c = firpfbch_create(num_channels, m, slsl, 0.0f, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER);
 

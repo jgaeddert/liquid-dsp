@@ -135,7 +135,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->sigdet = agc_create(1.0f, 0.1f);
 
     // carrier offset correction
-    q->nco_rx = nco_create();
+    q->nco_rx = nco_create(LIQUID_VCO);
 
     // cyclic prefix correlation windows
     q->delay_correlator = autocorr_cccf_create(OFDMFRAME64SYNC_AUTOCORR_LEN,16);

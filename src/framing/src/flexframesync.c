@@ -173,7 +173,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
 
     // pll, nco
     fs->pll_rx = pll_create();
-    fs->nco_rx = nco_create();
+    fs->nco_rx = nco_create(LIQUID_VCO);
     pll_set_bandwidth(fs->pll_rx, fs->props.pll_bw0);
     pll_set_damping_factor(fs->pll_rx, 4.0f);   // increasing damping factor
                                                 // reduces oscillations,

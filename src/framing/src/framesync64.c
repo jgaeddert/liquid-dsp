@@ -142,7 +142,7 @@ framesync64 framesync64_create(
 
     // pll, nco
     fs->pll_rx = pll_create();
-    fs->nco_rx = nco_create();
+    fs->nco_rx = nco_create(LIQUID_VCO);
     pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
     pll_set_damping_factor(fs->pll_rx, 4.0f);   // increasing damping factor
                                                 // reduces oscillations,

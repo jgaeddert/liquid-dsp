@@ -61,8 +61,8 @@ void autotest_pll_phase_offset() {
     float tol = 1e-4f;      // error tolerance
 
     // objects
-    nco nco_tx = nco_create();
-    nco nco_rx = nco_create();
+    nco nco_tx = nco_create(LIQUID_VCO);
+    nco nco_rx = nco_create(LIQUID_VCO);
     pll pll_rx = pll_create();
 
     // initialize objects
@@ -95,8 +95,8 @@ void autotest_pll_frequency_offset() {
     float tol = 1e-4f;      // error tolerance
 
     // objects
-    nco nco_tx = nco_create();
-    nco nco_rx = nco_create();
+    nco nco_tx = nco_create(LIQUID_VCO);
+    nco nco_rx = nco_create(LIQUID_VCO);
     pll pll_rx = pll_create();
 
     // initialize objects

@@ -29,9 +29,10 @@
 
 #include "liquid.internal.h"
 
-nco nco_create()
+nco nco_create(liquid_ncotype _type)
 {
     nco p = (nco) malloc(sizeof(struct nco_s));
+    p->type = _type;
 
     // initialize sine table
     unsigned int i;
@@ -39,6 +40,17 @@ nco nco_create()
         p->sintab[i] = sinf(2.0f*M_PI*(float)(i)/256.0f);
 
     nco_reset(p);
+
+    // set internal method
+    if (p->type == LIQUID_NCO) {
+        p->compute_sincos = &nco_compute_sincos;
+    } else if (p->type == LIQUID_VCO) {
+        p->compute_sincos = &vco_compute_sincos;
+    } else {
+        fprintf(stderr,"error: nco_create(), unknown type : %u\n", p->type);
+        exit(0);
+    }
+
     return p;
 }
 
@@ -113,22 +125,32 @@ void nco_compute_sincos(nco _nco)
     _nco->cosine = _nco->sintab[(_nco->index+64)&0xff];
 }
 
-// TODO : use sine table
+void vco_compute_sincos(nco _nco)
+{
+    _nco->sine   = sinf(_nco->theta);
+    _nco->cosine = cosf(_nco->theta);
+}
+
+// TODO : compute sine, cosine internally
 float nco_sin(nco _nco) {return sinf(_nco->theta);}
 float nco_cos(nco _nco) {return cosf(_nco->theta);}
 
 void nco_sincos(nco _nco, float* _s, float* _c)
 {
-    // compute sine, cosine from sine table
-    nco_compute_sincos(_nco);
+    // compute sine, cosine internally
+    _nco->compute_sincos(_nco);
+
     *_s = _nco->sine;
     *_c = _nco->cosine;
 }
 
 void nco_cexpf(nco _nco, float complex * _y)
 {
+    // compute sine, cosine internally
+    _nco->compute_sincos(_nco);
+
     // set _y[0] to [cos(theta) + _Complex_I*sin(theta)]
-    *_y = liquid_crotf_vect(_nco->theta);
+    *_y = _nco->cosine + _Complex_I*(_nco->sine);
 }
 
 // mixing functions
@@ -136,21 +158,28 @@ void nco_cexpf(nco _nco, float complex * _y)
 // Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
 void nco_mix_up(nco _nco, complex float _x, complex float *_y)
 {
+    // compute sine, cosine internally
+    _nco->compute_sincos(_nco);
+
     // multiply _x by [cos(theta) + _Complex_I*sin(theta)]
-    *_y = _x * liquid_crotf_vect(_nco->theta);
+    *_y = _x * (_nco->cosine + _Complex_I*(_nco->sine));
     nco_step(_nco);
 }
 
 // Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
 void nco_mix_down(nco _nco, complex float _x, complex float *_y)
 {
+    // compute sine, cosine internally
+    _nco->compute_sincos(_nco);
+
     // multiply _x by [cos(-theta) + _Complex_I*sin(-theta)]
-    *_y = _x * liquid_crotf_vect(-_nco->theta);
+    *_y = _x * (_nco->cosine - _Complex_I*(_nco->sine));
     nco_step(_nco);
 }
 
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
+// TODO : implement NCO/VCO-specific versions
 void nco_mix_block_up(
     nco _nco,
     complex float *_x,
@@ -179,6 +208,7 @@ void nco_mix_block_up(
 }
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
+// TODO : implement NCO/VCO-specific versions
 void nco_mix_block_down(
     nco _nco,
     complex float *_x,

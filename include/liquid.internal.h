@@ -850,16 +850,20 @@ extern const float complex ofdmframe64_plcp_Lt[64];
 
 // Numerically-controlled oscillator, floating point phase precision
 struct nco_s {
+    liquid_ncotype type;
     float theta;        // NCO phase
     float d_theta;      // NCO frequency
     float sintab[256];  // sine table
     unsigned int index; // table index
     float sine;
     float cosine;
+    void (*compute_sincos)(nco _q);
 };
 
 void nco_constrain_phase(nco _nco);
+
 void nco_compute_sincos(nco _nco);
+void vco_compute_sincos(nco _nco);
 
 //
 // MODULE : random

@@ -31,8 +31,8 @@ int main() {
 #endif
 
     // objects
-    nco nco_tx = nco_create();
-    nco nco_rx = nco_create();
+    nco nco_tx = nco_create(LIQUID_VCO);
+    nco nco_rx = nco_create(LIQUID_VCO);
     pll pll_rx = pll_create();
 
     // initialize objects
