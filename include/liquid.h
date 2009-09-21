@@ -1712,7 +1712,9 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
 // MODULE : nco (numerically-controlled oscillator)
 //
 
-
+// oscillator type
+//  LIQUID_NCO  :   numerically-controlled oscillator (fast)
+//  LIQUID_VCO  :   "voltage"-controlled oscillator (precise)
 typedef enum {
     LIQUID_NCO=0,
     LIQUID_VCO
