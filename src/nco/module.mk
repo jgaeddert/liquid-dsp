@@ -39,7 +39,8 @@ local_s_files	:=		\
 #
 local_t_files	:=		\
 	nco_autotest.h		\
-	pll_autotest.h
+	pll_autotest.h		\
+	vco_autotest.h
 
 
 # local_b_files
@@ -50,7 +51,8 @@ local_t_files	:=		\
 # $(local_dir)
 #
 local_b_files	:=		\
-	nco_benchmark.h
+	nco_benchmark.h		\
+	vco_benchmark.h		\
 
 include common.mk
 
