@@ -123,6 +123,11 @@ void INTERP(_print)(INTERP() _q)
     WINDOW(_print)(_q->w);
 }
 
+void INTERP(_clear)(INTERP() _q)
+{
+    WINDOW(_clear)(_q->w);
+}
+
 void INTERP(_execute)(INTERP() _q, TI _x, TO *_y)
 {
     TI * r; // read pointer

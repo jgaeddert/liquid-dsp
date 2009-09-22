@@ -894,6 +894,7 @@ INTERP() INTERP(_create_rrc)(unsigned int _k,                   \
                    float _dt);                                  \
 void INTERP(_destroy)(INTERP() _q);                             \
 void INTERP(_print)(INTERP() _q);                               \
+void INTERP(_clear)(INTERP() _q);                               \
 void INTERP(_execute)(INTERP() _q, TI _x, TO *_y);
 
 LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float,         float,          float)
@@ -914,6 +915,7 @@ DECIM() DECIM(_create)(unsigned int _D,                         \
                        unsigned int _h_len);                    \
 void    DECIM(_destroy)(DECIM() _q);                            \
 void    DECIM(_print)(DECIM() _q);                              \
+void    DECIM(_clear)(DECIM() _q);                              \
 void    DECIM(_execute)(DECIM() _q,                             \
                         TI *_x,                                 \
                         TO *_y,                                 \
@@ -993,6 +995,7 @@ RESAMP2()   RESAMP2(_recreate)(RESAMP2() _q,                    \
                                unsigned int _h_len);            \
 void        RESAMP2(_destroy)(RESAMP2() _q);                    \
 void        RESAMP2(_print)(RESAMP2() _q);                      \
+void        RESAMP2(_clear)(RESAMP2() _q);                      \
 void        RESAMP2(_decim_execute)(RESAMP2() _f,               \
                                     TI * _x,                    \
                                     TO * _y);                   \

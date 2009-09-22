@@ -78,6 +78,11 @@ void DECIM(_print)(DECIM() _q)
     WINDOW(_print)(_q->w);
 }
 
+void DECIM(_clear)(DECIM() _q)
+{
+    WINDOW(_clear)(_q->w);
+}
+
 void DECIM(_execute)(DECIM() _q, TI *_x, TO *_y, unsigned int _index)
 {
     TI * r; // read pointer
