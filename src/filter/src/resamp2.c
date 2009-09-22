@@ -40,6 +40,7 @@ struct RESAMP2(_s) {
     TC * h;             // filter prototype
     unsigned int m;     // primitive filter length
     unsigned int h_len; // actual filter length: h_len = 4*m+1
+    float fc;           // center frequency [-1.0 <= fc <= 1.0]
 
     // lower branch (filter)
     TC * h1;
@@ -51,10 +52,16 @@ struct RESAMP2(_s) {
     unsigned int w0_index;
 };
 
-RESAMP2() RESAMP2(_create)(unsigned int _h_len)
+RESAMP2() RESAMP2(_create)(unsigned int _h_len,
+                           float _fc)
 {
     RESAMP2() f = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
     f->h_len = _h_len;
+    f->fc = _fc;
+    if ( f->fc < -1.0f || f->fc > 1.0f ) {
+        printf("error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
+        exit(-1);
+    }
 
     // change filter length as necessary
     // h_len = 2*(2*m) + 1
@@ -71,12 +78,20 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len)
     // design filter prototype
     unsigned int i;
     float t, h1, h2;
+    TC h3;
     float beta = 6.0f;
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
         h2 = kaiser(i,f->h_len,beta,0);
-        f->h[i] = h1*h2;
+#if TC_COMPLEX == 1
+        h3 = cosf(M_PI*t*f->fc) + _Complex_I*sinf(M_PI*t*f->fc);
+#else
+        h3 = cosf(M_PI*t*f->fc);
+#endif
+        f->h[i] = h1*h2*h3;
+
+        printf("h(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(f->h[i]), cimagf(f->h[i]));
     }
 
     // resample, alternate sign, reverse direction
@@ -95,7 +110,9 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len)
     return f;
 }
 
-RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
+RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
+                             unsigned int _h_len,
+                             float _fc)
 {
     unsigned int i;
     // change filter length as necessary
@@ -106,13 +123,16 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
         m1 = 2;
 
     // TODO: redesign filter anyway
-    if (m1 == m0)
+    if (m1 == m0 && _f->fc == _fc)
         return _f;
 
     // compute new lengths
     _f->m = m1;
     _f->h_len = 4*(_f->m) + 1;
     _f->h1_len = 2*(_f->m);
+
+    // set center frequency
+    _f->fc = _fc;
 
     // re-allocate memory
     _f->h  = (TC*) realloc(_f->h,  (_f->h_len)*sizeof(TC));
@@ -168,12 +188,18 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f, unsigned int _h_len)
 
     // design filter prototype
     float t, h1, h2;
+    TC h3;
     float beta = 6.0f;
     for (i=0; i<_f->h_len; i++) {
         t = (float)i - (float)(_f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
         h2 = kaiser(i,_f->h_len,beta,0);
-        _f->h[i] = h1*h2;
+#if TC_COMPLEX == 1
+        h3 = cosf(M_PI*t*_f->fc) + _Complex_I*sinf(M_PI*t*_f->fc);
+#else
+        h3 = cosf(M_PI*t*_f->fc);
+#endif
+        _f->h[i] = h1*h2*h3;
     }
 
     // resample, alternate sign, reverse direction

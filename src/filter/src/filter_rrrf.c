@@ -51,6 +51,10 @@
 #define WINDOW(name)        LIQUID_CONCAT(fwindow,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
 
+#define TO_COMPLEX          0
+#define TC_COMPLEX          0
+#define TI_COMPLEX          0
+
 // source files
 //#include "autocorr.c"
 #include "fir_farrow.c"

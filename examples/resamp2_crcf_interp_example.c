@@ -17,7 +17,7 @@ int main() {
     unsigned int N=128;         // number of input samples
 
     // create/print the half-band resampler
-    resamp2_cccf f = resamp2_cccf_create(h_len);
+    resamp2_cccf f = resamp2_cccf_create(h_len,0.0f);
     resamp2_cccf_print(f);
 
     // open output file

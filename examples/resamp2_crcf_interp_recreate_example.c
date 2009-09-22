@@ -18,7 +18,7 @@ int main() {
     float fc=0.10f;
     unsigned int N=32;
 
-    resamp2_cccf f = resamp2_cccf_create(h0_len);
+    resamp2_cccf f = resamp2_cccf_create(h0_len,0.0f);
 
     resamp2_cccf_print(f);
 
@@ -51,7 +51,7 @@ int main() {
 
     // re-create interpolator
     printf("recreating filter...\n");
-    f = resamp2_cccf_recreate(f,h1_len);
+    f = resamp2_cccf_recreate(f,h1_len,0.0f);
 
     // TODO: push additional values?
 

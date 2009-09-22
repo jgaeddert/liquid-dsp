@@ -48,6 +48,10 @@
 #define WINDOW(name)        LIQUID_CONCAT(cfwindow,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
 
+#define TO_COMPLEX          1
+#define TC_COMPLEX          1
+#define TI_COMPLEX          1
+
 // source files
 #include "autocorr.c"
 #include "fir_filter.c"
@@ -56,7 +60,7 @@
 #include "interp.c"
 #include "decim.c"
 //#include "qmfb.c"
-//#include "resamp.c"
+#include "resamp.c"
 #include "resamp2.c"
 //#include "symsync.c"
 #include "symsync2.c"

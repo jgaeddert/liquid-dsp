@@ -136,7 +136,7 @@ DDS() DDS(_create)(float _fc_in,            // input carrier
     // allocate memory for resampler pointers
     q->halfband_resamp = (RESAMP2()*) malloc((q->num_stages)*sizeof(RESAMP()*));
     for (i=0; i<q->num_stages; i++) {
-        q->halfband_resamp[i] = RESAMP2(_create)(q->h_len[i]);
+        q->halfband_resamp[i] = RESAMP2(_create)(q->h_len[i],q->fc[i]);
     }
 
     return q;
@@ -187,10 +187,10 @@ void DDS(_reset)(DDS() _q)
     // reset internal filter state variables
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
-        //RESAMP2(_reset)(_q->halfband_resamp[i]);
+        RESAMP2(_clear)(_q->halfband_resamp[i]);
     }
 
-    //RESAMP(_reset)(_q->frac_resamp);
+    RESAMP(_reset)(_q->frac_resamp);
     
     nco_reset(_q->ncox);
 }
@@ -234,7 +234,6 @@ void DDS(_execute_interp)(DDS() _q,
 
     unsigned int s, i;
     unsigned int k=1; // number of inputs for this stage
-    unsigned int j=0;
     T * x0 = NULL, * x1 = NULL;
     for (s=0; s<_q->num_stages; s++) {
         //printf("stage %3u, k = %3u\n", s, k);
@@ -245,13 +244,9 @@ void DDS(_execute_interp)(DDS() _q,
         }
         k <<= 1;
     }
-    /*
-    for (i=0; i<_q->buffer_len; i++)
-        printf("%3u : %12.8f\n", i, crealf(_q->buffer[i]));
-    */
 
     // TODO : execute arbitrary resampler
-
+    
 
     *_num_written = 1<<_q->num_stages;
 

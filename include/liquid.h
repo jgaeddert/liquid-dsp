@@ -990,9 +990,11 @@ LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid
 
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef     struct RESAMP2(_s) * RESAMP2();                     \
-RESAMP2()   RESAMP2(_create)(unsigned int _h_len);              \
+RESAMP2()   RESAMP2(_create)(unsigned int _h_len,               \
+                             float _fc);                        \
 RESAMP2()   RESAMP2(_recreate)(RESAMP2() _q,                    \
-                               unsigned int _h_len);            \
+                               unsigned int _h_len,             \
+                               float _fc);                      \
 void        RESAMP2(_destroy)(RESAMP2() _q);                    \
 void        RESAMP2(_print)(RESAMP2() _q);                      \
 void        RESAMP2(_clear)(RESAMP2() _q);                      \
