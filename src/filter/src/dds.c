@@ -52,8 +52,9 @@ struct DDS(_s) {
     RESAMP2() * halfband_resamp;
     unsigned int num_stages;
     float halfband_rate;
-    float * fc;
-    unsigned int * h_len;
+    float * fc;             // filter center frequency
+    float * slsl;           // filter sidelobe suppression level
+    unsigned int * h_len;   // filter length
     T * buffer;
     unsigned int buffer_len;
     T ** b;
@@ -97,11 +98,13 @@ DDS() DDS(_create)(float _fc_in,            // input carrier
     q->frac_rate = q->rate / q->halfband_rate;
 
     // allocate memory for filter properties
-    q->fc = (float*) malloc((q->num_stages)*sizeof(float));
+    q->fc    = (float*) malloc((q->num_stages)*sizeof(float));
+    q->slsl  = (float*) malloc((q->num_stages)*sizeof(float));
     q->h_len = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
     unsigned int i;
     for (i=0; i<q->num_stages; i++) {
         q->fc[i] = 0.0f;
+        q->slsl[i] = 40.0f;
         q->h_len[i] = 13;
     }
 
@@ -136,7 +139,9 @@ DDS() DDS(_create)(float _fc_in,            // input carrier
     // allocate memory for resampler pointers
     q->halfband_resamp = (RESAMP2()*) malloc((q->num_stages)*sizeof(RESAMP()*));
     for (i=0; i<q->num_stages; i++) {
-        q->halfband_resamp[i] = RESAMP2(_create)(q->h_len[i],q->fc[i]);
+        q->halfband_resamp[i] = RESAMP2(_create)(q->h_len[i],
+                                                 q->fc[i],
+                                                 q->slsl[i]);
     }
 
     return q;

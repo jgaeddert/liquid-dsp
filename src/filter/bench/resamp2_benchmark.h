@@ -39,7 +39,7 @@ void resamp2_crcf_bench(
 {
     unsigned long int i;
 
-    resamp2_crcf q = resamp2_crcf_create(_h_len,0.0f);
+    resamp2_crcf q = resamp2_crcf_create(_h_len,0.0f,60.0f);
 
     float complex x[] = {1.0f, -1.0f};
     float complex y[] = {1.0f, -1.0f};

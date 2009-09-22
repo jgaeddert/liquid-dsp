@@ -41,6 +41,7 @@ struct RESAMP2(_s) {
     unsigned int m;     // primitive filter length
     unsigned int h_len; // actual filter length: h_len = 4*m+1
     float fc;           // center frequency [-1.0 <= fc <= 1.0]
+    float slsl;         // sidelobe suppression level [dB]
 
     // lower branch (filter)
     TC * h1;
@@ -53,11 +54,13 @@ struct RESAMP2(_s) {
 };
 
 RESAMP2() RESAMP2(_create)(unsigned int _h_len,
-                           float _fc)
+                           float _fc,
+                           float _slsl)
 {
     RESAMP2() f = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
     f->h_len = _h_len;
     f->fc = _fc;
+    f->slsl = _slsl;
     if ( f->fc < -1.0f || f->fc > 1.0f ) {
         printf("error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
         exit(-1);
@@ -79,7 +82,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
     unsigned int i;
     float t, h1, h2;
     TC h3;
-    float beta = 6.0f;
+    float beta = kaiser_beta_slsl(f->slsl);
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
@@ -90,8 +93,6 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
         h3 = cosf(M_PI*t*f->fc);
 #endif
         f->h[i] = h1*h2*h3;
-
-        printf("h(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(f->h[i]), cimagf(f->h[i]));
     }
 
     // resample, alternate sign, reverse direction
@@ -112,7 +113,8 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
 
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
                              unsigned int _h_len,
-                             float _fc)
+                             float _fc,
+                             float _slsl)
 {
     unsigned int i;
     // change filter length as necessary
@@ -123,7 +125,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
         m1 = 2;
 
     // TODO: redesign filter anyway
-    if (m1 == m0 && _f->fc == _fc)
+    if (m1 == m0 && _f->fc == _fc && _f->slsl == _slsl)
         return _f;
 
     // compute new lengths
@@ -131,8 +133,9 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     _f->h_len = 4*(_f->m) + 1;
     _f->h1_len = 2*(_f->m);
 
-    // set center frequency
+    // set center frequency, sidelobe suppression level
     _f->fc = _fc;
+    _f->slsl = _slsl;
 
     // re-allocate memory
     _f->h  = (TC*) realloc(_f->h,  (_f->h_len)*sizeof(TC));
@@ -221,7 +224,9 @@ void RESAMP2(_destroy)(RESAMP2() _f)
 
 void RESAMP2(_print)(RESAMP2() _f)
 {
-    printf("fir half-band resampler: [%u]\n", _f->h_len);
+    printf("fir half-band resampler: [%u taps, fc=%12.8f]\n",
+            _f->h_len,
+            _f->fc);
     unsigned int i;
     for (i=0; i<_f->h_len; i++) {
         printf("  h(%4u) = ", i+1);

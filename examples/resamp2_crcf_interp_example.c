@@ -15,9 +15,12 @@ int main() {
     unsigned int h_len = 4*m+1; // filter length
     float fc=0.17f;             // input tone frequency
     unsigned int N=128;         // number of input samples
+    float slsl=60.0f;           // filter sidelobe level [dB]
 
-    // create/print the half-band resampler
-    resamp2_cccf f = resamp2_cccf_create(h_len,0.0f);
+    // create/print the half-band resampler, centered on
+    // tone frequency with a specified sidelobe suppression
+    // level
+    resamp2_cccf f = resamp2_cccf_create(h_len,fc,slsl);
     resamp2_cccf_print(f);
 
     // open output file
