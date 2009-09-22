@@ -21,11 +21,13 @@ int main() {
     dds_cccf q = dds_cccf_create(fc0,fc1,r);
     dds_cccf_print(q);
 
+    float complex x;
     float complex y[8*128];
     unsigned int nw;
     unsigned int i, n=0;
     for (i=0; i<128; i++) {
-        dds_cccf_execute(q, randnf(), &y[n], &nw);
+        x = i < 100 ? 1.0f : 0.0f;
+        dds_cccf_execute(q, x, &y[n], &nw);
         n += nw;
     }
 
@@ -41,7 +43,11 @@ int main() {
     for (i=0; i<n; i++) {
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
-
+    fprintf(fid,"nfft=1024;\n");
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
+    fprintf(fid,"plot(f,Y);\n");
+    fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);
 

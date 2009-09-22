@@ -102,10 +102,20 @@ DDS() DDS(_create)(float _fc_in,            // input carrier
     q->slsl  = (float*) malloc((q->num_stages)*sizeof(float));
     q->h_len = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
     unsigned int i;
-    for (i=0; i<q->num_stages; i++) {
-        q->fc[i] = 0.0f;
-        q->slsl[i] = 40.0f;
-        q->h_len[i] = 13;
+    float fc;
+    if (q->is_interp) {
+        fc = q->fc0;
+        for (i=0; i<q->num_stages; i++) {
+            q->fc[i] = fc;
+            q->slsl[i] = 60.0f;
+            q->h_len[i] = i==0 ? 16 : q->h_len[i-1]/2;
+        }
+    } else {
+        for (i=0; i<q->num_stages; i++) {
+            q->fc[i] = 0.0f;
+            q->slsl[i] = 60.0f;
+            q->h_len[i] = i==0 ? 8 : q->h_len[i-1]*2;
+        }
     }
 
     // allocate memory for buffering
