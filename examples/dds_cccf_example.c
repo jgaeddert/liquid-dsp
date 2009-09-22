@@ -21,9 +21,13 @@ int main() {
     dds_cccf q = dds_cccf_create(fc0,fc1,r);
     dds_cccf_print(q);
 
-    float complex y[256];
+    float complex y[8*128];
     unsigned int nw;
-    dds_cccf_execute(q, 0, y, &nw);
+    unsigned int i, n=0;
+    for (i=0; i<128; i++) {
+        dds_cccf_execute(q, randnf(), &y[n], &nw);
+        n += nw;
+    }
 
     // open/initialize output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -34,6 +38,9 @@ int main() {
 
     // output results
     fprintf(fid,"\n\n");
+    for (i=0; i<n; i++) {
+        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+    }
 
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);

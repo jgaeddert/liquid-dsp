@@ -201,7 +201,6 @@ void DDS(_execute)(DDS() _q,
                    float complex * _y,
                    unsigned int * _num_written)
 {
-    printf("running...\n");
     if (_q->is_interp)
         DDS(_execute_interp)(_q, _x, _y, _num_written);
     else
@@ -235,18 +234,28 @@ void DDS(_execute_interp)(DDS() _q,
 
     unsigned int s, i;
     unsigned int k=1; // number of inputs for this stage
-    T * x0, * x1;
+    unsigned int j=0;
+    T * x0 = NULL, * x1 = NULL;
     for (s=0; s<_q->num_stages; s++) {
-        printf("stage %3u, k = %3u\n", s, k);
+        //printf("stage %3u, k = %3u\n", s, k);
         x0 = _q->b[s];      // input buffer
         x1 = _q->b[s+1];    // output buffer
         for (i=0; i<k; i++) {
-            //RESAMP2(_interp_execute)(_q->halfband_resamp[s], x0[k], &x1[2*k]);
+            RESAMP2(_interp_execute)(_q->halfband_resamp[s], x0[i], &x1[2*i]);
         }
-        k <<= 1; // k *= 2
+        k <<= 1;
     }
+    /*
+    for (i=0; i<_q->buffer_len; i++)
+        printf("%3u : %12.8f\n", i, crealf(_q->buffer[i]));
+    */
 
-    // execute arbitrary resampler
-    *_num_written = 0;
+    // TODO : execute arbitrary resampler
+
+
+    *_num_written = 1<<_q->num_stages;
+
+    for (i=0; i<(1<<_q->num_stages); i++)
+        _y[i] = x1[i];
 }
 
