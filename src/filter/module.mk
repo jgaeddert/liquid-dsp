@@ -27,6 +27,7 @@ module_name     := filter
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 			\
+	dds.c				\
 	filter_rrrf.c			\
 	filter_crcf.c			\
 	filter_cccf.c			\
