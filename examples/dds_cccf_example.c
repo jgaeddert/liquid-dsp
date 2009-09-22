@@ -14,12 +14,16 @@ int main() {
     // options
     float fc0=0.0f;             // input frequency
     float fc1=0.0f;             // output frequency
-    float r=(8.0f)*0.666f;               // resampling rate (output/input)
+    float r=8.0f;               // resampling rate (output/input)
     //unsigned int n=128;         // number of input samples
 
     // create resampler
     dds_cccf q = dds_cccf_create(fc0,fc1,r);
     dds_cccf_print(q);
+
+    float complex y[256];
+    unsigned int nw;
+    dds_cccf_execute(q, 0, y, &nw);
 
     // open/initialize output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
