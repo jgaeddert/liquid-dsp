@@ -219,7 +219,7 @@ void DDS(_decim_execute)(DDS() _q,
     nco_mix_down(_q->ncox, y, &y);
 
     // set output
-    *_y = y;
+    *_y = y / ((float)(_q->rate));
 }
 
 // execute interpolator
