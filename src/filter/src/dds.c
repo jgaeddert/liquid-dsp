@@ -65,6 +65,9 @@ struct DDS(_s) {
 
     // low-rate mixing stage
     nco ncox;
+
+    // down-converter scaling factor
+    float zeta;
 };
 
 DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
@@ -119,6 +122,9 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
                                                  q->fc[i],
                                                  q->slsl[i]);
     }
+
+    // set down-converter scaling factor
+    q->zeta = 1.0f / ((float)(q->rate));
 
     // create NCO and set frequency
     q->ncox = nco_create(LIQUID_VCO);
@@ -218,8 +224,8 @@ void DDS(_decim_execute)(DDS() _q,
     // increment NCO
     nco_mix_down(_q->ncox, y, &y);
 
-    // set output
-    *_y = y / ((float)(_q->rate));
+    // set output, normalizing by scaling factor
+    *_y = y * _q->zeta;
 }
 
 // execute interpolator

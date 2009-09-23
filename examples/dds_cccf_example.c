@@ -74,7 +74,7 @@ int main() {
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,  nfft))));\n");
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/r,nfft))));\n");
-    fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z,nfft))));\n");
+    fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z,  nfft))));\n");
     fprintf(fid,"plot(f,X,f,Y,f,Z);\n");
     fprintf(fid,"legend('original','up-converted','down-converted',1);\n");
     fprintf(fid,"grid on;\n");
