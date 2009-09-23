@@ -31,9 +31,7 @@
 // defined:
 //  DDS()           name-mangling macro
 //  T               coefficients type
-//  WINDOW()        window macro
 //  RESAMP2()       halfband resampler
-//  RESAMP()        arbitrary resampler
 //  PRINTVAL()      print macro
 
 #define DDS(name)           LIQUID_CONCAT(dds_cccf,name)
@@ -59,10 +57,10 @@ struct DDS(_s) {
     float * slsl;           // filter sidelobe suppression level
     unsigned int * h_len;   // filter length
 
-    // TODO : this buffering method is confusing; clean it up
-    T * buffer;
+    // internal buffers
     unsigned int buffer_len;
-    T ** b;
+    T * buffer0;
+    T * buffer1;
 
     // low-rate mixing stage
     nco ncox;
@@ -96,6 +94,7 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
     float fc, fd;
     fc = 0.5*(1<<q->num_stages)*q->fc0;
     fd = 0.3;
+    // TODO : compute/set filter bandwidths, lengths appropriately
     for (i=0; i<q->num_stages; i++) {
         q->fc[i] = fc;
         while (q->fc[i] >  0.5f) q->fc[i] -= 1.0f;
@@ -108,36 +107,12 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
     }
 
     // allocate memory for buffering
-    q->buffer_len = 1<<(q->num_stages+1);
+    q->buffer_len = q->rate;
     printf("buffer length : %u\n", q->buffer_len);
-    q->buffer = (T*) malloc((q->buffer_len)*sizeof(T));
+    q->buffer0 = (T*) malloc((q->buffer_len)*sizeof(T));
+    q->buffer1 = (T*) malloc((q->buffer_len)*sizeof(T));
 
-    q->b = (T**) malloc((q->num_stages+1)*sizeof(T*));
-    unsigned int k, n=0;
-    //if (q->is_interp) {
-        k = 1;
-        for (i=0; i<q->num_stages+1; i++) {
-            printf("n : %u\n", n);
-            q->b[i] = q->buffer + n;
-            n += k;
-            k <<= 1;
-        }
-#if 0
-    } else {
-        k = 1<<q->num_stages;
-        for (i=0; i<q->num_stages+1; i++) {
-            printf("n : %u\n", n);
-            q->b[i] = q->buffer + n;
-            n += k;
-            k >>= 1;
-        }
-    }
-#endif
-
-    // TODO : compute resampler parameters
-    // TODO : generate resamplers
-
-    // allocate memory for resampler pointers
+    // allocate memory for resampler pointers and create objects
     q->halfband_resamp = (RESAMP2()*) malloc((q->num_stages)*sizeof(RESAMP()*));
     for (i=0; i<q->num_stages; i++) {
         q->halfband_resamp[i] = RESAMP2(_create)(q->h_len[i],
@@ -145,9 +120,10 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
                                                  q->slsl[i]);
     }
 
-    // create NCO
+    // create NCO and set frequency
     q->ncox = nco_create(LIQUID_VCO);
-    nco_set_frequency(q->ncox, 2*M_PI*(1<<q->num_stages)*q->fc0);
+    // TODO : ensure range is in [-pi,pi]
+    nco_set_frequency(q->ncox, 2*M_PI*(q->rate)*(q->fc0));
 
     return q;
 }
@@ -158,9 +134,9 @@ void DDS(_destroy)(DDS() _q)
     free(_q->fc);
     free(_q->bw);
 
-    // destroy buffer, buffer pointers
-    free(_q->buffer);
-    free(_q->b);
+    // destroy buffers
+    free(_q->buffer0);
+    free(_q->buffer1);
 
     // destroy halfband resampler objects
     unsigned int i;
@@ -219,28 +195,32 @@ void DDS(_interp_execute)(DDS() _q,
                           T _x,
                           T * _y)
 {
-    // TODO : execute arbitrary resampler
-
-    // TODO : increment NCO
+    // increment NCO
     nco_mix_up(_q->ncox, _x, &_x);
 
     // set initial buffer value
-    _q->buffer[0] = _x;
+    _q->buffer0[0] = _x;
 
     unsigned int s, i;
     unsigned int k=1; // number of inputs for this stage
-    T * x0 = NULL, * x1 = NULL;
+    T * b0 = NULL;  // input buffer pointer
+    T * b1 = NULL;  // output buffer pointer
     for (s=0; s<_q->num_stages; s++) {
         //printf("stage %3u, k = %3u\n", s, k);
-        x0 = _q->b[s];      // input buffer
-        x1 = _q->b[s+1];    // output buffer
-        for (i=0; i<k; i++) {
-            RESAMP2(_interp_execute)(_q->halfband_resamp[s], x0[i], &x1[2*i]);
-        }
+
+        // set buffer pointers
+        b0 = s%2 == 0 ? _q->buffer0 : _q->buffer1;
+        b1 = s%2 == 1 ? _q->buffer0 : _q->buffer1;
+        for (i=0; i<k; i++)
+            RESAMP2(_interp_execute)(_q->halfband_resamp[s], b0[i], &b1[2*i]);
+        
+        // length doubles with each iteration
         k <<= 1;
     }
 
-    for (i=0; i<(1<<_q->num_stages); i++)
-        _y[i] = x1[i];
+    // copy output data
+    //for (i=0; i<_q->rate; i++)
+    //    _y[i] = b1[i];
+    memmove(_y, b1, (_q->rate)*sizeof(T));
 }
 
