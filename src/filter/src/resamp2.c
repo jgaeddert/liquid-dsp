@@ -61,7 +61,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
     f->h_len = _h_len;
     f->fc = _fc;
     f->slsl = _slsl;
-    if ( f->fc < -1.0f || f->fc > 1.0f ) {
+    if ( f->fc < -0.5f || f->fc > 0.5f ) {
         printf("error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
         exit(-1);
     }
@@ -88,9 +88,9 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
         h1 = sincf(t/2.0f);
         h2 = kaiser(i,f->h_len,beta,0);
 #if TC_COMPLEX == 1
-        h3 = cosf(M_PI*t*f->fc) + _Complex_I*sinf(M_PI*t*f->fc);
+        h3 = cosf(2.0f*M_PI*t*f->fc) + _Complex_I*sinf(2.0f*M_PI*t*f->fc);
 #else
-        h3 = cosf(M_PI*t*f->fc);
+        h3 = cosf(2.0f*M_PI*t*f->fc);
 #endif
         f->h[i] = h1*h2*h3;
     }

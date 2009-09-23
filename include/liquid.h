@@ -752,9 +752,8 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
 #define LIQUID_DDS_DEFINE_API(DDS,T)                            \
                                                                 \
 typedef struct DDS(_s) * DDS();                                 \
-DDS() DDS(_create)(float _fc_in,                                \
-                 float _fc_out,                                 \
-                 float _rate);                                  \
+DDS() DDS(_create)(float _fc,                                   \
+                   float _rate);                                \
 void DDS(_destroy)(DDS() _q);                                   \
 void DDS(_print)(DDS() _q);                                     \
 void DDS(_reset)(DDS() _q);                                     \

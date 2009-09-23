@@ -12,13 +12,12 @@
 
 int main() {
     // options
-    float fc0=0.0f;             // input frequency
-    float fc1=0.0f;             // output frequency
+    float fc=0.17f;              // input (output) decim (interp) frequency
     float r=8.0f;               // resampling rate (output/input)
     //unsigned int n=128;         // number of input samples
 
     // create resampler
-    dds_cccf q = dds_cccf_create(fc0,fc1,r);
+    dds_cccf q = dds_cccf_create(fc,r);
     dds_cccf_print(q);
 
     float complex x;
@@ -26,7 +25,8 @@ int main() {
     unsigned int nw;
     unsigned int i, n=0;
     for (i=0; i<128; i++) {
-        x = i < 100 ? 1.0f : 0.0f;
+        //x = i < 100 ? 1.0f : 0.0f;
+        x = i == 0 ? 1.0f : 0.0f;
         dds_cccf_execute(q, x, &y[n], &nw);
         n += nw;
     }
