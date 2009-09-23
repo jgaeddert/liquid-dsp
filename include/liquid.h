@@ -623,6 +623,13 @@ void fir_prototype_design_slsl();
 
 void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
 
+// estimates the number of filter taps required to meet
+// the specifications
+//  _slsl   : sidelobe suppression level (_slsl < 0)
+//  _ft     : filter transition bandwidth (0 < _ft < 0.5)
+float num_fir_filter_taps(float _slsl,
+                          float _ft);
+
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl);
 

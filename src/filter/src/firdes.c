@@ -28,6 +28,21 @@
 
 #include "liquid.internal.h"
 
+// estimates the number of filter taps required to meet
+// the specifications
+//  _slsl   : sidelobe suppression level (_slsl < 0)
+//  _ft     : filter transition bandwidth (0 < _ft < 0.5)
+float num_fir_filter_taps(float _slsl,
+                          float _ft)
+{
+    // error-checking
+    if (_ft < 0.0f || _ft > 0.5f) {
+        printf("error: num_fir_filter_taps(), transition bandwidth (%12.4e) is out of range [0,0.5]\n", _ft);
+        exit(0);
+    }
+    return 2.0f * fabsf(_slsl) / (22.0f * _ft);
+}
+
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl)
 {
@@ -50,7 +65,12 @@ float kaiser_beta_slsl(float _slsl)
 //  _fc     : cutoff frequency
 //  _slsl   : sidelobe suppression level (dB attenuation)
 //  _h      : output coefficient buffer
-void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float *_h) {
+void fir_kaiser_window(unsigned int _n,
+                       float _fc,
+                       float _slsl,
+                       float _mu,
+                       float *_h)
+{
     // chooise kaiser beta parameter (approximate)
     float beta = kaiser_beta_slsl(_slsl);
 
@@ -79,7 +99,11 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float
 //  _K      : Rice fading factor (K >= 0)
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, float *_h)
+void fir_design_doppler(unsigned int _n,
+                        float _fd,
+                        float _K,
+                        float _theta,
+                        float *_h)
 {
     float t, J, r, w;
     float beta = 4; // kaiser window parameter
@@ -108,7 +132,10 @@ void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, floa
 //  _n      : filter length
 //  _k      : samples/symbol
 //  _beta   : excess bandwidth factor
-void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h)
+void fir_design_optim_root_nyquist(unsigned int _n,
+                                   unsigned int _k,
+                                   float _slsl,
+                                   float *_h)
 {
     // validate inputs:
     //    _k >= 2

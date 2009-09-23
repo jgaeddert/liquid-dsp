@@ -54,7 +54,7 @@ struct DDS(_s) {
     // halfband decimation/interpolation stages
     RESAMP2() * halfband_resamp;
     float * fc;             // filter center frequency
-    float * bw;             // filter bandwidth
+    float * ft;             // filter transition bandwidth
     float * slsl;           // filter sidelobe suppression level
     unsigned int * h_len;   // filter length
 
@@ -91,23 +91,32 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
 
     // allocate memory for filter properties
     q->fc    = (float*) malloc((q->num_stages)*sizeof(float));
-    q->bw    = (float*) malloc((q->num_stages)*sizeof(float));
+    q->ft    = (float*) malloc((q->num_stages)*sizeof(float));
     q->slsl  = (float*) malloc((q->num_stages)*sizeof(float));
     q->h_len = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
     unsigned int i;
-    float fc, fd;
+    float fc, bw;
     fc = 0.5*(1<<q->num_stages)*q->fc0; // filter center frequency
-    fd = q->bw0;                        // signal bandwidth
+    bw = q->bw0;                        // signal bandwidth
     // TODO : compute/set filter bandwidths, lengths appropriately
     for (i=0; i<q->num_stages; i++) {
         q->fc[i] = fc;
         while (q->fc[i] >  0.5f) q->fc[i] -= 1.0f;
         while (q->fc[i] < -0.5f) q->fc[i] += 1.0f;
-        q->bw[i] = 1.0f - 0.5f*fd;
+
+        // compute transition bandwidth
+        // TODO : verify this calculation
+        q->ft[i] = 0.5f*(1.0f - bw);
         q->slsl[i] = q->slsl0;
-        q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.7;
+
+        // compute (estimate) required filter length
+        //q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.7;
+        q->h_len[i] = num_fir_filter_taps(q->slsl[i], q->ft[i]);
+        if ((q->h_len[i] % 2) == 0) q->h_len[i]++;
+
+        // update carrier, bandwidth parameters
         fc *= 0.5f;
-        fd *= 0.5f;
+        bw *= 0.5f;
     }
 
     // allocate memory for buffering
@@ -138,7 +147,7 @@ void DDS(_destroy)(DDS() _q)
 {
     free(_q->h_len);
     free(_q->fc);
-    free(_q->bw);
+    free(_q->ft);
 
     // destroy buffers
     free(_q->buffer0);
@@ -167,10 +176,10 @@ void DDS(_print)(DDS() _q)
     printf("    halfband stages (low rate -> high rate) :\n");
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
-        printf("      [%3u] : fc = %8.5f, bw = %8.5f, %3u taps\n",
+        printf("      [%3u] : fc = %8.5f, ft = %8.5f, %3u taps\n",
                     i,
                     _q->fc[i],
-                    _q->bw[i],
+                    _q->ft[i],
                     _q->h_len[i]);
         //RESAMP2(_print)(_q->halfband_resamp[i]);
     }

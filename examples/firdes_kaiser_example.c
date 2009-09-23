@@ -11,10 +11,13 @@
 
 int main() {
     // options
-    unsigned int h_len=37;  // filter length
     float fc=0.4f;          // filter cutoff frequency
-    float slsl=40.0f;       // sidelobe suppression level
+    float ft=0.2f;          // filter transition
+    float slsl=60.0f;       // sidelobe suppression level
     float mu=0.0f;          // fractional timing offset
+
+    unsigned int h_len=(unsigned int)num_fir_filter_taps(slsl,ft);
+    printf("h_len : %u\n", h_len);
 
     unsigned int i;
     float h[h_len];
