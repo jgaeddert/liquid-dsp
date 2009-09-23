@@ -43,8 +43,7 @@
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 
 struct DDS(_s) {
-    int is_interp;
-    float rate;
+    unsigned int rate;
     float fc0;
 
     // initial decimation/interpolation stages
@@ -59,41 +58,20 @@ struct DDS(_s) {
     unsigned int buffer_len;
     T ** b;
 
-    // arbitrary resampling clean-up stage
-    RESAMP() frac_resamp;
-    float frac_rate;
-
     // final mixing stage
     nco ncox;
 };
 
-DDS() DDS(_create)(float _fc,               // input carrier
-                   float _rate)             // rate (output/input)
+DDS() DDS(_create)(unsigned int _num_stages,//
+                   float _fc,               // input carrier
+                   float _bw,               // input signal bandwidth
+                   float _slsl)             // 
 {
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
-    q->rate = _rate;
+    q->num_stages = _num_stages;
+    q->rate = 1<<(q->num_stages);
     q->fc0 = _fc;
-    float log2rate;
-
-    if (q->rate <= 0.0f) {
-        printf("error: dds_xxxt_create(), invalid rate %12.4e (must be greater than 0)\n", q->rate);
-        exit(0);
-    } else if (q->rate >= 1.0f) {
-        // interpolation
-        q->is_interp = 1;
-        log2rate = log2f(q->rate);
-        q->num_stages = roundf(log2rate); // floorf(log2rate);
-        q->halfband_rate = (float)(1<<q->num_stages);
-    } else {
-        // decimation
-        q->is_interp = 0;
-        log2rate = -log2f(q->rate);
-        q->num_stages = roundf(log2rate); // floorf(log2rate);
-        q->halfband_rate = 1.0f / (float)(1<<q->num_stages);
-    }
-    // compute fractional rate
-    q->frac_rate = q->rate / q->halfband_rate;
 
     // allocate memory for filter properties
     q->fc    = (float*) malloc((q->num_stages)*sizeof(float));
@@ -101,25 +79,18 @@ DDS() DDS(_create)(float _fc,               // input carrier
     q->slsl  = (float*) malloc((q->num_stages)*sizeof(float));
     q->h_len = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
     unsigned int i;
-    float fc;
-    if (q->is_interp) {
-        fc = 0.5*(1<<q->num_stages)*q->fc0;
-        for (i=0; i<q->num_stages; i++) {
-            q->fc[i] = fc;
-            while (q->fc[i] >  0.5f) q->fc[i] -= 1.0f;
-            while (q->fc[i] < -0.5f) q->fc[i] += 1.0f;
-            q->bw[i] = 0.2f;
-            q->slsl[i] = 60.0f;
-            q->h_len[i] = i==0 ? 33 : q->h_len[i-1]*0.7;
-            fc *= 0.5f;
-        }
-    } else {
-        for (i=0; i<q->num_stages; i++) {
-            q->fc[i] = 0.0f;
-            q->bw[i] = 0.2f;
-            q->slsl[i] = 60.0f;
-            q->h_len[i] = i==0 ? 8 : q->h_len[i-1]*2;
-        }
+    float fc, fd;
+    fc = 0.5*(1<<q->num_stages)*q->fc0;
+    fd = 0.3;
+    for (i=0; i<q->num_stages; i++) {
+        q->fc[i] = fc;
+        while (q->fc[i] >  0.5f) q->fc[i] -= 1.0f;
+        while (q->fc[i] < -0.5f) q->fc[i] += 1.0f;
+        q->bw[i] = 1-fd;
+        q->slsl[i] = 80.0f;
+        q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.6;
+        fc *= 0.5f;
+        fd *= 0.5f;
     }
 
     // allocate memory for buffering
@@ -129,7 +100,7 @@ DDS() DDS(_create)(float _fc,               // input carrier
 
     q->b = (T**) malloc((q->num_stages+1)*sizeof(T*));
     unsigned int k, n=0;
-    if (q->is_interp) {
+    //if (q->is_interp) {
         k = 1;
         for (i=0; i<q->num_stages+1; i++) {
             printf("n : %u\n", n);
@@ -137,6 +108,7 @@ DDS() DDS(_create)(float _fc,               // input carrier
             n += k;
             k <<= 1;
         }
+#if 0
     } else {
         k = 1<<q->num_stages;
         for (i=0; i<q->num_stages+1; i++) {
@@ -146,6 +118,7 @@ DDS() DDS(_create)(float _fc,               // input carrier
             k >>= 1;
         }
     }
+#endif
 
     // TODO : compute resampler parameters
     // TODO : generate resamplers
@@ -157,13 +130,6 @@ DDS() DDS(_create)(float _fc,               // input carrier
                                                  q->fc[i],
                                                  q->slsl[i]);
     }
-
-    // create fractional resampler
-    q->frac_resamp = RESAMP(_create)(q->frac_rate,
-                                     6,         // h_len
-                                     0.5f,      // bandwidth
-                                     60.0f,     // sidelobe level [dB]
-                                     16);       // npfb
 
     // create NCO
     q->ncox = nco_create(LIQUID_VCO);
@@ -188,9 +154,6 @@ void DDS(_destroy)(DDS() _q)
         RESAMP2(_destroy)(_q->halfband_resamp[i]);
     free(_q->halfband_resamp);
 
-    // destroy fractional resampler object
-    RESAMP(_destroy)(_q->frac_resamp);
-
     // destroy NCO object
     nco_destroy(_q->ncox);
 
@@ -204,7 +167,8 @@ void DDS(_print)(DDS() _q)
     printf("      fc : %8.5f\n", _q->fc0);
     printf("    halfband stages : %3u %s, rate : %12.4e\n",
                     _q->num_stages,
-                    _q->is_interp ? "interp" : "decim ",
+                    //_q->is_interp ? "interp" : "decim ",
+                    "interp",
                     _q->halfband_rate);
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
@@ -215,9 +179,6 @@ void DDS(_print)(DDS() _q)
                     _q->h_len[i]);
         //RESAMP2(_print)(_q->halfband_resamp[i]);
     }
-    printf("    fractional stage,             rate : %12.4e\n",
-                    _q->frac_rate);
-    printf("      16 filters\n");
 }
 
 void DDS(_reset)(DDS() _q)
@@ -228,8 +189,6 @@ void DDS(_reset)(DDS() _q)
         RESAMP2(_clear)(_q->halfband_resamp[i]);
     }
 
-    RESAMP(_reset)(_q->frac_resamp);
-    
     nco_reset(_q->ncox);
 }
 
@@ -239,10 +198,12 @@ void DDS(_execute)(DDS() _q,
                    float complex * _y,
                    unsigned int * _num_written)
 {
-    if (_q->is_interp)
+    //if (_q->is_interp)
         DDS(_execute_interp)(_q, _x, _y, _num_written);
+        /*
     else
         DDS(_execute_decim)(_q, _x, _y, _num_written);
+        */
 }
 
 // 

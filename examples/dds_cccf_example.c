@@ -12,30 +12,31 @@
 
 int main() {
     // options
-    float fc=0.17f;              // input (output) decim (interp) frequency
-    float r=8.0f;               // resampling rate (output/input)
-    //unsigned int n=128;         // number of input samples
+    float fc=0.2f;              // input (output) decim (interp) frequency
+    unsigned int num_stages=3;
+    unsigned int num_samples=128;         // number of input samples
 
+    unsigned int  r=1<<num_stages;               // resampling rate (output/input)
     // create resampler
-    dds_cccf q = dds_cccf_create(fc,r);
+    dds_cccf q = dds_cccf_create(num_stages,fc,0.5f,-60.0f);
     dds_cccf_print(q);
 
     float complex x;
-    float complex y[8*128];
+    float complex y[r*num_samples];
     unsigned int nw;
     unsigned int i, n=0;
-    for (i=0; i<128; i++) {
+    for (i=0; i<num_samples; i++) {
         //x = i < 100 ? 1.0f : 0.0f;
         x = i == 0 ? 1.0f : 0.0f;
         dds_cccf_execute(q, x, &y[n], &nw);
-        n += nw;
+        n += r;
     }
 
     // open/initialize output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
-    fprintf(fid,"r=%12.8f;\n", r);
+    fprintf(fid,"r=%u;\n", r);
 
 
     // output results
