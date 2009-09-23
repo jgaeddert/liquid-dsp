@@ -429,17 +429,9 @@ unsigned int reverse_index(unsigned int _i, unsigned int _n);
 //
 
 // Direct digital [up/down] synthesizer
-#define LIQUID_DDS_DEFINE_INTERNAL_API(DDS,T)                   \
-void DDS(_execute_decim)(DDS() _q,                              \
-                         T _x,                                  \
-                         T * _y,                                \
-                         unsigned int * _num_written);          \
-void DDS(_execute_interp)(DDS() _q,                             \
-                          T _x,                                 \
-                          T * _y,                               \
-                          unsigned int * _num_written);
+//#define LIQUID_DDS_DEFINE_INTERNAL_API(DDS,T)
 
-LIQUID_DDS_DEFINE_INTERNAL_API(DDS_MANGLE_CCCF, liquid_float_complex)
+//LIQUID_DDS_DEFINE_INTERNAL_API(DDS_MANGLE_CCCF, liquid_float_complex)
 
 
 // fir_farrow

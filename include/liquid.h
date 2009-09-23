@@ -759,10 +759,12 @@ DDS() DDS(_create)(unsigned int _num_stages,                    \
 void DDS(_destroy)(DDS() _q);                                   \
 void DDS(_print)(DDS() _q);                                     \
 void DDS(_reset)(DDS() _q);                                     \
-void DDS(_execute)(DDS() _q,                                    \
-                   T _x,                                        \
-                   T * _y,                                      \
-                   unsigned int * _num_written);
+void DDS(_decim_execute)(DDS() _q,                              \
+                         T * _x,                                \
+                         T * _y);                               \
+void DDS(_interp_execute)(DDS() _q,                             \
+                          T _x,                                 \
+                          T * _y);
 
 LIQUID_DDS_DEFINE_API(DDS_MANGLE_CCCF, liquid_float_complex)
 

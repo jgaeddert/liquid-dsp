@@ -43,35 +43,49 @@
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 
 struct DDS(_s) {
-    unsigned int rate;
-    float fc0;
+    // user-defined parameters
+    unsigned int num_stages;    // number of halfband stages
+    float fc0;                  // high-rate center frequency (-0.5,0.5)
+    float bw0;                  // low-rate bandwidth (range?)
+    float slsl0;                // filter sidelobe levels [dB]
 
-    // initial decimation/interpolation stages
+    // derived values
+    unsigned int rate;  // re-sampling rate (2^num_stages)
+
+    // halfband decimation/interpolation stages
     RESAMP2() * halfband_resamp;
-    unsigned int num_stages;
-    float halfband_rate;
     float * fc;             // filter center frequency
     float * bw;             // filter bandwidth
     float * slsl;           // filter sidelobe suppression level
     unsigned int * h_len;   // filter length
+
+    // TODO : this buffering method is confusing; clean it up
     T * buffer;
     unsigned int buffer_len;
     T ** b;
 
-    // final mixing stage
+    // low-rate mixing stage
     nco ncox;
 };
 
-DDS() DDS(_create)(unsigned int _num_stages,//
+DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
                    float _fc,               // input carrier
                    float _bw,               // input signal bandwidth
-                   float _slsl)             // 
+                   float _slsl)             // sidelobe suppression level
 {
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
     q->num_stages = _num_stages;
     q->rate = 1<<(q->num_stages);
     q->fc0 = _fc;
+    q->bw0 = _bw;
+    q->slsl0 = _slsl;
+
+    // error checking
+    if (q->fc0 > 0.5f || q->fc0 < -0.5f) {
+        printf("error: dds_xxxf_create(), frequency %12.4e is out of range (-0.5,0.5)\n", q->fc0);
+        exit(0);
+    }
 
     // allocate memory for filter properties
     q->fc    = (float*) malloc((q->num_stages)*sizeof(float));
@@ -87,7 +101,7 @@ DDS() DDS(_create)(unsigned int _num_stages,//
         while (q->fc[i] >  0.5f) q->fc[i] -= 1.0f;
         while (q->fc[i] < -0.5f) q->fc[i] += 1.0f;
         q->bw[i] = 1-fd;
-        q->slsl[i] = 80.0f;
+        q->slsl[i] = q->slsl0;
         q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.6;
         fc *= 0.5f;
         fd *= 0.5f;
@@ -163,13 +177,13 @@ void DDS(_destroy)(DDS() _q)
 
 void DDS(_print)(DDS() _q)
 {
-    printf("direct digital synthesizer (dds), rate : %12.4e\n", _q->rate);
+    printf("direct digital synthesizer (dds), rate : %u\n", _q->rate);
     printf("      fc : %8.5f\n", _q->fc0);
     printf("    halfband stages : %3u %s, rate : %12.4e\n",
                     _q->num_stages,
                     //_q->is_interp ? "interp" : "decim ",
                     "interp",
-                    _q->halfband_rate);
+                    0.0f);
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
         printf("      [%3u] : fc = %8.5f, bw = %8.5f, %3u taps\n",
@@ -192,39 +206,18 @@ void DDS(_reset)(DDS() _q)
     nco_reset(_q->ncox);
 }
 
-// push input and compute output(s)
-void DDS(_execute)(DDS() _q,
-                   float complex _x,
-                   float complex * _y,
-                   unsigned int * _num_written)
-{
-    //if (_q->is_interp)
-        DDS(_execute_interp)(_q, _x, _y, _num_written);
-        /*
-    else
-        DDS(_execute_decim)(_q, _x, _y, _num_written);
-        */
-}
-
-// 
-// internal
-//
-
 // execute decimator
-void DDS(_execute_decim)(DDS() _q,
-                         T _x,
-                         T * _y,
-                         unsigned int * _num_written)
+void DDS(_decim_execute)(DDS() _q,
+                         T * _x,
+                         T * _y)
 {
     // TODO : decimator needs to wait until enough samples are written into the buffer
-    *_num_written = 0;
 }
 
 // execute interpolator
-void DDS(_execute_interp)(DDS() _q,
+void DDS(_interp_execute)(DDS() _q,
                           T _x,
-                          T * _y,
-                          unsigned int * _num_written)
+                          T * _y)
 {
     // TODO : execute arbitrary resampler
 
@@ -246,8 +239,6 @@ void DDS(_execute_interp)(DDS() _q,
         }
         k <<= 1;
     }
-
-    *_num_written = 1<<_q->num_stages;
 
     for (i=0; i<(1<<_q->num_stages); i++)
         _y[i] = x1[i];
