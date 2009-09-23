@@ -12,13 +12,15 @@
 
 int main() {
     // options
-    float fc=0.2f;              // input (output) decim (interp) frequency
-    unsigned int num_stages=3;
-    unsigned int num_samples=128;         // number of input samples
-    float bw=0.5f;
-    float slsl=60.0f;
+    float fc=-0.4f;                 // input (output) decim (interp) frequency
+    unsigned int num_stages=3;      // number of halfband interp/decim stages
+    unsigned int num_samples=64;    // number of input samples
+    float slsl=60.0f;               // DDS sidelobe suppression level
+    float bw=0.5f;                  // signal bandwidth
 
-    unsigned int  r=1<<num_stages;               // resampling rate (output/input)
+    // derived values
+    unsigned int r=1<<num_stages;   // resampling rate (output/input)
+
     // create resampler
     dds_cccf q = dds_cccf_create(num_stages,fc,bw,slsl);
     dds_cccf_print(q);
@@ -34,12 +36,14 @@ int main() {
     float complex z[num_samples];
 
     unsigned int i;
-    float zeta=2.0f*1.8534f / ((float)num_samples);    // magitude correction factor
 
-    // generate the baseband signal
-    for (i=0; i<num_samples; i++) {
-        x[i] = i < num_samples/2 ? zeta*hamming(i,num_samples/2) : 0.0f;
-    }
+    // generate the baseband signal (filter pulse)
+    unsigned int h_len = num_samples/2;
+    h_len += num_samples % 2 ? 0 : 1;
+    float h[h_len];
+    fir_kaiser_window(h_len,bw,60.0f,0.0f,h);
+    for (i=0; i<num_samples; i++)
+        x[i] = i < h_len ? h[i]*bw : 0.0f;
 
     // run interpolation (up-conversion) stage
     for (i=0; i<num_samples; i++) {
@@ -70,8 +74,9 @@ int main() {
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,  nfft))));\n");
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/r,nfft))));\n");
-    fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z,  nfft))));\n");
-    fprintf(fid,"plot(f/r,X,f,Y,f/r,Z);\n");
+    fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z/r,nfft))));\n");
+    fprintf(fid,"plot(f,X,f,Y,f,Z);\n");
+    fprintf(fid,"legend('original','up-converted','down-converted',1);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
     fclose(fid);

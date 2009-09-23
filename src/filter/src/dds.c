@@ -82,7 +82,7 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
 
     // error checking
     if (q->fc0 > 0.5f || q->fc0 < -0.5f) {
-        printf("error: dds_xxxf_create(), frequency %12.4e is out of range (-0.5,0.5)\n", q->fc0);
+        printf("error: dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]\n", q->fc0);
         exit(0);
     }
 
@@ -102,14 +102,13 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
         while (q->fc[i] < -0.5f) q->fc[i] += 1.0f;
         q->bw[i] = 1.0f - 0.5f*fd;
         q->slsl[i] = q->slsl0;
-        q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.6;
+        q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.7;
         fc *= 0.5f;
         fd *= 0.5f;
     }
 
     // allocate memory for buffering
     q->buffer_len = q->rate;
-    printf("buffer length : %u\n", q->buffer_len);
     q->buffer0 = (T*) malloc((q->buffer_len)*sizeof(T));
     q->buffer1 = (T*) malloc((q->buffer_len)*sizeof(T));
 
@@ -158,6 +157,7 @@ void DDS(_print)(DDS() _q)
     printf("      fc    : %8.5f\n", _q->fc0);
     printf("      bw    : %8.5f\n", _q->bw0);
     printf("      slsl  : %8.2f [dB]\n", _q->slsl0);
+    printf("      nco/f : %8.4f [dB]\n", _q->ncox->d_theta / (2.0f*M_PI));
     printf("    halfband stages (low rate -> high rate) :\n");
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
@@ -179,7 +179,7 @@ void DDS(_reset)(DDS() _q)
         RESAMP2(_clear)(_q->halfband_resamp[i]);
     }
 
-    nco_reset(_q->ncox);
+    nco_set_phase(_q->ncox,0.0f);
 }
 
 // execute decimator
@@ -191,31 +191,32 @@ void DDS(_decim_execute)(DDS() _q,
     memmove(_q->buffer0, _x, (_q->rate)*sizeof(T));
 
     unsigned int k=_q->rate;    // number of inputs for this stage
-    int s;              // stage counter
+    unsigned int s;     // stage counter
     unsigned int i;     // input counter
+    unsigned int g;     // halfband resampler stage index (reversed)
     T * b0 = NULL;      // input buffer pointer
     T * b1 = NULL;      // output buffer pointer
 
     // iterate through each stage
-    for (s=_q->num_stages-1; s>=0; s--) {
+    for (s=0; s<_q->num_stages; s++) {
+        // length halves with each iteration
+        k >>= 1;
 
         // set buffer pointers
         b0 = s%2 == 0 ? _q->buffer0 : _q->buffer1;
         b1 = s%2 == 1 ? _q->buffer0 : _q->buffer1;
 
         // execute halfband decimator
+        g = _q->num_stages - s - 1;
         for (i=0; i<k; i++)
-            RESAMP2(_decim_execute)(_q->halfband_resamp[s], &b0[2*i], &b1[i]);
-        
-        // length halves with each iteration
-        k >>= 1;
+            RESAMP2(_decim_execute)(_q->halfband_resamp[g], &b0[2*i], &b1[i]);
     }
 
     // output value
     T y = b1[0];
 
     // increment NCO
-    nco_mix_up(_q->ncox, y, &y);
+    nco_mix_down(_q->ncox, y, &y);
 
     // set output
     *_y = y;
