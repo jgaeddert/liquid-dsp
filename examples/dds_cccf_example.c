@@ -23,32 +23,55 @@ int main() {
     dds_cccf q = dds_cccf_create(num_stages,fc,bw,slsl);
     dds_cccf_print(q);
 
-    float complex x;
-    float complex y[r*num_samples];
-    unsigned int i, n=0;
-    for (i=0; i<num_samples; i++) {
-        //x = i < 100 ? 1.0f : 0.0f;
-        x = i == 0 ? 1.0f : 0.0f;
-        dds_cccf_interp_execute(q, x, &y[n]);
-        n += r;
-    }
-
     // open/initialize output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"r=%u;\n", r);
 
+    float complex x[num_samples];
+    float complex y[r*num_samples];
+    float complex z[num_samples];
+
+    unsigned int i;
+    float zeta=2.0f*1.8534f / ((float)num_samples);    // magitude correction factor
+
+    // generate the baseband signal
+    for (i=0; i<num_samples; i++) {
+        x[i] = i < num_samples/2 ? zeta*hamming(i,num_samples/2) : 0.0f;
+    }
+
+    // run interpolation (up-conversion) stage
+    for (i=0; i<num_samples; i++) {
+        dds_cccf_interp_execute(q, x[i], &y[r*i]);
+    }
+
+    // clear DDS object
+    dds_cccf_reset(q);
+
+    // run decimation (down-conversion) stage
+    for (i=0; i<num_samples; i++) {
+        dds_cccf_decim_execute(q, &y[r*i], &z[i]);
+    }
 
     // output results
-    fprintf(fid,"\n\n");
-    for (i=0; i<n; i++) {
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+
+    for (i=0; i<r*num_samples; i++)
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-    }
+
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"z(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(z[i]), cimagf(z[i]));
+
+    // print results
+    fprintf(fid,"\n\n");
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,  nfft))));\n");
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/r,nfft))));\n");
-    fprintf(fid,"plot(f,Y);\n");
+    fprintf(fid,"Z = 20*log10(abs(fftshift(fft(z,  nfft))));\n");
+    fprintf(fid,"plot(f/r,X,f,Y,f/r,Z);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
     fclose(fid);

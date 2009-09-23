@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -92,14 +93,14 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
     q->h_len = (unsigned int*) malloc((q->num_stages)*sizeof(unsigned int));
     unsigned int i;
     float fc, fd;
-    fc = 0.5*(1<<q->num_stages)*q->fc0;
-    fd = 0.3;
+    fc = 0.5*(1<<q->num_stages)*q->fc0; // filter center frequency
+    fd = q->bw0;                        // signal bandwidth
     // TODO : compute/set filter bandwidths, lengths appropriately
     for (i=0; i<q->num_stages; i++) {
         q->fc[i] = fc;
         while (q->fc[i] >  0.5f) q->fc[i] -= 1.0f;
         while (q->fc[i] < -0.5f) q->fc[i] += 1.0f;
-        q->bw[i] = 1-fd;
+        q->bw[i] = 1.0f - 0.5f*fd;
         q->slsl[i] = q->slsl0;
         q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.6;
         fc *= 0.5f;
@@ -154,12 +155,10 @@ void DDS(_destroy)(DDS() _q)
 void DDS(_print)(DDS() _q)
 {
     printf("direct digital synthesizer (dds), rate : %u\n", _q->rate);
-    printf("      fc : %8.5f\n", _q->fc0);
-    printf("    halfband stages : %3u %s, rate : %12.4e\n",
-                    _q->num_stages,
-                    //_q->is_interp ? "interp" : "decim ",
-                    "interp",
-                    0.0f);
+    printf("      fc    : %8.5f\n", _q->fc0);
+    printf("      bw    : %8.5f\n", _q->bw0);
+    printf("      slsl  : %8.2f [dB]\n", _q->slsl0);
+    printf("    halfband stages (low rate -> high rate) :\n");
     unsigned int i;
     for (i=0; i<_q->num_stages; i++) {
         printf("      [%3u] : fc = %8.5f, bw = %8.5f, %3u taps\n",
@@ -169,6 +168,7 @@ void DDS(_print)(DDS() _q)
                     _q->h_len[i]);
         //RESAMP2(_print)(_q->halfband_resamp[i]);
     }
+    printf("    complexity : %12.4f\n",0.0f);
 }
 
 void DDS(_reset)(DDS() _q)
@@ -187,7 +187,38 @@ void DDS(_decim_execute)(DDS() _q,
                          T * _x,
                          T * _y)
 {
-    // TODO : decimator needs to wait until enough samples are written into the buffer
+    // copy input data
+    memmove(_q->buffer0, _x, (_q->rate)*sizeof(T));
+
+    unsigned int k=_q->rate;    // number of inputs for this stage
+    int s;              // stage counter
+    unsigned int i;     // input counter
+    T * b0 = NULL;      // input buffer pointer
+    T * b1 = NULL;      // output buffer pointer
+
+    // iterate through each stage
+    for (s=_q->num_stages-1; s>=0; s--) {
+
+        // set buffer pointers
+        b0 = s%2 == 0 ? _q->buffer0 : _q->buffer1;
+        b1 = s%2 == 1 ? _q->buffer0 : _q->buffer1;
+
+        // execute halfband decimator
+        for (i=0; i<k; i++)
+            RESAMP2(_decim_execute)(_q->halfband_resamp[s], &b0[2*i], &b1[i]);
+        
+        // length halves with each iteration
+        k >>= 1;
+    }
+
+    // output value
+    T y = b1[0];
+
+    // increment NCO
+    nco_mix_up(_q->ncox, y, &y);
+
+    // set output
+    *_y = y;
 }
 
 // execute interpolator
@@ -198,19 +229,23 @@ void DDS(_interp_execute)(DDS() _q,
     // increment NCO
     nco_mix_up(_q->ncox, _x, &_x);
 
+    unsigned int s;     // stage counter
+    unsigned int i;     // input counter
+    unsigned int k=1;   // number of inputs for this stage
+    T * b0 = NULL;      // input buffer pointer
+    T * b1 = NULL;      // output buffer pointer
+
     // set initial buffer value
     _q->buffer0[0] = _x;
 
-    unsigned int s, i;
-    unsigned int k=1; // number of inputs for this stage
-    T * b0 = NULL;  // input buffer pointer
-    T * b1 = NULL;  // output buffer pointer
+    // iterate through each stage
     for (s=0; s<_q->num_stages; s++) {
-        //printf("stage %3u, k = %3u\n", s, k);
 
         // set buffer pointers
         b0 = s%2 == 0 ? _q->buffer0 : _q->buffer1;
         b1 = s%2 == 1 ? _q->buffer0 : _q->buffer1;
+
+        // execute halfband interpolator
         for (i=0; i<k; i++)
             RESAMP2(_interp_execute)(_q->halfband_resamp[s], b0[i], &b1[2*i]);
         
@@ -219,8 +254,6 @@ void DDS(_interp_execute)(DDS() _q,
     }
 
     // copy output data
-    //for (i=0; i<_q->rate; i++)
-    //    _y[i] = b1[i];
     memmove(_y, b1, (_q->rate)*sizeof(T));
 }
 
