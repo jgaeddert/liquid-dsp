@@ -29,6 +29,7 @@ int main() {
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
+    fprintf(fid,"n=%u;\n", num_samples);
     fprintf(fid,"r=%u;\n", r);
 
     float complex x[num_samples];
@@ -79,6 +80,22 @@ int main() {
     fprintf(fid,"legend('original','up-converted','down-converted',1);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-0.5 0.5 -120 20]);\n");
+
+    fprintf(fid,"\n\n");
+    fprintf(fid,"t0 = 0:[n-1];\n");
+    fprintf(fid,"t1 = 0:[n*r-1];\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(3,1,1);\n");
+    fprintf(fid,"  plot(t0,real(x),t0,imag(x));\n");
+    fprintf(fid,"  legend('I','Q',0);\n");
+    fprintf(fid,"  axis([0 n -0.55 0.55]);\n");
+    fprintf(fid,"subplot(3,1,2);\n");
+    fprintf(fid,"  plot(t1,real(y),t1,imag(y));\n");
+    fprintf(fid,"  axis([0 n*r -0.55 0.55]);\n");
+    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"  plot(t0,real(z),t0,imag(z));\n");
+    fprintf(fid,"  axis([0 n -0.55 0.55]);\n");
+
     fclose(fid);
     printf("results written to %s\n",OUTPUT_FILENAME);
 
