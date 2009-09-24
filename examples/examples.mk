@@ -54,6 +54,7 @@ local_src	:=			\
 	flexframesync_example.c		\
 	framegen64_example.c		\
 	framesync64_example.c		\
+	freqmodem_example.c		\
 	gport2_example.c		\
 	gport_example.c			\
 	gport_threaded_example.c	\

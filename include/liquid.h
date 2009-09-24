@@ -1616,8 +1616,13 @@ typedef struct freqmodem_s * freqmodem;
 freqmodem freqmodem_create();
 void freqmodem_destroy(freqmodem _fm);
 void freqmodem_print(freqmodem _fm);
-void freqmodem_modulate(freqmodem _fm, float _x, liquid_float_complex *_y);
-void freqmodem_demodulate(freqmodem _fm, liquid_float_complex *_y, float *_x);
+void freqmodem_reset(freqmodem _fm);
+void freqmodem_modulate(freqmodem _fm,
+                        float _x,
+                        liquid_float_complex *_y);
+void freqmodem_demodulate(freqmodem _fm,
+                          liquid_float_complex _y,
+                          float *_x);
 
 //
 // MODULE : multicarrier
