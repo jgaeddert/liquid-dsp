@@ -1613,7 +1613,8 @@ void cpmodem_demodulate(cpmodem _mod,
 
 // TODO : complete analog modems
 typedef struct freqmodem_s * freqmodem;
-freqmodem freqmodem_create();
+freqmodem freqmodem_create(float _m,
+                           float _fc);
 void freqmodem_destroy(freqmodem _fm);
 void freqmodem_print(freqmodem _fm);
 void freqmodem_reset(freqmodem _fm);

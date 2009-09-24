@@ -5,17 +5,20 @@
 //
 
 #include <stdio.h>
+#include <math.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "freqmodem_example.m"
 
 int main() {
     // options
+    float mod_index = 1.0f;   // modulation index (bandwidth)
+    float fc = 0.2f*M_PI;
     unsigned int num_samples = 256;
 
     // create mod/demod objects
-    freqmodem mod = freqmodem_create();
-    freqmodem demod = freqmodem_create();
+    freqmodem mod   = freqmodem_create(mod_index,fc);
+    freqmodem demod = freqmodem_create(mod_index,fc);
     freqmodem_print(mod);
 
     unsigned int i;
@@ -55,7 +58,7 @@ int main() {
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/n,nfft))));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Y);\n");
-    fprintf(fid,"axis([-0.5 0.5 -120 40]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -60 20]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

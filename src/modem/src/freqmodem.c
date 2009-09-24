@@ -24,25 +24,42 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
 struct freqmodem_s {
     nco oscillator;
     pll sync;
+    float fc;       // carrier frequency
     float m;        // modulation index
+    float m_inv;    // 1/m
 
     // phase difference
     float complex q;
 };
 
-freqmodem freqmodem_create()
+freqmodem freqmodem_create(float _m,
+                           float _fc)
 {
     freqmodem fm = (freqmodem) malloc(sizeof(struct freqmodem_s));
+    fm->m = _m;
+    fm->fc = _fc;
+    if (fm->m <= 0.0f || fm->m > 2.0f*M_PI) {
+        printf("error: freqmodem_create(), modulation index %12.4e out of range (0,2*pi)\n", fm->m);
+        exit(0);
+    } else if (fm->fc <= -M_PI || fm->fc >= M_PI) {
+        printf("error: freqmodem_create(), carrier frequency %12.4e out of range (-pi,pi)\n", fm->fc);
+        exit(0);
+    }
 
+    fm->m_inv = 1.0f / fm->m;
+
+    // create oscillator, phase-locked loop
     fm->oscillator = nco_create(LIQUID_VCO);
     fm->sync = pll_create();
-    fm->m = 0.1f;
+
+    freqmodem_reset(fm);
 
     return fm;
 }
@@ -58,6 +75,7 @@ void freqmodem_print(freqmodem _fm)
 {
     printf("freqmodem:\n");
     printf("    mod. index  :   %8.4f\n", _fm->m);
+    printf("    fc          :   %8.4f\n", _fm->fc);
 }
 
 void freqmodem_reset(freqmodem _fm)
@@ -75,7 +93,7 @@ void freqmodem_modulate(freqmodem _fm,
                         float complex *_y)
 {
     nco_set_frequency(_fm->oscillator,
-                      (_fm->m)*_x);
+                      (_fm->m)*_x + _fm->fc);
 
     nco_cexpf(_fm->oscillator, _y);
     nco_step(_fm->oscillator);
@@ -85,9 +103,10 @@ void freqmodem_demodulate(freqmodem _fm,
                           float complex _y,
                           float *_x)
 {
+    // TODO : push through loop filter before computing phase difference
+
     // compute phase difference and normalize by modulation index
-    // TODO : push through loop filter
-    *_x = cargf(conjf(_fm->q)*(_y)) / (_fm->m);
+    *_x = (cargf(conjf(_fm->q)*(_y)) - _fm->fc) * _fm->m_inv;
 
     _fm->q = _y;
 }
