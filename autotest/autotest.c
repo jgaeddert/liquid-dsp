@@ -73,6 +73,7 @@ void execute_autotest(autotest _test, bool _verbose);
 void execute_package(package _p, bool _verbose);
 void print_autotest_results(autotest _test);
 void print_package_results(package _p);
+void print_failed_tests(void);
 
 // main function
 int main(int argc, char *argv[])
@@ -171,6 +172,9 @@ int main(int argc, char *argv[])
         break;
     }
 
+    if (_autotest_verbose)
+        print_failed_tests();
+
     autotest_print_results();
     return 0;
 }
@@ -243,3 +247,19 @@ void print_package_results(package _p)
 
     printf("\n");
 }
+
+void print_failed_tests(void)
+{
+    if (_autotest_num_failed == 0)
+        return;
+
+    printf("==================================\n");
+    printf(" FAILED TESTS:\n");
+    unsigned int t;
+    for (t=0; t<NUM_AUTOTESTS; t++) {
+        if (autotests[t].pass == false)
+            printf("    %3u : <<FAIL>> %s\n", autotests[t].id,
+                                              autotests[t].name);
+    }
+}
+
