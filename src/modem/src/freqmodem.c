@@ -28,9 +28,13 @@
 
 #include "liquid.internal.h"
 
+#define FREQMODEM_DEMOD_USE_PLL     0
+
 struct freqmodem_s {
     nco oscillator;
+#if FREQMODEM_DEMOD_USE_PLL
     pll sync;
+#endif
     float fc;       // carrier frequency
     float m;        // modulation index
     float m_inv;    // 1/m
@@ -55,9 +59,16 @@ freqmodem freqmodem_create(float _m,
 
     fm->m_inv = 1.0f / fm->m;
 
-    // create oscillator, phase-locked loop
+    // create oscillator
     fm->oscillator = nco_create(LIQUID_VCO);
+
+#if FREQMODEM_DEMOD_USE_PLL
+    // TODO : set initial NCO frequency ?
+    // create phase-locked loop
     fm->sync = pll_create();
+    pll_set_bandwidth(fm->sync,0.03f);
+    pll_set_damping_factor(fm->sync,2.1f);
+#endif
 
     freqmodem_reset(fm);
 
@@ -67,7 +78,9 @@ freqmodem freqmodem_create(float _m,
 void freqmodem_destroy(freqmodem _fm)
 {
     nco_destroy(_fm->oscillator);
+#if FREQMODEM_DEMOD_USE_PLL
     pll_destroy(_fm->sync);
+#endif
     free(_fm);
 }
 
@@ -82,7 +95,9 @@ void freqmodem_reset(freqmodem _fm)
 {
     // reset oscillator, phase-locked loop
     nco_reset(_fm->oscillator);
+#if FREQMODEM_DEMOD_USE_PLL
     pll_reset(_fm->sync);
+#endif
 
     // clear complex phase term
     _fm->q = 0.0f;
@@ -103,12 +118,21 @@ void freqmodem_demodulate(freqmodem _fm,
                           float complex _y,
                           float *_x)
 {
-    // TODO : push through loop filter before computing phase difference
+#if FREQMODEM_DEMOD_USE_PLL
+    // push through loop filter
+    float complex p;
+    nco_cexpf(_fm->oscillator, &p);
+    float phase_error = cargf( conjf(p)*_y );
+    pll_step(_fm->sync, _fm->oscillator, phase_error);
+    nco_step(_fm->oscillator);
 
+    *_x = (nco_get_frequency(_fm->oscillator) -_fm->fc) * _fm->m_inv;
+#else
     // compute phase difference and normalize by modulation index
     *_x = (cargf(conjf(_fm->q)*(_y)) - _fm->fc) * _fm->m_inv;
 
     _fm->q = _y;
+#endif
 }
 
 

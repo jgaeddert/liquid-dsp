@@ -12,9 +12,10 @@
 
 int main() {
     // options
-    float mod_index = 1.0f;   // modulation index (bandwidth)
-    float fc = 0.2f*M_PI;
-    unsigned int num_samples = 256;
+    float mod_index = 0.1f;         // modulation index (bandwidth)
+    float fc = 0.1371f*2.0f*M_PI;   // FM carrier
+    unsigned int num_samples = 256; // number of samples
+    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
 
     // create mod/demod objects
     freqmodem mod   = freqmodem_create(mod_index,fc);
@@ -32,6 +33,11 @@ int main() {
     // modulate signal
     for (i=0; i<num_samples; i++)
         freqmodem_modulate(mod, x[i], &y[i]);
+
+    // add noise
+    float nstd = powf(10.0f,-SNRdB*0.1f);
+    for (i=0; i<num_samples; i++)
+        cawgn(&y[i], nstd);
 
     // demodulate signal
     for (i=0; i<num_samples; i++)
@@ -52,6 +58,7 @@ int main() {
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,x,t,z);\n");
+    fprintf(fid,"axis([0 n -1.2 1.2]);\n");
     // spectrum
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
