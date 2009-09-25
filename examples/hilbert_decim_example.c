@@ -13,11 +13,12 @@
 int main() {
     unsigned int m=5;           // filter semi-length
     unsigned int h_len = 4*m+1; // filter length
+    float slsl=60.0f;           // filter sidelobe suppression level
     float fc=0.37f;             // signal center frequency
     unsigned int N=128;         // number of samples
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(h_len);
+    firhilb f = firhilb_create(h_len,slsl);
     firhilb_print(f);
 
     // open output file

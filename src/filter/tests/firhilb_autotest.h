@@ -46,8 +46,8 @@ void autotest_firhilb_decim()
     };
 
     float complex y[16];
-    firhilb ht = firhilb_create(21);
-    float tol=0.001f;
+    firhilb ht = firhilb_create(21,60.0f);
+    float tol=0.005f;
 
     // run decimator
     unsigned int i;
@@ -91,8 +91,8 @@ void autotest_firhilb_interp()
 
 
     float y[32];
-    firhilb ht = firhilb_create(21);
-    float tol=0.001f;
+    firhilb ht = firhilb_create(21,60.0f);
+    float tol=0.005f;
 
     // run interpolator
     unsigned int i;

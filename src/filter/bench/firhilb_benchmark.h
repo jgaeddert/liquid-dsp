@@ -36,7 +36,7 @@ void firhilb_decim_bench(
     for (i=0; i<_h_len; i++)
         h[i] = 1.0f;
 
-    firhilb q = firhilb_create(_h_len);
+    firhilb q = firhilb_create(_h_len,60.0f);
 
     float x[] = {1.0f, -1.0f};
     float complex y;

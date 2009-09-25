@@ -35,23 +35,31 @@
 //  PRINTVAL()      print macro
 
 struct FIRHILB(_s) {
-    T * h;
-    unsigned int h_len;
+    T * h;                  // filter coefficients
+    unsigned int h_len;     // length of filter
+    float slsl;             // filter sidelobe suppression level [dB]
 
-    T * hq;
-    unsigned int hq_len;
+    unsigned int m;         // primitive filter length (filter semi-
+                            // length), h_len = 4*m+1
 
-    unsigned int m;
+    // quadrature filter components
+    T * hq;                 // quadrature filter coefficients
+    unsigned int hq_len;    // quadrature filter length
+    WINDOW() wq;            // quadrature filter window
 
-    T * wi;
-    unsigned int wi_index;
-    WINDOW() wq;
+    // in-phase 'filter' (delay line)
+    T * wi;                 // window (buffer)
+    unsigned int wi_index;  // index
 };
 
-FIRHILB() FIRHILB(_create)(unsigned int _h_len)
+FIRHILB() FIRHILB(_create)(unsigned int _h_len,
+                           float _slsl)
 {
     FIRHILB() f = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
     f->h_len = _h_len;
+    f->slsl = _slsl;
+
+    // TODO : validate firhilb inputs
 
     // change filter length as necessary
     // h_len = 2*(2*m) + 1
@@ -65,9 +73,10 @@ FIRHILB() FIRHILB(_create)(unsigned int _h_len)
     f->hq_len = 2*(f->m);
     f->hq = (T *) malloc((f->hq_len)*sizeof(T));
 
+    // compute filter coefficients, alternating sign
     unsigned int i;
     float t, h1, h2, s;
-    float beta = 6.0f;
+    float beta = kaiser_beta_slsl(f->slsl);
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
@@ -76,7 +85,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _h_len)
         f->h[i] = s*h1*h2;
     }
 
-    // resample, alternate sign, reverse direction
+    // resample, reverse direction
     unsigned int j=0;
     for (i=1; i<f->h_len; i+=2)
         f->hq[j++] = f->h[f->h_len - i - 1];
