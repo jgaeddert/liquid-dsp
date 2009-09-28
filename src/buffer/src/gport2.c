@@ -122,6 +122,7 @@ void gport2_produce(gport2 _p, void * _w, unsigned int _n)
     pthread_mutex_lock(&(_p->internal_mutex));
 
     // wait for data to become available
+    // TODO : write data as it becomes available instead of waiting for entire block
     while (_n > _p->num_write_elements_available) {
         _p->producer_waiting = true;
         pthread_cond_wait(&(_p->producer_data_ready),&(_p->internal_mutex));
@@ -167,6 +168,7 @@ void gport2_consume(gport2 _p, void * _r, unsigned int _n)
     pthread_mutex_lock(&(_p->consumer_mutex));
     pthread_mutex_lock(&(_p->internal_mutex));
 
+    // TODO : read data as it becomes available instead of waiting for entire block
     while (_n > _p->num_read_elements_available) {
         _p->consumer_waiting = true;
         pthread_cond_wait(&(_p->consumer_data_ready),&(_p->internal_mutex));
