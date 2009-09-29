@@ -52,16 +52,4 @@ unsigned int estimate_req_filter_len(float _b, float _slsl)
     return h_len;
 }
 
-void validate_filter_length(unsigned int * _h_len)
-{
-    if (*_h_len > FIR_FILTER_LEN_MAX) {
-        printf("warning: maximum filter length exceeded, truncating to %u\n",
-                FIR_FILTER_LEN_MAX);
-        *_h_len = FIR_FILTER_LEN_MAX;
-    } else if (*_h_len < 2) {
-        printf("warning: minimum filter length exceeded, extending to 2\n");
-        *_h_len = 2;
-    }
-}
-
 

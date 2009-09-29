@@ -577,16 +577,10 @@ void asgram_execute(asgram _q);
 // MODULE : filter
 //
 
-//
-#define FIR_FILTER_LEN_MAX 2048
-
 // esimate required filter length given
 //   _b    : transition bandwidth (0 < _b < 0.5)
 //   _slsl : sidelobe suppression level [dB]
 unsigned int estimate_req_filter_len(float _b, float _slsl);
-
-// deprecated
-void validate_filter_length(unsigned int * _h_len);
 
 // generic prototypes
 #define FIR_TEMPLATE    0   // Remez, e.g.
