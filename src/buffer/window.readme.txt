@@ -1,0 +1,45 @@
+##
+## Window methods
+##
+
+window window_create(unsigned int _n)
+    Creates a window (circular/ring buffer) with _n accessable
+    elements.  By default the window is filled with zeros.
+
+window window_recreate(window _w, unsigned int _n)
+    Re-creates a window from a previously instantiated one with a new
+    length _n.  If the length of the window increases, the old values
+    are preserved and zeros are pushed into the beginning (oldest).
+    If the length of the window decreases, the oldest values are
+    truncated.  Similar to the standard C realloc() function.
+
+void window_destroy(window _w)
+    Destroys a window object (de-allocates memory).
+
+void window_print(window _w)
+    Prints elements in a window object to the file stdout in a
+    well-formatted manner.
+
+void window_debug_print(window _w)
+    Prints all internal elements in a window object to the file stdout
+    in a well-formatted manner.
+
+void window_clear(window _w)
+    Clears all elements in a window object by setting them to zero.
+
+void window_read(window _w, T ** _v)
+    Returns a pointer to the beginning of the buffer.
+    NOTE: the intention is to read values from the window buffer and
+    not to change them.  The result of changing values in the returned
+    array pointer _v is undefined due to the internal mechanism the
+    window methods use for efficient bookkeeping.
+
+void window_push(window _w, T _v)
+    Push a single value to the end of the window.  Oldest value is
+    removed from the buffer and all values are logically shifted left
+    by one index.
+
+void window_write(window _w, T * _v, unsigned int _n)
+    Writes _n elements in the array _v to the window object.  This is
+    equivalent to iterating window_push() _n times over the array.
+
