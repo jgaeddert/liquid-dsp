@@ -12,6 +12,7 @@ local_src	:=			\
 	resamp2_crcf_interp_recreate_example.c	\
 	symsync2_crcf_example.c		\
 	symsync_crcf_example.c		\
+	symsynclp_crcf_example.c	\
 	decim_rrrf_example.c		\
 	fir_farrow_rrrf_example.c	\
 	fir_filter_rrrf_example.c	\

@@ -46,9 +46,11 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q);
 //  PRINTVAL()      print macro
 
 struct SYMSYNCLP(_s) {
-    unsigned int k; // samples/symbol
+    unsigned int k;     // samples/symbol
     unsigned int p;     // polynomial order
     float * x;          // ...
+    float * yi, * yq;
+    float * pi, * pq;
     WINDOW() wmf;       // matched filter window
 
     // timing error loop filter
@@ -90,8 +92,15 @@ SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
         exit(0);
     }
     
-    // create (derivative) matched filter output windows
+    // create matched filter output window
     q->wmf  = WINDOW(_create)(q->p);
+
+    // create buffers
+    q->x  = (float*) malloc((q->p)*sizeof(float));
+    q->yi = (float*) malloc((q->p)*sizeof(float));
+    q->yq = (float*) malloc((q->p)*sizeof(float));
+    q->pi = (float*) malloc((q->p)*sizeof(float));
+    q->pq = (float*) malloc((q->p)*sizeof(float));
 
     // reset state and initialize loop filter
     SYMSYNCLP(_clear)(q);
@@ -115,6 +124,11 @@ void SYMSYNCLP(_destroy)(SYMSYNCLP() _q)
     fwindow_destroy(_q->debug_q_hat);
 #endif
     WINDOW(_destroy)(_q->wmf);
+    free(_q->x);
+    free(_q->yi);
+    free(_q->yq);
+    free(_q->pi);
+    free(_q->pq);
     free(_q);
 }
 
@@ -144,10 +158,19 @@ void SYMSYNCLP(_clear)(SYMSYNCLP() _q)
 }
 
 void SYMSYNCLP(_execute)(SYMSYNCLP() _q,
-                         TI _x,
+                         TI * _x,
+                         unsigned int _nx,
                          TO * _y,
-                         unsigned int *_num_written)
+                         unsigned int *_ny)
 {
+    unsigned int i, ny=0, k=0;
+    for (i=0; i<_nx; i++) {
+        SYMSYNCLP(_step)(_q, _x[i], &_y[ny], &k);
+        ny += k;
+        //printf("%u\n",k);
+    }
+    *_ny = ny;
+
 }
 
 void SYMSYNCLP(_set_lf_bw)(SYMSYNCLP() _q, float _bt)
@@ -201,7 +224,7 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q)
     float * r;
     unsigned int i;
 
-    // print bsoft buffer
+    // print
     fprintf(fid,"tau = zeros(1,n);\n");
     fwindow_read(_q->debug_tau, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
@@ -222,21 +245,6 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q)
         fprintf(fid,"q_hat(%4u) = %12.8f;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
 
-#if 0
-    fprintf(fid,"\n\n");
-    fprintf(fid,"t=1:n;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(t,b,'Color',[0.5 0.5 0.5]);\n");
-    fprintf(fid,"plot(t,b_soft,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
-    fprintf(fid,"hold off;\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([t(1) t(end) -1 1]);\n");
-    fprintf(fid,"legend('b','b (soft)',0);\n");
-    fprintf(fid,"xlabel('Symbol Index')\n");
-    fprintf(fid,"ylabel('Polyphase Filter Index')\n");
-    fprintf(fid,"%% done.\n");
-#endif
     fclose(fid);
     printf("symsync: internal results written to %s.\n", DEBUG_SYMSYNCLP_FILENAME);
 }
@@ -244,7 +252,68 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q)
 
 void SYMSYNCLP(_step)(SYMSYNCLP() _q, TI _x, TO * _y, unsigned int *_ny)
 {
-    //TO mf;
-    //TO dmf;
+    WINDOW(_push)(_q->wmf,_x);
+    TO mf=0;
+    TO dmf=0;
+
+    unsigned int n = 0;
+
+    while (_q->tau < 1.0f) {
+#if DEBUG_SYMSYNC
+        fwindow_push(_q->debug_tau,  _q->tau);
+        //uiwindow_push(_q->debug_b,     _q->b);
+        fwindow_push(_q->debug_delta,  _q->del);
+        fwindow_push(_q->debug_q_hat,  _q->q_hat);
+        // printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->b_soft);
+#endif
+        // compute interpolants
+        //FIRPFB(_execute)(_q->mf,  _q->b, &mf);
+        //FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
+
+        unsigned int i;
+        TO * r;
+        WINDOW(_read)(_q->wmf, &r);
+        for (i=0; i<_q->p; i++) {
+            _q->x[i]  = ((float)(i) - (float)(_q->p) + 1.0f) / ((float)(_q->k));
+            _q->yi[i] = crealf(r[i]);
+            _q->yq[i] = cimagf(r[i]);
+        }
+
+        polyfit(_q->x, _q->yi, _q->p, _q->pi, _q->p);
+        polyfit(_q->x, _q->yq, _q->p, _q->pq, _q->p);
+
+        mf = polyval(_q->pi, _q->p, _q->tau) +
+             polyval(_q->pq, _q->p, _q->tau) * _Complex_I;
+
+        // differentiate polynomial
+        for (i=1; i<_q->p; i++) {
+            _q->pi[i] *= (float)(i);
+            _q->pq[i] *= (float)(i);
+        }
+        dmf = polyval(_q->pi+1, _q->p-1, _q->tau) +
+              polyval(_q->pq+1, _q->p-1, _q->tau) * _Complex_I;
+
+        dmf *= 0.1f;
+
+        // store output
+        _y[n] = mf;
+#if 1//DEBUG_SYMSYNC_PRINT
+        printf("mf : %12.8f + j*%12.8f\n", crealf(mf), cimagf(mf));
+        printf("     %12.8f + j*%12.8f\n", crealf(dmf), cimagf(dmf));
+#endif
+
+        // apply loop filter
+        SYMSYNCLP(_advance_internal_loop)(_q, mf, dmf);
+
+        _q->tau     += _q->del;
+
+        n++;
+    }
+
+
+    _q->tau     -= 1.0f;
+    //_q->b_soft  -= (float)(_q->num_filters);
+    //_q->b       -= _q->num_filters;
+    *_ny = n;
 }
 

@@ -1119,7 +1119,8 @@ void SYMSYNCLP(_destroy)(SYMSYNCLP() _q);                       \
 void SYMSYNCLP(_print)(SYMSYNCLP() _q);                         \
 void SYMSYNCLP(_clear)(SYMSYNCLP() _q);                         \
 void SYMSYNCLP(_execute)(SYMSYNCLP() _q,                        \
-                         TI _x,                                 \
+                         TI * _x,                               \
+                         unsigned int _nx,                      \
                          TO * _y,                               \
                          unsigned int *_num_written);           \
 void SYMSYNCLP(_set_lf_bw)(SYMSYNCLP() _q, float _bt);
