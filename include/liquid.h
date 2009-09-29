@@ -1114,9 +1114,7 @@ LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_fl
 #define LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP,TO,TC,TI)         \
 typedef struct SYMSYNCLP(_s) * SYMSYNCLP();                     \
 SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k, /*samp/symbol*/ \
-                               unsigned int _p, /*poly order*/  \
-                               TC * _h,                         \
-                               unsigned int _h_len);            \
+                               unsigned int _p);/*poly order*/  \
 void SYMSYNCLP(_destroy)(SYMSYNCLP() _q);                       \
 void SYMSYNCLP(_print)(SYMSYNCLP() _q);                         \
 void SYMSYNCLP(_clear)(SYMSYNCLP() _q);                         \

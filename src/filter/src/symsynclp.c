@@ -27,10 +27,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define DEBUG_SYMSYNCLP           1
-#define DEBUG_SYMSYNCLP_PRINT     0
-#define DEBUG_SYMSYNCLP_FILENAME  "symsync_internal_debug.m"
-#define DEBUG_BUFFER_LEN        (1024)
+#define DEBUG_SYMSYNCLP             1
+#define DEBUG_SYMSYNCLP_PRINT       0
+#define DEBUG_SYMSYNCLP_FILENAME    "symsynclp_internal_debug.m"
+#define DEBUG_BUFFER_LEN            (1024)
 
 #if DEBUG_SYMSYNCLP
 void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q);
@@ -39,7 +39,6 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q);
 
 // defined:
 //  SYMSYNCLP()     name-mangling macro
-//  FIR_FILTER()    finite impulse response filter macro
 //  TO              output data type
 //  TC              coefficient data type
 //  TI              input data type
@@ -47,19 +46,10 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q);
 //  PRINTVAL()      print macro
 
 struct SYMSYNCLP(_s) {
-    TC * h;
-    TC * dh;
     unsigned int k; // samples/symbol
-    unsigned int h_len;
-
-    FIR_FILTER() mf;    // matched filter
-    FIR_FILTER() dmf;   // derivative matched filter
-
     unsigned int p;     // polynomial order
     float * x;          // ...
-    WINDOW() wmf;
-    WINDOW() wdmf;
-
+    WINDOW() wmf;       // matched filter window
 
     // timing error loop filter
     float bt;       // filter bandwidth
@@ -88,33 +78,20 @@ struct SYMSYNCLP(_s) {
 };
 
 SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
-                               unsigned int _p,
-                               TC * _h,
-                               unsigned int _h_len)
+                               unsigned int _p)
 {
     SYMSYNCLP() q = (SYMSYNCLP()) malloc(sizeof(struct SYMSYNCLP(_s)));
-    q->k = _k;
-    q->p = _p;
-    q->h_len = _h_len;  // TODO: validate filter length
-    
-    // compute derivative filter
-    TC dh[_h_len];
-    unsigned int i;
-    for (i=0; i<_h_len; i++) {
-        if (i==0) {
-            dh[i] = _h[i+1] - _h[_h_len-1];
-        } else if (i==_h_len-1) {
-            dh[i] = _h[0]   - _h[i-1];
-        } else {
-            dh[i] = _h[i+1] - _h[i-1];
-        }
-    }
-    q->mf  = FIR_FILTER(_create)(_h, _h_len);
-    q->dmf = FIR_FILTER(_create)(dh, _h_len);
+    q->k = _k;  // samples/symbol
+    q->p = _p;  // polynomial order
 
+    // validate inputs
+    if (q->p < 2) {
+        printf("error: symsynclp_xxxt_create(), polynomial order must be at least 2\n");
+        exit(0);
+    }
+    
     // create (derivative) matched filter output windows
     q->wmf  = WINDOW(_create)(q->p);
-    q->wdmf = WINDOW(_create)(q->p);
 
     // reset state and initialize loop filter
     SYMSYNCLP(_clear)(q);
@@ -137,10 +114,7 @@ void SYMSYNCLP(_destroy)(SYMSYNCLP() _q)
     fwindow_destroy(_q->debug_delta);
     fwindow_destroy(_q->debug_q_hat);
 #endif
-    FIR_FILTER(_destroy)(_q->mf);
-    FIR_FILTER(_destroy)(_q->dmf);
     WINDOW(_destroy)(_q->wmf);
-    WINDOW(_destroy)(_q->wdmf);
     free(_q);
 }
 
@@ -148,18 +122,13 @@ void SYMSYNCLP(_print)(SYMSYNCLP() _q)
 {
     printf("symbol synchronizer (Lagrange polynomials) [k: %u, order : %u]\n",
         _q->k, _q->p);
-    FIR_FILTER(_print)(_q->mf);
-    FIR_FILTER(_print)(_q->dmf);
 }
 
 void SYMSYNCLP(_clear)(SYMSYNCLP() _q)
 {
     // reset internal filterbank states
-    FIR_FILTER(_clear)(_q->mf);
-    FIR_FILTER(_clear)(_q->dmf);
 
     WINDOW(_clear)(_q->wmf);
-    WINDOW(_clear)(_q->wdmf);
 
     // reset loop filter states
     _q->q_hat = 0.0f;
@@ -275,9 +244,6 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q)
 
 void SYMSYNCLP(_step)(SYMSYNCLP() _q, TI _x, TO * _y, unsigned int *_ny)
 {
-    FIR_FILTER(_push)(_q->mf,  _x);
-    FIR_FILTER(_push)(_q->dmf, _x);
-
     //TO mf;
     //TO dmf;
 }
