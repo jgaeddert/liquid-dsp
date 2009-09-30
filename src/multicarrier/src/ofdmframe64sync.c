@@ -595,11 +595,71 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
 #endif
             //_q->G[i] = _q->G0[i]; // use only first estimate
         }
+    }
+
+    // TODO: choose smoothing factor and range appropriately
+    ofdmframe64sync_smooth_gain(_q, 0.8f, 3);
+
 #if DEBUG_OFDMFRAME64SYNC
-        // correct long sequence (plotting purposes only)
+    // correct long sequence (plotting purposes only)
+    for (i=0; i<64; i++) {
         _q->Lf0[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
         _q->Lf1[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
+    }
 #endif
+}
+
+// smooth subcarrier gains
+void ofdmframe64sync_smooth_gain(ofdmframe64sync _q,
+                                 float _alpha,
+                                 unsigned int _range)
+{
+    if (_range == 0)
+        return;
+
+    // validate inputs
+    if (_alpha < 0.0f) {
+        printf("error: ofdmframe64sync_smooth_gain(), smoothing factor is negative\n");
+        exit(0);
+    } else if (_range > 32) {
+        printf("error: ofdmframe64sync_smooth_gain(), range is too large\n");
+        exit(0);
+    }
+
+    float complex G_hat[64];// temporary gain array
+    float w;                // weighting factor
+    float w_total;          // sum weighting factor
+    int t = (int)(_range);  // subcarrier smoothing bound
+    int j;                  // subcarrier distance index
+    unsigned int n;         // subcarrier index
+    int sctype;
+    unsigned int i;
+    for (i=0; i<64; i++) {
+        G_hat[i] = 0.0f;
+        sctype = ofdmframe64_getsctype(i);
+        if (sctype != OFDMFRAME64_SCTYPE_NULL) {
+            // average adjacent subcarrier gains (smoothing)
+            w_total = 0.0f;
+            for (j=-t; j<t; j++) {
+                // compute subcarrier index
+                n = (i+j+64)%64;
+
+                // ignore null subcarriers
+                if (ofdmframe64_getsctype(n) == OFDMFRAME64_SCTYPE_NULL)
+                    continue;
+
+                // compute weighting factor
+                w = expf(-_alpha*fabsf(j));
+                w_total += w;
+
+                // average gain
+                G_hat[i] += _q->G[n] * w;
+            }
+            G_hat[i] /= w_total;
+        }
+
+        // set new, smoothed gain value
+        _q->G[i] = G_hat[i];
     }
 }
 

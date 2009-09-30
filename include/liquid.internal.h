@@ -843,6 +843,9 @@ void ofdmframe64sync_compute_plcplong0(ofdmframe64sync _q);
 void ofdmframe64sync_compute_plcplong1(ofdmframe64sync _q);
 void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q);
 void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q);
+void ofdmframe64sync_smooth_gain(ofdmframe64sync _q,
+                                 float _alpha,
+                                 unsigned int _range);
 void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x);
 extern const float complex ofdmframe64_plcp_Sf[64];
 extern const float complex ofdmframe64_plcp_St[64];
