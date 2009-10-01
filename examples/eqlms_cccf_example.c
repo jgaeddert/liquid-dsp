@@ -11,7 +11,7 @@
 #include <complex.h>
 #include "liquid.h"
 
-#define DEBUG_FILENAME "eqlms_cccf_example.m"
+#define OUTPUT_FILENAME "eqlms_cccf_example.m"
 
 // print macro for complex numbers
 //  F   :   output file
@@ -36,8 +36,8 @@ int main() {
     unsigned int i;
 
     // open output file
-    FILE * fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
 
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
@@ -161,7 +161,7 @@ int main() {
     fprintf(fid,"legend('received','equalized',1');\n");
 
     fclose(fid);
-    printf("results written to %s.\n",DEBUG_FILENAME);
+    printf("results written to %s.\n",OUTPUT_FILENAME);
 
     fir_filter_cccf_destroy(f);
     eqlms_cccf_destroy(eq);

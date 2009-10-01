@@ -7,7 +7,7 @@
 
 #include "liquid.h"
 
-#define DEBUG_FILENAME "firpfbch_synthesis_example.m"
+#define OUTPUT_FILENAME "firpfbch_synthesis_example.m"
 
 int main() {
     // options
@@ -23,8 +23,8 @@ int main() {
     // create synthesizer object
     firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, FIRPFBCH_SYNTHESIZER);
 
-    FILE*fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
     fprintf(fid,"num_symbols=%u;\n", num_symbols);
@@ -84,7 +84,7 @@ int main() {
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     firpfbch_destroy(c);
 

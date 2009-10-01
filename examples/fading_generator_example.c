@@ -9,8 +9,7 @@
 
 #include "liquid.h"
 
-#define DEBUG
-#define DEBUG_FILENAME "debug_fading_generator_example.m"
+#define OUTPUT_FILENAME "debug_fading_generator_example.m"
 
 int main() {
     // options
@@ -27,14 +26,13 @@ int main() {
     fir_design_doppler(h_len,fd,K,theta,h);
     fir_filter_rrrf fi = fir_filter_rrrf_create(h,h_len);
     fir_filter_rrrf fq = fir_filter_rrrf_create(h,h_len);
-#ifdef DEBUG
-    FILE*fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s, auto-generated file\n\n",DEBUG_FILENAME);
+
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
 
     for (i=0; i<h_len; i++)
         fprintf(fid,"h(%3u) = %12.8e;\n", i+1, h[i]);
-#endif
 
     // generate complex fading envelope
     float complex x, y;
@@ -69,12 +67,9 @@ int main() {
 
         printf("%4u: r:%8.5f, angle:%5.2f\n", i, cabsf(y), cargf(y));
 
-#ifdef DEBUG
         fprintf(fid, "y(%4u) = %12.8e + j*%12.8e;\n",i+1,crealf(y),cimagf(y));
-#endif
     }
 
-#ifdef DEBUG
     fprintf(fid,"\n\n");
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
@@ -96,8 +91,7 @@ int main() {
 
     fclose(fid);
 
-    printf("results written to %s\n", DEBUG_FILENAME);
-#endif
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     // clean up objects
     fir_filter_rrrf_destroy(fi);

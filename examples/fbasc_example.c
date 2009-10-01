@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define DEBUG_FILENAME "fbasc_example.m"
+#define OUTPUT_FILENAME "fbasc_example.m"
 
 int main() {
     // options
@@ -25,8 +25,8 @@ int main() {
     fbasc_print(fbasc_encoder);
 
     // open debug file
-    FILE * fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
 
@@ -76,7 +76,7 @@ int main() {
 
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", DEBUG_FILENAME);
+    printf("results wrtten to %s\n", OUTPUT_FILENAME);
 
     // destroy objects
     fbasc_destroy(fbasc_encoder);

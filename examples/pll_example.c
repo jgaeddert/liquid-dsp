@@ -12,9 +12,8 @@
 
 #include "liquid.h"
 
-// DEBUG: print every output line in octave-friendly format
-#define DEBUG
-#define DEBUG_FILENAME "pll_example.m"
+// output to octave-friendly format
+#define OUTPUT_FILENAME "pll_example.m"
 
 int main() {
     srand( time(NULL) );
@@ -24,11 +23,10 @@ int main() {
     float pll_bandwidth = 1e-3f;
     unsigned int n=250;     // number of iterations
     unsigned int d=10;      // print every "d" lines
-#ifdef DEBUG
-    FILE * debug_file = fopen(DEBUG_FILENAME,"w");
+
+    FILE * debug_file = fopen(OUTPUT_FILENAME,"w");
     fprintf(debug_file, "clear all;\n");
     fprintf(debug_file, "phi=zeros(1,%u);\n",n);
-#endif
 
     // objects
     nco nco_tx = nco_create(LIQUID_VCO);
@@ -60,10 +58,8 @@ int main() {
         // perfect error estimation
         //phase_error = nco_tx->theta - nco_rx->theta;
 
-#ifdef DEBUG
         // print every line in a format that octave can read
         fprintf(debug_file, "phi(%u) = %10.6E;\n", i+1, phase_error);
-#endif
         if ((i+1)%d == 0 || i==n-1) {
             printf("  %4u: e_hat : %6.3f, freq error : %6.3f, phase error : %6.3f\n",
                     i+1,                                // iteration
@@ -77,15 +73,13 @@ int main() {
         pll_step(pll_rx, nco_rx, phase_error);
         nco_step(nco_rx);
     }
-#ifdef DEBUG
     fprintf(debug_file, "plot(phi);\n");
     fprintf(debug_file, "xlabel('time [sample]');\n");
     fprintf(debug_file, "ylabel('phase error [radians]')\n");
     fprintf(debug_file, "grid on;\n");
     fclose(debug_file);
 
-    printf("output written to %s.\n", DEBUG_FILENAME);
-#endif
+    printf("output written to %s.\n", OUTPUT_FILENAME);
 
     nco_destroy(nco_tx);
     nco_destroy(nco_rx);

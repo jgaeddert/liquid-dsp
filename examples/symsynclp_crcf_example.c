@@ -8,8 +8,7 @@
 
 #include "liquid.h"
 
-#define DEBUG
-#define DEBUG_FILENAME "symsynclp_crcf_example.m"
+#define OUTPUT_FILENAME "symsynclp_crcf_example.m"
 
 int main() {
     // options
@@ -45,9 +44,8 @@ int main() {
     float complex y[num_samples];
     float complex z[num_samples];
 
-#ifdef DEBUG
-    FILE* fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_FILENAME);
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"close all;\nclear all;\n\n");
 
     fprintf(fid,"k=%u;\n",k);
@@ -55,7 +53,6 @@ int main() {
     fprintf(fid,"beta=%12.8f;\n",beta);
     fprintf(fid,"num_filters=%u;\n",num_filters);
     fprintf(fid,"num_symbols=%u;\n",num_symbols);
-#endif
 
     for (i=0; i<num_symbols; i++) {
         if (random_data) {
@@ -80,17 +77,13 @@ int main() {
     printf("x(t) :\n");
     for (i=0; i<num_symbols; i++) {
         //printf("  x(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(x[i]), cimagf(x[i]));
-#ifdef DEBUG
         fprintf(fid,"x(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(x[i]), cimagf(x[i]));
-#endif
     }
 
     printf("y(t) :\n");
     for (i=0; i<num_samples; i++) {
         //printf("  y(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-#ifdef DEBUG
         fprintf(fid,"y(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-#endif
     }
 
     printf("z(t) :\n");
@@ -98,16 +91,11 @@ int main() {
         printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
     for (i=0; i<num_symbols_sync; i++) {
         //printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
-#ifdef DEBUG
         fprintf(fid,"z(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(z[i]), cimagf(z[i]));
-#endif
     }
 
-#ifdef DEBUG
     fclose(fid);
-
-    printf("results written to %s.\n", DEBUG_FILENAME);
-#endif
+    printf("results written to %s.\n", OUTPUT_FILENAME);
 
     // clean it up
     interp_crcf_destroy(q);

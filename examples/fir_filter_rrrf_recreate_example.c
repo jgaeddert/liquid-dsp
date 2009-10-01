@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define DEBUG_FILENAME "fir_filter_rrrf_recreate_example.m"
+#define OUTPUT_FILENAME "fir_filter_rrrf_recreate_example.m"
 
 int main() {
     srand(time(NULL));
@@ -30,7 +30,7 @@ int main() {
     fir_filter_rrrf f = fir_filter_rrrf_create(h0,h0_len);
     //fir_filter_rrrf_print(f);
 
-    FILE*fid = fopen(DEBUG_FILENAME,"w");
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h0_len=%u;\n", h0_len);
@@ -111,7 +111,7 @@ int main() {
     fprintf(fid,"legend('filter 0','filter 1',1);\n");
 
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     fir_filter_rrrf_destroy(f);
 

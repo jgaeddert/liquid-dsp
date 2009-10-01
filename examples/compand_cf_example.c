@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define DEBUG_FILENAME "compand_cf_example.m"
+#define OUTPUT_FILENAME "compand_cf_example.m"
 
 int main() {
     // options
@@ -16,8 +16,8 @@ int main() {
     int n=31;
 
     // open debug file
-    FILE * fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
 
@@ -57,7 +57,7 @@ int main() {
 
     // close debug file
     fclose(fid);
-    printf("results wrtten to %s\n", DEBUG_FILENAME);
+    printf("results wrtten to %s\n", OUTPUT_FILENAME);
     printf("done.\n");
     return 0;
 }

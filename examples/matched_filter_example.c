@@ -8,8 +8,6 @@
 
 #include "liquid.h"
 
-#undef DEBUG
-
 int main() {
     // options
     unsigned int k=2;   // samples/symbol
@@ -30,11 +28,11 @@ int main() {
     unsigned int i;
     for (i=0; i<h_len; i++)
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);
-#ifdef DEBUG
+
     unsigned int num_samples=k*num_symbols;
     float y[num_samples];
     unsigned int n=0;
-#endif
+
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
         sym_in = (rand() % 2) ? 1.0f : -1.0f;
@@ -52,17 +50,13 @@ int main() {
         if (i>=2*m) printf(" *\n");
         else        printf("\n");
 
-#ifdef DEBUG
-        // debug: save output symbols
+        // save output symbols
         memcpy(&y[n], buff, k*sizeof(float));
         n += k;
-#endif
     }
 
-#ifdef DEBUG
     for (i=0; i<num_samples; i++)
         printf(" y(%3u) = %8.5f;\n", i+1, y[i]);
-#endif
     
     // clean it up
     interp_rrrf_destroy(q);

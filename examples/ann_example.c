@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "liquid.h"
 
-#define DEBUG_FILENAME "ann_example.m"
+#define OUTPUT_FILENAME "ann_example.m"
 
 int main() {
     // options
@@ -43,12 +43,12 @@ int main() {
     ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
 
 #if 0
-    FILE* fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n",DEBUG_FILENAME);
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
 
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 #endif
     
     ann_destroy(q);

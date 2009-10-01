@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "liquid.h"
 
-#define DEBUG_FILENAME  "framegen64_example.m"
+#define OUTPUT_FILENAME  "framegen64_example.m"
 
 int main() {
     // create framegen64 object
@@ -30,8 +30,8 @@ int main() {
     framegen64_execute(f, header, payload, frame);
 
     // write frame to output file
-    FILE* fid = fopen(DEBUG_FILENAME, "w");
-    fprintf(fid,"%% %s: auto-generated file\n", DEBUG_FILENAME);
+    FILE* fid = fopen(OUTPUT_FILENAME, "w");
+    fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
@@ -45,7 +45,7 @@ int main() {
     fprintf(fid,"t=0:(2047+64);\n");
     fprintf(fid,"plot(t,real(frame),t,imag(frame));\n");
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     framegen64_destroy(f);
 

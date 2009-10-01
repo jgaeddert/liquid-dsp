@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "liquid.h"
 
-#define DEBUG // writes results to agc_example.m
+#define OUTPUT_FILENAME "agc_example.m"
 
 int main() {
     // options
@@ -20,25 +20,21 @@ int main() {
     // print info
     printf("automatic gain control // target: %5.1f, loop bandwidth: %4.2e\n",etarget,bt);
 
-#ifdef DEBUG
-    FILE* fid = fopen("agc_example.m","w");
-    fprintf(fid,"%% agc_example.m, auto-generated file\n\n");
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
-#endif
 
     unsigned int i;
     float complex x = 1.2f + _Complex_I*3.9f, y=x;
     for (i=0; i<n; i++) {
-#ifdef DEBUG
         fprintf(fid,"x(%3u) = %12.4e;\n", i+1, cabsf(y));
-#endif
+
         if ( ((i+1)%d)==0 || i+1==n )
             printf("%3u: %8.3f\n", i+1, cabsf(y));
 
         agc_execute(p, x, &y);
     }
 
-#ifdef DEBUG
     fprintf(fid,"\n\n%% print results\n");
     fprintf(fid,"n=%u;\nt=0:(n-1);\n",n);
     fprintf(fid,"e=%12.4e;\n",etarget);
@@ -49,8 +45,7 @@ int main() {
     fprintf(fid,"\n\n");
 
     fclose(fid);
-    printf("results written to agc_example.m\n");
-#endif
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     agc_destroy(p);
 

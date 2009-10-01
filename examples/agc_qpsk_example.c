@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "liquid.h"
 
-#define DEBUG_FILENAME "agc_qpsk_example.m"
+#define OUTPUT_FILENAME "agc_qpsk_example.m"
 
 int main() {
     // options
@@ -34,8 +34,8 @@ int main() {
     // print info
     printf("automatic gain control // target: %8.4f, loop bandwidth: %4.2e\n",etarget,bt);
 
-    FILE* fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n",DEBUG_FILENAME);
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
 
     unsigned int sym, n=0, num_samples=num_symbols*k;
@@ -68,7 +68,7 @@ int main() {
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(10*log10(rssi));\n");
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     modem_destroy(mod);
     agc_destroy(p);

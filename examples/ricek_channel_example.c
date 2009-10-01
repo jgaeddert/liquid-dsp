@@ -9,8 +9,7 @@
 
 #include "liquid.h"
 
-#define DEBUG
-#define DEBUG_FILENAME "debug_ricek_channel_example.m"
+#define OUTPUT_FILENAME "debug_ricek_channel_example.m"
 
 int main() {
     // options
@@ -24,11 +23,9 @@ int main() {
     // generate objects
     ricek_channel q = ricek_channel_create(h_len, K, fd, theta);
 
-#ifdef DEBUG
-    FILE*fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s, auto-generated file\n\n",DEBUG_FILENAME);
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s, auto-generated file\n\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
-#endif
 
     // generate complex fading envelope
     float complex x=omega, y;
@@ -38,12 +35,9 @@ int main() {
         ricek_channel_execute(q,x,&y);
 
         printf("y(%4u) = %12.8fe + j*%12.8f;\n",i+1,crealf(y),cimagf(y));
-#ifdef DEBUG
         fprintf(fid, "y(%4u) = %12.5e + j*%12.5e;\n",i+1,crealf(y),cimagf(y));
-#endif
     }
 
-#ifdef DEBUG
     fprintf(fid,"\n\n");
     fprintf(fid,"t=0:length(y)-1;\n");
     fprintf(fid,"R=20*log10(abs(y));\n");
@@ -55,8 +49,7 @@ int main() {
 
     fclose(fid);
 
-    printf("results written to %s\n", DEBUG_FILENAME);
-#endif
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     // clean up objects
     ricek_channel_destroy(q);

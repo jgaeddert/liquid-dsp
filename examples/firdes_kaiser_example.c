@@ -6,8 +6,7 @@
 
 #include "liquid.h"
 
-#define DEBUG 1
-#define DEBUG_FILENAME "firdes_kaiser_example.m"
+#define OUTPUT_FILENAME "firdes_kaiser_example.m"
 
 int main() {
     // options
@@ -23,23 +22,18 @@ int main() {
     float h[h_len];
     fir_kaiser_window(h_len,fc,slsl,mu,h);
 
-#if DEBUG
-    FILE*fid = fopen(DEBUG_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", DEBUG_FILENAME);
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\n",h_len);
     fprintf(fid,"fc=%12.4e;\n",fc);
     fprintf(fid,"slsl=%12.4e;\n",slsl);
-#endif
 
     for (i=0; i<h_len; i++) {
         printf("h(%4u) = %12.4e;\n", i+1, h[i]);
-#if DEBUG
         fprintf(fid,"h(%4u) = %12.4e;\n", i+1, h[i]);
-#endif
     }   
 
-#if DEBUG
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"H=20*log10(abs(fftshift(fft(h*fc,nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
@@ -52,8 +46,7 @@ int main() {
     fprintf(fid,"axis([-0.5 0.5 -slsl-40 10]);\n");
 
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
-#endif
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     printf("done.\n");
     return 0;

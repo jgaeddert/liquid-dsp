@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define DEBUG_FILENAME  "framesync64_example.m"
+#define OUTPUT_FILENAME  "framesync64_example.m"
 
 static int callback(unsigned char * _header,  int _header_valid,
                     unsigned char * _payload, int _payload_valid,
@@ -66,8 +66,8 @@ int main() {
     framesync64_execute(fs, frame_rx, 2048);
 
     // write frame to output file
-    FILE* fid = fopen(DEBUG_FILENAME, "w");
-    fprintf(fid,"%% %s: auto-generated file\n", DEBUG_FILENAME);
+    FILE* fid = fopen(OUTPUT_FILENAME, "w");
+    fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
@@ -78,7 +78,7 @@ int main() {
     fprintf(fid,"t=0:2047;\n");
     fprintf(fid,"plot(t,real(frame_rx),t,imag(frame_rx));\n");
     fclose(fid);
-    printf("results written to %s\n", DEBUG_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     framegen64_destroy(fg);
     framesync64_destroy(fs);
