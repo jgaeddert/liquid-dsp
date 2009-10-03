@@ -36,7 +36,7 @@
 #endif
 
 #define DEBUG_OFDMFRAME64SYNC             1
-#define DEBUG_OFDMFRAME64SYNC_PRINT       1
+#define DEBUG_OFDMFRAME64SYNC_PRINT       0
 #define DEBUG_OFDMFRAME64SYNC_FILENAME    "ofdmframe64sync_internal_debug.m"
 #define DEBUG_OFDMFRAME64SYNC_BUFFER_LEN  (1024)
 
@@ -85,6 +85,7 @@ struct ofdmframe64sync_s {
     float complex Lt1[64], Lf1[64]; // received PLCP long sequence (second)
     float complex G0[64], G1[64];
     int backoff;
+    float complex B[64];            // subcarrier phase rotation due to backoff
 
     // timer
     unsigned int timer;
@@ -164,6 +165,9 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->x_phase[3] =  21.0f;
 
     q->backoff = 2;
+    float phi = (float)(q->backoff)*2.0f*M_PI/64.0f;
+    for (i=0; i<64; i++)
+        q->B[i] = liquid_crotf_vect(i*phi);
 
     q->callback = _callback;
     q->userdata = _userdata;
@@ -492,8 +496,10 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         // compute cross-correlation
         dotprod_cccf_execute(_q->cross_correlator, rc+32, &_q->rxy0);
         dotprod_cccf_execute(_q->cross_correlator, rc+32+64, &_q->rxy1);
+#if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("|rxy0| = %12.8f\n", cabsf(_q->rxy0));
         printf("|rxy1| = %12.8f\n", cabsf(_q->rxy1));
+#endif
 
         memmove(_q->Lt0, rc+32-_q->backoff,     64*sizeof(float complex));
         memmove(_q->Lt1, rc+32+64-_q->backoff,  64*sizeof(float complex));
@@ -565,7 +571,6 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
     unsigned int i;
     float g0, theta0;
     float g1, theta1;
-    float phi = (float)(_q->backoff)*2.0f*M_PI/64.0f;
     for (i=0; i<64; i++) {
         if (i==0 || (i>26 && i<38)) {
             // disabled subcarrier
@@ -574,8 +579,8 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
             _q->G[i]  = 0.0f;
         } else {
             // compute subcarrier gains
-            _q->G0[i] = 1.0f / (_q->Lf0[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
-            _q->G1[i] = 1.0f / (_q->Lf1[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G0[i] = 1.0f / (_q->Lf0[i] * _q->B[i] * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G1[i] = 1.0f / (_q->Lf1[i] * _q->B[i] * conj(ofdmframe64_plcp_Lf[i]));
 
             // average amplitude, phase of subcarrier gains (note
             // that residual phase offset is taken care of by pilot
@@ -603,8 +608,8 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
 #if DEBUG_OFDMFRAME64SYNC
     // correct long sequence (plotting purposes only)
     for (i=0; i<64; i++) {
-        _q->Lf0[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
-        _q->Lf1[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
+        _q->Lf0[i] *= _q->G[i]*_q->B[i];
+        _q->Lf1[i] *= _q->G[i]*_q->B[i];
     }
 #endif
 }
@@ -672,15 +677,14 @@ void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q)
     unsigned int i;
     int sctype;
     float g=0.0f;
-    float phi = (float)(_q->backoff) * 2.0f * M_PI / 64.0f;
     for (i=0; i<64; i++) {
         sctype = ofdmframe64_getsctype(i);
         if (sctype != OFDMFRAME64_SCTYPE_NULL) {
 #if DEBUG_OFDMFRAME64SYNC
             // compute individual subcarrier gain, compensating for
             // fft backoff (plotting purposes only)
-            _q->G0[i] = 1.0f / (_q->Lf0[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
-            _q->G1[i] = 1.0f / (_q->Lf1[i] * liquid_crotf_vect(i*phi) * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G0[i] = 1.0f / (_q->Lf0[i] * _q->B[i] * conj(ofdmframe64_plcp_Lf[i]));
+            _q->G1[i] = 1.0f / (_q->Lf1[i] * _q->B[i] * conj(ofdmframe64_plcp_Lf[i]));
 #endif
 
             // average amplitude of subcarriers (note that residual
@@ -702,8 +706,8 @@ void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q)
 #if DEBUG_OFDMFRAME64SYNC
         // correct long sequence (plotting purposes only)
         // compensating for fft timing backoff
-        _q->Lf0[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
-        _q->Lf1[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
+        _q->Lf0[i] *= _q->G[i]*_q->B[i];
+        _q->Lf1[i] *= _q->G[i]*_q->B[i];
 #endif
     }
 }
@@ -753,9 +757,8 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
     // gain correction (equalizer)
     unsigned int i;
-    float phi = (float)(_q->backoff)*2.0f*M_PI/64.0f;
     for (i=0; i<64; i++) {
-        _q->X[i] *= _q->G[i]*liquid_crotf_vect(i*phi);
+        _q->X[i] *= _q->G[i]*_q->B[i];
     }
     _q->y_phase[0] = cargf(_q->X[11]);  // -21
     _q->y_phase[1] = cargf(_q->X[25]);  //  -7
