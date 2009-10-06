@@ -57,7 +57,7 @@ msequence msequence_create(unsigned int _m)
         exit(1);
     }
     msequence ms = (msequence) malloc(sizeof(struct msequence_s));
-    *ms = msequence_default[_m];
+    memmove(ms, &msequence_default[_m], sizeof(struct msequence_s));
     return ms;
 }
 
