@@ -64,6 +64,7 @@ float kaiser_beta_slsl(float _slsl)
 //  _n      : filter length
 //  _fc     : cutoff frequency
 //  _slsl   : sidelobe suppression level (dB attenuation)
+//  _mu     : fractional sample offset [-0.5,0.5]
 //  _h      : output coefficient buffer
 void fir_kaiser_window(unsigned int _n,
                        float _fc,
@@ -71,6 +72,18 @@ void fir_kaiser_window(unsigned int _n,
                        float _mu,
                        float *_h)
 {
+    // validate inputs
+    if (_mu < -0.5f || _mu > 0.5f) {
+        printf("error: fir_kaiser_window(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
+        exit(0);
+    } else if (_fc < 0.0f || _fc > 1.0f) {
+        printf("error: fir_kaiser_window(), cutoff frequency (%12.4e) out of range [0.0,1.0]\n", _fc);
+        exit(0);
+    } else if (_n == 0) {
+        printf("error: fir_kaiser_window(), filter length must be greater than zero\n");
+        exit(0);
+    }
+
     // chooise kaiser beta parameter (approximate)
     float beta = kaiser_beta_slsl(_slsl);
 
