@@ -1408,13 +1408,13 @@ void interleaver_debug_print(interleaver _i);
 //
 
 // ln( gamma(z) )
-float lngammaf(float _z);
+float liquid_lngammaf(float _z);
 
 // gamma(z)
-float gammaf(float _z);
+float liquid_gammaf(float _z);
 
 // n!
-float factorialf(unsigned int _n);
+float liquid_factorialf(unsigned int _n);
 
 // Bessel function of the first kind
 float besselj_0(float _z);

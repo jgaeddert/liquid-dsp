@@ -28,18 +28,18 @@
 
 #include "liquid.internal.h"
 
-float lngammaf(float _z) {
+float liquid_lngammaf(float _z) {
     float g = 0.5*( logf(2*M_PI)-log(_z) );
     g += _z*( logf(_z+(1/(12.0f*_z-0.1f/_z)))-1);
     return g;
 }
 
-float gammaf(float _z) {
-    return expf( lngammaf(_z) );
+float liquid_gammaf(float _z) {
+    return expf( liquid_lngammaf(_z) );
 }
 
-float factorialf(unsigned int _n) {
-    return fabsf(gammaf((float)(_n+1)));
+float liquid_factorialf(unsigned int _n) {
+    return fabsf(liquid_gammaf((float)(_n+1)));
 }
 
 // Bessel function of the first kind
@@ -56,7 +56,7 @@ float besselj_0(float _z)
     unsigned int k;
     float t, y=0.0f;
     for (k=0; k<NUM_BESSELJ0_ITERATIONS; k++) {
-        t = powf(_z/2, (float)k) / gammaf((float)k+1);
+        t = powf(_z/2, (float)k) / tgamma((float)k+1);
         y += (k%2) ? -t*t : t*t;
     }
     return y;
@@ -69,7 +69,7 @@ float besseli_0(float _z)
     unsigned int k;
     float t, y=0.0f;
     for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
-        t = powf(_z/2, (float)k) / gammaf((float)k+1);
+        t = powf(_z/2, (float)k) / tgamma((float)k+1);
         y += t*t;
     }
     return y;

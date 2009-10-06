@@ -30,11 +30,11 @@
 void xautotest_gamma()
 {
     float tol = 1e-3f;
-    CONTEND_DELTA(gammaf(0.1f), 9.51350769866873f, tol);
-    CONTEND_DELTA(gammaf(0.2f), 4.59084371199880f, tol);
-    CONTEND_DELTA(gammaf(0.5f), 1.77245385090552f, tol);
-    CONTEND_DELTA(gammaf(1.5f), 0.886226925452758f, tol);
-    CONTEND_DELTA(gammaf(2.5f), 1.329340388179140f, tol);
+    CONTEND_DELTA(liquid_gammaf(0.1f), 9.51350769866873f, tol);
+    CONTEND_DELTA(liquid_gammaf(0.2f), 4.59084371199880f, tol);
+    CONTEND_DELTA(liquid_gammaf(0.5f), 1.77245385090552f, tol);
+    CONTEND_DELTA(liquid_gammaf(1.5f), 0.886226925452758f, tol);
+    CONTEND_DELTA(liquid_gammaf(2.5f), 1.329340388179140f, tol);
 }
 
 // 
@@ -43,13 +43,13 @@ void xautotest_gamma()
 void autotest_factorial()
 {
     float tol = 1e-3f;
-    CONTEND_DELTA(factorialf(0), 1,   tol);
-    CONTEND_DELTA(factorialf(1), 1,   tol);
-    CONTEND_DELTA(factorialf(2), 2,   tol);
-    CONTEND_DELTA(factorialf(3), 6,   tol);
-    CONTEND_DELTA(factorialf(4), 24,  tol);
-    CONTEND_DELTA(factorialf(5), 120, tol);
-    CONTEND_DELTA(factorialf(6), 720, tol);
+    CONTEND_DELTA(liquid_factorialf(0), 1,   tol);
+    CONTEND_DELTA(liquid_factorialf(1), 1,   tol);
+    CONTEND_DELTA(liquid_factorialf(2), 2,   tol);
+    CONTEND_DELTA(liquid_factorialf(3), 6,   tol);
+    CONTEND_DELTA(liquid_factorialf(4), 24,  tol);
+    CONTEND_DELTA(liquid_factorialf(5), 120, tol);
+    CONTEND_DELTA(liquid_factorialf(6), 720, tol);
 }
 
 // 
