@@ -82,7 +82,7 @@ float complex icrandnf()
 
 void cawgn(float complex *_x, float _nstd)
 {
-    *_x += icrandnf()*_nstd;
+    *_x += icrandnf()*_nstd*0.707106781186547f;
 }
 
 // Weibull
