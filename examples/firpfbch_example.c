@@ -36,8 +36,8 @@ int main() {
 
     // generate data buffers
     float complex  x[num_samples];  // input matrix: num_channels x num_frames
-    float complex y0[num_samples];  // filterbank channelizer output
-    float complex y1[num_samples];  // conventional output
+    float complex y0[num_samples];  // conventional output
+    float complex y1[num_samples];  // filterbank channelizer output
 
     // objects to run conventional channelizer
     interp_crcf interp[num_channels];

@@ -28,80 +28,93 @@
 // AUTOTEST: validate synthesis correctness
 //
 void autotest_firpfbch_synthesis() {
-    unsigned int num_channels = 4;  // number of channels
-    unsigned int num_symbols = 8;   // number of symbols per channel
-    unsigned int m=2;               // filter delay
-    float beta=-40.0f;              // excess bandwidth factor
-    float tol=0.05f;                // error tolerance
+    // options
+    unsigned int num_channels=4;    // number of channels
+    unsigned int m=3;               // filter delay
+    float slsl=-60;                 // sidelobe suppression level
+    unsigned int num_symbols=16;    // number of baseband symbols
+    float tol=1e-3f;                // error tolerance
 
-    unsigned int i;
+    unsigned int num_frames = num_symbols+4*m;
+    unsigned int i, j, k, n;
 
-    float complex x[32] = {
-         2.205e-01,  2.205e-01,  2.205e-01,  2.205e-01, 
-         7.122e-01,  7.122e-01,  7.122e-01,  7.122e-01, 
-         1.000e+00,  1.000e+00,  1.000e+00,  1.000e+00, 
-         7.122e-01,  7.122e-01,  7.122e-01,  7.122e-01, 
-         2.205e-01,  2.205e-01,  2.205e-01,  2.205e-01, 
-         0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00, 
-         0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00, 
-         0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00
-    };
+    // create channelizer object (synthesizer)
+    firpfbch cs = firpfbch_create(num_channels,
+                                  m,
+                                  slsl,
+                                  0,
+                                  FIRPFBCH_NYQUIST,
+                                  FIRPFBCH_SYNTHESIZER);
 
-    float complex y_test[32] = {
-        -1.726e-18+-0.000e+00*_Complex_I,  4.174e-19+-4.337e-19*_Complex_I, 
-         0.000e+00+-1.297e-18*_Complex_I, -2.355e-18+-1.735e-18*_Complex_I, 
-         6.080e-19+-2.234e-34*_Complex_I, -1.567e-17+ 4.337e-18*_Complex_I, 
-         0.000e+00+ 1.124e-17*_Complex_I, -2.847e-17+ 2.429e-17*_Complex_I, 
-         2.205e-01+-1.620e-16*_Complex_I, -2.428e-16+ 9.714e-17*_Complex_I, 
-         0.000e+00+ 5.402e-16*_Complex_I, -3.255e-16+ 6.939e-16*_Complex_I, 
-         7.122e-01+-7.849e-16*_Complex_I, -1.055e-15+-4.163e-16*_Complex_I, 
-         0.000e+00+-4.215e-16*_Complex_I, -4.271e-16+ 1.304e-15*_Complex_I, 
-         1.000e+00+-1.469e-15*_Complex_I, -1.362e-15+-3.608e-16*_Complex_I, 
-         0.000e+00+ 1.320e-15*_Complex_I,  1.211e-15+ 1.221e-15*_Complex_I, 
-         7.122e-01+-2.573e-15*_Complex_I,  1.293e-16+-1.388e-16*_Complex_I, 
-         0.000e+00+-4.988e-16*_Complex_I, -6.063e-17+ 5.274e-16*_Complex_I, 
-         2.205e-01+-4.859e-16*_Complex_I, -1.964e-16+-1.388e-17*_Complex_I, 
-         0.000e+00+ 1.574e-16*_Complex_I,  4.390e-17+ 4.423e-17*_Complex_I, 
-         6.080e-19+-4.835e-34*_Complex_I,  8.310e-17+ 0.000e+00*_Complex_I, 
-         0.000e+00+ 1.818e-17*_Complex_I, -3.295e-17+-1.691e-17*_Complex_I
-    };
+    // generate data buffers
+    float complex  x[num_channels]; // channelized input
+    float complex y0[num_channels]; // conventional output
+    float complex y1[num_channels]; // filterbank channelizer output
 
-    firpfbch c = firpfbch_create(num_channels,
-                                 m,
-                                 beta,
-                                 0.0f,
-                                 FIRPFBCH_NYQUIST,
-                                 FIRPFBCH_SYNTHESIZER);
+    // retrieve filter taps from channelizer object
+    unsigned int h_len = 2*m*num_channels;
+    float h[h_len];
+    firpfbch_get_filter_taps(cs,h);
 
-    float complex y[32];
-
-    unsigned int n=0;
-    for (i=0; i<num_symbols; i++) {
-        firpfbch_execute(c, &x[n], &y[n]);
-        n += num_channels;
+    // objects to run conventional channelizer
+    interp_crcf interp[num_channels];
+    nco ncox[num_channels];
+    for (i=0; i<num_channels; i++) {
+        interp[i] = interp_crcf_create(num_channels, h, h_len);
+        ncox[i] = nco_create(LIQUID_VCO);
+        nco_set_frequency(ncox[i], 2.0f*M_PI*(float)(i)/(float)(num_channels));
     }
 
-#if 0
-    // print formatted results (octave)
-    printf("y=zeros(1,32);\n");
-    printf("y_test=zeros(1,32);\n");
-    for (i=0; i<32; i++) {
-        printf("     y(%2u) = %10.2e + j*%10.2e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        printf("y_test(%2u) = %10.2e + j*%10.2e;\n", i+1, crealf(y_test[i]), cimagf(y_test[i]));
+    // synthesize time series
+    n=0;
+    float complex y0a[num_channels];
+    float complex y0b[num_channels];
+    for (i=0; i<num_frames; i++) {
+        // generate random samples
+        for (j=0; j<num_channels; j++)
+            x[j] = randnf() + randnf()*_Complex_I;
+
+        // 
+        // execute conventional synthesizer
+        //
+        for (j=0; j<num_channels; j++)
+            y0[j] = 0.0f;
+
+        for (j=0; j<num_channels; j++) {
+            // run interpolator
+            interp_crcf_execute(interp[j],x[n+j],y0a);
+
+            // up-convert
+            nco_mix_block_up(ncox[j],y0a,y0b,num_channels);
+
+            // append to output buffer
+            for (k=0; k<num_channels; k++) {
+                y0[k] += y0b[k] / (float)(num_channels);
+            }
+        }
+
+        // 
+        // execute synthesis filter bank
+        //
+        firpfbch_execute(cs, x, y1);
+
+        // 
+        // validate outputs
+        //
+        for (j=0; j<num_channels; j++) {
+            CONTEND_DELTA(crealf(y0[j]), crealf(y1[j]), tol);
+            CONTEND_DELTA(cimagf(y0[j]), cimagf(y1[j]), tol);
+        }
     }
-    // plot results
-    printf("figure;\n");
-    printf("subplot(2,1,1); plot(1:32,real(y_test), 1:32,real(y));\n");
-    printf("subplot(2,1,2); plot(1:32,imag(y_test), 1:32,imag(y));\n");
-#endif
 
-
-    for (i=0; i<32; i++) {
-        CONTEND_DELTA(crealf(y[i]), crealf(y_test[i]), tol);
-        CONTEND_DELTA(cimagf(y[i]), cimagf(y_test[i]), tol);
+    // clean up allocated objects
+    for (i=0; i<num_channels; i++) {
+        interp_crcf_destroy(interp[i]);
+        nco_destroy(ncox[i]);
     }
+    firpfbch_destroy(cs);
 
-    firpfbch_destroy(c);
+    printf("done.\n");
 }
 
 
