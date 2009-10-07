@@ -189,7 +189,7 @@ void nco_mix_block_up(
     unsigned int i;
 
     float theta =   _nco->theta;
-    float d_theta = _nco->theta;
+    float d_theta = _nco->d_theta;
     for (i=0; i<_N; i++) {
         // multiply _x[i] by [cos(theta) + _Complex_I*sin(theta)]
         _y[i] = _x[i] * liquid_crotf_vect(theta);
@@ -218,7 +218,7 @@ void nco_mix_block_down(
     unsigned int i;
 
     float theta =   _nco->theta;
-    float d_theta = _nco->theta;
+    float d_theta = _nco->d_theta;
     for (i=0; i<_N; i++) {
         // multiply _x[i] by [cos(-theta) + _Complex_I*sin(-theta)]
         _y[i] = _x[i] * liquid_crotf_vect(-theta);
