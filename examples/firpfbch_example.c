@@ -43,17 +43,14 @@ int main() {
     interp_crcf interp[num_channels];
     nco ncox[num_channels];
 
-    // generate filter identical to channelizer's
-    // TODO : retrieve filter prototype from channelizer object itself
-    float fc = 1.0f/(float)(num_channels);  // cutoff frequency
+    // retrieve filter taps from channelizer object
     unsigned int h_len = 2*m*num_channels;
-    float h[h_len+1];
-    fir_kaiser_window(h_len+1, fc, slsl, 0.0f, h);
+    float h[h_len];
+    firpfbch_get_filter_taps(cs,h);
 
     float f;
     for (i=0; i<num_channels; i++) {
         f = 2.0f * M_PI * (float)(i) / (float)(num_channels);
-        printf("f : %12.8f\n", f);
         interp[i] = interp_crcf_create(num_channels, h, h_len);
         ncox[i] = nco_create(LIQUID_VCO);
         nco_set_frequency(ncox[i], f);
@@ -94,6 +91,16 @@ int main() {
 
         n += num_channels;
     }
+
+    // compute error
+    float rmse=0.0f;
+    float complex err;
+    for (i=0; i<num_samples; i++) {
+        err = y0[i] - y1[i];
+        rmse += crealf(err*conjf(err));
+    }
+    rmse = sqrtf(rmse / (float)num_samples);
+    printf("rmse : %12.4e\n", rmse);
 
     // write output to file
     for (i=0; i<num_samples; i++) {

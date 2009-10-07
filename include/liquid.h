@@ -1646,6 +1646,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 void firpfbch_destroy(firpfbch _c);
 void firpfbch_clear(firpfbch _c);
 void firpfbch_print(firpfbch _c);
+void firpfbch_get_filter_taps(firpfbch _c, float * _h);
 void firpfbch_execute(firpfbch _c, liquid_float_complex * _x, liquid_float_complex * _y);
 //void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _X);
 //void firpfbch_analyzer_execute(firpfbch _c, float complex * _X, float complex * _x);

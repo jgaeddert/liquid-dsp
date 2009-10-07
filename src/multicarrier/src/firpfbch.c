@@ -43,6 +43,10 @@ struct firpfbch_s {
     float dt;
     float complex * x;  // time-domain buffer
     float complex * X;  // freq-domain buffer
+
+    // filter
+    unsigned int h_len;
+    float * h;
     
     FIR_FILTER() * bank;
 #if HAVE_FFTW3_H
@@ -69,25 +73,25 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     c->nyquist      = _nyquist;
     c->type         = _type;
 
-    // create bank of filters
-    c->bank = (FIR_FILTER()*) malloc((c->num_channels)*sizeof(FIR_FILTER()));
-
-    // design filter
-    unsigned int h_len;
-
-    // design filter using kaiser window and be done with it
-    // TODO: use filter prototype object
+    // validate inputs
     if (_m < 1) {
         printf("error: firpfbch_create(), invalid filter delay (must be greater than 0)\n");
         exit(1);
     }
-    h_len = 2*(c->m)*(c->num_channels);
-    float h[h_len+1];
+
+    // create bank of filters
+    c->bank = (FIR_FILTER()*) malloc((c->num_channels)*sizeof(FIR_FILTER()));
+
+    // design filter
+    // TODO: use filter prototype object
+    c->h_len = 2*(c->m)*(c->num_channels);
+    c->h = (float*) malloc((c->h_len+1)*sizeof(float));
+
     if (c->nyquist == FIRPFBCH_NYQUIST) {
         float fc = 1/(float)(c->num_channels);  // cutoff frequency
-        fir_kaiser_window(h_len+1, fc, c->beta, 0.0f, h);
+        fir_kaiser_window(c->h_len+1, fc, c->beta, 0.0f, c->h);
     } else if (c->nyquist == FIRPFBCH_ROOTNYQUIST) {
-        design_rrc_filter(c->num_channels, c->m, c->beta, c->dt, h);
+        design_rrc_filter(c->num_channels, c->m, c->beta, c->dt, c->h);
     } else {
         printf("error: firpfbch_create(), unsupported nyquist flag: %d\n", _nyquist);
         exit(1);
@@ -99,7 +103,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     float h_sub[h_sub_len];
     for (i=0; i<c->num_channels; i++) {
         for (n=0; n<h_sub_len; n++) {
-            h_sub[n] = h[i + n*(c->num_channels)];
+            h_sub[n] = c->h[i + n*(c->num_channels)];
         }   
         c->bank[i] = FIR_FILTER(_create)(h_sub, h_sub_len);
 
@@ -112,7 +116,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 
 #ifdef DEBUG
     for (i=0; i<h_len+1; i++)
-        printf("h(%4u) = %12.4e;\n", i+1, h[i]);
+        printf("h(%4u) = %12.4e;\n", i+1, c->h[i]);
 #endif
 
     // allocate memory for buffers
@@ -142,6 +146,7 @@ void firpfbch_destroy(firpfbch _c)
 #else
     fft_destroy_plan(_c->fft);
 #endif
+    free(_c->h);
     free(_c->x);
     free(_c->X);
     free(_c);
@@ -162,6 +167,11 @@ void firpfbch_print(firpfbch _c)
     printf("firpfbch: [%u taps]\n", 0);
 }
 
+void firpfbch_get_filter_taps(firpfbch _c, 
+                              float * _h)
+{
+    memmove(_h, _c->h, (_c->h_len)*sizeof(float));
+}
 
 void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _y)
 {
