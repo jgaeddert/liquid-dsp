@@ -36,7 +36,7 @@ void autotest_firpfbch_synthesis() {
     float tol=1e-3f;                // error tolerance
 
     unsigned int num_frames = num_symbols+4*m;
-    unsigned int i, j, k, n;
+    unsigned int i, j, k;
 
     // create channelizer object (synthesizer)
     firpfbch cs = firpfbch_create(num_channels,
@@ -66,7 +66,6 @@ void autotest_firpfbch_synthesis() {
     }
 
     // synthesize time series
-    n=0;
     float complex y0a[num_channels];
     float complex y0b[num_channels];
     for (i=0; i<num_frames; i++) {
@@ -82,7 +81,7 @@ void autotest_firpfbch_synthesis() {
 
         for (j=0; j<num_channels; j++) {
             // run interpolator
-            interp_crcf_execute(interp[j],x[n+j],y0a);
+            interp_crcf_execute(interp[j],x[j],y0a);
 
             // up-convert
             nco_mix_block_up(ncox[j],y0a,y0b,num_channels);
