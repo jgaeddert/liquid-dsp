@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "liquid.h"
@@ -11,16 +12,17 @@
 
 int main() {
     // options
-    unsigned int num_channels=4;    // number of channels
+    unsigned int num_channels=6;    // number of channels
     unsigned int m=5;               // filter delay
     float slsl=-60;                 // sidelobe suppression level
     unsigned int num_symbols=64;    // number of baseband symbols
+    int type = FIRPFBCH_NYQUIST;
 
     unsigned int i, j, k, n;
 
     // create objects
-    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, FIRPFBCH_SYNTHESIZER);
-    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, FIRPFBCH_ANALYZER);
+    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_SYNTHESIZER);
+    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_ANALYZER);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -86,8 +88,7 @@ int main() {
         for (j=0; j<num_channels; j++) {
             x[j] = randnf() + randnf()*_Complex_I;
             // select a specific channel
-            //if ((j%num_channels)!=1)
-            //    x[j] = 0.0f;
+            //if ((j%num_channels)!=2)
         }
 
         // 
@@ -126,8 +127,8 @@ int main() {
             nco_mix_block_down(nco_ca[j],y0,z0a,num_channels);
 
             // run decimator
-            decim_crcf_execute(decim[j],z0a,&z0[j],num_channels-1);
-            //decim_crcf_execute(decim[j],z0a,&z0[j],0);
+            //decim_crcf_execute(decim[j],z0a,&z0[j],num_channels-1);
+            decim_crcf_execute(decim[j],z0a,&z0[j],0);
         }
 
         // 

@@ -120,15 +120,22 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 #endif
 
     // allocate memory for buffers
+    // TODO : use fftw_malloc if HAVE_FFTW3_H
     c->x = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     c->X = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     firpfbch_clear(c);
 
     // create fft plan
 #if HAVE_FFTW3_H
-    c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_BACKWARD, FFTW_ESTIMATE);
+    if (c->type == FIRPFBCH_SYNTHESIZER)
+        c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_BACKWARD, FFTW_ESTIMATE);
+    else
+        c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_FORWARD, FFTW_ESTIMATE);
 #else
-    c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
+    if (c->type == FIRPFBCH_SYNTHESIZER)
+        c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
+    else
+        c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_FORWARD);
 #endif
 
     return c;
