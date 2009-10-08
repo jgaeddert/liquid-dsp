@@ -43,6 +43,7 @@ struct autotest_s {
     long unsigned int num_passed;
     long unsigned int num_failed;
     float percent_passed;
+    bool executed;
     bool pass;
 };
 
@@ -209,6 +210,8 @@ void execute_autotest(autotest _test, bool _verbose)
     else
         _test->percent_passed = 0.0f;
 
+    _test->executed = true;
+
     //if (_verbose)
     //    print_autotest_results(_test);
 }
@@ -226,7 +229,9 @@ void execute_package(package _p, bool _verbose)
 
 void print_autotest_results(autotest _test)
 {
-    if (_test->pass)
+    if (!_test->executed)
+        printf("    IGNORED ");
+    else if (_test->pass)
         printf("    PASS    ");
     else
         printf("  <<FAIL>>  ");
@@ -257,7 +262,7 @@ void print_failed_tests(void)
     printf(" FAILED TESTS:\n");
     unsigned int t;
     for (t=0; t<NUM_AUTOTESTS; t++) {
-        if (autotests[t].pass == false)
+        if (!autotests[t].pass && autotests[t].executed)
             printf("    %3u : <<FAIL>> %s\n", autotests[t].id,
                                               autotests[t].name);
     }

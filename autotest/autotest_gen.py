@@ -191,7 +191,7 @@ def writeOutputFile( filename = outputFileName ):
     for i in range(len(benchmark_functions)):
         bf = benchmark_functions[i]
         # append benchmark function to array
-        f.write(" "*4 + "{" + str(i) + ",&" + bf.function_name + ",\"" + bf.short_name + "\",0,0,0,0,0}")
+        f.write(" "*4 + "{" + str(i) + ",&" + bf.function_name + ",\"" + bf.short_name + "\",0,0,0,0,0,0}")
         if not i == len(benchmark_functions)-1:
             f.write(",\n")
     f.write("\n};\n")
