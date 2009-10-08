@@ -92,8 +92,12 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"t:p:lLvqs")) != EOF){
+    while((d = getopt(argc,argv,"hut:p:Llsvq")) != EOF){
         switch (d) {
+        case 'h':
+        case 'u':
+            print_help();
+            return 0;
         case 't':
             autotest_id = atoi(optarg);
             if (autotest_id >= NUM_AUTOTESTS) {
@@ -112,11 +116,6 @@ int main(int argc, char *argv[])
                 mode = RUN_SINGLE_PACKAGE;
             }
             break;
-        case 'l':
-            // list only packages and exit
-            for (i=0; i<NUM_PACKAGES; i++)
-                printf("%u: %s\n", packages[i].id, packages[i].name);
-            return 0;
         case 'L':
             // list packages, autotests and exit
             for (i=0; i<NUM_PACKAGES; i++) {
@@ -124,6 +123,11 @@ int main(int argc, char *argv[])
                 for (j=packages[i].autotest_index; j<packages[i].num_autotests+packages[i].autotest_index; j++)
                     printf("    %u: %s\n", autotests[j].id, autotests[j].name);
             }
+            return 0;
+        case 'l':
+            // list only packages and exit
+            for (i=0; i<NUM_PACKAGES; i++)
+                printf("%u: %s\n", packages[i].id, packages[i].name);
             return 0;
         case 's':
             stop_on_fail = true;
@@ -136,9 +140,6 @@ int main(int argc, char *argv[])
             verbose = false;
             _autotest_verbose = false;
             break;
-        case 'h':
-            print_help();
-            return 0;
         default:
             print_help();
             return 0;
@@ -184,13 +185,14 @@ void print_help()
 {
     // help
     printf("autotest options:\n");
-    printf("  -h : prints this help file\n");
-    printf("  -t <autotest_index>\n");
-    printf("  -p <package_index>\n");
-    printf("  -l : lists available autotests\n");
-    printf("  -s : stop on fail\n");
-    printf("  -v : verbose\n");
-    printf("  -q : quiet\n");
+    printf("  -h,-u : prints this help file\n");
+    printf("  -t<n> : run specific test\n");
+    printf("  -p<n> : run specific package\n");
+    printf("  -L    : lists all autotests\n");
+    printf("  -l    : lists all packages\n");
+    printf("  -s    : stop on fail\n");
+    printf("  -v    : verbose\n");
+    printf("  -q    : quiet\n");
 }
 
 void execute_autotest(autotest _test, bool _verbose)
