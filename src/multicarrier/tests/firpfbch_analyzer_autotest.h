@@ -28,93 +28,86 @@
 // AUTOTEST: validate analysis correctness
 //
 void autotest_firpfbch_analysis() {
-    unsigned int num_channels = 4;  // number of channels
-    unsigned int m=2;               // filter delay
-    float beta=-40.0f;              // excess bandwidth factor
-    unsigned int num_symbols = 8;   // number of symbols per channel
-    float tol=0.05f;                // error tolerance
+    // options
+    unsigned int num_channels=4;    // number of channels
+    unsigned int m=3;               // filter delay
+    float slsl=-60;                 // sidelobe suppression level
+    unsigned int num_symbols=16;    // number of baseband symbols
+    float tol=1e-3f;                // error tolerance
 
-    unsigned int i;
-    float complex x[32] = {
-         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
-         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
-         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
-         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
-        -1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
-         1.000e+00+-1.000e+00*_Complex_I,  1.000e+00+ 1.000e+00*_Complex_I, 
-         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
-        -1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
-        -1.000e+00+-1.000e+00*_Complex_I,  1.000e+00+-1.000e+00*_Complex_I, 
-         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
-        -1.000e+00+ 1.000e+00*_Complex_I,  1.000e+00+ 1.000e+00*_Complex_I, 
-         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
-         1.000e+00+ 1.000e+00*_Complex_I,  1.000e+00+-1.000e+00*_Complex_I, 
-         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I, 
-         1.000e+00+-1.000e+00*_Complex_I, -1.000e+00+-1.000e+00*_Complex_I, 
-         1.000e+00+ 1.000e+00*_Complex_I, -1.000e+00+ 1.000e+00*_Complex_I
-    };
+    unsigned int num_frames = num_symbols+4*m;
+    unsigned int i, j;
 
-    float complex y_test[32] = {
-        -7.831e-18+-7.831e-18*_Complex_I, -7.831e-18+-7.831e-18*_Complex_I, 
-        -7.831e-18+-7.831e-18*_Complex_I, -7.831e-18+-7.831e-18*_Complex_I, 
-         5.123e-02+ 3.123e-02*_Complex_I, -5.123e-02+-1.610e-01*_Complex_I, 
-        -2.435e-01+ 1.610e-01*_Complex_I,  2.435e-01+-3.123e-02*_Complex_I, 
-         5.061e-01+ 1.205e+00*_Complex_I,  1.789e+00+ 2.059e+00*_Complex_I, 
-         2.478e+00+-1.892e-01*_Complex_I, -7.724e-01+ 9.244e-01*_Complex_I, 
-        -1.215e-01+-1.280e+00*_Complex_I,  6.738e-02+ 1.933e+00*_Complex_I, 
-         4.281e+00+ 1.120e+00*_Complex_I, -2.273e-01+ 2.227e+00*_Complex_I, 
-        -1.295e+00+ 1.459e-01*_Complex_I, -4.442e+00+ 2.485e+00*_Complex_I, 
-         1.647e+00+-1.136e-01*_Complex_I,  9.023e-02+ 1.483e+00*_Complex_I, 
-         3.894e-01+-1.761e-01*_Complex_I, -7.794e-01+ 4.154e+00*_Complex_I, 
-         1.226e+00+-1.761e-01*_Complex_I,  3.164e+00+ 1.983e-01*_Complex_I, 
-        -1.823e+00+-9.375e-01*_Complex_I, -3.074e+00+-2.958e+00*_Complex_I, 
-        -5.617e-01+-6.780e-01*_Complex_I,  1.459e+00+ 5.733e-01*_Complex_I, 
-         2.586e-01+ 2.457e+00*_Complex_I, -1.881e+00+-1.246e+00*_Complex_I, 
-         9.363e-02+-7.253e-02*_Complex_I, -2.471e+00+ 2.862e+00*_Complex_I
-    };
+    // create channelizer object (analyzer)
+    firpfbch ca = firpfbch_create(num_channels,
+                                  m,
+                                  slsl,
+                                  0,
+                                  FIRPFBCH_NYQUIST,
+                                  FIRPFBCH_ANALYZER);
 
-    // create channelizer
-    firpfbch c = firpfbch_create(num_channels,
-                                 m,
-                                 beta,
-                                 0.0f,
-                                 FIRPFBCH_NYQUIST,
-                                 FIRPFBCH_ANALYZER);
+    // generate data buffers
+    float complex  y[num_channels]; // input
+    float complex z0[num_channels]; // conventional output
+    float complex z1[num_channels]; // filterbank channelizer output
 
-    float complex y[32];
+    // retrieve filter taps from channelizer object
+    unsigned int h_len = 2*m*num_channels;
+    float h[h_len];
+    firpfbch_get_filter_taps(ca,h);
 
-    unsigned int n=0;
-    for (i=0; i<num_symbols; i++) {
-        firpfbch_execute(c, &x[n], &y[n]);
-        n += num_channels;
+    // objects to run conventional channelizer
+    decim_crcf decim[num_channels];
+    nco ncox[num_channels];
+    for (i=0; i<num_channels; i++) {
+        decim[i] = decim_crcf_create(num_channels, h, h_len);
+        ncox[i] = nco_create(LIQUID_VCO);
+        nco_set_frequency(ncox[i], -2.0f*M_PI*(float)(i)/(float)(num_channels));
     }
-#if 0
-    // print formatted results (octave)
-    printf("y=zeros(%u,%u);\n", num_channels, num_symbols);
-    printf("y_test=zeros(%u,%u);\n", num_channels, num_symbols);
-    unsigned int j;
-    n=0;
-    for (j=0; j<num_symbols; j++) {
-        for (i=0; i<num_channels; i++) {
-            printf("     y(%2u,%2u) = %10.3e + j*%10.3e;\n", i+1, j+1, crealf(y[n]),      cimagf(y[n]));
-            printf("y_test(%2u,%2u) = %10.3e + j*%10.3e;\n", i+1, j+1, crealf(y_test[n]), cimagf(y_test[n]));
-            n++;
+
+    // analyze time series
+    float complex z0a[num_channels];
+    for (i=0; i<num_frames; i++) {
+        // generate random samples
+        for (j=0; j<num_channels; j++)
+            y[j] = randnf() + randnf()*_Complex_I;
+
+        // 
+        // execute conventional analyzer
+        //
+        for (j=0; j<num_channels; j++)
+            z0[j] = 0.0f;
+
+        for (j=0; j<num_channels; j++) {
+            // down-convert
+            nco_mix_block_down(ncox[j],y,z0a,num_channels);
+
+            // run decimator
+            decim_crcf_execute(decim[j],z0a,&z0[j],0);
+        }
+
+        // 
+        // execute analysis filter bank
+        //
+        firpfbch_execute(ca, y, z1);
+
+        // 
+        // validate outputs
+        //
+        for (j=0; j<num_channels; j++) {
+            CONTEND_DELTA(crealf(z0[j]), crealf(z1[j]), tol);
+            CONTEND_DELTA(cimagf(z0[j]), cimagf(z1[j]), tol);
         }
     }
-    // plot results
-    printf("for i=1:4,\n");
-    printf("    figure;\n");
-    printf("    subplot(2,1,1); plot(1:8,real(y_test(i,:)),1:8,real(y(i,:)));\n");
-    printf("    subplot(2,1,2); plot(1:8,imag(y_test(i,:)),1:8,imag(y(i,:)));\n");
-    printf("end;\n");
-#endif
 
-    for (i=0; i<32; i++) {
-        CONTEND_DELTA(crealf(y[i]), crealf(y_test[i]), tol);
-        CONTEND_DELTA(cimagf(y[i]), cimagf(y_test[i]), tol);
+    // clean up allocated objects
+    for (i=0; i<num_channels; i++) {
+        decim_crcf_destroy(decim[i]);
+        nco_destroy(ncox[i]);
     }
+    firpfbch_destroy(ca);
 
-    firpfbch_destroy(c);
+    printf("done.\n");
 }
 
 
