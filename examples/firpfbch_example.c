@@ -38,11 +38,11 @@ int main() {
     fprintf(fid,"z1 = zeros(num_channels,num_symbols);\n");
 
     // generate data buffers
-    float complex  x[num_symbols];  // input
-    float complex y0[num_symbols];  // conventional synthesizer output
-    float complex y1[num_symbols];  // filterbank synthesizer output
-    float complex z0[num_symbols];  // conventional analyzer output
-    float complex z1[num_symbols];  // filterbank analyzer output
+    float complex  x[num_channels]; // input
+    float complex y0[num_channels]; // conventional synthesizer output
+    float complex y1[num_channels]; // filterbank synthesizer output
+    float complex z0[num_channels]; // conventional analyzer output
+    float complex z1[num_channels]; // filterbank analyzer output
 
     // objects to run conventional channelizer
     interp_crcf interp[num_channels];
