@@ -127,15 +127,9 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 
     // create fft plan
 #if HAVE_FFTW3_H
-    if (c->type == FIRPFBCH_SYNTHESIZER)
-        c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_BACKWARD, FFTW_ESTIMATE);
-    else
-        c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_FORWARD, FFTW_ESTIMATE);
+    c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_BACKWARD, FFTW_ESTIMATE);
 #else
-    if (c->type == FIRPFBCH_SYNTHESIZER)
-        c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
-    else
-        c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_FORWARD);
+    c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
 #endif
 
     return c;

@@ -16,7 +16,8 @@ int main() {
     unsigned int m=5;               // filter delay
     float slsl=-60;                 // sidelobe suppression level
     unsigned int num_symbols=64;    // number of baseband symbols
-    int type = FIRPFBCH_NYQUIST;
+    int type = FIRPFBCH_ROOTNYQUIST;
+    slsl = 0.7f;
 
     unsigned int i, j, k, n;
 
@@ -68,7 +69,7 @@ int main() {
         // analysis
         decim[i] = decim_crcf_create(num_channels, hca, h_len);
         nco_ca[i] = nco_create(LIQUID_VCO);
-        nco_set_frequency(nco_ca[i], -f);
+        nco_set_frequency(nco_ca[i], f);
     }
 
     //for (i=0; i<h_len; i++)
@@ -87,8 +88,11 @@ int main() {
         // generate random samples
         for (j=0; j<num_channels; j++) {
             x[j] = randnf() + randnf()*_Complex_I;
+            x[j] = (rand()%2 ? 1.0f : -1.0f) +
+                   (rand()%2 ? 1.0f : -1.0f)*_Complex_I;
             // select a specific channel
-            //if ((j%num_channels)!=2)
+            if (j!=1)
+                x[j] = 0.0f;
         }
 
         // 
@@ -179,9 +183,11 @@ int main() {
     fprintf(fid,"for i=1:num_channels,\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"    plot(ts,real(z0(i,:)), ts,real(z1(i,:)));\n");
+    fprintf(fid,"    plot(ts,real(z0(i,:)),'-x', ts,real(z1(i,:)),'-x');\n");
+    fprintf(fid,"    axis([0 (num_symbols-1) -2 2]);\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"    plot(ts,imag(z0(i,:)), ts,imag(z1(i,:)));\n");
+    fprintf(fid,"    plot(ts,imag(z0(i,:)),'-x', ts,imag(z1(i,:)),'-x');\n");
+    fprintf(fid,"    axis([0 (num_symbols-1) -2 2]);\n");
     fprintf(fid,"end;\n");
 
     fclose(fid);

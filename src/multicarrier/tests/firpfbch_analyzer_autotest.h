@@ -62,7 +62,7 @@ void autotest_firpfbch_analysis() {
     for (i=0; i<num_channels; i++) {
         decim[i] = decim_crcf_create(num_channels, h, h_len);
         ncox[i] = nco_create(LIQUID_VCO);
-        nco_set_frequency(ncox[i], -2.0f*M_PI*(float)(i)/(float)(num_channels));
+        nco_set_frequency(ncox[i], 2.0f*M_PI*(float)(i)/(float)(num_channels));
     }
 
     // analyze time series
