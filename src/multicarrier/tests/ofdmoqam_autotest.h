@@ -110,7 +110,7 @@ void xautotest_ofdmoqam_synthesis()
     // derived values
 
     // 
-    ofdmoqam c = ofdmoqam_create(num_channels, m, OFDMOQAM_SYNTHESIZER);
+    ofdmoqam c = ofdmoqam_create(num_channels, m, OFDMOQAM_SYNTHESIZER,0);
 
     float complex y[64];
     for (i=0; i<64; i++)

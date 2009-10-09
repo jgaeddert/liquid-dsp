@@ -42,7 +42,7 @@ void firpfbch_execute_bench(
     // initialize channelizer
     float slsl  = -60.0f;
     float dt    =   0.0f;
-    firpfbch c = firpfbch_create(_num_channels, _m, slsl, dt, FIRPFBCH_NYQUIST, _type);
+    firpfbch c = firpfbch_create(_num_channels, _m, slsl, dt, FIRPFBCH_NYQUIST, _type, 0);
 
     unsigned long int i;
 

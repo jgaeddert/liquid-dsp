@@ -20,7 +20,7 @@ int main() {
     unsigned int num_frames=25;     // num frames
 
     // create objects
-    firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, FIRPFBCH_ANALYZER);
+    firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, FIRPFBCH_ANALYZER,0);
 
     //firpfbch_print(c);
 

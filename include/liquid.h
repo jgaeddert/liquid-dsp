@@ -1642,7 +1642,8 @@ firpfbch firpfbch_create(unsigned int _num_channels,
                          float _beta,
                          float _dt,
                          int _nyquist,
-                         int _type);
+                         int _type,
+                         int _gradient);
 void firpfbch_destroy(firpfbch _c);
 void firpfbch_clear(firpfbch _c);
 void firpfbch_print(firpfbch _c);
@@ -1659,7 +1660,8 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
                          unsigned int _m,
                          float _beta,
                          float _dt,
-                         int _type);
+                         int _type,
+                         int _gradient);
 void ofdmoqam_destroy(ofdmoqam _c);
 void ofdmoqam_print(ofdmoqam _c);
 void ofdmoqam_clear(ofdmoqam _c);

@@ -16,9 +16,9 @@ int main() {
     unsigned int num_symbols=32;    // num symbols
     unsigned int m=2;               // ofdm/oqam symbol delay
     float beta = 0.99f;             // excess bandwidth factor
-    float dt   = 0.3f;              // timing offset (fractional sample) 
+    float dt   = 0.0f;              // timing offset (fractional sample) 
     modulation_scheme ms = MOD_QAM; // modulation scheme
-    unsigned int bps = 4;           // modulation depth (bits/symbol)
+    unsigned int bps = 2;           // modulation depth (bits/symbol)
 
     // number of frames (compensate for filter delay)
     unsigned int num_frames = num_symbols + 2*m + 1;
@@ -26,14 +26,11 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_SYNTHESIZER);
-    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_ANALYZER);
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_SYNTHESIZER,0);
+    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_ANALYZER,0);
 
     // modem
     modem mod = modem_create(ms,bps);
-
-    modem mod0 = modem_create(MOD_QAM,4);
-    modem mod1 = modem_create(MOD_QPSK,2);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -93,16 +90,16 @@ int main() {
 
     // print results
     fprintf(fid,"\n\n");
-    fprintf(fid,"x = X(:,1:%u);\n", num_symbols);
-    fprintf(fid,"y = Y(:,%u:%u);\n", 2*m+2, num_symbols + 2*m+1);
+    fprintf(fid,"X0 = X(:,1:%u);\n", num_symbols);
+    fprintf(fid,"Y0 = Y(:,%u:%u);\n", 2*m+2, num_symbols + 2*m+1);
     fprintf(fid,"for i=1:num_channels,\n");
     fprintf(fid,"    figure;\n");
     fprintf(fid,"    subplot(2,1,1);\n");
-    fprintf(fid,"    plot(1:num_symbols,real(x(i,:)),'-x',1:num_symbols,real(y(i,:)),'-x');\n");
+    fprintf(fid,"    plot(1:num_symbols,real(X0(i,:)),'-x',1:num_symbols,real(Y0(i,:)),'-x');\n");
     fprintf(fid,"    ylabel('Re');\n");
     fprintf(fid,"    title(['channel ' num2str(i-1)]);\n");
     fprintf(fid,"    subplot(2,1,2);\n");
-    fprintf(fid,"    plot(1:num_symbols,imag(x(i,:)),'-x',1:num_symbols,imag(y(i,:)),'-x');\n");
+    fprintf(fid,"    plot(1:num_symbols,imag(X0(i,:)),'-x',1:num_symbols,imag(Y0(i,:)),'-x');\n");
     fprintf(fid,"    ylabel('Im');\n");
     fprintf(fid,"    pause(0.2);\n");
     fprintf(fid,"end;\n");
@@ -114,9 +111,6 @@ int main() {
     ofdmoqam_destroy(cs);
     ofdmoqam_destroy(ca);
     modem_destroy(mod);
-
-    modem_destroy(mod0);
-    modem_destroy(mod1);
 
     printf("done.\n");
     return 0;

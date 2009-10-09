@@ -27,11 +27,11 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    firpfbch cs0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER);
-    firpfbch cs1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER);
+    firpfbch cs0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER, 0);
+    firpfbch cs1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER, 0);
 
-    firpfbch ca0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER);
-    firpfbch ca1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER);
+    firpfbch ca0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER, 0);
+    firpfbch ca1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER, 0);
 
     // modem
     modem mod = modem_create(ms,bps);

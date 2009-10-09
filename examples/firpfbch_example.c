@@ -17,12 +17,13 @@ int main() {
     float slsl=-60;                 // sidelobe suppression level
     unsigned int num_symbols=64;    // number of baseband symbols
     int type = FIRPFBCH_NYQUIST;
+    int gradient=0;
 
     unsigned int i, j, k, n;
 
     // create objects
-    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_SYNTHESIZER);
-    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_ANALYZER);
+    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_SYNTHESIZER, gradient);
+    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_ANALYZER, gradient);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);

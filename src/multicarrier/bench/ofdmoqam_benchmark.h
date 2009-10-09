@@ -43,7 +43,7 @@ void ofdmoqam_execute_bench(
     // initialize channelizer
     float beta  = 0.99f;
     float dt    = 0.0f;
-    ofdmoqam c = ofdmoqam_create(_num_channels, _m, beta, dt, _type);
+    ofdmoqam c = ofdmoqam_create(_num_channels, _m, beta, dt, _type, 0);
 
     unsigned long int i;
 

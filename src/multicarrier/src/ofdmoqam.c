@@ -56,7 +56,8 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
                          unsigned int _m,
                          float _beta,
                          float _dt,
-                         int _type)
+                         int _type,
+                         int _gradient)
 {
     ofdmoqam c = (ofdmoqam) malloc(sizeof(struct ofdmoqam_s));
     c->num_channels = _num_channels;
@@ -88,8 +89,8 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
 
     // create filterbank channelizers
     // TODO: use actual prototype (get rid of _slsl input)
-    c->c0 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type);
-    c->c1 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type);
+    c->c0 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type, _gradient);
+    c->c1 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type, _gradient);
 
     // clear buffers, etc.
     ofdmoqam_clear(c);

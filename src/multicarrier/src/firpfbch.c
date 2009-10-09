@@ -63,7 +63,8 @@ firpfbch firpfbch_create(unsigned int _num_channels,
                          float _beta,
                          float _dt,
                          int _nyquist,
-                         int _type)
+                         int _type,
+                         int _gradient)
 {
     firpfbch c = (firpfbch) malloc(sizeof(struct firpfbch_s));
     c->num_channels = _num_channels;
@@ -96,9 +97,24 @@ firpfbch firpfbch_create(unsigned int _num_channels,
         printf("error: firpfbch_create(), unsupported nyquist flag: %d\n", _nyquist);
         exit(1);
     }
+    
+    unsigned int i;
+    if (_gradient) {
+        float dh[c->h_len];
+        for (i=0; i<c->h_len; i++) {
+            if (i==0) {
+                dh[i] = c->h[i+1] - c->h[c->h_len-1];
+            } else if (i==c->h_len-1) {
+                dh[i] = c->h[0]   - c->h[i-1];
+            } else {
+                dh[i] = c->h[i+1] - c->h[i-1];
+            }
+        }
+        memmove(c->h, dh, (c->h_len)*sizeof(float));
+    }
 
     // generate bank of sub-samped filters
-    unsigned int i, n;
+    unsigned int n;
     unsigned int h_sub_len = 2*(c->m);  // length of each sub-sampled filter
     float h_sub[h_sub_len];
     for (i=0; i<c->num_channels; i++) {

@@ -44,7 +44,8 @@ void autotest_firpfbch_synthesis() {
                                   slsl,
                                   0,
                                   FIRPFBCH_NYQUIST,
-                                  FIRPFBCH_SYNTHESIZER);
+                                  FIRPFBCH_SYNTHESIZER,
+                                  0);
 
     // generate data buffers
     float complex  x[num_channels]; // channelized input
@@ -172,7 +173,8 @@ void autotest_firpfbch_synthesis_noise() {
                                  beta,
                                  0.0f,
                                  FIRPFBCH_NYQUIST,
-                                 FIRPFBCH_SYNTHESIZER);
+                                 FIRPFBCH_SYNTHESIZER,
+                                 0);
 
     float complex y[32];
 

@@ -44,7 +44,8 @@ void autotest_firpfbch_analysis() {
                                   slsl,
                                   0,
                                   FIRPFBCH_NYQUIST,
-                                  FIRPFBCH_ANALYZER);
+                                  FIRPFBCH_ANALYZER,
+                                  0);
 
     // generate data buffers
     float complex  y[num_channels]; // input
@@ -168,7 +169,8 @@ void xautotest_firpfbch_analysis_noise() {
                                  beta,
                                  0.0f,
                                  FIRPFBCH_NYQUIST,
-                                 FIRPFBCH_ANALYZER);
+                                 FIRPFBCH_ANALYZER,
+                                 0);
 
     float complex y[32];
 
@@ -220,7 +222,7 @@ void xautotest_firpfbch_analysis_energy()
     float f;
     nco nco_synth = nco_create(LIQUID_VCO);
 
-    firpfbch c = firpfbch_create(num_channels, m, slsl, 0.0f, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER);
+    firpfbch c = firpfbch_create(num_channels, m, slsl, 0.0f, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER,0);
 
     unsigned int i, j, k;
     float complex x[num_channels], y[num_channels];
