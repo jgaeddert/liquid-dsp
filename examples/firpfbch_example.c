@@ -16,8 +16,7 @@ int main() {
     unsigned int m=5;               // filter delay
     float slsl=-60;                 // sidelobe suppression level
     unsigned int num_symbols=64;    // number of baseband symbols
-    int type = FIRPFBCH_ROOTNYQUIST;
-    slsl = 0.7f;
+    int type = FIRPFBCH_NYQUIST;
 
     unsigned int i, j, k, n;
 
@@ -88,11 +87,6 @@ int main() {
         // generate random samples
         for (j=0; j<num_channels; j++) {
             x[j] = randnf() + randnf()*_Complex_I;
-            x[j] = (rand()%2 ? 1.0f : -1.0f) +
-                   (rand()%2 ? 1.0f : -1.0f)*_Complex_I;
-            // select a specific channel
-            if (j!=1)
-                x[j] = 0.0f;
         }
 
         // 
