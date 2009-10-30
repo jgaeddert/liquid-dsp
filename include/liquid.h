@@ -748,7 +748,7 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
 #define DDS_MANGLE_CCCF(name)  LIQUID_CONCAT(dds_cccf,name)
 
 // Macro:
-//   AUTOCORR   : name-mangling macro
+//   DDS        : name-mangling macro
 //   T          : output data type
 #define LIQUID_DDS_DEFINE_API(DDS,T)                            \
                                                                 \
