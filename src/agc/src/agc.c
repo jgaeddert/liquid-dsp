@@ -28,38 +28,43 @@
 
 #include "liquid.internal.h"
 
-struct agc_s {
-    float e;            // estimated signal energy
-    float e_target;     // target signal energy
+#define AGC(name)           LIQUID_CONCAT(agc,name)
+#define T                   float
+#define TC                  float complex
+#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_rrrf,name)
+
+struct AGC(_s) {
+    T e;            // estimated signal energy
+    T e_target;     // target signal energy
 
     // gain variables
-    float g;            // current gain value
-    float g_min;        // minimum gain value
-    float g_max;        // maximum gain value
+    T g;            // current gain value
+    T g_min;        // minimum gain value
+    T g_max;        // maximum gain value
 
     // loop filter parameters
-    float BT;           // bandwidth-time constant
-    float alpha;        // feed-back gain
-    float beta;         // feed-forward gain
+    T BT;           // bandwidth-time constant
+    T alpha;        // feed-back gain
+    T beta;         // feed-forward gain
 
     // loop filter state variables
-    float e_prime;
-    float e_hat;        // filtered energy estimate
-    float tmp2;
+    T e_prime;
+    T e_hat;        // filtered energy estimate
+    T tmp2;
 
-    fir_filter_rrrf f;
+    FIR_FILTER() f;
 };
 
 
-agc agc_create(float _etarget, float _BT)
+AGC() AGC(_create)(T _etarget, T _BT)
 {
-    agc _agc = (agc) malloc(sizeof(struct agc_s));
-    agc_init(_agc);
-    agc_set_target(_agc, _etarget);
-    agc_set_bandwidth(_agc, _BT);
+    AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
+    AGC(_init)(_q);
+    AGC(_set_target)(_q, _etarget);
+    AGC(_set_bandwidth)(_q, _BT);
 
     // normalized windowing function
-    float w[11] = {
+    T w[11] = {
        0.014792,
        0.042634,
        0.081587,
@@ -77,73 +82,73 @@ agc agc_create(float _etarget, float _BT)
     //for (i=0; i<11; i++)
     //    printf("w(%4u) = %8.4f;\n", i+1, w[i]);
 
-    _agc->f = fir_filter_rrrf_create(w,11);
+    _q->f = FIR_FILTER(_create)(w,11);
 
     for (i=0; i<11; i++)
-        fir_filter_rrrf_push(_agc->f, 0.0f);
+        FIR_FILTER(_push)(_q->f, 0.0f);
 
-    return _agc;
+    return _q;
 }
 
-void agc_destroy(agc _agc)
+void AGC(_destroy)(AGC() _q)
 {
-    fir_filter_rrrf_destroy(_agc->f);
-    free(_agc);
+    fir_filter_rrrf_destroy(_q->f);
+    free(_q);
 }
 
-void agc_print(agc _agc)
+void AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4fdB]:\n", 10*log10(_agc->e_target / _agc->g));
+    printf("agc [rssi: %12.4fdB]:\n", 10*log10(_q->e_target / _q->g));
 }
 
-void agc_reset(agc _agc)
+void AGC(_reset)(AGC() _q)
 {
-    fir_filter_rrrf_clear(_agc->f);
-    _agc->e_prime = 1.0f;
-    _agc->e_hat = 1.0f;
-    _agc->tmp2 = 1.0f;
+    fir_filter_rrrf_clear(_q->f);
+    _q->e_prime = 1.0f;
+    _q->e_hat = 1.0f;
+    _q->tmp2 = 1.0f;
 }
 
-void agc_init(agc _agc)
+void AGC(_init)(AGC() _q)
 {
-    //_agc->e = 1.0f;
-    _agc->e_target = 1.0f;
+    //_q->e = 1.0f;
+    _q->e_target = 1.0f;
 
     // set gain variables
-    _agc->g = 1.0f;
-    _agc->g_min = 1e-6f;
-    _agc->g_max = 1e+6f;
+    _q->g = 1.0f;
+    _q->g_min = 1e-6f;
+    _q->g_max = 1e+6f;
 
     // prototype loop filter
-    agc_set_bandwidth(_agc, 0.01f);
+    AGC(_set_bandwidth)(_q, 0.01f);
 
     // initialize loop filter state variables
-    _agc->e_prime = 1.0f;
-    _agc->e_hat = 1.0f;
-    _agc->tmp2 = 1.0f;
+    _q->e_prime = 1.0f;
+    _q->e_hat = 1.0f;
+    _q->tmp2 = 1.0f;
 }
 
-void agc_set_target(agc _agc, float _e_target)
+void AGC(_set_target)(AGC() _q, T _e_target)
 {
     // check to ensure _e_target is reasonable
 
-    _agc->e_target = _e_target;
+    _q->e_target = _e_target;
 
     ///\todo auto-adjust gain to compensate?
 }
 
-void agc_set_gain_limits(agc _agc, float _g_min, float _g_max)
+void AGC(_set_gain_limits)(AGC() _q, T _g_min, T _g_max)
 {
     if (_g_min > _g_max) {
         printf("error: agc_set_gain_limits(), _g_min < _g_max\n");
         exit(0);
     }
 
-    _agc->g_min = _g_min;
-    _agc->g_max = _g_max;
+    _q->g_min = _g_min;
+    _q->g_max = _g_max;
 }
 
-void agc_set_bandwidth(agc _agc, float _BT)
+void AGC(_set_bandwidth)(AGC() _q, T _BT)
 {
     // check to ensure _BT is reasonable
     if ( _BT <= 0 ) {
@@ -154,44 +159,44 @@ void agc_set_bandwidth(agc _agc, float _BT)
         exit(-1);
     }
 
-    _agc->BT = _BT;
-    _agc->alpha = sqrtf(_agc->BT);
-    _agc->beta = 1 - _agc->alpha;
+    _q->BT = _BT;
+    _q->alpha = sqrtf(_q->BT);
+    _q->beta = 1 - _q->alpha;
 }
 
-void agc_execute(agc _agc, float complex _x, float complex *_y)
+void AGC(_execute)(AGC() _q, TC _x, TC *_y)
 {
     // estimate normalized energy, should be equal to 1.0 when locked
-    float e2 = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
-    fir_filter_rrrf_push(_agc->f, e2);
-    float e_hat;
-    fir_filter_rrrf_execute(_agc->f, &e_hat);
-    e_hat = sqrtf(e_hat);// * (_agc->g) / (_agc->e_target);
+    T e2 = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+    fir_filter_rrrf_push(_q->f, e2);
+    T e_hat;
+    fir_filter_rrrf_execute(_q->f, &e_hat);
+    e_hat = sqrtf(e_hat);// * (_q->g) / (_q->e_target);
 
     // ideal gain
-    float g = _agc->e_target / e_hat;
+    T g = _q->e_target / e_hat;
 
     // accumulated gain
-    _agc->g = (_agc->beta)*(_agc->g) + (_agc->alpha)*g;
-    //_agc->g = g;
+    _q->g = (_q->beta)*(_q->g) + (_q->alpha)*g;
+    //_q->g = g;
 
     // limit gain
-    if ( _agc->g > _agc->g_max )
-        _agc->g = _agc->g_max;
-    else if ( _agc->g < _agc->g_min )
-        _agc->g = _agc->g_min;
+    if ( _q->g > _q->g_max )
+        _q->g = _q->g_max;
+    else if ( _q->g < _q->g_min )
+        _q->g = _q->g_min;
 
     // apply gain to input
-    *_y = _x * _agc->g;
+    *_y = _x * _q->g;
 }
 
-float agc_get_signal_level(agc _agc)
+T AGC(_get_signal_level)(AGC() _q)
 {
-    return (_agc->e_target / _agc->g);
+    return (_q->e_target / _q->g);
 }
 
-float agc_get_gain(agc _agc)
+T AGC(_get_gain)(AGC() _q)
 {
-    return _agc->g;
+    return _q->g;
 }
 

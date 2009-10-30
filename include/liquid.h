@@ -79,30 +79,41 @@ LIQUID_DEFINE_COMPLEX(float, liquid_float_complex);
 // 
 // MODULE : agc (automatic gain control)
 //
-typedef struct agc_s * agc;
 
-agc agc_create(float _etarget, float _BT);
-void agc_destroy(agc _agc);
-void agc_print(agc _agc);
-void agc_reset(agc _agc);
+#define AGC_MANGLE_FLOAT(name)  LIQUID_CONCAT(agc, name)
 
-// Set target energy
-void agc_set_target(agc _agc, float _e_target);
+// large macro
+//   AGC    : name-mangling macro
+//   T      : primitive data type
+//   TC     : input/output data type
+#define LIQUID_AGC_DEFINE_API(AGC,T,TC)                         \
+typedef struct AGC(_s) * AGC();                                 \
+                                                                \
+AGC() AGC(_create)(T _etarget, T _bt);                          \
+void AGC(_destroy)(AGC() _q);                                   \
+void AGC(_print)(AGC() _q);                                     \
+void AGC(_reset)(AGC() _q);                                     \
+                                                                \
+/* Set target energy */                                         \
+void AGC(_set_target)(AGC() _q, T _e_target);                   \
+                                                                \
+/* set gain limits */                                           \
+void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
+                                                                \
+/* Set loop filter bandwidth; attack/release time */            \
+void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
+                                                                \
+/* Apply gain to input, update tracking loop */                 \
+void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
+                                                                \
+/* Return signal level in dB relative to target */              \
+T AGC(_get_signal_level)(AGC() _q);                             \
+                                                                \
+/* Return gain in dB relative to target energy */               \
+T AGC(_get_gain)(AGC() _q);
 
-// set gain limits
-void agc_set_gain_limits(agc _agc, float _gmin, float _gmax);
-
-// Set loop filter bandwidth; attack/release time
-void agc_set_bandwidth(agc _agc, float _BT);
-
-// Apply gain to input, update tracking loop
-void agc_execute(agc _agc, liquid_float_complex _x, liquid_float_complex *_y);
-
-// Return signal level in dB relative to target
-float agc_get_signal_level(agc _agc);
-
-// Return gain in dB relative to target energy
-float agc_get_gain(agc _agc);
+// Define agc APIs
+LIQUID_AGC_DEFINE_API(AGC_MANGLE_FLOAT, float, liquid_float_complex)
 
 
 //
