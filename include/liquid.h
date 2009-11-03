@@ -1646,8 +1646,9 @@ typedef struct firpfbch_s * firpfbch;
 // _num_channels:   number of channels
 // _m           :   filter delay (length = 2*k*m)
 // _beta        :   sidelobe suppression level (nyquist), excess bandwidth (root nyquist)
-// _nyquist     :   0: nyquist, 1: root nyquist
+// _nyquist     :   0: nyquist,  1: root nyquist
 // _type        :   0: analyzer, 1: synthesizer
+// _gradient    :   0: normal,   1: compute gradient of prototype filter
 firpfbch firpfbch_create(unsigned int _num_channels,
                          unsigned int _m,
                          float _beta,
@@ -1680,21 +1681,6 @@ void ofdmoqam_execute(ofdmoqam _c,
                       liquid_float_complex * _x,
                       liquid_float_complex * _y);
 
-// Discrete multi-tone (OFDM)
-#if 0
-typedef struct ofdm_s * ofdm;
-#define OFDM_ANALYZER           FIRPFBCH_ANALYZER
-#define OFDM_SYNTHESIZER        FIRPFBCH_SYNTHESIZER
-ofdm ofdm_create(unsigned int   _num_channels,
-                 unsigned int   _cp_len,
-                 unsigned int   _taper_len,
-                 int            _type);
-void ofdm_destroy(ofdm _c);
-void ofdm_print(ofdm _c);
-void ofdm_execute(ofdm _c,
-                  liquid_float_complex * _x,
-                  liquid_float_complex *_y);
-#endif
 
 // OFDM frame (symbol) generator
 typedef struct ofdmframegen_s * ofdmframegen;
