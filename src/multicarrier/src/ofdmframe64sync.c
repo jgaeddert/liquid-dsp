@@ -283,6 +283,10 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
 {
 #if DEBUG_OFDMFRAME64SYNC
     FILE * fid = fopen(DEBUG_OFDMFRAME64SYNC_FILENAME,"w");
+    if (!fid) {
+        printf("error: ofdmframe64_debug_print(), could not open file for writing\n");
+        return;
+    }
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
