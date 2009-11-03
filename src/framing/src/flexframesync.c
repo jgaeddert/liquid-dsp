@@ -41,6 +41,10 @@
 #define DEBUG_FLEXFRAMESYNC_FILENAME    "flexframesync_internal_debug.m"
 #define DEBUG_FLEXFRAMESYNC_BUFFER_LEN  (4096)
 
+#if DEBUG_FLEXFRAMESYNC
+void flexframesync_output_debug_file(flexframesync _fs);
+#endif
+
 static flexframesyncprops_s flexframesyncprops_default = {
     // automatic gain control
     3e-3f,      // agc_bw0
@@ -262,117 +266,6 @@ void flexframesync_destroy(flexframesync _fs)
     free(_fs->payload_sym);
     free(_fs->payload);
 
-#ifdef DEBUG_FLEXFRAMESYNC
-    unsigned int i;
-    float * r;
-    float complex * rc;
-    FILE* fid = fopen(DEBUG_FLEXFRAMESYNC_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file", DEBUG_FLEXFRAMESYNC_FILENAME);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n\n");
-
-    // write agc_rssi
-    fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fwindow_read(_fs->debug_agc_rssi, &r);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(10*log10(agc_rssi))\n");
-    fprintf(fid,"ylabel('RSSI [dB]');\n");
-
-    // write agc out
-    fprintf(fid,"agc_out = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_agc_out, &rc);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"agc_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(agc_out),real(agc_out), 1:length(agc_out),imag(agc_out));\n");
-    fprintf(fid,"ylabel('agc-out');\n");
-
-
-    // write x
-    fprintf(fid,"x = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_x, &rc);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
-    fprintf(fid,"ylabel('received signal, x');\n");
-
-    // write rxy
-    fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_rxy, &rc);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(abs(rxy))\n");
-    fprintf(fid,"ylabel('|r_{xy}|');\n");
-
-    // write nco_rx_out
-    fprintf(fid,"nco_rx_out = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_nco_rx_out, &rc);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"nco_rx_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(nco_rx_out,'x')\n");
-    fprintf(fid,"xlabel('I');\n");
-    fprintf(fid,"ylabel('Q');\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
-
-    // write frame symbols
-    fprintf(fid,"framesyms = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_framesyms, &rc);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(framesyms,'x','MarkerSize',1)\n");
-    fprintf(fid,"xlabel('I');\n");
-    fprintf(fid,"ylabel('Q');\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
-
-    // write nco_phase
-    fprintf(fid,"nco_phase = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fwindow_read(_fs->debug_nco_phase, &r);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"nco_phase(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(nco_phase)\n");
-    fprintf(fid,"ylabel('nco phase [radians]');\n");
-
-    // write nco_freq
-    fprintf(fid,"nco_freq = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fwindow_read(_fs->debug_nco_freq, &r);
-    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"nco_freq(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(nco_freq)\n");
-    fprintf(fid,"ylabel('nco freq');\n");
-
-
-    fprintf(fid,"\n\n");
-    fclose(fid);
-
-    printf("flexframesync/debug: results written to %s\n", DEBUG_FLEXFRAMESYNC_FILENAME);
-
-    // clean up debug windows
-    fwindow_destroy(_fs->debug_agc_rssi);
-    cfwindow_destroy(_fs->debug_agc_out);
-    cfwindow_destroy(_fs->debug_rxy);
-    cfwindow_destroy(_fs->debug_x);
-    cfwindow_destroy(_fs->debug_nco_rx_out);
-    cfwindow_destroy(_fs->debug_framesyms);
-#endif
     free(_fs);
 }
 
@@ -751,3 +644,121 @@ void flexframesync_assemble_payload(flexframesync _fs)
 }
 
 
+#ifdef DEBUG_FLEXFRAMESYNC
+void flexframesync_output_debug_file(flexframesync _fs)
+{
+    unsigned int i;
+    float * r;
+    float complex * rc;
+    FILE* fid = fopen(DEBUG_FLEXFRAMESYNC_FILENAME,"w");
+    if (!fid) {
+        printf("error: flexframesync_output_debug_file(), could not open file for writing\n");
+        return;
+    }
+    fprintf(fid,"%% %s: auto-generated file", DEBUG_FLEXFRAMESYNC_FILENAME);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+
+    // write agc_rssi
+    fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fwindow_read(_fs->debug_agc_rssi, &r);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(10*log10(agc_rssi))\n");
+    fprintf(fid,"ylabel('RSSI [dB]');\n");
+
+    // write agc out
+    fprintf(fid,"agc_out = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    cfwindow_read(_fs->debug_agc_out, &rc);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"agc_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(agc_out),real(agc_out), 1:length(agc_out),imag(agc_out));\n");
+    fprintf(fid,"ylabel('agc-out');\n");
+
+
+    // write x
+    fprintf(fid,"x = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    cfwindow_read(_fs->debug_x, &rc);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(x),real(x), 1:length(x),imag(x));\n");
+    fprintf(fid,"ylabel('received signal, x');\n");
+
+    // write rxy
+    fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    cfwindow_read(_fs->debug_rxy, &rc);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(abs(rxy))\n");
+    fprintf(fid,"ylabel('|r_{xy}|');\n");
+
+    // write nco_rx_out
+    fprintf(fid,"nco_rx_out = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    cfwindow_read(_fs->debug_nco_rx_out, &rc);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"nco_rx_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(nco_rx_out,'x')\n");
+    fprintf(fid,"xlabel('I');\n");
+    fprintf(fid,"ylabel('Q');\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
+
+    // write frame symbols
+    fprintf(fid,"framesyms = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    cfwindow_read(_fs->debug_framesyms, &rc);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(framesyms,'x','MarkerSize',1)\n");
+    fprintf(fid,"xlabel('I');\n");
+    fprintf(fid,"ylabel('Q');\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
+
+    // write nco_phase
+    fprintf(fid,"nco_phase = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fwindow_read(_fs->debug_nco_phase, &r);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"nco_phase(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(nco_phase)\n");
+    fprintf(fid,"ylabel('nco phase [radians]');\n");
+
+    // write nco_freq
+    fprintf(fid,"nco_freq = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fwindow_read(_fs->debug_nco_freq, &r);
+    for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"nco_freq(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(nco_freq)\n");
+    fprintf(fid,"ylabel('nco freq');\n");
+
+
+    fprintf(fid,"\n\n");
+    fclose(fid);
+
+    printf("flexframesync/debug: results written to %s\n", DEBUG_FLEXFRAMESYNC_FILENAME);
+
+    // clean up debug windows
+    fwindow_destroy(_fs->debug_agc_rssi);
+    cfwindow_destroy(_fs->debug_agc_out);
+    cfwindow_destroy(_fs->debug_rxy);
+    cfwindow_destroy(_fs->debug_x);
+    cfwindow_destroy(_fs->debug_nco_rx_out);
+    cfwindow_destroy(_fs->debug_framesyms);
+}
+#endif
