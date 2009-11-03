@@ -59,10 +59,10 @@ void fec_decode_bench(
         *_num_iterations /= _n;
 
     switch (_fs) {
-    case FEC_CONV_V27:  *_num_iterations /= 20;     break;
-    case FEC_CONV_V29:  *_num_iterations /= 50;     break;
-    case FEC_CONV_V39:  *_num_iterations /= 200;    break;
-    case FEC_CONV_V615: *_num_iterations /= 500;    break;
+    case FEC_CONV_V27:  *_num_iterations /= 5;      break;
+    case FEC_CONV_V29:  *_num_iterations /= 10;     break;
+    case FEC_CONV_V39:  *_num_iterations /= 100;    break;
+    case FEC_CONV_V615: *_num_iterations /= 200;    break;
     case FEC_CONV_V27P23:
     case FEC_CONV_V27P34:
     case FEC_CONV_V27P45:
@@ -81,7 +81,7 @@ void fec_decode_bench(
         break;
     default:;
     }
-    if (*_num_iterations < 4) *_num_iterations = 4;
+    if (*_num_iterations < 1) *_num_iterations = 1;
 
     // generate fec object
     fec q = fec_create(_fs,_opts);
