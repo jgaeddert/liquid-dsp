@@ -221,6 +221,10 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
 void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
 {
     FILE * fid = fopen(DEBUG_SYMSYNC_FILENAME, "w");
+    if (!fid) {
+        printf("error: symsync_xxxt_output_debug_file(), could not open file for writing\n");
+        return;
+    }
     fprintf(fid, "%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);
 
     fprintf(fid,"num_filters = %u\n",_q->num_filters);
