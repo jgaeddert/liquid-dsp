@@ -1760,44 +1760,54 @@ typedef enum {
     LIQUID_VCO
 } liquid_ncotype;
 
-typedef struct nco_s * nco;
+#define NCO_MANGLE_FLOAT(name)  LIQUID_CONCAT(nco, name)
 
-nco nco_create(liquid_ncotype _type);
-void nco_destroy(nco _nco);
-void nco_print(nco _nco);
-void nco_reset(nco _nco);
-void nco_set_frequency(nco _nco, float _f);
-void nco_adjust_frequency(nco _nco, float _df);
-void nco_set_phase(nco _nco, float _phi);
-void nco_adjust_phase(nco _nco, float _dphi);
-void nco_step(nco _nco);
+// large macro
+//   NCO    : name-mangling macro
+//   T      : primitive data type
+//   TC     : input/output data type
+#define LIQUID_NCO_DEFINE_API(NCO,T,TC)                         \
+typedef struct NCO(_s) * NCO();                                 \
+                                                                \
+NCO() NCO(_create)(liquid_ncotype _type);                       \
+void NCO(_destroy)(NCO() _q);                                   \
+void NCO(_print)(NCO() _q);                                     \
+void NCO(_reset)(NCO() _q);                                     \
+void NCO(_set_frequency)(NCO() _q, T _f);                       \
+void NCO(_adjust_frequency)(NCO() _q, T _df);                   \
+void NCO(_set_phase)(NCO() _q, T _phi);                         \
+void NCO(_adjust_phase)(NCO() _q, T _dphi);                     \
+void NCO(_step)(NCO() _q);                                      \
+                                                                \
+T NCO(_get_phase)(NCO() _q);                                    \
+T NCO(_get_frequency)(NCO() _q);                                \
+                                                                \
+T NCO(_sin)(NCO() _q);                                          \
+T NCO(_cos)(NCO() _q);                                          \
+void NCO(_sincos)(NCO() _q, T* _s, T* _c);                      \
+void NCO(_cexpf)(NCO() _q, TC * _y);                            \
+                                                                \
+/* mixing functions */                                          \
+/* Rotate input vector up by NCO angle: */                      \
+/*      \f$\vec{y} = \vec{x}e^{j\theta}\f$ */                   \
+void NCO(_mix_up)(NCO() _q, TC _x, TC *_y);                     \
+                                                                \
+/* Rotate input vector down by NCO angle: */                    \
+/*      \f$\vec{y} = \vec{x}e^{-j\theta}\f$ */                  \
+void NCO(_mix_down)(NCO() _q, TC _x, TC *_y);                   \
+                                                                \
+void NCO(_mix_block_up)(NCO() _q,                               \
+                        TC *_x,                                 \
+                        TC *_y,                                 \
+                        unsigned int _N);                       \
+void NCO(_mix_block_down)(NCO() _q,                             \
+                          TC *_x,                               \
+                          TC *_y,                               \
+                          unsigned int _N);
 
-float nco_get_phase(nco _nco);
-float nco_get_frequency(nco _nco);
+// Define nco APIs
+LIQUID_NCO_DEFINE_API(NCO_MANGLE_FLOAT, float, liquid_float_complex)
 
-float nco_sin(nco _nco);
-float nco_cos(nco _nco);
-void nco_sincos(nco _nco, float* _s, float* _c);
-void nco_cexpf(nco _nco, liquid_float_complex * _y);
-
-// mixing functions
-
-// Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
-void nco_mix_up(nco _nco, liquid_float_complex _x, liquid_float_complex *_y);
-
-// Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
-void nco_mix_down(nco _nco, liquid_float_complex _x, liquid_float_complex *_y);
-
-// Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
-void nco_mix_block_up(nco _nco,
-                      liquid_float_complex *_x,
-                      liquid_float_complex *_y,
-                      unsigned int _N);
-
-void nco_mix_block_down(nco _nco,
-                        liquid_float_complex *_x,
-                        liquid_float_complex *_y,
-                        unsigned int _N);
 
 //
 // Phase-locked loop

@@ -29,210 +29,219 @@
 
 #include "liquid.internal.h"
 
-nco nco_create(liquid_ncotype _type)
+#define NCO(name)   LIQUID_CONCAT(nco,name)
+#define T           float
+#define TC          float complex
+
+#define SIN         sinf
+#define COS         cosf
+#define PI          (M_PI)
+
+NCO() NCO(_create)(liquid_ncotype _type)
 {
-    nco p = (nco) malloc(sizeof(struct nco_s));
-    p->type = _type;
+    NCO() q = (NCO()) malloc(sizeof(struct NCO(_s)));
+    q->type = _type;
 
     // initialize sine table
     unsigned int i;
     for (i=0; i<256; i++)
-        p->sintab[i] = sinf(2.0f*M_PI*(float)(i)/256.0f);
+        q->sintab[i] = sinf(2.0f*M_PI*(float)(i)/256.0f);
 
-    nco_reset(p);
+    NCO(_reset)(q);
 
     // set internal method
-    if (p->type == LIQUID_NCO) {
-        p->compute_sincos = &nco_compute_sincos;
-    } else if (p->type == LIQUID_VCO) {
-        p->compute_sincos = &vco_compute_sincos;
+    if (q->type == LIQUID_NCO) {
+        q->compute_sincos = &NCO(_compute_sincos);
+    } else if (q->type == LIQUID_VCO) {
+        q->compute_sincos = &vco_compute_sincos;
     } else {
-        fprintf(stderr,"error: nco_create(), unknown type : %u\n", p->type);
+        fprintf(stderr,"error: NCO(_create)(), unknown type : %u\n", q->type);
         exit(0);
     }
 
-    return p;
+    return q;
 }
 
-void nco_destroy(nco _nco)
+void NCO(_destroy)(NCO() _q)
 {
-    free(_nco);
+    free(_q);
 }
 
-void nco_reset(nco _nco)
+void NCO(_reset)(NCO() _q)
 {
-    _nco->theta = 0.0f;
-    _nco->d_theta = 0.0f;
+    _q->theta = 0.0f;
+    _q->d_theta = 0.0f;
 
     // reset sine table index
-    _nco->index = 0;
+    _q->index = 0;
 
     // set internal sine, cosine values
-    _nco->sine = 0.0f;
-    _nco->cosine = 1.0f;
+    _q->sine = 0.0f;
+    _q->cosine = 1.0f;
 }
 
-void nco_set_frequency(nco _nco, float _f)
+void NCO(_set_frequency)(NCO() _q, T _f)
 {
-    _nco->d_theta = _f;
+    _q->d_theta = _f;
 }
 
-void nco_adjust_frequency(nco _nco, float _df)
+void NCO(_adjust_frequency)(NCO() _q, T _df)
 {
-    _nco->d_theta += _df;
+    _q->d_theta += _df;
 }
 
-void nco_set_phase(nco _nco, float _phi)
+void NCO(_set_phase)(NCO() _q, T _phi)
 {
-    _nco->theta = _phi;
-    nco_constrain_phase(_nco);
+    _q->theta = _phi;
+    NCO(_constrain_phase)(_q);
 }
 
-void nco_adjust_phase(nco _nco, float _dphi)
+void NCO(_adjust_phase)(NCO() _q, T _dphi)
 {
-    _nco->theta += _dphi;
-    nco_constrain_phase(_nco);
+    _q->theta += _dphi;
+    NCO(_constrain_phase)(_q);
 }
 
-void nco_step(nco _nco)
+void NCO(_step)(NCO() _q)
 {
-    _nco->theta += _nco->d_theta;
-    nco_constrain_phase(_nco);
+    _q->theta += _q->d_theta;
+    NCO(_constrain_phase)(_q);
 }
 
-float nco_get_phase(nco _q) { return _q->theta; }
-float nco_get_frequency(nco _q) { return _q->d_theta; }
+T NCO(_get_phase)(NCO() _q) { return _q->theta; }
+T NCO(_get_frequency)(NCO() _q) { return _q->d_theta; }
 
-void nco_constrain_phase(nco _nco)
+void NCO(_constrain_phase)(NCO() _q)
 {
-    if (_nco->theta > M_PI)
-        _nco->theta -= 2.0f*M_PI;
-    else if (_nco->theta < -M_PI)
-        _nco->theta += 2.0f*M_PI;
+    if (_q->theta > PI)
+        _q->theta -= 2*PI;
+    else if (_q->theta < -PI)
+        _q->theta += 2*PI;
 }
 
-void nco_compute_sincos(nco _nco)
+void NCO(_compute_sincos)(NCO() _q)
 {
     // assume phase is constrained to be in (-pi,pi)
 
     // compute index
     // NOTE : 40.743665 ~ 256 / (2*pi)
     // NOTE : add 512 to ensure positive value, add 0.5 for rounding precision
-    _nco->index = ((unsigned int)((_nco->theta)*40.743665f + 512.0f + 0.5f))&0xff;
-    assert(_nco->index < 256);
+    // TODO : move away from floating-point specific code
+    _q->index = ((unsigned int)((_q->theta)*40.743665f + 512.0f + 0.5f))&0xff;
+    assert(_q->index < 256);
     
-    _nco->sine = _nco->sintab[_nco->index];
-    _nco->cosine = _nco->sintab[(_nco->index+64)&0xff];
+    _q->sine = _q->sintab[_q->index];
+    _q->cosine = _q->sintab[(_q->index+64)&0xff];
 }
 
-void vco_compute_sincos(nco _nco)
+void vco_compute_sincos(NCO() _q)
 {
-    _nco->sine   = sinf(_nco->theta);
-    _nco->cosine = cosf(_nco->theta);
+    _q->sine   = sinf(_q->theta);
+    _q->cosine = cosf(_q->theta);
 }
 
 // TODO : compute sine, cosine internally
-float nco_sin(nco _nco) {return sinf(_nco->theta);}
-float nco_cos(nco _nco) {return cosf(_nco->theta);}
+T NCO(_sin)(NCO() _q) {return sinf(_q->theta);}
+T NCO(_cos)(NCO() _q) {return cosf(_q->theta);}
 
-void nco_sincos(nco _nco, float* _s, float* _c)
+void NCO(_sincos)(NCO() _q, T* _s, T* _c)
 {
     // compute sine, cosine internally
-    _nco->compute_sincos(_nco);
+    _q->compute_sincos(_q);
 
-    *_s = _nco->sine;
-    *_c = _nco->cosine;
+    *_s = _q->sine;
+    *_c = _q->cosine;
 }
 
-void nco_cexpf(nco _nco, float complex * _y)
+void NCO(_cexpf)(NCO() _q, TC * _y)
 {
     // compute sine, cosine internally
-    _nco->compute_sincos(_nco);
+    _q->compute_sincos(_q);
 
     // set _y[0] to [cos(theta) + _Complex_I*sin(theta)]
-    *_y = _nco->cosine + _Complex_I*(_nco->sine);
+    *_y = _q->cosine + _Complex_I*(_q->sine);
 }
 
 // mixing functions
 
 // Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
-void nco_mix_up(nco _nco, complex float _x, complex float *_y)
+void NCO(_mix_up)(NCO() _q, TC _x, TC *_y)
 {
     // compute sine, cosine internally
-    _nco->compute_sincos(_nco);
+    _q->compute_sincos(_q);
 
     // multiply _x by [cos(theta) + _Complex_I*sin(theta)]
-    *_y = _x * (_nco->cosine + _Complex_I*(_nco->sine));
-    nco_step(_nco);
+    *_y = _x * (_q->cosine + _Complex_I*(_q->sine));
+    NCO(_step)(_q);
 }
 
 // Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
-void nco_mix_down(nco _nco, complex float _x, complex float *_y)
+void NCO(_mix_down)(NCO() _q, TC _x, TC *_y)
 {
     // compute sine, cosine internally
-    _nco->compute_sincos(_nco);
+    _q->compute_sincos(_q);
 
     // multiply _x by [cos(-theta) + _Complex_I*sin(-theta)]
-    *_y = _x * (_nco->cosine - _Complex_I*(_nco->sine));
-    nco_step(_nco);
+    *_y = _x * (_q->cosine - _Complex_I*(_q->sine));
+    NCO(_step)(_q);
 }
 
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
 // TODO : implement NCO/VCO-specific versions
-void nco_mix_block_up(
-    nco _nco,
-    complex float *_x,
-    complex float *_y,
+void NCO(_mix_block_up)(
+    NCO() _q,
+    TC *_x,
+    TC *_y,
     unsigned int _N)
 {
     unsigned int i;
 
-    float theta =   _nco->theta;
-    float d_theta = _nco->d_theta;
+    T theta =   _q->theta;
+    T d_theta = _q->d_theta;
     for (i=0; i<_N; i++) {
         // multiply _x[i] by [cos(theta) + _Complex_I*sin(theta)]
         _y[i] = _x[i] * liquid_crotf_vect(theta);
         
-        // nco_step(_nco);
+        // NCO(_step(_q);
         theta += d_theta;
     }
 
-    // nco_constrain_phase(_nco);
-    while (theta > M_PI)
-        theta -= 2*M_PI;
-    while (theta < -M_PI)
-        theta += 2*M_PI;
+    // NCO(_constrain_phase(_q);
+    while (theta > PI)
+        theta -= 2*PI;
+    while (theta < -PI)
+        theta += 2*PI;
 
-    nco_set_phase(_nco, theta);
+    NCO(_set_phase)(_q, theta);
 }
 
 // Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
 // TODO : implement NCO/VCO-specific versions
-void nco_mix_block_down(
-    nco _nco,
-    complex float *_x,
-    complex float *_y,
+void NCO(_mix_block_down)(
+    NCO() _q,
+    TC *_x,
+    TC *_y,
     unsigned int _N)
 {
     unsigned int i;
 
-    float theta =   _nco->theta;
-    float d_theta = _nco->d_theta;
+    T theta =   _q->theta;
+    T d_theta = _q->d_theta;
     for (i=0; i<_N; i++) {
         // multiply _x[i] by [cos(-theta) + _Complex_I*sin(-theta)]
         _y[i] = _x[i] * liquid_crotf_vect(-theta);
         
-        // nco_step(_nco);
+        // NCO(_step(_q);
         theta += d_theta;
     }
 
-    // nco_constrain_phase(_nco);
-    while (theta > M_PI)
-        theta -= 2*M_PI;
-    while (theta < -M_PI)
-        theta += 2*M_PI;
+    // NCO(_constrain_phase(_q);
+    while (theta > PI)
+        theta -= 2*PI;
+    while (theta < -PI)
+        theta += 2*PI;
 
-    nco_set_phase(_nco, theta);
+    NCO(_set_phase)(_q, theta);
 }
 
