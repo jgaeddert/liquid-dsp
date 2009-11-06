@@ -1,6 +1,13 @@
 //
-// Example: Hilbert transform: 1:2 complex-to-real interp.
+// firhilb_interp_example.c
 //
+// Hilbert transform: 1:2 complex-to-real interpolator
+//
+// Demonstrates the functionality of firhilb (finite impulse
+// response Hilbert transform) interpolator which converts a
+// complex time series into a real one with twice the number of
+// samples.  The input is a complex-valued sinusoid of N samples.
+// The output is a real-valued sinusoid of 2*N samples.
 
 #include <stdio.h>
 #include <complex.h>
