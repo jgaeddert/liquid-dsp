@@ -14,7 +14,7 @@
 
 int main() {
     // create nco object
-    nco n = nco_create();
+    nco n = nco_create(LIQUID_NCO);
     nco_set_phase(n,0.3f);
     nco_set_frequency(n,0.0f);
 
