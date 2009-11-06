@@ -37,7 +37,7 @@
 #define OFDMFRAMESYNC_MIN_NUM_SUBCARRIERS   (8)
 
 #define DEBUG_OFDMFRAMESYNC             1
-#define DEBUG_OFDMFRAMESYNC_PRINT       1
+#define DEBUG_OFDMFRAMESYNC_PRINT       0
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (1024)
 
