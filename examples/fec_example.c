@@ -1,5 +1,11 @@
 //
+// fec_example.c
 //
+// This example demonstrates the interface for forward
+// error-correction (FEC) codes.  A buffer of data bytes
+// is encoded and corrupted with several errors.  The
+// decoder then attempts to recover the original data
+// set.
 //
 
 #include <stdio.h>
@@ -9,7 +15,18 @@
 
 #include "liquid.h"
 
-void usage();
+// print usage/help message
+void usage()
+{
+    printf("fec_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  n     : input data size (number of uncoded bytes)\n");
+    printf("  c     : coding scheme, [h74], r3, v27, v29, v39, v615,\n");
+    printf("          v27p23, v27p34, v27p45, v27p56, v27p67, v27p78,\n");
+    printf("          v29p23, v29p34, v29p45, v29p56, v29p67, v29p78,\n");
+    printf("          none\n");
+}
+
 
 int main(int argc, char*argv[]) {
     unsigned int n = 4;             // data length (bytes)
@@ -164,15 +181,5 @@ int main(int argc, char*argv[]) {
     fec_destroy(q);
 
     return 0;
-}
-
-void usage()
-{
-    printf("fec_example [options]\n");
-    printf("  u/h   : print usage\n");
-    printf("  c     : coding scheme, [h74], r3, v27, v29, v39, v615,\n");
-    printf("          v27p23, v27p34, v27p45, v27p56, v27p67, v27p78,\n");
-    printf("          v29p23, v29p34, v29p45, v29p56, v29p67, v29p78,\n");
-    printf("          none\n");
 }
 

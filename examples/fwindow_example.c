@@ -1,5 +1,11 @@
 //
+// fwindow_example.c
 //
+// This example demonstrates the functionality of a
+// window buffer (also known as a circular or ring
+// buffer) of floating-point values.  Values are
+// written to and read from the buffer using several
+// different methods.
 //
 
 #include <stdio.h>
@@ -7,33 +13,35 @@
 #include "liquid.h"
 
 int main() {
+    // initialize vector of data for testing
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     float *r; // reader
     unsigned int i;
 
-    // create window
-    // 0 0 0 0 0 0 0 0 0 0
+    // create window: 10 elements, initialized to 0
+    // w: 0 0 0 0 0 0 0 0 0 0
     fwindow w = fwindow_create(10);
 
     // push 4 elements
-    // 0 0 0 0 0 0 1 1 1 1
+    // w: 0 0 0 0 0 0 1 1 1 1
     fwindow_push(w, 1);
     fwindow_push(w, 1);
     fwindow_push(w, 1);
     fwindow_push(w, 1);
 
     // push 4 more elements
-    // 0 0 1 1 1 1 9 8 7 6
+    // w: 0 0 1 1 1 1 9 8 7 6
     fwindow_write(w, v, 4);
 
     // push 4 more elements
-    // 1 1 9 8 7 6 3 3 3 3
+    // w: 1 1 9 8 7 6 3 3 3 3
     fwindow_push(w, 3);
     fwindow_push(w, 3);
     fwindow_push(w, 3);
     fwindow_push(w, 3);
 
-    // read
+    // read the buffer by assigning the pointer
+    // appropriately
     fwindow_read(w, &r);
 
     // manual print
@@ -43,6 +51,7 @@ int main() {
 
     fwindow_debug_print(w);
 
+    // clean it up
     fwindow_destroy(w);
 
     printf("done.\n");
