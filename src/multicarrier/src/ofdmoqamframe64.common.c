@@ -23,6 +23,8 @@
 //  - physical layer convergence procedure (PLCP)
 //
 
+#include <math.h>
+
 #include "liquid.internal.h"
 
 int ofdmoqamframe64_getsctype(unsigned int _id)
@@ -37,7 +39,7 @@ int ofdmoqamframe64_getsctype(unsigned int _id)
 
 void ofdmoqamframe64_init_S0(float complex * _S0)
 {
-    msequence ms = msequence_create(5);
+    msequence ms = msequence_create(4);
     modem mod = modem_create(MOD_QPSK,2);
     unsigned int s;
     float complex sym;

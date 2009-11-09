@@ -41,7 +41,7 @@
 #define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (2048)
 
 // auto-correlation integration length
-#define OFDMOQAMFRAME64SYNC_AUTOCORR_LEN      (96)
+#define OFDMOQAMFRAME64SYNC_AUTOCORR_LEN      (64)
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
 void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q);
@@ -144,7 +144,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->sigdet = agc_create(1.0f, 0.01f);
 
     // create auto-correlator objects
-    q->autocorr_length = q->num_subcarriers;
+    q->autocorr_length = OFDMOQAMFRAME64SYNC_AUTOCORR_LEN;
     q->autocorr_delay0 = q->num_subcarriers;
     q->autocorr_delay1 = q->num_subcarriers / 2;
     q->autocorr0 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay0);
@@ -272,10 +272,11 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
     printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max0),cargf(_q->rxx_max0));
     printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max1),cargf(_q->rxx_max1));
     _q->nu_hat = cargf((_q->rxx_max0)*conjf(_q->rxx_max1));
+
     if (_q->nu_hat >  M_PI/2.0f) _q->nu_hat -= M_PI;
     if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
-    _q->nu_hat /= (float)(_q->num_subcarriers);
-    printf("nu_hat      = %12.8f\n", _q->nu_hat);
+    _q->nu_hat *= 2.0f / (float)(_q->num_subcarriers);
+    printf("nu_hat =  %12.8f\n", _q->nu_hat);
 }
 
 //
@@ -308,6 +309,12 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     }
     */
  
+    // short, long sequences
+    for (i=0; i<_q->num_subcarriers; i++) {
+        fprintf(fid,"S0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S0[i]), cimagf(_q->S0[i]));
+        fprintf(fid,"S1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1[i]), cimagf(_q->S1[i]));
+    }
+
     fprintf(fid,"x = zeros(1,n);\n");
     cfwindow_read(_q->debug_x, &rc);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
