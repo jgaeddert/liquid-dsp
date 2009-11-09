@@ -49,6 +49,15 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q);
 
 struct ofdmoqamframe64sync_s {
     unsigned int num_subcarriers;   // 64
+    unsigned int m;
+    float beta;
+
+    // constants
+    float zeta;         // scaling factor
+
+    // PLCP
+    float complex * S0; // short sequence
+    float complex * S1; // long sequence
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
@@ -63,7 +72,17 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(ofdmoqamframe64sync_callback _cal
 {
     ofdmoqamframe64sync q = (ofdmoqamframe64sync) malloc(sizeof(struct ofdmoqamframe64sync_s));
     q->num_subcarriers = 64;
+    q->m = 2;
+    q->beta = 0.7f;
+
+    q->zeta = 1.0f;
     
+    // allocate memory for PLCP arrays
+    q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->S1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    ofdmoqamframe64_init_S0(q->S0);
+    ofdmoqamframe64_init_S1(q->S1);
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     q->debug_x   = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxx = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
@@ -85,6 +104,11 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
 #endif
+
+    // clean up PLCP arrays
+    free(_q->S0);
+    free(_q->S1);
+
     free(_q);
 }
 

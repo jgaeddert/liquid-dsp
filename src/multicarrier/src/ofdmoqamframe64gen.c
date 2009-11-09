@@ -38,18 +38,42 @@
 
 struct ofdmoqamframe64gen_s {
     unsigned int num_subcarriers;
+    unsigned int m;
+    float beta;
 
+    // constants
+    float zeta;         // scaling factor
+
+    // PLCP
+    float complex * S0; // short sequence
+    float complex * S1; // long sequence
 };
 
 ofdmoqamframe64gen ofdmoqamframe64gen_create()
 {
     ofdmoqamframe64gen q = (ofdmoqamframe64gen) malloc(sizeof(struct ofdmoqamframe64gen_s));
+    q->num_subcarriers = 64;
+    q->m = 2;
+    q->beta = 0.7f;
+
+    q->zeta = 1.0f;
+
+    // allocate memory for PLCP arrays
+    q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->S1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    ofdmoqamframe64_init_S0(q->S0);
+    ofdmoqamframe64_init_S1(q->S1);
 
     return q;
 }
 
 void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q)
 {
+    // clean up PLCP arrays
+    free(_q->S0);
+    free(_q->S1);
+
+    // free main object memory
     free(_q);
 }
 

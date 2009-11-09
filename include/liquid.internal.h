@@ -852,6 +852,16 @@ extern const float complex ofdmframe64_plcp_St[64];
 extern const float complex ofdmframe64_plcp_Lf[64];
 extern const float complex ofdmframe64_plcp_Lt[64];
 
+// ofdm/oqam framing
+void ofdmoqamframe64_init_S0(float complex * _S0);
+void ofdmoqamframe64_init_S1(float complex * _S0);
+
+#define OFDMOQAMFRAME64_SCTYPE_NULL     0
+#define OFDMOQAMFRAME64_SCTYPE_PILOT    1
+#define OFDMOQAMFRAME64_SCTYPE_DATA     2
+int ofdmoqamframe64_getsctype(unsigned int _id);
+
+
 // 
 // MODULE : nco (numerically-controlled oscillator)
 //
