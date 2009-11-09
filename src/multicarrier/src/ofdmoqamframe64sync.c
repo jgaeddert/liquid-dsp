@@ -79,6 +79,10 @@ struct ofdmoqamframe64sync_s {
     float complex rxx_max0;
     float complex rxx_max1;
 
+    // carrier frequency offset (CFO) estimation
+    float nu_hat;
+    //nco ncof;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
     cfwindow debug_rxx0;
@@ -194,6 +198,9 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     // reset auto-correlators
     autocorr_cccf_clear(_q->autocorr0);
     autocorr_cccf_clear(_q->autocorr1);
+
+    // reset frequency offset estimation
+    _q->nu_hat = 0.0f;
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
@@ -212,7 +219,22 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         cfwindow_push(_q->debug_rxx0, _q->rxx0);
         cfwindow_push(_q->debug_rxx1, _q->rxx1);
 #endif
+        if (cabsf(_q->rxx0)     + cabsf(_q->rxx1)   >
+            cabsf(_q->rxx_max0) + cabsf(_q->rxx_max1) )
+        {
+            _q->rxx_max0 = _q->rxx0;
+            _q->rxx_max1 = _q->rxx1;
+        }
     }
+
+    // print CFO estimate
+    printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max0),cargf(_q->rxx_max0));
+    printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max1),cargf(_q->rxx_max1));
+    _q->nu_hat = cargf((_q->rxx_max0)*conjf(_q->rxx_max1));
+    if (_q->nu_hat >  M_PI/2.0f) _q->nu_hat -= M_PI;
+    if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
+    _q->nu_hat /= (float)(_q->num_subcarriers);
+    printf("nu_hat      = %12.8f\n", _q->nu_hat);
 }
 
 //
