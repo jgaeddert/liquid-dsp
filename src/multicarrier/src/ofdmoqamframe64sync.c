@@ -54,6 +54,7 @@ struct ofdmoqamframe64sync_s {
 
     // synchronizer parameters
     float rxx_thresh;   // auto-correlation threshold (0,1)
+    float rxy_thresh;   // cross-correlation threshold (0,1)
 
     // filterbank objects
     firpfbch ca0;
@@ -113,6 +114,9 @@ struct ofdmoqamframe64sync_s {
     cfwindow input_buffer;
     unsigned int timer;
 
+    // output data buffer, ready to demodulate
+    float complex * data;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
     cfwindow debug_rxx0;
@@ -143,6 +147,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // synchronizer parameters
     q->rxx_thresh = 0.75f;
+    q->rxy_thresh = 0.75f;
 
     q->zeta = 64.0f/sqrtf(52.0f);
     
@@ -191,12 +196,14 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->crosscorr = fir_filter_cccf_create(q->rxy0, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
-    // input buffer
+    // input buffer: 3 S0 symbols + 2 S1 symbols
     q->input_buffer = cfwindow_create(5*(q->num_subcarriers));
 
     // gain
     q->g = 1.0f;
     q->G = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+
+    q->data = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // reset object
     ofdmoqamframe64sync_reset(q);
@@ -253,6 +260,9 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 
     // free gain arrays
     free(_q->G);
+
+    // free data buffer
+    free(_q->data);
 
     // free circular buffer array
     cfwindow_destroy(_q->input_buffer);
@@ -321,6 +331,9 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         // compensate for CFO
         nco_mix_up(_q->nco_rx, x, &x);
 
+        // 
+        cfwindow_push(_q->x, x);
+
         switch (_q->state) {
         case OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT:
             ofdmoqamframe64sync_execute_plcpshort(_q,x);
@@ -337,11 +350,6 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         default:;
         }
     }
-#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
-    printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max0),cargf(_q->rxx_max0));
-    printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max1),cargf(_q->rxx_max1));
-    printf("nu_hat =  %12.8f\n", _q->nu_hat);
-#endif
 }
 
 //
@@ -364,6 +372,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     float complex * rc;
 
     // gain vectors
+    fprintf(fid,"g = %12.4e;\n", _q->g);
     for (i=0; i<_q->num_subcarriers; i++) {
         fprintf(fid,"G(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G[i]), cimagf(_q->G[i]));
         //fprintf(fid,"G0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
@@ -410,6 +419,17 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xy}|');\n");
 
+    fprintf(fid,"t = 5*64;\n");
+    fprintf(fid,"input_buffer = zeros(1,t);\n");
+    cfwindow_read(_q->input_buffer, &rc);
+    for (i=0; i<5*64; i++)
+        fprintf(fid,"input_buffer(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(0:(t-1),real(input_buffer),0:(t-1),imag(input_buffer));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('input buffer');\n");
+
+
     /*
     // plot gain vectors
     fprintf(fid,"f = [-32:31];\n");
@@ -444,6 +464,8 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
 
 void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x)
 {
+    cfwindow_push(_q->input_buffer,_x);
+
     // run AGC, clip output
     float complex y;
     agc_execute(_q->sigdet, _x, &y);
@@ -480,23 +502,23 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
         if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
         _q->nu_hat *= 2.0f / (float)(_q->num_subcarriers);
 
-        /*
 #if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max0),cargf(_q->rxx_max0));
         printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max1),cargf(_q->rxx_max1));
         printf("nu_hat =  %12.8f\n", _q->nu_hat);
 #endif
 
-        nco_set_frequency(_q->nco_rx, _q->nu_hat);
+        //nco_set_frequency(_q->nco_rx, _q->nu_hat);
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
 
         _q->g = agc_get_gain(_q->sigdet);
-        */
     }
 }
 
 void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x)
 {
+    cfwindow_push(_q->input_buffer,_x);
+
     // cross-correlator
     float complex rxy;
     fir_filter_cccf_push(_q->crosscorr, _x);
@@ -505,16 +527,47 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxy, rxy);
 #endif
+
+    if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
+        printf("rxy[0] : %12.8f\n", cabsf(rxy));
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
+    }
 }
 
 void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex _x)
 {
+    cfwindow_push(_q->input_buffer,_x);
+
+    // cross-correlator
+    float complex rxy;
+    fir_filter_cccf_push(_q->crosscorr, _x);
+    fir_filter_cccf_execute(_q->crosscorr, &rxy);
+
+#if DEBUG_OFDMOQAMFRAME64SYNC
+    cfwindow_push(_q->debug_rxy, rxy);
+#endif
+
+    if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
+        printf("rxy[1] : %12.8f\n", cabsf(rxy));
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
+
+        // 
+        float complex * r;
+        cfwindow_read(_q->input_buffer, &r);
+
+        unsigned int i;
+        for (i=0; i<4; i++) {
+            firpfbch_execute(_q->ca0, &r[i*64],    _q->X0);
+            firpfbch_execute(_q->ca1, &r[i*64+32], _q->X1);
+        }
+    }
+
 }
 
 void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x)
 {
     // push 64 samples into buffer
-    cfwindow_push(_q->x, _x);
+    //cfwindow_push(_q->x, _x); // executed in main loop?
     _q->timer++;
     if (_q->timer < _q->num_subcarriers)
         return;
@@ -550,10 +603,25 @@ void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex
             // pilot subcarrier : use p/n sequence for pilot phase
         } else {
             // data subcarrier
-            //_q->data[j++] = _q->X[i];
+            if ((i%2)==0) {
+                // even subcarrier
+                _q->data[j] = crealf(_q->X0[i]) + 
+                              cimagf(_q->X1[i]) * _Complex_I;
+            } else {
+                // odd subcarrier
+                _q->data[j] = cimagf(_q->X0[i]) * _Complex_I +
+                              crealf(_q->X1[i]);
+            }
+            // scaling factor
+            _q->data[j] /= _q->zeta;
+            j++;
         }
     }
     assert(j==48);
 
+//#if DEBUG_OFDMFRAME64SYNC
+    for (i=0; i<48; i++)
+        cfwindow_push(_q->debug_framesyms,_q->data[i]);
+//#endif
 
 }
