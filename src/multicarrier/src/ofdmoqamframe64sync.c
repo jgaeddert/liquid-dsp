@@ -87,6 +87,19 @@ struct ofdmoqamframe64sync_s {
     float nu_hat;
     nco nco_rx;     //numerically-controlled oscillator
 
+    // receiver state
+    enum {
+        OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT=0,  // seek PLCP short sequence
+        OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0,    // seek first PLCP long sequence
+        OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1,    // seek second PLCP long sequence
+        OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD     // receive payload symbols
+    } state;
+
+    // input sample buffer
+    // NOTE: this is necessary to align the channelizer
+    //       buffers, although it is hardly an ideal
+    //       solution
+    //cfwindow input_buffer;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
@@ -125,7 +138,6 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
                                   0.0f,  // dt
                                   OFDMOQAM_ANALYZER,
                                   0);    // gradient
-
  
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -169,11 +181,11 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     ofdmoqamframe64sync_reset(q);
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    q->debug_x   = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx0 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx1 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxy = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_framesyms = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_x =        cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx0=      cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx1=      cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxy=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_framesyms= cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     return q;

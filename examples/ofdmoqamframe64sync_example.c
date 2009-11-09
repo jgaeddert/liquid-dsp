@@ -40,7 +40,7 @@ int main() {
 
     // options
     unsigned int num_symbols_S0=3;  // num short sequence symbols
-    unsigned int num_symbols_S1=3;  // num long sequence symbols
+    unsigned int num_symbols_S1=2;  // num long sequence symbols
     unsigned int num_symbols_data=8;// num data symbols
     unsigned int m=3;
     float beta = 0.7f;
