@@ -56,7 +56,10 @@ struct ofdmoqamframe64sync_s {
     float rxx_thresh;   // auto-correlation threshold (0,1)
 
     // filterbank objects
-    ofdmoqam analyzer;
+    firpfbch ca0;
+    firpfbch ca1;
+    cfwindow x;                 // 64+32 = 96
+    float complex * X0, * X1;   // @ 64
 
     // constants
     float zeta;         // scaling factor
@@ -92,7 +95,8 @@ struct ofdmoqamframe64sync_s {
     nco nco_rx;     //numerically-controlled oscillator
 
     // gain
-    float g;
+    float g;    // coarse gain estimate
+    float complex * G;  // complex subcarrier gain estimate
 
     // receiver state
     enum {
@@ -107,6 +111,7 @@ struct ofdmoqamframe64sync_s {
     //       buffers, although it is hardly an ideal
     //       solution
     cfwindow input_buffer;
+    unsigned int timer;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
@@ -141,13 +146,12 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     q->zeta = 64.0f/sqrtf(52.0f);
     
-    // create analyzer
-    q->analyzer = ofdmoqam_create(q->num_subcarriers,
-                                  q->m,
-                                  q->beta,
-                                  0.0f,  // dt
-                                  OFDMOQAM_ANALYZER,
-                                  0);    // gradient
+    // create analysis filter banks
+    q->ca0 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,OFDMOQAM_ANALYZER,0/*gradient*/);
+    q->ca1 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,OFDMOQAM_ANALYZER,0/*gradient*/);
+    q->x = cfwindow_create(96);
+    q->X0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->X1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
  
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -192,6 +196,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // gain
     q->g = 1.0f;
+    q->G = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // reset object
     ofdmoqamframe64sync_reset(q);
@@ -218,8 +223,12 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     cfwindow_destroy(_q->debug_framesyms);
 #endif
 
-    // free analyzer object memory
-    ofdmoqam_destroy(_q->analyzer);
+    // free analysis filter bank memory objects
+    firpfbch_destroy(_q->ca0);
+    firpfbch_destroy(_q->ca1);
+    cfwindow_destroy(_q->x);
+    free(_q->X0);
+    free(_q->X1);
 
     // clean up PLCP arrays
     free(_q->S0);
@@ -241,6 +250,9 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free cross-correlator memory objects
     fir_filter_cccf_destroy(_q->crosscorr);
     free(_q->rxy0);
+
+    // free gain arrays
+    free(_q->G);
 
     // free circular buffer array
     cfwindow_destroy(_q->input_buffer);
@@ -274,14 +286,19 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     // clear input buffer
     cfwindow_clear(_q->input_buffer);
 
-    // clear analysis filter bank
-    ofdmoqam_clear(_q->analyzer);
+    // clear analysis filter bank objects
+    firpfbch_clear(_q->ca0);
+    firpfbch_clear(_q->ca1);
 
     // reset gain parameters
     _q->g = 1.0f;   // coarse gain estimate
+    unsigned int i;
+    for (i=0; i<_q->num_subcarriers; i++)
+        _q->G[i] = 1.0f;
 
     // reset state
     _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
+    _q->timer = 0;
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
@@ -344,16 +361,12 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     unsigned int i;
     float complex * rc;
 
-    /*
-    fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat0 + _q->nu_hat1);
-
     // gain vectors
-    for (i=0; i<64; i++) {
+    for (i=0; i<_q->num_subcarriers; i++) {
         fprintf(fid,"G(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G[i]), cimagf(_q->G[i]));
-        fprintf(fid,"G0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
-        fprintf(fid,"G1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
+        //fprintf(fid,"G0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
+        //fprintf(fid,"G1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
     }
-    */
  
     // CFO estimate
     fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat);
@@ -478,7 +491,10 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
         _q->g = agc_get_gain(_q->sigdet);
         */
     }
+}
 
+void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x)
+{
     // cross-correlator
     float complex rxy;
     fir_filter_cccf_push(_q->crosscorr, _x);
@@ -487,11 +503,6 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxy, rxy);
 #endif
-
-}
-
-void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x)
-{
 }
 
 void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex _x)
@@ -500,5 +511,47 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 
 void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x)
 {
-}
+    // push 64 samples into buffer
+    cfwindow_push(_q->x, _x);
+    _q->timer++;
+    if (_q->timer < _q->num_subcarriers)
+        return;
 
+    // reset timer
+    _q->timer = 0;
+
+    // execute analysis filter banks
+    float complex * r;
+    cfwindow_read(_q->x, &r);
+    firpfbch_execute(_q->ca0, &r[0],  _q->X0);
+    firpfbch_execute(_q->ca1, &r[32], _q->X1);
+
+    // gain correction (equalizer)
+    unsigned int i;
+    for (i=0; i<_q->num_subcarriers; i++) {
+        _q->X0[i] *= _q->G[i];
+        _q->X1[i] *= _q->G[i];
+    }
+
+    // TODO : extract pilots
+
+    // TODO : compute pilot phase correction (fit to first-order polynomial)
+
+    // strip data subcarriers
+    unsigned int j=0;
+    int sctype;
+    for (i=0; i<_q->num_subcarriers; i++) {
+        sctype = ofdmoqamframe64_getsctype(i);
+        if (sctype==OFDMOQAMFRAME64_SCTYPE_NULL) {
+            // disabled subcarrier
+        } else if (sctype==OFDMOQAMFRAME64_SCTYPE_PILOT) {
+            // pilot subcarrier : use p/n sequence for pilot phase
+        } else {
+            // data subcarrier
+            //_q->data[j++] = _q->X[i];
+        }
+    }
+    assert(j==48);
+
+
+}
