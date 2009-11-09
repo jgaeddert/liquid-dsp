@@ -62,6 +62,9 @@ struct ofdmoqamframe64sync_s {
     float complex * S0; // short sequence
     float complex * S1; // long sequence
 
+    // pilot sequence
+    msequence ms_pilot;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
     cfwindow debug_rxx;
@@ -102,6 +105,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(ofdmoqamframe64sync_callback _cal
     q->debug_framesyms = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
 
+    // set pilot sequence
+    q->ms_pilot = msequence_create(8);
+
     ofdmoqamframe64sync_reset(q);
 
     return q;
@@ -124,6 +130,9 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     free(_q->S0);
     free(_q->S1);
 
+    // free pilot msequence object memory
+    msequence_destroy(_q->ms_pilot);
+
     // free main object memory
     free(_q);
 }
@@ -136,6 +145,8 @@ void ofdmoqamframe64sync_print(ofdmoqamframe64sync _q)
 
 void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
 {
+    // reset pilot sequence generator
+    msequence_reset(_q->ms_pilot);
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,

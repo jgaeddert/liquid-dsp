@@ -55,6 +55,8 @@ struct ofdmoqamframe64gen_s {
     float complex * S0; // short sequence
     float complex * S1; // long sequence
 
+    // pilot sequence
+    msequence ms_pilot;
 };
 
 ofdmoqamframe64gen ofdmoqamframe64gen_create()
@@ -84,6 +86,9 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create()
     ofdmoqamframe64_init_S0(q->S0);
     ofdmoqamframe64_init_S1(q->S1);
 
+    // set pilot sequence
+    q->ms_pilot = msequence_create(8);
+
     return q;
 }
 
@@ -96,9 +101,12 @@ void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q)
     free(_q->X);
     free(_q->x);
 
-    // clean up PLCP arrays
+    // free PLCP memory arrays
     free(_q->S0);
     free(_q->S1);
+
+    // free pilot msequence object memory
+    msequence_destroy(_q->ms_pilot);
 
     // free main object memory
     free(_q);
@@ -140,9 +148,36 @@ void ofdmoqamframe64gen_writeheader(ofdmoqamframe64gen _q,
 {
 }
 
+// x    :   48
+// y    :   64
 void ofdmoqamframe64gen_writesymbol(ofdmoqamframe64gen _q,
-                                float complex * _x,
-                                float complex * _y)
+                                    float complex * _x,
+                                    float complex * _y)
 {
+    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
+
+    // move frequency data to internal buffer
+    unsigned int i, j=0;
+    int sctype;
+    for (i=0; i<_q->num_subcarriers; i++) {
+        sctype = ofdmoqamframe64_getsctype(i);
+        if (sctype==OFDMOQAMFRAME64_SCTYPE_NULL) {
+            // disabled subcarrier
+            _q->X[i] = 0.0f;
+        } else if (sctype==OFDMOQAMFRAME64_SCTYPE_PILOT) {
+            // pilot subcarrier
+            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->zeta;
+        } else {
+            // data subcarrier
+            _q->X[i] = _x[j] * _q->zeta;
+            j++;
+        }
+
+        //printf("X[%3u] = %12.8f + j*%12.8f;\n",i+1,crealf(_q->X[i]),cimagf(_q->X[i]));
+    }
+    assert(j==48);
+
+    // execute synthesizer, store result in output array
+    ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
 
