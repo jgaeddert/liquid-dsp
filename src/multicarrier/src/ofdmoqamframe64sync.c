@@ -31,12 +31,12 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
+//#if HAVE_FFTW3_H
+//#   include <fftw3.h>
+//#endif
 
 #define DEBUG_OFDMOQAMFRAME64SYNC             1
-#define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       0
+#define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       1
 #define DEBUG_OFDMOQAMFRAME64SYNC_FILENAME    "ofdmoqamframe64sync_internal_debug.m"
 #define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (2048)
 
@@ -49,8 +49,8 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q);
 
 struct ofdmoqamframe64sync_s {
     unsigned int num_subcarriers;   // 64
-    unsigned int m;
-    float beta;
+    unsigned int m;                 // filter delay
+    float beta;                     // filter excess bandwidth factor
 
     // filterbank objects
     ofdmoqam analyzer;
@@ -87,6 +87,9 @@ struct ofdmoqamframe64sync_s {
     float nu_hat;
     nco nco_rx;     //numerically-controlled oscillator
 
+    // gain
+    float g;
+
     // receiver state
     enum {
         OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT=0,  // seek PLCP short sequence
@@ -99,7 +102,7 @@ struct ofdmoqamframe64sync_s {
     // NOTE: this is necessary to align the channelizer
     //       buffers, although it is hardly an ideal
     //       solution
-    //cfwindow input_buffer;
+    cfwindow input_buffer;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
@@ -177,6 +180,12 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->crosscorr = fir_filter_cccf_create(q->rxy0, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
+    // input buffer
+    q->input_buffer = cfwindow_create(5*(q->num_subcarriers));
+
+    // gain
+    q->g = 1.0f;
+
     // reset object
     ofdmoqamframe64sync_reset(q);
 
@@ -226,6 +235,9 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     fir_filter_cccf_destroy(_q->crosscorr);
     free(_q->rxy0);
 
+    // free circular buffer array
+    cfwindow_destroy(_q->input_buffer);
+
     // free main object memory
     free(_q);
 }
@@ -244,10 +256,24 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     // reset auto-correlators
     autocorr_cccf_clear(_q->autocorr0);
     autocorr_cccf_clear(_q->autocorr1);
+    _q->rxx_max0 = 0.0f;
+    _q->rxx_max1 = 0.0f;
 
     // reset frequency offset estimation, correction
     _q->nu_hat = 0.0f;
     nco_reset(_q->nco_rx);
+
+    // clear input buffer
+    cfwindow_clear(_q->input_buffer);
+
+    // clear analysis filter bank
+    ofdmoqam_clear(_q->analyzer);
+
+    // reset gain parameters
+    _q->g = 1.0f;   // coarse gain estimate
+
+    // reset state
+    _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
@@ -255,37 +281,34 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
                                  unsigned int _n)
 {
     unsigned int i;
+    float complex x;
     for (i=0; i<_n; i++) {
+        x = _x[i];
 #if DEBUG_OFDMOQAMFRAME64SYNC
-        cfwindow_push(_q->debug_x, _x[i]);
+        cfwindow_push(_q->debug_x,x);
 #endif
 
-        // auto-correlators
-        autocorr_cccf_push(_q->autocorr0, _x[i]);
-        autocorr_cccf_execute(_q->autocorr0, &_q->rxx0);
+        // coarse gain correction
+        x *= _q->g;
+        
+        // compensate for CFO
+        nco_mix_up(_q->nco_rx, x, &x);
 
-        autocorr_cccf_push(_q->autocorr1, _x[i]);
-        autocorr_cccf_execute(_q->autocorr1, &_q->rxx1);
-
-#if DEBUG_OFDMOQAMFRAME64SYNC
-        cfwindow_push(_q->debug_rxx0, _q->rxx0);
-        cfwindow_push(_q->debug_rxx1, _q->rxx1);
-#endif
-        if (cabsf(_q->rxx0)     + cabsf(_q->rxx1)   >
-            cabsf(_q->rxx_max0) + cabsf(_q->rxx_max1) )
-        {
-            _q->rxx_max0 = _q->rxx0;
-            _q->rxx_max1 = _q->rxx1;
+        switch (_q->state) {
+        case OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT:
+            ofdmoqamframe64sync_execute_plcpshort(_q,x);
+            break;
+        case OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0:
+            ofdmoqamframe64sync_execute_plcplong0(_q,x);
+            break;
+        case OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1:
+            ofdmoqamframe64sync_execute_plcplong1(_q,x);
+            break;
+        case OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD:
+            ofdmoqamframe64sync_execute_rxpayload(_q,x);
+            break;
+        default:;
         }
-
-        // cross-correlator
-        float complex rxy;
-        fir_filter_cccf_push(_q->crosscorr, _x[i]);
-        fir_filter_cccf_execute(_q->crosscorr, &rxy);
- 
-#if DEBUG_OFDMOQAMFRAME64SYNC
-        cfwindow_push(_q->debug_rxy, rxy);
-#endif
     }
 
     // print CFO estimate
@@ -400,4 +423,47 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     printf("ofdmoqamframe64sync/debug: results written to %s\n", DEBUG_OFDMOQAMFRAME64SYNC_FILENAME);
 }
 #endif
+
+void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x)
+{
+    // auto-correlators
+    autocorr_cccf_push(_q->autocorr0, _x);
+    autocorr_cccf_execute(_q->autocorr0, &_q->rxx0);
+
+    autocorr_cccf_push(_q->autocorr1, _x);
+    autocorr_cccf_execute(_q->autocorr1, &_q->rxx1);
+
+#if DEBUG_OFDMOQAMFRAME64SYNC
+    cfwindow_push(_q->debug_rxx0, _q->rxx0);
+    cfwindow_push(_q->debug_rxx1, _q->rxx1);
+#endif
+    if (cabsf(_q->rxx0)     + cabsf(_q->rxx1)   >
+        cabsf(_q->rxx_max0) + cabsf(_q->rxx_max1) )
+    {
+        _q->rxx_max0 = _q->rxx0;
+        _q->rxx_max1 = _q->rxx1;
+    }
+
+    // cross-correlator
+    float complex rxy;
+    fir_filter_cccf_push(_q->crosscorr, _x);
+    fir_filter_cccf_execute(_q->crosscorr, &rxy);
+
+#if DEBUG_OFDMOQAMFRAME64SYNC
+    cfwindow_push(_q->debug_rxy, rxy);
+#endif
+
+}
+
+void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x)
+{
+}
+
+void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex _x)
+{
+}
+
+void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x)
+{
+}
 

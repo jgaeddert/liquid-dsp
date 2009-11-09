@@ -861,6 +861,10 @@ void ofdmoqamframe64_init_S1(float complex * _S0);
 #define OFDMOQAMFRAME64_SCTYPE_DATA     2
 int ofdmoqamframe64_getsctype(unsigned int _id);
 
+void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x);
+void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x);
+void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex _x);
+void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
