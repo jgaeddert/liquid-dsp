@@ -130,7 +130,9 @@ void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q)
 void ofdmoqamframe64gen_print(ofdmoqamframe64gen _q)
 {
     printf("ofdmoqamframe64gen:\n");
-    printf("    num subcarriers     :   %u\n", _q->num_subcarriers);
+    printf("    num subcarriers     :   %-u\n", _q->num_subcarriers);
+    printf("    m (filter delay)    :   %-u\n", _q->m);
+    printf("    beta (excess b/w)   :   %8.6f\n", _q->beta);
 }
 
 void ofdmoqamframe64gen_reset(ofdmoqamframe64gen _q)

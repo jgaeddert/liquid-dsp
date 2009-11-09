@@ -264,7 +264,9 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 void ofdmoqamframe64sync_print(ofdmoqamframe64sync _q)
 {
     printf("ofdmoqamframe64sync:\n");
-    printf("    num subcarriers     :   %u\n", _q->num_subcarriers);
+    printf("    num subcarriers     :   %-u\n", _q->num_subcarriers);
+    printf("    m (filter delay)    :   %-u\n", _q->m);
+    printf("    beta (excess b/w)   :   %8.6f\n", _q->beta);
 }
 
 void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
