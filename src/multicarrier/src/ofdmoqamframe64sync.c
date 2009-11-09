@@ -52,6 +52,9 @@ struct ofdmoqamframe64sync_s {
     unsigned int m;                 // filter delay
     float beta;                     // filter excess bandwidth factor
 
+    // synchronizer parameters
+    float rxx_thresh;   // auto-correlation threshold (0,1)
+
     // filterbank objects
     ofdmoqam analyzer;
 
@@ -78,6 +81,7 @@ struct ofdmoqamframe64sync_s {
     float complex rxx1;
     float complex rxx_max0;
     float complex rxx_max1;
+    float rxx_mag_max;
 
     // cross-correlator
     float complex * rxy0;
@@ -131,6 +135,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     }
     q->m = _m;
     q->beta = _beta;
+
+    // synchronizer parameters
+    q->rxx_thresh = 0.75f;
 
     q->zeta = 64.0f/sqrtf(52.0f);
     
@@ -258,6 +265,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     autocorr_cccf_clear(_q->autocorr1);
     _q->rxx_max0 = 0.0f;
     _q->rxx_max1 = 0.0f;
+    _q->rxx_mag_max = 0.0f;
 
     // reset frequency offset estimation, correction
     _q->nu_hat = 0.0f;
@@ -310,16 +318,11 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         default:;
         }
     }
-
-    // print CFO estimate
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
     printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max0),cargf(_q->rxx_max0));
     printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max1),cargf(_q->rxx_max1));
-    _q->nu_hat = cargf((_q->rxx_max0)*conjf(_q->rxx_max1));
-
-    if (_q->nu_hat >  M_PI/2.0f) _q->nu_hat -= M_PI;
-    if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
-    _q->nu_hat *= 2.0f / (float)(_q->num_subcarriers);
     printf("nu_hat =  %12.8f\n", _q->nu_hat);
+#endif
 }
 
 //
@@ -379,7 +382,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"rxx1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),abs(rxx0),0:(n-1),abs(rxx1));\n");
+    fprintf(fid,"plot(0:(n-1),abs(rxx0),0:(n-1),abs(rxx1),0:(n-1),[abs(rxx0)+abs(rxx1)]/2,'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xx}|');\n");
 
@@ -426,6 +429,13 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
 
 void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x)
 {
+    // run AGC, clip output
+    float complex y;
+    agc_execute(_q->sigdet, _x, &y);
+    //if (agc_get_signal_level(_q->sigdet) < -15.0f)
+    //    return;
+
+
     // auto-correlators
     autocorr_cccf_push(_q->autocorr0, _x);
     autocorr_cccf_execute(_q->autocorr0, &_q->rxx0);
@@ -437,11 +447,36 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     cfwindow_push(_q->debug_rxx0, _q->rxx0);
     cfwindow_push(_q->debug_rxx1, _q->rxx1);
 #endif
-    if (cabsf(_q->rxx0)     + cabsf(_q->rxx1)   >
-        cabsf(_q->rxx_max0) + cabsf(_q->rxx_max1) )
-    {
+    float rxx_mag = cabsf(_q->rxx0) + cabsf(_q->rxx1);
+    rxx_mag *= 0.5f;
+    rxx_mag *= agc_get_signal_level(_q->sigdet);
+    if (rxx_mag > _q->rxx_mag_max) {
         _q->rxx_max0 = _q->rxx0;
         _q->rxx_max1 = _q->rxx1;
+        _q->rxx_mag_max = rxx_mag;
+    }
+
+    if (rxx_mag > (_q->rxx_thresh)*(_q->autocorr_length)) {
+        // TODO : wait for auto-correlation to peak before changing state
+
+        // estimate CFO
+        _q->nu_hat = cargf((_q->rxx_max0)*conjf(_q->rxx_max1));
+        if (_q->nu_hat >  M_PI/2.0f) _q->nu_hat -= M_PI;
+        if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
+        _q->nu_hat *= 2.0f / (float)(_q->num_subcarriers);
+
+        /*
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
+        printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max0),cargf(_q->rxx_max0));
+        printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max1),cargf(_q->rxx_max1));
+        printf("nu_hat =  %12.8f\n", _q->nu_hat);
+#endif
+
+        nco_set_frequency(_q->nco_rx, _q->nu_hat);
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
+
+        _q->g = agc_get_gain(_q->sigdet);
+        */
     }
 
     // cross-correlator
