@@ -65,9 +65,24 @@ struct ofdmoqamframe64sync_s {
     // pilot sequence
     msequence ms_pilot;
 
+    // signal detection | automatic gain control
+    agc sigdet;
+
+    // auto-correlators
+    autocorr_cccf autocorr0;        // auto-correlation object [0]
+    autocorr_cccf autocorr1;        // auto-correlation object [1]
+    unsigned int autocorr_length;   // auto-correlation length
+    unsigned int autocorr_delay0;   // delay [0]
+    unsigned int autocorr_delay1;   // delay [1]
+    float complex rxx0;
+    float complex rxx1;
+    float complex rxx_max0;
+    float complex rxx_max1;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
-    cfwindow debug_rxx;
+    cfwindow debug_rxx0;
+    cfwindow debug_rxx1;
     cfwindow debug_rxy;
     cfwindow debug_framesyms;
 #endif
@@ -100,13 +115,24 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(ofdmoqamframe64sync_callback _cal
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     q->debug_x   = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx0 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx1 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxy = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
+
+    // create agc | signal detection object
+    q->sigdet = agc_create(1.0f, 0.01f);
+
+    // create auto-correlator objects
+    q->autocorr_length = q->num_subcarriers;
+    q->autocorr_delay0 = q->num_subcarriers;
+    q->autocorr_delay1 = q->num_subcarriers / 2;
+    q->autocorr0 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay0);
+    q->autocorr1 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay1);
 
     ofdmoqamframe64sync_reset(q);
 
@@ -118,7 +144,8 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 #if DEBUG_OFDMOQAMFRAME64SYNC
     ofdmoqamframe64sync_debug_print(_q);
     cfwindow_destroy(_q->debug_x);
-    cfwindow_destroy(_q->debug_rxx);
+    cfwindow_destroy(_q->debug_rxx0);
+    cfwindow_destroy(_q->debug_rxx1);
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
 #endif
@@ -132,6 +159,11 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 
     // free pilot msequence object memory
     msequence_destroy(_q->ms_pilot);
+
+    // free agc | signal detection object memory
+    agc_destroy(_q->sigdet);
+
+    // free auto-correlator memory objects
 
     // free main object memory
     free(_q);
@@ -147,12 +179,29 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
 {
     // reset pilot sequence generator
     msequence_reset(_q->ms_pilot);
+
+    // reset auto-correlators
+    autocorr_cccf_clear(_q->autocorr0);
+    autocorr_cccf_clear(_q->autocorr1);
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
                                  float complex * _x,
                                  unsigned int _n)
 {
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        autocorr_cccf_push(_q->autocorr0, _x[i]);
+        autocorr_cccf_execute(_q->autocorr0, &_q->rxx0);
+
+        autocorr_cccf_push(_q->autocorr1, _x[i]);
+        autocorr_cccf_execute(_q->autocorr1, &_q->rxx1);
+
+#if DEBUG_OFDMOQAMFRAME64SYNC
+        cfwindow_push(_q->debug_rxx0, _q->rxx0);
+        cfwindow_push(_q->debug_rxx1, _q->rxx1);
+#endif
+    }
 }
 
 //
@@ -194,12 +243,16 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('received signal, x');\n");
 
-    fprintf(fid,"rxx = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxx, &rc);
+    fprintf(fid,"rxx0 = zeros(1,n);\n");
+    cfwindow_read(_q->debug_rxx0, &rc);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+        fprintf(fid,"rxx0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"rxx1 = zeros(1,n);\n");
+    cfwindow_read(_q->debug_rxx1, &rc);
+    for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxx1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),abs(rxx));\n");
+    fprintf(fid,"plot(0:(n-1),abs(rxx0),0:(n-1),abs(rxx1));\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xx}|');\n");
 
