@@ -212,7 +212,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xy}|');\n");
 
-
+    /*
     // plot gain vectors
     fprintf(fid,"f = [-32:31];\n");
     fprintf(fid,"figure;\n");
@@ -224,6 +224,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"         f,unwrap(fftshift(arg(G1))),...\n");
     fprintf(fid,"         f,unwrap(fftshift(arg(G))));\n");
     fprintf(fid,"    ylabel('phase');\n");
+    */
 
     // frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
