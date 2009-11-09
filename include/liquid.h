@@ -1681,6 +1681,42 @@ void ofdmoqam_execute(ofdmoqam _c,
                       liquid_float_complex * _x,
                       liquid_float_complex * _y);
 
+// 
+// ofdmoqamframe64gen
+//
+typedef struct ofdmoqamframe64gen_s * ofdmoqamframe64gen;
+ofdmoqamframe64gen ofdmoqamframe64gen_create();
+void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q);
+void ofdmoqamframe64gen_print(ofdmoqamframe64gen _q);
+void ofdmoqamframe64gen_reset(ofdmoqamframe64gen _q);
+// short PLCP training sequence (160 samples)
+void ofdmoqamframe64gen_writeshortsequence(ofdmoqamframe64gen _q,
+                                           liquid_float_complex *_y);
+// long PLCP training sequence (160 samples)
+void ofdmoqamframe64gen_writelongsequence(ofdmoqamframe64gen _q,
+                                          liquid_float_complex *_y);
+void ofdmoqamframe64gen_writeheader(ofdmoqamframe64gen _q,
+                                    liquid_float_complex *_y);
+void ofdmoqamframe64gen_writesymbol(ofdmoqamframe64gen _q,
+                                    liquid_float_complex *_x,
+                                    liquid_float_complex *_y);
+
+// 
+// ofdmoqamframe64sync
+//
+typedef int (*ofdmoqamframe64sync_callback)(liquid_float_complex * _y,
+                                            void * _userdata);
+typedef struct ofdmoqamframe64sync_s * ofdmoqamframe64sync;
+ofdmoqamframe64sync ofdmoqamframe64sync_create(ofdmoqamframe64sync_callback _callback,
+                                               void * _userdata);
+void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q);
+void ofdmoqamframe64sync_print(ofdmoqamframe64sync _q);
+void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q);
+void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
+                                 liquid_float_complex * _x,
+                                 unsigned int _n);
+
+
 
 // OFDM frame (symbol) generator
 typedef struct ofdmframegen_s * ofdmframegen;
