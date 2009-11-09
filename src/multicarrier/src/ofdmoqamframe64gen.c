@@ -44,9 +44,17 @@ struct ofdmoqamframe64gen_s {
     // constants
     float zeta;         // scaling factor
 
+    // filterbank objects
+    ofdmoqam synthesizer;
+
+    // transform objects
+    float complex * X;
+    float complex * x;
+
     // PLCP
     float complex * S0; // short sequence
     float complex * S1; // long sequence
+
 };
 
 ofdmoqamframe64gen ofdmoqamframe64gen_create()
@@ -57,6 +65,18 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create()
     q->beta = 0.7f;
 
     q->zeta = 1.0f;
+
+    // create synthesizer
+    q->synthesizer = ofdmoqam_create(q->num_subcarriers,
+                                     q->m,
+                                     q->beta,
+                                     0.0f,  // dt
+                                     OFDMOQAM_SYNTHESIZER,
+                                     0);    // gradient
+
+    // allocate memory for transform objects
+    q->X  = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->x  = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -69,6 +89,13 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create()
 
 void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q)
 {
+    // free synthesizer object memory
+    ofdmoqam_destroy(_q->synthesizer);
+
+    // free transform array memory
+    free(_q->X);
+    free(_q->x);
+
     // clean up PLCP arrays
     free(_q->S0);
     free(_q->S1);
@@ -88,14 +115,24 @@ void ofdmoqamframe64gen_reset(ofdmoqamframe64gen _q)
 }
 
 void ofdmoqamframe64gen_writeshortsequence(ofdmoqamframe64gen _q,
-                                       float complex * _y)
+                                           float complex * _y)
 {
+    // move short sequence to freq-domain buffer
+    memmove(_q->X, _q->S0, (_q->num_subcarriers)*sizeof(float complex));
+
+    // execute synthesizer, store result in output array
+    ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
 
 
 void ofdmoqamframe64gen_writelongsequence(ofdmoqamframe64gen _q,
-                                      float complex * _y)
+                                          float complex * _y)
 {
+    // move long sequence to freq-domain buffer
+    memmove(_q->X, _q->S1, (_q->num_subcarriers)*sizeof(float complex));
+
+    // execute synthesizer, store result in output array
+    ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
 
 void ofdmoqamframe64gen_writeheader(ofdmoqamframe64gen _q,

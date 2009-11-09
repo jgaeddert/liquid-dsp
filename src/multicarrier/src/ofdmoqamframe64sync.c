@@ -52,6 +52,9 @@ struct ofdmoqamframe64sync_s {
     unsigned int m;
     float beta;
 
+    // filterbank objects
+    ofdmoqam analyzer;
+
     // constants
     float zeta;         // scaling factor
 
@@ -77,6 +80,15 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(ofdmoqamframe64sync_callback _cal
 
     q->zeta = 1.0f;
     
+    // create analyzer
+    q->analyzer = ofdmoqam_create(q->num_subcarriers,
+                                  q->m,
+                                  q->beta,
+                                  0.0f,  // dt
+                                  OFDMOQAM_ANALYZER,
+                                  0);    // gradient
+
+ 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -105,16 +117,21 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     cfwindow_destroy(_q->debug_framesyms);
 #endif
 
+    // free analyzer object memory
+    ofdmoqam_destroy(_q->analyzer);
+
     // clean up PLCP arrays
     free(_q->S0);
     free(_q->S1);
 
+    // free main object memory
     free(_q);
 }
 
 void ofdmoqamframe64sync_print(ofdmoqamframe64sync _q)
 {
     printf("ofdmoqamframe64sync:\n");
+    printf("    num subcarriers     :   %u\n", _q->num_subcarriers);
 }
 
 void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
@@ -122,8 +139,8 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
-                             float complex * _x,
-                             unsigned int _n)
+                                 float complex * _x,
+                                 unsigned int _n)
 {
 }
 
