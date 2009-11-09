@@ -115,7 +115,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->m = _m;
     q->beta = _beta;
 
-    q->zeta = 1.0f;
+    q->zeta = 64.0f/sqrtf(52.0f);
     
     // create analyzer
     q->analyzer = ofdmoqam_create(q->num_subcarriers,
@@ -131,6 +131,11 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->S1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     ofdmoqamframe64_init_S0(q->S0);
     ofdmoqamframe64_init_S1(q->S1);
+    unsigned int i;
+    for (i=0; i<q->num_subcarriers; i++) {
+        q->S0[i] *= q->zeta;
+        q->S1[i] *= q->zeta;
+    }
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
@@ -151,7 +156,6 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
                                   0.0f,   // dt
                                   OFDMOQAM_SYNTHESIZER,
                                   0);     // gradient
-    unsigned int i;
     for (i=0; i<2*(q->m); i++)
         ofdmoqam_execute(cs,q->S1,q->rxy0);
     q->crosscorr = fir_filter_cccf_create(q->rxy0, q->num_subcarriers);
@@ -232,6 +236,9 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
+#if DEBUG_OFDMOQAMFRAME64SYNC
+        cfwindow_push(_q->debug_x, _x[i]);
+#endif
 
         // auto-correlators
         autocorr_cccf_push(_q->autocorr0, _x[i]);

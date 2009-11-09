@@ -76,9 +76,9 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
     q->m = _m;
     q->beta = _beta;
 
-    q->zeta = 1.0f;
+    q->zeta = 64.0f/sqrtf(52.0f);
 
-    // create synthesizer
+    // create synthsizer
     q->synthesizer = ofdmoqam_create(q->num_subcarriers,
                                      q->m,
                                      q->beta,
@@ -95,6 +95,11 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
     q->S1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     ofdmoqamframe64_init_S0(q->S0);
     ofdmoqamframe64_init_S1(q->S1);
+    unsigned int i;
+    for (i=0; i<q->num_subcarriers; i++) {
+        q->S0[i] *= q->zeta;
+        q->S1[i] *= q->zeta;
+    }
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
