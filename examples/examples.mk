@@ -73,6 +73,7 @@ local_src	:=			\
 	ofdmframesync_example.c		\
 	ofdmoqam_example.c		\
 	ofdmoqam_firpfbch_example.c	\
+	ofdmoqamframe64sync_example.c	\
 	packetizer_example.c		\
 	pll_example.c			\
 	polyfit_example.c		\
