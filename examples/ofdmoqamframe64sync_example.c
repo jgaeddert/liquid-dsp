@@ -12,6 +12,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 
 #include "liquid.h"
 
@@ -56,6 +57,10 @@ int main() {
                                num_symbols_data;
     unsigned int num_frames  = num_symbols + 4*m;
     unsigned int num_samples = 64*num_frames;
+
+    printf("num symbols: %u\n", num_symbols);
+    printf("num frames : %u\n", num_frames);
+    printf("num samples: %u\n", num_samples);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -108,24 +113,26 @@ int main() {
         n += 64;
     }
 
-    // generate data sequence
-    for (i=0; i<48; i++)
-        data_tx[i] = modem_gen_rand_sym(mod);
-    for (i=0; i<48; i++)
-        modem_modulate(mod, data_tx[i], &x[i]);
+    // modulate data symbols
+    for (i=0; i<num_symbols_data; i++) {
 
-    // modulate symbols
-    for (i=0; i<num_symbols; i++) {
+        // generate data sequence
+        unsigned int j;
+        for (j=0; j<48; j++)
+            data_tx[j] = modem_gen_rand_sym(mod);
+        for (j=0; j<48; j++)
+            modem_modulate(mod, data_tx[j], &x[j]);
+
         ofdmoqamframe64gen_writesymbol(fg,x,&y[n]);
         n += 64;
     }
 
     // flush
     for (i=0; i<4*m; i++) {
-        //ofdmoqamframe64gen_flush(fg,x,&y[n]);
-        //n += 64;
+        ofdmoqamframe64gen_flush(fg,&y[n]);
+        n += 64;
     }
-    // assert(n==num_samples);
+    assert(n==num_samples);
     printf("n = %u\n", n);
 
     // add channel impairments

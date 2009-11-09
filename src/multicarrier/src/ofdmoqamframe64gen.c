@@ -181,3 +181,15 @@ void ofdmoqamframe64gen_writesymbol(ofdmoqamframe64gen _q,
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
 
+void ofdmoqamframe64gen_flush(ofdmoqamframe64gen _q,
+                              float complex * _y)
+{
+    // fill freq-domain buffer with zeros
+    unsigned int j;
+    for (j=0; j<_q->num_subcarriers; j++)
+        _q->X[j] = 0.0f;
+
+    // execute synthesizer, store result in output array
+    ofdmoqam_execute(_q->synthesizer, _q->X, _y);
+}
+

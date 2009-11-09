@@ -1700,6 +1700,8 @@ void ofdmoqamframe64gen_writeheader(ofdmoqamframe64gen _q,
 void ofdmoqamframe64gen_writesymbol(ofdmoqamframe64gen _q,
                                     liquid_float_complex *_x,
                                     liquid_float_complex *_y);
+void ofdmoqamframe64gen_flush(ofdmoqamframe64gen _q,
+                              liquid_float_complex *_y);
 
 // 
 // ofdmoqamframe64sync
