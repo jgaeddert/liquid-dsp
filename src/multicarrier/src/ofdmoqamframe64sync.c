@@ -79,6 +79,10 @@ struct ofdmoqamframe64sync_s {
     float complex rxx_max0;
     float complex rxx_max1;
 
+    // cross-correlator
+    float complex * rxy0;
+    fir_filter_cccf crosscorr;
+
     // carrier frequency offset (CFO) estimation
     float nu_hat;
     //nco ncof;
@@ -128,14 +132,6 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     ofdmoqamframe64_init_S0(q->S0);
     ofdmoqamframe64_init_S1(q->S1);
 
-#if DEBUG_OFDMOQAMFRAME64SYNC
-    q->debug_x   = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx0 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx1 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxy = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_framesyms = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-#endif
-
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
 
@@ -149,7 +145,28 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->autocorr0 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay0);
     q->autocorr1 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay1);
 
+    // create cross-correlator object
+    q->rxy0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    ofdmoqam cs = ofdmoqam_create(q->num_subcarriers,q->m,q->beta,
+                                  0.0f,   // dt
+                                  OFDMOQAM_SYNTHESIZER,
+                                  0);     // gradient
+    unsigned int i;
+    for (i=0; i<2*(q->m); i++)
+        ofdmoqam_execute(cs,q->S1,q->rxy0);
+    q->crosscorr = fir_filter_cccf_create(q->rxy0, q->num_subcarriers);
+    ofdmoqam_destroy(cs);
+
+    // reset object
     ofdmoqamframe64sync_reset(q);
+
+#if DEBUG_OFDMOQAMFRAME64SYNC
+    q->debug_x   = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx0 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx1 = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxy = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_framesyms = cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+#endif
 
     return q;
 }
@@ -179,6 +196,12 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     agc_destroy(_q->sigdet);
 
     // free auto-correlator memory objects
+    autocorr_cccf_destroy(_q->autocorr0);
+    autocorr_cccf_destroy(_q->autocorr1);
+
+    // free cross-correlator memory objects
+    fir_filter_cccf_destroy(_q->crosscorr);
+    free(_q->rxy0);
 
     // free main object memory
     free(_q);
@@ -209,6 +232,8 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
 {
     unsigned int i;
     for (i=0; i<_n; i++) {
+
+        // auto-correlators
         autocorr_cccf_push(_q->autocorr0, _x[i]);
         autocorr_cccf_execute(_q->autocorr0, &_q->rxx0);
 
@@ -225,6 +250,15 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
             _q->rxx_max0 = _q->rxx0;
             _q->rxx_max1 = _q->rxx1;
         }
+
+        // cross-correlator
+        float complex rxy;
+        fir_filter_cccf_push(_q->crosscorr, _x[i]);
+        fir_filter_cccf_execute(_q->crosscorr, &rxy);
+ 
+#if DEBUG_OFDMOQAMFRAME64SYNC
+        cfwindow_push(_q->debug_rxy, rxy);
+#endif
     }
 
     // print CFO estimate
