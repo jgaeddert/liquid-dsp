@@ -1685,7 +1685,8 @@ void ofdmoqam_execute(ofdmoqam _c,
 // ofdmoqamframe64gen
 //
 typedef struct ofdmoqamframe64gen_s * ofdmoqamframe64gen;
-ofdmoqamframe64gen ofdmoqamframe64gen_create();
+ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
+                                             float _beta);
 void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q);
 void ofdmoqamframe64gen_print(ofdmoqamframe64gen _q);
 void ofdmoqamframe64gen_reset(ofdmoqamframe64gen _q);
@@ -1709,7 +1710,9 @@ void ofdmoqamframe64gen_flush(ofdmoqamframe64gen _q,
 typedef int (*ofdmoqamframe64sync_callback)(liquid_float_complex * _y,
                                             void * _userdata);
 typedef struct ofdmoqamframe64sync_s * ofdmoqamframe64sync;
-ofdmoqamframe64sync ofdmoqamframe64sync_create(ofdmoqamframe64sync_callback _callback,
+ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
+                                               float _beta,
+                                               ofdmoqamframe64sync_callback _callback,
                                                void * _userdata);
 void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q);
 void ofdmoqamframe64sync_print(ofdmoqamframe64sync _q);

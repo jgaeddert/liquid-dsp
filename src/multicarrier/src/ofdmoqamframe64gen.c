@@ -59,12 +59,22 @@ struct ofdmoqamframe64gen_s {
     msequence ms_pilot;
 };
 
-ofdmoqamframe64gen ofdmoqamframe64gen_create()
+ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
+                                             float _beta)
 {
     ofdmoqamframe64gen q = (ofdmoqamframe64gen) malloc(sizeof(struct ofdmoqamframe64gen_s));
     q->num_subcarriers = 64;
-    q->m = 2;
-    q->beta = 0.7f;
+
+    // validate input
+    if (_m < 2) {
+        fprintf(stderr,"error: ofdmoqamframe64sync_create(), filter delay must be > 1\n");
+        exit(1);
+    } else if (_beta < 0.0f) {
+        fprintf(stderr,"error: ofdmoqamframe64sync_create(), filter excess bandwidth must be > 0\n");
+        exit(1);
+    }
+    q->m = _m;
+    q->beta = _beta;
 
     q->zeta = 1.0f;
 

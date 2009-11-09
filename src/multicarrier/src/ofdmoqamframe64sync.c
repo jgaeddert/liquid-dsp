@@ -38,7 +38,7 @@
 #define DEBUG_OFDMOQAMFRAME64SYNC             1
 #define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       0
 #define DEBUG_OFDMOQAMFRAME64SYNC_FILENAME    "ofdmoqamframe64sync_internal_debug.m"
-#define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (1024)
+#define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (2048)
 
 // auto-correlation integration length
 #define OFDMOQAMFRAME64SYNC_AUTOCORR_LEN      (96)
@@ -88,13 +88,24 @@ struct ofdmoqamframe64sync_s {
 #endif
 };
 
-ofdmoqamframe64sync ofdmoqamframe64sync_create(ofdmoqamframe64sync_callback _callback,
-                                       void * _userdata)
+ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
+                                               float _beta,
+                                               ofdmoqamframe64sync_callback _callback,
+                                               void * _userdata)
 {
     ofdmoqamframe64sync q = (ofdmoqamframe64sync) malloc(sizeof(struct ofdmoqamframe64sync_s));
     q->num_subcarriers = 64;
-    q->m = 2;
-    q->beta = 0.7f;
+
+    // validate input
+    if (_m < 2) {
+        fprintf(stderr,"error: ofdmoqamframe64sync_create(), filter delay must be > 1\n");
+        exit(1);
+    } else if (_beta < 0.0f) {
+        fprintf(stderr,"error: ofdmoqamframe64sync_create(), filter excess bandwidth must be > 0\n");
+        exit(1);
+    }
+    q->m = _m;
+    q->beta = _beta;
 
     q->zeta = 1.0f;
     

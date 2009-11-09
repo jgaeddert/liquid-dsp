@@ -41,8 +41,9 @@ int main() {
     // options
     unsigned int num_symbols_S0=3;  // num short sequence symbols
     unsigned int num_symbols_S1=3;  // num long sequence symbols
-    unsigned int num_symbols_data=6;// num data symbols
-    unsigned int m=2;
+    unsigned int num_symbols_data=8;// num data symbols
+    unsigned int m=3;
+    float beta = 0.7f;
     modulation_scheme ms = MOD_QPSK;
     unsigned int bps = 2;
     float cfo=0.0f;         // carrier frequency offset (max: pi/16 ~ 0.19)
@@ -75,11 +76,11 @@ int main() {
     modem demod = modem_create(ms,bps);
 
     // create frame generator
-    ofdmoqamframe64gen fg = ofdmoqamframe64gen_create();
+    ofdmoqamframe64gen fg = ofdmoqamframe64gen_create(m,beta);
     ofdmoqamframe64gen_print(fg);
 
     // create frame synchronizer
-    ofdmoqamframe64sync fs = ofdmoqamframe64sync_create(callback,(void*)demod);
+    ofdmoqamframe64sync fs = ofdmoqamframe64sync_create(m,beta,callback,(void*)demod);
     ofdmoqamframe64sync_print(fs);
 
     // channel impairments
