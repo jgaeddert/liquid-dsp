@@ -83,9 +83,10 @@ struct ofdmoqamframe64sync_s {
     float complex * rxy0;
     fir_filter_cccf crosscorr;
 
-    // carrier frequency offset (CFO) estimation
+    // carrier frequency offset (CFO) estimation, compensation
     float nu_hat;
-    //nco ncof;
+    nco nco_rx;     //numerically-controlled oscillator
+
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
@@ -143,6 +144,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     // create agc | signal detection object
     q->sigdet = agc_create(1.0f, 0.01f);
 
+    // create NCO for CFO compensation
+    q->nco_rx = nco_create(LIQUID_VCO);
+
     // create auto-correlator objects
     q->autocorr_length = OFDMOQAMFRAME64SYNC_AUTOCORR_LEN;
     q->autocorr_delay0 = q->num_subcarriers;
@@ -199,6 +203,9 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free agc | signal detection object memory
     agc_destroy(_q->sigdet);
 
+    // free NCO object memory
+    nco_destroy(_q->nco_rx);
+
     // free auto-correlator memory objects
     autocorr_cccf_destroy(_q->autocorr0);
     autocorr_cccf_destroy(_q->autocorr1);
@@ -226,8 +233,9 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     autocorr_cccf_clear(_q->autocorr0);
     autocorr_cccf_clear(_q->autocorr1);
 
-    // reset frequency offset estimation
+    // reset frequency offset estimation, correction
     _q->nu_hat = 0.0f;
+    nco_reset(_q->nco_rx);
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
@@ -309,6 +317,9 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     }
     */
  
+    // CFO estimate
+    fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat);
+
     // short, long sequences
     for (i=0; i<_q->num_subcarriers; i++) {
         fprintf(fid,"S0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S0[i]), cimagf(_q->S0[i]));
