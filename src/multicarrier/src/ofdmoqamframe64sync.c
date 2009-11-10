@@ -152,8 +152,8 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->zeta = 64.0f/sqrtf(52.0f);
     
     // create analysis filter banks
-    q->ca0 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,OFDMOQAM_ANALYZER,0/*gradient*/);
-    q->ca1 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,OFDMOQAM_ANALYZER,0/*gradient*/);
+    q->ca0 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,0/*gradient*/);
+    q->ca1 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,0/*gradient*/);
     q->x = cfwindow_create(96);
     q->X0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->X1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -557,8 +557,8 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 
         unsigned int i;
         for (i=0; i<4; i++) {
-            firpfbch_execute(_q->ca0, &r[i*64],    _q->X0);
-            firpfbch_execute(_q->ca1, &r[i*64+32], _q->X1);
+            firpfbch_analyzer_execute(_q->ca0, &r[i*64],    _q->X0);
+            firpfbch_analyzer_execute(_q->ca1, &r[i*64+32], _q->X1);
         }
     }
 
@@ -578,8 +578,8 @@ void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex
     // execute analysis filter banks
     float complex * r;
     cfwindow_read(_q->x, &r);
-    firpfbch_execute(_q->ca0, &r[0],  _q->X0);
-    firpfbch_execute(_q->ca1, &r[32], _q->X1);
+    firpfbch_analyzer_execute(_q->ca0, &r[0],  _q->X0);
+    firpfbch_analyzer_execute(_q->ca1, &r[32], _q->X1);
 
     // gain correction (equalizer)
     unsigned int i;

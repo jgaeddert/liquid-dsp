@@ -67,7 +67,7 @@ struct firpfbch_s {
     fftplan fft;
 #endif
     int nyquist;    // nyquist/root-nyquist
-    int type;       // synthesis/analysis
+    //int type;       // synthesis/analysis
 };
 
 firpfbch firpfbch_create(unsigned int _num_channels,
@@ -75,7 +75,6 @@ firpfbch firpfbch_create(unsigned int _num_channels,
                          float _beta,
                          float _dt,
                          int _nyquist,
-                         int _type,
                          int _gradient)
 {
     firpfbch c = (firpfbch) malloc(sizeof(struct firpfbch_s));
@@ -84,7 +83,6 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     c->beta         = _beta;
     c->dt           = _dt;
     c->nyquist      = _nyquist;
-    c->type         = _type;
 
     // validate inputs
     if (_m < 1) {
@@ -316,7 +314,7 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     }
 }
 
-
+#if 0
 void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y)
 {
     if (_c->type == FIRPFBCH_ANALYZER)
@@ -324,4 +322,5 @@ void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y)
     else
         firpfbch_synthesizer_execute(_c,_x,_y);
 }
+#endif
 

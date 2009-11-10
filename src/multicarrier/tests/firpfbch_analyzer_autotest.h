@@ -44,7 +44,6 @@ void autotest_firpfbch_analysis() {
                                   slsl,
                                   0,
                                   FIRPFBCH_NYQUIST,
-                                  FIRPFBCH_ANALYZER,
                                   0);
 
     // generate data buffers
@@ -90,7 +89,7 @@ void autotest_firpfbch_analysis() {
         // 
         // execute analysis filter bank
         //
-        firpfbch_execute(ca, y, z1);
+        firpfbch_analyzer_execute(ca, y, z1);
 
         // 
         // validate outputs
@@ -169,14 +168,13 @@ void xautotest_firpfbch_analysis_noise() {
                                  beta,
                                  0.0f,
                                  FIRPFBCH_NYQUIST,
-                                 FIRPFBCH_ANALYZER,
                                  0);
 
     float complex y[32];
 
     unsigned int n=0;
     for (i=0; i<num_symbols; i++) {
-        firpfbch_execute(c, &x[n], &y[n]);
+        firpfbch_analyzer_execute(c, &x[n], &y[n]);
         n += num_channels;
     }
 
@@ -222,7 +220,12 @@ void xautotest_firpfbch_analysis_energy()
     float f;
     nco nco_synth = nco_create(LIQUID_VCO);
 
-    firpfbch c = firpfbch_create(num_channels, m, slsl, 0.0f, FIRPFBCH_NYQUIST,FIRPFBCH_ANALYZER,0);
+    firpfbch c = firpfbch_create(num_channels,
+                                 m,
+                                 slsl,
+                                 0.0f,
+                                 FIRPFBCH_NYQUIST,
+                                 0);
 
     unsigned int i, j, k;
     float complex x[num_channels], y[num_channels];
@@ -242,7 +245,7 @@ void xautotest_firpfbch_analysis_energy()
             }
 
             // execute analysis filter bank
-            firpfbch_execute(c, x, y);
+            firpfbch_analyzer_execute(c, x, y);
 
         }
 

@@ -89,8 +89,8 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
 
     // create filterbank channelizers
     // TODO: use actual prototype (get rid of _slsl input)
-    c->c0 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type, _gradient);
-    c->c1 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, c->type, _gradient);
+    c->c0 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, _gradient);
+    c->c1 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, _gradient);
 
     // clear buffers, etc.
     ofdmoqam_clear(c);
@@ -154,8 +154,8 @@ void ofdmoqam_synthesizer_execute(ofdmoqam _c, float complex * _X, float complex
     }
 
     // execute synthesis filter banks
-    firpfbch_execute(_c->c0, _c->X0, _c->x0);
-    firpfbch_execute(_c->c1, _c->X1, _c->x1);
+    firpfbch_synthesizer_execute(_c->c0, _c->X0, _c->x0);
+    firpfbch_synthesizer_execute(_c->c1, _c->X1, _c->x1);
 
     // delay the upper branch
     memmove(_c->x0_prime + k2, _c->x0, k2*sizeof(float complex));
@@ -184,8 +184,8 @@ void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * 
     memmove(_c->x0_prime, _x + k2, k2*sizeof(float complex));
 
     // execute analysis filter banks
-    firpfbch_execute(_c->c0, _c->x0, _c->X0);
-    firpfbch_execute(_c->c1, _c->x1, _c->X1);
+    firpfbch_analyzer_execute(_c->c0, _c->x0, _c->X0);
+    firpfbch_analyzer_execute(_c->c1, _c->x1, _c->X1);
 
     // re-combine channels, delay upper branch by one symbol
     for (i=0; i<_c->num_channels; i+=2) {

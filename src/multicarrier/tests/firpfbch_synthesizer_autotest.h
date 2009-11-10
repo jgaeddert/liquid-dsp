@@ -44,7 +44,6 @@ void autotest_firpfbch_synthesis() {
                                   slsl,
                                   0,
                                   FIRPFBCH_NYQUIST,
-                                  FIRPFBCH_SYNTHESIZER,
                                   0);
 
     // generate data buffers
@@ -96,7 +95,7 @@ void autotest_firpfbch_synthesis() {
         // 
         // execute synthesis filter bank
         //
-        firpfbch_execute(cs, x, y1);
+        firpfbch_synthesizer_execute(cs, x, y1);
 
         // 
         // validate outputs
@@ -173,14 +172,13 @@ void autotest_firpfbch_synthesis_noise() {
                                  beta,
                                  0.0f,
                                  FIRPFBCH_NYQUIST,
-                                 FIRPFBCH_SYNTHESIZER,
                                  0);
 
     float complex y[32];
 
     unsigned int n=0;
     for (i=0; i<num_symbols; i++) {
-        firpfbch_execute(c, &x[n], &y[n]);
+        firpfbch_synthesizer_execute(c, &x[n], &y[n]);
         n += num_channels;
     }
 

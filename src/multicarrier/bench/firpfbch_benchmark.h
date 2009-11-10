@@ -42,7 +42,12 @@ void firpfbch_execute_bench(
     // initialize channelizer
     float slsl  = -60.0f;
     float dt    =   0.0f;
-    firpfbch c = firpfbch_create(_num_channels, _m, slsl, dt, FIRPFBCH_NYQUIST, _type, 0);
+    firpfbch c = firpfbch_create(_num_channels,
+                                 _m,
+                                 slsl,
+                                 dt,
+                                 FIRPFBCH_NYQUIST,
+                                 0);
 
     unsigned long int i;
 
@@ -57,11 +62,20 @@ void firpfbch_execute_bench(
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
-    for (i=0; i<(*_num_iterations); i++) {
-        firpfbch_execute(c,x,y);
-        firpfbch_execute(c,x,y);
-        firpfbch_execute(c,x,y);
-        firpfbch_execute(c,x,y);
+    if (_type = FIRPFBCH_SYNTHESIZER) {
+        for (i=0; i<(*_num_iterations); i++) {
+            firpfbch_synthesizer_execute(c,x,y);
+            firpfbch_synthesizer_execute(c,x,y);
+            firpfbch_synthesizer_execute(c,x,y);
+            firpfbch_synthesizer_execute(c,x,y);
+        }
+    } else  {
+        for (i=0; i<(*_num_iterations); i++) {
+            firpfbch_analyzer_execute(c,x,y);
+            firpfbch_analyzer_execute(c,x,y);
+            firpfbch_analyzer_execute(c,x,y);
+            firpfbch_analyzer_execute(c,x,y);
+        }
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
