@@ -24,14 +24,13 @@ int main() {
     unsigned int m=5;               // filter delay
     float slsl=-60;                 // sidelobe suppression level
     unsigned int num_symbols=64;    // number of baseband symbols
-    int type = FIRPFBCH_NYQUIST;
     int gradient=0;
 
     unsigned int i, j, k, n;
 
     // create objects
-    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_SYNTHESIZER, gradient);
-    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0, type, FIRPFBCH_ANALYZER, gradient);
+    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, gradient);
+    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, gradient);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -120,7 +119,7 @@ int main() {
         // 
         // execute synthesis filter bank
         //
-        firpfbch_execute(cs, x, y1);
+        firpfbch_synthesizer_execute(cs, x, y1);
 
 
 
@@ -141,7 +140,7 @@ int main() {
         // 
         // execute analysis filter bank
         //
-        firpfbch_execute(ca, y1, z1);
+        firpfbch_analyzer_execute(ca, y1, z1);
 
         // compute error
         for (j=0; j<num_channels; j++) {

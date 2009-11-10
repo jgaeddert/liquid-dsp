@@ -21,7 +21,7 @@ int main() {
     unsigned int num_samples = num_frames*num_channels;
 
     // create synthesizer object
-    firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, FIRPFBCH_SYNTHESIZER, 0);
+    firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, 0);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -48,7 +48,7 @@ int main() {
         }
 
         // execute synthesis filter bank
-        firpfbch_execute(c, X, y);
+        firpfbch_synthesizer_execute(c, X, y);
 
         // write output to file
         for (j=0; j<num_channels; j++) {

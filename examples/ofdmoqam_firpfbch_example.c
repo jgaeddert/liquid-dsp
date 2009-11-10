@@ -27,11 +27,11 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    firpfbch cs0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER, 0);
-    firpfbch cs1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_SYNTHESIZER, 0);
+    firpfbch cs0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
+    firpfbch cs1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
 
-    firpfbch ca0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER, 0);
-    firpfbch ca1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, FIRPFBCH_ANALYZER, 0);
+    firpfbch ca0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
+    firpfbch ca1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
 
     // modem
     modem mod = modem_create(ms,bps);
@@ -112,8 +112,8 @@ int main() {
             printf("X0(%3u) = %12.8f + j*%12.8f\n", j, crealf(X0[j]), cimagf(X0[j]));
         printf("\n");
         */
-        firpfbch_execute(cs0, X0, y0);
-        firpfbch_execute(cs1, X1, y1);
+        firpfbch_synthesizer_execute(cs0, X0, y0);
+        firpfbch_synthesizer_execute(cs1, X1, y1);
         // delay lower branch by half a symbol:
         // copy first half of symbol from lower branch
         memmove(&y1_prime[k2], &y1[0], k2*sizeof(float complex));
@@ -132,8 +132,8 @@ int main() {
         // copy first half of symbol to lower branch
         memmove(&z1[k2], &y[0], k2*sizeof(float complex));
         // run analyzer
-        firpfbch_execute(ca0, z0, Z0);
-        firpfbch_execute(ca1, z1, Z1);
+        firpfbch_analyzer_execute(ca0, z0, Z0);
+        firpfbch_analyzer_execute(ca1, z1, Z1);
         // finish delay
         // copy last half of symbol to lower branch
         memmove(&z1[0], &y[k2], k2*sizeof(float complex));
