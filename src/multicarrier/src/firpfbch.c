@@ -28,8 +28,25 @@
 
 #include "liquid.internal.h"
 
+// Use fftw library if installed, otherwise use internal (less
+// efficient) fft library.
 #if HAVE_FFTW3_H
 #   include <fftw3.h>
+#   define FFT_PLAN             fftwf_plan
+#   define FFT_CREATE_PLAN      fftwf_plan_dft_1d
+#   define FFT_DESTROY_PLAN     fftwf_destroy_plan
+#   define FFT_EXECUTE          fftwf_execute
+#   define FFT_DIR_FORWARD      FFTW_FORWARD
+#   define FFT_DIR_BACKWARD     FFTW_BACKWARD
+#   define FFT_METHOD           FFTW_ESTIMATE
+#else
+#   define FFT_PLAN             fftplan
+#   define FFT_CREATE_PLAN      fft_create_plan
+#   define FFT_DESTROY_PLAN     fft_destroy_plan
+#   define FFT_EXECUTE          fft_execute
+#   define FFT_DIR_FORWARD      FFT_FORWARD
+#   define FFT_DIR_BACKWARD     FFT_REVERSE
+#   define FFT_METHOD           FFTW_ESTIMATE
 #endif
 
 #define DEBUG_FIRPFBCH_PRINT    0
@@ -61,11 +78,9 @@ struct firpfbch_s {
     FIR_FILTER() * bank;
 #endif
 
-#if HAVE_FFTW3_H
-    fftwf_plan fft;
-#else
-    fftplan fft;
-#endif
+    // fft plan
+    FFT_PLAN fft;
+
     int nyquist;    // nyquist/root-nyquist
     //int type;       // synthesis/analysis
 };
@@ -164,11 +179,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     firpfbch_clear(c);
 
     // create fft plan
-#if HAVE_FFTW3_H
-    c->fft = fftwf_plan_dft_1d(c->num_channels, c->X, c->x, FFTW_BACKWARD, FFTW_ESTIMATE);
-#else
-    c->fft = fft_create_plan(c->num_channels, c->X, c->x, FFT_REVERSE);
-#endif
+    c->fft = FFT_CREATE_PLAN(c->num_channels, c->X, c->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     return c;
 }
@@ -189,11 +200,7 @@ void firpfbch_destroy(firpfbch _c)
     free(_c->bank);
 #endif
 
-#if HAVE_FFTW3_H
-    fftwf_destroy_plan(_c->fft);
-#else
-    fft_destroy_plan(_c->fft);
-#endif
+    FFT_DESTROY_PLAN(_c->fft);
     free(_c->h);
     free(_c->x);
     free(_c->X);
@@ -240,11 +247,7 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
     memmove(_c->X, _x, (_c->num_channels)*sizeof(float complex));
 
     // execute inverse fft, store in buffer _c->x
-#if HAVE_FFTW3_H
-    fftwf_execute(_c->fft);
-#else
-    fft_execute(_c->fft);
-#endif
+    FFT_EXECUTE(_c->fft);
 
     // push samples into filter bank and execute, putting
     // samples into output buffer _y
@@ -289,11 +292,7 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
 #endif
 
     // execute inverse fft, store in buffer _c->x
-#if HAVE_FFTW3_H
-    fftwf_execute(_c->fft);
-#else
-    fft_execute(_c->fft);
-#endif
+    FFT_EXECUTE(_c->fft);
 
     // copy results to output buffer
     memmove(_y, _c->x, (_c->num_channels)*sizeof(float complex));
