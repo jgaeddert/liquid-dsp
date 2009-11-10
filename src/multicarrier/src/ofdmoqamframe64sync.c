@@ -154,7 +154,6 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     // create analysis filter banks
     q->ca0 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,0/*gradient*/);
     q->ca1 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,0/*gradient*/);
-    q->x = cfwindow_create(96);
     q->X0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->X1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
  
@@ -233,7 +232,6 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free analysis filter bank memory objects
     firpfbch_destroy(_q->ca0);
     firpfbch_destroy(_q->ca1);
-    cfwindow_destroy(_q->x);
     free(_q->X0);
     free(_q->X1);
 
@@ -326,13 +324,14 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
 #endif
 
         // coarse gain correction
-        x *= _q->g;
+        //x *= _q->g;
         
         // compensate for CFO
         nco_mix_up(_q->nco_rx, x, &x);
 
-        // 
-        cfwindow_push(_q->x, x);
+        // push sample into analysis filter banks
+        firpfbch_analyzer_push(_q->ca0, x);
+        firpfbch_analyzer_push(_q->ca1, x); // TODO : push delayed sample
 
         switch (_q->state) {
         case OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT:
@@ -550,16 +549,6 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[1] : %12.8f\n", cabsf(rxy));
         _q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
-
-        // 
-        float complex * r;
-        cfwindow_read(_q->input_buffer, &r);
-
-        unsigned int i;
-        for (i=0; i<4; i++) {
-            firpfbch_analyzer_execute(_q->ca0, &r[i*64],    _q->X0);
-            firpfbch_analyzer_execute(_q->ca1, &r[i*64+32], _q->X1);
-        }
     }
 
 }
@@ -567,7 +556,6 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x)
 {
     // push 64 samples into buffer
-    //cfwindow_push(_q->x, _x); // executed in main loop?
     _q->timer++;
     if (_q->timer < _q->num_subcarriers)
         return;
@@ -577,15 +565,16 @@ void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex
 
     // execute analysis filter banks
     float complex * r;
-    cfwindow_read(_q->x, &r);
-    firpfbch_analyzer_execute(_q->ca0, &r[0],  _q->X0);
-    firpfbch_analyzer_execute(_q->ca1, &r[32], _q->X1);
+    //printf("rxpayload returning prematurely\n");
+    //return;
+    firpfbch_analyzer_run(_q->ca0, _q->X0);
+    firpfbch_analyzer_run(_q->ca1, _q->X1);
 
     // gain correction (equalizer)
     unsigned int i;
     for (i=0; i<_q->num_subcarriers; i++) {
-        _q->X0[i] *= _q->G[i];
-        _q->X1[i] *= _q->G[i];
+        _q->X0[i] *= _q->G[i] * _q->zeta;
+        _q->X1[i] *= _q->G[i] * _q->zeta;
     }
 
     // TODO : extract pilots
