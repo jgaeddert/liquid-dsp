@@ -379,7 +379,9 @@ struct DOTPROD(_s) {                                            \
     unsigned int n;                                             \
 };                                                              \
 DOTPROD() DOTPROD(_create)(TC * _v, unsigned int _n);           \
+DOTPROD() DOTPROD(_create_rev)(TC * _v, unsigned int _n);       \
 void DOTPROD(_destroy)(DOTPROD() _q);                           \
+void DOTPROD(_print)(DOTPROD() _q);                             \
 void DOTPROD(_execute)(DOTPROD() _q, TI * _v, TO * _y);
 
 // Define APIs
