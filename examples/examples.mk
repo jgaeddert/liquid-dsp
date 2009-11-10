@@ -43,6 +43,7 @@ local_src	:=			\
 	eqlms_cccf_example.c		\
 	eqrls_cccf_example.c		\
 	fbuffer_example.c		\
+	fwdelay_example.c		\
 	fwindow_example.c		\
 	fading_channel_example.c	\
 	fading_generator_example.c	\

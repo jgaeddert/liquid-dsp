@@ -253,6 +253,33 @@ LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT, unsigned int)
 
 
+// wdelay functions : windowed-delay
+// Implements an efficient z^-k delay with minimal memory
+#define WDELAY_MANGLE_FLOAT(name)   LIQUID_CONCAT(fwdelay, name)
+#define WDELAY_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfwdelay, name)
+#define WDELAY_MANGLE_UINT(name)    LIQUID_CONCAT(uiwdelay, name)
+
+// large macro
+//   WDELAY : name-mangling macro
+//   T      : data type
+#define LIQUID_WDELAY_DEFINE_API(WDELAY,T)                      \
+                                                                \
+typedef struct WDELAY(_s) * WDELAY();                           \
+WDELAY() WDELAY(_create)(unsigned int _k);                      \
+WDELAY() WDELAY(_recreate)(WDELAY() _w, unsigned int _k);       \
+void WDELAY(_destroy)(WDELAY() _w);                             \
+void WDELAY(_print)(WDELAY() _w);                               \
+void WDELAY(_debug_print)(WDELAY() _w);                         \
+void WDELAY(_clear)(WDELAY() _w);                               \
+void WDELAY(_read)(WDELAY() _w, T * _v);                        \
+void WDELAY(_push)(WDELAY() _b, T _v);
+
+// Define wdelay APIs
+LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT, float)
+LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
+LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT, unsigned int)
+
+
 // Port
 #define PORT_MANGLE_FLOAT(name)     LIQUID_CONCAT(fport,name)
 #define PORT_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfport,name)
