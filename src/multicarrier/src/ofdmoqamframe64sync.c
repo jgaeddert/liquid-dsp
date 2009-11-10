@@ -31,10 +31,6 @@
 
 #include "liquid.internal.h"
 
-//#if HAVE_FFTW3_H
-//#   include <fftw3.h>
-//#endif
-
 #define DEBUG_OFDMOQAMFRAME64SYNC             1
 #define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       1
 #define DEBUG_OFDMOQAMFRAME64SYNC_FILENAME    "ofdmoqamframe64sync_internal_debug.m"
@@ -59,7 +55,6 @@ struct ofdmoqamframe64sync_s {
     // filterbank objects
     firpfbch ca0;
     firpfbch ca1;
-    cfwindow x;                 // 64+32 = 96
     float complex * X0, * X1;   // @ 64
 
     // constants
@@ -114,7 +109,7 @@ struct ofdmoqamframe64sync_s {
     cfwindow input_buffer;
     unsigned int timer;
 
-    // output data buffer, ready to demodulate
+    // output data buffer, ready for demodulation
     float complex * data;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
@@ -146,10 +141,10 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->beta = _beta;
 
     // synchronizer parameters
-    q->rxx_thresh = 0.75f;
-    q->rxy_thresh = 0.75f;
+    q->rxx_thresh = 0.75f;  // auto-correlation threshold
+    q->rxy_thresh = 0.75f;  // cross-correlation threshold
 
-    q->zeta = 64.0f/sqrtf(52.0f);
+    q->zeta = 64.0f/sqrtf(52.0f);   // scaling factor
     
     // create analysis filter banks
     q->ca0 = firpfbch_create(q->num_subcarriers, q->m, q->beta, 0.0f /*dt*/,FIRPFBCH_ROOTNYQUIST,0/*gradient*/);
