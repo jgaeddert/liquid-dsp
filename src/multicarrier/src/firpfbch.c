@@ -155,7 +155,7 @@ void firpfbch_destroy(firpfbch _c)
 {
     unsigned int i;
     for (i=0; i<_c->num_channels; i++)
-        fir_filter_crcf_destroy(_c->bank[i]);
+        FIR_FILTER(_destroy)(_c->bank[i]);
     free(_c->bank);
 
 #if HAVE_FFTW3_H
@@ -173,7 +173,7 @@ void firpfbch_clear(firpfbch _c)
 {
     unsigned int i;
     for (i=0; i<_c->num_channels; i++) {
-        fir_filter_crcf_clear(_c->bank[i]);
+        FIR_FILTER(_clear)(_c->bank[i]);
         _c->x[i] = 0;
         _c->X[i] = 0;
     }
@@ -207,8 +207,8 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
     // push samples into filter bank and execute, putting
     // samples into output buffer _y
     for (i=0; i<_c->num_channels; i++) {
-        fir_filter_crcf_push(_c->bank[i], _c->x[i]);
-        fir_filter_crcf_execute(_c->bank[i], &(_y[i]));
+        FIR_FILTER(_push)(_c->bank[i], _c->x[i]);
+        FIR_FILTER(_execute)(_c->bank[i], &(_y[i]));
 
         // invoke scaling factor
         _y[i] /= (float)(_c->num_channels);
@@ -227,8 +227,8 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     unsigned int i, b;
 
     // push first value and compute output
-    fir_filter_crcf_push(_c->bank[0], _x[0]);
-    fir_filter_crcf_execute(_c->bank[0], &(_c->X[0]));
+    FIR_FILTER(_push)(_c->bank[0], _x[0]);
+    FIR_FILTER(_execute)(_c->bank[0], &(_c->X[0]));
 
     // execute inverse fft, store in buffer _c->x
 #if HAVE_FFTW3_H
@@ -245,8 +245,8 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     // input buffer _c->X
     for (i=1; i<_c->num_channels; i++) {
         b = _c->num_channels-i;
-        fir_filter_crcf_push(_c->bank[b], _x[i]);
-        fir_filter_crcf_execute(_c->bank[b], &(_c->X[b]));
+        FIR_FILTER(_push)(_c->bank[b], _x[i]);
+        FIR_FILTER(_execute)(_c->bank[b], &(_c->X[b]));
     }
 }
 
