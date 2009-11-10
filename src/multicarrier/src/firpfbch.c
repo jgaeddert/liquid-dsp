@@ -55,8 +55,6 @@
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
 #define WINDOW(name)        LIQUID_CONCAT(cfwindow,name)
 
-#define FIRPFBCH_USE_DOTPROD    1
-
 struct firpfbch_s {
     unsigned int num_channels;
     unsigned int m;
@@ -69,14 +67,9 @@ struct firpfbch_s {
     unsigned int h_len;
     float * h;
     
-#if FIRPFBCH_USE_DOTPROD
     // create separate bank of dotprod and window objects
     DOTPROD() * dp;
     WINDOW() * w;
-#else
-    // create bank of FIR filters
-    FIR_FILTER() * bank;
-#endif
 
     // fft plan
     FFT_PLAN fft;
@@ -106,12 +99,8 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     }
 
     // create bank of filters
-#if FIRPFBCH_USE_DOTPROD
     c->dp   = (DOTPROD()*) malloc((c->num_channels)*sizeof(DOTPROD()));
     c->w    = (WINDOW()*) malloc((c->num_channels)*sizeof(WINDOW()));
-#else
-    c->bank = (FIR_FILTER()*) malloc((c->num_channels)*sizeof(FIR_FILTER()));
-#endif
 
     // design filter
     // TODO: use filter prototype object
@@ -151,14 +140,10 @@ firpfbch firpfbch_create(unsigned int _num_channels,
         for (n=0; n<h_sub_len; n++) {
             h_sub[n] = c->h[i + n*(c->num_channels)];
         }
-#if FIRPFBCH_USE_DOTPROD
         // create window buffer and dotprod object (coefficients
         // loaded in reverse order)
         c->dp[i] = DOTPROD(_create_rev)(h_sub,h_sub_len);
         c->w[i]  = WINDOW(_create)(h_sub_len);
-#else
-        c->bank[i] = FIR_FILTER(_create)(h_sub, h_sub_len);
-#endif
 
 #if DEBUG_FIRPFBCH_PRINT
         printf("h_sub[%u] :\n", i);
@@ -187,18 +172,12 @@ firpfbch firpfbch_create(unsigned int _num_channels,
 void firpfbch_destroy(firpfbch _c)
 {
     unsigned int i;
-#if FIRPFBCH_USE_DOTPROD
     for (i=0; i<_c->num_channels; i++) {
         DOTPROD(_destroy)(_c->dp[i]);
         WINDOW(_destroy)(_c->w[i]);
     }
     free(_c->dp);
     free(_c->w);
-#else
-    for (i=0; i<_c->num_channels; i++)
-        FIR_FILTER(_destroy)(_c->bank[i]);
-    free(_c->bank);
-#endif
 
     FFT_DESTROY_PLAN(_c->fft);
     free(_c->h);
@@ -211,11 +190,7 @@ void firpfbch_clear(firpfbch _c)
 {
     unsigned int i;
     for (i=0; i<_c->num_channels; i++) {
-#if FIRPFBCH_USE_DOTPROD
         WINDOW(_clear)(_c->w[i]);
-#else
-        FIR_FILTER(_clear)(_c->bank[i]);
-#endif
         _c->x[i] = 0;
         _c->X[i] = 0;
     }
@@ -226,10 +201,7 @@ void firpfbch_print(firpfbch _c)
     printf("firpfbch: [%u channels]\n", _c->num_channels);
     unsigned int i;
     for (i=0; i<_c->num_channels; i++) {
-#if FIRPFBCH_USE_DOTPROD
         DOTPROD(_print)(_c->dp[i]);
-#else
-#endif
     }
 }
 
@@ -251,18 +223,11 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
 
     // push samples into filter bank and execute, putting
     // samples into output buffer _y
-#if FIRPFBCH_USE_DOTPROD
     float complex * r;
-#endif
     for (i=0; i<_c->num_channels; i++) {
-#if FIRPFBCH_USE_DOTPROD
         WINDOW(_push)(_c->w[i], _c->x[i]);
         WINDOW(_read)(_c->w[i], &r);
         DOTPROD(_execute)(_c->dp[i], r, &(_y[i]));
-#else
-        FIR_FILTER(_push)(_c->bank[i], _c->x[i]);
-        FIR_FILTER(_execute)(_c->bank[i], &(_y[i]));
-#endif
 
         // invoke scaling factor
         _y[i] /= (float)(_c->num_channels);
@@ -281,15 +246,10 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     unsigned int i, b;
 
     // push first value and compute output
-#if FIRPFBCH_USE_DOTPROD
     float complex * r;
     WINDOW(_push)(_c->w[0], _x[0]);
     WINDOW(_read)(_c->w[0], &r);
     DOTPROD(_execute)(_c->dp[0], r, &(_c->X[0]));
-#else
-    FIR_FILTER(_push)(_c->bank[0], _x[0]);
-    FIR_FILTER(_execute)(_c->bank[0], &(_c->X[0]));
-#endif
 
     // execute inverse fft, store in buffer _c->x
     FFT_EXECUTE(_c->fft);
@@ -302,14 +262,9 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     // input buffer _c->X
     for (i=1; i<_c->num_channels; i++) {
         b = _c->num_channels-i;
-#if FIRPFBCH_USE_DOTPROD
         WINDOW(_push)(_c->w[b], _x[i]);
         WINDOW(_read)(_c->w[b], &r);
         DOTPROD(_execute)(_c->dp[b], r, &(_c->X[b]));
-#else
-        FIR_FILTER(_push)(_c->bank[b], _x[i]);
-        FIR_FILTER(_execute)(_c->bank[b], &(_c->X[b]));
-#endif
     }
 }
 
