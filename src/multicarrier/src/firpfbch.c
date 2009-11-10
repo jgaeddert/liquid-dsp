@@ -66,6 +66,7 @@ struct firpfbch_s {
     // filter
     unsigned int h_len;
     float * h;
+    unsigned int filter_index;
     
     // create separate bank of dotprod and window objects
     DOTPROD() * dp;
@@ -194,6 +195,7 @@ void firpfbch_clear(firpfbch _c)
         _c->x[i] = 0;
         _c->X[i] = 0;
     }
+    _c->filter_index = 0;
 }
 
 void firpfbch_print(firpfbch _c)
@@ -210,6 +212,10 @@ void firpfbch_get_filter_taps(firpfbch _c,
 {
     memmove(_h, _c->h, (_c->h_len)*sizeof(float));
 }
+
+// 
+// SYNTHESIZER
+//
 
 void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex * _y)
 {
@@ -234,7 +240,29 @@ void firpfbch_synthesizer_execute(firpfbch _c, float complex * _x, float complex
     }
 }
 
+// 
+// ANALYZER
+//
+
 void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * _y)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_channels; i++)
+        firpfbch_analyzer_push(_c,_x[i]);
+
+    firpfbch_analyzer_run(_c,_y);
+}
+
+void firpfbch_analyzer_push(firpfbch _c, float complex _x)
+{
+    // push sample into the buffer at filter_index
+    WINDOW(_push)(_c->w[_c->filter_index], _x);
+
+    // decrement filter index
+    _c->filter_index = (_c->filter_index+_c->num_channels-1) % _c->num_channels;
+}
+
+void firpfbch_analyzer_run(firpfbch _c, float complex * _y)
 {
     // NOTE: The analyzer is different from the synthesizer in
     //       that the invocation of the commutator results in a
@@ -244,12 +272,12 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     //       the remaining filters are executed.
 
     unsigned int i, b;
+    unsigned int k = _c->filter_index;
 
     // push first value and compute output
     float complex * r;
-    WINDOW(_push)(_c->w[0], _x[0]);
-    WINDOW(_read)(_c->w[0], &r);
-    DOTPROD(_execute)(_c->dp[0], r, &(_c->X[0]));
+    WINDOW(_read)(_c->w[k], &r);
+    DOTPROD(_execute)(_c->dp[k], r, &(_c->X[k]));
 
     // execute inverse fft, store in buffer _c->x
     FFT_EXECUTE(_c->fft);
@@ -261,20 +289,8 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     // *reverse* order, putting result into the inverse DFT
     // input buffer _c->X
     for (i=1; i<_c->num_channels; i++) {
-        b = _c->num_channels-i;
-        WINDOW(_push)(_c->w[b], _x[i]);
+        b = (_c->num_channels+k-i) % _c->num_channels;
         WINDOW(_read)(_c->w[b], &r);
         DOTPROD(_execute)(_c->dp[b], r, &(_c->X[b]));
     }
 }
-
-#if 0
-void firpfbch_execute(firpfbch _c, float complex * _x, float complex * _y)
-{
-    if (_c->type == FIRPFBCH_ANALYZER)
-        firpfbch_analyzer_execute(_c,_x,_y);
-    else
-        firpfbch_synthesizer_execute(_c,_x,_y);
-}
-#endif
-

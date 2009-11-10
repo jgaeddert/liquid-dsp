@@ -823,7 +823,7 @@ LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, liquid_float_complex, liqui
 //#define FIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(dfirhilb, name)
 
 // NOTES:
-//   Although firhilb is a placeholder for both the decimation and
+//   Although firhilb is a placeholder for both decimation and
 //   interpolation, separate objects should be used for each task.
 #define LIQUID_FIRHILB_DEFINE_API(FIRHILB,T,TC)                 \
 typedef struct FIRHILB(_s) * FIRHILB();                         \
@@ -1638,6 +1638,9 @@ void freqmodem_demodulate(freqmodem _fm,
 //
 
 // FIR polyphase filterbank channelizer
+// NOTES:
+//   Although firpfbch is a placeholder for both the synthesizer and
+//   analyzer, separate objects should be used for each task.
 typedef struct firpfbch_s * firpfbch;
 
 #define FIRPFBCH_NYQUIST        0
@@ -1661,10 +1664,14 @@ void firpfbch_destroy(firpfbch _c);
 void firpfbch_clear(firpfbch _c);
 void firpfbch_print(firpfbch _c);
 void firpfbch_get_filter_taps(firpfbch _c, float * _h);
-//void firpfbch_execute(firpfbch _c, liquid_float_complex * _x, liquid_float_complex * _y);
+
+// synthesis
 void firpfbch_synthesizer_execute(firpfbch _c,
                                   liquid_float_complex * _x,
                                   liquid_float_complex * _X);
+// analysis
+void firpfbch_analyzer_push(firpfbch _c, liquid_float_complex _x);
+void firpfbch_analyzer_run(firpfbch _c, liquid_float_complex * _X);
 void firpfbch_analyzer_execute(firpfbch _c,
                                liquid_float_complex * _X,
                                liquid_float_complex * _x);
