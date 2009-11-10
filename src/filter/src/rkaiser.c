@@ -28,10 +28,6 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
-
 void design_rkaiser_filter(
   unsigned int _k,
   unsigned int _m,
@@ -71,13 +67,8 @@ void design_rkaiser_filter(
     float complex g[h_len];
 
     // transform objects
-#if HAVE_FFTW3_H
-    fftwf_plan  fft = fftwf_plan_dft_1d(h_len,h,H,FFTW_FORWARD,FFTW_ESTIMATE);
-    fftwf_plan ifft = fftwf_plan_dft_1d(h_len,G,g,FFTW_BACKWARD,FFTW_ESTIMATE);
-#else
-    fftplan  fft = fft_create_plan(h_len,h,H,FFT_FORWARD);
-    fftplan ifft = fft_create_plan(h_len,G,g,FFT_REVERSE);
-#endif
+    FFT_PLAN  fft = FFT_CREATE_PLAN(h_len,h,H,FFT_DIR_FORWARD, FFT_METHOD);
+    FFT_PLAN ifft = FFT_CREATE_PLAN(h_len,G,g,FFT_DIR_BACKWARD,FFT_METHOD);
 
     // design filter from Kaiser prototype (nyquist filter)
     fir_kaiser_window(h_len, fc, 60.0f, 0.0f, hf);
@@ -87,11 +78,7 @@ void design_rkaiser_filter(
         h[(i+_k*_m+1)%h_len] = hf[i];
 
     // run forward transform
-#if HAVE_FFTW3_H
-    fftwf_execute(fft);
-#else
-    fft_execute(fft);
-#endif
+    FFT_EXECUTE(fft);
 
     // compute spectral factor
     for (i=0; i<h_len; i++)
@@ -101,24 +88,15 @@ void design_rkaiser_filter(
     // ...
 
     // compute reverse transform
-#if HAVE_FFTW3_H
-    fftwf_execute(ifft);
-#else
-    fft_execute(ifft);
-#endif
+    FFT_EXECUTE(ifft);
 
     // copy to real array, shifting values appropriately
     for (i=0; i<h_len; i++)
         _h[i] = crealf(g[(i+_k*_m+1)%h_len]) * zeta;
 
     // destroy transform objects
-#if HAVE_FFTW3_H
-    fftwf_destroy_plan(fft);
-    fftwf_destroy_plan(ifft);
-#else
-    fft_destroy_plan(fft);
-    fft_destroy_plan(ifft);
-#endif
+    FFT_DESTROY_PLAN(fft);
+    FFT_DESTROY_PLAN(ifft);
 
 #if 1
     // print filter coefficients

@@ -425,6 +425,29 @@ unsigned int reverse_index(unsigned int _i, unsigned int _n);
 //void fft_shift_even(float complex *_x, unsigned int _n);
 
 
+// Use fftw library if installed, otherwise use internal (less
+// efficient) fft library.
+#if HAVE_FFTW3_H
+#   include <fftw3.h>
+#   define FFT_PLAN             fftwf_plan
+#   define FFT_CREATE_PLAN      fftwf_plan_dft_1d
+#   define FFT_DESTROY_PLAN     fftwf_destroy_plan
+#   define FFT_EXECUTE          fftwf_execute
+#   define FFT_DIR_FORWARD      FFTW_FORWARD
+#   define FFT_DIR_BACKWARD     FFTW_BACKWARD
+#   define FFT_METHOD           FFTW_ESTIMATE
+#else
+#   define FFT_PLAN             fftplan
+#   define FFT_CREATE_PLAN      fft_create_plan
+#   define FFT_DESTROY_PLAN     fft_destroy_plan
+#   define FFT_EXECUTE          fft_execute
+#   define FFT_DIR_FORWARD      FFT_FORWARD
+#   define FFT_DIR_BACKWARD     FFT_REVERSE
+#   define FFT_METHOD           0
+#endif
+
+
+
 //
 // MODULE : filter
 //

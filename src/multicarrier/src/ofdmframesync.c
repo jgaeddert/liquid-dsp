@@ -30,10 +30,6 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
-
 #define OFDMFRAMESYNC_MIN_NUM_SUBCARRIERS   (8)
 
 #define DEBUG_OFDMFRAMESYNC             1
@@ -64,11 +60,7 @@ struct ofdmframesync_s {
     float nu_hat;       // carrier frequency offset estimation
     float dt_hat;       // symbol timing offset estimation
 
-#if HAVE_FFTW3_H
-    fftwf_plan fft;
-#else
-    fftplan fft;
-#endif
+    FFT_PLAN fft;
 
     ofdmframesync_callback callback;
     void * userdata;
@@ -106,11 +98,7 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     q->x = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->X = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
-#if HAVE_FFTW3_H
-    q->fft = fftwf_plan_dft_1d(q->num_subcarriers, q->x, q->X, FFTW_FORWARD, FFTW_ESTIMATE);
-#else
-    q->fft = fft_create_plan(q->num_subcarriers, q->x, q->X, FFT_FORWARD);
-#endif
+    q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // cyclic prefix correlation windows
     q->wcp    = cfwindow_create(q->cp_len);
@@ -163,11 +151,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->x);
     free(_q->X);
     free(_q->rxy_buffer);
-#if HAVE_FFTW3_H
-    fftwf_destroy_plan(_q->fft);
-#else
-    fft_destroy_plan(_q->fft);
-#endif
+    FFT_DESTROY_PLAN(_q->fft);
 
     cfwindow_destroy(_q->wcp);
     cfwindow_destroy(_q->wdelay);
@@ -265,11 +249,7 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
     }
 
     // execute fft
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
+    FFT_EXECUTE(_q->fft);
 
     // TODO : compensate for fractional time delay
     //float dt = (float)(d) / (float)(_q->num_subcarriers);

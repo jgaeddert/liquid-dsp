@@ -29,10 +29,6 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
-
 #define DEBUG_OFDMFRAMEGEN                  1
 #define OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS    (8)
 
@@ -45,11 +41,8 @@ struct ofdmframegen_s {
 
     float complex * xcp;    // cyclic prefix pointer (not allocated)
 
-#if HAVE_FFTW3_H
-    fftwf_plan fft;
-#else
-    fftplan fft;
-#endif
+    FFT_PLAN fft;
+
     float zeta;             // fft scaling factor
 };
 
@@ -79,11 +72,8 @@ ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
     q->x = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->X = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
-#if HAVE_FFTW3_H
-    q->fft = fftwf_plan_dft_1d(q->num_subcarriers, q->X, q->x, FFTW_BACKWARD, FFTW_ESTIMATE);
-#else
-    q->fft = fft_create_plan(q->num_subcarriers, q->X, q->x, FFT_REVERSE);
-#endif
+    q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
+
     q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
 
     // set cyclic prefix array pointer
@@ -97,11 +87,7 @@ void ofdmframegen_destroy(ofdmframegen _q)
     free(_q->x);
     free(_q->X);
 
-#if HAVE_FFTW3_H
-    fftwf_destroy_plan(_q->fft);
-#else
-    fft_destroy_plan(_q->fft);
-#endif
+    FFT_DESTROY_PLAN(_q->fft);
     free(_q);
 }
 
@@ -126,11 +112,7 @@ void ofdmframegen_execute(ofdmframegen _q,
     memmove(_q->X, _x, (_q->num_subcarriers)*sizeof(float complex));
 
     // execute inverse fft, store in buffer _q->x
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
+    FFT_EXECUTE(_q->fft);
 
     // scaling
     unsigned int i;

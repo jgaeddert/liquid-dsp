@@ -28,27 +28,6 @@
 
 #include "liquid.internal.h"
 
-// Use fftw library if installed, otherwise use internal (less
-// efficient) fft library.
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#   define FFT_PLAN             fftwf_plan
-#   define FFT_CREATE_PLAN      fftwf_plan_dft_1d
-#   define FFT_DESTROY_PLAN     fftwf_destroy_plan
-#   define FFT_EXECUTE          fftwf_execute
-#   define FFT_DIR_FORWARD      FFTW_FORWARD
-#   define FFT_DIR_BACKWARD     FFTW_BACKWARD
-#   define FFT_METHOD           FFTW_ESTIMATE
-#else
-#   define FFT_PLAN             fftplan
-#   define FFT_CREATE_PLAN      fft_create_plan
-#   define FFT_DESTROY_PLAN     fft_destroy_plan
-#   define FFT_EXECUTE          fft_execute
-#   define FFT_DIR_FORWARD      FFT_FORWARD
-#   define FFT_DIR_BACKWARD     FFT_REVERSE
-#   define FFT_METHOD           FFTW_ESTIMATE
-#endif
-
 #define DEBUG_FIRPFBCH_PRINT    0
 
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_crcf,name)

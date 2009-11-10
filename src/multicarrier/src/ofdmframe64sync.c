@@ -31,10 +31,6 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
-
 #define DEBUG_OFDMFRAME64SYNC             1
 #define DEBUG_OFDMFRAME64SYNC_PRINT       0
 #define DEBUG_OFDMFRAME64SYNC_FILENAME    "ofdmframe64sync_internal_debug.m"
@@ -50,11 +46,7 @@ struct ofdmframe64sync_s {
     // fast Fourier transform
     float complex * x;      // FFT time-domain buffer
     float complex * X;      // FFT freq-domain buffer
-#if HAVE_FFTW3_H
-    fftwf_plan fft;
-#else
-    fftplan fft;
-#endif
+    FFT_PLAN fft;
 
     // initial gain correction / signal detection
     agc sigdet;             // automatic gain control for signal detection
@@ -126,11 +118,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->x = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->X = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
-#if HAVE_FFTW3_H
-    q->fft = fftwf_plan_dft_1d(q->num_subcarriers, q->x, q->X, FFTW_FORWARD, FFTW_ESTIMATE);
-#else
-    q->fft = fft_create_plan(q->num_subcarriers, q->x, q->X, FFT_FORWARD);
-#endif
+    q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // initial gain correction / signal detection
     q->sigdet = agc_create(1.0f, 0.1f);
@@ -191,11 +179,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     free(_q->X);
     cfwindow_destroy(_q->rxy_buffer);
     cfwindow_destroy(_q->Lt_buffer);
-#if HAVE_FFTW3_H
-    fftwf_destroy_plan(_q->fft);
-#else
-    fft_destroy_plan(_q->fft);
-#endif
+    FFT_DESTROY_PLAN(_q->fft);
 
     agc_destroy(_q->sigdet);
     msequence_destroy(_q->ms_pilot);
@@ -546,11 +530,7 @@ void ofdmframe64sync_compute_plcplong0(ofdmframe64sync _q)
 {
     // first PLCP long sequence
     memmove(_q->x, _q->Lt0, 64*sizeof(float complex));
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
+    FFT_EXECUTE(_q->fft);
     memmove(_q->Lf0, _q->X, 64*sizeof(float complex));
 }
 
@@ -558,11 +538,7 @@ void ofdmframe64sync_compute_plcplong1(ofdmframe64sync _q)
 {
     // second PLCP long sequence
     memmove(_q->x, _q->Lt1, 64*sizeof(float complex));
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
+    FFT_EXECUTE(_q->fft);
     memmove(_q->Lf1, _q->X, 64*sizeof(float complex));
 }
  
@@ -753,11 +729,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     //       does not overlap the next OFDM symbol
     // TODO: compensate equalizer phase for timing backoff
     memmove(_q->x, _q->symbol+_q->cp_len-_q->backoff, 64*sizeof(float complex));
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
+    FFT_EXECUTE(_q->fft);
 
     // gain correction (equalizer)
     unsigned int i;

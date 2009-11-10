@@ -30,10 +30,6 @@
 
 #include "liquid.internal.h"
 
-#if HAVE_FFTW3_H
-#   include <fftw3.h>
-#endif
-
 #define DEBUG_OFDMFRAME64GEN                1
 
 struct ofdmframe64gen_s {
@@ -50,11 +46,8 @@ struct ofdmframe64gen_s {
 
     msequence ms_pilot;
 
-#if HAVE_FFTW3_H
-    fftwf_plan fft;
-#else
-    fftplan fft;
-#endif
+    FFT_PLAN fft;
+
     float zeta;             // fft scaling factor
 };
 
@@ -68,11 +61,7 @@ ofdmframe64gen ofdmframe64gen_create()
     q->x = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->X = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
-#if HAVE_FFTW3_H
-    q->fft = fftwf_plan_dft_1d(q->num_subcarriers, q->X, q->x, FFTW_BACKWARD, FFTW_ESTIMATE);
-#else
-    q->fft = fft_create_plan(q->num_subcarriers, q->X, q->x, FFT_REVERSE);
-#endif
+    q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
     q->zeta = sqrtf(1.0f / 52.0f); // sqrt((64/52)*(1/64)) : 52 subcarriers used
 
     // set cyclic prefix array pointer
@@ -92,11 +81,8 @@ void ofdmframe64gen_destroy(ofdmframe64gen _q)
     free(_q->X);
     msequence_destroy(_q->ms_pilot);
 
-#if HAVE_FFTW3_H
-    fftwf_destroy_plan(_q->fft);
-#else
-    fft_destroy_plan(_q->fft);
-#endif
+    FFT_DESTROY_PLAN(_q->fft);
+
     free(_q);
 }
 
@@ -169,11 +155,7 @@ void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
     assert(j==48);
 
     // execute inverse fft, store in buffer _q->x
-#if HAVE_FFTW3_H
-    fftwf_execute(_q->fft);
-#else
-    fft_execute(_q->fft);
-#endif
+    FFT_EXECUTE(_q->fft);
 
     // copy cyclic prefix
     memmove(_y, _q->xcp, (_q->cp_len)*sizeof(float complex));
