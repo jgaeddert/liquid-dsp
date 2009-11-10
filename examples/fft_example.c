@@ -7,6 +7,7 @@
 
 int main() {
     unsigned int n=16;
+    int method=0;
     float complex x[n]; // time-domain 'signal'
     float complex y[n]; // fft(x)
     float complex z[n]; // ifft(y)
@@ -15,8 +16,8 @@ int main() {
     for (i=0; i<n; i++)
         x[i] = (float)i - _Complex_I*(float)i;
 
-    fftplan pf = fft_create_plan(n, x, y, FFT_FORWARD);
-    fftplan pr = fft_create_plan(n, y, z, FFT_REVERSE);
+    fftplan pf = fft_create_plan(n, x, y, FFT_FORWARD, method);
+    fftplan pr = fft_create_plan(n, y, z, FFT_REVERSE, method);
 
     // execute ffts
     fft_execute(pf);
