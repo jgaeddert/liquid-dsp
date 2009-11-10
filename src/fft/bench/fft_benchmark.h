@@ -40,7 +40,8 @@ void fft_bench(
 {
     // initialize arrays, plan
     float complex x[_n], y[_n];
-    fftplan p = fft_create_plan(_n, x, y, _direction);
+    int _method = 0;
+    fftplan p = fft_create_plan(_n, x, y, _direction, _method);
     
     unsigned long int i;
 

@@ -26,6 +26,7 @@
 // autotest helper function
 void fft_test(float complex *_x, float complex *_test, unsigned int _n)
 {
+    int _method = 0;
     float tol=1e-4f;
 
     unsigned int i;
@@ -33,11 +34,11 @@ void fft_test(float complex *_x, float complex *_test, unsigned int _n)
     float complex y[_n], z[_n];
 
     // compute FFT
-    fftplan pf = fft_create_plan(_n, _x, y, FFT_FORWARD);
+    fftplan pf = fft_create_plan(_n, _x, y, FFT_FORWARD, _method);
     fft_execute(pf);
 
     // compute IFFT
-    fftplan pr = fft_create_plan(_n, y, z, FFT_REVERSE);
+    fftplan pr = fft_create_plan(_n, y, z, FFT_REVERSE, _method);
     fft_execute(pr);
 
     // normalize inverse

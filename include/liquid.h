@@ -572,7 +572,8 @@ typedef struct fftplan_s * fftplan;
 fftplan fft_create_plan(unsigned int _n,
                         liquid_float_complex * _x,
                         liquid_float_complex * _y,
-                        int _dir);
+                        int _dir,
+                        int _method);
 void fft_destroy_plan(fftplan _p);
 void fft_execute(fftplan _p);
 

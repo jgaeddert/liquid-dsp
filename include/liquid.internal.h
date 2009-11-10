@@ -390,6 +390,7 @@ struct fftplan_s {
     float complex * x;          // input array
     float complex * y;          // output array
     int direction;              // forward/reverse
+    int method;
 
     // radix-2
     int is_radix2;              // radix-2 flag

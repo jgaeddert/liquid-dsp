@@ -34,13 +34,18 @@ void fft_destroy_plan(fftplan _p)
     free(_p);
 }
 
-fftplan fft_create_plan(unsigned int _n, float complex * _x, float complex * _y, int _dir)
+fftplan fft_create_plan(unsigned int _n,
+                        float complex * _x,
+                        float complex * _y,
+                        int _dir,
+                        int _method)
 {
     fftplan p = (fftplan) malloc(_n*sizeof(struct fftplan_s));
 
     p->n = _n;
     p->x = _x;
     p->y = _y;
+    p->method = _method;
 
     if (_dir == FFT_FORWARD)
         p->direction = FFT_FORWARD;

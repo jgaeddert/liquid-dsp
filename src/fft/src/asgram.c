@@ -52,7 +52,7 @@ asgram asgram_create(float complex * _x, unsigned int _n)
     q->y = (float complex*) malloc((q->n)*sizeof(float complex));
     q->psd = (float*) malloc((q->n)*sizeof(float));
 
-    q->p = fft_create_plan(q->n, q->x, q->y, FFT_FORWARD);
+    q->p = fft_create_plan(q->n, q->x, q->y, FFT_FORWARD, 0);
     q->num_levels = 6;
     q->levelchar[0] = 'M';
     q->levelchar[1] = '#';
