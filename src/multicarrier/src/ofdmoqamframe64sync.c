@@ -63,6 +63,8 @@ struct ofdmoqamframe64sync_s {
     // PLCP
     float complex * S0; // short sequence
     float complex * S1; // long sequence
+    float complex * S1a;    // decoded long sequence (first)
+    float complex * S1b;    // decoded long sequence (second)
 
     // pilot sequence
     msequence ms_pilot;
@@ -162,6 +164,8 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
         q->S0[i] *= q->zeta;
         q->S1[i] *= q->zeta;
     }
+    q->S1a = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->S1b = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
@@ -233,6 +237,8 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // clean up PLCP arrays
     free(_q->S0);
     free(_q->S1);
+    free(_q->S1a);
+    free(_q->S1b);
 
     // free pilot msequence object memory
     msequence_destroy(_q->ms_pilot);
@@ -322,7 +328,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         //x *= _q->g;
         
         // compensate for CFO
-        nco_mix_up(_q->nco_rx, x, &x);
+        //nco_mix_up(_q->nco_rx, x, &x);
 
         // push sample into analysis filter banks
         firpfbch_analyzer_push(_q->ca0, x);
@@ -412,6 +418,26 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"plot(0:(n-1),abs(rxy));\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xy}|');\n");
+
+    // decoded long sequences
+    fprintf(fid,"S1  = zeros(1,64);\n");
+    fprintf(fid,"S1a = zeros(1,64);\n");
+    fprintf(fid,"S1b = zeros(1,64);\n");
+    for (i=0; i<64; i++) {
+        fprintf(fid,"S1(%4u)  = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1[i]),  cimagf(_q->S1[i]));
+        fprintf(fid,"S1a(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1a[i]), cimagf(_q->S1a[i]));
+        fprintf(fid,"S1b(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1b[i]), cimagf(_q->S1b[i]));
+    }
+    fprintf(fid,"S1 = S1/(64/sqrt(52));\n");
+    fprintf(fid,"figure;\n");
+    //fprintf(fid,"f = [(0:63)]/64 - 0.5;\n");
+    //fprintf(fid,"plot(S1,'x',S1a,'x',S1b,'x');\n");
+    fprintf(fid,"plot(S1,'x',S1a,'x');\n");
+    fprintf(fid,"xlabel('I');\n");
+    fprintf(fid,"ylabel('Q');\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
+    fprintf(fid,"title('PLCP long sequences');\n");
 
     fprintf(fid,"t = 5*64;\n");
     fprintf(fid,"input_buffer = zeros(1,t);\n");
@@ -524,7 +550,21 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[0] : %12.8f\n", cabsf(rxy));
-        _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
+
+        // run analyzers
+        firpfbch_analyzer_run(_q->ca0, _q->X0);
+        firpfbch_analyzer_run(_q->ca1, _q->X1);
+        unsigned int i;
+        for (i=0; i<_q->num_subcarriers; i++) {
+            if ((i%2)==0) {
+                _q->S1a[i] = crealf(_q->X0[i]) + cimagf(_q->X1[i])*_Complex_I;
+            } else {
+                _q->S1a[i] = crealf(_q->X1[i]) + cimagf(_q->X0[i])*_Complex_I;
+            }
+            _q->S1a[i] /= _q->zeta;
+        }
+        
+        //_q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
     }
 }
 
@@ -543,7 +583,7 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[1] : %12.8f\n", cabsf(rxy));
-        _q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
+        //_q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
     }
 
 }
@@ -559,7 +599,6 @@ void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex
     _q->timer = 0;
 
     // execute analysis filter banks
-    float complex * r;
     //printf("rxpayload returning prematurely\n");
     //return;
     firpfbch_analyzer_run(_q->ca0, _q->X0);

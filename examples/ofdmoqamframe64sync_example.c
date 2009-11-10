@@ -40,10 +40,10 @@ int main() {
 
     // options
     unsigned int num_symbols_S0=3;  // num short sequence symbols
-    unsigned int num_symbols_S1=2;  // num long sequence symbols
-    unsigned int num_symbols_data=8;// num data symbols
-    unsigned int m=3;
-    float beta = 0.7f;
+    unsigned int num_symbols_S1=8;  // num long sequence symbols
+    unsigned int num_symbols_data=1;// num data symbols
+    unsigned int m=2;
+    float beta = 0.9f;
     modulation_scheme ms = MOD_QPSK;
     unsigned int bps = 2;
     float cfo=0.0f;         // carrier frequency offset (max: pi/(2*64) ~ 0.024544)

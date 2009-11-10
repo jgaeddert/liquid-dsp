@@ -81,7 +81,7 @@ void ofdmoqamframe64_init_S1(float complex * _S1)
     unsigned int j;
     unsigned int sctype;
 
-    // short sequence
+    // long sequence
     for (j=0; j<num_subcarriers; j++) {
         sctype = ofdmoqamframe64_getsctype(j);
         if (sctype == OFDMOQAMFRAME64_SCTYPE_NULL) {
