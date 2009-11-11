@@ -102,11 +102,7 @@ struct ofdmoqamframe64sync_s {
         OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD     // receive payload symbols
     } state;
 
-    // input sample buffer
-    // NOTE: this is necessary to align the channelizer
-    //       buffers, although it is hardly an ideal
-    //       solution
-    cfwindow input_buffer;
+    // timing/delay
     unsigned int timer;
     cfwdelay delay;
 
@@ -193,8 +189,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->crosscorr = fir_filter_cccf_create(q->rxy0, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
-    // input buffer: 3 S0 symbols + 2 S1 symbols
-    q->input_buffer = cfwindow_create(5*(q->num_subcarriers));
+    // delay buffer
     q->delay = cfwdelay_create((q->num_subcarriers)/2);
 
     // gain
@@ -263,8 +258,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free data buffer
     free(_q->data);
 
-    // free circular buffer array
-    cfwindow_destroy(_q->input_buffer);
+    // free delay buffer
     cfwdelay_destroy(_q->delay);
 
     // free main object memory
@@ -293,8 +287,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     _q->nu_hat = 0.0f;
     nco_reset(_q->nco_rx);
 
-    // clear input buffer
-    cfwindow_clear(_q->input_buffer);
+    // clear delay buffer
     cfwdelay_clear(_q->delay);
 
     // clear analysis filter bank objects
@@ -442,17 +435,6 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"title('PLCP long sequences');\n");
 
-    fprintf(fid,"t = 5*64;\n");
-    fprintf(fid,"input_buffer = zeros(1,t);\n");
-    cfwindow_read(_q->input_buffer, &rc);
-    for (i=0; i<5*64; i++)
-        fprintf(fid,"input_buffer(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(t-1),real(input_buffer),0:(t-1),imag(input_buffer));\n");
-    fprintf(fid,"xlabel('sample index');\n");
-    fprintf(fid,"ylabel('input buffer');\n");
-
-
     /*
     // plot gain vectors
     fprintf(fid,"f = [-32:31];\n");
@@ -487,8 +469,6 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
 
 void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x)
 {
-    cfwindow_push(_q->input_buffer,_x);
-
     // run AGC, clip output
     float complex y;
     agc_execute(_q->sigdet, _x, &y);
@@ -546,8 +526,6 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
 
 void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x)
 {
-    cfwindow_push(_q->input_buffer,_x);
-
     // cross-correlator
     float complex rxy;
     fir_filter_cccf_push(_q->crosscorr, _x);
@@ -579,8 +557,6 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 
 void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex _x)
 {
-    cfwindow_push(_q->input_buffer,_x);
-
     // cross-correlator
     float complex rxy;
     fir_filter_cccf_push(_q->crosscorr, _x);
