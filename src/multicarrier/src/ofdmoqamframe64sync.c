@@ -99,6 +99,7 @@ struct ofdmoqamframe64sync_s {
         OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT=0,  // seek PLCP short sequence
         OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0,    // seek first PLCP long sequence
         OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1,    // seek second PLCP long sequence
+        OFDMOQAMFRAME64SYNC_STATE_BLAH,
         OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD     // receive payload symbols
     } state;
 
@@ -203,7 +204,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->G = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // symbol buffers
-    q->symbol_buffer_len = 2*q->m;
+    q->symbol_buffer_len = 2*(q->m) + 1;
     q->symbol_buffer0 = (float complex*) malloc((q->num_subcarriers)*(q->symbol_buffer_len)*sizeof(float complex));
     q->symbol_buffer1 = (float complex*) malloc((q->num_subcarriers)*(q->symbol_buffer_len)*sizeof(float complex));
 
@@ -343,7 +344,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         //x *= _q->g;
         
         // compensate for CFO
-        nco_mix_down(_q->nco_rx, x, &x);
+        //nco_mix_down(_q->nco_rx, x, &x);
 
         // push sample into analysis filter banks
         float complex x_delay;
@@ -361,6 +362,9 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
             break;
         case OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1:
             ofdmoqamframe64sync_execute_plcplong1(_q,x);
+            break;
+        case OFDMOQAMFRAME64SYNC_STATE_BLAH:
+            ofdmoqamframe64sync_execute_blah(_q,x);
             break;
         case OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD:
             ofdmoqamframe64sync_execute_rxpayload(_q,x);
@@ -460,16 +464,25 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     // symbol buffer
     fprintf(fid,"symbol_buffer0 = zeros(%u,%u);\n", _q->num_subcarriers, _q->symbol_buffer_len);
     fprintf(fid,"symbol_buffer1 = zeros(%u,%u);\n", _q->num_subcarriers, _q->symbol_buffer_len);
-    unsigned int j,n;
+    unsigned int j,n,k;
     for (j=0; j<_q->symbol_buffer_len; j++) {
+        k = (_q->symbol_buffer_index + j) % _q->symbol_buffer_len;
         for (i=0; i<64; i++) {
-            n = j*64 + i;
+            n = k*64 + i;
             fprintf(fid,"symbol_buffer0(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1,
                     crealf(_q->symbol_buffer0[n]), cimagf(_q->symbol_buffer0[n]));
             fprintf(fid,"symbol_buffer1(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1,
                     crealf(_q->symbol_buffer1[n]), cimagf(_q->symbol_buffer1[n]));
         }
     }
+    fprintf(fid,"i0 = 1:2:64; %% even subcarriers\n");
+    fprintf(fid,"i1 = 2:2:64; %% odd subcarriers\n");
+    fprintf(fid,"symbols = zeros(%u,%u);\n", _q->num_subcarriers, _q->symbol_buffer_len);
+    fprintf(fid,"symbols(i0,:) =   real(symbol_buffer0(i0,:)) + j*imag(symbol_buffer1(i0,:));\n");
+    fprintf(fid,"symbols(i1,:) = j*imag(symbol_buffer0(i1,:)) +   real(symbol_buffer1(i1,:));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(symbols,'x');\n");
+    fprintf(fid,"axis('square');\n");
 
     /*
     // plot gain vectors
@@ -588,8 +601,7 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
             }
             _q->S1a[i] /= _q->zeta;
         }
-        
-        _q->timer = 0;
+
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
     }
 }
@@ -614,18 +626,21 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 
         printf("rxy[1] : %12.8f\n", cabsf(rxy));
         
-        _q->timer++;
-        if (_q->timer == 7) {
-            printf("ofdmoqamframe64sync: exiting prematurely\n");
-            ofdmoqamframe64sync_destroy(_q);
-            exit(1);
-        } else {
-            return;
-        }
-
-        _q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
+        //_q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_BLAH;
+        _q->timer = 0;
     }
 
+}
+
+void ofdmoqamframe64sync_execute_blah(ofdmoqamframe64sync _q, float complex _x)
+{
+    printf("waiting...\n");
+    _q->timer++;
+    if (_q->timer == 31) {
+        _q->timer = 0;
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
+    }
 }
 
 void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x)
@@ -648,11 +663,13 @@ void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex
     printf("writing data symbol to buffer\n");
     ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
 
+    /*
     if (rand()%10 == 0) {
         printf("ofdmoqamframe64sync: exiting prematurely\n");
         ofdmoqamframe64sync_destroy(_q);
         exit(1);
     }
+    */
 
     // gain correction (equalizer)
     unsigned int i;

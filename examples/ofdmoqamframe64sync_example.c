@@ -44,8 +44,8 @@ int main() {
     unsigned int num_symbols_data=16;// num data symbols
     unsigned int m=2;
     float beta = 0.9f;
-    modulation_scheme ms = MOD_QPSK;
-    unsigned int bps = 2;
+    modulation_scheme ms = MOD_QAM;
+    unsigned int bps = 4;
     float cfo=0.0f;         // carrier frequency offset (max: pi/(2*64) ~ 0.024544)
     float cpo=0.0f;         // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
@@ -56,7 +56,7 @@ int main() {
     unsigned int num_symbols = num_symbols_S0 +
                                num_symbols_S1 +
                                num_symbols_data;
-    unsigned int num_frames  = num_symbols + 2*m;
+    unsigned int num_frames  = num_symbols + 2*m + 1;
     unsigned int num_samples = 64*num_frames;
 
     printf("num symbols: %u\n", num_symbols);
@@ -129,7 +129,7 @@ int main() {
     }
 
     // flush
-    for (i=0; i<2*m; i++) {
+    for (i=0; i<2*m+1; i++) {
         ofdmoqamframe64gen_flush(fg,&y[n]);
         n += 64;
     }
