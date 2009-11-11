@@ -501,8 +501,8 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     cfwindow_push(_q->debug_rxx1, _q->rxx1);
 #endif
     float agc_rssi = agc_get_signal_level(_q->sigdet);
-    float rxx_mag0 = cabsf(_q->rxx0);
-    float rxx_mag1 = cabsf(_q->rxx1);
+    float rxx_mag0 = cabsf(_q->rxx0) * agc_rssi;
+    float rxx_mag1 = cabsf(_q->rxx1) * agc_rssi;
 
     float threshold = (_q->rxx_thresh)*(_q->autocorr_length);
 
