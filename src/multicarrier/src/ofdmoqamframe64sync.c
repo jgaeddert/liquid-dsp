@@ -108,6 +108,7 @@ struct ofdmoqamframe64sync_s {
     //       solution
     cfwindow input_buffer;
     unsigned int timer;
+    cfwdelay delay;
 
     // output data buffer, ready for demodulation
     float complex * data;
@@ -194,6 +195,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // input buffer: 3 S0 symbols + 2 S1 symbols
     q->input_buffer = cfwindow_create(5*(q->num_subcarriers));
+    q->delay = cfwdelay_create((q->num_subcarriers)/2);
 
     // gain
     q->g = 1.0f;
@@ -263,6 +265,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 
     // free circular buffer array
     cfwindow_destroy(_q->input_buffer);
+    cfwdelay_destroy(_q->delay);
 
     // free main object memory
     free(_q);
@@ -292,6 +295,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
 
     // clear input buffer
     cfwindow_clear(_q->input_buffer);
+    cfwdelay_clear(_q->delay);
 
     // clear analysis filter bank objects
     firpfbch_clear(_q->ca0);
@@ -327,8 +331,11 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         nco_mix_down(_q->nco_rx, x, &x);
 
         // push sample into analysis filter banks
-        firpfbch_analyzer_push(_q->ca0, x);
-        firpfbch_analyzer_push(_q->ca1, x); // TODO : push delayed sample
+        float complex x_delay;
+        cfwdelay_read(_q->delay,&x_delay);
+        cfwdelay_push(_q->delay,x);
+        firpfbch_analyzer_push(_q->ca0, x);         // push input sample
+        firpfbch_analyzer_push(_q->ca1, x_delay);   // push delayed sample
 
         switch (_q->state) {
         case OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT:
