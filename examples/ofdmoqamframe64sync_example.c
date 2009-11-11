@@ -40,8 +40,8 @@ int main() {
 
     // options
     unsigned int num_symbols_S0=3;  // num short sequence symbols
-    unsigned int num_symbols_S1=8;  // num long sequence symbols
-    unsigned int num_symbols_data=1;// num data symbols
+    unsigned int num_symbols_S1=2;  // num long sequence symbols
+    unsigned int num_symbols_data=6;// num data symbols
     unsigned int m=2;
     float beta = 0.9f;
     modulation_scheme ms = MOD_QPSK;
