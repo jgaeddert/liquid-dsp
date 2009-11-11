@@ -106,6 +106,12 @@ struct ofdmoqamframe64sync_s {
     unsigned int timer;
     cfwdelay delay;
 
+    // symbol buffers
+    float complex * symbol_buffer0; // [num_subcarriers * m]
+    float complex * symbol_buffer1; // [num_subcarriers * m]
+    unsigned int symbol_buffer_index;
+    unsigned int symbol_buffer_len;
+
     // output data buffer, ready for demodulation
     float complex * data;
 
@@ -196,6 +202,11 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->g = 1.0f;
     q->G = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
+    // symbol buffers
+    q->symbol_buffer_len = 2*q->m;
+    q->symbol_buffer0 = (float complex*) malloc((q->num_subcarriers)*(q->symbol_buffer_len)*sizeof(float complex));
+    q->symbol_buffer1 = (float complex*) malloc((q->num_subcarriers)*(q->symbol_buffer_len)*sizeof(float complex));
+
     q->data = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // reset object
@@ -255,6 +266,10 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free gain arrays
     free(_q->G);
 
+    // free symbol buffers
+    free(_q->symbol_buffer0);
+    free(_q->symbol_buffer1);
+
     // free data buffer
     free(_q->data);
 
@@ -299,6 +314,13 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     unsigned int i;
     for (i=0; i<_q->num_subcarriers; i++)
         _q->G[i] = 1.0f;
+
+    // reset symbol buffers
+    for (i=0; i<(_q->num_subcarriers)*(_q->symbol_buffer_len); i++) {
+        _q->symbol_buffer0[i] = 0;
+        _q->symbol_buffer1[i] = 0;
+    }
+    _q->symbol_buffer_index = 0;
 
     // reset state
     _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
@@ -435,6 +457,20 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"title('PLCP long sequences');\n");
 
+    // symbol buffer
+    fprintf(fid,"symbol_buffer0 = zeros(%u,%u);\n", _q->num_subcarriers, _q->symbol_buffer_len);
+    fprintf(fid,"symbol_buffer1 = zeros(%u,%u);\n", _q->num_subcarriers, _q->symbol_buffer_len);
+    unsigned int j,n;
+    for (j=0; j<_q->symbol_buffer_len; j++) {
+        for (i=0; i<64; i++) {
+            n = j*64 + i;
+            fprintf(fid,"symbol_buffer0(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1,
+                    crealf(_q->symbol_buffer0[n]), cimagf(_q->symbol_buffer0[n]));
+            fprintf(fid,"symbol_buffer1(%4u,%4u) = %12.4e + j*%12.4e;\n", i+1, j+1,
+                    crealf(_q->symbol_buffer1[n]), cimagf(_q->symbol_buffer1[n]));
+        }
+    }
+
     /*
     // plot gain vectors
     fprintf(fid,"f = [-32:31];\n");
@@ -541,6 +577,8 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
         // run analyzers
         firpfbch_analyzer_run(_q->ca0, _q->X0);
         firpfbch_analyzer_run(_q->ca1, _q->X1);
+        // write result to symbol buffer
+        ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
         unsigned int i;
         for (i=0; i<_q->num_subcarriers; i++) {
             if ((i%2)==0) {
@@ -551,7 +589,8 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
             _q->S1a[i] /= _q->zeta;
         }
         
-        //_q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
+        _q->timer = 0;
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
     }
 }
 
@@ -567,8 +606,24 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 #endif
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
+        // run analyzers
+        firpfbch_analyzer_run(_q->ca0, _q->X0);
+        firpfbch_analyzer_run(_q->ca1, _q->X1);
+        // write result to symbol buffer
+        ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
+
         printf("rxy[1] : %12.8f\n", cabsf(rxy));
-        //_q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
+        
+        _q->timer++;
+        if (_q->timer == 7) {
+            printf("ofdmoqamframe64sync: exiting prematurely\n");
+            ofdmoqamframe64sync_destroy(_q);
+            exit(1);
+        } else {
+            return;
+        }
+
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
     }
 
 }
@@ -589,11 +644,21 @@ void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex
     firpfbch_analyzer_run(_q->ca0, _q->X0);
     firpfbch_analyzer_run(_q->ca1, _q->X1);
 
+    // write result to symbol buffer
+    printf("writing data symbol to buffer\n");
+    ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
+
+    if (rand()%10 == 0) {
+        printf("ofdmoqamframe64sync: exiting prematurely\n");
+        ofdmoqamframe64sync_destroy(_q);
+        exit(1);
+    }
+
     // gain correction (equalizer)
     unsigned int i;
     for (i=0; i<_q->num_subcarriers; i++) {
-        _q->X0[i] *= _q->G[i] * _q->zeta;
-        _q->X1[i] *= _q->G[i] * _q->zeta;
+        _q->X0[i] *= _q->G[i];// * _q->zeta;
+        _q->X1[i] *= _q->G[i];// * _q->zeta;
     }
 
     // TODO : extract pilots
@@ -632,4 +697,25 @@ void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex
         cfwindow_push(_q->debug_framesyms,_q->data[i]);
 //#endif
 
+}
+
+void ofdmoqamframe64sync_symbol_buffer_write(ofdmoqamframe64sync _q,
+                                             float complex * _X0,
+                                             float complex * _X1)
+{
+    unsigned int offset = (_q->symbol_buffer_index)*(_q->num_subcarriers);
+    memmove(_q->symbol_buffer0 + offset, _X0, (_q->num_subcarriers)*sizeof(float complex));
+    memmove(_q->symbol_buffer1 + offset, _X1, (_q->num_subcarriers)*sizeof(float complex));
+
+    _q->symbol_buffer_index++;
+    _q->symbol_buffer_index %= (_q->symbol_buffer_len);
+}
+
+void ofdmoqamframe64sync_symbol_buffer_read(ofdmoqamframe64sync _q,
+                                            float complex * _X0,
+                                            float complex * _X1)
+{
+    unsigned int offset = (_q->symbol_buffer_index)*(_q->num_subcarriers);
+    memmove(_X0, _q->symbol_buffer0 + offset, (_q->num_subcarriers)*sizeof(float complex));
+    memmove(_X1, _q->symbol_buffer1 + offset, (_q->num_subcarriers)*sizeof(float complex));
 }
