@@ -169,7 +169,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->ms_pilot = msequence_create(8);
 
     // create agc | signal detection object
-    q->sigdet = agc_create(1.0f, 0.01f);
+    q->sigdet = agc_create(1.0f, 0.001f);
 
     // create NCO for CFO compensation
     q->nco_rx = nco_create(LIQUID_VCO);
@@ -496,13 +496,18 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     autocorr_cccf_push(_q->autocorr1, _x);
     autocorr_cccf_execute(_q->autocorr1, &_q->rxx1);
 
+    // TODO : compensate for signal level appropriately
+    float g = agc_get_gain(_q->sigdet);
+    g = 1.0f;
+    _q->rxx0 *= g;
+    _q->rxx1 *= g;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxx0, _q->rxx0);
     cfwindow_push(_q->debug_rxx1, _q->rxx1);
 #endif
-    float agc_rssi = agc_get_signal_level(_q->sigdet);
-    float rxx_mag0 = cabsf(_q->rxx0) * agc_rssi;
-    float rxx_mag1 = cabsf(_q->rxx1) * agc_rssi;
+    float rxx_mag0 = cabsf(_q->rxx0);
+    float rxx_mag1 = cabsf(_q->rxx1);
 
     float threshold = (_q->rxx_thresh)*(_q->autocorr_length);
 
