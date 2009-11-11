@@ -80,8 +80,6 @@ struct ofdmoqamframe64sync_s {
     unsigned int autocorr_delay1;   // delay [1]
     float complex rxx0;
     float complex rxx1;
-    float complex rxx_max0;
-    float complex rxx_max1;
     float rxx_mag_max;
 
     // cross-correlator
@@ -286,8 +284,6 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     // reset auto-correlators
     autocorr_cccf_clear(_q->autocorr0);
     autocorr_cccf_clear(_q->autocorr1);
-    _q->rxx_max0 = 0.0f;
-    _q->rxx_max1 = 0.0f;
     _q->rxx_mag_max = 0.0f;
 
     // reset frequency offset estimation, correction
@@ -328,7 +324,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         //x *= _q->g;
         
         // compensate for CFO
-        //nco_mix_up(_q->nco_rx, x, &x);
+        nco_mix_down(_q->nco_rx, x, &x);
 
         // push sample into analysis filter banks
         firpfbch_analyzer_push(_q->ca0, x);
@@ -504,32 +500,33 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     cfwindow_push(_q->debug_rxx0, _q->rxx0);
     cfwindow_push(_q->debug_rxx1, _q->rxx1);
 #endif
-    float rxx_mag = cabsf(_q->rxx0) + cabsf(_q->rxx1);
-    rxx_mag *= 0.5f;
-    rxx_mag *= agc_get_signal_level(_q->sigdet);
-    if (rxx_mag > _q->rxx_mag_max) {
-        _q->rxx_max0 = _q->rxx0;
-        _q->rxx_max1 = _q->rxx1;
-        _q->rxx_mag_max = rxx_mag;
-    }
+    float agc_rssi = agc_get_signal_level(_q->sigdet);
+    float rxx_mag0 = cabsf(_q->rxx0);
+    float rxx_mag1 = cabsf(_q->rxx1);
 
-    if (rxx_mag > (_q->rxx_thresh)*(_q->autocorr_length)) {
+    float threshold = (_q->rxx_thresh)*(_q->autocorr_length);
+
+    if (rxx_mag0 > threshold && rxx_mag1 > threshold) {
         // TODO : wait for auto-correlation to peak before changing state
+        if (rxx_mag0 + rxx_mag1 > _q->rxx_mag_max) {
+            _q->rxx_mag_max = rxx_mag0 + rxx_mag1;
+            return;
+        }
 
         // estimate CFO
-        _q->nu_hat = cargf((_q->rxx_max0)*conjf(_q->rxx_max1));
+        _q->nu_hat = cargf((_q->rxx0)*conjf(_q->rxx1));
         if (_q->nu_hat >  M_PI/2.0f) _q->nu_hat -= M_PI;
         if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
         _q->nu_hat *= 2.0f / (float)(_q->num_subcarriers);
 
 #if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
-        printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max0),cargf(_q->rxx_max0));
-        printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx_max1),cargf(_q->rxx_max1));
+        printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx0),cargf(_q->rxx0));
+        printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx1),cargf(_q->rxx1));
         printf("nu_hat =  %12.8f\n", _q->nu_hat);
 #endif
 
-        //nco_set_frequency(_q->nco_rx, _q->nu_hat);
-        //_q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
+        nco_set_frequency(_q->nco_rx, _q->nu_hat);
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
 
         _q->g = agc_get_gain(_q->sigdet);
     }
