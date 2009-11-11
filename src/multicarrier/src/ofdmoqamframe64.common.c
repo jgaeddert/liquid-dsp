@@ -62,7 +62,10 @@ void ofdmoqamframe64_init_S0(float complex * _S0)
                 // odd subcarrer
                 s = msequence_generate_symbol(ms,2);
                 modem_modulate(mod,s,&sym);
-                _S0[j] = sym * zeta * sqrtf(2.0f);
+                // retain only quadrature component (time aligned
+                // without half-symbol delay), and amplitude-
+                // compensated.
+                _S0[j] = cimagf(sym) * _Complex_I * zeta * 2.0f;
             }
         }
     }

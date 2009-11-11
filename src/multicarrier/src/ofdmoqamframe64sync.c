@@ -529,7 +529,7 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
 #endif
 
         //nco_set_frequency(_q->nco_rx, _q->nu_hat);
-        _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
+        //_q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
 
         _q->g = agc_get_gain(_q->sigdet);
     }
