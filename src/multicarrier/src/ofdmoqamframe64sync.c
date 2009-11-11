@@ -99,7 +99,7 @@ struct ofdmoqamframe64sync_s {
         OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT=0,  // seek PLCP short sequence
         OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0,    // seek first PLCP long sequence
         OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1,    // seek second PLCP long sequence
-        OFDMOQAMFRAME64SYNC_STATE_BLAH,
+        OFDMOQAMFRAME64SYNC_STATE_DELAY,
         OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD     // receive payload symbols
     } state;
 
@@ -351,6 +351,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         cfwdelay_read(_q->delay,&x_delay);
         cfwdelay_push(_q->delay,x);
         firpfbch_analyzer_push(_q->ca0, x);         // push input sample
+        // TODO : remove delay and replace with delayed execution
         firpfbch_analyzer_push(_q->ca1, x_delay);   // push delayed sample
 
         switch (_q->state) {
@@ -363,8 +364,9 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         case OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1:
             ofdmoqamframe64sync_execute_plcplong1(_q,x);
             break;
-        case OFDMOQAMFRAME64SYNC_STATE_BLAH:
-            ofdmoqamframe64sync_execute_blah(_q,x);
+        case OFDMOQAMFRAME64SYNC_STATE_DELAY:
+            // TODO : remove this state
+            ofdmoqamframe64sync_execute_delay(_q,x);
             break;
         case OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD:
             ofdmoqamframe64sync_execute_rxpayload(_q,x);
@@ -627,13 +629,13 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         printf("rxy[1] : %12.8f\n", cabsf(rxy));
         
         //_q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
-        _q->state = OFDMOQAMFRAME64SYNC_STATE_BLAH;
+        _q->state = OFDMOQAMFRAME64SYNC_STATE_DELAY;
         _q->timer = 0;
     }
 
 }
 
-void ofdmoqamframe64sync_execute_blah(ofdmoqamframe64sync _q, float complex _x)
+void ofdmoqamframe64sync_execute_delay(ofdmoqamframe64sync _q, float complex _x)
 {
     printf("waiting...\n");
     _q->timer++;
