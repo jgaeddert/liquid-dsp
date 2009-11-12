@@ -107,6 +107,8 @@ struct ofdmoqamframe64sync_s {
     // timing/delay
     unsigned int timer;
     unsigned int num_symbols;
+    unsigned int num_samples;
+    int run_analyzer;
     cfwdelay delay;
 
     // symbol buffers
@@ -136,8 +138,8 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->num_subcarriers = 64;
 
     // validate input
-    if (_m < 2) {
-        fprintf(stderr,"error: ofdmoqamframe64sync_create(), filter delay must be > 1\n");
+    if (_m < 1) {
+        fprintf(stderr,"error: ofdmoqamframe64sync_create(), filter delay must be > 0\n");
         exit(1);
     } else if (_beta < 0.0f) {
         fprintf(stderr,"error: ofdmoqamframe64sync_create(), filter excess bandwidth must be > 0\n");
@@ -197,6 +199,12 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
                                   0);     // gradient
     for (i=0; i<2*(q->m); i++)
         ofdmoqam_execute(cs,q->S1,q->rxy0);
+    // time reverse, complex conjugate
+    memmove(q->X0, q->rxy0, 64*sizeof(float complex));
+    for (i=0; i<64; i++)
+        q->rxy0[i] = conjf(q->X0[64-i-1]);
+    // fftshift
+    //fft_shift(q->rxy0,64);
     q->crosscorr = fir_filter_cccf_create(q->rxy0, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
@@ -333,6 +341,8 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
     _q->timer = 0;
     _q->num_symbols = 0;
+    _q->num_samples = 0;
+    _q->run_analyzer = 0;
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
@@ -346,6 +356,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
 #if DEBUG_OFDMOQAMFRAME64SYNC
         cfwindow_push(_q->debug_x,x);
 #endif
+        _q->num_samples++;
 
         // coarse gain correction
         //x *= _q->g;
@@ -358,10 +369,9 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         cfwdelay_read(_q->delay,&x_delay);
         cfwdelay_push(_q->delay,x);
         firpfbch_analyzer_push(_q->ca0, x);         // push input sample
-        // TODO : remove delay and replace with delayed execution
-        //firpfbch_analyzer_push(_q->ca1, x_delay);   // push delayed sample
-        firpfbch_analyzer_push(_q->ca1, x);   // push delayed sample
+        firpfbch_analyzer_push(_q->ca1, x_delay);   // push delayed sample
 
+        //if (!(_q->run_analyzer)) {
         switch (_q->state) {
         case OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT:
             ofdmoqamframe64sync_execute_plcpshort(_q,x);
@@ -381,8 +391,21 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
             break;
         default:;
         }
-    }
-}
+        //}
+
+        if (_q->run_analyzer) {
+            unsigned int k=0;
+            // run analyzers
+            if ((_q->num_samples % 64) == k) {
+                printf("n : %4u\n", _q->num_samples);
+                firpfbch_analyzer_run(_q->ca0, _q->X0);
+                firpfbch_analyzer_run(_q->ca1, _q->X1);
+
+                ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
+            }
+        } // _q->run_analyzer
+    } // for (i=0; i<_n; i++)
+} // ofdmoqamframe64sync_execute()
 
 //
 // internal
@@ -595,14 +618,15 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 #endif
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
-        printf("rxy[0] : %12.8f\n", cabsf(rxy));
+        printf("rxy[0] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
 
         // run analyzers
-        firpfbch_analyzer_run(_q->ca0, _q->X0);
-        firpfbch_analyzer_run(_q->ca1, _q->X1);
+        //firpfbch_analyzer_run(_q->ca0, _q->X0);
+        //firpfbch_analyzer_run(_q->ca1, _q->X1);
         // write result to symbol buffer
-        ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
-        _q->num_symbols++;
+        //ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
+        //_q->num_symbols++;
+        /*
         unsigned int i;
         for (i=0; i<_q->num_subcarriers; i++) {
             if ((i%2)==0) {
@@ -612,6 +636,9 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
             }
             _q->S1a[i] /= _q->zeta;
         }
+        */
+
+        _q->run_analyzer = 1;
 
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
     }
@@ -630,16 +657,19 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         // run analyzers
+        /*
         firpfbch_analyzer_run(_q->ca0, _q->X0);
         firpfbch_analyzer_run(_q->ca1, _q->X1);
         // write result to symbol buffer
         ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
         _q->num_symbols++;
+        */
 
-        printf("rxy[1] : %12.8f\n", cabsf(rxy));
+        //printf("rxy[1] : %12.8f\n", cabsf(rxy));
+        printf("rxy[1] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
         
         //_q->state = OFDMOQAMFRAME64SYNC_STATE_RXPAYLOAD;
-        _q->state = OFDMOQAMFRAME64SYNC_STATE_DELAY;
+        //_q->state = OFDMOQAMFRAME64SYNC_STATE_DELAY;
         _q->timer = 0;
     }
 
@@ -657,6 +687,7 @@ void ofdmoqamframe64sync_execute_delay(ofdmoqamframe64sync _q, float complex _x)
 
 void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x)
 {
+    return;
     // push 64 samples into buffer
     _q->timer++;
     if (_q->timer < _q->num_subcarriers)
