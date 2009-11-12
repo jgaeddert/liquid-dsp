@@ -39,13 +39,13 @@ int main() {
     srand(time(NULL));
 
     // options
-    unsigned int num_symbols_S0=3;  // num short sequence symbols
+    unsigned int num_symbols_S0=6;  // num short sequence symbols
     unsigned int num_symbols_S1=2;  // num long sequence symbols
-    unsigned int num_symbols_data=16;// num data symbols
+    unsigned int num_symbols_data=6;// num data symbols
     unsigned int m=2;
     float beta = 0.9f;
     modulation_scheme ms = MOD_QAM;
-    unsigned int bps = 4;
+    unsigned int bps = 2;
     float cfo=0.0f;         // carrier frequency offset (max: pi/(2*64) ~ 0.024544)
     float cpo=0.0f;         // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
