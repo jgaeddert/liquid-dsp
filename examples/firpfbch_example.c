@@ -2,7 +2,7 @@
 // firpfbch_example.c
 //
 // Finite impulse response (FIR) polyphase filter bank (PFB)
-// channelizer example.  This example demonstrates thefunctionality
+// channelizer example.  This example demonstrates the functionality
 // of the polyphase filter bank channelizer and how its output
 // is mathematically equivalent to a series of parallel down-
 // converters (mixers/decimators).
@@ -24,13 +24,12 @@ int main() {
     unsigned int m=5;               // filter delay
     float slsl=-60;                 // sidelobe suppression level
     unsigned int num_symbols=64;    // number of baseband symbols
-    int gradient=0;
 
     unsigned int i, j, k, n;
 
     // create objects
-    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, gradient);
-    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, gradient);
+    firpfbch cs = firpfbch_create(num_channels, m, slsl, 0/*dt*/, FIRPFBCH_NYQUIST, 0/*gradient*/);
+    firpfbch ca = firpfbch_create(num_channels, m, slsl, 0/*dt*/, FIRPFBCH_NYQUIST, 0/*gradient*/);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
