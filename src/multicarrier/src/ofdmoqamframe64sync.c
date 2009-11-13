@@ -199,7 +199,8 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
                                   0);     // gradient
     for (i=0; i<2*(q->m); i++)
         ofdmoqam_execute(cs,q->S1,q->rxy0);
-    // time reverse, complex conjugate
+    // time reverse, complex conjugate (same as fftshift for
+    // this particular sequence)
     memmove(q->X0, q->rxy0, 64*sizeof(float complex));
     for (i=0; i<64; i++)
         q->rxy0[i] = conjf(q->X0[64-i-1]);

@@ -99,6 +99,9 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
     for (i=0; i<q->num_subcarriers; i++) {
         q->S0[i] *= q->zeta;
         q->S1[i] *= q->zeta;
+
+        // conjugate long sequence on transmitter side
+        q->S1[i] = conjf(q->S1[i]);
     }
 
     // set pilot sequence
