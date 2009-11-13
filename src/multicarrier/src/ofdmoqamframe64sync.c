@@ -109,6 +109,7 @@ struct ofdmoqamframe64sync_s {
     unsigned int num_symbols;
     unsigned int num_samples;
     int run_analyzer;
+    unsigned int sample_phase;
     cfwdelay delay;
 
     // symbol buffers
@@ -344,6 +345,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     _q->num_symbols = 0;
     _q->num_samples = 0;
     _q->run_analyzer = 0;
+    _q->sample_phase = 0;
 }
 
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
@@ -395,7 +397,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         //}
 
         if (_q->run_analyzer) {
-            unsigned int k=0;
+            unsigned int k=_q->sample_phase;
             // run analyzers
             if ((_q->num_samples % 64) == k) {
                 printf("n : %4u\n", _q->num_samples);
@@ -640,6 +642,8 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
         */
 
         _q->run_analyzer = 1;
+        _q->sample_phase = (_q->num_samples + (_q->num_subcarriers)/2) % _q->num_subcarriers;
+        printf("sample phase : %u\n",_q->sample_phase);
 
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
     }

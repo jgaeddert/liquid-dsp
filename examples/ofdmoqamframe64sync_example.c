@@ -51,6 +51,7 @@ int main() {
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int p=0;       // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
+    unsigned int d=33;      // sample delay (noise samples before frame)
 
     unsigned int i;
     unsigned int num_symbols = num_symbols_S0 +
@@ -151,6 +152,15 @@ int main() {
         n++;
     }
 
+    // execute synchronizer on noise samples (delay);
+    float complex noise;
+    for (i=0; i<d; i++) {
+        noise = 0.0f;
+        cawgn(&noise,nstd);
+        ofdmoqamframe64sync_execute(fs,&noise,1);
+    }
+
+    // execute synchronizer on data samples
     ofdmoqamframe64sync_execute(fs,z,num_samples);
 
     // print results
