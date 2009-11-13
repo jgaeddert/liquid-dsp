@@ -256,7 +256,7 @@ void firpfbch_analyzer_run(firpfbch _c, float complex * _y)
     // push first value and compute output
     float complex * r;
     WINDOW(_read)(_c->w[k], &r);
-    DOTPROD(_execute)(_c->dp[k], r, &(_c->X[k]));
+    DOTPROD(_execute)(_c->dp[0], r, &(_c->X[0]));
 
     // execute inverse fft, store in buffer _c->x
     FFT_EXECUTE(_c->fft);
@@ -267,9 +267,11 @@ void firpfbch_analyzer_run(firpfbch _c, float complex * _y)
     // push remaining samples into filter bank and execute in
     // *reverse* order, putting result into the inverse DFT
     // input buffer _c->X
+    //for (i=1; i<_c->num_channels; i++) {
     for (i=1; i<_c->num_channels; i++) {
-        b = (_c->num_channels+k-i) % _c->num_channels;
+        b = (k+i) % _c->num_channels;
         WINDOW(_read)(_c->w[b], &r);
-        DOTPROD(_execute)(_c->dp[b], r, &(_c->X[b]));
+        DOTPROD(_execute)(_c->dp[i], r, &(_c->X[i]));
     }
 }
+
