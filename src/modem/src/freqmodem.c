@@ -28,7 +28,7 @@
 
 #include "liquid.internal.h"
 
-#define FREQMODEM_DEMOD_USE_PLL     0
+#define FREQMODEM_DEMOD_USE_PLL     1
 
 struct freqmodem_s {
     nco oscillator;
@@ -66,8 +66,8 @@ freqmodem freqmodem_create(float _m,
     // TODO : set initial NCO frequency ?
     // create phase-locked loop
     fm->sync = pll_create();
-    pll_set_bandwidth(fm->sync,0.03f);
-    pll_set_damping_factor(fm->sync,2.1f);
+    pll_set_bandwidth(fm->sync,0.005f);
+    pll_set_damping_factor(fm->sync,4.1f);
 #endif
 
     freqmodem_reset(fm);
@@ -124,6 +124,7 @@ void freqmodem_demodulate(freqmodem _fm,
     nco_cexpf(_fm->oscillator, &p);
     float phase_error = cargf( conjf(p)*_y );
     pll_step(_fm->sync, _fm->oscillator, phase_error);
+    nco_adjust_frequency(_fm->oscillator,_fm->fc);
     nco_step(_fm->oscillator);
 
     *_x = (nco_get_frequency(_fm->oscillator) -_fm->fc) * _fm->m_inv;
