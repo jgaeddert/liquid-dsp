@@ -583,7 +583,7 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
     }
 
     // TODO: choose smoothing factor and range appropriately
-    ofdmframe64sync_smooth_gain(_q, 0.8f, 3);
+    ofdmframe64sync_smooth_gain(_q, 0.8f, 6);
 
 #if DEBUG_OFDMFRAME64SYNC
     // correct long sequence (plotting purposes only)
@@ -625,7 +625,7 @@ void ofdmframe64sync_smooth_gain(ofdmframe64sync _q,
         if (sctype != OFDMFRAME64_SCTYPE_NULL) {
             // average adjacent subcarrier gains (smoothing)
             w_total = 0.0f;
-            for (j=-t; j<t; j++) {
+            for (j=-t; j<=t; j++) {
                 // compute subcarrier index
                 n = (i+j+64)%64;
 
@@ -634,7 +634,7 @@ void ofdmframe64sync_smooth_gain(ofdmframe64sync _q,
                     continue;
 
                 // compute weighting factor
-                w = expf(-_alpha*fabsf(j));
+                w = expf(-_alpha*fabsf(j*j));
                 w_total += w;
 
                 // average gain
