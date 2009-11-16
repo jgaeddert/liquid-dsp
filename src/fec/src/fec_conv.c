@@ -156,7 +156,7 @@ void fec_conv_decode(fec _q,
     // invoke hard-decision scaling
     unsigned int k;
     for (k=0; k<8*_q->num_enc_bytes; k++)
-        _q->enc_bits[k] *= 255;
+        _q->enc_bits[k] = _q->enc_bits[k] ? FEC_SOFTBIT_1 : FEC_SOFTBIT_0;
 
     // run decoder
     _q->init_viterbi(_q->vp,0);

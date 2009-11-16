@@ -207,6 +207,11 @@ struct channel_s {
 // MODULE : fec (forward error-correction)
 //
 
+// define soft bit values
+#define FEC_SOFTBIT_0       (0)
+#define FEC_SOFTBIT_1       (255)
+#define FEC_SOFTBIT_ERASURE (127)
+
 extern unsigned char c_ones_mod2[256];
 
 // checksum / cyclic redundancy check (crc)

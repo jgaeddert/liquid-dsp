@@ -175,7 +175,7 @@ void fec_conv_punctured_decode(fec _q,
             if (_q->puncturing_matrix[r*(_q->P)+p]) {
                 // push bit from input
                 bit = (byte_in >> (7-k)) & 0x01;
-                _q->enc_bits[i+r] = bit ? 255 : 0;
+                _q->enc_bits[i+r] = bit ? FEC_SOFTBIT_1 : FEC_SOFTBIT_0;
                 k++;
                 if (k==8) {
                     k = 0;
@@ -184,7 +184,7 @@ void fec_conv_punctured_decode(fec _q,
                 }
             } else {
                 // push erasure
-                _q->enc_bits[i+r] = 127; //FEC_CONV_ERASURE;
+                _q->enc_bits[i+r] = FEC_SOFTBIT_ERASURE;
             }
         }
         p = (p+1) % _q->P;
