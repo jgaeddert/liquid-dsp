@@ -793,11 +793,15 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     if (_q->callback != NULL) {
         int retval = _q->callback(_q->data, _q->userdata);
         if (retval == -1) {
+#if DEBUG_OFDMFRAME64SYNC_PRINT
             printf("exiting prematurely\n");
+#endif
             ofdmframe64sync_destroy(_q);
             exit(0);
         } else if (retval == 1) {
+#if DEBUG_OFDMFRAME64SYNC_PRINT
             printf("resetting synchronizer\n");
+#endif
             ofdmframe64sync_reset(_q);
         } else {
             // do nothing
