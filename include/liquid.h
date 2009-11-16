@@ -531,10 +531,8 @@ int crc32_validate_message(unsigned char *_data,
                            unsigned int _n,
                            unsigned int _key);
 
-// 
-// MODULE : FEC (forward error correction)
-//
-
+// available FEC schemes
+#define LIQUID_NUM_FEC_SCHEMES  21
 typedef enum {
     FEC_UNKNOWN=0,
     FEC_NONE,           // no error-correction
@@ -566,7 +564,10 @@ typedef enum {
 
 struct fec_conv_opts {int puncture;};
 
-extern const char * fec_scheme_str[21];
+extern const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES];
+
+// returns fec_scheme based on input string
+fec_scheme liquid_getopt_str2fec(const char * _str);
 
 typedef struct fec_s * fec;
 

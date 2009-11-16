@@ -24,34 +24,83 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "liquid.internal.h"
 
 // object-independent methods
 
-const char * fec_scheme_str[21] = {
-    "unknown",
-    "none",
-    "repeat(3)",
-    "hamming(7,4)",
-    "hamming(8,4)",
-    "convolutional r1/2 K=7",
-    "convolutional r1/2 K=9",
-    "convolutional r1/3 K=9",
-    "convolutional r1/6 K=15",
-    "convolutional r2/3 K=7 (punctured)",
-    "convolutional r3/4 K=7 (punctured)",
-    "convolutional r4/5 K=7 (punctured)",
-    "convolutional r5/6 K=7 (punctured)",
-    "convolutional r6/7 K=7 (punctured)",
-    "convolutional r7/8 K=7 (punctured)",
-    "convolutional r2/3 K=9 (punctured)",
-    "convolutional r3/4 K=9 (punctured)",
-    "convolutional r4/5 K=9 (punctured)",
-    "convolutional r5/6 K=9 (punctured)",
-    "convolutional r6/7 K=9 (punctured)",
-    "convolutional r7/8 K=9 (punctured)"
+const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES] = {
+    "[unknown]",
+    "[none]",
+    "[r3] repeat(3)",
+    "[h74] hamming(7,4)",
+    "[h84] hamming(8,4)",
+    "[v27] convolutional r1/2 K=7",
+    "[v29] convolutional r1/2 K=9",
+    "[v39] convolutional r1/3 K=9",
+    "[v615] convolutional r1/6 K=15",
+    "[v27p23] convolutional r2/3 K=7 (punctured)",
+    "[v27p34] convolutional r3/4 K=7 (punctured)",
+    "[v27p45] convolutional r4/5 K=7 (punctured)",
+    "[v27p56] convolutional r5/6 K=7 (punctured)",
+    "[v27p67] convolutional r6/7 K=7 (punctured)",
+    "[v27p78] convolutional r7/8 K=7 (punctured)",
+    "[v29p23] convolutional r2/3 K=9 (punctured)",
+    "[v29p34] convolutional r3/4 K=9 (punctured)",
+    "[v29p45] convolutional r4/5 K=9 (punctured)",
+    "[v29p56] convolutional r5/6 K=9 (punctured)",
+    "[v29p67] convolutional r6/7 K=9 (punctured)",
+    "[v29p78] convolutional r7/8 K=9 (punctured)"
 };
+
+fec_scheme liquid_getopt_str2fec(const char * _str)
+{
+    if (strcmp(_str,"unknown")==0) {
+        return FEC_UNKNOWN;
+    } else if (strcmp(_str,"none")==0) {
+        return FEC_NONE;
+    } else if (strcmp(_str, "v27")==0) {
+        return FEC_CONV_V27;
+    } else if (strcmp(_str, "v29")==0) {
+        return FEC_CONV_V29;
+    } else if (strcmp(_str, "v39")==0) {
+        return FEC_CONV_V39;
+    } else if (strcmp(_str, "v615")==0) {
+        return FEC_CONV_V615;
+    } else if (strcmp(_str, "v27p23")==0) {
+        return FEC_CONV_V27P23;
+    } else if (strcmp(_str, "v27p34")==0) {
+        return FEC_CONV_V27P34;
+    } else if (strcmp(_str, "v27p45")==0) {
+        return FEC_CONV_V27P45;
+    } else if (strcmp(_str, "v27p56")==0) {
+        return FEC_CONV_V27P56;
+    } else if (strcmp(_str, "v27p67")==0) {
+        return FEC_CONV_V27P67;
+    } else if (strcmp(_str, "v27p78")==0) {
+        return FEC_CONV_V27P78;
+    } else if (strcmp(_str, "v29p23")==0) {
+        return FEC_CONV_V29P23;
+    } else if (strcmp(_str, "v29p34")==0) {
+        return FEC_CONV_V29P34;
+    } else if (strcmp(_str, "v29p45")==0) {
+        return FEC_CONV_V29P45;
+    } else if (strcmp(_str, "v29p56")==0) {
+        return FEC_CONV_V29P56;
+    } else if (strcmp(_str, "v29p67")==0) {
+        return FEC_CONV_V29P67;
+    } else if (strcmp(_str, "v29p78")==0) {
+        return FEC_CONV_V29P78;
+    } else if (strcmp(_str, "r3")==0) {
+        return FEC_REP3;
+    } else if (strcmp(_str, "h74")==0) {
+        return FEC_HAMMING74;
+    }
+    fprintf(stderr,"warning: liquid_getopt_str2fec(), unknown/unsupported fec scheme : %s\n", _str);
+    return FEC_UNKNOWN;
+}
+
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 {
