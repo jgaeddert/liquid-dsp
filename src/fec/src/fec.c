@@ -150,11 +150,11 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V29P67:
     case FEC_CONV_V29P78:
         printf("error: fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)\n");
-        exit(0);
+        exit(-1);
 #endif
     default:
         printf("error: fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(0);
+        exit(-1);
     }
     unsigned int num_bits_in = _msg_len*8;
     unsigned int n = num_bits_in + K - 1;
@@ -203,11 +203,11 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_CONV_V615:
     case FEC_CONV_V27P23:
         printf("error: fec_get_rate(), convolutional codes unavailable (install libfec)\n");
-        exit(0);
+        exit(-1);
 #endif
     default:
         printf("error: fec_get_rate(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(0);
+        exit(-1);
     }
     return 0;
 }
@@ -216,7 +216,8 @@ fec fec_create(fec_scheme _scheme, void *_opts)
 {
     switch (_scheme) {
     case FEC_UNKNOWN:
-        return NULL;
+        printf("error: fec_create(), cannot create fec object of type \"UNKNOWN\"\n");
+        exit(-1);
     case FEC_NONE:
         return fec_pass_create(NULL);
     case FEC_REP3:
@@ -226,7 +227,7 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_HAMMING84:
         //return fec_hamming84_create(_opts);
         printf("error: fec_create(), unsupported scheme: fec_hamming84\n");
-        exit(0);
+        exit(-1);
 #if HAVE_FEC_H
     case FEC_CONV_V27:
     case FEC_CONV_V29:
@@ -259,12 +260,15 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_CONV_V27P67:
     case FEC_CONV_V27P78:
         printf("error: fec_create(), convolutional codes unavailable (install libfec)\n");
-        exit(0);
+        exit(-1);
 #endif
     default:
         printf("error: fec_create(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(0);
+        exit(-1);
     }
+
+    // should never get to this point, but return NULL to keep
+    // compiler happy
     return NULL;
 }
 
