@@ -389,36 +389,38 @@ void fec_conv_init_v29p78(fec _q);
 // are stored in look-up table (very fast)
 #define FFT_SIZE_LUT    16
 
-struct fftplan_s {
-    unsigned int n;             // fft size
-    float complex * twiddle;    // twiddle factors
-    float complex * x;          // input array
-    float complex * y;          // output array
-    int direction;              // forward/reverse
-    int method;
 
-    // radix-2
-    int is_radix2;              // radix-2 flag
-    unsigned int * index_rev;   // input indices (reversed)
-    unsigned int m;             // log2(n)
-};
-
-// initialization
-void fft_init_lut(fftplan _p);
-void fft_init_radix2(fftplan _p);
-
-// execution
-
-// execute basic dft (slow, but guarantees
-// correct output)
-void fft_execute_dft(fftplan _p);
-
-// execute basic dft using look-up table for
-// twiddle factors (fast for small fft sizes)
-void fft_execute_lut(fftplan _p);
-
-// execute radix-2 fft
-void fft_execute_radix2(fftplan _p);
+// Macro    :   FFT (internal)
+//  FFT     :   name-mangling macro
+//  T       :   primitive data type
+#define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T)                   \
+struct FFT(plan_s) {                                            \
+    unsigned int n;             /* fft size */                  \
+    T * twiddle;                /* twiddle factors */           \
+    T * x;                      /* input array */               \
+    T * y;                      /* output array */              \
+    int direction;              /* forward/reverse */           \
+    int method;                                                 \
+                                                                \
+    /* radix-2 implementation data */                           \
+    int is_radix2;              /* radix-2 flag */              \
+    unsigned int * index_rev;   /* input indices (reversed) */  \
+    unsigned int m;             /* log2(n) */                   \
+};                                                              \
+                                                                \
+/* initialization */                                            \
+void FFT(_init_lut)(FFT(plan) _p);                              \
+void FFT(_init_radix2)(FFT(plan) _p);                           \
+                                                                \
+/* execute basic dft (slow, but guarantees correct output) */   \
+void FFT(_execute_dft)(FFT(plan) _p);                           \
+                                                                \
+/* execute basic dft using look-up table for twiddle factors */ \
+/* (fast for small fft sizes) */                                \
+void FFT(_execute_lut)(FFT(plan) _p);                           \
+                                                                \
+/* execute radix-2 fft */                                       \
+void FFT(_execute_radix2)(FFT(plan) _p);
 
 // miscellaneous functions
 unsigned int reverse_index(unsigned int _i, unsigned int _n);
@@ -429,6 +431,7 @@ unsigned int reverse_index(unsigned int _i, unsigned int _n);
 //void fft_shift_odd(float complex *_x, unsigned int _n);
 //void fft_shift_even(float complex *_x, unsigned int _n);
 
+LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, liquid_float_complex)
 
 // Use fftw library if installed, otherwise use internal (less
 // efficient) fft library.

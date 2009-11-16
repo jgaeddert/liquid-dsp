@@ -593,19 +593,28 @@ void fec_decode(fec _q,
 // MODULE : fft (fast Fourier transform)
 //
 
-typedef struct fftplan_s * fftplan;
-
 #define FFT_FORWARD 0
 #define FFT_REVERSE 1
-fftplan fft_create_plan(unsigned int _n,
-                        liquid_float_complex * _x,
-                        liquid_float_complex * _y,
-                        int _dir,
-                        int _method);
-void fft_destroy_plan(fftplan _p);
-void fft_execute(fftplan _p);
 
-void fft_shift(liquid_float_complex *_x, unsigned int _n);
+#define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
+
+// Macro    :   FFT
+//  FFT     :   name-mangling macro
+//  T       :   primitive data type
+#define LIQUID_FFT_DEFINE_API(FFT,T)                            \
+                                                                \
+typedef struct FFT(plan_s) * FFT(plan);                         \
+FFT(plan) FFT(_create_plan)(unsigned int _n,                    \
+                        T * _x,                                 \
+                        T * _y,                                 \
+                        int _dir,                               \
+                        int _method);                           \
+void FFT(_destroy_plan)(FFT(plan) _p);                          \
+void FFT(_execute)(FFT(plan) _p);                               \
+                                                                \
+void FFT(_shift)(T *_x, unsigned int _n);
+
+LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,liquid_float_complex)
 
 // ascii spectrogram
 typedef struct asgram_s * asgram;
