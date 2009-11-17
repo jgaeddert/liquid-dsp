@@ -49,6 +49,7 @@ local_src	:=			\
 	fading_generator_example.c	\
 	fbasc_example.c			\
 	fec_example.c			\
+	fct_example.c			\
 	fft_example.c			\
 	firpfbch_example.c		\
 	firpfbch_analysis_example.c	\

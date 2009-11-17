@@ -30,7 +30,8 @@ local_s_files	:= 		\
 	asgram.c		\
 	fft_create_plan.c	\
 	fft_execute.c		\
-	fft_shift.c
+	fft_shift.c		\
+	dct.c
 
 # local_t_files
 #

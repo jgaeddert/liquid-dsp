@@ -624,6 +624,10 @@ void asgram_set_offset(asgram _q, float _offset);
 void asgram_destroy(asgram _q);
 void asgram_execute(asgram _q);
 
+// real, even DFT: DCT-II
+void  dct(float *_x, float * _y, unsigned int _n);
+void idct(float *_x, float * _y, unsigned int _n);
+
 //
 // MODULE : filter
 //
