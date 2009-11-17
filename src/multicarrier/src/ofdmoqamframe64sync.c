@@ -626,6 +626,7 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
         printf("sample phase : %u\n",_q->sample_phase);
 
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
+        _q->timer = 0;
     }
 }
 
@@ -639,6 +640,10 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxy, rxy);
 #endif
+
+    _q->timer++;
+    if (_q->timer < _q->num_subcarriers-2)
+        return;
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[1] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
@@ -661,29 +666,35 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
         // run analyzers and write result to symbol buffer
         ofdmoqamframe64sync_run_analyzers(_q);
         printf("symbol[%3u] : %4u\n", _q->num_symbols, _q->num_samples);
-        _q->num_symbols++;
 
         // determine what type of symbol is stored at the
         // end of the symbol buffer (e.g. short/long sequence,
         // data symbol. etc.)
-        if (_q->num_symbols == _q->symbol_buffer_len+1) {
+        if (_q->num_symbols == _q->symbol_buffer_len + 2 +1) {
             printf("  retrieving S1\n");
             ofdmoqamframe64sync_symbol_buffer_read(_q, _q->S1a, _q->S1b);
             // estimate gain
             printf("  estimating gain...\n");
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
+        } else if (_q->num_symbols > _q->symbol_buffer_len + 2 +1) {
+            // receive payload
+            ofdmoqamframe64sync_symbol_buffer_read(_q, _q->Y0, _q->Y1);
+            ofdmoqamframe64sync_rxpayload(_q, _q->Y0, _q->Y1);
+
         }
+        _q->num_symbols++;
     }
 }
 
-#if 0
-void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q)
+void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
+                                   float complex * _Y0,
+                                   float complex * _Y1)
 {
     // gain correction (equalizer)
     unsigned int i;
     for (i=0; i<_q->num_subcarriers; i++) {
-        _q->X0[i] *= _q->G[i];// * _q->zeta;
-        _q->X1[i] *= _q->G[i];// * _q->zeta;
+        _Y0[i] *= _q->G[i];// * _q->zeta;
+        _Y1[i] *= _q->G[i];// * _q->zeta;
     }
 
     // TODO : extract pilots
@@ -703,12 +714,12 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q)
             // data subcarrier
             if ((i%2)==0) {
                 // even subcarrier
-                _q->data[j] = crealf(_q->X0[i]) + 
-                              cimagf(_q->X1[i]) * _Complex_I;
+                _q->data[j] = crealf(_Y0[i]) + 
+                              cimagf(_Y1[i]) * _Complex_I;
             } else {
                 // odd subcarrier
-                _q->data[j] = cimagf(_q->X0[i]) * _Complex_I +
-                              crealf(_q->X1[i]);
+                _q->data[j] = cimagf(_Y0[i]) * _Complex_I +
+                              crealf(_Y1[i]);
             }
             // scaling factor
             _q->data[j] /= _q->zeta;
@@ -723,7 +734,6 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q)
 //#endif
 
 }
-#endif
 
 void ofdmoqamframe64sync_symbol_buffer_write(ofdmoqamframe64sync _q,
                                              float complex * _X0,
@@ -761,10 +771,37 @@ void ofdmoqamframe64sync_estimate_gain_plcplong(ofdmoqamframe64sync _q)
                 _q->G[j] = 1.0f;
             } else {
                 // odd
-                _q->G[j] = _q->S0[j] * conjf(_q->S1a[j]);
+                _q->G[j] = 1.0f / (_q->S1a[j] / _q->S0[j]);
             }
         }
     }
 
-    // run the loop again
+    // run the loop again, computing gains on even subcarriers
+    for (j=0; j<_q->num_subcarriers; j++) {
+        sctype = ofdmoqamframe64_getsctype(j);
+        if (sctype==OFDMOQAMFRAME64_SCTYPE_NULL) {
+            continue;
+        } else if ((j%2)==1) {
+            continue;
+        } else {
+            // even subcarrier: average adjacent subcarriers' gains
+            // TODO : improve upon this method
+            unsigned int j0 = (j+_q->num_subcarriers-1)%_q->num_subcarriers;
+            unsigned int j1 = (j+1)%_q->num_subcarriers;
+            int sctype0 = ofdmoqamframe64_getsctype(j0);
+            int sctype1 = ofdmoqamframe64_getsctype(j1);
+            float complex g=0.0f;
+            float w=0.0f;
+            if (sctype0 != OFDMOQAMFRAME64_SCTYPE_NULL) {
+                g += _q->G[j0];
+                w += 1.0f;
+            }
+            if (sctype1 != OFDMOQAMFRAME64_SCTYPE_NULL) {
+                g += _q->G[j1];
+                w += 1.0f;
+            }
+            _q->G[j] = g / w;
+        }
+    }
+    // TODO : run smoothing algorithm
 }

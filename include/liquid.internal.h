@@ -906,7 +906,9 @@ void ofdmoqamframe64sync_symbol_buffer_read(ofdmoqamframe64sync _q,
                                             float complex * _X1);
 
 void ofdmoqamframe64sync_estimate_gain_plcplong(ofdmoqamframe64sync _q);
-//void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q);
+void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
+                                   float complex * _Y0,
+                                   float complex * _Y1);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
