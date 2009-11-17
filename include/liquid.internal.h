@@ -897,13 +897,16 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
 void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x);
 void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex _x);
 void ofdmoqamframe64sync_execute_delay(ofdmoqamframe64sync _q, float complex _x);
-void ofdmoqamframe64sync_execute_rxpayload(ofdmoqamframe64sync _q, float complex _x);
+void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex _x);
 void ofdmoqamframe64sync_symbol_buffer_write(ofdmoqamframe64sync _q,
                                              float complex * _X0,
                                              float complex * _X1);
 void ofdmoqamframe64sync_symbol_buffer_read(ofdmoqamframe64sync _q,
                                             float complex * _X0,
                                             float complex * _X1);
+
+void ofdmoqamframe64sync_estimate_gain_plcplong(ofdmoqamframe64sync _q);
+//void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)
