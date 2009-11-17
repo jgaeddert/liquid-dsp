@@ -893,10 +893,10 @@ void ofdmoqamframe64_init_S1(float complex * _S0);
 #define OFDMOQAMFRAME64_SCTYPE_DATA     2
 int ofdmoqamframe64_getsctype(unsigned int _id);
 
+void ofdmoqamframe64sync_run_analyzers(ofdmoqamframe64sync _q);
 void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x);
 void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex _x);
 void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex _x);
-void ofdmoqamframe64sync_execute_delay(ofdmoqamframe64sync _q, float complex _x);
 void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex _x);
 void ofdmoqamframe64sync_symbol_buffer_write(ofdmoqamframe64sync _q,
                                              float complex * _X0,

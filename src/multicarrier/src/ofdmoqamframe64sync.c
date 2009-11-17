@@ -532,6 +532,19 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
 }
 #endif
 
+// run analyzers and push resulting symbols to buffer, but
+// do not increment symbol counter (num_symbols)
+void ofdmoqamframe64sync_run_analyzers(ofdmoqamframe64sync _q)
+{
+    // run analyzers
+    firpfbch_analyzer_run(_q->ca0, _q->X0);
+    firpfbch_analyzer_run(_q->ca1, _q->X1);
+
+    // write resulting symbol to buffer
+    ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
+}
+
+
 void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x)
 {
     // run AGC, clip output
@@ -603,23 +616,11 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[0] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
 
-        // run analyzers
+        // run analyzers and write result to symbol buffer
         //firpfbch_analyzer_run(_q->ca0, _q->X0);
         //firpfbch_analyzer_run(_q->ca1, _q->X1);
-        // write result to symbol buffer
         //ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
-        //_q->num_symbols++;
-        /*
-        unsigned int i;
-        for (i=0; i<_q->num_subcarriers; i++) {
-            if ((i%2)==0) {
-                _q->S1a[i] = crealf(_q->X0[i]) + cimagf(_q->X1[i])*_Complex_I;
-            } else {
-                _q->S1a[i] = crealf(_q->X1[i]) + cimagf(_q->X0[i])*_Complex_I;
-            }
-            _q->S1a[i] /= _q->zeta;
-        }
-        */
+        ofdmoqamframe64sync_run_analyzers(_q);
 
         _q->sample_phase = (_q->num_samples + (_q->num_subcarriers)/2) % _q->num_subcarriers;
         printf("sample phase : %u\n",_q->sample_phase);
@@ -640,17 +641,13 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 #endif
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
-        // run analyzers
-        /*
-        firpfbch_analyzer_run(_q->ca0, _q->X0);
-        firpfbch_analyzer_run(_q->ca1, _q->X1);
-        // write result to symbol buffer
-        ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
-        _q->num_symbols++;
-        */
-
-        //printf("rxy[1] : %12.8f\n", cabsf(rxy));
         printf("rxy[1] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
+
+        // run analyzers and write result to symbol buffer
+        //firpfbch_analyzer_run(_q->ca0, _q->X0);
+        //firpfbch_analyzer_run(_q->ca1, _q->X1);
+        //ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
+        ofdmoqamframe64sync_run_analyzers(_q);
         
         _q->state = OFDMOQAMFRAME64SYNC_STATE_RXSYMBOLS;
     }
@@ -660,15 +657,15 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex _x)
 {
     unsigned int k=_q->sample_phase;
-    // run analyzers
     if ((_q->num_samples % 64) == k) {
+        // run analyzers and write result to symbol buffer
+        ofdmoqamframe64sync_run_analyzers(_q);
         printf("symbol[%3u] : %4u\n", _q->num_symbols, _q->num_samples);
-        firpfbch_analyzer_run(_q->ca0, _q->X0);
-        firpfbch_analyzer_run(_q->ca1, _q->X1);
-
-        ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
         _q->num_symbols++;
 
+        // determine what type of symbol is stored at the
+        // end of the symbol buffer (e.g. short/long sequence,
+        // data symbol. etc.)
         if (_q->num_symbols == _q->symbol_buffer_len+1) {
             printf("  retrieving S1\n");
             ofdmoqamframe64sync_symbol_buffer_read(_q, _q->S1a, _q->S1b);
