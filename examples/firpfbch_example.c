@@ -139,7 +139,25 @@ int main() {
         // 
         // execute analysis filter bank
         //
+#if 0
         firpfbch_analyzer_execute(ca, y1, z1);
+#else
+        // equivalent to firpfbch_analyzer_execute(ca,y1,z1);
+        for (j=0; j<num_channels; j++) {
+            // push sample into filter bank
+            firpfbch_analyzer_push(ca, y1[j]);
+
+            // randomly execute the analysis filter bank; this
+            // is just to show that the state of the filter bank
+            // is not lost.  The resulting data in z1 will be
+            // later over-written.
+            if (j==0) firpfbch_analyzer_run(ca, z1);
+        }
+        // run the analysis filter bank, this time saving the
+        // internal state
+        firpfbch_analyzer_run(ca, z1);
+        firpfbch_analyzer_saverunstate(ca);
+#endif
 
         // compute error
         for (j=0; j<num_channels; j++) {

@@ -1713,6 +1713,7 @@ void firpfbch_synthesizer_execute(firpfbch _c,
 // analysis
 void firpfbch_analyzer_push(firpfbch _c, liquid_float_complex _x);
 void firpfbch_analyzer_run(firpfbch _c, liquid_float_complex * _X);
+void firpfbch_analyzer_saverunstate(firpfbch _c);
 void firpfbch_analyzer_execute(firpfbch _c,
                                liquid_float_complex * _X,
                                liquid_float_complex * _x);

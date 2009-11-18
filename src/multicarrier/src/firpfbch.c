@@ -42,6 +42,10 @@ struct firpfbch_s {
     float complex * x;  // time-domain buffer
     float complex * X;  // freq-domain buffer
 
+    // run|state buffers
+    float complex * X_prime;    // freq-domain buffer (analysis
+                                // filter bank)
+
     // filter
     unsigned int h_len;
     float * h;
@@ -141,6 +145,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     // TODO : use fftw_malloc if HAVE_FFTW3_H
     c->x = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     c->X = (float complex*) malloc((c->num_channels)*sizeof(float complex));
+    c->X_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     firpfbch_clear(c);
 
     // create fft plan
@@ -163,6 +168,7 @@ void firpfbch_destroy(firpfbch _c)
     free(_c->h);
     free(_c->x);
     free(_c->X);
+    free(_c->X_prime);
     free(_c);
 }
 
@@ -173,6 +179,7 @@ void firpfbch_clear(firpfbch _c)
         WINDOW(_clear)(_c->w[i]);
         _c->x[i] = 0;
         _c->X[i] = 0;
+        _c->X_prime[i] = 0;
     }
     _c->filter_index = 0;
 }
@@ -229,7 +236,11 @@ void firpfbch_analyzer_execute(firpfbch _c, float complex * _x, float complex * 
     for (i=0; i<_c->num_channels; i++)
         firpfbch_analyzer_push(_c,_x[i]);
 
+    // run the analysis filters on the given input
     firpfbch_analyzer_run(_c,_y);
+
+    // save the run state : IDFT input X -> X_prime
+    firpfbch_analyzer_saverunstate(_c);
 }
 
 void firpfbch_analyzer_push(firpfbch _c, float complex _x)
@@ -250,6 +261,9 @@ void firpfbch_analyzer_run(firpfbch _c, float complex * _y)
     //       invoked after the first filter is run, after which
     //       the remaining filters are executed.
 
+    // restore saved IDFT input state X from X_prime
+    memmove(_c->X, _c->X_prime, (_c->num_channels)*sizeof(float complex));
+
     unsigned int i, b;
     unsigned int k = _c->filter_index;
 
@@ -268,6 +282,11 @@ void firpfbch_analyzer_run(firpfbch _c, float complex * _y)
     // *reverse* order, putting result into the inverse DFT
     // input buffer _c->X
     //for (i=1; i<_c->num_channels; i++) {
+    // NOTE : the filter window buffers have already been loaded
+    //        in the proper reverse order, so there is no need
+    //        to execute the dot products in any particular order,
+    //        so long as they are aligned with the proper input
+    //        buffer.
     for (i=1; i<_c->num_channels; i++) {
         b = (k+i) % _c->num_channels;
         WINDOW(_read)(_c->w[b], &r);
@@ -275,3 +294,9 @@ void firpfbch_analyzer_run(firpfbch _c, float complex * _y)
     }
 }
 
+// save the run state of the filter bank by dumping the
+// IDFT input buffer X into the temporary buffer X_prime
+void firpfbch_analyzer_saverunstate(firpfbch _c)
+{
+    memmove(_c->X_prime, _c->X, (_c->num_channels)*sizeof(float complex));
+}
