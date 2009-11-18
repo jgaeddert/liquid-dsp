@@ -39,19 +39,19 @@ int main() {
     srand(time(NULL));
 
     // options
-    unsigned int num_symbols_S0=6;  // num short sequence symbols
+    unsigned int num_symbols_S0=16;  // num short sequence symbols
     unsigned int num_symbols_S1=2;  // num long sequence symbols
     unsigned int num_symbols_data=16;// num data symbols
-    unsigned int m=2;
-    float beta = 0.9f;
+    unsigned int m=3;
+    float beta = 0.7f;
     modulation_scheme ms = MOD_QAM;
     unsigned int bps = 2;
     float cfo=0.0f;         // carrier frequency offset (max: pi/(2*64) ~ 0.024544)
-    float cpo=1.0f;         // carrier phase offset
+    float cpo=0.0f;         // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int p=4;       // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
-    unsigned int d=33;      // sample delay (noise samples before frame)
+    unsigned int d=0;      // sample delay (noise samples before frame)
 
     unsigned int i;
     unsigned int num_symbols = num_symbols_S0 +
@@ -103,9 +103,8 @@ int main() {
 
     unsigned int n=0;
 
-    // write short sequence
-    //for (i=0; i<num_symbols_S0/2; i++) {
-    for (i=0; i<4; i++) {
+    // write short sequence(s)
+    for (i=0; i<num_symbols_S0; i++) {
         ofdmoqamframe64gen_writeshortsequence(fg,&y[n]);
         n += 64;
     }
@@ -113,13 +112,6 @@ int main() {
     // write long sequence
     for (i=0; i<num_symbols_S1; i++) {
         ofdmoqamframe64gen_writelongsequence(fg,&y[n]);
-        n += 64;
-    }
-
-    // write short sequence
-    //for (i=0; i<num_symbols_S0/2; i++) {
-    for (i=0; i<2; i++) {
-        ofdmoqamframe64gen_writeshortsequence(fg,&y[n]);
         n += 64;
     }
 

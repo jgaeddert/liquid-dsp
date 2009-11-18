@@ -84,7 +84,7 @@ struct ofdmoqamframe64sync_s {
     float rxx_mag_max;
 
     // cross-correlator
-    float complex * rxy0;
+    float complex * hxy;
     fir_filter_cccf crosscorr;
 
     // carrier frequency offset (CFO) estimation, compensation
@@ -191,21 +191,21 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->autocorr1 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay1);
 
     // create cross-correlator object
-    q->rxy0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->hxy = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     ofdmoqam cs = ofdmoqam_create(q->num_subcarriers,q->m,q->beta,
                                   0.0f,   // dt
                                   OFDMOQAM_SYNTHESIZER,
                                   0);     // gradient
     for (i=0; i<2*(q->m); i++)
-        ofdmoqam_execute(cs,q->S1,q->rxy0);
+        ofdmoqam_execute(cs,q->S0,q->hxy);
     // time reverse, complex conjugate (same as fftshift for
     // this particular sequence)
-    memmove(q->X0, q->rxy0, 64*sizeof(float complex));
+    memmove(q->X0, q->hxy, 64*sizeof(float complex));
     for (i=0; i<64; i++)
-        q->rxy0[i] = conjf(q->X0[64-i-1]);
+        q->hxy[i] = conjf(q->X0[64-i-1]);
     // fftshift
-    //fft_shift(q->rxy0,64);
-    q->crosscorr = fir_filter_cccf_create(q->rxy0, q->num_subcarriers);
+    //fft_shift(q->hxy,64);
+    q->crosscorr = fir_filter_cccf_create(q->hxy, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
     // delay buffer
@@ -276,7 +276,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 
     // free cross-correlator memory objects
     fir_filter_cccf_destroy(_q->crosscorr);
-    free(_q->rxy0);
+    free(_q->hxy);
 
     // free gain arrays
     free(_q->G);
@@ -339,6 +339,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
 
     // reset state
     _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
+    _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
     _q->timer = 0;
     _q->num_symbols = 0;
     _q->num_samples = 0;
@@ -470,7 +471,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"figure;\n");
     //fprintf(fid,"f = [(0:63)]/64 - 0.5;\n");
     //fprintf(fid,"plot(S1,'x',S1a,'x',S1b,'x');\n");
-    fprintf(fid,"plot(S1,'x',S1a,'x');\n");
+    fprintf(fid,"plot(S1,'x',S1a/(64*sqrt(2/52)),'x');\n");
     fprintf(fid,"xlabel('I');\n");
     fprintf(fid,"ylabel('Q');\n");
     fprintf(fid,"axis square;\n");
@@ -617,8 +618,8 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
         printf("rxy[0] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
 
         // run analyzers and write result to symbol buffer
-        //firpfbch_analyzer_run(_q->ca0, _q->X0);
-        //firpfbch_analyzer_run(_q->ca1, _q->X1);
+        //firpfbch_analyzer_run(_q->ca0, _q->S1a);
+        //firpfbch_analyzer_run(_q->ca1, _q->S1b);
         //ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
         ofdmoqamframe64sync_run_analyzers(_q);
 
@@ -649,8 +650,24 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         printf("rxy[1] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
 
         // run analyzers and write result to symbol buffer
-        //firpfbch_analyzer_run(_q->ca0, _q->X0);
-        //firpfbch_analyzer_run(_q->ca1, _q->X1);
+        if (((_q->num_samples + _q->sample_phase) % _q->num_subcarriers)==0) {
+            printf("  saving symbol [%3u]\n", _q->num_symbols);
+            firpfbch_analyzer_run(_q->ca0, _q->S1a);
+            firpfbch_analyzer_run(_q->ca1, _q->S1b);
+            firpfbch_analyzer_saverunstate(_q->ca0);
+            firpfbch_analyzer_saverunstate(_q->ca1);
+            _q->num_symbols++;
+
+            if (_q->num_symbols == 10) {
+                // estimate gain
+            printf("  estimating gain...\n");
+            ofdmoqamframe64sync_estimate_gain_plcplong(_q);
+                printf("exiting prematurely\n");
+                ofdmoqamframe64sync_destroy(_q);
+                exit(1);
+            }
+        }
+        return;
         //ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
         ofdmoqamframe64sync_run_analyzers(_q);
         
