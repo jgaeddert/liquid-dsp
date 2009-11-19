@@ -300,3 +300,11 @@ void firpfbch_analyzer_saverunstate(firpfbch _c)
 {
     memmove(_c->X_prime, _c->X, (_c->num_channels)*sizeof(float complex));
 }
+
+// clear the run state of the filter bank
+void firpfbch_analyzer_clearrunstate(firpfbch _c)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_channels; i++)
+        _c->X_prime[i] = 0;
+}
