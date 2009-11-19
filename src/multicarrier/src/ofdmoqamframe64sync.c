@@ -197,7 +197,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
                                   OFDMOQAM_SYNTHESIZER,
                                   0);     // gradient
     for (i=0; i<2*(q->m); i++)
-        ofdmoqam_execute(cs,q->S0,q->hxy);
+        ofdmoqam_execute(cs,q->S1,q->hxy);
     // time reverse, complex conjugate (same as fftshift for
     // this particular sequence)
     memmove(q->X0, q->hxy, 64*sizeof(float complex));
@@ -339,7 +339,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
 
     // reset state
     _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
-    _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
+    //_q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
     _q->timer = 0;
     _q->num_symbols = 0;
     _q->num_samples = 0;
@@ -417,6 +417,12 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
         //fprintf(fid,"G0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
         //fprintf(fid,"G1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
     }
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"f = -32:31;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"    plot(f,fftshift(abs(G)));\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"    plot(f,fftshift(arg(G)));\n");
  
     // CFO estimate
     fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat);
@@ -467,11 +473,18 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
         fprintf(fid,"S1a(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1a[i]), cimagf(_q->S1a[i]));
         fprintf(fid,"S1b(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1b[i]), cimagf(_q->S1b[i]));
     }
-    fprintf(fid,"S1 = S1/(64/sqrt(52));\n");
+    fprintf(fid,"S1  = S1/(64/sqrt(52));\n");
+    fprintf(fid,"S1a = S1a/(64/sqrt(52/2));\n");
+    fprintf(fid,"S1b = S1a/(64/sqrt(52/2));\n");
+    fprintf(fid,"t0 = 1:2:64;\n");
+    fprintf(fid,"t1 = 2:2:64;\n");
+    fprintf(fid,"S = zeros(1,64);\n");
+    fprintf(fid,"S(t0) = real(S1a(t0)) + j*imag(S1b(t0));\n");
+    fprintf(fid,"S(t1) = real(S1b(t1)) + j*imag(S1a(t1));\n");
     fprintf(fid,"figure;\n");
     //fprintf(fid,"f = [(0:63)]/64 - 0.5;\n");
     //fprintf(fid,"plot(S1,'x',S1a,'x',S1b,'x');\n");
-    fprintf(fid,"plot(S1,'x',S1a/(64*sqrt(2/52)),'x');\n");
+    fprintf(fid,"plot(S1,'x',S,'x');\n");
     fprintf(fid,"xlabel('I');\n");
     fprintf(fid,"ylabel('Q');\n");
     fprintf(fid,"axis square;\n");
@@ -578,7 +591,7 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     float threshold = (_q->rxx_thresh)*(_q->autocorr_length);
 
     if (rxx_mag0 > threshold && rxx_mag1 > threshold) {
-        // TODO : wait for auto-correlation to peak before changing state
+        // wait for auto-correlation to peak before changing state
         if (rxx_mag0 + rxx_mag1 > _q->rxx_mag_max) {
             _q->rxx_mag_max = rxx_mag0 + rxx_mag1;
             return;
@@ -624,6 +637,7 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
         ofdmoqamframe64sync_run_analyzers(_q);
 
         _q->sample_phase = (_q->num_samples + (_q->num_subcarriers)/2) % _q->num_subcarriers;
+        //_q->sample_phase = (_q->num_samples) % _q->num_subcarriers;
         printf("sample phase : %u\n",_q->sample_phase);
 
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
@@ -649,6 +663,7 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[1] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
 
+#if 0
         // run analyzers and write result to symbol buffer
         if (((_q->num_samples + _q->sample_phase) % _q->num_subcarriers)==0) {
             printf("  saving symbol [%3u]\n", _q->num_symbols);
@@ -670,6 +685,7 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         return;
         //ofdmoqamframe64sync_symbol_buffer_write(_q, _q->X0, _q->X1);
         ofdmoqamframe64sync_run_analyzers(_q);
+#endif
         
         _q->state = OFDMOQAMFRAME64SYNC_STATE_RXSYMBOLS;
     }
@@ -681,18 +697,24 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
     unsigned int k=_q->sample_phase;
     if ((_q->num_samples % 64) == k) {
         // run analyzers and write result to symbol buffer
-        ofdmoqamframe64sync_run_analyzers(_q);
+        firpfbch_analyzer_run(_q->ca0, _q->S1a);
+        firpfbch_analyzer_run(_q->ca1, _q->S1b);
+        firpfbch_analyzer_saverunstate(_q->ca0);
+        firpfbch_analyzer_saverunstate(_q->ca1);
+        
         printf("symbol[%3u] : %4u\n", _q->num_symbols, _q->num_samples);
 
         // determine what type of symbol is stored at the
         // end of the symbol buffer (e.g. short/long sequence,
         // data symbol. etc.)
-        if (_q->num_symbols == _q->symbol_buffer_len + 2 +1) {
-            printf("  retrieving S1\n");
-            ofdmoqamframe64sync_symbol_buffer_read(_q, _q->S1a, _q->S1b);
+        //if (_q->num_symbols == _q->symbol_buffer_len + 2 +1) {
+        if (_q->num_symbols == _q->m + 2 /* + 1 */) {
             // estimate gain
             printf("  estimating gain...\n");
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
+            printf("exiting prematurely\n");
+            ofdmoqamframe64sync_destroy(_q);
+            exit(1);
         } else if (_q->num_symbols > _q->symbol_buffer_len + 2 +1) {
             // receive payload
             ofdmoqamframe64sync_symbol_buffer_read(_q, _q->Y0, _q->Y1);
