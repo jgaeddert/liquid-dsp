@@ -39,6 +39,10 @@
 // auto-correlation integration length
 #define OFDMOQAMFRAME64SYNC_AUTOCORR_LEN      (64)
 
+float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
+                                               float complex _y1,
+                                               float complex _p);
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
 void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q);
 #endif
@@ -96,6 +100,7 @@ struct ofdmoqamframe64sync_s {
     float complex * G0; // complex subcarrier gain estimate, S0[0]
     float complex * G1; // complex subcarrier gain estimate, S0[1]
     float complex * G;  // complex subcarrier gain estimate
+    float phi_pilots[4];
 
     // receiver state
     enum {
@@ -331,6 +336,8 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     unsigned int i;
     for (i=0; i<_q->num_subcarriers; i++)
         _q->G[i] = 1.0f;
+    for (i=0; i<4; i++)
+        _q->phi_pilots[i] = 0.0f;
 
     // reset state
     _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
@@ -415,6 +422,9 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
         fprintf(fid,"G(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G[i]), cimagf(_q->G[i]));
         //fprintf(fid,"G0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
         //fprintf(fid,"G1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
+    }
+    for (i=0; i<4; i++) {
+        fprintf(fid,"phi(%3u) = %12.8f;\n", i+1, _q->phi_pilots[i]);
     }
     fprintf(fid,"figure;\n");
     fprintf(fid,"f = -32:31;\n");
@@ -706,6 +716,8 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
                                    float complex * _Y0,
                                    float complex * _Y1)
 {
+    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
+
     // gain correction (equalizer)
     unsigned int i;
     for (i=0; i<_q->num_subcarriers; i++) {
@@ -719,6 +731,7 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 
     // strip data subcarriers
     unsigned int j=0;
+    unsigned int t=0;
     int sctype;
     for (i=0; i<_q->num_subcarriers; i++) {
         sctype = ofdmoqamframe64_getsctype(i);
@@ -726,6 +739,22 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
             // disabled subcarrier
         } else if (sctype==OFDMOQAMFRAME64_SCTYPE_PILOT) {
             // pilot subcarrier : use p/n sequence for pilot phase
+            float complex y0 = ((i%2)==0 ? _Y0[i] : _Y1[i]) / _q->zeta;
+            float complex y1 = ((i%2)==0 ? _Y1[i] : _Y0[i]) / _q->zeta;
+            float complex p = (pilot_phase ? 1.0f : -1.0f);
+            /*
+            printf("i = %u\n", i);
+            printf("y0 = %12.8f + j*%12.8f;\n", crealf(y0),cimagf(y0));
+            printf("y1 = %12.8f + j*%12.8f;\n", crealf(y1),cimagf(y1));
+            */
+            float phi_hat =
+            ofdmoqamframe64sync_estimate_pilot_phase(y0,y1,p);
+            _q->phi_pilots[t++] = phi_hat;
+            /*
+            printf("exiting prematurely\n");
+            ofdmoqamframe64sync_destroy(_q);
+            exit(1);
+            */
         } else {
             // data subcarrier
             if ((i%2)==0) {
@@ -815,4 +844,57 @@ void ofdmoqamframe64sync_estimate_gain_plcplong(ofdmoqamframe64sync _q)
         }
     }
     // TODO : run smoothing algorithm
+}
+
+float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
+                                               float complex _y1,
+                                               float complex _p)
+{
+    float e_min = 0.0f;
+    float e = 0.0f;
+    float phi_hat = 0.0f;
+    float phi0 = -M_PI/1.0f;
+    float phi1 =  M_PI/1.0f;
+
+    float phi  = phi0;
+    float dphi = M_PI/30.0f;
+    float complex g;
+    float complex y_hat, y0_hat, y1_hat;
+    unsigned int i=0;
+
+    FILE * fid = fopen("ofdmoqamframe64sync_estimate_pilot_phase.m","w");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"clear all;\n");
+    while (phi <= phi1) {
+        // compute complex phase rotation gain
+        g = cexpf(-_Complex_I*phi);
+
+        // compute rotation
+        y0_hat = _y0*g;
+        y1_hat = _y1*g;
+        y_hat = crealf(y0_hat) + _Complex_I*cimagf(y1_hat);
+        //y_hat = crealf(y1_hat) + _Complex_I*cimagf(y0_hat);
+
+        // compute error
+        e = fabsf(crealf(y_hat)-crealf(_p)) +
+            fabsf(cimagf(y_hat)-crealf(_p));
+        e = cabsf(y_hat-_p);
+
+        if (e < e_min || i==0) {
+            e_min = e;
+            phi_hat = phi;
+        }
+
+        //printf("e(%3u) = %12.8f; phi(%3u) = %12.8f; pause(0.02);\n", i+1, e, i+1, phi);
+        fprintf(fid,"e(%3u) = %12.8f; phi(%3u) = %12.8f; pause(0.02);\n", i+1, e, i+1, phi);
+        i++;
+
+        // increment phase
+        phi += dphi;
+    }
+    //printf("phi_hat : %12.8f\n", phi_hat);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(phi,e);\n");
+    fclose(fid);
+    return phi_hat;
 }
