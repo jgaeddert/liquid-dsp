@@ -435,7 +435,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"    xlabel('subcarrier index');\n");
     fprintf(fid,"    ylabel('arg\\{G\\}');\n");
     fprintf(fid,"    grid on;\n");
- 
+
     // CFO estimate
     fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat);
 
@@ -475,24 +475,34 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"plot(0:(n-1),abs(rxy));\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xy}|');\n");
-
     // decoded long sequences
     fprintf(fid,"S1  = zeros(1,64);\n");
     fprintf(fid,"S1a = zeros(1,64);\n");
     fprintf(fid,"S1b = zeros(1,64);\n");
+    fprintf(fid,"Y0  = zeros(1,64);\n");
+    fprintf(fid,"Y1  = zeros(1,64);\n");
     for (i=0; i<64; i++) {
         fprintf(fid,"S1(%4u)  = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1[i]),  cimagf(_q->S1[i]));
         fprintf(fid,"S1a(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1a[i]), cimagf(_q->S1a[i]));
         fprintf(fid,"S1b(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1b[i]), cimagf(_q->S1b[i]));
+        fprintf(fid,"Y0(%4u)  = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Y0[i]),  cimagf(_q->Y0[i]));
+        fprintf(fid,"Y1(%4u)  = %12.4e + j*%12.4e;\n", i+1, crealf(_q->Y1[i]),  cimagf(_q->Y1[i]));
     }
-    fprintf(fid,"S1  = S1/(64/sqrt(52));\n");
-    fprintf(fid,"S1a = S1a/(64/sqrt(52/2));\n");
-    fprintf(fid,"S1b = S1a/(64/sqrt(52/2));\n");
+    fprintf(fid,"zeta = 64/sqrt(52/2);\n");
+    fprintf(fid,"S1  = S1 / zeta;\n");
+    fprintf(fid,"S1a = S1a / zeta;\n");
+    fprintf(fid,"S1b = S1b / zeta;\n");
+    fprintf(fid,"Y0  = Y0  / zeta;\n");
+    fprintf(fid,"Y1  = Y1  / zeta;\n");
     fprintf(fid,"t0 = 1:2:64;\n");
     fprintf(fid,"t1 = 2:2:64;\n");
     fprintf(fid,"S = zeros(1,64);\n");
     fprintf(fid,"S(t0) = real(S1a(t0)) + j*imag(S1b(t0));\n");
     fprintf(fid,"S(t1) = real(S1b(t1)) + j*imag(S1a(t1));\n");
+    fprintf(fid,"Y = zeros(1,64);\n");
+    fprintf(fid,"Y(t0) = real(Y0(t0)) + j*imag(Y1(t0));\n");
+    fprintf(fid,"Y(t1) = real(Y1(t1)) + j*imag(Y0(t1));\n");
+
     fprintf(fid,"figure;\n");
     //fprintf(fid,"f = [(0:63)]/64 - 0.5;\n");
     //fprintf(fid,"plot(S1,'x',S1a,'x',S1b,'x');\n");
@@ -504,6 +514,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"title('PLCP long sequences');\n");
 
+#if 0
     // symbol buffer
     fprintf(fid,"symbol_buffer0 = zeros(%u,%u);\n", _q->num_subcarriers, _q->symbol_buffer_len);
     fprintf(fid,"symbol_buffer1 = zeros(%u,%u);\n", _q->num_subcarriers, _q->symbol_buffer_len);
@@ -526,20 +537,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(symbols,'x');\n");
     fprintf(fid,"axis('square');\n");
-
-    /*
-    // plot gain vectors
-    fprintf(fid,"f = [-32:31];\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"    plot(f,fftshift(abs(G0)),f,fftshift(abs(G1)),f,fftshift(abs(G)));\n");
-    fprintf(fid,"    ylabel('gain');\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"    plot(f,unwrap(fftshift(arg(G0))),...\n");
-    fprintf(fid,"         f,unwrap(fftshift(arg(G1))),...\n");
-    fprintf(fid,"         f,unwrap(fftshift(arg(G))));\n");
-    fprintf(fid,"    ylabel('phase');\n");
-    */
+#endif
 
     // frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
@@ -626,6 +624,7 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
 
         _q->g = agc_get_gain(_q->sigdet);
+        _q->timer=0;
     }
 }
 
@@ -639,6 +638,13 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxy, rxy);
 #endif
+
+    _q->timer++;
+    if (_q->timer > 10*(_q->num_subcarriers)) {
+        printf("warning: ofdmoqamframe64sync could not find first PLCP long sequence; resetting synchronizer\n");
+        ofdmoqamframe64sync_reset(_q);
+        return;
+    }
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[0] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
@@ -670,8 +676,13 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 #endif
 
     _q->timer++;
-    if (_q->timer < _q->num_subcarriers-2)
+    if (_q->timer < _q->num_subcarriers-2) {
         return;
+    } else if (_q->timer > _q->num_subcarriers+2) {
+        printf("warning: ofdmoqamframe64sync could not find second PLCP long sequence; resetting synchronizer\n");
+        ofdmoqamframe64sync_reset(_q);
+        return;
+    }
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
         printf("rxy[1] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
@@ -722,7 +733,6 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
         // for the filter delay (e.g. short/long sequence,
         // data symbol. etc.)
 
-        /*
         if (_q->num_symbols == _q->m - 1 && _q->m > 1) {
             // save first S1 symbol
         } else if (_q->num_symbols == _q->m) {
@@ -731,23 +741,24 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
             // ignore first S0 symbol, S0[0]
         } else if (_q->num_symbols == _q->m + 2) {
             // save S0[1]
-        } else if (_q->num_symbols == _q->m + 3) {
-            // save S0[2], estimate gain
-        } else if (_q->num_symbols > _q->m + 3) {
-            // execute rxpayload
-        }
-        */
-        if (0) {
-        } else if (_q->num_symbols == _q->m + 2 /* + 1 */) {
-            // estimate gain
             printf("  estimating gain...\n");
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
             memmove(_q->S1a, _q->Y0, (_q->num_subcarriers)*sizeof(float complex));
             memmove(_q->S1b, _q->Y1, (_q->num_subcarriers)*sizeof(float complex));
+            /*
             printf("exiting prematurely\n");
             ofdmoqamframe64sync_destroy(_q);
             exit(1);
+            */
+        } else if (_q->num_symbols == _q->m + 3) {
+            // save S0[2], estimate gain
+        } else if (_q->num_symbols == _q->m + 4) {
+            // TODO : figure out why this symbol is bad
+        } else if (_q->num_symbols > _q->m + 4) {
+            // execute rxpayload
+            ofdmoqamframe64sync_rxpayload(_q,_q->Y0,_q->Y1);
         }
+
         _q->num_symbols++;
     }
 }

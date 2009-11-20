@@ -47,7 +47,7 @@ int main() {
     modulation_scheme ms = MOD_QAM;
     unsigned int bps = 2;
     float cfo=0.0f;         // carrier frequency offset (max: pi/(2*64) ~ 0.024544)
-    float cpo=1.4f;         // carrier phase offset
+    float cpo=0.0f;         // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int p=0;       // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
@@ -118,7 +118,7 @@ int main() {
 
     // write short sequence(s)
     //for (i=0; i<num_symbols_S0; i++) {
-    for (i=0; i<num_symbols_S0-3; i++) {
+    for (i=0; i<3; i++) {
         ofdmoqamframe64gen_writeshortsequence(fg,&y[n]);
         n += 64;
     }
