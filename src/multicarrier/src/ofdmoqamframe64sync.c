@@ -93,6 +93,8 @@ struct ofdmoqamframe64sync_s {
 
     // gain
     float g;    // coarse gain estimate
+    float complex * G0; // complex subcarrier gain estimate, S0[0]
+    float complex * G1; // complex subcarrier gain estimate, S0[1]
     float complex * G;  // complex subcarrier gain estimate
 
     // receiver state
@@ -213,7 +215,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // gain
     q->g = 1.0f;
-    q->G = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->G0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->G1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->G  = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // symbol buffers
     q->symbol_buffer_len = 2*(q->m) + 1;
@@ -279,6 +283,8 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     free(_q->hxy);
 
     // free gain arrays
+    free(_q->G0);
+    free(_q->G1);
     free(_q->G);
 
     // free symbol buffers
@@ -704,29 +710,43 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
     unsigned int k=_q->sample_phase;
     if ((_q->num_samples % 64) == k) {
         // run analyzers and write result to symbol buffer
-        firpfbch_analyzer_run(_q->ca0, _q->S1a);
-        firpfbch_analyzer_run(_q->ca1, _q->S1b);
+        firpfbch_analyzer_run(_q->ca0, _q->Y0);
+        firpfbch_analyzer_run(_q->ca1, _q->Y1);
         firpfbch_analyzer_saverunstate(_q->ca0);
         firpfbch_analyzer_saverunstate(_q->ca1);
         
         printf("symbol[%3u] : %4u\n", _q->num_symbols, _q->num_samples);
 
-        // determine what type of symbol is stored at the
-        // end of the symbol buffer (e.g. short/long sequence,
+        // determine what type of symbol is produced at the
+        // output of the analysis filter banks, compensating
+        // for the filter delay (e.g. short/long sequence,
         // data symbol. etc.)
-        //if (_q->num_symbols == _q->symbol_buffer_len + 2 +1) {
-        if (_q->num_symbols == _q->m + 2 /* + 1 */) {
+
+        /*
+        if (_q->num_symbols == _q->m - 1 && _q->m > 1) {
+            // save first S1 symbol
+        } else if (_q->num_symbols == _q->m) {
+            // save second S1 symbol
+        } else if (_q->num_symbols == _q->m + 1) {
+            // ignore first S0 symbol, S0[0]
+        } else if (_q->num_symbols == _q->m + 2) {
+            // save S0[1]
+        } else if (_q->num_symbols == _q->m + 3) {
+            // save S0[2], estimate gain
+        } else if (_q->num_symbols > _q->m + 3) {
+            // execute rxpayload
+        }
+        */
+        if (0) {
+        } else if (_q->num_symbols == _q->m + 2 /* + 1 */) {
             // estimate gain
             printf("  estimating gain...\n");
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
+            memmove(_q->S1a, _q->Y0, (_q->num_subcarriers)*sizeof(float complex));
+            memmove(_q->S1b, _q->Y1, (_q->num_subcarriers)*sizeof(float complex));
             printf("exiting prematurely\n");
             ofdmoqamframe64sync_destroy(_q);
             exit(1);
-        } else if (_q->num_symbols > _q->symbol_buffer_len + 2 +1) {
-            // receive payload
-            ofdmoqamframe64sync_symbol_buffer_read(_q, _q->Y0, _q->Y1);
-            ofdmoqamframe64sync_rxpayload(_q, _q->Y0, _q->Y1);
-
         }
         _q->num_symbols++;
     }
@@ -817,7 +837,7 @@ void ofdmoqamframe64sync_estimate_gain_plcplong(ofdmoqamframe64sync _q)
                 _q->G[j] = 1.0f;
             } else {
                 // odd
-                _q->G[j] = 1.0f / (_q->S1a[j] / _q->S0[j]);
+                _q->G[j] = 1.0f / (_q->Y0[j] / _q->S0[j]);
             }
         }
     }
