@@ -421,8 +421,14 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"f = -32:31;\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"    plot(f,fftshift(abs(G)));\n");
+    fprintf(fid,"    xlabel('subcarrier index');\n");
+    fprintf(fid,"    ylabel('|G|');\n");
+    fprintf(fid,"    grid on;\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"    plot(f,fftshift(arg(G)));\n");
+    fprintf(fid,"    xlabel('subcarrier index');\n");
+    fprintf(fid,"    ylabel('arg\\{G\\}');\n");
+    fprintf(fid,"    grid on;\n");
  
     // CFO estimate
     fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat);
@@ -484,7 +490,8 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"figure;\n");
     //fprintf(fid,"f = [(0:63)]/64 - 0.5;\n");
     //fprintf(fid,"plot(S1,'x',S1a,'x',S1b,'x');\n");
-    fprintf(fid,"plot(S1,'x',S,'x');\n");
+    fprintf(fid,"plot(S1,'x',S,'x',S1a,'x',S1b,'x');\n");
+    fprintf(fid,"legend('S1','S','S1a','S1b',0);\n");
     fprintf(fid,"xlabel('I');\n");
     fprintf(fid,"ylabel('Q');\n");
     fprintf(fid,"axis square;\n");
