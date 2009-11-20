@@ -117,6 +117,9 @@ struct ofdmoqamframe64sync_s {
     // output data buffer, ready for demodulation
     float complex * data;
 
+    ofdmoqamframe64sync_callback callback;
+    void * userdata;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
     cfwindow debug_rxx0;
@@ -228,6 +231,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->debug_rxy=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms= cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
+
+    q->callback = _callback;
+    q->userdata = _userdata;
 
     return q;
 }
@@ -742,6 +748,22 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     for (i=0; i<48; i++)
         cfwindow_push(_q->debug_framesyms,_q->data[i]);
 //#endif
+
+    if (_q->callback != NULL) {
+        int retval = _q->callback(_q->data, _q->userdata);
+        if (retval == -1) {
+            printf("exiting prematurely\n");
+            ofdmoqamframe64sync_destroy(_q);
+            exit(0);
+        } else if (retval == 1) {
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
+            printf("resetting synchronizer\n");
+#endif
+            ofdmoqamframe64sync_reset(_q);
+        } else {
+            // do nothing
+        }
+    }
 
 }
 
