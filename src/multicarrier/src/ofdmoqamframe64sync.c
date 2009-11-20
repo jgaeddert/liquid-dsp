@@ -108,9 +108,11 @@ struct ofdmoqamframe64sync_s {
     // timing/delay
     unsigned int timer;
     unsigned int num_symbols;
+    unsigned int num_data_symbols;
     unsigned int num_samples;
     unsigned int sample_phase;
-    cfwdelay delay;
+    cfwdelay delay0;
+    cfwdelay delay1;
 
     // symbol buffers
     float complex * symbol_buffer0; // [num_subcarriers * m]
@@ -210,8 +212,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->crosscorr = fir_filter_cccf_create(q->hxy, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
-    // delay buffer
-    q->delay = cfwdelay_create((q->num_subcarriers)/2);
+    // delay buffers
+    q->delay0 = cfwdelay_create((q->num_subcarriers));
+    q->delay1 = cfwdelay_create((q->num_subcarriers)/2);
 
     // gain
     q->g = 1.0f;
@@ -295,7 +298,8 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     free(_q->data);
 
     // free delay buffer
-    cfwdelay_destroy(_q->delay);
+    cfwdelay_destroy(_q->delay0);
+    cfwdelay_destroy(_q->delay1);
 
     // free main object memory
     free(_q);
@@ -324,7 +328,8 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     nco_reset(_q->nco_rx);
 
     // clear delay buffer
-    cfwdelay_clear(_q->delay);
+    cfwdelay_clear(_q->delay0);
+    cfwdelay_clear(_q->delay1);
 
     // clear analysis filter bank objects
     firpfbch_clear(_q->ca0);
@@ -348,6 +353,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     //_q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
     _q->timer = 0;
     _q->num_symbols = 0;
+    _q->num_data_symbols = 0;
     _q->num_samples = 0;
     _q->sample_phase = 0;
 }
@@ -372,11 +378,14 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         //nco_mix_down(_q->nco_rx, x, &x);
 
         // push sample into analysis filter banks
-        float complex x_delay;
-        cfwdelay_read(_q->delay,&x_delay);
-        cfwdelay_push(_q->delay,x);
-        firpfbch_analyzer_push(_q->ca0, x);         // push input sample
-        firpfbch_analyzer_push(_q->ca1, x_delay);   // push delayed sample
+        float complex x_delay0;
+        float complex x_delay1;
+        cfwdelay_read(_q->delay0,&x_delay0);
+        cfwdelay_read(_q->delay1,&x_delay1);
+        cfwdelay_push(_q->delay0,x);
+        cfwdelay_push(_q->delay1,x);
+        firpfbch_analyzer_push(_q->ca0, x_delay0);  // push input sample
+        firpfbch_analyzer_push(_q->ca1, x_delay1);  // push delayed sample
 
         switch (_q->state) {
         case OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT:
@@ -578,7 +587,6 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     //if (agc_get_signal_level(_q->sigdet) < -15.0f)
     //    return;
 
-
     // auto-correlators
     autocorr_cccf_push(_q->autocorr0, _x);
     autocorr_cccf_execute(_q->autocorr0, &_q->rxx0);
@@ -733,13 +741,13 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
         // for the filter delay (e.g. short/long sequence,
         // data symbol. etc.)
 
-        if (_q->num_symbols == _q->m - 1 && _q->m > 1) {
+        if (_q->num_symbols == _q->m) {
             // save first S1 symbol
-        } else if (_q->num_symbols == _q->m) {
-            // save second S1 symbol
         } else if (_q->num_symbols == _q->m + 1) {
-            // ignore first S0 symbol, S0[0]
+            // save second S1 symbol
         } else if (_q->num_symbols == _q->m + 2) {
+            // ignore first S0 symbol, S0[0]
+        } else if (_q->num_symbols == _q->m + 3) {
             // save S0[1]
             printf("  estimating gain...\n");
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
@@ -750,13 +758,13 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
             ofdmoqamframe64sync_destroy(_q);
             exit(1);
             */
-        } else if (_q->num_symbols == _q->m + 3) {
-            // save S0[2], estimate gain
         } else if (_q->num_symbols == _q->m + 4) {
-            // TODO : figure out why this symbol is bad
+            // save S0[2], estimate gain
         } else if (_q->num_symbols > _q->m + 4) {
             // execute rxpayload
             ofdmoqamframe64sync_rxpayload(_q,_q->Y0,_q->Y1);
+            //printf("  ==> data symbol %u\n", _q->num_data_symbols);
+            _q->num_data_symbols++;
         }
 
         _q->num_symbols++;
