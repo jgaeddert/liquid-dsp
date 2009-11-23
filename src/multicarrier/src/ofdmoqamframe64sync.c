@@ -74,6 +74,9 @@ struct ofdmoqamframe64sync_s {
 
     // pilot sequence
     msequence ms_pilot;
+    float x_phase[4];
+    float y_phase[4];
+    float p_phase[2];       // polynomial fit
 
     // signal detection | automatic gain control
     agc sigdet;
@@ -98,7 +101,6 @@ struct ofdmoqamframe64sync_s {
     float complex * G0; // complex subcarrier gain estimate, S2[0]
     float complex * G1; // complex subcarrier gain estimate, S2[1]
     float complex * G;  // complex subcarrier gain estimate
-    float phi_pilots[4];
 
     // receiver state
     enum {
@@ -182,6 +184,10 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
+    q->x_phase[0] = -21.0f;
+    q->x_phase[1] =  -7.0f;
+    q->x_phase[2] =   7.0f;
+    q->x_phase[3] =  21.0f;
 
     // create agc | signal detection object
     q->sigdet = agc_create(1.0f, 0.001f);
@@ -332,7 +338,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     for (i=0; i<_q->num_subcarriers; i++)
         _q->G[i] = 1.0f;
     for (i=0; i<4; i++)
-        _q->phi_pilots[i] = 0.0f;
+        _q->y_phase[i] = 0.0f;
 
     // reset state
     _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPSHORT;
@@ -419,7 +425,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
         //fprintf(fid,"G1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
     }
     for (i=0; i<4; i++) {
-        fprintf(fid,"phi(%3u) = %12.8f;\n", i+1, _q->phi_pilots[i]);
+        fprintf(fid,"phi(%3u) = %12.8f;\n", i+1, _q->y_phase[i]);
     }
     fprintf(fid,"figure;\n");
     fprintf(fid,"f = -32:31;\n");
@@ -642,6 +648,13 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex _x)
 {
     unsigned int k=_q->sample_phase;
+#if 0
+    // synthesize timing offset
+    if (_q->num_symbols > _q->m + 5) {
+        k = (k+1)%_q->num_subcarriers;
+        //k = (k+_q->num_subcarriers-1)%_q->num_subcarriers;
+    }
+#endif
     if ((_q->num_samples % 64) == k) {
         // run analyzers
         firpfbch_analyzer_run(_q->ca0, _q->Y0);
@@ -700,6 +713,9 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
                                    float complex * _Y0,
                                    float complex * _Y1)
 {
+    unsigned int j=0;
+    unsigned int t=0;
+    int sctype;
     unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
 
     // gain correction (equalizer)
@@ -710,25 +726,17 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     }
 
     // TODO : extract pilots
-
-    // TODO : compute pilot phase correction (fit to first-order polynomial)
-
-    // strip data subcarriers
-    unsigned int j=0;
-    unsigned int t=0;
-    int sctype;
     for (i=0; i<_q->num_subcarriers; i++) {
         sctype = ofdmoqamframe64_getsctype(i);
-        if (sctype==OFDMOQAMFRAME64_SCTYPE_NULL) {
-            // disabled subcarrier
-        } else if (sctype==OFDMOQAMFRAME64_SCTYPE_PILOT) {
+        if (sctype==OFDMOQAMFRAME64_SCTYPE_PILOT) {
             // pilot subcarrier : use p/n sequence for pilot phase
             float complex y0 = ((i%2)==0 ? _Y0[i] : _Y1[i]) / _q->zeta;
             float complex y1 = ((i%2)==0 ? _Y1[i] : _Y0[i]) / _q->zeta;
             float complex p = (pilot_phase ? 1.0f : -1.0f);
             float phi_hat =
             ofdmoqamframe64sync_estimate_pilot_phase(y0,y1,p);
-            _q->phi_pilots[t++] = phi_hat;
+            _q->y_phase[t] = phi_hat;
+            t++;
 #if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
             printf("i = %u\n", i);
             printf("y0 = %12.8f + j*%12.8f;\n", crealf(y0),cimagf(y0));
@@ -740,6 +748,53 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
             ofdmoqamframe64sync_destroy(_q);
             exit(1);
             */
+        }
+    }
+    assert(t==4);
+ 
+    // pilot phase correction
+    /*
+    _q->y_phase[0] = cargf(_q->X[11]);  // -21
+    _q->y_phase[1] = cargf(_q->X[25]);  //  -7
+    _q->y_phase[2] = cargf(_q->X[39]);  //   7
+    _q->y_phase[3] = cargf(_q->X[53]);  //  21
+    */
+
+    // try to unwrap phase
+    for (i=1; i<4; i++) {
+        while ((_q->y_phase[i] - _q->y_phase[i-1]) >  M_PI)
+            _q->y_phase[i] -= 2*M_PI;
+        while ((_q->y_phase[i] - _q->y_phase[i-1]) < -M_PI)
+            _q->y_phase[i] += 2*M_PI;
+    }
+
+    // fit phase to 1st-order polynomial (2 coefficients)
+    polyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
+
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
+    // print phase results
+    for (i=0; i<4; i++) {
+        printf("x(%3u) = %12.8f; y(%3u) = %12.8f;\n", i+1, _q->x_phase[i], i+1, _q->y_phase[i]);
+    }
+    printf("p(1) = %12.8f\n", _q->p_phase[0]);
+    printf("p(2) = %12.8f\n", _q->p_phase[1]);
+#endif
+
+    // compensate for phase shift due to timing offset
+    float theta;
+    for (i=0; i<_q->num_subcarriers; i++) {
+        theta = polyval(_q->p_phase, 2, (float)(i)-32.0f);
+        _Y0[i] *= liquid_crotf_vect(-theta);
+        _Y1[i] *= liquid_crotf_vect(-theta);
+    }
+
+    // strip data subcarriers
+    for (i=0; i<_q->num_subcarriers; i++) {
+        sctype = ofdmoqamframe64_getsctype(i);
+        if (sctype==OFDMOQAMFRAME64_SCTYPE_NULL) {
+            // disabled subcarrier
+        } else if (sctype==OFDMOQAMFRAME64_SCTYPE_PILOT) {
+            // pilot subcarrier
         } else {
             // data subcarrier
             if ((i%2)==0) {
