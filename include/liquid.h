@@ -1745,12 +1745,15 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
 void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q);
 void ofdmoqamframe64gen_print(ofdmoqamframe64gen _q);
 void ofdmoqamframe64gen_reset(ofdmoqamframe64gen _q);
-// short PLCP training sequence (160 samples)
+// short PLCP training sequence
 void ofdmoqamframe64gen_writeshortsequence(ofdmoqamframe64gen _q,
                                            liquid_float_complex *_y);
-// long PLCP training sequence (160 samples)
+// long PLCP training sequence
 void ofdmoqamframe64gen_writelongsequence(ofdmoqamframe64gen _q,
                                           liquid_float_complex *_y);
+// gain PLCP training sequence
+void ofdmoqamframe64gen_writetrainingsequence(ofdmoqamframe64gen _q,
+                                              liquid_float_complex *_y);
 void ofdmoqamframe64gen_writeheader(ofdmoqamframe64gen _q,
                                     liquid_float_complex *_y);
 void ofdmoqamframe64gen_writesymbol(ofdmoqamframe64gen _q,

@@ -106,3 +106,40 @@ void ofdmoqamframe64_init_S1(float complex * _S1)
     modem_destroy(mod);
 }
 
+void ofdmoqamframe64_init_S2(float complex * _S2)
+{
+    msequence ms = msequence_create(4);
+    modem mod = modem_create(MOD_QPSK,2);
+    unsigned int s;
+    float complex sym;
+    unsigned int num_subcarriers = 64;
+    float zeta = 1.0f;
+    unsigned int j;
+    unsigned int sctype;
+
+    // short sequence
+    for (j=0; j<num_subcarriers; j++) {
+        sctype = ofdmoqamframe64_getsctype(j);
+        if (sctype == OFDMOQAMFRAME64_SCTYPE_NULL) {
+            // NULL subcarrier
+            _S2[j] = 0.0f;
+        } else {
+            if ((j%2) == 0) {
+                // even subcarrer
+                _S2[j] = 0.0f;
+            } else {
+                // odd subcarrer
+                s = msequence_generate_symbol(ms,2);
+                modem_modulate(mod,s,&sym);
+                // retain only quadrature component (time aligned
+                // without half-symbol delay), and amplitude-
+                // compensated.
+                _S2[j] = cimagf(sym) * _Complex_I * zeta * 2.0f;
+            }
+        }
+    }
+    msequence_destroy(ms);
+    modem_destroy(mod);
+}
+
+

@@ -39,8 +39,9 @@ int main() {
     srand(time(NULL));
 
     // options
-    unsigned int num_symbols_S0=6;  // num short sequence symbols
+    unsigned int num_symbols_S0=3;  // num short sequence symbols
     unsigned int num_symbols_S1=2;  // num long sequence symbols
+    unsigned int num_symbols_S2=3;  // num long sequence symbols
     unsigned int num_symbols_data=16;// num data symbols
     unsigned int m=3;
     float beta = 0.7f;
@@ -56,6 +57,7 @@ int main() {
     unsigned int i;
     unsigned int num_symbols = num_symbols_S0 +
                                num_symbols_S1 +
+                               num_symbols_S2 +
                                num_symbols_data;
     unsigned int num_frames  = num_symbols + 2*m + 1;
     unsigned int num_samples = 64*num_frames;
@@ -104,8 +106,7 @@ int main() {
     unsigned int n=0;
 
     // write short sequence(s)
-    //for (i=0; i<num_symbols_S0; i++) {
-    for (i=0; i<3; i++) {
+    for (i=0; i<num_symbols_S0; i++) {
         ofdmoqamframe64gen_writeshortsequence(fg,&y[n]);
         n += 64;
     }
@@ -117,9 +118,8 @@ int main() {
     }
 
     // write short sequence(s)
-    //for (i=0; i<num_symbols_S0; i++) {
-    for (i=0; i<3; i++) {
-        ofdmoqamframe64gen_writeshortsequence(fg,&y[n]);
+    for (i=0; i<num_symbols_S2; i++) {
+        ofdmoqamframe64gen_writetrainingsequence(fg,&y[n]);
         n += 64;
     }
 

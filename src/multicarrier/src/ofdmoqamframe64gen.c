@@ -54,6 +54,7 @@ struct ofdmoqamframe64gen_s {
     // PLCP
     float complex * S0; // short sequence
     float complex * S1; // long sequence
+    float complex * S2; // training sequence
 
     // pilot sequence
     msequence ms_pilot;
@@ -93,12 +94,15 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->S2 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     ofdmoqamframe64_init_S0(q->S0);
     ofdmoqamframe64_init_S1(q->S1);
+    ofdmoqamframe64_init_S2(q->S2);
     unsigned int i;
     for (i=0; i<q->num_subcarriers; i++) {
         q->S0[i] *= q->zeta;
         q->S1[i] *= q->zeta;
+        q->S2[i] *= q->zeta;
 
         // conjugate long sequence on transmitter side
         q->S1[i] = conjf(q->S1[i]);
@@ -122,6 +126,7 @@ void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q)
     // free PLCP memory arrays
     free(_q->S0);
     free(_q->S1);
+    free(_q->S2);
 
     // free pilot msequence object memory
     msequence_destroy(_q->ms_pilot);
@@ -162,6 +167,17 @@ void ofdmoqamframe64gen_writelongsequence(ofdmoqamframe64gen _q,
     // execute synthesizer, store result in output array
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
+
+void ofdmoqamframe64gen_writetrainingsequence(ofdmoqamframe64gen _q,
+                                              float complex * _y)
+{
+    // move short sequence to freq-domain buffer
+    memmove(_q->X, _q->S2, (_q->num_subcarriers)*sizeof(float complex));
+
+    // execute synthesizer, store result in output array
+    ofdmoqam_execute(_q->synthesizer, _q->X, _y);
+}
+
 
 void ofdmoqamframe64gen_writeheader(ofdmoqamframe64gen _q,
                                 float complex * _y)

@@ -68,6 +68,7 @@ struct ofdmoqamframe64sync_s {
     // PLCP
     float complex * S0; // short sequence
     float complex * S1; // long sequence
+    float complex * S2; // training sequence
     float complex * S1a;    // decoded long sequence (first)
     float complex * S1b;    // decoded long sequence (second)
 
@@ -97,8 +98,8 @@ struct ofdmoqamframe64sync_s {
 
     // gain
     float g;    // coarse gain estimate
-    float complex * G0; // complex subcarrier gain estimate, S0[0]
-    float complex * G1; // complex subcarrier gain estimate, S0[1]
+    float complex * G0; // complex subcarrier gain estimate, S2[0]
+    float complex * G1; // complex subcarrier gain estimate, S2[1]
     float complex * G;  // complex subcarrier gain estimate
     float phi_pilots[4];
 
@@ -170,12 +171,15 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    q->S2 = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     ofdmoqamframe64_init_S0(q->S0);
     ofdmoqamframe64_init_S1(q->S1);
+    ofdmoqamframe64_init_S2(q->S2);
     unsigned int i;
     for (i=0; i<q->num_subcarriers; i++) {
         q->S0[i] *= q->zeta;
         q->S1[i] *= q->zeta;
+        q->S2[i] *= q->zeta;
     }
     q->S1a = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
     q->S1b = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -265,6 +269,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // clean up PLCP arrays
     free(_q->S0);
     free(_q->S1);
+    free(_q->S2);
     free(_q->S1a);
     free(_q->S1b);
 
@@ -442,10 +447,11 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     // CFO estimate
     fprintf(fid,"nu_hat = %12.4e;\n", _q->nu_hat);
 
-    // short, long sequences
+    // short, long, training sequences
     for (i=0; i<_q->num_subcarriers; i++) {
         fprintf(fid,"S0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S0[i]), cimagf(_q->S0[i]));
         fprintf(fid,"S1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S1[i]), cimagf(_q->S1[i]));
+        fprintf(fid,"S2(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->S2[i]), cimagf(_q->S2[i]));
     }
 
     fprintf(fid,"x = zeros(1,n);\n");
@@ -687,9 +693,9 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
         } else if (_q->num_symbols == _q->m + 1) {
             // save second S1 symbol
         } else if (_q->num_symbols == _q->m + 2) {
-            // ignore first S0 symbol, S0[0]
+            // ignore first S2 symbol, S2[0]
         } else if (_q->num_symbols == _q->m + 3) {
-            // save S0[1]
+            // save S2[1]
             printf("  estimating gain...\n");
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
             memmove(_q->S1a, _q->Y0, (_q->num_subcarriers)*sizeof(float complex));
@@ -700,7 +706,7 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
             exit(1);
             */
         } else if (_q->num_symbols == _q->m + 4) {
-            // save S0[2], estimate gain
+            // save S2[2], estimate gain
         } else if (_q->num_symbols > _q->m + 4) {
             // execute rxpayload
             ofdmoqamframe64sync_rxpayload(_q,_q->Y0,_q->Y1);
@@ -809,7 +815,7 @@ void ofdmoqamframe64sync_estimate_gain_plcplong(ofdmoqamframe64sync _q)
                 _q->G[j] = 1.0f;
             } else {
                 // odd
-                _q->G[j] = 1.0f / (_q->Y0[j] / _q->S0[j]);
+                _q->G[j] = 1.0f / (_q->Y0[j] / _q->S2[j]);
             }
         }
     }
