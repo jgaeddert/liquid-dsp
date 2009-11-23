@@ -79,13 +79,10 @@ struct ofdmoqamframe64sync_s {
     agc sigdet;
 
     // auto-correlators
-    autocorr_cccf autocorr0;        // auto-correlation object [0]
-    autocorr_cccf autocorr1;        // auto-correlation object [1]
+    autocorr_cccf autocorr;        // auto-correlation object [0]
     unsigned int autocorr_length;   // auto-correlation length
     unsigned int autocorr_delay0;   // delay [0]
-    unsigned int autocorr_delay1;   // delay [1]
-    float complex rxx0;
-    float complex rxx1;
+    float complex rxx;
     float rxx_mag_max;
 
     // cross-correlator
@@ -128,8 +125,7 @@ struct ofdmoqamframe64sync_s {
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow debug_x;
-    cfwindow debug_rxx0;
-    cfwindow debug_rxx1;
+    cfwindow debug_rxx;
     cfwindow debug_rxy;
     cfwindow debug_framesyms;
 #endif
@@ -196,9 +192,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     // create auto-correlator objects
     q->autocorr_length = OFDMOQAMFRAME64SYNC_AUTOCORR_LEN;
     q->autocorr_delay0 = q->num_subcarriers / 4;
-    q->autocorr_delay1 = q->num_subcarriers / 2;
-    q->autocorr0 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay0);
-    q->autocorr1 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay1);
+    q->autocorr = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay0);
 
     // create cross-correlator object
     q->hxy = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -235,8 +229,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     q->debug_x =        cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx0=      cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx1=      cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxy=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms= cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
@@ -252,8 +245,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 #if DEBUG_OFDMOQAMFRAME64SYNC
     ofdmoqamframe64sync_debug_print(_q);
     cfwindow_destroy(_q->debug_x);
-    cfwindow_destroy(_q->debug_rxx0);
-    cfwindow_destroy(_q->debug_rxx1);
+    cfwindow_destroy(_q->debug_rxx);
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
 #endif
@@ -283,8 +275,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     nco_destroy(_q->nco_rx);
 
     // free auto-correlator memory objects
-    autocorr_cccf_destroy(_q->autocorr0);
-    autocorr_cccf_destroy(_q->autocorr1);
+    autocorr_cccf_destroy(_q->autocorr);
 
     // free cross-correlator memory objects
     fir_filter_cccf_destroy(_q->crosscorr);
@@ -320,8 +311,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     msequence_reset(_q->ms_pilot);
 
     // reset auto-correlators
-    autocorr_cccf_clear(_q->autocorr0);
-    autocorr_cccf_clear(_q->autocorr1);
+    autocorr_cccf_clear(_q->autocorr);
     _q->rxx_mag_max = 0.0f;
 
     // reset frequency offset estimation, correction
@@ -463,16 +453,12 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('received signal, x');\n");
 
-    fprintf(fid,"rxx0 = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxx0, &rc);
+    fprintf(fid,"rxx = zeros(1,n);\n");
+    cfwindow_read(_q->debug_rxx, &rc);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxx0(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"rxx1 = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxx1, &rc);
-    for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
-        fprintf(fid,"rxx1(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+        fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),abs(rxx0),0:(n-1),abs(rxx1),0:(n-1),[abs(rxx0)+abs(rxx1)]/2,'-k','LineWidth',2);\n");
+    fprintf(fid,"plot(0:(n-1),abs(rxx),'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('|r_{xx}|');\n");
 
@@ -560,43 +546,36 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     //    return;
 
     // auto-correlators
-    autocorr_cccf_push(_q->autocorr0, _x);
-    autocorr_cccf_execute(_q->autocorr0, &_q->rxx0);
-
-    autocorr_cccf_push(_q->autocorr1, _x);
-    autocorr_cccf_execute(_q->autocorr1, &_q->rxx1);
+    autocorr_cccf_push(_q->autocorr, _x);
+    autocorr_cccf_execute(_q->autocorr, &_q->rxx);
 
     // TODO : compensate for signal level appropriately
     float g = agc_get_gain(_q->sigdet);
     g = 1.0f;
-    _q->rxx0 *= g;
-    _q->rxx1 *= g;
+    _q->rxx *= g;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    cfwindow_push(_q->debug_rxx0, _q->rxx0);
-    cfwindow_push(_q->debug_rxx1, _q->rxx1);
+    cfwindow_push(_q->debug_rxx, _q->rxx);
 #endif
-    float rxx_mag0 = cabsf(_q->rxx0);
-    float rxx_mag1 = cabsf(_q->rxx1);
+    float rxx_mag = cabsf(_q->rxx);
 
     float threshold = (_q->rxx_thresh)*(_q->autocorr_length);
 
-    if (rxx_mag0 > threshold && rxx_mag1 > threshold) {
+    if (rxx_mag > threshold) {
         // wait for auto-correlation to peak before changing state
-        if (rxx_mag0 + rxx_mag1 > _q->rxx_mag_max) {
-            _q->rxx_mag_max = rxx_mag0 + rxx_mag1;
+        if (rxx_mag > _q->rxx_mag_max) {
+            _q->rxx_mag_max = rxx_mag;
             return;
         }
 
         // estimate CFO
-        _q->nu_hat = cargf(_q->rxx0);
+        _q->nu_hat = cargf(_q->rxx);
         if (_q->nu_hat >  M_PI/2.0f) _q->nu_hat -= M_PI;
         if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
         _q->nu_hat *= 4.0f / (float)(_q->num_subcarriers);
 
 #if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
-        printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx0),cargf(_q->rxx0));
-        printf("rxx[1] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx1),cargf(_q->rxx1));
+        printf("rxx = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx),cargf(_q->rxx));
         printf("nu_hat =  %12.8f\n", _q->nu_hat);
 #endif
 
