@@ -742,11 +742,9 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
             float complex y0 = ((i%2)==0 ? _Y0[i] : _Y1[i]) / _q->zeta;
             float complex y1 = ((i%2)==0 ? _Y1[i] : _Y0[i]) / _q->zeta;
             float complex p = (pilot_phase ? 1.0f : -1.0f);
-            /*
             printf("i = %u\n", i);
             printf("y0 = %12.8f + j*%12.8f;\n", crealf(y0),cimagf(y0));
             printf("y1 = %12.8f + j*%12.8f;\n", crealf(y1),cimagf(y1));
-            */
             float phi_hat =
             ofdmoqamframe64sync_estimate_pilot_phase(y0,y1,p);
             _q->phi_pilots[t++] = phi_hat;
@@ -851,13 +849,13 @@ float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
                                                float complex _p)
 {
     float e_min = 0.0f;
-    float e = 0.0f;
+    float complex e = 0.0f;
     float phi_hat = 0.0f;
     float phi0 = -M_PI/1.0f;
     float phi1 =  M_PI/1.0f;
 
     float phi  = phi0;
-    float dphi = M_PI/30.0f;
+    float dphi = M_PI/100.0f;
     float complex g;
     float complex y_hat, y0_hat, y1_hat;
     unsigned int i=0;
@@ -879,22 +877,32 @@ float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
         e = fabsf(crealf(y_hat)-crealf(_p)) +
             fabsf(cimagf(y_hat)-crealf(_p));
         e = cabsf(y_hat-_p);
+        e = y_hat - _p;
 
-        if (e < e_min || i==0) {
+        if (cabsf(e) < e_min || i==0) {
             e_min = e;
             phi_hat = phi;
         }
 
         //printf("e(%3u) = %12.8f; phi(%3u) = %12.8f; pause(0.02);\n", i+1, e, i+1, phi);
-        fprintf(fid,"e(%3u) = %12.8f; phi(%3u) = %12.8f; pause(0.02);\n", i+1, e, i+1, phi);
+        fprintf(fid,"y_hat(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y_hat), cimagf(y_hat));
+        fprintf(fid,"e(%3u) = %12.8f + j*%12.8f; phi(%3u) = %12.8f;\n", i+1, crealf(e),cimagf(e), i+1, phi);
         i++;
 
         // increment phase
         phi += dphi;
     }
+    fprintf(fid,"p0 = %12.8f + j*%12.8f;\n", crealf(_y0), cimagf(_y0));
+    fprintf(fid,"p1 = %12.8f + j*%12.8f;\n", crealf(_y1), cimagf(_y1));
+    fprintf(fid,"p = %12.8f + j*%12.8f;\n", crealf(_p), cimagf(_p));
     //printf("phi_hat : %12.8f\n", phi_hat);
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(phi,e);\n");
+    fprintf(fid,"plot(real(y_hat),imag(y_hat),'-',real(y_hat(1)),imag(y_hat(1)),'rx',real(p),imag(p),'os');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"axis('square');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(phi,real(e),phi,imag(e),phi,abs(e)); grid on;\n");
     fclose(fid);
     return phi_hat;
 }
