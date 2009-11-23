@@ -81,7 +81,7 @@ struct ofdmoqamframe64sync_s {
     // auto-correlators
     autocorr_cccf autocorr;        // auto-correlation object [0]
     unsigned int autocorr_length;   // auto-correlation length
-    unsigned int autocorr_delay0;   // delay [0]
+    unsigned int autocorr_delay;    // delay
     float complex rxx;
     float rxx_mag_max;
 
@@ -191,8 +191,8 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // create auto-correlator objects
     q->autocorr_length = OFDMOQAMFRAME64SYNC_AUTOCORR_LEN;
-    q->autocorr_delay0 = q->num_subcarriers / 4;
-    q->autocorr = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay0);
+    q->autocorr_delay = q->num_subcarriers / 4;
+    q->autocorr = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay);
 
     // create cross-correlator object
     q->hxy = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
@@ -527,16 +527,6 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
 }
 #endif
 
-// run analyzers and push resulting symbols to buffer, but
-// do not increment symbol counter (num_symbols)
-void ofdmoqamframe64sync_run_analyzers(ofdmoqamframe64sync _q)
-{
-    // run analyzers
-    firpfbch_analyzer_run(_q->ca0, _q->X0);
-    firpfbch_analyzer_run(_q->ca1, _q->X1);
-}
-
-
 void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex _x)
 {
     // run AGC, clip output
@@ -611,7 +601,6 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
         // run analyzers
         //firpfbch_analyzer_run(_q->ca0, _q->S1a);
         //firpfbch_analyzer_run(_q->ca1, _q->S1b);
-        ofdmoqamframe64sync_run_analyzers(_q);
 
         _q->sample_phase = (_q->num_samples + (_q->num_subcarriers)/2) % _q->num_subcarriers;
         //_q->sample_phase = (_q->num_samples) % _q->num_subcarriers;
@@ -675,10 +664,12 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
             // ignore first S2 symbol, S2[0]
         } else if (_q->num_symbols == _q->m + 3) {
             // save S2[1]
-            printf("  estimating gain...\n");
+            printf("  estimating gain [0]...\n");
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
+#if DEBUG_OFDMOQAMFRAME64SYNC
             memmove(_q->S1a, _q->Y0, (_q->num_subcarriers)*sizeof(float complex));
             memmove(_q->S1b, _q->Y1, (_q->num_subcarriers)*sizeof(float complex));
+#endif
             /*
             printf("exiting prematurely\n");
             ofdmoqamframe64sync_destroy(_q);
@@ -686,7 +677,15 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
             */
         } else if (_q->num_symbols == _q->m + 4) {
             // save S2[2], estimate gain
-        } else if (_q->num_symbols > _q->m + 4) {
+            printf("  estimating gain [1]...\n");
+            ofdmoqamframe64sync_estimate_gain_plcplong(_q);
+#if DEBUG_OFDMOQAMFRAME64SYNC
+            memmove(_q->S1a, _q->Y0, (_q->num_subcarriers)*sizeof(float complex));
+            memmove(_q->S1b, _q->Y1, (_q->num_subcarriers)*sizeof(float complex));
+#endif
+        } else if (_q->num_symbols == _q->m + 5) {
+            // ignore last S2 symbol, S2[3]
+        } else if (_q->num_symbols > _q->m + 5) {
             // execute rxpayload
             ofdmoqamframe64sync_rxpayload(_q,_q->Y0,_q->Y1);
             //printf("  ==> data symbol %u\n", _q->num_data_symbols);
