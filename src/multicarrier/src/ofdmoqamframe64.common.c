@@ -55,17 +55,17 @@ void ofdmoqamframe64_init_S0(float complex * _S0)
             // NULL subcarrier
             _S0[j] = 0.0f;
         } else {
-            if ((j%2) == 0) {
-                // even subcarrer
-                _S0[j] = 0.0f;
-            } else {
-                // odd subcarrer
+            if ((j%4) == 2) {
+                // even subcarrer, skipping ever other (14 total)
                 s = msequence_generate_symbol(ms,2);
                 modem_modulate(mod,s,&sym);
                 // retain only quadrature component (time aligned
                 // without half-symbol delay), and amplitude-
                 // compensated.
-                _S0[j] = cimagf(sym) * _Complex_I * zeta * 2.0f;
+                _S0[j] = cimagf(sym) * _Complex_I * zeta * 2.0f * sqrtf(2.0f);
+            } else {
+                // odd subcarrer
+                _S0[j] = 0.0f;
             }
         }
     }

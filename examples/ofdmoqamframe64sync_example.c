@@ -41,7 +41,7 @@ int main() {
     // options
     unsigned int num_symbols_S0=3;  // num short sequence symbols
     unsigned int num_symbols_S1=2;  // num long sequence symbols
-    unsigned int num_symbols_S2=3;  // num long sequence symbols
+    unsigned int num_symbols_S2=3;  // num training sequence symbols
     unsigned int num_symbols_data=16;// num data symbols
     unsigned int m=3;
     float beta = 0.7f;
@@ -52,7 +52,7 @@ int main() {
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int p=0;       // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
-    unsigned int d=0;      // sample delay (noise samples before frame)
+    unsigned int d=0;       // sample delay (noise samples before frame)
 
     unsigned int i;
     unsigned int num_symbols = num_symbols_S0 +
@@ -117,7 +117,7 @@ int main() {
         n += 64;
     }
 
-    // write short sequence(s)
+    // write training sequence(s)
     for (i=0; i<num_symbols_S2; i++) {
         ofdmoqamframe64gen_writetrainingsequence(fg,&y[n]);
         n += 64;

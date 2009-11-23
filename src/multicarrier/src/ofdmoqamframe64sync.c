@@ -195,7 +195,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
 
     // create auto-correlator objects
     q->autocorr_length = OFDMOQAMFRAME64SYNC_AUTOCORR_LEN;
-    q->autocorr_delay0 = q->num_subcarriers;
+    q->autocorr_delay0 = q->num_subcarriers / 4;
     q->autocorr_delay1 = q->num_subcarriers / 2;
     q->autocorr0 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay0);
     q->autocorr1 = autocorr_cccf_create(q->autocorr_length, q->autocorr_delay1);
@@ -589,10 +589,10 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
         }
 
         // estimate CFO
-        _q->nu_hat = cargf((_q->rxx0)*conjf(_q->rxx1));
+        _q->nu_hat = cargf(_q->rxx0);
         if (_q->nu_hat >  M_PI/2.0f) _q->nu_hat -= M_PI;
         if (_q->nu_hat < -M_PI/2.0f) _q->nu_hat += M_PI;
-        _q->nu_hat *= 2.0f / (float)(_q->num_subcarriers);
+        _q->nu_hat *= 4.0f / (float)(_q->num_subcarriers);
 
 #if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("rxx[0] = |%12.8f| arg{%12.8f}\n", cabsf(_q->rxx0),cargf(_q->rxx0));
