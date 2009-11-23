@@ -726,12 +726,15 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
             float complex y0 = ((i%2)==0 ? _Y0[i] : _Y1[i]) / _q->zeta;
             float complex y1 = ((i%2)==0 ? _Y1[i] : _Y0[i]) / _q->zeta;
             float complex p = (pilot_phase ? 1.0f : -1.0f);
-            printf("i = %u\n", i);
-            printf("y0 = %12.8f + j*%12.8f;\n", crealf(y0),cimagf(y0));
-            printf("y1 = %12.8f + j*%12.8f;\n", crealf(y1),cimagf(y1));
             float phi_hat =
             ofdmoqamframe64sync_estimate_pilot_phase(y0,y1,p);
             _q->phi_pilots[t++] = phi_hat;
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
+            printf("i = %u\n", i);
+            printf("y0 = %12.8f + j*%12.8f;\n", crealf(y0),cimagf(y0));
+            printf("y1 = %12.8f + j*%12.8f;\n", crealf(y1),cimagf(y1));
+            printf("phi_hat = %12.8f\n", phi_hat);
+#endif
             /*
             printf("exiting prematurely\n");
             ofdmoqamframe64sync_destroy(_q);
@@ -755,10 +758,10 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     }
     assert(j==48);
 
-//#if DEBUG_OFDMFRAME64SYNC
+#if DEBUG_OFDMOQAMFRAME64SYNC
     for (i=0; i<48; i++)
         cfwindow_push(_q->debug_framesyms,_q->data[i]);
-//#endif
+#endif
 
     if (_q->callback != NULL) {
         int retval = _q->callback(_q->data, _q->userdata);
@@ -855,16 +858,12 @@ float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
         y0_hat = _y0*g;
         y1_hat = _y1*g;
         y_hat = crealf(y0_hat) + _Complex_I*cimagf(y1_hat);
-        //y_hat = crealf(y1_hat) + _Complex_I*cimagf(y0_hat);
 
         // compute error
-        e = fabsf(crealf(y_hat)-crealf(_p)) +
-            fabsf(cimagf(y_hat)-crealf(_p));
-        e = cabsf(y_hat-_p);
         e = y_hat - _p;
 
         if (cabsf(e) < e_min || i==0) {
-            e_min = e;
+            e_min = cabsf(e);
             phi_hat = phi;
         }
 
