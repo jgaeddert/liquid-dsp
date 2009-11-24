@@ -37,7 +37,7 @@
 #define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (2048)
 
 // auto-correlation integration length
-#define OFDMOQAMFRAME64SYNC_AUTOCORR_LEN      (64)
+#define OFDMOQAMFRAME64SYNC_AUTOCORR_LEN      (96)
 
 float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
                                                float complex _y1,
@@ -190,7 +190,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->x_phase[3] =  21.0f;
 
     // create agc | signal detection object
-    q->sigdet = agc_create(1.0f, 0.001f);
+    q->sigdet = agc_create(1.0f, 0.1f);
 
     // create NCO for CFO compensation
     q->nco_rx = nco_create(LIQUID_VCO);
@@ -367,7 +367,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         //x *= _q->g;
         
         // compensate for CFO
-        //nco_mix_down(_q->nco_rx, x, &x);
+        nco_mix_down(_q->nco_rx, x, &x);
 
         // push sample into analysis filter banks
         float complex x_delay0;
@@ -540,15 +540,13 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     agc_execute(_q->sigdet, _x, &y);
     //if (agc_get_signal_level(_q->sigdet) < -15.0f)
     //    return;
+    if (cabsf(y) > 2.0f)
+        y = 2.0f*liquid_crotf_vect(cargf(y));
 
     // auto-correlators
-    autocorr_cccf_push(_q->autocorr, _x);
+    //autocorr_cccf_push(_q->autocorr, _x);
+    autocorr_cccf_push(_q->autocorr, y);
     autocorr_cccf_execute(_q->autocorr, &_q->rxx);
-
-    // TODO : compensate for signal level appropriately
-    float g = agc_get_gain(_q->sigdet);
-    g = 1.0f;
-    _q->rxx *= g;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxx, _q->rxx);
@@ -579,6 +577,10 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
 
         _q->g = agc_get_gain(_q->sigdet);
+
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
+        printf("gain : %f\n", _q->g);
+#endif
         _q->timer=0;
     }
 }
@@ -590,19 +592,25 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
     fir_filter_cccf_push(_q->crosscorr, _x);
     fir_filter_cccf_execute(_q->crosscorr, &rxy);
 
+    rxy *= _q->g;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxy, rxy);
 #endif
 
     _q->timer++;
     if (_q->timer > 10*(_q->num_subcarriers)) {
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("warning: ofdmoqamframe64sync could not find first PLCP long sequence; resetting synchronizer\n");
+#endif
         ofdmoqamframe64sync_reset(_q);
         return;
     }
 
     if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("rxy[0] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
+#endif
 
         // run analyzers
         //firpfbch_analyzer_run(_q->ca0, _q->S1a);
@@ -610,7 +618,9 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 
         _q->sample_phase = (_q->num_samples + (_q->num_subcarriers)/2) % _q->num_subcarriers;
         //_q->sample_phase = (_q->num_samples) % _q->num_subcarriers;
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("sample phase : %u\n",_q->sample_phase);
+#endif
 
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
         _q->timer = 0;
@@ -624,21 +634,27 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
     fir_filter_cccf_push(_q->crosscorr, _x);
     fir_filter_cccf_execute(_q->crosscorr, &rxy);
 
+    rxy *= _q->g;
+
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxy, rxy);
 #endif
 
     _q->timer++;
-    if (_q->timer < _q->num_subcarriers-2) {
+    if (_q->timer < _q->num_subcarriers-8) {
         return;
-    } else if (_q->timer > _q->num_subcarriers+2) {
+    } else if (_q->timer > _q->num_subcarriers+8) {
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("warning: ofdmoqamframe64sync could not find second PLCP long sequence; resetting synchronizer\n");
+#endif
         ofdmoqamframe64sync_reset(_q);
         return;
     }
 
-    if (cabsf(rxy) > (_q->rxy_thresh)*(_q->num_subcarriers)) {
+    if (cabsf(rxy) > 0.7f*(_q->rxy_thresh)*(_q->num_subcarriers)) {
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("rxy[1] : %12.8f at input[%3u]\n", cabsf(rxy), _q->num_samples);
+#endif
 
         _q->state = OFDMOQAMFRAME64SYNC_STATE_RXSYMBOLS;
     }
@@ -662,7 +678,9 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
         firpfbch_analyzer_saverunstate(_q->ca0);
         firpfbch_analyzer_saverunstate(_q->ca1);
         
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("symbol[%3u] : %4u\n", _q->num_symbols, _q->num_samples);
+#endif
 
         // determine what type of symbol is produced at the
         // output of the analysis filter banks, compensating
@@ -677,7 +695,9 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
             // ignore first S2 symbol, S2[0]
         } else if (_q->num_symbols == _q->m + 3) {
             // save S2[1]
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
             printf("  estimating gain [0]...\n");
+#endif
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
 #if DEBUG_OFDMOQAMFRAME64SYNC
             memmove(_q->S1a, _q->Y0, (_q->num_subcarriers)*sizeof(float complex));
@@ -690,7 +710,9 @@ void ofdmoqamframe64sync_execute_rxsymbols(ofdmoqamframe64sync _q, float complex
             */
         } else if (_q->num_symbols == _q->m + 4) {
             // save S2[2], estimate gain
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
             printf("  estimating gain [1]...\n");
+#endif
             ofdmoqamframe64sync_estimate_gain_plcplong(_q);
 #if DEBUG_OFDMOQAMFRAME64SYNC
             memmove(_q->S1a, _q->Y0, (_q->num_subcarriers)*sizeof(float complex));
