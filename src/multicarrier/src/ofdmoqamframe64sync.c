@@ -32,7 +32,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_OFDMOQAMFRAME64SYNC             1
-#define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       1
+#define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       0
 #define DEBUG_OFDMOQAMFRAME64SYNC_FILENAME    "ofdmoqamframe64sync_internal_debug.m"
 #define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (2048)
 
@@ -131,6 +131,7 @@ struct ofdmoqamframe64sync_s {
     cfwindow debug_rxy;
     cfwindow debug_framesyms;
     fwindow debug_pilotphase;
+    fwindow debug_rssi;
 #endif
 };
 
@@ -154,8 +155,8 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->beta = _beta;
 
     // synchronizer parameters
-    q->rxx_thresh = 0.75f;  // auto-correlation threshold
-    q->rxy_thresh = 0.75f;  // cross-correlation threshold
+    q->rxx_thresh = 0.60f;  // auto-correlation threshold
+    q->rxy_thresh = 0.60f;  // cross-correlation threshold
 
     q->zeta = 64.0f/sqrtf(52.0f);   // scaling factor
     
@@ -240,6 +241,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->debug_rxy=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms= cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_pilotphase= fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rssi=       fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     q->callback = _callback;
@@ -257,6 +259,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
     fwindow_destroy(_q->debug_pilotphase);
+    fwindow_destroy(_q->debug_rssi);
 #endif
 
     // free analysis filter bank memory objects
@@ -519,7 +522,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"title('PLCP long sequences');\n");
 
- 
+  
     // pilot phase
     fprintf(fid,"pilotphase = zeros(1,n);\n");
     fwindow_read(_q->debug_pilotphase, &r);
@@ -529,6 +532,16 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"plot(0:(n-1),(pilotphase),'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('pilot phase');\n");
+
+    // rssi (received signal strength indication)
+    fprintf(fid,"rssi = zeros(1,n);\n");
+    fwindow_read(_q->debug_rssi, &r);
+    for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(0:(n-1),rssi,'-k','LineWidth',2);\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('RSSI');\n");
 
     // frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
@@ -565,6 +578,8 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxx, _q->rxx);
+
+    fwindow_push(_q->debug_rssi, agc_get_signal_level(_q->sigdet));
 #endif
     float rxx_mag = cabsf(_q->rxx);
 
