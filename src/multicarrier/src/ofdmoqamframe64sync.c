@@ -130,6 +130,7 @@ struct ofdmoqamframe64sync_s {
     cfwindow debug_rxx;
     cfwindow debug_rxy;
     cfwindow debug_framesyms;
+    fwindow debug_pilotphase;
 #endif
 };
 
@@ -238,6 +239,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->debug_rxx=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxy=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms= cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase= fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     q->callback = _callback;
@@ -254,6 +256,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     cfwindow_destroy(_q->debug_rxx);
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
+    fwindow_destroy(_q->debug_pilotphase);
 #endif
 
     // free analysis filter bank memory objects
@@ -416,6 +419,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"n = %u;\n", DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     unsigned int i;
     float complex * rc;
+    float * r;
 
     // gain vectors
     fprintf(fid,"g = %12.4e;\n", _q->g);
@@ -514,6 +518,17 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"axis square;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"title('PLCP long sequences');\n");
+
+ 
+    // pilot phase
+    fprintf(fid,"pilotphase = zeros(1,n);\n");
+    fwindow_read(_q->debug_pilotphase, &r);
+    for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"pilotphase(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(0:(n-1),(pilotphase),'-k','LineWidth',2);\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('pilot phase');\n");
 
     // frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
@@ -800,6 +815,10 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     }
     printf("p(1) = %12.8f\n", _q->p_phase[0]);
     printf("p(2) = %12.8f\n", _q->p_phase[1]);
+#endif
+
+#if DEBUG_OFDMOQAMFRAME64SYNC
+    fwindow_push(_q->debug_pilotphase, _q->p_phase[0]);
 #endif
 
     // compensate for phase shift due to timing offset

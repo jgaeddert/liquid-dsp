@@ -42,7 +42,7 @@ int main() {
     unsigned int num_symbols_S0=2;  // num short sequence symbols
     unsigned int num_symbols_S1=2;  // num long sequence symbols
     unsigned int num_symbols_S2=4;  // num training sequence symbols
-    unsigned int num_symbols_data=16;// num data symbols
+    unsigned int num_symbols_data=128;// num data symbols
     unsigned int m=3;
     float beta = 0.7f;
     modulation_scheme ms = MOD_QAM;
