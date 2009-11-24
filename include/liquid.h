@@ -1418,7 +1418,13 @@ LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF, liquid_float_complex,    liquid_float
 
 typedef struct packetizer_s * packetizer;
 
-packetizer packetizer_create(unsigned int _dec_msg_len, int _fec0, int _fec1);
+packetizer packetizer_create(unsigned int _dec_msg_len,
+                             int _fec0,
+                             int _fec1);
+packetizer packetizer_recreate(packetizer _p,
+                               unsigned int _dec_msg_len,
+                               int _fec0,
+                               int _fec1);
 void packetizer_destroy(packetizer _p);
 void packetizer_print(packetizer _p);
 

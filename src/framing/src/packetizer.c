@@ -33,10 +33,9 @@ unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1)
     return fec_get_enc_msg_length(_fec1, fec_get_enc_msg_length(_fec0, _n+4));
 }
 
-packetizer packetizer_create(
-    unsigned int _n,
-    int _fec0,
-    int _fec1)
+packetizer packetizer_create(unsigned int _n,
+                             int _fec0,
+                             int _fec1)
 {
     packetizer p = (packetizer) malloc(sizeof(struct packetizer_s));
 
@@ -72,6 +71,27 @@ packetizer packetizer_create(
     }
 
     return p;
+}
+
+// re-create packetizer object
+packetizer packetizer_recreate(packetizer _p,
+                               unsigned int _n,
+                               int _fec0,
+                               int _fec1)
+{
+    // check values
+    if (_p->msg_len     ==  _n      &&
+        _p->plan[0].fs  ==  _fec0   &&
+        _p->plan[1].fs  ==  _fec1 )
+    {
+        // no change; return input pointer
+        return _p;
+    } else {
+        // something has changed; destroy old object and create new one
+        // TODO : rather than completely destroying object, only change values that are necessary
+        packetizer_destroy(_p);
+        return packetizer_create(_n,_fec0,_fec1);
+    }
 }
 
 void packetizer_destroy(packetizer _p)

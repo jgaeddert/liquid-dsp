@@ -112,6 +112,9 @@ int main(int argc, char*argv[]) {
     else
         printf("(crc failed)\n");
 
+    // clean up allocated objects
+    packetizer_destroy(p);
+
     printf("done.\n");
     return 0;
 }
