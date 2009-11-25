@@ -62,7 +62,8 @@ local_b_files	:=			\
 	firpfbch_benchmark.h		\
 	ofdmframe64sync_benchmark.h	\
 	ofdmframesync_benchmark.h	\
-	ofdmoqam_benchmark.h
+	ofdmoqam_benchmark.h		\
+	ofdmoqamframe64sync_benchmark.h
 
 
 include common.mk
