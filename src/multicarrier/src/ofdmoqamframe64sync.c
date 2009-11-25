@@ -36,6 +36,8 @@
 #define DEBUG_OFDMOQAMFRAME64SYNC_FILENAME    "ofdmoqamframe64sync_internal_debug.m"
 #define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (2048)
 
+#define DEBUG_OFDMOQAMFRAME64SYNC_PILOTPHASE  0
+
 // auto-correlation integration length
 #define OFDMOQAMFRAME64SYNC_AUTOCORR_LEN      (96)
 
@@ -958,9 +960,11 @@ float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
     float complex y_hat, y0_hat, y1_hat;
     unsigned int i=0;
 
+#if DEBUG_OFDMOQAMFRAME64SYNC_PILOTPHASE
     FILE * fid = fopen("ofdmoqamframe64sync_estimate_pilot_phase.m","w");
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
+#endif
     while (phi <= phi1) {
         // compute complex phase rotation gain
         g = cexpf(-_Complex_I*phi);
@@ -979,13 +983,17 @@ float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
         }
 
         //printf("e(%3u) = %12.8f; phi(%3u) = %12.8f; pause(0.02);\n", i+1, e, i+1, phi);
+#if DEBUG_OFDMOQAMFRAME64SYNC_PILOTPHASE
         fprintf(fid,"y_hat(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y_hat), cimagf(y_hat));
         fprintf(fid,"e(%3u) = %12.8f + j*%12.8f; phi(%3u) = %12.8f;\n", i+1, crealf(e),cimagf(e), i+1, phi);
+#endif
+
         i++;
 
         // increment phase
         phi += dphi;
     }
+#if DEBUG_OFDMOQAMFRAME64SYNC_PILOTPHASE
     fprintf(fid,"p0 = %12.8f + j*%12.8f;\n", crealf(_y0), cimagf(_y0));
     fprintf(fid,"p1 = %12.8f + j*%12.8f;\n", crealf(_y1), cimagf(_y1));
     fprintf(fid,"p = %12.8f + j*%12.8f;\n", crealf(_p), cimagf(_p));
@@ -998,5 +1006,6 @@ float ofdmoqamframe64sync_estimate_pilot_phase(float complex _y0,
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(phi,real(e),phi,imag(e),phi,abs(e)); grid on;\n");
     fclose(fid);
+#endif
     return phi_hat;
 }
