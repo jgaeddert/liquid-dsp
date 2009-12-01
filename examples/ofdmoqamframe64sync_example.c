@@ -29,15 +29,16 @@ typedef struct {
 // static callback function invoked when each symbol received
 static int callback(float complex * _y, void * _userdata)
 {
-    unsigned int data_rx[48];
     simulation_data * q = (simulation_data*) _userdata;
-    unsigned int i, num_sym_errors=0;
-    unsigned int n = 48*q->num_symbols_rx;
+    unsigned int i;
+    unsigned int num_sym_errors=0;          // number of symbol errors
+    unsigned int n = 48*q->num_symbols_rx;  // array index counter
+    unsigned int sym_rx;    // received, demodulated symbol
     for (i=0; i<48; i++) {
-        modem_demodulate(q->demod,_y[i],&data_rx[i]);
-        num_sym_errors += (data_rx[i]==q->data_tx[n+i]) ? 0 : 1;
+        modem_demodulate(q->demod,_y[i],&sym_rx);
+        num_sym_errors += (sym_rx==q->data_tx[n+i]) ? 0 : 1;
     }
-    printf("callback invoked [%3u] :: num symbol errors : %u / 48\n", q->num_symbols_rx, num_sym_errors);
+    printf("callback invoked [%3u] :: num symbol errors : %2u / 48\n", q->num_symbols_rx, num_sym_errors);
     q->num_symbols_rx++;
 
     // choose appropriate return value
