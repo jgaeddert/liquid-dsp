@@ -18,20 +18,34 @@
 
 #define OUTPUT_FILENAME "ofdmoqamframe64sync_example.m"
 
-// static data sequence
-static unsigned int data_tx[48];
+// simulation data structure
+typedef struct {
+    unsigned int * data_tx;         // original transmitted data
+    modem demod;                    // demodulator
+    unsigned int num_symbols;       // number of symbols
+    unsigned int num_symbols_rx;    // number of symbols received
+} simulation_data;
 
 // static callback function invoked when each symbol received
 static int callback(float complex * _y, void * _userdata)
 {
     unsigned int data_rx[48];
-    modem demod = (modem)_userdata;
+    simulation_data * q = (simulation_data*) _userdata;
     unsigned int i, num_sym_errors=0;
+    unsigned int n = 48*q->num_symbols_rx;
     for (i=0; i<48; i++) {
-        modem_demodulate(demod,_y[i],&data_rx[i]);
-        num_sym_errors += (data_rx[i]==data_tx[i]) ? 0 : 1;
+        modem_demodulate(q->demod,_y[i],&data_rx[i]);
+        num_sym_errors += (data_rx[i]==q->data_tx[n+i]) ? 0 : 1;
     }
-    printf("callback invoked :: num symbol errors : %u / 48\n", num_sym_errors);
+    printf("callback invoked [%3u] :: num symbol errors : %u / 48\n", q->num_symbols_rx, num_sym_errors);
+    q->num_symbols_rx++;
+
+    // choose appropriate return value
+    if (q->num_symbols_rx == q->num_symbols) {
+        printf("frame received\n");
+        return 1;
+    }
+
     return 0;
 }
 
@@ -74,16 +88,22 @@ int main() {
     fprintf(fid,"z = zeros(1,n);\n");
     fprintf(fid,"h = zeros(1,%u);\n", p+1);
 
-    // create modems
-    modem mod   = modem_create(ms,bps);
-    modem demod = modem_create(ms,bps);
+    // create simulation data structure (pass to callback function)
+    simulation_data simdata;
+    simdata.num_symbols = num_symbols_data;
+    simdata.num_symbols_rx = 0;
+    simdata.demod = modem_create(ms,bps);
+    simdata.data_tx = (unsigned int*)malloc(48*simdata.num_symbols*sizeof(unsigned int));
+
+    // create modem
+    modem mod = modem_create(ms,bps);
 
     // create frame generator
     ofdmoqamframe64gen fg = ofdmoqamframe64gen_create(m,beta);
     ofdmoqamframe64gen_print(fg);
 
     // create frame synchronizer
-    ofdmoqamframe64sync fs = ofdmoqamframe64sync_create(m,beta,callback,(void*)demod);
+    ofdmoqamframe64sync fs = ofdmoqamframe64sync_create(m,beta,callback,(void*)&simdata);
     ofdmoqamframe64sync_print(fs);
 
     // channel impairments
@@ -128,10 +148,10 @@ int main() {
 
         // generate data sequence
         unsigned int j;
-        for (j=0; j<48; j++)
-            data_tx[j] = modem_gen_rand_sym(mod);
-        for (j=0; j<48; j++)
-            modem_modulate(mod, data_tx[j], &x[j]);
+        for (j=0; j<48; j++) {
+            simdata.data_tx[48*i+j] = modem_gen_rand_sym(mod);
+            modem_modulate(mod, simdata.data_tx[48*i+j], &x[j]);
+        }
 
         ofdmoqamframe64gen_writesymbol(fg,x,&y[n]);
         n += 64;
@@ -215,6 +235,10 @@ int main() {
     modem_destroy(mod);
     nco_destroy(nco_rx);
     fir_filter_cccf_destroy(fchannel);
+
+    // destroy simulation data object internals
+    modem_destroy(simdata.demod);
+    free(simdata.data_tx);
 
     printf("done.\n");
     return 0;
