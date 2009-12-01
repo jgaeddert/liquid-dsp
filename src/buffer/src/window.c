@@ -147,6 +147,20 @@ void WINDOW(_read)(WINDOW() _w, T ** _v)
     *_v = _w->v + _w->read_index;
 }
 
+void WINDOW(_index)(WINDOW() _w,
+                    unsigned int _i,
+                    T * _v)
+{
+    // validate input
+    if (_i >= _w->len) {
+        fprintf(stderr,"error: window_index(), index value out of range\n");
+        exit(1);
+    }
+
+    // return value at index
+    *_v = _w->v[_w->read_index + _i];
+}
+
 void WINDOW(_push)(WINDOW() _w, T _v)
 {
     // increment index

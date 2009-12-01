@@ -10,7 +10,8 @@
 void autotest_fwindow()
 {
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
-    float *r; // reader
+    float *r;   // reader pointer
+    float x;    // temporary value holder
     unsigned int i;
 
     float test0[10] = {0,0,0,0,0,0,0,0,0,0};
@@ -56,6 +57,18 @@ void autotest_fwindow()
 
     fwindow_read(w, &r);
     CONTEND_SAME_DATA(r,test3,10*sizeof(float));
+
+    // test indexing operation
+    fwindow_index(w, 0, &x);    CONTEND_EQUALITY(x, 1);
+    fwindow_index(w, 1, &x);    CONTEND_EQUALITY(x, 1);
+    fwindow_index(w, 2, &x);    CONTEND_EQUALITY(x, 9);
+    fwindow_index(w, 3, &x);    CONTEND_EQUALITY(x, 8);
+    fwindow_index(w, 4, &x);    CONTEND_EQUALITY(x, 7);
+    fwindow_index(w, 5, &x);    CONTEND_EQUALITY(x, 6);
+    fwindow_index(w, 6, &x);    CONTEND_EQUALITY(x, 3);
+    fwindow_index(w, 7, &x);    CONTEND_EQUALITY(x, 3);
+    fwindow_index(w, 8, &x);    CONTEND_EQUALITY(x, 3);
+    fwindow_index(w, 9, &x);    CONTEND_EQUALITY(x, 3);
 
     // push 4 more elements
     // 7 6 3 3 3 3 5 5 5 5

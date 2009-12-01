@@ -244,6 +244,7 @@ void WINDOW(_print)(WINDOW() _w);                               \
 void WINDOW(_debug_print)(WINDOW() _w);                         \
 void WINDOW(_clear)(WINDOW() _w);                               \
 void WINDOW(_read)(WINDOW() _w, T ** _v);                       \
+void WINDOW(_index)(WINDOW() _w, unsigned int _i, T * _v);      \
 void WINDOW(_push)(WINDOW() _b, T _v);                          \
 void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
 
