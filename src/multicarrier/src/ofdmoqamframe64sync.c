@@ -32,7 +32,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_OFDMOQAMFRAME64SYNC             1
-#define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       1
+#define DEBUG_OFDMOQAMFRAME64SYNC_PRINT       0
 #define DEBUG_OFDMOQAMFRAME64SYNC_FILENAME    "ofdmoqamframe64sync_internal_debug.m"
 #define DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN  (2048)
 
@@ -118,8 +118,6 @@ struct ofdmoqamframe64sync_s {
     unsigned int num_data_symbols;
     unsigned int num_samples;
     unsigned int sample_phase;
-    cfwdelay delay0;
-    cfwdelay delay1;
     cfwindow input_buffer;
 
     // output data buffer, ready for demodulation
@@ -223,9 +221,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->crosscorr = fir_filter_cccf_create(q->hxy, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
-    // delay buffers
-    q->delay0 = cfwdelay_create((q->num_subcarriers));
-    q->delay1 = cfwdelay_create((q->num_subcarriers)/2);
+    // input buffer
     q->input_buffer = cfwindow_create((q->num_subcarriers));
 
     // gain
@@ -305,9 +301,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free data buffer
     free(_q->data);
 
-    // free delay buffer
-    cfwdelay_destroy(_q->delay0);
-    cfwdelay_destroy(_q->delay1);
+    // free input buffer
     cfwindow_destroy(_q->input_buffer);
 
     // free main object memory
@@ -335,9 +329,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     _q->nu_hat = 0.0f;
     nco_reset(_q->nco_rx);
 
-    // clear delay buffer
-    cfwdelay_clear(_q->delay0);
-    cfwdelay_clear(_q->delay1);
+    // clear input buffer
     cfwindow_clear(_q->input_buffer);
 
     // clear analysis filter bank objects
@@ -384,10 +376,9 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         // push sample into analysis filter banks
         float complex x_delay0;
         float complex x_delay1;
-        cfwdelay_read(_q->delay0,&x_delay0);
-        cfwdelay_read(_q->delay1,&x_delay1);
-        cfwdelay_push(_q->delay0,x);
-        cfwdelay_push(_q->delay1,x);
+        cfwindow_index(_q->input_buffer,0, &x_delay0); // full symbol delay
+        cfwindow_index(_q->input_buffer,32,&x_delay1); // half symbol delay
+
         cfwindow_push(_q->input_buffer,x);
         firpfbch_analyzer_push(_q->ca0, x_delay0);  // push input sample
         firpfbch_analyzer_push(_q->ca1, x_delay1);  // push delayed sample
@@ -716,9 +707,11 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         printf("nu_hat[1] = %12.8f\n", nu_hat1);
         nco_adjust_frequency(_q->nco_rx, nu_hat1);
 
+        /*
         printf("exiting prematurely\n");
         ofdmoqamframe64sync_destroy(_q);
         exit(1);
+        */
         _q->state = OFDMOQAMFRAME64SYNC_STATE_RXSYMBOLS;
     }
 
