@@ -28,10 +28,11 @@ module_name     := fft
 #
 local_s_files	:= 		\
 	asgram.c		\
+	dct.c			\
 	fft_create_plan.c	\
 	fft_execute.c		\
 	fft_shift.c		\
-	dct.c
+	mdct.c
 
 # local_t_files
 #

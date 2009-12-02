@@ -629,6 +629,10 @@ void asgram_execute(asgram _q);
 void  dct(float *_x, float * _y, unsigned int _n);
 void idct(float *_x, float * _y, unsigned int _n);
 
+// modified discrete cosine transform
+void  mdct(float *_x, float * _X, float * _w, unsigned int _N);
+void imdct(float *_X, float * _x, float * _w, unsigned int _N);
+
 //
 // MODULE : filter
 //
