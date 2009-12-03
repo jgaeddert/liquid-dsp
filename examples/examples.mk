@@ -67,6 +67,7 @@ local_src	:=			\
 	itqmfb_rrrf_example.c		\
 	kmeans_example.c		\
 	matrix_example.c		\
+	mdct_example.c			\
 	modem_example.c			\
 	nco_example.c			\
 	ofdmframe64gen_example.c	\

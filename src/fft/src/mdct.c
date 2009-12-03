@@ -67,15 +67,15 @@ void imdct(float * _X, float * _x, float * _w, unsigned int _N)
         _x[n] = 0.0f;
 
     float nn;
-    for (k=0; k<_N; k++) {
-        for (n=0; n<2*_N; n++) {
+    for (n=0; n<2*_N; n++) {
+        for (k=0; k<_N; k++) {
             nn = (float)n + 0.5f + (float)_N*0.5f;
-            _x[k] += _X[k]*cos(M_PI*inv_N*(nn)*(k+0.5f));
+            _x[n] += _X[k]*cos(M_PI*inv_N*(nn)*(k+0.5f));
         }
     }
 
-    // multiply by window
+    // multiply by window, normalization factor
     for (k=0; k<2*_N; k++)
-        _x[k] *= _w[k];
+        _x[k] *= _w[k] * 2.0f * inv_N;
 }
 
