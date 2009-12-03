@@ -88,12 +88,14 @@ int main() {
     fprintf(fid,"ty=[0:(length(y)-1)]/r-h_len;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(tx,real(x),'-x','Color',[0.5 0.5 0.5],ty,real(y),'-x','Color',[0.5 0 0]);\n");
+    fprintf(fid,"  plot(tx,real(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',3,...\n");
+    fprintf(fid,"       ty,real(y),'-s','Color',[0.5 0 0],    'MarkerSize',3);\n");
     fprintf(fid,"  legend('original','resampled',1);");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(tx,imag(x),'-x','Color',[0.5 0.5 0.5],ty,imag(y),'-x','Color',[0 0.5 0]);\n");
+    fprintf(fid,"  plot(tx,imag(x),'-s','Color',[0.5 0.5 0.5],'MarkerSize',3,...\n");
+    fprintf(fid,"       ty,imag(y),'-s','Color',[0 0.5 0],    'MarkerSize',3);\n");
     fprintf(fid,"  legend('original','resampled',1);");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('imag');\n");
