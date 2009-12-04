@@ -1,5 +1,7 @@
 // 
-// Test polynomial fit
+// polyfit_example.c
+//
+// Test polynomial fit to sample data
 //
 
 #include <stdio.h>
@@ -40,18 +42,26 @@ int main() {
         // print polynomial coefficients vector in reverse order
         fprintf(fid,"p(%3u) = %12.4e;\n", i+1, p[k-i-1]);
     }
+
+    // evaluate polynomial
+    float xmin = -7.5f;
+    float xmax =  7.5f;
+    unsigned int num_steps = 64;
+    float dx = (xmax-xmin)/(num_steps-1);
+    float xtest = xmin;
+    float ytest;
+    for (i=0; i<num_steps; i++) {
+        ytest = polyval(p,k,xtest);
+        fprintf(fid,"xtest(%3u) = %12.4e; ytest(%3u) = %12.4e;\n", i+1, xtest, i+1, ytest);
+        xtest += dx;
+    }
     
     // plot results
-    fprintf(fid,"xmin = min(x);\n");
-    fprintf(fid,"xmax = max(x);\n");
-    fprintf(fid,"dx   = (xmax-xmin)/99;\n");
-    fprintf(fid,"xt   = xmin:dx:xmax;\n");
-    fprintf(fid,"yt   = polyval(p,xt);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(x,y,'x', xt,yt,'-');\n");
+    fprintf(fid,"plot(x,y,'x',xtest,ytest,'-');\n");
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('y, p^{(%u)}(x)');\n", order);
-    fprintf(fid,"legend('data','poly-fit',1);\n");
+    fprintf(fid,"legend('data','poly-fit',0);\n");
+    fprintf(fid,"grid on;\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
