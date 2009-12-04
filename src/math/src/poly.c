@@ -33,7 +33,7 @@ float polyval(float * _p, unsigned int _k, float _x)
     unsigned int i;
     float xk = 1;
     float y = 0.0f;
-    for (i=0; i<=_k; i++) {
+    for (i=0; i<_k; i++) {
         y += _p[i]*xk;
         xk *= _x;
     }
