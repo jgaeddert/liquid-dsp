@@ -61,6 +61,8 @@ struct ofdmframe64sync_s {
 
     float phi_prime;        // previous average pilot phase
     float dphi;             // differential pilot phase
+    float m_prime;          // previous phase slope
+    float m_hat;            // filtered phase slope
     unsigned int num_symbols_rx;
 
     // numerically-controlled oscillator for carrier offset correction
@@ -217,6 +219,8 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     _q->num_symbols_rx = 0;
     _q->phi_prime = 0.0f;
     _q->dphi = 0.0f;
+    _q->m_hat = 0.0f;
+    _q->m_prime = 0.0f;
 
 #if 0
     unsigned int i;
@@ -782,6 +786,13 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     // adjust nco frequency based on some small percentage of
     // the differential average pilot phase
     nco_adjust_frequency(_q->nco_rx, -0.1f*_q->dphi / 64.0f);
+
+    // filter phase slope
+    float zeta = 0.02f;
+    _q->m_hat = zeta*_q->m_prime + (1.0f - zeta)*_q->m_hat;
+    _q->m_prime = _q->p_phase[1];
+    _q->p_phase[1] = _q->m_hat;
+    //printf("p(%3u) = %12.8f;\n", _q->num_symbols_rx+1, _q->p_phase[1]);
 
     // compensate for phase/time shift
     float theta;
