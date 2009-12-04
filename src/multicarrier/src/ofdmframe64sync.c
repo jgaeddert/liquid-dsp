@@ -59,6 +59,10 @@ struct ofdmframe64sync_s {
     float y_phase[4];       // pilot subcarrier phase
     float p_phase[2];       // polynomial fit
 
+    float phi_prime;        // previous average pilot phase
+    float dphi;             // differential pilot phase
+    unsigned int num_symbols_rx;
+
     // numerically-controlled oscillator for carrier offset correction
     nco nco_rx;
 
@@ -210,6 +214,10 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     // reset symbol timer
     _q->timer = 0;
 
+    _q->num_symbols_rx = 0;
+    _q->phi_prime = 0.0f;
+    _q->dphi = 0.0f;
+
 #if 0
     unsigned int i;
     for (i=0; i<64; i++) {
@@ -326,8 +334,8 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     //fprintf(fid,"Lf0 = fft(Lt0).*G;\n");
     //fprintf(fid,"Lf1 = fft(Lt1).*G;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
-    fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
+    fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'s','MarkerSize',2,...\n");
+    fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'s','MarkerSize',2);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"xlabel('in-phase');\n");
@@ -352,7 +360,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(framesyms),imag(framesyms),'x','MarkerSize',1);\n");
+    fprintf(fid,"plot(real(framesyms),imag(framesyms),'s','MarkerSize',2);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"xlabel('in-phase');\n");
@@ -759,6 +767,22 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     // fit phase to 1st-order polynomial (2 coefficients)
     polyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
+    // extract average pilot phase difference and unwrap
+    _q->dphi = _q->num_symbols_rx == 0 ? 0.0f : _q->p_phase[0] - _q->phi_prime;
+    while (_q->dphi >  M_PI) _q->dphi -= 2.0f*M_PI;
+    while (_q->dphi < -M_PI) _q->dphi += 2.0f*M_PI;
+    _q->phi_prime = _q->p_phase[0];
+
+    /*
+    printf("phi(%3u) = %12.8f; dphi(%3u) = %12.8f;\n", _q->num_symbols_rx+1,
+                                                       _q->phi_prime,
+                                                       _q->num_symbols_rx+1,
+                                                       _q->dphi);
+    */
+    // adjust nco frequency based on some small percentage of
+    // the differential average pilot phase
+    nco_adjust_frequency(_q->nco_rx, -0.1f*_q->dphi / 64.0f);
+
     // compensate for phase/time shift
     float theta;
     for (i=0; i<64; i++) {
@@ -784,6 +808,8 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
     }
     assert(j==48);
+
+    _q->num_symbols_rx++;
 
 #if DEBUG_OFDMFRAME64SYNC
     for (i=0; i<48; i++)
