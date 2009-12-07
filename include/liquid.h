@@ -1600,6 +1600,10 @@ typedef enum {
 // Modulation scheme string for printing purposes
 extern const char* modulation_scheme_str[10];
 
+// Constant arbitrary linear modems
+extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
+extern const liquid_float_complex modem_arb_opt16[16];  // optimal 16-QAM
+
 // useful functions
 
 // counts the number of different bits between two symbols

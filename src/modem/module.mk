@@ -28,6 +28,7 @@ module_name     := modem
 #
 local_s_files	:=		\
 	modem.c			\
+	modem_arb_const.c	\
 	modem_create.c		\
 	modem_common.c		\
 	modem_modulate.c	\

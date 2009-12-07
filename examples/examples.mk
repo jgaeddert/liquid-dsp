@@ -68,6 +68,7 @@ local_src	:=			\
 	kmeans_example.c		\
 	matrix_example.c		\
 	mdct_example.c			\
+	modem_arb_example.c		\
 	modem_example.c			\
 	nco_example.c			\
 	ofdmframe64gen_example.c	\
