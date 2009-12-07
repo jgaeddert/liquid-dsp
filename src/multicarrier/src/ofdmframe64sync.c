@@ -338,8 +338,8 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     //fprintf(fid,"Lf0 = fft(Lt0).*G;\n");
     //fprintf(fid,"Lf1 = fft(Lt1).*G;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'s','MarkerSize',2,...\n");
-    fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'s','MarkerSize',2);\n");
+    fprintf(fid,"plot(real(Lf0(s)),imag(Lf0(s)),'x','MarkerSize',1,...\n");
+    fprintf(fid,"     real(Lf1(s)),imag(Lf1(s)),'x','MarkerSize',1);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"xlabel('in-phase');\n");
@@ -364,7 +364,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(real(framesyms),imag(framesyms),'s','MarkerSize',2);\n");
+    fprintf(fid,"plot(real(framesyms),imag(framesyms),'x','MarkerSize',1);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"xlabel('in-phase');\n");

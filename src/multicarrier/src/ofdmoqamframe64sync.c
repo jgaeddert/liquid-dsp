@@ -694,12 +694,12 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         memmove(_q->S1b, rc, 64*sizeof(float complex));
 
         // estimate frequency offset
-        float complex rxy=0.0f;
+        float complex rxy_hat=0.0f;
         unsigned int j;
         for (j=0; j<64; j++) {
-            rxy += _q->S1a[j] * conjf(_q->S1b[j]);
+            rxy_hat += _q->S1a[j] * conjf(_q->S1b[j]);
         }
-        float nu_hat1 = -cargf(rxy);
+        float nu_hat1 = -cargf(rxy_hat);
         if (nu_hat1 >  M_PI) nu_hat1 -= 2.0f*M_PI;
         if (nu_hat1 < -M_PI) nu_hat1 += 2.0f*M_PI;
         nu_hat1 /= 64.0f;
