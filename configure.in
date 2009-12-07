@@ -88,8 +88,7 @@ dnl Check canonical system
 AC_CANONICAL_SYSTEM
 case $target_cpu in
 i386|i486|i586|i686)
-    #ARCH_OPTION="-march=$target_cpu";
-    ARCH_OPTION="";;
+    ARCH_OPTION="-march=native";;
 powerpc*)
     ARCH_OPTION="-fno-common -faltivec";;
 *)

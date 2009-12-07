@@ -26,13 +26,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#if 0
-struct X(_s) {
-    TC * h;
-    unsigned int n;
-};
-#endif
-
 // basic dot product
 
 void DOTPROD(_run)(TC *_h, TI *_x, unsigned int _n, TO * _y)

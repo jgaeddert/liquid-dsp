@@ -202,6 +202,33 @@ struct channel_s {
     float s, sig;
 };
 
+//
+// MODULE : dotprod
+//
+
+// Macro    :   DOTPROD (internal)
+//  DOTPROD :   name-mangling macro
+//  TO      :   output data type
+//  TC      :   coefficients data type
+//  TI      :   input data type
+#define LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD,TO,TC,TI)    \
+struct DOTPROD(_s) {                                            \
+    TC * h;             /* coefficients */                      \
+    unsigned int n;     /* length */                            \
+};
+
+LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_RRRF, float, float, float)
+
+LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CCCF,
+                                   liquid_float_complex,
+                                   liquid_float_complex,
+                                   liquid_float_complex)
+
+LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
+                                   liquid_float_complex,
+                                   float,
+                                   liquid_float_complex)
+
 
 //
 // MODULE : fec (forward error-correction)
