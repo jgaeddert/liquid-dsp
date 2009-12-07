@@ -84,6 +84,9 @@ modules		:=	\
 #	ann
 #	optim
 
+# target-specific libraries
+mlibs_dotprod := @MLIBS_DOTPROD@
+
 # Target collection
 #
 # Information about targets for each module is collected

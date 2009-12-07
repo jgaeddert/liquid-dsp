@@ -88,8 +88,10 @@ dnl Check canonical system
 AC_CANONICAL_SYSTEM
 case $target_cpu in
 i386|i486|i586|i686)
+    MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.mmx.c"
     ARCH_OPTION="-march=native";;
 powerpc*)
+    MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.c"
     ARCH_OPTION="-fno-common -faltivec";;
 *)
 esac
@@ -109,6 +111,7 @@ dnl
 dnl autoconf variable substitutions
 dnl
 AC_SUBST(LIBS)              dnl shared libraries (-lc, -lm, etc.)
+AC_SUBST(MLIBS_DOTPROD)     dnl 
 
 AC_SUBST(SH_LIB)            dnl output shared library target
 AC_SUBST(REBIND)            dnl rebinding tool (e.g. ldconfig)

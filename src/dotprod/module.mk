@@ -27,9 +27,7 @@ module_name     := dotprod
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 			\
-	dotprod_cccf.c			\
-	dotprod_crcf.c			\
-	dotprod_rrrf.c
+	$(mlibs_dotprod)
 
 # local_t_files
 #
