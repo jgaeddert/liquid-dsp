@@ -39,13 +39,17 @@ void dotprod_rrrf_bench(
     }
 
     // start trials
+    *_num_iterations *= 256;
+    *_num_iterations /= _n;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         dotprod_rrrf_run(x,h,_n,&y);
         dotprod_rrrf_run(x,h,_n,&y);
+        dotprod_rrrf_run(x,h,_n,&y);
+        dotprod_rrrf_run(x,h,_n,&y);
     }
     getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 2;
+    *_num_iterations *= 4;
 
 }
 
