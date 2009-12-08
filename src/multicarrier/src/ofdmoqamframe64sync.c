@@ -80,6 +80,9 @@ struct ofdmoqamframe64sync_s {
     float y_phase[4];
     float p_phase[2];       // polynomial fit
 
+    nco nco_pilot;
+    pll pll_pilot;
+
     // signal detection | automatic gain control
     agc sigdet;
 
@@ -132,6 +135,7 @@ struct ofdmoqamframe64sync_s {
     cfwindow debug_rxy;
     cfwindow debug_framesyms;
     fwindow debug_pilotphase;
+    fwindow debug_pilotphase_hat;
     fwindow debug_rssi;
 #endif
 };
@@ -192,6 +196,12 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->x_phase[2] =   7.0f;
     q->x_phase[3] =  21.0f;
 
+    // create NCO for pilots
+    q->nco_pilot = nco_create(LIQUID_VCO);
+    q->pll_pilot = pll_create();
+    pll_set_bandwidth(q->pll_pilot,0.01f);
+    pll_set_damping_factor(q->pll_pilot,4.0f);
+
     // create agc | signal detection object
     q->sigdet = agc_create(1.0f, 0.1f);
 
@@ -241,6 +251,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->debug_rxy=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms= cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_pilotphase= fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase_hat= fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
     q->debug_rssi=       fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
 
@@ -259,6 +270,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
     fwindow_destroy(_q->debug_pilotphase);
+    fwindow_destroy(_q->debug_pilotphase_hat);
     fwindow_destroy(_q->debug_rssi);
 #endif
 
@@ -304,6 +316,9 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free input buffer
     cfwindow_destroy(_q->input_buffer);
 
+    nco_destroy(_q->nco_pilot);
+    pll_destroy(_q->pll_pilot);
+
     // free main object memory
     free(_q);
 }
@@ -328,6 +343,8 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     // reset frequency offset estimation, correction
     _q->nu_hat = 0.0f;
     nco_reset(_q->nco_rx);
+    nco_reset(_q->nco_pilot);
+    pll_reset(_q->pll_pilot);
 
     // clear input buffer
     cfwindow_clear(_q->input_buffer);
@@ -526,8 +543,13 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fwindow_read(_q->debug_pilotphase, &r);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"pilotphase(%4u) = %12.4e;\n", i+1, r[i]);
+
+    fprintf(fid,"pilotphase_hat = zeros(1,n);\n");
+    fwindow_read(_q->debug_pilotphase_hat, &r);
+    for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"pilotphase_hat(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),(pilotphase),'-k','LineWidth',2);\n");
+    fprintf(fid,"plot(0:(127),pilotphase([n-128+1]:n),'-k',0:(127),pilotphase_hat([n-128+1]:n),'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('pilot phase');\n");
 
@@ -697,7 +719,7 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         float complex rxy_hat=0.0f;
         unsigned int j;
         for (j=0; j<64; j++) {
-            rxy_hat += _q->S1a[j] * conjf(_q->S1b[j]);
+            rxy_hat += _q->S1a[j] * conjf(_q->S1b[j]) * hamming(j,64);
         }
         float nu_hat1 = -cargf(rxy_hat);
         if (nu_hat1 >  M_PI) nu_hat1 -= 2.0f*M_PI;
@@ -849,6 +871,13 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     // fit phase to 1st-order polynomial (2 coefficients)
     polyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
+    //nco_step(_q->nco_pilot);
+    float theta_hat = nco_get_phase(_q->nco_pilot);
+    float phase_error = _q->p_phase[0] - theta_hat;
+    while (phase_error >  M_PI) phase_error -= 2.0f*M_PI;
+    while (phase_error < -M_PI) phase_error += 2.0f*M_PI;
+    pll_step(_q->pll_pilot, _q->nco_pilot, 0.1f*phase_error);
+
 #if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
     // print phase results
     for (i=0; i<4; i++) {
@@ -859,16 +888,21 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 #endif
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    fwindow_push(_q->debug_pilotphase, _q->p_phase[0]);
+    fwindow_push(_q->debug_pilotphase,      _q->p_phase[0]);
+    fwindow_push(_q->debug_pilotphase_hat,  theta_hat);
 #endif
 
     // compensate for phase shift due to timing offset
     float theta;
+    _q->p_phase[0] = theta_hat;
+    _q->p_phase[1] = 0.0f;
     for (i=0; i<_q->num_subcarriers; i++) {
+        // TODO : compute phase for delayed symbol (different from non-delayed symbol)
         theta = polyval(_q->p_phase, 2, (float)(i)-32.0f);
         _Y0[i] *= liquid_crotf_vect(-theta);
         _Y1[i] *= liquid_crotf_vect(-theta);
     }
+    nco_step(_q->nco_pilot);
 
     // strip data subcarriers
     for (i=0; i<_q->num_subcarriers; i++) {
