@@ -245,6 +245,10 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
 
 void flexframesync_destroy(flexframesync _fs)
 {
+#if DEBUG_FLEXFRAMESYNC
+    flexframesync_output_debug_file(_fs);
+#endif
+
     // destroy synchronizer objects
     agc_destroy(_fs->agc_rx);
     pll_destroy(_fs->pll_rx);
