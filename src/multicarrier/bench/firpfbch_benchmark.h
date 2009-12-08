@@ -62,7 +62,7 @@ void firpfbch_execute_bench(
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
-    if (_type = FIRPFBCH_SYNTHESIZER) {
+    if (_type == FIRPFBCH_SYNTHESIZER) {
         for (i=0; i<(*_num_iterations); i++) {
             firpfbch_synthesizer_execute(c,x,y);
             firpfbch_synthesizer_execute(c,x,y);
