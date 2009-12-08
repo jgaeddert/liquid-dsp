@@ -748,10 +748,15 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     for (i=0; i<64; i++) {
         _q->X[i] *= _q->G[i]*_q->B[i];
     }
-    _q->y_phase[0] = cargf(_q->X[11]);  // -21
-    _q->y_phase[1] = cargf(_q->X[25]);  //  -7
-    _q->y_phase[2] = cargf(_q->X[39]);  //   7
-    _q->y_phase[3] = cargf(_q->X[53]);  //  21
+
+    // pilot phase correction
+    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
+    float complex p = pilot_phase ? 1.0f : -1.0f;
+
+    _q->y_phase[0] = cargf(_q->X[11]*conjf(p));  // -21
+    _q->y_phase[1] = cargf(_q->X[25]*conjf(p));  //  -7
+    _q->y_phase[2] = cargf(_q->X[39]*conjf(p));  //   7
+    _q->y_phase[3] = cargf(_q->X[53]*conjf(p));  //  21
 
     // try to unwrap phase
     for (i=1; i<4; i++) {
@@ -759,13 +764,6 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
             _q->y_phase[i] -= 2*M_PI;
         while ((_q->y_phase[i] - _q->y_phase[i-1]) < -M_PI)
             _q->y_phase[i] += 2*M_PI;
-    }
-
-    // pilot phase correction
-    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
-    if (pilot_phase==0) {
-        for (i=0; i<4; i++)
-            _q->y_phase[i] -= M_PI;
     }
 
     // fit phase to 1st-order polynomial (2 coefficients)
