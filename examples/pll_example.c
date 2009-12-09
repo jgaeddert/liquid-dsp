@@ -21,6 +21,7 @@ int main() {
     float phase_offset = M_PI/2;
     float frequency_offset = 0.0f;
     float pll_bandwidth = 1e-3f;
+    float pll_damping_factor = 4.0f;
     unsigned int n=250;     // number of iterations
     unsigned int d=10;      // print every "d" lines
 
@@ -37,6 +38,7 @@ int main() {
     nco_set_phase(nco_tx, phase_offset);
     nco_set_frequency(nco_tx, frequency_offset);
     pll_set_bandwidth(pll_rx, pll_bandwidth);
+    pll_set_damping_factor(pll_rx, pll_damping_factor);
 
     // print parameters
     printf("PLL example :\n");
