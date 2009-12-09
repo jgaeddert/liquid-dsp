@@ -63,6 +63,8 @@ void fir_filter_rrrf_bench(
 void benchmark_fir_filter_rrrf_4    FIR_FILTER_RRRF_BENCHMARK_API(4)
 void benchmark_fir_filter_rrrf_8    FIR_FILTER_RRRF_BENCHMARK_API(8)
 void benchmark_fir_filter_rrrf_16   FIR_FILTER_RRRF_BENCHMARK_API(16)
+void benchmark_fir_filter_rrrf_32   FIR_FILTER_RRRF_BENCHMARK_API(32)
+void benchmark_fir_filter_rrrf_64   FIR_FILTER_RRRF_BENCHMARK_API(64)
 
 #endif // __LIQUID_FIR_FILTER_RRRF_BENCHMARK_H__
 
