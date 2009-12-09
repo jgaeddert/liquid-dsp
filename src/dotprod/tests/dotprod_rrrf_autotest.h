@@ -21,6 +21,8 @@
 #ifndef __DOTPROD_AUTOTEST_H__
 #define __DOTPROD_AUTOTEST_H__
 
+#include <string.h>
+
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -150,6 +152,53 @@ void autotest_dotprod_rrrf_struct()
     // clean-up
     dotprod_rrrf_destroy(dp);
 }
+
+// 
+// AUTOTEST: structured dot product with floating-point data
+//
+void autotest_dotprod_rrrf_struct_align()
+{
+    float h[16] = {
+    -0.050565, -0.952580,  0.274320,  1.232400, 
+     1.268200,  0.565770,  0.800830,  0.923970, 
+     0.517060, -0.530340, -0.378550, -1.127100, 
+     1.123100, -1.006000, -1.483800, -0.062007
+    };
+
+    float x[16] = {
+    -0.384280, -0.812030,  0.156930,  1.919500, 
+     0.564580, -0.123610, -0.138640,  0.004984, 
+    -1.100200, -0.497620,  0.089977, -1.745500, 
+     0.463640,  0.592100,  1.150000, -1.225400
+    };
+
+    float test = 3.66411513609863;
+    float tol = 1e-3f;
+    float y;
+
+    // create dotprod object
+    dotprod_rrrf dp = dotprod_rrrf_create(h,16);
+
+    // test data mis-alignment conditions
+    float x_buffer[20];
+    float * x_hat;
+    unsigned int i;
+    for (i=0; i<4; i++) {
+        // set pointer to array aligned with counter
+        x_hat = &x_buffer[i];
+
+        // copy input data to buffer
+        memmove(x_hat, x, 16*sizeof(float));
+        
+        // execute dotprod
+        dotprod_rrrf_execute(dp,x_hat,&y);
+        CONTEND_DELTA(y,test,tol);
+    }
+
+    // destroy dotprod object
+    dotprod_rrrf_destroy(dp);
+}
+
 
 // 
 // AUTOTEST: dot product with floating-point data
