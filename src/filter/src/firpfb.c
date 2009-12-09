@@ -97,7 +97,7 @@ void FIRPFB(_print)(FIRPFB() _b)
         printf("bank %u:\n",i);
         for (n=0; n<_b->h_len; n++) {
             printf("  ");
-            PRINTVAL_TC(stdout,"h",n,_b->dp[i]->h[n]);
+            //PRINTVAL_TC(stdout,"h",n,_b->dp[i]->h[n]);
         }
         printf("\n");
     }

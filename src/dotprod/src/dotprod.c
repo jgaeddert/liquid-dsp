@@ -26,6 +26,11 @@
 #include <string.h>
 #include <stdio.h>
 
+struct DOTPROD(_s) {
+    TC * h;             // coefficients array
+    unsigned int n;     // length
+};
+
 // basic dot product
 
 void DOTPROD(_run)(TC *_h, TI *_x, unsigned int _n, TO * _y)

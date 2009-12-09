@@ -91,7 +91,7 @@ i386|i486|i586|i686)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.mmx.c"
     ARCH_OPTION="-march=native";;
 powerpc*)
-    MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.c"
+    MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.av.c"
     ARCH_OPTION="-fno-common -faltivec";;
 *)
 esac

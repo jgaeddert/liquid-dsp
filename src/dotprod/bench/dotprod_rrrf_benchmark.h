@@ -38,19 +38,24 @@ void dotprod_rrrf_bench(
         h[i] = 1.0f;
     }
 
+    // create dotprod structure;
+    dotprod_rrrf dp = dotprod_rrrf_create(h,_n);
+
     // start trials
     *_num_iterations *= 256;
     *_num_iterations /= _n;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        dotprod_rrrf_run(x,h,_n,&y);
-        dotprod_rrrf_run(x,h,_n,&y);
-        dotprod_rrrf_run(x,h,_n,&y);
-        dotprod_rrrf_run(x,h,_n,&y);
+        dotprod_rrrf_execute(dp,x,&y);
+        dotprod_rrrf_execute(dp,x,&y);
+        dotprod_rrrf_execute(dp,x,&y);
+        dotprod_rrrf_execute(dp,x,&y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
+    // clean up objects
+    dotprod_rrrf_destroy(dp);
 }
 
 #define dotprod_rrrf_BENCHMARK_API(N)       \
