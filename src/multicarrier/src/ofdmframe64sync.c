@@ -59,6 +59,9 @@ struct ofdmframe64sync_s {
     float y_phase[4];       // pilot subcarrier phase
     float p_phase[2];       // polynomial fit
 
+    nco nco_pilot;          // pilot phase nco
+    pll pll_pilot;          // pilot phase pll
+
     float phi_prime;        // previous average pilot phase
     float dphi;             // differential pilot phase
     float m_prime;          // previous phase slope
@@ -110,6 +113,8 @@ struct ofdmframe64sync_s {
     cfwindow debug_rxx;
     cfwindow debug_rxy;
     cfwindow debug_framesyms;
+    fwindow debug_pilotphase;
+    fwindow debug_pilotphase_hat;
 #endif
 };
 
@@ -131,6 +136,10 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 
     // carrier offset correction
     q->nco_rx = nco_create(LIQUID_VCO);
+    q->nco_pilot = nco_create(LIQUID_VCO);
+    q->pll_pilot = pll_create();
+    pll_set_bandwidth(q->pll_pilot,0.01f);
+    pll_set_damping_factor(q->pll_pilot,4.0f);
 
     // cyclic prefix correlation windows
     q->delay_correlator = autocorr_cccf_create(OFDMFRAME64SYNC_AUTOCORR_LEN,16);
@@ -149,6 +158,8 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->debug_rxx = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
     q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
     q->debug_framesyms = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase = fwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase_hat = fwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     // pilot sequence generator
@@ -179,6 +190,8 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     cfwindow_destroy(_q->debug_rxx);
     cfwindow_destroy(_q->debug_rxy);
     cfwindow_destroy(_q->debug_framesyms);
+    fwindow_destroy(_q->debug_pilotphase);
+    fwindow_destroy(_q->debug_pilotphase_hat);
 #endif
 
     free(_q->x);
@@ -192,6 +205,8 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     autocorr_cccf_destroy(_q->delay_correlator);
     dotprod_cccf_destroy(_q->cross_correlator);
     nco_destroy(_q->nco_rx);
+    nco_destroy(_q->nco_pilot);
+    pll_destroy(_q->pll_pilot);
     free(_q);
 }
 
@@ -212,6 +227,8 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     _q->rxx_max = 0.0f;
     nco_set_frequency(_q->nco_rx, 0.0f);
     nco_set_phase(_q->nco_rx, 0.0f);
+    nco_reset(_q->nco_pilot);
+    pll_reset(_q->pll_pilot);
 
     // reset symbol timer
     _q->timer = 0;
@@ -370,6 +387,18 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
     fprintf(fid,"title('Frame Symbols');\n");
+
+    // pilot phase
+    float * r;
+    fprintf(fid,"pilotphase = zeros(1,n);\n");
+    fwindow_read(_q->debug_pilotphase, &r);
+    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"pilotphase(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"pilotphase_hat = zeros(1,n);\n");
+    fwindow_read(_q->debug_pilotphase_hat, &r);
+    for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
+        fprintf(fid,"pilotphase_hat(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"figure; plot(0:127,pilotphase([n-128+1]:n),'-k','LineWidth',1,0:127,pilotphase_hat([n-128+1]:n),'-k','LineWidth',2);\n");
 
     fclose(fid);
     printf("ofdmframe64sync/debug: results written to %s\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
@@ -769,6 +798,15 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     // fit phase to 1st-order polynomial (2 coefficients)
     polyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
+    float theta_hat = nco_get_phase(_q->nco_pilot);
+    float phase_error = _q->p_phase[0] - theta_hat;
+    pll_step(_q->pll_pilot, _q->nco_pilot, phase_error);
+
+#if DEBUG_OFDMFRAME64SYNC
+    fwindow_push(_q->debug_pilotphase,      _q->p_phase[0]);
+    fwindow_push(_q->debug_pilotphase_hat,  theta_hat);
+#endif
+
     // extract average pilot phase difference and unwrap
     _q->dphi = _q->num_symbols_rx == 0 ? 0.0f : _q->p_phase[0] - _q->phi_prime;
     while (_q->dphi >  M_PI) _q->dphi -= 2.0f*M_PI;
@@ -794,10 +832,15 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
     // compensate for phase/time shift
     float theta;
+    /*
+    _q->p_phase[0] = theta_hat;
+    _q->p_phase[1] = 0.0f;
+    */
     for (i=0; i<64; i++) {
         theta = polyval(_q->p_phase, 2, (float)(i)-32.0f);
         _q->X[i] *= liquid_crotf_vect(-theta);
     }
+    nco_step(_q->nco_pilot);
 
     // TODO: perform additional polynomial gain compensation
 
