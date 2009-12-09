@@ -75,15 +75,28 @@ void dotprod_rrrf_run4(float *_h,
 //
 
 struct dotprod_rrrf_s {
-    unsigned int n; // length
-    float *h[4];    // hold 4 copies on altivec machines
+    // dotprod length (number of coefficients)
+    unsigned int n;
+
+    // coefficients arrays: the altivec velocity engine operates
+    // on 128-bit registers which can hold four 32-bit floating-
+    // point values.  We need to hold 4 copies of the coefficients
+    // to meet all possible alignments to the input data.
+    float *h[4];
 };
 
+// create the structured dotprod object
 dotprod_rrrf dotprod_rrrf_create(float * _h, unsigned int _n)
 {
     dotprod_rrrf dp = (dotprod_rrrf)malloc(sizeof(struct dotprod_rrrf_s));
     dp->n = _n;
 
+    // create 4 copies of the input coefficients (one for each
+    // data alignment).  For example: _h[4] = {1,2,3,4,5,6}
+    //  dp->h[0] = {1,2,3,4,5,6}
+    //  dp->h[1] = {. 1,2,3,4,5,6}
+    //  dp->h[2] = {. . 1,2,3,4,5,6}
+    //  dp->h[3] = {. . . 1,2,3,4,5,6}
     unsigned int i,j;
     for (i=0; i<4; i++) {
         dp->h[i] = calloc(1+(dp->n+i-1)/4,sizeof(vector float));
@@ -94,27 +107,33 @@ dotprod_rrrf dotprod_rrrf_create(float * _h, unsigned int _n)
     return dp;
 }
 
+// destroy the structured dotprod object
 void dotprod_rrrf_destroy(dotprod_rrrf _dp)
 {
+    // clean up coefficients arrays
     unsigned int i;
     for (i=0; i<4; i++)
         free(_dp->h[i]);
+
+    // free allocated object memory
     free(_dp);
 }
 
+// print the dotprod object
 void dotprod_rrrf_print(dotprod_rrrf _dp)
 {
-    printf("dotprod_rrrf:\n");
+    printf("dotprod_rrrf [%u taps]:\n", _dp->n);
     unsigned int i;
     for (i=0; i<_dp->n; i++)
-        printf("%3u : %12.9f\n", i, _dp->h[0][i]);
+        printf("  %3u : %12.9f\n", i, _dp->h[0][i]);
 }
 
+// exectue vectorized structured inner dot product
 void dotprod_rrrf_execute(dotprod_rrrf _dp,
                           float * _x,
                           float * _r)
 {
-    int al; // alignment
+    int al; // input data alignment
 
     vector float *ar,*d;
     vector float s0,s1,s2,s3;
@@ -126,70 +145,35 @@ void dotprod_rrrf_execute(dotprod_rrrf _dp,
 
     d = (vector float*)_dp->h[al];
 
-    // print values
-#if DEBUG_DOTPROD_RRRF_AV
-    vector float h;
-    vector float x;
-    unsigned int i;
-    for (i=0; i<_dp->n; i+=4) {
-        h = d[i/4];
-        printf("  h : %12.8vf\n", h);
-    }
-    for (i=0; i<_dp->n; i+=4) {
-        x = ar[i/4];
-        printf("  x : %12.8vf\n", x);
-    }
-#endif
-
     nblocks = (_dp->n + al - 1)/4 + 1;
-#if DEBUG_DOTPROD_RRRF_AV
-    printf("nblocks : %u\n", nblocks);
-#endif
 
+    // split into four vectors each with four 32-bit
+    // partial sums.  Effectively each loop iteration
+    // operates on 16 input samples at a time.
     s0 = s1 = s2 = s3 = (vector float)(0);
     while (nblocks >= 4) {
         s0 = vec_madd(ar[nblocks-1],d[nblocks-1],s0);
         s1 = vec_madd(ar[nblocks-2],d[nblocks-2],s1);
         s2 = vec_madd(ar[nblocks-3],d[nblocks-3],s2);
         s3 = vec_madd(ar[nblocks-4],d[nblocks-4],s3);
-        //printf("block\n");
         nblocks -= 4;
     }
 
-#if DEBUG_DOTPROD_RRRF_AV
-    printf("\n");
-    printf("s0 : %12.8vf\n", s0);
-    printf("s1 : %12.8vf\n", s1);
-    printf("s2 : %12.8vf\n", s2);
-    printf("s3 : %12.8vf\n", s3);
-    printf("\n");
-#endif
+    // fold the resulting partial sums into vector s0
+    s0 = vec_add(s0,s1);    // s0 = s0+s1
+    s2 = vec_add(s2,s3);    // s2 = s2+s3
+    s0 = vec_add(s0,s2);    // s0 = s0+s2
 
-    s0 = vec_add(s0,s1,s0);
-    s2 = vec_add(s2,s3,s2);
-    s0 = vec_add(s0,s2,s0);
-
-#if DEBUG_DOTPROD_RRRF_AV
-    printf("s0 : %12.8vf\n", s0);
-#endif
-
-    while (nblocks-- > 0) {
+    // finish partial summing operations
+    while (nblocks-- > 0)
         s0 = vec_madd(ar[nblocks],d[nblocks],s0);
-        //printf("*s : %12.8vf\n", s0);
-    }
-#if DEBUG_DOTPROD_RRRF_AV
-    printf("s0 : %12.8vf\n", s0);
-#endif
 
+    // move the result into the union s (effetively,
+    // this loads the four 32-bit values in s0 into
+    // the array w).
     s.v = vec_add(s0,(vector float)(0));
-#if DEBUG_DOTPROD_RRRF_AV
-    printf("v  : %12.8vf\n", s.v);
-    printf("w0 : %12.8f\n", s.w[0]);
-    printf("w1 : %12.8f\n", s.w[1]);
-    printf("w2 : %12.8f\n", s.w[2]);
-    printf("w3 : %12.8f\n", s.w[3]);
-#endif
 
+    // sum the resulting array
     *_r = s.w[0] + s.w[1] + s.w[2] + s.w[3];
 }
 
