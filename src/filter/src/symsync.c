@@ -193,7 +193,9 @@ void SYMSYNC(_estimate_timing)(SYMSYNC() _q, TI * _v, unsigned int _n)
 void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
 {
     //  1.  compute timing error signal, clipping large levels
-    _q->q = tanhf( 0.5f*(crealf(mf)*crealf(dmf) + cimagf(mf)*cimagf(dmf)) );
+    _q->q = 0.5f*(crealf(mf)*crealf(dmf) + cimagf(mf)*cimagf(dmf));
+    if (_q->q > 1.0f)       _q->q =  1.0f;
+    else if (_q->q < -1.0f) _q->q = -1.0f;
 
     //  2.  filter error signal: retain large percent (alpha) of
     //      old estimate and small percent (beta) of new estimate
