@@ -89,7 +89,12 @@ AC_CANONICAL_SYSTEM
 case $target_cpu in
 i386|i486|i586|i686)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.mmx.c"
-    ARCH_OPTION="-march=native";;
+    case $target_os in
+    darwin*)
+        ARCH_OPTION="-march=native";;
+    *)
+        ARCH_OPTION="-march=$target_cpu";;
+    esac;;
 powerpc*)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.av.c"
     ARCH_OPTION="-fno-common -faltivec";;
