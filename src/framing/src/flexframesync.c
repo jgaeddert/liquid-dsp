@@ -64,6 +64,11 @@ static flexframesyncprops_s flexframesyncprops_default = {
     -15.0f      // squelch_threshold
 };
 
+void flexframesyncprops_init_default(flexframesyncprops_s * _props)
+{
+    memmove(_props, &flexframesyncprops_default, sizeof(flexframesyncprops_s));
+}
+
 struct flexframesync_s {
 
     // synchronizer objects
@@ -170,7 +175,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
 
     // agc, rssi, squelch
     fs->agc_rx = agc_create(1.0f, fs->props.agc_bw0);
-    agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
+    agc_set_gain_limits(fs->agc_rx, 1e-6, 1e3);
     fs->squelch_threshold = fs->props.squelch_threshold;
     fs->squelch_timeout = FLEXFRAMESYNC_SQUELCH_TIMEOUT;
     fs->squelch_timer = fs->squelch_timeout;

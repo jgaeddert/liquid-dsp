@@ -1348,6 +1348,7 @@ typedef struct {
     //flexframesync_callback callback;
     //void * userdata;
 } flexframesyncprops_s;
+void flexframesyncprops_init_default(flexframesyncprops_s * _props);
 typedef struct flexframesync_s * flexframesync;
 flexframesync flexframesync_create(flexframesyncprops_s * _props,
                                    flexframesync_callback _callback,
