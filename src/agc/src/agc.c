@@ -157,12 +157,20 @@ void AGC(_set_bandwidth)(AGC() _q, T _BT)
 
 void AGC(_execute)(AGC() _q, TC _x, TC *_y)
 {
+    T e_hat;
+#if 0
     // estimate normalized energy, should be equal to 1.0 when locked
     T e2 = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
     fir_filter_rrrf_push(_q->f, e2);
-    T e_hat;
     fir_filter_rrrf_execute(_q->f, &e_hat);
     e_hat = sqrtf(e_hat);// * (_q->g) / (_q->e_target);
+#else
+    float zeta = 0.1f;
+    // estimate normalized energy, should be equal to 1.0 when locked
+    _q->e_hat = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+    _q->e_prime = (_q->e_hat)*zeta + (_q->e_prime)*(1.0f-zeta);
+    e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
+#endif
 
     // ideal gain
     T g = _q->e_target / e_hat;
