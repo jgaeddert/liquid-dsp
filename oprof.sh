@@ -10,7 +10,7 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-opcontrol --setup --no-vmlinux
+opcontrol --setup --no-vmlinux --callgraph=20
 opcontrol --reset
 opcontrol --start
 
@@ -18,5 +18,6 @@ opcontrol --start
 $@
 
 opcontrol --shutdown
-opannotate --source | vim -
+#opannotate --source | vim -
+opreport --callgraph -t 0.01 | vim -
 
