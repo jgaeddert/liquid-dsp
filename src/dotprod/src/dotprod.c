@@ -109,6 +109,6 @@ void DOTPROD(_print)(DOTPROD() _q)
 
 void DOTPROD(_execute)(DOTPROD() _q, TI * _x, TO * _y)
 {
-    DOTPROD(_run)(_q->h, _x, _q->n, _y);
+    DOTPROD(_run4)(_q->h, _x, _q->n, _y);
 }
 
