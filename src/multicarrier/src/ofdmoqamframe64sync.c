@@ -727,8 +727,10 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         if (nu_hat1 >  M_PI) nu_hat1 -= 2.0f*M_PI;
         if (nu_hat1 < -M_PI) nu_hat1 += 2.0f*M_PI;
         nu_hat1 /= 64.0f;
+#if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("nu_hat[0] = %12.8f\n", _q->nu_hat);
         printf("nu_hat[1] = %12.8f\n", nu_hat1);
+#endif
         nco_adjust_frequency(_q->nco_rx, nu_hat1);
 
         /*
