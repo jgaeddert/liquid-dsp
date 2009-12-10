@@ -91,7 +91,7 @@ i386|i486|i586|i686)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.mmx.c"
     case $target_os in
     darwin*)
-        ARCH_OPTION="-march=native";;
+        ARCH_OPTION="-march=core2";;
     *)
         ARCH_OPTION="-march=$target_cpu";;
     esac;;
