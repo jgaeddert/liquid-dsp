@@ -56,12 +56,9 @@ struct AGC(_s) {
 };
 
 
-AGC() AGC(_create)(T _etarget, T _BT)
+AGC() AGC(_create)()
 {
     AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
-    AGC(_init)(_q);
-    AGC(_set_target)(_q, _etarget);
-    AGC(_set_bandwidth)(_q, _BT);
 
     // normalized windowing function
     T w[11] = {
@@ -87,6 +84,19 @@ AGC() AGC(_create)(T _etarget, T _BT)
     for (i=0; i<11; i++)
         FIR_FILTER(_push)(_q->f, 0.0f);
 
+    // initialize loop filter state variables
+    _q->e_prime = 1.0f;
+    _q->e_hat = 1.0f;
+    _q->tmp2 = 1.0f;
+
+    // set default gain variables
+    _q->g = 1.0f;
+    _q->g_min = 1e-6f;
+    _q->g_max = 1e+6f;
+
+    AGC(_set_target)(_q, 1.0);
+    AGC(_set_bandwidth)(_q, 0.0);
+
     return _q;
 }
 
@@ -109,32 +119,13 @@ void AGC(_reset)(AGC() _q)
     _q->tmp2 = 1.0f;
 }
 
-void AGC(_init)(AGC() _q)
-{
-    //_q->e = 1.0f;
-    _q->e_target = 1.0f;
-
-    // set gain variables
-    _q->g = 1.0f;
-    _q->g_min = 1e-6f;
-    _q->g_max = 1e+6f;
-
-    // prototype loop filter
-    AGC(_set_bandwidth)(_q, 0.01f);
-
-    // initialize loop filter state variables
-    _q->e_prime = 1.0f;
-    _q->e_hat = 1.0f;
-    _q->tmp2 = 1.0f;
-}
-
 void AGC(_set_target)(AGC() _q, T _e_target)
 {
     // check to ensure _e_target is reasonable
 
     _q->e_target = _e_target;
 
-    ///\todo auto-adjust gain to compensate?
+    // TODO : auto-adjust agc gain to compensate for target change?
 }
 
 void AGC(_set_gain_limits)(AGC() _q, T _g_min, T _g_max)
@@ -151,11 +142,11 @@ void AGC(_set_gain_limits)(AGC() _q, T _g_min, T _g_max)
 void AGC(_set_bandwidth)(AGC() _q, T _BT)
 {
     // check to ensure _BT is reasonable
-    if ( _BT <= 0 ) {
-        perror("\n");
+    if ( _BT < 0 ) {
+        fprintf(stderr,"error: agc_set_bandwidth(), bandwidth must be positive\n");
         exit(-1);
     } else if ( _BT > 0.5f ) {
-        perror("\n");
+        fprintf(stderr,"error: agc_set_bandwidth(), bandwidth must less than 0.5\n");
         exit(-1);
     }
 

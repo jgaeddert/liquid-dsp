@@ -132,7 +132,9 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // initial gain correction / signal detection
-    q->sigdet = agc_create(1.0f, 0.1f);
+    q->sigdet = agc_create();
+    agc_set_target(q->sigdet,1.0f);
+    agc_set_bandwidth(q->sigdet,0.1f);
 
     // carrier offset correction
     q->nco_rx = nco_create(LIQUID_VCO);

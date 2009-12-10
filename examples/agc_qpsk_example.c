@@ -11,7 +11,7 @@ int main() {
     // options
     float etarget=1.0f;     // target energy
     float gamma=0.01f;      // channel gain
-    float bt=1e-3f;         // loop bandwidth
+    float bt=1e-2f;         // loop bandwidth
     unsigned int num_symbols=100;     // number of iterations
     unsigned int d=5;       // print every d iterations
 
@@ -25,7 +25,9 @@ int main() {
     float h[h_len];
     design_rrc_filter(k,m,beta,0,h);
     interp_crcf interp = interp_crcf_create(k,h,h_len);
-    agc p = agc_create(etarget, bt);
+    agc p = agc_create();
+    agc_set_target(p, etarget);
+    agc_set_bandwidth(p, bt);
 
     unsigned int i;
     for (i=0; i<h_len; i++)
@@ -65,8 +67,17 @@ int main() {
 
 
     fprintf(fid,"\n\n");
+    fprintf(fid,"n = length(x);\n");
+    fprintf(fid,"t = 0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(10*log10(rssi));\n");
+    fprintf(fid,"plot(t,10*log10(rssi),'-k','LineWidth',2);\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('rssi [dB]');\n");
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,real(y),t,imag(y));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('agc output');\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 

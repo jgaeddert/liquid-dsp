@@ -37,7 +37,9 @@ void autotest_dc_gain_control() {
     float g_target = 10*log10(energy_target/energy_start);
 
     // create AGC object and initialize
-    agc g = agc_create(energy_target, bt);
+    agc g = agc_create();
+    agc_set_target(g,energy_target);
+    agc_set_bandwidth(g, bt);
 
     unsigned int i;
     float complex x = energy_start, y;
@@ -69,7 +71,9 @@ void autotest_ac_gain_control() {
     float g_target = 10*log10(energy_target/energy_start);
 
     // create AGC object and initialize
-    agc g = agc_create(energy_target, bt);
+    agc g = agc_create();
+    agc_set_target(g,energy_target);
+    agc_set_bandwidth(g, bt);
 
     unsigned int i;
     float complex x, y;

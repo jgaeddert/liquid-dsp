@@ -89,7 +89,7 @@ LIQUID_DEFINE_COMPLEX(float, liquid_float_complex);
 #define LIQUID_AGC_DEFINE_API(AGC,T,TC)                         \
 typedef struct AGC(_s) * AGC();                                 \
                                                                 \
-AGC() AGC(_create)(T _etarget, T _bt);                          \
+AGC() AGC(_create)();                                           \
 void AGC(_destroy)(AGC() _q);                                   \
 void AGC(_print)(AGC() _q);                                     \
 void AGC(_reset)(AGC() _q);                                     \
@@ -106,10 +106,10 @@ void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
 /* Apply gain to input, update tracking loop */                 \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
-/* Return signal level in dB relative to target */              \
+/* Return signal level (linear) relative to target energy */    \
 T AGC(_get_signal_level)(AGC() _q);                             \
                                                                 \
-/* Return gain in dB relative to target energy */               \
+/* Return gain value (linear) relative to target energy */      \
 T AGC(_get_gain)(AGC() _q);
 
 // Define agc APIs

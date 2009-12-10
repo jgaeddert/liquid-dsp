@@ -174,7 +174,9 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->intlv_header = interleaver_create(32, INT_BLOCK);
 
     // agc, rssi, squelch
-    fs->agc_rx = agc_create(1.0f, fs->props.agc_bw0);
+    fs->agc_rx = agc_create();
+    agc_set_target(fs->agc_rx, 1.0f);
+    agc_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e3);
     fs->squelch_threshold = fs->props.squelch_threshold;
     fs->squelch_timeout = FLEXFRAMESYNC_SQUELCH_TIMEOUT;

@@ -15,7 +15,9 @@ int main() {
     unsigned int d=5;       // print every d iterations
 
     // create objects
-    agc p = agc_create(etarget, bt);
+    agc p = agc_create();
+    agc_set_target(p,etarget);
+    agc_set_bandwidth(p,bt);
 
     // print info
     printf("automatic gain control // target: %5.1f, loop bandwidth: %4.2e\n",etarget,bt);

@@ -33,7 +33,9 @@ void benchmark_agc(
     unsigned int i;
 
     // initialize AGC object
-    agc g = agc_create(1.0f, 0.05f);
+    agc g = agc_create();
+    agc_set_target(g,1.0f);
+    agc_set_bandwidth(g,0.05f);
 
     float complex x=1.0f, y;
 

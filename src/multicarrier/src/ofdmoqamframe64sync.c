@@ -203,7 +203,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     pll_set_damping_factor(q->pll_pilot,4.0f);
 
     // create agc | signal detection object
-    q->sigdet = agc_create(1.0f, 0.1f);
+    q->sigdet = agc_create();
+    agc_set_target(q->sigdet,1.0f);
+    agc_set_bandwidth(q->sigdet,0.1f);
 
     // create NCO for CFO compensation
     q->nco_rx = nco_create(LIQUID_VCO);

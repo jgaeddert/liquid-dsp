@@ -134,7 +134,9 @@ framesync64 framesync64_create(
     fs->userdata = _userdata;
 
     // agc, rssi, squelch
-    fs->agc_rx = agc_create(1.0f, FRAMESYNC64_AGC_BW_0);
+    fs->agc_rx = agc_create();
+    agc_set_target(fs->agc_rx, 1.0f);
+    agc_set_bandwidth(fs->agc_rx, FRAMESYNC64_AGC_BW_0);
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
     fs->squelch_threshold = FRAMESYNC64_SQUELCH_THRESH;
     fs->squelch_timeout = FRAMESYNC64_SQUELCH_TIMEOUT;
