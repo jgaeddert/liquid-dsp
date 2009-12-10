@@ -178,13 +178,13 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     agc_set_target(fs->agc_rx, 1.0f);
     agc_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
     agc_set_gain_limits(fs->agc_rx, 1e-6, 1e3);
-    fs->squelch_threshold = fs->props.squelch_threshold;
+    fs->squelch_threshold = powf(10.0f,(fs->props.squelch_threshold)/10.0f);
     fs->squelch_timeout = FLEXFRAMESYNC_SQUELCH_TIMEOUT;
     fs->squelch_timer = fs->squelch_timeout;
 
     // pll, nco
     fs->pll_rx = pll_create();
-    fs->nco_rx = nco_create(LIQUID_VCO);
+    fs->nco_rx = nco_create(LIQUID_NCO);
     pll_set_bandwidth(fs->pll_rx, fs->props.pll_bw0);
     pll_set_damping_factor(fs->pll_rx, 6.0f);   // increasing damping factor
                                                 // reduces oscillations,
@@ -347,7 +347,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
     for (i=0; i<_n; i++) {
         // agc
         agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
-        _fs->rssi = 10*log10(agc_get_signal_level(_fs->agc_rx));
+        _fs->rssi = agc_get_signal_level(_fs->agc_rx);
 #ifdef DEBUG_FLEXFRAMESYNC
         cfwindow_push(_fs->debug_x, _x[i]);
         fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
