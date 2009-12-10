@@ -397,8 +397,8 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             } else {
                 modem_demodulate(_fs->mod_payload, nco_rx_out, &demod_sym);
                 get_demodulator_phase_error(_fs->mod_payload, &phase_error);
+                phase_error *= cabsf(nco_rx_out);
             }
-            phase_error *= tanhf(cabsf(nco_rx_out));
 
             //if (_fs->rssi < _fs->squelch_threshold)
             //    phase_error *= 0.01f;
