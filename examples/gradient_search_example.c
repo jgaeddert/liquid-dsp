@@ -31,8 +31,7 @@ int main() {
     fprintf(fid,"close all;\n");
 
     // create gradient_search object
-    gradient_search * gs;
-    gs = gradient_search_create(
+    gradient_search gs = gradient_search_create(
         NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
 
     // execute search
@@ -65,7 +64,7 @@ int main() {
 
     // test results, optimum at [1, 1, 1, ... 1];
 
-    free_gradient_search(gs);
+    gradient_search_destroy(gs);
 
     return 0;
 }

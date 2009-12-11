@@ -1972,59 +1972,53 @@ int optim_threshold_switch(float _u1, float _u2, int _minimize);
 #define LIQUID_OPTIM_MINIMIZE (0)
 #define LIQUID_OPTIM_MAXIMIZE (1)
 
-/** \brief gradient search algorithm (steepest descent) object
-    \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
- */
-typedef struct {
-    float* v;           ///< external vector to optimize
-    unsigned int num_parameters;
+typedef float (*utility_function)(void * _userdata,
+                                  float * _v,
+                                  unsigned int _n);
 
-    float gamma;        ///< increment, \f$ \gamma \f$
-    float delta;        ///< step size, \f$ \Delta \f$
-    float* v_prime;     ///< 
+typedef struct gradient_search_s * gradient_search;
 
-    float* gradient;    ///< gradient approximation
-    float utility;      ///< current utility
+// Create a simple gradient_search object; parameters are specified internally
+//   _obj               :   userdata
+//   _v                 :   array of parameters to optimize
+//   _num_parameters    :   array length
+//   _get_utility       :   utility function pointer
+//   _minmax            :   direction (0:minimize, 1:maximize)
+gradient_search gradient_search_create(void* _obj,  // userdata
+                                       float* _v,
+                                       unsigned int _num_parameters,
+                                       utility_function _u,
+                                       int _minmax);
 
-    /// \brief External utility function.
-    float (*get_utility)(void*, float*, unsigned int);
-    void* obj;          ///< object to optimize
-    int minimize;       ///< minimize/maximimze utility
-} gradient_search;
+// Create a gradient_search object, specifying search parameters
+//   _obj               :   userdata
+//   _v                 :   array of parameters to optimize
+//   _num_parameters    :   array length
+//   _delta             :
+//   _gamma             :
+//   _get_utility       :   utility function pointer
+//   _minmax            :   direction (0:minimize, 1:maximize)
+gradient_search gradient_search_create_advanced(void* _obj,
+                                                float* _v,
+                                                unsigned int _num_parameters,
+                                                float _delta,
+                                                float _gamma,
+                                                utility_function _u,
+                                                int _minmax);
 
-/// Create a simple gradient_search object; parameters are specified internally
-gradient_search* gradient_search_create(
-    void* _obj,
-    float* _v,
-    unsigned int _num_parameters,
-    float (*_get_utility)(void*, float*, unsigned int),
-    int _minmax
-    );
+// Destroy a gradient_search object
+void gradient_search_destroy(gradient_search _g);
 
-/// Create a gradient_search object, specifying search parameters
-gradient_search* gradient_search_create_advanced(
-    void* _obj,
-    float* _v,
-    unsigned int _num_parameters,
-    float _delta,
-    float _gamma,
-    float (*_get_utility)(void*, float*, unsigned int),
-    int _minmax
-    );
+// Iterate once
+void gradient_search_step(gradient_search _g);
 
-/// Destroy a gradient_search object
-void free_gradient_search(gradient_search*);
+// Prints current status of search
+void gradient_search_print(gradient_search _g);
 
-/// Iterate once
-void gradient_search_step(gradient_search* _g);
-
-/// Prints current status of search
-void gradient_search_print(gradient_search* _g);
-
-void gradient_search_compute_gradient(gradient_search* _g, unsigned int _dimension);
-
-/// Execute the search
-float gradient_search_run(gradient_search* _g, unsigned int _max_iterations, float _target_utility);
+// Execute the search
+float gradient_search_execute(gradient_search _g,
+                              unsigned int _max_iterations,
+                              float _target_utility);
 
 //
 // MODULE : quantization

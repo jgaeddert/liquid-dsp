@@ -24,11 +24,11 @@
 
 #define LIQUID_GRADIENT_SEARCH_GAMMA_MIN 0.000001
 
-gradient_search* gradient_search_create(
+gradient_search gradient_search_create(
     void* _obj,
     float* _v,
     unsigned int _num_parameters,
-    float (*_get_utility)(void*, float*, unsigned int),
+    utility_function _u,
     int _minmax)
 {
     return gradient_search_create_advanced(
@@ -37,22 +37,21 @@ gradient_search* gradient_search_create(
         _num_parameters,
         1e-6f,  // delta
         0.002f, // gamma
-        _get_utility,
+        _u,
         _minmax
         );
 }
 
-gradient_search* gradient_search_create_advanced(
+gradient_search gradient_search_create_advanced(
     void* _obj,
     float* _v,
     unsigned int _num_parameters,
     float _delta,
     float _gamma,
-    float (*_get_utility)(void*, float*, unsigned int),
+    utility_function _u,
     int _minmax)
 {
-    gradient_search* gs;
-    gs = (gradient_search*) malloc( sizeof(gradient_search) );
+    gradient_search gs = (gradient_search) malloc( sizeof(struct gradient_search_s) );
 
     // initialize public values
     gs->delta = _delta;
@@ -60,7 +59,7 @@ gradient_search* gradient_search_create_advanced(
     gs->obj = _obj;
     gs->v = _v;
     gs->num_parameters = _num_parameters;
-    gs->get_utility = _get_utility;
+    gs->get_utility = _u;
     gs->minimize = ( _minmax == LIQUID_OPTIM_MINIMIZE ) ? 1 : 0;
 
     // initialize private values
@@ -71,14 +70,14 @@ gradient_search* gradient_search_create_advanced(
     return gs;
 }
 
-void free_gradient_search(gradient_search* _g)
+void gradient_search_destroy(gradient_search _g)
 {
     free(_g->gradient);
     free(_g->v_prime);
     free(_g);
 }
 
-void gradient_search_print(gradient_search* _g)
+void gradient_search_print(gradient_search _g)
 {
     printf("[%.3f] ", _g->utility);
     unsigned int i;
@@ -87,7 +86,7 @@ void gradient_search_print(gradient_search* _g)
     printf("\n");
 }
 
-void gradient_search_step(gradient_search* _g)
+void gradient_search_step(gradient_search _g)
 {
     // compute gradient on each dimension
     float f_prime;
@@ -134,7 +133,7 @@ void gradient_search_step(gradient_search* _g)
     _g->utility = utility_tmp;
 }
 
-float gradient_search_run(gradient_search* _g, unsigned int _max_iterations, float _target_utility)
+float gradient_search_run(gradient_search _g, unsigned int _max_iterations, float _target_utility)
 {
     unsigned int i=0;
     do {
