@@ -15,12 +15,12 @@ float rosenbrock(void * _x, float* _opt, unsigned int _len);
 
 int main() {
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
-    unsigned int num_iterations = 1000; // number of iterations to run
+    unsigned int num_iterations = 4000; // number of iterations to run
 
     float optimum_vect[num_parameters];
     unsigned int i;
     for (i=0; i<num_parameters; i++)
-        optimum_vect[i] = randnf();
+        optimum_vect[i] = 0.0f;
 
     float optimum_utility;
 
