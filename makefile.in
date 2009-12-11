@@ -77,12 +77,11 @@ modules		:=	\
 	modem 		\
 	multicarrier	\
 	nco 		\
+	optim		\
 	quantization	\
 	random		\
 	sequence	\
 	utility
-#	ann
-#	optim
 
 # target-specific libraries
 mlibs_dotprod := @MLIBS_DOTPROD@

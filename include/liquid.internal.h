@@ -929,6 +929,11 @@ void nco_constrain_phase(nco _nco);
 void nco_compute_sincos(nco _nco);
 void vco_compute_sincos(nco _nco);
 
+// 
+// MODULE : optim (non-linear optimization)
+//
+void optim_ps_increase_mem(optim_ps _ps, unsigned int _n);
+
 //
 // MODULE : random
 //
