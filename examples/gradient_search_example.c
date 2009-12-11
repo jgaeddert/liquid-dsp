@@ -14,32 +14,56 @@
 float rosenbrock(void * _x, float* _opt, unsigned int _len);
 
 int main() {
-    unsigned int num_parameters = 4;
+    unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
+    unsigned int num_iterations = 1000; // number of iterations to run
+
     float optimum_vect[num_parameters];
     unsigned int i;
     for (i=0; i<num_parameters; i++)
-        optimum_vect[i] = 0.0f;
+        optimum_vect[i] = randnf();
 
     float optimum_utility;
 
-    // try to create gradient_search object
+    // open output file
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+
+    // create gradient_search object
     gradient_search * gs;
     gs = gradient_search_create(
         NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
 
     // execute search
-    optimum_utility = gradient_search_run(gs, 10000, -1e-6f);
+    //optimum_utility = gradient_search_run(gs, num_iterations, -1e-6f);
+
+    // execute search one iteration at a time
+    fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
+    for (i=0; i<num_iterations; i++) {
+        optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
+        fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
+
+        gradient_search_step(gs);
+
+        if (((i+1)%100)==0)
+            gradient_search_print(gs);
+    }
 
     // print results
     printf("\n");
     gradient_search_print(gs);
 
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"semilogy(u);\n");
+    fprintf(fid,"xlabel('iteration');\n");
+    fprintf(fid,"ylabel('utility');\n");
+    fprintf(fid,"title('gradient search results');\n");
+    fprintf(fid,"grid on;\n");
+    fclose(fid);
+    printf("results written to %s.\n", OUTPUT_FILENAME);
+
     // test results, optimum at [1, 1, 1, ... 1];
-    /*
-    TS_ASSERT_DELTA(optimum_utility, 0.0f, 0.001f);
-    for (i=0;i <num_parameters; i++)
-        TS_ASSERT_DELTA(optimum_vect[i], 1.0f, 0.01f);
-    */
 
     free_gradient_search(gs);
 
