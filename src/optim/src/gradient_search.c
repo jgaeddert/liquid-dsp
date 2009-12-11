@@ -124,9 +124,12 @@ void gradient_search_step(gradient_search _g)
         // decrease gamma if utility did not improve from last iteration
         if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
              _g->gamma > LIQUID_GRADIENT_SEARCH_GAMMA_MIN )
-            _g->gamma *= 0.95;
-        else
-            continue_loop = 0;
+        {
+            _g->gamma *= 0.99;
+        } else {
+            //continue_loop = 0;
+        }
+        continue_loop = 0;
     }
 
     // update utility
