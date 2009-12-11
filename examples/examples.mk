@@ -62,6 +62,7 @@ local_src	:=			\
 	gport_example.c			\
 	gport_threaded_example.c	\
 	gport2_threaded_example.c	\
+	gradient_search_example.c	\
 	interleaver_example.c		\
 	itqmfb_crcf_example.c		\
 	itqmfb_rrrf_example.c		\
