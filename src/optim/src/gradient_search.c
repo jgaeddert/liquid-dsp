@@ -56,13 +56,16 @@ gradient_search gradient_search_create_advanced(
     // initialize public values
     gs->delta = _delta;
     gs->gamma = _gamma;
+    gs->dgamma = 0.99f;
+    gs->gamma_hat = gs->gamma;
+
     gs->obj = _obj;
     gs->v = _v;
     gs->num_parameters = _num_parameters;
     gs->get_utility = _u;
     gs->minimize = ( _minmax == LIQUID_OPTIM_MINIMIZE ) ? 1 : 0;
 
-    // initialize private values
+    // initialize internal memory arrays
     gs->gradient = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->v_prime  = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->utility = gs->get_utility(gs->obj, gs->v, gs->num_parameters);
@@ -84,6 +87,11 @@ void gradient_search_print(gradient_search _g)
     for (i=0; i<_g->num_parameters; i++)
         printf("%.3f ", _g->v[i]);
     printf("\n");
+}
+
+void gradient_search_reset(gradient_search _g)
+{
+    _g->gamma_hat = _g->gamma;
 }
 
 void gradient_search_step(gradient_search _g)
@@ -112,10 +120,10 @@ void gradient_search_step(gradient_search _g)
         //   + (maximum)
         if (_g->minimize) {
             for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] = _g->v_prime[i] - (_g->gamma * _g->gradient[i]);
+                _g->v[i] = _g->v_prime[i] - (_g->gamma_hat * _g->gradient[i]);
         } else {
             for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] = _g->v_prime[i] + (_g->gamma * _g->gradient[i]);
+                _g->v[i] = _g->v_prime[i] + (_g->gamma_hat * _g->gradient[i]);
         }
 
         // compute utility for this parameter set,
@@ -123,9 +131,9 @@ void gradient_search_step(gradient_search _g)
 
         // decrease gamma if utility did not improve from last iteration
         if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
-             _g->gamma > LIQUID_GRADIENT_SEARCH_GAMMA_MIN )
+             _g->gamma_hat > LIQUID_GRADIENT_SEARCH_GAMMA_MIN )
         {
-            _g->gamma *= 0.99;
+            _g->gamma_hat *= _g->dgamma;
         } else {
             //continue_loop = 0;
         }

@@ -933,24 +933,25 @@ void vco_compute_sincos(nco _nco);
 // MODULE : optim (non-linear optimization)
 //
 
-/** \brief gradient search algorithm (steepest descent) object
-    \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
- */
+// \brief gradient search algorithm (steepest descent) object
+// \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
 struct gradient_search_s {
-    float* v;           ///< external vector to optimize
+    float* v;           // vector to optimize (externally allocated)
     unsigned int num_parameters;
 
-    float gamma;        ///< increment, \f$ \gamma \f$
-    float delta;        ///< step size, \f$ \Delta \f$
-    float* v_prime;     ///< 
+    float gamma;        // nominal stepsize
+    float delta;        // differential used to compute (estimate) derivative
+    float dgamma;       // decremental gamma parameter
+    float gamma_hat;    // step size (decreases each epoch)
+    float* v_prime;     // temporary vector array
 
-    float* gradient;    ///< gradient approximation
-    float utility;      ///< current utility
+    float* gradient;    // gradient approximation
+    float utility;      // current utility
 
-    /// \brief External utility function.
-    float (*get_utility)(void*, float*, unsigned int);
-    void* obj;          ///< object to optimize
-    int minimize;       ///< minimize/maximimze utility
+    // External utility function.
+    utility_function get_utility;
+    void* obj;          // object to optimize (user data)
+    int minimize;       // minimize/maximimze utility (search direction)
 };
 
 void optim_ps_increase_mem(optim_ps _ps, unsigned int _n);

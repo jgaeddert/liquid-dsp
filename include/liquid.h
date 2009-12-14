@@ -2009,11 +2009,14 @@ gradient_search gradient_search_create_advanced(void* _obj,
 // Destroy a gradient_search object
 void gradient_search_destroy(gradient_search _g);
 
-// Iterate once
-void gradient_search_step(gradient_search _g);
-
 // Prints current status of search
 void gradient_search_print(gradient_search _g);
+
+// Resets internal state
+void gradient_search_reset(gradient_search _g);
+
+// Iterate once
+void gradient_search_step(gradient_search _g);
 
 // Execute the search
 float gradient_search_execute(gradient_search _g,
