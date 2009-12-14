@@ -111,6 +111,9 @@ void gradient_search_step(gradient_search _g)
         _g->gradient[i] = (f_prime - _g->utility) / _g->delta;
     }
 
+    // normalize gradient vector
+    gradient_search_normalize_gradient(_g);
+
     int continue_loop = 1;
     float utility_tmp;
 
@@ -166,3 +169,21 @@ int optim_threshold_switch(float _u1, float _u2, int _minimize)
     return _minimize ? _u1 > _u2 : _u1 < _u2;
 }
 
+// 
+// internal
+//
+
+// normalize gradient vector to unity
+void gradient_search_normalize_gradient(gradient_search _g)
+{
+    // normalize gradient
+    float sig = 0.0f;
+    unsigned int i;
+    for (i=0; i<_g->num_parameters; i++)
+        sig += _g->gradient[i] * _g->gradient[i];
+
+    sig = 1.0f / sqrtf(sig/(float)(_g->num_parameters));
+
+    for (i=0; i<_g->num_parameters; i++)
+        _g->gradient[i] *= sig;
+}

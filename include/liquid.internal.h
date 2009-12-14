@@ -954,6 +954,9 @@ struct gradient_search_s {
     int minimize;       // minimize/maximimze utility (search direction)
 };
 
+// normalize the gradient vector
+void gradient_search_normalize_gradient(gradient_search _g);
+
 void optim_ps_increase_mem(optim_ps _ps, unsigned int _n);
 
 //
