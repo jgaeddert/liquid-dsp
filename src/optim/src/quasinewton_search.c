@@ -49,6 +49,7 @@ quasinewton_search quasinewton_search_create(
 
     // initialize internal memory arrays
     q->B        = (float*) calloc( q->num_parameters*q->num_parameters, sizeof(float));
+    q->H        = (float*) calloc( q->num_parameters*q->num_parameters, sizeof(float));
     q->p        = (float*) calloc( q->num_parameters, sizeof(float) );
     q->gradient = (float*) calloc( q->num_parameters, sizeof(float) );
     q->gradient0= (float*) calloc( q->num_parameters, sizeof(float) );
@@ -64,6 +65,7 @@ quasinewton_search quasinewton_search_create(
 void quasinewton_search_destroy(quasinewton_search _q)
 {
     free(_q->B);
+    free(_q->H);
 
     free(_q->p);
     free(_q->gradient);
@@ -104,21 +106,28 @@ void quasinewton_search_step(quasinewton_search _q)
 
     // compute normalized gradient vector
     quasinewton_search_compute_gradient(_q);
-    quasinewton_search_normalize_gradient(_q);
+    //quasinewton_search_normalize_gradient(_q);
 
     // TODO : perform line search to find optimal gamma
-    //_q->gamma_hat *= _q->dgamma;
 
     // compute search direction
+#if 0
     fmatrix_mul(_q->B,        n, n,
                 _q->gradient, n, 1,
                 _q->p,        n, 1);
     for (i=0; i<_q->num_parameters; i++)
         _q->p[i] = -_q->p[i];
+#else
+    quasinewton_search_compute_Hessian(_q);
+    fmatrix_inv(_q->H, n, n);
+    fmatrix_mul(_q->H, n, n,
+                _q->gradient, n, 1,
+                _q->p, n, 1);
+#endif
 
     // compute step vector
     for (i=0; i<_q->num_parameters; i++)
-        _q->dv[i] = _q->gamma_hat * _q->p[i];
+        _q->dv[i] = -_q->gamma_hat * _q->p[i];
 
     // apply change
     for (i=0; i<_q->num_parameters; i++) {
@@ -131,7 +140,15 @@ void quasinewton_search_step(quasinewton_search _q)
     memmove(_q->gradient0, _q->gradient, (_q->num_parameters)*sizeof(float));
 
     // update utility
-    _q->utility = _q->get_utility(_q->obj, _q->v, _q->num_parameters);
+    float u_prime = _q->get_utility(_q->obj, _q->v, _q->num_parameters);
+
+    if (u_prime > _q->utility) {
+        _q->gamma_hat *= 0.99f;
+    } else {
+        _q->gamma_hat *= 1.001f;
+    }
+
+    _q->utility = u_prime;
 }
 
 float quasinewton_search_run(quasinewton_search _q,
@@ -186,3 +203,71 @@ void quasinewton_search_normalize_gradient(quasinewton_search _q)
     for (i=0; i<_q->num_parameters; i++)
         _q->gradient[i] *= sig;
 }
+
+// compute Hessian
+void quasinewton_search_compute_Hessian(quasinewton_search _q)
+{
+    unsigned int i, j;
+    unsigned int n = _q->num_parameters;
+    float f00, f01, f10, f11;
+    float f0, f1, f2;
+    float m0, m1;
+    float delta = 1e-2f;
+
+    // reset v_prime
+    memmove(_q->v_prime, _q->v, (_q->num_parameters)*sizeof(float));
+
+
+    for (i=0; i<_q->num_parameters; i++) {
+        //for (j=0; j<_q->num_parameters; j++) {
+        for (j=0; j<=i; j++) {
+            if (i==j) {
+
+                _q->v_prime[i] = _q->v[i] - delta;
+                f0 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+
+                _q->v_prime[i] = _q->v[i];
+                f1 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+
+                _q->v_prime[i] = _q->v[i] + delta;
+                f2 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                
+                m0 = (f1 - f0) / delta;
+                m1 = (f2 - f1) / delta;
+                matrix_access(_q->H, n, n, i, j) = (m1 - m0) / delta;
+
+            } else {
+
+                // 0 0
+                _q->v_prime[i] = _q->v[i] - delta;
+                _q->v_prime[j] = _q->v[j] - delta;
+                f00 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+
+                // 0 1
+                _q->v_prime[i] = _q->v[i] - delta;
+                _q->v_prime[j] = _q->v[j] + delta;
+                f01 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+
+                // 1 0
+                _q->v_prime[i] = _q->v[i] + delta;
+                _q->v_prime[j] = _q->v[j] - delta;
+                f10 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+
+                // 1 1
+                _q->v_prime[i] = _q->v[i] + delta;
+                _q->v_prime[j] = _q->v[j] + delta;
+                f11 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+
+                // compute second partial derivative
+                m0 = (f01 - f00) / (2.0f*delta);
+                m1 = (f11 - f10) / (2.0f*delta);
+                matrix_access(_q->H, n, n, i, j) = (m1 - m0) / (2.0f*delta);
+                matrix_access(_q->H, n, n, j, i) = (m1 - m0) / (2.0f*delta);
+            }
+        }
+    }
+    //fmatrix_print(_q->H, n, n);
+    //exit(1);
+}
+
+

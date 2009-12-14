@@ -971,6 +971,7 @@ struct quasinewton_search_s {
     float* dv;          // parameter step vector
 
     float * B;          // approximate Hessian matrix inverse [n x n]
+    float * H;          // Hessian matrix
 
     float* p;           // search direction
     float* gradient;    // gradient approximation
@@ -988,6 +989,9 @@ void quasinewton_search_compute_gradient(quasinewton_search _q);
 
 // compute the norm of the gradient(x_k)
 void quasinewton_search_normalize_gradient(quasinewton_search _q);
+
+// compute gradient(x_k)
+void quasinewton_search_compute_Hessian(quasinewton_search _q);
 
 // compute the updated inverse hessian matrix using the Broyden, Fletcher,
 // Goldfarb & Shanno method (BFGS)
