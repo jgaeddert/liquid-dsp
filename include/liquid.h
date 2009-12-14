@@ -1550,7 +1550,9 @@ void MATRIX(_div)(T * _x, unsigned int _rx, unsigned int _cx,   \
 void MATRIX(_trans)(T * _x, unsigned int _rx, unsigned int _cx);\
 void MATRIX(_inv)(T * _x,                                       \
                   unsigned int _rx,                             \
-                  unsigned int _cx);
+                  unsigned int _cx);                            \
+void MATRIX(_eye)(T * _x,                                       \
+                  unsigned int _n);
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 

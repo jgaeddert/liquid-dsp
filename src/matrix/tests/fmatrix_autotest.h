@@ -115,4 +115,35 @@ void autotest_fmatrix_mul() {
 
 }
 
+
+// 
+// AUTOTEST: identity
+//
+void autotest_fmatrix_eye() {
+    float x[16]= {
+       4,  -3,  -1,  3,
+       1,   1,   0,  2,
+      -1,   0,   1,  1,
+      -2,  -5,   1,  -3};
+
+    float I4_test[16] = {
+        1,  0,  0,  0,
+        0,  1,  0,  0,
+        0,  0,  1,  0,
+        0,  0,  0,  1};
+
+    float y[16];
+    float z[16];
+
+    // generate identity matrix
+    fmatrix_eye(y,4);
+    CONTEND_SAME_DATA(y, I4_test, 16*sizeof(float));
+
+    // multiply with input
+    fmatrix_mul(x, 4, 4,
+                y, 4, 4,
+                z, 4, 4);
+    CONTEND_SAME_DATA(x, z, 16*sizeof(float));
+}
+
 #endif // __LIQUID_FMATRIX_AUTOTEST_H__
