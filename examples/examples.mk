@@ -89,6 +89,7 @@ local_src	:=			\
 	qmfb_crcf_analysis_example.c	\
 	qmfb_crcf_synthesis_example.c	\
 	quantize_example.c		\
+	quasinewton_search_example.c	\
 	random_example.c		\
 	ricek_channel_example.c		\
 	scramble_example.c

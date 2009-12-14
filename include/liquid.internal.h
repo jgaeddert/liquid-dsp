@@ -933,7 +933,7 @@ void vco_compute_sincos(nco _nco);
 // MODULE : optim (non-linear optimization)
 //
 
-// \brief gradient search algorithm (steepest descent) object
+// gradient search algorithm (steepest descent) object
 // \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
 struct gradient_search_s {
     float* v;           // vector to optimize (externally allocated)
@@ -956,6 +956,42 @@ struct gradient_search_s {
 
 // normalize the gradient vector
 void gradient_search_normalize_gradient(gradient_search _g);
+
+
+// quasi-Newton search object
+struct quasinewton_search_s {
+    float* v;           // vector to optimize (externally allocated)
+    unsigned int num_parameters;    // number of parameters to optimize [n]
+
+    float gamma;        // nominal stepsize
+    float delta;        // differential used to compute (estimate) derivative
+    float dgamma;       // decremental gamma parameter
+    float gamma_hat;    // step size (decreases each epoch)
+    float* v_prime;     // temporary vector array
+    float* dv;          // parameter step vector
+
+    float * B;          // approximate Hessian matrix inverse [n x n]
+
+    float* p;           // search direction
+    float* gradient;    // gradient approximation
+    float* gradient0;   // gradient approximation (previous step)
+
+    // External utility function.
+    utility_function get_utility;
+    float utility;      // current utility
+    void* obj;          // object to optimize (user data)
+    int minimize;       // minimize/maximimze utility (search direction)
+};
+
+// compute gradient(x_k)
+void quasinewton_search_compute_gradient(quasinewton_search _q);
+
+// compute the norm of the gradient(x_k)
+void quasinewton_search_normalize_gradient(quasinewton_search _q);
+
+// compute the updated inverse hessian matrix using the Broyden, Fletcher,
+// Goldfarb & Shanno method (BFGS)
+void quasinewton_search_update_hessian_bfgs(quasinewton_search _q);
 
 void optim_ps_increase_mem(optim_ps _ps, unsigned int _n);
 

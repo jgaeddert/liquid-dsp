@@ -2023,6 +2023,39 @@ float gradient_search_execute(gradient_search _g,
                               unsigned int _max_iterations,
                               float _target_utility);
 
+
+// quasi-Newton search
+typedef struct quasinewton_search_s * quasinewton_search;
+
+// Create a simple quasinewton_search object; parameters are specified internally
+//   _obj               :   userdata
+//   _v                 :   array of parameters to optimize
+//   _num_parameters    :   array length
+//   _get_utility       :   utility function pointer
+//   _minmax            :   direction (0:minimize, 1:maximize)
+quasinewton_search quasinewton_search_create(void* _obj,  // userdata
+                                             float* _v,
+                                             unsigned int _num_parameters,
+                                             utility_function _u,
+                                             int _minmax);
+
+// Destroy a quasinewton_search object
+void quasinewton_search_destroy(quasinewton_search _g);
+
+// Prints current status of search
+void quasinewton_search_print(quasinewton_search _g);
+
+// Resets internal state
+void quasinewton_search_reset(quasinewton_search _g);
+
+// Iterate once
+void quasinewton_search_step(quasinewton_search _g);
+
+// Execute the search
+float quasinewton_search_execute(quasinewton_search _g,
+                                 unsigned int _max_iterations,
+                                 float _target_utility);
+
 //
 // MODULE : quantization
 //

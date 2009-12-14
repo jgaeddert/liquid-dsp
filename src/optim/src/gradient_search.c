@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "liquid.internal.h"
 
 #define LIQUID_GRADIENT_SEARCH_GAMMA_MIN 0.000001
