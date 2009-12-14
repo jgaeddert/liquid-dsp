@@ -124,10 +124,10 @@ void gradient_search_step(gradient_search _g)
         //   + (maximum)
         if (_g->minimize) {
             for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] = _g->v_prime[i] - (_g->gamma_hat * _g->gradient[i]);
+                _g->v[i] -= _g->gamma_hat * _g->gradient[i];
         } else {
             for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] = _g->v_prime[i] + (_g->gamma_hat * _g->gradient[i]);
+                _g->v[i] += _g->gamma_hat * _g->gradient[i];
         }
 
         // compute utility for this parameter set,
