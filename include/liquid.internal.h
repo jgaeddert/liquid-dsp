@@ -762,6 +762,13 @@ struct modem_s {
 
     float d_phi;
 
+    // APSK modem
+    unsigned int apsk_num_levels;   // number of levels
+    unsigned int * apsk_p;          // number of symbols per level
+    float * apsk_r;                 // radii of levels
+    float * apsk_r_slicer;          // slicer radii of levels
+    unsigned int ** apsk_symbol_map;// symbol mapping
+
     // modulate function pointer
     void (*modulate_func)(modem _mod, unsigned int symbol_in, float complex *y);
 
@@ -782,6 +789,7 @@ modem modem_create_arb_rotated(unsigned int _bits_per_symbol);
 // specific modem create routines
 modem modem_create_bpsk(void);
 modem modem_create_qpsk(void);
+modem modem_create_apsk32(unsigned int _bits_per_symbol);
 
 /// Scale arbitrary modem energy to unity
 void modem_arb_scale(modem _mod);
@@ -801,6 +809,7 @@ void modem_modulate_arb(modem _mod, unsigned int symbol_in, float complex *y);
 // specific modem modulate routines
 void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_apsk32(modem _mod, unsigned int symbol_in, float complex *y);
 
 // generic modem demodulate routines
 void modem_demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);
@@ -814,6 +823,7 @@ void modem_demodulate_arb(modem _demod, float complex x, unsigned int *symbol_ou
 // specific modem demodulate routines
 void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_apsk32(modem _demod, float complex x, unsigned int *symbol_out);
 
 // get demodulator phase error
 //void get_demodulator_phase_error(modem _demod, float* _phi);

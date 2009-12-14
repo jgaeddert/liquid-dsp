@@ -54,6 +54,8 @@ modem modem_create(
         return modem_create_qpsk();
     case MOD_DPSK:
         return modem_create_dpsk(_bits_per_symbol);
+    case MOD_APSK32:
+        return modem_create_apsk32(_bits_per_symbol);
     case MOD_ARB:
         return modem_create_arb(_bits_per_symbol);
     case MOD_ARB_MIRRORED:
@@ -266,6 +268,12 @@ modem modem_create_dpsk(
     mod->demodulate_func = &modem_demodulate_dpsk;
 
     return mod;
+}
+
+modem modem_create_apsk32(
+    unsigned int _bits_per_symbol)
+{
+    return modem_create_qam(5);
 }
 
 modem modem_create_arb(
