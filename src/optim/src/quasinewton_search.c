@@ -93,6 +93,8 @@ void quasinewton_search_reset(quasinewton_search _q)
             _q->B[n++] = (i==j) ? 1.0f : 0.0f;
         }
     }
+
+    _q->utility = _q->get_utility(_q->obj, _q->v, _q->num_parameters);
 }
 
 void quasinewton_search_step(quasinewton_search _q)
@@ -105,7 +107,7 @@ void quasinewton_search_step(quasinewton_search _q)
     quasinewton_search_normalize_gradient(_q);
 
     // TODO : perform line search to find optimal gamma
-    _q->gamma_hat *= _q->dgamma;
+    //_q->gamma_hat *= _q->dgamma;
 
     // compute search direction
     fmatrix_mul(_q->B,        n, n,
@@ -114,24 +116,22 @@ void quasinewton_search_step(quasinewton_search _q)
     for (i=0; i<_q->num_parameters; i++)
         _q->p[i] = -_q->p[i];
 
-    // override to gradient search
-    for (i=0; i<_q->num_parameters; i++) _q->p[i] = -_q->gradient[i];
-
     // compute step vector
     for (i=0; i<_q->num_parameters; i++)
         _q->dv[i] = _q->gamma_hat * _q->p[i];
 
-    // TODO update inverse Hessian approximation
-
     // apply change
-    for (i=0; i<_q->num_parameters; i++)
+    for (i=0; i<_q->num_parameters; i++) {
         _q->v[i] += _q->dv[i];
+    }
+
+    // TODO update inverse Hessian approximation
 
     // store previous gradient
     memmove(_q->gradient0, _q->gradient, (_q->num_parameters)*sizeof(float));
 
     // update utility
-    //_q->utility = utility_tmp;
+    _q->utility = _q->get_utility(_q->obj, _q->v, _q->num_parameters);
 }
 
 float quasinewton_search_run(quasinewton_search _q,
