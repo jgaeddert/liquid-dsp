@@ -147,8 +147,8 @@ void modem_modulate_arb(
     float complex *y)
 {
     if (symbol_in >= _mod->M) {
-        perror("ERROR: modulate_arb(), input symbol exceeds maximum\n");
-        return;
+        fprintf(stderr,"error: modulate_arb(), input symbol exceeds maximum\n");
+        exit(1);
     }
 
     *y = _mod->symbol_map[symbol_in]; 
