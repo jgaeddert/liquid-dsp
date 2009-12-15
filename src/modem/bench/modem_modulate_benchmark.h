@@ -95,5 +95,8 @@ void benchmark_modulate_qam64  MODEM_MODULATE_BENCH_API(MOD_QAM, 6)
 void benchmark_modulate_qam128 MODEM_MODULATE_BENCH_API(MOD_QAM, 7)
 void benchmark_modulate_qam256 MODEM_MODULATE_BENCH_API(MOD_QAM, 8)
 
+// APSK
+void benchmark_modulate_apsk32 MODEM_MODULATE_BENCH_API(MOD_APSK32, 5)
+
 #endif // __LIQUID_MODEM_BENCH_H__
 
