@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
-const char* modulation_scheme_str[13] = {
+const char* modulation_scheme_str[14] = {
     "unknown",
     "psk",
     "dpsk",
@@ -38,7 +38,8 @@ const char* modulation_scheme_str[13] = {
     "bpsk",
     "qpsk",
     "apsk16(4,12)",
-    "apsk32(4,12,16)"
+    "apsk32(4,12,16)",
+    "apsk64(4,12,16,32)"
 };
 
 // Generate random symbol

@@ -1596,11 +1596,12 @@ typedef enum {
     MOD_BPSK,           // Specific: binary PSK
     MOD_QPSK,           // specific: quaternary PSK
     MOD_APSK16,         // amplitude phase-shift keying, M=16 (4,12)
-    MOD_APSK32          // amplitude phase-shift keying, M=32 (4,12,16)
+    MOD_APSK32,         // amplitude phase-shift keying, M=32 (4,12,16)
+    MOD_APSK64          // amplitude phase-shift keying, M=64 (4,12,16,32)
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
-extern const char* modulation_scheme_str[13];
+extern const char* modulation_scheme_str[14];
 
 // Constant arbitrary linear modems
 extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo

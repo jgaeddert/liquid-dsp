@@ -71,6 +71,8 @@ modem modem_create(
         return modem_create_apsk16(_bits_per_symbol);
     case MOD_APSK32:
         return modem_create_apsk32(_bits_per_symbol);
+    case MOD_APSK64:
+        return modem_create_apsk64(_bits_per_symbol);
     default:
         fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u (%u b/s)\n",
                 _scheme, _bits_per_symbol);
@@ -286,6 +288,7 @@ modem modem_create_apsk(
     switch (_bits_per_symbol) {
     case 4:     return modem_create_apsk16(_bits_per_symbol);
     case 5:     return modem_create_apsk32(_bits_per_symbol);
+    case 6:     return modem_create_apsk64(_bits_per_symbol);
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
@@ -340,6 +343,32 @@ modem modem_create_apsk32(
     mod->apsk_phi = (float *) apsk32_phi;
     mod->apsk_r_slicer = (float *) apsk32_r_slicer;
     mod->apsk_symbol_map = (unsigned int *) apsk32_symbol_map;
+
+    mod->modulate_func = &modem_modulate_apsk;
+    mod->demodulate_func = &modem_demodulate_apsk;
+
+    return mod;
+}
+
+modem modem_create_apsk64(
+    unsigned int _bits_per_symbol)
+{
+    if (_bits_per_symbol != 6) {
+        fprintf(stderr,"error: modem_create_apsk64(), bits/symbol is not exactly 6\n");
+        exit(1);
+    }
+    modem mod = (modem) malloc( sizeof(struct modem_s) );
+    mod->scheme = MOD_APSK64;
+
+    modem_init(mod, 6);
+    
+    // set internals
+    mod->apsk_num_levels = apsk64_num_levels;
+    mod->apsk_p = (unsigned int *) apsk64_p;
+    mod->apsk_r = (float *) apsk64_r;
+    mod->apsk_phi = (float *) apsk64_phi;
+    mod->apsk_r_slicer = (float *) apsk64_r_slicer;
+    mod->apsk_symbol_map = (unsigned int *) apsk64_symbol_map;
 
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;

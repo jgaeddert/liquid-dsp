@@ -793,6 +793,7 @@ modem modem_create_bpsk(void);
 modem modem_create_qpsk(void);
 modem modem_create_apsk16(unsigned int _bits_per_symbol);
 modem modem_create_apsk32(unsigned int _bits_per_symbol);
+modem modem_create_apsk64(unsigned int _bits_per_symbol);
 
 /// Scale arbitrary modem energy to unity
 void modem_arb_scale(modem _mod);
@@ -842,6 +843,13 @@ extern const float apsk32_r[3];
 extern const float apsk32_phi[3];
 extern const float apsk32_r_slicer[2];
 extern const unsigned int apsk32_symbol_map[32];
+
+extern const unsigned int apsk64_num_levels;
+extern const unsigned int apsk64_p[4];
+extern const float apsk64_r[4];
+extern const float apsk64_phi[4];
+extern const float apsk64_r_slicer[3];
+extern const unsigned int apsk64_symbol_map[64];
 
 // get demodulator phase error
 //void get_demodulator_phase_error(modem _demod, float* _phi);
