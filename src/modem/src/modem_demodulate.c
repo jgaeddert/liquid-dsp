@@ -160,7 +160,7 @@ void modem_demodulate_apsk32(modem _mod,
     float r = cabsf(_x);
 
     // determine which ring to demodulate with
-    unsigned int i, p;
+    unsigned int i, p=0;
     for (i=0; i<_mod->apsk_num_levels-1; i++) {
         if (r < _mod->apsk_r_slicer[i]) {
             p = i;
