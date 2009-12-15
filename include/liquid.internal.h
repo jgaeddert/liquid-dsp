@@ -768,7 +768,7 @@ struct modem_s {
     float * apsk_r;                 // radii of levels
     float * apsk_r_slicer;          // slicer radii of levels
     float * apsk_phi;               // phase offset of levels
-    //float complex * apsk_symbol_map;// symbol mapping
+    unsigned int * apsk_symbol_map; // symbol mapping
 
     // modulate function pointer
     void (*modulate_func)(modem _mod, unsigned int symbol_in, float complex *y);

@@ -287,6 +287,7 @@ modem modem_create_apsk32(
     mod->apsk_r = (float *) apsk32_r;
     mod->apsk_phi = (float *) apsk32_phi;
     mod->apsk_r_slicer = (float *) apsk32_r_slicer;
+    mod->apsk_symbol_map = (unsigned int *) apsk32_symbol_map;
 
     mod->modulate_func = &modem_modulate_apsk32;
     mod->demodulate_func = &modem_demodulate_apsk32;

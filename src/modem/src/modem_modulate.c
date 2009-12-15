@@ -113,7 +113,29 @@ void modem_modulate_apsk32(
         return;
     }
 
-    *y = 0.0f;
+    // map input symbol to constellation symbol
+    unsigned int i;
+    unsigned int s = _mod->apsk_symbol_map[symbol_in];
+
+    // determine in which level the symbol is located
+    unsigned int p=0;   // level
+    unsigned int t=0;   // accumulated number of points per level
+    for (i=0; i<_mod->apsk_num_levels; i++) {
+        if (symbol_in < t + _mod->apsk_p[i]) {
+            p = i;
+            break;
+        }
+        t += _mod->apsk_p[i];
+    }
+    unsigned int s0 = s - t;
+    unsigned int s1 = _mod->apsk_p[p];
+    printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", symbol_in, s, p, t, s0,s1);
+
+    // map symbol to constellation point
+    float r = _mod->apsk_r[p];
+    float phi = _mod->apsk_phi[p] + (float)(s0)*2.0f*M_PI / (float)(s1);
+
+    *y = r * cexpf(_Complex_I*phi);
 }
 
 void modem_modulate_arb(
