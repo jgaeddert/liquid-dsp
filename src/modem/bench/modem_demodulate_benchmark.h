@@ -98,6 +98,7 @@ void benchmark_demodulate_qam256   MODEM_DEMODULATE_BENCH_API(MOD_QAM, 8)
 // A-PSK
 void benchmark_demodulate_apsk16   MODEM_DEMODULATE_BENCH_API(MOD_APSK16, 4)
 void benchmark_demodulate_apsk32   MODEM_DEMODULATE_BENCH_API(MOD_APSK32, 5)
+void benchmark_demodulate_apsk64   MODEM_DEMODULATE_BENCH_API(MOD_APSK64, 6)
 
 #endif // __LIQUID_MODEM_DEMODULATE_BENCHMARK_H__
 

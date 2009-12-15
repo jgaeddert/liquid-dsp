@@ -14,7 +14,7 @@
 
 int main() {
     // create mod/demod objects
-    unsigned int bps=4;
+    unsigned int bps=6;
     modulation_scheme ms = MOD_APSK;
     modem mod = modem_create(ms, bps);
     modem demod = modem_create(ms, bps);
