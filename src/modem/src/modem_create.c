@@ -37,7 +37,8 @@ modem modem_create(
         fprintf(stderr,"error: modem_create(), modem must have at least 1 bit/symbol\n");
         exit(1);
     } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
-        fprintf(stderr,"error: modem_create(), maximum number of bits/symbol exceeded\n");
+        fprintf(stderr,"error: modem_create(), maximum number of bits/symbol (%u) exceeded\n",
+                MAX_MOD_BITS_PER_SYMBOL);
         exit(1);
     }
 
@@ -71,7 +72,8 @@ modem modem_create(
     case MOD_APSK32:
         return modem_create_apsk32(_bits_per_symbol);
     default:
-        fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme\n");
+        fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u (%u b/s)\n",
+                _scheme, _bits_per_symbol);
         exit(-1);
     }
 
@@ -285,7 +287,8 @@ modem modem_create_apsk(
     case 4:     return modem_create_apsk16(_bits_per_symbol);
     case 5:     return modem_create_apsk32(_bits_per_symbol);
     default:
-        fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level\n");
+        fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
+                _bits_per_symbol);
         exit(1);
     }
 
