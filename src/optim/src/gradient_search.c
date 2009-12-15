@@ -183,8 +183,12 @@ void gradient_search_normalize_gradient(gradient_search _g)
     for (i=0; i<_g->num_parameters; i++)
         sig += _g->gradient[i] * _g->gradient[i];
 
+    if ( sig == 0.0f )
+        return;
+
     sig = 1.0f / sqrtf(sig/(float)(_g->num_parameters));
 
     for (i=0; i<_g->num_parameters; i++)
         _g->gradient[i] *= sig;
 }
+
