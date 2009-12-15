@@ -152,6 +152,49 @@ void modem_demodulate_arb(
     *symbol_out = s;
 }
 
+void modem_demodulate_apsk32(modem _mod,
+                             float complex _x,
+                             unsigned int * _symbol_out)
+{
+    // compute amplitude
+    float r = cabsf(_x);
+
+    // determine which ring to demodulate with
+    unsigned int i, p;
+    for (i=0; i<_mod->apsk_num_levels-1; i++) {
+        if (r < _mod->apsk_r_slicer[i]) {
+            p = i;
+            break;
+        } else {
+            p = _mod->apsk_num_levels-1;
+        }
+    }
+
+    // find closest point in ring
+    float theta = cargf(_x);
+    float dphi = 2.0f*M_PI / (float) _mod->apsk_p[p];
+    float phi = _mod->apsk_phi[p];
+    float d, d_hat, dmin = 2.0f*M_PI;
+    unsigned int s_hat=0;
+    for (i=0; i<_mod->apsk_p[p]; i++) {
+        d = theta - phi;
+
+        // constrain phase to be in [-pi,pi]
+        if (d < -M_PI) d += 2.0f*M_PI;
+        if (d >  M_PI) d -= 2.0f*M_PI;
+
+        d_hat = fabsf(d);
+        if (d_hat < dmin) {
+            dmin = d;
+            s_hat = i;
+        }
+
+        phi += dphi;
+    }
+
+    *_symbol_out = 0;
+}
+
 #if 0
 void modem_demodulate_arb_mirrored(modem _mod, float I_in, float Q_in, unsigned int *symbol_out)
 {

@@ -767,7 +767,8 @@ struct modem_s {
     unsigned int * apsk_p;          // number of symbols per level
     float * apsk_r;                 // radii of levels
     float * apsk_r_slicer;          // slicer radii of levels
-    unsigned int ** apsk_symbol_map;// symbol mapping
+    float * apsk_phi;               // phase offset of levels
+    //float complex * apsk_symbol_map;// symbol mapping
 
     // modulate function pointer
     void (*modulate_func)(modem _mod, unsigned int symbol_in, float complex *y);
@@ -824,6 +825,14 @@ void modem_demodulate_arb(modem _demod, float complex x, unsigned int *symbol_ou
 void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_apsk32(modem _demod, float complex x, unsigned int *symbol_out);
+
+// specific modem definitions
+extern const unsigned int apsk32_num_levels;
+extern const unsigned int apsk32_p[3];
+extern const float apsk32_r[3];
+extern const float apsk32_phi[3];
+extern const float apsk32_r_slicer[2];
+extern const unsigned int apsk32_symbol_map[32];
 
 // get demodulator phase error
 //void get_demodulator_phase_error(modem _demod, float* _phi);

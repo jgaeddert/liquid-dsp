@@ -12,9 +12,9 @@
 
 int main() {
     // create mod/demod objects
-    unsigned int bps=4;
-    modem mod = modem_create(MOD_QAM, bps);
-    modem demod = modem_create(MOD_QAM, bps);
+    unsigned int bps=5;
+    modem mod = modem_create(MOD_APSK32, bps);
+    modem demod = modem_create(MOD_APSK32, bps);
 
     modem_print(mod);
 
@@ -29,7 +29,7 @@ int main() {
         modem_demodulate(demod, x, &s);
         num_errors += count_bit_errors(i,s);
     }
-    printf("num errors: %u\n", num_errors);
+    printf("num errors: %4u / %4u\n", num_errors, num_symbols*bps);
 
     modem_destroy(mod);
     modem_destroy(demod);

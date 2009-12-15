@@ -103,6 +103,19 @@ void modem_modulate_dpsk(
     //printf("mod: state_theta = %f\n", _mod->state_theta);
 }
 
+void modem_modulate_apsk32(
+    modem _mod,
+    unsigned int symbol_in,
+    float complex *y)
+{
+    if (symbol_in >= _mod->M) {
+        fprintf(stderr,"error: modem_modulate_apsk32(), input symbol exceeds maximum\n");
+        return;
+    }
+
+    *y = 0.0f;
+}
+
 void modem_modulate_arb(
     modem _mod,
     unsigned int symbol_in,

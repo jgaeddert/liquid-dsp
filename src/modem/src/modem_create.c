@@ -273,7 +273,25 @@ modem modem_create_dpsk(
 modem modem_create_apsk32(
     unsigned int _bits_per_symbol)
 {
-    return modem_create_qam(5);
+    if (_bits_per_symbol != 5) {
+        fprintf(stderr,"warning: modem_create_apsk32(), bits/symbol is not exactly 5\n");
+    }
+    modem mod = (modem) malloc( sizeof(struct modem_s) );
+    mod->scheme = MOD_APSK32;
+
+    modem_init(mod, 5);
+    
+    // set internals
+    mod->apsk_num_levels = apsk32_num_levels;
+    mod->apsk_p = (unsigned int *) apsk32_p;
+    mod->apsk_r = (float *) apsk32_r;
+    mod->apsk_phi = (float *) apsk32_phi;
+    mod->apsk_r_slicer = (float *) apsk32_r_slicer;
+
+    mod->modulate_func = &modem_modulate_apsk32;
+    mod->demodulate_func = &modem_demodulate_apsk32;
+
+    return mod;
 }
 
 modem modem_create_arb(
