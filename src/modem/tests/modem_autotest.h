@@ -99,6 +99,7 @@ void autotest_mod_demod_qam256() {  modem_test_mod_demod(MOD_QAM, 8);   }
 //
 // AUTOTESTS: Specific A-PSK
 //
+void autotest_mod_demod_apsk16(){   modem_test_mod_demod(MOD_APSK16,4); }
 void autotest_mod_demod_apsk32(){   modem_test_mod_demod(MOD_APSK32,5); }
 
 

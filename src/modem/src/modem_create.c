@@ -66,6 +66,8 @@ modem modem_create(
         return modem_create_bpsk();
     case MOD_QPSK:
         return modem_create_qpsk();
+    case MOD_APSK16:
+        return modem_create_apsk16(_bits_per_symbol);
     case MOD_APSK32:
         return modem_create_apsk32(_bits_per_symbol);
     default:
