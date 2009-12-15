@@ -129,7 +129,10 @@ void modem_modulate_apsk32(
     }
     unsigned int s0 = s - t;
     unsigned int s1 = _mod->apsk_p[p];
+
+#if 0
     printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", symbol_in, s, p, t, s0,s1);
+#endif
 
     // map symbol to constellation point
     float r = _mod->apsk_r[p];
