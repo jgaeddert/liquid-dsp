@@ -280,7 +280,7 @@ modem modem_create_apsk(
     unsigned int _bits_per_symbol)
 {
     switch (_bits_per_symbol) {
-    case 5: return modem_create_apsk32(_bits_per_symbol);
+    case 5:     return modem_create_apsk32(_bits_per_symbol);
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level\n");
         exit(1);
@@ -289,12 +289,12 @@ modem modem_create_apsk(
     return NULL;
 }
 
-
 modem modem_create_apsk32(
     unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol != 5) {
-        fprintf(stderr,"warning: modem_create_apsk32(), bits/symbol is not exactly 5\n");
+        fprintf(stderr,"error: modem_create_apsk32(), bits/symbol is not exactly 5\n");
+        exit(1);
     }
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_APSK32;
@@ -309,8 +309,8 @@ modem modem_create_apsk32(
     mod->apsk_r_slicer = (float *) apsk32_r_slicer;
     mod->apsk_symbol_map = (unsigned int *) apsk32_symbol_map;
 
-    mod->modulate_func = &modem_modulate_apsk32;
-    mod->demodulate_func = &modem_demodulate_apsk32;
+    mod->modulate_func = &modem_modulate_apsk;
+    mod->demodulate_func = &modem_demodulate_apsk;
 
     return mod;
 }

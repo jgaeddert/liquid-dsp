@@ -152,9 +152,9 @@ void modem_demodulate_arb(
     *symbol_out = s;
 }
 
-void modem_demodulate_apsk32(modem _mod,
-                             float complex _x,
-                             unsigned int * _symbol_out)
+void modem_demodulate_apsk(modem _mod,
+                           float complex _x,
+                           unsigned int * _symbol_out)
 {
     // compute amplitude
     float r = cabsf(_x);

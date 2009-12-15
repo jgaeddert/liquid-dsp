@@ -805,13 +805,13 @@ void modem_modulate_qam(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_psk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_dpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_arb(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_apsk(modem _mod, unsigned int symbol_in, float complex *y);
 //void modem_modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y);
 //void modem_modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y);
 
 // specific modem modulate routines
 void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
-void modem_modulate_apsk32(modem _mod, unsigned int symbol_in, float complex *y);
 
 // generic modem demodulate routines
 void modem_demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);
@@ -819,13 +819,13 @@ void modem_demodulate_qam(modem _demod, float complex x, unsigned int *symbol_ou
 void modem_demodulate_psk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_dpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_arb(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_apsk(modem _demod, float complex x, unsigned int *symbol_out);
 //void modem_demodulate_arb_mirrored(modem _demod, float complex x, unsigned int *symbol_out);
 //void modem_demodulate_arb_rotated(modem _demod, float complex x, unsigned int *symbol_out);
 
 // specific modem demodulate routines
 void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
-void modem_demodulate_apsk32(modem _demod, float complex x, unsigned int *symbol_out);
 
 // specific modem definitions
 extern const unsigned int apsk32_num_levels;
