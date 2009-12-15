@@ -34,36 +34,40 @@ modem modem_create(
     unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 ) {
-        perror("ERROR! modem_create, modem must have at least 1 bit/symbol\n");
-        return NULL;
+        fprintf(stderr,"error: modem_create(), modem must have at least 1 bit/symbol\n");
+        exit(1);
     } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
-        perror("ERROR! modem_create, maximum number of bits/symbol exceeded\n");
-        return NULL;
+        fprintf(stderr,"error: modem_create(), maximum number of bits/symbol exceeded\n");
+        exit(1);
     }
 
     switch (_scheme) {
+    case MOD_PSK:
+        return modem_create_psk(_bits_per_symbol);
+    case MOD_DPSK:
+        return modem_create_dpsk(_bits_per_symbol);
     case MOD_ASK:
         return modem_create_ask(_bits_per_symbol);
     case MOD_QAM:
         return modem_create_qam(_bits_per_symbol);
-    case MOD_PSK:
-        return modem_create_psk(_bits_per_symbol);
-    case MOD_BPSK:
-        return modem_create_bpsk();
-    case MOD_QPSK:
-        return modem_create_qpsk();
-    case MOD_DPSK:
-        return modem_create_dpsk(_bits_per_symbol);
-    case MOD_APSK32:
-        return modem_create_apsk32(_bits_per_symbol);
+
+    // arbitrary modem definitions
     case MOD_ARB:
         return modem_create_arb(_bits_per_symbol);
     case MOD_ARB_MIRRORED:
         return modem_create_arb_mirrored(_bits_per_symbol);
     case MOD_ARB_ROTATED:
         return modem_create_arb_rotated(_bits_per_symbol);
+
+    // specific modems
+    case MOD_BPSK:
+        return modem_create_bpsk();
+    case MOD_QPSK:
+        return modem_create_qpsk();
+    case MOD_APSK32:
+        return modem_create_apsk32(_bits_per_symbol);
     default:
-        perror("ERROR: modem_create(), unknown/unsupported modulation scheme\n");
+        fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme\n");
         exit(-1);
     }
 
@@ -75,11 +79,11 @@ modem modem_create(
 void modem_init(modem _mod, unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 ) {
-        perror("ERROR! modem_init(), modem must have at least 1 bit/symbol\n");
-        return;
+        fprintf(stderr,"error: modem_init(), modem must have at least 1 bit/symbol\n");
+        exit(1);
     } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
-        perror("ERROR! modem_init(), maximum number of bits per symbol exceeded\n");
-        return;
+        fprintf(stderr,"error: modem_init(), maximum number of bits per symbol exceeded\n");
+        exit(1);
     }
 
     _mod->m = _bits_per_symbol;
@@ -144,8 +148,8 @@ modem modem_create_qam(
     unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 ) {
-        perror("ERROR! modem_create_qam, modem must have at least 2 bits/symbol\n");
-        return NULL;
+        fprintf(stderr,"error: modem_create_qam(), modem must have at least 2 bits/symbol\n");
+        exit(1);
     }
 
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -354,11 +358,11 @@ void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len)
     if ( (_mod->scheme != MOD_ARB) && (_mod->scheme != MOD_ARB_MIRRORED) &&
          (_mod->scheme != MOD_ARB_ROTATED) )
     {
-        perror("ERROR: modem_arb_init(), modem is not of arbitrary type\n");
-        exit(-1);
+        fprintf(stderr,"error: modem_arb_init(), modem is not of arbitrary type\n");
+        exit(1);
     } else if (_len != _mod->M) {
-        perror("ERROR: modem_arb_init(), array sizes do not match\n");
-        exit(-1);
+        fprintf(stderr,"error: modem_arb_init(), array sizes do not match\n");
+        exit(1);
     }
 #endif
 
@@ -388,7 +392,7 @@ void modem_arb_init_file(modem _mod, char* filename) {
     // try to open file
     FILE * f = fopen(filename, "r");
     if (f == NULL) {
-        perror("modem_arb_init_file(), could not open file\n");
+        fprintf(stderr,"modem_arb_init_file(), could not open file\n");
         exit(1);
     }
 
@@ -400,7 +404,7 @@ void modem_arb_init_file(modem _mod, char* filename) {
 
         // ensure proper number of symbols were read
         if (results < 2) {
-            perror("modem_arb_init_file() unable to parse line\n");
+            fprintf(stderr,"modem_arb_init_file() unable to parse line\n");
             exit(-1);
         }
 

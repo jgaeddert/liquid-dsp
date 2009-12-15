@@ -1571,12 +1571,9 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 typedef enum {
     MOD_UNKNOWN=0,      // Unknown modulation scheme
     MOD_PSK,            // Phase-shift keying (PSK)
-    MOD_BPSK,           // Specific: binary PSK
-    MOD_QPSK,           // specific: quaternary PSK
     MOD_DPSK,           // differential PSK
     MOD_ASK,            // amplitude-shift keying
     MOD_QAM,            // quadrature amplitude-shift keying (QAM)
-    MOD_APSK32,         // amplitude phase-shift keying, M=32 (4,12,16)
     MOD_ARB,            // arbitrary QAM
 
     /* \brief Arbitrary QAM, only the constellation points in the first
@@ -1593,8 +1590,11 @@ typedef enum {
      *
      * \image html Constellation64ARBR.png "64-QAM (arb, rotated) constellation"
      */
-    MOD_ARB_ROTATED
+    MOD_ARB_ROTATED,
 
+    MOD_BPSK,           // Specific: binary PSK
+    MOD_QPSK,           // specific: quaternary PSK
+    MOD_APSK32          // amplitude phase-shift keying, M=32 (4,12,16)
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes

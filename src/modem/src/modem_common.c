@@ -28,15 +28,15 @@
 const char* modulation_scheme_str[11] = {
     "unknown",
     "psk",
-    "bpsk",
-    "qpsk",
     "dpsk",
     "ask",
     "qam",
-    "apsk32(4,12,16)",
     "arb",
     "arb (mirrored)",
-    "arb (rotated)"
+    "arb (rotated)",
+    "bpsk",
+    "qpsk",
+    "apsk32(4,12,16)"
 };
 
 // Generate random symbol
