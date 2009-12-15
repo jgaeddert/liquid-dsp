@@ -39,7 +39,7 @@ const char* modulation_scheme_str[14] = {
     "qpsk",
     "apsk16(4,12)",
     "apsk32(4,12,16)",
-    "apsk64(4,12,16,32)"
+    "apsk64(4,14,20,26)"
 };
 
 // Generate random symbol
