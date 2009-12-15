@@ -172,8 +172,10 @@ void modem_demodulate_apsk32(modem _mod,
 
     // find closest point in ring
     float theta = cargf(_x);
+    if (theta < 0.0f) theta += 2.0f*M_PI;
     float dphi = 2.0f*M_PI / (float) _mod->apsk_p[p];
     float phi = _mod->apsk_phi[p];
+    float phi_hat = 0.0f;
     float d, d_hat, dmin = 2.0f*M_PI;
     unsigned int s_hat=0;
     for (i=0; i<_mod->apsk_p[p]; i++) {
@@ -185,14 +187,37 @@ void modem_demodulate_apsk32(modem _mod,
 
         d_hat = fabsf(d);
         if (d_hat < dmin) {
-            dmin = d;
+            dmin = d_hat;
             s_hat = i;
+            phi_hat = phi;
         }
 
         phi += dphi;
     }
+    // accumulate symbol points
+    for (i=0; i<p; i++)
+        s_hat += _mod->apsk_p[i];
+    //assert(s_hat < _mod->M);
 
-    *_symbol_out = 0;
+    // reverse symbol mapping
+    unsigned int s_prime=0;
+    for (i=0; i<_mod->M; i++) {
+        if ( _mod->apsk_symbol_map[i] == s_hat) {
+            s_prime = i;
+            break;
+        }
+    }
+
+#if 0
+    printf("              x : %12.8f + j*%12.8f\n", crealf(_x), cimagf(_x));
+    printf("              p : %3u\n", p);
+    printf("          theta : %12.8f\n", theta);
+    printf("        phi_hat : %12.8f\n", phi_hat);
+    printf("           dmin : %12.8f\n", dmin);
+    printf("              s : %3u > %3u\n", s_hat, s_prime);
+#endif
+
+    *_symbol_out = s_prime;
 }
 
 #if 0

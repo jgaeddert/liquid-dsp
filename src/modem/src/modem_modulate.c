@@ -121,7 +121,7 @@ void modem_modulate_apsk32(
     unsigned int p=0;   // level
     unsigned int t=0;   // accumulated number of points per level
     for (i=0; i<_mod->apsk_num_levels; i++) {
-        if (symbol_in < t + _mod->apsk_p[i]) {
+        if (s < t + _mod->apsk_p[i]) {
             p = i;
             break;
         }
