@@ -50,6 +50,8 @@ modem modem_create(
         return modem_create_ask(_bits_per_symbol);
     case MOD_QAM:
         return modem_create_qam(_bits_per_symbol);
+    case MOD_APSK:
+        return modem_create_apsk(_bits_per_symbol);
 
     // arbitrary modem definitions
     case MOD_ARB:
@@ -273,6 +275,20 @@ modem modem_create_dpsk(
 
     return mod;
 }
+
+modem modem_create_apsk(
+    unsigned int _bits_per_symbol)
+{
+    switch (_bits_per_symbol) {
+    case 5: return modem_create_apsk32(_bits_per_symbol);
+    default:
+        fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level\n");
+        exit(1);
+    }
+
+    return NULL;
+}
+
 
 modem modem_create_apsk32(
     unsigned int _bits_per_symbol)

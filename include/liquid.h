@@ -1574,6 +1574,7 @@ typedef enum {
     MOD_DPSK,           // differential PSK
     MOD_ASK,            // amplitude-shift keying
     MOD_QAM,            // quadrature amplitude-shift keying (QAM)
+    MOD_APSK,           // amplitude phase-shift keying (APSK)
     MOD_ARB,            // arbitrary QAM
 
     /* \brief Arbitrary QAM, only the constellation points in the first
@@ -1598,7 +1599,7 @@ typedef enum {
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
-extern const char* modulation_scheme_str[11];
+extern const char* modulation_scheme_str[12];
 
 // Constant arbitrary linear modems
 extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
