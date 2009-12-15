@@ -190,6 +190,7 @@ void modem_demodulate_apsk(modem _mod,
             dmin = d_hat;
             s_hat = i;
             phi_hat = phi;
+            _mod->phase_error = d * _mod->apsk_r[p];
         }
 
         phi += dphi;
