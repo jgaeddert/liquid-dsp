@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
-const char* modulation_scheme_str[12] = {
+const char* modulation_scheme_str[13] = {
     "unknown",
     "psk",
     "dpsk",
@@ -37,6 +37,7 @@ const char* modulation_scheme_str[12] = {
     "arb (rotated)",
     "bpsk",
     "qpsk",
+    "apsk16(4,12)",
     "apsk32(4,12,16)"
 };
 

@@ -27,6 +27,26 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
+// APSK32(4,12)
+const unsigned int apsk16_num_levels = 2;
+const unsigned int apsk16_p[2] = {4,12};
+
+const float apsk16_r[2] = {
+    0.43246540f,
+    1.12738252f};
+
+const float apsk16_phi[2] = {
+    0.0f,
+    0.0f};
+
+const float apsk16_r_slicer[1] = {
+    0.77992396f};
+
+const unsigned int apsk16_symbol_map[16] = {
+    11,  10,   8,   9,  12,   2,   7,   1,
+    14,  15,   5,   4,  13,   3,   6,   0};
+
+
 // APSK32(4,12,16)
 const unsigned int apsk32_num_levels = 3;
 const unsigned int apsk32_p[3] = {4,12,16};
