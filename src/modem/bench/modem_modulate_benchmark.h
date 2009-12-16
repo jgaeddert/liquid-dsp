@@ -87,19 +87,20 @@ void benchmark_modulate_dpsk32  MODEM_MODULATE_BENCH_API(MOD_DPSK, 5)
 void benchmark_modulate_dpsk64  MODEM_MODULATE_BENCH_API(MOD_DPSK, 6)
 
 // QAM
-void benchmark_modulate_qam4   MODEM_MODULATE_BENCH_API(MOD_QAM, 2)
-void benchmark_modulate_qam8   MODEM_MODULATE_BENCH_API(MOD_QAM, 3)
-void benchmark_modulate_qam16  MODEM_MODULATE_BENCH_API(MOD_QAM, 4)
-void benchmark_modulate_qam32  MODEM_MODULATE_BENCH_API(MOD_QAM, 5)
-void benchmark_modulate_qam64  MODEM_MODULATE_BENCH_API(MOD_QAM, 6)
-void benchmark_modulate_qam128 MODEM_MODULATE_BENCH_API(MOD_QAM, 7)
-void benchmark_modulate_qam256 MODEM_MODULATE_BENCH_API(MOD_QAM, 8)
+void benchmark_modulate_qam4    MODEM_MODULATE_BENCH_API(MOD_QAM, 2)
+void benchmark_modulate_qam8    MODEM_MODULATE_BENCH_API(MOD_QAM, 3)
+void benchmark_modulate_qam16   MODEM_MODULATE_BENCH_API(MOD_QAM, 4)
+void benchmark_modulate_qam32   MODEM_MODULATE_BENCH_API(MOD_QAM, 5)
+void benchmark_modulate_qam64   MODEM_MODULATE_BENCH_API(MOD_QAM, 6)
+void benchmark_modulate_qam128  MODEM_MODULATE_BENCH_API(MOD_QAM, 7)
+void benchmark_modulate_qam256  MODEM_MODULATE_BENCH_API(MOD_QAM, 8)
 
 // APSK
-void benchmark_modulate_apsk8  MODEM_MODULATE_BENCH_API(MOD_APSK8,  3)
-void benchmark_modulate_apsk16 MODEM_MODULATE_BENCH_API(MOD_APSK16, 4)
-void benchmark_modulate_apsk32 MODEM_MODULATE_BENCH_API(MOD_APSK32, 5)
-void benchmark_modulate_apsk64 MODEM_MODULATE_BENCH_API(MOD_APSK64, 6)
+void benchmark_modulate_apsk8   MODEM_MODULATE_BENCH_API(MOD_APSK,  3)
+void benchmark_modulate_apsk16  MODEM_MODULATE_BENCH_API(MOD_APSK,  4)
+void benchmark_modulate_apsk32  MODEM_MODULATE_BENCH_API(MOD_APSK,  5)
+void benchmark_modulate_apsk64  MODEM_MODULATE_BENCH_API(MOD_APSK,  6)
+void benchmark_modulate_apsk128 MODEM_MODULATE_BENCH_API(MOD_APSK,  7)
 
 #endif // __LIQUID_MODEM_BENCH_H__
 

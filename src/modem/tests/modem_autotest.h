@@ -97,12 +97,13 @@ void autotest_mod_demod_qam128() {  modem_test_mod_demod(MOD_QAM, 7);   }
 void autotest_mod_demod_qam256() {  modem_test_mod_demod(MOD_QAM, 8);   }
 
 //
-// AUTOTESTS: Specific A-PSK
+// AUTOTESTS: generic APSK (maps to specific APSK modems internally)
 //
-void autotest_mod_demod_apsk8(){    modem_test_mod_demod(MOD_APSK8, 3); }
-void autotest_mod_demod_apsk16(){   modem_test_mod_demod(MOD_APSK16,4); }
-void autotest_mod_demod_apsk32(){   modem_test_mod_demod(MOD_APSK32,5); }
-void autotest_mod_demod_apsk64(){   modem_test_mod_demod(MOD_APSK64,6); }
+void autotest_mod_demod_apsk8()  {  modem_test_mod_demod(MOD_APSK,3);   }
+void autotest_mod_demod_apsk16() {  modem_test_mod_demod(MOD_APSK,4);   }
+void autotest_mod_demod_apsk32() {  modem_test_mod_demod(MOD_APSK,5);   }
+void autotest_mod_demod_apsk64() {  modem_test_mod_demod(MOD_APSK,6);   }
+void autotest_mod_demod_apsk128(){  modem_test_mod_demod(MOD_APSK,7);   }
 
 
 #endif 
