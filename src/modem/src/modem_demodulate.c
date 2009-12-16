@@ -180,14 +180,6 @@ void modem_demodulate_apsk(modem _mod,
     s_hat %= _mod->apsk_p[p];   // ensure symbol is in range
     //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
 
-    // compute resduals
-    // TODO : find better, faster way to compute APSK residuals
-    _mod->phase_error = theta - s_hat*dphi;
-    if (_mod->phase_error >  M_PI) _mod->phase_error -= 2.0f*M_PI;
-    if (_mod->phase_error < -M_PI) _mod->phase_error += 2.0f*M_PI;
-
-    _mod->res = _x - _mod->apsk_r[p] * cexpf(_Complex_I*s_hat*dphi);
-
     // accumulate symbol points
     for (i=0; i<p; i++)
         s_hat += _mod->apsk_p[i];
@@ -211,6 +203,18 @@ void modem_demodulate_apsk(modem _mod,
 #endif
 
     *_symbol_out = s_prime;
+
+    // compute resduals
+    // TODO : find better, faster way to compute APSK residuals
+    float complex x_hat;
+    modem_modulate_apsk(_mod, s_prime, &x_hat);
+
+    _mod->phase_error = _mod->apsk_r[p] * cargf(_x*conjf(x_hat));
+    //_mod->phase_error *= sqrtf(_mod->M) / (float)(_mod->apsk_p[p]);
+
+    _mod->res = _x - x_hat;
+
+
 }
 
 #if 0
