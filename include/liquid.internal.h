@@ -791,6 +791,7 @@ modem modem_create_arb_rotated(unsigned int _bits_per_symbol);
 // specific modem create routines
 modem modem_create_bpsk(void);
 modem modem_create_qpsk(void);
+modem modem_create_apsk8(unsigned int _bits_per_symbol);
 modem modem_create_apsk16(unsigned int _bits_per_symbol);
 modem modem_create_apsk32(unsigned int _bits_per_symbol);
 modem modem_create_apsk64(unsigned int _bits_per_symbol);
@@ -830,6 +831,13 @@ void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_o
 void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
 
 // specific modem definitions
+extern const unsigned int apsk8_num_levels;
+extern const unsigned int apsk8_p[2];
+extern const float apsk8_r[2];
+extern const float apsk8_phi[2];
+extern const float apsk8_r_slicer[1];
+extern const unsigned int apsk8_symbol_map[8];
+
 extern const unsigned int apsk16_num_levels;
 extern const unsigned int apsk16_p[2];
 extern const float apsk16_r[2];
