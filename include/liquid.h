@@ -1598,11 +1598,12 @@ typedef enum {
     MOD_APSK8 ,         // amplitude phase-shift keying, M=8  (1,7)
     MOD_APSK16,         // amplitude phase-shift keying, M=16 (4,12)
     MOD_APSK32,         // amplitude phase-shift keying, M=32 (4,12,16)
-    MOD_APSK64          // amplitude phase-shift keying, M=64 (4,12,16,32)
+    MOD_APSK64,         // amplitude phase-shift keying, M=64 (4,14,20,26)
+    MOD_APSK128         // amplitude phase-shift keying, M=128(8,18,24,36,42)
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
-extern const char* modulation_scheme_str[15];
+extern const char* modulation_scheme_str[16];
 
 // Constant arbitrary linear modems
 extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
