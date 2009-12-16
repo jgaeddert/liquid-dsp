@@ -29,6 +29,7 @@ module_name     := channel
 local_s_files	:=			\
 	awgn_channel.c			\
 	channel.c			\
+	pamodel.c			\
 	ricek_channel.c
 
 # local_t_files

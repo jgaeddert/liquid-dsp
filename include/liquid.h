@@ -384,6 +384,15 @@ void channel_execute(channel _c,
                      liquid_float_complex _x,
                      liquid_float_complex *_y);
 
+// power amplifier model
+typedef struct pamodel_s * pamodel;
+pamodel pamodel_create(float _alpha);
+void pamodel_destroy(pamodel _q);
+void pamodel_print(pamodel _q);
+void pamodel_execute(pamodel _q,
+                     liquid_float_complex _x,
+                     liquid_float_complex * _y);
+
 //
 // MODULE : dotprod (vector dot product)
 //
