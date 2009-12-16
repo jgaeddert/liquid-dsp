@@ -35,6 +35,7 @@ void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
     unsigned int i, s, M=1<<_bps;
     float complex x;
     float phase_error, evm;
+    float e = 0.0f;
     for (i=0; i<M; i++) {
         modem_modulate(mod, i, &x);
         modem_demodulate(demod, x, &s);
@@ -44,7 +45,12 @@ void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
         CONTEND_DELTA(phase_error, 0.0f, 1e-3f);
         get_demodulator_evm(demod, &evm);
         CONTEND_DELTA(evm, 0.0f, 1e-3f);
+
+        e += crealf(x*conjf(x));
     }
+    e = sqrtf(e / (float)M);
+
+    CONTEND_DELTA(e,1.0f,1e-3f);
 
     // clean it up
     modem_destroy(mod);
