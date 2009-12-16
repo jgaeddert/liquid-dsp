@@ -180,6 +180,14 @@ void modem_demodulate_apsk(modem _mod,
     s_hat %= _mod->apsk_p[p];   // ensure symbol is in range
     //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
 
+    // compute resduals
+    // TODO : find better, faster way to compute APSK residuals
+    _mod->phase_error = theta - s_hat*dphi;
+    if (_mod->phase_error >  M_PI) _mod->phase_error -= 2.0f*M_PI;
+    if (_mod->phase_error < -M_PI) _mod->phase_error += 2.0f*M_PI;
+
+    _mod->res = _x - _mod->apsk_r[p] * cexpf(_Complex_I*s_hat*dphi);
+
     // accumulate symbol points
     for (i=0; i<p; i++)
         s_hat += _mod->apsk_p[i];
@@ -320,7 +328,13 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
     switch (_demod->scheme) {
     case MOD_PSK:
     case MOD_DPSK:
-        // no need to calculate phase error from generic PSK/DPSK
+    case MOD_APSK:
+    case MOD_APSK8:
+    case MOD_APSK16:
+    case MOD_APSK32:
+    case MOD_APSK64:
+    case MOD_APSK128:
+        // no need to calculate phase error
         break;
     case MOD_BPSK:
         _demod->phase_error = cargf(_demod->state);
@@ -384,6 +398,12 @@ void get_demodulator_evm(modem _demod, float* _evm)
         break;
     case MOD_ASK:
     case MOD_QAM:
+    case MOD_APSK:
+    case MOD_APSK8:
+    case MOD_APSK16:
+    case MOD_APSK32:
+    case MOD_APSK64:
+    case MOD_APSK128:
     case MOD_ARB:
     case MOD_ARB_MIRRORED:
     case MOD_ARB_ROTATED:
