@@ -41,9 +41,9 @@ void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
         CONTEND_EQUALITY(s, i);
 
         get_demodulator_phase_error(demod, &phase_error);
-        CONTEND_DELTA(phase_error, 0.0f, 1e-6f);
+        CONTEND_DELTA(phase_error, 0.0f, 1e-3f);
         get_demodulator_evm(demod, &evm);
-        CONTEND_DELTA(evm, 0.0f, 1e-6f);
+        CONTEND_DELTA(evm, 0.0f, 1e-3f);
     }
 
     // clean it up
@@ -99,6 +99,7 @@ void autotest_mod_demod_qam256() {  modem_test_mod_demod(MOD_QAM, 8);   }
 //
 // AUTOTESTS: Specific A-PSK
 //
+void autotest_mod_demod_apsk8(){    modem_test_mod_demod(MOD_APSK8, 3); }
 void autotest_mod_demod_apsk16(){   modem_test_mod_demod(MOD_APSK16,4); }
 void autotest_mod_demod_apsk32(){   modem_test_mod_demod(MOD_APSK32,5); }
 void autotest_mod_demod_apsk64(){   modem_test_mod_demod(MOD_APSK64,6); }
