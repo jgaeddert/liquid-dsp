@@ -174,27 +174,12 @@ void modem_demodulate_apsk(modem _mod,
     float theta = cargf(_x);
     if (theta < 0.0f) theta += 2.0f*M_PI;
     float dphi = 2.0f*M_PI / (float) _mod->apsk_p[p];
-    float phi = _mod->apsk_phi[p];
-    float phi_hat = 0.0f;
-    float d, d_hat, dmin = 2.0f*M_PI;
     unsigned int s_hat=0;
-    for (i=0; i<_mod->apsk_p[p]; i++) {
-        d = theta - phi;
+    float i_hat = (theta - _mod->apsk_phi[p]) / dphi;
+    s_hat = roundf(i_hat);      // compute symbol (closest angle)
+    s_hat %= _mod->apsk_p[p];   // ensure symbol is in range
+    //printf("          i_hat : %12.8f (%3u)\n", i_hat, s_hat);
 
-        // constrain phase to be in [-pi,pi]
-        if (d < -M_PI) d += 2.0f*M_PI;
-        if (d >  M_PI) d -= 2.0f*M_PI;
-
-        d_hat = fabsf(d);
-        if (d_hat < dmin) {
-            dmin = d_hat;
-            s_hat = i;
-            phi_hat = phi;
-            _mod->phase_error = d * _mod->apsk_r[p];
-        }
-
-        phi += dphi;
-    }
     // accumulate symbol points
     for (i=0; i<p; i++)
         s_hat += _mod->apsk_p[i];
@@ -213,7 +198,6 @@ void modem_demodulate_apsk(modem _mod,
     printf("              x : %12.8f + j*%12.8f\n", crealf(_x), cimagf(_x));
     printf("              p : %3u\n", p);
     printf("          theta : %12.8f\n", theta);
-    printf("        phi_hat : %12.8f\n", phi_hat);
     printf("           dmin : %12.8f\n", dmin);
     printf("              s : %3u > %3u\n", s_hat, s_prime);
 #endif
