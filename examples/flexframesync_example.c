@@ -29,14 +29,15 @@ int main() {
 
     // channel options
     float SNRdB = 12.0f;
+    float pa_distortion = 2.6f;
 
     // create flexframegen object
     flexframegenprops_s fgprops;
     fgprops.rampup_len = 64;
     fgprops.phasing_len = 256;
     fgprops.payload_len = 64;
-    fgprops.mod_scheme = MOD_PSK;
-    fgprops.mod_bps = 3;
+    fgprops.mod_scheme = MOD_QAM;
+    fgprops.mod_bps = 4;
     fgprops.rampdn_len = 64;
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
@@ -71,6 +72,7 @@ int main() {
     float mu    = 0.3f; // fractional sample delay
     fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,0.9f,60.0f);
     fir_farrow_crcf_set_delay(delay_filter,mu);
+    pamodel pa = pamodel_create(pa_distortion);
 
     unsigned int i;
     // initialize header, payload
@@ -124,6 +126,8 @@ int main() {
         // apply channel gain
         z[0] *= gamma;
         z[1] *= gamma;
+        pamodel_execute(pa, z[0], &z[0]);
+        pamodel_execute(pa, z[1], &z[1]);
 
         // add noise
         cawgn(&z[0], nstd);
@@ -208,6 +212,7 @@ int main() {
     flexframesync_destroy(fs);
     nco_destroy(nco_channel);
     interp_crcf_destroy(interp);
+    pamodel_destroy(pa);
 
     printf("done.\n");
     return 0;

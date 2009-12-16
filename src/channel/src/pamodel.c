@@ -53,6 +53,8 @@ void pamodel_print(pamodel _q)
 
 void pamodel_execute(pamodel _q, float complex _x, float complex *_y)
 {
-    *_y = tanhf(_x * _q->alpha) / (_q->alpha);
+    float theta = cargf(_x);
+    float r     = cabsf(_x);
+    *_y = (cosf(theta) + _Complex_I*sinf(theta))*tanhf(r * _q->alpha) / (_q->alpha);
 }
 
