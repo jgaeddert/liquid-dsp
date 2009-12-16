@@ -23,9 +23,12 @@
 //
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "liquid.internal.h"
 
-const char* modulation_scheme_str[16] = {
+const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES] = {
     "unknown",
     "psk",
     "dpsk",
@@ -43,6 +46,43 @@ const char* modulation_scheme_str[16] = {
     "apsk64(4,14,20,26)",
     "apsk128(8,18,24,36,42)"
 };
+
+modulation_scheme liquid_getopt_str2mod(const char * _str)
+{
+    if (strcmp(_str,"unknown")==0) {
+        return MOD_UNKNOWN;
+    } else if (strcmp(_str,"psk")==0) {
+        return MOD_PSK;
+    } else if (strcmp(_str,"dpsk")==0) {
+        return MOD_DPSK;
+    } else if (strcmp(_str,"ask")==0) {
+        return MOD_ASK;
+    } else if (strcmp(_str,"qam")==0) {
+        return MOD_QAM;
+    } else if (strcmp(_str,"apsk")==0) {
+        return MOD_APSK;
+    } else if (strcmp(_str,"arb")==0) {
+        return MOD_ARB;
+
+    } else if (strcmp(_str,"bpsk")==0) {
+        return MOD_BPSK;
+    } else if (strcmp(_str,"qpsk")==0) {
+        return MOD_QPSK;
+    } else if (strcmp(_str,"apsk8")==0) {
+        return MOD_APSK8;
+    } else if (strcmp(_str,"apsk16")==0) {
+        return MOD_APSK16;
+    } else if (strcmp(_str,"apsk32")==0) {
+        return MOD_APSK32;
+    } else if (strcmp(_str,"apsk64")==0) {
+        return MOD_APSK64;
+    } else if (strcmp(_str,"apsk128")==0) {
+        return MOD_APSK128;
+    }
+    fprintf(stderr,"warning: liquid_getopt_str2mod(), unknown/unsupported mod scheme : %s\n", _str);
+    return MOD_UNKNOWN;
+}
+
 
 // Generate random symbol
 unsigned int modem_gen_rand_sym(modem _mod)

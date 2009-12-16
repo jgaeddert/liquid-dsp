@@ -1577,6 +1577,7 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
+#define LIQUID_NUM_MOD_SCHEMES  16
 typedef enum {
     MOD_UNKNOWN=0,      // Unknown modulation scheme
     MOD_PSK,            // Phase-shift keying (PSK)
@@ -1612,7 +1613,10 @@ typedef enum {
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
-extern const char* modulation_scheme_str[16];
+extern const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES];
+
+// returns modulation_scheme based on input string
+modulation_scheme liquid_getopt_str2mod(const char * _str);
 
 // Constant arbitrary linear modems
 extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
