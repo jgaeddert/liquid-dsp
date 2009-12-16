@@ -29,7 +29,7 @@ int main() {
 
     // channel options
     float SNRdB = 12.0f;
-    float pa_distortion = 2.6f;
+    float pa_distortion = 0.5f;
 
     // create flexframegen object
     flexframegenprops_s fgprops;
@@ -117,6 +117,10 @@ int main() {
         // run interpolator
         interp_crcf_execute(interp, x, y);
 
+        // power amplifier model
+        pamodel_execute(pa, y[0], &y[0]);
+        pamodel_execute(pa, y[1], &y[1]);
+
         // add channel impairments
         nco_mix_up(nco_channel, y[0], &z[0]);
         nco_step(nco_channel);
@@ -126,8 +130,6 @@ int main() {
         // apply channel gain
         z[0] *= gamma;
         z[1] *= gamma;
-        pamodel_execute(pa, z[0], &z[0]);
-        pamodel_execute(pa, z[1], &z[1]);
 
         // add noise
         cawgn(&z[0], nstd);
