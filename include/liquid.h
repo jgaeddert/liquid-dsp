@@ -103,6 +103,10 @@ void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
 /* Set loop filter bandwidth; attack/release time */            \
 void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
                                                                 \
+/* lock/unlock gain control */                                  \
+void AGC(_lock)(AGC() _q);                                      \
+void AGC(_unlock)(AGC() _q);                                    \
+                                                                \
 /* Apply gain to input, update tracking loop */                 \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \

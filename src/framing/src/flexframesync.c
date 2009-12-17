@@ -327,6 +327,7 @@ void flexframesync_reset(flexframesync _fs)
     symsync_crcf_clear(_fs->mfdecim);
     pll_reset(_fs->pll_rx);
     //agc_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
+    agc_unlock(_fs->agc_rx);
     nco_reset(_fs->nco_rx);
 
     // SINDR estimate
@@ -454,6 +455,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     flexframesync_demodulate_header(_fs);
                     flexframesync_decode_header(_fs);
                     if (_fs->header_valid) {
+                        agc_lock(_fs->agc_rx);
                         _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
                     } else {
                         //printf("***** header invalid!\n");
@@ -495,6 +497,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             case FLEXFRAMESYNC_STATE_RESET:
                 // open bandwidth
                 _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
+                agc_unlock(_fs->agc_rx);
                 flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;
 

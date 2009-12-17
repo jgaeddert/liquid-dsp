@@ -53,6 +53,9 @@ struct AGC(_s) {
     T tmp2;
 
     FIR_FILTER() f;
+
+    // is agc locked?
+    int is_locked;
 };
 
 
@@ -97,6 +100,8 @@ AGC() AGC(_create)()
     AGC(_set_target)(_q, 1.0);
     AGC(_set_bandwidth)(_q, 0.0);
 
+    _q->is_locked = 0;
+
     return _q;
 }
 
@@ -117,6 +122,8 @@ void AGC(_reset)(AGC() _q)
     _q->e_prime = 1.0f;
     _q->e_hat = 1.0f;
     _q->tmp2 = 1.0f;
+
+    AGC(_unlock)(_q);
 }
 
 void AGC(_set_target)(AGC() _q, T _e_target)
@@ -155,8 +162,23 @@ void AGC(_set_bandwidth)(AGC() _q, T _BT)
     _q->beta = 1 - _q->alpha;
 }
 
+void AGC(_lock)(AGC() _q)
+{
+    _q->is_locked = 1;
+}
+
+void AGC(_unlock)(AGC() _q)
+{
+    _q->is_locked = 0;
+}
+
 void AGC(_execute)(AGC() _q, TC _x, TC *_y)
 {
+    if (_q->is_locked) {
+        *_y = _x * (_q->g);
+        return;
+    }
+
     T e_hat;
 #if 0
     // estimate normalized energy, should be equal to 1.0 when locked
