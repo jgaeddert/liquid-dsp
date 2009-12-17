@@ -25,7 +25,7 @@
 
 #include "liquid.h"
 
-void benchmark_agc(
+void benchmark_agc_unlocked(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations)
@@ -40,6 +40,37 @@ void benchmark_agc(
     float complex x=1.0f, y;
 
     getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        agc_execute(g, x, &y);
+        agc_execute(g, x, &y);
+        agc_execute(g, x, &y);
+        agc_execute(g, x, &y);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+
+    *_num_iterations *= 4;
+
+    agc_destroy(g);
+}
+
+
+void benchmark_agc_locked(
+    struct rusage *_start,
+    struct rusage *_finish,
+    unsigned long int *_num_iterations)
+{
+    unsigned int i;
+
+    // initialize AGC object
+    agc g = agc_create();
+    agc_set_target(g,1.0f);
+    agc_set_bandwidth(g,0.05f);
+    agc_lock(g);
+
+    float complex x=1.0f, y;
+
+    getrusage(RUSAGE_SELF, _start);
+    *_num_iterations *= 16;
     for (i=0; i<(*_num_iterations); i++) {
         agc_execute(g, x, &y);
         agc_execute(g, x, &y);
