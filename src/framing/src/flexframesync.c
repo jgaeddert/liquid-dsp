@@ -49,6 +49,8 @@ static flexframesyncprops_s flexframesyncprops_default = {
     // automatic gain control
     3e-3f,      // agc_bw0
     1e-5f,      // agc_bw1
+    1e-6f,      // agc_gmin
+    1e3f,       // agc_gmax
     // symbol timing recovery
     0.08f,      // sym_bw0
     0.05f,      // sym_bw1
@@ -177,7 +179,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->agc_rx = agc_create();
     agc_set_target(fs->agc_rx, 1.0f);
     agc_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
-    agc_set_gain_limits(fs->agc_rx, 1e-6, 1e3);
+    agc_set_gain_limits(fs->agc_rx, fs->props.agc_gmin, fs->props.agc_gmax);
     fs->squelch_threshold = powf(10.0f,(fs->props.squelch_threshold)/10.0f);
     fs->squelch_timeout = FLEXFRAMESYNC_SQUELCH_TIMEOUT;
     fs->squelch_timer = fs->squelch_timeout;

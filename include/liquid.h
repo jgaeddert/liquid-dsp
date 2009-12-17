@@ -1347,6 +1347,7 @@ typedef int (*flexframesync_callback)(unsigned char * _header,
                                       void * _userdata);
 typedef struct {
     float agc_bw0, agc_bw1;     // automatic gain control bandwidth
+    float agc_gmin, agc_gmax;   // automatic gain control gain limits
     float sym_bw0, sym_bw1;     // symbol synchronizer bandwidth
     float pll_bw0, pll_bw1;     // phase-locked loop bandwidth
     unsigned int k;             // decimation rate
