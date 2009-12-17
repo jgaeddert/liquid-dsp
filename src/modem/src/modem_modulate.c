@@ -22,6 +22,7 @@
 //
 //
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include "liquid.internal.h"
