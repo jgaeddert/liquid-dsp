@@ -14,7 +14,7 @@ section             # syms          Description
 ramp up (r/u)       0+              phasing (1010...) with ramp up
 phasing pattern     0+              10101010...
 p/n sequence        64              BPSK P/N sequence
-header              128
+header              256
                     # bytes
     crc             4               cyclic redundancy check
     mod scheme/bps  1               modulation scheme, depth

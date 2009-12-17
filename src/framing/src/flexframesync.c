@@ -105,8 +105,8 @@ struct flexframesync_s {
     modem mod_header;
     fec fec_header;
     interleaver intlv_header;
-    float complex header_samples[128];
-    unsigned char header_sym[128];
+    float complex header_samples[256];
+    unsigned char header_sym[256];
     unsigned char header_enc[32];
     unsigned char header[15];
 
@@ -167,12 +167,12 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
         flexframesync_setprops(fs, &flexframesyncprops_default);
 
     // header objects
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0
+#if !defined HAVE_FEC_H || HAVE_FEC_H==0 || LIQUID_FLEXFRAME_FORCE_H74==1
     fs->fec_header = fec_create(FEC_HAMMING74, NULL);
 #else
     fs->fec_header = fec_create(FEC_CONV_V27, NULL);
 #endif
-    fs->mod_header = modem_create(MOD_QPSK, 2);
+    fs->mod_header = modem_create(MOD_BPSK, 1);
     fs->intlv_header = interleaver_create(32, INT_BLOCK);
 
     // agc, rssi, squelch
@@ -445,8 +445,8 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 // SINDR estimation
                 get_demodulator_evm(_fs->mod_header, &_fs->evm);
                 _fs->evm_hat += _fs->evm;
-                if (_fs->num_symbols_collected==128) {
-                    _fs->evm_hat /= 128.0f;
+                if (_fs->num_symbols_collected==256) {
+                    _fs->evm_hat /= 256.0f;
                     _fs->SINDRdB_hat = -10*log10f(_fs->evm_hat);
 #if DEBUG_FLEXFRAMESYNC_PRINT
                     printf("SINDR   :   %12.8f dB\n", _fs->SINDRdB_hat);
@@ -634,7 +634,7 @@ void flexframesync_demodulate_header(flexframesync _fs)
     unsigned int i, sym;
 
     // run demodulator
-    for (i=0; i<128; i++) {
+    for (i=0; i<256; i++) {
         modem_demodulate(_fs->mod_header, _fs->header_samples[i], &sym);
         _fs->header_sym[i] = (unsigned char)sym;
     }
@@ -643,10 +643,14 @@ void flexframesync_demodulate_header(flexframesync _fs)
     unsigned char byte;
     for (i=0; i<32; i++) {
         byte = 0;
-        byte |= (_fs->header_sym[4*i+0] << 6);
-        byte |= (_fs->header_sym[4*i+1] << 4);
-        byte |= (_fs->header_sym[4*i+2] << 2);
-        byte |= (_fs->header_sym[4*i+3]     );
+        byte |= (_fs->header_sym[8*i+0] << 7);
+        byte |= (_fs->header_sym[8*i+1] << 6);
+        byte |= (_fs->header_sym[8*i+2] << 5);
+        byte |= (_fs->header_sym[8*i+3] << 4);
+        byte |= (_fs->header_sym[8*i+4] << 3);
+        byte |= (_fs->header_sym[8*i+5] << 2);
+        byte |= (_fs->header_sym[8*i+6] << 1);
+        byte |= (_fs->header_sym[8*i+7]     );
         _fs->header_enc[i] = byte;
     }
 }

@@ -57,8 +57,8 @@ struct flexframegen_s {
     interleaver intlv_header;
     unsigned char header[15];
     unsigned char header_enc[32];
-    unsigned char header_sym[128];
-    float complex header_samples[128];
+    unsigned char header_sym[256];
+    float complex header_samples[256];
 
     // payload
     modem mod_payload;
@@ -91,8 +91,8 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     msequence_destroy(ms);
 
     // create header objects
-    fg->mod_header = modem_create(MOD_QPSK, 2);
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0
+    fg->mod_header = modem_create(MOD_BPSK, 1);
+#if !defined HAVE_FEC_H || HAVE_FEC_H==0 || LIQUID_FLEXFRAME_FORCE_H74==1
     fg->fec_header = fec_create(FEC_HAMMING74, NULL);
 #else
     fg->fec_header = fec_create(FEC_CONV_V27, NULL);
@@ -202,8 +202,8 @@ void flexframegen_execute(flexframegen _fg,
     // header
     flexframegen_encode_header(_fg, _header);
     flexframegen_modulate_header(_fg);
-    memmove(&_y[n], _fg->header_samples, 128*sizeof(float complex));
-    n += 128;
+    memmove(&_y[n], _fg->header_samples, 256*sizeof(float complex));
+    n += 256;
 
     // payload
     memmove(_fg->payload, _payload, _fg->props.payload_len);
@@ -241,7 +241,7 @@ void flexframegen_compute_frame_len(flexframegen _fg)
     _fg->frame_len += _fg->props.rampup_len;    // ramp up length
     _fg->frame_len += _fg->props.phasing_len;   // phasing length
     _fg->frame_len += _fg->pnsequence_len;      // p/n sequence length
-    _fg->frame_len += 128;                      // header length
+    _fg->frame_len += 256;                      // header length
 
     // payload length
     flexframegen_compute_payload_len(_fg);
@@ -304,7 +304,7 @@ void flexframegen_encode_header(flexframegen _fg,
 
     // run encoder
     fec_encode(_fg->fec_header, 15, _fg->header, _fg->header_enc);
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0
+#if !defined HAVE_FEC_H || HAVE_FEC_H==0 || LIQUID_FLEXFRAME_FORCE_H74==1
     _fg->header_enc[30] = 0xa7;
     _fg->header_enc[31] = 0x9e;
 #endif
@@ -333,14 +333,18 @@ void flexframegen_modulate_header(flexframegen _fg)
 
     // unpack header symbols
     for (i=0; i<32; i++) {
-        _fg->header_sym[4*i+0] = (_fg->header_enc[i] >> 6) & 0x03;
-        _fg->header_sym[4*i+1] = (_fg->header_enc[i] >> 4) & 0x03;
-        _fg->header_sym[4*i+2] = (_fg->header_enc[i] >> 2) & 0x03;
-        _fg->header_sym[4*i+3] = (_fg->header_enc[i]     ) & 0x03;
+        _fg->header_sym[8*i+0] = (_fg->header_enc[i] >> 7) & 0x01;
+        _fg->header_sym[8*i+1] = (_fg->header_enc[i] >> 6) & 0x01;
+        _fg->header_sym[8*i+2] = (_fg->header_enc[i] >> 5) & 0x01;
+        _fg->header_sym[8*i+3] = (_fg->header_enc[i] >> 4) & 0x01;
+        _fg->header_sym[8*i+4] = (_fg->header_enc[i] >> 3) & 0x01;
+        _fg->header_sym[8*i+5] = (_fg->header_enc[i] >> 2) & 0x01;
+        _fg->header_sym[8*i+6] = (_fg->header_enc[i] >> 1) & 0x01;
+        _fg->header_sym[8*i+7] = (_fg->header_enc[i]     ) & 0x01;
     }
 
     // modulate symbols
-    for (i=0; i<128; i++)
+    for (i=0; i<256; i++)
         modem_modulate(_fg->mod_header, _fg->header_sym[i], &_fg->header_samples[i]);
 }
 
