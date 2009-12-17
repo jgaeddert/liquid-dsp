@@ -36,6 +36,8 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
+#define RESAMP2_USE_FIR_FILTER 0
+
 struct RESAMP2(_s) {
     TC * h;             // filter prototype
     unsigned int m;     // primitive filter length
@@ -47,6 +49,9 @@ struct RESAMP2(_s) {
     TC * h1;
     WINDOW() w1;
     unsigned int h1_len;
+#if RESAMP2_USE_FIR_FILTER
+    FIR_FILTER() f1;
+#endif
 
     // upper branch (delay line)
     TI * w0;
@@ -95,10 +100,16 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
         f->h[i] = h1*h2*h3;
     }
 
-    // resample, alternate sign, reverse direction
+    // resample, alternate sign, [reverse direction]
     unsigned int j=0;
+#if RESAMP2_USE_FIR_FILTER
+    for (i=1; i<f->h_len; i+=2)
+        f->h1[j++] = f->h[i];
+    f->f1 = FIR_FILTER(_create)(f->h1, f->h1_len);
+#else
     for (i=1; i<f->h_len; i+=2)
         f->h1[j++] = f->h[f->h_len - i - 1];
+#endif
 
     f->w1 = WINDOW(_create)(2*(f->m));
     WINDOW(_clear)(f->w1);
@@ -219,6 +230,9 @@ void RESAMP2(_destroy)(RESAMP2() _f)
     free(_f->w0);
     free(_f->h);
     free(_f->h1);
+#if RESAMP2_USE_FIR_FILTER
+    FIR_FILTER(_destroy)(_f->f1);
+#endif
     free(_f);
 }
 
@@ -256,10 +270,15 @@ void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
     TO y0, y1;
 
     // compute filter branch
+#if RESAMP2_USE_FIR_FILTER
+    FIR_FILTER(_push)(_f->f1, _x[0]);
+    FIR_FILTER(_execute)(_f->f1, &y1);
+#else
     WINDOW(_push)(_f->w1, _x[0]);
     WINDOW(_read)(_f->w1, &r);
     // TODO yq = DOTPROD(_execute)(_f->dpq, r);
     DOTPROD(_run4)(_f->h1, r, _f->h1_len, &y1);
+#endif
 
     // compute delay branch
     y0 = _f->w0[_f->w0_index];
@@ -274,18 +293,20 @@ void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
 {
     TI * r;  // read pointer
 
-    // TODO macro for crealf, cimagf?
-    
     // compute first branch (delay)
     _y[0] = _f->w0[_f->w0_index];
     _f->w0[_f->w0_index] = _x;
     _f->w0_index = (_f->w0_index+1) % (_f->m);
 
     // compute second branch (filter)
+#if RESAMP2_USE_FIR_FILTER
+    FIR_FILTER(_push)(_f->f1, _x);
+    FIR_FILTER(_execute)(_f->f1, &_y[1]);
+#else
     WINDOW(_push)(_f->w1, _x);
     WINDOW(_read)(_f->w1, &r);
     //yq = DOTPROD(_execute)(_f->dpq, r);
     DOTPROD(_run4)(_f->h1, r, _f->h1_len, &_y[1]);
-
+#endif
 }
 
