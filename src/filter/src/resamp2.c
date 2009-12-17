@@ -266,7 +266,6 @@ void RESAMP2(_clear)(RESAMP2() _f)
 
 void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
 {
-    TI * r;
     TO y0, y1;
 
     // compute filter branch
@@ -274,6 +273,7 @@ void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
     FIR_FILTER(_push)(_f->f1, _x[0]);
     FIR_FILTER(_execute)(_f->f1, &y1);
 #else
+    TI * r;
     WINDOW(_push)(_f->w1, _x[0]);
     WINDOW(_read)(_f->w1, &r);
     // TODO yq = DOTPROD(_execute)(_f->dpq, r);
@@ -291,8 +291,6 @@ void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
 
 void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
 {
-    TI * r;  // read pointer
-
     // compute first branch (delay)
     _y[0] = _f->w0[_f->w0_index];
     _f->w0[_f->w0_index] = _x;
@@ -303,6 +301,7 @@ void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
     FIR_FILTER(_push)(_f->f1, _x);
     FIR_FILTER(_execute)(_f->f1, &_y[1]);
 #else
+    TI * r;  // read pointer
     WINDOW(_push)(_f->w1, _x);
     WINDOW(_read)(_f->w1, &r);
     //yq = DOTPROD(_execute)(_f->dpq, r);
