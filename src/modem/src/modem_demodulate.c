@@ -26,6 +26,15 @@
 #include <math.h>
 #include "liquid.internal.h"
 
+float complex cargf_demod_approx(float complex _x)
+{
+    float theta = cimagf(_x);
+    if (theta >  M_PI_2)
+        theta =  M_PI_2;
+    else if (theta < -M_PI_2)
+        theta = -M_PI_2;
+    return theta;
+}
 
 void modem_demodulate(
     modem _demod,
@@ -48,7 +57,8 @@ void modem_demodulate_ask(modem _demod,
 
     // compute residuals
     float complex x_hat = _x + _demod->res;
-    _demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
+    //_demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
+    _demod->phase_error = cargf_demod_approx(x_hat*conjf(_x));
     _demod->evm = cabsf(_demod->res);
 }
 
@@ -69,7 +79,8 @@ void modem_demodulate_qam(modem _demod,
     // compute residuals
     float complex x_hat = _x + _demod->res;
     //_demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
-    _demod->phase_error = cimagf(x_hat*conjf(_x));
+    //_demod->phase_error = cimagf(x_hat*conjf(_x));
+    _demod->phase_error = cargf_demod_approx(x_hat*conjf(_x));
     _demod->evm = cabsf(_demod->res);
 }
 
@@ -108,7 +119,8 @@ void modem_demodulate_bpsk(modem _demod,
     _demod->res = x_hat - _x;
     _demod->evm = cabsf(_demod->res);
     //_demod->phase_error = cargf(_x*conjf(x_hat));
-    _demod->phase_error = cimagf(_x*conjf(x_hat));
+    //_demod->phase_error = cimagf(_x*conjf(x_hat));
+    _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
 void modem_demodulate_qpsk(modem _demod,
@@ -125,7 +137,8 @@ void modem_demodulate_qpsk(modem _demod,
     _demod->res = x_hat - _x;
     _demod->evm = cabsf(_demod->res);
     //_demod->phase_error = cargf(_x*conjf(x_hat));
-    _demod->phase_error = cimagf(_x*conjf(x_hat));
+    //_demod->phase_error = cimagf(_x*conjf(x_hat));
+    _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
 void modem_demodulate_dpsk(modem _demod,
@@ -178,7 +191,8 @@ void modem_demodulate_arb(modem _mod,
     float complex x_hat = _mod->symbol_map[s];
     _mod->res =  x_hat - _x;
     _mod->evm = cabsf(_mod->res);
-    _mod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
+    //_mod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
+    _mod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
 void modem_demodulate_apsk(modem _mod,
@@ -238,7 +252,8 @@ void modem_demodulate_apsk(modem _mod,
     float complex x_hat;
     modem_modulate_apsk(_mod, s_prime, &x_hat);
 
-    _mod->phase_error = _mod->apsk_r[p] * cargf(_x*conjf(x_hat));
+    //_mod->phase_error = _mod->apsk_r[p] * cargf(_x*conjf(x_hat));
+    _mod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
     //_mod->phase_error *= sqrtf(_mod->M) / (float)(_mod->apsk_p[p]);
 
     _mod->res = _x - x_hat;
