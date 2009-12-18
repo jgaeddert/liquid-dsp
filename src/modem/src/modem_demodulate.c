@@ -68,7 +68,8 @@ void modem_demodulate_qam(modem _demod,
 
     // compute residuals
     float complex x_hat = _x + _demod->res;
-    _demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
+    //_demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
+    _demod->phase_error = cimagf(x_hat*conjf(_x));
     _demod->evm = cabsf(_demod->res);
 }
 
@@ -106,7 +107,8 @@ void modem_demodulate_bpsk(modem _demod,
     modem_modulate_bpsk(_demod, *_symbol_out, &x_hat);
     _demod->res = x_hat - _x;
     _demod->evm = cabsf(_demod->res);
-    _demod->phase_error = cargf(_x*conjf(x_hat));
+    //_demod->phase_error = cargf(_x*conjf(x_hat));
+    _demod->phase_error = cimagf(_x*conjf(x_hat));
 }
 
 void modem_demodulate_qpsk(modem _demod,
@@ -122,7 +124,8 @@ void modem_demodulate_qpsk(modem _demod,
     modem_modulate_qpsk(_demod, *_symbol_out, &x_hat);
     _demod->res = x_hat - _x;
     _demod->evm = cabsf(_demod->res);
-    _demod->phase_error = cargf(_x*conjf(x_hat));
+    //_demod->phase_error = cargf(_x*conjf(x_hat));
+    _demod->phase_error = cimagf(_x*conjf(x_hat));
 }
 
 void modem_demodulate_dpsk(modem _demod,
