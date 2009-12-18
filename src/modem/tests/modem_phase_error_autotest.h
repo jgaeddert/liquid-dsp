@@ -45,6 +45,10 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
         // modulate symbol
         modem_modulate(mod, i, &x);
 
+        // ignore rare condition where modulated symbol is (0,0)
+        // (e.g. APSK-8)
+        if (cabsf(x) < 1e-3f) continue;
+
         // add phase offsets
         x_phi_pos = x * cexpf( phi*_Complex_I);
         x_phi_neg = x * cexpf(-phi*_Complex_I);
