@@ -28,7 +28,7 @@
 
 float complex cargf_demod_approx(float complex _x)
 {
-    float theta = cimagf(_x);
+    float theta = cimagf(_x) / fabsf(crealf(_x));
     if (theta >  M_PI_2)
         theta =  M_PI_2;
     else if (theta < -M_PI_2)
