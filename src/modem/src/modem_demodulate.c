@@ -68,7 +68,7 @@ void modem_demodulate_qam(modem _demod,
 
     // compute residuals
     float complex x_hat = _x + _demod->res;
-    _demod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
+    _demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
     _demod->evm = cabsf(_demod->res);
 }
 
