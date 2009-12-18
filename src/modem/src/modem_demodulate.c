@@ -35,33 +35,41 @@ void modem_demodulate(
     _demod->demodulate_func(_demod, x, symbol_out);
 }
 
-void modem_demodulate_ask(
-    modem _demod,
-    float complex x,
-    unsigned int *symbol_out)
+void modem_demodulate_ask(modem _demod,
+                          float complex _x,
+                          unsigned int * _symbol_out)
 {
     unsigned int s;
-    _demod->state = x;
+    _demod->state = _x;
     float res_i;
-    modem_demodulate_linear_array_ref(crealf(x), _demod->m, _demod->ref, &s, &res_i);
-    _demod->res = res_i + _Complex_I*cimagf(x);
-    *symbol_out = gray_encode(s);
+    modem_demodulate_linear_array_ref(crealf(_x), _demod->m, _demod->ref, &s, &res_i);
+    _demod->res = res_i + _Complex_I*cimagf(_x);
+    *_symbol_out = gray_encode(s);
+
+    // compute residuals
+    float complex x_hat = _x + _demod->res;
+    _demod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
+    _demod->evm = cabsf(_demod->res);
 }
 
-void modem_demodulate_qam(
-    modem _demod,
-    float complex x,
-    unsigned int *symbol_out)
+void modem_demodulate_qam(modem _demod,
+                          float complex _x,
+                          unsigned int * _symbol_out)
 {
     unsigned int s_i, s_q;
-    _demod->state = x;
+    _demod->state = _x;
     float res_i, res_q;
-    modem_demodulate_linear_array_ref(crealf(x), _demod->m_i, _demod->ref, &s_i, &res_i);
-    modem_demodulate_linear_array_ref(cimagf(x), _demod->m_q, _demod->ref, &s_q, &res_q);
+    modem_demodulate_linear_array_ref(crealf(_x), _demod->m_i, _demod->ref, &s_i, &res_i);
+    modem_demodulate_linear_array_ref(cimagf(_x), _demod->m_q, _demod->ref, &s_q, &res_q);
     _demod->res = res_i + _Complex_I*res_q;
     s_i = gray_encode(s_i);
     s_q = gray_encode(s_q);
-    *symbol_out = ( s_i << _demod->m_q ) + s_q;
+    *_symbol_out = ( s_i << _demod->m_q ) + s_q;
+
+    // compute residuals
+    float complex x_hat = _x + _demod->res;
+    _demod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
+    _demod->evm = cabsf(_demod->res);
 }
 
 
@@ -82,6 +90,9 @@ void modem_demodulate_psk(
 
     modem_demodulate_linear_array_ref(theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
     *symbol_out = gray_encode(s);
+
+    // compute residuals
+    // phase error computed as residual from demodulator
 }
 
 void modem_demodulate_bpsk(
@@ -93,25 +104,30 @@ void modem_demodulate_bpsk(
     _demod->state = x;
 }
 
-void modem_demodulate_qpsk(
-    modem _demod,
-    float complex x,
-    unsigned int *symbol_out)
+void modem_demodulate_qpsk(modem _demod,
+                           float complex _x,
+                           unsigned int * _symbol_out)
 {
-    *symbol_out  = (crealf(x) > 0 ) ? 0 : 1;
-    *symbol_out += (cimagf(x) > 0 ) ? 0 : 2;
-    _demod->state = x;
+    *_symbol_out  = (crealf(_x) > 0 ) ? 0 : 1;
+    *_symbol_out += (cimagf(_x) > 0 ) ? 0 : 2;
+    _demod->state = _x;
+
+    // compute residuals
+    float complex x_hat;
+    modem_modulate_qpsk(_demod, *_symbol_out, &x_hat);
+    _demod->res = x_hat - _x;
+    _demod->evm = cabsf(_demod->res);
+    _demod->phase_error = cargf(_x*conjf(x_hat));
 }
 
-void modem_demodulate_dpsk(
-    modem _demod,
-    float complex x,
-    unsigned int *symbol_out)
+void modem_demodulate_dpsk(modem _demod,
+                           float complex _x,
+                           unsigned int * _symbol_out)
 {
     unsigned int s;
-    float theta = cargf(x);
+    float theta = cargf(_x);
     float d_theta = theta - _demod->state_theta;
-    _demod->state = x;
+    _demod->state = _x;
     _demod->state_theta = theta;
 
     // subtract phase offset, ensuring phase is in [-pi,pi)
@@ -122,13 +138,14 @@ void modem_demodulate_dpsk(
         d_theta += 2*M_PI;
 
     modem_demodulate_linear_array_ref(d_theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
-    *symbol_out = gray_encode(s);
+    *_symbol_out = gray_encode(s);
+
+    // compute residuals
 }
 
-void modem_demodulate_arb(
-    modem _mod,
-    float complex x,
-    unsigned int *symbol_out)
+void modem_demodulate_arb(modem _mod,
+                          float complex _x,
+                          unsigned int * _symbol_out)
 {
     //printf("modem_demodulate_arb() invoked with I=%d, Q=%d\n", x);
     
@@ -136,7 +153,7 @@ void modem_demodulate_arb(
     float d, d_min = 1e9;
 
     for (i=0; i<_mod->M; i++) {
-        d = cabsf(x - _mod->symbol_map[i]);
+        d = cabsf(_x - _mod->symbol_map[i]);
 
         //printf("  d[%u] = %u\n", i, d);
 
@@ -146,10 +163,10 @@ void modem_demodulate_arb(
         }
     }
     //printf(" > s = %d\n", *symbol_out);
-    _mod->res = x - _mod->symbol_map[s];
-    _mod->state = x;
+    _mod->res = _x - _mod->symbol_map[s];
+    _mod->state = _x;
 
-    *symbol_out = s;
+    *_symbol_out = s;
 }
 
 void modem_demodulate_apsk(modem _mod,
@@ -338,6 +355,7 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
     case MOD_APSK32:
     case MOD_APSK64:
     case MOD_APSK128:
+    case MOD_QAM:
         // no need to calculate phase error
         break;
     case MOD_BPSK:
@@ -348,6 +366,7 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
             _demod->phase_error += M_PI;
         break;
     case MOD_QPSK:
+#if 0
         _demod->phase_error = cargf(_demod->state);
 
         // fold phase error angle onto Q1 projection, 0 <= phase_error <= pi/2
@@ -356,13 +375,15 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
         if (_demod->phase_error > M_PI / 2.0f)
             _demod->phase_error -= M_PI / 2.0f;
         _demod->phase_error -= M_PI / 4.0f;
+#endif
         break;
     case MOD_ASK:
+#if 0
         _demod->phase_error = (crealf(_demod->state) > 0.0f) ?
              cimagf(_demod->state) :
             -cimagf(_demod->state);
+#endif
         break;
-    case MOD_QAM:
     case MOD_ARB:
     case MOD_ARB_MIRRORED:
     case MOD_ARB_ROTATED:
