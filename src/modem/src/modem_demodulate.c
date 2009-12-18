@@ -95,13 +95,19 @@ void modem_demodulate_psk(
     // phase error computed as residual from demodulator
 }
 
-void modem_demodulate_bpsk(
-    modem _demod,
-    float complex x,
-    unsigned int *symbol_out)
+void modem_demodulate_bpsk(modem _demod,
+                           float complex _x,
+                           unsigned int * _symbol_out)
 {
-    *symbol_out = (crealf(x) > 0 ) ? 0 : 1;
-    _demod->state = x;
+    *_symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
+    _demod->state = _x;
+
+    // compute residuals
+    float complex x_hat;
+    modem_modulate_bpsk(_demod, *_symbol_out, &x_hat);
+    _demod->res = x_hat - _x;
+    _demod->evm = cabsf(_demod->res);
+    _demod->phase_error = cargf(_x*conjf(x_hat));
 }
 
 void modem_demodulate_qpsk(modem _demod,
@@ -359,11 +365,13 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
         // no need to calculate phase error
         break;
     case MOD_BPSK:
+#if 0
         _demod->phase_error = cargf(_demod->state);
         if (_demod->phase_error > M_PI / 2.0f)
             _demod->phase_error -= M_PI;
         else if (_demod->phase_error < -M_PI / 2.0f)
             _demod->phase_error += M_PI;
+#endif
         break;
     case MOD_QPSK:
 #if 0
