@@ -86,10 +86,10 @@ void autotest_phase_error_qpsk()    {   modem_test_phase_error(MOD_QPSK,2); }
 //
 // AUTOTESTS: generic ASK
 //
-void autotest_phase_error_ask2()    {   modem_test_phase_error(MOD_PSK, 1); }
-void autotest_phase_error_ask4()    {   modem_test_phase_error(MOD_PSK, 2); }
-void autotest_phase_error_ask8()    {   modem_test_phase_error(MOD_PSK, 3); }
-void autotest_phase_error_ask16()   {   modem_test_phase_error(MOD_PSK, 4); }
+void autotest_phase_error_ask2()    {   modem_test_phase_error(MOD_ASK, 1); }
+void autotest_phase_error_ask4()    {   modem_test_phase_error(MOD_ASK, 2); }
+void autotest_phase_error_ask8()    {   modem_test_phase_error(MOD_ASK, 3); }
+void autotest_phase_error_ask16()   {   modem_test_phase_error(MOD_ASK, 4); }
 
 //
 // AUTOTESTS: generic PSK

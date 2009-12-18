@@ -66,10 +66,10 @@ void autotest_mod_demod_qpsk()  {   modem_test_mod_demod(MOD_QPSK, 2);  }
 //
 // AUTOTESTS: generic ASK
 //
-void autotest_mod_demod_ask2()  {   modem_test_mod_demod(MOD_PSK, 1);   }
-void autotest_mod_demod_ask4()  {   modem_test_mod_demod(MOD_PSK, 2);   }
-void autotest_mod_demod_ask8()  {   modem_test_mod_demod(MOD_PSK, 3);   }
-void autotest_mod_demod_ask16() {   modem_test_mod_demod(MOD_PSK, 4);   }
+void autotest_mod_demod_ask2()  {   modem_test_mod_demod(MOD_ASK, 1);   }
+void autotest_mod_demod_ask4()  {   modem_test_mod_demod(MOD_ASK, 2);   }
+void autotest_mod_demod_ask8()  {   modem_test_mod_demod(MOD_ASK, 3);   }
+void autotest_mod_demod_ask16() {   modem_test_mod_demod(MOD_ASK, 4);   }
 
 //
 // AUTOTESTS: generic PSK

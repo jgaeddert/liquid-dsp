@@ -48,7 +48,7 @@ void modem_demodulate_ask(modem _demod,
 
     // compute residuals
     float complex x_hat = _x + _demod->res;
-    _demod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
+    _demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
     _demod->evm = cabsf(_demod->res);
 }
 
@@ -169,10 +169,14 @@ void modem_demodulate_arb(modem _mod,
         }
     }
     //printf(" > s = %d\n", *symbol_out);
-    _mod->res = _x - _mod->symbol_map[s];
     _mod->state = _x;
-
     *_symbol_out = s;
+
+    // compute residuals
+    float complex x_hat = _mod->symbol_map[s];
+    _mod->res =  x_hat - _x;
+    _mod->evm = cabsf(_mod->res);
+    _mod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
 }
 
 void modem_demodulate_apsk(modem _mod,
@@ -393,6 +397,7 @@ void get_demodulator_phase_error(modem _demod, float* _phi)
 #endif
         break;
     case MOD_ARB:
+        break;
     case MOD_ARB_MIRRORED:
     case MOD_ARB_ROTATED:
         if (cabsf(_demod->res) < 1e-3f) {
