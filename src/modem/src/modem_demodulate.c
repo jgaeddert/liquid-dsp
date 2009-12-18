@@ -73,10 +73,9 @@ void modem_demodulate_qam(modem _demod,
 }
 
 
-void modem_demodulate_psk(
-    modem _demod,
-    float complex x,
-    unsigned int *symbol_out)
+void modem_demodulate_psk(modem _demod,
+                          float complex x,
+                          unsigned int *symbol_out)
 {
     unsigned int s;
     float theta = cargf(x);
@@ -240,8 +239,6 @@ void modem_demodulate_apsk(modem _mod,
     //_mod->phase_error *= sqrtf(_mod->M) / (float)(_mod->apsk_p[p]);
 
     _mod->res = _x - x_hat;
-
-
 }
 
 #if 0
@@ -356,67 +353,6 @@ void modem_modem_demodulate_arb_rotated(modem _mod, float I_in, float Q_in, unsi
 // get demodulator phase error
 void get_demodulator_phase_error(modem _demod, float* _phi)
 {
-    switch (_demod->scheme) {
-    case MOD_PSK:
-    case MOD_DPSK:
-    case MOD_APSK:
-    case MOD_APSK8:
-    case MOD_APSK16:
-    case MOD_APSK32:
-    case MOD_APSK64:
-    case MOD_APSK128:
-    case MOD_QAM:
-        // no need to calculate phase error
-        break;
-    case MOD_BPSK:
-#if 0
-        _demod->phase_error = cargf(_demod->state);
-        if (_demod->phase_error > M_PI / 2.0f)
-            _demod->phase_error -= M_PI;
-        else if (_demod->phase_error < -M_PI / 2.0f)
-            _demod->phase_error += M_PI;
-#endif
-        break;
-    case MOD_QPSK:
-#if 0
-        _demod->phase_error = cargf(_demod->state);
-
-        // fold phase error angle onto Q1 projection, 0 <= phase_error <= pi/2
-        if (_demod->phase_error < 0 )
-            _demod->phase_error += M_PI;
-        if (_demod->phase_error > M_PI / 2.0f)
-            _demod->phase_error -= M_PI / 2.0f;
-        _demod->phase_error -= M_PI / 4.0f;
-#endif
-        break;
-    case MOD_ASK:
-#if 0
-        _demod->phase_error = (crealf(_demod->state) > 0.0f) ?
-             cimagf(_demod->state) :
-            -cimagf(_demod->state);
-#endif
-        break;
-    case MOD_ARB:
-        break;
-    case MOD_ARB_MIRRORED:
-    case MOD_ARB_ROTATED:
-        if (cabsf(_demod->res) < 1e-3f) {
-            _demod->phase_error = 0.0f;
-        } else {
-            // calculate phase difference between received signal and constellation point
-            //_demod->phase_error =
-            //    atan2(_demod->state_q + _demod->res_q, _demod->state_i + _demod->res_i)
-            //   -atan2(_demod->state_q, _demod->state_i);
-            _demod->phase_error = cargf(_demod->state + _demod->res) - cargf(_demod->state);
-
-            // normalize phase error by signal amplitude
-            _demod->phase_error *= cabsf(_demod->state);
-        }
-
-        break;
-    default:;
-    }
-
     *_phi = _demod->phase_error;
 }
 
