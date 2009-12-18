@@ -36,6 +36,8 @@ static unsigned long int _autotest_num_checks=0;
 static unsigned long int _autotest_num_passed=0;
 static unsigned long int _autotest_num_failed=0;
 
+static unsigned long int _autotest_num_warnings=0;
+
 static bool _autotest_verbose = true;
 
 static inline void test_failed()
@@ -163,6 +165,20 @@ static inline void _autotest_print_array(uint8_t * _x, unsigned int _n)
     }
 #  define CONTEND_SAME_DATA_FL(F,L,X,Y,N)  TEST_SAME_DATA(F,L,#X,(X),#Y,(Y),#N,(N))
 #  define CONTEND_SAME_DATA(X,Y,N)         CONTEND_SAME_DATA_FL(__FILE__,__LINE__,X,Y,N)
+
+void _autotest_warn(const char * _file,
+                    unsigned int _line,
+                    const char * _message)
+{
+    if (_autotest_verbose)
+        fprintf(stderr,"  WARNING: %s line %u : %s\n", _file, _line, _message);
+
+    _autotest_num_warnings++;
+}
+
+// AUTOTEST WARN
+#  define AUTOTEST_WARN_FL(F,L,MSG)      AUTOTEST_WARN(F,L,#MSG)
+#  define AUTOTEST_WARN(MSG)             AUTOTEST_WARN_FL(__FILE__,__LINE__,MSG)
 
 #endif // __LIQUID_AUTOTEST_H__
 

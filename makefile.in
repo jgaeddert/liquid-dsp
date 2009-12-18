@@ -173,8 +173,8 @@ autotest_include.h: $(autotest_headers)
 	python autotest/autotest_gen.py $(autotest_headers)
 
 # compile the autotest program without linking
-$(autotest_prog).o: autotest_include.h autotest/autotest.c
-	$(CC) $(CFLAGS) autotest/autotest.c -c -o $@
+$(autotest_prog).o: autotest/autotest.c autotest/autotest.h autotest_include.h
+	$(CC) $(CFLAGS) $< -c -o $@
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
