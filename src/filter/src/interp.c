@@ -128,6 +128,7 @@ void INTERP(_clear)(INTERP() _q)
     WINDOW(_clear)(_q->w);
 }
 
+// TODO : only compute necessary multiplications in interp_xxt_execute
 void INTERP(_execute)(INTERP() _q, TI _x, TO *_y)
 {
     TI * r; // read pointer
@@ -140,7 +141,7 @@ void INTERP(_execute)(INTERP() _q, TI _x, TO *_y)
             WINDOW(_push)(_q->w,0);
 
         WINDOW(_read)(_q->w,&r);
-        DOTPROD(_run)(_q->h, r, _q->h_len, &_y[i]);
+        DOTPROD(_run4)(_q->h, r, _q->h_len, &_y[i]);
     }
 }
 
