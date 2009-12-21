@@ -1432,6 +1432,8 @@ LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF, liquid_float_complex,    liquid_float
 // Packetizer
 //
 
+unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1);
+
 typedef struct packetizer_s * packetizer;
 
 packetizer packetizer_create(unsigned int _dec_msg_len,
@@ -1444,7 +1446,8 @@ packetizer packetizer_recreate(packetizer _p,
 void packetizer_destroy(packetizer _p);
 void packetizer_print(packetizer _p);
 
-unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1);
+unsigned int packetizer_get_dec_msg_len(packetizer _p);
+unsigned int packetizer_get_enc_msg_len(packetizer _p);
 
 void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char * _pkt);
 int  packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);

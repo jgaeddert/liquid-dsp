@@ -128,6 +128,18 @@ void packetizer_print(packetizer _p)
     }
 }
 
+// get decoded message length
+unsigned int packetizer_get_dec_msg_len(packetizer _p)
+{
+    return _p->msg_len;
+}
+
+// get encoded message length
+unsigned int packetizer_get_enc_msg_len(packetizer _p)
+{
+    return _p->packet_len;
+}
+
 void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
 {
     // 
