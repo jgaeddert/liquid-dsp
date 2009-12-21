@@ -864,9 +864,20 @@ void FIR_FILTER(_push)(FIR_FILTER() _f, TI _x);                 \
 void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y);             \
 unsigned int FIR_FILTER(_get_length)(FIR_FILTER() _f);
 
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_RRRF, float, float, float)
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_RRRF,
+                             float,
+                             float,
+                             float)
+
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CRCF,
+                             liquid_float_complex,
+                             float,
+                             liquid_float_complex)
+
+LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF,
+                             liquid_float_complex,
+                             liquid_float_complex,
+                             liquid_float_complex)
 
 //
 // FIR Hilbert transform
@@ -918,9 +929,20 @@ void IIR_FILTER(_clear)(IIR_FILTER() _f);                       \
 void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y);      \
 unsigned int IIR_FILTER(_get_length)(IIR_FILTER() _f);
 
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF, float, float, float)
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF,
+                             float,
+                             float,
+                             float)
+
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CRCF,
+                             liquid_float_complex,
+                             float,
+                             liquid_float_complex)
+
+LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF,
+                             liquid_float_complex,
+                             liquid_float_complex,
+                             liquid_float_complex)
 
 
 //
@@ -946,9 +968,20 @@ void FIRPFB(_push)(FIRPFB() _b, TI _x);                         \
 void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, TO *_y);    \
 void FIRPFB(_clear)(FIRPFB() _b);
 
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF, float,         float,          float)
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
-LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_RRRF,
+                         float,
+                         float,
+                         float)
+
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CRCF,
+                         liquid_float_complex,
+                         float,
+                         liquid_float_complex)
+
+LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
+                         liquid_float_complex,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
 // 
 // Interpolator
@@ -971,9 +1004,20 @@ void INTERP(_print)(INTERP() _q);                               \
 void INTERP(_clear)(INTERP() _q);                               \
 void INTERP(_execute)(INTERP() _q, TI _x, TO *_y);
 
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF, float,         float,          float)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
-LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_RRRF,
+                         float,
+                         float,
+                         float)
+
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CRCF,
+                         liquid_float_complex,
+                         float,
+                         liquid_float_complex)
+
+LIQUID_INTERP_DEFINE_API(INTERP_MANGLE_CCCF,
+                         liquid_float_complex,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
 // 
 // Decimator
@@ -987,17 +1031,28 @@ typedef struct DECIM(_s) * DECIM();                             \
 DECIM() DECIM(_create)(unsigned int _D,                         \
                        TC *_h,                                  \
                        unsigned int _h_len);                    \
-void    DECIM(_destroy)(DECIM() _q);                            \
-void    DECIM(_print)(DECIM() _q);                              \
-void    DECIM(_clear)(DECIM() _q);                              \
-void    DECIM(_execute)(DECIM() _q,                             \
-                        TI *_x,                                 \
-                        TO *_y,                                 \
-                        unsigned int _index);
+void DECIM(_destroy)(DECIM() _q);                               \
+void DECIM(_print)(DECIM() _q);                                 \
+void DECIM(_clear)(DECIM() _q);                                 \
+void DECIM(_execute)(DECIM() _q,                                \
+                     TI *_x,                                    \
+                     TO *_y,                                    \
+                     unsigned int _index);
 
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF, float,           float,          float)
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
-LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_RRRF,
+                        float,
+                        float,
+                        float)
+
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CRCF,
+                        liquid_float_complex,
+                        float,
+                        liquid_float_complex)
+
+LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
+                        liquid_float_complex,
+                        liquid_float_complex,
+                        liquid_float_complex)
 
 // 
 // quadrature mirror filter banks
@@ -1024,9 +1079,20 @@ void    QMFB(_execute)(QMFB() _q,                               \
                        TO * _y0,                                \
                        TO * _y1);
 
-LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_RRRF, float, float, float)
-LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-//LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_RRRF,
+                       float,
+                       float,
+                       float)
+
+LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF,
+                       liquid_float_complex,
+                       float,
+                       liquid_float_complex)
+
+//LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CCCF,
+//                       liquid_float_complex,
+//                       liquid_float_complex,
+//                       liquid_float_complex)
 
 // 
 // iterative tree quadrature mirror filter banks
@@ -1040,20 +1106,31 @@ LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_flo
 
 #define LIQUID_ITQMFB_DEFINE_API(ITQMFB,TO,TC,TI)               \
 typedef struct ITQMFB(_s) * ITQMFB();                           \
-ITQMFB()    ITQMFB(_create)(unsigned int _n,                    \
-                            unsigned int _m,                    \
-                            float _slsl,                        \
-                            int _type);                         \
-ITQMFB()    ITQMFB(_recreate)(ITQMFB() _q, unsigned int _m);    \
-void        ITQMFB(_destroy)(ITQMFB() _q);                      \
-void        ITQMFB(_print)(ITQMFB() _q);                        \
-void        ITQMFB(_execute)(ITQMFB() _q,                       \
-                             TO * _x,                           \
-                             TO * _y);
+ITQMFB() ITQMFB(_create)(unsigned int _n,                       \
+                         unsigned int _m,                       \
+                         float _slsl,                           \
+                         int _type);                            \
+ITQMFB() ITQMFB(_recreate)(ITQMFB() _q, unsigned int _m);       \
+void ITQMFB(_destroy)(ITQMFB() _q);                             \
+void ITQMFB(_print)(ITQMFB() _q);                               \
+void ITQMFB(_execute)(ITQMFB() _q,                              \
+                      TO * _x,                                  \
+                      TO * _y);
 
-LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_RRRF, float, float, float)
-LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-//LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_RRRF,
+                         float,
+                         float,
+                         float)
+
+LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CRCF,
+                         liquid_float_complex,
+                         float,
+                         liquid_float_complex)
+
+//LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CCCF,
+//                         liquid_float_complex,
+//                         liquid_float_complex,
+//                         liquid_float_complex)
 
 // 
 // Half-band resampler
@@ -1063,27 +1140,38 @@ LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid
 #define RESAMP2_MANGLE_CCCF(name)   LIQUID_CONCAT(resamp2_cccf,name)
 
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
-typedef     struct RESAMP2(_s) * RESAMP2();                     \
-RESAMP2()   RESAMP2(_create)(unsigned int _h_len,               \
+typedef struct RESAMP2(_s) * RESAMP2();                         \
+RESAMP2() RESAMP2(_create)(unsigned int _h_len,                 \
+                           float _fc,                           \
+                           float _slsl);                        \
+RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
+                             unsigned int _h_len,               \
                              float _fc,                         \
                              float _slsl);                      \
-RESAMP2()   RESAMP2(_recreate)(RESAMP2() _q,                    \
-                               unsigned int _h_len,             \
-                               float _fc,                       \
-                               float _slsl);                    \
-void        RESAMP2(_destroy)(RESAMP2() _q);                    \
-void        RESAMP2(_print)(RESAMP2() _q);                      \
-void        RESAMP2(_clear)(RESAMP2() _q);                      \
-void        RESAMP2(_decim_execute)(RESAMP2() _f,               \
-                                    TI * _x,                    \
-                                    TO * _y);                   \
-void        RESAMP2(_interp_execute)(RESAMP2() _f,              \
-                                     TI _x,                     \
-                                     TO * _y);
+void RESAMP2(_destroy)(RESAMP2() _q);                           \
+void RESAMP2(_print)(RESAMP2() _q);                             \
+void RESAMP2(_clear)(RESAMP2() _q);                             \
+void RESAMP2(_decim_execute)(RESAMP2() _f,                      \
+                             TI * _x,                           \
+                             TO * _y);                          \
+void RESAMP2(_interp_execute)(RESAMP2() _f,                     \
+                              TI _x,                            \
+                              TO * _y);
 
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF, float,           float,          float)
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
-LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
+
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
+
+LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
 
 
 // 
@@ -1094,24 +1182,35 @@ LIQUID_RESAMP2_DEFINE_API(RESAMP2_MANGLE_CCCF, liquid_float_complex,   liquid_fl
 #define RESAMP_MANGLE_CCCF(name)    LIQUID_CONCAT(resamp_cccf,name)
 
 #define LIQUID_RESAMP_DEFINE_API(RESAMP,TO,TC,TI)               \
-typedef     struct RESAMP(_s) * RESAMP();                       \
-RESAMP()    RESAMP(_create)(float _r,                           \
-                            unsigned int _h_len,                \
-                            float _fc,                          \
-                            float _slsl,                        \
-                            unsigned int _npfb);                \
-void        RESAMP(_destroy)(RESAMP() _q);                      \
-void        RESAMP(_print)(RESAMP() _q);                        \
-void        RESAMP(_reset)(RESAMP() _q);                        \
-void        RESAMP(_setrate)(RESAMP() _q, float _rate);         \
-void        RESAMP(_execute)(RESAMP() _q,                       \
-                             TI _x,                             \
-                             TO * _y,                           \
-                             unsigned int *_num_written);
+typedef struct RESAMP(_s) * RESAMP();                           \
+RESAMP() RESAMP(_create)(float _r,                              \
+                         unsigned int _h_len,                   \
+                         float _fc,                             \
+                         float _slsl,                           \
+                         unsigned int _npfb);                   \
+void RESAMP(_destroy)(RESAMP() _q);                             \
+void RESAMP(_print)(RESAMP() _q);                               \
+void RESAMP(_reset)(RESAMP() _q);                               \
+void RESAMP(_setrate)(RESAMP() _q, float _rate);                \
+void RESAMP(_execute)(RESAMP() _q,                              \
+                      TI _x,                                    \
+                      TO * _y,                                  \
+                      unsigned int *_num_written);
 
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF, float,         float,          float)
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
-LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_RRRF,
+                         float,
+                         float,
+                         float)
+
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CRCF,
+                         liquid_float_complex,
+                         float,
+                         liquid_float_complex)
+
+LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF,
+                         liquid_float_complex,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer)
@@ -1122,26 +1221,37 @@ LIQUID_RESAMP_DEFINE_API(RESAMP_MANGLE_CCCF, liquid_float_complex, liquid_float_
 
 #define LIQUID_SYMSYNC_DEFINE_API(SYMSYNC,TO,TC,TI)             \
 typedef struct SYMSYNC(_s) * SYMSYNC();                         \
-SYMSYNC()   SYMSYNC(_create)(unsigned int _k,                   \
-                             unsigned int _num_filters,         \
-                             TC * _h,                           \
-                             unsigned int _h_len);              \
-void        SYMSYNC(_destroy)(SYMSYNC() _q);                    \
-void        SYMSYNC(_print)(SYMSYNC() _q);                      \
-void        SYMSYNC(_execute)(SYMSYNC() _q,                     \
-                              TI * _x,                          \
-                              unsigned int _nx,                 \
-                              TO * _y,                          \
-                              unsigned int *_ny);               \
-void        SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);       \
-void        SYMSYNC(_clear)(SYMSYNC() _q);                      \
-void        SYMSYNC(_estimate_timing)(SYMSYNC() _q,             \
-                                      TI * _x,                  \
-                                      unsigned int _n);
+SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
+                           unsigned int _num_filters,           \
+                           TC * _h,                             \
+                           unsigned int _h_len);                \
+void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
+void SYMSYNC(_print)(SYMSYNC() _q);                             \
+void SYMSYNC(_execute)(SYMSYNC() _q,                            \
+                       TI * _x,                                 \
+                       unsigned int _nx,                        \
+                       TO * _y,                                 \
+                       unsigned int *_ny);                      \
+void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);              \
+void SYMSYNC(_clear)(SYMSYNC() _q);                             \
+void SYMSYNC(_estimate_timing)(SYMSYNC() _q,                    \
+                               TI * _x,                         \
+                               unsigned int _n);
 
-LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF, float,           float,          float)
-LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
-//LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
+
+LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
+
+//LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF,
+//                          liquid_float_complex,
+//                          liquid_float_complex,
+//                          liquid_float_complex)
 
 // 
 // Symbol timing recovery (symbol synchronizer, 2 samples/symbol in/out)
@@ -1152,25 +1262,36 @@ LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex,   float,   
 
 #define LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2,TO,TC,TI)           \
 typedef struct SYMSYNC2(_s) * SYMSYNC2();                       \
-SYMSYNC2()  SYMSYNC2(_create)(unsigned int _num_filters,        \
-                              TC * _h,                          \
-                              unsigned int _h_len);             \
-void        SYMSYNC2(_destroy)(SYMSYNC2() _q);                  \
-void        SYMSYNC2(_print)(SYMSYNC2() _q);                    \
-void        SYMSYNC2(_execute)(SYMSYNC2() _q,                   \
-                               TI * _x,                         \
-                               unsigned int _nx,                \
-                               TO * _y,                         \
-                               unsigned int *_ny);              \
-void        SYMSYNC2(_set_lf_bw)(SYMSYNC2() _q, float _bt);     \
-void        SYMSYNC2(_clear)(SYMSYNC2() _q);                    \
-void        SYMSYNC2(_estimate_timing)(SYMSYNC2() _q,           \
-                                       TI * _x,                 \
-                                       unsigned int _n);
+SYMSYNC2() SYMSYNC2(_create)(unsigned int _num_filters,         \
+                             TC * _h,                           \
+                             unsigned int _h_len);              \
+void SYMSYNC2(_destroy)(SYMSYNC2() _q);                         \
+void SYMSYNC2(_print)(SYMSYNC2() _q);                           \
+void SYMSYNC2(_execute)(SYMSYNC2() _q,                          \
+                        TI * _x,                                \
+                        unsigned int _nx,                       \
+                        TO * _y,                                \
+                        unsigned int *_ny);                     \
+void SYMSYNC2(_set_lf_bw)(SYMSYNC2() _q, float _bt);            \
+void SYMSYNC2(_clear)(SYMSYNC2() _q);                           \
+void SYMSYNC2(_estimate_timing)(SYMSYNC2() _q,                  \
+                                TI * _x,                        \
+                                unsigned int _n);
 
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF, float,         float,          float)
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF, liquid_float_complex, float,          liquid_float_complex)
-LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF, liquid_float_complex, liquid_float_complex,  liquid_float_complex)
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
+
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
+                           liquid_float_complex)
 
 
 // 
@@ -1232,9 +1353,20 @@ void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y);             \
 unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f);          \
 void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h);
 
-LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
-LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-//LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
+LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_RRRF,
+                             float,
+                             float,
+                             float)
+
+LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CRCF,
+                             liquid_float_complex,
+                             float,
+                             liquid_float_complex)
+
+//LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CCCF,
+//                             liquid_float_complex,
+//                             liquid_float_complex,
+//                             liquid_float_complex)
 
 
 //
@@ -1397,9 +1529,20 @@ void PNSYNC(_destroy)(PNSYNC() _fs);                            \
 void PNSYNC(_print)(PNSYNC() _fs);                              \
 void PNSYNC(_correlate)(PNSYNC() _fs, TI _sym, TO * _y);
 
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_RRRF, float,           float,          float)
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF, liquid_float_complex,   float,          liquid_float_complex)
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF, liquid_float_complex,   liquid_float_complex,  liquid_float_complex)
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_RRRF,
+                         float,
+                         float,
+                         float)
+
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF,
+                         liquid_float_complex,
+                         float,
+                         liquid_float_complex)
+
+LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF,
+                         liquid_float_complex,
+                         liquid_float_complex,
+                         liquid_float_complex)
 
 
 //
@@ -1423,9 +1566,20 @@ void BSYNC(_destroy)(BSYNC() _fs);                              \
 void BSYNC(_print)(BSYNC() _fs);                                \
 void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO * _y);
 
-LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_RRRF, float,                   float,                  float)
-LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CRCF, liquid_float_complex,    float,                  liquid_float_complex)
-LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF, liquid_float_complex,    liquid_float_complex,   liquid_float_complex)
+LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_RRRF,
+                        float,
+                        float,
+                        float)
+
+LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CRCF,
+                        liquid_float_complex,
+                        float,
+                        liquid_float_complex)
+
+LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF,
+                        liquid_float_complex,
+                        liquid_float_complex,
+                        liquid_float_complex)
 
 
 // 
