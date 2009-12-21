@@ -176,6 +176,7 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
 void SYMSYNC(_lock)(SYMSYNC() _q)
 {
     _q->is_locked = 1;
+    _q->del = _q->k;    // fix step size to number of samples/symbol
 }
 
 void SYMSYNC(_unlock)(SYMSYNC() _q)
@@ -327,7 +328,7 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
         // compute filterbank outputs
         FIRPFB(_execute)(_q->mf,  _q->b, &mf);
         if (!_q->is_locked)
-        FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
+            FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
         mf *= _q->k_inv;
 
         // store output
@@ -337,13 +338,12 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
 #endif
 
         // apply loop filter
-        if (!_q->is_locked) {
+        if (!_q->is_locked)
             SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
-        }
 
-            _q->tau     += _q->del;
-            _q->b_soft  =  _q->tau * (float)(_q->num_filters);
-            _q->b       =  (int)roundf(_q->b_soft);
+        _q->tau     += _q->del;
+        _q->b_soft  =  _q->tau * (float)(_q->num_filters);
+        _q->b       =  (int)roundf(_q->b_soft);
 
         n++;
     }
