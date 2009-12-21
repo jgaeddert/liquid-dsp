@@ -79,7 +79,7 @@ void autotest_fwindow()
 
     fwindow_read(w, &r);
     CONTEND_SAME_DATA(r,test4,10*sizeof(float));
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         fwindow_debug_print(w);
 
     // recreate window (truncate to last 6 elements)
@@ -108,7 +108,7 @@ void autotest_fwindow()
     fwindow_read(w, &r);
     CONTEND_SAME_DATA(r,test8,10*sizeof(float));
 
-    if (_autotest_verbose) {
+    if (liquid_autotest_verbose) {
         // manual print
         printf("manual output:\n");
         for (i=0; i<10; i++)

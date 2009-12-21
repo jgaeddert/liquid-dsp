@@ -41,7 +41,7 @@ void autotest_polyfit_q3n3()
     unsigned int k=Q+1;
     polyfit(x,y,n, p,k);
 
-    if (_autotest_verbose) {
+    if (liquid_autotest_verbose) {
         unsigned int i;
         for (i=0; i<3; i++)
             printf("%3u : %12.8f > %12.8f\n", i, x[i], y[i]);

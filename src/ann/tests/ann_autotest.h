@@ -45,7 +45,7 @@ void xautotest_ann_node()
     // evaluate node
     node_evaluate(q);
 
-    if (_autotest_verbose) {
+    if (liquid_autotest_verbose) {
         node_print(q);
         printf("y = %12.8f\n", y[0]);
     }

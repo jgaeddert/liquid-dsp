@@ -47,7 +47,7 @@ void conv_test(fec_scheme _fs,
 
     // create object
     fec q = fec_create(_fs,NULL);
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         fec_print(q);
 
     // encode message
@@ -64,7 +64,7 @@ void conv_test(fec_scheme _fs,
     // validate data are the same
     CONTEND_SAME_DATA(msg, msg_dec, _dec_msg_len);
 
-    if (_autotest_verbose) {
+    if (liquid_autotest_verbose) {
         printf("enc   dec\n");
         printf("---   ---\n");
         for (i=0; i<_dec_msg_len; i++)

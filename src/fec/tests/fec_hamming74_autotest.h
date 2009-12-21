@@ -40,7 +40,7 @@ void autotest_hamming74_codec()
 
     // create object
     fec q = fec_create(fs,NULL);
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         fec_print(q);
 
     // encode message

@@ -35,7 +35,7 @@ void packetizer_test_codec(unsigned int _n, fec_scheme _fec0, fec_scheme _fec1)
     // create object
     packetizer p = packetizer_create(_n,_fec0,_fec1);
 
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         packetizer_print(p);
 
     // initialize data

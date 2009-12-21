@@ -18,7 +18,7 @@ void test_freqoffset(float _dphi, unsigned int _n)
     }
 
     float nu_hat = estimate_freqoffset(x,_n);
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         printf("nu_hat: %f (expected %f)\n", nu_hat, _dphi);
 
     CONTEND_DELTA( nu_hat, _dphi, tol );

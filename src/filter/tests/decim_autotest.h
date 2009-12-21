@@ -53,7 +53,7 @@ void autotest_decim_rrrf_generic()
     for (i=0; i<4; i++) {
         CONTEND_DELTA(y[i], test[i], tol);
         
-        if (_autotest_verbose)
+        if (liquid_autotest_verbose)
             printf("  y(%u) = %8.4f;\n", i+1, y[i]);
     }
 

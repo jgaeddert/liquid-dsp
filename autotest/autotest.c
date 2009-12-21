@@ -134,11 +134,11 @@ int main(int argc, char *argv[])
             break;
         case 'v':
             verbose = true;
-            _autotest_verbose = true;
+            liquid_autotest_verbose = true;
             break;
         case 'q':
             verbose = false;
-            _autotest_verbose = false;
+            liquid_autotest_verbose = false;
             break;
         default:
             print_help();
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
             execute_package( &packages[i], verbose );
 
             n++;
-            if (stop_on_fail && _autotest_num_failed > 0)
+            if (stop_on_fail && liquid_autotest_num_failed > 0)
                 break;
         }
 
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
         break;
     }
 
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         print_failed_tests();
 
     autotest_print_results();
@@ -197,14 +197,14 @@ void print_help()
 
 void execute_autotest(autotest _test, bool _verbose)
 {
-    unsigned long int autotest_num_passed_init = _autotest_num_passed;
-    unsigned long int autotest_num_failed_init = _autotest_num_failed;
+    unsigned long int autotest_num_passed_init = liquid_autotest_num_passed;
+    unsigned long int autotest_num_failed_init = liquid_autotest_num_failed;
 
     // execute test
     _test->api();
 
-    _test->num_passed = _autotest_num_passed - autotest_num_passed_init;
-    _test->num_failed = _autotest_num_failed - autotest_num_failed_init;
+    _test->num_passed = liquid_autotest_num_passed - autotest_num_passed_init;
+    _test->num_failed = liquid_autotest_num_failed - autotest_num_failed_init;
     _test->num_checks = _test->num_passed + _test->num_failed;
     _test->pass = (_test->num_failed==0) ? true : false;
     if (_test->num_checks > 0)
@@ -257,7 +257,7 @@ void print_package_results(package _p)
 
 void print_failed_tests(void)
 {
-    if (_autotest_num_failed == 0)
+    if (liquid_autotest_num_failed == 0)
         return;
 
     printf("==================================\n");

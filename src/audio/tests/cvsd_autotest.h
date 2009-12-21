@@ -32,7 +32,7 @@ void autotest_cvsd_rmse_sine() {
     }   
 
     rmse = 10*log10f(rmse/n);
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         printf("cvsd rmse : %8.2f dB\n", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 }

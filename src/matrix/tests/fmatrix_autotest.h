@@ -67,7 +67,7 @@ void autotest_fmatrix_ops() {
         66, 81, 96   };
 
     fmatrix_mul(x,2,3, y,3,3, z,2,3);
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         fmatrix_print(z,2,3);
 
     CONTEND_SAME_DATA(z,ztest,sizeof(z));
@@ -104,12 +104,12 @@ void autotest_fmatrix_mul() {
        16,  -13,    5};
 
     fmatrix_mul(x,5,3,y,3,5,z0,5,5);
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         fmatrix_print(z0,5,5);
     CONTEND_SAME_DATA(z0,z0_test,5*5*sizeof(float));
 
     fmatrix_mul(y,3,5,x,5,3,z1,3,3);
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         fmatrix_print(z1,3,3);
     CONTEND_SAME_DATA(z1,z1_test,3*3*sizeof(float));
 

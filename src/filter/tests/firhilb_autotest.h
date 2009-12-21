@@ -54,7 +54,7 @@ void autotest_firhilb_decim()
     for (i=0; i<16; i++)
         firhilb_decim_execute(ht, &x[2*i], &y[i]);
 
-    if (_autotest_verbose) {
+    if (liquid_autotest_verbose) {
         printf("hilbert transform decimator output:\n");
         for (i=0; i<16; i++)
             printf("  y(%3u) = %8.5f + j*%8.5f;\n", i+1, crealf(y[i]), cimagf(y[i]));
@@ -99,7 +99,7 @@ void autotest_firhilb_interp()
     for (i=0; i<16; i++)
         firhilb_interp_execute(ht, x[i], &y[2*i]);
 
-    if (_autotest_verbose) {
+    if (liquid_autotest_verbose) {
         printf("hilbert transform interpolator output:\n");
         for (i=0; i<32; i++)
             printf("  y(%3u) = %8.5f;\n", i+1, y[i]);

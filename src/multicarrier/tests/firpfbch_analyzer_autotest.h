@@ -249,7 +249,7 @@ void xautotest_firpfbch_analysis_energy()
 
         }
 
-        if (_autotest_verbose) {
+        if (liquid_autotest_verbose) {
             printf("e[%2u] : ", i);
             for (j=0; j<num_channels; j++)
                 printf("%6.4f ",cabsf(y[j])/(float)num_channels);

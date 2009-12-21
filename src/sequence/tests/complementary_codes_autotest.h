@@ -36,7 +36,7 @@ void autotest_ccodes() {
     bsequence_create_ccodes(a, b);
 
     // print
-    if (_autotest_verbose) {
+    if (liquid_autotest_verbose) {
         bsequence_print(a);
         bsequence_print(b);
     }
@@ -53,7 +53,7 @@ void autotest_ccodes() {
         raa = bsequence_correlate(a,ax);
         rbb = bsequence_correlate(b,bx);
 
-        if (_autotest_verbose)
+        if (liquid_autotest_verbose)
             printf("    %3u : raa + rbb = %d\n", i, raa+rbb);
 
         if (i==0) { CONTEND_EQUALITY(raa+rbb,2*n);  }

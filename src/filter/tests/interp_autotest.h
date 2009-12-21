@@ -52,11 +52,11 @@ void autotest_interp_rrrf_generic()
     for (i=0; i<16; i++) {
         CONTEND_DELTA(y[i], test[i], tol);
 
-        if (_autotest_verbose)
+        if (liquid_autotest_verbose)
             printf("  y(%u) = %8.4f;\n", i+1, y[i]);
     }
 
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         interp_rrrf_print(q);
 
     interp_rrrf_destroy(q);
@@ -113,11 +113,11 @@ void autotest_interp_crcf_generic()
         CONTEND_DELTA( crealf(y[i]), crealf(test[i]), tol);
         CONTEND_DELTA( cimagf(y[i]), cimagf(test[i]), tol);
 
-        if (_autotest_verbose)
+        if (liquid_autotest_verbose)
             printf("  y(%u) = %8.4f + j%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
 
-    if (_autotest_verbose)
+    if (liquid_autotest_verbose)
         interp_crcf_print(q);
 
     interp_crcf_destroy(q);

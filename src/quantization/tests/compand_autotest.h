@@ -39,7 +39,7 @@ void autotest_compand_float() {
         y = compress_mulaw(x,mu);
         x_hat = expand_mulaw(y,mu);
 
-        if (_autotest_verbose)
+        if (liquid_autotest_verbose)
             printf("%8.4f -> %8.4f -> %8.4f\n", x, y, x_hat);
 
         CONTEND_DELTA(x,x_hat,tol);
@@ -65,7 +65,7 @@ void autotest_compand_cfloat() {
         compress_cf_mulaw(x,mu,&y);
         expand_cf_mulaw(y,mu,&z);
 
-        if (_autotest_verbose) {
+        if (liquid_autotest_verbose) {
             printf("%8.4f +j%8.4f > ", crealf(x), cimagf(x));
             printf("%8.4f +j%8.4f > ", crealf(y), cimagf(y));
             printf("%8.4f +j%8.4f\n",  crealf(z), cimagf(z));
