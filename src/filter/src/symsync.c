@@ -77,6 +77,9 @@ struct SYMSYNC(_s) {
     float tau;
     float del;
 
+    // lock
+    int is_locked;
+
 #if DEBUG_SYMSYNC
     FILE * fid;
     fwindow  debug_bsoft;
@@ -114,6 +117,9 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
     // reset state and initialize loop filter
     SYMSYNC(_clear)(q);
     SYMSYNC(_set_lf_bw)(q, 0.01f);
+
+    // unlock loop control
+    q->is_locked = 0;
 
 #if DEBUG_SYMSYNC
     q->debug_bsoft =  fwindow_create(DEBUG_BUFFER_LEN);
@@ -167,6 +173,16 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
     _q->beta  = 0.22f * (_q->bt);   // percent of new sample to retain
 }
 
+void SYMSYNC(_lock)(SYMSYNC() _q)
+{
+    _q->is_locked = 1;
+}
+
+void SYMSYNC(_unlock)(SYMSYNC() _q)
+{
+    _q->is_locked = 0;
+}
+
 void SYMSYNC(_clear)(SYMSYNC() _q)
 {
     // reset internal filterbank states
@@ -184,6 +200,8 @@ void SYMSYNC(_clear)(SYMSYNC() _q)
     _q->q_hat   = 0.0f;
     _q->q_prime = 0.0f;
     _q->del = (float)(_q->k);
+
+    _q->is_locked = 0;
 }
 
 void SYMSYNC(_estimate_timing)(SYMSYNC() _q, TI * _v, unsigned int _n)
@@ -308,6 +326,7 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
 #endif
         // compute filterbank outputs
         FIRPFB(_execute)(_q->mf,  _q->b, &mf);
+        if (!_q->is_locked)
         FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
         mf *= _q->k_inv;
 
@@ -318,11 +337,13 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
 #endif
 
         // apply loop filter
-        SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
+        if (!_q->is_locked) {
+            SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
+        }
 
-        _q->tau     += _q->del;
-        _q->b_soft  =  _q->tau * (float)(_q->num_filters);
-        _q->b       =  (int)roundf(_q->b_soft);
+            _q->tau     += _q->del;
+            _q->b_soft  =  _q->tau * (float)(_q->num_filters);
+            _q->b       =  (int)roundf(_q->b_soft);
 
         n++;
     }
