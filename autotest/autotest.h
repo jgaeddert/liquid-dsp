@@ -177,7 +177,7 @@ void _autotest_warn(const char * _file,
 }
 
 // AUTOTEST WARN
-#  define AUTOTEST_WARN_FL(F,L,MSG)      AUTOTEST_WARN(F,L,#MSG)
+#  define AUTOTEST_WARN_FL(F,L,MSG)      _autotest_warn(F,L,#MSG)
 #  define AUTOTEST_WARN(MSG)             AUTOTEST_WARN_FL(__FILE__,__LINE__,MSG)
 
 #endif // __LIQUID_AUTOTEST_H__
