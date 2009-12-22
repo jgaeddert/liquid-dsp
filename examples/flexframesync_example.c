@@ -7,9 +7,9 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <getopt.h>
 
 #include "liquid.h"
-#include "liquid.internal.h"
 
 #define OUTPUT_FILENAME  "flexframesync_example.m"
 
@@ -22,22 +22,60 @@ static int callback(unsigned char * _rx_header,
 typedef struct {
     unsigned char * header;
     unsigned char * payload;
+    unsigned int num_frames_received;
 } framedata;
 
-int main() {
+void usage();
+
+int main(int argc, char *argv[]) {
     srand( time(NULL) );
 
+    // define parameters
+    float SNRdB = 30.0f;
+    unsigned int m = 3;     // filter delay
+    float beta = 0.7f;      // filter excess bandwidth
+    float noise_floor = -30.0f;
+    modulation_scheme mod_scheme = MOD_PSK;
+    unsigned int bps = 1;
+    unsigned int packet_len = 64;
+    unsigned int num_frames = 3;
+
+    // get options
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhs:f:m:p:n:")) != EOF){
+        switch (dopt) {
+        case 'h':
+        case 'u': usage(); return 0;
+        case 's': SNRdB = atof(optarg); break;
+        case 'f': packet_len = atol(optarg); break;
+        case 'm':
+            mod_scheme = liquid_getopt_str2mod(optarg);
+            if (mod_scheme == MOD_UNKNOWN) {
+                printf("error: unknown/unsupported mod. scheme: %s\n", optarg);
+                usage();
+                exit(-1);
+            }
+            break;
+        case 'p': bps = atoi(optarg); break;
+        case 'n': num_frames = atoi(optarg); break;
+        default:
+            printf("error: unknown option\n");
+            usage();
+            exit(-1);
+        }
+    }
+    printf("blah\n");
+
     // channel options
-    float SNRdB = 12.0f;
     float pa_distortion = 0.5f;
 
     // create flexframegen object
     flexframegenprops_s fgprops;
     fgprops.rampup_len = 64;
-    fgprops.phasing_len = 256;
-    fgprops.payload_len = 64;
-    fgprops.mod_scheme = MOD_QAM;
-    fgprops.mod_bps = 4;
+    fgprops.phasing_len = 64;
+    fgprops.payload_len = packet_len;
+    fgprops.mod_scheme = mod_scheme;
+    fgprops.mod_bps = bps;
     fgprops.rampdn_len = 64;
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
@@ -45,19 +83,27 @@ int main() {
     // frame data
     unsigned char header[8];
     unsigned char payload[fgprops.payload_len];
-    framedata fd = {header, payload};
+    framedata fd = {header, payload, 0};
 
     // create interpolator
-    unsigned int m=3;
-    float beta=0.7f;
     unsigned int h_len = 2*2*m + 1;
     float h[h_len];
     design_rrc_filter(2,m,beta,0,h);
     interp_crcf interp = interp_crcf_create(2,h,h_len);
 
     // create flexframesync object with default properties
-    //flexframesyncprops_s fsprops;
-    flexframesync fs = flexframesync_create(NULL,callback,(void*)&fd);
+    flexframesyncprops_s fsprops;
+    flexframesyncprops_init_default(&fsprops);
+    fsprops.squelch_threshold = noise_floor - 3.0f; // set threshold below noise floor
+                                                    // to help ensure detection for weak
+                                                    // signals
+    fsprops.agc_bw0 = 1e-3f;
+    fsprops.agc_bw1 = 1e-5f;
+    fsprops.agc_gmin = 1e-3f;
+    fsprops.agc_gmax = 1e4f;
+    fsprops.pll_bw0 = 1e-3f;
+    fsprops.pll_bw1 = 1e-4f;
+    flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
     flexframesync_print(fs);
 
     // channel
@@ -66,9 +112,8 @@ int main() {
     nco nco_channel = nco_create(LIQUID_VCO);
     nco_set_phase(nco_channel, phi);
     nco_set_frequency(nco_channel, dphi);
-    float n0    = -18.0f;                        // noise level
-    float nstd  = powf(10.0f, n0/10.0f);         // noise std. dev.
-    float gamma = powf(10.0f, (SNRdB+n0)/10.0f); // channel gain
+    float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
     float mu    = 0.3f; // fractional sample delay
     fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,0.9f,60.0f);
     fir_farrow_crcf_set_delay(delay_filter,mu);
@@ -109,7 +154,7 @@ int main() {
         flexframesync_execute(fs, &noise, 1);
     }
     unsigned int j;
-    for (j=0; j<3; j++) {
+    for (j=0; j<num_frames; j++) {
     for (i=0; i<frame_len+2*m; i++) {
         // compensate for filter delay
         x = (i<frame_len) ? frame[i] : 0.0f;
@@ -156,7 +201,9 @@ int main() {
         fir_farrow_crcf_execute(delay_filter, &z[1]);
         flexframesync_execute(fs, z, 2);
     }
-    }
+    } // num frames
+
+    printf("num frames received : %3u / %3u\n", fd.num_frames_received, num_frames);
 
     // write to file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -220,6 +267,16 @@ int main() {
     return 0;
 }
 
+void usage()
+{
+    printf("  u/h   :   print usage\n");
+    printf("  s     :   SNR [dB], 30\n");
+    printf("  f     :   frame bytes (packet len), 64\n");
+    printf("  m     :   mod scheme, [psk], dpsk, pam, qam\n");
+    printf("  p     :   bits per symbol, 1\n");
+    printf("  n     :   num frames, 3\n");
+}
+
 static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
@@ -246,6 +303,8 @@ static int callback(unsigned char * _rx_header,
     for (i=0; i<_rx_payload_len; i++)
         num_payload_errors += (_rx_payload[i] == fd->payload[i]) ? 0 : 1;
     printf("    num payload errors  : %u\n", num_payload_errors);
+
+    fd->num_frames_received++;
 
     return 0;
 }
