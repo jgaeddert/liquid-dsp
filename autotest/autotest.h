@@ -78,6 +78,11 @@ static inline void liquid_autotest_failed_msg(const char * _file,
 
 static void autotest_print_results(void)
 {
+    if (liquid_autotest_num_warnings > 0) {
+        printf("==================================\n");
+        printf(" %lu warnings\n", liquid_autotest_num_warnings);
+    }
+
     printf("==================================\n");
     if (liquid_autotest_num_failed==0) {
         printf(" PASSED ALL %lu CHECKS\n", liquid_autotest_num_passed);
