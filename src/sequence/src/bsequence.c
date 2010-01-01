@@ -183,6 +183,21 @@ unsigned int bsequence_get_length(bsequence _bs)
     return _bs->num_bits;
 }
 
+unsigned int bsequence_index(bsequence _bs, unsigned int _i)
+{
+    if (_i >= _bs->num_bits) {
+        fprintf(stderr,"error: bsequence_index(), invalid index %u\n", _i);
+        exit(-1);
+    }
+    div_t d = div( _i, 8 ); // 8 bits/byte (unsigned char)
+
+    // compute byte index
+    unsigned int k = _bs->s_len - d.quot - 1;
+
+    // return particular bit at byte index
+    return ((_bs->s[k]) >> d.rem ) & 1;
+}
+
 void bsequence_create_ccodes(bsequence _a, bsequence _b)
 {
     // make sure sequences are the same length

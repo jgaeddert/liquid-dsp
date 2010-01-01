@@ -2364,6 +2364,7 @@ unsigned int bsequence_accumulate(bsequence _bs);
 
 // accessor functions
 unsigned int bsequence_get_length(bsequence _bs);
+unsigned int bsequence_index(bsequence _bs, unsigned int _i);
 
 // M-Sequence
 

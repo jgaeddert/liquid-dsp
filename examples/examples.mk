@@ -31,6 +31,7 @@ local_src	:=			\
 	ann_example.c			\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\
+	bsequence_example.c		\
 	buffer_example.c		\
 	cfbuffer_example.c		\
 	checksum_example.c		\
