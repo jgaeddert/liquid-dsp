@@ -11,8 +11,9 @@ BIB = bibtex
 BIB_FLAGS =
 
 # Listings used in this document
-LISTINGS = \
-	listings/nco.c++.tex
+LISTINGS = 				\
+	listings/nco.c++.tex		\
+	listings/agc.example.c.tex
 
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
