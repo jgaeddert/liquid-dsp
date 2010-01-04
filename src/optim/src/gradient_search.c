@@ -59,6 +59,9 @@ gradient_search gradient_search_create_advanced(
     gs->gamma = _gamma;
     gs->dgamma = 0.99f;
     gs->gamma_hat = gs->gamma;
+    gs->alpha = 0.9f;
+
+    gs->beta = 1.0f - gs->alpha;
 
     gs->obj = _obj;
     gs->v = _v;
@@ -69,6 +72,8 @@ gradient_search gradient_search_create_advanced(
     // initialize internal memory arrays
     gs->gradient = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->v_prime  = (float*) calloc( gs->num_parameters, sizeof(float) );
+    gs->dv_hat   = (float*) calloc( gs->num_parameters, sizeof(float) );
+    gs->dv       = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->utility = gs->get_utility(gs->obj, gs->v, gs->num_parameters);
 
     return gs;
@@ -78,6 +83,8 @@ void gradient_search_destroy(gradient_search _g)
 {
     free(_g->gradient);
     free(_g->v_prime);
+    free(_g->dv_hat);
+    free(_g->dv);
     free(_g);
 }
 
@@ -119,15 +126,25 @@ void gradient_search_step(gradient_search _g)
     float utility_tmp;
 
     while (continue_loop) {
+        // compute vector step : use [alpha]% of new gradient and
+        //                       retain [beta]% of old gradient
+        for (i=0; i<_g->num_parameters; i++)
+            _g->dv[i] = _g->gamma_hat * _g->gradient[i] * _g->alpha + 
+                        _g->dv_hat[i] * _g->beta;
+
+        // store vector step
+        for (i=0; i<_g->num_parameters; i++)
+            _g->dv_hat[i] = _g->dv[i];
+
         // update v; polarity determines optimization type:
         //   - (minimum)
         //   + (maximum)
         if (_g->minimize) {
             for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] -= _g->gamma_hat * _g->gradient[i];
+                _g->v[i] -= _g->dv[i];
         } else {
             for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] += _g->gamma_hat * _g->gradient[i];
+                _g->v[i] += _g->dv[i];
         }
 
         // compute utility for this parameter set,
