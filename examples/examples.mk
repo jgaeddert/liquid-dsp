@@ -35,6 +35,7 @@ local_src	:=			\
 	buffer_example.c		\
 	cfbuffer_example.c		\
 	checksum_example.c		\
+	chromosome_example.c		\
 	compand_example.c		\
 	compand_cf_example.c		\
 	crc_example.c			\

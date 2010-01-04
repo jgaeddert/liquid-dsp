@@ -1061,6 +1061,19 @@ void quasinewton_search_update_hessian_bfgs(quasinewton_search _q);
 
 void optim_ps_increase_mem(optim_ps _ps, unsigned int _n);
 
+
+// Chromosome structure used in genetic algorithm searches
+struct chromosome_s {
+    unsigned int num_parameters;        // number of represented parameters
+
+    unsigned long* s;                   // chromosome data
+    unsigned int bits_per_parameter;    // bits to represent each parameter
+
+    unsigned int num_bits;              // total number of bits
+    unsigned long max_int_value;        // maximum representable integer value
+    float scaling_factor;               // scaling factor
+};
+
 //
 // MODULE : random
 //

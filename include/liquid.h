@@ -2247,6 +2247,35 @@ float quasinewton_search_execute(quasinewton_search _g,
                                  unsigned int _max_iterations,
                                  float _target_utility);
 
+// genetic algorithm search
+typedef struct chromosome_s * chromosome;
+
+// Create a chromosome object
+chromosome chromosome_create(unsigned int _num_parameters,
+                             unsigned int _bits_per_parameter);
+
+// Destroy a chromosome object
+void chromosome_destroy(chromosome _c);
+
+// Print chromosome values to screen
+void chromosome_print(chromosome _c);
+
+// Mutates chromosome _c at _index
+void chromosome_mutate(chromosome _c, unsigned int _index);
+
+// Resulting chromosome _c is a crossover of parents _p1 and _p2 at _threshold
+void chromosome_crossover(chromosome _p1,
+                          chromosome _p2,
+                          chromosome _c,
+                          unsigned int _threshold);
+
+// Initializes chromosome to random value
+void chromosome_init_random(chromosome _c);
+
+// Returns floating point representation of chromosome
+float chromosome_value(chromosome _c, unsigned int _index);
+
+
 //
 // MODULE : quantization
 //
