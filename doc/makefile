@@ -11,16 +11,17 @@ BIB = bibtex
 BIB_FLAGS =
 
 # Listings used in this document
-LISTINGS = 				\
-	listings/nco.c++.tex		\
+LISTINGS = 					\
+	listings/nco.c++.tex			\
+	listings/gradient_search.example.c.tex	\
 	listings/agc.example.c.tex
 
-SECTIONS :=				\
-	sections/agc.tex		\
-	sections/audio.tex		\
-	sections/buffer.tex		\
-	sections/filter.tex		\
-	sections/multicarrier.tex	\
+SECTIONS :=					\
+	sections/agc.tex			\
+	sections/audio.tex			\
+	sections/buffer.tex			\
+	sections/filter.tex			\
+	sections/multicarrier.tex		\
 	sections/optim.tex
 
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'

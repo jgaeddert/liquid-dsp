@@ -20,10 +20,10 @@ The gradient is a vector field which points to the greatest rate of increase,
 and is computed as
 \[
     \nabla f(\vec{x}) = \left(
-        \frac{f}{x_0},
-        \frac{f}{x_1},
+        \frac{\partial f}{\partial x_0},
+        \frac{\partial f}{\partial x_1},
         \ldots,
-        \frac{f}{x_{N-1}}
+        \frac{\partial f}{\partial x_{N-1}}
     \right)
 \]
 In most non-linear optimization problems, $\nabla f(\vec{x})$ is not known,
@@ -42,4 +42,8 @@ convergence, and therefore the updated vector at time $n+1$ is
 where $\Delta\vec{x}[0] = \vec{0}$.
 In {\it liquid}, the gradient is normalized to unity (orthonormal).
 Furthermore, $\gamma$ is slightly reduced each epoch.
+
+% gradient_search example
+\input{listings/gradient_search.example.c.tex}
+
 
