@@ -124,43 +124,39 @@ void gradient_search_step(gradient_search _g)
     // normalize gradient vector
     gradient_search_normalize_gradient(_g);
 
-    int continue_loop = 1;
     float utility_tmp;
 
-    while (continue_loop) {
-        // compute vector step : use [alpha]% of new gradient and
-        //                       retain [beta]% of old gradient
+    // compute vector step : use [alpha]% of new gradient and
+    //                       retain [beta]% of old gradient
+    for (i=0; i<_g->num_parameters; i++) {
+        _g->dv[i] = _g->gamma_hat * _g->gradient[i] * _g->alpha + 
+                    _g->dv_hat[i] * _g->beta;
+    }
+
+    // store vector step
+    for (i=0; i<_g->num_parameters; i++)
+        _g->dv_hat[i] = _g->dv[i];
+
+    // update v; polarity determines optimization type:
+    //   - (minimum)
+    //   + (maximum)
+    if (_g->minimize) {
         for (i=0; i<_g->num_parameters; i++)
-            _g->dv[i] = _g->gamma_hat * _g->gradient[i] * _g->alpha + 
-                        _g->dv_hat[i] * _g->beta;
-
-        // store vector step
+            _g->v[i] -= _g->dv[i];
+    } else {
         for (i=0; i<_g->num_parameters; i++)
-            _g->dv_hat[i] = _g->dv[i];
+            _g->v[i] += _g->dv[i];
+    }
 
-        // update v; polarity determines optimization type:
-        //   - (minimum)
-        //   + (maximum)
-        if (_g->minimize) {
-            for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] -= _g->dv[i];
-        } else {
-            for (i=0; i<_g->num_parameters; i++)
-                _g->v[i] += _g->dv[i];
-        }
+    // compute utility for this parameter set,
+    utility_tmp = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
 
-        // compute utility for this parameter set,
-        utility_tmp = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
-
-        // decrease gamma if utility did not improve from last iteration
-        if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
-             _g->gamma_hat > LIQUID_GRADIENT_SEARCH_GAMMA_MIN )
-        {
-            _g->gamma_hat *= _g->dgamma;
-        } else {
-            //continue_loop = 0;
-        }
-        continue_loop = 0;
+    // decrease gamma if utility did not improve from last iteration
+    //if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
+    if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
+         _g->gamma_hat > LIQUID_GRADIENT_SEARCH_GAMMA_MIN )
+    {
+        _g->gamma_hat *= _g->dgamma;
     }
 
     // update utility
