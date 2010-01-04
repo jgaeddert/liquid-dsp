@@ -36,19 +36,21 @@ gradient_search gradient_search_create(
         _obj,
         _v,
         _num_parameters,
-        1e-6f,  // delta
-        0.002f, // gamma
+        1e-6f,  // delta (gradient approximation step size)
+        0.002f, // gamma (vector step size)
+        0.9f,   // alpha (vector filter bandwidth)
         _u,
         _minmax
         );
 }
 
 gradient_search gradient_search_create_advanced(
-    void* _obj,
-    float* _v,
+    void * _userdata,
+    float * _v,
     unsigned int _num_parameters,
     float _delta,
     float _gamma,
+    float _alpha,
     utility_function _u,
     int _minmax)
 {
@@ -59,7 +61,7 @@ gradient_search gradient_search_create_advanced(
     gs->gamma = _gamma;
     gs->dgamma = 0.99f;
     gs->gamma_hat = gs->gamma;
-    gs->alpha = 0.9f;
+    gs->alpha = _alpha;
 
     gs->beta = 1.0f - gs->alpha;
 

@@ -2165,30 +2165,32 @@ typedef float (*utility_function)(void * _userdata,
 typedef struct gradient_search_s * gradient_search;
 
 // Create a simple gradient_search object; parameters are specified internally
-//   _obj               :   userdata
+//   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
-//   _num_parameters    :   array length
-//   _get_utility       :   utility function pointer
-//   _minmax            :   direction (0:minimize, 1:maximize)
-gradient_search gradient_search_create(void* _obj,  // userdata
-                                       float* _v,
+//   _num_parameters    :   array length (number of parameters to optimize)
+//   _u                 :   utility function pointer
+//   _minmax            :   search direction (0:minimize, 1:maximize)
+gradient_search gradient_search_create(void * _userdata,
+                                       float * _v,
                                        unsigned int _num_parameters,
                                        utility_function _u,
                                        int _minmax);
 
 // Create a gradient_search object, specifying search parameters
-//   _obj               :   userdata
+//   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
-//   _num_parameters    :   array length
-//   _delta             :
-//   _gamma             :
-//   _get_utility       :   utility function pointer
-//   _minmax            :   direction (0:minimize, 1:maximize)
-gradient_search gradient_search_create_advanced(void* _obj,
-                                                float* _v,
+//   _num_parameters    :   array length (number of parameters to optimize)
+//   _delta             :   gradient approximation step size (default: 1e-6f)
+//   _gamma             :   vector step size (default: 0.002f)
+//   _alpha             :   vector step filter bandwidth (default: 0.9)
+//   _u                 :   utility function pointer
+//   _minmax            :   search direction (0:minimize, 1:maximize)
+gradient_search gradient_search_create_advanced(void * _userdata,
+                                                float * _v,
                                                 unsigned int _num_parameters,
                                                 float _delta,
                                                 float _gamma,
+                                                float _alpha,
                                                 utility_function _u,
                                                 int _minmax);
 
