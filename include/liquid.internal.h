@@ -1012,7 +1012,7 @@ struct gradient_search_s {
 
     // External utility function.
     utility_function get_utility;
-    void* obj;          // object to optimize (user data)
+    void * userdata;    // object to optimize (user data)
     int minimize;       // minimize/maximimze utility (search direction)
 };
 

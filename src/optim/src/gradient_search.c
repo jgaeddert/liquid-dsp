@@ -26,14 +26,14 @@
 #define LIQUID_GRADIENT_SEARCH_GAMMA_MIN 0.000001
 
 gradient_search gradient_search_create(
-    void* _obj,
-    float* _v,
+    void * _userdata,
+    float * _v,
     unsigned int _num_parameters,
     utility_function _u,
     int _minmax)
 {
     return gradient_search_create_advanced(
-        _obj,
+        _userdata,
         _v,
         _num_parameters,
         1e-6f,  // delta (gradient approximation step size)
@@ -65,7 +65,7 @@ gradient_search gradient_search_create_advanced(
 
     gs->beta = 1.0f - gs->alpha;
 
-    gs->obj = _obj;
+    gs->userdata = _userdata;
     gs->v = _v;
     gs->num_parameters = _num_parameters;
     gs->get_utility = _u;
@@ -76,7 +76,7 @@ gradient_search gradient_search_create_advanced(
     gs->v_prime  = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->dv_hat   = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->dv       = (float*) calloc( gs->num_parameters, sizeof(float) );
-    gs->utility = gs->get_utility(gs->obj, gs->v, gs->num_parameters);
+    gs->utility = gs->get_utility(gs->userdata, gs->v, gs->num_parameters);
 
     return gs;
 }
@@ -116,7 +116,7 @@ void gradient_search_step(gradient_search _g)
 
     for (i=0; i<_g->num_parameters; i++) {
         _g->v_prime[i] += _g->delta;
-        f_prime = _g->get_utility(_g->obj, _g->v_prime, _g->num_parameters);
+        f_prime = _g->get_utility(_g->userdata, _g->v_prime, _g->num_parameters);
         _g->v_prime[i] -= _g->delta;
         _g->gradient[i] = (f_prime - _g->utility) / _g->delta;
     }
@@ -150,7 +150,7 @@ void gradient_search_step(gradient_search _g)
         }
 
         // compute utility for this parameter set,
-        utility_tmp = _g->get_utility(_g->obj, _g->v, _g->num_parameters);
+        utility_tmp = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
 
         // decrease gamma if utility did not improve from last iteration
         if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
@@ -173,7 +173,7 @@ float gradient_search_run(gradient_search _g, unsigned int _max_iterations, floa
     do {
         i++;
         gradient_search_step(_g);
-        _g->utility = _g->get_utility(_g->obj, _g->v, _g->num_parameters);
+        _g->utility = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
 
     } while (
         optim_threshold_switch(_g->utility, _target_utility, _g->minimize) &&
