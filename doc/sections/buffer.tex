@@ -1,0 +1,17 @@
+% Buffer documentation / sandbox
+\section{buffer}
+
+\subsection{window}
+used to implement a sliding window
+
+{\tt window\_recreate()}
+Similar to the standard C library's realloc(), recreate() extends an existing
+window...
+If the size of the new window is larger than the old one, the old values are
+pushed to the end
+
+8   : 1 2 3 4 5 6 7 8
+16  : 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8
+
+8   : 1 2 3 4 5 6 7 8
+4   : 5 6 7 8

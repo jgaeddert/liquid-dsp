@@ -15,6 +15,13 @@ LISTINGS = 				\
 	listings/nco.c++.tex		\
 	listings/agc.example.c.tex
 
+SECTIONS :=				\
+	sections/agc.tex		\
+	sections/audio.tex		\
+	sections/buffer.tex		\
+	sections/filter.tex		\
+	sections/multicarrier.tex
+
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
@@ -33,7 +40,7 @@ $(LISTINGS) : %.tex : %
 listings: highlight.sty $(LISTINGS)
 
 # auxillary
-$(projName).aux: $(projName).tex listings highlight.sty
+$(projName).aux: $(projName).tex listings highlight.sty $(SECTIONS)
 	$(TEX) $(TEX_FLAGS) $(projName)
 
 # bibliography
@@ -44,7 +51,7 @@ $(projName).bbl: $(projName).aux $(projName).bib
 # TODO list figures as dependencies
 #$(projName).pdf: $(projName).bbl $(projName).tex listings
 # TODO use above line for bibliography (ignore for now)
-$(projName).pdf: $(projName).tex listings
+$(projName).pdf: $(projName).tex listings $(SECTIONS)
 	$(TEX) $(TEX_FLAGS) $(projName)
 	$(TEX) $(TEX_FLAGS) $(projName)
 

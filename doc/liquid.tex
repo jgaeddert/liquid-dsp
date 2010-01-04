@@ -257,12 +257,16 @@ graduated.\footnote{Come back in a year and ask again... {\em sigh}}
 \label{ch:modules}
 
 
-\section{agc: automatic gain control}
+\include{sections/agc}
+
 \section{ann: artificial neural networks}
-\section{audio}
-source audio encoders/decoders: cvsd, filterbanks (sub-channel coding)
-\section{buffer}
-internal buffering, circular/static, ports (threaded)
+
+\include{sections/audio}
+%source audio encoders/decoders: cvsd, filterbanks (sub-channel coding)
+
+\include{sections/buffer}
+%internal buffering, circular/static, ports (threaded)
+
 \section{channel}
 communications channel modeling: additive noise, multipath fading...
 \section{dotprod: dot products (real, complex)}
@@ -274,8 +278,10 @@ parametric estimation: frequency offset, timing offset, fading...
 (basic), checksum, crc, Hamming block codes...
 \section{fft: fast Fourier transform}
 (basic), simple implementation
-\section{filter}
-fir, iir, polyphase, hilbert, interp, decim, Farrow, design, remez, etc.
+
+\include{sections/filter}
+%fir, iir, polyphase, hilbert, interp, decim, Farrow, design, remez, etc.
+
 \section{interleaver}
 bit- and symbol-level
 \section{math}
@@ -285,8 +291,10 @@ and polynomial operations
 basic math, lu-decomp, inversion, gauss-jordan elimination
 \section{modem}
 modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
-\section{multicarrier}
-OFDM/OQAM, OFDM...
+
+\include{sections/multicarrier}
+%OFDM/OQAM, OFDM...
+
 \section{nco}
 numerically-controlled oscillator: mix, pll
 \section{optim}
@@ -301,8 +309,6 @@ lfsr, complementary codes
 useful miscellany: bit packing, etc. 
 
 
-\include{sections/agc}
-    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %             BIBLIOGRAPHY
