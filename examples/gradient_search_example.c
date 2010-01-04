@@ -10,9 +10,6 @@
 
 #define OUTPUT_FILENAME "gradient_search_example.m"
 
-// N-dimensional rosenbrock function
-float rosenbrock(void * _x, float* _opt, unsigned int _len);
-
 int main() {
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
     unsigned int num_iterations = 4000; // number of iterations to run
@@ -68,18 +65,3 @@ int main() {
 
     return 0;
 }
-
-// N-dimensional rosenbrock function
-float rosenbrock(void * _x, float* _opt, unsigned int _len)
-{
-    if (_len < 2)
-        return 0.0f;
-
-    float u=0;
-    unsigned int i;
-    for (i=0; i<(_len-1); i++)
-        u += powf(1-_opt[i],2) + 100*powf( _opt[i+1] - powf(_opt[i],2), 2);
-
-    return u;
-}
-

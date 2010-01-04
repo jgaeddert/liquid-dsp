@@ -2127,6 +2127,9 @@ void pll_step(pll _p, nco _nco, float _e);
 // MODULE : optimization
 //
 
+// n-dimensional rosenbrock function (minimum at _v = {1,1,1...}
+float rosenbrock(void * _userdata, float * _v, unsigned int _n);
+
 // optim pattern set (struct)
 struct optim_ps_s {
     float *x, *y;

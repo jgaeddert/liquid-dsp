@@ -28,8 +28,9 @@ module_name     := optim
 #
 local_s_files	:=		\
 	gradient_search.c	\
+	pattern_set.c		\
 	quasinewton_search.c	\
-	pattern_set.c
+	rosenbrock.c
 
 # local_t_files
 #
