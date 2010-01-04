@@ -1,0 +1,45 @@
+% optimization documentation
+\section{optim (optimization)}
+Newton-raphson, gradient, evolutionary algorithms, etc.
+
+\subsection{Gradient search}
+This module implements a steepest-descent search or gradient search.
+Given a function $f$ which operates on a vector
+$\vec{x} = \{x_0,x_1,\ldots,x_{N-1}\}$ of $N$ parameters,
+the gradient search method seeks to find the optimum $\vec{x}$ which
+minimizes $f$.
+The gradient search is iterative, and adjusts $\vec{x}$ proportional to the
+negative of the gradient of $f$ evaluated at the current location.
+\[
+    \Delta \vec{x}[n+1] = -\gamma[n] \nabla f(\vec{x}[n])
+\]
+where $\gamma[n]$ is the step size and
+$\nabla f(\vec{x}[n])$ is the gradient of $f$ at $\vec{x}$, at the $n^{th}$
+iteration.
+The gradient is a vector field which points to the greatest rate of increase,
+and is computed as
+\[
+    \nabla f(\vec{x}) = \left(
+        \frac{f}{x_0},
+        \frac{f}{x_1},
+        \ldots,
+        \frac{f}{x_{N-1}}
+    \right)
+\]
+In most non-linear optimization problems, $\nabla f(\vec{x})$ is not known,
+and must be estimated for each value of $\vec{x}[n]$ using the finite element
+method.
+The $k^{th}$ component of the gradient is approximated by
+\[
+    \frac{\partial f(\vec{x})}{\partial x_k} \approx 
+    \frac{f(x_0,\ldots,x_k+\Delta,\ldots,x_{N-1}) - f(\vec{x})}{\Delta}
+\]
+An additional filtering operation is introduced on the step size to help
+convergence, and therefore the updated vector at time $n+1$ is
+\[
+    \vec{x}[n+1] = \alpha \Delta\vec{x}[n+1] + (1-\alpha)\Delta\vec{x}[n]
+\]
+where $\Delta\vec{x}[0] = \vec{0}$.
+In {\it liquid}, the gradient is normalized to unity (orthonormal).
+Furthermore, $\gamma$ is slightly reduced each epoch.
+

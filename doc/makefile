@@ -20,7 +20,8 @@ SECTIONS :=				\
 	sections/audio.tex		\
 	sections/buffer.tex		\
 	sections/filter.tex		\
-	sections/multicarrier.tex
+	sections/multicarrier.tex	\
+	sections/optim.tex
 
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
