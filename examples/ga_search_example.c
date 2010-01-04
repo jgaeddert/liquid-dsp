@@ -51,6 +51,11 @@ int main() {
     printf("\n");
     ga_search_print(ga);
 
+    printf("optimum utility : %12.8f [", optimum_utility);
+    for (i=0; i<num_parameters; i++)
+        printf("%.3f ", optimum_vect[i]);
+    printf("]\n");
+
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(u);\n");
     fprintf(fid,"xlabel('iteration');\n");

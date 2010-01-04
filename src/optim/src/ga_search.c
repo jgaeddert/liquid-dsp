@@ -180,13 +180,10 @@ void ga_search_evolve(ga_search _g)
     // Rank
     ga_search_rank(_g);
 
-#if 0
     if ( optim_threshold_switch(_g->utility_opt,
                                 _g->utility[_g->rank[0]],
-                                _g->minimize) ) {
-#else
-    if (_g->utility_opt < _g->utility[_g->rank[0]]) {
-#endif
+                                _g->minimize) )
+    {
         // update optimum
         ga_search_evaluate_chromosome( _g, _g->population[_g->rank[0]] );
         _g->utility_opt = _g->utility[_g->rank[0]];
@@ -195,9 +192,12 @@ void ga_search_evolve(ga_search _g)
         printf("  utility: %0.2E", _g->utility_opt);
         printf("  [");
         for (i=0; i<_g->num_parameters; i++)
-            printf(" %12.8f", _g->v_opt[i]);
+            printf(" %6.3f", _g->v_opt[i]);
         printf(" ]\n");
     }
+    
+    // set optimum vector to output
+    memmove(_g->v, _g->v_opt, sizeof(float)*_g->num_parameters);
 }
 
 float ga_search_evaluate_chromosome(ga_search _g, chromosome _c)
@@ -227,11 +227,10 @@ void ga_search_crossover(ga_search _g)
         c = _g->rank[i];
 
         //printf("  ga_search_crossover, p1: %d, p2: %d, c: %d\n", p1, p2, c);
-        chromosome_crossover(
-            _g->population[p1],
-            _g->population[p2],
-            _g->population[c],
-            threshold);
+        chromosome_crossover(_g->population[p1],
+                             _g->population[p2],
+                             _g->population[c],
+                             threshold);
     }
 }
 
