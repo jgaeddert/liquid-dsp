@@ -28,6 +28,7 @@ module_name     := optim
 #
 local_s_files	:=		\
 	chromosome.c		\
+	ga_search.c		\
 	gradient_search.c	\
 	pattern_set.c		\
 	quasinewton_search.c	\

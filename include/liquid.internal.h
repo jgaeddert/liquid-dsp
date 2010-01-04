@@ -1074,6 +1074,40 @@ struct chromosome_s {
     float scaling_factor;               // scaling factor
 };
 
+struct ga_search_s {
+    chromosome * population;            // population of chromosomes
+    unsigned int population_size;       // size of the population
+    unsigned int selection_size;        // number of 
+    unsigned int num_mutations;         // number of mutations per evolution
+
+    float* v;                           // vector buffer to optimize
+    unsigned int num_parameters;        // number of parameters to optimize
+    unsigned int bits_per_parameter;    // num bits to represent each parmeter 
+    unsigned int bits_per_chromosome;   // total number of bits in each chromosome
+
+    float *utility;                     // utility array
+    unsigned int *rank;                 // rank indices of chromosomes (best to worst)
+
+    float* v_opt;
+    float utility_opt;
+
+    // External utility function.
+    //
+    // The success of a GA search algorithm is contingent upon the
+    // design of a good utility function.  It should meet the following
+    // criteria:
+    //   - monotonically increasing (never flat)
+    //   - efficient to compute
+    //   - maps the [0,1] bounded output vector to desired range
+    //   - for multiple objectives, utility should be high \em only when
+    //         all objectives are met (multiplicative, not additive)
+    float (*get_utility)(void*, float*, unsigned int);
+    void* userdata;         // object to optimize
+    int minimize;           // minimize/maximize utility
+};
+
+
+
 //
 // MODULE : random
 //

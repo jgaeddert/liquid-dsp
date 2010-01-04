@@ -60,6 +60,7 @@ local_src	:=			\
 	framegen64_example.c		\
 	framesync64_example.c		\
 	freqmodem_example.c		\
+	ga_search_example.c		\
 	gport2_example.c		\
 	gport_example.c			\
 	gport_threaded_example.c	\

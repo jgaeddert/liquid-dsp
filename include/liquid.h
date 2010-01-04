@@ -2275,6 +2275,45 @@ void chromosome_init_random(chromosome _c);
 // Returns floating point representation of chromosome
 float chromosome_value(chromosome _c, unsigned int _index);
 
+typedef struct ga_search_s * ga_search;
+
+// Create a simple ga_search object; parameters are specified internally
+ga_search ga_search_create(void * _userdata,
+                           float * _v,
+                           unsigned int _num_parameters,
+                           float (*_get_utility)(void*, float*, unsigned int),
+                           int _minmax);
+
+// Create a ga_search object, specifying search parameters
+ga_search ga_search_create_advanced(void * _userdata,
+                                    float * _v,
+                                    unsigned int _num_parameters,
+                                    unsigned int _bits_per_parameter,
+                                    unsigned int _population_size,
+                                    float _mutation_rate,
+                                    float (*_get_utility)(void*, float*, unsigned int),
+                                    int _minmax);
+
+// Destroy a ga_search object
+void ga_search_destroy(ga_search);
+
+// Execute the search
+float ga_search_run(ga_search _g,
+                    unsigned int _max_iterations,
+                    float _target_utility);
+
+void ga_search_evolve(ga_search);
+
+float ga_search_evaluate_chromosome(ga_search _g, chromosome _c);
+
+void ga_search_rank(ga_search);
+
+void ga_search_crossover(ga_search);
+
+void ga_search_mutate(ga_search);
+
+void ga_search_print(ga_search);
+
 
 //
 // MODULE : quantization
