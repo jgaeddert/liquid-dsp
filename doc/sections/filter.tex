@@ -1,6 +1,61 @@
-% Filter documentation / sandbox
+% 
+% MODULE : filter
+%
 \section{filter}
+\label{module:filter}
 
-\subsection{resamp2}
+% fir_filter
+\subsection{fir\_filter}
+Finite impulse response filter.
+The output $y$ is the convolution of the input $x$ with the filter
+coefficients (impulse response) $h$, viz
+\[
+    y_n = \sum_{k=0}^{N-1}{ h_k x_{N-k-1} }
+\]
+where $\vec{h} = \{h_0,h_1,\ldots,h_{N-1}\}$ is the filter impulse response.
+
+% firhilb
+\subsection{firhilb (finite impulse response Hilbert transform)}
+
+% firpfb
+\subsection{firpfb (finite impulse response polyphase filter bank)}
+
+% interp
+\subsection{interp (interpolator)}
+
+% decim
+\subsection{decim (decimator)}
+
+% qmfb
+\subsection{qmfb (quadrature mirror filter bank)}
+
+% iir_filter
+\subsection{iir\_filter}
+Infinite impulse response filter.
+\[
+    y_n = \sum_{k=0}^{N-1}{ b_k x_{N-k-1} } +
+          \sum_{k=0}^{N-1}{ a_k y_{N-k-1} }
+\]
+where $\vec{b} = \{b_0,b_1,\ldots,b_{N-1}\}$ are the feed-forward parameters
+and $\vec{a} = \{a_0,a_1,\ldots,a_{N-1}\}$ are the feed-back parameters.
+\[
+    H(z) = \frac{\sum_{k=0}^{N-1}{b_k z^{-k}}}
+                {\sum_{k=0}^{N-1}{a_k z^{-k}}}
+\]
+Typically, $H(z)$ is normalized such that $a_0=1$.
+
+\subsection{resamp2 (halfband resampler)}
 resamp2 is a halfband resampler used for efficient interpolation and
 decimation
+
+\subsection{resamp (arbitrary resampler)}
+
+\subsection{symsync (symbol synchronizer)}
+
+\subsection{symsync2 (halfband symbol synchronizer)}
+
+\subsection{firfarrow (finite impulse response Farrow filter)}
+
+\subsection{lf2 (second-order integrating loop filter)}
+
+
