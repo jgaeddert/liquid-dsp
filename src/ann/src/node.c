@@ -82,18 +82,24 @@ void NODE(_evaluate)(NODE() _n)
     _n->y[0] = _n->activation_func(_n->mu, _n->v);
 }
 
-// TODO: update NODE(_train) to work for more than just output layer
+// TODO: update NODE(_train) to work for both input and output layers
 void NODE(_train)(NODE() _n, T _d, float _eta)
 {
-    T y = _n->y[0]; // actual output
-    T e = _d - y;   // error
+    NODE(_evaluate)(_n);    // evaluate the node
+    T y = _n->y[0];         // actual output
+    T e = _d - y;           // error
     T g = _n->d_activation_func(_n->mu, _n->v); // local gradient
-    T dw;   // weight gradient
+    T dw;                   // weight gradient
 
+    // update internal weights
     unsigned int i;
     for (i=0; i<_n->num_inputs; i++) {
-        dw = - _eta * e * g * y;
+        dw = _eta * e * g * _n->x[i];
         _n->w[i] += dw;
     }
+
+    // update bias
+    dw = _eta * e * g;
+    _n->w[i] += dw;
 }
 

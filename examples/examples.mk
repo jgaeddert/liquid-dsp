@@ -29,6 +29,7 @@ local_src	:=			\
 	agc_example.c			\
 	agc_qpsk_example.c		\
 	ann_example.c			\
+	ann_node_example.c		\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\
 	bsequence_example.c		\
