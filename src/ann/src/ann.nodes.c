@@ -113,7 +113,8 @@ ANN() ANN(_create)(
 
     for (i=0; i<q->num_weights; i++) {
         q->w[i] = ((i%2)==0) ? 1.0 : -1.0;
-        q->w[i] = i;
+        //q->w[i] = i;
+        q->w[i] = (i%2 ? 0.1f : -0.1f);
         q->dw[i] = 0.0f;
     }
 
@@ -165,7 +166,7 @@ void ANN(_destroy)(ANN() _q)
 void ANN(_print)(ANN() _q)
 {
     unsigned int i;
-    printf("percepton network : [");
+    printf("perceptron network : [");
     for (i=0; i<_q->num_layers; i++)
         printf("%3u",_q->structure[i]);
     printf("]\n");
@@ -236,6 +237,21 @@ void ANN(_train)(ANN() _q,
     for (i=0; i<_n; i++) {
         // evaluate network
         ANN(_evaluate)(_q, &_x[i*(_q->num_inputs)], y_hat);
+
+        // train (output layer only)
+        unsigned int k, n=0;
+        for (j=0; j<_q->num_layers; j++) {
+            for (k=0; k<_q->structure[j]; k++) {
+                if (j == _q->num_layers-1) {
+                    printf("  training node %3u in layer %3u\n", n, j);
+                    NODE(_train)(_q->nodes[n],1.0f,0.1f);
+                    NODE(_print)(_q->nodes[n]);
+                } else {
+                    printf("  skipping node %3u in layer %3u\n", n, j);
+                }
+                n++;
+            }
+        }
 
         // compute error
         e = 0.0f;
