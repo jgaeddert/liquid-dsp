@@ -38,7 +38,7 @@ gradient_search gradient_search_create(
         _num_parameters,
         1e-6f,  // delta (gradient approximation step size)
         0.002f, // gamma (vector step size)
-        0.9f,   // alpha (vector filter bandwidth)
+        0.1f,   // alpha (momentum parameter)
         _u,
         _minmax
         );
@@ -62,8 +62,6 @@ gradient_search gradient_search_create_advanced(
     gs->dgamma = 0.99f;
     gs->gamma_hat = gs->gamma;
     gs->alpha = _alpha;
-
-    gs->beta = 1.0f - gs->alpha;
 
     gs->userdata = _userdata;
     gs->v = _v;
@@ -126,11 +124,10 @@ void gradient_search_step(gradient_search _g)
 
     float utility_tmp;
 
-    // compute vector step : use [alpha]% of new gradient and
-    //                       retain [beta]% of old gradient
+    // compute vector step : retain [alpha]% of old gradient
     for (i=0; i<_g->num_parameters; i++) {
-        _g->dv[i] = _g->gamma_hat * _g->gradient[i] * _g->alpha + 
-                    _g->dv_hat[i] * _g->beta;
+        _g->dv[i] = _g->gamma_hat * _g->gradient[i] +
+                    _g->dv_hat[i] * _g->alpha;
     }
 
     // store vector step

@@ -2185,7 +2185,7 @@ gradient_search gradient_search_create(void * _userdata,
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _delta             :   gradient approximation step size (default: 1e-6f)
 //   _gamma             :   vector step size (default: 0.002f)
-//   _alpha             :   vector step filter bandwidth (default: 0.9)
+//   _alpha             :   momentum parameter (default: 0.1f)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
 gradient_search gradient_search_create_advanced(void * _userdata,

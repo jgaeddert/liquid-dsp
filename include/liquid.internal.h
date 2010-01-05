@@ -998,14 +998,13 @@ struct gradient_search_s {
     unsigned int num_parameters;
 
     float gamma;        // nominal stepsize
+    float alpha;        // momentum parameter
     float delta;        // differential used to compute (estimate) derivative
     float dgamma;       // decremental gamma parameter
     float gamma_hat;    // step size (decreases each epoch)
     float* v_prime;     // temporary vector array
     float* dv;          // vector step
     float* dv_hat;      // vector step (previous iteration)
-    float alpha;        // filter (feed-forward parameter)
-    float beta;         // filter (feed-back parameter)
 
     float* gradient;    // gradient approximation
     float utility;      // current utility
