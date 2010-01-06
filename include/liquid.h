@@ -159,6 +159,24 @@ void  ANN(_train)(ANN() _q,                                     \
 // Define ann APIs
 LIQUID_ANN_DEFINE_API(ANN_MANGLE_FLOAT, float)
 
+
+// maxnet
+typedef struct maxnet_s * maxnet;
+maxnet maxnet_create(unsigned int _num_classes,
+                     unsigned int * _structure,
+                     unsigned int _num_layers);
+void maxnet_destroy(maxnet _q);
+void maxnet_print(maxnet _q);
+void maxnet_evaluate(maxnet _q,
+                     float * _x,
+                     float * _y,
+                     unsigned int * _class);
+void maxnet_train(maxnet _q,
+                  float * _x,
+                  unsigned int * _class,
+                  unsigned int _num_patterns,
+                  unsigned int _max_num_trials);
+
 // K-means (2-dimensional)
 void kmeans(liquid_float_complex * _x,
             unsigned int _n,

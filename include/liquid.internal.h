@@ -158,6 +158,13 @@ void annlayer_evaluate(annlayer _q);
 void annlayer_compute_bp_error(annlayer _q, float * _error);
 void annlayer_train(annlayer _q, float _eta);
 
+// maxnet
+struct maxnet_s {
+    ann * networks;
+    unsigned int num_inputs;
+    unsigned int num_classes;
+};
+
 //
 // MODULE : audio
 //

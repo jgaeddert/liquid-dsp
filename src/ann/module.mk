@@ -31,6 +31,7 @@ local_s_files	:= 			\
 	activation_functions.c		\
 	kmeans.c			\
 	layer.c				\
+	maxnet.c			\
 	node.c
 
 # local_t_files
