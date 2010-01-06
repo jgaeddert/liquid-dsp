@@ -140,6 +140,8 @@ annlayer annlayer_create(float * _w,
                          float * _y,
                          unsigned int _num_inputs,
                          unsigned int _num_outputs,
+                         int is_input_layer,
+                         int is_output_layer,
                          int _activation_func,
                          float _mu);
 void annlayer_destroy(annlayer _q);

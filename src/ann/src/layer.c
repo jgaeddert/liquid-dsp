@@ -43,6 +43,8 @@ ANNLAYER() ANNLAYER(_create)(float * _w,
                              float * _y,
                              unsigned int _num_inputs,
                              unsigned int _num_outputs,
+                             int _is_input_layer,
+                             int _is_output_layer,
                              int _activation_func,
                              float _mu)
 {
@@ -51,10 +53,22 @@ ANNLAYER() ANNLAYER(_create)(float * _w,
     q->num_inputs = _num_inputs;
     q->num_nodes  = _num_outputs;
 
+    q->is_input_layer = _is_input_layer;
+    q->is_output_layer = _is_output_layer;
+
     q->nodes = (NODE()*) malloc( q->num_nodes * sizeof(NODE()) );
     unsigned int i, nw=0, ny=0;
+    float * node_input;
     for (i=0; i<q->num_nodes; i++) {
-        q->nodes[i] = NODE(_create)(&_w[nw], _x, &_y[ny], q->num_inputs, 0, 1.0f);
+        // only one input per node for the input layer
+        node_input = (q->is_input_layer) ? &_x[i] : _x;
+
+        q->nodes[i] = NODE(_create)(&_w[nw],        // weights pointer
+                                    node_input,     // input pointer
+                                    &_y[ny],        // output pointer
+                                    q->num_inputs,  // number of inputs
+                                    0,              // activation function
+                                    1.0f);          // mu
         nw += q->num_inputs+1;
         ny++;
     }
@@ -77,6 +91,10 @@ void ANNLAYER(_destroy)(ANNLAYER() _q)
 void ANNLAYER(_print)(ANNLAYER() _q)
 {
     printf("neuron layer:\n");
+    if (_q->is_input_layer)
+        printf("    [INPUT LAYER]\n");
+    if (_q->is_output_layer)
+        printf("    [OUTPUT LAYER]\n");
     printf("    num inputs  : %u\n", _q->num_inputs);
     printf("    num outputs : %u\n", _q->num_nodes);
     unsigned int i;

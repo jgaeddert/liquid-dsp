@@ -38,7 +38,7 @@
 
 #define LIQUID_ANN_MAX_NETWORK_SIZE 1024
 
-#define DEBUG_ANN 1
+#define DEBUG_ANN 0
 
 struct ANN(_s) {
     // weights
@@ -125,6 +125,8 @@ ANN() ANN(_create)(unsigned int * _structure,
     unsigned int ny = q->num_inputs;
     unsigned int num_inputs, num_outputs;
     unsigned int num_weights;
+    int is_input_layer;
+    int is_output_layer;
     for (i=0; i<q->num_layers; i++) {
         num_inputs = (i==0) ? 1 : q->structure[i-1];
         num_outputs = q->structure[i];
@@ -132,11 +134,17 @@ ANN() ANN(_create)(unsigned int * _structure,
 
         num_weights = (num_inputs+1)*num_outputs;
 
+        is_input_layer = (i==0);
+        is_output_layer = (i==q->num_layers-1);
+
+        // create the node layer
         q->layers[i] = ANNLAYER(_create)(q->w + nw,
                                          q->y_hat + nx,
                                          q->y_hat + ny,
                                          num_inputs,
                                          num_outputs,
+                                         is_input_layer,
+                                         is_output_layer,
                                          0,
                                          1.0f);
         nw += num_weights;
@@ -213,8 +221,7 @@ void ANN(_train)(ANN() _q,
                  T _emax,
                  unsigned int _nmax)
 {
-    // TODO: implement ANN(_train) method
-
+#if 0
     // for now, just compute error
     T y_hat[_q->num_outputs];
     float d, e;
@@ -238,6 +245,19 @@ void ANN(_train)(ANN() _q,
     rmse = sqrtf(rmse / _n);
 
     printf("rmse : %12.8f\n", rmse);
+#else
+    unsigned int i, j;
+    float * x;
+    float * y;
+    for (i=0; i<_nmax; i++) {
+        for (j=0; j<_n; j++) {
+            x = &_x[j * _q->num_inputs];
+            y = &_y[j * _q->num_outputs];
+
+            ANN(_train_bp)(_q,x,y);
+        }
+    }
+#endif
 }
 
 // Train using backpropagation

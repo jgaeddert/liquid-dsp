@@ -22,7 +22,7 @@ int main() {
     };
 
     // binary output sequence
-    float y[4] = {  -1, 1, 1, -1 };
+    float y[4] = {  -0.5, 0.5, 0.5, -0.5 };
     float y_hat;
 
     // create network
@@ -41,12 +41,24 @@ int main() {
 
     unsigned int num_training_patterns = 4;
     float error_tolerance = 0.0f;
-    unsigned int max_trials = 10;
-    //ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
+    unsigned int max_trials = 8000;
+
+    printf("training...\n");
+    ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
+    printf("done.\n");
+
+    for (i=0; i<4; i++) {
+        ann_evaluate(q,&x[2*i],&y_hat);
+        //ann_print(q);
+        printf("%6.3f %6.3f > %6.3f (%12.8f)\n",
+                x[2*i+0], x[2*i+1], y[i], y_hat);
+    }
+#if 0
     float x0[2] = {-1, 1};
     float y0[1] = {0.5};
     for (i=0; i<100; i++)
     ann_train_bp(q,x0,y0);
+#endif
 
 #if 0
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
