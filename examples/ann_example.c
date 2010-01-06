@@ -30,7 +30,6 @@ int main() {
 
     ann_evaluate(q,x,&y_hat);
     ann_print(q);
-    printf("y = %12.8f : %12.8f\n", y[0]);
 
     unsigned int i;
     // evaluate network

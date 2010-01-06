@@ -113,6 +113,20 @@ void   NODE(_train)(NODE() _n, T _d, float _eta);
 // Define ann APIs
 LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
 
+typedef struct annlayer_s * annlayer;
+annlayer annlayer_create(float * _w,
+                         float * _x,
+                         float * _y,
+                         unsigned int _num_inputs,
+                         unsigned int _num_outputs,
+                         int _activation_func,
+                         float _mu);
+void annlayer_destroy(annlayer _q);
+void annlayer_print(annlayer _q);
+void annlayer_evaluate(annlayer _q);
+void annlayer_train(annlayer _q,
+                    float * _d,
+                    float _eta);
 
 //
 // MODULE : audio
@@ -998,13 +1012,14 @@ struct gradient_search_s {
     unsigned int num_parameters;
 
     float gamma;        // nominal stepsize
-    float alpha;        // momentum parameter
     float delta;        // differential used to compute (estimate) derivative
     float dgamma;       // decremental gamma parameter
     float gamma_hat;    // step size (decreases each epoch)
     float* v_prime;     // temporary vector array
     float* dv;          // vector step
     float* dv_hat;      // vector step (previous iteration)
+    float alpha;        // filter (feed-forward parameter)
+    float beta;         // filter (feed-back parameter)
 
     float* gradient;    // gradient approximation
     float utility;      // current utility

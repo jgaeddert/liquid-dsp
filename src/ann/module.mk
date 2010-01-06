@@ -30,6 +30,7 @@ local_s_files	:= 			\
 	ann.nodes.c			\
 	activation_functions.c		\
 	kmeans.c			\
+	layer.c				\
 	node.c
 
 # local_t_files
