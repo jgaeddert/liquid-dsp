@@ -31,6 +31,7 @@
 #include "liquid.internal.h"
 
 #define ANN(name)       LIQUID_CONCAT(ann,name)
+#define ANNLAYER(name)  LIQUID_CONCAT(annlayer,name)
 #define NODE(name)      LIQUID_CONCAT(node,name)
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
 #define T               float
@@ -51,7 +52,7 @@ struct ANN(_s) {
     unsigned int num_layers;
     unsigned int num_nodes;
 
-    NODE() * nodes;
+    ANNLAYER() * layers;
     T * y_hat;  // 
 
     // activation function (derivative) pointer
@@ -65,9 +66,8 @@ struct ANN(_s) {
 };
 
 // Creates a network
-ANN() ANN(_create)(
-        unsigned int * _structure,
-        unsigned int _num_layers)
+ANN() ANN(_create)(unsigned int * _structure,
+                   unsigned int _num_layers)
 {
     unsigned int i;
     if (_num_layers < 2) {
@@ -118,29 +118,30 @@ ANN() ANN(_create)(
         q->dw[i] = 0.0f;
     }
 
-    // create nodes
-    q->nodes = (NODE()*) malloc((q->num_nodes)*sizeof(NODE()));
+    // create layers
+    q->layers = (ANNLAYER()*) malloc((q->num_layers)*sizeof(ANNLAYER()));
     unsigned int nw = 0;
     unsigned int nx = 0;
     unsigned int ny = q->num_inputs;
-    unsigned int j, n=0;
+    unsigned int num_inputs, num_outputs;
+    unsigned int num_weights;
     for (i=0; i<q->num_layers; i++) {
-        printf("layer %3u\n", i);
-        for (j=0; j<q->structure[i]; j++) {
-            printf("  [%3u] nw : %3u, nx : %3u, inputs : %3u, ny : %3u\n",
-                    n, nw, nx, (i==0) ? 1 : q->structure[i-1], ny);
-            q->nodes[n] = NODE(_create)(q->w + nw,
-                                        q->y_hat + nx,
-                                        q->y_hat + ny,
-                                        (i==0) ? 1 : q->structure[i-1],
-                                        0,
-                                        1.0f);
-            nw += (i==0) ? 2 : q->structure[i-1]+1;
-            nx += (i==0) ? 1 : 0;
-            ny++;
-            n++;
-        }
-        nx += (i==0) ? 0 : q->structure[i-1];
+        num_inputs = (i==0) ? 1 : q->structure[i-1];
+        num_outputs = q->structure[i];
+        printf("layer %3u (%3u inputs, %3u outputs)\n", i, num_inputs, num_outputs);
+
+        num_weights = (num_inputs+1)*num_outputs;
+
+        q->layers[i] = ANNLAYER(_create)(q->w + nw,
+                                         q->y_hat + nx,
+                                         q->y_hat + ny,
+                                         num_inputs,
+                                         num_outputs,
+                                         0,
+                                         1.0f);
+        nw += num_weights;
+        nx += (i==0) ? q->structure[0] : q->structure[i-1];
+        ny += num_outputs;
     }
 
     return q;
@@ -153,11 +154,11 @@ void ANN(_destroy)(ANN() _q)
     free(_q->dw);
     free(_q->y_hat);
 
-    // destroy node objects
+    // destroy layer objects
     unsigned int i;
-    for (i=0; i<_q->num_nodes; i++)
-        NODE(_destroy)(_q->nodes[i]);
-    free(_q->nodes);
+    for (i=0; i<_q->num_layers; i++)
+        ANNLAYER(_destroy)(_q->layers[i]);
+    free(_q->layers);
 
     free(_q);
 }
@@ -179,8 +180,8 @@ void ANN(_print)(ANN() _q)
     for (i=0; i<_q->num_weights; i++)
         printf("  w[%4u] = %12.8f\n", i, _q->w[i]);
 
-    for (i=0; i<_q->num_nodes; i++)
-        node_print(_q->nodes[i]);
+    for (i=0; i<_q->num_layers; i++)
+        ANNLAYER(_print)(_q->layers[i]);
 }
 
 // Evaluates the network _q at _input and stores the result in _output
@@ -189,24 +190,9 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
     // copy input elements to head of buffer
     memmove(_q->y_hat, _x, (_q->num_inputs)*sizeof(T));
 
-#if 0
-    unsigned int i,j,t,n=0;
-    printf("\n\n\n");
-    for (i=0; i<_q->num_layers; i++) {
-        printf("------------------\n");
-        printf("evaluating layer %3u\n", i);
-        for (j=0; j<_q->structure[i]; j++) {
-            NODE(_evaluate)(_q->nodes[n]);
-            NODE(_print)(_q->nodes[n]);
-            n++;
-        }
-    }
-#else
     unsigned int i;
-    for (i=0; i<_q->num_nodes; i++) {
-        NODE(_evaluate)(_q->nodes[i]);
-    }
-#endif
+    for (i=0; i<_q->num_layers; i++)
+        ANNLAYER(_evaluate)(_q->layers[i]);
 
     // copy output
     memmove(_y, &_q->y_hat[_q->num_nodes + _q->num_inputs - _q->num_outputs], (_q->num_outputs)*sizeof(float));
@@ -237,21 +223,6 @@ void ANN(_train)(ANN() _q,
     for (i=0; i<_n; i++) {
         // evaluate network
         ANN(_evaluate)(_q, &_x[i*(_q->num_inputs)], y_hat);
-
-        // train (output layer only)
-        unsigned int k, n=0;
-        for (j=0; j<_q->num_layers; j++) {
-            for (k=0; k<_q->structure[j]; k++) {
-                if (j == _q->num_layers-1) {
-                    printf("  training node %3u in layer %3u\n", n, j);
-                    //NODE(_train)(_q->nodes[n],1.0f,0.1f);
-                    NODE(_print)(_q->nodes[n]);
-                } else {
-                    printf("  skipping node %3u in layer %3u\n", n, j);
-                }
-                n++;
-            }
-        }
 
         // compute error
         e = 0.0f;
