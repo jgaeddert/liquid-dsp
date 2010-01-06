@@ -85,3 +85,16 @@ float ann_df_mulaw(float _mu, float _x)
     return _mu/( logf(1+_mu)*(1+_mu*_x) );
 }
 
+// 
+// erf (error function) activation function
+//
+float ann_af_erf(float _mu, float _x)
+{
+    return erf(_mu*_x);
+}
+
+float ann_df_erf(float _mu, float _x)
+{
+    return 2*_mu / sqrtf(M_PI) * expf(-(_mu*_x)*(_mu*_x));
+}
+

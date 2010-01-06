@@ -128,7 +128,8 @@ typedef enum {
     LIQUID_ANN_AF_LINEAR=0,
     LIQUID_ANN_AF_LOGISTIC,
     LIQUID_ANN_AF_TANH,
-    LIQUID_ANN_AF_MULAW
+    LIQUID_ANN_AF_MULAW,
+    LIQUID_ANN_AF_ERF
 } ann_activation_function;
 
 #define ANN_MANGLE_FLOAT(name)  LIQUID_CONCAT(ann, name)

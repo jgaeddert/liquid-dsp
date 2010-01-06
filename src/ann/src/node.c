@@ -65,6 +65,10 @@ NODE() NODE(_create)(float * _w,
         n->activation_func = ann_af_mulaw;
         n->d_activation_func = ann_df_mulaw;
         break;
+    case LIQUID_ANN_AF_ERF:
+        n->activation_func = ann_af_erf;
+        n->d_activation_func = ann_df_erf;
+        break;
     default:
         printf("error: node_create(), invalid activation function %d\n", _activation_func);
         exit(1);

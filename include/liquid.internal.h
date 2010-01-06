@@ -72,6 +72,10 @@ float ann_df_tanh(float _mu, float _x);
 float ann_af_mulaw(float _mu, float _x);
 float ann_df_mulaw(float _mu, float _x);
 
+// erf (error function) activation function
+float ann_af_erf(float _mu, float _x);
+float ann_df_erf(float _mu, float _x);
+
 // large macro (internal)
 //   ANN    : name-mangling macro
 //   T      : primitive data type
