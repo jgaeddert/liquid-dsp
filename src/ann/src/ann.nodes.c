@@ -38,7 +38,7 @@
 
 #define LIQUID_ANN_MAX_NETWORK_SIZE 1024
 
-#define DEBUG_ANN 0
+#define DEBUG_ANN 1
 
 struct ANN(_s) {
     // weights
@@ -113,8 +113,8 @@ ANN() ANN(_create)(unsigned int * _structure,
 
     for (i=0; i<q->num_weights; i++) {
         q->w[i] = ((i%2)==0) ? 1.0 : -1.0;
-        //q->w[i] = i;
-        q->w[i] = (i%2 ? 0.1f : -0.1f);
+        q->w[i] = (i%2 ? 1.0f : -1.0f)*0.1f*(float)i;
+        //q->w[i] = (i%2 ? 0.1f : -0.1f);
         q->dw[i] = 0.0f;
     }
 
@@ -242,21 +242,55 @@ void ANN(_train)(ANN() _q,
 
 // Train using backpropagation
 // _q       :   network object
-// _x       :   input training pattern array [_n x nx]
-// _y       :   output training pattern array [_n x ny]
+// _x       :   input training pattern array [num_inputs x 1]
+// _y       :   output training pattern array [num_outputs x 1]
 void ANN(_train_bp)(ANN() _q,
                     T * _x,
                     T * _y)
 {
-    //unsigned int i;
+    unsigned int i;
 
     // evaluate network
     T y_hat[_q->num_outputs];
     ANN(_evaluate)(_q, _x, y_hat);
+#if DEBUG_ANN
+    ANN(_print)(_q);
+#endif
 
-    // compute node error
-    // starting at output layer and working backwards
-    //for (i=_q->
+    // compute error
+    T error[_q->num_outputs];
+    for (i=0; i<_q->num_outputs; i++)
+        error[i] = _y[i] - y_hat[i];
+
+#if DEBUG_ANN
+    // print input, output
+    printf("[");
+    for (i=0; i<_q->num_inputs; i++)
+        printf("%12.8f", _x[i]);
+    printf("] > [");
+    for (i=0; i<_q->num_outputs; i++)
+        printf("%12.8f (%12.8f)",_y[i], y_hat[i]);
+    printf("]\n");
+#endif
+
+    // compute back-propagation error starting with last layer and
+    // working backwards
+    float * e;
+    unsigned int n;
+    for (i=0; i<_q->num_layers; i++) {
+        n = _q->num_layers - i - 1;
+        e = (i==0) ? error : _q->layers[n+1]->error;
+
+#if DEBUG_ANN
+        printf(">>>>> computing bp error on layer %3u\n", n);
+#endif
+        ANNLAYER(_compute_bp_error)(_q->layers[n], e);
+    }
+
+    // update weights
+    for (i=0; i<_q->num_layers; i++) {
+        ANNLAYER(_train)(_q->layers[i], 0.01f);
+    }
 }
 
 

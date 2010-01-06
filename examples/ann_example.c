@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define OUTPUT_FILENAME "ann_example.m"
 
@@ -28,8 +28,8 @@ int main() {
     // create network
     ann q = ann_create(structure, 3);
 
-    ann_evaluate(q,x,&y_hat);
-    ann_print(q);
+    //ann_evaluate(q,x,&y_hat);
+    //ann_print(q);
 
     unsigned int i;
     // evaluate network
@@ -42,7 +42,11 @@ int main() {
     unsigned int num_training_patterns = 4;
     float error_tolerance = 0.0f;
     unsigned int max_trials = 10;
-    ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
+    //ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
+    float x0[2] = {-1, 1};
+    float y0[1] = {0.5};
+    for (i=0; i<100; i++)
+    ann_train_bp(q,x0,y0);
 
 #if 0
     FILE* fid = fopen(OUTPUT_FILENAME,"w");

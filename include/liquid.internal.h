@@ -121,6 +121,20 @@ void   NODE(_train)(NODE() _n, float _eta);
 LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
 
 typedef struct annlayer_s * annlayer;
+
+struct annlayer_s {
+    unsigned int num_inputs;    // number of inputs into this layer
+    unsigned int num_nodes;     // number of nodes in this layer
+    node * nodes;               // nodes in this layer
+    int is_output_layer;        // output layer flag
+    int is_input_layer;         // input layer flag
+
+    float * error;              // back-propagation input error [num_inputs x 1]
+
+    //ANNLAYER() * prev_layer;    // pointer to previous layer in network
+    //ANNLAYER() * next_layer;    // pointer to next layer in network
+};
+
 annlayer annlayer_create(float * _w,
                          float * _x,
                          float * _y,

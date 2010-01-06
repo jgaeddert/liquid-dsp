@@ -38,19 +38,6 @@
 
 #define DEBUG_ANNLAYER  0
 
-struct ANNLAYER(_s) {
-    unsigned int num_inputs;    // number of inputs into this layer
-    unsigned int num_nodes;     // number of nodes in this layer
-    NODE() * nodes;             // nodes in this layer
-    int is_output_layer;        // output layer flag
-    int is_input_layer;         // input layer flag
-
-    float * error;              // back-propagation input error [num_inputs x 1]
-
-    //ANNLAYER() * prev_layer;    // pointer to previous layer in network
-    //ANNLAYER() * next_layer;    // pointer to next layer in network
-};
-
 ANNLAYER() ANNLAYER(_create)(float * _w,
                              float * _x,
                              float * _y,
@@ -118,7 +105,7 @@ void ANNLAYER(_compute_bp_error)(ANNLAYER() _q, T * _error)
     // update back-propagation delta value
     // TODO : check to see if this changes for output/input layers
     unsigned int j;
-#if 1
+#if DEBUG_ANNLAYER
     for (i=0; i<_q->num_nodes; i++)
         printf("  node %3u : delta = %12.8f\n", i, _q->nodes[i]->delta);
 #endif
@@ -133,8 +120,10 @@ void ANNLAYER(_compute_bp_error)(ANNLAYER() _q, T * _error)
         }
     }
 
+#if DEBUG_ANNLAYER
     for (i=0; i<_q->num_inputs; i++)
         printf("    error[%3u] = %12.8f\n", i, _q->error[i]);
+#endif
 
 }
 

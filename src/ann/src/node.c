@@ -34,7 +34,7 @@
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
 #define T               float
 
-#define DEBUG_NODE  1
+#define DEBUG_NODE  0
 
 NODE() NODE(_create)(float * _w,
                      float * _x,
@@ -61,13 +61,13 @@ void NODE(_destroy)(NODE() _n)
 
 void NODE(_print)(NODE() _n)
 {
-    printf("node [%u inputs]:\n", _n->num_inputs);
+    printf("  node [%u inputs]:\n", _n->num_inputs);
     unsigned int i;
     for (i=0; i<_n->num_inputs; i++)
-        printf("  w[%3u] = %12.8f : x[%3u] = %12.8f\n", i, _n->w[i], i, _n->x[i]);
-    printf("  w[%3u] = %12.8f (bias)\n", i, _n->w[i]);
-    printf("  v = %12.8f\n", _n->v);
-    printf("  y = %12.8f\n", _n->y[0]);
+        printf("    w[%3u] = %12.8f : x[%3u] = %12.8f\n", i, _n->w[i], i, _n->x[i]);
+    printf("    w[%3u] = %12.8f (bias)\n", i, _n->w[i]);
+    printf("    v = %12.8f\n", _n->v);
+    printf("    y = %12.8f\n", _n->y[0]);
 }
 
 void NODE(_evaluate)(NODE() _n)
