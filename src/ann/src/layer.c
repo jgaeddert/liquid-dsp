@@ -45,14 +45,10 @@ struct ANNLAYER(_s) {
     int is_output_layer;        // output layer flag
     int is_input_layer;         // input layer flag
 
-    float * w;                  // weights pointer (not allocated)
+    float * error;              // back-propagation input error [num_inputs x 1]
 
-    float * x;                  // input array
-    float * v;                  // intermediate output array
-    float * y;                  // output array
-
-    ANNLAYER() * prev_layer;    // pointer to previous layer in network
-    ANNLAYER() * next_layer;    // pointer to next layer in network
+    //ANNLAYER() * prev_layer;    // pointer to previous layer in network
+    //ANNLAYER() * next_layer;    // pointer to next layer in network
 };
 
 ANNLAYER() ANNLAYER(_create)(float * _w,
@@ -76,6 +72,8 @@ ANNLAYER() ANNLAYER(_create)(float * _w,
         ny++;
     }
 
+    q->error = (float*) malloc(q->num_inputs*sizeof(float));
+
     return q;
 }
 
@@ -85,6 +83,7 @@ void ANNLAYER(_destroy)(ANNLAYER() _q)
     for (i=0; i<_q->num_nodes; i++)
         NODE(_destroy)(_q->nodes[i]);
     free(_q->nodes);
+    free(_q->error);
     free(_q);
 }
 
@@ -106,9 +105,43 @@ void ANNLAYER(_evaluate)(ANNLAYER() _q)
 }
 
 // TODO: update ANNLAYER(_train) to work for both input and output layers
-void ANNLAYER(_train)(ANNLAYER() _q,
-                      T * _d,
-                      float _eta)
+//  _q      :   ann layer
+//  _error  :   output error [num_outputs x 1]
+void ANNLAYER(_compute_bp_error)(ANNLAYER() _q, T * _error)
 {
+    unsigned int i;
+
+    // compute back-propagation error for each node
+    for (i=0; i<_q->num_nodes; i++)
+        NODE(_compute_bp_error)(_q->nodes[i], _error[i]);
+
+    // update back-propagation delta value
+    // TODO : check to see if this changes for output/input layers
+    unsigned int j;
+#if 1
+    for (i=0; i<_q->num_nodes; i++)
+        printf("  node %3u : delta = %12.8f\n", i, _q->nodes[i]->delta);
+#endif
+    // reset delta
+    for (i=0; i<_q->num_inputs; i++)
+        _q->error[i] = 0.0f;
+
+    for (i=0; i<_q->num_inputs; i++) {
+        // parse nodes in layer
+        for (j=0; j<_q->num_nodes; j++) {
+            _q->error[i] += _q->nodes[j]->delta * _q->nodes[j]->w[i];
+        }
+    }
+
+    for (i=0; i<_q->num_inputs; i++)
+        printf("    error[%3u] = %12.8f\n", i, _q->error[i]);
+
 }
 
+void ANNLAYER(_train)(ANNLAYER() _q, T _eta)
+{
+    // update node weights
+    unsigned int i;
+    for (i=0; i<_q->num_nodes; i++)
+        NODE(_train)(_q->nodes[i], _eta);
+}

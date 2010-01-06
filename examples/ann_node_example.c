@@ -51,7 +51,9 @@ int main() {
         e = y_hat - y[0];
         fprintf(fid,"y(%3u) = %12.4e;\n", i+1, y[0]);
         fprintf(fid,"e(%3u) = %12.4e;\n", i+1, e*e);
-        node_train(q,e,eta);
+
+        node_compute_bp_error(q,e);
+        node_train(q,eta);
         //node_print(q);
     }
     node_print(q);

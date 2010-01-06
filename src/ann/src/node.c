@@ -34,7 +34,7 @@
 #define DOTPROD(name)   LIQUID_CONCAT(dotprod_rrrf,name)
 #define T               float
 
-#define DEBUG_NODE  0
+#define DEBUG_NODE  1
 
 NODE() NODE(_create)(float * _w,
                      float * _x,
@@ -82,17 +82,27 @@ void NODE(_evaluate)(NODE() _n)
     _n->y[0] = _n->activation_func(_n->mu, _n->v);
 }
 
-// TODO: update NODE(_train) to work for both input and output layers
-void NODE(_train)(NODE() _n, T _error, float _eta)
+// compute back-propagation error
+void NODE(_compute_bp_error)(NODE() _n, T _error)
 {
-    //NODE(_evaluate)(_n);    // evaluate the node
-    //
+    // store error value
+    _n->e = _error;
+
     // compute gradient of activation function
-    T g = _n->d_activation_func(_n->mu, _n->v);
+    _n->g = _n->d_activation_func(_n->mu, _n->v);
 
     // delta: output error scaled by gradient of activation function
-    _n->delta = _error*g;
+    _n->delta = _n->e * _n->g;
 
+#if DEBUG_NODE
+    printf("  node: e : %12.8f, g : %12.8f, delta=e*g : %12.8f\n",
+            _n->e, _n->g, _n->delta);
+#endif
+}
+
+// TODO: update NODE(_train) to work for both input and output layers
+void NODE(_train)(NODE() _n, float _eta)
+{
     // update internal weights
     T dw;   // weight correction
     unsigned int i;

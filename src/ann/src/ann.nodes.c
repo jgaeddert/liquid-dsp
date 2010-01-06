@@ -244,7 +244,7 @@ void ANN(_train)(ANN() _q,
             for (k=0; k<_q->structure[j]; k++) {
                 if (j == _q->num_layers-1) {
                     printf("  training node %3u in layer %3u\n", n, j);
-                    NODE(_train)(_q->nodes[n],1.0f,0.1f);
+                    //NODE(_train)(_q->nodes[n],1.0f,0.1f);
                     NODE(_print)(_q->nodes[n]);
                 } else {
                     printf("  skipping node %3u in layer %3u\n", n, j);

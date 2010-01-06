@@ -96,6 +96,8 @@ struct NODE(_s) {                                               \
     T * x;      /* input array */                               \
     T * y;      /* output array */                              \
     T v;        /* intermediate output */                       \
+    T e;        /* output error */                              \
+    T g;        /* activation function gradient */              \
     T delta;    /* local gradient */                            \
     T * dw;     /* weight correction */                         \
     unsigned int num_inputs;                                    \
@@ -112,7 +114,8 @@ NODE() NODE(_create)(float * _w,                                \
 void   NODE(_destroy)(NODE() _n);                               \
 void   NODE(_print)(NODE() _n);                                 \
 void   NODE(_evaluate)(NODE() _n);                              \
-void   NODE(_train)(NODE() _n, T _error, float _eta);
+void   NODE(_compute_bp_error)(NODE() _n, T _error);            \
+void   NODE(_train)(NODE() _n, float _eta);
 
 // Define ann APIs
 LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
@@ -128,9 +131,8 @@ annlayer annlayer_create(float * _w,
 void annlayer_destroy(annlayer _q);
 void annlayer_print(annlayer _q);
 void annlayer_evaluate(annlayer _q);
-void annlayer_train(annlayer _q,
-                    float * _d,
-                    float _eta);
+void annlayer_compute_bp_error(annlayer _q, float * _error);
+void annlayer_train(annlayer _q, float _eta);
 
 //
 // MODULE : audio
