@@ -30,6 +30,7 @@ local_src	:=			\
 	agc_qpsk_example.c		\
 	ann_example.c			\
 	ann_layer_example.c		\
+	ann_maxnet_example.c		\
 	ann_node_example.c		\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\

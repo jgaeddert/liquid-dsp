@@ -45,18 +45,49 @@ MAXNET() MAXNET(_create)(unsigned int _num_classes,
                          unsigned int _num_layers)
 {
     MAXNET() q = (MAXNET()) malloc(sizeof(struct MAXNET(_s)));
+
+    // validate inputs
+    if (_num_classes == 0) {
+        fprintf(stderr,"error: maxnet_create(), must have more than one class\n");
+        exit(1);
+    } else if (_num_layers < 2) {
+        fprintf(stderr,"error: maxnet_create(), networks must have at least 2 layers\n");
+        exit(1);
+    } else if (_structure[_num_layers-1] != 1) {
+        fprintf(stderr,"error: maxnet_create(), network structure must have only one output\n");
+        exit(1);
+    }
     
+    //q->num_inputs  = _num_inputs;
+    q->num_classes = _num_classes;
+
+    // initialize networks
+    q->networks = (ANN()*) malloc( q->num_classes * sizeof(ANN()) );
+    unsigned int i;
+    for (i=0; i<q->num_classes; i++) {
+        q->networks[i] = ANN(_create)(_structure, _num_layers);
+        ANN(_init_random_weights)(q->networks[i]);
+    }
+
     return q;
 }
 
 void MAXNET(_destroy)(MAXNET() _q)
 {
+    // destroy networks
+    unsigned int i;
+    for (i=0; i<_q->num_classes; i++)
+        ANN(_destroy)(_q->networks[i]);
+    free(_q->networks);
+
+    // free main object
     free(_q);
 }
 
 void MAXNET(_print)(MAXNET() _q)
 {
     printf("maxnet:\n");
+    printf("  num classes   :   %u\n", _q->num_classes);
 }
 
 void MAXNET(_evaluate)(MAXNET() _q,
@@ -64,13 +95,46 @@ void MAXNET(_evaluate)(MAXNET() _q,
                        T * _y,
                        unsigned int * _class)
 {
+    // evaluate each network
+    unsigned int i;
+    float y_max = 0.0f;
+    for (i=0; i<_q->num_classes; i++) {
+        ANN(_evaluate)(_q->networks[i], _x, &_y[i]);
+
+        if (_y[i] > y_max || i==0) {
+            *_class = i;
+        }
+    }
 }
 
 void MAXNET(_train)(MAXNET() _q,
                     float * _x,
-                    unsigned int * _class,
-                    unsigned int _num_patterns,
-                    unsigned int _max_num_trials)
+                    unsigned int _class)
 {
+    float y;
+    unsigned int i;
+    // train each network
+    for (i=0; i<_q->num_classes; i++) {
+        y = (i == _class) ? 1.0f : -1.0f;
+        ANN(_train_bp)(_q->networks[i], _x, &y);
+    }
+}
+
+void MAXNET(_train_group)(MAXNET() _q,
+                          float * _x,
+                          unsigned int * _class,
+                          unsigned int _num_patterns,
+                          unsigned int _max_num_trials)
+{
+    float y;
+    unsigned int i;
+    for (i=0; i<_num_patterns; i++) {
+        // train each network
+        unsigned int j;
+        for (j=0; j<_q->num_classes; j++) {
+            y = (j == _class[i]) ? 1.0f : -1.0f;
+            //ANN(_train_bp)(_q->networks[j], x,
+        }
+    }
 }
 
