@@ -124,6 +124,13 @@ LIQUID_AGC_DEFINE_API(AGC_MANGLE_FLOAT, float, liquid_float_complex)
 // MODULE : ann (artificial neural network)
 //
 
+typedef enum {
+    LIQUID_ANN_AF_LINEAR=0,
+    LIQUID_ANN_AF_LOGISTIC,
+    LIQUID_ANN_AF_TANH,
+    LIQUID_ANN_AF_MULAW
+} ann_activation_function;
+
 #define ANN_MANGLE_FLOAT(name)  LIQUID_CONCAT(ann, name)
 
 // large macro

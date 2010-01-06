@@ -145,7 +145,7 @@ ANN() ANN(_create)(unsigned int * _structure,
                                          num_outputs,
                                          is_input_layer,
                                          is_output_layer,
-                                         0,
+                                         LIQUID_ANN_AF_TANH,
                                          1.0f);
         nw += num_weights;
         nx += (i==0) ? q->structure[0] : q->structure[i-1];

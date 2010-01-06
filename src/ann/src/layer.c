@@ -59,15 +59,22 @@ ANNLAYER() ANNLAYER(_create)(float * _w,
     q->nodes = (NODE()*) malloc( q->num_nodes * sizeof(NODE()) );
     unsigned int i, nw=0, ny=0;
     float * node_input;
+    int activation_function;
     for (i=0; i<q->num_nodes; i++) {
         // only one input per node for the input layer
         node_input = (q->is_input_layer) ? &_x[i] : _x;
+
+        // set appropriate activation function
+        if (q->is_output_layer)
+            activation_function = LIQUID_ANN_AF_LINEAR;
+        else
+            activation_function = _activation_func;
 
         q->nodes[i] = NODE(_create)(&_w[nw],        // weights pointer
                                     node_input,     // input pointer
                                     &_y[ny],        // output pointer
                                     q->num_inputs,  // number of inputs
-                                    0,              // activation function
+                                    activation_function,  // activation function
                                     1.0f);          // mu
         nw += q->num_inputs+1;
         ny++;

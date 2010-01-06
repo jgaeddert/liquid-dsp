@@ -48,8 +48,27 @@ NODE() NODE(_create)(float * _w,
     n->x = _x;
     n->y = _y;
     n->num_inputs = _num_inputs;
-    n->activation_func = ann_af_tanh;
-    n->d_activation_func = ann_df_tanh;
+    switch (_activation_func) {
+    case LIQUID_ANN_AF_LINEAR:
+        n->activation_func = ann_af_linear;
+        n->d_activation_func = ann_df_linear;
+        break;
+    case LIQUID_ANN_AF_LOGISTIC:
+        n->activation_func = ann_af_logistic;
+        n->d_activation_func = ann_df_logistic;
+        break;
+    case LIQUID_ANN_AF_TANH:
+        n->activation_func = ann_af_tanh;
+        n->d_activation_func = ann_df_tanh;
+        break;
+    case LIQUID_ANN_AF_MULAW:
+        n->activation_func = ann_af_mulaw;
+        n->d_activation_func = ann_df_mulaw;
+        break;
+    default:
+        printf("error: node_create(), invalid activation function %d\n", _activation_func);
+        exit(1);
+    }
     n->mu = _mu;
     return n;
 }
