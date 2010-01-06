@@ -78,7 +78,11 @@ float ann_df_mulaw(float _mu, float _x);
 #define LIQUID_ANN_DEFINE_INTERNAL_API(ANN,T)                   \
 void  ANN(_train_bp)(ANN() _q,                                  \
                   T * _x,                                       \
-                  T * _y);
+                  T * _y);                                      \
+float ANN(_compute_rmse)(ANN() _q,                              \
+                         T * _x,                                \
+                         T * _y,                                \
+                         unsigned int _num_patterns);
 
 // Define ann APIs
 LIQUID_ANN_DEFINE_INTERNAL_API(ANN_MANGLE_FLOAT, float)

@@ -221,34 +221,11 @@ void ANN(_train)(ANN() _q,
                  T _emax,
                  unsigned int _nmax)
 {
-#if 0
-    // for now, just compute error
-    T y_hat[_q->num_outputs];
-    float d, e;
-    float rmse=0.0f;
-    unsigned int i, j;
-    for (i=0; i<_n; i++) {
-        // evaluate network
-        ANN(_evaluate)(_q, &_x[i*(_q->num_inputs)], y_hat);
 
-        // compute error
-        e = 0.0f;
-        for (j=0; j<_q->num_outputs; j++) {
-            printf("y[%3u] = %12.8f (expected %12.8f)\n",
-                    i, y_hat[j],_y[i*(_q->num_outputs)+j]);
-            d = y_hat[j] - _y[i*(_q->num_outputs) + j];
-            e += d*d;
-        }
-        rmse += e / (_q->num_outputs);
-    }
-
-    rmse = sqrtf(rmse / _n);
-
-    printf("rmse : %12.8f\n", rmse);
-#else
     unsigned int i, j;
     float * x;
     float * y;
+    FILE * fid = fopen("ann_debug.m","w");
     for (i=0; i<_nmax; i++) {
         for (j=0; j<_n; j++) {
             x = &_x[j * _q->num_inputs];
@@ -256,8 +233,13 @@ void ANN(_train)(ANN() _q,
 
             ANN(_train_bp)(_q,x,y);
         }
+
+        float rmse = ANN(_compute_rmse)(_q,_x,_y,_n);
+        fprintf(fid,"rmse(%6u) = %16.8e;\n", i+1, rmse);
+        if ((i%100)==0)
+            printf("%6u : %12.4e\n", i, rmse);
     }
-#endif
+    fclose(fid);
 }
 
 // Train using backpropagation
@@ -314,3 +296,34 @@ void ANN(_train_bp)(ANN() _q,
 }
 
 
+float ANN(_compute_rmse)(ANN() _q,
+                         T * _x,
+                         T * _y,
+                         unsigned int _num_patterns)
+{
+    // for now, just compute error
+    T y_hat[_q->num_outputs];
+    float d, e;
+    float rmse=0.0f;
+    unsigned int i, j;
+    for (i=0; i<_num_patterns; i++) {
+        // evaluate network
+        ANN(_evaluate)(_q, &_x[i*(_q->num_inputs)], y_hat);
+
+        // compute error
+        e = 0.0f;
+        for (j=0; j<_q->num_outputs; j++) {
+            /*
+            printf("y[%3u] = %12.8f (expected %12.8f)\n",
+                    i, y_hat[j],_y[i*(_q->num_outputs)+j]);
+            */
+            d = y_hat[j] - _y[i*(_q->num_outputs) + j];
+            e += d*d;
+        }
+        rmse += e / (_q->num_outputs);
+    }
+
+    rmse = sqrtf(rmse / _num_patterns);
+
+    return rmse;
+}
