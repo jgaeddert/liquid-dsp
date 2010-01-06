@@ -92,8 +92,12 @@ LIQUID_ANN_DEFINE_INTERNAL_API(ANN_MANGLE_FLOAT, float)
                                                                 \
 typedef struct NODE(_s) * NODE();                               \
 struct NODE(_s) {                                               \
-    T *w, *x, *y;                                               \
-    T v, *dw, delta;   \
+    T * w;      /* weights */                                   \
+    T * x;      /* input array */                               \
+    T * y;      /* output array */                              \
+    T v;        /* intermediate output */                       \
+    T delta;    /* local gradient */                            \
+    T * dw;     /* weight correction */                         \
     unsigned int num_inputs;                                    \
     T(*activation_func)(float,T);                               \
     T(*d_activation_func)(float,T);                             \
@@ -108,7 +112,7 @@ NODE() NODE(_create)(float * _w,                                \
 void   NODE(_destroy)(NODE() _n);                               \
 void   NODE(_print)(NODE() _n);                                 \
 void   NODE(_evaluate)(NODE() _n);                              \
-void   NODE(_train)(NODE() _n, T _d, float _eta);
+void   NODE(_train)(NODE() _n, T _error, float _eta);
 
 // Define ann APIs
 LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)

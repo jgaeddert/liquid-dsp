@@ -47,10 +47,11 @@ int main() {
     float e;
     printf("training...\n");
     for (i=0; i<64; i++) {
+        node_evaluate(q);
         e = y_hat - y[0];
         fprintf(fid,"y(%3u) = %12.4e;\n", i+1, y[0]);
         fprintf(fid,"e(%3u) = %12.4e;\n", i+1, e*e);
-        node_train(q,y_hat,eta);
+        node_train(q,e,eta);
         //node_print(q);
     }
     node_print(q);
