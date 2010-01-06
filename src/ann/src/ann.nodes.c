@@ -224,7 +224,7 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
 void ANN(_train)(ANN() _q,
                  T * _x,
                  T * _y,
-                 unsigned int _n,
+                 unsigned int _num_patterns,
                  T _emax,
                  unsigned int _nmax)
 {
@@ -232,21 +232,39 @@ void ANN(_train)(ANN() _q,
     unsigned int i, j;
     float * x;
     float * y;
+    float rmse;
     FILE * fid = fopen("ann_debug.m","w");
+    fprintf(fid,"%% %s : auto-generated file\n", "ann_debug.m");
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
     for (i=0; i<_nmax; i++) {
-        for (j=0; j<_n; j++) {
+        for (j=0; j<_num_patterns; j++) {
             x = &_x[j * _q->num_inputs];
             y = &_y[j * _q->num_outputs];
 
             ANN(_train_bp)(_q,x,y);
         }
 
-        float rmse = ANN(_compute_rmse)(_q,_x,_y,_n);
+        // compute error
+        rmse = ANN(_compute_rmse)(_q,_x,_y,_num_patterns);
         fprintf(fid,"rmse(%6u) = %16.8e;\n", i+1, rmse);
+
         if ((i%100)==0)
             printf("%6u : %12.4e\n", i, rmse);
+
+        // break if error is below tolerance
+        if (rmse < _emax)
+            break;
     }
+
+    fprintf(fid,"\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"semilogy(rmse)\n");
+    fprintf(fid,"xlabel('training epoch');\n");
+    fprintf(fid,"ylabel('RMSE');\n");
+    fprintf(fid,"grid on;\n");
     fclose(fid);
+    printf("training results written to %s\n", "ann_debug.m");
 }
 
 // Train using backpropagation

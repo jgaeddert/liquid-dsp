@@ -10,12 +10,12 @@
 #define OUTPUT_FILENAME "ann_example.m"
 
 int main() {
+    // set random seed
     srand(time(NULL));
-    // options
 
     // create network structure:
     //      2 inputs, 4 hidden neurons, 1 output
-    unsigned int structure[3] = {2, 2, 1};
+    unsigned int structure[3] = {2, 4, 1};
 
     // binary input sequence
     float x[8] = {-1,-1,    // 0 0
@@ -24,16 +24,13 @@ int main() {
                    1, 1     // 1 1
     };
 
-    // binary output sequence
-    float y[4] = {  -0.5, 0.5, 0.5, -0.5 };
+    // binary output sequence (exclusive or)
+    float y[4] = {-1, 1, 1, -1};
     float y_hat;
 
-    // create network
+    // create network and initialize weights randomly
     ann q = ann_create(structure, 3);
     ann_init_random_weights(q);
-
-    //ann_evaluate(q,x,&y_hat);
-    //ann_print(q);
 
     unsigned int i;
     // evaluate network
@@ -44,8 +41,8 @@ int main() {
     }
 
     unsigned int num_training_patterns = 4;
-    float error_tolerance = 0.0f;
-    unsigned int max_trials = 8000;
+    float error_tolerance = 1e-3f;
+    unsigned int max_trials = 2000;
 
     printf("training...\n");
     ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
@@ -57,12 +54,6 @@ int main() {
         printf("%6.3f %6.3f > %6.3f (%12.8f)\n",
                 x[2*i+0], x[2*i+1], y[i], y_hat);
     }
-#if 0
-    float x0[2] = {-1, 1};
-    float y0[1] = {0.5};
-    for (i=0; i<100; i++)
-    ann_train_bp(q,x0,y0);
-#endif
 
 #if 0
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
