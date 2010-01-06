@@ -113,7 +113,7 @@ ANN() ANN(_create)(unsigned int * _structure,
 
     for (i=0; i<q->num_weights; i++) {
         q->w[i] = ((i%2)==0) ? 1.0 : -1.0;
-        q->w[i] = (i%2 ? 1.0f : -1.0f)*0.1f*(float)i;
+        q->w[i] = (i%2 ? 1.0f : -1.0f)*0.1f*(float)i / (float)(q->num_weights);
         //q->w[i] = (i%2 ? 0.1f : -0.1f);
         q->dw[i] = 0.0f;
     }
@@ -190,6 +190,13 @@ void ANN(_print)(ANN() _q)
 
     for (i=0; i<_q->num_layers; i++)
         ANNLAYER(_print)(_q->layers[i]);
+}
+
+void ANN(_init_random_weights)(ANN() _q)
+{
+    unsigned int i;
+    for (i=0; i<_q->num_weights; i++)
+        _q->w[i] = randnf();
 }
 
 // Evaluates the network _q at _input and stores the result in _output

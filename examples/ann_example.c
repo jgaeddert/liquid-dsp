@@ -3,11 +3,14 @@
 //
 
 #include <stdio.h>
+#include <time.h>
+
 #include "liquid.internal.h"
 
 #define OUTPUT_FILENAME "ann_example.m"
 
 int main() {
+    srand(time(NULL));
     // options
 
     // create network structure:
@@ -27,6 +30,7 @@ int main() {
 
     // create network
     ann q = ann_create(structure, 3);
+    ann_init_random_weights(q);
 
     //ann_evaluate(q,x,&y_hat);
     //ann_print(q);
