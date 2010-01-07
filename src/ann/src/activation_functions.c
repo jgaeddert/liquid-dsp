@@ -82,7 +82,9 @@ float ann_af_mulaw(float _mu, float _x)
 
 float ann_df_mulaw(float _mu, float _x)
 {
-    return _mu/( logf(1+_mu)*(1+_mu*_x) );
+    // not exact derivative, but doesn't yield 'nan' result
+    return ann_df_erf(_mu,_x);
+    //return _mu/( logf(1+_mu)*(1+_mu*_x) );
 }
 
 // 
