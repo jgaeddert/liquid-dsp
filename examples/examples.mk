@@ -32,6 +32,7 @@ local_src	:=			\
 	ann_layer_example.c		\
 	ann_maxnet_example.c		\
 	ann_node_example.c		\
+	ann_xor_example.c		\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\
 	bsequence_example.c		\
