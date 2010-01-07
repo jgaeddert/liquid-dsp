@@ -1,0 +1,29 @@
+% 
+% MODULE : ann (artificial neural networks)
+%
+
+\section{ann (artificial neural netowrks)}
+multi-layer perceptron networks, maxnets, [radial basis functions], etc.
+
+\subsection{Multi-layer perceptron network}
+
+Notation:
+\begin{itemize}
+    \item[$w$] weight
+    \item[$\Delta w$] weight correction
+    \item[$\phi(\cdot)$] activation function
+    \item[$\phi'(\cdot)$] activation function derivative
+    \item[$x$] neuron input
+    \item[$v$] neuron output (before activation function)
+    \item[$y$] neuron output (after activation function)
+    \item[$\delta$] neuron input(output) error
+\end{itemize}
+Additionally, subscripts $i$ and $j$ represent the weight and node indices,
+respectively, superscript $k$ denotes the layer, and $n$ represents the time.
+For example, $w_{i,j}^{(k)}[n]$ is the $i^{th}$ weight of the $j^{th}$ node in
+layer $k$ at time $n$.
+Each neuron has an input vector $\vec{x}^{(k)}[n]$...
+the output is therefore
+\[
+    y_j^{(k)}[n] = \phi\left( \sum_{i}{y_{i}^{(k-1)}[n] w_{i,j}^{(k)}[n]} + b_{j}^{(k)} \right)
+\]

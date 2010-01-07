@@ -18,6 +18,7 @@ LISTINGS = 					\
 
 SECTIONS :=					\
 	sections/agc.tex			\
+	sections/ann.tex			\
 	sections/audio.tex			\
 	sections/buffer.tex			\
 	sections/filter.tex			\
