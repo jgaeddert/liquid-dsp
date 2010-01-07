@@ -62,6 +62,8 @@ int main() {
 
     float rmse;
     unsigned int j;
+    printf(" epoch :   rms error\n");
+    printf(" ----- :   ---------------\n");
     for (i=0; i<max_trials; i++) {
         // run single training epoch
         for (j=0; j<num_training_patterns; j++)
@@ -78,8 +80,10 @@ int main() {
         fprintf(fid,"rmse(%6u) = %16.8e;\n", i+1, rmse);
 
         // break if error is below tolerance
-        if (rmse < error_tolerance)
+        if (rmse < error_tolerance) {
+            printf("reached error limit\n");
             break;
+        }
     }
     
     fprintf(fid,"\n");

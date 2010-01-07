@@ -53,16 +53,14 @@ struct ANN(_s) {
     unsigned int num_nodes;
 
     ANNLAYER() * layers;
-    T * y_hat;  // 
+    T * y_hat;  // internal memory
 
     // activation function (derivative) pointer
-    T(*activation_func)(T);
-    T(*d_activation_func)(T);
+    //ann_activation_function af_hidden;    // hidden layer(s)
+    //ann_activation_function af_output;    // output layer
 
-    // backpropagation
+    // back-propagation training objects
     T * dw;     // gradient weights vector [num_weights]
-    //T * e;      // output node error vector [num_nodes]
-
 };
 
 // Creates a network
@@ -70,6 +68,8 @@ ANN() ANN(_create)(unsigned int * _structure,
                    unsigned int _num_layers)
 {
     unsigned int i;
+
+    // validate input
     if (_num_layers < 2) {
         printf("error: ann_create(), must have at least 2 layers\n");
         exit(1);
@@ -111,6 +111,7 @@ ANN() ANN(_create)(unsigned int * _structure,
     q->dw = (T*) malloc( (q->num_weights)*sizeof(T) );
     q->y_hat = (T*) malloc( (q->num_nodes+q->num_inputs)*sizeof(T) );
 
+    // initialize weights
     for (i=0; i<q->num_weights; i++) {
         q->w[i] = ((i%2)==0) ? 1.0 : -1.0;
         q->w[i] = (i%2 ? 1.0f : -1.0f)*0.1f*(float)i / (float)(q->num_weights);
@@ -128,12 +129,14 @@ ANN() ANN(_create)(unsigned int * _structure,
     int is_input_layer;
     int is_output_layer;
     for (i=0; i<q->num_layers; i++) {
+        // compute number of inputs, outputs to layer
         num_inputs = (i==0) ? 1 : q->structure[i-1];
         num_outputs = q->structure[i];
-        printf("layer %3u (%3u inputs, %3u outputs)\n", i, num_inputs, num_outputs);
 
+        // compute number of weights in the layer
         num_weights = (num_inputs+1)*num_outputs;
 
+        // set input/output layer flags
         is_input_layer = (i==0);
         is_output_layer = (i==q->num_layers-1);
 
@@ -147,6 +150,7 @@ ANN() ANN(_create)(unsigned int * _structure,
                                          is_output_layer,
                                          LIQUID_ANN_AF_TANH,
                                          1.0f);
+        // increment counters
         nw += num_weights;
         nx += (i==0) ? q->structure[0] : q->structure[i-1];
         ny += num_outputs;
@@ -155,6 +159,7 @@ ANN() ANN(_create)(unsigned int * _structure,
     return q;
 }
 
+// clean up the network object
 void ANN(_destroy)(ANN() _q)
 {
     free(_q->structure);
@@ -192,6 +197,7 @@ void ANN(_print)(ANN() _q)
         ANNLAYER(_print)(_q->layers[i]);
 }
 
+// initialize weights to random (normal distribution)
 void ANN(_init_random_weights)(ANN() _q)
 {
     unsigned int i;
@@ -215,12 +221,12 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
 
 // train network
 //
-// _q       :   network object
-// _x       :   input training pattern array [_n x nx]
-// _y       :   output training pattern array [_n x ny]
-// _n       :   number of training patterns
-// _emax    :   maximum error tolerance
-// _nmax    :   maximum number of iterations
+// _q               :   network object
+// _x               :   input training pattern array [_n x nx]
+// _y               :   output training pattern array [_n x ny]
+// _num_patterns    :   number of training patterns
+// _emax            :   maximum error tolerance
+// _nmax            :   maximum number of iterations
 void ANN(_train)(ANN() _q,
                  T * _x,
                  T * _y,
@@ -320,7 +326,8 @@ void ANN(_train_bp)(ANN() _q,
     }
 }
 
-
+// compute network root mean-square error (rmse) on
+// input patterns
 float ANN(_compute_rmse)(ANN() _q,
                          T * _x,
                          T * _y,
@@ -338,10 +345,6 @@ float ANN(_compute_rmse)(ANN() _q,
         // compute error
         e = 0.0f;
         for (j=0; j<_q->num_outputs; j++) {
-            /*
-            printf("y[%3u] = %12.8f (expected %12.8f)\n",
-                    i, y_hat[j],_y[i*(_q->num_outputs)+j]);
-            */
             d = y_hat[j] - _y[i*(_q->num_outputs) + j];
             e += d*d;
         }
