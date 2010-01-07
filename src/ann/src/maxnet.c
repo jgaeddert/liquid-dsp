@@ -58,7 +58,7 @@ MAXNET() MAXNET(_create)(unsigned int _num_classes,
         exit(1);
     }
     
-    //q->num_inputs  = _num_inputs;
+    q->num_inputs  = _structure[0];
     q->num_classes = _num_classes;
 
     // initialize networks
@@ -98,13 +98,26 @@ void MAXNET(_evaluate)(MAXNET() _q,
     // evaluate each network
     unsigned int i;
     float y_max = 0.0f;
+#if DEBUG_MAXNET
+    printf("[");
+    for (i=0; i<_q->num_classes; i++)
+        printf("%12.8f", _x[i]);
+    printf("] > [");
+#endif
+
     for (i=0; i<_q->num_classes; i++) {
         ANN(_evaluate)(_q->networks[i], _x, &_y[i]);
 
         if (_y[i] > y_max || i==0) {
             *_class = i;
+            y_max = _y[i];
         }
     }
+#if DEBUG_MAXNET
+    for (i=0; i<_q->num_classes; i++)
+        printf("%12.8f", _y[i]);
+    printf("] (%3u)\n", *_class);
+#endif
 }
 
 void MAXNET(_train)(MAXNET() _q,
@@ -136,5 +149,37 @@ void MAXNET(_train_group)(MAXNET() _q,
             //ANN(_train_bp)(_q->networks[j], x,
         }
     }
+}
+
+float MAXNET(_compute_rmse)(MAXNET() _q,
+                            float * _x,
+                            unsigned int * _class,
+                            unsigned int _num_patterns)
+{
+    float y[_q->num_classes];
+    unsigned int c;
+    unsigned int i;
+    float e, rmse=0.0f;
+    unsigned int num_errors = 0;
+    for (i=0; i<_num_patterns; i++) {
+        // evaluate maxnet
+        MAXNET(_evaluate)(_q, &_x[i*_q->num_inputs], y, &c);
+
+        // observe output from each network
+        unsigned int j;
+        float s;
+        for (j=0; j<_q->num_classes; j++) {
+            s = _class[i] == j ? 1.0f : -1.0f;
+            e = y[j] - s;
+            rmse += e*e;
+        }
+        num_errors += (c == _class[i]) ? 0 : 1;
+    }
+    rmse /= (float)_num_patterns * (float)(_q->num_classes);
+    rmse = sqrtf(rmse);
+
+    //printf("errors : %6u / %6u\n", num_errors, _num_patterns);
+
+    return rmse;
 }
 

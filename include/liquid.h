@@ -179,6 +179,10 @@ void maxnet_train_group(maxnet _q,
                         unsigned int * _class,
                         unsigned int _num_patterns,
                         unsigned int _max_num_trials);
+float maxnet_compute_rmse(maxnet _q,
+                          float * _x,
+                          unsigned int * _class,
+                          unsigned int _num_patterns);
 
 // K-means (2-dimensional)
 void kmeans(liquid_float_complex * _x,

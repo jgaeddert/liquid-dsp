@@ -5,6 +5,7 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "liquid.internal.h"
@@ -46,28 +47,34 @@ int main() {
         printf("\n");
     }
 
-    unsigned int num_trials=1;
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+
+    unsigned int num_trials=2000;
     unsigned int n;
     for (n=0; n<num_trials; n++) {
         // compute error
+        float rmse = maxnet_compute_rmse(q,x,class,4);
+        fprintf(fid,"e(%6u) = %16.8e;\n", n+1, rmse);
         if ((n%100)==0) {
-            for (i=0; i<4; i++) {
-                maxnet_evaluate(q,&x[i*2],y_test,&c_test);
-                unsigned int j;
-                printf("[");
-                for (j=0; j<2; j++)
-                    printf("%12.8f",x[i*2+j]);
-                printf("] > [");
-                for (j=0; j<2; j++)
-                    printf("%12.8f",y_test[j]);
-                printf("] (%u)\n", c_test);
-            }
+            printf("epoch %6u : %12.8f\n", n, rmse);
+
+            //for (i=0; i<4; i++)
+            //    maxnet_evaluate(q,&x[i*2],y_test,&c_test);
         }
 
         for (i=0; i<4; i++)
-            maxnet_train(q,&x[i*2],class);
+            maxnet_train(q,&x[i*2],class[i]);
     }
 
+    fprintf(fid,"\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"semilogy(e);\n");
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME);
+ 
     maxnet_destroy(q);
 
     printf("done.\n");
