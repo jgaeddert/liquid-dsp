@@ -52,7 +52,7 @@ int main() {
     unsigned int max_trials = 2000;
 
     printf("training...\n");
-#if 1
+#if 0
     //ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
     ann_train_ga(q,x,y,num_training_patterns,error_tolerance,max_trials);
 #else
