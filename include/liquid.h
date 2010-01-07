@@ -152,9 +152,15 @@ void  ANN(_evaluate)(ANN() _q,                                  \
 void  ANN(_train)(ANN() _q,                                     \
                   T * _x,                                       \
                   T * _y,                                       \
-                  unsigned int _n,                              \
+                  unsigned int _num_patterns,                   \
                   T _emax,                                      \
                   unsigned int _nmax);                          \
+void  ANN(_train_ga)(ANN() _q,                                  \
+                     T * _x,                                    \
+                     T * _y,                                    \
+                     unsigned int _num_patterns,                \
+                     T _emax,                                   \
+                     unsigned int _nmax);                       \
 float ANN(_compute_rmse)(ANN() _q,                              \
                          T * _x,                                \
                          T * _y,                                \

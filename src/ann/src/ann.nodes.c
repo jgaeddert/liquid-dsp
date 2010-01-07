@@ -66,12 +66,6 @@ struct ANN(_s) {
     ga_search ga;
 };
 
-// forward declaration
-void ANN(_train_ga)(ANN() _q,
-                    T * _x,
-                    T * _y,
-                    unsigned int _num_patterns);
-
 // Creates a network
 ANN() ANN(_create)(unsigned int * _structure,
                    unsigned int _num_layers)
@@ -243,9 +237,6 @@ void ANN(_train)(ANN() _q,
                  T _emax,
                  unsigned int _nmax)
 {
-    ANN(_train_ga)(_q, _x, _y, _num_patterns);
-    return;
-
     unsigned int i, j;
     float * x;
     float * y;
@@ -394,7 +385,9 @@ float ANN(_ga_search_callback)(void * _userdata,
 void ANN(_train_ga)(ANN() _q,
                     T * _x,
                     T * _y,
-                    unsigned int _num_patterns)
+                    unsigned int _num_patterns,
+                    float _emax,
+                    unsigned int _nmax)
 {
     // create search structure
     struct ANN(_ga_search_object) obj = {_q, _x, _y, _num_patterns};
@@ -407,10 +400,34 @@ void ANN(_train_ga)(ANN() _q,
                                     LIQUID_OPTIM_MINIMIZE);
 
     // run search
+#if 0
+    ga_search_run(ga,_nmax,_emax);
+#else
     unsigned int i;
-    for (i=0; i<1000; i++) {
+#define OUTPUT_FILENAME "ann_search_ga_internal_debug.m"
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+
+    for (i=0; i<_nmax; i++) {
         ga_search_evolve(ga);
+
+        float rmse = ANN(_compute_rmse)(_q,_x,_y,_num_patterns);
+
+        if ((i%100)==0)
+            printf("%6u : %12.4e\n", i, rmse);
+
+        fprintf(fid,"rmse(%6u) = %16.8e;\n", i+1, rmse);
     }
+    fprintf(fid,"\n");
+    fprintf(fid,"semilogy(rmse,'-','LineWidth',2)\n");
+    fprintf(fid,"xlabel('training epoch');\n");
+    fprintf(fid,"ylabel('rmse');\n");
+    fprintf(fid,"grid on;\n");
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME);
+#endif
 
     // clean it up
     ga_search_destroy(ga);

@@ -35,6 +35,8 @@
 #define LIQUID_GA_SEARCH_MAX_POPULATION_SIZE (1024)
 #define LIQUID_GA_SEARCH_MAX_CHROMOSOME_SIZE (32)
 
+#define LIQUID_DEBUG_GA_SEARCH 0
+
 ga_search ga_search_create(void * _userdata,
                            float* _v,
                            unsigned int _num_parameters,
@@ -189,11 +191,13 @@ void ga_search_evolve(ga_search _g)
         _g->utility_opt = _g->utility[_g->rank[0]];
         memmove(_g->v_opt, _g->v, sizeof(float)*_g->num_parameters);
 
+#if LIQUID_DEBUG_GA_SEARCH
         printf("  utility: %0.2E", _g->utility_opt);
         printf("  [");
         for (i=0; i<_g->num_parameters; i++)
             printf(" %6.3f", _g->v_opt[i]);
         printf(" ]\n");
+#endif
     }
     
     // set optimum vector to output

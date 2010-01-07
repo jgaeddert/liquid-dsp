@@ -53,7 +53,8 @@ int main() {
 
     printf("training...\n");
 #if 1
-    ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
+    //ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
+    ann_train_ga(q,x,y,num_training_patterns,error_tolerance,max_trials);
 #else
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
