@@ -1,8 +1,15 @@
 //
+// ann_example.c
+//
 // artificial neural network (ann) eXclusive OR example
+//
+// This example demonstrates the functionality of the ann
+// module by training a simple network to learn the output
+// of an exclusive or (xor) circuit.
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "liquid.internal.h"
@@ -45,25 +52,54 @@ int main() {
     unsigned int max_trials = 2000;
 
     printf("training...\n");
+#if 0
     ann_train(q,x,y,num_training_patterns,error_tolerance,max_trials);
+#else
+    FILE* fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+
+    float rmse;
+    unsigned int j;
+    for (i=0; i<max_trials; i++) {
+        // run single training epoch
+        for (j=0; j<num_training_patterns; j++)
+            ann_train_bp(q,&x[2*j],&y[j]);
+
+        // compute error
+        rmse = ann_compute_rmse(q,x,y,num_training_patterns);
+
+        // print error periodically
+        if ( (i%100)==0 )
+            printf("%6u : %16.8e;\n", i, rmse);
+
+        // output error to file
+        fprintf(fid,"rmse(%6u) = %16.8e;\n", i+1, rmse);
+
+        // break if error is below tolerance
+        if (rmse < error_tolerance)
+            break;
+    }
+    
+    fprintf(fid,"\n");
+    fprintf(fid,"semilogy(rmse,'-','LineWidth',2)\n");
+    fprintf(fid,"xlabel('training epoch');\n");
+    fprintf(fid,"ylabel('rmse');\n");
+    fprintf(fid,"grid on;\n");
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME);
+#endif
     printf("done.\n");
 
-    for (i=0; i<4; i++) {
+    for (i=0; i<num_training_patterns; i++) {
         ann_evaluate(q,&x[2*i],&y_hat);
         //ann_print(q);
         printf("%6.3f %6.3f > %6.3f (%12.8f)\n",
                 x[2*i+0], x[2*i+1], y[i], y_hat);
     }
 
-#if 0
-    FILE* fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
 
-    fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
-#endif
-    
     ann_destroy(q);
 
     printf("done.\n");
