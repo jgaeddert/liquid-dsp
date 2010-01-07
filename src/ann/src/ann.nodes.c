@@ -61,7 +61,16 @@ struct ANN(_s) {
 
     // back-propagation training objects
     T * dw;     // gradient weights vector [num_weights]
+
+    // ga-based training
+    ga_search ga;
 };
+
+// forward declaration
+void ANN(_train_ga)(ANN() _q,
+                    T * _x,
+                    T * _y,
+                    unsigned int _num_patterns);
 
 // Creates a network
 ANN() ANN(_create)(unsigned int * _structure,
@@ -234,6 +243,8 @@ void ANN(_train)(ANN() _q,
                  T _emax,
                  unsigned int _nmax)
 {
+    ANN(_train_ga)(_q, _x, _y, _num_patterns);
+    return;
 
     unsigned int i, j;
     float * x;
@@ -355,3 +366,53 @@ float ANN(_compute_rmse)(ANN() _q,
 
     return rmse;
 }
+
+// ga search structure
+struct ANN(_ga_search_object) {
+    ANN() network;
+    float * x;
+    float * y;
+    unsigned int num_patterns;
+};
+
+// ga search callback
+float ANN(_ga_search_callback)(void * _userdata,
+                               float * _v,
+                               unsigned int _num_parameters)
+{
+    struct ANN(_ga_search_object) *q = (struct ANN(_ga_search_object)*) _userdata;
+
+    float rmse = ANN(_compute_rmse)(q->network,
+                                    q->x,
+                                    q->y,
+                                    q->num_patterns);
+
+    return rmse;
+}
+
+
+void ANN(_train_ga)(ANN() _q,
+                    T * _x,
+                    T * _y,
+                    unsigned int _num_patterns)
+{
+    // create search structure
+    struct ANN(_ga_search_object) obj = {_q, _x, _y, _num_patterns};
+
+    // create search object
+    ga_search ga = ga_search_create((void*)&obj,
+                                    _q->w,
+                                    _q->num_weights,
+                                    &ANN(_ga_search_callback),
+                                    LIQUID_OPTIM_MINIMIZE);
+
+    // run search
+    unsigned int i;
+    for (i=0; i<1000; i++) {
+        ga_search_evolve(ga);
+    }
+
+    // clean it up
+    ga_search_destroy(ga);
+}
+
