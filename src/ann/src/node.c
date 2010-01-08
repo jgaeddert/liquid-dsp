@@ -74,11 +74,22 @@ NODE() NODE(_create)(float * _w,
         exit(1);
     }
     n->mu = _mu;
+
+    // back-propagation weight correction array
+    n->dw = (T*) malloc( (n->num_inputs+1)*sizeof(T) );
+    unsigned int i;
+    for (i=0; i<n->num_inputs+1; i++)
+        n->dw[i] = 0.0;
+
     return n;
 }
 
 void NODE(_destroy)(NODE() _n)
 {
+    // free weight correction array (back-propagation)
+    free(_n->dw);
+
+    // free main object memory
     free(_n);
 }
 
@@ -123,19 +134,28 @@ void NODE(_compute_bp_error)(NODE() _n, T _error)
 #endif
 }
 
-// TODO: update NODE(_train) to work for both input and output layers
+// update weights with learning rate _eta and momentum constant _alpha
 void NODE(_train)(NODE() _n, float _eta)
 {
     // update internal weights
-    T dw;   // weight correction
+    float alpha = 0.2f; // momentum constant
+    T dw_hat;           // weight correction estimate
+    T input;            // neuron input
     unsigned int i;
-    for (i=0; i<_n->num_inputs; i++) {
-        dw = _eta * _n->delta * _n->x[i];
-        _n->w[i] += dw;
+    for (i=0; i<_n->num_inputs+1; i++) {
+        // determine input value (bias?)
+        input = (i == _n->num_inputs) ? 1.0f : _n->x[i];
+
+        // compute weight correction estimate
+        dw_hat = _eta * _n->delta * input;
+
+        // compute weight correction using momentum constant (retain
+        // a small portion of previous correction)
+        _n->dw[i] = dw_hat + alpha*_n->dw[i];
+
+        // update weights
+        _n->w[i] += _n->dw[i];
     }
 
-    // update bias
-    dw = _eta * _n->delta;
-    _n->w[i] += dw;
 }
 
