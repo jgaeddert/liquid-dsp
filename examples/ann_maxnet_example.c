@@ -3,6 +3,10 @@
 //
 // artificial neural network (ann) maxnet example
 //
+// This example demonstrates the functionality of the ann
+// maxnet by training a network to recognize and separate
+// two input patterns in a 2-dimensional plane.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,19 +20,36 @@ int main() {
     // set random seed
     srand(time(NULL));
 
+    // number of patterns over which to train
+    unsigned int num_patterns = 250;
+
     // create network structure:
     //      2 inputs, 4 hidden neurons, 1 output
-    unsigned int structure[3] = {2, 4, 1};
+    unsigned int structure[3] = {2, 6, 1};
 
-    // binary input sequence
-    float x[8] = {-1,-1,    // 0 0
-                  -1, 1,    // 0 1
-                   1,-1,    // 1 0
-                   1, 1     // 1 1
-    };
+    // input sequence in 2-dimensional plane
+    float x[2*num_patterns];
 
     // classification
-    unsigned int class[4] = {0, 1, 1, 0};
+    unsigned int class[num_patterns];
+
+    // generate random sample points
+    unsigned int i;
+    for (i=0; i<num_patterns; i++) {
+        float x0 = 2.0f*randf()-1.0f;
+        float x1 = 2.0f*randf()-1.0f;
+
+        float r = sqrtf(x0*x0 + x1*x1);
+        if (r < 0.8f) {
+            x[2*i+0] = 0.7f * x0;
+            x[2*i+1] = 0.7f * x1;
+            class[i] = 0;
+        } else {
+            x[2*i+0] = x0;
+            x[2*i+1] = x1;
+            class[i] = 1;
+        }
+    }
 
     // create network and initialize weights randomly
     maxnet q = maxnet_create(2, structure, 3);
@@ -39,7 +60,6 @@ int main() {
     unsigned int c_test;
     maxnet_evaluate(q,x_test,y_test,&c_test);
 
-    unsigned int i;
     for (i=0; i<2; i++) {
         printf("  %3u : %12.8f", i, y_test[i]);
         if (i == c_test)
@@ -54,24 +74,54 @@ int main() {
 
     unsigned int num_trials=2000;
     unsigned int n;
+    unsigned int num_errors;    // number of classification errors
     for (n=0; n<num_trials; n++) {
         // compute error
-        float rmse = maxnet_compute_rmse(q,x,class,4);
+        float rmse = maxnet_compute_rmse(q,x,class,num_patterns);
         fprintf(fid,"e(%6u) = %16.8e;\n", n+1, rmse);
-        if ((n%100)==0) {
-            printf("epoch %6u : %12.8f\n", n, rmse);
 
-            //for (i=0; i<4; i++)
-            //    maxnet_evaluate(q,&x[i*2],y_test,&c_test);
+        // periodically evaluate the network and print the results
+        if ((n%100)==0) {
+            num_errors=0;
+            for (i=0; i<num_patterns; i++) {
+                maxnet_evaluate(q,&x[i*2],y_test,&c_test);
+                num_errors += c_test == class[i] ? 0 : 1;
+            }
+            printf("epoch %6u : %12.8f (classification errors: %6u / %6u)\n",
+                    n, rmse, num_errors, num_patterns);
         }
 
-        for (i=0; i<4; i++)
+        // run training algorithm
+        for (i=0; i<num_patterns; i++)
             maxnet_train(q,&x[i*2],class[i]);
     }
 
     fprintf(fid,"\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(e);\n");
+
+    // evaluate maxnet and plot results
+    fprintf(fid,"c0 = []; %% class 0 indices\n");
+    fprintf(fid,"c1 = []; %% class 1 indices\n");
+    unsigned int n0=1;
+    unsigned int n1=1;
+    for (i=0; i<num_patterns; i++) {
+        maxnet_evaluate(q,&x[2*i],y_test,&c_test);
+        fprintf(fid,"x(%3u) = %12.8f + j*%12.8f;\n", i+1, x[2*i+0], x[2*i+1]);
+        if (c_test == 0)
+            fprintf(fid,"c0(%3u) = %3u;\n", n0++, i+1);
+        else
+            fprintf(fid,"c1(%3u) = %3u;\n", n1++, i+1);
+    }
+
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(x(c0),'or',x(c1),'ob');\n");
+    fprintf(fid,"xlabel('x_0');\n");
+    fprintf(fid,"ylabel('x_1');\n");
+    fprintf(fid,"axis([-1 1 -1 1]);\n");
+    fprintf(fid,"axis square;\n");
+
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
  
