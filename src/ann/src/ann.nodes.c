@@ -200,6 +200,65 @@ void ANN(_print)(ANN() _q)
         ANNLAYER(_print)(_q->layers[i]);
 }
 
+ANN() ANN(_load_from_file)(char * _filename)
+{
+    FILE * fid = fopen(_filename,"r");
+    if (!fid) {
+        printf("error: ann_load_from_file(), cannot open \"%s\" for reading\n", _filename);
+        exit(1);
+    }
+
+    // first line: number of layers
+    unsigned int num_layers;
+    fscanf(fid,"%u\n", &num_layers);
+
+    // next line: network structure
+    unsigned int i;
+    unsigned int structure[num_layers];
+    for (i=0; i<num_layers; i++)
+        fscanf(fid,"%u", &structure[i]);
+
+    // create network object
+    ANN() q = ANN(_create)(structure, num_layers);
+
+    // read weights from file, overloading initialized values
+    for (i=0; i<q->num_weights; i++) {
+        fscanf(fid,"%f", &(q->w[i]));
+        if (feof(fid)) {
+            printf("error: ann_load_from_file(), invalid file : premature EOF\n");
+            fclose(fid);
+            exit(1);
+        }
+    }
+
+    fclose(fid);
+    return q;
+}
+
+void ANN(_save_to_file)(ANN() _q, char * _filename)
+{
+    FILE * fid = fopen(_filename,"w");
+    if (!fid) {
+        printf("error: ann_load_from_file(), cannot open \"%s\" for writing\n", _filename);
+        exit(1);
+    }
+
+    // first line: number of layers
+    fprintf(fid,"%u\n", _q->num_layers);
+
+    // next line: network structure
+    unsigned int i;
+    for (i=0; i<_q->num_layers; i++)
+        fprintf(fid,"%u ", _q->structure[i]);
+    fprintf(fid,"\n");
+
+    // save weights from file, reading directly from network object
+    for (i=0; i<_q->num_weights; i++)
+        fprintf(fid,"%16.8e\n", _q->w[i]);
+
+    fclose(fid);
+}
+
 // initialize weights to random (normal distribution)
 void ANN(_init_random_weights)(ANN() _q)
 {

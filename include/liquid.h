@@ -146,6 +146,8 @@ ANN() ANN(_create)(unsigned int * _structure,                   \
                    unsigned int _num_layers);                   \
 void  ANN(_destroy)(ANN() _q);                                  \
 void  ANN(_print)(ANN() _q);                                    \
+ANN() ANN(_load_from_file)(char * _filename);                   \
+void  ANN(_save_to_file)(ANN() _q, char * _filename);           \
 void  ANN(_init_random_weights)(ANN() _q);                      \
 void  ANN(_evaluate)(ANN() _q,                                  \
                      T * _x,                                    \
