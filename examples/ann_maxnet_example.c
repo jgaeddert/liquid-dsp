@@ -24,7 +24,7 @@ int main() {
     unsigned int num_patterns = 250;
 
     // create network structure:
-    //      2 inputs, 4 hidden neurons, 1 output
+    //      2 inputs, 6 hidden neurons, 1 output
     unsigned int structure[3] = {2, 6, 1};
 
     // input sequence in 2-dimensional plane
@@ -89,6 +89,9 @@ int main() {
             }
             printf("epoch %6u : %12.8f (classification errors: %6u / %6u)\n",
                     n, rmse, num_errors, num_patterns);
+
+            if (num_errors == 0)
+                break;
         }
 
         // run training algorithm
@@ -114,9 +117,36 @@ int main() {
             fprintf(fid,"c1(%3u) = %3u;\n", n1++, i+1);
     }
 
+    // compute discriminating regions
+    printf("computing discriminating regions...\n");
+    unsigned int nx = 501;
+    float xmin = -2.0f;
+    float xmax =  2.0f;
+    float dx = (xmax - xmin) / (float)(nx-1);
+    unsigned int j;
+    unsigned int c_test0;
+    n=0;
+    for (i=0; i<nx; i++) {
+        x_test[0] = xmin + dx*i;
+        x_test[1] = xmin;
+        maxnet_evaluate(q,x_test,y_test,&c_test0);
+
+        for (j=0; j<nx; j++) {
+            x_test[1] = xmin + dx*j;
+            maxnet_evaluate(q,x_test,y_test,&c_test);
+
+            if (c_test != c_test0) {
+                c_test0 = c_test;
+                fprintf(fid,"d(%3u) = %12.8f + j*%12.8f;\n", n+1, x_test[0], x_test[1]);
+                n++;
+            }
+        }
+    }
+    printf("done.\n");
+
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(x(c0),'or',x(c1),'ob');\n");
+    fprintf(fid,"plot(x(c0),'sr',x(c1),'sb',d,'o','MarkerSize',1,'Color',[1 1 1]*0.7);\n");
     fprintf(fid,"xlabel('x_0');\n");
     fprintf(fid,"ylabel('x_1');\n");
     fprintf(fid,"axis([-1 1 -1 1]);\n");
