@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 
 #include "liquid.internal.h"
@@ -72,7 +73,7 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
 
-    unsigned int num_trials=2000;
+    unsigned int num_trials=1000;
     unsigned int n;
     unsigned int num_errors;    // number of classification errors
     for (n=0; n<num_trials; n++) {
@@ -101,7 +102,9 @@ int main() {
 
     fprintf(fid,"\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"semilogy(e);\n");
+    fprintf(fid,"semilogy(e,'-','LineWidth',2);\n");
+    fprintf(fid,"xlabel('training epoch');\n");
+    fprintf(fid,"ylabel('RMS error');\n");
 
     // evaluate maxnet and plot results
     fprintf(fid,"c0 = []; %% class 0 indices\n");
