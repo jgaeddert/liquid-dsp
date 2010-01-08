@@ -208,11 +208,16 @@ ANN() ANN(_load_from_file)(char * _filename)
         exit(1);
     }
 
+    // character buffer
+    char buffer[64];
+
     // first line: number of layers
+    fscanf(fid,"%s", buffer);   // "NUM_LAYERS:"
     unsigned int num_layers;
     fscanf(fid,"%u\n", &num_layers);
 
     // next line: network structure
+    fscanf(fid,"%s", buffer);   // "STRUCTURE:"
     unsigned int i;
     unsigned int structure[num_layers];
     for (i=0; i<num_layers; i++)
@@ -222,6 +227,7 @@ ANN() ANN(_load_from_file)(char * _filename)
     ANN() q = ANN(_create)(structure, num_layers);
 
     // read weights from file, overloading initialized values
+    fscanf(fid,"%s", buffer); // "WEIGHTS:"
     for (i=0; i<q->num_weights; i++) {
         fscanf(fid,"%f", &(q->w[i]));
         if (feof(fid)) {
@@ -244,15 +250,17 @@ void ANN(_save_to_file)(ANN() _q, char * _filename)
     }
 
     // first line: number of layers
-    fprintf(fid,"%u\n", _q->num_layers);
+    fprintf(fid,"NUM_LAYERS: %u\n", _q->num_layers);
 
     // next line: network structure
     unsigned int i;
+    fprintf(fid,"STRUCTURE: ");
     for (i=0; i<_q->num_layers; i++)
         fprintf(fid,"%u ", _q->structure[i]);
     fprintf(fid,"\n");
 
     // save weights from file, reading directly from network object
+    fprintf(fid,"WEIGHTS:\n");
     for (i=0; i<_q->num_weights; i++)
         fprintf(fid,"%16.8e\n", _q->w[i]);
 
