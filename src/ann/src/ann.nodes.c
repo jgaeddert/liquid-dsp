@@ -56,8 +56,8 @@ struct ANN(_s) {
     T * y_hat;  // internal memory
 
     // activation function (derivative) pointer
-    //ann_activation_function af_hidden;    // hidden layer(s)
-    //ann_activation_function af_output;    // output layer
+    ann_activation_function activation_func_hidden;
+    ann_activation_function activation_func_output;
 
     // back-propagation training objects
     T * dw;     // gradient weights vector [num_weights]
@@ -97,6 +97,8 @@ ANN() ANN(_create)(unsigned int * _structure,
         q->structure[i] = _structure[i];
     q->num_inputs = q->structure[0];
     q->num_outputs = q->structure[q->num_layers-1];
+    q->activation_func_hidden = _activation_func_hidden;
+    q->activation_func_output = _activation_func_output;
 
     // Initialize weights
     q->num_weights = 2 * (q->structure[0]);
@@ -147,8 +149,8 @@ ANN() ANN(_create)(unsigned int * _structure,
         is_output_layer = (i==q->num_layers-1);
 
         activation_func = is_output_layer ?
-                          _activation_func_output :
-                          _activation_func_hidden;
+                          q->activation_func_output :
+                          q->activation_func_hidden;
 
         // create the node layer
         q->layers[i] = ANNLAYER(_create)(q->w + nw,
@@ -230,11 +232,21 @@ ANN() ANN(_load_from_file)(char * _filename)
     for (i=0; i<num_layers; i++)
         fscanf(fid,"%u", &structure[i]);
 
+    // next line: activation function (hidden layers)
+    fscanf(fid,"%s", buffer);   // "ACTIVATION_HIDDEN:"
+    int activation_func_hidden;
+    fscanf(fid,"%d", &activation_func_hidden);
+
+    // next line: activation function (output layer)
+    fscanf(fid,"%s", buffer);   // "ACTIVATION_OUTPUT:"
+    int activation_func_output;
+    fscanf(fid,"%d", &activation_func_output);
+
     // create network object
     ANN() q = ANN(_create)(structure,
                            num_layers,
-                           LIQUID_ANN_AF_TANH,
-                           LIQUID_ANN_AF_LINEAR);
+                           activation_func_hidden,
+                           activation_func_output);
 
     // read weights from file, overloading initialized values
     fscanf(fid,"%s", buffer); // "WEIGHTS:"
@@ -268,6 +280,10 @@ void ANN(_save_to_file)(ANN() _q, char * _filename)
     for (i=0; i<_q->num_layers; i++)
         fprintf(fid,"%u ", _q->structure[i]);
     fprintf(fid,"\n");
+
+    // next line: activation functions
+    fprintf(fid,"ACTIVATION_HIDDEN: %d\n", _q->activation_func_hidden);
+    fprintf(fid,"ACTIVATION_OUTPUT: %d\n", _q->activation_func_output);
 
     // save weights from file, reading directly from network object
     fprintf(fid,"WEIGHTS:\n");
