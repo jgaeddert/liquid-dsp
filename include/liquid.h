@@ -2180,16 +2180,10 @@ void pll_step(pll _p, nco _nco, float _e);
 // n-dimensional rosenbrock function (minimum at _v = {1,1,1...}
 float rosenbrock(void * _userdata, float * _v, unsigned int _n);
 
-// optim pattern set (struct)
-struct optim_ps_s {
-    float *x, *y;
-    unsigned int nx, ny, np;
-    unsigned int na; // num allocated
-};
-
 typedef struct optim_ps_s * optim_ps;
 
-optim_ps optim_ps_create(unsigned int _nx, unsigned int _ny);
+optim_ps optim_ps_create(unsigned int _num_inputs,
+                         unsigned int _num_outputs);
 void optim_ps_destroy(optim_ps _ps);
 void optim_ps_print(optim_ps _ps);
 void optim_ps_append_pattern(optim_ps _ps, float *_x, float *_y);

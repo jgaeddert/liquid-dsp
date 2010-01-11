@@ -1107,6 +1107,16 @@ void quasinewton_search_compute_Hessian(quasinewton_search _q);
 // Goldfarb & Shanno method (BFGS)
 void quasinewton_search_update_hessian_bfgs(quasinewton_search _q);
 
+// optim pattern set (struct)
+struct optim_ps_s {
+    float * x;      // input
+    float * y;      // output
+    unsigned int num_inputs;
+    unsigned int num_outputs;
+    unsigned int num_patterns;
+    unsigned int num_allocated;
+};
+
 void optim_ps_increase_mem(optim_ps _ps, unsigned int _n);
 
 

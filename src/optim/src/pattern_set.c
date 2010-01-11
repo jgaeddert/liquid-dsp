@@ -27,19 +27,22 @@
 #include <string.h>
 #include "liquid.internal.h"
 
-optim_ps optim_ps_create(unsigned int _nx, unsigned int _ny)
+// create pattern set object
+optim_ps optim_ps_create(unsigned int _num_inputs,
+                         unsigned int _num_outputs)
 {
     optim_ps ps = (optim_ps) malloc(sizeof(struct optim_ps_s));
-    ps->nx = _nx;
-    ps->ny = _ny;
-    ps->np = 0;
-    ps->na = 1;
-    ps->x = (float*) malloc((ps->na)*(ps->nx)*sizeof(float));
-    ps->y = (float*) malloc((ps->na)*(ps->ny)*sizeof(float));
+    ps->num_inputs  = _num_inputs;
+    ps->num_outputs = _num_outputs;
+    ps->num_patterns = 0;
+    ps->num_allocated = 1;
+    ps->x = (float*) malloc((ps->num_allocated)*(ps->num_inputs)*sizeof(float));
+    ps->y = (float*) malloc((ps->num_allocated)*(ps->num_outputs)*sizeof(float));
 
     return ps;
 }
 
+// destroy pattern set object
 void optim_ps_destroy(optim_ps _ps)
 {
     free(_ps->x);
@@ -47,76 +50,94 @@ void optim_ps_destroy(optim_ps _ps)
     free(_ps);
 }
 
+// print pattern set
 void optim_ps_print(optim_ps _ps)
 {
-    printf("optim pattern set [%u] :\n", _ps->np);
-    if (_ps->np == 0) return;
+    printf("optim pattern set [%u] :\n", _ps->num_patterns);
+    if (_ps->num_patterns == 0) return;
 
     unsigned int n,i,ix=0,iy=0;
-    for (n=0; n<_ps->np; n++) {
+    for (n=0; n<_ps->num_patterns; n++) {
         printf("  %u\t:", n);
-        for (i=0; i<_ps->nx; i++)
+        for (i=0; i<_ps->num_inputs; i++)
             printf(" %8.5f", _ps->x[ix++]);
         printf(" : ");
-        for (i=0; i<_ps->ny; i++)
+        for (i=0; i<_ps->num_outputs; i++)
             printf(" %8.5f", _ps->y[iy++]);
         printf("\n");
     }
 }
 
+// append single pattern to set
 void optim_ps_append_pattern(optim_ps _ps, float *_x, float *_y)
 {
-    if (_ps->na == _ps->np)
+    // increase memory if necessary
+    if (_ps->num_allocated == _ps->num_patterns)
         optim_ps_increase_mem(_ps,4);
 
-    memmove(_ps->x + _ps->np*_ps->nx, _x, (_ps->nx)*sizeof(float));
-    memmove(_ps->y + _ps->np*_ps->ny, _y, (_ps->ny)*sizeof(float));
-    _ps->np++;
+    // intput, output write pointers
+    float * wx = _ps->x + _ps->num_patterns * _ps->num_inputs;
+    float * wy = _ps->y + _ps->num_patterns * _ps->num_outputs;
+
+    // copy input to appropriate memory location
+    memmove(wx, _x, (_ps->num_inputs)*sizeof(float));
+    memmove(wy, _y, (_ps->num_outputs)*sizeof(float));
+    _ps->num_patterns++;
 }
 
-void optim_ps_append_patterns(optim_ps _ps, float *_x, float *_y, unsigned int _np)
+// append multiple patterns to set
+void optim_ps_append_patterns(optim_ps _ps, float *_x, float *_y, unsigned int _num_patterns)
 {
-    if (_ps->na < (_ps->np + _np))
-        optim_ps_increase_mem(_ps, _np);
+    // increase memory if necessary
+    if (_ps->num_allocated < (_ps->num_patterns + _num_patterns))
+        optim_ps_increase_mem(_ps, _num_patterns);
 
-    memmove(_ps->x + _ps->np*_ps->nx, _x, (_ps->nx)*_np*sizeof(float));
-    memmove(_ps->y + _ps->np*_ps->ny, _y, (_ps->ny)*_np*sizeof(float));
-    _ps->np += _np;
+    // intput, output write pointers
+    float * wx = _ps->x + _ps->num_patterns * _ps->num_inputs;
+    float * wy = _ps->y + _ps->num_patterns * _ps->num_outputs;
+
+    // copy input to appropriate memory location
+    memmove(wx, _x, (_ps->num_inputs)*_num_patterns*sizeof(float));
+    memmove(wy, _y, (_ps->num_outputs)*_num_patterns*sizeof(float));
+    _ps->num_patterns += _num_patterns;
 }
 
 void optim_ps_delete_pattern(optim_ps _ps, unsigned int _i)
 {
-    if (_i > _ps->np) {
+    if (_i > _ps->num_patterns) {
         printf("error: optim_ps_delete_pattern(), index exceeds available patterns\n");
         exit(1);
     }
 
-    _ps->np--;
-    if (_ps->np == _i)
+    _ps->num_patterns--;
+    if (_ps->num_patterns == _i)
         return;
 
-    unsigned int ix1 = (_ps->nx)*(_i);
-    unsigned int ix2 = (_ps->nx)*(_i+1);
-    memmove(&(_ps->x[ix1]), &(_ps->x[ix2]), (_ps->nx)*(_ps->np - _i)*sizeof(float));
+    unsigned int ix1 = (_ps->num_inputs)*(_i);
+    unsigned int ix2 = (_ps->num_inputs)*(_i+1);
+    memmove(&(_ps->x[ix1]), &(_ps->x[ix2]), (_ps->num_inputs)*(_ps->num_patterns - _i)*sizeof(float));
 
-    unsigned int iy1 = (_ps->ny)*(_i);
-    unsigned int iy2 = (_ps->ny)*(_i+1);
-    memmove(&(_ps->y[iy1]), &(_ps->y[iy2]), (_ps->ny)*(_ps->np - _i)*sizeof(float));
+    unsigned int iy1 = (_ps->num_outputs)*(_i);
+    unsigned int iy2 = (_ps->num_outputs)*(_i+1);
+    memmove(&(_ps->y[iy1]), &(_ps->y[iy2]), (_ps->num_outputs)*(_ps->num_patterns - _i)*sizeof(float));
 }
+
+// clear pattern sets
 void optim_ps_clear(optim_ps _ps)
 {
-    _ps->np = 0;
+    _ps->num_patterns = 0;
 }
 
+// access pattern set
 void optim_ps_access(optim_ps _ps, unsigned int _i, float **_x, float **_y)
 {
-    if (_i > _ps->np) {
+    if (_i > _ps->num_patterns) {
         printf("error: optim_ps_access(), index exceeds available patterns\n");
         exit(1);
     }
 
-    *_x = &(_ps->x[(_ps->nx)*_i]);
-    *_y = &(_ps->y[(_ps->ny)*_i]);
+    *_x = &(_ps->x[(_ps->num_inputs)*_i]);
+    *_y = &(_ps->y[(_ps->num_outputs)*_i]);
 }
 
 // protected
@@ -124,7 +145,7 @@ void optim_ps_access(optim_ps _ps, unsigned int _i, float **_x, float **_y)
 // increase memory size
 void optim_ps_increase_mem(optim_ps _ps, unsigned int _n)
 {
-    _ps->na += _n;
-    _ps->x = (float*) realloc((void*)(_ps->x), (_ps->nx)*(_ps->na)*sizeof(float));
-    _ps->y = (float*) realloc((void*)(_ps->y), (_ps->ny)*(_ps->na)*sizeof(float));
+    _ps->num_allocated += _n;
+    _ps->x = (float*) realloc((void*)(_ps->x), (_ps->num_inputs)*(_ps->num_allocated)*sizeof(float));
+    _ps->y = (float*) realloc((void*)(_ps->y), (_ps->num_outputs)*(_ps->num_allocated)*sizeof(float));
 }
