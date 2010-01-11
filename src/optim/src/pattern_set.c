@@ -69,8 +69,8 @@ void optim_ps_append_pattern(optim_ps _ps, float *_x, float *_y)
     if (_ps->na == _ps->np)
         optim_ps_increase_mem(_ps,4);
 
-    memmove(_ps->x, _x, (_ps->nx)*sizeof(float));
-    memmove(_ps->y, _y, (_ps->ny)*sizeof(float));
+    memmove(_ps->x + _ps->np*_ps->nx, _x, (_ps->nx)*sizeof(float));
+    memmove(_ps->y + _ps->np*_ps->ny, _y, (_ps->ny)*sizeof(float));
     _ps->np++;
 }
 
