@@ -68,7 +68,7 @@ MAXNET() MAXNET(_create)(unsigned int _num_classes,
         q->networks[i] = ANN(_create)(_structure,
                                       _num_layers,
                                       LIQUID_ANN_AF_TANH,
-                                      LIQUID_ANN_AF_TANH);
+                                      LIQUID_ANN_AF_LINEAR);
         ANN(_init_random_weights)(q->networks[i]);
     }
 

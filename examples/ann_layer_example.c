@@ -41,7 +41,7 @@ int main() {
         y_hat[i] = (i%2 ? 0.5f : -0.5f);
 
     // create the layer
-    annlayer q = annlayer_create(w,x,y,num_inputs,num_outputs,0,1.0f);
+    annlayer q = annlayer_create(w,x,y,num_inputs,num_outputs,0,0,LIQUID_ANN_AF_LINEAR,1.0f);
 
     // evaluate
     annlayer_evaluate(q);
