@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "optim_internal.h"
+#include "liquid.internal.h"
 
 optim_ps optim_ps_create(unsigned int _nx, unsigned int _ny)
 {
@@ -79,8 +79,8 @@ void optim_ps_append_patterns(optim_ps _ps, float *_x, float *_y, unsigned int _
     if (_ps->na < (_ps->np + _np))
         optim_ps_increase_mem(_ps, _np);
 
-    memmove(_ps->x, _x, (_ps->nx)*_np*sizeof(float));
-    memmove(_ps->y, _y, (_ps->ny)*_np*sizeof(float));
+    memmove(_ps->x + _ps->np*_ps->nx, _x, (_ps->nx)*_np*sizeof(float));
+    memmove(_ps->y + _ps->np*_ps->ny, _y, (_ps->ny)*_np*sizeof(float));
     _ps->np += _np;
 }
 
