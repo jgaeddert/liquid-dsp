@@ -51,7 +51,8 @@ int main() {
     }
 
     // create network and initialize weights randomly
-    ann q = ann_create(structure, 4);
+    ann q = ann_create(structure, 4, LIQUID_ANN_AF_TANH,
+                                     LIQUID_ANN_AF_LINEAR);
     ann_init_random_weights(q);
 
     float error_tolerance = 1e-3f;

@@ -36,7 +36,8 @@ int main() {
     float y_hat;
 
     // create network and initialize weights randomly
-    ann q = ann_create(structure, 3);
+    ann q = ann_create(structure, 3, LIQUID_ANN_AF_TANH,
+                                     LIQUID_ANN_AF_TANH);
     ann_init_random_weights(q);
 
     unsigned int i;

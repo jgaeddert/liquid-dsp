@@ -68,7 +68,9 @@ struct ANN(_s) {
 
 // Creates a network
 ANN() ANN(_create)(unsigned int * _structure,
-                   unsigned int _num_layers)
+                   unsigned int _num_layers,
+                   int _activation_func_hidden,
+                   int _activation_func_output)
 {
     unsigned int i;
 
@@ -131,6 +133,7 @@ ANN() ANN(_create)(unsigned int * _structure,
     unsigned int num_weights;
     int is_input_layer;
     int is_output_layer;
+    int activation_func;
     for (i=0; i<q->num_layers; i++) {
         // compute number of inputs, outputs to layer
         num_inputs = (i==0) ? 1 : q->structure[i-1];
@@ -143,6 +146,10 @@ ANN() ANN(_create)(unsigned int * _structure,
         is_input_layer = (i==0);
         is_output_layer = (i==q->num_layers-1);
 
+        activation_func = is_output_layer ?
+                          _activation_func_output :
+                          _activation_func_hidden;
+
         // create the node layer
         q->layers[i] = ANNLAYER(_create)(q->w + nw,
                                          q->y_hat + nx,
@@ -151,7 +158,7 @@ ANN() ANN(_create)(unsigned int * _structure,
                                          num_outputs,
                                          is_input_layer,
                                          is_output_layer,
-                                         LIQUID_ANN_AF_TANH,
+                                         activation_func,
                                          1.0f);
         // increment counters
         nw += num_weights;
@@ -224,7 +231,10 @@ ANN() ANN(_load_from_file)(char * _filename)
         fscanf(fid,"%u", &structure[i]);
 
     // create network object
-    ANN() q = ANN(_create)(structure, num_layers);
+    ANN() q = ANN(_create)(structure,
+                           num_layers,
+                           LIQUID_ANN_AF_TANH,
+                           LIQUID_ANN_AF_LINEAR);
 
     // read weights from file, overloading initialized values
     fscanf(fid,"%s", buffer); // "WEIGHTS:"

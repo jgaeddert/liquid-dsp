@@ -65,7 +65,10 @@ MAXNET() MAXNET(_create)(unsigned int _num_classes,
     q->networks = (ANN()*) malloc( q->num_classes * sizeof(ANN()) );
     unsigned int i;
     for (i=0; i<q->num_classes; i++) {
-        q->networks[i] = ANN(_create)(_structure, _num_layers);
+        q->networks[i] = ANN(_create)(_structure,
+                                      _num_layers,
+                                      LIQUID_ANN_AF_TANH,
+                                      LIQUID_ANN_AF_TANH);
         ANN(_init_random_weights)(q->networks[i]);
     }
 

@@ -143,7 +143,9 @@ typedef enum {
                                                                 \
 typedef struct ANN(_s) * ANN();                                 \
 ANN() ANN(_create)(unsigned int * _structure,                   \
-                   unsigned int _num_layers);                   \
+                   unsigned int _num_layers,                    \
+                   int _activation_func_hidden,                 \
+                   int _activation_func_output);                \
 void  ANN(_destroy)(ANN() _q);                                  \
 void  ANN(_print)(ANN() _q);                                    \
 ANN() ANN(_load_from_file)(char * _filename);                   \
