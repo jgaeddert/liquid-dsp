@@ -55,6 +55,15 @@ struct gport2_s {
 
 gport2 gport2_create(unsigned int _n, unsigned int _size)
 {
+    // validate input
+    if (_n == 0) {
+        fprintf(stderr,"error: gport2_create(), buffer length cannot be zero\n");
+        exit(1);
+    } else if (_size == 0) {
+        fprintf(stderr,"error: gport2_create(), object size cannot be zero\n");
+        exit(1);
+    }
+
     gport2 p = (gport2) malloc(sizeof(struct gport2_s));
     p->v = NULL;
 
