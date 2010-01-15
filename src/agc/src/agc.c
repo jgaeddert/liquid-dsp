@@ -31,10 +31,8 @@
 #define AGC(name)           LIQUID_CONCAT(agc,name)
 #define T                   float
 #define TC                  float complex
-#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_rrrf,name)
 
 struct AGC(_s) {
-    T e;            // estimated signal energy
     T e_target;     // target signal energy
 
     // gain variables
@@ -48,11 +46,9 @@ struct AGC(_s) {
     T beta;         // feed-forward gain
 
     // loop filter state variables
-    T e_prime;
-    T e_hat;        // filtered energy estimate
-    T tmp2;
-
-    FIR_FILTER() f;
+    T e;            // instantaneous estimated signal energy
+    T e_hat;        // filtered (average) energy estimate
+    T e_prime;      // previous energy estimate
 
     // is agc locked?
     int is_locked;
@@ -63,34 +59,9 @@ AGC() AGC(_create)()
 {
     AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
 
-    // normalized windowing function
-    T w[11] = {
-       0.014792,
-       0.042634,
-       0.081587,
-       0.122933,
-       0.154722,
-       0.166667,
-       0.154722,
-       0.122933,
-       0.081587,
-       0.042634,
-       0.014792
-    };
-
-    unsigned int i;
-    //for (i=0; i<11; i++)
-    //    printf("w(%4u) = %8.4f;\n", i+1, w[i]);
-
-    _q->f = FIR_FILTER(_create)(w,11);
-
-    for (i=0; i<11; i++)
-        FIR_FILTER(_push)(_q->f, 0.0f);
-
     // initialize loop filter state variables
     _q->e_prime = 1.0f;
     _q->e_hat = 1.0f;
-    _q->tmp2 = 1.0f;
 
     // set default gain variables
     _q->g = 1.0f;
@@ -107,7 +78,6 @@ AGC() AGC(_create)()
 
 void AGC(_destroy)(AGC() _q)
 {
-    fir_filter_rrrf_destroy(_q->f);
     free(_q);
 }
 
@@ -118,10 +88,8 @@ void AGC(_print)(AGC() _q)
 
 void AGC(_reset)(AGC() _q)
 {
-    fir_filter_rrrf_clear(_q->f);
     _q->e_prime = 1.0f;
     _q->e_hat = 1.0f;
-    _q->tmp2 = 1.0f;
 
     AGC(_unlock)(_q);
 }
@@ -138,7 +106,7 @@ void AGC(_set_target)(AGC() _q, T _e_target)
 void AGC(_set_gain_limits)(AGC() _q, T _g_min, T _g_max)
 {
     if (_g_min > _g_max) {
-        printf("error: agc_set_gain_limits(), _g_min < _g_max\n");
+        fprintf(stderr,"error: agc_set_gain_limits(), _g_min < _g_max\n");
         exit(0);
     }
 
@@ -179,27 +147,17 @@ void AGC(_execute)(AGC() _q, TC _x, TC *_y)
         return;
     }
 
-    T e_hat;
-#if 0
-    // estimate normalized energy, should be equal to 1.0 when locked
-    T e2 = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
-    fir_filter_rrrf_push(_q->f, e2);
-    fir_filter_rrrf_execute(_q->f, &e_hat);
-    e_hat = sqrtf(e_hat);// * (_q->g) / (_q->e_target);
-#else
     float zeta = 0.1f;
     // estimate normalized energy, should be equal to 1.0 when locked
-    _q->e_hat = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
-    _q->e_prime = (_q->e_hat)*zeta + (_q->e_prime)*(1.0f-zeta);
-    e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
-#endif
+    _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+    _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
+    _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
 
     // ideal gain
-    T g = _q->e_target / e_hat;
+    T g = _q->e_target / _q->e_hat;
 
     // accumulated gain
     _q->g = (_q->beta)*(_q->g) + (_q->alpha)*g;
-    //_q->g = g;
 
     // limit gain
     if ( _q->g > _q->g_max )
