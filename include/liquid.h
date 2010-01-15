@@ -388,6 +388,10 @@ void gport2_print(gport2 _p);
 void gport2_produce(gport2 _p,
                     void * _w,
                     unsigned int _n);
+void gport2_produce_available(gport2 _p,
+                              void * _w,
+                              unsigned int _nmax,
+                              unsigned int *_np);
 void gport2_consume(gport2 _p,
                     void * _r,
                     unsigned int _n);

@@ -128,5 +128,57 @@ void autotest_gport2_consume_available()
     gport2_destroy(p);
 }
 
+
+// 
+// AUTOTEST: produce_available
+//
+void autotest_gport2_produce_available()
+{
+    gport2 p = gport2_create(8,sizeof(int));
+    int w[5];
+    int r[8];
+    int test0[4] = {0,1,2,3};
+    int test1[3] = {0,1,2};
+    int test2[8] = {3,4,0,1,2,0,1,2};
+    // consumer:    3,4,0,1,2,0,1,2
+
+    // initialize write array
+    int i;
+    for (i=0; i<5; i++)
+        w[i] = i;
+    // producer:    0, 1, 2, 3, 4
+
+    unsigned int np; // number of samples produced
+
+    gport2_produce_available(p,(void*)w,4,&np);
+    // port:        0, 1, 2, 3
+    gport2_consume(p,(void*)r,4);
+    // consumer:    0, 1, 2, 3
+    // port:        <empty>
+    CONTEND_EQUALITY(np,4);
+    CONTEND_SAME_DATA(r,test0,4*sizeof(int));
+
+    gport2_produce_available(p,(void*)w,5,&np);
+    CONTEND_EQUALITY(np,5);
+    // port:        0, 1, 2, 3, 4
+    gport2_produce_available(p,(void*)w,5,&np);
+    CONTEND_EQUALITY(np,3);
+    // port:        0, 1, 2, 3, 4, 0, 1, 2
+    gport2_consume(p,(void*)r,3);
+    // consumer:    0, 1, 2
+    // port:        3, 4, 0, 1, 2
+    CONTEND_SAME_DATA(r,test1,3*sizeof(int));
+
+    gport2_produce_available(p,(void*)w,5,&np);
+    CONTEND_EQUALITY(np,3);
+    // port:        3, 4, 0, 1, 2, 0, 1, 2
+    gport2_consume(p,(void*)r,8);
+    // consumer:    3, 4, 0, 1, 2, 0, 1, 2
+    // port:        <empty>
+    CONTEND_SAME_DATA(r,test2,8*sizeof(int));
+
+    gport2_destroy(p);
+}
+
 #endif // __GPORT2_AUTOTEST_H__
 

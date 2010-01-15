@@ -163,6 +163,59 @@ void gport2_produce(gport2 _p, void * _w, unsigned int _n)
     pthread_mutex_unlock(&(_p->producer_mutex));
 }
 
+void gport2_produce_available(gport2 _p,
+                              void * _w,
+                              unsigned int _nmax,
+                              unsigned int *_np)
+{
+    pthread_mutex_lock(&(_p->producer_mutex));
+    pthread_mutex_lock(&(_p->internal_mutex));
+
+    while (_p->num_write_elements_available == 0) {
+        _p->producer_waiting = true;
+        pthread_cond_wait(&(_p->producer_data_ready),&(_p->internal_mutex));
+    }
+    _p->producer_waiting = false;
+
+    unsigned int n = (_p->num_write_elements_available > _nmax) ?
+        _nmax : _p->num_write_elements_available;
+    *_np = n;
+
+    // copy data circularly if necessary
+    if (_p->write_index + n > _p->n) {
+        printf("overflow\n");
+        // overflow: copy data circularly
+        unsigned int b = _p->n - _p->write_index;
+
+        // copy lower section: 'b' elements
+        memmove(_p->v + (_p->write_index)*(_p->size),
+                _w,
+                b*(_p->size));
+        
+        // copy upper section
+        memmove(_p->v,
+                _w + b*(_p->size),
+                (n-b)*(_p->size));
+    } else {
+        memmove(_p->v + (_p->write_index)*(_p->size),
+                _w,
+                n*(_p->size));
+    }
+
+    _p->num_write_elements_available -= n;
+    _p->num_read_elements_available += n;
+
+    _p->write_index = (_p->write_index + n) % _p->n;
+
+    // signal consumer
+    if (_p->consumer_waiting) {
+        pthread_cond_signal(&(_p->consumer_data_ready));
+    }
+
+    pthread_mutex_unlock(&(_p->internal_mutex));
+    pthread_mutex_unlock(&(_p->producer_mutex));
+}
+
 void gport2_consume(gport2 _p, void * _r, unsigned int _n)
 {
     pthread_mutex_lock(&(_p->consumer_mutex));
