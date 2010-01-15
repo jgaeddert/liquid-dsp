@@ -118,49 +118,20 @@ void gport2_print(gport2 _p)
 
 void gport2_produce(gport2 _p, void * _w, unsigned int _n)
 {
-    pthread_mutex_lock(&(_p->producer_mutex));
-    pthread_mutex_lock(&(_p->internal_mutex));
+    unsigned int num_produced;
+    unsigned int num_produced_total = 0;
 
-    // wait for data to become available
-    // TODO : write data as it becomes available instead of waiting for entire block
-    while (_n > _p->num_write_elements_available) {
-        _p->producer_waiting = true;
-        pthread_cond_wait(&(_p->producer_data_ready),&(_p->internal_mutex));
+    // produce samples as they become available
+    while (_n > 0) {
+        // produce maximum number of samples available
+        gport2_produce_available(_p,
+                                 _w + num_produced_total*_p->size,
+                                 _n,
+                                 &num_produced);
+        // update counters
+        num_produced_total += num_produced;
+        _n -= num_produced;
     }
-    _p->producer_waiting = false;
-
-    // copy data circularly if necessary
-    if (_p->write_index + _n > _p->n) {
-        // overflow: copy data circularly
-        unsigned int b = _p->n - _p->write_index;
-
-        // copy lower section: 'b' elements
-        memmove(_p->v + (_p->write_index)*(_p->size),
-                _w,
-                b*(_p->size));
-        
-        // copy upper section
-        memmove(_p->v,
-                _w + b*(_p->size),
-                (_n-b)*(_p->size));
-    } else {
-        memmove(_p->v + (_p->write_index)*(_p->size),
-                _w,
-                _n*(_p->size));
-    }
-
-    _p->num_write_elements_available -= _n;
-    _p->num_read_elements_available += _n;
-
-    _p->write_index = (_p->write_index + _n) % _p->n;
-
-    // signal consumer
-    if (_p->consumer_waiting) {
-        pthread_cond_signal(&(_p->consumer_data_ready));
-    }
-
-    pthread_mutex_unlock(&(_p->internal_mutex));
-    pthread_mutex_unlock(&(_p->producer_mutex));
 }
 
 void gport2_produce_available(gport2 _p,
@@ -217,49 +188,20 @@ void gport2_produce_available(gport2 _p,
 
 void gport2_consume(gport2 _p, void * _r, unsigned int _n)
 {
-    pthread_mutex_lock(&(_p->consumer_mutex));
-    pthread_mutex_lock(&(_p->internal_mutex));
+    unsigned int num_consumed;
+    unsigned int num_consumed_total = 0;
 
-    // TODO : read data as it becomes available instead of waiting for entire block
-    while (_n > _p->num_read_elements_available) {
-        _p->consumer_waiting = true;
-        pthread_cond_wait(&(_p->consumer_data_ready),&(_p->internal_mutex));
+    // consume samples as they become available
+    while (_n > 0) {
+        // consume maximum number of samples available
+        gport2_consume_available(_p,
+                                 _r + num_consumed_total*_p->size,
+                                 _n,
+                                 &num_consumed);
+        // update counters
+        num_consumed_total += num_consumed;
+        _n -= num_consumed;
     }
-    _p->consumer_waiting = false;
-
-    // copy data circularly if necessary
-    if (_n > _p->n - _p->read_index) {
-        // underflow: copy data circularly
-        unsigned int b = _p->n - _p->read_index;
-
-        // copy lower section: 'b' elements
-        memmove(_r,
-                _p->v + (_p->read_index)*(_p->size),
-                b*(_p->size));
-
-        // copy upper section
-        memmove(_r + b*(_p->size),
-                _p->v,
-                (_n-b)*(_p->size));
-
-    } else {
-        memmove(_r,
-                _p->v + (_p->read_index)*(_p->size),
-                _n*(_p->size));
-    }
-
-    _p->num_read_elements_available -= _n;
-    _p->num_write_elements_available += _n;
-
-    _p->read_index = (_p->read_index + _n) % _p->n;
-
-    // signal producer
-    if (_p->producer_waiting) {
-        pthread_cond_signal(&(_p->producer_data_ready));
-    }
-
-    pthread_mutex_unlock(&(_p->internal_mutex));
-    pthread_mutex_unlock(&(_p->consumer_mutex));
 }
 
 void gport2_consume_available(gport2 _p, void * _r, unsigned int _nmax, unsigned int *_nc)
