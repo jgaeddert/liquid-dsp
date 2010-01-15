@@ -183,7 +183,6 @@ void gport2_produce_available(gport2 _p,
 
     // copy data circularly if necessary
     if (_p->write_index + n > _p->n) {
-        printf("overflow\n");
         // overflow: copy data circularly
         unsigned int b = _p->n - _p->write_index;
 
