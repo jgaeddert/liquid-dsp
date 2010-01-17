@@ -105,6 +105,7 @@ void autotest_mod_demod_qam256() {  modem_test_mod_demod(MOD_QAM, 8);   }
 //
 // AUTOTESTS: generic APSK (maps to specific APSK modems internally)
 //
+void autotest_mod_demod_apsk4()  {  modem_test_mod_demod(MOD_APSK,2);   }
 void autotest_mod_demod_apsk8()  {  modem_test_mod_demod(MOD_APSK,3);   }
 void autotest_mod_demod_apsk16() {  modem_test_mod_demod(MOD_APSK,4);   }
 void autotest_mod_demod_apsk32() {  modem_test_mod_demod(MOD_APSK,5);   }

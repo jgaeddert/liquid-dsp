@@ -40,6 +40,7 @@ const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES] = {
     "arb (rotated)",
     "bpsk",
     "qpsk",
+    "apsk4(1,3)",
     "apsk8(1,7)",
     "apsk16(4,12)",
     "apsk32(4,12,16)",

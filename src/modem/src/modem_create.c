@@ -67,6 +67,8 @@ modem modem_create(
         return modem_create_bpsk();
     case MOD_QPSK:
         return modem_create_qpsk();
+    case MOD_APSK4:
+        return modem_create_apsk4(_bits_per_symbol);
     case MOD_APSK8:
         return modem_create_apsk8(_bits_per_symbol);
     case MOD_APSK16:
@@ -290,6 +292,7 @@ modem modem_create_apsk(
     unsigned int _bits_per_symbol)
 {
     switch (_bits_per_symbol) {
+    case 2:     return modem_create_apsk4(_bits_per_symbol);
     case 3:     return modem_create_apsk8(_bits_per_symbol);
     case 4:     return modem_create_apsk16(_bits_per_symbol);
     case 5:     return modem_create_apsk32(_bits_per_symbol);
@@ -303,6 +306,33 @@ modem modem_create_apsk(
 
     return NULL;
 }
+
+modem modem_create_apsk4(
+    unsigned int _bits_per_symbol)
+{
+    if (_bits_per_symbol != 2) {
+        fprintf(stderr,"error: modem_create_apsk4(), bits/symbol is not exactly 2\n");
+        exit(1);
+    }
+    modem mod = (modem) malloc( sizeof(struct modem_s) );
+    mod->scheme = MOD_APSK4;
+
+    modem_init(mod, 3);
+    
+    // set internals
+    mod->apsk_num_levels = apsk4_num_levels;
+    mod->apsk_p = (unsigned int *) apsk4_p;
+    mod->apsk_r = (float *) apsk4_r;
+    mod->apsk_phi = (float *) apsk4_phi;
+    mod->apsk_r_slicer = (float *) apsk4_r_slicer;
+    mod->apsk_symbol_map = (unsigned int *) apsk4_symbol_map;
+
+    mod->modulate_func = &modem_modulate_apsk;
+    mod->demodulate_func = &modem_demodulate_apsk;
+
+    return mod;
+}
+
 
 modem modem_create_apsk8(
     unsigned int _bits_per_symbol)

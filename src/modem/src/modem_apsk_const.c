@@ -27,6 +27,23 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
+// APSK4(1,3)
+const unsigned int apsk4_num_levels = 2;
+const unsigned int apsk4_p[2] = {1,3};
+
+const float apsk4_r[2] = {
+    0.00000000,  1.15470052};
+
+const float apsk4_phi[2] = {
+    0.00000000,  0.00000000};
+
+const float apsk4_r_slicer[1] = {
+    0.57735026};
+
+const unsigned int apsk4_symbol_map[4] = {
+    3,2,1,0};
+  
+
 // APSK8(1,7)
 const unsigned int apsk8_num_levels = 2;
 const unsigned int apsk8_p[2] = {1,7};
