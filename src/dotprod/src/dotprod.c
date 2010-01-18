@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -90,6 +91,20 @@ DOTPROD() DOTPROD(_create_rev)(TC * _h, unsigned int _n)
         q->h[i-1] = _h[_n-i];
     
     return q;
+}
+
+DOTPROD() DOTPROD(_recreate)(DOTPROD() _q,
+                             TC * _h,
+                             unsigned int _n)
+{
+    // set new length
+    _q->n = _n;
+
+    // re-allocate memory and move new coefficients
+    _q->h = (TC*) realloc(_q->h, (_q->n)*sizeof(TC));
+    memmove(_q->h, _h, (_q->n)*sizeof(TC));
+
+    return _q;
 }
 
 void DOTPROD(_destroy)(DOTPROD() _q)
