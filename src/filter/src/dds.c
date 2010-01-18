@@ -19,7 +19,7 @@
  */
 
 //
-// 2nd-order integrating loop filter
+// direct digital synthesizer (up/down-converter)
 //
 
 #include <stdlib.h>
@@ -35,12 +35,6 @@
 //  RESAMP2()       halfband resampler
 //  PRINTVAL()      print macro
 
-#define DDS(name)           LIQUID_CONCAT(dds_cccf,name)
-#define T                   float complex
-#define WINDOW(name)        LIQUID_CONCAT(cfwindow,name)
-#define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
-#define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
-
 struct DDS(_s) {
     // user-defined parameters
     unsigned int num_stages;    // number of halfband stages
@@ -49,14 +43,14 @@ struct DDS(_s) {
     float slsl0;                // filter sidelobe levels [dB]
 
     // derived values
-    unsigned int rate;  // re-sampling rate (2^num_stages)
+    unsigned int rate;          // re-sampling rate (2^num_stages)
 
     // halfband decimation/interpolation stages
     RESAMP2() * halfband_resamp;
-    float * fc;             // filter center frequency
-    float * ft;             // filter transition bandwidth
-    float * slsl;           // filter sidelobe suppression level
-    unsigned int * h_len;   // filter length
+    float * fc;                 // filter center frequency
+    float * ft;                 // filter transition bandwidth
+    float * slsl;               // filter sidelobe suppression level
+    unsigned int * h_len;       // filter length
 
     // internal buffers
     unsigned int buffer_len;
