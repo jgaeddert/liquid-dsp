@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -36,9 +37,10 @@
 //  PRINTVAL()  print macro
 
 struct FIRPFB(_s) {
-    TC * h;
-    unsigned int h_len;
-    unsigned int num_filters;
+    TC * h;                     // filter coefficients array
+    unsigned int h_len;         // total number of filter coefficients
+    unsigned int h_sub_len;     // sub-sampled filter length
+    unsigned int num_filters;   // number of filters
 
     WINDOW() w;
     DOTPROD() * dp;
@@ -69,27 +71,42 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len
         b->dp[i] = DOTPROD(_create)(h_sub,h_sub_len);
     }
 
-    b->h_len = h_sub_len;
+    // save sub-sampled filter length
+    b->h_sub_len = h_sub_len;
 
     // create window buffer
-    b->w = WINDOW(_create)(b->h_len);
+    b->w = WINDOW(_create)(b->h_sub_len);
     WINDOW(_clear)(b->w);
 
     return b;
 }
 
 // re-create filterbank object
+// TODO : check this method
 FIRPFB() FIRPFB(_recreate)(FIRPFB() _q,
                            unsigned int _num_filters,
                            TC * _h,
                            unsigned int _h_len)
 {
-    // TODO : only destroy objects if necessary
+    // check to see if filter length has changed
+    if (_h_len != _q->h_len || _num_filters != _q->num_filters) {
+        // filter length has changed: recreate entire filter
+        FIRPFB(_destroy)(_q);
+        _q = FIRPFB(_create)(_num_filters,_h,_h_len);
+        return _q;
+    }
 
-    FIRPFB(_destroy)(_q);
+    // re-create each dotprod object
+    TC h_sub[_q->h_sub_len];
+    unsigned int i, n;
+    for (i=0; i<_q->num_filters; i++) {
+        for (n=0; n<_q->h_sub_len; n++) {
+            // load filter in reverse order
+            h_sub[_q->h_sub_len-n-1] = _h[i + n*(_q->num_filters)];
+        }
 
-    _q = FIRPFB(_create)(_num_filters,_h,_h_len);
-
+        _q->dp[i] = DOTPROD(_recreate)(_q->dp[i],h_sub,_q->h_sub_len);
+    }
     return _q;
 }
 
