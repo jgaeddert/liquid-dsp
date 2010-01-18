@@ -1014,8 +1014,12 @@ LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF,
 #define LIQUID_FIRPFB_DEFINE_API(FIRPFB,TO,TC,TI)               \
 typedef struct FIRPFB(_s) * FIRPFB();                           \
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters,             \
-               TC * _h,                                         \
-               unsigned int _h_len);                            \
+                         TC * _h,                               \
+                         unsigned int _h_len);                  \
+FIRPFB() FIRPFB(_recreate)(FIRPFB() _q,                         \
+                           unsigned int _num_filters,           \
+                           TC * _h,                             \
+                           unsigned int _h_len);                \
 void FIRPFB(_destroy)(FIRPFB() _b);                             \
 void FIRPFB(_print)(FIRPFB() _b);                               \
 void FIRPFB(_push)(FIRPFB() _b, TI _x);                         \

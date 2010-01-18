@@ -78,6 +78,21 @@ FIRPFB() FIRPFB(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len
     return b;
 }
 
+// re-create filterbank object
+FIRPFB() FIRPFB(_recreate)(FIRPFB() _q,
+                           unsigned int _num_filters,
+                           TC * _h,
+                           unsigned int _h_len)
+{
+    // TODO : only destroy objects if necessary
+
+    FIRPFB(_destroy)(_q);
+
+    _q = FIRPFB(_create)(_num_filters,_h,_h_len);
+
+    return _q;
+}
+
 void FIRPFB(_destroy)(FIRPFB() _b)
 {
     unsigned int i;
