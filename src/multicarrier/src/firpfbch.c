@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -121,12 +122,13 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     unsigned int h_sub_len = 2*(c->m);  // length of each sub-sampled filter
     float h_sub[h_sub_len];
     for (i=0; i<c->num_channels; i++) {
+        // sub-sample prototype filter, loading coefficients in reverse order
         for (n=0; n<h_sub_len; n++) {
-            h_sub[n] = c->h[i + n*(c->num_channels)];
+            h_sub[h_sub_len-n-1] = c->h[i + n*(c->num_channels)];
         }
         // create window buffer and dotprod object (coefficients
         // loaded in reverse order)
-        c->dp[i] = DOTPROD(_create_rev)(h_sub,h_sub_len);
+        c->dp[i] = DOTPROD(_create)(h_sub,h_sub_len);
         c->w[i]  = WINDOW(_create)(h_sub_len);
 
 #if DEBUG_FIRPFBCH_PRINT

@@ -79,20 +79,6 @@ DOTPROD() DOTPROD(_create)(TC * _h, unsigned int _n)
     return q;
 }
 
-DOTPROD() DOTPROD(_create_rev)(TC * _h, unsigned int _n)
-{
-    DOTPROD() q = (DOTPROD()) malloc(sizeof(struct DOTPROD(_s)));
-    q->n = _n;
-    q->h = (TC*) malloc((q->n)*sizeof(TC));
-
-    // load coefficients in reverse order
-    unsigned int i;
-    for (i=_n; i>0; i--)
-        q->h[i-1] = _h[_n-i];
-    
-    return q;
-}
-
 DOTPROD() DOTPROD(_recreate)(DOTPROD() _q,
                              TC * _h,
                              unsigned int _n)

@@ -470,7 +470,6 @@ void DOTPROD(_run4)(TC *_h, TI *_x, unsigned int _n, TO *_y);   \
                                                                 \
 typedef struct DOTPROD(_s) * DOTPROD();                         \
 DOTPROD() DOTPROD(_create)(TC * _v, unsigned int _n);           \
-DOTPROD() DOTPROD(_create_rev)(TC * _v, unsigned int _n);       \
 DOTPROD() DOTPROD(_recreate)(DOTPROD() _q,                      \
                              TC * _v,                           \
                              unsigned int _n);                  \
