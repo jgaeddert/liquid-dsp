@@ -141,8 +141,16 @@ void FIRPFB(_push)(FIRPFB() _b, TI _x)
     WINDOW(_push)(_b->w, _x);
 }
 
-void FIRPFB(_execute)(FIRPFB() _b, unsigned int _i, TO *_y)
+void FIRPFB(_execute)(FIRPFB() _b,
+                      unsigned int _i,
+                      TO *_y)
 {
+    // validate input
+    if (_i >= _b->num_filters) {
+        fprintf(stderr,"error: firpfb_execute(), filterbank index exceeds maximum\n");
+        exit(1);
+    }
+
     // read buffer
     TI *r;
     WINDOW(_read)(_b->w, &r);
