@@ -1,11 +1,8 @@
-// file: modem_test.c
+// modem_example.c
 //
 // Tests simple modulation/demodulation without noise or phase
 // offset, counting the number of resulting symbol errors.
 //
-// Complile and run:
-//   $ gcc modem_test.c -lliquid -o modemtest
-//   $ ./modemtest
 
 #include <stdlib.h>
 #include <stdio.h>
