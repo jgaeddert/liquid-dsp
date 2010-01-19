@@ -1,5 +1,58 @@
-% Buffer documentation / sandbox
+% 
+% MODULE : buffer
+%
 \section{buffer}
+\label{module:buffer}
+
+%
+% gport
+%
+\subsection{gport}
+\label{module:buffer:gport}
+The {\tt gport} object implements a generic port to share data
+between asynchronous threads.
+
+There are two ways to access data: direct memory access and 
+indirect (copied) memory acess.
+Each has distinct advantages and distadvantages.
+Depending upon your needs...
+Regardless of which implementation you use, the model is equivalent:
+a buffer of data (initially empty) is created.
+The {\it producer} is the method in charge of writing to the buffer (or
+``producing'' the data).
+The {\it consumer} is the method in charge of reading the data from the buffer
+(or ``consuming'' it).
+The producer and consumer methods can exist on completely separate threads,
+and do not need to be externally synchronized.
+The {\it gport} object synchronizes the data between the ports.
+
+\subsubsection{Direct Memory Access}
+Using {\tt gport} via direct memory access is a multi-step process, equivalent
+for both the producer and consumer threads.
+For the sake of simplicity, we will describe the process for writing data to
+the port on the producer side...
+
+\begin{enumerate}
+\item the producer requests a lock on the port
+\item once the request is serviced, the port returns a pointer to the array of
+      data...
+\item the producer writes its data at this location
+\item the producer then unlocks the port, allowing the consumer thread to read
+      data from it.
+\item this process is repeated as necessary
+\end{enumerate}
+
+\input{listings/gport.direct.example.c.tex}
+
+\subsubsection{Indirect/Copied Memory Access}
+
+\begin{itemize}
+\item the producer 
+\end{itemize}
+
+\input{listings/gport.indirect.example.c.tex}
+
+\subsubsection{Key differences between memory access modes}
 
 \subsection{window}
 used to implement a sliding window
