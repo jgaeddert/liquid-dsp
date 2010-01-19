@@ -90,6 +90,23 @@ float sincf(float _x) {
     return sinf(M_PI*_x)/(M_PI*_x);
 }
 
+// next power of 2 : y = ceil(log2(_x))
+unsigned int liquid_nextpow2(unsigned int _x)
+{
+    if (_x == 0) {
+        fprintf(stderr,"error: liquid_nextpow2(), input must be greater than zero\n");
+        exit(0);
+    }
+
+    _x--;
+    unsigned int n=0;
+    while (_x > 0) {
+        _x >>= 1;
+        n++;
+    }
+    return n;
+}
+
 // 
 // Windowing functions
 //

@@ -1722,6 +1722,9 @@ float besseli_0(float _z);
 // sin(pi x) / (pi x)
 float sincf(float _x);
 
+// next power of 2 : y = ceil(log2(_x))
+unsigned int liquid_nextpow2(unsigned int _x);
+
 // 
 // Windowing functions
 //

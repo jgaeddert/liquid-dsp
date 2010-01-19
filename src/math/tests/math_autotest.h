@@ -95,5 +95,35 @@ void autotest_sincf()
     CONTEND_DELTA(sincf(0.0f), 1.0f, tol);
 }
 
+// 
+// AUTOTEST: nextpow2
+//
+void autotest_nextpow2()
+{
+    CONTEND_EQUALITY(liquid_nextpow2(1),    0);
+
+    CONTEND_EQUALITY(liquid_nextpow2(2),    1);
+
+    CONTEND_EQUALITY(liquid_nextpow2(3),    2);
+    CONTEND_EQUALITY(liquid_nextpow2(4),    2);
+
+    CONTEND_EQUALITY(liquid_nextpow2(5),    3);
+    CONTEND_EQUALITY(liquid_nextpow2(6),    3);
+    CONTEND_EQUALITY(liquid_nextpow2(7),    3);
+    CONTEND_EQUALITY(liquid_nextpow2(8),    3);
+
+    CONTEND_EQUALITY(liquid_nextpow2(9),    4);
+    CONTEND_EQUALITY(liquid_nextpow2(10),   4);
+    CONTEND_EQUALITY(liquid_nextpow2(11),   4);
+    CONTEND_EQUALITY(liquid_nextpow2(12),   4);
+    CONTEND_EQUALITY(liquid_nextpow2(13),   4);
+    CONTEND_EQUALITY(liquid_nextpow2(14),   4);
+    CONTEND_EQUALITY(liquid_nextpow2(15),   4);
+
+    CONTEND_EQUALITY(liquid_nextpow2(67),   7);
+    CONTEND_EQUALITY(liquid_nextpow2(179),  8);
+    CONTEND_EQUALITY(liquid_nextpow2(888),  10);
+}
+
 #endif 
 
