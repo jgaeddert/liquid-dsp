@@ -126,10 +126,9 @@ void FIRPFB(_print)(FIRPFB() _b)
     unsigned int i,n;
 
     for (i=0; i<_b->num_filters; i++) {
-        printf("bank %u:\n",i);
+        printf("  bank %3u: ",i);
         for (n=0; n<_b->h_len; n++) {
-            printf("  ");
-            //PRINTVAL_TC(stdout,"h",n,_b->dp[i]->h[n]);
+            //printf("%6.4f+j%6.4f ", crealf(_b->dp[i]->h[n]), cimagf(_b->dp[i]->h[n]));
         }
         printf("\n");
     }
