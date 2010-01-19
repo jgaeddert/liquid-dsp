@@ -24,7 +24,7 @@ The {\it consumer} is the method in charge of reading the data from the buffer
 (or ``consuming'' it).
 The producer and consumer methods can exist on completely separate threads,
 and do not need to be externally synchronized.
-The {\it gport} object synchronizes the data between the ports.
+The {\tt gport} object synchronizes the data between the ports.
 
 \subsubsection{Direct Memory Access}
 Using {\tt gport} via direct memory access is a multi-step process, equivalent
@@ -45,10 +45,7 @@ the port on the producer side...
 \input{listings/gport.direct.example.c.tex}
 
 \subsubsection{Indirect/Copied Memory Access}
-
-\begin{itemize}
-\item the producer 
-\end{itemize}
+Indirect (or ``copied'') memory access...
 
 \input{listings/gport.indirect.example.c.tex}
 
@@ -65,6 +62,12 @@ The benefit is that both the internal producer and consumer methods will write
 the data as it becomes available, and does not have to wait internally until
 an entire block of the requested size is available.
 
+It is important to stay consistent with the memory access mode used within a
+thread, however mixed memory access modes can be used between threads on the
+same port.
+For example, the producer thread may use the direct memory access mode while
+the consumer uses the indrect memory acess mode.
+
 \subsubsection{Problem areas}
 When using the direct memory access method, the size of the data request
 during lock is limited by the size of the port.
@@ -79,8 +82,10 @@ window...
 If the size of the new window is larger than the old one, the old values are
 pushed to the end
 
+\begin{verbatim}
 8   : 1 2 3 4 5 6 7 8
 16  : 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8
 
 8   : 1 2 3 4 5 6 7 8
 4   : 5 6 7 8
+\end{verbatim}
