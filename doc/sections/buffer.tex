@@ -53,6 +53,22 @@ the port on the producer side...
 \input{listings/gport.indirect.example.c.tex}
 
 \subsubsection{Key differences between memory access modes}
+While the direct memory access method provides a simpler interface--in the
+sense that no external buffers are required--the user must take care in not
+writing outside the bounds of the memory requested.
+That is, if 256 samples are locked, only 256 values are available.
+Writing more data will produce unexpected results.
+
+Indirect memory acess requires the use of memory allocated externally to the
+port.
+The benefit is that both the internal producer and consumer methods will write
+the data as it becomes available, and does not have to wait internally until
+an entire block of the requested size is available.
+
+\subsubsection{Problem areas}
+When using the direct memory access method, the size of the data request
+during lock is limited by the size of the port.
+[[race/lock conditions?]]
 
 \subsection{window}
 used to implement a sliding window

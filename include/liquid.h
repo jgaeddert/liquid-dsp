@@ -356,7 +356,7 @@ LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_UINT, unsigned int)
 
 //
-// Generic port
+// Generic port [depreciated]
 //
 typedef struct gport_s * gport;
 gport gport_create(unsigned int _n, unsigned int _size);

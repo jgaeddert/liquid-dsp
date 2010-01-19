@@ -19,7 +19,7 @@
  */
 
 //
-// Generic port
+// Generic port [depreciated]
 //
 
 #include <stdlib.h>
