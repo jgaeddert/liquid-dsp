@@ -48,6 +48,15 @@ struct RESAMP(_s) {
     int b;          // filterbank index
     float del;      // fractional delay step
 
+    // fixed-point phase
+    unsigned int theta;             // sampling phase
+    unsigned int d_theta;           // phase differential
+
+    unsigned int num_bits_phase;    // number of bits in phase
+    unsigned int max_phase;         // maximum phase value
+    unsigned int num_bits_npfb;     // number of bits in npfb
+    unsigned int num_shift_bits;    // number of bits to shift to compute b
+
     unsigned int npfb;
     FIRPFB() f;
 
@@ -67,10 +76,19 @@ RESAMP() RESAMP(_create)(float _r,
     q->slsl  = _slsl;
     q->fc    = _fc;
     q->h_len = _h_len;
-    q->npfb  = _npfb;
+
+    q->num_bits_npfb = 0;
+    while (_npfb > 1) {
+        q->num_bits_npfb++;
+        _npfb >>= 1;
+    }
+    q->npfb = 1<<q->num_bits_npfb;
+    q->num_bits_phase = 20;
+    q->max_phase = 1 << q->num_bits_phase;
+    q->num_shift_bits = q->num_bits_phase - q->num_bits_npfb;
 
     // design filter
-    unsigned int n = 2*_h_len*_npfb+1;
+    unsigned int n = 2*_h_len*q->npfb+1;
     float hf[n];
     TC h[n];
     fir_kaiser_window(n,q->fc/((float)(q->npfb)),q->slsl,0.0f,hf);
@@ -85,7 +103,7 @@ RESAMP() RESAMP(_create)(float _r,
     // copy to type-specific array
     for (i=0; i<n; i++)
         h[i] = hf[i]*gain;
-    q->f = FIRPFB(_create)(_npfb,h,n-1);
+    q->f = FIRPFB(_create)(q->npfb,h,n-1);
 
     //for (i=0; i<n; i++)
     //    PRINTVAL_TC(stdout,"h",i,h[i]);
@@ -95,6 +113,9 @@ RESAMP() RESAMP(_create)(float _r,
     q->bf  = 0.0f;
     q->b   = 0;
     q->del = 1.0f / q->r;
+
+    q->theta = 0;
+    q->d_theta = (unsigned int)( q->max_phase * q->del );
 
     return q;
 }
@@ -117,6 +138,8 @@ void RESAMP(_reset)(RESAMP() _q)
     _q->tau = 0.0f;
     _q->bf  = 0.0f;
     _q->b   = 0;
+
+    _q->theta = 0;
 }
 
 void RESAMP(_setrate)(RESAMP() _q, float _rate)
@@ -124,6 +147,8 @@ void RESAMP(_setrate)(RESAMP() _q, float _rate)
     // TODO : validate rate, validate this method
     _q->r = _rate;
     _q->del = 1.0f / _q->r;
+
+    _q->d_theta = (unsigned int)( _q->max_phase * _q->del );
 }
 
 void RESAMP(_execute)(RESAMP() _q,
@@ -135,21 +160,33 @@ void RESAMP(_execute)(RESAMP() _q,
     unsigned int n=0;
     
     //while (_q->tau < 1.0f) {
-    while (_q->b < _q->npfb) {
+    //while (_q->b < _q->npfb) {
+    while (_q->theta < _q->max_phase) {
 #if DEBUG_RESAMP_PRINT
-        printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
+        //printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
+        printf("  [%2u] : theta = %6u, b : %6u\n", n, _q->theta, _q->b);
 #endif
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
 
+#if 0
         _q->tau += _q->del;
         _q->bf = _q->tau * (float)(_q->npfb);
         _q->b  = (int)roundf(_q->bf);
+#else
+        _q->theta += _q->d_theta;
+        _q->b = _q->theta >> _q->num_shift_bits;
+#endif
         n++;
     }
 
+#if 0
     _q->tau -= 1.0f;
     _q->bf  -= (float)(_q->npfb);
     _q->b   -= _q->npfb;
+#else
+    _q->theta -= _q->max_phase;
+    _q->b = _q->theta >> _q->num_shift_bits;
+#endif
     *_num_written = n;
 }
 
