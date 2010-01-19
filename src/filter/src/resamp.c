@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -49,8 +50,8 @@ struct RESAMP(_s) {
     int b;          // filterbank index
     float del;      // fractional delay step
 
-    // fixed-point phase
 #if RESAMP_USE_FIXED_POINT_PHASE
+    // fixed-point phase
     unsigned int theta;             // sampling phase
     unsigned int d_theta;           // phase differential
 
@@ -59,6 +60,7 @@ struct RESAMP(_s) {
     unsigned int num_bits_npfb;     // number of bits in npfb
     unsigned int num_shift_bits;    // number of bits to shift to compute b
 #else
+    // floating-point phase
     float tau;      // accumulated timing phase (0 <= tau <= 1)
     float bf;       // soft filterbank index
 #endif
@@ -87,11 +89,7 @@ RESAMP() RESAMP(_create)(float _r,
     q->del = 1.0f / q->r;
 
 #if RESAMP_USE_FIXED_POINT_PHASE
-    q->num_bits_npfb = 0;
-    while (_npfb > 1) {
-        q->num_bits_npfb++;
-        _npfb >>= 1;
-    }
+    q->num_bits_npfb = liquid_nextpow2(_npfb);
     q->npfb = 1<<q->num_bits_npfb;
     q->num_bits_phase = 20;
     q->max_phase = 1 << q->num_bits_phase;
