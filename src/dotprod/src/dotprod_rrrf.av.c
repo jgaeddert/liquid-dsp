@@ -107,6 +107,17 @@ dotprod_rrrf dotprod_rrrf_create(float * _h, unsigned int _n)
     return dp;
 }
 
+// re-create the structured dotprod object
+dotprod_rrrf dotprod_rrrf_recreate(dotprod_rrrf _dp,
+                                   float * _h,
+                                   unsigned int _n)
+{
+    // completely destroy and re-create dotprod object
+    dotprod_rrrf_destroy(_dp);
+    _dp = dotprod_rrrf_create(_h,_n);
+    return _dp;
+}
+
 // destroy the structured dotprod object
 void dotprod_rrrf_destroy(dotprod_rrrf _dp)
 {
