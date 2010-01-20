@@ -1072,6 +1072,9 @@ struct gradient_search_s {
     int minimize;       // minimize/maximimze utility (search direction)
 };
 
+// compute the gradient vector (estimate)
+void gradient_search_compute_gradient(gradient_search _g);
+
 // normalize the gradient vector
 void gradient_search_normalize_gradient(gradient_search _g);
 

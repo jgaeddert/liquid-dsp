@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "liquid.internal.h"
 
@@ -104,30 +105,14 @@ void gradient_search_reset(gradient_search _g)
 
 void gradient_search_step(gradient_search _g)
 {
-    // compute initial utility
-    _g->utility = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
-
-    // compute gradient on each dimension
-    float f_prime;
-
-    unsigned int i;
-    // reset v_prime
-    for (i=0; i<_g->num_parameters; i++)
-        _g->v_prime[i] = _g->v[i];
-
-    for (i=0; i<_g->num_parameters; i++) {
-        _g->v_prime[i] += _g->delta;
-        f_prime = _g->get_utility(_g->userdata, _g->v_prime, _g->num_parameters);
-        _g->v_prime[i] -= _g->delta;
-        _g->gradient[i] = (f_prime - _g->utility) / _g->delta;
-    }
+    // compute gradient vector (un-normalized)
+    gradient_search_compute_gradient(_g);
 
     // normalize gradient vector
     gradient_search_normalize_gradient(_g);
 
-    float utility_tmp;
-
     // compute vector step : retain [alpha]% of old gradient
+    unsigned int i;
     for (i=0; i<_g->num_parameters; i++) {
         _g->dv[i] = _g->gamma_hat * _g->gradient[i] +
                     _g->dv_hat[i] * _g->alpha;
@@ -137,9 +122,9 @@ void gradient_search_step(gradient_search _g)
     for (i=0; i<_g->num_parameters; i++)
         _g->dv_hat[i] = _g->dv[i];
 
-    // update v; polarity determines optimization type:
-    //   - (minimum)
-    //   + (maximum)
+    // update optimum vector: optimization type determines polarity
+    //   - (minimize)
+    //   + (maximize)
     if (_g->minimize) {
         for (i=0; i<_g->num_parameters; i++)
             _g->v[i] -= _g->dv[i];
@@ -149,6 +134,7 @@ void gradient_search_step(gradient_search _g)
     }
 
     // compute utility for this parameter set,
+    float utility_tmp;
     utility_tmp = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
 
     // decrease gamma if utility did not improve from last iteration
@@ -163,6 +149,8 @@ void gradient_search_step(gradient_search _g)
     _g->utility = utility_tmp;
 }
 
+// batch execution of gradient search : run many steps and stop
+// when criteria are met
 float gradient_search_execute(gradient_search _g,
                               unsigned int _max_iterations,
                               float _target_utility)
@@ -171,7 +159,7 @@ float gradient_search_execute(gradient_search _g,
     do {
         i++;
         gradient_search_step(_g);
-        _g->utility = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
+        //_g->utility = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
 
     } while (
         optim_threshold_switch(_g->utility, _target_utility, _g->minimize) &&
@@ -191,6 +179,38 @@ int optim_threshold_switch(float _u1, float _u2, int _minimize)
 // internal
 //
 
+// compute the gradient vector (estimate)
+void gradient_search_compute_gradient(gradient_search _g)
+{
+    // compute initial utility
+    float u, u_prime;
+    u = _g->get_utility(_g->userdata,
+                        _g->v,
+                        _g->num_parameters);
+
+    // reset v_prime
+    memmove(_g->v_prime, _g->v, _g->num_parameters*sizeof(float));
+
+    unsigned int i;
+    // compute gradient estimate on each dimension
+    for (i=0; i<_g->num_parameters; i++) {
+        // increment test vector by delta
+        _g->v_prime[i] += _g->delta;
+
+        // compute new utility
+        u_prime = _g->get_utility(_g->userdata, 
+                                  _g->v_prime,
+                                  _g->num_parameters);
+
+        // reset test vector
+        _g->v_prime[i] = _g->v[i];
+
+        // compute gradient estimate (slop of utility for the
+        // i^th parameter)
+        _g->gradient[i] = (u_prime - u) / _g->delta;
+    }
+}
+
 // normalize gradient vector to unity
 void gradient_search_normalize_gradient(gradient_search _g)
 {
@@ -208,4 +228,5 @@ void gradient_search_normalize_gradient(gradient_search _g)
     for (i=0; i<_g->num_parameters; i++)
         _g->gradient[i] *= sig;
 }
+
 
