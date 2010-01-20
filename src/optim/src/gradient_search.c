@@ -74,7 +74,7 @@ gradient_search gradient_search_create_advanced(
     gs->v_prime  = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->dv_hat   = (float*) calloc( gs->num_parameters, sizeof(float) );
     gs->dv       = (float*) calloc( gs->num_parameters, sizeof(float) );
-    gs->utility = gs->get_utility(gs->userdata, gs->v, gs->num_parameters);
+    gs->utility = 0.0f;
 
     return gs;
 }
@@ -104,6 +104,9 @@ void gradient_search_reset(gradient_search _g)
 
 void gradient_search_step(gradient_search _g)
 {
+    // compute initial utility
+    _g->utility = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
+
     // compute gradient on each dimension
     float f_prime;
 
@@ -160,7 +163,9 @@ void gradient_search_step(gradient_search _g)
     _g->utility = utility_tmp;
 }
 
-float gradient_search_run(gradient_search _g, unsigned int _max_iterations, float _target_utility)
+float gradient_search_execute(gradient_search _g,
+                              unsigned int _max_iterations,
+                              float _target_utility)
 {
     unsigned int i=0;
     do {
