@@ -46,7 +46,7 @@ struct FIR_FARROW(_s) {
     unsigned int Q;     // polynomial order
 
     float mu;           // fractional sample delay
-    float * P;          // polynomail coefficients matrix [n x p]
+    float * P;          // polynomail coefficients matrix [ h_len x Q+1 ]
     float gamma;        // inverse of DC response (normalization factor)
 
 #if FIR_FARROW_USE_DOTPROD
@@ -57,26 +57,31 @@ struct FIR_FARROW(_s) {
 #endif
 };
 
-FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
+FIR_FARROW() FIR_FARROW(_create)(unsigned int _h_len,
                                  unsigned int _p,
                                  float _fc,
                                  float _slsl)
 {
-    FIR_FARROW() f = (FIR_FARROW()) malloc(sizeof(struct FIR_FARROW(_s)));
-    f->h_len = _n;
-    f->Q     = _p;
-    f->slsl  = _slsl;
-    f->fc    = _fc;
+    // validate input
+    if (_h_len < 2) {
+        fprintf(stderr,"error: fir_farrow_xxxt_create(), filter length must be > 2\n");
+        exit(1);
+    } else if (_p < 1) {
+        fprintf(stderr,"error: fir_farrow_xxxt_create(), polynomial order must be at least 1\n");
+        exit(1);
+    } else if (_fc < 0.0f || _fc > 1.0f) {
+        fprintf(stderr,"error: fir_farrow_xxxt_create(), filter cutoff must be in [0,1]\n");
+        exit(1);
+    }
 
-    // TODO: validate input
+    FIR_FARROW() f = (FIR_FARROW()) malloc(sizeof(struct FIR_FARROW(_s)));
+    f->h_len = _h_len;  // filter length
+    f->Q     = _p;      // polynomial order
+    f->slsl  = _slsl;   // filter sidelobe suppression level
+    f->fc    = _fc;     // filter cutoff frequency
 
     // allocate memory for filter coefficients
     f->h = (TC *) malloc((f->h_len)*sizeof(TC));
-
-    // load filter in reverse order
-    //unsigned int i;
-    //for (i=_n; i>0; i--)
-    //    f->h[i-1] = _h[_n-i];
 
 #if FIR_FARROW_USE_DOTPROD
     f->w = WINDOW(_create)(f->h_len);
@@ -84,13 +89,17 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,
     f->v = malloc((f->h_len)*sizeof(TI));
 #endif
 
-    // allocate memory for polynomial matrix
+    // allocate memory for polynomial matrix [ h_len x Q+1 ]
     f->P = (float*) malloc((f->h_len)*(f->Q+1)*sizeof(float));
 
+    // clear the filter object
     FIR_FARROW(_clear)(f);
 
     // generate polynomials
     FIR_FARROW(_genpoly)(f);
+
+    // set nominal delay of 0
+    FIR_FARROW(_set_delay)(f,0.0f);
 
     return f;
 }
@@ -102,8 +111,8 @@ void FIR_FARROW(_destroy)(FIR_FARROW() _f)
 #else
     free(_f->v);
 #endif
-    free(_f->h);
-    free(_f->P);
+    free(_f->h);    // free the filter coefficients array
+    free(_f->P);    // free the polynomial matrix
     free(_f);
 }
 
@@ -155,7 +164,10 @@ void FIR_FARROW(_push)(FIR_FARROW() _f, TI _x)
 
 void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
 {
-    // TODO: validate input
+    // validate input
+    if (_mu < -1.0f || _mu > 1.0f) {
+        fprintf(stderr,"warning: fir_farrow_xxxt_set_delay(), delay out of range\n");
+    }
 
     unsigned int i, n=0;
     for (i=0; i<_f->h_len; i++) {
@@ -177,7 +189,7 @@ void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y)
 #if FIR_FARROW_USE_DOTPROD
     TI *r;
     WINDOW(_read)(_f->w, &r);
-    DOTPROD(_run)(_f->h, r, _f->h_len, _y);
+    DOTPROD(_run4)(_f->h, r, _f->h_len, _y);
 #else
     TO y = 0;
     unsigned int i;
@@ -201,6 +213,7 @@ void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h)
 // internal
 //
 
+// generate polynomials to represent filter coefficients
 void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
 {
     unsigned int i, j, n=0;

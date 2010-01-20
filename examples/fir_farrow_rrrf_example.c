@@ -1,5 +1,8 @@
 //
+// fir_farrow_rrrf_example.c
 //
+// Demonstrates the functionality of the finite impulse response Farrow
+// filter for arbitrary fractional sample group delay.
 //
 
 #include <stdio.h>

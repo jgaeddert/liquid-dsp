@@ -1409,7 +1409,7 @@ LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP_MANGLE_CRCF,
 //   TI         : input data type
 #define LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW,TO,TC,TI)       \
 typedef struct FIR_FARROW(_s) * FIR_FARROW();                   \
-FIR_FARROW() FIR_FARROW(_create)(unsigned int _n,               \
+FIR_FARROW() FIR_FARROW(_create)(unsigned int _h_len,           \
                                  unsigned int _p,               \
                                  float _fc,                     \
                                  float _beta);                  \
