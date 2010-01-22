@@ -5,7 +5,7 @@
 \label{module:filter}
 
 % fir_filter
-\subsection{fir\_filter}
+\subsection{{\tt fir\_filter} (finite impulse response filter)}
 Finite impulse response filter.
 The output $y$ is the convolution of the input $x$ with the filter
 coefficients (impulse response) $h$, viz
@@ -30,15 +30,19 @@ time series to a complex-valued one.
 
 % interp
 \subsection{{\tt interp} (interpolator)}
+The {\tt interp} object implements a basic interpolator with an integer
+output-to-input resampling ratio.
 
 % decim
 \subsection{{\tt decim} (decimator)}
+The {\tt decim} object implements a basic interpolator with an integer
+input-to-output resampling ratio.
 
 % qmfb
-\subsection{qmfb (quadrature mirror filter bank)}
+\subsection{{\tt qmfb} (quadrature mirror filter bank)}
 
 % iir_filter
-\subsection{iir\_filter}
+\subsection{{\tt iir\_filter}}
 Infinite impulse response filter.
 \[
     y_n = \sum_{k=0}^{N-1}{ b_k x_{N-k-1} } +
@@ -49,21 +53,56 @@ and $\vec{a} = \{a_0,a_1,\ldots,a_{N-1}\}$ are the feed-back parameters.
 \[
     H(z) = \frac{\sum_{k=0}^{N-1}{b_k z^{-k}}}
                 {\sum_{k=0}^{N-1}{a_k z^{-k}}}
+         = \frac{ b_0 + b_1 z^{-1} + \cdots + b_{N-1} z^{N-1}}
+                { a_0 + a_1 z^{-1} + \cdots + a_{N-1} z^{N-1}}
 \]
 Typically, $H(z)$ is normalized such that $a_0=1$.
 
-\subsection{resamp2 (halfband resampler)}
+\subsection{{\tt resamp2} (halfband resampler)}
 resamp2 is a halfband resampler used for efficient interpolation and
 decimation
 
-\subsection{resamp (arbitrary resampler)}
+\subsection{{\tt resamp} (arbitrary resampler)}
+For arbitrary (e.g. non-integer) resampling ratios, the {\tt resamp} object is
+the ideal solution.
+It makes no restrictions on the output-to-input resampling ratio (e.g.
+irrational values are fair game).
+The arbitrary resampler uses a polyphase filter bank for interpolation between
+available input sample points.
 
-\subsection{symsync (symbol synchronizer)}
+See also: {\tt firpfb}, {\tt symsync}, {\tt symsync2}
 
-\subsection{symsync2 (halfband symbol synchronizer)}
+\subsection{{\tt symsync} (symbol synchronizer)}
+The {\tt symsync} object is a multi-rate symbol timing synchronizer useful for
+locking a received digital signal to the receiver's clock.
+It is effectively the same as the {\tt resamp} object, but includes an
+internal control mechanism for tracking to timing phase and frequency offsets.
+The filter structure is a polyphase representation of a Nyquist matched
+filter.
 
-\subsection{firfarrow (finite impulse response Farrow filter)}
+\subsubsection{Theory}
 
-\subsection{lf2 (second-order integrating loop filter)}
+\subsubsection{Loop Architecture}
+Timing error:
+\[
+    e_\tau(nT_s) = \tanh\left( y(nT_s)\dot{y}(nT_s) \right)
+\]
+Filtered timing error:
+\[
+    \hat{e}_\tau(n) = \beta e_\tau(n) + \alpha \hat{e}_\tau(n-1)
+\]
+For a given bandwidth $b$, the loop filter coefficients are computed as
+$\alpha = 1-b$ and $\beta = 0.22b$.
+While certainly not optimized, it is important to understand the difficulty in
+computing loop filter coefficients when a delay is introduced into the control
+loop.
+This delay is a by-product of the matched filter itself, in the sense that the
+timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
+
+\subsection{{\tt symsync2} (halfband symbol synchronizer)}
+
+\subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
+
+\subsection{{\tt lf2} (second-order integrating loop filter)}
 
 
