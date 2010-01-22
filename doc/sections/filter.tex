@@ -15,16 +15,24 @@ coefficients (impulse response) $h$, viz
 where $\vec{h} = \{h_0,h_1,\ldots,h_{N-1}\}$ is the filter impulse response.
 
 % firhilb
-\subsection{firhilb (finite impulse response Hilbert transform)}
+\subsection{{\tt firhilb} (finite impulse response Hilbert transform)}
+The {\tt firhilb} object is a finite impulse response Hilbert transform which
+converts between real and complex time series.
+The interpolator takes a complex time series and produces real-valued samples
+at twice the sample rate.
+The decimator reverses the process by halving the sample rate of a real-valued
+time series to a complex-valued one.
+
+\input{listings/firhilb.example.c.tex}
 
 % firpfb
-\subsection{firpfb (finite impulse response polyphase filter bank)}
+\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
 
 % interp
-\subsection{interp (interpolator)}
+\subsection{{\tt interp} (interpolator)}
 
 % decim
-\subsection{decim (decimator)}
+\subsection{{\tt decim} (decimator)}
 
 % qmfb
 \subsection{qmfb (quadrature mirror filter bank)}
