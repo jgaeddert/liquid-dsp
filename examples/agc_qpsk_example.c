@@ -25,9 +25,9 @@ int main() {
     float h[h_len];
     design_rrc_filter(k,m,beta,0,h);
     interp_crcf interp = interp_crcf_create(k,h,h_len);
-    agc p = agc_create();
-    agc_set_target(p, etarget);
-    agc_set_bandwidth(p, bt);
+    agc_crcf p = agc_crcf_create();
+    agc_crcf_set_target(p, etarget);
+    agc_crcf_set_bandwidth(p, bt);
 
     unsigned int i;
     for (i=0; i<h_len; i++)
@@ -56,13 +56,13 @@ int main() {
     // run agc
     float complex y[num_samples];
     for (i=0; i<num_samples; i++) {
-        agc_execute(p, x[i], &y[i]);
+        agc_crcf_execute(p, x[i], &y[i]);
         if ( ((i+1)%d) == 0 )
-            printf("%4u: %8.3f\n", i+1, agc_get_signal_level(p));
+            printf("%4u: %8.3f\n", i+1, agc_crcf_get_signal_level(p));
 
         fprintf(fid,"   x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"   y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"rssi(%4u) = %12.4e;\n", i+1, agc_get_signal_level(p));
+        fprintf(fid,"rssi(%4u) = %12.4e;\n", i+1, agc_crcf_get_signal_level(p));
     }
 
 
@@ -82,7 +82,7 @@ int main() {
     printf("results written to %s\n", OUTPUT_FILENAME);
 
     modem_destroy(mod);
-    agc_destroy(p);
+    agc_crcf_destroy(p);
     interp_crcf_destroy(interp);
 
     printf("done.\n");

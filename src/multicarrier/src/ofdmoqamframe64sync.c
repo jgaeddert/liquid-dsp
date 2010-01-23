@@ -84,7 +84,7 @@ struct ofdmoqamframe64sync_s {
     pll pll_pilot;
 
     // signal detection | automatic gain control
-    agc sigdet;
+    agc_crcf sigdet;
 
     // auto-correlators
     autocorr_cccf autocorr;        // auto-correlation object [0]
@@ -203,9 +203,9 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     pll_set_damping_factor(q->pll_pilot,4.0f);
 
     // create agc | signal detection object
-    q->sigdet = agc_create();
-    agc_set_target(q->sigdet,1.0f);
-    agc_set_bandwidth(q->sigdet,0.1f);
+    q->sigdet = agc_crcf_create();
+    agc_crcf_set_target(q->sigdet,1.0f);
+    agc_crcf_set_bandwidth(q->sigdet,0.1f);
 
     // create NCO for CFO compensation
     q->nco_rx = nco_create(LIQUID_VCO);
@@ -295,7 +295,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     msequence_destroy(_q->ms_pilot);
 
     // free agc | signal detection object memory
-    agc_destroy(_q->sigdet);
+    agc_crcf_destroy(_q->sigdet);
 
     // free NCO object memory
     nco_destroy(_q->nco_rx);
@@ -587,8 +587,8 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
 {
     // run AGC, clip output
     float complex y;
-    agc_execute(_q->sigdet, _x, &y);
-    //if (agc_get_signal_level(_q->sigdet) < -15.0f)
+    agc_crcf_execute(_q->sigdet, _x, &y);
+    //if (agc_crcf_get_signal_level(_q->sigdet) < -15.0f)
     //    return;
     if (cabsf(y) > 2.0f)
         y = 2.0f*liquid_crotf_vect(cargf(y));
@@ -601,7 +601,7 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
 #if DEBUG_OFDMOQAMFRAME64SYNC
     cfwindow_push(_q->debug_rxx, _q->rxx);
 
-    fwindow_push(_q->debug_rssi, agc_get_signal_level(_q->sigdet));
+    fwindow_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->sigdet));
 #endif
     float rxx_mag = cabsf(_q->rxx);
 
@@ -628,7 +628,7 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
         nco_set_frequency(_q->nco_rx, _q->nu_hat);
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
 
-        _q->g = agc_get_gain(_q->sigdet);
+        _q->g = agc_crcf_get_gain(_q->sigdet);
 
 #if DEBUG_OFDMOQAMFRAME64SYNC_PRINT
         printf("gain : %f\n", _q->g);

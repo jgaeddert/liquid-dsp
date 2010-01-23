@@ -26,7 +26,8 @@ module_name	:= agc
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:= agc.c
+local_s_files	:=	\
+	agc_crcf.c
 
 # local_t_files
 #

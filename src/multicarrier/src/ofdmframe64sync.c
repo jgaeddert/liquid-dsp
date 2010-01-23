@@ -49,7 +49,7 @@ struct ofdmframe64sync_s {
     FFT_PLAN fft;
 
     // initial gain correction / signal detection
-    agc sigdet;             // automatic gain control for signal detection
+    agc_crcf sigdet;        // automatic gain control for signal detection
     float g;                // flat gain estimation
 
     // equalization
@@ -132,9 +132,9 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // initial gain correction / signal detection
-    q->sigdet = agc_create();
-    agc_set_target(q->sigdet,1.0f);
-    agc_set_bandwidth(q->sigdet,0.1f);
+    q->sigdet = agc_crcf_create();
+    agc_crcf_set_target(q->sigdet,1.0f);
+    agc_crcf_set_bandwidth(q->sigdet,0.1f);
 
     // carrier offset correction
     q->nco_rx = nco_create(LIQUID_VCO);
@@ -202,7 +202,7 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     cfwindow_destroy(_q->Lt_buffer);
     FFT_DESTROY_PLAN(_q->fft);
 
-    agc_destroy(_q->sigdet);
+    agc_crcf_destroy(_q->sigdet);
     msequence_destroy(_q->ms_pilot);
     autocorr_cccf_destroy(_q->delay_correlator);
     dotprod_cccf_destroy(_q->cross_correlator);
@@ -223,7 +223,7 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     msequence_reset(_q->ms_pilot);
 
     _q->g = 1.0f;
-    agc_reset(_q->sigdet);
+    agc_crcf_reset(_q->sigdet);
     _q->state = OFDMFRAME64SYNC_STATE_PLCPSHORT;
     autocorr_cccf_clear(_q->delay_correlator);
     _q->rxx_max = 0.0f;
@@ -412,8 +412,8 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
 {
     // run AGC, clip output
     float complex y;
-    agc_execute(_q->sigdet, _x, &y);
-    //if (agc_get_signal_level(_q->sigdet) < -15.0f)
+    agc_crcf_execute(_q->sigdet, _x, &y);
+    //if (agc_crcf_get_signal_level(_q->sigdet) < -15.0f)
     //    return;
     if (cabsf(y) > 2.0f)
         y = 2.0f*liquid_crotf_vect(cargf(y));
@@ -437,7 +437,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
         nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
         _q->timer = 0;
-        _q->g = agc_get_gain(_q->sigdet);
+        _q->g = agc_crcf_get_gain(_q->sigdet);
     }
 }
 

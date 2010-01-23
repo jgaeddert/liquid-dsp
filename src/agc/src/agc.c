@@ -28,10 +28,6 @@
 
 #include "liquid.internal.h"
 
-#define AGC(name)           LIQUID_CONCAT(agc,name)
-#define T                   float
-#define TC                  float complex
-
 struct AGC(_s) {
     liquid_agc_type type;
 
@@ -60,8 +56,8 @@ struct AGC(_s) {
 AGC() AGC(_create)()
 {
     AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
-    //_q->type = LIQUID_AGC_DEFAULT;
-    _q->type = LIQUID_AGC_LOG;
+    _q->type = LIQUID_AGC_DEFAULT;
+    //_q->type = LIQUID_AGC_LOG;
     //_q->type = LIQUID_AGC_EXP;
 
     // initialize loop filter state variables
@@ -195,7 +191,11 @@ void AGC(_estimate_gain_default)(AGC() _q, TC _x)
 {
     float zeta = 0.1f;
     // estimate normalized energy, should be equal to 1.0 when locked
+#if TC_COMPLEX
     _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+#else
+    _q->e = _x*_x;
+#endif
     _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
     _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
 
@@ -210,7 +210,11 @@ void AGC(_estimate_gain_log)(AGC() _q, TC _x)
 {
     float zeta = 0.1f;
     // estimate normalized energy, should be equal to 1.0 when locked
+#if TC_COMPLEX
     _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+#else
+    _q->e = _x*_x;
+#endif
     _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
     _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
 
@@ -225,7 +229,11 @@ void AGC(_estimate_gain_log)(AGC() _q, TC _x)
 void AGC(_estimate_gain_exp)(AGC() _q, TC _x)
 {
     // compute estimate of instantaneous input signal level
-    _q->e = crealf(_x * conjf(_x));
+#if TC_COMPLEX
+    _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+#else
+    _q->e = _x*_x;
+#endif
     _q->e_hat = sqrtf(_q->e);
 
     // compute estimate of output signal level

@@ -87,7 +87,8 @@ typedef enum {
     LIQUID_AGC_EXP          // exponential gain attack/release
 } liquid_agc_type;
 
-#define AGC_MANGLE_FLOAT(name)  LIQUID_CONCAT(agc, name)
+#define AGC_MANGLE_CRCF(name)   LIQUID_CONCAT(agc_crcf, name)
+#define AGC_MANGLE_RRRF(name)   LIQUID_CONCAT(agc_rrrf, name)
 
 // large macro
 //   AGC    : name-mangling macro
@@ -124,7 +125,8 @@ T AGC(_get_signal_level)(AGC() _q);                             \
 T AGC(_get_gain)(AGC() _q);
 
 // Define agc APIs
-LIQUID_AGC_DEFINE_API(AGC_MANGLE_FLOAT, float, liquid_float_complex)
+LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
+//LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
 
 
 //

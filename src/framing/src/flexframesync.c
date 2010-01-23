@@ -74,7 +74,7 @@ void flexframesyncprops_init_default(flexframesyncprops_s * _props)
 struct flexframesync_s {
 
     // synchronizer objects
-    agc agc_rx;
+    agc_crcf agc_rx;
     symsync_crcf mfdecim;
     pll pll_rx;
     nco nco_rx;
@@ -176,10 +176,10 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->intlv_header = interleaver_create(32, INT_BLOCK);
 
     // agc, rssi, squelch
-    fs->agc_rx = agc_create();
-    agc_set_target(fs->agc_rx, 1.0f);
-    agc_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
-    agc_set_gain_limits(fs->agc_rx, fs->props.agc_gmin, fs->props.agc_gmax);
+    fs->agc_rx = agc_crcf_create();
+    agc_crcf_set_target(fs->agc_rx, 1.0f);
+    agc_crcf_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
+    agc_crcf_set_gain_limits(fs->agc_rx, fs->props.agc_gmin, fs->props.agc_gmax);
     fs->squelch_threshold = powf(10.0f,(fs->props.squelch_threshold)/10.0f);
     fs->squelch_timeout = FLEXFRAMESYNC_SQUELCH_TIMEOUT;
     fs->squelch_timer = fs->squelch_timeout;
@@ -259,7 +259,7 @@ void flexframesync_destroy(flexframesync _fs)
 #endif
 
     // destroy synchronizer objects
-    agc_destroy(_fs->agc_rx);
+    agc_crcf_destroy(_fs->agc_rx);
     pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
     bsync_rrrf_destroy(_fs->fsync);
@@ -326,8 +326,8 @@ void flexframesync_reset(flexframesync _fs)
 {
     symsync_crcf_clear(_fs->mfdecim);
     pll_reset(_fs->pll_rx);
-    //agc_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
-    agc_unlock(_fs->agc_rx);
+    //agc_crcf_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
+    agc_crcf_unlock(_fs->agc_rx);
     symsync_crcf_unlock(_fs->mfdecim);
     nco_reset(_fs->nco_rx);
 
@@ -350,11 +350,11 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 
     for (i=0; i<_n; i++) {
         // agc
-        agc_execute(_fs->agc_rx, _x[i], &agc_rx_out);
-        _fs->rssi = agc_get_signal_level(_fs->agc_rx);
+        agc_crcf_execute(_fs->agc_rx, _x[i], &agc_rx_out);
+        _fs->rssi = agc_crcf_get_signal_level(_fs->agc_rx);
 #ifdef DEBUG_FLEXFRAMESYNC
         cfwindow_push(_fs->debug_x, _x[i]);
-        fwindow_push(_fs->debug_agc_rssi, agc_get_signal_level(_fs->agc_rx));
+        fwindow_push(_fs->debug_agc_rssi, agc_crcf_get_signal_level(_fs->agc_rx));
         cfwindow_push(_fs->debug_agc_out, agc_rx_out);
 #endif
 
@@ -457,7 +457,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     flexframesync_demodulate_header(_fs);
                     flexframesync_decode_header(_fs);
                     if (_fs->header_valid) {
-                        agc_lock(_fs->agc_rx);
+                        agc_crcf_lock(_fs->agc_rx);
                         _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
                     } else {
                         //printf("***** header invalid!\n");
@@ -499,7 +499,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             case FLEXFRAMESYNC_STATE_RESET:
                 // open bandwidth
                 _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
-                agc_unlock(_fs->agc_rx);
+                agc_crcf_unlock(_fs->agc_rx);
                 symsync_crcf_unlock(_fs->mfdecim);
                 flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;
@@ -511,7 +511,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             }
         }
     }
-    //printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
+    //printf("rssi: %8.4f\n", 10*log10(agc_crcf_get_signal_level(_fs->agc_rx)));
 }
 
 // 
@@ -521,7 +521,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 // open bandwidth of synchronizer objects (acquisition mode)
 void flexframesync_open_bandwidth(flexframesync _fs)
 {
-    agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
+    agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw0);
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw0);
 }
@@ -529,7 +529,7 @@ void flexframesync_open_bandwidth(flexframesync _fs)
 // close bandwidth of synchronizer objects (tracking mode)
 void flexframesync_close_bandwidth(flexframesync _fs)
 {
-    agc_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
+    agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
     pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
 }
