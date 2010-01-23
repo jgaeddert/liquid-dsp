@@ -27,7 +27,8 @@ module_name	:= agc
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=	\
-	agc_crcf.c
+	agc_crcf.c	\
+	agc_rrrf.c
 
 # local_t_files
 #

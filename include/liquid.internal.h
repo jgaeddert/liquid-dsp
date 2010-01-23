@@ -58,7 +58,7 @@ void AGC(_estimate_gain_exp)(AGC() _q, TC _x);                  \
 void AGC(_limit_gain)(AGC() _q);
 
 LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
-//LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
+LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
 
 
 //

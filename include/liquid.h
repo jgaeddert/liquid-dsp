@@ -129,7 +129,7 @@ T AGC(_get_gain)(AGC() _q);
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
-//LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
+LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
 
 
 //
