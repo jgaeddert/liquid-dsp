@@ -16,6 +16,7 @@ int main() {
 
     // create objects
     agc_crcf p = agc_crcf_create();
+    agc_crcf_set_type(p,LIQUID_AGC_EXP);
     agc_crcf_set_target(p,etarget);
     agc_crcf_set_bandwidth(p,bt);
 

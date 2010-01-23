@@ -57,8 +57,6 @@ AGC() AGC(_create)()
 {
     AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
     _q->type = LIQUID_AGC_DEFAULT;
-    //_q->type = LIQUID_AGC_LOG;
-    //_q->type = LIQUID_AGC_EXP;
 
     // initialize loop filter state variables
     _q->e_prime = 1.0f;
@@ -93,6 +91,11 @@ void AGC(_reset)(AGC() _q)
     _q->e_hat = 1.0f;
 
     AGC(_unlock)(_q);
+}
+
+void AGC(_set_type)(AGC() _q, liquid_agc_type _type)
+{
+    _q->type = _type;
 }
 
 void AGC(_set_target)(AGC() _q, T _e_target)

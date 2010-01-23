@@ -102,6 +102,9 @@ void AGC(_destroy)(AGC() _q);                                   \
 void AGC(_print)(AGC() _q);                                     \
 void AGC(_reset)(AGC() _q);                                     \
                                                                 \
+/* Set type */                                                  \
+void AGC(_set_type)(AGC() _q, liquid_agc_type _type);           \
+                                                                \
 /* Set target energy */                                         \
 void AGC(_set_target)(AGC() _q, T _e_target);                   \
                                                                 \
