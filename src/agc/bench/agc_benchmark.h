@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -25,36 +26,49 @@
 
 #include "liquid.h"
 
-void benchmark_agc_unlocked(
+// helper function to keep code base small
+void agc_crcf_unlocked_bench(
     struct rusage *_start,
     struct rusage *_finish,
-    unsigned long int *_num_iterations)
+    unsigned long int *_num_iterations,
+    liquid_agc_type _type)
 {
     unsigned int i;
 
     // initialize AGC object
-    agc g = agc_create();
-    agc_set_target(g,1.0f);
-    agc_set_bandwidth(g,0.05f);
+    agc_crcf g = agc_crcf_create();
+    agc_crcf_set_type(g,_type);
+    agc_crcf_set_target(g,1.0f);
+    agc_crcf_set_bandwidth(g,0.05f);
 
     float complex x=1.0f, y;
 
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        agc_execute(g, x, &y);
-        agc_execute(g, x, &y);
-        agc_execute(g, x, &y);
-        agc_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
     }
     getrusage(RUSAGE_SELF, _finish);
 
     *_num_iterations *= 4;
 
-    agc_destroy(g);
+    agc_crcf_destroy(g);
 }
 
+#define AGC_CRCF_BENCHMARK_API(TYPE)        \
+(   struct rusage *_start,                  \
+    struct rusage *_finish,                 \
+    unsigned long int *_num_iterations)     \
+{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, TYPE); }
 
-void benchmark_agc_locked(
+void benchmark_agc_crcf_default     AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT)
+void benchmark_agc_crcf_log         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG)
+void benchmark_agc_crcf_exp         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP)
+
+
+void benchmark_agc_crcf_locked(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations)
@@ -62,26 +76,26 @@ void benchmark_agc_locked(
     unsigned int i;
 
     // initialize AGC object
-    agc g = agc_create();
-    agc_set_target(g,1.0f);
-    agc_set_bandwidth(g,0.05f);
-    agc_lock(g);
+    agc_crcf g = agc_crcf_create();
+    agc_crcf_set_target(g,1.0f);
+    agc_crcf_set_bandwidth(g,0.05f);
+    agc_crcf_lock(g);
 
     float complex x=1.0f, y;
 
     getrusage(RUSAGE_SELF, _start);
     *_num_iterations *= 16;
     for (i=0; i<(*_num_iterations); i++) {
-        agc_execute(g, x, &y);
-        agc_execute(g, x, &y);
-        agc_execute(g, x, &y);
-        agc_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
     }
     getrusage(RUSAGE_SELF, _finish);
 
     *_num_iterations *= 4;
 
-    agc_destroy(g);
+    agc_crcf_destroy(g);
 }
 
 #endif // __AGC_BENCHMARK_H__
