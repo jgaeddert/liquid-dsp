@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -37,23 +38,23 @@ void autotest_dc_gain_control() {
     float g_target = 10*log10(energy_target/energy_start);
 
     // create AGC object and initialize
-    agc g = agc_create();
-    agc_set_target(g,energy_target);
-    agc_set_bandwidth(g, bt);
+    agc_crcf g = agc_crcf_create();
+    agc_crcf_set_target(g,energy_target);
+    agc_crcf_set_bandwidth(g, bt);
 
     unsigned int i;
     float complex x = energy_start, y;
     for (i=0; i<256; i++) {
-        agc_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
     }
-    float gain = 10*log10( agc_get_gain(g) );
+    float gain = 10*log10( agc_crcf_get_gain(g) );
 
     // Check results
     CONTEND_DELTA( crealf(y), energy_target,    tol );
     CONTEND_DELTA( cimagf(y), 0.0f,             tol );
     CONTEND_DELTA( gain,      g_target,         tol );
 
-    agc_destroy(g);
+    agc_crcf_destroy(g);
 }
 
 // 
@@ -71,23 +72,23 @@ void autotest_ac_gain_control() {
     float g_target = 10*log10(energy_target/energy_start);
 
     // create AGC object and initialize
-    agc g = agc_create();
-    agc_set_target(g,energy_target);
-    agc_set_bandwidth(g, bt);
+    agc_crcf g = agc_crcf_create();
+    agc_crcf_set_target(g,energy_target);
+    agc_crcf_set_bandwidth(g, bt);
 
     unsigned int i;
     float complex x, y;
     for (i=0; i<256; i++) {
         x = cexpf(_Complex_I*theta) * energy_start;
         theta += dtheta;
-        agc_execute(g, x, &y);
+        agc_crcf_execute(g, x, &y);
     }
-    float gain = 10*log10( agc_get_gain(g) );
+    float gain = 10*log10( agc_crcf_get_gain(g) );
 
     // Check results
     CONTEND_DELTA( gain,      g_target,         tol );
 
-    agc_destroy(g);
+    agc_crcf_destroy(g);
 }
 
 
