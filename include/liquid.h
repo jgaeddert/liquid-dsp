@@ -3,7 +3,6 @@
  * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
  *                                      Institute & State University
  *
- *
  * This file is part of liquid.
  *
  * liquid is free software: you can redistribute it and/or modify
@@ -81,6 +80,12 @@ LIQUID_DEFINE_COMPLEX(float, liquid_float_complex);
 // 
 // MODULE : agc (automatic gain control)
 //
+
+typedef enum {
+    LIQUID_AGC_DEFAULT=0,   // default gain attack/release
+    LIQUID_AGC_LOG,         // logarithmic gain attack/release
+    LIQUID_AGC_EXP          // exponential gain attack/release
+} liquid_agc_type;
 
 #define AGC_MANGLE_FLOAT(name)  LIQUID_CONCAT(agc, name)
 
