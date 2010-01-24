@@ -90,6 +90,11 @@ int main() {
     fmatrix_print(L,2,2);
     fmatrix_print(U,2,2);
 
+    printf("testing L/U decomposition [Doolittle's method]\n");
+    fmatrix_ludecomp_doolittle(A,2,2,L,U,P);
+    fmatrix_print(L,2,2);
+    fmatrix_print(U,2,2);
+
     printf("done.\n");
     return 0;
 }

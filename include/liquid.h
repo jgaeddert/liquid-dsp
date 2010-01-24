@@ -1821,7 +1821,13 @@ void MATRIX(_ludecomp_crout)(T * _x,                            \
                              unsigned int _cx,                  \
                              T * _L,                            \
                              T * _U,                            \
-                             T * _P);
+                             T * _P);                           \
+void MATRIX(_ludecomp_doolittle)(T * _x,                        \
+                                 unsigned int _rx,              \
+                                 unsigned int _cx,              \
+                                 T * _L,                        \
+                                 T * _U,                        \
+                                 T * _P);
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
