@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -28,7 +29,7 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
 {
     // ensure lengths are valid
     if (_XR != _XC ) {
-        printf("error: matrix_inv(), invalid dimensions\n");
+        fprintf(stderr, "error: matrix_inv(), invalid dimensions\n");
         exit(0);
     }
 
@@ -97,7 +98,7 @@ void MATRIX(_pivot)(T * _X, unsigned int _XR, unsigned int _XC, unsigned int _r,
 {
     T v = matrix_access(_X,_XR,_XC,_r,_c);
     if (v==0) {
-        printf("warning: pivoting on zero\n");
+        fprintf(stderr, "warning: matrix_pivot(), pivoting on zero\n");
         return;
     }
     unsigned int r,c;
