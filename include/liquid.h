@@ -493,10 +493,20 @@ void DOTPROD(_destroy)(DOTPROD() _q);                           \
 void DOTPROD(_print)(DOTPROD() _q);                             \
 void DOTPROD(_execute)(DOTPROD() _q, TI * _v, TO * _y);
 
-// Define APIs
-LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF, float, float, float)
-LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCF, liquid_float_complex, liquid_float_complex, liquid_float_complex)
-LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
+
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
+
+LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
 
 //
 // MODULE : equalization
