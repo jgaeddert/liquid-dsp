@@ -81,6 +81,15 @@ int main() {
     fmatrix_print(t,4,8);
 #endif
 
+    printf("testing L/U decomposition [Crout's method]\n");
+    float A[4] = {
+        4,3,
+        6,3};
+    float L[4], U[4], P[4];
+    fmatrix_ludecomp_crout(A,2,2,L,U,P);
+    fmatrix_print(L,2,2);
+    fmatrix_print(U,2,2);
+
     printf("done.\n");
     return 0;
 }

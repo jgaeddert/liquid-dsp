@@ -734,6 +734,7 @@ void MATRIX(_swaprows)(T * _x,                                  \
                   unsigned int _r1,                             \
                   unsigned int _r2);
 
+
 LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT, float)
 LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 
