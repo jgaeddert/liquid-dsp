@@ -7,3 +7,19 @@
 transcendental functions not in the C standard library (gamma, besseli, etc.)
 and polynomial operations
 
+{\tt liquid\_lngammaf}
+\[
+    \ln(\Gamma(z)) \approx
+    \frac{z}{2} \ln\left( \frac{2\pi}{z} \right)
+    \left(
+        \ln\left(z + \frac{1}{12 z - 0.1/z} \right) - 1
+    \right)
+\]
+
+{\tt liquid\_sincf}
+\[ \sinc(z) = \frac{\sin(z)}{2\pi z} \]
+For small $z$, this can be approximated as
+\[
+    \sinc(z) \approx \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
+\]
+

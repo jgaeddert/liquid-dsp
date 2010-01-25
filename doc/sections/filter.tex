@@ -105,4 +105,42 @@ timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
 
 \subsection{{\tt lf2} (second-order integrating loop filter)}
 
+\subsection{{\tt rrcos}}
+{\tt design\_rrc\_filter} calculates the coefficients for a square-root
+raised-cosinee (RRC) finite impulse response (FIR) filter commonly used in
+digital communications.
+The input parameters are as follows
+\begin{itemize}
+    \item[$k$] : samples per symbol
+    \item[$m$] : sample delay
+    \item[$\beta$] : excess bandwidth (rolloff) factor
+\end{itemize}
+The function returns the filter coefficients in the buffer, $h$, which has been
+allocated externally.  The length of the filter is always
+\[
+    h_{len} = 2 k m + 1
+\]
+
+The filter coefficients themselves are derived from the following equation
+\[ 
+    h\left[z\right] =
+      4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
+                    \sin\left[(1+\beta)\pi z\right] / (4\beta z) }
+                  { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
+\]
+where $z=n/k-m$, and $T=1$ for most cases.
+The function compensates for the two cases where $h[n]$ might be
+undefined in the above equation, viz.
+\[
+    \mathop {\lim }\limits_{z \to 0 } h(z) =
+      \frac{ 4\beta \left[ 1 + \frac{1-\beta\pi }{ 4\beta } \right] }
+           { \pi\sqrt{T}\left( 1-16\beta^2 z^2 \right) }
+\]
+and
+\[
+    \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
+        \frac{(1+\beta)}{2\pi}\sin\left[\frac{(1+\beta)\pi}{4\beta}\right]
+      - \frac{(1-\beta)}{2}\cos\left[\frac{(1-\beta)\pi}{4\beta}\right]
+      + \frac{2\beta}{\pi}\sin\left[\frac{(1-\beta)\pi}{4\beta}\right]
+\]
 
