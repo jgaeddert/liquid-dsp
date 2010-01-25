@@ -27,20 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 
-void MATRIX(_print)(T * _X,
-                    unsigned int _R,
-                    unsigned int _C)
-{
-    printf("matrix [%u x %u] : \n", _R, _C);
-    unsigned int r,c;
-    for (r=0; r<_R; r++) {
-        for (c=0; c<_C; c++) {
-            MATRIX_PRINT_ELEMENT(_X,_R,_C,r,c);
-        }
-        printf("\n");
-    }
-}
-
 void MATRIX(_add)(T * _X,
                   T * _Y,
                   T * _Z,
@@ -142,16 +128,4 @@ void MATRIX(_trans)(T * _X,
         }
     }
 }
-
-// initialize square matrix to the identity matrix
-void MATRIX(_eye)(T * _X, unsigned int _n)
-{
-    unsigned int r,c,k=0;
-    for (r=0; r<_n; r++) {
-        for (c=0; c<_n; c++) {
-            _X[k++] = r==c ? 1. : 0.;
-        }
-    }
-}
-
 

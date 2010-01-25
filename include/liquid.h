@@ -1817,6 +1817,12 @@ void MATRIX(_inv)(T * _x,                                       \
                   unsigned int _cx);                            \
 void MATRIX(_eye)(T * _x,                                       \
                   unsigned int _n);                             \
+void MATRIX(_ones)(T * _x,                                      \
+                   unsigned int _r,                             \
+                   unsigned int _c);                            \
+void MATRIX(_zeros)(T * _x,                                     \
+                    unsigned int _r,                            \
+                    unsigned int _c);                           \
 void MATRIX(_ludecomp_crout)(T * _x,                            \
                              unsigned int _rx,                  \
                              unsigned int _cx,                  \
