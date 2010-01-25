@@ -84,6 +84,31 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
     }
 }
 
+void MATRIX(_div)(T * _X, unsigned int _XR, unsigned int _XC,
+                  T * _Y, unsigned int _YR, unsigned int _YC,
+                  T * _Z, unsigned int _ZR, unsigned int _ZC)
+{
+    // ensure all matrices are square and the same size
+    unsigned int n = _XR;
+    if (_ZR != _XR || _ZC != _YC || _XC != _YR ) {
+        fprintf(stderr,"error: matrix_div(), invalid dimensions\n");
+        exit(-1);
+    } else if ( _XC != n || _YR != n || _YC != n || _ZR != n || _ZC != n) {
+        fprintf(stderr,"error: matrix_div(), invalid dimensions\n");
+        exit(-1);
+    }
+
+    // compute inv(_Y)
+    T Y_inv[n*n];
+    memmove(Y_inv, _Y, n*n*sizeof(T));
+    MATRIX(_inv)(Y_inv,n,n);
+
+    // _Z = _X * inv(_Y)
+    MATRIX(_mul)(_X,    n, n,
+                 Y_inv, n, n,
+                 _Z,    n, n);
+}
+
 
 // compute matrix transpose
 void MATRIX(_trans)(T * _X, unsigned int _XR, unsigned int _XC)
