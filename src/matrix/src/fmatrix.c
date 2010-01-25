@@ -29,7 +29,7 @@
 #define MATRIX_NAME     "fmatrix"
 #define T               float
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
-    printf("%7.2f", matrix_access(X,R,C,r,c));
+    printf("%12.8f", matrix_access(X,R,C,r,c));
 
 #include "matrix.c"
 #include "matrix_base.c"

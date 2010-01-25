@@ -98,6 +98,75 @@ int main() {
     fmatrix_print(L,4,4);
     fmatrix_print(U,4,4);
 
+    printf("\n\n");
+    float X[16] = {
+       0.84382,  -2.38304,   1.43061,  -1.66604,
+       3.99475,   0.88066,   4.69373,   0.44563,
+       7.28072,  -2.06608,   0.67074,   9.80657,
+       6.07741,  -3.93099,   1.22826,  -0.42142};
+    float Y[16];
+    printf("\nX:\n");
+    fmatrix_print(X,4,4);
+
+    // swaprows
+    memmove(Y,X,16*sizeof(float));
+    fmatrix_swaprows(Y,4,4,0,2);
+    printf("\nfmatrix_swaprows(X,4,4,0,2):\n");
+    fmatrix_print(Y,4,4);
+
+    // pivot test
+    memmove(Y,X,16*sizeof(float));
+    fmatrix_pivot(Y,4,4,1,2);
+    printf("\nfmatrix_pivot(X,4,4,1,2):\n");
+    fmatrix_print(Y,4,4);
+
+    // inverse test
+    memmove(Y,X,16*sizeof(float));
+    fmatrix_inv(Y,4,4);
+    printf("\nfmatrix_inv(X,4,4):\n");
+    fmatrix_print(Y,4,4);
+
+    // determinant test
+    float D = fmatrix_det(X,4);
+    printf("\nfmatrix_det(X,4) = %12.8f\n", D);
+
+    // L/U decomp (Crout's method)
+    fmatrix_ludecomp_crout(X,4,4,L,U,P);
+    printf("\nfmatrix_ludecomp_crout(X,4,4,L,U,P)\n");
+    printf("L:\n");
+    fmatrix_print(L,4,4);
+    printf("U:\n");
+    fmatrix_print(U,4,4);
+
+    // L/U decomp (Doolittle's method)
+    fmatrix_ludecomp_doolittle(X,4,4,L,U,P);
+    printf("\nfmatrix_ludecomp_doolittle(X,4,4,L,U,P)\n");
+    printf("L:\n");
+    fmatrix_print(L,4,4);
+    printf("U:\n");
+    fmatrix_print(U,4,4);
+
+    /*
+    float b[4] = {
+       0.91489,
+       0.71789,
+       1.06553,
+      -0.81707};
+    */
+
+    float Xb[20] = {
+       0.84382,  -2.38304,   1.43061,  -1.66604,   0.91489,
+       3.99475,   0.88066,   4.69373,   0.44563,   0.71789,
+       7.28072,  -2.06608,   0.67074,   9.80657,   1.06553,
+       6.07741,  -3.93099,   1.22826,  -0.42142,  -0.81707};
+    printf("\n[X b] =\n");
+    fmatrix_print(Xb,4,5);
+
+    fmatrix_gjelim(Xb,4,5);
+    printf("\nfmatrix_gjelim(Xb,4,5)\n");
+    fmatrix_print(Xb,4,5);
+
+
     printf("done.\n");
     return 0;
 }
