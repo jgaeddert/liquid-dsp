@@ -82,18 +82,15 @@ int main() {
 #endif
 
     printf("testing L/U decomposition [Crout's method]\n");
-    float A[4] = {
-        4,3,
-        6,3};
-    float L[4], U[4], P[4];
-    fmatrix_ludecomp_crout(A,2,2,L,U,P);
-    fmatrix_print(L,2,2);
-    fmatrix_print(U,2,2);
+    float L[16], U[16], P[16];
+    fmatrix_ludecomp_crout(s,4,4,L,U,P);
+    fmatrix_print(L,4,4);
+    fmatrix_print(U,4,4);
 
     printf("testing L/U decomposition [Doolittle's method]\n");
-    fmatrix_ludecomp_doolittle(A,2,2,L,U,P);
-    fmatrix_print(L,2,2);
-    fmatrix_print(U,2,2);
+    fmatrix_ludecomp_doolittle(s,4,4,L,U,P);
+    fmatrix_print(L,4,4);
+    fmatrix_print(U,4,4);
 
     printf("done.\n");
     return 0;
