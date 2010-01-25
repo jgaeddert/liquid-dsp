@@ -17,3 +17,24 @@ pivot, swaprows
 \label{module:matrix:complex}
 inv(ert), gjelim (Gauss-Jordan elimination), pivot,
 
+\subsubsection{LU Decomposition, Crout's Method}
+Crout's method decomposes a non-singular $n\times n$ matrix $\vec{A}$ into a
+product of a lower triangular $n \times n$ matrix $\vec{L}$ and an upper
+triangular $n \times n$ matrix $\vec{U}$. %NOTE : discuss permutation matrix P
+In fact, $\vec{U}$ is a unit upper triangular matrix (its values along the
+diagonal are 1).
+
+\[
+    \vec{L}_{i,k} = \vec{A}_{i,k} -
+                    \sum_{t=0}^{k-1}{ \vec{L}_{i,t} \vec{U}_{t,k} }
+                    \ \forall k \in \{0,n-1\}, i \in \{k,n-1\}
+\]
+
+\[
+    \vec{U}_{k,j} = \left[
+                    \vec{A}_{k,j} -
+                    \sum_{t=0}^{k-1}{ \vec{L}_{k,t} \vec{U}_{t,j} }
+                    \right] / \vec{L}_{k,k}
+                    \ \forall k \in \{0,n-1\}, j \in \{k+1,n-1\}
+\]
+
