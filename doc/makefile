@@ -24,9 +24,24 @@ SECTIONS :=					\
 	sections/ann.tex			\
 	sections/audio.tex			\
 	sections/buffer.tex			\
+	sections/channel.tex			\
+	sections/dotprod.tex			\
+	sections/equalization.tex		\
+	sections/fec.tex			\
+	sections/fft.tex			\
 	sections/filter.tex			\
+	sections/framing.tex			\
+	sections/interleaver.tex		\
+	sections/math.tex			\
+	sections/matrix.tex			\
+	sections/modem.tex			\
 	sections/multicarrier.tex		\
-	sections/optim.tex
+	sections/nco.tex			\
+	sections/optim.tex			\
+	sections/quantization.tex		\
+	sections/random.tex			\
+	sections/sequence.tex			\
+	sections/utility.tex
 
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
