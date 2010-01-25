@@ -9,6 +9,19 @@ Matrices in {\it liquid} are represented as just arrays of a single dimension.
 \label{module:matrix:math}
 add, sub, mul, div, trans(pose), eye
 
+\subsubsection{{\tt matrix\_eye} (identity matrix)}
+The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
+\[
+    \vec{I}_n = 
+    \begin{bmatrix}
+        1 & 0 & \cdots & 0 \\
+        0 & 1 & \cdots & 0 \\
+        %  &   &        &   \\
+        \\
+        0 & 0 & \cdots & 1 \\
+    \end{bmatrix}
+\]
+
 \subsection{Elementary math operations}
 \label{module:matrix:elementary}
 pivot, swaprows
@@ -90,6 +103,7 @@ U =
   0.00000000  0.00000000  0.00000000  1.00000000
 \end{verbatim}
 
+Doolittle's method...
 \begin{verbatim}
 fmatrix_ludecomp_doolittle(X,4,4,L,U,P)
 L =

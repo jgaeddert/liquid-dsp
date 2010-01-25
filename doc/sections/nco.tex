@@ -6,3 +6,23 @@
 \label{module:nco}
 numerically-controlled oscillator: mix, pll
 
+\subsection{{nco}}
+\label{module:nco:nco}
+The {\tt nco} object implements an oscillator with two options for internal
+phase precision: {\tt LIQUID\_NCO} and {\tt LIQUID\_VCO}.
+
+\subsection{{pll} (phase-locked loop)}
+\label{module:nco:pll}
+The phase-locked loop object provides a method for synchronizing oscillators
+on different platforms.
+It uses a second-order integrating loop filter to adjust the frequency of its
+{\tt nco} based on an instantaneous phase error input.
+
+For a given bandwidth $b$, damping factor $\xi$, and scaling factor $k_1$,
+the loop filter coefficients are
+\[  \beta = \frac{2b}{k_1} \left(\xi + \frac{1}{4\xi} \right)   \]
+\[  \alpha = 2 \xi \beta    \]
+Given a phase error $v$, the filtered phase error is given by
+\[  q^\prime(n) = v \beta q^\prime(n-1) \]
+\[  v = \alpha v + q^\prime(n)          \]
+
