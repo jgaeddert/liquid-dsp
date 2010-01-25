@@ -1810,6 +1810,7 @@ void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
 void MATRIX(_div)(T * _x, T * _y, T * _z, unsigned int _n);     \
+T    MATRIX(_det)(T * _x, unsigned int _n);                     \
 void MATRIX(_trans)(T * _x, unsigned int _rx, unsigned int _cx);\
 void MATRIX(_inv)(T * _x,                                       \
                   unsigned int _rx,                             \

@@ -108,6 +108,24 @@ void MATRIX(_div)(T * _X,
                  _Z,    _n, _n);
 }
 
+// matrix determinant
+T MATRIX(_det)(T * _X,
+               unsigned int _n)
+{
+    // compute L/U decomposition (Doolittle's method)
+    T L[_n*_n]; // lower
+    T U[_n*_n]; // upper
+    T P[_n*_n]; // permutation
+    MATRIX(_ludecomp_doolittle)(_X,_n,_n,L,U,P);
+
+    // evaluate along the diagonal of U
+    T det = 1.0;
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        det *= matrix_access(U,_n,_n,i,i);
+
+    return det;
+}
 
 // compute matrix transpose
 void MATRIX(_trans)(T * _X,

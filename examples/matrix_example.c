@@ -51,12 +51,16 @@ int main() {
     float i4[16];
     fmatrix_mul(s,4,4,s_inv,4,4,i4,4,4);
 
-    printf("s:\n");
+    printf("\ns:\n");
     fmatrix_print(s,4,4);
-    printf("inv(s):\n");
+    printf("\ninv(s):\n");
     fmatrix_print(s_inv,4,4);
-    printf("s*inv(s):\n");
+    printf("\ns*inv(s):\n");
     fmatrix_print(i4,4,4);
+
+    printf("\n");
+    float det = fmatrix_det(s,4);
+    printf("det(s) = %12.8f\n", det);
 
 #if 0
     // pivot test (matrix inversion)
@@ -81,12 +85,14 @@ int main() {
     fmatrix_print(t,4,8);
 #endif
 
+    printf("\n");
     printf("testing L/U decomposition [Crout's method]\n");
     float L[16], U[16], P[16];
     fmatrix_ludecomp_crout(s,4,4,L,U,P);
     fmatrix_print(L,4,4);
     fmatrix_print(U,4,4);
 
+    printf("\n");
     printf("testing L/U decomposition [Doolittle's method]\n");
     fmatrix_ludecomp_doolittle(s,4,4,L,U,P);
     fmatrix_print(L,4,4);
