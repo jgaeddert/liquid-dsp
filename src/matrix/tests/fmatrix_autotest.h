@@ -42,7 +42,7 @@ void autotest_fmatrix_add() {
         1, 3, 5,
         7, 9, 11 };
 
-    fmatrix_add(2,3,x,y,z);
+    fmatrix_add(x,y,z,2,3);
 
     CONTEND_SAME_DATA(z,ztest,sizeof(z));
 }

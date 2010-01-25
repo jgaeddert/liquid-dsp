@@ -1796,14 +1796,16 @@ void polyfit(float * _x,
 void MATRIX(_print)(T * _x,                                     \
                     unsigned int _rx,                           \
                     unsigned int _cx);                          \
-void MATRIX(_add)(unsigned int _r, unsigned int _c,             \
-                  T * _x,                                       \
+void MATRIX(_add)(T * _x,                                       \
                   T * _y,                                       \
-                  T * _z);                                      \
-void MATRIX(_sub)(unsigned int _r, unsigned int _c,             \
-                  T * _x,                                       \
+                  T * _z,                                       \
+                  unsigned int _r,                              \
+                  unsigned int _c);                             \
+void MATRIX(_sub)(T * _x,                                       \
                   T * _y,                                       \
-                  T * _z);                                      \
+                  T * _z,                                       \
+                  unsigned int _r,                              \
+                  unsigned int _c);                             \
 void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \

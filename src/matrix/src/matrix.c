@@ -27,7 +27,9 @@
 #include <stdio.h>
 #include <string.h>
 
-void MATRIX(_print)(T * _X, unsigned int _R, unsigned int _C)
+void MATRIX(_print)(T * _X,
+                    unsigned int _R,
+                    unsigned int _C)
 {
     printf("matrix [%u x %u] : \n", _R, _C);
     unsigned int r,c;
@@ -39,16 +41,22 @@ void MATRIX(_print)(T * _X, unsigned int _R, unsigned int _C)
     }
 }
 
-void MATRIX(_add)(unsigned int _R, unsigned int _C,
-                  T * _X, T * _Y, T * _Z)
+void MATRIX(_add)(T * _X,
+                  T * _Y,
+                  T * _Z,
+                  unsigned int _R,
+                  unsigned int _C)
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++)
         _Z[i] = _X[i] + _Y[i];
 }
 
-void MATRIX(_sub)(unsigned int _R, unsigned int _C,
-                  T * _X, T * _Y, T * _Z)
+void MATRIX(_sub)(T * _X,
+                  T * _Y,
+                  T * _Z,
+                  unsigned int _R,
+                  unsigned int _C)
 {
     unsigned int i;
     for (i=0; i<(_R*_C); i++)
@@ -102,7 +110,9 @@ void MATRIX(_div)(T * _X,
 
 
 // compute matrix transpose
-void MATRIX(_trans)(T * _X, unsigned int _XR, unsigned int _XC)
+void MATRIX(_trans)(T * _X,
+                    unsigned int _XR,
+                    unsigned int _XC)
 {
     T y[_XR*_XC];
     memmove(y,_X,_XR*_XC*sizeof(T));
