@@ -80,9 +80,37 @@ void MATRIX(_gjelim)(T * _X, unsigned int _XR, unsigned int _XC)
 {
     unsigned int r, c;
 
-    // TODO: choose pivot rows carefully
-    for (r=0; r<_XR; r++)
+    // choose pivot rows based on maximum element along column
+    float v;
+    float v_max=0.;
+    unsigned int r_opt=0;
+    unsigned int r_hat;
+    for (r=0; r<_XR; r++) {
+
+        // check values along this column and find the maximum
+        for (r_hat=r; r_hat<_XR; r_hat++) {
+            v = cabsf( matrix_access(_X,_XR,_XC,r_hat,r) );
+            // swap rows if necessary
+            if (v > v_max || r_hat==r) {
+                r_opt = r_hat;
+                v_max = v;
+            }
+        }
+
+        // if the maximum is zero, matrix is singular
+        if (v_max == 0.0f) {
+            fprintf(stderr,"warning: matrix_gjelim(), matrix singular to machine precision\n");
+        }
+
+        // if row does not match column (e.g. maximum value does not
+        // lie on the diagonal) swap the rows
+        if (r != r_opt) {
+            MATRIX(_swaprows)(_X,_XR,_XC,r,r_opt);
+        }
+
+        // pivot on the diagonal element
         MATRIX(_pivot)(_X,_XR,_XC,r,r);
+    }
 
     // scale by diagonal
     T g;
