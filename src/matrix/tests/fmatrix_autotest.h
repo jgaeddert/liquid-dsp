@@ -146,4 +146,108 @@ void autotest_fmatrix_eye() {
     CONTEND_SAME_DATA(x, z, 16*sizeof(float));
 }
 
+// 
+// AUTOTEST: L/U decomp (Crout)
+//
+void autotest_fmatrix_ludecomp_crout()
+{
+    float tol = 1e-6f;  // error tolerance
+
+    float A[16]= {
+       4,  -3,  -1,  3,
+       1,   1,   0,  2,
+      -1,   0,   1,  1,
+      -2,  -5,   1,  -3};
+
+    float L[16];
+    float U[16];
+    float P[16];
+
+    float LU_test[16];
+
+    // run decomposition
+    fmatrix_ludecomp_crout(A,4,4,L,U,P);
+
+    if (liquid_autotest_verbose) {
+        printf("L :\n");
+        fmatrix_print(L,4,4);
+        printf("U :\n");
+        fmatrix_print(U,4,4);
+    }
+
+    unsigned int r,c;
+    for (r=0; r<4; r++) {
+        for (c=0; c<4; c++) {
+            if (r < c) {
+                CONTEND_DELTA( matrix_access(L,4,4,r,c), 0.0f, tol );
+            } else if (r==c) {
+                CONTEND_DELTA( matrix_access(U,4,4,r,c), 1.0f, tol );
+            } else {
+                CONTEND_DELTA( matrix_access(U,4,4,r,c), 0.0f, tol );
+            }
+        }
+    }
+
+    // multiply LU
+    fmatrix_mul(L,       4, 4,
+                U,       4, 4,
+                LU_test, 4, 4);
+
+    unsigned int i;
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( LU_test[i], A[i], tol );
+}
+
+// 
+// AUTOTEST: L/U decomp (Doolittle)
+//
+void autotest_fmatrix_ludecomp_doolittle()
+{
+    float tol = 1e-6f;  // error tolerance
+
+    float A[16]= {
+       4,  -3,  -1,  3,
+       1,   1,   0,  2,
+      -1,   0,   1,  1,
+      -2,  -5,   1,  -3};
+
+    float L[16];
+    float U[16];
+    float P[16];
+
+    float LU_test[16];
+
+    // run decomposition
+    fmatrix_ludecomp_doolittle(A,4,4,L,U,P);
+
+    if (liquid_autotest_verbose) {
+        printf("L :\n");
+        fmatrix_print(L,4,4);
+        printf("U :\n");
+        fmatrix_print(U,4,4);
+    }
+
+    unsigned int r,c;
+    for (r=0; r<4; r++) {
+        for (c=0; c<4; c++) {
+            if (r < c) {
+                CONTEND_DELTA( matrix_access(L,4,4,r,c), 0.0f, tol );
+            } else if (r==c) {
+                CONTEND_DELTA( matrix_access(L,4,4,r,c), 1.0f, tol );
+            } else {
+                CONTEND_DELTA( matrix_access(U,4,4,r,c), 0.0f, tol );
+            }
+        }
+    }
+
+    // multiply LU
+    fmatrix_mul(L,       4, 4,
+                U,       4, 4,
+                LU_test, 4, 4);
+
+    unsigned int i;
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( LU_test[i], A[i], tol );
+}
+
 #endif // __LIQUID_FMATRIX_AUTOTEST_H__

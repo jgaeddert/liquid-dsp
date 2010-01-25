@@ -708,10 +708,8 @@ void interleaver_circshift_R4(unsigned char *_x, unsigned int _n);
 // MODULE : matrix
 //
 
-#define MATRIX_MAX_SIZE 1024
-
 // fast access to matrix element, read/write
-#define matrix_fast_access(X,r,c,R,C) ((X)[(r)*(C)+(c)])
+#define matrix_fast_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
 #define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(fmatrix, name)
 #define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfmatrix, name)
