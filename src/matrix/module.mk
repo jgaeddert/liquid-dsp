@@ -38,6 +38,7 @@ local_s_files	:= 		\
 # within $(local_dir)
 #
 local_t_files	:=		\
+	cfmatrix_autotest.h	\
 	fmatrix_autotest.h
 
 
