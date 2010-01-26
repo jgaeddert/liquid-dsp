@@ -144,3 +144,44 @@ and
       + \frac{2\beta}{\pi}\sin\left[\frac{(1-\beta)\pi}{4\beta}\right]
 \]
 
+\subsection{Windowed prototype}
+\label{ch:filterdesign:window}
+
+Basic idea: apply windowing function to truncated sinc
+
+\begin{equation}
+h(t) = w_n(t) \sinc(\Delta f t)
+\end{equation}
+
+where $w_n(t)$ is chosen from...
+
+\subsection{Kaiser}
+\label{ch:filterdesign:window:kaiser}
+The Kaiser window is defined as...
+\begin{equation}
+\label{eqn:kaiser_window}
+w[n] = \frac{I_0\left[\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right]}{I_0\left(\pi\beta\right)}
+\end{equation}
+where $I_\nu(z)$ is the modified Bessel function of the first kind of order $\nu$.
+\begin{equation}
+\label{eqn:besseli_infinite_sum}
+I_\nu(z) = \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
+\end{equation}
+
+The sum in (\ref{eqn:besseli_infinite_sum}) converges quickly due to the
+denominator increasing rapidly, thus only a few terms are necessary for
+sufficient approximation.
+An approximation for the value of $\beta$ to give a particular sidelobe level
+for the window is
+\begin{equation}
+\hat{\beta}(\gamma) = \frac{\gamma + 21.45}{7.3}
+\end{equation}
+where $\gamma$ is the sidelobe suppression in decibels.
+An approximation for the value of $\beta$ to give a particular transition
+bandwidth for the window is
+\begin{equation}
+\hat{\beta}(\Delta f) = 10\Delta f \,\, (not\, accurate)
+\end{equation}
+where $0 < \Delta f < 0.5$ is the normalized transition bandwidth.
+
+
