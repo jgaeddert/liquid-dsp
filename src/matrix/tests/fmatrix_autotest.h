@@ -251,4 +251,30 @@ void autotest_fmatrix_ludecomp_doolittle()
         CONTEND_DELTA( LU_test[i], A[i], tol );
 }
 
+// 
+// AUTOTEST: inverse
+//
+void autotest_fmatrix_inv()
+{
+    float tol = 1e-3f;
+
+    float x[9] = {
+       0.137864,  -0.444106,   0.394107,
+      -0.571620,   0.106554,   0.058423,
+       0.659264,   0.243594,  -0.122755};
+
+    float x_inv[9];
+    float x_inv_test[9] = {
+       0.37791,  -0.57405,   0.94008,
+       0.43799,   3.82934,   3.22867,
+       2.89873,   4.51595,   3.30942};
+
+    memmove(x_inv, x, sizeof(x));
+    fmatrix_inv(x_inv,3,3);
+
+    unsigned int i;
+    for (i=0; i<9; i++)
+        CONTEND_DELTA(x_inv[i], x_inv_test[i], tol);
+}
+
 #endif // __LIQUID_FMATRIX_AUTOTEST_H__

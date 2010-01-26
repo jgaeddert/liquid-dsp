@@ -117,4 +117,34 @@ void autotest_cfmatrix_eye() {
     CONTEND_SAME_DATA(x, z, 16*sizeof(float complex));
 }
 
+// 
+// AUTOTEST: inverse
+//
+void autotest_cfmatrix_inv()
+{
+    float tol = 1e-3f;
+
+    float complex x[9] = {
+      0.054076+  0.263160*_I,   0.570850+ -0.208230*_I,   0.551480+ -0.189100*_I, 
+     -0.223700+  0.298170*_I,   0.416250+  1.152200*_I,  -0.299920+  0.469310*_I, 
+     -1.485400+ -0.192370*_I,  -0.679430+  0.528100*_I,  -0.827860+ -0.345740*_I
+    };
+
+    float complex x_inv[9];
+    float complex x_inv_test[9] = {
+     -0.277900+ -0.717820*_I,   0.559370+  0.305450*_I,  -0.691300+  0.080448*_I, 
+     -0.026647+ -0.650270*_I,   0.702820+ -0.990530*_I,   0.237160+  0.231150*_I, 
+      1.319100+  1.318300*_I,  -0.539880+  0.808700*_I,  -0.255610+  0.084624*_I
+    };
+
+    memmove(x_inv, x, sizeof(x));
+    cfmatrix_inv(x_inv,3,3);
+
+    unsigned int i;
+    for (i=0; i<9; i++) {
+        CONTEND_DELTA(crealf(x_inv[i]), crealf(x_inv_test[i]), tol);
+        CONTEND_DELTA(cimagf(x_inv[i]), cimagf(x_inv_test[i]), tol);
+    }
+}
+
 #endif // __LIQUID_CFMATRIX_AUTOTEST_H__
