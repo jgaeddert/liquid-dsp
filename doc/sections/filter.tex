@@ -4,6 +4,18 @@
 \section{filter}
 \label{module:filter}
 
+% autocorr
+\subsection{{\tt autocorr} (auto-correlator)}
+Implements an auto-correlator
+% TODO check this equation
+\[
+    r_{xx}(n) = \sum_{k=0}^{N-1} {x(n-k)x^*(n-k-d)}
+\]
+where $N$ is the window length, and $d$ is the overlap delay.
+
+% dds
+\subsection{{\tt dds} (direct digital synthesizer)}
+
 % fir_filter
 \subsection{{\tt fir\_filter} (finite impulse response filter)}
 Finite impulse response filter.
