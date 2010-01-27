@@ -71,23 +71,21 @@ liquid/
                                 all APIsfor external use
         liquid.internal.h   <-- internal header
     src/
-        include/            <-- initially empty directory
         module1/
             module.mk       <-- top-level included makefile for
                                 building this specific module
             README
             src/
-                object1.h   <-- internal header
-                object1.1.c <-- internal source
-                object1.2.c <-- internal source
+                object_a.c  <-- internal source
+                object_b.c  <-- internal source
                 ...
             tests/
-                autotest1.1.h
-                autotest1.2.h
+                autotest_a.h
+                autotest_b.h
                 ...
             bench/
-                benchmark1.h
-                benchmark2.h
+                benchmark_a.h
+                benchmark_b.h
                 ...
         module2/
             ...
@@ -124,4 +122,36 @@ Repository organization
     modules/                <-- processing blocks
         interpolator/
 
+
+======================================================================================
+ DSP module dependency tree
+======================================================================================
+Listed below is the dependency tree each module has on each other.  The aim is
+to provide a framework for building modules separately without generating the
+entire library if it is either not needed, or consumes too much memory.  This
+list might not be complete, and should probably be automatically generated.
+
+    agc             []
+    ann             []
+    audio           [filter,fft,multicarrier]
+    buffer          []
+    channel         [random]
+    dotprod         []
+    equalization    [buffer,dotprod,matrix]
+    estimation      []
+    fec             [utility]
+    fft             []
+    filter          [buffer,dotprod]
+    framing         [agc,fec,filter,nco,sequence]
+    interleaver     []
+    math            []
+    matrix          []
+    modem           []
+    multicarrier    [filter,fft,nco]
+    nco             [filter]
+    optim           []
+    quantization    []
+    random          [math]
+    sequence        []
+    utility         []
 
