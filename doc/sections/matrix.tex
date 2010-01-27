@@ -119,18 +119,55 @@ U =
 \end{verbatim}
 
 \subsubsection{Gauss-Jordan Elimination}
-
-gjelim...
+Gauss-Jordan elimination converts a $n \times m$ matrix into its row-reduced
+echelon form using elementary matrix operations (e.g. pivoting).
+This can be used to solve a linear system of $n$ equations
+$\vec{A}\vec{x} = \vec{b}$ for the unknown vector $\x{x}$
+\[
+    \begin{bmatrix}
+        A_{0,0}     & A_{0,1}   & \cdots  & A_{0,n-1} \\
+        A_{1,0}     & A_{1,1}   & \cdots  & A_{1,n-1} \\
+        \\
+        A_{n-1,0}   & A_{n-1,1} & \cdots  & A_{n-1,n-1}
+    \end{bmatrix}
+    \begin{bmatrix}
+        x_{0} \\
+        x_{1} \\
+        \\
+        x_{n-1}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        b_{0} \\
+        b_{1} \\
+        \\
+        b_{n-1}
+    \end{bmatrix}
+\]
+The solution for $\vec{x}$ is given by inverting $\vec{A}$ and multiplying
+by $\vec{b}$, viz
+\[
+    \vec{x} = \vec{A}^{-1}\vec{b}
+\]
+This is also equivalent to concatenating $\vec{A}$ and $\vec{b}$ and
+converting it to its row-reduced echelon form.
+If $\vec{A}$ is non-singular the resulting $n \times n+1$ matrix will hold
+$\vec{x}$ in its last column.
+The row-reduced echelon form of a matrix is computed in {\it liquid} using the
+Gauss-Jordan elimination algorithm, and can be invoked as such:
 \begin{verbatim}
-Xb =
+Ab =
   0.84381998 -2.38303995  1.43060994 -1.66603994  0.91488999
   3.99475002  0.88066000  4.69372988  0.44563001  0.71789002
   7.28072023 -2.06608009  0.67074001  9.80657005  1.06552994
   6.07741022 -3.93098998  1.22826004 -0.42142001 -0.81707001
-fmatrix_gjelim(Xb,4,5)
+fmatrix_gjelim(Ab,4,5)
   1.00000000 -0.00000000  0.00000000 -0.00000000 -0.51971692
  -0.00000000  1.00000000  0.00000000  0.00000000 -0.43340963
  -0.00000000 -0.00000000  1.00000000 -0.00000000  0.64247853
   0.00000000 -0.00000000 -0.00000000  0.99999994  0.35925382
 \end{verbatim}
+Notice that the result contains $\vec{I}_n$ in its first $n$ rows and $n$
+columns (to within machine precision).
+[NOTE: row permutations (swapping) might have occurred...]
 
