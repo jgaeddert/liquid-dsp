@@ -28,6 +28,7 @@ module_name     := math
 #
 local_s_files	:= 		\
 	math.c			\
+	math.trig.c		\
 	poly.c
 
 # local_t_files

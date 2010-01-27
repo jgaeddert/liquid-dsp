@@ -1730,6 +1730,16 @@ void interleaver_debug_print(interleaver _i);
 // MODULE : math
 //
 
+// trig
+float liquid_sinf(float _x);
+float liquid_cosf(float _x);
+float liquid_tanf(float _x);
+void  liquid_sincosf(float _x,
+                     float * _sinf,
+                     float * _cosf);
+float liquid_expf(float _x);
+float liquid_logf(float _x);
+
 // ln( gamma(z) )
 float liquid_lngammaf(float _z);
 
