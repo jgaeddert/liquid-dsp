@@ -41,7 +41,31 @@ fmatrix_swaprows(x,4,4,0,2);
   6.07741022 -3.93098998  1.22826004 -0.42142001
 \end{verbatim}
 
-Pivoting...
+\subsubsection{Pivoting}
+[NOTE: terminology for ``pivot'' is different from literature.]
+Given an $n \times m$ matrix $\vec{A}$...
+\[
+    \vec{A} = 
+    \begin{bmatrix}
+        A_{0,0}     & A_{0,1}   & \cdots  & A_{0,m-1} \\
+        A_{1,0}     & A_{1,1}   & \cdots  & A_{1,m-1} \\
+        \\
+        A_{n-1,0}   & A_{n-1,1} & \cdots  & A_{n-1,m-1}
+    \end{bmatrix}
+\]
+The pivot element must not be zero.
+Pivoting $\vec{A}$ around $\vec{A}_{a,b}$ gives
+\[
+    \vec{B}_{i,j} = \left(
+                    \frac{\vec{A}_{i,b}}{\vec{A}_{a,b}}
+                    \right)
+                    \vec{A}_{a,j} - \vec{A}_{i,j}
+                    \forall i \ne a
+\]
+Row $a$ is left unchanged in $\vec{B}$.
+All elements of $\vec{B}$ in column $b$ are zero except for row $a$.
+For our example $4 \times 4$ matrix $\vec{x}$, pivoting around
+$\vec{x}_{1,2}$ gives:
 \begin{verbatim}
 fmatrix_pivot(x,4,4,1,2);
   0.37374675  2.65145779  0.00000000  1.80186427
@@ -52,7 +76,7 @@ fmatrix_pivot(x,4,4,1,2);
 
 \subsection{Complex math operations}
 \label{module:matrix:complex}
-inv(ert), gjelim (Gauss-Jordan elimination), pivot,
+inv(ert), gjelim (Gauss-Jordan elimination)
 
 Inverse...
 \begin{verbatim}
@@ -122,7 +146,7 @@ U =
 Gauss-Jordan elimination converts a $n \times m$ matrix into its row-reduced
 echelon form using elementary matrix operations (e.g. pivoting).
 This can be used to solve a linear system of $n$ equations
-$\vec{A}\vec{x} = \vec{b}$ for the unknown vector $\x{x}$
+$\vec{A}\vec{x} = \vec{b}$ for the unknown vector $\vec{x}$
 \[
     \begin{bmatrix}
         A_{0,0}     & A_{0,1}   & \cdots  & A_{0,n-1} \\
@@ -149,7 +173,7 @@ by $\vec{b}$, viz
 \[
     \vec{x} = \vec{A}^{-1}\vec{b}
 \]
-This is also equivalent to concatenating $\vec{A}$ and $\vec{b}$ and
+This is also equivalent to augmenting $\vec{A}$ with $\vec{b}$ and
 converting it to its row-reduced echelon form.
 If $\vec{A}$ is non-singular the resulting $n \times n+1$ matrix will hold
 $\vec{x}$ in its last column.
