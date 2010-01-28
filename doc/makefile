@@ -9,6 +9,9 @@ TEX = pdflatex
 TEX_FLAGS = --shell-escape
 BIB = bibtex
 BIB_FLAGS =
+CC = gcc
+CFLAGS = -Wall
+LDFLAGS = -lliquid
 
 # Listings used in this document
 LISTINGS = 					\
@@ -43,6 +46,8 @@ SECTIONS :=					\
 	sections/sequence.tex			\
 	sections/utility.tex
 
+extra_clean :=
+
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
@@ -60,6 +65,17 @@ $(LISTINGS) : %.tex : %
 # full listings target
 listings: highlight.sty $(LISTINGS)
 
+fig-clean:
+	$(RM) figures.gen/*
+
+# auto-generated figures, target collection variables
+figures_generated :=
+
+# modem figures
+include figures.modem.mk
+
+figures: $(figures_generated)
+
 # auxillary
 $(projName).aux: $(projName).tex listings highlight.sty $(SECTIONS)
 	$(TEX) $(TEX_FLAGS) $(projName)
@@ -72,12 +88,10 @@ $(projName).bbl: $(projName).aux $(projName).bib
 # TODO list figures as dependencies
 #$(projName).pdf: $(projName).bbl $(projName).tex listings
 # TODO use above line for bibliography (ignore for now)
-$(projName).pdf: $(projName).tex listings $(SECTIONS)
+$(projName).pdf: $(projName).tex listings $(SECTIONS) $(figures_generated)
 	$(TEX) $(TEX_FLAGS) $(projName)
 	$(TEX) $(TEX_FLAGS) $(projName)
 
-fig-clean:
-	#rm -f figures/*.pdf
 
 listings-clean:
 	rm -f highlight.sty
@@ -86,7 +100,8 @@ listings-clean:
 doc-clean:
 	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.bbl *.blg $(projName).pdf
 
-clean: doc-clean
+clean: doc-clean fig-clean
+	$(RM) $(extra_clean)
 
 distclean: doc-clean listings-clean fig-clean
 
