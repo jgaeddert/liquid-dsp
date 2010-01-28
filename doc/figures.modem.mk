@@ -11,6 +11,13 @@ local_epsfiles :=			\
 	figures.gen/modem_8psk.eps	\
 	figures.gen/modem_16psk.eps	\
 					\
+	figures.gen/modem_4apsk.eps	\
+	figures.gen/modem_8apsk.eps	\
+	figures.gen/modem_16apsk.eps	\
+	figures.gen/modem_32apsk.eps	\
+	figures.gen/modem_64apsk.eps	\
+	figures.gen/modem_128apsk.eps	\
+					\
 	figures.gen/modem_2ask.eps	\
 	figures.gen/modem_4ask.eps	\
 	figures.gen/modem_8ask.eps	\
@@ -50,6 +57,27 @@ figures.gen/modem_8psk.gnu   : %.gnu : src/modem.genplot ; ./$< -f $@ -m psk -p 
 
 figures.gen/modem_16psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 4
 figures.gen/modem_16psk.gnu  : %.gnu : src/modem.genplot ; ./$< -f $@ -m psk -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+# 
+# apsk
+#
+figures.gen/modem_4apsk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 2
+figures.gen/modem_4apsk.gnu  : %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_8apsk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 3
+figures.gen/modem_8apsk.gnu  : %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 3 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_16apsk.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 4
+figures.gen/modem_16apsk.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_32apsk.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 5
+figures.gen/modem_32apsk.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_64apsk.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 6
+figures.gen/modem_64apsk.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_128apsk.dat: %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 7
+figures.gen/modem_128apsk.gnu: %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
 # 
 # ask
