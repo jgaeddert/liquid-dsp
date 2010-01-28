@@ -6,7 +6,114 @@
 \label{module:modem}
 modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
 
-\includegraphics[trim = 15mm 0mm 15mm 0mm,clip,height=8cm]{figures.gen/modem_16qam}   \\
-\includegraphics[trim = 15mm 0mm 15mm 0mm,clip,height=8cm]{figures.gen/modem_64qam}   \\
-\includegraphics[trim = 15mm 0mm 15mm 0mm,clip,height=8cm]{figures.gen/modem_256qam}  \\
+%-------------------- FIGURE: PSK MODEM --------------------
+\begin{figure}[ht]
+\centering
+\mbox{
+  \subfigure[BPSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_bpsk}
+      \label{fig:modem:psk:2}
+    } \quad
+  \subfigure[QPSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_qpsk}
+      \label{fig:modem:psk:4}
+    } \quad
+}
+\mbox{
+  \subfigure[8-PSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_8psk}
+      \label{fig:modem:psk:8}
+    } \quad
+  \subfigure[16-PSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_16psk}
+      \label{fig:modem:psk:16}
+    } \quad
+}
 % trim = left bottom right top
+\caption{Phase-shift keying (PSK) modem}
+\label{fig:modem:psk}
+\end{figure}
+
+
+%-------------------- FIGURE: ASK MODEM --------------------
+\begin{figure}[ht]
+\centering
+\mbox{
+  \subfigure[2-ASK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_2ask}
+      \label{fig:modem:ask:2}
+    } \quad
+  \subfigure[4-ASK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_4ask}
+      \label{fig:modem:ask:4}
+    } \quad
+}
+\mbox{
+  \subfigure[8-ASK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_8ask}
+      \label{fig:modem:ask:8}
+    } \quad
+  \subfigure[16-ASK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_16ask}
+      \label{fig:modem:ask:16}
+    } \quad
+}
+% trim = left bottom right top
+\caption{Pulse-amplitude modulation (ASK) modem}
+\label{fig:modem:ask}
+\end{figure}
+
+
+%-------------------- FIGURE: QAM MODEM --------------------
+\begin{figure}[ht]
+\centering
+\mbox{
+  \subfigure[8-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_8qam}
+      \label{fig:modem:qam:8}
+    } \quad
+  \subfigure[16-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_16qam}
+      \label{fig:modem:qam:16}
+    } \quad
+}
+\mbox{
+  \subfigure[32-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_32qam}
+      \label{fig:modem:qam:32}
+    } \quad
+  \subfigure[64-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_64qam}
+      \label{fig:modem:qam:64}
+    } \quad
+}
+\mbox{
+  \subfigure[128-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_128qam}
+      \label{fig:modem:qam:128}
+    } \quad
+  \subfigure[256-QAM]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_64qam}
+      \label{fig:modem:qam:256}
+    } \quad
+}
+% trim = left bottom right top
+\caption{Rectangular quaternary-amplitude modulation (QAM) modem}
+\label{fig:modem:qam}
+\end{figure}
+
+
