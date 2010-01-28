@@ -3,7 +3,9 @@
 %
 \section{matrix}
 \label{module:matrix}
-Matrices in {\it liquid} are represented as just arrays of a single dimension.
+Matrices in {\it liquid} are represented as just arrays of a single dimension,
+and do not rely on special objects for their manipulation.
+\input{listings/matrix.example.c.tex}
 
 \subsection{Basic math operations}
 \label{module:matrix:math}
@@ -127,7 +129,7 @@ computing the product of the diagonal elements of $\vec{U}$, viz
     \left|\vec{A}\right| =
     \prod_{k=0}^{n-1}{\vec{U}_{k,k}}
 \]
-This is equivalent to performing L/U decomposition using Crot's method and
+This is equivalent to performing L/U decomposition using Crout's method and
 then computing the product of the diagonal elements of $\vec{L}$.
 \begin{verbatim}
 fmatrix_det(X,4,4) = 585.40289307

@@ -15,12 +15,13 @@ LDFLAGS = -lliquid
 
 # Listings used in this document
 LISTINGS = 					\
+	listings/agc.example.c.tex		\
 	listings/nco.c++.tex			\
 	listings/firhilb.example.c.tex		\
 	listings/gradient_search.example.c.tex	\
 	listings/gport.direct.example.c.tex	\
 	listings/gport.indirect.example.c.tex	\
-	listings/agc.example.c.tex
+	listings/matrix.example.c.tex
 
 SECTIONS :=					\
 	sections/agc.tex			\
