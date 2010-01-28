@@ -78,7 +78,35 @@ fmatrix_pivot(x,4,4,1,2);
 \label{module:matrix:complex}
 inv(ert), gjelim (Gauss-Jordan elimination)
 
-Inverse...
+\subsubsection{Inverse}
+Given an $n \times n$ matrix $\vec{A}$, augment with $\vec{I}_n$:
+\[
+    \left[\vec{A}|\vec{I}_n\right] = 
+    \left[
+    \begin{array}{cccc|cccc}
+    A_{0,0}     & A_{0,1}   & \cdots  & A_{0,m-1}   & 1 & 0 & \cdots & 0 \\
+    A_{1,0}     & A_{1,1}   & \cdots  & A_{1,m-1}   & 0 & 1 & \cdots & 0 \\
+                &           &         &             &   &   &        &   \\
+    A_{n-1,0}   & A_{n-1,1} & \cdots  & A_{n-1,m-1} & 0 & 0 & \cdots & 1 \\
+    \end{array}
+    \right]
+\]
+Perform elementary operations to convert to its row-reduced echelon form.
+The resulting matrix has the identity matrix on the left and $\vec{A}^{-1}$ on
+its right, viz
+\[
+    \left[\vec{I}_n|\vec{A}^{-1}\right] = 
+    \left[
+    \begin{array}{cccc|cccc}
+1 & 0 & \cdots & 0 & A^{-1}_{0,0}   & A^{-1}_{0,1}   & \cdots  & A^{-1}_{0,m-1}   \\
+0 & 1 & \cdots & 0 & A^{-1}_{1,0}   & A^{-1}_{1,1}   & \cdots  & A^{-1}_{1,m-1}   \\
+  &   &        &   &                &                &         &                  \\
+0 & 0 & \cdots & 1 & A^{-1}_{n-1,0} & A^{-1}_{n-1,1} & \cdots  & A^{-1}_{n-1,m-1} \\
+    \end{array}
+    \right]
+\]
+The {\tt matrix\_inv} method uses Gauss-Jordan elmination (see 
+{\tt matrix\_gjelim} for row reduction and back-substitution.
 \begin{verbatim}
 fmatrix_inv(x,4,4);
  -0.33453920  0.04643385 -0.04868321  0.23879384
