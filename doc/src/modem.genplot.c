@@ -91,7 +91,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set xrange [-1.5:1.5]\n");
     fprintf(fid,"set yrange [-1.5:1.5]\n");
     fprintf(fid,"set size square\n");
-    fprintf(fid,"set title \"%s\"\n", figure_title);
+    //fprintf(fid,"set title \"%s\"\n", figure_title);
     fprintf(fid,"set xlabel \"I\"\n");
     fprintf(fid,"set ylabel \"Q\"\n");
     fprintf(fid,"set nokey # disable legned\n");
