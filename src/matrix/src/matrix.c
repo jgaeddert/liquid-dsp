@@ -55,7 +55,7 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
 {
     // ensure lengths are valid
     if (_ZR != _XR || _ZC != _YC || _XC != _YR ) {
-        fprintf(stderr,"error: matrix_multiply(), invalid dimensions\n");
+        fprintf(stderr,"error: matrix_mul(), invalid dimensions\n");
         exit(0);
     }
 
@@ -75,6 +75,28 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
             printf("\n");
 #endif
         }
+    }
+}
+
+// augment matrices x and y:
+//  z = [x | y]
+void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
+                  T * _y, unsigned int _ry, unsigned int _cy,
+                  T * _z, unsigned int _rz, unsigned int _cz)
+{
+    // ensure lengths are valid
+    if (_rz != _rx || _rz != _ry || _rx != _ry || _cz != _cx + _cy) {
+        fprintf(stderr,"error: matrix_aug(), invalid dimensions\n");
+        exit(0);
+    }
+
+    unsigned int r, c, n;
+    for (r=0; r<_rz; r++) {
+        n=0;
+        for (c=0; c<_cx; c++)
+            matrix_access(_z,_rz,_cz,r,n++) = matrix_access(_x,_rx,_cx,r,c);
+        for (c=0; c<_cy; c++)
+            matrix_access(_z,_rz,_cz,r,n++) = matrix_access(_y,_ry,_cy,r,c);
     }
 }
 

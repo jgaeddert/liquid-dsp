@@ -59,7 +59,7 @@ int main() {
     fmatrix_print(i4,4,4);
 
     printf("\n");
-    float det = fmatrix_det(s,4);
+    float det = fmatrix_det(s,4,4);
     printf("det(s) = %12.8f\n", det);
 
 #if 0
@@ -127,7 +127,7 @@ int main() {
     fmatrix_print(Y,4,4);
 
     // determinant test
-    float D = fmatrix_det(X,4);
+    float D = fmatrix_det(X,4,4);
     printf("\nfmatrix_det(X,4) = %12.8f\n", D);
 
     // L/U decomp (Crout's method)

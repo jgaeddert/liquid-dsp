@@ -116,6 +116,35 @@ void autotest_fmatrix_mul() {
 
 }
 
+// 
+// AUTOTEST: matrix_aug
+//
+void autotest_fmatrix_aug() {
+    float x[12]= {
+      -17,   -3,   -7,
+       -5,   -5,   -2,
+        1,    8,    7,
+       -1,   32,    2};
+
+    float y[8] = {
+      -30,   20,
+      -13,    7,
+       -4,    5,
+       25,   -4};
+
+    float z0[20];
+    float z0_test[20] = {
+      -17,   -3,   -7,  -30,   20,
+       -5,   -5,   -2,  -13,    7,
+        1,    8,    7,   -4,    5,
+       -1,   32,    2,   25,   -4};
+
+    fmatrix_aug(x,4,3,y,4,2,z0,4,5);
+    if (liquid_autotest_verbose)
+        fmatrix_print(z0,4,5);
+    CONTEND_SAME_DATA(z0,z0_test,4*5*sizeof(float));
+}
+
 
 // 
 // AUTOTEST: identity
