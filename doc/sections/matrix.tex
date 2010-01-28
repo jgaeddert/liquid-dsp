@@ -106,7 +106,9 @@ its right, viz
     \right]
 \]
 The {\tt matrix\_inv} method uses Gauss-Jordan elmination (see 
-{\tt matrix\_gjelim} for row reduction and back-substitution.
+{\tt matrix\_gjelim}) for row reduction and back-substitution.
+Pivot elements in $\vec{A}$ with the largest magnitude are chosen to help
+stability in floating-point arithmetic.
 \begin{verbatim}
 fmatrix_inv(x,4,4);
  -0.33453920  0.04643385 -0.04868321  0.23879384
@@ -115,7 +117,18 @@ fmatrix_inv(x,4,4);
   0.13544561 -0.01930523  0.11944833 -0.14921521
 \end{verbatim}
 
-Determinant...
+\subsubsection{Determinant}
+The determinant of an $n \times n$ matrix $\vec{A}$...
+In {\it liquid}, the determinant is computed by L/U decomposition of $\vec{A}$
+using Doolittle's method (see {\tt matrix\_ludecom\_doolittle}) and then
+computing the product of the diagonal elements of $\vec{U}$, viz
+\[
+    \det\left(\vec{A}\right) =
+    \left|\vec{A}\right| =
+    \prod_{k=0}^{n-1}{\vec{U}_{k,k}}
+\]
+This is equivalent to performing L/U decomposition using Crot's method and
+then computing the product of the diagonal elements of $\vec{L}$.
 \begin{verbatim}
 fmatrix_det(X,4) = 585.40289307
 \end{verbatim}
