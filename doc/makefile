@@ -12,6 +12,11 @@ BIB_FLAGS =
 CC = gcc
 CFLAGS = -Wall
 LDFLAGS = -lliquid
+RM = rm -f
+PYGMENTIZE = pygmentize
+PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
+PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
+PYGMENTS_STYLE = default
 
 # Listings used in this document
 LISTINGS = 					\
@@ -23,6 +28,7 @@ LISTINGS = 					\
 	listings/gport.indirect.example.c.tex	\
 	listings/matrix.example.c.tex
 
+# .tex inputs
 SECTIONS :=					\
 	sections/agc.tex			\
 	sections/ann.tex			\
@@ -47,27 +53,34 @@ SECTIONS :=					\
 	sections/sequence.tex			\
 	sections/utility.tex
 
+# additional targets to clean
 extra_clean :=
-
-PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
-PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
-PYGMENTS_STYLE = default
 
 all: $(projName).pdf
 
+
+##
+## LISTINGS
+##
+
 # generate listings style
 highlight.sty:
-	pygmentize -f latex -S $(PYGMENTS_STYLE) > highlight.sty
+	$(PYGMENTIZE) -f latex -S $(PYGMENTS_STYLE) > highlight.sty
 
 # use pygments (http://pygments.org) to generate fancy syntax-highlighted source
 $(LISTINGS) : %.tex : %
-	pygmentize -f latex $(PYGMENTS_OPTS) -o $@ $<
+	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ $<
 
 # full listings target
 listings: highlight.sty $(LISTINGS)
 
-fig-clean:
-	$(RM) figures.gen/*
+clean-listings:
+	$(RM) highlight.sty
+	$(RM) $(LISTINGS)
+
+##
+## FIGURES
+##
 
 # auto-generated figures, target collection variables
 figures_generated :=
@@ -75,7 +88,17 @@ figures_generated :=
 # modem figures
 include figures.modem.mk
 
+# full figures target
 figures: $(figures_generated)
+
+# clean figures target
+clean-figures:
+	$(RM) figures.gen/*
+
+
+##
+## DOCUMENT
+##
 
 # auxillary
 $(projName).aux: $(projName).tex listings highlight.sty $(SECTIONS)
@@ -86,23 +109,22 @@ $(projName).bbl: $(projName).aux $(projName).bib
 	$(BIB) $(BIB_FLAGS) $(projName)
 
 # main project file (.pdf)
-# TODO list figures as dependencies
 #$(projName).pdf: $(projName).bbl $(projName).tex listings
 # TODO use above line for bibliography (ignore for now)
 $(projName).pdf: $(projName).tex listings $(SECTIONS) $(figures_generated)
 	$(TEX) $(TEX_FLAGS) $(projName)
 	$(TEX) $(TEX_FLAGS) $(projName)
 
+clean-doc:
+	$(RM) *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.bbl *.blg $(projName).pdf
 
-listings-clean:
-	rm -f highlight.sty
-	rm -f $(LISTINGS)
 
-doc-clean:
-	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.bbl *.blg $(projName).pdf
+##
+## OTHER
+##
 
-clean: doc-clean fig-clean
+clean: clean-doc
+
+distclean: clean clean-figures clean-listings
 	$(RM) $(extra_clean)
-
-distclean: doc-clean listings-clean fig-clean
 
