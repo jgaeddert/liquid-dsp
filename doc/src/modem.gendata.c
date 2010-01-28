@@ -65,6 +65,8 @@ int main(int argc, char*argv[]) {
     unsigned int i; // modulated symbol
     unsigned int num_symbols = 1<<bps;
     float complex x;
+    unsigned int s;
+    char symbol_str[bps+1];
 
     // create the modem and generate constellation
     modem mod = modem_create(ms, bps);
@@ -84,7 +86,16 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_symbols; i++) {
         modem_modulate(mod, i, &x);
 
-        fprintf(fid,"%12.4e %12.4e\n", crealf(x), cimagf(x));
+        // generate binary symbol string
+        unsigned int j;
+        s = i;
+        for (j=0; j<bps; j++) {
+            symbol_str[bps-j-1] = (s & 1) ? '1' : '0';
+            s >>= 1;
+        }
+        symbol_str[j] = '\0';   // terminate with null character
+
+        fprintf(fid,"%12.4e %12.4e \"%s\"  \"%u\"\n", crealf(x), cimagf(x), symbol_str, i);
     }
 
     // close output file

@@ -23,7 +23,7 @@ void usage()
 
 int main(int argc, char*argv[]) {
     // create mod/demod objects
-    unsigned int gnuplot_version=0;
+    float gnuplot_version=0.0;
     enum {GNUPLOT_TERM_PNG=0,
           GNUPLOT_TERM_JPG,
           GNUPLOT_TERM_EPS
@@ -31,8 +31,6 @@ int main(int argc, char*argv[]) {
     char input_filename[256] = "datafile.dat";
     char output_filename[256] = "modem.gnu";
     char figure_title[256] = "constellation";
-    //strcpy(input_filename,"datafile.dat");
-    //strcpy(output_filename,"");
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhg:t:d:f:T:")) != EOF) {
@@ -41,7 +39,7 @@ int main(int argc, char*argv[]) {
         case 'h':
             usage();
             return 0;
-        case 'g':   gnuplot_version = atoi(optarg);         break;
+        case 'g':   gnuplot_version = atof(optarg);         break;
         case 't':   gnuplot_term = atoi(optarg);            break;
         case 'd':   strncpy(input_filename,optarg,256);     break;
         case 'f':   strncpy(output_filename,optarg,256);    break;
@@ -70,14 +68,24 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"reset\n");
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
-    fprintf(fid,"set xrange [-2:2]\n");
-    fprintf(fid,"set yrange [-2:2]\n");
+    fprintf(fid,"set xrange [-1.5:1.5]\n");
+    fprintf(fid,"set yrange [-1.5:1.5]\n");
     fprintf(fid,"set size square\n");
     fprintf(fid,"set title \"%s\"\n", figure_title);
     fprintf(fid,"set xlabel \"I\"\n");
     fprintf(fid,"set ylabel \"Q\"\n");
-    fprintf(fid,"set nokey\n");
-    fprintf(fid,"plot \"%s\" using 1:2 with points\n",input_filename);
+    fprintf(fid,"set nokey # disable legned\n");
+    fprintf(fid,"set grid xtics ytics lc rgb '#999999' lw 1\n");
+    fprintf(fid,"set pointsize 1.0\n");
+    //fprintf(fid,"set grid\n");
+    if (gnuplot_version < 4.2f) {
+        fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080'\n",input_filename);
+    } else {
+        fprintf(fid,"xoffset = 0.06\n");
+        fprintf(fid,"yoffset = 0.06\n");
+        fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080',\\\n",input_filename);
+        fprintf(fid,"     '%s' using ($1+xoffset):($2+yoffset):4 with labels font 'arial,10'\n", input_filename);
+    }
 
     // close it up
     fclose(fid);
