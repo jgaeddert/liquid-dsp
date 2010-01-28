@@ -94,21 +94,43 @@ void MATRIX(_div)(T * _X,
                  _Z,    _n, _n);
 }
 
-// matrix determinant
-T MATRIX(_det)(T * _X,
-               unsigned int _n)
+// matrix determinant (2 x 2)
+T MATRIX(_det2x2)(T * _X,
+                  unsigned int _r,
+                  unsigned int _c)
 {
+    // validate input
+    if (_r != 2 || _c != 2) {
+        fprintf(stderr,"error: matrix_det2x2(), invalid dimensions\n");
+        exit(1);
+    }
+    return _X[0]*_X[3] - _X[1]*_X[2];
+}
+
+// matrix determinant (n x n)
+T MATRIX(_det)(T * _X,
+               unsigned int _r,
+               unsigned int _c)
+{
+    // validate input
+    if (_r != _c) {
+        fprintf(stderr,"error: matrix_det(), matrix must be square\n");
+        exit(1);
+    }
+    unsigned int n = _r;
+    if (n==2) return MATRIX(_det2x2)(_X,2,2);
+
     // compute L/U decomposition (Doolittle's method)
-    T L[_n*_n]; // lower
-    T U[_n*_n]; // upper
-    T P[_n*_n]; // permutation
-    MATRIX(_ludecomp_doolittle)(_X,_n,_n,L,U,P);
+    T L[n*n]; // lower
+    T U[n*n]; // upper
+    T P[n*n]; // permutation
+    MATRIX(_ludecomp_doolittle)(_X,n,n,L,U,P);
 
     // evaluate along the diagonal of U
     T det = 1.0;
     unsigned int i;
-    for (i=0; i<_n; i++)
-        det *= matrix_access(U,_n,_n,i,i);
+    for (i=0; i<n; i++)
+        det *= matrix_access(U,n,n,i,i);
 
     return det;
 }

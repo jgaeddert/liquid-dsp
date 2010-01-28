@@ -720,9 +720,12 @@ void interleaver_circshift_R4(unsigned char *_x, unsigned int _n);
 //   MATRIX : name-mangling macro
 //   T      : data type
 #define LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX,T)             \
+T    MATRIX(_det2x2)(T * _x,                                    \
+                     unsigned int _rx,                          \
+                     unsigned int _cx);                         \
 void MATRIX(_gjelim)(T * _x,                                    \
-                unsigned int _rx,                               \
-                unsigned int _cx);                              \
+                     unsigned int _rx,                          \
+                     unsigned int _cx);                         \
 void MATRIX(_pivot)(T * _x,                                     \
                unsigned int _rx,                                \
                unsigned int _cx,                                \
