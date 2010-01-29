@@ -1,5 +1,5 @@
 //
-// Arbitrary resampler
+// filter_resamp_crcf.c : arbitrary resampler plot
 //
 
 #include <stdio.h>
@@ -26,9 +26,6 @@ int main() {
         float complex jphi = _Complex_I*2.0f*M_PI*i;
         x[i] = cexpf(jphi*0.04f) + 1.4f*cexpf(jphi*0.07f);
         //x[i] *= blackmanharris(i,n);
-        // smooth transition
-        if (i < 10) x[i] *= blackmanharris(i,20);
-        else if (i > (n-10-1)) x[i] *= blackmanharris(n-i-1+10,20);
     }
 
     // output buffer with extra padding for good measure
