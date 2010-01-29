@@ -2,9 +2,6 @@
 # Makefile for generating liquid documentation modem figures
 #
 
-GNUPLOT_VERSION = 4.2
-GNUPLOT = gnuplot
-
 local_epsfiles :=			\
 	figures.gen/modem_bpsk.eps	\
 	figures.gen/modem_qpsk.eps	\

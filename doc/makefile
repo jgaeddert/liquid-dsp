@@ -13,10 +13,15 @@ CC = gcc
 CFLAGS = -Wall
 LDFLAGS = -lliquid
 RM = rm -f
+
+GNUPLOT = gnuplot
+GNUPLOT_VERSION = 4.2
+
 PYGMENTIZE = pygmentize
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
+
 
 # Listings used in this document
 LISTINGS = 					\

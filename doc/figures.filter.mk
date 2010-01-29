@@ -2,19 +2,21 @@
 # Makefile for generating liquid documentation filter figures
 #
 
-GNUPLOT_VERSION = 4.2
-GNUPLOT = gnuplot
-
-local_epsfiles :=			\
-	figures.gen/filter_kaiser.eps
+local_epsfiles :=				\
+	figures.gen/filter_kaiser.eps		\
+	figures.gen/filter_resamp_crcf.eps
 
 local_gnufiles := $(patsubst %.eps,%.gnu,$(local_epsfiles))
 #local_datfiles := $(patsubst %.eps,%.dat,$(local_epsfiles))
 
-# gnuplot script generator function
+# gnuplot script generator programs
 src/filter_kaiser : src/filter_kaiser.c
+src/filter_resamp_crcf : src/filter_resamp_crcf.c
 
 figures.gen/filter_kaiser.gnu : src/filter_kaiser
+	./$<
+
+figures.gen/filter_resamp_crcf.gnu : src/filter_resamp_crcf
 	./$<
 
 # eps target files
