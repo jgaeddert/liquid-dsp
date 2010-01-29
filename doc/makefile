@@ -86,6 +86,7 @@ clean-listings:
 figures_generated :=
 
 # modem figures
+include figures.filter.mk
 include figures.modem.mk
 
 # full figures target
