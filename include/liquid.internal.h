@@ -860,6 +860,8 @@ modem modem_create_apsk16(unsigned int _bits_per_symbol);
 modem modem_create_apsk32(unsigned int _bits_per_symbol);
 modem modem_create_apsk64(unsigned int _bits_per_symbol);
 modem modem_create_apsk128(unsigned int _bits_per_symbol);
+modem modem_create_arb16opt(unsigned int _bits_per_symbol);
+modem modem_create_arb64vt(unsigned int _bits_per_symbol);
 
 /// Scale arbitrary modem energy to unity
 void modem_arb_scale(modem _mod);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -79,6 +80,10 @@ modem modem_create(
         return modem_create_apsk64(_bits_per_symbol);
     case MOD_APSK128:
         return modem_create_apsk128(_bits_per_symbol);
+    case MOD_ARB16OPT:
+        return modem_create_arb16opt(4);
+    case MOD_ARB64VT:
+        return modem_create_arb64vt(6);
     default:
         fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u (%u b/s)\n",
                 _scheme, _bits_per_symbol);
@@ -514,6 +519,32 @@ modem modem_create_arb_rotated(
     mod->modulate_func = &modem_modulate_arb;
     mod->demodulate_func = &modem_demodulate_arb;
 
+    return mod;
+}
+
+modem modem_create_arb16opt(
+    unsigned int _bits_per_symbol)
+{
+    if (_bits_per_symbol != 4) {
+        fprintf(stderr,"error: modem_create_arb16opt(), bits/symbol is not exactly 4\n");
+        exit(1);
+    }
+
+    modem mod = modem_create_arb(4);
+    modem_arb_init(mod,(float complex*)modem_arb_opt16,16);
+    return mod;
+}
+
+modem modem_create_arb64vt(
+    unsigned int _bits_per_symbol)
+{
+    if (_bits_per_symbol != 6) {
+        fprintf(stderr,"error: modem_create_arb64vt(), bits/symbol is not exactly 6\n");
+        exit(1);
+    }
+
+    modem mod = modem_create_arb(6);
+    modem_arb_init(mod,(float complex*)modem_arb_vt64,64);
     return mod;
 }
 

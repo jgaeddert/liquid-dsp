@@ -56,6 +56,10 @@ int main(int argc, char*argv[]) {
     modem mod = modem_create(ms, bps);
     modem demod = modem_create(ms, bps);
 
+    // ensure bits/symbol matches modem description (only
+    // applicable to certain specific modems)
+    bps = modem_get_bps(mod);
+
     modem_print(mod);
 
     // open output file

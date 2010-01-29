@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -45,7 +46,9 @@ const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES] = {
     "apsk16(4,12)",
     "apsk32(4,12,16)",
     "apsk64(4,14,20,26)",
-    "apsk128(8,18,24,36,42)"
+    "apsk128(8,18,24,36,42)",
+    "arb16opt (optimal 16-qam)",
+    "arb64vt (64-qam vt logo)"
 };
 
 modulation_scheme liquid_getopt_str2mod(const char * _str)
@@ -79,6 +82,10 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
         return MOD_APSK64;
     } else if (strcmp(_str,"apsk128")==0) {
         return MOD_APSK128;
+    } else if (strcmp(_str,"arb16opt")==0) {
+        return MOD_ARB16OPT;
+    } else if (strcmp(_str,"arb64vt")==0) {
+        return MOD_ARB64VT;
     }
     fprintf(stderr,"warning: liquid_getopt_str2mod(), unknown/unsupported mod scheme : %s\n", _str);
     return MOD_UNKNOWN;

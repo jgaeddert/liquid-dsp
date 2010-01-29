@@ -1863,7 +1863,7 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_NUM_MOD_SCHEMES  17
+#define LIQUID_NUM_MOD_SCHEMES  19
 typedef enum {
     MOD_UNKNOWN=0,      // Unknown modulation scheme
     MOD_PSK,            // Phase-shift keying (PSK)
@@ -1896,7 +1896,9 @@ typedef enum {
     MOD_APSK16,         // amplitude phase-shift keying, M=16 (4,12)
     MOD_APSK32,         // amplitude phase-shift keying, M=32 (4,12,16)
     MOD_APSK64,         // amplitude phase-shift keying, M=64 (4,14,20,26)
-    MOD_APSK128         // amplitude phase-shift keying, M=128(8,18,24,36,42)
+    MOD_APSK128,        // amplitude phase-shift keying, M=128(8,18,24,36,42)
+    MOD_ARB16OPT,       // optimal 16-QAM
+    MOD_ARB64VT         // Virginia Tech logo
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
