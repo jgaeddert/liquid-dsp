@@ -27,7 +27,7 @@ int main() {
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);
 #endif
 
-    unsigned int nfft=256;
+    unsigned int nfft=512;
     float complex x[nfft];
     float complex X[nfft];
     fftplan fft = fft_create_plan(nfft,x,X,FFT_FORWARD,0);
@@ -63,7 +63,7 @@ int main() {
     for (i=0; i<nfft; i++) {
         f = (float)(i) / (float)nfft - 0.5f;
         k = (i + nfft/2) % nfft;
-        fprintf(fid,"%12.8f %12.8f\n", f, 20*log10(fabsf(X[k])));
+        fprintf(fid,"%12.8f %12.8f\n", f, 20*log10(cabsf(X[k])));
     }   
 
     fclose(fid);

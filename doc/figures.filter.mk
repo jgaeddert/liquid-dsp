@@ -25,8 +25,7 @@ $(local_epsfiles) : %.eps : %.gnu
 figures_generated += $(local_epsfiles)
 
 extra_clean +=				\
-	src/modem.genplot		\
-	src/modem.gendata		\
+	src/filter_kaiser		\
 	$(local_epsfiles)		\
 	$(local_gnufiles)		\
 #	$(local_datfiles)
