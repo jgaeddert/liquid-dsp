@@ -6,51 +6,6 @@
 \label{module:modem}
 modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
 
-%-------------------- FIGURE: APSK MODEM --------------------
-\begin{figure}[ht]
-\centering
-\mbox{
-  \subfigure[4-APSK]
-    {
-      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_4apsk}
-      \label{fig:modem:apsk:4}
-    } \quad
-  \subfigure[8-PSK]
-    {
-      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_8apsk}
-      \label{fig:modem:apsk:8}
-    } \quad
-}
-\mbox{
-  \subfigure[16-APSK]
-    {
-      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_16apsk}
-      \label{fig:modem:apsk:16}
-    } \quad
-  \subfigure[32-APSK]
-    {
-      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_32apsk}
-      \label{fig:modem:apsk:32}
-    } \quad
-}
-\mbox{
-  \subfigure[64-APSK]
-    {
-      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_64apsk}
-      \label{fig:modem:apsk:64}
-    } \quad
-  \subfigure[128-APSK]
-    {
-      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_128apsk}
-      \label{fig:modem:apsk:128}
-    } \quad
-}
-% trim = left bottom right top
-\caption{Phase-shift keying (PSK) modem}
-\label{fig:modem:apsk}
-\end{figure}
-
-
 %-------------------- FIGURE: PSK MODEM --------------------
 \begin{figure}[ht]
 \centering
@@ -81,6 +36,51 @@ modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
 % trim = left bottom right top
 \caption{Phase-shift keying (PSK) modem}
 \label{fig:modem:psk}
+\end{figure}
+
+
+%-------------------- FIGURE: APSK MODEM --------------------
+\begin{figure}[ht]
+\centering
+\mbox{
+  \subfigure[4-APSK (1,3)]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_4apsk}
+      \label{fig:modem:apsk:4}
+    } \quad
+  \subfigure[8-PSK (1,7)]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_8apsk}
+      \label{fig:modem:apsk:8}
+    } \quad
+}
+\mbox{
+  \subfigure[16-APSK (4,12)]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_16apsk}
+      \label{fig:modem:apsk:16}
+    } \quad
+  \subfigure[32-APSK (4,12,16)]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_32apsk}
+      \label{fig:modem:apsk:32}
+    } \quad
+}
+\mbox{
+  \subfigure[64-APSK (4,14,20,26)]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_64apsk}
+      \label{fig:modem:apsk:64}
+    } \quad
+  \subfigure[128-APSK (8,18,24,36,42)]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_128apsk}
+      \label{fig:modem:apsk:128}
+    } \quad
+}
+% trim = left bottom right top
+\caption{Amplitude/phase-shift keying (APSK) modem}
+\label{fig:modem:apsk}
 \end{figure}
 
 

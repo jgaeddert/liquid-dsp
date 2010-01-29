@@ -72,7 +72,7 @@ int main(int argc, char*argv[]) {
 
     // determine labeling scheme
     if ( (ms==MOD_QAM) && (bps%2) && (bps>5) )  plot_long_labels = false;
-    else if ( (ms==MOD_APSK) && (bps>7) )       plot_long_labels = false;
+    else if ( (ms==MOD_APSK) && (bps>6) )       plot_long_labels = false;
     else if ( (ms==MOD_ASK)  && (bps>3) )       plot_long_labels = false;
     else if ( (ms==MOD_PSK)  && (bps>5) )       plot_long_labels = false;
     else                                        plot_long_labels = plot_labels;
