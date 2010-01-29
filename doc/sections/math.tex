@@ -17,9 +17,26 @@ and polynomial operations
 \]
 
 {\tt liquid\_sincf}
-\[ \sinc(z) = \frac{\sin(z)}{2\pi z} \]
+\[ \sinc(z) = \frac{\sin(\pi z)}{\pi z} \]
 For small $z$, this can be approximated as
 \[
     \sinc(z) \approx \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
 \]
+
+{\tt liquid\_besseli0}
+\[
+    \ln\left(\ln\left(I_0(z)\right)\right) \approx
+    c_0 + c_1 t + c_2 t ^2 + c_3 t^3
+\]
+where $t=\ln(z)$ and
+\[
+    \left\{c_0,c_1,c_2,c_3\right\} =
+    \begin{cases}
+    \left\{\text{-1.52624, 1.9597, -9.4287e-03, -7.0471e-04}\right\} & t < 0.5 \\
+    \left\{\text{-1.5531, 1.8936, -0.07972, -0.01333}\right\} & 0.5 \le t < 2.3 \\
+    \left\{\text{-1.2958, 1.7693, -0.1175, 0.006341}\right\} & \text{else}.
+    \end{cases}
+\]
+This is a particularly useful approximation for the Kaiser window in
+fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
 
