@@ -28,6 +28,7 @@ figures_generated += $(local_epsfiles)
 
 extra_clean +=				\
 	src/filter_kaiser		\
+	src/filter_resamp_crcf		\
 	$(local_epsfiles)		\
 	$(local_gnufiles)		\
 #	$(local_datfiles)

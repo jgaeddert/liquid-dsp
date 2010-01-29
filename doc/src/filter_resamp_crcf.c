@@ -25,7 +25,10 @@ int main() {
     for (i=0; i<n; i++) {
         float complex jphi = _Complex_I*2.0f*M_PI*i;
         x[i] = cexpf(jphi*0.04f) + 1.4f*cexpf(jphi*0.07f);
-        x[i] *= blackmanharris(i,n);
+        //x[i] *= blackmanharris(i,n);
+        // smooth transition
+        if (i < 10) x[i] *= blackmanharris(i,20);
+        else if (i > (n-10-1)) x[i] *= blackmanharris(n-i-1+10,20);
     }
 
     // output buffer with extra padding for good measure
@@ -51,10 +54,11 @@ int main() {
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     //fprintf(fid,"set xrange [0:%u];\n",n);
-    //fprintf(fid,"set yrange [-1:1]\n");
+    fprintf(fid,"set yrange [-3:3]\n");
     fprintf(fid,"set size ratio 0.3\n");
     fprintf(fid,"set xlabel 'Sample Index'\n");
-    fprintf(fid,"set nokey # disable legned\n");
+    fprintf(fid,"set key top right nobox\n");
+    fprintf(fid,"set ytics -5,1,5\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set pointsize 0.6\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' lw 1\n");
@@ -62,8 +66,8 @@ int main() {
 
     fprintf(fid,"# real\n");
     fprintf(fid,"set ylabel 'Real'\n");
-    fprintf(fid,"plot '-' using 1:2 with linespoints pointtype 7 linetype 1 linewidth 1 linecolor rgb '#999999',\\\n");
-    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '#008000'\n");
+    fprintf(fid,"plot '-' using 1:2 with linespoints pointtype 7 linetype 1 linewidth 1 linecolor rgb '#999999' title 'original',\\\n");
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '#008000' title 'resampled'\n");
     // export output
     for (i=0; i<n; i++) {
         //fprintf(fid,"%6u %12.4e %12.4e\n", i, cos(2*M_PI*0.04*i), sin(2*M_PI*0.04*i));
@@ -80,8 +84,8 @@ int main() {
 
     fprintf(fid,"# imag\n");
     fprintf(fid,"set ylabel 'Imag'\n");
-    fprintf(fid,"plot '-' using 1:3 with linespoints pointtype 7 linetype 1 linewidth 1 linecolor rgb '#999999',\\\n");
-    fprintf(fid,"     '-' using 1:3 with points pointtype 7 linecolor rgb '#800000'\n");
+    fprintf(fid,"plot '-' using 1:3 with linespoints pointtype 7 linetype 1 linewidth 1 linecolor rgb '#999999' title 'original',\\\n");
+    fprintf(fid,"     '-' using 1:3 with points pointtype 7 linecolor rgb '#800000' title 'resampled'\n");
     // export output
     for (i=0; i<n; i++) {
         //fprintf(fid,"%6u %12.4e %12.4e\n", i, cos(2*M_PI*0.04*i), sin(2*M_PI*0.04*i));
