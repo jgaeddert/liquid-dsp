@@ -8,7 +8,8 @@
 
 #include <liquid/liquid.h>
 
-#define OUTPUT_FILENAME "figures.gen/filter_resamp_crcf.gnu"
+#define OUTPUT_FILENAME  "figures.gen/filter_resamp_crcf.gnu"
+#define OUTPUT_FILENAME2 "figures.gen/filter_resamp_crcf_psd.gnu"
 
 int main() {
     // options
@@ -98,6 +99,57 @@ int main() {
     fprintf(fid,"unset multiplot\n");
 
     // close output file
+    fclose(fid);
+
+
+    fid = fopen(OUTPUT_FILENAME2,"w");
+    unsigned int nfft = 512;
+    float complex xfft[nfft];
+    float complex X[nfft];
+    float complex Y[nfft];
+    fftplan fft = fft_create_plan(nfft,xfft,X,FFT_FORWARD,0);
+    for (i=0; i<nfft; i++)
+        xfft[i] = i < k ? y[i] * hann(i,n) / n: 0.0f;
+    fft_execute(fft);
+    memmove(Y,X,sizeof(X));
+    fft_shift(Y,nfft);
+
+    for (i=0; i<nfft; i++)
+        xfft[i] = i < n ? x[i] *hann(i,n) / n: 0.0f;
+    fft_execute(fft);
+    fft_shift(X,nfft);
+    fft_destroy_plan(fft);
+
+    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME2);
+    fprintf(fid,"reset\n");
+    // TODO : switch terminal types here
+    fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
+    fprintf(fid,"set xrange [-0.5:0.5];\n");
+    fprintf(fid,"set yrange [-120:20]\n");
+    fprintf(fid,"set size ratio 0.6\n");
+    fprintf(fid,"set xlabel 'Normalized Frequency'\n");
+    fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
+    fprintf(fid,"set key top right nobox\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set pointsize 0.6\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' lw 1\n");
+
+    fprintf(fid,"# real\n");
+    fprintf(fid,"set ylabel 'Real'\n");
+    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#999999' title 'original',\\\n");
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#004080' title 'resampled'\n");
+    // export output
+    for (i=0; i<nfft; i++) {
+        float fx = (float)(i) / (float)nfft - 0.5f;
+        fprintf(fid,"%12.8f %12.4e\n", fx, 20*log10f(cabsf(X[i])));
+    }
+    fprintf(fid,"e\n");
+    for (i=0; i<nfft; i++) {
+        float fy = ((float)(i) / (float)nfft - 0.5f)*r;
+        fprintf(fid,"%12.8f %12.4e\n", fy, 20*log10f(cabsf(Y[i])));
+    }
+    fprintf(fid,"e\n");
+
     fclose(fid);
 
     printf("done.\n");
