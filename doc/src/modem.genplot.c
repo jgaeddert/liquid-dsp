@@ -68,7 +68,21 @@ int main(int argc, char*argv[]) {
 
     // derived options
     bool plot_labels = (gnuplot_version > 4.1) && (bps < 8);
-    bool plot_long_labels = (plot_labels) && (bps < 5);
+    bool plot_long_labels;
+
+    // determine labeling scheme
+    if ( (ms==MOD_QAM) && (bps%2) && (bps>5) )  plot_long_labels = false;
+    else if ( (ms==MOD_APSK) && (bps>7) )       plot_long_labels = false;
+    else if ( (ms==MOD_ASK)  && (bps>3) )       plot_long_labels = false;
+    else if ( (ms==MOD_PSK)  && (bps>5) )       plot_long_labels = false;
+    else                                        plot_long_labels = plot_labels;
+
+    float range = 1.5f;
+    if ( (ms == MOD_QAM && bps > 4 && bps%2) ||
+         (ms == MOD_ASK && bps > 3) )
+    {
+        range = 1.75f;
+    }
 
     // write output file
     FILE * fid = fopen(output_filename,"w");
@@ -88,8 +102,8 @@ int main(int argc, char*argv[]) {
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     // TODO : set range according to scheme
-    fprintf(fid,"set xrange [-1.5:1.5]\n");
-    fprintf(fid,"set yrange [-1.5:1.5]\n");
+    fprintf(fid,"set xrange [-%4.2f:%4.2f]\n",range,range);
+    fprintf(fid,"set yrange [-%4.2f:%4.2f]\n",range,range);
     fprintf(fid,"set size square\n");
     //fprintf(fid,"set title \"%s\"\n", figure_title);
     fprintf(fid,"set xlabel \"I\"\n");
@@ -100,7 +114,7 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"set grid polar\n");
     else
         fprintf(fid,"set grid xtics ytics\n");
-    fprintf(fid,"set grid lc rgb '#999999' lw 1\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' linewidth 1\n");
     fprintf(fid,"set pointsize 1.0\n");
     if (!plot_labels) {
         // do not print labels
