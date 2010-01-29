@@ -218,6 +218,40 @@ make bench
 \end{verbatim}
 
 \section{Tutorial}
+Most of {\it liquid}'s signal processing elements are C structures which
+retain the object's parameters, state, and other useful information.
+The naming convention is
+{\tt basename\_xxxt\_method} where
+{\tt basename} is the base object name (e.g. {\tt interp}),
+{\tt xxxt} is the type definition, and
+{\tt method} is the object method.
+The type definition describes respective output, internal, and input type.
+Types are usually {\tt f} to denote standard 32-bit {\it floating point}
+precision values and can either be represented as {\tt r} (real) or {\tt c}
+(complex).
+For example, a {\tt dotprod} (vector dot product) object with complex input
+and output types but real internal coefficients operating on 32-bit
+floating-point precision values is {\tt dotprod\_crcf}.
+
+Most objects have at least four standard methods:
+{\tt create()},
+{\tt destroy()},
+{\tt print()},
+and
+{\tt execute()}.
+Certain object also implement a {\tt recreate()} method which operates similar
+to that of {\tt realloc()} in C.
+A few points to note:
+\begin{enumerate}
+\item While the objects do retain internal memory, they operate on external
+arrays defined by the user. That is... It is strictly up to the user to manage
+his/her own memory.
+\item ...
+\end{enumerate}
+
+\section{Learning by example}
+The {\tt examples/} subdirectory includes numerous examples for nearly all the
+signal processing components.
 
 \section{Sandbox}
 
