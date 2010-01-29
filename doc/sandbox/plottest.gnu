@@ -10,7 +10,9 @@ set title "constellation"
 set xlabel "I"
 set ylabel "Q"
 set nokey
-set grid xtics ytics lc rgb '#999999' lw 1
+#set grid xtics ytics lc rgb '#999999' lw 1
+set grid polar
+set grid lc rgb '#cccccc'
 set pointsize 1.0
 xoffset = 0.06
 yoffset = 0.06

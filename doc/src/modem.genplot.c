@@ -99,7 +99,8 @@ int main(int argc, char*argv[]) {
     if (ms == MOD_BPSK || ms == MOD_QPSK || ms == MOD_PSK || ms == MOD_DPSK || ms == MOD_APSK)
         fprintf(fid,"set grid polar\n");
     else
-        fprintf(fid,"set grid xtics ytics lc rgb '#999999' lw 1\n");
+        fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set grid lc rgb '#999999' lw 1\n");
     fprintf(fid,"set pointsize 1.0\n");
     if (!plot_labels) {
         // do not print labels
