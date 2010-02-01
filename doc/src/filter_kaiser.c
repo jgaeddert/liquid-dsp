@@ -8,12 +8,9 @@
 #include <math.h>
 #include <liquid/liquid.h>
 
-#define OUTPUT_FILENAME "figures.gen/filter_kaiser.gnu"
+#include "liquid.doc.h"
 
-void compute_filter_psd(float * _h,
-                        unsigned int _h_len,
-                        float complex * _X,
-                        unsigned int _nfft);
+#define OUTPUT_FILENAME "figures.gen/filter_kaiser.gnu"
 
 int main() {
     // options
@@ -30,7 +27,7 @@ int main() {
     // compute filter power spectral density
     unsigned int nfft=512;
     float complex X[nfft];
-    compute_filter_psd(h,h_len,X,nfft);
+    liquid_doc_compute_psdf(h,h_len,X,nfft,LIQUID_DOC_PSDWINDOW_NONE,1);
 
     // open output file and print header
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -61,24 +58,5 @@ int main() {
 
     fclose(fid);
     return 0;
-}
-
-void compute_filter_psd(float * _h,
-                        unsigned int _h_len,
-                        float complex * _X,
-                        unsigned int _nfft)
-{
-    unsigned int i;
-    // compute and remove any DC bias
-    float sum=0.0f;
-    for (i=0; i<_h_len; i++)
-        sum += _h[i];
-
-    float complex x[_nfft];
-    fftplan fft = fft_create_plan(_nfft,x,_X,FFT_FORWARD,0);
-    for (i=0; i<_nfft; i++)
-        x[i] = i < _h_len ? _h[i] / sum : 0.0f;
-    fft_execute(fft);
-    fft_destroy_plan(fft);
 }
 

@@ -16,8 +16,8 @@ $(local_pdffiles) : %.pdf : %.eps
 	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
 
 # gnuplot script generator programs
-src/filter_kaiser : src/filter_kaiser.c
-src/filter_resamp_crcf : src/filter_resamp_crcf.c
+src/filter_kaiser : src/filter_kaiser.c $(lib_objects)
+src/filter_resamp_crcf : src/filter_resamp_crcf.c $(lib_objects)
 
 figures.gen/filter_kaiser.gnu : src/filter_kaiser
 	./$<

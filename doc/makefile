@@ -10,7 +10,7 @@ TEX_FLAGS = --shell-escape
 BIB = bibtex
 BIB_FLAGS =
 CC = gcc
-CFLAGS = -Wall
+CFLAGS :=
 LDFLAGS = -lliquid
 RM = rm -f
 
@@ -25,6 +25,9 @@ PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
 
+include_dirs	:= . include
+INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
+CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 
 # Listings used in this document
 LISTINGS = 					\
@@ -61,6 +64,9 @@ SECTIONS :=					\
 	sections/sequence.tex			\
 	sections/utility.tex
 
+lib_sources	:=				\
+	lib/liquid_doc_compute_psd.c
+
 # additional targets to clean
 extra_clean :=
 
@@ -85,6 +91,20 @@ listings: highlight.sty $(LISTINGS)
 clean-listings:
 	$(RM) highlight.sty
 	$(RM) $(LISTINGS)
+
+##
+## LIB
+##
+
+lib_objects	= $(addsuffix .o,$(lib_sources))
+
+$(lib_objects) : %.o : %
+	$(CC) $(CFLAGS) -c $< -o $@
+
+lib: $(lib_objects)
+
+clean-lib:
+	$(RM) $(lib_objects)
 
 ##
 ## FIGURES
