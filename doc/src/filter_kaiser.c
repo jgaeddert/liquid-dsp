@@ -1,5 +1,5 @@
 //
-//
+// filter_kaiser.c : demonstrate filter desing using Kaiser window
 //
 
 #include <stdio.h>
@@ -18,7 +18,7 @@ void compute_filter_psd(float * _h,
 int main() {
     // options
     float fc=0.4f;          // filter cutoff frequency
-    float ft=0.2f;          // filter transition
+    float ft=0.1f;          // filter transition
     float slsl=60.0f;       // sidelobe suppression level
     float mu=0.0f;          // fractional timing offset
 

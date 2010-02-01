@@ -29,6 +29,11 @@ local_epsfiles :=			\
 
 local_gnufiles := $(patsubst %.eps,%.gnu,$(local_epsfiles))
 local_datfiles := $(patsubst %.eps,%.dat,$(local_epsfiles))
+local_pdffiles := $(patsubst %.eps,%.pdf,$(local_epsfiles))
+
+# target pdf files
+$(local_pdffiles) : %.pdf : %.eps
+	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
 
 # gnuplot script generator function
 src/modem.genplot : src/modem.genplot.c
@@ -113,7 +118,7 @@ figures.gen/modem_256qam.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 
 figures.gen/modem_256qam.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m qam -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
 # accumulate target
-figures_generated += $(local_epsfiles)
+figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
 	src/modem.genplot		\

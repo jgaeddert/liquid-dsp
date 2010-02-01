@@ -14,6 +14,9 @@ CFLAGS = -Wall
 LDFLAGS = -lliquid
 RM = rm -f
 
+EPSTOPDF = epstopdf
+EPSTOPDF_FLAGS = --compress
+
 GNUPLOT = gnuplot
 GNUPLOT_VERSION = 4.2
 
