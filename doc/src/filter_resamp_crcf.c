@@ -129,7 +129,6 @@ int main() {
     fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' lw 1\n");
 
     fprintf(fid,"# real\n");
-    fprintf(fid,"set ylabel 'Real'\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#999999' title 'original',\\\n");
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#004080' title 'resampled'\n");
     // export output
