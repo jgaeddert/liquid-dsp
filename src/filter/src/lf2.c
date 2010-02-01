@@ -48,6 +48,9 @@ lf2 lf2_create(float _bt)
     // create object
     lf2 f = (lf2) malloc(sizeof(struct lf2_s));
 
+    // set default damping factor
+    f->xi = M_SQRT2;
+
     // reset internal state
     lf2_reset(f);
 
@@ -104,9 +107,6 @@ void lf2_advance(lf2 _f, float _v, float *_v_hat)
 //
 void lf2_generate_filter(lf2 _f)
 {
-    // beta = 2*BT/(xi+1/(4*xi))/k1;
-    // alpha = 2*xi*beta;
-
     float k1 = 1.0f;
     _f->beta = 2*(_f->BT)*(_f->xi+1/(4*(_f->xi)))/k1;
     _f->alpha = 2*(_f->xi)*(_f->beta);
