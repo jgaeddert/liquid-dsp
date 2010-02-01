@@ -10,6 +10,10 @@ numerically-controlled oscillator: mix, pll
 \label{module:nco:nco}
 The {\tt nco} object implements an oscillator with two options for internal
 phase precision: {\tt LIQUID\_NCO} and {\tt LIQUID\_VCO}.
+The {\tt LIQUID\_NCO} implements a numerically-controlled oscillator that uses
+a look-up table to generate a complex sinusoid while
+the {\tt LIQUID\_VCO} implements a ``voltage-controlled'' oscillator that uses
+the {\tt sinf} and {\tt cosf} functions to generate a complex sinusoid.
 
 \subsection{{pll} (phase-locked loop)}
 \label{module:nco:pll}
@@ -17,12 +21,16 @@ The phase-locked loop object provides a method for synchronizing oscillators
 on different platforms.
 It uses a second-order integrating loop filter to adjust the frequency of its
 {\tt nco} based on an instantaneous phase error input.
-
-For a given bandwidth $b$, damping factor $\xi$, and scaling factor $k_1$,
+% TODO : generate figure
+For a given bandwidth $w$, damping factor $\xi$, and scaling factor $k_1$,
 the loop filter coefficients are
-\[  \beta = \frac{2b}{k_1} \left(\xi + \frac{1}{4\xi} \right)   \]
+\[  \beta = \frac{2w}{k_1} \left(\xi + \frac{1}{4\xi} \right)   \]
 \[  \alpha = 2 \xi \beta    \]
-Given a phase error $v$, the filtered phase error is given by
-\[  q^\prime(n) = v \beta q^\prime(n-1) \]
-\[  v = \alpha v + q^\prime(n)          \]
+The default values for $k_1$ and $\xi$ are $1$ and $\sqrt{2}$, respectively.
+Given an instantaneous phase error $v$, the filtered phase error $\hat{v}$ is
+given by
+\[  q(n) = v \beta + q(n-1)     \]
+\[  \hat{v} = \alpha v + q(n)   \]
+where $q(0)=0$.
 
+See also {\tt lf2} (filter).
