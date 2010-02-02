@@ -22,6 +22,8 @@
 #ifndef __LIQUID_CFMATRIX_AUTOTEST_H__
 #define __LIQUID_CFMATRIX_AUTOTEST_H__
 
+#include <string.h>
+
 #include "autotest/autotest.h"
 #include "liquid.h"
 

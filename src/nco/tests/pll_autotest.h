@@ -74,8 +74,13 @@ void autotest_pll_phase_offset() {
     pll_run_loop(nco_tx, nco_rx, pll_rx, n);
 
     // run tests
-    CONTEND_DELTA(nco_tx->theta, nco_rx->theta, tol);
-    CONTEND_DELTA(nco_tx->d_theta, nco_rx->d_theta, tol);
+    float nco_tx_phase = nco_get_phase(nco_tx);
+    float nco_rx_phase = nco_get_phase(nco_rx);
+    CONTEND_DELTA(nco_tx_phase, nco_rx_phase, tol);
+
+    float nco_tx_freq = nco_get_frequency(nco_tx);
+    float nco_rx_freq = nco_get_frequency(nco_rx);
+    CONTEND_DELTA(nco_tx_freq, nco_rx_freq, tol);
 
     // clean it up
     nco_destroy(nco_tx);
@@ -108,8 +113,13 @@ void autotest_pll_frequency_offset() {
     pll_run_loop(nco_tx, nco_rx, pll_rx, n);
 
     // run tests
-    CONTEND_DELTA(nco_tx->theta, nco_rx->theta, tol);
-    CONTEND_DELTA(nco_tx->d_theta, nco_rx->d_theta, tol);
+    float nco_tx_phase = nco_get_phase(nco_tx);
+    float nco_rx_phase = nco_get_phase(nco_rx);
+    CONTEND_DELTA(nco_tx_phase, nco_rx_phase, tol);
+
+    float nco_tx_freq = nco_get_frequency(nco_tx);
+    float nco_rx_freq = nco_get_frequency(nco_rx);
+    CONTEND_DELTA(nco_tx_freq, nco_rx_freq, tol);
 
     // clean it up
     nco_destroy(nco_tx);
