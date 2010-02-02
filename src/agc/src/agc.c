@@ -244,10 +244,10 @@ void AGC(_estimate_gain_exp)(AGC() _q, TC _x)
 
     if (e_out > _q->e_target) {
         // decrease gain proportional to energy difference
-        _q->g *= 1.0f - _q->beta * (e_out - _q->e_target) / e_out;
+        _q->g *= 1.0f - sqrtf(_q->alpha) * (e_out - _q->e_target) / e_out;
     } else {
         // increase gain proportional to energy difference
-        _q->g *= 1.0f + _q->beta * (_q->e_target - e_out) / _q->e_target;
+        _q->g *= 1.0f - sqrtf(_q->alpha) * (e_out - _q->e_target) / _q->e_target;
     }
 }
 

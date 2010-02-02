@@ -72,9 +72,9 @@ and the gain error is
 The gain estimate is updated proportional to the gain error, viz
 \[
     \hat{g}(n+1) =
-        \hat{g}(n) \left(1 - \beta
+        \hat{g}(n) \left(1 -
          \frac{
-            \gamma(n)
+            \gamma(n)\sqrt{\alpha}
         }{
             \text{argmax}\left\{\bar{e}(n),\|y(n)\|\right\}
         }
