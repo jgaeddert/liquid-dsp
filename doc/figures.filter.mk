@@ -3,6 +3,7 @@
 #
 
 local_epsfiles :=				\
+	figures.gen/filter_interp_crcf.eps	\
 	figures.gen/filter_kaiser.eps		\
 	figures.gen/filter_resamp_crcf.eps	\
 	figures.gen/filter_resamp_crcf_psd.eps	\
@@ -15,13 +16,21 @@ local_pdffiles := $(patsubst %.eps,%.pdf,$(local_epsfiles))
 $(local_pdffiles) : %.pdf : %.eps
 	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
 
+#
 # gnuplot script generator programs
-src/filter_kaiser : src/filter_kaiser.c $(lib_objects)
-src/filter_resamp_crcf : src/filter_resamp_crcf.c $(lib_objects)
+# 
 
+# interpolator
+src/filter_interp_crcf : src/filter_interp_crcf.c $(lib_objects)
+figures.gen/filter_interp_crcf.gnu : src/filter_interp_crcf
+	./$<
+
+# kaiser window filter design
+src/filter_kaiser : src/filter_kaiser.c $(lib_objects)
 figures.gen/filter_kaiser.gnu : src/filter_kaiser
 	./$<
 
+src/filter_resamp_crcf : src/filter_resamp_crcf.c $(lib_objects)
 figures.gen/filter_resamp_crcf.gnu \
 figures.gen/filter_resamp_crcf_psd.gnu: src/filter_resamp_crcf
 	./$<
