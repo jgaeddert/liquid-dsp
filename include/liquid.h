@@ -778,19 +778,17 @@ float num_fir_filter_taps(float _slsl,
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl);
 
-// Design FIR filter using window method
-//  _n      : filter length (odd)
-//  _fc     : filter cutoff (0 < _fc < 1)
-//  _slsl   : sidelobe suppression level (_slsl < 0)
-//  _h      : output coefficient buffer
-void fir_design_windowed_sinc(unsigned int _n, float _fc, float _slsl, float *_h);
-
 // Design FIR using kaiser window
 //  _n      : filter length
 //  _fc     : cutoff frequency
 //  _slsl   : sidelobe suppression level (dB attenuation)
+//  _mu     : fractional sample delay
 //  _h      : output coefficient buffer
-void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float *_h);
+void fir_kaiser_window(unsigned int _n,
+                       float _fc,
+                       float _slsl,
+                       float _mu,
+                       float *_h);
 
 // Design FIR doppler filter
 //  _n      : filter length
@@ -798,7 +796,11 @@ void fir_kaiser_window(unsigned int _n, float _fc, float _slsl, float _mu, float
 //  _K      : Rice fading factor (K >= 0)
 //  _theta  : LoS component angle of arrival
 //  _h      : output coefficient buffer
-void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, float *_h);
+void fir_design_doppler(unsigned int _n,
+                        float _fd,
+                        float _K,
+                        float _theta,
+                        float *_h);
 
 // Design optimum FIR root-nyquist filter
 //  _n      : filter length
@@ -812,13 +814,11 @@ void fir_design_doppler(unsigned int _n, float _fd, float _K, float _theta, floa
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rcos_filter(
-    unsigned int _k,
-    unsigned int _m,
-    float _beta,
-    float _dt,
-    float * _h
-);
+void design_rcos_filter(unsigned int _k,
+                        unsigned int _m,
+                        float _beta,
+                        float _dt,
+                        float * _h);
 
 // Design root-Nyquist raised-cosine filter
 //  _k      : samples/symbol
@@ -826,13 +826,11 @@ void design_rcos_filter(
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rrc_filter(
-    unsigned int _k,
-    unsigned int _m,
-    float _beta,
-    float _dt,
-    float * _h
-);
+void design_rrc_filter(unsigned int _k,
+                       unsigned int _m,
+                       float _beta,
+                       float _dt,
+                       float * _h);
 
 // Design root-Nyquist Kaiser filter
 //  _k      : samples/symbol
@@ -840,19 +838,20 @@ void design_rrc_filter(
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rkaiser_filter(
-    unsigned int _k,
-    unsigned int _m,
-    float _beta,
-    float _dt,
-    float * _h
+void design_rkaiser_filter(unsigned int _k,
+                           unsigned int _m,
+                           float _beta,
+                           float _dt,
+                           float * _h
 );
 
 // Compute group delay for an FIR filter
 //  _h      : filter coefficients array
 //  _n      : filter length
 //  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
-float fir_group_delay(float * _h, unsigned int _n, float _fc);
+float fir_group_delay(float * _h,
+                      unsigned int _n,
+                      float _fc);
 
 //
 // IIR filter design
