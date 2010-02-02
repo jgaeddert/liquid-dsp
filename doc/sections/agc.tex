@@ -4,6 +4,87 @@
 
 \section{agc (automatic gain control)}
 \label{module:agc}
+Normalizing the incoming signal level is a critical step for many wireless
+communications protocols, particularly in digital modulation schemes which
+encode information in the signal amplitude (e.g. see {\tt MOD\_QAM}).
+Furthermore, loop filters for tracking carrier and symbol timing are highly
+sensitive to signal levels.
+For these reasons and more does gain control play a crucial role in SDR.
 
+\liquid\ implements automatic gain controlling with the {\tt agc\_xxxt}
+object.
+Operating one sample at a time, the {\tt agc} object makes an estimate
+$\hat{e}$ of the signal energy and updates the internal gain $\hat{g}$,
+applying it to the input to produce an output with the target energy
+$\bar{e}$.
+
+Problem areas: signals that have fluctuating gain...
+
+Loop filter coefficients for a bandwidth $w$,
+\[  \alpha = \sqrt{w}  \]
+\[  \beta = 1 - \alpha   \]
+
+\subsection{{\tt LIQUID\_AGC\_DEFAULT}}
+The default {\tt agc} type is a... For a given input sample $x$ at time $n$,
+the filtered signal energy estimate $\hat{e}$ is
+\[  q(n) = \zeta|x|^2 + (1-\zeta)q(n-1)     \]
+\[  \hat{e}(n) = \sqrt{q(n)}                \]
+where $q(0)=0$ and $\zeta=0.1$ is a smoothing factor.%
+\footnote{This smoothing factor is necessary to help prevent wild fluctuations
+in $\hat{e}(n)$ which can occur if the input signal's instantaneous amplitude
+has significant variation.}
+The instantaneous ideal gain is
+\[
+    \bar{g}(n) = \bar{e} / \hat{e}(n)
+\]
+and the filtered gain estimate is
+\[
+    \hat{g}(n) = \beta \hat{g}(n-1) + \alpha \bar{g}(n)
+\]
+
+\subsection{{\tt LIQUID\_AGC\_LOG}}
+As in the default case, the log {\tt agc} type makes an estimate of the
+instantaneous gain,
+\[
+    \bar{g}(n) = \bar{e}(n) / \hat{e}(n)
+\]
+however the loop control operates on the log of the gain error, viz
+\[
+    \gamma(n) = \ln\bigl( \bar{g}(n) / \hat{g}(n) \bigr)
+\]
+The {\tt agc} then updates its gain estimate according to the magnitude of the
+error.
+\[
+    \hat{g}(n+1) = \hat{g}(n) e^{ \alpha \gamma(n) }
+\]
+Notice that when $\gamma(n)=0$, the gain is not updated
+(i.e. $\hat{g}(n+1) = \hat{g}(n)$).
+
+
+\subsection{{\tt LIQUID\_AGC\_EXP}}
+The exponential gain update method does not...
+The instantaneous output energy is
+\[  \|y(n)\| = \hat{g}(n)\|x(n)\i|      \]
+and the gain error is
+\[
+    \gamma(n) = \|y(n)\| - \bar{e}
+\]
+The gain estimate is updated proportional to the gain error, viz
+\[
+    \hat{g}(n+1) =
+        \hat{g}(n) \left(1 - \beta
+         \frac{
+            \gamma(n)
+        }{
+            \text{argmax}\left\{\bar{e}(n),\|y(n)\|\right\}
+        }
+    \right)
+\]
+The multiplier in to the right of the above equation is always positive
+and proportional to the gain error.
+Notice that when the error is zero ($\|y(n)\| = \bar{e}$),
+$\hat{g}(n+1) = \hat{g}$
+
+\subsection{Usage}
 Basic usage:
 \input{listings/agc.example.c.tex}
