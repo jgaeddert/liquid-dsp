@@ -76,6 +76,7 @@
 \renewcommand{\vec}[1]{\boldsymbol{#1}}
 \newcommand{\ciren}{C{\sc iren}}
 \newcommand{\liquid}{{\it liquid}}
+\newcommand{\liquidfpm}{{\it liquid-fpm}}
 
 %--------- CAPTION OPTIONS -------------------
 \usepackage[small,bf]{caption}
@@ -268,7 +269,17 @@ data sequence and do not require a high-level object-oriented programming
 interface.
 This we will leave to framework developers and interface builders.
 
+\subsection{Data Types}
+The majority of signal processing for SDR is performed at complex baseband.
+Complex numbers are handled in \liquid\ by defining data type
+{\tt liquid\_float\_complex} which is binary compatible with the standard
+C math type {\tt float complex} and C++ type {\tt std::complex<float>}.
+
+Fixed-point data types are defined in the \liquidfpm\ library (see XXX).
+
 \subsection{Building/Linking with C++}
+Although \liquid\ is written in C, it can be seamlessly compiled and linked
+with C++ source files.
 Here is an example:
 \input{listings/nco.c++.tex}
 
