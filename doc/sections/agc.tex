@@ -35,11 +35,11 @@ in $\hat{e}(n)$ which can occur if the input signal's instantaneous amplitude
 has significant variation.}
 The instantaneous ideal gain is
 \[
-    \bar{g}(n) = \bar{e} / \hat{e}(n)
+    \bar{g}(n) = \bar{e}(n) / \hat{e}(n)
 \]
 and the filtered gain estimate is
 \[
-    \hat{g}(n) = \beta \hat{g}(n-1) + \alpha \bar{g}(n)
+    \hat{g}(n+1) = \beta \hat{g}(n) + \alpha \bar{g}(n)
 \]
 
 \subsection{{\tt LIQUID\_AGC\_LOG}}
