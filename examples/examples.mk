@@ -22,7 +22,7 @@ local_src	:=			\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\
 	iir_filter_rrrf_example.c	\
-	interp_rrrf_example.c		\
+	interp_crcf_example.c		\
 	matched_filter_example.c	\
 	symsync_rrrf_example.c		\
 					\
