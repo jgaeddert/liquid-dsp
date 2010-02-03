@@ -21,13 +21,13 @@ $\bar{e}$.
 Problem areas: signals that have fluctuating gain...
 
 Loop filter coefficients for a bandwidth $w$,
-\[  \alpha = \sqrt{w}  \]
-\[  \beta = 1 - \alpha   \]
+\[  \alpha = \sqrt{w}   \]
+\[  \beta = 1 - \alpha  \]
 
 \subsection{{\tt LIQUID\_AGC\_DEFAULT}}
 The default {\tt agc} type is a... For a given input sample $x$ at time $n$,
 the filtered signal energy estimate $\hat{e}$ is
-\[  q(n) = \zeta|x|^2 + (1-\zeta)q(n-1)     \]
+\[  q(n) = \zeta\|x\|^2 + (1-\zeta)q(n-1)   \]
 \[  \hat{e}(n) = \sqrt{q(n)}                \]
 where $q(0)=0$ and $\zeta=0.1$ is a smoothing factor.%
 \footnote{This smoothing factor is necessary to help prevent wild fluctuations
@@ -64,7 +64,7 @@ Notice that when $\gamma(n)=0$, the gain is not updated
 \subsection{{\tt LIQUID\_AGC\_EXP}}
 The exponential gain update method does not...
 The instantaneous output energy is
-\[  \|y(n)\| = \hat{g}(n)\|x(n)\i|      \]
+\[  \|y(n)\| = \hat{g}(n)\|x(n)\|      \]
 and the gain error is
 \[
     \gamma(n) = \|y(n)\| - \bar{e}
