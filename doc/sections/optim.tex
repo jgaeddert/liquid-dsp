@@ -8,8 +8,11 @@ Given a function $f$ which operates on a vector
 $\vec{x} = \{x_0,x_1,\ldots,x_{N-1}\}$ of $N$ parameters,
 the gradient search method seeks to find the optimum $\vec{x}$ which
 minimizes $f$.
-The gradient search is iterative, and adjusts $\vec{x}$ proportional to the
-negative of the gradient of $f$ evaluated at the current location.
+
+\subsubsection{Theory}
+The gradient search is an iterative method, and adjusts $\vec{x}$ proportional
+to the negative of the gradient of $f$ evaluated at the current location.
+The update equation is
 \[
     \Delta \vec{x}[n+1] = -\gamma[n] \nabla f(\vec{x}[n])
 \]
@@ -17,7 +20,7 @@ where $\gamma[n]$ is the step size and
 $\nabla f(\vec{x}[n])$ is the gradient of $f$ at $\vec{x}$, at the $n^{th}$
 iteration.
 The gradient is a vector field which points to the greatest rate of increase,
-and is computed as
+and is computed at $\vec{x}$ as
 \[
     \nabla f(\vec{x}) = \left(
         \frac{\partial f}{\partial x_0},
@@ -27,20 +30,49 @@ and is computed as
     \right)
 \]
 In most non-linear optimization problems, $\nabla f(\vec{x})$ is not known,
-and must be estimated for each value of $\vec{x}[n]$ using the finite element
+and must be approximated for each value of $\vec{x}[n]$ using the finite element
 method.
-The $k^{th}$ component of the gradient is approximated by
+The partial derivative of the $k^{th}$ component is estimated by computing the
+slope of $f$ when $x_k$ is increased by a small amount $\Delta$ while holding
+all other elements of $\vec{x}$ constant.
+This process is repeated for all elements in $\vec{x}$ to comput the gradient
+vector.
+Mathematically, the $k^{th}$ component of the gradient is approximated by
 \[
     \frac{\partial f(\vec{x})}{\partial x_k} \approx 
     \frac{f(x_0,\ldots,x_k+\Delta,\ldots,x_{N-1}) - f(\vec{x})}{\Delta}
 \]
-An additional filtering operation is introduced on the step size to help
-convergence, and therefore the updated vector at time $n+1$ is
+Finally, the optimizing vector is updated via
 \[
-    \vec{x}[n+1] = \alpha \Delta\vec{x}[n+1] + (1-\alpha)\Delta\vec{x}[n]
+    \vec{x}[n+1] = \Delta\vec{x}[n+1]
+\]
+
+\subsubsection{Momentum constant}
+When $f(\vec{x})$ is flat (i.e. $\nabla f(\vec{x})\approx \vec{0}$),
+convergence will be slow.
+This effect can be mitigated by permitting the update vector equation to
+retain a small portion of the previous step vector.
+The updated vector at time $n+1$ is
+\[
+    \vec{x}[n+1] = \Delta\vec{x}[n+1] + \alpha\Delta\vec{x}[n]
 \]
 where $\Delta\vec{x}[0] = \vec{0}$.
-In {\it liquid}, the gradient is normalized to unity (orthonormal).
+The update...
+\[
+    \vec{x}[n+1] = 
+        %\Delta\vec{x}[n+1] +
+        \sum_{k=0}^{n+1}{\alpha^{k}\Delta\vec{x}[n+1-k]}
+\]
+which is stable only for $0 \le \alpha \le 1$.
+For flat regions, the gradient vector $\nabla f(\vec{x})$ is approximately a
+constant $\Delta\vec{x}$, and $\vec{x}[n]$ therefore becomes a geometric
+series converging to $\Delta\vec{x}/(1-\alpha)$.
+This accelerates the algorithm across relatively flat regions of $f$.
+The momentum constant additionally adds some stability for regions where the
+gradient method tends to oscillate, such as steep valleys in $f$.
+
+\subsubsection{Implementation // Usage}
+In \liquid, the gradient is normalized to unity (orthonormal).
 Furthermore, $\gamma$ is slightly reduced each epoch.
 
 % gradient_search example
