@@ -4,4 +4,43 @@
 
 \section{dotprod}
 \label{module:dotprod}
+Implements a vector dot product between two equally-sized vectors
+$\vec{x} = \left[x_0,x_1,\ldots,x_{N-1}\right]$ and
+$\vec{v} = \left[v_0,v_1,\ldots,v_{N-1}\right]$
+\[
+    \vec{x} \cdot \vec{v}   =
+    \vec{x}^T \vec{v}       =
+    \sum_{k=0}^{N-1}x_k v_k
+\]
+A number of other modules rely on {\tt dotprod}, such as filtering and
+equalization.
 
+\subsection{Specific machine architectures}
+\label{module:dotprod:arch}
+The vector dot product has a complexity of $O(N)$ multiply-and-accumulate
+operations.
+Because of its prevalence in multimedia applications, a considerable amount of
+research has been put into computing the vector dot product as efficiently as
+possible.
+Software-defined radio is no exception as basic profiling will likely
+demonstrate that a considerable portion of the processor is spent computing
+it.
+Certain machine architectures have specific instructions for computing vector
+dot products... SIMD, mmx, sse, AltiVec, etc.
+
+\subsection{Usage}
+\label{module:dotprod:usage}
+There are effectively two ways to use the {\tt dotprod} module.
+In the first and most general case, a vector dot product is computed on two
+input vectors $\vec{x}$ and $\vec{v}$ whose values are not known
+{\it a priori}.
+
+In the second case, a {\tt dotprod} object is created around vector $\vec{v}$
+which does not change (or rarely changes) throughout its life cycle.
+This is the more convenient method for filtering objects which don't usually
+have time-dependent coefficients.
+
+\input{listings/dotprod_rrrf.example.c.tex}
+
+In both cases the {\tt dotprod} can be easily integrated with the
+{\tt window} object for managing input data and alignment.

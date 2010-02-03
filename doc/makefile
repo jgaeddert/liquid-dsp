@@ -32,13 +32,14 @@ CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 # Listings used in this document
 LISTINGS = 					\
 	listings/agc.example.c.tex		\
-	listings/nco.c++.tex			\
+	listings/dotprod_rrrf.example.c.tex	\
 	listings/firhilb.example.c.tex		\
 	listings/gradient_search.example.c.tex	\
 	listings/gport.direct.example.c.tex	\
 	listings/gport.indirect.example.c.tex	\
 	listings/interp.example.c.tex		\
-	listings/matrix.example.c.tex
+	listings/matrix.example.c.tex		\
+	listings/nco.c++.tex
 
 # .tex inputs
 SECTIONS :=					\
