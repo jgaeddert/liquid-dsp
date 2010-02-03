@@ -4,7 +4,42 @@
 
 \section{modem}
 \label{module:modem}
-modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
+The modem module implements a set of (mod)ulation/(dem)odulation schemes
+for encoding information into signals.
+%For the analog modems, samples are modulated according to...
+For the digital modems, data bits are encoded into symbols representing
+carrier frequency, phase, amplitude, etc.
+
+\subsection{Analog modulation schemes}
+freqmod, ampmod, etc.
+
+\subsection{Continuous phase digital modulation schemes}
+fsk, msk, etc.
+
+\subsection{Linear digital modulation schemes}
+(d)psk, apsk, ask, qam
+
+The {\tt modem} object realizes the linear digital modulation library in which
+the information from a symbol is encoded into the amplitude and phase of a
+sample.
+The input/output relationship for modulation/demodulation for {\tt modem} is
+strictly one-to-one and is independent of any pulse shaping, or interpolation.
+This differs from {\tt cpmodem} in which the pulse shaping filter is
+integrated into the modem itself.
+
+\subsubsection{Usage}
+\begin{itemize}
+\item[] {\tt modem\_modulate()} converts an input symbol into an output sample
+\item[] {\tt modem\_demodulate()} finds the closest symbol which matches the
+input sample
+\item[] {\tt modem\_get\_demodulator\_phase\_error()} returns an angle
+proportional to the phase error after demodulation
+\item[] {\tt modem\_get\_demodulator\_evm()} returns a value equal to the
+error vector magnitude after demodulation
+\end{itemize}
+
+\subsubsection{{\tt MOD\_PSK}, {\tt MOD\_DPSK}}
+Phase-shift keying...
 
 %-------------------- FIGURE: PSK MODEM --------------------
 \begin{figure}[ht]
