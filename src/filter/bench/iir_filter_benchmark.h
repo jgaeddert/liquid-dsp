@@ -31,6 +31,9 @@ void iir_filter_rrrf_bench(
     unsigned long int *_num_iterations,
     unsigned int _n)
 {
+    // scale number of iterations (trials)
+    *_num_iterations = (*_num_iterations * 16) / _n;
+
     float b[_n], a[_n], y;
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -64,6 +67,9 @@ void iir_filter_rrrf_bench(
 void benchmark_iir_filter_rrrf_4    IIR_FILTER_RRRF_BENCHMARK_API(4)
 void benchmark_iir_filter_rrrf_8    IIR_FILTER_RRRF_BENCHMARK_API(8)
 void benchmark_iir_filter_rrrf_16   IIR_FILTER_RRRF_BENCHMARK_API(16)
+void benchmark_iir_filter_rrrf_32   IIR_FILTER_RRRF_BENCHMARK_API(32)
+void benchmark_iir_filter_rrrf_64   IIR_FILTER_RRRF_BENCHMARK_API(64)
+void benchmark_iir_filter_rrrf_128  IIR_FILTER_RRRF_BENCHMARK_API(128)
 
 #endif // __LIQUID_IIR_FILTER_RRRF_BENCHMARK_H__
 

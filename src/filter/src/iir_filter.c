@@ -35,6 +35,8 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
+#define LIQUID_IIR_FILTER_USE_DOTPROD   0
+
 struct IIR_FILTER(_s) {
     TC * b;         // feedforward coefficients
     TC * a;         // feedback coefficients
@@ -44,9 +46,10 @@ struct IIR_FILTER(_s) {
     unsigned int nb;
     unsigned int na;
 
-    WINDOW() w;
-    //DOTPROD() dpa;
-    //DOTPROD() dpb;
+#if LIQUID_IIR_FILTER_USE_DOTPROD
+    DOTPROD() dpa;
+    DOTPROD() dpb;
+#endif
 };
 
 IIR_FILTER() IIR_FILTER(_create)(TC * _b, unsigned int _nb, TC * _a, unsigned int _na)
@@ -81,8 +84,10 @@ IIR_FILTER() IIR_FILTER(_create)(TC * _b, unsigned int _nb, TC * _a, unsigned in
     for (i=0; i<f->n; i++)
         f->v[i] = 0;
 
-    f->w = WINDOW(_create)(f->n);
-    WINDOW(_clear)(f->w);
+#if LIQUID_IIR_FILTER_USE_DOTPROD
+    f->dpa = DOTPROD(_create)(f->a+1, f->na-1);
+    f->dpb = DOTPROD(_create)(f->b,   f->nb);
+#endif
     
     return f;
 }
@@ -95,7 +100,10 @@ IIR_FILTER() IIR_FILTER(_create_prototype)(unsigned int _n)
 
 void IIR_FILTER(_destroy)(IIR_FILTER() _f)
 {
-    WINDOW(_destroy)(_f->w);
+#if LIQUID_IIR_FILTER_USE_DOTPROD
+    DOTPROD(_destroy)(_f->dpa);
+    DOTPROD(_destroy)(_f->dpb);
+#endif
     free(_f->b);
     free(_f->a);
     free(_f->v);
@@ -139,6 +147,16 @@ void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y)
     for (i=_f->n-1; i>0; i--)
         _f->v[i] = _f->v[i-1];
 
+#if LIQUID_IIR_FILTER_USE_DOTPROD
+    // compute new v
+    TI v0;
+    DOTPROD(_execute)(_f->dpa, _f->v+1, & v0);
+    v0 = _x - v0;
+    _f->v[0] = v0;
+
+    // compute new y
+    DOTPROD(_execute)(_f->dpb, _f->v, _y);
+#else
     // compute new v
     TI v0 = _x;
     for (i=1; i<_f->na; i++)
@@ -152,6 +170,7 @@ void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y)
 
     // set return value
     *_y = y0;
+#endif
 }
 
 unsigned int IIR_FILTER(_get_length)(IIR_FILTER() _f)
