@@ -89,16 +89,31 @@ void polyfit(float * _x,
 }
 
 // expands the polynomial:
-//  (x-a[0]) * (x-a[1]) * ... * (x-a[n-1])
+//  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
 // as
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
 void poly_expandroots(float * _a,
                       unsigned int _n,
                       float * _c)
 {
-    unsigned int i;
+    // no roots; return zero
+    if (_n == 0) {
+        _c[0] = 0.;
+        return;
+    }
+
+    int i, j;
+    // initialize coefficients array to [1,0,0,....0]
     for (i=0; i<=_n; i++)
-        _c[i] = 0.0f;
+        _c[i] = (i==0) ? 1 : 0;
+
+    // iterative polynomial multiplication
+    for (i=0; i<_n; i++) {
+        for (j=i+1; j>0; j--)
+            _c[j] = _a[i]*_c[j] + _c[j-1];
+
+        _c[j] *= _a[i];
+    }
 
     // assert(c[_n]==1.0f)
 }
