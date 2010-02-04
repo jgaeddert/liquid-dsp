@@ -798,7 +798,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     }
 
     // fit phase to 1st-order polynomial (2 coefficients)
-    polyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
+    fpolyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
     float theta_hat = nco_get_phase(_q->nco_pilot);
     float phase_error = _q->p_phase[0] - theta_hat;
@@ -839,7 +839,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     _q->p_phase[1] = 0.0f;
     */
     for (i=0; i<64; i++) {
-        theta = polyval(_q->p_phase, 2, (float)(i)-32.0f);
+        theta = fpolyval(_q->p_phase, 2, (float)(i)-32.0f);
         _q->X[i] *= liquid_crotf_vect(-theta);
     }
     nco_step(_q->nco_pilot);

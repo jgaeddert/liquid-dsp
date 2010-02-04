@@ -1782,52 +1782,49 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 
 // polynomials
 
-// evaluate polynomial _p (order _k-1) at value _x
-float polyval(float * _p, unsigned int _k, float _x);
 
-// least-squares polynomial fit (order _k-1)
-void polyfit(float * _x,
-             float * _y,
-             unsigned int _n,
-             float * _p,
-             unsigned int _k);
+#define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(fpoly, name)
+#define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfmatrix, name)
 
-// expands the polynomial:
-//  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
-// as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-void poly_expandroots(float * _a,
-                      unsigned int _n,
-                      float * _c);
+// large macro
+//   POLY   : name-mangling macro
+//   T      : data type
+#define LIQUID_POLY_DEFINE_API(POLY,T)                          \
+/* evaluate polynomial _p (order _k-1) at value _x  */          \
+T POLY(val)(T * _p, unsigned int _k, T _x);                     \
+                                                                \
+/* least-squares polynomial fit (order _k-1) */                 \
+void POLY(fit)(T * _x,                                          \
+               T * _y,                                          \
+               unsigned int _n,                                 \
+               T * _p,                                          \
+               unsigned int _k);                                \
+                                                                \
+/* expands the polynomial:                                      \
+ *  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])                      \
+ */                                                             \
+void POLY(_expandroots)(T * _a,                                 \
+                        unsigned int _n,                        \
+                        T * _c);                                \
+                                                                \
+/* expands the polynomial:                                      \
+ *  (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])     \
+ */                                                             \
+void POLY(_expandroots2)(T * _a,                                \
+                         T * _b,                                \
+                         unsigned int _n,                       \
+                         T * _c);                               \
+                                                                \
+/* expands the multiplication of two polynomials */             \
+void POLY(mul)(T * _a,                                          \
+               unsigned int _order_a,                           \
+               T * _b,                                          \
+               unsigned int _order_b,                           \
+               T * _c);
 
-// expands the polynomial:
-//  (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])
-// as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-void poly_expandroots2(float * _a,
-                       float * _b,
-                       unsigned int _n,
-                       float * _c);
 
-// expands the multiplication of two polynomials
-//
-//  (a[0] + a[1]*x + a[2]*x^2 + ...) * (b[0] + b[1]*x + b[]*x^2 + ...2 + ...)
-// as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-//
-// where order(c)  = order(a)  + order(b) + 1
-//    :: length(c) = length(a) + length(b) - 1
-//
-//  _a          :   1st polynomial coefficients (length is _order_a+1)
-//  _order_a    :   1st polynomial order
-//  _b          :   2nd polynomial coefficients (length is _order_b+1)
-//  _order_b    :   2nd polynomial order
-//  _c          :   output polynomial coefficients (length is _order_a + _order_b + 1)
-void polymul(float * _a,
-             unsigned int _order_a,
-             float * _b,
-             unsigned int _order_b,
-             float * _c);
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT, float)
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT, liquid_float_complex)
 
 
 //

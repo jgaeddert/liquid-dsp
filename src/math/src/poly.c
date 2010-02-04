@@ -29,11 +29,11 @@
 #include "liquid.internal.h"
 
 
-float polyval(float * _p, unsigned int _k, float _x)
+T POLY(val)(T * _p, unsigned int _k, T _x)
 {
     unsigned int i;
-    float xk = 1;
-    float y = 0.0f;
+    T xk = 1;
+    T y = 0.0f;
     for (i=0; i<_k; i++) {
         y += _p[i]*xk;
         xk *= _x;
@@ -41,17 +41,17 @@ float polyval(float * _p, unsigned int _k, float _x)
     return y;
 }
 
-void polyfit(float * _x,
-             float * _y,
-             unsigned int _n,
-             float * _p,
-             unsigned int _k)
+void POLY(fit)(T * _x,
+               T * _y,
+               unsigned int _n,
+               T * _p,
+               unsigned int _k)
 {
 
     // ...
-    float X[_n*_k];
+    T X[_n*_k];
     unsigned int r,c;
-    float v;
+    T v;
     for (r=0; r<_n; r++) {
         v = 1;
         for (c=0; c<_k; c++) {
@@ -61,40 +61,40 @@ void polyfit(float * _x,
     }
 
     // compute transpose of X
-    float Xt[_k*_n];
-    memmove(Xt,X,_k*_n*sizeof(float));
-    fmatrix_trans(Xt,_n,_k);
+    T Xt[_k*_n];
+    memmove(Xt,X,_k*_n*sizeof(T));
+    MATRIX(_trans)(Xt,_n,_k);
 
     // compute [X']*y
-    float Xty[_k];
-    fmatrix_mul(Xt, _k, _n,
-                _y, _n, 1,
-                Xty,_k, 1);
+    T Xty[_k];
+    MATRIX(_mul)(Xt, _k, _n,
+                 _y, _n, 1,
+                 Xty,_k, 1);
 
     // compute [X']*X
-    float X2[_k*_k];
-    fmatrix_mul(Xt, _k, _n,
-                X,  _n, _k,
-                X2, _k, _k);
+    T X2[_k*_k];
+    MATRIX(_mul)(Xt, _k, _n,
+                 X,  _n, _k,
+                 X2, _k, _k);
 
     // compute inv([X']*X)
-    float G[_k*_k];
-    memmove(G,X2,_k*_k*sizeof(float));
-    fmatrix_inv(G,_k,_k);
+    T G[_k*_k];
+    memmove(G,X2,_k*_k*sizeof(T));
+    MATRIX(_inv)(G,_k,_k);
 
     // compute coefficients
-    fmatrix_mul(G,  _k, _k,
-                Xty,_k, 1,
-                _p, _k, 1);
+    MATRIX(_mul)(G,  _k, _k,
+                 Xty,_k, 1,
+                 _p, _k, 1);
 }
 
 // expands the polynomial:
 //  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
 // as
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-void poly_expandroots(float * _a,
-                      unsigned int _n,
-                      float * _c)
+void POLY(_expandroots)(T * _a,
+                        unsigned int _n,
+                        T * _c)
 {
     // no roots; return zero
     if (_n == 0) {
@@ -124,10 +124,10 @@ void poly_expandroots(float * _a,
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
 //
 // c has order _n (array is length _n+1)
-void poly_expandroots2(float * _a,
-                       float * _b,
-                       unsigned int _n,
-                       float * _c)
+void POLY(expandroots2)(T * _a,
+                        T * _b,
+                        unsigned int _n,
+                        T * _c)
 {
     unsigned int i;
     for (i=0; i<=_n; i++)
@@ -148,11 +148,11 @@ void poly_expandroots2(float * _a,
 //  _b          :   2nd polynomial coefficients (length is _order_b+1)
 //  _order_b    :   2nd polynomial order
 //  _c          :   output polynomial coefficients (length is _order_a + _order_b + 1)
-void polymul(float * _a,
-             unsigned int _order_a,
-             float * _b,
-             unsigned int _order_b,
-             float * _c)
+void POLY(mul)(T * _a,
+               unsigned int _order_a,
+               T * _b,
+               unsigned int _order_b,
+               T * _c)
 {
     unsigned int na = _order_a + 1;
     unsigned int nb = _order_b + 1;

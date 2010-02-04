@@ -27,7 +27,7 @@
 // 
 // AUTOTEST: polyfit 3rd order polynomial, critically sampled
 //
-void autotest_polyfit_q3n3()
+void autotest_fpolyfit_q3n3()
 {
     unsigned int Q=2;   // polynomial order
     unsigned int n=3;   // input vector size
@@ -39,7 +39,7 @@ void autotest_polyfit_q3n3()
     float tol = 1e-3f;
 
     unsigned int k=Q+1;
-    polyfit(x,y,n, p,k);
+    fpolyfit(x,y,n, p,k);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -65,7 +65,7 @@ void autotest_poly_expandroots_4()
     float c_test[6] = { 120, 146, 1, -27, -1, 1 };
     float tol = 1e-3f;
 
-    poly_expandroots(a,5,c);
+    fpoly_expandroots(a,5,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -94,7 +94,7 @@ void autotest_polymul_2_3()
     float c_test[6] = { -18, 42, -43, 27, -26, 15 };
     float tol = 1e-3f;
 
-    polymul(a,2,b,3,c);
+    fpolymul(a,2,b,3,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;

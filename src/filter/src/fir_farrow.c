@@ -173,7 +173,7 @@ void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
     for (i=0; i<_f->h_len; i++) {
         // compute filter tap from polynomial using negative
         // value for _mu
-        _f->h[i] = polyval(_f->P+n, _f->Q, -_mu);
+        _f->h[i] = POLY(val)(_f->P+n, _f->Q, -_mu);
 
         // normalize filter by inverse of DC response
         _f->h[i] *= _f->gamma;
@@ -240,7 +240,7 @@ void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
             mu_vect[j] = mu;
             hp_vect[j] = h0*h1;
         }
-        polyfit(mu_vect,hp_vect,_q->Q+1,p,_q->Q+1);
+        POLY(fit)(mu_vect,hp_vect,_q->Q+1,p,_q->Q+1);
 #if FIR_FARROW_DEBUG
         printf("  polynomial : ");
         for (j=0; j<=_p; j++)

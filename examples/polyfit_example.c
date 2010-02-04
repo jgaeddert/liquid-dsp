@@ -35,7 +35,7 @@ int main() {
     // compute coefficients
     unsigned int k=order+1;
     float p[k];
-    polyfit(x,y,n,p,k);
+    fpolyfit(x,y,n,p,k);
 
     for (i=0; i<k; i++) {
         printf("p[%3u] = %12.4e\n", i, p[i]);
@@ -51,7 +51,7 @@ int main() {
     float xtest = xmin;
     float ytest;
     for (i=0; i<num_steps; i++) {
-        ytest = polyval(p,k,xtest);
+        ytest = fpolyval(p,k,xtest);
         fprintf(fid,"xtest(%3u) = %12.4e; ytest(%3u) = %12.4e;\n", i+1, xtest, i+1, ytest);
         xtest += dx;
     }
