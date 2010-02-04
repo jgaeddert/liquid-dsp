@@ -14,7 +14,7 @@ carrier frequency, phase, amplitude, etc.
 freqmod, ampmod, etc.
 
 \subsection{Continuous phase digital modulation schemes}
-fsk, msk, etc.
+fsk, msk, etc. [NOTE: not yet implemented]
 
 \subsection{Linear digital modulation schemes}
 (d)psk, apsk, ask, qam
@@ -38,8 +38,73 @@ proportional to the phase error after demodulation
 error vector magnitude after demodulation
 \end{itemize}
 
-\subsubsection{{\tt MOD\_PSK}, {\tt MOD\_DPSK}}
-Phase-shift keying...
+\subsubsection{Gray coding}
+To reduce the bit error rate, all symbols are automatically Gray encoded;
+adjacent symbols in a constellation differ by only one bit.
+Gray encoding is computed to the binary-coded decimal symbol
+by applying and exclusive OR bitmask of itself shifted to the right by a
+single bit.
+%
+For example, the bcd value of 183 is {\tt 10110111}.
+It has adjacent symbol 184 ({\tt 10111000}) which differs by 4 bits.
+%
+For example, the bcd value of 183 is {\tt 10110111}.
+It has adjacent symbols 182 ({\tt 10110110}) which differs by only one bit,
+and 184 ({\tt 10111000}) which differs by 4 bits.
+\begin{verbatim}
+        10110111    bcd_in (183)        10111000    bcd_in (184)
+        .1011011    bcd_in >> 1         .1011100    bcd_in >> 1
+xor :   --------                        --------
+        11101100    gray_out (236)      11100100    gray_out (228)
+\end{verbatim}
+Notice that the two output symbols
+236 ({\tt 11101100}) and
+228 ({\tt 11100100}) differ by only one bit.
+The decoding process is similar to encoding but slightly more involved.
+Gray decoding is computed on an encoded input symbol
+by adding to it (modulo 2) as many shifted versions of itself as it has bits.
+\begin{verbatim}
+        11101100    gray_in (236)       11100100    gray_in (228)
+        .1110110    gray_in >> 1        .1110010    gray_in >> 1
+        ..111011    gray_in >> 2        ..111001    gray_in >> 2
+        ...11101    gray_in >> 3        ...11100    gray_in >> 3
+        ....1110    gray_in >> 4        ....1110    gray_in >> 4
+        .....111    gray_in >> 5        .....111    gray_in >> 5
+        ......11    gray_in >> 6        ......11    gray_in >> 6
+        .......1    gray_in >> 7        .......1    gray_in >> 7
+xor :   --------                        --------
+        10110111    gray_out (183)      10111000    gray_out (184)
+\end{verbatim}
+There are a few interesting characteristics of Gray encoding:
+\begin{itemize}
+\item the first bit never changes in encoding/decoding
+\item there is a unique mapping between input and output symbols
+\end{itemize}
+It is also interesting to note that in linear modems (e.g. PSK), the
+{\tt decoder} is applied to the symbol at the transmitter while the
+{\tt encoder} is applied to the received symbol at the receiver.
+This is somewhat counterintuitive and is because...
+In \liquid, Gray encoding and decoding are computed with the
+{\tt gray\_encode()} {\tt gray\_decode()} methods, respectively.
+
+\subsubsection{{\tt MOD\_PSK} (phase-shift keying)}
+demodulation is performed independent of the signal amplitude
+
+\subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
+demodulation is performed independent of the signal amplitude
+
+\subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
+
+\subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
+
+\subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
+Also known as quadrature amplitude-shift keying
+\begin{itemize}
+\item I/Q symbols are decoded as separate {\tt MOD\_ASK} symbols
+\item gray encoding is applied to I/Q symbols separately to help ensure
+minimal bit changes between adjacent samples across both in-phase and
+quadrature-phase dimensions
+\end{itemize}
 
 %-------------------- FIGURE: PSK MODEM --------------------
 \begin{figure}[ht]
