@@ -40,3 +40,32 @@ where $t=\ln(z)$ and
 This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
 
+\subsection{Polynomials}
+
+\subsubsection{{\tt polyval}}
+Evaluates the polynomial $P^n(x)$ at $x_0$.
+
+\subsubsection{{\tt polyfit}}
+Fits data to a polynomial of order $k-1$ from $n$ samples using the
+least-squares method.
+Data vectors
+$\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
+$\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$...
+Uses matrix algebra to solve system of equations...
+
+\subsubsection{{\tt poly\_expandroots}}
+Expands the a polynomial based on its roots
+\[
+    P^n(x) = \prod_{k=0}^{n-1}{(x+a_k)}
+\]
+where $r_k=-a_k$ are the roots of $P^n(x)$.
+
+\subsubsection{{\tt poly\_expandroots2}}
+Expands the a polynomial as
+\[
+    P^n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
+\]
+
+\subsubsection{{\tt polymul}}
+Multiplies two polynomials $P^n(x)$ and $Q^t(x)$.
+
