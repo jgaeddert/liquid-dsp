@@ -107,6 +107,27 @@ unsigned int liquid_nextpow2(unsigned int _x)
     return n;
 }
 
+// (n choose k) = n! / ( k! (n-k)! )
+unsigned int liquid_nchoosek(unsigned int _n, unsigned int _k)
+{
+    // quick-and-dirty method
+    // TODO : implement floating-point method when _n is large
+    if (_k == 0 || _k == _n)
+        return 1;
+
+    // take advantage of symmetry and take larger value
+    if (_k < _n/2)
+        _k = _n - _k;
+
+    unsigned int rnum=1, rden=1;
+    unsigned int i;
+    for (i=_n; i>_k; i--)
+        rnum *= i;
+    for (i=1; i<=_n-_k; i++)
+        rden *= i;
+    return rnum / rden;
+}
+
 // 
 // Windowing functions
 //

@@ -1760,6 +1760,9 @@ float sincf(float _x);
 // next power of 2 : y = ceil(log2(_x))
 unsigned int liquid_nextpow2(unsigned int _x);
 
+// (n choose k) = n! / ( k! (n-k)! )
+unsigned int liquid_nchoosek(unsigned int _n, unsigned int _k);
+
 // 
 // Windowing functions
 //
@@ -1789,6 +1792,42 @@ void polyfit(float * _x,
              float * _p,
              unsigned int _k);
 
+// expands the polynomial:
+//  (x-a[0]) * (x-a[1]) * ... * (x-a[n-1])
+// as
+//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
+void poly_expandroots(float * _a,
+                      unsigned int _n,
+                      float * _c);
+
+// expands the polynomial:
+//  (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])
+// as
+//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
+void poly_expandroots2(float * _a,
+                       float * _b,
+                       unsigned int _n,
+                       float * _c);
+
+// expands the multiplication of two polynomials
+//
+//  (a[0] + a[1]*x + a[2]*x^2 + ...) * (b[0] + b[1]*x + b[]*x^2 + ...2 + ...)
+// as
+//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
+//
+// where order(c)  = order(a)  + order(b) + 1
+//    :: length(c) = length(a) + length(b) - 1
+//
+//  _a          :   1st polynomial coefficients (length is _order_a+1)
+//  _order_a    :   1st polynomial order
+//  _b          :   2nd polynomial coefficients (length is _order_b+1)
+//  _order_b    :   2nd polynomial order
+//  _c          :   output polynomial coefficients (length is _order_a + _order_b + 1)
+void polymul(float * _a,
+             unsigned int _order_a,
+             float * _b,
+             unsigned int _order_b,
+             float * _c);
 
 
 //
