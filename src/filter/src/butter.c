@@ -22,17 +22,42 @@
 // Butterworth filter design
 //
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "liquid.internal.h"
+
 // butterworth polynomial
 void butterpolyf(unsigned int _n, float *_p)
 {
     
 }
 
-void butterf(unsigned int _n, float *_a)
+void butterf(float * _b,
+             float * _a,
+             unsigned int _n)
 {
     // poles
-    float s[_n+1];
+    float complex s[_n];
 
+    unsigned int i;
+    float theta;
+    for (i=0; i<_n; i++) {
+        theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
+        s[i] = -cexpf(_Complex_I*theta);
+    }
     
+    printf("poles:\n");
+    for (i=0; i<_n; i++)
+        printf("  s[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(-s[i]), cimagf(-s[i]));
+
+    // expand roots
+    float complex p[_n+1];
+    cfpoly_expandroots(s,_n,p);
+
+    // print results
+    printf("expanded polynomial:\n");
+    for (i=0; i<=_n; i++)
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(p[i]), cimagf(p[i]));
 }
 

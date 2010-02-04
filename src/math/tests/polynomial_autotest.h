@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -58,7 +59,7 @@ void autotest_fpolyfit_q3n3()
 // 
 // AUTOTEST: poly_expandroots
 //
-void autotest_poly_expandroots_4()
+void autotest_fpoly_expandroots_4()
 {
     float a[5] = { 2, 1, 4, -5, -3 };
     float c[6];
@@ -84,9 +85,40 @@ void autotest_poly_expandroots_4()
 }
 
 // 
-// AUTOTEST: polymul
+// AUTOTEST: cfpoly_expandroots
 //
-void autotest_polymul_2_3()
+void autotest_cfpoly_expandroots_4()
+{
+    // expand complex roots on conjugate pair
+    float theta = 1.7f;
+    float complex a[2] = { cexpf(_Complex_I*theta), cexpf(-_Complex_I*theta) };
+    float complex c[3];
+    float complex c_test[3] = { 1, 2*cosf(theta), 1 };
+    float tol = 1e-3f;
+
+    cfpoly_expandroots(a,2,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        for (i=0; i<3; i++)
+            printf("c[%3u] = %12.8f + j*%12.8f\n", i, crealf(c[i]), cimagf(c[i]));
+    }
+    
+    CONTEND_DELTA(crealf(c[0]), crealf(c_test[0]), tol);
+    CONTEND_DELTA(cimagf(c[0]), cimagf(c_test[0]), tol);
+
+    CONTEND_DELTA(crealf(c[1]), crealf(c_test[1]), tol);
+    CONTEND_DELTA(cimagf(c[1]), cimagf(c_test[1]), tol);
+
+    CONTEND_DELTA(crealf(c[2]), crealf(c_test[2]), tol);
+    CONTEND_DELTA(cimagf(c[2]), cimagf(c_test[2]), tol);
+
+}
+
+// 
+// AUTOTEST: fpolymul
+//
+void autotest_fpolymul_2_3()
 {
     float a[3] = {  2, -4,  3 };
     float b[4] = { -9,  3, -2,  5};

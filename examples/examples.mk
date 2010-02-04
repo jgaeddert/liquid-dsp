@@ -21,6 +21,7 @@ local_src	:=			\
 	firpfb_rrrf_example.c		\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\
+	iirdes_butterworth_example.c	\
 	iir_filter_rrrf_example.c	\
 	interp_crcf_example.c		\
 	matched_filter_example.c	\

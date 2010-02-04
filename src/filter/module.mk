@@ -27,12 +27,14 @@ module_name     := filter
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 			\
+	butter.c			\
 	filter_rrrf.c			\
 	filter_crcf.c			\
 	filter_cccf.c			\
 	filter_common.c			\
 	fir_group_delay.c		\
 	firdes.c			\
+	iirdes.c			\
 	rcos.c				\
 	rkaiser.c			\
 	rrcos.c				\

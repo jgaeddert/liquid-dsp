@@ -857,7 +857,9 @@ float fir_group_delay(float * _h,
 // IIR filter design
 //
 
-void butterf(unsigned int _n, float * _a);
+void butterf(float * _b,
+             float * _a,
+             unsigned int _n);
 
 // Chebyshev type-I filter design
 //  _n  :   filter order
@@ -1784,7 +1786,7 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 
 
 #define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(fpoly, name)
-#define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfmatrix, name)
+#define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfpoly, name)
 
 // large macro
 //   POLY   : name-mangling macro
