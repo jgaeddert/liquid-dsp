@@ -1793,7 +1793,7 @@ void polyfit(float * _x,
              unsigned int _k);
 
 // expands the polynomial:
-//  (x-a[0]) * (x-a[1]) * ... * (x-a[n-1])
+//  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
 // as
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
 void poly_expandroots(float * _a,

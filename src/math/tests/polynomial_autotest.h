@@ -83,5 +83,34 @@ void autotest_poly_expandroots_4()
     CONTEND_DELTA(c[5], c_test[5], tol);
 }
 
+// 
+// AUTOTEST: polymul
+//
+void autotest_polymul_2_3()
+{
+    float a[3] = {  2, -4,  3 };
+    float b[4] = { -9,  3, -2,  5};
+    float c[6];
+    float c_test[6] = { -18, 42, -43, 27, -26, 15 };
+    float tol = 1e-3f;
+
+    polymul(a,2,b,3,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        printf("c[6] = ");
+        for (i=0; i<6; i++)
+            printf("%8.2f", c[i]);
+        printf("\n");
+    }
+    
+    CONTEND_DELTA(c[0], c_test[0], tol);
+    CONTEND_DELTA(c[1], c_test[1], tol);
+    CONTEND_DELTA(c[2], c_test[2], tol);
+    CONTEND_DELTA(c[3], c_test[3], tol);
+    CONTEND_DELTA(c[4], c_test[4], tol);
+    CONTEND_DELTA(c[5], c_test[5], tol);
+}
+
 #endif 
 
