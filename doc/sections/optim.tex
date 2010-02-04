@@ -3,16 +3,16 @@
 Newton-raphson, gradient, evolutionary algorithms, etc.
 
 \subsection{Gradient search}
-This module implements a steepest-descent search or gradient search.
+This module implements a gradient or ``steepest-descent'' search.
 Given a function $f$ which operates on a vector
-$\vec{x} = \{x_0,x_1,\ldots,x_{N-1}\}$ of $N$ parameters,
+$\vec{x} = [x_0,x_1,\ldots,x_{N-1}]^T$ of $N$ parameters,
 the gradient search method seeks to find the optimum $\vec{x}$ which
-minimizes $f$.
+minimizes $f(\vec{x})$.
 
 \subsubsection{Theory}
 The gradient search is an iterative method, and adjusts $\vec{x}$ proportional
 to the negative of the gradient of $f$ evaluated at the current location.
-The update equation is
+The vector $\vec{x}$ is adjusted by
 \[
     \Delta \vec{x}[n+1] = -\gamma[n] \nabla f(\vec{x}[n])
 \]
@@ -42,9 +42,10 @@ Mathematically, the $k^{th}$ component of the gradient is approximated by
     \frac{\partial f(\vec{x})}{\partial x_k} \approx 
     \frac{f(x_0,\ldots,x_k+\Delta,\ldots,x_{N-1}) - f(\vec{x})}{\Delta}
 \]
-Finally, the optimizing vector is updated via
+Once $\nabla f(\vec{x}[n])$ is known, $\Delta\vec{x}[n+1]$ is computed and the
+optimizing vector is updated via
 \[
-    \vec{x}[n+1] = \Delta\vec{x}[n+1]
+    \vec{x}[n+1] = \vec{x}[n] + \Delta\vec{x}[n+1]
 \]
 
 \subsubsection{Momentum constant}
@@ -54,7 +55,7 @@ This effect can be mitigated by permitting the update vector equation to
 retain a small portion of the previous step vector.
 The updated vector at time $n+1$ is
 \[
-    \vec{x}[n+1] = \Delta\vec{x}[n+1] + \alpha\Delta\vec{x}[n]
+    \vec{x}[n+1] = \vec{x}[n] + \Delta\vec{x}[n+1] + \alpha\Delta\vec{x}[n]
 \]
 where $\Delta\vec{x}[0] = \vec{0}$.
 The update...
@@ -71,10 +72,28 @@ This accelerates the algorithm across relatively flat regions of $f$.
 The momentum constant additionally adds some stability for regions where the
 gradient method tends to oscillate, such as steep valleys in $f$.
 
-\subsubsection{Implementation // Usage}
+\subsubsection{Step size adjustment}
 In \liquid, the gradient is normalized to unity (orthonormal).
-Furthermore, $\gamma$ is slightly reduced each epoch.
+That is $\|\nabla f(\vec{x}[n])\|=1$.
+Furthermore, $\gamma$ is slightly reduced each epoch by a multiplier $\mu$
+\[
+    \gamma[n+1] = \mu \gamma[n]
+\]
+This helps improve stability and convergence over regions where the algorithm
+might oscillate due to steep values of $f$.
+%The default value for $\mu$ is 0.99.
 
+\subsubsection{Usage}
+Here is a summary of the parameters used in the gradient search algorithm and
+their default values:
+\begin{itemize}
+\item[$\Delta$] : step size in computing the gradient (default $10^{-6}$)
+\item[$\gamma$] : step size in updating $\vec{x}[n]$ (default 0.002)
+\item[$\alpha$] : momentum constant (default 0.1)
+\item[$\mu$]    : iterative $\gamma$ adjustment factor (default 0.99)
+\end{itemize}
+
+Here is an example of how the {\tt gradient\_search} is used:
 % gradient_search example
 \input{listings/gradient_search.example.c.tex}
 

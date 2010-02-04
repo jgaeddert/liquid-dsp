@@ -1069,7 +1069,7 @@ struct gradient_search_s {
 
     float gamma;        // nominal stepsize
     float delta;        // differential used to compute (estimate) derivative
-    float dgamma;       // decremental gamma parameter
+    float mu;           // decremental gamma parameter
     float gamma_hat;    // step size (decreases each epoch)
     float* v_prime;     // temporary vector array
     float* dv;          // vector step

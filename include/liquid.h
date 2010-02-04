@@ -2303,6 +2303,7 @@ gradient_search gradient_search_create(void * _userdata,
 //   _delta             :   gradient approximation step size (default: 1e-6f)
 //   _gamma             :   vector step size (default: 0.002f)
 //   _alpha             :   momentum parameter (default: 0.1f)
+//   _mu                :   decremental gamma parameter (default: 0.99f)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
 gradient_search gradient_search_create_advanced(void * _userdata,
@@ -2311,6 +2312,7 @@ gradient_search gradient_search_create_advanced(void * _userdata,
                                                 float _delta,
                                                 float _gamma,
                                                 float _alpha,
+                                                float _mu,
                                                 utility_function _u,
                                                 int _minmax);
 

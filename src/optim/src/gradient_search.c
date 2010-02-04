@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -26,6 +27,12 @@
 
 #define LIQUID_GRADIENT_SEARCH_GAMMA_MIN 0.000001
 
+// default parameters
+#define LIQUID_GRADIENT_SEARCH_DEFAULT_DELTA    (1e-6f)
+#define LIQUID_GRADIENT_SEARCH_DEFAULT_GAMMA    (0.002f)
+#define LIQUID_GRADIENT_SEARCH_DEFAULT_ALPHA    (0.1f)
+#define LIQUID_GRADIENT_SEARCH_DEFAULT_MU       (0.99f)
+
 gradient_search gradient_search_create(
     void * _userdata,
     float * _v,
@@ -33,16 +40,15 @@ gradient_search gradient_search_create(
     utility_function _u,
     int _minmax)
 {
-    return gradient_search_create_advanced(
-        _userdata,
-        _v,
-        _num_parameters,
-        1e-6f,  // delta (gradient approximation step size)
-        0.002f, // gamma (vector step size)
-        0.1f,   // alpha (momentum parameter)
-        _u,
-        _minmax
-        );
+    return gradient_search_create_advanced(_userdata,
+                                           _v,
+                                           _num_parameters,
+                                           LIQUID_GRADIENT_SEARCH_DEFAULT_DELTA,
+                                           LIQUID_GRADIENT_SEARCH_DEFAULT_GAMMA,
+                                           LIQUID_GRADIENT_SEARCH_DEFAULT_ALPHA,
+                                           LIQUID_GRADIENT_SEARCH_DEFAULT_MU,
+                                           _u,
+                                           _minmax);
 }
 
 gradient_search gradient_search_create_advanced(
@@ -52,6 +58,7 @@ gradient_search gradient_search_create_advanced(
     float _delta,
     float _gamma,
     float _alpha,
+    float _mu,
     utility_function _u,
     int _minmax)
 {
@@ -60,7 +67,7 @@ gradient_search gradient_search_create_advanced(
     // initialize public values
     gs->delta = _delta;
     gs->gamma = _gamma;
-    gs->dgamma = 0.99f;
+    gs->mu    = _mu;
     gs->gamma_hat = gs->gamma;
     gs->alpha = _alpha;
 
@@ -142,7 +149,7 @@ void gradient_search_step(gradient_search _g)
     if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
          _g->gamma_hat > LIQUID_GRADIENT_SEARCH_GAMMA_MIN )
     {
-        _g->gamma_hat *= _g->dgamma;
+        _g->gamma_hat *= _g->mu;
     }
 
     // update utility
