@@ -16,37 +16,50 @@
 
 int main() {
     // options
-    unsigned int nz=0;  // num zeros
-    unsigned int np=5;  // num poles (filter order)
-
-    float complex z[nz];
-    float complex p[np];
+    unsigned int np=5;      // num poles (filter order)
+    unsigned int nz=0;      // num zeros (nz <= np)
 
     unsigned int i;
+    float complex p[np];    // poles array
+    float complex z[nz];    // zeros array
+
     // compute butterworth roots (poles)
     butter_rootsf(np,p);
 
-    // add zeros
+    // add zeros (if available)
     for (i=0; i<nz; i++) z[i] = 1.0f;
 
     float complex k = 1.0f;     // scaling factor
-    float m = 1.0f;             // bilateral warping factor
-    float complex b[np+1];      // output numerator TODO validate this length
+    float m = 1.0f;             // bilateral warping factor (filter bandwidth)
+    float complex b[np+1];      // output numerator
     float complex a[np+1];      // output denominator
-    bilinear_zpk(z, nz,
-                 p, np,
-                 k, m,
-                 b, a);
 
-    // print coefficients
-    for (i=0; i<=np; i++)
-        printf("a(%3u) = %12.8f +j*%12.8f\n", i+1, crealf(a[i]), cimagf(a[i]));
+    // compute bilinear z-transform on continuous time
+    // transfer function
+    bilinear_zpk(z, nz, // zeros
+                 p, np, // poles
+                 k, m,  // scaling/warping factors
+                 b, a); // output
 
+    // print results
+    printf("poles (%u):\n",np);
+    for (i=0; i<np; i++)
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
     printf("\n");
 
-    for (i=0; i<=np; i++)
-        printf("b(%3u) = %12.8f +j*%12.8f\n", i+1, crealf(b[i]), cimagf(b[i]));
+    printf("zeros (%u):\n",nz);
+    for (i=0; i<nz; i++)
+        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(z[i]), cimagf(z[i]));
+    printf("\n");
 
+    printf("numerator:\n");
+    for (i=0; i<=np; i++)
+        printf("  b[%3u] = %12.8f +j*%12.8f\n", i, crealf(b[i]), cimagf(b[i]));
+    printf("\n");
+
+    printf("denominator:\n");
+    for (i=0; i<=np; i++)
+        printf("  a[%3u] = %12.8f +j*%12.8f\n", i, crealf(a[i]), cimagf(a[i]));
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");

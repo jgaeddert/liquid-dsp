@@ -28,7 +28,7 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-#define LIQUID_DEBUG_BUTTER_PRINT   1
+#define LIQUID_DEBUG_BUTTER_PRINT   0
 
 // compute complex roots of the butterworth polynomial (poles of the
 // filter); length of _r is _n+1

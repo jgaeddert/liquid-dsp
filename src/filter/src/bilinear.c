@@ -29,7 +29,7 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_DEBUG_BILINEAR_PRINT 1
+#define LIQUID_DEBUG_BILINEAR_PRINT 0
 
 // bilinear z-transform using zeros, poles, gain
 //
