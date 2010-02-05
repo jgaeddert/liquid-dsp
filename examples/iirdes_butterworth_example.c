@@ -11,12 +11,13 @@
 
 int main() {
     // options
-    unsigned int n=5;   // order
+    unsigned int n=5;   // filter order
+    float fc = 0.1f;    // cutoff
 
     float b[n+1];       // numerator
     float a[n+1];       // denominator
 
-    butterf(b,a,n);
+    butterf(n,fc,b,a);
 
     // print coefficients
     unsigned int i;

@@ -38,10 +38,20 @@ void butterpolyf(unsigned int _n, float *_p)
     
 }
 
-void butterf(float * _b,
-             float * _a,
-             unsigned int _n)
+void butterf(unsigned int _n,
+             float _fc,
+             float * _b,
+             float * _a)
 {
+    // validate input
+    if (_fc <= 0.0f || _fc >= 0.5f) {
+        fprintf(stderr,"error: butterf(), cutoff frequency out of range\n");
+        exit(1);
+    } else if (_n == 0) {
+        fprintf(stderr,"error: butterf(), filter order must be greater than zero\n");
+        exit(1);
+    }
+
     // poles
     float complex s[_n];
 
@@ -70,7 +80,6 @@ void butterf(float * _b,
     unsigned int na = _n+1;
 
     // normalized cutoff frequency
-    float _fc = 0.25f;
     float m = 1.0f / tanf(M_PI * _fc);
     float mk = 1.0f;    // placeholder for m^k
     printf("m = %12.8f\n", m);

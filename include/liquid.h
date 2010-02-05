@@ -857,9 +857,10 @@ float fir_group_delay(float * _h,
 // IIR filter design
 //
 
-void butterf(float * _b,
-             float * _a,
-             unsigned int _n);
+void butterf(unsigned int _n,
+             float _fc,
+             float * _b,
+             float * _a);
 
 // Chebyshev type-I filter design
 //  _n  :   filter order
