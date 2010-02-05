@@ -68,15 +68,19 @@ void butterf(float * _b,
     // ...
     unsigned int nb = _n+1;
     unsigned int na = _n+1;
-    float polyb[nb];
-    float polya[na];
+
+    // normalized cutoff frequency
+    float _fc = 0.25f;
+    float m = 1.0f / tanf(M_PI * _fc);
+    float mk = 1.0f;    // placeholder for m^k
+    printf("m = %12.8f\n", m);
 
     float as[na];
     for (i=0; i<=_n; i++)
         as[i] = crealf(p[i]);
 
-    for (i=0; i<nb; i++) polyb[i] = 0;
-    for (i=0; i<na; i++) polya[i] = 0;
+    for (i=0; i<nb; i++) _b[i] = 0;
+    for (i=0; i<na; i++) _a[i] = 0;
 
     // temporary polynomial: (1 + 1/z)^(k) * (1 - 1/z)^(n-k)
     int poly_1pz[na];
@@ -88,23 +92,36 @@ void butterf(float * _b,
 
         printf("  poly[n=%-3u k=%-3u] : ", _n, i);
         for (j=0; j<na; j++)
-            printf("%3d", poly_1pz[j]);
+            printf("%6d", poly_1pz[j]);
         printf("\n");
 
+        // accumulate polynomial coefficients
         for (j=0; j<na; j++)
-            polya[j] += as[i]*poly_1pz[j];
-    }
-    printf("denominator:\n");
-    for (i=0; i<na; i++)
-        printf("  a[%3u] = %12.8f\n", i, polya[i]);
+            _a[j] += as[i]*mk*poly_1pz[j];
 
-    // for now assume numerator has zero terms...
+        // update frequency-scaling multiplier
+        mk *= m;
+    }
+
+    // compute numerator (simple binomial expansion)
     poly_binomial_expand(_n,poly_1pz);
     for (i=0; i<na; i++)
-        polyb[i] = poly_1pz[i];
+        _b[i] = poly_1pz[i];
+
+    // normalize to a[0]
+    float a0_inv = 1.0f / _a[0];
+    for (i=0; i<=_n; i++) {
+        _b[i] *= a0_inv;
+        _a[i] *= a0_inv;
+    }
      
+#if 0
     printf("numerator:\n");
     for (i=0; i<nb; i++)
-        printf("  b[%3u] = %12.8f\n", i, polyb[i]);
+        printf("  b[%3u] = %12.8f\n", i, _b[i]);
+    printf("denominator:\n");
+    for (i=0; i<na; i++)
+        printf("  a[%3u] = %12.8f\n", i, _a[i]);
+#endif
 }
 
