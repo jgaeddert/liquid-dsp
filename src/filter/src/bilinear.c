@@ -63,11 +63,13 @@ void bilinear_zpk(float complex * _z,
     unsigned int nb = _nz+1;
     float complex pb[nb];
     cfpoly_expandroots(_z,_nz,pb);
+    if (_nz == 0) pb[0] = 1.;
 
     // expand denominator
     unsigned int na = _np+1;
     float complex pa[na];
     cfpoly_expandroots(_p,_np,pa);
+    if (_np == 0) pa[0] = 1.;
 
     // scale numerator by _k
     for (i=0; i<nb; i++)
@@ -121,12 +123,25 @@ void bilinear_nd(float complex * _b,
                  float complex * _bd,
                  float complex * _ad)
 {
+    if (_b_order > _a_order) {
+        fprintf(stderr,"error: bilinear_nd(), numerator order cannot be higher than denominator\n");
+        exit(1);
+    }
+
+#if LIQUID_DEBUG_BILINEAR_PRINT
+    printf("***********************************\n");
+    printf("numerator order   : %u\n", _b_order);
+    printf("denominator order : %u\n", _a_order);
+#endif
+
     // ...
-    unsigned int nb = _b_order+1;
-    unsigned int na = _a_order+1;
+    unsigned int nb = _b_order+1;   // input numerator polynomial array length
+    unsigned int na = _a_order+1;   // input denominator polynomial array length
 
     unsigned int i, j;
-    for (i=0; i<nb; i++) _bd[i] = 0.;
+
+    // clear output arrays (both are length na = _a_order+1)
+    for (i=0; i<na; i++) _bd[i] = 0.;
     for (i=0; i<na; i++) _ad[i] = 0.;
 
     // temporary polynomial: (1 + 1/z)^(k) * (1 - 1/z)^(n-k)
@@ -134,7 +149,7 @@ void bilinear_nd(float complex * _b,
 
     float mk=1.0f;
 
-    // compute denominator
+    // multiply denominator by ((1-1/z)/(1+1/z))^na and expand
     for (i=0; i<na; i++) {
         // expand the polynomial (1+x)^i * (1-x)^(_a_order-i)
         poly_binomial_expand_pm(_a_order,
@@ -149,11 +164,21 @@ void bilinear_nd(float complex * _b,
         mk *= _m;
     }
 
-    // for now assume numerator has zero terms...
-    // TODO : expand polynomial in numerator
-    poly_binomial_expand(_a_order,poly_1pz);
-    for (i=0; i<na; i++)
-        _bd[i] = poly_1pz[i];
+    // multiply numerator by ((1-1/z)/(1+1/z))^na and expand
+    mk = 1.0f;
+    for (i=0; i<nb; i++) {
+        // expand the polynomial (1+x)^i * (1-x)^(_a_order-i)
+        poly_binomial_expand_pm(_a_order,
+                                _a_order-i,
+                                poly_1pz);
+
+        // accumulate polynomial coefficients
+        for (j=0; j<na; j++)
+            _bd[j] += _b[i]*mk*poly_1pz[j];
+
+        // update multiplier
+        mk *= _m;
+    }
 
     // normalize by a[0]
     float complex a0_inv = 1.0f / _ad[0];
