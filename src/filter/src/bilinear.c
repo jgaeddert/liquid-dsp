@@ -29,20 +29,66 @@
 
 #include "liquid.internal.h"
 
+#define LIQUID_DEBUG_BILINEAR_PRINT 1
+
 // bilinear z-transform using zeros, poles, gain
 //
 //            (s-z[0])*(s-z[1])*...*(s-z[nz-1])
 // H(s) = k * ---------------------------------
 //            (s-p[0])*(s-p[1])*...*(s-z[np-1])
+//
+// inputs
+//  _z      :   array of polynomial zeros (length _nz)
+//  _nz     :   number of zeros
+//  _p      :   array of polynomial poles (length _np)
+//  _np     :   number of poles
+//  _k      :   scaling factor
+//  _m      :   bilateral warping factor
+//
+// outputs
+//  _b      :   digital numerator (length _nz+1)
+//  _a      :   digital denominator (length _np+1)
 void bilinear_zpk(float complex * _z,
                   unsigned int _nz,
                   float complex * _p,
                   unsigned int _np,
-                  float _k,
-                  float * _bd,
-                  unsigned int _nbd,
-                  float * _ad,
-                  unsigned int _nad);
+                  float complex _k,
+                  float _m,
+                  float complex * _b,
+                  float complex * _a)
+{
+    unsigned int i;
+
+    // expand numerator
+    unsigned int nb = _nz+1;
+    float complex pb[nb];
+    cfpoly_expandroots(_z,_nz,pb);
+
+    // expand denominator
+    unsigned int na = _np+1;
+    float complex pa[na];
+    cfpoly_expandroots(_p,_np,pa);
+
+    // scale numerator by _k
+    for (i=0; i<nb; i++)
+        pb[i] *= _k;
+
+#if LIQUID_DEBUG_BILINEAR_PRINT
+    printf("numerator:\n");
+    for (i=0; i<nb; i++)
+        printf("  b[%3u] = %12.8f + j*%12.8f\n", i, crealf(pb[i]), cimagf(pb[i]));
+
+    printf("denominator:\n");
+    for (i=0; i<na; i++)
+        printf("  a[%3u] = %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
+#endif
+
+    // compute bilinear z-transform on result
+    bilinear_nd(pb,nb-1,
+                pa,na-1,
+                _m,
+                _b, _a);
+}
 
 // bilinear z-transform using polynomial expansion in numerator and
 // denominator
@@ -50,39 +96,70 @@ void bilinear_zpk(float complex * _z,
 //          b[0] + b[1]*s + ... + b[nb]*s^(nb-1)
 // H(s) =   ------------------------------------
 //          a[0] + a[1]*s + ... + a[na]*s^(na-1)
+//
+// computes H(z) = H( s -> _m*(z-1)/(z+1) ) and expands as
+//
+//          bd[0] + bd[1]*z^-1 + ... + bd[nb]*z^-n
+// H(z) =   --------------------------------------
+//          ad[0] + ad[1]*z^-1 + ... + ad[nb]*z^-m
+//
+// inputs
+//  _b          :   numerator array (length _b_order+1)
+//  _b_order    :   polynomial order of _b
+//  _a          :   denominator array (length _a_order+1)
+//  _a_order    :   polynomial order of _a
+//  _m          :   bilateral warping factor
+//
+// outputs
+//  _bd         :   digital filter numerator (length _b_order+1)
+//  _ad         :   digital filter numerator (length _a_order+1)
 void bilinear_nd(float complex * _b,
                  unsigned int _b_order,
                  float complex * _a,
                  unsigned int _a_order,
-                 float * _bd,
-                 unsigned int _nbd,
-                 float * _ad,
-                 unsigned int _nad)
+                 float _m,
+                 float complex * _bd,
+                 float complex * _ad)
 {
     // ...
     unsigned int nb = _b_order+1;
     unsigned int na = _a_order+1;
-    float complex polyb[nb];
-    float complex polya[na];
 
-    unsigned int i;
-    for (i=0; i<nb; i++) polyb[i] = 0;
-    for (i=0; i<na; i++) polya[i] = 0;
+    unsigned int i, j;
+    for (i=0; i<nb; i++) _bd[i] = 0.;
+    for (i=0; i<na; i++) _ad[i] = 0.;
 
     // temporary polynomial: (1 + 1/z)^(k) * (1 - 1/z)^(n-k)
     int poly_1pz[na];
 
+    float mk=1.0f;
+
     // compute denominator
     for (i=0; i<na; i++) {
-        poly_binomial_expand_pm(na,i,poly_1pz);
-        unsigned int j;
+        // expand the polynomial (1+x)^i * (1-x)^(_a_order-i)
+        poly_binomial_expand_pm(_a_order,
+                                _a_order-i,
+                                poly_1pz);
+
+        // accumulate polynomial coefficients
         for (j=0; j<na; j++)
-            polya[j] += _a[i]*poly_1pz[j];
+            _ad[j] += _a[i]*mk*poly_1pz[j];
+
+        // update multiplier
+        mk *= _m;
     }
 
     // for now assume numerator has zero terms...
-    poly_binomial_expand(na,poly_1pz);
+    // TODO : expand polynomial in numerator
+    poly_binomial_expand(_a_order,poly_1pz);
     for (i=0; i<na; i++)
-        polyb[i] = poly_1pz[i];
+        _bd[i] = poly_1pz[i];
+
+    // normalize by a[0]
+    float complex a0_inv = 1.0f / _ad[0];
+    for (i=0; i<na; i++) {
+        _bd[i] *= a0_inv;
+        _ad[i] *= a0_inv;
+    }
 }
 

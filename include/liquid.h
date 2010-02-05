@@ -869,6 +869,34 @@ void butterf(unsigned int _n,
 //  _a  :   denominator coefficient array (length _n+1)
 void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
 
+// bilinear z-transform using zeros, poles, gain
+//
+//            (s-z[0])*(s-z[1])*...*(s-z[nz-1])
+// H(s) = k * ---------------------------------
+//            (s-p[0])*(s-p[1])*...*(s-z[np-1])
+void bilinear_zpk(liquid_float_complex * _z,
+                  unsigned int _nz,
+                  liquid_float_complex * _p,
+                  unsigned int _np,
+                  liquid_float_complex _k,
+                  float _m,
+                  liquid_float_complex * _b,
+                  liquid_float_complex * _a);
+
+// bilinear z-transform using polynomial expansion in numerator and
+// denominator
+//
+//          b[0] + b[1]*s + ... + b[nb]*s^(nb-1)
+// H(s) =   ------------------------------------
+//          a[0] + a[1]*s + ... + a[na]*s^(na-1)
+void bilinear_nd(liquid_float_complex * _b,
+                 unsigned int _b_order,
+                 liquid_float_complex * _a,
+                 unsigned int _a_order,
+                 float _m,
+                 liquid_float_complex * _bd,
+                 liquid_float_complex * _ad);
+
 
 //
 // auto-correlator (delay cross-correlation)
