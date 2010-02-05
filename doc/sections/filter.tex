@@ -67,16 +67,21 @@ input-to-output resampling ratio.
 \subsection{{\tt iir\_filter}}
 Infinite impulse response filter.
 \[
-    y_n = \sum_{k=0}^{N-1}{ b_k x_{N-k-1} } +
-          \sum_{k=0}^{N-1}{ a_k y_{N-k-1} }
+    y[n] = \frac{1}{a_0} \left(
+           \sum_{j=0}^{n_b-1}{ b_j x[n-j] } -
+           \sum_{k=1}^{n_a-1}{ a_k y[n-k] }
+           \right)
 \]
-where $\vec{b} = \{b_0,b_1,\ldots,b_{N-1}\}$ are the feed-forward parameters
-and $\vec{a} = \{a_0,a_1,\ldots,a_{N-1}\}$ are the feed-back parameters.
+where $\vec{b} = [b_0,b_1,\ldots,b_{n_b-1}]^T$ are the feed-forward parameters
+and   $\vec{a} = [a_0,a_1,\ldots,a_{n_a-1}]^T$ are the feed-back parameters
+of length $n_b$ and $n_a$, respectively.
+The $z$-transform of the transfer function is therefore
 \[
-    H(z) = \frac{\sum_{k=0}^{N-1}{b_k z^{-k}}}
-                {\sum_{k=0}^{N-1}{a_k z^{-k}}}
-         = \frac{ b_0 + b_1 z^{-1} + \cdots + b_{N-1} z^{N-1}}
-                { a_0 + a_1 z^{-1} + \cdots + a_{N-1} z^{N-1}}
+    H(z) = \frac{Y(z)}{X(z)}
+         = \frac{\sum\limits_{j=0}^{n_b-1}{b_j z^{-j}}}
+                {\sum\limits_{k=0}^{n_a-1}{a_k z^{-k}}}
+         = \frac{ b_0 + b_1 z^{-1} + \cdots + b_{n_b-1} z^{n_b-1}}
+                { a_0 + a_1 z^{-1} + \cdots + a_{n_a-1} z^{n_a-1}}
 \]
 Typically, $H(z)$ is normalized such that $a_0=1$.
 
