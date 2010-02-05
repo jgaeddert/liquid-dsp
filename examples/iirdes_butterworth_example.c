@@ -11,7 +11,7 @@
 
 int main() {
     // options
-    unsigned int n=5;   // order
+    unsigned int n=2;   // order
 
     float b[n+1];       // numerator
     float a[n+1];       // denominator
