@@ -1825,9 +1825,17 @@ void POLY(mul)(T * _a,                                          \
                unsigned int _order_b,                           \
                T * _c);
 
-
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT, float)
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT, liquid_float_complex)
+
+
+// expands the polynomial: (1+x)^n
+void poly_binomial_expand(unsigned int _n, int * _c);
+
+// expands the polynomial: (1+x)^k * (1-x)^(n-k)
+void poly_binomial_expand_pm(unsigned int _n,
+                             unsigned int _k,
+                             int * _c);
 
 
 //

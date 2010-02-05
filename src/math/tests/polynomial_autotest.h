@@ -144,5 +144,75 @@ void autotest_fpolymul_2_3()
     CONTEND_DELTA(c[5], c_test[5], tol);
 }
 
+// 
+// AUTOTEST: poly_binomial_expand
+//
+void autotest_poly_binomial_expand_n6()
+{
+    unsigned int n=6;
+    int c[7];
+    int c_test[7] = {1, 6, 15, 20, 15, 6, 1};
+
+    poly_binomial_expand(n,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        printf("c[%u] = ", n+1);
+        for (i=0; i<=n; i++)
+            printf("%5d", c[i]);
+        printf("\n");
+    }
+    
+    CONTEND_SAME_DATA(c,c_test,sizeof(c));
+}
+
+
+// 
+// AUTOTEST: poly_binomial_expand_pm
+//
+void autotest_poly_binomial_expand_pm_n6_k1()
+{
+    unsigned int n=6;
+    unsigned int k=1;
+    int c[7];
+    int c_test[7] = {1,  -4,   5,   0,  -5,   4,  -1};
+
+    poly_binomial_expand_pm(n,k,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        printf("c[%u] = ", n+1);
+        for (i=0; i<=n; i++)
+            printf("%5d", c[i]);
+        printf("\n");
+    }
+    
+    CONTEND_SAME_DATA(c,c_test,sizeof(c));
+}
+
+
+// 
+// AUTOTEST: poly_binomial_expand_pm
+//
+void autotest_poly_binomial_expand_pm_n5_k2()
+{
+    unsigned int n=5;
+    unsigned int k=2;
+    int c[6];
+    int c_test[6] = {1,  -1,  -2,   2,   1,  -1};
+
+    poly_binomial_expand_pm(n,k,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        printf("c[%u] = ", n+1);
+        for (i=0; i<=n; i++)
+            printf("%5d", c[i]);
+        printf("\n");
+    }
+    
+    CONTEND_SAME_DATA(c,c_test,sizeof(c));
+}
+
 #endif 
 

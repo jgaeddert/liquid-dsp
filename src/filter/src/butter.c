@@ -28,10 +28,6 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-void poly_binomial_expand(unsigned int _n, int * _c);
-void poly_binomial_expand_pm(unsigned int _n,
-                             unsigned int _k,
-                             int * _c);
 // butterworth polynomial
 void butterpolyf(unsigned int _n, float *_p)
 {

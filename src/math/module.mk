@@ -29,6 +29,7 @@ module_name     := math
 local_s_files	:= 		\
 	cfpoly.c		\
 	fpoly.c			\
+	poly.common.c		\
 	math.c			\
 	math.trig.c
 

@@ -29,60 +29,6 @@
 
 #include "liquid.internal.h"
 
-
-// expands the polynomial:
-//  (1+x)^n
-// as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-void poly_binomial_expand(unsigned int _n,
-                          int * _c)
-{
-    // easy way...
-    unsigned int k;
-    for (k=0; k<=_n; k++)
-        _c[k] = (int) liquid_nchoosek(_n,k);
-}
-
-
-// expands the polynomial:
-//  (1+x)^k * (1-x)^(n-k)
-// as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-//
-//  tests:  n=6, k=1 : c[7]=[1  -4   5   0  -5   4  -1]
-//          n=5, k=2 : c[6]=[1  -1  -2   2   1  -1]
-void poly_binomial_expand_pm(unsigned int _n,
-                             unsigned int _k,
-                             int * _c)
-{
-    int cp[_k+1];       // coefficients array for (1+x)^k
-    int cm[_n-_k+1];    // coefficients array for (1-x)^(n-k)
-    unsigned int i;
-    for (i=0; i<_n+1; i++)
-        _c[i]  = 0;
-
-    // compute (1+x)^k
-    for (i=0; i<=_k; i++) {
-        cp[i] = (int) liquid_nchoosek(_k,i);
-    }
-
-    // compute (1-x)^(n-k)
-    for (i=0; i<=_n-_k; i++) {
-        cm[i] = (i%2 ? -1 : 1) * (int) liquid_nchoosek(_n-_k,i);
-    }
-
-    // multiply both polynomials
-    unsigned int j;
-    unsigned int t;
-    for (i=0; i<=_k; i++) {
-        for (j=0; j<=_n-_k; j++) {
-            t = i+j;
-            _c[t] += cp[i] * cm[j];
-        }
-    }
-}
-
-
 // bilinear z-transform using zeros, poles, gain
 //
 //            (s-z[0])*(s-z[1])*...*(s-z[nz-1])
