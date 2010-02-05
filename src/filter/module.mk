@@ -29,6 +29,7 @@ module_name     := filter
 local_s_files	:= 			\
 	bilinear.c			\
 	butter.c			\
+	cheby1.c			\
 	filter_rrrf.c			\
 	filter_crcf.c			\
 	filter_cccf.c			\

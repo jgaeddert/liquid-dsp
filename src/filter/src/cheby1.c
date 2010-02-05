@@ -28,23 +28,61 @@
 
 #include "liquid.internal.h"
 
+#define LIQUID_DEBUG_CHEBY1_PRINT   1
+
 void cheby1f(unsigned int _n, float _ep, float * _b, float * _a)
 {
-    // poles
-    float complex s[_n];
+    unsigned int i;
 
-    float e = _ep;
-    float e2 = e*e;
     float nf = (float) _n;
 
-    float b = 0.5*powf( sqrtf(1+1/e2) + 1/e,  1/nf) +
-              0.5*powf( sqrtf(1-1/e2) + 1/e, -1/nf);
+    float t0 = sqrt(1.0 + 1.0/(_ep*_ep));
+    float tp = powf( t0 + 1.0/_ep, 1.0/nf );
+    float tm = powf( t0 - 1.0/_ep, 1.0/nf );
 
-    float a = 0.5*powf( sqrtf(1+1/e2) + 1/e,  1/nf) -
-              0.5*powf( sqrtf(1-1/e2) + 1/e, -1/nf);
+    float b = 0.5*(tp + tm);
+    float a = 0.5*(tp - tm);
 
-    printf("ep : %12.8f\n", e);
+    printf("ep : %12.8f\n", _ep);
     printf("b  : %12.8f\n", b);
     printf("a  : %12.8f\n", a);
 
+    // compute poles
+    float complex s[_n];
+    float theta;
+    for (i=0; i<_n; i++) {
+        theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
+
+        //_r[i] = -cexpf(_Complex_I*theta); // butterworth
+        s[i] = -a*cosf(theta) - _Complex_I*b*sinf(theta);
+    }
+
+#if LIQUID_DEBUG_CHEBY1_PRINT
+    printf("poles:\n");
+    for (i=0; i<_n; i++)
+        printf("  s[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(-s[i]), cimagf(-s[i]));
+#endif
+
+    // compute gain (should be purely real)
+    float complex A=1.0f;
+    for (i=0; i<_n; i++)
+        A *= s[i];
+    A *= 1.0f / sqrtf(1.0f + _ep*_ep);
+    printf("A : %12.8f + j*%12.8f\n", crealf(A), cimagf(A));
+
+    // expand roots
+    float complex pcf[_n];
+    cfpoly_expandroots(s,_n,pcf);
+
+#if LIQUID_DEBUG_CHEBY1_PRINT
+    printf("expanded polynomial:\n");
+    for (i=0; i<=_n; i++)
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(pcf[i]), cimagf(pcf[i]));
+        //printf("  p[%3u] = %12.8f\n", i+1, p[i]);
+#endif
+
+    // clear output for now
+    memset(_b, 0, (_n+1)*sizeof(float));
+    memset(_a, 0, (_n+1)*sizeof(float));
 }
+
