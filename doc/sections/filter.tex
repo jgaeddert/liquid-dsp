@@ -127,6 +127,35 @@ gives the discrete-time transfer function
 \]
 Multiplying both the numerator an denominator by $(1+z^{-1})^{n-1}$...
 
+\subsubsection{Bilinear $z$-transform}
+Given a continuous time transfer function
+\[
+    H(s) = \frac{
+            b_0 + b_1 s + b_2 s^2 + \cdots + b_n s^n
+           }{
+            a_0 + a_1 s + a_2 s^2 + \cdots + a_m s^m
+           }
+\]
+{\tt bilinear\_nd} converts into discretized transfer function
+\[
+    H(z) = H(s)|_{s\rightarrow m\frac{1-z^{-1}}{1+z^{-1}}}
+         = \frac{
+            b_0 + b_1 z^{-1} + b_2 z^{-2} + \cdots + b_n z^{-n}
+           }{
+            a_0 + a_1 z^{-1} + a_2 z^{-2} + \cdots + a_m z^{-m}
+           }
+\]
+TODO: elaborate on this, use different coefficients notation for analog form
+
+{\tt bilinear\_zpk} converts from the analog form
+\[
+    H(s) = k \frac{
+            (s-z_0)(s-z_1)\cdots(s-z_n)
+           }{
+            (s-p_0)(s-p_1)\cdots(s-p_m)
+           }
+\]
+
 \subsection{{\tt resamp2} (halfband resampler)}
 resamp2 is a halfband resampler used for efficient interpolation and
 decimation

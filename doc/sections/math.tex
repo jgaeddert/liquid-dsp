@@ -66,6 +66,21 @@ Expands the a polynomial as
     P^n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
 \]
 
+\subsubsection{{\tt poly\_binomial\_expand}}
+Expands the a polynomial as a binomial series
+\[
+    P^n(x) = (x+1)^n = \sum_{k=0}^{n}{ {n \choose k} x^k}
+\]
+
+\subsubsection{{\tt poly\_binomial\_expand\_pm}}
+Expands the a polynomial as an alternating binomial series
+[NOTE: change terminology?]
+\[
+    P^n(x) = (x+1)^j (x-1)^{n-j}
+           = \left( \sum_{k=0}^{j}  { {n \choose k}    x^k} \right)
+             \left( \sum_{k=0}^{n-j}{ {n \choose k} (-x)^k} \right)
+\]
+
 \subsubsection{{\tt polymul}}
 Multiplies two polynomials $P^n(x)$ and $Q^t(x)$.
 
