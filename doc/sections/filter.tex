@@ -85,6 +85,48 @@ The $z$-transform of the transfer function is therefore
 \]
 Typically, $H(z)$ is normalized such that $a_0=1$.
 
+See also: {\tt iirdes} (IIR filter design).
+
+\subsection{{\tt iirdes} (IIR filter design)}
+Butterworth prototype:
+\[
+    H_a(s) = \frac{1}{B_n(s)}
+           = \frac{
+                (-1)^n s_0 s_1 \cdots s_{n-1}
+            }{
+                (s-s_0)(s-s_1) \cdots (s-s_{n-1})
+            }
+\]
+where $B_n(s)$ is the $n^{th}$-order Butterworth polynomial with roots
+$s_0,s_1,\ldots,s_{n-1}$.
+\[
+    s_k = \omega_c \exp\left\{
+                j \frac{\left(2k+n+1\right)\pi}{2n}
+          \right\}
+\]
+for $k=0,1,\ldots,n-1$.
+Note that this results in a set of complex conjugate pairs... such that
+$(-1)^n s_0 s_1 \cdots s_{n-1} = 1$.
+Taking the bilinear $z$-transform
+\[
+    s \rightarrow \omega_c
+                  \cot\left(\frac{\pi \omega_c}{\omega_s}\right)
+                  \frac{1+z^{-1}}{1-z^{-1}}
+\]
+gives the discrete-time transfer function
+\[
+    H(z) = \frac{
+            %(-1)^n s_0 s_1 \cdots s_{n-1}
+            1
+           }{
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_0\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_1\right)
+            \cdots
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_{n-1}\right)
+           }
+\]
+Multiplying both the numerator an denominator by $(1+z^{-1})^{n-1}$...
+
 \subsection{{\tt resamp2} (halfband resampler)}
 resamp2 is a halfband resampler used for efficient interpolation and
 decimation
@@ -226,4 +268,5 @@ where $0 < \Delta f < 0.5$ is the normalized transition bandwidth.
 
 
 \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser}
+
 
