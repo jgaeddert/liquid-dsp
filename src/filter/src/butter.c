@@ -57,7 +57,7 @@ void butter_polyf(unsigned int _n, float *_p)
     butter_rootsf(_n,s);
     
     // expand roots
-    float complex pcf[_n];
+    float complex pcf[_n+1];
     cfpoly_expandroots(s,_n,pcf);
 
     // return only real components
