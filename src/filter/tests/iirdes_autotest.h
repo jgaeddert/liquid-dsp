@@ -25,7 +25,17 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-void autotest_iir_butter_2()
+//
+// Bibliography:
+// [1] Zimer, Tranter, Fannin, "Signals & Systems, Continuous
+//     and Discrete," 4th ed., Prentice Hall, Upper Saddle
+//     River, NJ, 1998
+
+// 
+// AUTOTEST : design 2nd-order butterworth filter (design
+//            comes from [1] Example 9-7, pp. 440--442
+//
+void autotest_iirdes_butter_2()
 {
     // initialize variables
     unsigned int n = 2;     // filter order
