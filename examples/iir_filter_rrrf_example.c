@@ -11,7 +11,7 @@
 
 int main() {
     // options
-    unsigned int order=6;   // filter order
+    unsigned int order=4;   // filter order
     float fc=0.1f;          // cutoff frequency
     unsigned int n=128;     // number of samples
 
@@ -40,14 +40,14 @@ int main() {
     float y;
     for (i=0; i<n; i++) {
         // generate input signal (noisy sine wave with decaying amplitude)
-        x = sinf(2*M_PI*0.037f*i)*expf(-(float)i*0.02f) + 0.1f*randnf();
+        x = sinf(2*M_PI*0.057f*i)*expf(-(float)i*0.04f) + 0.1f*randnf();
 
         // run filter
         iir_filter_rrrf_execute(f, x, &y);
 
         printf("%4u : %12.8f\n", i, y);
-        fprintf(fid,"x(%4u) = %12.8f;\n", i+1, x);
-        fprintf(fid,"y(%4u) = %12.8f;\n", i+1, y);
+        fprintf(fid,"x(%4u) = %12.4e;\n", i+1, x);
+        fprintf(fid,"y(%4u) = %12.4e;\n", i+1, y);
     }
 
     fprintf(fid,"\n");
