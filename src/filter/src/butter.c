@@ -80,73 +80,35 @@ void butterf(unsigned int _n,
         exit(1);
     }
 
-    unsigned int i, j;
-    // butterworth polynomial
-    float p[_n+1];
-    butter_polyf(_n,p);
-
-#if LIQUID_DEBUG_BUTTER_PRINT
-    printf("expanded polynomial:\n");
-    for (i=0; i<=_n; i++)
-        printf("  p[%3u] = %12.8f\n", i+1, p[i]);
-#endif
-
-    // ...
-    unsigned int nb = _n+1;
-    unsigned int na = _n+1;
+    unsigned int i;
 
     // normalized cutoff frequency
     float m = 1.0f / tanf(M_PI * _fc);
-    float mk = 1.0f;    // placeholder for m^k
 #if LIQUID_DEBUG_BUTTER_PRINT
     printf("m = %12.8f\n", m);
 #endif
 
-    for (i=0; i<nb; i++) _b[i] = 0;
-    for (i=0; i<na; i++) _a[i] = 0;
+    // compute butterworth roots (poles)
+    float complex p[_n];    // poles array
+    butter_rootsf(_n,p);
 
-    // temporary polynomial: (1 + 1/z)^(k) * (1 - 1/z)^(n-k)
-    int poly_1pz[na];
+    float complex k = 1.0f;     // scaling factor
+    float complex b[_n+1];      // output numerator
+    float complex a[_n+1];      // output denominator
 
-    // compute denominator
-    for (i=0; i<na; i++) {
-        // expand the polynomial (1 + x)^i * (1 - x)^(_n-i)
-        poly_binomial_expand_pm(_n,_n-i,poly_1pz);
+    // compute bilinear z-transform on continuous time
+    // transfer function
+    bilinear_zpk(NULL,  0,  // zeros
+                 p,     _n, // poles
+                 k,     m,  // scaling/warping factors
+                 b,     a); // output
 
-#if LIQUID_DEBUG_BUTTER_PRINT
-        printf("  poly[n=%-3u k=%-3u] : ", _n, i);
-        for (j=0; j<na; j++)
-            printf("%6d", poly_1pz[j]);
-        printf("\n");
-#endif
-
-        // accumulate polynomial coefficients
-        for (j=0; j<na; j++)
-            _a[j] += p[i]*mk*poly_1pz[j];
-
-        // update frequency-scaling multiplier
-        mk *= m;
-    }
-
-    // compute numerator (simple binomial expansion)
-    poly_binomial_expand(_n,poly_1pz);
-    for (i=0; i<na; i++)
-        _b[i] = poly_1pz[i];
-
-    // normalize by a[0]
-    float a0_inv = 1.0f / _a[0];
+    // retain only real component (imaginary should
+    // be zero since poles are all complementary
+    // complex pairs)
     for (i=0; i<=_n; i++) {
-        _b[i] *= a0_inv;
-        _a[i] *= a0_inv;
+        _b[i] = crealf(b[i]);
+        _a[i] = crealf(a[i]);
     }
-     
-#if LIQUID_DEBUG_BUTTER_PRINT
-    printf("numerator:\n");
-    for (i=0; i<nb; i++)
-        printf("  b[%3u] = %12.8f\n", i, _b[i]);
-    printf("denominator:\n");
-    for (i=0; i<na; i++)
-        printf("  a[%3u] = %12.8f\n", i, _a[i]);
-#endif
 }
 
