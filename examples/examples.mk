@@ -24,6 +24,7 @@ local_src	:=			\
 	hilbert_interp_example.c	\
 	iirdes_butterworth_example.c	\
 	iirdes_cheby1_example.c		\
+	iirdes_cheby2_example.c		\
 	iir_filter_rrrf_example.c	\
 	interp_crcf_example.c		\
 	matched_filter_example.c	\

@@ -879,6 +879,18 @@ void cheby1f(unsigned int _n,
              float * _b,
              float * _a);
 
+// Chebyshev type-II filter design
+//  _n      :   filter order
+//  _fc     :   filter cutoff
+//  _ep     :   epsilon, stopband ripple
+//  _b      :   numerator coefficient array (length _n+1)
+//  _a      :   denominator coefficient array (length _n+1)
+void cheby2f(unsigned int _n,
+             float _fc,
+             float _ep,
+             float * _b,
+             float * _a);
+
 // bilinear z-transform using zeros, poles, gain
 //
 //            (s-z[0])*(s-z[1])*...*(s-z[nz-1])
