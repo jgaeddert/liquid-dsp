@@ -857,17 +857,27 @@ float fir_group_delay(float * _h,
 // IIR filter design
 //
 
+// Butterworth filter design
+//  _n      :   filter order
+//  _fc     :   filter cutoff
+//  _b      :   numerator coefficient array (length _n+1)
+//  _a      :   denominator coefficient array (length _n+1)
 void butterf(unsigned int _n,
              float _fc,
              float * _b,
              float * _a);
 
 // Chebyshev type-I filter design
-//  _n  :   filter order
-//  _ep :   epsilon, passband ripple
-//  _b  :   numerator coefficient array (length 1)
-//  _a  :   denominator coefficient array (length _n+1)
-void cheby1f(unsigned int _n, float _ep, float * _b, float * _a);
+//  _n      :   filter order
+//  _fc     :   filter cutoff
+//  _ep     :   epsilon, passband ripple
+//  _b      :   numerator coefficient array (length _n+1)
+//  _a      :   denominator coefficient array (length _n+1)
+void cheby1f(unsigned int _n,
+             float _fc,
+             float _ep,
+             float * _b,
+             float * _a);
 
 // bilinear z-transform using zeros, poles, gain
 //

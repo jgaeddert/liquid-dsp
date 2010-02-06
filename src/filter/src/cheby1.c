@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -31,7 +32,10 @@
 
 #define LIQUID_DEBUG_CHEBY1_PRINT   1
 
-void cheby1f(unsigned int _n, float _ep, float * _b, float * _a)
+// compute complex roots of a chebyshev filter
+void cheby1_rootsf(unsigned int _n,
+                   float _ep,
+                   float complex *_r)
 {
     unsigned int i;
 
@@ -51,88 +55,60 @@ void cheby1f(unsigned int _n, float _ep, float * _b, float * _a)
 #endif
 
     // compute poles
-    float complex s[_n];
     float theta;
     for (i=0; i<_n; i++) {
         theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
-
-        //_r[i] = -cexpf(_Complex_I*theta); // butterworth
-        s[i] = -a*cosf(theta) - _Complex_I*b*sinf(theta);
+        _r[i] = -a*cosf(theta) - _Complex_I*b*sinf(theta);
     }
+}
+
+
+void cheby1f(unsigned int _n,
+             float _fc,
+             float _ep,
+             float * _b,
+             float * _a)
+{
+    unsigned int i;
+    // poles
+    float complex p[_n];
+    cheby1_rootsf(_n,_ep,p);
 
 #if LIQUID_DEBUG_CHEBY1_PRINT
     printf("poles:\n");
     for (i=0; i<_n; i++)
-        printf("  s[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(-s[i]), cimagf(-s[i]));
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(-p[i]), cimagf(-p[i]));
 #endif
 
     // compute gain (should be purely real)
     float complex A=1.0f;
     for (i=0; i<_n; i++)
-        A *= s[i];
+        A *= p[i];
     A *= 1.0f / sqrtf(1.0f + _ep*_ep);
     printf("A : %12.8f + j*%12.8f\n", crealf(A), cimagf(A));
 
-    // expand roots
-    float complex pcf[_n+1];
-    cfpoly_expandroots(s,_n,pcf);
-
-    float p[_n+1];
-    for (i=0; i<=_n; i++)
-        p[i] = crealf(pcf[i]);
-
-#if LIQUID_DEBUG_CHEBY1_PRINT
-    printf("expanded polynomial:\n");
-    for (i=0; i<=_n; i++)
-        printf("  p[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(pcf[i]), cimagf(pcf[i]));
-        //printf("  p[%3u] = %12.8f\n", i+1, p[i]);
-#endif
     // normalized cutoff frequency
-    float _fc = 0.25f;
     float m = 1.0f / tanf(M_PI * _fc);
-    float mk = 1.0f;    // placeholder for m^k
 #if LIQUID_DEBUG_CHEBY1_PRINT
     printf("m = %12.8f\n", m);
 #endif
 
-    // clear output 
-    memset(_b, 0, (_n+1)*sizeof(float));
-    memset(_a, 0, (_n+1)*sizeof(float));
+    float complex b[_n+1];  // output numerator
+    float complex a[_n+1];  // output denominator
 
-    // temporary polynomial: (1 + 1/z)^(k) * (1 - 1/z)^(n-k)
-    int poly_1pz[_n+1];
+    // compute bilinear z-transform on continuous time
+    // transfer function
+    bilinear_zpk(NULL,  0,  // zeros
+                 p,     _n, // poles
+                 A,     m,  // scaling/warping factors
+                 b,     a); // output
 
-    // compute denominator
-    unsigned int j;
+    // retain only real component (imaginary should
+    // be zero since poles are all complementary
+    // complex pairs)
     for (i=0; i<=_n; i++) {
-        // expand the polynomial (1 + x)^i * (1 - x)^(_n-i)
-        poly_binomial_expand_pm(_n,_n-i,poly_1pz);
-
-#if LIQUID_DEBUG_CHEBY1_PRINT
-        printf("  poly[n=%-3u k=%-3u] : ", _n, i);
-        for (j=0; j<=_n; j++)
-            printf("%6d", poly_1pz[j]);
-        printf("\n");
-#endif
-
-        // accumulate polynomial coefficients
-        for (j=0; j<=_n; j++)
-            _a[j] += p[i]*mk*poly_1pz[j];
-
-        // update frequency-scaling multiplier
-        mk *= m;
-    }
-
-    // compute numerator (simple binomial expansion)
-    poly_binomial_expand(_n,poly_1pz);
-    for (i=0; i<=_n; i++)
-        _b[i] = poly_1pz[i];
-
-    // normalize by a[0]
-    float a0_inv = 1.0f / _a[0];
-    for (i=0; i<=_n; i++) {
-        _b[i] *= a0_inv * crealf(A);
-        _a[i] *= a0_inv;
+        _b[i] = crealf(b[i]);
+        _a[i] = crealf(a[i]);
     }
 
 }

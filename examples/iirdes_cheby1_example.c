@@ -22,7 +22,7 @@ int main() {
     float b[n+1];       // numerator
     float a[n+1];       // denominator
 
-    cheby1f(n,epsilon,b,a);
+    cheby1f(n,fc,epsilon,b,a);
 
     // print coefficients
     unsigned int i;
