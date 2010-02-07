@@ -1,6 +1,14 @@
 //
 // iir_filter_crcf_example.c
 //
+// complex infinite impulse response filter example
+//
+// Demonstrates the functionality of iir_filter by designing a low-order
+// prototype (e.g. Butterworth) and using it to filter a noisy signal.
+// The filter coefficients are real, but the input and output arrays are
+// complex.  The filter order and cutoff frequency are specified at the
+// beginning.
+//
 
 #include <stdio.h>
 #include <math.h>
@@ -32,6 +40,9 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
+    fprintf(fid,"order=%u;\n", order);
+    fprintf(fid,"b=zeros(1,order+1);\n");
+    fprintf(fid,"a=zeros(1,order+1);\n");
     fprintf(fid,"n=%u;\n",n);
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
@@ -52,6 +63,11 @@ int main() {
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y), cimagf(y));
     }
 
+    // output filter coefficients using extra precision
+    for (i=0; i<=order; i++) {
+        fprintf(fid,"b(%3u) = %16.8e;\n", i+1, b[i]);
+        fprintf(fid,"a(%3u) = %16.8e;\n", i+1, a[i]);
+    }
     fprintf(fid,"\n");
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
