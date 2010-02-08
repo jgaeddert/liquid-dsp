@@ -1,5 +1,5 @@
 //
-// filter_kaiser.c : demonstrate filter desing using Kaiser window
+// filter_kaiser.c : demonstrate fir filter design using Kaiser window
 //
 
 #include <stdio.h>

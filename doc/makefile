@@ -67,7 +67,8 @@ SECTIONS :=					\
 	sections/utility.tex
 
 lib_sources	:=				\
-	lib/liquid_doc_compute_psd.c
+	lib/liquid_doc_compute_psd.c		\
+	lib/liquid_doc_freqz.c
 
 # additional targets to clean
 extra_clean :=

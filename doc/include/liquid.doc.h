@@ -52,7 +52,17 @@ void liquid_doc_compute_psdf(float * _x,
                              float complex * _X,
                              unsigned int _nfft,
                              liquid_doc_psdwindow _wtype,
-                              bool _normalize);
+                             bool _normalize);
+
+
+// Compute spectral response
+void liquid_doc_freqz(float * _b,
+                      unsigned int _nb,
+                      float * _a,
+                      unsigned int _na,
+                      unsigned int _nfft,
+                      float * _Hmag,
+                      float * _Harg);
 
 #endif // __LIQUID_DOC_H__
 
