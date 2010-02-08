@@ -124,6 +124,18 @@ void POLY(fit_lagrange)(T * _x,
         for (j=0; j<_n; j++) {
             _p[j] += g * c[j];
         }
+
+#if 0
+        // debug/print
+        printf("****** %3u : **********************\n", i);
+        printf("  g : %12.8f\n", g);
+        printf("  roots:\n");
+        for (j=0; j<k; j++)
+            printf("  r[%3u] = %12.8f\n", j, crealf(roots[j]));
+        printf("  expanded roots:\n");
+        for (j=0; j<_n; j++)
+            printf("  c[%3u] = %16.6f > %16.6f\n", j, crealf(c[j]), crealf(g*c[j]));
+#endif
     }
 
 }
