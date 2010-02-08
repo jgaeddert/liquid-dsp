@@ -53,6 +53,27 @@ $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$...
 Uses matrix algebra to solve system of equations...
 
+\subsubsection{{\tt polyfit\_lagrange}}
+Fits dataset of $n$ sample points to exact polynomial of order $n-1$ using
+Lagrange interpolation.
+Given input vectors
+$\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
+$\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$, the interpolating polynomial is
+\[
+    P^{n-1}(x) =
+        \sum_{j=0}^{n-1}
+        {
+            \left[
+            y_j
+            \prod_{{k=0}\atop{k \ne j}}^{n-1}
+            {
+                \frac{x-x_k}{x_j-x_k}
+            }
+            \right]
+        }
+\]
+See also {\tt poly\_expandroots}.
+
 \subsubsection{{\tt poly\_expandroots}}
 Expands the a polynomial based on its roots
 \[
