@@ -95,6 +95,7 @@ local_src	:=			\
 	packetizer_example.c		\
 	pll_example.c			\
 	polyfit_example.c		\
+	polyfit_lagrange_example.c	\
 	pnsync_crcf_example.c		\
 	pnsync_rrrf_example.c		\
 	prqmfb_crcf_example.c		\

@@ -1853,6 +1853,12 @@ void POLY(fit)(T * _x,                                          \
                T * _p,                                          \
                unsigned int _k);                                \
                                                                 \
+/* Lagrange polynomial exact fit (order _n-1) */                \
+void POLY(fit_lagrange)(T * _x,                                 \
+                        T * _y,                                 \
+                        unsigned int _n,                        \
+                        T * _p);                                \
+                                                                \
 /* expands the polynomial:                                      \
  *  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])                      \
  */                                                             \

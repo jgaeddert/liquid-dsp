@@ -88,6 +88,46 @@ void POLY(fit)(T * _x,
                  _p, _k, 1);
 }
 
+// Lagrange polynomial exact fit (order _n-1)
+void POLY(fit_lagrange)(T * _x,
+                        T * _y,
+                        unsigned int _n,
+                        T * _p)
+{
+    unsigned int k=_n-1;    // polynomial order
+
+    // clear polynomial coefficients array
+    unsigned int i;
+    for (i=0; i<k; i++)
+        _p[i] = 0.;
+
+    // compute roots, gain
+    T roots[k];     // polynomial roots
+    T c[_n];        // expanded polynomial
+    T g;            // gain
+    unsigned int j;
+    unsigned int n;
+    for (i=0; i<_n; i++) {
+        n=0;
+        g=1.0f;
+        for (j=0; j<_n; j++) {
+            if (j!=i) {
+                roots[n++] = - _x[j];
+                g *= (_x[i] - _x[j]);
+            }
+        }
+        g = _y[i] / g;
+
+        // expand roots
+        POLY(_expandroots)(roots, k, c);
+
+        for (j=0; j<_n; j++) {
+            _p[j] += g * c[j];
+        }
+    }
+
+}
+
 // expands the polynomial:
 //  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
 // as
