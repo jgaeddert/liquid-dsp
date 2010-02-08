@@ -76,11 +76,11 @@ void bilinear_zpk(float complex * _z,
         pb[i] *= _k;
 
 #if LIQUID_DEBUG_BILINEAR_PRINT
-    printf("numerator:\n");
+    printf("bilinear(zpk), numerator:\n");
     for (i=0; i<nb; i++)
         printf("  b[%3u] = %12.8f + j*%12.8f\n", i, crealf(pb[i]), cimagf(pb[i]));
 
-    printf("denominator:\n");
+    printf("bilinear(zpk), denominator:\n");
     for (i=0; i<na; i++)
         printf("  a[%3u] = %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
 #endif
@@ -130,8 +130,8 @@ void bilinear_nd(float complex * _b,
 
 #if LIQUID_DEBUG_BILINEAR_PRINT
     printf("***********************************\n");
-    printf("numerator order   : %u\n", _b_order);
-    printf("denominator order : %u\n", _a_order);
+    printf("bilinear(nd), numerator order   : %u\n", _b_order);
+    printf("bilinear(nd), denominator order : %u\n", _a_order);
 #endif
 
     // ...
@@ -155,6 +155,13 @@ void bilinear_nd(float complex * _b,
         poly_binomial_expand_pm(_a_order,
                                 _a_order-i,
                                 poly_1pz);
+
+#if LIQUID_DEBUG_BILINEAR_PRINT
+        printf("  %-4u : a=%12.4e + j*%12.4e, mk=%12.8f\n", i, crealf(_a[i]), cimagf(_a[i]), mk);
+        for (j=0; j<na; j++)
+            printf("    poly_1pz[%3u] = %6d : %12.4f + j*%12.4f\n", j, poly_1pz[j], crealf(_a[i]*mk*poly_1pz[j]),
+                                                                                    cimagf(_a[i]*mk*poly_1pz[j]));
+#endif
 
         // accumulate polynomial coefficients
         for (j=0; j<na; j++)
