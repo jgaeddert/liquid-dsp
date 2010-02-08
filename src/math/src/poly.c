@@ -128,6 +128,27 @@ void POLY(fit_lagrange)(T * _x,
 
 }
 
+// Lagrange polynomial interpolation
+void POLY(_interp_lagrange)(T * _x,
+                            T * _y,
+                            unsigned int _n,
+                            T   _x0,
+                            T * _y0)
+{
+    *_y0 = 0.0;     // set output to zero
+    T g;            // accumulator
+    unsigned int i, j;
+    for (i=0; i<_n; i++) {
+        g=1.0f;
+        for (j=0; j<_n; j++) {
+            if (j!=i) {
+                g *= (_x0 - _x[j])/(_x[i] - _x[j]);
+            }
+        }
+        *_y0 += _y[i] * g;
+    }
+}
+
 // expands the polynomial:
 //  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
 // as

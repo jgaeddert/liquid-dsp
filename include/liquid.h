@@ -1859,6 +1859,13 @@ void POLY(fit_lagrange)(T * _x,                                 \
                         unsigned int _n,                        \
                         T * _p);                                \
                                                                 \
+/* Lagrange polynomial interpolation */                         \
+void POLY(_interp_lagrange)(T * _x,                             \
+                            T * _y,                             \
+                            unsigned int _n,                    \
+                            T   _x0,                            \
+                            T * _y0);                           \
+                                                                \
 /* expands the polynomial:                                      \
  *  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])                      \
  */                                                             \

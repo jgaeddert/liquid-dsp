@@ -39,6 +39,14 @@ int main() {
         fprintf(fid,"p(%3u) = %12.4e;\n", i+1, p[n-i-1]);
     }
 
+    // test interpolation method
+    float x0 = 0.23f, y0;
+    float x1 = 0.77f, y1;
+    fpoly_interp_lagrange(x,y,n,x0,&y0);
+    fpoly_interp_lagrange(x,y,n,x1,&y1);
+    fprintf(fid,"x0 = %12.4e; y0 = %12.4e;\n", x0, y0);
+    fprintf(fid,"x1 = %12.4e; y1 = %12.4e;\n", x1, y1);
+    
     // evaluate polynomial
     float xdel = n < 3 ? 0.1f : 0.02f /(float)n;
     float xmin = 0.0f - xdel;
@@ -52,12 +60,12 @@ int main() {
         fprintf(fid,"xtest(%3u) = %12.4e; ytest(%3u) = %12.4e;\n", i+1, xtest, i+1, ytest);
         xtest += dx;
     }
-    
+
     // plot results
-    fprintf(fid,"plot(x,y,'s',xtest,ytest,'-');\n");
+    fprintf(fid,"plot(x,y,'s',xtest,ytest,'-',[x0 x1],[y0 y1],'rx');\n");
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('y, p^{(%u)}(x)');\n", n);
-    fprintf(fid,"legend('data','poly-fit',0);\n");
+    fprintf(fid,"legend('data','poly-fit','interp',0);\n");
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
