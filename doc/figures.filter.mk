@@ -3,6 +3,7 @@
 #
 
 local_epsfiles :=				\
+	figures.gen/filter_cheby1.eps		\
 	figures.gen/filter_interp_crcf.eps	\
 	figures.gen/filter_kaiser.eps		\
 	figures.gen/filter_resamp_crcf.eps	\
@@ -19,6 +20,11 @@ $(local_pdffiles) : %.pdf : %.eps
 #
 # gnuplot script generator programs
 # 
+
+# cheby1 iir filter design
+src/filter_cheby1 : src/filter_cheby1.c $(lib_objects)
+figures.gen/filter_cheby1.gnu : src/filter_cheby1
+	./$<
 
 # interpolator
 src/filter_interp_crcf : src/filter_interp_crcf.c $(lib_objects)
