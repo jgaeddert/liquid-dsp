@@ -86,13 +86,30 @@ void cheby2f(unsigned int _n,
              float * _a)
 {
     unsigned int i;
+
     // poles
-    float complex p[_n];
+    unsigned int np = _n;
+    float complex p[np];
     cheby2_polesf(_n,_ep,p);
 
     // zeros
-    float complex z[_n];
+    unsigned int nz = _n;
+    float complex z[nz];
     cheby2_zerosf(_n,_ep,z);
+
+    // For odd-length filters the center zero is infinity : -1/ jcos(pi/2)
+    // which needs to be eliminated.  Consequently, we will later need to
+    // compensate the filter gain. Note that this is not the same as first
+    // reducing nz and then computing the zero locations.
+    if (nz % 2) {
+        // eliminate center zero by moving all other zero locates back
+        // one index
+        for (i=(nz+1)/2; i<nz; i++)
+            z[i-1] = z[i];
+
+        // decrement number of zeros
+        nz--;
+    }
 
 #if LIQUID_DEBUG_CHEBY2_PRINT
     printf("poles:\n");
@@ -119,8 +136,8 @@ void cheby2f(unsigned int _n,
 
     // compute bilinear z-transform on continuous time
     // transfer function
-    bilinear_zpk(z,     _n, // zeros
-                 p,     _n, // poles
+    bilinear_zpk(z,     nz, // zeros
+                 p,     np, // poles
                  A,     m,  // scaling/warping factors
                  b,     a); // output
 
@@ -131,6 +148,17 @@ void cheby2f(unsigned int _n,
         _b[i] = crealf(b[i]);
         _a[i] = crealf(a[i]);
     }
-
+    
+    // normalize filter gain (only necessary for odd-order filters
+    // as we eliminated the zero at infinity)
+    float bsum=0.0f;
+    float asum=0.0f;
+    for (i=0; i<=_n; i++) {
+        bsum += _b[i];
+        asum += _a[i];
+    }
+    float g = bsum / asum;
+    for (i=0; i<=_n; i++)
+        _b[i] /= g;
 }
 
