@@ -84,6 +84,40 @@ void autotest_fpoly_expandroots_4()
     CONTEND_DELTA(c[5], c_test[5], tol);
 }
 
+
+// 
+// AUTOTEST: poly_expandroots
+//
+void autotest_fpoly_expandroots_11()
+{
+    float a[11] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+    float c[12];
+    float c_test[12] = {39916800,
+                        120543840,
+                        150917976,
+                        105258076,
+                        45995730,
+                        13339535,
+                        2637558,
+                        357423,
+                        32670,
+                        1925,
+                        66,
+                        1};
+    float tol = 1e-3f;
+
+    fpoly_expandroots(a,11,c);
+
+    unsigned int i;
+    if (liquid_autotest_verbose) {
+        for (i=0; i<12; i++)
+            printf("  c[%3u] = %12.2f\n", i, c[i]);
+    }
+    
+    for (i=0; i<12; i++)
+        CONTEND_DELTA(c[i], c_test[i], tol);
+}
+
 // 
 // AUTOTEST: cfpoly_expandroots
 //
