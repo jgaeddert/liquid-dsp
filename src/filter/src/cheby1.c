@@ -84,7 +84,9 @@ void cheby1f(unsigned int _n,
     float complex A=1.0f;
     for (i=0; i<_n; i++)
         A *= p[i];
-    A *= 1.0f / sqrtf(1.0f + _ep*_ep);
+    // gain compensation for even-order filters
+    if ( (_n%2) == 0 )
+        A *= 1.0f / sqrtf(1.0f + _ep*_ep);
     printf("A : %12.8f + j*%12.8f\n", crealf(A), cimagf(A));
 
     // normalized cutoff frequency
