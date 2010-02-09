@@ -26,6 +26,7 @@ local_src	:=			\
 	iirdes_cheby1_example.c		\
 	iirdes_cheby2_example.c		\
 	iir_filter_crcf_example.c	\
+	iir_filter_crcf_sos_example.c	\
 	interp_crcf_example.c		\
 	matched_filter_example.c	\
 	symsync_rrrf_example.c		\

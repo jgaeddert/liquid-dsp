@@ -167,22 +167,28 @@ void IIR_FILTER(_print)(IIR_FILTER() _f)
     printf("iir filter [%s]:\n", _f->type == IIR_FILTER_TYPE_NORM ? "normal" : "sos");
     unsigned int i;
 
-    printf("  b :");
-    for (i=0; i<_f->nb; i++)
-        PRINTVAL(_f->b[i]);
-    printf("\n");
+    if (_f->type == IIR_FILTER_TYPE_SOS) {
+        for (i=0; i<_f->nsos; i++)
+            IIR_FILTER(_print)(_f->fsos[i]);
+    } else {
 
-    printf("  a :");
-    for (i=0; i<_f->na; i++)
-        PRINTVAL(_f->a[i]);
-    printf("\n");
+        printf("  b :");
+        for (i=0; i<_f->nb; i++)
+            PRINTVAL(_f->b[i]);
+        printf("\n");
+
+        printf("  a :");
+        for (i=0; i<_f->na; i++)
+            PRINTVAL(_f->a[i]);
+        printf("\n");
 
 #if 0
-    printf("  v :");
-    for (i=0; i<_f->n; i++)
-        PRINTVAL(_f->v[i]);
-    printf("\n");
+        printf("  v :");
+        for (i=0; i<_f->n; i++)
+            PRINTVAL(_f->v[i]);
+        printf("\n");
 #endif
+    }
 }
 
 void IIR_FILTER(_clear)(IIR_FILTER() _f)
