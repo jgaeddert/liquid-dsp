@@ -23,7 +23,7 @@
 #define __LIQUID_IIRDES_AUTOTEST_H__
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 //
 // Bibliography:
@@ -65,6 +65,30 @@ void autotest_iirdes_butter_2()
         CONTEND_DELTA( b[i], b_test[i], tol );
         CONTEND_DELTA( a[i], a_test[i], tol );
     }
+}
+
+
+// 
+// AUTOTEST : 
+//
+void autotest_iirdes_cplxpair()
+{
+    unsigned int n=5;
+    float complex r[n];
+    float complex p[n];
+
+    butter_rootsf(n,r);
+
+    liquid_cplxpair(r,n,1e-6f,p);
+
+    unsigned int i;
+    printf("roots:\n");
+    for (i=0; i<n; i++)
+        printf("  r[%3u] : %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
+
+    printf("paired roots:\n");
+    for (i=0; i<n; i++)
+        printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
 }
 
 #endif // __LIQUID_IIRDES_AUTOTEST_H__

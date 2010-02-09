@@ -595,6 +595,17 @@ LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
                                      float,
                                      liquid_float_complex)
 
+// iirdes
+
+// Butterworth polynomial roots
+void butter_rootsf(unsigned int _n,
+                   float complex *_r);
+
+// sorts _z into complex conjugate pairs within a tolerance
+void liquid_cplxpair(float complex * _z,
+                     unsigned int _n,
+                     float _tol,
+                     float complex * _p);
 
 //
 // MODULE : framing

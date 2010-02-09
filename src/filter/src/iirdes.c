@@ -25,10 +25,56 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
+
+// sorts _z into complex conjugate pairs within a tolerance
+void liquid_cplxpair(float complex * _z,
+                     unsigned int _n,
+                     float _tol,
+                     float complex * _p)
+{
+    bool paired[_n];
+    memset(paired,0,sizeof(paired));
+
+    unsigned int i,j,k=0;
+    for (i=0; i<_n; i++) {
+        // ignore value if already paired
+        if (paired[i] || fabsf(cimagf(_z[i])) < _tol)
+            continue;
+
+        for (j=i; j<_n; j++) {
+            // ignore value if already paired
+            if (paired[j] || fabsf(cimagf(_z[j])) < _tol)
+                continue;
+
+            if ( fabsf(cimagf(_z[i]*_z[j])) < _tol ) {
+                _p[k++] = _z[i];
+                _p[k++] = _z[j];
+                paired[i] = true;
+                paired[j] = true;
+                break;
+            }
+        }
+    }
+
+    // sort through remaining unpaired values and ensure
+    // they are purely real
+    for (i=0; i<_n; i++) {
+        if (paired[i])
+            continue;
+
+        if (cimagf(_z[i]) > _tol) {
+            fprintf(stderr,"warning, liquid_cplxpair(), complex numbers cannot be paired\n");
+        } else {
+            _p[k++] = _z[i];
+            paired[i] = true;
+        }
+    }
+}
 
 // converts discrete-time zero/pole/gain (zpk) recursive (iir)
 // filter representation to second-order sections (sos) form
