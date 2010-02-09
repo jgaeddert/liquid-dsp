@@ -30,3 +30,32 @@
 
 #include "liquid.internal.h"
 
+// converts discrete-time zero/pole/gain (zpk) recursive (iir)
+// filter representation to second-order sections (sos) form
+//
+//  _z      :   zeros array (size _nz)
+//  _nz     :   number of zeros
+//  _p      :   poles array (size _np)
+//  _np     :   number of poles
+//  _k      :   gain
+//
+//  _B      :   output numerator matrix (size L x 3)
+//  _A      :   output denominator matrix (size L x 3)
+//
+//  L is the number of sections in the cascade:
+//      L = _np % 2 ? (_np + 1)/2 : _np/2;
+void iirdes_zpk2sos(float complex * _z,
+                    unsigned int _nz,
+                    float complex * _p,
+                    unsigned int _np,
+                    float _k,
+                    float * _B,
+                    float * _A)
+{
+    // find/group complex conjugate pairs (poles)
+
+    // find/group complex conjugate pairs (zeros)
+
+    // group poles pairs with zeros pairs
+}
+

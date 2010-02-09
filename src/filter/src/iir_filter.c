@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -46,10 +47,19 @@ struct IIR_FILTER(_s) {
     unsigned int nb;
     unsigned int na;
 
+    enum {
+        IIR_FILTER_TYPE_NORM=0,
+        IIR_FILTER_TYPE_SOS
+    } type;
+
 #if LIQUID_IIR_FILTER_USE_DOTPROD
     DOTPROD() dpa;
     DOTPROD() dpb;
 #endif
+
+    // second-order sections 
+    IIR_FILTER() * fsos;    // filters
+    unsigned int nsos;      // number of sections
 };
 
 IIR_FILTER() IIR_FILTER(_create)(TC * _b, unsigned int _nb, TC * _a, unsigned int _na)
@@ -58,6 +68,7 @@ IIR_FILTER() IIR_FILTER(_create)(TC * _b, unsigned int _nb, TC * _a, unsigned in
     f->nb = _nb;
     f->na = _na;
     f->n = (f->na > f->nb) ? f->na : f->nb;
+    f->type = IIR_FILTER_TYPE_NORM;
 
     f->b = (TC *) malloc((f->na)*sizeof(TC));
     f->a = (TC *) malloc((f->nb)*sizeof(TC));
@@ -92,6 +103,37 @@ IIR_FILTER() IIR_FILTER(_create)(TC * _b, unsigned int _nb, TC * _a, unsigned in
     return f;
 }
 
+IIR_FILTER() IIR_FILTER(_create_sos)(TC * _B,
+                                     TC * _A,
+                                     unsigned int _nsos)
+{
+    IIR_FILTER() f = (IIR_FILTER()) malloc(sizeof(struct IIR_FILTER(_s)));
+
+    f->type = IIR_FILTER_TYPE_SOS;
+    f->nsos = _nsos;
+    f->fsos = (IIR_FILTER()*) malloc( (f->nsos)*sizeof(IIR_FILTER()) );
+
+    // create coefficients array and copy over
+    f->b = (TC *) malloc(3*(f->nsos)*sizeof(TC));
+    f->a = (TC *) malloc(3*(f->nsos)*sizeof(TC));
+    memmove(f->b, _B, 3*(f->nsos)*sizeof(TC));
+    memmove(f->a, _A, 3*(f->nsos)*sizeof(TC));
+
+    TC at[3];
+    TC bt[3];
+    unsigned int i,k;
+    for (i=0; i<f->nsos; i++) {
+        for (k=0; k<3; k++) {
+            at[k] = f->a[3*i+k];
+            bt[k] = f->b[3*i+k];
+        }
+        f->fsos[i] = IIR_FILTER(_create)(bt,3,at,3);
+        //f->fsos[i] = IIR_FILTER(_create)(f->b+3*i,3,f->a+3*i,3);
+    }
+    return f;
+}
+
+
 IIR_FILTER() IIR_FILTER(_create_prototype)(unsigned int _n)
 {
     printf("warning: iir_filter_create_prototype(), not yet implemented\n");
@@ -106,13 +148,23 @@ void IIR_FILTER(_destroy)(IIR_FILTER() _f)
 #endif
     free(_f->b);
     free(_f->a);
-    free(_f->v);
+    // if filter is comprised of cascaded second-order sections,
+    // delete sub-filters separately
+    if (_f->type == IIR_FILTER_TYPE_SOS) {
+        unsigned int i;
+        for (i=0; i<_f->nsos; i++)
+            IIR_FILTER(_destroy)(_f->fsos[i]);
+        free(_f->fsos);
+    } else {
+        free(_f->v);
+    }
+
     free(_f);
 }
 
 void IIR_FILTER(_print)(IIR_FILTER() _f)
 {
-    printf("iir filter coefficients:\n");
+    printf("iir filter [%s]:\n", _f->type == IIR_FILTER_TYPE_NORM ? "normal" : "sos");
     unsigned int i;
 
     printf("  b :");
@@ -125,10 +177,12 @@ void IIR_FILTER(_print)(IIR_FILTER() _f)
         PRINTVAL(_f->a[i]);
     printf("\n");
 
+#if 0
     printf("  v :");
     for (i=0; i<_f->n; i++)
         PRINTVAL(_f->v[i]);
     printf("\n");
+#endif
 }
 
 void IIR_FILTER(_clear)(IIR_FILTER() _f)
@@ -139,7 +193,9 @@ void IIR_FILTER(_clear)(IIR_FILTER() _f)
         _f->v[i] = 0;
 }
 
-void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y)
+void IIR_FILTER(_execute_norm)(IIR_FILTER() _f,
+                               TI _x,
+                               TO *_y)
 {
     unsigned int i;
 
@@ -172,6 +228,32 @@ void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y)
     *_y = y0;
 #endif
 }
+
+void IIR_FILTER(_execute_sos)(IIR_FILTER() _f, TI _x, TO *_y)
+{
+    TI t0 = _x;     // intermediate input
+    TO t1;          // intermediate output
+    unsigned int i;
+    for (i=0; i<_f->nsos; i++) {
+        // run each filter separately
+        IIR_FILTER(_execute_norm)(_f->fsos[i], t0, &t1);
+
+        // output becomes input
+        t0 = t1;
+    }
+    *_y = t1;
+}
+
+void IIR_FILTER(_execute)(IIR_FILTER() _f,
+                          TI _x,
+                          TO *_y)
+{
+    if (_f->type == IIR_FILTER_TYPE_NORM)
+        IIR_FILTER(_execute_norm)(_f,_x,_y);
+    else
+        IIR_FILTER(_execute_sos)(_f,_x,_y);
+}
+
 
 unsigned int IIR_FILTER(_get_length)(IIR_FILTER() _f)
 {

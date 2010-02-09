@@ -919,6 +919,17 @@ void bilinear_nd(liquid_float_complex * _b,
                  liquid_float_complex * _bd,
                  liquid_float_complex * _ad);
 
+// converts discrete-time zero/pole/gain (zpk) recursive (iir)
+// filter representation to second-order sections (sos) form
+void iirdes_zpk2sos(liquid_float_complex * _z,
+                    unsigned int _nz,
+                    liquid_float_complex * _p,
+                    unsigned int _np,
+                    float _k,
+                    float * _B,
+                    float * _A);
+
+
 
 //
 // auto-correlator (delay cross-correlation)
@@ -1054,9 +1065,12 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 #define LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER,TO,TC,TI)       \
 typedef struct IIR_FILTER(_s) * IIR_FILTER();                   \
 IIR_FILTER() IIR_FILTER(_create)(TC * _b,                       \
-               unsigned int _nb,                                \
-               TC * _a,                                         \
-               unsigned int _na);                               \
+                                 unsigned int _nb,              \
+                                 TC * _a,                       \
+                                 unsigned int _na);             \
+IIR_FILTER() IIR_FILTER(_create_sos)(TC * _B,                   \
+                                     TC * _A,                   \
+                                     unsigned int _n);          \
 void IIR_FILTER(_destroy)(IIR_FILTER() _f);                     \
 void IIR_FILTER(_print)(IIR_FILTER() _f);                       \
 void IIR_FILTER(_clear)(IIR_FILTER() _f);                       \
