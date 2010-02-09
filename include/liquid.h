@@ -878,6 +878,11 @@ void cheby1f(unsigned int _n,
              float _ep,
              float * _b,
              float * _a);
+void cheby1sosf(unsigned int _n,
+                float _fc,
+                float _ep,
+                float * _B,
+                float * _A);
 
 // Chebyshev type-II filter design
 //  _n      :   filter order

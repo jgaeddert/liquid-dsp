@@ -115,3 +115,38 @@ void cheby1f(unsigned int _n,
 
 }
 
+void cheby1sosf(unsigned int _n,
+                float _fc,
+                float _ep,
+                float * _B,
+                float * _A)
+{
+    unsigned int i;
+    // poles
+    float complex r[_n];
+    cheby1_rootsf(_n,_ep,r);
+
+    // compute gain (should be purely real)
+    float complex A=1.0f;
+    for (i=0; i<_n; i++)
+        A *= r[i];
+    // gain compensation for even-order filters
+    if ( (_n%2) == 0 )
+        A *= 1.0f / sqrtf(1.0f + _ep*_ep);
+
+    // normalized cutoff frequency
+    float m = 1.0f / tanf(M_PI * _fc);
+
+    float complex z[_n];
+    float complex p[_n];
+    for (i=0; i<_n; i++) {
+        p[i] = (r[i]/m - 1.0)/(r[i]/m + 1.0);
+        z[i] = 1.0;
+        A *= 1.0 / (r[i] + m);
+    }
+
+    // convert digital z/p/k form to sos form
+    float k = crealf(A);
+    iirdes_zpk2sos(z,p,_n,k,_B,_A);
+}
+

@@ -49,23 +49,6 @@ void butter_rootsf(unsigned int _n,
 #endif
 }
 
-// butterworth polynomial of order _n (length of _p is _n+1)
-void butter_polyf(unsigned int _n, float *_p)
-{
-    // compute poles
-    float complex s[_n];
-    butter_rootsf(_n,s);
-    
-    // expand roots
-    float complex pcf[_n+1];
-    cfpoly_expandroots(s,_n,pcf);
-
-    // return only real components
-    unsigned int i;
-    for (i=0; i<=_n; i++)
-        _p[i] = crealf(pcf[i]);
-}
-
 void butterf(unsigned int _n,
              float _fc,
              float * _b,
