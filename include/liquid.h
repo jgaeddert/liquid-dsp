@@ -922,13 +922,11 @@ void bilinear_nd(liquid_float_complex * _b,
 // converts discrete-time zero/pole/gain (zpk) recursive (iir)
 // filter representation to second-order sections (sos) form
 void iirdes_zpk2sos(liquid_float_complex * _z,
-                    unsigned int _nz,
                     liquid_float_complex * _p,
-                    unsigned int _np,
+                    unsigned int _n,
                     float _k,
                     float * _B,
                     float * _A);
-
 
 
 //

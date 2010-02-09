@@ -28,6 +28,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -79,29 +80,38 @@ void liquid_cplxpair(float complex * _z,
 // converts discrete-time zero/pole/gain (zpk) recursive (iir)
 // filter representation to second-order sections (sos) form
 //
-//  _z      :   zeros array (size _nz)
-//  _nz     :   number of zeros
-//  _p      :   poles array (size _np)
-//  _np     :   number of poles
+//  _z      :   zeros array (size _n)
+//  _p      :   poles array (size _n)
+//  _n      :   number of poles, zeros
 //  _k      :   gain
 //
 //  _B      :   output numerator matrix (size L x 3)
 //  _A      :   output denominator matrix (size L x 3)
 //
 //  L is the number of sections in the cascade:
-//      L = _np % 2 ? (_np + 1)/2 : _np/2;
+//      L = _n % 2 ? (_n + 1)/2 : _n/2;
 void iirdes_zpk2sos(float complex * _z,
-                    unsigned int _nz,
                     float complex * _p,
-                    unsigned int _np,
+                    unsigned int _n,
                     float _k,
                     float * _B,
                     float * _A)
 {
+    float tol=1e-6f;
+
     // find/group complex conjugate pairs (poles)
+    float complex zp[_n];
+    liquid_cplxpair(_z,_n,tol,zp);
 
     // find/group complex conjugate pairs (zeros)
+    float complex pp[_n];
+    liquid_cplxpair(_p,_n,tol,pp);
 
-    // group poles pairs with zeros pairs
+    // TODO : group pole pairs with zero pairs
+#if 0
+    bool paired[_n];
+    unsigned int t[_n];
+    memset(paired,0,sizeof(paired));
+#endif
 }
 

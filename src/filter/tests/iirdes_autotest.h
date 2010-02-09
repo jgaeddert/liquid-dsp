@@ -67,7 +67,6 @@ void autotest_iirdes_butter_2()
     }
 }
 
-
 // 
 // AUTOTEST : 
 //
@@ -89,6 +88,40 @@ void autotest_iirdes_cplxpair()
     printf("paired roots:\n");
     for (i=0; i<n; i++)
         printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+}
+
+// 
+// AUTOTEST : 
+//
+void autotest_iirdes_zpk2sos()
+{
+    unsigned int n=5;
+    float m=1.0f;
+
+    float complex z[n]; // zeros
+    float complex p[n]; // poles
+
+    unsigned int L = n % 2 ? (n+1)/2 : n/2;
+    float B[3*L];
+    float A[3*L];
+
+    float complex r[n]; // roots
+    butter_rootsf(n,r);
+    unsigned int i;
+    for (i=0; i<n; i++) {
+        p[i] = (r[i]/m - 1.0) / (r[i]/m + 1.0);
+        z[i] = 1.0;
+    }
+
+    printf("poles:\n");
+    for (i=0; i<n; i++)
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+
+    printf("zeros:\n");
+    for (i=0; i<n; i++)
+        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(z[i]), cimagf(z[i]));
+
+    iirdes_zpk2sos(z,p,n,1.0f,B,A);
 }
 
 #endif // __LIQUID_IIRDES_AUTOTEST_H__
