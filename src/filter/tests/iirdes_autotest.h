@@ -122,6 +122,14 @@ void autotest_iirdes_zpk2sos()
         printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(z[i]), cimagf(z[i]));
 
     iirdes_zpk2sos(z,p,n,1.0f,B,A);
+
+    printf("B:\n");
+    for (i=0; i<L; i++)
+        printf("  %12.8f %12.8f %12.8f\n", B[3*i+0], B[3*i+1], B[3*i+2]);
+
+    printf("A:\n");
+    for (i=0; i<L; i++)
+        printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
 }
 
 #endif // __LIQUID_IIRDES_AUTOTEST_H__

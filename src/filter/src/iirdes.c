@@ -47,9 +47,9 @@ void liquid_cplxpair(float complex * _z,
         if (paired[i] || fabsf(cimagf(_z[i])) < _tol)
             continue;
 
-        for (j=i; j<_n; j++) {
+        for (j=0; j<_n; j++) {
             // ignore value if already paired
-            if (paired[j] || fabsf(cimagf(_z[j])) < _tol)
+            if (j==i || paired[j] || fabsf(cimagf(_z[j])) < _tol)
                 continue;
 
             if ( fabsf(cimagf(_z[i]*_z[j])) < _tol ) {
@@ -61,6 +61,7 @@ void liquid_cplxpair(float complex * _z,
             }
         }
     }
+    assert(k < _n);
 
     // sort through remaining unpaired values and ensure
     // they are purely real
@@ -97,6 +98,7 @@ void iirdes_zpk2sos(float complex * _z,
                     float * _B,
                     float * _A)
 {
+    unsigned int i;
     float tol=1e-6f;
 
     // find/group complex conjugate pairs (poles)
@@ -113,5 +115,60 @@ void iirdes_zpk2sos(float complex * _z,
     unsigned int t[_n];
     memset(paired,0,sizeof(paired));
 #endif
+    // _n = 2*m + l
+    unsigned int l = _n % 2;        // odd/even order
+    unsigned int m = (_n - l)/2;
+    unsigned int L = m+l;
+
+#if 1
+    printf("  n=%u, m=%u, l=%u, L=%u\n", _n, m, l, L);
+    printf("poles :\n");
+    for (i=0; i<_n; i++)
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(_p[i]), cimagf(_p[i]));
+    printf("zeros :\n");
+    for (i=0; i<_n; i++)
+        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(_z[i]), cimagf(_z[i]));
+
+    printf("poles (conjugate pairs):\n");
+    for (i=0; i<_n; i++)
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(pp[i]), cimagf(pp[i]));
+    printf("zeros (conjugate pairs):\n");
+    for (i=0; i<_n; i++)
+        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(zp[i]), cimagf(zp[i]));
+#endif
+
+    float complex t0, t1;
+    for (i=0; i<m; i++) {
+        // expand complex pole pairs
+        t0 = pp[2*i+0];
+        t1 = pp[2*i+1];
+        _A[3*i+0] = 1.0;
+        _A[3*i+1] = crealf(t0+t1);
+        _A[3*i+2] = crealf(t0*t1);
+
+        // expand complex zero pairs
+        t0 = zp[2*i+0];
+        t1 = zp[2*i+1];
+        _B[3*i+0] = 1.0;
+        _B[3*i+1] = crealf(t0+t1);
+        _B[3*i+2] = crealf(t0*t1);
+    }
+
+    // add zero/pole pair if order is odd
+    if (l) {
+        _A[3*m+0] = 1.0;
+        _A[3*m+1] = pp[_n-1];
+        _A[3*m+2] = 0.0;
+
+        _B[3*m+0] = 1.0;
+        _B[3*m+1] = zp[_n-1];
+        _B[3*m+2] = 0.0;
+    }
+
+    _B[0] *= _k;
+    _B[1] *= _k;
+    _B[2] *= _k;
+
+    // TODO : adjust gain
 }
 

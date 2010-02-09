@@ -8,7 +8,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define OUTPUT_FILENAME "iir_filter_crcf_sos_example.m"
 
@@ -28,6 +28,30 @@ int main() {
 
     unsigned int nsos=3;
     unsigned int n=128;     // number of samples
+    unsigned int i;
+
+#if 0
+    // design butterworth filter...
+    float complex r[5];
+    butter_rootsf(5,r);
+    float complex z[5];
+    float complex p[5];
+    for (i=0; i<5; i++) {
+        p[i] = (r[i] - 1.0f)/(r[i] + 1.0f);
+        z[i] = 1.0f;
+    }
+    iirdes_zpk2sos(z,p,5,1.0f,B,A);
+#endif
+
+    printf("B:\n");
+    for (i=0; i<nsos; i++)
+        printf("  %12.8f %12.8f %12.8f\n", B[3*i+0], B[3*i+1], B[3*i+2]);
+
+    printf("A:\n");
+    for (i=0; i<nsos; i++)
+        printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
+
+    //return 0;
 
     // create filter
     iir_filter_crcf f = iir_filter_crcf_create_sos(B,A,nsos);
@@ -46,7 +70,6 @@ int main() {
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
 
-    unsigned int i;
     float complex x;
     float complex y;
     for (i=0; i<n; i++) {
@@ -57,7 +80,7 @@ int main() {
         // run filter
         iir_filter_crcf_execute(f, x, &y);
 
-        printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
+        //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x), cimagf(x));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y), cimagf(y));
     }
