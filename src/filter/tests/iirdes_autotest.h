@@ -95,7 +95,7 @@ void autotest_iirdes_cplxpair()
 //
 void autotest_iirdes_zpk2sos()
 {
-    unsigned int n=5;
+    unsigned int n=4;
     float m=1.0f;
 
     float complex z[n]; // zeros
@@ -108,10 +108,16 @@ void autotest_iirdes_zpk2sos()
     float complex r[n]; // roots
     butter_rootsf(n,r);
     unsigned int i;
+    float complex k=1.0f;
     for (i=0; i<n; i++) {
         p[i] = (r[i]/m - 1.0) / (r[i]/m + 1.0);
         z[i] = 1.0;
+        k *= r[i]/m - 1.0;
     }
+
+    printf("roots:\n");
+    for (i=0; i<n; i++)
+        printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
 
     printf("poles:\n");
     for (i=0; i<n; i++)
@@ -121,7 +127,7 @@ void autotest_iirdes_zpk2sos()
     for (i=0; i<n; i++)
         printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(z[i]), cimagf(z[i]));
 
-    iirdes_zpk2sos(z,p,n,1.0f,B,A);
+    iirdes_zpk2sos(z,p,n,crealf(k),B,A);
 
     printf("B:\n");
     for (i=0; i<L; i++)

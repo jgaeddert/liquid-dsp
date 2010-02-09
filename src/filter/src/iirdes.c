@@ -52,7 +52,7 @@ void liquid_cplxpair(float complex * _z,
             if (j==i || paired[j] || fabsf(cimagf(_z[j])) < _tol)
                 continue;
 
-            if ( fabsf(cimagf(_z[i]*_z[j])) < _tol ) {
+            if ( fabsf(cimagf(_z[i])+cimagf(_z[j])) < _tol ) {
                 _p[k++] = _z[i];
                 _p[k++] = _z[j];
                 paired[i] = true;
@@ -61,7 +61,7 @@ void liquid_cplxpair(float complex * _z,
             }
         }
     }
-    assert(k < _n);
+    assert(k <= _n);
 
     // sort through remaining unpaired values and ensure
     // they are purely real
@@ -90,7 +90,7 @@ void liquid_cplxpair(float complex * _z,
 //  _A      :   output denominator matrix (size L x 3)
 //
 //  L is the number of sections in the cascade:
-//      L = _n % 2 ? (_n + 1)/2 : _n/2;
+//      L = (_n + (_n%2)) / 2;
 void iirdes_zpk2sos(float complex * _z,
                     float complex * _p,
                     unsigned int _n,

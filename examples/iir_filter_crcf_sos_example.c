@@ -36,11 +36,15 @@ int main() {
     butter_rootsf(5,r);
     float complex z[5];
     float complex p[5];
+    float fc = 0.1f;
+    float m = 1.0 / tanf(3.14159*fc);
+    float complex k = 1.0f;
     for (i=0; i<5; i++) {
-        p[i] = (r[i] - 1.0f)/(r[i] + 1.0f);
+        p[i] = (r[i]/m - 1.0f)/(r[i]/m + 1.0f);
         z[i] = 1.0f;
+        k *= 1.0f/(r[i] + m);
     }
-    iirdes_zpk2sos(z,p,5,1.0f,B,A);
+    iirdes_zpk2sos(z,p,5,crealf(k),B,A);
 #endif
 
     printf("B:\n");
