@@ -46,10 +46,38 @@ float ellipdegf(float _N,
                 float _k1,
                 unsigned int _n);
 
-// Elliptic cd() function (_n recursions)
-float cdef(float _u,
-           float _k,
-           unsigned int _n);
+// 
+float complex ellip_pqf(float complex _u,
+                       float complex _wM,
+                       float _k,
+                       unsigned int _M);
+
+// 
+float complex ellip_apqf(float complex _u,
+                        float complex _w0,
+                        float _k,
+                        unsigned int _M);
+
+// elliptic cd() function (_n recursions)
+float complex ellip_cdf(float complex _u,
+                        float complex _k,
+                        unsigned int _n);
+
+// elliptic inverse cd() function (_n recursions)
+float complex ellip_acdf(float complex _u,
+                         float complex _k,
+                         unsigned int _n);
+
+
+// elliptic sn() function (_n recursions)
+float complex ellip_snf(float complex _u,
+                        float complex _k,
+                        unsigned int _n);
+
+// elliptic inverse sn() function (_n recursions)
+float complex ellip_asnf(float complex _u,
+                         float complex _k,
+                         unsigned int _n);
 
 // ***************************************************************
 
@@ -111,16 +139,17 @@ float ellipdegf(float _N,
     return k;
 }
 
-// Elliptic cd() function (_n recursions)
-float cdef(float _u,
-           float _k,
-           unsigned int _n)
+// 
+float complex ellip_pqf(float complex _u,
+                       float complex _wM,
+                       float _k,
+                       unsigned int _M)
 {
-    float wn = cosf(_u*M_PI*0.5f);
-    float wn_inv = 1.0f / wn;
+    float complex wn = _wM;
+    float complex wn_inv = 1.0f / wn;
     float kn;
     unsigned int i;
-    for (i=_n; i>0; i--) {
+    for (i=_M; i>0; i--) {
         unsigned int j;
         kn = _k;
         for (j=0; j<i; j++)
@@ -132,3 +161,61 @@ float cdef(float _u,
 
     return 1.0f / wn_inv;
 }
+
+// 
+float complex ellip_apqf(float complex _u,
+                         float complex _w0,
+                         float _k,
+                         unsigned int _M)
+{
+    float complex wn = _w0;
+    float complex kn;
+    unsigned int i;
+    for (i=1; i<=_M; i++) {
+        unsigned int j;
+        kn = _k;
+        for (j=0; j<i; j++)
+            kn = landenf(kn);
+
+        wn = 2*wn / ((1.0f+kn)*(1.0f + sqrtf(1.0f - kn*kn*wn*wn)));
+    }
+
+    return wn;
+}
+
+// elliptic cd() function (_n recursions)
+float complex ellip_cdf(float complex _u,
+                        float complex _k,
+                        unsigned int _n)
+{
+    float complex wM = cosf(_u*M_PI*0.5f);
+    return ellip_pqf(_u,wM,_k,_n);
+}
+
+// elliptic inverse cd() function (_n recursions)
+float complex ellip_acdf(float complex _u,
+                         float complex _k,
+                         unsigned int _n)
+{
+    float complex w0 = cosf(_u*M_PI*0.5f);
+    return ellip_apqf(_u,w0,_k,_n);
+}
+
+// elliptic sn() function (_n recursions)
+float complex ellip_snf(float complex _u,
+                        float complex _k,
+                        unsigned int _n)
+{
+    float complex wM = sinf(_u*M_PI*0.5f);
+    return ellip_pqf(_u,wM,_k,_n);
+}
+
+// elliptic inverse sn() function (_n recursions)
+float complex ellip_asnf(float complex _u,
+                         float complex _k,
+                         unsigned int _n)
+{
+    float complex w0 = sinf(_u*M_PI*0.5f);
+    return ellip_apqf(_u,w0,_k,_n);
+}
+
