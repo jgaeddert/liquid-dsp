@@ -31,6 +31,7 @@ local_s_files	:= 			\
 	butter.c			\
 	cheby1.c			\
 	cheby2.c			\
+	ellip.c				\
 	filter_rrrf.c			\
 	filter_crcf.c			\
 	filter_cccf.c			\
