@@ -12,7 +12,7 @@
 
 int main() {
 
-    float complex u = 0.01f;
+    float complex u = 0.7f;
     float k = 0.8f;
     unsigned int n=7;
 

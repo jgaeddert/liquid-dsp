@@ -32,8 +32,10 @@
 
 // forward declarations
 
-// Landen transformation (one iteration)
-float landenf(float _k);
+// Landen transformation (_n iterations)
+void landenf(float _k,
+             unsigned int _n,
+             float * _v);
 
 // compute elliptic integral K(k) for _n recursions
 void ellipkf(float _k,
@@ -81,11 +83,19 @@ float complex ellip_asnf(float complex _u,
 
 // ***************************************************************
 
-// Landen transformation (one iteration)
-float landenf(float _k)
+// Landen transformation
+void landenf(float _k,
+             unsigned int _n,
+             float * _v)
 {
-    float kp = sqrtf(1.0f - _k*_k);
-    return (1.0f - kp) / (1.0f + kp);
+    unsigned int i;
+    float k = _k;
+    float kp;
+    for (i=0; i<_n; i++) {
+        kp = sqrtf(1 - k*k);
+        k  = (1 - kp)/(1 + kp);
+        _v[i] = k;
+    }
 }
 
 // compute elliptic integral K(k) for _n recursions
@@ -94,18 +104,38 @@ void ellipkf(float _k,
              float * _K,
              float * _Kp)
 {
-    float kn = _k;
-    float knp = sqrtf(1.0f - _k*_k);
-    float K  = 0.5f*M_PI;
-    float Kp = 0.5f*M_PI;
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        kn  = landenf(kn);
-        knp = landenf(knp);
+    float kmin = 1e-6f;
+    float kmax = sqrtf(1-kmin*kmin);
+    
+    float K;
+    float Kp;
 
-        K  *= (1.0f + kn);
-        Kp *= (1.0f + knp);
+    float kp = sqrtf(1-_k*_k);
+
+    if (_k > kmax) {
+        float L = -logf(0.25f*kp);
+        K = L + 0.25f*(L-1)*kp*kp;
+    } else {
+        float v[_n];
+        landenf(_k,_n,v);
+        K = M_PI * 0.5f;
+        unsigned int i;
+        for (i=0; i<_n; i++)
+            K *= (1 + v[i]);
     }
+
+    if (_k < kmin) {
+        float L = -logf(_k*0.25f);
+        Kp = L + 0.25f*(L-1)*_k*_k;
+    } else {
+        float vp[_n];
+        landenf(kp,_n,vp);
+        Kp = M_PI * 0.5f;
+        unsigned int i;
+        for (i=0; i<_n; i++)
+            Kp *= (1 + vp[i]);
+    }
+
     *_K  = K;
     *_Kp = Kp;
 }
@@ -146,22 +176,13 @@ float complex ellip_pqf(float complex _u,
                        unsigned int _M)
 {
     float complex wn = _wM;
-    float complex wn_inv = 1.0f / wn;
-    float kn;
+    float v[_M];
+    landenf(_k,_M,v);
     unsigned int i;
     for (i=_M; i>0; i--) {
-        printf("  1/w[%3u] = %12.8f + j*%12.8f\n", i, crealf(wn_inv), cimagf(wn_inv));
-        unsigned int j;
-        kn = _k;
-        for (j=0; j<i; j++)
-            kn = landenf(kn);
-
-        wn = 1.0f / wn_inv;
-        wn_inv = 1.0f / (1.0f + kn) * (wn_inv + kn*wn);
+        wn = (1 + v[i-1])*wn / (1 + v[i-1]*wn*wn);
     }
-
-    float complex w0 = 1.0f / wn_inv;
-    return w0;
+    return wn;
 }
 
 // elliptic cd() function (_n recursions)
@@ -169,9 +190,14 @@ float complex ellip_cdf(float complex _u,
                         float complex _k,
                         unsigned int _n)
 {
-    float complex wM = ccosf(_u*M_PI*0.5f);
-    float complex w0 = ellip_pqf(_u,wM,_k,_n);
-    return w0;
+    float complex wn = ccosf(_u*M_PI*0.5f);
+    float v[_n];
+    landenf(_k,_n,v);
+    unsigned int i;
+    for (i=_n; i>0; i--) {
+        wn = (1 + v[i-1])*wn / (1 + v[i-1]*wn*wn);
+    }
+    return wn;
 }
 
 // elliptic sn() function (_n recursions)
@@ -179,9 +205,14 @@ float complex ellip_snf(float complex _u,
                         float complex _k,
                         unsigned int _n)
 {
-    float complex wM = csinf(_u*M_PI*0.5f);
-    float complex w0 = ellip_pqf(_u,wM,_k,_n);
-    return w0;
+    float complex wn = csinf(_u*M_PI*0.5f);
+    float v[_n];
+    landenf(_k,_n,v);
+    unsigned int i;
+    for (i=_n; i>0; i--) {
+        wn = (1 + v[i-1])*wn / (1 + v[i-1]*wn*wn);
+    }
+    return wn;
 }
 
 // generic elliptic inverse recursion
@@ -192,13 +223,12 @@ float complex ellip_apqf(float complex _u,
 {
     float complex wn = _w0;
     float complex kn;
+    float v[_M];
+    landenf(_k,_M,v);
     unsigned int i;
     for (i=1; i<=_M; i++) {
-        printf("  w[%3u] = %12.8f + j*%12.8f\n", i, crealf(wn), cimagf(wn));
-        unsigned int j;
-        kn = _k;
-        for (j=0; j<i; j++)
-            kn = landenf(kn);
+        //printf("  w[%3u] = %12.8f + j*%12.8f\n", i, crealf(wn), cimagf(wn));
+        kn = v[i-1];
 
         wn = 2*wn / ((1.0f+kn)*(1.0f + csqrtf(1.0f - kn*kn*wn*wn)));
     }
