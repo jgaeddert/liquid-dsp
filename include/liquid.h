@@ -961,6 +961,16 @@ void ellip_azpkf(unsigned int _n,
                  liquid_float_complex * _p,
                  liquid_float_complex * _k);
 
+void zpk_a2df(liquid_float_complex * _za,
+              unsigned int _nza,
+              liquid_float_complex * _pa,
+              unsigned int _npa,
+              liquid_float_complex _ka,
+              float _m,
+              liquid_float_complex * _zd,
+              liquid_float_complex * _pd,
+              liquid_float_complex * _kd);
+
 //
 // auto-correlator (delay cross-correlation)
 //

@@ -172,3 +172,39 @@ void iirdes_zpk2sos(float complex * _z,
     // TODO : adjust gain
 }
 
+// 
+// new IIR design
+//
+
+void zpk_a2df(float complex * _za,
+              unsigned int _nza,
+              float complex * _pa,
+              unsigned int _npa,
+              float complex _ka,
+              float _m,
+              float complex * _zd,
+              float complex * _pd,
+              float complex * _kd)
+{
+    unsigned int n = _npa;
+    unsigned int i;
+    float complex G = _ka;
+    for (i=0; i<n; i++) {
+        float complex zm = _za[i] / _m;
+        float complex pm = _pa[i] / _m;
+        _pd[i] = (1 - pm)/(1 + pm);
+        _zd[i] = (i < _nza) ? (1 - zm)/(1 + zm) : 1;
+        G *= (1 + _pd[i])/(1 + _zd[i]);
+    }
+#if 1
+    printf("zpk_a2df() zeros (digital):\n");
+    for (i=0; i<n; i++)
+        printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_zd[i]), cimagf(_zd[i]));
+    printf("zpk_a2df() poles (digital):\n");
+    for (i=0; i<n; i++)
+        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
+#endif
+
+    *_kd = G;
+}
+

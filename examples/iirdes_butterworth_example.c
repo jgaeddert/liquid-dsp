@@ -21,7 +21,7 @@ int main() {
     float a[n+1];       // denominator
 
 #if 1
-    // complex analog roots
+    // complex analog poles/zeros/gain
     float complex za[0];
     float complex pa[n];
     float complex ka;
@@ -32,17 +32,39 @@ int main() {
     // 
     float complex bc[n+1];
     float complex ac[n+1];
+#if 1
+    // complex digital poles/zeros/gain
+    float complex zd[n];
+    float complex pd[n];
+    float complex kd;
+    float m = 1.0f / tanf(M_PI * fc);
+    printf("ka : %12.8f + j*%12.8f\n", crealf(ka), cimagf(ka));
+    zpk_a2df(za,    0,
+             pa,    n,
+             ka,    m,
+             zd, pd, &kd);
+
+    cfpoly_expandroots(zd,n,bc);
+    cfpoly_expandroots(pd,n,ac);
+
+    // real coefficients
+    for (i=0; i<=n; i++) {
+        b[i] = crealf(bc[n-i])*kd;
+        a[i] = crealf(ac[n-i]);
+    }
+#else
     bilinear_zpk(za,0,
                  pa,n,
                  ka,
                  1.0f / tanf(M_PI * fc),
                  bc, ac);
-
     // real coefficients
     for (i=0; i<=n; i++) {
         b[i] = crealf(bc[i]);
         a[i] = crealf(ac[i]);
     }
+#endif
+
 #else
     butterf(n,fc,b,a);
 #endif
