@@ -78,36 +78,103 @@ void liquid_cplxpair(float complex * _z,
     }
 }
 
+
+// 
+// new IIR design
+//
+
+// convert to the form:
+//          (z^-1 - zd[0])(z^-1 - zd[1]) ... (z^-1 - zd[n-1])
+//  H(z) = ---------------------------------------------------
+//          (z^-1 - pd[0])(z^-1 - pd[1]) ... (z^-1 - pd[n-1])
+void iirdes_zpka2df(float complex * _za,
+                    unsigned int _nza,
+                    float complex * _pa,
+                    unsigned int _npa,
+                    float complex _ka,
+                    float _m,
+                    float complex * _zd,
+                    float complex * _pd,
+                    float complex * _kd)
+{
+    unsigned int n = _npa;
+    unsigned int i;
+    float complex G = _ka;
+    for (i=0; i<n; i++) {
+        float complex zm = _za[i] / _m;
+        float complex pm = _pa[i] / _m;
+        _pd[i] = (pm + 1)/(pm - 1);
+        _zd[i] = (i < _nza) ? (zm + 1)/(zm - 1) : 1;
+        G *= (1 + _pd[i])/(1 + _zd[i]);
+    }
+
+#if 1
+    // print poles and zeros
+    printf("zpk_a2df() poles (discrete):\n");
+    for (i=0; i<n; i++)
+        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
+    printf("zpk_a2df() zeros (discrete):\n");
+    for (i=0; i<n; i++)
+        printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_zd[i]), cimagf(_zd[i]));
+    printf("zpk_a2df() gain (discrete):\n");
+    printf("  kd      = %12.8f + j*%12.8f\n", crealf(G), cimagf(G));
+#endif
+
+    *_kd = G;
+}
+
+// convert discrete z/p/k form to transfer function
+void iirdes_dzpk2tff(float complex * _zd,
+                     float complex * _pd,
+                     unsigned int _n,
+                     float complex _k,
+                     float * _b,
+                     float * _a)
+{
+    unsigned int i;
+    float complex q[_n+1];
+
+    // expand poles
+    cfpoly_expandroots(_pd,_n,q);
+    for (i=0; i<=_n; i++)
+        _a[i] = crealf(q[_n-i]);
+
+    // expand zeros
+    cfpoly_expandroots(_zd,_n,q);
+    for (i=0; i<=_n; i++)
+        _b[i] = crealf(q[_n-i]*_k);
+}
+
 // converts discrete-time zero/pole/gain (zpk) recursive (iir)
 // filter representation to second-order sections (sos) form
 //
-//  _z      :   zeros array (size _n)
-//  _p      :   poles array (size _n)
+//  _zd     :   discrete zeros array (size _n)
+//  _pd     :   discrete poles array (size _n)
 //  _n      :   number of poles, zeros
-//  _k      :   gain
+//  _kd     :   gain
 //
 //  _B      :   output numerator matrix (size L x 3)
 //  _A      :   output denominator matrix (size L x 3)
 //
 //  L is the number of sections in the cascade:
 //      L = (_n + (_n%2)) / 2;
-void iirdes_zpk2sos(float complex * _z,
-                    float complex * _p,
-                    unsigned int _n,
-                    float _k,
-                    float * _B,
-                    float * _A)
+void iirdes_dzpk2sosf(float complex * _zd,
+                      float complex * _pd,
+                      unsigned int _n,
+                      float complex _kd,
+                      float * _B,
+                      float * _A)
 {
     unsigned int i;
     float tol=1e-6f;
 
     // find/group complex conjugate pairs (poles)
     float complex zp[_n];
-    liquid_cplxpair(_z,_n,tol,zp);
+    liquid_cplxpair(_zd,_n,tol,zp);
 
     // find/group complex conjugate pairs (zeros)
     float complex pp[_n];
-    liquid_cplxpair(_p,_n,tol,pp);
+    liquid_cplxpair(_pd,_n,tol,pp);
 
     // TODO : group pole pairs with zero pairs
 #if 0
@@ -124,10 +191,10 @@ void iirdes_zpk2sos(float complex * _z,
     printf("  n=%u, m=%u, l=%u, L=%u\n", _n, m, l, L);
     printf("poles :\n");
     for (i=0; i<_n; i++)
-        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(_p[i]), cimagf(_p[i]));
+        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
     printf("zeros :\n");
     for (i=0; i<_n; i++)
-        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(_z[i]), cimagf(_z[i]));
+        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(_zd[i]), cimagf(_zd[i]));
 
     printf("poles (conjugate pairs):\n");
     for (i=0; i<_n; i++)
@@ -165,88 +232,12 @@ void iirdes_zpk2sos(float complex * _z,
         _B[3*m+2] = 0.0;
     }
 
-    _B[0] *= _k;
-    _B[1] *= _k;
-    _B[2] *= _k;
+    _B[0] *= _kd;
+    _B[1] *= _kd;
+    _B[2] *= _kd;
 
     // TODO : adjust gain
-}
 
-// 
-// new IIR design
-//
-
-// convert to the form:
-//          (z^-1 - zd[0])(z^-1 - zd[1]) ... (z^-1 - zd[n-1])
-//  H(z) = ---------------------------------------------------
-//          (z^-1 - pd[0])(z^-1 - pd[1]) ... (z^-1 - pd[n-1])
-void zpk_a2df(float complex * _za,
-              unsigned int _nza,
-              float complex * _pa,
-              unsigned int _npa,
-              float complex _ka,
-              float _m,
-              float complex * _zd,
-              float complex * _pd,
-              float complex * _kd)
-{
-    unsigned int n = _npa;
-    unsigned int i;
-    float complex G = _ka;
-    for (i=0; i<n; i++) {
-        float complex zm = _za[i] / _m;
-        float complex pm = _pa[i] / _m;
-        _pd[i] = (pm + 1)/(pm - 1);
-        _zd[i] = (i < _nza) ? (zm + 1)/(zm - 1) : 1;
-        G *= (1 + _pd[i])/(1 + _zd[i]);
-    }
-
-#if 1
-    // print poles and zeros
-    printf("zpk_a2df() poles (digital):\n");
-    for (i=0; i<n; i++)
-        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
-    printf("zpk_a2df() zeros (digital):\n");
-    for (i=0; i<n; i++)
-        printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_zd[i]), cimagf(_zd[i]));
-    printf("zpk_a2df() gain (digital):\n");
-    printf("  kd      = %12.8f + j*%12.8f\n", crealf(G), cimagf(G));
-#endif
-
-    *_kd = G;
-}
-
-// convert digital z/p/k form to transfer function
-void dzpk2tff(float complex * _zd,
-              float complex * _pd,
-              unsigned int _n,
-              float complex _k,
-              float * _b,
-              float * _a)
-{
-    unsigned int i;
-    float complex q[_n+1];
-
-    // expand poles
-    cfpoly_expandroots(_pd,_n,q);
-    for (i=0; i<=_n; i++)
-        _a[i] = crealf(q[_n-i]);
-
-    // expand zeros
-    cfpoly_expandroots(_zd,_n,q);
-    for (i=0; i<=_n; i++)
-        _b[i] = crealf(q[_n-i]*_k);
-}
-
-// convert digital z/p/k form to second-order sections
-void dzpk2sosf(float complex * _zd,
-               float complex * _pd,
-               unsigned int _n,
-               float complex _kd,
-               float * _B,
-               float * _A)
-{
-    iirdes_zpk2sos(_zd,_pd,_n,_kd,_B,_A);
 }
 
 

@@ -924,15 +924,6 @@ void bilinear_nd(liquid_float_complex * _b,
                  liquid_float_complex * _bd,
                  liquid_float_complex * _ad);
 
-// converts discrete-time zero/pole/gain (zpk) recursive (iir)
-// filter representation to second-order sections (sos) form
-void iirdes_zpk2sos(liquid_float_complex * _z,
-                    liquid_float_complex * _p,
-                    unsigned int _n,
-                    float _k,
-                    float * _B,
-                    float * _A);
-
 //
 // iir filter design (new)
 //
@@ -961,31 +952,31 @@ void ellip_azpkf(unsigned int _n,
                  liquid_float_complex * _p,
                  liquid_float_complex * _k);
 
-// convert analog z/p/k form to digital z/p/k form
-void zpk_a2df(liquid_float_complex * _za,
-              unsigned int _nza,
-              liquid_float_complex * _pa,
-              unsigned int _npa,
-              liquid_float_complex _ka,
-              float _m,
-              liquid_float_complex * _zd,
-              liquid_float_complex * _pd,
-              liquid_float_complex * _kd);
+// convert analog z/p/k form to discrete z/p/k form
+void iirdes_zpka2df(liquid_float_complex * _za,
+                    unsigned int _nza,
+                    liquid_float_complex * _pa,
+                    unsigned int _npa,
+                    liquid_float_complex _ka,
+                    float _m,
+                    liquid_float_complex * _zd,
+                    liquid_float_complex * _pd,
+                    liquid_float_complex * _kd);
 
-// convert digital z/p/k form to transfer function
-void dzpk2tff(liquid_float_complex * _zd,
-              liquid_float_complex * _pd,
-              unsigned int _n,
-              liquid_float_complex _k,
-              float * _b,
-              float * _a);
-// convert digital z/p/k form to second-order sections
-void dzpk2sosf(liquid_float_complex * _zd,
-              liquid_float_complex * _pd,
-              unsigned int _n,
-              liquid_float_complex _k,
-              float * _B,
-              float * _A);
+// convert discrete z/p/k form to transfer function
+void iirdes_dzpk2tff(liquid_float_complex * _zd,
+                     liquid_float_complex * _pd,
+                     unsigned int _n,
+                     liquid_float_complex _kd,
+                     float * _b,
+                     float * _a);
+// convert discrete z/p/k form to second-order sections
+void iirdes_dzpk2sosf(liquid_float_complex * _zd,
+                      liquid_float_complex * _pd,
+                      unsigned int _n,
+                      liquid_float_complex _kd,
+                      float * _B,
+                      float * _A);
 
 //
 // auto-correlator (delay cross-correlation)

@@ -148,7 +148,7 @@ void cheby1sosf(unsigned int _n,
 
     // convert digital z/p/k form to sos form
     float k = crealf(A);
-    iirdes_zpk2sos(z,p,_n,k,_B,_A);
+    iirdes_dzpk2sosf(z,p,_n,k,_B,_A);
 }
 
 
