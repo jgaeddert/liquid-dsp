@@ -961,6 +961,7 @@ void ellip_azpkf(unsigned int _n,
                  liquid_float_complex * _p,
                  liquid_float_complex * _k);
 
+// convert analog z/p/k form to digital z/p/k form
 void zpk_a2df(liquid_float_complex * _za,
               unsigned int _nza,
               liquid_float_complex * _pa,
@@ -970,6 +971,21 @@ void zpk_a2df(liquid_float_complex * _za,
               liquid_float_complex * _zd,
               liquid_float_complex * _pd,
               liquid_float_complex * _kd);
+
+// convert digital z/p/k form to transfer function
+void dzpk2tff(liquid_float_complex * _zd,
+              liquid_float_complex * _pd,
+              unsigned int _n,
+              liquid_float_complex _k,
+              float * _b,
+              float * _a);
+// convert digital z/p/k form to second-order sections
+void dzpk2sosf(liquid_float_complex * _zd,
+              liquid_float_complex * _pd,
+              unsigned int _n,
+              liquid_float_complex _k,
+              float * _B,
+              float * _A);
 
 //
 // auto-correlator (delay cross-correlation)

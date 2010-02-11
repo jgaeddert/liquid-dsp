@@ -38,10 +38,6 @@ int main() {
     for (i=0; i<2*L; i++)
         printf("  za[%3u] = %12.8f + j*%12.8f\n", i, crealf(za[i]), cimagf(za[i]));
 
-    // 
-    float complex bc[n+1];
-    float complex ac[n+1];
-
     // complex digital poles/zeros/gain
     float complex zd[n];
     float complex pd[n];
@@ -53,15 +49,8 @@ int main() {
              ka,    m,
              zd, pd, &kd);
 
-    cfpoly_expandroots(zd,n,bc);
-    cfpoly_expandroots(pd,n,ac);
-
-    // real coefficients
-    for (i=0; i<=n; i++) {
-        b[i] = crealf(bc[n-i])*kd;
-        a[i] = crealf(ac[n-i]);
-    }
-
+    // convert complex digital poles/zeros/gain into transfer function
+    dzpk2tff(zd,pd,n,kd,b,a);
 #else
     cheby2f(n,fc,epsilon,b,a);
 #endif

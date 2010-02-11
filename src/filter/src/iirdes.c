@@ -216,3 +216,37 @@ void zpk_a2df(float complex * _za,
     *_kd = G;
 }
 
+// convert digital z/p/k form to transfer function
+void dzpk2tff(float complex * _zd,
+              float complex * _pd,
+              unsigned int _n,
+              float complex _k,
+              float * _b,
+              float * _a)
+{
+    unsigned int i;
+    float complex q[_n+1];
+
+    // expand poles
+    cfpoly_expandroots(_pd,_n,q);
+    for (i=0; i<=_n; i++)
+        _a[i] = crealf(q[_n-i]);
+
+    // expand zeros
+    cfpoly_expandroots(_zd,_n,q);
+    for (i=0; i<=_n; i++)
+        _b[i] = crealf(q[_n-i]*_k);
+}
+
+// convert digital z/p/k form to second-order sections
+void dzpk2sosf(float complex * _zd,
+               float complex * _pd,
+               unsigned int _n,
+               float complex _kd,
+               float * _B,
+               float * _A)
+{
+    iirdes_zpk2sos(_zd,_pd,_n,_kd,_B,_A);
+}
+
+
