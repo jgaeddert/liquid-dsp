@@ -20,7 +20,7 @@ int main() {
     float b[n+1];       // numerator
     float a[n+1];       // denominator
 
-#if 0
+#if 1
     // complex analog roots
     float complex za[0];
     float complex pa[n];

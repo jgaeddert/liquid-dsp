@@ -114,10 +114,10 @@ void cheby2f(unsigned int _n,
 
 #if LIQUID_DEBUG_CHEBY2_PRINT
     printf("poles:\n");
-    for (i=0; i<_n; i++)
+    for (i=0; i<np; i++)
         printf("  p[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(-p[i]), cimagf(-p[i]));
     printf("zeros:\n");
-    for (i=0; i<_n; i++)
+    for (i=0; i<nz; i++)
         printf("  z[%3u] = %12.8f + j*%12.8f\n", i+1, crealf(z[i]), cimagf(z[i]));
 #endif
 
@@ -162,6 +162,7 @@ void cheby2f(unsigned int _n,
     for (i=0; i<=_n; i++)
         _b[i] /= g;
 }
+
 // 
 // new filter design
 //
@@ -210,8 +211,19 @@ void cheby2_azpkf(unsigned int _n,
         //float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
         float theta = (float)(0.5f*M_PI*(2*(i+1)-1)/(float)(_n));
         _z[k++] = -1.0f / (_Complex_I*cosf(theta));
+        _z[k++] =  1.0f / (_Complex_I*cosf(theta));
     }
 
-    assert(k==L);
+    assert(k==2*L);
+
+    // compute gain
+    float complex Az=1.0f;
+    float complex Ap=1.0f;
+    for (i=0; i<2*L; i++)
+        Az *= _z[i];
+    for (i=0; i<_n; i++)
+        Ap *= _p[i];
+
+    *_k = Ap / Az;
 }
 
