@@ -19,13 +19,38 @@ int main() {
     // epsilon
     float epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
 
+    unsigned int i;
     float b[n+1];       // numerator
     float a[n+1];       // denominator
 
+#if 1
+    // complex analog roots
+    float complex za[0];
+    float complex pa[n];
+    float complex ka;
+    cheby1_azpkf(n,fc,epsilon,za,pa,&ka);
+    for (i=0; i<n; i++)
+        printf("  pa[%3u] = %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
+
+    // 
+    float complex bc[n+1];
+    float complex ac[n+1];
+    bilinear_zpk(za,0,
+                 pa,n,
+                 ka,
+                 1.0f / tanf(M_PI * fc),
+                 bc, ac);
+
+    // real coefficients
+    for (i=0; i<=n; i++) {
+        b[i] = crealf(bc[i]);
+        a[i] = crealf(ac[i]);
+    }
+#else
     cheby1f(n,fc,epsilon,b,a);
+#endif
 
     // print coefficients
-    unsigned int i;
     for (i=0; i<=n; i++) printf("a(%3u) = %12.8f;\n", i+1, a[i]);
     for (i=0; i<=n; i++) printf("b(%3u) = %12.8f;\n", i+1, b[i]);
 

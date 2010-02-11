@@ -173,9 +173,9 @@ void cheby1_azpkf(unsigned int _n,
     float a = 0.5*(tp - tm);    // ellipse minor axis
 
 #if LIQUID_DEBUG_CHEBY1_PRINT
-    printf("ep : %12.8f\n", _ep);
-    printf("b  : %12.8f\n", b);
-    printf("a  : %12.8f\n", a);
+    printf("  ep : %12.8f\n", _ep);
+    printf("  b  : %12.8f\n", b);
+    printf("  a  : %12.8f\n", a);
 #endif
 
     unsigned int r = _n%2;
@@ -193,5 +193,18 @@ void cheby1_azpkf(unsigned int _n,
     if (r) _p[k++] = -a;
 
     assert(k==_n);
+
+    // compute gain (should be purely real)
+    float complex A=1.0f;
+    for (i=0; i<_n; i++)
+        A *= _p[i];
+    // gain compensation for even-order filters
+    if ( (_n%2) == 0 )
+        A *= 1.0f / sqrtf(1.0f + _ep*_ep);
+#if LIQUID_DEBUG_CHEBY1_PRINT
+    printf("  k  : %12.8f + j*%12.8f\n", crealf(A), cimagf(A));
+#endif
+
+    *_k = A;
 }
 
