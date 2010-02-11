@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
+#include <assert.h>
 #include <string.h>
 
 #include "liquid.internal.h"
@@ -148,5 +149,49 @@ void cheby1sosf(unsigned int _n,
     // convert digital z/p/k form to sos form
     float k = crealf(A);
     iirdes_zpk2sos(z,p,_n,k,_B,_A);
+}
+
+
+// 
+// new filter design
+//
+
+void cheby1_azpkf(unsigned int _n,
+                  float _fc,
+                  float _ep,
+                  liquid_float_complex * _z,
+                  liquid_float_complex * _p,
+                  liquid_float_complex * _k)
+{
+    float nf = (float) _n;
+
+    float t0 = sqrt(1.0 + 1.0/(_ep*_ep));
+    float tp = powf( t0 + 1.0/_ep, 1.0/nf );
+    float tm = powf( t0 - 1.0/_ep, 1.0/nf );
+
+    float b = 0.5*(tp + tm);    // ellipse major axis
+    float a = 0.5*(tp - tm);    // ellipse minor axis
+
+#if LIQUID_DEBUG_CHEBY1_PRINT
+    printf("ep : %12.8f\n", _ep);
+    printf("b  : %12.8f\n", b);
+    printf("a  : %12.8f\n", a);
+#endif
+
+    unsigned int r = _n%2;
+    unsigned int L = (_n - r)/2;
+    
+    // compute poles
+    unsigned int i;
+    unsigned int k=0;
+    for (i=0; i<L; i++) {
+        float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
+        _p[k++] = -a*cosf(theta) - _Complex_I*b*sinf(theta);
+        _p[k++] = -a*cosf(theta) + _Complex_I*b*sinf(theta);
+    }
+
+    if (r) _p[k++] = -a;
+
+    assert(k==_n);
 }
 

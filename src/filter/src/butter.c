@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 #include "liquid.internal.h"
 
 #define LIQUID_DEBUG_BUTTER_PRINT   0
@@ -93,5 +94,31 @@ void butterf(unsigned int _n,
         _b[i] = crealf(b[i]);
         _a[i] = crealf(a[i]);
     }
+}
+
+// 
+// new filter design
+//
+
+void butter_azpkf(unsigned int _n,
+                  float _fc,
+                  liquid_float_complex * _z,
+                  liquid_float_complex * _p,
+                  liquid_float_complex * _k)
+{
+    unsigned int r = _n%2;
+    unsigned int L = (_n - r)/2;
+    
+    unsigned int i;
+    unsigned int k=0;
+    for (i=0; i<L; i++) {
+        float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
+        _p[k++] = -cexpf(-_Complex_I*theta);
+        _p[k++] = -cexpf( _Complex_I*theta);
+    }
+
+    if (r) _p[k++] = -1.0f;
+
+    assert(k==_n);
 }
 
