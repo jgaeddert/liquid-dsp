@@ -48,18 +48,6 @@ float ellipdegf(float _N,
                 float _k1,
                 unsigned int _n);
 
-// 
-float complex ellip_pqf(float complex _u,
-                       float complex _wM,
-                       float _k,
-                       unsigned int _M);
-
-// 
-float complex ellip_apqf(float complex _u,
-                        float complex _w0,
-                        float _k,
-                        unsigned int _M);
-
 // elliptic cd() function (_n recursions)
 float complex ellip_cdf(float complex _u,
                         float complex _k,
@@ -169,22 +157,6 @@ float ellipdegf(float _N,
     return k;
 }
 
-// generic elliptic recursion
-float complex ellip_pqf(float complex _u,
-                       float complex _wM,
-                       float _k,
-                       unsigned int _M)
-{
-    float complex wn = _wM;
-    float v[_M];
-    landenf(_k,_M,v);
-    unsigned int i;
-    for (i=_M; i>0; i--) {
-        wn = (1 + v[i-1])*wn / (1 + v[i-1]*wn*wn);
-    }
-    return wn;
-}
-
 // elliptic cd() function (_n recursions)
 float complex ellip_cdf(float complex _u,
                         float complex _k,
@@ -212,27 +184,6 @@ float complex ellip_snf(float complex _u,
     for (i=_n; i>0; i--) {
         wn = (1 + v[i-1])*wn / (1 + v[i-1]*wn*wn);
     }
-    return wn;
-}
-
-// generic elliptic inverse recursion
-float complex ellip_apqf(float complex _u,
-                         float complex _w0,
-                         float _k,
-                         unsigned int _M)
-{
-    float complex wn = _w0;
-    float complex kn;
-    float v[_M];
-    landenf(_k,_M,v);
-    unsigned int i;
-    for (i=1; i<=_M; i++) {
-        //printf("  w[%3u] = %12.8f + j*%12.8f\n", i, crealf(wn), cimagf(wn));
-        kn = v[i-1];
-
-        wn = 2*wn / ((1.0f+kn)*(1.0f + csqrtf(1.0f - kn*kn*wn*wn)));
-    }
-
     return wn;
 }
 
