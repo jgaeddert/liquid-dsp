@@ -192,10 +192,13 @@ void zpk_a2df(float complex * _za,
     for (i=0; i<n; i++) {
         float complex zm = _za[i] / _m;
         float complex pm = _pa[i] / _m;
-        _pd[i] = (1 - pm)/(1 + pm);
-        _zd[i] = (i < _nza) ? (1 - zm)/(1 + zm) : 1;
+        _pd[i] = (1 + pm)/(1 - pm);
+        _zd[i] = (i < _nza) ? (1 + zm)/(1 - zm) : -1;
+        _pd[i] = -_pd[i];
+        _zd[i] = -_zd[i];
         G *= (1 + _pd[i])/(1 + _zd[i]);
     }
+
 #if 1
     printf("zpk_a2df() zeros (digital):\n");
     for (i=0; i<n; i++)
@@ -203,6 +206,8 @@ void zpk_a2df(float complex * _za,
     printf("zpk_a2df() poles (digital):\n");
     for (i=0; i<n; i++)
         printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
+    printf("zpk_a2df() gain (digital):\n");
+    printf("  kd      = %12.8f + j*%12.8f\n", crealf(G), cimagf(G));
 #endif
 
     *_kd = G;

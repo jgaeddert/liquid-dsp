@@ -117,11 +117,11 @@ void butter_azpkf(unsigned int _n,
     unsigned int k=0;
     for (i=0; i<L; i++) {
         float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
-        _p[k++] = -cexpf( _Complex_I*theta);
-        _p[k++] = -cexpf(-_Complex_I*theta);
+        _p[k++] = cexpf( _Complex_I*theta);
+        _p[k++] = cexpf(-_Complex_I*theta);
     }
 
-    if (r) _p[k++] = 1.0f;
+    if (r) _p[k++] = -1.0f;
 
     assert(k==_n);
 

@@ -32,7 +32,7 @@ int main() {
     // 
     float complex bc[n+1];
     float complex ac[n+1];
-#if 1
+
     // complex digital poles/zeros/gain
     float complex zd[n];
     float complex pd[n];
@@ -52,19 +52,6 @@ int main() {
         b[i] = crealf(bc[n-i])*kd;
         a[i] = crealf(ac[n-i]);
     }
-#else
-    bilinear_zpk(za,0,
-                 pa,n,
-                 ka,
-                 1.0f / tanf(M_PI * fc),
-                 bc, ac);
-    // real coefficients
-    for (i=0; i<=n; i++) {
-        b[i] = crealf(bc[i]);
-        a[i] = crealf(ac[i]);
-    }
-#endif
-
 #else
     butterf(n,fc,b,a);
 #endif

@@ -197,8 +197,8 @@ void cheby2_azpkf(unsigned int _n,
     unsigned int k=0;
     for (i=0; i<L; i++) {
         float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
-        _p[k++] = 1.0f / (-a*cosf(theta) - _Complex_I*b*sinf(theta));
-        _p[k++] = 1.0f / (-a*cosf(theta) + _Complex_I*b*sinf(theta));
+        _p[k++] = -1.0f / (-a*cosf(theta) - _Complex_I*b*sinf(theta));
+        _p[k++] = -1.0f / (-a*cosf(theta) + _Complex_I*b*sinf(theta));
     }
 
     if (r) _p[k++] = -1.0f / a;
@@ -216,6 +216,7 @@ void cheby2_azpkf(unsigned int _n,
 
     assert(k==2*L);
 
+#if 0
     // compute gain
     float complex Az=1.0f;
     float complex Ap=1.0f;
@@ -225,5 +226,8 @@ void cheby2_azpkf(unsigned int _n,
         Ap *= _p[i];
 
     *_k = Ap / Az;
+#else
+    *_k = 1.0f;
+#endif
 }
 

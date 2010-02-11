@@ -194,17 +194,9 @@ void cheby1_azpkf(unsigned int _n,
 
     assert(k==_n);
 
-    // compute gain (should be purely real)
-    float complex A=1.0f;
-    for (i=0; i<_n; i++)
-        A *= _p[i];
-    // gain compensation for even-order filters
-    if ( (_n%2) == 0 )
-        A *= 1.0f / sqrtf(1.0f + _ep*_ep);
-#if LIQUID_DEBUG_CHEBY1_PRINT
-    printf("  k  : %12.8f + j*%12.8f\n", crealf(A), cimagf(A));
-#endif
-
-    *_k = A;
+    if ( r == 0 )
+        *_k = 1.0f / sqrtf(1.0f + _ep*_ep);
+    else
+        *_k = 1.0f;
 }
 
