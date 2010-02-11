@@ -35,13 +35,13 @@ int main() {
     float complex kd;
     float m = 1.0f / tanf(M_PI * fc);
     printf("ka : %12.8f + j*%12.8f\n", crealf(ka), cimagf(ka));
-    zpk_a2df(za,    0,
-             pa,    n,
-             ka,    m,
-             zd, pd, &kd);
+    iirdes_zpka2df(za,    0,
+                   pa,    n,
+                   ka,    m,
+                   zd, pd, &kd);
 
     // convert complex digital poles/zeros/gain into transfer function
-    dzpk2tff(zd,pd,n,kd,b,a);
+    iirdes_dzpk2tff(zd,pd,n,kd,b,a);
 #else
     butterf(n,fc,b,a);
 #endif
