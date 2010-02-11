@@ -237,27 +237,38 @@ float complex ellip_apqf(float complex _u,
 }
 
 // elliptic inverse cd() function (_n recursions)
-float complex ellip_acdf(float complex _u,
+float complex ellip_acdf(float complex _w,
                          float complex _k,
                          unsigned int _n)
 {
-    float complex w0 = ellip_cdf(_u,_k,_n);
-    float complex wM = ellip_apqf(_u,w0,_k,_n);
-    return cacosf(wM)*(2.0f/M_PI);
+    float v[_n];
+    landenf(_k,_n,v);
+    float v1;
+
+    float complex w = _w;
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        v1 = (i==0) ? _k : v[i-1];
+        w = w / (1 + csqrtf(1 - w*w*v1*v1)) * 2.0 / (1+v[i]);
+        //printf("  w[%3u] = %12.8f + j*%12.8f\n", i, crealf(w), cimagf(w));
+    }
+
+    float complex u = cacosf(w) * 2.0 / M_PI;
+    //printf("  u = %12.8f + j*%12.8f\n", crealf(u), cimagf(u));
+
+#if 0
+    float K, Kp;
+    ellipkf(_k, _n, &K, &Kp);
+    float R = Kp / K;
+#endif
+    return u;
 }
 
 // elliptic inverse sn() function (_n recursions)
-float complex ellip_asnf(float complex _u,
+float complex ellip_asnf(float complex _w,
                          float complex _k,
                          unsigned int _n)
 {
-    printf("**************\n");
-    float complex w0 = ellip_snf(_u,_k,_n);     // sn(_u*K,_k)
-    float complex wM = ellip_apqf(_u,w0,_k,_n); // csinf(2*pi*_u)
-    printf("ellip_asnf:\n");
-    printf("  _u = %12.8f + j*%12.8f\n", crealf(_u), cimagf(_u));
-    printf("  w0 = %12.8f + j*%12.8f\n", crealf(w0), cimagf(w0));
-    printf("  wM = %12.8f + j*%12.8f\n", crealf(wM), cimagf(wM));
-    return casinf(wM)*(2.0f/M_PI);
+    return 1.0 - ellip_acdf(_w,_k,_n);
 }
 

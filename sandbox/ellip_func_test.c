@@ -23,6 +23,12 @@ int main() {
     printf("cd  : %12.8f + j*%12.8f\n", crealf(cd), cimagf(cd));
     printf("sn  : %12.8f + j*%12.8f\n", crealf(sn), cimagf(sn));
 
+    printf("\n");
+    float complex acd = ellip_acdf(cd,k,n);
+    float complex asn = ellip_asnf(sn,k,n);
+    printf("acd : %12.8f + j*%12.8f\n", crealf(acd), cimagf(acd));
+    printf("asn : %12.8f + j*%12.8f\n", crealf(asn), cimagf(asn));
+
     printf("done.\n");
     return 0;
 }
