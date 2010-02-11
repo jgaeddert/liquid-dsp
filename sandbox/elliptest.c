@@ -71,7 +71,7 @@ int main() {
     }
 
     float complex v0 = -_Complex_I*ellip_asnf(_Complex_I/ep, k1, n)/N;
-    printf("v0          : %12.8f + j*%12.8f\n", i, crealf(v0), cimagf(v0));
+    printf("v0          : %12.8f + j*%12.8f\n", crealf(v0), cimagf(v0));
     v0 = 0.2331f; // TODO : fix this!
 
     float complex pa[L];
