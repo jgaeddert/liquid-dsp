@@ -933,6 +933,33 @@ void iirdes_zpk2sos(liquid_float_complex * _z,
                     float * _B,
                     float * _A);
 
+//
+// iir filter design (new)
+//
+void butter_azpkf(unsigned int _n,
+                  float _fc,
+                  liquid_float_complex * _z,
+                  liquid_float_complex * _p,
+                  liquid_float_complex * _k);
+void cheby1_azpkf(unsigned int _n,
+                  float _fc,
+                  float _ep,
+                  liquid_float_complex * _z,
+                  liquid_float_complex * _p,
+                  liquid_float_complex * _k);
+void cheby2_azpkf(unsigned int _n,
+                  float _fc,
+                  float _es,
+                  liquid_float_complex * _z,
+                  liquid_float_complex * _p,
+                  liquid_float_complex * _k);
+void ellip_azpkf(unsigned int _n,
+                 float _fc,
+                 float _ep,
+                 float _es,
+                 liquid_float_complex * _z,
+                 liquid_float_complex * _p,
+                 liquid_float_complex * _k);
 
 //
 // auto-correlator (delay cross-correlation)
