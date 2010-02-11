@@ -75,6 +75,10 @@ void butterf(unsigned int _n,
     // compute butterworth roots (poles)
     float complex p[_n];    // poles array
     butter_rootsf(_n,p);
+#if LIQUID_DEBUG_BUTTER_PRINT
+    for (i=0; i<_n; i++)
+        printf("  r[%3u] = %12.8f + j* %12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+#endif
 
     float complex k = 1.0f;     // scaling factor
     float complex b[_n+1];      // output numerator
@@ -113,12 +117,14 @@ void butter_azpkf(unsigned int _n,
     unsigned int k=0;
     for (i=0; i<L; i++) {
         float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
-        _p[k++] = -cexpf(-_Complex_I*theta);
         _p[k++] = -cexpf( _Complex_I*theta);
+        _p[k++] = -cexpf(-_Complex_I*theta);
     }
 
-    if (r) _p[k++] = -1.0f;
+    if (r) _p[k++] = 1.0f;
 
     assert(k==_n);
+
+    *_k = 1.0;
 }
 
