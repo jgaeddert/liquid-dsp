@@ -93,41 +93,39 @@ void autotest_iirdes_cplxpair()
 // 
 // AUTOTEST : 
 //
-void autotest_iirdes_zpk2sos()
+void autotest_iirdes_dzpk2sosf()
 {
     unsigned int n=4;
-    float m=1.0f;
+    float fc = 0.25f;
 
-    float complex z[n]; // zeros
-    float complex p[n]; // poles
-
+    unsigned int i;
     unsigned int L = n % 2 ? (n+1)/2 : n/2;
     float B[3*L];
     float A[3*L];
 
-    float complex r[n]; // roots
-    butter_rootsf(n,r);
-    unsigned int i;
-    float complex k=1.0f;
-    for (i=0; i<n; i++) {
-        p[i] = (r[i]/m - 1.0) / (r[i]/m + 1.0);
-        z[i] = 1.0;
-        k *= r[i]/m - 1.0;
-    }
+    float complex za[n];    // analog zeros
+    float complex pa[n];    // analog poles
+    float complex ka;       // analog gain
+    butter_azpkf(n,fc,za,pa,&ka);
 
-    printf("roots:\n");
+    float complex zd[n];    // digital zeros
+    float complex pd[n];    // digital poles
+    float complex kd;       // digital gain
+    float m = 1 / tanf(M_PI * fc);
+    iirdes_zpka2df(za,  0,
+                   pa,  n,
+                   ka,  m,
+                   zd, pd, &kd);
+
+    printf("poles (digital):\n");
     for (i=0; i<n; i++)
-        printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
+        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(pd[i]), cimagf(pd[i]));
 
-    printf("poles:\n");
+    printf("zeros (digital):\n");
     for (i=0; i<n; i++)
-        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+        printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(zd[i]), cimagf(zd[i]));
 
-    printf("zeros:\n");
-    for (i=0; i<n; i++)
-        printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(z[i]), cimagf(z[i]));
-
-    iirdes_zpk2sos(z,p,n,crealf(k),B,A);
+    iirdes_dzpk2sosf(zd,pd,n,kd,B,A);
 
     printf("B:\n");
     for (i=0; i<L; i++)
