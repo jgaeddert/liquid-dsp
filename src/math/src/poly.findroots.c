@@ -30,7 +30,7 @@
 #include "liquid.internal.h"
 
 
-// finds the complex roots of the polynomial
+// finds the complex roots of the polynomial using the Durand-Kerner method
 void POLY(_findroots)(T * _p,
                       unsigned int _k,
                       T * _roots)
@@ -65,11 +65,14 @@ void POLY(_findroots)(T * _p,
         t *= t0;
     }
 
-    unsigned int num_iterations = 20;
+    unsigned int max_num_iterations = 50;
+    int continue_iterating = 1;
     unsigned int j, k;
     T f;
     T fp;
-    for (i=0; i<num_iterations; i++) {
+    //for (i=0; i<num_iterations; i++) {
+    i = 0;
+    while (continue_iterating) {
 #if 0
         printf("%s_findroots(), i=%3u :\n", POLY_NAME, i);
         for (j=0; j<num_roots; j++)
@@ -85,10 +88,26 @@ void POLY(_findroots)(T * _p,
             r1[j] = r0[j] - f / fp;
         }
 
+        // stop iterating if roots have settled
+        float delta=0.0f;
+        T e;
+        for (j=0; j<num_roots; j++) {
+            e = r0[j] - r1[j];
+            delta += crealf(e*conjf(e));
+        }
+        delta /= num_roots * gmax;
+#if 0
+        printf("delta[%3u] = %12.4e\n", i, delta);
+#endif
+
+        if (delta < 1e-6f || i == max_num_iterations)
+            continue_iterating = 0;
+
         memmove(r0, r1, num_roots*sizeof(T));
+        i++;
     }
 
     for (i=0; i<_k; i++)
-        _roots[i] = r0[i];
+        _roots[i] = r1[i];
 }
 
