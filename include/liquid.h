@@ -1942,6 +1942,11 @@ void POLY(_expandroots2)(T * _a,                                \
                          unsigned int _n,                       \
                          T * _c);                               \
                                                                 \
+/* find roots of the polynomial (complex) */                    \
+void POLY(_findroots)(T * _c,                                   \
+                      unsigned int _n,                          \
+                      T * _roots);                              \
+                                                                \
 /* expands the multiplication of two polynomials */             \
 void POLY(mul)(T * _a,                                          \
                unsigned int _order_a,                           \

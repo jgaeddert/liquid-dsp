@@ -31,4 +31,5 @@
 #define T               float
 
 #include "poly.c"
+#include "poly.findroots.c"
 
