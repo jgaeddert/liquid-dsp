@@ -2153,6 +2153,10 @@ void cpmodem_demodulate(cpmodem _mod,
 //
 
 // TODO : complete analog modems
+typedef enum {
+    LIQUID_MODEM_FM_PLL=0,
+    LIQUID_MODEM_FM_DELAY_CONJ
+} liquid_fmtype;
 typedef struct freqmodem_s * freqmodem;
 freqmodem freqmodem_create(float _m,
                            float _fc);
@@ -2165,6 +2169,24 @@ void freqmodem_modulate(freqmodem _fm,
 void freqmodem_demodulate(freqmodem _fm,
                           liquid_float_complex _y,
                           float *_x);
+
+typedef enum {
+    LIQUID_MODEM_AM_DSB=0,
+    LIQUID_MODEM_AM_SSB
+} liquid_modem_amtype;
+typedef struct ampmodem_s * ampmodem;
+ampmodem ampmodem_create(float _m,
+                         liquid_modem_amtype _type);
+void ampmodem_destroy(ampmodem _fm);
+void ampmodem_print(ampmodem _fm);
+void ampmodem_reset(ampmodem _fm);
+void ampmodem_modulate(ampmodem _fm,
+                       float _x,
+                       liquid_float_complex *_y);
+void ampmodem_demodulate(ampmodem _fm,
+                         liquid_float_complex _y,
+                         float *_x);
+
 
 //
 // MODULE : multicarrier
