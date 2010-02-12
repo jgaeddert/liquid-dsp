@@ -57,7 +57,7 @@ ampmodem ampmodem_create(float _m,
     nco_reset(q->oscillator);
     q->sync = pll_create();
     pll_reset(q->sync);
-    pll_set_bandwidth(q->sync,1e-3f);
+    pll_set_bandwidth(q->sync,1e-2f);
     pll_set_damping_factor(q->sync,4.0f);
 
     // single side-band
@@ -117,19 +117,27 @@ void ampmodem_demodulate(ampmodem _q,
     case LIQUID_MODEM_AM_SSB:
         // non-coherent demodulation (peak detector)
         t = cabsf(_y);
+
+        // remove DC bias
         _q->ssb_q_hat = (    _q->ssb_alpha)*t +
                         (1 - _q->ssb_alpha)*_q->ssb_q_hat;
         *_x = 2.0f*(t - _q->ssb_q_hat);
         break;
     case LIQUID_MODEM_AM_DSB:
         // coherent demodulation
+
+        // mix signal down
         nco_cexpf(_q->oscillator, &s);
         _y *= s;
-        t = cargf(_y);
-        if (t >  M_PI/2) t -= M_PI;
-        if (t < -M_PI/2) t += M_PI;
-        t *= cargf(_y);
-        pll_step(_q->sync, _q->oscillator, -t);
+
+        // compute constrained phase error
+        t = -cargf(_y);
+        if      (t >  M_PI/2) t -= M_PI;
+        else if (t < -M_PI/2) t += M_PI;
+        t *= cabsf(_y);
+
+        // adjust nco, pll objects
+        pll_step(_q->sync, _q->oscillator, t);
         nco_step(_q->oscillator);
         *_x = crealf(_y);
         break;

@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <complex.h>
+
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "ampmodem_example.m"
@@ -13,12 +15,12 @@
 int main() {
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.1371f*2.0f*M_PI;   // AM carrier
-    float cfo = 0.1f;               // carrier frequency offset
+    //float fc = 0.1371f*2.0f*M_PI;   // AM carrier
+    float cfo = 0.02f;              // carrier frequency offset
     float cpo = M_PI / 3.0f;        // carrier phase offset
     unsigned int num_samples = 256; // number of samples
     float SNRdB = 20.0f;            // signal-to-noise ratio [dB]
-    liquid_modem_amtype type = LIQUID_MODEM_AM_SSB;
+    liquid_modem_amtype type = LIQUID_MODEM_AM_DSB;
 
     // create mod/demod objects
     ampmodem mod   = ampmodem_create(mod_index,type);
@@ -71,10 +73,11 @@ int main() {
     // spectrum
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y/n,nfft))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
+    fprintf(fid,"Y = Y - max(Y);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Y);\n");
-    fprintf(fid,"axis([-0.5 0.5 -60 20]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -60 10]);\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
