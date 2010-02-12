@@ -38,6 +38,9 @@ void POLY(_findroots)(T * _p,
     if (_k < 2) {
         fprintf(stderr,"%s_findroots(), order must be greater than 0\n", POLY_NAME);
         exit(1);
+    } else if (_p[_k-1] != 1) {
+        fprintf(stderr,"%s_findroots(), _p[_k-1] must be equal to 1\n", POLY_NAME);
+        exit(1);
     }
 
     unsigned int i;
@@ -45,15 +48,24 @@ void POLY(_findroots)(T * _p,
     T r0[num_roots];
     T r1[num_roots];
 
+    // find intial magnitude
+    float g     = 0.0f;
+    float gmax  = 0.0f;
+    for (i=0; i<_k; i++) {
+        g = cabsf(_p[i]);
+        if (i==0 || g > gmax)
+            gmax = g;
+    }
+
     // initialize roots
-    T t0 = 0.4f + 0.9f*_Complex_I;
+    T t0 = 0.9f * (1 + gmax) * cexpf(_Complex_I*1.1526f);
     T t  = 1.0f;
     for (i=0; i<num_roots; i++) {
         r0[i] = t;
         t *= t0;
     }
 
-    unsigned int num_iterations = 10;
+    unsigned int num_iterations = 20;
     unsigned int j, k;
     T f;
     T fp;
@@ -76,6 +88,7 @@ void POLY(_findroots)(T * _p,
         memmove(r0, r1, num_roots*sizeof(T));
     }
 
-    memmove(_roots, r0, num_roots*sizeof(T));
+    for (i=0; i<_k; i++)
+        _roots[i] = r0[i];
 }
 

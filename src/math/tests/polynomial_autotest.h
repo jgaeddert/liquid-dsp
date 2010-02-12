@@ -248,5 +248,51 @@ void autotest_poly_binomial_expand_pm_n5_k2()
     CONTEND_SAME_DATA(c,c_test,sizeof(c));
 }
 
+// 
+// AUTOTEST: cfpoly_findroots
+//
+void autotest_cfpoly_findroots()
+{
+    unsigned int n=5;
+    float tol=1e-6f;
+
+    float complex p[n];
+    float complex roots[n-1];
+
+    float complex p_hat[n];
+
+    unsigned int i;
+    for (i=0; i<n; i++)
+        p[i] = i == n-1 ? 1 : 3.0f * randnf();
+
+    cfpoly_findroots(p,n,roots);
+
+    float complex roots_hat[n-1];
+    // convert form...
+    for (i=0; i<n-1; i++)
+        roots_hat[i] = -roots[i];
+
+    cfpoly_expandroots(roots_hat,n-1,p_hat);
+
+    if (liquid_autotest_verbose) {
+        printf("poly:\n");
+        for (i=0; i<n; i++)
+            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+
+        printf("roots:\n");
+        for (i=0; i<n-1; i++)
+            printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
+
+        printf("poly (expanded roots):\n");
+        for (i=0; i<n; i++)
+            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p_hat[i]), cimagf(p_hat[i]));
+    }
+
+    for (i=0; i<n; i++) {
+        CONTEND_DELTA(crealf(p[i]), crealf(p_hat[i]), tol);
+        CONTEND_DELTA(cimagf(p[i]), cimagf(p_hat[i]), tol);
+    }
+}
+
 #endif 
 
