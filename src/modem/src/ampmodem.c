@@ -57,9 +57,11 @@ ampmodem ampmodem_create(float _m,
     nco_reset(q->oscillator);
     q->sync = pll_create();
     pll_reset(q->sync);
+    pll_set_bandwidth(q->sync,1e-3f);
+    pll_set_damping_factor(q->sync,4.0f);
 
     // single side-band
-    q->ssb_alpha = 1e-3f;
+    q->ssb_alpha = 0.01f;
     q->ssb_q_hat = 0.0f;
 
     // double side-band
@@ -84,6 +86,8 @@ void ampmodem_print(ampmodem _q)
 
 void ampmodem_reset(ampmodem _q)
 {
+    // single side-band
+    _q->ssb_q_hat = 0.5f;
 }
 
 void ampmodem_modulate(ampmodem _q,
@@ -92,7 +96,7 @@ void ampmodem_modulate(ampmodem _q,
 {
     switch (_q->type) {
     case LIQUID_MODEM_AM_SSB:
-        *_y = _x + 0.5f;
+        *_y = 0.5f*(_x + 1.0f);
         break;
     case LIQUID_MODEM_AM_DSB:
         *_y = _x;
@@ -107,18 +111,27 @@ void ampmodem_demodulate(ampmodem _q,
                          float complex _y,
                          float *_x)
 {
+    float t;
+    float complex s;
     switch (_q->type) {
     case LIQUID_MODEM_AM_SSB:
-        // peak detector
-#if 0
-        float q = cabsf(_y);
-
-        // remove DC bias
-        _q->ssb_q_hat = (_q->ssb_alpha)*q + (1.0f - _q->ssb_alpha)*_q->ssb_q_hat;
-        *_y = q - _q->ssb_q_hat;
-#endif
+        // non-coherent demodulation (peak detector)
+        t = cabsf(_y);
+        _q->ssb_q_hat = (    _q->ssb_alpha)*t +
+                        (1 - _q->ssb_alpha)*_q->ssb_q_hat;
+        *_x = 2.0f*(t - _q->ssb_q_hat);
         break;
     case LIQUID_MODEM_AM_DSB:
+        // coherent demodulation
+        nco_cexpf(_q->oscillator, &s);
+        _y *= s;
+        t = cargf(_y);
+        if (t >  M_PI/2) t -= M_PI;
+        if (t < -M_PI/2) t += M_PI;
+        t *= cargf(_y);
+        pll_step(_q->sync, _q->oscillator, -t);
+        nco_step(_q->oscillator);
+        *_x = crealf(_y);
         break;
     default:
         fprintf(stderr,"error: ampmodem_demodulate(), invalid type\n");

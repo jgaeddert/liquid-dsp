@@ -1,7 +1,7 @@
 // ampmodem_test.c
 //
-// Tests simple modulation/demodulation without noise or phase
-// offset
+// Tests simple modulation/demodulation with noise,
+// carrier phase, and carrier frequency offsets
 //
 
 #include <stdio.h>
@@ -13,9 +13,11 @@
 int main() {
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
-    float fc = 0.1371f*2.0f*M_PI;   // FM carrier
+    float fc = 0.1371f*2.0f*M_PI;   // AM carrier
+    float cfo = 0.1f;               // carrier frequency offset
+    float cpo = M_PI / 3.0f;        // carrier phase offset
     unsigned int num_samples = 256; // number of samples
-    float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
+    float SNRdB = 20.0f;            // signal-to-noise ratio [dB]
     liquid_modem_amtype type = LIQUID_MODEM_AM_SSB;
 
     // create mod/demod objects
@@ -35,10 +37,16 @@ int main() {
     for (i=0; i<num_samples; i++)
         ampmodem_modulate(mod, x[i], &y[i]);
 
-    // add noise
+    // add channel impairments
+    nco nco_channel = nco_create(LIQUID_VCO);
+    nco_set_frequency(nco_channel, cfo);
+    nco_set_phase(nco_channel, cpo);
     float nstd = powf(10.0f,-SNRdB*0.1f);
-    for (i=0; i<num_samples; i++)
+    for (i=0; i<num_samples; i++) {
         cawgn(&y[i], nstd);
+        nco_mix_up(nco_channel, y[i], &y[i]);
+    }
+    nco_destroy(nco_channel);
 
     // demodulate signal
     for (i=0; i<num_samples; i++)
