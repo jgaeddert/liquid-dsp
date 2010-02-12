@@ -14,12 +14,17 @@ int main() {
     // options
     unsigned int n=6;   // filter order
     float fc = 0.25f;   // cutoff
-    float slsl = 40.0f; // stopband attenuation [dB]
-    float ripple = 1.0f;// passband ripple [dB]
+    float slsl = 60.0f; // stopband attenuation [dB]
+    float ripple = 0.5f;// passband ripple [dB]
+
+    float Gp = powf(10.0f, -ripple  / 20.0f);
+    float Gs = powf(10.0f, -slsl    / 20.0f);
+    printf("  Gp = %12.8f\n", Gp);
+    printf("  Gs = %12.8f\n", Gs);
 
     // epsilon values (ignored for now)
-    float ep = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
-    float es = powf(10.0f, -slsl/20.0f);
+    float ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
+    float es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
 
     unsigned int i;
     float b[n+1];       // numerator

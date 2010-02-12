@@ -246,6 +246,10 @@ void ellip_azpkf(unsigned int _n,
     // ripples passband, stopband
     float ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
     float es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
+    ep = _ep;
+    es = _es;
+    Gp = 1/sqrtf(1 + ep*ep);
+    Gs = 1/sqrtf(1 + es*es);
     printf("ep, es      : %12.8f, %12.8f\n", ep, es);
 
     float k  = Wp/Ws;           // 0.8889f;
