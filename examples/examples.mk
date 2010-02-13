@@ -101,6 +101,7 @@ local_src	:=			\
 	polyfit_example.c		\
 	polyfit_lagrange_example.c	\
 	poly_findroots_example.c	\
+	poly_findroots_bairstow_example.c	\
 	pnsync_crcf_example.c		\
 	pnsync_rrrf_example.c		\
 	prqmfb_crcf_example.c		\
