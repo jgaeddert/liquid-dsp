@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -111,11 +113,71 @@ void POLY(_findroots)(T * _p,
         _roots[i] = r1[i];
 }
 
+// forward declaration
+void POLY(_findroots_bairstow_recursion)(T * _p,
+                                         unsigned int _k,
+                                         T * _p1,
+                                         T * _u,
+                                         T * _v);
+
 // finds the complex roots of the polynomial using Bairstow's method
 void POLY(_findroots_bairstow)(T * _p,
                                unsigned int _k,
                                float complex * _roots)
 {
+    T p0[_k];       // buffer 0
+    T p1[_k];       // buffer 1
+    T * p   = NULL; // input polynomial
+    T * pr  = NULL; // output (reduced) polynomial
+
+    unsigned int i, k=0;
+    memmove(p0, _p, _k*sizeof(T));
+
+    T u, v;
+
+    unsigned int n = _k;
+    unsigned int r = _k % 2;
+    unsigned int L = (_k-r)/2;
+    for (i=0; i<L-1+r; i++) {
+        p  = (i % 2) == 0 ? p0 : p1;
+        pr = (i % 2) == 0 ? p1 : p0;
+
+        // compute factor using Bairstow's recursion
+        POLY(_findroots_bairstow_recursion)(p,n,pr,&u,&v);
+
+        float complex r0 = 0.5f*(-u + csqrtf(u*u - 4*v));
+        float complex r1 = 0.5f*(-u - csqrtf(u*u - 4*v));
+
+        _roots[k++] = r0;
+        _roots[k++] = r1;
+
+#if 0
+        unsigned int j;
+        printf("initial polynomial:\n");
+        for (j=0; j<n; j++)
+            printf("  p[%3u]  = %12.8f + j*%12.8f\n", j, crealf(p[j]), cimagf(p[j]));
+
+        printf("polynomial factor: x^2 + u*x + v\n");
+        printf("  u : %12.8f + j*%12.8f\n", crealf(u), cimagf(u));
+        printf("  v : %12.8f + j*%12.8f\n", crealf(v), cimagf(v));
+
+        printf("roots:\n");
+        printf("  r0 : %12.8f + j*%12.8f\n", crealf(r0), cimagf(r0));
+        printf("  r1 : %12.8f + j*%12.8f\n", crealf(r1), cimagf(r1));
+
+        printf("reduced polynomial:\n");
+        for (j=0; j<n-2; j++)
+            printf("  pr[%3u] = %12.8f + j*%12.8f\n", j, crealf(pr[j]), cimagf(pr[j]));
+#endif
+
+        n -= 2;
+    }
+
+    if (r==0) {
+        assert(n==2);
+        _roots[k++] = -pr[0]/pr[1];
+    }
+    //assert( k == _k-1 );
 }
 
 // iterate over Bairstow's method
@@ -126,7 +188,7 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
                                          T * _v)
 {
     // validate length
-    if (_k < 4) {
+    if (_k < 3) {
         fprintf(stderr,"findroots_bairstow_recursion(), invalid polynomial length: %u\n", _k);
         exit(1);
     }

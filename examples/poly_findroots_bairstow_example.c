@@ -15,11 +15,16 @@ void fpoly_findroots_bairstow_recursion(float * _p,
                                         float * _u,
                                         float * _v);
 
+void fpoly_findroots_bairstow(float * _p,
+                              unsigned int _k,
+                              float complex * _r);
+
 int main() {
     unsigned int n=6;
     float p[6] = {6,11,-33,-33,11,6};
 
     unsigned int i;
+#if 0
     float p1[n];    // reduced polynomial
     float u, v;     // polynomial factor coefficients
 
@@ -50,6 +55,15 @@ int main() {
     printf("reduced polynomial:\n");
     for (i=0; i<n-2; i++)
         printf("  p1[%3u] = %12.8f\n", i, p1[i]);
+
+#else
+    float complex roots[n-1];
+    fpoly_findroots_bairstow(p,n,roots);
+    printf("roots:\n");
+    for (i=0; i<n-1; i++)
+        printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
+
+#endif
 
     printf("done.\n");
     return 0;
