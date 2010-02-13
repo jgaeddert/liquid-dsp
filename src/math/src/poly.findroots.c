@@ -114,13 +114,14 @@ void POLY(_findroots)(T * _p,
 // finds the complex roots of the polynomial using Bairstow's method
 void POLY(_findroots_bairstow)(T * _p,
                                unsigned int _k,
-                               T * _roots)
+                               float complex * _roots)
 {
 }
 
 // iterate over Bairstow's method
 void POLY(_findroots_bairstow_recursion)(T * _p,
                                          unsigned int _k,
+                                         T * _p1,
                                          T * _u,
                                          T * _v)
 {
@@ -137,19 +138,22 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
     
     unsigned int n = _k-1;
     T c,d,g,h;
-    T b[_k];
-    T f[_k];
+    T q;
     T du, dv;
 
-    b[n]    = 0;
-    b[n-1]  = 0;
-    f[n]    = 0;
-    f[n-1]  = 0;
+    // reduced polynomials
+    T b[_k];
+    T f[_k];
+    b[n] = b[n-1] = 0;
+    f[n] = f[n-1] = 0;
 
-    unsigned int k;
-    unsigned int num_iterations=8;
-    for (k=0; k<num_iterations; k++) {
-        int i;
+    int i;
+    unsigned int k=0;
+    unsigned int max_num_iterations=50;
+    int continue_iterating = 1;
+
+    while (continue_iterating) {
+        // update reduced polynomial coefficients
         for (i=n-2; i>=0; i--) {
             b[i] = _p[i+2] - u*b[i+1] - v*b[i+2];
             f[i] =  b[i+2] - u*f[i+1] - v*f[i+2];
@@ -159,6 +163,14 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
         d = _p[0] - v*b[0];
         h =  b[0] - v*f[0];
 
+        // compute scaling factor
+        q  = 1/(v*g*g + h*(h-u*g));
+
+        // compute u, v steps
+        du = - q*(-h*c   + g*d);
+        dv = - q*(-g*v*c + (g*u-h)*d);
+
+#if 0
         printf("bairstow [%u] :\n", k);
         printf("  u : %12.8f + j*%12.8f\n", crealf(u), cimagf(u));
         printf("  v : %12.8f + j*%12.8f\n", crealf(v), cimagf(v));
@@ -173,14 +185,23 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
         printf("  d : %12.8f + j*%12.8f\n", crealf(d), cimagf(d));
         printf("  h : %12.8f + j*%12.8f\n", crealf(h), cimagf(h));
 
-        du = - 1/(v*g*g + h*(h-u*g))*(-h*c   + g*d);
-        dv = - 1/(v*g*g + h*(h-u*g))*(-g*v*c + (g*u-h)*d);
+        printf("  step : %12.8f + j*%12.8f\n", crealf(du+dv), cimagf(du+dv));
+#endif
 
+        // adjust u, v
         u += du;
         v += dv;
 
-        printf("  step : %12.8f + j*%12.8f\n", du+dv);
+        // increment iteration counter
+        k++;
+
+        // exit conditions
+        if (cabsf(du+dv) < 1e-6f || k == max_num_iterations)
+            continue_iterating = 0;
     }
+
+    for (i=0; i<_k-2; i++)
+        _p1[i] = b[i];
 
     *_u = u;
     *_v = v;
