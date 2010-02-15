@@ -22,6 +22,8 @@
 #ifndef __LIQUID_POLYNOMIAL_AUTOTEST_H__
 #define __LIQUID_POLYNOMIAL_AUTOTEST_H__
 
+#include <stdbool.h>
+
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -249,9 +251,56 @@ void autotest_poly_binomial_expand_pm_n5_k2()
 }
 
 // 
-// AUTOTEST: cfpoly_findroots
+// AUTOTEST: fpoly_findroots
 //
-void autotest_cfpoly_findroots()
+void autotest_fpoly_findroots()
+{
+    float tol=1e-6f;
+
+    float p[6] = {6,11,-33,-33,11,6};
+    float complex roots[5];
+    float complex rtest[5] = {-3,2,-1,0.5,-1./3.};
+
+    fpoly_findroots(p,6,roots);
+
+    unsigned int i;
+    if (liquid_autotest_verbose) {
+        printf("poly:\n");
+        for (i=0; i<6; i++)
+            printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+
+        printf("roots:\n");
+        for (i=0; i<5; i++)
+            printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
+    }
+
+    bool rtest_used[5];
+    memset(rtest_used, 0, sizeof(rtest_used));
+
+    unsigned int j,k=0;
+    for (i=0; i<5; i++) {
+        for (j=0; j<5; j++) {
+            // check to see if this root has been used already
+            if (rtest_used[j]) continue;
+
+            // check to see if roots match within relative tolerance
+            if (cabsf(roots[i]-rtest[j]) < tol) {
+                rtest_used[j] = true;
+                CONTEND_DELTA(crealf(roots[i]), crealf(rtest[j]), tol);
+                CONTEND_DELTA(cimagf(roots[i]), cimagf(rtest[j]), tol);
+                k++;
+                continue;
+            }
+        }
+    }
+    CONTEND_EQUALITY(k,5);
+}
+
+
+// 
+// AUTOTEST: cfpoly_findroots (random roots)
+//
+void autotest_cfpoly_findroots_rand()
 {
     unsigned int n=5;
     float tol=1e-6f;
