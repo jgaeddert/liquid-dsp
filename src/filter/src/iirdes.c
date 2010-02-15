@@ -153,11 +153,12 @@ void iirdes_dzpk2tff(float complex * _zd,
 //  _n      :   number of poles, zeros
 //  _kd     :   gain
 //
-//  _B      :   output numerator matrix (size L x 3)
-//  _A      :   output denominator matrix (size L x 3)
+//  _B      :   output numerator matrix (size (L+r) x 3)
+//  _A      :   output denominator matrix (size (L+r) x 3)
 //
 //  L is the number of sections in the cascade:
-//      L = (_n + (_n%2)) / 2;
+//      r = _n % 2
+//      L = (_n - r) / 2;
 void iirdes_dzpk2sosf(float complex * _zd,
                       float complex * _pd,
                       unsigned int _n,
@@ -183,12 +184,11 @@ void iirdes_dzpk2sosf(float complex * _zd,
     memset(paired,0,sizeof(paired));
 #endif
     // _n = 2*m + l
-    unsigned int l = _n % 2;        // odd/even order
-    unsigned int m = (_n - l)/2;
-    unsigned int L = m+l;
+    unsigned int r = _n % 2;        // odd/even order
+    unsigned int L = (_n - r)/2;
 
 #if 1
-    printf("  n=%u, m=%u, l=%u, L=%u\n", _n, m, l, L);
+    printf("  n=%u, r=%u, L=%u\n", _n, r, L);
     printf("poles :\n");
     for (i=0; i<_n; i++)
         printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(_pd[i]), cimagf(_pd[i]));
@@ -205,7 +205,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
 #endif
 
     float complex t0, t1;
-    for (i=0; i<m; i++) {
+    for (i=0; i<L; i++) {
         // expand complex pole pairs
         t0 = pp[2*i+0];
         t1 = pp[2*i+1];
@@ -222,14 +222,14 @@ void iirdes_dzpk2sosf(float complex * _zd,
     }
 
     // add zero/pole pair if order is odd
-    if (l) {
-        _A[3*m+0] = 1.0;
-        _A[3*m+1] = pp[_n-1];
-        _A[3*m+2] = 0.0;
+    if (r) {
+        _A[3*i+0] = 1.0;
+        _A[3*i+1] = pp[_n-1];
+        _A[3*i+2] = 0.0;
 
-        _B[3*m+0] = 1.0;
-        _B[3*m+1] = zp[_n-1];
-        _B[3*m+2] = 0.0;
+        _B[3*i+0] = 1.0;
+        _B[3*i+1] = zp[_n-1];
+        _B[3*i+2] = 0.0;
     }
 
     _B[0] *= _kd;

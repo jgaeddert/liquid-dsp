@@ -19,9 +19,10 @@ int main() {
     // epsilon
     float epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
 
-    unsigned int L = (n+(n%2))/2;
-    float B[3*L];       // numerator
-    float A[3*L];       // denominator
+    unsigned int r = n%2;
+    unsigned int L = (n-r)/2;
+    float B[3*(L+r)];       // numerator
+    float A[3*(L+r)];       // denominator
 
     cheby1sosf(n,fc,epsilon,B,A);
 
@@ -30,9 +31,10 @@ int main() {
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"\nclear all;\nclose all;\n\n");
     fprintf(fid,"n=%u;\n", n);
+    fprintf(fid,"r=%u;\n", r);
     fprintf(fid,"L=%u;\n", L);
-    fprintf(fid,"B = zeros(3,L);\n");
-    fprintf(fid,"A = zeros(3,L);\n");
+    fprintf(fid,"B = zeros(L+r,3);\n");
+    fprintf(fid,"A = zeros(L+r,3);\n");
     // output filter coefficients using extra precision
     unsigned int i;
     unsigned int j;

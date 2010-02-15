@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <getopt.h>
 #include <math.h>
 #include "liquid.h"
@@ -18,6 +19,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
     printf("  n     : filter order\n");
+    printf("  o     : format [sos], tf\n");
 #if 0
     printf("  r     : passband ripple [dB]\n");
     printf("  s     : stopband attenuation [dB]\n");
@@ -30,9 +32,11 @@ void usage()
 int main(int argc, char*argv[]) {
     // options
     unsigned int n=6;   // filter order
-    float fc = 0.25f;   // cutoff
+    float fc = 0.30f;   // cutoff
     float slsl = 60.0f; // stopband attenuation [dB]
-    float ripple = 0.5f;// passband ripple [dB]
+    float ripple = 1.0f;// passband ripple [dB]
+
+    // filter type
     enum {  IIRDES_EXAMPLE_BUTTER=0,
             IIRDES_EXAMPLE_CHEBY1,
             IIRDES_EXAMPLE_CHEBY2,
@@ -40,8 +44,13 @@ int main(int argc, char*argv[]) {
             IIRDES_EXAMPLE_BESSEL
     } type = 0;
 
+    // output format
+    enum {  IIRDES_EXAMPLE_SOS=0,
+            IIRDES_EXAMPLE_TF
+    } format = 0;
+
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:n:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uht:n:o:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -59,13 +68,24 @@ int main(int argc, char*argv[]) {
             } else if (strcmp(optarg,"bessel")==0) {
                 type = IIRDES_EXAMPLE_BESSEL;
             } else {
-                fprintf(stderr,"error: iirdes_example, unknown fileter type \"%s\"\n", optarg);
+                fprintf(stderr,"error: iirdes_example, unknown filter type \"%s\"\n", optarg);
                 usage();
                 exit(1);
             }
             break;
         case 'n':
             n = atoi(optarg);
+            break;
+        case 'o':
+            if (strcmp(optarg,"sos")==0) {
+                format = IIRDES_EXAMPLE_SOS;
+            } else if (strcmp(optarg,"tf")==0) {
+                format = IIRDES_EXAMPLE_TF;
+            } else {
+                fprintf(stderr,"error: iirdes_example, unknown output format \"%s\"\n", optarg);
+                usage();
+                exit(1);
+            }
             break;
         default:
             fprintf(stderr,"error: iirdes_example, unknown option %s\n", optarg);
@@ -89,6 +109,10 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     float b[n+1];       // numerator
     float a[n+1];       // denominator
+
+    // second-order sections
+    float A[3*(L+r)];
+    float B[3*(L+r)];
 
     // specific filter variables
     float epsilon, Gp, Gs, ep, es;
@@ -154,26 +178,68 @@ int main(int argc, char*argv[]) {
                    ka,    m,
                    zd, pd, &kd);
 
-    // convert complex digital poles/zeros/gain into transfer function
-    iirdes_dzpk2tff(zd,pd,n,kd,b,a);
-
-    // print coefficients
-    for (i=0; i<=n; i++) printf("a(%3u) = %12.8f;\n", i+1, a[i]);
-    for (i=0; i<=n; i++) printf("b(%3u) = %12.8f;\n", i+1, b[i]);
-
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid,"\nclear all;\nclose all;\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
     fprintf(fid,"n=%u;\n", n);
-    fprintf(fid,"a = zeros(1,n+1);\n");
-    fprintf(fid,"b = zeros(1,n+1);\n");
-    for (i=0; i<=n; i++) {
-        fprintf(fid,"a(%3u) = %12.4e;\n", i+1, a[i]);
-        fprintf(fid,"b(%3u) = %12.4e;\n", i+1, b[i]);
+    fprintf(fid,"r=%u;\n", r);
+    fprintf(fid,"L=%u;\n", L);
+    fprintf(fid,"nfft=1024;\n");
+
+    if (format == IIRDES_EXAMPLE_TF) {
+        // convert complex digital poles/zeros/gain into transfer function
+        iirdes_dzpk2tff(zd,pd,n,kd,b,a);
+
+        // print coefficients
+        for (i=0; i<=n; i++) printf("a(%3u) = %12.8f;\n", i+1, a[i]);
+        for (i=0; i<=n; i++) printf("b(%3u) = %12.8f;\n", i+1, b[i]);
+
+        fprintf(fid,"a = zeros(1,n+1);\n");
+        fprintf(fid,"b = zeros(1,n+1);\n");
+        for (i=0; i<=n; i++) {
+            fprintf(fid,"a(%3u) = %12.4e;\n", i+1, a[i]);
+            fprintf(fid,"b(%3u) = %12.4e;\n", i+1, b[i]);
+        }
+        fprintf(fid,"\n");
+        fprintf(fid,"H = fft(b,nfft)./fft(a,nfft);\n");
+        fprintf(fid,"H = fftshift(H);\n");
+    } else {
+        // convert complex digital poles/zeros/gain into second-
+        // order sections form
+        iirdes_dzpk2sosf(zd,pd,n,kd,B,A);
+
+        unsigned int j;
+        for (i=0; i<L+r; i++) {
+            for (j=0; j<3; j++) {
+                fprintf(fid,"B(%3u,%3u) = %16.8e;\n", i+1, j+1, B[3*i+j]);
+                fprintf(fid,"A(%3u,%3u) = %16.8e;\n", i+1, j+1, A[3*i+j]);
+            }
+        }
+        fprintf(fid,"\n");
+        fprintf(fid,"H = ones(1,nfft);\n");
+        fprintf(fid,"for i=1:(L+r),\n");
+        fprintf(fid,"    H = H .* fft(B(i,:),nfft)./fft(A(i,:),nfft);\n");
+        fprintf(fid,"end;\n");
+        fprintf(fid,"H = fftshift(H);\n");
     }
-    fprintf(fid,"\n");
-    fprintf(fid,"freqz(b,a);\n");
+
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1),\n");
+    fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
+    fprintf(fid,"  axis([0.0 0.5 -4 1]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency');\n");
+    fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
+    fprintf(fid,"subplot(2,1,2),\n");
+    fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
+    fprintf(fid,"  axis([0.0 0.5 -100 10]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency');\n");
+    fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
+
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
