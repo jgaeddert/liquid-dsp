@@ -28,6 +28,7 @@
 
 #include "liquid.internal.h"
 
+// TODO : this method is not accurate enough for computing Bessel polynomials
 float liquid_lngammaf(float _z) {
     float g = 0.5*( logf(2*M_PI)-log(_z) );
     g += _z*( logf(_z+(1/(12.0f*_z-0.1f/_z)))-1);

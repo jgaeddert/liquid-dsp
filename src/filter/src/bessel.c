@@ -60,9 +60,17 @@ void fpoly_bessel(unsigned int _n, float * _p)
     unsigned int k;
     unsigned int N = _n-1;
     for (k=0; k<_n; k++) {
+#if 0
+        // use internal log(gamma(z))
         float t0 = liquid_lngammaf((float)(2*N-k)+1);
         float t1 = liquid_lngammaf((float)(N-k)  +1);
         float t2 = liquid_lngammaf((float)(k)     +1);
+#else
+        // use standard math log(gamma(z))
+        float t0 = lgammaf((float)(2*N-k)+1);
+        float t1 = lgammaf((float)(N-k)  +1);
+        float t2 = lgammaf((float)(k)     +1);
+#endif
 
         // M_LN2 = log(2) = 0.693147180559945
         float t3 = M_LN2 * (float)(N-k);    // log(2^(N-k)) = log(2)*log(N-k)

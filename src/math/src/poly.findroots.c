@@ -143,6 +143,11 @@ void POLY(_findroots_bairstow)(T * _p,
         p  = (i % 2) == 0 ? p0 : p1;
         pr = (i % 2) == 0 ? p1 : p0;
 
+        // initial estimates for u, v
+        // TODO : ensure no division by zero
+        u = p[n-2] / p[n-1];
+        v = p[n-3] / p[n-1];
+
         // compute factor using Bairstow's recursion
         POLY(_findroots_bairstow_recursion)(p,n,pr,&u,&v);
 
@@ -195,9 +200,8 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
     }
 
     // initial estimates for u, v
-    // TODO : ensure no division by zero
-    T u = _p[_k-2] / _p[_k-1];
-    T v = _p[_k-3] / _p[_k-1];
+    T u = *_u;
+    T v = *_v;
     
     unsigned int n = _k-1;
     T c,d,g,h;
@@ -235,25 +239,33 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
 
 #if 0
         printf("bairstow [%u] :\n", k);
-        printf("  u : %12.8f + j*%12.8f\n", crealf(u), cimagf(u));
-        printf("  v : %12.8f + j*%12.8f\n", crealf(v), cimagf(v));
-        printf("  b : \n");
+        printf("  u     : %12.4e + j*%12.4e\n", crealf(u), cimagf(u));
+        printf("  v     : %12.4e + j*%12.4e\n", crealf(v), cimagf(v));
+        printf("  b     : \n");
         for (i=0; i<n-2; i++)
-            printf("      %12.8f + j*%12.8f\n", crealf(b[i]), cimagf(b[i]));
-        printf("  fb : \n");
+            printf("      %12.4e + j*%12.4e\n", crealf(b[i]), cimagf(b[i]));
+        printf("  fb    : \n");
         for (i=0; i<n-2; i++)
-            printf("      %12.8f + j*%12.8f\n", crealf(f[i]), cimagf(f[i]));
-        printf("  c : %12.8f + j*%12.8f\n", crealf(c), cimagf(c));
-        printf("  g : %12.8f + j*%12.8f\n", crealf(g), cimagf(g));
-        printf("  d : %12.8f + j*%12.8f\n", crealf(d), cimagf(d));
-        printf("  h : %12.8f + j*%12.8f\n", crealf(h), cimagf(h));
+            printf("      %12.4e + j*%12.4e\n", crealf(f[i]), cimagf(f[i]));
+        printf("  c     : %12.4e + j*%12.4e\n", crealf(c), cimagf(c));
+        printf("  g     : %12.4e + j*%12.4e\n", crealf(g), cimagf(g));
+        printf("  d     : %12.4e + j*%12.4e\n", crealf(d), cimagf(d));
+        printf("  h     : %12.4e + j*%12.4e\n", crealf(h), cimagf(h));
+        printf("  q     : %12.4e + j*%12.4e\n", crealf(q), cimagf(q));
+        printf("  du    : %12.4e + j*%12.4e\n", crealf(du), cimagf(du));
+        printf("  dv    : %12.4e + j*%12.4e\n", crealf(dv), cimagf(dv));
 
-        printf("  step : %12.8f + j*%12.8f\n", crealf(du+dv), cimagf(du+dv));
+        printf("  step : %12.4e + j*%12.4e\n", crealf(du+dv), cimagf(du+dv));
 #endif
 
         // adjust u, v
-        u += du;
-        v += dv;
+        if (isnan(du) || isnan(dv)) {
+            u *= 0.5f;
+            v *= 0.5f;
+        } else {
+            u += du;
+            v += dv;
+        }
 
         // increment iteration counter
         k++;
