@@ -233,7 +233,7 @@ void ellip_azpkf(unsigned int _n,
                  float complex * _ka)
 {
     // filter specifications
-    float fp = _fc;     // pass-band cutoff
+    float fp = 0.125f;     // pass-band cutoff
     float fs = 1.1*fp;  // stop-band cutoff
     float Gp = 0.95f;   // pass-band gain
     float Gs = 0.01f;   // stop-band gain
@@ -242,6 +242,8 @@ void ellip_azpkf(unsigned int _n,
 
     float Wp = 2*M_PI*fp;
     float Ws = 2*M_PI*fs;
+    Wp = 1.0f;
+    Ws = 1.1f*Wp;
 
     // ripples passband, stopband
     float ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
