@@ -22,6 +22,7 @@ local_src	:=			\
 	firpfb_rrrf_example.c		\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\
+	iirdes_bessel_example.c		\
 	iirdes_butterworth_example.c	\
 	iirdes_cheby1_example.c		\
 	iirdes_cheby2_example.c		\

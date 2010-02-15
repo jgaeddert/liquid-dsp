@@ -44,15 +44,26 @@ void bessel_azpkf(unsigned int _n,
                   float complex * _pa,
                   float complex * _ka)
 {
-    unsigned int r = _n%2;
-    unsigned int L = (_n - r)/2;
-    
-    unsigned int i;
-    unsigned int k=0;
     // compute poles (roots to Bessel polynomial)
-    for (i=0; i<L; i++) {
-        _pa[k++] = 0.0f;
-    }
+    fpoly_bessel_roots(_n+1,_pa);
+
+    // analog Bessel filter prototype has no zeros
+
+#if 0
+    // compute gain using standard math log(gamma(z))
+    unsigned int N = _n;
+    unsigned int k = 0;
+    float t0 = lgammaf((float)(2*N-k)+1);
+    float t1 = lgammaf((float)(N-k)  +1);
+    float t2 = lgammaf((float)(k)    +1);
+
+    // M_LN2 = log(2) = 0.693147180559945
+    float t3 = M_LN2 * (float)(N-k);    // log(2^(N-k)) = log(2)*log(N-k)
+
+    *_ka = roundf(expf(t0 - t1 - t2 - t3));
+#else
+    *_ka = 1.0f;
+#endif
 }
 
 void fpoly_bessel(unsigned int _n, float * _p)
@@ -69,7 +80,7 @@ void fpoly_bessel(unsigned int _n, float * _p)
         // use standard math log(gamma(z))
         float t0 = lgammaf((float)(2*N-k)+1);
         float t1 = lgammaf((float)(N-k)  +1);
-        float t2 = lgammaf((float)(k)     +1);
+        float t2 = lgammaf((float)(k)    +1);
 #endif
 
         // M_LN2 = log(2) = 0.693147180559945
@@ -90,7 +101,7 @@ void fpoly_bessel(unsigned int _n, float * _p)
 void fpoly_bessel_roots(unsigned int _n,
                         float complex * _roots)
 {
-    if (_n < 4) {
+    if (_n < 11) {
         float p[_n];
         fpoly_bessel(_n,p);
         fpoly_findroots(p,_n,_roots);
