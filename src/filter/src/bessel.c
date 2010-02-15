@@ -33,9 +33,9 @@
 
 // forward declarations
 
-void cfpoly_bessel(unsigned int _n, int * _p);
+void fpoly_bessel(unsigned int _n, float * _p);
 
-void cfpoly_bessel_roots(unsigned int _n, float complex * _roots);
+void fpoly_bessel_roots(unsigned int _n, float complex * _roots);
 
 // ****************************************
 
@@ -55,33 +55,37 @@ void bessel_azpkf(unsigned int _n,
     }
 }
 
-void cfpoly_bessel(unsigned int _n, int * _p)
+void fpoly_bessel(unsigned int _n, float * _p)
 {
     unsigned int k;
+    unsigned int N = _n-1;
     for (k=0; k<_n; k++) {
-        float t0 = liquid_lngammaf((float)(2*_n-k)+1);
-        float t1 = liquid_lngammaf((float)(_n-k)  +1);
+        float t0 = liquid_lngammaf((float)(2*N-k)+1);
+        float t1 = liquid_lngammaf((float)(N-k)  +1);
         float t2 = liquid_lngammaf((float)(k)     +1);
-        float t3 = 1<<(_n-k);
 
-        _p[k] = (int) ( expf(t0 - t1 -t2)/t3 );
+        // M_LN2 = log(2) = 0.693147180559945
+        float t3 = M_LN2 * (float)(N-k);    // log(2^(N-k)) = log(2)*log(N-k)
+
+        _p[k] = roundf(expf(t0 - t1 - t2 - t3));
+
 #if 0
-        printf("  p[%3u,%3u] = %d\n", k, _n, _p[k]);
-        printf("    t0 : %12.8f\n", t0);
-        printf("    t1 : %12.8f\n", t1);
-        printf("    t2 : %12.8f\n", t2);
-        printf("    t3 : %12.8f\n", t3);
+        printf("  p[%3u,%3u] = %12.4e\n", k, _n, _p[k]);
+        printf("    t0 : %12.4e\n", t0);
+        printf("    t1 : %12.4e\n", t1);
+        printf("    t2 : %12.4e\n", t2);
+        printf("    t3 : %12.4e\n", t3);
 #endif
     }
 }
 
-void cfpoly_bessel_roots(unsigned int _n,
-                         float complex * _roots)
+void fpoly_bessel_roots(unsigned int _n,
+                        float complex * _roots)
 {
     if (_n < 4) {
-        float complex p[_n];
-        cfpoly_bessel(_n,p);
-        cfpoly_findroots(p,_n,_roots);
+        float p[_n];
+        fpoly_bessel(_n,p);
+        fpoly_findroots(p,_n,_roots);
     } else {
         float m0 = -0.668861023825672*_n + 0.352940768662957;
         float m1 = 1.0f / (1.6013579390149844*_n - 0.0429146801453954);

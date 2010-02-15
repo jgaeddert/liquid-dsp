@@ -11,7 +11,8 @@
 
 #define OUTPUT_FILENAME "poly_findroots_example.m"
 
-void besselpoly(unsigned int _n, int * _p);
+// forward declaration of internal method
+void fpoly_bessel(unsigned int _n, float * _p);
 
 //  n   m0(n)                   m2(n)                   tr(n)
 //  4   -2.32218504000000e+00   1.57017774731388e-01    1.75438094000000
@@ -39,8 +40,8 @@ int main() {
 
     // compute bessel polynomial
     unsigned int i;
-    int bp[n];
-    besselpoly(n-1,bp);
+    float bp[n];
+    fpoly_bessel(n,bp);
     for (i=0; i<n; i++)
         p[i] = bp[i];
 
@@ -57,15 +58,15 @@ int main() {
 
     printf("polynomial :\n");
     for (i=0; i<n; i++)
-        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+        printf("  p[%3u] = %12.4e + j*%12.4e\n", i, crealf(p[i]), cimagf(p[i]));
 
     printf("roots :\n");
     for (i=0; i<n-1; i++)
-        printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
+        printf("  r[%3u] = %12.4e + j*%12.4e\n", i, crealf(roots[i]), cimagf(roots[i]));
 
     printf("poly (expanded roots):\n");
     for (i=0; i<n; i++)
-        printf("  p[%3u] = %12.8f + j*%12.8f\n", i, crealf(p_hat[i]), cimagf(p_hat[i]));
+        printf("  p[%3u] = %12.4e + j*%12.4e\n", i, crealf(p_hat[i]), cimagf(p_hat[i]));
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
@@ -73,9 +74,9 @@ int main() {
     fprintf(fid,"close all;\n\n");
     fprintf(fid,"n = %u;\n", n);
     for (i=0; i<n; i++)
-        fprintf(fid,"p(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(p[i]), cimagf(p[i]));
+        fprintf(fid,"p(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(p[i]), cimagf(p[i]));
     for (i=0; i<n-1; i++)
-        fprintf(fid,"r(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(roots[i]), cimagf(roots[i]));
+        fprintf(fid,"r(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(roots[i]), cimagf(roots[i]));
     fprintf(fid,"figure;\n");
     fprintf(fid,"t = -0.5:0.01:0.1;\n");
     fprintf(fid,"plot(t,polyval(p,t));\n");
@@ -95,25 +96,5 @@ int main() {
     printf("results written to %s\n", OUTPUT_FILENAME);
     
     return 0;
-}
-
-void besselpoly(unsigned int _n, int * _p)
-{
-    unsigned int k;
-    for (k=0; k<=_n; k++) {
-        float t0 = liquid_lngammaf((float)(2*_n-k)+1);
-        float t1 = liquid_lngammaf((float)(_n-k)+1);
-        float t2 = liquid_lngammaf((float)(k) + 1);
-        float t3 = 1<<(_n-k);
-
-        _p[k] = (int) ( expf(t0 - t1 -t2)/t3 );
-#if 0
-        printf("  p[%3u,%3u] = %d\n", k, _n, _p[k]);
-        printf("    t0 : %12.8f\n", t0);
-        printf("    t1 : %12.8f\n", t1);
-        printf("    t2 : %12.8f\n", t2);
-        printf("    t3 : %12.8f\n", t3);
-#endif
-    }
 }
 
