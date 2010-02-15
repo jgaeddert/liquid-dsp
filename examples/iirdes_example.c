@@ -19,13 +19,13 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
     printf("  n     : filter order\n");
-    printf("  o     : format [sos], tf\n");
-#if 0
     printf("  r     : passband ripple [dB]\n");
     printf("  s     : stopband attenuation [dB]\n");
-#endif
     printf("  f     : passband cut-off [0,0.5]\n");
-    printf("  ...\n");
+    printf("  o     : format [sos], tf\n");
+    printf("          sos   : second-order sections form\n");
+    printf("          tf    : regular transfer function form (potentially\n");
+    printf("                  unstable for large orders\n");
 }
 
 
@@ -50,7 +50,7 @@ int main(int argc, char*argv[]) {
     } format = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:n:o:f:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uht:n:r:s:f:o:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -73,9 +73,10 @@ int main(int argc, char*argv[]) {
                 exit(1);
             }
             break;
-        case 'n':
-            n = atoi(optarg);
-            break;
+        case 'n': n = atoi(optarg);         break;
+        case 'r': ripple = atof(optarg);    break;
+        case 's': slsl = atof(optarg);      break;
+        case 'f': fc = atof(optarg);        break;
         case 'o':
             if (strcmp(optarg,"sos")==0) {
                 format = IIRDES_EXAMPLE_SOS;
@@ -87,7 +88,6 @@ int main(int argc, char*argv[]) {
                 exit(1);
             }
             break;
-        case 'f': fc = atof(optarg); break;
         default:
             fprintf(stderr,"error: iirdes_example, unknown option %s\n", optarg);
             usage();
@@ -108,13 +108,6 @@ int main(int argc, char*argv[]) {
     unsigned int L = (n-r)/2;
 
     unsigned int i;
-    float b[n+1];       // numerator
-    float a[n+1];       // denominator
-
-    // second-order sections
-    float A[3*(L+r)];
-    float B[3*(L+r)];
-
     // specific filter variables
     float epsilon, Gp, Gs, ep, es;
 
@@ -190,12 +183,15 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"nfft=1024;\n");
 
     if (format == IIRDES_EXAMPLE_TF) {
+        float b[n+1];       // numerator
+        float a[n+1];       // denominator
+
         // convert complex digital poles/zeros/gain into transfer function
         iirdes_dzpk2tff(zd,pd,n,kd,b,a);
 
         // print coefficients
-        for (i=0; i<=n; i++) printf("a(%3u) = %12.8f;\n", i+1, a[i]);
-        for (i=0; i<=n; i++) printf("b(%3u) = %12.8f;\n", i+1, b[i]);
+        for (i=0; i<=n; i++) printf("a[%3u] = %12.8f;\n", i, a[i]);
+        for (i=0; i<=n; i++) printf("b[%3u] = %12.8f;\n", i, b[i]);
 
         fprintf(fid,"a = zeros(1,n+1);\n");
         fprintf(fid,"b = zeros(1,n+1);\n");
@@ -207,9 +203,21 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"H = fft(b,nfft)./fft(a,nfft);\n");
         fprintf(fid,"H = fftshift(H);\n");
     } else {
+        // second-order sections
+        float A[3*(L+r)];
+        float B[3*(L+r)];
+
         // convert complex digital poles/zeros/gain into second-
         // order sections form
         iirdes_dzpk2sosf(zd,pd,n,kd,B,A);
+
+        // print coefficients
+        printf("B [%u x 3] :\n", L+r);
+        for (i=0; i<L+r; i++)
+            printf("  %12.8f %12.8f %12.8f\n", B[3*i+0], B[3*i+1], B[3*i+2]);
+        printf("A [%u x 3] :\n", L+r);
+        for (i=0; i<L+r; i++)
+            printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
 
         unsigned int j;
         for (i=0; i<L+r; i++) {
@@ -227,6 +235,8 @@ int main(int argc, char*argv[]) {
     }
 
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+
+    // plot magnitude response
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1),\n");
     fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
@@ -240,6 +250,8 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency');\n");
     fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
+
+    // plot phase, group delay response
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
