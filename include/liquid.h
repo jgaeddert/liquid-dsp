@@ -1907,7 +1907,8 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 // large macro
 //   POLY   : name-mangling macro
 //   T      : data type
-#define LIQUID_POLY_DEFINE_API(POLY,T)                          \
+//   TC     : data type (complex)
+#define LIQUID_POLY_DEFINE_API(POLY,T,TC)                       \
 /* evaluate polynomial _p (order _k-1) at value _x  */          \
 T POLY(val)(T * _p, unsigned int _k, T _x);                     \
                                                                 \
@@ -1949,7 +1950,7 @@ void POLY(_expandroots2)(T * _a,                                \
 /* find roots of the polynomial (complex) */                    \
 void POLY(_findroots)(T * _c,                                   \
                       unsigned int _n,                          \
-                      T * _roots);                              \
+                      TC * _roots);                             \
                                                                 \
 /* expands the multiplication of two polynomials */             \
 void POLY(mul)(T * _a,                                          \
@@ -1958,8 +1959,13 @@ void POLY(mul)(T * _a,                                          \
                unsigned int _order_b,                           \
                T * _c);
 
-LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT, float)
-LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT, liquid_float_complex)
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT,
+                       float,
+                       liquid_float_complex)
+
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT,
+                       liquid_float_complex,
+                       liquid_float_complex)
 
 
 // expands the polynomial: (1+x)^n

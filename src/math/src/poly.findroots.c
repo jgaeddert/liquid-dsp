@@ -32,10 +32,18 @@
 #include "liquid.internal.h"
 
 
-// finds the complex roots of the polynomial using the Durand-Kerner method
+// finds the complex roots of the polynomial
 void POLY(_findroots)(T * _p,
                       unsigned int _k,
-                      T * _roots)
+                      TC * _roots)
+{
+    POLY(_findroots_bairstow)(_p,_k,_roots);
+}
+
+// finds the complex roots of the polynomial using the Durand-Kerner method
+void POLY(_findroots_durandkerner)(T * _p,
+                                   unsigned int _k,
+                                   TC * _roots)
 {
     if (_k < 2) {
         fprintf(stderr,"%s_findroots(), order must be greater than 0\n", POLY_NAME);
@@ -113,17 +121,10 @@ void POLY(_findroots)(T * _p,
         _roots[i] = r1[i];
 }
 
-// forward declaration
-void POLY(_findroots_bairstow_recursion)(T * _p,
-                                         unsigned int _k,
-                                         T * _p1,
-                                         T * _u,
-                                         T * _v);
-
 // finds the complex roots of the polynomial using Bairstow's method
 void POLY(_findroots_bairstow)(T * _p,
                                unsigned int _k,
-                               float complex * _roots)
+                               TC * _roots)
 {
     T p0[_k];       // buffer 0
     T p1[_k];       // buffer 1

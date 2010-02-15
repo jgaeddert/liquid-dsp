@@ -7,17 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "liquid.h"
-
-void fpoly_findroots_bairstow_recursion(float * _p,
-                                        unsigned int _k,
-                                        float * _p1,
-                                        float * _u,
-                                        float * _v);
-
-void fpoly_findroots_bairstow(float * _p,
-                              unsigned int _k,
-                              float complex * _r);
+#include "liquid.internal.h"
 
 int main() {
     unsigned int n=6;

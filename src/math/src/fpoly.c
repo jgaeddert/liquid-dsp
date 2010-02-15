@@ -29,6 +29,7 @@
 #define POLY(name)      LIQUID_CONCAT(fpoly, name)
 #define POLY_NAME       "fpoly"
 #define T               float
+#define TC              float complex
 
 #include "poly.c"
 #include "poly.findroots.c"

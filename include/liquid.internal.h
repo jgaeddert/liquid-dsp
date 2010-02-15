@@ -717,6 +717,30 @@ void interleaver_circshift_R4(unsigned char *_x, unsigned int _n);
 // complex rotation by cexpf(_Complex_I*THETA)
 #define liquid_crotf(X,THETA) ((X)*liquid_crotf_vect(THETA))
 
+// polynomials
+#define LIQUID_POLY_DEFINE_INTERNAL_API(POLY,T,TC)          \
+void POLY(_findroots_durandkerner)(T * _p,                  \
+                                   unsigned int _k,         \
+                                   TC * _roots);            \
+void POLY(_findroots_bairstow_recursion)(T * _p,            \
+                                         unsigned int _k,   \
+                                         T * _p1,           \
+                                         T * _u,            \
+                                         T * _v);           \
+void POLY(_findroots_bairstow)(T * _p,                      \
+                               unsigned int _k,             \
+                               TC * _roots);
+
+LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_FLOAT,
+                                float,
+                                float complex)
+
+LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CFLOAT,
+                                float complex,
+                                float complex)
+
+
+
 //
 // MODULE : matrix
 //
