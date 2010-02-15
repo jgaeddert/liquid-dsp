@@ -951,8 +951,12 @@ void ellip_azpkf(unsigned int _n,
                  liquid_float_complex * _z,
                  liquid_float_complex * _p,
                  liquid_float_complex * _k);
+void bessel_azpkf(unsigned int _n,
+                  liquid_float_complex * _z,
+                  liquid_float_complex * _p,
+                  liquid_float_complex * _k);
 
-// convert analog z/p/k form to discrete z/p/k form
+// convert analog z/p/k form to discrete z/p/k form (bilinear z-transform)
 void iirdes_zpka2df(liquid_float_complex * _za,
                     unsigned int _nza,
                     liquid_float_complex * _pa,
