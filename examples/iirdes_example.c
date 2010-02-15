@@ -23,8 +23,8 @@ void usage()
 #if 0
     printf("  r     : passband ripple [dB]\n");
     printf("  s     : stopband attenuation [dB]\n");
-    printf("  f     : passband cut-off [0,0.5]\n");
 #endif
+    printf("  f     : passband cut-off [0,0.5]\n");
     printf("  ...\n");
 }
 
@@ -32,7 +32,7 @@ void usage()
 int main(int argc, char*argv[]) {
     // options
     unsigned int n=6;   // filter order
-    float fc = 0.30f;   // cutoff
+    float fc = 0.25f;   // cutoff
     float slsl = 60.0f; // stopband attenuation [dB]
     float ripple = 1.0f;// passband ripple [dB]
 
@@ -50,7 +50,7 @@ int main(int argc, char*argv[]) {
     } format = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:n:o:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uht:n:o:f:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -87,6 +87,7 @@ int main(int argc, char*argv[]) {
                 exit(1);
             }
             break;
+        case 'f': fc = atof(optarg); break;
         default:
             fprintf(stderr,"error: iirdes_example, unknown option %s\n", optarg);
             usage();
