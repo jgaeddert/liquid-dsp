@@ -260,10 +260,11 @@ void print_package_results(package _p)
 
 void print_volatile_tests(void)
 {
-#if 0
-    if (liquid_autotest_num_failed == 0)
+    if (liquid_autotest_num_failed == 0 &&
+        liquid_autotest_num_warnings == 0)
+    {
         return;
-#endif
+    }
 
     printf("==================================\n");
     printf(" VOLATILE TESTS:\n");
