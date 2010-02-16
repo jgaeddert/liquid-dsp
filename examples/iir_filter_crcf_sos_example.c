@@ -80,24 +80,6 @@ int main() {
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
 
-#if 0
-    // print analog z/p/k
-    fprintf(fid,"za = zeros(1,nza);\n");
-    for (i=0; i<nza; i++)
-        fprintf(fid,"  za(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(za[i]), cimagf(za[i]));
-    fprintf(fid,"pa = zeros(1,npa);\n");
-    for (i=0; i<nza; i++)
-        fprintf(fid,"  pa(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pa[i]), cimagf(pa[i]));
-#endif
-
-    // print digital z/p/k
-    fprintf(fid,"zd = zeros(1,order);\n");
-    fprintf(fid,"pd = zeros(1,order);\n");
-    for (i=0; i<order; i++) {
-        fprintf(fid,"  zd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(zd[i]), cimagf(zd[i]));
-        fprintf(fid,"  pd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pd[i]), cimagf(pd[i]));
-    }
-
     float complex x;
     float complex y;
     for (i=0; i<n; i++) {
@@ -121,17 +103,6 @@ int main() {
             fprintf(fid,"A(%3u,%3u) = %16.8e;\n", i+1, j+1, A[3*i+j]);
         }
     }
-    fprintf(fid,"\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"k=0:0.01:1;\n");
-    fprintf(fid,"ti = cos(2*pi*k);\n");
-    fprintf(fid,"tq = sin(2*pi*k);\n");
-    fprintf(fid,"plot(ti,tq,'-','LineWidth',1,'Color',[1 1 1]*0.7,...\n");
-    fprintf(fid,"     zd,'o','LineWidth',2,'Color',[0.5 0   0],'MarkerSize',2,...\n");
-    fprintf(fid,"     pd,'x','LineWidth',2,'Color',[0   0.5 0],'MarkerSize',2);\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
-    fprintf(fid,"axis square;\n");
 
     fprintf(fid,"\n");
     fprintf(fid,"t=0:(n-1);\n");

@@ -182,6 +182,24 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"L=%u;\n", L);
     fprintf(fid,"nfft=1024;\n");
 
+#if 0
+    // print analog z/p/k
+    fprintf(fid,"za = zeros(1,nza);\n");
+    for (i=0; i<nza; i++)
+        fprintf(fid,"  za(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(za[i]), cimagf(za[i]));
+    fprintf(fid,"pa = zeros(1,npa);\n");
+    for (i=0; i<nza; i++)
+        fprintf(fid,"  pa(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pa[i]), cimagf(pa[i]));
+#endif
+
+    // print digital z/p/k
+    fprintf(fid,"zd = zeros(1,n);\n");
+    fprintf(fid,"pd = zeros(1,n);\n");
+    for (i=0; i<n; i++) {
+        fprintf(fid,"  zd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(zd[i]), cimagf(zd[i]));
+        fprintf(fid,"  pd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pd[i]), cimagf(pd[i]));
+    }
+
     if (format == IIRDES_EXAMPLE_TF) {
         float b[n+1];       // numerator
         float a[n+1];       // denominator
@@ -248,9 +266,24 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"H = fftshift(H);\n");
     }
 
-    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    // plot zeros, poles
+    fprintf(fid,"\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"k=0:0.01:1;\n");
+    fprintf(fid,"ti = cos(2*pi*k);\n");
+    fprintf(fid,"tq = sin(2*pi*k);\n");
+    fprintf(fid,"plot(ti,tq,'-','LineWidth',1,'Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"     real(zd),imag(zd),'o','LineWidth',2,'Color',[0.5 0   0],'MarkerSize',2,...\n");
+    fprintf(fid,"     real(pd),imag(pd),'x','LineWidth',2,'Color',[0   0.5 0],'MarkerSize',2);\n");
+    fprintf(fid,"xlabel('real');\n");
+    fprintf(fid,"ylabel('imag');\n");
+    fprintf(fid,"title('z-plane');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"axis square;\n");
 
     // plot magnitude response, group delay
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1),\n");
     fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
