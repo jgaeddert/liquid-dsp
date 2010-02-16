@@ -101,11 +101,20 @@ void iirdes_zpka2df(float complex * _za,
     unsigned int i;
     float complex G = _ka;
     for (i=0; i<n; i++) {
-        float complex zm = _za[i] / _m;
+        // compute digital zeros (pad with -1s)
+        if (i < _nza) {
+            float complex zm = _za[i] / _m;
+            _zd[i] = (1 + zm)/(1 - zm);
+        } else {
+            _zd[i] = -1;
+        }
+
+        // compute digital poles
         float complex pm = _pa[i] / _m;
-        _pd[i] = (pm + 1)/(pm - 1);
-        _zd[i] = (i < _nza) ? (zm + 1)/(zm - 1) : 1;
-        G *= (1 + _pd[i])/(1 + _zd[i]);
+        _pd[i] = (1 + pm)/(1 - pm);
+
+        // compute digital gain
+        G *= (1 - _pd[i])/(1 - _zd[i]);
     }
 
 #if 1
@@ -134,13 +143,23 @@ void iirdes_dzpk2tff(float complex * _zd,
     unsigned int i;
     float complex q[_n+1];
 
+    // negate poles
+    float complex pdm[_n];
+    for (i=0; i<_n; i++)
+        pdm[i] = -_pd[i];
+
     // expand poles
-    cfpoly_expandroots(_pd,_n,q);
+    cfpoly_expandroots(pdm,_n,q);
     for (i=0; i<=_n; i++)
         _a[i] = crealf(q[_n-i]);
 
+    // negate zeros
+    float complex zdm[_n];
+    for (i=0; i<_n; i++)
+        zdm[i] = -_zd[i];
+
     // expand zeros
-    cfpoly_expandroots(_zd,_n,q);
+    cfpoly_expandroots(zdm,_n,q);
     for (i=0; i<=_n; i++)
         _b[i] = crealf(q[_n-i]*_k);
 }
@@ -207,15 +226,15 @@ void iirdes_dzpk2sosf(float complex * _zd,
     float complex t0, t1;
     for (i=0; i<L; i++) {
         // expand complex pole pairs
-        t0 = pp[2*i+0];
-        t1 = pp[2*i+1];
+        t0 = -pp[2*i+0];
+        t1 = -pp[2*i+1];
         _A[3*i+0] = 1.0;
         _A[3*i+1] = crealf(t0+t1);
         _A[3*i+2] = crealf(t0*t1);
 
         // expand complex zero pairs
-        t0 = zp[2*i+0];
-        t1 = zp[2*i+1];
+        t0 = -zp[2*i+0];
+        t1 = -zp[2*i+1];
         _B[3*i+0] = 1.0;
         _B[3*i+1] = crealf(t0+t1);
         _B[3*i+2] = crealf(t0*t1);
@@ -224,11 +243,11 @@ void iirdes_dzpk2sosf(float complex * _zd,
     // add zero/pole pair if order is odd
     if (r) {
         _A[3*i+0] = 1.0;
-        _A[3*i+1] = pp[_n-1];
+        _A[3*i+1] = -pp[_n-1];
         _A[3*i+2] = 0.0;
 
         _B[3*i+0] = 1.0;
-        _B[3*i+1] = zp[_n-1];
+        _B[3*i+1] = -zp[_n-1];
         _B[3*i+2] = 0.0;
     }
 
