@@ -33,7 +33,7 @@ void fpoly_bessel(unsigned int _n, float * _p);
 //
 
 int main() {
-    unsigned int n=5;
+    unsigned int n=4;
 
     float complex p[n];
     float complex roots[n-1];
