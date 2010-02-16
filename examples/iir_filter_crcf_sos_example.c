@@ -14,7 +14,7 @@
 
 int main() {
     // options
-    unsigned int order=3;   // filter order
+    unsigned int order=5;   // filter order
     float fc=0.1f;          // cutoff frequency
     unsigned int n=128;     // number of samples
 
@@ -26,15 +26,14 @@ int main() {
     float complex za[order];    // analog complex zeros
     float complex pa[order];    // analog complex poles
     float complex ka;           // analog gain
-#if 0
-    float ripple = 1.0f;
-    float epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
-    cheby1_azpkf(order,fc,epsilon,za,pa,&ka);
-#else
-    butter_azpkf(order,fc,za,pa,&ka);
-#endif
+
     unsigned int nza = 0;
     unsigned int npa = order;
+
+    nza = 2*L;
+    float slsl = 60.0f;
+    float epsilon = powf(10.0f, -slsl/20.0f);
+    cheby2_azpkf(order,fc,epsilon,za,pa,&ka);
 
     // complex digital poles/zeros/gain
     float complex zd[order];
@@ -71,12 +70,33 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
+    fprintf(fid,"order=%u;\n", order);
+    fprintf(fid,"nza=%u;\n", nza);
+    fprintf(fid,"npa=%u;\n", npa);
     fprintf(fid,"nsos=%u;\n", L+r);
     fprintf(fid,"B=zeros(nsos,3);\n");
     fprintf(fid,"A=zeros(nsos,3);\n");
     fprintf(fid,"n=%u;\n",n);
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
+
+#if 0
+    // print analog z/p/k
+    fprintf(fid,"za = zeros(1,nza);\n");
+    for (i=0; i<nza; i++)
+        fprintf(fid,"  za(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(za[i]), cimagf(za[i]));
+    fprintf(fid,"pa = zeros(1,npa);\n");
+    for (i=0; i<nza; i++)
+        fprintf(fid,"  pa(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pa[i]), cimagf(pa[i]));
+#endif
+
+    // print digital z/p/k
+    fprintf(fid,"zd = zeros(1,order);\n");
+    fprintf(fid,"pd = zeros(1,order);\n");
+    for (i=0; i<order; i++) {
+        fprintf(fid,"  zd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(zd[i]), cimagf(zd[i]));
+        fprintf(fid,"  pd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pd[i]), cimagf(pd[i]));
+    }
 
     float complex x;
     float complex y;
@@ -101,6 +121,18 @@ int main() {
             fprintf(fid,"A(%3u,%3u) = %16.8e;\n", i+1, j+1, A[3*i+j]);
         }
     }
+    fprintf(fid,"\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"k=0:0.01:1;\n");
+    fprintf(fid,"ti = cos(2*pi*k);\n");
+    fprintf(fid,"tq = sin(2*pi*k);\n");
+    fprintf(fid,"plot(ti,tq,'-','LineWidth',1,'Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"     zd,'x','LineWidth',2,'Color',[0.5 0   0],'MarkerSize',1,...\n");
+    fprintf(fid,"     pd,'o','LineWidth',2,'Color',[0   0.5 0],'MarkerSize',1);\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"axis square;\n");
+
     fprintf(fid,"\n");
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
