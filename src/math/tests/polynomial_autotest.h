@@ -106,18 +106,17 @@ void autotest_fpoly_expandroots_11()
                         1925,
                         66,
                         1};
-    float tol = 1e-3f;
+    float tol = 1e-6f;
 
     fpoly_expandroots(a,11,c);
 
     unsigned int i;
-    if (liquid_autotest_verbose) {
-        for (i=0; i<12; i++)
-            printf("  c[%3u] = %12.2f\n", i, c[i]);
+    for (i=0; i<12; i++) {
+        if (liquid_autotest_verbose)
+            printf("  c[%3u] : %16.8e (expected %16.8e)\n", i, c[i], c_test[i]);
+
+        CONTEND_DELTA(c[i], c_test[i], fabsf(tol*c_test[i]));
     }
-    
-    for (i=0; i<12; i++)
-        CONTEND_DELTA(c[i], c_test[i], tol);
 }
 
 // 
