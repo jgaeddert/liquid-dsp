@@ -165,7 +165,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     printf("  old values:\n");
     for (i=0; i<m0; i++) {
         printf("  %4u : ", i);
-        PRINTVAL(w0_tmp[i]);
+        PRINTVAL_TC(w0_tmp[i],%12.8f);
         printf("\n");
     }
     _f->w0 = realloc(_f->w0, (_f->m)*sizeof(TI));   // reallocate memory
@@ -195,7 +195,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     printf("  new values:\n");
     for (i=0; i<m1; i++) {
         printf("  %4u : ", i);
-        PRINTVAL(_f->w0[(i+_f->w0_index)%(m1)]);
+        PRINTVAL_TC(_f->w0[(i+_f->w0_index)%(m1)],%12.8f);
         printf("\n");
     }
     free(w0_tmp);       // free temporary memory block
@@ -244,13 +244,13 @@ void RESAMP2(_print)(RESAMP2() _f)
     unsigned int i;
     for (i=0; i<_f->h_len; i++) {
         printf("  h(%4u) = ", i+1);
-        PRINTVAL(_f->h[i]);
+        PRINTVAL_TC(_f->h[i],%12.8f);
         printf(";\n");
     }
     printf("---\n");
     for (i=0; i<_f->h1_len; i++) {
         printf("  h1(%4u) = ", i+1);
-        PRINTVAL(_f->h1[i]);
+        PRINTVAL_TC(_f->h1[i],%12.8f);
         printf(";\n");
     }
 }

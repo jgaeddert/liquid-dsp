@@ -121,7 +121,7 @@ RESAMP() RESAMP(_create)(float _r,
     q->f = FIRPFB(_create)(q->npfb,h,n-1);
 
     //for (i=0; i<n; i++)
-    //    PRINTVAL_TC(stdout,"h",i,h[i]);
+    //    PRINTVAL_TC(h[i],%12.8f);
     //exit(0);
 
     return q;

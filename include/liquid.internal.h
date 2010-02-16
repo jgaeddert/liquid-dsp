@@ -45,6 +45,9 @@
 #define DEBUG_PRINTF_CFLOAT(F,STR,I,V)                          \
     fprintf(F,"%s(%4u) = %12.4e +j*%12.4e;\n",STR,I+1,crealf(V),cimagf(V))
 
+#define PRINTVAL_FLOAT(X,F)     printf(#F,crealf(X));
+#define PRINTVAL_CFLOAT(X,F)    printf(#F "+j*" #F, crealf(X), cimagf(X));
+
 //
 // MODULE : agc
 //

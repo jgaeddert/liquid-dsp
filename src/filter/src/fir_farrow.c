@@ -146,7 +146,7 @@ void FIR_FARROW(_print)(FIR_FARROW() _f)
     n = _f->h_len;
     for (i=0; i<n; i++) {
         printf("  h(%3u) = ", i+1);
-        PRINTVAL(_f->h[n-i-1]);
+        PRINTVAL_TC(_f->h[n-i-1],%12.8f);
         printf(";\n");
     }
 }

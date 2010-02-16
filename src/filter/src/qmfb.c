@@ -156,15 +156,13 @@ void QMFB(_print)(QMFB() _q)
     printf("---\n");
     for (i=0; i<_q->h_sub_len; i++) {
         printf("  h0(%4u) = ", i+1);
-        //PRINTVAL(_q->h1[i]);
-        printf("%12.8f", _q->h0[i]);
+        PRINTVAL_TC(_q->h0[i],%12.8f);
         printf(";\n");
     }
     printf("---\n");
     for (i=0; i<_q->h_sub_len; i++) {
         printf("  h1(%4u) = ", i+1);
-        //PRINTVAL(_q->h1[i]);
-        printf("%12.8f", _q->h1[i]);
+        PRINTVAL_TC(_q->h1[i],%12.8f);
         printf(";\n");
     }
 }

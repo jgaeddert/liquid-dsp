@@ -174,12 +174,12 @@ void IIR_FILTER(_print)(IIR_FILTER() _f)
 
         printf("  b :");
         for (i=0; i<_f->nb; i++)
-            PRINTVAL(_f->b[i]);
+            PRINTVAL_TC(_f->b[i],%12.8f);
         printf("\n");
 
         printf("  a :");
         for (i=0; i<_f->na; i++)
-            PRINTVAL(_f->a[i]);
+            PRINTVAL_TC(_f->a[i],%12.8f);
         printf("\n");
 
 #if 0

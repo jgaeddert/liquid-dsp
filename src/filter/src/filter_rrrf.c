@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -41,9 +42,6 @@
 #define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_rrrf,name)
 #define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_rrrf,name)
 
-#define PRINTVAL(x)         printf("%12.4e", x)
-#define PRINTVAL_TC(F,STR,I,V)  DEBUG_PRINTF_FLOAT(F,STR,I,V)
-
 #define T                   float   // general
 #define TO                  float   // output
 #define TC                  float   // coefficients
@@ -55,6 +53,10 @@
 #define TO_COMPLEX          0
 #define TC_COMPLEX          0
 #define TI_COMPLEX          0
+
+#define PRINTVAL_TO(X,F)    PRINTVAL_FLOAT(X,F)
+#define PRINTVAL_TC(X,F)    PRINTVAL_FLOAT(X,F)
+#define PRINTVAL_TI(X,F)    PRINTVAL_FLOAT(X,F)
 
 // source files
 //#include "autocorr.c"

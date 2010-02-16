@@ -21,7 +21,7 @@ int main() {
     float h[h_len];
     fir_kaiser_window(h_len,fc,slsl,mu,h);
     fir_filter_rrrf f = fir_filter_rrrf_create(h,h_len);
-    //fir_filter_rrrf_print(f);
+    fir_filter_rrrf_print(f);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
