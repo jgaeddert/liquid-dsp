@@ -25,12 +25,29 @@ int main() {
     unsigned int n=128;     // number of samples
 
     // design butterworth filter
+    float complex za[order];    // analog complex zeros
+    float complex pa[order];    // analog complex poles
+    float complex ka;           // analog gain
+    butter_azpkf(order,fc,za,pa,&ka);
+    unsigned int nza = 0;
+    unsigned int npa = order;
+
+    // complex digital poles/zeros/gain
+    float complex zd[order];
+    float complex pd[order];
+    float complex kd;
+    float m = 1.0f / tanf(M_PI * fc);
+    iirdes_zpka2df(za,    nza,
+                   pa,    npa,
+                   ka,    m,
+                   zd, pd, &kd);
+
+    // convert complex digital poles/zeros/gain into transfer function
     float a[order+1];
     float b[order+1];
-    butterf(order,fc,b,a);
-    //cheby1f(order,fc,0.1f,b,a);
-    //cheby2f(order,fc,0.1f,b,a);
+    iirdes_dzpk2tff(zd,pd,order,kd,b,a);
 
+    // create filter
     iir_filter_crcf f = iir_filter_crcf_create(b,order+1,a,order+1);
     iir_filter_crcf_print(f);
 

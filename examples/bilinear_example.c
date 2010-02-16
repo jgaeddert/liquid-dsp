@@ -24,7 +24,10 @@ int main() {
     float complex z[nz];    // zeros array
 
     // compute butterworth roots (poles)
-    butter_rootsf(np,p);
+    for (i=0; i<np; i++) {
+        float theta = (float)(2*(i+1) + np - 1)*M_PI /(float)(2*np);
+        p[i] = cexpf(_Complex_I*theta);
+    }
 
     // add zeros (if available)
     for (i=0; i<nz; i++) z[i] = 1.0f;

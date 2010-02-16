@@ -13,52 +13,56 @@
 #define OUTPUT_FILENAME "iir_filter_crcf_sos_example.m"
 
 int main() {
-    // from Mitra:2001, p. 625
-    float B[9] = {
-        0.0300018f,  0.0300018f, 0.0f,
-        1.0000000f, -0.0861016f, 1.0000000f,
-        1.0000000f, -0.7638292f, 1.0000000f
-    };
-
-    float A[9] = {
-        1.0000000f, -0.6135686f, 0.0f,
-        1.0000000f, -1.1528628f, 0.6116484f,
-        1.0000000f, -1.0983340f, 0.89907598f
-    };
-
-    unsigned int nsos=3;
+    // options
+    unsigned int order=3;   // filter order
+    float fc=0.1f;          // cutoff frequency
     unsigned int n=128;     // number of samples
-    unsigned int i;
 
+    unsigned int i;
+    unsigned int r = order % 2;
+    unsigned int L = (order-r)/2;
+
+    // design Chebyshev type I filter
+    float complex za[order];    // analog complex zeros
+    float complex pa[order];    // analog complex poles
+    float complex ka;           // analog gain
 #if 0
-    // design butterworth filter...
-    float complex r[5];
-    butter_rootsf(5,r);
-    float complex z[5];
-    float complex p[5];
-    float fc = 0.1f;
-    float m = 1.0 / tanf(3.14159*fc);
-    float complex k = 1.0f;
-    for (i=0; i<5; i++) {
-        p[i] = (r[i]/m - 1.0f)/(r[i]/m + 1.0f);
-        z[i] = 1.0f;
-        k *= 1.0f/(r[i] + m);
-    }
-    iirdes_zpk2sos(z,p,5,crealf(k),B,A);
+    float ripple = 1.0f;
+    float epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
+    cheby1_azpkf(order,fc,epsilon,za,pa,&ka);
+#else
+    butter_azpkf(order,fc,za,pa,&ka);
 #endif
+    unsigned int nza = 0;
+    unsigned int npa = order;
+
+    // complex digital poles/zeros/gain
+    float complex zd[order];
+    float complex pd[order];
+    float complex kd;
+    float m = 1.0f / tanf(M_PI * fc);
+    iirdes_zpka2df(za,    nza,
+                   pa,    npa,
+                   ka,    m,
+                   zd, pd, &kd);
+
+    // convert complex digital poles/zeros/gain into transfer function
+    float B[3*(L+r)];
+    float A[3*(L+r)];
+    iirdes_dzpk2sosf(zd,pd,order,kd,B,A);
 
     printf("B:\n");
-    for (i=0; i<nsos; i++)
+    for (i=0; i<L+r; i++)
         printf("  %12.8f %12.8f %12.8f\n", B[3*i+0], B[3*i+1], B[3*i+2]);
 
     printf("A:\n");
-    for (i=0; i<nsos; i++)
+    for (i=0; i<L+r; i++)
         printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
 
     //return 0;
 
     // create filter
-    iir_filter_crcf f = iir_filter_crcf_create_sos(B,A,nsos);
+    iir_filter_crcf f = iir_filter_crcf_create_sos(B,A,L+r);
     iir_filter_crcf_print(f);
 
     // open output file
@@ -67,7 +71,7 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n");
-    fprintf(fid,"nsos=%u;\n", nsos);
+    fprintf(fid,"nsos=%u;\n", L+r);
     fprintf(fid,"B=zeros(nsos,3);\n");
     fprintf(fid,"A=zeros(nsos,3);\n");
     fprintf(fid,"n=%u;\n",n);
@@ -91,7 +95,7 @@ int main() {
 
     // output filter coefficients using extra precision
     unsigned int j;
-    for (i=0; i<nsos; i++) {
+    for (i=0; i<L+r; i++) {
         for (j=0; j<3; j++) {
             fprintf(fid,"B(%3u,%3u) = %16.8e;\n", i+1, j+1, B[3*i+j]);
             fprintf(fid,"A(%3u,%3u) = %16.8e;\n", i+1, j+1, A[3*i+j]);
