@@ -15,7 +15,7 @@
 // print usage/help message
 void usage()
 {
-    printf("irdes_example [options]\n");
+    printf("iirdes_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
     printf("  n     : filter order\n");
@@ -89,7 +89,7 @@ int main(int argc, char*argv[]) {
             }
             break;
         default:
-            fprintf(stderr,"error: iirdes_example, unknown option %s\n", optarg);
+            fprintf(stderr,"error: iirdes_example, unknown option\n");
             usage();
             return 1;
         }

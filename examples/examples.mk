@@ -23,12 +23,6 @@ local_src	:=			\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\
 	iirdes_example.c		\
-	iirdes_bessel_example.c		\
-	iirdes_butterworth_example.c	\
-	iirdes_cheby1_example.c		\
-	iirdes_cheby2_example.c		\
-	iirdes_ellip_example.c		\
-	iirdes_cheby1_sos_example.c	\
 	iir_filter_crcf_example.c	\
 	iir_filter_crcf_sos_example.c	\
 	interp_crcf_example.c		\
