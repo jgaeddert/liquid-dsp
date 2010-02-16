@@ -15,7 +15,7 @@
 int main() {
     // options
     unsigned int order=5;   // filter order
-    float fc=0.1f;          // cutoff frequency
+    float fc=0.2f;          // cutoff frequency
     unsigned int n=128;     // number of samples
 
     unsigned int i;
@@ -31,7 +31,7 @@ int main() {
     unsigned int npa = order;
 
     nza = 2*L;
-    float slsl = 60.0f;
+    float slsl = 40.0f;
     float epsilon = powf(10.0f, -slsl/20.0f);
     cheby2_azpkf(order,fc,epsilon,za,pa,&ka);
 
@@ -127,8 +127,8 @@ int main() {
     fprintf(fid,"ti = cos(2*pi*k);\n");
     fprintf(fid,"tq = sin(2*pi*k);\n");
     fprintf(fid,"plot(ti,tq,'-','LineWidth',1,'Color',[1 1 1]*0.7,...\n");
-    fprintf(fid,"     zd,'x','LineWidth',2,'Color',[0.5 0   0],'MarkerSize',1,...\n");
-    fprintf(fid,"     pd,'o','LineWidth',2,'Color',[0   0.5 0],'MarkerSize',1);\n");
+    fprintf(fid,"     zd,'o','LineWidth',2,'Color',[0.5 0   0],'MarkerSize',2,...\n");
+    fprintf(fid,"     pd,'x','LineWidth',2,'Color',[0   0.5 0],'MarkerSize',2);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
     fprintf(fid,"axis square;\n");
