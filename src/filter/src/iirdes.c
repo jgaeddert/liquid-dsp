@@ -166,7 +166,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
                       float * _B,
                       float * _A)
 {
-    unsigned int i;
+    int i;
     float tol=1e-6f;
 
     // find/group complex conjugate pairs (poles)
@@ -232,12 +232,9 @@ void iirdes_dzpk2sosf(float complex * _zd,
         _B[3*i+2] = 0.0;
     }
 
+    // adjust gain
     _B[0] *= _kd;
     _B[1] *= _kd;
     _B[2] *= _kd;
-
-    // TODO : adjust gain
-
 }
-
 
