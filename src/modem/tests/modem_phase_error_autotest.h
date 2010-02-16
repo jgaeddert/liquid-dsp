@@ -57,7 +57,7 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
         // maps to appropriate symbol
         modem_demodulate(demod, x_phi_pos, &s);
         if (s != i) {
-            fprintf(stderr,"warning: modem_test_phase_error(), output symbol does not match\n");
+            AUTOTEST_WARN("modem_test_phase_error(), output symbol does not match");
         }
         get_demodulator_phase_error(demod,&phase_error);
         CONTEND_EXPRESSION(phase_error > 0.0f);
@@ -66,7 +66,7 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
         // maps to appropriate symbol
         modem_demodulate(demod, x_phi_neg, &s);
         if (s != i) {
-            fprintf(stderr,"warning: modem_test_phase_error(), output symbol does not match\n");
+            AUTOTEST_WARN("modem_test_phase_error(), output symbol does not match");
         }
         get_demodulator_phase_error(demod,&phase_error);
         CONTEND_EXPRESSION(phase_error < 0.0f);

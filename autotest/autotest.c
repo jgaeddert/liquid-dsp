@@ -42,6 +42,7 @@ struct autotest_s {
     long unsigned int num_checks;
     long unsigned int num_passed;
     long unsigned int num_failed;
+    long unsigned int num_warnings;
     float percent_passed;
     bool executed;
     bool pass;
@@ -74,7 +75,7 @@ void execute_autotest(autotest _test, bool _verbose);
 void execute_package(package _p, bool _verbose);
 void print_autotest_results(autotest _test);
 void print_package_results(package _p);
-void print_failed_tests(void);
+void print_volatile_tests(void);
 
 // main function
 int main(int argc, char *argv[])
@@ -175,7 +176,7 @@ int main(int argc, char *argv[])
     }
 
     if (liquid_autotest_verbose)
-        print_failed_tests();
+        print_volatile_tests();
 
     autotest_print_results();
     return 0;
@@ -199,12 +200,14 @@ void execute_autotest(autotest _test, bool _verbose)
 {
     unsigned long int autotest_num_passed_init = liquid_autotest_num_passed;
     unsigned long int autotest_num_failed_init = liquid_autotest_num_failed;
+    unsigned long int autotest_num_warnings_init = liquid_autotest_num_warnings;
 
     // execute test
     _test->api();
 
     _test->num_passed = liquid_autotest_num_passed - autotest_num_passed_init;
     _test->num_failed = liquid_autotest_num_failed - autotest_num_failed_init;
+    _test->num_warnings = liquid_autotest_num_warnings - autotest_num_warnings_init;
     _test->num_checks = _test->num_passed + _test->num_failed;
     _test->pass = (_test->num_failed==0) ? true : false;
     if (_test->num_checks > 0)
@@ -255,18 +258,29 @@ void print_package_results(package _p)
     printf("\n");
 }
 
-void print_failed_tests(void)
+void print_volatile_tests(void)
 {
+#if 0
     if (liquid_autotest_num_failed == 0)
         return;
+#endif
 
     printf("==================================\n");
-    printf(" FAILED TESTS:\n");
+    printf(" VOLATILE TESTS:\n");
     unsigned int t;
     for (t=0; t<NUM_AUTOTESTS; t++) {
-        if (!autotests[t].pass && autotests[t].executed)
-            printf("    %3u : <<FAIL>> %s\n", autotests[t].id,
-                                              autotests[t].name);
+        if (autotests[t].executed) {
+            if (!autotests[t].pass) {
+                printf("    %3u : <<FAIL>> %s\n", autotests[t].id,
+                                                  autotests[t].name);
+            }
+            
+            if (autotests[t].num_warnings > 0) {
+                printf("    %3u : %4lu warnings %s\n", autotests[t].id,
+                                                       autotests[t].num_warnings,
+                                                       autotests[t].name);
+            }
+        }
     }
 }
 

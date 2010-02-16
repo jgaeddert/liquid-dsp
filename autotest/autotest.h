@@ -80,7 +80,7 @@ static void autotest_print_results(void)
 {
     if (liquid_autotest_num_warnings > 0) {
         printf("==================================\n");
-        printf(" %lu warnings\n", liquid_autotest_num_warnings);
+        printf(" WARNINGS : %-lu\n", liquid_autotest_num_warnings);
     }
 
     printf("==================================\n");
