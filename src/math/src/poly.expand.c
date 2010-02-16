@@ -56,7 +56,17 @@ void POLY(_expandbinomial)(T * _a,
         _c[j] *= _a[i];
     }
 
-    // assert(c[0]==1.0f)
+    // flip values
+    unsigned int r = (_n+1) % 2;
+    unsigned int L = (_n+1-r)/2;
+    T tmp;
+    for (i=0; i<L; i++) {
+        tmp = _c[i];
+        _c[i] = _c[_n-i];
+        _c[_n-i] = tmp;
+    }
+
+    // assert(_c[0]==1.0f);
 }
 
 

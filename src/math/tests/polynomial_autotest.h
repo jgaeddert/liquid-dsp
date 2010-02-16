@@ -59,6 +59,34 @@ void autotest_fpolyfit_q3n3()
 }
 
 // 
+// AUTOTEST: poly_expandbinomial
+//
+void autotest_fpoly_expandbinomial_4()
+{
+    float a[4] = { 3, 2, -5, 1 };
+    float c[5];
+    float c_test[5] = { 1, 1, -19, -49, -30 };
+    float tol = 1e-3f;
+
+    fpoly_expandbinomial(a,4,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        printf("c[5] = ");
+        for (i=0; i<5; i++)
+            printf("%8.2f", c[i]);
+        printf("\n");
+    }
+    
+    CONTEND_DELTA(c[0], c_test[0], tol);
+    CONTEND_DELTA(c[1], c_test[1], tol);
+    CONTEND_DELTA(c[2], c_test[2], tol);
+    CONTEND_DELTA(c[3], c_test[3], tol);
+    CONTEND_DELTA(c[4], c_test[4], tol);
+}
+
+
+// 
 // AUTOTEST: poly_expandroots
 //
 void autotest_fpoly_expandroots_4()
