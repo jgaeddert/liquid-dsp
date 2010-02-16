@@ -44,3 +44,37 @@ float fir_group_delay(float * _h, unsigned int _n, float _fc)
     return crealf(t0/t1);
 }
 
+float iir_group_delay(float * _b,
+                      unsigned int _nb,
+                      float * _a,
+                      unsigned int _na,
+                      float _fc)
+{
+    // TODO : validate input
+
+    // compute c = conv(b,fliplr(a))
+    //         c(z) = b(z)*a(1/z)*z^(-_na)
+    unsigned int nc = _na + _nb - 1;
+    float c[nc];
+    unsigned int i,j;
+    for (i=0; i<_nb; i++) {
+        for (j=0; j<_na; j++) {
+        }
+    }
+
+    float complex t0=0.0f;
+    float complex t1=0.0f;
+    for (i=0; i<nc; i++) {
+        t0 += c[i] * cexpf(_Complex_I*2*M_PI*_fc*i) * i;
+        t1 += c[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+    }
+
+    float tol = 1e-12f;
+    if (cabsf(t1)<tol) {
+        t0 = 0.0f;
+        t1 = 1.0f;
+    }
+
+    return crealf(t0/t1) - (_na - 1);
+}
+
