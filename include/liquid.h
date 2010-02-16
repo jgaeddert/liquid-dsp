@@ -1930,6 +1930,13 @@ void POLY(_interp_lagrange)(T * _x,                             \
                             T * _y0);                           \
                                                                 \
 /* expands the polynomial:                                      \
+ *  (1+x*a[0])*(1+x*a[1]) * ... * (1+x*a[n-1])                  \
+ */                                                             \
+void POLY(_expandbinomial)(T * _a,                              \
+                           unsigned int _n,                     \
+                           T * _c);                             \
+                                                                \
+/* expands the polynomial: TODO: switch to (x-a[0])*...         \
  *  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])                      \
  */                                                             \
 void POLY(_expandroots)(T * _a,                                 \

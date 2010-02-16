@@ -32,5 +32,6 @@
 #define TC              float complex
 
 #include "poly.c"
+#include "poly.expand.c"
 #include "poly.findroots.c"
 
