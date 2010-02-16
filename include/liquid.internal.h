@@ -954,7 +954,7 @@ void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
 
 // modem demodualte phase error approximation
-float complex cargf_demod_approx(float complex _x);
+float cargf_demod_approx(float complex _x);
 
 // generic modem demodulate routines
 void modem_demodulate_ask(modem _demod, float complex x, unsigned int *symbol_out);

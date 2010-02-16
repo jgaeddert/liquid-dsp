@@ -26,7 +26,7 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-float complex cargf_demod_approx(float complex _x)
+float cargf_demod_approx(float complex _x)
 {
     float theta;
     float xi = crealf(_x);
@@ -402,6 +402,7 @@ void get_demodulator_evm(modem _demod, float* _evm)
     case MOD_ASK:
     case MOD_QAM:
     case MOD_APSK:
+    case MOD_APSK4:
     case MOD_APSK8:
     case MOD_APSK16:
     case MOD_APSK32:

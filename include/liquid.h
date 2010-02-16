@@ -2094,6 +2094,7 @@ modem modem_create(modulation_scheme, unsigned int _bits_per_symbol);
 
 void modem_destroy(modem _mod);
 void modem_print(modem _mod);
+void modem_reset(modem _mod);
 
 // Initialize arbitrary modem constellation
 void modem_arb_init(modem _mod, liquid_float_complex *_symbol_map, unsigned int _len);

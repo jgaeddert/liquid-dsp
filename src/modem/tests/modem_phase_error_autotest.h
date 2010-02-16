@@ -36,12 +36,15 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
     // run the test
     unsigned int i, s, M=1<<_bps;
     float complex x;
-    float complex x_phi_pos;    // positive phase error demod input
-    float complex x_phi_neg;    // negative phase error demod input
+    float complex x_hat;    // rotated symbol
     float phase_error;
     float phi = 0.01f;
 
     for (i=0; i<M; i++) {
+        // reset modem objects
+        modem_reset(mod);
+        modem_reset(demod);
+
         // modulate symbol
         modem_modulate(mod, i, &x);
 
@@ -50,24 +53,40 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
         if (cabsf(x) < 1e-3f) continue;
 
         // add phase offsets
-        x_phi_pos = x * cexpf( phi*_Complex_I);
-        x_phi_neg = x * cexpf(-phi*_Complex_I);
+        x_hat = x * cexpf( phi*_Complex_I);
 
         // demod positive phase signal, and ensure demodulator
         // maps to appropriate symbol
-        modem_demodulate(demod, x_phi_pos, &s);
-        if (s != i) {
+        modem_demodulate(demod, x_hat, &s);
+        if (s != i)
             AUTOTEST_WARN("modem_test_phase_error(), output symbol does not match");
-        }
+
         get_demodulator_phase_error(demod,&phase_error);
         CONTEND_EXPRESSION(phase_error > 0.0f);
+    }
 
-        // demod negative phase signal, and ensure demodulator
+    // repeat with negative phase error
+    for (i=0; i<M; i++) {
+        // reset modem objects
+        modem_reset(mod);
+        modem_reset(demod);
+
+        // modulate symbol
+        modem_modulate(mod, i, &x);
+
+        // ignore rare condition where modulated symbol is (0,0)
+        // (e.g. APSK-8)
+        if (cabsf(x) < 1e-3f) continue;
+
+        // add phase offsets
+        x_hat = x * cexpf(-phi*_Complex_I);
+
+        // demod positive phase signal, and ensure demodulator
         // maps to appropriate symbol
-        modem_demodulate(demod, x_phi_neg, &s);
-        if (s != i) {
+        modem_demodulate(demod, x_hat, &s);
+        if (s != i)
             AUTOTEST_WARN("modem_test_phase_error(), output symbol does not match");
-        }
+
         get_demodulator_phase_error(demod,&phase_error);
         CONTEND_EXPRESSION(phase_error < 0.0f);
     }

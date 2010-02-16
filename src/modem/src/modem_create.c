@@ -672,4 +672,10 @@ void modem_print(modem _mod)
     printf("    bits/symbol:    %u\n", _mod->m);
 }
 
+void modem_reset(modem _mod)
+{
+    _mod->state = 1.0f;
+    _mod->state_theta = 0.0f;
+}
+
 
