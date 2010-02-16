@@ -40,26 +40,32 @@ struct IIRFILTSOS(_s) {
     TI v[3];         // internal filter state
 };
 
-void IIRFILTSOS(_init)(IIRFILTSOS() _q,
-                       TC * _b,
-                       TC * _a)
+IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
+                                 TC * _a)
 {
-    memmove(_q->b, _b, 3*sizeof(TC));
-    memmove(_q->a, _a, 3*sizeof(TC));
+    IIRFILTSOS() q = (IIRFILTSOS()) malloc(sizeof(struct IIRFILTSOS(_s)));
 
     TC a0 = _a[0];
 
-    _q->b[0] /= a0;
-    _q->b[1] /= a0;
-    _q->b[2] /= a0;
+    // copy feed-forward coefficients (numerator)
+    q->b[0] = _b[0] / a0;
+    q->b[1] = _b[1] / a0;
+    q->b[2] = _b[2] / a0;
 
-    _q->a[0] /= a0;
-    _q->a[1] /= a0;
-    _q->a[2] /= a0;
+    // copy feed-back coefficients (denominator)
+    q->a[0] = _a[0] / a0;
+    q->a[1] = _a[1] / a0;
+    q->a[2] = _a[2] / a0;
 
-    _q->v[0] = 0;
-    _q->v[1] = 0;
-    _q->v[2] = 0;
+    // clear filter state
+    IIRFILTSOS(_clear)(q);
+
+    return q;
+}
+
+void IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
+{
+    free(_q);
 }
 
 void IIRFILTSOS(_print)(IIRFILTSOS() _q)
@@ -91,7 +97,9 @@ void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
     _q->v[1] = _q->v[0];
 
     // compute new v[0]
-    _q->v[0] = _x - _q->a[1]*_q->v[1] - _q->a[2]*_q->v[2];
+    _q->v[0] = _x - 
+               _q->a[1]*_q->v[1] -
+               _q->a[2]*_q->v[2];
 
     // compute new y
     *_y = _q->b[0]*_q->v[0] +

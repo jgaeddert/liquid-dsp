@@ -562,10 +562,11 @@ LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, l
 
 #define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
-void IIRFILTSOS(_init)(IIRFILTSOS() _q,                         \
-                       TC * _b,                                 \
-                       TC * _a);                                \
+IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
+                                 TC * _a);                      \
+void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
 void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
+void IIRFILTSOS(_clear)(IIRFILTSOS() _q);                       \
 void IIRFILTSOS(_execute)(IIRFILTSOS() _q,                      \
                           TI   _x,                              \
                           TO * _y);
