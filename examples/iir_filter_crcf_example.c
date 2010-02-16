@@ -75,7 +75,7 @@ int main() {
         // run filter
         iir_filter_crcf_execute(f, x, &y);
 
-        //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
+        printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x), cimagf(x));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y), cimagf(y));
     }
