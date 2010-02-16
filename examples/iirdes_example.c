@@ -202,6 +202,13 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"\n");
         fprintf(fid,"H = fft(b,nfft)./fft(a,nfft);\n");
         fprintf(fid,"H = fftshift(H);\n");
+        fprintf(fid,"%% group delay\n");
+        fprintf(fid,"c = conv(b,fliplr(a));\n");
+        fprintf(fid,"cr = c.*[0:(length(b)+length(a)-2)];\n");
+        fprintf(fid,"t0 = fft(cr,nfft);\n");
+        fprintf(fid,"t1 = fft(c, nfft);\n");
+        fprintf(fid,"gd = real(t0./t1) - length(a) + 1;\n");
+
     } else {
         // second-order sections
         float A[3*(L+r)];
@@ -228,30 +235,41 @@ int main(int argc, char*argv[]) {
         }
         fprintf(fid,"\n");
         fprintf(fid,"H = ones(1,nfft);\n");
+        fprintf(fid,"gd = zeros(1,nfft);\n");
         fprintf(fid,"for i=1:(L+r),\n");
         fprintf(fid,"    H = H .* fft(B(i,:),nfft)./fft(A(i,:),nfft);\n");
+        fprintf(fid,"    %% group delay\n");
+        fprintf(fid,"    c = conv(B(i,:),fliplr(A(i,:)));\n");
+        fprintf(fid,"    cr = c.*[0:4];\n");
+        fprintf(fid,"    t0 = fft(cr,nfft);\n");
+        fprintf(fid,"    t1 = fft(c, nfft);\n");
+        fprintf(fid,"    gd = gd + real(t0./t1) - 2;\n");
         fprintf(fid,"end;\n");
         fprintf(fid,"H = fftshift(H);\n");
     }
 
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
 
-    // plot magnitude response
+    // plot magnitude response, group delay
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1),\n");
+    fprintf(fid,"subplot(3,1,1),\n");
     fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
     fprintf(fid,"  axis([0.0 0.5 -4 1]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency');\n");
     fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
-    fprintf(fid,"subplot(2,1,2),\n");
+    fprintf(fid,"subplot(3,1,2),\n");
     fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
     fprintf(fid,"  axis([0.0 0.5 -100 10]);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency');\n");
     fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
-
-    // plot phase, group delay response
+    fprintf(fid,"subplot(3,1,3),\n");
+    fprintf(fid,"  plot(f,gd,'-','Color',[0 0.5 0],'LineWidth',2);\n");
+    fprintf(fid,"  axis([0.0 0.5 0 ceil(1.1*max(gd))]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency');\n");
+    fprintf(fid,"  ylabel('Group delay [samples]');\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
