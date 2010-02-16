@@ -27,7 +27,6 @@ module_name     := filter
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 			\
-	bilinear.c			\
 	bessel.c			\
 	butter.c			\
 	cheby1.c			\

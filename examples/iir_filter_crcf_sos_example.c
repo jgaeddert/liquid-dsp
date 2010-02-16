@@ -40,10 +40,10 @@ int main() {
     float complex pd[order];
     float complex kd;
     float m = 1.0f / tanf(M_PI * fc);
-    iirdes_zpka2df(za,    nza,
-                   pa,    npa,
-                   ka,    m,
-                   zd, pd, &kd);
+    bilinear_zpkf(za,    nza,
+                  pa,    npa,
+                  ka,    m,
+                  zd, pd, &kd);
 
     // convert complex digital poles/zeros/gain into transfer function
     float B[3*(L+r)];

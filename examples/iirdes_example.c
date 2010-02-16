@@ -167,10 +167,10 @@ int main(int argc, char*argv[]) {
     float complex pd[n];
     float complex kd;
     float m = 1.0f / tanf(M_PI * fc);
-    iirdes_zpka2df(za,    nza,
-                   pa,    npa,
-                   ka,    m,
-                   zd, pd, &kd);
+    bilinear_zpkf(za,    nza,
+                  pa,    npa,
+                  ka,    m,
+                  zd, pd, &kd);
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");

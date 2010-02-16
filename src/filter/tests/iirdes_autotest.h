@@ -69,10 +69,10 @@ void autotest_iirdes_butter_2()
     float complex pd[order];
     float complex kd;
     float m = 1.0f / tanf(M_PI * fc);
-    iirdes_zpka2df(za,    nza,
-                   pa,    npa,
-                   ka,    m,
-                   zd, pd, &kd);
+    bilinear_zpkf(za,    nza,
+                  pa,    npa,
+                  ka,    m,
+                  zd, pd, &kd);
 
     // convert complex digital poles/zeros/gain into transfer function
     iirdes_dzpk2tff(zd,pd,order,kd,b,a);
@@ -132,10 +132,10 @@ void autotest_iirdes_dzpk2sosf()
     float complex pd[n];    // digital poles
     float complex kd;       // digital gain
     float m = 1 / tanf(M_PI * fc);
-    iirdes_zpka2df(za,  0,
-                   pa,  n,
-                   ka,  m,
-                   zd, pd, &kd);
+    bilinear_zpkf(za,  0,
+                  pa,  n,
+                  ka,  m,
+                  zd, pd, &kd);
 
     printf("poles (digital):\n");
     for (i=0; i<n; i++)

@@ -87,15 +87,15 @@ void liquid_cplxpair(float complex * _z,
 //          (z^-1 - zd[0])(z^-1 - zd[1]) ... (z^-1 - zd[n-1])
 //  H(z) = ---------------------------------------------------
 //          (z^-1 - pd[0])(z^-1 - pd[1]) ... (z^-1 - pd[n-1])
-void iirdes_zpka2df(float complex * _za,
-                    unsigned int _nza,
-                    float complex * _pa,
-                    unsigned int _npa,
-                    float complex _ka,
-                    float _m,
-                    float complex * _zd,
-                    float complex * _pd,
-                    float complex * _kd)
+void bilinear_zpkf(float complex * _za,
+                   unsigned int _nza,
+                   float complex * _pa,
+                   unsigned int _npa,
+                   float complex _ka,
+                   float _m,
+                   float complex * _zd,
+                   float complex * _pd,
+                   float complex * _kd)
 {
     unsigned int n = _npa;
     unsigned int i;

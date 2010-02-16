@@ -893,37 +893,6 @@ void cheby2f(unsigned int _n,
              float * _a);
 #endif
 
-// bilinear z-transform using zeros, poles, gain
-//
-//            (s-z[0])*(s-z[1])*...*(s-z[nz-1])
-// H(s) = k * ---------------------------------
-//            (s-p[0])*(s-p[1])*...*(s-z[np-1])
-void bilinear_zpk(liquid_float_complex * _z,
-                  unsigned int _nz,
-                  liquid_float_complex * _p,
-                  unsigned int _np,
-                  liquid_float_complex _k,
-                  float _m,
-                  liquid_float_complex * _b,
-                  liquid_float_complex * _a);
-
-// bilinear z-transform using polynomial expansion in numerator and
-// denominator
-//
-//          b[0] + b[1]*s + ... + b[nb]*s^(nb-1)
-// H(s) =   ------------------------------------
-//          a[0] + a[1]*s + ... + a[na]*s^(na-1)
-void bilinear_nd(liquid_float_complex * _b,
-                 unsigned int _b_order,
-                 liquid_float_complex * _a,
-                 unsigned int _a_order,
-                 float _m,
-                 liquid_float_complex * _bd,
-                 liquid_float_complex * _ad);
-
-//
-// iir filter design (new)
-//
 void butter_azpkf(unsigned int _n,
                   float _fc,
                   liquid_float_complex * _z,
@@ -954,15 +923,15 @@ void bessel_azpkf(unsigned int _n,
                   liquid_float_complex * _k);
 
 // convert analog z/p/k form to discrete z/p/k form (bilinear z-transform)
-void iirdes_zpka2df(liquid_float_complex * _za,
-                    unsigned int _nza,
-                    liquid_float_complex * _pa,
-                    unsigned int _npa,
-                    liquid_float_complex _ka,
-                    float _m,
-                    liquid_float_complex * _zd,
-                    liquid_float_complex * _pd,
-                    liquid_float_complex * _kd);
+void bilinear_zpkf(liquid_float_complex * _za,
+                   unsigned int _nza,
+                   liquid_float_complex * _pa,
+                   unsigned int _npa,
+                   liquid_float_complex _ka,
+                   float _m,
+                   liquid_float_complex * _zd,
+                   liquid_float_complex * _pd,
+                   liquid_float_complex * _kd);
 
 // convert discrete z/p/k form to transfer function
 void iirdes_dzpk2tff(liquid_float_complex * _zd,
