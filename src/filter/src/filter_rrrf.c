@@ -30,8 +30,9 @@
 #define FIR_FARROW(name)    LIQUID_CONCAT(fir_farrow_rrrf,name)
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_rrrf,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilb,name)
-#define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_rrrf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
+#define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_rrrf,name)
+#define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_rrrf,name)
 #define ITQMFB(name)        LIQUID_CONCAT(itqmfb_rrrf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_rrrf,name)
@@ -63,8 +64,9 @@
 #include "fir_farrow.c"
 #include "fir_filter.c"
 #include "firhilb.c"
-#include "iir_filter.c"
 #include "firpfb.c"
+#include "iir_filter.c"
+#include "iirfiltsos.c"
 #include "interp.c"
 #include "itqmfb.c"
 #include "decim.c"

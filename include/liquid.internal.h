@@ -553,6 +553,37 @@ LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_RRRF, float, float, float)
 LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 
+// 
+// iirfiltsos : infinite impulse respone filter (second-order sections)
+//
+#define IIRFILTSOS_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define IIRFILTSOS_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfiltsos_crcf,name)
+#define IIRFILTSOS_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfiltsos_cccf,name)
+
+#define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
+typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
+void IIRFILTSOS(_init)(IIRFILTSOS() _q,                         \
+                       TC * _b,                                 \
+                       TC * _a);                                \
+void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
+void IIRFILTSOS(_execute)(IIRFILTSOS() _q,                      \
+                          TI   _x,                              \
+                          TO * _y);
+
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRF,
+                                      float,
+                                      float,
+                                      float)
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CRCF,
+                                      liquid_float_complex,
+                                      float,
+                                      liquid_float_complex)
+LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
+                                      liquid_float_complex,
+                                      liquid_float_complex,
+                                      liquid_float_complex)
+
+
 // itqmfb
 #define LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB,TO,TC,TI)      \
 void    ITQMFB(_analysis_execute)(ITQMFB() _q,                  \

@@ -30,6 +30,7 @@
 #define DDS(name)           LIQUID_CONCAT(dds_cccf,name)
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_cccf,name)
 #define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_cccf,name)
+#define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_cccf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
@@ -60,8 +61,9 @@
 #include "autocorr.c"
 #include "dds.c"
 #include "fir_filter.c"
-#include "iir_filter.c"
 #include "firpfb.c"
+#include "iir_filter.c"
+#include "iirfiltsos.c"
 #include "interp.c"
 #include "decim.c"
 //#include "qmfb.c"

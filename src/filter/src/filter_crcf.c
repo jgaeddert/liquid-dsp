@@ -29,8 +29,9 @@
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_crcf,name)
 #define FIR_FARROW(name)    LIQUID_CONCAT(fir_farrow_crcf,name)
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_crcf,name)
-#define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_crcf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_crcf,name)
+#define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_crcf,name)
+#define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_crcf,name)
 #define ITQMFB(name)        LIQUID_CONCAT(itqmfb_crcf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_crcf,name)
@@ -61,8 +62,9 @@
 //#include "autocorr.c"
 #include "fir_farrow.c"
 #include "fir_filter.c"
-#include "iir_filter.c"
 #include "firpfb.c"
+#include "iir_filter.c"
+#include "iirfiltsos.c"
 #include "interp.c"
 #include "itqmfb.c"
 #include "decim.c"
