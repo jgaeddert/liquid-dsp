@@ -38,7 +38,7 @@
 void autotest_iirdes_butter_2()
 {
     // initialize variables
-    unsigned int n = 2;     // filter order
+    unsigned int order = 2;     // filter order
     float fc = 0.25f;       // normalized cutoff frequency
     float tol = 1e-6f;      // error tolerance
 
@@ -56,8 +56,26 @@ void autotest_iirdes_butter_2()
         0.585786437626905f,
         0.292893218813452f};
 
-    // design filter
-    butterf(n,fc,b,a);
+    // design butterworth filter
+    float complex za[order];    // analog complex zeros
+    float complex pa[order];    // analog complex poles
+    float complex ka;           // analog gain
+    butter_azpkf(order,fc,za,pa,&ka);
+    unsigned int nza = 0;
+    unsigned int npa = order;
+
+    // complex digital poles/zeros/gain
+    float complex zd[order];
+    float complex pd[order];
+    float complex kd;
+    float m = 1.0f / tanf(M_PI * fc);
+    iirdes_zpka2df(za,    nza,
+                   pa,    npa,
+                   ka,    m,
+                   zd, pd, &kd);
+
+    // convert complex digital poles/zeros/gain into transfer function
+    iirdes_dzpk2tff(zd,pd,order,kd,b,a);
 
     // Ensure data are equal to within tolerance
     unsigned int i;
@@ -70,7 +88,8 @@ void autotest_iirdes_butter_2()
 // 
 // AUTOTEST : 
 //
-void autotest_iirdes_cplxpair()
+#if 0
+void xautotest_iirdes_cplxpair()
 {
     unsigned int n=5;
     float complex r[n];
@@ -89,6 +108,7 @@ void autotest_iirdes_cplxpair()
     for (i=0; i<n; i++)
         printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
 }
+#endif
 
 // 
 // AUTOTEST : 
