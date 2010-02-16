@@ -58,11 +58,14 @@ struct IIR_FILTER(_s) {
 #endif
 
     // second-order sections 
-    IIR_FILTER() * fsos;    // filters
+    IIRFILTSOS() * fsos;    // filters
     unsigned int nsos;      // number of sections
 };
 
-IIR_FILTER() IIR_FILTER(_create)(TC * _b, unsigned int _nb, TC * _a, unsigned int _na)
+IIR_FILTER() IIR_FILTER(_create)(TC * _b,
+                                 unsigned int _nb,
+                                 TC * _a,
+                                 unsigned int _na)
 {
     IIR_FILTER() f = (IIR_FILTER()) malloc(sizeof(struct IIR_FILTER(_s)));
     f->nb = _nb;
@@ -111,7 +114,7 @@ IIR_FILTER() IIR_FILTER(_create_sos)(TC * _B,
 
     f->type = IIR_FILTER_TYPE_SOS;
     f->nsos = _nsos;
-    f->fsos = (IIR_FILTER()*) malloc( (f->nsos)*sizeof(IIR_FILTER()) );
+    f->fsos = (IIRFILTSOS()*) malloc( (f->nsos)*sizeof(IIRFILTSOS()) );
 
     // create coefficients array and copy over
     f->b = (TC *) malloc(3*(f->nsos)*sizeof(TC));
@@ -127,7 +130,7 @@ IIR_FILTER() IIR_FILTER(_create_sos)(TC * _B,
             at[k] = f->a[3*i+k];
             bt[k] = f->b[3*i+k];
         }
-        f->fsos[i] = IIR_FILTER(_create)(bt,3,at,3);
+        f->fsos[i] = IIRFILTSOS(_create)(bt,at);
         //f->fsos[i] = IIR_FILTER(_create)(f->b+3*i,3,f->a+3*i,3);
     }
     return f;
@@ -153,7 +156,7 @@ void IIR_FILTER(_destroy)(IIR_FILTER() _f)
     if (_f->type == IIR_FILTER_TYPE_SOS) {
         unsigned int i;
         for (i=0; i<_f->nsos; i++)
-            IIR_FILTER(_destroy)(_f->fsos[i]);
+            IIRFILTSOS(_destroy)(_f->fsos[i]);
         free(_f->fsos);
     } else {
         free(_f->v);
@@ -169,7 +172,7 @@ void IIR_FILTER(_print)(IIR_FILTER() _f)
 
     if (_f->type == IIR_FILTER_TYPE_SOS) {
         for (i=0; i<_f->nsos; i++)
-            IIR_FILTER(_print)(_f->fsos[i]);
+            IIRFILTSOS(_print)(_f->fsos[i]);
     } else {
 
         printf("  b :");
@@ -242,7 +245,7 @@ void IIR_FILTER(_execute_sos)(IIR_FILTER() _f, TI _x, TO *_y)
     unsigned int i;
     for (i=0; i<_f->nsos; i++) {
         // run each filter separately
-        IIR_FILTER(_execute_norm)(_f->fsos[i], t0, &t1);
+        IIRFILTSOS(_execute)(_f->fsos[i], t0, &t1);
 
         // output becomes input
         t0 = t1;

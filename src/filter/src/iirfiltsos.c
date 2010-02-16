@@ -20,7 +20,7 @@
  */
 
 //
-// Infinite impulse response filter (second-order sections)
+// Infinite impulse response filter (second-order section)
 //
 
 #include <stdio.h>
@@ -71,13 +71,16 @@ void IIRFILTSOS(_destroy)(IIRFILTSOS() _q)
 void IIRFILTSOS(_print)(IIRFILTSOS() _q)
 {
     printf("iir filter | sos:\n");
-    printf("  b[0] : ");    PRINTVAL_TC(_q->b[0],%12.8f);
-    printf("  b[1] : ");    PRINTVAL_TC(_q->b[1],%12.8f);
-    printf("  b[2] : ");    PRINTVAL_TC(_q->b[2],%12.8f);
 
-    printf("  a[0] : ");    PRINTVAL_TC(_q->a[0],%12.8f);
-    printf("  a[1] : ");    PRINTVAL_TC(_q->a[1],%12.8f);
-    printf("  a[2] : ");    PRINTVAL_TC(_q->a[2],%12.8f);
+    printf("  b : ");
+    PRINTVAL_TC(_q->b[0],%12.8f); printf(",");
+    PRINTVAL_TC(_q->b[1],%12.8f); printf(",");
+    PRINTVAL_TC(_q->b[2],%12.8f); printf("\n");
+
+    printf("  a : ");
+    PRINTVAL_TC(_q->a[0],%12.8f); printf(",");
+    PRINTVAL_TC(_q->a[1],%12.8f); printf(",");
+    PRINTVAL_TC(_q->a[2],%12.8f); printf("\n");
 }
 
 void IIRFILTSOS(_clear)(IIRFILTSOS() _q)
@@ -101,7 +104,7 @@ void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
                _q->a[1]*_q->v[1] -
                _q->a[2]*_q->v[2];
 
-    // compute new y
+    // compute output _y
     *_y = _q->b[0]*_q->v[0] +
           _q->b[1]*_q->v[1] +
           _q->b[2]*_q->v[2];
