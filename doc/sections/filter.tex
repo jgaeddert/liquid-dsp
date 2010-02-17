@@ -151,15 +151,37 @@ See {\tt poly\_binomial\_expand\_pm()} in the math section.
 {\tt bilinear\_zpk()} converts from the analog zeros ($z_k$), poles ($p_k$),
 gain ($k$) form
 \[
-    H_a(s) = k
+    H_a(s) = k_a
             \frac{
-                (s-z_0)(s-z_1)\cdots(s-z_{n-1})
+                (s-z_{a0})(s-z_{a1})\cdots(s-z_{an-1})
             }{
-                (s-p_0)(s-p_1)\cdots(s-p_{m-1})
+                (s-p_{a0})(s-p_{a1})\cdots(s-p_{am-1})
             }
 \]
-The result is a digital filter with complex coefficients arrays
-$\vec{b}$ and $\vec{a}$ each of length $m+1$ where $m$ is the number of poles.
+...maps the analog zeros and poles $\{z_{ai},p_{ai}\}$
+to digital $\{z_{i},p_{i}\}$...
+\[
+    H_d(s) = k_d
+            \frac{
+                (1-z_{0}z^{-1})(1-z_{1}z^{-1})\cdots(1-z_{n-1}z^{-1})
+            }{
+                (1-p_{0}z^{-1})(1-p_{1}z^{-1})\cdots(1-p_{n-1}z^{-1})
+            }
+\]
+...second-order sections form:
+\[
+    H_d(s) = H_0
+             \left[
+                G_0 \frac{1 + z^{-1}}
+                         {1 - p_0 z^{-1}}
+             \right]^r
+             \prod_{k=1}^{L} {\left[
+                G_i \frac{(1-z_iz^{-1})(1-z_i^*z^{-1})}
+                         {(1-p_iz^{-1})(1-p_i^*z^{-1})}
+             \right]}
+\]
+where $r=0$ when the filter order is odd, $r=1$ when the filter order is even,
+and $L=(n-r)/2$.
 
 % Butterworth IIR filter design
 \begin{figure}
