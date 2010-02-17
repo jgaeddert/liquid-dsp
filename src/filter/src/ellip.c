@@ -22,6 +22,10 @@
 //
 // Elliptic filter design
 //
+//  [Orfanidis:2006] Sophocles J. Orfanidis, "Lecture Notes on
+//      Elliptic Filter Design." 2006
+//  [Orfanidis:2005] Sophocles J. Orfanidis, source code available
+//      on www.ece.rutgers.edu/~orfanidi/hpeq
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +56,7 @@ void ellipkf(float _k,
              float * _K,
              float * _Kp)
 {
-    float kmin = 1e-6f;
+    float kmin = 4e-4f;
     float kmax = sqrtf(1-kmin*kmin);
     
     float K;
@@ -60,6 +64,10 @@ void ellipkf(float _k,
 
     float kp = sqrtf(1-_k*_k);
 
+    //printf("ellipkf: k = %16.8e, kp = %16.8e\n", _k, kp);
+
+    // Floating point resolution limits the range of the
+    // computation of K on input _k [Orfanidis:2005]
     if (_k > kmax) {
         float L = -logf(0.25f*kp);
         K = L + 0.25f*(L-1)*kp*kp;
@@ -114,6 +122,15 @@ float ellipdegf(float _N,
 
     float g = b / (1.0f + 2.0f*a);
     float k = 4.0f*sqrtf(q)*g*g;
+
+#if LIQUID_DEBUG_ELLIP_PRINT
+    printf("ellipdegf(N=%f, k1=%f, n=%u):\n", _N, _k1, _n);
+    printf("  K1        :   %12.4e;\n", K1);
+    printf("  K1p       :   %12.4e;\n", K1p);
+    printf("  q1        :   %12.4e;\n", q1);
+    printf("  q         :   %12.4e;\n", q);
+#endif
+
     return k;
 }
 
@@ -218,8 +235,8 @@ void ellip_azpkf(unsigned int _n,
     float k  = Wp/Ws;           // 0.8889f;
     float k1 = ep/es;           // 0.0165f;
 #if LIQUID_DEBUG_ELLIP_PRINT
-    printf("k           : %12.8f\n", k);
-    printf("k1          : %12.8f\n", k1);
+    printf("k           : %12.4e\n", k);
+    printf("k1          : %12.4e\n", k1);
 #endif
 
     float K,  Kp;
@@ -241,7 +258,7 @@ void ellip_azpkf(unsigned int _n,
 
     k = ellipdegf(N,k1,n);      // 0.91427171
 #if LIQUID_DEBUG_ELLIP_PRINT
-    printf("k           : %12.8f\n", k);
+    printf("k           : %12.4e\n", k);
 #endif
 
     float fs_new = fp/k;        // 4.37506723
