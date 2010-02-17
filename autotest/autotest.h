@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -21,7 +22,7 @@
 //
 // Lightweight autotest header
 //
-// Similar to CxxTest, but written for Liquid DSP code in C
+// Similar to CxxTest, but written for liquid DSP code in C
 //
 
 #ifndef __LIQUID_AUTOTEST_H__
@@ -194,6 +195,14 @@ void liquid_autotest_warn(const char * _file,
 // AUTOTEST WARN
 #  define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,#MSG)
 #  define AUTOTEST_WARN(MSG)             AUTOTEST_WARN_FL(__FILE__,__LINE__,MSG)
+
+// AUTOTEST PASS
+#  define AUTOTEST_PASS_FL(F,L)          liquid_autotest_passed()
+#  define AUTOTEST_PASS()                AUTOTEST_PASS_FL(__FILE__,__LINE__)
+
+// AUTOTEST FAIL
+#  define AUTOTEST_FAIL_FL(F,L,MSG)      liquid_autotest_failed_msg(F,L,MSG)
+#  define AUTOTEST_FAIL(MSG)             AUTOTEST_FAIL_FL(__FILE__,__LINE__,MSG)
 
 #endif // __LIQUID_AUTOTEST_H__
 

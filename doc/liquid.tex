@@ -399,7 +399,12 @@ $y$.
 true.
 \paragraph{{\tt CONTEND\_SAME\_DATA}$(ptrA,ptrB,n)$} asserts that each of $n$
 byte values in the arrays referenced by $ptrA$ and $ptrB$ are equal.
+\paragraph{{\tt AUTOTEST\_PASS}$()$} passes unconditionally.
+\paragraph{{\tt AUTOTEST\_FAIL}$(string)$} prints $string$ and fails
+unconditionaly.
 \paragraph{{\tt AUTOTEST\_WARN}$(string)$} simply prints a warning.
+The autotest program will keep track of which tests elicit warnings and add
+them to the list of volatile tests.
 
 Here are some examples:
 \begin{itemize}
