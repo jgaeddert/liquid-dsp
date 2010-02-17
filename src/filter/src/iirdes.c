@@ -32,6 +32,8 @@
 
 #include "liquid.internal.h"
 
+#define LIQUID_IIRDES_DEBUG_PRINT 0
+
 // sorts _z into complex conjugate pairs within a tolerance
 void liquid_cplxpair(float complex * _z,
                      unsigned int _n,
@@ -117,7 +119,7 @@ void bilinear_zpkf(float complex * _za,
         G *= (1 - _pd[i])/(1 - _zd[i]);
     }
 
-#if 1
+#if LIQUID_IIRDES_DEBUG_PRINT
     // print poles and zeros
     printf("zpk_a2df() poles (discrete):\n");
     for (i=0; i<n; i++)
@@ -206,7 +208,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
     unsigned int r = _n % 2;        // odd/even order
     unsigned int L = (_n - r)/2;
 
-#if 1
+#if LIQUID_IIRDES_DEBUG_PRINT
     printf("  n=%u, r=%u, L=%u\n", _n, r, L);
     printf("poles :\n");
     for (i=0; i<_n; i++)
