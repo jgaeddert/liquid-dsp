@@ -208,7 +208,7 @@ int main(int argc, char*argv[]) {
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [0:0.5];\n");
-    fprintf(fid,"set yrange [-4:0.5]\n");
+    fprintf(fid,"set yrange [-80:5]\n");
     fprintf(fid,"set size ratio 0.6\n");
     //fprintf(fid,"set title 'filter design'\n");
     fprintf(fid,"set xlabel 'Normalized Frequency'\n");
