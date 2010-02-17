@@ -34,8 +34,7 @@ void liquid_doc_freqz(float * _b,
                       float * _a,
                       unsigned int _na,
                       unsigned int _nfft,
-                      float * _Hmag,
-                      float * _Harg)
+                      float complex * _H)
 {
     unsigned int i;
 
@@ -62,9 +61,6 @@ void liquid_doc_freqz(float * _b,
     for (i=0; i<_nfft; i++)
         X[i] = B[i] / A[i];
 
-    for (i=0; i<_nfft; i++) {
-        _Hmag[i] = cabsf(X[i]);
-        _Harg[i] = cargf(X[i]);
-    }
+    memmove(_H, X, _nfft*sizeof(float complex));
 }
 

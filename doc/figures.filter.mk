@@ -21,10 +21,17 @@ $(local_pdffiles) : %.pdf : %.eps
 # gnuplot script generator programs
 # 
 
-# cheby1 iir filter design
-src/filter_cheby1 : src/filter_cheby1.c $(lib_objects)
-figures.gen/filter_cheby1.gnu : src/filter_cheby1
-	./$<
+# iir filter design
+src/filter_iirdes : src/filter_iirdes.c $(lib_objects)
+
+# filter design options
+fc	:= 0.2
+order	:= 7
+ripple	:= 1.0
+slsl	:= 60.0
+nfft	:= 1024
+filter_iirdes_opts := -f $(fc) -n $(order) -w $(nfft) -r $(ripple) -s $(slsl)
+figures.gen/filter_cheby1.gnu : src/filter_iirdes ; ./$< -g $@ -f $(fc) -n $(order) -w $(nfft) -r $(ripple) -s $(slsl) -t cheby1
 
 # interpolator
 src/filter_interp_crcf : src/filter_interp_crcf.c $(lib_objects)

@@ -61,8 +61,7 @@ void liquid_doc_freqz(float * _b,
                       float * _a,
                       unsigned int _na,
                       unsigned int _nfft,
-                      float * _Hmag,
-                      float * _Harg);
+                      float complex * _H);
 
 #endif // __LIQUID_DOC_H__
 
