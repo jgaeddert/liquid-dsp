@@ -3,7 +3,11 @@
 #
 
 local_epsfiles :=				\
+	figures.gen/filter_butter.eps		\
 	figures.gen/filter_cheby1.eps		\
+	figures.gen/filter_cheby2.eps		\
+	figures.gen/filter_ellip.eps		\
+	figures.gen/filter_bessel.eps		\
 	figures.gen/filter_interp_crcf.eps	\
 	figures.gen/filter_kaiser.eps		\
 	figures.gen/filter_resamp_crcf.eps	\
@@ -31,7 +35,11 @@ ripple	:= 1.0
 slsl	:= 60.0
 nfft	:= 1024
 filter_iirdes_opts := -f $(fc) -n $(order) -w $(nfft) -r $(ripple) -s $(slsl)
-figures.gen/filter_cheby1.gnu : src/filter_iirdes ; ./$< -g $@ -f $(fc) -n $(order) -w $(nfft) -r $(ripple) -s $(slsl) -t cheby1
+figures.gen/filter_butter.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t butter
+figures.gen/filter_cheby1.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t cheby1
+figures.gen/filter_cheby2.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t cheby2
+figures.gen/filter_ellip.gnu  : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t ellip
+figures.gen/filter_bessel.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t bessel
 
 # interpolator
 src/filter_interp_crcf : src/filter_interp_crcf.c $(lib_objects)

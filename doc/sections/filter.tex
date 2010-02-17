@@ -161,12 +161,44 @@ gain ($k$) form
 The result is a digital filter with complex coefficients arrays
 $\vec{b}$ and $\vec{a}$ each of length $m+1$ where $m$ is the number of poles.
 
-% cheby1 : chebyshev iir filter design
+% Butterworth IIR filter design
+\begin{figure}
+\centering
+\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_butter}
+\caption{{\tt butterf} (Butterworth filter design)}
+\label{fig:module:filter:butter}
+\end{figure}
+
+% Chebyshev type-I IIR filter design
 \begin{figure}
 \centering
 \includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_cheby1}
 \caption{{\tt cheby1f} (Chebyshev type-I filter design)}
 \label{fig:module:filter:cheby1}
+\end{figure}
+
+% Chebyshev type-II IIR filter design
+\begin{figure}
+\centering
+\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_cheby2}
+\caption{{\tt cheby2f} (Chebyshev type-II filter design)}
+\label{fig:module:filter:cheby2}
+\end{figure}
+
+% Elliptic IIR filter design
+\begin{figure}
+\centering
+\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_ellip}
+\caption{{\tt ellipf} (Elliptic filter design)}
+\label{fig:module:filter:ellip}
+\end{figure}
+
+% Bessel IIR filter design
+\begin{figure}
+\centering
+\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_bessel}
+\caption{{\tt besself} (Bessel filter design)}
+\label{fig:module:filter:bessel}
 \end{figure}
 
 
