@@ -223,8 +223,11 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"%% group delay\n");
         fprintf(fid,"c = conv(b,fliplr(conj(a)));\n");
         fprintf(fid,"cr = c.*[0:(length(c)-1)];\n");
-        fprintf(fid,"t0 = fft(cr,nfft);\n");
-        fprintf(fid,"t1 = fft(c, nfft);\n");
+        fprintf(fid,"t0 = fftshift(fft(cr,nfft));\n");
+        fprintf(fid,"t1 = fftshift(fft(c, nfft));\n");
+        fprintf(fid,"polebins = find(abs(t1)<1e-6);\n");
+        fprintf(fid,"t0(polebins)=0;\n");
+        fprintf(fid,"t1(polebins)=1;\n");
         fprintf(fid,"gd = real(t0./t1) - length(a) + 1;\n");
 
     } else {
@@ -254,13 +257,18 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"\n");
         fprintf(fid,"H = ones(1,nfft);\n");
         fprintf(fid,"gd = zeros(1,nfft);\n");
+        fprintf(fid,"t0 = zeros(1,nfft);\n");
+        fprintf(fid,"t1 = zeros(1,nfft);\n");
         fprintf(fid,"for i=1:(L+r),\n");
         fprintf(fid,"    H = H .* fft(B(i,:),nfft)./fft(A(i,:),nfft);\n");
         fprintf(fid,"    %% group delay\n");
         fprintf(fid,"    c = conv(B(i,:),fliplr(conj(A(i,:))));\n");
         fprintf(fid,"    cr = c.*[0:4];\n");
-        fprintf(fid,"    t0 = fft(cr,nfft);\n");
-        fprintf(fid,"    t1 = fft(c, nfft);\n");
+        fprintf(fid,"    t0 = fftshift(fft(cr,nfft));\n");
+        fprintf(fid,"    t1 = fftshift(fft(c, nfft));\n");
+        fprintf(fid,"    polebins = find(abs(t1)<1e-6);\n");
+        fprintf(fid,"    t0(polebins)=0;\n");
+        fprintf(fid,"    t1(polebins)=1;\n");
         fprintf(fid,"    gd = gd + real(t0./t1) - 2;\n");
         fprintf(fid,"end;\n");
         fprintf(fid,"H = fftshift(H);\n");
@@ -282,8 +290,16 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
     fprintf(fid,"axis square;\n");
 
-    // plot magnitude response, group delay
+    // plot group delay
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"  plot(f,gd,'-','Color',[0 0.5 0],'LineWidth',2);\n");
+    fprintf(fid,"  axis([0.0 0.5 0 ceil(1.1*max(gd))]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency');\n");
+    fprintf(fid,"  ylabel('Group delay [samples]');\n");
+
+    // plot magnitude response
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1),\n");
     fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
@@ -297,14 +313,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('Normalized Frequency');\n");
     fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
-#if 0
-    fprintf(fid,"subplot(3,1,3),\n");
-    fprintf(fid,"  plot(f,gd,'-','Color',[0 0.5 0],'LineWidth',2);\n");
-    fprintf(fid,"  axis([0.0 0.5 0 ceil(1.1*max(gd))]);\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"  xlabel('Normalized Frequency');\n");
-    fprintf(fid,"  ylabel('Group delay [samples]');\n");
-#endif
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
