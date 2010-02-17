@@ -632,15 +632,49 @@ LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
 
 // iirdes
 
-// Butterworth polynomial roots
-void butter_rootsf(unsigned int _n,
-                   float complex *_r);
-
-// sorts _z into complex conjugate pairs within a tolerance
+// sorts _z into complex conjugate pairs to within a tolerance
 void liquid_cplxpair(float complex * _z,
                      unsigned int _n,
                      float _tol,
                      float complex * _p);
+
+// Jacobian elliptic functions (src/filter/src/ellip.c)
+
+// Landen transformation (_n iterations)
+void landenf(float _k,
+             unsigned int _n,
+             float * _v);
+
+// compute elliptic integral K(k) for _n recursions
+void ellipkf(float _k,
+             unsigned int _n,
+             float * _K,
+             float * _Kp);
+
+// elliptic degree
+float ellipdegf(float _N,
+                float _k1,
+                unsigned int _n);
+
+// elliptic cd() function (_n recursions)
+float complex ellip_cdf(float complex _u,
+                        float _k,
+                        unsigned int _n);
+
+// elliptic inverse cd() function (_n recursions)
+float complex ellip_acdf(float complex _u,
+                         float _k,
+                         unsigned int _n);
+
+// elliptic sn() function (_n recursions)
+float complex ellip_snf(float complex _u,
+                        float _k,
+                        unsigned int _n);
+
+// elliptic inverse sn() function (_n recursions)
+float complex ellip_asnf(float complex _u,
+                         float _k,
+                         unsigned int _n);
 
 //
 // MODULE : framing

@@ -31,47 +31,6 @@
 
 #define LIQUID_DEBUG_ELLIP_PRINT   0
 
-// forward declarations
-
-// Landen transformation (_n iterations)
-void landenf(float _k,
-             unsigned int _n,
-             float * _v);
-
-// compute elliptic integral K(k) for _n recursions
-void ellipkf(float _k,
-             unsigned int _n,
-             float * _K,
-             float * _Kp);
-
-// elliptic degree
-float ellipdegf(float _N,
-                float _k1,
-                unsigned int _n);
-
-// elliptic cd() function (_n recursions)
-float complex ellip_cdf(float complex _u,
-                        float complex _k,
-                        unsigned int _n);
-
-// elliptic inverse cd() function (_n recursions)
-float complex ellip_acdf(float complex _u,
-                         float complex _k,
-                         unsigned int _n);
-
-
-// elliptic sn() function (_n recursions)
-float complex ellip_snf(float complex _u,
-                        float complex _k,
-                        unsigned int _n);
-
-// elliptic inverse sn() function (_n recursions)
-float complex ellip_asnf(float complex _u,
-                         float complex _k,
-                         unsigned int _n);
-
-// ***************************************************************
-
 // Landen transformation
 void landenf(float _k,
              unsigned int _n,
@@ -160,7 +119,7 @@ float ellipdegf(float _N,
 
 // elliptic cd() function (_n recursions)
 float complex ellip_cdf(float complex _u,
-                        float complex _k,
+                        float _k,
                         unsigned int _n)
 {
     float complex wn = ccosf(_u*M_PI*0.5f);
@@ -175,7 +134,7 @@ float complex ellip_cdf(float complex _u,
 
 // elliptic sn() function (_n recursions)
 float complex ellip_snf(float complex _u,
-                        float complex _k,
+                        float _k,
                         unsigned int _n)
 {
     float complex wn = csinf(_u*M_PI*0.5f);
@@ -190,7 +149,7 @@ float complex ellip_snf(float complex _u,
 
 // elliptic inverse cd() function (_n recursions)
 float complex ellip_acdf(float complex _w,
-                         float complex _k,
+                         float _k,
                          unsigned int _n)
 {
     float v[_n];
@@ -218,7 +177,7 @@ float complex ellip_acdf(float complex _w,
 
 // elliptic inverse sn() function (_n recursions)
 float complex ellip_asnf(float complex _w,
-                         float complex _k,
+                         float _k,
                          unsigned int _n)
 {
     return 1.0 - ellip_acdf(_w,_k,_n);
@@ -252,31 +211,43 @@ void ellip_azpkf(unsigned int _n,
     es = _es;
     Gp = 1/sqrtf(1 + ep*ep);
     Gs = 1/sqrtf(1 + es*es);
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("ep, es      : %12.8f, %12.8f\n", ep, es);
+#endif
 
     float k  = Wp/Ws;           // 0.8889f;
     float k1 = ep/es;           // 0.0165f;
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("k           : %12.8f\n", k);
     printf("k1          : %12.8f\n", k1);
+#endif
 
     float K,  Kp;
     float K1, K1p;
     ellipkf(k, n, &K,  &Kp);    // K  = 2.23533416, Kp  = 1.66463780
     ellipkf(k1,n, &K1, &K1p);   // K1 = 1.57090271, K1p = 5.49361753
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("K,  Kp      : %12.8f, %12.8f\n", K,  Kp);
     printf("K1, K1p     : %12.8f, %12.8f\n", K1, K1p);
+#endif
 
     float Nexact = (K1p/K1)/(Kp/K); // 4.69604063
     float N = ceilf(Nexact);        // 5
     N = _n;
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("N (exact)   : %12.8f\n", Nexact);
     printf("N           : %12.8f\n", N);
+#endif
 
     k = ellipdegf(N,k1,n);      // 0.91427171
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("k           : %12.8f\n", k);
+#endif
 
     float fs_new = fp/k;        // 4.37506723
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("fs_new      : %12.8f\n", fs_new);
+#endif
 
     unsigned int L = (unsigned int)(floorf(N/2.0f)); // 2
     unsigned int r = ((unsigned int)N) % 2;
@@ -285,31 +256,43 @@ void ellip_azpkf(unsigned int _n,
     for (i=0; i<L; i++) {
         float t = (float)i + 1.0f;
         u[i] = (2.0f*t - 1.0f)/N;
+#if LIQUID_DEBUG_ELLIP_PRINT
         printf("u[%3u]      : %12.8f\n", i, u[i]);
+#endif
     }
     float complex zeta[L];
     for (i=0; i<L; i++) {
         zeta[i] = ellip_cdf(u[i],k,n);
+#if LIQUID_DEBUG_ELLIP_PRINT
         printf("zeta[%3u]   : %12.8f + j*%12.8f\n", i, crealf(zeta[i]), cimagf(zeta[i]));
+#endif
     }
 
     // compute filter zeros
     float complex za[L];
     for (i=0; i<L; i++) {
         za[i] = _Complex_I * Wp / (k*zeta[i]);
+#if LIQUID_DEBUG_ELLIP_PRINT
         printf("za[%3u]     : %12.8f + j*%12.8f\n", i, crealf(za[i]), cimagf(za[i]));
+#endif
     }
 
     float complex v0 = -_Complex_I*ellip_asnf(_Complex_I/ep, k1, n)/N;
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("v0          : %12.8f + j*%12.8f\n", crealf(v0), cimagf(v0));
+#endif
 
     float complex pa[L];
     for (i=0; i<L; i++) {
         pa[i] = Wp*_Complex_I*ellip_cdf(u[i]-_Complex_I*v0, k, n);
+#if LIQUID_DEBUG_ELLIP_PRINT
         printf("pa[%3u]     : %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
+#endif
     }
     float complex pa0 = Wp * _Complex_I*ellip_snf(_Complex_I*v0, k, n);
+#if LIQUID_DEBUG_ELLIP_PRINT
     printf("pa0         : %12.8f + j*%12.8f\n", crealf(pa0), cimagf(pa0));
+#endif
 
     // compute poles
     unsigned int t=0;
