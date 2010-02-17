@@ -853,6 +853,18 @@ float fir_group_delay(float * _h,
                       unsigned int _n,
                       float _fc);
 
+// Compute group delay for an IIR filter
+//  _b      : filter numerator coefficients
+//  _nb     : filter numerator length
+//  _a      : filter denominator coefficients
+//  _na     : filter denominator length
+//  _fc     : frequency at which delay is evaluated (-0.5 < _fc < 0.5)
+float iir_group_delay(float * _b,
+                      unsigned int _nb,
+                      float * _a,
+                      unsigned int _na,
+                      float _fc);
+
 //
 // IIR filter design
 //
