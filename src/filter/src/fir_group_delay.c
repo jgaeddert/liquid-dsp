@@ -57,8 +57,12 @@ float iir_group_delay(float * _b,
     unsigned int nc = _na + _nb - 1;
     float c[nc];
     unsigned int i,j;
-    for (i=0; i<_nb; i++) {
-        for (j=0; j<_na; j++) {
+    for (i=0; i<nc; i++)
+        c[i] = 0.0;
+
+    for (i=0; i<_na; i++) {
+        for (j=0; j<_nb; j++) {
+            c[i+j] += conjf(_a[_na-i-1])*_b[j];
         }
     }
 
@@ -69,11 +73,9 @@ float iir_group_delay(float * _b,
         t1 += c[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
     }
 
-    float tol = 1e-12f;
-    if (cabsf(t1)<tol) {
-        t0 = 0.0f;
-        t1 = 1.0f;
-    }
+    float tol = 1e-5f;
+    if (cabsf(t1)<tol)
+        return 0.0f;
 
     return crealf(t0/t1) - (_na - 1);
 }
