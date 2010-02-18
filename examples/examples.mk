@@ -74,6 +74,7 @@ local_src	:=			\
 	gport2_threaded_example.c	\
 	gradient_search_example.c	\
 	interleaver_example.c		\
+	iirqmfb_crcf_example.c		\
 	itqmfb_crcf_example.c		\
 	itqmfb_rrrf_example.c		\
 	kmeans_example.c		\

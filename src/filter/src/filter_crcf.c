@@ -33,6 +33,7 @@
 #define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_crcf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_crcf,name)
+#define IIRQMFB(name)       LIQUID_CONCAT(iirqmfb_crcf,name)
 #define ITQMFB(name)        LIQUID_CONCAT(itqmfb_crcf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_crcf,name)
 #define QMFB(name)          LIQUID_CONCAT(qmfb_crcf,name)
@@ -66,6 +67,7 @@
 #include "iir_filter.c"
 #include "iirfiltsos.c"
 #include "interp.c"
+#include "iirqmfb.c"
 #include "itqmfb.c"
 #include "decim.c"
 #include "qmfb.c"

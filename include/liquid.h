@@ -1270,10 +1270,37 @@ LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CRCF,
                        float,
                        liquid_float_complex)
 
-//LIQUID_QMFB_DEFINE_API(QMFB_MANGLE_CCCF,
-//                       liquid_float_complex,
-//                       liquid_float_complex,
-//                       liquid_float_complex)
+// 
+// iir quadrature mirror filter banks
+//
+#define IIRQMFB_MANGLE_RRRF(name)   LIQUID_CONCAT(iirqmfb_rrrf,name)
+#define IIRQMFB_MANGLE_CRCF(name)   LIQUID_CONCAT(iirqmfb_crcf,name)
+
+#define LIQUID_IIRQMFB_DEFINE_API(IIRQMFB,TO,TC,TI)             \
+typedef struct IIRQMFB(_s) * IIRQMFB();                         \
+IIRQMFB() IIRQMFB(_create)(unsigned int _order,                 \
+                           float _beta,                         \
+                           int _type,                           \
+                           int _prototype);                     \
+IIRQMFB() IIRQMFB(_recreate)(IIRQMFB() _q, unsigned int _m);    \
+void IIRQMFB(_destroy)(IIRQMFB() _q);                           \
+void IIRQMFB(_print)(IIRQMFB() _q);                             \
+void IIRQMFB(_clear)(IIRQMFB() _q);                             \
+void IIRQMFB(_execute)(IIRQMFB() _q,                            \
+                       TI   _x0,                                \
+                       TI   _x1,                                \
+                       TO * _y0,                                \
+                       TO * _y1);
+
+LIQUID_IIRQMFB_DEFINE_API(IIRQMFB_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
+
+LIQUID_IIRQMFB_DEFINE_API(IIRQMFB_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
 
 // 
 // iterative tree quadrature mirror filter banks
