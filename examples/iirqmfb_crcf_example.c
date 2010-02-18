@@ -49,10 +49,14 @@ int main() {
 
     // generate time-domain signal (windowed noise)
     for (i=0; i<n; i++) {
+#if 0
         x[i] = (i<num_samples) ? kaiser(i,num_samples,10.0f,0)*randnf() : 0.0f;
         x[i] *= cexpf(_Complex_I*2*M_PI*randf());
         //x[i] = (i==4) ? 1.0f : 0.0f;
+#else
         x[i] = (i<num_samples) ? kaiser(i,num_samples,10.0f,0) : 0.0f;
+        //x[i] *= cexpf(_Complex_I*i*0.02f*2*M_PI);
+#endif
     }
 
     // compute QMF analysis sub-channel output
@@ -89,6 +93,18 @@ int main() {
     fprintf(fid,"    plot(t,imag(x),'-x',t,imag(z),'-o');\n");
     fprintf(fid,"    ylabel('imag');\n");
     fprintf(fid,"    legend('original','reconstructed',0);\n");
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"    plot(td,real(y(1,:)),'-o',td,imag(y(1,:)),'-o');\n");
+    fprintf(fid,"    ylabel('H_0');\n");
+    fprintf(fid,"    legend('real','imag',0);\n");
+    fprintf(fid,"    axis([0 n/2 -1 1]);\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"    plot(td,real(y(2,:)),'-o',td,imag(y(2,:)),'-o');\n");
+    fprintf(fid,"    ylabel('H_1');\n");
+    fprintf(fid,"    legend('real','imag',0);\n");
+    fprintf(fid,"    axis([0 n/2 -1 1]);\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

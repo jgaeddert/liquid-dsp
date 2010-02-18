@@ -34,8 +34,7 @@
 //  TO              output data type
 //  TC              coefficient data type
 //  TI              input data type
-//  WINDOW()        window macro
-//  DOTPROD()       dotprod macro
+//  IIR_FILTER()    iir filter macro
 //  PRINTVAL()      print macro
 
 struct IIRQMFB(_s) {
@@ -48,8 +47,10 @@ struct IIRQMFB(_s) {
     unsigned int r;     // order % 2
     unsigned int L;     // (order-r)/2
 
-    IIR_FILTER() A0;
-    IIR_FILTER() A1;
+    IIR_FILTER() A0;    // all-pass filter (lower branch)
+    IIR_FILTER() A1;    // all-pass filter (upper branch)
+
+    TI v;               // delay element
 };
 
 // forward declaration
@@ -119,8 +120,8 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
                           zd,  pd,
                           zd0, pd0,
                           zd1, pd1);
-    unsigned int i;
 #if 0
+    unsigned int i;
     printf("zeros (upper)\n");
     for (i=0; i<order_A0; i++)
         printf("  zd0[%3u] : %12.8f + j*%12.8f\n", i, crealf(zd0[i]), cimagf(zd0[i]));
@@ -144,6 +145,8 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     unsigned int L1 = (order_A1 - r1)/2;
     float B[3*(L1 + r1)];
     float A[3*(L1 + r1)];
+
+    // split complex digital gain between filters
     float kd0 = sqrtf(crealf(kd));
     float kd1 = sqrtf(crealf(kd));
 
@@ -154,6 +157,9 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     // create A1 (lower branch)
     iirdes_dzpk2sosf(zd1,pd1,order_A1,kd1,B,A);
     q->A1 = IIR_FILTER(_create_sos)(B, A, L1+r1);
+
+    // clear the object's internal state
+    IIRQMFB(_clear)(q);
 
     return q;
 }
@@ -187,6 +193,7 @@ void IIRQMFB(_clear)(IIRQMFB() _q)
 {
     IIR_FILTER(_clear)(_q->A0);
     IIR_FILTER(_clear)(_q->A1);
+    _q->v = 0;
 }
 
 
@@ -217,8 +224,8 @@ void IIRQMFB(_analysis_execute)(IIRQMFB() _q,
     IIR_FILTER(_execute)(_q->A1, _x1, &t1);
 
     // compute outputs
-    *_y0 = t0 + t1;
-    *_y1 = t0 - t1;
+    *_y0 = 0.5f*(t0 + t1);
+    *_y1 = 0.5f*(t0 - t1);
 }
 
 void IIRQMFB(_synthesis_execute)(IIRQMFB() _q,
