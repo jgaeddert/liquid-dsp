@@ -14,7 +14,7 @@
 #define OUTPUT_FILENAME "iirqmfb_crcf_example.m"
 
 int main() {
-    unsigned int order=5;           // filter order
+    unsigned int order=9;           // filter order
     float beta = 0.3f;              // sidelobe suppression level
     int prototype=0;                // filter prototype (ignored for now)
     unsigned int num_samples=64;    // number of samples
@@ -52,6 +52,7 @@ int main() {
         x[i] = (i<num_samples) ? kaiser(i,num_samples,10.0f,0)*randnf() : 0.0f;
         x[i] *= cexpf(_Complex_I*2*M_PI*randf());
         //x[i] = (i==4) ? 1.0f : 0.0f;
+        x[i] = (i<num_samples) ? kaiser(i,num_samples,10.0f,0) : 0.0f;
     }
 
     // compute QMF analysis sub-channel output
