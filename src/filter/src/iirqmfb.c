@@ -264,8 +264,10 @@ void IIRQMFB(_allpass_zpk)(unsigned int _order,
     //
     unsigned int r = _order % 2;
     unsigned int L = (_order - r)/2;
-    printf("r : %u\n", r);
-    printf("L : %u\n", L);
+    unsigned int p = L % 2;
+    unsigned int M = (L-p)/2;
+    printf("r   : %u\n", r);
+    printf("L   : %u\n", L);
 
     // sort
     float tol = 1e-4f;
@@ -310,8 +312,11 @@ void IIRQMFB(_allpass_zpk)(unsigned int _order,
         _pd1[k1++] = pdcc[2*L];
     }
 
-    assert(k0 == L);
-    assert(k1 == L+r);
+    printf("k0 : %3u (%3u)\n", k0, 2*(M+p));
+    printf("k1 : %3u (%3u)\n", k1, 2*(M+0)+r);
+
+    assert(k0 == 2*(M+p)+0);
+    assert(k1 == 2*(M+0)+r);
 
 #if 0
     printf("zeros (upper)\n");

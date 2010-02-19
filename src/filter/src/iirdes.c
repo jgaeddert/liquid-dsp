@@ -225,37 +225,49 @@ void iirdes_dzpk2sosf(float complex * _zd,
         printf("  z[%3u] = %12.8f + j*%12.8f\n", i, crealf(zp[i]), cimagf(zp[i]));
 #endif
 
-    float complex t0, t1;
+    float complex z0, z1;
+    float complex p0, p1;
+    float g;
     for (i=0; i<L; i++) {
+        p0 = -pp[2*i+0];
+        p1 = -pp[2*i+1];
+
+        z0 = -zp[2*i+0];
+        z1 = -zp[2*i+1];
+
+        // compute gain
+        g = crealf( (1+p0)*(1+p1) / ((1+z0)*(1+z1)) );
+
         // expand complex pole pairs
-        t0 = -pp[2*i+0];
-        t1 = -pp[2*i+1];
         _A[3*i+0] = 1.0;
-        _A[3*i+1] = crealf(t0+t1);
-        _A[3*i+2] = crealf(t0*t1);
+        _A[3*i+1] = crealf(p0+p1);
+        _A[3*i+2] = crealf(p0*p1);
 
         // expand complex zero pairs
-        t0 = -zp[2*i+0];
-        t1 = -zp[2*i+1];
-        _B[3*i+0] = 1.0;
-        _B[3*i+1] = crealf(t0+t1);
-        _B[3*i+2] = crealf(t0*t1);
+        _B[3*i+0] = g*1.0;
+        _B[3*i+1] = g*crealf(z0+z1);
+        _B[3*i+2] = g*crealf(z0*z1);
     }
 
     // add zero/pole pair if order is odd
     if (r) {
-        _A[3*i+0] = 1.0;
+        p0 = -pp[_n-1];
+        z0 = -zp[_n-1];
+        g  = crealf((1+p0)/(1+z0));
+        _A[3*i+0] =  1.0;
         _A[3*i+1] = -pp[_n-1];
-        _A[3*i+2] = 0.0;
+        _A[3*i+2] =  0.0;
 
-        _B[3*i+0] = 1.0;
-        _B[3*i+1] = -zp[_n-1];
-        _B[3*i+2] = 0.0;
+        _B[3*i+0] =  g*1.0;
+        _B[3*i+1] = -g*zp[_n-1];
+        _B[3*i+2] =  0.0;
     }
 
+#if 0
     // adjust gain
     _B[0] *= _kd;
     _B[1] *= _kd;
     _B[2] *= _kd;
+#endif
 }
 
