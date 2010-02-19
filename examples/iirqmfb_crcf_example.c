@@ -14,13 +14,13 @@
 #define OUTPUT_FILENAME "iirqmfb_crcf_example.m"
 
 int main() {
-    unsigned int order=9;           // filter order
-    float beta = 0.3f;              // sidelobe suppression level
+    unsigned int order=5;           // filter order
+    float beta = 0.3f;              // sidelobe suppression level (ignored for now)
     int prototype=0;                // filter prototype (ignored for now)
     unsigned int num_samples=64;    // number of samples
 
     // derived values
-    unsigned int n = num_samples;
+    unsigned int n = num_samples*1.2;
 
     // ensure even number
     n += (n%2) == 1 ? 1 : 0;
@@ -34,6 +34,8 @@ int main() {
                                             beta,
                                             LIQUID_QMFB_SYNTHESIZER,
                                             prototype);
+
+    iirqmfb_crcf_print(qmfa);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
@@ -88,22 +90,22 @@ int main() {
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"    plot(t,real(x),'-x',t,real(z),'-o');\n");
     fprintf(fid,"    ylabel('real');\n");
-    fprintf(fid,"    legend('original','reconstructed',0);\n");
+    fprintf(fid,"    legend('original','reconstructed',1);\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"    plot(t,imag(x),'-x',t,imag(z),'-o');\n");
     fprintf(fid,"    ylabel('imag');\n");
-    fprintf(fid,"    legend('original','reconstructed',0);\n");
+    fprintf(fid,"    legend('original','reconstructed',1);\n");
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"    plot(td,real(y(1,:)),'-o',td,imag(y(1,:)),'-o');\n");
     fprintf(fid,"    ylabel('H_0');\n");
-    fprintf(fid,"    legend('real','imag',0);\n");
+    fprintf(fid,"    legend('real','imag',1);\n");
     fprintf(fid,"    axis([0 n/2 -1 1]);\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"    plot(td,real(y(2,:)),'-o',td,imag(y(2,:)),'-o');\n");
     fprintf(fid,"    ylabel('H_1');\n");
-    fprintf(fid,"    legend('real','imag',0);\n");
+    fprintf(fid,"    legend('real','imag',1);\n");
     fprintf(fid,"    axis([0 n/2 -1 1]);\n");
 
     fclose(fid);

@@ -72,6 +72,27 @@ void IIRQMFB(_allpass_zpk)(unsigned int _order,
                            float complex * _zd1,
                            float complex * _pd1);
 
+// digital zeros/poles/gain to power complementary all-pass filters of
+// second-order sections form
+//  _order  :   filter order
+//  _zd     :   digital zeros [1 x _order]
+//  _pd     :   digital poles [1 x _order]
+//
+// r  = _order % 2
+// L  = (_order-r)/2
+// rp = L % 2;
+// Lp = (L - rp)/2;
+//
+// second-order sections (filter 0) : Lp + r
+// second-order sections (filter 1) : Lp + rp
+void IIRQMFB(_allpass_dzpk2sosf)(unsigned int _order,
+                                 float complex * _zd,
+                                 float complex * _pd,
+                                 float * _B0,
+                                 float * _A0,
+                                 float * _B1,
+                                 float * _A1);
+
 IIRQMFB() IIRQMFB(_create)(unsigned int _order,
                            float _beta,
                            int _type,
@@ -84,6 +105,10 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     // design all-pass filters
     q->r = q->order % 2;        // odd order?
     q->L = (q->order - q->r)/2; // floor(order/2)
+
+    if (q->r==0) {
+        fprintf(stderr,"warning: iirqmfb_xxxt_create(), filter order is even\n");
+    }
 
     // analog poles/zeros/gain
     float complex pa[q->order];
@@ -107,56 +132,20 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
                   zd, pd, &kd);
     printf("kd : %12.8f + j*%12.8f\n", crealf(kd), cimagf(kd));
 
-    // search for appropriate pairing
-    unsigned int order_A0 = q->L;
-    unsigned int order_A1 = q->L + q->r;
-    printf("order(A0) : %u\n", order_A0);
-    printf("order(A1) : %u\n", order_A1);
-    float complex zd0[order_A0];
-    float complex pd0[order_A0];
-    float complex zd1[order_A1];
-    float complex pd1[order_A1];
-    IIRQMFB(_allpass_zpk)(q->order,
-                          zd,  pd,
-                          zd0, pd0,
-                          zd1, pd1);
-#if 0
-    unsigned int i;
-    printf("zeros (upper)\n");
-    for (i=0; i<order_A0; i++)
-        printf("  zd0[%3u] : %12.8f + j*%12.8f\n", i, crealf(zd0[i]), cimagf(zd0[i]));
-    printf("poles (upper)\n");
-    for (i=0; i<order_A0; i++)
-        printf("  pd0[%3u] : %12.8f + j*%12.8f\n", i, crealf(pd0[i]), cimagf(pd0[i]));
-
-    printf("\n");
-    printf("zeros (lower)\n");
-    for (i=0; i<order_A1; i++)
-        printf("  zd1[%3u] : %12.8f + j*%12.8f\n", i, crealf(zd1[i]), cimagf(zd1[i]));
-    printf("poles (lower)\n");
-    for (i=0; i<order_A1; i++)
-        printf("  pd1[%3u] : %12.8f + j*%12.8f\n", i, crealf(pd1[i]), cimagf(pd1[i]));
-#endif
-
-    // create filters
-    unsigned int r0 = order_A0 % 2;
-    unsigned int L0 = (order_A0 - r0)/2;
-    unsigned int r1 = order_A1 % 2;
-    unsigned int L1 = (order_A1 - r1)/2;
-    float B[3*(L1 + r1)];
-    float A[3*(L1 + r1)];
-
-    // split complex digital gain between filters
-    float kd0 = sqrtf(crealf(kd));
-    float kd1 = sqrtf(crealf(kd));
-
-    // create A0 (upper branch)
-    iirdes_dzpk2sosf(zd0,pd0,order_A0,kd0,B,A);
-    q->A0 = IIR_FILTER(_create_sos)(B, A, L0+r0);
-
-    // create A1 (lower branch)
-    iirdes_dzpk2sosf(zd1,pd1,order_A1,kd1,B,A);
-    q->A1 = IIR_FILTER(_create_sos)(B, A, L1+r1);
+    // TODO : decrease allocated array size (this is too large)
+    unsigned int rp = q->L % 2;
+    unsigned int Lp = (q->L-rp)/2;
+    unsigned int order_A0 = Lp + q->r;
+    unsigned int order_A1 = Lp + rp;
+    float B0[3*order_A0];
+    float A0[3*order_A0];
+    float B1[3*order_A1];
+    float A1[3*order_A1];
+    IIRQMFB(_allpass_dzpk2sosf)(q->order, zd, pd,
+                                B0, A0,
+                                B1, A1);
+    q->A0 = IIR_FILTER(_create_sos)(B0, A0, order_A0);
+    q->A1 = IIR_FILTER(_create_sos)(B1, A1, order_A1);
 
     // clear the object's internal state
     IIRQMFB(_clear)(q);
@@ -215,15 +204,16 @@ void IIRQMFB(_analysis_execute)(IIRQMFB() _q,
                                 TO * _y0,
                                 TO * _y1)
 {
-    // run upper branch
+    // compute upper branch
     TO t0;
     IIR_FILTER(_execute)(_q->A0, _x0, &t0);
 
-    // run lower branch
+    // compute lower branch (delayed input)
     TO t1;
-    IIR_FILTER(_execute)(_q->A1, _x1, &t1);
+    IIR_FILTER(_execute)(_q->A1, _q->v, &t1);
+    _q->v = _x1;
 
-    // compute outputs
+    // compute output
     *_y0 = 0.5f*(t0 + t1);
     *_y1 = 0.5f*(t0 - t1);
 }
@@ -234,11 +224,14 @@ void IIRQMFB(_synthesis_execute)(IIRQMFB() _q,
                                  TO * _y0,
                                  TO * _y1)
 {
+    // compute upper branch (delayed output)
+    *_y0 = _q->v;
     TI t0 = _x0 + _x1;
-    TI t1 = _x0 - _x1;
+    IIR_FILTER(_execute)(_q->A0, t0, &_q->v);
 
-    IIR_FILTER(_execute)(_q->A0, t0, _y0);
-    IIR_FILTER(_execute)(_q->A1, t1, _y1);
+    // compute lower branch
+    TI t1 = _x0 - _x1;
+    IIR_FILTER(_execute)(_q->A1, t0, _y1);
 }
 
 // internal
@@ -336,6 +329,116 @@ void IIRQMFB(_allpass_zpk)(unsigned int _order,
 #endif
 
 
+}
+
+// digital zeros/poles/gain to power complementary all-pass filters of
+// second-order sections form
+//  _order  :   filter order
+//  _zd     :   digital zeros [1 x _order]
+//  _pd     :   digital poles [1 x _order]
+//
+// r = _order % 2
+// L = (_order-r)/2
+// NOTE: special conditions exist for this to work
+void IIRQMFB(_allpass_dzpk2sosf)(unsigned int _order,
+                                 float complex * _zd,
+                                 float complex * _pd,
+                                 float * _B0,
+                                 float * _A0,
+                                 float * _B1,
+                                 float * _A1)
+{
+    // NOTE : zeros and gain are ignored
+
+    // find/group complex conjugate pairs (poles)
+    float tol = 1e-4f;
+    float complex pdcc[_order];
+    liquid_cplxpair(_pd,_order,tol,pdcc);
+
+    // TODO : ensure values are sorted properly
+    unsigned int r = _order % 2;    // number of first-order sections
+    unsigned int L = (_order-r)/2;  // total number of second-order sections
+
+    unsigned int i;
+    printf("iirqmfb_xxxt_allpass_dzpk2sosf() :\n");
+    for (i=0; i<_order; i++) {
+        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(pdcc[i]), cimagf(pdcc[i]));
+
+        if (fabsf(crealf(pdcc[i])) > tol) {
+            fprintf(stderr,"warning: iirqmfb_xxxt_allpass_zpk(), not all poles lie on imaginary axis\n");
+        }
+    }
+
+    unsigned int k0=0;
+    unsigned int k1=0;
+    for (i=0; i<L; i++) {
+        float complex p0 = -pdcc[2*i+0];
+        float complex p1 = -pdcc[2*i+1];
+
+        if ( (i%2)==1 ) {
+            _A0[3*k0+0] = _B0[3*k0+2] = 1.0;
+            _A0[3*k0+1] = _B0[3*k0+1] = crealf(p0+p1);
+            _A0[3*k0+2] = _B0[3*k0+0] = crealf(p0*p1);
+            k0++;
+        } else {
+            _A1[3*k1+0] = _B1[3*k1+2] = 1.0;
+            _A1[3*k1+1] = _B1[3*k1+1] = crealf(p0+p1);
+            _A1[3*k1+2] = _B1[3*k1+0] = crealf(p0*p1);
+            k1++;
+        }
+    }
+
+    if (r) {
+        float complex p = -pdcc[2*L+0];
+
+        _A0[3*k0 + 0] = _B0[3*k0 + 1] = 1.0;
+        _A0[3*k0 + 1] = _B0[3*k0 + 0] = crealf(p);
+        _A0[3*k0 + 2] = _B0[3*k0 + 2] = 0.0;
+
+        k0++;
+    }
+
+    unsigned int rp = L % 2;
+    unsigned int Lp = (L-rp)/2;
+
+#if 0
+    printf("  n  : %u\n", _order);
+    printf("  r  : %u\n", r);
+    printf("  L  : %u\n", L);
+    printf("  rp : %u\n", rp);
+    printf("  Lp : %u\n", Lp);
+    printf("\n");
+
+    printf("  k0 : %u\n", k0);
+    printf("  k1 : %u\n", k1);
+#endif
+
+    unsigned int n0 = Lp + r;
+    unsigned int n1 = Lp + rp;
+
+    printf("  n0 : %u\n", n0);
+    printf("  n1 : %u\n", n1);
+
+    assert(k0 == n0);
+    assert(k1 == n1);
+
+#if 0
+    printf("B0 [3 x %u] :\n", k0);
+    for (i=0; i<k0; i++)
+        printf("  %12.8f %12.8f %12.8f\n", _B0[3*i+0], _B0[3*i+1], _B0[3*i+2]);
+    printf("A0 [3 x %u] :\n", k0);
+    for (i=0; i<k0; i++)
+        printf("  %12.8f %12.8f %12.8f\n", _A0[3*i+0], _A0[3*i+1], _A0[3*i+2]);
+
+    printf("\n");
+
+    printf("B1 [3 x %u] :\n", k1);
+    for (i=0; i<k1; i++)
+        printf("  %12.8f %12.8f %12.8f\n", _B1[3*i+0], _B1[3*i+1], _B1[3*i+2]);
+    printf("A1 [3 x %u] :\n", k1);
+    for (i=0; i<k1; i++)
+        printf("  %12.8f %12.8f %12.8f\n", _A1[3*i+0], _A1[3*i+1], _A1[3*i+2]);
+#endif
 }
 
 
