@@ -15,27 +15,29 @@
 
 int main() {
     // options
-    unsigned int h_len = 13;    // filter semi-length (filter delay)
+    unsigned int h_len = 7;     // filter semi-length (filter delay)
     float r=0.9f;               // resampling rate (output/input)
     float bw=0.5f;              // resampling filter bandwidth
     float slsl=-60.0f;          // resampling filter sidelobe suppression level
     unsigned int npfb=32;       // number of filters in bank (timing resolution)
-    unsigned int n=128;         // number of input samples
+    unsigned int n=180;         // number of input samples
 
-    unsigned int nx = n + 2*h_len;
+    // number of input samples (adjusted for filter delay)
+    unsigned int nx = n + h_len;
 
     // generate input sequence : windowed sum of complex sinusoids
     unsigned int i;
     float complex x[nx];
     for (i=0; i<nx; i++) {
         float complex jphi = _Complex_I*2.0f*M_PI*i;
-        x[i] = cexpf(jphi*0.04f) + 1.4f*cexpf(jphi*0.07f);
-        //x[i] *= blackmanharris(i,nx);
-        unsigned int t = 16;
+        x[i] = cexpf(jphi*0.02f) + 1.4f*cexpf(jphi*0.07f);
+        
+        // window edge size
+        unsigned int t = (unsigned int)(0.1*n);
         if (i < n) {
+            // edge-rounded window
             if (i < t)          x[i] *= blackmanharris(i,2*t);
-            else if (i < n-t)   x[i] *= 1.0f;
-            else                x[i] *= blackmanharris(n-i-1,2*t);
+            else if (i >= n-t)  x[i] *= blackmanharris(n-i-1,2*t);
         } else {
             x[i] = 0.;
         }
