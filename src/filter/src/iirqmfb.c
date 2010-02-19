@@ -107,7 +107,8 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     q->L = (q->order - q->r)/2; // floor(order/2)
 
     if (q->r==0) {
-        fprintf(stderr,"warning: iirqmfb_xxxt_create(), filter order is even\n");
+        fprintf(stderr,"error: iirqmfb_xxxt_create(), filter order is even (odd filter order will be supported later)\n");
+        exit(1);
     }
 
     // analog poles/zeros/gain
@@ -135,7 +136,7 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     // TODO : decrease allocated array size (this is too large)
     unsigned int rp = q->L % 2;
     unsigned int Lp = (q->L-rp)/2;
-    unsigned int order_A0 = Lp + q->r;
+    unsigned int order_A0 = Lp;
     unsigned int order_A1 = Lp + rp;
     float B0[3*order_A0];
     float A0[3*order_A0];
@@ -225,13 +226,13 @@ void IIRQMFB(_synthesis_execute)(IIRQMFB() _q,
                                  TO * _y1)
 {
     // compute upper branch (delayed output)
-    *_y0 = _q->v;
     TI t0 = _x0 + _x1;
-    IIR_FILTER(_execute)(_q->A0, t0, &_q->v);
+    *_y0 = _q->v;
+    IIR_FILTER(_execute)(_q->A1, t0, &_q->v);
 
     // compute lower branch
     TI t1 = _x0 - _x1;
-    IIR_FILTER(_execute)(_q->A1, t0, _y1);
+    IIR_FILTER(_execute)(_q->A0, t1, _y1);
 }
 
 // internal
@@ -388,6 +389,7 @@ void IIRQMFB(_allpass_dzpk2sosf)(unsigned int _order,
         }
     }
 
+#if 0
     if (r) {
         float complex p = -pdcc[2*L+0];
 
@@ -397,6 +399,7 @@ void IIRQMFB(_allpass_dzpk2sosf)(unsigned int _order,
 
         k0++;
     }
+#endif
 
     unsigned int rp = L % 2;
     unsigned int Lp = (L-rp)/2;
@@ -413,7 +416,7 @@ void IIRQMFB(_allpass_dzpk2sosf)(unsigned int _order,
     printf("  k1 : %u\n", k1);
 #endif
 
-    unsigned int n0 = Lp + r;
+    unsigned int n0 = Lp;
     unsigned int n1 = Lp + rp;
 
     printf("  n0 : %u\n", n0);
