@@ -16,7 +16,7 @@
 int main() {
     // options
     unsigned int h_len = 7;     // filter semi-length (filter delay)
-    float r=0.9f;               // resampling rate (output/input)
+    float r=1/sqrtf(2);         // resampling rate (output/input)
     float bw=0.5f;              // resampling filter bandwidth
     float slsl=-60.0f;          // resampling filter sidelobe suppression level
     unsigned int npfb=32;       // number of filters in bank (timing resolution)
@@ -73,7 +73,7 @@ int main() {
     fprintf(fid,"set ytics -5,1,5\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set pointsize 0.6\n");
-    fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' lw 1\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set multiplot layout 2,1 scale 1.0,1.0\n");
 
     fprintf(fid,"# real\n");
@@ -138,7 +138,7 @@ int main() {
     fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set pointsize 0.6\n");
-    fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' lw 1\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n",LIQUID_DOC_COLOR_GRID);
 
     fprintf(fid,"# real\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '#999999' title 'original',\\\n");

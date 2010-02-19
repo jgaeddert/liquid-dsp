@@ -27,6 +27,7 @@
 #include <liquid/liquid.h>
 
 // default gnuplot colors
+#define LIQUID_DOC_COLOR_GRID   "#cccccc"   // very light gray
 #define LIQUID_DOC_COLOR_GRAY   "#999999"   // light gray
 #define LIQUID_DOC_COLOR_BLUE   "#004080"   // blue
 #define LIQUID_DOC_COLOR_GREEN  "#008040"   // green

@@ -215,7 +215,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
     fprintf(fid,"set nokey # disable legned\n");
     fprintf(fid,"set grid xtics ytics\n");
-    fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' lw 1\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"plot '-' using 2:3 with lines linetype 1 linewidth 4 linecolor rgb '%s'\n",LIQUID_DOC_COLOR_BLUE);
     fprintf(fid,"#    i   freq         PSD  \n");
     for (i=0; i<nfft2; i++) {

@@ -10,6 +10,8 @@
 #include <getopt.h>
 #include <liquid/liquid.h>
 
+#include "liquid.doc.h"
+
 // print usage/help message
 void usage()
 {
@@ -114,7 +116,7 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"set grid polar\n");
     else
         fprintf(fid,"set grid xtics ytics\n");
-    fprintf(fid,"set grid linetype 1 linecolor rgb '#999999' linewidth 1\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set pointsize 1.0\n");
     if (!plot_labels) {
         // do not print labels
