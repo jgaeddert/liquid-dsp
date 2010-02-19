@@ -53,25 +53,6 @@ struct IIRQMFB(_s) {
     TI v;               // delay element
 };
 
-// forward declaration
-//  _order  :   filter order
-//  _zd     :   digital zeros [1 x _order]
-//  _pd     :   digital poles [1 x _order]
-//
-// r = _order % 2
-// L = (_order-r)/2
-//  _zd0    :   digital zeros, upper all-pass filter [1 x L]
-//  _pd0    :   digital poles, upper all-pass filter [1 x L]
-//  _zd1    :   digital zeros, lower all-pass filter [1 x L+r]
-//  _pd1    :   digital poles, lower all-pass filter [1 x L+r]
-void IIRQMFB(_allpass_zpk)(unsigned int _order,
-                           float complex * _zd,
-                           float complex * _pd,
-                           float complex * _zd0,
-                           float complex * _pd0,
-                           float complex * _zd1,
-                           float complex * _pd1);
-
 // digital zeros/poles/gain to power complementary all-pass filters of
 // second-order sections form
 //  _order  :   filter order
@@ -237,101 +218,6 @@ void IIRQMFB(_synthesis_execute)(IIRQMFB() _q,
 
 // internal
 
-//  _order  :   filter order
-//  _zd     :   digital zeros [1 x _order]
-//  _pd     :   digital poles [1 x _order]
-//
-// r = _order % 2
-// L = (_order-r)/2
-//  _zd0    :   digital zeros, upper all-pass filter [1 x L]
-//  _pd0    :   digital poles, upper all-pass filter [1 x L]
-//  _zd1    :   digital zeros, lower all-pass filter [1 x L+r]
-//  _pd1    :   digital poles, lower all-pass filter [1 x L+r]
-void IIRQMFB(_allpass_zpk)(unsigned int _order,
-                           float complex * _zd,
-                           float complex * _pd,
-                           float complex * _zd0,
-                           float complex * _pd0,
-                           float complex * _zd1,
-                           float complex * _pd1)
-{
-    //
-    unsigned int r = _order % 2;
-    unsigned int L = (_order - r)/2;
-    unsigned int p = L % 2;
-    unsigned int M = (L-p)/2;
-    printf("r   : %u\n", r);
-    printf("L   : %u\n", L);
-
-    // sort
-    float tol = 1e-4f;
-
-    // find/group complex conjugate pairs (zeros, poles)
-    float complex zdcc[_order];
-    float complex pdcc[_order];
-    liquid_cplxpair(_zd,_order,tol,zdcc);
-    liquid_cplxpair(_pd,_order,tol,pdcc);
-
-    unsigned int i;
-    for (i=0; i<_order; i++) {
-        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(pdcc[i]), cimagf(pdcc[i]));
-
-        if (fabsf(crealf(pdcc[i])) > tol) {
-            fprintf(stderr,"warning: iirqmfb_xxxt_allpass_zpk(), not all poles lie on imaginary axis\n");
-        }
-    }
-
-    // TODO : ensure values are sorted properly
-
-    unsigned int k0=0;
-    unsigned int k1=0;
-    for (i=0; i<L; i++) {
-        if ( (i%2)==0 ) {
-            _zd0[k0  ] = zdcc[2*i+0];
-            _pd0[k0++] = pdcc[2*i+0];
-
-            _zd0[k0  ] = zdcc[2*i+1];
-            _pd0[k0++] = pdcc[2*i+1];
-        } else {
-            _zd1[k1  ] = zdcc[2*i+0];
-            _pd1[k1++] = pdcc[2*i+0];
-
-            _zd1[k1  ] = zdcc[2*i+1];
-            _pd1[k1++] = pdcc[2*i+1];
-        }
-    }
-
-    if (r) {
-        _zd1[k1  ] = zdcc[2*L];
-        _pd1[k1++] = pdcc[2*L];
-    }
-
-    printf("k0 : %3u (%3u)\n", k0, 2*(M+p));
-    printf("k1 : %3u (%3u)\n", k1, 2*(M+0)+r);
-
-    assert(k0 == 2*(M+p)+0);
-    assert(k1 == 2*(M+0)+r);
-
-#if 0
-    printf("zeros (upper)\n");
-    for (i=0; i<L; i++)
-        printf("  zd0[%3u] : %12.8f + j*%12.8f\n", i, crealf(_zd0[i]), cimagf(_zd0[i]));
-    printf("poles (upper)\n");
-    for (i=0; i<L; i++)
-        printf("  pd0[%3u] : %12.8f + j*%12.8f\n", i, crealf(_pd0[i]), cimagf(_pd0[i]));
-
-    printf("\n");
-    printf("zeros (lower)\n");
-    for (i=0; i<L+r; i++)
-        printf("  zd1[%3u] : %12.8f + j*%12.8f\n", i, crealf(_zd1[i]), cimagf(_zd1[i]));
-    printf("poles (lower)\n");
-    for (i=0; i<L+r; i++)
-        printf("  pd1[%3u] : %12.8f + j*%12.8f\n", i, crealf(_pd1[i]), cimagf(_pd1[i]));
-#endif
-
-
-}
-
 // digital zeros/poles/gain to power complementary all-pass filters of
 // second-order sections form
 //  _order  :   filter order
@@ -388,18 +274,6 @@ void IIRQMFB(_allpass_dzpk2sosf)(unsigned int _order,
             k1++;
         }
     }
-
-#if 0
-    if (r) {
-        float complex p = -pdcc[2*L+0];
-
-        _A0[3*k0 + 0] = _B0[3*k0 + 1] = 1.0;
-        _A0[3*k0 + 1] = _B0[3*k0 + 0] = crealf(p);
-        _A0[3*k0 + 2] = _B0[3*k0 + 2] = 0.0;
-
-        k0++;
-    }
-#endif
 
     unsigned int rp = L % 2;
     unsigned int Lp = (L-rp)/2;
