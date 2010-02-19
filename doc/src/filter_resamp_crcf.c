@@ -20,7 +20,9 @@ int main() {
     float bw=0.5f;              // resampling filter bandwidth
     float slsl=-60.0f;          // resampling filter sidelobe suppression level
     unsigned int npfb=32;       // number of filters in bank (timing resolution)
-    unsigned int nx=128;        // number of input samples
+    unsigned int n=128;         // number of input samples
+
+    unsigned int nx = n + 2*h_len;
 
     // generate input sequence : windowed sum of complex sinusoids
     unsigned int i;
@@ -29,6 +31,14 @@ int main() {
         float complex jphi = _Complex_I*2.0f*M_PI*i;
         x[i] = cexpf(jphi*0.04f) + 1.4f*cexpf(jphi*0.07f);
         //x[i] *= blackmanharris(i,nx);
+        unsigned int t = 16;
+        if (i < n) {
+            if (i < t)          x[i] *= blackmanharris(i,2*t);
+            else if (i < n-t)   x[i] *= 1.0f;
+            else                x[i] *= blackmanharris(n-i-1,2*t);
+        } else {
+            x[i] = 0.;
+        }
     }
 
     // output buffer with extra padding for good measure

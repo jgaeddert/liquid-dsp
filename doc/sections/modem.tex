@@ -11,7 +11,45 @@ For the digital modems, data bits are encoded into symbols representing
 carrier frequency, phase, amplitude, etc.
 
 \subsection{Analog modulation schemes}
-freqmod, ampmod, etc.
+\subsubsection{{\tt freqmodem} (analog FM)}
+The {\tt freqmodem} object implements an analog frequency modulation (FM)
+modulator and demodulator.
+Two options for demodulation are possible...
+[TODO: check this equation]
+\[
+    s(t) =  \exp\left\{
+                j 2 \pi k f_c
+                \int_{0}^{t}{
+                    m(\tau)d\tau
+                }
+            \right\}
+\]
+where $-1 \le m(t) \le 1$ is the message signal, $f_c$ is the carrier
+frequency, and $k$ is the modulation index.
+The modulation index governs the relative bandwidth of the signal
+[TODO: explain in more detail].
+
+\subsubsection{{\tt ampmodem} (analog AM)}
+The {\tt ampmodem} object implements an analog amplitude modulation (AM)
+modulator/demodulator pair.
+Two transmission schemes are available: single side-band (SSB), and
+double side-band (DSB).
+For SSB, the receiver can either use a peak detector, or phase-locked loop
+({\it not yet implemented}).
+For DSB, the receiver uses a Costas loop for carrier frequency and phase
+tracking.
+
+Single side-band:
+\[
+    s_1(t) = \frac{1}{2}\Bigl(1+k m(t)\Bigr)e^{j 2 \pi f_c t}
+\]
+where $-1 \le m(t) \le 1$ is the message signal, $f_c$ is the carrier frequency,
+and $k$ is the modulation index.
+
+Double side-band:
+\[
+    s_2(t) = m(t)e^{j 2 \pi f_c t}
+\]
 
 \subsection{Continuous phase digital modulation schemes}
 fsk, msk, etc. [NOTE: not yet implemented]

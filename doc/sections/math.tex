@@ -18,14 +18,15 @@ and polynomial operations
 
 {\tt liquid\_sincf}
 \[ \sinc(z) = \frac{\sin(\pi z)}{\pi z} \]
-For small $z$, this can be approximated as
+For small $z$, this can be approximated by expanding the first few terms of
+the series
 \[
-    \sinc(z) \approx \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
+    \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
 \]
 
 {\tt liquid\_besseli0}
 \[
-    \ln\left(\ln\left(I_0(z)\right)\right) \approx
+    \ln\Bigl[\ln\left(I_0(z)\right)\Bigr] \approx
     c_0 + c_1 t + c_2 t ^2 + c_3 t^3
 \]
 where $t=\ln(z)$ and
@@ -41,11 +42,24 @@ This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
 
 \subsection{Polynomials}
+Like matrices, polynomials in \liquid\ do not use a particular data type, but
+are stored as memory arrays.
+\[
+    P^n(x) = \sum_{k=0}^{n}{c_k x^k}
+           = c_0 + c_1 x + c_2 x^2 + \cdots + c_n x^n
+\]
+An $n^{th}$-order polynomial has $n+1$ coefficients ordered in memory in
+increasing degree.
+For example, a $2^{nd}$-order polynomial $0.1 -2.4x + 1.3x^2$ stored in an
+array {\tt float c[]} has
+{\tt c[0]=0.1},
+{\tt c[1]=-2.4}, and
+{\tt c[2]=1.3}.
 
-\subsubsection{{\tt polyval}}
+\subsubsection{{\tt polyval()}}
 Evaluates the polynomial $P^n(x)$ at $x_0$.
 
-\subsubsection{{\tt polyfit}}
+\subsubsection{{\tt polyfit()}}
 Fits data to a polynomial of order $k-1$ from $n$ samples using the
 least-squares method.
 Data vectors
@@ -53,7 +67,7 @@ $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$...
 Uses matrix algebra to solve system of equations...
 
-\subsubsection{{\tt polyfit\_lagrange}}
+\subsubsection{{\tt polyfit\_lagrange()}}
 Fits dataset of $n$ sample points to exact polynomial of order $n-1$ using
 Lagrange interpolation.
 Given input vectors
@@ -74,33 +88,47 @@ $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$, the interpolating polynomial is
 \]
 See also {\tt poly\_expandroots}.
 
-\subsubsection{{\tt poly\_interp\_lagrange}}
-Uses Lagrange polynomials to interpolate $(x,y)$ from a set
-of $n$ pairs
+\subsubsection{{\tt poly\_interp\_lagrange()}}
+Uses Lagrange polynomials to find the interpolant
+$(\dot{x},\dot{y})$ from a set of $n$ pairs
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
-See also {\tt polyfit\_lagrange}.
+\[
+    \dot{y} =
+        \sum_{j=0}^{n-1}
+        {
+            \left[
+            y_j
+            \prod_{{k=0}\atop{k \ne j}}^{n-1}
+            {
+                \frac{\dot{x}-x_k}{x_j-x_k}
+            }
+            \right]
+        }
+\]
 
-\subsubsection{{\tt poly\_expandroots}}
+See also {\tt polyfit\_lagrange()}.
+
+\subsubsection{{\tt poly\_expandroots()}}
 Expands the a polynomial based on its roots
 \[
     P^n(x) = \prod_{k=0}^{n-1}{(x+a_k)}
 \]
 where $r_k=-a_k$ are the roots of $P^n(x)$.
 
-\subsubsection{{\tt poly\_expandroots2}}
+\subsubsection{{\tt poly\_expandroots2()} {\it not implemented}}
 Expands the a polynomial as
 \[
     P^n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
 \]
 
-\subsubsection{{\tt poly\_binomial\_expand}}
+\subsubsection{{\tt poly\_binomial\_expand()}}
 Expands the a polynomial as a binomial series
 \[
     P^n(x) = (x+1)^n = \sum_{k=0}^{n}{ {n \choose k} x^k}
 \]
 
-\subsubsection{{\tt poly\_binomial\_expand\_pm}}
+\subsubsection{{\tt poly\_binomial\_expand\_pm()}}
 Expands the a polynomial as an alternating binomial series
 [NOTE: change terminology?]
 \[
@@ -109,6 +137,39 @@ Expands the a polynomial as an alternating binomial series
              \left( \sum_{k=0}^{n-j}{ {n \choose k} (-x)^k} \right)
 \]
 
-\subsubsection{{\tt polymul}}
-Multiplies two polynomials $P^n(x)$ and $Q^t(x)$.
+\subsubsection{{\tt polymul()}}
+Multiplies two polynomials $P^n(x)$ and $Q^m(x)$.
+
+\subsubsection{{\tt polydiff()} {\it not yet implemented}}
+Computes the derivative $\frac{\partial}{\partial x}P^n(x)$ of polynomial
+$P^n(x)$
+\[
+    \frac{\partial}{\partial x}P^n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
+\]
+
+\subsubsection{{\tt poly\_findroots\_bairstow()}}
+Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method.
+For a polynomial $P^n(x)$...
+\[
+    P^n(x) = \prod_{k=0}^{n-1}{(x-r_k)}
+\]
+...there exists a polynomial $p^{2}(x)=u + vx + x^2$ which divides
+$P^{n}(x)$ and has two roots (possibly complex)
+\[
+    r_0 = \frac{1}{2}\left(-v-\sqrt{v^2-4u}\right), \; \\
+    r_1 = \frac{1}{2}\left(-v+\sqrt{v^2-4u}\right)
+\]
+If indeed the roots $r_0$ and $r_1$ are complex, they are also complex
+conjugates.
+Bairstow's method uses Newtonian iterations to find a pair $u$ and $v$ which
+are both finite and real-valued.
+This method has several advantages over other methods
+\begin{itemize}
+\item iterations operate on real-valued math, even if the roots are complex
+\item the algorithm is capable of handling multiple roots (unlike the
+      Durand-Kerner method)
+\item the algorithm does not rely on expanding the full polynomial and is
+      therefore resilient to machine precision
+\end{itemize}
+
 
