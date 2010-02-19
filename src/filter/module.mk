@@ -38,6 +38,7 @@ local_s_files	:= 			\
 	filter_common.c			\
 	group_delay.c			\
 	firdes.c			\
+	firdespm.c			\
 	iirdes.c			\
 	rcos.c				\
 	rkaiser.c			\
