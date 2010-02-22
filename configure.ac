@@ -23,7 +23,7 @@ dnl Liquid SDR library configure
 dnl Process with autoconf to generate configure script
 dnl
 
-AC_PREREQ([2.65])
+dnl AC_PREREQ(2.65)
 AC_INIT([liquid-dsp],[0.1.0],[liquid@vt.edu])
 AC_CONFIG_SRCDIR([libliquid.c])
 
