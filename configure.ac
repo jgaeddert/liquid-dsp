@@ -23,7 +23,9 @@ dnl Liquid SDR library configure
 dnl Process with autoconf to generate configure script
 dnl
 
-AC_INIT([liquid-dsp],[0.1.0],[liquid@vt.edu],[liquid])
+AC_PREREQ([2.65])
+AC_INIT([liquid-dsp],[0.1.0],[liquid@vt.edu])
+AC_CONFIG_SRCDIR([libliquid.c])
 
 dnl Autoheader
 AC_CONFIG_HEADER(config.h)
@@ -50,18 +52,24 @@ AC_ARG_ENABLE(profile,
 )
 
 dnl Check for necessary programs
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_RANLIB
 
-dnl Check for necessary libraries
+dnl Check for necessary libraries, library functions
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
 dnl AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c], [malloc, free, memset, memmove], [],
+AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove], [],
              [AC_MSG_ERROR(Need standard c library!)],
              [])
-AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf], [],
+AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
              [AC_MSG_ERROR(Need standard math library!)],
              [])
 
 dnl Check for necessary header files
-AC_CHECK_HEADERS(stdio.h stdlib.h stdbool.h complex.h string.h getopt.h sys/resource.h)
+AC_CHECK_HEADERS([stdio.h stdlib.h stdbool.h complex.h string.h getopt.h sys/resource.h float.h inttypes.h limits.h stdlib.h string.h unistd.h])
 if test -z "$HAVE_stdio.h"
 then
     AC_MSG_ERROR([Need stdio.h!])
@@ -82,12 +90,19 @@ AC_CHECK_LIB([liquidfpm], [q32_mul], [],
              [AC_MSG_WARN(fixed-point math library useful but not required)],
              [])
 
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_SIZE_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT8_T
+
 dnl Check size of certain variables
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(unsigned int)
 
 dnl Check canonical system
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 case $target_cpu in
 i386|i486|i586|i686)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.mmx.c"
@@ -128,4 +143,5 @@ AC_SUBST(DEBUG_OPTION)      dnl debug option
 AC_SUBST(PROFILE_OPTION)    dnl profile symbols
 AC_SUBST(CLIB)              dnl 
 
-AC_OUTPUT(makefile)
+AC_CONFIG_FILES([makefile])
+AC_OUTPUT
