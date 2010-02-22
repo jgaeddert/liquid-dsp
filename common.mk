@@ -1,5 +1,6 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+#                                      Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,6 +20,33 @@
 # 
 # Common module makefile
 #
+# This makefile is included by each module's "module.mk" and expands
+# the variables specific to each module.  This is done for compactness,
+# however it might be a bit confusing.
+#
+# Each module defines these local variables:
+#
+#    module_name    : name of the module (e.g. filter)
+#    local_s_files  : list of local source files (.c)
+#    local_t_files  : list of local autotest headers
+#    local_b_files  : list of local benchmark headers
+#
+# This makefile expands these variables to their names relative to
+# the top srcdir directory.  For example, say the module 'filter'
+# defines $(local_s_files) as
+#
+#     local_s_files := filter_crcf.c \
+#                      filter_cccf.c \
+#                      filter_rrrf.c
+#
+# then this common.mk expands $(local_src) as
+#
+#     local_src := src/filter/src/filter_crcf.c \
+#                  src/filter/src/filter_cccf.c \
+#                  src/filter/src/filter_rrrf.c
+#
+# and appends it to the top-level variable $(sources) variable. This
+# trend continues across the tests and benchmarks files.
 
 local_dir       := $(modulesdir)/$(module_name)
 local_lib       := lib$(module_name).a
