@@ -37,6 +37,14 @@ void fpoly_bessel(unsigned int _n, float * _p);
 
 void fpoly_bessel_roots(unsigned int _n, float complex * _roots);
 
+void fpoly_bessel_roots_orchard(unsigned int _n, float complex * _roots);
+
+void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
+                                          float _x,
+                                          float _y,
+                                          float * _x_hat,
+                                          float * _y_hat);
+
 // ****************************************
 
 void bessel_azpkf(unsigned int _n,
@@ -101,7 +109,8 @@ void fpoly_bessel(unsigned int _n, float * _p)
 void fpoly_bessel_roots(unsigned int _n,
                         float complex * _roots)
 {
-    if (_n < 11) {
+    //if (_n < 11) {
+    if (0) {
         float p[_n];
         fpoly_bessel(_n,p);
         fpoly_findroots(p,_n,_roots);
@@ -109,16 +118,87 @@ void fpoly_bessel_roots(unsigned int _n,
         float m0 = -0.668861023825672*_n + 0.352940768662957;
         float m1 = 1.0f / (1.6013579390149844*_n - 0.0429146801453954);
 
-        unsigned int i;
-        unsigned int r = _n%2;
-        unsigned int L = (_n-r)/2;
+        int i;
+        int r = _n%2;
+        int L = (_n-r)/2;
         float ri, rq;
         for (i=0; i<_n; i++) {
             rq = (i - L - r + 0.5)*1.778f;
             ri = m0 * m1*rq*rq;
 
+            printf("  [%3u] : %12.8f + j*%12.8f\n", i, ri, rq);
+            fpoly_bessel_roots_orchard_recursion(_n,ri,rq,&ri,&rq);
             _roots[i] = ri + _Complex_I*rq;
         }
     }
+}
+
+void fpoly_bessel_roots_orchard(unsigned int _n,
+                                float complex * _roots)
+{
+    // make initial guesses at roots
+
+    // run recursion for each root estimate
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        float x = 1.0f;
+        float y = 0.0f;
+        float x_hat, y_hat;
+        fpoly_bessel_roots_orchard_recursion(_n,x,y,&x_hat,&y_hat);
+    }
+
+    // TODO : check for uniqueness
+}
+
+void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
+                                          float _x,
+                                          float _y,
+                                          float * _x_hat,
+                                          float * _y_hat)
+{
+    if (_n < 2) {
+        fprintf(stderr,"error: fpoly_bessel_roots_orchard_recursion(), n < 2\n");
+        exit(1);
+    }
+    float u0, u1, u2=0, u2p=0;
+    float v0, v1, v2=0, v2p=0;
+    float x = _x;
+    float y = _y;
+
+    unsigned int k,i;
+    unsigned int num_iterations = 10;
+    for (k=0; k<num_iterations; k++) {
+        u0 = 1.0;
+        u1 = 1.0 + x;
+
+        v0 = 0.0f;
+        v1 = y;
+
+        // compute u_r, v_r
+        for (i=2; i<_n; i++) {
+            u2 = (2*i-1)*u1 + (x*x - y*y)*u0 - 2*x*y*v0;
+            v2 = (2*i-1)*v1 + (x*x - y*y)*v0 + 2*x*y*u0;
+
+            // update u[r-1], v[r-1]
+            u0 = u1;
+            v0 = v1;
+
+            // update u[r-2], v[r-2]
+            u1 = u2;
+            v1 = v2;
+        }
+
+        // compute derivatives
+        u2p = u2 - x*u1 + y*v1;
+        v2p = v2 - x*v1 - y*u1;
+
+        // update roots
+        float g = u2p*u2p + v2p*v2p;
+        x -= (u2p*u2 + v2p*v2)/g;
+        y -= (u2p*v2 - v2p*u2)/g;
+    }
+
+    *_x_hat = x;
+    *_y_hat = y;
 }
 
