@@ -104,7 +104,7 @@ AC_CHECK_SIZEOF(unsigned int)
 dnl Check canonical system
 AC_CANONICAL_TARGET
 case $target_cpu in
-i386|i486|i586|i686)
+i386|i486|i586|i686|x86|x86_64)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.mmx.c"
     case $target_os in
     darwin*)
@@ -116,6 +116,9 @@ powerpc*)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.av.c"
     ARCH_OPTION="-fno-common -faltivec";;
 *)
+    dnl unknown architecture : use portable C version
+    MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.mmx.c"
+    ARCH_OPTION="";;
 esac
 
 case $target_os in
