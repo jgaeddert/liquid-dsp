@@ -109,7 +109,7 @@ i386|i486|i586|i686|x86|x86_64)
     darwin*)
         ARCH_OPTION="-march=core2";;
     *)
-        ARCH_OPTION="-march=$target_cpu";;
+        ARCH_OPTION="";;
     esac;;
 powerpc*)
     MLIBS_DOTPROD="dotprod_cccf.c dotprod_crcf.c dotprod_rrrf.av.c"
