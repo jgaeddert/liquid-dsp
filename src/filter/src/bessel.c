@@ -22,6 +22,10 @@
 //
 // Bessel filter design
 //
+// References:
+//  [Bianchi:2007] G. Bianchi and R. Sorrentino, "Electronic Filter Simulation
+//      and Design." New York: McGraw-Hill, 2007.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,21 +61,17 @@ void bessel_azpkf(unsigned int _n,
 
     // analog Bessel filter prototype has no zeros
 
-#if 0
-    // compute gain using standard math log(gamma(z))
-    unsigned int N = _n;
-    unsigned int k = 0;
-    float t0 = lgammaf((float)(2*N-k)+1);
-    float t1 = lgammaf((float)(N-k)  +1);
-    float t2 = lgammaf((float)(k)    +1);
-
-    // M_LN2 = log(2) = 0.693147180559945
-    float t3 = M_LN2 * (float)(N-k);    // log(2^(N-k)) = log(2)*log(N-k)
-
-    *_ka = roundf(expf(t0 - t1 - t2 - t3));
-#else
+    // set gain
     *_ka = 1.0f;
-#endif
+
+    // The analog Bessel filter's 3-dB cut-off frequency is a
+    // non-linear function of its order.  This frequency can
+    // be approximated from [Bianchi:2007] (1.67), pp. 33.
+    // Re-normalize poles by (approximated) 3-dB frequency.
+    float w3dB = sqrtf((2*_n-1)*logf(2.0f));
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        _pa[i] /= w3dB;
 }
 
 void fpoly_bessel(unsigned int _n, float * _p)
@@ -109,8 +109,8 @@ void fpoly_bessel(unsigned int _n, float * _p)
 void fpoly_bessel_roots(unsigned int _n,
                         float complex * _roots)
 {
-    //if (_n < 11) {
-    if (0) {
+    if (_n < 11) {
+    //if (0) {
         float p[_n];
         fpoly_bessel(_n,p);
         fpoly_findroots(p,_n,_roots);
