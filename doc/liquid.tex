@@ -346,11 +346,19 @@ Requirements:
 optional)
 \end{itemize}
 
-Optional:
+\liquid\ was designed to be portable, and in doing so requires minimal dependencies to
+build and run.
+%Several well-known DSP packages (such as {\tt fftw} [cite] and {\it libfec} [cite])...
+The project, however, will take advantage of other libraries if they are installed on the
+target machine.
+These optional packages are:
 \begin{itemize}
 \item {\tt fftw3}
 \item {\tt libfec}
+\item {\tt liquid-fpm} (liquid fixed-point math library)
 \end{itemize}
+The build system checks to see if they are installed during the {\tt configure} process
+and will generate an appropriate {\tt config.h} if they are.
 
 \subsection{Source code organization}
 In order to keep the project relatively organized, the source code is broken
