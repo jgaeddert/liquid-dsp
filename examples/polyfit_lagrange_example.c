@@ -22,7 +22,7 @@ int main() {
     for (i=0; i<n; i++) {
         float v = (float)(i) - (float)(n)/2 + 0.5f;
         v = (float)i / (float)(n-1);
-        x[i] = v;
+        x[i] = v + 0.0f*randnf();
         y[i] = randnf();
 
         printf("x : %12.8f, y : %12.8f\n", x[i], y[i]);
@@ -46,6 +46,16 @@ int main() {
     fpoly_interp_lagrange(x,y,n,x1,&y1);
     fprintf(fid,"x0 = %12.4e; y0 = %12.4e;\n", x0, y0);
     fprintf(fid,"x1 = %12.4e; y1 = %12.4e;\n", x1, y1);
+    printf("x0 = %12.4e; y0 = %12.4e;\n", x0, y0);
+    printf("x1 = %12.4e; y1 = %12.4e;\n", x1, y1);
+
+    // test interpolation using barycentric weights
+    float w[n];
+    fpolyfit_lagrange_barycentric(x,n,w);
+    y0 = fpolyval_lagrange_barycentric(x,y,w,x0,n);
+    y1 = fpolyval_lagrange_barycentric(x,y,w,x1,n);
+    printf("x0 = %12.4e; y0 = %12.4e;\n", x0, y0);
+    printf("x1 = %12.4e; y1 = %12.4e;\n", x1, y1);
     
     // evaluate polynomial
     float xdel = n < 3 ? 0.1f : 0.02f /(float)n;
@@ -55,17 +65,19 @@ int main() {
     float dx = (xmax-xmin)/(num_steps-1);
     float xtest = xmin;
     float ytest;
+    float ytest2;
     for (i=0; i<num_steps; i++) {
         ytest = fpolyval(p,n,xtest);
-        fprintf(fid,"xtest(%3u) = %12.4e; ytest(%3u) = %12.4e;\n", i+1, xtest, i+1, ytest);
+        ytest2 = fpolyval_lagrange_barycentric(x,y,w,xtest,n);
+        fprintf(fid,"xtest(%3u) = %12.4e; ytest(%3u) = %12.4e; ytest2(%3u) = %12.4e;\n", i+1, xtest, i+1, ytest, i+1, ytest2);
         xtest += dx;
     }
 
     // plot results
-    fprintf(fid,"plot(x,y,'s',xtest,ytest,'-',[x0 x1],[y0 y1],'rx');\n");
+    fprintf(fid,"plot(x,y,'s',xtest,ytest,'-',xtest,ytest2,'-',[x0 x1],[y0 y1],'rx');\n");
     fprintf(fid,"xlabel('x');\n");
     fprintf(fid,"ylabel('y, p^{(%u)}(x)');\n", n);
-    fprintf(fid,"legend('data','poly-fit','interp',0);\n");
+    fprintf(fid,"legend('data','poly-fit','barycentric','interp',0);\n");
     fprintf(fid,"grid on;\n");
 
     fclose(fid);

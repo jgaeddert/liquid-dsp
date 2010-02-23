@@ -1937,6 +1937,18 @@ void POLY(_interp_lagrange)(T * _x,                             \
                             T   _x0,                            \
                             T * _y0);                           \
                                                                 \
+/* Lagrange polynomial fit (barycentric form) */                \
+void POLY(fit_lagrange_barycentric)(T * _x,                     \
+                                    unsigned int _n,            \
+                                    T * _w);                    \
+                                                                \
+/* Lagrange polynomial interpolation (barycentric form) */      \
+T POLY(val_lagrange_barycentric)(T * _x,                        \
+                                 T * _y,                        \
+                                 T * _w,                        \
+                                 T   _x0,                       \
+                                 unsigned int _n);              \
+                                                                \
 /* expands the polynomial:                                      \
  *  (1+x*a[0])*(1+x*a[1]) * ... * (1+x*a[n-1])                  \
  */                                                             \
