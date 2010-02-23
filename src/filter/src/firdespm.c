@@ -93,9 +93,12 @@ void firdespm(unsigned int _n,
     float D[nt];    // desired response
     float H[nt];    // actual response
     float W[nt];    // weighting
+    float c[nt];
+    float alpha[nt-1];
+    float x[nt];
 
     // extremal error
-    float rho = 1.0f;
+    float rho = 0.0f;
 
     // number of extremal frequencies in the pass-band
     unsigned int np = (unsigned int)( nt*(_fp / (_fp + _fs)));
@@ -116,7 +119,11 @@ void firdespm(unsigned int _n,
         F[i] = 0.0f + _fp * (float)(i) / (float)(np-1);
 
     for (i=0; i<ns; i++)
-        F[np+i] = _fs  + (0.5-_fs) * (float)(i) / (float)(ns);
+        F[np+i] = _fs  + (0.5-_fs) * (float)(i) / (float)(ns-1);
+
+    // iterate over Remez exchange algorithm
+    unsigned int p;
+    for (p=0; p<4; p++) {
 
     // evaluate D
     for (i=0; i<nt; i++)
@@ -126,7 +133,6 @@ void firdespm(unsigned int _n,
     for (i=0; i<nt; i++)
         W[i] = firdespm_weight(F[i],_fp,_fs,_K);
 
-    float x[nt];
     for (i=0; i<nt; i++)
         x[i] = cosf(2*M_PI*F[i]);
 
@@ -150,17 +156,15 @@ void firdespm(unsigned int _n,
     printf("  rho   :   %12.8f\n", rho);
 
     // compute polynomial values
-    float c[nt-1];
     int t = 1;
-    for (i=0; i<nt-1; i++) {
+    for (i=0; i<nt; i++) {
         c[i] = D[i] - t*rho / W[i];
         t = -t;
 
-        printf("  c[%3u]    :   %12.4e;\n", i, c[i]);
+        printf("  c[%3u]    :   %16.8e;\n", i, c[i]);
     }
 
     // evaluate alpha
-    float alpha[nt-1];
     fpolyfit_lagrange_barycentric(x,nt-1,alpha);
 
     // evaluate the polynomial on the dense set
@@ -170,31 +174,72 @@ void firdespm(unsigned int _n,
     for (i=0; i<nt; i++) {
         float xf = cosf(2*M_PI*F[i]);
         float t  = fpolyval_lagrange_barycentric(x,c,a,xf,nt);
-        fprintf(fid,"fk(%3u) = %12.4e;\n", i+1, F[i]);
-        fprintf(fid,"Hk(%3u) = %12.4e;\n", i+1, t);
+        fprintf(fid,"fk(%3u) = %16.8e;\n", i+1, F[i]);
+        fprintf(fid,"Hk(%3u) = %16.8e;\n", i+1, t);
     }
+
+    unsigned int m=0;
+    float t_prime = 0;
+    int dir = 0;
+
     for (i=0; i<d; i++) {
         float f = 0.5* (float)i / (float)(d-1);
         float xf = cosf(2*M_PI*f);
         float t;
-#if 0
-        unsigned int k;
-        t0 = 0.0f;
-        t1 = 0.0f;
-        for (k=0; k<nt-1; k++) {
-            t0 += c[k]*alpha[k]/(xf - x[k]);
-            t1 +=      alpha[k]/(xf - x[k]);
+        //t = fpolyval_lagrange_barycentric(x,c,alpha,xf,nt-1);
+        t = fpolyval_lagrange_barycentric(x,c,a,xf,nt);
+
+        fprintf(fid,"f(%3u) = %16.8e; H(%3u) = %16.8e;\n", i+1, f, i+1, t);
+
+        // is extremal frequency?
+        if ( i == 0 ) {
+            t_prime = t;
+        } else if (i == 1) {
+            dir = (t > t_prime) ? 1 : 0;
+        } else if ( (dir && t < t_prime) || (!dir && t > t_prime)) {
+            if (m==nt)
+                continue;
+
+            //fprintf(fid,"fext(%3u) = %16.8e; Hext(%3u) = %16.8e;\n", m+1, f, m+1, t);
+            F[m] = f;
+            m++;
+
+            dir = 1-dir;
         }
-        t = t0/t1;
-#else
-        t = fpolyval_lagrange_barycentric(x,c,alpha,xf,nt-1);
-#endif
-        fprintf(fid,"f(%3u) = %12.4e; H(%3u) = %12.4e;\n", i+1, f, i+1, t);
+
+        t_prime = t;
     }
+    F[m++] = 0.0f;
+    F[m++] = _fp;
+    F[m++] = _fs;
+    F[m++] = 0.5f;
+
+    // sort values(?)
+    for (i=0; i<m; i++) {
+        unsigned int j;
+        for (j=0; j<i; j++) {
+            if (F[i] < F[j]) {
+                float tmp = F[i];
+                F[i] = F[j];
+                F[j] = tmp;
+            }
+        }
+    }
+
+    printf(" m : %u\n", m);
+    for (i=0; i<nt; i++) {
+        printf("F[%3u] = %12.8f\n", i, F[i]);
+        float f = F[i];
+        float xf = cosf(2*M_PI*f);
+        float t = fpolyval_lagrange_barycentric(x,c,a,xf,nt);
+        fprintf(fid,"fext(%3u) = %16.8e; Hext(%3u) = %16.8e;\n", i+1, F[i], i+1, t);
+    }
+
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,H,'-', fk,Hk,'s');\n");
+    fprintf(fid,"plot(f,H,'-', fk,Hk,'s',fext,Hext,'x');\n");
     fclose(fid);
     printf("internal results written to firdespm_internal_debug.m\n");
+    } // p
 }
 
 float firdespm_weight(float _f,
@@ -210,5 +255,36 @@ float firdespm_weight(float _f,
         fprintf(stderr,"warning: firdespm_weight(), _f is not in [_fp,_fs]\n");
     }
     return 1.0f;
+}
+
+// iterate over the Remez exchange algorithm
+//  _n      :   number of extremal frequencies
+//  _fp     :   pass-band frequency
+//  _fs     :   stop-band frequency
+//  _fext   :   trial set of extremal frequencies
+//  _a      :   Lagrange interpolating polynomial coefficients (barycentric)
+void firdes_remez(unsigned int _n,
+                  float _fp,
+                  float _fs,
+                  float * _fext,
+                  float * _a)
+{
+    // validate input : assert extremal frequency are in range
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        if (_fext[i] > _fp && _fext[i] < _fs) {
+            fprintf(stderr,"error: firdes_remez(), extremal frequency out of range\n");
+            exit(1);
+        }
+    }
+
+    //
+}
+
+// Extremal frequency search (Remez algorithm)
+void firdes_remez_fextsearch(unsigned int _n,
+                             float _fp,
+                             float _fs)
+{
 }
 
