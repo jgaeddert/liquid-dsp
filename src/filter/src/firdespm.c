@@ -131,15 +131,7 @@ void firdespm(unsigned int _n,
         x[i] = cosf(2*M_PI*F[i]);
 
     // evaluate a[i]
-    for (i=0; i<nt; i++) {
-        unsigned int k;
-        a[i] = i % 2 ? 1.0f : -1.0f;
-        for (k=0; k<nt; k++) {
-            if (i==k) continue;
-
-            a[i] *= 1.0f / (x[i] - x[k]);
-        }
-    }
+    fpolyfit_lagrange_barycentric(x,nt,a);
 
     // print
     for (i=0; i<nt; i++) {
@@ -152,7 +144,7 @@ void firdespm(unsigned int _n,
     float t1 = 0.0f;
     for (i=0; i<nt; i++) {
         t0 += a[i]*D[i];
-        t1 += a[i]/W[i] * (i % 2 ? 1.0f : -1.0f);
+        t1 += a[i]/W[i] * (i % 2 ? -1.0f : 1.0f);
     }
     rho = t0/t1;
     printf("  rho   :   %12.8f\n", rho);
@@ -169,24 +161,23 @@ void firdespm(unsigned int _n,
 
     // evaluate alpha
     float alpha[nt-1];
-    for (i=0; i<nt-1; i++) {
-        unsigned int k;
-        alpha[i] = i % 2 ? 1.0f : -1.0f;
-        for (k=0; k<nt-1; k++) {
-            if (i==k) continue;
-
-            alpha[i] *= 1.0f / (x[i] - x[k]);
-        }
-    }
+    fpolyfit_lagrange_barycentric(x,nt-1,alpha);
 
     // evaluate the polynomial on the dense set
     FILE * fid = fopen("firdespm_internal_debug.m", "w");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
+    for (i=0; i<nt; i++) {
+        float xf = cosf(2*M_PI*F[i]);
+        float t  = fpolyval_lagrange_barycentric(x,c,a,xf,nt);
+        fprintf(fid,"fk(%3u) = %12.4e;\n", i+1, F[i]);
+        fprintf(fid,"Hk(%3u) = %12.4e;\n", i+1, t);
+    }
     for (i=0; i<d; i++) {
-        float f = (float)i / (float)(2*d);
+        float f = 0.5* (float)i / (float)(d-1);
         float xf = cosf(2*M_PI*f);
-
+        float t;
+#if 0
         unsigned int k;
         t0 = 0.0f;
         t1 = 0.0f;
@@ -194,10 +185,16 @@ void firdespm(unsigned int _n,
             t0 += c[k]*alpha[k]/(xf - x[k]);
             t1 +=      alpha[k]/(xf - x[k]);
         }
-        fprintf(fid,"H(%3u) = %12.4e;\n", i+1, t0/t1);
+        t = t0/t1;
+#else
+        t = fpolyval_lagrange_barycentric(x,c,alpha,xf,nt-1);
+#endif
+        fprintf(fid,"f(%3u) = %12.4e; H(%3u) = %12.4e;\n", i+1, f, i+1, t);
     }
-    printf("internal results written to firdespm_internal_debug.m\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,H,'-', fk,Hk,'s');\n");
     fclose(fid);
+    printf("internal results written to firdespm_internal_debug.m\n");
 }
 
 float firdespm_weight(float _f,
