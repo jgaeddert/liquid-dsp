@@ -116,6 +116,11 @@ void POLY(fit_lagrange_barycentric)(T * _x,
 
         _w[j] = 1. / _w[j];
     }
+
+    // normalize by _w[0]
+    T w0 = _w[0];
+    for (j=0; j<_n; j++)
+        _w[j] /= w0;
 }
 
 // Lagrange polynomial interpolation (barycentric form)

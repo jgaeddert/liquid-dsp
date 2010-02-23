@@ -38,6 +38,11 @@ int main() {
     float w[n];
     fpolyfit_lagrange_barycentric(x,n,w);
 
+    // print coefficients
+    // NOTE : for Chebyshev points of the second kind, w[i] = (-1)^i * (i==0 || i==n-1 ? 1 : 2)
+    for (i=0; i<n; i++)
+        printf("  w[%3u] = %12.4e;\n", i, w[i]);
+
     // evaluate polynomial
     float xmin = -1.1f;
     float xmax =  1.1f;
