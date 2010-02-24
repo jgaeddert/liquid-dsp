@@ -84,32 +84,31 @@ void firdespm(unsigned int _n,
     unsigned int i;
     unsigned int d = 20*_n; // grid density
 
-    unsigned int nt = _n + 2;
+    unsigned int r = _n + 2;    // number of extremal frequencies
 
-    float a[_n+2];  // Lagrange interpolation coefficients
-    float F[_n+3];  // extremal frequency locations
-    float e[_n+3];  // extremal frequency error values
+    float F[r+1];  // extremal frequency locations
 
-    float D[nt];    // desired response
-    float H[nt];    // actual response
-    float W[nt];    // weighting
-    float c[nt];
-    float alpha[nt-1];
-    float x[nt];
+    float D[r];    // desired response
+    //float H[r];    // actual response
+    float W[r];    // weighting
+    float c[r];
+    float alpha[r];     // Lagrange interpolation coefficients
+    float beta[r-1];
+    float x[r];
 
     // extremal error
     float rho = 0.0f;
 
     // number of extremal frequencies in the pass-band
-    unsigned int np = (unsigned int)( nt*(_fp / (_fp + _fs)));
+    unsigned int np = (unsigned int)( r*(_fp / (_fp + _fs)));
     if (np < 2)
         np = 2;
-    else if (np == nt)
-        np = nt-1;
+    else if (np == r)
+        np = r-1;
 
     // number of extremal frequencies in the stop-band
-    unsigned int ns = nt - np;
-    assert(np+ns == nt);
+    unsigned int ns = r - np;
+    assert(np+ns == r);
 
     printf("  np    :   %u\n", np);
     printf("  ns    :   %u\n", ns);
@@ -123,57 +122,57 @@ void firdespm(unsigned int _n,
 
     // iterate over Remez exchange algorithm
     unsigned int p;
-    for (p=0; p<4; p++) {
+    for (p=0; p<8; p++) {
 
     // evaluate D
-    for (i=0; i<nt; i++)
+    for (i=0; i<r; i++)
         D[i] = F[i] <= _fp ? 1.0f : 0.0f;
 
     // evaluate W
-    for (i=0; i<nt; i++)
+    for (i=0; i<r; i++)
         W[i] = firdespm_weight(F[i],_fp,_fs,_K);
 
-    for (i=0; i<nt; i++)
+    for (i=0; i<r; i++)
         x[i] = cosf(2*M_PI*F[i]);
 
-    // evaluate a[i]
-    fpolyfit_lagrange_barycentric(x,nt,a);
+    // evaluate alpha[i]
+    fpolyfit_lagrange_barycentric(x,r,alpha);
 
     // print
-    for (i=0; i<nt; i++) {
+    for (i=0; i<r; i++) {
         printf("  %3u   : F=%12.8f, D=%3.1f, W=%12.8f, a=%12.4e\n",
-                  i, F[i], D[i], W[i], a[i]);
+                  i, F[i], D[i], W[i], alpha[i]);
     }
 
     // compute rho
     float t0 = 0.0f;
     float t1 = 0.0f;
-    for (i=0; i<nt; i++) {
-        t0 += a[i]*D[i];
-        t1 += a[i]/W[i] * (i % 2 ? -1.0f : 1.0f);
+    for (i=0; i<r; i++) {
+        t0 += alpha[i]*D[i];
+        t1 += alpha[i]/W[i] * (i % 2 ? -1.0f : 1.0f);
     }
     rho = t0/t1;
     printf("  rho   :   %12.8f\n", rho);
 
     // compute polynomial values
     int t = 1;
-    for (i=0; i<nt; i++) {
+    for (i=0; i<r; i++) {
         c[i] = D[i] - t*rho / W[i];
         t = -t;
 
         printf("  c[%3u]    :   %16.8e;\n", i, c[i]);
     }
 
-    // evaluate alpha
-    fpolyfit_lagrange_barycentric(x,nt-1,alpha);
+    // evaluate beta
+    fpolyfit_lagrange_barycentric(x,r-1,beta);
 
     // evaluate the polynomial on the dense set
     FILE * fid = fopen("firdespm_internal_debug.m", "w");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    for (i=0; i<nt; i++) {
+    for (i=0; i<r; i++) {
         float xf = cosf(2*M_PI*F[i]);
-        float t  = fpolyval_lagrange_barycentric(x,c,a,xf,nt);
+        float t  = fpolyval_lagrange_barycentric(x,c,alpha,xf,r);
         fprintf(fid,"fk(%3u) = %16.8e;\n", i+1, F[i]);
         fprintf(fid,"Hk(%3u) = %16.8e;\n", i+1, t);
     }
@@ -186,8 +185,8 @@ void firdespm(unsigned int _n,
         float f = 0.5* (float)i / (float)(d-1);
         float xf = cosf(2*M_PI*f);
         float t;
-        //t = fpolyval_lagrange_barycentric(x,c,alpha,xf,nt-1);
-        t = fpolyval_lagrange_barycentric(x,c,a,xf,nt);
+        t = fpolyval_lagrange_barycentric(x,c,beta,xf,r-1);
+        //t = fpolyval_lagrange_barycentric(x,c,a,xf,r);
 
         fprintf(fid,"f(%3u) = %16.8e; H(%3u) = %16.8e;\n", i+1, f, i+1, t);
 
@@ -197,7 +196,7 @@ void firdespm(unsigned int _n,
         } else if (i == 1) {
             dir = (t > t_prime) ? 1 : 0;
         } else if ( (dir && t < t_prime) || (!dir && t > t_prime)) {
-            if (m==nt)
+            if (m==r)
                 continue;
 
             //fprintf(fid,"fext(%3u) = %16.8e; Hext(%3u) = %16.8e;\n", m+1, f, m+1, t);
@@ -226,12 +225,13 @@ void firdespm(unsigned int _n,
         }
     }
 
+    // plotting purposes only
     printf(" m : %u\n", m);
-    for (i=0; i<nt; i++) {
+    for (i=0; i<r; i++) {
         printf("F[%3u] = %12.8f\n", i, F[i]);
         float f = F[i];
         float xf = cosf(2*M_PI*f);
-        float t = fpolyval_lagrange_barycentric(x,c,a,xf,nt);
+        float t = fpolyval_lagrange_barycentric(x,c,beta,xf,r);
         fprintf(fid,"fext(%3u) = %16.8e; Hext(%3u) = %16.8e;\n", i+1, F[i], i+1, t);
     }
 
