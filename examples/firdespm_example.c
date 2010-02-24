@@ -12,9 +12,9 @@
 #include "liquid.h"
 
 int main() {
-    unsigned int n=21;
-    float fp = 0.20f;
-    float fs = 0.25f;
+    unsigned int n=24;
+    float fp = 0.08f;
+    float fs = 0.16f;
     float K  = 1.0f;
 
     float h[n];

@@ -79,8 +79,6 @@ void firdespm(unsigned int _N,
     } else if (_N==0) {
         fprintf(stderr,"error: firdespm(), filter length (_N) must be greater than 0\n");
         exit(1);
-    } else if ((_N % 2)==0) {
-        fprintf(stderr,"warning: firdespm(), filter length (_N) is even (not yet supported)\n");
     }
 
     unsigned int i;
@@ -90,7 +88,7 @@ void firdespm(unsigned int _N,
 
     // determine number of approximating functions
     // TODO : number of approximating functions is dependent upon filter type and symmetry
-    unsigned int r = n + 2;
+    unsigned int r = n + s + 1;
     printf(" N : %u, n : %u, r : %u\n", _N, n, r);
 
     unsigned int d = 20*n; // grid density
@@ -258,7 +256,7 @@ void firdespm(unsigned int _N,
     }
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,H,'-', fk,Hk,'s',fext,Hext,'x');\n");
+    fprintf(fid,"plot(f,H,'-', fk,Hk,'s',fext,Hext,'x'); grid on;\n");
     fclose(fid);
     printf("internal results written to firdespm_internal_debug.m\n");
     } // p
