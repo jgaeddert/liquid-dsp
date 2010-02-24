@@ -58,41 +58,41 @@ Additional:
 
 Source code organization
 liquid/
-    README.txt              <-- this file
-    common.mk               <-- common makefile for building each module
-    configure.in            <-- configuration shell script prototype
-    makefile.in             <-- top-level makefile prototype
-    reconf                  <-- bootstrapping shell script
+    README.txt                  <-- this file
+    common.mk                   <-- common makefile for building each module
+    configure.ac                <-- configuration shell script prototype (autoconf)
+    makefile.in                 <-- top-level makefile prototype
+    reconf                      <-- bootstrapping shell script
     doc/
         makefile
         liquid.tex
     include/
-        liquid.h            <-- external header, defines
-                                all APIsfor external use
-        liquid.internal.h   <-- internal header
+        liquid.h                <-- external header, defines
+                                    all APIsfor external use
+        liquid.internal.h       <-- internal header
     src/
         module1/
-            module.mk       <-- top-level included makefile for
-                                building this specific module
+            module.mk           <-- top-level included makefile for
+                                    building this specific module
             README
             src/
-                object_a.c  <-- internal source
-                object_b.c  <-- internal source
+                object_a.c      <-- internal source
+                object_b.c      <-- internal source
                 ...
             tests/
-                autotest_a.h
-                autotest_b.h
+                autotest_a.h    <-- autotest script
+                autotest_b.h    <-- autotest script
                 ...
             bench/
-                benchmark_a.h
-                benchmark_b.h
+                benchmark_a.h   <-- benchmark script
+                benchmark_b.h   <-- benchmark script
                 ...
         module2/
             ...
     examples/
-        example.mk          <-- top-level included makefile
-        example1.c
-        example2.c
+        example.mk              <-- top-level included makefile
+        example1.c              <-- example program source
+        example2.c              <-- example program source
 
 Documentation organization
     Introduction
@@ -118,8 +118,8 @@ Repository organization
         tags/
     people/
         jgaeddert/
-    framework/              <-- framework for connecting modules
-    modules/                <-- processing blocks
+    framework/                  <-- framework for connecting modules
+    modules/                    <-- processing blocks
         interpolator/
 
 
