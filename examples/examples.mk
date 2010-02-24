@@ -18,6 +18,7 @@ local_src	:=			\
 	fir_filter_rrrf_example.c	\
 	fir_filter_rrrf_recreate_example.c	\
 	firdes_kaiser_example.c		\
+	firdespm_example.c		\
 	firpfb_rrrf_example.c		\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\

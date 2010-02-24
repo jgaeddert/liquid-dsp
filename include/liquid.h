@@ -778,6 +778,18 @@ float num_fir_filter_taps(float _slsl,
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl);
 
+// Design FIR filter using Parks-McClellan algorithm
+//  _n      : filter length
+//  _fp     : pass-band frequency (0 < _fp < _fs < 0.5)
+//  _fs     : stop-band frequency (0 < _fp < _fs < 0.5)
+//  _K      : weighting factor
+//  _h      : output coefficient buffer
+void firdespm(unsigned int _n,
+              float _fp,
+              float _fs,
+              float _K,
+              float *_h);
+
 // Design FIR using kaiser window
 //  _n      : filter length
 //  _fc     : cutoff frequency
