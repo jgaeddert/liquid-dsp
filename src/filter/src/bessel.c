@@ -198,16 +198,16 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
         exit(1);
     }
 
-    // create internal variables (use double precision to help
+    // create internal variables (use long double precision to help
     // algorithm converge, particularly for large _n)
-    double u0, u1, u2=0, u2p=0;
-    double v0, v1, v2=0, v2p=0;
-    double x = _x;
-    double y = _y;
-    //double eps = 1e-6f;
+    long double u0, u1, u2=0, u2p=0;
+    long double v0, v1, v2=0, v2p=0;
+    long double x = _x;
+    long double y = _y;
+    //long double eps = 1e-6f;
 
     unsigned int k,i;
-    unsigned int num_iterations = 20;
+    unsigned int num_iterations = 50;
     for (k=0; k<num_iterations; k++) {
         //printf("%3u :   %16.8e + j*%16.8e\n", k, x, y);
         u0 = 1.0;
@@ -233,14 +233,14 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
         v2p = v2 - x*v1 - y*u1;
 
         // update roots
-        double g = u2p*u2p + v2p*v2p;
+        long double g = u2p*u2p + v2p*v2p;
         if (g == 0.) break;
 
         // For larger order _n, the step values dx and dy will be the
         // evaluation of the ratio of two large numbers which can prevent
         // the algorithm from converging for finite machine precision.
-        double dx = -(u2p*u2 + v2p*v2)/g;
-        double dy = -(u2p*v2 - v2p*u2)/g;
+        long double dx = -(u2p*u2 + v2p*v2)/g;
+        long double dy = -(u2p*v2 - v2p*u2)/g;
         x += dx;
         y += dy;
     }
