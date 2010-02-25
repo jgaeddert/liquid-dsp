@@ -25,6 +25,8 @@
 // References:
 //  [Bianchi:2007] G. Bianchi and R. Sorrentino, "Electronic Filter Simulation
 //      and Design." New York: McGraw-Hill, 2007.
+//  [Orchard:1965] H. J. Orchard, "The Roots of the Maximally Flat-Delay
+//      Polynomials." IEEE Transactions on Circuit Theory, September, 1965.
 //
 
 #include <stdio.h>
@@ -109,47 +111,82 @@ void fpoly_bessel(unsigned int _n, float * _p)
 void fpoly_bessel_roots(unsigned int _n,
                         float complex * _roots)
 {
-    if (_n < 11) {
-    //if (0) {
-        float p[_n];
-        fpoly_bessel(_n,p);
-        fpoly_findroots(p,_n,_roots);
-    } else {
-        float m0 = -0.668861023825672*_n + 0.352940768662957;
-        float m1 = 1.0f / (1.6013579390149844*_n - 0.0429146801453954);
-
-        int i;
-        int r = _n%2;
-        int L = (_n-r)/2;
-        float ri, rq;
-        for (i=0; i<_n; i++) {
-            rq = (i - L - r + 0.5)*1.778f;
-            ri = m0 * m1*rq*rq;
-
-            printf("  [%3u] : %12.8f + j*%12.8f\n", i, ri, rq);
-            fpoly_bessel_roots_orchard_recursion(_n,ri,rq,&ri,&rq);
-            _roots[i] = ri + _Complex_I*rq;
-        }
-    }
+    fpoly_bessel_roots_orchard(_n, _roots);
 }
+
+// Estimate the roots of the _n^th-order Bessel polynomial using
+// Orchard's recursion.  The initial estimates for the roots of
+// L_{k} are extrapolated from those in L_{k-2} and L_{k-1}.
+// The resulting root is near enough the true root such that
+// Orchard's recursion will find it.
 
 void fpoly_bessel_roots_orchard(unsigned int _n,
                                 float complex * _roots)
 {
-    // make initial guesses at roots
+    // initialize arrays
+    float complex r0[_n];       // roots of L_{k-2}
+    float complex r1[_n];       // roots of L_{k-1}
+    float complex r_hat[_n];    // roots of L_{k}
 
-    // run recursion for each root estimate
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        float x = 1.0f;
-        float y = 0.0f;
-        float x_hat, y_hat;
-        fpoly_bessel_roots_orchard_recursion(_n,x,y,&x_hat,&y_hat);
+    unsigned int i, j;
+    unsigned int p, L;
+    for (i=1; i<_n; i++) {
+        p = i % 2;  // order is odd?
+        L = (i+p)/2;
+        //printf("\n***** order %3u, p=%3u, L=%3u\n", i, p, L);
+
+        if (i == 1) {
+            r1[0]    = -1;
+            r_hat[0] = -1;
+        } else if (i == 2) {
+            r1[0]    = -1;
+            r_hat[0] = -1.5f + _Complex_I*0.5f*sqrtf(3.0f);
+        } else {
+
+            // use previous 2 sets of roots to estimate this set
+            if (p) {
+                // odd order : one real root on negative imaginary axis
+                r_hat[0] = 2*crealf(r1[0]) - crealf(r0[0]);
+            } else {
+                // even order
+                r_hat[0] = 2*r1[0] - conjf(r0[0]);
+            }
+
+            // linear extrapolation of roots of L_{k-2} and L_{k-1} for
+            // new root estimate in L_{k}
+            for (j=1; j<L; j++)
+                r_hat[j] = 2*r1[j-p] - r0[j-1];
+
+            for (j=0; j<L; j++) {
+                float x = crealf(r_hat[j]);
+                float y = cimagf(r_hat[j]);
+                float x_hat, y_hat;
+                fpoly_bessel_roots_orchard_recursion(i,x,y,&x_hat,&y_hat);
+                r_hat[j] = x_hat + _Complex_I*y_hat;
+            }
+        }
+
+        // copy roots:  roots(L_{k+1}) -> roots(L_{k+2))
+        //              roots(L_{k})   -> roots(L_{k+1))
+        memmove(r0, r1,    (L-p)*sizeof(float complex));
+        memmove(r1, r_hat,     L*sizeof(float complex));
     }
 
-    // TODO : check for uniqueness
+    // copy results to output
+    p = _n % 2;
+    L = (_n-p)/2;
+    for (i=0; i<L; i++) {
+        unsigned int p = L-i-1;
+        _roots[2*i+0] =       r_hat[p];
+        _roots[2*i+1] = conjf(r_hat[p]);
+    }
+
+    // if order is odd, copy single real root last
+    if (p)
+        _roots[_n-1] = r_hat[0];
 }
 
+// from [Orchard:1965]
 void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
                                           float _x,
                                           float _y,
