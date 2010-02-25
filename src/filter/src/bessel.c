@@ -160,14 +160,19 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
         fprintf(stderr,"error: fpoly_bessel_roots_orchard_recursion(), n < 2\n");
         exit(1);
     }
-    float u0, u1, u2=0, u2p=0;
-    float v0, v1, v2=0, v2p=0;
-    float x = _x;
-    float y = _y;
+
+    // create internal variables (use double precision to help
+    // algorithm converge, particularly for large _n)
+    double u0, u1, u2=0, u2p=0;
+    double v0, v1, v2=0, v2p=0;
+    double x = _x;
+    double y = _y;
+    //double eps = 1e-6f;
 
     unsigned int k,i;
-    unsigned int num_iterations = 10;
+    unsigned int num_iterations = 20;
     for (k=0; k<num_iterations; k++) {
+        //printf("%3u :   %16.8e + j*%16.8e\n", k, x, y);
         u0 = 1.0;
         u1 = 1.0 + x;
 
@@ -175,17 +180,15 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
         v1 = y;
 
         // compute u_r, v_r
-        for (i=2; i<_n; i++) {
+        for (i=2; i<=_n; i++) {
             u2 = (2*i-1)*u1 + (x*x - y*y)*u0 - 2*x*y*v0;
             v2 = (2*i-1)*v1 + (x*x - y*y)*v0 + 2*x*y*u0;
 
-            // update u[r-1], v[r-1]
-            u0 = u1;
-            v0 = v1;
-
-            // update u[r-2], v[r-2]
-            u1 = u2;
-            v1 = v2;
+            // if not on last iteration, update u0, v0, u1, v1
+            if (i < _n) {
+                u0 = u1; v0 = v1;
+                u1 = u2; v1 = v2;
+            }
         }
 
         // compute derivatives
@@ -193,9 +196,16 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
         v2p = v2 - x*v1 - y*u1;
 
         // update roots
-        float g = u2p*u2p + v2p*v2p;
-        x -= (u2p*u2 + v2p*v2)/g;
-        y -= (u2p*v2 - v2p*u2)/g;
+        double g = u2p*u2p + v2p*v2p;
+        if (g == 0.) break;
+
+        // For larger order _n, the step values dx and dy will be the
+        // evaluation of the ratio of two large numbers which can prevent
+        // the algorithm from converging for finite machine precision.
+        double dx = -(u2p*u2 + v2p*v2)/g;
+        double dy = -(u2p*v2 - v2p*u2)/g;
+        x += dx;
+        y += dy;
     }
 
     *_x_hat = x;
