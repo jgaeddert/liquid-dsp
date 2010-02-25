@@ -23,6 +23,14 @@
 // fir (finite impulse response) filter design using Parks-McClellan
 // algorithm
 //
+// References:
+//  [McClellan:1973] J. H. McClellan, T. W. Parks, L. R. Rabiner, "A
+//      Computer Program for Designing Optimum FIR Linear Phase
+//      Digital Filters," IEEE Transactions on Audio and
+//      Electroacoustics, vol. AU-21, No. 6, December 1973
+//  [Rabiner:197x] L. R. Rabiner, J. H. McClellan, T. W. Parks, "FIR
+//      Digital filter Design Techniques Using Weighted Chebyshev
+//      Approximations," Proceedings of the IEEE, March 197x.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,12 +91,25 @@ void firdespm(unsigned int _N,
 
     unsigned int i;
 
-    unsigned int s = _N % 2;
-    unsigned int n = (_N-s)/2;
-
-    // determine number of approximating functions
     // TODO : number of approximating functions is dependent upon filter type and symmetry
-    unsigned int r = n + s + 1;
+    // determine number of approximating functions, extremal frequencies
+    //  N   :   filter length
+    //  n   :   filter semi-length
+    //          n = (N-1)/2     N odd
+    //          n = N/2         N even
+    //  r   :   number of approximating functions
+    //          r = n + 1       case 1 : N odd, symmetric impulse
+    //          r = n           else
+    //  ne  :   number of extremal frequencies
+    //  ne_max  maximum number of possible extremal frequencies
+    //  [McClellan:1973] Eq. (3), (4), (5), (6)
+    //  [Rabiner:197x] Tables II, III, and Eq. (19)
+    unsigned int s = _N % 2;        // s = N odd ? 1 : 0
+    unsigned int n = (_N-s)/2;      // filter semi-length
+    unsigned int r = n + s;         // number of approximating functions
+    unsigned int ne_max = r + 3;    // maximum number of extrema
+                                    // TODO : this will change based on the number of discrete bands
+    r += 1; // FIXME : temporary fix until arrays are properly sorted out
     printf(" N : %u, n : %u, r : %u\n", _N, n, r);
 
     unsigned int d = 20*n; // grid density
@@ -232,6 +253,9 @@ void firdespm(unsigned int _N,
     F[m++] = _fp;
     F[m++] = _fs;
     F[m++] = 0.5f;
+
+    // TODO : assert !(m > ne_max)
+    // TODO : retain only ne largest extrema
 
     // sort values(?)
     for (i=0; i<m; i++) {
