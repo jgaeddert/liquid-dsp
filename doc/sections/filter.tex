@@ -85,7 +85,35 @@ The $z$-transform of the transfer function is therefore
 \]
 Typically, $H(z)$ is normalized such that $a_0=1$.
 
+For larger order filters (even for $n\approx 8$) the filter can become
+unstable due to finite machine precision.
+It is often therefore useful to express $H(z)$ in terms of second-order
+sections.
+For a filter of order $n$, these sections are denoted by the two $L+r\times 3$
+matrices $\vec{B}$ and $\vec{A}$
+where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
+\[
+    H_d(z) = 
+             \left[
+                \frac{B_{r,0} + B_{r,1}z^{-1}}
+                     {1       + A_{r,1}z^{-1}}
+             \right]^r
+             \prod_{k=r}^{L} {\left[
+                \frac{B_{k,0} + B_{k,1}z^{-1} + B_{k,2}z^{-2}}
+                     {1       + A_{k,1}z^{-1} + A_{k,2}z^{-2}}
+             \right]}
+\]
+Notice that $H(z)$ is now a series of cascaded second-order IIR filters.
+The `sos' form is practical when filters are designed from analog prototypes
+where the poles and zeros are known.
+\liquid\ implements second-order sections efficiently with the internal
+{\tt iirfiltsos\_xxxt} object.
+For a cascaded second-order section IIR filter, use
+{\tt iir\_filter\_xxxt\_create\_sos(B,A,n)}.
+
 See also: {\tt iirdes} (IIR filter design).
+
+
 
 \subsection{{\tt iirdes} (IIR filter design)}
 Butterworth prototype:
@@ -170,12 +198,12 @@ to digital $\{z_{i},p_{i}\}$...
 \]
 ...second-order sections form:
 \[
-    H_d(s) = H_0
+    H_d(z) = H_0
              \left[
                 G_0 \frac{1 + z^{-1}}
                          {1 - p_0 z^{-1}}
              \right]^r
-             \prod_{k=1}^{L} {\left[
+             \prod_{k=r}^{L} {\left[
                 G_i \frac{(1-z_iz^{-1})(1-z_i^*z^{-1})}
                          {(1-p_iz^{-1})(1-p_i^*z^{-1})}
              \right]}
