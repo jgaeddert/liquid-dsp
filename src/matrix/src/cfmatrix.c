@@ -36,5 +36,6 @@
 #include "matrix.c"
 #include "matrix_base.c"
 #include "matrix_inv.c"
+#include "matrix.linsolve.c"
 #include "matrix_ludecomp.c"
 

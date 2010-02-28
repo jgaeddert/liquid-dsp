@@ -20,20 +20,26 @@
  */
 
 //
-// Floating-point matrix
-// 
+// Solve linear system of equations
+//
+
+#include <string.h>
 
 #include "liquid.internal.h"
 
-#define MATRIX(name)    LIQUID_CONCAT(fmatrix, name)
-#define MATRIX_NAME     "fmatrix"
-#define T               float
-#define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
-    printf("%12.8f", matrix_access(X,R,C,r,c));
+// 
+void MATRIX(_linsolve)(T * _A,
+                       unsigned int _n,
+                       T * _b,
+                       T * _x,
+                       void * _opts)
+{
+    T A_inv[_n*_n];
+    memmove(A_inv, _A, _n*_n*sizeof(T));
+    MATRIX(_inv)(A_inv,_n,_n);
 
-#include "matrix.c"
-#include "matrix_base.c"
-#include "matrix_inv.c"
-#include "matrix.linsolve.c"
-#include "matrix_ludecomp.c"
+    MATRIX(_mul)(A_inv, _n, _n,
+                 _b,    _n,  1,
+                 _x,    _n,  1);
+}
 
