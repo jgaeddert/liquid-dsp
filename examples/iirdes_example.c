@@ -18,10 +18,12 @@ void usage()
     printf("iirdes_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
+    printf("  b     : filter transformation: [LP], HP, BP, BS\n");
     printf("  n     : filter order\n");
     printf("  r     : passband ripple [dB]\n");
     printf("  s     : stopband attenuation [dB]\n");
     printf("  f     : passband cut-off [0,0.5]\n");
+    printf("  c     : center frequency (BP, BS cases) [0,0.5]\n");
     printf("  o     : format [sos], tf\n");
     printf("          sos   : second-order sections form\n");
     printf("          tf    : regular transfer function form (potentially\n");
@@ -31,18 +33,17 @@ void usage()
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int n=6;   // filter order
-    float fc = 0.25f;   // cutoff
-    float slsl = 60.0f; // stopband attenuation [dB]
-    float ripple = 1.0f;// passband ripple [dB]
+    unsigned int n=6;       // filter order
+    float fc = 0.25f;       // cutoff frequency (low-pass prototype)
+    float f0 = 0.25f;       // center frequency (band-pass, band-stop)
+    float slsl = 60.0f;     // stopband attenuation [dB]
+    float ripple = 1.0f;    // passband ripple [dB]
 
     // filter type
-    enum {  IIRDES_EXAMPLE_BUTTER=0,
-            IIRDES_EXAMPLE_CHEBY1,
-            IIRDES_EXAMPLE_CHEBY2,
-            IIRDES_EXAMPLE_ELLIP,
-            IIRDES_EXAMPLE_BESSEL
-    } type = 0;
+    liquid_iirdes_filtertype ftype = LIQUID_IIRDES_BUTTER;
+
+    // band type
+    liquid_iirdes_bandtype btype = LIQUID_IIRDES_LOWPASS;
 
     // output format
     enum {  IIRDES_EXAMPLE_SOS=0,
@@ -50,7 +51,7 @@ int main(int argc, char*argv[]) {
     } format = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:n:r:s:f:o:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uht:q:n:r:s:f:c:o:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -58,17 +59,32 @@ int main(int argc, char*argv[]) {
             return 0;
         case 't':
             if (strcmp(optarg,"butter")==0) {
-                type = IIRDES_EXAMPLE_BUTTER;
+                ftype = LIQUID_IIRDES_BUTTER;
             } else if (strcmp(optarg,"cheby1")==0) {
-                type = IIRDES_EXAMPLE_CHEBY1;
+                ftype = LIQUID_IIRDES_CHEBY1;
             } else if (strcmp(optarg,"cheby2")==0) {
-                type = IIRDES_EXAMPLE_CHEBY2;
+                ftype = LIQUID_IIRDES_CHEBY2;
             } else if (strcmp(optarg,"ellip")==0) {
-                type = IIRDES_EXAMPLE_ELLIP;
+                ftype = LIQUID_IIRDES_ELLIP;
             } else if (strcmp(optarg,"bessel")==0) {
-                type = IIRDES_EXAMPLE_BESSEL;
+                ftype = LIQUID_IIRDES_BESSEL;
             } else {
                 fprintf(stderr,"error: iirdes_example, unknown filter type \"%s\"\n", optarg);
+                usage();
+                exit(1);
+            }
+            break;
+        case 'q':
+            if (strcmp(optarg,"LP")==0) {
+                btype = LIQUID_IIRDES_LOWPASS;
+            } else if (strcmp(optarg,"HP")==0) {
+                btype = LIQUID_IIRDES_HIGHPASS;
+            } else if (strcmp(optarg,"BP")==0) {
+                btype = LIQUID_IIRDES_BANDPASS;
+            } else if (strcmp(optarg,"BS")==0) {
+                btype = LIQUID_IIRDES_BANDSTOP;
+            } else {
+                fprintf(stderr,"error: iirdes_example, unknown band type \"%s\"\n", optarg);
                 usage();
                 exit(1);
             }
@@ -77,6 +93,7 @@ int main(int argc, char*argv[]) {
         case 'r': ripple = atof(optarg);    break;
         case 's': slsl = atof(optarg);      break;
         case 'f': fc = atof(optarg);        break;
+        case 'c': f0 = atof(optarg);        break;
         case 'o':
             if (strcmp(optarg,"sos")==0) {
                 format = IIRDES_EXAMPLE_SOS;
@@ -111,25 +128,25 @@ int main(int argc, char*argv[]) {
     // specific filter variables
     float epsilon, Gp, Gs, ep, es;
 
-    switch (type) {
-    case IIRDES_EXAMPLE_BUTTER:
+    switch (ftype) {
+    case LIQUID_IIRDES_BUTTER:
         printf("Butterworth filter design:\n");
         nza = 0;
         butter_azpkf(n,fc,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_CHEBY1:
+    case LIQUID_IIRDES_CHEBY1:
         printf("Cheby-I filter design:\n");
         nza = 0;
         epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
         cheby1_azpkf(n,fc,epsilon,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_CHEBY2:
+    case LIQUID_IIRDES_CHEBY2:
         printf("Cheby-II filter design:\n");
         nza = 2*L;
         epsilon = powf(10.0f, -slsl/20.0f);
         cheby2_azpkf(n,fc,epsilon,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_ELLIP:
+    case LIQUID_IIRDES_ELLIP:
         printf("elliptic filter design:\n");
         nza = 2*L;
         Gp = powf(10.0f, -ripple  / 20.0f);
@@ -143,13 +160,13 @@ int main(int argc, char*argv[]) {
 
         ellip_azpkf(n,fc,ep,es,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_BESSEL:
+    case LIQUID_IIRDES_BESSEL:
         printf("Bessel filter design:\n");
         bessel_azpkf(n,za,pa,&ka);
         nza = 0;
         break;
     default:
-        fprintf(stderr,"error: iirdes_example: unknown type\n");
+        fprintf(stderr,"error: iirdes_example: unknown filter type\n");
         exit(1);
     }
 
@@ -163,8 +180,9 @@ int main(int argc, char*argv[]) {
     printf("  ka : %12.8f + j*%12.8f\n", crealf(ka), cimagf(ka));
 
     // complex digital poles/zeros/gain
-    float complex zd[n];
-    float complex pd[n];
+    // NOTE: allocated double the filter order to cover band-pass, band-stop cases
+    float complex zd[2*n];
+    float complex pd[2*n];
     float complex kd;
     float m = 1.0f / tanf(M_PI * fc);
     bilinear_zpkf(za,    nza,
@@ -177,10 +195,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"n=%u;\n", n);
-    fprintf(fid,"r=%u;\n", r);
-    fprintf(fid,"L=%u;\n", L);
-    fprintf(fid,"nfft=1024;\n");
 
 #if 0
     // print analog z/p/k
@@ -191,6 +205,54 @@ int main(int argc, char*argv[]) {
     for (i=0; i<nza; i++)
         fprintf(fid,"  pa(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pa[i]), cimagf(pa[i]));
 #endif
+    printf("zeros (digital, low-pass prototype):\n");
+    for (i=0; i<n; i++)
+        printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(zd[i]), cimagf(zd[i]));
+    printf("poles (digital, low-pass prototype):\n");
+    for (i=0; i<n; i++)
+        printf("  pd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(pd[i]), cimagf(pd[i]));
+    printf("gain (digital):\n");
+    printf("  kd : %12.8f + j*%12.8f\n", crealf(kd), cimagf(kd));
+
+    // negate zeros, poles for high-pass and band-stop cases
+    if (btype == LIQUID_IIRDES_HIGHPASS ||
+        btype == LIQUID_IIRDES_BANDSTOP)
+    {
+        for (i=0; i<n; i++) {
+            zd[i] = -zd[i];
+            pd[i] = -pd[i];
+        }
+    }
+
+    // transform zeros, poles in band-pass, band-stop cases
+    // NOTE: this also doubles the filter order
+    if (btype == LIQUID_IIRDES_BANDPASS ||
+        btype == LIQUID_IIRDES_BANDSTOP)
+    {
+        // allocate memory for transformed zeros, poles
+        float complex zd1[2*n];
+        float complex pd1[2*n];
+
+        // run zeros, poles trasform
+        iirdes_dzpk_lp2bp(zd, pd,   // low-pass prototype zeros, poles
+                          n,        // filter order
+                          f0,       // center frequency
+                          zd1,pd1); // transformed zeros, poles (length: 2*n)
+
+        // copy transformed zeros, poles
+        memmove(zd, zd1, 2*n*sizeof(float complex));
+        memmove(pd, pd1, 2*n*sizeof(float complex));
+
+        // update paramteres : n -> 2*n
+        r = 0;
+        L = n;
+        n = 2*n;
+    }
+
+    fprintf(fid,"n=%u;\n", n);
+    fprintf(fid,"r=%u;\n", r);
+    fprintf(fid,"L=%u;\n", L);
+    fprintf(fid,"nfft=1024;\n");
 
     // print digital z/p/k
     fprintf(fid,"zd = zeros(1,n);\n");
@@ -199,6 +261,7 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"  zd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(zd[i]), cimagf(zd[i]));
         fprintf(fid,"  pd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pd[i]), cimagf(pd[i]));
     }
+
 
     if (format == IIRDES_EXAMPLE_TF) {
         float b[n+1];       // numerator

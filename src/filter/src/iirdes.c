@@ -206,7 +206,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
 #endif
     // _n = 2*m + l
     unsigned int r = _n % 2;        // odd/even order
-    unsigned int L = (_n - r)/2;
+    unsigned int L = (_n - r)/2;    // filter semi-length
 
 #if LIQUID_IIRDES_DEBUG_PRINT
     printf("  n=%u, r=%u, L=%u\n", _n, r, L);
@@ -235,39 +235,67 @@ void iirdes_dzpk2sosf(float complex * _zd,
         z0 = -zp[2*i+0];
         z1 = -zp[2*i+1];
 
-        // compute gain
-        g = crealf( (1+p0)*(1+p1) / ((1+z0)*(1+z1)) );
-
         // expand complex pole pairs
         _A[3*i+0] = 1.0;
         _A[3*i+1] = crealf(p0+p1);
         _A[3*i+2] = crealf(p0*p1);
 
         // expand complex zero pairs
-        _B[3*i+0] = g*1.0;
-        _B[3*i+1] = g*crealf(z0+z1);
-        _B[3*i+2] = g*crealf(z0*z1);
+        _B[3*i+0] = 1.0;
+        _B[3*i+1] = crealf(z0+z1);
+        _B[3*i+2] = crealf(z0*z1);
     }
 
     // add zero/pole pair if order is odd
     if (r) {
         p0 = -pp[_n-1];
         z0 = -zp[_n-1];
-        g  = crealf((1+p0)/(1+z0));
+        
         _A[3*i+0] =  1.0;
         _A[3*i+1] = -pp[_n-1];
         _A[3*i+2] =  0.0;
 
-        _B[3*i+0] =  g*1.0;
-        _B[3*i+1] = -g*zp[_n-1];
+        _B[3*i+0] =  1.0;
+        _B[3*i+1] = -zp[_n-1];
         _B[3*i+2] =  0.0;
     }
 
-#if 0
-    // adjust gain
-    _B[0] *= _kd;
-    _B[1] *= _kd;
-    _B[2] *= _kd;
-#endif
+    // adjust gain of first element
+    _B[0] *= crealf(_kd);
+    _B[1] *= crealf(_kd);
+    _B[2] *= crealf(_kd);
+}
+
+// digital z/p/k low-pass to band-pass
+//  _zd     :   digital zeros (low-pass prototype)
+//  _pd     :   digital poles (low-pass prototype)
+//  _n      :   low-pass filter order
+//  _f0     :   center frequency
+//  _zdt    :   digital zeros transformed [length: 2*_n]
+//  _pdt    :   digital poles transformed [length: 2*_n]
+void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
+                       liquid_float_complex * _pd,
+                       unsigned int _n,
+                       float _f0,
+                       liquid_float_complex * _zdt,
+                       liquid_float_complex * _pdt)
+{
+    float c0 = cosf(2*M_PI*_f0);
+
+    //unsigned int r = _n % 2;
+    //unsigned int L = (_n-r)/2;
+
+    // TODO : keep output conjugates grouped together
+    unsigned int i;
+    float complex t0;
+    for (i=0; i<_n; i++) {
+        t0 = 1 + _zd[i];
+        _zdt[2*i+0] = 0.5f*(c0*t0 + csqrtf(c0*c0*t0*t0 - 4*_zd[i]));
+        _zdt[2*i+1] = 0.5f*(c0*t0 - csqrtf(c0*c0*t0*t0 - 4*_zd[i]));
+
+        t0 = 1 + _pd[i];
+        _pdt[2*i+0] = 0.5f*(c0*t0 + csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
+        _pdt[2*i+1] = 0.5f*(c0*t0 - csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
+    }
 }
 

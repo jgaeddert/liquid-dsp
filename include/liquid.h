@@ -881,6 +881,23 @@ float iir_group_delay(float * _b,
 // IIR filter design
 //
 
+// IIR filter design filter type
+typedef enum {
+    LIQUID_IIRDES_BUTTER=0,
+    LIQUID_IIRDES_CHEBY1,
+    LIQUID_IIRDES_CHEBY2,
+    LIQUID_IIRDES_ELLIP,
+    LIQUID_IIRDES_BESSEL
+} liquid_iirdes_filtertype;
+
+// IIR filter design band type
+typedef enum {
+    LIQUID_IIRDES_LOWPASS=0,
+    LIQUID_IIRDES_HIGHPASS,
+    LIQUID_IIRDES_BANDPASS,
+    LIQUID_IIRDES_BANDSTOP
+} liquid_iirdes_bandtype;
+
 #if 0
 // Butterworth filter design
 //  _n      :   filter order
@@ -956,6 +973,20 @@ void bilinear_zpkf(liquid_float_complex * _za,
                    liquid_float_complex * _zd,
                    liquid_float_complex * _pd,
                    liquid_float_complex * _kd);
+
+// digital z/p/k low-pass to band-pass
+//  _zd     :   digital zeros (low-pass prototype)
+//  _pd     :   digital poles (low-pass prototype)
+//  _n      :   low-pass filter order
+//  _f0     :   center frequency
+//  _zdt    :   digital zeros transformed [length: 2*_n]
+//  _pdt    :   digital poles transformed [length: 2*_n]
+void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
+                       liquid_float_complex * _pd,
+                       unsigned int _n,
+                       float _f0,
+                       liquid_float_complex * _zdt,
+                       liquid_float_complex * _pdt);
 
 // convert discrete z/p/k form to transfer function
 void iirdes_dzpk2tff(liquid_float_complex * _zd,
