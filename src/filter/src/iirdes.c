@@ -105,14 +105,14 @@ void bilinear_zpkf(float complex * _za,
     for (i=0; i<n; i++) {
         // compute digital zeros (pad with -1s)
         if (i < _nza) {
-            float complex zm = _za[i] / _m;
+            float complex zm = _za[i] * _m;
             _zd[i] = (1 + zm)/(1 - zm);
         } else {
             _zd[i] = -1;
         }
 
         // compute digital poles
-        float complex pm = _pa[i] / _m;
+        float complex pm = _pa[i] * _m;
         _pd[i] = (1 + pm)/(1 - pm);
 
         // compute digital gain

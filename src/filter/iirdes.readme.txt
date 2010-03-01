@@ -2,7 +2,7 @@
 # iirdes (infinite impulse response filter design)
 #
 
-Liquid implements infinite impulse respone (IIR) filter design for the three major classes of filters (Butterworth, Chebyshev, and elliptic) as follows:
+Liquid implements infinite impulse respone (IIR) filter design for the three major classes of filters (Butterworth, Chebyshev, and elliptic) as well as the Bessel filter as follows:
 
 1. Use butterf(), cheby1f(), cheby2f(), ellipf(), besself() to design a low-pass analog prototype in terms of complex zeros, poles, and gain.
 
@@ -13,27 +13,26 @@ Liquid implements infinite impulse respone (IIR) filter design for the three maj
     bessel_azpkf()  :   Bessel (maximally flat group delay)
 
 2. Convert the low-pass analog prototype to its digital equivalent (also in terms of zeros, poles, and gain) using the bilinear z-transform
+    
+    bilinear_zpkf()
+
+3. Transform the low-pass digital prototype to high-pass, band-pass, or band-stop.
     - [LP]  : low-pass filter   : s = m * (1+z^-1) / (1-z^-1)
     - [HP]  : high-pass filter  : s = m * (1-z^-1) / (1+z^-1)
     - [BP]  : band-pass filter  : s = m * (1-c0z^-1+z^-2) / (1-z^-2)
     - [BS]  : band-stop filter  : s = m * (1-z^-2) / (1-c0z^-1+z^-2)
 
-    zpk_a2df()
+    iirdes_dzpk_lp2bp()
 
-3. Transform the digital z/p/k form of the filter to one of the three forms:
+4. Transform the digital z/p/k form of the filter to one of the three forms:
     - [tf]  : typical transfer function for digital iir filters of the form B(z)/A(z)
     - [sos] : second-order sections form : prod( Bk(z)/Ak(z) )
 
-    dzpk_to_tf()
-    dzpk_to_sosf()
+    dzpk2tff()
+    dzpk2sosf()
 
-4. Create the filter object (e.g. iirfilt, iirqmfb) from the resulting structure
+5. Create the filter object (e.g. iirfilt, iirqmfb) from the resulting structure
 
     iirfilt_crcf_create()
     iirfilt_crcf_create_sosf()
 
-Additional IIR filter designs:
-    - [ap]  : dual all-pass filter form: A0(z) + A1(z)
-              NOTE: A0(z) and A1(z) should be able to take either the [tf] or [sos] form
-
-    
