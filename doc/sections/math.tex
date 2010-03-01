@@ -41,6 +41,22 @@ where $t=\ln(z)$ and
 This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
 
+An iterative method comes from Gross(1995),
+%\cite{Gross:1995}
+\[
+    I_\nu(z) = \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
+\]
+
+{\tt liquid\_nchoosek()}
+\[
+    {n \choose k} = \frac{n!}{(n-k)!k!}
+\]
+
+{\tt liquid\_nextpow2()} computes $\lceil \log_2(x) \rceil$
+
+\subsection{Windowing functions}
+Kaiser, Hamming, Hann, Blackman-harris
+
 \subsection{Polynomials}
 Like matrices, polynomials in \liquid\ do not use a particular data type, but
 are stored as memory arrays.
