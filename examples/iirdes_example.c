@@ -15,15 +15,16 @@
 // print usage/help message
 void usage()
 {
-    printf("iirdes_example [options]\n");
-    printf("  u/h   : print usage\n");
+    printf("iirdes_example -- infinite impulse response filter design\n");
+    printf("options (default values in []):\n");
+    printf("  u/h   : print usage/help\n");
     printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
     printf("  b     : filter transformation: [LP], HP, BP, BS\n");
-    printf("  n     : filter order\n");
-    printf("  r     : passband ripple [dB]\n");
-    printf("  s     : stopband attenuation [dB]\n");
-    printf("  f     : passband cut-off [0,0.5]\n");
-    printf("  c     : center frequency (BP, BS cases) [0,0.5]\n");
+    printf("  n     : filter order, n > 0 [5]\n");
+    printf("  r     : passband ripple in dB (cheby1, ellip), r > 0 [1.0]\n");
+    printf("  s     : stopband attenuation in dB (cheby2, ellip), s > 0 [60.0]\n");
+    printf("  f     : passband cut-off, 0 < f < 0.5 [0.2]\n");
+    printf("  c     : center frequency (BP, BS cases), 0 < c < 0.5 [0.25]\n");
     printf("  o     : format [sos], tf\n");
     printf("          sos   : second-order sections form\n");
     printf("          tf    : regular transfer function form (potentially\n");
@@ -33,8 +34,8 @@ void usage()
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int n=6;       // filter order
-    float fc = 0.25f;       // cutoff frequency (low-pass prototype)
+    unsigned int n=5;       // filter order
+    float fc = 0.20f;       // cutoff frequency (low-pass prototype)
     float f0 = 0.25f;       // center frequency (band-pass, band-stop)
     float slsl = 60.0f;     // stopband attenuation [dB]
     float ripple = 1.0f;    // passband ripple [dB]
@@ -45,13 +46,13 @@ int main(int argc, char*argv[]) {
     // band type
     liquid_iirdes_bandtype btype = LIQUID_IIRDES_LOWPASS;
 
-    // output format
+    // output format: second-order sections or transfer function
     enum {  IIRDES_EXAMPLE_SOS=0,
             IIRDES_EXAMPLE_TF
     } format = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:q:n:r:s:f:c:o:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uht:b:n:r:s:f:c:o:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -74,7 +75,7 @@ int main(int argc, char*argv[]) {
                 exit(1);
             }
             break;
-        case 'q':
+        case 'b':
             if (strcmp(optarg,"LP")==0) {
                 btype = LIQUID_IIRDES_LOWPASS;
             } else if (strcmp(optarg,"HP")==0) {
@@ -111,6 +112,26 @@ int main(int argc, char*argv[]) {
             return 1;
         }
     }
+
+    // validate input
+    if (fc <= 0 || fc >= 0.5) {
+        fprintf(stderr,"error: %s, cutoff frequency out of range\n", argv[0]);
+        usage();
+        exit(1);
+    } else if (f0 < 0 || f0 > 0.5) {
+        fprintf(stderr,"error: %s, center frequency out of range\n", argv[0]);
+        usage();
+        exit(1);
+    } else if (ripple <= 0) {
+        fprintf(stderr,"error: %s, pass-band ripple out of range\n", argv[0]);
+        usage();
+        exit(1);
+    } else if (slsl <= 0) {
+        fprintf(stderr,"error: %s, stop-band ripple out of range\n", argv[0]);
+        usage();
+        exit(1);
+    }
+
 
     // number of analaog poles/zeros
     unsigned int npa = n;
