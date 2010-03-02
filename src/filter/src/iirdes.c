@@ -22,6 +22,11 @@
 //
 // iir (infinite impulse response) filter design
 //
+// References
+//  [Constantinides:1967] A. G. Constantinides, "Frequency
+//      Transformations for Digital Filters." IEEE Electronic
+//      Letters, vol. 3, no. 11, pp 487-489, 1967.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,6 +89,30 @@ void liquid_cplxpair(float complex * _z,
 // 
 // new IIR design
 //
+
+// Compute frequency pre-warping factor.  See [Constantinides:1967]
+float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
+                         float _fc,
+                         float _f0)
+{
+    float m = 0.0f;
+    if (_btype == LIQUID_IIRDES_LOWPASS) {
+        // low pass
+        m = tanf(M_PI * _fc);
+    } else if (_btype == LIQUID_IIRDES_HIGHPASS) {
+        // high pass
+        m = -cosf(M_PI * _fc) / sinf(M_PI * _fc);
+    } else if (_btype == LIQUID_IIRDES_BANDPASS) {
+        // band pass
+        m = (cosf(2*M_PI*_fc) - cosf(2*M_PI*_f0) )/ sinf(2*M_PI*_fc);
+    } else if (_btype == LIQUID_IIRDES_BANDSTOP) {
+        // band stop
+        m = sinf(2*M_PI*_fc)/(cosf(2*M_PI*_fc) - cosf(2*M_PI*_f0));
+    }
+    m = fabsf(m);
+
+    return m;
+}
 
 // convert to the form:
 //          (z^-1 - zd[0])(z^-1 - zd[1]) ... (z^-1 - zd[n-1])
@@ -227,7 +256,6 @@ void iirdes_dzpk2sosf(float complex * _zd,
 
     float complex z0, z1;
     float complex p0, p1;
-    float g;
     for (i=0; i<L; i++) {
         p0 = -pp[2*i+0];
         p1 = -pp[2*i+1];

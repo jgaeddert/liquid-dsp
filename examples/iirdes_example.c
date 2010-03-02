@@ -184,7 +184,8 @@ int main(int argc, char*argv[]) {
     float complex zd[2*n];
     float complex pd[2*n];
     float complex kd;
-    float m = 1.0f / tanf(M_PI * fc);
+    float m = iirdes_freqprewarp(btype,fc,f0);
+    printf("m : %12.8f\n", m);
     bilinear_zpkf(za,    nza,
                   pa,    npa,
                   ka,    m,

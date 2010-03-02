@@ -963,6 +963,11 @@ void bessel_azpkf(unsigned int _n,
                   liquid_float_complex * _p,
                   liquid_float_complex * _k);
 
+// compute frequency pre-warping factor
+float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
+                         float _fc,
+                         float _f0);
+
 // convert analog z/p/k form to discrete z/p/k form (bilinear z-transform)
 void bilinear_zpkf(liquid_float_complex * _za,
                    unsigned int _nza,
