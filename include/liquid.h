@@ -898,41 +898,34 @@ typedef enum {
     LIQUID_IIRDES_BANDSTOP
 } liquid_iirdes_bandtype;
 
-#if 0
-// Butterworth filter design
-//  _n      :   filter order
-//  _fc     :   filter cutoff
-//  _b      :   numerator coefficient array (length _n+1)
-//  _a      :   denominator coefficient array (length _n+1)
-void butterf(unsigned int _n,
-             float _fc,
-             float * _b,
-             float * _a);
+// IIR filter design coefficients format
+typedef enum {
+    LIQUID_IIRDES_SOS=0,
+    LIQUID_IIRDES_TF
+} liquid_iirdes_format;
 
-// Chebyshev type-I filter design
-//  _n      :   filter order
-//  _fc     :   filter cutoff
-//  _ep     :   epsilon, passband ripple
-//  _b      :   numerator coefficient array (length _n+1)
-//  _a      :   denominator coefficient array (length _n+1)
-void cheby1f(unsigned int _n,
-             float _fc,
-             float _ep,
-             float * _b,
-             float * _a);
+// IIR filter design template
+//  _ftype      :   filter type (e.g. LIQUID_IIRDES_BUTTER)
+//  _btype      :   band type (e.g. LIQUID_IIRDES_BANDPASS)
+//  _format     :   coefficients format (e.g. LIQUID_IIRDES_SOS)
+//  _n          :   filter order
+//  _fc         :   low-pass prototype cut-off frequency
+//  _f0         :   center frequency (band-pass, band-stop)
+//  _Ap         :   pass-band ripple in dB
+//  _As         :   stop-band ripple in dB
+//  _B          :   numerator
+//  _A          :   denominator
+void iirdes(liquid_iirdes_filtertype _ftype,
+            liquid_iirdes_bandtype   _btype,
+            liquid_iirdes_format     _format,
+            unsigned int _n,
+            float _fc,
+            float _f0,
+            float _Ap,
+            float _As,
+            float * _B,
+            float * _A);
 
-// Chebyshev type-II filter design
-//  _n      :   filter order
-//  _fc     :   filter cutoff
-//  _ep     :   epsilon, stopband ripple
-//  _b      :   numerator coefficient array (length _n+1)
-//  _a      :   denominator coefficient array (length _n+1)
-void cheby2f(unsigned int _n,
-             float _fc,
-             float _ep,
-             float * _b,
-             float * _a);
-#endif
 
 void butter_azpkf(unsigned int _n,
                   float _fc,

@@ -47,9 +47,7 @@ int main(int argc, char*argv[]) {
     liquid_iirdes_bandtype btype = LIQUID_IIRDES_LOWPASS;
 
     // output format: second-order sections or transfer function
-    enum {  IIRDES_EXAMPLE_SOS=0,
-            IIRDES_EXAMPLE_TF
-    } format = 0;
+    liquid_iirdes_format format = LIQUID_IIRDES_SOS;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uht:b:n:r:s:f:c:o:")) != EOF) {
@@ -97,9 +95,9 @@ int main(int argc, char*argv[]) {
         case 'c': f0 = atof(optarg);        break;
         case 'o':
             if (strcmp(optarg,"sos")==0) {
-                format = IIRDES_EXAMPLE_SOS;
+                format = LIQUID_IIRDES_SOS;
             } else if (strcmp(optarg,"tf")==0) {
-                format = IIRDES_EXAMPLE_TF;
+                format = LIQUID_IIRDES_TF;
             } else {
                 fprintf(stderr,"error: iirdes_example, unknown output format \"%s\"\n", optarg);
                 usage();
@@ -285,7 +283,7 @@ int main(int argc, char*argv[]) {
     }
 
 
-    if (format == IIRDES_EXAMPLE_TF) {
+    if (format == LIQUID_IIRDES_TF) {
         float b[n+1];       // numerator
         float a[n+1];       // denominator
 
