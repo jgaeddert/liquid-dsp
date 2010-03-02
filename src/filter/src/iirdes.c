@@ -308,6 +308,7 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
                        liquid_float_complex * _zdt,
                        liquid_float_complex * _pdt)
 {
+#if 1
     float c0 = cosf(2*M_PI*_f0);
 
     //unsigned int r = _n % 2;
@@ -325,5 +326,41 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
         _pdt[2*i+0] = 0.5f*(c0*t0 + csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
         _pdt[2*i+1] = 0.5f*(c0*t0 - csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
     }
+#else
+    float _beta = 0.2f;   // low-pass prototype cutoff
+    _f0 = 0.25f;
+
+    float alpha = cosf(2*M_PI*_f0);
+    float f_lo = _f0 - _beta*0.5f;
+    float f_hi = _f0 + _beta*0.5f;
+    float k = tanf(M_PI*_beta) / tanf(M_PI*(f_hi - f_lo));
+
+    float g1 = -2*alpha*k/(k+1);
+    float g2 = (k-1)/(k+1);
+
+    printf("    fc      :   %12.8f\n", _f0);
+    printf("    beta    :   %12.8f\n", _beta);
+    printf("    f0      :   %12.8f\n", f_lo);
+    printf("    f1      :   %12.8f\n", f_hi);
+    printf("    alpha   :   %12.8f\n", alpha);
+    printf("    k       :   %12.8f\n", k);
+    printf("    gamma1  :   %12.8f\n", g1);
+    printf("    gamma2  :   %12.8f\n", g2);
+
+    float s = g2+1;
+
+    float complex t0;
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        t0 = _zd[i]*(g2-1);
+        _zdt[2*i+0] = (g1 + csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
+        _zdt[2*i+1] = (g1 - csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
+
+        t0 = _pd[i]*(g2-1);
+        _pdt[2*i+0] = (g1 + csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
+        _pdt[2*i+1] = (g1 - csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
+    }
+
+#endif
 }
 
