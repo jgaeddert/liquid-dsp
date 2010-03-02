@@ -66,9 +66,6 @@ int main(int argc, char *argv[]) {
     }
     printf("blah\n");
 
-    // channel options
-    float pa_distortion = 0.5f;
-
     // create flexframegen object
     flexframegenprops_s fgprops;
     fgprops.rampup_len = 64;
@@ -117,7 +114,6 @@ int main(int argc, char *argv[]) {
     float mu    = 0.3f; // fractional sample delay
     fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,0.9f,60.0f);
     fir_farrow_crcf_set_delay(delay_filter,mu);
-    pamodel pa = pamodel_create(pa_distortion);
 
     unsigned int i;
     // initialize header, payload
@@ -161,10 +157,6 @@ int main(int argc, char *argv[]) {
 
         // run interpolator
         interp_crcf_execute(interp, x, y);
-
-        // power amplifier model
-        pamodel_execute(pa, y[0], &y[0]);
-        pamodel_execute(pa, y[1], &y[1]);
 
         // add channel impairments
         nco_mix_up(nco_channel, y[0], &z[0]);
@@ -261,7 +253,6 @@ int main(int argc, char *argv[]) {
     flexframesync_destroy(fs);
     nco_destroy(nco_channel);
     interp_crcf_destroy(interp);
-    pamodel_destroy(pa);
 
     printf("done.\n");
     return 0;
