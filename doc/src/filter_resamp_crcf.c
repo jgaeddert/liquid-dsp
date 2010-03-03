@@ -151,7 +151,7 @@ int main() {
     fprintf(fid,"e\n");
     for (i=0; i<nfft; i++) {
         float fy = ((float)(i) / (float)nfft - 0.5f)*r;
-        fprintf(fid,"%12.8f %12.4e\n", fy, 20*log10f(cabsf(Y[i])) - scaling_factor);
+        fprintf(fid,"%12.8f %12.4e\n", fy, 20*log10f(cabsf(Y[i])) - scaling_factor - 20*log10(r));
     }
     fprintf(fid,"e\n");
 
