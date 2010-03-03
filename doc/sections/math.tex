@@ -58,10 +58,15 @@ An iterative method comes from Gross(1995),
 Kaiser, Hamming, Hann, Blackman-harris
 
 \subsection{Polynomials}
+A number of \liquid\ modules require polynomial manipulations, particularly
+those involving filter design where transfer functions are represented as the
+explicit ratio of polynomials in $z^{-1}$.
+This sub-module is not intended to be complete, but rather is required for
+the proper functionality of other modules.
 Like matrices, polynomials in \liquid\ do not use a particular data type, but
 are stored as memory arrays.
 \[
-    P^n(x) = \sum_{k=0}^{n}{c_k x^k}
+    P_n(x) = \sum_{k=0}^{n}{c_k x^k}
            = c_0 + c_1 x + c_2 x^2 + \cdots + c_n x^n
 \]
 An $n^{th}$-order polynomial has $n+1$ coefficients ordered in memory in
@@ -70,10 +75,12 @@ For example, a $2^{nd}$-order polynomial $0.1 -2.4x + 1.3x^2$ stored in an
 array {\tt float c[]} has
 {\tt c[0]=0.1},
 {\tt c[1]=-2.4}, and
-{\tt c[2]=1.3}.
+{\tt c[2]=1.3}.%
+\footnote{Note that this convention is reversed from that used in octave
+[cite:octave:web].}
 
 \subsubsection{{\tt polyval()}}
-Evaluates the polynomial $P^n(x)$ at $x_0$.
+Evaluates the polynomial $P_n(x)$ at $x_0$.
 
 \subsubsection{{\tt polyfit()}}
 Fits data to a polynomial of order $k-1$ from $n$ samples using the
@@ -82,6 +89,20 @@ Data vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$...
 Uses matrix algebra to solve system of equations...
+\[
+    \vec{p} = \left(\vec{X}^T\vec{X}\right)^{-1}\vec{X}^T\vec{y}
+\]
+where
+\[
+    \vec{X} = 
+    \begin{bmatrix}
+        1   & x_0       & x_0^2     & \cdots    & x_0^{k}     \\
+        1   & x_1       & x_1^2     & \cdots    & x_1^{k}     \\
+        \\
+        1   & x_{n-1}   & x_{n-1}^2 & \cdots    & x_{n-1}^{k}
+    \end{bmatrix}
+\]
+
 
 \subsubsection{{\tt polyfit\_lagrange()}}
 Fits dataset of $n$ sample points to exact polynomial of order $n-1$ using
@@ -90,13 +111,11 @@ Given input vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$, the interpolating polynomial is
 \[
-    P^{n-1}(x) =
-        \sum_{j=0}^{n-1}
-        {
+    P_{n-1}(x) =
+        \sum_{j=0}^{n-1} {
             \left[
             y_j
-            \prod_{{k=0}\atop{k \ne j}}^{n-1}
-            {
+            \prod_{{k=0}\atop{k \ne j}}^{n-1} {
                 \frac{x-x_k}{x_j-x_k}
             }
             \right]
@@ -111,66 +130,82 @@ $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
 \[
     \dot{y} =
-        \sum_{j=0}^{n-1}
-        {
+        \sum_{j=0}^{n-1} {
             \left[
             y_j
-            \prod_{{k=0}\atop{k \ne j}}^{n-1}
-            {
+            \prod_{{k=0}\atop{k \ne j}}^{n-1} {
                 \frac{\dot{x}-x_k}{x_j-x_k}
             }
             \right]
         }
 \]
-
 See also {\tt polyfit\_lagrange()}.
+
+\subsubsection{{\tt polyfit\_lagrange\_barycentric()}}
+Computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
+\[
+    w_j =   \frac{1}{
+                \prod_{k \ne j}{\left(x_j - x_k\right)}
+            }
+\]
+which can be used to compute the interpolant $(\dot{x},\dot{y})$ as
+\[
+    \dot{y} =   \frac{
+                    \sum\limits_{j=0}^{k-1}{ w_j y_j /(\dot{x}-x_j) }
+                } {
+                    \sum\limits_{j=0}^{k-1}{     w_j /(\dot{x}-x_j) }
+                }
+\]
+This is the preferred method for computing Lagrange interpolating polynomials,
+particularly if $\vec{x}$ is unchanging.
+The function returns $\dot{y}$ if $\dot{x}$ is equal to any $x_j$.
 
 \subsubsection{{\tt poly\_expandroots()}}
 Expands the a polynomial based on its roots
 \[
-    P^n(x) = \prod_{k=0}^{n-1}{(x+a_k)}
+    P_n(x) = \prod_{k=0}^{n-1}{(x+a_k)}
 \]
-where $r_k=-a_k$ are the roots of $P^n(x)$.
+where $r_k=-a_k$ are the roots of $P_n(x)$.
 
 \subsubsection{{\tt poly\_expandroots2()} {\it not implemented}}
 Expands the a polynomial as
 \[
-    P^n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
+    P_n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
 \]
 
 \subsubsection{{\tt poly\_binomial\_expand()}}
 Expands the a polynomial as a binomial series
 \[
-    P^n(x) = (x+1)^n = \sum_{k=0}^{n}{ {n \choose k} x^k}
+    P_n(x) = (x+1)^n = \sum_{k=0}^{n}{ {n \choose k} x^k}
 \]
 
 \subsubsection{{\tt poly\_binomial\_expand\_pm()}}
 Expands the a polynomial as an alternating binomial series
 [NOTE: change terminology?]
 \[
-    P^n(x) = (x+1)^j (x-1)^{n-j}
+    P_n(x) = (x+1)^j (x-1)^{n-j}
            = \left( \sum_{k=0}^{j}  { {n \choose k}    x^k} \right)
              \left( \sum_{k=0}^{n-j}{ {n \choose k} (-x)^k} \right)
 \]
 
 \subsubsection{{\tt polymul()}}
-Multiplies two polynomials $P^n(x)$ and $Q^m(x)$.
+Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
 
 \subsubsection{{\tt polydiff()} {\it not yet implemented}}
-Computes the derivative $\frac{\partial}{\partial x}P^n(x)$ of polynomial
-$P^n(x)$
+Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
+$P_n(x)$
 \[
-    \frac{\partial}{\partial x}P^n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
+    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
 \]
 
 \subsubsection{{\tt poly\_findroots\_bairstow()}}
 Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method.
-For a polynomial $P^n(x)$...
+For a polynomial $P_n(x)$...
 \[
-    P^n(x) = \prod_{k=0}^{n-1}{(x-r_k)}
+    P_n(x) = \prod_{k=0}^{n-1}{(x-r_k)}
 \]
-...there exists a polynomial $p^{2}(x)=u + vx + x^2$ which divides
-$P^{n}(x)$ and has two roots (possibly complex)
+...there exists a polynomial $p_{2}(x)=u + vx + x^2$ which divides
+$P_{n}(x)$ exactly and has two roots (possibly complex)
 \[
     r_0 = \frac{1}{2}\left(-v-\sqrt{v^2-4u}\right), \; \\
     r_1 = \frac{1}{2}\left(-v+\sqrt{v^2-4u}\right)
