@@ -72,6 +72,8 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
         return MOD_BPSK;
     } else if (strcmp(_str,"qpsk")==0) {
         return MOD_QPSK;
+    } else if (strcmp(_str,"apsk4")==0) {
+        return MOD_APSK4;
     } else if (strcmp(_str,"apsk8")==0) {
         return MOD_APSK8;
     } else if (strcmp(_str,"apsk16")==0) {
