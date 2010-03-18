@@ -22,33 +22,39 @@ int main() {
     // options
     unsigned int order=4;   // filter order
     float fc=0.1f;          // cutoff frequency
+    float f0=0.0f;          // center frequency
+    float Ap=1.0f;          // pass-band ripple
+    float As=40.0f;         // stop-band attenuation
     unsigned int n=128;     // number of samples
+    liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_BUTTER;
+    liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
+    liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
 
-    // design butterworth filter
-    float complex za[order];    // analog complex zeros
-    float complex pa[order];    // analog complex poles
-    float complex ka;           // analog gain
-    butter_azpkf(order,fc,za,pa,&ka);
-    unsigned int nza = 0;
-    unsigned int npa = order;
+    // derived values
+    unsigned int N = order; // effective order
+    // filter order effectively doubles due to doubling the number
+    // of poles and zeros due to filter transformation
+    if (btype == LIQUID_IIRDES_BANDPASS || btype == LIQUID_IIRDES_BANDSTOP)
+    {
+        N *= 2;
+    }
+    unsigned int r = N%2;       // odd/even order
+    unsigned int L = (N-r)/2;   // filter semi-length
 
-    // complex digital poles/zeros/gain
-    float complex zd[order];
-    float complex pd[order];
-    float complex kd;
-    float m = 1.0f / tanf(M_PI * fc);
-    bilinear_zpkf(za,    nza,
-                  pa,    npa,
-                  ka,    m,
-                  zd, pd, &kd);
+    // allocate memory for filter coefficients
+    unsigned int h_len = (format == LIQUID_IIRDES_SOS) ? 3*(L+r) : N+1;
+    float a[h_len];
+    float b[h_len];
 
-    // convert complex digital poles/zeros/gain into transfer function
-    float a[order+1];
-    float b[order+1];
-    iirdes_dzpk2tff(zd,pd,order,kd,b,a);
+    // design filter
+    iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
 
     // create filter
-    iir_filter_crcf f = iir_filter_crcf_create(b,order+1,a,order+1);
+    iir_filter_crcf f = NULL;
+    if (format == LIQUID_IIRDES_SOS)
+        f = iir_filter_crcf_create_sos(b,a,L+r);
+    else
+        f = iir_filter_crcf_create(b,h_len, a,h_len);
     iir_filter_crcf_print(f);
 
     // open output file
@@ -80,12 +86,51 @@ int main() {
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y), cimagf(y));
     }
 
-    // output filter coefficients using extra precision
-    for (i=0; i<=order; i++) {
-        fprintf(fid,"b(%3u) = %16.8e;\n", i+1, b[i]);
-        fprintf(fid,"a(%3u) = %16.8e;\n", i+1, a[i]);
+    // output filter coefficients using extra precision, compute spectral response
+    fprintf(fid,"nfft = 1024;\n");
+    if (format == LIQUID_IIRDES_SOS) {
+        fprintf(fid,"L = %u;\n", L);
+        fprintf(fid,"r = %u;\n", r);
+        unsigned int j;
+        for (i=0; i<L+r; i++) {
+            for (j=0; j<3; j++) {
+                fprintf(fid,"B(%3u,%3u) = %16.8e;\n", i+1, j+1, b[3*i+j]);
+                fprintf(fid,"A(%3u,%3u) = %16.8e;\n", i+1, j+1, a[3*i+j]);
+            }
+        }
+        fprintf(fid,"\n");
+        fprintf(fid,"H = ones(1,nfft);\n");
+        fprintf(fid,"for i=1:(L+r),\n");
+        fprintf(fid,"    H = H .* fft(B(i,:),nfft)./fft(A(i,:),nfft);\n");
+        fprintf(fid,"end;\n");
+        fprintf(fid,"H = fftshift(H);\n");
+
+    } else {
+        for (i=0; i<h_len; i++) {
+            fprintf(fid,"b(%3u) = %16.8e;\n", i+1, b[i]);
+            fprintf(fid,"a(%3u) = %16.8e;\n", i+1, a[i]);
+        }
+        fprintf(fid,"H = fft(b,nfft)./fft(a,nfft);\n");
     }
     fprintf(fid,"\n");
+
+    // plot magnitude response
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1),\n");
+    fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
+    fprintf(fid,"  axis([0.0 0.5 -4 1]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency');\n");
+    fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
+    fprintf(fid,"subplot(2,1,2),\n");
+    fprintf(fid,"  plot(f,20*log10(abs(H)),'-','Color',[0.5 0 0],'LineWidth',2);\n");
+    fprintf(fid,"  axis([0.0 0.5 -100 10]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('Normalized Frequency');\n");
+    fprintf(fid,"  ylabel('Filter PSD [dB]');\n");
+
+    // plot output
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
