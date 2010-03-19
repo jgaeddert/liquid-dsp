@@ -532,7 +532,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         //float a[_n+1];      // denominator
 
         // convert complex digital poles/zeros/gain into transfer function
-        iirdes_dzpk2tff(zd,pd,_n,kd,_A,_A);
+        iirdes_dzpk2tff(zd,pd,_n,kd,_B,_A);
 
         // print coefficients
         for (i=0; i<=_n; i++) printf("b[%3u] = %12.8f;\n", i, _B[i]);
