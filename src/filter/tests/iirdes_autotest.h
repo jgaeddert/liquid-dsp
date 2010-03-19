@@ -19,34 +19,35 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//
+// References
+//  [Ziemer:1998] Ziemer, Tranter, Fannin, "Signals & Systems,
+//      Continuous and Discrete," 4th ed., Prentice Hall, Upper
+//      Saddle River, NJ, 1998
+
 #ifndef __LIQUID_IIRDES_AUTOTEST_H__
 #define __LIQUID_IIRDES_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
-//
-// Bibliography:
-// [1] Zimer, Tranter, Fannin, "Signals & Systems, Continuous
-//     and Discrete," 4th ed., Prentice Hall, Upper Saddle
-//     River, NJ, 1998
-
 // 
-// AUTOTEST : design 2nd-order butterworth filter (design
-//            comes from [1] Example 9-7, pp. 440--442
+// AUTOTEST : design 2nd-order butterworth filter (design comes
+//            from [Ziemer:1998] Example 9-7, pp. 440--442)
 //
 void autotest_iirdes_butter_2()
 {
     // initialize variables
-    unsigned int order = 2;     // filter order
+    unsigned int order = 2; // filter order
     float fc = 0.25f;       // normalized cutoff frequency
+    float f0 = 0.0f;        // center frequency (ignored for low-pass filter)
+    float Ap = 1.0f;        // pass-band ripple (ignored for Butterworth)
+    float As = 40.0f;       // stop-band attenuation (ignored for Butterworth)
     float tol = 1e-6f;      // error tolerance
 
-    // output coefficients
-    float a[3];
-    float b[3];
-
     // initialize pre-determined coefficient array
+    // for 2^nd-order low-pass Butterworth filter
+    // with cutoff frequency 0.25
     float a_test[3] = {
         1.0f,
         0.0f,
@@ -56,26 +57,18 @@ void autotest_iirdes_butter_2()
         0.585786437626905f,
         0.292893218813452f};
 
+    // output coefficients
+    float a[3];
+    float b[3];
+
     // design butterworth filter
-    float complex za[order];    // analog complex zeros
-    float complex pa[order];    // analog complex poles
-    float complex ka;           // analog gain
-    butter_azpkf(order,fc,za,pa,&ka);
-    unsigned int nza = 0;
-    unsigned int npa = order;
-
-    // complex digital poles/zeros/gain
-    float complex zd[order];
-    float complex pd[order];
-    float complex kd;
-    float m = 1.0f / tanf(M_PI * fc);
-    bilinear_zpkf(za,    nza,
-                  pa,    npa,
-                  ka,    m,
-                  zd, pd, &kd);
-
-    // convert complex digital poles/zeros/gain into transfer function
-    iirdes_dzpk2tff(zd,pd,order,kd,b,a);
+    iirdes(LIQUID_IIRDES_BUTTER,
+           LIQUID_IIRDES_LOWPASS,
+           LIQUID_IIRDES_TF,
+           order,
+           fc, f0,
+           Ap, As,
+           b, a);
 
     // Ensure data are equal to within tolerance
     unsigned int i;
