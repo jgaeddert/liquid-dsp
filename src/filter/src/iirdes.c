@@ -404,6 +404,8 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         exit(1);
     }
 
+    unsigned int i;
+
     // number of analaog poles/zeros
     unsigned int npa = _n;
     unsigned int nza;
@@ -413,55 +415,52 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     float complex za[_n];
     float complex ka;
 
-    unsigned int r = _n%2;
-    unsigned int L = (_n-r)/2;
+    // derived values
+    unsigned int r = _n%2;      // odd/even filter order
+    unsigned int L = (_n-r)/2;  // filter semi-length
 
-    unsigned int i;
     // specific filter variables
     float epsilon, Gp, Gs, ep, es;
 
+    // compute zeros and poles of analog prototype
     switch (_ftype) {
     case LIQUID_IIRDES_BUTTER:
-        printf("Butterworth filter design:\n");
+        // Butterworth filter design : no zeros, _n poles
         nza = 0;
         butter_azpkf(_n,_fc,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY1:
-        printf("Cheby-I filter design:\n");
+        // Cheby-I filter design : no zeros, _n poles, pass-band ripple
         nza = 0;
         epsilon = sqrtf( powf(10.0f, _Ap / 10.0f) - 1.0f );
         cheby1_azpkf(_n,_fc,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY2:
-        printf("Cheby-II filter design:\n");
+        // Cheby-II filter design : _n-r zeros, _n poles, stop-band ripple
         nza = 2*L;
         epsilon = powf(10.0f, -_As/20.0f);
         cheby2_azpkf(_n,_fc,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_ELLIP:
-        printf("elliptic filter design:\n");
+        // elliptic filter design : _n-r zeros, _n poles, pass/stop-band ripple
         nza = 2*L;
-        Gp = powf(10.0f, -_Ap / 20.0f);
-        Gs = powf(10.0f, -_As / 20.0f);
-        printf("  Gp = %12.8f\n", Gp);
-        printf("  Gs = %12.8f\n", Gs);
-
-        // epsilon values
-        ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
-        es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
-
+        Gp = powf(10.0f, -_Ap / 20.0f);     // pass-band gain
+        Gs = powf(10.0f, -_As / 20.0f);     // stop-band gain
+        ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);    // pass-band epsilon
+        es = sqrtf(1.0f/(Gs*Gs) - 1.0f);    // stop-band epsilon
         ellip_azpkf(_n,_fc,ep,es,za,pa,&ka);
         break;
     case LIQUID_IIRDES_BESSEL:
-        printf("Bessel filter design:\n");
-        bessel_azpkf(_n,za,pa,&ka);
+        // Bessel filter design : no zeros, _n poles
         nza = 0;
+        bessel_azpkf(_n,za,pa,&ka);
         break;
     default:
         fprintf(stderr,"error: iirdes(), unknown filter type\n");
         exit(1);
     }
 
+#if LIQUID_IIRDES_DEBUG_PRINT
     printf("poles (analog):\n");
     for (i=0; i<npa; i++)
         printf("  pa[%3u] = %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
@@ -470,6 +469,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         printf("  za[%3u] = %12.8f + j*%12.8f\n", i, crealf(za[i]), cimagf(za[i]));
     printf("gain (analog):\n");
     printf("  ka : %12.8f + j*%12.8f\n", crealf(ka), cimagf(ka));
+#endif
 
     // complex digital poles/zeros/gain
     // NOTE: allocated double the filter order to cover band-pass, band-stop cases
@@ -477,12 +477,13 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     float complex pd[2*_n];
     float complex kd;
     float m = iirdes_freqprewarp(_btype,_fc,_f0);
-    printf("m : %12.8f\n", m);
+    //printf("m : %12.8f\n", m);
     bilinear_zpkf(za,    nza,
                   pa,    npa,
                   ka,    m,
                   zd, pd, &kd);
 
+#if LIQUID_IIRDES_DEBUG_PRINT
     printf("zeros (digital, low-pass prototype):\n");
     for (i=0; i<_n; i++)
         printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(zd[i]), cimagf(zd[i]));
@@ -491,6 +492,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         printf("  pd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(pd[i]), cimagf(pd[i]));
     printf("gain (digital):\n");
     printf("  kd : %12.8f + j*%12.8f\n", crealf(kd), cimagf(kd));
+#endif
 
     // negate zeros, poles for high-pass and band-stop cases
     if (_btype == LIQUID_IIRDES_HIGHPASS ||
@@ -511,7 +513,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         float complex zd1[2*_n];
         float complex pd1[2*_n];
 
-        // run zeros, poles trasform
+        // run zeros, poles low-pass -> band-pass trasform
         iirdes_dzpk_lp2bp(zd, pd,   // low-pass prototype zeros, poles
                           _n,       // filter order
                           _f0,      // center frequency
@@ -528,24 +530,24 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     }
 
     if (_format == LIQUID_IIRDES_TF) {
-        //float b[_n+1];      // numerator
-        //float a[_n+1];      // denominator
-
-        // convert complex digital poles/zeros/gain into transfer function
+        // convert complex digital poles/zeros/gain into transfer
+        // function : H(z) = B(z) / A(z)
+        // where length(B,A) = low/high-pass ? _n + 1 : 2*_n + 1
         iirdes_dzpk2tff(zd,pd,_n,kd,_B,_A);
 
+#if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
         for (i=0; i<=_n; i++) printf("b[%3u] = %12.8f;\n", i, _B[i]);
         for (i=0; i<=_n; i++) printf("a[%3u] = %12.8f;\n", i, _A[i]);
+#endif
     } else {
-        // second-order sections
-        //float A[3*(L+r)];
-        //float B[3*(L+r)];
-
         // convert complex digital poles/zeros/gain into second-
-        // order sections form
+        // order sections form :
+        // H(z) = prod { (b0 + b1*z^-1 + b2*z^-2) / (a0 + a1*z^-1 + a2*z^-2) }
+        // where size(B,A) = low/high-pass ? [3]x[L+r] : [3]x[2*L]
         iirdes_dzpk2sosf(zd,pd,_n,kd,_B,_A);
 
+#if LIQUID_IIRDES_DEBUG_PRINT
         // print coefficients
         printf("B [%u x 3] :\n", L+r);
         for (i=0; i<L+r; i++)
@@ -553,6 +555,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         printf("A [%u x 3] :\n", L+r);
         for (i=0; i<L+r; i++)
             printf("  %12.8f %12.8f %12.8f\n", _A[3*i+0], _A[3*i+1], _A[3*i+2]);
+#endif
 
     }
 }
