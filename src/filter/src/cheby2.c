@@ -31,8 +31,18 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_DEBUG_CHEBY2_PRINT   1
+#define LIQUID_DEBUG_CHEBY2_PRINT   0
 
+// Compute analog zeros, poles, gain of low-pass Chebyshev
+// Type II filter, grouping complex conjugates together. If
+// the filter order is odd, the single real pole is at the
+// end of the array.
+//  _n      :   filter order
+//  _fc     :   cutoff frequency (ignored)
+//  _ep     :   epsilon, related to stop-band ripple
+//  _z      :   output analog zeros [length: floor(_n/2)]
+//  _p      :   output analog poles [length: _n]
+//  _k      :   output analog gain
 void cheby2_azpkf(unsigned int _n,
                   float _fc,
                   float _es,
@@ -49,7 +59,7 @@ void cheby2_azpkf(unsigned int _n,
     float b = 0.5*(tp + tm);    // ellipse major axis
     float a = 0.5*(tp - tm);    // ellipse minor axis
 
-#if LIQUID_DEBUG_CHEBY1_PRINT
+#if LIQUID_DEBUG_CHEBY2_PRINT
     printf("ep : %12.8f\n", _es);
     printf("b  : %12.8f\n", b);
     printf("a  : %12.8f\n", a);
@@ -74,7 +84,6 @@ void cheby2_azpkf(unsigned int _n,
     // compute zeros
     k=0;
     for (i=0; i<L; i++) {
-        //float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
         float theta = (float)(0.5f*M_PI*(2*(i+1)-1)/(float)(_n));
         _z[k++] = -1.0f / (_Complex_I*cosf(theta));
         _z[k++] =  1.0f / (_Complex_I*cosf(theta));
@@ -82,18 +91,6 @@ void cheby2_azpkf(unsigned int _n,
 
     assert(k==2*L);
 
-#if 0
-    // compute gain
-    float complex Az=1.0f;
-    float complex Ap=1.0f;
-    for (i=0; i<2*L; i++)
-        Az *= _z[i];
-    for (i=0; i<_n; i++)
-        Ap *= _p[i];
-
-    *_k = Ap / Az;
-#else
     *_k = 1.0f;
-#endif
 }
 

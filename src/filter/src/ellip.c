@@ -200,6 +200,17 @@ float complex ellip_asnf(float complex _w,
     return 1.0 - ellip_acdf(_w,_k,_n);
 }
 
+// Compute analog zeros, poles, gain of low-pass elliptic
+// filter, grouping complex conjugates together. If
+// the filter order is odd, the single real pole is at the
+// end of the array.
+//  _n      :   filter order
+//  _fc     :   cutoff frequency (ignored)
+//  _ep     :   epsilon_p, related to pass-band ripple
+//  _es     :   epsilon_s, related to stop-band ripple
+//  _z      :   output analog zeros [length: floor(_n/2)]
+//  _p      :   output analog poles [length: _n]
+//  _k      :   output analog gain
 void ellip_azpkf(unsigned int _n,
                  float _fc,
                  float _ep,
@@ -209,27 +220,23 @@ void ellip_azpkf(unsigned int _n,
                  float complex * _ka)
 {
     // filter specifications
-    float fp = 0.125f;     // pass-band cutoff
-    float fs = 1.1*fp;  // stop-band cutoff
-    float Gp = 0.95f;   // pass-band gain
-    float Gs = 0.01f;   // stop-band gain
+    float fp = 1.0f / (2.0f * M_PI);    // pass-band cutoff
+    float fs = 1.1*fp;                  // stop-band cutoff
+    //float Gp = 1/sqrtf(1 + _ep*_ep);    // pass-band gain
+    //float Gs = 1/sqrtf(1 + _es*_es);    // stop-band gain
 
-    unsigned int n=7;   // number of iterations
+    // number of iterations for elliptic integral
+    // approximations
+    unsigned int n=7;
 
     float Wp = 2*M_PI*fp;
     float Ws = 2*M_PI*fs;
-    Wp = 1.0f;
-    Ws = 1.1f*Wp;
 
     // ripples passband, stopband
-    float ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
-    float es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
-    ep = _ep;
-    es = _es;
-    Gp = 1/sqrtf(1 + ep*ep);
-    Gs = 1/sqrtf(1 + es*es);
+    float ep = _ep;
+    float es = _es;
 #if LIQUID_DEBUG_ELLIP_PRINT
-    printf("ep, es      : %12.8f, %12.8f\n", ep, es);
+    printf("ep, es      : %12.8f, %12.8f\n", _ep, _es);
 #endif
 
     float k  = Wp/Ws;           // 0.8889f;
@@ -261,7 +268,7 @@ void ellip_azpkf(unsigned int _n,
     printf("k           : %12.4e\n", k);
 #endif
 
-    float fs_new = fp/k;        // 4.37506723
+    //float fs_new = fp/k;        // 4.37506723
 #if LIQUID_DEBUG_ELLIP_PRINT
     printf("fs_new      : %12.8f\n", fs_new);
 #endif
@@ -327,7 +334,7 @@ void ellip_azpkf(unsigned int _n,
     }
     assert(t==2*L);
 
-    *_ka = (r==0) ? Gp : 1.0f;
+    *_ka = (r==0) ? 1/sqrtf(1 + _ep*_ep) : 1.0f;
 }
 
 

@@ -31,6 +31,16 @@
 
 #define LIQUID_DEBUG_BUTTER_PRINT   0
 
+// Compute analog zeros, poles, gain of low-pass Butterworth
+// filter, grouping complex conjugates together. If filter
+// order is odd, the single real pole (-1) is at the end of
+// the array.  There are no zeros for the analog Butterworth
+// filter.  The gain is unity.
+//  _n      :   filter order
+//  _fc     :   cutoff frequency (ignored)
+//  _z      :   output analog zeros [length:  0]
+//  _p      :   output analog poles [length: _n]
+//  _k      :   output analog gain
 void butter_azpkf(unsigned int _n,
                   float _fc,
                   liquid_float_complex * _z,

@@ -31,8 +31,19 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_DEBUG_CHEBY1_PRINT   1
+#define LIQUID_DEBUG_CHEBY1_PRINT   0
 
+// Compute analog zeros, poles, gain of low-pass Chebyshev
+// Type I filter, grouping complex conjugates together. If
+// the filter order is odd, the single real pole is at the
+// end of the array.  There are no zeros for the analog
+// Chebyshev Type I filter.
+//  _n      :   filter order
+//  _fc     :   cutoff frequency (ignored)
+//  _ep     :   epsilon, related to pass-band ripple
+//  _z      :   output analog zeros [length:  0]
+//  _p      :   output analog poles [length: _n]
+//  _k      :   output analog gain
 void cheby1_azpkf(unsigned int _n,
                   float _fc,
                   float _ep,

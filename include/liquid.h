@@ -926,7 +926,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
             float * _B,
             float * _A);
 
-
+// compute analog zeros, poles, gain for specific filter types
 void butter_azpkf(unsigned int _n,
                   float _fc,
                   liquid_float_complex * _z,
@@ -962,6 +962,14 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
                          float _f0);
 
 // convert analog z/p/k form to discrete z/p/k form (bilinear z-transform)
+//  _za     :   analog zeros [length: _nza]
+//  _nza    :   number of analog zeros
+//  _pa     :   analog poles [length: _npa]
+//  _npa    :   number of analog poles
+//  _m      :   frequency pre-warping factor
+//  _zd     :   output digital zeros [length: _npa]
+//  _pd     :   output digital poles [length: _npa]
+//  _kd     :   output digital gain (should actually be real-valued)
 void bilinear_zpkf(liquid_float_complex * _za,
                    unsigned int _nza,
                    liquid_float_complex * _pa,
@@ -973,12 +981,12 @@ void bilinear_zpkf(liquid_float_complex * _za,
                    liquid_float_complex * _kd);
 
 // digital z/p/k low-pass to band-pass
-//  _zd     :   digital zeros (low-pass prototype)
-//  _pd     :   digital poles (low-pass prototype)
+//  _zd     :   digital zeros (low-pass prototype), [length: _n]
+//  _pd     :   digital poles (low-pass prototype), [length: _n]
 //  _n      :   low-pass filter order
 //  _f0     :   center frequency
-//  _zdt    :   digital zeros transformed [length: 2*_n]
-//  _pdt    :   digital poles transformed [length: 2*_n]
+//  _zdt    :   output digital zeros transformed [length: 2*_n]
+//  _pdt    :   output digital poles transformed [length: 2*_n]
 void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
                        liquid_float_complex * _pd,
                        unsigned int _n,
@@ -987,13 +995,27 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
                        liquid_float_complex * _pdt);
 
 // convert discrete z/p/k form to transfer function
+//  _zd     :   digital zeros [length: _n]
+//  _pd     :   digital poles [length: _n]
+//  _n      :   filter order
+//  _kd     :   digital gain
+//  _b      :   output numerator [length: _n+1]
+//  _a      :   output denominator [length: _n+1]
 void iirdes_dzpk2tff(liquid_float_complex * _zd,
                      liquid_float_complex * _pd,
                      unsigned int _n,
                      liquid_float_complex _kd,
                      float * _b,
                      float * _a);
+
 // convert discrete z/p/k form to second-order sections
+//  _zd     :   digital zeros [length: _n]
+//  _pd     :   digital poles [length: _n]
+//  _n      :   filter order
+//  _kd     :   digital gain
+//  _B      :   output numerator [size: 3 x L+r]
+//  _A      :   output denominator [size: 3 x L+r]
+//  where r = _n%2, L = (_n-r)/2
 void iirdes_dzpk2sosf(liquid_float_complex * _zd,
                       liquid_float_complex * _pd,
                       unsigned int _n,

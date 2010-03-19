@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <assert.h>
 #include "liquid.internal.h"
@@ -53,6 +54,15 @@ void fpoly_bessel_roots_orchard_recursion(unsigned int _n,
 
 // ****************************************
 
+// Compute analog zeros, poles, gain of low-pass Bessel
+// filter, grouping complex conjugates together. If
+// the filter order is odd, the single real pole is at
+// the end of the array.  There are no zeros for the
+// analog Bessel filter.  The gain is unity.
+//  _n      :   filter order
+//  _z      :   output analog zeros [length:  0]
+//  _p      :   output analog poles [length: _n]
+//  _k      :   output analog gain
 void bessel_azpkf(unsigned int _n,
                   float complex * _za,
                   float complex * _pa,
@@ -119,7 +129,6 @@ void fpoly_bessel_roots(unsigned int _n,
 // L_{k} are extrapolated from those in L_{k-2} and L_{k-1}.
 // The resulting root is near enough the true root such that
 // Orchard's recursion will find it.
-
 void fpoly_bessel_roots_orchard(unsigned int _n,
                                 float complex * _roots)
 {
