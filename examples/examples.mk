@@ -23,6 +23,7 @@ local_src	:=			\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\
 	iirdes_example.c		\
+	iirdes_analog_example.c		\
 	iir_filter_crcf_example.c	\
 	interp_crcf_example.c		\
 	matched_filter_example.c	\

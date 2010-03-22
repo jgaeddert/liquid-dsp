@@ -91,6 +91,11 @@ void cheby2_azpkf(unsigned int _n,
 
     assert(k==2*L);
 
+    // compute gain
     *_k = 1.0f;
+    for (i=0; i<_n; i++)
+        *_k *= _p[i];
+    for (i=0; i<2*L; i++)
+        *_k /= _z[i];
 }
 

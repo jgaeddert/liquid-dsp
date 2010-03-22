@@ -139,6 +139,7 @@ int main(int argc, char*argv[]) {
     float complex pa[n];
     float complex za[n];
     float complex ka;
+    float complex k0;
 
     unsigned int r = n%2;
     unsigned int L = (n-r)/2;
@@ -151,18 +152,21 @@ int main(int argc, char*argv[]) {
     case LIQUID_IIRDES_BUTTER:
         printf("Butterworth filter design:\n");
         nza = 0;
+        k0 = 1.0f;
         butter_azpkf(n,fc,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY1:
         printf("Cheby-I filter design:\n");
         nza = 0;
         epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
+        k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + epsilon*epsilon);
         cheby1_azpkf(n,fc,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY2:
         printf("Cheby-II filter design:\n");
         nza = 2*L;
         epsilon = powf(10.0f, -slsl/20.0f);
+        k0 = 1.0f;
         cheby2_azpkf(n,fc,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_ELLIP:
@@ -176,12 +180,14 @@ int main(int argc, char*argv[]) {
         // epsilon values
         ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
         es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
+        k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + ep*ep);
 
         ellip_azpkf(n,fc,ep,es,za,pa,&ka);
         break;
     case LIQUID_IIRDES_BESSEL:
         printf("Bessel filter design:\n");
         bessel_azpkf(n,za,pa,&ka);
+        k0 = 1.0f;
         nza = 0;
         break;
     default:
@@ -207,7 +213,7 @@ int main(int argc, char*argv[]) {
     printf("m : %12.8f\n", m);
     bilinear_zpkf(za,    nza,
                   pa,    npa,
-                  ka,    m,
+                  k0,    m,
                   zd, pd, &kd);
 
     // open output file

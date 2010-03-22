@@ -82,9 +82,9 @@ void cheby1_azpkf(unsigned int _n,
 
     assert(k==_n);
 
-    if ( r == 0 )
-        *_k = 1.0f / sqrtf(1.0f + _ep*_ep);
-    else
-        *_k = 1.0f;
+    // compute gain
+    *_k = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);
+    for (i=0; i<_n; i++)
+        *_k *= _p[i];
 }
 

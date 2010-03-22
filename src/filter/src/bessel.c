@@ -73,9 +73,6 @@ void bessel_azpkf(unsigned int _n,
 
     // analog Bessel filter prototype has no zeros
 
-    // set gain
-    *_ka = 1.0f;
-
     // The analog Bessel filter's 3-dB cut-off frequency is a
     // non-linear function of its order.  This frequency can
     // be approximated from [Bianchi:2007] (1.67), pp. 33.
@@ -84,6 +81,11 @@ void bessel_azpkf(unsigned int _n,
     unsigned int i;
     for (i=0; i<_n; i++)
         _pa[i] /= w3dB;
+
+    // set gain
+    *_ka = 1.0f;
+    for (i=0; i<_n; i++)
+        *_ka *= _pa[i];
 }
 
 void fpoly_bessel(unsigned int _n, float * _p)

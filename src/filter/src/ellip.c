@@ -334,7 +334,12 @@ void ellip_azpkf(unsigned int _n,
     }
     assert(t==2*L);
 
-    *_ka = (r==0) ? 1/sqrtf(1 + _ep*_ep) : 1.0f;
+    // compute gain
+    *_ka = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);
+    for (i=0; i<_n; i++)
+        *_ka *= _pa[i];
+    for (i=0; i<2*L; i++)
+        *_ka /= _za[i];
 }
 
 

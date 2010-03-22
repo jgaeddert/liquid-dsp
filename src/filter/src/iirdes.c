@@ -414,6 +414,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     float complex pa[_n];
     float complex za[_n];
     float complex ka;
+    float complex k0 = 1.0f; // nominal digital gain
 
     // derived values
     unsigned int r = _n%2;      // odd/even filter order
@@ -427,18 +428,21 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     case LIQUID_IIRDES_BUTTER:
         // Butterworth filter design : no zeros, _n poles
         nza = 0;
+        k0 = 1.0f;
         butter_azpkf(_n,_fc,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY1:
         // Cheby-I filter design : no zeros, _n poles, pass-band ripple
         nza = 0;
         epsilon = sqrtf( powf(10.0f, _Ap / 10.0f) - 1.0f );
+        k0 = r ? 1.0f : 1.0f / sqrt(1.0f + epsilon*epsilon);
         cheby1_azpkf(_n,_fc,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY2:
         // Cheby-II filter design : _n-r zeros, _n poles, stop-band ripple
         nza = 2*L;
         epsilon = powf(10.0f, -_As/20.0f);
+        k0 = 1.0f;
         cheby2_azpkf(_n,_fc,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_ELLIP:
@@ -448,11 +452,13 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         Gs = powf(10.0f, -_As / 20.0f);     // stop-band gain
         ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);    // pass-band epsilon
         es = sqrtf(1.0f/(Gs*Gs) - 1.0f);    // stop-band epsilon
+        k0 = r ? 1.0f : 1.0f / sqrt(1.0f + ep*ep);
         ellip_azpkf(_n,_fc,ep,es,za,pa,&ka);
         break;
     case LIQUID_IIRDES_BESSEL:
         // Bessel filter design : no zeros, _n poles
         nza = 0;
+        k0 = 1.0f;
         bessel_azpkf(_n,za,pa,&ka);
         break;
     default:
