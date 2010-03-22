@@ -205,14 +205,12 @@ float complex ellip_asnf(float complex _w,
 // the filter order is odd, the single real pole is at the
 // end of the array.
 //  _n      :   filter order
-//  _fc     :   cutoff frequency (ignored)
 //  _ep     :   epsilon_p, related to pass-band ripple
 //  _es     :   epsilon_s, related to stop-band ripple
-//  _z      :   output analog zeros [length: floor(_n/2)]
-//  _p      :   output analog poles [length: _n]
-//  _k      :   output analog gain
+//  _za     :   output analog zeros [length: floor(_n/2)]
+//  _pa     :   output analog poles [length: _n]
+//  _ka     :   output analog gain
 void ellip_azpkf(unsigned int _n,
-                 float _fc,
                  float _ep,
                  float _es,
                  float complex * _za,

@@ -37,15 +37,13 @@
 // the array.  There are no zeros for the analog Butterworth
 // filter.  The gain is unity.
 //  _n      :   filter order
-//  _fc     :   cutoff frequency (ignored)
-//  _z      :   output analog zeros [length:  0]
-//  _p      :   output analog poles [length: _n]
-//  _k      :   output analog gain
+//  _za     :   output analog zeros [length:  0]
+//  _pa     :   output analog poles [length: _n]
+//  _ka     :   output analog gain
 void butter_azpkf(unsigned int _n,
-                  float _fc,
-                  liquid_float_complex * _z,
-                  liquid_float_complex * _p,
-                  liquid_float_complex * _k)
+                  liquid_float_complex * _za,
+                  liquid_float_complex * _pa,
+                  liquid_float_complex * _ka)
 {
     unsigned int r = _n%2;
     unsigned int L = (_n - r)/2;
@@ -54,14 +52,14 @@ void butter_azpkf(unsigned int _n,
     unsigned int k=0;
     for (i=0; i<L; i++) {
         float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
-        _p[k++] = cexpf( _Complex_I*theta);
-        _p[k++] = cexpf(-_Complex_I*theta);
+        _pa[k++] = cexpf( _Complex_I*theta);
+        _pa[k++] = cexpf(-_Complex_I*theta);
     }
 
-    if (r) _p[k++] = -1.0f;
+    if (r) _pa[k++] = -1.0f;
 
     assert(k==_n);
 
-    *_k = 1.0;
+    *_ka = 1.0;
 }
 

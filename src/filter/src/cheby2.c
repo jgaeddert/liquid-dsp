@@ -38,17 +38,15 @@
 // the filter order is odd, the single real pole is at the
 // end of the array.
 //  _n      :   filter order
-//  _fc     :   cutoff frequency (ignored)
 //  _ep     :   epsilon, related to stop-band ripple
-//  _z      :   output analog zeros [length: floor(_n/2)]
-//  _p      :   output analog poles [length: _n]
-//  _k      :   output analog gain
+//  _za     :   output analog zeros [length: floor(_n/2)]
+//  _pa     :   output analog poles [length: _n]
+//  _ka     :   output analog gain
 void cheby2_azpkf(unsigned int _n,
-                  float _fc,
                   float _es,
-                  liquid_float_complex * _z,
-                  liquid_float_complex * _p,
-                  liquid_float_complex * _k)
+                  liquid_float_complex * _za,
+                  liquid_float_complex * _pa,
+                  liquid_float_complex * _ka)
 {
     float nf = (float) _n;
 
@@ -73,11 +71,11 @@ void cheby2_azpkf(unsigned int _n,
     unsigned int k=0;
     for (i=0; i<L; i++) {
         float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
-        _p[k++] = 1.0f / (a*cosf(theta) - _Complex_I*b*sinf(theta));
-        _p[k++] = 1.0f / (a*cosf(theta) + _Complex_I*b*sinf(theta));
+        _pa[k++] = 1.0f / (a*cosf(theta) - _Complex_I*b*sinf(theta));
+        _pa[k++] = 1.0f / (a*cosf(theta) + _Complex_I*b*sinf(theta));
     }
 
-    if (r) _p[k++] = -1.0f / a;
+    if (r) _pa[k++] = -1.0f / a;
 
     assert(k==_n);
 
@@ -85,17 +83,17 @@ void cheby2_azpkf(unsigned int _n,
     k=0;
     for (i=0; i<L; i++) {
         float theta = (float)(0.5f*M_PI*(2*(i+1)-1)/(float)(_n));
-        _z[k++] = -1.0f / (_Complex_I*cosf(theta));
-        _z[k++] =  1.0f / (_Complex_I*cosf(theta));
+        _za[k++] = -1.0f / (_Complex_I*cosf(theta));
+        _za[k++] =  1.0f / (_Complex_I*cosf(theta));
     }
 
     assert(k==2*L);
 
     // compute gain
-    *_k = 1.0f;
+    *_ka = 1.0f;
     for (i=0; i<_n; i++)
-        *_k *= _p[i];
+        *_ka *= _pa[i];
     for (i=0; i<2*L; i++)
-        *_k /= _z[i];
+        *_ka /= _za[i];
 }
 

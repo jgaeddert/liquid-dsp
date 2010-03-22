@@ -98,7 +98,7 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     float complex ka;
 
     // TODO : use design other than Butterworth based on input prototype
-    butter_azpkf(q->order,0.25f,za,pa,&ka);
+    butter_azpkf(q->order,za,pa,&ka);
     unsigned int npa = q->order;
     unsigned int nza = 0;
 

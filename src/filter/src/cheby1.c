@@ -39,17 +39,15 @@
 // end of the array.  There are no zeros for the analog
 // Chebyshev Type I filter.
 //  _n      :   filter order
-//  _fc     :   cutoff frequency (ignored)
 //  _ep     :   epsilon, related to pass-band ripple
-//  _z      :   output analog zeros [length:  0]
-//  _p      :   output analog poles [length: _n]
-//  _k      :   output analog gain
+//  _za     :   output analog zeros [length:  0]
+//  _pa     :   output analog poles [length: _n]
+//  _ka     :   output analog gain
 void cheby1_azpkf(unsigned int _n,
-                  float _fc,
                   float _ep,
-                  liquid_float_complex * _z,
-                  liquid_float_complex * _p,
-                  liquid_float_complex * _k)
+                  liquid_float_complex * _za,
+                  liquid_float_complex * _pa,
+                  liquid_float_complex * _ka)
 {
     float nf = (float) _n;
 
@@ -74,17 +72,17 @@ void cheby1_azpkf(unsigned int _n,
     unsigned int k=0;
     for (i=0; i<L; i++) {
         float theta = (float)(2*(i+1) + _n - 1)*M_PI/(float)(2*_n);
-        _p[k++] = a*cosf(theta) - _Complex_I*b*sinf(theta);
-        _p[k++] = a*cosf(theta) + _Complex_I*b*sinf(theta);
+        _pa[k++] = a*cosf(theta) - _Complex_I*b*sinf(theta);
+        _pa[k++] = a*cosf(theta) + _Complex_I*b*sinf(theta);
     }
 
-    if (r) _p[k++] = -a;
+    if (r) _pa[k++] = -a;
 
     assert(k==_n);
 
     // compute gain
-    *_k = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);
+    *_ka = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);
     for (i=0; i<_n; i++)
-        *_k *= _p[i];
+        *_ka *= _pa[i];
 }
 

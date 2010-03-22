@@ -928,24 +928,20 @@ void iirdes(liquid_iirdes_filtertype _ftype,
 
 // compute analog zeros, poles, gain for specific filter types
 void butter_azpkf(unsigned int _n,
-                  float _fc,
-                  liquid_float_complex * _z,
-                  liquid_float_complex * _p,
-                  liquid_float_complex * _k);
+                  liquid_float_complex * _za,
+                  liquid_float_complex * _pa,
+                  liquid_float_complex * _ka);
 void cheby1_azpkf(unsigned int _n,
-                  float _fc,
                   float _ep,
                   liquid_float_complex * _z,
                   liquid_float_complex * _p,
                   liquid_float_complex * _k);
 void cheby2_azpkf(unsigned int _n,
-                  float _fc,
                   float _es,
                   liquid_float_complex * _z,
                   liquid_float_complex * _p,
                   liquid_float_complex * _k);
 void ellip_azpkf(unsigned int _n,
-                 float _fc,
                  float _ep,
                  float _es,
                  liquid_float_complex * _z,
