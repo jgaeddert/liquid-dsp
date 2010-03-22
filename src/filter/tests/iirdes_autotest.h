@@ -119,7 +119,7 @@ void autotest_iirdes_dzpk2sosf()
     float complex za[n];    // analog zeros
     float complex pa[n];    // analog poles
     float complex ka;       // analog gain
-    butter_azpkf(n,fc,za,pa,&ka);
+    butter_azpkf(n,za,pa,&ka);
 
     float complex zd[n];    // digital zeros
     float complex pd[n];    // digital poles

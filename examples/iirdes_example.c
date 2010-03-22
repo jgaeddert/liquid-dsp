@@ -153,21 +153,21 @@ int main(int argc, char*argv[]) {
         printf("Butterworth filter design:\n");
         nza = 0;
         k0 = 1.0f;
-        butter_azpkf(n,fc,za,pa,&ka);
+        butter_azpkf(n,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY1:
         printf("Cheby-I filter design:\n");
         nza = 0;
         epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
         k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + epsilon*epsilon);
-        cheby1_azpkf(n,fc,epsilon,za,pa,&ka);
+        cheby1_azpkf(n,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_CHEBY2:
         printf("Cheby-II filter design:\n");
         nza = 2*L;
         epsilon = powf(10.0f, -slsl/20.0f);
         k0 = 1.0f;
-        cheby2_azpkf(n,fc,epsilon,za,pa,&ka);
+        cheby2_azpkf(n,epsilon,za,pa,&ka);
         break;
     case LIQUID_IIRDES_ELLIP:
         printf("elliptic filter design:\n");
@@ -182,7 +182,7 @@ int main(int argc, char*argv[]) {
         es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
         k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + ep*ep);
 
-        ellip_azpkf(n,fc,ep,es,za,pa,&ka);
+        ellip_azpkf(n,ep,es,za,pa,&ka);
         break;
     case LIQUID_IIRDES_BESSEL:
         printf("Bessel filter design:\n");
