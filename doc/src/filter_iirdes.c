@@ -37,12 +37,7 @@ int main(int argc, char*argv[]) {
     bool gnuplot_filename_given = false;
 
     // filter type
-    enum {  IIRDES_EXAMPLE_BUTTER=0,
-            IIRDES_EXAMPLE_CHEBY1,
-            IIRDES_EXAMPLE_CHEBY2,
-            IIRDES_EXAMPLE_ELLIP,
-            IIRDES_EXAMPLE_BESSEL
-    } type = 0;
+    liquid_iirdes_filtertype type = LIQUID_IIRDES_BUTTER;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uht:n:r:s:f:w:g:")) != EOF) {
@@ -53,15 +48,15 @@ int main(int argc, char*argv[]) {
             return 0;
         case 't':
             if (strcmp(optarg,"butter")==0) {
-                type = IIRDES_EXAMPLE_BUTTER;
+                type = LIQUID_IIRDES_BUTTER;
             } else if (strcmp(optarg,"cheby1")==0) {
-                type = IIRDES_EXAMPLE_CHEBY1;
+                type = LIQUID_IIRDES_CHEBY1;
             } else if (strcmp(optarg,"cheby2")==0) {
-                type = IIRDES_EXAMPLE_CHEBY2;
+                type = LIQUID_IIRDES_CHEBY2;
             } else if (strcmp(optarg,"ellip")==0) {
-                type = IIRDES_EXAMPLE_ELLIP;
+                type = LIQUID_IIRDES_ELLIP;
             } else if (strcmp(optarg,"bessel")==0) {
-                type = IIRDES_EXAMPLE_BESSEL;
+                type = LIQUID_IIRDES_BESSEL;
             } else {
                 fprintf(stderr,"error: iirdes_example, unknown filter type \"%s\"\n", optarg);
                 usage();
@@ -103,6 +98,7 @@ int main(int argc, char*argv[]) {
     float complex pa[n];
     float complex za[n];
     float complex ka;
+    float complex k0 = 1.0f;
 
     unsigned int r = n%2;
     unsigned int L = (n-r)/2;
@@ -112,41 +108,46 @@ int main(int argc, char*argv[]) {
     float epsilon, Gp, Gs, ep, es;
 
     switch (type) {
-    case IIRDES_EXAMPLE_BUTTER:
+    case LIQUID_IIRDES_BUTTER:
         printf("Butterworth filter design:\n");
         nza = 0;
-        butter_azpkf(n,fc,za,pa,&ka);
+        k0 = 1.0f;
+        butter_azpkf(n,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_CHEBY1:
+    case LIQUID_IIRDES_CHEBY1:
         printf("Cheby-I filter design:\n");
         nza = 0;
         epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
-        cheby1_azpkf(n,fc,epsilon,za,pa,&ka);
+        k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + epsilon*epsilon);
+        cheby1_azpkf(n,epsilon,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_CHEBY2:
+    case LIQUID_IIRDES_CHEBY2:
         printf("Cheby-II filter design:\n");
         nza = 2*L;
         epsilon = powf(10.0f, -slsl/20.0f);
-        cheby2_azpkf(n,fc,epsilon,za,pa,&ka);
+        k0 = 1.0f;
+        cheby2_azpkf(n,epsilon,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_ELLIP:
+    case LIQUID_IIRDES_ELLIP:
         printf("elliptic filter design:\n");
         nza = 2*L;
         Gp = powf(10.0f, -ripple  / 20.0f);
         Gs = powf(10.0f, -slsl    / 20.0f);
-        printf("  Gp = %12.8f\n", Gp);
-        printf("  Gs = %12.8f\n", Gs);
+        //printf("  Gp = %12.8f\n", Gp);
+        //printf("  Gs = %12.8f\n", Gs);
 
         // epsilon values
         ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
         es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
+        k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + epsilon*epsilon);
 
-        ellip_azpkf(n,fc,ep,es,za,pa,&ka);
+        ellip_azpkf(n,ep,es,za,pa,&ka);
         break;
-    case IIRDES_EXAMPLE_BESSEL:
+    case LIQUID_IIRDES_BESSEL:
         printf("Bessel filter design:\n");
         bessel_azpkf(n,za,pa,&ka);
         nza = 0;
+        k0 = 1.0f;
         break;
     default:
         fprintf(stderr,"error: iirdes_example: unknown type\n");
@@ -160,7 +161,7 @@ int main(int argc, char*argv[]) {
     float m = 1.0f / tanf(M_PI * fc);
     bilinear_zpkf(za,    nza,
                   pa,    npa,
-                  ka,    m,
+                  k0,    m,
                   zd, pd, &kd);
 
     // second-order sections
