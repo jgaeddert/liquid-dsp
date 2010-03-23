@@ -40,28 +40,42 @@
 #define LIQUID_IIRDES_DEBUG_PRINT 0
 
 // sorts _z into complex conjugate pairs within a tolerance
+//  _z      :   complex array (size _n)
+//  _n      :   number of elements in _z
+//  _tol    :   tolerance for finding complex pairs
+//  _p      :   resulting pairs, pure real values of _z at end, TODO: force complex pairs
 void liquid_cplxpair(float complex * _z,
                      unsigned int _n,
                      float _tol,
                      float complex * _p)
 {
+    // validate input
+    if (_tol < 0) {
+        fprintf(stderr,"error: liquid_cplxpair(), tolerance must be positive\n");
+        exit(1);
+    }
+
+    // keep track of which elements have been paired
     bool paired[_n];
     memset(paired,0,sizeof(paired));
 
     unsigned int i,j,k=0;
     for (i=0; i<_n; i++) {
-        // ignore value if already paired
+        // ignore value if already paired, or if imaginary
+        // component is less than tolerance
         if (paired[i] || fabsf(cimagf(_z[i])) < _tol)
             continue;
 
         for (j=0; j<_n; j++) {
-            // ignore value if already paired
+            // ignore value if already paired, or if imaginary
+            // component is less than tolerance
             if (j==i || paired[j] || fabsf(cimagf(_z[j])) < _tol)
                 continue;
 
             if ( fabsf(cimagf(_z[i])+cimagf(_z[j])) < _tol &&
                  fabsf(crealf(_z[i])-crealf(_z[j])) < _tol )
             {
+                // found complex conjugate pair
                 _p[k++] = _z[i];
                 _p[k++] = _z[j];
                 paired[i] = true;
@@ -93,6 +107,9 @@ void liquid_cplxpair(float complex * _z,
 //
 
 // Compute frequency pre-warping factor.  See [Constantinides:1967]
+//  _btype  :   band type (e.g. LIQUID_IIRDES_HIGHPASS)
+//  _fc     :   low-pass cutoff frequency
+//  _f0     :   center frequency (band-pass|stop cases only)
 float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
                          float _fc,
                          float _f0)
@@ -116,10 +133,20 @@ float iirdes_freqprewarp(liquid_iirdes_bandtype _btype,
     return m;
 }
 
-// convert to the form:
-//          (z^-1 - zd[0])(z^-1 - zd[1]) ... (z^-1 - zd[n-1])
-//  H(z) = ---------------------------------------------------
-//          (z^-1 - pd[0])(z^-1 - pd[1]) ... (z^-1 - pd[n-1])
+// convert analog zeros, poles, gain to digital zeros, poles gain
+//  _za     :   analog zeros (length: _nza)
+//  _nza    :   number of analog zeros
+//  _pa     :   analog poles (length: _npa)
+//  _npa    :   number of analog poles
+//  _ka     :   nominal gain (NOTE: this does not necessarily carry over from analog gain)
+//  _m      :   frequency pre-warping factor
+//  _zd     :   digital zeros (length: _npa)
+//  _pd     :   digital poles (length: _npa)
+//  _kd     :   digital gain
+//
+// The filter order is characterized by the number of analog
+// poles.  The analog filter may have up to _npa zeros.
+// The number of digital zeros and poles is equal to _npa.
 void bilinear_zpkf(float complex * _za,
                    unsigned int _nza,
                    float complex * _pa,
@@ -130,9 +157,11 @@ void bilinear_zpkf(float complex * _za,
                    float complex * _pd,
                    float complex * _kd)
 {
-    unsigned int n = _npa;
     unsigned int i;
-    float complex G = _ka;
+
+    // filter order is equal to number of analog poles
+    unsigned int n = _npa;
+    float complex G = _ka;  // nominal gain
     for (i=0; i<n; i++) {
         // compute digital zeros (pad with -1s)
         if (i < _nza) {
@@ -149,6 +178,7 @@ void bilinear_zpkf(float complex * _za,
         // compute digital gain
         G *= (1 - _pd[i])/(1 - _zd[i]);
     }
+    *_kd = G;
 
 #if LIQUID_IIRDES_DEBUG_PRINT
     // print poles and zeros
@@ -161,11 +191,15 @@ void bilinear_zpkf(float complex * _za,
     printf("zpk_a2df() gain (discrete):\n");
     printf("  kd      = %12.8f + j*%12.8f\n", crealf(G), cimagf(G));
 #endif
-
-    *_kd = G;
 }
 
-// convert discrete z/p/k form to transfer function
+// convert discrete z/p/k form to transfer function form
+//  _zd     :   digital zeros (length: _n)
+//  _pd     :   digital poles (length: _n)
+//  _n      :   filter order
+//  _k      :   digital gain
+//  _b      :   output numerator (length: _n+1)
+//  _a      :   output denominator (length: _n+1)
 void iirdes_dzpk2tff(float complex * _zd,
                      float complex * _pd,
                      unsigned int _n,
@@ -219,7 +253,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
                       float * _A)
 {
     int i;
-    float tol=1e-6f;
+    float tol=1e-6f; // tolerance for conjuate pair computation
 
     // find/group complex conjugate pairs (poles)
     float complex zp[_n];
@@ -230,12 +264,8 @@ void iirdes_dzpk2sosf(float complex * _zd,
     liquid_cplxpair(_pd,_n,tol,pp);
 
     // TODO : group pole pairs with zero pairs
-#if 0
-    bool paired[_n];
-    unsigned int t[_n];
-    memset(paired,0,sizeof(paired));
-#endif
-    // _n = 2*m + l
+
+    // _n = 2*L + r
     unsigned int r = _n % 2;        // odd/even order
     unsigned int L = (_n - r)/2;    // filter semi-length
 
@@ -276,7 +306,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
         _B[3*i+2] = crealf(z0*z1);
     }
 
-    // add zero/pole pair if order is odd
+    // add remaining zero/pole pair if order is odd
     if (r) {
         p0 = -pp[_n-1];
         z0 = -zp[_n-1];
@@ -296,7 +326,7 @@ void iirdes_dzpk2sosf(float complex * _zd,
     _B[2] *= crealf(_kd);
 }
 
-// digital z/p/k low-pass to band-pass
+// digital z/p/k low-pass to band-pass transformation
 //  _zd     :   digital zeros (low-pass prototype)
 //  _pd     :   digital poles (low-pass prototype)
 //  _n      :   low-pass filter order
@@ -310,13 +340,10 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
                        liquid_float_complex * _zdt,
                        liquid_float_complex * _pdt)
 {
-#if 1
+    // 
     float c0 = cosf(2*M_PI*_f0);
 
-    //unsigned int r = _n % 2;
-    //unsigned int L = (_n-r)/2;
-
-    // TODO : keep output conjugates grouped together
+    // transform zeros, poles using quadratic formula
     unsigned int i;
     float complex t0;
     for (i=0; i<_n; i++) {
@@ -328,42 +355,6 @@ void iirdes_dzpk_lp2bp(liquid_float_complex * _zd,
         _pdt[2*i+0] = 0.5f*(c0*t0 + csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
         _pdt[2*i+1] = 0.5f*(c0*t0 - csqrtf(c0*c0*t0*t0 - 4*_pd[i]));
     }
-#else
-    float _beta = 0.2f;   // low-pass prototype cutoff
-    _f0 = 0.25f;
-
-    float alpha = cosf(2*M_PI*_f0);
-    float f_lo = _f0 - _beta*0.5f;
-    float f_hi = _f0 + _beta*0.5f;
-    float k = tanf(M_PI*_beta) / tanf(M_PI*(f_hi - f_lo));
-
-    float g1 = -2*alpha*k/(k+1);
-    float g2 = (k-1)/(k+1);
-
-    printf("    fc      :   %12.8f\n", _f0);
-    printf("    beta    :   %12.8f\n", _beta);
-    printf("    f0      :   %12.8f\n", f_lo);
-    printf("    f1      :   %12.8f\n", f_hi);
-    printf("    alpha   :   %12.8f\n", alpha);
-    printf("    k       :   %12.8f\n", k);
-    printf("    gamma1  :   %12.8f\n", g1);
-    printf("    gamma2  :   %12.8f\n", g2);
-
-    float s = g2+1;
-
-    float complex t0;
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        t0 = _zd[i]*(g2-1);
-        _zdt[2*i+0] = (g1 + csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
-        _zdt[2*i+1] = (g1 - csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
-
-        t0 = _pd[i]*(g2-1);
-        _pdt[2*i+0] = (g1 + csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
-        _pdt[2*i+1] = (g1 - csqrtf(g1*g1 - s*s + t0*t0))/(t0 - s);
-    }
-
-#endif
 }
 
 // IIR filter design template
@@ -552,7 +543,8 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         // convert complex digital poles/zeros/gain into second-
         // order sections form :
         // H(z) = prod { (b0 + b1*z^-1 + b2*z^-2) / (a0 + a1*z^-1 + a2*z^-2) }
-        // where size(B,A) = low/high-pass ? [3]x[L+r] : [3]x[2*L]
+        // where size(B,A) = low|high-pass  : [3]x[L+r]
+        //                   band-pass|stop : [3]x[2*L]
         iirdes_dzpk2sosf(zd,pd,_n,kd,_B,_A);
 
 #if LIQUID_IIRDES_DEBUG_PRINT
