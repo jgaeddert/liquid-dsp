@@ -59,7 +59,9 @@ void liquid_cplxpair(float complex * _z,
             if (j==i || paired[j] || fabsf(cimagf(_z[j])) < _tol)
                 continue;
 
-            if ( fabsf(cimagf(_z[i])+cimagf(_z[j])) < _tol ) {
+            if ( fabsf(cimagf(_z[i])+cimagf(_z[j])) < _tol &&
+                 fabsf(crealf(_z[i])-crealf(_z[j])) < _tol )
+            {
                 _p[k++] = _z[i];
                 _p[k++] = _z[j];
                 paired[i] = true;
