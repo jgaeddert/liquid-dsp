@@ -83,7 +83,7 @@ the set $\mathcal{S}$ to the received symbol $\vec{r}$, viz.
     \bigr\}
 \]
 For arbitrary modulation schemes a linear search over all symbols in
-$\mathcal{S}$ is required which has a complexity of $O(M^2)$, however one may
+$\mathcal{S}$ is required which has a complexity of $\ord(M^2)$, however one may
 take advantage of symmetries in certain constellations to reduce this.
 %For example...
 
@@ -154,22 +154,6 @@ In \liquid, Gray encoding and decoding are computed with the
 \subsubsection{{\tt MOD\_PSK} (phase-shift keying)}
 demodulation is performed independent of the signal amplitude
 
-\subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
-demodulation is performed independent of the signal amplitude
-
-\subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
-
-\subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
-
-\subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
-Also known as quadrature amplitude-shift keying
-\begin{itemize}
-\item I/Q symbols are decoded as separate {\tt MOD\_ASK} symbols
-\item gray encoding is applied to I/Q symbols separately to help ensure
-minimal bit changes between adjacent samples across both in-phase and
-quadrature-phase dimensions
-\end{itemize}
-
 %-------------------- FIGURE: PSK MODEM --------------------
 \begin{figure}[ht]
 \centering
@@ -202,6 +186,10 @@ quadrature-phase dimensions
 \label{fig:modem:psk}
 \end{figure}
 
+\subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
+demodulation is performed independent of the signal amplitude
+
+\subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
 
 %-------------------- FIGURE: APSK MODEM --------------------
 \begin{figure}[ht]
@@ -247,6 +235,8 @@ quadrature-phase dimensions
 \label{fig:modem:apsk}
 \end{figure}
 
+\subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
+
 
 %-------------------- FIGURE: ASK MODEM --------------------
 \begin{figure}[ht]
@@ -279,6 +269,16 @@ quadrature-phase dimensions
 \caption{Pulse-amplitude modulation (ASK) modem}
 \label{fig:modem:ask}
 \end{figure}
+
+\subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
+Also known as quadrature amplitude-shift keying
+\begin{itemize}
+\item I/Q symbols are decoded as separate {\tt MOD\_ASK} symbols
+\item gray encoding is applied to I/Q symbols separately to help ensure
+minimal bit changes between adjacent samples across both in-phase and
+quadrature-phase dimensions
+\end{itemize}
+
 
 
 %-------------------- FIGURE: QAM MODEM --------------------
