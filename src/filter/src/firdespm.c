@@ -27,10 +27,10 @@
 //  [McClellan:1973] J. H. McClellan, T. W. Parks, L. R. Rabiner, "A
 //      Computer Program for Designing Optimum FIR Linear Phase
 //      Digital Filters," IEEE Transactions on Audio and
-//      Electroacoustics, vol. AU-21, No. 6, December 1973
-//  [Rabiner:197x] L. R. Rabiner, J. H. McClellan, T. W. Parks, "FIR
+//      Electroacoustics, vol. AU-21, No. 6, December 1973.
+//  [Rabiner:1975] L. R. Rabiner, J. H. McClellan, T. W. Parks, "FIR
 //      Digital filter Design Techniques Using Weighted Chebyshev
-//      Approximations," Proceedings of the IEEE, March 197x.
+//      Approximations," Proceedings of the IEEE, March 1975.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -90,6 +90,12 @@ void firdespm(unsigned int _N,
     }
 
     unsigned int i;
+
+#if 0
+    float bands[2][2] = {
+        {0.0f, _fp},
+        {_fs,  0.5f}};
+#endif
 
     // TODO : number of approximating functions is dependent upon filter type and symmetry
     // determine number of approximating functions, extremal frequencies
@@ -153,7 +159,7 @@ void firdespm(unsigned int _N,
 
     // iterate over Remez exchange algorithm
     unsigned int p;
-    for (p=0; p<1; p++) {
+    for (p=0; p<6; p++) {
 
     // evaluate D (desired response)
     for (i=0; i<ne; i++)
@@ -309,6 +315,35 @@ void firdespm(unsigned int _N,
     fclose(fid);
     printf("internal results written to firdespm_internal_debug.m\n");
     } // p
+
+    // evaluate Lagrange polynomial on evenly spaced points
+    unsigned int b=r;
+    float G[2*b-1];
+    for (i=0; i<=b; i++) {
+        float f = (float)(i) / (float)(2*b-1);
+        float xf = cosf(2*M_PI*f);
+        float cf = fpolyval_lagrange_barycentric(x,c,beta,xf,ne-1);
+        G[i] = cf;
+        G[2*b-i-1] = cf;
+    }
+    //for (i=0; i<2*b-1; i++)
+    //    printf("G(%3u) = %12.4e;\n", i+1, G[i]);
+
+    // compute inverse DFT
+    float h[b];
+    for (i=0; i<b; i++) {
+        h[i] = 0.0f;
+        unsigned int j;
+        for (j=0; j<2*b-1; j++) {
+            float f = (float)(i) / (float) (2*b-1);
+            h[i] += G[j] * cosf(2*M_PI*f*j);
+        }
+        h[i] /= 2*b-1;
+    }
+    for (i=0; i<b; i++)
+        printf("h(%3u) = %12.8f;\n", i+1, h[i]);
+
+    // TODO : perform transformation here for different filter types
 }
 
 float firdespm_weight(float _f,
