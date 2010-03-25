@@ -169,6 +169,8 @@ void firdespm(unsigned int _N,
     printf(" N : %u, n : %u, r : %u, ne : %u, ne(max) : %u\n", _N, n, r, ne, ne_max);
 
     unsigned int grid_density = 16;
+    unsigned int max_iterations = 1;
+
     unsigned int grid_size = 0;
     // TODO : compute grid size here
     //for (i=0; i<num_bands; i++)
@@ -198,11 +200,45 @@ void firdespm(unsigned int _N,
     // initial guess of extremal frequencies evenly spaced on F
     for (i=0; i<=r; i++) {
         iext[i] = (i * (grid_size-1)) / r;
-        printf("iext(%3u) = %u\n", i, iext[i]);
+        //printf("iext(%3u) = %u\n", i, iext[i]);
     }
 
     // TODO : fix grid, weights according to filter type
 
+    // iterate over the Remez exchange algorithm
+    unsigned int p;
+    for (p=0; p<max_iterations; p++) {
+        // compute Chebyshev points on F[iext[]] : cos(2*pi*f)
+        for (i=0; i<=r; i++) {
+            x[i] = cosf(2*M_PI*F[iext[i]]);
+            printf("x[%3u] = %12.8f\n", i, x[i]);
+        }
+        printf("\n");
+
+        // compute Lagrange interpolating polynomial
+        fpolyfit_lagrange_barycentric(x,r+1,alpha);
+        for (i=0; i<=r; i++)
+            printf("a[%3u] = %12.8f\n", i, alpha[i]);
+
+        // compute rho
+        float t0 = 0.0f;    // numerator
+        float t1 = 0.0f;    // denominator
+        float rho;
+        for (i=0; i<r+1; i++) {
+            t0 += alpha[i] * D[iext[i]];
+            t1 += alpha[i] / W[iext[i]] * (i % 2 ? -1.0f : 1.0f);
+        }
+        rho = t0/t1;
+        printf("  rho   :   %12.4e\n", rho);
+        printf("\n");
+
+        // compute polynomial values (interpolants)
+        for (i=0; i<=r; i++) {
+            c[i] = D[iext[i]] - (i % 2 ? -1 : 1) * rho / W[i];
+            printf("c[%3u] = %16.8e\n", i, c[i]);
+        }
+    }
+    
 #if 0
     // evaluate Lagrange polynomial on evenly spaced points
     unsigned int b=r;
