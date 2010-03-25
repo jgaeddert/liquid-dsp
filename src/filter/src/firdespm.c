@@ -237,6 +237,13 @@ void firdespm(unsigned int _N,
             c[i] = D[iext[i]] - (i % 2 ? -1 : 1) * rho / W[i];
             printf("c[%3u] = %16.8e\n", i, c[i]);
         }
+
+        // calculate error
+        firdespm_compute_error(r,alpha,x,c,grid_size,F,D,W,E);
+        FILE * fid = fopen("error.dat","w");
+        for (i=0; i<grid_size; i++)
+            fprintf(fid,"%16.8e;\n", E[i]);
+        fclose(fid);
     }
     
 #if 0
@@ -389,10 +396,12 @@ void firdespm_compute_error(unsigned int _r,
 {
     unsigned int i;
 
+    float xf;
     float H;
     for (i=0; i<_grid_size; i++) {
         // compute actual response
-        H = fpolyval_lagrange_barycentric(_x,_c,_alpha,_F[i],_r+1);
+        xf = cosf(2*M_PI*_F[i]);
+        H = fpolyval_lagrange_barycentric(_x,_c,_alpha,xf,_r+1);
 
         // compute error
         _E[i] = _W[i] * (_D[i] - H);
