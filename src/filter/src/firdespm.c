@@ -175,7 +175,7 @@ void firdespm(unsigned int _N,
     printf(" N : %u, n : %u, r : %u, ne : %u, ne(max) : %u\n", _N, n, r, ne, ne_max);
 
     unsigned int grid_density = 16;
-    unsigned int max_iterations = 1;
+    unsigned int max_iterations = 2;
 
     unsigned int grid_size = 0;
     // TODO : compute grid size here
@@ -253,8 +253,10 @@ void firdespm(unsigned int _N,
 
         // search for new extremal frequencies
         firdespm_iext_search(r, iext, E, grid_size);
+
+        // TODO : check exit criteria
     }
-    
+
 #if 0
     // evaluate Lagrange polynomial on evenly spaced points
     unsigned int b=r;
@@ -447,13 +449,79 @@ void firdespm_iext_search(unsigned int _r,
     if ( fabsf(_E[i]) > fabsf(_E[i-1]) )
         found_iext[num_found++] = i;
 
+#if 1
     for (i=0; i<num_found; i++)
-        printf("found_iext[%3u] = %u\n", i, found_iext[i]);
-
+        printf("found_iext[%3u] = %5u : %12.4e\n", i, found_iext[i], _E[found_iext[i]]);
     FILE * fid = fopen("iext.dat","w");
     for (i=0; i<num_found; i++)
         fprintf(fid,"%u;\n", found_iext[i]+1);
     fclose(fid);
+#endif
+
+    // search extrema and eliminate smallest
+    unsigned int imin=0;    // index of found_iext where _E is a minimum extreme
+    unsigned int sign=0;    // sign of error
+    unsigned int num_extra = num_found - _r - 1; // number of extra extremal frequencies
+    unsigned int alternating_sign;
+
+    while (num_extra) {
+        // evaluate sign of first extrema
+        sign = _E[found_iext[0]] > 0.0;
+
+        //
+        alternating_sign = 1;
+        for (i=1; i<num_found; i++) {
+            // update new minimum extreme
+            if ( fabsf(_E[found_iext[i]]) < fabsf(_E[found_iext[imin]]) )
+                imin = i;
+    
+            if ( sign && _E[found_iext[i]] < 0.0 ) {
+                sign = 0;
+            } else if ( sign && _E[found_iext[i]] > 0.0 ) {
+                sign = 1;
+            } else {
+                // found two extrema with non-alternating sign
+                alternating_sign = 0;
+                break;
+            }
+        }
+
+        // 
+        if ( alternating_sign && num_extra==1) {
+            //imin = (fabsf(_E[found_iext[0]]) > fabsf(_E[found_iext[num_extra-1]])) ? 0 : num_extra-1;
+            if (fabsf(_E[found_iext[0]]) > fabsf(_E[found_iext[num_extra-1]]))
+                imin = 0;
+            else
+                imin = num_extra-1;
+        }
+
+        // Delete value in 'found_iext' at 'index imin'.  This
+        // is equivalent to shifing all values left one position
+        // starting at index imin+1
+        printf("deleting found_iext[%3u] = %3u\n", imin, found_iext[imin]);
+        memmove( &found_iext[imin],
+                 &found_iext[imin+1],
+                 (num_found-imin)*sizeof(unsigned int));
+        // equivalent code:
+        //for (i=imin; i<num_found; i++)
+        //    found_iext[i] = found_iext[i+1];
+
+        num_extra--;
+        num_found--;
+    }
+
+#if 1
+    for (i=0; i<num_found; i++)
+        printf("found_iext_new[%3u] = %u\n", i, found_iext[i]);
+    fid = fopen("iext_new.dat","w");
+    for (i=0; i<_r+1; i++)
+        fprintf(fid,"%u;\n", found_iext[i]+1);
+    fclose(fid);
+#endif
+
+    // copy new values
+    memmove(_iext, found_iext, (_r+1)*sizeof(unsigned int));
+
 }
 
 
