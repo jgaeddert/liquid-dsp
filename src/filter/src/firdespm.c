@@ -24,6 +24,10 @@
 // algorithm
 //
 // References:
+//  [Parks:1972] T. W. Parks and J. H. McClellan, "Chebyshev
+//      Approximation for Nonrecursive Digital Filters with Linear
+//      Phase," IEEE Transactions on Circuit Theory, vol. CT-19,
+//      no. 2, March 1972.
 //  [McClellan:1973] J. H. McClellan, T. W. Parks, L. R. Rabiner, "A
 //      Computer Program for Designing Optimum FIR Linear Phase
 //      Digital Filters," IEEE Transactions on Audio and
@@ -31,6 +35,7 @@
 //  [Rabiner:1975] L. R. Rabiner, J. H. McClellan, T. W. Parks, "FIR
 //      Digital filter Design Techniques Using Weighted Chebyshev
 //      Approximations," Proceedings of the IEEE, March 1975.
+//  [Janovetz:1998] J. Janovetz, online: http://www.janovetz.com/jake/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,29 +46,49 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_FIRDESPM_DEBUG_PRINT 0
+#define LIQUID_FIRDESPM_DEBUG   1
 
-#if 0
+typedef enum {
+    LIQUID_FIRDESPM_BANDPASS=0,
+    LIQUID_FIRDESPM_DIFFERENTIATOR,
+    LIQUID_FIRDESPM_HILBERT
+} liquid_firdespm_btype;
+
 // structured data type
 typedef struct {
-    float * F;
-    float * D;
-    float * W;
-    float * H;
-    float * E;
+    // constants
+    unsigned int h_len;         // filter length
+    unsigned int r;             // number of approximating functions
+    unsigned int grid_size;     // number of points on the grid
+    unsigned int grid_density;  // density of the grid
 
-    unsigned int grid_size;
-    unsigned int grid_density;
-    unsigned int r;
+    // band type (e.g. LIQUID_FIRDESPM_BANDPASS)
+    liquid_firdespm_btype btype;
+    
+    // dense grid elements
+    float * F;                  // frequencies, [0, 0.5]
+    float * D;                  // desired response
+    float * W;                  // weight
+    float * E;                  // error
+
+    float * x;                  // Chebyshev points : cos(2*pi*f)
+    float * alpha;              // Lagrange interpolating polynomial
+    float * c;                  // interpolants
+
+    unsigned int * iext;        // indices of extrema
+
+#if LIQUID_FIRDESPM_DEBUG
+    FILE * fid;
+#endif
+
 } firdespm_s;
 
+#if 0
 typedef firdespm_s * firdespm;
 
 firdespm firdespm_create(unsigned int _h_len);
 void firdespm_destroy(firdespm _q);
 void firdespm_print(firdespm _q);
-
-void firdespm_execute(firdespm _q, float * _h);
 #endif
 
 // prototypes
@@ -449,7 +474,7 @@ void firdespm_iext_search(unsigned int _r,
     if ( fabsf(_E[i]) > fabsf(_E[i-1]) )
         found_iext[num_found++] = i;
 
-#if 1
+#if LIQUID_FIRDESPM_DEBUG
     for (i=0; i<num_found; i++)
         printf("found_iext[%3u] = %5u : %12.4e\n", i, found_iext[i], _E[found_iext[i]]);
     FILE * fid = fopen("iext.dat","w");
@@ -510,7 +535,7 @@ void firdespm_iext_search(unsigned int _r,
         num_found--;
     }
 
-#if 1
+#if LIQUID_FIRDESPM_DEBUG
     for (i=0; i<num_found; i++)
         printf("found_iext_new[%3u] = %u\n", i, found_iext[i]);
     fid = fopen("iext_new.dat","w");
