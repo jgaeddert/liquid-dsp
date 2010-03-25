@@ -101,6 +101,12 @@ void firdespm_compute_error(unsigned int _r,
                             float * _W,
                             float * _E);
 
+// search error curve for _r+1 extremal indices
+void firdespm_iext_search(unsigned int _r,
+                          unsigned int * _iext,
+                          float * _E,
+                          unsigned int _grid_size);
+
 // weighting function
 // TODO : allow multiple bands, non-flat weighting function
 float firdespm_weight(float _f,
@@ -244,6 +250,9 @@ void firdespm(unsigned int _N,
         for (i=0; i<grid_size; i++)
             fprintf(fid,"%16.8e;\n", E[i]);
         fclose(fid);
+
+        // search for new extremal frequencies
+        firdespm_iext_search(r, iext, E, grid_size);
     }
     
 #if 0
@@ -377,6 +386,7 @@ void firdespm_init_grid(unsigned int _r,            // number of approximating f
 
             n++;
         }
+        // force endpoint to be upper edge of frequency band
         _F[n-1] = f1;   // according to Janovetz
     }
     *_gridsize = n;
@@ -408,5 +418,42 @@ void firdespm_compute_error(unsigned int _r,
     }
 }
 
+// search error curve for _r+1 extremal indices
+void firdespm_iext_search(unsigned int _r,
+                          unsigned int * _iext,
+                          float * _E,
+                          unsigned int _grid_size)
+{
+    unsigned int i;
+
+    // found extremal frequency indices
+    unsigned int found_iext[2*_r];
+    unsigned int num_found=0;
+
+    // check for extremum at f=0
+    if ( fabsf(_E[0]) > fabsf(_E[1]) )
+        found_iext[num_found++] = 0;
+
+    // search inside grid
+    for (i=1; i<_grid_size-1; i++) {
+        if ( ((_E[i]>0.0) && (_E[i-1]<_E[i]) && (_E[i+1]<_E[i]) ) ||
+             ((_E[i]<0.0) && (_E[i-1]>_E[i]) && (_E[i+1]>_E[i]) ) )
+        {
+            found_iext[num_found++] = i;
+        }
+    }
+
+    // check for extremum at f=0.5
+    if ( fabsf(_E[i]) > fabsf(_E[i-1]) )
+        found_iext[num_found++] = i;
+
+    for (i=0; i<num_found; i++)
+        printf("found_iext[%3u] = %u\n", i, found_iext[i]);
+
+    FILE * fid = fopen("iext.dat","w");
+    for (i=0; i<num_found; i++)
+        fprintf(fid,"%u;\n", found_iext[i]+1);
+    fclose(fid);
+}
 
 
