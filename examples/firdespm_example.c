@@ -32,6 +32,14 @@ int main() {
     unsigned int n=15;
     float fp = 0.375/2.0f;
     float fs = 0.25f;
+
+    n = 25;
+    fp = 0.08;
+    fs = 0.16;
+
+    n = 25;
+    fp = 0.1f;
+    fs = 0.2f;
 #endif
     float K  = 1.0f;
 

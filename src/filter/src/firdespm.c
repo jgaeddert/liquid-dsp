@@ -56,6 +56,19 @@ void firdespm(unsigned int _n,
               float _K,
               float * _h);
 
+// initialize the frequency grid on the disjoint bounded set
+void firdespm_init_grid(unsigned int _r,            // number of approximating functions
+                        unsigned int _grid_density,
+                        unsigned int _num_bands,
+                        float * _bands,
+                        float * _des,
+                        float * _weight,
+                        unsigned int *_gridsize,
+                        float * _F,
+                        float * _D,
+                        float * _W);
+
+
 // weighting function
 // TODO : allow multiple bands, non-flat weighting function
 float firdespm_weight(float _f,
@@ -95,6 +108,10 @@ void firdespm(unsigned int _N,
     float bands[2][2] = {
         {0.0f, _fp},
         {_fs,  0.5f}};
+#else
+    float bands[4]  = {0.0f, _fp, _fs, 0.5f};
+    float des[2]    = {1.0f, 0.0f};
+    float weight[2] = {1.0f, 1.0f};
 #endif
 
     // TODO : number of approximating functions is dependent upon filter type and symmetry
@@ -119,203 +136,24 @@ void firdespm(unsigned int _N,
                                     // TODO : this will change based on the number of discrete bands
     printf(" N : %u, n : %u, r : %u, ne : %u, ne(max) : %u\n", _N, n, r, ne, ne_max);
 
-    unsigned int d = 20*n; // grid density
-    float F[ne_max];    // extremal frequencies
+    unsigned int grid_density = 16;
+    unsigned int grid_size = 0;
+    //for (i=0; i<num_bands; i++)
+    //    grid_size += 
+    grid_size = 1024;
+    float F[grid_size];
+    float D[grid_size];
+    float W[grid_size];
 
-    float D[ne];        // desired response at extremal frequencies
-    float H[ne];        // actual response
-    float W[ne];        // weighting at extremal frequencies
-
-    int sigma[ne];      // sign of error at extremal frequencies
-
-    float x[ne];        // Chebyshev points on F : cos(2*pi*F[i])
-    float c[ne];        // interpolated extremal values (alternating +/- rho)
-    float alpha[ne];    // Lagrange interpolation coefficients
-    float beta[ne-1];
-
-    // extremal error
-    float rho = 0.0f;
-
-    // number of extremal frequencies in the pass-band
-    unsigned int np = (unsigned int)( ne*(_fp / (_fp + _fs)));
-    if (np < 2)
-        np = 2;
-    else if (np == ne)
-        np = r-1;
-
-    // number of extremal frequencies in the stop-band
-    unsigned int ns = ne - np;
-    assert(np+ns == ne);
-
-    printf("  np    :   %u\n", np);
-    printf("  ns    :   %u\n", ns);
-
-    // initial guess of F
-    for (i=0; i<np; i++)
-        F[i] = 0.0f + _fp * (float)(i) / (float)(np-1);
-
-    for (i=0; i<ns; i++)
-        F[np+i] = _fs  + (0.5-_fs) * (float)(i) / (float)(ns-1);
-
-    // iterate over Remez exchange algorithm
-    unsigned int p;
-    for (p=0; p<6; p++) {
-
-    // evaluate D (desired response)
-    for (i=0; i<ne; i++)
-        D[i] = F[i] <= _fp ? 1.0f : 0.0f;
-
-    // evaluate W (weighting factor)
-    for (i=0; i<ne; i++)
-        W[i] = firdespm_weight(F[i],_fp,_fs,_K);
-
-    // compute Chebyshev points on f : cos(2*pi*f)
-    for (i=0; i<ne; i++)
-        x[i] = cosf(2*M_PI*F[i]);
-
-    // evaluate alpha[i]
-    fpolyfit_lagrange_barycentric(x,ne,alpha);
-
-    // compute rho
-    float t0 = 0.0f;
-    float t1 = 0.0f;
-    for (i=0; i<ne; i++) {
-        t0 += alpha[i]*D[i];
-        t1 += alpha[i]/W[i] * (i % 2 ? -1.0f : 1.0f);
-    }
-    rho = t0/t1;
-    printf("  rho   :   %12.8f\n", rho);
-
-    // compute polynomial values
-    for (i=0; i<ne-1; i++) {
-        float pm = i % 2 ? -1 : 1;
-        c[i] = D[i] - pm*rho / W[i];
-
-        printf("  c[%3u]    :   %16.8e;\n", i, c[i]);
-    }
-
-    // evaluate beta
-    // TODO : improve computation of beta knowing alpha
-    fpolyfit_lagrange_barycentric(x,ne-1,beta);
-
-    // evaluate the polynomial on the dense set
-    FILE * fid = fopen("firdespm_internal_debug.m", "w");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-
-    // evaluate trial set of extremal frequencies
-    for (i=0; i<ne; i++) {
-        H[i] = fpolyval_lagrange_barycentric(x,c,beta,x[i],ne-1);
-        sigma[i] = (H[i] - D[i]) > 0 ? 1 : -1;
-
-        fprintf(fid,"fk(%3u) = %16.8e;\n", i+1, F[i]);
-        fprintf(fid,"Hk(%3u) = %16.8e;\n", i+1, H[i]);
-    }
-
-    // print
-    for (i=0; i<ne; i++) {
-        printf(" %3u : F=%12.8f, D=%3.1f, W=%12.8f, H=%12.8f, sig=%2d\n",
-                  i, F[i], D[i], W[i], H[i], sigma[i]);
-    }
-    for (i=0; i<ne; i++)
-        printf(" alpha[%3u] = %12.4e\n", i, alpha[i]);
-
-    // plotting : evaluate the response
-    for (i=0; i<d; i++) {
-        float f = 0.5* (float)i / (float)(d-1);
-        float xf = cosf(2*M_PI*f);
-        float t = fpolyval_lagrange_barycentric(x,c,beta,xf,ne-1);
-
-        fprintf(fid,"f(%3u) = %16.8e; H(%3u) = %16.8e;\n", i+1, f, i+1, t);
-    }
-
-    // search for new extremal frequencies
-    for (i=0; i<ne; i++) {
-        // TODO : replace old algorithm below with more sophisticated approach
-    }
-
-    unsigned int m=0;
-    float t_prime = 0;
-    int dir = 0;
-
-#if 0
-    float w_hat;
-    float d_hat;
-    float e_hat;
-#endif
-    for (i=0; i<d; i++) {
-        // compute candidate frequency
-        float f = 0.5* (float)i / (float)(d-1);
-
-        // ignore transition bands
-        if (f > _fp && f < _fs)
-            continue;
-
-        float xf = cosf(2*M_PI*f);
-        float t = fpolyval_lagrange_barycentric(x,c,beta,xf,ne-1);
-        //t = fpolyval_lagrange_barycentric(x,c,a,xf,r);
-
-#if 0
-        // compute error
-        w_hat = firdespm_weight(f,_fp,_fs,_K);
-        d_hat = (f < _fp) ? 1.0f : 0.0f;
-        e_hat = w_hat*(t - d_hat);
-#endif
-
-        // is extremal frequency?
-        if ( i == 0 ) {
-            t_prime = t;
-        } else if (i == 1) {
-            dir = (t > t_prime) ? 1 : 0;
-        } else if ( (dir && t < t_prime) || (!dir && t > t_prime)) {
-            if (m==r)
-                continue;
-
-            //fprintf(fid,"fext(%3u) = %16.8e; Hext(%3u) = %16.8e;\n", m+1, f, m+1, t);
-            F[m] = f;
-            m++;
-
-            dir = 1-dir;
-        }
-
-        t_prime = t;
-    }
-    F[m++] = 0.0f;
-    F[m++] = _fp;
-    F[m++] = _fs;
-    F[m++] = 0.5f;
-
-    // TODO : assert !(m > ne_max)
-    // TODO : retain only ne largest extrema
-
-    // sort values(?)
-    for (i=0; i<m; i++) {
-        unsigned int j;
-        for (j=0; j<i; j++) {
-            if (F[i] < F[j]) {
-                float tmp = F[i];
-                F[i] = F[j];
-                F[j] = tmp;
-            }
-        }
-    }
-
-    // plotting purposes only
-    printf(" m : %u\n", m);
-    for (i=0; i<ne; i++) {
-        printf("F[%3u] = %12.8f\n", i, F[i]);
-        float f = F[i];
-        float xf = cosf(2*M_PI*f);
-        float t = fpolyval_lagrange_barycentric(x,c,beta,xf,ne-1);
-        fprintf(fid,"fext(%3u) = %16.8e; Hext(%3u) = %16.8e;\n", i+1, F[i], i+1, t);
-    }
-
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,H,'-', fk,Hk,'s',fext,Hext,'x'); grid on;\n");
+    firdespm_init_grid(r,grid_density,num_bands,bands,des,weight,&grid_size,F,D,W);
+    FILE * fid = fopen("grid.dat","w");
+    for (i=0; i<grid_size; i++)
+        fprintf(fid,"%12.4e;\n", F[i]);
     fclose(fid);
-    printf("internal results written to firdespm_internal_debug.m\n");
-    } // p
 
+    // 
+
+#if 0
     // evaluate Lagrange polynomial on evenly spaced points
     unsigned int b=r;
     float G[2*b-1];
@@ -344,6 +182,7 @@ void firdespm(unsigned int _N,
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);
 
     // TODO : perform transformation here for different filter types
+#endif
 }
 
 float firdespm_weight(float _f,
@@ -391,4 +230,66 @@ void firdes_remez_fextsearch(unsigned int _n,
                              float _fs)
 {
 }
+
+// initialize the frequency grid on the disjoint bounded set
+void firdespm_init_grid(unsigned int _r,            // number of approximating functions
+                        unsigned int _grid_density,
+                        unsigned int _num_bands,
+                        float * _bands,
+                        float * _des,
+                        float * _weight,
+                        unsigned int *_gridsize,
+                        float * _F,
+                        float * _D,
+                        float * _W)
+{
+    unsigned int i,j;
+
+    // validate input
+
+    // frequency step size
+    float df = 0.5f/(_grid_density*_r);
+    printf("df : %12.8f\n", df);
+
+    // number of grid points counter
+    unsigned int n = 0;
+
+    // TODO : take care of special symmetry conditions here
+
+    float f0, f1;
+    for (i=0; i<_num_bands; i++) {
+        // extract band edges
+        f0 = _bands[2*i+0];
+        f1 = _bands[2*i+1];
+        printf("band : [%12.8f %12.8f]\n",f0,f1);
+
+        // compute the number of gridpoints in this band
+        unsigned int num_points = (unsigned int)( (f1-f0)/df + 0.5 );
+
+        // ensure at least one point per band
+        if (num_points < 1) num_points = 1;
+
+        // add points to grid
+        for (j=0; j<num_points; j++) {
+            // add frequency points
+            _F[n] = f0 + j*df;
+
+            // compute desired response
+            // TODO : use function pointer?
+            _D[n] = _des[i];
+
+            // compute weight
+            // TODO : use function pointer?
+            _W[n] = _weight[i];
+
+            n++;
+        }
+        _F[n-1] = f1;   // according to Janovetz
+    }
+    *_gridsize = n;
+
+    // TODO : take care of special symmetry conditions here
+}
+
+
 
