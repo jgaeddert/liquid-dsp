@@ -178,9 +178,11 @@ void firdespm(unsigned int _N,
     unsigned int i;
 
 #if 0
-    float bands[2][2] = {
-        {0.0f, _fp},
-        {_fs,  0.5f}};
+    float bands[6]  = { 0.0f,  0.1f,
+                        0.15f, 0.35f,
+                        0.4f,  0.5f};
+    float des[3]    = {0.0f, 1.0f, 0.0f};
+    float weight[3] = {1.0f, 1.0f, 1.0f};
 #else
     float bands[4]  = {0.0f, _fp, _fs, 0.5f};
     float des[2]    = {1.0f, 0.0f};
@@ -199,7 +201,7 @@ void firdespm(unsigned int _N,
     //  ne  :   number of extremal frequencies
     //  ne_max  maximum number of possible extremal frequencies
     //  [McClellan:1973] Eq. (3), (4), (5), (6)
-    //  [Rabiner:197x] Tables II, III, and Eq. (19)
+    //  [Rabiner:1975] Tables II, III, and Eq. (19)
     unsigned int num_bands = 2;     // number of disjoint frequency bands
     unsigned int s = _N % 2;        // s = N odd ? 1 : 0
     unsigned int n = (_N-s)/2;      // filter semi-length
@@ -210,7 +212,7 @@ void firdespm(unsigned int _N,
     printf(" N : %u, n : %u, r : %u, ne : %u, ne(max) : %u\n", _N, n, r, ne, ne_max);
 
     unsigned int grid_density = 16;
-    unsigned int max_iterations = 7;
+    unsigned int max_iterations = 1;
 
     unsigned int grid_size = 0;
     // TODO : compute grid size here
@@ -231,7 +233,7 @@ void firdespm(unsigned int _N,
 
     firdespm_init_grid(r,grid_density,num_bands,bands,des,weight,&grid_size,F,D,W);
     printf("grid size : %u\n", grid_size);
-#if LIQUID_FIRDES_DEBUG
+#if LIQUID_FIRDESPM_DEBUG
     FILE * fid = fopen("firdespm_grid.m","w");
     for (i=0; i<grid_size; i++) {
         fprintf(fid,"F(%4u) = %12.4e;\n", i+1, F[i]);
@@ -258,7 +260,7 @@ void firdespm(unsigned int _N,
         // compute error
         firdespm_compute_error(r,alpha,x,c,grid_size,F,D,W,E);
 
-#if LIQUID_FIRDES_DEBUG
+#if LIQUID_FIRDESPM_DEBUG
         FILE * fid = fopen("error.dat","w");
         for (i=0; i<grid_size; i++)
             fprintf(fid,"%16.8e;\n", E[i]);
@@ -272,7 +274,7 @@ void firdespm(unsigned int _N,
     }
 
     // re-compute interpolator one last time
-    firdespm_compute_interp(r, iext, F, D, W, alpha, x, c);
+    //firdespm_compute_interp(r, iext, F, D, W, alpha, x, c);
 
 #if 0
     // evaluate Lagrange polynomial on evenly spaced points
@@ -382,10 +384,10 @@ void firdespm_init_grid(unsigned int _r,            // number of approximating f
         // extract band edges
         f0 = _bands[2*i+0];
         f1 = _bands[2*i+1];
-        printf("band : [%12.8f %12.8f]\n",f0,f1);
 
         // compute the number of gridpoints in this band
         unsigned int num_points = (unsigned int)( (f1-f0)/df + 0.5 );
+        printf("band : [%12.8f %12.8f] %3u points\n",f0,f1,num_points);
 
         // ensure at least one point per band
         if (num_points < 1) num_points = 1;
@@ -482,6 +484,7 @@ void firdespm_compute_error(unsigned int _r,
 }
 
 // search error curve for _r+1 extremal indices
+// TODO : return number of values which have changed (exit criteria)
 void firdespm_iext_search(unsigned int _r,
                           unsigned int * _iext,
                           float * _E,
@@ -512,7 +515,7 @@ void firdespm_iext_search(unsigned int _r,
 
 #if LIQUID_FIRDESPM_DEBUG
     for (i=0; i<num_found; i++)
-        printf("found_iext[%3u] = %5u : %12.4e\n", i, found_iext[i], _E[found_iext[i]]);
+        printf("found_iext[%3u] = %5u : %18.8e\n", i, found_iext[i], _E[found_iext[i]]);
     FILE * fid = fopen("iext.dat","w");
     for (i=0; i<num_found; i++)
         fprintf(fid,"%u;\n", found_iext[i]+1);
@@ -530,15 +533,18 @@ void firdespm_iext_search(unsigned int _r,
         sign = _E[found_iext[0]] > 0.0;
 
         //
+        imin = 0;
         alternating_sign = 1;
         for (i=1; i<num_found; i++) {
-            // update new minimum extreme
-            if ( fabsf(_E[found_iext[i]]) < fabsf(_E[found_iext[imin]]) )
+            // update new minimum error extreme
+            if ( fabsf(_E[found_iext[i]]) < fabsf(_E[found_iext[imin]]) ) {
                 imin = i;
+                printf("new min at i=%u\n", imin);
+            }
     
             if ( sign && _E[found_iext[i]] < 0.0 ) {
                 sign = 0;
-            } else if ( sign && _E[found_iext[i]] > 0.0 ) {
+            } else if ( !sign && _E[found_iext[i]] > 0.0 ) {
                 sign = 1;
             } else {
                 // found two extrema with non-alternating sign
@@ -546,26 +552,30 @@ void firdespm_iext_search(unsigned int _r,
                 break;
             }
         }
+        printf("  imin : %3u : %12.4e;\n", imin, _E[found_iext[imin]]);
 
         // 
         if ( alternating_sign && num_extra==1) {
             //imin = (fabsf(_E[found_iext[0]]) > fabsf(_E[found_iext[num_extra-1]])) ? 0 : num_extra-1;
-            if (fabsf(_E[found_iext[0]]) > fabsf(_E[found_iext[num_extra-1]]))
+            if (fabsf(_E[found_iext[0]]) < fabsf(_E[found_iext[num_found-1]]))
                 imin = 0;
             else
-                imin = num_extra-1;
+                imin = num_found-1;
         }
 
         // Delete value in 'found_iext' at 'index imin'.  This
         // is equivalent to shifing all values left one position
         // starting at index imin+1
         printf("deleting found_iext[%3u] = %3u\n", imin, found_iext[imin]);
+#if 0
         memmove( &found_iext[imin],
                  &found_iext[imin+1],
                  (num_found-imin)*sizeof(unsigned int));
+#else
         // equivalent code:
-        //for (i=imin; i<num_found; i++)
-        //    found_iext[i] = found_iext[i+1];
+        for (i=imin; i<num_found; i++)
+            found_iext[i] = found_iext[i+1];
+#endif
 
         num_extra--;
         num_found--;
