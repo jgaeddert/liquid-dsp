@@ -116,6 +116,16 @@ void firdespm_init_grid(unsigned int _r,            // number of approximating f
                         float * _D,
                         float * _W);
 
+// compute interpolating polynomial
+void firdespm_compute_interp(unsigned int _r,
+                             unsigned int * _iext,
+                             float * _F,
+                             float * _D,
+                             float * _W,
+                             float * _alpha,
+                             float * _x,
+                             float * _c);
+
 void firdespm_compute_error(unsigned int _r,
                             float * _alpha,
                             float * _x,
@@ -220,6 +230,8 @@ void firdespm(unsigned int _N,
     float c[r+1];           // interpolated extremal values (alternating +/- rho on E)
 
     firdespm_init_grid(r,grid_density,num_bands,bands,des,weight,&grid_size,F,D,W);
+    printf("grid size : %u\n", grid_size);
+#if LIQUID_FIRDES_DEBUG
     FILE * fid = fopen("firdespm_grid.m","w");
     for (i=0; i<grid_size; i++) {
         fprintf(fid,"F(%4u) = %12.4e;\n", i+1, F[i]);
@@ -227,6 +239,7 @@ void firdespm(unsigned int _N,
         fprintf(fid,"W(%4u) = %12.4e;\n", i+1, W[i]);
     }
     fclose(fid);
+#endif
 
     // initial guess of extremal frequencies evenly spaced on F
     for (i=0; i<=r; i++) {
@@ -239,48 +252,27 @@ void firdespm(unsigned int _N,
     // iterate over the Remez exchange algorithm
     unsigned int p;
     for (p=0; p<max_iterations; p++) {
-        // compute Chebyshev points on F[iext[]] : cos(2*pi*f)
-        for (i=0; i<=r; i++) {
-            x[i] = cosf(2*M_PI*F[iext[i]]);
-            printf("x[%3u] = %12.8f\n", i, x[i]);
-        }
-        printf("\n");
+        // compute interpolator
+        firdespm_compute_interp(r, iext, F, D, W, alpha, x, c);
 
-        // compute Lagrange interpolating polynomial
-        fpolyfit_lagrange_barycentric(x,r+1,alpha);
-        for (i=0; i<=r; i++)
-            printf("a[%3u] = %12.8f\n", i, alpha[i]);
-
-        // compute rho
-        float t0 = 0.0f;    // numerator
-        float t1 = 0.0f;    // denominator
-        float rho;
-        for (i=0; i<r+1; i++) {
-            t0 += alpha[i] * D[iext[i]];
-            t1 += alpha[i] / W[iext[i]] * (i % 2 ? -1.0f : 1.0f);
-        }
-        rho = t0/t1;
-        printf("  rho   :   %12.4e\n", rho);
-        printf("\n");
-
-        // compute polynomial values (interpolants)
-        for (i=0; i<=r; i++) {
-            c[i] = D[iext[i]] - (i % 2 ? -1 : 1) * rho / W[i];
-            printf("c[%3u] = %16.8e\n", i, c[i]);
-        }
-
-        // calculate error
+        // compute error
         firdespm_compute_error(r,alpha,x,c,grid_size,F,D,W,E);
+
+#if LIQUID_FIRDES_DEBUG
         FILE * fid = fopen("error.dat","w");
         for (i=0; i<grid_size; i++)
             fprintf(fid,"%16.8e;\n", E[i]);
         fclose(fid);
+#endif
 
         // search for new extremal frequencies
         firdespm_iext_search(r, iext, E, grid_size);
 
         // TODO : check exit criteria
     }
+
+    // re-compute interpolator one last time
+    firdespm_compute_interp(r, iext, F, D, W, alpha, x, c);
 
 #if 0
     // evaluate Lagrange polynomial on evenly spaced points
@@ -419,6 +411,50 @@ void firdespm_init_grid(unsigned int _r,            // number of approximating f
     *_gridsize = n;
 
     // TODO : take care of special symmetry conditions here
+}
+
+// compute interpolating polynomial
+void firdespm_compute_interp(unsigned int _r,
+                             unsigned int * _iext,
+                             float * _F,
+                             float * _D,
+                             float * _W,
+                             float * _alpha,
+                             float * _x,
+                             float * _c)
+{
+    unsigned int i;
+
+    // compute Chebyshev points on F[iext[]] : cos(2*pi*f)
+    for (i=0; i<=_r; i++) {
+        _x[i] = cosf(2*M_PI*_F[_iext[i]]);
+        printf("x[%3u] = %12.8f\n", i, _x[i]);
+    }
+    printf("\n");
+
+    // compute Lagrange interpolating polynomial
+    fpolyfit_lagrange_barycentric(_x,_r+1,_alpha);
+    for (i=0; i<=_r; i++)
+        printf("a[%3u] = %12.8f\n", i, _alpha[i]);
+
+    // compute rho
+    float t0 = 0.0f;    // numerator
+    float t1 = 0.0f;    // denominator
+    float rho;
+    for (i=0; i<_r+1; i++) {
+        t0 += _alpha[i] * _D[_iext[i]];
+        t1 += _alpha[i] / _W[_iext[i]] * (i % 2 ? -1.0f : 1.0f);
+    }
+    rho = t0/t1;
+    printf("  rho   :   %12.4e\n", rho);
+    printf("\n");
+
+    // compute polynomial values (interpolants)
+    for (i=0; i<=_r; i++) {
+        _c[i] = _D[_iext[i]] - (i % 2 ? -1 : 1) * rho / _W[i];
+        printf("c[%3u] = %16.8e\n", i, _c[i]);
+    }
+
 }
 
 void firdespm_compute_error(unsigned int _r,
