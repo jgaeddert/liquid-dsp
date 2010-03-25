@@ -175,7 +175,7 @@ void firdespm(unsigned int _N,
     printf(" N : %u, n : %u, r : %u, ne : %u, ne(max) : %u\n", _N, n, r, ne, ne_max);
 
     unsigned int grid_density = 16;
-    unsigned int max_iterations = 2;
+    unsigned int max_iterations = 7;
 
     unsigned int grid_size = 0;
     // TODO : compute grid size here
