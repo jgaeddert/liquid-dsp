@@ -653,7 +653,21 @@ LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
                                      float,
                                      liquid_float_complex)
 
-// iirdes
+// firdes : finite impulse response filter design
+
+// initialize the frequency grid on the disjoint bounded set
+void firdespm_init_grid(firdespm _q);
+
+// compute interpolating polynomial
+void firdespm_compute_interp(firdespm _q);
+
+void firdespm_compute_error(firdespm _q);
+
+// search error curve for _r+1 extremal indices
+void firdespm_iext_search(firdespm _q);
+
+
+// iirdes : infinite impulse response filter design
 
 // sorts _z into complex conjugate pairs to within a tolerance
 void liquid_cplxpair(float complex * _z,

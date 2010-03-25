@@ -779,16 +779,24 @@ float num_fir_filter_taps(float _slsl,
 float kaiser_beta_slsl(float _slsl);
 
 // Design FIR filter using Parks-McClellan algorithm
-//  _n      : filter length
-//  _fp     : pass-band frequency (0 < _fp < _fs < 0.5)
-//  _fs     : stop-band frequency (0 < _fp < _fs < 0.5)
-//  _K      : weighting factor
-//  _h      : output coefficient buffer
-void firdespm(unsigned int _n,
-              float _fp,
-              float _fs,
-              float _K,
-              float *_h);
+
+typedef enum {
+    LIQUID_FIRDESPM_BANDPASS=0,
+    LIQUID_FIRDESPM_DIFFERENTIATOR,
+    LIQUID_FIRDESPM_HILBERT
+} liquid_firdespm_btype;
+
+typedef struct firdespm_s * firdespm;
+
+firdespm firdespm_create(unsigned int _h_len,
+                         float * _bands,
+                         float * _des,
+                         float * _weights,
+                         unsigned int _num_bands,
+                         liquid_firdespm_btype _btype);
+void firdespm_destroy(firdespm _q);
+void firdespm_print(firdespm _q);
+void firdespm_execute(firdespm _q, float * _h);
 
 // Design FIR using kaiser window
 //  _n      : filter length
