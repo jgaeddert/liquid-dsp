@@ -43,6 +43,29 @@
 
 #define LIQUID_FIRDESPM_DEBUG_PRINT 0
 
+#if 0
+// structured data type
+typedef struct {
+    float * F;
+    float * D;
+    float * W;
+    float * H;
+    float * E;
+
+    unsigned int grid_size;
+    unsigned int grid_density;
+    unsigned int r;
+} firdespm_s;
+
+typedef firdespm_s * firdespm;
+
+firdespm firdespm_create(unsigned int _h_len);
+void firdespm_destroy(firdespm _q);
+void firdespm_print(firdespm _q);
+
+void firdespm_execute(firdespm _q, float * _h);
+#endif
+
 // prototypes
 
 //  _n      :   filter semi-length (N = 2*n+1)
@@ -68,6 +91,15 @@ void firdespm_init_grid(unsigned int _r,            // number of approximating f
                         float * _D,
                         float * _W);
 
+void firdespm_compute_error(unsigned int _r,
+                            float * _alpha,
+                            float * _x,
+                            float * _c,
+                            unsigned int _grid_size,
+                            float * _F,
+                            float * _D,
+                            float * _W,
+                            float * _E);
 
 // weighting function
 // TODO : allow multiple bands, non-flat weighting function
@@ -138,20 +170,38 @@ void firdespm(unsigned int _N,
 
     unsigned int grid_density = 16;
     unsigned int grid_size = 0;
+    // TODO : compute grid size here
     //for (i=0; i<num_bands; i++)
     //    grid_size += 
     grid_size = 1024;
-    float F[grid_size];
-    float D[grid_size];
-    float W[grid_size];
+    float F[grid_size];     // frequencies on the disjoint bounded set
+    float D[grid_size];     // desired response
+    float W[grid_size];     // weighting
+
+    //float H[grid_size];     // actual filter response
+    float E[grid_size];     // error
+    
+    unsigned int iext[r+1]; // index of extremal frequencies
+    float x[r+1];           // Chebyshev points on F[iext[]] : cos(2*pi*f)
+    float alpha[r+1];       // Lagrange interpolation coefficients
+    float c[r+1];           // interpolated extremal values (alternating +/- rho on E)
 
     firdespm_init_grid(r,grid_density,num_bands,bands,des,weight,&grid_size,F,D,W);
-    FILE * fid = fopen("grid.dat","w");
-    for (i=0; i<grid_size; i++)
-        fprintf(fid,"%12.4e;\n", F[i]);
+    FILE * fid = fopen("firdespm_grid.m","w");
+    for (i=0; i<grid_size; i++) {
+        fprintf(fid,"F(%4u) = %12.4e;\n", i+1, F[i]);
+        fprintf(fid,"D(%4u) = %12.4e;\n", i+1, D[i]);
+        fprintf(fid,"W(%4u) = %12.4e;\n", i+1, W[i]);
+    }
     fclose(fid);
 
-    // 
+    // initial guess of extremal frequencies evenly spaced on F
+    for (i=0; i<=r; i++) {
+        iext[i] = (i * (grid_size-1)) / r;
+        printf("iext(%3u) = %u\n", i, iext[i]);
+    }
+
+    // TODO : fix grid, weights according to filter type
 
 #if 0
     // evaluate Lagrange polynomial on evenly spaced points
@@ -289,6 +339,28 @@ void firdespm_init_grid(unsigned int _r,            // number of approximating f
     *_gridsize = n;
 
     // TODO : take care of special symmetry conditions here
+}
+
+void firdespm_compute_error(unsigned int _r,
+                            float * _alpha,
+                            float * _x,
+                            float * _c,
+                            unsigned int _grid_size,
+                            float * _F,
+                            float * _D,
+                            float * _W,
+                            float * _E)
+{
+    unsigned int i;
+
+    float H;
+    for (i=0; i<_grid_size; i++) {
+        // compute actual response
+        H = fpolyval_lagrange_barycentric(_x,_c,_alpha,_F[i],_r+1);
+
+        // compute error
+        _E[i] = _W[i] * (_D[i] - H);
+    }
 }
 
 
