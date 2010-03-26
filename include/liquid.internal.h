@@ -666,6 +666,9 @@ void firdespm_compute_error(firdespm _q);
 // search error curve for _r+1 extremal indices
 void firdespm_iext_search(firdespm _q);
 
+// compute filter taps (coefficients) from result
+void firdespm_compute_taps(firdespm _q, float * _h);
+
 
 // iirdes : infinite impulse response filter design
 

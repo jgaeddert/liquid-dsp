@@ -184,12 +184,12 @@ void firdespm_execute(firdespm _q, float * _h)
     // initial guess of extremal frequencies evenly spaced on F
     for (i=0; i<_q->r+1; i++) {
         _q->iext[i] = (i * (_q->grid_size-1)) / _q->r;
-        //printf("iext(%3u) = %u\n", i, iext[i]);
+        printf("iext_guess[%3u] = %u\n", i, _q->iext[i]);
     }
 
     // iterate over the Remez exchange algorithm
     unsigned int p;
-    unsigned int max_iterations = 16;
+    unsigned int max_iterations = 10;
     for (p=0; p<max_iterations; p++) {
         // compute interpolator
         firdespm_compute_interp(_q);
@@ -202,38 +202,10 @@ void firdespm_execute(firdespm _q, float * _h)
 
         // TODO : check exit criteria
     }
+    //return;
 
-    // re-compute interpolator one last time and compute
-    // coefficients for best cosine approximation
-    firdespm_compute_interp(_q);
-
-    // evaluate Lagrange polynomial on evenly spaced points
-    float G[2*_q->r-1];
-    for (i=0; i<_q->r; i++) {
-        float f = (float)(i) / (float)(2*_q->r-1);
-        float xf = cosf(2*M_PI*f);
-        float cf = fpolyval_lagrange_barycentric(_q->x,_q->c,_q->alpha,xf,_q->r+1);
-        G[i] = cf;
-        G[2*_q->r-i-1] = cf;
-    }
-    //for (i=0; i<2*b-1; i++)
-    //    printf("G(%3u) = %12.4e;\n", i+1, G[i]);
-
-    // compute inverse DFT (slow method)
-    float h[_q->r];
-    for (i=0; i<_q->r; i++) {
-        h[i] = 0.0f;
-        unsigned int j;
-        for (j=0; j<2*_q->r-1; j++) {
-            float f = (float)(i) / (float) (2*_q->r-1);
-            h[i] += G[j] * cosf(2*M_PI*f*j);
-        }
-        h[i] /= (float)(2*_q->r-1);
-    }
-    for (i=0; i<_q->r; i++)
-        printf("h(%3u) = %12.8f;\n", i+1, h[i]);
-
-    // TODO : perform transformation here for different filter types
+    // compute filter taps
+    firdespm_compute_taps(_q, _h);
 }
 
 
@@ -301,6 +273,8 @@ void firdespm_init_grid(firdespm _q)
                 _q->D[i] /= cosf(M_PI*_q->F[i]);
                 _q->W[i] *= cosf(M_PI*_q->F[i]);
             }
+            // force weight at endpoint to be (nearly) zero
+            //_q->W[_q->grid_size-1] = 6.12303177e-17f;
         }
     } else {
         // differentiator, Hilbert transform
@@ -342,6 +316,7 @@ void firdespm_compute_interp(firdespm _q)
     float t1 = 0.0f;    // denominator
     float rho;
     for (i=0; i<_q->r+1; i++) {
+        //printf("D[%3u] = %16.8e, W[%3u] = %16.8e\n", i, _q->D[_q->iext[i]], i, _q->W[_q->iext[i]]);
         t0 += _q->alpha[i] * _q->D[_q->iext[i]];
         t1 += _q->alpha[i] / _q->W[_q->iext[i]] * (i % 2 ? -1.0f : 1.0f);
     }
@@ -423,6 +398,11 @@ void firdespm_iext_search(firdespm _q)
     unsigned int num_extra = num_found - _q->r - 1; // number of extra extremal frequencies
     unsigned int alternating_sign;
 
+#if 0
+    for (i=0; i<_q->r+1; i++)
+        printf("iext[%4u] = %4u : %16.8e\n", i, found_iext[i], _q->E[found_iext[i]]);
+#endif
+
     while (num_extra) {
         // evaluate sign of first extrema
         sign = _q->E[found_iext[0]] > 0.0;
@@ -432,10 +412,8 @@ void firdespm_iext_search(firdespm _q)
         alternating_sign = 1;
         for (i=1; i<num_found; i++) {
             // update new minimum error extreme
-            if ( fabsf(_q->E[found_iext[i]]) < fabsf(_q->E[found_iext[imin]]) ) {
+            if ( fabsf(_q->E[found_iext[i]]) < fabsf(_q->E[found_iext[imin]]) )
                 imin = i;
-                printf("new min at i=%u\n", imin);
-            }
     
             if ( sign && _q->E[found_iext[i]] < 0.0 ) {
                 sign = 0;
@@ -452,7 +430,7 @@ void firdespm_iext_search(firdespm _q)
                 break;
             }
         }
-        printf("  imin : %3u : %12.4e;\n", imin, _q->E[found_iext[imin]]);
+        //printf("  imin : %3u : %12.4e;\n", imin, _q->E[found_iext[imin]]);
 
         // 
         if ( alternating_sign && num_extra==1) {
@@ -466,7 +444,7 @@ void firdespm_iext_search(firdespm _q)
         // Delete value in 'found_iext' at 'index imin'.  This
         // is equivalent to shifing all values left one position
         // starting at index imin+1
-        printf("deleting found_iext[%3u] = %3u\n", imin, found_iext[imin]);
+        //printf("deleting found_iext[%3u] = %3u\n", imin, found_iext[imin]);
 #if 0
         memmove( &found_iext[imin],
                  &found_iext[imin+1],
@@ -480,7 +458,7 @@ void firdespm_iext_search(firdespm _q)
         num_extra--;
         num_found--;
 
-        printf("num extra: %3u, num found: %3u\n", num_extra, num_found);
+        //printf("num extra: %3u, num found: %3u\n", num_extra, num_found);
     }
 
     // count number of changes
@@ -493,6 +471,54 @@ void firdespm_iext_search(firdespm _q)
     memmove(_q->iext, found_iext, (_q->r+1)*sizeof(unsigned int));
 }
 
+// compute filter taps (coefficients) from result
+void firdespm_compute_taps(firdespm _q, float * _h)
+{
+    unsigned int i;
+
+    // re-generate interpolator and compute coefficients
+    // for best cosine approximation
+    firdespm_compute_interp(_q);
+
+    // evaluate Lagrange polynomial on evenly spaced points
+    float G[2*_q->r-1];
+    for (i=0; i<_q->r; i++) {
+        float f = (float)(i) / (float)(2*_q->r-1);
+        float xf = cosf(2*M_PI*f);
+        float cf = fpolyval_lagrange_barycentric(_q->x,_q->c,_q->alpha,xf,_q->r+1);
+        G[i] = cf;
+        G[2*_q->r-i-1] = cf;
+    }
+    //for (i=0; i<2*b-1; i++)
+    //    printf("G(%3u) = %12.4e;\n", i+1, G[i]);
+
+    // compute inverse DFT (slow method), performing
+    // transformation here for different filter types
+    // TODO : flesh out computation for other filter types
+    if (_q->btype == LIQUID_FIRDESPM_BANDPASS && _q->s==1) {
+        // odd filter length, even symmetry
+        for (i=0; i<_q->h_len; i++) {
+            _h[i] = 0.0f;
+            unsigned int j;
+            for (j=0; j<2*_q->r-1; j++) {
+                float f = ((float)(i) - (float)(_q->r-1)) / (float) (2*_q->r-1);
+                _h[i] += G[j] * cosf(2*M_PI*f*j);
+            }
+            _h[i] /= (float)(2*_q->r-1);
+        }
+    } else if (_q->btype == LIQUID_FIRDESPM_BANDPASS && _q->s==0) {
+        // even filter length, even symmetry
+        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+    } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==1) {
+        // odd filter length, odd symmetry
+        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+    } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==0) {
+        // even filter length, odd symmetry
+        fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
+    }
+    for (i=0; i<_q->h_len; i++)
+        printf("h(%3u) = %12.8f;\n", i+1, _h[i]);
+}
 
 #if LIQUID_FIRDESPM_DEBUG
 void firdespm_output_debug_file(firdespm _q)

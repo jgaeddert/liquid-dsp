@@ -28,6 +28,10 @@ int main() {
     firdespm_execute(q,h);
     firdespm_destroy(q);
 
+    unsigned int i;
+    for (i=0; i<n; i++)
+        printf("%20.12f\n", h[i]);
+
     printf("done.\n");
     return 0;
 }
