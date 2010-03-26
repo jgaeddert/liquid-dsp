@@ -661,14 +661,19 @@ void firdespm_init_grid(firdespm _q);
 // compute interpolating polynomial
 void firdespm_compute_interp(firdespm _q);
 
+// compute error signal from actual response (interpolator
+// output), desired response, and weights
 void firdespm_compute_error(firdespm _q);
 
 // search error curve for _r+1 extremal indices
 void firdespm_iext_search(firdespm _q);
 
+// evaluates result to determine if Remez exchange algorithm
+// has converged
+int firdespm_is_search_complete(firdespm _q);
+
 // compute filter taps (coefficients) from result
 void firdespm_compute_taps(firdespm _q, float * _h);
-
 
 // iirdes : infinite impulse response filter design
 

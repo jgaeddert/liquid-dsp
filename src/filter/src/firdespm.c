@@ -90,7 +90,7 @@ struct firdespm_s {
     float rho;                  // extremal weighted error
 
     unsigned int * iext;        // indices of extrema
-    unsigned int num_changes;   // number of changes in extrema
+    unsigned int num_exchanges;   // number of changes in extrema
 
 #if LIQUID_FIRDESPM_DEBUG
     FILE * fid;
@@ -234,8 +234,10 @@ void firdespm_execute(firdespm _q, float * _h)
         firdespm_iext_search(_q);
 
         // TODO : check exit criteria
+        if (firdespm_is_search_complete(_q))
+            break;
     }
-    //return;
+    printf("search complete in %u iterations\n", p);
 
     // compute filter taps
     firdespm_compute_taps(_q, _h);
@@ -535,13 +537,37 @@ void firdespm_iext_search(firdespm _q)
     }
 
     // count number of changes
-    unsigned int num_changes=0;
+    _q->num_exchanges=0;
     for (i=0; i<_q->r+1; i++)
-        num_changes += _q->iext[i] == found_iext[i] ? 0 : 1;
-    printf("changes : %u\n", num_changes);
+        _q->num_exchanges += _q->iext[i] == found_iext[i] ? 0 : 1;
 
     // copy new values
     memmove(_q->iext, found_iext, (_q->r+1)*sizeof(unsigned int));
+}
+
+// evaluates result to determine if Remez exchange algorithm
+// has converged
+int firdespm_is_search_complete(firdespm _q)
+{
+    // if no extremal frequencies have been exchanged, Remez
+    // algorithm has converged
+    if (_q->num_exchanges == 0)
+        return 1;
+
+    unsigned int i;
+    float tol = 1e-3f;
+
+    float e=0.0f;
+    float emin=0.0f;
+    float emax=0.0f;
+    for (i=0; i<_q->r+1; i++) {
+        e = fabsf(_q->E[_q->iext[i]]);
+        if (i==0 || e < emin) emin = e;
+        if (i==0 || e > emax) emax = e;
+    }
+
+    printf("emin : %16.8e, emax : %16.8e, metric : %16.8e\n", emin, emax, (emax-emin)/emax);
+    return (emax-emin) / emax < tol ? 1 : 0;
 }
 
 // compute filter taps (coefficients) from result
