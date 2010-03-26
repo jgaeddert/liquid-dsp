@@ -144,9 +144,15 @@ firdespm firdespm_create(unsigned int _h_len,
     memmove(q->des,     _des,       q->num_bands*sizeof(float));
     memmove(q->weights, _weights,   q->num_bands*sizeof(float));
 
-    // TODO : estimate grid size
+    // estimate grid size
     q->grid_density = 16;
-    q->grid_size = 1024;
+    q->grid_size = 0;
+    float df = 0.5f/(q->grid_density*q->r); // frequency step
+    for (i=0; i<q->num_bands; i++) {
+        float f0 = q->bands[2*i+0];         // lower band edge
+        float f1 = q->bands[2*i+1];         // upper band edge
+        q->grid_size += (unsigned int)( (f1-f0)/df + 1.0f );
+    }
 
     // create the grid
     q->F = (float*) malloc(q->grid_size*sizeof(float));
@@ -270,10 +276,11 @@ void firdespm_init_grid(firdespm _q)
 
         // compute the number of gridpoints in this band
         unsigned int num_points = (unsigned int)( (f1-f0)/df + 0.5 );
-        printf("band : [%12.8f %12.8f] %3u points\n",f0,f1,num_points);
 
         // ensure at least one point per band
         if (num_points < 1) num_points = 1;
+
+        //printf("band : [%12.8f %12.8f] %3u points\n",f0,f1,num_points);
 
         // add points to grid
         for (j=0; j<num_points; j++) {
