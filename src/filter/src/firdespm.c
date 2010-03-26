@@ -189,7 +189,7 @@ void firdespm_execute(firdespm _q, float * _h)
 
     // iterate over the Remez exchange algorithm
     unsigned int p;
-    unsigned int max_iterations = 1;
+    unsigned int max_iterations = 8;
     for (p=0; p<max_iterations; p++) {
         // compute interpolator
         firdespm_compute_interp(_q);
@@ -358,9 +358,14 @@ void firdespm_iext_search(firdespm _q)
     unsigned int found_iext[2*_q->r];
     unsigned int num_found=0;
 
+#if 0
     // check for extremum at f=0
     if ( fabsf(_q->E[0]) > fabsf(_q->E[1]) )
         found_iext[num_found++] = 0;
+#else
+    // force f=0 into candidate set
+    found_iext[num_found++] = 0;
+#endif
 
     // search inside grid
     for (i=1; i<_q->grid_size-1; i++) {
@@ -368,12 +373,24 @@ void firdespm_iext_search(firdespm _q)
              ((_q->E[i]<0.0) && (_q->E[i-1]>_q->E[i]) && (_q->E[i+1]>_q->E[i]) ) )
         {
             found_iext[num_found++] = i;
+            assert(num_found < 2*_q->r);
         }
     }
 
+#if 0
     // check for extremum at f=0.5
-    if ( fabsf(_q->E[i]) > fabsf(_q->E[i-1]) )
-        found_iext[num_found++] = i;
+    if ( fabsf(_q->E[_q->grid_size-1]) > fabsf(_q->E[_q->grid_size-2]) )
+        found_iext[num_found++] = _q->grid_size-1;
+#else
+    // force f=0.5 into candidate set
+    found_iext[num_found++] = _q->grid_size-1;
+#endif
+    printf("r+1 = %4u, num_found = %4u\n", _q->r+1, num_found);
+    if (num_found < _q->r+1) {
+        // take care of this condition by force-adding indices
+    }
+    assert(num_found < 2*_q->r);
+    assert(num_found >= _q->r+1);
 
     // search extrema and eliminate smallest
     unsigned int imin=0;    // index of found_iext where _E is a minimum extreme
@@ -437,6 +454,8 @@ void firdespm_iext_search(firdespm _q)
 
         num_extra--;
         num_found--;
+
+        printf("num extra: %3u, num found: %3u\n", num_extra, num_found);
     }
 
     // count number of changes
@@ -477,7 +496,7 @@ void firdespm_output_debug_file(firdespm _q)
     fprintf(fid,"ylabel('error');\n");
 
     // evaluate poly
-    unsigned int n=256;
+    unsigned int n=1024;
     for (i=0; i<n; i++) {
         float f = (float) i / (float)(2*(n-1));
         float x = cosf(2*M_PI*f);
@@ -488,6 +507,7 @@ void firdespm_output_debug_file(firdespm _q)
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,H,'-', F(iext),D(iext)-E(iext),'x');\n");
+    //fprintf(fid,"plot(f,20*log10(abs(H)),'-', F(iext),20*log10(abs(D(iext)-E(iext))),'x');\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('frequency');\n");
     fprintf(fid,"ylabel('filter response');\n");
