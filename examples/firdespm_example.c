@@ -12,7 +12,7 @@
 #include "liquid.h"
 
 int main() {
-    unsigned int n=25;
+    unsigned int n=35;
     float fp = 0.1f;
     float fs = 0.2f;
 
