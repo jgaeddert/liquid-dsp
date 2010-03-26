@@ -104,7 +104,17 @@ firdespm firdespm_create(unsigned int _h_len,
                          unsigned int _num_bands,
                          liquid_firdespm_btype _btype)
 {
-    // TODO : validate input
+    // validate input
+    unsigned int i;
+    int bands_valid = 1;
+    for (i=0; i<2*_num_bands; i++)
+        bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
+    for (i=1; i<2*_num_bands; i++)
+        bands_valid &= _bands[i] >= _bands[i-1];
+    if (!bands_valid) {
+        fprintf(stderr,"error: firdespm_create(), invalid bands\n");
+        exit(1);
+    }
 
     // create object
     firdespm q = (firdespm) malloc(sizeof(struct firdespm_s));
@@ -365,15 +375,17 @@ void firdespm_iext_search(firdespm _q)
 #else
     // force f=0 into candidate set
     found_iext[num_found++] = 0;
+    printf("num_found : %4u [%4u / %4u]\n", num_found, 0, _q->grid_size);
 #endif
 
     // search inside grid
     for (i=1; i<_q->grid_size-1; i++) {
-        if ( ((_q->E[i]>0.0) && (_q->E[i-1]<_q->E[i]) && (_q->E[i+1]<_q->E[i]) ) ||
-             ((_q->E[i]<0.0) && (_q->E[i-1]>_q->E[i]) && (_q->E[i+1]>_q->E[i]) ) )
+        if ( ((_q->E[i]>0.0) && (_q->E[i-1]<=_q->E[i]) && (_q->E[i+1]<=_q->E[i]) ) ||
+             ((_q->E[i]<0.0) && (_q->E[i-1]>=_q->E[i]) && (_q->E[i+1]>=_q->E[i]) ) )
         {
             found_iext[num_found++] = i;
-            assert(num_found < 2*_q->r);
+            printf("num_found : %4u [%4u / %4u]\n", num_found, i, _q->grid_size);
+            assert(num_found <= 2*_q->r);
         }
     }
 
@@ -384,13 +396,26 @@ void firdespm_iext_search(firdespm _q)
 #else
     // force f=0.5 into candidate set
     found_iext[num_found++] = _q->grid_size-1;
+    printf("num_found : %4u [%4u / %4u]\n", num_found, _q->grid_size-1, _q->grid_size);
 #endif
     printf("r+1 = %4u, num_found = %4u\n", _q->r+1, num_found);
     if (num_found < _q->r+1) {
         // take care of this condition by force-adding indices
     }
     assert(num_found < 2*_q->r);
-    assert(num_found >= _q->r+1);
+
+    //assert(num_found >= _q->r+1);
+    if (num_found < _q->r+1) {
+        fprintf(stderr,"error: firdespm_iext_search(), too few extrema found (expected %u, found %u)\n",
+                _q->r+1, num_found);
+        fprintf(stderr,"exiting prematurely\n");
+        for(i=0; i<num_found; i++)
+            _q->iext[i] = found_iext[i];
+        for(; i<_q->r+1; i++)
+            _q->iext[i] = found_iext[0];
+        firdespm_destroy(_q);
+        exit(1);
+    }
 
     // search extrema and eliminate smallest
     unsigned int imin=0;    // index of found_iext where _E is a minimum extreme
