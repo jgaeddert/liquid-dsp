@@ -18,10 +18,23 @@ int main() {
     float fp = 0.1f;
     float fs = 0.2f;
 
+#if 0
     unsigned int num_bands = 2;
     float bands[4]   = {0.0f, fp, fs, 0.5f};
     float des[2]     = {1.0f, 0.0f};
     float weights[2] = {1.0f, 1.0f};
+#else
+    unsigned int num_bands = 3;
+    float beta=0.5f;
+    unsigned int k = 2;
+    float delta = 0.0f;
+    float fc = 0.5f/(float)(k); // center band
+    fp = fc - beta*fc + delta;
+    fs = fc + beta*fc + delta;
+    float bands[6]   = {0.0f, fp, fc, fc, fs, 0.5f};
+    float des[3]     = {1.0f, 1.0f/sqrtf(2.0f), 0.0f};
+    float weights[3] = {1.0f, 1.0f, 1.0f};
+#endif
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
 
     unsigned int i;

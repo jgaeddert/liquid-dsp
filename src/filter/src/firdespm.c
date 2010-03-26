@@ -25,7 +25,9 @@
 //
 // Much of this program has been borrowed heavily from [McClellan:1973]
 // and [Janovetz:1998] with the exception of the Lagrange polynomial
-// interpolation formulas.
+// interpolation formulas and the structured 'firdespm' object. Several
+// improvements have been made in the search algorithm to help maintain
+// stability and convergence.
 //
 // References:
 //  [Parks:1972] T. W. Parks and J. H. McClellan, "Chebyshev
@@ -192,6 +194,7 @@ void firdespm_execute(firdespm _q, float * _h)
     unsigned int i;
 
     // initial guess of extremal frequencies evenly spaced on F
+    // TODO : guarantee at least one extremal frequency lies in each band
     for (i=0; i<_q->r+1; i++) {
         _q->iext[i] = (i * (_q->grid_size-1)) / _q->r;
         printf("iext_guess[%3u] = %u\n", i, _q->iext[i]);
@@ -228,11 +231,28 @@ void firdespm_init_grid(firdespm _q)
 {
     unsigned int i,j;
 
-    // validate input
-
     // frequency step size
     float df = 0.5f/(_q->grid_density*_q->r);
     printf("df : %12.8f\n", df);
+
+#if 0
+    firdespm_print(_q);
+
+    // compute total bandwidth
+    float b=0.0f;
+    for (i=0; i<_q->num_bands; i++)
+        b += _q->bands[2*i+1] - _q->bands[2*i+0];
+
+    printf("b : %12.8f\n", b);
+
+    // adjust frequency step size if it is too large
+    float g = b / (df * _q->r); // approximate oversampling rate (points/extrema)
+    float gmin = 4.0f;
+    if (g < gmin)
+        df *= g / gmin;
+    printf("df : %12.8f\n", df);
+    //exit(1);
+#endif
 
     // number of grid points counter
     unsigned int n = 0;
@@ -365,7 +385,8 @@ void firdespm_iext_search(firdespm _q)
     unsigned int i;
 
     // found extremal frequency indices
-    unsigned int found_iext[2*_q->r];
+    unsigned int nmax = 2*_q->r + 2*_q->num_bands; // max number of extremals
+    unsigned int found_iext[nmax];
     unsigned int num_found=0;
 
 #if 0
@@ -383,9 +404,9 @@ void firdespm_iext_search(firdespm _q)
         if ( ((_q->E[i]>0.0) && (_q->E[i-1]<=_q->E[i]) && (_q->E[i+1]<=_q->E[i]) ) ||
              ((_q->E[i]<0.0) && (_q->E[i-1]>=_q->E[i]) && (_q->E[i+1]>=_q->E[i]) ) )
         {
+            assert(num_found < nmax);
             found_iext[num_found++] = i;
             printf("num_found : %4u [%4u / %4u]\n", num_found, i, _q->grid_size);
-            assert(num_found <= 2*_q->r);
         }
     }
 
@@ -395,14 +416,19 @@ void firdespm_iext_search(firdespm _q)
         found_iext[num_found++] = _q->grid_size-1;
 #else
     // force f=0.5 into candidate set
+    assert(num_found < nmax);
     found_iext[num_found++] = _q->grid_size-1;
     printf("num_found : %4u [%4u / %4u]\n", num_found, _q->grid_size-1, _q->grid_size);
 #endif
     printf("r+1 = %4u, num_found = %4u\n", _q->r+1, num_found);
     if (num_found < _q->r+1) {
+        // too few extremal frequencies found.  Theoretically, this
+        // should never happen as the Chebyshev alternation theorem
+        // guarantees at least r+1 extrema, however due to finite
+        // machine precision, this can happen.
+
         // take care of this condition by force-adding indices
     }
-    assert(num_found < 2*_q->r);
 
     //assert(num_found >= _q->r+1);
     if (num_found < _q->r+1) {
@@ -416,6 +442,8 @@ void firdespm_iext_search(firdespm _q)
         firdespm_destroy(_q);
         exit(1);
     }
+
+    assert(num_found <= nmax);
 
     // search extrema and eliminate smallest
     unsigned int imin=0;    // index of found_iext where _E is a minimum extreme
