@@ -52,6 +52,11 @@
 
 #define LIQUID_FIRDESPM_DEBUG   1
 
+#define LIQUID_FIRDESPM_DEBUG_FILENAME "firdespm_internal_debug.m"
+#if LIQUID_FIRDESPM_DEBUG
+void firdespm_output_debug_file(firdespm _q);
+#endif
+
 // structured data type
 struct firdespm_s {
     // constants
@@ -145,6 +150,10 @@ firdespm firdespm_create(unsigned int _h_len,
 
 void firdespm_destroy(firdespm _q)
 {
+#if LIQUID_FIRDESPM_DEBUG
+    firdespm_output_debug_file(_q);
+#endif
+
     // free dense grid elements
     free(_q->F);
     free(_q->D);
@@ -187,13 +196,6 @@ void firdespm_execute(firdespm _q, float * _h)
 
         // compute error
         firdespm_compute_error(_q);
-
-#if LIQUID_FIRDESPM_DEBUG
-        FILE * fid = fopen("error.dat","w");
-        for (i=0; i<_q->grid_size; i++)
-            fprintf(fid,"%16.8e;\n", _q->E[i]);
-        fclose(fid);
-#endif
 
         // search for new extremal frequencies
         firdespm_iext_search(_q);
@@ -373,15 +375,6 @@ void firdespm_iext_search(firdespm _q)
     if ( fabsf(_q->E[i]) > fabsf(_q->E[i-1]) )
         found_iext[num_found++] = i;
 
-#if LIQUID_FIRDESPM_DEBUG
-    for (i=0; i<num_found; i++)
-        printf("found_iext[%3u] = %5u : %18.8e\n", i, found_iext[i], _q->E[found_iext[i]]);
-    FILE * fid = fopen("iext.dat","w");
-    for (i=0; i<num_found; i++)
-        fprintf(fid,"%u;\n", found_iext[i]+1);
-    fclose(fid);
-#endif
-
     // search extrema and eliminate smallest
     unsigned int imin=0;    // index of found_iext where _E is a minimum extreme
     unsigned int sign=0;    // sign of error
@@ -446,15 +439,6 @@ void firdespm_iext_search(firdespm _q)
         num_found--;
     }
 
-#if LIQUID_FIRDESPM_DEBUG
-    for (i=0; i<num_found; i++)
-        printf("found_iext_new[%3u] = %u\n", i, found_iext[i]);
-    fid = fopen("iext_new.dat","w");
-    for (i=0; i<_q->r+1; i++)
-        fprintf(fid,"%u;\n", found_iext[i]+1);
-    fclose(fid);
-#endif
-
     // count number of changes
     unsigned int num_changes=0;
     for (i=0; i<_q->r+1; i++)
@@ -465,4 +449,53 @@ void firdespm_iext_search(firdespm _q)
     memmove(_q->iext, found_iext, (_q->r+1)*sizeof(unsigned int));
 }
 
+
+#if LIQUID_FIRDESPM_DEBUG
+void firdespm_output_debug_file(firdespm _q)
+{
+    FILE * fid = fopen(LIQUID_FIRDESPM_DEBUG_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", LIQUID_FIRDESPM_DEBUG_FILENAME);
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+
+    unsigned int i;
+    for (i=0; i<_q->grid_size; i++) {
+        fprintf(fid,"F(%4u) = %16.8e;\n", i+1, _q->F[i]);
+        fprintf(fid,"D(%4u) = %16.8e;\n", i+1, _q->D[i]);
+        fprintf(fid,"W(%4u) = %16.8e;\n", i+1, _q->W[i]);
+        fprintf(fid,"E(%4u) = %16.8e;\n", i+1, _q->E[i]);
+    }
+
+    for (i=0; i<_q->r+1; i++) {
+        fprintf(fid,"iext(%4u) = %u;\n", i+1, _q->iext[i]+1);
+    }
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(F,E,'-', F(iext),E(iext),'x');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"xlabel('frequency');\n");
+    fprintf(fid,"ylabel('error');\n");
+
+    // evaluate poly
+    unsigned int n=256;
+    for (i=0; i<n; i++) {
+        float f = (float) i / (float)(2*(n-1));
+        float x = cosf(2*M_PI*f);
+        float c = fpolyval_lagrange_barycentric(_q->x,_q->c,_q->alpha,x,_q->r+1);
+
+        fprintf(fid,"f(%4u) = %20.12e; H(%4u) = %20.12e;\n", i+1, f, i+1, c);
+    }
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,H,'-', F(iext),D(iext)-E(iext),'x');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"xlabel('frequency');\n");
+    fprintf(fid,"ylabel('filter response');\n");
+
+    fprintf(fid,"rho = %20.12e;\n", _q->rho);
+
+    fclose(fid);
+    printf("internal debugging results written to %s.\n", LIQUID_FIRDESPM_DEBUG_FILENAME);
+}
+#endif
 
