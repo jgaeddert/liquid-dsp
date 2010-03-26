@@ -106,15 +106,29 @@ firdespm firdespm_create(unsigned int _h_len,
                          unsigned int _num_bands,
                          liquid_firdespm_btype _btype)
 {
-    // validate input
     unsigned int i;
+
+    // validate input
     int bands_valid = 1;
+    int weights_valid = 1;
+    // ensure bands are withing [0,0.5]
     for (i=0; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= 0.0 && _bands[i] <= 0.5;
+    // ensure bands are non-decreasing
     for (i=1; i<2*_num_bands; i++)
         bands_valid &= _bands[i] >= _bands[i-1];
+    // ensure weights are greater than 0
+    for (i=0; i<_num_bands; i++)
+        weights_valid &= _weights[i] > 0;
+
     if (!bands_valid) {
         fprintf(stderr,"error: firdespm_create(), invalid bands\n");
+        exit(1);
+    } else if (!weights_valid) {
+        fprintf(stderr,"error: firdespm_create(), invalid weights (must be positive)\n");
+        exit(1);
+    } else if (_num_bands == 0) {
+        fprintf(stderr,"error: firdespm_create(), number of bands must be > 0\n");
         exit(1);
     }
 
@@ -351,19 +365,18 @@ void firdespm_compute_interp(firdespm _q)
     // compute rho
     float t0 = 0.0f;    // numerator
     float t1 = 0.0f;    // denominator
-    float rho;
     for (i=0; i<_q->r+1; i++) {
         //printf("D[%3u] = %16.8e, W[%3u] = %16.8e\n", i, _q->D[_q->iext[i]], i, _q->W[_q->iext[i]]);
         t0 += _q->alpha[i] * _q->D[_q->iext[i]];
         t1 += _q->alpha[i] / _q->W[_q->iext[i]] * (i % 2 ? -1.0f : 1.0f);
     }
-    rho = t0/t1;
-    printf("  rho   :   %12.4e\n", rho);
+    _q->rho = t0/t1;
+    printf("  rho   :   %12.4e\n", _q->rho);
     printf("\n");
 
     // compute polynomial values (interpolants)
     for (i=0; i<_q->r+1; i++) {
-        _q->c[i] = _q->D[_q->iext[i]] - (i % 2 ? -1 : 1) * rho / _q->W[i];
+        _q->c[i] = _q->D[_q->iext[i]] - (i % 2 ? -1 : 1) * _q->rho / _q->W[i];
         printf("c[%3u] = %16.8e\n", i, _q->c[i]);
     }
 
