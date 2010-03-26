@@ -182,14 +182,14 @@ void firdespm_execute(firdespm _q, float * _h)
     unsigned int i;
 
     // initial guess of extremal frequencies evenly spaced on F
-    for (i=0; i<=_q->r; i++) {
+    for (i=0; i<_q->r+1; i++) {
         _q->iext[i] = (i * (_q->grid_size-1)) / _q->r;
         //printf("iext(%3u) = %u\n", i, iext[i]);
     }
 
     // iterate over the Remez exchange algorithm
     unsigned int p;
-    unsigned int max_iterations = 8;
+    unsigned int max_iterations = 16;
     for (p=0; p<max_iterations; p++) {
         // compute interpolator
         firdespm_compute_interp(_q);
@@ -203,39 +203,37 @@ void firdespm_execute(firdespm _q, float * _h)
         // TODO : check exit criteria
     }
 
-    // re-compute interpolator one last time
-    //firdespm_compute_interp(_q);
+    // re-compute interpolator one last time and compute
+    // coefficients for best cosine approximation
+    firdespm_compute_interp(_q);
 
-#if 0
     // evaluate Lagrange polynomial on evenly spaced points
-    unsigned int b=r;
-    float G[2*b-1];
-    for (i=0; i<=b; i++) {
-        float f = (float)(i) / (float)(2*b-1);
+    float G[2*_q->r-1];
+    for (i=0; i<_q->r; i++) {
+        float f = (float)(i) / (float)(2*_q->r-1);
         float xf = cosf(2*M_PI*f);
-        float cf = fpolyval_lagrange_barycentric(x,c,beta,xf,ne-1);
+        float cf = fpolyval_lagrange_barycentric(_q->x,_q->c,_q->alpha,xf,_q->r+1);
         G[i] = cf;
-        G[2*b-i-1] = cf;
+        G[2*_q->r-i-1] = cf;
     }
     //for (i=0; i<2*b-1; i++)
     //    printf("G(%3u) = %12.4e;\n", i+1, G[i]);
 
-    // compute inverse DFT
-    float h[b];
-    for (i=0; i<b; i++) {
+    // compute inverse DFT (slow method)
+    float h[_q->r];
+    for (i=0; i<_q->r; i++) {
         h[i] = 0.0f;
         unsigned int j;
-        for (j=0; j<2*b-1; j++) {
-            float f = (float)(i) / (float) (2*b-1);
+        for (j=0; j<2*_q->r-1; j++) {
+            float f = (float)(i) / (float) (2*_q->r-1);
             h[i] += G[j] * cosf(2*M_PI*f*j);
         }
-        h[i] /= 2*b-1;
+        h[i] /= (float)(2*_q->r-1);
     }
-    for (i=0; i<b; i++)
+    for (i=0; i<_q->r; i++)
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);
 
     // TODO : perform transformation here for different filter types
-#endif
 }
 
 
@@ -257,13 +255,16 @@ void firdespm_init_grid(firdespm _q)
     // number of grid points counter
     unsigned int n = 0;
 
-    // TODO : take care of special symmetry conditions here
-
     float f0, f1;
     for (i=0; i<_q->num_bands; i++) {
         // extract band edges
         f0 = _q->bands[2*i+0];
         f1 = _q->bands[2*i+1];
+
+        // ensure first point is not zero for differentiator
+        // and Hilbert transforms due to transformation (below)
+        if (i==0 && _q->btype != LIQUID_FIRDESPM_BANDPASS)
+            f0 = f0 < df ? df : f0;
 
         // compute the number of gridpoints in this band
         unsigned int num_points = (unsigned int)( (f1-f0)/df + 0.5 );
@@ -292,7 +293,31 @@ void firdespm_init_grid(firdespm _q)
     }
     _q->grid_size = n;
 
-    // TODO : take care of special symmetry conditions here
+    // take care of special symmetry conditions here
+    if (_q->btype == LIQUID_FIRDESPM_BANDPASS) {
+        if (_q->s == 0) {
+            // even length filter
+            for (i=0; i<_q->grid_size; i++) {
+                _q->D[i] /= cosf(M_PI*_q->F[i]);
+                _q->W[i] *= cosf(M_PI*_q->F[i]);
+            }
+        }
+    } else {
+        // differentiator, Hilbert transform
+        if (_q->s == 0) {
+            // even length filter
+            for (i=0; i<_q->grid_size; i++) {
+                _q->D[i] /= sinf(M_PI*_q->F[i]);
+                _q->W[i] *= sinf(M_PI*_q->F[i]);
+            }
+        } else {
+            // odd length filter
+            for (i=0; i<_q->grid_size; i++) {
+                _q->D[i] /= sinf(2*M_PI*_q->F[i]);
+                _q->W[i] *= sinf(2*M_PI*_q->F[i]);
+            }
+        }
+    }
 }
 
 // compute interpolating polynomial
@@ -301,7 +326,7 @@ void firdespm_compute_interp(firdespm _q)
     unsigned int i;
 
     // compute Chebyshev points on F[iext[]] : cos(2*pi*f)
-    for (i=0; i<=_q->r; i++) {
+    for (i=0; i<_q->r+1; i++) {
         _q->x[i] = cosf(2*M_PI*_q->F[_q->iext[i]]);
         printf("x[%3u] = %12.8f\n", i, _q->x[i]);
     }
@@ -309,7 +334,7 @@ void firdespm_compute_interp(firdespm _q)
 
     // compute Lagrange interpolating polynomial
     fpolyfit_lagrange_barycentric(_q->x,_q->r+1,_q->alpha);
-    for (i=0; i<=_q->r; i++)
+    for (i=0; i<_q->r+1; i++)
         printf("a[%3u] = %12.8f\n", i, _q->alpha[i]);
 
     // compute rho
@@ -325,7 +350,7 @@ void firdespm_compute_interp(firdespm _q)
     printf("\n");
 
     // compute polynomial values (interpolants)
-    for (i=0; i<=_q->r; i++) {
+    for (i=0; i<_q->r+1; i++) {
         _q->c[i] = _q->D[_q->iext[i]] - (i % 2 ? -1 : 1) * rho / _q->W[i];
         printf("c[%3u] = %16.8e\n", i, _q->c[i]);
     }
