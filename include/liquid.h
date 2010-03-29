@@ -786,8 +786,17 @@ typedef enum {
     LIQUID_FIRDESPM_HILBERT
 } liquid_firdespm_btype;
 
-typedef struct firdespm_s * firdespm;
+// run filter design (full life cycle of object)
+void firdespm_run(unsigned int _h_len,
+                  float * _bands,
+                  float * _des,
+                  float * _weights,
+                  unsigned int _num_bands,
+                  liquid_firdespm_btype _btype,
+                  float * _h);
 
+// structured object
+typedef struct firdespm_s * firdespm;
 firdespm firdespm_create(unsigned int _h_len,
                          float * _bands,
                          float * _des,

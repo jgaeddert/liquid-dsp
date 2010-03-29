@@ -99,6 +99,26 @@ struct firdespm_s {
 
 };
 
+// run filter design (full life cycle of object)
+void firdespm_run(unsigned int _h_len,
+                  float * _bands,
+                  float * _des,
+                  float * _weights,
+                  unsigned int _num_bands,
+                  liquid_firdespm_btype _btype,
+                  float * _h)
+{
+    // create object
+    firdespm q = firdespm_create(_h_len,_bands,_des,_weights,_num_bands,_btype);
+
+    // execute
+    firdespm_execute(q,_h);
+
+    // destroy
+    firdespm_destroy(q);
+}
+
+
 // create filter design object
 firdespm firdespm_create(unsigned int _h_len,
                          float * _bands,
