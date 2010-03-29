@@ -20,65 +20,75 @@
  */
 
 // 
-// common polynomial expansions
+// common polynomial routines
+//  polyval
+//  polyfit
 //
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
 
 
-// expands the polynomial:
-//  (1+x)^n
-// as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-void poly_binomial_expand(unsigned int _n,
-                          int * _c)
+T POLY(val)(T * _p, unsigned int _k, T _x)
 {
-    // easy way...
-    unsigned int k;
-    for (k=0; k<=_n; k++)
-        _c[k] = (int) liquid_nchoosek(_n,k);
+    unsigned int i;
+    T xk = 1;
+    T y = 0.0f;
+    for (i=0; i<_k; i++) {
+        y += _p[i]*xk;
+        xk *= _x;
+    }
+    return y;
 }
 
-
-// expands the polynomial:
-//  (1+x)^k * (1-x)^(n-k)
-// as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
-//
-//  tests:  n=6, k=1 : c[7]=[1  -4   5   0  -5   4  -1]
-//          n=5, k=2 : c[6]=[1  -1  -2   2   1  -1]
-void poly_binomial_expand_pm(unsigned int _n,
-                             unsigned int _k,
-                             int * _c)
+void POLY(fit)(T * _x,
+               T * _y,
+               unsigned int _n,
+               T * _p,
+               unsigned int _k)
 {
-    int cp[_k+1];       // coefficients array for (1+x)^k
-    int cm[_n-_k+1];    // coefficients array for (1-x)^(n-k)
-    unsigned int i;
-    for (i=0; i<_n+1; i++)
-        _c[i]  = 0;
 
-    // compute (1+x)^k
-    for (i=0; i<=_k; i++) {
-        cp[i] = (int) liquid_nchoosek(_k,i);
-    }
-
-    // compute (1-x)^(n-k)
-    for (i=0; i<=_n-_k; i++) {
-        cm[i] = (i%2 ? -1 : 1) * (int) liquid_nchoosek(_n-_k,i);
-    }
-
-    // multiply both polynomials
-    unsigned int j;
-    unsigned int t;
-    for (i=0; i<=_k; i++) {
-        for (j=0; j<=_n-_k; j++) {
-            t = i+j;
-            _c[t] += cp[i] * cm[j];
+    // ...
+    T X[_n*_k];
+    unsigned int r,c;
+    T v;
+    for (r=0; r<_n; r++) {
+        v = 1;
+        for (c=0; c<_k; c++) {
+            matrix_access(X,_n,_k,r,c) = v;
+            v *= _x[r];
         }
     }
+
+    // compute transpose of X
+    T Xt[_k*_n];
+    memmove(Xt,X,_k*_n*sizeof(T));
+    MATRIX(_trans)(Xt,_n,_k);
+
+    // compute [X']*y
+    T Xty[_k];
+    MATRIX(_mul)(Xt, _k, _n,
+                 _y, _n, 1,
+                 Xty,_k, 1);
+
+    // compute [X']*X
+    T X2[_k*_k];
+    MATRIX(_mul)(Xt, _k, _n,
+                 X,  _n, _k,
+                 X2, _k, _k);
+
+    // compute inv([X']*X)
+    T G[_k*_k];
+    memmove(G,X2,_k*_k*sizeof(T));
+    MATRIX(_inv)(G,_k,_k);
+
+    // compute coefficients
+    MATRIX(_mul)(G,  _k, _k,
+                 Xty,_k, 1,
+                 _p, _k, 1);
 }
 

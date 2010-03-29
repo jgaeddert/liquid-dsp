@@ -31,7 +31,7 @@
 #define T               float complex
 #define TC              float complex
 
-#include "poly.c"
+#include "poly.common.c"
 #include "poly.expand.c"
 #include "poly.findroots.c"
 #include "poly.lagrange.c"

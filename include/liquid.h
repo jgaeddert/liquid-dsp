@@ -1987,7 +1987,7 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 #define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfpoly, name)
 
 #define POLY_MANGLE_DOUBLE(name)    LIQUID_CONCAT(poly, name)
-#define POLY_MANGLE_CDOUBLE(name)   LIQUID_CONCAT(cpoly, name)
+//#define POLY_MANGLE_CDOUBLE(name)   LIQUID_CONCAT(cpoly, name)
 
 // large macro
 //   POLY   : name-mangling macro
@@ -2075,9 +2075,9 @@ LIQUID_POLY_DEFINE_API(POLY_MANGLE_DOUBLE,
                        double,
                        liquid_double_complex)
 
-LIQUID_POLY_DEFINE_API(POLY_MANGLE_CDOUBLE,
-                       liquid_double_complex,
-                       liquid_double_complex)
+//LIQUID_POLY_DEFINE_API(POLY_MANGLE_CDOUBLE,
+//                       liquid_double_complex,
+//                       liquid_double_complex)
 
 
 // expands the polynomial: (1+x)^n
