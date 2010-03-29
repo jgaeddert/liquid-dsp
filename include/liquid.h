@@ -75,7 +75,8 @@ extern "C" {
 #endif
 //#   define LIQUID_DEFINE_COMPLEX(R,C) typedef C struct {R real; R imag;};
 
-LIQUID_DEFINE_COMPLEX(float, liquid_float_complex);
+LIQUID_DEFINE_COMPLEX(float,  liquid_float_complex);
+LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 
 // 
 // MODULE : agc (automatic gain control)
@@ -1985,6 +1986,9 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 #define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(fpoly, name)
 #define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfpoly, name)
 
+#define POLY_MANGLE_DOUBLE(name)    LIQUID_CONCAT(poly, name)
+#define POLY_MANGLE_CDOUBLE(name)   LIQUID_CONCAT(cpoly, name)
+
 // large macro
 //   POLY   : name-mangling macro
 //   T      : data type
@@ -2066,6 +2070,14 @@ LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT,
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT,
                        liquid_float_complex,
                        liquid_float_complex)
+
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_DOUBLE,
+                       double,
+                       liquid_double_complex)
+
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_CDOUBLE,
+                       liquid_double_complex,
+                       liquid_double_complex)
 
 
 // expands the polynomial: (1+x)^n
