@@ -36,7 +36,7 @@ x =
   7.28072023 -2.06608009  0.67074001  9.80657005
   6.07741022 -3.93098998  1.22826004 -0.42142001
 
-fmatrix_swaprows(x,4,4,0,2);
+matrixf_swaprows(x,4,4,0,2);
   7.28072023 -2.06608009  0.67074001  9.80657005
   3.99475002  0.88066000  4.69372988  0.44563001
   0.84381998 -2.38303995  1.43060994 -1.66603994
@@ -69,7 +69,7 @@ All elements of $\vec{B}$ in column $b$ are zero except for row $a$.
 For our example $4 \times 4$ matrix $\vec{x}$, pivoting around
 $\vec{x}_{1,2}$ gives:
 \begin{verbatim}
-fmatrix_pivot(x,4,4,1,2);
+matrixf_pivot(x,4,4,1,2);
   0.37374675  2.65145779  0.00000000  1.80186427
   3.99475002  0.88066000  4.69372988  0.44563001
  -6.70986557  2.19192743  0.00000000 -9.74288940
@@ -112,7 +112,7 @@ The {\tt matrix\_inv} method uses Gauss-Jordan elmination (see
 Pivot elements in $\vec{A}$ with the largest magnitude are chosen to help
 stability in floating-point arithmetic.
 \begin{verbatim}
-fmatrix_inv(x,4,4);
+matrixf_inv(x,4,4);
  -0.33453920  0.04643385 -0.04868321  0.23879384
  -0.42204019  0.12152659 -0.07431178  0.06774280
   0.35104612  0.15256262  0.04403552 -0.20177667
@@ -132,7 +132,7 @@ computing the product of the diagonal elements of $\vec{U}$, viz
 This is equivalent to performing L/U decomposition using Crout's method and
 then computing the product of the diagonal elements of $\vec{L}$.
 \begin{verbatim}
-fmatrix_det(X,4,4) = 585.40289307
+matrixf_det(X,4,4) = 585.40289307
 \end{verbatim}
 
 \subsubsection{LU Decomposition, Crout's Method}
@@ -157,7 +157,7 @@ diagonal are 1).
 \]
 
 \begin{verbatim}
-fmatrix_ludecomp_crout(X,4,4,L,U,P)
+matrixf_ludecomp_crout(X,4,4,L,U,P)
 L =
   0.84381998  0.00000000  0.00000000  0.00000000
   3.99475002 12.16227055  0.00000000  0.00000000
@@ -172,7 +172,7 @@ U =
 
 Doolittle's method...
 \begin{verbatim}
-fmatrix_ludecomp_doolittle(X,4,4,L,U,P)
+matrixf_ludecomp_doolittle(X,4,4,L,U,P)
 L =
   1.00000000  0.00000000  0.00000000  0.00000000
   4.73412609  1.00000000  0.00000000  0.00000000
@@ -228,7 +228,7 @@ Ab =
   3.99475002  0.88066000  4.69372988  0.44563001  0.71789002
   7.28072023 -2.06608009  0.67074001  9.80657005  1.06552994
   6.07741022 -3.93098998  1.22826004 -0.42142001 -0.81707001
-fmatrix_gjelim(Ab,4,5)
+matrixf_gjelim(Ab,4,5)
   1.00000000 -0.00000000  0.00000000 -0.00000000 -0.51971692
  -0.00000000  1.00000000  0.00000000  0.00000000 -0.43340963
  -0.00000000 -0.00000000  1.00000000 -0.00000000  0.64247853

@@ -79,10 +79,10 @@ array {\tt float c[]} has
 \footnote{Note that this convention is reversed from that used in octave
 [cite:octave:web].}
 
-\subsubsection{{\tt polyval()}}
+\subsubsection{{\tt poly\_val()}}
 Evaluates the polynomial $P_n(x)$ at $x_0$.
 
-\subsubsection{{\tt polyfit()}}
+\subsubsection{{\tt poly\_fit()}}
 Fits data to a polynomial of order $k-1$ from $n$ samples using the
 least-squares method.
 Data vectors
@@ -104,7 +104,7 @@ where
 \]
 
 
-\subsubsection{{\tt polyfit\_lagrange()}}
+\subsubsection{{\tt poly\_fit\_lagrange()}}
 Fits dataset of $n$ sample points to exact polynomial of order $n-1$ using
 Lagrange interpolation.
 Given input vectors
@@ -139,9 +139,9 @@ $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
             \right]
         }
 \]
-See also {\tt polyfit\_lagrange()}.
+See also {\tt poly\_fit\_lagrange()}.
 
-\subsubsection{{\tt polyfit\_lagrange\_barycentric()}}
+\subsubsection{{\tt poly\_fit\_lagrange\_barycentric()}}
 Computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
 \[
     w_j =   \frac{1}{
@@ -188,10 +188,10 @@ Expands the a polynomial as an alternating binomial series
              \left( \sum_{k=0}^{n-j}{ {n \choose k} (-x)^k} \right)
 \]
 
-\subsubsection{{\tt polymul()}}
+\subsubsection{{\tt poly\_mul()}}
 Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
 
-\subsubsection{{\tt polydiff()} {\it not yet implemented}}
+\subsubsection{{\tt poly\_diff()} {\it not yet implemented}}
 Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
 $P_n(x)$
 \[
