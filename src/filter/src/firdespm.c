@@ -52,7 +52,8 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_FIRDESPM_DEBUG   1
+#define LIQUID_FIRDESPM_DEBUG       1
+#define LIQUID_FIRDESPM_DEBUG_PRINT 0
 
 #define LIQUID_FIRDESPM_DEBUG_FILENAME "firdespm_internal_debug.m"
 #if LIQUID_FIRDESPM_DEBUG
@@ -90,7 +91,7 @@ struct firdespm_s {
     float rho;                  // extremal weighted error
 
     unsigned int * iext;        // indices of extrema
-    unsigned int num_exchanges;   // number of changes in extrema
+    unsigned int num_exchanges; // number of changes in extrema
 
 #if LIQUID_FIRDESPM_DEBUG
     FILE * fid;
@@ -217,12 +218,14 @@ void firdespm_execute(firdespm _q, float * _h)
     // TODO : guarantee at least one extremal frequency lies in each band
     for (i=0; i<_q->r+1; i++) {
         _q->iext[i] = (i * (_q->grid_size-1)) / _q->r;
+#if LIQUID_FIRDESPM_DEBUG_PRINT
         printf("iext_guess[%3u] = %u\n", i, _q->iext[i]);
+#endif
     }
 
     // iterate over the Remez exchange algorithm
     unsigned int p;
-    unsigned int max_iterations = 10;
+    unsigned int max_iterations = 40;
     for (p=0; p<max_iterations; p++) {
         // compute interpolator
         firdespm_compute_interp(_q);
@@ -233,11 +236,13 @@ void firdespm_execute(firdespm _q, float * _h)
         // search for new extremal frequencies
         firdespm_iext_search(_q);
 
-        // TODO : check exit criteria
+        // check exit criteria
         if (firdespm_is_search_complete(_q))
             break;
     }
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("search complete in %u iterations\n", p);
+#endif
 
     // compute filter taps
     firdespm_compute_taps(_q, _h);
@@ -255,7 +260,9 @@ void firdespm_init_grid(firdespm _q)
 
     // frequency step size
     float df = 0.5f/(_q->grid_density*_q->r);
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("df : %12.8f\n", df);
+#endif
 
 #if 0
     firdespm_print(_q);
@@ -355,14 +362,18 @@ void firdespm_compute_interp(firdespm _q)
     // compute Chebyshev points on F[iext[]] : cos(2*pi*f)
     for (i=0; i<_q->r+1; i++) {
         _q->x[i] = cosf(2*M_PI*_q->F[_q->iext[i]]);
+#if LIQUID_FIRDESPM_DEBUG_PRINT
         printf("x[%3u] = %12.8f\n", i, _q->x[i]);
+#endif
     }
-    printf("\n");
+    //printf("\n");
 
     // compute Lagrange interpolating polynomial
     fpolyfit_lagrange_barycentric(_q->x,_q->r+1,_q->alpha);
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->r+1; i++)
         printf("a[%3u] = %12.8f\n", i, _q->alpha[i]);
+#endif
 
     // compute rho
     float t0 = 0.0f;    // numerator
@@ -373,13 +384,17 @@ void firdespm_compute_interp(firdespm _q)
         t1 += _q->alpha[i] / _q->W[_q->iext[i]] * (i % 2 ? -1.0f : 1.0f);
     }
     _q->rho = t0/t1;
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("  rho   :   %12.4e\n", _q->rho);
     printf("\n");
+#endif
 
     // compute polynomial values (interpolants)
     for (i=0; i<_q->r+1; i++) {
         _q->c[i] = _q->D[_q->iext[i]] - (i % 2 ? -1 : 1) * _q->rho / _q->W[i];
+#if LIQUID_FIRDESPM_DEBUG_PRINT
         printf("c[%3u] = %16.8e\n", i, _q->c[i]);
+#endif
     }
 
 }
@@ -418,7 +433,9 @@ void firdespm_iext_search(firdespm _q)
 #else
     // force f=0 into candidate set
     found_iext[num_found++] = 0;
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("num_found : %4u [%4u / %4u]\n", num_found, 0, _q->grid_size);
+#endif
 #endif
 
     // search inside grid
@@ -428,7 +445,9 @@ void firdespm_iext_search(firdespm _q)
         {
             assert(num_found < nmax);
             found_iext[num_found++] = i;
+#if LIQUID_FIRDESPM_DEBUG_PRINT
             printf("num_found : %4u [%4u / %4u]\n", num_found, i, _q->grid_size);
+#endif
         }
     }
 
@@ -440,9 +459,9 @@ void firdespm_iext_search(firdespm _q)
     // force f=0.5 into candidate set
     assert(num_found < nmax);
     found_iext[num_found++] = _q->grid_size-1;
-    printf("num_found : %4u [%4u / %4u]\n", num_found, _q->grid_size-1, _q->grid_size);
+    //printf("num_found : %4u [%4u / %4u]\n", num_found, _q->grid_size-1, _q->grid_size);
 #endif
-    printf("r+1 = %4u, num_found = %4u\n", _q->r+1, num_found);
+    //printf("r+1 = %4u, num_found = %4u\n", _q->r+1, num_found);
     if (num_found < _q->r+1) {
         // too few extremal frequencies found.  Theoretically, this
         // should never happen as the Chebyshev alternation theorem
@@ -566,7 +585,9 @@ int firdespm_is_search_complete(firdespm _q)
         if (i==0 || e > emax) emax = e;
     }
 
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     printf("emin : %16.8e, emax : %16.8e, metric : %16.8e\n", emin, emax, (emax-emin)/emax);
+#endif
     return (emax-emin) / emax < tol ? 1 : 0;
 }
 
@@ -615,8 +636,10 @@ void firdespm_compute_taps(firdespm _q, float * _h)
         // even filter length, odd symmetry
         fprintf(stderr,"warning: firdespm_compute_taps(), filter configuration not yet supported\n");
     }
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->h_len; i++)
         printf("h(%3u) = %12.8f;\n", i+1, _h[i]);
+#endif
 }
 
 #if LIQUID_FIRDESPM_DEBUG
