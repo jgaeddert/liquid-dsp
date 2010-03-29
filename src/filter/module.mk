@@ -58,6 +58,7 @@ local_s_files	:= 			\
 local_t_files	:= 			\
 	decim_autotest.h		\
 	firdes_autotest.h		\
+	firdespm_autotest.h		\
 	fir_filter_rrrf_autotest.h	\
 	fir_filter_crcf_autotest.h	\
 	firhilb_autotest.h		\
