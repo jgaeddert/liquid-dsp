@@ -28,13 +28,63 @@
 
 #include "liquid.internal.h"
 
-void design_rkaiser_filter(
-  unsigned int _k,
-  unsigned int _m,
-  float _beta,
-  float _dt,
-  float * _h
-)
+float filter_autocorr(float * _h,
+                      unsigned int _h_len,
+                      int _lag)
+{
+    // auto-correlation is even symmetric
+    _lag = abs(_lag);
+
+    // validate input
+    if (_lag >= _h_len)
+        return 0.0f;
+
+    // initialize auto-correlation to zero
+    float rxx=0.0f;
+
+    // compute auto-correlation
+    unsigned int i;
+    for (i=_lag; i<_h_len; i++) {
+        rxx += _h[i] * _h[i-_lag];
+    }
+
+    return rxx;
+}
+
+void filter_compute_isi(float * _h,
+                        unsigned int _k,
+                        unsigned int _m,
+                        float * _mse,
+                        float * _max)
+{
+    unsigned int h_len = 2*_k*_m+1;
+
+    // compute zero-lag auto-correlation
+    //float rxx0 = filter_autocorr(_h,h_len,0);
+
+    unsigned int i;
+    float isi_mse = 0.0f;
+    float isi_max = 0.0f;
+    float e;
+    for (i=1; i<_m; i++) {
+        e = filter_autocorr(_h,h_len,i*_k);
+        e = fabsf(e);
+
+        isi_mse += e*e;
+        
+        if (i==1 || e > isi_max)
+            isi_max = e;
+    }
+
+    *_mse = isi_mse / (float)(_m-1);
+    *_max = isi_max;
+}
+
+void design_rkaiser_filter(unsigned int _k,
+                           unsigned int _m,
+                           float _beta,
+                           float _dt,
+                           float * _h)
 {
     unsigned int h_len;
 
@@ -51,73 +101,50 @@ void design_rkaiser_filter(
 
     unsigned int i;
 
-    h_len = 2*_k*_m + 1;
+    unsigned int n=2*_k*_m+1;       // filter length
+    float fc = 0.5f / (float)(_k);  // filter cutoff
+    float del = 0.0f;
 
-    // 
-    float fc = 1.0f / (float)(_k);  // filter cut-off
+    float h[n];
+    fir_kaiser_window(n,fc,60.0f,_dt,h);
+    float e2 = 0.0f;
+    for (i=0; i<n; i++) e2 += h[i]*h[i];
+    for (i=0; i<n; i++) h[i] /= sqrtf(e2*_k);
+    // copy results
+    memmove(_h, h, n*sizeof(float));
 
-    // scaling factor due to transforms, filter gain
-    float zeta = sqrtf((float)_k) / ((float)h_len);
+    float isi_max;
+    float isi_mse;
+    filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
 
-    // memory arrays
-    float hf[h_len];
-    float complex h[h_len];
-    float complex H[h_len];
-    float complex G[h_len];
-    float complex g[h_len];
+    // iterate...
+    float df = 0.001f / (float)_k;
+    float isi_mse_min = isi_mse;
+    unsigned int p;
+    for (p=0; p<1000; p++) {
+        // increase band edges
+        del += df;
 
-    // transform objects
-    FFT_PLAN  fft = FFT_CREATE_PLAN(h_len,h,H,FFT_DIR_FORWARD, FFT_METHOD);
-    FFT_PLAN ifft = FFT_CREATE_PLAN(h_len,G,g,FFT_DIR_BACKWARD,FFT_METHOD);
+        // execute filter design
+        fir_kaiser_window(n,fc+del,60.0f,_dt,h);
+        e2 = 0.0f;
+        for (i=0; i<n; i++) e2 += h[i]*h[i];
+        for (i=0; i<n; i++) h[i] /= sqrtf(e2*_k);
 
-    // design filter from Kaiser prototype (nyquist filter)
-    fir_kaiser_window(h_len, fc, 60.0f, 0.0f, hf);
+        // compute inter-symbol interference (MSE, max)
+        filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
 
-    // copy to complex array, shifting values appropriately
-    for (i=0; i<h_len; i++)
-        h[(i+_k*_m+1)%h_len] = hf[i];
+        printf("  %4u : isi mse : %20.8e (min: %20.8e)\n", p, isi_mse, isi_mse_min);
+        if (isi_mse > isi_mse_min) {
+            // search complete
+            break;
+        } else {
+            isi_mse_min = isi_mse;
+            // copy results
+            memmove(_h, h, n*sizeof(float));
+        }
+    };
 
-    // run forward transform
-    FFT_EXECUTE(fft);
 
-    // compute spectral factor
-    for (i=0; i<h_len; i++)
-        G[i] = sqrtf(fabsf(crealf(H[i])));
-
-    // apply phase rotation (time delay)
-    // ...
-
-    // compute reverse transform
-    FFT_EXECUTE(ifft);
-
-    // copy to real array, shifting values appropriately
-    for (i=0; i<h_len; i++)
-        _h[i] = crealf(g[(i+_k*_m+1)%h_len]) * zeta;
-
-    // destroy transform objects
-    FFT_DESTROY_PLAN(fft);
-    FFT_DESTROY_PLAN(ifft);
-
-#if 1
-    // print filter coefficients
-    printf("-----\n");
-    for (i=0; i<h_len; i++)
-        printf("hf(%3u) = %12.8f;\n", i+1, hf[i]);
-    printf("-----\n");
-    for (i=0; i<h_len; i++)
-        printf("h(%3u) = %12.8f;\n", i+1, crealf(h[i]));
-    printf("-----\n");
-    for (i=0; i<h_len; i++)
-        printf("H(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(H[i]), cimagf(H[i]));
-    printf("-----\n");
-    for (i=0; i<h_len; i++)
-        printf("G(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(G[i]), cimagf(G[i]));
-    printf("-----\n");
-    for (i=0; i<h_len; i++)
-        printf("g(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(g[i]), cimagf(g[i]));
-    printf("-----\n");
-    for (i=0; i<h_len; i++)
-        printf("h(%3u) = %12.8f;\n", i+1, _h[i]);
-#endif
 }
 
