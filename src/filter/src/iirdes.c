@@ -216,7 +216,7 @@ void iirdes_dzpk2tff(float complex * _zd,
         pdm[i] = -_pd[i];
 
     // expand poles
-    cfpoly_expandroots(pdm,_n,q);
+    polycf_expandroots(pdm,_n,q);
     for (i=0; i<=_n; i++)
         _a[i] = crealf(q[_n-i]);
 
@@ -226,7 +226,7 @@ void iirdes_dzpk2tff(float complex * _zd,
         zdm[i] = -_zd[i];
 
     // expand zeros
-    cfpoly_expandroots(zdm,_n,q);
+    polycf_expandroots(zdm,_n,q);
     for (i=0; i<=_n; i++)
         _b[i] = crealf(q[_n-i]*_k);
 }

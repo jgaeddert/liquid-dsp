@@ -30,10 +30,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "liquid.internal.h"
-
-
-T POLY(val)(T * _p, unsigned int _k, T _x)
+T POLY(_val)(T * _p, unsigned int _k, T _x)
 {
     unsigned int i;
     T xk = 1;
@@ -45,11 +42,11 @@ T POLY(val)(T * _p, unsigned int _k, T _x)
     return y;
 }
 
-void POLY(fit)(T * _x,
-               T * _y,
-               unsigned int _n,
-               T * _p,
-               unsigned int _k)
+void POLY(_fit)(T * _x,
+                T * _y,
+                unsigned int _n,
+                T * _p,
+                unsigned int _k)
 {
 
     // ...

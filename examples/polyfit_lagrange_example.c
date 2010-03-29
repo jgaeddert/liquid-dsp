@@ -34,9 +34,9 @@ int main() {
 
     // compute Lagrange interpolation weights
     //float p[n];
-    //fpolyfit_lagrange(x,y,n,p);
+    //polyf_fit_lagrange(x,y,n,p);
     float w[n];
-    fpolyfit_lagrange_barycentric(x,n,w);
+    polyf_fit_lagrange_barycentric(x,n,w);
 
     // print coefficients
     // NOTE : for Chebyshev points of the second kind, w[i] = (-1)^i * (i==0 || i==n-1 ? 1 : 2)
@@ -51,7 +51,7 @@ int main() {
     float xtest = xmin;
     float ytest;
     for (i=0; i<num_steps; i++) {
-        ytest = fpolyval_lagrange_barycentric(x,y,w,xtest,n);
+        ytest = polyf_val_lagrange_barycentric(x,y,w,xtest,n);
         fprintf(fid,"xtest(%3u) = %12.4e; ytest(%3u) = %12.4e;\n", i+1, xtest, i+1, ytest);
         xtest += dx;
     }

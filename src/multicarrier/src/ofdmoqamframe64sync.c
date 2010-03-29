@@ -873,7 +873,7 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     }
 
     // fit phase to 1st-order polynomial (2 coefficients)
-    fpolyfit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
+    polyf_fit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
     //nco_step(_q->nco_pilot);
     float theta_hat = nco_get_phase(_q->nco_pilot);
@@ -902,7 +902,7 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     _q->p_phase[1] = 0.0f;
     for (i=0; i<_q->num_subcarriers; i++) {
         // TODO : compute phase for delayed symbol (different from non-delayed symbol)
-        theta = fpolyval(_q->p_phase, 2, (float)(i)-32.0f);
+        theta = polyf_val(_q->p_phase, 2, (float)(i)-32.0f);
         _Y0[i] *= liquid_crotf_vect(-theta);
         _Y1[i] *= liquid_crotf_vect(-theta);
     }

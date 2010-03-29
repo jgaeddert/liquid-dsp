@@ -89,7 +89,7 @@ void POLY(_findroots_durandkerner)(T * _p,
             printf("  r[%3u] = %12.8f + j*%12.8f\n", j, crealf(r0[j]), cimagf(r0[j]));
 #endif
         for (j=0; j<num_roots; j++) {
-            f = POLY(val)(_p,_k,r0[j]);
+            f = POLY(_val)(_p,_k,r0[j]);
             fp = 1;
             for (k=0; k<num_roots; k++) {
                 if (k==j) continue;

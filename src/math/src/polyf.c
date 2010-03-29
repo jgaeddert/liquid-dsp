@@ -20,20 +20,19 @@
  */
 
 //
-// Floating-point matrix
+// Floating-point polynomials
 // 
 
 #include "liquid.internal.h"
 
-#define MATRIX(name)    LIQUID_CONCAT(fmatrix, name)
-#define MATRIX_NAME     "fmatrix"
+#define MATRIX(name)    LIQUID_CONCAT(matrixf, name)
+#define POLY(name)      LIQUID_CONCAT(polyf, name)
+#define POLY_NAME       "polyf"
 #define T               float
-#define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
-    printf("%12.8f", matrix_access(X,R,C,r,c));
+#define TC              float complex
 
-#include "matrix.c"
-#include "matrix_base.c"
-#include "matrix_inv.c"
-#include "matrix.linsolve.c"
-#include "matrix_ludecomp.c"
+#include "poly.common.c"
+#include "poly.expand.c"
+#include "poly.findroots.c"
+#include "poly.lagrange.c"
 

@@ -45,7 +45,7 @@ int main() {
     for (i=0; i<n; i++)
         p[i] = bp[i];
 
-    cfpoly_findroots(p,n,roots);
+    polycf_findroots(p,n,roots);
 
     // expand polynomial
     float complex roots_hat[n-1];
@@ -54,7 +54,7 @@ int main() {
         roots_hat[i] = -roots[i];
 
     float complex p_hat[n];
-    cfpoly_expandroots(roots_hat,n-1,p_hat);
+    polycf_expandroots(roots_hat,n-1,p_hat);
 
     printf("polynomial :\n");
     for (i=0; i<n; i++)

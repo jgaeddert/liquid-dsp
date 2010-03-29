@@ -106,10 +106,10 @@ void POLY(_expandroots)(T * _a,
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
 //
 // c has order _n (array is length _n+1)
-void POLY(expandroots2)(T * _a,
-                        T * _b,
-                        unsigned int _n,
-                        T * _c)
+void POLY(_expandroots2)(T * _a,
+                         T * _b,
+                         unsigned int _n,
+                         T * _c)
 {
     unsigned int i;
     for (i=0; i<=_n; i++)
@@ -130,11 +130,11 @@ void POLY(expandroots2)(T * _a,
 //  _b          :   2nd polynomial coefficients (length is _order_b+1)
 //  _order_b    :   2nd polynomial order
 //  _c          :   output polynomial coefficients (length is _order_a + _order_b + 1)
-void POLY(mul)(T * _a,
-               unsigned int _order_a,
-               T * _b,
-               unsigned int _order_b,
-               T * _c)
+void POLY(_mul)(T * _a,
+                unsigned int _order_a,
+                T * _b,
+                unsigned int _order_b,
+                T * _c)
 {
     unsigned int na = _order_a + 1;
     unsigned int nb = _order_b + 1;

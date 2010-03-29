@@ -48,7 +48,7 @@ int main() {
 
 #else
     float complex roots[n-1];
-    fpoly_findroots_bairstow(p,n,roots);
+    polyf_findroots_bairstow(p,n,roots);
     printf("roots:\n");
     for (i=0; i<n-1; i++)
         printf("  r[%3u] = %12.8f + j*%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));

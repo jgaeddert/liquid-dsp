@@ -112,15 +112,15 @@ void quasinewton_search_step(quasinewton_search _q)
 
     // compute search direction
 #if 0
-    fmatrix_mul(_q->B,        n, n,
+    matrixf_mul(_q->B,        n, n,
                 _q->gradient, n, 1,
                 _q->p,        n, 1);
     for (i=0; i<_q->num_parameters; i++)
         _q->p[i] = -_q->p[i];
 #else
     quasinewton_search_compute_Hessian(_q);
-    fmatrix_inv(_q->H, n, n);
-    fmatrix_mul(_q->H, n, n,
+    matrixf_inv(_q->H, n, n);
+    matrixf_mul(_q->H, n, n,
                 _q->gradient, n, 1,
                 _q->p, n, 1);
 #endif
@@ -266,7 +266,7 @@ void quasinewton_search_compute_Hessian(quasinewton_search _q)
             }
         }
     }
-    //fmatrix_print(_q->H, n, n);
+    //matrixf_print(_q->H, n, n);
     //exit(1);
 }
 

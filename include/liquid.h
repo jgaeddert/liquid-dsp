@@ -1983,8 +1983,8 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 // polynomials
 
 
-#define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(fpoly, name)
-#define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfpoly, name)
+#define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(polyf, name)
+#define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(polycf, name)
 
 #define POLY_MANGLE_DOUBLE(name)    LIQUID_CONCAT(poly, name)
 //#define POLY_MANGLE_CDOUBLE(name)   LIQUID_CONCAT(cpoly, name)
@@ -1995,20 +1995,20 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 //   TC     : data type (complex)
 #define LIQUID_POLY_DEFINE_API(POLY,T,TC)                       \
 /* evaluate polynomial _p (order _k-1) at value _x  */          \
-T POLY(val)(T * _p, unsigned int _k, T _x);                     \
+T POLY(_val)(T * _p, unsigned int _k, T _x);                    \
                                                                 \
 /* least-squares polynomial fit (order _k-1) */                 \
-void POLY(fit)(T * _x,                                          \
-               T * _y,                                          \
-               unsigned int _n,                                 \
-               T * _p,                                          \
-               unsigned int _k);                                \
+void POLY(_fit)(T * _x,                                         \
+                T * _y,                                         \
+                unsigned int _n,                                \
+                T * _p,                                         \
+                unsigned int _k);                               \
                                                                 \
 /* Lagrange polynomial exact fit (order _n-1) */                \
-void POLY(fit_lagrange)(T * _x,                                 \
-                        T * _y,                                 \
-                        unsigned int _n,                        \
-                        T * _p);                                \
+void POLY(_fit_lagrange)(T * _x,                                \
+                         T * _y,                                \
+                         unsigned int _n,                       \
+                         T * _p);                               \
                                                                 \
 /* Lagrange polynomial interpolation */                         \
 void POLY(_interp_lagrange)(T * _x,                             \
@@ -2018,16 +2018,16 @@ void POLY(_interp_lagrange)(T * _x,                             \
                             T * _y0);                           \
                                                                 \
 /* Lagrange polynomial fit (barycentric form) */                \
-void POLY(fit_lagrange_barycentric)(T * _x,                     \
-                                    unsigned int _n,            \
-                                    T * _w);                    \
+void POLY(_fit_lagrange_barycentric)(T * _x,                    \
+                                     unsigned int _n,           \
+                                     T * _w);                   \
                                                                 \
 /* Lagrange polynomial interpolation (barycentric form) */      \
-T POLY(val_lagrange_barycentric)(T * _x,                        \
-                                 T * _y,                        \
-                                 T * _w,                        \
-                                 T   _x0,                       \
-                                 unsigned int _n);              \
+T POLY(_val_lagrange_barycentric)(T * _x,                       \
+                                  T * _y,                       \
+                                  T * _w,                       \
+                                  T   _x0,                      \
+                                  unsigned int _n);             \
                                                                 \
 /* expands the polynomial:                                      \
  *  (1+x*a[0])*(1+x*a[1]) * ... * (1+x*a[n-1])                  \
@@ -2057,11 +2057,11 @@ void POLY(_findroots)(T * _c,                                   \
                       TC * _roots);                             \
                                                                 \
 /* expands the multiplication of two polynomials */             \
-void POLY(mul)(T * _a,                                          \
-               unsigned int _order_a,                           \
-               T * _b,                                          \
-               unsigned int _order_b,                           \
-               T * _c);
+void POLY(_mul)(T * _a,                                         \
+                unsigned int _order_a,                          \
+                T * _b,                                         \
+                unsigned int _order_b,                          \
+                T * _c);
 
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT,
                        float,
@@ -2093,8 +2093,11 @@ void poly_binomial_expand_pm(unsigned int _n,
 // MODULE : matrix
 //
 
-#define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(fmatrix, name)
-#define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfmatrix, name)
+#define MATRIX_MANGLE_DOUBLE(name)  LIQUID_CONCAT(matrix,   name)
+#define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(matrixf,  name)
+
+#define MATRIX_MANGLE_CDOUBLE(name) LIQUID_CONCAT(matrixc,  name)
+#define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(matrixcf, name)
 
 // large macro
 //   MATRIX : name-mangling macro
@@ -2153,8 +2156,11 @@ void MATRIX(_ludecomp_doolittle)(T * _x,                        \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
-LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT, float)
-LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT,   float)
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_DOUBLE,  double)
+
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
+LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
 
 //

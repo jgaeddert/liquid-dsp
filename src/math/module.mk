@@ -27,9 +27,8 @@ module_name     := math
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
-	cfpoly.c		\
-	fpoly.c			\
-	poly.common.c		\
+	polyf.c			\
+	polycf.c		\
 	math.c			\
 	math.trig.c
 

@@ -28,9 +28,9 @@
 #include "liquid.h"
 
 // 
-// AUTOTEST: polyfit 3rd order polynomial, critically sampled
+// AUTOTEST: poly_fit 3rd order polynomial, critically sampled
 //
-void autotest_fpolyfit_q3n3()
+void autotest_polyf_fit_q3n3()
 {
     unsigned int Q=2;   // polynomial order
     unsigned int n=3;   // input vector size
@@ -42,7 +42,7 @@ void autotest_fpolyfit_q3n3()
     float tol = 1e-3f;
 
     unsigned int k=Q+1;
-    fpolyfit(x,y,n, p,k);
+    polyf_fit(x,y,n, p,k);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -61,14 +61,14 @@ void autotest_fpolyfit_q3n3()
 // 
 // AUTOTEST: poly_expandbinomial
 //
-void autotest_fpoly_expandbinomial_4()
+void autotest_polyf_expandbinomial_4()
 {
     float a[4] = { 3, 2, -5, 1 };
     float c[5];
     float c_test[5] = { 1, 1, -19, -49, -30 };
     float tol = 1e-3f;
 
-    fpoly_expandbinomial(a,4,c);
+    polyf_expandbinomial(a,4,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -89,14 +89,14 @@ void autotest_fpoly_expandbinomial_4()
 // 
 // AUTOTEST: poly_expandroots
 //
-void autotest_fpoly_expandroots_4()
+void autotest_polyf_expandroots_4()
 {
     float a[5] = { 2, 1, 4, -5, -3 };
     float c[6];
     float c_test[6] = { 120, 146, 1, -27, -1, 1 };
     float tol = 1e-3f;
 
-    fpoly_expandroots(a,5,c);
+    polyf_expandroots(a,5,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -118,7 +118,7 @@ void autotest_fpoly_expandroots_4()
 // 
 // AUTOTEST: poly_expandroots
 //
-void autotest_fpoly_expandroots_11()
+void autotest_polyf_expandroots_11()
 {
     float a[11] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
     float c[12];
@@ -136,7 +136,7 @@ void autotest_fpoly_expandroots_11()
                         1};
     float tol = 1e-6f;
 
-    fpoly_expandroots(a,11,c);
+    polyf_expandroots(a,11,c);
 
     unsigned int i;
     for (i=0; i<12; i++) {
@@ -148,9 +148,9 @@ void autotest_fpoly_expandroots_11()
 }
 
 // 
-// AUTOTEST: cfpoly_expandroots
+// AUTOTEST: polycf_expandroots
 //
-void autotest_cfpoly_expandroots_4()
+void autotest_polycf_expandroots_4()
 {
     // expand complex roots on conjugate pair
     float theta = 1.7f;
@@ -159,7 +159,7 @@ void autotest_cfpoly_expandroots_4()
     float complex c_test[3] = { 1, 2*cosf(theta), 1 };
     float tol = 1e-3f;
 
-    cfpoly_expandroots(a,2,c);
+    polycf_expandroots(a,2,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -179,9 +179,9 @@ void autotest_cfpoly_expandroots_4()
 }
 
 // 
-// AUTOTEST: fpolymul
+// AUTOTEST: polyf_mul
 //
-void autotest_fpolymul_2_3()
+void autotest_polyf_mul_2_3()
 {
     float a[3] = {  2, -4,  3 };
     float b[4] = { -9,  3, -2,  5};
@@ -189,7 +189,7 @@ void autotest_fpolymul_2_3()
     float c_test[6] = { -18, 42, -43, 27, -26, 15 };
     float tol = 1e-3f;
 
-    fpolymul(a,2,b,3,c);
+    polyf_mul(a,2,b,3,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -207,10 +207,11 @@ void autotest_fpolymul_2_3()
     CONTEND_DELTA(c[5], c_test[5], tol);
 }
 
+#if 0
 // 
 // AUTOTEST: poly_binomial_expand
 //
-void autotest_poly_binomial_expand_n6()
+void xautotest_poly_binomial_expand_n6()
 {
     unsigned int n=6;
     int c[7];
@@ -233,7 +234,7 @@ void autotest_poly_binomial_expand_n6()
 // 
 // AUTOTEST: poly_binomial_expand_pm
 //
-void autotest_poly_binomial_expand_pm_n6_k1()
+void xautotest_poly_binomial_expand_pm_n6_k1()
 {
     unsigned int n=6;
     unsigned int k=1;
@@ -257,7 +258,7 @@ void autotest_poly_binomial_expand_pm_n6_k1()
 // 
 // AUTOTEST: poly_binomial_expand_pm
 //
-void autotest_poly_binomial_expand_pm_n5_k2()
+void xautotest_poly_binomial_expand_pm_n5_k2()
 {
     unsigned int n=5;
     unsigned int k=2;
@@ -276,11 +277,12 @@ void autotest_poly_binomial_expand_pm_n5_k2()
     
     CONTEND_SAME_DATA(c,c_test,sizeof(c));
 }
+#endif
 
 // 
-// AUTOTEST: fpoly_findroots
+// AUTOTEST: polyf_findroots
 //
-void autotest_fpoly_findroots()
+void autotest_polyf_findroots()
 {
     float tol=1e-6f;
 
@@ -288,7 +290,7 @@ void autotest_fpoly_findroots()
     float complex roots[5];
     float complex rtest[5] = {-3,2,-1,0.5,-1./3.};
 
-    fpoly_findroots(p,6,roots);
+    polyf_findroots(p,6,roots);
 
     unsigned int i;
     if (liquid_autotest_verbose) {
@@ -325,9 +327,9 @@ void autotest_fpoly_findroots()
 
 
 // 
-// AUTOTEST: cfpoly_findroots (random roots)
+// AUTOTEST: polycf_findroots (random roots)
 //
-void autotest_cfpoly_findroots_rand()
+void autotest_polycf_findroots_rand()
 {
     unsigned int n=5;
     float tol=1e-6f;
@@ -341,14 +343,14 @@ void autotest_cfpoly_findroots_rand()
     for (i=0; i<n; i++)
         p[i] = i == n-1 ? 1 : 3.0f * randnf();
 
-    cfpoly_findroots(p,n,roots);
+    polycf_findroots(p,n,roots);
 
     float complex roots_hat[n-1];
     // convert form...
     for (i=0; i<n-1; i++)
         roots_hat[i] = -roots[i];
 
-    cfpoly_expandroots(roots_hat,n-1,p_hat);
+    polycf_expandroots(roots_hat,n-1,p_hat);
 
     if (liquid_autotest_verbose) {
         printf("poly:\n");

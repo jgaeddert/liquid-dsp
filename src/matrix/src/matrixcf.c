@@ -20,19 +20,22 @@
  */
 
 //
-// Complex floating-point polynomials
+// Complex floating-point matrix
 // 
 
 #include "liquid.internal.h"
 
-#define MATRIX(name)    LIQUID_CONCAT(cfmatrix, name)
-#define POLY(name)      LIQUID_CONCAT(cfpoly, name)
-#define POLY_NAME       "cfpoly"
+#define MATRIX(name)    LIQUID_CONCAT(matrixcf, name)
+#define MATRIX_NAME     "matrixcf"
 #define T               float complex
-#define TC              float complex
+#define MATRIX_PRINT_ELEMENT(X,R,C,r,c)     \
+    printf("%7.2f+j%6.2f ",                 \
+        crealf(matrix_access(X,R,C,r,c)),   \
+        cimagf(matrix_access(X,R,C,r,c)));
 
-#include "poly.common.c"
-#include "poly.expand.c"
-#include "poly.findroots.c"
-#include "poly.lagrange.c"
+#include "matrix.base.c"
+#include "matrix.inv.c"
+#include "matrix.linsolve.c"
+#include "matrix.ludecomp.c"
+#include "matrix.math.c"
 

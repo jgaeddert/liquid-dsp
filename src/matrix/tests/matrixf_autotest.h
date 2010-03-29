@@ -19,8 +19,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FMATRIX_AUTOTEST_H__
-#define __LIQUID_FMATRIX_AUTOTEST_H__
+#ifndef __LIQUID_MATRIXF_AUTOTEST_H__
+#define __LIQUID_MATRIXF_AUTOTEST_H__
 
 #include <string.h>
 
@@ -28,9 +28,9 @@
 #include "liquid.h"
 
 // 
-// AUTOTEST: Test fmatrix add
+// AUTOTEST: Test matrixf add
 //
-void autotest_fmatrix_add() {
+void autotest_matrixf_add() {
 
     float x[6] = {
         1, 2, 3,
@@ -45,15 +45,15 @@ void autotest_fmatrix_add() {
         1, 3, 5,
         7, 9, 11 };
 
-    fmatrix_add(x,y,z,2,3);
+    matrixf_add(x,y,z,2,3);
 
     CONTEND_SAME_DATA(z,ztest,sizeof(z));
 }
 
 // 
-// AUTOTEST: Test fmatrix ops
+// AUTOTEST: Test matrixf ops
 //
-void autotest_fmatrix_ops() {
+void autotest_matrixf_ops() {
 
     float x[6] = {
         1, 2, 3,
@@ -69,9 +69,9 @@ void autotest_fmatrix_ops() {
         30, 36, 42,
         66, 81, 96   };
 
-    fmatrix_mul(x,2,3, y,3,3, z,2,3);
+    matrixf_mul(x,2,3, y,3,3, z,2,3);
     if (liquid_autotest_verbose)
-        fmatrix_print(z,2,3);
+        matrixf_print(z,2,3);
 
     CONTEND_SAME_DATA(z,ztest,sizeof(z));
 }
@@ -79,7 +79,7 @@ void autotest_fmatrix_ops() {
 // 
 // AUTOTEST: 
 //
-void autotest_fmatrix_mul() {
+void autotest_matrixf_mul() {
     float x[15]= {
        4,  -3,  -1,
        1,   1,   0,
@@ -106,14 +106,14 @@ void autotest_fmatrix_mul() {
        45,  -20,   -2,
        16,  -13,    5};
 
-    fmatrix_mul(x,5,3,y,3,5,z0,5,5);
+    matrixf_mul(x,5,3,y,3,5,z0,5,5);
     if (liquid_autotest_verbose)
-        fmatrix_print(z0,5,5);
+        matrixf_print(z0,5,5);
     CONTEND_SAME_DATA(z0,z0_test,5*5*sizeof(float));
 
-    fmatrix_mul(y,3,5,x,5,3,z1,3,3);
+    matrixf_mul(y,3,5,x,5,3,z1,3,3);
     if (liquid_autotest_verbose)
-        fmatrix_print(z1,3,3);
+        matrixf_print(z1,3,3);
     CONTEND_SAME_DATA(z1,z1_test,3*3*sizeof(float));
 
 }
@@ -121,7 +121,7 @@ void autotest_fmatrix_mul() {
 // 
 // AUTOTEST: matrix_aug
 //
-void autotest_fmatrix_aug() {
+void autotest_matrixf_aug() {
     float x[12]= {
       -17,   -3,   -7,
        -5,   -5,   -2,
@@ -141,9 +141,9 @@ void autotest_fmatrix_aug() {
         1,    8,    7,   -4,    5,
        -1,   32,    2,   25,   -4};
 
-    fmatrix_aug(x,4,3,y,4,2,z0,4,5);
+    matrixf_aug(x,4,3,y,4,2,z0,4,5);
     if (liquid_autotest_verbose)
-        fmatrix_print(z0,4,5);
+        matrixf_print(z0,4,5);
     CONTEND_SAME_DATA(z0,z0_test,4*5*sizeof(float));
 }
 
@@ -151,7 +151,7 @@ void autotest_fmatrix_aug() {
 // 
 // AUTOTEST: identity
 //
-void autotest_fmatrix_eye() {
+void autotest_matrixf_eye() {
     float x[16]= {
        4,  -3,  -1,  3,
        1,   1,   0,  2,
@@ -168,11 +168,11 @@ void autotest_fmatrix_eye() {
     float z[16];
 
     // generate identity matrix
-    fmatrix_eye(y,4);
+    matrixf_eye(y,4);
     CONTEND_SAME_DATA(y, I4_test, 16*sizeof(float));
 
     // multiply with input
-    fmatrix_mul(x, 4, 4,
+    matrixf_mul(x, 4, 4,
                 y, 4, 4,
                 z, 4, 4);
     CONTEND_SAME_DATA(x, z, 16*sizeof(float));
@@ -181,7 +181,7 @@ void autotest_fmatrix_eye() {
 // 
 // AUTOTEST: L/U decomp (Crout)
 //
-void autotest_fmatrix_ludecomp_crout()
+void autotest_matrixf_ludecomp_crout()
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -198,13 +198,13 @@ void autotest_fmatrix_ludecomp_crout()
     float LU_test[16];
 
     // run decomposition
-    fmatrix_ludecomp_crout(A,4,4,L,U,P);
+    matrixf_ludecomp_crout(A,4,4,L,U,P);
 
     if (liquid_autotest_verbose) {
         printf("L :\n");
-        fmatrix_print(L,4,4);
+        matrixf_print(L,4,4);
         printf("U :\n");
-        fmatrix_print(U,4,4);
+        matrixf_print(U,4,4);
     }
 
     unsigned int r,c;
@@ -221,7 +221,7 @@ void autotest_fmatrix_ludecomp_crout()
     }
 
     // multiply LU
-    fmatrix_mul(L,       4, 4,
+    matrixf_mul(L,       4, 4,
                 U,       4, 4,
                 LU_test, 4, 4);
 
@@ -233,7 +233,7 @@ void autotest_fmatrix_ludecomp_crout()
 // 
 // AUTOTEST: L/U decomp (Doolittle)
 //
-void autotest_fmatrix_ludecomp_doolittle()
+void autotest_matrixf_ludecomp_doolittle()
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -250,13 +250,13 @@ void autotest_fmatrix_ludecomp_doolittle()
     float LU_test[16];
 
     // run decomposition
-    fmatrix_ludecomp_doolittle(A,4,4,L,U,P);
+    matrixf_ludecomp_doolittle(A,4,4,L,U,P);
 
     if (liquid_autotest_verbose) {
         printf("L :\n");
-        fmatrix_print(L,4,4);
+        matrixf_print(L,4,4);
         printf("U :\n");
-        fmatrix_print(U,4,4);
+        matrixf_print(U,4,4);
     }
 
     unsigned int r,c;
@@ -273,7 +273,7 @@ void autotest_fmatrix_ludecomp_doolittle()
     }
 
     // multiply LU
-    fmatrix_mul(L,       4, 4,
+    matrixf_mul(L,       4, 4,
                 U,       4, 4,
                 LU_test, 4, 4);
 
@@ -285,7 +285,7 @@ void autotest_fmatrix_ludecomp_doolittle()
 // 
 // AUTOTEST: inverse
 //
-void autotest_fmatrix_inv()
+void autotest_matrixf_inv()
 {
     float tol = 1e-3f;
 
@@ -301,11 +301,11 @@ void autotest_fmatrix_inv()
        2.89873,   4.51595,   3.30942};
 
     memmove(x_inv, x, sizeof(x));
-    fmatrix_inv(x_inv,3,3);
+    matrixf_inv(x_inv,3,3);
 
     unsigned int i;
     for (i=0; i<9; i++)
         CONTEND_DELTA(x_inv[i], x_inv_test[i], tol);
 }
 
-#endif // __LIQUID_FMATRIX_AUTOTEST_H__
+#endif // __LIQUID_MATRIXF_AUTOTEST_H__

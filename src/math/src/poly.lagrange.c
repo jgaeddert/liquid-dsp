@@ -26,13 +26,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "liquid.internal.h"
-
 // Lagrange polynomial exact fit (order _n-1)
-void POLY(fit_lagrange)(T * _x,
-                        T * _y,
-                        unsigned int _n,
-                        T * _p)
+void POLY(_fit_lagrange)(T * _x,
+                         T * _y,
+                         unsigned int _n,
+                         T * _p)
 {
     unsigned int k=_n-1;    // polynomial order
 
@@ -101,9 +99,9 @@ void POLY(_interp_lagrange)(T * _x,
     }
 }
 // Lagrange polynomial fit (barycentric form)
-void POLY(fit_lagrange_barycentric)(T * _x,
-                                    unsigned int _n,
-                                    T * _w)
+void POLY(_fit_lagrange_barycentric)(T * _x,
+                                     unsigned int _n,
+                                     T * _w)
 {
     // compute barycentric weights (slow method)
     unsigned int j, k;
@@ -124,11 +122,11 @@ void POLY(fit_lagrange_barycentric)(T * _x,
 }
 
 // Lagrange polynomial interpolation (barycentric form)
-T POLY(val_lagrange_barycentric)(T * _x,
-                                 T * _y,
-                                 T * _w,
-                                 T   _x0,
-                                 unsigned int _n)
+T POLY(_val_lagrange_barycentric)(T * _x,
+                                  T * _y,
+                                  T * _w,
+                                  T   _x0,
+                                  unsigned int _n)
 {
     T t0 = 0.;  // numerator sum
     T t1 = 0.;  // denominator sum

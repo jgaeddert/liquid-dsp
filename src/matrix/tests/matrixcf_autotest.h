@@ -19,8 +19,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_CFMATRIX_AUTOTEST_H__
-#define __LIQUID_CFMATRIX_AUTOTEST_H__
+#ifndef __LIQUID_MATRIXCF_AUTOTEST_H__
+#define __LIQUID_MATRIXCF_AUTOTEST_H__
 
 #include <string.h>
 
@@ -34,9 +34,9 @@
 #define _I _Complex_I
 
 // 
-// AUTOTEST: Test cfmatrix add
+// AUTOTEST: Test matrixcf add
 //
-void autotest_cfmatrix_add() {
+void autotest_matrixcf_add() {
 
     float complex x[6] = {
       2+  3*_I,  10+  9*_I,   1+  3*_I, 
@@ -54,15 +54,15 @@ void autotest_cfmatrix_add() {
       8+ 11*_I,  15+ 16*_I,   8+  2*_I
     };
 
-    cfmatrix_add(x,y,z,2,3);
+    matrixcf_add(x,y,z,2,3);
 
     CONTEND_SAME_DATA(z,ztest,sizeof(z));
 }
 
 // 
-// AUTOTEST: Test cfmatrix ops
+// AUTOTEST: Test matrixcf ops
 //
-void autotest_cfmatrix_mul() {
+void autotest_matrixcf_mul() {
 
     float complex x[6] = {
       9+  9*_I,   3+  4*_I,   8+  3*_I, 
@@ -81,9 +81,9 @@ void autotest_cfmatrix_mul() {
     -24+170*_I,  17+174*_I,  28+125*_I
     };
     
-    cfmatrix_mul(x,2,3, y,3,3, z,2,3);
+    matrixcf_mul(x,2,3, y,3,3, z,2,3);
     if (liquid_autotest_verbose)
-        cfmatrix_print(z,2,3);
+        matrixcf_print(z,2,3);
 
     CONTEND_SAME_DATA(z,ztest,sizeof(z));
 }
@@ -91,7 +91,7 @@ void autotest_cfmatrix_mul() {
 // 
 // AUTOTEST: identity
 //
-void autotest_cfmatrix_eye() {
+void autotest_matrixcf_eye() {
     float complex x[16]= {
       9+  4*_I,   4+  9*_I,   5+  4*_I,   4+  5*_I, 
       3+  9*_I,   9+  2*_I,   9+  7*_I,   9+  2*_I, 
@@ -109,11 +109,11 @@ void autotest_cfmatrix_eye() {
     float complex z[16];
 
     // generate identity matrix
-    cfmatrix_eye(y,4);
+    matrixcf_eye(y,4);
     CONTEND_SAME_DATA(y, I4_test, 16*sizeof(float complex));
 
     // multiply with input
-    cfmatrix_mul(x, 4, 4,
+    matrixcf_mul(x, 4, 4,
                  y, 4, 4,
                  z, 4, 4);
     CONTEND_SAME_DATA(x, z, 16*sizeof(float complex));
@@ -122,7 +122,7 @@ void autotest_cfmatrix_eye() {
 // 
 // AUTOTEST: inverse
 //
-void autotest_cfmatrix_inv()
+void autotest_matrixcf_inv()
 {
     float tol = 1e-3f;
 
@@ -140,7 +140,7 @@ void autotest_cfmatrix_inv()
     };
 
     memmove(x_inv, x, sizeof(x));
-    cfmatrix_inv(x_inv,3,3);
+    matrixcf_inv(x_inv,3,3);
 
     unsigned int i;
     for (i=0; i<9; i++) {
@@ -149,4 +149,4 @@ void autotest_cfmatrix_inv()
     }
 }
 
-#endif // __LIQUID_CFMATRIX_AUTOTEST_H__
+#endif // __LIQUID_MATRIXCF_AUTOTEST_H__

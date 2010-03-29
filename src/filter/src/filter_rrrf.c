@@ -50,7 +50,7 @@
 #define TI                  float   // input
 #define WINDOW(name)        LIQUID_CONCAT(fwindow,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
-#define POLY(name)          LIQUID_CONCAT(fpoly,name)
+#define POLY(name)          LIQUID_CONCAT(polyf,name)
 
 #define TO_COMPLEX          0
 #define TC_COMPLEX          0

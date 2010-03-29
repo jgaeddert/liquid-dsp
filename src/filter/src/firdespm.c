@@ -389,7 +389,7 @@ void firdespm_compute_interp(firdespm _q)
     //printf("\n");
 
     // compute Lagrange interpolating polynomial
-    fpolyfit_lagrange_barycentric(_q->x,_q->r+1,_q->alpha);
+    polyf_fit_lagrange_barycentric(_q->x,_q->r+1,_q->alpha);
 #if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->r+1; i++)
         printf("a[%3u] = %12.8f\n", i, _q->alpha[i]);
@@ -428,7 +428,7 @@ void firdespm_compute_error(firdespm _q)
     for (i=0; i<_q->grid_size; i++) {
         // compute actual response
         xf = cosf(2*M_PI*_q->F[i]);
-        H = fpolyval_lagrange_barycentric(_q->x,_q->c,_q->alpha,xf,_q->r+1);
+        H = polyf_val_lagrange_barycentric(_q->x,_q->c,_q->alpha,xf,_q->r+1);
 
         // compute error
         _q->E[i] = _q->W[i] * (_q->D[i] - H);
@@ -625,7 +625,7 @@ void firdespm_compute_taps(firdespm _q, float * _h)
     for (i=0; i<_q->r; i++) {
         float f = (float)(i) / (float)(2*_q->r-1);
         float xf = cosf(2*M_PI*f);
-        float cf = fpolyval_lagrange_barycentric(_q->x,_q->c,_q->alpha,xf,_q->r+1);
+        float cf = polyf_val_lagrange_barycentric(_q->x,_q->c,_q->alpha,xf,_q->r+1);
         G[i] = cf;
         G[2*_q->r-i-1] = cf;
     }
@@ -693,7 +693,7 @@ void firdespm_output_debug_file(firdespm _q)
     for (i=0; i<n; i++) {
         float f = (float) i / (float)(2*(n-1));
         float x = cosf(2*M_PI*f);
-        float c = fpolyval_lagrange_barycentric(_q->x,_q->c,_q->alpha,x,_q->r+1);
+        float c = polyf_val_lagrange_barycentric(_q->x,_q->c,_q->alpha,x,_q->r+1);
 
         fprintf(fid,"f(%4u) = %20.12e; H(%4u) = %20.12e;\n", i+1, f, i+1, c);
     }

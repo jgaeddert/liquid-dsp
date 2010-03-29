@@ -27,8 +27,8 @@ module_name     := matrix
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
-	cfmatrix.c		\
-	fmatrix.c
+	matrixf.c		\
+	matrixcf.c
 
 # local_t_files
 #
@@ -38,8 +38,8 @@ local_s_files	:= 		\
 # within $(local_dir)
 #
 local_t_files	:=		\
-	cfmatrix_autotest.h	\
-	fmatrix_autotest.h
+	matrixcf_autotest.h	\
+	matrixf_autotest.h
 
 
 # local_b_files

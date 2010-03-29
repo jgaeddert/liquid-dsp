@@ -279,19 +279,19 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q, TI _x, TO * _y, unsigned int *_ny)
             _q->yq[i] = cimagf(r[i]);
         }
 
-        POLY(fit)(_q->x, _q->yi, _q->p, _q->pi, _q->p);
-        POLY(fit)(_q->x, _q->yq, _q->p, _q->pq, _q->p);
+        POLY(_fit)(_q->x, _q->yi, _q->p, _q->pi, _q->p);
+        POLY(_fit)(_q->x, _q->yq, _q->p, _q->pq, _q->p);
 
-        mf = POLY(val)(_q->pi, _q->p, _q->tau) +
-             POLY(val)(_q->pq, _q->p, _q->tau) * _Complex_I;
+        mf = POLY(_val)(_q->pi, _q->p, _q->tau) +
+             POLY(_val)(_q->pq, _q->p, _q->tau) * _Complex_I;
 
         // differentiate polynomial
         for (i=1; i<_q->p; i++) {
             _q->pi[i] *= (float)(i);
             _q->pq[i] *= (float)(i);
         }
-        dmf = POLY(val)(_q->pi+1, _q->p-1, _q->tau) +
-              POLY(val)(_q->pq+1, _q->p-1, _q->tau) * _Complex_I;
+        dmf = POLY(_val)(_q->pi+1, _q->p-1, _q->tau) +
+              POLY(_val)(_q->pq+1, _q->p-1, _q->tau) * _Complex_I;
 
         dmf *= 0.1f;
 
