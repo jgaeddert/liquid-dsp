@@ -30,39 +30,52 @@
 
 #define LIQUID_RKAISER_DEBUG_FILENAME "rkaiser_internal_debug.m"
 
-float filter_autocorr(float * _h,
-                      unsigned int _h_len,
-                      int _lag)
+// rkaiser_autocorr()
+//
+// Compute auto-correlation of filter at a specific lag.
+//
+//  _h      :   filter coefficients [size: _h_len]
+//  _h_len  :   filter length
+//  _lag    :   auto-correlation lag (samples)
+float rkaiser_autocorr(float * _h,
+                       unsigned int _h_len,
+                       int _lag)
 {
     // auto-correlation is even symmetric
     _lag = abs(_lag);
 
-    // validate input
-    if (_lag >= _h_len)
-        return 0.0f;
-
-    // initialize auto-correlation to zero
-    float rxx=0.0f;
+    // lag outside of filter length is zero
+    if (_lag >= _h_len) return 0.0f;
 
     // compute auto-correlation
+    float rxx=0.0f; // initialize auto-correlation to zero
     unsigned int i;
-    for (i=_lag; i<_h_len; i++) {
+    for (i=_lag; i<_h_len; i++)
         rxx += _h[i] * _h[i-_lag];
-    }
 
     return rxx;
 }
 
-void filter_compute_isi(float * _h,
-                        unsigned int _k,
-                        unsigned int _m,
-                        float * _mse,
-                        float * _max)
+// rkaiser_compute_isi()
+//
+// Compute inter-symbol interference (ISI)--both MSE and
+// maximum--for the filter _h.
+//
+//  _h      :   filter coefficients [size: 2*_k*_m+1]
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _mse    :   output mean-squared ISI
+//  _max    :   maximum ISI
+void rkaiser_compute_isi(float * _h,
+                         unsigned int _k,
+                         unsigned int _m,
+                         float * _mse,
+                         float * _max)
 {
     unsigned int h_len = 2*_k*_m+1;
 
     // compute zero-lag auto-correlation
-    float rxx0 = filter_autocorr(_h,h_len,0);
+    float rxx0 = rkaiser_autocorr(_h,h_len,0);
     //printf("rxx0 = %12.8f\n", rxx0);
     //exit(1);
 
@@ -70,8 +83,8 @@ void filter_compute_isi(float * _h,
     float isi_mse = 0.0f;
     float isi_max = 0.0f;
     float e;
-    for (i=1; i<_m; i++) {
-        e = filter_autocorr(_h,h_len,i*_k) / rxx0;
+    for (i=1; i<=2*_m; i++) {
+        e = rkaiser_autocorr(_h,h_len,i*_k) / rxx0;
         e = fabsf(e);
 
         isi_mse += e*e;
@@ -80,10 +93,20 @@ void filter_compute_isi(float * _h,
             isi_max = e;
     }
 
-    *_mse = isi_mse / (float)(_m-1);
+    *_mse = isi_mse / (float)(2*_m);
     *_max = isi_max;
 }
 
+// design_rkaiser_filter()
+//
+// Design frequency-shifted root-Nyquist filter based on
+// the Kaiser-windowed sinc.
+//
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+//  _dt     :   filter fractional sample delay
+//  _h      :   resulting filter [size: 2*_k*_m+1]
 void design_rkaiser_filter(unsigned int _k,
                            unsigned int _m,
                            float _beta,
@@ -112,9 +135,7 @@ void design_rkaiser_filter(unsigned int _k,
     float fc = 1.0f / kf;               // filter cutoff
     float h[n];                         // temporary coefficients array
 
-    printf("As = %12.8f\n", As);
-
-    // bandwidth adjustment
+    // bandwidth adjustment array (3 points makes a parabola)
     float x[3] = {
         0.0f,
         0.25f * _beta / kf,
@@ -126,11 +147,12 @@ void design_rkaiser_filter(unsigned int _k,
     float y[3];
     for (i=0; i<3; i++) {
         fir_kaiser_window(n,fc+x[i],As,_dt,h);
-        filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
+        rkaiser_compute_isi(h,_k,_m,&isi_mse,&isi_max);
         y[i] = isi_mse;
     }
 
-    // iterate...
+    // run parabolic search to find bandwidth adjustment x_hat which
+    // minimizes the inter-symbol interference of the filter
     unsigned int p, pmax=10;
     float t0, t1;
     float x_hat = x[1];
@@ -155,10 +177,11 @@ void design_rkaiser_filter(unsigned int _k,
         x_hat = 0.5f * t0 / t1;
 
         // execute filter design
+        // TODO : re-adjust As if excess bandwidth exceeds _beta
         fir_kaiser_window(n,fc+x_hat,As,_dt,h);
 
         // compute inter-symbol interference (MSE, max)
-        filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
+        rkaiser_compute_isi(h,_k,_m,&isi_mse,&isi_max);
         y_hat = isi_mse;
 
         // search index of maximum

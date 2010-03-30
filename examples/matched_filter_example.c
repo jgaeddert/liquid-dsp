@@ -13,8 +13,8 @@
 int main() {
     // options
     unsigned int k=2;   // samples/symbol
-    unsigned int m=3;   // symbol delay
-    float beta=0.9f;    // excess bandwidth factor
+    unsigned int m=5;   // symbol delay
+    float beta=0.3f;    // excess bandwidth factor
     unsigned int num_symbols=16;
 
     // initialize objects
