@@ -19,7 +19,11 @@
  */
 
 //
-// Design root-Nyquist Kiser filter
+// Design root-Nyquist Kaiser filter
+//
+// References
+//  [Vaidyanathan:1993] Vaidyanathan, P. P., "Multirate Systems and
+//      Filter Banks," 1993, Prentice Hall, Section 3.2.1
 //
 
 #include <math.h>
@@ -27,75 +31,6 @@
 #include <stdlib.h>
 
 #include "liquid.internal.h"
-
-#define LIQUID_RKAISER_DEBUG_FILENAME "rkaiser_internal_debug.m"
-
-// rkaiser_autocorr()
-//
-// Compute auto-correlation of filter at a specific lag.
-//
-//  _h      :   filter coefficients [size: _h_len]
-//  _h_len  :   filter length
-//  _lag    :   auto-correlation lag (samples)
-float rkaiser_autocorr(float * _h,
-                       unsigned int _h_len,
-                       int _lag)
-{
-    // auto-correlation is even symmetric
-    _lag = abs(_lag);
-
-    // lag outside of filter length is zero
-    if (_lag >= _h_len) return 0.0f;
-
-    // compute auto-correlation
-    float rxx=0.0f; // initialize auto-correlation to zero
-    unsigned int i;
-    for (i=_lag; i<_h_len; i++)
-        rxx += _h[i] * _h[i-_lag];
-
-    return rxx;
-}
-
-// rkaiser_compute_isi()
-//
-// Compute inter-symbol interference (ISI)--both MSE and
-// maximum--for the filter _h.
-//
-//  _h      :   filter coefficients [size: 2*_k*_m+1]
-//  _k      :   filter over-sampling rate (samples/symbol)
-//  _m      :   filter delay (symbols)
-//  _mse    :   output mean-squared ISI
-//  _max    :   maximum ISI
-void rkaiser_compute_isi(float * _h,
-                         unsigned int _k,
-                         unsigned int _m,
-                         float * _mse,
-                         float * _max)
-{
-    unsigned int h_len = 2*_k*_m+1;
-
-    // compute zero-lag auto-correlation
-    float rxx0 = rkaiser_autocorr(_h,h_len,0);
-    //printf("rxx0 = %12.8f\n", rxx0);
-    //exit(1);
-
-    unsigned int i;
-    float isi_mse = 0.0f;
-    float isi_max = 0.0f;
-    float e;
-    for (i=1; i<=2*_m; i++) {
-        e = rkaiser_autocorr(_h,h_len,i*_k) / rxx0;
-        e = fabsf(e);
-
-        isi_mse += e*e;
-        
-        if (i==1 || e > isi_max)
-            isi_max = e;
-    }
-
-    *_mse = isi_mse / (float)(2*_m);
-    *_max = isi_max;
-}
 
 // design_rkaiser_filter()
 //
@@ -113,8 +48,6 @@ void design_rkaiser_filter(unsigned int _k,
                            float _dt,
                            float * _h)
 {
-    unsigned int h_len;
-
     if ( _k < 1 ) {
         printf("error: design_rkaiser_filter(): k must be greater than 0\n");
         exit(0);
@@ -152,7 +85,7 @@ void design_rkaiser_filter(unsigned int _k,
 
         // compute filter, isi
         fir_kaiser_window(n,fc+x[i],As,_dt,h);
-        rkaiser_compute_isi(h,_k,_m,&isi_mse,&isi_max);
+        liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
         y[i] = isi_mse;
     }
 
@@ -162,7 +95,6 @@ void design_rkaiser_filter(unsigned int _k,
     float t0, t1;
     float x_hat = x[1];
     float y_hat;
-    float y_prime=0;
     unsigned int imax;
     for (p=0; p<pmax; p++) {
         // numerator
@@ -189,7 +121,7 @@ void design_rkaiser_filter(unsigned int _k,
         fir_kaiser_window(n,fc+x_hat,As,_dt,h);
 
         // compute inter-symbol interference (MSE, max)
-        rkaiser_compute_isi(h,_k,_m,&isi_mse,&isi_max);
+        liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
         y_hat = isi_mse;
 
         // search index of maximum

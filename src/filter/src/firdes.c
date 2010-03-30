@@ -161,4 +161,75 @@ void fir_design_optim_root_nyquist(unsigned int _n,
     // begin optimization:
 }
 
+// filter analysis
+
+
+// liquid_filter_autocorr()
+//
+// Compute auto-correlation of filter at a specific lag.
+//
+//  _h      :   filter coefficients [size: _h_len]
+//  _h_len  :   filter length
+//  _lag    :   auto-correlation lag (samples)
+float liquid_filter_autocorr(float * _h,
+                             unsigned int _h_len,
+                             int _lag)
+{
+    // auto-correlation is even symmetric
+    _lag = abs(_lag);
+
+    // lag outside of filter length is zero
+    if (_lag >= _h_len) return 0.0f;
+
+    // compute auto-correlation
+    float rxx=0.0f; // initialize auto-correlation to zero
+    unsigned int i;
+    for (i=_lag; i<_h_len; i++)
+        rxx += _h[i] * _h[i-_lag];
+
+    return rxx;
+}
+
+// liquid_filter_isi()
+//
+// Compute inter-symbol interference (ISI)--both MSE and
+// maximum--for the filter _h.
+//
+//  _h      :   filter coefficients [size: 2*_k*_m+1]
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _mse    :   output mean-squared ISI
+//  _max    :   maximum ISI
+void liquid_filter_isi(float * _h,
+                       unsigned int _k,
+                       unsigned int _m,
+                       float * _mse,
+                       float * _max)
+{
+    unsigned int h_len = 2*_k*_m+1;
+
+    // compute zero-lag auto-correlation
+    float rxx0 = liquid_filter_autocorr(_h,h_len,0);
+    //printf("rxx0 = %12.8f\n", rxx0);
+    //exit(1);
+
+    unsigned int i;
+    float isi_mse = 0.0f;
+    float isi_max = 0.0f;
+    float e;
+    for (i=1; i<=2*_m; i++) {
+        e = liquid_filter_autocorr(_h,h_len,i*_k) / rxx0;
+        e = fabsf(e);
+
+        isi_mse += e*e;
+        
+        if (i==1 || e > isi_max)
+            isi_max = e;
+    }
+
+    *_mse = isi_mse / (float)(2*_m);
+    *_max = isi_max;
+}
+
+
 

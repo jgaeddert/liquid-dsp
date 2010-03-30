@@ -895,6 +895,35 @@ float iir_group_delay(float * _b,
                       unsigned int _na,
                       float _fc);
 
+
+// liquid_filter_autocorr()
+//
+// Compute auto-correlation of filter at a specific lag.
+//
+//  _h      :   filter coefficients [size: _h_len]
+//  _h_len  :   filter length
+//  _lag    :   auto-correlation lag (samples)
+float liquid_filter_autocorr(float * _h,
+                             unsigned int _h_len,
+                             int _lag);
+
+// liquid_filter_isi()
+//
+// Compute inter-symbol interference (ISI)--both MSE and
+// maximum--for the filter _h.
+//
+//  _h      :   filter coefficients [size: 2*_k*_m+1]
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _mse    :   output mean-squared ISI
+//  _max    :   maximum ISI
+void liquid_filter_isi(float * _h,
+                       unsigned int _k,
+                       unsigned int _m,
+                       float * _mse,
+                       float * _max);
+
+
 //
 // IIR filter design
 //
