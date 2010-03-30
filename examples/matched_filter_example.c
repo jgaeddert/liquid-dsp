@@ -8,11 +8,13 @@
 
 #include "liquid.h"
 
+#define OUTPUT_FILENAME "matched_filter_example.m"
+
 int main() {
     // options
     unsigned int k=2;   // samples/symbol
-    unsigned int m=6;   // symbol delay
-    float beta=0.7f;    // excess bandwidth factor
+    unsigned int m=3;   // symbol delay
+    float beta=0.5f;    // excess bandwidth factor
     unsigned int num_symbols=16;
 
     // initialize objects
@@ -57,6 +59,24 @@ int main() {
 
     for (i=0; i<num_samples; i++)
         printf(" y(%3u) = %8.5f;\n", i+1, y[i]);
+
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+
+    for (i=0; i<h_len; i++)
+        fprintf(fid,"h(%3u) = %20.8e;\n", i+1, h[i]);
+    fprintf(fid,"nfft=1024;\n");
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h,nfft))));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,H);\n");
+    fprintf(fid,"xlabel('normalized frequency');\n");
+    fprintf(fid,"ylabel('PSD');\n");
+    fprintf(fid,"axis([-0.5 0.5 -100 10]);\n");
+    fprintf(fid,"grid on;\n");
+
+    fclose(fid);
+    printf("results written to %s.\n", OUTPUT_FILENAME);
     
     // clean it up
     interp_rrrf_destroy(q);

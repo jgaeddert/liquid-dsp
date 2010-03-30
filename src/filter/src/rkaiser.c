@@ -28,6 +28,8 @@
 
 #include "liquid.internal.h"
 
+#define LIQUID_RKAISER_DEBUG_FILENAME "rkaiser_internal_debug.m"
+
 float filter_autocorr(float * _h,
                       unsigned int _h_len,
                       int _lag)
@@ -101,12 +103,17 @@ void design_rkaiser_filter(unsigned int _k,
 
     unsigned int i;
 
-    unsigned int n=2*_k*_m+1;       // filter length
-    float fc = 0.5f / (float)(_k);  // filter cutoff
-    float del = 0.0f;
+    unsigned int n=2*_k*_m+1;           // filter length
+    float del = 0.5f*_beta/(float)(_k); // transition bandwidth
+    float As = 14.26f*del*n + 7.95f;    // sidelobe attenuation
+    //As = 60.0f;
+    printf("As = %12.8f\n", As);
+    //exit(1);
+
+    float fc = 1.0f / (float)(_k);  // filter cutoff
 
     float h[n];
-    fir_kaiser_window(n,fc,60.0f,_dt,h);
+    fir_kaiser_window(n,fc,As,_dt,h);
     float e2 = 0.0f;
     for (i=0; i<n; i++) e2 += h[i]*h[i];
     for (i=0; i<n; i++) h[i] /= sqrtf(e2*_k);
@@ -118,15 +125,16 @@ void design_rkaiser_filter(unsigned int _k,
     filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
 
     // iterate...
-    float df = 0.001f / (float)_k;
     float isi_mse_min = isi_mse;
-    unsigned int p;
-    for (p=0; p<1000; p++) {
+    unsigned int p, pmax=1000;
+    FILE * fid = fopen(LIQUID_RKAISER_DEBUG_FILENAME,"w");
+    fprintf(fid,"clear all;\n");
+    for (p=0; p<pmax; p++) {
         // increase band edges
-        del += df;
+        float df = 0.5f * _beta * p / (float)(_k*pmax);
 
         // execute filter design
-        fir_kaiser_window(n,fc+del,60.0f,_dt,h);
+        fir_kaiser_window(n,fc+df,As,_dt,h);
         e2 = 0.0f;
         for (i=0; i<n; i++) e2 += h[i]*h[i];
         for (i=0; i<n; i++) h[i] /= sqrtf(e2*_k);
@@ -137,14 +145,22 @@ void design_rkaiser_filter(unsigned int _k,
         printf("  %4u : isi mse : %20.8e (min: %20.8e)\n", p, isi_mse, isi_mse_min);
         if (isi_mse > isi_mse_min) {
             // search complete
-            break;
+            //break;
         } else {
             isi_mse_min = isi_mse;
             // copy results
             memmove(_h, h, n*sizeof(float));
         }
+        fprintf(fid,"fc(%5u) = %20.8e; isi_mse(%5u) = %20.8e;\n", p+1, fc+df, p+1, isi_mse);
     };
 
+    //fprintf(fid,"plot(fc, 10*log10(isi_mse));\n");
+    fprintf(fid,"plot(fc, isi_mse);\n");
+    fprintf(fid,"xlabel('cutoff frequency');\n");
+    fprintf(fid,"ylabel('ISI, MSE [dB]');\n");
+    fprintf(fid,"grid on;\n");
+    fclose(fid);
+    printf("internal debug results written to %s\n", LIQUID_RKAISER_DEBUG_FILENAME);
 
 }
 
