@@ -138,14 +138,19 @@ void design_rkaiser_filter(unsigned int _k,
     // bandwidth adjustment array (3 points makes a parabola)
     float x[3] = {
         0.0f,
-        0.25f * _beta / kf,
-        0.50f * _beta / kf};
+        0.2f * _beta / kf,
+        0.4f * _beta / kf};
 
     // evaluate performance (ISI) of each bandwidth adjustment
     float isi_max;
     float isi_mse;
     float y[3];
     for (i=0; i<3; i++) {
+        // re-compute transition band and As
+        del = (_beta / kf) - x[i];
+        As  = 14.26f*del*n + 7.95f;
+
+        // compute filter, isi
         fir_kaiser_window(n,fc+x[i],As,_dt,h);
         rkaiser_compute_isi(h,_k,_m,&isi_mse,&isi_max);
         y[i] = isi_mse;
@@ -176,8 +181,11 @@ void design_rkaiser_filter(unsigned int _k,
         // compute new estimate
         x_hat = 0.5f * t0 / t1;
 
+        // re-compute transition band and As
+        del = (_beta / kf) - x_hat;
+        As  = 14.26f*del*n + 7.95f;
+
         // execute filter design
-        // TODO : re-adjust As if excess bandwidth exceeds _beta
         fir_kaiser_window(n,fc+x_hat,As,_dt,h);
 
         // compute inter-symbol interference (MSE, max)
