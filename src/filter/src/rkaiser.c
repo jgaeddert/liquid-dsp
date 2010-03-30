@@ -62,14 +62,16 @@ void filter_compute_isi(float * _h,
     unsigned int h_len = 2*_k*_m+1;
 
     // compute zero-lag auto-correlation
-    //float rxx0 = filter_autocorr(_h,h_len,0);
+    float rxx0 = filter_autocorr(_h,h_len,0);
+    //printf("rxx0 = %12.8f\n", rxx0);
+    //exit(1);
 
     unsigned int i;
     float isi_mse = 0.0f;
     float isi_max = 0.0f;
     float e;
     for (i=1; i<_m; i++) {
-        e = filter_autocorr(_h,h_len,i*_k);
+        e = filter_autocorr(_h,h_len,i*_k) / rxx0;
         e = fabsf(e);
 
         isi_mse += e*e;
@@ -104,7 +106,7 @@ void design_rkaiser_filter(unsigned int _k,
     unsigned int i;
 
     unsigned int n=2*_k*_m+1;           // filter length
-    float del = 0.5f*_beta/(float)(_k); // transition bandwidth
+    float del = _beta/(float)(_k); // transition bandwidth
     float As = 14.26f*del*n + 7.95f;    // sidelobe attenuation
     //As = 60.0f;
     printf("As = %12.8f\n", As);
@@ -114,9 +116,6 @@ void design_rkaiser_filter(unsigned int _k,
 
     float h[n];
     fir_kaiser_window(n,fc,As,_dt,h);
-    float e2 = 0.0f;
-    for (i=0; i<n; i++) e2 += h[i]*h[i];
-    for (i=0; i<n; i++) h[i] /= sqrtf(e2*_k);
     // copy results
     memmove(_h, h, n*sizeof(float));
 
@@ -135,9 +134,6 @@ void design_rkaiser_filter(unsigned int _k,
 
         // execute filter design
         fir_kaiser_window(n,fc+df,As,_dt,h);
-        e2 = 0.0f;
-        for (i=0; i<n; i++) e2 += h[i]*h[i];
-        for (i=0; i<n; i++) h[i] /= sqrtf(e2*_k);
 
         // compute inter-symbol interference (MSE, max)
         filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
@@ -145,7 +141,7 @@ void design_rkaiser_filter(unsigned int _k,
         printf("  %4u : isi mse : %20.8e (min: %20.8e)\n", p, isi_mse, isi_mse_min);
         if (isi_mse > isi_mse_min) {
             // search complete
-            //break;
+            break;
         } else {
             isi_mse_min = isi_mse;
             // copy results
@@ -162,5 +158,9 @@ void design_rkaiser_filter(unsigned int _k,
     fclose(fid);
     printf("internal debug results written to %s\n", LIQUID_RKAISER_DEBUG_FILENAME);
 
+    // normalize
+    float e2 = 0.0f;
+    for (i=0; i<n; i++) e2 += _h[i]*_h[i];
+    for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
 }
 

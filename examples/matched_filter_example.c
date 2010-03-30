@@ -13,13 +13,14 @@
 int main() {
     // options
     unsigned int k=2;   // samples/symbol
-    unsigned int m=3;   // symbol delay
+    unsigned int m=6;   // symbol delay
     float beta=0.5f;    // excess bandwidth factor
     unsigned int num_symbols=16;
 
     // initialize objects
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
+    //design_rrc_filter(k,m,beta,0,h);
     design_rkaiser_filter(k,m,beta,0,h);
     interp_rrrf q  = interp_rrrf_create(k,h,h_len);
     decim_rrrf d   = decim_rrrf_create(k,h,h_len);
