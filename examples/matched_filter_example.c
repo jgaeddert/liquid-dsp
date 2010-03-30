@@ -13,8 +13,8 @@
 int main() {
     // options
     unsigned int k=2;   // samples/symbol
-    unsigned int m=6;   // symbol delay
-    float beta=0.5f;    // excess bandwidth factor
+    unsigned int m=3;   // symbol delay
+    float beta=0.9f;    // excess bandwidth factor
     unsigned int num_symbols=16;
 
     // initialize objects
@@ -63,12 +63,17 @@ int main() {
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"k = %u;\n", k);
+    fprintf(fid,"m = %u;\n", m);
+    fprintf(fid,"beta = %12.8f;\n", beta);
 
     for (i=0; i<h_len; i++)
         fprintf(fid,"h(%3u) = %20.8e;\n", i+1, h[i]);
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h,nfft))));\n");
+    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h/k,nfft))));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,H);\n");
     fprintf(fid,"xlabel('normalized frequency');\n");

@@ -104,61 +104,77 @@ void design_rkaiser_filter(unsigned int _k,
     } else;
 
     unsigned int i;
+    float kf = (float)_k;
 
     unsigned int n=2*_k*_m+1;           // filter length
-    float del = _beta/(float)(_k); // transition bandwidth
+    float del = _beta/kf;               // transition bandwidth
     float As = 14.26f*del*n + 7.95f;    // sidelobe attenuation
-    //As = 60.0f;
+    float fc = 1.0f / kf;               // filter cutoff
+    float h[n];                         // temporary coefficients array
+
     printf("As = %12.8f\n", As);
-    //exit(1);
 
-    float fc = 1.0f / (float)(_k);  // filter cutoff
+    // bandwidth adjustment
+    float x[3] = {
+        0.0f,
+        0.25f * _beta / kf,
+        0.50f * _beta / kf};
 
-    float h[n];
-    fir_kaiser_window(n,fc,As,_dt,h);
-    // copy results
-    memmove(_h, h, n*sizeof(float));
-
+    // evaluate performance (ISI) of each bandwidth adjustment
     float isi_max;
     float isi_mse;
-    filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
+    float y[3];
+    for (i=0; i<3; i++) {
+        fir_kaiser_window(n,fc+x[i],As,_dt,h);
+        filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
+        y[i] = isi_mse;
+    }
 
     // iterate...
-    float isi_mse_min = isi_mse;
-    unsigned int p, pmax=1000;
-    FILE * fid = fopen(LIQUID_RKAISER_DEBUG_FILENAME,"w");
-    fprintf(fid,"clear all;\n");
+    unsigned int p, pmax=10;
+    float t0, t1;
+    float x_hat = x[1];
+    float y_hat;
+    float y_prime=0;
+    unsigned int imax;
     for (p=0; p<pmax; p++) {
-        // increase band edges
-        float df = 0.5f * _beta * p / (float)(_k*pmax);
+        // numerator
+        t0 = y[0] * (x[1]*x[1] - x[2]*x[2]) +
+             y[1] * (x[2]*x[2] - x[0]*x[0]) +
+             y[2] * (x[0]*x[0] - x[1]*x[1]);
+
+        // denominator
+        t1 = y[0] * (x[1] - x[2]) +
+             y[1] * (x[2] - x[0]) +
+             y[2] * (x[0] - x[1]);
+
+        // break if denominator is sufficiently small
+        if (fabsf(t1) < 1e-12f) break;
+
+        // compute new estimate
+        x_hat = 0.5f * t0 / t1;
 
         // execute filter design
-        fir_kaiser_window(n,fc+df,As,_dt,h);
+        fir_kaiser_window(n,fc+x_hat,As,_dt,h);
 
         // compute inter-symbol interference (MSE, max)
         filter_compute_isi(h,_k,_m,&isi_mse,&isi_max);
+        y_hat = isi_mse;
 
-        printf("  %4u : isi mse : %20.8e (min: %20.8e)\n", p, isi_mse, isi_mse_min);
-        if (isi_mse > isi_mse_min) {
-            // search complete
-            break;
-        } else {
-            isi_mse_min = isi_mse;
-            // copy results
-            memmove(_h, h, n*sizeof(float));
-        }
-        fprintf(fid,"fc(%5u) = %20.8e; isi_mse(%5u) = %20.8e;\n", p+1, fc+df, p+1, isi_mse);
+        // search index of maximum
+        if      (y[0] > y[1] && y[0] > y[2])    imax = 0;
+        else if (y[1] > y[0] && y[1] > y[2])    imax = 1;
+        else                                    imax = 2;
+
+        // replace old estimate
+        x[imax] = x_hat;
+        y[imax] = y_hat;
+
+        //printf("  %4u : x_hat=%12.8f, y_hat=%20.8e\n", p+1, x_hat, y_hat);
     };
 
-    //fprintf(fid,"plot(fc, 10*log10(isi_mse));\n");
-    fprintf(fid,"plot(fc, isi_mse);\n");
-    fprintf(fid,"xlabel('cutoff frequency');\n");
-    fprintf(fid,"ylabel('ISI, MSE [dB]');\n");
-    fprintf(fid,"grid on;\n");
-    fclose(fid);
-    printf("internal debug results written to %s\n", LIQUID_RKAISER_DEBUG_FILENAME);
-
-    // normalize
+    // compute optimum filter and normalize
+    fir_kaiser_window(n,fc+x_hat,As,_dt,_h);
     float e2 = 0.0f;
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
