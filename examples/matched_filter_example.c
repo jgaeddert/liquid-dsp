@@ -20,8 +20,9 @@ int main() {
     // initialize objects
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
+    design_hM3_filter(k,m,beta,0,h);
+    //design_rkaiser_filter(k,m,beta,0,h);
     //design_rrc_filter(k,m,beta,0,h);
-    design_rkaiser_filter(k,m,beta,0,h);
     interp_rrrf q  = interp_rrrf_create(k,h,h_len);
     decim_rrrf d   = decim_rrrf_create(k,h,h_len);
 
