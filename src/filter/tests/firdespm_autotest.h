@@ -41,7 +41,7 @@ void autotest_firdespm_bandpass_n24()
     unsigned int num_bands=2;
     float bands[4]  = {0.0f,0.08f,0.16f,0.50f};
     float des[2]    = {1.0f,0.0f};
-    float weight[2] = {1.0f,1.0f};
+    float weights[2]= {1.0f,1.0f};
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
     float tol = 1e-6f;
 
@@ -76,7 +76,70 @@ void autotest_firdespm_bandpass_n24()
 
     // Create filter
     float h[n];
-    firdespm_run(n,bands,des,weight,num_bands,btype,h);
+    firdespm_run(n,bands,des,weights,num_bands,btype,h);
+
+    // Ensure data are equal
+    unsigned int i;
+    for (i=0; i<n; i++)
+        CONTEND_DELTA( h[i], h0[i], tol );
+}
+
+
+void autotest_firdespm_bandpass_n32()
+{
+    // [McClellan:1973], Figure 9.
+
+    // Initialize variables
+    unsigned int n=32;
+    unsigned int num_bands = 3;
+    float bands[6] = {  0.0f,   0.1f,
+                        0.2f,   0.35f,
+                        0.425f, 0.5f};
+    float des[3] = {0.0f, 1.0f, 0.0f};
+    float weights[3] = {10.0f, 1.0f, 10.0f};
+    liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
+    float tol = 1e-6f;
+
+    // Initialize pre-determined coefficient array
+    float h0[32] = {
+       -0.57534121e-2f,
+        0.99027198e-3f,
+        0.75733545e-2f,
+       -0.65141192e-2f,
+        0.13960525e-1f,
+        0.22951469e-2f,
+       -0.19994067e-1f,
+        0.71369560e-2f,
+       -0.39657363e-1f,
+        0.11260114e-1f,
+        0.66233643e-1f,
+       -0.10497223e-1f,
+        0.85136133e-1f,
+       -0.12024993e+0f,
+       -0.29678577e+0f,
+        0.30410917e+0f,
+        // symmetry
+        0.30410917e+0f,
+       -0.29678577e+0f,
+       -0.12024993e+0f,
+        0.85136133e-1f,
+       -0.10497223e-1f,
+        0.66233643e-1f,
+        0.11260114e-1f,
+       -0.39657363e-1f,
+        0.71369560e-2f,
+       -0.19994067e-1f,
+        0.22951469e-2f,
+        0.13960525e-1f,
+       -0.65141192e-2f,
+        0.75733545e-2f,
+        0.99027198e-3f,
+       -0.57534121e-2f
+    };
+
+    // Create filter
+    float h[n];
+    firdespm_run(n,bands,des,weights,num_bands,btype,h);
 
     // Ensure data are equal
     unsigned int i;
