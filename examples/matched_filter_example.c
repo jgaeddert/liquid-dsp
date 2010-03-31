@@ -40,10 +40,10 @@ int main() {
         // generate random symbol
         sym_in = (rand() % 2) ? 1.0f : -1.0f;
 
-        // interp_rrrfolate
+        // interpolate
         interp_rrrf_execute(q, sym_in, buff);
 
-        // decim_rrrfate
+        // decimate
         decim_rrrf_execute(d, buff, &sym_out, 0);
 
         // normalize output
@@ -58,8 +58,8 @@ int main() {
         n += k;
     }
 
-    for (i=0; i<num_samples; i++)
-        printf(" y(%3u) = %8.5f;\n", i+1, y[i]);
+    //for (i=0; i<num_samples; i++)
+    //    printf(" y(%3u) = %8.5f;\n", i+1, y[i]);
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
