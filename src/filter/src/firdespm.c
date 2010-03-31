@@ -116,7 +116,6 @@ void firdespm_run(unsigned int _h_len,
 
     // destroy
     firdespm_destroy(q);
-    exit(1);
 }
 
 
@@ -230,9 +229,26 @@ void firdespm_destroy(firdespm _q)
 void firdespm_print(firdespm _q)
 {
     unsigned int i;
-    printf("firdespm:\n");
-    for (i=0; i<_q->num_bands; i++)
-        printf("  [%12.8f %12.8f]\n", _q->bands[2*i+0], _q->bands[2*i+1]);
+
+    printf("firdespm:               ");
+    for (i=0; i<_q->num_bands; i++) printf("      band %-5u", i);
+    printf("\n");
+
+    printf("  lower band edge       ");
+    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->bands[2*i+0]);
+    printf("\n");
+
+    printf("  upper band edge       ");
+    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->bands[2*i+1]);
+    printf("\n");
+
+    printf("  desired value         ");
+    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->des[i]);
+    printf("\n");
+
+    printf("  weighting             ");
+    for (i=0; i<_q->num_bands; i++) printf("%16.8f", _q->weights[i]);
+    printf("\n");
 }
 
 void firdespm_execute(firdespm _q, float * _h)
