@@ -161,6 +161,7 @@ firdespm firdespm_create(unsigned int _h_len,
     q->s     = q->h_len % 2;        // odd/even length
     q->n     = (q->h_len - q->s)/2; // filter semi-length
     q->r     = q->n + q->s;         // number of approximating functions
+    q->btype = _btype;              // set band type
 
     // allocate memory for extremal frequency set, interpolating polynomial
     q->iext  = (unsigned int*) malloc((q->r+1)*sizeof(unsigned int));
