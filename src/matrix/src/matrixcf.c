@@ -20,7 +20,7 @@
  */
 
 //
-// Complex floating-point matrix
+// Complex floating-point matrix (single precision)
 // 
 
 #include "liquid.internal.h"

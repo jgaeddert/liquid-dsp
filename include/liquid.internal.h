@@ -859,12 +859,6 @@ LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CFLOAT,
 // MODULE : matrix
 //
 
-// fast access to matrix element, read/write
-#define matrix_fast_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
-
-#define MATRIX_MANGLE_FLOAT(name)   LIQUID_CONCAT(matrixf,  name)
-#define MATRIX_MANGLE_CFLOAT(name)  LIQUID_CONCAT(matrixcf, name)
-
 // large macro
 //   MATRIX : name-mangling macro
 //   T      : data type
@@ -887,8 +881,11 @@ void MATRIX(_swaprows)(T * _x,                                  \
                   unsigned int _r2);
 
 
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT,  float)
-LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT, liquid_float_complex)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT,   float)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_DOUBLE,  double)
+
+LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CFLOAT,  liquid_float_complex)
+LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 
 //
 // MODULE : modem

@@ -20,14 +20,14 @@
  */
 
 //
-// Floating-point matrix (single precision)
+// Floating-point matrix (double precision)
 // 
 
 #include "liquid.internal.h"
 
-#define MATRIX(name)    LIQUID_CONCAT(matrixf, name)
-#define MATRIX_NAME     "matrixf"
-#define T               float
+#define MATRIX(name)    LIQUID_CONCAT(matrix, name)
+#define MATRIX_NAME     "matrix"
+#define T               double
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
     printf("%12.8f", matrix_access(X,R,C,r,c));
 

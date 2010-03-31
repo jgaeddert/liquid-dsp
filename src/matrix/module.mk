@@ -27,7 +27,9 @@ module_name     := matrix
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
+	matrix.c		\
 	matrixf.c		\
+	matrixc.c		\
 	matrixcf.c
 
 # local_t_files

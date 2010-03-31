@@ -20,16 +20,18 @@
  */
 
 //
-// Floating-point matrix (single precision)
+// Complex floating-point matrix (double precision)
 // 
 
 #include "liquid.internal.h"
 
-#define MATRIX(name)    LIQUID_CONCAT(matrixf, name)
-#define MATRIX_NAME     "matrixf"
-#define T               float
-#define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
-    printf("%12.8f", matrix_access(X,R,C,r,c));
+#define MATRIX(name)    LIQUID_CONCAT(matrixc, name)
+#define MATRIX_NAME     "matrixc"
+#define T               double complex
+#define MATRIX_PRINT_ELEMENT(X,R,C,r,c)     \
+    printf("%7.2f+j%6.2f ",                 \
+        crealf(matrix_access(X,R,C,r,c)),   \
+        cimagf(matrix_access(X,R,C,r,c)));
 
 #include "matrix.base.c"
 #include "matrix.inv.c"
