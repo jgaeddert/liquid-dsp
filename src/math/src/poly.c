@@ -20,16 +20,16 @@
  */
 
 //
-// Complex floating-point polynomials (single precision)
+// Floating-point polynomials (double precision)
 // 
 
 #include "liquid.internal.h"
 
-#define MATRIX(name)    LIQUID_CONCAT(matrixcf, name)
-#define POLY(name)      LIQUID_CONCAT(polycf,   name)
-#define POLY_NAME       "polycf"
-#define T               float complex
-#define TC              float complex
+#define MATRIX(name)    LIQUID_CONCAT(matrix, name)
+#define POLY(name)      LIQUID_CONCAT(poly,   name)
+#define POLY_NAME       "poly"
+#define T               double
+#define TC              double complex
 
 #include "poly.common.c"
 #include "poly.expand.c"

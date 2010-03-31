@@ -27,6 +27,8 @@ module_name     := math
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 		\
+	poly.c			\
+	polyc.c			\
 	polyf.c			\
 	polycf.c		\
 	math.c			\

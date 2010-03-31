@@ -2012,11 +2012,11 @@ float blackmanharris(unsigned int _n, unsigned int _N);
 // polynomials
 
 
-#define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(polyf, name)
-#define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(polycf, name)
+#define POLY_MANGLE_DOUBLE(name)    LIQUID_CONCAT(poly,   name)
+#define POLY_MANGLE_FLOAT(name)     LIQUID_CONCAT(polyf,  name)
 
-#define POLY_MANGLE_DOUBLE(name)    LIQUID_CONCAT(poly, name)
-//#define POLY_MANGLE_CDOUBLE(name)   LIQUID_CONCAT(cpoly, name)
+#define POLY_MANGLE_CDOUBLE(name)   LIQUID_CONCAT(polyc,  name)
+#define POLY_MANGLE_CFLOAT(name)    LIQUID_CONCAT(polycf, name)
 
 // large macro
 //   POLY   : name-mangling macro
@@ -2092,21 +2092,21 @@ void POLY(_mul)(T * _a,                                         \
                 unsigned int _order_b,                          \
                 T * _c);
 
-LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT,
-                       float,
-                       liquid_float_complex)
-
-LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT,
-                       liquid_float_complex,
-                       liquid_float_complex)
-
 LIQUID_POLY_DEFINE_API(POLY_MANGLE_DOUBLE,
                        double,
                        liquid_double_complex)
 
-//LIQUID_POLY_DEFINE_API(POLY_MANGLE_CDOUBLE,
-//                       liquid_double_complex,
-//                       liquid_double_complex)
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_FLOAT,
+                       float,
+                       liquid_float_complex)
+
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_CDOUBLE,
+                       liquid_double_complex,
+                       liquid_double_complex)
+
+LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT,
+                       liquid_float_complex,
+                       liquid_float_complex)
 
 
 // expands the polynomial: (1+x)^n
