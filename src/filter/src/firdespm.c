@@ -75,20 +75,20 @@ struct firdespm_s {
     liquid_firdespm_btype btype;
 
     // filter description parameters
-    double * bands;              // bands array [size: 2*num_bands]
-    double * des;                // desired response [size: num_bands]
-    double * weights;            // weights [size: num_bands]
+    double * bands;             // bands array [size: 2*num_bands]
+    double * des;               // desired response [size: num_bands]
+    double * weights;           // weights [size: num_bands]
     
     // dense grid elements
-    double * F;                  // frequencies, [0, 0.5]
-    double * D;                  // desired response
-    double * W;                  // weight
-    double * E;                  // error
+    double * F;                 // frequencies, [0, 0.5]
+    double * D;                 // desired response
+    double * W;                 // weight
+    double * E;                 // error
 
-    double * x;                  // Chebyshev points : cos(2*pi*f)
-    double * alpha;              // Lagrange interpolating polynomial
-    double * c;                  // interpolants
-    double rho;                  // extremal weighted error
+    double * x;                 // Chebyshev points : cos(2*pi*f)
+    double * alpha;             // Lagrange interpolating polynomial
+    double * c;                 // interpolants
+    double rho;                 // extremal weighted error
 
     unsigned int * iext;        // indices of extrema
     unsigned int num_exchanges; // number of changes in extrema
@@ -350,7 +350,8 @@ void firdespm_init_grid(firdespm _q)
         // ensure at least one point per band
         if (num_points < 1) num_points = 1;
 
-        //printf("band : [%12.8f %12.8f] %3u points\n",f0,f1,num_points);
+        printf("band : [%12.8f %12.8f] %3u points\n",f0,f1,num_points);
+        printf("  (f1-f0)/df = %20.8e\n", (f1-f0)/df);
 
         // add points to grid
         for (j=0; j<num_points; j++) {
@@ -682,28 +683,14 @@ void firdespm_compute_taps(firdespm _q, float * _h)
     // compute inverse DFT (slow method), performing
     // transformation here for different filter types
     // TODO : flesh out computation for other filter types
-    if (_q->btype == LIQUID_FIRDESPM_BANDPASS && _q->s==1) {
+    unsigned int j;
+    if (_q->btype == LIQUID_FIRDESPM_BANDPASS) {
         // odd filter length, even symmetry
         for (i=0; i<_q->h_len; i++) {
             double v = G[0];
             double f = ((double)i - (double)(p-1) + 0.5*(1-_q->s)) / (double)(_q->h_len);
-            printf("f[%3u] = %12.8f\n", i, 2*M_PI*f);
-            unsigned int j;
-            for (j=1; j<_q->r; j++) {
+            for (j=1; j<_q->r; j++)
                 v += 2.0 * G[j] * cos(2*M_PI*f*j);
-            }
-            _h[i] = v / (double)(_q->h_len);
-        }
-    } else if (_q->btype == LIQUID_FIRDESPM_BANDPASS && _q->s==0) {
-        // even filter length, even symmetry
-        for (i=0; i<_q->h_len; i++) {
-            double v = G[0];
-            double f = ((double)i - (double)(p-1) + 0.5) / (double)(_q->h_len);
-            printf("f[%3u] = %12.8f\n", i, 2*M_PI*f);
-            unsigned int j;
-            for (j=1; j<_q->r; j++) {
-                v += 2.0 * G[j] * cos(2*M_PI*f*j);
-            }
             _h[i] = v / (double)(_q->h_len);
         }
     } else if (_q->btype != LIQUID_FIRDESPM_BANDPASS && _q->s==1) {
