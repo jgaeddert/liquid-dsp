@@ -53,7 +53,7 @@
 #include "liquid.internal.h"
 
 #define LIQUID_FIRDESPM_DEBUG       1
-#define LIQUID_FIRDESPM_DEBUG_PRINT 1
+#define LIQUID_FIRDESPM_DEBUG_PRINT 0
 
 #define LIQUID_FIRDESPM_DEBUG_FILENAME "firdespm_internal_debug.m"
 #if LIQUID_FIRDESPM_DEBUG
@@ -185,7 +185,8 @@ firdespm firdespm_create(unsigned int _h_len,
     }
 
     // estimate grid size
-    q->grid_density = 16;
+    // TODO : adjust grid density based on expected value for rho
+    q->grid_density = 20;
     q->grid_size = 0;
     double df = 0.5/(q->grid_density*q->r); // frequency step
     for (i=0; i<q->num_bands; i++) {
@@ -351,8 +352,7 @@ void firdespm_init_grid(firdespm _q)
         // ensure at least one point per band
         if (num_points < 1) num_points = 1;
 
-        printf("band : [%12.8f %12.8f] %3u points\n",f0,f1,num_points);
-        printf("  (f1-f0)/df = %20.8e\n", (f1-f0)/df);
+        //printf("band : [%12.8f %12.8f] %3u points\n",f0,f1,num_points);
 
         // add points to grid
         for (j=0; j<num_points; j++) {
@@ -475,7 +475,7 @@ void firdespm_iext_search(firdespm _q)
     unsigned int found_iext[nmax];
     unsigned int num_found=0;
 
-#if 1
+#if 0
     // check for extremum at f=0
     if ( fabsf(_q->E[0]) > fabsf(_q->E[1]) )
         found_iext[num_found++] = 0;
@@ -489,8 +489,8 @@ void firdespm_iext_search(firdespm _q)
 
     // search inside grid
     for (i=1; i<_q->grid_size-1; i++) {
-        if ( ((_q->E[i]>0.0) && (_q->E[i-1]<=_q->E[i]) && (_q->E[i+1]<=_q->E[i]) ) ||
-             ((_q->E[i]<0.0) && (_q->E[i-1]>=_q->E[i]) && (_q->E[i+1]>=_q->E[i]) ) )
+        if ( ((_q->E[i]>=0.0) && (_q->E[i-1]<=_q->E[i]) && (_q->E[i+1]<=_q->E[i]) ) ||
+             ((_q->E[i]< 0.0) && (_q->E[i-1]>=_q->E[i]) && (_q->E[i+1]>=_q->E[i]) ) )
         {
             assert(num_found < nmax);
             found_iext[num_found++] = i;
@@ -500,7 +500,7 @@ void firdespm_iext_search(firdespm _q)
         }
     }
 
-#if 1
+#if 0
     // check for extremum at f=0.5
     if ( fabsf(_q->E[_q->grid_size-1]) > fabsf(_q->E[_q->grid_size-2]) )
         found_iext[num_found++] = _q->grid_size-1;
@@ -515,22 +515,13 @@ void firdespm_iext_search(firdespm _q)
         // too few extremal frequencies found.  Theoretically, this
         // should never happen as the Chebyshev alternation theorem
         // guarantees at least r+1 extrema, however due to finite
-        // machine precision, this can happen.
+        // machine precision, interpolation can be imprecise
 
-        // take care of this condition by force-adding indices
-    }
-
-    //assert(num_found >= _q->r+1);
-    if (num_found < _q->r+1) {
-        fprintf(stderr,"error: firdespm_iext_search(), too few extrema found (expected %u, found %u)\n",
+        fprintf(stderr,"warning: firdespm_iext_search(), too few extrema found (expected %u, found %u)\n",
                 _q->r+1, num_found);
         fprintf(stderr,"exiting prematurely\n");
-        for(i=0; i<num_found; i++)
-            _q->iext[i] = found_iext[i];
-        for(; i<_q->r+1; i++)
-            _q->iext[i] = found_iext[0];
-        firdespm_destroy(_q);
-        exit(1);
+        _q->num_exchanges = 0;
+        return;
     }
 
     assert(num_found <= nmax);
@@ -541,7 +532,7 @@ void firdespm_iext_search(firdespm _q)
     unsigned int num_extra = num_found - _q->r - 1; // number of extra extremal frequencies
     unsigned int alternating_sign;
 
-#if 1
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->r+1; i++)
         printf("iext[%4u] = %4u : %16.8e\n", i, found_iext[i], _q->E[found_iext[i]]);
 #endif
@@ -560,7 +551,7 @@ void firdespm_iext_search(firdespm _q)
     
             if ( sign && _q->E[found_iext[i]] < 0.0 ) {
                 sign = 0;
-            } else if ( !sign && _q->E[found_iext[i]] > 0.0 ) {
+            } else if ( !sign && _q->E[found_iext[i]] >= 0.0 ) {
                 sign = 1;
             } else {
                 // found two extrema with non-alternating sign; delete
@@ -612,7 +603,7 @@ void firdespm_iext_search(firdespm _q)
     // copy new values
     memmove(_q->iext, found_iext, (_q->r+1)*sizeof(unsigned int));
 
-#if 1
+#if LIQUID_FIRDESPM_DEBUG_PRINT
     for (i=0; i<_q->r+1; i++)
         printf("iext_new[%4u] = %4u : %16.8e\n", i, found_iext[i], _q->E[found_iext[i]]);
 #endif
@@ -657,7 +648,6 @@ void firdespm_compute_taps(firdespm _q, float * _h)
 
     // evaluate Lagrange polynomial on evenly spaced points
     unsigned int p = _q->r - _q->s + 1;
-    printf(" **** p = %u\n", p);
     double G[p];
     for (i=0; i<p; i++) {
         double f = (double)(i) / (double)(_q->h_len);
@@ -678,7 +668,7 @@ void firdespm_compute_taps(firdespm _q, float * _h)
         }
 
         G[i] = cf * g;
-        printf("G(%3u) = %12.4e (cf = %12.8f, f=%12.8f, c = %12.8f);\n", i+1, G[i], cf, f, g);
+        //printf("G(%3u) = %12.4e (cf = %12.8f, f=%12.8f, c = %12.8f);\n", i+1, G[i], cf, f, g);
     }
 
     // compute inverse DFT (slow method), performing
