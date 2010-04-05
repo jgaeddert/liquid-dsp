@@ -43,7 +43,7 @@ void autotest_firdespm_bandpass_n24()
     float des[2]    = {1.0f,0.0f};
     float weights[2]= {1.0f,1.0f};
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
-    float tol = 1e-6f;
+    float tol = 1e-4f;
 
     // Initialize pre-determined coefficient array
     float h0[24] = {
@@ -98,7 +98,7 @@ void autotest_firdespm_bandpass_n32()
     float des[3] = {0.0f, 1.0f, 0.0f};
     float weights[3] = {10.0f, 1.0f, 10.0f};
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
-    float tol = 1e-6f;
+    float tol = 1e-4f;
 
     // Initialize pre-determined coefficient array
     float h0[32] = {
