@@ -20,7 +20,7 @@
  */
 
 //
-// Chebeshev type-I filter design
+// Chebeshev type-II filter design
 //
 
 #include <stdio.h>
@@ -48,11 +48,10 @@ void cheby2_azpkf(unsigned int _n,
                   liquid_float_complex * _pa,
                   liquid_float_complex * _ka)
 {
-    float nf = (float) _n;
-
+    // temporary values
     float t0 = sqrt(1.0 + 1.0/(_es*_es));
-    float tp = powf( t0 + 1.0/_es, 1.0/nf );
-    float tm = powf( t0 - 1.0/_es, 1.0/nf );
+    float tp = powf( t0 + 1.0/_es, 1.0/(float)(_n) );
+    float tm = powf( t0 - 1.0/_es, 1.0/(float)(_n) );
 
     float b = 0.5*(tp + tm);    // ellipse major axis
     float a = 0.5*(tp - tm);    // ellipse minor axis
@@ -63,8 +62,9 @@ void cheby2_azpkf(unsigned int _n,
     printf("a  : %12.8f\n", a);
 #endif
 
-    unsigned int r = _n%2;
-    unsigned int L = (_n - r)/2;
+    // filter order variables
+    unsigned int r = _n % 2;        // odd order?
+    unsigned int L = (_n - r)/2;    // half order
     
     // compute poles
     unsigned int i;
@@ -75,8 +75,11 @@ void cheby2_azpkf(unsigned int _n,
         _pa[k++] = 1.0f / (a*cosf(theta) + _Complex_I*b*sinf(theta));
     }
 
+    // if filter order is odd, there is an additional pole on the
+    // real axis
     if (r) _pa[k++] = -1.0f / a;
 
+    // ensure we have written exactly _n poles
     assert(k==_n);
 
     // compute zeros
@@ -87,9 +90,10 @@ void cheby2_azpkf(unsigned int _n,
         _za[k++] =  1.0f / (_Complex_I*cosf(theta));
     }
 
+    // ensure we have written exactly 2*L poles
     assert(k==2*L);
 
-    // compute gain
+    // compute analog gain (ignored in digital conversion)
     *_ka = 1.0f;
     for (i=0; i<_n; i++)
         *_ka *= _pa[i];

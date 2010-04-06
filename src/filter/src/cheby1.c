@@ -49,11 +49,10 @@ void cheby1_azpkf(unsigned int _n,
                   liquid_float_complex * _pa,
                   liquid_float_complex * _ka)
 {
-    float nf = (float) _n;
-
+    // temporary values
     float t0 = sqrt(1.0 + 1.0/(_ep*_ep));
-    float tp = powf( t0 + 1.0/_ep, 1.0/nf );
-    float tm = powf( t0 - 1.0/_ep, 1.0/nf );
+    float tp = powf( t0 + 1.0/_ep, 1.0/(float)(_n) );
+    float tm = powf( t0 - 1.0/_ep, 1.0/(float)(_n) );
 
     float b = 0.5*(tp + tm);    // ellipse major axis
     float a = 0.5*(tp - tm);    // ellipse minor axis
@@ -64,8 +63,9 @@ void cheby1_azpkf(unsigned int _n,
     printf("  a  : %12.8f\n", a);
 #endif
 
-    unsigned int r = _n%2;
-    unsigned int L = (_n - r)/2;
+    // filter order variables
+    unsigned int r = _n%2;          // odd order?
+    unsigned int L = (_n - r)/2;    // half order
     
     // compute poles
     unsigned int i;
@@ -76,11 +76,14 @@ void cheby1_azpkf(unsigned int _n,
         _pa[k++] = a*cosf(theta) + _Complex_I*b*sinf(theta);
     }
 
+    // if filter order is odd, there is an additional pole on the
+    // real axis
     if (r) _pa[k++] = -a;
 
+    // ensure we have written exactly _n poles
     assert(k==_n);
 
-    // compute gain
+    // compute analog gain (ignored in digital conversion)
     *_ka = r ? 1.0f : 1.0f / sqrtf(1.0f + _ep*_ep);
     for (i=0; i<_n; i++)
         *_ka *= _pa[i];
