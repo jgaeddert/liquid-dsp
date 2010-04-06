@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -42,12 +43,24 @@ void fec_encode_bench(
     void * _opts)
 {
 #if HAVE_FEC_H == 0
-    if ( _fs == FEC_CONV_V27 ||
-         _fs == FEC_CONV_V29 ||
-         _fs == FEC_CONV_V39 ||
-         _fs == FEC_CONV_V615)
+    if ( _fs == FEC_CONV_V27    ||
+         _fs == FEC_CONV_V29    ||
+         _fs == FEC_CONV_V39    ||
+         _fs == FEC_CONV_V615   ||
+         _fs == FEC_CONV_V27P23 ||
+         _fs == FEC_CONV_V27P34 ||
+         _fs == FEC_CONV_V27P45 ||
+         _fs == FEC_CONV_V27P56 ||
+         _fs == FEC_CONV_V27P67 ||
+         _fs == FEC_CONV_V27P78 ||
+         _fs == FEC_CONV_V29P23 ||
+         _fs == FEC_CONV_V29P34 ||
+         _fs == FEC_CONV_V29P45 ||
+         _fs == FEC_CONV_V29P56 ||
+         _fs == FEC_CONV_V29P67 ||
+         _fs == FEC_CONV_V29P78)
     {
-        printf("warning: convolutional codes unavailable (install libfec)\n");
+        fprintf(stderr,"warning: convolutional codes unavailable (install libfec)\n");
         getrusage(RUSAGE_SELF, _start);
         memmove((void*)_finish,(void*)_start,sizeof(struct rusage));
         return;
