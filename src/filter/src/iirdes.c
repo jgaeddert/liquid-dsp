@@ -479,7 +479,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     //printf("m : %12.8f\n", m);
     bilinear_zpkf(za,    nza,
                   pa,    npa,
-                  ka,    m,
+                  k0,    m,
                   zd, pd, &kd);
 
 #if LIQUID_IIRDES_DEBUG_PRINT
