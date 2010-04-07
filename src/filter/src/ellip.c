@@ -35,14 +35,24 @@
 
 #define LIQUID_DEBUG_ELLIP_PRINT   0
 
-// Landen transformation
+// landenf()
+//
+// Compute the Landen transformation of _k over _n iterations,
+//  k[n] = (k[n-1] / (1+k'[n-1]))^2
+// where
+//  k'[n-1] = sqrt(1-k[n-1]^2)
+//
+//  _k      :   elliptic modulus
+//  _n      :   number of iterations
+//  _v      :   sequence of decreasing moduli [size: _n]
 void landenf(float _k,
              unsigned int _n,
              float * _v)
 {
     unsigned int i;
-    float k = _k;
-    float kp;
+
+    float k = _k;       // k[n]
+    float kp;           // k'[n]
     for (i=0; i<_n; i++) {
         kp = sqrtf(1 - k*k);
         k  = (1 - kp)/(1 + kp);
@@ -50,12 +60,20 @@ void landenf(float _k,
     }
 }
 
+// ellipkf()
+//
 // compute elliptic integral K(k) for _n recursions
+//
+//  _k      :   elliptic modulus
+//  _n      :   number of iterations
+//  _K      :   complete elliptic integral (modulus k)
+//  _Kp     :   complete elliptic integral (modulus k')
 void ellipkf(float _k,
              unsigned int _n,
              float * _K,
              float * _Kp)
 {
+    // define range for k due to machine precision
     float kmin = 4e-4f;
     float kmax = sqrtf(1-kmin*kmin);
     
@@ -69,6 +87,8 @@ void ellipkf(float _k,
     // Floating point resolution limits the range of the
     // computation of K on input _k [Orfanidis:2005]
     if (_k > kmax) {
+        // input exceeds maximum extreme for this precision; use
+        // approximation
         float L = -logf(0.25f*kp);
         K = L + 0.25f*(L-1)*kp*kp;
     } else {
@@ -81,6 +101,8 @@ void ellipkf(float _k,
     }
 
     if (_k < kmin) {
+        // input exceeds minimum extreme for this precision; use
+        // approximation
         float L = -logf(_k*0.25f);
         Kp = L + 0.25f*(L-1)*_k*_k;
     } else {
@@ -92,11 +114,18 @@ void ellipkf(float _k,
             Kp *= (1 + vp[i]);
     }
 
+    // set return values
     *_K  = K;
     *_Kp = Kp;
 }
 
-// elliptic degree
+// ellipdegf()
+//
+// Compute elliptic degree using _n iterations
+//
+//  _N      :   analog filter order
+//  _k1     :   elliptic modulus for stop-band, ep/ep1
+//  _n      :   number of Landen iterations
 float ellipdegf(float _N,
                 float _k1,
                 unsigned int _n)
@@ -134,7 +163,13 @@ float ellipdegf(float _N,
     return k;
 }
 
-// elliptic cd() function (_n recursions)
+// ellip_cdf()
+//
+// complex elliptic cd() function (Jacobian elliptic cosine)
+//
+//  _u      :   vector in the complex u-plane
+//  _k      :   elliptic modulus (0 <= _k < 1)
+//  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_cdf(float complex _u,
                         float _k,
                         unsigned int _n)
@@ -149,7 +184,13 @@ float complex ellip_cdf(float complex _u,
     return wn;
 }
 
-// elliptic sn() function (_n recursions)
+// ellip_snf()
+//
+// complex elliptic sn() function (Jacobian elliptic sine)
+//
+//  _u      :   vector in the complex u-plane
+//  _k      :   elliptic modulus (0 <= _k < 1)
+//  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_snf(float complex _u,
                         float _k,
                         unsigned int _n)
@@ -164,7 +205,14 @@ float complex ellip_snf(float complex _u,
     return wn;
 }
 
-// elliptic inverse cd() function (_n recursions)
+// ellip_acdf()
+//
+// complex elliptic inverse cd() function (Jacobian elliptic
+// arc cosine)
+//
+//  _w      :   vector in the complex u-plane
+//  _k      :   elliptic modulus (0 <= _k < 1)
+//  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_acdf(float complex _w,
                          float _k,
                          unsigned int _n)
@@ -192,7 +240,14 @@ float complex ellip_acdf(float complex _w,
     return u;
 }
 
-// elliptic inverse sn() function (_n recursions)
+// ellip_asnf()
+//
+// complex elliptic inverse sn() function (Jacobian elliptic
+// arc sine)
+//
+//  _w      :   vector in the complex u-plane
+//  _k      :   elliptic modulus (0 <= _k < 1)
+//  _n      :   number of Landen iterations (typically 5-6)
 float complex ellip_asnf(float complex _w,
                          float _k,
                          unsigned int _n)
@@ -200,6 +255,8 @@ float complex ellip_asnf(float complex _w,
     return 1.0 - ellip_acdf(_w,_k,_n);
 }
 
+// ellip_azpkf()
+//
 // Compute analog zeros, poles, gain of low-pass elliptic
 // filter, grouping complex conjugates together. If
 // the filter order is odd, the single real pole is at the
