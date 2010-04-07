@@ -26,7 +26,7 @@ int main() {
     float Ap=1.0f;          // pass-band ripple
     float As=40.0f;         // stop-band attenuation
     unsigned int n=128;     // number of samples
-    liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_BUTTER;
+    liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_ELLIP;
     liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
     liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
 

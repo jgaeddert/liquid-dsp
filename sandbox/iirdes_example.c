@@ -1,6 +1,6 @@
 // iirdes_example.c
 //
-// Tests infinite impulse reponse (IIR) digital filter design.
+// Tests infinite impulse reponse (IIR) filter design.
 //
 
 #include <stdlib.h>
@@ -34,11 +34,11 @@ void usage()
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int order=5;   // filter order
+    unsigned int n=5;       // filter order
     float fc = 0.20f;       // cutoff frequency (low-pass prototype)
     float f0 = 0.25f;       // center frequency (band-pass, band-stop)
-    float As = 60.0f;       // stopband attenuation [dB]
-    float Ap = 1.0f;        // passband ripple [dB]
+    float slsl = 60.0f;     // stopband attenuation [dB]
+    float ripple = 1.0f;    // passband ripple [dB]
 
     // filter type
     liquid_iirdes_filtertype ftype = LIQUID_IIRDES_BUTTER;
@@ -88,11 +88,11 @@ int main(int argc, char*argv[]) {
                 exit(1);
             }
             break;
-        case 'n': order = atoi(optarg); break;
-        case 'r': Ap = atof(optarg);    break;
-        case 's': As = atof(optarg);    break;
-        case 'f': fc = atof(optarg);    break;
-        case 'c': f0 = atof(optarg);    break;
+        case 'n': n = atoi(optarg);         break;
+        case 'r': ripple = atof(optarg);    break;
+        case 's': slsl = atof(optarg);      break;
+        case 'f': fc = atof(optarg);        break;
+        case 'c': f0 = atof(optarg);        break;
         case 'o':
             if (strcmp(optarg,"sos")==0) {
                 format = LIQUID_IIRDES_SOS;
@@ -120,36 +120,101 @@ int main(int argc, char*argv[]) {
         fprintf(stderr,"error: %s, center frequency out of range\n", argv[0]);
         usage();
         exit(1);
-    } else if (Ap <= 0) {
+    } else if (ripple <= 0) {
         fprintf(stderr,"error: %s, pass-band ripple out of range\n", argv[0]);
         usage();
         exit(1);
-    } else if (As <= 0) {
+    } else if (slsl <= 0) {
         fprintf(stderr,"error: %s, stop-band ripple out of range\n", argv[0]);
         usage();
         exit(1);
     }
 
-    // derived values : compute filter length
-    unsigned int N = order; // effective order
-    // filter order effectively doubles for band-pass, band-stop
-    // filters due to doubling the number of poles and zeros as
-    // a result of filter transformation
-    if (btype == LIQUID_IIRDES_BANDPASS ||
-        btype == LIQUID_IIRDES_BANDSTOP)
-    {
-        N *= 2;
+
+    // number of analaog poles/zeros
+    unsigned int npa = n;
+    unsigned int nza;
+
+    // analog poles/zeros/gain
+    float complex pa[n];
+    float complex za[n];
+    float complex ka;
+    float complex k0;
+
+    unsigned int r = n%2;
+    unsigned int L = (n-r)/2;
+
+    unsigned int i;
+    // specific filter variables
+    float epsilon, Gp, Gs, ep, es;
+
+    switch (ftype) {
+    case LIQUID_IIRDES_BUTTER:
+        printf("Butterworth filter design:\n");
+        nza = 0;
+        k0 = 1.0f;
+        butter_azpkf(n,za,pa,&ka);
+        break;
+    case LIQUID_IIRDES_CHEBY1:
+        printf("Cheby-I filter design:\n");
+        nza = 0;
+        epsilon = sqrtf( powf(10.0f, ripple / 10.0f) - 1.0f );
+        k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + epsilon*epsilon);
+        cheby1_azpkf(n,epsilon,za,pa,&ka);
+        break;
+    case LIQUID_IIRDES_CHEBY2:
+        printf("Cheby-II filter design:\n");
+        nza = 2*L;
+        epsilon = powf(10.0f, -slsl/20.0f);
+        k0 = 1.0f;
+        cheby2_azpkf(n,epsilon,za,pa,&ka);
+        break;
+    case LIQUID_IIRDES_ELLIP:
+        printf("elliptic filter design:\n");
+        nza = 2*L;
+        Gp = powf(10.0f, -ripple  / 20.0f);
+        Gs = powf(10.0f, -slsl    / 20.0f);
+        printf("  Gp = %12.8f\n", Gp);
+        printf("  Gs = %12.8f\n", Gs);
+
+        // epsilon values
+        ep = sqrtf(1.0f/(Gp*Gp) - 1.0f);
+        es = sqrtf(1.0f/(Gs*Gs) - 1.0f);
+        k0 = r ? 1.0f : 1.0f / sqrtf(1.0f + ep*ep);
+
+        ellip_azpkf(n,ep,es,za,pa,&ka);
+        break;
+    case LIQUID_IIRDES_BESSEL:
+        printf("Bessel filter design:\n");
+        bessel_azpkf(n,za,pa,&ka);
+        k0 = 1.0f;
+        nza = 0;
+        break;
+    default:
+        fprintf(stderr,"error: iirdes_example: unknown filter type\n");
+        exit(1);
     }
-    unsigned int r = N % 2;     // odd/even order
-    unsigned int L = (N-r)/2;   // filter semi-length
 
-    // allocate memory for filter coefficients
-    unsigned int h_len = (format == LIQUID_IIRDES_SOS) ? 3*(L+r) : N+1;
-    float b[h_len];
-    float a[h_len];
+    printf("poles (analog):\n");
+    for (i=0; i<npa; i++)
+        printf("  pa[%3u] = %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));
+    printf("zeros (analog):\n");
+    for (i=0; i<nza; i++)
+        printf("  za[%3u] = %12.8f + j*%12.8f\n", i, crealf(za[i]), cimagf(za[i]));
+    printf("gain (analog):\n");
+    printf("  ka : %12.8f + j*%12.8f\n", crealf(ka), cimagf(ka));
 
-    // design filter
-    iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
+    // complex digital poles/zeros/gain
+    // NOTE: allocated double the filter order to cover band-pass, band-stop cases
+    float complex zd[2*n];
+    float complex pd[2*n];
+    float complex kd;
+    float m = iirdes_freqprewarp(btype,fc,f0);
+    printf("m : %12.8f\n", m);
+    bilinear_zpkf(za,    nza,
+                  pa,    npa,
+                  k0,    m,
+                  zd, pd, &kd);
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -157,20 +222,87 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
-    fprintf(fid,"n=%u;\n", order);
+#if 0
+    // print analog z/p/k
+    fprintf(fid,"za = zeros(1,nza);\n");
+    for (i=0; i<nza; i++)
+        fprintf(fid,"  za(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(za[i]), cimagf(za[i]));
+    fprintf(fid,"pa = zeros(1,npa);\n");
+    for (i=0; i<nza; i++)
+        fprintf(fid,"  pa(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pa[i]), cimagf(pa[i]));
+#endif
+    printf("zeros (digital, low-pass prototype):\n");
+    for (i=0; i<n; i++)
+        printf("  zd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(zd[i]), cimagf(zd[i]));
+    printf("poles (digital, low-pass prototype):\n");
+    for (i=0; i<n; i++)
+        printf("  pd[%3u] = %12.4e + j*%12.4e;\n", i, crealf(pd[i]), cimagf(pd[i]));
+    printf("gain (digital):\n");
+    printf("  kd : %12.8f + j*%12.8f\n", crealf(kd), cimagf(kd));
+
+    // negate zeros, poles for high-pass and band-stop cases
+    if (btype == LIQUID_IIRDES_HIGHPASS ||
+        btype == LIQUID_IIRDES_BANDSTOP)
+    {
+        for (i=0; i<n; i++) {
+            zd[i] = -zd[i];
+            pd[i] = -pd[i];
+        }
+    }
+
+    // transform zeros, poles in band-pass, band-stop cases
+    // NOTE: this also doubles the filter order
+    if (btype == LIQUID_IIRDES_BANDPASS ||
+        btype == LIQUID_IIRDES_BANDSTOP)
+    {
+        // allocate memory for transformed zeros, poles
+        float complex zd1[2*n];
+        float complex pd1[2*n];
+
+        // run zeros, poles trasform
+        iirdes_dzpk_lp2bp(zd, pd,   // low-pass prototype zeros, poles
+                          n,        // filter order
+                          f0,       // center frequency
+                          zd1,pd1); // transformed zeros, poles (length: 2*n)
+
+        // copy transformed zeros, poles
+        memmove(zd, zd1, 2*n*sizeof(float complex));
+        memmove(pd, pd1, 2*n*sizeof(float complex));
+
+        // update paramteres : n -> 2*n
+        r = 0;
+        L = n;
+        n = 2*n;
+    }
+
+    fprintf(fid,"n=%u;\n", n);
     fprintf(fid,"r=%u;\n", r);
     fprintf(fid,"L=%u;\n", L);
     fprintf(fid,"nfft=1024;\n");
 
-    unsigned int i;
+    // print digital z/p/k
+    fprintf(fid,"zd = zeros(1,n);\n");
+    fprintf(fid,"pd = zeros(1,n);\n");
+    for (i=0; i<n; i++) {
+        fprintf(fid,"  zd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(zd[i]), cimagf(zd[i]));
+        fprintf(fid,"  pd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pd[i]), cimagf(pd[i]));
+    }
+
+
     if (format == LIQUID_IIRDES_TF) {
+        float b[n+1];       // numerator
+        float a[n+1];       // denominator
+
+        // convert complex digital poles/zeros/gain into transfer function
+        iirdes_dzpk2tff(zd,pd,n,kd,b,a);
+
         // print coefficients
-        for (i=0; i<=order; i++) printf("a[%3u] = %12.8f;\n", i, a[i]);
-        for (i=0; i<=order; i++) printf("b[%3u] = %12.8f;\n", i, b[i]);
+        for (i=0; i<=n; i++) printf("a[%3u] = %12.8f;\n", i, a[i]);
+        for (i=0; i<=n; i++) printf("b[%3u] = %12.8f;\n", i, b[i]);
 
         fprintf(fid,"a = zeros(1,n+1);\n");
         fprintf(fid,"b = zeros(1,n+1);\n");
-        for (i=0; i<=order; i++) {
+        for (i=0; i<=n; i++) {
             fprintf(fid,"a(%3u) = %12.4e;\n", i+1, a[i]);
             fprintf(fid,"b(%3u) = %12.4e;\n", i+1, b[i]);
         }
@@ -188,8 +320,14 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"gd = real(t0./t1) - length(a) + 1;\n");
 
     } else {
-        float * B = b;
-        float * A = a;
+        // second-order sections
+        float A[3*(L+r)];
+        float B[3*(L+r)];
+
+        // convert complex digital poles/zeros/gain into second-
+        // order sections form
+        iirdes_dzpk2sosf(zd,pd,n,kd,B,A);
+
         // print coefficients
         printf("B [%u x 3] :\n", L+r);
         for (i=0; i<L+r; i++)
@@ -224,6 +362,22 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"end;\n");
         fprintf(fid,"H = fftshift(H);\n");
     }
+
+    // plot zeros, poles
+    fprintf(fid,"\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"k=0:0.01:1;\n");
+    fprintf(fid,"ti = cos(2*pi*k);\n");
+    fprintf(fid,"tq = sin(2*pi*k);\n");
+    fprintf(fid,"plot(ti,tq,'-','LineWidth',1,'Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"     real(zd),imag(zd),'o','LineWidth',2,'Color',[0.5 0   0],'MarkerSize',2,...\n");
+    fprintf(fid,"     real(pd),imag(pd),'x','LineWidth',2,'Color',[0   0.5 0],'MarkerSize',2);\n");
+    fprintf(fid,"xlabel('real');\n");
+    fprintf(fid,"ylabel('imag');\n");
+    fprintf(fid,"title('z-plane');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"axis square;\n");
 
     // plot group delay
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
