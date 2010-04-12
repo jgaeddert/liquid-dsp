@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "liquid.h"
 
@@ -93,7 +94,7 @@ int main() {
     fprintf(fid,"grid on;\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"g = conv(h,h)/k;\n");
+    fprintf(fid,"g = conv(h,fliplr(h))/k;\n");
     fprintf(fid,"t = [(-2*k*m):(2*k*m)]/k;\n");
     fprintf(fid,"i0 = [0:k:4*k*m]+1;\n");
     fprintf(fid,"plot(t,g,'-s',...\n");
