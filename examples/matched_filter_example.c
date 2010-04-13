@@ -63,7 +63,7 @@ int main() {
         else        printf("\n");
 
         // save output symbols
-        memcpy(&y[n], buff, k*sizeof(float));
+        memmove(&y[n], buff, k*sizeof(float));
         n += k;
     }
 
