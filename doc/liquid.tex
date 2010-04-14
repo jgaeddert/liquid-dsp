@@ -270,6 +270,19 @@ data sequence and do not require a high-level object-oriented programming
 interface.
 This we will leave to framework developers and interface builders.
 
+While a number of signal processing elements in \liquid\ use structures, these
+are simply to save the internal state of the object.
+For instance, a {\tt firfilt\_crcf} (finite impulse response filter) object
+is just a structure which contains--among other things--the filter taps
+(coefficients) and an input buffer.
+For the most part, C++ polymorphic data types and abstract base classes are
+unnecessary for basic signal processing, and primarily serve to reduce the
+code base of a project.
+Furthermore, while templates can certainly be useful for library development,
+their benefits are of limited use to signal processing and can be circumvented
+through the use of pre-processor macros at the gain of targeting more embedded
+processors.
+
 \subsection{Data Types}
 The majority of signal processing for SDR is performed at complex baseband.
 Complex numbers are handled in \liquid\ by defining data type
@@ -285,7 +298,7 @@ Here is an example:
 \input{listings/nco.c++.tex}
 
 \section{History}
-{\em liquid} was created by J. Gaeddert out of necessity to perform complex
+\liquid\ was created by J. Gaeddert out of necessity to perform complex
 digital signal processing algorithms on embedded devices
 without relying on dealing
 with proprietary and otherwise cumbersome frameworks.
