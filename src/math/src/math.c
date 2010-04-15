@@ -170,7 +170,7 @@ float liquid_kbd_window(unsigned int _n,
     }
     //printf("%12.8f / %12.8f = %12.8f\n", w0, w1, w0/w1);
 
-    return w0 / w1;
+    return sqrtf(w0 / w1);
 }
 
 
