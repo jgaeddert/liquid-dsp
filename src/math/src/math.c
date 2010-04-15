@@ -152,17 +152,17 @@ float liquid_kbd_window(unsigned int _n,
         exit(1);
     }
 
-    unsigned int N2 = _N >> 1;
-    if (_n >= N2)
+    unsigned int M = _N / 2;
+    if (_n >= M)
         return liquid_kbd_window(_N-_n-1,_N,_beta);
 
     float w0 = 0.0f;
     float w1 = 0.0f;
     float w;
     unsigned int i;
-    for (i=0; i<N2; i++) {
+    for (i=0; i<=M; i++) {
         // compute Kaiser window
-        w = kaiser(i,N2,_beta,0.0f);
+        w = kaiser(i,M+1,_beta,0.0f);
 
         // accumulate window sums
         w1 += w;
