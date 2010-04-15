@@ -133,6 +133,47 @@ unsigned int liquid_nchoosek(unsigned int _n, unsigned int _k)
 // Windowing functions
 //
 
+// Kaiser-Bessel derived window
+float liquid_kbd_window(unsigned int _n,
+                        unsigned int _N,
+                        float _beta)
+{
+    // TODO add reference
+
+    // validate input
+    if (_n >= _N) {
+        fprintf(stderr,"error: liquid_kbd_window(), index exceeds maximum\n");
+        exit(1);
+    } else if (_N == 0) {
+        fprintf(stderr,"error: liquid_kbd_window(), window length must be greater than zero\n");
+        exit(1);
+    } else if ( _N % 2 ) {
+        fprintf(stderr,"error: liquid_kbd_window(), window length must be odd\n");
+        exit(1);
+    }
+
+    unsigned int N2 = _N >> 1;
+    if (_n >= N2)
+        return liquid_kbd_window(_N-_n-1,_N,_beta);
+
+    float w0 = 0.0f;
+    float w1 = 0.0f;
+    float w;
+    unsigned int i;
+    for (i=0; i<N2; i++) {
+        // compute Kaiser window
+        w = kaiser(i,N2,_beta,0.0f);
+
+        // accumulate window sums
+        w1 += w;
+        if (i <= _n) w0 += w;
+    }
+    //printf("%12.8f / %12.8f = %12.8f\n", w0, w1, w0/w1);
+
+    return w0 / w1;
+}
+
+
 // Kaiser window
 float kaiser(unsigned int _n, unsigned int _N, float _beta, float _mu)
 {

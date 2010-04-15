@@ -77,6 +77,7 @@ local_src	:=			\
 	iirqmfb_crcf_example.c		\
 	itqmfb_crcf_example.c		\
 	itqmfb_rrrf_example.c		\
+	kbd_window_example.c		\
 	kmeans_example.c		\
 	matrix_example.c		\
 	mdct_example.c			\
