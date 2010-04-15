@@ -42,6 +42,7 @@ local_s_files	:= 		\
 # within $(local_dir)
 #
 local_t_files	:= 		\
+	kbd_autotest.h		\
 	math_autotest.h		\
 	polynomial_autotest.h
 
