@@ -20,8 +20,13 @@
  */
 
 //
-// FBASC: filterbank audio synthesizer codec
-//
+// fbasc : filterbank audio synthesizer codec
+// 
+// The fbasc audio codec implements an AAC-like compression
+// algorithm, using the modified discrete cosine transform as a
+// loss-less channelizer.  The resulting channelized data are
+// then quantized based on their spectral energy levels and then
+// packed into a frame which the decoder can then interpret.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,38 +38,20 @@
 
 #define FBASC_DEBUG     0
 
-//  description         value   units
-//  -----------         -----   -----
-//  sample rate         16      kHz
-//  frame length        64      ms
-//  samples/frame       1024    samp.
-//
-//  num. channels       32      -
-//  samp./ch./frame     32      samp.
-//
-//  av. bit rate        16      kbps
-//  num. used channels  16      ch.
-//  bits/u. ch./frame   ?       bits
-//
-
 struct fbasc_s {
     int type;                       // encoder/decoder
-    unsigned int num_channels;      // 16
-    unsigned int samples_per_frame; // 256
-    unsigned int bytes_per_header;  // 8 (num_channels/2)
-    unsigned int bytes_per_frame;   // <fixed>
-    unsigned int bits_per_block;
-    unsigned int max_bits_per_sample;
+    unsigned int num_channels;      // MDCT size (half-length)
+    unsigned int samples_per_frame; // input audio samples per frame
+    unsigned int bytes_per_frame;   // number of bytes per frame
+
+    // derived values
+    unsigned int symbols_per_frame; // samples_per_frame/num_channels
+
     unsigned int * bk;              // bits per subchannel
     float * gk;                     // subchannel gain
 
-    // derived values
-    unsigned int samples_per_channel;   // samples_per_frame/num_channels (16)
-
     // common objects
-    int channelizer_type;
-    itqmfb_rrrf channelizer;        // channelizer
-    float * X;              // channelized matrix (length: samples_per_frame)
+    float * X;              // channelized matrix (size: num_channels x symbols_per_frame)
     unsigned char * data;   // frame data (bytes)
 
     // analysis/synthesis
@@ -75,10 +62,8 @@ struct fbasc_s {
 // create options
 //  _type               :   analysis/synthesis (encoder/decoder)
 //  _num_channels       :   number of filterbank channels
-//  _samples_per_frame  :   number of real samples per frame
+//  _samples_per_frame  :   number of real samples per frame (must be even multiple of _num_channels)
 //  _bytes_per_frame    :   number of encoded data bytes per frame
-//
-// FIXME: only build objects necessary for codec type (analysis vs. synthesis)
 fbasc fbasc_create(
         int _type,
         unsigned int _num_channels,
@@ -86,38 +71,28 @@ fbasc fbasc_create(
         unsigned int _bytes_per_frame)
 {
     fbasc q = (fbasc) malloc(sizeof(struct fbasc_s));
-    q->type = _type;
 
+    // initialize parametric values/lengths
+    q->type = _type;
+    q->num_channels = _num_channels;
+    q->samples_per_frame = _samples_per_frame;
+    q->bytes_per_frame = _bytes_per_frame;
+
+    // validate input
     if (q->type == FBASC_ENCODER) {
-        q->channelizer_type = LIQUID_ITQMFB_ANALYZER;
     } else if (q->type == FBASC_DECODER) {
-        q->channelizer_type = LIQUID_ITQMFB_SYNTHESIZER;
     } else {
         printf("error: fbasc_create(), unknown type: %d\n", _type);
         exit(1);
     }
 
-    // initialize parametric values/lengths
-    q->num_channels = _num_channels;
-    q->samples_per_frame = _samples_per_frame;
-    q->bytes_per_frame = _bytes_per_frame;
-
-    // override to default values
-    q->num_channels = 16;
-    q->samples_per_frame = 512;
-    q->bytes_per_header = q->num_channels;
-    q->bits_per_block = 16;
-    q->max_bits_per_sample = 8;
-    q->bytes_per_frame = q->samples_per_frame + q->bytes_per_header;
-
     // initialize derived values/lengths
-    q->samples_per_channel = (q->samples_per_frame) / (q->num_channels);
+    q->symbols_per_frame = (q->samples_per_frame) / (q->num_channels);
 
-    // create polyphase filterbank channelizers
-    //    num_channels      : 16 = 2^4
-    //    filter length     : 20
-    //    filter bandwidth  : 0.3
-    q->channelizer = itqmfb_rrrf_create(4, 20, 0.3f, q->channelizer_type);
+    if ( q->symbols_per_frame * q->num_channels != q->samples_per_frame) {
+        fprintf(stderr,"error: fbasc_create(), _num_channels must evenly divide _samples_per_frame\n");
+        exit(1);
+    }
 
     // analysis/synthesis
     q->X = (float*) malloc( (q->samples_per_frame)*sizeof(float) );
@@ -134,9 +109,6 @@ fbasc fbasc_create(
 
 void fbasc_destroy(fbasc _q)
 {
-    // destroy channelizer
-    itqmfb_rrrf_destroy(_q->channelizer);
-
     // free common arrays
     free(_q->X);
     free(_q->data);
@@ -166,9 +138,9 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         _q->channel_energy[i] = 0.0f;
 
     unsigned int n=0;   // input sample counter
-    for (i=0; i<_q->samples_per_channel; i++) {
+    for (i=0; i<_q->symbols_per_frame; i++) {
         // channelize time series
-        itqmfb_rrrf_execute(_q->channelizer, _audio + n, _q->X + n);
+        //itqmfb_rrrf_execute(_q->channelizer, _audio + n, _q->X + n);
 
         // compute energy on each channel
         for (j=0; j<_q->num_channels; j++)
@@ -177,10 +149,11 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         n += _q->num_channels;
     }
 
+#if 0
     // normalize channel energy
     float max_var = 0.0f;
     for (i=0; i<_q->num_channels; i++) {
-        _q->channel_energy[i] = _q->channel_energy[i] / _q->samples_per_channel;
+        _q->channel_energy[i] = _q->channel_energy[i] / _q->symbols_per_frame;
         max_var = _q->channel_energy[i] > max_var ? _q->channel_energy[i] : max_var;
     }
     //printf("max variance: %16.12f\n", max_var);
@@ -226,7 +199,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     float max_sample=0.0f;
 #endif
     unsigned int b;
-    for (i=0; i<_q->samples_per_channel; i++) {
+    for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
 
             if (_q->bk[j] > 0) {
@@ -256,7 +229,7 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 
     // TODO: pack frame
 
-
+#endif
 
 }
 
@@ -290,7 +263,7 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
     // decode using basic quantizer
     float sample, z;
     unsigned int b;
-    for (i=0; i<_q->samples_per_channel; i++) {
+    for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
             if (_q->bk[j] > 0) {
                 // quantize
@@ -312,9 +285,9 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
     }
 
     unsigned int n=0;   // output sample counter
-    for (i=0; i<_q->samples_per_channel; i++) {
+    for (i=0; i<_q->symbols_per_frame; i++) {
         // run synthesizer
-        itqmfb_rrrf_execute(_q->channelizer, _q->X + n, _audio + n);
+        //itqmfb_rrrf_execute(_q->channelizer, _q->X + n, _audio + n);
 
         n += _q->num_channels;
     }
