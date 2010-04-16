@@ -68,7 +68,6 @@ int main() {
         // generate filtered noise
         fir_filter_rrrf_push(f, randnf());
         fir_filter_rrrf_execute(f, &x[i]); 
-        x[i] = 1.0f;
 
         fprintf(fid,"x(%4u) = %12.4e;", i+1, x[i]);
     }
