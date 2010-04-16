@@ -48,6 +48,8 @@ struct fbasc_s {
     unsigned int symbols_per_frame; // samples_per_frame/num_channels
 
     // common objects
+    float * w;                      // MDCT window [size: 2*num_channels]
+    float * buffer;                 // MDCT buffer [size: 2*num_channels]
     float * X;                      // channelized matrix (size: num_channels x symbols_per_frame)
     unsigned int * bk;              // bits per subchannel
     float * gk;                     // subchannel gain
@@ -95,6 +97,8 @@ fbasc fbasc_create(
     }
 
     // analysis/synthesis
+    q->w =              (float*) malloc( 2*(q->num_channels)*sizeof(float) );
+    q->buffer =         (float*) malloc( 2*(q->num_channels)*sizeof(float) );
     q->X =              (float*) malloc( (q->samples_per_frame)*sizeof(float) );
     q->channel_energy = (float*) malloc( (q->num_channels)*sizeof(float) );
     q->gk =             (float*) malloc( (q->num_channels)*sizeof(float) );
@@ -104,13 +108,25 @@ fbasc fbasc_create(
     q->bk = (unsigned int *) malloc( (q->num_channels)*sizeof(unsigned int));
     q->data = (unsigned char *) malloc( (q->samples_per_frame)*sizeof(unsigned char));
 
+    unsigned int i;
+
+    // initialize window
+    for (i=0; i<q->num_channels; i++)
+        q->w[i] = liquid_kbd_window(i,2*q->num_channels,10.0f);
+
+    // reset buffer
+    for (i=0; i<q->num_channels; i++)
+        q->buffer[i] = 0.0f;
+
     return q;
 }
 
 void fbasc_destroy(fbasc _q)
 {
     // free common arrays
-    free(_q->X);
+    free(_q->X);        // channelized samples
+    free(_q->w);        // windowing function for MDCT
+    free(_q->buffer);   // buffer for MDCT
     free(_q->data);
     free(_q->bk);
     free(_q->gk);
@@ -132,6 +148,16 @@ void fbasc_print(fbasc _q)
 void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 {
     unsigned int i, j;
+
+    // run analyzer
+
+    // compute channel energy
+   
+    // compute bit allocation
+
+    // quantize samples
+
+    // pack data
 
     // clear energy...
     for (i=0; i<_q->num_channels; i++)
@@ -295,6 +321,51 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 
 
 // internal
+
+// run analyzer
+void fbasc_encoder_run_analyzer(fbasc _q,
+                                float * _x,
+                                float * _X)
+{
+    unsigned int i;
+
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        // copy last half of buffer to first half
+        memmove(_q->buffer, &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
+
+        // copy input block to last half of buffer
+        memmove(_q->buffer, &_x[i*_q->num_channels], _q->num_channels*sizeof(float));
+
+        // run transform
+        mdct(_q->buffer, &_X[i*_q->num_channels], _q->w, _q->num_channels);
+    }
+}
+
+// run synthesizer
+void fbasc_encoder_run_synthesizer(fbasc _q,
+                                   float * _X,
+                                   float * _x)
+{
+    unsigned int i,j;
+
+    // copy last half of buffer to beginning of output; this
+    // preserves continuity between frames
+    memmove(_x, &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
+
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        // run inverse transform
+        imdct(&_X[i*_q->num_channels], _q->buffer, _q->w, _q->num_channels);
+
+        // accumulate first half of buffer to output
+        for (j=0; j<_q->num_channels; j++)
+            _x[i*_q->num_channels + j] += _q->buffer[j];
+
+        // copy last half of buffer to output (only if the
+        // index isn't on the last symbol)
+        if (i==_q->symbols_per_frame-1) break;
+        memmove(&_x[(i+1)*_q->num_channels], &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
+    }
+}
 
 // TODO: document this method
 void fbasc_compute_bit_allocation(unsigned int _n,

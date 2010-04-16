@@ -6,6 +6,8 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "liquid.h"
@@ -73,20 +75,34 @@ int main() {
     }
     fir_filter_rrrf_destroy(f);
 
-    // run analyzer
-    for (i=0; i<num_symbols-1; i++) {
-        mdct(&x[i*num_channels],&X[i*num_channels],w,num_channels);
+    // run analyzer, accounting for input overlap
+    float buffer[2*num_channels];
+    memset(buffer, 0x00, 2*num_channels*sizeof(float));
+    for (i=0; i<num_symbols; i++) {
+        // copy last half of buffer to first half
+        memmove(buffer, &buffer[num_channels], num_channels*sizeof(float));
+
+        // copy input block to last half of buffer
+        memmove(&buffer[num_channels], &x[i*num_channels], num_channels*sizeof(float));
+
+        // run transform
+        mdct(buffer, &X[i*num_channels], w, num_channels);
+
+        //mdct(&x[i*num_channels],&X[i*num_channels],w,num_channels);
     }
 
-    // run synthesizer
-    float y_tmp[2*num_channels];   // temporary buffer
-    for (i=0; i<num_symbols-1; i++) {
+    // run synthesizer, accountint for output overlap
+    for (i=0; i<num_symbols; i++) {
         // run inverse MDCT
-        imdct(&X[i*num_channels],y_tmp,w,num_channels);
+        imdct(&X[i*num_channels],buffer,w,num_channels);
 
-        // accumulate result in output buffer
-        for (j=0; j<2*num_channels; j++)
-            y[i*num_channels+j] += y_tmp[j];
+        // accumulate first half of buffer to output
+        for (j=0; j<num_channels; j++)
+            y[i*num_channels+j] += buffer[j];
+
+        // copy last half of buffer to output (only if we aren't at the last symbol)
+        if (i==num_symbols-1) break;
+        memmove(&y[(i+1)*num_channels], &buffer[num_channels], num_channels*sizeof(float));
     }
 
     // print results to file
@@ -116,7 +132,7 @@ int main() {
     // plot time-domain reconstruction
     fprintf(fid,"t = 0:(num_samples-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,x,t,y);\n");
+    fprintf(fid,"plot(t,x,t-num_channels,y);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('signal output');\n");
     fprintf(fid,"legend('original','reconstructed',0);\n");

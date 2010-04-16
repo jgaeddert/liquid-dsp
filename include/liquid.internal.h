@@ -189,6 +189,10 @@ void fbasc_compute_bit_allocation(unsigned int _n,
                                   unsigned int _max_bits,
                                   unsigned int * _k);
 
+// run analyzer/synthesizer
+void fbasc_encoder_run_analyzer(fbasc _q, float * _x, float * _X);
+void fbasc_encoder_run_synthesizer(fbasc _q, float * _X, float * _x);
+
 // quantize/de-quantize channelized data
 void fbasc_encoder_quantize_samples(fbasc _q);
 void fbasc_decoder_deqauntize_samples(fbasc _q);
