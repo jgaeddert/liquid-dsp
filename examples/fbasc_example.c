@@ -14,7 +14,7 @@ int main() {
     // options
     unsigned int num_channels=16;
     unsigned int samples_per_frame=512;
-    unsigned int bytes_per_frame=samples_per_frame + num_channels + 1;
+    unsigned int bytes_per_frame = samples_per_frame + num_channels + 1;
 
     unsigned int num_frames=2;
 
@@ -34,7 +34,9 @@ int main() {
     float dphi=0.03f;
     unsigned int i, j;
     unsigned int n=0;   // output file sample counter
-    float x[samples_per_frame], y[samples_per_frame];
+    float x[samples_per_frame];
+    float X[samples_per_frame];
+    float y[samples_per_frame];
     unsigned char framedata[bytes_per_frame];
     for (i=0; i<num_frames; i++) {
         for (j=0; j<samples_per_frame; j++) {
@@ -45,13 +47,15 @@ int main() {
             //x[j] = randnf()*0.1f;
         }
 
-#if 0
+#if 1
         fbasc_encode(fbasc_encoder, x, framedata);
 
-        fbasc_decode(fbasc_decoder, framedata, y);
+        //fbasc_decode(fbasc_decoder, framedata, y);
 #else
-        float X[samples_per_frame];
+        // run analyzer
         fbasc_encoder_run_analyzer(fbasc_encoder, x, X);
+
+        // run synthesizer
         fbasc_decoder_run_synthesizer(fbasc_decoder, X, y);
 #endif
 

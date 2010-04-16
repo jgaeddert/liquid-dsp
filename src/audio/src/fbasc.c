@@ -36,7 +36,7 @@
 
 #include "liquid.internal.h"
 
-#define FBASC_DEBUG     0
+#define FBASC_DEBUG     1
 
 struct fbasc_s {
     int type;                       // encoder/decoder
@@ -46,6 +46,10 @@ struct fbasc_s {
 
     // derived values
     unsigned int symbols_per_frame; // samples_per_frame/num_channels
+    unsigned int header_len;        // header length (bytes)
+    unsigned int bits_per_frame;
+    unsigned int bits_per_symbol;
+    unsigned int max_bits_per_sample;
 
     // common objects
     float * w;                      // MDCT window [size: 2*num_channels]
@@ -90,6 +94,10 @@ fbasc fbasc_create(
 
     // initialize derived values/lengths
     q->symbols_per_frame = (q->samples_per_frame) / (q->num_channels);
+    q->header_len = q->num_channels + 1; // header length
+    q->bits_per_frame = 8*(q->bytes_per_frame-q->header_len);
+    q->bits_per_symbol = q->bits_per_frame / q->symbols_per_frame;
+    q->max_bits_per_sample = 8;
 
     if ( q->symbols_per_frame * q->num_channels != q->samples_per_frame) {
         fprintf(stderr,"error: fbasc_create(), _num_channels must evenly divide _samples_per_frame\n");
@@ -151,62 +159,25 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
     unsigned int i, j;
 
     // run analyzer
+    fbasc_encoder_run_analyzer(_q, _audio, _q->X);
 
     // compute channel energy
-   
-    // compute bit allocation
-
-    // quantize samples
-
-    // pack data
-
-    // clear energy...
-    for (i=0; i<_q->num_channels; i++)
-        _q->channel_energy[i] = 0.0f;
-
-    unsigned int n=0;   // input sample counter
-    for (i=0; i<_q->symbols_per_frame; i++) {
-        // channelize time series
-        //itqmfb_rrrf_execute(_q->channelizer, _audio + n, _q->X + n);
-
-        // compute energy on each channel
-        for (j=0; j<_q->num_channels; j++)
-            _q->channel_energy[j] += (_q->X[n+j])*(_q->X[n+j]);
-
-        n += _q->num_channels;
-    }
-
-#if 0
-    // normalize channel energy
-    float max_var = 0.0f;
-    for (i=0; i<_q->num_channels; i++) {
-        _q->channel_energy[i] = _q->channel_energy[i] / _q->symbols_per_frame;
-        max_var = _q->channel_energy[i] > max_var ? _q->channel_energy[i] : max_var;
-    }
-    //printf("max variance: %16.12f\n", max_var);
-
-    // compute nominal gain
-    int gi = (int)(-log2f(max_var)) - 16;
-    gi = gi > 255 ? 255 : gi;
-    gi = gi <   0 ?   0 : gi;
-    float g = (float)(1<<gi);
-#if FBASC_DEBUG
-    printf("  enc: nominal gain : %12.4e (gi = %3u)\n", g, gi);
-#endif
-
-#if FBASC_DEBUG
-    printf("channel energy:\n");
-    for (i=0; i<_q->num_channels; i++)
-        printf("  e[%3u] = %12.8f\n", i, _q->channel_energy[i]);
-#endif
+    fbasc_encoder_compute_metrics(_q);
 
     // compute bit partitioning
     fbasc_compute_bit_allocation(_q->num_channels,
                                  _q->channel_energy,
-                                 _q->bits_per_block,
+                                 _q->bits_per_symbol,
                                  _q->max_bits_per_sample,
                                  _q->bk);
 
+    // quantize samples
+    void fbasc_encoder_quantize_samples(fbasc _q);
+
+    // pack data
+    void fbasc_encoder_pack_frame(fbasc _q);
+
+#if 0
     // write partition to header
     unsigned int s=0;
     _frame[s++] = gi;
@@ -221,38 +192,6 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
         _q->gk[i] = (float)(1<<(k_max-_q->bk[i]));
 
     // encode using basic quantizer
-    float sample, z;
-#if FBASC_DEBUG
-    float max_sample=0.0f;
-#endif
-    unsigned int b;
-    for (i=0; i<_q->symbols_per_frame; i++) {
-        for (j=0; j<_q->num_channels; j++) {
-
-            if (_q->bk[j] > 0) {
-                // acquire sample, applying proper gain
-                sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j] * g;
-
-                // compress using mu-law encoder
-                z = compress_mulaw(sample, _q->mu);
-
-#if FBASC_DEBUG
-                if (fabsf(z) > max_sample)
-                    max_sample = fabsf(z);
-#endif
-                // quantize
-                b = quantize_adc(z, _q->bk[j]);
-            } else {
-                b = 0;
-            }
-
-            _frame[s] = b;
-            s++;
-        }
-    }
-#if FBASC_DEBUG
-    printf("max sample: %12.8f\n", max_sample);
-#endif
 
     // TODO: pack frame
 
@@ -417,7 +356,7 @@ void fbasc_compute_bit_allocation(unsigned int _n,
         bk = (bk < 0)               ? 0                 : bk;
 
 #if FBASC_DEBUG
-        printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.8f, bk = %8.4f(%3d)\n",
+        printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.4f, bk = %8.4f(%3d)\n",
                idx[i], _e[idx[i]], b, log2p, bkf, bk);
 #endif
         _k[idx[i]] = bk;
@@ -427,6 +366,48 @@ void fbasc_compute_bit_allocation(unsigned int _n,
     }
 
 }
+
+// compute normalized channel energy, nominal gain, etc.
+void fbasc_encoder_compute_metrics(fbasc _q)
+{
+    unsigned int i,j;
+
+    // clear channel energy array
+    for (i=0; i<_q->num_channels; i++)
+        _q->channel_energy[i] = 0.0f;
+
+    // compute channel energy
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        for (j=0; j<_q->num_channels; j++) {
+            float t0 = _q->X[i*_q->num_channels+j];
+            _q->channel_energy[j] += t0*t0;
+        }
+    }
+
+    // normalize channel energy by number of symbols per frame
+    float max_var = 0.0f;
+    for (i=0; i<_q->num_channels; i++) {
+        _q->channel_energy[i] = _q->channel_energy[i] / _q->symbols_per_frame;
+        max_var = _q->channel_energy[i] > max_var ? _q->channel_energy[i] : max_var;
+    }
+    printf("max variance: %16.12f\n", max_var);
+
+    // compute nominal gain
+    int gi = (int)(-log2f(max_var)) - 16;
+    gi = gi > 255 ? 255 : gi;
+    gi = gi <   0 ?   0 : gi;
+    float g = (float)(1<<gi);
+#if FBASC_DEBUG
+    printf("  enc: nominal gain : %12.4e (gi = %3u)\n", g, gi);
+#endif
+
+#if FBASC_DEBUG
+    printf("channel energy:\n");
+    for (i=0; i<_q->num_channels; i++)
+        printf("  e[%3u] = %12.8f\n", i, _q->channel_energy[i]);
+#endif
+}
+
 
 // quantize channelized data
 void fbasc_encoder_quantize_samples(fbasc _q)
