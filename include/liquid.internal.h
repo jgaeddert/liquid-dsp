@@ -189,8 +189,13 @@ void fbasc_compute_bit_allocation(unsigned int _n,
                                   unsigned int _max_bits,
                                   unsigned int * _k);
 
-void fbasc_encode_frame(fbasc _q);
-void fbasc_decode_frame(fbasc _q);
+// quantize/de-quantize channelized data
+void fbasc_encoder_quantize_samples(fbasc _q);
+void fbasc_decoder_deqauntize_samples(fbasc _q);
+
+// pack/unpack frame
+void fbasc_encoder_pack_frame(fbasc _q);
+void fbasc_decoder_unpack_frame(fbasc _q);
 
 //
 // MODULE : buffer

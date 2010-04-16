@@ -47,12 +47,12 @@ struct fbasc_s {
     // derived values
     unsigned int symbols_per_frame; // samples_per_frame/num_channels
 
+    // common objects
+    float * X;                      // channelized matrix (size: num_channels x symbols_per_frame)
     unsigned int * bk;              // bits per subchannel
     float * gk;                     // subchannel gain
-
-    // common objects
-    float * X;              // channelized matrix (size: num_channels x symbols_per_frame)
-    unsigned char * data;   // frame data (bytes)
+    unsigned char * data;           // quantized frame data (bytes)
+    //unsigned char * packed_data;    // packed quantized data
 
     // analysis/synthesis
     float * channel_energy;
@@ -95,9 +95,9 @@ fbasc fbasc_create(
     }
 
     // analysis/synthesis
-    q->X = (float*) malloc( (q->samples_per_frame)*sizeof(float) );
+    q->X =              (float*) malloc( (q->samples_per_frame)*sizeof(float) );
     q->channel_energy = (float*) malloc( (q->num_channels)*sizeof(float) );
-    q->gk = (float*) malloc( (q->num_channels)*sizeof(float) );
+    q->gk =             (float*) malloc( (q->num_channels)*sizeof(float) );
     q->mu = 255.0f;
 
     // data
@@ -363,4 +363,25 @@ void fbasc_compute_bit_allocation(unsigned int _n,
     }
 
 }
+
+// quantize channelized data
+void fbasc_encoder_quantize_samples(fbasc _q)
+{
+}
+
+// de-quantize channelized data
+void fbasc_decoder_deqauntize_samples(fbasc _q)
+{
+}
+
+// pack frame
+void fbasc_encoder_pack_frame(fbasc _q)
+{
+}
+
+// unpack frame
+void fbasc_decoder_unpack_frame(fbasc _q)
+{
+}
+
 
