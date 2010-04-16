@@ -142,6 +142,7 @@ void fbasc_print(fbasc _q)
     printf("    type:           %s\n", 
         _q->type == FBASC_ENCODER ? "encoder" : "decoder");
     printf("    samples/frame:  %u\n", _q->samples_per_frame);
+    printf("    symbols/frame:  %u\n", _q->symbols_per_frame);
     printf("    bytes/frame:    %u\n", _q->bytes_per_frame);
 }
 
@@ -334,7 +335,7 @@ void fbasc_encoder_run_analyzer(fbasc _q,
         memmove(_q->buffer, &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
 
         // copy input block to last half of buffer
-        memmove(_q->buffer, &_x[i*_q->num_channels], _q->num_channels*sizeof(float));
+        memmove(&_q->buffer[_q->num_channels], &_x[i*_q->num_channels], _q->num_channels*sizeof(float));
 
         // run transform
         mdct(_q->buffer, &_X[i*_q->num_channels], _q->w, _q->num_channels);
@@ -342,7 +343,7 @@ void fbasc_encoder_run_analyzer(fbasc _q,
 }
 
 // run synthesizer
-void fbasc_encoder_run_synthesizer(fbasc _q,
+void fbasc_decoder_run_synthesizer(fbasc _q,
                                    float * _X,
                                    float * _x)
 {
@@ -362,7 +363,7 @@ void fbasc_encoder_run_synthesizer(fbasc _q,
 
         // copy last half of buffer to output (only if the
         // index isn't on the last symbol)
-        if (i==_q->symbols_per_frame-1) break;
+        if (i==_q->symbols_per_frame-1) continue;
         memmove(&_x[(i+1)*_q->num_channels], &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
     }
 }

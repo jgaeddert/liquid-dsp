@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define OUTPUT_FILENAME "fbasc_example.m"
 
@@ -45,9 +45,15 @@ int main() {
             //x[j] = randnf()*0.1f;
         }
 
+#if 0
         fbasc_encode(fbasc_encoder, x, framedata);
 
         fbasc_decode(fbasc_decoder, framedata, y);
+#else
+        float X[samples_per_frame];
+        fbasc_encoder_run_analyzer(fbasc_encoder, x, X);
+        fbasc_decoder_run_synthesizer(fbasc_decoder, X, y);
+#endif
 
         // write data to file
         for (j=0; j<samples_per_frame; j++) {
