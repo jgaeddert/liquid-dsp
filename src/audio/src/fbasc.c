@@ -303,26 +303,18 @@ void fbasc_compute_bit_allocation(unsigned int _n,
                                   unsigned int _max_bits,
                                   unsigned int * _k)
 {
-    float e[_n];            // sorted energy variances
     unsigned int idx[_n];   // sorted indices
 
     unsigned int i, j;
-    for (i=0; i<_n; i++) {
-        e[i] = _e[i];
+    for (i=0; i<_n; i++)
         idx[i] = i;
-    }
 
     // sort (inefficient, but easy to implement)
-    float e_tmp;
     unsigned int i_tmp;
     for (i=0; i<_n; i++) {
         for (j=0; j<_n; j++) {
-            if ( (i!=j) && (e[i] > e[j]) ) {
+            if ( (i!=j) && (_e[idx[i]] > _e[idx[j]]) ) {
                 // swap values
-                e_tmp = e[i];
-                e[i] = e[j];
-                e[j] = e_tmp;
-
                 i_tmp = idx[i];
                 idx[i] = idx[j];
                 idx[j] = i_tmp;
@@ -342,10 +334,10 @@ void fbasc_compute_bit_allocation(unsigned int _n,
         b = (float)(available_bits) / (float)(n);
         // compute 'entropy' metric
         for (j=i; j<_n; j++)
-            log2p += (e[j] == 0.0f) ? -60.0f : log2f(e[j]);
+            log2p += (_e[idx[j]] == 0.0f) ? -60.0f : log2f(_e[idx[j]]);
         log2p /= n;
 
-        bkf = (e[i]==0.0f) ? 1.0f : b + 0.5f*log2f(e[i]) - 0.5f*log2p;
+        bkf = (_e[idx[i]]==0.0f) ? 1.0f : b + 0.5f*log2f(_e[idx[i]]) - 0.5f*log2p;
         bk  = (int)roundf(bkf);
 
         bk = (bk > _max_bits)       ? _max_bits         : bk;
@@ -354,7 +346,7 @@ void fbasc_compute_bit_allocation(unsigned int _n,
 
 #if FBASC_DEBUG
         printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.8f, bk = %8.4f(%3d)\n",
-               idx[i], e[i], b, log2p, bkf, bk);
+               idx[i], _e[idx[i]], b, log2p, bkf, bk);
 #endif
         _k[idx[i]] = bk;
 
@@ -367,6 +359,43 @@ void fbasc_compute_bit_allocation(unsigned int _n,
 // quantize channelized data
 void fbasc_encoder_quantize_samples(fbasc _q)
 {
+    unsigned int i;     // symbol counter
+    unsigned int j;     // sub-channel counter
+    unsigned int s=0;   // output sample counter
+    float sample;       // channelized sample
+    float z;            // compressed sample
+    unsigned int b;     // quantized sample
+
+#if 0
+    // find bk_max
+    unsigned int bk_max=0;
+    for (i=0; i<_q->num_channels; i++)
+        bk_max = _q->bk[i] > bk_max ? _q->bk[i] : bk_max;
+
+    // compute scaling factor: gk = 2^(max(bk) - bk)
+    for (i=0; i<_q->num_channels; i++)
+        _q->gk[i] = (float)(1<<(bk_max-_q->bk[i]));
+#endif
+
+    // cycle through symbols in each sub-channel and quantize
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        for (j=0; j<_q->num_channels; j++) {
+            if (_q->bk[j] > 0) {
+                // acquire sample, applying proper gain
+                //sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j] * g;
+                sample = _q->X[i*(_q->num_channels)+j];
+
+                // compress using mu-law encoder
+                z = compress_mulaw(sample, _q->mu);
+
+                // quantize
+                b = quantize_adc(z, _q->bk[j]);
+            } else {
+                b = 0;
+            }
+            _q->data[s++] = b;
+        }
+    }
 }
 
 // de-quantize channelized data
