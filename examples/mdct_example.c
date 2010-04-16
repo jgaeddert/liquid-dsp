@@ -14,7 +14,7 @@
 
 int main() {
     // MDCT options
-    unsigned int N=64; // MDCT size
+    unsigned int num_channels=64; // MDCT size
     unsigned int num_symbols=16;
 
     // filter options
@@ -25,7 +25,7 @@ int main() {
 
     // derived values
     unsigned int i,j;
-    unsigned int num_samples = N*num_symbols;
+    unsigned int num_samples = num_channels*num_symbols;
     float x[num_samples];
     float X[num_samples];
     float y[num_samples];
@@ -39,19 +39,23 @@ int main() {
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
-    fprintf(fid,"N = %u;\n", N);
+    fprintf(fid,"num_channels = %u;\n", num_channels);
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
-    fprintf(fid,"num_samples = N*num_symbols;\n");
+    fprintf(fid,"num_samples = num_channels*num_symbols;\n");
 
     // generate window
-    float w[2*N];
-    for (i=0; i<2*N; i++) {
+    float w[2*num_channels];
+    for (i=0; i<2*num_channels; i++) {
+#if 0
         // raised half sine
-        //w[i] = sinf(M_PI/(2.0f*N)*(i+0.5f));
-
+        w[i] = sinf(M_PI/(2.0f*num_channels)*(i+0.5f));
+#elif 0
         // shaped pulse
-        float t0 = sinf(M_PI/(2*N)*(i+0.5));
+        float t0 = sinf(M_PI/(2*num_channels)*(i+0.5));
         w[i] = sinf(M_PI*0.5f*t0*t0);
+#else
+        w[i] = liquid_kbd_window(i,2*num_channels,10.0f);
+#endif
     }
 
     // generate basic filter
@@ -67,26 +71,27 @@ int main() {
 
         fprintf(fid,"x(%4u) = %12.4e;", i+1, x[i]);
     }
+    fir_filter_rrrf_destroy(f);
 
     // run analyzer
     for (i=0; i<num_symbols-1; i++) {
-        mdct(&x[i*N],&X[i*N],w,N);
+        mdct(&x[i*num_channels],&X[i*num_channels],w,num_channels);
     }
 
     // run synthesizer
-    float y_tmp[2*N];   // temporary buffer
+    float y_tmp[2*num_channels];   // temporary buffer
     for (i=0; i<num_symbols-1; i++) {
         // run inverse MDCT
-        imdct(&X[i*N],y_tmp,w,N);
+        imdct(&X[i*num_channels],y_tmp,w,num_channels);
 
         // accumulate result in output buffer
-        for (j=0; j<2*N; j++)
-            y[i*N+j] += y_tmp[j];
+        for (j=0; j<2*num_channels; j++)
+            y[i*num_channels+j] += y_tmp[j];
     }
 
     // print results to file
-    fprintf(fid,"w = zeros(1,2*N);\n");
-    for (i=0; i<2*N; i++)
+    fprintf(fid,"w = zeros(1,2*num_channels);\n");
+    for (i=0; i<2*num_channels; i++)
         fprintf(fid,"w(%3u) = %12.4e;\n",i+1,w[i]);
 
     fprintf(fid,"x = zeros(1,num_samples);\n");
@@ -95,16 +100,16 @@ int main() {
         fprintf(fid,"x(%3u) = %12.4e;\n", i+1, x[i]);
         fprintf(fid,"y(%3u) = %12.4e;\n", i+1, y[i]);
     }
-    fprintf(fid,"X = zeros(N,num_symbols);\n");
+    fprintf(fid,"X = zeros(num_symbols,num_channels);\n");
     for (i=0; i<num_symbols; i++) {
-        for (j=0; j<N; j++)
-            fprintf(fid,"X(%3u,%3u) = %12.4e;\n", i+1, j+1, X[i*N+j]);
+        for (j=0; j<num_channels; j++)
+            fprintf(fid,"X(%3u,%3u) = %12.4e;\n", i+1, j+1, X[i*num_channels+j]);
     }
 
     // plot spectral response
     /*
     fprintf(fid,"figure;\n");
-    fprintf(fid,"f = [0:(N-1)]/(2*N);\n");
+    fprintf(fid,"f = [0:(num_channels-1)]/(2*num_channels);\n");
     fprintf(fid,"plot(f,20*log10(abs(X')),'Color',[1 1 1]*0.5);\n");
     */
 
@@ -118,8 +123,6 @@ int main() {
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
-
-    fir_filter_rrrf_destroy(f);
 
     printf("done.\n");
     return 0;
