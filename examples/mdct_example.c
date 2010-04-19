@@ -91,7 +91,7 @@ int main() {
         //mdct(&x[i*num_channels],&X[i*num_channels],w,num_channels);
     }
 
-    // run synthesizer, accountint for output overlap
+    // run synthesizer, accounting for output overlap
     for (i=0; i<num_symbols; i++) {
         // run inverse MDCT
         imdct(&X[i*num_channels],buffer,w,num_channels);
