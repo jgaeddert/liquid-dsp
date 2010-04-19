@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -51,7 +52,8 @@ const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES] = {
     "[v29p45] convolutional r4/5 K=9 (punctured)",
     "[v29p56] convolutional r5/6 K=9 (punctured)",
     "[v29p67] convolutional r6/7 K=9 (punctured)",
-    "[v29p78] convolutional r7/8 K=9 (punctured)"
+    "[v29p78] convolutional r7/8 K=9 (punctured)",
+    "[rs8] Reed-solomon"
 };
 
 fec_scheme liquid_getopt_str2fec(const char * _str)
@@ -92,6 +94,9 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
         return FEC_CONV_V29P67;
     } else if (strcmp(_str, "v29p78")==0) {
         return FEC_CONV_V29P78;
+
+    } else if (strcmp(_str, "rs8")==0) {
+        return FEC_RS_P8;
     } else if (strcmp(_str, "r3")==0) {
         return FEC_REP3;
     } else if (strcmp(_str, "h74")==0) {
@@ -113,6 +118,8 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_REP3:      return 3*_msg_len;
     case FEC_HAMMING74: return 2*_msg_len;
     case FEC_HAMMING84: return 2*_msg_len;
+
+    // convolutional codes
 #if HAVE_FEC_H
     case FEC_CONV_V27:  return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
     case FEC_CONV_V29:  return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
@@ -149,7 +156,16 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V29P56:
     case FEC_CONV_V29P67:
     case FEC_CONV_V29P78:
-        printf("error: fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)\n");
+        fprintf(stderr, "error: fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)\n");
+        exit(-1);
+#endif
+
+    // Reed-Solomon codes
+#if HAVE_FEC_H
+    case FEC_RS_P8:          return 255;
+#else
+    case FEC_RS_P8:
+        fprintf(stderr, "error: fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
 #endif
     default:
@@ -179,6 +195,8 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_REP3:      return 1./3.;
     case FEC_HAMMING74: return 1./2.;
     case FEC_HAMMING84: return 1./2.;
+
+    // convolutional codes
 #if HAVE_FEC_H
     case FEC_CONV_V27:  return 1./2.;
     case FEC_CONV_V29:  return 1./2.;
@@ -202,9 +220,19 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_CONV_V39:
     case FEC_CONV_V615:
     case FEC_CONV_V27P23:
-        printf("error: fec_get_rate(), convolutional codes unavailable (install libfec)\n");
+        fprintf(stderr,"error: fec_get_rate(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
 #endif
+
+    // Reed-Solomon codes
+#if HAVE_FEC_H
+    case FEC_RS_P8:          return 223./255.;
+#else
+    case FEC_RS_P8:
+        fprintf(stderr,"error: fec_get_rate(), Reed-Solomon codes unavailable (install libfec)\n");
+        exit(-1);
+#endif
+
     default:
         printf("error: fec_get_rate(), unknown/unsupported scheme: %d\n", _scheme);
         exit(-1);
@@ -228,6 +256,8 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         //return fec_hamming84_create(_opts);
         printf("error: fec_create(), unsupported scheme: fec_hamming84\n");
         exit(-1);
+
+    // convolutional codes
 #if HAVE_FEC_H
     case FEC_CONV_V27:
     case FEC_CONV_V29:
@@ -259,9 +289,20 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_CONV_V27P56:
     case FEC_CONV_V27P67:
     case FEC_CONV_V27P78:
-        printf("error: fec_create(), convolutional codes unavailable (install libfec)\n");
+        fprintf(stderr,"error: fec_create(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
 #endif
+
+    // Reed-Solomon codes
+#if HAVE_FEC_H
+    case FEC_RS_P8:
+        return fec_rs_create(_scheme);
+#else
+    case FEC_RS_P8:
+        fprintf(stderr,"error: fec_create(), Reed-Solomon codes unavailable (install libfec)\n");
+        exit(-1);
+#endif
+
     default:
         printf("error: fec_create(), unknown/unsupported scheme: %d\n", _scheme);
         exit(-1);

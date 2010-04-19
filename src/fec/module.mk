@@ -38,7 +38,8 @@ local_s_files	:=			\
 	fec_hamming74.c			\
 	fec_hamming84.c			\
 	fec_pass.c			\
-	fec_rep.c
+	fec_rep.c			\
+	fec_rs.c
 
 # local_t_files
 #

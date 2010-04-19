@@ -625,7 +625,7 @@ int crc32_validate_message(unsigned char *_data,
                            unsigned int _key);
 
 // available FEC schemes
-#define LIQUID_NUM_FEC_SCHEMES  21
+#define LIQUID_NUM_FEC_SCHEMES  22
 typedef enum {
     FEC_UNKNOWN=0,
     FEC_NONE,           // no error-correction
@@ -652,7 +652,10 @@ typedef enum {
     FEC_CONV_V29P45,    // r4/5, K=9, dfree=5
     FEC_CONV_V29P56,    // r5/6, K=9, dfree=5
     FEC_CONV_V29P67,    // r6/7, K=9, dfree=4
-    FEC_CONV_V29P78     // r7/8, K=9, dfree=4
+    FEC_CONV_V29P78,    // r7/8, K=9, dfree=4
+
+    // Reed-Solomon
+    FEC_RS_P8           // p=8, n=255, k=223
 } fec_scheme;
 
 struct fec_conv_opts {int puncture;};

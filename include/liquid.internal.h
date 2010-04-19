@@ -194,7 +194,7 @@ void fbasc_encoder_compute_metrics(fbasc _q);
 
 // run analyzer/synthesizer
 void fbasc_encoder_run_analyzer(fbasc _q, float * _x, float * _X);
-void fbasc_encoder_run_synthesizer(fbasc _q, float * _X, float * _x);
+void fbasc_decoder_run_synthesizer(fbasc _q, float * _X, float * _x);
 
 // quantize/de-quantize channelized data
 void fbasc_encoder_quantize_samples(fbasc _q);
@@ -320,6 +320,23 @@ struct fec_s {
     int  (*update_viterbi_blk)(void*,unsigned char*,int);
     int  (*chainback_viterbi)(void*,unsigned char*,unsigned int,unsigned int);
     void (*delete_viterbi)(void*);
+
+    // Reed-Solomon
+    int symsize;    // symbol size (bits per symbol)
+    int genpoly;    // generator polynomial
+    int fcs;        //
+    int prim;       //
+    int nroots;     // number of roots in the polynomial
+    //int ntrials;    //
+    int nn;         // 2^symsize - 1
+    int kk;         // nn - nroots
+    void * rs;      // Reed-Solomon internal object
+
+    // Reed-Solomon decoder
+    //unsigned char * block;  // [size: 1 x n]
+    unsigned char * tblock; // [size: 1 x n]
+    int * errlocs;          // error locations [size: 1 x n]
+    int * derrlocs;         // decoded error locations [size: 1 x n]
 
     // encode function pointer
     void (*encode_func)(fec _q,
@@ -454,6 +471,18 @@ void fec_conv_init_v29p45(fec _q);
 void fec_conv_init_v29p56(fec _q);
 void fec_conv_init_v29p67(fec _q);
 void fec_conv_init_v29p78(fec _q);
+
+// Reed-Solomon
+void fec_rs_init_p8(fec _q);
+void fec_rs_encode(fec _q,
+                   unsigned int _dec_msg_len,
+                   unsigned char * _msg_dec,
+                   unsigned char * _msg_enc);
+void fec_rs_decode(fec _q,
+                   unsigned int _dec_msg_len,
+                   unsigned char * _msg_enc,
+                   unsigned char * _msg_dec);
+
 
 //
 // MODULE : fft (fast discrete Fourier transform)
