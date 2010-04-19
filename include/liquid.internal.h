@@ -297,14 +297,17 @@ unsigned int reverse_uint32(unsigned int _x);
 
 // fec : basic object
 struct fec_s {
+    // common
     fec_scheme scheme;
     //unsigned int dec_msg_len;
     //unsigned int enc_msg_len;
     float rate;
 
-    // convolutional : internal memory structure
+    // lengths: convolutional, Reed-Solomon
     unsigned int num_dec_bytes;
     unsigned int num_enc_bytes;
+
+    // convolutional : internal memory structure
     unsigned char * enc_bits;
     void * vp;      // decoder object
     int * poly;     // polynomial
@@ -334,11 +337,15 @@ struct fec_s {
     void * rs;      // Reed-Solomon internal object
 
     // Reed-Solomon decoder
-    //unsigned char * block;  // [size: 1 x n]
-    unsigned char * tblock; // [size: 1 x n]
-    int * errlocs;          // error locations [size: 1 x n]
-    int * derrlocs;         // decoded error locations [size: 1 x n]
-    int erasures;           // number of erasures
+    unsigned int num_blocks;    // number of blocks: ceil(dec_msg_len / nn)
+    unsigned int dec_block_len; // number of decoded bytes per block: 
+    unsigned int enc_block_len; // number of encoded bytes per block: 
+    unsigned int res_block_len; // residual bytes in last block
+    unsigned int pad;           // padding for each block
+    unsigned char * tblock;     // decoder input sequence [size: 1 x n]
+    int * errlocs;              // error locations [size: 1 x n]
+    int * derrlocs;             // decoded error locations [size: 1 x n]
+    int erasures;               // number of erasures
 
     // encode function pointer
     void (*encode_func)(fec _q,
@@ -477,6 +484,8 @@ void fec_conv_init_v29p78(fec _q);
 // Reed-Solomon
 fec fec_rs_create(fec_scheme _fs);
 void fec_rs_init_p8(fec _q);
+void fec_rs_setlength(fec _q,
+                      unsigned int _dec_msg_len);
 void fec_rs_encode(fec _q,
                    unsigned int _dec_msg_len,
                    unsigned char * _msg_dec,

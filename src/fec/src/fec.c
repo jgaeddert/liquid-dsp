@@ -162,7 +162,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 
     // Reed-Solomon codes
 #if HAVE_FEC_H
-    case FEC_RS_P8:          return 255;
+    case FEC_RS_P8:          return 255; // TODO : use subroutine to calculate this length
 #else
     case FEC_RS_P8:
         fprintf(stderr, "error: fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)\n");

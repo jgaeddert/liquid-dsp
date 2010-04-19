@@ -31,7 +31,7 @@ void usage()
 
 int main(int argc, char*argv[]) {
     unsigned int n = 4;             // data length (bytes)
-    unsigned int nmax = 500;        // maximum data length
+    unsigned int nmax = 5000;       // maximum data length
     fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
 
     int dopt;

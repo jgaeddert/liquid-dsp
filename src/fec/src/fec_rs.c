@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "liquid.internal.h"
@@ -55,13 +56,9 @@ fec fec_rs_create(fec_scheme _fs)
     q->nn = (1 << q->symsize) - 1;
     q->kk = q->nn - q->nroots;
 
-    // Reed-Solomon specific decoding
-    q->rs = init_rs_char(q->symsize,
-                         q->genpoly,
-                         q->fcs,
-                         q->prim,
-                         q->nroots,
-                         0);
+    // lengths
+    q->num_dec_bytes = 0;
+    q->rs = NULL;
 
     // allocate memory for arrays
     q->tblock   = (unsigned char*) malloc(q->nn*sizeof(unsigned char));
@@ -90,17 +87,40 @@ void fec_rs_encode(fec _q,
                    unsigned char *_msg_dec,
                    unsigned char *_msg_enc)
 {
+    // re-allocate resources if necessary
+    fec_rs_setlength(_q, _dec_msg_len);
+
     // TODO : make length variable
     if (_dec_msg_len != 223) {
         fprintf(stderr,"error: fec_rs_encode(), _dec_msg_len must be 223\n");
         exit(1);
     }
 
-    // copy sequence
-    memmove(_msg_enc, _msg_dec, _q->nn*sizeof(unsigned char));
+    unsigned int i;
+    unsigned int n0=0;  // input index
+    unsigned int n1=0;  // output index
+    unsigned int block_size=0;
+    for (i=0; i<_q->num_blocks; i++) {
+        if (i < _q->num_blocks-1)
+            block_size = _q->dec_block_len;
+        else
+            block_size = _q->dec_block_len - _q->res_block_len;
 
-    // encode data, appending parity bits to end of sequence
-    encode_rs_char(_q->rs, _msg_enc, &_msg_enc[_q->kk]);
+        // copy sequence
+        memmove(_q->tblock, &_msg_dec[n0], block_size*sizeof(unsigned char));
+
+        // TODO : pad end with zeros (if necessary)
+
+        // encode data, appending parity bits to end of sequence
+        encode_rs_char(_q->rs, _q->tblock, &_q->tblock[_q->dec_block_len]);
+
+        // copy result to output
+        memmove(&_msg_enc[n1], _q->tblock, _q->enc_block_len*sizeof(unsigned char));
+
+        // increment counters
+        n0 += _q->dec_block_len;
+        n1 += _q->enc_block_len;
+    }
 }
 
 //unsigned int
@@ -109,6 +129,9 @@ void fec_rs_decode(fec _q,
                    unsigned char *_msg_enc,
                    unsigned char *_msg_dec)
 {
+    // re-allocate resources if necessary
+    fec_rs_setlength(_q, _dec_msg_len);
+
     // TODO : make length variable
     if (_dec_msg_len != 223) {
         fprintf(stderr,"error: fec_rs_decode(), _dec_msg_len must be 223\n");
@@ -120,19 +143,75 @@ void fec_rs_decode(fec _q,
     memset(_q->derrlocs, 0x00, _q->nn*sizeof(unsigned char));
     _q->erasures = 0;
 
-    // copy sequence to input array
-    memmove(_q->tblock, _msg_enc, _q->nn*sizeof(unsigned char));
+    unsigned int i;
+    unsigned int n0=0;
+    unsigned int n1=0;
+    unsigned int block_size=0;
+    for (i=0; i<_q->num_blocks; i++) {
+        if (i < _q->num_blocks-1)
+            block_size = _q->dec_block_len;
+        else
+            block_size = _q->dec_block_len - _q->res_block_len;
 
-    // decode block
-    int derrors = decode_rs_char(_q->rs, _q->tblock, _q->derrlocs, _q->erasures);
+        // copy sequence
+        memmove(_q->tblock, &_msg_enc[n0], _q->enc_block_len*sizeof(unsigned char));
 
-    // copy output
-    memmove(_msg_dec, _q->tblock, _dec_msg_len*sizeof(unsigned char));
+        // decode block
+        int derrors = decode_rs_char(_q->rs,
+                                     _q->tblock,
+                                     _q->derrlocs,
+                                     _q->erasures);
+
+        // copy result
+        memmove(&_msg_dec[n1], _q->tblock, block_size*sizeof(unsigned char));
+
+        // increment counters
+        n0 += _q->enc_block_len;
+        n1 += _q->dec_block_len;
+    }
 }
 
-void fec_rs_setlength(fec _q,
-                      unsigned int _dec_msg_len)
+// set dec_msg_len, re-allocating resources as necessary
+void fec_rs_setlength(fec _q, unsigned int _dec_msg_len)
 {
+    // return if length has not changed
+    if (_dec_msg_len == _q->num_dec_bytes)
+        return;
+
+    // reset lengths
+    _q->num_dec_bytes = _dec_msg_len;
+
+    // 
+    div_t d;
+    d = div(_q->num_dec_bytes, _q->kk);
+    _q->num_blocks = d.quot + (d.rem==0 ? 0 : 1);
+    d = div(_dec_msg_len, _q->num_blocks);
+    _q->dec_block_len = d.quot + (d.rem == 0 ? 0 : 1);
+    _q->enc_block_len = _q->dec_block_len + _q->nroots;
+    _q->res_block_len = (_q->num_blocks*_q->dec_block_len) % _q->num_dec_bytes;
+    _q->pad = _q->kk - _q->dec_block_len;
+
+    _q->num_enc_bytes = _q->enc_block_len * _q->num_blocks;
+    
+    printf("dec_msg_len     :   %u\n", _q->num_dec_bytes);
+    printf("num_blocks      :   %u\n", _q->num_blocks);
+    printf("dec_block_len   :   %u\n", _q->dec_block_len);
+    printf("enc_block_len   :   %u\n", _q->enc_block_len);
+    printf("res_block_len   :   %u\n", _q->res_block_len);
+    printf("pad             :   %u\n", _q->pad);
+    printf("enc_msg_len     :   %u\n", _q->num_enc_bytes);
+
+    // delete old decoder if necessary
+    if (_q->rs != NULL)
+        free_rs_char(_q->rs);
+
+    // Reed-Solomon specific decoding
+    _q->rs = init_rs_char(_q->symsize,
+                          _q->genpoly,
+                          _q->fcs,
+                          _q->prim,
+                          _q->nroots,
+                          _q->pad);
 }
 
 // 
