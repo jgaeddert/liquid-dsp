@@ -58,9 +58,10 @@ void fec_encode_bench(
          _fs == FEC_CONV_V29P45 ||
          _fs == FEC_CONV_V29P56 ||
          _fs == FEC_CONV_V29P67 ||
-         _fs == FEC_CONV_V29P78)
+         _fs == FEC_CONV_V29P78 ||
+         _fs == FEC_RS_M8)
     {
-        fprintf(stderr,"warning: convolutional codes unavailable (install libfec)\n");
+        fprintf(stderr,"warning: convolutional, Reed-Solomon codes unavailable (install libfec)\n");
         getrusage(RUSAGE_SELF, _start);
         memmove((void*)_finish,(void*)_start,sizeof(struct rusage));
         return;
@@ -114,6 +115,8 @@ void benchmark_fec_enc_conv615_n64      FEC_ENCODE_BENCH_API(FEC_CONV_V615, 64, 
 void benchmark_fec_enc_conv27p23_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P23,64, NULL)
 void benchmark_fec_enc_conv27p34_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P34,64, NULL)
 void benchmark_fec_enc_conv27p45_n64    FEC_ENCODE_BENCH_API(FEC_CONV_V27P45,64, NULL)
+
+void benchmark_fec_enc_rs8_n64          FEC_ENCODE_BENCH_API(FEC_RS_M8,     64,  NULL)
 
 #endif // __LIQUID_FEC_ENCODE_BENCHMARK_H__
 
