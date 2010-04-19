@@ -46,7 +46,7 @@ fec fec_rs_create(fec_scheme _fs)
     q->decode_func = &fec_rs_decode;
 
     switch (q->scheme) {
-    case FEC_RS_P8: fec_rs_init_p8(q);   break;
+    case FEC_RS_M8: fec_rs_init_p8(q);   break;
     default:
         printf("error: fec_rs_create(), invalid type\n");
         exit(0);
@@ -87,6 +87,12 @@ void fec_rs_encode(fec _q,
                    unsigned char *_msg_dec,
                    unsigned char *_msg_enc)
 {
+    // validate input
+    if (_dec_msg_len == 0) {
+        fprintf(stderr,"error: fec_rs_encode(), input lenght must be > 0\n");
+        exit(1);
+    }
+
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
 
@@ -123,6 +129,12 @@ void fec_rs_decode(fec _q,
                    unsigned char *_msg_enc,
                    unsigned char *_msg_dec)
 {
+    // validate input
+    if (_dec_msg_len == 0) {
+        fprintf(stderr,"error: fec_rs_encode(), input lenght must be > 0\n");
+        exit(1);
+    }
+
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
 
@@ -200,6 +212,7 @@ void fec_rs_setlength(fec _q, unsigned int _dec_msg_len)
 
     _q->num_enc_bytes = _q->enc_block_len * _q->num_blocks;
     
+#if VERBOSE_FEC_RS
     printf("dec_msg_len     :   %u\n", _q->num_dec_bytes);
     printf("num_blocks      :   %u\n", _q->num_blocks);
     printf("dec_block_len   :   %u\n", _q->dec_block_len);
@@ -207,6 +220,7 @@ void fec_rs_setlength(fec _q, unsigned int _dec_msg_len)
     printf("res_block_len   :   %u\n", _q->res_block_len);
     printf("pad             :   %u\n", _q->pad);
     printf("enc_msg_len     :   %u\n", _q->num_enc_bytes);
+#endif
 
     // delete old decoder if necessary
     if (_q->rs != NULL)
@@ -232,7 +246,6 @@ void fec_rs_init_p8(fec _q)
     _q->fcs = 1;
     _q->prim = 1;
     _q->nroots = 32;
-    //_q->ntrials = 10;
 }
 
 #else   // HAVE_FEC_H (config.h)

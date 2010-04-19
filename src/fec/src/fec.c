@@ -96,7 +96,7 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
         return FEC_CONV_V29P78;
 
     } else if (strcmp(_str, "rs8")==0) {
-        return FEC_RS_P8;
+        return FEC_RS_M8;
     } else if (strcmp(_str, "r3")==0) {
         return FEC_REP3;
     } else if (strcmp(_str, "h74")==0) {
@@ -159,9 +159,9 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 
     // Reed-Solomon codes
 #if HAVE_FEC_H
-    case FEC_RS_P8:         return fec_rs_get_enc_msg_len(_msg_len,32,255,223);
+    case FEC_RS_M8:         return fec_rs_get_enc_msg_len(_msg_len,32,255,223);
 #else
-    case FEC_RS_P8:
+    case FEC_RS_M8:
         fprintf(stderr, "error: fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
 #endif
@@ -221,6 +221,12 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
                                     unsigned int _nn,
                                     unsigned int _kk)
 {
+    // validate input
+    if (_dec_msg_len == 0) {
+        fprintf(stderr,"error: fec_rs_get_enc_msg_len(), _dec_msg_len must be greater than 0\n");
+        exit(1);
+    }
+
     div_t d;
 
     // compute the number of blocks in the full message sequence
@@ -286,9 +292,9 @@ float fec_get_rate(fec_scheme _scheme)
 
     // Reed-Solomon codes
 #if HAVE_FEC_H
-    case FEC_RS_P8:          return 223./255.;
+    case FEC_RS_M8:          return 223./255.;
 #else
-    case FEC_RS_P8:
+    case FEC_RS_M8:
         fprintf(stderr,"error: fec_get_rate(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
 #endif
@@ -355,10 +361,10 @@ fec fec_create(fec_scheme _scheme, void *_opts)
 
     // Reed-Solomon codes
 #if HAVE_FEC_H
-    case FEC_RS_P8:
+    case FEC_RS_M8:
         return fec_rs_create(_scheme);
 #else
-    case FEC_RS_P8:
+    case FEC_RS_M8:
         fprintf(stderr,"error: fec_create(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
 #endif

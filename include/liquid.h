@@ -654,8 +654,8 @@ typedef enum {
     FEC_CONV_V29P67,    // r6/7, K=9, dfree=4
     FEC_CONV_V29P78,    // r7/8, K=9, dfree=4
 
-    // Reed-Solomon
-    FEC_RS_P8           // p=8, n=255, k=223
+    // Reed-Solomon codes
+    FEC_RS_M8           // m=8, n=255, k=223
 } fec_scheme;
 
 struct fec_conv_opts {int puncture;};
