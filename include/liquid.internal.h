@@ -409,6 +409,14 @@ void fec_hamming74_decode(fec _q,
 //                r1/3 K=9
 //                r1/6 K=15
 
+// compute encoded message length for convolutional codes
+//  _dec_msg_len    :   decoded message length
+//  _K              :   constraint length
+//  _p              :   puncturing rate, r = _p / (_p+1)
+unsigned int fec_conv_get_enc_msg_len(unsigned int _dec_msg_len,
+                                      unsigned int _K,
+                                      unsigned int _p);
+
 // convolutional code polynomials
 extern int fec_conv27_poly[2];
 extern int fec_conv29_poly[2];

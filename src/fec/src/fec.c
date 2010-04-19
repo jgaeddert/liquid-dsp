@@ -109,9 +109,6 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
 
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 {
-    unsigned int K=0;   // constraint length
-    unsigned int p=0;   // puncture rate
-
     switch (_scheme) {
     case FEC_UNKNOWN:   return 0;
     case FEC_NONE:      return _msg_len;
@@ -125,19 +122,19 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V29:  return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
     case FEC_CONV_V39:  return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
     case FEC_CONV_V615: return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
-    case FEC_CONV_V27P23:   K=7; p=2; break;
-    case FEC_CONV_V27P34:   K=7; p=3; break;
-    case FEC_CONV_V27P45:   K=7; p=4; break;
-    case FEC_CONV_V27P56:   K=7; p=5; break;
-    case FEC_CONV_V27P67:   K=7; p=6; break;
-    case FEC_CONV_V27P78:   K=7; p=7; break;
+    case FEC_CONV_V27P23:   return fec_conv_get_enc_msg_len(_msg_len,7,2);
+    case FEC_CONV_V27P34:   return fec_conv_get_enc_msg_len(_msg_len,7,3);
+    case FEC_CONV_V27P45:   return fec_conv_get_enc_msg_len(_msg_len,7,4);
+    case FEC_CONV_V27P56:   return fec_conv_get_enc_msg_len(_msg_len,7,5);
+    case FEC_CONV_V27P67:   return fec_conv_get_enc_msg_len(_msg_len,7,6);
+    case FEC_CONV_V27P78:   return fec_conv_get_enc_msg_len(_msg_len,7,7);
 
-    case FEC_CONV_V29P23:   K=9; p=2; break;
-    case FEC_CONV_V29P34:   K=9; p=3; break;
-    case FEC_CONV_V29P45:   K=9; p=4; break;
-    case FEC_CONV_V29P56:   K=9; p=5; break;
-    case FEC_CONV_V29P67:   K=9; p=6; break;
-    case FEC_CONV_V29P78:   K=9; p=7; break;
+    case FEC_CONV_V29P23:   return fec_conv_get_enc_msg_len(_msg_len,9,2);
+    case FEC_CONV_V29P34:   return fec_conv_get_enc_msg_len(_msg_len,9,3);
+    case FEC_CONV_V29P45:   return fec_conv_get_enc_msg_len(_msg_len,9,4);
+    case FEC_CONV_V29P56:   return fec_conv_get_enc_msg_len(_msg_len,9,5);
+    case FEC_CONV_V29P67:   return fec_conv_get_enc_msg_len(_msg_len,9,6);
+    case FEC_CONV_V29P78:   return fec_conv_get_enc_msg_len(_msg_len,9,7);
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
@@ -172,20 +169,33 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
         printf("error: fec_get_enc_msg_length(), unknown/unsupported scheme: %d\n", _scheme);
         exit(-1);
     }
-    unsigned int num_bits_in = _msg_len*8;
-    unsigned int n = num_bits_in + K - 1;
-    unsigned int num_bits_out = n + (n+p-1)/p;
+
+    return 0;
+}
+
+// compute encoded message length for convolutional codes
+//  _dec_msg_len    :   decoded message length
+//  _K              :   constraint length
+//  _p              :   puncturing rate, r = _p / (_p+1)
+unsigned int fec_conv_get_enc_msg_len(unsigned int _dec_msg_len,
+                                      unsigned int _K,
+                                      unsigned int _p)
+{
+    unsigned int num_bits_in = _dec_msg_len*8;
+    unsigned int n = num_bits_in + _K - 1;
+    unsigned int num_bits_out = n + (n+_p-1)/_p;
     unsigned int num_bytes_out = num_bits_out/8 + (num_bits_out%8 ? 1 : 0);
 #if 0
-    printf("msg len :       %3u\n", _msg_len);
+    printf("msg len :       %3u\n", _dec_msg_len);
     printf("num bits in :   %3u\n", num_bits_in);
     printf("n (constraint): %3u\n", n);
     printf("num bits out:   %3u", num_bits_out);
-    printf(" = n+(n+p-1)/p = %u+(%u+%u-1)/%u\n", n,n,p,p);
+    printf(" = n+(n+p-1)/p = %u+(%u+%u-1)/%u\n", n,n,_p,_p);
     printf("num bytes out:  %3u\n", num_bytes_out);
 #endif
     return num_bytes_out;
 }
+
 
 float fec_get_rate(fec_scheme _scheme)
 {
