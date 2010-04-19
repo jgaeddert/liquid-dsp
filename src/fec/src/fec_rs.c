@@ -90,6 +90,17 @@ void fec_rs_encode(fec _q,
                    unsigned char *_msg_dec,
                    unsigned char *_msg_enc)
 {
+    // TODO : make length variable
+    if (_dec_msg_len != 223) {
+        fprintf(stderr,"error: fec_rs_encode(), _dec_msg_len must be 223\n");
+        exit(1);
+    }
+
+    // copy sequence
+    memmove(_msg_enc, _msg_dec, _q->nn*sizeof(unsigned char));
+
+    // encode data, appending parity bits to end of sequence
+    encode_rs_char(_q->rs, _msg_enc, &_msg_enc[_q->kk]);
 }
 
 //unsigned int
@@ -98,6 +109,25 @@ void fec_rs_decode(fec _q,
                    unsigned char *_msg_enc,
                    unsigned char *_msg_dec)
 {
+    // TODO : make length variable
+    if (_dec_msg_len != 223) {
+        fprintf(stderr,"error: fec_rs_decode(), _dec_msg_len must be 223\n");
+        exit(1);
+    }
+
+    // set erasures, error locations to zero
+    memset(_q->errlocs,  0x00, _q->nn*sizeof(unsigned char));
+    memset(_q->derrlocs, 0x00, _q->nn*sizeof(unsigned char));
+    _q->erasures = 0;
+
+    // copy sequence to input array
+    memmove(_q->tblock, _msg_enc, _q->nn*sizeof(unsigned char));
+
+    // decode block
+    int derrors = decode_rs_char(_q->rs, _q->tblock, _q->derrlocs, _q->erasures);
+
+    // copy output
+    memmove(_msg_dec, _q->tblock, _dec_msg_len*sizeof(unsigned char));
 }
 
 void fec_rs_setlength(fec _q,

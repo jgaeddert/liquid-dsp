@@ -328,6 +328,7 @@ struct fec_s {
     int prim;       //
     int nroots;     // number of roots in the polynomial
     //int ntrials;    //
+    unsigned int rspad; // number of implicit padded symbols
     int nn;         // 2^symsize - 1
     int kk;         // nn - nroots
     void * rs;      // Reed-Solomon internal object
@@ -337,6 +338,7 @@ struct fec_s {
     unsigned char * tblock; // [size: 1 x n]
     int * errlocs;          // error locations [size: 1 x n]
     int * derrlocs;         // decoded error locations [size: 1 x n]
+    int erasures;           // number of erasures
 
     // encode function pointer
     void (*encode_func)(fec _q,

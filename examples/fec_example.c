@@ -31,7 +31,7 @@ void usage()
 
 int main(int argc, char*argv[]) {
     unsigned int n = 4;             // data length (bytes)
-    unsigned int nmax = 100;        // maximum data length
+    unsigned int nmax = 500;        // maximum data length
     fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
 
     int dopt;
@@ -59,6 +59,8 @@ int main(int argc, char*argv[]) {
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
+    printf("dec msg len : %u\n", n);
+    printf("enc msg len : %u\n", n_enc);
     unsigned char data[n];          // original data message
     unsigned char msg_enc[n_enc];   // encoded data message
     unsigned char msg_cor[n_enc];   // corrupted data message
