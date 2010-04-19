@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -28,11 +29,28 @@
 
 #include "liquid.internal.h"
 
-unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1)
+// packetizer_get_packet_length()
+//
+// returns the length of encoded bytes after packetizing
+//
+//  _n      :   number of uncoded input bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_get_packet_length(unsigned int _n,
+                                          int _fec0,
+                                          int _fec1)
 {
-    return fec_get_enc_msg_length(_fec1, fec_get_enc_msg_length(_fec0, _n+4));
+    return fec_get_enc_msg_length(_fec1,
+                fec_get_enc_msg_length(_fec0, _n+4) );
 }
 
+// packetizer_create()
+//
+// create packetizer object
+//
+//  _n      :   number of uncoded intput bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
 packetizer packetizer_create(unsigned int _n,
                              int _fec0,
                              int _fec1)
@@ -60,11 +78,13 @@ packetizer packetizer_create(unsigned int _n,
 
         // compute lengths
         p->plan[i].dec_msg_len = n0;
-        p->plan[i].enc_msg_len = fec_get_enc_msg_length(p->plan[i].fs, p->plan[i].dec_msg_len);
+        p->plan[i].enc_msg_len = fec_get_enc_msg_length(p->plan[i].fs,
+                                                        p->plan[i].dec_msg_len);
 
         // create objects
         p->plan[i].f = fec_create(p->plan[i].fs, NULL);
-        p->plan[i].q = interleaver_create(p->plan[i].enc_msg_len, p->plan[i].intlv_scheme);
+        p->plan[i].q = interleaver_create(p->plan[i].enc_msg_len,
+                                          p->plan[i].intlv_scheme);
 
         // update length
         n0 = p->plan[i].enc_msg_len;
@@ -73,7 +93,14 @@ packetizer packetizer_create(unsigned int _n,
     return p;
 }
 
+// packetizer_recreate()
+//
 // re-create packetizer object
+//
+//  _p      :   initialz packetizer object
+//  _n      :   number of uncoded intput bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
 packetizer packetizer_recreate(packetizer _p,
                                unsigned int _n,
                                int _fec0,
@@ -94,6 +121,7 @@ packetizer packetizer_recreate(packetizer _p,
     }
 }
 
+// destroy packetizer object
 void packetizer_destroy(packetizer _p)
 {
     // free fec, interleaver objects
@@ -114,6 +142,7 @@ void packetizer_destroy(packetizer _p)
     free(_p);
 }
 
+// print packetizer object internals
 void packetizer_print(packetizer _p)
 {
     printf("packetizer [dec: %u, enc: %u]\n", _p->msg_len, _p->packet_len);
@@ -140,9 +169,18 @@ unsigned int packetizer_get_enc_msg_len(packetizer _p)
     return _p->packet_len;
 }
 
-void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
+// packetizer_encode()
+//
+// Execute the packetizer on an input message
+//
+//  _p      :   packetizer object
+//  _msg    :   input message (uncoded bytes)
+//  _pkt    :   encoded output message
+void packetizer_encode(packetizer _p,
+                       unsigned char * _msg,
+                       unsigned char * _pkt)
 {
-    // 
+    // copy input message to internal buffer[0]
     memmove(_p->buffer_0, _msg, _p->msg_len);
 
     // compute crc32, append to buffer
@@ -156,23 +194,50 @@ void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char *_pkt)
     // execute fec/interleaver plans
     unsigned int i;
     for (i=0; i<_p->plan_len; i++) {
-        fec_encode(_p->plan[i].f, _p->plan[i].dec_msg_len, _p->buffer_0, _p->buffer_1);
-        interleaver_interleave(_p->plan[i].q, _p->buffer_1, _p->buffer_0);
+        // run the encoder: buffer[0] > buffer[1]
+        fec_encode(_p->plan[i].f,
+                   _p->plan[i].dec_msg_len,
+                   _p->buffer_0,
+                   _p->buffer_1);
+
+        // run the interleaver: buffer[1] > buffer[0]
+        interleaver_interleave(_p->plan[i].q,
+                               _p->buffer_1,
+                               _p->buffer_0);
     }
 
+    // copy result to output
     memmove(_pkt, _p->buffer_0, _p->packet_len);
 }
 
-int packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg)
+// packetizer_decode()
+//
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded bytes)
+//  _msg    :   decoded output message
+int packetizer_decode(packetizer _p,
+                      unsigned char * _pkt,
+                      unsigned char * _msg)
 {
-
+    // copy coded message to internal buffer[0]
     memmove(_p->buffer_0, _pkt, _p->packet_len);
 
     // execute fec/interleaver plans
     unsigned int i;
     for (i=_p->plan_len; i>0; i--) {
-        interleaver_deinterleave(_p->plan[i-1].q, _p->buffer_0, _p->buffer_1);
-        fec_decode(_p->plan[i-1].f, _p->plan[i-1].dec_msg_len, _p->buffer_1, _p->buffer_0);
+        // run the de-interleaver: buffer[0] > buffer[1]
+        interleaver_deinterleave(_p->plan[i-1].q,
+                                 _p->buffer_0,
+                                 _p->buffer_1);
+
+        // run the decoder: buffer[1] > buffer[0]
+        fec_decode(_p->plan[i-1].f,
+                   _p->plan[i-1].dec_msg_len,
+                   _p->buffer_1,
+                   _p->buffer_0);
     }
 
     // strip crc32, validate message
@@ -182,9 +247,13 @@ int packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg)
     crc32_key |= _p->buffer_0[_p->msg_len+2] << 16;
     crc32_key |= _p->buffer_0[_p->msg_len+3] << 24;
 
+    // copy result to output
     memmove(_msg, _p->buffer_0, _p->msg_len);
 
-    return crc32_validate_message(_p->buffer_0, _p->msg_len, crc32_key);
+    // return crc validity
+    return crc32_validate_message(_p->buffer_0,
+                                  _p->msg_len,
+                                  crc32_key);
 }
 
 void packetizer_set_scheme(packetizer _p, int _fec0, int _fec1)

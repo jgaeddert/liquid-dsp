@@ -1917,25 +1917,75 @@ LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF,
 // Packetizer
 //
 
-unsigned int packetizer_get_packet_length(unsigned int _n, int _fec0, int _fec1);
+// packetizer_get_packet_length()
+//
+// returns the length of encoded bytes after packetizing
+//
+//  _n      :   number of uncoded input bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_get_packet_length(unsigned int _n,
+                                          int _fec0,
+                                          int _fec1);
 
 typedef struct packetizer_s * packetizer;
 
+// packetizer_create()
+//
+// create packetizer object
+//
+//  _n      :   number of uncoded intput bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
 packetizer packetizer_create(unsigned int _dec_msg_len,
                              int _fec0,
                              int _fec1);
+
+// packetizer_recreate()
+//
+// re-create packetizer object
+//
+//  _p      :   initialz packetizer object
+//  _n      :   number of uncoded intput bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
 packetizer packetizer_recreate(packetizer _p,
                                unsigned int _dec_msg_len,
                                int _fec0,
                                int _fec1);
+
+// destroy packetizer object
 void packetizer_destroy(packetizer _p);
+
+// print packetizer object internals
 void packetizer_print(packetizer _p);
 
 unsigned int packetizer_get_dec_msg_len(packetizer _p);
 unsigned int packetizer_get_enc_msg_len(packetizer _p);
 
-void packetizer_encode(packetizer _p, unsigned char * _msg, unsigned char * _pkt);
-int  packetizer_decode(packetizer _p, unsigned char * _pkt, unsigned char * _msg);
+
+// packetizer_encode()
+//
+// Execute the packetizer on an input message
+//
+//  _p      :   packetizer object
+//  _msg    :   input message (uncoded bytes)
+//  _pkt    :   encoded output message
+void packetizer_encode(packetizer _p,
+                       unsigned char * _msg,
+                       unsigned char * _pkt);
+
+// packetizer_decode()
+//
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded bytes)
+//  _msg    :   decoded output message
+int  packetizer_decode(packetizer _p,
+                       unsigned char * _pkt,
+                       unsigned char * _msg);
 
 
 //
