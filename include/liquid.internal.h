@@ -473,6 +473,7 @@ void fec_conv_init_v29p67(fec _q);
 void fec_conv_init_v29p78(fec _q);
 
 // Reed-Solomon
+fec fec_rs_create(fec_scheme _fs);
 void fec_rs_init_p8(fec _q);
 void fec_rs_encode(fec _q,
                    unsigned int _dec_msg_len,
