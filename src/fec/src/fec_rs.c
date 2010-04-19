@@ -90,12 +90,6 @@ void fec_rs_encode(fec _q,
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
 
-    // TODO : make length variable
-    if (_dec_msg_len != 223) {
-        fprintf(stderr,"error: fec_rs_encode(), _dec_msg_len must be 223\n");
-        exit(1);
-    }
-
     unsigned int i;
     unsigned int n0=0;  // input index
     unsigned int n1=0;  // output index
@@ -131,12 +125,6 @@ void fec_rs_decode(fec _q,
 {
     // re-allocate resources if necessary
     fec_rs_setlength(_q, _dec_msg_len);
-
-    // TODO : make length variable
-    if (_dec_msg_len != 223) {
-        fprintf(stderr,"error: fec_rs_decode(), _dec_msg_len must be 223\n");
-        exit(1);
-    }
 
     // set erasures, error locations to zero
     memset(_q->errlocs,  0x00, _q->nn*sizeof(unsigned char));
@@ -181,7 +169,26 @@ void fec_rs_setlength(fec _q, unsigned int _dec_msg_len)
     // reset lengths
     _q->num_dec_bytes = _dec_msg_len;
 
-    // 
+    // example : if we are using the 8-bit code,
+    //      nroots  = 32
+    //      nn      = 255
+    //      kk      = 223
+    // Let _dec_msg_len = 1024, then
+    //      num_blocks = ceil(1024/223)
+    //                 = ceil(4.5919)
+    //                 = 5
+    //      dec_block_len = ceil(1024/num_blocks)
+    //                    = ceil(204.8)
+    //                    = 205
+    //      enc_block_len = dec_block_len + nroots
+    //                    = 237
+    //      res_block_len = mod(num_blocks*dec_block_len,_dec_msg_len)
+    //                    = mod(5*205,1024)
+    //                    = mod(1025,1024)
+    //                    = 1
+    //      pad = kk - dec_block_len
+    //          = 223 - 205
+    //          = 18
     div_t d;
     d = div(_q->num_dec_bytes, _q->kk);
     _q->num_blocks = d.quot + (d.rem==0 ? 0 : 1);

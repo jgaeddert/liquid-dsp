@@ -159,7 +159,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 
     // Reed-Solomon codes
 #if HAVE_FEC_H
-    case FEC_RS_P8:          return 255; // TODO : use subroutine to calculate this length
+    case FEC_RS_P8:         return fec_rs_get_enc_msg_len(_msg_len,32,255,223);
 #else
     case FEC_RS_P8:
         fprintf(stderr, "error: fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)\n");
@@ -194,6 +194,56 @@ unsigned int fec_conv_get_enc_msg_len(unsigned int _dec_msg_len,
     printf("num bytes out:  %3u\n", num_bytes_out);
 #endif
     return num_bytes_out;
+}
+
+// compute encoded message length for Reed-Solomon codes
+//  _dec_msg_len    :   decoded message length
+//  _nroots         :   number of roots in polynomial
+//  _nn             :   
+//  _kk             :   
+// Example : if we are using the 8-bit code,
+//      _nroots  = 32
+//      _nn      = 255
+//      _kk      = 223
+// Let _dec_msg_len = 1024, then
+//      num_blocks = ceil(1024/223)
+//                 = ceil(4.5919)
+//                 = 5
+//      dec_block_len = ceil(1024/num_blocks)
+//                    = ceil(204.8)
+//                    = 205
+//      enc_block_len = dec_block_len + nroots
+//                    = 237
+//      enc_msg_len = num_blocks * enc_block_len
+//                  = 1185
+unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
+                                    unsigned int _nroots,
+                                    unsigned int _nn,
+                                    unsigned int _kk)
+{
+    div_t d;
+
+    // compute the number of blocks in the full message sequence
+    d = div(_dec_msg_len, _kk);
+    unsigned int num_blocks = d.quot + (d.rem==0 ? 0 : 1);
+
+    // compute the length of each decoded block
+    d = div(_dec_msg_len, num_blocks);
+    unsigned int dec_block_len = d.quot + (d.rem == 0 ? 0 : 1);
+
+    // compute the encoded block length
+    unsigned int enc_block_len = dec_block_len + _nroots;
+
+    // compute the number of bytes in the full encoded message
+    unsigned int enc_msg_len = enc_block_len * num_blocks;
+#if 0
+    printf("dec_msg_len     :   %u\n", _dec_msg_len);
+    printf("num_blocks      :   %u\n",  num_blocks);
+    printf("dec_block_len   :   %u\n",  dec_block_len);
+    printf("enc_block_len   :   %u\n",  enc_block_len);
+    printf("enc_msg_len     :   %u\n",  enc_msg_len);
+#endif
+    return enc_msg_len;
 }
 
 

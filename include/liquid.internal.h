@@ -490,6 +490,18 @@ void fec_conv_init_v29p67(fec _q);
 void fec_conv_init_v29p78(fec _q);
 
 // Reed-Solomon
+
+// compute encoded message length for Reed-Solomon codes
+//  _dec_msg_len    :   decoded message length
+//  _nroots         :   number of roots in polynomial
+//  _nn             :   
+//  _kk             :   
+unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
+                                    unsigned int _nroots,
+                                    unsigned int _nn,
+                                    unsigned int _kk);
+
+
 fec fec_rs_create(fec_scheme _fs);
 void fec_rs_init_p8(fec _q);
 void fec_rs_setlength(fec _q,
