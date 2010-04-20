@@ -28,6 +28,10 @@ int main() {
 
     fbasc_print(fbasc_encoder);
 
+    unsigned int bytes_per_header = fbasc_compute_header_length(num_channels,
+                                                                samples_per_frame,
+                                                                bytes_per_frame);
+
     // open debug file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -44,6 +48,7 @@ int main() {
     float x[samples_per_frame];
     float X[samples_per_frame];
     float y[samples_per_frame];
+    unsigned char headerdata[bytes_per_header];
     unsigned char framedata[bytes_per_frame];
     for (i=0; i<num_frames; i++) {
         for (j=0; j<samples_per_frame; j++) {
@@ -55,9 +60,9 @@ int main() {
         }
 
 #if 1
-        fbasc_encode(fbasc_encoder, x, framedata);
+        fbasc_encode(fbasc_encoder, x, headerdata, framedata);
 
-        //fbasc_decode(fbasc_decoder, framedata, y);
+        //fbasc_decode(fbasc_decoder, headerdata, framedata, y);
 #else
         // run analyzer
         fbasc_encoder_run_analyzer(fbasc_encoder, x, X);

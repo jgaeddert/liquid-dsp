@@ -72,6 +72,14 @@ struct fbasc_s {
     float mu;                       // compression factor (see module:quantization)
 };
 
+// compute length of header
+unsigned int fbasc_compute_header_length(unsigned int _num_channels,
+                                         unsigned int _samples_per_frame,
+                                         unsigned int _bytes_per_frame)
+{
+    return _num_channels + 1;
+}
+
 // create options
 //  _type               :   analysis/synthesis (encoder/decoder)
 //  _num_channels       :   number of filterbank channels
@@ -100,15 +108,27 @@ fbasc fbasc_create(int _type,
 
     // initialize derived values/lengths
     q->symbols_per_frame = (q->samples_per_frame) / (q->num_channels);
-    q->header_len = q->num_channels + 1; // header length
-    q->bits_per_frame = 8*(q->bytes_per_frame - q->header_len);
+    q->bits_per_frame = 8*q->bytes_per_frame;
     q->bits_per_symbol = q->bits_per_frame / q->symbols_per_frame;
     q->max_bits_per_sample = 8;
 
+    // ensure num_channels evenly divides samples_per_frame
     if ( q->symbols_per_frame * q->num_channels != q->samples_per_frame) {
         fprintf(stderr,"error: fbasc_create(), _num_channels must evenly divide _samples_per_frame\n");
         exit(1);
     }
+
+    // ensure num_channels evenly divides samples_per_frame
+    unsigned int bytes_per_symbol = q->bytes_per_frame / q->num_channels;
+    if ( bytes_per_symbol * q->num_channels != q->bytes_per_frame) {
+        fprintf(stderr,"error: fbasc_create(), _num_channels must evenly divide _bytes_per_frame\n");
+        exit(1);
+    }
+
+    // compute header length (bytes)
+    q->header_len = fbasc_compute_header_length(q->num_channels,
+                                                q->samples_per_frame,
+                                                q->bytes_per_frame);
 
     // analysis/synthesis
     q->w =              (float*) malloc( 2*(q->num_channels)*sizeof(float) );
@@ -158,14 +178,17 @@ void fbasc_print(fbasc _q)
     printf("    samples/frame:  %u\n", _q->samples_per_frame);
     printf("    symbols/frame:  %u\n", _q->symbols_per_frame);
     printf("    bytes/frame:    %u\n", _q->bytes_per_frame);
+    printf("    header length:  %u bytes\n", _q->header_len);
 }
 
 // encode frame of audio
 //  _q      :   fbasc object
 //  _audio  :   audio samples [size: samples_per_frame x 1]
+//  _header :   encoded header [size: ???]
 //  _frame  :   encoded frame bytes [size: bytes_per_frame x 1]
 void fbasc_encode(fbasc _q,
                   float * _audio,
+                  unsigned char * _header,
                   unsigned char * _frame)
 {
     // run analyzer
@@ -214,9 +237,13 @@ void fbasc_encode(fbasc _q,
 
 // decode frame of audio
 //  _q      :   fbasc object
+//  _header :   encoded header [size: ???]
 //  _frame  :   encoded frame bytes [size: bytes_per_frame x 1]
 //  _audio  :   decoded audio samples [size: samples_per_frame x 1]
-void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
+void fbasc_decode(fbasc _q,
+                  unsigned char * _header,
+                  unsigned char * _frame,
+                  float * _audio)
 {
     unsigned int i, j;
 

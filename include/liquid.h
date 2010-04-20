@@ -239,6 +239,9 @@ void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 #define FBASC_ENCODER   0
 #define FBASC_DECODER   1
 typedef struct fbasc_s * fbasc;
+unsigned int fbasc_compute_header_length(unsigned int _num_channels,
+                                         unsigned int _samples_per_frame,
+                                         unsigned int _bytes_per_frame);
 fbasc fbasc_create(int _type,
                    unsigned int _num_channels,
                    unsigned int _samples_per_frame,
@@ -248,8 +251,10 @@ void fbasc_print(fbasc _q);
 
 void fbasc_encode(fbasc _q,
                   float * _audio,
+                  unsigned char * _header,
                   unsigned char * _frame);
 void fbasc_decode(fbasc _q,
+                  unsigned char * _header,
                   unsigned char * _frame,
                   float * _audio);
 
