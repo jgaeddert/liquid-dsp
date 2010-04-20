@@ -533,6 +533,31 @@ void fbasc_encoder_quantize_samples(fbasc _q)
 // de-quantize channelized data
 void fbasc_decoder_deqauntize_samples(fbasc _q)
 {
+    unsigned int i;     // symbol counter
+    unsigned int j;     // channel counter
+    unsigned int s=0;   // output sample counter
+    float sample;       // channelized sample
+    float z;            // compressed sample
+    unsigned int b;     // quantized sample
+
+    // cycle through symbols in each channel and quantize
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        for (j=0; j<_q->num_channels; j++) {
+            if (_q->bk[j] > 0) {
+                // acquire digital sample
+                b = _q->data[i*_q->num_channels + j];
+
+                // quantize, digital-to-analog conversion
+                z = quantize_adc(b, _q->bk[j]);
+
+                // de-compress (expand) using mu-law decoder
+                sample = expand_mulaw(z, _q->mu);
+            } else {
+                sample = 0.0f;
+            }
+            _q->X[i*(_q->num_channels)+j] = sample;
+        }
+    }
 }
 
 // pack frame
