@@ -407,38 +407,91 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
         }
     }
 
+    //float var_max = _var[idx[0]];
+
     // compute bit allocation
-    float log2p;
+    float b = (float)_num_bits / (float)_num_channels;
     int bk;
-    float bkf;
     unsigned int n=_num_channels;
-    unsigned int available_bits = _num_bits;
-    float b;
-    for (i=0; i<_num_channels; i++) {
-        log2p = 0.0f;
-        b = (float)(available_bits) / (float)(n);
-        // compute 'entropy' metric
-        for (j=i; j<_num_channels; j++)
-            log2p += (_var[idx[j]] == 0.0f) ? -60.0f : log2f(_var[idx[j]]);
-        log2p /= n;
 
-        bkf = (_var[idx[i]]==0.0f) ? 1.0f : b + 0.5f*log2f(_var[idx[i]]) - 0.5f*log2p;
-        bk  = (int)roundf(bkf);
+    // compute log of geometric mean of variances: log2( prod(_var[])^(1/M) )
+    float log2p=0.0f;
+    for (i=0; i<_num_channels; i++)
+        log2p += (_var[i] == 0.0f) ? -60.0f : log2f(_var[i]);
+    log2p /= n;
+    printf("log2p : %12.8f\n", log2p);
 
-        bk = (bk > _max_bits)       ? _max_bits         : bk;
-        bk = (bk > available_bits)  ? available_bits    : bk;
-        bk = (bk < 0)               ? 0                 : bk;
+    // compute theoretical bit allocations
+    float bkf[_num_channels];
+    for (i=0; i<_num_channels; i++)
+        bkf[i] = (_var[i]==0.0f) ? 0.0f : b + 0.5f*log2f(_var[i]) - 0.5f*log2p;
 
-#if FBASC_DEBUG
-        printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.4f, bk = %8.4f(%3d)\n",
-               idx[i], _var[idx[i]], b, log2p, bkf, bk);
+#if 1
+    for (i=0; i<_num_channels; i++)
+        printf("  var[%3u] = %12.4e, bk = %12.6f\n", idx[i], _var[idx[i]], bkf[idx[i]]);
 #endif
-        _k[idx[i]] = bk;
 
-        available_bits -= bk;
-        n--;
+#if 0
+    // assert sum is roughly equal to _num_bits
+    float bkf_sum = 0.0f;
+    for (i=0; i<_num_channels; i++)
+        bkf_sum += bkf[i];
+    printf(" num bits : %u (%12.8f)\n", _num_bits, bkf_sum);
+#endif
+
+    // TODO : explain what is going on here
+    int continue_iterating = 1;
+    unsigned int num_iterations=0;
+    do {
+        num_iterations++;
+
+        // find num and sum sum of soft bit allocations greater than zero
+        float bkf_valid_sum = 0.0f;
+        unsigned int num_valid = 0;
+        for (i=0; i<_num_channels; i++) {
+            if (bkf[idx[i]] > 0.0f) {
+                bkf_valid_sum += bkf[idx[i]];
+                num_valid++;
+            } else {
+                break;
+            }
+        }
+        //printf("bkf valid sum : %f\n", bkf_valid_sum);
+
+        // shift valid bit allocations
+        float shift = (bkf_valid_sum - (float)_num_bits) / (float)num_valid;
+        for (i=0; i<_num_channels; i++)
+            bkf[i] -= shift;
+
+        // check exit criteria
+        if ( fabsf(bkf_valid_sum - _num_bits) < 0.1 || num_iterations > 4)
+            continue_iterating = 0;
+    } while (continue_iterating);
+
+    // re-compute bit allocation based on validity of soft bit partitions
+    unsigned int bits_available = _num_bits;
+    for (i=0; i<_num_channels; i++) {
+        // if invalid, set bit allocation to zero and continue
+        if ( bkf[idx[i]] <= 0.0f) {
+            _k[idx[i]] = 0;
+            continue;
+        }
+
+        unsigned int bk = (unsigned int)roundf(bkf[idx[i]]);
+        if (bk > _max_bits) bk = _max_bits;
+
+        bits_available -= bk;
+
+        _k[idx[i]] = bk;
+        
     }
 
+    // print results
+#if 1
+    printf("*******************\n");
+    for (i=0; i<_num_channels; i++)
+        printf("  var[%3u] = %12.4e, bk = %12.6f, b = %u\n", idx[i], _var[idx[i]], bkf[idx[i]], _k[idx[i]]);
+#endif
 }
 
 // compute encoder metrics
