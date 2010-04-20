@@ -461,6 +461,8 @@ void fbasc_compute_bit_allocation(unsigned int _n,
 // compute encoder metrics
 void fbasc_encoder_compute_metrics(fbasc _q)
 {
+    unsigned int i;
+
     // compute nominal gain
 #if 0
     int gi = (int)(-log2f(max_var)) - 16;   // use variance
@@ -474,15 +476,26 @@ void fbasc_encoder_compute_metrics(fbasc _q)
     _q->gain = 1.0f;
 #endif
 
-#if FBASC_DEBUG
-    printf("  enc: nominal gain : %12.4e (gi = %3u)\n", _q->gain, gi);
-#endif
+    // find maximum bit allocation
+    unsigned int bk_max = 0;
+    for (i=0; i<_q->num_channels; i++) {
+        if (_q->bk[i] > bk_max || i==0)
+            bk_max = _q->bk[i];
+    }
+
+    // compute relative gains: gk = 2^(max(bk) - bk)
+    for (i=0; i<_q->num_channels; i++)
+        _q->gk[i] = (float)(1<<(bk_max-_q->bk[i])) * _q->gain;
 
 #if FBASC_DEBUG
-    unsigned int i;
-    printf("channel energy:\n");
-    for (i=0; i<_q->num_channels; i++)
-        printf("  e[%3u] = %12.8f\n", i, _q->channel_energy[i]);
+    printf("encoder metrics:\n");
+    printf("    nominal gain : %12.4e (gi = %3u)\n", _q->gain, gi);
+    for (i=0; i<_q->num_channels; i++) {
+        if (_q->bk[i] > 0)
+            printf("  %3u : e = %12.8f, b = %3u, g=%12.4f\n", i, _q->channel_energy[i],_q->bk[i], _q->gk[i]);
+        else
+            printf("  %3u : e = %12.8f, b = %3u\n",           i, _q->channel_energy[i],_q->bk[i]);
+    }
 #endif
 }
 
@@ -497,24 +510,12 @@ void fbasc_encoder_quantize_samples(fbasc _q)
     float z;            // compressed sample
     unsigned int b;     // quantized sample
 
-#if 0
-    // find bk_max
-    unsigned int bk_max=0;
-    for (i=0; i<_q->num_channels; i++)
-        bk_max = _q->bk[i] > bk_max ? _q->bk[i] : bk_max;
-
-    // compute scaling factor: gk = 2^(max(bk) - bk)
-    for (i=0; i<_q->num_channels; i++)
-        _q->gk[i] = (float)(1<<(bk_max-_q->bk[i])) * _q->gain;
-#endif
-
     // cycle through symbols in each channel and quantize
     for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
             if (_q->bk[j] > 0) {
                 // acquire sample, applying proper gain
-                //sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j];
-                sample = _q->X[i*(_q->num_channels)+j];
+                sample = _q->X[i*(_q->num_channels)+j] * _q->gk[j];
 
                 // compress using mu-law encoder
                 z = compress_mulaw(sample, _q->mu);

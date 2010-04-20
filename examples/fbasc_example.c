@@ -14,7 +14,11 @@ int main() {
     // options
     unsigned int num_channels=16;
     unsigned int samples_per_frame=512;
+#if 0
     unsigned int bytes_per_frame = samples_per_frame + num_channels + 1;
+#else
+    unsigned int bytes_per_frame = 128;
+#endif
 
     unsigned int num_frames=2;
 
@@ -50,7 +54,7 @@ int main() {
             //x[j] = randnf()*0.1f;
         }
 
-#if 0
+#if 1
         fbasc_encode(fbasc_encoder, x, framedata);
 
         //fbasc_decode(fbasc_decoder, framedata, y);
