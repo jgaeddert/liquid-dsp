@@ -201,7 +201,7 @@ void fbasc_decoder_run_synthesizer(fbasc _q, float * _X, float * _x);
 
 // quantize/de-quantize channelized data
 void fbasc_encoder_quantize_samples(fbasc _q);
-void fbasc_decoder_deqauntize_samples(fbasc _q);
+void fbasc_decoder_dequantize_samples(fbasc _q);
 
 // pack/unpack frame
 void fbasc_encoder_pack_frame(fbasc _q);

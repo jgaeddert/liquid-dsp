@@ -64,6 +64,7 @@ struct fbasc_s {
     unsigned int * bk;              // bits per channel [size: num_channels x 1]
     float * gk;                     // channel gain [size: num_channels x 1]
     unsigned char * data;           // quantized frame data (bytes) [size: num_channels x symbols_per_frame]
+    // TODO : extend 'data' variable to unsigned short to allow more than 8 bits / sample
     //unsigned char * packed_data;    // packed quantized data
 
     // analysis/synthesis
@@ -98,11 +99,18 @@ fbasc fbasc_create(int _type,
     q->samples_per_frame = _samples_per_frame;
     q->bytes_per_frame = _bytes_per_frame;
 
+#if 1
+    if (q->samples_per_frame != q->bytes_per_frame) {
+        fprintf(stderr,"error: fbasc_create(), [bug] samples_per_frame must be equal to bytes_per_frame\n");
+        exit(1);
+    }
+#endif
+
     // validate input
     if (q->type == FBASC_ENCODER) {
     } else if (q->type == FBASC_DECODER) {
     } else {
-        printf("error: fbasc_create(), unknown type: %d\n", _type);
+        fprintf(stderr,"error: fbasc_create(), unknown type: %d\n", _type);
         exit(1);
     }
 
@@ -210,27 +218,23 @@ void fbasc_encode(fbasc _q,
     // quantize samples
     fbasc_encoder_quantize_samples(_q);
 
+#if 0
     // pack data
     fbasc_encoder_pack_frame(_q);
 
-#if 0
-    // write partition to header
-    unsigned int s=0;
-    _frame[s++] = gi;
-    unsigned int k_max=0;
-    for (i=0; i<_q->bytes_per_header; i++) {
-        _frame[s++] = _q->bk[i];
-        k_max = (_q->bk[i] > k_max) ? _q->bk[i] : k_max;
+    // TODO : encode header
+#else
+    // write raw data to header
+    unsigned int i;
+    _header[0] = 0; // nominal gain
+    printf("encoder:\n");
+    for (i=0; i<_q->num_channels; i++) {
+        _header[i+1] = _q->bk[i];
+        printf("  %3u : b=%u\n", i, _header[i+1]);
     }
 
-    // compute scaling factor: gk = 2^(max(bk) - bk)
-    for (i=0; i<_q->num_channels; i++)
-        _q->gk[i] = (float)(1<<(k_max-_q->bk[i]));
-
-    // encode using basic quantizer
-
-    // TODO: pack frame
-
+    // write raw samples to framedata
+    memmove(_frame, _q->data, _q->samples_per_frame*sizeof(unsigned char));
 #endif
 
 }
@@ -245,62 +249,35 @@ void fbasc_decode(fbasc _q,
                   unsigned char * _frame,
                   float * _audio)
 {
-    unsigned int i, j;
+    unsigned int i;
 
-    // clear energy...
-    for (i=0; i<_q->num_channels; i++)
-        _q->channel_energy[i] = 0.0f;
+#if 0
+    // unpack data
+    fbasc_decoder_unpack_frame(_q);
 
-    // get bit partitioning
-    unsigned int s=0;
-    // compute nominal gain
-    unsigned int gi = _frame[s++];
-    float g = (float)(1<<gi);
-#if FBASC_DEBUG
-    printf("  dec: nominal gain : %12.4e (gi = %3u)\n", g, gi);
-#endif
-    unsigned int k_max=0;
+    // TODO : decode header
+#else
+    // read raw data from header
+    //_q->gi = _header[0]; // nominal gain
+    printf("decoder:\n");
     for (i=0; i<_q->num_channels; i++) {
-        _q->bk[i] = _frame[s];
-        s++;
-        k_max = (_q->bk[i] > k_max) ? _q->bk[i] : k_max;
+        _q->bk[i] = _header[i+1];
+        printf("  %3u : b=%u\n", i, _q->bk[i]);
     }
 
-    // compute scaling factor: gk = 2^-(max(bk) - bk)
-    for (i=0; i<_q->num_channels; i++)
-        _q->gk[i] = 1.0f / (float)(1<<(k_max-_q->bk[i]));
+    // read raw samples from framedata
+    memmove(_q->data, _frame, _q->samples_per_frame*sizeof(unsigned char));
+#endif
 
-    // decode using basic quantizer
-    float sample, z;
-    unsigned int b;
-    for (i=0; i<_q->symbols_per_frame; i++) {
-        for (j=0; j<_q->num_channels; j++) {
-            if (_q->bk[j] > 0) {
-                // quantize
-                b = _frame[s];
+    // compute metrics for decoding
+    printf("**** DECODER METRICS\n");
+    fbasc_encoder_compute_metrics(_q);
 
-                z = quantize_dac(b,_q->bk[j]);
-            } else {
-                z = 0.0f;
-            }
+    // de-quantize samples
+    fbasc_decoder_dequantize_samples(_q);
 
-            s++;
-
-            // expand using mu-law decoder
-            sample = expand_mulaw(z, _q->mu);
-
-            // store sample, applying proper gain
-            _q->X[i*(_q->num_channels)+j] = sample * _q->gk[j] / g;
-        }
-    }
-
-    unsigned int n=0;   // output sample counter
-    for (i=0; i<_q->symbols_per_frame; i++) {
-        // run synthesizer
-        //itqmfb_rrrf_execute(_q->channelizer, _q->X + n, _audio + n);
-
-        n += _q->num_channels;
-    }
+    // run synthesizer
+    fbasc_decoder_run_synthesizer(_q, _q->X, _audio);
 }
 
 
@@ -549,40 +526,61 @@ void fbasc_encoder_quantize_samples(fbasc _q)
 
                 // quantize
                 b = quantize_adc(z, _q->bk[j]);
+#if 0
+                if (s < 10)
+                    printf("  %3u : b=0x%4.4x, z=%12.8f, sample=%12.8f\n", s, b,z,sample);
+#endif
             } else {
                 b = 0;
             }
-            _q->data[s++] = b;
+            _q->data[s] = b;
+
+            s++;
         }
     }
+
+    printf("encoder data...\n");
+    for (i=0; i<10; i++)
+        printf("  %3u : %3u\n", i, _q->data[i]);
+
 }
 
 // de-quantize channelized data
-void fbasc_decoder_deqauntize_samples(fbasc _q)
+void fbasc_decoder_dequantize_samples(fbasc _q)
 {
     unsigned int i;     // symbol counter
     unsigned int j;     // channel counter
-    unsigned int s=0;   // output sample counter
+    unsigned int s=0;   // input sample counter
     float sample;       // channelized sample
     float z;            // compressed sample
     unsigned int b;     // quantized sample
+
+    printf("decoder data...\n");
+    for (i=0; i<10; i++)
+        printf("  %3u : %3u\n", i, _q->data[i]);
 
     // cycle through symbols in each channel and quantize
     for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
             if (_q->bk[j] > 0) {
                 // acquire digital sample
-                b = _q->data[i*_q->num_channels + j];
+                b = _q->data[s];
 
                 // quantize, digital-to-analog conversion
-                z = quantize_adc(b, _q->bk[j]);
+                z = quantize_dac(b, _q->bk[j]);
 
                 // de-compress (expand) using mu-law decoder
-                sample = expand_mulaw(z, _q->mu);
+                sample = expand_mulaw(z, _q->mu) / _q->gk[j];
+
+#if 0
+                if (s < 10)
+                    printf("  %3u : b=0x%4.4x, z=%12.8f, sample=%12.8f\n", s, b,z,sample);
+#endif
             } else {
                 sample = 0.0f;
             }
             _q->X[i*(_q->num_channels)+j] = sample;
+            s++;
         }
     }
 }

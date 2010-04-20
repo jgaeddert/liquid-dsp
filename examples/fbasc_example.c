@@ -17,10 +17,10 @@ int main() {
 #if 0
     unsigned int bytes_per_frame = samples_per_frame + num_channels + 1;
 #else
-    unsigned int bytes_per_frame = 128;
+    unsigned int bytes_per_frame = 512;
 #endif
 
-    unsigned int num_frames=2;
+    unsigned int num_frames=1;
 
     // create fbasc codecs
     fbasc fbasc_encoder = fbasc_create(FBASC_ENCODER, num_channels, samples_per_frame, bytes_per_frame);
@@ -62,7 +62,7 @@ int main() {
 #if 1
         fbasc_encode(fbasc_encoder, x, headerdata, framedata);
 
-        //fbasc_decode(fbasc_decoder, headerdata, framedata, y);
+        fbasc_decode(fbasc_decoder, headerdata, framedata, y);
 #else
         // run analyzer
         fbasc_encoder_run_analyzer(fbasc_encoder, x, X);
