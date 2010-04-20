@@ -204,9 +204,13 @@ void fbasc_decoder_run_synthesizer(fbasc _q, float * _X, float * _x);
 void fbasc_encoder_quantize_samples(fbasc _q);
 void fbasc_decoder_dequantize_samples(fbasc _q);
 
+// pack/unpack header
+void fbasc_encoder_pack_header(fbasc _q, unsigned char * _header);
+void fbasc_decoder_unpack_header(fbasc _q, unsigned char * _header);
+
 // pack/unpack frame
-void fbasc_encoder_pack_frame(fbasc _q);
-void fbasc_decoder_unpack_frame(fbasc _q);
+void fbasc_encoder_pack_frame(fbasc _q, unsigned char * _frame);
+void fbasc_decoder_unpack_frame(fbasc _q, unsigned char * _frame);
 
 //
 // MODULE : buffer

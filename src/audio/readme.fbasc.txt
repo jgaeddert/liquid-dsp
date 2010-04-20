@@ -47,4 +47,11 @@ frame - a set of MDCT symbols upon which the fbasc codec runs its analysis.
     application.
 
 
+The header contains the following data:
+    id      name                # bytes
+    --      ----------          ---------
+    fid     frame id            2
+    g0      nominal gain        1
+    bk      bit allocation      num_channels : [num_channels/2]
+
 

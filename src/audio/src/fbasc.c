@@ -38,6 +38,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -71,6 +72,10 @@ struct fbasc_s {
     float * channel_energy;         // signal variance on each channel [size: num_channels x 1]
     float gain;                     // nominal gain
     float mu;                       // compression factor (see module:quantization)
+
+    // frame info
+    unsigned int fid;               // frame id
+    unsigned int g0;                // nominal channel gain (quantized)
 };
 
 // compute length of header
@@ -78,7 +83,7 @@ unsigned int fbasc_compute_header_length(unsigned int _num_channels,
                                          unsigned int _samples_per_frame,
                                          unsigned int _bytes_per_frame)
 {
-    return _num_channels + 1;
+    return _num_channels + 3;
 }
 
 // create options
@@ -218,21 +223,13 @@ void fbasc_encode(fbasc _q,
     // quantize samples
     fbasc_encoder_quantize_samples(_q);
 
+    // pack header
+    fbasc_encoder_pack_header(_q, _header);
+
 #if 0
-    // pack data
-    fbasc_encoder_pack_frame(_q);
-
-    // TODO : encode header
+    // pack frame data
+    fbasc_encoder_pack_frame(_q, _frame);
 #else
-    // write raw data to header
-    unsigned int i;
-    _header[0] = 0; // nominal gain
-    printf("encoder:\n");
-    for (i=0; i<_q->num_channels; i++) {
-        _header[i+1] = _q->bk[i];
-        printf("  %3u : b=%u\n", i, _header[i+1]);
-    }
-
     // write raw samples to framedata
     memmove(_frame, _q->data, _q->samples_per_frame*sizeof(unsigned char));
 #endif
@@ -251,20 +248,13 @@ void fbasc_decode(fbasc _q,
 {
     unsigned int i;
 
+    // unpack header
+    fbasc_decoder_unpack_header(_q, _header);
+
 #if 0
-    // unpack data
-    fbasc_decoder_unpack_frame(_q);
-
-    // TODO : decode header
+    // unpack frame data
+    fbasc_decoder_unpack_frame(_q, _frame);
 #else
-    // read raw data from header
-    //_q->gi = _header[0]; // nominal gain
-    printf("decoder:\n");
-    for (i=0; i<_q->num_channels; i++) {
-        _q->bk[i] = _header[i+1];
-        printf("  %3u : b=%u\n", i, _q->bk[i]);
-    }
-
     // read raw samples from framedata
     memmove(_q->data, _frame, _q->samples_per_frame*sizeof(unsigned char));
 #endif
@@ -396,7 +386,7 @@ void fbasc_encoder_compute_channel_energy(fbasc _q)
 // TODO: document this method
 // fbasc_compute_bit_allocation()
 //
-// computes optimal bit allocation based on energy data
+// computes optimal bit allocation based on channel variance
 //
 //  _num_channels   :   number of channels
 //  _var            :   channel variance array [size: _num_channels x 1]
@@ -585,13 +575,70 @@ void fbasc_decoder_dequantize_samples(fbasc _q)
     }
 }
 
+// pack header
+void fbasc_encoder_pack_header(fbasc _q,
+                               unsigned char * _header)
+{
+    unsigned int i;
+    unsigned int n=0;
+
+    // fid: frame id
+    _header[n++] = (_q->fid >> 8) && 0x00ff;
+    _header[n++] = (_q->fid     ) && 0x00ff;
+
+    // g0 : nominal gain
+    _header[n++] = _q->g0 && 0x00ff;
+
+    // bk : bit allocation
+#if 0
+    for (i=0; i<_q->num_channels; i+=2)
+        _header[n++] = _q->gk[i+0] | (_q->gk[i+1] << 4);
+#else
+    for (i=0; i<_q->num_channels; i++)
+        _header[n++] = _q->bk[i];
+#endif
+
+    assert(n == _q->header_len);
+}
+
+// unpack header
+void fbasc_decoder_unpack_header(fbasc _q,
+                                 unsigned char * _header)
+{
+    unsigned int i;
+    unsigned int n=0;
+
+    // fid: frame id
+    _q->fid = (_header[0] << 8) | _header[1];
+    n += 2;
+
+    // g0 : nominal gain
+    _q->g0 = _header[n++];
+
+    // bk : bit allocation
+#if 0
+    for (i=0; i<_q->num_channels; i+=2) {
+        _q->bk[i+0] = (_header[n]     ) && 0x00ff
+        _q->bk[i+1] = (_header[n] >> 4) && 0x00ff
+        n++;
+    }
+#else
+    for (i=0; i<_q->num_channels; i++)
+        _q->bk[i] = _header[n++];
+#endif
+
+    assert(n == _q->header_len);
+}
+
 // pack frame
-void fbasc_encoder_pack_frame(fbasc _q)
+void fbasc_encoder_pack_frame(fbasc _q,
+                              unsigned char * _frame)
 {
 }
 
 // unpack frame
-void fbasc_decoder_unpack_frame(fbasc _q)
+void fbasc_decoder_unpack_frame(fbasc _q,
+                                unsigned char * _frame)
 {
 }
 
