@@ -27,6 +27,11 @@
 // loss-less channelizer.  The resulting channelized data are
 // then quantized based on their spectral energy levels and then
 // packed into a frame which the decoder can then interpret.
+// The result is a lossy encoder (as a result of quantization)
+// whose compression/quality levels can be easily varied.
+// 
+// More information available in src/audio/readme.fbasc.txt
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,8 +60,8 @@ struct fbasc_s {
     float * w;                      // MDCT window [size: 2*num_channels]
     float * buffer;                 // MDCT buffer [size: 2*num_channels]
     float * X;                      // channelized matrix (size: num_channels x symbols_per_frame)
-    unsigned int * bk;              // bits per subchannel
-    float * gk;                     // subchannel gain
+    unsigned int * bk;              // bits per channel
+    float * gk;                     // channel gain
     unsigned char * data;           // quantized frame data (bytes)
     //unsigned char * packed_data;    // packed quantized data
 
@@ -413,7 +418,7 @@ void fbasc_encoder_compute_metrics(fbasc _q)
 void fbasc_encoder_quantize_samples(fbasc _q)
 {
     unsigned int i;     // symbol counter
-    unsigned int j;     // sub-channel counter
+    unsigned int j;     // channel counter
     unsigned int s=0;   // output sample counter
     float sample;       // channelized sample
     float z;            // compressed sample
@@ -430,7 +435,7 @@ void fbasc_encoder_quantize_samples(fbasc _q)
         _q->gk[i] = (float)(1<<(bk_max-_q->bk[i]));
 #endif
 
-    // cycle through symbols in each sub-channel and quantize
+    // cycle through symbols in each channel and quantize
     for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
             if (_q->bk[j] > 0) {
