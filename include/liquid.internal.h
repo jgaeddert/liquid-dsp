@@ -180,12 +180,13 @@ struct maxnet_s {
 // compute normalized channel energy
 void fbasc_encoder_compute_channel_energy(fbasc _q);
 
-// compute optimum bit allocation for sub-band coder
-// _n           :   number of channels
-// _e           :   energy array [_n x 1]
-// _num_bits    :   total number of bits available
-// _max_bits    :   maximum number of bits per channel
-// _k           :   resulting bit allocation array [_n x 1]
+// computes optimal bit allocation based on channel variance
+//
+//  _num_channels   :   number of channels
+//  _var            :   channel variance array [size: _num_channels x 1]
+//  _num_bits       :   total number of bits per symbol
+//  _max_bits       :   maximum number of bits per channel
+//  _k              :   resulting bit allocation per channel [size: _num_channels x 1]
 void fbasc_compute_bit_allocation(unsigned int _n,
                                   float * _e,
                                   unsigned int _num_bits,

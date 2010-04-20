@@ -398,28 +398,28 @@ void fbasc_encoder_compute_channel_energy(fbasc _q)
 //
 // computes optimal bit allocation based on energy data
 //
-//  _n          :   number of channels
-//  _e          :   energy array [size: _n x 1]
-//  _num_bits   :   total number of bits per symbol
-//  _max_bits   :   maximum number of bits per channel
-//  _k          :   resulting bit allocation per channel [size: _n x 1]
-void fbasc_compute_bit_allocation(unsigned int _n,
-                                  float * _e,
+//  _num_channels   :   number of channels
+//  _var            :   channel variance array [size: _num_channels x 1]
+//  _num_bits       :   total number of bits per symbol
+//  _max_bits       :   maximum number of bits per channel
+//  _k              :   resulting bit allocation per channel [size: _num_channels x 1]
+void fbasc_compute_bit_allocation(unsigned int _num_channels,
+                                  float * _var,
                                   unsigned int _num_bits,
                                   unsigned int _max_bits,
                                   unsigned int * _k)
 {
-    unsigned int idx[_n];   // sorted indices
+    unsigned int idx[_num_channels];   // sorted indices
 
     unsigned int i, j;
-    for (i=0; i<_n; i++)
+    for (i=0; i<_num_channels; i++)
         idx[i] = i;
 
     // sort (inefficient, but easy to implement)
     unsigned int i_tmp;
-    for (i=0; i<_n; i++) {
-        for (j=0; j<_n; j++) {
-            if ( (i!=j) && (_e[idx[i]] > _e[idx[j]]) ) {
+    for (i=0; i<_num_channels; i++) {
+        for (j=0; j<_num_channels; j++) {
+            if ( (i!=j) && (_var[idx[i]] > _var[idx[j]]) ) {
                 // swap values
                 i_tmp = idx[i];
                 idx[i] = idx[j];
@@ -432,18 +432,18 @@ void fbasc_compute_bit_allocation(unsigned int _n,
     float log2p;
     int bk;
     float bkf;
-    unsigned int n=_n;
+    unsigned int n=_num_channels;
     unsigned int available_bits = _num_bits;
     float b;
-    for (i=0; i<_n; i++) {
+    for (i=0; i<_num_channels; i++) {
         log2p = 0.0f;
         b = (float)(available_bits) / (float)(n);
         // compute 'entropy' metric
-        for (j=i; j<_n; j++)
-            log2p += (_e[idx[j]] == 0.0f) ? -60.0f : log2f(_e[idx[j]]);
+        for (j=i; j<_num_channels; j++)
+            log2p += (_var[idx[j]] == 0.0f) ? -60.0f : log2f(_var[idx[j]]);
         log2p /= n;
 
-        bkf = (_e[idx[i]]==0.0f) ? 1.0f : b + 0.5f*log2f(_e[idx[i]]) - 0.5f*log2p;
+        bkf = (_var[idx[i]]==0.0f) ? 1.0f : b + 0.5f*log2f(_var[idx[i]]) - 0.5f*log2p;
         bk  = (int)roundf(bkf);
 
         bk = (bk > _max_bits)       ? _max_bits         : bk;
@@ -452,7 +452,7 @@ void fbasc_compute_bit_allocation(unsigned int _n,
 
 #if FBASC_DEBUG
         printf("e[%3u] = %12.8f, b = %8.4f, log2p = %12.4f, bk = %8.4f(%3d)\n",
-               idx[i], _e[idx[i]], b, log2p, bkf, bk);
+               idx[i], _var[idx[i]], b, log2p, bkf, bk);
 #endif
         _k[idx[i]] = bk;
 
