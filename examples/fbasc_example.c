@@ -17,7 +17,7 @@ int main() {
 #if 0
     unsigned int bytes_per_frame = samples_per_frame + num_channels + 1;
 #else
-    unsigned int bytes_per_frame = 512;
+    unsigned int bytes_per_frame = 64;
 #endif
 
     unsigned int num_frames=1;

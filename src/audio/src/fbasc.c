@@ -104,7 +104,7 @@ fbasc fbasc_create(int _type,
     q->samples_per_frame = _samples_per_frame;
     q->bytes_per_frame = _bytes_per_frame;
 
-#if 1
+#if 0
     if (q->samples_per_frame != q->bytes_per_frame) {
         fprintf(stderr,"error: fbasc_create(), [bug] samples_per_frame must be equal to bytes_per_frame\n");
         exit(1);
@@ -226,14 +226,8 @@ void fbasc_encode(fbasc _q,
     // pack header
     fbasc_encoder_pack_header(_q, _header);
 
-#if 0
     // pack frame data
     fbasc_encoder_pack_frame(_q, _frame);
-#else
-    // write raw samples to framedata
-    memmove(_frame, _q->data, _q->samples_per_frame*sizeof(unsigned char));
-#endif
-
 }
 
 // decode frame of audio
@@ -251,13 +245,8 @@ void fbasc_decode(fbasc _q,
     // unpack header
     fbasc_decoder_unpack_header(_q, _header);
 
-#if 0
     // unpack frame data
     fbasc_decoder_unpack_frame(_q, _frame);
-#else
-    // read raw samples from framedata
-    memmove(_q->data, _frame, _q->samples_per_frame*sizeof(unsigned char));
-#endif
 
     // compute metrics for decoding
     printf("**** DECODER METRICS\n");
@@ -598,6 +587,8 @@ void fbasc_encoder_pack_header(fbasc _q,
         _header[n++] = _q->bk[i];
 #endif
 
+    // TODO : add redundancy check
+
     assert(n == _q->header_len);
 }
 
@@ -628,18 +619,114 @@ void fbasc_decoder_unpack_header(fbasc _q,
 #endif
 
     assert(n == _q->header_len);
+
+    // TODO : validate bit allocation
+    // TODO : validate redundancy check
 }
 
 // pack frame
+//
+// Example:
+//
+//  bk  data    buffer
+//  --  -----   ----------------
+//  3     101   .............101
+//  0       -   .............101
+//  1       0   ............0101
+//  0       -   ............0101
+//  5   10010   .......100100101
+//  0       -   .......100100101
+//  4    1101   ...1101100100101
+//  3     001   0011101100100101
 void fbasc_encoder_pack_frame(fbasc _q,
                               unsigned char * _frame)
 {
+    unsigned int i,j;
+
+    unsigned int n=0;           // output byte counter
+    unsigned short int buffer=0;// symbol buffer, 16 bits wide (more than max_bits_per_sample)
+    unsigned int buffer_len=0;  // length of buffer
+    unsigned int s;             // data sample
+
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        for (j=0; j<_q->num_channels; j++) {
+            // strip data sample
+            s = _q->data[i*_q->num_channels + j];
+
+            // push sample into left side of buffer
+            buffer |= (s << buffer_len);
+
+            // increment buffer length
+            buffer_len += _q->bk[j];
+
+            // while buffer length exceeds one byte, strip byte off end
+            while (buffer_len >= 8) {
+                // strip byte off end of buffer and store in output
+                _frame[n++] = buffer & 0x00ff;
+
+                // shift buffer
+                buffer >>= 8;
+
+                // decrement buffer length
+                buffer_len -= 8;
+            }
+        }
+    }
 }
 
 // unpack frame
+//
+// Example:
+//
+//  bk  buffer              data
+//  --  ----------------    -----
+//  3   0011101100100101    101
+//  0   0011101100100...    -
+//  1   0011101100100...    0
+//  0   001110110010....    -
+//  5   001110110010....    10010
+//  0   0011101.........    -
+//  4   0011101.........    1101
+//  3   001.............    001
 void fbasc_decoder_unpack_frame(fbasc _q,
                                 unsigned char * _frame)
 {
+    unsigned int i,j;
+
+    unsigned int n=0;           // input byte counter
+    unsigned short int buffer=0;// symbol buffer, 16 bits wide (more than max_bits_per_sample)
+    unsigned int buffer_len=0;  // length of buffer
+    unsigned int s;             // data sample
+
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        for (j=0; j<_q->num_channels; j++) {
+
+            // skip if no bits are allocated to this channel
+            if (_q->bk[j] == 0)
+                continue;
+
+            // while buffer length is too small, strip byte from frame
+            while (buffer_len < _q->bk[j]) {
+                // shift input into left side of buffer
+                buffer |= (_frame[n++] << buffer_len);
+
+                // increment buffer length
+                buffer_len += 8;
+            }
+
+            // strip sample bits off right side of buffer
+            s = buffer & ((1 << _q->bk[j])-1);
+
+            // shift buffer
+            buffer >>= _q->bk[j];
+
+            // decrement buffer length
+            buffer_len -= _q->bk[j];
+
+            // save data sample
+            _q->data[i*_q->num_channels + j] = s;
+        }
+    }
 }
 
 
