@@ -29,6 +29,9 @@ int main() {
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
+    fprintf(fid,"num_channels = %u;\n", num_channels);
+    fprintf(fid,"samples_per_frame = %u;\n", samples_per_frame);
+    fprintf(fid,"num_frames = %u;\n", num_frames);
 
     float phi=0.0f;
     float dphi=0.03f;
@@ -47,7 +50,7 @@ int main() {
             //x[j] = randnf()*0.1f;
         }
 
-#if 1
+#if 0
         fbasc_encode(fbasc_encoder, x, framedata);
 
         //fbasc_decode(fbasc_decoder, framedata, y);
@@ -69,13 +72,14 @@ int main() {
 
     // plot results
     fprintf(fid,"\n\n");
+    fprintf(fid,"num_samples = num_frames * samples_per_frame;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1), plot(x);\n");
-    fprintf(fid,"ylabel('input');\n");
-    //fprintf(fid,"axis([1 length(x) -0.5 0.5]);\n");
-    fprintf(fid,"subplot(2,1,2), plot(y);\n");
-    fprintf(fid,"ylabel('encoded/decoded');\n");
-    //fprintf(fid,"axis([1 length(y) -0.5 0.5]);\n");
+    fprintf(fid,"t = 0:(num_samples-1);\n");
+    fprintf(fid,"plot(t,x,t-num_channels,y);\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('signal');\n");
+    fprintf(fid,"grid on\n");
+    fprintf(fid,"legend('original','reconstructed',1);\n");
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"nfft = 1024;\n");
@@ -83,6 +87,11 @@ int main() {
     fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,nfft))));\n");
     fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
     fprintf(fid,"plot(f,X,f,Y);\n");
+    fprintf(fid,"xlabel('normalized frequency');\n");
+    fprintf(fid,"ylabel('PSD [dB]');\n");
+    fprintf(fid,"axis([-0.5 0.5 -120 40]);\n");
+    fprintf(fid,"grid on\n");
+    fprintf(fid,"legend('original','reconstructed',1);\n");
 
     // close debug file
     fclose(fid);

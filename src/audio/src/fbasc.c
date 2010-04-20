@@ -75,11 +75,10 @@ struct fbasc_s {
 //  _num_channels       :   number of filterbank channels
 //  _samples_per_frame  :   number of real samples per frame (must be even multiple of _num_channels)
 //  _bytes_per_frame    :   number of encoded data bytes per frame
-fbasc fbasc_create(
-        int _type,
-        unsigned int _num_channels,
-        unsigned int _samples_per_frame,
-        unsigned int _bytes_per_frame)
+fbasc fbasc_create(int _type,
+                   unsigned int _num_channels,
+                   unsigned int _samples_per_frame,
+                   unsigned int _bytes_per_frame)
 {
     fbasc q = (fbasc) malloc(sizeof(struct fbasc_s));
 
@@ -159,7 +158,13 @@ void fbasc_print(fbasc _q)
     printf("    bytes/frame:    %u\n", _q->bytes_per_frame);
 }
 
-void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
+// encode frame of audio
+//  _q      :   fbasc object
+//  _audio  :   audio samples [size: samples_per_frame x 1]
+//  _frame  :   encoded frame bytes [size: bytes_per_frame x 1]
+void fbasc_encode(fbasc _q,
+                  float * _audio,
+                  unsigned char * _frame)
 {
     unsigned int i, j;
 
@@ -204,6 +209,10 @@ void fbasc_encode(fbasc _q, float * _audio, unsigned char * _frame)
 
 }
 
+// decode frame of audio
+//  _q      :   fbasc object
+//  _frame  :   encoded frame bytes [size: bytes_per_frame x 1]
+//  _audio  :   decoded audio samples [size: samples_per_frame x 1]
 void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 {
     unsigned int i, j;
@@ -265,9 +274,17 @@ void fbasc_decode(fbasc _q, unsigned char * _frame, float * _audio)
 }
 
 
-// internal
+// 
+// internal methods
+//
 
-// run analyzer
+// fbasc_encoder_run_analyzer()
+//
+// run analyzer on a frame of data
+//  _q      :   fbasc object
+//  _x      :   input audio samples [size: samples_per_frame x 1]
+//  _X      :   output channelized samples [size: num_channels x symbols_per_frame]
+//  NOTE: num_channels * symbols_per_frame = samples_per_frame
 void fbasc_encoder_run_analyzer(fbasc _q,
                                 float * _x,
                                 float * _X)
@@ -276,17 +293,30 @@ void fbasc_encoder_run_analyzer(fbasc _q,
 
     for (i=0; i<_q->symbols_per_frame; i++) {
         // copy last half of buffer to first half
-        memmove(_q->buffer, &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
+        memmove(_q->buffer,
+                &_q->buffer[_q->num_channels],
+                _q->num_channels*sizeof(float));
 
-        // copy input block to last half of buffer
-        memmove(&_q->buffer[_q->num_channels], &_x[i*_q->num_channels], _q->num_channels*sizeof(float));
+        // copy input block [size: num_channels x 1] to last half of buffer
+        memmove(&_q->buffer[_q->num_channels],
+                &_x[i*_q->num_channels],
+                _q->num_channels*sizeof(float));
 
-        // run transform
-        mdct(_q->buffer, &_X[i*_q->num_channels], _q->w, _q->num_channels);
+        // run transform on internal buffer, store result in output
+        mdct(_q->buffer,
+             &_X[i*_q->num_channels],
+             _q->w,
+             _q->num_channels);
     }
 }
 
-// run synthesizer
+// fbasc_encoder_run_analyzer()
+//
+// run synthesizer on a frame of data
+//  _q      :   fbasc object
+//  _X      :   intput channelized samples [size: num_channels x symbols_per_frame]
+//  _x      :   output audio samples [size: samples_per_frame x 1]
+//  NOTE: num_channels * symbols_per_frame = samples_per_frame
 void fbasc_decoder_run_synthesizer(fbasc _q,
                                    float * _X,
                                    float * _x)
@@ -295,11 +325,16 @@ void fbasc_decoder_run_synthesizer(fbasc _q,
 
     // copy last half of buffer to beginning of output; this
     // preserves continuity between frames
-    memmove(_x, &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
+    memmove(_x,
+            &_q->buffer[_q->num_channels],
+            _q->num_channels*sizeof(float));
 
     for (i=0; i<_q->symbols_per_frame; i++) {
-        // run inverse transform
-        imdct(&_X[i*_q->num_channels], _q->buffer, _q->w, _q->num_channels);
+        // run inverse transform on input [size: num_channels x 1]
+        imdct(&_X[i*_q->num_channels],
+              _q->buffer,
+              _q->w,
+              _q->num_channels);
 
         // accumulate first half of buffer to output
         for (j=0; j<_q->num_channels; j++)
@@ -307,12 +342,24 @@ void fbasc_decoder_run_synthesizer(fbasc _q,
 
         // copy last half of buffer to output (only if the
         // index isn't on the last symbol)
-        if (i==_q->symbols_per_frame-1) continue;
-        memmove(&_x[(i+1)*_q->num_channels], &_q->buffer[_q->num_channels], _q->num_channels*sizeof(float));
+        if (i==_q->symbols_per_frame-1)
+            continue;
+        memmove(&_x[(i+1)*_q->num_channels],
+                &_q->buffer[_q->num_channels],
+                _q->num_channels*sizeof(float));
     }
 }
 
 // TODO: document this method
+// fbasc_compute_bit_allocation()
+//
+// computes optimal bit allocation based on energy data
+//
+//  _n          :   number of channels
+//  _e          :   energy array [size: _n x 1]
+//  _num_bits   :   total number of bits per symbol
+//  _max_bits   :   maximum number of bits per channel
+//  _k          :   resulting bit allocation per channel [size: _n x 1]
 void fbasc_compute_bit_allocation(unsigned int _n,
                                   float * _e,
                                   unsigned int _num_bits,
@@ -398,6 +445,7 @@ void fbasc_encoder_compute_metrics(fbasc _q)
     printf("max variance: %16.12f\n", max_var);
 
     // compute nominal gain
+    // TODO : store internally
     int gi = (int)(-log2f(max_var)) - 16;
     gi = gi > 255 ? 255 : gi;
     gi = gi <   0 ?   0 : gi;
