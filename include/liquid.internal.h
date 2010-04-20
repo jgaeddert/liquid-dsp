@@ -177,6 +177,9 @@ struct maxnet_s {
 // MODULE : audio
 //
 
+// compute normalized channel energy
+void fbasc_encoder_compute_channel_energy(fbasc _q);
+
 // compute optimum bit allocation for sub-band coder
 // _n           :   number of channels
 // _e           :   energy array [_n x 1]
