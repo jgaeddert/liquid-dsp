@@ -400,7 +400,11 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
                                   unsigned int _max_bits,
                                   unsigned int * _k)
 {
-    unsigned int idx[_num_channels];   // sorted indices
+    // copy variance internally
+    float var[_num_channels];
+    memmove(var, _var, _num_channels*sizeof(float));
+
+    unsigned int idx[_num_channels];    // sorted indices
 
     unsigned int i, j;
     for (i=0; i<_num_channels; i++)
@@ -410,7 +414,7 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
     unsigned int i_tmp;
     for (i=0; i<_num_channels; i++) {
         for (j=0; j<_num_channels; j++) {
-            if ( (i!=j) && (_var[idx[i]] > _var[idx[j]]) ) {
+            if ( (i!=j) && (var[idx[i]] > var[idx[j]]) ) {
                 // swap values
                 i_tmp = idx[i];
                 idx[i] = idx[j];
@@ -419,27 +423,33 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
         }
     }
 
-    //float var_max = _var[idx[0]];
+    float var_max = var[idx[0]];
+    if (var_max < 1e-6f) {
+        // maximum variance extremely low
+        for (i=0; i<_num_channels; i++)
+            var[i] = 1.0f;
+    }
 
     // compute bit allocation
     float b = (float)_num_bits / (float)_num_channels;
     unsigned int n=_num_channels;
 
-    // compute log of geometric mean of variances: log2( prod(_var[])^(1/M) )
+    // compute log of geometric mean of variances: log2( prod(var[])^(1/M) )
     float log2p=0.0f;
     for (i=0; i<_num_channels; i++)
-        log2p += (_var[i] == 0.0f) ? -60.0f : log2f(_var[i]);
+        log2p += (var[i] == 0.0f) ? -60.0f : log2f(var[i]);
     log2p /= n;
-    //printf("log2p : %12.8f\n", log2p);
+    printf("max var : %12.8f\n", var_max);
+    printf("log2p   : %12.8f\n", log2p);
 
     // compute theoretical bit allocations
     float bkf[_num_channels];
     for (i=0; i<_num_channels; i++)
-        bkf[i] = (_var[i]==0.0f) ? 0.0f : b + 0.5f*log2f(_var[i]) - 0.5f*log2p;
+        bkf[i] = (var[i]==0.0f) ? 0.0f : b + 0.5f*log2f(var[i]) - 0.5f*log2p;
 
 #if FBASC_DEBUG
     for (i=0; i<_num_channels; i++)
-        printf("  var[%3u] = %12.4e, bk = %12.6f\n", idx[i], _var[idx[i]], bkf[idx[i]]);
+        printf("  var[%3u] = %12.4e, bk = %12.6f\n", idx[i], var[idx[i]], bkf[idx[i]]);
 #endif
 
 #if 0
@@ -489,7 +499,9 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
         }
 
         unsigned int bk = (unsigned int)roundf(bkf[idx[i]]);
-        if (bk > _max_bits) bk = _max_bits;
+        if (bk > _max_bits)         bk = _max_bits;
+        if (bk > bits_available)    bk = bits_available;
+        if (bk < 2)                 bk = 0;
 
         bits_available -= bk;
 
@@ -497,11 +509,14 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
         
     }
 
+    // assign any remaining available bits to channel with highest variance
+    _k[idx[0]] += bits_available;
+
     // print results
 #if FBASC_DEBUG
     printf("*******************\n");
     for (i=0; i<_num_channels; i++)
-        printf("  var[%3u] = %12.4e, bk = %12.6f, b = %u\n", idx[i], _var[idx[i]], bkf[idx[i]], _k[idx[i]]);
+        printf("  var[%3u] = %12.4e, bk = %12.6f, b = %u\n", idx[i], var[idx[i]], bkf[idx[i]], _k[idx[i]]);
 #endif
 }
 
