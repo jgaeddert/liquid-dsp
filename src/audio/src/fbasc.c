@@ -42,7 +42,7 @@
 
 #include "liquid.internal.h"
 
-#define FBASC_DEBUG     1
+#define FBASC_DEBUG     0
 
 // fbasc object structure
 struct fbasc_s {
@@ -257,10 +257,7 @@ void fbasc_decode(fbasc _q,
     fbasc_decoder_unpack_frame(_q, _frame);
 
     // compute metrics for decoding
-#if FBASC_DEBUG
-    printf("**** DECODER METRICS\n");
-#endif
-    fbasc_encoder_compute_metrics(_q);
+    fbasc_decoder_compute_metrics(_q);
 
     // de-quantize samples
     fbasc_decoder_dequantize_samples(_q);
@@ -439,8 +436,10 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
     for (i=0; i<_num_channels; i++)
         log2p += (var[i] == 0.0f) ? -60.0f : log2f(var[i]);
     log2p /= n;
+#if FBASC_DEBUG
     printf("max var : %12.8f\n", var_max);
     printf("log2p   : %12.8f\n", log2p);
+#endif
 
     // compute theoretical bit allocations
     float bkf[_num_channels];
@@ -525,19 +524,20 @@ void fbasc_encoder_compute_metrics(fbasc _q)
 {
     unsigned int i;
 
+    // find maximum variance
+    float var_max = 0.0f;
+    for (i=0; i<_q->num_channels; i++) {
+        if (_q->channel_var[i] > var_max || i==0)
+            var_max = _q->channel_var[i];
+    }
+
     // compute nominal gain
-#if 0
-    int gi = (int)(-log2f(max_var)) - 16;   // use variance
+    int gi = (int)(-log2f(var_max)) - 4;   // use variance
     //int gi = (int)(-log2f(max_amp)) - 1;    // use peak amplitude
-    gi = gi > 255 ? 255 : gi;
-    gi = gi <   0 ?   0 : gi;
-    _q->gain = (float)(1<<gi);
-#else
-    // TODO FIXME : compute nominal gain properly
-    int gi = 0;
-    _q->gain = (float)(1<<gi);
-    _q->gain = 1.0f;
-#endif
+    gi = gi > 7 ? 7 : gi;
+    gi = gi < 0 ? 0 : gi;
+    _q->g0 = gi;
+    _q->gain = (float)(1<<_q->g0);
 
     // find maximum bit allocation
     unsigned int bk_max = 0;
@@ -552,7 +552,41 @@ void fbasc_encoder_compute_metrics(fbasc _q)
 
 #if FBASC_DEBUG
     printf("encoder metrics:\n");
-    printf("    nominal gain : %12.4e (gi = %3u)\n", _q->gain, gi);
+    printf("    var max     : %12.8f\n", var_max);
+    printf("    g0          : %u\n", _q->g0);
+    printf("    nominal gain: %12.8f\n", _q->gain);
+    for (i=0; i<_q->num_channels; i++) {
+        if (_q->bk[i] > 0)
+            printf("  %3u : e = %12.8f, b = %3u, g=%12.4f\n", i, _q->channel_var[i],_q->bk[i], _q->gk[i]);
+        else
+            printf("  %3u : e = %12.8f, b = %3u\n",           i, _q->channel_var[i],_q->bk[i]);
+    }
+#endif
+}
+
+
+// compute decoder metrics
+void fbasc_decoder_compute_metrics(fbasc _q)
+{
+    unsigned int i;
+    _q->gain = (float)(1<<_q->g0);
+
+    // find maximum bit allocation
+    unsigned int bk_max = 0;
+    for (i=0; i<_q->num_channels; i++) {
+        if (_q->bk[i] > bk_max || i==0)
+            bk_max = _q->bk[i];
+    }
+
+    // compute relative gains: gk = 2^(max(bk) - bk)
+    for (i=0; i<_q->num_channels; i++)
+        _q->gk[i] = (float)(1<<(bk_max-_q->bk[i])) * _q->gain;
+
+#if FBASC_DEBUG
+    printf("decoder metrics:\n");
+    printf("    var max     : %12.8f\n", var_max);
+    printf("    g0          : %u\n", _q->g0);
+    printf("    nominal gain: %12.8f\n", _q->gain);
     for (i=0; i<_q->num_channels; i++) {
         if (_q->bk[i] > 0)
             printf("  %3u : e = %12.8f, b = %3u, g=%12.4f\n", i, _q->channel_var[i],_q->bk[i], _q->gk[i]);
@@ -660,7 +694,7 @@ void fbasc_encoder_pack_header(fbasc _q,
     n += 2;
 
     // g0 : nominal gain
-    _header[n++] = _q->g0 && 0x00ff;
+    _header[n++] = _q->g0 & 0x00ff;
 
     // bk : bit allocation
 #if 0
@@ -693,8 +727,8 @@ void fbasc_decoder_unpack_header(fbasc _q,
     // bk : bit allocation
 #if 0
     for (i=0; i<_q->num_channels; i+=2) {
-        _q->bk[i+0] = (_header[n]     ) && 0x00ff
-        _q->bk[i+1] = (_header[n] >> 4) && 0x00ff
+        _q->bk[i+0] = (_header[n]     ) & 0x00ff
+        _q->bk[i+1] = (_header[n] >> 4) & 0x00ff
         n++;
     }
 #else
@@ -735,12 +769,6 @@ void fbasc_encoder_pack_frame(fbasc _q,
     unsigned int buffer_len=0;  // length of buffer
     unsigned int s;             // data sample
 
-    // test...
-    unsigned int bk_total=0;
-    for (i=0; i<_q->num_channels; i++)
-        bk_total += _q->bk[i];
-    printf("bk (total) : %3u (%3u)\n", bk_total, 0);
-
     for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
             // strip data sample
@@ -766,7 +794,7 @@ void fbasc_encoder_pack_frame(fbasc _q,
         }
     }
 
-    printf(" n = %3u (%3u)\n", n, _q->bytes_per_frame);
+    //printf(" n = %3u (%3u)\n", n, _q->bytes_per_frame);
     assert( n == _q->bytes_per_frame );
 }
 
