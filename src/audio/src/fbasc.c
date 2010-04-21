@@ -42,7 +42,7 @@
 
 #include "liquid.internal.h"
 
-#define FBASC_DEBUG     0
+#define FBASC_DEBUG     1
 
 // fbasc object structure
 struct fbasc_s {
@@ -497,7 +497,7 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
             continue;
         }
 
-        unsigned int bk = (unsigned int)roundf(bkf[idx[i]]);
+        unsigned int bk = (unsigned int)ceilf(bkf[idx[i]]);
         if (bk > _max_bits)         bk = _max_bits;
         if (bk > bits_available)    bk = bits_available;
         if (bk < 2)                 bk = 0;
@@ -508,8 +508,22 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
         
     }
 
-    // assign any remaining available bits to channel with highest variance
-    _k[idx[0]] += bits_available;
+    // assign any remaining available bits to channels with highest
+    // variance, ensuring number of bits does not exceed maximum
+    unsigned int k=0;
+    while (bits_available > 0) {
+        if (_k[idx[k]] < _max_bits) {
+            _k[idx[k]]++;
+            bits_available--;
+        } else {
+            k++;
+        }
+
+        if (k == _num_channels) {
+            fprintf(stderr,"error: number of bits exceeds maximum\n");
+            exit(1);
+        }
+    }
 
     // print results
 #if FBASC_DEBUG
@@ -592,7 +606,6 @@ void fbasc_decoder_compute_metrics(fbasc _q)
 
 #if FBASC_DEBUG
     printf("decoder metrics:\n");
-    printf("    var max     : %12.8f\n", var_max);
     printf("    g0          : %d\n", _q->g0);
     printf("    nominal gain: %12.8f\n", _q->gain);
     for (i=0; i<_q->num_channels; i++) {
