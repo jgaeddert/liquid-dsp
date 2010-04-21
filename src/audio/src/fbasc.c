@@ -54,28 +54,27 @@ struct fbasc_s {
     // derived values
     unsigned int symbols_per_frame; // samples_per_frame/num_channels
     unsigned int header_len;        // header length (bytes)
-    unsigned int bits_per_frame;
     unsigned int bits_per_symbol;
     unsigned int max_bits_per_sample;
 
-    // common objects
+    // analysis/synthesis
     float * w;                      // MDCT window [size: 2*num_channels x 1]
     float * buffer;                 // MDCT buffer [size: 2*num_channels x 1]
     float * X;                      // channelized matrix [size: num_channels x symbols_per_frame]
-    unsigned int * bk;              // bits per channel [size: num_channels x 1]
-    unsigned short int * data;      // quantized frame data (bytes) [size: num_channels x symbols_per_frame]
 
-    // analysis/synthesis
     float * channel_var;            // signal variance on each channel [size: num_channels x 1]
     float * channel_peak;           // signal peak on each channel [size: num_channels x 1]
     float * channel_gain;           // gain on each channel [size: num_channels x 1]
+
+    unsigned int * bk;              // bits per channel [size: num_channels x 1]
+    unsigned short int * data;      // quantized frame data (bytes) [size: num_channels x symbols_per_frame]
     float gain;                     // nominal gain
     float mu;                       // compression factor (see module:quantization)
 
     // frame info
     unsigned int fid;               // frame id
     signed char g0;                 // nominal channel gain (quantized)
-    unsigned int * gk;             // quantized channel gain [size: num_channels x 1]
+    unsigned int * gk;              // quantized channel gain [size: num_channels x 1]
 };
 
 // compute length of header
@@ -123,8 +122,7 @@ fbasc fbasc_create(int _type,
 
     // initialize derived values/lengths
     q->symbols_per_frame = (q->samples_per_frame) / (q->num_channels);
-    q->bits_per_frame = 8*q->bytes_per_frame;
-    q->bits_per_symbol = q->bits_per_frame / q->symbols_per_frame;
+    q->bits_per_symbol = 8*q->bytes_per_frame / q->symbols_per_frame;
     q->max_bits_per_sample = 12;
 
     // ensure num_channels evenly divides samples_per_frame
@@ -133,7 +131,7 @@ fbasc fbasc_create(int _type,
         exit(1);
     }
 
-    // ensure num_channels evenly divides samples_per_frame
+    // ensure num_channels evenly divides bytes_per_frame
     unsigned int bytes_per_symbol = q->bytes_per_frame / q->num_channels;
     if ( bytes_per_symbol * q->num_channels != q->bytes_per_frame) {
         fprintf(stderr,"error: fbasc_create(), _num_channels must evenly divide _bytes_per_frame\n");
@@ -155,9 +153,9 @@ fbasc fbasc_create(int _type,
     q->mu = 255.0f;
 
     // data
-    q->bk = (unsigned int *) malloc( (q->num_channels)*sizeof(unsigned int));
-    q->gk = (unsigned int *) malloc( (q->num_channels)*sizeof(unsigned int));
-    q->data = (unsigned short *) malloc( (q->samples_per_frame)*sizeof(unsigned short));
+    q->bk =     (unsigned int *)   malloc( (q->num_channels)*sizeof(unsigned int));
+    q->gk =     (unsigned int *)   malloc( (q->num_channels)*sizeof(unsigned int));
+    q->data =   (unsigned short *) malloc( (q->samples_per_frame)*sizeof(unsigned short));
 
     unsigned int i;
 
@@ -381,7 +379,7 @@ void fbasc_encoder_compute_channel_variance(fbasc _q)
     // TODO : determine if this is really necessary
     float max_var = 0.0f;
     for (i=0; i<_q->num_channels; i++) {
-        _q->channel_var[i] = _q->channel_var[i] / _q->symbols_per_frame;
+        _q->channel_var[i] /= _q->symbols_per_frame;
         max_var = _q->channel_var[i]  > max_var ? _q->channel_var[i]  : max_var;
         max_amp = _q->channel_peak[i] > max_amp ? _q->channel_peak[i] : max_amp;
     }
@@ -511,7 +509,7 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
         unsigned int bk = (unsigned int)ceilf(bkf[idx[i]]);
         if (bk > _max_bits)         bk = _max_bits;
         if (bk > bits_available)    bk = bits_available;
-        if (bk < 4)                 bk = 0;
+        if (bk < 3)                 bk = 0;
 
         bits_available -= bk;
 
@@ -586,13 +584,18 @@ void fbasc_encoder_compute_metrics(fbasc _q)
 
     // compute relative gains:
     for (i=0; i<_q->num_channels; i++) {
+#if 0
         gi = (int)(-log2f( _q->channel_peak[i] / amp_max ));
         gi = gi > 15 ? 15 : gi;
         gi = gi <  0 ?  0 : gi;
         _q->gk[i] = gi;    // quantized channel gain
         _q->channel_gain[i] = expf(_q->gk[i] * 0.69315f) * _q->gain;    // 2^gi
+#else
+        gi = 0;
+        _q->gk[i] = 0;
         _q->channel_gain[i] = _q->gain;
-        _q->channel_gain[i] = 0.25f;
+#endif
+
 #if FBASC_DEBUG
         printf("peak[%3u] = %12.8f : %12.8f (%12.8f, %3d) > %12.8f\n",
                 i,
@@ -635,8 +638,7 @@ void fbasc_decoder_compute_metrics(fbasc _q)
 
     // compute relative gains: channel_gain = 2^(max(bk) - bk)
     for (i=0; i<_q->num_channels; i++)
-        _q->channel_gain[i] = 0.25f;
-        //_q->channel_gain[i] = _q->gain;
+        _q->channel_gain[i] = _q->gain;
         //_q->channel_gain[i]  = expf(_q->gk[i] * 0.69315f) * _q->gain;
         //_q->channel_gain[i] = (float)(1<<(bk_max-_q->bk[i])) * _q->gain;
 
@@ -663,14 +665,6 @@ void fbasc_encoder_quantize_samples(fbasc _q)
     float sample;       // channelized sample
     float z;            // compressed sample
     unsigned int b;     // quantized sample
-
-#define BLAH 0
-
-#if BLAH
-    float e[_q->num_channels];
-    for (i=0; i<_q->num_channels; i++)
-        e[i] = 0.0f;
-#endif
     // cycle through symbols in each channel and quantize
     for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
@@ -684,16 +678,6 @@ void fbasc_encoder_quantize_samples(fbasc _q)
                 // quantize
                 b = quantize_adc(z, _q->bk[j]);
 
-#if BLAH
-                // compute error
-                float y = expand_mulaw(quantize_dac(b, _q->bk[j]), _q->mu);
-                e[j] += (sample-y)*(sample-y);
-#endif
-
-#if 0
-                if (s < 10)
-                    printf("  %3u : b=0x%4.4x, z=%12.8f, sample=%12.8f\n", s, b,z,sample);
-#endif
             } else {
                 b = 0;
             }
@@ -702,16 +686,6 @@ void fbasc_encoder_quantize_samples(fbasc _q)
             s++;
         }
     }
-#if BLAH
-    for (i=0; i<_q->num_channels; i++)
-        printf("  error[%3u] = %12.8f\n", i, e[i]);
-#endif
-
-#if FBASC_DEBUG
-    printf("encoder data...\n");
-    for (i=0; i<10; i++)
-        printf("  %3u : %3u\n", i, _q->data[i]);
-#endif
 }
 
 // de-quantize channelized data
@@ -723,12 +697,6 @@ void fbasc_decoder_dequantize_samples(fbasc _q)
     float sample;       // channelized sample
     float z;            // compressed sample
     unsigned int b;     // quantized sample
-
-#if FBASC_DEBUG
-    printf("decoder data...\n");
-    for (i=0; i<10; i++)
-        printf("  %3u : %3u\n", i, _q->data[i]);
-#endif
 
     // cycle through symbols in each channel and quantize
     for (i=0; i<_q->symbols_per_frame; i++) {
@@ -743,10 +711,6 @@ void fbasc_decoder_dequantize_samples(fbasc _q)
                 // de-compress (expand) using mu-law decoder
                 sample = expand_mulaw(z, _q->mu) / _q->channel_gain[j];
 
-#if 0
-                if (s < 10)
-                    printf("  %3u : b=0x%4.4x, z=%12.8f, sample=%12.8f\n", s, b,z,sample);
-#endif
             } else {
                 sample = 0.0f;
             }

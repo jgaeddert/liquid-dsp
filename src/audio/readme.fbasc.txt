@@ -64,6 +64,9 @@ The header contains the following data:
     --      ----------          ---------
     fid     frame id            2
     g0      nominal gain        1
-    bk      bit allocation      num_channels : [num_channels/2]
+    bk      bit allocation      num_channels / 2
+    gk      gain allocation     num_channels / 2
+    --      ----------          ---------
+            total:              num_channels + 3
 
 
