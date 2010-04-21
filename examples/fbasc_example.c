@@ -42,6 +42,7 @@ int main() {
     for (i=0; i<num_samples; i++) {
         x[i] = 0.5f*cosf(2.0f*M_PI*phi) + 0.5f*cosf(2.0f*M_PI*phi*0.57f);
         x[i] *= 0.1f;
+        x[i] *= hamming(i,num_samples);
         phi += dphi;
     }
 
@@ -62,12 +63,19 @@ int main() {
                      &y[i*samples_per_frame]);
     }
 
-    // compute error
-    float e=0.0f;
+    // compute error : signal-to-distortion ratio
+    float s=0.0f;   // signal variance
+    float e=0.0f;   // error variance
     for (i=0; i<num_samples-num_channels; i++) {
-        e += x[i] - y[i+num_channels];
+        // compute signal variance
+        s += x[i]*x[i];
+
+        // compute error variance
+        float v = x[i] - y[i+num_channels];
+        e = v*v;
     }
-    printf("e = %12.8f\n", e);
+    float SDR = 10*log10f(s/e);
+    printf("SDR = %8.2f dB\n", SDR);
 
     // open debug file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -95,14 +103,15 @@ int main() {
     fprintf(fid,"legend('original','reconstructed',1);\n");
 
     fprintf(fid,"figure;\n");
+    fprintf(fid,"w = hamming(length(x)).';\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x,nfft))));\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
+    fprintf(fid,"X = 20*log10(abs(fftshift(fft(x.*w,nfft))));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y.*w,nfft))));\n");
     fprintf(fid,"plot(f,X,f,Y);\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"axis([-0.5 0.5 -120 40]);\n");
+    fprintf(fid,"axis([-0.5 0.5 -100 40]);\n");
     fprintf(fid,"grid on\n");
     fprintf(fid,"legend('original','reconstructed',1);\n");
 
