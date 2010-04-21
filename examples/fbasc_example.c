@@ -72,7 +72,7 @@ int main() {
 
         // compute error variance
         float v = x[i] - y[i+num_channels];
-        e = v*v;
+        e += v*v;
     }
     float SDR = 10*log10f(s/e);
     printf("SDR = %8.2f dB\n", SDR);

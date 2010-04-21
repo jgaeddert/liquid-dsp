@@ -68,12 +68,14 @@ struct fbasc_s {
 
     // analysis/synthesis
     float * channel_var;            // signal variance on each channel [size: num_channels x 1]
+    float * channel_peak;           // signal peak on each channel [size: num_channels x 1]
     float gain;                     // nominal gain
     float mu;                       // compression factor (see module:quantization)
 
     // frame info
     unsigned int fid;               // frame id
     signed char g0;                 // nominal channel gain (quantized)
+    unsigned int * gk2;             // quantized channel gain [size: num_channels x 1]
 };
 
 // compute length of header
@@ -82,7 +84,8 @@ struct fbasc_s {
 //  --      ----------          ---------
 //  fid     frame id            2
 //  g0      nominal gain        1
-//  bk      bit allocation      num_channels
+//  bk      bit allocation      num_channels/2
+//  gk      channel gain        num_channels/2
 //  --      ----------          ---------
 //          total:              num_channels + 3
 unsigned int fbasc_compute_header_length(unsigned int _num_channels,
@@ -147,11 +150,13 @@ fbasc fbasc_create(int _type,
     q->buffer =         (float*) malloc( 2*(q->num_channels)*sizeof(float) );
     q->X =              (float*) malloc( (q->samples_per_frame)*sizeof(float) );
     q->channel_var =    (float*) malloc( (q->num_channels)*sizeof(float) );
+    q->channel_peak =   (float*) malloc( (q->num_channels)*sizeof(float) );
     q->gk =             (float*) malloc( (q->num_channels)*sizeof(float) );
     q->mu = 255.0f;
 
     // data
     q->bk = (unsigned int *) malloc( (q->num_channels)*sizeof(unsigned int));
+    q->gk2 = (unsigned int *) malloc( (q->num_channels)*sizeof(unsigned int));
     q->data = (unsigned short *) malloc( (q->samples_per_frame)*sizeof(unsigned short));
 
     unsigned int i;
@@ -178,7 +183,9 @@ void fbasc_destroy(fbasc _q)
     free(_q->buffer);       // buffer for MDCT
     free(_q->X);            // channelized samples
     free(_q->channel_var);  // channel variance
+    free(_q->channel_peak); // channel peak
     free(_q->gk);
+    free(_q->gk2);
 
     free(_q->bk);           // bit allocations
     free(_q->data);         // sampled data
@@ -569,6 +576,36 @@ void fbasc_encoder_compute_metrics(fbasc _q)
     for (i=0; i<_q->num_channels; i++)
         _q->gk[i] = (float)(1<<(bk_max-_q->bk[i])) * _q->gain;
 
+    // find peaks
+    unsigned int j;
+    for (i=0; i<_q->num_channels; i++)
+        _q->channel_peak[i] = 0.0f;
+    for (i=0; i<_q->symbols_per_frame; i++) {
+        for (j=0; j<_q->num_channels; j++) {
+            float v = fabsf(_q->X[i*_q->num_channels+j]);
+            if (v > _q->channel_peak[j])
+                _q->channel_peak[j] = v;
+        }
+    }
+
+    // compute relative gains:
+    for (i=0; i<_q->num_channels; i++) {
+        gi = (int)(-log2f( _q->channel_peak[i] / amp_max ));
+        gi = gi > 15 ? 15 : gi;
+        gi = gi <  0 ?  0 : gi;
+        _q->gk2[i] = gi;    // quantized channel gain
+        _q->gk[i]  = expf(_q->gk2[i] * 0.69315f) * _q->gain;    // 2^gi
+#if FBASC_DEBUG
+        printf("peak[%3u] = %12.8f : %12.8f (%12.8f, %3d) > %12.8f\n",
+                i,
+                _q->channel_peak[i],
+                _q->channel_peak[i] / amp_max,
+                -log2f(_q->channel_peak[i] / amp_max),
+                gi,
+                _q->gk[i]);
+#endif
+    }
+
 #if FBASC_DEBUG
     printf("encoder metrics:\n");
     printf("    var max     : %12.8f\n", var_max);
@@ -600,7 +637,8 @@ void fbasc_decoder_compute_metrics(fbasc _q)
 
     // compute relative gains: gk = 2^(max(bk) - bk)
     for (i=0; i<_q->num_channels; i++)
-        _q->gk[i] = (float)(1<<(bk_max-_q->bk[i])) * _q->gain;
+        _q->gk[i]  = expf(_q->gk2[i] * 0.69315f) * _q->gain;
+        //_q->gk[i] = (float)(1<<(bk_max-_q->bk[i])) * _q->gain;
 
 #if FBASC_DEBUG
     printf("decoder metrics:\n");
@@ -715,14 +753,13 @@ void fbasc_encoder_pack_header(fbasc _q,
     // g0 : nominal gain
     _header[n++] = _q->g0 & 0x00ff;
 
-    // bk : bit allocation
-#if 0
-    for (i=0; i<_q->num_channels; i+=2)
-        _header[n++] = _q->gk[i+0] | (_q->gk[i+1] << 4);
-#else
-    for (i=0; i<_q->num_channels; i++)
-        _header[n++] = _q->bk[i];
-#endif
+    // bk  : bit allocation
+    // gk2 : channel gain
+    for (i=0; i<_q->num_channels; i++) {
+        _header[n]  = (_q->bk[i]  & 0x0f) << 4;
+        _header[n] |= (_q->gk2[i] & 0x0f);
+        n++;
+    }
 
     // TODO : add redundancy check
 
@@ -744,16 +781,11 @@ void fbasc_decoder_unpack_header(fbasc _q,
     _q->g0 = _header[n++];
 
     // bk : bit allocation
-#if 0
-    for (i=0; i<_q->num_channels; i+=2) {
-        _q->bk[i+0] = (_header[n]     ) & 0x00ff
-        _q->bk[i+1] = (_header[n] >> 4) & 0x00ff
+    for (i=0; i<_q->num_channels; i++) {
+        _q->bk[i]  = (_header[n] >> 4) & 0x0f;
+        _q->gk2[i] = (_header[n]     ) & 0x0f;
         n++;
     }
-#else
-    for (i=0; i<_q->num_channels; i++)
-        _q->bk[i] = _header[n++];
-#endif
 
     assert(n == _q->header_len);
 
