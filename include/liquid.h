@@ -248,6 +248,7 @@ fbasc fbasc_create(int _type,
                    unsigned int _bytes_per_frame);
 void fbasc_destroy(fbasc _q);
 void fbasc_print(fbasc _q);
+void fbasc_reset(fbasc _q);
 
 void fbasc_encode(fbasc _q,
                   float * _audio,

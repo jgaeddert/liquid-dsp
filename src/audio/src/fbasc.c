@@ -209,6 +209,15 @@ void fbasc_print(fbasc _q)
     printf("    bits/sample:    %f\n", bits_per_sample);
 }
 
+void fbasc_reset(fbasc _q)
+{
+    unsigned int i;
+    
+    // clear buffer
+    for (i=0; i<_q->num_channels; i++)
+        _q->buffer[i] = 0;
+}
+
 // encode frame of audio
 //  _q      :   fbasc object
 //  _audio  :   audio samples [size: samples_per_frame x 1]
