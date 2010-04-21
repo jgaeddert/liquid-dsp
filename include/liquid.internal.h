@@ -177,8 +177,8 @@ struct maxnet_s {
 // MODULE : audio
 //
 
-// compute normalized channel energy
-void fbasc_encoder_compute_channel_energy(fbasc _q);
+// compute normalized channel variance
+void fbasc_encoder_compute_channel_variance(fbasc _q);
 
 // computes optimal bit allocation based on channel variance
 //

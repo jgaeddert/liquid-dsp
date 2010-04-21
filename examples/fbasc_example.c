@@ -12,13 +12,13 @@
 
 int main() {
     // options
-    unsigned int num_channels=16;
+    unsigned int num_channels=64;
     unsigned int samples_per_frame=512;
     unsigned int num_frames=2;
 #if 0
     unsigned int bytes_per_frame = samples_per_frame + num_channels + 1;
 #else
-    unsigned int bytes_per_frame = num_channels*4;
+    unsigned int bytes_per_frame = num_channels;
 #endif
 
     // derived values
