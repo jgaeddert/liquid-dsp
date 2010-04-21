@@ -69,7 +69,7 @@ struct fbasc_s {
     //unsigned char * packed_data;    // packed quantized data
 
     // analysis/synthesis
-    float * channel_energy;         // signal variance on each channel [size: num_channels x 1]
+    float * channel_var;            // signal variance on each channel [size: num_channels x 1]
     float gain;                     // nominal gain
     float mu;                       // compression factor (see module:quantization)
 
@@ -79,6 +79,14 @@ struct fbasc_s {
 };
 
 // compute length of header
+//
+//  id      name                # bytes
+//  --      ----------          ---------
+//  fid     frame id            2
+//  g0      nominal gain        1
+//  bk      bit allocation      num_channels
+//  --      ----------          ---------
+//          total:              num_channels + 3
 unsigned int fbasc_compute_header_length(unsigned int _num_channels,
                                          unsigned int _samples_per_frame,
                                          unsigned int _bytes_per_frame)
@@ -103,13 +111,6 @@ fbasc fbasc_create(int _type,
     q->num_channels = _num_channels;
     q->samples_per_frame = _samples_per_frame;
     q->bytes_per_frame = _bytes_per_frame;
-
-#if 0
-    if (q->samples_per_frame != q->bytes_per_frame) {
-        fprintf(stderr,"error: fbasc_create(), [bug] samples_per_frame must be equal to bytes_per_frame\n");
-        exit(1);
-    }
-#endif
 
     // validate input
     if (q->type == FBASC_ENCODER) {
@@ -147,7 +148,7 @@ fbasc fbasc_create(int _type,
     q->w =              (float*) malloc( 2*(q->num_channels)*sizeof(float) );
     q->buffer =         (float*) malloc( 2*(q->num_channels)*sizeof(float) );
     q->X =              (float*) malloc( (q->samples_per_frame)*sizeof(float) );
-    q->channel_energy = (float*) malloc( (q->num_channels)*sizeof(float) );
+    q->channel_var =    (float*) malloc( (q->num_channels)*sizeof(float) );
     q->gk =             (float*) malloc( (q->num_channels)*sizeof(float) );
     q->mu = 255.0f;
 
@@ -165,18 +166,24 @@ fbasc fbasc_create(int _type,
     for (i=0; i<2*q->num_channels; i++)
         q->buffer[i] = 0.0f;
 
+    // reset frame id
+    q->fid = 0;
+
     return q;
 }
 
+// destroy fbasc object, free internally-allocated memory
 void fbasc_destroy(fbasc _q)
 {
     // free common arrays
-    free(_q->X);        // channelized samples
-    free(_q->w);        // windowing function for MDCT
-    free(_q->buffer);   // buffer for MDCT
-    free(_q->data);
-    free(_q->bk);
+    free(_q->w);            // windowing function for MDCT
+    free(_q->buffer);       // buffer for MDCT
+    free(_q->X);            // channelized samples
+    free(_q->channel_var);  // channel variance
     free(_q->gk);
+
+    free(_q->bk);           // bit allocations
+    free(_q->data);         // sampled data
 
     // free memory structure
     free(_q);
@@ -207,12 +214,12 @@ void fbasc_encode(fbasc _q,
     // run analyzer
     fbasc_encoder_run_analyzer(_q, _audio, _q->X);
 
-    // compute channel energy
+    // compute channel variance
     fbasc_encoder_compute_channel_energy(_q);
 
     // compute bit partitioning
     fbasc_compute_bit_allocation(_q->num_channels,
-                                 _q->channel_energy,
+                                 _q->channel_var,
                                  _q->bits_per_symbol,
                                  _q->max_bits_per_sample,
                                  _q->bk);
@@ -228,6 +235,9 @@ void fbasc_encode(fbasc _q,
 
     // pack frame data
     fbasc_encoder_pack_frame(_q, _frame);
+
+    // increment frame id
+    _q->fid++;
 }
 
 // decode frame of audio
@@ -240,8 +250,6 @@ void fbasc_decode(fbasc _q,
                   unsigned char * _frame,
                   float * _audio)
 {
-    unsigned int i;
-
     // unpack header
     fbasc_decoder_unpack_header(_q, _header);
 
@@ -249,7 +257,9 @@ void fbasc_decode(fbasc _q,
     fbasc_decoder_unpack_frame(_q, _frame);
 
     // compute metrics for decoding
+#if FBASC_DEBUG
     printf("**** DECODER METRICS\n");
+#endif
     fbasc_encoder_compute_metrics(_q);
 
     // de-quantize samples
@@ -336,39 +346,41 @@ void fbasc_decoder_run_synthesizer(fbasc _q,
     }
 }
 
-// compute normalized channel energy
+// compute normalized channel variance
 void fbasc_encoder_compute_channel_energy(fbasc _q)
 {
     unsigned int i,j;
 
-    // clear channel energy array
+    // clear channel variance array
     for (i=0; i<_q->num_channels; i++)
-        _q->channel_energy[i] = 0.0f;
+        _q->channel_var[i] = 0.0f;
 
-    // compute channel energy, maximum amplitude
+    // compute channel variance, maximum amplitude
     float max_amp = 0.0f;
     for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
             // strip sample from channelized data
             float v = _q->X[i*_q->num_channels+j];
 
-            // accumulate energy on channel
-            _q->channel_energy[j] += v*v;
+            // accumulate variance on channel
+            _q->channel_var[j] += v*v;
 
             if ( fabsf(v) > max_amp || (i==0 && j==0) )
                 max_amp = fabsf(v);
         }
     }
 
-    // normalize channel energy by number of symbols per frame
+    // normalize channel variance by number of symbols per frame
     // TODO : determine if this is really necessary
     float max_var = 0.0f;
     for (i=0; i<_q->num_channels; i++) {
-        _q->channel_energy[i] = _q->channel_energy[i] / _q->symbols_per_frame;
-        max_var = _q->channel_energy[i] > max_var ? _q->channel_energy[i] : max_var;
+        _q->channel_var[i] = _q->channel_var[i] / _q->symbols_per_frame;
+        max_var = _q->channel_var[i] > max_var ? _q->channel_var[i] : max_var;
     }
+#if FBASC_DEBUG
     printf("max variance:  %16.12f\n", max_var);
     printf("max amplitude: %16.12f\n", max_amp);
+#endif
 }
 
 
@@ -411,7 +423,6 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
 
     // compute bit allocation
     float b = (float)_num_bits / (float)_num_channels;
-    int bk;
     unsigned int n=_num_channels;
 
     // compute log of geometric mean of variances: log2( prod(_var[])^(1/M) )
@@ -419,14 +430,14 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
     for (i=0; i<_num_channels; i++)
         log2p += (_var[i] == 0.0f) ? -60.0f : log2f(_var[i]);
     log2p /= n;
-    printf("log2p : %12.8f\n", log2p);
+    //printf("log2p : %12.8f\n", log2p);
 
     // compute theoretical bit allocations
     float bkf[_num_channels];
     for (i=0; i<_num_channels; i++)
         bkf[i] = (_var[i]==0.0f) ? 0.0f : b + 0.5f*log2f(_var[i]) - 0.5f*log2p;
 
-#if 1
+#if FBASC_DEBUG
     for (i=0; i<_num_channels; i++)
         printf("  var[%3u] = %12.4e, bk = %12.6f\n", idx[i], _var[idx[i]], bkf[idx[i]]);
 #endif
@@ -487,7 +498,7 @@ void fbasc_compute_bit_allocation(unsigned int _num_channels,
     }
 
     // print results
-#if 1
+#if FBASC_DEBUG
     printf("*******************\n");
     for (i=0; i<_num_channels; i++)
         printf("  var[%3u] = %12.4e, bk = %12.6f, b = %u\n", idx[i], _var[idx[i]], bkf[idx[i]], _k[idx[i]]);
@@ -509,6 +520,7 @@ void fbasc_encoder_compute_metrics(fbasc _q)
 #else
     // TODO FIXME : compute nominal gain properly
     int gi = 0;
+    _q->gain = (float)(1<<gi);
     _q->gain = 1.0f;
 #endif
 
@@ -528,9 +540,9 @@ void fbasc_encoder_compute_metrics(fbasc _q)
     printf("    nominal gain : %12.4e (gi = %3u)\n", _q->gain, gi);
     for (i=0; i<_q->num_channels; i++) {
         if (_q->bk[i] > 0)
-            printf("  %3u : e = %12.8f, b = %3u, g=%12.4f\n", i, _q->channel_energy[i],_q->bk[i], _q->gk[i]);
+            printf("  %3u : e = %12.8f, b = %3u, g=%12.4f\n", i, _q->channel_var[i],_q->bk[i], _q->gk[i]);
         else
-            printf("  %3u : e = %12.8f, b = %3u\n",           i, _q->channel_energy[i],_q->bk[i]);
+            printf("  %3u : e = %12.8f, b = %3u\n",           i, _q->channel_var[i],_q->bk[i]);
     }
 #endif
 }
@@ -571,10 +583,11 @@ void fbasc_encoder_quantize_samples(fbasc _q)
         }
     }
 
+#if FBASC_DEBUG
     printf("encoder data...\n");
     for (i=0; i<10; i++)
         printf("  %3u : %3u\n", i, _q->data[i]);
-
+#endif
 }
 
 // de-quantize channelized data
@@ -587,9 +600,11 @@ void fbasc_decoder_dequantize_samples(fbasc _q)
     float z;            // compressed sample
     unsigned int b;     // quantized sample
 
+#if FBASC_DEBUG
     printf("decoder data...\n");
     for (i=0; i<10; i++)
         printf("  %3u : %3u\n", i, _q->data[i]);
+#endif
 
     // cycle through symbols in each channel and quantize
     for (i=0; i<_q->symbols_per_frame; i++) {
@@ -625,8 +640,9 @@ void fbasc_encoder_pack_header(fbasc _q,
     unsigned int n=0;
 
     // fid: frame id
-    _header[n++] = (_q->fid >> 8) && 0x00ff;
-    _header[n++] = (_q->fid     ) && 0x00ff;
+    _header[n+0] = (_q->fid >> 8) & 0x00ff;
+    _header[n+1] = (_q->fid     ) & 0x00ff;
+    n += 2;
 
     // g0 : nominal gain
     _header[n++] = _q->g0 && 0x00ff;
@@ -675,6 +691,8 @@ void fbasc_decoder_unpack_header(fbasc _q,
 
     // TODO : validate bit allocation
     // TODO : validate redundancy check
+
+    printf("frame id : %u\n", _q->fid);
 }
 
 // pack frame
@@ -694,12 +712,19 @@ void fbasc_decoder_unpack_header(fbasc _q,
 void fbasc_encoder_pack_frame(fbasc _q,
                               unsigned char * _frame)
 {
+    // TODO : there is a bug in this code; data written outside of _frame bounds
     unsigned int i,j;
 
     unsigned int n=0;           // output byte counter
     unsigned short int buffer=0;// symbol buffer, 16 bits wide (more than max_bits_per_sample)
     unsigned int buffer_len=0;  // length of buffer
     unsigned int s;             // data sample
+
+    // test...
+    unsigned int bk_total=0;
+    for (i=0; i<_q->num_channels; i++)
+        bk_total += _q->bk[i];
+    printf("bk (total) : %3u (%3u)\n", bk_total, 0);
 
     for (i=0; i<_q->symbols_per_frame; i++) {
         for (j=0; j<_q->num_channels; j++) {
@@ -725,6 +750,9 @@ void fbasc_encoder_pack_frame(fbasc _q,
             }
         }
     }
+
+    printf(" n = %3u (%3u)\n", n, _q->bytes_per_frame);
+    assert( n == _q->bytes_per_frame );
 }
 
 // unpack frame

@@ -20,7 +20,7 @@ int main() {
     unsigned int bytes_per_frame = 32;
 #endif
 
-    unsigned int num_frames=1;
+    unsigned int num_frames=5;
 
     // create fbasc codecs
     fbasc fbasc_encoder = fbasc_create(FBASC_ENCODER, num_channels, samples_per_frame, bytes_per_frame);
