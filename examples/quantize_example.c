@@ -103,15 +103,12 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"x(%4u) = %16.8e; y(%4u) = %16.8e;\n", i+1, x[i], i+1, y[i]);
     }
     fprintf(fid,"figure;\n");
-    fprintf(fid,"t = 0:(num_samples-1);\n");
-#if 0
-    fprintf(fid,"plot(t,x,t,y);\n");
-#else
+    fprintf(fid,"t  = 0:(num_samples-1);\n");
+    fprintf(fid,"%% generate stairs-like plot\n");
+    fprintf(fid,"t0 = reshape([t(1:num_samples-1)(:) t(1:num_samples-1)(:)]',1,2*(num_samples-1)) + 0.5;\n");
+    fprintf(fid,"y0 = reshape([y(1:num_samples-1)(:) y(2:num_samples)(:)]',  1,2*(num_samples-1));\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(t,x,'Color',[1 0 0]);\n");
-    fprintf(fid,"stairs(t,y);\n");
-    fprintf(fid,"hold off;\n");
-#endif
+    fprintf(fid,"plot(t,x,t0,y0);\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('signal');\n");
     fprintf(fid,"legend('original','reconstructed',1);\n");
