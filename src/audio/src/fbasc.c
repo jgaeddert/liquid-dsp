@@ -202,6 +202,11 @@ void fbasc_print(fbasc _q)
     printf("    symbols/frame:  %u\n", _q->symbols_per_frame);
     printf("    bytes/frame:    %u\n", _q->bytes_per_frame);
     printf("    header length:  %u bytes\n", _q->header_len);
+
+    // compute average bits / sample
+    float bits_per_sample = (float)(8*_q->bytes_per_frame + 8*_q->header_len) /
+                            (float)(_q->samples_per_frame);
+    printf("    bits/sample:    %f\n", bits_per_sample);
 }
 
 // encode frame of audio
