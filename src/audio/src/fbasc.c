@@ -64,9 +64,7 @@ struct fbasc_s {
     float * X;                      // channelized matrix [size: num_channels x symbols_per_frame]
     unsigned int * bk;              // bits per channel [size: num_channels x 1]
     float * gk;                     // channel gain [size: num_channels x 1]
-    unsigned char * data;           // quantized frame data (bytes) [size: num_channels x symbols_per_frame]
-    // TODO : extend 'data' variable to unsigned short to allow more than 8 bits / sample
-    //unsigned char * packed_data;    // packed quantized data
+    unsigned short int * data;      // quantized frame data (bytes) [size: num_channels x symbols_per_frame]
 
     // analysis/synthesis
     float * channel_var;            // signal variance on each channel [size: num_channels x 1]
@@ -124,7 +122,7 @@ fbasc fbasc_create(int _type,
     q->symbols_per_frame = (q->samples_per_frame) / (q->num_channels);
     q->bits_per_frame = 8*q->bytes_per_frame;
     q->bits_per_symbol = q->bits_per_frame / q->symbols_per_frame;
-    q->max_bits_per_sample = 8;
+    q->max_bits_per_sample = 12;
 
     // ensure num_channels evenly divides samples_per_frame
     if ( q->symbols_per_frame * q->num_channels != q->samples_per_frame) {
@@ -154,7 +152,7 @@ fbasc fbasc_create(int _type,
 
     // data
     q->bk = (unsigned int *) malloc( (q->num_channels)*sizeof(unsigned int));
-    q->data = (unsigned char *) malloc( (q->samples_per_frame)*sizeof(unsigned char));
+    q->data = (unsigned short *) malloc( (q->samples_per_frame)*sizeof(unsigned short));
 
     unsigned int i;
 
