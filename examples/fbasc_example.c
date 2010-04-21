@@ -45,22 +45,29 @@ int main() {
         phi += dphi;
     }
 
-    unsigned char headerdata[bytes_per_header];
-    unsigned char framedata[bytes_per_frame];
+    unsigned char header[bytes_per_header];
+    unsigned char frame[bytes_per_frame];
     // encode/decode frames
     for (i=0; i<num_frames; i++) {
         // encode frame
         fbasc_encode(fbasc_encoder,
                      &x[i*samples_per_frame],
-                     headerdata,
-                     framedata);
+                     header,
+                     frame);
 
         // decode frame
         fbasc_decode(fbasc_decoder,
-                     headerdata,
-                     framedata,
+                     header,
+                     frame,
                      &y[i*samples_per_frame]);
     }
+
+    // compute error
+    float e=0.0f;
+    for (i=0; i<num_samples-num_channels; i++) {
+        e += x[i] - y[i+num_channels];
+    }
+    printf("e = %12.8f\n", e);
 
     // open debug file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
