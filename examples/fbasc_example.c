@@ -41,7 +41,7 @@ int main() {
     float dphi=0.03f;
     for (i=0; i<num_samples; i++) {
         x[i] = 0.5f*cosf(2.0f*M_PI*phi) + 0.5f*cosf(2.0f*M_PI*phi*0.57f);
-        x[i] *= 0.1f;
+        x[i] *= 0.2f;
         x[i] *= hamming(i,num_samples);
         phi += dphi;
     }

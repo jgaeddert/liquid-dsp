@@ -75,7 +75,7 @@ struct fbasc_s {
 
     // frame info
     unsigned int fid;               // frame id
-    unsigned int g0;                // nominal channel gain (quantized)
+    signed char g0;                 // nominal channel gain (quantized)
 };
 
 // compute length of header
@@ -531,13 +531,20 @@ void fbasc_encoder_compute_metrics(fbasc _q)
             var_max = _q->channel_var[i];
     }
 
+    // find maximum amplitude
+    float amp_max = 0.0f;
+    for (i=0; i<_q->samples_per_frame; i++) {
+        if (fabsf(_q->X[i]) > amp_max)
+            amp_max = fabsf(_q->X[i]);
+    }
+
     // compute nominal gain
-    int gi = (int)(-log2f(var_max)) - 4;   // use variance
-    //int gi = (int)(-log2f(max_amp)) - 1;    // use peak amplitude
-    gi = gi > 7 ? 7 : gi;
-    gi = gi < 0 ? 0 : gi;
+    //int gi = (int)(-log2f(var_max)) - 4;   // using peak variance
+    int gi = (int)(-log2f(amp_max)) - 4;    // using peak amplitude
+    gi = gi >  127 ?  127 : gi;
+    gi = gi < -127 ? -127 : gi;
     _q->g0 = gi;
-    _q->gain = (float)(1<<_q->g0);
+    _q->gain = expf(_q->g0 * 0.69315f); // 2^g0
 
     // find maximum bit allocation
     unsigned int bk_max = 0;
@@ -553,7 +560,8 @@ void fbasc_encoder_compute_metrics(fbasc _q)
 #if FBASC_DEBUG
     printf("encoder metrics:\n");
     printf("    var max     : %12.8f\n", var_max);
-    printf("    g0          : %u\n", _q->g0);
+    printf("    amp max     : %12.8f\n", amp_max);
+    printf("    g0          : %d\n", _q->g0);
     printf("    nominal gain: %12.8f\n", _q->gain);
     for (i=0; i<_q->num_channels; i++) {
         if (_q->bk[i] > 0)
@@ -569,7 +577,7 @@ void fbasc_encoder_compute_metrics(fbasc _q)
 void fbasc_decoder_compute_metrics(fbasc _q)
 {
     unsigned int i;
-    _q->gain = (float)(1<<_q->g0);
+    _q->gain = expf(_q->g0 * 0.69315f); // 2^g0
 
     // find maximum bit allocation
     unsigned int bk_max = 0;
@@ -585,7 +593,7 @@ void fbasc_decoder_compute_metrics(fbasc _q)
 #if FBASC_DEBUG
     printf("decoder metrics:\n");
     printf("    var max     : %12.8f\n", var_max);
-    printf("    g0          : %u\n", _q->g0);
+    printf("    g0          : %d\n", _q->g0);
     printf("    nominal gain: %12.8f\n", _q->gain);
     for (i=0; i<_q->num_channels; i++) {
         if (_q->bk[i] > 0)
