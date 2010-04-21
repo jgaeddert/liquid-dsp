@@ -9,8 +9,19 @@ then packed into a frame which the decoder can then interpret. The result is a
 lossy encoder (as a result of quantization) whose compression/quality levels
 can be easily varied.
 
-How does it work? The codec exploits several components typical of audio
-signals and aspects of human hearing:
+                +------+ -->           -->  +-------+
+                |      | -->           -->  |       |
+   original     |      | -->  M-band   -->  |       |     reconstructed
+     time   ->  | MDCT |  .  quantizer  .   | iMDCT | ->      time
+    series      |      |  .             .   |       |        series
+                |      |  .             .   |       |
+                +------+ -->           -->  +-------+
+
+Specifically, fbasc uses sub-band coding to allocate quantization bits to each
+channel in order to minimize distortion of the reconstructed signal. Sub-bands
+with higher variance (signal 'energy') are assigned more bits.  This is the
+heart of the codec, which exploits several components typical of audio signals
+and aspects of human hearing and perception:
     1.  The majority of audio signals (including music and voice) have a
         strong time-frequency localization; that is, they only occupy a small
         fraction of audible frequencies for a short duration.  This is
@@ -22,7 +33,8 @@ signals and aspects of human hearing:
 There are several benefits to using fbasc over other compression algorithms
 such as CVSD (see src/audio/readme.cvsd.txt) and auto-regressive models, the
 main being that the algorithm is theoretically lossless (i.e. perfect
-reconstruction) as the bit rate increases.
+reconstruction) as the bit rate increases.  As a result, the codec is limited
+only by the quantization noise on each channel.
 
 Here are some useful definitions, as used in the fbasc code:
 
