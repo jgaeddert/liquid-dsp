@@ -927,9 +927,17 @@ void POLY(_findroots_bairstow)(T * _p,                      \
                                unsigned int _k,             \
                                TC * _roots);
 
+LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_DOUBLE,
+                                double,
+                                double complex)
+
 LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_FLOAT,
                                 float,
                                 float complex)
+
+LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CDOUBLE,
+                                double complex,
+                                double complex)
 
 LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CFLOAT,
                                 float complex,
