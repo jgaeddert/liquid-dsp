@@ -195,6 +195,7 @@ void fbasc_compute_bit_allocation(unsigned int _n,
 
 // compute normalized channel energy, nominal gain, etc.
 void fbasc_encoder_compute_metrics(fbasc _q);
+void fbasc_decoder_compute_metrics(fbasc _q);
 
 // run analyzer/synthesizer
 void fbasc_encoder_run_analyzer(fbasc _q, float * _x, float * _X);

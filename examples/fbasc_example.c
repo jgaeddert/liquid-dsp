@@ -14,13 +14,15 @@ int main() {
     // options
     unsigned int num_channels=16;
     unsigned int samples_per_frame=512;
+    unsigned int num_frames=2;
 #if 0
     unsigned int bytes_per_frame = samples_per_frame + num_channels + 1;
 #else
-    unsigned int bytes_per_frame = 32;
+    unsigned int bytes_per_frame = 64;
 #endif
 
-    unsigned int num_frames=5;
+    // derived values
+    unsigned int num_samples = samples_per_frame * num_frames;
 
     // create fbasc codecs
     fbasc fbasc_encoder = fbasc_create(FBASC_ENCODER, num_channels, samples_per_frame, bytes_per_frame);
@@ -31,6 +33,34 @@ int main() {
     unsigned int bytes_per_header = fbasc_compute_header_length(num_channels,
                                                                 samples_per_frame,
                                                                 bytes_per_frame);
+    unsigned int i;
+    float x[num_samples];   // original data sequence
+    float y[num_samples];   // reconstructed sequence
+
+    float phi=0.0f;
+    float dphi=0.03f;
+    for (i=0; i<num_samples; i++) {
+        x[i] = 0.5f*cosf(2.0f*M_PI*phi) + 0.5f*cosf(2.0f*M_PI*phi*0.57f);
+        x[i] *= 0.1f;
+        phi += dphi;
+    }
+
+    unsigned char headerdata[bytes_per_header];
+    unsigned char framedata[bytes_per_frame];
+    // encode/decode frames
+    for (i=0; i<num_frames; i++) {
+        // encode frame
+        fbasc_encode(fbasc_encoder,
+                     &x[i*samples_per_frame],
+                     headerdata,
+                     framedata);
+
+        // decode frame
+        fbasc_decode(fbasc_decoder,
+                     headerdata,
+                     framedata,
+                     &y[i*samples_per_frame]);
+    }
 
     // open debug file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
@@ -40,44 +70,11 @@ int main() {
     fprintf(fid,"num_channels = %u;\n", num_channels);
     fprintf(fid,"samples_per_frame = %u;\n", samples_per_frame);
     fprintf(fid,"num_frames = %u;\n", num_frames);
+    fprintf(fid,"num_samples = samples_per_frame * num_frames;\n");
 
-    float phi=0.0f;
-    float dphi=0.03f;
-    unsigned int i, j;
-    unsigned int n=0;   // output file sample counter
-    float x[samples_per_frame];
-    float X[samples_per_frame];
-    float y[samples_per_frame];
-    unsigned char headerdata[bytes_per_header];
-    unsigned char framedata[bytes_per_frame];
-    for (i=0; i<num_frames; i++) {
-        for (j=0; j<samples_per_frame; j++) {
-            x[j] = (i==0) ? 0.5f*cosf(2.0f*M_PI*phi) + 0.5f*cosf(2.0f*M_PI*phi*0.57f) : 0.0f;
-            //x[j] = (i==0) ? cosf(2.0f*M_PI*phi) : 0.0f;
-            phi += dphi;
-            x[j] *= 0.1f*kaiser(j,samples_per_frame,10.0f,0);
-            //x[j] = randnf()*0.1f;
-        }
-
-#if 1
-        fbasc_encode(fbasc_encoder, x, headerdata, framedata);
-
-        fbasc_decode(fbasc_decoder, headerdata, framedata, y);
-#else
-        // run analyzer
-        fbasc_encoder_run_analyzer(fbasc_encoder, x, X);
-
-        // run synthesizer
-        fbasc_decoder_run_synthesizer(fbasc_decoder, X, y);
-#endif
-
-        // write data to file
-        for (j=0; j<samples_per_frame; j++) {
-            fprintf(fid, "x(%4u) = %8.4e;\n", n+1, x[j]);
-            fprintf(fid, "y(%4u) = %8.4e;\n", n+1, y[j]);
-            n++;
-        }
-    }
+    // write data to file
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"x(%4u) = %16.8e; y(%4u) = %16.8e;\n", i+1, x[i], i+1, y[i]);
 
     // plot results
     fprintf(fid,"\n\n");
