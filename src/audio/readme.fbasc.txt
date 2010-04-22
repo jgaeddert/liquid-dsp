@@ -37,6 +37,13 @@ reconstruction) as the bit rate increases.  As a result, the codec is limited
 only by the quantization noise on each channel.
 
 Here are some useful definitions, as used in the fbasc code:
+                   __________  __________
+                  /   MDCT   \/          \
+                 /   window  /\          ...
+            ____/       ____/  \____                                time
+    frame:  [----s0----][----s1----][----s2----][----s3----] ... --->
+                        |          |
+                      ->|          |<- symbol (length = M samples)
 
 MDCT - the modified discrete cosine transform is a lapped discrete cosine
     transform which uses a special windowing function to ensure perfect
@@ -44,12 +51,14 @@ MDCT - the modified discrete cosine transform is a lapped discrete cosine
     samples (overlapped by M) to produce M frequency-domain samples.
     Conversely, the inverse MDCT accepts M frequency-domain samples and
     produces 2*M time-domain samples which are windowed and then overlapped to
-    reconstruct the original signal.
+    reconstruct the original signal.  For convenience, we may refer to M
+    time-domain samples as a 'symbol.'
+
+symbol - one block of M time-domain samples upon which the MDCT operates.
 
 channel - one of the M frequency-domain components as a result of applying the
     MDCT.  This is somewhat equivalent to a discrete Fourier transform 'bin.'
-
-symbol - one block of M time-domain samples upon which the MDCT operates.
+    Note than M is equal to the number of channels in analysis.
 
 frame - a set of MDCT symbols upon which the fbasc codec runs its analysis.
     Because the codec uses time-frequency localization for its encoding, it is
@@ -58,6 +67,26 @@ frame - a set of MDCT symbols upon which the fbasc codec runs its analysis.
     operates on several symbols, however, the exact number depends on the
     application.
 
+Interface
+    fbasc_create()
+        creates an fbasc encoder/decoder object, allocating memory as
+        necessary, and computing internal parameters appropriately.
+    fbasc_destroy() 
+        destroys an fbasc encoder/decoder object, freeing internally-allocated
+        memory.
+    fbasc_encode()
+        encode a frame of data, storing the header and frame data separately.
+        This separation allows the user to use different forward
+        error-correction codes (if desired) to protect the header differently
+        than the rest of the frame.  It is important to keep the two together,
+        however, as the header is a description of how to decode the frame.
+    fbasc_decode()
+        decodes a frame of data, generating the reconstructed time series.
+
+Useful properties:
+    1.  Because of the nature of the MDCT, frames will overlap by M samples
+        (one symbol).  This introduces a reconstruction delay of M samples,
+        noticeable at the decoder.
 
 The header contains the following data:
     id      name                # bytes
@@ -69,4 +98,18 @@ The header contains the following data:
     --      ----------          ---------
             total:              num_channels + 3
 
+Miscellaneous information
+
+Example:
+
+create() parameters:
+    num channels    =   64  (samples/symbol)
+    samples/frame   =   512
+    bytes/frame     =   256
+    ---------------------------
+derived values:
+    symbols/frame   =   [samples/frame] / [samples/symbol]  =   8
+    bytes/symbol    =   [bytes/frame]   / [symbols/frame]   =   32
+
+Each symbol must be encoded with an even number of bytes.
 
