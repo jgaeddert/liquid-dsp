@@ -122,7 +122,7 @@ fbasc fbasc_create(int _type,
 
     // initialize derived values/lengths
     q->symbols_per_frame = (q->samples_per_frame) / (q->num_channels);
-    q->bits_per_symbol = 8*q->bytes_per_frame / q->symbols_per_frame;
+    q->bits_per_symbol = (8*q->bytes_per_frame) / q->symbols_per_frame;
     q->max_bits_per_sample = 12;
 
     // ensure num_channels evenly divides samples_per_frame
@@ -131,10 +131,9 @@ fbasc fbasc_create(int _type,
         exit(1);
     }
 
-    // ensure num_channels evenly divides bytes_per_frame
-    unsigned int bytes_per_symbol = q->bytes_per_frame / q->num_channels;
-    if ( bytes_per_symbol * q->num_channels != q->bytes_per_frame) {
-        fprintf(stderr,"error: fbasc_create(), _num_channels must evenly divide _bytes_per_frame\n");
+    // ensure bits/symbol > 0
+    if ( q->bits_per_symbol == 0 ) {
+        fprintf(stderr,"error: fbasc_create(), too few bytes allocated to frame\n");
         exit(1);
     }
 
@@ -218,6 +217,7 @@ void fbasc_print(fbasc _q)
     printf("    samples/frame:  %u\n", _q->samples_per_frame);
     printf("    symbols/frame:  %u\n", _q->symbols_per_frame);
     printf("    bytes/frame:    %u\n", _q->bytes_per_frame);
+    printf("    bits/symbol:    %u\n", _q->bits_per_symbol);
     printf("    header length:  %u bytes\n", _q->header_len);
 
     // compute average bits / sample
@@ -858,7 +858,30 @@ void fbasc_encoder_pack_frame(fbasc _q,
         }
     }
 
-    //printf(" n = %3u (%3u)\n", n, _q->bytes_per_frame);
+    // assert remaining bits in buffer is less than or equal to 8 (only
+    // one byte at maximum remaining in buffer).
+    assert(buffer_len <= 8);
+
+    // If buffer isn't empty, put whatever bits are left into frame.
+    // This will only happen if the total number of bits in the frame
+    // isn't evenly divisible by the number of symbols in the frame.
+    // Because we rounded down when computing bits/symbol in create(),
+    // we should never have more than 8 bits left.
+    if ( buffer_len > 0 )
+        _frame[n++] = buffer & 0x00ff;
+
+    // It is possible at this point for the number of bytes written to
+    // be less than bytes/frame (an artifact of rounding down in the
+    // computation of bits/symbol in the create() method).
+    // Example: symbols/frame = 17, bytes/frame = 23, therefore
+    //          bits/symbol = 23*8/17 = 10.824 -> 10 (rounded down)
+    // As a result, the actual bytes/frame = 10*17/8 = 21.25 which is
+    // 22 when rounded up.  This is one less than the originally
+    // specified value 23.
+    while (n < _q->bytes_per_frame)
+        _frame[n++] = 0x00; // pad any remaining bytes with zeros.
+
+    //printf(" n = %3u (%3u) : buffer_len : %u\n", n, _q->bytes_per_frame, buffer_len);
     assert( n == _q->bytes_per_frame );
 }
 
