@@ -134,27 +134,27 @@ unsigned int liquid_nchoosek(unsigned int _n, unsigned int _k)
 //
 
 // Kaiser-Bessel derived window
-float liquid_kbd_window(unsigned int _n,
-                        unsigned int _N,
-                        float _beta)
+float liquid_kbd(unsigned int _n,
+                 unsigned int _N,
+                 float _beta)
 {
     // TODO add reference
 
     // validate input
     if (_n >= _N) {
-        fprintf(stderr,"error: liquid_kbd_window(), index exceeds maximum\n");
+        fprintf(stderr,"error: liquid_kbd(), index exceeds maximum\n");
         exit(1);
     } else if (_N == 0) {
-        fprintf(stderr,"error: liquid_kbd_window(), window length must be greater than zero\n");
+        fprintf(stderr,"error: liquid_kbd(), window length must be greater than zero\n");
         exit(1);
     } else if ( _N % 2 ) {
-        fprintf(stderr,"error: liquid_kbd_window(), window length must be odd\n");
+        fprintf(stderr,"error: liquid_kbd(), window length must be odd\n");
         exit(1);
     }
 
     unsigned int M = _N / 2;
     if (_n >= M)
-        return liquid_kbd_window(_N-_n-1,_N,_beta);
+        return liquid_kbd(_N-_n-1,_N,_beta);
 
     float w0 = 0.0f;
     float w1 = 0.0f;
@@ -171,6 +171,52 @@ float liquid_kbd_window(unsigned int _n,
     //printf("%12.8f / %12.8f = %12.8f\n", w0, w1, w0/w1);
 
     return sqrtf(w0 / w1);
+}
+
+
+// Kaiser-Bessel derived window (full window function)
+void liquid_kbd_window(unsigned int _n,
+                       float _beta,
+                       float * _w)
+{
+    unsigned int i;
+    // TODO add reference
+
+    // validate input
+    if (_n == 0) {
+        fprintf(stderr,"error: liquid_kbd_window(), window length must be greater than zero\n");
+        exit(1);
+    } else if ( _n % 2 ) {
+        fprintf(stderr,"error: liquid_kbd_window(), window length must be odd\n");
+        exit(1);
+    } else if ( _beta < 0.0f ) {
+        fprintf(stderr,"error: liquid_kbd_window(), _beta must be positive\n");
+        exit(1);
+    }
+
+    // compute half length
+    unsigned int M = _n / 2;
+
+    // generate regular Kaiser window, length M+1
+    float w_kaiser[M+1];
+    for (i=0; i<=M; i++)
+        w_kaiser[i] = kaiser(i,M+1,_beta,0.0f);
+
+    // compute sum(wk[])
+    float w_sum = 0.0f;
+    for (i=0; i<=M; i++)
+        w_sum += w_kaiser[i];
+
+    // accumulate window
+    float w_acc = 0.0f;
+    for (i=0; i<M; i++) {
+        w_acc += w_kaiser[i];
+        _w[i] = sqrtf(w_acc / w_sum);
+    }
+
+    // window has even symmetry; flip around index M
+    for (i=0; i<M; i++)
+        _w[_n-i-1] = _w[i];
 }
 
 

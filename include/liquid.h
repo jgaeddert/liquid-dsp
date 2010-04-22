@@ -2066,11 +2066,17 @@ unsigned int liquid_nchoosek(unsigned int _n, unsigned int _k);
 // Windowing functions
 //
 
-// Kaiser-Bessel derived window
+// Kaiser-Bessel derived window (single sample)
 //  _n      :   index (0 <= _n < _N)
 //  _N      :   length of filter (must be even)
 //  _beta   :   Kaiser window parameter (_beta > 0)
-float liquid_kbd_window(unsigned int _n, unsigned int _N, float _beta);
+float liquid_kbd(unsigned int _n, unsigned int _N, float _beta);
+
+// Kaiser-Bessel derived window (full window)
+//  _n      :   length of filter (must be even)
+//  _beta   :   Kaiser window parameter (_beta > 0)
+//  _w      :   resulting window
+void liquid_kbd_window(unsigned int _n, float _beta, float * _w);
 
 // Kaiser window
 float kaiser(unsigned int _n, unsigned int _N, float _beta, float _dt);

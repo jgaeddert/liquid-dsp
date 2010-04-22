@@ -160,8 +160,7 @@ fbasc fbasc_create(int _type,
     unsigned int i;
 
     // initialize window
-    for (i=0; i<2*q->num_channels; i++)
-        q->w[i] = liquid_kbd_window(i,2*q->num_channels,10.0f);
+    liquid_kbd_window(2*q->num_channels,10.0f,q->w);
 
     // reset buffer
     for (i=0; i<2*q->num_channels; i++)

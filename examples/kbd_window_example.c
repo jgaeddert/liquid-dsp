@@ -15,10 +15,9 @@ int main() {
     unsigned int n=64;      // window length
     float beta = 20.0f;     // Kaiser beta factor
 
-    float w[n];
     unsigned int i;
-    for (i=0; i<n; i++)
-        w[i] = liquid_kbd_window(i,n,beta);
+    float w[n];
+    liquid_kbd_window(n,beta,w);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);

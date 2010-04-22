@@ -31,13 +31,12 @@
 void liquid_kbd_window_test(unsigned int _n,
                             float _beta)
 {
+    unsigned int i;
     float tol = 1e-3f;
 
     // compute window
     float w[_n];
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        w[i] = liquid_kbd_window(i,_n,_beta);
+    liquid_kbd_window(_n,_beta,w);
 
     // square window
     float w2[_n];
