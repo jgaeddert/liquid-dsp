@@ -26,16 +26,6 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-void fft_execute(fftplan _p)
-{
-    if (_p->n <= FFT_SIZE_LUT)
-        fft_execute_lut(_p);
-    else if (_p->is_radix2)
-        fft_execute_radix2(_p);
-    else
-        fft_execute_dft(_p);
-}
-
 void fft_execute_dft(fftplan _p)
 {
     unsigned int k, n, N=_p->n;

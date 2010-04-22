@@ -533,6 +533,13 @@ void fec_rs_decode(fec _q,
 // are stored in look-up table (very fast)
 #define FFT_SIZE_LUT    16
 
+typedef enum {
+    LIQUID_FFT_DFT_1D   = 0,
+    LIQUID_FFT_REDFT00,
+    LIQUID_FFT_REDFT01,
+    LIQUID_FFT_REDFT10,
+    LIQUID_FFT_REDFT11
+} liquid_fft_kind;
 
 // Macro    :   FFT (internal)
 //  FFT     :   name-mangling macro
@@ -546,11 +553,17 @@ struct FFT(plan_s) {                                            \
     TC * y;                     /* output array */              \
     int direction;              /* forward/reverse */           \
     int method;                                                 \
+    liquid_fft_kind kind;                                       \
+                                                                \
+    /* real even/odd DFTs parameters */                         \
+    T * xr;                     /* input array (real) */        \
+    T * yr;                     /* output array (real) */       \
                                                                 \
     /* radix-2 implementation data */                           \
     int is_radix2;              /* radix-2 flag */              \
     unsigned int * index_rev;   /* input indices (reversed) */  \
     unsigned int m;             /* log2(n) */                   \
+    void (*execute)(FFT(plan)); /* function pointer */          \
 };                                                              \
                                                                 \
 /* initialization */                                            \

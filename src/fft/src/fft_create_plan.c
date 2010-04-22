@@ -47,6 +47,7 @@ fftplan fft_create_plan(unsigned int _n,
     p->x = _x;
     p->y = _y;
     p->method = _method;
+    p->kind = LIQUID_FFT_DFT_1D;
 
     if (_dir == FFT_FORWARD)
         p->direction = FFT_FORWARD;
@@ -69,12 +70,45 @@ fftplan fft_create_plan(unsigned int _n,
     // initialize twiddle factors, etc.
     if (_n <= FFT_SIZE_LUT ) {
         fft_init_lut(p);
+        p->execute = &fft_execute_lut;
     } else if (d==1) {
         // radix-2
         p->is_radix2 = 1;   // true
         p->m = m;
         fft_init_radix2(p);
+        p->execute = &fft_execute_radix2;
+    } else {
+        p->execute = &fft_execute_dft;
     }
+
+    return p;
+}
+
+
+fftplan fft_create_plan_r2r_1d(unsigned int _n,
+                               T * _x,
+                               T * _y,
+                               int _kind,
+                               int _method)
+{
+    fftplan p = (fftplan) malloc(_n*sizeof(struct fftplan_s));
+
+    p->n  = _n;
+    p->xr = _x;
+    p->yr = _y;
+    p->method = _method;
+    switch (_kind) {
+    case FFT_REDFT00:   p->kind = LIQUID_FFT_REDFT00;   break;
+    case FFT_REDFT01:   p->kind = LIQUID_FFT_REDFT01;   break;
+    case FFT_REDFT10:   p->kind = LIQUID_FFT_REDFT10;   break;
+    case FFT_REDFT11:   p->kind = LIQUID_FFT_REDFT11;   break;
+    default:
+        fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid kind, %d\n", _kind);
+        exit(1);
+    }
+
+    fprintf(stderr,"error: fft_create_plan_r2f_1d(), DCT not yet supported!\n");
+    exit(1);
 
     return p;
 }
@@ -115,5 +149,10 @@ unsigned int reverse_index(unsigned int _i, unsigned int _n)
     }
 
     return j;
+}
+
+void fft_execute(fftplan _p)
+{
+    _p->execute(_p);
 }
 
