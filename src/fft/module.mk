@@ -55,6 +55,7 @@ local_t_files	:= 		\
 # $(local_dir)
 #
 local_b_files	:=		\
+	mdct_benchmark.h	\
 	fft_benchmark.h
 
 
