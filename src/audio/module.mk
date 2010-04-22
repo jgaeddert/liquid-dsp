@@ -47,7 +47,8 @@ local_t_files	:= cvsd_autotest.h
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:= 
+local_b_files	:=			\
+	fbasc_benchmark.h
 
 
 include common.mk
