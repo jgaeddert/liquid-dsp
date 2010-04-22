@@ -15,11 +15,7 @@ int main() {
     unsigned int num_channels=64;
     unsigned int samples_per_frame=512;
     unsigned int num_frames=2;
-#if 0
-    unsigned int bytes_per_frame = samples_per_frame + num_channels + 1;
-#else
     unsigned int bytes_per_frame = num_channels;
-#endif
 
     // derived values
     unsigned int num_samples = samples_per_frame * num_frames;
@@ -37,6 +33,22 @@ int main() {
     float x[num_samples];   // original data sequence
     float y[num_samples];   // reconstructed sequence
 
+#if 0
+    // filtered noise signal
+    unsigned int h_len = 55;
+    float h[h_len];
+    fir_kaiser_window(h_len,0.1f,60.0f,0.0f,h);
+    fir_filter_rrrf q = fir_filter_rrrf_create(h,h_len);
+    for (i=0; i<num_samples; i++) {
+        float noise = 0.1f*randnf();
+        float t;
+        fir_filter_rrrf_push(q,noise);
+        fir_filter_rrrf_execute(q,&t);
+        x[i] = t;
+        x[i] *= hamming(i,num_samples);
+    }
+    fir_filter_rrrf_destroy(q);
+#else
     float phi=0.0f;
     float dphi=0.03f;
     for (i=0; i<num_samples; i++) {
@@ -45,6 +57,7 @@ int main() {
         x[i] *= hamming(i,num_samples);
         phi += dphi;
     }
+#endif
 
     unsigned char header[bytes_per_header];
     unsigned char frame[bytes_per_frame];
@@ -61,6 +74,10 @@ int main() {
                      header,
                      frame,
                      &y[i*samples_per_frame]);
+
+        // optional: strip off frame id
+        unsigned int frame_id = (header[0] << 8) | header[1];
+        printf("frame id : %u\n", frame_id);
     }
 
     // compute error : signal-to-distortion ratio
@@ -74,8 +91,8 @@ int main() {
         float v = x[i] - y[i+num_channels];
         e += v*v;
     }
-    float SDR = 10*log10f(s/e);
-    printf("SDR = %8.2f dB\n", SDR);
+    float SNR = 10*log10f(s/e);
+    printf("SNR = %8.2f dB\n", SNR);
 
     // open debug file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

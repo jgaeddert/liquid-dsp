@@ -788,7 +788,7 @@ void fbasc_decoder_unpack_header(fbasc _q,
     // TODO : validate bit allocation
     // TODO : validate redundancy check
 
-    printf("frame id : %u\n", _q->fid);
+    //printf("frame id : %u\n", _q->fid);
 }
 
 // pack frame
