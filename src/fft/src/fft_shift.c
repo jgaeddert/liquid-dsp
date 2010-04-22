@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -25,7 +26,7 @@
 //#include <math.h>
 #include "liquid.internal.h"
 
-void fft_shift(float complex *_x, unsigned int _n)
+void fft_shift(TC *_x, unsigned int _n)
 {
     unsigned int i, n2;
     if (_n%2)
@@ -33,7 +34,7 @@ void fft_shift(float complex *_x, unsigned int _n)
     else
         n2 = _n/2;
 
-    float complex tmp;
+    TC tmp;
     for (i=0; i<n2; i++) {
         tmp = _x[i];
         _x[i] = _x[i+n2];

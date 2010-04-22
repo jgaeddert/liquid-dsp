@@ -537,12 +537,13 @@ void fec_rs_decode(fec _q,
 // Macro    :   FFT (internal)
 //  FFT     :   name-mangling macro
 //  T       :   primitive data type
-#define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T)                   \
+//  TC      :   primitive data type (complex)
+#define LIQUID_FFT_DEFINE_INTERNAL_API(FFT,T,TC)                \
 struct FFT(plan_s) {                                            \
     unsigned int n;             /* fft size */                  \
-    T * twiddle;                /* twiddle factors */           \
-    T * x;                      /* input array */               \
-    T * y;                      /* output array */              \
+    TC * twiddle;               /* twiddle factors */           \
+    TC * x;                     /* input array */               \
+    TC * y;                     /* output array */              \
     int direction;              /* forward/reverse */           \
     int method;                                                 \
                                                                 \
@@ -575,7 +576,7 @@ unsigned int reverse_index(unsigned int _i, unsigned int _n);
 //void fft_shift_odd(float complex *_x, unsigned int _n);
 //void fft_shift_even(float complex *_x, unsigned int _n);
 
-LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, liquid_float_complex)
+LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_complex)
 
 // Use fftw library if installed, otherwise use internal (less
 // efficient) fft library.

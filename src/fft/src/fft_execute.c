@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -38,11 +39,11 @@ void fft_execute(fftplan _p)
 void fft_execute_dft(fftplan _p)
 {
     unsigned int k, n, N=_p->n;
-    double phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
+    T phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
     for (k=0; k<N; k++) {
         _p->y[k] = 0.0f;
         for (n=0; n<N; n++) {
-            phi = 2*M_PI*d*((double)n)*((double)k) / (double) (N);
+            phi = 2*M_PI*d*((T)n)*((T)k) / (T) (N);
             _p->y[k] += _p->x[n] * cexp(_Complex_I*phi);
         }
     }
@@ -67,8 +68,8 @@ void fft_execute_radix2(fftplan _p)
     for (i=0; i<_p->n; i++)
         _p->y[i] = _p->x[ _p->index_rev[i] ];
 
-    float complex t, yp, *y=_p->y;
-    float phi, d_phi;
+    TC t, yp, *y=_p->y;
+    T phi, d_phi;
     unsigned int n1=0, n2=1;
     for (i=0; i<_p->m; i++) {
         n1 = n2;

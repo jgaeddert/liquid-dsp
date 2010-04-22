@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -35,8 +36,8 @@ void fft_destroy_plan(fftplan _p)
 }
 
 fftplan fft_create_plan(unsigned int _n,
-                        float complex * _x,
-                        float complex * _y,
+                        TC * _x,
+                        TC * _y,
                         int _dir,
                         int _method)
 {
@@ -82,11 +83,11 @@ fftplan fft_create_plan(unsigned int _n,
 void fft_init_lut(fftplan _p)
 {
     unsigned int k, n, N = _p->n;
-    _p->twiddle = (float complex*) malloc(N*N*sizeof(float complex));
-    double phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
+    _p->twiddle = (TC*) malloc(N*N*sizeof(TC));
+    T phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
     for (k=0; k<N; k++) {
         for (n=0; n<N; n++) {
-            phi = 2*M_PI*d*((double)n)*((double)k) / (double) (N);
+            phi = 2*M_PI*d*((T)n)*((T)k) / (T) (N);
             _p->twiddle[k*N + n] = cexp(_Complex_I*phi);
         }   
     }   

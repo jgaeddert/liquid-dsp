@@ -703,20 +703,21 @@ void fec_decode(fec _q,
 // Macro    :   FFT
 //  FFT     :   name-mangling macro
 //  T       :   primitive data type
-#define LIQUID_FFT_DEFINE_API(FFT,T)                            \
+//  TC      :   primitive data type (complex)
+#define LIQUID_FFT_DEFINE_API(FFT,T,TC)                         \
                                                                 \
 typedef struct FFT(plan_s) * FFT(plan);                         \
 FFT(plan) FFT(_create_plan)(unsigned int _n,                    \
-                        T * _x,                                 \
-                        T * _y,                                 \
-                        int _dir,                               \
-                        int _method);                           \
+                            TC * _x,                            \
+                            TC * _y,                            \
+                            int _dir,                           \
+                            int _method);                       \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
-void FFT(_shift)(T *_x, unsigned int _n);
+void FFT(_shift)(TC*_x, unsigned int _n);
 
-LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,liquid_float_complex)
+LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
 
 // ascii spectrogram
 typedef struct asgram_s * asgram;
