@@ -20,13 +20,13 @@
  */
 
 //
-// fft : inefficient but effective
+// fft_execute.c
 //
 
 #include <math.h>
 #include "liquid.internal.h"
 
-void fft_execute_dft(fftplan _p)
+void FFT(_execute_dft)(FFT(plan) _p)
 {
     unsigned int k, n, N=_p->n;
     T phi, d = (_p->direction==FFT_FORWARD) ? -1 : 1;
@@ -39,7 +39,7 @@ void fft_execute_dft(fftplan _p)
     }
 }
 
-void fft_execute_lut(fftplan _p)
+void FFT(_execute_lut)(FFT(plan) _p)
 {
     unsigned int k, n, N=_p->n;
     for (k=0; k<N; k++) {
@@ -51,7 +51,7 @@ void fft_execute_lut(fftplan _p)
     }
 }
 
-void fft_execute_radix2(fftplan _p)
+void FFT(_execute_radix2)(FFT(plan) _p)
 {
     // swap values
     unsigned int i,j,k;

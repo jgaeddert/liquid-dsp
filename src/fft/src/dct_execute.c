@@ -29,7 +29,7 @@
 #include "liquid.internal.h"
 
 // real, even DFT: DCT-II
-void fft_execute_REDCT01_dct(fftplan _p)
+void FFT(_execute_REDCT01_dct)(FFT(plan) _p)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -45,7 +45,7 @@ void fft_execute_REDCT01_dct(fftplan _p)
 }
 
 // real, even iDFT: DCT-III
-void fft_execute_REDCT10_dct(fftplan _p)
+void FFT(_execute_REDCT10_dct)(FFT(plan) _p)
 {
     // ugly, slow method
     unsigned int i,k;

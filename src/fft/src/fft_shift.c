@@ -20,13 +20,13 @@
  */
 
 //
-// fft_shift
+// fft_shift.c
 //
 
 //#include <math.h>
 #include "liquid.internal.h"
 
-void fft_shift(TC *_x, unsigned int _n)
+void FFT(_shift)(TC *_x, unsigned int _n)
 {
     unsigned int i, n2;
     if (_n%2)

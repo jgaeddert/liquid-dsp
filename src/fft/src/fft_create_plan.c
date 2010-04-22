@@ -28,20 +28,20 @@
 
 #include "liquid.internal.h"
 
-void fft_destroy_plan(fftplan _p)
+void FFT(_destroy_plan)(FFT(plan) _p)
 {
     free(_p->twiddle);
     free(_p->index_rev);
     free(_p);
 }
 
-fftplan fft_create_plan(unsigned int _n,
-                        TC * _x,
-                        TC * _y,
-                        int _dir,
-                        int _method)
+FFT(plan) FFT(_create_plan)(unsigned int _n,
+                            TC * _x,
+                            TC * _y,
+                            int _dir,
+                            int _method)
 {
-    fftplan p = (fftplan) malloc(_n*sizeof(struct fftplan_s));
+    FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
 
     p->n = _n;
     p->x = _x;
@@ -69,29 +69,29 @@ fftplan fft_create_plan(unsigned int _n,
 
     // initialize twiddle factors, etc.
     if (_n <= FFT_SIZE_LUT ) {
-        fft_init_lut(p);
-        p->execute = &fft_execute_lut;
+        FFT(_init_lut)(p);
+        p->execute = &FFT(_execute_lut);
     } else if (d==1) {
         // radix-2
         p->is_radix2 = 1;   // true
         p->m = m;
-        fft_init_radix2(p);
-        p->execute = &fft_execute_radix2;
+        FFT(_init_radix2)(p);
+        p->execute = &FFT(_execute_radix2);
     } else {
-        p->execute = &fft_execute_dft;
+        p->execute = &FFT(_execute_dft);
     }
 
     return p;
 }
 
 
-fftplan fft_create_plan_r2r_1d(unsigned int _n,
+FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
                                T * _x,
                                T * _y,
                                int _kind,
                                int _method)
 {
-    fftplan p = (fftplan) malloc(_n*sizeof(struct fftplan_s));
+    FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
 
     p->n  = _n;
     p->xr = _x;
@@ -114,7 +114,7 @@ fftplan fft_create_plan_r2r_1d(unsigned int _n,
 }
 
 // initialize twiddle factors using plain look-up table
-void fft_init_lut(fftplan _p)
+void FFT(_init_lut)(FFT(plan) _p)
 {
     unsigned int k, n, N = _p->n;
     _p->twiddle = (TC*) malloc(N*N*sizeof(TC));
@@ -127,7 +127,7 @@ void fft_init_lut(fftplan _p)
     }   
 }
 
-void fft_init_radix2(fftplan _p)
+void FFT(_init_radix2)(FFT(plan) _p)
 {
     _p->index_rev = (unsigned int *) malloc((_p->n)*sizeof(unsigned int));
     unsigned int i;
@@ -151,7 +151,7 @@ unsigned int reverse_index(unsigned int _i, unsigned int _n)
     return j;
 }
 
-void fft_execute(fftplan _p)
+void FFT(_execute)(FFT(plan) _p)
 {
     _p->execute(_p);
 }
