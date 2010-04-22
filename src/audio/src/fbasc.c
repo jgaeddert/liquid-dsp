@@ -160,7 +160,25 @@ fbasc fbasc_create(int _type,
     unsigned int i;
 
     // initialize window
-    liquid_kbd_window(2*q->num_channels,10.0f,q->w);
+    //  0   :   Kaiser-Bessel derived window (beta = 10.0)
+    //  1   :   half sine
+    //  2   :   shaped pulse
+    int window_type = 0;
+
+    if (window_type == 0) {
+        // Kaiser-Bessel derived window
+        liquid_kbd_window(2*q->num_channels,10.0f,q->w);
+    } else if (window_type == 1) {
+        // half sine
+        for (i=0; i<2*q->num_channels; i++)
+            q->w[i] = sinf(M_PI/(2.0f*q->num_channels)*(i+0.5f));
+    } else {
+        // shaped pulse
+        for (i=0; i<2*q->num_channels; i++) {
+            float t0 = sinf(M_PI/(2*q->num_channels)*(i+0.5));
+            q->w[i] = sinf(M_PI*0.5f*t0*t0);
+        }
+    }
 
     // reset buffer
     for (i=0; i<2*q->num_channels; i++)
