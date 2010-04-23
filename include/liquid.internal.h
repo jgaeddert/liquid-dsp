@@ -759,6 +759,24 @@ LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
 
 // firdes : finite impulse response filter design
 
+// design_rkaiser_filter_internal()
+//
+// Design frequency-shifted root-Nyquist filter based on
+// the Kaiser-windowed sinc.
+//
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+//  _dt     :   filter fractional sample delay
+//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _gamma  :   transition bandwidth adjustment, 0 < _gamma < 1
+void design_rkaiser_filter_internal(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _gamma);
+
 // initialize the frequency grid on the disjoint bounded set
 void firdespm_init_grid(firdespm _q);
 

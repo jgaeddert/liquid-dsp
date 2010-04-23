@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -47,6 +48,29 @@ void design_rkaiser_filter(unsigned int _k,
                            float _beta,
                            float _dt,
                            float * _h)
+{
+    // simply call internal method, ignoring gamma
+    float gamma;
+    design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&gamma);
+}
+
+// design_rkaiser_filter_internal()
+//
+// Design frequency-shifted root-Nyquist filter based on
+// the Kaiser-windowed sinc.
+//
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+//  _dt     :   filter fractional sample delay
+//  _h      :   resulting filter [size: 2*_k*_m+1]
+//  _gamma  :   transition bandwidth adjustment, 0 < _gamma < 1
+void design_rkaiser_filter_internal(unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    float _dt,
+                                    float * _h,
+                                    float * _gamma)
 {
     if ( _k < 1 ) {
         printf("error: design_rkaiser_filter(): k must be greater than 0\n");
@@ -146,5 +170,8 @@ void design_rkaiser_filter(unsigned int _k,
     float e2 = 0.0f;
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
+
+    // save trasition bandwidth adjustment
+    *_gamma = x_hat;
 }
 
