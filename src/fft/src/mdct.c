@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -35,7 +36,6 @@ void mdct(float * _x, float * _X, float * _w, unsigned int _N)
     // pre-compute windowed input
     float xw[2*_N];
 
-    float inv_N = 1.0f / (float)_N;
     unsigned int n,k;
     for (n=0; n<2*_N; n++)
         xw[n] = _x[n] * _w[n];
@@ -44,13 +44,38 @@ void mdct(float * _x, float * _X, float * _w, unsigned int _N)
     for (k=0; k<_N; k++)
         _X[k] = 0.0f;
 
+#if 0
     float nn;
+    float inv_N = 1.0f / (float)_N;
     for (k=0; k<_N; k++) {
         for (n=0; n<2*_N; n++) {
             nn = (float)n + 0.5f + (float)_N*0.5f;
             _X[k] += xw[n]*cosf(M_PI*inv_N*(nn)*(0.5f+k));
         }
     }
+#else
+    if (_N % 2) {
+        // TODO : use DCT-II
+        fprintf(stderr,"error: mdct(), _N must be even\n");
+        exit(1);
+    }
+    // fold input sequence onto itself: create pointers (length _N/2)
+    unsigned int M = _N/2;
+    float * a = &xw[0*M];
+    float * b = &xw[1*M];
+    float * c = &xw[2*M];
+    float * d = &xw[3*M];
+
+    float x0[_N];
+    unsigned int i;
+    for (i=0; i<M; i++) {
+        x0[i]   = -c[M-i-1] - d[i];
+        x0[i+M] =  a[i]     - b[M-i-1];
+    }
+
+    // compute regular DCT-IV on result
+    dct_typeIV(x0,_X,_N);
+#endif
 }
 
 // 
@@ -58,14 +83,14 @@ void imdct(float * _X, float * _x, float * _w, unsigned int _N)
 {
     // ugly, slow method
 
-    float inv_N = 1.0f / (float)_N;
-
     unsigned int n,k;
 
     // initialize output to zero
     for (n=0; n<2*_N; n++)
         _x[n] = 0.0f;
 
+    float inv_N = 1.0f / (float)_N;
+#if 0
     float nn;
     for (n=0; n<2*_N; n++) {
         for (k=0; k<_N; k++) {
@@ -73,6 +98,29 @@ void imdct(float * _X, float * _x, float * _w, unsigned int _N)
             _x[n] += _X[k]*cos(M_PI*inv_N*(nn)*(k+0.5f));
         }
     }
+#else
+    if (_N % 2) {
+        // TODO : use DCT-III
+        fprintf(stderr,"error: mdct(), _N must be even\n");
+        exit(1);
+    }
+    // compute regular DCT-IV on input
+    float x0[_N];
+    dct_typeIV(_X,x0,_N);
+
+    // fold resulting sequence onto itself: create pointers (length _N/2)
+    unsigned int M = _N/2;
+    float * e = &x0[0*M];       // -c[M-i-1] - d
+    float * f = &x0[1*M];       //  a        - b[M-i-1]
+
+    unsigned int i;
+    for (i=0; i<M; i++) {
+        _x[i+0*M] =   f[i];     // a - b[M-i-1]
+        _x[i+1*M] =  -f[M-i-1]; // b - a[M-i-1]
+        _x[i+2*M] =  -e[M-i-1]; // c + d[M-i-1]
+        _x[i+3*M] =  -e[i];     // d + c[M-i-1]
+    }
+#endif
 
     // multiply by window, normalization factor
     for (k=0; k<2*_N; k++)
