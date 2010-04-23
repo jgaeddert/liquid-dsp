@@ -56,7 +56,7 @@ int main() {
         float t0 = sinf(M_PI/(2*num_channels)*(i+0.5));
         w[i] = sinf(M_PI*0.5f*t0*t0);
 #else
-        w[i] = liquid_kbd_window(i,2*num_channels,10.0f);
+        w[i] = liquid_kbd(i,2*num_channels,10.0f);
 #endif
     }
 
