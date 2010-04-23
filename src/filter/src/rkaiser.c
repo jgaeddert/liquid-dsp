@@ -62,29 +62,30 @@ void design_rkaiser_filter(unsigned int _k,
     unsigned int i;
     float kf = (float)_k;
 
-    unsigned int n=2*_k*_m+1;           // filter length
-    float del = _beta/kf;               // transition bandwidth
-    float As = 14.26f*del*n + 7.95f;    // sidelobe attenuation
-    float fc = 1.0f / kf;               // filter cutoff
-    float h[n];                         // temporary coefficients array
+    unsigned int n=2*_k*_m+1;   // filter length
+    float del;                  // transition bandwidth
+    float As;                   // sidelobe attenuation
+    float fc;                   // filter cutoff
+    float h[n];                 // temporary coefficients array
 
     // bandwidth adjustment array (3 points makes a parabola)
     float x[3] = {
         0.0f,
-        0.2f * _beta / kf,
-        0.4f * _beta / kf};
+        0.2f,
+        0.6f};
 
     // evaluate performance (ISI) of each bandwidth adjustment
     float isi_max;
     float isi_mse;
     float y[3];
     for (i=0; i<3; i++) {
-        // re-compute transition band and As
-        del = (_beta / kf) - x[i];
+        // re-compute transition band, As, and cutoff frequency
+        del = (_beta / kf)*(1.0f - x[i]);
         As  = 14.26f*del*n + 7.95f;
+        fc  = (1 + _beta*x[i])/kf;
 
         // compute filter, isi
-        fir_kaiser_window(n,fc+x[i],As,_dt,h);
+        fir_kaiser_window(n,fc,As,_dt,h);
         liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
         y[i] = isi_mse;
     }
@@ -113,12 +114,13 @@ void design_rkaiser_filter(unsigned int _k,
         // compute new estimate
         x_hat = 0.5f * t0 / t1;
 
-        // re-compute transition band and As
-        del = (_beta / kf) - x_hat;
+        // re-compute transition band, As, and cutoff frequency
+        del = (_beta / kf)*(1.0f - x_hat);
         As  = 14.26f*del*n + 7.95f;
+        fc  = (1 + _beta*x_hat)/kf;
 
         // execute filter design
-        fir_kaiser_window(n,fc+x_hat,As,_dt,h);
+        fir_kaiser_window(n,fc,As,_dt,h);
 
         // compute inter-symbol interference (MSE, max)
         liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
@@ -137,7 +139,10 @@ void design_rkaiser_filter(unsigned int _k,
     };
 
     // compute optimum filter and normalize
-    fir_kaiser_window(n,fc+x_hat,As,_dt,_h);
+    del = (_beta / kf)*(1.0f - x_hat);
+    As  = 14.26f*del*n + 7.95f;
+    fc  = (1 + _beta*x_hat)/kf;
+    fir_kaiser_window(n,fc,As,_dt,_h);
     float e2 = 0.0f;
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
