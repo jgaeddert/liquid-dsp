@@ -28,8 +28,14 @@
 
 #include "liquid.internal.h"
 
-// real, even DFT: DCT-II
-void FFT(_execute_REDCT01_dct)(FFT(plan) _p)
+// DCT-I
+void FFT(_execute_REDFT00)(FFT(plan) _p)
+{
+    fprintf(stderr,"warning, fft_execute_REDFT00() not yet implemented!\n");
+}
+
+// DCT-II (regular 'dct')
+void FFT(_execute_REDFT10)(FFT(plan) _p)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -44,8 +50,8 @@ void FFT(_execute_REDCT01_dct)(FFT(plan) _p)
     }
 }
 
-// real, even iDFT: DCT-III
-void FFT(_execute_REDCT10_dct)(FFT(plan) _p)
+// DCT-III (regular 'idct')
+void FFT(_execute_REDFT01)(FFT(plan) _p)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -58,4 +64,10 @@ void FFT(_execute_REDCT10_dct)(FFT(plan) _p)
             _p->yr[i] += _p->xr[k]*cosf(phi);
         }
     }
+}
+
+// DCT-IV
+void FFT(_execute_REDFT11)(FFT(plan) _p)
+{
+    fprintf(stderr,"warning, fft_execute_REDFT11() not yet implemented!\n");
 }

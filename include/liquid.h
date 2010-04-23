@@ -698,10 +698,10 @@ void fec_decode(fec _q,
 #define FFT_FORWARD 0
 #define FFT_REVERSE 1
 
-#define FFT_REDFT00 0
-#define FFT_REDFT01 1
-#define FFT_REDFT10 2
-#define FFT_REDFT11 3
+#define FFT_REDFT00 0   // DCT-I
+#define FFT_REDFT10 1   // DCT-II
+#define FFT_REDFT01 2   // DCT-III
+#define FFT_REDFT11 3   // DCT-IV
 
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
 

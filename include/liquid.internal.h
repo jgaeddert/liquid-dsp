@@ -534,11 +534,11 @@ void fec_rs_decode(fec _q,
 #define FFT_SIZE_LUT    16
 
 typedef enum {
-    LIQUID_FFT_DFT_1D   = 0,
-    LIQUID_FFT_REDFT00,
-    LIQUID_FFT_REDFT01,
-    LIQUID_FFT_REDFT10,
-    LIQUID_FFT_REDFT11
+    LIQUID_FFT_DFT_1D   = 0,    // complex one-dimensional FFT
+    LIQUID_FFT_REDFT00,         // real one-dimensional DCT-I
+    LIQUID_FFT_REDFT10,         // real one-dimensional DCT-II
+    LIQUID_FFT_REDFT01,         // real one-dimensional DCT-III
+    LIQUID_FFT_REDFT11          // real one-dimensional DCT-IV
 } liquid_fft_kind;
 
 // Macro    :   FFT (internal)
@@ -558,6 +558,8 @@ struct FFT(plan_s) {                                            \
     /* real even/odd DFTs parameters */                         \
     T * xr;                     /* input array (real) */        \
     T * yr;                     /* output array (real) */       \
+    TC * xc;                    /* allocated input array */     \
+    TC * yc;                    /* allocated output array */    \
                                                                 \
     /* radix-2 implementation data */                           \
     int is_radix2;              /* radix-2 flag */              \
@@ -578,7 +580,13 @@ void FFT(_execute_dft)(FFT(plan) _p);                           \
 void FFT(_execute_lut)(FFT(plan) _p);                           \
                                                                 \
 /* execute radix-2 fft */                                       \
-void FFT(_execute_radix2)(FFT(plan) _p);
+void FFT(_execute_radix2)(FFT(plan) _p);                        \
+                                                                \
+/* discrete cosine transform (DCT) prototypes */                \
+void FFT(_execute_REDFT00)(FFT(plan) _p);   /* DCT-I   */       \
+void FFT(_execute_REDFT10)(FFT(plan) _p);   /* DCT-II  */       \
+void FFT(_execute_REDFT01)(FFT(plan) _p);   /* DCT-III */       \
+void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */
 
 // miscellaneous functions
 unsigned int reverse_index(unsigned int _i, unsigned int _n);

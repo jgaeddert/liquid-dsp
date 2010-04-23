@@ -86,10 +86,10 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
 
 
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
-                               T * _x,
-                               T * _y,
-                               int _kind,
-                               int _method)
+                                   T * _x,
+                                   T * _y,
+                                   int _kind,
+                                   int _method)
 {
     FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
 
@@ -98,17 +98,30 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     p->yr = _y;
     p->method = _method;
     switch (_kind) {
-    case FFT_REDFT00:   p->kind = LIQUID_FFT_REDFT00;   break;
-    case FFT_REDFT01:   p->kind = LIQUID_FFT_REDFT01;   break;
-    case FFT_REDFT10:   p->kind = LIQUID_FFT_REDFT10;   break;
-    case FFT_REDFT11:   p->kind = LIQUID_FFT_REDFT11;   break;
+    case FFT_REDFT00:
+        // DCT-I
+        p->kind = LIQUID_FFT_REDFT00;
+        p->execute = &FFT(_execute_REDFT00);
+        break;
+    case FFT_REDFT10:
+        // DCT-II
+        p->kind = LIQUID_FFT_REDFT10;
+        p->execute = &FFT(_execute_REDFT10);
+        break;
+    case FFT_REDFT01:
+        // DCT-III
+        p->kind = LIQUID_FFT_REDFT01;
+        p->execute = &FFT(_execute_REDFT01);
+        break;
+    case FFT_REDFT11:
+        // DCT-IV
+        p->kind = LIQUID_FFT_REDFT11;
+        p->execute = &FFT(_execute_REDFT11);
+        break;
     default:
         fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid kind, %d\n", _kind);
         exit(1);
     }
-
-    fprintf(stderr,"error: fft_create_plan_r2f_1d(), DCT not yet supported!\n");
-    exit(1);
 
     return p;
 }
@@ -151,6 +164,7 @@ unsigned int reverse_index(unsigned int _i, unsigned int _n)
     return j;
 }
 
+// execute fft : simply calls internal function pointer
 void FFT(_execute)(FFT(plan) _p)
 {
     _p->execute(_p);
