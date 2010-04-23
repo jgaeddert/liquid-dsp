@@ -59,3 +59,22 @@ void idct(float * _x, float * _y, unsigned int _n)
     }
 }
 
+// DCT-IV
+void dct_typeIV(float * _x, float * _y, unsigned int _n)
+{
+    // ugly, slow method
+    unsigned int i,k;
+
+    // compute 1/n
+    float n_inv = 1.0f / (float)_n;
+
+    float phi;
+    for (i=0; i<_n; i++) {
+        _y[i] = 0.0f;
+        for (k=0; k<_n; k++) {
+            phi = M_PI*n_inv*((float)i + 0.5f)*((float)k + 0.5f);
+            _y[i] += _x[k]*cosf(phi);
+        }
+    }
+}
+
