@@ -93,10 +93,15 @@ void design_rkaiser_filter_internal(unsigned int _k,
     float h[n];                 // temporary coefficients array
 
     // bandwidth adjustment array (3 points makes a parabola)
+    float p0 = (_m == 1) ? -0.12861f : 0.011*logf(_m-1.8f) - 0.046f;
+    float p1 = (_m == 1) ?  0.90364f : 0.0064437f*_m + 0.863301f;
+    float gamma_hat = p1*_beta + p0;  // initial estimate
+    if (gamma_hat < _beta*0.10f) gamma_hat = 0.10f*_beta;
+    if (gamma_hat > _beta*0.95f) gamma_hat = 0.95f*_beta;
     float x[3] = {
-        0.0f,
-        0.2f,
-        0.6f};
+        gamma_hat*0.9f,
+        gamma_hat,
+        _beta*0.98f};
 
     // evaluate performance (ISI) of each bandwidth adjustment
     float isi_max;
@@ -104,9 +109,9 @@ void design_rkaiser_filter_internal(unsigned int _k,
     float y[3];
     for (i=0; i<3; i++) {
         // re-compute transition band, As, and cutoff frequency
-        del = (_beta / kf)*(1.0f - x[i]);
+        del = x[i] / kf;
         As  = 14.26f*del*n + 7.95f;
-        fc  = (1 + _beta*x[i])/kf;
+        fc  = (1 + _beta - x[i])/kf;
 
         // compute filter, isi
         fir_kaiser_window(n,fc,As,_dt,h);
@@ -137,11 +142,20 @@ void design_rkaiser_filter_internal(unsigned int _k,
 
         // compute new estimate
         x_hat = 0.5f * t0 / t1;
+        if (x_hat < 0) {
+            printf("gamma too small; exiting prematurely\n");
+            x_hat = 0.01f;
+            break;
+        } else if (x_hat > _beta) {
+            printf("gamma too large; exiting prematurely\n");
+            x_hat = _beta;
+            break;
+        }
 
         // re-compute transition band, As, and cutoff frequency
-        del = (_beta / kf)*(1.0f - x_hat);
+        del = x_hat / kf;
         As  = 14.26f*del*n + 7.95f;
-        fc  = (1 + _beta*x_hat)/kf;
+        fc  = (1 + _beta - x_hat)/kf;
 
         // execute filter design
         fir_kaiser_window(n,fc,As,_dt,h);
@@ -163,9 +177,9 @@ void design_rkaiser_filter_internal(unsigned int _k,
     };
 
     // compute optimum filter and normalize
-    del = (_beta / kf)*(1.0f - x_hat);
-    As  = 14.26f*del*n + 7.95f;
-    fc  = (1 + _beta*x_hat)/kf;
+        del = x_hat / kf;
+        As  = 14.26f*del*n + 7.95f;
+        fc  = (1 + _beta - x_hat)/kf;
     fir_kaiser_window(n,fc,As,_dt,_h);
     float e2 = 0.0f;
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
