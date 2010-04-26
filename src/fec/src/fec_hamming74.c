@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -27,20 +28,25 @@
 
 #include "liquid.internal.h"
 
+// generator polynomials
 #define HAMMING74_H0    0x55
 #define HAMMING74_H1    0x33
 #define HAMMING74_H2    0x0f
 
+// decode Hamming(7,4) symbol by simply stripping out
+// original data bits
 #define fec_hamming74_decode_symbol(_s) \
     (((0x10 & _s) >> 1) | ((0x07 & _s) >> 0))
 
-static unsigned char hamming74_enc[] = {
+// Hamming(7,4) encoding matrix
+static unsigned char hamming74_enc[16] = {
     0x00,   0x69,   0x2a,   0x43,
     0x4c,   0x25,   0x66,   0x0f,
     0x70,   0x19,   0x5a,   0x33,
     0x3c,   0x55,   0x16,   0x7f
 };
 
+// Hamming(7,4) syndrome bit-flip array
 static unsigned char hamming74_bflip[] = {
     0x00,   // 0 (not used)
     0x40,   // 1
@@ -52,25 +58,38 @@ static unsigned char hamming74_bflip[] = {
     0x01,   // 7
 };
 
+// create Hamming(7,4) codec object
 fec fec_hamming74_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
+    // set scheme
     q->scheme = FEC_HAMMING74;
     q->rate = fec_get_rate(q->scheme);
 
+    // set internal function pointers
     q->encode_func = &fec_hamming74_encode;
     q->decode_func = &fec_hamming74_decode;
 
     return q;
 }
 
+// destroy Hamming(7,4) object
 void fec_hamming74_destroy(fec _q)
 {
     free(_q);
 }
 
-void fec_hamming74_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_dec, unsigned char *_msg_enc)
+// encode block of data using Hamming(7,4) encoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+void fec_hamming74_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char *_msg_dec,
+                          unsigned char *_msg_enc)
 {
     unsigned int i, j=0;
     unsigned char s0, s1;
@@ -83,8 +102,18 @@ void fec_hamming74_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg
     }
 }
 
+// decode block of data using Hamming(7,4) decoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+//
 //unsigned int
-void fec_hamming74_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_enc, unsigned char *_msg_dec)
+void fec_hamming74_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char *_msg_enc,
+                          unsigned char *_msg_dec)
 {
     unsigned int i, num_errors=0;
     unsigned char r0, r1, z0, z1, s0, s1;
@@ -119,14 +148,19 @@ void fec_hamming74_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg
     //return num_errors;
 }
 
-// internal
 
+// 
+// internal
+//
+
+// binary dot-product (count ones modulo 2)
 #define bdotprod(x,y) c_ones_mod2[(x)&(y)]
+
+// compute syndrome on received symbol _r
 unsigned char fec_hamming74_compute_syndrome(unsigned char _r)
 {
-    return
-        (bdotprod(_r,HAMMING74_H0) << 0) |
-        (bdotprod(_r,HAMMING74_H1) << 1) |
-        (bdotprod(_r,HAMMING74_H2) << 2);
+    return (bdotprod(_r,HAMMING74_H0) << 0) |
+           (bdotprod(_r,HAMMING74_H1) << 1) |
+           (bdotprod(_r,HAMMING74_H2) << 2);
 }
 
