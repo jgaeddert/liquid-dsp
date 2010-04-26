@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -137,7 +138,7 @@ framesync64 framesync64_create(
     fs->agc_rx = agc_crcf_create();
     agc_crcf_set_target(fs->agc_rx, 1.0f);
     agc_crcf_set_bandwidth(fs->agc_rx, FRAMESYNC64_AGC_BW_0);
-    agc_crcf_set_gain_limits(fs->agc_rx, 1e-6, 1e2);
+    agc_crcf_set_gain_limits(fs->agc_rx, 1e-6, 1e4);
     fs->squelch_threshold = FRAMESYNC64_SQUELCH_THRESH;
     fs->squelch_timeout = FRAMESYNC64_SQUELCH_TIMEOUT;
     fs->squelch_timer = fs->squelch_timeout;
@@ -375,6 +376,10 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         if (_fs->rssi < _fs->squelch_threshold &&
             _fs->state == FRAMESYNC64_STATE_SEEKPN)
         {
+            // auto-squelch (adjust squelch threshold)
+            if (_fs->rssi + 5.0f < _fs->squelch_threshold)
+                _fs->squelch_threshold = _fs->rssi + 5.0f;
+
             if (_fs->squelch_timer > 1) {
                 // signal low, but we haven't reached timout yet; decrement
                 // counter and continue
@@ -382,7 +387,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             } else if (_fs->squelch_timer == 1) {
                 // squelch timeout: signal has been too low for too long
 
-                //printf("squelch enabled\n");
+                //printf("squelch enabled, rssi : %6.2f dB (squelch: %6.2f dB)\n", _fs->rssi, _fs->squelch_threshold);
                 _fs->squelch_timer = 0;
                 framesync64_reset(_fs);
                 continue;
