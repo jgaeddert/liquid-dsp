@@ -23,6 +23,7 @@
 // MDCT : Modified Discrete Cosine Transforms
 //
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
