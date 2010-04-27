@@ -352,46 +352,51 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT, unsigned int)
 
 
-// Port
-#define PORT_MANGLE_FLOAT(name)     LIQUID_CONCAT(fport,name)
-#define PORT_MANGLE_CFLOAT(name)    LIQUID_CONCAT(cfport,name)
-#define PORT_MANGLE_UINT(name)      LIQUID_CONCAT(uiport,name)
-
-// Macro
-//  PORT    : name-mangling macro
-//  T       : data type
-#define LIQUID_PORT_DEFINE_API(PORT,T)                          \
-typedef struct PORT(_s) * PORT();                               \
-PORT() PORT(_create)(unsigned int _n);                          \
-void PORT(_destroy)(PORT() _p);                                 \
-void PORT(_print)(PORT() _p);                                   \
-void PORT(_produce)(PORT() _p, T * _w, unsigned int _n);        \
-void PORT(_consume)(PORT() _p, T * _r, unsigned int _n);
-
-LIQUID_PORT_DEFINE_API(PORT_MANGLE_FLOAT, float)
-LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, liquid_float_complex)
-LIQUID_PORT_DEFINE_API(PORT_MANGLE_UINT, unsigned int)
-
 //
 // Generic port
 //
 
-enum {
-    GPORT_SIGNAL_NULL=0,            // no signal
-    GPORT_SIGNAL_METADATA_UPDATE,   // metadata 
-    GPORT_SIGNAL_EOM                // end of message
-};
 typedef struct gport_s * gport;
+
+// create gport object
+//
+//  _n      :   size of the internal buffer
+//  _size   :   size of each element in bytes (e.g. sizeof(int))
 gport gport_create(unsigned int _n, unsigned int _size);
+
+// destroy gport object and free all internal memory
 void gport_destroy(gport _p);
+
+// print gport object internals
 void gport_print(gport _p);
 
 // producer methods
+
+// lock producer (direct memory access)
+//  _p      :   gport object
+//  _n      :   requested number of elements to lock
+//
+// returns pointer to internal memory buffer for writing
 void * gport_producer_lock(gport _p, unsigned int _n);
+
+// unlock producer (direct memory access)
+//  _p      :   gport object
+//  _n      :   requested number of elements to unlock
 void gport_producer_unlock(gport _p, unsigned int _n);
+
+// produce data (indirect memory access)
+//  _p      :   gport object
+//  _w      :   external data buffer [size: 1 x _n]
+//  _n      :   number of elements to produce (size of _w)
 void gport_produce(gport _p,
                    void * _w,
                    unsigned int _n);
+
+// produce available data (indirect memory access)
+//  _p      :   gport object
+//  _w      :   external data buffer [size: 1 x _nmax]
+//  _nmax   :   number of elements in _w
+//  _np     :   returned number of elements in _w produced by _p
 void gport_produce_available(gport _p,
                              void * _w,
                              unsigned int _nmax,
@@ -399,19 +404,47 @@ void gport_produce_available(gport _p,
 
 
 // consumer methods
+
+// lock consumer (direct memory access)
+//
+//  _p      :   gport object
+//  _n      :   requested number of elements to lock
+//
+// returns pointer to internal memory buffer for reading
 void * gport_consumer_lock(gport _p, unsigned int _n);
+
+// unlock consumer (direct memory access)
+//  _p      :   gport object
+//  _n      :   requested number of elements to unlock
 void gport_consumer_unlock(gport _p, unsigned int _n);
+
+// consume data (indirect memory access)
+//  _p      :   gport object
+//  _r      :   external data buffer [size: 1 x _n]
+//  _n      :   number of elements to consume (size of _r)
 void gport_consume(gport _p,
                    void * _r,
                    unsigned int _n);
+
+// produce available data (indirect memory access)
+//  _p      :   gport object
+//  _r      :   external data buffer [size: 1 x _nmax]
+//  _nmax   :   number of elements in _r
+//  _nc     :   returned number of elements in _r consumed by _p
 void gport_consume_available(gport _p,
                              void * _r,
                              unsigned int _nmax,
                              unsigned int *_nc);
 
+#if 0
+enum {
+    GPORT_SIGNAL_NULL=0,            // no signal
+    GPORT_SIGNAL_METADATA_UPDATE,   // metadata 
+    GPORT_SIGNAL_EOM                // end of message
+};
 // signaling methods
 void gport_signal(gport _p, int _message);
-
+#endif
 
 //
 // MODULE : channel

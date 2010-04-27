@@ -27,7 +27,6 @@
 #define BUFFER_TYPE_UINT
 
 #define BUFFER(name)    LIQUID_CONCAT(uibuffer, name)
-#define PORT(name)      LIQUID_CONCAT(uiport, name)
 #define WDELAY(name)    LIQUID_CONCAT(uiwdelay, name)
 #define WINDOW(name)    LIQUID_CONCAT(uiwindow, name)
 
@@ -39,7 +38,6 @@
 
 
 #include "buffer.c"
-#include "port.c"
 #include "window.c"
 #include "wdelay.c"
 

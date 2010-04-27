@@ -27,7 +27,6 @@
 #define BUFFER_TYPE_FLOAT
 
 #define BUFFER(name)    LIQUID_CONCAT(fbuffer, name)
-#define PORT(name)      LIQUID_CONCAT(fport, name)
 #define WDELAY(name)    LIQUID_CONCAT(fwdelay, name)
 #define WINDOW(name)    LIQUID_CONCAT(fwindow, name)
 
@@ -38,7 +37,6 @@
     printf("\t: %12.4e", V);
 
 #include "buffer.c"
-#include "port.c"
 #include "wdelay.c"
 #include "window.c"
 
