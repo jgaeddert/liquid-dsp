@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,20 +19,20 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_GPORT_BENCHMARK_H__
-#define __LIQUID_GPORT_BENCHMARK_H__
+#ifndef __LIQUID_GPORT_DMA_BENCHMARK_H__
+#define __LIQUID_GPORT_DMA_BENCHMARK_H__
 
 #include <sys/resource.h>
 #include "liquid.h"
 
-#define GPORT_BENCH_API(N)              \
+#define GPORT_DMA_BENCH_API(N)          \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ gport_bench(_start, _finish, _num_iterations, N); }
+{ gport_dma_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
-void gport_bench(
+void gport_dma_bench(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations,
@@ -59,10 +60,10 @@ void gport_bench(
 }
 
 // 
-void benchmark_gport_n1     GPORT_BENCH_API(1)
-void benchmark_gport_n4     GPORT_BENCH_API(4)
-void benchmark_gport_n16    GPORT_BENCH_API(16)
-void benchmark_gport_n64    GPORT_BENCH_API(64)
+void benchmark_gport_dma_n1     GPORT_DMA_BENCH_API(1)
+void benchmark_gport_dma_n4     GPORT_DMA_BENCH_API(4)
+void benchmark_gport_dma_n16    GPORT_DMA_BENCH_API(16)
+void benchmark_gport_dma_n64    GPORT_DMA_BENCH_API(64)
 
-#endif // __LIQUID_GPORT_BENCHMARK_H__
+#endif // __LIQUID_GPORT_DMA_BENCHMARK_H__
 

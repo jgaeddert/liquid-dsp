@@ -55,10 +55,10 @@ local_t_files	:= 		\
 # $(local_dir)
 #
 local_b_files	:= 			\
-	gport2_benchmark.h		\
-	gport2_threaded_benchmark.h	\
-	gport_benchmark.h		\
-	gport_threaded_benchmark.h	\
+	gport_dma_benchmark.h		\
+	gport_dma_threaded_benchmark.h	\
+	gport_ima_benchmark.h		\
+	gport_ima_threaded_benchmark.h	\
 	window_benchmark.h
 
 include common.mk

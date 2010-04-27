@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,8 +19,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_GPORT_THREADED_BENCHMARK_H__
-#define __LIQUID_GPORT_THREADED_BENCHMARK_H__
+#ifndef __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
+#define __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -41,16 +42,16 @@ typedef struct {
     unsigned int producer_size;
     unsigned int consumer_size;
     unsigned long int num_trials;
-} gport_threaded_bench_data_t;
+} gport_dma_threaded_bench_data_t;
 
-#define GPORT_THREADED_BENCH_API(N)     \
+#define GPORT_DMA_THREADED_BENCH_API(N)     \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ gport_threaded_bench(_start, _finish, _num_iterations, N); }
+{ gport_dma_threaded_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
-void gport_threaded_bench(
+void gport_dma_threaded_bench(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations,
@@ -60,7 +61,7 @@ void gport_threaded_bench(
     *_num_iterations = (*_num_iterations*_n)/4;
 
     // initialize port
-    gport_threaded_bench_data_t data;
+    gport_dma_threaded_bench_data_t data;
     data.p = gport_create(8*_n,sizeof(int));
     data.producer_size = _n;
     data.consumer_size = _n;
@@ -99,7 +100,7 @@ void gport_threaded_bench(
 
 void producer_handler(void * _data)
 {
-    gport_threaded_bench_data_t * data = (gport_threaded_bench_data_t*)_data;
+    gport_dma_threaded_bench_data_t * data = (gport_dma_threaded_bench_data_t*)_data;
     unsigned long int i;
     int * w;
     for (i=0; i<data->num_trials; i+=data->producer_size) {
@@ -112,7 +113,7 @@ void producer_handler(void * _data)
 
 void consumer_handler(void * _data)
 {
-    gport_threaded_bench_data_t * data = (gport_threaded_bench_data_t*)_data;
+    gport_dma_threaded_bench_data_t * data = (gport_dma_threaded_bench_data_t*)_data;
     unsigned long int i;
     int * r;
     for (i=0; i<data->num_trials; i+=data->consumer_size) {
@@ -123,10 +124,10 @@ void consumer_handler(void * _data)
 }
 
 // 
-void benchmark_gport_threaded_n1     GPORT_THREADED_BENCH_API(1)
-void benchmark_gport_threaded_n4     GPORT_THREADED_BENCH_API(4)
-void benchmark_gport_threaded_n16    GPORT_THREADED_BENCH_API(16)
-void benchmark_gport_threaded_n64    GPORT_THREADED_BENCH_API(64)
+void benchmark_gport_dma_threaded_n1     GPORT_DMA_THREADED_BENCH_API(1)
+void benchmark_gport_dma_threaded_n4     GPORT_DMA_THREADED_BENCH_API(4)
+void benchmark_gport_dma_threaded_n16    GPORT_DMA_THREADED_BENCH_API(16)
+void benchmark_gport_dma_threaded_n64    GPORT_DMA_THREADED_BENCH_API(64)
 
-#endif // __LIQUID_GPORT_THREADED_BENCHMARK_H__
+#endif // __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
 
