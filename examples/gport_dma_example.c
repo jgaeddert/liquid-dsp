@@ -1,5 +1,7 @@
 //
-// gport (generic port) example
+// gport_dma_example.c
+//
+// gport (generic port) direct memory access example
 //
 
 #include <stdio.h>

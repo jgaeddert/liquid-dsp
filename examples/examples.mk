@@ -68,10 +68,10 @@ local_src	:=			\
 	framesync64_example.c		\
 	freqmodem_example.c		\
 	ga_search_example.c		\
-	gport2_example.c		\
-	gport_example.c			\
-	gport_threaded_example.c	\
-	gport2_threaded_example.c	\
+	gport_dma_example.c		\
+	gport_dma_threaded_example.c	\
+	gport_ima_example.c		\
+	gport_ima_threaded_example.c	\
 	gradient_search_example.c	\
 	interleaver_example.c		\
 	iirqmfb_crcf_example.c		\

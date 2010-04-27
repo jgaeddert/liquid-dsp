@@ -30,8 +30,7 @@ local_s_files	:= 	\
 	fbuffer.c	\
 	cfbuffer.c	\
 	uibuffer.c	\
-	gport.c		\
-	gport2.c
+	gport.c
 
 # local_t_files
 #

@@ -373,8 +373,14 @@ LIQUID_PORT_DEFINE_API(PORT_MANGLE_CFLOAT, liquid_float_complex)
 LIQUID_PORT_DEFINE_API(PORT_MANGLE_UINT, unsigned int)
 
 //
-// Generic port [depreciated]
+// Generic port
 //
+
+enum {
+    GPORT_SIGNAL_NULL=0,            // no signal
+    GPORT_SIGNAL_METADATA_UPDATE,   // metadata 
+    GPORT_SIGNAL_EOM                // end of message
+};
 typedef struct gport_s * gport;
 gport gport_create(unsigned int _n, unsigned int _size);
 void gport_destroy(gport _p);
@@ -403,44 +409,8 @@ void gport_consume_available(gport _p,
                              unsigned int _nmax,
                              unsigned int *_nc);
 
-
-//
-// Generic port (2)
-//
-enum {
-    GPORT2_SIGNAL_NULL=0,           // no signal
-    GPORT2_SIGNAL_METADATA_UPDATE,  // metadata 
-    GPORT2_SIGNAL_EOM               // end of message
-};
-typedef struct gport2_s * gport2;
-gport2 gport2_create(unsigned int _n, unsigned int _size);
-void gport2_destroy(gport2 _p);
-void gport2_print(gport2 _p);
-
-// producer methods
-void * gport2_producer_lock(gport2 _p, unsigned int _n);
-void gport2_producer_unlock(gport2 _p, unsigned int _n);
-void gport2_produce(gport2 _p,
-                    void * _w,
-                    unsigned int _n);
-void gport2_produce_available(gport2 _p,
-                              void * _w,
-                              unsigned int _nmax,
-                              unsigned int *_np);
-
-// consumer methods
-void * gport2_consumer_lock(gport2 _p, unsigned int _n);
-void gport2_consumer_unlock(gport2 _p, unsigned int _n);
-void gport2_consume(gport2 _p,
-                    void * _r,
-                    unsigned int _n);
-void gport2_consume_available(gport2 _p,
-                              void * _r,
-                              unsigned int _nmax,
-                              unsigned int *_nc);
-
 // signaling methods
-void gport2_signal(gport2 _p, int _message);
+void gport_signal(gport _p, int _message);
 
 
 //

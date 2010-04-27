@@ -1,5 +1,7 @@
 //
-// generic port (gport) example (threaded)
+// gport_dma_threaded_example.c
+// 
+// generic port (gport) direct memory access example (threaded)
 //
 
 #include <unistd.h>     // Symbolic Constants

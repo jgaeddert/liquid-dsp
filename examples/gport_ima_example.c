@@ -1,5 +1,7 @@
 //
-// gport2 (generic port) example
+// gport_ima_example.c
+//
+// gport (generic port) indirect memory access example
 //
 
 #include <stdio.h>
@@ -13,7 +15,7 @@ int main() {
     int w[n], r[n];
 
     // create port
-    gport2 p = gport2_create(n,sizeof(int));
+    gport p = gport_create(n,sizeof(int));
 
     // initialize data
     unsigned int i;
@@ -22,21 +24,21 @@ int main() {
 
     // producer
     printf("  producing 8 elements...\n");
-    gport2_produce(p,(void*)w,8);
+    gport_produce(p,(void*)w,8);
     printf("  producer finished\n");
 
     // consumer
     printf("  consuming 8 elements...\n");
-    gport2_consume(p,(void*)r,8);
+    gport_consume(p,(void*)r,8);
     printf("  consumer finished\n");
 
     for (i=0; i<8; i++)
         printf(" r(%2u) = %d\n",i,r[i]);
     
     // print status
-    gport2_print(p);
+    gport_print(p);
 
-    gport2_destroy(p);
+    gport_destroy(p);
 
     printf("done.\n");
     return 0;
