@@ -19,6 +19,13 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// 
+// gport_ima_benchmark.h
+//
+// Run gport (generic data port) using indirect memory
+// access benchmark
+//
+
 #ifndef __LIQUID_GPORT_IMA_BENCHMARK_H__
 #define __LIQUID_GPORT_IMA_BENCHMARK_H__
 
@@ -32,15 +39,16 @@
 { gport_ima_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
-void gport_ima_bench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations,
-    unsigned int _n)
+void gport_ima_bench(struct rusage *_start,
+                     struct rusage *_finish,
+                     unsigned long int *_num_iterations,
+                     unsigned int _n)
 {
     // initialize port
     gport p = gport_create(2*_n-1,sizeof(int));
-    int w[_n], r[_n];
+
+    int w[_n];  // external buffer for writing
+    int r[_n];  // external buffer for reading
 
     unsigned long int i;
 
@@ -48,7 +56,10 @@ void gport_ima_bench(
     //   write to port, read from port
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
+        // producer: write data to port from external buffer
         gport_produce(p,(void*)w,_n);
+
+        // consumer: read data from port to external buffer
         gport_consume(p,(void*)r,_n);
     }
     getrusage(RUSAGE_SELF, _finish);
@@ -62,6 +73,7 @@ void benchmark_gport_ima_n1    GPORT_IMA_BENCH_API(1)
 void benchmark_gport_ima_n4    GPORT_IMA_BENCH_API(4)
 void benchmark_gport_ima_n16   GPORT_IMA_BENCH_API(16)
 void benchmark_gport_ima_n64   GPORT_IMA_BENCH_API(64)
+void benchmark_gport_ima_n256  GPORT_IMA_BENCH_API(256)
 
 #endif // __LIQUID_GPORT_IMA_BENCHMARK_H__
 
