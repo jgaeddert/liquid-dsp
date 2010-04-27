@@ -43,7 +43,7 @@ local_s_files	:= 	\
 local_t_files	:= 		\
 	cbuffer_autotest.h	\
 	sbuffer_autotest.h	\
-	gport2_autotest.h	\
+	gport_autotest.h	\
 	window_autotest.h
 
 
