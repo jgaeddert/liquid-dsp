@@ -383,10 +383,26 @@ void gport_print(gport _p);
 // producer methods
 void * gport_producer_lock(gport _p, unsigned int _n);
 void gport_producer_unlock(gport _p, unsigned int _n);
+void gport_produce(gport _p,
+                   void * _w,
+                   unsigned int _n);
+void gport_produce_available(gport _p,
+                             void * _w,
+                             unsigned int _nmax,
+                             unsigned int *_np);
+
 
 // consumer methods
 void * gport_consumer_lock(gport _p, unsigned int _n);
 void gport_consumer_unlock(gport _p, unsigned int _n);
+void gport_consume(gport _p,
+                   void * _r,
+                   unsigned int _n);
+void gport_consume_available(gport _p,
+                             void * _r,
+                             unsigned int _nmax,
+                             unsigned int *_nc);
+
 
 //
 // Generic port (2)
