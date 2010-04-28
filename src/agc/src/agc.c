@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -50,6 +51,16 @@ struct AGC(_s) {
 
     // is agc locked?
     int is_locked;
+
+    // squelch
+    int squelch_activated;          // squelch activated/deactivated?
+    int squelch_enabled;            // squelch enabled/disabled?
+    int squelch_auto;               // automatic squelch?
+    unsigned int squelch_timeout;   // number of samples before timing out
+    unsigned int squelch_timer;     // sub-threshold counter
+    T squelch_threshold_auto;       // squelch threshold (auto)
+    T squelch_threshold;            // squelch threshold
+    T squelch_headroom;             // nominally 4 dB
 };
 
 
@@ -71,6 +82,13 @@ AGC() AGC(_create)()
     AGC(_set_bandwidth)(_q, 0.0);
 
     _q->is_locked = 0;
+
+    // squelch
+    _q->squelch_headroom = 4.0f;
+    AGC(_squelch_disable_auto)(_q);
+    AGC(_squelch_set_threshold)(_q, -30.0f);
+    AGC(_squelch_set_timeout)(_q, 32);
+    AGC(_squelch_deactivate)(_q);
 
     return _q;
 }
@@ -174,6 +192,10 @@ void AGC(_execute)(AGC() _q, TC _x, TC *_y)
 
     // apply gain to input
     *_y = _x * _q->g;
+
+    // squelch
+    if (_q->squelch_activated)
+        AGC(_execute_squelch)(_q);
 }
 
 T AGC(_get_signal_level)(AGC() _q)
@@ -185,6 +207,54 @@ T AGC(_get_gain)(AGC() _q)
 {
     return _q->g;
 }
+
+// activate squelch
+void AGC(_squelch_activate)(AGC() _q)
+{
+    _q->squelch_activated = 1;
+}
+
+// deactivate squelch
+void AGC(_squelch_deactivate)(AGC() _q)
+{
+    _q->squelch_activated = 0;
+    _q->squelch_enabled = 0;
+    _q->squelch_timer = _q->squelch_timeout;
+}
+
+// enable automatic squelch
+void AGC(_squelch_enable_auto)(AGC() _q)
+{
+    _q->squelch_auto = 1;
+}
+
+// disenable automatic squelch
+void AGC(_squelch_disable_auto)(AGC() _q)
+{
+    _q->squelch_auto = 0;
+}
+
+// set squelch threshold
+void AGC(_squelch_set_threshold)(AGC() _q,
+                                 T _threshold)
+{
+    _q->squelch_threshold      = _threshold;
+    _q->squelch_threshold_auto = _q->squelch_threshold;
+}
+
+// set squelch timeout
+void AGC(_squelch_set_timeout)(AGC() _q,
+                               unsigned int _n)
+{
+    _q->squelch_timeout = _n;
+}
+
+// return squelch enabled flag
+int AGC(_squelch_is_enabled)(AGC() _q)
+{
+    return _q->squelch_enabled;
+}
+
 
 // 
 // internal methods
@@ -258,5 +328,44 @@ void AGC(_limit_gain)(AGC() _q)
         _q->g = _q->g_max;
     else if ( _q->g < _q->g_min )
         _q->g = _q->g_min;
+}
+
+// execute squelch cycle
+void AGC(_execute_squelch)(AGC() _q)
+{
+    // get rssi
+    // TODO : use linear
+    T rssi = 10*log10f( AGC(_get_signal_level)(_q) );
+
+    // determine if squelch should be enabled
+    if (rssi < _q->squelch_threshold) {
+        // signal is low : take appropriate action
+
+        // auto-squelch (monitor signal level and adjust threshold)
+        if (_q->squelch_auto) {
+            if (rssi + _q->squelch_headroom < _q->squelch_threshold_auto) {
+                _q->squelch_threshold_auto = rssi + _q->squelch_headroom;
+            }
+        }
+
+        // 
+        if (_q->squelch_enabled)
+            return;
+
+        if (_q->squelch_timer > 0) {
+            // signal low, but we haven't reached timeout yet;
+            // decrement counter and continue
+            _q->squelch_timer--;
+        } else {
+            // squelch timeout : signal has been too low for
+            // too long; set squelch_enabled flag
+            _q->squelch_enabled = 1;
+            printf("squelch enabled\n");
+        }
+    } else {
+        // signal high : clear squelch_enabled flag and reset timer
+        _q->squelch_enabled = 0;
+        _q->squelch_timer = _q->squelch_timeout;
+    }
 }
 

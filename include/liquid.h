@@ -126,7 +126,16 @@ void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
 T AGC(_get_signal_level)(AGC() _q);                             \
                                                                 \
 /* Return gain value (linear) relative to target energy */      \
-T AGC(_get_gain)(AGC() _q);
+T AGC(_get_gain)(AGC() _q);                                     \
+                                                                \
+/* squelch */                                                   \
+void AGC(_squelch_activate)(AGC() _q);                          \
+void AGC(_squelch_deactivate)(AGC() _q);                        \
+void AGC(_squelch_enable_auto)(AGC() _q);                       \
+void AGC(_squelch_disable_auto)(AGC() _q);                      \
+void AGC(_squelch_set_threshold)(AGC() _q, T _threshold);       \
+void AGC(_squelch_set_timeout)(AGC() _q, unsigned int _n);      \
+int  AGC(_squelch_is_enabled)(AGC() _q);
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)

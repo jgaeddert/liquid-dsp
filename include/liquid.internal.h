@@ -58,7 +58,10 @@ void AGC(_init)(AGC() _q);                                      \
 void AGC(_estimate_gain_default)(AGC() _q, TC _x);              \
 void AGC(_estimate_gain_log)(AGC() _q, TC _x);                  \
 void AGC(_estimate_gain_exp)(AGC() _q, TC _x);                  \
-void AGC(_limit_gain)(AGC() _q);
+void AGC(_limit_gain)(AGC() _q);                                \
+                                                                \
+/* squelch */                                                   \
+void AGC(_execute_squelch)(AGC() _q);
 
 LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
 LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
