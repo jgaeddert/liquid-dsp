@@ -41,7 +41,7 @@
 #define FRAMESYNC64_PLL_BW_0        (2e-3f)
 #define FRAMESYNC64_PLL_BW_1        (1e-4f)
 
-#define FRAMESYNC64_SQUELCH_THRESH  (-15.0f)
+#define FRAMESYNC64_SQUELCH_THRESH  (-25.0f)
 #define FRAMESYNC64_SQUELCH_TIMEOUT (32)
 
 #define FRAME64_PN_LEN              (64)
@@ -81,9 +81,7 @@ struct framesync64_s {
 
     // squelch
     float rssi;     // received signal strength indicator [dB]
-    float squelch_threshold;
-    unsigned int squelch_timeout;
-    unsigned int squelch_timer;
+    int squelch_enabled;
 
     // status variables
     enum {
@@ -141,9 +139,13 @@ framesync64 framesync64_create(
     agc_crcf_set_target(fs->agc_rx, 1.0f);
     agc_crcf_set_bandwidth(fs->agc_rx, FRAMESYNC64_AGC_BW_0);
     agc_crcf_set_gain_limits(fs->agc_rx, 1e-6, 1e4);
-    fs->squelch_threshold = FRAMESYNC64_SQUELCH_THRESH;
-    fs->squelch_timeout = FRAMESYNC64_SQUELCH_TIMEOUT;
-    fs->squelch_timer = fs->squelch_timeout;
+
+    agc_crcf_squelch_activate(fs->agc_rx);
+    agc_crcf_squelch_set_threshold(fs->agc_rx, FRAMESYNC64_SQUELCH_THRESH);
+    agc_crcf_squelch_set_timeout(fs->agc_rx, FRAMESYNC64_SQUELCH_TIMEOUT);
+
+    agc_crcf_squelch_enable_auto(fs->agc_rx);
+    fs->squelch_enabled = 0;
 
     // pll, nco
     fs->pll_rx = pll_create();
@@ -267,33 +269,23 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         // squelch: block agc output from synchronizer only if
         // 1. received signal strength indicator has not exceeded squelch
         //    threshold at any time within the past <squelch_timeout> samples
-        // 2. mode is FRAMESYNC64_STATE_SEEKPN (seek p/n sequence)
-        if (_fs->rssi < _fs->squelch_threshold &&
+        // 2. mode is FLEXFRAMESYNC_STATE_SEEKPN (seek p/n sequence)
+        if (agc_crcf_squelch_is_enabled(_fs->agc_rx) &&
             _fs->state == FRAMESYNC64_STATE_SEEKPN)
         {
-            // auto-squelch (adjust squelch threshold)
-            if (_fs->rssi + 5.0f < _fs->squelch_threshold)
-                _fs->squelch_threshold = _fs->rssi + 5.0f;
-
-            if (_fs->squelch_timer > 1) {
-                // signal low, but we haven't reached timout yet; decrement
-                // counter and continue
-                _fs->squelch_timer--;
-            } else if (_fs->squelch_timer == 1) {
-                // squelch timeout: signal has been too low for too long
-
-                //printf("squelch enabled, rssi : %6.2f dB (squelch: %6.2f dB)\n", _fs->rssi, _fs->squelch_threshold);
-                _fs->squelch_timer = 0;
+            // reset on first instance of squelch enabled
+            if (!_fs->squelch_enabled) {
+                _fs->squelch_enabled = 1;
                 framesync64_reset(_fs);
-                continue;
-            } else {
-                // squelch enabled: ignore sample (wait for high signal)
-                continue;
+                //printf("squelch enabled\n");
             }
         } else {
-            // signal high: reset timer and continue
-            _fs->squelch_timer = _fs->squelch_timeout;
+            _fs->squelch_enabled = 0;
         }
+
+        // if squelch is enabled, skip remaining of synchronizer
+        if (_fs->squelch_enabled)
+            continue;
 
         // symbol synchronizer
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
@@ -310,9 +302,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 
-            //if (_fs->rssi < _fs->squelch_threshold)
-            //    phase_error *= 0.01f;
-
             pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
             /*
             float fmax = 0.05f;
@@ -325,8 +314,6 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             fwindow_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
             cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
-            if (_fs->rssi < _fs->squelch_threshold)
-                continue;
 
             //
             switch (_fs->state) {
@@ -403,7 +390,7 @@ void framesync64_set_sym_bw0(framesync64 _fs, float _sym_bw0) { _fs->sym_bw0 = _
 void framesync64_set_sym_bw1(framesync64 _fs, float _sym_bw1) { _fs->sym_bw1 = _sym_bw1;}
 void framesync64_set_squelch_threshold(framesync64 _fs, float _squelch_threshold)
 {
-    _fs->squelch_threshold = _squelch_threshold;
+    agc_crcf_squelch_set_threshold(_fs->agc_rx, _squelch_threshold);
 }
 
 // 
