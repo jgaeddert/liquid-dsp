@@ -82,9 +82,7 @@ struct flexframesync_s {
 
     //
     float rssi;
-    float squelch_threshold;
-    unsigned int squelch_timeout;
-    unsigned int squelch_timer;
+    int squelch_enabled;
 
     // status variables
     enum {
@@ -180,9 +178,13 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     agc_crcf_set_target(fs->agc_rx, 1.0f);
     agc_crcf_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
     agc_crcf_set_gain_limits(fs->agc_rx, fs->props.agc_gmin, fs->props.agc_gmax);
-    fs->squelch_threshold = powf(10.0f,(fs->props.squelch_threshold)/10.0f);
-    fs->squelch_timeout = FLEXFRAMESYNC_SQUELCH_TIMEOUT;
-    fs->squelch_timer = fs->squelch_timeout;
+
+    agc_crcf_squelch_activate(fs->agc_rx);
+    agc_crcf_squelch_set_threshold(fs->agc_rx, fs->props.squelch_threshold);
+    agc_crcf_squelch_set_timeout(fs->agc_rx, FLEXFRAMESYNC_SQUELCH_TIMEOUT);
+
+    agc_crcf_squelch_enable_auto(fs->agc_rx);
+    fs->squelch_enabled = 0;
 
     // pll, nco
     fs->pll_rx = pll_create();
@@ -362,28 +364,22 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         // 1. received signal strength indicator has not exceeded squelch
         //    threshold at any time within the past <squelch_timeout> samples
         // 2. mode is FLEXFRAMESYNC_STATE_SEEKPN (seek p/n sequence)
-        if (_fs->rssi < _fs->squelch_threshold &&
+        if (agc_crcf_squelch_is_enabled(_fs->agc_rx) &&
             _fs->state == FLEXFRAMESYNC_STATE_SEEKPN)
         {
-            if (_fs->squelch_timer > 1) {
-                // signal low, but we haven't reached timout yet; decrement
-                // counter and continue
-                _fs->squelch_timer--;
-            } else if (_fs->squelch_timer == 1) {
-                // squelch timeout: signal has been too low for too long
-
-                //printf("squelch enabled\n");
-                _fs->squelch_timer = 0;
+            // reset on first instance of squelch enabled
+            if (!_fs->squelch_enabled) {
+                _fs->squelch_enabled = 1;
                 flexframesync_reset(_fs);
-                continue;
-            } else {
-                // squelch enabled: ignore sample (wait for high signal)
-                continue;
+                //printf("squelch enabled\n");
             }
         } else {
-            // signal high: reset timer and continue
-            _fs->squelch_timer = _fs->squelch_timeout;
+            _fs->squelch_enabled = 0;
         }
+
+        // if squelch is enabled, skip remaining of synchronizer
+        if (_fs->squelch_enabled)
+            continue;
 
         // symbol synchronizer
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
