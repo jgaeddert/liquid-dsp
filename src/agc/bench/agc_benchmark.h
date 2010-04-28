@@ -27,11 +27,11 @@
 #include "liquid.h"
 
 // helper function to keep code base small
-void agc_crcf_unlocked_bench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations,
-    liquid_agc_type _type)
+void agc_crcf_unlocked_bench(struct rusage *_start,
+                             struct rusage *_finish,
+                             unsigned long int *_num_iterations,
+                             liquid_agc_type _type,
+                             int _squelch)
 {
     unsigned int i;
 
@@ -40,6 +40,12 @@ void agc_crcf_unlocked_bench(
     agc_crcf_set_type(g,_type);
     agc_crcf_set_target(g,1.0f);
     agc_crcf_set_bandwidth(g,0.05f);
+
+    // squelch
+    if (_squelch)
+        agc_crcf_squelch_activate(g);
+    else
+        agc_crcf_squelch_deactivate(g);
 
     float complex x=1.0f, y;
 
@@ -57,15 +63,16 @@ void agc_crcf_unlocked_bench(
     agc_crcf_destroy(g);
 }
 
-#define AGC_CRCF_BENCHMARK_API(TYPE)        \
+#define AGC_CRCF_BENCHMARK_API(TYPE,SQUELCH)\
 (   struct rusage *_start,                  \
     struct rusage *_finish,                 \
     unsigned long int *_num_iterations)     \
-{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, TYPE); }
+{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, TYPE, SQUELCH); }
 
-void benchmark_agc_crcf_default     AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT)
-void benchmark_agc_crcf_log         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG)
-void benchmark_agc_crcf_exp         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP)
+void benchmark_agc_crcf_default     AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  0)
+void benchmark_agc_crcf_default_sq  AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  1)
+void benchmark_agc_crcf_log         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      0)
+void benchmark_agc_crcf_exp         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      0)
 
 
 void benchmark_agc_crcf_locked(

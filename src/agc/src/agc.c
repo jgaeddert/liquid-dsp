@@ -238,7 +238,7 @@ void AGC(_squelch_disable_auto)(AGC() _q)
 void AGC(_squelch_set_threshold)(AGC() _q,
                                  T _threshold)
 {
-    _q->squelch_threshold      = _threshold;
+    _q->squelch_threshold      = powf(10.0f,_threshold / 10.0f);
     _q->squelch_threshold_auto = _q->squelch_threshold;
 }
 
@@ -334,8 +334,7 @@ void AGC(_limit_gain)(AGC() _q)
 void AGC(_execute_squelch)(AGC() _q)
 {
     // get rssi
-    // TODO : use linear
-    T rssi = 10*log10f( AGC(_get_signal_level)(_q) );
+    T rssi = AGC(_get_signal_level)(_q);
 
     // determine if squelch should be enabled
     if (rssi < _q->squelch_threshold) {
@@ -343,8 +342,8 @@ void AGC(_execute_squelch)(AGC() _q)
 
         // auto-squelch (monitor signal level and adjust threshold)
         if (_q->squelch_auto) {
-            if (rssi + _q->squelch_headroom < _q->squelch_threshold_auto) {
-                _q->squelch_threshold_auto = rssi + _q->squelch_headroom;
+            if (rssi * _q->squelch_headroom < _q->squelch_threshold_auto) {
+                _q->squelch_threshold_auto = rssi * _q->squelch_headroom;
             }
         }
 
