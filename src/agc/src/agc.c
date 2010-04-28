@@ -360,7 +360,6 @@ void AGC(_execute_squelch)(AGC() _q)
             // squelch timeout : signal has been too low for
             // too long; set squelch_enabled flag
             _q->squelch_enabled = 1;
-            printf("squelch enabled\n");
         }
     } else {
         // signal high : clear squelch_enabled flag and reset timer
