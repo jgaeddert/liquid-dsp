@@ -54,13 +54,13 @@ struct AGC(_s) {
 
     // squelch
     int squelch_activated;          // squelch activated/deactivated?
-    int squelch_enabled;            // squelch enabled/disabled?
     int squelch_auto;               // automatic squelch?
     unsigned int squelch_timeout;   // number of samples before timing out
     unsigned int squelch_timer;     // sub-threshold counter
     T squelch_threshold_auto;       // squelch threshold (auto)
     T squelch_threshold;            // squelch threshold
     T squelch_headroom;             // nominally 4 dB
+    int squelch_status;             // status
 };
 
 
@@ -218,7 +218,7 @@ void AGC(_squelch_activate)(AGC() _q)
 void AGC(_squelch_deactivate)(AGC() _q)
 {
     _q->squelch_activated = 0;
-    _q->squelch_enabled = 0;
+    _q->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
     _q->squelch_timer = _q->squelch_timeout;
 }
 
@@ -249,10 +249,17 @@ void AGC(_squelch_set_timeout)(AGC() _q,
     _q->squelch_timeout = _n;
 }
 
-// return squelch enabled flag
+// return squelch enabled/disabled flag
+// TODO : remove this antiquated method
 int AGC(_squelch_is_enabled)(AGC() _q)
 {
-    return _q->squelch_enabled;
+    return (_q->squelch_status == LIQUID_AGC_SQUELCH_ENABLED) ? 1 : 0;
+}
+
+// return squelch status code
+int AGC(_squelch_get_status)(AGC() _q)
+{
+    return _q->squelch_status;
 }
 
 
@@ -336,34 +343,38 @@ void AGC(_execute_squelch)(AGC() _q)
     // get rssi
     T rssi = AGC(_get_signal_level)(_q);
 
-    // determine if squelch should be enabled
-    if (rssi < _q->squelch_threshold) {
-        // signal is low : take appropriate action
+    int signal_low = (rssi < _q->squelch_threshold) ? 1 : 0;
 
-        // auto-squelch (monitor signal level and adjust threshold)
-        if (_q->squelch_auto) {
-            if (rssi * _q->squelch_headroom < _q->squelch_threshold_auto) {
-                _q->squelch_threshold_auto = rssi * _q->squelch_headroom;
+    switch (_q->squelch_status) {
+        case LIQUID_AGC_SQUELCH_ENABLED:
+            // TODO : run auto-squelch
+            if (!signal_low) _q->squelch_status = LIQUID_AGC_SQUELCH_RISE;
+            break;
+        case LIQUID_AGC_SQUELCH_RISE:
+            _q->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
+            break;
+        case LIQUID_AGC_SQUELCH_SIGNALHI:
+            if (signal_low) _q->squelch_status = LIQUID_AGC_SQUELCH_FALL;
+            break;
+        case LIQUID_AGC_SQUELCH_FALL:
+            _q->squelch_status = LIQUID_AGC_SQUELCH_SIGNALLO;
+            _q->squelch_timer = _q->squelch_timeout;
+            break;
+        case LIQUID_AGC_SQUELCH_SIGNALLO:
+            if (!signal_low) {
+                _q->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
+            } else if (_q->squelch_timer > 0) {
+                _q->squelch_timer--;
+            } else {
+                _q->squelch_status = LIQUID_AGC_SQUELCH_TIMEOUT;
             }
-        }
-
-        // 
-        if (_q->squelch_enabled)
-            return;
-
-        if (_q->squelch_timer > 0) {
-            // signal low, but we haven't reached timeout yet;
-            // decrement counter and continue
-            _q->squelch_timer--;
-        } else {
-            // squelch timeout : signal has been too low for
-            // too long; set squelch_enabled flag
-            _q->squelch_enabled = 1;
-        }
-    } else {
-        // signal high : clear squelch_enabled flag and reset timer
-        _q->squelch_enabled = 0;
-        _q->squelch_timer = _q->squelch_timeout;
+            break;
+        case LIQUID_AGC_SQUELCH_TIMEOUT:
+            _q->squelch_status = LIQUID_AGC_SQUELCH_ENABLED;
+            break;
+        default:
+            fprintf(stderr, "error: agc_xxxt_execute_squelch(), invalid squelch code: %d\n", _q->squelch_status);
+            exit(1);
     }
 }
 

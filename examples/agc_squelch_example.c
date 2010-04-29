@@ -62,12 +62,12 @@ int main() {
     for (i=0; i<num_samples; i++) {
         agc_crcf_execute(p, x[i], &y[i]);
         rssi[i] = agc_crcf_get_signal_level(p);
-        squelch[i] = agc_crcf_squelch_is_enabled(p);
+        squelch[i] = agc_crcf_squelch_get_status(p);
 
         if ( ((i+1)%d) == 0 )
             printf("%4u: %12.8f %c\n", i+1,
                                        rssi[i],
-                                       squelch[i] ? '*' : ' ');
+                                       squelch[i]==LIQUID_AGC_SQUELCH_ENABLED ? '*' : ' ');
 
     }
     agc_crcf_destroy(p);
@@ -84,6 +84,8 @@ int main() {
         fprintf(fid,"squelch(%4u) = %d;\n", i+1, squelch[i]);
     }
 
+    fprintf(fid,"squelch_enabled = (squelch == 0);\n");
+
     fprintf(fid,"\n\n");
     fprintf(fid,"n = length(x);\n");
     fprintf(fid,"t = 0:(n-1);\n");
@@ -97,8 +99,8 @@ int main() {
     fprintf(fid,"  xlabel('sample index');\n");
     fprintf(fid,"  ylabel('rssi [dB]');\n");
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(t,real(y),t,imag(y),t,squelch,'-r');\n");
-    //fprintf(fid,"  plot(t,real(y).*(1-squelch),t,imag(y).*(1-squelch));\n");
+    fprintf(fid,"  plot(t,real(y),t,imag(y),t,squelch_enabled,'-r');\n");
+    //fprintf(fid,"  plot(t,real(y).*(1-squelch_enabled),t,imag(y).*(1-squelch_enabled));\n");
     fprintf(fid,"  xlabel('sample index');\n");
     fprintf(fid,"  ylabel('output');\n");
     fclose(fid);

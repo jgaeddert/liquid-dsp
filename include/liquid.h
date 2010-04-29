@@ -88,6 +88,16 @@ typedef enum {
     LIQUID_AGC_EXP          // exponential gain attack/release
 } liquid_agc_type;
 
+// agc squelch status codes
+enum {
+    LIQUID_AGC_SQUELCH_ENABLED=0,   // squelch enabled
+    LIQUID_AGC_SQUELCH_RISE,        // rising edge trigger
+    LIQUID_AGC_SQUELCH_SIGNALHI,    // signal high
+    LIQUID_AGC_SQUELCH_FALL,        // falling edge trigger
+    LIQUID_AGC_SQUELCH_SIGNALLO,    // signal low, but no timeout
+    LIQUID_AGC_SQUELCH_TIMEOUT      // signal low, timed out
+};
+
 #define AGC_MANGLE_CRCF(name)   LIQUID_CONCAT(agc_crcf, name)
 #define AGC_MANGLE_RRRF(name)   LIQUID_CONCAT(agc_rrrf, name)
 
@@ -135,7 +145,8 @@ void AGC(_squelch_enable_auto)(AGC() _q);                       \
 void AGC(_squelch_disable_auto)(AGC() _q);                      \
 void AGC(_squelch_set_threshold)(AGC() _q, T _threshold);       \
 void AGC(_squelch_set_timeout)(AGC() _q, unsigned int _n);      \
-int  AGC(_squelch_is_enabled)(AGC() _q);
+int  AGC(_squelch_is_enabled)(AGC() _q);                        \
+int  AGC(_squelch_get_status)(AGC() _q);
 
 // Define agc APIs
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
