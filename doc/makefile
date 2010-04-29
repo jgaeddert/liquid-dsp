@@ -117,6 +117,7 @@ clean-lib:
 figures_generated :=
 
 # modem figures
+include figures.agc.mk
 include figures.filter.mk
 include figures.modem.mk
 
