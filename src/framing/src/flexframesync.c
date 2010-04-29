@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -82,7 +83,7 @@ struct flexframesync_s {
 
     //
     float rssi;
-    int squelch_enabled;
+    int squelch_status;
 
     // status variables
     enum {
@@ -184,7 +185,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     agc_crcf_squelch_set_timeout(fs->agc_rx, FLEXFRAMESYNC_SQUELCH_TIMEOUT);
 
     agc_crcf_squelch_enable_auto(fs->agc_rx);
-    fs->squelch_enabled = 0;
+    fs->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
 
     // pll, nco
     fs->pll_rx = pll_create();
@@ -364,21 +365,15 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         // 1. received signal strength indicator has not exceeded squelch
         //    threshold at any time within the past <squelch_timeout> samples
         // 2. mode is FLEXFRAMESYNC_STATE_SEEKPN (seek p/n sequence)
-        if (agc_crcf_squelch_is_enabled(_fs->agc_rx) &&
-            _fs->state == FLEXFRAMESYNC_STATE_SEEKPN)
-        {
-            // reset on first instance of squelch enabled
-            if (!_fs->squelch_enabled) {
-                _fs->squelch_enabled = 1;
-                flexframesync_reset(_fs);
-                //printf("squelch enabled\n");
-            }
-        } else {
-            _fs->squelch_enabled = 0;
-        }
-
+        _fs->squelch_status = agc_crcf_squelch_get_status(_fs->agc_rx);
+#ifdef DEBUG_FLEXFRAMESYNC_PRINT
+        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT)
+            printf("squelch active\n");
+#endif
         // if squelch is enabled, skip remaining of synchronizer
-        if (_fs->squelch_enabled)
+        // NOTE : if squelch is deactivated, the default status
+        //        value is LIQUID_AGC_SQUELCH_SIGNALHI
+        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_ENABLED)
             continue;
 
         // symbol synchronizer
@@ -432,6 +427,10 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     flexframesync_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, cargf(rxy));
                     symsync_crcf_lock(_fs->mfdecim);
+
+                    // deactivate squelch as not to suppress signal in the
+                    // middle of the frame
+                    agc_crcf_squelch_deactivate(_fs->agc_rx);
                     _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
                 }
                 break;
@@ -496,6 +495,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 // open bandwidth
                 _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
                 agc_crcf_unlock(_fs->agc_rx);
+                agc_crcf_squelch_activate(_fs->agc_rx);
                 symsync_crcf_unlock(_fs->mfdecim);
                 flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;

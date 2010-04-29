@@ -81,7 +81,7 @@ struct framesync64_s {
 
     // squelch
     float rssi;     // received signal strength indicator [dB]
-    int squelch_enabled;
+    int squelch_status;
 
     // status variables
     enum {
@@ -145,7 +145,7 @@ framesync64 framesync64_create(
     agc_crcf_squelch_set_timeout(fs->agc_rx, FRAMESYNC64_SQUELCH_TIMEOUT);
 
     agc_crcf_squelch_enable_auto(fs->agc_rx);
-    fs->squelch_enabled = 0;
+    fs->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
 
     // pll, nco
     fs->pll_rx = pll_create();
@@ -270,21 +270,15 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         // 1. received signal strength indicator has not exceeded squelch
         //    threshold at any time within the past <squelch_timeout> samples
         // 2. mode is FLEXFRAMESYNC_STATE_SEEKPN (seek p/n sequence)
-        if (agc_crcf_squelch_is_enabled(_fs->agc_rx) &&
-            _fs->state == FRAMESYNC64_STATE_SEEKPN)
-        {
-            // reset on first instance of squelch enabled
-            if (!_fs->squelch_enabled) {
-                _fs->squelch_enabled = 1;
-                framesync64_reset(_fs);
-                //printf("squelch enabled\n");
-            }
-        } else {
-            _fs->squelch_enabled = 0;
-        }
-
+        _fs->squelch_status = agc_crcf_squelch_get_status(_fs->agc_rx);
+#if DEBUG_FRAMESYNC64_PRINT
+        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT)
+            printf("squelch active\n");
+#endif
         // if squelch is enabled, skip remaining of synchronizer
-        if (_fs->squelch_enabled)
+        // NOTE : if squelch is deactivated, the default status
+        //        value is LIQUID_AGC_SQUELCH_SIGNALHI
+        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_ENABLED)
             continue;
 
         // symbol synchronizer
@@ -328,6 +322,10 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
                     nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
+
+                    // deactivate squelch as not to suppress signal in the
+                    // middle of the frame
+                    agc_crcf_squelch_deactivate(_fs->agc_rx);
                     _fs->state = FRAMESYNC64_STATE_RXHEADER;
                 }
                 break;
@@ -368,6 +366,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
             case FRAMESYNC64_STATE_RESET:
                 // open bandwidth
                 framesync64_open_bandwidth(_fs);
+                agc_crcf_squelch_activate(_fs->agc_rx);
                 _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 _fs->num_symbols_collected = 0;
 

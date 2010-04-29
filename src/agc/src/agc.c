@@ -249,13 +249,6 @@ void AGC(_squelch_set_timeout)(AGC() _q,
     _q->squelch_timeout = _n;
 }
 
-// return squelch enabled/disabled flag
-// TODO : remove this antiquated method
-int AGC(_squelch_is_enabled)(AGC() _q)
-{
-    return (_q->squelch_status == LIQUID_AGC_SQUELCH_ENABLED) ? 1 : 0;
-}
-
 // return squelch status code
 int AGC(_squelch_get_status)(AGC() _q)
 {
