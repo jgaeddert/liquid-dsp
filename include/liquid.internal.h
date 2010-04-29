@@ -998,20 +998,7 @@ LIQUID_POLY_DEFINE_INTERNAL_API(POLY_MANGLE_CFLOAT,
 #define LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX,T)             \
 T    MATRIX(_det2x2)(T * _x,                                    \
                      unsigned int _rx,                          \
-                     unsigned int _cx);                         \
-void MATRIX(_gjelim)(T * _x,                                    \
-                     unsigned int _rx,                          \
-                     unsigned int _cx);                         \
-void MATRIX(_pivot)(T * _x,                                     \
-               unsigned int _rx,                                \
-               unsigned int _cx,                                \
-               unsigned int _r,                                 \
-               unsigned int _c);                                \
-void MATRIX(_swaprows)(T * _x,                                  \
-                  unsigned int _rx,                             \
-                  unsigned int _cx,                             \
-                  unsigned int _r1,                             \
-                  unsigned int _r2);
+                     unsigned int _cx);
 
 
 LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_FLOAT,   float)

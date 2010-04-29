@@ -2296,6 +2296,19 @@ void MATRIX(_ones)(T * _x,                                      \
 void MATRIX(_zeros)(T * _x,                                     \
                     unsigned int _r,                            \
                     unsigned int _c);                           \
+void MATRIX(_gjelim)(T * _x,                                    \
+                     unsigned int _rx,                          \
+                     unsigned int _cx);                         \
+void MATRIX(_pivot)(T * _x,                                     \
+               unsigned int _rx,                                \
+               unsigned int _cx,                                \
+               unsigned int _r,                                 \
+               unsigned int _c);                                \
+void MATRIX(_swaprows)(T * _x,                                  \
+                  unsigned int _rx,                             \
+                  unsigned int _cx,                             \
+                  unsigned int _r1,                             \
+                  unsigned int _r2);                            \
 void MATRIX(_linsolve)(T * _A,                                  \
                        unsigned int _r,                         \
                        T * _b,                                  \
