@@ -28,7 +28,9 @@
 #include "liquid.internal.h"
 
 // real, even DFT: DCT-II
-void dct(float * _x, float * _y, unsigned int _n)
+void dct(float * _x,
+         float * _y,
+         unsigned int _n)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -44,7 +46,9 @@ void dct(float * _x, float * _y, unsigned int _n)
 }
 
 // real, even iDFT: DCT-III
-void idct(float * _x, float * _y, unsigned int _n)
+void idct(float * _x,
+          float * _y,
+          unsigned int _n)
 {
     // ugly, slow method
     unsigned int i,k;
@@ -60,7 +64,9 @@ void idct(float * _x, float * _y, unsigned int _n)
 }
 
 // DCT-IV
-void dct_typeIV(float * _x, float * _y, unsigned int _n)
+void dct_typeIV(float * _x,
+                float * _y,
+                unsigned int _n)
 {
     // ugly, slow method
     unsigned int i,k;

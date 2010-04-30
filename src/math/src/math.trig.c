@@ -29,6 +29,7 @@
 
 #include "liquid.internal.h"
 
+#if 0
 #define LIQUID_SINF_POLYORD (4)
 static float liquid_sinf_poly[LIQUID_SINF_POLYORD] = {
   -0.113791698328739f,
@@ -36,6 +37,7 @@ static float liquid_sinf_poly[LIQUID_SINF_POLYORD] = {
    1.026821728423492f,
    0.000000000000000f
 };
+#endif
 
 void liquid_sincosf(float _x,
                     float * _sinf,

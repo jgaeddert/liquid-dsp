@@ -30,7 +30,10 @@
 #include "liquid.internal.h"
 
 // 
-void mdct(float * _x, float * _X, float * _w, unsigned int _N)
+void mdct(float * _x,
+          float * _X,
+          float * _w,
+          unsigned int _N)
 {
     // ugly, slow method
 
@@ -80,7 +83,10 @@ void mdct(float * _x, float * _X, float * _w, unsigned int _N)
 }
 
 // 
-void imdct(float * _X, float * _x, float * _w, unsigned int _N)
+void imdct(float * _X,
+           float * _x,
+           float * _w,
+           unsigned int _N)
 {
     // ugly, slow method
 

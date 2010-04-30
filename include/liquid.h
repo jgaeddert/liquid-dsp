@@ -778,6 +778,7 @@ void asgram_execute(asgram _q);
 // real, even DFT: DCT-II
 void  dct(float *_x, float * _y, unsigned int _n);
 void idct(float *_x, float * _y, unsigned int _n);
+void dct_typeIV(float *_x, float * _y, unsigned int _n);
 
 // modified discrete cosine transform
 void  mdct(float *_x, float * _X, float * _w, unsigned int _N);
