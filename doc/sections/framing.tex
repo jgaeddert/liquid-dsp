@@ -5,3 +5,28 @@
 \section{framing}
 \label{module:framing}
 
+\subsection{packetizer}
+
+The liquid packetizer is a structure for abstracting multi-level forward
+error-correction from the user.
+The packetizer accepts a buffer of uncoded data bytes and adds a 32-bit
+cyclic redundancy check (crc) before applying two levels of forward error-
+correction and bit-level interleaving.  The user may choose any two 
+supported FEC schemes (including none) and the packetizer object will
+handle buffering and data management internally, providing a truly abstract
+interface.  The same is true for the packet decoder which accepts an array
+of possibly corrupt data and attempts to recover the original message using
+the FEC schemes provided.  The packet decoder returns the validity of the
+resulting CRC as well as its best effort of decoding the message.
+
+The packetizer also allows for re-structuring if the user wishes to change
+error-correction schemes or data lengths.  This is accomplished with the
+{\tt packetier\_recreate()} method.
+
+Here is a minimal example demonstrating the packetizer's most basic
+functionality:
+\input{listings/packetizer.example.c.tex}
+
+See also: fec module, {\tt examples/packetizer\_example.c}
+
+

@@ -39,7 +39,8 @@ LISTINGS = 					\
 	listings/gport.indirect.example.c.tex	\
 	listings/interp.example.c.tex		\
 	listings/matrix.example.c.tex		\
-	listings/nco.c++.tex
+	listings/nco.c++.tex			\
+	listings/packetizer.example.c.tex
 
 # .tex inputs
 SECTIONS :=					\
