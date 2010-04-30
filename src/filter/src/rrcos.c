@@ -48,7 +48,7 @@
   \f[ 
     h\left[z\right] =
       4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
-                    \sin\left[(1+\beta)\pi z\right] / (4\beta z) }
+                    \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
                   { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
   \f]
 
@@ -58,19 +58,18 @@
   undefined in the above equation, viz.
 
   \f[
-    \mathop {\lim }\limits_{z \to 0 } h(z) =
-      \frac{ 4\beta \left[ 1 + \frac{1-\beta\pi }{ 4\beta } \right] }
-           { \pi\sqrt{T}\left( 1-16\beta^2 z^2 \right) }
+    \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
   \f]
 
   and
 
   \f[
     \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
-        \frac{(1+\beta)}{2\pi}\sin\left[\frac{(1+\beta)\pi}{4\beta}\right]
-      - \frac{(1-\beta)}{2}\cos\left[\frac{(1-\beta)\pi}{4\beta}\right]
-      + \frac{2\beta}{\pi}\sin\left[\frac{(1-\beta)\pi}{4\beta}\right]
-
+        \frac{\beta}{\sqrt{2}}
+        \left[
+            \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
+            \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
+        \right]
   \f]
 
   \param[in]  _k         samples per symbol
@@ -119,9 +118,8 @@ void design_rrc_filter(
         t2 = sinf((1-_beta)*M_PI*z);
 
         // Check for special condition where z equals zero
-        if ( fabsf(z) < 1e-3 ) {
-            t4 = 4*_beta/(M_PI*sqrtf(T)*(1-(16*_beta*_beta*z*z)));
-            _h[n] = t4*( 1 + (1-_beta)*M_PI/(4*_beta) );
+        if ( fabsf(z) < 1e-5 ) {
+            _h[n] = 1 - _beta + 4*_beta/M_PI;
         } else {
             t3 = 1/((4*_beta*z));
 
@@ -129,14 +127,13 @@ void design_rrc_filter(
             g *= g;
 
             // Check for special condition where 16*_beta^2*z^2 equals 1
-            if ( g < 1e-3 ) {
+            if ( g < 1e-5 ) {
                 float g1, g2, g3, g4;
-                g1 = -(1+_beta)*M_PI*sinf((1+_beta)*M_PI/(4*_beta));
-                g2 = cosf((1-_beta)*M_PI/(4*_beta))*(1-_beta)*M_PI;
-                g3 = -sinf((1-_beta)*M_PI/(4*_beta))*4*_beta;
-                g4 = -2*M_PI;
-
-                _h[n] = (g1+g2+g3)/g4;
+                g1 = 1 + 2.0f/M_PI;
+                g2 = sinf(0.25f*M_PI/_beta);
+                g3 = 1 - 2.0f/M_PI;
+                g4 = cosf(0.25f*M_PI/_beta);
+                _h[n] = _beta/sqrtf(2.0f)*(g1*g2 + g3*g4);
             } else {
                 t4 = 4*_beta/(M_PI*sqrtf(T)*(1-(16*_beta*_beta*z*z)));
                 _h[n] = t4*( t1 + (t2*t3) );
