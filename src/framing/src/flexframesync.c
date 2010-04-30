@@ -366,7 +366,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         //    threshold at any time within the past <squelch_timeout> samples
         // 2. mode is FLEXFRAMESYNC_STATE_SEEKPN (seek p/n sequence)
         _fs->squelch_status = agc_crcf_squelch_get_status(_fs->agc_rx);
-#ifdef DEBUG_FLEXFRAMESYNC_PRINT
+#if DEBUG_FLEXFRAMESYNC_PRINT
         if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT)
             printf("squelch active\n");
 #endif
