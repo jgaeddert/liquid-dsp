@@ -373,8 +373,12 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         // if squelch is enabled, skip remaining of synchronizer
         // NOTE : if squelch is deactivated, the default status
         //        value is LIQUID_AGC_SQUELCH_SIGNALHI
-        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_ENABLED)
+        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT) {
+            // reset on timeout (very important!)
+            flexframesync_reset(_fs);
+        } else if (_fs->squelch_status == LIQUID_AGC_SQUELCH_ENABLED) {
             continue;
+        }
 
         // symbol synchronizer
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
