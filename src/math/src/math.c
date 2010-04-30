@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -28,10 +29,25 @@
 
 #include "liquid.internal.h"
 
-// TODO : this method is not accurate enough for computing Bessel polynomials
-float liquid_lngammaf(float _z) {
-    float g = 0.5*( logf(2*M_PI)-log(_z) );
-    g += _z*( logf(_z+(1/(12.0f*_z-0.1f/_z)))-1);
+#define NUM_LNGAMMA_ITERATIONS (16)
+#define EULER_GAMMA            (0.57721566490153286)
+float liquid_lngammaf(float _z)
+{
+    float g;
+    if (_z < 0.46f) {
+        // low value approximation
+        g = -logf(_z) - EULER_GAMMA*_z;
+        unsigned int n;
+        float z_by_n;   // value of z/n
+        for (n=1; n<NUM_LNGAMMA_ITERATIONS; n++) {
+            z_by_n = _z / (float)n;
+            g += -logf(1.0f + z_by_n) + z_by_n;
+        }
+    } else {
+        // high value approximation
+        g = 0.5*( logf(2*M_PI)-log(_z) );
+        g += _z*( logf(_z+(1/(12.0f*_z-0.1f/_z)))-1);
+    }
     return g;
 }
 
