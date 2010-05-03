@@ -29,12 +29,15 @@
 
 #include "liquid.internal.h"
 
-#define NUM_LNGAMMA_ITERATIONS (16)
+#define NUM_LNGAMMA_ITERATIONS (64)
 #define EULER_GAMMA            (0.57721566490153286)
 float liquid_lngammaf(float _z)
 {
     float g;
-    if (_z < 0.46f) {
+    if (_z < 0) {
+        fprintf(stderr,"error: liquid_lngammaf(), undefined for z <= 0\n");
+        exit(1);
+    } else if (_z < 0.60) {
         // low value approximation
         g = -logf(_z) - EULER_GAMMA*_z;
         unsigned int n;
@@ -51,8 +54,22 @@ float liquid_lngammaf(float _z)
     return g;
 }
 
-float liquid_gammaf(float _z) {
-    return expf( liquid_lngammaf(_z) );
+float liquid_gammaf(float _z)
+{
+    if (_z < 0) {
+        // use identities
+        //  (1) gamma(z)*gamma(-z) = -pi / (z*sin(pi*z))
+        //  (2) z*gamma(z) = gamma(1+z)
+        //
+        // therefore:
+        //  gamma(z) = pi / ( gamma(1-z) * sin(pi*z) )
+        float t0 = liquid_gammaf(1.0 - _z);
+        float t1 = sinf(M_PI*_z);
+        // TODO : first check for singularities before dividing
+        return M_PI / (t0 * t1);
+    } else {
+        return expf( liquid_lngammaf(_z) );
+    }
 }
 
 float liquid_factorialf(unsigned int _n) {

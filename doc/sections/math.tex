@@ -9,12 +9,25 @@ and polynomial operations
 
 {\tt liquid\_lngammaf}
 \[
-    \ln(\Gamma(z)) \approx
-    \frac{z}{2} \ln\left( \frac{2\pi}{z} \right)
-    \left(
-        \ln\left(z + \frac{1}{12 z - 0.1/z} \right) - 1
-    \right)
+    \ln\left[ \Gamma(z) \right] \approx
+    \begin{cases}
+    % undefined for z < 0
+        \text{undefined}
+        & z < 0 \\
+    % low signal approximation
+        -\ln(z) - \gamma z - \sum_{n=1}^{\infty} {
+            \left[ \ln(1 + z/n) -z/n\right]
+        }
+        & 0 \le z < 0.6 \\
+    % high signal approximation
+        \frac{z}{2} \ln\left( \frac{2\pi}{z} \right)
+        \left(
+            \ln\left(z + \frac{1}{12 z - 0.1/z} \right) - 1
+        \right)
+        & z \ge 0.6
+    \end{cases}
 \]
+where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
 
 {\tt liquid\_sincf}
 \[ \sinc(z) = \frac{\sin(\pi z)}{\pi z} \]
