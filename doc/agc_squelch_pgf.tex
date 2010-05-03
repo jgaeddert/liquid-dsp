@@ -28,40 +28,46 @@
     \def\threshold{0.3} % squelch threshold
     \def\rise{0.354}    % rising edge
     \def\fall{1.430}    % falling edge
-    \def\timeout{1.7}   % timeout
+    \def\timeout{1.8}   % timeout
     %\draw[step=2.5mm,help lines] (0,0) grid (2,1);
 
     % axis 
-    \draw[very thick, black,->] (-0.05, 0.0 ) -- (2,0)
-        node[below=1em] {{\it time}};
-    \draw[very thick, black,->] ( 0.0, -0.05) -- (0,1)
-        node[left=1em,rotate=90] {{\it signal strength}};
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (2,0) node[anchor=south] {{\it time}};
+    \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1) node[left=7pt,rotate=90] {{\it signal strength}};
 
     % draw curve
-    \draw plot[very thick,black] file {figures.gen/agc_squelch_pgf.dat};
+    \draw[thick,black] plot[very thick,black] file {figures.gen/agc_squelch_pgf.dat};
 
     % draw squelch threshold line
     \draw[thin, gray] (-0.02, \threshold) -- (2,\threshold)
-        node[black,above=2pt] {squelch threshold};
+        node[black,anchor=south] {{\it squelch threshold}};
 
     % intersection lines
-    \draw[thin,gray] (\rise,   \threshold) -- (\rise,   -0.02);
-    \draw[thin,gray] (\fall,   \threshold) -- (\fall,   -0.02);
-    \draw[thin,gray] (\timeout,\threshold) -- (\timeout,-0.02);
+    \draw[thin,gray] (\rise,   \threshold)      -- (\rise,   -0.02);
+    \draw[thin,gray] (\fall,   \threshold)      -- (\fall,   -0.02);
+    \draw[thin,gray] (\timeout,\threshold)      -- (\timeout,-0.02);
+    \draw[thin,gray] (\fall,   \threshold+0.02) -- (\fall,   \threshold+0.1);
+    \draw[thin,gray] (\timeout,\threshold+0.02) -- (\timeout,\threshold+0.1)
+        node[anchor=east,black] {{\it timeout}};
+    \draw[thin,gray,->] (\fall,\threshold+0.07) -- (\timeout,\threshold+0.07);
 
     % intersection points
     \draw[fill=black] (\rise,   \threshold) circle (0.1pt);
     \draw[fill=black] (\fall,   \threshold) circle (0.1pt);
     \draw[fill=black] (\timeout,\threshold) circle (0.1pt);
 
+    \draw (\rise,   \threshold) circle (0.25pt);
+    \draw (\fall,   \threshold) circle (0.25pt);
+    \draw (\timeout,\threshold) circle (0.25pt);
+
     % squelch code labels
-    \def\q{-0.1};
+    \def\q{-0.05};
     \path (0.00, \q) node[anchor=east] {{\it agc code:\,\,}}
           (0.00, \q) node {{\tt 0}}
           (0.05, \q) node {{\tt 0}}
-          (0.10, \q) node {{\tt 0}}
+          %(0.10, \q) node {{\tt 0}}
           (0.15, \q) node {$\cdots$}
-          (0.20, \q) node {{\tt 0}}
+          %(0.20, \q) node {{\tt 0}}
           (0.25, \q) node {{\tt 0}}
           (0.30, \q) node {{\tt 0}}
           (\rise,\q) node {{\tt 1}}
@@ -77,6 +83,7 @@
           (\fall,      \q) node {{\tt 3}}
           (\fall+0.05, \q) node {{\tt 4}}
           (\fall+0.10, \q) node {{\tt 4}}
+          (0.5*\fall+0.5*\timeout, \q) node {$\cdots$}
           (\timeout-0.10,   \q) node {{\tt 4}}
           (\timeout-0.05,   \q) node {{\tt 4}}
           (\timeout,        \q) node {{\tt 5}}
