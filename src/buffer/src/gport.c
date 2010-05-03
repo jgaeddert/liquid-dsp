@@ -54,6 +54,7 @@ struct gport_s {
 
     // other
     pthread_mutex_t internal_mutex;
+    int eom;
 };
 
 // create gport object
@@ -96,6 +97,7 @@ gport gport_create(unsigned int _n, unsigned int _size)
 
     // internal
     pthread_mutex_init(&p->internal_mutex,NULL);
+    p->eom = 0;
 
     return p;
 }
@@ -103,6 +105,9 @@ gport gport_create(unsigned int _n, unsigned int _size)
 // destroy gport object and free all internal memory
 void gport_destroy(gport _p)
 {
+    // broadcast eom signal
+    gport_signal_eom(_p);
+
     // producer
     pthread_mutex_destroy(&_p->producer_mutex);
     pthread_cond_destroy(&_p->producer_data_ready);
@@ -144,15 +149,16 @@ void gport_print(gport _p)
 //  _p      :   gport object
 //  _w      :   external data buffer [size: 1 x _n]
 //  _n      :   number of elements to produce (size of _w)
-void gport_produce(gport _p,
-                   void * _w,
-                   unsigned int _n)
+// returns status
+int gport_produce(gport _p,
+                  void * _w,
+                  unsigned int _n)
 {
     unsigned int num_produced;
     unsigned int num_produced_total = 0;
 
     // produce samples as they become available
-    while (_n > 0) {
+    while (_n > 0 && !_p->eom) {
         // produce maximum number of samples available
         gport_produce_available(_p,
                                  _w + num_produced_total*_p->size,
@@ -162,6 +168,8 @@ void gport_produce(gport _p,
         num_produced_total += num_produced;
         _n -= num_produced;
     }
+
+    return _p->eom;
 }
 
 // produce available data (indirect memory access)
@@ -169,17 +177,18 @@ void gport_produce(gport _p,
 //  _w      :   external data buffer [size: 1 x _nmax]
 //  _nmax   :   number of elements in _w
 //  _np     :   returned number of elements in _w produced by _p
-void gport_produce_available(gport _p,
-                             void * _w,
-                             unsigned int _nmax,
-                             unsigned int *_np)
+// returns status
+int gport_produce_available(gport _p,
+                            void * _w,
+                            unsigned int _nmax,
+                            unsigned int *_np)
 {
     // lock mutexes
     pthread_mutex_lock(&(_p->producer_mutex));
     pthread_mutex_lock(&(_p->internal_mutex));
 
     // wait until at least one element is available
-    while (_p->num_write_elements_available == 0) {
+    while (_p->num_write_elements_available == 0 && !_p->eom) {
         // set flag signaling that the producer is waiting for data
         _p->producer_waiting = true;
 
@@ -190,8 +199,16 @@ void gport_produce_available(gport _p,
         pthread_cond_wait(&(_p->producer_data_ready),
                           &(_p->internal_mutex));
     }
+
     // clear producer waiting flag
     _p->producer_waiting = false;
+
+    if (_p->eom) {
+        pthread_mutex_unlock(&(_p->internal_mutex));
+        pthread_mutex_unlock(&(_p->producer_mutex));
+        *_np = 0;
+        return _p->eom;
+    }
 
     // set return value (number of samples we have produced)
     unsigned int n = (_p->num_write_elements_available > _nmax) ?
@@ -232,6 +249,7 @@ void gport_produce_available(gport _p,
     // release mutexes
     pthread_mutex_unlock(&(_p->internal_mutex));
     pthread_mutex_unlock(&(_p->producer_mutex));
+    return _p->eom;
 }
 
 // 
@@ -312,15 +330,16 @@ void gport_producer_unlock(gport _p,
 //  _p      :   gport object
 //  _r      :   external data buffer [size: 1 x _n]
 //  _n      :   number of elements to consume (size of _r)
-void gport_consume(gport _p,
-                   void * _r,
-                   unsigned int _n)
+// returns status
+int gport_consume(gport _p,
+                  void * _r,
+                  unsigned int _n)
 {
     unsigned int num_consumed;
     unsigned int num_consumed_total = 0;
 
     // consume samples as they become available
-    while (_n > 0) {
+    while (_n > 0 && !_p->eom) {
         // consume maximum number of samples available
         gport_consume_available(_p,
                                  _r + num_consumed_total*_p->size,
@@ -330,6 +349,8 @@ void gport_consume(gport _p,
         num_consumed_total += num_consumed;
         _n -= num_consumed;
     }
+
+    return _p->eom;
 }
 
 // produce available data (indirect memory access)
@@ -337,17 +358,18 @@ void gport_consume(gport _p,
 //  _r      :   external data buffer [size: 1 x _nmax]
 //  _nmax   :   number of elements in _r
 //  _nc     :   returned number of elements in _r consumed by _p
-void gport_consume_available(gport _p,
-                             void * _r,
-                             unsigned int _nmax,
-                             unsigned int *_nc)
+// returns status
+int gport_consume_available(gport _p,
+                            void * _r,
+                            unsigned int _nmax,
+                            unsigned int *_nc)
 {
     // lock mutexes
     pthread_mutex_lock(&(_p->consumer_mutex));
     pthread_mutex_lock(&(_p->internal_mutex));
 
     // wait until at least one element is available
-    while (_p->num_read_elements_available == 0) {
+    while (_p->num_read_elements_available == 0 && !_p->eom) {
         // set flag signaling that consumer is waiting for data
         _p->consumer_waiting = true;
 
@@ -358,8 +380,16 @@ void gport_consume_available(gport _p,
         pthread_cond_wait(&(_p->consumer_data_ready),
                           &(_p->internal_mutex));
     }
+
     // clear consumer waiting flag
     _p->consumer_waiting = false;
+
+    if (_p->eom) {
+        pthread_mutex_unlock(&(_p->internal_mutex));
+        pthread_mutex_unlock(&(_p->consumer_mutex));
+        *_nc = 0;
+        return _p->eom;
+    }
 
     // set return value (number of samples we have consumed)
     unsigned int n = (_p->num_read_elements_available > _nmax) ?
@@ -402,6 +432,7 @@ void gport_consume_available(gport _p,
     // release mutexes
     pthread_mutex_unlock(&(_p->internal_mutex));
     pthread_mutex_unlock(&(_p->consumer_mutex));
+    return _p->eom;
 }
 
 // 
@@ -472,3 +503,22 @@ void gport_consumer_unlock(gport _p,
     pthread_mutex_unlock(&_p->consumer_mutex);
 }
 
+void gport_signal_eom(gport _p)
+{
+    // lock internal mutex
+    pthread_mutex_lock(&(_p->internal_mutex));
+
+    // signal eom
+    _p->eom = 1;
+
+    // producer: signal condition if waiting for data
+    if (_p->producer_waiting)
+        pthread_cond_signal(&(_p->producer_data_ready));
+
+    // consumer: signal condition if waiting for data
+    if (_p->consumer_waiting)
+        pthread_cond_signal(&(_p->consumer_data_ready));
+
+    // unlock internal mutex
+    pthread_mutex_unlock(&(_p->internal_mutex));
+}

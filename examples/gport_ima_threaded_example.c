@@ -30,7 +30,7 @@ int main()
     void * status;
     
     // create port: interface between threads
-    gport p = gport_create(PRODUCER_SIZE+CONSUMER_SIZE, sizeof(unsigned int));
+    gport p = gport_create(10, sizeof(unsigned int));
     
     // set thread attributes
     pthread_attr_init(&thread_attr);
@@ -58,18 +58,28 @@ void producer_handler ( void *_ptr )
     gport p = (gport) _ptr;
     unsigned int i, j, n=0;
     int w[PRODUCER_SIZE];
+    int eom;
 
-    for (i=0; i<CONSUMER_SIZE; i++) {
+    for (i=0; i<10; i++) {
         for (j=0; j<PRODUCER_SIZE; j++)
             w[j] = n++;
 
         printf("  producer waiting for %u samples...\n", PRODUCER_SIZE);
-        gport_produce(p,(void*)w,PRODUCER_SIZE);
+        eom = gport_produce(p,(void*)w,PRODUCER_SIZE);
+
+        if (eom) {
+            printf("producer received eom\n");
+            break;
+        }
 
         printf("  producer waiting %u ms\n", PRODUCER_TIMER);
         usleep(PRODUCER_TIMER*1000);
     }
     
+    // give consumer time to finish reading buffer, then broadcast eom
+    usleep(300000);
+    gport_signal_eom(p);
+
     printf("  producer exiting thread\n");
     pthread_exit(0); // exit thread
 }
@@ -80,14 +90,24 @@ void consumer_handler ( void *_ptr )
     gport p = (gport) _ptr;
     unsigned int i, j, n=0;
     int r[CONSUMER_SIZE];
+    int eom;
 
-    for (i=0; i<PRODUCER_SIZE; i++) {
+    for (i=0; i<10; i++) {
         printf("  consumer waiting for %u samples...\n", CONSUMER_SIZE);
-        gport_consume(p,(void*)r,CONSUMER_SIZE);
+        eom = gport_consume(p,(void*)r,CONSUMER_SIZE);
+
+        if (eom) {
+            printf("consumer received eom\n");
+            break;
+        }
 
         for (j=0; j<CONSUMER_SIZE; j++)
             printf("  %3u: %d\n", n++, r[j]);
     }
+
+    // give producer time to finish writing buffer, then broadcast eom
+    usleep(300000);
+    gport_signal_eom(p);
 
     printf("  consumer exiting thread\n");
     pthread_exit(0); // exit thread

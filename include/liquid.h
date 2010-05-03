@@ -407,19 +407,21 @@ void gport_producer_unlock(gport _p, unsigned int _n);
 //  _p      :   gport object
 //  _w      :   external data buffer [size: 1 x _n]
 //  _n      :   number of elements to produce (size of _w)
-void gport_produce(gport _p,
-                   void * _w,
-                   unsigned int _n);
+// returns status
+int gport_produce(gport _p,
+                  void * _w,
+                  unsigned int _n);
 
 // produce available data (indirect memory access)
 //  _p      :   gport object
 //  _w      :   external data buffer [size: 1 x _nmax]
 //  _nmax   :   number of elements in _w
 //  _np     :   returned number of elements in _w produced by _p
-void gport_produce_available(gport _p,
-                             void * _w,
-                             unsigned int _nmax,
-                             unsigned int *_np);
+// returns status
+int gport_produce_available(gport _p,
+                            void * _w,
+                            unsigned int _nmax,
+                            unsigned int *_np);
 
 
 // consumer methods
@@ -441,19 +443,24 @@ void gport_consumer_unlock(gport _p, unsigned int _n);
 //  _p      :   gport object
 //  _r      :   external data buffer [size: 1 x _n]
 //  _n      :   number of elements to consume (size of _r)
-void gport_consume(gport _p,
-                   void * _r,
-                   unsigned int _n);
+// returns status
+int gport_consume(gport _p,
+                  void * _r,
+                  unsigned int _n);
 
 // produce available data (indirect memory access)
 //  _p      :   gport object
 //  _r      :   external data buffer [size: 1 x _nmax]
 //  _nmax   :   number of elements in _r
 //  _nc     :   returned number of elements in _r consumed by _p
-void gport_consume_available(gport _p,
-                             void * _r,
-                             unsigned int _nmax,
-                             unsigned int *_nc);
+// returns status
+int gport_consume_available(gport _p,
+                            void * _r,
+                            unsigned int _nmax,
+                            unsigned int *_nc);
+
+// broadcast eom signal
+void gport_signal_eom(gport _p);
 
 #if 0
 enum {
