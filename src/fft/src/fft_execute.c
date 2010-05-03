@@ -61,6 +61,7 @@ void FFT(_execute_radix2)(FFT(plan) _p)
     TC t, yp, *y=_p->y;
     T phi, d_phi;
     unsigned int n1=0, n2=1;
+    // TODO : store twiddle factors internallly
     for (i=0; i<_p->m; i++) {
         n1 = n2;
         n2 *= 2;
