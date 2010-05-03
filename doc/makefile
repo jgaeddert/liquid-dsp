@@ -129,6 +129,17 @@ figures: $(figures_generated)
 clean-figures:
 	$(RM) figures.gen/*
 
+## 
+## PGF
+##
+src/agc_squelch_pgf.o	: src/agc_squelch_pgf.c $(lib_objects)
+src/agc_squelch_pgf	: src/agc_squelch_pgf.o
+figures.gen/agc_squelch_pgf.dat : src/agc_squelch_pgf
+	./$<
+
+figures.gen/agc_squelch_pgf.pdf : agc_squelch_pgf.tex figures.gen/agc_squelch_pgf.dat
+	pdflatex agc_squelch_pgf.tex
+	mv agc_squelch_pgf.pdf figures.gen/
 
 ##
 ## DOCUMENT
