@@ -45,7 +45,15 @@ struct INTERP(_s) {
     //DOTPROD() dp;
 };
 
-INTERP() INTERP(_create)(unsigned int _M, TC *_h, unsigned int _h_len)
+// interp_xxxt_create()
+//
+// create interpolator
+//  _M      :   interpolation factor
+//  _h      :   filter coefficients array [size: 1 x _h_len]
+//  _h_len  :   filter length
+INTERP() INTERP(_create)(unsigned int _M,
+                         TC *_h,
+                         unsigned int _h_len)
 {
     INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
     q->h_len = _h_len;
@@ -63,8 +71,17 @@ INTERP() INTERP(_create)(unsigned int _M, TC *_h, unsigned int _h_len)
     return q;
 }
 
-
-INTERP() INTERP(_create_rrc)(unsigned int _k, unsigned int _m, float _beta, float _dt)
+// interp_xxxt_create_rrc()
+//
+// create root raised-cosine interpolator
+//  _k      :   samples/symbol _k > 1
+//  _m      :   filter delay (symbols), _m > 0
+//  _beta   :   excess bandwidth factor, 0 < _beta < 1
+//  _dt     :   fractional sample delay, 0 <= _dt < 1
+INTERP() INTERP(_create_rrc)(unsigned int _k,
+                             unsigned int _m,
+                             float _beta,
+                             float _dt)
 {
     // generate rrc filter
     unsigned int h_len = 2*_k*_m + 1;
@@ -109,6 +126,7 @@ INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
 }
 #endif
 
+// destroy interpolator object
 void INTERP(_destroy)(INTERP() _q)
 {
     WINDOW(_destroy)(_q->w);
@@ -116,6 +134,7 @@ void INTERP(_destroy)(INTERP() _q)
     free(_q);
 }
 
+// print interpolator state
 void INTERP(_print)(INTERP() _q)
 {
     printf("interp() [%u] :\n", _q->M);
@@ -123,13 +142,22 @@ void INTERP(_print)(INTERP() _q)
     WINDOW(_print)(_q->w);
 }
 
+// clear internal state
 void INTERP(_clear)(INTERP() _q)
 {
     WINDOW(_clear)(_q->w);
 }
 
+// interp_xxxt_execute()
+//
+// execute interpolator
+//  _q      :   interpolator object
+//  _x      :   input sample
+//  _y      :   output buffer [size: 1 x _M]
 // TODO : only compute necessary multiplications in interp_xxt_execute
-void INTERP(_execute)(INTERP() _q, TI _x, TO *_y)
+void INTERP(_execute)(INTERP() _q,
+                      TI _x,
+                      TO *_y)
 {
     TI * r; // read pointer
 

@@ -1350,12 +1350,13 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
 #define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
 typedef struct INTERP(_s) * INTERP();                           \
 INTERP() INTERP(_create)(unsigned int _M,                       \
-              TC *_h,                                           \
-              unsigned int _h_len);                             \
+                         TC *_h,                                \
+                         unsigned int _h_len);                  \
+/* create root raised-cosine interpolator */                    \
 INTERP() INTERP(_create_rrc)(unsigned int _k,                   \
-                   unsigned int _m,                             \
-                   float _beta,                                 \
-                   float _dt);                                  \
+                             unsigned int _m,                   \
+                             float _beta,                       \
+                             float _dt);                        \
 void INTERP(_destroy)(INTERP() _q);                             \
 void INTERP(_print)(INTERP() _q);                               \
 void INTERP(_clear)(INTERP() _q);                               \
