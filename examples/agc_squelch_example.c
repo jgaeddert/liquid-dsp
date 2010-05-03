@@ -27,6 +27,7 @@ int main() {
     agc_crcf_squelch_activate(p);
     agc_crcf_squelch_set_threshold(p,noise_floor+5.0f);
     agc_crcf_squelch_set_timeout(p,16);
+    agc_crcf_squelch_enable_auto(p);
 
     unsigned int i;
     float complex x[num_samples];

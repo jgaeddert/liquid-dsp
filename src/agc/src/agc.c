@@ -59,7 +59,7 @@ struct AGC(_s) {
     unsigned int squelch_timer;     // sub-threshold counter
     T squelch_threshold_auto;       // squelch threshold (auto)
     T squelch_threshold;            // squelch threshold
-    T squelch_headroom;             // nominally 4 dB
+    //T squelch_headroom;             // nominally 4 dB
     int squelch_status;             // status
 };
 
@@ -84,7 +84,7 @@ AGC() AGC(_create)()
     _q->is_locked = 0;
 
     // squelch
-    _q->squelch_headroom = 4.0f;
+    //_q->squelch_headroom = 4.0f;
     AGC(_squelch_disable_auto)(_q);
     AGC(_squelch_set_threshold)(_q, -30.0f);
     AGC(_squelch_set_timeout)(_q, 32);
@@ -330,6 +330,26 @@ void AGC(_limit_gain)(AGC() _q)
         _q->g = _q->g_min;
 }
 
+// update automatic squelch threshold
+void AGC(_update_auto_squelch)(AGC() _q,
+                               T _rssi)
+{
+    // if rssi dips too low (roughly 3dB below threshold),
+    // decrease threshold slightly
+    if (_rssi < _q->squelch_threshold * 0.4f) {
+        _q->squelch_threshold *= 0.8f;
+#if 0
+        printf("agc auto-squelch threshold : %12.8f dB\n", 10*log10f(_q->squelch_threshold));
+#endif
+    }
+#if 0
+    else {
+        // continuously increase threshold
+        _q->squelch_threshold *= 1.00001f;
+    }
+#endif
+}
+
 // execute squelch cycle
 void AGC(_execute_squelch)(AGC() _q)
 {
@@ -340,7 +360,9 @@ void AGC(_execute_squelch)(AGC() _q)
 
     switch (_q->squelch_status) {
         case LIQUID_AGC_SQUELCH_ENABLED:
-            // TODO : run auto-squelch
+            // update auto-squelch threshold
+            if (_q->squelch_auto) AGC(_update_auto_squelch)(_q, rssi);
+
             if (!signal_low) _q->squelch_status = LIQUID_AGC_SQUELCH_RISE;
             break;
         case LIQUID_AGC_SQUELCH_RISE:
@@ -364,6 +386,7 @@ void AGC(_execute_squelch)(AGC() _q)
             break;
         case LIQUID_AGC_SQUELCH_TIMEOUT:
             _q->squelch_status = LIQUID_AGC_SQUELCH_ENABLED;
+            //printf("squelch enabled\n");
             break;
         default:
             fprintf(stderr, "error: agc_xxxt_execute_squelch(), invalid squelch code: %d\n", _q->squelch_status);
