@@ -141,6 +141,8 @@ figures.gen/agc_squelch_pgf.pdf : agc_squelch_pgf.tex figures.gen/agc_squelch_pg
 	pdflatex agc_squelch_pgf.tex
 	mv agc_squelch_pgf.pdf figures.gen/
 
+figures_generated += figures.gen/agc_squelch_pgf.pdf
+
 ##
 ## DOCUMENT
 ##

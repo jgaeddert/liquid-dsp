@@ -85,9 +85,50 @@ and proportional to the gain error.
 Notice that when the error is zero ($\|y(n)\| = \bar{e}$),
 $\hat{g}(n+1) = \hat{g}$
 
-\subsection{Usage}
-Basic usage:
-\input{listings/agc.example.c.tex}
+\subsection{Squelch}
+The {\tt agc} module contains internal squelch control to allow the
+controlling unit the ability to disable signal processing when the signal
+level is too low.
+In traditional radio design, the squelch circuit was used to suppress the
+output of a receiver when the signal strength falls below a certain level,
+primarily used to disable annoying static due to noise when no other operators
+were transmitting.
+Having said that, he squelch control in \liquid\ is actually somewhat of a
+misnomer as it doesn't actually control the AGC, but rather just monitors the
+dynamics of the signal level and returns its status to the controlling unit.
+The squelch control follows six states
+(enabled, rising edge trigger, signal high, falling edge trigger,
+signal low, and timeout)
+as depicted in
+Figure~\ref{fig:module:agc:squelch} and
+Table~\ref{tab:module:agc:squelch_codes}.
+These states give the user flexibility in programming networks where packets
+are transmitted in short bursts and the receiver needs to synchronize quickly.
+The status of the squelch control is retrived via the
+{\tt agc\_crcf\_squelch\_get\_status()} method.
+
+The typical control cycle for the AGC squelch is depicted in
+Figure~\ref{fig:module:agc:squelch}.
+Initially, squelch is enabled (code {\tt 0}) as the signal has been low for
+quite some time.
+When the beginning of a packet is received, the RSSI increases beyond the
+squelch threshold (code {\tt 1}).
+All subsequent samples above this threshold return a ``signal high'' status
+(code {\tt 2}).
+Once the signal level falls below the threshold, the squelch returns a
+``falling edge trigger'' status (code {\tt 4}).
+All subsequent samples below the threshold until timing out return a ``signal
+low'' status (code {\tt 4}).
+When the signal has been low for a sufficient period of time (defined by the
+user), the squelch will return a ``timeout'' status (code {\tt 5}).
+All subsequent samples below the threshold will return a ``squelch enabled''
+status.
+
+\subsubsection{methodology}
+The reason for all six states (as opposed to just ``squelch on'' and ``squelch
+off'') are to allow for complex scenarios...
+
+\subsubsection{auto-squelch}
 
 \begin{figure}
 \centering
@@ -96,4 +137,30 @@ Basic usage:
 \label{fig:module:agc:squelch}
 \end{figure}
 
+
+% ------------ TABLE: AGC SQUELCH CODES ------------
+\begin{table}[!ht]
+\caption{{\tt agc} squelch codes}
+\label{tab:module:agc:squelch_codes}
+\centering
+\begin{tabular*}{0.95\textwidth}{@{\extracolsep{\fill}}lll}
+
+\hline\hline \\[-6pt]
+{\bf code} & {\bf id} & {\bf description} \\[6pt]
+\hline \\[-6pt]
+{\tt 0} & {\tt LIQUID\_AGC\_SQUELCH\_ENABLED}    & squelch enabled \\
+{\tt 1} & {\tt LIQUID\_AGC\_SQUELCH\_RISE}       & rising edge trigger \\
+{\tt 2} & {\tt LIQUID\_AGC\_SQUELCH\_SIGNALHI}   & signal level high \\
+{\tt 3} & {\tt LIQUID\_AGC\_SQUELCH\_FALL}       & falling edge trigger \\
+{\tt 4} & {\tt LIQUID\_AGC\_SQUELCH\_SIGNALLO}   & signal level low, but no timeout \\
+{\tt 5} & {\tt LIQUID\_AGC\_SQUELCH\_TIMEOUT}    & signal level low, timeout \\ \\[-6pt]
+
+\hline\hline
+\end{tabular*}
+\end{table}%
+% ------------------------
+
+\subsection{Usage}
+Basic usage:
+\input{listings/agc.example.c.tex}
 
