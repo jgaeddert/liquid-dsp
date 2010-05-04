@@ -1,5 +1,12 @@
 //
-// Packetizer example
+// packetizer_example.c
+//
+// Demonstrates the functionality of the packetizer object.  Data are encoded
+// using two forward error-correction schemes (an inner and outer code) before
+// data errors are introduced.  The decoder then tries to recover the original
+// data message.
+// SEE ALSO: fec_example.c
+//           crc_example.c
 //
 
 #include <stdio.h>

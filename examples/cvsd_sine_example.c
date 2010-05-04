@@ -1,5 +1,11 @@
 //
+// cvsd_sine_example.c
 //
+// Continuously-variable slope delta example, sinusoidal input.
+// This example demonstrates the CVSD audio encoder interface, and
+// its response to a sinusoidal input.  The output distortion
+// ratio is computed, and the time-domain results are written to
+// a file.
 //
 
 #include <stdio.h>

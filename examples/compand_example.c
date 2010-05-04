@@ -1,5 +1,5 @@
 //
-//
+// compand_example.c
 //
 
 #include <stdio.h>

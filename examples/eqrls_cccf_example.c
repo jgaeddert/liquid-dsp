@@ -1,10 +1,8 @@
-// file: eqrls_cccf_example.c
+// 
+// eqrls_cccf_example.c
 //
-// Tests recursive least-squares equalizer
+// Tests recursive least-squares (RLS) equalizer (EQ).
 //
-// Complile and run:
-//   $ gcc eqrls_cccf_example.c -lliquid -o eqrls_cccf_example
-//   $ ./eqrls_cccf_example
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,16 @@
 //
-// Arbitrary resampler
+// dds_cccf_example.c
+//
+// Direct digital synthesizer example.  This example demonstrates
+// the interface to the direct digital synthesizer.  A baseband
+// pulse is generated and then efficiently up-converted
+// (interpolated and mixed up) using the DDS object.  The resulting
+// signal is then down-converted (mixed down and decimated) using
+// the same DDS object.  Results are written to a file.
+// SEE ALSO: interp_crcf_example.c
+//           decim_crcf_example.c
+//           resamp2_crcf_example.c
+//           nco_example.c
 //
 
 #include <stdio.h>

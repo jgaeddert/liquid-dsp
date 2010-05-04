@@ -1,10 +1,8 @@
-// file: eqlms_cccf_example.c
+// 
+// eqlms_cccf_example.c
 //
-// Tests least mean-squares equalizer
+// Tests least mean-squares (LMS) equalizer (EQ).
 //
-// Complile and run:
-//   $ gcc eqlms_cccf_example.c -lliquid -o eqlms_cccf_example
-//   $ ./eqlms_cccf_example
 
 #include <stdio.h>
 #include <stdlib.h>

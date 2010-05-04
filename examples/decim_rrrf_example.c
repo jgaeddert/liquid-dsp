@@ -1,5 +1,5 @@
 //
-//
+// decim_rrrf_example.c
 //
 
 #include <stdio.h>

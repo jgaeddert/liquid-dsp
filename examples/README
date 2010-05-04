@@ -43,6 +43,7 @@ ann_maxnet_example.c
    separate two input patterns in a 2-dimensional plane.
     
 ann_node_example.c
+
 ann_xor_example.c
     Artificial neural network (ann) eXclusive OR example. This example
     demonstrates the functionality of the ann  module by training a simple
@@ -60,16 +61,56 @@ asgram_example.c
     resulting frequency response is printed to the screen.
 
 autocorr_cccf_example.c
+
 bsequence_example.c
+
 buffer_example.c
+
 cfbuffer_example.c
+
 checksum_example.c
+    This example demonstrates how a checksum can be used to validate data
+    received through un-reliable means (e.g. a noisy channel). A checksum is,
+    in essence, a weak error detection code that simply counts the number of
+    ones in a block of data (modulo 256). The limitation, however, is that
+    multiple bit errors might result in a false positive validation of the
+    corrupted data.  For a much much stronger eror detection, use the cyclic
+    redundancy check.
+    SEE ALSO: crc_example.c
+              fec_example.c
+
 chromosome_example.c
+
 compand_cf_example.c
+
 compand_example.c
+
 crc_example.c
+    Cyclic redundancy check (CRC) example.  This example demonstrates how a
+    CRC can be used to validate data received through un-reliable means (e.g.
+    a noisy channel).  A CRC is, in essence, a strong algebraic error
+    detection code that computes a key on a block of data using base-2
+    polynomials.
+    SEE ALSO: checksum_example.c
+              fec_example.c
 cvsd_sine_example.c
+    Continuously-variable slope delta example, sinusoidal input. This example
+    demonstrates the CVSD audio encoder interface, and its response to a
+    sinusoidal input.  The output distortion ratio is computed, and the
+    time-domain results are written to a file.
+
 dds_cccf_example.c
+    Direct digital synthesizer example.  This example demonstrates the
+    interface to the direct digital synthesizer.  A baseband pulse is
+    generated and then efficiently up-converted (interpolated and mixed up)
+    using the DDS object.  The resulting signal is then down-converted (mixed
+    down and decimated) using the same DDS object.  Results are written to a
+    file.
+    SEE ALSO: interp_crcf_example.c
+              decim_crcf_example.c
+              resamp2_crcf_example.c
+              nco_example.c
+
 decim_rrrf_example.c
 dotprod_cccf_example.c
 dotprod_rrrf_example.c
@@ -132,7 +173,15 @@ ofdmoqam_firpfbch_example.c
 ofdmoqamframe64gen_example.c
 ofdmoqamframe64sync_example.c
 optim_ps_example.c
-packetizer_example.c
+
+packetizer_example.c *
+    Demonstrates the functionality of the packetizer object.  Data are encoded
+    using two forward error-correction schemes (an inner and outer code)
+    before data errors are introduced.  The decoder then tries to recover the
+    original data message.
+    SEE ALSO: fec_example.c
+              crc_example.c
+
 pll_example.c
 pnsync_crcf_example.c
 pnsync_rrrf_example.c
