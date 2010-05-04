@@ -106,7 +106,8 @@ void AGC(_print)(AGC() _q)
 void AGC(_reset)(AGC() _q)
 {
     _q->e_prime = 1.0f;
-    _q->e_hat = 1.0f;
+    _q->e_hat   = 1.0f;
+    _q->g       = 1.0f;
 
     AGC(_unlock)(_q);
 }
@@ -291,12 +292,11 @@ void AGC(_estimate_gain_log)(AGC() _q, TC _x)
     _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
     _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
 
-    // loop filter : compute log
-    T gain_ideal = _q->e_target / _q->e_hat;
-    T log_gain_error = logf(gain_ideal) - logf(_q->g);
+    // loop filter : compute gain error
+    T gain_error = _q->e_target / (_q->e_hat * _q->g);
 
     // adjust gain proportional to log of error
-    _q->g *= expf(_q->alpha * log_gain_error);
+    _q->g *= powf(gain_error, _q->alpha);
 }
 
 void AGC(_estimate_gain_exp)(AGC() _q, TC _x)
@@ -314,10 +314,10 @@ void AGC(_estimate_gain_exp)(AGC() _q, TC _x)
 
     if (e_out > _q->e_target) {
         // decrease gain proportional to energy difference
-        _q->g *= 1.0f - sqrtf(_q->alpha) * (e_out - _q->e_target) / e_out;
+        _q->g *= 1.0f - _q->alpha * (e_out - _q->e_target) / e_out;
     } else {
         // increase gain proportional to energy difference
-        _q->g *= 1.0f - sqrtf(_q->alpha) * (e_out - _q->e_target) / _q->e_target;
+        _q->g *= 1.0f - _q->alpha * (e_out - _q->e_target) / _q->e_target;
     }
 }
 
