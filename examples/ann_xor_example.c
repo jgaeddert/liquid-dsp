@@ -1,11 +1,16 @@
 //
 // ann_xor_example.c
 //
-// artificial neural network (ann) eXclusive OR example
-//
-// This example demonstrates the functionality of the ann
-// module by training a simple network to learn the output
-// of an exclusive or (xor) circuit.
+// Artificial neural network (ann) eXclusive OR example. This
+// example demonstrates the functionality of the ann  module by
+// training a simple network to learn the output of an exclusive
+// or (xor) circuit:
+//      x   y   |   z
+//      --------+-----
+//      0   0   |   0
+//      0   1   |   1
+//      1   0   |   1
+//      1   1   |   0
 //
 
 #include <stdio.h>

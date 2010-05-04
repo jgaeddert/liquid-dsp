@@ -4,30 +4,6 @@
 
 local_dir	:= examples
 local_src	:=			\
-	dds_cccf_example.c		\
-	resamp_crcf_example.c		\
-	resamp2_crcf_decim_example.c	\
-	resamp2_crcf_interp_example.c	\
-	resamp2_crcf_interp_recreate_example.c	\
-	symsync2_crcf_example.c		\
-	symsync_crcf_example.c		\
-	symsynclp_crcf_example.c	\
-	decim_rrrf_example.c		\
-	fir_farrow_rrrf_example.c	\
-	fir_filter_rrrf_example.c	\
-	fir_filter_rrrf_recreate_example.c	\
-	firdes_kaiser_example.c		\
-	firdespm_example.c		\
-	firpfb_rrrf_example.c		\
-	hilbert_decim_example.c		\
-	hilbert_interp_example.c	\
-	iirdes_example.c		\
-	iirdes_analog_example.c		\
-	iir_filter_crcf_example.c	\
-	interp_crcf_example.c		\
-	matched_filter_example.c	\
-	symsync_rrrf_example.c		\
-					\
 	agc_example.c			\
 	agc_qpsk_example.c		\
 	agc_squelch_example.c		\
@@ -48,6 +24,8 @@ local_src	:=			\
 	compand_cf_example.c		\
 	crc_example.c			\
 	cvsd_sine_example.c		\
+	dds_cccf_example.c		\
+	decim_rrrf_example.c		\
 	dotprod_rrrf_example.c		\
 	dotprod_cccf_example.c		\
 	eqlms_cccf_example.c		\
@@ -61,6 +39,12 @@ local_src	:=			\
 	fec_example.c			\
 	fct_example.c			\
 	fft_example.c			\
+	fir_farrow_rrrf_example.c	\
+	fir_filter_rrrf_example.c	\
+	fir_filter_rrrf_recreate_example.c	\
+	firdes_kaiser_example.c		\
+	firdespm_example.c		\
+	firpfb_rrrf_example.c		\
 	firpfbch_example.c		\
 	firpfbch_analysis_example.c	\
 	firpfbch_synthesis_example.c	\
@@ -74,12 +58,19 @@ local_src	:=			\
 	gport_ima_example.c		\
 	gport_ima_threaded_example.c	\
 	gradient_search_example.c	\
+	hilbert_decim_example.c		\
+	hilbert_interp_example.c	\
 	interleaver_example.c		\
+	iirdes_example.c		\
+	iirdes_analog_example.c		\
 	iirqmfb_crcf_example.c		\
+	iir_filter_crcf_example.c	\
+	interp_crcf_example.c		\
 	itqmfb_crcf_example.c		\
 	itqmfb_rrrf_example.c		\
 	kbd_window_example.c		\
 	kmeans_example.c		\
+	matched_filter_example.c	\
 	matrix_example.c		\
 	math_lngamma_example.c		\
 	mdct_example.c			\
@@ -109,8 +100,16 @@ local_src	:=			\
 	quantize_example.c		\
 	quasinewton_search_example.c	\
 	random_example.c		\
+	resamp_crcf_example.c		\
+	resamp2_crcf_decim_example.c	\
+	resamp2_crcf_interp_example.c	\
+	resamp2_crcf_interp_recreate_example.c	\
 	ricek_channel_example.c		\
-	scramble_example.c
+	scramble_example.c		\
+	symsync2_crcf_example.c		\
+	symsync_crcf_example.c		\
+	symsync_rrrf_example.c		\
+	symsynclp_crcf_example.c
 #	metadata_example.c		\
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))

@@ -1,7 +1,9 @@
+// 
 // ampmodem_test.c
 //
-// Tests simple modulation/demodulation with noise,
-// carrier phase, and carrier frequency offsets
+// Tests simple modulation/demodulation of the ampmodem (analog
+// amplitude modulator/demodulator) with noise, carrier phase,
+// and carrier frequency offsets.
 //
 
 #include <stdlib.h>

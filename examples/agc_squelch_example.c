@@ -1,5 +1,10 @@
 //
-// Automatic gain control with squelch example
+// agc_squelch_example.c
+//
+// Automatic gain control with squelch example.  This example demonstrates
+// the squelch control functionality of the AGC module.  Squelch is used
+// to suppress the output of the AGC when the signal level drops below a
+// certain threshold.
 //
 
 #include <stdio.h>

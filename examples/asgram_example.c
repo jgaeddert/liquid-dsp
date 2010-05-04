@@ -1,6 +1,10 @@
 //
 // asgram_example.c
 //
+// ASCII spectrogram example.  This example demonstrates the functionality
+// of the ASCII spectrogram.  A sweeping complex sinusoid is generated and
+// the resulting frequency response is printed to the screen.
+//
 
 #include <unistd.h> // usleep
 #include <stdio.h>

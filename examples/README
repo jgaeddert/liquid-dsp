@@ -1,0 +1,158 @@
+==============================================================================
+ liquid examples
+==============================================================================
+
+This directory contains all the examples for interfacing the liquid modules.
+Some examples permit command-line options.  These scripts are denoted with an
+asterisk (*).
+
+TODO: finish descriptions
+
+agc_example.c
+    Automatic gain control example demonstrating the transient responses
+    between the three AGC types (LIQUID_AGC_DEFAULT, LIQUID_AGC_LOG,
+    LIQUID_AGC_EXP).
+
+agc_qpsk_example.c
+    Automatic gain control test for data signals with fluctuating signal
+    levels.  QPSK modulation introduces periodic random zero-crossings which
+    gives instantaneous amplitude levels near zero.  This example tests the
+    response of the AGC to these types of signals.
+
+agc_squelch_example.c
+    Automatic gain control with squelch example.  This example demonstrates
+    the squelch control functionality of the AGC module.  Squelch is used to
+    suppress the output of the AGC when the signal level drops below a certain
+    threshold.
+
+ampmodem_example.c
+    Tests simple modulation/demodulation of the ampmodem (analog amplitude
+    modulator/demodulator) with noise, carrier phase, and carrier frequency
+    offsets.
+
+ann_example.c
+    Artificial neural network (ann) example. This example demonstrates the
+    functionality of the ann module by training a simple network to learn the
+    output of a continuous function.
+
+ann_layer_example.c
+
+ann_maxnet_example.c
+   Artificial neural network (ann) maxnet example. This example demonstrates
+   the functionality of the ann maxnet by training a network to recognize and
+   separate two input patterns in a 2-dimensional plane.
+    
+ann_node_example.c
+ann_xor_example.c
+    Artificial neural network (ann) eXclusive OR example. This example
+    demonstrates the functionality of the ann  module by training a simple
+    network to learn the output of an exclusive or (xor) circuit:
+        x   y   |   z
+        --------+-----
+        0   0   |   0
+        0   1   |   1
+        1   0   |   1
+        1   1   |   0
+
+asgram_example.c
+    ASCII spectrogram example.  This example demonstrates the functionality of
+    the ASCII spectrogram.  A sweeping complex sinusoid is generated and the
+    resulting frequency response is printed to the screen.
+
+autocorr_cccf_example.c
+bsequence_example.c
+buffer_example.c
+cfbuffer_example.c
+checksum_example.c
+chromosome_example.c
+compand_cf_example.c
+compand_example.c
+crc_example.c
+cvsd_sine_example.c
+dds_cccf_example.c
+decim_rrrf_example.c
+dotprod_cccf_example.c
+dotprod_rrrf_example.c
+eqlms_cccf_example.c
+eqrls_cccf_example.c
+fading_channel_example.c
+fading_generator_example.c
+fbasc_example.c
+fbuffer_example.c
+fct_example.c
+fec_example.c
+fft_example.c
+fir_farrow_rrrf_example.c
+fir_filter_rrrf_example.c
+fir_filter_rrrf_recreate_example.c
+firdes_kaiser_example.c
+firdespm_example.c
+firpfb_rrrf_example.c
+firpfbch_analysis_example.c
+firpfbch_example.c
+firpfbch_synthesis_example.c
+flexframesync_example.c
+framegen64_example.c
+framesync64_example.c
+freqmodem_example.c
+fwdelay_example.c
+fwindow_example.c
+ga_search_example.c
+gport_dma_example.c
+gport_dma_threaded_example.c
+gport_ima_example.c
+gport_ima_threaded_example.c
+gradient_search_example.c
+hilbert_decim_example.c
+hilbert_interp_example.c
+iir_filter_crcf_example.c
+iirdes_analog_example.c
+iirdes_example.c
+iirqmfb_crcf_example.c
+interleaver_example.c
+interp_crcf_example.c
+itqmfb_crcf_example.c
+itqmfb_rrrf_example.c
+kbd_window_example.c
+kmeans_example.c
+matched_filter_example.c
+math_lngamma_example.c
+matrix_example.c
+mdct_example.c
+metadata_example.c
+modem_arb_example.c
+modem_example.c
+nco_example.c
+ofdmframe64gen_example.c
+ofdmframe64sync_example.c
+ofdmframegen_example.c
+ofdmframesync_example.c
+ofdmoqam_example.c
+ofdmoqam_firpfbch_example.c
+ofdmoqamframe64gen_example.c
+ofdmoqamframe64sync_example.c
+optim_ps_example.c
+packetizer_example.c
+pll_example.c
+pnsync_crcf_example.c
+pnsync_rrrf_example.c
+poly_findroots_bairstow_example.c
+poly_findroots_example.c
+polyfit_example.c
+polyfit_lagrange_example.c
+prqmfb_crcf_example.c
+qmfb_crcf_analysis_example.c
+qmfb_crcf_synthesis_example.c
+quantize_example.c
+quasinewton_search_example.c
+random_example.c
+resamp2_crcf_decim_example.c
+resamp2_crcf_interp_example.c
+resamp2_crcf_interp_recreate_example.c
+resamp_crcf_example.c
+ricek_channel_example.c
+scramble_example.c
+symsync2_crcf_example.c
+symsync_crcf_example.c
+symsync_rrrf_example.c
+symsynclp_crcf_example.c

@@ -1,5 +1,10 @@
 //
-// Automatic gain control test
+// agc_qpsk_example.c
+//
+// Automatic gain control test for data signals with fluctuating signal
+// levels.  QPSK modulation introduces periodic random zero-crossings
+// which gives instantaneous amplitude levels near zero.  This example
+// tests the response of the AGC to these types of signals.
 //
 
 #include <stdio.h>

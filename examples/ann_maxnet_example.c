@@ -1,11 +1,10 @@
 // 
 // ann_maxnet_example.c
 //
-// artificial neural network (ann) maxnet example
-//
-// This example demonstrates the functionality of the ann
-// maxnet by training a network to recognize and separate
-// two input patterns in a 2-dimensional plane.
+// Artificial neural network (ann) maxnet example. This example 
+// demonstrates the functionality of the ann maxnet by training
+// a network to recognize and separate two input patterns in a
+// 2-dimensional plane.
 //
 
 #include <stdio.h>

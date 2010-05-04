@@ -1,11 +1,9 @@
 //
 // ann_example.c
 //
-// artificial neural network (ann) example
-//
-// This example demonstrates the functionality of the ann
-// module by training a simple network to learn the output
-// of a function.
+// Artificial neural network (ann) example. This example demonstrates
+// the functionality of the ann module by training a simple network
+// to learn the output of a continuous function.
 //
 
 #include <stdio.h>
