@@ -2,6 +2,14 @@
 // iirdes_analog_example.c
 //
 // Tests infinite impulse reponse (IIR) analog filter design.
+// While this example seems purely academic as IIR filters
+// used in liquid are all digital, it is important to realize
+// that they are all derived from their analog counterparts.
+// This example serves to check the response of the analog
+// filters to ensure they are correct.  The results of design
+// are written to a file.
+// SEE ALSO: iirdes_example.c
+//           iir_filter_crcf_example.c
 //
 
 #include <stdio.h>

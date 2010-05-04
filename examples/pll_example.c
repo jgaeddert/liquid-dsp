@@ -1,8 +1,8 @@
 //
 // pll_example.c
 // 
-// Demonstrates a basic phase-locked loop to track the
-// phase of a sinusoid.
+// Demonstrates a basic phase-locked loop to track the phase of a
+// complex sinusoid.
 //
 
 #include <stdio.h>

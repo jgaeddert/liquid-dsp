@@ -1,5 +1,7 @@
 // 
-// Test matrixf ops
+// matrix_example.c
+//
+// This example demonstrates basic matrix operations.
 //
 
 #include <stdio.h>

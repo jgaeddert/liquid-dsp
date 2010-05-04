@@ -1,7 +1,7 @@
 // 
 // polyfit_example.c
 //
-// Test polynomial fit to sample data
+// Test polynomial fit to sample data.
 //
 
 #include <stdio.h>
