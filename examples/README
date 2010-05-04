@@ -121,13 +121,36 @@ fading_generator_example.c
 fbasc_example.c
 fbuffer_example.c
 fct_example.c
+
 fec_example.c
+    This example demonstrates the interface for forward error-correction (FEC)
+    codes.  A buffer of data bytes is encoded and corrupted with several
+    errors.  The decoder then attempts to recover the original data set.  The
+    user may select the FEC scheme from the command-line interface.
+    SEE ALSO: crc_example.c
+              checksum_example.c
+              packetizer_example.c
+
 fft_example.c
+    This example demonstrates the interface to the fast discrete Fourier
+    transform (FFT).
+    SEE ALSO: mdct_example.c
+              fct_example.c
+
 fir_farrow_rrrf_example.c
 fir_filter_rrrf_example.c
 fir_filter_rrrf_recreate_example.c
+
 firdes_kaiser_example.c
+    This example demonstrates finite impulse response filter design using a
+    Kaiser window.
+    SEE ALSO: firdespm_example.c
+
 firdespm_example.c
+    This example demonstrates finite impulse response filter design using the
+    Parks-McClellan algorithm.
+    SEE ALSO: firdes_kaiser_example.c
+
 firpfb_rrrf_example.c
 firpfbch_analysis_example.c
 firpfbch_example.c
@@ -144,8 +167,24 @@ gport_dma_threaded_example.c
 gport_ima_example.c
 gport_ima_threaded_example.c
 gradient_search_example.c
+
 hilbert_decim_example.c
+    Hilbert transform: 2:1 real-to-complex decimator.  This example
+    demonstrates the functionality of firhilb (finite impulse response Hilbert
+    transform) decimator which converts a real time series into a complex one
+    with half the number of samples.  The input is a real-valued sinusoid of N
+    samples. The output is a complex-valued sinusoid of N/2 samples.
+    SEE ALSO: hilbert_interp_example.c
+
 hilbert_interp_example.c
+    Hilbert transform: 1:2 complex-to-real interpolator.  This example
+    demonstrates the functionality of firhilb (finite impulse response Hilbert
+    transform) interpolator which converts a complex time series into a real
+    one with twice the number of samples.  The input is a complex-valued
+    sinusoid of N samples. The output is a real-valued sinusoid of 2*N
+    samples.
+    SEE ALSO: hilbert_decim_example.c
+
 iir_filter_crcf_example.c
     Complex infinite impulse response filter example. Demonstrates the
     functionality of iir_filter by designing a low-order prototype (e.g.
@@ -193,10 +232,25 @@ matrix_example.c
     This example demonstrates basic matrix operations.
 
 mdct_example.c
-metadata_example.c
+
 modem_arb_example.c
+    This example demonstrates the functionality of the arbitrary modem, a
+    digital modulator/demodulator object with signal constellation points
+    chosen arbitrarily.  A simple bit-error rate simulation is then run to
+    test the performance of the modem.  The results are written to a file.
+SEE ALSO: modem_example.c
+
 modem_example.c
+    This example demonstates the digital modulator/demodulator (modem) object.
+    Data symbols are modulated into complex samples which are then demodulated
+    without noise or phase offsets.  The user may select the modulation scheme
+    via the command-line interface.
+    SEE ALSO: modem_arb_example.c
+
 nco_example.c
+    This example demonstrates the most basic functionality of the
+    numerically-controlled oscillator (NCO) object.
+
 ofdmframe64gen_example.c
 ofdmframe64sync_example.c
 ofdmframegen_example.c
@@ -238,7 +292,11 @@ qmfb_crcf_analysis_example.c
 qmfb_crcf_synthesis_example.c
 quantize_example.c
 quasinewton_search_example.c
+
 random_example.c
+    This example tests the random number generators for different
+    distributions.
+
 resamp2_crcf_decim_example.c
 resamp2_crcf_interp_example.c
 resamp2_crcf_interp_recreate_example.c

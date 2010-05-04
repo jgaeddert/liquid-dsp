@@ -1,16 +1,16 @@
-// file: nco_test.c
+// 
+// nco_example.c
 //
-// Tests simple nco functionality
+// This example demonstrates the most basic functionality of the
+// numerically-controlled oscillator (NCO) object.
 //
-// Complile and run:
-//   $ gcc nco_test.c -lliquid -o ncotest
-//   $ ./ncotest
 
 #include <stdio.h>
 #include <math.h>
 #include "liquid.h"
 
 int main() {
+    // create the NCO object
     nco p = nco_create(LIQUID_NCO);
     nco_set_phase(p, 0.0f);
     nco_set_frequency(p, M_PI/10);

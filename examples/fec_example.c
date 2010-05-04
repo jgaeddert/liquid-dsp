@@ -1,11 +1,14 @@
 //
 // fec_example.c
 //
-// This example demonstrates the interface for forward
-// error-correction (FEC) codes.  A buffer of data bytes
-// is encoded and corrupted with several errors.  The
-// decoder then attempts to recover the original data
-// set.
+// This example demonstrates the interface for forward error-
+// correction (FEC) codes.  A buffer of data bytes is encoded and
+// corrupted with several errors.  The decoder then attempts to
+// recover the original data set.  The user may select the FEC
+// scheme from the command-line interface.
+// SEE ALSO: crc_example.c
+//           checksum_example.c
+//           packetizer_example.c
 //
 
 #include <stdio.h>
@@ -29,7 +32,9 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
+    // options
     unsigned int n = 4;             // data length (bytes)
     unsigned int nmax = 5000;       // maximum data length
     fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme

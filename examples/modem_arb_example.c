@@ -1,7 +1,12 @@
 //
 // modem_arb_example.c
 //
-// Demonstrates the functionality of the arbitrary modem.
+// This example demonstrates the functionality of the arbitrary
+// modem, a digital modulator/demodulator object with signal
+// constellation points chosen arbitrarily.  A simple bit-error
+// rate simulation is then run to test the performance of the
+// modem.  The results are written to a file.
+// SEE ALSO: modem_example.c
 //
 
 #include <stdio.h>
@@ -26,11 +31,13 @@ int main() {
     fprintf(fid,"bps = %u;\n", bps);
     fprintf(fid,"M = %u;\n", M);
 
-    // create and initialize mod/demod objects
-    modem mod = modem_create(MOD_ARB, bps);
-    modem_arb_init(mod,constellation,M);
-
+    // create mod/demod objects
+    modem mod   = modem_create(MOD_ARB, bps);
     modem demod = modem_create(MOD_ARB, bps);
+
+    // initialize mod/demod objects (NOTE: arbitrary modem
+    // objects MUST be initialized before use)
+    modem_arb_init(mod,constellation,M);
     modem_arb_init(demod,constellation,M);
 
     modem_print(mod);
@@ -44,17 +51,21 @@ int main() {
     unsigned int sym_in;
     unsigned int sym_out;
     for (i=0; i<n; i++) {
+        // generate and modulate random symbol
         sym_in = modem_gen_rand_sym(mod);
         modem_modulate(mod, sym_in, &x);
 
         // add noise
-        cawgn(&x,0.03);
+        cawgn(&x,0.05);
 
         // demodulate
         modem_demodulate(demod, x, &sym_out);
 
+        // accumulate errors
         num_errors += count_bit_errors(sym_in,sym_out);
-        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x), cimagf(x));
+        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1,
+                                                     crealf(x),
+                                                     cimagf(x));
     }
     printf("num bit errors: %4u / %4u\n", num_errors, bps*n);
 

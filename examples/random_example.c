@@ -1,5 +1,8 @@
+// 
+// random_example.c
 //
-// Test random number generator
+// This example tests the random number generators for different
+// distributions.
 //
 
 #include <stdio.h>
@@ -38,6 +41,24 @@ int main() {
     m2 = (m2 / (float)N) - m1*m1;
     printf("Gauss:   %8.4f (%8.4f) %8.4f (%8.4f)\n", m1, 0.0f, m2, 1.0f);
 
+    // Rice
+    m1=0.0f;
+    m2=0.0f;
+    for (i=0; i<N; i++) {
+        // K     = 1.0f
+        // omega = 2.0f
+        x = rand_ricekf(1.0f, 2.0f);
+        m1 += x;
+        m2 += x*x;
+    }
+    // m1 = ???
+    m1 /= (float) N;
+    // m2 = ???
+    m2 = (m2 / (float)N) - m1*m1;
+    // TODO: compute expected mean, variance for Rice-K distribution
+    //printf("Rice:    %8.4f (%8.4f) %8.4f (%8.4f)\n", m1, 0.0f, m2, 0.0f);
+    printf("Rice:    %8.4f (       ?) %8.4f (       ?)\n", m1, m2);
+
     // Weibull
     m1=0.0f;
     m2=0.0f;
@@ -53,7 +74,7 @@ int main() {
     m1 /= (float) N;
     // m2 = (b/a)^(2/b)*(gamma(1+2/b)-(gamma(1+1/b))^2)
     m2 = (m2 / (float)N) - m1*m1;
-    printf("weibull: %8.4f (%8.4f) %8.4f (%8.4f)\n", m1, 1.2533f, m2, 0.42920f);
+    printf("Weibull: %8.4f (%8.4f) %8.4f (%8.4f)\n", m1, 1.2533f, m2, 0.42920f);
 
     printf("done.\n");
     return 0;

@@ -1,5 +1,7 @@
 //
-// Test floating-point dot product
+// dotprod_cccf_example.c
+//
+// Test floating-point dot product.
 //
 
 #include <stdio.h>

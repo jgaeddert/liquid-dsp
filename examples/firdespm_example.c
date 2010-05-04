@@ -1,8 +1,9 @@
 //
-// firdespm.c
+// firdespm_example.c
 //
-// Finite impulse response filter design using Parks-McClellan
-// algorithm.
+// This example demonstrates finite impulse response filter design
+// using the Parks-McClellan algorithm.
+// SEE ALSO: firdes_kaiser_example.c
 //
 
 #include <stdio.h>
@@ -14,11 +15,13 @@
 #define OUTPUT_FILENAME "firdespm_example.m"
 
 int main() {
-    unsigned int n=24;
-    float fp = 0.08f;
-    float fs = 0.16f;
+    // options
+    unsigned int n=25;  // filter length
+    float fp = 0.08f;   // pass-band cutoff frequency
+    float fs = 0.16f;   // stop-band cutoff frequency
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
 
+    // derived values
     unsigned int num_bands = 2;
     float bands[4]   = {0.0f, fp, fs, 0.5f};
     float des[2]     = {1.0f, 0.0f};

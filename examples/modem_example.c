@@ -1,7 +1,12 @@
+// 
 // modem_example.c
 //
-// Tests simple modulation/demodulation without noise or phase
-// offset, counting the number of resulting symbol errors.
+// This example demonstates the digital modulator/demodulator
+// (modem) object.  Data symbols are modulated into complex
+// samples which are then demodulated without noise or phase
+// offsets.  The user may select the modulation scheme via
+// the command-line interface.
+// SEE ALSO: modem_arb_example.c
 //
 
 #include <stdlib.h>
@@ -25,7 +30,8 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     // create mod/demod objects
     unsigned int bps=2;
     modulation_scheme ms = MOD_PSK;
@@ -53,7 +59,9 @@ int main(int argc, char*argv[]) {
             return 1;
         }
     }
-    modem mod = modem_create(ms, bps);
+
+    // create the modem objects
+    modem mod   = modem_create(ms, bps);
     modem demod = modem_create(ms, bps);
 
     // ensure bits/symbol matches modem description (only

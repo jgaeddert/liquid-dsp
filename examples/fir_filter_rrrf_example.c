@@ -1,5 +1,5 @@
 //
-//
+// fir_filter_rrrf_example.c
 //
 
 #include <stdio.h>
