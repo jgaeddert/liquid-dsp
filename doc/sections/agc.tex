@@ -104,7 +104,7 @@ Figure~\ref{fig:module:agc:squelch} and
 Table~\ref{tab:module:agc:squelch_codes}.
 These states give the user flexibility in programming networks where packets
 are transmitted in short bursts and the receiver needs to synchronize quickly.
-The status of the squelch control is retrived via the
+The status of the squelch control is retrieved via the
 {\tt agc\_crcf\_squelch\_get\_status()} method.
 
 The typical control cycle for the AGC squelch is depicted in
@@ -116,7 +116,7 @@ squelch threshold (code {\tt 1}).
 All subsequent samples above this threshold return a ``signal high'' status
 (code {\tt 2}).
 Once the signal level falls below the threshold, the squelch returns a
-``falling edge trigger'' status (code {\tt 4}).
+``falling edge trigger'' status (code {\tt 3}).
 All subsequent samples below the threshold until timing out return a ``signal
 low'' status (code {\tt 4}).
 When the signal has been low for a sufficient period of time (defined by the
@@ -126,9 +126,27 @@ status.
 
 \subsubsection{methodology}
 The reason for all six states (as opposed to just ``squelch on'' and ``squelch
-off'') are to allow for complex scenarios...
+off'') are to allow for the AGC to adjust to complex signal dynamics.
+The default operation for the AGC is to {\it disable} the squelch.
+For example if the AGC squelch control is in ``signal low'' mode
+(state {\tt 4}) and the signal increases above the threshold before timeout,
+the AGC will move back to the ``signal high'' mode (state {\tt 2}).
+This is particularly useful for weak signals whose received signal strength is
+hovering around the squelch threshold; it would be undesireable for the AGC to
+enable the squelch in the middle of receiving a packet!
 
 \subsubsection{auto-squelch}
+The AGC module also allows for an auto-squelch mechanism which attempts to
+track the signal threshold to the noise floor of the receiver.
+This is accomplished by monitoring the signal level when squelch is enabled.
+The auto-squelch mechanism has a 4dB headroom; if the signal level drops below
+4dB beneath the squelch threshold, the threshold will be decremented.
+This is useful for receiving weak signals slightly above the noise floor,
+particularly when the exact noise floor is not known or varies slightly over
+time.
+Auto-squelch is enabled/disabled using the
+{\tt agc\_crcf\_squelch\_enable\_auto()} and 
+{\tt agc\_crcf\_squelch\_disable\_auto()} methods respectively.
 
 \begin{figure}
 \centering
