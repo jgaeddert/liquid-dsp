@@ -1463,6 +1463,12 @@ struct ga_search_s {
 //
 float complex icrandnf();
 
+// data scrambler masks
+#define LIQUID_SCRAMBLE_MASK0   (0xb4)
+#define LIQUID_SCRAMBLE_MASK1   (0x6a)
+#define LIQUID_SCRAMBLE_MASK2   (0x8b)
+#define LIQUID_SCRAMBLE_MASK3   (0xc5)
+
 //
 // MODULE : sequence
 //

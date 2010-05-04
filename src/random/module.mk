@@ -37,7 +37,9 @@ local_s_files	:=		\
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:= random_autotest.h
+local_t_files	:=		\
+	random_autotest.h	\
+	scramble_autotest.h
 
 
 # local_b_files

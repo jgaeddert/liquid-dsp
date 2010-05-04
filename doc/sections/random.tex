@@ -67,3 +67,15 @@ $X_0 \sim N(0,\sigma)$,
 $X_1 \sim N(s,\sigma)$,
 $R = \sqrt{X_0^2 + X_1^2}$.
 
+
+\subsection{Data scrambler}
+Physical layer synchronization of received waveforms relies on independent and
+identically distributed underlying data symbols.
+If the message sequence, however, is too repetitive
+(such as '{\tt 00000....}' or '{\tt 11001100....}')
+and the modulation scheme is BPSK, the synchronizer probably won't be able to
+recover the symbol timing.
+It is imperative to increase the short-term entropy of the data for this to happen.
+The data scrambler routine attempts to 'whiten' the data sequence with a bit
+mask in order to achieve maximum entropy.
+

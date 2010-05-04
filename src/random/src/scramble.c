@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
+ *
  *
  * This file is part of liquid.
  *
@@ -28,18 +30,30 @@
 
 #include "liquid.internal.h"
 
-void scramble_data(unsigned char * _x, unsigned int _len)
+void scramble_data(unsigned char * _x,
+                   unsigned int _n)
 {
-    // for now apply static mask
-    unsigned char mask = 0xb4;
+    // t = 4*(floor(_n/4))
+    unsigned int t = (_n>>2)<<2;
+
+    // apply static masks
     unsigned int i;
-    for (i=0; i<_len; i++)
-        _x[i] ^= mask;
+    for (i=0; i<t; i+=4) {
+        _x[i  ] ^= LIQUID_SCRAMBLE_MASK0;
+        _x[i+1] ^= LIQUID_SCRAMBLE_MASK1;
+        _x[i+2] ^= LIQUID_SCRAMBLE_MASK2;
+        _x[i+3] ^= LIQUID_SCRAMBLE_MASK3;
+    }
+
+    // clean up remainder of elements
+    for ( ; i<_n; i++)
+        _x[i] ^= LIQUID_SCRAMBLE_MASK0;
 }
 
-void unscramble_data(unsigned char * _x, unsigned int _len)
+void unscramble_data(unsigned char * _x,
+                     unsigned int _n)
 {
     // for now apply simple static mask (re-run scramble)
-    scramble_data(_x,_len);
+    scramble_data(_x,_n);
 }
 
