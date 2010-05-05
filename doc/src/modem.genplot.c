@@ -77,6 +77,7 @@ int main(int argc, char*argv[]) {
     else if ( (ms==MOD_APSK) && (bps>6) )       plot_long_labels = false;
     else if ( (ms==MOD_ASK)  && (bps>3) )       plot_long_labels = false;
     else if ( (ms==MOD_PSK)  && (bps>5) )       plot_long_labels = false;
+    else if (  ms==MOD_ARB64VT          )       plot_long_labels = false;
     else                                        plot_long_labels = plot_labels;
 
     float range = 1.5f;
@@ -84,6 +85,8 @@ int main(int argc, char*argv[]) {
          (ms == MOD_ASK && bps > 3) )
     {
         range = 1.75f;
+    } else if (ms == MOD_ARB64VT) {
+        range = 2.0f;
     }
 
     // write output file

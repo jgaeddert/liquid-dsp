@@ -25,7 +25,10 @@ local_epsfiles :=			\
 	figures.gen/modem_32qam.eps	\
 	figures.gen/modem_64qam.eps	\
 	figures.gen/modem_128qam.eps	\
-	figures.gen/modem_256qam.eps
+	figures.gen/modem_256qam.eps	\
+					\
+	figures.gen/modem_arb16opt.eps	\
+	figures.gen/modem_arb64vt.eps
 
 local_gnufiles := $(patsubst %.eps,%.gnu,$(local_epsfiles))
 local_datfiles := $(patsubst %.eps,%.dat,$(local_epsfiles))
@@ -116,6 +119,15 @@ figures.gen/modem_128qam.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m qam -p 
 
 figures.gen/modem_256qam.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 8
 figures.gen/modem_256qam.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m qam -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+# 
+# opt
+#
+figures.gen/modem_arb16opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb16opt -p 4
+figures.gen/modem_arb16opt.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m arb16opt -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_arb64vt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb64vt -p 6
+figures.gen/modem_arb64vt.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m arb64vt -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
 # accumulate target
 figures_generated += $(local_pdffiles)
