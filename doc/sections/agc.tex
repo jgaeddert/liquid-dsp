@@ -83,7 +83,7 @@ The gain estimate is updated proportional to the gain error, viz
 The multiplier in to the right of the above equation is always positive
 and proportional to the gain error.
 Notice that when the error is zero ($\|y(n)\| = \bar{e}$),
-$\hat{g}(n+1) = \hat{g}$
+$\hat{g}(n+1) = \hat{g}(n)$
 
 \subsection{Squelch}
 The {\tt agc} module contains internal squelch control to allow the
@@ -93,7 +93,7 @@ In traditional radio design, the squelch circuit was used to suppress the
 output of a receiver when the signal strength falls below a certain level,
 primarily used to disable annoying static due to noise when no other operators
 were transmitting.
-Having said that, he squelch control in \liquid\ is actually somewhat of a
+Having said that, the squelch control in \liquid\ is actually somewhat of a
 misnomer as it doesn't actually control the AGC, but rather just monitors the
 dynamics of the signal level and returns its status to the controlling unit.
 The squelch control follows six states
@@ -124,30 +124,6 @@ user), the squelch will return a ``timeout'' status (code {\tt 5}).
 All subsequent samples below the threshold will return a ``squelch enabled''
 status.
 
-\subsubsection{methodology}
-The reason for all six states (as opposed to just ``squelch on'' and ``squelch
-off'') are to allow for the AGC to adjust to complex signal dynamics.
-The default operation for the AGC is to {\it disable} the squelch.
-For example if the AGC squelch control is in ``signal low'' mode
-(state {\tt 4}) and the signal increases above the threshold before timeout,
-the AGC will move back to the ``signal high'' mode (state {\tt 2}).
-This is particularly useful for weak signals whose received signal strength is
-hovering around the squelch threshold; it would be undesireable for the AGC to
-enable the squelch in the middle of receiving a packet!
-
-\subsubsection{auto-squelch}
-The AGC module also allows for an auto-squelch mechanism which attempts to
-track the signal threshold to the noise floor of the receiver.
-This is accomplished by monitoring the signal level when squelch is enabled.
-The auto-squelch mechanism has a 4dB headroom; if the signal level drops below
-4dB beneath the squelch threshold, the threshold will be decremented.
-This is useful for receiving weak signals slightly above the noise floor,
-particularly when the exact noise floor is not known or varies slightly over
-time.
-Auto-squelch is enabled/disabled using the
-{\tt agc\_crcf\_squelch\_enable\_auto()} and 
-{\tt agc\_crcf\_squelch\_disable\_auto()} methods respectively.
-
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.gen/agc_squelch_pgf}
@@ -177,6 +153,31 @@ Auto-squelch is enabled/disabled using the
 \end{tabular*}
 \end{table}%
 % ------------------------
+
+
+\subsubsection{methodology}
+The reason for all six states (as opposed to just ``squelch on'' and ``squelch
+off'') are to allow for the AGC to adjust to complex signal dynamics.
+The default operation for the AGC is to {\it disable} the squelch.
+For example if the AGC squelch control is in ``signal low'' mode
+(state {\tt 4}) and the signal increases above the threshold before timeout,
+the AGC will move back to the ``signal high'' mode (state {\tt 2}).
+This is particularly useful for weak signals whose received signal strength is
+hovering around the squelch threshold; it would be undesireable for the AGC to
+enable the squelch in the middle of receiving a packet!
+
+\subsubsection{auto-squelch}
+The AGC module also allows for an auto-squelch mechanism which attempts to
+track the signal threshold to the noise floor of the receiver.
+This is accomplished by monitoring the signal level when squelch is enabled.
+The auto-squelch mechanism has a 4dB headroom; if the signal level drops below
+4dB beneath the squelch threshold, the threshold will be decremented.
+This is useful for receiving weak signals slightly above the noise floor,
+particularly when the exact noise floor is not known or varies slightly over
+time.
+Auto-squelch is enabled/disabled using the
+{\tt agc\_crcf\_squelch\_enable\_auto()} and 
+{\tt agc\_crcf\_squelch\_disable\_auto()} methods respectively.
 
 \subsection{Usage}
 Basic usage:
