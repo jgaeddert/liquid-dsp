@@ -49,8 +49,9 @@ void liquid_doc_compute_psdcf(float complex * _x,
     float wnorm=0.0f;
     for (i=0; i<_n; i++) {
         switch (_wtype) {
-        case LIQUID_DOC_PSDWINDOW_NONE: w[i] = 1.0f;        break;
-        case LIQUID_DOC_PSDWINDOW_HANN: w[i] = hann(i,_n);  break;
+        case LIQUID_DOC_PSDWINDOW_NONE:     w[i] = 1.0f;            break;
+        case LIQUID_DOC_PSDWINDOW_HANN:     w[i] = hann(i,_n);      break;
+        case LIQUID_DOC_PSDWINDOW_HAMMING:  w[i] = hamming(i,_n);   break;
             break;
         default:
             fprintf(stderr,"error: liquid_doc_compute_psd(), invalid window type\n");

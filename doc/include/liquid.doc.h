@@ -36,7 +36,8 @@
 // power spectral density window
 typedef enum {
     LIQUID_DOC_PSDWINDOW_NONE=0,
-    LIQUID_DOC_PSDWINDOW_HANN
+    LIQUID_DOC_PSDWINDOW_HANN,
+    LIQUID_DOC_PSDWINDOW_HAMMING
 } liquid_doc_psdwindow;
 
 // compute power spectral density (complex float input)
