@@ -5,12 +5,12 @@
 \section{dotprod}
 \label{module:dotprod}
 Implements a vector dot product between two equally-sized vectors
-$\vec{x} = \left[x_0,x_1,\ldots,x_{N-1}\right]$ and
-$\vec{v} = \left[v_0,v_1,\ldots,v_{N-1}\right]$
+$\vec{x} = \left[x_0,x_1,\ldots,x_{N-1}\right]^T$ and
+$\vec{v} = \left[v_0,v_1,\ldots,v_{N-1}\right]^T$
 \[
     \vec{x} \cdot \vec{v}   =
     \vec{x}^T \vec{v}       =
-    \sum_{k=0}^{N-1}x_k v_k
+    \sum_{k=0}^{N-1}{ x(k) v(k) }
 \]
 A number of other modules rely on {\tt dotprod}, such as filtering and
 equalization.

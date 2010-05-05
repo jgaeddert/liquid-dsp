@@ -8,7 +8,8 @@ local_epsfiles :=					\
 	figures.gen/filter_cheby2.eps			\
 	figures.gen/filter_ellip.eps			\
 	figures.gen/filter_bessel.eps			\
-	figures.gen/filter_firhilb_decim_crcf.eps	\
+	figures.gen/filter_firhilb_decim_crcf_time.eps	\
+	figures.gen/filter_firhilb_decim_crcf_freq.eps	\
 	figures.gen/filter_interp_crcf.eps		\
 	figures.gen/filter_kaiser.eps			\
 	figures.gen/filter_resamp_crcf.eps		\
@@ -44,7 +45,8 @@ figures.gen/filter_bessel.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_o
 
 # firhilb decimator
 src/filter_firhilb_decim_crcf : src/filter_firhilb_decim_crcf.c $(lib_objects)
-figures.gen/filter_firhilb_decim_crcf.gnu : src/filter_firhilb_decim_crcf
+figures.gen/filter_firhilb_decim_crcf_time.gnu \
+figures.gen/filter_firhilb_decim_crcf_freq.gnu : src/filter_firhilb_decim_crcf
 	./$<
 
 # interpolator

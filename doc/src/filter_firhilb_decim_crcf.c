@@ -9,14 +9,15 @@
 #include <liquid/liquid.h>
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME "figures.gen/filter_firhilb_decim_crcf.gnu"
+#define OUTPUT_FILENAME_TIME "figures.gen/filter_firhilb_decim_crcf_time.gnu"
+#define OUTPUT_FILENAME_FREQ "figures.gen/filter_firhilb_decim_crcf_freq.gnu"
 
 int main() {
-    unsigned int m=5;               // filter semi-length
+    unsigned int m=3;               // filter semi-length
     unsigned int h_len = 4*m+1;     // filter length
     float slsl=60.0f;               // filter sidelobe suppression level
     float fc=0.37f;                 // signal center frequency
-    unsigned int num_samples=128;   // number of samples
+    unsigned int num_samples=100;   // number of samples
 
     // allocate memory for arrays
     float x[2*num_samples];         // real input
@@ -35,7 +36,7 @@ int main() {
         theta += dtheta;
     }
 
-    // run Hilber transform
+    // run Hilbert transform
     for (i=0; i<num_samples; i++) {
         // execute transform (decimator) to compute complex signal
         firhilb_decim_execute(f, &x[2*i], &y[i]);
@@ -50,17 +51,17 @@ int main() {
     //fft_shift(Y,nfft);
     float scaling_factor = 20*log10f(num_samples);
 
-    // open/initialize output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME);
-    fprintf(fid,"reset\n");
-
-#if 0
+    // generate plots
+    FILE * fid = NULL;
 
     // 
-    // plot time-domain
+    // generate time-domain plot
     //
 
+    // open/initialize output file
+    fid = fopen(OUTPUT_FILENAME_TIME,"w");
+    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_TIME);
+    fprintf(fid,"reset\n");
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     //fprintf(fid,"set xrange [0:%u];\n",n);
@@ -76,6 +77,7 @@ int main() {
 
     fprintf(fid,"# real\n");
     fprintf(fid,"set ylabel 'real'\n");
+    fprintf(fid,"set xrange [0:%u]\n", 2*num_samples);
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'real'\n", LIQUID_DOC_COLOR_RED);
     // export output
     for (i=0; i<2*num_samples; i++) {
@@ -86,6 +88,7 @@ int main() {
 
     fprintf(fid,"# complex\n");
     fprintf(fid,"set ylabel 'complex'\n");
+    fprintf(fid,"set xrange [0:%u]\n", num_samples);
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'real',\\\n", LIQUID_DOC_COLOR_BLUE);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'imag'\n", LIQUID_DOC_COLOR_GREEN);
     // export output
@@ -99,15 +102,19 @@ int main() {
     }
     fprintf(fid,"e\n");
     fprintf(fid,"unset multiplot\n");
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME_TIME);
 
-
-
-#else
 
     // 
-    // plot frequency-domain
+    // generate frequency-domain plot
     //
 
+    // open/initialize output file
+    fid = fopen(OUTPUT_FILENAME_FREQ,"w");
+    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_FREQ);
+    fprintf(fid,"reset\n");
+    // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [-0.5:0.5];\n");
     fprintf(fid,"set yrange [-80:20]\n");
@@ -133,10 +140,8 @@ int main() {
         fprintf(fid,"%12.8f %12.4e\n", fy, 20*log10f(cabsf(Y[i])) - scaling_factor);
     }
     fprintf(fid,"e\n");
-#endif
-
     fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME_FREQ);
 
     firhilb_destroy(f);
     printf("done.\n");
