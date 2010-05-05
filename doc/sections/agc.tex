@@ -4,9 +4,10 @@
 
 \section{agc (automatic gain control)}
 \label{module:agc}
-Normalizing the incoming signal level is a critical step for many wireless
-communications protocols, particularly in digital modulation schemes which
-encode information in the signal amplitude (e.g. see {\tt MOD\_QAM}).
+Normalizing an incoming signal level before further processing is a critical
+step for many wireless communications protocols, particularly in digital
+modulation schemes which encode information in the signal amplitude (e.g. see
+{\tt MOD\_QAM}, section~\ref{module:modem:digital}).
 Furthermore, loop filters for tracking carrier and symbol timing are highly
 sensitive to signal levels.
 For these reasons and more does gain control play a crucial role in SDR.
@@ -17,6 +18,8 @@ Operating one sample at a time, the {\tt agc} object makes an estimate
 $\hat{e}$ of the signal energy and updates the internal gain $\hat{g}$,
 applying it to the input to produce an output with the target energy
 $\bar{e}$.
+The gain estimate is updated by way of an open loop filter whose bandwidth
+determines the update rate of the AGC.
 
 Problem areas: signals that have fluctuating gain...
 
@@ -84,6 +87,21 @@ The multiplier in to the right of the above equation is always positive
 and proportional to the gain error.
 Notice that when the error is zero ($\|y(n)\| = \bar{e}$),
 $\hat{g}(n+1) = \hat{g}(n)$
+
+\subsection{Locking}
+The {\tt agc} module permits the gain to be locked when, for example, the
+header of a packet is received.
+This is useful for effectively switching the AGC on and off during short,
+burt-mode packet transmissions, particularly when the signal has a high-order
+digital amplitude-modulation (e.g. 64-QAM) and the AGC could potentially
+corrupt the data.
+When the {\tt agc} object is locked, the internal gain control is not updated,
+and the internal gain at the time of locking is applied directly to the output
+signal.
+%
+Locking and unlocking is accomplished with the
+{\tt agc\_crcf\_lock()} and
+{\tt agc\_crcf\_unlock()} methods, respectively.
 
 \subsection{Squelch}
 The {\tt agc} module contains internal squelch control to allow the
