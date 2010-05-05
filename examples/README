@@ -76,6 +76,7 @@ checksum_example.c
     multiple bit errors might result in a false positive validation of the
     corrupted data.  For a much much stronger eror detection, use the cyclic
     redundancy check.
+
     SEE ALSO: crc_example.c
               fec_example.c
 
@@ -91,6 +92,7 @@ crc_example.c
     a noisy channel).  A CRC is, in essence, a strong algebraic error
     detection code that computes a key on a block of data using base-2
     polynomials.
+
     SEE ALSO: checksum_example.c
               fec_example.c
 cvsd_sine_example.c
@@ -106,6 +108,7 @@ dds_cccf_example.c
     using the DDS object.  The resulting signal is then down-converted (mixed
     down and decimated) using the same DDS object.  Results are written to a
     file.
+
     SEE ALSO: interp_crcf_example.c
               decim_crcf_example.c
               resamp2_crcf_example.c
@@ -122,11 +125,12 @@ fbasc_example.c
 fbuffer_example.c
 fct_example.c
 
-fec_example.c
+fec_example.c *
     This example demonstrates the interface for forward error-correction (FEC)
     codes.  A buffer of data bytes is encoded and corrupted with several
     errors.  The decoder then attempts to recover the original data set.  The
     user may select the FEC scheme from the command-line interface.
+
     SEE ALSO: crc_example.c
               checksum_example.c
               packetizer_example.c
@@ -134,6 +138,7 @@ fec_example.c
 fft_example.c
     This example demonstrates the interface to the fast discrete Fourier
     transform (FFT).
+
     SEE ALSO: mdct_example.c
               fct_example.c
 
@@ -144,11 +149,13 @@ fir_filter_rrrf_recreate_example.c
 firdes_kaiser_example.c
     This example demonstrates finite impulse response filter design using a
     Kaiser window.
+    
     SEE ALSO: firdespm_example.c
 
 firdespm_example.c
     This example demonstrates finite impulse response filter design using the
     Parks-McClellan algorithm.
+
     SEE ALSO: firdes_kaiser_example.c
 
 firpfb_rrrf_example.c
@@ -174,6 +181,7 @@ hilbert_decim_example.c
     transform) decimator which converts a real time series into a complex one
     with half the number of samples.  The input is a real-valued sinusoid of N
     samples. The output is a complex-valued sinusoid of N/2 samples.
+
     SEE ALSO: hilbert_interp_example.c
 
 hilbert_interp_example.c
@@ -183,6 +191,7 @@ hilbert_interp_example.c
     one with twice the number of samples.  The input is a complex-valued
     sinusoid of N samples. The output is a real-valued sinusoid of 2*N
     samples.
+
     SEE ALSO: hilbert_decim_example.c
 
 iir_filter_crcf_example.c
@@ -199,11 +208,13 @@ iirdes_analog_example.c *
     analog counterparts. This example serves to check the response of the
     analog filters to ensure they are correct.  The results of design are
     written to a file.
+
     SEE ALSO: iirdes_example.c
               iir_filter_crcf_example.c
 
 iirdes_example.c *
     Tests infinite impulse reponse (IIR) digital filter design.
+
     SEE ALSO: iirdes_analog_example.c
               iir_filter_crcf_example.c
 
@@ -216,6 +227,7 @@ interleaver_example.c
     codes in correcting bit errors.  In this example, data bits are
     interleaved and de-interleaved; the resulting sequence is validated to
     match the original.
+
     SEE ALSO: packetizer_example.c
 
 interp_crcf_example.c
@@ -238,14 +250,25 @@ modem_arb_example.c
     digital modulator/demodulator object with signal constellation points
     chosen arbitrarily.  A simple bit-error rate simulation is then run to
     test the performance of the modem.  The results are written to a file.
-SEE ALSO: modem_example.c
 
-modem_example.c
+    SEE ALSO: modem_example.c
+
+modem_example.c *
     This example demonstates the digital modulator/demodulator (modem) object.
     Data symbols are modulated into complex samples which are then demodulated
     without noise or phase offsets.  The user may select the modulation scheme
     via the command-line interface.
+
     SEE ALSO: modem_arb_example.c
+
+msequence_example.c
+    This example demonstrates the auto-correlation properties of a
+    maximal-length sequence (m-sequence).  An m-sequence of a certain length
+    is used to generate two binary sequences (buffers) which are then
+    cross-correlated.  The resulting correlation produces -1 for all values
+    except at index zero, where the sequences align.
+
+    SEE ALSO: bsequence_example.c
 
 nco_example.c
     This example demonstrates the most basic functionality of the
@@ -266,6 +289,7 @@ packetizer_example.c *
     using two forward error-correction schemes (an inner and outer code)
     before data errors are introduced.  The decoder then tries to recover the
     original data message.
+
     SEE ALSO: fec_example.c
               crc_example.c
 
@@ -280,11 +304,13 @@ poly_findroots_example.c
 
 polyfit_example.c
     Test polynomial fit to sample data.
+
     SEE ALSO: polyfit_lagrange_example.c
 
 polyfit_lagrange_example.c
     Test exact polynomial fit to sample data using Lagrange interpolating
     polynomials.
+
     SEE ALSO: polyfit_example.c
 
 prqmfb_crcf_example.c

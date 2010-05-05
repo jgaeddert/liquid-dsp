@@ -76,6 +76,7 @@ local_src	:=			\
 	mdct_example.c			\
 	modem_arb_example.c		\
 	modem_example.c			\
+	msequence_example.c		\
 	nco_example.c			\
 	ofdmframe64gen_example.c	\
 	ofdmframe64sync_example.c	\
