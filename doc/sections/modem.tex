@@ -69,6 +69,9 @@ fsk, msk, etc. [NOTE: not yet implemented]
 The {\tt modem} object realizes the linear digital modulation library in which
 the information from a symbol is encoded into the amplitude and phase of a
 sample.
+The modem structure implements a variety of common modulation schemes,
+including (differential) phase-shift keying, and (quadrature) amplitude
+modulation.
 The input/output relationship for modulation/demodulation for {\tt modem} is
 strictly one-to-one and is independent of any pulse shaping, or interpolation.
 This differs from {\tt cpmodem} in which the pulse shaping filter is
@@ -98,19 +101,27 @@ proportional to the phase error after demodulation
 error vector magnitude after demodulation
 \end{itemize}
 
+While the same modem structure may be used for both modulation and
+demodulation for most schemes, it is important to use separate objects
+for differential-mode modems (e.g. {\tt MOD\_DPSK}) as the internal state
+will change after each symbol.
+It is usually good practice to keep separate instances of modulators and
+demodulators.
+This holds true for most any encoder/decoder pair in \liquid.
+
 \subsubsection{Gray coding}
 In order to reduce the number of bit errors in a digital modem,
 all symbols are automatically Gray encoded;
 adjacent symbols in a constellation differ by only one bit.
 %
-For example, the bcd value of 183 is {\tt 10110111}.
+For example, the binary-coded decimal (bcd) value of 183 is {\tt 10110111}.
 It has adjacent symbol 184 ({\tt 10111000}) which differs by 4 bits.
 Assume the transmitter sends 183 without encoding.
 If noise at the receiver were to cause it to demodulate the nearby symbol 184,
 the result would be 4 bit errors.
 %
 Gray encoding is computed to the binary-coded decimal symbol
-by applying and exclusive OR bitmask of itself shifted to the right by a
+by applying an exclusive OR bitmask of itself shifted to the right by a
 single bit.
 \begin{verbatim}
         10110111    bcd_in (183)        10111000    bcd_in (184)
@@ -152,7 +163,24 @@ In \liquid, Gray encoding and decoding are computed with the
 {\tt gray\_encode()} {\tt gray\_decode()} methods, respectively.
 
 \subsubsection{{\tt MOD\_PSK} (phase-shift keying)}
-demodulation is performed independent of the signal amplitude
+Demodulation is performed independent of the signal amplitude.
+For an $M$-symbol constellation, the $k^{th}$ symbol is
+\[
+    s_k = e^{j 2 \pi k/M}
+\]
+where $k \in \{0,1,\ldots,M-1\}$.
+Specific schemes include BPSK ($M=2$),
+\[
+    s_k = e^{j \pi k} =
+    \begin{cases}
+        +1 & k=0 \\
+        -1 & k=1
+    \end{cases}
+\]
+and QPSK ($M=4$)
+\[
+    s_k = e^{j\left(\pi k/4 + \frac{\pi}{4}\right)}
+\]
 
 %-------------------- FIGURE: PSK MODEM --------------------
 \begin{figure}[ht]
@@ -187,9 +215,36 @@ demodulation is performed independent of the signal amplitude
 \end{figure}
 
 \subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
-demodulation is performed independent of the signal amplitude
+Demodulation is performed independent of the signal amplitude.
+The data are encoded using phase transitions, rather than absolute phase.
+This allows the receiver to demodulate incoherently, but at a quality
+degradation of 3dB.
+\[
+    s_k(n) = \exp\left\{
+                \frac{
+                    j 2 \pi \Bigl(k(n) - k(n-1)\Bigr)
+                } {
+                    M
+                }
+            \right\}
+\]
 
 \subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
+Amplitude/phase-shift keying is a specific form of quadrature amplitude
+modulation where constellation points lie on concentric circles.
+\begin{itemize}
+\item constellation points are further apart than those of PSK/DPSK, resulting
+      in an improved error performance,
+\item phase recovery is improved over regular QAM as the constellation points
+      are less sensitive to phase noise
+\end{itemize}
+Demodulation follows as a two-step process: first, the amplitude of the
+received signal is evaluated to determine in which level (``ring'') the
+transmitted symbol lies.
+Once the level is determined, the appropriate symbol is chosen based on its
+phase, similar to PSK demodulation.
+Demodulation of APSK consumes slightly more clock cycles than the PSK and QAM
+demodulators.
 
 %-------------------- FIGURE: APSK MODEM --------------------
 \begin{figure}[ht]
@@ -237,6 +292,21 @@ demodulation is performed independent of the signal amplitude
 
 \subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
 
+\[
+    s_k = \alpha ( 2 k - M - 1 )
+\]
+where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
+\[
+    \alpha = 
+    \begin{cases}
+    1               &   M=2     \\
+    1/\sqrt{5}      &   M=4     \\
+    1/\sqrt{21}     &   M=8     \\
+    1/\sqrt{85}     &   M=16    \\
+    1/\sqrt{341}    &   M=32    \\
+    \sqrt{3}/M      &   M > 32
+    \end{cases}
+\]
 
 %-------------------- FIGURE: ASK MODEM --------------------
 \begin{figure}[ht]
@@ -278,6 +348,36 @@ Also known as quadrature amplitude-shift keying
 minimal bit changes between adjacent samples across both in-phase and
 quadrature-phase dimensions
 \end{itemize}
+
+\[
+    s_k = \alpha \{ ( 2 k_i - M_i - 1 ) + j(2 k_q - M_q - 1) \}
+\]
+where
+$k_i$ is the in-phase symbol,
+$k_q$ is the quadrature symbol,
+$M_i = 2^{m_i}$ and $M_q = 2^{m_q}$, are the number of respective in-phase and
+quadrature symbols,
+$m_i=\lceil \log_2(M) \rceil$ and $m_q=\lfloor \log_2(M) \rfloor$ are the
+number of respective in-phase and quadrature bits, and
+$\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
+\[
+    \alpha = 
+    \begin{cases}
+    1/\sqrt{2}      &   M=4     \\
+    1/\sqrt{6}      &   M=8     \\
+    1/\sqrt{10}     &   M=16    \\
+    1/\sqrt{26}     &   M=32    \\
+    1/\sqrt{42}     &   M=64    \\
+    1/\sqrt{106}    &   M=128   \\
+    1/\sqrt{170}    &   M=256   \\
+    1/\sqrt{426}    &   M=512   \\
+    1/\sqrt{682}    &   M=1024  \\
+    1/\sqrt{1706}   &   M=2048  \\
+    1/\sqrt{2730}   &   M=4096  \\
+    \sqrt{2/M}      &   \text{else}
+    \end{cases}
+\]
+
 
 
 
@@ -324,6 +424,11 @@ quadrature-phase dimensions
 \caption{Rectangular quaternary-amplitude modulation (QAM) modem}
 \label{fig:modem:qam}
 \end{figure}
+
+\subsubsection{{\tt MOD\_ARB} (arbitrary modem)}
+\liquid\ also allows the user to create their own modulation schemes by
+designating the number of bits per symbol, and the full signal constellation.
+Several pre-loaded arbitrary signal constellations are available.
 
 %-------------------- FIGURE: ARB MODEM --------------------
 \begin{figure}[ht]
