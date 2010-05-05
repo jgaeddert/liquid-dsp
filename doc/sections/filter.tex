@@ -408,16 +408,19 @@ sufficient approximation.
 An approximation for the value of $\beta$ to give a particular sidelobe level
 for the window is
 \begin{equation}
-    \hat{\beta}(\gamma) = \frac{\gamma + 21.45}{7.3}
+    \beta =
+    \begin{cases}
+        0.1102 (A_s - 8.7)      &   A_s > 50 \\
+        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+        0                       & \text{else}
+    \end{cases}
 \end{equation}
-where $\gamma$ is the sidelobe suppression in decibels.
-An approximation for the value of $\beta$ to give a particular transition
-bandwidth for the window is
-\begin{equation}
-    \hat{\beta}(\Delta f) = 10\Delta f \,\, (not\, accurate)
-\end{equation}
-where $0 < \Delta f < 0.5$ is the normalized transition bandwidth.
-
+where $A_s$ is the sidelobe suppression in decibels.
+The length of the filter is approximated as
+\[
+    N = \frac{A_s}{11 \Delta f}
+\]
+where $\Delta f$ is the desired transition bandwidth of the filter.
 
 \begin{figure}
 \centering
@@ -427,8 +430,8 @@ where $0 < \Delta f < 0.5$ is the normalized transition bandwidth.
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_freq}
 }
-\caption{{\tt fir\_kaiser\_window()} demonstration, $f_c=0.15$, $f_t=0.05$,
-$A_s=60$dB}
+\caption{{\tt fir\_kaiser\_window()} demonstration, $f_c=0.15$,
+$\Delta f=0.05$, $A_s=60$dB}
 \label{fig:module:filter:firdes_kaiser}
 \end{figure}
 
