@@ -419,6 +419,17 @@ bandwidth for the window is
 where $0 < \Delta f < 0.5$ is the normalized transition bandwidth.
 
 
-\includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser}
+\begin{figure}
+\centering
+\subfigure[time] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_time}
+}
+\subfigure[PSD] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_freq}
+}
+\caption{{\tt fir\_kaiser\_window()} demonstration, $f_c=0.15$, $f_t=0.05$,
+$A_s=60$dB}
+\label{fig:module:filter:firdes_kaiser}
+\end{figure}
 
 

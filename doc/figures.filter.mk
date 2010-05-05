@@ -11,7 +11,8 @@ local_epsfiles :=					\
 	figures.gen/filter_firhilb_decim_crcf_time.eps	\
 	figures.gen/filter_firhilb_decim_crcf_freq.eps	\
 	figures.gen/filter_interp_crcf.eps		\
-	figures.gen/filter_kaiser.eps			\
+	figures.gen/filter_kaiser_time.eps		\
+	figures.gen/filter_kaiser_freq.eps		\
 	figures.gen/filter_resamp_crcf.eps		\
 	figures.gen/filter_resamp_crcf_psd.eps
 
@@ -56,7 +57,8 @@ figures.gen/filter_interp_crcf.gnu : src/filter_interp_crcf
 
 # kaiser window filter design
 src/filter_kaiser : src/filter_kaiser.c $(lib_objects)
-figures.gen/filter_kaiser.gnu : src/filter_kaiser
+figures.gen/filter_kaiser_time.gnu \
+figures.gen/filter_kaiser_freq.gnu : src/filter_kaiser
 	./$<
 
 src/filter_resamp_crcf : src/filter_resamp_crcf.c $(lib_objects)
