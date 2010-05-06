@@ -1,0 +1,127 @@
+% 
+% installation
+%
+ 
+The basic installation is as follows:
+\begin{verbatim}
+    $ ./reconf
+    $ ./configure
+    $ make
+    # make install
+\end{verbatim}
+The additional makefile targets are listed here.
+
+\section{Building \& Dependencies}
+\label{ch:installation:building}
+Requirements:
+\begin{itemize}
+\item {\tt gcc}, the GNU compiler collection
+\item {\tt libc}, the standard C library
+\item {\tt libm}, the standard math library (eventually will be phased out to
+optional)
+\end{itemize}
+
+\liquid\ was designed to be portable, and in doing so requires minimal dependencies to
+build and run.
+%Several well-known DSP packages (such as {\tt fftw} [cite] and {\it libfec} [cite])...
+The project, however, will take advantage of other libraries if they are installed on the
+target machine.
+These optional packages are:
+\begin{itemize}
+\item {\tt fftw3}
+\item {\tt libfec}
+\item {\tt liquid-fpm} (liquid fixed-point math library)
+\end{itemize}
+The build system checks to see if they are installed during the {\tt configure} process
+and will generate an appropriate {\tt config.h} if they are.
+
+\subsection{Source code organization}
+In order to keep the project relatively organized, the source code is broken
+up into separate ``modules'' under the top {\tt src/} directory.
+
+\section{Targets}
+\label{ch:installation:targets}
+
+\subsubsection{Modules}
+Each module consists of a top-level included makefile, a {\tt README}, the
+library source files, a set of test scripts, and a set of benchmarks.
+
+\subsubsection{Examples ({\tt make examples})}
+All examples are built as stand-alone programs not build by the target
+{\tt all} by default.
+All examples can be built by invoking {\tt make examples}, or a specific
+example can be build by invoking e.g. {\tt make examples/modem\_example}.
+
+\subsection{Autotests ({\tt make check})}
+\label{ch:installation:targets:autotests}
+Source code validation is a critical step in any software library,
+particularly for verifying the portability of code to different processors and
+platforms.
+Packaged with \liquid\ are a number of automatic test scripts to validate the
+correctness of the source code.
+The test scripts are located under each module's {\tt tests} directory and
+take the form of a C header file.
+The python script {\tt autotest\_gen.py} parses these header files looking for
+the key ``{\tt void autotest\_}'' which corresponds to a specific test.
+%Each test that is found is appended to a list
+The python script generates the header file {\tt autotest\_include.h} which
+includes all the modules' test headers as well as several organizing
+structures for keeping track of which tests have passed or failed.
+The result is an executable file, {\tt xautotest}, which can be run to
+validate the functional correctess of \liquid\ on your target platform.
+
+\subsubsection{Macros}
+Each module contains a number of autotest scripts which using pre-processor
+macros for asserting the functional correctness of the souce code.
+
+\paragraph{{\tt CONTEND\_EQUALITY}$(x,y)$} asserts that $x==y$ and fails if
+false.
+\paragraph{{\tt CONTEND\_INEQUALITY}$(x,y)$} asserts that $x$ differs from
+$y$.
+\paragraph{{\tt CONTEND\_GREATER\_THAN}$(x,y)$} asserts that $x>y$.
+\paragraph{{\tt CONTEND\_LESS\_THAN}$(x,y)$} asserts that $x<y$.
+\paragraph{{\tt CONTEND\_DELTA}$(x,y,\Delta)$} asserts thaat $|x-y|<\Delta$
+\paragraph{{\tt CONTEND\_EXPRESSION}$(expr)$} asserts that some expression is
+true.
+\paragraph{{\tt CONTEND\_SAME\_DATA}$(ptrA,ptrB,n)$} asserts that each of $n$
+byte values in the arrays referenced by $ptrA$ and $ptrB$ are equal.
+\paragraph{{\tt AUTOTEST\_PASS}$()$} passes unconditionally.
+\paragraph{{\tt AUTOTEST\_FAIL}$(string)$} prints $string$ and fails
+unconditionaly.
+\paragraph{{\tt AUTOTEST\_WARN}$(string)$} simply prints a warning.
+The autotest program will keep track of which tests elicit warnings and add
+them to the list of volatile tests.
+
+Here are some examples:
+\begin{itemize}
+\item[] {\tt CONTEND\_EQUALITY}(1,1) will {\it pass}
+\item[] {\tt CONTEND\_EQUALITY}(1,2) will {\it fail}
+\end{itemize}
+
+\subsubsection{Running the autotests}
+The result is an executable file named {\tt xautotest} which has several
+options for running.
+These options may be viewed with either the {\tt -h} or {\tt -u} flags (for
+help/usage information).
+\begin{verbatim}
+    $ ./xautotest -h
+    autotest options:
+      -h,-u : prints this help file
+      -t<n> : run specific test
+      -p<n> : run specific package
+      -L    : lists all autotests
+      -l    : lists all packages
+      -s    : stop on fail
+      -v    : verbose
+      -q    : quiet
+\end{verbatim}
+Simply running the program executes all the tests and displays the results to
+the screen.
+The is the default response of the target {\tt make check}.
+
+\subsection{Benchmarks ({\tt make bench})}
+\label{ch:installation:targets:benchmarks}
+
+\subsection{Targets summary}
+
+

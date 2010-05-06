@@ -44,6 +44,9 @@ LISTINGS = 					\
 
 # .tex inputs
 SECTIONS :=					\
+	sections/introduction.tex		\
+	sections/installation.tex		\
+						\
 	sections/agc.tex			\
 	sections/ann.tex			\
 	sections/audio.tex			\
