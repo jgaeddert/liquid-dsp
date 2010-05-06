@@ -5,3 +5,20 @@
 \section{fft (fast Fourier transform)}
 \label{module:fft}
 
+Given a vector of complex time-domain samples
+$\vec{x} = \left[x_0,x_1,\ldots,x_{N-1}\right]^T$\ldots
+
+Forward transform:
+\[
+    X(k) = \sum_{i=0}^{N-1}{x(i) e^{-j 2 \pi k i/N}}
+\]
+
+Reverse transform:
+\[
+    x(n) = \sum_{i=0}^{N-1}{X(i) e^{ j 2 \pi n i/N}}
+\]
+
+\liquid\ implements only the basic decimation-in-time FFT algorithm for
+radix-2 transforms, however, will use the fftw3 library [cite:fftw3.org] if
+available.
+
