@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <complex.h>
 #include <math.h>
@@ -43,6 +44,7 @@ int main() {
     float rssi[num_samples];
 
     // prime agc with noise
+    printf("priming agc\n");
     float noise_std = powf(10.0f, noise_floor / 10.0f) / sqrtf(2.0f);
     for (i=0; i<2000; i++) {
         float complex noise = noise_std*(randnf() + _Complex_I*randnf());
@@ -85,9 +87,12 @@ int main() {
     }
     agc_crcf_destroy(p);
 
-
     // open/initialize output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    if (!fid) {
+        fprintf(stderr,"error, could not open file \"%s\" for writing!\n", OUTPUT_FILENAME);
+        exit(1);
+    }
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"reset\n");
     // TODO : switch terminal types here
@@ -108,7 +113,7 @@ int main() {
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '#777777',\\\n");
     fprintf(fid,"     '-' using 1:2 with points pointtype 7 pointsize 1.2 linecolor rgb '#440000'\n");
     for (i=0; i<num_samples; i++) {
-        fprintf(fid,"%4u %8.2f\n", i, 10*log10f(rssi[i]) - noise_floor + 5.0f);
+        //fprintf(fid,"%4u %8.2f\n", i, 10*log10f(rssi[i]) - noise_floor + 5.0f);
     }
     fprintf(fid,"e\n");
     fprintf(fid,"# horizontal threshold line\n");
@@ -122,6 +127,5 @@ int main() {
     fprintf(fid,"e\n");
     fclose(fid);
 
-    printf("done.\n");
     return 0;
 }

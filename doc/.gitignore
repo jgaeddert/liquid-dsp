@@ -1,0 +1,17 @@
+agc_squelch_pgf.aux
+agc_squelch_pgf.log
+figures.gen/
+highlight.sty
+liquid.aux
+liquid.log
+liquid.pdf
+liquid.toc
+src/agc_squelch
+src/agc_squelch_pgf
+src/filter_firhilb_decim_crcf
+src/filter_iirdes
+src/filter_interp_crcf
+src/filter_kaiser
+src/filter_resamp_crcf
+src/modem.gendata
+src/modem.genplot
