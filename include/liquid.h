@@ -2721,6 +2721,10 @@ T NCO(_cos)(NCO() _q);                                          \
 void NCO(_sincos)(NCO() _q, T* _s, T* _c);                      \
 void NCO(_cexpf)(NCO() _q, TC * _y);                            \
                                                                 \
+/* pll : phase-locked loop */                                   \
+void NCO(_pll_set_bandwidth)(NCO() _q, float _b);               \
+void NCO(_pll_step)(NCO() _q, float _dphi);                     \
+                                                                \
 /* mixing functions */                                          \
 /* Rotate input vector up by NCO angle: */                      \
 /*      \f$\vec{y} = \vec{x}e^{j\theta}\f$ */                   \
