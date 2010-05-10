@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
 #include <math.h>
 #include <time.h>
 
@@ -16,76 +17,109 @@
 #define OUTPUT_FILENAME "pll_example.m"
 
 int main() {
-    srand( time(NULL) );
     // parameters
-    float phase_offset = M_PI/2;
-    float frequency_offset = 0.0f;
-    float pll_bandwidth = 1e-3f;
-    float pll_damping_factor = 4.0f;
-    unsigned int n=250;     // number of iterations
-    unsigned int d=10;      // print every "d" lines
+    float phase_offset = 0.8f;
+    float frequency_offset = 0.01f;
+    float pll_bandwidth = 0.05f;
+    float pll_damping_factor = 0.707f;
+    unsigned int n=256;     // number of iterations
+    unsigned int d=n/32;    // print every "d" lines
 
-    FILE * debug_file = fopen(OUTPUT_FILENAME,"w");
-    fprintf(debug_file, "clear all;\n");
-    fprintf(debug_file, "phi=zeros(1,%u);\n",n);
+    //
+    float theta[n];         // input phase
+    float complex x[n];     // input sinusoid
+    float phi[n];           // output phase
+    float complex y[n];     // output sinusoid
 
-    // objects
-    nco nco_tx = nco_create(LIQUID_VCO);
-    nco nco_rx = nco_create(LIQUID_VCO);
-    pll pll_rx = pll_create();
+    // generate iir loop filter(s)
+    float a[2];
+    float b[2];
+    float wn = pll_bandwidth;
+    float zeta = pll_damping_factor;
+    float K = 1000; // loop gain
 
-    // initialize objects
-    nco_set_phase(nco_tx, phase_offset);
-    nco_set_frequency(nco_tx, frequency_offset);
-    pll_set_bandwidth(pll_rx, pll_bandwidth);
-    pll_set_damping_factor(pll_rx, pll_damping_factor);
+    // loop filter
+    float t1 = K/(wn*wn);
+    float t2 = 2*zeta/wn - 1/K;
+    b[0] = 1 + t2/2;
+    b[1] = 1 - t2/2;
+    a[0] = 1 + t1/2;
+    a[1] = 1 - t1/2;
+    iir_filter_rrrf F = iir_filter_rrrf_create(b,2,a,2);
 
-    // print parameters
-    printf("PLL example :\n");
-    printf("frequency offset: %6.3f, phase offset: %6.3f, pll b/w: %6.3f\n",
-            frequency_offset, phase_offset, pll_bandwidth);
+    // integrator
+    b[0] = 2*K;
+    b[1] = 2*K;
+    a[0] =  1.0f;
+    a[1] = -1.0f;
+    iir_filter_rrrf G = iir_filter_rrrf_create(b,2,a,2);
+
+    unsigned int i;
+
+    // generate input
+    float t=phase_offset;
+    float dt = frequency_offset;
+    for (i=0; i<n; i++) {
+        theta[i] = t;
+        x[i] = cexpf(_Complex_I*theta[i]);
+
+        t += dt;
+    }
 
     // run loop
-    unsigned int i;
-    float phase_error;
-    float complex r, v;
+    float phi_hat=0.0f;
     for (i=0; i<n; i++) {
-        // received complex signal
-        nco_cexpf(nco_tx,&r);
-        nco_cexpf(nco_rx,&v);
+        y[i] = cexpf(_Complex_I*phi_hat);
 
-        // error estimation
-        phase_error = cargf(r*conjf(v));
+        // compute error
+        float e = cargf(x[i]*conjf(y[i]));
 
-        // perfect error estimation
-        //phase_error = nco_tx->theta - nco_rx->theta;
+        if ( (i%d)==0 )
+            printf("e(%3u) = %12.8f;\n", i, e);
 
-        // print every line in a format that octave can read
-        fprintf(debug_file, "phi(%u) = %10.6E;\n", i+1, phase_error);
-        if ((i+1)%d == 0 || i==n-1) {
-            printf("  %4u: e_hat : %6.3f, freq error : %6.3f, phase error : %6.3f\n",
-                    i+1,                                // iteration
-                    phase_error,                        // estimated phase error
-                    nco_get_frequency(nco_tx) - nco_get_frequency(nco_rx),  // true frequency error
-                    nco_get_phase(nco_tx) - nco_get_phase(nco_rx));     // true phase error
-        }
+        // filter error
+        float e_hat;
+        iir_filter_rrrf_execute(F,e,&e_hat);
 
-        // update NCO objects
-        nco_step(nco_tx);
-        pll_step(pll_rx, nco_rx, phase_error);
-        nco_step(nco_rx);
+        // integrate
+        iir_filter_rrrf_execute(G,e_hat,&phi_hat);
+
+        phi[i] = phi_hat;
     }
-    fprintf(debug_file, "plot(phi);\n");
-    fprintf(debug_file, "xlabel('time [sample]');\n");
-    fprintf(debug_file, "ylabel('phase error [radians]')\n");
-    fprintf(debug_file, "grid on;\n");
-    fclose(debug_file);
+
+    // destroy filter
+    iir_filter_rrrf_destroy(F);
+    iir_filter_rrrf_destroy(G);
+
+    // open output file
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"n=%u;\n",n);
+
+    fprintf(fid,"a(1) = %16.8e;\n", a[0]);
+    fprintf(fid,"a(2) = %16.8e;\n", a[1]);
+    fprintf(fid,"a(3) = %16.8e;\n", a[2]);
+
+    fprintf(fid,"b(1) = %16.8e;\n", b[0]);
+    fprintf(fid,"b(2) = %16.8e;\n", b[1]);
+    fprintf(fid,"b(3) = %16.8e;\n", b[2]);
+
+    //fprintf(fid,"figure;\n");
+    //fprintf(fid,"freqz(b,a);\n");
+
+    for (i=0; i<n; i++) {
+        fprintf(fid,"theta(%3u) = %16.8e;\n", i+1, theta[i]);
+        fprintf(fid,"  phi(%3u) = %16.8e;\n", i+1, phi[i]);
+    }
+    fprintf(fid,"t=0:(n-1);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,theta,t,phi);\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('phase');\n");
+
+    fclose(fid);
 
     printf("output written to %s.\n", OUTPUT_FILENAME);
-
-    nco_destroy(nco_tx);
-    nco_destroy(nco_rx);
-    pll_destroy(pll_rx);
 
     printf("done.\n");
     return 0;

@@ -154,6 +154,18 @@ void NCO(_cexpf)(NCO() _q,
     *_y = _q->cosine + _Complex_I*(_q->sine);
 }
 
+// pll methods
+
+void NCO(_pll_set_bandwidth)(NCO() _q,
+                             float _b)
+{
+}
+
+void NCO(_pll_step)(NCO() _q,
+                    float _dphi)
+{
+}
+
 // mixing functions
 
 // Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
