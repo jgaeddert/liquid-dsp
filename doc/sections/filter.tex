@@ -22,7 +22,7 @@ Finite impulse response filter.
 The output $y$ is the convolution of the input $x$ with the filter
 coefficients (impulse response) $h$, viz
 \[
-    y_n = \sum_{k=0}^{N-1}{ h_k x_{N-k-1} }
+    y(n) = \sum_{k=0}^{N-1}{ h(k) x(N-k-1) }
 \]
 where $\vec{h} = \{h_0,h_1,\ldots,h_{N-1}\}$ is the filter impulse response.
 
@@ -35,6 +35,21 @@ at twice the sample rate.
 The decimator reverses the process by halving the sample rate of a real-valued
 time series to a complex-valued one.
 
+Typical trade-offs between filter length, side-lobe suppression, and
+transition bandwidth apply.
+The {\tt firhilb} object uses a half-band filter to implement the transform as
+efficiently as possible.
+While any filter length can be accepted, the {\tt firhilb} object internally
+forces the length to be of the form $n=4m+1$.
+A halfband filter of this length has $2m$ zeros and $2m+1$ non-zero
+coefficients.
+Of these non-zero coefficients, one is exactly $1$ while the other $2m$ are
+even symmetric, and therefore only $m$ computations are needed...
+[TODO: flesh out this section]
+
+{\it See also:} {\tt resamp2} (section~\ref{module:filter:resamp2}),
+FIR filter design (section~\ref{module:filter:firdes}).
+
 \input{listings/firhilb.example.c.tex}
 
 \begin{figure}
@@ -46,7 +61,7 @@ time series to a complex-valued one.
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firhilb_decim_crcf_freq}
 }
 \caption{{\tt firhilb\_crcf} (Hilbert transform) decimator demonstration. The
-small signal at $f=0.12$ is due to aliasing as a result of imperfect image
+small signal at $f=0.13$ is due to aliasing as a result of imperfect image
 rejection}
 \label{fig:module:filter:firhilb_crcf}
 \end{figure}
@@ -129,7 +144,7 @@ See also: {\tt iirdes} (IIR filter design).
 
 
 
-\subsection{{\tt iirdes} (IIR filter design)}
+\subsection{{\tt iirdes} (infinite impulse response filter design)}
 Butterworth prototype:
 \[
     H_a(s) = \frac{1}{B_n(s)}
@@ -267,6 +282,7 @@ and $L=(n-r)/2$.
 
 
 \subsection{{\tt resamp2} (halfband resampler)}
+\label{module:filter:resamp2}
 resamp2 is a halfband resampler used for efficient interpolation and
 decimation
 
@@ -326,48 +342,10 @@ timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
 
 \subsection{{\tt lf2} (second-order integrating loop filter)}
 
-\subsection{{\tt rrcos}}
-{\tt design\_rrc\_filter} calculates the coefficients for a square-root
-raised-cosinee (RRC) finite impulse response (FIR) filter commonly used in
-digital communications.
-The input parameters are as follows
-\begin{itemize}
-    \item[$k$] : samples per symbol
-    \item[$m$] : sample delay
-    \item[$\beta$] : excess bandwidth (rolloff) factor
-\end{itemize}
-The function returns the filter coefficients in the buffer, $h$, which has been
-allocated externally.  The length of the filter is always
-\[
-    h_{len} = 2 k m + 1
-\]
+\subsection{{\tt firdes} (finite impulse response filter design)}
+\label{module:filter:firdes}
 
-The filter coefficients themselves are derived from the following equation
-\[ 
-    h\left[z\right] =
-      4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
-                    \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
-                  { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
-\]
-where $z=n/k-m$, and $T=1$ for most cases.
-The function compensates for the two cases where $h[n]$ might be
-undefined in the above equation, viz.
-\[
-    \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
-\]
-and
-\[
-    \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
-        \frac{\beta}{\sqrt{2}}
-        \left[
-            \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
-            \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
-        \right]
-\]
-
-\subsection{Windowed prototype}
-\label{ch:filterdesign:window}
-
+\subsubsection{Window prototype}
 Basic idea: apply windowing function to truncated sinc
 
 \begin{equation}
@@ -376,8 +354,6 @@ h(t) = w_n(t) \sinc(\Delta f t)
 
 where $w_n(t)$ is chosen from...
 
-\subsection{Kaiser}
-\label{ch:filterdesign:window:kaiser}
 The Kaiser window is defined as...
 \begin{equation}
 \label{eqn:kaiser_window}
@@ -436,3 +412,47 @@ $\Delta f=0.05$, $A_s=60$dB}
 \end{figure}
 
 
+\subsubsection{{\tt rcos} (raised-cosine filter)}
+
+\subsubsection{{\tt rrcos} (square-root raised-cosine filter)}
+{\tt design\_rrc\_filter} calculates the coefficients for a square-root
+raised-cosinee (RRC) finite impulse response (FIR) filter commonly used in
+digital communications.
+The input parameters are as follows
+\begin{itemize}
+    \item[$k$] : samples per symbol
+    \item[$m$] : sample delay
+    \item[$\beta$] : excess bandwidth (rolloff) factor
+\end{itemize}
+The function returns the filter coefficients in the buffer, $h$, which has been
+allocated externally.  The length of the filter is always
+\[
+    h_{len} = 2 k m + 1
+\]
+
+The filter coefficients themselves are derived from the following equation
+\[ 
+    h\left[z\right] =
+      4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
+                    \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
+                  { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
+\]
+where $z=n/k-m$, and $T=1$ for most cases.
+The function compensates for the two cases where $h[n]$ might be
+undefined in the above equation, viz.
+\[
+    \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
+\]
+and
+\[
+    \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
+        \frac{\beta}{\sqrt{2}}
+        \left[
+            \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
+            \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
+        \right]
+\]
+
+
+\subsubsection{{\tt firdespm}}
+FIR filter desing using the Parks-McClellan algorithm.
