@@ -1308,21 +1308,33 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 
 
 // Numerically-controlled oscillator, floating point phase precision
-struct nco_s {
-    liquid_ncotype type;
-    float theta;        // NCO phase
-    float d_theta;      // NCO frequency
-    float sintab[256];  // sine table
-    unsigned int index; // table index
-    float sine;
-    float cosine;
-    void (*compute_sincos)(nco _q);
-};
+#define LIQUID_NCO_DEFINE_INTERNAL_API(NCO,T,TC)                \
+struct NCO(_s) {                                                \
+    liquid_ncotype type;                                        \
+    T theta;            /* NCO phase                    */      \
+    T d_theta;          /* NCO frequency                */      \
+    T sintab[256];      /* sine table                   */      \
+    unsigned int index; /* table index                  */      \
+    T sine;                                                     \
+    T cosine;                                                   \
+    void (*compute_sincos)(NCO() _q);                           \
+                                                                \
+    /* phase-locked loop */                                     \
+    T bandwidth;        /* loop filter bandwidth        */      \
+    T xi;               /* loop filter damping factor   */      \
+    T a0, a1;           /* feed-back coefficients       */      \
+    T b0, b1;           /* feed-forward coefficients    */      \
+};                                                              \
+                                                                \
+void NCO(_constrain_phase)(NCO() _q);                           \
+                                                                \
+void NCO(_compute_sincos_nco)(NCO() _q);                        \
+void NCO(_compute_sincos_vco)(NCO() _q);
 
-void nco_constrain_phase(nco _nco);
-
-void nco_compute_sincos(nco _nco);
-void vco_compute_sincos(nco _nco);
+// Define nco internal APIs
+LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,
+                               float,
+                               float complex)
 
 // 
 // MODULE : optim (non-linear optimization)
