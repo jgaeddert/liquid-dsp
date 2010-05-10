@@ -11,6 +11,40 @@ and do not rely on special objects for their manipulation.
 \label{module:matrix:math}
 add, sub, mul, div, trans(pose), eye
 
+\subsubsection{{\tt matrix\_access} (access element)}
+{\tt matrix\_access(X,R,C,r,c)} will access the element of a $R \times C$
+matrix $\vec{X}$ at row $r$ and column $c$.
+This method is really just a pre-processor macro which performs a literal
+string replacement
+\begin{verbatim}
+  #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
+\end{verbatim}
+and can be used for both setting and retrieving values of a matrix.
+For example,
+\begin{verbatim}
+X = 
+  0.406911   0.118444   0.923281   0.827254   0.463265
+  0.038897   0.132381   0.061137   0.880045   0.570341
+  0.151206   0.439508   0.695207   0.215935   0.999683
+  0.808384   0.601597   0.149171   0.975722   0.205819
+
+float v = matrix_access(X,4,5,0,1);
+v =
+  0.118444
+
+matrix_access(X,4,5,2,3) = 0;
+X =
+  0.406911   0.118444   0.923281   0.827254   0.463265
+  0.038897   0.132381   0.061137   0.880045   0.570341
+  0.151206   0.439508   0.695207   0.0        0.999683
+  0.808384   0.601597   0.149171   0.975722   0.205819
+\end{verbatim}
+Because this method is really just a macro, there is no error-checking to
+ensure that one is accessing the matrix within its memory bounds.
+Therefore, special care must be taken when programming.
+Furthermore, {\tt matrix\_access()} can be used for all matrix types
+({\tt matrixf}, {\tt matrixcf}, etc.).
+
 \subsubsection{{\tt matrix\_eye} (identity matrix)}
 The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
 \[
