@@ -4,7 +4,6 @@
 # Includes targets for listings, figures, etc.
 #
 
-projName = liquid
 TEX = pdflatex
 TEX_FLAGS = --shell-escape
 BIB = bibtex
@@ -77,7 +76,7 @@ lib_sources	:=				\
 # additional targets to clean
 extra_clean :=
 
-all: $(projName).pdf
+all: liquid.pdf
 
 
 ##
@@ -151,22 +150,22 @@ figures_generated += figures.gen/agc_squelch_pgf.pdf
 ##
 
 # auxillary
-$(projName).aux: $(projName).tex listings highlight.sty $(SECTIONS)
-	$(TEX) $(TEX_FLAGS) $(projName)
+liquid.aux liquid.bib.aux : liquid.tex listings highlight.sty $(SECTIONS)
+	$(TEX) $(TEX_FLAGS) liquid
+	touch liquid.bib.aux
 
 # bibliography
-$(projName).bbl: $(projName).aux $(projName).bib
-	$(BIB) $(BIB_FLAGS) $(projName)
+liquid.bbl : liquid.bib liquid.bib.aux
+	$(BIB) $(BIB_FLAGS) liquid
 
 # main project file (.pdf)
-#$(projName).pdf: $(projName).bbl $(projName).tex listings
-# TODO use above line for bibliography (ignore for now)
-$(projName).pdf: $(projName).tex listings $(SECTIONS) $(figures_generated)
-	$(TEX) $(TEX_FLAGS) $(projName)
-	$(TEX) $(TEX_FLAGS) $(projName)
+liquid.pdf: liquid.tex liquid.bbl listings $(SECTIONS) $(figures_generated)
+	$(TEX) $(TEX_FLAGS) liquid
+	$(TEX) $(TEX_FLAGS) liquid
 
 clean-doc:
-	$(RM) *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.bbl *.blg $(projName).pdf
+	$(RM) *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.bbl *.blg
+	$(RM) liquid.pdf
 
 
 ##

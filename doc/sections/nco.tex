@@ -21,16 +21,91 @@ The phase-locked loop object provides a method for synchronizing oscillators
 on different platforms.
 It uses a second-order integrating loop filter to adjust the frequency of its
 {\tt nco} based on an instantaneous phase error input.
-% TODO : generate figure
-For a given bandwidth $w$, damping factor $\xi$, and scaling factor $k_1$,
-the loop filter coefficients are
-\[  \beta = \frac{2w}{k_1} \left(\xi + \frac{1}{4\xi} \right)   \]
-\[  \alpha = 2 \xi \beta    \]
-The default values for $k_1$ and $\xi$ are $1$ and $\sqrt{2}$, respectively.
-Given an instantaneous phase error $v$, the filtered phase error $\hat{v}$ is
-given by
-\[  q(n) = v \beta + q(n-1)     \]
-\[  \hat{v} = \alpha v + q(n)   \]
-where $q(0)=0$.
 
-See also {\tt lf2} (filter).
+The integrator has a transfer function $G(s) = K/s$.
+For a given loop filter $F(s)$, the closed-loop transfer function becomes
+\[
+    H(s) = \frac{ G(s)F(s) }{ 1 + G(s)F(s) }
+         = \frac{ KF(s)    }{ s + KF(s)    }
+\]
+where the loop gain $K$ absorbs all the gains in the loop.
+
+\subsubsection{Active lag design}
+From \cite{Best:1997}.
+\[
+    F(s) = \frac{1 + \tau_2 s}{1 + \tau_1 s}
+\]
+This gives a closed-loop transfer function
+\[
+    H(s) = \frac{
+                \frac{K}{\tau_1} (1 + s\tau_2)
+           } {
+                s^2 + s\frac{1 + K\tau_2}{\tau_1} + \frac{K}{\tau_1}
+           }
+\]
+
+\[
+    \omega_n = \sqrt{\frac{K}{\tau_1}}
+    \,\,\,\,\,\,
+    \zeta = \frac{\omega_n}{2}\left(\tau_2 + \frac{1}{K}\right)
+        \rightarrow
+    \tau_1 = \frac{K}{\omega_n^2}
+    \,\,\,\,\,\,
+    \tau_2 = \frac{2\zeta}{\omega_n} - \frac{1}{K}
+\]
+
+The open-loop transfer function is
+\[
+    H'(s) = F(s)G(s) = K \frac{1 + \tau_2 s}{s + \tau_1 s^2}
+\]
+Taking the bilinear $z$-transform gives the digital filter:
+\[
+    H'(z) = H'(s)\Bigl.\Bigr|_{s = \frac{1}{2}\frac{1-z^{-1}}{1+z^{-1}}}
+          = 2 K \frac{
+                (1+\tau_2/2) + 2 z^{-1}     + ( 1 - \tau_2/2)z^{-2}
+          } {
+                (1+\tau_1/2) -\tau_1 z^{-1} + (-1 + \tau_1/2)z^{-2}
+          }
+\]
+
+
+
+\subsubsection{Active PI design}
+Active ``proportional plus integration''
+\[
+    F(s) = \frac{1 + \tau_2 s}{\tau_1 s}
+\]
+This gives a closed-loop transfer function
+\[
+    H(s) = \frac{
+                \frac{K}{\tau_1} (1 + s\tau_2)
+           } {
+                s^2 + s\frac{K\tau_2}{\tau_1} + \frac{K}{\tau_1 + \tau_2}
+           }
+\]
+
+\[
+    \omega_n = \sqrt{\frac{K}{\tau_1}}
+    \,\,\,\,\,\,
+    \zeta = \frac{\omega_n \tau_2}{2}
+        \rightarrow
+    \tau_1 = \frac{K}{\omega_n^2}
+    \,\,\,\,\,\,
+    \tau_2 = \frac{2\zeta}{\omega_n}
+\]
+
+The open-loop transfer function is
+\[
+    H'(s) = F(s)G(s) = K \frac{1 + \tau_2 s}{\tau_1 s^2}
+\]
+Taking the bilinear $z$-transform gives the digital filter:
+\[
+    H'(z) = H'(s)\Bigl.\Bigr|_{s = \frac{1}{2}\frac{1-z^{-1}}{1+z^{-1}}}
+          = 2 K \frac{
+                (1+\tau_2/2) + 2 z^{-1}     + ( 1 - \tau_2/2)z^{-2}
+          } {
+                \tau_1/2 -\tau_1 z^{-1} + (\tau_1/2)z^{-2}
+          }
+\]
+
+
