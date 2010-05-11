@@ -1321,15 +1321,20 @@ struct NCO(_s) {                                                \
                                                                 \
     /* phase-locked loop */                                     \
     T bandwidth;        /* loop filter bandwidth        */      \
-    T xi;               /* loop filter damping factor   */      \
-    T a0, a1;           /* feed-back coefficients       */      \
-    T b0, b1;           /* feed-forward coefficients    */      \
+    T zeta;             /* loop filter damping factor   */      \
+    T a[3];             /* feed-back coefficients       */      \
+    T b[3];             /* feed-forward coefficients    */      \
+    T v[3];             /* buffer                       */      \
 };                                                              \
                                                                 \
 void NCO(_constrain_phase)(NCO() _q);                           \
                                                                 \
 void NCO(_compute_sincos_nco)(NCO() _q);                        \
-void NCO(_compute_sincos_vco)(NCO() _q);
+void NCO(_compute_sincos_vco)(NCO() _q);                        \
+                                                                \
+/* phase-locked loop methods */                                 \
+void NCO(_pll_set_bandwidth_active_lag)(NCO() _q, float _b);    \
+void NCO(_pll_set_bandwidth_active_PI)(NCO() _q, float _b);
 
 // Define nco internal APIs
 LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,

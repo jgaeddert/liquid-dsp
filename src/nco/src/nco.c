@@ -156,14 +156,43 @@ void NCO(_cexpf)(NCO() _q,
 
 // pll methods
 
+// set pll bandwidth
 void NCO(_pll_set_bandwidth)(NCO() _q,
-                             float _b)
+                             T _b)
 {
+    // validate input
+    if (_b < 0.0f) {
+        fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
+        exit(1);
+    }
+
+    NCO(_pll_set_bandwidth_active_lag)(_q, _b);
+    //NCO(_pll_set_bandwidth_active_PI)(_q, _b);
 }
 
+// advance pll
 void NCO(_pll_step)(NCO() _q,
-                    float _dphi)
+                    T _dphi)
 {
+    T phi_hat;
+
+    // advance buffer
+    _q->v[2] = _q->v[1];
+    _q->v[1] = _q->v[0];
+
+    // compute new v[0]
+    _q->v[0] = _dphi - 
+               _q->a[1]*_q->v[1] -
+               _q->a[2]*_q->v[2];
+
+    // compute output _y
+    phi_hat = _q->b[0]*_q->v[0] +
+              _q->b[1]*_q->v[1] +
+              _q->b[2]*_q->v[2];
+
+    _q->theta = phi_hat;
+
+    // TODO : allow internal PLL to execute independently of NCO
 }
 
 // mixing functions
@@ -300,6 +329,77 @@ void NCO(_compute_sincos_vco)(NCO() _q)
 {
     _q->sine   = SIN(_q->theta);
     _q->cosine = COS(_q->theta);
+}
+
+// use active lag loop filter
+//          1 + t2 * s
+//  F(s) = ------------
+//          1 + t1 * s
+void NCO(_pll_set_bandwidth_active_lag)(NCO() _q,
+                                        float _b)
+{
+    _q->bandwidth = _b;
+    _q->zeta = 1.0f / sqrt(2.0f);
+
+    // loop filter (active lag)
+    T wn = _q->bandwidth;   // natural frequency
+    T zeta = _q->zeta;      // damping factor
+    T K = 1000;             // loop gain
+    T t1 = K/(wn*wn);
+    T t2 = 2*zeta/wn - 1/K;
+
+    _q->b[0] = 2*K*(1.+t2/2.0f);
+    _q->b[1] = 2*K*2.;
+    _q->b[2] = 2*K*(1.-t2/2.0f);
+
+    _q->a[0] =  1 + t1/2.0f;
+    _q->a[1] = -t1;
+    _q->a[2] = -1 + t1/2.0f;
+
+    // normalize coefficients
+    _q->b[0] /= _q->a[0];
+    _q->b[1] /= _q->a[0];
+    _q->b[2] /= _q->a[0];
+
+    _q->a[1] /= _q->a[0];
+    _q->a[2] /= _q->a[0];
+    _q->a[0] = 1.0f;
+}
+
+// use active PI ("proportional + integration") loop filter
+//          1 + t2 * s
+//  F(s) = ------------
+//           t1 * s
+void NCO(_pll_set_bandwidth_active_PI)(NCO() _q,
+                                       float _b)
+{
+    _q->bandwidth = _b;
+    _q->zeta = 1.0f / sqrt(2.0f);
+
+    // loop filter (active lag)
+    T wn = _q->bandwidth;   // natural frequency
+    T zeta = _q->zeta;      // damping factor
+    T K = 1000;             // loop gain
+    T t1 = K/(wn*wn);
+    T t2 = 2*zeta/wn;
+
+    _q->b[0] = 2*K*(1.+t2/2.0f);
+    _q->b[1] = 2*K*2.;
+    _q->b[2] = 2*K*(1.-t2/2.0f);
+
+    _q->a[0] =  t1/2.0f;
+    _q->a[1] = -t1;
+    _q->a[2] =  t1/2.0f;
+
+    // normalize coefficients
+    _q->b[0] /= _q->a[0];
+    _q->b[1] /= _q->a[0];
+    _q->b[2] /= _q->a[0];
+
+    _q->a[1] /= _q->a[0];
+    _q->a[2] /= _q->a[0];
+    _q->a[0] = 1.0f;
+
 }
 
 
