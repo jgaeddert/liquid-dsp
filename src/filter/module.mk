@@ -67,6 +67,7 @@ local_t_files	:= 			\
 	iirdes_autotest.h		\
 	iir_filter_rrrf_autotest.h	\
 	iir_filter_crcf_autotest.h	\
+	iirfiltsos_rrrf_autotest.h	\
 	interp_autotest.h
 
 
