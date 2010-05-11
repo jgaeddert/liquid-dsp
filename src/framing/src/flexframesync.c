@@ -56,8 +56,8 @@ static flexframesyncprops_s flexframesyncprops_default = {
     0.08f,      // sym_bw0
     0.05f,      // sym_bw1
     // phase-locked loop
-    2e-3f,      // pll_bw0
-    1e-3f,      // pll_bw1
+    1e-1f,      // pll_bw0
+    1e-2f,      // pll_bw1
     // symbol timing recovery
     2,          // k
     32,         // npfb
@@ -77,7 +77,6 @@ struct flexframesync_s {
     // synchronizer objects
     agc_crcf agc_rx;
     symsync_crcf mfdecim;
-    pll pll_rx;
     nco nco_rx;
     bsync_rrrf fsync;
 
@@ -188,12 +187,8 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
 
     // pll, nco
-    fs->pll_rx = pll_create();
     fs->nco_rx = nco_create(LIQUID_NCO);
-    pll_set_bandwidth(fs->pll_rx, fs->props.pll_bw0);
-    pll_set_damping_factor(fs->pll_rx, 6.0f);   // increasing damping factor
-                                                // reduces oscillations,
-                                                // improves stability
+    nco_pll_set_bandwidth(fs->nco_rx, fs->props.pll_bw0);
 
     // bsync (p/n synchronizer)
     // TODO : add separate method to configure p/n sequence
@@ -263,7 +258,6 @@ void flexframesync_destroy(flexframesync _fs)
 
     // destroy synchronizer objects
     agc_crcf_destroy(_fs->agc_rx);
-    pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
     bsync_rrrf_destroy(_fs->fsync);
     symsync_crcf_destroy(_fs->mfdecim);
@@ -328,7 +322,6 @@ void flexframesync_print(flexframesync _fs)
 void flexframesync_reset(flexframesync _fs)
 {
     symsync_crcf_clear(_fs->mfdecim);
-    pll_reset(_fs->pll_rx);
     //agc_crcf_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
     agc_crcf_unlock(_fs->agc_rx);
     symsync_crcf_unlock(_fs->mfdecim);
@@ -402,7 +395,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             //if (_fs->rssi < _fs->squelch_threshold)
             //    phase_error *= 0.01f;
 
-            pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
+            nco_pll_step(_fs->nco_rx, phase_error);
             /*
             float fmax = 0.05f;
             if (_fs->nco_rx->d_theta >  fmax) _fs->nco_rx->d_theta =  fmax;
@@ -503,6 +496,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 symsync_crcf_unlock(_fs->mfdecim);
                 flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;
+                nco_reset(_fs->nco_rx);
 
                 // Don't actually reset the synchronizer
                 //flexframesync_reset(_fs);
@@ -523,7 +517,7 @@ void flexframesync_open_bandwidth(flexframesync _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw0);
-    pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw0);
+    nco_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw0);
 }
 
 // close bandwidth of synchronizer objects (tracking mode)
@@ -531,7 +525,7 @@ void flexframesync_close_bandwidth(flexframesync _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
-    pll_set_bandwidth(_fs->pll_rx, _fs->props.pll_bw1);
+    nco_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
 }
 
 void flexframesync_configure_payload_buffers(flexframesync _fs)

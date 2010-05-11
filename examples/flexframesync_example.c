@@ -91,15 +91,13 @@ int main(int argc, char *argv[]) {
     // create flexframesync object with default properties
     flexframesyncprops_s fsprops;
     flexframesyncprops_init_default(&fsprops);
-    fsprops.squelch_threshold = noise_floor - 3.0f; // set threshold below noise floor
-                                                    // to help ensure detection for weak
-                                                    // signals
+    fsprops.squelch_threshold = noise_floor + 3.0f;
     fsprops.agc_bw0 = 1e-3f;
     fsprops.agc_bw1 = 1e-5f;
     fsprops.agc_gmin = 1e-3f;
     fsprops.agc_gmax = 1e4f;
-    fsprops.pll_bw0 = 1e-3f;
-    fsprops.pll_bw1 = 1e-4f;
+    fsprops.pll_bw0 = 1e-1f;
+    fsprops.pll_bw1 = 1e-2f;
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
     flexframesync_print(fs);
 
