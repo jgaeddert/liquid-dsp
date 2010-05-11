@@ -146,9 +146,14 @@ int main(int argc, char*argv[]) {
                   );
         }
 
-        // update NCO objects
+        // update tx nco object
         nco_step(nco_tx);
+
+        // update pll
         nco_pll_step(nco_rx, phase_error);
+
+        // update rx nco object
+        nco_step(nco_rx);
     }
 
     fprintf(fid, "figure;\n");

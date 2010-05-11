@@ -38,6 +38,8 @@
 #define COS         cosf
 #define PI          (M_PI)
 
+#define NCO_PLL_BANDWIDTH_DEFAULT (0.1)
+
 // create nco/vco object
 NCO() NCO(_create)(liquid_ncotype _type)
 {
@@ -49,6 +51,8 @@ NCO() NCO(_create)(liquid_ncotype _type)
     for (i=0; i<256; i++)
         q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
 
+    // set default pll bandwidth
+    NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
     NCO(_reset)(q);
 
     // set internal method
@@ -73,15 +77,24 @@ void NCO(_destroy)(NCO() _q)
 // reset internal state of nco object
 void NCO(_reset)(NCO() _q)
 {
-    _q->theta = 0.0f;
-    _q->d_theta = 0.0f;
+    _q->theta = 0;
+    _q->d_theta = 0;
 
     // reset sine table index
     _q->index = 0;
 
     // set internal sine, cosine values
-    _q->sine = 0.0f;
-    _q->cosine = 1.0f;
+    _q->sine = 0;
+    _q->cosine = 1;
+
+    // reset pll filter state
+    _q->v[0] = 0;
+    _q->v[1] = 0;
+    _q->v[2] = 0;
+
+    // reset pll phase state
+    _q->pll_phi_hat   = 0;
+    _q->pll_phi_prime = 0;
 }
 
 // set frequency of nco object
@@ -166,33 +179,38 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
         exit(1);
     }
 
+    // compute loop filter using active lag design
     NCO(_pll_set_bandwidth_active_lag)(_q, _b);
+
+    // compute loop filter using active PI design
     //NCO(_pll_set_bandwidth_active_PI)(_q, _b);
 }
 
-// advance pll
+// advance pll phase
+//  _q      :   nco object
+//  _dphi   :   phase error
 void NCO(_pll_step)(NCO() _q,
                     T _dphi)
 {
-    T phi_hat;
+    // save pll phase state
+    _q->pll_phi_prime = _q->pll_phi_hat;
 
     // advance buffer
     _q->v[2] = _q->v[1];
     _q->v[1] = _q->v[0];
 
-    // compute new v[0]
+    // compute new v[0] from input
     _q->v[0] = _dphi - 
                _q->a[1]*_q->v[1] -
                _q->a[2]*_q->v[2];
 
-    // compute output _y
-    phi_hat = _q->b[0]*_q->v[0] +
-              _q->b[1]*_q->v[1] +
-              _q->b[2]*_q->v[2];
+    // compute output phase state
+    _q->pll_phi_hat = _q->b[0]*_q->v[0] +
+                      _q->b[1]*_q->v[1] +
+                      _q->b[2]*_q->v[2];
 
-    _q->theta = phi_hat;
-
-    // TODO : allow internal PLL to execute independently of NCO
+    // compute new phase step (frequency)
+    NCO(_set_frequency)(_q, _q->pll_phi_hat - _q->pll_phi_prime);
 }
 
 // mixing functions
@@ -211,7 +229,7 @@ void NCO(_mix_up)(NCO() _q,
 
     // multiply _x by [cos(theta) + _Complex_I*sin(theta)]
     *_y = _x * (_q->cosine + _Complex_I*(_q->sine));
-    NCO(_step)(_q);
+    //NCO(_step)(_q);
 }
 
 // Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
@@ -227,7 +245,7 @@ void NCO(_mix_down)(NCO() _q,
 
     // multiply _x by [cos(-theta) + _Complex_I*sin(-theta)]
     *_y = _x * (_q->cosine - _Complex_I*(_q->sine));
-    NCO(_step)(_q);
+    //NCO(_step)(_q);
 }
 
 

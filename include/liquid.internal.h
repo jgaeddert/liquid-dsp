@@ -1325,6 +1325,8 @@ struct NCO(_s) {                                                \
     T a[3];             /* feed-back coefficients       */      \
     T b[3];             /* feed-forward coefficients    */      \
     T v[3];             /* buffer                       */      \
+    T pll_phi_prime;    /* pll phase state              */      \
+    T pll_phi_hat;      /* pll output phase             */      \
 };                                                              \
                                                                 \
 void NCO(_constrain_phase)(NCO() _q);                           \
