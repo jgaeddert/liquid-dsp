@@ -693,6 +693,18 @@ LIQUID_IIRQMFB_DEFINE_INTERNAL_API(IIRQMFB_MANGLE_CRCF,
 
 #define LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS,TO,TC,TI)  \
 typedef struct IIRFILTSOS(_s) * IIRFILTSOS();                   \
+                                                                \
+/* filter structure */                                          \
+struct IIRFILTSOS(_s) {                                         \
+    TC b[3];    /* feed-forward coefficients                */  \
+    TC a[3];    /* feed-back coefficients                   */  \
+                                                                \
+    /* internal buffering                                   */  \
+    TC x[3];    /* Direct form I  buffer (input)            */  \
+    TC y[3];    /* Direct form I  buffer (output)           */  \
+    TC v[3];    /* Direct form II buffer                    */  \
+};                                                              \
+                                                                \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
                                  TC * _a);                      \
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
@@ -700,7 +712,13 @@ void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
 void IIRFILTSOS(_clear)(IIRFILTSOS() _q);                       \
 void IIRFILTSOS(_execute)(IIRFILTSOS() _q,                      \
                           TI   _x,                              \
-                          TO * _y);
+                          TO * _y);                             \
+void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,                  \
+                              TI   _x,                          \
+                              TO * _y);                         \
+void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
+                              TI   _x,                          \
+                              TO * _y);
 
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRF,
                                       float,

@@ -23,7 +23,7 @@
 #define __IIRFILTSOS_RRRF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void autotest_iirfiltsos_impulse_n2()
 {

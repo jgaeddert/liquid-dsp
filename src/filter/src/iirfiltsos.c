@@ -34,12 +34,7 @@
 //  TI              input type
 //  PRINTVAL()      print macro(s)
 
-struct IIRFILTSOS(_s) {
-    TC b[3];         // feedforward coefficients
-    TC a[3];         // feedback coefficients
-    TI v[3];         // internal filter state
-};
-
+// create iirfiltsos object
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
                                  TC * _a)
 {
@@ -89,11 +84,58 @@ void IIRFILTSOS(_clear)(IIRFILTSOS() _q)
     _q->v[0] = 0;
     _q->v[1] = 0;
     _q->v[2] = 0;
+
+    _q->x[0] = 0;
+    _q->x[1] = 0;
+    _q->x[2] = 0;
+
+    _q->y[0] = 0;
+    _q->y[1] = 0;
+    _q->y[2] = 0;
+
 }
 
 void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
                           TI   _x,
                           TO * _y)
+{
+    // execute type-specific code
+    IIRFILTSOS(_execute_df2)(_q,_x,_y);
+}
+
+
+// direct form I
+void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,
+                              TI   _x,
+                              TO * _y)
+{
+    // advance buffer x
+    _q->x[2] = _q->x[1];
+    _q->x[1] = _q->x[0];
+    _q->x[0] = _x;
+
+    // advance buffer y
+    _q->y[2] = _q->y[1];
+    _q->y[1] = _q->y[0];
+
+    // compute new v
+    TI v = _q->x[0] * _q->b[0] +
+           _q->x[1] * _q->b[1] +
+           _q->x[2] * _q->b[2];
+
+    // compute new y[0]
+    _q->y[0] = v -
+               _q->y[1] * _q->a[1] -
+               _q->y[2] * _q->a[2];
+
+    // set output
+    *_y = _q->y[0];
+}
+
+// direct form II
+void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
+                              TI   _x,
+                              TO * _y)
 {
     // advance buffer
     _q->v[2] = _q->v[1];
@@ -109,4 +151,5 @@ void IIRFILTSOS(_execute)(IIRFILTSOS() _q,
           _q->b[1]*_q->v[1] +
           _q->b[2]*_q->v[2];
 }
+
 
