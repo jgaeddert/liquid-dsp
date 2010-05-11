@@ -32,8 +32,8 @@ int main() {
     float complex y[n];     // output sinusoid
 
     // generate iir loop filter(s)
-    float a[2];
-    float b[2];
+    float a[3];
+    float b[3];
     float wn = pll_bandwidth;
     float zeta = pll_damping_factor;
     float K = 1000; // loop gain
@@ -41,18 +41,15 @@ int main() {
     // loop filter
     float t1 = K/(wn*wn);
     float t2 = 2*zeta/wn - 1/K;
-    b[0] = 1 + t2/2;
-    b[1] = 1 - t2/2;
-    a[0] = 1 + t1/2;
-    a[1] = 1 - t1/2;
-    iir_filter_rrrf F = iir_filter_rrrf_create(b,2,a,2);
 
-    // integrator
-    b[0] = 2*K;
-    b[1] = 2*K;
-    a[0] =  1.0f;
-    a[1] = -1.0f;
-    iir_filter_rrrf G = iir_filter_rrrf_create(b,2,a,2);
+    b[0] = 2*K*(1.+t2/2.0f);
+    b[1] = 2*K*2.;
+    b[2] = 2*K*(1.-t2/2.0f);
+
+    a[0] =  1 + t1/2.0f;
+    a[1] = -t1;
+    a[2] = -1 + t1/2.0f;
+    iir_filter_rrrf H = iir_filter_rrrf_create(b,3,a,3);
 
     unsigned int i;
 
@@ -78,18 +75,13 @@ int main() {
             printf("e(%3u) = %12.8f;\n", i, e);
 
         // filter error
-        float e_hat;
-        iir_filter_rrrf_execute(F,e,&e_hat);
-
-        // integrate
-        iir_filter_rrrf_execute(G,e_hat,&phi_hat);
+        iir_filter_rrrf_execute(H,e,&phi_hat);
 
         phi[i] = phi_hat;
     }
 
     // destroy filter
-    iir_filter_rrrf_destroy(F);
-    iir_filter_rrrf_destroy(G);
+    iir_filter_rrrf_destroy(H);
 
     // open output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
