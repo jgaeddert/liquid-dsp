@@ -215,7 +215,7 @@ void NCO(_pll_step)(NCO() _q,
 
 // mixing functions
 
-// Rotate input vector up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
+// Rotate input vector up by NCO angle, y = x exp{+j theta}
 //  _q      :   nco object
 //  _x      :   input sample
 //  _y      :   output sample
@@ -229,10 +229,9 @@ void NCO(_mix_up)(NCO() _q,
 
     // multiply _x by [cos(theta) + _Complex_I*sin(theta)]
     *_y = _x * (_q->cosine + _Complex_I*(_q->sine));
-    //NCO(_step)(_q);
 }
 
-// Rotate input vector down by NCO angle, \f$\vec{y} = \vec{x}e^{-j\theta}\f$
+// Rotate input vector down by NCO angle, y = x exp{-j theta}
 //  _q      :   nco object
 //  _x      :   input sample
 //  _y      :   output sample
@@ -245,7 +244,6 @@ void NCO(_mix_down)(NCO() _q,
 
     // multiply _x by [cos(-theta) + _Complex_I*sin(-theta)]
     *_y = _x * (_q->cosine - _Complex_I*(_q->sine));
-    //NCO(_step)(_q);
 }
 
 
@@ -375,13 +373,14 @@ void NCO(_pll_set_bandwidth_active_lag)(NCO() _q,
     _q->a[2] = -1 + t1/2.0f;
 
     // normalize coefficients
-    _q->b[0] /= _q->a[0];
-    _q->b[1] /= _q->a[0];
-    _q->b[2] /= _q->a[0];
+    T a0 = _q->a[0];
+    _q->b[0] /= a0;
+    _q->b[1] /= a0;
+    _q->b[2] /= a0;
 
-    _q->a[1] /= _q->a[0];
-    _q->a[2] /= _q->a[0];
-    _q->a[0] = 1.0f;
+    _q->a[1] /= a0;
+    _q->a[2] /= a0;
+    _q->a[0] /= a0;
 }
 
 // use active PI ("proportional + integration") loop filter
@@ -410,13 +409,14 @@ void NCO(_pll_set_bandwidth_active_PI)(NCO() _q,
     _q->a[2] =  t1/2.0f;
 
     // normalize coefficients
-    _q->b[0] /= _q->a[0];
-    _q->b[1] /= _q->a[0];
-    _q->b[2] /= _q->a[0];
+    T a0 = _q->a[0];
+    _q->b[0] /= a0;
+    _q->b[1] /= a0;
+    _q->b[2] /= a0;
 
-    _q->a[1] /= _q->a[0];
-    _q->a[2] /= _q->a[0];
-    _q->a[0] = 1.0f;
+    _q->a[1] /= a0;
+    _q->a[2] /= a0;
+    _q->a[0] /= a0;
 
 }
 

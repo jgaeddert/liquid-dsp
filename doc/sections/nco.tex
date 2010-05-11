@@ -15,6 +15,28 @@ a look-up table to generate a complex sinusoid while
 the {\tt LIQUID\_VCO} implements a ``voltage-controlled'' oscillator that uses
 the {\tt sinf} and {\tt cosf} functions to generate a complex sinusoid.
 
+\subsubsection{Interface}
+\begin{itemize}
+\item {\tt nco\_create()} creates an {\tt nco} object
+\item {\tt nco\_destroy()} destroys an {\tt nco} object
+\item {\tt nco\_reset()} clears in internal state of an {\tt nco} object
+\item {\tt nco\_set\_frequency()} sets the frequency (phase step size)
+\item {\tt nco\_adjust\_frequency()} increments the frequency (phase step size)
+\item {\tt nco\_set\_phase()} sets the internal {\tt nco} phase
+\item {\tt nco\_adjust\_phase()} increments the internal {\tt nco} phase
+\item {\tt nco\_step()} increments the internal {\tt nco} phase by its
+    internal frequency
+\item {\tt nco\_get\_phase()} returns the internal phase
+\item {\tt nco\_get\_frequency()} returns the internal frequency (phase step
+    size)
+\item {\tt nco\_sin()} returns $\sin(\theta)$
+\item {\tt nco\_cos()} returns $\cos(\theta)$
+\item {\tt nco\_sincos()} returns $\sin(\theta)$, $\cos(\theta)$
+\item {\tt nco\_cexpf()} returns $e^{j\theta}$
+\item {\tt nco\_mix\_up()} rotates an input vector by $e^{j\theta}$
+\item {\tt nco\_mix\_down()} rotates an input vector by $e^{-j\theta}$
+\end{itemize}
+
 \subsection{{pll} (phase-locked loop)}
 \label{module:nco:pll}
 The phase-locked loop object provides a method for synchronizing oscillators
