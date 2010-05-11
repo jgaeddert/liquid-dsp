@@ -17,4 +17,4 @@ src/filter_kaiser
 src/filter_resamp_crcf
 src/modem.gendata
 src/modem.genplot
-figures.gen/*
+src/nco_pll

@@ -123,6 +123,7 @@ figures_generated :=
 include figures.agc.mk
 include figures.filter.mk
 include figures.modem.mk
+include figures.nco.mk
 
 # full figures target
 figures: $(figures_generated)
