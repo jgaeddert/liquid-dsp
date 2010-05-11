@@ -36,8 +36,7 @@ $(local_epsfiles) : %.eps : %.gnu
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
-	src/filter_kaiser		\
-	src/filter_resamp_crcf		\
+	src/nco_pll			\
 	$(local_epsfiles)		\
 	$(local_gnufiles)		\
 	$(local_pdffiles)		\

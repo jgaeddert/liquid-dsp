@@ -12,6 +12,7 @@ CC = gcc
 CFLAGS :=
 LDFLAGS = -lliquid
 RM = rm -f
+MV = mv
 
 EPSTOPDF = epstopdf
 EPSTOPDF_FLAGS = --compress
@@ -119,7 +120,7 @@ clean-lib:
 # auto-generated figures, target collection variables
 figures_generated :=
 
-# module makefiles
+# module figure makefiles
 include figures.agc.mk
 include figures.filter.mk
 include figures.modem.mk
@@ -130,28 +131,17 @@ figures: $(figures_generated)
 
 # clean figures target
 clean-figures:
-	$(RM) figures.gen/*
-
-## 
-## PGF
-##
-src/agc_squelch_pgf.o	: src/agc_squelch_pgf.c $(lib_objects)
-src/agc_squelch_pgf	: src/agc_squelch_pgf.o
-figures.gen/agc_squelch_pgf.dat : src/agc_squelch_pgf
-	./$<
-
-figures.gen/agc_squelch_pgf.pdf : agc_squelch_pgf.tex figures.gen/agc_squelch_pgf.dat
-	pdflatex agc_squelch_pgf.tex
-	mv agc_squelch_pgf.pdf figures.gen/
-
-figures_generated += figures.gen/agc_squelch_pgf.pdf
+	$(RM) figures.gen/*.eps
+	$(RM) figures.gen/*.dat
+	$(RM) figures.gen/*.gnu
+	$(RM) figures.gen/*.pdf
 
 ##
 ## DOCUMENT
 ##
 
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex listings highlight.sty $(SECTIONS)
+liquid.aux liquid.bib.aux : liquid.tex listings highlight.sty $(SECTIONS) $(figures_generated)
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 
@@ -160,7 +150,7 @@ liquid.bbl : liquid.bib liquid.bib.aux
 	$(BIB) $(BIB_FLAGS) liquid
 
 # main project file (.pdf)
-liquid.pdf: liquid.tex liquid.bbl listings $(SECTIONS) $(figures_generated)
+liquid.pdf: liquid.tex liquid.bbl listings $(SECTIONS)
 	$(TEX) $(TEX_FLAGS) liquid
 	$(TEX) $(TEX_FLAGS) liquid
 

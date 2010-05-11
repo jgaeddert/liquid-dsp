@@ -74,6 +74,9 @@ $(local_epsfiles) : %.eps : %.gnu
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
+	src/filter_firhilb_decim_crcf	\
+	src/filter_iirdes		\
+	src/filter_interp_crcf		\
 	src/filter_kaiser		\
 	src/filter_resamp_crcf		\
 	$(local_epsfiles)		\
