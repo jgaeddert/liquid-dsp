@@ -1,10 +1,13 @@
 //
 // nco_pll_modem_example.c
 //
-// This example demonstrates how the nco/pll object can be used for carrier
-// frequency recovery in digital modems.
+// This example demonstrates how the nco/pll object (numerically-controlled
+// oscillator with phase-locked loop) can be used for carrier frequency
+// recovery in digital modems.  The modem type, SNR, and other parameters are
+// specified via the command-line interface.
 //
 // SEE ALSO: nco_example.c
+//           nco_pll_example.c
 //
 
 #include <stdio.h>
@@ -24,7 +27,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  s     : signal-to-noise ratio, default: 30dB\n");
     printf("  b     : pll bandwidth, default: 1e-3\n");
-    printf("  n     : number of symbols, default: 250\n");
+    printf("  n     : number of symbols, default: 256\n");
     printf("  P     : phase offset (radians), default: pi/10 ~ 0.3146\n");
     printf("  F     : frequency offset (radians), default: 0.001\n");
     printf("  p     : modulation depth, default: 2 bits/symbol\n");
@@ -60,12 +63,12 @@ int main(int argc, char*argv[]) {
         case 'm':
             ms = liquid_getopt_str2mod(optarg);
             if (ms == MOD_UNKNOWN) {
-                fprintf(stderr,"error: mod_pll, unknown/unsupported modulation scheme \"%s\"\n", optarg);
+                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
             }
             break;
         default:
-            fprintf(stderr,"error: mod_pll, unknown option\n");
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
             return 1;
         }
