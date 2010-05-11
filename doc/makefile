@@ -120,7 +120,7 @@ clean-lib:
 # auto-generated figures, target collection variables
 figures_generated :=
 
-# modem figures
+# module makefiles
 include figures.agc.mk
 include figures.filter.mk
 include figures.modem.mk
