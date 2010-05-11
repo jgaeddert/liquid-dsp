@@ -20,7 +20,8 @@
  */
 
 //
-// Numerically-controlled oscillator
+// Numerically-controlled oscillator (nco) with internal phase-locked
+// loop (pll) implementation
 //
 
 #include <math.h>
@@ -39,6 +40,12 @@
 #define PI          (M_PI)
 
 #define NCO_PLL_BANDWIDTH_DEFAULT (0.1)
+#define NCO_PLL_GAIN_DEFAULT      (1000)
+
+// internal PLL IIR filter form
+//  1   :   Direct Form-I   (suggested)
+//  2   :   Direct Form-II
+#define NCO_PLL_IIRFILT_FORM (1)
 
 #define LIQUID_DEBUG_NCO (0)
 
@@ -133,15 +140,38 @@ void NCO(_step)(NCO() _q)
 }
 
 // get phase
-T NCO(_get_phase)(NCO() _q) { return _q->theta; }
+T NCO(_get_phase)(NCO() _q)
+{
+    return _q->theta;
+}
 
 // ge frequency
-T NCO(_get_frequency)(NCO() _q) { return _q->d_theta; }
+T NCO(_get_frequency)(NCO() _q)
+{
+    // return both internal NCO phase step as well
+    // as PLL phase step
+    return _q->d_theta + _q->pll_dtheta_base;
+}
 
 
 // TODO : compute sine, cosine internally
-T NCO(_sin)(NCO() _q) {return SIN(_q->theta);}
-T NCO(_cos)(NCO() _q) {return COS(_q->theta);}
+T NCO(_sin)(NCO() _q)
+{
+    // compute internal sin, cos
+    _q->compute_sincos(_q);
+
+    // return resulting cosine component
+    return _q->sine;
+}
+
+T NCO(_cos)(NCO() _q)
+{
+    // compute internal sin, cos
+    _q->compute_sincos(_q);
+
+    // return resulting cosine component
+    return _q->cosine;
+}
 
 // compute sin, cos of internal phase
 void NCO(_sincos)(NCO() _q, T* _s, T* _c)
@@ -178,11 +208,7 @@ void NCO(_pll_reset)(NCO() _q)
     printf("base frequency : %f\n", _q->pll_dtheta_base);
 #endif
 
-    // clear filter state
-    _q->v[0] = 0;
-    _q->v[1] = 0;
-    _q->v[2] = 0;
-
+    // clear Direct Form I filter state
     _q->x[0] = 0;
     _q->x[1] = 0;
     _q->x[2] = 0;
@@ -190,6 +216,11 @@ void NCO(_pll_reset)(NCO() _q)
     _q->y[0] = 0;
     _q->y[1] = 0;
     _q->y[2] = 0;
+
+    // clear Direct Form II filter state
+    _q->v[0] = 0;
+    _q->v[1] = 0;
+    _q->v[2] = 0;
 
     // reset phase state
     _q->pll_phi_prime = 0;
@@ -206,7 +237,7 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
         exit(1);
     }
 
-    // reset pll, saving frequency state
+    // reset pll, saving frequency state (pll_dtheta_base)
     NCO(_pll_reset)(_q);
 
     // compute loop filter using active lag design
@@ -225,7 +256,7 @@ void NCO(_pll_step)(NCO() _q,
     // save pll phase state
     _q->pll_phi_prime = _q->pll_phi_hat;
 
-#if 0
+#if NCO_PLL_IIRFILT_FORM == 2
     // Direct Form II
 
     // advance buffer
@@ -241,7 +272,7 @@ void NCO(_pll_step)(NCO() _q,
     _q->pll_phi_hat = _q->b[0]*_q->v[0] +
                       _q->b[1]*_q->v[1] +
                       _q->b[2]*_q->v[2];
-#else
+#elif NCO_PLL_IIRFILT_FORM == 1
     // Direct Form I
 
     // advance buffer x
@@ -264,6 +295,8 @@ void NCO(_pll_step)(NCO() _q,
                       _q->y[2] * _q->a[2];
 
     _q->y[0] = _q->pll_phi_hat;
+#else
+#  error "invalid NCO_PLL_IIRFILT_FORM value"
 #endif
 
     // compute new phase step (frequency)
@@ -304,7 +337,8 @@ void NCO(_mix_down)(NCO() _q,
 }
 
 
-// Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
+// Rotate input vector array up by NCO angle:
+//      y(t) = x(t) exp{+j (f*t + theta)}
 // TODO : implement NCO/VCO-specific versions
 //  _q      :   nco object
 //  _x      :   input array [size: _n x 1]
@@ -323,20 +357,14 @@ void NCO(_mix_block_up)(NCO() _q,
         // multiply _x[i] by [cos(theta) + _Complex_I*sin(theta)]
         _y[i] = _x[i] * liquid_crotf_vect(theta);
         
-        // NCO(_step(_q);
         theta += d_theta;
     }
-
-    // NCO(_constrain_phase(_q);
-    while (theta > PI)
-        theta -= 2*PI;
-    while (theta < -PI)
-        theta += 2*PI;
 
     NCO(_set_phase)(_q, theta);
 }
 
-// Rotate input vector array up by NCO angle, \f$\vec{y} = \vec{x}e^{j\theta}\f$
+// Rotate input vector array down by NCO angle:
+//      y(t) = x(t) exp{-j (f*t + theta)}
 // TODO : implement NCO/VCO-specific versions
 //  _q      :   nco object
 //  _x      :   input array [size: _n x 1]
@@ -355,15 +383,8 @@ void NCO(_mix_block_down)(NCO() _q,
         // multiply _x[i] by [cos(-theta) + _Complex_I*sin(-theta)]
         _y[i] = _x[i] * liquid_crotf_vect(-theta);
         
-        // NCO(_step(_q);
         theta += d_theta;
     }
-
-    // NCO(_constrain_phase(_q);
-    while (theta > PI)
-        theta -= 2*PI;
-    while (theta < -PI)
-        theta += 2*PI;
 
     NCO(_set_phase)(_q, theta);
 }
@@ -415,9 +436,9 @@ void NCO(_pll_set_bandwidth_active_lag)(NCO() _q,
     _q->zeta = 1.0f / sqrt(2.0f);
 
     // loop filter (active lag)
-    T wn = _q->bandwidth;   // natural frequency
-    T zeta = _q->zeta;      // damping factor
-    T K = 1000;             // loop gain
+    T wn = _q->bandwidth;       // natural frequency
+    T zeta = _q->zeta;          // damping factor
+    T K = NCO_PLL_GAIN_DEFAULT; // loop gain
     T t1 = K/(wn*wn);
     T t2 = 2*zeta/wn - 1/K;
 
@@ -451,9 +472,9 @@ void NCO(_pll_set_bandwidth_active_PI)(NCO() _q,
     _q->zeta = 1.0f / sqrt(2.0f);
 
     // loop filter (active lag)
-    T wn = _q->bandwidth;   // natural frequency
-    T zeta = _q->zeta;      // damping factor
-    T K = 1000;             // loop gain
+    T wn = _q->bandwidth;       // natural frequency
+    T zeta = _q->zeta;          // damping factor
+    T K = NCO_PLL_GAIN_DEFAULT; // loop gain
     T t1 = K/(wn*wn);
     T t2 = 2*zeta/wn;
 
