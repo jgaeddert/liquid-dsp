@@ -38,7 +38,8 @@ int main() {
     float zeta = pll_damping_factor;
     float K = 1000; // loop gain
 
-    // loop filter
+#if 0
+    // loop filter (active lag)
     float t1 = K/(wn*wn);
     float t2 = 2*zeta/wn - 1/K;
 
@@ -49,7 +50,21 @@ int main() {
     a[0] =  1 + t1/2.0f;
     a[1] = -t1;
     a[2] = -1 + t1/2.0f;
+#else
+    // loop filter (active PI)
+    float t1 = K/(wn*wn);
+    float t2 = 2*zeta/wn;
+
+    b[0] = 2*K*(1.+t2/2.0f);
+    b[1] = 2*K*2.;
+    b[2] = 2*K*(1.-t2/2.0f);
+
+    a[0] =  t1/2.0f;
+    a[1] = -t1;
+    a[2] =  t1/2.0f;
+#endif
     iir_filter_rrrf H = iir_filter_rrrf_create(b,3,a,3);
+    iir_filter_rrrf_print(H);
 
     unsigned int i;
 
