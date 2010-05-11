@@ -1342,9 +1342,12 @@ struct NCO(_s) {                                                \
     T zeta;             /* loop filter damping factor   */      \
     T a[3];             /* feed-back coefficients       */      \
     T b[3];             /* feed-forward coefficients    */      \
-    T v[3];             /* buffer                       */      \
+    T x[3];             /* buffer, Direct Form I        */      \
+    T y[3];             /* buffer, Direct Form I        */      \
+    T v[3];             /* buffer, Direct Form II       */      \
     T pll_phi_prime;    /* pll phase state              */      \
     T pll_phi_hat;      /* pll output phase             */      \
+    T pll_dtheta_base;  /* NCO base frequency           */      \
 };                                                              \
                                                                 \
 void NCO(_constrain_phase)(NCO() _q);                           \
@@ -1353,6 +1356,7 @@ void NCO(_compute_sincos_nco)(NCO() _q);                        \
 void NCO(_compute_sincos_vco)(NCO() _q);                        \
                                                                 \
 /* phase-locked loop methods */                                 \
+void NCO(_pll_reset)(NCO() _q);                                 \
 void NCO(_pll_set_bandwidth_active_lag)(NCO() _q, float _b);    \
 void NCO(_pll_set_bandwidth_active_PI)(NCO() _q, float _b);
 

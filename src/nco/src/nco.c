@@ -40,6 +40,8 @@
 
 #define NCO_PLL_BANDWIDTH_DEFAULT (0.1)
 
+#define LIQUID_DEBUG_NCO (0)
+
 // create nco/vco object
 NCO() NCO(_create)(liquid_ncotype _type)
 {
@@ -52,8 +54,8 @@ NCO() NCO(_create)(liquid_ncotype _type)
         q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
 
     // set default pll bandwidth
-    NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
     NCO(_reset)(q);
+    NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
 
     // set internal method
     if (q->type == LIQUID_NCO) {
@@ -88,13 +90,10 @@ void NCO(_reset)(NCO() _q)
     _q->cosine = 1;
 
     // reset pll filter state
-    _q->v[0] = 0;
-    _q->v[1] = 0;
-    _q->v[2] = 0;
+    NCO(_pll_reset)(_q);
 
-    // reset pll phase state
-    _q->pll_phi_hat   = 0;
-    _q->pll_phi_prime = 0;
+    // reset pll base frequency
+    _q->pll_dtheta_base = 0;
 }
 
 // set frequency of nco object
@@ -129,6 +128,7 @@ void NCO(_adjust_phase)(NCO() _q, T _dphi)
 void NCO(_step)(NCO() _q)
 {
     _q->theta += _q->d_theta;
+    _q->theta += _q->pll_dtheta_base;
     NCO(_constrain_phase)(_q);
 }
 
@@ -169,6 +169,33 @@ void NCO(_cexpf)(NCO() _q,
 
 // pll methods
 
+// reset pll state, retaining base frequency
+void NCO(_pll_reset)(NCO() _q)
+{
+    // retain base frequency
+    _q->pll_dtheta_base += _q->d_theta;
+#if LIQUID_DEBUG_NCO
+    printf("base frequency : %f\n", _q->pll_dtheta_base);
+#endif
+
+    // clear filter state
+    _q->v[0] = 0;
+    _q->v[1] = 0;
+    _q->v[2] = 0;
+
+    _q->x[0] = 0;
+    _q->x[1] = 0;
+    _q->x[2] = 0;
+
+    _q->y[0] = 0;
+    _q->y[1] = 0;
+    _q->y[2] = 0;
+
+    // reset phase state
+    _q->pll_phi_prime = 0;
+    _q->pll_phi_hat = 0;
+}
+
 // set pll bandwidth
 void NCO(_pll_set_bandwidth)(NCO() _q,
                              T _b)
@@ -178,6 +205,9 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
         fprintf(stderr,"error: nco_pll_set_bandwidth(), bandwidth must be positive\n");
         exit(1);
     }
+
+    // reset pll, saving frequency state
+    NCO(_pll_reset)(_q);
 
     // compute loop filter using active lag design
     NCO(_pll_set_bandwidth_active_lag)(_q, _b);
@@ -195,6 +225,9 @@ void NCO(_pll_step)(NCO() _q,
     // save pll phase state
     _q->pll_phi_prime = _q->pll_phi_hat;
 
+#if 0
+    // Direct Form II
+
     // advance buffer
     _q->v[2] = _q->v[1];
     _q->v[1] = _q->v[0];
@@ -208,6 +241,30 @@ void NCO(_pll_step)(NCO() _q,
     _q->pll_phi_hat = _q->b[0]*_q->v[0] +
                       _q->b[1]*_q->v[1] +
                       _q->b[2]*_q->v[2];
+#else
+    // Direct Form I
+
+    // advance buffer x
+    _q->x[2] = _q->x[1];
+    _q->x[1] = _q->x[0];
+    _q->x[0] = _dphi;
+
+    // advance buffer y
+    _q->y[2] = _q->y[1];
+    _q->y[1] = _q->y[0];
+
+    // compute new v
+    float v = _q->x[0] * _q->b[0] +
+              _q->x[1] * _q->b[1] +
+              _q->x[2] * _q->b[2];
+
+    // compute new y[0]
+    _q->pll_phi_hat = v -
+                      _q->y[1] * _q->a[1] -
+                      _q->y[2] * _q->a[2];
+
+    _q->y[0] = _q->pll_phi_hat;
+#endif
 
     // compute new phase step (frequency)
     NCO(_set_frequency)(_q, _q->pll_phi_hat - _q->pll_phi_prime);

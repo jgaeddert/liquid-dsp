@@ -81,6 +81,9 @@ int main(int argc, char*argv[]) {
 
     // run loop
     for (i=0; i<n; i++) {
+        if (i == n/2)
+            nco_pll_set_bandwidth(nco_rx, pll_bandwidth*0.5f);
+
         // generate complex sinusoid
         nco_cexpf(nco_rx, &y[i]);
 
