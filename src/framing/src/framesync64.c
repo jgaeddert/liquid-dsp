@@ -38,8 +38,8 @@
 #define FRAMESYNC64_AGC_BW_0        (3e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-5f)
 
-#define FRAMESYNC64_PLL_BW_0        (2e-3f)
-#define FRAMESYNC64_PLL_BW_1        (1e-4f)
+#define FRAMESYNC64_PLL_BW_0        (0.10f)
+#define FRAMESYNC64_PLL_BW_1        (0.01f)
 
 #define FRAMESYNC64_SQUELCH_THRESH  (-25.0f)
 #define FRAMESYNC64_SQUELCH_TIMEOUT (32)
@@ -70,7 +70,6 @@ struct framesync64_s {
     // synchronizer objects
     agc_crcf agc_rx;
     symsync_crcf mfdecim;
-    pll pll_rx;
     nco nco_rx;
     bsync_rrrf fsync;
 
@@ -148,12 +147,8 @@ framesync64 framesync64_create(
     fs->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
 
     // pll, nco
-    fs->pll_rx = pll_create();
     fs->nco_rx = nco_create(LIQUID_VCO);
-    pll_set_bandwidth(fs->pll_rx, FRAMESYNC64_PLL_BW_0);
-    pll_set_damping_factor(fs->pll_rx, 4.0f);   // increasing damping factor
-                                                // reduces oscillations,
-                                                // improves stability
+    nco_pll_set_bandwidth(fs->nco_rx, FRAMESYNC64_PLL_BW_0);
 
     // bsync (p/n synchronizer)
     unsigned int i;
@@ -221,7 +216,6 @@ void framesync64_destroy(framesync64 _fs)
     fec_destroy(_fs->dec);
     interleaver_destroy(_fs->intlv);
     agc_crcf_destroy(_fs->agc_rx);
-    pll_destroy(_fs->pll_rx);
     nco_destroy(_fs->nco_rx);
     bsync_rrrf_destroy(_fs->fsync);
     modem_destroy(_fs->bpsk);
@@ -238,10 +232,8 @@ void framesync64_print(framesync64 _fs)
 void framesync64_reset(framesync64 _fs)
 {
     symsync_crcf_clear(_fs->mfdecim);
-    pll_reset(_fs->pll_rx);
     agc_crcf_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_0);
-    nco_set_phase(_fs->nco_rx, 0.0f);
-    nco_set_frequency(_fs->nco_rx, 0.0f);
+    nco_reset(_fs->nco_rx);
 }
 
 // TODO: break framesync64_execute method into manageable pieces
@@ -300,7 +292,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 
-            pll_step(_fs->pll_rx, _fs->nco_rx, phase_error);
+            nco_pll_step(_fs->nco_rx, phase_error);
             /*
             float fmax = 0.05f;
             if (_fs->nco_rx->d_theta >  fmax) _fs->nco_rx->d_theta =  fmax;
@@ -374,9 +366,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 _fs->num_symbols_collected = 0;
 
-                _fs->nco_rx->theta=0.0f;
-                _fs->nco_rx->d_theta=0.0f;
-                pll_reset(_fs->pll_rx);
+                nco_reset(_fs->nco_rx);
                 break;
             default:;
             }
@@ -404,14 +394,14 @@ void framesync64_open_bandwidth(framesync64 _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->agc_bw0);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw0);
-    pll_set_bandwidth(_fs->pll_rx, _fs->pll_bw0);
+    nco_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw0);
 }
 
 void framesync64_close_bandwidth(framesync64 _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw1);
-    pll_set_bandwidth(_fs->pll_rx, _fs->pll_bw1);
+    nco_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw1);
 }
 
 void framesync64_decode_header(framesync64 _fs)
