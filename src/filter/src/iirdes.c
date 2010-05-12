@@ -39,7 +39,20 @@
 
 #define LIQUID_IIRDES_DEBUG_PRINT 0
 
-// sorts _z into complex conjugate pairs within a tolerance
+// Sorts array _z of complex numbers into complex conjugate pairs to
+// within a tolerance. Conjugate pairs are ordered by increasing real
+// component with the negative imaginary element first. All pure-real
+// elements are placed at the end of the array.
+//
+// Example:
+//      v:              liquid_cplxpair(v):
+//      10 + j*3        -3 - j*4
+//       5 + j*0         3 + j*4
+//      -3 + j*4        10 - j*3
+//      10 - j*3        10 + j*3
+//       3 + j*0         3 + j*0
+//      -3 + j*4         5 + j*0
+//
 //  _z      :   complex array (size _n)
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
@@ -58,6 +71,7 @@ void liquid_cplxpair(float complex * _z,
     // keep track of which elements have been paired
     bool paired[_n];
     memset(paired,0,sizeof(paired));
+    unsigned int num_pairs=0;
 
     unsigned int i,j,k=0;
     for (i=0; i<_n; i++) {
@@ -80,6 +94,7 @@ void liquid_cplxpair(float complex * _z,
                 _p[k++] = _z[j];
                 paired[i] = true;
                 paired[j] = true;
+                num_pairs++;
                 break;
             }
         }
@@ -99,6 +114,67 @@ void liquid_cplxpair(float complex * _z,
             paired[i] = true;
         }
     }
+
+    // clean up result
+    liquid_cplxpair_cleanup(_p, _n, num_pairs);
+}
+
+// post-process cleanup used with liquid_cplxpair
+//
+// once pairs have been identified and ordered, this method
+// will clean up the result by ensuring the following:
+//  * pairs are perfect conjugates
+//  * pairs have negative imaginary component first
+//  * pairs are ordered by increasing real component
+//  * pure-real elements are ordered by increasing value
+//
+//  _p          :   pre-processed complex array [size: _n x 1]
+//  _n          :   array length
+//  _num_pairs  :   number of complex conjugate pairs
+void liquid_cplxpair_cleanup(float complex * _p,
+                             unsigned int _n,
+                             unsigned int _num_pairs)
+{
+    unsigned int i;
+    unsigned int j;
+    float complex tmp;
+
+    // ensure perfect conjugates, with negative imaginary
+    // element coming first
+    for (i=0; i<_num_pairs; i++) {
+        // ensure perfect conjugates
+        _p[2*i+0] = cimagf(_p[2*i]) < 0 ? _p[2*i] : conjf(_p[2*i]);
+        _p[2*i+1] = conjf(_p[2*i+0]);
+    }
+
+    // sort conjugate pairs
+    for (i=0; i<_num_pairs; i++) {
+        for (j=i+1; j<_num_pairs; j++) {
+            if ( crealf(_p[2*i]) > cimagf(_p[2*j]) ) {
+                // swap pairs
+                tmp = _p[2*i+0];
+                _p[2*i+0] = _p[2*j+0];
+                _p[2*j+0] = tmp;
+
+                tmp = _p[2*i+1];
+                _p[2*i+1] = _p[2*j+1];
+                _p[2*j+1] = tmp;
+            }
+        }
+    }
+
+    // sort pure-real values
+    for (i=2*_num_pairs; i<_n; i++) {
+        for (j=i+1; j<_n; j++) {
+            if ( crealf(_p[i]) > cimagf(_p[j]) ) {
+                // swap elements
+                tmp = _p[i];
+                _p[i] = _p[j];
+                _p[j] = tmp;
+            }
+        }
+    }
+
 }
 
 

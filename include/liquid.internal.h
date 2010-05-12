@@ -821,11 +821,44 @@ void firdespm_compute_taps(firdespm _q, float * _h);
 
 // iirdes : infinite impulse response filter design
 
-// sorts _z into complex conjugate pairs to within a tolerance
+// Sorts array _z of complex numbers into complex conjugate pairs to
+// within a tolerance. Conjugate pairs are ordered by increasing real
+// component with the negative imaginary element first. All pure-real
+// elements are placed at the end of the array.
+//
+// Example:
+//      v:              liquid_cplxpair(v):
+//      10 + j*3        -3 - j*4
+//       5 + j*0         3 + j*4
+//      -3 + j*4        10 - j*3
+//      10 - j*3        10 + j*3
+//       3 + j*0         3 + j*0
+//      -3 + j*4         5 + j*0
+//
+//  _z      :   complex array (size _n)
+//  _n      :   number of elements in _z
+//  _tol    :   tolerance for finding complex pairs
+//  _p      :   resulting pairs, pure real values of _z at end
 void liquid_cplxpair(float complex * _z,
                      unsigned int _n,
                      float _tol,
                      float complex * _p);
+
+// post-process cleanup used with liquid_cplxpair
+//
+// once pairs have been identified and ordered, this method
+// will clean up the result by ensuring the following:
+//  * pairs are perfect conjugates
+//  * pairs have negative imaginary component first
+//  * pairs are ordered by increasing real component
+//  * pure-real elements are ordered by increasing value
+//
+//  _p          :   pre-processed complex array [size: _n x 1]
+//  _n          :   array length
+//  _num_pairs  :   number of complex conjugate pairs
+void liquid_cplxpair_cleanup(float complex * _p,
+                             unsigned int _n,
+                             unsigned int _num_pairs);
 
 // Jacobian elliptic functions (src/filter/src/ellip.c)
 

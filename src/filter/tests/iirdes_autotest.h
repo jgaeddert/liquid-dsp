@@ -81,27 +81,53 @@ void autotest_iirdes_butter_2()
 // 
 // AUTOTEST : 
 //
-#if 0
-void xautotest_iirdes_cplxpair()
+
+void autotest_iirdes_cplxpair_n6()
 {
-    unsigned int n=5;
-    float complex r[n];
-    float complex p[n];
+    float tol = 1e-8f;
 
-    butter_rootsf(n,r);
+    //
+    float complex r[6] = {
+       0.980066577841242 + 0.198669330795061 * _Complex_I,
+       5.000000000000000 + 0.000000000000000 * _Complex_I,
+      -0.416146836547142 + 0.909297426825682 * _Complex_I,
+       0.980066577841242 - 0.198669330795061 * _Complex_I,
+       0.300000000000000 + 0.000000000000000 * _Complex_I,
+      -0.416146836547142 - 0.909297426825682 * _Complex_I
+    };
 
-    liquid_cplxpair(r,n,1e-6f,p);
+    float complex p[6];
+
+    float complex ptest[6] = {
+      -0.416146836547142 - 0.909297426825682 * _Complex_I,
+      -0.416146836547142 + 0.909297426825682 * _Complex_I,
+       0.980066577841242 - 0.198669330795061 * _Complex_I,
+       0.980066577841242 + 0.198669330795061 * _Complex_I,
+       0.300000000000000 + 0.000000000000000 * _Complex_I,
+       5.000000000000000 + 0.000000000000000 * _Complex_I
+    };
+
+    // compute complex pairs
+    liquid_cplxpair(r,6,1e-6f,p);
 
     unsigned int i;
-    printf("roots:\n");
-    for (i=0; i<n; i++)
-        printf("  r[%3u] : %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
 
-    printf("paired roots:\n");
-    for (i=0; i<n; i++)
-        printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+    if (liquid_autotest_verbose) {
+        printf("complex set:\n");
+        for (i=0; i<6; i++)
+            printf("  r[%3u] : %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
+
+        printf("complex pairs:\n");
+        for (i=0; i<6; i++)
+            printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+    }
+
+    // run test
+    for (i=0; i<6; i++) {
+        CONTEND_DELTA( crealf(p[i]), crealf(ptest[i]), tol );
+        CONTEND_DELTA( cimagf(p[i]), cimagf(ptest[i]), tol );
+    }
 }
-#endif
 
 // 
 // AUTOTEST : 
