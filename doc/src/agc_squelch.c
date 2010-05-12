@@ -1,5 +1,5 @@
 //
-// agc_squelch_pgf.c : automatic gain control squelch plot
+// agc_squelch.c : automatic gain control squelch plot
 //
 
 #include <stdio.h>
@@ -10,7 +10,7 @@
 #include <liquid/liquid.h>
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME  "figures.gen/agc_squelch_pgf.dat"
+#define OUTPUT_FILENAME  "figures.pgf/agc_squelch.dat"
 
 int main() {
     // options

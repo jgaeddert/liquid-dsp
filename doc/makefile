@@ -129,12 +129,16 @@ include figures.nco.mk
 # full figures target
 figures: $(figures_generated)
 
-# clean figures target
+# clean figures target (all supplemental files)
 clean-figures:
 	$(RM) figures.gen/*.eps
 	$(RM) figures.gen/*.dat
 	$(RM) figures.gen/*.gnu
 	$(RM) figures.gen/*.pdf
+	$(RM) figures.pgf/*.aux
+	$(RM) figures.pgf/*.dat
+	$(RM) figures.pgf/*.log
+	$(RM) figures.pgf/*.pdf
 
 ##
 ## DOCUMENT
