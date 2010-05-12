@@ -1,8 +1,19 @@
 ======================================================================================
 
-  Liquid : Software-Defined Radio Digital Signal Processing Library
+  liquid-dsp : Software-Defined Radio Digital Signal Processing Library
 
 ======================================================================================
+
+liquid-dsp is a free and open-source digital signal processing (DSP) library
+designed specifically for software-defined radios on embedded platforms. The
+aim is to provide a lightweight DSP library that does not rely on a myriad of
+external dependencies or proprietary and otherwise cumbersome frameworks.
+All signal processing elements are designed to be flexible, scalable, and
+dynamic, including filters, filter design, oscillators, modems, synchronizers,
+and complex mathematical operations.
+
+For more information, please refer to the full documentation directory under
+doc/.
 
 BUILD:
     $ ./reconf
@@ -18,13 +29,16 @@ TEST: (requires python to generate header file)
 BENCHMARK: (requires python to generate header file)
     $ make bench
 
-Using oprofile (http://...) with the benchmark tool to profile liquid
+Using oprofile (http://oprofile.sourceforge.net/) with the benchmark tool to
+profile liquid
     # opcontrol --setup --no-vmlinux
     # opcontrol --reset
     # opcontrol --start
     $ ./benchmark -p0 -c2.0e9 -n1000000
     # opcontrol --shutdown
     # opannotate --source | vim -
+        or
+    # opreport --callgraph -t 0.01 | vim -
 
 Modules: description
     agc: automatic gain control
@@ -66,6 +80,7 @@ liquid/
     doc/
         makefile
         liquid.tex
+        ...
     include/
         liquid.h                <-- external header, defines
                                     all APIsfor external use
@@ -91,6 +106,7 @@ liquid/
             ...
     examples/
         example.mk              <-- top-level included makefile
+        README                  <-- description of examples
         example1.c              <-- example program source
         example2.c              <-- example program source
 
@@ -109,19 +125,6 @@ Documentation organization
             ...
     Module2
         ...
-
-Repository organization
-/svn/liquid/
-    liquid/
-        trunk/
-        branches/
-        tags/
-    people/
-        jgaeddert/
-    framework/                  <-- framework for connecting modules
-    modules/                    <-- processing blocks
-        interpolator/
-
 
 ======================================================================================
  DSP module dependency tree
