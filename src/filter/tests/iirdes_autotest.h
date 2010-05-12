@@ -79,7 +79,7 @@ void autotest_iirdes_butter_2()
 }
 
 // 
-// AUTOTEST : 
+// AUTOTEST : complex pair, n=6
 //
 
 void autotest_iirdes_cplxpair_n6()
@@ -124,6 +124,86 @@ void autotest_iirdes_cplxpair_n6()
 
     // run test
     for (i=0; i<6; i++) {
+        CONTEND_DELTA( crealf(p[i]), crealf(ptest[i]), tol );
+        CONTEND_DELTA( cimagf(p[i]), cimagf(ptest[i]), tol );
+    }
+}
+
+
+// 
+// AUTOTEST : complex pair, n=20
+//
+
+void autotest_iirdes_cplxpair_n20()
+{
+    float tol = 1e-8f;
+
+    //
+    float complex r[20] = {
+      -0.340396183901119 + 1.109902927794652 * _Complex_I,
+       1.148964416793990 + 0.000000000000000 * _Complex_I,
+       0.190037889511651 + 0.597517076404221 * _Complex_I,
+      -0.340396183901119 - 1.109902927794652 * _Complex_I,
+       0.890883293686046 + 0.000000000000000 * _Complex_I,
+      -0.248338528396292 - 0.199390430636670 * _Complex_I,
+       0.190037889511651 - 0.597517076404221 * _Complex_I,
+       0.003180396218998 + 0.000000000000000 * _Complex_I,
+       0.261949046540733 - 0.739400953405199 * _Complex_I,
+       0.261949046540733 + 0.739400953405199 * _Complex_I,
+       0.309342570837113 + 0.000000000000000 * _Complex_I,
+       0.035516103001236 + 0.000000000000000 * _Complex_I,
+      -0.184159864176452 - 0.240335024546875 * _Complex_I,
+      -0.485244526317243 + 0.452251520655749 * _Complex_I,
+      -0.485244526317243 - 0.452251520655749 * _Complex_I,
+      -0.581633365450190 + 0.000000000000000 * _Complex_I,
+      -0.248338528396292 + 0.199390430636670 * _Complex_I,
+      -0.184159864176452 + 0.240335024546875 * _Complex_I,
+       1.013685316242435 + 0.000000000000000 * _Complex_I,
+      -0.089598596934739 + 0.000000000000000 * _Complex_I
+    };
+
+    float complex p[20];
+
+    float complex ptest[20] = {
+      -0.485244526317243 - 0.452251520655749 * _Complex_I,
+      -0.485244526317243 + 0.452251520655749 * _Complex_I,
+      -0.340396183901119 - 1.109902927794652 * _Complex_I,
+      -0.340396183901119 + 1.109902927794652 * _Complex_I,
+      -0.248338528396292 - 0.199390430636670 * _Complex_I,
+      -0.248338528396292 + 0.199390430636670 * _Complex_I,
+      -0.184159864176452 - 0.240335024546875 * _Complex_I,
+      -0.184159864176452 + 0.240335024546875 * _Complex_I,
+       0.190037889511651 - 0.597517076404221 * _Complex_I,
+       0.190037889511651 + 0.597517076404221 * _Complex_I,
+       0.261949046540733 - 0.739400953405199 * _Complex_I,
+       0.261949046540733 + 0.739400953405199 * _Complex_I,
+      -0.581633365450190 + 0.000000000000000 * _Complex_I,
+      -0.089598596934739 + 0.000000000000000 * _Complex_I,
+       0.003180396218998 + 0.000000000000000 * _Complex_I,
+       0.035516103001236 + 0.000000000000000 * _Complex_I,
+       0.309342570837113 + 0.000000000000000 * _Complex_I,
+       0.890883293686046 + 0.000000000000000 * _Complex_I,
+       1.013685316242435 + 0.000000000000000 * _Complex_I,
+       1.148964416793990 + 0.000000000000000 * _Complex_I
+    };
+
+    // compute complex pairs
+    liquid_cplxpair(r,20,1e-6f,p);
+
+    unsigned int i;
+
+    if (liquid_autotest_verbose) {
+        printf("complex set:\n");
+        for (i=0; i<20; i++)
+            printf("  r[%3u] : %12.8f + j*%12.8f\n", i, crealf(r[i]), cimagf(r[i]));
+
+        printf("complex pairs:\n");
+        for (i=0; i<20; i++)
+            printf("  p[%3u] : %12.8f + j*%12.8f\n", i, crealf(p[i]), cimagf(p[i]));
+    }
+
+    // run test
+    for (i=0; i<20; i++) {
         CONTEND_DELTA( crealf(p[i]), crealf(ptest[i]), tol );
         CONTEND_DELTA( cimagf(p[i]), cimagf(ptest[i]), tol );
     }

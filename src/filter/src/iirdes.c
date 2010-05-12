@@ -100,6 +100,7 @@ void liquid_cplxpair(float complex * _z,
         }
     }
     assert(k <= _n);
+    printf("num pairs: %u\n", num_pairs);
 
     // sort through remaining unpaired values and ensure
     // they are purely real
@@ -149,28 +150,28 @@ void liquid_cplxpair_cleanup(float complex * _p,
 
     // sort conjugate pairs
     for (i=0; i<_num_pairs; i++) {
-        for (j=i+1; j<_num_pairs; j++) {
-            if ( crealf(_p[2*i]) > cimagf(_p[2*j]) ) {
+        for (j=_num_pairs-1; j>i; j--) {
+            if ( crealf(_p[2*(j-1)]) > crealf(_p[2*j]) ) {
                 // swap pairs
-                tmp = _p[2*i+0];
-                _p[2*i+0] = _p[2*j+0];
-                _p[2*j+0] = tmp;
+                tmp = _p[2*(j-1)+0];
+                _p[2*(j-1)+0] = _p[2*j+0];
+                _p[2*j    +0] = tmp;
 
-                tmp = _p[2*i+1];
-                _p[2*i+1] = _p[2*j+1];
-                _p[2*j+1] = tmp;
+                tmp = _p[2*(j-1)+1];
+                _p[2*(j-1)+1] = _p[2*j+1];
+                _p[2*j    +1] = tmp;
             }
         }
     }
 
     // sort pure-real values
     for (i=2*_num_pairs; i<_n; i++) {
-        for (j=i+1; j<_n; j++) {
-            if ( crealf(_p[i]) > cimagf(_p[j]) ) {
+        for (j=_n-1; j>i; j--) {
+            if ( crealf(_p[j-1]) > crealf(_p[j]) ) {
                 // swap elements
-                tmp = _p[i];
-                _p[i] = _p[j];
-                _p[j] = tmp;
+                tmp = _p[j-1];
+                _p[j-1] = _p[j];
+                _p[j  ] = tmp;
             }
         }
     }
