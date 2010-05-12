@@ -1,100 +1,36 @@
 // 
 // poly_findroots_example.c
 //
-// test polynomial root-finding algorithm(s)
+// test polynomial root-finding algorithm (Bairstow's method)
 //
 
 #include <stdio.h>
 #include <math.h>
 
-#include "liquid.h"
-
-#define OUTPUT_FILENAME "poly_findroots_example.m"
-
-// forward declaration of internal method
-void fpoly_bessel(unsigned int _n, float * _p);
-
-//  n   m0(n)                   m2(n)                   tr(n)
-//  4   -2.32218504000000e+00   1.57017774731388e-01    1.75438094000000
-//  5   -2.99066420749534e+00   1.25586431233268e-01    1.76789754200000
-//  6   -3.66047349303832e+00   1.04583627408534e-01    1.77689253100000
-//  7   -4.33196373609137e+00   8.96656396226647e-02    1.78345867057143e+00
-//  8   -4.99584039483034470    0.07824392346702261     1.78322436142857e+00
-//
-// m[0] ~ -0.668861023825672*n + 0.352940768662957
-// m[2] ~ 1 / (1.6013579390149844*n -0.0429146801453954)
-//
-// Roots r[i] of the (n-1)^th-order Bessel polynomial lie on
-// quadratic polynomial (approximately)
-//      Im{r[i]} ~ t * 1.778
-// where t = i - L - w + 0.5, w = (n-1) % 2, L = (n-w-1)/2
-//      Re{r[i]} ~ m0(n) + m1(n)*Im{r[i]}^2
-//
-//
+#include "liquid.internal.h"
 
 int main() {
-    unsigned int n=4;
+    unsigned int n=6;   // polynomial length (order+1)
+    unsigned int i;
 
-    float complex p[n];
+    // generate polynomial
+    float p[6] = {6,11,-33,-33,11,6};
     float complex roots[n-1];
 
-    // compute bessel polynomial
-    unsigned int i;
-    float bp[n];
-    fpoly_bessel(n,bp);
+    // print polynomial
+    printf("polynomial:\n");
     for (i=0; i<n; i++)
-        p[i] = bp[i];
+        printf("  p[%3u] = %12.4f\n", i, p[i]);
 
-    polycf_findroots(p,n,roots);
+    // compute roots of polynomial
+    polyf_findroots(p,n,roots);
+    printf("roots:\n");
+    for (i=0; i<n-1; i++) {
+        printf("  r[%3u] = %12.8f + j*%12.8f\n", i,
+                                                 crealf(roots[i]),
+                                                 cimagf(roots[i]));
+    }
 
-    // expand polynomial
-    float complex roots_hat[n-1];
-    // convert form...
-    for (i=0; i<n-1; i++)
-        roots_hat[i] = -roots[i];
-
-    float complex p_hat[n];
-    polycf_expandroots(roots_hat,n-1,p_hat);
-
-    printf("polynomial :\n");
-    for (i=0; i<n; i++)
-        printf("  p[%3u] = %12.4e + j*%12.4e\n", i, crealf(p[i]), cimagf(p[i]));
-
-    printf("roots :\n");
-    for (i=0; i<n-1; i++)
-        printf("  r[%3u] = %12.4e + j*%12.4e\n", i, crealf(roots[i]), cimagf(roots[i]));
-
-    printf("poly (expanded roots):\n");
-    for (i=0; i<n; i++)
-        printf("  p[%3u] = %12.4e + j*%12.4e\n", i, crealf(p_hat[i]), cimagf(p_hat[i]));
-
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n\n");
-    fprintf(fid,"n = %u;\n", n);
-    for (i=0; i<n; i++)
-        fprintf(fid,"p(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(p[i]), cimagf(p[i]));
-    for (i=0; i<n-1; i++)
-        fprintf(fid,"r(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(roots[i]), cimagf(roots[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"t = -0.5:0.01:0.1;\n");
-    fprintf(fid,"plot(t,polyval(p,t));\n");
-    fprintf(fid,"grid on;\n");
-
-    // fit roots to 2nd-order polynomial
-    fprintf(fid,"m = polyfit(imag(r),real(r),2);\n");
-    fprintf(fid,"y = [-1:0.01:1]*1.1*max(imag(r));\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(polyval(m,y),y,'-',r,'x');\n");
-    fprintf(fid,"grid on;\n");
-
-    fprintf(fid,"n\n");
-    fprintf(fid,"m'\n");
-
-    fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
-    
+    printf("done.\n");
     return 0;
 }
-

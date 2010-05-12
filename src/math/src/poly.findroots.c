@@ -33,6 +33,9 @@
 
 
 // finds the complex roots of the polynomial
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
 void POLY(_findroots)(T * _p,
                       unsigned int _k,
                       TC * _roots)
@@ -41,15 +44,18 @@ void POLY(_findroots)(T * _p,
 }
 
 // finds the complex roots of the polynomial using the Durand-Kerner method
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
 void POLY(_findroots_durandkerner)(T * _p,
                                    unsigned int _k,
                                    TC * _roots)
 {
     if (_k < 2) {
-        fprintf(stderr,"%s_findroots(), order must be greater than 0\n", POLY_NAME);
+        fprintf(stderr,"%s_findroots_durandkerner(), order must be greater than 0\n", POLY_NAME);
         exit(1);
     } else if (_p[_k-1] != 1) {
-        fprintf(stderr,"%s_findroots(), _p[_k-1] must be equal to 1\n", POLY_NAME);
+        fprintf(stderr,"%s_findroots_durandkerner(), _p[_k-1] must be equal to 1\n", POLY_NAME);
         exit(1);
     }
 
@@ -122,6 +128,9 @@ void POLY(_findroots_durandkerner)(T * _p,
 }
 
 // finds the complex roots of the polynomial using Bairstow's method
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _roots  :   resulting complex roots [size: _k-1 x 1]
 void POLY(_findroots_bairstow)(T * _p,
                                unsigned int _k,
                                TC * _roots)
@@ -131,33 +140,42 @@ void POLY(_findroots_bairstow)(T * _p,
     T * p   = NULL; // input polynomial
     T * pr  = NULL; // output (reduced) polynomial
 
-    unsigned int i, k=0;
+    unsigned int i;
+    unsigned int k=0;   // output roots counter
     memmove(p0, _p, _k*sizeof(T));
 
     T u, v;
 
-    unsigned int n = _k;
-    unsigned int r = _k % 2;
-    unsigned int L = (_k-r)/2;
+    unsigned int n = _k;        // input counter (decrementer)
+    unsigned int r = _k % 2;    // polynomial length odd? (order even?)
+    unsigned int L = (_k-r)/2;  // semi-length
     for (i=0; i<L-1+r; i++) {
+        // set polynomial and reduced polynomial buffer pointers
         p  = (i % 2) == 0 ? p0 : p1;
         pr = (i % 2) == 0 ? p1 : p0;
 
         // initial estimates for u, v
         // TODO : ensure no division by zero
+        if (p[n-1] == 0) {
+            fprintf(stderr,"warning: poly_findroots_bairstow(), irreducible polynomial");
+            p[n-1] = 1e-12;
+        }
         u = p[n-2] / p[n-1];
         v = p[n-3] / p[n-1];
 
         // compute factor using Bairstow's recursion
         POLY(_findroots_bairstow_recursion)(p,n,pr,&u,&v);
 
-        float complex r0 = 0.5f*(-u + csqrtf(u*u - 4*v));
-        float complex r1 = 0.5f*(-u - csqrtf(u*u - 4*v));
+        // compute complex roots of x^2 + u*x + v
+        TC r0 = 0.5f*(-u + csqrtf(u*u - 4.0*v));
+        TC r1 = 0.5f*(-u - csqrtf(u*u - 4.0*v));
 
+        // append result to output
         _roots[k++] = r0;
         _roots[k++] = r1;
 
 #if 0
+        // print debugging info
         unsigned int j;
         printf("initial polynomial:\n");
         for (j=0; j<n; j++)
@@ -176,6 +194,7 @@ void POLY(_findroots_bairstow)(T * _p,
             printf("  pr[%3u] = %12.8f + j*%12.8f\n", j, crealf(pr[j]), cimagf(pr[j]));
 #endif
 
+        // decrement new (reduced) polynomial size by 2
         n -= 2;
     }
 
@@ -186,7 +205,12 @@ void POLY(_findroots_bairstow)(T * _p,
     //assert( k == _k-1 );
 }
 
-// iterate over Bairstow's method
+// iterate over Bairstow's method, finding quadratic factor x^2 + u*x + v
+//  _p      :   polynomial array, ascending powers [size: _k x 1]
+//  _k      :   polynomials length (poly order = _k - 1)
+//  _p1     :   reduced polynomial (output) [size: _k-2 x 1]
+//  _u      :   input: initial estimate for u; output: resulting u
+//  _v      :   input: initial estimate for v; output: resulting v
 void POLY(_findroots_bairstow_recursion)(T * _p,
                                          unsigned int _k,
                                          T * _p1,
@@ -238,6 +262,7 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
         dv = - q*(-g*v*c + (g*u-h)*d);
 
 #if 0
+        // print debugging info
         printf("bairstow [%u] :\n", k);
         printf("  u     : %12.4e + j*%12.4e\n", crealf(u), cimagf(u));
         printf("  v     : %12.4e + j*%12.4e\n", crealf(v), cimagf(v));
@@ -275,9 +300,11 @@ void POLY(_findroots_bairstow_recursion)(T * _p,
             continue_iterating = 0;
     }
 
+    // set resulting reduced polynomial
     for (i=0; i<_k-2; i++)
         _p1[i] = b[i];
 
+    // set output pairs
     *_u = u;
     *_v = v;
 

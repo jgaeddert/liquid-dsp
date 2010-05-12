@@ -320,7 +320,6 @@ pll_example.c
 
 pnsync_crcf_example.c
 pnsync_rrrf_example.c
-poly_findroots_bairstow_example.c
 poly_findroots_example.c
 
 polyfit_example.c
