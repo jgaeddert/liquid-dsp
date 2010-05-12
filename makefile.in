@@ -20,6 +20,23 @@
 # 
 # Makefile for liquid SDR libraries
 #
+# Targets:
+#    all                 :   dynamic shared-library object (e.g. libliquid.so)
+#    install             :   install the dynamic shared library object and
+#                            header file(s)
+#    clean               :   clean all targets (bench, check, examples, etc)
+#    check               :   build and run autotest program
+#    bench               :   build and run benchmarking program
+#    examples            :   build all examples
+#    todolist            :   generate list of todos (text file)
+#    todolist.html       :   generate list of todos (html file)
+#
+#    clean-[modulename]  :   clean module [modulename]
+#    clean-modules       :   clean all modules
+#    clean-examples      :   clean examples
+#    clean-check         :   clean autotest program
+#    clean-bench         :   clean benchmark program
+#
 
 # paths
 srcdir = @srcdir@

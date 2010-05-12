@@ -1,5 +1,5 @@
 % 
-% agc_squelch_pgf.tex
+% figures.pgf/agc_squelch.tex
 %
 % Author: Joseph D. Gaeddert
 \documentclass[a4paper,landscape]{article}
@@ -36,7 +36,7 @@
     \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1) node[left=7pt,rotate=90] {{\it signal strength}};
 
     % draw curve
-    \draw[thick,black] plot[very thick,black] file {figures.gen/agc_squelch_pgf.dat};
+    \draw[thick,black] plot[very thick,black] file {figures.pgf/agc_squelch.dat};
 
     % draw squelch threshold line
     \draw[thin, gray] (-0.02, \threshold) -- (2,\threshold)

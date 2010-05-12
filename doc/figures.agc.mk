@@ -3,28 +3,27 @@
 #
 
 local_pdffiles :=			\
-	figures.gen/agc_squelch_pgf.pdf
+	figures.pgf/agc_squelch.pdf
 
 ##
 ## agc_squelch (PGF)
 ## 
-src/agc_squelch_pgf : src/agc_squelch_pgf.c $(lib_objects)
+src/agc_squelch : src/agc_squelch.c $(lib_objects)
 
-figures.gen/agc_squelch_pgf.dat : src/agc_squelch_pgf
+figures.pgf/agc_squelch.dat : src/agc_squelch
 	./$<
 
-figures.gen/agc_squelch_pgf.pdf : agc_squelch_pgf.tex figures.gen/agc_squelch_pgf.dat
-	$(TEX) agc_squelch_pgf.tex
-	$(MV) agc_squelch_pgf.pdf figures.gen/
+figures.pgf/agc_squelch.pdf : figures.pgf/agc_squelch.tex figures.pgf/agc_squelch.dat
+	$(TEX) --output-directory=figures.pgf $<
 
 
 # accumulate target
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
-	src/agc_squelch_pgf		\
-	agc_squelch_pgf.aux		\
-	agc_squelch_pgf.log		\
-	figures.gen/agc_squelch_pgf.dat	\
+	src/agc_squelch			\
+	figures.pgf/agc_squelch.aux	\
+	figures.pgf/agc_squelch.dat	\
+	figures.pgf/agc_squelch.log	\
 	$(local_pdffiles)
 
