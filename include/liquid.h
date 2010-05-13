@@ -2285,6 +2285,16 @@ void MATRIX(_sub)(T * _x,                                       \
                   T * _z,                                       \
                   unsigned int _r,                              \
                   unsigned int _c);                             \
+void MATRIX(_pmul)(T * _x,                                      \
+                   T * _y,                                      \
+                   T * _z,                                      \
+                   unsigned int _r,                             \
+                   unsigned int _c);                            \
+void MATRIX(_pdiv)(T * _x,                                      \
+                   T * _y,                                      \
+                   T * _z,                                      \
+                   unsigned int _r,                             \
+                   unsigned int _c);                            \
 void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
@@ -2337,6 +2347,10 @@ void MATRIX(_ludecomp_doolittle)(T * _x,                        \
                                  T * _P);
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
+
+#define matrixc_access(X,R,C,r,c)   matrix_access(X,R,C,r,c)
+#define matrixf_access(X,R,C,r,c)   matrix_access(X,R,C,r,c)
+#define matrixcf_access(X,R,C,r,c)  matrix_access(X,R,C,r,c)
 
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_FLOAT,   float)
 LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_DOUBLE,  double)

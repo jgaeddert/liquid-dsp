@@ -27,6 +27,12 @@
 #include <stdio.h>
 #include <string.h>
 
+// add elements of two matrices
+//  _X      :   1st input matrix [size: _R x _C]
+//  _Y      :   2nd input matrix [size: _R x _C]
+//  _Z      :   output matrix [size: _R x _C]
+//  _R      :   number of rows
+//  _C      :   number of columns
 void MATRIX(_add)(T * _X,
                   T * _Y,
                   T * _Z,
@@ -38,6 +44,12 @@ void MATRIX(_add)(T * _X,
         _Z[i] = _X[i] + _Y[i];
 }
 
+// subtract elements of two matrices
+//  _X      :   1st input matrix [size: _R x _C]
+//  _Y      :   2nd input matrix [size: _R x _C]
+//  _Z      :   output matrix [size: _R x _C]
+//  _R      :   number of rows
+//  _C      :   number of columns
 void MATRIX(_sub)(T * _X,
                   T * _Y,
                   T * _Z,
@@ -49,6 +61,42 @@ void MATRIX(_sub)(T * _X,
         _Z[i] = _X[i] - _Y[i];
 }
 
+// point-wise multiplication
+//  _X      :   1st input matrix [size: _R x _C]
+//  _Y      :   2nd input matrix [size: _R x _C]
+//  _Z      :   output matrix [size: _R x _C]
+//  _R      :   number of rows
+//  _C      :   number of columns
+void MATRIX(_pmul)(T * _X,
+                   T * _Y,
+                   T * _Z,
+                   unsigned int _R,
+                   unsigned int _C)
+{
+    unsigned int i;
+    for (i=0; i<(_R*_C); i++)
+        _Z[i] = _X[i] * _Y[i];
+}
+
+// point-wise division
+//  _X      :   1st input matrix [size: _R x _C]
+//  _Y      :   2nd input matrix [size: _R x _C]
+//  _Z      :   output matrix [size: _R x _C]
+//  _R      :   number of rows
+//  _C      :   number of columns
+void MATRIX(_pdiv)(T * _X,
+                   T * _Y,
+                   T * _Z,
+                   unsigned int _R,
+                   unsigned int _C)
+{
+    unsigned int i;
+    for (i=0; i<(_R*_C); i++)
+        _Z[i] = _X[i] / _Y[i];
+}
+
+
+// multiply two matrices together
 void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
                   T * _Y, unsigned int _YR, unsigned int _YC,
                   T * _Z, unsigned int _ZR, unsigned int _ZC)
@@ -100,6 +148,7 @@ void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
     }
 }
 
+// solve set of linear equations
 void MATRIX(_div)(T * _X,
                   T * _Y,
                   T * _Z,
