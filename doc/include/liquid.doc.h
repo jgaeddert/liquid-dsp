@@ -32,6 +32,7 @@
 #define LIQUID_DOC_COLOR_BLUE   "#004080"   // blue
 #define LIQUID_DOC_COLOR_GREEN  "#008040"   // green
 #define LIQUID_DOC_COLOR_RED    "#800000"   // dark red
+#define LIQUID_DOC_COLOR_PURPLE "#400040"   // dark puple
 
 // power spectral density window
 typedef enum {

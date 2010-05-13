@@ -11,6 +11,30 @@ modulation schemes which encode information in the signal amplitude (e.g. see
 Furthermore, loop filters for tracking carrier and symbol timing are highly
 sensitive to signal levels.
 For these reasons and more does gain control play a crucial role in SDR.
+The ideal AGC has a transfer function as in
+figure~\ref{fig:module:agc:transfer_function}.
+When the input signal level is low, the AGC is disabled and the output is a
+linear function of the input.
+When the input level reaches a lower threshold, $e_0$, the AGC becomes active
+and the output level is maintained at the target, $\bar{e}$, until the input
+reaches its upper limit, $e_1$.
+The AGC is disabled at this point, and the output level is again a linear
+function of the input.
+
+\begin{figure}[h!]
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=10cm]{figures.pgf/agc_transfer_function}
+\caption{Ideal AGC transfer function}
+\label{fig:module:agc:transfer_function}
+\end{figure}
+
+%The energy of a signal $\vec{x} = [x(0), x(1), \ldots, x(N-1) ]$ is
+%\[
+%    E\{\|\vec{x}\|\} = 
+%        \left[
+%        \sum\limits_{k=0}^{N-1} {\|x^2(k)\|}
+%        \right]^{1/2}
+%\]
 
 \liquid\ implements automatic gain controlling with the {\tt agc\_xxxt}
 family of objects.
@@ -21,14 +45,6 @@ $\hat{e}$ of the signal energy and updates the internal gain $\hat{g}$,
 applying it to the input to produce an output with the target energy.
 The gain estimate is updated by way of an open loop filter whose bandwidth
 determines the update rate of the AGC.
-
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=10cm]{figures.pgf/agc_transfer_function}
-\caption{Ideal AGC transfer function}
-\label{fig:module:agc:transfer_function}
-\end{figure}
-
 
 Loop filter coefficients for a bandwidth $w$,
 \[  \alpha = \sqrt{w}   \]
@@ -94,6 +110,7 @@ The multiplier in to the right of the above equation is always positive
 and proportional to the gain error.
 Notice that when the error is zero ($\|y(n)\| = \bar{e}$),
 $\hat{g}(n+1) = \hat{g}(n)$
+
 
 \subsection{Locking}
 The {\tt agc} module permits the gain to be locked when, for example, the
@@ -207,4 +224,12 @@ Auto-squelch is enabled/disabled using the
 \subsection{Usage}
 Basic usage:
 \input{listings/agc.example.c.tex}
+
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.gen/agc_transient}
+\caption{{\tt agc\_crcf} transient response}
+\label{fig:module:agc:transient}
+\end{figure}
+
 

@@ -9,6 +9,7 @@
 highlight.sty
 # ignore all figure-generating programs
 src/agc_squelch
+src/agc_transient
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
 src/filter_interp_crcf
