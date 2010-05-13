@@ -19,6 +19,9 @@ Similar matrix interfaces exist in \liquid\ for
 {\it double complex} ({\tt matrixc}), and
 {\it float complex} ({\tt matrixcf}).
 
+% 
+% basic math operations 
+%
 \subsection{Basic math operations}
 \label{module:matrix:math}
 add, sub, mul, div, trans(pose), eye
@@ -82,6 +85,29 @@ Z =
   0.9243971   0.1179412
 \end{verbatim}
 
+\subsubsection{{\tt matrix\_trans} (transpose matrix)}
+The {\tt matrix\_trans} performs the non-conjugate matrix transpose.
+\[
+    \left[
+    \begin{array}{cccc}
+    A_{0,0}     & A_{0,1}   & \cdots  & A_{0,m-1}   \\
+    A_{1,0}     & A_{1,1}   & \cdots  & A_{1,m-1}   \\
+                &           &         &             \\
+    A_{n-1,0}   & A_{n-1,1} & \cdots  & A_{n-1,m-1} \\
+    \end{array}
+    \right]^T
+    =
+    \left[
+    \begin{array}{cccc}
+    A_{0,0}     & A_{0,1}   & \cdots  & A_{0,n-1}   \\
+    A_{1,0}     & A_{1,1}   & \cdots  & A_{1,n-1}   \\
+                &           &         &             \\
+    A_{m-1,0}   & A_{m-1,1} & \cdots  & A_{m-1,n-1} \\
+    \end{array}
+    \right]
+\]
+
+
 \subsubsection{{\tt matrix\_eye} (identity matrix)}
 The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
 \[
@@ -95,6 +121,9 @@ The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
     \end{bmatrix}
 \]
 
+% 
+% elementary math operations 
+%
 \subsection{Elementary math operations}
 \label{module:matrix:elementary}
 pivot, swaprows
@@ -147,6 +176,9 @@ matrixf_pivot(x,4,4,1,2);
  -5.03205967  4.16144180  0.00000000  0.53803295
 \end{verbatim}
 
+% 
+% complex math operations 
+%
 \subsection{Complex math operations}
 \label{module:matrix:complex}
 inv(ert), gjelim (Gauss-Jordan elimination)
