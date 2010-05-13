@@ -211,14 +211,15 @@ $P_n(x)$
     \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
 \]
 
-\subsubsection{{\tt poly\_findroots\_bairstow()}}
-Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method.
-For a polynomial $P_n(x)$...
+\subsubsection{{\tt poly\_findroots()}}
+Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method
+[TODO : add reference].
+For an $n^{th}$-order polynomial $P_n(x)$ given by
 \[
     P_n(x) = \prod_{k=0}^{n-1}{(x-r_k)}
 \]
-...there exists a polynomial $p_{2}(x)=u + vx + x^2$ which divides
-$P_{n}(x)$ exactly and has two roots (possibly complex)
+there exists at least one quadratic polynomial $p_{2}(x)=u + vx + x^2$ which
+exactly divides $P_{n}(x)$ and has two roots (possibly complex)
 \[
     r_0 = \frac{1}{2}\left(-v-\sqrt{v^2-4u}\right), \; \\
     r_1 = \frac{1}{2}\left(-v+\sqrt{v^2-4u}\right)
@@ -231,9 +232,21 @@ This method has several advantages over other methods
 \begin{itemize}
 \item iterations operate on real-valued math, even if the roots are complex
 \item the algorithm is capable of handling multiple roots (unlike the
-      Durand-Kerner method)
+      Durand-Kerner method), i.e. $P_{n}(x) = (x-2)(x-2)(x-2)\cdots$
 \item the algorithm does not rely on expanding the full polynomial and is
       therefore resilient to machine precision
 \end{itemize}
+Each iteration of Bairstow's algorithm reduces the original polynomial order
+by two, eventually collapsing the polynomial.
+The initial choice of $u$ and $v$ determine both algorithm convergence and
+speed.
+
+\liquid\ implements Bairstow's method with the {\tt poly\_findroots()}
+function which accepts an $n^{th}$-order polynomial in standard expanded form
+and computes its $n$ roots.
+The last term of the polynomial (highest order) cannot be zero, otherwise the
+algorithm will not converge.
+%The roots are sorted by complex pairs according to
+%{\tt liquid\_cplxpair()} (see section...)
 
 
