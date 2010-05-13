@@ -1,0 +1,58 @@
+% 
+% figures.pgf/agc_transfer_function.tex
+%
+% Author: Joseph D. Gaeddert
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+%%%<
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+%%%>
+
+\begin{comment}
+:Title: 
+
+\end{comment}
+
+\usetikzlibrary{calc,arrows,positioning}
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{tikzpicture}[scale=4];
+    % help lines
+    %\draw[step=2.5mm,help lines] (0,0) grid (2,1);
+    %
+    \def\dv{0.015}    % voltage deviation
+
+    % axis 
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (2,0)
+        node[anchor=north] {{\it input energy}};
+    \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1)
+        node[left=7pt,rotate=90] {{\it output energy}};
+
+    % curve
+    \draw[thick, black] (0.0, 0.0      ) -- 
+                             (0.5, 0.5 - \dv) --
+                             (1.5, 0.5 + \dv) --
+                             (2.0, 1.0      );
+
+    % other lines
+    \draw[thin, gray] (0.0, 0.5) -- (2.0, 0.5) node[anchor=south,black] {$\bar{e}$}; % horizontal
+    \draw[thin, gray] (0.5, 0.0) -- (0.5, 0.5 - \dv);
+    \draw[thin, gray] (1.5, 0.0) -- (1.5, 0.5 + \dv);
+
+    % tic marks and labels
+    \draw[very thick, black] (-0.5pt, 0.5) -- (0.5pt, 0.5);% node[left=7pt] {$\hat{e}$};
+    \draw[very thick, black] (0.5, -0.5pt) -- (0.5, 0.5pt) node[below=7pt] {$e_0$};
+    \draw[very thick, black] (1.5, -0.5pt) -- (1.5, 0.5pt) node[below=7pt] {$e_1$};
+
+\end{tikzpicture}
+
+\end{document}
+

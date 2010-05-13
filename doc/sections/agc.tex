@@ -13,15 +13,22 @@ sensitive to signal levels.
 For these reasons and more does gain control play a crucial role in SDR.
 
 \liquid\ implements automatic gain controlling with the {\tt agc\_xxxt}
-object.
+family of objects.
+The goal is to estimate the gain required to force a signal to have a specific
+target energy, $\bar{e}$.
 Operating one sample at a time, the {\tt agc} object makes an estimate
 $\hat{e}$ of the signal energy and updates the internal gain $\hat{g}$,
-applying it to the input to produce an output with the target energy
-$\bar{e}$.
+applying it to the input to produce an output with the target energy.
 The gain estimate is updated by way of an open loop filter whose bandwidth
 determines the update rate of the AGC.
 
-Problem areas: signals that have fluctuating gain...
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=10cm]{figures.pgf/agc_transfer_function}
+\caption{Ideal AGC transfer function}
+\label{fig:module:agc:transfer_function}
+\end{figure}
+
 
 Loop filter coefficients for a bandwidth $w$,
 \[  \alpha = \sqrt{w}   \]
