@@ -68,6 +68,7 @@ int main() {
     for (i=1; i<h_len; i++)
         h[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
     fir_filter_cccf f = fir_filter_cccf_create(h,h_len);
+    fir_filter_cccf_print(f);
 
     // generate random data signal
     for (i=0; i<n; i++)
@@ -306,9 +307,53 @@ int main() {
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_TAPS);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
-    fprintf(fid,"set size ratio 1\n");
-    fprintf(fid,"set samples 128\n");
-    fprintf(fid,"plot [-10:10] sin(x),atan(x),cos(atan(x))\n");
+    fprintf(fid,"set size ratio 0.5\n");
+    fprintf(fid,"set xrange [-1:%u];\n", h_len > p ? h_len : p);
+    fprintf(fid,"set yrange [-1.8:1.8]\n");
+    fprintf(fid,"set xlabel 'filter index'\n");
+    fprintf(fid,"set key top right nobox\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set multiplot layout 2,1 scale 1.0,1.0\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"set pointsize 0.8\n");
+
+    // real
+    fprintf(fid,"set ylabel 'real'\n");
+    fprintf(fid,"plot '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'channel',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'LMS',\\\n",     LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'RLS'\n",        LIQUID_DOC_COLOR_BLUE);
+    // channel
+    for (i=0; i<h_len; i++)
+        fprintf(fid,"  %4u %12.4e\n", i, crealf(h[i]));
+    fprintf(fid,"e\n");
+    // LMS
+    for (i=0; i<p; i++)
+        fprintf(fid,"  %4u %12.4e\n", i, crealf(w_lms[i]));
+    fprintf(fid,"e\n");
+    // RLS
+    for (i=0; i<p; i++)
+        fprintf(fid,"  %4u %12.4e\n", i, crealf(w_rls[i]));
+    fprintf(fid,"e\n");
+
+    // imag
+    fprintf(fid,"set ylabel 'imag'\n");
+    fprintf(fid,"plot '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'channel',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'LMS',\\\n",     LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 12 linecolor rgb '%s' title 'RLS'\n",        LIQUID_DOC_COLOR_BLUE);
+    // channel
+    for (i=0; i<h_len; i++)
+        fprintf(fid,"  %4u %12.4e\n", i, cimagf(h[i]));
+    fprintf(fid,"e\n");
+    // LMS
+    for (i=0; i<p; i++)
+        fprintf(fid,"  %4u %12.4e\n", i, cimagf(w_lms[i]));
+    fprintf(fid,"e\n");
+    // RLS
+    for (i=0; i<p; i++)
+        fprintf(fid,"  %4u %12.4e\n", i, cimagf(w_rls[i]));
+    fprintf(fid,"e\n");
+    fprintf(fid,"unset multiplot\n");
+
     fclose(fid);
 
     return 0;
