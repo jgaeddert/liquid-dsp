@@ -6,3 +6,157 @@
 \label{module:equalization}
 adaptive equalizers: LMS, RLS, blind...
 
+This section describes the functionality of two digital linear adaptive
+equalizers implemented...
+
+\subsection{System Description}
+Suppose a known transmitted symbol sequence
+$\vec{d} = \{ d_0, d_1, \ldots ,d_{N-1}\}$
+which passes through an unknown channel filter $\vec{h}_n$ of length $q$.
+The received symbol at time $n$ is therefore
+\[
+    y(n) = \sum\limits_{k=0}^{q-1}{h_n(k)d(n-k)} + w(n)
+\]
+where $w(n)$ represents white Gauss noise.
+The adaptive linear equalizer attempts to use a finite impulse response (FIR)
+filter $\vec{w}$ of length $p$ to estimate the transmitted symbol, using only
+the received signal vector $\vec{y}$ and the known data sequence $\vec{d}$,
+viz
+\[
+    \hat{d}(n) = \vec{w}_n^T \vec{y}(n)
+\]
+where $\vec{y}_n = [ y(n), y(n-1),\ldots, y(n-p+1) ]^T$.
+Several methods for estimating $\vec{w}$ are known in the literature, and
+typically rely on iteratively adjusting $\vec{w}$ with each input though a
+recursion algorithm.
+In this section we provide a very brief overview of two prevalent adaptation
+algorithms;
+for a more in-depth discussion we refer the interested reader to
+\cite{Proakis:2001,Haykin:2002}.
+
+\subsection{Least Mean-Squares}
+The least mean-squares (LMS) algorithm adapts the coefficients of the filter
+estimate using a steepest descent (gradient) of the instantaneous {\it a priori}
+error.
+The filter estimate at time $n+1$ follows the following recursion
+\begin{equation}
+\label{eq:lms:weight_update}
+\vec{w}_{n+1} = \vec{w}_{n} - \mu \vec{g}_n
+\end{equation}
+where $\mu$ is the iterative step size, and
+$\vec{g}_n$ the normalized gradient vector, estimated from the error signal
+and the coefficients vector at time $n$.
+
+\subsection{Recursive Least-Squares}
+The recursive least-squares (RLS) algorithm attempts to minimize the
+time-average weighted square error of the filter output, viz
+\begin{equation}
+c(\vec{w}_n) = \sum\limits_{i=0}^{n}{ \lambda^{i-n} \left| d(i)-\hat{d}(i)\right|^2 }
+\end{equation}
+where the forgetting factor $0<\lambda\leq 1$ which itroduces exponential
+weighting into past data, appropriate for time-varying channels.
+The solution to minimizing the cost function $c(\vec{w}_n)$ is achieved by
+setting its partial derivatives with respect to $\vec{w}_n$ equal to zero.
+The solution at time $n$ involves inverting the weighted cross correlation
+matrix for $\vec{y}_n$, a computationally complex task.
+This step can be circumvented through the use of a recursive algorithm which
+attempts to estimate the inverse using the {\it a priori} error from the
+output of the filter.
+The update equation is
+\begin{equation}
+\label{eq:rls:weight_update}
+\vec{w}_{n+1} = \vec{w}_n + \Delta_{n}
+\end{equation}
+where the correction factor $\Delta_{n}$ depends on $\vec{y}_n$ and $\vec{w}_n$,
+and involves several $p \times p$ matrix multiplications.
+The RLS algorithm provides a solution which converges much faster than the LMS
+algorithm, however with a significant increase in computational complexity and
+memory requirements.
+
+\subsection{Results}
+Both the LMS and RLS equalizers were implemented in the C programming
+language using a minimalistic interface wrapper.
+The performance of the two equalizers were compared by generating a channel
+with an impulse response representing a strong line-of-sight (LoS) component
+followed by random echoes.
+Each was trained on 512 iterations of a known QPSK-modulated training sequence with learning
+rate parameters $\mu=0.999$ and $\lambda=0.999$ for the LMS and RLS algorithms,
+respectively.
+A small amount of noise was inject after the channel filter (roughly 40dB
+below the signal level) to demonstrate the robustness of the algorithms.
+The results of two simulations are shown in
+figures~\ref{fig:equalizer_example1} and \ref{fig:equalizer_example2};
+the first demonstrating a 10-tap equalizer applied to the response of a 6-tap
+channel while the second demonstrates a 28-tap equalizer for a 12-tap
+channel.
+
+The passband power spectral densities (PSD) of the channel and the equalizer outputs
+are depicted in figures~\ref{fig:equalizer_example1:psd} and \ref{fig:equalizer_example2:psd}.
+While nearly flat, it is important to realize that these algorithms minimize
+a cost function defined as the square of the {\it a priori} filter output error,
+and do not necessarily force the PSD to zero.
+In both scenarios, the RLS equalizer had a lower error after training, and converged to its
+error minimum much faster.
+
+
+
+%-------------------- FIGURE: EQUALIZER EXAMPLE 1 --------------------
+\begin{figure}[ht]
+\centering
+\mbox{
+  \subfigure[PSD] {
+      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_psd}
+      \label{fig:equalizer_example1:psd}
+    } \quad
+  \subfigure[constellation] {
+      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_const}
+      \label{fig:equalizer_example1:constellation}
+    } \quad
+}
+\mbox{
+  \subfigure[taps] {
+      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_taps}
+      \label{fig:equalizer_example1:taps}
+    } \quad
+  \subfigure[mean-squared error] {
+      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_mse}
+      \label{fig:equalizer_example1:mse}
+    } \quad
+}
+% trim = left bottom right top
+\caption{Scenario 1: 10-tap equalizer for a 6-tap channel.  The LMS and RMS algorithms exhibit
+a final root mean-squared error of -33.46dB and -34.76dB, respectively }
+\label{fig:equalizer_example1}
+\end{figure}
+
+
+%-------------------- FIGURE: EQUALIZER EXAMPLE 2 --------------------
+\begin{figure}[ht]
+\centering
+\mbox{
+  \subfigure[PSD] {
+      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_psd}
+      \label{fig:equalizer_example2:psd}
+    } \quad
+  \subfigure[constellation] {
+      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_constellation}
+      \label{fig:equalizer_example2:constellation}
+    } \quad
+}
+\mbox{
+  \subfigure[taps] {
+      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_taps}
+      \label{fig:equalizer_example2:taps}
+    } \quad
+  \subfigure[mean-squared error] {
+      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_error}
+      \label{fig:equalizer_example2:mse}
+    } \quad
+}
+% trim = left bottom right top
+\caption{Scenario 1: 28-tap equalizer for a 12-tap channel.  The LMS and RMS algorithms exhibit
+a final root mean-squared error of -27.27dB and -29.55dB, respectively }
+\label{fig:equalizer_example2}
+\end{figure}
+
+

@@ -123,6 +123,7 @@ figures_generated :=
 
 # module figure makefiles
 include figures.agc.mk
+include figures.equalization.mk
 include figures.filter.mk
 include figures.modem.mk
 include figures.nco.mk
