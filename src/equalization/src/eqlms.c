@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +20,7 @@
  */
 
 //
-// Least mean-squares equalizer
+// Least mean-squares (LMS) equalizer
 //
 
 #include <stdlib.h>
@@ -40,6 +41,8 @@ struct EQLMS(_s) {
     fwindow ex2_buffer; // input energy buffer
 };
 
+// create least mean-squares (LMS) equalizer object
+//  _p      :   equalizer length (number of taps)
 EQLMS() EQLMS(_create)(unsigned int _p)
 {
     EQLMS() eq = (EQLMS()) malloc(sizeof(struct EQLMS(_s)));
@@ -58,6 +61,7 @@ EQLMS() EQLMS(_create)(unsigned int _p)
     return eq;
 }
 
+// destroy eqlms object
 void EQLMS(_destroy)(EQLMS() _eq)
 {
     free(_eq->w0);
@@ -68,13 +72,18 @@ void EQLMS(_destroy)(EQLMS() _eq)
     free(_eq);
 }
 
+// print eqlms object internals
 void EQLMS(_print)(EQLMS() _eq)
 {
     printf("equalizer (LMS):\n");
     printf("    order:      %u\n", _eq->p);
 }
 
-void EQLMS(_set_bw)(EQLMS() _eq, float _mu)
+// set learning rate of equalizer
+//  _eq     :   equalizer object
+//  _mu     :   LMS learning rate (should be near 0), 0 < _mu < 1
+void EQLMS(_set_bw)(EQLMS() _eq,
+                    float _mu)
 {
     if (_mu < 0.0f) {
         printf("error: eqlms_xxxt_set_bw(), learning rate must be positive\n");
@@ -84,6 +93,7 @@ void EQLMS(_set_bw)(EQLMS() _eq, float _mu)
     _eq->mu = _mu;
 }
 
+// reset equalizer
 void EQLMS(_reset)(EQLMS() _eq)
 {
     unsigned int i;
@@ -95,11 +105,15 @@ void EQLMS(_reset)(EQLMS() _eq)
     _eq->n=0;
 }
 
-//
+// execute cycle of equalizer, filtering output
+//  _eq     :   equalizer object
 //  _x      :   received sample
 //  _d      :   desired output
 //  _d_hat  :   filtered output
-void EQLMS(_execute)(EQLMS() _eq, T _x, T _d, T * _d_hat)
+void EQLMS(_execute)(EQLMS() _eq,
+                     T _x,
+                     T _d,
+                     T * _d_hat)
 {
     unsigned int i;
     unsigned int p=_eq->p;
@@ -155,6 +169,7 @@ void EQLMS(_execute)(EQLMS() _eq, T _x, T _d, T * _d_hat)
     memmove(_eq->w0, _eq->w1,   p*sizeof(T));
 }
 
+// retrieve internal filter coefficients
 void EQLMS(_get_weights)(EQLMS() _eq, T * _w)
 {
     // copy output weight vector
@@ -163,12 +178,17 @@ void EQLMS(_get_weights)(EQLMS() _eq, T * _w)
         _w[i] = conj(_eq->w1[p-i-1]);
 }
 
-//
-//  _w  :   initial weights / output weights
-//  _x  :   received sample vector
-//  _d  :   desired output vector
-//  _n  :   vector length
-void EQLMS(_train)(EQLMS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
+// train equalizer object
+//  _eq     :   equalizer object
+//  _w      :   initial weights / output weights
+//  _x      :   received sample vector
+//  _d      :   desired output vector
+//  _n      :   vector length
+void EQLMS(_train)(EQLMS() _eq,
+                   T * _w,
+                   T * _x,
+                   T * _d,
+                   unsigned int _n)
 {
     unsigned int i, p=_eq->p;
     if (_n < p) {
