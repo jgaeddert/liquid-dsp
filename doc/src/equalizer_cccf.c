@@ -2,57 +2,96 @@
 // equalizer_cccf.c
 //  
 // Generates four files:
-//  * figures.gen/equalizer_cccf_const.gnu  : signal constellation
-//  * figures.gen/equalizer_cccf_mse.gnu    : mean-square error
-//  * figures.gen/equalizer_cccf_psd.gnu    : power spectral density
-//  * figures.gen/equalizer_cccf_taps.gnu   : equalizer taps
+//  * filename_const.gnu    : signal constellation
+//  * filename_mse.gnu      : mean-square error
+//  * filename_psd.gnu      : power spectral density
+//  * filename_taps.gnu     : equalizer taps
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <getopt.h>
 #include <math.h>
 #include <complex.h>
 
 #include <liquid/liquid.h>
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME_CONST   "figures.gen/equalizer_cccf_const.gnu"
-#define OUTPUT_FILENAME_MSE     "figures.gen/equalizer_cccf_mse.gnu"
-#define OUTPUT_FILENAME_PSD     "figures.gen/equalizer_cccf_psd.gnu"
-#define OUTPUT_FILENAME_TAPS    "figures.gen/equalizer_cccf_taps.gnu"
+// print usage/help message
+void usage()
+{
+    printf("equalizer_cccf [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  f     : file base name (required)\n");
+    printf("  g     : specify gnuplot version <4.2>\n");
+    printf("  n     : number of symbols <512>\n");
+    printf("  c     : channel filter length <6>\n");
+    printf("  p     : equalizer filter length <10>\n");
+    printf("  m     : LMS equalizer learning rate <0.5>\n");
+    printf("  l     : RLS equalizer learning rate <0.999>\n");
+    printf("  s     : signal-to-noise ratio [db] <40>\n");
+    printf("  t     : channel phase offset <0>\n");
+}
 
-// print macro for complex numbers
-//  F   :   output file
-//  S   :   variable name (string)
-//  I   :   index
-//  V   :   value
-#define PRINT_COMPLEX(F,S,I,V) fprintf(F,"%s(%4u) = %5.2f+j*%5.2f;",S,I,crealf(V),cimagf(V));
 
-int main() {
+int main(int argc, char*argv[]) {
     // options
-    unsigned int n=512;     // number of symbols to observe
-    unsigned int h_len=6;   // channel filter length
-    unsigned int p=10;      // equalizer order
-    float mu=0.500f;        // LMS learning rate
-    float lambda=0.999f;    // RLS learning rate
-    float SNRdB = 65.0f;    // signal-to-noise ratio
+    unsigned int n=512;         // number of symbols to observe
+    unsigned int h_len=6;       // channel filter length
+    unsigned int p=10;          // equalizer order
+    float mu=0.500f;            // LMS learning rate
+    float lambda=0.999f;        // RLS learning rate
+    float SNRdB = 40.0f;        // signal-to-noise ratio
+    float theta = 0.0f;         // channel phase offset
 
     // plotting options
     unsigned int nfft = 512;    // fft size
+    float gnuplot_version = 4.2;
+    char filename_base[256];
+    strcpy(filename_base,"");
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhf:g:n:c:p:m:l:s:t:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();                              return 0;
+        case 'f': strncpy(filename_base,optarg,256);    break;
+        case 'g': gnuplot_version = atoi(optarg);       break;
+        case 'n': n = atoi(optarg);                     break;
+        case 'c': h_len = atoi(optarg);                 break;
+        case 'p': p = atoi(optarg);                     break;
+        case 'm': mu = atof(optarg);                    break;
+        case 'l': lambda = atof(optarg);                break;
+        case 's': SNRdB = atof(optarg);                 break;
+        case 't': theta = atof(optarg);                 break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
+
+    if (strcmp(filename_base,"")==0) {
+        fprintf(stderr,"error: %s, invalid or unspecified file base name\n", argv[0]);
+        usage();
+        return 1;
+    }
 
     // bookkeeping variables
     float complex d[n];     // data sequence
     float complex h[h_len]; // channel filter coefficients
     float complex y[n];     // received data sequence (filtered by channel)
 
-    // LMS
+    // least mean-squares (LMS) equalizer
     float complex d_hat_lms[n]; // recovered data sequence
     float complex w_lms[p];     // equalizer filter coefficients
     float mse_lms[n];           // equalizer mean-squared error
 
-    // RLS
+    // recursive least-squares (RLS) equalizer
     float complex d_hat_rls[n]; // recovered data sequence
     float complex w_rls[p];     // equalizer filter coefficients
     float mse_rls[n];           // equalizer mean-squared error
+
     unsigned int i;
 
     // create LMS equalizer
@@ -67,8 +106,10 @@ int main() {
     h[0] = 1.0f;
     for (i=1; i<h_len; i++)
         h[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
+    // apply channel phase offset
+    for (i=0; i<h_len; i++)
+        h[i] *= cexpf(_Complex_I*theta);
     fir_filter_cccf f = fir_filter_cccf_create(h,h_len);
-    fir_filter_cccf_print(f);
 
     // generate random data signal
     for (i=0; i<n; i++)
@@ -78,7 +119,7 @@ int main() {
     // filter data signal through channel
     float complex noise;
     float gamma = powf(10.0f, -SNRdB/10.0f); // * sqrtf(2.0f);
-    //float gamma = 0.0f;
+    //gamma = 0.0f;
     for (i=0; i<n; i++) {
         fir_filter_cccf_push(f,d[i]);
         fir_filter_cccf_execute(f,&y[i]);
@@ -90,14 +131,14 @@ int main() {
 
     // intialize equalizer coefficients
     for (i=0; i<p; i++) {
-        w_lms[i] = 0;
-        w_rls[i] = w_lms[i];
+        w_lms[i] = (i==0) ? 1.0f : 0.0f;
+        w_rls[i] = (i==0) ? 1.0f : 0.0f;
     }
 
     // train equalizers
     float complex z_lms, z_rls;
     float mse;
-    float zeta=0.1; // smoothing factor (small zeta -> smooth MSE)
+    float zeta=0.1f; // smoothing factor (small zeta -> smooth MSE)
     for (i=0; i<n; i++) {
         // update LMS EQ and compute smoothed mean-squared error
         eqlms_cccf_execute(eqlms, y[i], d[i], &z_lms);
@@ -127,51 +168,6 @@ int main() {
         fir_filter_cccf_execute(feqrls,&d_hat_rls[i]);
     }
 
-
-    //
-    // print results
-    //
-#if 0
-    printf("channel:\n");
-    for (i=0; i<h_len; i++) {
-        PRINT_COMPLEX(stdout,"h",i+1,h[i]); printf("\n");
-        PRINT_COMPLEX(fid,   "h",i+1,h[i]); fprintf(fid,"\n");
-    }
-
-    printf("equalizer:\n");
-    for (i=0; i<p; i++) {
-        PRINT_COMPLEX(stdout,"w",i+1,w[i]); printf("\n");
-        PRINT_COMPLEX(fid,   "w",i+1,w[i]); fprintf(fid,"\n");
-    }
-#endif
-
-#if 0
-    float complex e;
-    float mse=0.0f;
-    for (i=0; i<n; i++) {
-        if (i==ntrain)
-            printf("----------\n");
-
-        /*
-        PRINT_COMPLEX(stdout,"d",   i+1,    d[i]);
-        PRINT_COMPLEX(stdout,"y",   i+1,    y[i]);
-        PRINT_COMPLEX(stdout,"dhat",i+1,    d_hat[i]);
-        printf("\n");
-        */
-
-        PRINT_COMPLEX(fid,  "d",    i+1,    d[i]);
-        PRINT_COMPLEX(fid,  "y",    i+1,    y[i]);
-        PRINT_COMPLEX(fid,  "d_hat",i+1,    d_hat[i]);
-        fprintf(fid, "\n");
-
-        // compute mse
-        e = d[i] - d_hat[i];
-        mse += crealf(e*conj(e));
-    }
-    mse /= n;
-    printf("mse: %12.8f\n", mse);
-#endif
-
     // clean up allocated memory
     fir_filter_cccf_destroy(f);
     eqlms_cccf_destroy(eqlms);
@@ -183,17 +179,24 @@ int main() {
     // generate plots
     //
     FILE * fid = NULL;
+    char filename[300];
 
     // 
     // const: constellation
     //
-    fid = fopen(OUTPUT_FILENAME_CONST,"w");
-    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_CONST);
+    strncpy(filename, filename_base, 256);
+    strcat(filename, "_const.gnu");
+    fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: %s, could not open file '%s' for writing\n", argv[0], filename);
+        return 1;
+    }
+    fprintf(fid,"# %s: auto-generated file\n\n", filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 1\n");
-    fprintf(fid,"set xrange [-1.6:1.6];\n");
-    fprintf(fid,"set yrange [-1.6:1.6];\n");
+    fprintf(fid,"set xrange [-2:2];\n");
+    fprintf(fid,"set yrange [-2:2];\n");
     fprintf(fid,"set xlabel 'I'\n");
     fprintf(fid,"set ylabel 'Q'\n");
     fprintf(fid,"set grid xtics ytics\n");
@@ -223,8 +226,14 @@ int main() {
     // 
     // mse : mean-squared error
     //
-    fid = fopen(OUTPUT_FILENAME_MSE,"w");
-    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_MSE);
+    strncpy(filename, filename_base, 256);
+    strcat(filename, "_mse.gnu");
+    fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: %s, could not open file '%s' for writing\n", argv[0], filename);
+        return 1;
+    }
+    fprintf(fid,"# %s: auto-generated file\n\n", filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 1\n");
@@ -267,8 +276,14 @@ int main() {
     for (i=0; i<nfft; i++)
         freq[i] = (float)(i) / (float)nfft - 0.5f;
 
-    fid = fopen(OUTPUT_FILENAME_PSD,"w");
-    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_PSD);
+    strncpy(filename, filename_base, 256);
+    strcat(filename, "_psd.gnu");
+    fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: %s, could not open file '%s' for writing\n", argv[0], filename);
+        return 1;
+    }
+    fprintf(fid,"# %s: auto-generated file\n\n", filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 1\n");
@@ -303,8 +318,14 @@ int main() {
     // 
     // taps : equalizer taps
     //
-    fid = fopen(OUTPUT_FILENAME_TAPS,"w");
-    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_TAPS);
+    strncpy(filename, filename_base, 256);
+    strcat(filename, "_taps.gnu");
+    fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: %s, could not open file '%s' for writing\n", argv[0], filename);
+        return 1;
+    }
+    fprintf(fid,"# %s: auto-generated file\n\n", filename);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 0.5\n");

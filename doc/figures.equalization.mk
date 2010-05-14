@@ -4,11 +4,11 @@
 # MODULE : equalization
 #
 
-local_pdffiles :=				\
-	figures.gen/equalizer_cccf_const.pdf	\
-	figures.gen/equalizer_cccf_mse.pdf		\
-	figures.gen/equalizer_cccf_psd.pdf		\
-	figures.gen/equalizer_cccf_taps.pdf
+local_pdffiles :=					\
+	figures.gen/equalizer_example1_const.pdf	\
+	figures.gen/equalizer_example1_mse.pdf		\
+	figures.gen/equalizer_example1_psd.pdf		\
+	figures.gen/equalizer_example1_taps.pdf
 
 local_gnufiles := $(patsubst %.pdf,%.gnu,$(local_pdffiles))
 local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
@@ -18,11 +18,11 @@ local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 ## 
 src/equalizer_cccf : src/equalizer_cccf.c $(lib_objects)
 
-figures.gen/equalizer_cccf_const.gnu	\
-figures.gen/equalizer_cccf_mse.gnu	\
-figures.gen/equalizer_cccf_psd.gnu	\
-figures.gen/equalizer_cccf_taps.gnu	: src/equalizer_cccf
-	./$<
+figures.gen/equalizer_example1_const.gnu	\
+figures.gen/equalizer_example1_mse.gnu		\
+figures.gen/equalizer_example1_psd.gnu		\
+figures.gen/equalizer_example1_taps.gnu	: src/equalizer_cccf
+	./$< -f figures.gen/equalizer_example1 -n512 -c6 -p10
 
 ##
 ## target collection
