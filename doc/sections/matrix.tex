@@ -3,15 +3,41 @@
 %
 \section{matrix}
 \label{module:matrix}
-Matrices in {\it liquid} are represented as just arrays of a single dimension,
+Matrices are used for solving linear systems of equations and are used
+extensively in polynomial fitting, adaptive equalization, and filter design.
+In {\it liquid}, matrices are represented as just arrays of a single dimension,
 and do not rely on special objects for their manipulation.
+This is to help portability of the code and ease of integration into other
+libraries.
+Here is a simple example of the matrix interface:
 \input{listings/matrix.example.c.tex}
 
+Notice that all routines for the type {\it float} are prefaced with
+{\tt matrixf}.
+This follows the naming convention of the standard C library routines which
+append an {\tt f} to the end of methods operating on floating-point precision
+types.
+Similar matrix interfaces exist in \liquid\ for
+{\it double} ({\tt matrix}),
+{\it double complex} ({\tt matrixc}), and
+{\it float complex} ({\tt matrixcf}).
+
+% 
+% basic math operations 
+%
 \subsection{Basic math operations}
 \label{module:matrix:math}
-add, sub, mul, div, trans(pose), eye
+This section describes the basic matrix math operations, including addition,
+subtraction, point-wise multiplication and division, transposition, and
+initializing the identity matrix.
 
 \subsubsection{{\tt matrix\_access} (access element)}
+\label{module:matrix:access}
+Because matrices in \liquid\ are really just one-dimensional arrays, indexing
+matrix values for storage or retrieval is as straighforward as indexing the
+array itself.
+\liquid\ also provides a simple macro for ensuring the proper value is
+returned.
 {\tt matrix\_access(X,R,C,r,c)} will access the element of a $R \times C$
 matrix $\vec{X}$ at row $r$ and column $c$.
 This method is really just a pre-processor macro which performs a literal
@@ -22,22 +48,22 @@ string replacement
 and can be used for both setting and retrieving values of a matrix.
 For example,
 \begin{verbatim}
-X = 
-  0.406911   0.118444   0.923281   0.827254   0.463265
-  0.038897   0.132381   0.061137   0.880045   0.570341
-  0.151206   0.439508   0.695207   0.215935   0.999683
-  0.808384   0.601597   0.149171   0.975722   0.205819
+    X = 
+      0.406911   0.118444   0.923281   0.827254   0.463265
+      0.038897   0.132381   0.061137   0.880045   0.570341
+      0.151206   0.439508   0.695207   0.215935   0.999683
+      0.808384   0.601597   0.149171   0.975722   0.205819
 
-float v = matrix_access(X,4,5,0,1);
-v =
-  0.118444
+    float v = matrix_access(X,4,5,0,1);
+    v =
+      0.118444
 
-matrix_access(X,4,5,2,3) = 0;
-X =
-  0.406911   0.118444   0.923281   0.827254   0.463265
-  0.038897   0.132381   0.061137   0.880045   0.570341
-  0.151206   0.439508   0.695207   0.0        0.999683
-  0.808384   0.601597   0.149171   0.975722   0.205819
+    matrix_access(X,4,5,2,3) = 0;
+    X =
+      0.406911   0.118444   0.923281   0.827254   0.463265
+      0.038897   0.132381   0.061137   0.880045   0.570341
+      0.151206   0.439508   0.695207   0.0        0.999683
+      0.808384   0.601597   0.149171   0.975722   0.205819
 \end{verbatim}
 Because this method is really just a macro, there is no error-checking to
 ensure that one is accessing the matrix within its memory bounds.
@@ -45,7 +71,58 @@ Therefore, special care must be taken when programming.
 Furthermore, {\tt matrix\_access()} can be used for all matrix types
 ({\tt matrixf}, {\tt matrixcf}, etc.).
 
+\subsubsection{{\tt matrix\_add}, {\tt matrix\_sub}, {\tt matrix\_pmul},
+and {\tt matrix\_pdiv} (point-wise math operations)}
+\label{module:matrix:mathop}
+The {\tt add}, {\tt sub}, {\tt pmul}, and {\tt pdiv} methods perform
+point-wise addition, subtraction, multiplication, and division of the elements
+of two $n \times m$ matrices, $\vec{X}$ and $\vec{Y}$.
+That is, $\vec{Z}_{i,k} = \vec{X}_{i,k} + \vec{Y}_{i,k}$ for all $i$, $k$.
+
+It is very important to understand the difference between the methods
+{\tt matrix\_pmul()} and {\tt matrix\_mul()}, as well as
+{\tt matrix\_pdiv()} and {\tt matrix\_div()}.
+In each case, the latter performs a vastly different operation.
+%
+\begin{verbatim}
+    X =                         Y =
+      0.59027   0.83429           0.764108   0.741641
+      0.67779   0.19793           0.660932   0.041723
+      0.95075   0.33980           0.972282   0.347090
+
+    matrix_pmul(X,Y,Z,2,3);
+    Z =
+      0.4510300   0.6187437
+      0.4479731   0.0082582
+      0.9243971   0.1179412
+\end{verbatim}
+
+\subsubsection{{\tt matrix\_trans} (transpose matrix)}
+\label{module:matrix:trans}
+The {\tt matrix\_trans} performs the non-conjugate matrix transpose.
+That is, the matrix is flipped on its main diagonal.
+Formally, $[\vec{A}^T]_{j,k} = \vec{A}_{k,j}$.
+Here's a simple example:
+\[
+    \left[
+    \begin{array}{ccc}
+    0 & 1 & 2 \\
+    3 & 4 & 5 \\
+    \end{array}
+    \right]^T
+    =
+    \left[
+    \begin{array}{cc}
+    0 & 3 \\
+    1 & 4 \\
+    2 & 5 \\
+    \end{array}
+    \right]
+\]
+
+
 \subsubsection{{\tt matrix\_eye} (identity matrix)}
+\label{module:matrix:eye}
 The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
 \[
     \vec{I}_n = 
@@ -58,26 +135,34 @@ The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
     \end{bmatrix}
 \]
 
+% 
+% elementary math operations 
+%
 \subsection{Elementary math operations}
 \label{module:matrix:elementary}
-pivot, swaprows
+This section describes elementary math operations for linear systems of
+equations.
 
-Swap rows...
+\subsubsection{{\tt matrix\_swaprows} (swap rows)}
+\label{module:matrix:swaprows}
+Matrix row-swapping is often necessary to express a matrix in its row-reduced
+echelon form.
 \begin{verbatim}
-x = 
-  0.84381998 -2.38303995  1.43060994 -1.66603994
-  3.99475002  0.88066000  4.69372988  0.44563001
-  7.28072023 -2.06608009  0.67074001  9.80657005
-  6.07741022 -3.93098998  1.22826004 -0.42142001
+    x = 
+      0.84381998 -2.38303995  1.43060994 -1.66603994
+      3.99475002  0.88066000  4.69372988  0.44563001
+      7.28072023 -2.06608009  0.67074001  9.80657005
+      6.07741022 -3.93098998  1.22826004 -0.42142001
 
-matrixf_swaprows(x,4,4,0,2);
-  7.28072023 -2.06608009  0.67074001  9.80657005
-  3.99475002  0.88066000  4.69372988  0.44563001
-  0.84381998 -2.38303995  1.43060994 -1.66603994
-  6.07741022 -3.93098998  1.22826004 -0.42142001
+    matrixf_swaprows(x,4,4,0,2);
+      7.28072023 -2.06608009  0.67074001  9.80657005
+      3.99475002  0.88066000  4.69372988  0.44563001
+      0.84381998 -2.38303995  1.43060994 -1.66603994
+      6.07741022 -3.93098998  1.22826004 -0.42142001
 \end{verbatim}
 
-\subsubsection{Pivoting}
+\subsubsection{{\tt matrix\_pivot} (pivoting)}
+\label{module:matrix:pivot}
 [NOTE: terminology for ``pivot'' is different from literature.]
 Given an $n \times m$ matrix $\vec{A}$...
 \[
@@ -103,18 +188,27 @@ All elements of $\vec{B}$ in column $b$ are zero except for row $a$.
 For our example $4 \times 4$ matrix $\vec{x}$, pivoting around
 $\vec{x}_{1,2}$ gives:
 \begin{verbatim}
-matrixf_pivot(x,4,4,1,2);
-  0.37374675  2.65145779  0.00000000  1.80186427
-  3.99475002  0.88066000  4.69372988  0.44563001
- -6.70986557  2.19192743  0.00000000 -9.74288940
- -5.03205967  4.16144180  0.00000000  0.53803295
+    matrixf_pivot(x,4,4,1,2);
+      0.37374675  2.65145779  0.00000000  1.80186427
+      3.99475002  0.88066000  4.69372988  0.44563001
+     -6.70986557  2.19192743  0.00000000 -9.74288940
+     -5.03205967  4.16144180  0.00000000  0.53803295
 \end{verbatim}
 
+% 
+% complex math operations 
+%
 \subsection{Complex math operations}
 \label{module:matrix:complex}
-inv(ert), gjelim (Gauss-Jordan elimination)
+More complex math operations are described here, including matrix inversion,
+square matrix determinant,
+Gauss-Jordan elimination, and lower/upper decomposition routines using both
+Crout's and Doolittle's methods.
+% singular value decomposition
+% eigenvalue decomposition
 
-\subsubsection{Inverse}
+\subsubsection{{\tt matrix\_inv} (inverse)}
+\label{module:matrix:inv}
 Given an $n \times n$ matrix $\vec{A}$, augment with $\vec{I}_n$:
 \[
     \left[\vec{A}|\vec{I}_n\right] = 
@@ -146,14 +240,15 @@ The {\tt matrix\_inv} method uses Gauss-Jordan elmination (see
 Pivot elements in $\vec{A}$ with the largest magnitude are chosen to help
 stability in floating-point arithmetic.
 \begin{verbatim}
-matrixf_inv(x,4,4);
- -0.33453920  0.04643385 -0.04868321  0.23879384
- -0.42204019  0.12152659 -0.07431178  0.06774280
-  0.35104612  0.15256262  0.04403552 -0.20177667
-  0.13544561 -0.01930523  0.11944833 -0.14921521
+    matrixf_inv(x,4,4);
+     -0.33453920  0.04643385 -0.04868321  0.23879384
+     -0.42204019  0.12152659 -0.07431178  0.06774280
+      0.35104612  0.15256262  0.04403552 -0.20177667
+      0.13544561 -0.01930523  0.11944833 -0.14921521
 \end{verbatim}
 
-\subsubsection{Determinant}
+\subsubsection{{\tt matrix\_det} (determinant)}
+\label{module:matrix:det}
 The determinant of an $n \times n$ matrix $\vec{A}$...
 In {\it liquid}, the determinant is computed by L/U decomposition of $\vec{A}$
 using Doolittle's method (see {\tt matrix\_ludecomp\_doolittle}) and then
@@ -166,60 +261,83 @@ computing the product of the diagonal elements of $\vec{U}$, viz
 This is equivalent to performing L/U decomposition using Crout's method and
 then computing the product of the diagonal elements of $\vec{L}$.
 \begin{verbatim}
-matrixf_det(X,4,4) = 585.40289307
+    matrixf_det(X,4,4) = 585.40289307
 \end{verbatim}
 
-\subsubsection{LU Decomposition, Crout's Method}
+\subsubsection{{\tt matrix\_ludecom\_crout} (LU Decomposition, Crout's Method)}
+\label{module:matrix:ludecomp_crout}
 Crout's method decomposes a non-singular $n\times n$ matrix $\vec{A}$ into a
 product of a lower triangular $n \times n$ matrix $\vec{L}$ and an upper
 triangular $n \times n$ matrix $\vec{U}$. %NOTE : discuss permutation matrix P
 In fact, $\vec{U}$ is a unit upper triangular matrix (its values along the
 diagonal are 1).
-
+%
 \[
     \vec{L}_{i,k} = \vec{A}_{i,k} -
                     \sum_{t=0}^{k-1}{ \vec{L}_{i,t} \vec{U}_{t,k} }
                     \ \forall k \in \{0,n-1\}, i \in \{k,n-1\}
 \]
-
+%
 \[
     \vec{U}_{k,j} = \left[
-                    \vec{A}_{k,j} -
-                    \sum_{t=0}^{k-1}{ \vec{L}_{k,t} \vec{U}_{t,j} }
+                        \vec{A}_{k,j} -
+                        \sum_{t=0}^{k-1}{ \vec{L}_{k,t} \vec{U}_{t,j} }
                     \right] / \vec{L}_{k,k}
                     \ \forall k \in \{0,n-1\}, j \in \{k+1,n-1\}
 \]
-
+%
 \begin{verbatim}
-matrixf_ludecomp_crout(X,4,4,L,U,P)
-L =
-  0.84381998  0.00000000  0.00000000  0.00000000
-  3.99475002 12.16227055  0.00000000  0.00000000
-  7.28072023 18.49547005 -8.51144791  0.00000000
-  6.07741022 13.23228073 -6.81350422 -6.70173073
-U =
-  1.00000000 -2.82410932  1.69539714 -1.97440207
-  0.00000000  1.00000000 -0.17093502  0.68514121
-  0.00000000  0.00000000  1.00000000 -1.35225296
-  0.00000000  0.00000000  0.00000000  1.00000000
+    matrixf_ludecomp_crout(X,4,4,L,U,P)
+    L =
+      0.84381998  0.00000000  0.00000000  0.00000000
+      3.99475002 12.16227055  0.00000000  0.00000000
+      7.28072023 18.49547005 -8.51144791  0.00000000
+      6.07741022 13.23228073 -6.81350422 -6.70173073
+    U =
+      1.00000000 -2.82410932  1.69539714 -1.97440207
+      0.00000000  1.00000000 -0.17093502  0.68514121
+      0.00000000  0.00000000  1.00000000 -1.35225296
+      0.00000000  0.00000000  0.00000000  1.00000000
 \end{verbatim}
 
-Doolittle's method...
+\subsubsection{{\tt matrix\_ludecom\_doolittle} (LU Decomposition, Doolittle's Method)}
+\label{module:matrix:ludecomp_doolittle}
+Doolittle's method is similar to Crout's except it is the lower triangular
+matrix that is left with ones on the diagonal.
+The update algorithm is similar to Crout's but with a slight variation: the
+upper triangular matrix is computed first.
+%
+\[
+    \vec{U}_{k,j} = \vec{A}_{k,j} -
+                    \sum_{t=0}^{k-1}{ \vec{L}_{k,t} \vec{U}_{t,j} }
+                    \ \forall k \in \{0,n-1\}, j \in \{k,n-1\}
+\]
+%
+\[
+    \vec{L}_{i,k} = \left[
+                        \vec{A}_{i,k} -
+                        \sum_{t=0}^{k-1}{ \vec{L}_{i,t} \vec{U}_{t,k} }
+                    \right] / \vec{U}_{k,k}
+                    \ \forall k \in \{0,n-1\}, i \in \{k+1,n-1\}
+\]
+%
+Here is a simple example:
 \begin{verbatim}
-matrixf_ludecomp_doolittle(X,4,4,L,U,P)
-L =
-  1.00000000  0.00000000  0.00000000  0.00000000
-  4.73412609  1.00000000  0.00000000  0.00000000
-  8.62828636  1.52072513  1.00000000  0.00000000
-  7.20225906  1.08797777  0.80051047  1.00000000
-U =
-  0.84381998 -2.38303995  1.43060994 -1.66603994
-  0.00000000 12.16227150 -2.07895803  8.33287334
-  0.00000000  0.00000000 -8.51144791 11.50963116
-  0.00000000  0.00000000  0.00000000 -6.70172977
+    matrixf_ludecomp_doolittle(X,4,4,L,U,P)
+    L =
+      1.00000000  0.00000000  0.00000000  0.00000000
+      4.73412609  1.00000000  0.00000000  0.00000000
+      8.62828636  1.52072513  1.00000000  0.00000000
+      7.20225906  1.08797777  0.80051047  1.00000000
+    U =
+      0.84381998 -2.38303995  1.43060994 -1.66603994
+      0.00000000 12.16227150 -2.07895803  8.33287334
+      0.00000000  0.00000000 -8.51144791 11.50963116
+      0.00000000  0.00000000  0.00000000 -6.70172977
 \end{verbatim}
 
-\subsubsection{Gauss-Jordan Elimination}
+\subsubsection{{\tt matrix\_gjelim} (Gauss-Jordan Elimination)}
+\label{module:matrix:gjelim}
 Gauss-Jordan elimination converts a $n \times m$ matrix into its row-reduced
 echelon form using elementary matrix operations (e.g. pivoting).
 This can be used to solve a linear system of $n$ equations
@@ -257,16 +375,16 @@ $\vec{x}$ in its last column.
 The row-reduced echelon form of a matrix is computed in {\it liquid} using the
 Gauss-Jordan elimination algorithm, and can be invoked as such:
 \begin{verbatim}
-Ab =
-  0.84381998 -2.38303995  1.43060994 -1.66603994  0.91488999
-  3.99475002  0.88066000  4.69372988  0.44563001  0.71789002
-  7.28072023 -2.06608009  0.67074001  9.80657005  1.06552994
-  6.07741022 -3.93098998  1.22826004 -0.42142001 -0.81707001
-matrixf_gjelim(Ab,4,5)
-  1.00000000 -0.00000000  0.00000000 -0.00000000 -0.51971692
- -0.00000000  1.00000000  0.00000000  0.00000000 -0.43340963
- -0.00000000 -0.00000000  1.00000000 -0.00000000  0.64247853
-  0.00000000 -0.00000000 -0.00000000  0.99999994  0.35925382
+    Ab =
+      0.84381998 -2.38303995  1.43060994 -1.66603994  0.91488999
+      3.99475002  0.88066000  4.69372988  0.44563001  0.71789002
+      7.28072023 -2.06608009  0.67074001  9.80657005  1.06552994
+      6.07741022 -3.93098998  1.22826004 -0.42142001 -0.81707001
+    matrixf_gjelim(Ab,4,5)
+      1.00000000 -0.00000000  0.00000000 -0.00000000 -0.51971692
+     -0.00000000  1.00000000  0.00000000  0.00000000 -0.43340963
+     -0.00000000 -0.00000000  1.00000000 -0.00000000  0.64247853
+      0.00000000 -0.00000000 -0.00000000  0.99999994  0.35925382
 \end{verbatim}
 Notice that the result contains $\vec{I}_n$ in its first $n$ rows and $n$
 columns (to within machine precision).
