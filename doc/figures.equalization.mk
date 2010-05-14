@@ -5,23 +5,23 @@
 #
 
 local_pdffiles :=				\
-	figures.gen/eqlms_cccf_const.pdf	\
-	figures.gen/eqlms_cccf_mse.pdf		\
-	figures.gen/eqlms_cccf_psd.pdf		\
-	figures.gen/eqlms_cccf_taps.pdf
+	figures.gen/equalizer_cccf_const.pdf	\
+	figures.gen/equalizer_cccf_mse.pdf		\
+	figures.gen/equalizer_cccf_psd.pdf		\
+	figures.gen/equalizer_cccf_taps.pdf
 
 local_gnufiles := $(patsubst %.pdf,%.gnu,$(local_pdffiles))
 local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 
 ##
-## eqlms_cccf
+## equalizer_cccf
 ## 
-src/eqlms_cccf : src/eqlms_cccf.c $(lib_objects)
+src/equalizer_cccf : src/equalizer_cccf.c $(lib_objects)
 
-figures.gen/eqlms_cccf_const.gnu	\
-figures.gen/eqlms_cccf_mse.gnu		\
-figures.gen/eqlms_cccf_psd.gnu		\
-figures.gen/eqlms_cccf_taps.gnu	: src/eqlms_cccf
+figures.gen/equalizer_cccf_const.gnu	\
+figures.gen/equalizer_cccf_mse.gnu	\
+figures.gen/equalizer_cccf_psd.gnu	\
+figures.gen/equalizer_cccf_taps.gnu	: src/equalizer_cccf
 	./$<
 
 ##
@@ -40,7 +40,7 @@ $(local_epsfiles) : %.eps : %.gnu
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
-	src/eqlms_cccf			\
+	src/equalizer_cccf		\
 	$(local_epsfiles)		\
 	$(local_gnufiles)		\
 	$(local_pdffiles)

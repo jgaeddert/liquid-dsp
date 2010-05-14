@@ -2,10 +2,10 @@
 // eqlms_cccf.c
 //  
 // Generates four files:
-//  * figures.gen/eqlms_cccf_const.gnu  : signal constellation
-//  * figures.gen/eqlms_cccf_mse.gnu    : mean-square error
-//  * figures.gen/eqlms_cccf_psd.gnu    : power spectral density
-//  * figures.gen/eqlms_cccf_taps.gnu   : equalizer taps
+//  * figures.gen/equalizer_cccf_const.gnu  : signal constellation
+//  * figures.gen/equalizer_cccf_mse.gnu    : mean-square error
+//  * figures.gen/equalizer_cccf_psd.gnu    : power spectral density
+//  * figures.gen/equalizer_cccf_taps.gnu   : equalizer taps
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,10 +15,10 @@
 #include <liquid/liquid.h>
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME_CONST   "figures.gen/eqlms_cccf_const.gnu"
-#define OUTPUT_FILENAME_MSE     "figures.gen/eqlms_cccf_mse.gnu"
-#define OUTPUT_FILENAME_PSD     "figures.gen/eqlms_cccf_psd.gnu"
-#define OUTPUT_FILENAME_TAPS    "figures.gen/eqlms_cccf_taps.gnu"
+#define OUTPUT_FILENAME_CONST   "figures.gen/equalizer_cccf_const.gnu"
+#define OUTPUT_FILENAME_MSE     "figures.gen/equalizer_cccf_mse.gnu"
+#define OUTPUT_FILENAME_PSD     "figures.gen/equalizer_cccf_psd.gnu"
+#define OUTPUT_FILENAME_TAPS    "figures.gen/equalizer_cccf_taps.gnu"
 
 // print macro for complex numbers
 //  F   :   output file

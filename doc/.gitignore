@@ -10,7 +10,7 @@ highlight.sty
 # ignore all figure-generating programs
 src/agc_squelch
 src/agc_transient
-src/eqlms_cccf
+src/equalizer_cccf
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
 src/filter_interp_crcf
