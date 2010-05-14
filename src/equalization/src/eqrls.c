@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +20,7 @@
  */
 
 //
-// Recursive least-squares equalizer
+// Recursive least-squares (RLS) equalizer
 //
 
 #include <stdlib.h>
@@ -49,25 +50,27 @@ struct EQRLS(_s) {
     WINDOW() buffer;    // input buffer
 };
 
+// create recursive least-squares (RLS) equalizer object
+//  _p      :   equalizer length (number of taps)
 EQRLS() EQRLS(_create)(unsigned int _p)
 {
     EQRLS() eq = (EQRLS()) malloc(sizeof(struct EQRLS(_s)));
 
-    // set filter order, other params
+    // set filter order, other parameters
     eq->p = _p;
     eq->lambda = 0.99f;
     eq->delta = 0.1f;
     eq->n=0;
 
-    //
-    eq->w0 = (T*) malloc((eq->p)*sizeof(T));
-    eq->w1 = (T*) malloc((eq->p)*sizeof(T));
-    eq->P0 = (T*) malloc((eq->p)*(eq->p)*sizeof(T));
-    eq->P1 = (T*) malloc((eq->p)*(eq->p)*sizeof(T));
-    eq->g = (T*) malloc((eq->p)*sizeof(T));
+    // allocate memory for matrices
+    eq->w0 =    (T*) malloc((eq->p)*sizeof(T));
+    eq->w1 =    (T*) malloc((eq->p)*sizeof(T));
+    eq->P0 =    (T*) malloc((eq->p)*(eq->p)*sizeof(T));
+    eq->P1 =    (T*) malloc((eq->p)*(eq->p)*sizeof(T));
+    eq->g =     (T*) malloc((eq->p)*sizeof(T));
 
-    eq->xP0 = (T*) malloc((eq->p)*sizeof(T));
-    eq->gxl = (T*) malloc((eq->p)*(eq->p)*sizeof(T));
+    eq->xP0 =   (T*) malloc((eq->p)*sizeof(T));
+    eq->gxl =   (T*) malloc((eq->p)*(eq->p)*sizeof(T));
     eq->gxlP0 = (T*) malloc((eq->p)*(eq->p)*sizeof(T));
 
     eq->buffer = WINDOW(_create)(eq->p);
@@ -77,6 +80,7 @@ EQRLS() EQRLS(_create)(unsigned int _p)
     return eq;
 }
 
+// destroy eqrls object
 void EQRLS(_destroy)(EQRLS() _eq)
 {
     free(_eq->w0);
@@ -93,6 +97,7 @@ void EQRLS(_destroy)(EQRLS() _eq)
     free(_eq);
 }
 
+// print eqrls object internals
 void EQRLS(_print)(EQRLS() _eq)
 {
     printf("equalizer (RLS):\n");
@@ -126,7 +131,11 @@ void EQRLS(_print)(EQRLS() _eq)
 #endif
 }
 
-void EQRLS(_set_bw)(EQRLS() _eq, float _lambda)
+// set learning rate of equalizer
+//  _eq     :   equalizer object
+//  _lambda :   RLS learning rate (should be close to 1.0), 0 < _lambda < 1
+void EQRLS(_set_bw)(EQRLS() _eq,
+                    float _lambda)
 {
     if (_lambda < 0.0f || _lambda > 1.0f) {
         printf("error: eqrls_xxxt_set_bw(), learning rate must be in (0,1)\n");
@@ -136,7 +145,7 @@ void EQRLS(_set_bw)(EQRLS() _eq, float _lambda)
     _eq->lambda = _lambda;
 }
 
-
+// reset equalizer
 void EQRLS(_reset)(EQRLS() _eq)
 {
     unsigned int i, j;
@@ -154,11 +163,15 @@ void EQRLS(_reset)(EQRLS() _eq)
     WINDOW(_clear)(_eq->buffer);
 }
 
-//
+// execute cycle of equalizer, filtering output
+//  _eq     :   equalizer object
 //  _x      :   received sample
 //  _d      :   desired output
 //  _d_hat  :   filtered output
-void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
+void EQRLS(_execute)(EQRLS() _eq,
+                     T _x,
+                     T _d,
+                     T * _d_hat)
 {
     unsigned int i,r,c;
     unsigned int p=_eq->p;
@@ -271,6 +284,7 @@ void EQRLS(_execute)(EQRLS() _eq, T _x, T _d, T * _d_hat)
 
 }
 
+// retrieve internal filter coefficients
 void EQRLS(_get_weights)(EQRLS() _eq, T * _w)
 {
     // copy output weight vector
@@ -279,12 +293,17 @@ void EQRLS(_get_weights)(EQRLS() _eq, T * _w)
         _w[i] = _eq->w1[p-i-1];
 }
 
-//
-//  _w  :   initial weights / output weights
-//  _x  :   received sample vector
-//  _d  :   desired output vector
-//  _n  :   vector length
-void EQRLS(_train)(EQRLS() _eq, T * _w, T * _x, T * _d, unsigned int _n)
+// train equalizer object
+//  _eq     :   equalizer object
+//  _w      :   initial weights / output weights
+//  _x      :   received sample vector
+//  _d      :   desired output vector
+//  _n      :   vector length
+void EQRLS(_train)(EQRLS() _eq,
+                   T * _w,
+                   T * _x,
+                   T * _d,
+                   unsigned int _n)
 {
     unsigned int i, p=_eq->p;
     if (_n < p) {
