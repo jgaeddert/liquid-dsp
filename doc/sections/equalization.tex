@@ -34,7 +34,7 @@ algorithms;
 for a more in-depth discussion we refer the interested reader to
 \cite{Proakis:2001,Haykin:2002}.
 
-\subsection{Least Mean-Squares}
+\subsection{{\tt eqlms} (least mean-squares equalizer)}
 The least mean-squares (LMS) algorithm adapts the coefficients of the filter
 estimate using a steepest descent (gradient) of the instantaneous {\it a priori}
 error.
@@ -47,7 +47,7 @@ where $\mu$ is the iterative step size, and
 $\vec{g}_n$ the normalized gradient vector, estimated from the error signal
 and the coefficients vector at time $n$.
 
-\subsection{Recursive Least-Squares}
+\subsection{{\tt eqrls} (recursive least-squares equalizer)}
 The recursive least-squares (RLS) algorithm attempts to minimize the
 time-average weighted square error of the filter output, viz
 \begin{equation}
@@ -73,34 +73,69 @@ The RLS algorithm provides a solution which converges much faster than the LMS
 algorithm, however with a significant increase in computational complexity and
 memory requirements.
 
-\subsection{Results}
-Both the LMS and RLS equalizers were implemented in the C programming
-language using a minimalistic interface wrapper.
-The performance of the two equalizers were compared by generating a channel
-with an impulse response representing a strong line-of-sight (LoS) component
-followed by random echoes.
-Each was trained on 512 iterations of a known QPSK-modulated training sequence with learning
-rate parameters $\mu=0.999$ and $\lambda=0.999$ for the LMS and RLS algorithms,
-respectively.
-A small amount of noise was inject after the channel filter (roughly 40dB
-below the signal level) to demonstrate the robustness of the algorithms.
+\subsection{Usage}
+\label{module:equalization:usage}
+The {\tt eqlms} and {\tt eqrls} have nearly identical interfaces, so we will
+leave the discussion to the {\tt eqlms} object here.
+Like most objects in \liquid, {\tt eqlms} follows the typical
+{\tt create()}, {\tt execute()}, {\tt destroy()} lifecycle.
+Training is accomplished either one sample at a time, or in a batch cycle.
+If trained one sample at a time, the symbols must be trained in the proper
+order, otherwise the algorithm won't converge.
+Here is a simple example:
+%
+\input{listings/eqlms_cccf.example.c.tex}
+%
+For more detailed examples, see
+{\tt examples/eqlms\_cccf\_example.c} and
+{\tt examples/eqrls\_cccf\_example.c}.
+
+\subsection{Demonstration}
+\label{module:equalization:demo}
+The performance of the {\tt eqlms} and {\tt eqrls} equalizers are compared by
+generating a channel with an impulse response representing a strong
+line-of-sight (LoS) component followed by random echoes.
+Each was trained on 512 iterations of a known QPSK-modulated training sequence
+with learning rate parameters $\mu=0.999$ and $\lambda=0.999$ for the LMS and
+RLS algorithms, respectively.
+A small amount of noise was injected after the channel filter to demonstrate
+the robustness of the algorithms.
 The results of two simulations are shown in
 figures~\ref{fig:module:equalization:example1} and
-\ref{fig:module:equalization:example1};
+\ref{fig:module:equalization:example2};
 the first demonstrating a 10-tap equalizer applied to the response of a 6-tap
-channel while the second demonstrates a 28-tap equalizer for a 12-tap
-channel.
+channel with an SNR of 40dB, while the second demonstrates a 28-tap equalizer
+for a 12-tap channel with an SNR of just 10dB.
 
-The passband power spectral densities (PSD) of the channel and the equalizer outputs
-are depicted in figures~\ref{fig:module:equalization:example1:psd} and
+The passband power spectral densities (PSD) of the channel and the equalizer
+outputs are depicted in figures~\ref{fig:module:equalization:example1:psd} and
 \ref{fig:module:equalization:example2:psd}.
-While nearly flat, it is important to realize that these algorithms minimize
-a cost function defined as the square of the {\it a priori} filter output error,
-and do not necessarily force the PSD to zero.
-In both scenarios, the RLS equalizer had a lower error after training, and converged to its
-error minimum much faster.
-
-
+Notice that the inter-symbol interference of the channel causes its PSD to
+have a non-flat response.
+Theoretically, if the inter-symbol interference is completely removed, the
+response of both the channel and the equalizer will be completely flat
+(neglecting any noise present).
+While the PSD of the equalized output is nearly flat in the figures,
+it is important to realize that these algorithms minimize a cost function
+defined as the square of the {\it a priori} filter output error, and do not
+necessarily force the PSD to zero.
+The classic zero-forcing equalizer has several drawbacks:
+\begin{enumerate}
+\item the equalizing filter which would give this response is not
+      necessarily realizable; that is, not all channels can be
+      perfectly inverted,
+\item forcing the frequency response to zero increases the noise
+      terms of frequencies where the spectra of the channel
+      response is low.  In this regard, the zero-forcing equalizer
+      only reduces inter-symbol interference and does not maximize
+      the ratio of signal power to both interference {\it and}
+      noise power as the LMS and RLS algorithms do.
+\end{enumerate}
+It is interesting to note that both the LMS and RLS equalizers converge to
+nearly the same solution.
+In both scenarios, however, the RLS equalizer has a slightly lower error after
+training while converging to its error minimum much faster.
+The RLS equalizer, however, has a much higher computational complexity.
 
 %-------------------- FIGURE: EQUALIZER EXAMPLE 1 --------------------
 \begin{figure}[ht]

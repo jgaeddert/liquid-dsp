@@ -31,7 +31,7 @@ figures.gen/equalizer_example1_const.gnu	\
 figures.gen/equalizer_example1_mse.gnu		\
 figures.gen/equalizer_example1_psd.gnu		\
 figures.gen/equalizer_example1_taps.gnu	: src/equalizer_cccf
-	./$< -f figures.gen/equalizer_example1 -n512 -c6 -p10 -s40
+	./$< -f figures.gen/equalizer_example1 -n512 -c6 -p12 -s40
 
 ##
 ## equalizer_example2
@@ -41,7 +41,7 @@ figures.gen/equalizer_example2_const.gnu	\
 figures.gen/equalizer_example2_mse.gnu		\
 figures.gen/equalizer_example2_psd.gnu		\
 figures.gen/equalizer_example2_taps.gnu	: src/equalizer_cccf
-	./$< -f figures.gen/equalizer_example2 -n512 -c12 -p28 -s20
+	./$< -f figures.gen/equalizer_example2 -n512 -c12 -p28 -s10
 
 ##
 ## target collection

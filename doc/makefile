@@ -33,6 +33,7 @@ CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 LISTINGS = 					\
 	listings/agc.example.c.tex		\
 	listings/dotprod_rrrf.example.c.tex	\
+	listings/eqlms_cccf.example.c.tex	\
 	listings/firhilb.example.c.tex		\
 	listings/gradient_search.example.c.tex	\
 	listings/gport.direct.example.c.tex	\
