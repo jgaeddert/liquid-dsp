@@ -288,7 +288,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 1\n");
     fprintf(fid,"set xrange [-0.5:0.5];\n");
-    fprintf(fid,"set yrange [-5:5]\n");
+    fprintf(fid,"set yrange [-10:10]\n");
     fprintf(fid,"set xlabel 'Normalized Frequency'\n");
     fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
     fprintf(fid,"set key top right nobox\n");
@@ -330,7 +330,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 0.5\n");
     fprintf(fid,"set xrange [-1:%u];\n", h_len > p ? h_len : p);
-    fprintf(fid,"set yrange [-1.8:1.8]\n");
+    fprintf(fid,"set yrange [-1.2:1.2]\n");
     fprintf(fid,"set xlabel 'filter index'\n");
     fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set grid xtics ytics\n");
