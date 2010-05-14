@@ -81,24 +81,23 @@ int main() {
     fprintf(fid,"# prototype\n");
     fprintf(fid,"set ylabel 'sinc, window'\n");
     fprintf(fid,"set xrange [0:%u]\n", h_len-1);
-    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'sinc',\\\n", LIQUID_DOC_COLOR_GRAY);
-    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'Kaiser window'\n", LIQUID_DOC_COLOR_RED);
-    // export output
-    for (i=0; i<h_len; i++) {
+    fprintf(fid,"plot '-' using 1:2 with impulses linetype 1 linewidth 3 linecolor rgb '%s' title 'sinc',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with lines    linetype 1 linewidth 3 linecolor rgb '%s' title 'Kaiser window'\n", LIQUID_DOC_COLOR_RED);
+    // sinc
+    for (i=0; i<h_len; i++)
         fprintf(fid,"%6u %12.4e\n", i, h1[i]);
-    }
     fprintf(fid,"e\n");
 
-    for (i=0; i<h_len; i++) {
+    // Kaiser window
+    for (i=0; i<h_len; i++)
         fprintf(fid,"%6u %12.4e\n", i, h2[i]);
-    }
     fprintf(fid,"e\n");
 
 
     fprintf(fid,"# filter\n");
     fprintf(fid,"set ylabel 'filter'\n");
     fprintf(fid,"set xrange [0:%u]\n", h_len-1);
-    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'composite'\n", LIQUID_DOC_COLOR_GREEN);
+    fprintf(fid,"plot '-' using 1:2 with impulses linetype 1 linewidth 3 linecolor rgb '%s' title 'composite'\n", LIQUID_DOC_COLOR_GREEN);
     // export output
     for (i=0; i<h_len; i++) {
         fprintf(fid,"%6u %12.4e\n", i, h[i]);

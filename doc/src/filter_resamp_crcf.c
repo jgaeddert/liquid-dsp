@@ -68,7 +68,7 @@ int main() {
     //fprintf(fid,"set xrange [0:%u];\n",n);
     fprintf(fid,"set yrange [-3:3]\n");
     fprintf(fid,"set size ratio 0.3\n");
-    fprintf(fid,"set xlabel 'Sample Index'\n");
+    fprintf(fid,"set xlabel 'Input Sample Index'\n");
     fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set ytics -5,1,5\n");
     fprintf(fid,"set grid xtics ytics\n");
@@ -133,7 +133,7 @@ int main() {
     fprintf(fid,"set xrange [-0.5:0.5];\n");
     fprintf(fid,"set yrange [-120:20]\n");
     fprintf(fid,"set size ratio 0.6\n");
-    fprintf(fid,"set xlabel 'Normalized Frequency'\n");
+    fprintf(fid,"set xlabel 'Normalized Input Frequency'\n");
     fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
     fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set grid xtics ytics\n");

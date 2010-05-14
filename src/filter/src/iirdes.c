@@ -100,7 +100,6 @@ void liquid_cplxpair(float complex * _z,
         }
     }
     assert(k <= _n);
-    printf("num pairs: %u\n", num_pairs);
 
     // sort through remaining unpaired values and ensure
     // they are purely real
