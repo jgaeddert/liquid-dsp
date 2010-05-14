@@ -58,6 +58,10 @@ struct RESAMP2(_s) {
     unsigned int w0_index;
 };
 
+// create a resamp2 object
+//  _h_len      :   desired filter length (will force 4*m+1)
+//  _fc         :   center frequency of half-band filter
+//  _slsl       :   side-lobe suppression level (attenuation)
 RESAMP2() RESAMP2(_create)(unsigned int _h_len,
                            float _fc,
                            float _slsl)
@@ -122,6 +126,11 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
     return f;
 }
 
+// re-create a resamp2 object
+//  _f          :   original resamp2 object
+//  _h_len      :   desired filter length (will force 4*m+1)
+//  _fc         :   center frequency of half-band filter
+//  _slsl       :   side-lobe suppression level (attenuation)
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
                              unsigned int _h_len,
                              float _fc,
@@ -224,6 +233,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     return _f;
 }
 
+// destroy a resamp2 object, clearing up all allocated memory
 void RESAMP2(_destroy)(RESAMP2() _f)
 {
     WINDOW(_destroy)(_f->w1);
@@ -236,6 +246,7 @@ void RESAMP2(_destroy)(RESAMP2() _f)
     free(_f);
 }
 
+// print a resamp2 object's internals
 void RESAMP2(_print)(RESAMP2() _f)
 {
     printf("fir half-band resampler: [%u taps, fc=%12.8f]\n",
@@ -255,6 +266,7 @@ void RESAMP2(_print)(RESAMP2() _f)
     }
 }
 
+// clear internal buffer
 void RESAMP2(_clear)(RESAMP2() _f)
 {
     WINDOW(_clear)(_f->w1);
@@ -264,7 +276,13 @@ void RESAMP2(_clear)(RESAMP2() _f)
     _f->w0_index = 0;
 }
 
-void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
+// execute half-band decimation
+//  _f      :   resamp2 object
+//  _x      :   input array [size: 2 x 1]
+//  _y      :   output sample pointer
+void RESAMP2(_decim_execute)(RESAMP2() _f,
+                             TI * _x,
+                             TO *_y)
 {
     TO y0, y1;
 
@@ -289,6 +307,10 @@ void RESAMP2(_decim_execute)(RESAMP2() _f, TI * _x, TO *_y)
     *_y = y0 + y1;
 }
 
+// execute half-band interpolation
+//  _f      :   resamp2 object
+//  _x      :   input sample
+//  _y      :   output array [size: 2 x 1]
 void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
 {
     // compute first branch (delay)
