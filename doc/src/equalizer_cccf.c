@@ -36,6 +36,9 @@ int main() {
     float lambda=0.999f;    // RLS learning rate
     float SNRdB = 65.0f;    // signal-to-noise ratio
 
+    // plotting options
+    unsigned int nfft = 512;    // fft size
+
     // bookkeeping variables
     float complex d[n];     // data sequence
     float complex h[h_len]; // channel filter coefficients
@@ -196,8 +199,8 @@ int main() {
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set pointsize 0.5\n");
     fprintf(fid,"plot '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'received',\\\n", LIQUID_DOC_COLOR_GRAY);
-    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'LMS',\\\n",      LIQUID_DOC_COLOR_RED);
-    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'RLS'\n",         LIQUID_DOC_COLOR_BLUE);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'LMS EQ',\\\n",   LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'RLS EQ'\n",      LIQUID_DOC_COLOR_BLUE);
     // received
     for (i=0; i<n; i++)
         fprintf(fid,"  %12.4e %12.4e\n", crealf(y[i]), cimagf(y[i]));
@@ -250,13 +253,49 @@ int main() {
     // 
     // psd : power spectral density
     //
+    float complex H[nfft];
+    float complex H_LMS[nfft];
+    float complex H_RLS[nfft];
+    liquid_doc_compute_psdcf(h,h_len, H,     nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
+    liquid_doc_compute_psdcf(w_lms,p, H_LMS, nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
+    liquid_doc_compute_psdcf(w_rls,p, H_RLS, nfft, LIQUID_DOC_PSDWINDOW_NONE, 0);
+    fft_shift(H,    nfft);
+    fft_shift(H_LMS,nfft);
+    fft_shift(H_RLS,nfft);
+    float freq[nfft];
+    for (i=0; i<nfft; i++)
+        freq[i] = (float)(i) / (float)nfft - 0.5f;
+
     fid = fopen(OUTPUT_FILENAME_PSD,"w");
     fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_PSD);
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 1\n");
-    fprintf(fid,"set samples 128\n");
-    fprintf(fid,"plot [-10:10] sin(x),atan(x),cos(atan(x))\n");
+    fprintf(fid,"set xrange [-0.5:0.5];\n");
+    fprintf(fid,"set yrange [-5:5]\n");
+    fprintf(fid,"set xlabel 'Normalized Frequency'\n");
+    fprintf(fid,"set ylabel 'Power Spectral Density [dB]'\n");
+    fprintf(fid,"set key top right nobox\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n",LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'received',\\\n",LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'LMS',\\\n",     LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'RLS'\n",        LIQUID_DOC_COLOR_BLUE);
+    // received signal
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f(cabsf(H[i])) );
+    fprintf(fid,"e\n");
+
+    // LMS equalizer
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f(cabsf(H_LMS[i])) + 20*log10f(H[i]));
+    fprintf(fid,"e\n");
+
+    // RLS equalizer
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"%12.8f %12.4e\n", freq[i], 20*log10f(cabsf(H_RLS[i])) + 20*log10f(H[i]));
+    fprintf(fid,"e\n");
+
     fclose(fid);
 
 
