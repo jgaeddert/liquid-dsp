@@ -3,9 +3,12 @@
 %
 \section{matrix}
 \label{module:matrix}
-Matrices in {\it liquid} are represented as just arrays of a single dimension,
+Matrices are used for solving linear systems of equations and are used
+extensively in polynomial fitting, adaptive equalization, and filter design.
+In {\it liquid}, matrices are represented as just arrays of a single dimension,
 and do not rely on special objects for their manipulation.
-This is to help portability of the code to other libraries.
+This is to help portability of the code and ease of integration into other
+libraries.
 Here is a simple example of the matrix interface:
 \input{listings/matrix.example.c.tex}
 
@@ -24,7 +27,9 @@ Similar matrix interfaces exist in \liquid\ for
 %
 \subsection{Basic math operations}
 \label{module:matrix:math}
-add, sub, mul, div, trans(pose), eye
+This section describes the basic matrix math operations, including addition,
+subtraction, point-wise multiplication and division, transposition, and
+initializing the identity matrix.
 
 \subsubsection{{\tt matrix\_access} (access element)}
 \label{module:matrix:access}
@@ -78,7 +83,7 @@ It is very important to understand the difference between the methods
 {\tt matrix\_pmul()} and {\tt matrix\_mul()}, as well as
 {\tt matrix\_pdiv()} and {\tt matrix\_div()}.
 In each case, the latter performs a vastly different operation.
-
+%
 \begin{verbatim}
     X =                         Y =
       0.59027   0.83429           0.764108   0.741641
@@ -135,11 +140,13 @@ The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
 %
 \subsection{Elementary math operations}
 \label{module:matrix:elementary}
-pivot, swaprows
+This section describes elementary math operations for linear systems of
+equations.
 
 \subsubsection{{\tt matrix\_swaprows} (swap rows)}
 \label{module:matrix:swaprows}
-Swap rows...
+Matrix row-swapping is often necessary to express a matrix in its row-reduced
+echelon form.
 \begin{verbatim}
     x = 
       0.84381998 -2.38303995  1.43060994 -1.66603994
@@ -193,7 +200,12 @@ $\vec{x}_{1,2}$ gives:
 %
 \subsection{Complex math operations}
 \label{module:matrix:complex}
-inv(ert), gjelim (Gauss-Jordan elimination)
+More complex math operations are described here, including matrix inversion,
+square matrix determinant,
+Gauss-Jordan elimination, and lower/upper decomposition routines using both
+Crout's and Doolittle's methods.
+% singular value decomposition
+% eigenvalue decomposition
 
 \subsubsection{{\tt matrix\_inv} (inverse)}
 \label{module:matrix:inv}
@@ -259,21 +271,21 @@ product of a lower triangular $n \times n$ matrix $\vec{L}$ and an upper
 triangular $n \times n$ matrix $\vec{U}$. %NOTE : discuss permutation matrix P
 In fact, $\vec{U}$ is a unit upper triangular matrix (its values along the
 diagonal are 1).
-
+%
 \[
     \vec{L}_{i,k} = \vec{A}_{i,k} -
                     \sum_{t=0}^{k-1}{ \vec{L}_{i,t} \vec{U}_{t,k} }
                     \ \forall k \in \{0,n-1\}, i \in \{k,n-1\}
 \]
-
+%
 \[
     \vec{U}_{k,j} = \left[
-                    \vec{A}_{k,j} -
-                    \sum_{t=0}^{k-1}{ \vec{L}_{k,t} \vec{U}_{t,j} }
+                        \vec{A}_{k,j} -
+                        \sum_{t=0}^{k-1}{ \vec{L}_{k,t} \vec{U}_{t,j} }
                     \right] / \vec{L}_{k,k}
                     \ \forall k \in \{0,n-1\}, j \in \{k+1,n-1\}
 \]
-
+%
 \begin{verbatim}
     matrixf_ludecomp_crout(X,4,4,L,U,P)
     L =
@@ -290,7 +302,26 @@ diagonal are 1).
 
 \subsubsection{{\tt matrix\_ludecom\_doolittle} (LU Decomposition, Doolittle's Method)}
 \label{module:matrix:ludecomp_doolittle}
-Doolittle's method...
+Doolittle's method is similar to Crout's except it is the lower triangular
+matrix that is left with ones on the diagonal.
+The update algorithm is similar to Crout's but with a slight variation: the
+upper triangular matrix is computed first.
+%
+\[
+    \vec{U}_{k,j} = \vec{A}_{k,j} -
+                    \sum_{t=0}^{k-1}{ \vec{L}_{k,t} \vec{U}_{t,j} }
+                    \ \forall k \in \{0,n-1\}, j \in \{k,n-1\}
+\]
+%
+\[
+    \vec{L}_{i,k} = \left[
+                        \vec{A}_{i,k} -
+                        \sum_{t=0}^{k-1}{ \vec{L}_{i,t} \vec{U}_{t,k} }
+                    \right] / \vec{U}_{k,k}
+                    \ \forall k \in \{0,n-1\}, i \in \{k+1,n-1\}
+\]
+%
+Here is a simple example:
 \begin{verbatim}
     matrixf_ludecomp_doolittle(X,4,4,L,U,P)
     L =
