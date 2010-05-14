@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <complex.h>
 
 #include <liquid/liquid.h>
@@ -29,21 +30,35 @@
 int main() {
     // options
     unsigned int n=512;     // number of symbols to observe
-    unsigned int ntrain=256;// number of training symbols
-    unsigned int h_len=4;   // channel filter length
-    unsigned int p=8;       // equalizer order
+    unsigned int h_len=6;   // channel filter length
+    unsigned int p=10;      // equalizer order
+    float mu=0.500f;        // LMS learning rate
+    float lambda=0.999f;    // RLS learning rate
+    float SNRdB = 65.0f;    // signal-to-noise ratio
 
     // bookkeeping variables
     float complex d[n];     // data sequence
-    float complex y[n];     // received data sequence (filtered by channel)
-    float complex d_hat[n]; // recovered data sequence
     float complex h[h_len]; // channel filter coefficients
-    float complex w[p];     // equalizer filter coefficients
-    float mse[n];
+    float complex y[n];     // received data sequence (filtered by channel)
+
+    // LMS
+    float complex d_hat_lms[n]; // recovered data sequence
+    float complex w_lms[p];     // equalizer filter coefficients
+    float mse_lms[n];           // equalizer mean-squared error
+
+    // RLS
+    float complex d_hat_rls[n]; // recovered data sequence
+    float complex w_rls[p];     // equalizer filter coefficients
+    float mse_rls[n];           // equalizer mean-squared error
     unsigned int i;
 
-    // create equalizer
-    eqlms_cccf eq = eqlms_cccf_create(p);
+    // create LMS equalizer
+    eqlms_cccf eqlms = eqlms_cccf_create(p);
+    eqlms_cccf_set_bw(eqlms, mu);
+
+    // create RLS equalizer
+    eqrls_cccf eqrls = eqrls_cccf_create(p);
+    eqrls_cccf_set_bw(eqrls, lambda);
 
     // create channel filter (random delay taps)
     h[0] = 1.0f;
@@ -57,30 +72,51 @@ int main() {
                (rand() % 2 ? 1.0f : -1.0f)*_Complex_I;
 
     // filter data signal through channel
+    float complex noise;
+    float gamma = powf(10.0f, -SNRdB/10.0f); // * sqrtf(2.0f);
+    //float gamma = 0.0f;
     for (i=0; i<n; i++) {
         fir_filter_cccf_push(f,d[i]);
         fir_filter_cccf_execute(f,&y[i]);
+
+        // add noise
+        crandnf(&noise);
+        y[i] += noise*gamma;
     }
 
-    // run equalizer
-    for (i=0; i<p; i++)
-        w[i] = 0;
-    float complex z;
-    for (i=0; i<n; i++) {
-        eqlms_cccf_execute(eq, y[i], d[i], &z);
-        mse[i] = cabsf(d[i] - z);
+    // intialize equalizer coefficients
+    for (i=0; i<p; i++) {
+        w_lms[i] = 0;
+        w_rls[i] = w_lms[i];
     }
-    eqlms_cccf_get_weights(eq, w);
-    //eqlms_cccf_train(eq, w, y, d, ntrain);
+
+    // train equalizers
+    float complex z_lms, z_rls;
+    for (i=0; i<n; i++) {
+        eqlms_cccf_execute(eqlms, y[i], d[i], &z_lms);
+        mse_lms[i] = cabsf(d[i] - z_lms);
+
+        eqrls_cccf_execute(eqrls, y[i], d[i], &z_rls);
+        mse_rls[i] = cabsf(d[i] - z_rls);
+    }
 
     // create filter from equalizer output
-    fir_filter_cccf feq = fir_filter_cccf_create(w,p);
+    eqlms_cccf_get_weights(eqlms, w_lms);
+    fir_filter_cccf feqlms = fir_filter_cccf_create(w_lms,p);
+
+    // create filter from equalizer output
+    eqrls_cccf_get_weights(eqrls, w_rls);
+    fir_filter_cccf feqrls = fir_filter_cccf_create(w_rls,p);
 
     // run equalizer filter
     for (i=0; i<n; i++) {
-        fir_filter_cccf_push(feq,y[i]);
-        fir_filter_cccf_execute(feq,&d_hat[i]);
+        fir_filter_cccf_push(feqlms,y[i]);
+        fir_filter_cccf_execute(feqlms,&d_hat_lms[i]);
+
+        fir_filter_cccf_push(feqrls,y[i]);
+        fir_filter_cccf_execute(feqrls,&d_hat_rls[i]);
     }
+
 
     //
     // print results
@@ -128,8 +164,10 @@ int main() {
 
     // clean up allocated memory
     fir_filter_cccf_destroy(f);
-    eqlms_cccf_destroy(eq);
-    fir_filter_cccf_destroy(feq);
+    eqlms_cccf_destroy(eqlms);
+    eqrls_cccf_destroy(eqrls);
+    fir_filter_cccf_destroy(feqlms);
+    fir_filter_cccf_destroy(feqrls);
 
     // 
     // generate plots

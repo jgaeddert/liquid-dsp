@@ -85,13 +85,13 @@ respectively.
 A small amount of noise was inject after the channel filter (roughly 40dB
 below the signal level) to demonstrate the robustness of the algorithms.
 The results of two simulations are shown in
-figures~\ref{fig:equalizer_example1} and \ref{fig:equalizer_example2};
+figures~\ref{fig:module:equalization:eqlms} and \ref{fig:module:equalization:eqrls};
 the first demonstrating a 10-tap equalizer applied to the response of a 6-tap
 channel while the second demonstrates a 28-tap equalizer for a 12-tap
 channel.
 
 The passband power spectral densities (PSD) of the channel and the equalizer outputs
-are depicted in figures~\ref{fig:equalizer_example1:psd} and \ref{fig:equalizer_example2:psd}.
+are depicted in figures~\ref{fig:module:equalization:eqlms:psd} and \ref{fig:module:equalization:eqrls:psd}.
 While nearly flat, it is important to realize that these algorithms minimize
 a cost function defined as the square of the {\it a priori} filter output error,
 and do not necessarily force the PSD to zero.
@@ -105,28 +105,27 @@ error minimum much faster.
 \centering
 \mbox{
   \subfigure[PSD] {
-      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_psd}
-      \label{fig:equalizer_example1:psd}
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures.gen/eqlms_cccf_psd}
+      \label{fig:module:equalization:eqlms:psd}
     } \quad
   \subfigure[constellation] {
-      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_const}
-      \label{fig:equalizer_example1:constellation}
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures.gen/eqlms_cccf_const}
+      \label{fig:module:equalization:eqlms:constellation}
     } \quad
 }
 \mbox{
   \subfigure[taps] {
-      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_taps}
-      \label{fig:equalizer_example1:taps}
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures.gen/eqlms_cccf_taps}
+      \label{fig:module:equalization:eqlms:taps}
     } \quad
   \subfigure[mean-squared error] {
-      \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures.gen/eqlms_cccf_mse}
-      \label{fig:equalizer_example1:mse}
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures.gen/eqlms_cccf_mse}
+      \label{fig:module:equalization:eqlms:mse}
     } \quad
 }
 % trim = left bottom right top
-\caption{Scenario 1: 10-tap equalizer for a 6-tap channel.  The LMS and RMS algorithms exhibit
-a final root mean-squared error of -33.46dB and -34.76dB, respectively }
-\label{fig:equalizer_example1}
+\caption{{\tt eqlms} demonstration: 10-tap equalizer for a 6-tap channel}
+\label{fig:module:equalization:eqlms}
 \end{figure}
 
 
@@ -135,28 +134,27 @@ a final root mean-squared error of -33.46dB and -34.76dB, respectively }
 \centering
 \mbox{
   \subfigure[PSD] {
-      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_psd}
-      \label{fig:equalizer_example2:psd}
+      %\includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures/equalizer_example2_psd}
+      \label{fig:module:equalization:eqrls:psd}
     } \quad
   \subfigure[constellation] {
-      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_constellation}
-      \label{fig:equalizer_example2:constellation}
+      %\includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures/equalizer_example2_constellation}
+      \label{fig:module:equalization:eqrls:constellation}
     } \quad
 }
 \mbox{
   \subfigure[taps] {
-      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_taps}
-      \label{fig:equalizer_example2:taps}
+      %\includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures/equalizer_example2_taps}
+      \label{fig:module:equalization:eqrls:taps}
     } \quad
   \subfigure[mean-squared error] {
-      %\includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=7.5cm]{figures/equalizer_example2_error}
-      \label{fig:equalizer_example2:mse}
+      %\includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=6cm]{figures/equalizer_example2_error}
+      \label{fig:module:equalization:eqrls:mse}
     } \quad
 }
 % trim = left bottom right top
-\caption{Scenario 1: 28-tap equalizer for a 12-tap channel.  The LMS and RMS algorithms exhibit
-a final root mean-squared error of -27.27dB and -29.55dB, respectively }
-\label{fig:equalizer_example2}
+\caption{{\tt eqrls} demonstration: 10-tap equalizer for a 6-tap channel}
+\label{fig:module:equalization:eqrls}
 \end{figure}
 
 
