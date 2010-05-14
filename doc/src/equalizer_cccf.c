@@ -1,5 +1,5 @@
 // 
-// eqlms_cccf.c
+// equalizer_cccf.c
 //  
 // Generates four files:
 //  * figures.gen/equalizer_cccf_const.gnu  : signal constellation
@@ -182,8 +182,31 @@ int main() {
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 1\n");
-    fprintf(fid,"set samples 128\n");
-    fprintf(fid,"plot [-10:10] sin(x),atan(x),cos(atan(x))\n");
+    fprintf(fid,"set xrange [-1.6:1.6];\n");
+    fprintf(fid,"set yrange [-1.6:1.6];\n");
+    fprintf(fid,"set xlabel 'I'\n");
+    fprintf(fid,"set ylabel 'Q'\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"set pointsize 0.5\n");
+    fprintf(fid,"plot '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'received',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'LMS',\\\n",      LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'RLS'\n",         LIQUID_DOC_COLOR_BLUE);
+    // received
+    for (i=0; i<n; i++)
+        fprintf(fid,"  %12.4e %12.4e\n", crealf(y[i]), cimagf(y[i]));
+    fprintf(fid,"e\n");
+
+    // LMS
+    for (i=0; i<n; i++)
+        fprintf(fid,"  %12.4e %12.4e\n", crealf(d_hat_lms[i]), cimagf(d_hat_lms[i]));
+    fprintf(fid,"e\n");
+
+    // RLS
+    for (i=0; i<n; i++)
+        fprintf(fid,"  %12.4e %12.4e\n", crealf(d_hat_rls[i]), cimagf(d_hat_rls[i]));
+    fprintf(fid,"e\n");
+
     fclose(fid);
 
 
