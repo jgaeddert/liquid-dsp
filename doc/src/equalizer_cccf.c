@@ -92,12 +92,18 @@ int main() {
 
     // train equalizers
     float complex z_lms, z_rls;
+    float mse;
+    float zeta=0.1; // smoothing factor (small zeta -> smooth MSE)
     for (i=0; i<n; i++) {
+        // update LMS EQ and compute smoothed mean-squared error
         eqlms_cccf_execute(eqlms, y[i], d[i], &z_lms);
-        mse_lms[i] = cabsf(d[i] - z_lms);
+        mse = cabsf(d[i] - z_lms);
+        mse_lms[i] = (i == 0) ? mse : mse_lms[i-1]*(1-zeta) + mse * zeta;
 
+        // update RLS EQ and compute smoothed mean-squared error
         eqrls_cccf_execute(eqrls, y[i], d[i], &z_rls);
-        mse_rls[i] = cabsf(d[i] - z_rls);
+        mse = cabsf(d[i] - z_rls);
+        mse_rls[i] = (i == 0) ? mse : mse_rls[i-1]*(1-zeta) + mse * zeta;
     }
 
     // create filter from equalizer output
@@ -218,9 +224,27 @@ int main() {
     fprintf(fid,"reset\n");
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size ratio 1\n");
-    fprintf(fid,"set samples 128\n");
-    fprintf(fid,"plot [-10:10] sin(x),atan(x),cos(atan(x))\n");
+    fprintf(fid,"set xrange [0:%u];\n", n);
+    fprintf(fid,"set yrange [1e-3:10];\n");
+    fprintf(fid,"set log y\n");
+    fprintf(fid,"set xlabel 'sample index'\n");
+    fprintf(fid,"set ylabel 'mean-squared error'\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"plot '-' using 1:2 with lines linewidth 2 linetype 1 linecolor rgb '%s' title 'LMS',\\\n", LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"     '-' using 1:2 with lines linewidth 2 linetype 1 linecolor rgb '%s' title 'RLS'\n",    LIQUID_DOC_COLOR_BLUE);
+    // LMS
+    for (i=0; i<n; i++)
+        fprintf(fid,"  %4u %16.8e\n", i, mse_lms[i]);
+    fprintf(fid,"e\n");
+
+    // RLS
+    for (i=0; i<n; i++)
+        fprintf(fid,"  %4u %16.8e\n", i, mse_rls[i]);
+    fprintf(fid,"e\n");
+
     fclose(fid);
+
 
 
     // 
