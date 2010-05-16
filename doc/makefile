@@ -167,6 +167,18 @@ clean-doc:
 
 
 ##
+## HTML DOCUMENTATION
+##
+
+html:
+
+# html generator program
+src/doc-html-gen : % : %.c $(lib_objects)
+
+html/index.html : src/doc-html-gen liquid.tex
+	./$< -i liquid.tex -o $@
+
+##
 ## OTHER
 ##
 

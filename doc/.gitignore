@@ -7,9 +7,10 @@
 *.toc
 # ignore listings style (pygments)
 highlight.sty
-# ignore all figure-generating programs
+# ignore all programs
 src/agc_squelch
 src/agc_transient
+src/doc-html-gen
 src/equalizer_cccf
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
