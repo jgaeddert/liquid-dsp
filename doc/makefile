@@ -74,7 +74,8 @@ SECTIONS :=					\
 
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
-	lib/liquid_doc_freqz.c
+	lib/liquid_doc_freqz.c			\
+	lib/htmlgen.c
 
 # additional targets to clean
 extra_clean :=
@@ -170,13 +171,29 @@ clean-doc:
 ## HTML DOCUMENTATION
 ##
 
-html:
+# html directories
+html/fig/.touch: ; mkdir -p html/fig && touch html/fig/.touch
+html/eqn/.touch: ; mkdir -p html/eqn && touch html/eqn/.touch
+html-dirs: html/fig/.touch html/eqn/.touch
+
+# html figures
+html_figures : $(figures)
 
 # html generator program
 src/doc-html-gen : % : %.c $(lib_objects)
 
-html/index.html : src/doc-html-gen liquid.tex
-	./$< -i liquid.tex -o $@
+# html index file
+html/index.html : src/doc-html-gen liquid.tex html-dirs
+	./$< -i liquid.tex
+
+# html main target
+html: html/index.html $(html_figures)
+
+# clean html files
+clean-html:
+	$(RM) src/doc-html-gen
+	$(RM) $(html_figures)
+	$(RM) -rf html
 
 ##
 ## OTHER
