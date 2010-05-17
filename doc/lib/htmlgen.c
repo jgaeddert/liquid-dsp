@@ -33,13 +33,47 @@ void htmlgen_parse_latex_file(char * _latex_filename)
 {
     printf("parsing latex file '%s'\n", _latex_filename);
 
-    FILE * fid = fopen("html/index.html","w");
-    if (!fid) {
+    FILE * fid_index = NULL;    // html index file
+    FILE * fid_eqnidx = NULL;   // equation index
+    FILE * fid_eqn = NULL;      // equation
+
+    // html index file
+    fid_index = fopen("html/index.html","w");
+    if (!fid_index) {
         fprintf(stderr,"error, could not open html/index.html for writing\n");
         exit(1);
     }
-    fprintf(fid,"liquid documentation\n");
+    fprintf(fid_index,"liquid documentation\n");
+    fclose(fid_index);
 
-    fclose(fid);
+    // equations makefile
+    fid_eqnidx = fopen("html/equations.mk","w");
+    if (!fid_eqnidx) {
+        fprintf(stderr,"error, could not open html/equations.mk for writing\n");
+        exit(1);
+    }
+    fprintf(fid_eqnidx,"html/eqn/eqn0001.png : html/eqn/eqn0001.tex\n");
+    fclose(fid_eqnidx);
+
+    // equation
+    fid_eqn = fopen("html/eqn/eqn0001.tex","w");
+    if (!fid_eqn) {
+        fprintf(stderr,"error, could not open html/eqn/eqn0001.tex for writing\n");
+        exit(1);
+    }
+    fprintf(fid_eqn,"\\documentclass{article} \n");
+    fprintf(fid_eqn,"\\usepackage{amsmath}\n");
+    fprintf(fid_eqn,"\\usepackage{amsthm}\n");
+    fprintf(fid_eqn,"\\usepackage{amssymb}\n");
+    fprintf(fid_eqn,"\\usepackage{bm}\n");
+    fprintf(fid_eqn,"\\newcommand{\\mx}[1]{\\mathbf{\\bm{#1}}} %% Matrix command\n");
+    fprintf(fid_eqn,"\\newcommand{\\vc}[1]{\\mathbf{\\bm{#1}}} %% Vector command \n");
+    fprintf(fid_eqn,"\\newcommand{\\T}{\\text{T}}              %% Transpose\n");
+    fprintf(fid_eqn,"\\pagestyle{empty} \n");
+    fprintf(fid_eqn,"\\begin{document} \n");
+    fprintf(fid_eqn,"\\newpage\n");
+    fprintf(fid_eqn,"\\[ y = \\int_0^\\infty \\gamma^2 \\cos(x) dx \\]\n");
+    fprintf(fid_eqn,"\\end{document}\n");
+    fclose(fid_eqn);
 }
 

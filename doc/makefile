@@ -177,7 +177,7 @@ html/eqn/.touch: ; mkdir -p html/eqn && touch html/eqn/.touch
 html-dirs := html/fig/.touch html/eqn/.touch
 
 # html figures
-html_figures : $(figures)
+html-figures : $(figures)
 
 # html generator program
 src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
@@ -187,13 +187,13 @@ html/index.html : src/doc-html-gen liquid.tex $(html-dirs)
 	./$< -i liquid.tex
 
 # html main target
-html: html/index.html $(html_figures)
+html: html/index.html $(html-figures)
 
 # clean html files
 clean-html:
 	$(RM) src/doc-html-gen
-	$(RM) $(html_figures)
-	$(RM) -rf html
+	$(RM) $(html-figures)
+	$(RM) -r html
 
 ##
 ## OTHER
