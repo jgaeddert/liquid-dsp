@@ -22,6 +22,7 @@
 #ifndef __LIQUID_DOC_H__
 #define __LIQUID_DOC_H__
 
+#include <stdio.h>
 #include <complex.h>
 #include <stdbool.h>
 #include <liquid/liquid.h>
@@ -69,10 +70,33 @@ void liquid_doc_freqz(float * _b,
 // 
 // html documentation generation
 //
+
+// doc-html-gen function
+typedef void (*htmlgen_func) (FILE * _fid_tex, FILE * _fid_html);
+
+// token structure
+typedef struct {
+    char * token;
+    htmlgen_func f;
+} htmlgen_token_s;
+
+
 void htmlgen_parse_latex_file(FILE * _fid_tex,
                               FILE * _fid_html);
 void htmlgen_html_write_header(FILE * _fid);
 void htmlgen_html_write_footer(FILE * _fid);
+
+// token methods
+void htmlgen_token_parse_begin(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_end(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_document(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_section(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_subsection(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_subsubsection(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_figure(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_tabular(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_enumerate(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_itemize(FILE * _fid_tex, FILE * _fid_html);
 
 #endif // __LIQUID_DOC_H__
 

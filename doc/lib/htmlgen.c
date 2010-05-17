@@ -22,11 +22,29 @@
 //
 // htmlgen.c : html documentation generator
 //
+// rules:
+//  * comments begin with '%'
+//  * tilda character '~' is a space
+//  * environment tokens begin with "\begin" or "\end"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "liquid.doc.h"
+
+// token table
+htmlgen_token_s htmlgen_token_tab[] = {
+    {"\\begin",         htmlgen_token_parse_begin},
+    {"\\end",           htmlgen_token_parse_end},
+    {"document",        htmlgen_token_parse_document},
+    {"section",         htmlgen_token_parse_section},
+    {"subsection",      htmlgen_token_parse_subsection},
+    {"subsubsection",   htmlgen_token_parse_subsubsection},
+    {"figure",          htmlgen_token_parse_figure},
+    {"tabular",         htmlgen_token_parse_tabular},
+    {"enumerate",       htmlgen_token_parse_enumerate},
+    {"itemize",         htmlgen_token_parse_itemize},
+};
 
 // parse LaTeX file
 void htmlgen_parse_latex_file(FILE * _fid_tex,
