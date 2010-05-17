@@ -18,17 +18,30 @@ void usage()
     printf("  i     : specify input LaTeX file\n");
 }
 
+// global defaults
+char default_input_filename[256] = "liquid.tex";
+char default_html_filename[256]  = "html/index.html";
+char default_eqmk_filename[256]  = "html/equations.mk";
+char default_eq_file_base[256]   = "html/eqn/";
+
+// global file identifiers
+FILE * fid_tex  = NULL;
+FILE * fid_eqmk = NULL;
+FILE * fid_eq   = NULL;
+FILE * fid_html = NULL;
 
 int main(int argc, char*argv[])
 {
-    char latex_filename[256] = "";
+    char filename_tex[256] = "";
+    char filename_html[256] = "";
+    strcpy(filename_html, default_html_filename);
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhi:o:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();                            return 0;
-        case 'i':   strncpy(latex_filename,optarg,256); break;
+        case 'i':   strncpy(filename_tex,optarg,256); break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
@@ -37,12 +50,48 @@ int main(int argc, char*argv[])
     }
 
     // ensure input filename was set
-    if (strcmp(latex_filename,"")==0) {
+    if (strcmp(filename_tex,"")==0) {
         fprintf(stderr,"error: %s, invalid or unspecified latex filename\n", argv[0]);
         return 1;
     }
 
-    htmlgen_parse_latex_file(latex_filename);
+    // 
+    // open files
+    //
+
+    // latex
+    fid_tex = fopen(filename_tex,"r");
+    if (!fid_tex) {
+        fprintf(stderr,"error, could not open '%s' for reading\n", filename_tex);
+        exit(1);
+    }
+
+    // html
+    fid_html = fopen(filename_html,"w");
+    if (!fid_html) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", filename_html);
+        exit(1);
+    }
+
+    // equations makefile
+    fid_eqmk = fopen("html/equations.mk","w");
+    if (!fid_eqmk) {
+        fprintf(stderr,"error, could not open html/equations.mk for writing\n");
+        exit(1);
+    }
+
+    // 
+    // run parser
+    //
+    printf("parsing latex file '%s'\n", filename_tex);
+    htmlgen_parse_latex_file(fid_tex, fid_html);
+
+    // 
+    // close files
+    //
+    fclose(fid_tex);
+    fclose(fid_html);
+    fclose(fid_eqmk);
 
     return 0;
 }

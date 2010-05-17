@@ -69,7 +69,10 @@ void liquid_doc_freqz(float * _b,
 // 
 // html documentation generation
 //
-void htmlgen_parse_latex_file(char * _latex_filename);
+void htmlgen_parse_latex_file(FILE * _fid_tex,
+                              FILE * _fid_html);
+void htmlgen_html_write_header(FILE * _fid);
+void htmlgen_html_write_footer(FILE * _fid);
 
 #endif // __LIQUID_DOC_H__
 

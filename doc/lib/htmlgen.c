@@ -29,31 +29,15 @@
 #include "liquid.doc.h"
 
 // parse LaTeX file
-void htmlgen_parse_latex_file(char * _latex_filename)
+void htmlgen_parse_latex_file(FILE * _fid_tex,
+                              FILE * _fid_html)
 {
-    printf("parsing latex file '%s'\n", _latex_filename);
+    // write header, footer
+    htmlgen_html_write_header(_fid_html);
+    fprintf(_fid_html,"<h1>liquid documentation</h1>\n");
+    htmlgen_html_write_footer(_fid_html);
 
-    FILE * fid_index = NULL;    // html index file
-    FILE * fid_eqnidx = NULL;   // equation index
     FILE * fid_eqn = NULL;      // equation
-
-    // html index file
-    fid_index = fopen("html/index.html","w");
-    if (!fid_index) {
-        fprintf(stderr,"error, could not open html/index.html for writing\n");
-        exit(1);
-    }
-    fprintf(fid_index,"liquid documentation\n");
-    fclose(fid_index);
-
-    // equations makefile
-    fid_eqnidx = fopen("html/equations.mk","w");
-    if (!fid_eqnidx) {
-        fprintf(stderr,"error, could not open html/equations.mk for writing\n");
-        exit(1);
-    }
-    fprintf(fid_eqnidx,"html/eqn/eqn0001.png : html/eqn/eqn0001.tex\n");
-    fclose(fid_eqnidx);
 
     // equation
     fid_eqn = fopen("html/eqn/eqn0001.tex","w");
@@ -75,5 +59,37 @@ void htmlgen_parse_latex_file(char * _latex_filename)
     fprintf(fid_eqn,"\\[ y = \\int_0^\\infty \\gamma^2 \\cos(x) dx \\]\n");
     fprintf(fid_eqn,"\\end{document}\n");
     fclose(fid_eqn);
+}
+
+// Write output html header
+void htmlgen_html_write_header(FILE * _fid)
+{
+    fprintf(_fid,"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n");
+    fprintf(_fid,"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
+    fprintf(_fid,"<!-- auto-generated file, do not edit -->\n");
+    fprintf(_fid,"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">\n");
+    fprintf(_fid,"<head>\n");
+    fprintf(_fid,"<!-- <style type=\"text/css\" media=\"all\">@import url(http://computing.ece.vt.edu/~jgaeddert/web.css);</style> -->\n");
+    fprintf(_fid,"<title>jgaeddert</title>\n");
+    fprintf(_fid,"<meta name=\"description\" content=\"Gaeddert Virginia Tech\" />\n");
+    fprintf(_fid,"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n");
+    fprintf(_fid,"<!-- <link rel=\"Shortcut Icon\" type=\"image/png\" href=\"img/favicon.png\" /> -->\n");
+    fprintf(_fid,"</head>\n");
+    fprintf(_fid,"<body>\n");
+}
+
+// Write output html footer
+void htmlgen_html_write_footer(FILE * _fid)
+{
+    fprintf(_fid,"    <!--\n");
+    fprintf(_fid,"    <p>\n");
+    fprintf(_fid,"    Validate:\n");
+    fprintf(_fid,"    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n");
+    fprintf(_fid,"    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n");
+    fprintf(_fid,"    </p>\n");
+    fprintf(_fid,"    -->\n");
+    fprintf(_fid,"    <p>Last updated: <em> ... </em></p>\n");
+    fprintf(_fid,"</body>\n");
+    fprintf(_fid,"</html>\n");
 }
 
