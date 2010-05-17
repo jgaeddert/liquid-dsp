@@ -114,7 +114,7 @@ void htmlgen_html_write_header(htmlgen _q);
 void htmlgen_html_write_footer(htmlgen _q);
 
 // equation files
-void htmlgen_add_equation(htmlgen _q, char * _eqn);
+void htmlgen_add_equation(htmlgen _q, char * _eqn, int _inline);
 
 // token methods
 void htmlgen_token_parse_begin(htmlgen _q);

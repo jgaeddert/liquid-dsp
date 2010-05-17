@@ -65,18 +65,17 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     fprintf(q->fid_eqmk,"# equations makefile : auto-generated\n");
     fprintf(q->fid_eqmk,"html_eqn_texfiles := ");
 
-    unsigned int equation_id = 0;
     char filename_eqn[256];
-    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", equation_id);
+    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", q->equation_id);
 
-    // equation
-    htmlgen_add_equation(q, "y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }");
+    // add equations
+    htmlgen_add_equation(q, "y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }", 0);
+    htmlgen_add_equation(q, "y = \\sum_{k=0}^{N-1} { \\sin\\Bigl( \\frac{x^k}{k!} \\Bigr) }", 0);
+    htmlgen_add_equation(q, "z = \\frac{1}{2} \\beta \\gamma^{1/t}", 0);
 
-    // insert equation into html file
-    fprintf(q->fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", equation_id);
-
-    // increment equation id
-    equation_id++;
+    fprintf(q->fid_html,"<p>here is a pretty inline equation:\n");
+    htmlgen_add_equation(q, "\\hat{s} = r_0 \\otimes r_1 \\otimes r_2", 1);
+    fprintf(q->fid_html,"</p>\n");
 
     // repeat as necessary
 
@@ -144,7 +143,8 @@ void htmlgen_destroy(htmlgen _q)
 }
 
 void htmlgen_add_equation(htmlgen _q,
-                          char * _eqn)
+                          char * _eqn,
+                          int _inline)
 {
     //
     char filename_eqn[64] = "";
@@ -182,8 +182,16 @@ void htmlgen_add_equation(htmlgen _q,
     // close file
     fclose(fid_eqn);
 
+    // insert equation into html file
+    if (!_inline) fprintf(_q->fid_html,"<p>\n");
+    fprintf(_q->fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", _q->equation_id);
+    if (!_inline) fprintf(_q->fid_html,"</p>\n");
+
     // add equation to makefile: target collection
     fprintf(_q->fid_eqmk,"\\\n\t%s", filename_eqn);
+
+    // increment equation id
+    _q->equation_id++;
 }
 
 // Write output html header
