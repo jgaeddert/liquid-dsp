@@ -80,11 +80,17 @@ typedef struct {
     htmlgen_func f;
 } htmlgen_token_s;
 
-
 void htmlgen_parse_latex_file(FILE * _fid_tex,
-                              FILE * _fid_html);
+                              FILE * _fid_html,
+                              FILE * _fid_eqmk);
+
+// html output
 void htmlgen_html_write_header(FILE * _fid);
 void htmlgen_html_write_footer(FILE * _fid);
+
+// equation files
+void htmlgen_eqn_write_header(FILE * _fid);
+void htmlgen_eqn_write_footer(FILE * _fid);
 
 // token methods
 void htmlgen_token_parse_begin(FILE * _fid_tex, FILE * _fid_html);

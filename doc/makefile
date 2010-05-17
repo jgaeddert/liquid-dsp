@@ -146,7 +146,7 @@ clean-figures:
 	$(RM) figures.pgf/*.pdf
 
 ##
-## DOCUMENT
+## PDF DOCUMENT
 ##
 
 # auxillary
@@ -183,9 +183,25 @@ html-figures : $(figures)
 # html generator program
 src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
 
-# html index file
-html/index.html : src/doc-html-gen liquid.tex $(html-dirs)
+# html index file, equations makefile
+html/index.html html/equations.mk : src/doc-html-gen liquid.tex $(html-dirs)
 	./$< -i liquid.tex
+
+# include targets for equations
+-include html/equations.mk
+html_eqn_pngfiles = $(patsubst %.tex,%.png,$(html_eqn_texfiles))
+html_eqn_dvifiles = $(patsubst %.tex,%.dvi,$(html_eqn_texfiles))
+
+$(html_eqn_dvifiles) : %.dvi : %.tex html/equations.mk
+	latex -interaction=batchmode -output-format=dvi -output-directory=html/eqn $<
+	$(RM) $*.log
+	$(RM) $*.aux
+
+$(html_eqn_pngfiles) : %.png : %.dvi html/equations.mk
+	dvipng -q -T tight -x1200 -z 9 -bg Transparent -o $@ $*.dvi
+
+# html equations target
+html-equations : $(html_eqn_pngfiles)
 
 # html main target
 html: html/index.html $(html-figures)

@@ -19,9 +19,12 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//
+// doc-html-gen token parser methods
+//
+
 #include "liquid.doc.h"
 
-// token parser methods
 void htmlgen_token_parse_begin(FILE * _fid_tex, FILE * _fid_html)
 {
 }

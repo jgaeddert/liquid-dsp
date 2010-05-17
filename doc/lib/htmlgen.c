@@ -48,35 +48,61 @@ htmlgen_token_s htmlgen_token_tab[] = {
 
 // parse LaTeX file
 void htmlgen_parse_latex_file(FILE * _fid_tex,
-                              FILE * _fid_html)
+                              FILE * _fid_html,
+                              FILE * _fid_eqmk)
 {
-    // write header, footer
+    // html: write header, footer
     htmlgen_html_write_header(_fid_html);
     fprintf(_fid_html,"<h1>liquid documentation</h1>\n");
     htmlgen_html_write_footer(_fid_html);
 
+    // equation makefile add header, etc.
+    fprintf(_fid_eqmk,"# equations makefile : auto-generated\n");
+    fprintf(_fid_eqmk,"html_eqn_texfiles := ");
+
     FILE * fid_eqn = NULL;      // equation
+    unsigned int equation_id = 0;
+    char filename_eqn[256];
+    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", equation_id);
 
     // equation
-    fid_eqn = fopen("html/eqn/eqn0001.tex","w");
+    fid_eqn = fopen(filename_eqn,"w");
     if (!fid_eqn) {
-        fprintf(stderr,"error, could not open html/eqn/eqn0001.tex for writing\n");
+        fprintf(stderr,"error, could not open '%s' for writing\n", filename_eqn);
         exit(1);
     }
-    fprintf(fid_eqn,"\\documentclass{article} \n");
-    fprintf(fid_eqn,"\\usepackage{amsmath}\n");
-    fprintf(fid_eqn,"\\usepackage{amsthm}\n");
-    fprintf(fid_eqn,"\\usepackage{amssymb}\n");
-    fprintf(fid_eqn,"\\usepackage{bm}\n");
-    fprintf(fid_eqn,"\\newcommand{\\mx}[1]{\\mathbf{\\bm{#1}}} %% Matrix command\n");
-    fprintf(fid_eqn,"\\newcommand{\\vc}[1]{\\mathbf{\\bm{#1}}} %% Vector command \n");
-    fprintf(fid_eqn,"\\newcommand{\\T}{\\text{T}}              %% Transpose\n");
-    fprintf(fid_eqn,"\\pagestyle{empty} \n");
-    fprintf(fid_eqn,"\\begin{document} \n");
-    fprintf(fid_eqn,"\\newpage\n");
+    htmlgen_eqn_write_header(fid_eqn);
     fprintf(fid_eqn,"\\[ y = \\int_0^\\infty \\gamma^2 \\cos(x) dx \\]\n");
-    fprintf(fid_eqn,"\\end{document}\n");
+    htmlgen_eqn_write_footer(fid_eqn);
     fclose(fid_eqn);
+
+    // equation makefile: target collection
+    fprintf(_fid_eqmk,"\\\n\t%s\n", filename_eqn);
+
+    // repeat as necessary
+
+    // equation makefile: clear end-of-line
+    fprintf(_fid_eqmk,"\n\n");
+}
+
+void htmlgen_eqn_write_header(FILE * _fid)
+{
+    fprintf(_fid,"\\documentclass{article} \n");
+    fprintf(_fid,"\\usepackage{amsmath}\n");
+    fprintf(_fid,"\\usepackage{amsthm}\n");
+    fprintf(_fid,"\\usepackage{amssymb}\n");
+    fprintf(_fid,"\\usepackage{bm}\n");
+    fprintf(_fid,"\\newcommand{\\mx}[1]{\\mathbf{\\bm{#1}}} %% Matrix command\n");
+    fprintf(_fid,"\\newcommand{\\vc}[1]{\\mathbf{\\bm{#1}}} %% Vector command \n");
+    fprintf(_fid,"\\newcommand{\\T}{\\text{T}}              %% Transpose\n");
+    fprintf(_fid,"\\pagestyle{empty} \n");
+    fprintf(_fid,"\\begin{document} \n");
+    fprintf(_fid,"\\newpage\n");
+}
+
+void htmlgen_eqn_write_footer(FILE * _fid)
+{
+    fprintf(_fid,"\\end{document}\n");
 }
 
 // Write output html header

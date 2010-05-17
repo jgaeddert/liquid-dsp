@@ -89,7 +89,9 @@ int main(int argc, char*argv[])
     // run parser
     //
     printf("parsing latex file '%s'...\n", filename_tex);
-    htmlgen_parse_latex_file(fid_tex, fid_html);
+    htmlgen_parse_latex_file(fid_tex,
+                             fid_html,
+                             fid_eqmk);
 
     // 
     // close files
