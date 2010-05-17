@@ -204,7 +204,7 @@ $(html_eqn_pngfiles) : %.png : %.dvi html/equations.mk
 html-equations : $(html_eqn_pngfiles)
 
 # html main target
-html: html/index.html $(html-figures)
+html: html/index.html html-figures html-equations
 
 # clean html files
 clean-html:

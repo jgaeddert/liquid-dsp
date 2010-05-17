@@ -89,6 +89,9 @@ void htmlgen_html_write_header(FILE * _fid);
 void htmlgen_html_write_footer(FILE * _fid);
 
 // equation files
+void htmlgen_add_equation(char * _eqn,
+                          unsigned int _eqn_id,
+                          FILE * _fid_eqmk);
 void htmlgen_eqn_write_header(FILE * _fid);
 void htmlgen_eqn_write_footer(FILE * _fid);
 

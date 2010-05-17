@@ -51,38 +51,70 @@ void htmlgen_parse_latex_file(FILE * _fid_tex,
                               FILE * _fid_html,
                               FILE * _fid_eqmk)
 {
-    // html: write header, footer
+    // html: write header
     htmlgen_html_write_header(_fid_html);
     fprintf(_fid_html,"<h1>liquid documentation</h1>\n");
-    htmlgen_html_write_footer(_fid_html);
 
     // equation makefile add header, etc.
     fprintf(_fid_eqmk,"# equations makefile : auto-generated\n");
     fprintf(_fid_eqmk,"html_eqn_texfiles := ");
 
-    FILE * fid_eqn = NULL;      // equation
     unsigned int equation_id = 0;
     char filename_eqn[256];
     sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", equation_id);
 
     // equation
-    fid_eqn = fopen(filename_eqn,"w");
-    if (!fid_eqn) {
-        fprintf(stderr,"error, could not open '%s' for writing\n", filename_eqn);
-        exit(1);
-    }
-    htmlgen_eqn_write_header(fid_eqn);
-    fprintf(fid_eqn,"\\[ y = \\int_0^\\infty \\gamma^2 \\cos(x) dx \\]\n");
-    htmlgen_eqn_write_footer(fid_eqn);
-    fclose(fid_eqn);
+    htmlgen_add_equation("y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }",
+                         equation_id,
+                         _fid_eqmk);
 
-    // equation makefile: target collection
-    fprintf(_fid_eqmk,"\\\n\t%s\n", filename_eqn);
+    // insert equation into html file
+    fprintf(_fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", equation_id);
+
+    // increment equation id
+    equation_id++;
 
     // repeat as necessary
 
     // equation makefile: clear end-of-line
     fprintf(_fid_eqmk,"\n\n");
+
+    // write html footer
+    htmlgen_html_write_footer(_fid_html);
+}
+
+void htmlgen_add_equation(char * _eqn,
+                          unsigned int _eqn_id,
+                          FILE * _fid_eqmk)
+{
+    //
+    char filename_eqn[64] = "";
+    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", _eqn_id);
+
+    // open file
+    FILE * fid_eqn = fopen(filename_eqn, "w");
+    if (!fid_eqn) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", filename_eqn);
+        exit(1);
+    }
+    fprintf(fid_eqn,"%% %s : auto-generated file\n", filename_eqn);
+
+    // write header
+    htmlgen_eqn_write_header(fid_eqn);
+
+    // write equation
+    fprintf(fid_eqn,"\\[\n");
+    fprintf(fid_eqn,"%s\n", _eqn);
+    fprintf(fid_eqn,"\\]\n");
+
+    // write footer
+    htmlgen_eqn_write_footer(fid_eqn);
+
+    // close file
+    fclose(fid_eqn);
+
+    // add equation to makefile: target collection
+    fprintf(_fid_eqmk,"\\\n\t%s", filename_eqn);
 }
 
 void htmlgen_eqn_write_header(FILE * _fid)
