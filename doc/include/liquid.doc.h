@@ -80,9 +80,27 @@ typedef struct {
     htmlgen_func f;
 } htmlgen_token_s;
 
-void htmlgen_parse_latex_file(FILE * _fid_tex,
-                              FILE * _fid_html,
-                              FILE * _fid_eqmk);
+// html gen structure
+typedef struct htmlgen_s * htmlgen;
+struct htmlgen_s {
+    // file names
+    char filename_tex[128];
+    char filename_html[128];
+    char filename_eqmk[128];
+
+    // file pointers
+    FILE * fid_tex;
+    FILE * fid_html;
+    FILE * fid_eqmk;
+
+    // equation identifier
+    unsigned int equation_id;
+};
+
+// main parsing function
+void htmlgen_parse_latex_file(char * _filename_tex,
+                              char * _filename_html,
+                              char * _filename_eqmk);
 
 // html output
 void htmlgen_html_write_header(FILE * _fid);

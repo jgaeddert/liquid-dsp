@@ -184,20 +184,22 @@ html-figures : $(figures)
 src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
 
 # html index file, equations makefile
-html/index.html html/equations.mk : src/doc-html-gen liquid.tex $(html-dirs)
+html/index.html	\
+html-equations.mk : src/doc-html-gen liquid.tex $(html-dirs)
 	./$< -i liquid.tex
 
 # include targets for equations
--include html/equations.mk
+.PRECIOUS: html-equations.mk
+-include html-equations.mk
 html_eqn_pngfiles = $(patsubst %.tex,%.png,$(html_eqn_texfiles))
 html_eqn_dvifiles = $(patsubst %.tex,%.dvi,$(html_eqn_texfiles))
 
-$(html_eqn_dvifiles) : %.dvi : %.tex html/equations.mk
+$(html_eqn_dvifiles) : %.dvi : %.tex html-equations.mk
 	latex -interaction=batchmode -output-format=dvi -output-directory=html/eqn $<
 	$(RM) $*.log
 	$(RM) $*.aux
 
-$(html_eqn_pngfiles) : %.png : %.dvi html/equations.mk
+$(html_eqn_pngfiles) : %.png : %.dvi html-equations.mk
 	dvipng -q -T tight -x1200 -z 9 -bg Transparent -o $@ $*.dvi
 
 # html equations target
@@ -211,6 +213,7 @@ clean-html:
 	$(RM) src/doc-html-gen
 	$(RM) $(html-figures)
 	$(RM) -r html
+	$(RM) figures-html.mk
 
 ##
 ## OTHER

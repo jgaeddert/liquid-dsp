@@ -47,17 +47,43 @@ htmlgen_token_s htmlgen_token_tab[] = {
 };
 
 // parse LaTeX file
-void htmlgen_parse_latex_file(FILE * _fid_tex,
-                              FILE * _fid_html,
-                              FILE * _fid_eqmk)
+void htmlgen_parse_latex_file(char * _filename_tex,
+                              char * _filename_html,
+                              char * _filename_eqmk)
 {
+    // create htmlgen object
+    struct htmlgen_s tmp;
+    htmlgen q = &tmp;
+
+    // copy file names
+    strncpy(q->filename_tex,  _filename_tex,  256);
+    strncpy(q->filename_html, _filename_html, 256);
+    strncpy(q->filename_eqmk, _filename_eqmk, 256);
+
+    // open files
+    q->fid_tex  = fopen(q->filename_tex, "r");
+    q->fid_html = fopen(q->filename_html,"w");
+    q->fid_eqmk = fopen(q->filename_eqmk,"w");
+
+    // validate files opened properly
+    if (!q->fid_tex) {
+        fprintf(stderr,"error, could not open '%s' for reading\n", q->filename_tex);
+        exit(1);
+    } else  if (!q->fid_html) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", q->filename_html);
+        exit(1);
+    } else  if (!q->fid_eqmk) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", q->filename_eqmk);
+        exit(1);
+    }
+
     // html: write header
-    htmlgen_html_write_header(_fid_html);
-    fprintf(_fid_html,"<h1>liquid documentation</h1>\n");
+    htmlgen_html_write_header(q->fid_html);
+    fprintf(q->fid_html,"<h1>liquid documentation</h1>\n");
 
     // equation makefile add header, etc.
-    fprintf(_fid_eqmk,"# equations makefile : auto-generated\n");
-    fprintf(_fid_eqmk,"html_eqn_texfiles := ");
+    fprintf(q->fid_eqmk,"# equations makefile : auto-generated\n");
+    fprintf(q->fid_eqmk,"html_eqn_texfiles := ");
 
     unsigned int equation_id = 0;
     char filename_eqn[256];
@@ -66,10 +92,10 @@ void htmlgen_parse_latex_file(FILE * _fid_tex,
     // equation
     htmlgen_add_equation("y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }",
                          equation_id,
-                         _fid_eqmk);
+                         q->fid_eqmk);
 
     // insert equation into html file
-    fprintf(_fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", equation_id);
+    fprintf(q->fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", equation_id);
 
     // increment equation id
     equation_id++;
@@ -77,10 +103,19 @@ void htmlgen_parse_latex_file(FILE * _fid_tex,
     // repeat as necessary
 
     // equation makefile: clear end-of-line
-    fprintf(_fid_eqmk,"\n\n");
+    fprintf(q->fid_eqmk,"\n\n");
 
     // write html footer
-    htmlgen_html_write_footer(_fid_html);
+    htmlgen_html_write_footer(q->fid_html);
+
+    // 
+    // close files
+    //
+    fclose(q->fid_tex);
+    fclose(q->fid_html);
+    fclose(q->fid_eqmk);
+
+
 }
 
 void htmlgen_add_equation(char * _eqn,
