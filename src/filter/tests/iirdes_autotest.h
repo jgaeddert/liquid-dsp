@@ -255,5 +255,45 @@ void autotest_iirdes_dzpk2sosf()
         printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
 }
 
-#endif // __LIQUID_IIRDES_AUTOTEST_H__
+// 
+// AUTOTEST : iirdes_isstable
+//
+void autotest_iirdes_isstable_n2_yes()
+{
+    // initialize pre-determined coefficient array
+    // for 2^nd-order low-pass Butterworth filter
+    // with cutoff frequency 0.25
+    float a[3] = {
+        1.0f,
+        0.0f,
+        0.171572875253810f};
+    float b[3] = {
+        0.292893218813452f,
+        0.585786437626905f,
+        0.292893218813452f};
 
+    int stable = iirdes_isstable(b,a,3);
+    CONTEND_EQUALITY( stable, 1 );
+}
+
+
+// 
+// AUTOTEST : iirdes_isstable
+//
+void autotest_iirdes_isstable_n2_no()
+{
+    // initialize unstable filter
+    float a[3] = {
+        1.0f,
+        0.0f,
+        1.171572875253810f};
+    float b[3] = {
+        0.292893218813452f,
+        0.585786437626905f,
+        0.292893218813452f};
+
+    int stable = iirdes_isstable(b,a,3);
+    CONTEND_EQUALITY( stable, 0 );
+}
+
+#endif // __LIQUID_IIRDES_AUTOTEST_H__

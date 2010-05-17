@@ -1143,6 +1143,14 @@ void iirdes_dzpk2sosf(liquid_float_complex * _zd,
                       float * _B,
                       float * _A);
 
+// checks stability of iir filter
+//  _b      :   feed-forward coefficients [size: _n x 1]
+//  _a      :   feed-back coefficients [size: _n x 1]
+//  _n      :   number of coefficients
+int iirdes_isstable(float * _b,
+                    float * _a,
+                    unsigned int _n);
+
 //
 // auto-correlator (delay cross-correlation)
 //

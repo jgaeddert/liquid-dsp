@@ -636,4 +636,44 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     }
 }
 
+// checks stability of iir filter
+//  _b      :   feed-forward coefficients [size: _n x 1]
+//  _a      :   feed-back coefficients [size: _n x 1]
+//  _n      :   number of coefficients
+int iirdes_isstable(float * _b,
+                    float * _a,
+                    unsigned int _n)
+{
+    // validate input
+    if (_n < 2) {
+        fprintf(stderr,"error: iirdes_isstable(), filter order too low\n");
+        exit(1);
+    }
+    unsigned int i;
+
+    // flip denominator, left to right
+    float a_hat[_n];
+    for (i=0; i<_n; i++)
+        a_hat[i] = _a[_n-i-1];
+
+    // compute poles (roots of denominator)
+    float complex roots[_n-1];
+    polyf_findroots_bairstow(a_hat, _n, roots);
+
+#if 0
+    // print roots
+    printf("\nroots:\n");
+    for (i=0; i<_n-1; i++)
+        printf("  r[%3u] = %12.8f + j *%12.8f\n", i, crealf(roots[i]), cimagf(roots[i]));
+#endif
+
+    // compute magnitude of poles
+    for (i=0; i<_n-1; i++) {
+        if (cabsf(roots[i]) > 1.0)
+            return 0;
+    }
+
+    return 1;
+}
+
 
