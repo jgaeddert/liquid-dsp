@@ -76,7 +76,9 @@ SECTIONS :=					\
 
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
-	lib/liquid_doc_freqz.c
+	lib/liquid_doc_freqz.c			\
+	lib/htmlgen.tokenparser.c		\
+	lib/htmlgen.c
 
 # additional targets to clean
 extra_clean :=
@@ -146,7 +148,7 @@ clean-figures:
 	$(RM) figures.pgf/*.pdf
 
 ##
-## DOCUMENT
+## PDF DOCUMENT
 ##
 
 # auxillary
@@ -167,6 +169,53 @@ clean-doc:
 	$(RM) *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.bbl *.blg
 	$(RM) liquid.pdf
 
+
+##
+## HTML DOCUMENTATION
+##
+
+# html directories
+html/fig/.touch: ; mkdir -p html/fig && touch html/fig/.touch
+html/eqn/.touch: ; mkdir -p html/eqn && touch html/eqn/.touch
+html-dirs := html/fig/.touch html/eqn/.touch
+
+# html figures
+html-figures : $(figures)
+
+# html generator program
+src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
+
+# html index file, equations makefile
+html/index.html	\
+html-equations.mk : src/doc-html-gen liquid.tex $(html-dirs)
+	./$< -i liquid.tex
+
+# include targets for equations
+.PRECIOUS: html-equations.mk
+-include html-equations.mk
+html_eqn_pngfiles = $(patsubst %.tex,%.png,$(html_eqn_texfiles))
+html_eqn_dvifiles = $(patsubst %.tex,%.dvi,$(html_eqn_texfiles))
+
+$(html_eqn_dvifiles) : %.dvi : %.tex html-equations.mk
+	latex -interaction=batchmode -output-format=dvi -output-directory=html/eqn $<
+	$(RM) $*.log
+	$(RM) $*.aux
+
+$(html_eqn_pngfiles) : %.png : %.dvi html-equations.mk
+	dvipng -q -T tight -x1200 -z 9 -bg Transparent -o $@ $*.dvi
+
+# html equations target
+html-equations : $(html_eqn_pngfiles)
+
+# html main target
+html: html/index.html html-figures html-equations
+
+# clean html files
+clean-html:
+	$(RM) src/doc-html-gen
+	$(RM) $(html-figures)
+	$(RM) -r html
+	$(RM) figures-html.mk
 
 ##
 ## OTHER

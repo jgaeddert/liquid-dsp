@@ -22,6 +22,7 @@
 #ifndef __LIQUID_DOC_H__
 #define __LIQUID_DOC_H__
 
+#include <stdio.h>
 #include <complex.h>
 #include <stdbool.h>
 #include <liquid/liquid.h>
@@ -65,6 +66,65 @@ void liquid_doc_freqz(float * _b,
                       unsigned int _na,
                       unsigned int _nfft,
                       float complex * _H);
+
+// 
+// html documentation generation
+//
+
+// html gen structure
+typedef struct htmlgen_s * htmlgen;
+struct htmlgen_s {
+    // file names
+    char filename_tex[128];
+    char filename_html[128];
+    char filename_eqmk[128];
+
+    // file pointers
+    FILE * fid_tex;
+    FILE * fid_html;
+    FILE * fid_eqmk;
+
+    // equation identifier
+    unsigned int equation_id;
+};
+
+// doc-html-gen function
+typedef void (*htmlgen_parse_func) (htmlgen _q);
+
+// token structure
+typedef struct {
+    char * token;
+    htmlgen_parse_func func;
+} htmlgen_token_s;
+
+// main parsing function
+void htmlgen_parse_latex_file(char * _filename_tex,
+                              char * _filename_html,
+                              char * _filename_eqmk);
+
+htmlgen htmlgen_create(char * _filename_tex,
+                       char * _filename_html,
+                       char * _filename_eqmk);
+void htmlgen_destroy(htmlgen _q);
+
+// html output
+void htmlgen_html_write_header(htmlgen _q);
+void htmlgen_html_write_footer(htmlgen _q);
+
+// equation files
+void htmlgen_add_equation(htmlgen _q, char * _eqn);
+
+// token methods
+void htmlgen_token_parse_begin(htmlgen _q);
+void htmlgen_token_parse_end(htmlgen _q);
+void htmlgen_token_parse_document(htmlgen _q);
+void htmlgen_token_parse_section(htmlgen _q);
+void htmlgen_token_parse_subsection(htmlgen _q);
+void htmlgen_token_parse_subsubsection(htmlgen _q);
+void htmlgen_token_parse_figure(htmlgen _q);
+void htmlgen_token_parse_tabular(htmlgen _q);
+void htmlgen_token_parse_enumerate(htmlgen _q);
+void htmlgen_token_parse_itemize(htmlgen _q);
 
 #endif // __LIQUID_DOC_H__
 
