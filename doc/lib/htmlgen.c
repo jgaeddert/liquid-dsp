@@ -55,6 +55,8 @@ void htmlgen_parse_latex_file(char * _filename_tex,
                                _filename_html,
                                _filename_eqmk);
 
+    htmlgen_open_files(q);
+
     // html: write header
     htmlgen_html_write_header(q);
     fprintf(q->fid_html,"<h1>liquid documentation</h1>\n");
@@ -83,6 +85,9 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 
     // write html footer
     htmlgen_html_write_footer(q);
+
+    // close files
+    htmlgen_close_files(q);
 }
 
 
@@ -100,32 +105,39 @@ htmlgen htmlgen_create(char * _filename_tex,
     strncpy(q->filename_html, _filename_html, 256);
     strncpy(q->filename_eqmk, _filename_eqmk, 256);
 
-    // open files
-    q->fid_tex  = fopen(q->filename_tex, "r");
-    q->fid_html = fopen(q->filename_html,"w");
-    q->fid_eqmk = fopen(q->filename_eqmk,"w");
-
-    // validate files opened properly
-    if (!q->fid_tex) {
-        fprintf(stderr,"error, could not open '%s' for reading\n", q->filename_tex);
-        exit(1);
-    } else  if (!q->fid_html) {
-        fprintf(stderr,"error, could not open '%s' for writing\n", q->filename_html);
-        exit(1);
-    } else  if (!q->fid_eqmk) {
-        fprintf(stderr,"error, could not open '%s' for writing\n", q->filename_eqmk);
-        exit(1);
-    }
-
     return q;
 }
 
-void htmlgen_destroy(htmlgen _q)
+void htmlgen_open_files(htmlgen _q)
+{
+    // open files
+    _q->fid_tex  = fopen(_q->filename_tex, "r");
+    _q->fid_html = fopen(_q->filename_html,"w");
+    _q->fid_eqmk = fopen(_q->filename_eqmk,"w");
+
+    // validate files opened properly
+    if (!_q->fid_tex) {
+        fprintf(stderr,"error, could not open '%s' for reading\n", _q->filename_tex);
+        exit(1);
+    } else if (!_q->fid_html) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", _q->filename_html);
+        exit(1);
+    } else  if (!_q->fid_eqmk) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", _q->filename_eqmk);
+        exit(1);
+    }
+}
+
+void htmlgen_close_files(htmlgen _q)
 {
     // close files
     fclose(_q->fid_tex);
     fclose(_q->fid_html);
     fclose(_q->fid_eqmk);
+}
+
+void htmlgen_destroy(htmlgen _q)
+{
 
     // free memory
     free(_q);
@@ -201,7 +213,7 @@ void htmlgen_html_write_footer(htmlgen _q)
     fprintf(_q->fid_html,"    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n");
     fprintf(_q->fid_html,"    </p>\n");
     fprintf(_q->fid_html,"    -->\n");
-    fprintf(_q->fid_html,"    <p>Last updated: <em> ... </em></p>\n");
+    fprintf(_q->fid_html,"    <p>Last updated: <em> TODO : add date/time here </em></p>\n");
     fprintf(_q->fid_html,"</body>\n");
     fprintf(_q->fid_html,"</html>\n");
 }

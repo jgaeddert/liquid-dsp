@@ -105,6 +105,8 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 htmlgen htmlgen_create(char * _filename_tex,
                        char * _filename_html,
                        char * _filename_eqmk);
+void htmlgen_open_files(htmlgen _q);
+void htmlgen_close_files(htmlgen _q);
 void htmlgen_destroy(htmlgen _q);
 
 // html output
