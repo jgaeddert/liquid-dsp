@@ -41,6 +41,42 @@ Here is a simple example:
 
 \subsection{{\tt rep3} (simple repeat code)}
 \label{module:fec:rep3}
+The {\tt rep3} code is a simple repeat code which simply repeats the message
+twice (transmits it three times).
+The decoder takes a majority vote of the bits received by applying a simple
+series bit masks.
+If the original bit is represented as $s$, then the transmitted bits are
+$s s s$.
+Let the received bit sequence be $r_0 r_1 r_2$.
+The estimated transmitted bit is {\tt 0} if the sum of the received bits is
+less than 2, and {\tt 1} otherwise.
+This is equivalent to
+\[
+    \hat{s} =   \Bigl(
+                (r_0 \oplus r_1) + 
+                (r_0 \oplus r_2) + 
+                (r_1 \oplus r_2) 
+                \Bigr)
+                \oplus
+                (r_1 \oplus r_1 \oplus r_2)
+\]
+where $\oplus$ represents logical {\it exclusive or} and $+$ represents
+logical {\it or}.
+In this fashion it is easy to decode several bytes of data at a time because
+machine architectures have low-level bit-wise manipulation instructions which
+can compute logical {\it exclusive or} and {\it or} very quickly.
+This is precisely how \liquid\ decodes {\tt rep3} data, only in this case,
+$s$, $r_0$, $r_1$, and $r_2$ represent a bytes of data rather than bits.
+The above notation is useful because the quantity
+$(r_0 \oplus r_1) + (r_0 \oplus r_2) + (r_1 \oplus r_2)$
+represents the number of errors corrected.
+
+It is well-known that repeat codes do not have strong error-correction
+capabilities for their rate, are are located far from the Shannon capacity
+bound \cite{Proakis:2001}.
+However, their simplicity in implementation and computational complexity gains
+them a place in digital communications, particularly in software radios where
+spectral efficiency is secondary to computational complexity.
 
 \subsection{{\tt h74} (Hamming (7,4) code)}
 \label{module:fec:h74}

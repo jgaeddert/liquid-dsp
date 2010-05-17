@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -27,6 +28,7 @@
 #include <string.h>
 #include "liquid.internal.h"
 
+// create rep3 codec object
 fec fec_rep3_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
@@ -40,17 +42,28 @@ fec fec_rep3_create(void * _opts)
     return q;
 }
 
+// destroy rep3 object
 void fec_rep3_destroy(fec _q)
 {
     free(_q);
 }
 
+// print rep3 object
 void fec_rep3_print(fec _q)
 {
     printf("fec_rep3 [r: %3.2f]\n", _q->rate);
 }
 
-void fec_rep3_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_dec, unsigned char *_msg_enc)
+// encode block of data using rep3 encoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+void fec_rep3_encode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char *_msg_dec,
+                     unsigned char *_msg_enc)
 {
     unsigned int i;
     for (i=0; i<3; i++) {
@@ -58,7 +71,16 @@ void fec_rep3_encode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_dec,
     }
 }
 
-void fec_rep3_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_enc, unsigned char *_msg_dec)
+// decode block of data using rep3 decoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+void fec_rep3_decode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char *_msg_enc,
+                     unsigned char *_msg_dec)
 {
     unsigned char s0, s1, s2, a, b, c, x, y;
     unsigned int i, num_errors=0;
@@ -76,6 +98,17 @@ void fec_rep3_decode(fec _q, unsigned int _dec_msg_len, unsigned char *_msg_enc,
         num_errors += x ? 1 : 0;
 
         _msg_dec[i] = x ^ y;
+
+        // TODO : see if there a simpler way
+        //  s0  s1  s2  y
+        //  0   0   0   0
+        //  0   0   1   0
+        //  0   1   0   0
+        //  0   1   1   1
+        //  1   0   0   0
+        //  1   0   1   1
+        //  1   1   0   1
+        //  1   1   1   1
     }
     //return num_errors;
 }
