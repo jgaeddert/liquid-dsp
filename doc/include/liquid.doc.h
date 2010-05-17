@@ -73,6 +73,8 @@ void liquid_doc_freqz(float * _b,
 
 // html gen structure
 typedef struct htmlgen_s * htmlgen;
+
+#define HTMLGEN_BUFFER_LENGTH   512
 struct htmlgen_s {
     // file names
     char filename_tex[128];
@@ -86,6 +88,10 @@ struct htmlgen_s {
 
     // equation identifier
     unsigned int equation_id;
+
+    //
+    char buffer[HTMLGEN_BUFFER_LENGTH+1];
+    unsigned int buffer_size;     // number of elements in buffer
 };
 
 // doc-html-gen function
@@ -115,6 +121,11 @@ void htmlgen_html_write_footer(htmlgen _q);
 
 // equation files
 void htmlgen_add_equation(htmlgen _q, char * _eqn, int _inline);
+
+// buffering methods
+void htmlgen_buffer_produce(htmlgen _q);
+void htmlgen_buffer_consume(htmlgen _q,
+                            unsigned int _n);
 
 // token methods
 void htmlgen_token_parse_begin(htmlgen _q);

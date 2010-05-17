@@ -55,6 +55,7 @@ void htmlgen_parse_latex_file(char * _filename_tex,
                                _filename_html,
                                _filename_eqmk);
 
+    // open files for reading/writing
     htmlgen_open_files(q);
 
     // html: write header
@@ -65,8 +66,8 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     fprintf(q->fid_eqmk,"# equations makefile : auto-generated\n");
     fprintf(q->fid_eqmk,"html_eqn_texfiles := ");
 
-    char filename_eqn[256];
-    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", q->equation_id);
+    //char filename_eqn[256];
+    //sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", q->equation_id);
 
     // add equations
     htmlgen_add_equation(q, "y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }", 0);
@@ -78,6 +79,14 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     fprintf(q->fid_html,"</p>\n");
 
     // repeat as necessary
+
+    // parse file
+    unsigned int i;
+    for (i=0; i<10; i++) {
+        htmlgen_buffer_produce(q); // fill buffer
+        printf("%s", q->buffer);
+        htmlgen_buffer_consume(q, q->buffer_size);
+    }
 
     // equation makefile: clear end-of-line
     fprintf(q->fid_eqmk,"\n\n");
@@ -98,6 +107,7 @@ htmlgen htmlgen_create(char * _filename_tex,
     // create htmlgen object
     htmlgen q = (htmlgen) malloc(sizeof(struct htmlgen_s));
     q->equation_id = 0;
+    q->buffer_size = 0;
 
     // copy file names
     strncpy(q->filename_tex,  _filename_tex,  256);
@@ -224,5 +234,44 @@ void htmlgen_html_write_footer(htmlgen _q)
     fprintf(_q->fid_html,"    <p>Last updated: <em> TODO : add date/time here </em></p>\n");
     fprintf(_q->fid_html,"</body>\n");
     fprintf(_q->fid_html,"</html>\n");
+}
+
+// read from file into buffer
+void htmlgen_buffer_produce(htmlgen _q)
+{
+    // number of empty elements in buffer
+    unsigned int num_remaining = HTMLGEN_BUFFER_LENGTH - _q->buffer_size;
+
+    // read values from file into buffer
+    unsigned int k = fread((void*) &_q->buffer[_q->buffer_size],
+                           sizeof(char),
+                           num_remaining,
+                           _q->fid_tex);
+    
+    if (k != num_remaining) {
+        fprintf(stderr,"warning: htmlgen_buffer_produce(), expected %u but only read %u\n", num_remaining, k);
+    }
+
+    _q->buffer_size += k;
+}
+
+// consume _n elements from buffer
+void htmlgen_buffer_consume(htmlgen _q,
+                            unsigned int _n)
+{
+    if (_n > _q->buffer_size) {
+        fprintf(stderr,"error: htmlgen_html_buffer_consume(), cannot consume more elments than size of buffer\n");
+        exit(1);
+    }
+    
+    // compute remaining values in buffer
+    unsigned int num_remaining = _q->buffer_size - _n;
+
+    memmove(_q->buffer, &_q->buffer[_n], num_remaining*sizeof(char));
+
+    _q->buffer_size -= _n;
+
+    // set null character at end of buffer
+    _q->buffer[_q->buffer_size] = '\0';
 }
 
