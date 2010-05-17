@@ -51,9 +51,49 @@ void htmlgen_parse_latex_file(char * _filename_tex,
                               char * _filename_html,
                               char * _filename_eqmk)
 {
+    htmlgen q = htmlgen_create(_filename_tex,
+                               _filename_html,
+                               _filename_eqmk);
+
+    // html: write header
+    htmlgen_html_write_header(q);
+    fprintf(q->fid_html,"<h1>liquid documentation</h1>\n");
+
+    // equation makefile add header, etc.
+    fprintf(q->fid_eqmk,"# equations makefile : auto-generated\n");
+    fprintf(q->fid_eqmk,"html_eqn_texfiles := ");
+
+    unsigned int equation_id = 0;
+    char filename_eqn[256];
+    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", equation_id);
+
+    // equation
+    htmlgen_add_equation(q, "y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }");
+
+    // insert equation into html file
+    fprintf(q->fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", equation_id);
+
+    // increment equation id
+    equation_id++;
+
+    // repeat as necessary
+
+    // equation makefile: clear end-of-line
+    fprintf(q->fid_eqmk,"\n\n");
+
+    // write html footer
+    htmlgen_html_write_footer(q);
+}
+
+
+// create htmlgen object
+htmlgen htmlgen_create(char * _filename_tex,
+                       char * _filename_html,
+                       char * _filename_eqmk)
+{
     // create htmlgen object
-    struct htmlgen_s tmp;
-    htmlgen q = &tmp;
+    htmlgen q = (htmlgen) malloc(sizeof(struct htmlgen_s));
+    q->equation_id = 0;
 
     // copy file names
     strncpy(q->filename_tex,  _filename_tex,  256);
@@ -77,54 +117,26 @@ void htmlgen_parse_latex_file(char * _filename_tex,
         exit(1);
     }
 
-    // html: write header
-    htmlgen_html_write_header(q->fid_html);
-    fprintf(q->fid_html,"<h1>liquid documentation</h1>\n");
-
-    // equation makefile add header, etc.
-    fprintf(q->fid_eqmk,"# equations makefile : auto-generated\n");
-    fprintf(q->fid_eqmk,"html_eqn_texfiles := ");
-
-    unsigned int equation_id = 0;
-    char filename_eqn[256];
-    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", equation_id);
-
-    // equation
-    htmlgen_add_equation("y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }",
-                         equation_id,
-                         q->fid_eqmk);
-
-    // insert equation into html file
-    fprintf(q->fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", equation_id);
-
-    // increment equation id
-    equation_id++;
-
-    // repeat as necessary
-
-    // equation makefile: clear end-of-line
-    fprintf(q->fid_eqmk,"\n\n");
-
-    // write html footer
-    htmlgen_html_write_footer(q->fid_html);
-
-    // 
-    // close files
-    //
-    fclose(q->fid_tex);
-    fclose(q->fid_html);
-    fclose(q->fid_eqmk);
-
-
+    return q;
 }
 
-void htmlgen_add_equation(char * _eqn,
-                          unsigned int _eqn_id,
-                          FILE * _fid_eqmk)
+void htmlgen_destroy(htmlgen _q)
+{
+    // close files
+    fclose(_q->fid_tex);
+    fclose(_q->fid_html);
+    fclose(_q->fid_eqmk);
+
+    // free memory
+    free(_q);
+}
+
+void htmlgen_add_equation(htmlgen _q,
+                          char * _eqn)
 {
     //
     char filename_eqn[64] = "";
-    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", _eqn_id);
+    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", _q->equation_id);
 
     // open file
     FILE * fid_eqn = fopen(filename_eqn, "w");
@@ -135,7 +147,17 @@ void htmlgen_add_equation(char * _eqn,
     fprintf(fid_eqn,"%% %s : auto-generated file\n", filename_eqn);
 
     // write header
-    htmlgen_eqn_write_header(fid_eqn);
+    fprintf(fid_eqn,"\\documentclass{article} \n");
+    fprintf(fid_eqn,"\\usepackage{amsmath}\n");
+    fprintf(fid_eqn,"\\usepackage{amsthm}\n");
+    fprintf(fid_eqn,"\\usepackage{amssymb}\n");
+    fprintf(fid_eqn,"\\usepackage{bm}\n");
+    fprintf(fid_eqn,"\\newcommand{\\mx}[1]{\\mathbf{\\bm{#1}}} %% Matrix command\n");
+    fprintf(fid_eqn,"\\newcommand{\\vc}[1]{\\mathbf{\\bm{#1}}} %% Vector command \n");
+    fprintf(fid_eqn,"\\newcommand{\\T}{\\text{T}}              %% Transpose\n");
+    fprintf(fid_eqn,"\\pagestyle{empty} \n");
+    fprintf(fid_eqn,"\\begin{document} \n");
+    fprintf(fid_eqn,"\\newpage\n");
 
     // write equation
     fprintf(fid_eqn,"\\[\n");
@@ -143,64 +165,44 @@ void htmlgen_add_equation(char * _eqn,
     fprintf(fid_eqn,"\\]\n");
 
     // write footer
-    htmlgen_eqn_write_footer(fid_eqn);
+    fprintf(fid_eqn,"\\end{document}\n");
 
     // close file
     fclose(fid_eqn);
 
     // add equation to makefile: target collection
-    fprintf(_fid_eqmk,"\\\n\t%s", filename_eqn);
-}
-
-void htmlgen_eqn_write_header(FILE * _fid)
-{
-    fprintf(_fid,"\\documentclass{article} \n");
-    fprintf(_fid,"\\usepackage{amsmath}\n");
-    fprintf(_fid,"\\usepackage{amsthm}\n");
-    fprintf(_fid,"\\usepackage{amssymb}\n");
-    fprintf(_fid,"\\usepackage{bm}\n");
-    fprintf(_fid,"\\newcommand{\\mx}[1]{\\mathbf{\\bm{#1}}} %% Matrix command\n");
-    fprintf(_fid,"\\newcommand{\\vc}[1]{\\mathbf{\\bm{#1}}} %% Vector command \n");
-    fprintf(_fid,"\\newcommand{\\T}{\\text{T}}              %% Transpose\n");
-    fprintf(_fid,"\\pagestyle{empty} \n");
-    fprintf(_fid,"\\begin{document} \n");
-    fprintf(_fid,"\\newpage\n");
-}
-
-void htmlgen_eqn_write_footer(FILE * _fid)
-{
-    fprintf(_fid,"\\end{document}\n");
+    fprintf(_q->fid_eqmk,"\\\n\t%s", filename_eqn);
 }
 
 // Write output html header
-void htmlgen_html_write_header(FILE * _fid)
+void htmlgen_html_write_header(htmlgen _q)
 {
-    fprintf(_fid,"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n");
-    fprintf(_fid,"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
-    fprintf(_fid,"<!-- auto-generated file, do not edit -->\n");
-    fprintf(_fid,"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">\n");
-    fprintf(_fid,"<head>\n");
-    fprintf(_fid,"<!-- <style type=\"text/css\" media=\"all\">@import url(http://computing.ece.vt.edu/~jgaeddert/web.css);</style> -->\n");
-    fprintf(_fid,"<title>jgaeddert</title>\n");
-    fprintf(_fid,"<meta name=\"description\" content=\"Gaeddert Virginia Tech\" />\n");
-    fprintf(_fid,"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n");
-    fprintf(_fid,"<!-- <link rel=\"Shortcut Icon\" type=\"image/png\" href=\"img/favicon.png\" /> -->\n");
-    fprintf(_fid,"</head>\n");
-    fprintf(_fid,"<body>\n");
+    fprintf(_q->fid_html,"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n");
+    fprintf(_q->fid_html,"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
+    fprintf(_q->fid_html,"<!-- auto-generated file, do not edit -->\n");
+    fprintf(_q->fid_html,"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">\n");
+    fprintf(_q->fid_html,"<head>\n");
+    fprintf(_q->fid_html,"<!-- <style type=\"text/css\" media=\"all\">@import url(http://computing.ece.vt.edu/~jgaeddert/web.css);</style> -->\n");
+    fprintf(_q->fid_html,"<title>jgaeddert</title>\n");
+    fprintf(_q->fid_html,"<meta name=\"description\" content=\"Gaeddert Virginia Tech\" />\n");
+    fprintf(_q->fid_html,"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n");
+    fprintf(_q->fid_html,"<!-- <link rel=\"Shortcut Icon\" type=\"image/png\" href=\"img/favicon.png\" /> -->\n");
+    fprintf(_q->fid_html,"</head>\n");
+    fprintf(_q->fid_html,"<body>\n");
 }
 
 // Write output html footer
-void htmlgen_html_write_footer(FILE * _fid)
+void htmlgen_html_write_footer(htmlgen _q)
 {
-    fprintf(_fid,"    <!--\n");
-    fprintf(_fid,"    <p>\n");
-    fprintf(_fid,"    Validate:\n");
-    fprintf(_fid,"    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n");
-    fprintf(_fid,"    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n");
-    fprintf(_fid,"    </p>\n");
-    fprintf(_fid,"    -->\n");
-    fprintf(_fid,"    <p>Last updated: <em> ... </em></p>\n");
-    fprintf(_fid,"</body>\n");
-    fprintf(_fid,"</html>\n");
+    fprintf(_q->fid_html,"    <!--\n");
+    fprintf(_q->fid_html,"    <p>\n");
+    fprintf(_q->fid_html,"    Validate:\n");
+    fprintf(_q->fid_html,"    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n");
+    fprintf(_q->fid_html,"    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n");
+    fprintf(_q->fid_html,"    </p>\n");
+    fprintf(_q->fid_html,"    -->\n");
+    fprintf(_q->fid_html,"    <p>Last updated: <em> ... </em></p>\n");
+    fprintf(_q->fid_html,"</body>\n");
+    fprintf(_q->fid_html,"</html>\n");
 }
 

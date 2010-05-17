@@ -25,43 +25,43 @@
 
 #include "liquid.doc.h"
 
-void htmlgen_token_parse_begin(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_begin(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_end(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_end(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_document(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_document(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_section(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_section(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_subsection(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_subsection(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_subsubsection(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_subsubsection(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_figure(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_figure(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_tabular(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_tabular(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_enumerate(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_enumerate(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_itemize(FILE * _fid_tex, FILE * _fid_html)
+void htmlgen_token_parse_itemize(htmlgen _q)
 {
 }
 

@@ -71,15 +71,6 @@ void liquid_doc_freqz(float * _b,
 // html documentation generation
 //
 
-// doc-html-gen function
-typedef void (*htmlgen_func) (FILE * _fid_tex, FILE * _fid_html);
-
-// token structure
-typedef struct {
-    char * token;
-    htmlgen_func f;
-} htmlgen_token_s;
-
 // html gen structure
 typedef struct htmlgen_s * htmlgen;
 struct htmlgen_s {
@@ -97,33 +88,43 @@ struct htmlgen_s {
     unsigned int equation_id;
 };
 
+// doc-html-gen function
+typedef void (*htmlgen_parse_func) (htmlgen _q);
+
+// token structure
+typedef struct {
+    char * token;
+    htmlgen_parse_func func;
+} htmlgen_token_s;
+
 // main parsing function
 void htmlgen_parse_latex_file(char * _filename_tex,
                               char * _filename_html,
                               char * _filename_eqmk);
 
+htmlgen htmlgen_create(char * _filename_tex,
+                       char * _filename_html,
+                       char * _filename_eqmk);
+void htmlgen_destroy(htmlgen _q);
+
 // html output
-void htmlgen_html_write_header(FILE * _fid);
-void htmlgen_html_write_footer(FILE * _fid);
+void htmlgen_html_write_header(htmlgen _q);
+void htmlgen_html_write_footer(htmlgen _q);
 
 // equation files
-void htmlgen_add_equation(char * _eqn,
-                          unsigned int _eqn_id,
-                          FILE * _fid_eqmk);
-void htmlgen_eqn_write_header(FILE * _fid);
-void htmlgen_eqn_write_footer(FILE * _fid);
+void htmlgen_add_equation(htmlgen _q, char * _eqn);
 
 // token methods
-void htmlgen_token_parse_begin(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_end(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_document(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_section(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_subsection(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_subsubsection(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_figure(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_tabular(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_enumerate(FILE * _fid_tex, FILE * _fid_html);
-void htmlgen_token_parse_itemize(FILE * _fid_tex, FILE * _fid_html);
+void htmlgen_token_parse_begin(htmlgen _q);
+void htmlgen_token_parse_end(htmlgen _q);
+void htmlgen_token_parse_document(htmlgen _q);
+void htmlgen_token_parse_section(htmlgen _q);
+void htmlgen_token_parse_subsection(htmlgen _q);
+void htmlgen_token_parse_subsubsection(htmlgen _q);
+void htmlgen_token_parse_figure(htmlgen _q);
+void htmlgen_token_parse_tabular(htmlgen _q);
+void htmlgen_token_parse_enumerate(htmlgen _q);
+void htmlgen_token_parse_itemize(htmlgen _q);
 
 #endif // __LIQUID_DOC_H__
 
