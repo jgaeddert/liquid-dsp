@@ -19,6 +19,7 @@ Documentation dependencies:
     gnuplot     : v4.2 (?)
     pygments    : (sudo apt-get install python-pygments)
     pgf 2.0     : (sudo apt-get install pgf)
+    dvipng      : dvi to png converter (sudo apt-get install dvipng)
     liquid      : build and install the base DSP libraries
 
 Documentation targets:
@@ -27,6 +28,7 @@ Documentation targets:
     listings        :   fancy code listings
     clean-figures   :   clean all auto-generated figures
     clean-listings  :   clean all auto-generated listings
+    html            :   html documentation (under construction)
 
 Directory listings and their contents
     figures.gen/    :   automatically-generated figures (gnuplot)
@@ -45,4 +47,6 @@ References
     [gnuplot:web] Gnuplot homepage, Online: http://www.gnuplot.info/
     [pgf:web] PGF and TikZ, Graphics systems for TeX, Online:
         http://sourceforge.net/projects/pgf/
+    [dvipng:web] dvipng: A DVI-to-PNG converter, Online:
+        http://sourceforge.net/projects/dvipng/
 
