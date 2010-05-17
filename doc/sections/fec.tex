@@ -4,5 +4,62 @@
 
 \section{fec (forward error correction)}
 \label{module:fec}
-(basic), checksum, crc, Hamming block codes...
+%(basic), checksum, crc, Hamming block codes...
+The fec module implements a set of forward error-correction codes for
+ensuring and validating data integrity through a noisy channel.
+Redudant (``parity'') bits are added to a data sequence to help correct for
+errors introduced by the channel.
+
+See also: {\tt packetizer}, {\tt interleaver}
+
+\subsection{Interface}
+\label{module:fec:interface}
+
+\subsection{{\tt checksum}}
+\label{module:fec:checksum}
+A checksum is a simple way to validate data received through un-reliable means
+(e.g. a noisy channel).
+A checksum is, in essence, a weak error detection code that simply counts the
+number of ones in a block of data (modulo 256).
+The limitation, however, is that multiple bit errors might result in a false
+positive validation of the corrupted data.
+Here is a simple example:
+%
+\input{listings/checksum.example.c.tex}
+%
+For a much much stronger eror detection, use the cyclic redundancy check.
+
+\subsection{{\tt crc32} (32-bit cyclic redundancy check)}
+\label{module:fec:crc32}
+This example demonstrates how a cyclic redundancy check (CRC) can be used to
+validate data received through un-reliable means (e.g. a noisy channel).
+A CRC is, in essence, a strong algebraic error detection code that computes a
+key on a block of data using base-2 polynomials.
+Here is a simple example:
+%
+\input{listings/crc32.example.c.tex}
+
+\subsection{{\tt rep3} (simple repeat code)}
+\label{module:fec:rep3}
+
+\subsection{{\tt h74} (Hamming (7,4) code)}
+\label{module:fec:h74}
+
+\subsection{{\tt v27} (rate $1/2$, $K=7$ convolutional code)}
+\label{module:fec:v27}
+
+\subsection{{\tt v29} (rate $1/2$, $K=9$ convolutional code)}
+\label{module:fec:v29}
+
+\subsection{{\tt v39} (rate $1/3$, $K=9$ convolutional code)}
+\label{module:fec:v39}
+
+\subsection{{\tt v615} (rate $1/6$, $K=15$ convolutional code)}
+\label{module:fec:v615}
+
+\subsection{{\tt rs8} (Reed-Solomon code)}
+\label{module:fec:rs8}
+
+\subsection{punctured codes}
+\label{module:fec:punctured}
 

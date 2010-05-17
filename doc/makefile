@@ -32,6 +32,8 @@ CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 # Listings used in this document
 LISTINGS = 					\
 	listings/agc.example.c.tex		\
+	listings/checksum.example.c.tex		\
+	listings/crc32.example.c.tex		\
 	listings/dotprod_rrrf.example.c.tex	\
 	listings/eqlms_cccf.example.c.tex	\
 	listings/firhilb.example.c.tex		\
