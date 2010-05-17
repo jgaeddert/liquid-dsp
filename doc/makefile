@@ -174,16 +174,16 @@ clean-doc:
 # html directories
 html/fig/.touch: ; mkdir -p html/fig && touch html/fig/.touch
 html/eqn/.touch: ; mkdir -p html/eqn && touch html/eqn/.touch
-html-dirs: html/fig/.touch html/eqn/.touch
+html-dirs := html/fig/.touch html/eqn/.touch
 
 # html figures
 html_figures : $(figures)
 
 # html generator program
-src/doc-html-gen : % : %.c $(lib_objects)
+src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
 
 # html index file
-html/index.html : src/doc-html-gen liquid.tex html-dirs
+html/index.html : src/doc-html-gen liquid.tex $(html-dirs)
 	./$< -i liquid.tex
 
 # html main target
