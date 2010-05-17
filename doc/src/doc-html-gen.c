@@ -19,10 +19,10 @@ void usage()
 }
 
 // global defaults
-char default_input_filename[256] = "liquid.tex";
-char default_html_filename[256]  = "html/index.html";
-char default_eqmk_filename[256]  = "html/equations.mk";
-char default_eq_file_base[256]   = "html/eqn/";
+char default_filename_tex[256]   = "liquid.tex";
+char default_filename_html[256]  = "html/index.html";
+char default_filename_eqmk[256]  = "html/equations.mk";
+char default_dirname_eq[256]     = "html/eqn/";
 
 // global file identifiers
 FILE * fid_tex  = NULL;
@@ -34,7 +34,12 @@ int main(int argc, char*argv[])
 {
     char filename_tex[256] = "";
     char filename_html[256] = "";
-    strcpy(filename_html, default_html_filename);
+    char filename_eqmk[256] = "";
+
+    // set defaults
+    strcpy(filename_tex,  default_filename_tex);
+    strcpy(filename_html, default_filename_html);
+    strcpy(filename_eqmk, default_filename_eqmk);
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhi:o:")) != EOF) {
@@ -49,11 +54,11 @@ int main(int argc, char*argv[])
         }
     }
 
-    // ensure input filename was set
-    if (strcmp(filename_tex,"")==0) {
-        fprintf(stderr,"error: %s, invalid or unspecified latex filename\n", argv[0]);
-        return 1;
-    }
+    // print options to screen
+    printf("filenames:\n");
+    printf("  tex   :   %s\n", filename_tex);
+    printf("  html  :   %s\n", filename_html);
+    printf("  eqmk  :   %s\n", filename_eqmk);
 
     // 
     // open files
@@ -83,7 +88,7 @@ int main(int argc, char*argv[])
     // 
     // run parser
     //
-    printf("parsing latex file '%s'\n", filename_tex);
+    printf("parsing latex file '%s'...\n", filename_tex);
     htmlgen_parse_latex_file(fid_tex, fid_html);
 
     // 
