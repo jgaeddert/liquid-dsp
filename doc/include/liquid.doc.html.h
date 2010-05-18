@@ -150,8 +150,6 @@ void htmlgen_token_parse_underscore(htmlgen _q);
 void htmlgen_token_parse_leftbrace(htmlgen _q);
 void htmlgen_token_parse_rightbrace(htmlgen _q);
 
-void htmlgen_token_parse_inline_eqn(htmlgen _q);    // inline equation environment: $
-
 void htmlgen_token_parse_fail(htmlgen _q);
 void htmlgen_token_parse_null(htmlgen _q);
 
@@ -161,10 +159,14 @@ void htmlgen_token_parse_null(htmlgen _q);
 void htmlgen_env_parse_itemize(htmlgen _q);     // \begin{itemize} (unordered list)
 void htmlgen_env_parse_enumerate(htmlgen _q);   // \begin{enumerate} (ordered list)
 void htmlgen_env_parse_eqn(htmlgen _q);         // \[ (short equation environment)
+void htmlgen_env_parse_inline_eqn(htmlgen _q);  // $ (inline equation environment)
 void htmlgen_env_parse_equation(htmlgen _q);    // \begin{equation} (long equation environment)
 void htmlgen_env_parse_verbatim(htmlgen _q);    // \begin{verbatim}
 
 void htmlgen_env_parse_list(htmlgen _q, char * _end);
+void htmlgen_env_parse_equation_help(htmlgen _q,
+                                     char * _end,
+                                     int _inline);
 
 #endif // __LIQUID_DOC_HTML_H__
 

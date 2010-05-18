@@ -289,8 +289,6 @@ void htmlgen_token_parse_label(htmlgen _q)
 
 void htmlgen_token_parse_tt(htmlgen _q)
 {
-    printf("inline tt\n");
-
     // fill buffer
     htmlgen_buffer_produce(_q);
 
@@ -299,9 +297,8 @@ void htmlgen_token_parse_tt(htmlgen _q)
 
     // print until '}' is found
     unsigned int n = strcspn(_q->buffer, "}");
-    printf(" tt : read %u elements\n", n);
 
-    // TODO : continue to read until '}' is found
+    // todo : continue to read until '}' is found
     if (n==_q->buffer_size) {
         fprintf(stderr,"error: htmlgen_token_parse_tt(), '}' not found\n");
         exit(1);
@@ -311,21 +308,44 @@ void htmlgen_token_parse_tt(htmlgen _q)
     htmlgen_buffer_dump(_q, _q->fid_html, n);
 
     // end <tt> environment
-    fprintf(_q->fid_html,"</tt>\n");
+    fprintf(_q->fid_html,"</tt>");
 
-    // consume 'n' characters from buffer
-    htmlgen_buffer_consume(_q, n);
-    printf("tt done.\n");
+    // consume 'n+1' characters from buffer (including
+    // trailing '}' character)
+    htmlgen_buffer_consume(_q, n+1);
 }
 
 void htmlgen_token_parse_it(htmlgen _q)
 {
-    printf("inline it\n");
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    // initialize <tt> environment
+    fprintf(_q->fid_html,"<em>");
+
+    // print until '}' is found
+    unsigned int n = strcspn(_q->buffer, "}");
+
+    // todo : continue to read until '}' is found
+    if (n==_q->buffer_size) {
+        fprintf(stderr,"error: htmlgen_token_parse_it(), '}' not found\n");
+        exit(1);
+    }
+
+    // print 'n' characters of buffer to html file
+    htmlgen_buffer_dump(_q, _q->fid_html, n);
+
+    // end <tt> environment
+    fprintf(_q->fid_html,"</em>");
+
+    // consume 'n+1' characters from buffer (including
+    // trailing '}' character)
+    htmlgen_buffer_consume(_q, n+1);
 }
 
 void htmlgen_token_parse_em(htmlgen _q)
 {
-    printf("inline em\n");
+    htmlgen_token_parse_it(_q);
 }
 
 void htmlgen_token_parse_item(htmlgen _q)
@@ -336,10 +356,6 @@ void htmlgen_token_parse_item(htmlgen _q)
     // TODO : figure out how to close <li> tag
 }
 
-void htmlgen_token_parse_inline_eqn(htmlgen _q)
-{
-    printf("inline eqn\n");
-}
 
 // 
 // escaped characters

@@ -32,12 +32,11 @@
 #include <string.h>
 #include "liquid.doc.html.h"
 
-#define HTMLGEN_NUM_TOKENS  (16)
+#define HTMLGEN_NUM_TOKENS  (18)
 
 // token table
 htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
     {"\\begin{",            htmlgen_token_parse_begin},
-    {"\\[",                 htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"\\chapter{",          htmlgen_token_parse_chapter},
     {"\\section{",          htmlgen_token_parse_section},
     {"\\subsection{",       htmlgen_token_parse_subsection},
@@ -51,20 +50,14 @@ htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
     {"%",                   htmlgen_token_parse_comment},
     {"\\_",                 htmlgen_token_parse_underscore},
     {"\\{",                 htmlgen_token_parse_leftbrace},
-    {"\\}",                 htmlgen_token_parse_rightbrace}
+    {"\\}",                 htmlgen_token_parse_rightbrace},
+
+    // environments
+    {"\\begin{equation}",   htmlgen_env_parse_equation},
+    {"\\[",                 htmlgen_env_parse_eqn},
+    {"$",                   htmlgen_env_parse_inline_eqn}
 //    {"\n\n",                htmlgen_token_parse_fail}       // TODO : add appropriate method
 };
-#if 0
-    {"document",        htmlgen_token_parse_document},
-    {"section",         htmlgen_token_parse_section},
-    {"subsection",      htmlgen_token_parse_subsection},
-    {"subsubsection",   htmlgen_token_parse_subsubsection},
-    {"equation",        htmlgen_token_parse_fail},      // TODO : add appropriate method
-    {"figure",          htmlgen_token_parse_figure},
-    {"tabular",         htmlgen_token_parse_tabular},
-    {"enumerate",       htmlgen_token_parse_enumerate},
-    {"itemize",         htmlgen_token_parse_itemize},
-#endif
 
 // parse LaTeX file
 void htmlgen_parse_latex_file(char * _filename_tex,
@@ -104,8 +97,7 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     htmlgen_parse_seek_first_chapter(q);
 
     // run batch parser
-    unsigned int i;
-    for (i=0; i<50; i++)
+    while (!feof(q->fid_tex))
         htmlgen_parse(q);
 
     //htmlgen_buffer_consume(q, q->buffer_size);
@@ -465,6 +457,9 @@ void htmlgen_parse(htmlgen _q)
 
         // write all of buffer to html file
         htmlgen_buffer_dump_all(_q, _q->fid_html);
+
+        // clear buffer
+        htmlgen_buffer_consume_all(_q);
     }
 }
 
