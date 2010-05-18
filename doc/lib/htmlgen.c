@@ -32,14 +32,21 @@
 #include <string.h>
 #include "liquid.doc.h"
 
+//#define HTMLGEN_NUM_TOKENS  (12)
+
 // token table
 htmlgen_token_s htmlgen_token_tab[] = {
     {"\\begin",         htmlgen_token_parse_begin},
     {"\\end",           htmlgen_token_parse_end},
+    {"\\[",             NULL},
+    {"\\]",             NULL},
+    {"%",               NULL},
+    {"\n\n",            NULL}, // new paragraph
     {"document",        htmlgen_token_parse_document},
     {"section",         htmlgen_token_parse_section},
     {"subsection",      htmlgen_token_parse_subsection},
     {"subsubsection",   htmlgen_token_parse_subsubsection},
+    {"equation",        NULL},
     {"figure",          htmlgen_token_parse_figure},
     {"tabular",         htmlgen_token_parse_tabular},
     {"enumerate",       htmlgen_token_parse_enumerate},
@@ -82,11 +89,28 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 
     // parse file
     unsigned int i;
-    for (i=0; i<10; i++) {
-        htmlgen_buffer_produce(q); // fill buffer
-        printf("%s", q->buffer);
-        htmlgen_buffer_consume(q, q->buffer_size);
+    htmlgen_buffer_produce(q); // fill buffer
+    printf("%s", q->buffer);
+    printf("\n\n");
+    unsigned int token_index, n;
+    int token_found = htmlgen_get_token(q,
+                                        htmlgen_token_tab,
+                                        14,
+                                        &token_index,
+                                        &n);
+    if (token_found) {
+        printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
+
+        // consume buffer up until this point
+        htmlgen_buffer_consume(q,n);
+
+        //htmlgen_token_tab[token_index].func(q);
+        htmlgen_token_parse_comment(q);
+    } else {
+        printf("no token found\n");
     }
+
+    //htmlgen_buffer_consume(q, q->buffer_size);
 
     // equation makefile: clear end-of-line
     fprintf(q->fid_eqmk,"\n\n");
@@ -274,4 +298,5 @@ void htmlgen_buffer_consume(htmlgen _q,
     // set null character at end of buffer
     _q->buffer[_q->buffer_size] = '\0';
 }
+
 

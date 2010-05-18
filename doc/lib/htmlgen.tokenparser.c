@@ -23,7 +23,59 @@
 // doc-html-gen token parser methods
 //
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "liquid.doc.h"
+
+int htmlgen_get_token(htmlgen _q,
+                      htmlgen_token_s * _token_tab,
+                      unsigned int _num_tokens,
+                      unsigned int * _token_index,
+                      unsigned int * _len)
+{
+    int d, dmin=0;
+    unsigned int i, index=0;
+    char * loc = NULL;
+    int token_found = 0;
+
+    // search for next token
+    for (i=0; i<_num_tokens; i++) {
+        loc = strstr( _q->buffer, _token_tab[i].token );
+
+#if 0
+        if (loc == NULL)
+            continue;
+        else
+            d = (int) (loc - _q->buffer);
+#else
+        printf("  %20s : ", _token_tab[i].token);
+        if (loc == NULL) {
+            printf("-\n");
+            continue;
+        } else {
+            d = (int) (loc - _q->buffer);
+            printf("%d\n", d);
+        }
+#endif
+
+        if (d < dmin || token_found == 0) {
+            dmin = d;
+            index = i;
+        }
+
+        // set flag to indicate at least one token has been found
+        token_found = 1;
+    }
+
+    // set return values
+    *_token_index = index;
+    *_len = dmin;
+
+    // return token found flag
+    return token_found;
+}
 
 void htmlgen_token_parse_begin(htmlgen _q)
 {
@@ -31,6 +83,15 @@ void htmlgen_token_parse_begin(htmlgen _q)
 
 void htmlgen_token_parse_end(htmlgen _q)
 {
+}
+
+void htmlgen_token_parse_comment(htmlgen _q)
+{
+    // eat up rest of line using strcspn method
+    unsigned int n = strcspn(_q->buffer, "\n\r\v\f");
+
+    // consume buffer up until end-of-line
+    htmlgen_buffer_consume(_q, n);
 }
 
 void htmlgen_token_parse_document(htmlgen _q)

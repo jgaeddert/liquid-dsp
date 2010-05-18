@@ -92,6 +92,8 @@ struct htmlgen_s {
     //
     char buffer[HTMLGEN_BUFFER_LENGTH+1];
     unsigned int buffer_size;     // number of elements in buffer
+
+    // list of tokens to escape mode
 };
 
 // doc-html-gen function
@@ -128,8 +130,16 @@ void htmlgen_buffer_consume(htmlgen _q,
                             unsigned int _n);
 
 // token methods
+int htmlgen_get_token(htmlgen _q,
+                      htmlgen_token_s * _token_tab,
+                      unsigned int _num_tokens,
+                      unsigned int * _token_index,
+                      unsigned int * _len);
 void htmlgen_token_parse_begin(htmlgen _q);
 void htmlgen_token_parse_end(htmlgen _q);
+//void htmlgen_token_parse_eqn_begin(htmlgen _q);
+//void htmlgen_token_parse_eqn_end(htmlgen _q);
+void htmlgen_token_parse_comment(htmlgen _q);
 void htmlgen_token_parse_document(htmlgen _q);
 void htmlgen_token_parse_section(htmlgen _q);
 void htmlgen_token_parse_subsection(htmlgen _q);
