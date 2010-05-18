@@ -1,4 +1,5 @@
-*.dat
-*.pdf
 *.aux
+*.dat
 *.log
+*.pdf
+*.png

@@ -180,7 +180,10 @@ html/eqn/.touch: ; mkdir -p html/eqn && touch html/eqn/.touch
 html-dirs := html/fig/.touch html/eqn/.touch
 
 # html figures
-html-figures : $(figures)
+html_figures = $(patsubst %.pdf,%.png,$(figures_generated))
+$(html_figures) : %.png : %.pdf
+	convert $< $@
+	cp $@ html/fig/
 
 # html generator program
 src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
@@ -208,14 +211,14 @@ $(html_eqn_pngfiles) : %.png : %.dvi html-equations.mk
 html-equations : $(html_eqn_pngfiles)
 
 # html main target
-html: html/index.html html-figures html-equations
+html: html/index.html html-equations $(html_figures)
 
 # clean html files
 clean-html:
 	$(RM) src/doc-html-gen
-	$(RM) $(html-figures)
 	$(RM) -r html
 	$(RM) figures-html.mk
+	#$(RM) $(html_figures)
 
 ##
 ## OTHER

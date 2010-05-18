@@ -20,6 +20,7 @@ Documentation dependencies:
     pygments    : (sudo apt-get install python-pygments)
     pgf 2.0     : (sudo apt-get install pgf)
     dvipng      : dvi to png converter (sudo apt-get install dvipng)
+    convert     : ImageMagick's command-line image conversion (html)
     liquid      : build and install the base DSP libraries
 
 Documentation targets:
@@ -49,4 +50,6 @@ References
         http://sourceforge.net/projects/pgf/
     [dvipng:web] dvipng: A DVI-to-PNG converter, Online:
         http://sourceforge.net/projects/dvipng/
+    [imagemagick:web] ImageMagick command-line image converter, Online:
+        http://www.imagemagick.org/script/convert.php
 
