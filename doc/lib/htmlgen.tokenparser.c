@@ -79,8 +79,33 @@ int htmlgen_get_token(htmlgen _q,
     return token_found;
 }
 
+// '\begin{'
 void htmlgen_token_parse_begin(htmlgen _q)
 {
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    // search for '}'
+    unsigned int n = strcspn(_q->buffer, "}");
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // check length
+    if (n >= 64) {
+        fprintf(stderr,"error: htmlgen_token_parse_begin(), invalid environment\n");
+        exit(1);
+    }
+
+    // copy environment tag in '{' and '}'
+    // TODO : strip white space
+    char environment[64];
+    memmove(environment, _q->buffer, n);
+    environment[n+1] = '\0';
+    
+    printf("environment : %s\n", environment);
+
+    // TODO : call specific routine here
 }
 
 void htmlgen_token_parse_end(htmlgen _q)

@@ -36,16 +36,19 @@
 
 // token table
 htmlgen_token_s htmlgen_token_tab[] = {
-    {"\\begin",         htmlgen_token_parse_begin},
-    {"\\end",           htmlgen_token_parse_end},
+    {"\\begin{",        htmlgen_token_parse_begin},
     {"\\[",             htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\]",             htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\chapter",       htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\label",         htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\chapter{",      htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\label{",        htmlgen_token_parse_comment},   // TODO : add appropriate method
     {"\\biliography",   htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\input",         htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\input{",        htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"{\\tt",           htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"{\\it",           htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"{\\em",           htmlgen_token_parse_comment},   // TODO : add appropriate method
     {"%",               htmlgen_token_parse_comment},
-    {"\n\n",            htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\n\n",            htmlgen_token_parse_comment}    // TODO : add appropriate method
+};
+#if 0
     {"document",        htmlgen_token_parse_document},
     {"section",         htmlgen_token_parse_section},
     {"subsection",      htmlgen_token_parse_subsection},
@@ -55,7 +58,7 @@ htmlgen_token_s htmlgen_token_tab[] = {
     {"tabular",         htmlgen_token_parse_tabular},
     {"enumerate",       htmlgen_token_parse_enumerate},
     {"itemize",         htmlgen_token_parse_itemize},
-};
+#endif
 
 // parse LaTeX file
 void htmlgen_parse_latex_file(char * _filename_tex,
@@ -90,33 +93,14 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     fprintf(q->fid_html,"</p>\n");
 
     // repeat as necessary
+    // strip the preamble and store in external file
+    htmlgen_parse_strip_preamble(q,"html/preamble.tex");
+    htmlgen_parse_seek_first_chapter(q);
 
-#if 0
-    // parse file
+    // run batch parser
     unsigned int i;
-    htmlgen_buffer_produce(q); // fill buffer
-    printf("%s", q->buffer);
-    printf("\n\n");
-    unsigned int token_index, n;
-    int token_found = htmlgen_get_token(q,
-                                        htmlgen_token_tab,
-                                        14,
-                                        &token_index,
-                                        &n);
-    if (token_found) {
-        printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
-
-        // consume buffer up until this point
-        htmlgen_buffer_consume(q,n);
-
-        // execute token-specific function
-        htmlgen_token_tab[token_index].func(q);
-    } else {
-        printf("no token found\n");
-    }
-#else
-    htmlgen_strip_preamble(q);
-#endif
+    for (i=0; i<10; i++)
+        htmlgen_parse(q);
 
     //htmlgen_buffer_consume(q, q->buffer_size);
 
@@ -324,14 +308,25 @@ void htmlgen_buffer_consume_eol(htmlgen _q)
     htmlgen_buffer_consume(_q, n);
 }
 
-// strip preamble and store in external file; stop when '\begin{document'
-// is found
-void htmlgen_strip_preamble(htmlgen _q)
+// consume entire buffer
+void htmlgen_buffer_consume_all(htmlgen _q)
+{
+    htmlgen_buffer_consume(_q, _q->buffer_size);
+}
+
+// strip preamble and store in external file; stop when
+// '\begin{document}' is found
+void htmlgen_parse_strip_preamble(htmlgen _q,
+                                  char * _filename)
 {
     htmlgen_token_s begindoc = {"\\begin{document}", NULL};
 
     // open output preamble file for writing
-    FILE * fid = fopen("html/preamble.tex", "w");
+    FILE * fid = fopen(_filename, "w");
+    if (!fid) {
+        fprintf(stderr,"error: htmlgen_strip_preamble(), could not open '%s' for writing\n", _filename);
+        exit(1);
+    }
 
     int token_found=0;
     unsigned int token_index, n;
@@ -343,23 +338,92 @@ void htmlgen_strip_preamble(htmlgen _q)
         token_found = htmlgen_get_token(_q, &begindoc, 1, &token_index, &n);
 
         if (token_found) {
-            // write partial buffer to file
+            // write partial buffer to file (up until '\begin{document}')
             unsigned int i;
             for (i=0; i<n; i++)
                 fprintf(fid,"%c", _q->buffer[i]);
 
             // consume buffer through token and EOL
             htmlgen_buffer_consume(_q, n);
-            htmlgen_buffer_consume_eol(_q);
+            htmlgen_buffer_consume_eol(_q); // strip '\begin{document}...\n'
         } else {
             // write full buffer to file
             fprintf(fid,"%s", _q->buffer);
 
-            // consume buffer
+            // empty buffer (consume all elements)
+            htmlgen_buffer_consume_all(_q);
+        }
+    }
+
+    if (feof(_q->fid_tex)) {
+        fprintf(stderr,"error: htmlgen_parse_strip_preamble(), found EOF prematurely\n");
+        exit(1);
+    }
+
+    fclose(fid);
+}
+
+void htmlgen_parse_seek_first_chapter(htmlgen _q)
+{
+    // define chapter token
+    htmlgen_token_s chtok = {"\\chapter{", NULL};
+
+    int token_found=0;
+    unsigned int token_index, n;
+    while (!token_found && !feof(_q->fid_tex)) {
+        // fill buffer
+        htmlgen_buffer_produce(_q);
+
+        // search for token
+        token_found = htmlgen_get_token(_q, &chtok, 1, &token_index, &n);
+
+        if (token_found) {
+            // consume buffer through token
+            htmlgen_buffer_consume(_q, n);
+        } else {
+            // empty buffer (consume all elements)
             htmlgen_buffer_consume(_q, _q->buffer_size);
         }
     }
 
-    fclose(fid);
+    if (feof(_q->fid_tex)) {
+        fprintf(stderr,"error: htmlgen_parse_seek_first_chapter(), found EOF prematurely\n");
+        exit(1);
+    }
+
+    // buffer should now contain: \chapter{...
+}
+
+// base parsing method, writing html output
+void htmlgen_parse(htmlgen _q)
+{
+    // parse file
+    unsigned int i;
+    htmlgen_buffer_produce(_q); // fill buffer
+    //printf("%s", _q->buffer);
+    //printf("\n\n");
+    unsigned int token_index, n;
+
+    // look for next token
+    int token_found = htmlgen_get_token(_q,
+                                        htmlgen_token_tab,
+                                        11, // TODO : fix length
+                                        &token_index,
+                                        &n);
+    if (token_found) {
+        printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
+
+        // consume buffer up through this point
+        unsigned int token_len = strlen(htmlgen_token_tab[token_index].token);
+        htmlgen_buffer_consume(_q, n + token_len);
+
+        // execute token-specific function
+        htmlgen_token_tab[token_index].func(_q);
+    } else {
+        printf("no token found\n");
+
+        // write output to html file
+        fprintf(_q->fid_html,"%s", _q->buffer);
+    }
 }
 

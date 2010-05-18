@@ -97,16 +97,29 @@ void htmlgen_buffer_produce(htmlgen _q);
 void htmlgen_buffer_consume(htmlgen _q,
                             unsigned int _n);
 void htmlgen_buffer_consume_eol(htmlgen _q);
+void htmlgen_buffer_consume_all(htmlgen _q);
 
 // batch parsing methods
-void htmlgen_strip_preamble(htmlgen _q);
+void htmlgen_parse_strip_preamble(htmlgen _q, char * _filename);
+void htmlgen_parse_seek_first_chapter(htmlgen _q);
+void htmlgen_parse(htmlgen _q);
 
+// 
 // token methods
+//
+
+// parse buffer, searching for next token
+//  _q              :   htmlgen object
+//  _token_tab      :   table of tokens [size: _num_tokens x 1]
+//  _num_tokens     :   length of tokens table
+//  _token_index    :   index of found token in table (output)
+//  _len            :   number of elements in buffer before token was found (output)
 int htmlgen_get_token(htmlgen _q,
                       htmlgen_token_s * _token_tab,
                       unsigned int _num_tokens,
                       unsigned int * _token_index,
                       unsigned int * _len);
+
 void htmlgen_token_parse_begin(htmlgen _q);
 void htmlgen_token_parse_end(htmlgen _q);
 //void htmlgen_token_parse_eqn_begin(htmlgen _q);

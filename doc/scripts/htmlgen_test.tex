@@ -1,0 +1,324 @@
+%
+% htmlgen_test.tex
+%
+ 
+\documentclass[11pt,twoside]{report}
+% ------------------- DOCUMENT VARIABLES -------------------
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{8.5in}
+\setlength{\evensidemargin}{0in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\topmargin}{0in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.1in}
+
+% ------------------- BIBLIOGRAPHY STYLE -------------------
+\usepackage{natbib}
+%\bibliographystyle{plain} % note the change here
+\bibliographystyle{IEEEtran}
+\bibpunct{[}{]}{,}{n}{}{;}  % define bibliography punctuation
+% The six mandatory arguments for \bibpunct are:
+%   1. opening bracket: '(', '[', '{', or '<'
+%   2. closing bracket: ')', ']', '}', or '>'
+%   3. separator between multiple citations: ';' or ','
+%   4. citation style: 'n' for numerical style, 's' for numerical superscript
+%      style, or 'a' for author year style
+%   5. punctuation between the author names and the year
+%   6. punctuation between years or numbers when common author lists are suppressed: ',' or ';' 
+
+% ------------------- GRAPHICS PACKAGES -------------------
+%\usepackage{epsf}
+%\usepackage{graphicx}
+\ifx\pdfoutput\undefined
+\usepackage{graphicx}
+\else
+\usepackage[pdftex]{graphicx}
+\fi
+\usepackage{epsfig}
+\usepackage{epstopdf}
+\usepackage{colortbl}
+\usepackage{color}
+
+%\usepackage{tabularx}
+\usepackage{ctable} % \toprule, \midrule, \bottomrule
+\setlength{\heavyrulewidth}{0.1em} % modify thickness of \toprule, \bottomrule
+\newcommand{\otoprule}{\midrule[\heavyrulewidth]}
+\usepackage{subfigure}
+\usepackage{multirow} % for tables
+%\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{fancyvrb}
+\usepackage{acronym}
+
+% tabular: \hline (thin) \hline\hline (thick)
+% from: http://www.faqs.org/faqs/tex-faq/ (see #44)
+\setlength{\doublerulesep}{\arrayrulewidth}
+
+%--------- NEW COMMANDS -------------------
+\newcommand{\NA}{\scriptsize{NA}}
+\newcommand{\E}{\scriptsize{E}}
+\newcommand{\tRMS}{\ensuremath{\tau_{rms}}}
+\newcommand{\tmED}{\ensuremath{\bar{\tau}}}
+\newcommand{\Np}{\ensuremath{N_p}}
+\newcommand{\ua}{\ensuremath{\uparrow}}
+\newcommand{\da}{\ensuremath{\downarrow}}
+\newcommand{\sinc}{\textup{sinc}}
+\newcommand{\etal}{{\it et al.}}
+\newcommand{\wavt}{W@VT}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\ciren}{C{\sc iren}}
+\newcommand{\ord}{\mathcal{O}}
+\newcommand{\liquid}{{\it liquid}}
+\newcommand{\liquidfpm}{{\it liquid-fpm}}
+
+%--------- CAPTION OPTIONS -------------------
+\usepackage[small,bf]{caption}
+\setcaptionwidth{15cm}
+\setlength{\belowcaptionskip}{0.5cm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             MAIN DOCUMENT
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% ------------------- DEFINE LISTINGS -------------------
+\input{highlight.sty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             TITLE PAGE
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\thispagestyle{empty}
+\pagenumbering{roman}
+\begin{center}
+
+{\huge\it liquid} \\
+Software-defined radio digital signal processing library
+
+\vfill
+
+Joseph D. Gaeddert
+
+\vfill
+
+\today \\
+Blacksburg, Virginia
+
+\vfill
+
+{\it Keywords:}
+polyphase filterbanks,
+OFDM/OQAM,
+power consumption,
+cognitive radio,
+software-defined radio,
+dynamic spectrum access
+\\
+
+\end{center}
+
+\pagebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             TABLE OF CONTENTS
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tableofcontents
+\pagebreak
+
+%\listoffigures
+%\pagebreak
+
+%\listoftables
+%\pagebreak
+
+%\section*{List of Abbreviations}
+%\begin{acronym}
+%  \acro{AWGN}{additive white Gauss noise}
+%\end{acronym}
+
+\pagenumbering{arabic}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%             Introduction
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Key points}
+\begin{itemize}
+\item open-source software-defined radio DSP algorithms
+\item minimal dependence on external libraries
+\item portable to embedded platforms
+\item flexible configuration
+\item targets cognitive radios and enabling technologies through
+      flexible algorithmic development
+\end{itemize}
+
+\subsection{Features}
+\begin{itemize}
+\item automatic test scripts for validation and accuracy
+\item benchmark tool for estimating computational speed on your machine
+\end{itemize}
+
+
+\section{Quick Start Guide}
+To build:
+\begin{verbatim}
+cd /path/to/liquid/
+./reconf
+./configure
+make
+sudo make install
+\end{verbatim}
+You may also want to build and run the optional validation program via
+\begin{verbatim}
+make check
+\end{verbatim}
+and the benchmarking tool,
+\begin{verbatim}
+make bench
+\end{verbatim}
+
+\section{Tutorial}
+Most of {\it liquid}'s signal processing elements are C structures which
+retain the object's parameters, state, and other useful information.
+The naming convention is
+{\tt basename\_xxxt\_method} where
+{\tt basename} is the base object name (e.g. {\tt interp}),
+{\tt xxxt} is the type definition, and
+{\tt method} is the object method.
+The type definition describes respective output, internal, and input type.
+Types are usually {\tt f} to denote standard 32-bit {\it floating point}
+precision values and can either be represented as {\tt r} (real) or {\tt c}
+(complex).
+For example, a {\tt dotprod} (vector dot product) object with complex input
+and output types but real internal coefficients operating on 32-bit
+floating-point precision values is {\tt dotprod\_crcf}.
+
+Most objects have at least four standard methods:
+{\tt create()},
+{\tt destroy()},
+{\tt print()},
+and
+{\tt execute()}.
+Certain object also implement a {\tt recreate()} method which operates similar
+to that of {\tt realloc()} in C.
+A few points to note:
+\begin{enumerate}
+\item While the objects do retain internal memory, they operate on external
+arrays defined by the user. That is... It is strictly up to the user to manage
+his/her own memory.
+\item ...
+\end{enumerate}
+
+\section{Learning by example}
+The {\tt examples/} subdirectory includes numerous examples for nearly all the
+signal processing components.
+
+\subsection{Why C?}
+A commonly asked question is ``why C and not C++?''
+The answer is simple: {\em portability}.
+Our aim is to provide a lightweight DSP library for software-defined radio
+that does not rely on a myriad of dependencies.
+While C++ is a fine language for many purposes (and theoretically runs just as
+fast as C), it is not as portable to embedded platforms as C.
+Furthermore, the majority of functions simply perform complex operations on a
+data sequence and do not require a high-level object-oriented programming
+interface.
+This we will leave to framework developers and interface builders.
+
+While a number of signal processing elements in \liquid\ use structures, these
+are simply to save the internal state of the object.
+For instance, a {\tt firfilt\_crcf} (finite impulse response filter) object
+is just a structure which contains--among other things--the filter taps
+(coefficients) and an input buffer.
+For the most part, C++ polymorphic data types and abstract base classes are
+unnecessary for basic signal processing, and primarily serve to reduce the
+code base of a project.
+Furthermore, while templates can certainly be useful for library development,
+their benefits are of limited use to signal processing and can be circumvented
+through the use of pre-processor macros at the gain of targeting more embedded
+processors.
+
+The C programming language has a rich history in system programming--
+specifically targeting embedded applications--and is the basis behind many
+well-known projects including the linux kernel and the python programming
+language.
+
+\subsection{Data Types}
+The majority of signal processing for SDR is performed at complex baseband.
+Complex numbers are handled in \liquid\ by defining data type
+{\tt liquid\_float\_complex} which is binary compatible with the standard
+C math type {\tt float complex} and C++ type {\tt std::complex<float>}.
+
+Fixed-point data types are defined in the \liquidfpm\ library (see XXX).
+
+\subsection{Building/Linking with C++}
+Although \liquid\ is written in C, it can be seamlessly compiled and linked
+with C++ source files.
+Here is an example:
+\input{listings/nco.c++.tex}
+
+\section{History}
+\liquid\ was created by J. Gaeddert out of necessity to perform complex
+digital signal processing algorithms on embedded devices
+without relying on dealing
+with proprietary and otherwise cumbersome frameworks.
+This was a critical step in his PhD thesis to adapt DSP algorithms in
+cognitive dynamic-spectrum radios to optimally manage finite radio resources.
+Was he successful?
+Put it this way: at the time this document was written he still has not
+graduated.\footnote{Come back in a year and ask again... {\em sigh}}
+
+\subsection{{\tt iirdes} (infinite impulse response filter design)}
+Butterworth prototype:
+\[
+    H_a(s) = \frac{1}{B_n(s)}
+           = \frac{
+                (-1)^n s_0 s_1 \cdots s_{n-1}
+            }{
+                (s-s_0)(s-s_1) \cdots (s-s_{n-1})
+            }
+\]
+where $B_n(s)$ is the $n^{th}$-order Butterworth polynomial with roots
+$s_0,s_1,\ldots,s_{n-1}$.
+\[
+    s_k = \omega_c \exp\left\{
+                j \frac{\left(2k+n+1\right)\pi}{2n}
+          \right\}
+\]
+for $k=0,1,\ldots,n-1$.
+Note that this results in a set of complex conjugate pairs... such that
+$(-1)^n s_0 s_1 \cdots s_{n-1} = 1$.
+Taking the bilinear $z$-transform
+\[
+    s \rightarrow \omega_c
+                  \cot\left(\frac{\pi \omega_c}{\omega_s}\right)
+                  \frac{1+z^{-1}}{1-z^{-1}}
+\]
+gives the discrete-time transfer function
+\[
+    H(z) = \frac{
+            %(-1)^n s_0 s_1 \cdots s_{n-1}
+            1
+           }{
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_0\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_1\right)
+            \cdots
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_{n-1}\right)
+           }
+\]
+Multiplying both the numerator an denominator by $(1+z^{-1})^{n-1}$...
+
+
+\end{document}
+
