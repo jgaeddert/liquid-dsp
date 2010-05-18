@@ -121,7 +121,30 @@ void htmlgen_token_parse_begin(htmlgen _q)
     // clear buffer through trailing '}'
     htmlgen_buffer_consume(_q, n+1);
 
-    // TODO : call specific routine here
+    if (strcmp(environment,"itemize")==0) {
+        // un-ordered list
+        htmlgen_env_parse_itemize(_q);
+
+    } else if (strcmp(environment,"enumerate")==0) {
+        // ordered list
+        htmlgen_env_parse_enumerate(_q);
+
+    } else if (strcmp(environment,"eqn")==0) {
+        // short equation
+        htmlgen_env_parse_eqn(_q);
+
+    } else if (strcmp(environment,"equation")==0) {
+        // long equation
+        htmlgen_env_parse_equation(_q);
+
+    } else if (strcmp(environment,"verbatim")==0) {
+        // verbatim
+        htmlgen_env_parse_verbatim(_q);
+
+    } else {
+        fprintf(stderr,"error: unknown environment '%s'\n", environment);
+        exit(1);
+    }
 }
 
 // '\chapter{'
@@ -149,7 +172,7 @@ void htmlgen_token_parse_chapter(htmlgen _q)
     _q->subsubsection = 1;
 
     // print heading to html file
-    fprintf(_q->fid_html,"<h1>%d %s</h1>\n", _q->chapter, name);
+    fprintf(_q->fid_html,"<h1>%u %s</h1>\n", _q->chapter, name);
 }
 
 
@@ -177,7 +200,7 @@ void htmlgen_token_parse_section(htmlgen _q)
     _q->subsubsection = 1;
 
     // print heading to html file
-    fprintf(_q->fid_html,"<h2>%d.%d %s</h2>\n", _q->chapter,
+    fprintf(_q->fid_html,"<h2>%u.%u %s</h2>\n", _q->chapter,
                                                 _q->section,
                                                 name);
 }
@@ -205,7 +228,7 @@ void htmlgen_token_parse_subsection(htmlgen _q)
     _q->subsubsection = 1;
 
     // print heading to html file
-    fprintf(_q->fid_html,"<h3>%d.%d%.d %s</h3>\n", _q->chapter,
+    fprintf(_q->fid_html,"<h3>%u.%u.%u %s</h3>\n", _q->chapter,
                                                    _q->section,
                                                    _q->subsection,
                                                    name);
@@ -233,44 +256,123 @@ void htmlgen_token_parse_subsubsection(htmlgen _q)
     _q->subsubsection++;
 
     // print heading to html file
-    fprintf(_q->fid_html,"<h2>%d.%d.%d.%d %s</h2>\n", _q->chapter,
+    fprintf(_q->fid_html,"<h2>%u.%u.%u.%u %s</h2>\n", _q->chapter,
                                                       _q->section,
                                                       _q->subsection,
                                                       _q->subsubsection,
                                                       name);
 }
 
+// '\label{'
+void htmlgen_token_parse_label(htmlgen _q)
+{
+    printf("parsing '\\label{...\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    char label[256];
+    unsigned int n = htmlgen_token_parse_envarg(_q, label);
+    
+    printf("label : '%s'\n", label);
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // print label as html comment
+    fprintf(_q->fid_html,"<!-- '%s' -->\n", label);
+}
+
+// 
+// short methods
+//
+
+void htmlgen_token_parse_tt(htmlgen _q)
+{
+    printf("inline tt\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    // initialize <tt> environment
+    fprintf(_q->fid_html,"<tt>");
+
+    // print until '}' is found
+    unsigned int n = strcspn(_q->buffer, "}");
+    printf(" tt : read %u elements\n", n);
+
+    // TODO : continue to read until '}' is found
+    if (n==_q->buffer_size) {
+        fprintf(stderr,"error: htmlgen_token_parse_tt(), '}' not found\n");
+        exit(1);
+    }
+
+    // print 'n' characters of buffer to html file
+    htmlgen_buffer_write_html(_q, n);
+
+    // end <tt> environment
+    fprintf(_q->fid_html,"</tt>\n");
+
+    // consume 'n' characters from buffer
+    htmlgen_buffer_consume(_q, n);
+    printf("tt done.\n");
+}
+
+void htmlgen_token_parse_it(htmlgen _q)
+{
+    printf("inline it\n");
+}
+
+void htmlgen_token_parse_em(htmlgen _q)
+{
+    printf("inline em\n");
+}
+
+void htmlgen_token_parse_item(htmlgen _q)
+{
+    printf("*** item\n");
+    fprintf(_q->fid_html,"<li>");
+
+    // TODO : figure out how to close <li> tag
+}
+
+void htmlgen_token_parse_inline_eqn(htmlgen _q)
+{
+    printf("inline eqn\n");
+}
+
+// 
+// escaped characters
+//
+
+void htmlgen_token_parse_underscore(htmlgen _q)
+{
+    fprintf(_q->fid_html,"_");
+}
+
+void htmlgen_token_parse_leftbrace(htmlgen _q)
+{
+    fprintf(_q->fid_html,"{");
+}
+
+void htmlgen_token_parse_rightbrace(htmlgen _q)
+{
+    fprintf(_q->fid_html,"}");
+}
+
 //
 // antiquated methods
 //
 
-void htmlgen_token_parse_end(htmlgen _q)
-{
-}
-
-void htmlgen_token_parse_document(htmlgen _q)
-{
-}
-
-void htmlgen_token_parse_figure(htmlgen _q)
-{
-}
-
-void htmlgen_token_parse_tabular(htmlgen _q)
-{
-}
-
-void htmlgen_token_parse_enumerate(htmlgen _q)
-{
-}
-
-void htmlgen_token_parse_itemize(htmlgen _q)
-{
-}
-
 void htmlgen_token_parse_fail(htmlgen _q)
 {
     fprintf(stderr,"*** error: htmlgen_token_parse_fail()\n");
+    exit(1);
+}
+
+// do nothing
+void htmlgen_token_parse_null(htmlgen _q)
+{
 }
 
 

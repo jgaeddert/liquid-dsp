@@ -77,6 +77,7 @@ SECTIONS :=					\
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
 	lib/liquid_doc_freqz.c			\
+	lib/htmlgen.envparser.c			\
 	lib/htmlgen.tokenparser.c		\
 	lib/htmlgen.c
 

@@ -99,6 +99,8 @@ void htmlgen_buffer_consume(htmlgen _q,
                             unsigned int _n);
 void htmlgen_buffer_consume_eol(htmlgen _q);
 void htmlgen_buffer_consume_all(htmlgen _q);
+void htmlgen_buffer_write_html(htmlgen _q, unsigned int _n);
+void htmlgen_buffer_write_html_all(htmlgen _q);
 
 // batch parsing methods
 void htmlgen_parse_strip_preamble(htmlgen _q, char * _filename);
@@ -133,17 +135,33 @@ void htmlgen_token_parse_chapter(htmlgen _q);
 void htmlgen_token_parse_section(htmlgen _q);
 void htmlgen_token_parse_subsection(htmlgen _q);
 void htmlgen_token_parse_subsubsection(htmlgen _q);
+void htmlgen_token_parse_label(htmlgen _q);
 
-//void htmlgen_token_parse_eqn_begin(htmlgen _q);
-//void htmlgen_token_parse_eqn_end(htmlgen _q);
-void htmlgen_token_parse_end(htmlgen _q);
-void htmlgen_token_parse_document(htmlgen _q);
-void htmlgen_token_parse_figure(htmlgen _q);
-void htmlgen_token_parse_tabular(htmlgen _q);
-void htmlgen_token_parse_enumerate(htmlgen _q);
-void htmlgen_token_parse_itemize(htmlgen _q);
+void htmlgen_token_parse_tt(htmlgen _q);
+void htmlgen_token_parse_it(htmlgen _q);
+void htmlgen_token_parse_em(htmlgen _q);
+void htmlgen_token_parse_item(htmlgen _q);
+
+// escaped characters
+void htmlgen_token_parse_underscore(htmlgen _q);
+void htmlgen_token_parse_leftbrace(htmlgen _q);
+void htmlgen_token_parse_rightbrace(htmlgen _q);
+
+void htmlgen_token_parse_inline_eqn(htmlgen _q);    // inline equation environment: $
 
 void htmlgen_token_parse_fail(htmlgen _q);
+void htmlgen_token_parse_null(htmlgen _q);
+
+// 
+// environment parsers
+//
+void htmlgen_env_parse_itemize(htmlgen _q);     // \begin{itemize} (unordered list)
+void htmlgen_env_parse_enumerate(htmlgen _q);   // \begin{enumerate} (ordered list)
+void htmlgen_env_parse_eqn(htmlgen _q);         // \[ (short equation environment)
+void htmlgen_env_parse_equation(htmlgen _q);    // \begin{equation} (long equation environment)
+void htmlgen_env_parse_verbatim(htmlgen _q);    // \begin{verbatim}
+
+void htmlgen_env_parse_list(htmlgen _q, char * _end);
 
 #endif // __LIQUID_DOC_HTML_H__
 

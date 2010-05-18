@@ -32,24 +32,27 @@
 #include <string.h>
 #include "liquid.doc.html.h"
 
-//#define HTMLGEN_NUM_TOKENS  (12)
+#define HTMLGEN_NUM_TOKENS  (16)
 
 // token table
-htmlgen_token_s htmlgen_token_tab[] = {
+htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
     {"\\begin{",            htmlgen_token_parse_begin},
     {"\\[",                 htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"\\chapter{",          htmlgen_token_parse_chapter},
     {"\\section{",          htmlgen_token_parse_section},
     {"\\subsection{",       htmlgen_token_parse_subsection},
     {"\\subsubsection{",    htmlgen_token_parse_subsubsection},
-    {"\\label{",            htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"\\label{",            htmlgen_token_parse_label},
     {"\\bibliography",      htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"\\input{",            htmlgen_token_parse_fail},      // TODO : add appropriate method
-    {"{\\tt",               htmlgen_token_parse_fail},      // TODO : add appropriate method
-    {"{\\it",               htmlgen_token_parse_fail},      // TODO : add appropriate method
-    {"{\\em",               htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"{\\tt",               htmlgen_token_parse_tt},
+    {"{\\it",               htmlgen_token_parse_it},
+    {"{\\em",               htmlgen_token_parse_em},
     {"%",                   htmlgen_token_parse_comment},
-    {"\n\n",                htmlgen_token_parse_fail}       // TODO : add appropriate method
+    {"\\_",                 htmlgen_token_parse_underscore},
+    {"\\{",                 htmlgen_token_parse_leftbrace},
+    {"\\}",                 htmlgen_token_parse_rightbrace}
+//    {"\n\n",                htmlgen_token_parse_fail}       // TODO : add appropriate method
 };
 #if 0
     {"document",        htmlgen_token_parse_document},
@@ -320,6 +323,28 @@ void htmlgen_buffer_consume_all(htmlgen _q)
     htmlgen_buffer_consume(_q, _q->buffer_size);
 }
 
+// write _n characters to output to html file
+void htmlgen_buffer_write_html(htmlgen _q,
+                               unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        fprintf(_q->fid_html,"%c", _q->buffer[i]);
+}
+
+
+// write entire buffer to output to html file
+void htmlgen_buffer_write_html_all(htmlgen _q)
+{
+    htmlgen_buffer_write_html(_q, _q->buffer_size);
+}
+
+
+//
+// parsing methods
+//
+
+
 // strip preamble and store in external file; stop when
 // '\begin{document}' is found
 void htmlgen_parse_strip_preamble(htmlgen _q,
@@ -345,16 +370,14 @@ void htmlgen_parse_strip_preamble(htmlgen _q,
 
         if (token_found) {
             // write partial buffer to file (up until '\begin{document}')
-            unsigned int i;
-            for (i=0; i<n; i++)
-                fprintf(fid,"%c", _q->buffer[i]);
+            htmlgen_buffer_write_html(_q, n);
 
             // consume buffer through token and EOL
             htmlgen_buffer_consume(_q, n);
             htmlgen_buffer_consume_eol(_q); // strip '\begin{document}...\n'
         } else {
             // write full buffer to file
-            fprintf(fid,"%s", _q->buffer);
+            htmlgen_buffer_write_html_all(_q);
 
             // empty buffer (consume all elements)
             htmlgen_buffer_consume_all(_q);
@@ -413,11 +436,16 @@ void htmlgen_parse(htmlgen _q)
     // look for next token
     int token_found = htmlgen_get_token(_q,
                                         htmlgen_token_tab,
-                                        14, // TODO : fix length
+                                        HTMLGEN_NUM_TOKENS,
                                         &token_index,
                                         &n);
+
+    // TODO : check for EOF
     if (token_found) {
         printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
+
+        // write output to html file up to token
+        htmlgen_buffer_write_html(_q, n);
 
         // consume buffer up through this point
 #if 1
@@ -433,8 +461,8 @@ void htmlgen_parse(htmlgen _q)
     } else {
         printf("no token found\n");
 
-        // write output to html file
-        fprintf(_q->fid_html,"%s", _q->buffer);
+        // write all of buffer to html file
+        htmlgen_buffer_write_html(_q, n);
     }
 }
 
