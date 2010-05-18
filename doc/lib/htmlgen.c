@@ -32,7 +32,7 @@
 #include <string.h>
 #include "liquid.doc.html.h"
 
-#define HTMLGEN_NUM_TOKENS  (18)
+#define HTMLGEN_NUM_TOKENS  (19)
 
 // token table
 htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
@@ -42,6 +42,7 @@ htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
     {"\\subsection{",       htmlgen_token_parse_subsection},
     {"\\subsubsection{",    htmlgen_token_parse_subsubsection},
     {"\\label{",            htmlgen_token_parse_label},
+    {"\\input{",            htmlgen_token_parse_input},
     {"\\bibliography",      htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"\\input{",            htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"{\\tt",               htmlgen_token_parse_tt},
@@ -272,7 +273,7 @@ void htmlgen_buffer_produce(htmlgen _q)
                            num_remaining,
                            _q->fid_tex);
     
-    if (k != num_remaining) {
+    if (k != num_remaining) { // && !feof(_q->fid_tex)) {
         fprintf(stderr,"warning: htmlgen_buffer_produce(), expected %u but only read %u\n", num_remaining, k);
     }
 

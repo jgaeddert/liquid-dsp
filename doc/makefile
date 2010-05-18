@@ -192,8 +192,8 @@ src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
 # html index file, equations makefile
 html/index.html	\
 html-equations.mk : src/doc-html-gen liquid.tex $(html-dirs)
-	./$< -i scripts/htmlgen_test.tex
-	#./$< -i liquid.tex
+	#./$< -i scripts/htmlgen_test.tex
+	./$< -i liquid.tex
 
 # include targets for equations
 .PRECIOUS: html-equations.mk

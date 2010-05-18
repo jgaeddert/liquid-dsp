@@ -280,7 +280,82 @@ void htmlgen_token_parse_label(htmlgen _q)
     htmlgen_buffer_consume(_q, n+1);
 
     // print label as html comment
-    fprintf(_q->fid_html,"<!-- '%s' -->\n", label);
+    fprintf(_q->fid_html,"<!-- label : '%s' -->\n", label);
+}
+
+// '\input{'
+void htmlgen_token_parse_input(htmlgen _q)
+{
+    printf("parsing '\\input{...\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    char filename[256];
+    unsigned int n = htmlgen_token_parse_envarg(_q, filename);
+    
+    printf("filename : '%s'\n", filename);
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // print input filename as html comment
+    fprintf(_q->fid_html,"<!-- input : '%s' -->\n", filename);
+
+    // ensure filename has '.tex' at the end
+    if (strncmp(filename+strlen(filename)-4,".tex",4) != 0)
+        strcat(filename,".tex");
+
+    printf("****** input file '%s'\n", filename);
+
+    // check to see if input is listing
+    if (strncmp(filename,"listings/",8)==0) {
+        printf("****** listing\n");
+    } else {
+        // put input file on hold
+
+        // rewind current file by buffer size
+        printf("rewinding input file by %u\n", _q->buffer_size);
+        fseek(_q->fid_tex, - _q->buffer_size, SEEK_CUR);
+#if 1
+        long int pos = ftell(_q->fid_tex);
+        printf("current position is %u\n", pos);
+#endif
+
+        // clear input buffer
+        htmlgen_buffer_consume_all(_q);
+        printf("buffer size: %u\n", _q->buffer_size);
+
+        // create new file pointer
+        FILE * fid_tmp = _q->fid_tex;
+
+        // open input file
+        printf("opening input file '%s'\n", filename);
+        _q->fid_tex = fopen(filename,"r");
+        if (!_q->fid_tex) {
+            fprintf(stderr,"error, htmlgen_token_parse_input(), could not open '%s' for reading\n", filename);
+            exit(1);
+        }
+        
+        // parse input file
+        while (!feof(_q->fid_tex))
+            htmlgen_parse(_q);
+
+        // close input file
+        printf("closing input file '%s'\n", filename);
+        fclose(_q->fid_tex);
+
+        // restore old file pointer
+        _q->fid_tex = fid_tmp;
+#if 1
+        fseek(_q->fid_tex, pos, SEEK_SET);
+#endif
+
+        // fill buffer
+        printf("filling buffer...\n");
+        htmlgen_buffer_produce(_q);
+        printf("buffer:%s\n\n", _q->buffer);
+    }
 }
 
 // 
