@@ -118,7 +118,7 @@ void htmlgen_env_parse_list(htmlgen _q, char * _end)
                 escape_token_found = 1;
 
             // write output to html file up to this point
-            htmlgen_buffer_write_html(_q, n);
+            htmlgen_buffer_dump(_q, _q->fid_html, n);
 
             // consume buffer through token
             unsigned int token_len = strlen(token_tab[token_index].token);
@@ -128,7 +128,7 @@ void htmlgen_env_parse_list(htmlgen _q, char * _end)
             token_tab[token_index].func(_q);
         } else {
             // no token found; write output to html file
-            htmlgen_buffer_write_html_all(_q);
+            htmlgen_buffer_dump_all(_q, _q->fid_html);
         }
     }
 }

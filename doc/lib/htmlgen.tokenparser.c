@@ -308,7 +308,7 @@ void htmlgen_token_parse_tt(htmlgen _q)
     }
 
     // print 'n' characters of buffer to html file
-    htmlgen_buffer_write_html(_q, n);
+    htmlgen_buffer_dump(_q, _q->fid_html, n);
 
     // end <tt> environment
     fprintf(_q->fid_html,"</tt>\n");

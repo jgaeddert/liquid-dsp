@@ -324,19 +324,21 @@ void htmlgen_buffer_consume_all(htmlgen _q)
 }
 
 // write _n characters to output to html file
-void htmlgen_buffer_write_html(htmlgen _q,
-                               unsigned int _n)
+void htmlgen_buffer_dump(htmlgen _q,
+                         FILE * _fid,
+                         unsigned int _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
-        fprintf(_q->fid_html,"%c", _q->buffer[i]);
+        fprintf(_fid, "%c", _q->buffer[i]);
 }
 
 
 // write entire buffer to output to html file
-void htmlgen_buffer_write_html_all(htmlgen _q)
+void htmlgen_buffer_dump_all(htmlgen _q,
+                             FILE * _fid)
 {
-    htmlgen_buffer_write_html(_q, _q->buffer_size);
+    htmlgen_buffer_dump(_q, _fid, _q->buffer_size);
 }
 
 
@@ -370,14 +372,14 @@ void htmlgen_parse_strip_preamble(htmlgen _q,
 
         if (token_found) {
             // write partial buffer to file (up until '\begin{document}')
-            htmlgen_buffer_write_html(_q, n);
+            htmlgen_buffer_dump(_q, fid, n);
 
             // consume buffer through token and EOL
             htmlgen_buffer_consume(_q, n);
             htmlgen_buffer_consume_eol(_q); // strip '\begin{document}...\n'
         } else {
             // write full buffer to file
-            htmlgen_buffer_write_html_all(_q);
+            htmlgen_buffer_dump_all(_q, fid);
 
             // empty buffer (consume all elements)
             htmlgen_buffer_consume_all(_q);
@@ -445,7 +447,7 @@ void htmlgen_parse(htmlgen _q)
         printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
 
         // write output to html file up to token
-        htmlgen_buffer_write_html(_q, n);
+        htmlgen_buffer_dump(_q, _q->fid_html, n);
 
         // consume buffer up through this point
 #if 1
@@ -462,7 +464,7 @@ void htmlgen_parse(htmlgen _q)
         printf("no token found\n");
 
         // write all of buffer to html file
-        htmlgen_buffer_write_html(_q, n);
+        htmlgen_buffer_dump_all(_q, _q->fid_html);
     }
 }
 

@@ -99,8 +99,11 @@ void htmlgen_buffer_consume(htmlgen _q,
                             unsigned int _n);
 void htmlgen_buffer_consume_eol(htmlgen _q);
 void htmlgen_buffer_consume_all(htmlgen _q);
-void htmlgen_buffer_write_html(htmlgen _q, unsigned int _n);
-void htmlgen_buffer_write_html_all(htmlgen _q);
+void htmlgen_buffer_dump(htmlgen _q,
+                         FILE * _fid,
+                         unsigned int _n);
+void htmlgen_buffer_dump_all(htmlgen _q,
+                             FILE * _fid);
 
 // batch parsing methods
 void htmlgen_parse_strip_preamble(htmlgen _q, char * _filename);
