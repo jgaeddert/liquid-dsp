@@ -91,6 +91,7 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 
     // repeat as necessary
 
+#if 0
     // parse file
     unsigned int i;
     htmlgen_buffer_produce(q); // fill buffer
@@ -113,6 +114,9 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     } else {
         printf("no token found\n");
     }
+#else
+    htmlgen_strip_preamble(q);
+#endif
 
     //htmlgen_buffer_consume(q, q->buffer_size);
 
@@ -310,4 +314,52 @@ void htmlgen_buffer_consume(htmlgen _q,
     _q->buffer[_q->buffer_size] = '\0';
 }
 
+// consume through end-of-line character
+void htmlgen_buffer_consume_eol(htmlgen _q)
+{
+    // eat up rest of line using strcspn method
+    unsigned int n = strcspn(_q->buffer, "\n\r\v\f");
+
+    // consume buffer up until end-of-line
+    htmlgen_buffer_consume(_q, n);
+}
+
+// strip preamble and store in external file; stop when '\begin{document'
+// is found
+void htmlgen_strip_preamble(htmlgen _q)
+{
+    htmlgen_token_s begindoc = {"\\begin{document}", NULL};
+
+    // open output preamble file for writing
+    FILE * fid = fopen("html/preamble.tex", "w");
+
+    int token_found=0;
+    unsigned int token_index, n;
+    while (!token_found && !feof(_q->fid_tex)) {
+        // fill buffer
+        htmlgen_buffer_produce(_q);
+
+        // search for token
+        token_found = htmlgen_get_token(_q, &begindoc, 1, &token_index, &n);
+
+        if (token_found) {
+            // write partial buffer to file
+            unsigned int i;
+            for (i=0; i<n; i++)
+                fprintf(fid,"%c", _q->buffer[i]);
+
+            // consume buffer through token and EOL
+            htmlgen_buffer_consume(_q, n);
+            htmlgen_buffer_consume_eol(_q);
+        } else {
+            // write full buffer to file
+            fprintf(fid,"%s", _q->buffer);
+
+            // consume buffer
+            htmlgen_buffer_consume(_q, _q->buffer_size);
+        }
+    }
+
+    fclose(fid);
+}
 

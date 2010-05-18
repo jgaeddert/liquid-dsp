@@ -96,6 +96,10 @@ void htmlgen_add_equation(htmlgen _q, char * _eqn, int _inline);
 void htmlgen_buffer_produce(htmlgen _q);
 void htmlgen_buffer_consume(htmlgen _q,
                             unsigned int _n);
+void htmlgen_buffer_consume_eol(htmlgen _q);
+
+// batch parsing methods
+void htmlgen_strip_preamble(htmlgen _q);
 
 // token methods
 int htmlgen_get_token(htmlgen _q,

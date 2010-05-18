@@ -89,11 +89,8 @@ void htmlgen_token_parse_end(htmlgen _q)
 
 void htmlgen_token_parse_comment(htmlgen _q)
 {
-    // eat up rest of line using strcspn method
-    unsigned int n = strcspn(_q->buffer, "\n\r\v\f");
-
     // consume buffer up until end-of-line
-    htmlgen_buffer_consume(_q, n);
+    htmlgen_buffer_consume_eol(_q);
 }
 
 void htmlgen_token_parse_document(htmlgen _q)

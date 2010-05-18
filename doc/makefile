@@ -210,8 +210,8 @@ $(html_eqn_pngfiles) : %.png : %.dvi html-equations.mk
 # html equations target
 html-equations : $(html_eqn_pngfiles)
 
-# html main target
-html: html/index.html html-equations $(html_figures)
+# html main target TODO : add $(html_figures) as dependency
+html: html/index.html html-equations
 
 # clean html files
 clean-html:
