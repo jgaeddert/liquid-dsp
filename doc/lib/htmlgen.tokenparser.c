@@ -79,37 +79,24 @@ int htmlgen_get_token(htmlgen _q,
     return token_found;
 }
 
-// '\begin{'
-void htmlgen_token_parse_begin(htmlgen _q)
+// parse argument of \begin{...}, \chapter{...}, etc.
+unsigned int htmlgen_token_parse_envarg(htmlgen _q, char * _arg)
 {
-    // fill buffer
-    htmlgen_buffer_produce(_q);
-
     // search for '}'
     unsigned int n = strcspn(_q->buffer, "}");
 
-    // clear buffer through trailing '}'
-    htmlgen_buffer_consume(_q, n+1);
-
     // check length
-    if (n >= 64) {
-        fprintf(stderr,"error: htmlgen_token_parse_begin(), invalid environment\n");
+    if (n >= 256) {
+        fprintf(stderr,"error: htmlgen_token_parse_envarg(), invalid environment\n");
         exit(1);
     }
 
     // copy environment tag in '{' and '}'
     // TODO : strip white space
-    char environment[64];
-    memmove(environment, _q->buffer, n);
-    environment[n+1] = '\0';
-    
-    printf("environment : %s\n", environment);
+    memmove(_arg, _q->buffer, n);
+    _arg[n] = '\0';
 
-    // TODO : call specific routine here
-}
-
-void htmlgen_token_parse_end(htmlgen _q)
-{
+    return n;
 }
 
 void htmlgen_token_parse_comment(htmlgen _q)
@@ -118,19 +105,150 @@ void htmlgen_token_parse_comment(htmlgen _q)
     htmlgen_buffer_consume_eol(_q);
 }
 
-void htmlgen_token_parse_document(htmlgen _q)
+// '\begin{'
+void htmlgen_token_parse_begin(htmlgen _q)
 {
+    printf("parsing '\\begin{...\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    char environment[256];
+    unsigned int n = htmlgen_token_parse_envarg(_q, environment);
+    
+    printf("environment '%s'\n", environment);
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // TODO : call specific routine here
 }
 
+// '\chapter{'
+void htmlgen_token_parse_chapter(htmlgen _q)
+{
+    printf("parsing '\\chapter{...\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    char name[256];
+    unsigned int n = htmlgen_token_parse_envarg(_q, name);
+    
+    printf("name '%s'\n", name);
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // TODO : look for \label{
+
+    // increment chapter, reset sub-chapter counters
+    _q->chapter++;
+    _q->section = 1;
+    _q->subsection = 1;
+    _q->subsubsection = 1;
+
+    // print heading to html file
+    fprintf(_q->fid_html,"<h1>%d %s</h1>\n", _q->chapter, name);
+}
+
+
+// '\section{'
 void htmlgen_token_parse_section(htmlgen _q)
 {
+    printf("parsing '\\section{...\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    char name[256];
+    unsigned int n = htmlgen_token_parse_envarg(_q, name);
+    
+    printf("name '%s'\n", name);
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // TODO : look for \label{
+
+    // increment section, reset sub-counters
+    _q->section++;
+    _q->subsection = 1;
+    _q->subsubsection = 1;
+
+    // print heading to html file
+    fprintf(_q->fid_html,"<h2>%d.%d %s</h2>\n", _q->chapter,
+                                                _q->section,
+                                                name);
 }
 
+// '\subsection{'
 void htmlgen_token_parse_subsection(htmlgen _q)
+{
+    printf("parsing '\\section{...\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    char name[256];
+    unsigned int n = htmlgen_token_parse_envarg(_q, name);
+    
+    printf("name '%s'\n", name);
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // TODO : look for \label{
+
+    // increment subsection, reset sub-counters
+    _q->subsection++;
+    _q->subsubsection = 1;
+
+    // print heading to html file
+    fprintf(_q->fid_html,"<h3>%d.%d%.d %s</h3>\n", _q->chapter,
+                                                   _q->section,
+                                                   _q->subsection,
+                                                   name);
+}
+
+// '\subsubsection{'
+void htmlgen_token_parse_subsubsection(htmlgen _q)
+{
+    printf("parsing '\\subsubsection{...\n");
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    char name[256];
+    unsigned int n = htmlgen_token_parse_envarg(_q, name);
+    
+    printf("name '%s'\n", name);
+
+    // clear buffer through trailing '}'
+    htmlgen_buffer_consume(_q, n+1);
+
+    // TODO : look for \label{
+
+    // increment subsubsection
+    _q->subsubsection++;
+
+    // print heading to html file
+    fprintf(_q->fid_html,"<h2>%d.%d.%d.%d %s</h2>\n", _q->chapter,
+                                                      _q->section,
+                                                      _q->subsection,
+                                                      _q->subsubsection,
+                                                      name);
+}
+
+//
+// antiquated methods
+//
+
+void htmlgen_token_parse_end(htmlgen _q)
 {
 }
 
-void htmlgen_token_parse_subsubsection(htmlgen _q)
+void htmlgen_token_parse_document(htmlgen _q)
 {
 }
 
@@ -148,6 +266,11 @@ void htmlgen_token_parse_enumerate(htmlgen _q)
 
 void htmlgen_token_parse_itemize(htmlgen _q)
 {
+}
+
+void htmlgen_token_parse_fail(htmlgen _q)
+{
+    fprintf(stderr,"*** error: htmlgen_token_parse_fail()\n");
 }
 
 

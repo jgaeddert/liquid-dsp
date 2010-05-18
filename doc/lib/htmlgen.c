@@ -36,24 +36,27 @@
 
 // token table
 htmlgen_token_s htmlgen_token_tab[] = {
-    {"\\begin{",        htmlgen_token_parse_begin},
-    {"\\[",             htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\chapter{",      htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\label{",        htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\biliography",   htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"\\input{",        htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"{\\tt",           htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"{\\it",           htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"{\\em",           htmlgen_token_parse_comment},   // TODO : add appropriate method
-    {"%",               htmlgen_token_parse_comment},
-    {"\n\n",            htmlgen_token_parse_comment}    // TODO : add appropriate method
+    {"\\begin{",            htmlgen_token_parse_begin},
+    {"\\[",                 htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"\\chapter{",          htmlgen_token_parse_chapter},
+    {"\\section{",          htmlgen_token_parse_section},
+    {"\\subsection{",       htmlgen_token_parse_subsection},
+    {"\\subsubsection{",    htmlgen_token_parse_subsubsection},
+    {"\\label{",            htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"\\bibliography",      htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"\\input{",            htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"{\\tt",               htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"{\\it",               htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"{\\em",               htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"%",                   htmlgen_token_parse_comment},
+    {"\n\n",                htmlgen_token_parse_fail}       // TODO : add appropriate method
 };
 #if 0
     {"document",        htmlgen_token_parse_document},
     {"section",         htmlgen_token_parse_section},
     {"subsection",      htmlgen_token_parse_subsection},
     {"subsubsection",   htmlgen_token_parse_subsubsection},
-    {"equation",        htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"equation",        htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"figure",          htmlgen_token_parse_figure},
     {"tabular",         htmlgen_token_parse_tabular},
     {"enumerate",       htmlgen_token_parse_enumerate},
@@ -99,7 +102,7 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 
     // run batch parser
     unsigned int i;
-    for (i=0; i<10; i++)
+    for (i=0; i<50; i++)
         htmlgen_parse(q);
 
     //htmlgen_buffer_consume(q, q->buffer_size);
@@ -129,6 +132,9 @@ htmlgen htmlgen_create(char * _filename_tex,
     q->section = 0;
     q->subsection = 0;
     q->subsubsection = 0;
+
+    // set environment mode to NONE
+    q->environment_mode = HTMLGEN_ENV_NONE;
 
     q->buffer_size = 0;
 
@@ -398,7 +404,7 @@ void htmlgen_parse_seek_first_chapter(htmlgen _q)
 void htmlgen_parse(htmlgen _q)
 {
     // parse file
-    unsigned int i;
+    
     htmlgen_buffer_produce(_q); // fill buffer
     //printf("%s", _q->buffer);
     //printf("\n\n");
@@ -407,15 +413,20 @@ void htmlgen_parse(htmlgen _q)
     // look for next token
     int token_found = htmlgen_get_token(_q,
                                         htmlgen_token_tab,
-                                        11, // TODO : fix length
+                                        14, // TODO : fix length
                                         &token_index,
                                         &n);
     if (token_found) {
         printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
 
         // consume buffer up through this point
+#if 1
+        // clear token
         unsigned int token_len = strlen(htmlgen_token_tab[token_index].token);
         htmlgen_buffer_consume(_q, n + token_len);
+#else
+        htmlgen_buffer_consume(_q, n);
+#endif
 
         // execute token-specific function
         htmlgen_token_tab[token_index].func(_q);

@@ -54,14 +54,15 @@ struct htmlgen_s {
 
     // list of tokens to escape mode
 
-#if 0
     // mode
     enum {
-        HTMLGEN_MODE_SEEK_DOC=0,    // look for \begin{document}
-        HTMLGEN_MODE_PARSE,         // parse
-        HTMLGEN_MODE_GET_ENV,       // inside environment : \begin{
-        HTMLGEN_MODE_GET_
-#endif
+        HTMLGEN_ENV_NONE=0,
+        HTMLGEN_ENV_FIGURE,
+        HTMLGEN_ENV_TABULAR,
+        HTMLGEN_ENV_ENUMERATE,
+        HTMLGEN_ENV_ITEMIZE,
+        HTMLGEN_ENV_VERBATIM
+    } environment_mode;
 };
 
 // doc-html-gen function
@@ -120,19 +121,29 @@ int htmlgen_get_token(htmlgen _q,
                       unsigned int * _token_index,
                       unsigned int * _len);
 
-void htmlgen_token_parse_begin(htmlgen _q);
-void htmlgen_token_parse_end(htmlgen _q);
-//void htmlgen_token_parse_eqn_begin(htmlgen _q);
-//void htmlgen_token_parse_eqn_end(htmlgen _q);
+// parse argument of \begin{...}, \chapter{...}, etc.
+//  * buffer contains 'xxxx}...'
+//  * returns length of 'xxxx' not including lagging '}' character
+//  * fails if length >= 256
+unsigned int htmlgen_token_parse_envarg(htmlgen _q, char * _arg);
+
 void htmlgen_token_parse_comment(htmlgen _q);
-void htmlgen_token_parse_document(htmlgen _q);
+void htmlgen_token_parse_begin(htmlgen _q);
+void htmlgen_token_parse_chapter(htmlgen _q);
 void htmlgen_token_parse_section(htmlgen _q);
 void htmlgen_token_parse_subsection(htmlgen _q);
 void htmlgen_token_parse_subsubsection(htmlgen _q);
+
+//void htmlgen_token_parse_eqn_begin(htmlgen _q);
+//void htmlgen_token_parse_eqn_end(htmlgen _q);
+void htmlgen_token_parse_end(htmlgen _q);
+void htmlgen_token_parse_document(htmlgen _q);
 void htmlgen_token_parse_figure(htmlgen _q);
 void htmlgen_token_parse_tabular(htmlgen _q);
 void htmlgen_token_parse_enumerate(htmlgen _q);
 void htmlgen_token_parse_itemize(htmlgen _q);
+
+void htmlgen_token_parse_fail(htmlgen _q);
 
 #endif // __LIQUID_DOC_HTML_H__
 
