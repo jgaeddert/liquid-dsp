@@ -29,6 +29,8 @@
 
 #include "liquid.doc.h"
 
+#define HTMLGEN_TOKEN_DEBUG (0)
+
 int htmlgen_get_token(htmlgen _q,
                       htmlgen_token_s * _token_tab,
                       unsigned int _num_tokens,
@@ -44,12 +46,7 @@ int htmlgen_get_token(htmlgen _q,
     for (i=0; i<_num_tokens; i++) {
         loc = strstr( _q->buffer, _token_tab[i].token );
 
-#if 0
-        if (loc == NULL)
-            continue;
-        else
-            d = (int) (loc - _q->buffer);
-#else
+#if HTMLGEN_TOKEN_DEBUG
         printf("  %20s : ", _token_tab[i].token);
         if (loc == NULL) {
             printf("-\n");
@@ -58,6 +55,11 @@ int htmlgen_get_token(htmlgen _q,
             d = (int) (loc - _q->buffer);
             printf("%d\n", d);
         }
+#else
+        if (loc == NULL)
+            continue;
+        else
+            d = (int) (loc - _q->buffer);
 #endif
 
         if (d < dmin || token_found == 0) {

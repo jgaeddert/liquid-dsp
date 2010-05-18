@@ -86,14 +86,27 @@ struct htmlgen_s {
     FILE * fid_html;
     FILE * fid_eqmk;
 
-    // equation identifier
+    // counters
     unsigned int equation_id;
+    unsigned int chapter;
+    unsigned int section;
+    unsigned int subsection;
+    unsigned int subsubsection;
 
     //
     char buffer[HTMLGEN_BUFFER_LENGTH+1];
     unsigned int buffer_size;     // number of elements in buffer
 
     // list of tokens to escape mode
+
+#if 0
+    // mode
+    enum {
+        HTMLGEN_MODE_SEEK_DOC=0,    // look for \begin{document}
+        HTMLGEN_MODE_PARSE,         // parse
+        HTMLGEN_MODE_GET_ENV,       // inside environment : \begin{
+        HTMLGEN_MODE_GET_
+#endif
 };
 
 // doc-html-gen function

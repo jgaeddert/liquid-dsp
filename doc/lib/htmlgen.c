@@ -38,15 +38,19 @@
 htmlgen_token_s htmlgen_token_tab[] = {
     {"\\begin",         htmlgen_token_parse_begin},
     {"\\end",           htmlgen_token_parse_end},
-    {"\\[",             NULL},
-    {"\\]",             NULL},
-    {"%",               NULL},
-    {"\n\n",            NULL}, // new paragraph
+    {"\\[",             htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\]",             htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\chapter",       htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\label",         htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\biliography",   htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"\\input",         htmlgen_token_parse_comment},   // TODO : add appropriate method
+    {"%",               htmlgen_token_parse_comment},
+    {"\n\n",            htmlgen_token_parse_comment},   // TODO : add appropriate method
     {"document",        htmlgen_token_parse_document},
     {"section",         htmlgen_token_parse_section},
     {"subsection",      htmlgen_token_parse_subsection},
     {"subsubsection",   htmlgen_token_parse_subsubsection},
-    {"equation",        NULL},
+    {"equation",        htmlgen_token_parse_comment},   // TODO : add appropriate method
     {"figure",          htmlgen_token_parse_figure},
     {"tabular",         htmlgen_token_parse_tabular},
     {"enumerate",       htmlgen_token_parse_enumerate},
@@ -104,8 +108,8 @@ void htmlgen_parse_latex_file(char * _filename_tex,
         // consume buffer up until this point
         htmlgen_buffer_consume(q,n);
 
-        //htmlgen_token_tab[token_index].func(q);
-        htmlgen_token_parse_comment(q);
+        // execute token-specific function
+        htmlgen_token_tab[token_index].func(q);
     } else {
         printf("no token found\n");
     }
@@ -130,7 +134,14 @@ htmlgen htmlgen_create(char * _filename_tex,
 {
     // create htmlgen object
     htmlgen q = (htmlgen) malloc(sizeof(struct htmlgen_s));
+
+    // set counters
     q->equation_id = 0;
+    q->chapter = 0;
+    q->section = 0;
+    q->subsection = 0;
+    q->subsubsection = 0;
+
     q->buffer_size = 0;
 
     // copy file names
