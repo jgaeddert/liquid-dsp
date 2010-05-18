@@ -111,7 +111,7 @@ clean-listings:
 
 lib_objects	= $(addsuffix .o,$(lib_sources))
 
-$(lib_objects) : %.o : % include/liquid.doc.h
+$(lib_objects) : %.o : % include/liquid.doc.h include/liquid.doc.html.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 lib: $(lib_objects)

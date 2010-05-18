@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "liquid.doc.h"
+#include "liquid.doc.html.h"
 
 //#define HTMLGEN_NUM_TOKENS  (12)
 

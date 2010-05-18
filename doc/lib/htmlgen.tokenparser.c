@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "liquid.doc.h"
+#include "liquid.doc.html.h"
 
 #define HTMLGEN_TOKEN_DEBUG (0)
 
