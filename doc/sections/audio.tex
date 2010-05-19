@@ -7,6 +7,37 @@
 
 \subsection{{\tt cvsd} (continuously variable slope delta)}
 \label{module:audio:cvsd}
+Continuously variable slope delta (CVSD) source encoding is used for data
+compression of audio signals.
+CVSD is a lossy compression whose quality is directly related to the sampling
+frequency and is generally most practical for speech applications.
+It is a form of delta modulation where $\Delta$ (the step size) is changed
+continuously to minimize slope-overload distortion \cite[p. 131]{Proakis:2001}.
+The output bit stream has a rate equal to that of the sampling frequency.
+It is considered to be a moderate compromise between quality and complexity.
+
+The algorithm attempts to dynamically adjust $\Delta$ value to track
+to the input signal.
+As with regular delta modulation algorithms,
+if the decoded reference signal exceeds the input (the error signal is
+negative), a binary {\tt 0} is sent and $\Delta$ is subtracted from the
+reference, otherwise a binary {\tt 1} is sent and $\Delta$ is added.
+However CVSD observes the previous $N$ transmitted bits are stored in memory.
+$\Delta$ is increased by $\zeta$ if they are equal, and decreased otherwise.
+This improves the dynamic range of the encoder over fixed-delta modulation
+encoders.
+
+The {\tt cvsd} module in \liquid\ allows the user to select both $\zeta$
+as well as $N$, the number of repeated bits observed before $\Delta$ is
+updated.
+The combination of these values with the sampling rate yields a speech
+compression algorithm with moderate quality.
+A demonstration of the algorithm can be seen in
+Figure~\ref{fig:module:audio:cvsd} where the encoder attempts to track to an
+input sinusoid.
+Notice that the encoder sometimes overshoots the reference signal.
+This distortion results in degradations, particularly in the upper frequency
+bands.
 
 \begin{figure}
 \centering

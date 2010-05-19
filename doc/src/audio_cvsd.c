@@ -19,7 +19,7 @@
 
 int main() {
     // options
-    unsigned int num_samples=256;   // number of samples
+    unsigned int num_samples=128;   // number of samples
     float fc = 0.03179f;            // input sine frequency
     unsigned int nbits=3;           // 
     float zeta=1.5f;                //
@@ -78,7 +78,7 @@ int main() {
     fprintf(fid,"set ylabel 'time series'\n");
     fprintf(fid,"set xrange [0:%u]\n", num_samples);
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'input',\\\n", LIQUID_DOC_COLOR_GRAY);
-    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'cvsd output'\n", LIQUID_DOC_COLOR_BLUE);
+    fprintf(fid,"     '-' using 1:2 with steps linetype 1 linewidth 2 linecolor rgb '%s' title 'cvsd output'\n", LIQUID_DOC_COLOR_BLUE);
     // export output
     for (i=0; i<num_samples; i++)
         fprintf(fid,"%6u %12.4e\n", i, x[i]);
