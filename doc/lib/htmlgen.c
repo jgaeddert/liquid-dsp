@@ -281,17 +281,21 @@ void htmlgen_buffer_produce(htmlgen _q)
                            sizeof(char),
                            num_remaining,
                            _q->fid_tex);
-    
+
     if (k != num_remaining && !feof(_q->fid_tex)) {
         fprintf(stderr,"warning: htmlgen_buffer_produce(), expected %u but only read %u\n", num_remaining, k);
         usleep(10000);
     }
 
     if (feof(_q->fid_tex)) {
-        //printf("eof!\n");
+        printf("htmlgen_buffer_produce() : eof!\n");
     }
 
     _q->buffer_size += k;
+
+    // append '\0' to end of buffer
+    _q->buffer[_q->buffer_size] = '\0';
+    
 }
 
 // consume _n elements from buffer

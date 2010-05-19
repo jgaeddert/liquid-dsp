@@ -58,7 +58,7 @@ void htmlgen_env_parse_unknown(htmlgen _q,
     unsigned int token_index = 0;
     unsigned int n = 0;
     unsigned int failsafe = 30;
-    while (!token_found && !feof(_q->fid_tex) ) {
+    while (!token_found && _q->buffer_size > 0) {
         failsafe--;
         if (!failsafe) {
             // die gracefully
@@ -68,7 +68,7 @@ void htmlgen_env_parse_unknown(htmlgen _q,
             exit(1);
         }
         printf("searching for '%s'\n", escape_token.token);
-        usleep(100000);
+        //usleep(100000);
         // fill buffer
         htmlgen_buffer_produce(_q);
 
@@ -87,7 +87,7 @@ void htmlgen_env_parse_unknown(htmlgen _q,
     if (token_found) {
         // consume buffer through token
         htmlgen_buffer_consume(_q, strlen(escape) );
-    } else {
+    } else if (feof(_q->fid_tex) ) {
         fprintf(stderr,"error: htmlgen_env_parse_unknown(), premature EOF\n");
         exit(1);
     }
@@ -221,7 +221,7 @@ void htmlgen_env_parse_list(htmlgen _q, char * _end)
     unsigned int token_index = 0;
     unsigned int n = 0;
 
-    while (!escape_token_found) {
+    while (!escape_token_found && _q->buffer_size > 0) {
         token_found = htmlgen_get_token(_q,
                                         token_tab,
                                         HTMLGEN_ENV_LIST_NUM_TOKENS,
@@ -251,7 +251,10 @@ void htmlgen_env_parse_list(htmlgen _q, char * _end)
         }
     }
 
-    if (feof(_q->fid_tex) && !escape_token_found) {
+    if (escape_token_found) {
+        
+    } else if (feof(_q->fid_tex)) {
+        // token wasn't found, but EOF was reached
         fprintf(stderr,"error: htmlgen_env_parse_list(), premature EOF\n");
         exit(1);
     }
@@ -264,6 +267,10 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
                                      int _inline)
 {
     printf("************ adding equation %u\n", _q->equation_id);
+    if (_q->equation_id == 33) {
+        printf("buffer : %s\n", _q->buffer);
+        exit(1);
+    }
 
     //
     char filename_eqn[64] = "";
@@ -283,9 +290,12 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
     fprintf(fid_eqn,"\\usepackage{amsthm}\n");
     fprintf(fid_eqn,"\\usepackage{amssymb}\n");
     fprintf(fid_eqn,"\\usepackage{bm}\n");
-    fprintf(fid_eqn,"\\newcommand{\\mx}[1]{\\mathbf{\\bm{#1}}} %% Matrix command\n");
-    fprintf(fid_eqn,"\\newcommand{\\vc}[1]{\\mathbf{\\bm{#1}}} %% Vector command \n");
-    fprintf(fid_eqn,"\\newcommand{\\T}{\\text{T}}              %% Transpose\n");
+    fprintf(fid_eqn,"\\newcommand{\\sinc}{\\textup{sinc}}\n");
+    fprintf(fid_eqn,"\\renewcommand{\\vec}[1]{\\boldsymbol{#1}}\n");
+    fprintf(fid_eqn,"\\newcommand{\\ord}{\\mathcal{O}}\n");
+    fprintf(fid_eqn,"\\newcommand{\\liquid}{{\\it liquid}}\n");
+    fprintf(fid_eqn,"\\newcommand{\\liquidfpm}{{\\it liquid-fpm}}\n");
+
     fprintf(fid_eqn,"\\pagestyle{empty} \n");
     fprintf(fid_eqn,"\\begin{document} \n");
     fprintf(fid_eqn,"\\newpage\n");
@@ -303,7 +313,8 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
     unsigned int token_index = 0;
     unsigned int n = 0;
 
-    while (!escape_token_found && !feof(_q->fid_tex) ) {
+    while (!escape_token_found && _q->buffer_size > 0) {
+        //printf("searching for '%s'...\n", _escape);
         // fill buffer
         htmlgen_buffer_produce(_q);
 
@@ -312,31 +323,31 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
                                         HTMLGEN_ENV_EQUATION_NUM_TOKENS,
                                         &token_index,
                                         &n);
+        printf("n = %u\n", n);
 
         if (token_found) {
             // check for escape token, e.g. '\end{itemize}'
-            if (token_index == 0)
+            if (token_index == 0) {
+                printf("escape token found! ('%s')\n", _escape);
                 escape_token_found = 1;
-
-            // write output to equation file up to this point
-            htmlgen_buffer_dump(_q, fid_eqn, n);
-
-            // consume buffer through token
-            unsigned int token_len = strlen(token_tab[token_index].token);
-            htmlgen_buffer_consume(_q, n + token_len);
+            }
 
             // execute token-specific function
             token_tab[token_index].func(_q);
-        } else {
-            // no token found; write output to equation file
-            htmlgen_buffer_dump_all(_q, fid_eqn);
-
-            // clear buffer
-            htmlgen_buffer_consume_all(_q);
         }
+
+        // dump to output file
+        htmlgen_buffer_dump(_q, fid_eqn, n);
+
+        // consume buffer
+        htmlgen_buffer_consume(_q, n);
     }
 
-    if (feof(_q->fid_tex) && !escape_token_found) {
+    if (escape_token_found) {
+        // consume through token
+        unsigned int token_len = strlen(token_tab[token_index].token);
+        htmlgen_buffer_consume(_q, token_len);
+    } else if (feof(_q->fid_tex)) {
         fprintf(stderr,"error: htmlgen_env_parse_equation_help(), premature EOF\n");
         exit(1);
     }
@@ -359,6 +370,5 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
 
     // increment equation id
     _q->equation_id++;
-
 }
 
