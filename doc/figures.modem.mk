@@ -2,6 +2,7 @@
 # Makefile for generating liquid documentation modem figures
 #
 
+# local targets
 local_epsfiles :=			\
 	figures.gen/modem_bpsk.eps	\
 	figures.gen/modem_qpsk.eps	\
@@ -34,23 +35,15 @@ local_gnufiles := $(patsubst %.eps,%.gnu,$(local_epsfiles))
 local_datfiles := $(patsubst %.eps,%.dat,$(local_epsfiles))
 local_pdffiles := $(patsubst %.eps,%.pdf,$(local_epsfiles))
 
-# target pdf files
-$(local_pdffiles) : %.pdf : %.eps
-	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
-
 # gnuplot script generator function
 src/modem.genplot : src/modem.genplot.c
 
 # modem data generator function
 src/modem.gendata : src/modem.gendata.c
 
-# eps target files
-$(local_epsfiles) : %.eps : %.gnu %.dat
-	$(GNUPLOT) $< > $@
-
-# 
-# psk
-#
+## 
+## psk
+##
 figures.gen/modem_bpsk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m bpsk -p 1
 figures.gen/modem_bpsk.gnu   : %.gnu : src/modem.genplot ; ./$< -f $@ -m bpsk -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
@@ -63,9 +56,9 @@ figures.gen/modem_8psk.gnu   : %.gnu : src/modem.genplot ; ./$< -f $@ -m psk -p 
 figures.gen/modem_16psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 4
 figures.gen/modem_16psk.gnu  : %.gnu : src/modem.genplot ; ./$< -f $@ -m psk -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
-# 
-# apsk
-#
+## 
+## apsk
+##
 figures.gen/modem_4apsk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 2
 figures.gen/modem_4apsk.gnu  : %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
@@ -84,9 +77,9 @@ figures.gen/modem_64apsk.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p
 figures.gen/modem_128apsk.dat: %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 7
 figures.gen/modem_128apsk.gnu: %.gnu : src/modem.genplot ; ./$< -f $@ -m apsk -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
-# 
-# ask
-#
+## 
+## ask
+##
 figures.gen/modem_2ask.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m ask -p 1
 figures.gen/modem_2ask.gnu   : %.gnu : src/modem.genplot ; ./$< -f $@ -m ask -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
@@ -99,9 +92,9 @@ figures.gen/modem_8ask.gnu   : %.gnu : src/modem.genplot ; ./$< -f $@ -m ask -p 
 figures.gen/modem_16ask.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m ask -p 4
 figures.gen/modem_16ask.gnu  : %.gnu : src/modem.genplot ; ./$< -f $@ -m ask -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
-# 
-# qam
-#
+## 
+## qam
+##
 figures.gen/modem_8qam.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 3
 figures.gen/modem_8qam.gnu   : %.gnu : src/modem.genplot ; ./$< -f $@ -m qam -p 3 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
@@ -120,22 +113,30 @@ figures.gen/modem_128qam.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m qam -p 
 figures.gen/modem_256qam.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 8
 figures.gen/modem_256qam.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m qam -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
-# 
-# opt
-#
+## 
+## arb
+##
 figures.gen/modem_arb16opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb16opt -p 4
 figures.gen/modem_arb16opt.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m arb16opt -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
 figures.gen/modem_arb64vt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb64vt -p 6
 figures.gen/modem_arb64vt.gnu : %.gnu : src/modem.genplot ; ./$< -f $@ -m arb64vt -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
+##
+## target collection
+## 
+
+# target pdf files
+$(local_pdffiles) : %.pdf : %.eps
+	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
+
+# eps target files
+$(local_epsfiles) : %.eps : %.gnu %.dat
+	$(GNUPLOT) $< > $@
+
 # accumulate target
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
 	src/modem.genplot		\
-	src/modem.gendata		\
-	$(local_epsfiles)		\
-	$(local_gnufiles)		\
-	$(local_datfiles)
-
+	src/modem.gendata

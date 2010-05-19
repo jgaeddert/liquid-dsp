@@ -1,7 +1,10 @@
 #
-# Makefile for generating liquid documentation agc figures
+# Makefile for generating liquid documentation figures
+#
+# MODULE : agc
 #
 
+# local targets
 local_pdffiles :=				\
 	figures.pgf/agc_squelch.pdf		\
 	figures.pgf/agc_transfer_function.pdf	\
@@ -39,19 +42,12 @@ figures.gen/agc_transient.pdf : figures.gen/agc_transient.eps
 	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
 
 ##
-##
+## target collection
 ## 
 
 # accumulate target
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
-	src/agc_squelch			\
-	figures.pgf/agc_*.aux		\
-	figures.pgf/agc_*.dat		\
-	figures.pgf/agc_*.log		\
-	figures.gen/agc_*.pdf		\
-	figures.gen/agc_*.eps		\
-	figures.gen/agc_*.gnu		\
-	$(local_pdffiles)
+	src/agc_squelch
 

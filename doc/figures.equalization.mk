@@ -4,6 +4,7 @@
 # MODULE : equalization
 #
 
+# local targets
 local_pdffiles :=					\
 	figures.gen/equalizer_example1_const.pdf	\
 	figures.gen/equalizer_example1_mse.pdf		\
@@ -59,8 +60,5 @@ $(local_epsfiles) : %.eps : %.gnu
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
-	src/equalizer_cccf		\
-	$(local_epsfiles)		\
-	$(local_gnufiles)		\
-	$(local_pdffiles)
+	src/equalizer_cccf
 

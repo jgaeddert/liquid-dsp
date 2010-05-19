@@ -25,7 +25,6 @@ int main() {
 
     // create Hilbert transform object
     firhilb f = firhilb_create(h_len,slsl);
-    firhilb_print(f);
 
     // generate input sequence
     unsigned int i;

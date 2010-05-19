@@ -24,4 +24,3 @@ src/nco_pll
 *.o
 # ignore all html files
 html/*
-html-equations.mk

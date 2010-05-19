@@ -1,44 +1,39 @@
 #
-# Makefile for generating liquid documentation nco figures
+# Makefile for generating liquid documentation figures
+#
+# MODULE : nco
 #
 
-local_epsfiles :=					\
-	figures.gen/nco_pll_sincos.eps			\
-	figures.gen/nco_pll_error.eps
+local_pdffiles :=					\
+	figures.gen/nco_pll_sincos.pdf			\
+	figures.gen/nco_pll_error.pdf
 
-local_gnufiles := $(patsubst %.eps,%.gnu,$(local_epsfiles))
-#local_datfiles := $(patsubst %.eps,%.dat,$(local_epsfiles))
-local_pdffiles := $(patsubst %.eps,%.pdf,$(local_epsfiles))
+local_gnufiles := $(patsubst %.pdf,%.gnu,$(local_pdffiles))
+local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 
-# target pdf files
-$(local_pdffiles) : %.pdf : %.eps
-	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
-
-#
-# gnuplot script generator programs
-# 
-
-# nco_pll
+## 
+## nco_pll
+##
 src/nco_pll : % : %.c $(lib_objects)
 figures.gen/nco_pll_sincos.gnu \
 figures.gen/nco_pll_error.gnu : src/nco_pll
 	./$< -n400
 
-#
-# target macros
-# 
+##
+## target collection
+## 
 
 # eps target files
 $(local_epsfiles) : %.eps : %.gnu
 	$(GNUPLOT) $< > $@
 
+# pdf target files
+$(local_pdffiles) : %.pdf : %.eps
+	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
+
 # accumulate target
 figures_generated += $(local_pdffiles)
 
 extra_clean +=				\
-	src/nco_pll			\
-	$(local_epsfiles)		\
-	$(local_gnufiles)		\
-	$(local_pdffiles)		\
-#	$(local_datfiles)
+	src/nco_pll
 

@@ -1,34 +1,30 @@
 #
-# Makefile for generating liquid documentation filter figures
+# Makefile for generating liquid documentation figures
+#
+# MODULE : filter
 #
 
-local_epsfiles :=					\
-	figures.gen/filter_butter.eps			\
-	figures.gen/filter_cheby1.eps			\
-	figures.gen/filter_cheby2.eps			\
-	figures.gen/filter_ellip.eps			\
-	figures.gen/filter_bessel.eps			\
-	figures.gen/filter_firhilb_decim_crcf_time.eps	\
-	figures.gen/filter_firhilb_decim_crcf_freq.eps	\
-	figures.gen/filter_interp_crcf.eps		\
-	figures.gen/filter_kaiser_time.eps		\
-	figures.gen/filter_kaiser_freq.eps		\
-	figures.gen/filter_resamp_crcf.eps		\
-	figures.gen/filter_resamp_crcf_psd.eps
+# local targets
+local_pdffiles :=					\
+	figures.gen/filter_butter.pdf			\
+	figures.gen/filter_cheby1.pdf			\
+	figures.gen/filter_cheby2.pdf			\
+	figures.gen/filter_ellip.pdf			\
+	figures.gen/filter_bessel.pdf			\
+	figures.gen/filter_firhilb_decim_crcf_time.pdf	\
+	figures.gen/filter_firhilb_decim_crcf_freq.pdf	\
+	figures.gen/filter_interp_crcf.pdf		\
+	figures.gen/filter_kaiser_time.pdf		\
+	figures.gen/filter_kaiser_freq.pdf		\
+	figures.gen/filter_resamp_crcf.pdf		\
+	figures.gen/filter_resamp_crcf_psd.pdf
 
-local_gnufiles := $(patsubst %.eps,%.gnu,$(local_epsfiles))
-#local_datfiles := $(patsubst %.eps,%.dat,$(local_epsfiles))
-local_pdffiles := $(patsubst %.eps,%.pdf,$(local_epsfiles))
+local_gnufiles := $(patsubst %.pdf,%.gnu,$(local_pdffiles))
+local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 
-# target pdf files
-$(local_pdffiles) : %.pdf : %.eps
-	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
-
-#
-# gnuplot script generator programs
-# 
-
-# iir filter design
+##
+## iir filter design
+##
 src/filter_iirdes : src/filter_iirdes.c $(lib_objects)
 
 # filter design options
@@ -44,31 +40,49 @@ figures.gen/filter_cheby2.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_o
 figures.gen/filter_ellip.gnu  : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t ellip
 figures.gen/filter_bessel.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t bessel
 
-# firhilb decimator
+##
+## firhilb decimator
+## 
 src/filter_firhilb_decim_crcf : src/filter_firhilb_decim_crcf.c $(lib_objects)
 figures.gen/filter_firhilb_decim_crcf_time.gnu \
 figures.gen/filter_firhilb_decim_crcf_freq.gnu : src/filter_firhilb_decim_crcf
 	./$<
 
-# interpolator
+## 
+## interpolator
+##
 src/filter_interp_crcf : src/filter_interp_crcf.c $(lib_objects)
 figures.gen/filter_interp_crcf.gnu : src/filter_interp_crcf
 	./$<
 
-# kaiser window filter design
+## 
+## kaiser window filter design
+##
 src/filter_kaiser : src/filter_kaiser.c $(lib_objects)
 figures.gen/filter_kaiser_time.gnu \
 figures.gen/filter_kaiser_freq.gnu : src/filter_kaiser
 	./$<
 
+## 
+## resamp_crcf
+##
 src/filter_resamp_crcf : src/filter_resamp_crcf.c $(lib_objects)
 figures.gen/filter_resamp_crcf.gnu \
 figures.gen/filter_resamp_crcf_psd.gnu: src/filter_resamp_crcf
 	./$<
 
+
+##
+## target collection
+## 
+
 # eps target files
 $(local_epsfiles) : %.eps : %.gnu
 	$(GNUPLOT) $< > $@
+
+# target pdf files
+$(local_pdffiles) : %.pdf : %.eps
+	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
 
 # accumulate target
 figures_generated += $(local_pdffiles)
@@ -78,9 +92,5 @@ extra_clean +=				\
 	src/filter_iirdes		\
 	src/filter_interp_crcf		\
 	src/filter_kaiser		\
-	src/filter_resamp_crcf		\
-	$(local_epsfiles)		\
-	$(local_gnufiles)		\
-	$(local_pdffiles)		\
-#	$(local_datfiles)
+	src/filter_resamp_crcf
 
