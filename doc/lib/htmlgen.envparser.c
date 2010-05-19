@@ -194,7 +194,7 @@ void htmlgen_env_parse_figure(htmlgen _q)
     char escape[] = "\\end{figure}";
 
     // start environment
-    fprintf(_q->fid_html,"<img src=\"html/fig/fig%u.png\" />\n", _q->figure_id);
+    fprintf(_q->fid_html,"<img src=\"fig/fig%u.png\" />\n", _q->figure_id);
     _q->figure_id++;
 
     fprintf(_q->fid_figs,"\\newpage\n");

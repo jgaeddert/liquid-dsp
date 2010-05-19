@@ -32,7 +32,7 @@
 #include <string.h>
 #include "liquid.doc.html.h"
 
-#define HTMLGEN_NUM_TOKENS  (19)
+#define HTMLGEN_NUM_TOKENS  (18)
 
 // token table
 htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
@@ -44,7 +44,6 @@ htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
     {"\\label{",            htmlgen_token_parse_label},
     {"\\input{",            htmlgen_token_parse_input},
     {"\\bibliography{",     htmlgen_token_parse_bibliography},
-    {"\\input{",            htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"{\\tt",               htmlgen_token_parse_tt},
     {"{\\it",               htmlgen_token_parse_it},
     {"{\\em",               htmlgen_token_parse_em},
@@ -216,11 +215,11 @@ void htmlgen_html_write_header(htmlgen _q)
     fprintf(_q->fid_html,"<!-- auto-generated file, do not edit -->\n");
     fprintf(_q->fid_html,"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">\n");
     fprintf(_q->fid_html,"<head>\n");
-    fprintf(_q->fid_html,"<!-- <style type=\"text/css\" media=\"all\">@import url(http://computing.ece.vt.edu/~jgaeddert/web.css);</style> -->\n");
-    fprintf(_q->fid_html,"<title>jgaeddert</title>\n");
-    fprintf(_q->fid_html,"<meta name=\"description\" content=\"Gaeddert Virginia Tech\" />\n");
-    fprintf(_q->fid_html,"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n");
-    fprintf(_q->fid_html,"<!-- <link rel=\"Shortcut Icon\" type=\"image/png\" href=\"img/favicon.png\" /> -->\n");
+    fprintf(_q->fid_html,"    <!-- <style type=\"text/css\" media=\"all\">@import url(http://computing.ece.vt.edu/~jgaeddert/web.css);</style> -->\n");
+    fprintf(_q->fid_html,"    <title>liquid documentation</title>\n");
+    fprintf(_q->fid_html,"    <meta name=\"description\" content=\"Gaeddert Virginia Tech\" />\n");
+    fprintf(_q->fid_html,"    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n");
+    fprintf(_q->fid_html,"    <!-- <link rel=\"Shortcut Icon\" type=\"image/png\" href=\"img/favicon.png\" /> -->\n");
     fprintf(_q->fid_html,"</head>\n");
     fprintf(_q->fid_html,"<body>\n");
 }
@@ -291,13 +290,13 @@ void htmlgen_figs_write_header(htmlgen _q)
     fprintf(_q->fid_figs,"\\newcommand{\\liquidfpm}{{\\it liquid-fpm}}\n");
 
     // figures packages
-    fprintf(_q->fid_figs,"\\ifx\\pdfoutput\\undefined\n");
+    //fprintf(_q->fid_figs,"\\ifx\\pdfoutput\\undefined\n");
     fprintf(_q->fid_figs,"\\usepackage{graphicx}\n");
-    fprintf(_q->fid_figs,"\\else\n");
-    fprintf(_q->fid_figs,"\\usepackage[pdftex]{graphicx}\n");
-    fprintf(_q->fid_figs,"\\fi\n");
-    fprintf(_q->fid_figs,"\\usepackage{epsfig}\n");
-    fprintf(_q->fid_figs,"\\usepackage{epstopdf}\n");
+    //fprintf(_q->fid_figs,"\\else\n");
+    //fprintf(_q->fid_figs,"\\usepackage[pdftex]{graphicx}\n");
+    //fprintf(_q->fid_figs,"\\fi\n");
+    //fprintf(_q->fid_figs,"\\usepackage{epsfig}\n");
+    //fprintf(_q->fid_figs,"\\usepackage{epstopdf}\n");
     fprintf(_q->fid_figs,"\\usepackage{colortbl}\n");
     fprintf(_q->fid_figs,"\\usepackage{color}\n");
     fprintf(_q->fid_figs,"\\usepackage{subfigure}\n");

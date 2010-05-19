@@ -70,6 +70,7 @@ void htmlgen_parse_latex_file(char * _filename_tex,
                               char * _filename_html,
                               char * _filename_eqns);
 
+// htmlgen object functions
 htmlgen htmlgen_create(char * _filename_tex,
                        char * _filename_html,
                        char * _filename_eqns);
