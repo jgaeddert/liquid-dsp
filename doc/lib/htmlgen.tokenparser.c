@@ -73,7 +73,7 @@ int htmlgen_get_token(htmlgen _q,
 
     // set return values
     *_token_index = index;
-    *_len = dmin;
+    *_len = token_found ? dmin : _q->buffer_size;
 
     // return token found flag
     return token_found;
@@ -136,7 +136,7 @@ void htmlgen_token_parse_begin(htmlgen _q)
     } else if (strcmp(environment,"equation")==0) {
         // long equation
         htmlgen_env_parse_equation(_q);
-
+#if 0
     } else if (strcmp(environment,"verbatim")==0) {
         // verbatim
         htmlgen_env_parse_verbatim(_q);
@@ -161,6 +161,11 @@ void htmlgen_token_parse_begin(htmlgen _q)
         fprintf(stderr,"error: unknown environment '%s'\n", environment);
         exit(1);
     }
+#else
+    } else {
+        htmlgen_env_parse_unknown(_q, environment);
+    }
+#endif
 }
 
 // '\chapter{'
@@ -297,6 +302,8 @@ void htmlgen_token_parse_label(htmlgen _q)
 
     // print label as html comment
     fprintf(_q->fid_html,"<!-- label : '%s' -->\n", label);
+
+    printf("done with label\n");
 }
 
 // '\input{'
@@ -329,6 +336,7 @@ void htmlgen_token_parse_input(htmlgen _q)
         printf("****** listing\n");
     } else {
         // put input file on hold
+        printf("****************************\n");
         printf("buffer:%s\n\n", _q->buffer);
 
         // rewind current file by buffer size
@@ -352,8 +360,16 @@ void htmlgen_token_parse_input(htmlgen _q)
 
         // parse input file
 #if 1
-        while (!feof(_q->fid_tex))
+        while (!feof(_q->fid_tex)) {
             htmlgen_parse(_q);
+            /*
+            if (feof(_q->fid_tex)) {
+                printf("tokenparser reached EOF\n");
+            } else {
+                printf("not yet at EOF\n");
+            }
+            */
+        }
 #else
         unsigned int i;
         for (i=0; i<40; i++)
@@ -364,14 +380,17 @@ void htmlgen_token_parse_input(htmlgen _q)
         printf("closing input file '%s'\n", filename);
         fclose(_q->fid_tex);
 
+        // ensure buffer is empty
+        htmlgen_buffer_consume_all(_q);
+
         // restore old file pointer
         _q->fid_tex = fid_tmp;
 
         // fill buffer
+        printf("****************************\n");
         printf("filling buffer...\n");
         htmlgen_buffer_produce(_q);
         printf("buffer : %s\n", _q->buffer);
-        exit(1);
     }
 }
 

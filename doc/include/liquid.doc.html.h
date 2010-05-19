@@ -157,6 +157,11 @@ void htmlgen_token_parse_null(htmlgen _q);
 // 
 // environment parsers
 //
+
+// unknown environment; parse until '\end{envarg}' is found
+void htmlgen_token_parse_unknown(htmlgen _q,
+                                 char * _envarg);
+
 void htmlgen_env_parse_itemize(htmlgen _q);     // \begin{itemize} (unordered list)
 void htmlgen_env_parse_enumerate(htmlgen _q);   // \begin{enumerate} (ordered list)
 void htmlgen_env_parse_eqn(htmlgen _q);         // \[ (short equation environment)

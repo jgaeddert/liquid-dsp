@@ -117,6 +117,9 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 
     // close files
     htmlgen_close_files(q);
+
+    // destroy object
+    htmlgen_destroy(q);
 }
 
 
@@ -284,6 +287,10 @@ void htmlgen_buffer_produce(htmlgen _q)
         usleep(10000);
     }
 
+    if (feof(_q->fid_tex)) {
+        //printf("eof!\n");
+    }
+
     _q->buffer_size += k;
 }
 
@@ -430,6 +437,7 @@ void htmlgen_parse(htmlgen _q)
 {
     // parse file
     
+    printf("parse: buffer produce\n");
     htmlgen_buffer_produce(_q); // fill buffer
     //printf("%s", _q->buffer);
     //printf("\n\n");

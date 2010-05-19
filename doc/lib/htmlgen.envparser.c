@@ -29,6 +29,76 @@
 
 #include "liquid.doc.html.h"
 
+void htmlgen_env_parse_unknown(htmlgen _q,
+                               char * _envarg)
+{
+    fprintf(stderr,"warning: unknown/unsupported environment '%s'\n", _envarg);
+
+    if (strlen(_envarg) > 50) {
+        fprintf(stderr,"error: htmlgen_env_parse_unknown(), _envarg too long!\n");
+        exit(1);
+    }
+
+    // generate escape sequence '\end{envarg}'
+    char escape[64] = "\\end{";
+    strcat(escape,_envarg);
+    strcat(escape,"}");
+
+    printf("escape : '%s'\n", escape);
+
+    // start environment
+    fprintf(_q->fid_html,"<pre>\n");
+    fprintf(_q->fid_html,"warning: unknown/unsupported environment '%s'\n\n", _envarg);
+
+    // configure escape token
+    htmlgen_token_s escape_token = {escape, NULL};
+
+    // read tokens until '\end{envarg}' is found
+    int token_found = 0;
+    unsigned int token_index = 0;
+    unsigned int n = 0;
+    unsigned int failsafe = 30;
+    while (!token_found && !feof(_q->fid_tex) ) {
+        failsafe--;
+        if (!failsafe) {
+            // die gracefully
+            printf("failsafe limit reached\n");
+            htmlgen_close_files(_q);
+            htmlgen_destroy(_q);
+            exit(1);
+        }
+        printf("searching for '%s'\n", escape_token.token);
+        usleep(100000);
+        // fill buffer
+        htmlgen_buffer_produce(_q);
+
+        printf("*******************\n");
+        printf("buffer : %s\n", _q->buffer);
+
+        token_found = htmlgen_get_token(_q, &escape_token, 1, &token_index, &n);
+
+        htmlgen_buffer_dump(_q, _q->fid_html, n);
+        htmlgen_buffer_dump(_q, stdout, n);
+
+        // consume buffer
+        htmlgen_buffer_consume(_q, n);
+    }
+
+    if (token_found) {
+        // consume buffer through token
+        htmlgen_buffer_consume(_q, strlen(escape) );
+    } else {
+        fprintf(stderr,"error: htmlgen_env_parse_unknown(), premature EOF\n");
+        exit(1);
+    }
+
+    // end environment
+    fprintf(_q->fid_html,"</pre>\n");
+
+    printf("done with unknown environment\n");
+}
+
+
 void htmlgen_env_parse_itemize(htmlgen _q)
 {
     // start un-orderd list
@@ -61,18 +131,21 @@ void htmlgen_env_parse_eqn(htmlgen _q)
 {
     printf("beginning short equation environment parser...\n");
     htmlgen_env_parse_equation_help(_q, "\\]", 0);
+    printf("ending short equation environment parser.\n");
 }
 
 void htmlgen_env_parse_inline_eqn(htmlgen _q)
 {
     printf("beginning inline equation environment parser...\n");
     htmlgen_env_parse_equation_help(_q, "$", 1);
+    printf("ending inline equation environment parser.\n");
 }
 
 void htmlgen_env_parse_equation(htmlgen _q)
 {
     printf("beginning long equation environment parser...\n");
     htmlgen_env_parse_equation_help(_q, "\\end{equation}", 0);
+    printf("ending long equation environment parser.\n");
 }
 
 void htmlgen_env_parse_verbatim(htmlgen _q)
@@ -85,6 +158,7 @@ void htmlgen_env_parse_verbatim(htmlgen _q)
 
 
     fprintf(_q->fid_html,"</tt>\n");
+    printf("ending verbatim environment parser...\n");
 }
 
 void htmlgen_env_parse_figure(htmlgen _q)
@@ -93,6 +167,7 @@ void htmlgen_env_parse_figure(htmlgen _q)
 
     // read buffer until \end{figure} tag is found
 
+    printf("ending figure environment parser.\n");
 }
 
 void htmlgen_env_parse_tabular(htmlgen _q)
@@ -100,6 +175,7 @@ void htmlgen_env_parse_tabular(htmlgen _q)
     printf("beginning tabular environment parser...\n");
 
     // read buffer until \end{tabular} tag is found
+    printf("ending tabular environment parser.\n");
 }
 
 void htmlgen_env_parse_tabularstar(htmlgen _q)
@@ -107,6 +183,7 @@ void htmlgen_env_parse_tabularstar(htmlgen _q)
     printf("beginning tabularstar environment parser...\n");
 
     // read buffer until \end{tabular*} tag is found
+    printf("ending tabularstar environment parser.\n");
 }
 
 
@@ -115,6 +192,7 @@ void htmlgen_env_parse_table(htmlgen _q)
     printf("beginning table environment parser...\n");
 
     // read buffer until \end{table} tag is found
+    printf("ending table environment parser.\n");
 }
 
 // 
@@ -172,6 +250,12 @@ void htmlgen_env_parse_list(htmlgen _q, char * _end)
             htmlgen_buffer_consume_all(_q);
         }
     }
+
+    if (feof(_q->fid_tex) && !escape_token_found) {
+        fprintf(stderr,"error: htmlgen_env_parse_list(), premature EOF\n");
+        exit(1);
+    }
+
 }
 
 #define HTMLGEN_ENV_EQUATION_NUM_TOKENS (2)
@@ -219,7 +303,7 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
     unsigned int token_index = 0;
     unsigned int n = 0;
 
-    while (!escape_token_found) {
+    while (!escape_token_found && !feof(_q->fid_tex) ) {
         // fill buffer
         htmlgen_buffer_produce(_q);
 
@@ -250,6 +334,11 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
             // clear buffer
             htmlgen_buffer_consume_all(_q);
         }
+    }
+
+    if (feof(_q->fid_tex) && !escape_token_found) {
+        fprintf(stderr,"error: htmlgen_env_parse_equation_help(), premature EOF\n");
+        exit(1);
     }
 
     fprintf(fid_eqn,"\\]\n");
