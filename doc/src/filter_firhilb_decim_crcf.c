@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include <liquid/liquid.h>
@@ -42,13 +43,26 @@ int main() {
     }
     firhilb_destroy(f);
 
+    // compute filter
+    float h[h_len];
+    fir_kaiser_window(h_len, 0.5f, slsl, 0.0f, h);
+
     unsigned int nfft = 512;
     float complex X[nfft];
     float complex Y[nfft];
+    float complex H[nfft];
     liquid_doc_compute_psdf( x,2*num_samples,X,nfft,LIQUID_DOC_PSDWINDOW_HAMMING,0);
     liquid_doc_compute_psdcf(y,  num_samples,Y,nfft,LIQUID_DOC_PSDWINDOW_HAMMING,0);
+    liquid_doc_compute_psdf( h,  h_len,      H,nfft,LIQUID_DOC_PSDWINDOW_NONE,   1);
     fft_shift(X,nfft);
     //fft_shift(Y,nfft);
+    fft_shift(H,nfft);
+
+    // rotate H right by nfft/4 and compute image
+    float complex Himg[nfft];
+    memmove(Himg, H, sizeof(H));
+    for (i=0; i<nfft; i++)
+        H[(i+3*nfft/4)%nfft] = Himg[i];
     float scaling_factor = 20*log10f(num_samples);
 
     // generate plots
@@ -127,9 +141,15 @@ int main() {
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n",LIQUID_DOC_COLOR_GRID);
 
     fprintf(fid,"# spectrum\n");
-    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'original/real',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' notitle,\\\n",   LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'original/real',\\\n", LIQUID_DOC_COLOR_GRAY);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'transformed/decimated'\n",   LIQUID_DOC_COLOR_GREEN);
     // export output
+    for (i=0; i<nfft; i++) {
+        float fh = (float)(i) / (float)nfft - 0.5f;
+        fprintf(fid,"%12.8f %12.4e\n", fh, 20*log10f(cabsf(H[i])) );//- scaling_factor);
+    }
+    fprintf(fid,"e\n");
     for (i=0; i<nfft; i++) {
         float fx = (float)(i) / (float)nfft - 0.5f;
         fprintf(fid,"%12.8f %12.4e\n", fx, 20*log10f(cabsf(X[i])) - scaling_factor);
