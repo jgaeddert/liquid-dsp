@@ -21,19 +21,19 @@ void usage()
 // global defaults
 char default_filename_tex[256]   = "liquid.tex";
 char default_filename_html[256]  = "html/index.html";
-char default_filename_eqmk[256]  = "html-equations.mk";
+char default_filename_eqns[256]  = "html/eqn/equations.tex";
 char default_dirname_eq[256]     = "html/eqn/";
 
 int main(int argc, char*argv[])
 {
     char filename_tex[256] = "";
     char filename_html[256] = "";
-    char filename_eqmk[256] = "";
+    char filename_eqns[256] = "";
 
     // set defaults
     strcpy(filename_tex,  default_filename_tex);
     strcpy(filename_html, default_filename_html);
-    strcpy(filename_eqmk, default_filename_eqmk);
+    strcpy(filename_eqns, default_filename_eqns);
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhi:o:")) != EOF) {
@@ -52,7 +52,7 @@ int main(int argc, char*argv[])
     printf("filenames:\n");
     printf("  tex   :   %s\n", filename_tex);
     printf("  html  :   %s\n", filename_html);
-    printf("  eqmk  :   %s\n", filename_eqmk);
+    printf("  eqns  :   %s\n", filename_eqns);
 
     // 
     // run parser
@@ -60,7 +60,7 @@ int main(int argc, char*argv[])
     printf("parsing latex file '%s'...\n", filename_tex);
     htmlgen_parse_latex_file(filename_tex,
                              filename_html,
-                             filename_eqmk);
+                             filename_eqns);
     return 0;
 }
 

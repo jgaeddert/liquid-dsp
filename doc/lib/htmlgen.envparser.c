@@ -274,35 +274,8 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
                                      int _inline)
 {
     printf("************ adding equation %u\n", _q->equation_id);
-
-    //
-    char filename_eqn[64] = "";
-    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", _q->equation_id);
-
-    // open file
-    FILE * fid_eqn = fopen(filename_eqn, "w");
-    if (!fid_eqn) {
-        fprintf(stderr,"error, could not open '%s' for writing\n", filename_eqn);
-        exit(1);
-    }
-    fprintf(fid_eqn,"%% %s : auto-generated file\n", filename_eqn);
-
-    // write header
-    fprintf(fid_eqn,"\\documentclass{article} \n");
-    fprintf(fid_eqn,"\\usepackage{amsmath}\n");
-    fprintf(fid_eqn,"\\usepackage{amsthm}\n");
-    fprintf(fid_eqn,"\\usepackage{amssymb}\n");
-    fprintf(fid_eqn,"\\usepackage{bm}\n");
-    fprintf(fid_eqn,"\\newcommand{\\sinc}{\\textup{sinc}}\n");
-    fprintf(fid_eqn,"\\renewcommand{\\vec}[1]{\\boldsymbol{#1}}\n");
-    fprintf(fid_eqn,"\\newcommand{\\ord}{\\mathcal{O}}\n");
-    fprintf(fid_eqn,"\\newcommand{\\liquid}{{\\it liquid}}\n");
-    fprintf(fid_eqn,"\\newcommand{\\liquidfpm}{{\\it liquid-fpm}}\n");
-
-    fprintf(fid_eqn,"\\pagestyle{empty} \n");
-    fprintf(fid_eqn,"\\begin{document} \n");
-    fprintf(fid_eqn,"\\newpage\n");
-    fprintf(fid_eqn,"\\[");
+    fprintf(_q->fid_eqns,"\\newpage\n");
+    fprintf(_q->fid_eqns,"\\[");
 
     // set up tokens
     htmlgen_token_s token_tab[HTMLGEN_ENV_EQUATION_NUM_TOKENS] = {
@@ -340,7 +313,7 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
         }
 
         // dump to output file
-        htmlgen_buffer_dump(_q, fid_eqn, n);
+        htmlgen_buffer_dump(_q, _q->fid_eqns, n);
 
         // consume buffer
         htmlgen_buffer_consume(_q, n);
@@ -358,21 +331,12 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
         exit(1);
     }
 
-    fprintf(fid_eqn,"\\]\n");
-
-    // write footer
-    fprintf(fid_eqn,"\\end{document}\n");
-
-    // close file
-    fclose(fid_eqn);
+    fprintf(_q->fid_eqns,"\\]\n");
 
     // insert equation into html file
     if (!_inline) fprintf(_q->fid_html,"<p align=\"center\">\n");
-    fprintf(_q->fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", _q->equation_id);
+    fprintf(_q->fid_html,"<img src=\"eqn/eqn%u.png\" />\n", _q->equation_id);
     if (!_inline) fprintf(_q->fid_html,"</p>\n");
-
-    // add equation to makefile: target collection
-    fprintf(_q->fid_eqmk,"\\\n\t%s", filename_eqn);
 
     // increment equation id
     _q->equation_id++;

@@ -63,11 +63,11 @@ htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
 // parse LaTeX file
 void htmlgen_parse_latex_file(char * _filename_tex,
                               char * _filename_html,
-                              char * _filename_eqmk)
+                              char * _filename_eqns)
 {
     htmlgen q = htmlgen_create(_filename_tex,
                                _filename_html,
-                               _filename_eqmk);
+                               _filename_eqns);
 
     // open files for reading/writing
     htmlgen_open_files(q);
@@ -76,15 +76,29 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     htmlgen_html_write_header(q);
     fprintf(q->fid_html,"<h1>liquid documentation</h1>\n");
 
-    // equation makefile add header, etc.
-    fprintf(q->fid_eqmk,"# equations makefile : auto-generated\n");
-    fprintf(q->fid_eqmk,"html_eqn_texfiles := ");
+    // equations file
+    fprintf(q->fid_eqns,"%%\n");
+    fprintf(q->fid_eqns,"%% %s : auto-generated file (do not edit)\n", q->filename_eqns);
+    fprintf(q->fid_eqns,"%%\n");
+    fprintf(q->fid_eqns,"\\documentclass{article} \n");
+    fprintf(q->fid_eqns,"\\usepackage{amsmath}\n");
+    fprintf(q->fid_eqns,"\\usepackage{amsthm}\n");
+    fprintf(q->fid_eqns,"\\usepackage{amssymb}\n");
+    fprintf(q->fid_eqns,"\\usepackage{bm}\n");
+    fprintf(q->fid_eqns,"\\newcommand{\\sinc}{\\textup{sinc}}\n");
+    fprintf(q->fid_eqns,"\\renewcommand{\\vec}[1]{\\boldsymbol{#1}}\n");
+    fprintf(q->fid_eqns,"\\newcommand{\\ord}{\\mathcal{O}}\n");
+    fprintf(q->fid_eqns,"\\newcommand{\\liquid}{{\\it liquid}}\n");
+    fprintf(q->fid_eqns,"\\newcommand{\\liquidfpm}{{\\it liquid-fpm}}\n");
+
+    fprintf(q->fid_eqns,"\\pagestyle{empty} \n");
+    fprintf(q->fid_eqns,"\\begin{document} \n");
 
     //char filename_eqn[256];
     //sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", q->equation_id);
 
     // add equations
-    htmlgen_add_equation(q, "y = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }", 0);
+    htmlgen_add_equation(q, "x = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }", 0);
     htmlgen_add_equation(q, "y = \\sum_{k=0}^{N-1} { \\sin\\Bigl( \\frac{x^k}{k!} \\Bigr) }", 0);
     htmlgen_add_equation(q, "z = \\frac{1}{2} \\beta \\gamma^{1/t}", 0);
 
@@ -105,8 +119,8 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 
     //htmlgen_buffer_consume(q, q->buffer_size);
 
-    // equation makefile: clear end-of-line
-    fprintf(q->fid_eqmk,"\n\n");
+    // write footer
+    fprintf(q->fid_eqns,"\\end{document}\n");
 
     // write html footer
     htmlgen_html_write_footer(q);
@@ -122,13 +136,13 @@ void htmlgen_parse_latex_file(char * _filename_tex,
 // create htmlgen object
 htmlgen htmlgen_create(char * _filename_tex,
                        char * _filename_html,
-                       char * _filename_eqmk)
+                       char * _filename_eqns)
 {
     // create htmlgen object
     htmlgen q = (htmlgen) malloc(sizeof(struct htmlgen_s));
 
     // set counters
-    q->equation_id = 0;
+    q->equation_id = 1;
     q->chapter = 0;
     q->section = 0;
     q->subsection = 0;
@@ -140,9 +154,9 @@ htmlgen htmlgen_create(char * _filename_tex,
     q->buffer_size = 0;
 
     // copy file names
-    strncpy(q->filename_tex,  _filename_tex,  256);
-    strncpy(q->filename_html, _filename_html, 256);
-    strncpy(q->filename_eqmk, _filename_eqmk, 256);
+    strncpy(q->filename_tex,  _filename_tex,  128);
+    strncpy(q->filename_html, _filename_html, 128);
+    strncpy(q->filename_eqns, _filename_eqns, 128);
 
     return q;
 }
@@ -152,7 +166,7 @@ void htmlgen_open_files(htmlgen _q)
     // open files
     _q->fid_tex  = fopen(_q->filename_tex, "r");
     _q->fid_html = fopen(_q->filename_html,"w");
-    _q->fid_eqmk = fopen(_q->filename_eqmk,"w");
+    _q->fid_eqns = fopen(_q->filename_eqns,"w");
 
     // validate files opened properly
     if (!_q->fid_tex) {
@@ -161,8 +175,8 @@ void htmlgen_open_files(htmlgen _q)
     } else if (!_q->fid_html) {
         fprintf(stderr,"error, could not open '%s' for writing\n", _q->filename_html);
         exit(1);
-    } else  if (!_q->fid_eqmk) {
-        fprintf(stderr,"error, could not open '%s' for writing\n", _q->filename_eqmk);
+    } else  if (!_q->fid_eqns) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", _q->filename_eqns);
         exit(1);
     }
 }
@@ -172,7 +186,7 @@ void htmlgen_close_files(htmlgen _q)
     // close files
     fclose(_q->fid_tex);
     fclose(_q->fid_html);
-    fclose(_q->fid_eqmk);
+    fclose(_q->fid_eqns);
 }
 
 void htmlgen_destroy(htmlgen _q)
@@ -186,49 +200,18 @@ void htmlgen_add_equation(htmlgen _q,
                           char * _eqn,
                           int _inline)
 {
-    //
-    char filename_eqn[64] = "";
-    sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", _q->equation_id);
+    printf("************ adding equation %u\n", _q->equation_id);
+    fprintf(_q->fid_eqns,"\\newpage\n");
+    fprintf(_q->fid_eqns,"\\[");
 
-    // open file
-    FILE * fid_eqn = fopen(filename_eqn, "w");
-    if (!fid_eqn) {
-        fprintf(stderr,"error, could not open '%s' for writing\n", filename_eqn);
-        exit(1);
-    }
-    fprintf(fid_eqn,"%% %s : auto-generated file\n", filename_eqn);
+    fprintf(_q->fid_eqns,"%s\n", _eqn);
 
-    // write header
-    fprintf(fid_eqn,"\\documentclass{article} \n");
-    fprintf(fid_eqn,"\\usepackage{amsmath}\n");
-    fprintf(fid_eqn,"\\usepackage{amsthm}\n");
-    fprintf(fid_eqn,"\\usepackage{amssymb}\n");
-    fprintf(fid_eqn,"\\usepackage{bm}\n");
-    fprintf(fid_eqn,"\\newcommand{\\mx}[1]{\\mathbf{\\bm{#1}}} %% Matrix command\n");
-    fprintf(fid_eqn,"\\newcommand{\\vc}[1]{\\mathbf{\\bm{#1}}} %% Vector command \n");
-    fprintf(fid_eqn,"\\newcommand{\\T}{\\text{T}}              %% Transpose\n");
-    fprintf(fid_eqn,"\\pagestyle{empty} \n");
-    fprintf(fid_eqn,"\\begin{document} \n");
-    fprintf(fid_eqn,"\\newpage\n");
-
-    // write equation
-    fprintf(fid_eqn,"\\[\n");
-    fprintf(fid_eqn,"%s\n", _eqn);
-    fprintf(fid_eqn,"\\]\n");
-
-    // write footer
-    fprintf(fid_eqn,"\\end{document}\n");
-
-    // close file
-    fclose(fid_eqn);
+    fprintf(_q->fid_eqns,"\\]\n");
 
     // insert equation into html file
-    if (!_inline) fprintf(_q->fid_html,"<p>\n");
-    fprintf(_q->fid_html,"<img src=\"eqn/eqn%.4u.png\" />\n", _q->equation_id);
+    if (!_inline) fprintf(_q->fid_html,"<p align=\"center\">\n");
+    fprintf(_q->fid_html,"<img src=\"eqn/eqn%u.png\" />\n", _q->equation_id);
     if (!_inline) fprintf(_q->fid_html,"</p>\n");
-
-    // add equation to makefile: target collection
-    fprintf(_q->fid_eqmk,"\\\n\t%s", filename_eqn);
 
     // increment equation id
     _q->equation_id++;

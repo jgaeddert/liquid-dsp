@@ -191,26 +191,17 @@ src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
 
 # html index file, equations makefile
 html/index.html	\
-html-equations.mk : src/doc-html-gen liquid.tex $(html-dirs)
+html/eqn/equations.tex : src/doc-html-gen liquid.tex $(html-dirs)
 	#./$< -i scripts/htmlgen_test.tex
 	./$< -i liquid.tex
 
-# include targets for equations
-.PRECIOUS: html-equations.mk
--include html-equations.mk
-html_eqn_pngfiles = $(patsubst %.tex,%.png,$(html_eqn_texfiles))
-html_eqn_dvifiles = $(patsubst %.tex,%.dvi,$(html_eqn_texfiles))
+# generate equations
+html-equations : html/eqn/.equations $(html-dirs)
 
-$(html_eqn_dvifiles) : %.dvi : %.tex html-equations.mk
-	latex -interaction=batchmode -output-format=dvi -output-directory=html/eqn $<
-	$(RM) $*.log
-	$(RM) $*.aux
-
-$(html_eqn_pngfiles) : %.png : %.dvi html-equations.mk
-	dvipng -q -T tight -x1200 -z 9 -bg Transparent -o $@ $*.dvi
-
-# html equations target
-html-equations : $(html_eqn_pngfiles)
+html/eqn/.equations : html/eqn/equations.tex $(html-dirs)
+	latex -interaction=batchmode -output-format=dvi -output-directory=html/eqn html/eqn/equations.tex
+	dvipng -q -T tight -x1200 -z 9 -bg Transparent -o html/eqn/eqn%d.png html/eqn/equations.dvi
+	touch html/eqn/.equations
 
 # html main target TODO : add $(html_figures) as dependency
 html: html/index.html html-equations

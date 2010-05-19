@@ -34,12 +34,12 @@ struct htmlgen_s {
     // file names
     char filename_tex[128];
     char filename_html[128];
-    char filename_eqmk[128];
+    char filename_eqns[128];
 
     // file pointers
     FILE * fid_tex;
     FILE * fid_html;
-    FILE * fid_eqmk;
+    FILE * fid_eqns;
 
     // counters
     unsigned int equation_id;
@@ -77,11 +77,11 @@ typedef struct {
 // main parsing function
 void htmlgen_parse_latex_file(char * _filename_tex,
                               char * _filename_html,
-                              char * _filename_eqmk);
+                              char * _filename_eqns);
 
 htmlgen htmlgen_create(char * _filename_tex,
                        char * _filename_html,
-                       char * _filename_eqmk);
+                       char * _filename_eqns);
 void htmlgen_open_files(htmlgen _q);
 void htmlgen_close_files(htmlgen _q);
 void htmlgen_destroy(htmlgen _q);
