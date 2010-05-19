@@ -92,8 +92,8 @@ input-to-output resampling ratio.
 % qmfb
 \subsection{{\tt qmfb} (quadrature mirror filter bank)}
 
-% iir_filter
-\subsection{{\tt iir\_filter}}
+% iirfilt
+\subsection{{\tt iirfilt}}
 Infinite impulse response filter.
 \[
     y[n] = \frac{1}{a_0} \left(
@@ -138,7 +138,7 @@ where the poles and zeros are known.
 \liquid\ implements second-order sections efficiently with the internal
 {\tt iirfiltsos\_xxxt} object.
 For a cascaded second-order section IIR filter, use
-{\tt iir\_filter\_xxxt\_create\_sos(B,A,n)}.
+{\tt iirfilt\_xxxt\_create\_sos(B,A,n)}.
 
 See also: {\tt iirdes} (IIR filter design).
 
