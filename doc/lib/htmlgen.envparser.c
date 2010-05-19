@@ -47,7 +47,7 @@ void htmlgen_env_parse_unknown(htmlgen _q,
     printf("escape : '%s'\n", escape);
 
     // start environment
-    fprintf(_q->fid_html,"<pre>\n");
+    fprintf(_q->fid_html,"<pre class=\"unknown\">\n");
     fprintf(_q->fid_html,"warning: unknown/unsupported environment '%s'\n\n", _envarg);
 
     // configure escape token
@@ -143,14 +143,49 @@ void htmlgen_env_parse_equation(htmlgen _q)
 void htmlgen_env_parse_verbatim(htmlgen _q)
 {
     printf("beginning verbatim environment parser...\n");
+    char escape[] = "\\end{verbatim}";
 
-    fprintf(_q->fid_html,"<tt>\n");
+    // start environment
+    fprintf(_q->fid_html,"<pre class=\"verbatim\">\n");
 
-    // read buffer until \end{verbatim} tag is found
+    // configure escape token
+    htmlgen_token_s escape_token = {escape, NULL};
 
+    // read tokens until escape token is found
+    int token_found = 0;
+    unsigned int token_index = 0;
+    unsigned int n = 0;
 
-    fprintf(_q->fid_html,"</tt>\n");
-    printf("ending verbatim environment parser...\n");
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    while (!token_found && _q->buffer_size > 0) {
+        //printf("searching for '%s'\n", escape_token.token);
+
+        token_found = htmlgen_get_token(_q, &escape_token, 1, &token_index, &n);
+
+        htmlgen_buffer_dump(_q, _q->fid_html, n);
+        htmlgen_buffer_dump(_q, stdout, n);
+
+        // consume buffer
+        htmlgen_buffer_consume(_q, n);
+
+        // fill buffer
+        htmlgen_buffer_produce(_q);
+    }
+
+    if (token_found) {
+        // consume buffer through token
+        htmlgen_buffer_consume(_q, strlen(escape) );
+    } else if (feof(_q->fid_tex) ) {
+        fprintf(stderr,"error: htmlgen_env_parse_unknown(), premature EOF\n");
+        exit(1);
+    }
+
+    // end environment
+    fprintf(_q->fid_html,"</pre>\n");
+
+    printf("done with verbatim environment\n");
 }
 
 void htmlgen_env_parse_figure(htmlgen _q)

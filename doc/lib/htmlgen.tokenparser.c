@@ -139,11 +139,12 @@ void htmlgen_token_parse_begin(htmlgen _q)
     } else if (strcmp(environment,"equation")==0) {
         // long equation
         htmlgen_env_parse_equation(_q);
-#if 0
+
     } else if (strcmp(environment,"verbatim")==0) {
         // verbatim
         htmlgen_env_parse_verbatim(_q);
 
+#if 0
     } else if (strcmp(environment,"figure")==0) {
         // figure
         htmlgen_env_parse_figure(_q);

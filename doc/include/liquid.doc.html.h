@@ -90,8 +90,10 @@ void htmlgen_destroy(htmlgen _q);
 void htmlgen_html_write_header(htmlgen _q);
 void htmlgen_html_write_footer(htmlgen _q);
 
-// equation files
-void htmlgen_add_equation(htmlgen _q, char * _eqn, int _inline);
+// add equation from string
+void htmlgen_add_equation_string(htmlgen _q,
+                                 int _inline,
+                                 char * _eqn);
 
 // buffering methods
 void htmlgen_buffer_produce(htmlgen _q);

@@ -98,12 +98,12 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     //sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", q->equation_id);
 
     // add equations
-    htmlgen_add_equation(q, "x = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }", 0);
-    htmlgen_add_equation(q, "y = \\sum_{k=0}^{N-1} { \\sin\\Bigl( \\frac{x^k}{k!} \\Bigr) }", 0);
-    htmlgen_add_equation(q, "z = \\frac{1}{2} \\beta \\gamma^{1/t}", 0);
+    htmlgen_add_equation_string(q, 0, "x = \\int_0^\\infty { \\gamma^2 \\cos(x) dx }");
+    htmlgen_add_equation_string(q, 0, "y = \\sum_{k=0}^{N-1} { \\sin\\Bigl( \\frac{x^k}{k!} \\Bigr) }");
+    htmlgen_add_equation_string(q, 0, "z = \\frac{1}{2} \\beta \\gamma^{1/t}");
 
     fprintf(q->fid_html,"<p>here is a pretty inline equation:\n");
-    htmlgen_add_equation(q, "\\hat{s} = r_0 \\otimes r_1 \\otimes r_2", 1);
+    htmlgen_add_equation_string(q, 1, "\\hat{s} = r_0 \\otimes r_1 \\otimes r_2");
     fprintf(q->fid_html,"</p>\n");
 
     // repeat as necessary
@@ -196,9 +196,9 @@ void htmlgen_destroy(htmlgen _q)
     free(_q);
 }
 
-void htmlgen_add_equation(htmlgen _q,
-                          char * _eqn,
-                          int _inline)
+void htmlgen_add_equation_string(htmlgen _q,
+                                 int _inline,
+                                 char * _eqn)
 {
     printf("************ adding equation %u\n", _q->equation_id);
     fprintf(_q->fid_eqns,"\\newpage\n");
