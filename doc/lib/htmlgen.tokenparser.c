@@ -313,14 +313,11 @@ void htmlgen_token_parse_input(htmlgen _q)
         printf("****** listing\n");
     } else {
         // put input file on hold
+        printf("buffer:%s\n\n", _q->buffer);
 
         // rewind current file by buffer size
         printf("rewinding input file by %u\n", _q->buffer_size);
-        fseek(_q->fid_tex, - _q->buffer_size, SEEK_CUR);
-#if 1
-        long int pos = ftell(_q->fid_tex);
-        printf("current position is %u\n", pos);
-#endif
+        fseek(_q->fid_tex, -(int)(_q->buffer_size), SEEK_CUR);
 
         // clear input buffer
         htmlgen_buffer_consume_all(_q);
@@ -347,14 +344,10 @@ void htmlgen_token_parse_input(htmlgen _q)
 
         // restore old file pointer
         _q->fid_tex = fid_tmp;
-#if 1
-        fseek(_q->fid_tex, pos, SEEK_SET);
-#endif
 
         // fill buffer
         printf("filling buffer...\n");
         htmlgen_buffer_produce(_q);
-        printf("buffer:%s\n\n", _q->buffer);
     }
 }
 
