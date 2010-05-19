@@ -87,6 +87,36 @@ void htmlgen_env_parse_verbatim(htmlgen _q)
     fprintf(_q->fid_html,"</tt>\n");
 }
 
+void htmlgen_env_parse_figure(htmlgen _q)
+{
+    printf("beginning figure environment parser...\n");
+
+    // read buffer until \end{figure} tag is found
+
+}
+
+void htmlgen_env_parse_tabular(htmlgen _q)
+{
+    printf("beginning tabular environment parser...\n");
+
+    // read buffer until \end{tabular} tag is found
+}
+
+void htmlgen_env_parse_tabularstar(htmlgen _q)
+{
+    printf("beginning tabularstar environment parser...\n");
+
+    // read buffer until \end{tabular*} tag is found
+}
+
+
+void htmlgen_env_parse_table(htmlgen _q)
+{
+    printf("beginning table environment parser...\n");
+
+    // read buffer until \end{table} tag is found
+}
+
 // 
 // helper methods
 //

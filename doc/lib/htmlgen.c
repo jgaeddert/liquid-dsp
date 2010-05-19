@@ -98,8 +98,14 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     htmlgen_parse_seek_first_chapter(q);
 
     // run batch parser
+#if 1
     while (!feof(q->fid_tex))
         htmlgen_parse(q);
+#else
+    unsigned int i;
+    for (i=0; i<40; i++)
+        htmlgen_parse(q);
+#endif
 
     //htmlgen_buffer_consume(q, q->buffer_size);
 
@@ -273,8 +279,9 @@ void htmlgen_buffer_produce(htmlgen _q)
                            num_remaining,
                            _q->fid_tex);
     
-    if (k != num_remaining) { // && !feof(_q->fid_tex)) {
+    if (k != num_remaining && !feof(_q->fid_tex)) {
         fprintf(stderr,"warning: htmlgen_buffer_produce(), expected %u but only read %u\n", num_remaining, k);
+        usleep(10000);
     }
 
     _q->buffer_size += k;

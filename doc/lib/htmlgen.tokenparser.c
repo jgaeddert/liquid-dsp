@@ -141,6 +141,22 @@ void htmlgen_token_parse_begin(htmlgen _q)
         // verbatim
         htmlgen_env_parse_verbatim(_q);
 
+    } else if (strcmp(environment,"figure")==0) {
+        // figure
+        htmlgen_env_parse_figure(_q);
+
+    } else if (strcmp(environment,"tabular")==0) {
+        // tabular
+        htmlgen_env_parse_tabular(_q);
+
+    } else if (strcmp(environment,"tabular*")==0) {
+        // tabular*
+        htmlgen_env_parse_tabularstar(_q);
+
+    } else if (strcmp(environment,"table")==0) {
+        // table
+        htmlgen_env_parse_table(_q);
+
     } else {
         fprintf(stderr,"error: unknown environment '%s'\n", environment);
         exit(1);
@@ -333,10 +349,16 @@ void htmlgen_token_parse_input(htmlgen _q)
             fprintf(stderr,"error, htmlgen_token_parse_input(), could not open '%s' for reading\n", filename);
             exit(1);
         }
-        
+
         // parse input file
+#if 1
         while (!feof(_q->fid_tex))
             htmlgen_parse(_q);
+#else
+        unsigned int i;
+        for (i=0; i<40; i++)
+            htmlgen_parse(_q);
+#endif
 
         // close input file
         printf("closing input file '%s'\n", filename);
@@ -348,6 +370,8 @@ void htmlgen_token_parse_input(htmlgen _q)
         // fill buffer
         printf("filling buffer...\n");
         htmlgen_buffer_produce(_q);
+        printf("buffer : %s\n", _q->buffer);
+        exit(1);
     }
 }
 

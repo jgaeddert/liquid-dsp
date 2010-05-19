@@ -163,6 +163,10 @@ void htmlgen_env_parse_eqn(htmlgen _q);         // \[ (short equation environmen
 void htmlgen_env_parse_inline_eqn(htmlgen _q);  // $ (inline equation environment)
 void htmlgen_env_parse_equation(htmlgen _q);    // \begin{equation} (long equation environment)
 void htmlgen_env_parse_verbatim(htmlgen _q);    // \begin{verbatim}
+void htmlgen_env_parse_figure(htmlgen _q);      // \begin{figure}
+void htmlgen_env_parse_tabular(htmlgen _q);     // \begin{tabular}
+void htmlgen_env_parse_tabularstar(htmlgen _q); // \begin{tabular*}
+void htmlgen_env_parse_table(htmlgen _q);       // \begin{table}
 
 void htmlgen_env_parse_list(htmlgen _q, char * _end);
 void htmlgen_env_parse_equation_help(htmlgen _q,
