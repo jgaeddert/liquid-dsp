@@ -129,6 +129,7 @@ figures_generated :=
 
 # module figure makefiles
 include figures.agc.mk
+include figures.audio.mk
 include figures.equalization.mk
 include figures.filter.mk
 include figures.modem.mk

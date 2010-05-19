@@ -40,6 +40,7 @@ int main() {
         // execute transform (decimator) to compute complex signal
         firhilb_decim_execute(f, &x[2*i], &y[i]);
     }
+    firhilb_destroy(f);
 
     unsigned int nfft = 512;
     float complex X[nfft];
@@ -125,7 +126,7 @@ int main() {
     fprintf(fid,"set pointsize 0.6\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n",LIQUID_DOC_COLOR_GRID);
 
-    fprintf(fid,"# real\n");
+    fprintf(fid,"# spectrum\n");
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'original/real',\\\n", LIQUID_DOC_COLOR_GRAY);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'transformed/decimated'\n",   LIQUID_DOC_COLOR_GREEN);
     // export output
@@ -142,9 +143,6 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME_FREQ);
 
-    firhilb_destroy(f);
     printf("done.\n");
-    return 0;
-
     return 0;
 }

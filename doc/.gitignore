@@ -10,6 +10,7 @@ highlight.sty
 # ignore all programs
 src/agc_squelch
 src/agc_transient
+src/audio_cvsd
 src/doc-html-gen
 src/equalizer_cccf
 src/filter_firhilb_decim_crcf
