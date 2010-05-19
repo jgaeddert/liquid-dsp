@@ -41,6 +41,9 @@ int htmlgen_get_token(htmlgen _q,
     unsigned int i, index=0;
     char * loc = NULL;
     int token_found = 0;
+#if HTMLGEN_TOKEN_DEBUG
+    printf("htmlgen_get_token() : \n");
+#endif
 
     // search for next token
     for (i=0; i<_num_tokens; i++) {
@@ -392,6 +395,12 @@ void htmlgen_token_parse_input(htmlgen _q)
         htmlgen_buffer_produce(_q);
         printf("buffer : %s\n", _q->buffer);
     }
+}
+
+// '\bibliography{'
+void htmlgen_token_parse_bibliography(htmlgen _q)
+{
+    printf("bibliography...\n");
 }
 
 // 

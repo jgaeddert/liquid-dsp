@@ -43,7 +43,7 @@ htmlgen_token_s htmlgen_token_tab[HTMLGEN_NUM_TOKENS] = {
     {"\\subsubsection{",    htmlgen_token_parse_subsubsection},
     {"\\label{",            htmlgen_token_parse_label},
     {"\\input{",            htmlgen_token_parse_input},
-    {"\\bibliography",      htmlgen_token_parse_fail},      // TODO : add appropriate method
+    {"\\bibliography{",     htmlgen_token_parse_bibliography},
     {"\\input{",            htmlgen_token_parse_fail},      // TODO : add appropriate method
     {"{\\tt",               htmlgen_token_parse_tt},
     {"{\\it",               htmlgen_token_parse_it},
@@ -98,14 +98,10 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     htmlgen_parse_seek_first_chapter(q);
 
     // run batch parser
-#if 1
-    while (!feof(q->fid_tex))
+    do {
+        htmlgen_buffer_produce(q);
         htmlgen_parse(q);
-#else
-    unsigned int i;
-    for (i=0; i<40; i++)
-        htmlgen_parse(q);
-#endif
+    } while (q->buffer_size > 0);
 
     //htmlgen_buffer_consume(q, q->buffer_size);
 
@@ -374,30 +370,28 @@ void htmlgen_parse_strip_preamble(htmlgen _q,
 
     int token_found=0;
     unsigned int token_index, n;
-    while (!token_found && !feof(_q->fid_tex)) {
-        // fill buffer
-        htmlgen_buffer_produce(_q);
 
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    while (!token_found && _q->buffer_size > 0) {
         // search for token
         token_found = htmlgen_get_token(_q, &begindoc, 1, &token_index, &n);
 
-        if (token_found) {
-            // write partial buffer to file (up until '\begin{document}')
-            htmlgen_buffer_dump(_q, fid, n);
+        // write buffer to file
+        htmlgen_buffer_dump(_q, fid, n);
 
-            // consume buffer through token and EOL
-            htmlgen_buffer_consume(_q, n);
-            htmlgen_buffer_consume_eol(_q); // strip '\begin{document}...\n'
-        } else {
-            // write full buffer to file
-            htmlgen_buffer_dump_all(_q, fid);
-
-            // empty buffer (consume all elements)
-            htmlgen_buffer_consume_all(_q);
-        }
+        // consume buffer
+        htmlgen_buffer_consume(_q, n);
+        
+        // fill buffer
+        htmlgen_buffer_produce(_q);
     }
 
-    if (feof(_q->fid_tex)) {
+    if (token_found) {
+        // consume buffer through token
+        htmlgen_buffer_consume(_q, strlen(begindoc.token) );
+    } else if (feof(_q->fid_tex)) {
         fprintf(stderr,"error: htmlgen_parse_strip_preamble(), found EOF prematurely\n");
         exit(1);
     }
@@ -412,23 +406,26 @@ void htmlgen_parse_seek_first_chapter(htmlgen _q)
 
     int token_found=0;
     unsigned int token_index, n;
-    while (!token_found && !feof(_q->fid_tex)) {
-        // fill buffer
-        htmlgen_buffer_produce(_q);
 
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    while (!token_found && _q->buffer_size > 0) {
         // search for token
         token_found = htmlgen_get_token(_q, &chtok, 1, &token_index, &n);
 
-        if (token_found) {
-            // consume buffer through token
-            htmlgen_buffer_consume(_q, n);
-        } else {
-            // empty buffer (consume all elements)
-            htmlgen_buffer_consume(_q, _q->buffer_size);
-        }
+        // TODO : dump to file?
+
+        // consume buffer
+        htmlgen_buffer_consume(_q, n);
+
+        // fill buffer
+        htmlgen_buffer_produce(_q);
     }
 
-    if (feof(_q->fid_tex)) {
+    if (token_found) {
+
+    } else if (feof(_q->fid_tex)) {
         fprintf(stderr,"error: htmlgen_parse_seek_first_chapter(), found EOF prematurely\n");
         exit(1);
     }

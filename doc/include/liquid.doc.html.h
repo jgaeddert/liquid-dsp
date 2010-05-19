@@ -140,6 +140,7 @@ void htmlgen_token_parse_subsection(htmlgen _q);
 void htmlgen_token_parse_subsubsection(htmlgen _q);
 void htmlgen_token_parse_label(htmlgen _q);
 void htmlgen_token_parse_input(htmlgen _q);
+void htmlgen_token_parse_bibliography(htmlgen _q);
 
 void htmlgen_token_parse_tt(htmlgen _q);
 void htmlgen_token_parse_it(htmlgen _q);

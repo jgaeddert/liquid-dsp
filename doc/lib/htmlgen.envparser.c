@@ -58,6 +58,10 @@ void htmlgen_env_parse_unknown(htmlgen _q,
     unsigned int token_index = 0;
     unsigned int n = 0;
     unsigned int failsafe = 30;
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
     while (!token_found && _q->buffer_size > 0) {
         failsafe--;
         if (!failsafe) {
@@ -68,12 +72,6 @@ void htmlgen_env_parse_unknown(htmlgen _q,
             exit(1);
         }
         printf("searching for '%s'\n", escape_token.token);
-        //usleep(100000);
-        // fill buffer
-        htmlgen_buffer_produce(_q);
-
-        printf("*******************\n");
-        printf("buffer : %s\n", _q->buffer);
 
         token_found = htmlgen_get_token(_q, &escape_token, 1, &token_index, &n);
 
@@ -82,6 +80,9 @@ void htmlgen_env_parse_unknown(htmlgen _q,
 
         // consume buffer
         htmlgen_buffer_consume(_q, n);
+
+        // fill buffer
+        htmlgen_buffer_produce(_q);
     }
 
     if (token_found) {
@@ -221,6 +222,9 @@ void htmlgen_env_parse_list(htmlgen _q, char * _end)
     unsigned int token_index = 0;
     unsigned int n = 0;
 
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
     while (!escape_token_found && _q->buffer_size > 0) {
         token_found = htmlgen_get_token(_q,
                                         token_tab,
@@ -249,6 +253,9 @@ void htmlgen_env_parse_list(htmlgen _q, char * _end)
             // clear buffer
             htmlgen_buffer_consume_all(_q);
         }
+
+        // fill buffer
+        htmlgen_buffer_produce(_q);
     }
 
     if (escape_token_found) {
@@ -267,10 +274,6 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
                                      int _inline)
 {
     printf("************ adding equation %u\n", _q->equation_id);
-    if (_q->equation_id == 33) {
-        printf("buffer : %s\n", _q->buffer);
-        exit(1);
-    }
 
     //
     char filename_eqn[64] = "";
@@ -313,10 +316,10 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
     unsigned int token_index = 0;
     unsigned int n = 0;
 
+    // fill buffer
+    htmlgen_buffer_produce(_q);
     while (!escape_token_found && _q->buffer_size > 0) {
         //printf("searching for '%s'...\n", _escape);
-        // fill buffer
-        htmlgen_buffer_produce(_q);
 
         token_found = htmlgen_get_token(_q,
                                         token_tab,
@@ -341,6 +344,9 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
 
         // consume buffer
         htmlgen_buffer_consume(_q, n);
+
+        // fill buffer
+        htmlgen_buffer_produce(_q);
     }
 
     if (escape_token_found) {
