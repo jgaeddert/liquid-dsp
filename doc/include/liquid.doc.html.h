@@ -35,14 +35,17 @@ struct htmlgen_s {
     char filename_tex[128];
     char filename_html[128];
     char filename_eqns[128];
+    char filename_figs[128];
 
     // file pointers
     FILE * fid_tex;
     FILE * fid_html;
     FILE * fid_eqns;
+    FILE * fid_figs;
 
     // counters
     unsigned int equation_id;
+    unsigned int figure_id;
     unsigned int chapter;
     unsigned int section;
     unsigned int subsection;
@@ -51,18 +54,6 @@ struct htmlgen_s {
     //
     char buffer[HTMLGEN_BUFFER_LENGTH+1];
     unsigned int buffer_size;     // number of elements in buffer
-
-    // list of tokens to escape mode
-
-    // mode
-    enum {
-        HTMLGEN_ENV_NONE=0,
-        HTMLGEN_ENV_FIGURE,
-        HTMLGEN_ENV_TABULAR,
-        HTMLGEN_ENV_ENUMERATE,
-        HTMLGEN_ENV_ITEMIZE,
-        HTMLGEN_ENV_VERBATIM
-    } environment_mode;
 };
 
 // doc-html-gen function
@@ -89,6 +80,14 @@ void htmlgen_destroy(htmlgen _q);
 // html output
 void htmlgen_html_write_header(htmlgen _q);
 void htmlgen_html_write_footer(htmlgen _q);
+
+// equations output
+void htmlgen_eqns_write_header(htmlgen _q);
+void htmlgen_eqns_write_footer(htmlgen _q);
+
+// figures output
+void htmlgen_figs_write_header(htmlgen _q);
+void htmlgen_figs_write_footer(htmlgen _q);
 
 // add equation from string
 void htmlgen_add_equation_string(htmlgen _q,

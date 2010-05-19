@@ -72,27 +72,12 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     // open files for reading/writing
     htmlgen_open_files(q);
 
-    // html: write header
+    // write headers
     htmlgen_html_write_header(q);
+    htmlgen_eqns_write_header(q);
+    htmlgen_figs_write_header(q);
+
     fprintf(q->fid_html,"<h1>liquid documentation</h1>\n");
-
-    // equations file
-    fprintf(q->fid_eqns,"%%\n");
-    fprintf(q->fid_eqns,"%% %s : auto-generated file (do not edit)\n", q->filename_eqns);
-    fprintf(q->fid_eqns,"%%\n");
-    fprintf(q->fid_eqns,"\\documentclass{article} \n");
-    fprintf(q->fid_eqns,"\\usepackage{amsmath}\n");
-    fprintf(q->fid_eqns,"\\usepackage{amsthm}\n");
-    fprintf(q->fid_eqns,"\\usepackage{amssymb}\n");
-    fprintf(q->fid_eqns,"\\usepackage{bm}\n");
-    fprintf(q->fid_eqns,"\\newcommand{\\sinc}{\\textup{sinc}}\n");
-    fprintf(q->fid_eqns,"\\renewcommand{\\vec}[1]{\\boldsymbol{#1}}\n");
-    fprintf(q->fid_eqns,"\\newcommand{\\ord}{\\mathcal{O}}\n");
-    fprintf(q->fid_eqns,"\\newcommand{\\liquid}{{\\it liquid}}\n");
-    fprintf(q->fid_eqns,"\\newcommand{\\liquidfpm}{{\\it liquid-fpm}}\n");
-
-    fprintf(q->fid_eqns,"\\pagestyle{empty} \n");
-    fprintf(q->fid_eqns,"\\begin{document} \n");
 
     //char filename_eqn[256];
     //sprintf(filename_eqn,"html/eqn/eqn%.4u.tex", q->equation_id);
@@ -122,8 +107,10 @@ void htmlgen_parse_latex_file(char * _filename_tex,
     // write footer
     fprintf(q->fid_eqns,"\\end{document}\n");
 
-    // write html footer
+    // write footers
     htmlgen_html_write_footer(q);
+    htmlgen_eqns_write_footer(q);
+    htmlgen_figs_write_footer(q);
 
     // close files
     htmlgen_close_files(q);
@@ -143,13 +130,11 @@ htmlgen htmlgen_create(char * _filename_tex,
 
     // set counters
     q->equation_id = 1;
+    q->figure_id = 1;
     q->chapter = 0;
     q->section = 0;
     q->subsection = 0;
     q->subsubsection = 0;
-
-    // set environment mode to NONE
-    q->environment_mode = HTMLGEN_ENV_NONE;
 
     q->buffer_size = 0;
 
@@ -157,6 +142,7 @@ htmlgen htmlgen_create(char * _filename_tex,
     strncpy(q->filename_tex,  _filename_tex,  128);
     strncpy(q->filename_html, _filename_html, 128);
     strncpy(q->filename_eqns, _filename_eqns, 128);
+    strcpy(q->filename_figs, "html/fig/figures.tex\0");
 
     return q;
 }
@@ -167,6 +153,7 @@ void htmlgen_open_files(htmlgen _q)
     _q->fid_tex  = fopen(_q->filename_tex, "r");
     _q->fid_html = fopen(_q->filename_html,"w");
     _q->fid_eqns = fopen(_q->filename_eqns,"w");
+    _q->fid_figs = fopen(_q->filename_figs,"w");
 
     // validate files opened properly
     if (!_q->fid_tex) {
@@ -178,6 +165,9 @@ void htmlgen_open_files(htmlgen _q)
     } else  if (!_q->fid_eqns) {
         fprintf(stderr,"error, could not open '%s' for writing\n", _q->filename_eqns);
         exit(1);
+    } else  if (!_q->fid_figs) {
+        fprintf(stderr,"error, could not open '%s' for writing\n", _q->filename_figs);
+        exit(1);
     }
 }
 
@@ -187,6 +177,7 @@ void htmlgen_close_files(htmlgen _q)
     fclose(_q->fid_tex);
     fclose(_q->fid_html);
     fclose(_q->fid_eqns);
+    fclose(_q->fid_figs);
 }
 
 void htmlgen_destroy(htmlgen _q)
@@ -247,6 +238,88 @@ void htmlgen_html_write_footer(htmlgen _q)
     fprintf(_q->fid_html,"    <p>Last updated: <em> TODO : add date/time here </em></p>\n");
     fprintf(_q->fid_html,"</body>\n");
     fprintf(_q->fid_html,"</html>\n");
+}
+
+// write output equations header
+void htmlgen_eqns_write_header(htmlgen _q)
+{
+    // equations file
+    fprintf(_q->fid_eqns,"%%\n");
+    fprintf(_q->fid_eqns,"%% %s : auto-generated file (do not edit)\n", _q->filename_eqns);
+    fprintf(_q->fid_eqns,"%%\n");
+    fprintf(_q->fid_eqns,"\\documentclass{article} \n");
+    fprintf(_q->fid_eqns,"\\usepackage{amsmath}\n");
+    fprintf(_q->fid_eqns,"\\usepackage{amsthm}\n");
+    fprintf(_q->fid_eqns,"\\usepackage{amssymb}\n");
+    fprintf(_q->fid_eqns,"\\usepackage{bm}\n");
+    fprintf(_q->fid_eqns,"\\newcommand{\\sinc}{\\textup{sinc}}\n");
+    fprintf(_q->fid_eqns,"\\renewcommand{\\vec}[1]{\\boldsymbol{#1}}\n");
+    fprintf(_q->fid_eqns,"\\newcommand{\\ord}{\\mathcal{O}}\n");
+    fprintf(_q->fid_eqns,"\\newcommand{\\liquid}{{\\it liquid}}\n");
+    fprintf(_q->fid_eqns,"\\newcommand{\\liquidfpm}{{\\it liquid-fpm}}\n");
+
+    fprintf(_q->fid_eqns,"\\pagestyle{empty} \n");
+    fprintf(_q->fid_eqns,"\\begin{document} \n");
+}
+
+// write output equations footer
+void htmlgen_eqns_write_footer(htmlgen _q)
+{
+    // add dummy equation to ensure document contains some content
+    fprintf(_q->fid_eqns,"\\newpage\n");
+    fprintf(_q->fid_eqns,"\\[ dummy equation\\]\n");
+
+    fprintf(_q->fid_eqns,"\\end{document}\n");
+}
+
+// write output figures header
+void htmlgen_figs_write_header(htmlgen _q)
+{
+    // figures file
+    fprintf(_q->fid_figs,"%%\n");
+    fprintf(_q->fid_figs,"%% %s : auto-generated file (do not edit)\n", _q->filename_figs);
+    fprintf(_q->fid_figs,"%%\n");
+    fprintf(_q->fid_figs,"\\documentclass{article} \n");
+    fprintf(_q->fid_figs,"\\usepackage{amsmath}\n");
+    fprintf(_q->fid_figs,"\\usepackage{amsthm}\n");
+    fprintf(_q->fid_figs,"\\usepackage{amssymb}\n");
+    fprintf(_q->fid_figs,"\\usepackage{bm}\n");
+    fprintf(_q->fid_figs,"\\newcommand{\\sinc}{\\textup{sinc}}\n");
+    fprintf(_q->fid_figs,"\\renewcommand{\\vec}[1]{\\boldsymbol{#1}}\n");
+    fprintf(_q->fid_figs,"\\newcommand{\\ord}{\\mathcal{O}}\n");
+    fprintf(_q->fid_figs,"\\newcommand{\\liquid}{{\\it liquid}}\n");
+    fprintf(_q->fid_figs,"\\newcommand{\\liquidfpm}{{\\it liquid-fpm}}\n");
+
+    // figures packages
+    fprintf(_q->fid_figs,"\\ifx\\pdfoutput\\undefined\n");
+    fprintf(_q->fid_figs,"\\usepackage{graphicx}\n");
+    fprintf(_q->fid_figs,"\\else\n");
+    fprintf(_q->fid_figs,"\\usepackage[pdftex]{graphicx}\n");
+    fprintf(_q->fid_figs,"\\fi\n");
+    fprintf(_q->fid_figs,"\\usepackage{epsfig}\n");
+    fprintf(_q->fid_figs,"\\usepackage{epstopdf}\n");
+    fprintf(_q->fid_figs,"\\usepackage{colortbl}\n");
+    fprintf(_q->fid_figs,"\\usepackage{color}\n");
+    fprintf(_q->fid_figs,"\\usepackage{subfigure}\n");
+    fprintf(_q->fid_figs,"\\usepackage{amsmath}\n");
+    fprintf(_q->fid_figs,"\\usepackage[small,bf]{caption}\n");
+    fprintf(_q->fid_figs,"\\setcaptionwidth{15cm}\n");
+    fprintf(_q->fid_figs,"\\setlength{\\belowcaptionskip}{0.5cm}\n");
+
+    fprintf(_q->fid_figs,"\\pagestyle{empty} \n");
+    fprintf(_q->fid_figs,"\\begin{document} \n");
+}
+
+// write output figures header
+void htmlgen_figs_write_footer(htmlgen _q)
+{
+    // add dummy figure to ensure document contains some content
+    fprintf(_q->fid_figs,"\\newpage\n");
+    fprintf(_q->fid_figs,"\\begin{figure}n");
+    fprintf(_q->fid_figs,"dummy figure\n");
+    fprintf(_q->fid_figs,"\\end{figure}\n");
+
+    fprintf(_q->fid_figs,"\\end{document}\n");
 }
 
 // read from file into buffer

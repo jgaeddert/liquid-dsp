@@ -8,7 +8,7 @@
 #include <string.h>
 #include <getopt.h>
 
-#include "liquid.doc.h"
+#include "liquid.doc.html.h"
 
 // print usage/help message
 void usage()

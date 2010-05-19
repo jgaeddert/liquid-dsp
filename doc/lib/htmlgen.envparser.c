@@ -178,7 +178,7 @@ void htmlgen_env_parse_verbatim(htmlgen _q)
         // consume buffer through token
         htmlgen_buffer_consume(_q, strlen(escape) );
     } else if (feof(_q->fid_tex) ) {
-        fprintf(stderr,"error: htmlgen_env_parse_unknown(), premature EOF\n");
+        fprintf(stderr,"error: htmlgen_env_parse_verbatim(), premature EOF\n");
         exit(1);
     }
 
@@ -191,9 +191,50 @@ void htmlgen_env_parse_verbatim(htmlgen _q)
 void htmlgen_env_parse_figure(htmlgen _q)
 {
     printf("beginning figure environment parser...\n");
+    char escape[] = "\\end{figure}";
 
-    // read buffer until \end{figure} tag is found
+    // start environment
+    fprintf(_q->fid_html,"<img src=\"html/fig/fig%u.png\" />\n", _q->figure_id);
+    _q->figure_id++;
 
+    fprintf(_q->fid_figs,"\\newpage\n");
+    fprintf(_q->fid_figs,"\\begin{figure}\n");
+
+    // configure escape token
+    htmlgen_token_s escape_token = {escape, NULL};
+
+    // read tokens until escape token is found
+    int token_found = 0;
+    unsigned int token_index = 0;
+    unsigned int n = 0;
+
+    // fill buffer
+    htmlgen_buffer_produce(_q);
+
+    while (!token_found && _q->buffer_size > 0) {
+        //printf("searching for '%s'\n", escape_token.token);
+
+        token_found = htmlgen_get_token(_q, &escape_token, 1, &token_index, &n);
+
+        htmlgen_buffer_dump(_q, _q->fid_figs, n);
+        htmlgen_buffer_dump(_q, stdout, n);
+
+        // consume buffer
+        htmlgen_buffer_consume(_q, n);
+
+        // fill buffer
+        htmlgen_buffer_produce(_q);
+    }
+
+    if (token_found) {
+        // consume buffer through token
+        htmlgen_buffer_consume(_q, strlen(escape) );
+    } else if (feof(_q->fid_tex) ) {
+        fprintf(stderr,"error: htmlgen_env_parse_figure(), premature EOF\n");
+        exit(1);
+    }
+
+    fprintf(_q->fid_figs,"\\end{figure}\n");
     printf("ending figure environment parser.\n");
 }
 

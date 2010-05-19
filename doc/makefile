@@ -190,8 +190,9 @@ $(html_figures) : %.png : %.pdf
 src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
 
 # html index file, equations makefile
-html/index.html	\
-html/eqn/equations.tex : src/doc-html-gen liquid.tex $(html-dirs)
+html/index.html		\
+html/eqn/equations.tex	\
+html/fig/figures.tex	: src/doc-html-gen liquid.tex $(html-dirs)
 	#./$< -i scripts/htmlgen_test.tex
 	./$< -i liquid.tex
 
@@ -203,14 +204,21 @@ html/eqn/.equations : html/eqn/equations.tex $(html-dirs)
 	dvipng -q -T tight -x1200 -z 9 -bg Transparent -o html/eqn/eqn%d.png html/eqn/equations.dvi
 	touch html/eqn/.equations
 
+# generate figures
+html-figures : html/fig/.figures $(html-dirs)
+
+html/fig/.figures : html/fig/figures.tex $(html-dirs)
+	latex -interaction=batchmode -output-format=dvi -output-directory=html/fig html/fig/figures.tex
+	dvipng -q -T tight -x1200 -z 9 -bg Transparent -o html/fig/fig%d.png html/fig/figures.dvi
+	touch html/fig/.figures
+
 # html main target TODO : add $(html_figures) as dependency
-html: html/index.html html-equations
+html: html/index.html html-equations html-figures
 
 # clean html files
 clean-html:
 	$(RM) src/doc-html-gen
 	$(RM) -r html
-	#$(RM) $(html_figures)
 
 ##
 ## OTHER
