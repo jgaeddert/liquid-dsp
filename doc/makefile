@@ -210,7 +210,6 @@ html: html/index.html html-equations
 clean-html:
 	$(RM) src/doc-html-gen
 	$(RM) -r html
-	$(RM) figures-html.mk
 	#$(RM) $(html_figures)
 
 ##

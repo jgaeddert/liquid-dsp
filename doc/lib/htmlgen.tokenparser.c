@@ -338,10 +338,6 @@ void htmlgen_token_parse_input(htmlgen _q)
     if (strncmp(filename,"listings/",8)==0) {
         printf("****** listing\n");
     } else {
-        // put input file on hold
-        printf("****************************\n");
-        printf("buffer:%s\n\n", _q->buffer);
-
         // rewind current file by buffer size
         printf("rewinding input file by %u\n", _q->buffer_size);
         fseek(_q->fid_tex, -(int)(_q->buffer_size), SEEK_CUR);
@@ -362,22 +358,11 @@ void htmlgen_token_parse_input(htmlgen _q)
         }
 
         // parse input file
-#if 1
-        while (!feof(_q->fid_tex)) {
+        do {
+            htmlgen_buffer_produce(_q);
             htmlgen_parse(_q);
-            /*
-            if (feof(_q->fid_tex)) {
-                printf("tokenparser reached EOF\n");
-            } else {
-                printf("not yet at EOF\n");
-            }
-            */
-        }
-#else
-        unsigned int i;
-        for (i=0; i<40; i++)
-            htmlgen_parse(_q);
-#endif
+        } while (_q->buffer_size > 0);
+        //} while (_q->buffer_size > 0 && !feof(_q->fid_tex));
 
         // close input file
         printf("closing input file '%s'\n", filename);
@@ -390,10 +375,7 @@ void htmlgen_token_parse_input(htmlgen _q)
         _q->fid_tex = fid_tmp;
 
         // fill buffer
-        printf("****************************\n");
-        printf("filling buffer...\n");
         htmlgen_buffer_produce(_q);
-        printf("buffer : %s\n", _q->buffer);
     }
 }
 

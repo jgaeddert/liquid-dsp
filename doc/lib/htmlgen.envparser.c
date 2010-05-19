@@ -57,21 +57,12 @@ void htmlgen_env_parse_unknown(htmlgen _q,
     int token_found = 0;
     unsigned int token_index = 0;
     unsigned int n = 0;
-    unsigned int failsafe = 30;
 
     // fill buffer
     htmlgen_buffer_produce(_q);
 
     while (!token_found && _q->buffer_size > 0) {
-        failsafe--;
-        if (!failsafe) {
-            // die gracefully
-            printf("failsafe limit reached\n");
-            htmlgen_close_files(_q);
-            htmlgen_destroy(_q);
-            exit(1);
-        }
-        printf("searching for '%s'\n", escape_token.token);
+        //printf("searching for '%s'\n", escape_token.token);
 
         token_found = htmlgen_get_token(_q, &escape_token, 1, &token_index, &n);
 
@@ -299,14 +290,10 @@ void htmlgen_env_parse_equation_help(htmlgen _q,
                                         HTMLGEN_ENV_EQUATION_NUM_TOKENS,
                                         &token_index,
                                         &n);
-        printf("n = %u\n", n);
-
         if (token_found) {
             // check for escape token, e.g. '\end{itemize}'
-            if (token_index == 0) {
-                printf("escape token found! ('%s')\n", _escape);
+            if (token_index == 0)
                 escape_token_found = 1;
-            }
 
             // execute token-specific function
             token_tab[token_index].func(_q);

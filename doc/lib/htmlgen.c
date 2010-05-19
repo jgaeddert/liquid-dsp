@@ -266,10 +266,6 @@ void htmlgen_buffer_produce(htmlgen _q)
         usleep(10000);
     }
 
-    if (feof(_q->fid_tex)) {
-        printf("htmlgen_buffer_produce() : eof!\n");
-    }
-
     _q->buffer_size += k;
 
     // append '\0' to end of buffer
@@ -421,10 +417,8 @@ void htmlgen_parse(htmlgen _q)
 {
     // parse file
     
-    printf("parse: buffer produce\n");
     htmlgen_buffer_produce(_q); // fill buffer
-    //printf("%s", _q->buffer);
-    //printf("\n\n");
+
     unsigned int token_index, n;
 
     // look for next token
@@ -436,7 +430,7 @@ void htmlgen_parse(htmlgen _q)
 
     // TODO : check for EOF
     if (token_found) {
-        printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
+        //printf("next token in buffer at %d is '%s'\n", n, htmlgen_token_tab[token_index].token);
 
         // write output to html file up to token
         htmlgen_buffer_dump(_q, _q->fid_html, n);
@@ -453,7 +447,7 @@ void htmlgen_parse(htmlgen _q)
         // execute token-specific function
         htmlgen_token_tab[token_index].func(_q);
     } else {
-        printf("no token found\n");
+        //printf("no token found\n");
 
         // write all of buffer to html file
         htmlgen_buffer_dump_all(_q, _q->fid_html);
