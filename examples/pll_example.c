@@ -63,8 +63,8 @@ int main() {
     a[1] = -t1;
     a[2] =  t1/2.0f;
 #endif
-    iir_filter_rrrf H = iir_filter_rrrf_create(b,3,a,3);
-    iir_filter_rrrf_print(H);
+    iirfilt_rrrf H = iirfilt_rrrf_create(b,3,a,3);
+    iirfilt_rrrf_print(H);
 
     unsigned int i;
 
@@ -90,13 +90,13 @@ int main() {
             printf("e(%3u) = %12.8f;\n", i, e);
 
         // filter error
-        iir_filter_rrrf_execute(H,e,&phi_hat);
+        iirfilt_rrrf_execute(H,e,&phi_hat);
 
         phi[i] = phi_hat;
     }
 
     // destroy filter
-    iir_filter_rrrf_destroy(H);
+    iirfilt_rrrf_destroy(H);
 
     // open output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

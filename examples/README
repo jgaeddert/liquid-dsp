@@ -194,12 +194,14 @@ hilbert_interp_example.c
 
     SEE ALSO: hilbert_decim_example.c
 
-iir_filter_crcf_example.c
+iirfilt_crcf_example.c
     Complex infinite impulse response filter example. Demonstrates the
-    functionality of iir_filter by designing a low-order prototype (e.g.
+    functionality of iirfilt by designing a low-order prototype (e.g.
     Butterworth) and using it to filter a noisy signal.  The filter
     coefficients are real, but the input and output arrays are complex.  The
     filter order and cutoff frequency are specified at the beginning.
+
+iirqmfb_...
 
 iirdes_analog_example.c *
     Tests infinite impulse reponse (IIR) analog filter design. While this
@@ -210,13 +212,13 @@ iirdes_analog_example.c *
     written to a file.
 
     SEE ALSO: iirdes_example.c
-              iir_filter_crcf_example.c
+              iirfilt_crcf_example.c
 
 iirdes_example.c *
     Tests infinite impulse reponse (IIR) digital filter design.
 
     SEE ALSO: iirdes_analog_example.c
-              iir_filter_crcf_example.c
+              iirfilt_crcf_example.c
 
 iirqmfb_crcf_example.c
 

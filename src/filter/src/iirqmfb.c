@@ -34,7 +34,7 @@
 //  TO              output data type
 //  TC              coefficient data type
 //  TI              input data type
-//  IIR_FILTER()    iir filter macro
+//  IIRFILT()    iir filter macro
 //  PRINTVAL()      print macro
 
 struct IIRQMFB(_s) {
@@ -47,8 +47,8 @@ struct IIRQMFB(_s) {
     unsigned int r;     // order % 2
     unsigned int L;     // (order-r)/2
 
-    IIR_FILTER() A0;    // all-pass filter (lower branch)
-    IIR_FILTER() A1;    // all-pass filter (upper branch)
+    IIRFILT() A0;    // all-pass filter (lower branch)
+    IIRFILT() A1;    // all-pass filter (upper branch)
 
     TI v;               // delay element
 };
@@ -126,8 +126,8 @@ IIRQMFB() IIRQMFB(_create)(unsigned int _order,
     IIRQMFB(_allpass_dzpk2sosf)(q->order, zd, pd,
                                 B0, A0,
                                 B1, A1);
-    q->A0 = IIR_FILTER(_create_sos)(B0, A0, order_A0);
-    q->A1 = IIR_FILTER(_create_sos)(B1, A1, order_A1);
+    q->A0 = IIRFILT(_create_sos)(B0, A0, order_A0);
+    q->A1 = IIRFILT(_create_sos)(B1, A1, order_A1);
 
     // clear the object's internal state
     IIRQMFB(_clear)(q);
@@ -146,8 +146,8 @@ IIRQMFB() IIRQMFB(_recreate)(IIRQMFB() _q,
 
 void IIRQMFB(_destroy)(IIRQMFB() _q)
 {
-    IIR_FILTER(_destroy)(_q->A0);
-    IIR_FILTER(_destroy)(_q->A1);
+    IIRFILT(_destroy)(_q->A0);
+    IIRFILT(_destroy)(_q->A1);
     free(_q);
 }
 
@@ -156,14 +156,14 @@ void IIRQMFB(_print)(IIRQMFB() _q)
     printf("iir quadrature mirror filterbank (%s):\n", 
            _q->type == LIQUID_QMFB_ANALYZER ? "analysis" : "synthesis");
     printf("    order   :   %u\n", _q->order);
-    IIR_FILTER(_print)(_q->A0);
-    IIR_FILTER(_print)(_q->A1);
+    IIRFILT(_print)(_q->A0);
+    IIRFILT(_print)(_q->A1);
 }
 
 void IIRQMFB(_clear)(IIRQMFB() _q)
 {
-    IIR_FILTER(_clear)(_q->A0);
-    IIR_FILTER(_clear)(_q->A1);
+    IIRFILT(_clear)(_q->A0);
+    IIRFILT(_clear)(_q->A1);
     _q->v = 0;
 }
 
@@ -188,11 +188,11 @@ void IIRQMFB(_analysis_execute)(IIRQMFB() _q,
 {
     // compute upper branch
     TO t0;
-    IIR_FILTER(_execute)(_q->A0, _x0, &t0);
+    IIRFILT(_execute)(_q->A0, _x0, &t0);
 
     // compute lower branch (delayed input)
     TO t1;
-    IIR_FILTER(_execute)(_q->A1, _q->v, &t1);
+    IIRFILT(_execute)(_q->A1, _q->v, &t1);
     _q->v = _x1;
 
     // compute output
@@ -209,11 +209,11 @@ void IIRQMFB(_synthesis_execute)(IIRQMFB() _q,
     // compute upper branch (delayed output)
     TI t0 = _x0 + _x1;
     *_y0 = _q->v;
-    IIR_FILTER(_execute)(_q->A1, t0, &_q->v);
+    IIRFILT(_execute)(_q->A1, t0, &_q->v);
 
     // compute lower branch
     TI t1 = _x0 - _x1;
-    IIR_FILTER(_execute)(_q->A0, t1, _y1);
+    IIRFILT(_execute)(_q->A0, t1, _y1);
 }
 
 // internal

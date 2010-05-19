@@ -65,8 +65,8 @@ local_t_files	:= 			\
 	firhilb_autotest.h		\
 	firpfb_autotest.h		\
 	iirdes_autotest.h		\
-	iir_filter_rrrf_autotest.h	\
-	iir_filter_crcf_autotest.h	\
+	iirfilt_rrrf_autotest.h		\
+	iirfilt_crcf_autotest.h		\
 	iirfiltsos_rrrf_autotest.h	\
 	interp_autotest.h
 
@@ -83,7 +83,7 @@ local_b_files	:=			\
 	decim_benchmark.h		\
 	firhilb_benchmark.h		\
 	fir_filter_benchmark.h		\
-	iir_filter_benchmark.h		\
+	iirfilt_benchmark.h		\
 	interp_benchmark.h		\
 	qmfb_benchmark.h		\
 	resamp_benchmark.h		\

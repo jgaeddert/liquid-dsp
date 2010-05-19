@@ -63,8 +63,8 @@ local_src	:=			\
 	interleaver_example.c		\
 	iirdes_example.c		\
 	iirdes_analog_example.c		\
+	iirfilt_crcf_example.c		\
 	iirqmfb_crcf_example.c		\
-	iir_filter_crcf_example.c	\
 	interp_crcf_example.c		\
 	itqmfb_crcf_example.c		\
 	itqmfb_rrrf_example.c		\

@@ -18,8 +18,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IIR_FILTER_RRRF_AUTOTEST_H__
-#define __IIR_FILTER_RRRF_AUTOTEST_H__
+#ifndef __IIRFILT_RRRF_AUTOTEST_H__
+#define __IIRFILT_RRRF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -37,7 +37,7 @@ void autotest_impulse_response_order3()
         0.1952621458756350,
         0.0976310729378175};
 
-    iir_filter_rrrf f = iir_filter_rrrf_create(b,3,a,3);
+    iirfilt_rrrf f = iirfilt_rrrf_create(b,3,a,3);
 
     // initialize oracle; expected output (generated with octave)
     float test[15] = {
@@ -65,12 +65,12 @@ void autotest_impulse_response_order3()
     for (i=0; i<15; i++) {
         v = (i==0) ? 1.0f : 0.0f;
 
-        iir_filter_rrrf_execute(f, v, &y);
+        iirfilt_rrrf_execute(f, v, &y);
 
         CONTEND_DELTA(test[i], y, tol);
     }
 
-    iir_filter_rrrf_destroy(f);
+    iirfilt_rrrf_destroy(f);
 }
 
 
@@ -87,7 +87,7 @@ void autotest_step_response_order3()
         0.1952621458756350,
         0.0976310729378175};
 
-    iir_filter_rrrf f = iir_filter_rrrf_create(b,3,a,3);
+    iirfilt_rrrf f = iirfilt_rrrf_create(b,3,a,3);
 
     float test[15] = {
        0.0976310729378175,
@@ -112,13 +112,13 @@ void autotest_step_response_order3()
 
     // hit filter with step, compare output
     for (i=0; i<15; i++) {
-        iir_filter_rrrf_execute(f, 1.0f, &y);
+        iirfilt_rrrf_execute(f, 1.0f, &y);
 
         CONTEND_DELTA(test[i], y, tol );
     }
 
-    iir_filter_rrrf_destroy(f);
+    iirfilt_rrrf_destroy(f);
 }
 
-#endif // __IIR_FILTER_RRRF_AUTOTEST_H__
+#endif // __IIRFILT_RRRF_AUTOTEST_H__
 

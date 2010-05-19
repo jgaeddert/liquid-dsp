@@ -18,14 +18,14 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_IIR_FILTER_RRRF_BENCHMARK_H__
-#define __LIQUID_IIR_FILTER_RRRF_BENCHMARK_H__
+#ifndef __LIQUID_IIRFILT_RRRF_BENCHMARK_H__
+#define __LIQUID_IIRFILT_RRRF_BENCHMARK_H__
 
 #include <sys/resource.h>
 #include "liquid.h"
 
 // Helper function to keep code base small
-void iir_filter_rrrf_bench(
+void iirfilt_rrrf_bench(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations,
@@ -38,7 +38,7 @@ void iir_filter_rrrf_bench(
     *_num_iterations = (*_num_iterations * 16) / _n;
 
     // create filter object
-    iir_filter_rrrf f;
+    iirfilt_rrrf f;
     if (_type == 0) {
         // normal transfer function
         float b[_n], a[_n];
@@ -46,7 +46,7 @@ void iir_filter_rrrf_bench(
             b[i] = 1.0f;
             a[i] = i==0 ? 1.0f : 0.0f;
         }
-        f = iir_filter_rrrf_create(b,_n,a,_n);
+        f = iirfilt_rrrf_create(b,_n,a,_n);
     } else {
         // second-order sections
         unsigned int r = _n % 2;
@@ -63,42 +63,42 @@ void iir_filter_rrrf_bench(
             A[3*i+2] = 0.0f;
         }
 
-        f = iir_filter_rrrf_create_sos(B,A,L+r);
+        f = iirfilt_rrrf_create_sos(B,A,L+r);
     }
 
     // start trials
     float y;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        iir_filter_rrrf_execute(f,1.0f,&y);
-        iir_filter_rrrf_execute(f,1.0f,&y);
-        iir_filter_rrrf_execute(f,1.0f,&y);
-        iir_filter_rrrf_execute(f,1.0f,&y);
+        iirfilt_rrrf_execute(f,1.0f,&y);
+        iirfilt_rrrf_execute(f,1.0f,&y);
+        iirfilt_rrrf_execute(f,1.0f,&y);
+        iirfilt_rrrf_execute(f,1.0f,&y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    iir_filter_rrrf_destroy(f);
+    iirfilt_rrrf_destroy(f);
 
 }
 
-#define IIR_FILTER_RRRF_BENCHMARK_API(N,T)  \
+#define IIRFILT_RRRF_BENCHMARK_API(N,T)  \
 (   struct rusage *_start,                  \
     struct rusage *_finish,                 \
     unsigned long int *_num_iterations)     \
-{ iir_filter_rrrf_bench(_start, _finish, _num_iterations, N, T); }
+{ iirfilt_rrrf_bench(_start, _finish, _num_iterations, N, T); }
 
-void benchmark_iir_filter_rrrf_4        IIR_FILTER_RRRF_BENCHMARK_API(4,    0)
-void benchmark_iir_filter_rrrf_8        IIR_FILTER_RRRF_BENCHMARK_API(8,    0)
-void benchmark_iir_filter_rrrf_16       IIR_FILTER_RRRF_BENCHMARK_API(16,   0)
-void benchmark_iir_filter_rrrf_32       IIR_FILTER_RRRF_BENCHMARK_API(32,   0)
-void benchmark_iir_filter_rrrf_64       IIR_FILTER_RRRF_BENCHMARK_API(64,   0)
+void benchmark_iirfilt_rrrf_4        IIRFILT_RRRF_BENCHMARK_API(4,    0)
+void benchmark_iirfilt_rrrf_8        IIRFILT_RRRF_BENCHMARK_API(8,    0)
+void benchmark_iirfilt_rrrf_16       IIRFILT_RRRF_BENCHMARK_API(16,   0)
+void benchmark_iirfilt_rrrf_32       IIRFILT_RRRF_BENCHMARK_API(32,   0)
+void benchmark_iirfilt_rrrf_64       IIRFILT_RRRF_BENCHMARK_API(64,   0)
 
-void benchmark_iir_filter_rrrf_sos_4    IIR_FILTER_RRRF_BENCHMARK_API(4,    1)
-void benchmark_iir_filter_rrrf_sos_8    IIR_FILTER_RRRF_BENCHMARK_API(8,    1)
-void benchmark_iir_filter_rrrf_sos_16   IIR_FILTER_RRRF_BENCHMARK_API(16,   1)
-void benchmark_iir_filter_rrrf_sos_32   IIR_FILTER_RRRF_BENCHMARK_API(32,   1)
-void benchmark_iir_filter_rrrf_sos_64   IIR_FILTER_RRRF_BENCHMARK_API(64,   1)
+void benchmark_iirfilt_rrrf_sos_4    IIRFILT_RRRF_BENCHMARK_API(4,    1)
+void benchmark_iirfilt_rrrf_sos_8    IIRFILT_RRRF_BENCHMARK_API(8,    1)
+void benchmark_iirfilt_rrrf_sos_16   IIRFILT_RRRF_BENCHMARK_API(16,   1)
+void benchmark_iirfilt_rrrf_sos_32   IIRFILT_RRRF_BENCHMARK_API(32,   1)
+void benchmark_iirfilt_rrrf_sos_64   IIRFILT_RRRF_BENCHMARK_API(64,   1)
 
-#endif // __LIQUID_IIR_FILTER_RRRF_BENCHMARK_H__
+#endif // __LIQUID_IIRFILT_RRRF_BENCHMARK_H__
 

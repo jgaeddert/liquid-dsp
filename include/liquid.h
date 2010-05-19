@@ -1273,9 +1273,9 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 // Infinite impulse response filter
 //
 
-#define IIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(iir_filter_rrrf,name)
-#define IIR_FILTER_MANGLE_CRCF(name)  LIQUID_CONCAT(iir_filter_crcf,name)
-#define IIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(iir_filter_cccf,name)
+#define IIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfilt_rrrf,name)
+#define IIR_FILTER_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfilt_crcf,name)
+#define IIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfilt_cccf,name)
 
 // Macro:
 //   IIR_FILTER : name-mangling macro

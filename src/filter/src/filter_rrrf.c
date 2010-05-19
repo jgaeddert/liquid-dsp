@@ -31,7 +31,7 @@
 #define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_rrrf,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilb,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
-#define IIR_FILTER(name)    LIQUID_CONCAT(iir_filter_rrrf,name)
+#define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
 #define IIRQMFB(name)       LIQUID_CONCAT(iirqmfb_rrrf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_rrrf,name)
@@ -66,7 +66,7 @@
 #include "fir_filter.c"
 #include "firhilb.c"
 #include "firpfb.c"
-#include "iir_filter.c"
+#include "iirfilt.c"
 #include "iirfiltsos.c"
 #include "interp.c"
 #include "iirqmfb.c"

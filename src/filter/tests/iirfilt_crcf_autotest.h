@@ -18,13 +18,13 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IIR_FILTER_CRCF_AUTOTEST_H__
-#define __IIR_FILTER_CRCF_AUTOTEST_H__
+#ifndef __IIRFILT_CRCF_AUTOTEST_H__
+#define __IIRFILT_CRCF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-void autotest_iir_filter_crcf_noise_01()
+void autotest_iirfilt_crcf_noise_01()
 {
     // initialize filter with 2nd-order low-pass butterworth
     float a[3] = { 
@@ -37,7 +37,7 @@ void autotest_iir_filter_crcf_noise_01()
         0.1952621458756350,
         0.0976310729378175};
 
-    iir_filter_crcf f = iir_filter_crcf_create(b,3,a,3);
+    iirfilt_crcf f = iirfilt_crcf_create(b,3,a,3);
 
     // noise signal (input)
     float complex x[32] = {
@@ -85,14 +85,14 @@ void autotest_iir_filter_crcf_noise_01()
 
     // filter noise signal, compare output
     for (i=0; i<32; i++) {
-        iir_filter_crcf_execute(f, x[i], &y);
+        iirfilt_crcf_execute(f, x[i], &y);
 
         CONTEND_DELTA( crealf(test[i]), crealf(y), tol );
         CONTEND_DELTA( cimagf(test[i]), cimagf(y), tol );
     }
 
-    iir_filter_crcf_destroy(f);
+    iirfilt_crcf_destroy(f);
 }
 
-#endif // __IIR_FILTER_CRCF_AUTOTEST_H__
+#endif // __IIRFILT_CRCF_AUTOTEST_H__
 

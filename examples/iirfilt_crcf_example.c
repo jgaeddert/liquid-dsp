@@ -1,8 +1,8 @@
 //
-// iir_filter_crcf_example.c
+// iirfilt_crcf_example.c
 //
 // Complex infinite impulse response filter example. Demonstrates
-// the functionality of iir_filter by designing a low-order
+// the functionality of iirfilt by designing a low-order
 // prototype (e.g. Butterworth) and using it to filter a noisy
 // signal.  The filter coefficients are real, but the input and
 // output arrays are complex.  The filter order and cutoff
@@ -15,7 +15,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "iir_filter_crcf_example.m"
+#define OUTPUT_FILENAME "iirfilt_crcf_example.m"
 
 int main() {
     // options
@@ -51,12 +51,15 @@ int main() {
     iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
 
     // create filter object
-    iir_filter_crcf f = NULL;
+    iirfilt_crcf f = NULL;
     if (format == LIQUID_IIRDES_SOS)
-        f = iir_filter_crcf_create_sos(b,a,L+r);
+        f = iirfilt_crcf_create_sos(b,a,L+r);
     else
-        f = iir_filter_crcf_create(b,h_len, a,h_len);
-    iir_filter_crcf_print(f);
+        f = iirfilt_crcf_create(b,h_len, a,h_len);
+    iirfilt_crcf_print(f);
+
+    // destroy filter object
+    iirfilt_crcf_destroy(f);
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -78,7 +81,7 @@ int main() {
         cawgn(&x,0.1f);
 
         // run filter
-        iir_filter_crcf_execute(f, x, &y);
+        iirfilt_crcf_execute(f, x, &y);
 
         //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x), cimagf(x));
@@ -127,9 +130,6 @@ int main() {
     fprintf(fid,"  grid on;\n");
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
-
-    // destroy filter object
-    iir_filter_crcf_destroy(f);
 
     printf("done.\n");
     return 0;
