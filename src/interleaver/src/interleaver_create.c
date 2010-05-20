@@ -75,12 +75,14 @@ void interleaver_init_block(interleaver _q)
         L >>= 1;
     }
     L = _q->len;
-    //printf("m=%u\n", m);
-    M = 1<<(M/2);   // m ~ sqrt(L)
 
-    //M=2;
+    M = 1<<(M/2);   // M ~ sqrt(L)
+    M--;            // help ensure M is not exactly sqrt(L)
+
     N = L / M;
     N += (L > (M*N)) ? 1 : 0; // ensures m*n >= _q->len
+
+    //printf("len : %u, M=%u N=%u\n", _q->len, M, N);
 
     unsigned int j, m=0,n=0;
     for (i=0; i<L; i++) {
