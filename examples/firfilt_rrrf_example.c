@@ -1,5 +1,5 @@
 //
-// fir_filter_rrrf_example.c
+// firfilt_rrrf_example.c
 //
 
 #include <stdio.h>
@@ -7,7 +7,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "fir_filter_rrrf_example.m"
+#define OUTPUT_FILENAME "firfilt_rrrf_example.m"
 
 int main() {
     // options
@@ -20,11 +20,11 @@ int main() {
     unsigned int i;
     float h[h_len];
     fir_kaiser_window(h_len,fc,slsl,mu,h);
-    fir_filter_rrrf f = fir_filter_rrrf_create(h,h_len);
-    fir_filter_rrrf_print(f);
+    firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
+    firfilt_rrrf_print(f);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
+    fprintf(fid,"%% firfilt_rrrf_example.m: auto-generated file\n\n");
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h_len=%u;\nn=%u;\n", h_len, n);
 
@@ -36,8 +36,8 @@ int main() {
         // generate noise
         x = (i<n) ? randnf()/sqrtf(n/2) : 0.0f;
 
-        fir_filter_rrrf_push(f, x);
-        fir_filter_rrrf_execute(f, &y); 
+        firfilt_rrrf_push(f, x);
+        firfilt_rrrf_execute(f, &y); 
 
         fprintf(fid,"x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
         printf("x(%4u) = %12.4e; y(%4u) = %12.4e;\n", i+1, x, i+1, y);
@@ -56,7 +56,7 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    fir_filter_rrrf_destroy(f);
+    firfilt_rrrf_destroy(f);
 
     printf("done.\n");
     return 0;

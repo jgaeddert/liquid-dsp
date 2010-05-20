@@ -51,7 +51,7 @@ int main() {
     h[0] = 1.0f;
     for (i=1; i<h_len; i++)
         h[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
-    fir_filter_cccf f = fir_filter_cccf_create(h,h_len);
+    firfilt_cccf f = firfilt_cccf_create(h,h_len);
 
     // generate random data signal
     for (i=0; i<n; i++)
@@ -60,8 +60,8 @@ int main() {
 
     // filter data signal through channel
     for (i=0; i<n; i++) {
-        fir_filter_cccf_push(f,d[i]);
-        fir_filter_cccf_execute(f,&y[i]);
+        firfilt_cccf_push(f,d[i]);
+        firfilt_cccf_execute(f,&y[i]);
     }
 
     // run equalizer
@@ -70,12 +70,12 @@ int main() {
     eqrls_cccf_train(eq, w, y, d, ntrain);
 
     // create filter from equalizer output
-    fir_filter_cccf feq = fir_filter_cccf_create(w,p);
+    firfilt_cccf feq = firfilt_cccf_create(w,p);
 
     // run equalizer filter
     for (i=0; i<n; i++) {
-        fir_filter_cccf_push(feq,y[i]);
-        fir_filter_cccf_execute(feq,&d_hat[i]);
+        firfilt_cccf_push(feq,y[i]);
+        firfilt_cccf_execute(feq,&d_hat[i]);
     }
 
     //
@@ -159,8 +159,8 @@ int main() {
     fclose(fid);
     printf("results written to %s.\n",OUTPUT_FILENAME);
 
-    fir_filter_cccf_destroy(f);
+    firfilt_cccf_destroy(f);
     eqrls_cccf_destroy(eq);
-    fir_filter_cccf_destroy(feq);
+    firfilt_cccf_destroy(feq);
     return 0;
 }

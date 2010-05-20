@@ -143,8 +143,8 @@ fft_example.c
               fct_example.c
 
 fir_farrow_rrrf_example.c
-fir_filter_rrrf_example.c
-fir_filter_rrrf_recreate_example.c
+firfilt_rrrf_example.c
+firfilt_rrrf_recreate_example.c
 
 firdes_kaiser_example.c
     This example demonstrates finite impulse response filter design using a

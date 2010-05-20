@@ -118,7 +118,7 @@ int main() {
         printf("h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
         fprintf(fid,"h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
     }
-    fir_filter_cccf fchannel = fir_filter_cccf_create(h,p+1);
+    firfilt_cccf fchannel = firfilt_cccf_create(h,p+1);
 
     float complex x[48];            // data buffer
     float complex y[num_samples];   // framegen output buffer
@@ -169,8 +169,8 @@ int main() {
     // add channel impairments
     n=0;
     for (i=0; i<num_samples; i++) {
-        fir_filter_cccf_push(fchannel,y[i]);
-        fir_filter_cccf_execute(fchannel,&z[i]);
+        firfilt_cccf_push(fchannel,y[i]);
+        firfilt_cccf_execute(fchannel,&z[i]);
 
         nco_mix_up(nco_rx,z[i],&z[i]);
 
@@ -235,7 +235,7 @@ int main() {
     ofdmoqamframe64sync_destroy(fs);
     modem_destroy(mod);
     nco_destroy(nco_rx);
-    fir_filter_cccf_destroy(fchannel);
+    firfilt_cccf_destroy(fchannel);
 
     // destroy simulation data object internals
     modem_destroy(simdata.demod);

@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "fir_filter_rrrf_recreate_example.m"
+#define OUTPUT_FILENAME "firfilt_rrrf_recreate_example.m"
 
 int main() {
     srand(time(NULL));
@@ -27,11 +27,11 @@ int main() {
     float h1[h1_len];
     design_rcos_filter(k,m0,beta0,0,h0);
     design_rcos_filter(k,m1,beta1,0,h1);
-    fir_filter_rrrf f = fir_filter_rrrf_create(h0,h0_len);
-    //fir_filter_rrrf_print(f);
+    firfilt_rrrf f = firfilt_rrrf_create(h0,h0_len);
+    //firfilt_rrrf_print(f);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
+    fprintf(fid,"%% firfilt_rrrf_example.m: auto-generated file\n\n");
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"h0_len=%u;\n", h0_len);
     fprintf(fid,"h1_len=%u;\n", h1_len);
@@ -48,8 +48,8 @@ int main() {
         if ((ix%k)==0)  x = rand()%2 ? 1.0f : -1.0f;
         else            x = 0.0f;
 
-        fir_filter_rrrf_push(f, x);
-        fir_filter_rrrf_execute(f, &y); 
+        firfilt_rrrf_push(f, x);
+        firfilt_rrrf_execute(f, &y); 
 
         ix++;
         iy++;
@@ -59,7 +59,7 @@ int main() {
 
     // recreate filter
     printf("re-creating filter...\n");
-    f = fir_filter_rrrf_recreate(f,h1,h1_len);
+    f = firfilt_rrrf_recreate(f,h1,h1_len);
 
     // push additional inputs to compensate for increased filter delay
     if (h1_len > h0_len) {
@@ -68,7 +68,7 @@ int main() {
             if ((ix%k)==0)  x = rand()%2 ? 1.0f : -1.0f;
             else            x = 0.0f;
             ix++;
-            fir_filter_rrrf_push(f, x);
+            firfilt_rrrf_push(f, x);
             fprintf(fid,"x(%4u) = %12.4e;\n", ix+1, x);
             printf("x(%4u) = %12.4e;\n", ix+1, x);
         }
@@ -79,8 +79,8 @@ int main() {
         if ((ix%k)==0)  x = rand()%2 ? 1.0f : -1.0f;
         else            x = 0.0f;
 
-        fir_filter_rrrf_push(f, x);
-        fir_filter_rrrf_execute(f, &y); 
+        firfilt_rrrf_push(f, x);
+        firfilt_rrrf_execute(f, &y); 
 
         ix++;
         iy++;
@@ -113,7 +113,7 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    fir_filter_rrrf_destroy(f);
+    firfilt_rrrf_destroy(f);
 
     printf("done.\n");
     return 0;

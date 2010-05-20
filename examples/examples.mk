@@ -40,8 +40,8 @@ local_src	:=			\
 	fct_example.c			\
 	fft_example.c			\
 	fir_farrow_rrrf_example.c	\
-	fir_filter_rrrf_example.c	\
-	fir_filter_rrrf_recreate_example.c	\
+	firfilt_rrrf_example.c		\
+	firfilt_rrrf_recreate_example.c	\
 	firdes_kaiser_example.c		\
 	firdespm_example.c		\
 	firpfb_rrrf_example.c		\

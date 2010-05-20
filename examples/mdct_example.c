@@ -63,17 +63,17 @@ int main() {
     // generate basic filter
     float h[h_len];
     fir_kaiser_window(h_len,fc,slsl,mu,h);
-    fir_filter_rrrf f = fir_filter_rrrf_create(h,h_len);
+    firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
 
     // generate random signal (filtered noise)
     for (i=0; i<num_samples; i++) {
         // generate filtered noise
-        fir_filter_rrrf_push(f, randnf());
-        fir_filter_rrrf_execute(f, &x[i]); 
+        firfilt_rrrf_push(f, randnf());
+        firfilt_rrrf_execute(f, &x[i]); 
 
         fprintf(fid,"x(%4u) = %12.4e;", i+1, x[i]);
     }
-    fir_filter_rrrf_destroy(f);
+    firfilt_rrrf_destroy(f);
 
     // run analyzer, accounting for input overlap
     float buffer[2*num_channels];

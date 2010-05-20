@@ -26,7 +26,7 @@ int main() {
     fir_farrow_rrrf f = fir_farrow_rrrf_create(h_len, p, fc, slsl);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% fir_filter_rrrf_example.m: auto-generated file\n\n");
+    fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"m = %u;\n", m);
     fprintf(fid,"h_len = %u;\n", h_len);

@@ -37,7 +37,7 @@ int main() {
     float complex h[64];
     for (i=0; i<64; i++)
         h[64-i-1] = conjf(ofdmframe64_plcp_Lt[i]);
-    fir_filter_cccf xcorr = fir_filter_cccf_create(h,64);
+    firfilt_cccf xcorr = firfilt_cccf_create(h,64);
 
     float complex x[48];    // data buffer
     float complex y[160];   // framegen output buffer
@@ -64,8 +64,8 @@ int main() {
         fprintf(fid,"r0(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r0),   cimagf(r0));
         fprintf(fid,"r1(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r1),   cimagf(r1));
         fprintf(fid,"r2(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r2),   cimagf(r2));
-        fir_filter_cccf_push(xcorr,y[i]);
-        fir_filter_cccf_execute(xcorr,&rxy);
+        firfilt_cccf_push(xcorr,y[i]);
+        firfilt_cccf_execute(xcorr,&rxy);
         fprintf(fid,"rxy(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(rxy), cimagf(rxy));
         n++;
     }
@@ -81,8 +81,8 @@ int main() {
         fprintf(fid,"r0(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r0),   cimagf(r0));
         fprintf(fid,"r1(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r1),   cimagf(r1));
         fprintf(fid,"r2(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r2),   cimagf(r2));
-        fir_filter_cccf_push(xcorr,y[i]);
-        fir_filter_cccf_execute(xcorr,&rxy);
+        firfilt_cccf_push(xcorr,y[i]);
+        firfilt_cccf_execute(xcorr,&rxy);
         fprintf(fid,"rxy(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(rxy), cimagf(rxy));
         n++;
     }
@@ -103,8 +103,8 @@ int main() {
         fprintf(fid,"r0(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r0),   cimagf(r0));
         fprintf(fid,"r1(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r1),   cimagf(r1));
         fprintf(fid,"r2(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(r2),   cimagf(r2));
-        fir_filter_cccf_push(xcorr,y[i]);
-        fir_filter_cccf_execute(xcorr,&rxy);
+        firfilt_cccf_push(xcorr,y[i]);
+        firfilt_cccf_execute(xcorr,&rxy);
         fprintf(fid,"rxy(%3u) = %12.4e + j*%12.4e;\n", n+1, crealf(rxy), cimagf(rxy));
         n++;
     }
@@ -133,7 +133,7 @@ int main() {
     autocorr_cccf_destroy(ac0);
     autocorr_cccf_destroy(ac1);
     autocorr_cccf_destroy(ac2);
-    fir_filter_cccf_destroy(xcorr);
+    firfilt_cccf_destroy(xcorr);
 
     printf("done.\n");
     return 0;

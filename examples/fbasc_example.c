@@ -38,16 +38,16 @@ int main() {
     unsigned int h_len = 55;
     float h[h_len];
     fir_kaiser_window(h_len,0.1f,60.0f,0.0f,h);
-    fir_filter_rrrf q = fir_filter_rrrf_create(h,h_len);
+    firfilt_rrrf q = firfilt_rrrf_create(h,h_len);
     for (i=0; i<num_samples; i++) {
         float noise = 0.1f*randnf();
         float t;
-        fir_filter_rrrf_push(q,noise);
-        fir_filter_rrrf_execute(q,&t);
+        firfilt_rrrf_push(q,noise);
+        firfilt_rrrf_execute(q,&t);
         x[i] = t;
         x[i] *= hamming(i,num_samples);
     }
-    fir_filter_rrrf_destroy(q);
+    firfilt_rrrf_destroy(q);
 #else
     float phi=0.0f;
     float dphi=0.03f;
