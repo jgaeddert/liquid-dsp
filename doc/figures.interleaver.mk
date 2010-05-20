@@ -6,24 +6,30 @@
 
 # local targets
 local_pdffiles :=					\
-	figures.gen/interleaver_example1.pdf		\
-	figures.gen/interleaver_example2.pdf
+	figures.gen/interleaver_scatterplot_i0.pdf	\
+	figures.gen/interleaver_scatterplot_i1.pdf	\
+	figures.gen/interleaver_scatterplot_i2.pdf	\
+	figures.gen/interleaver_scatterplot_i3.pdf
 
 local_gnufiles := $(patsubst %.pdf,%.gnu,$(local_pdffiles))
 local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 
 ##
-## interleaver
+## interleaver scatterplot
 ## 
 src/interleaver_scatterplot : src/interleaver_scatterplot.c $(lib_objects)
 
-# example 1
-figures.gen/interleaver_example1.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_example1.gnu -n8 -t sequence
+figures.gen/interleaver_scatterplot_i0.gnu : src/interleaver_scatterplot
+	./$< -f figures.gen/interleaver_scatterplot_i0.gnu -n64 -t sequence -i0
 
-# example 2
-figures.gen/interleaver_example2.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_example2.gnu -n64 -t sequence
+figures.gen/interleaver_scatterplot_i1.gnu : src/interleaver_scatterplot
+	./$< -f figures.gen/interleaver_scatterplot_i1.gnu -n64 -t sequence -i1
+
+figures.gen/interleaver_scatterplot_i2.gnu : src/interleaver_scatterplot
+	./$< -f figures.gen/interleaver_scatterplot_i2.gnu -n64 -t sequence -i2
+
+figures.gen/interleaver_scatterplot_i3.gnu : src/interleaver_scatterplot
+	./$< -f figures.gen/interleaver_scatterplot_i3.gnu -n64 -t sequence -i3
 
 ##
 ## target collection

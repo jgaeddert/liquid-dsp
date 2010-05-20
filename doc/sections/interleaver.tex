@@ -6,16 +6,35 @@
 \label{module:interleaver}
 bit- and symbol-level
 
-% interleaver scatterplot
+%-------------------- FIGURE: interleaver scatterplot --------------------
 \begin{figure}
 \centering
-\subfigure[$n=8$ bytes] {
-  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.47\textwidth]{figures.gen/interleaver_example1}
+\mbox{
+  \subfigure[$i=0$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i0}
+      \label{fig:interleaver:scatterplot:0}
+    } \quad
+  \subfigure[$i=1$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i1}
+      \label{fig:interleaver:scatterplot:1}
+    } \quad
 }
-\subfigure[$n=64$ bytes] {
-  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.47\textwidth]{figures.gen/interleaver_example2}
+\mbox{
+  \subfigure[$i=2$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i2}
+      \label{fig:interleaver:scatterplot:2}
+    } \quad
+  \subfigure[$i=3$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i3}
+      \label{fig:interleaver:scatterplot:3}
+    } \quad
 }
-\caption{{\tt interleaver} demonstration}
+\caption{{\tt interleaver} demonstration of a 64-byte (512-bit) sequence with
+increasing number of iterations (interleaving depth)}
 \label{fig:module:interleaver:scatterplot}
 \end{figure}
 
