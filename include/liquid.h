@@ -1273,44 +1273,44 @@ LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 // Infinite impulse response filter
 //
 
-#define IIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfilt_rrrf,name)
-#define IIR_FILTER_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfilt_crcf,name)
-#define IIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfilt_cccf,name)
+#define IIRFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(iirfilt_rrrf,name)
+#define IIRFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(iirfilt_crcf,name)
+#define IIRFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(iirfilt_cccf,name)
 
 // Macro:
-//   IIR_FILTER : name-mangling macro
+//   IIRFILT : name-mangling macro
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER,TO,TC,TI)       \
-typedef struct IIR_FILTER(_s) * IIR_FILTER();                   \
-IIR_FILTER() IIR_FILTER(_create)(TC * _b,                       \
-                                 unsigned int _nb,              \
-                                 TC * _a,                       \
-                                 unsigned int _na);             \
-IIR_FILTER() IIR_FILTER(_create_sos)(TC * _B,                   \
-                                     TC * _A,                   \
-                                     unsigned int _n);          \
-void IIR_FILTER(_destroy)(IIR_FILTER() _f);                     \
-void IIR_FILTER(_print)(IIR_FILTER() _f);                       \
-void IIR_FILTER(_clear)(IIR_FILTER() _f);                       \
-void IIR_FILTER(_execute)(IIR_FILTER() _f, TI _x, TO *_y);      \
-unsigned int IIR_FILTER(_get_length)(IIR_FILTER() _f);
+#define LIQUID_IIRFILT_DEFINE_API(IIRFILT,TO,TC,TI)             \
+typedef struct IIRFILT(_s) * IIRFILT();                         \
+IIRFILT() IIRFILT(_create)(TC * _b,                             \
+                           unsigned int _nb,                    \
+                           TC * _a,                             \
+                           unsigned int _na);                   \
+IIRFILT() IIRFILT(_create_sos)(TC * _B,                         \
+                               TC * _A,                         \
+                               unsigned int _nsos);             \
+void IIRFILT(_destroy)(IIRFILT() _f);                           \
+void IIRFILT(_print)(IIRFILT() _f);                             \
+void IIRFILT(_clear)(IIRFILT() _f);                             \
+void IIRFILT(_execute)(IIRFILT() _f, TI _x, TO *_y);            \
+unsigned int IIRFILT(_get_length)(IIRFILT() _f);
 
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_RRRF,
-                             float,
-                             float,
-                             float)
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
 
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CRCF,
-                             liquid_float_complex,
-                             float,
-                             liquid_float_complex)
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
 
-LIQUID_IIR_FILTER_DEFINE_API(IIR_FILTER_MANGLE_CCCF,
-                             liquid_float_complex,
-                             liquid_float_complex,
-                             liquid_float_complex)
+LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
 
 
 //

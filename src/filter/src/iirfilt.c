@@ -36,30 +36,32 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
-#define LIQUID_IIRFILT_USE_DOTPROD   0
+// use structured dot product? 0:no, 1:yes
+#define LIQUID_IIRFILT_USE_DOTPROD   (0)
 
 struct IIRFILT(_s) {
-    TC * b;         // feedforward coefficients
-    TC * a;         // feedback coefficients
-    TI * v;         // internal filter state
-    unsigned int n; // filter length
+    TC * b;             // numerator (feed-forward coefficients)
+    TC * a;             // denominator (feed-back coefficients)
+    TI * v;             // internal filter state (buffer)
+    unsigned int n;     // filter length (order+1)
 
-    unsigned int nb;
-    unsigned int na;
+    unsigned int nb;    // numerator length
+    unsigned int na;    // denominator length
 
+    // filter structure type
     enum {
         IIRFILT_TYPE_NORM=0,
         IIRFILT_TYPE_SOS
     } type;
 
 #if LIQUID_IIRFILT_USE_DOTPROD
-    DOTPROD() dpa;
-    DOTPROD() dpb;
+    DOTPROD() dpb;      // numerator dot product
+    DOTPROD() dpa;      // denominator dot product
 #endif
 
     // second-order sections 
-    IIRFILTSOS() * fsos;    // second-order sections filters
-    unsigned int L;         // number of second-order sections
+    IIRFILTSOS() * qsos;    // second-order sections filters
+    unsigned int nsos;      // number of second-order sections
 };
 
 // create iirfilt (infinite impulse response filter) object
@@ -72,78 +74,106 @@ IIRFILT() IIRFILT(_create)(TC * _b,
                            TC * _a,
                            unsigned int _na)
 {
-    IIRFILT() f = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
-    f->nb = _nb;
-    f->na = _na;
-    f->n = (f->na > f->nb) ? f->na : f->nb;
-    f->type = IIRFILT_TYPE_NORM;
+    // validate input
+    if (_nb == 0) {
+        fprintf(stderr,"error: iirfilt_xxxt_create(), numerator length cannot be zero\n");
+        exit(1);
+    } else if (_na == 0) {
+        fprintf(stderr,"error: iirfilt_xxxt_create(), denominator length cannot be zero\n");
+        exit(1);
+    }
 
-    f->b = (TC *) malloc((f->na)*sizeof(TC));
-    f->a = (TC *) malloc((f->nb)*sizeof(TC));
+    // create structure and initialize
+    IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
+    q->nb = _nb;
+    q->na = _na;
+    q->n = (q->na > q->nb) ? q->na : q->nb;
+    q->type = IIRFILT_TYPE_NORM;
 
+    // allocate memory for numerator, denominator
+    q->b = (TC *) malloc((q->na)*sizeof(TC));
+    q->a = (TC *) malloc((q->nb)*sizeof(TC));
+
+    // normalize coefficients to _a[0]
     TC a0 = _a[0];
 
     unsigned int i;
 #if 0
     // read values in reverse order
-    for (i=0; i<f->nb; i++)
-        f->b[i] = _b[f->nb - i - 1];
+    for (i=0; i<q->nb; i++)
+        q->b[i] = _b[q->nb - i - 1];
 
-    for (i=0; i<f->na; i++)
-        f->a[i] = _a[f->na - i - 1];
+    for (i=0; i<q->na; i++)
+        q->a[i] = _a[q->na - i - 1];
 #else
-    for (i=0; i<f->nb; i++)
-        f->b[i] = _b[i] / a0;
+    for (i=0; i<q->nb; i++)
+        q->b[i] = _b[i] / a0;
 
-    for (i=0; i<f->na; i++)
-        f->a[i] = _a[i] / a0;
+    for (i=0; i<q->na; i++)
+        q->a[i] = _a[i] / a0;
 #endif
 
-    f->v = (TI *) malloc((f->n)*sizeof(TI));
-    for (i=0; i<f->n; i++)
-        f->v[i] = 0;
+    // create buffer and initialize
+    q->v = (TI *) malloc((q->n)*sizeof(TI));
 
 #if LIQUID_IIRFILT_USE_DOTPROD
-    f->dpa = DOTPROD(_create)(f->a+1, f->na-1);
-    f->dpb = DOTPROD(_create)(f->b,   f->nb);
+    q->dpa = DOTPROD(_create)(q->a+1, q->na-1);
+    q->dpb = DOTPROD(_create)(q->b,   q->nb);
 #endif
+
+    // reset internal state
+    IIRFILT(_clear)(q);
     
-    return f;
+    // return iirfilt object
+    return q;
 }
 
 // create iirfilt (infinite impulse response filter) object based
 // on second-order sections form
-//  _B      :   numerator, feed-forward coefficients [size: _L x 3]
-//  _A      :   denominator, feed-back coefficients [size: _L x 3]
-//  _L      :   number of second-order sections
+//  _B      :   numerator, feed-forward coefficients [size: _nsos x 3]
+//  _A      :   denominator, feed-back coefficients [size: _nsos x 3]
+//  _nsos   :   number of second-order sections
+//
+// NOTE: The number of second-order sections can be computed from the
+// filter's order, n, as such:
+//   r = n % 2
+//   L = (n-r)/2
+//   nsos = L+r
 IIRFILT() IIRFILT(_create_sos)(TC * _B,
                                TC * _A,
-                               unsigned int _L)
+                               unsigned int _nsos)
 {
-    IIRFILT() f = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
+    // validate input
+    if (_nsos == 0) {
+        fprintf(stderr,"error: iirfilt_xxxt_create_sos(), filter must have at least one 2nd-order section\n");
+        exit(1);
+    }
 
-    f->type = IIRFILT_TYPE_SOS;
-    f->L = _L;
-    f->fsos = (IIRFILTSOS()*) malloc( (f->L)*sizeof(IIRFILTSOS()) );
+    // create structure and initialize
+    IIRFILT() q = (IIRFILT()) malloc(sizeof(struct IIRFILT(_s)));
+    q->type = IIRFILT_TYPE_SOS;
+    q->nsos = _nsos;
+    q->qsos = (IIRFILTSOS()*) malloc( (q->nsos)*sizeof(IIRFILTSOS()) );
+    q->n = _nsos * 2;
 
     // create coefficients array and copy over
-    f->b = (TC *) malloc(3*(f->L)*sizeof(TC));
-    f->a = (TC *) malloc(3*(f->L)*sizeof(TC));
-    memmove(f->b, _B, 3*(f->L)*sizeof(TC));
-    memmove(f->a, _A, 3*(f->L)*sizeof(TC));
+    q->b = (TC *) malloc(3*(q->nsos)*sizeof(TC));
+    q->a = (TC *) malloc(3*(q->nsos)*sizeof(TC));
+    memmove(q->b, _B, 3*(q->nsos)*sizeof(TC));
+    memmove(q->a, _A, 3*(q->nsos)*sizeof(TC));
 
     TC at[3];
     TC bt[3];
     unsigned int i,k;
-    for (i=0; i<f->L; i++) {
+    for (i=0; i<q->nsos; i++) {
         for (k=0; k<3; k++) {
-            at[k] = f->a[3*i+k];
-            bt[k] = f->b[3*i+k];
+            at[k] = q->a[3*i+k];
+            bt[k] = q->b[3*i+k];
         }
-        f->fsos[i] = IIRFILTSOS(_create)(bt,at);
-        //f->fsos[i] = IIRFILT(_create)(f->b+3*i,3,f->a+3*i,3);
+        q->qsos[i] = IIRFILTSOS(_create)(bt,at);
+        //q->qsos[i] = IIRFILT(_create)(q->b+3*i,3,q->a+3*i,3);
     }
-    return f;
+    return q;
 }
 
 
@@ -166,9 +196,9 @@ void IIRFILT(_destroy)(IIRFILT() _q)
     // delete sub-filters separately
     if (_q->type == IIRFILT_TYPE_SOS) {
         unsigned int i;
-        for (i=0; i<_q->L; i++)
-            IIRFILTSOS(_destroy)(_q->fsos[i]);
-        free(_q->fsos);
+        for (i=0; i<_q->nsos; i++)
+            IIRFILTSOS(_destroy)(_q->qsos[i]);
+        free(_q->qsos);
     } else {
         free(_q->v);
     }
@@ -183,8 +213,8 @@ void IIRFILT(_print)(IIRFILT() _q)
     unsigned int i;
 
     if (_q->type == IIRFILT_TYPE_SOS) {
-        for (i=0; i<_q->L; i++)
-            IIRFILTSOS(_print)(_q->fsos[i]);
+        for (i=0; i<_q->nsos; i++)
+            IIRFILTSOS(_print)(_q->qsos[i]);
     } else {
 
         printf("  b :");
@@ -213,8 +243,8 @@ void IIRFILT(_clear)(IIRFILT() _q)
 
     if (_q->type == IIRFILT_TYPE_SOS) {
         // clear second-order sections
-        for (i=0; i<_q->L; i++) {
-            IIRFILTSOS(_clear)(_q->fsos[i]);
+        for (i=0; i<_q->nsos; i++) {
+            IIRFILTSOS(_clear)(_q->qsos[i]);
         }
     } else {
         // set internal buffer to zero
@@ -223,7 +253,8 @@ void IIRFILT(_clear)(IIRFILT() _q)
     }
 }
 
-// execute normal iir filter (not second-order sections form)
+// execute normal iir filter using traditional numerator/denominator
+// form (not second-order sections form)
 //  _q      :   iirfilt object
 //  _x      :   input sample
 //  _y      :   output sample
@@ -274,11 +305,11 @@ void IIRFILT(_execute_sos)(IIRFILT() _q,
     TI t0 = _x;     // intermediate input
     TO t1;          // intermediate output
     unsigned int i;
-    for (i=0; i<_q->L; i++) {
+    for (i=0; i<_q->nsos; i++) {
         // run each filter separately
-        IIRFILTSOS(_execute)(_q->fsos[i], t0, &t1);
+        IIRFILTSOS(_execute)(_q->qsos[i], t0, &t1);
 
-        // output becomes input
+        // output for filter n becomes input to filter n+1
         t0 = t1;
     }
     *_y = t1;
