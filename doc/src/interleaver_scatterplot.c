@@ -39,11 +39,22 @@ int main(int argc, char*argv[]) {
     while ((dopt = getopt(argc,argv,"uhg:f:n:t:")) != EOF) {
         switch (dopt) {
         case 'u':
-        case 'h':   usage();                        return 0;
-        case 'g':   gnuplot_version = atof(optarg); break;
-        case 'f':   strncpy(filename,optarg,256);   break;
-        case 'n':   n = atoi(optarg);               break;
+        case 'h': usage();                          return 0;
+        case 'g': gnuplot_version = atof(optarg);   break;
+        case 'f': strncpy(filename,optarg,256);     break;
+        case 'n': n = atoi(optarg);                 break;
         case 't':
+            if ( strcmp(optarg,"sequence")==0 ) {
+                type = INT_SEQUENCE;
+                break;
+            } else if ( strcmp(optarg,"block")==0 ) {
+                type = INT_BLOCK;
+                break;
+            } else {
+                fprintf(stderr,"error: %s, unsupported type '%s'\n", argv[0], optarg);
+                usage();
+                return 1;
+            }
         default:
             fprintf(stderr,"error: %s, unknown/unsupported option '%c'\n", argv[0], dopt);
             usage();

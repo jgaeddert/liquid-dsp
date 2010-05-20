@@ -19,11 +19,11 @@ src/interleaver_scatterplot : src/interleaver_scatterplot.c $(lib_objects)
 
 # example 1
 figures.gen/interleaver_example1.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_example1.gnu -n8
+	./$< -f figures.gen/interleaver_example1.gnu -n8 -t sequence
 
 # example 2
 figures.gen/interleaver_example2.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_example2.gnu -n64
+	./$< -f figures.gen/interleaver_example2.gnu -n64 -t sequence
 
 ##
 ## target collection
