@@ -31,6 +31,7 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int n=6;       // filter order
     float fc = 0.25f;       // cutoff
+    float f0 = 0.25f;       // center frequency
     float slsl = 60.0f;     // stopband attenuation [dB]
     float ripple = 1.0f;    // passband ripple [dB]
     unsigned int nfft=1024; // output fft size
@@ -160,7 +161,7 @@ int main(int argc, char*argv[]) {
     float complex zd[n];
     float complex pd[n];
     float complex kd;
-    float m = 1.0f / tanf(M_PI * fc);
+    float m = iirdes_freqprewarp(LIQUID_IIRDES_LOWPASS,fc,f0);
     bilinear_zpkf(za,    nza,
                   pa,    npa,
                   k0,    m,
@@ -272,18 +273,19 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set ylabel 'quadrature-phase'\n");
     //fprintf(fid,"set nokey # disable legned\n");
     fprintf(fid,"set grid polar\n");
-    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
-    fprintf(fid,"set pointsize 1.0\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"set pointsize 1.5\n");
     fprintf(fid,"unset border # disable axis box\n");
     fprintf(fid,"set xtics (0,0.5,1) axis nomirror\n");
     fprintf(fid,"unset ytics\n");
 
-    fprintf(fid,"plot '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'zeros',\\\n", LIQUID_DOC_COLOR_BLUE);
-    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'poles'\n",    LIQUID_DOC_COLOR_GREEN);
-    // print digital z/p/k
+    fprintf(fid,"plot '-' using 1:2 with points pointtype 6 linewidth 5 linecolor rgb '%s' title 'zeros',\\\n", LIQUID_DOC_COLOR_PURPLE);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 2 linewidth 5 linecolor rgb '%s' title 'poles'\n",    LIQUID_DOC_COLOR_GREEN);
+    // print digital zeros
     for (i=0; i<n; i++)
         fprintf(fid,"  %12.4e %12.4e\n", crealf(zd[i]), cimagf(zd[i]));
     fprintf(fid,"e\n");
+    // print digital poles
     for (i=0; i<n; i++)
         fprintf(fid,"  %12.4e %12.4e\n", crealf(pd[i]), cimagf(pd[i]));
     fprintf(fid,"e\n");

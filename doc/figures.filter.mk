@@ -38,7 +38,7 @@ local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 src/filter_iirdes : src/filter_iirdes.c $(lib_objects)
 
 # filter design options
-fc	:= 0.2
+fc	:= 0.3
 order	:= 7
 ripple	:= 1.0
 slsl	:= 60.0
