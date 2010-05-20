@@ -14,7 +14,7 @@
 // print usage/help message
 void usage()
 {
-    printf("iirdes_example [options]\n");
+    printf("filter_iirdes [options]\n");
     printf("  u/h   : print usage\n");
     printf("  t     : filter type: [butter], cheby1, cheby2, ellip, bessel\n");
     printf("  n     : filter order\n");
@@ -22,9 +22,10 @@ void usage()
     printf("  s     : stopband attenuation [dB]\n");
     printf("  f     : passband cut-off [0,0.5]\n");
     printf("  w     : fft size [1024]\n");
-    printf("  g     : output gnuplot filename (required)\n");
+    printf("output filenames are generated from the filter type:\n");
+    printf("  figures.gen/filter_iirdes_<type>_psd.gnu (power spectral density)\n");
+    printf("  figures.gen/filter_iirdes_<type>_zpk.gnu (zeros/poles/gain)\n");
 }
-
 
 int main(int argc, char*argv[]) {
     // options
@@ -33,20 +34,23 @@ int main(int argc, char*argv[]) {
     float slsl = 60.0f;     // stopband attenuation [dB]
     float ripple = 1.0f;    // passband ripple [dB]
     unsigned int nfft=1024; // output fft size
-    char gnuplot_filename[256];
-    bool gnuplot_filename_given = false;
+    char filter_str[64];
 
     // filter type
     liquid_iirdes_filtertype type = LIQUID_IIRDES_BUTTER;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:n:r:s:f:w:g:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uht:n:r:s:f:w:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
             usage();
             return 0;
         case 't':
+            // copy filter type string
+            strncpy(filter_str,optarg,64);
+            filter_str[63] = '\0';
+
             if (strcmp(optarg,"butter")==0) {
                 type = LIQUID_IIRDES_BUTTER;
             } else if (strcmp(optarg,"cheby1")==0) {
@@ -68,10 +72,6 @@ int main(int argc, char*argv[]) {
         case 's': slsl = atof(optarg);      break;
         case 'f': fc = atof(optarg);        break;
         case 'w': nfft = atoi(optarg);      break;
-        case 'g':
-            strncpy(gnuplot_filename,optarg,256);
-            gnuplot_filename_given = true;
-            break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
@@ -79,12 +79,14 @@ int main(int argc, char*argv[]) {
         }
     }
 
-    // fail if no filename is given
-    if (!gnuplot_filename_given) {
-        fprintf(stderr,"error: %s, gnuplot filename not specified\n", argv[0]);
-        usage();
-        return 1;
-    }
+    // configure filenames
+    char filename_psd[256] = "figures.gen/filter_";
+    strcat(filename_psd, filter_str);
+    strcat(filename_psd, "_psd.gnu");
+
+    char filename_zpk[256] = "figures.gen/filter_";
+    strcat(filename_zpk, filter_str);
+    strcat(filename_zpk, "_zpk.gnu");
 
     // normalize nfft size
     nfft = 1 << liquid_nextpow2(nfft);
@@ -105,7 +107,7 @@ int main(int argc, char*argv[]) {
 
     unsigned int i;
     // specific filter variables
-    float epsilon, Gp, Gs, ep, es;
+    float epsilon=0, Gp, Gs, ep, es;
 
     switch (type) {
     case LIQUID_IIRDES_BUTTER:
@@ -202,9 +204,26 @@ int main(int argc, char*argv[]) {
             groupdelay[i] += iir_group_delay(&B[3*j],3,&A[3*j],3,f) - 2.0f;
     }
 
+    // 
+    // generate plots
+    //
+    FILE * fid = NULL;
+
+    // 
+    // generate spectrum plot
+    //
+
     // open output file
-    FILE*fid = fopen(gnuplot_filename,"w");
-    fprintf(fid,"# %s: auto-generated file\n\n", gnuplot_filename);
+    fid = fopen(filename_psd,"w");
+    if (fid == NULL) {
+        fprintf(stderr,"error: %s, could not open file \"%s\" for writing.\n", argv[0], filename_zpk);
+        exit(1);
+    }
+    // print header
+    fprintf(fid,"# %s : auto-generated file (do not edit)\n", filename_zpk);
+    fprintf(fid,"# invoked as :");
+    for (i=0; i<argc; i++)
+        fprintf(fid," %s",argv[i]);
     fprintf(fid,"reset\n");
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
@@ -223,18 +242,55 @@ int main(int argc, char*argv[]) {
         float f = (float)i/(float)nfft;
         fprintf(fid,"  %4u %12.4e %12.4e\n", i, f, 20*log10(cabsf(H[i])));
     }
-
-#if 0
-    // print digital z/p/k
-    fprintf(fid,"zd = zeros(1,n);\n");
-    fprintf(fid,"pd = zeros(1,n);\n");
-    for (i=0; i<n; i++) {
-        fprintf(fid,"  zd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(zd[i]), cimagf(zd[i]));
-        fprintf(fid,"  pd(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(pd[i]), cimagf(pd[i]));
-    }
-#endif
     fclose(fid);
-    //printf("results written to %s.\n", gnuplot_filename);
+    //printf("results written to %s.\n", filename_psd);
+
+    // 
+    // generate zeros/poles/gain plot
+    //
+
+    // write output file
+    fid = fopen(filename_zpk,"w");
+    if (fid == NULL) {
+        fprintf(stderr,"error: %s, could not open file \"%s\" for writing.\n", argv[0], filename_zpk);
+        exit(1);
+    }
+    // print header
+    fprintf(fid,"# %s : auto-generated file (do not edit)\n", filename_zpk);
+    fprintf(fid,"# invoked as :");
+    for (i=0; i<argc; i++)
+        fprintf(fid," %s",argv[i]);
+    fprintf(fid,"\n");
+    fprintf(fid,"reset\n");
+    // TODO : switch terminal types here
+    fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
+    fprintf(fid,"set xrange [-1.05:1.05]\n");
+    fprintf(fid,"set yrange [-1.05:1.05]\n");
+    fprintf(fid,"set size square\n");
+    //fprintf(fid,"set title \"%s\"\n", figure_title);
+    fprintf(fid,"set xlabel 'in-phase'\n");
+    fprintf(fid,"set ylabel 'quadrature-phase'\n");
+    //fprintf(fid,"set nokey # disable legned\n");
+    fprintf(fid,"set grid polar\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"set pointsize 1.0\n");
+    fprintf(fid,"unset border # disable axis box\n");
+    fprintf(fid,"set xtics (0,0.5,1) axis nomirror\n");
+    fprintf(fid,"unset ytics\n");
+
+    fprintf(fid,"plot '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'zeros',\\\n", LIQUID_DOC_COLOR_BLUE);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'poles'\n",    LIQUID_DOC_COLOR_GREEN);
+    // print digital z/p/k
+    for (i=0; i<n; i++)
+        fprintf(fid,"  %12.4e %12.4e\n", crealf(zd[i]), cimagf(zd[i]));
+    fprintf(fid,"e\n");
+    for (i=0; i<n; i++)
+        fprintf(fid,"  %12.4e %12.4e\n", crealf(pd[i]), cimagf(pd[i]));
+    fprintf(fid,"e\n");
+
+    // close it up
+    fclose(fid);
+
 
     return 0;
 }

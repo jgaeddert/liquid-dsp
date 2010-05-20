@@ -6,11 +6,21 @@
 
 # local targets
 local_pdffiles :=					\
-	figures.gen/filter_butter.pdf			\
-	figures.gen/filter_cheby1.pdf			\
-	figures.gen/filter_cheby2.pdf			\
-	figures.gen/filter_ellip.pdf			\
-	figures.gen/filter_bessel.pdf			\
+	figures.gen/filter_butter_psd.pdf		\
+	figures.gen/filter_butter_zpk.pdf		\
+							\
+	figures.gen/filter_cheby1_psd.pdf		\
+	figures.gen/filter_cheby1_zpk.pdf		\
+							\
+	figures.gen/filter_cheby2_psd.pdf		\
+	figures.gen/filter_cheby2_zpk.pdf		\
+							\
+	figures.gen/filter_ellip_psd.pdf		\
+	figures.gen/filter_ellip_zpk.pdf		\
+							\
+	figures.gen/filter_bessel_psd.pdf		\
+	figures.gen/filter_bessel_zpk.pdf		\
+							\
 	figures.gen/filter_firhilb_decim_crcf_time.pdf	\
 	figures.gen/filter_firhilb_decim_crcf_freq.pdf	\
 	figures.gen/filter_interp_crcf.pdf		\
@@ -34,11 +44,26 @@ ripple	:= 1.0
 slsl	:= 60.0
 nfft	:= 1024
 filter_iirdes_opts := -f $(fc) -n $(order) -w $(nfft) -r $(ripple) -s $(slsl)
-figures.gen/filter_butter.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t butter
-figures.gen/filter_cheby1.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t cheby1
-figures.gen/filter_cheby2.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t cheby2
-figures.gen/filter_ellip.gnu  : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t ellip
-figures.gen/filter_bessel.gnu : src/filter_iirdes ; ./$< -g $@ $(filter_iirdes_opts) -t bessel
+
+figures.gen/filter_butter_psd.gnu	\
+figures.gen/filter_butter_zpk.gnu	: src/filter_iirdes
+	./$< $(filter_iirdes_opts) -t butter
+
+figures.gen/filter_cheby1_psd.gnu	\
+figures.gen/filter_cheby1_zpk.gnu	: src/filter_iirdes
+	./$< $(filter_iirdes_opts) -t cheby1
+
+figures.gen/filter_cheby2_psd.gnu	\
+figures.gen/filter_cheby2_zpk.gnu	: src/filter_iirdes
+	./$< $(filter_iirdes_opts) -t cheby2
+
+figures.gen/filter_ellip_psd.gnu	\
+figures.gen/filter_ellip_zpk.gnu	: src/filter_iirdes
+	./$< $(filter_iirdes_opts) -t ellip
+
+figures.gen/filter_bessel_psd.gnu	\
+figures.gen/filter_bessel_zpk.gnu	: src/filter_iirdes
+	./$< $(filter_iirdes_opts) -t bessel
 
 ##
 ## firhilb decimator

@@ -243,7 +243,12 @@ and $L=(n-r)/2$.
 % Butterworth IIR filter design
 \begin{figure}
 \centering
-\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_butter}
+\subfigure[spectrum] {
+  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_butter_psd}
+}
+\subfigure[zeros, poles] {
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_butter_zpk}
+}
 \caption{{\tt butterf} (Butterworth filter design)}
 \label{fig:module:filter:butter}
 \end{figure}
@@ -251,7 +256,12 @@ and $L=(n-r)/2$.
 % Chebyshev type-I IIR filter design
 \begin{figure}
 \centering
-\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_cheby1}
+\subfigure[spectrum] {
+  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby1_psd}
+}
+\subfigure[zeros, poles] {
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_cheby1_zpk}
+}
 \caption{{\tt cheby1f} (Chebyshev type-I filter design)}
 \label{fig:module:filter:cheby1}
 \end{figure}
@@ -259,7 +269,12 @@ and $L=(n-r)/2$.
 % Chebyshev type-II IIR filter design
 \begin{figure}
 \centering
-\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_cheby2}
+\subfigure[spectrum] {
+  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_cheby2_psd}
+}
+\subfigure[zeros, poles] {
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_cheby2_zpk}
+}
 \caption{{\tt cheby2f} (Chebyshev type-II filter design)}
 \label{fig:module:filter:cheby2}
 \end{figure}
@@ -267,7 +282,12 @@ and $L=(n-r)/2$.
 % Elliptic IIR filter design
 \begin{figure}
 \centering
-\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_ellip}
+\subfigure[spectrum] {
+  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_ellip_psd}
+}
+\subfigure[zeros, poles] {
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_ellip_zpk}
+}
 \caption{{\tt ellipf} (Elliptic filter design)}
 \label{fig:module:filter:ellip}
 \end{figure}
@@ -275,7 +295,12 @@ and $L=(n-r)/2$.
 % Bessel IIR filter design
 \begin{figure}
 \centering
-\includegraphics[trim = 0mm 0mm 0mm 0mm, clip,width=13cm]{figures.gen/filter_bessel}
+\subfigure[spectrum] {
+  \includegraphics[trim = 2mm 5mm 0mm 5mm, clip, width=0.55\textwidth]{figures.gen/filter_bessel_psd}
+}
+\subfigure[zeros, poles] {
+  \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, width=0.37\textwidth]{figures.gen/filter_bessel_zpk}
+}
 \caption{{\tt besself} (Bessel filter design)}
 \label{fig:module:filter:bessel}
 \end{figure}
