@@ -232,6 +232,8 @@ interleaver_example.c
 
     SEE ALSO: packetizer_example.c
 
+interleaver_scatterplot_example.c
+
 interp_crcf_example.c
 itqmfb_crcf_example.c
 itqmfb_rrrf_example.c

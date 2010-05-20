@@ -61,6 +61,7 @@ local_src	:=			\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\
 	interleaver_example.c		\
+	interleaver_scatterplot_example.c	\
 	iirdes_example.c		\
 	iirdes_analog_example.c		\
 	iirfilt_crcf_example.c		\

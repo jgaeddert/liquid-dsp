@@ -1,5 +1,5 @@
 //
-// interleaver_scatterplot.c
+// interleaver_scatterplot_example.c
 // 
 // generate interleaver scatterplot figure
 //
@@ -10,16 +10,15 @@
 #include <getopt.h>
 #include <assert.h>
 
-#include <liquid/liquid.h>
-#include "liquid.doc.h"
+#include "liquid.h"
+
+#define OUTPUT_FILENAME "interleaver_scatterplot_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("interleaver_scatterplot [options]\n");
+    printf("interleaver_scatterplot_example [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  g     : specify gnuplot version\n");
-    printf("  f     : output gnuplot filename\n");
     printf("  n     : number of bytes, default: 8\n");
     printf("  t     : interleaver type, 'sequence' or 'block'\n");
 }
@@ -32,16 +31,12 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int n=8; // message length
     interleaver_type type = INT_SEQUENCE; // interleaver type
-    char filename[256] = "";
-    float gnuplot_version=0.0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhg:f:n:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhn:t:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();                          return 0;
-        case 'g': gnuplot_version = atof(optarg);   break;
-        case 'f': strncpy(filename,optarg,256);     break;
         case 'n': n = atoi(optarg);                 break;
         case 't':
             if ( strcmp(optarg,"sequence")==0 ) {
@@ -99,43 +94,34 @@ int main(int argc, char*argv[]) {
     interleaver_destroy(q);
 
     // write output file
-    FILE * fid = fopen(filename,"w");
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
     if (fid == NULL) {
-        fprintf(stderr,"error: %s, could not open file '%s' for writing.\n", argv[0],filename);
+        fprintf(stderr,"error: %s, could not open file '%s' for writing.\n", argv[0],OUTPUT_FILENAME);
         exit(1);
     }
     // print header
-    fprintf(fid,"# %s : auto-generated file (do not edit)\n", filename);
-    fprintf(fid,"# invoked as :");
+    fprintf(fid,"%% %s : auto-generated file (do not edit)\n", OUTPUT_FILENAME);
+    fprintf(fid,"%% invoked as :");
     for (i=0; i<argc; i++)
         fprintf(fid," %s",argv[i]);
     fprintf(fid,"\n");
-    fprintf(fid,"reset\n");
-    // TODO : switch terminal types here
-    fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
-    fprintf(fid,"set size square\n");
-    //fprintf(fid,"set title \"%s\"\n", figure_title);
-    fprintf(fid,"set xrange [0:1]\n");
-    fprintf(fid,"set yrange [0:1]\n");
-    fprintf(fid,"set xtics (0,0.5,1) axis\n");
-    fprintf(fid,"set ytics (0,0.5,1) axis\n");
-    fprintf(fid,"set xlabel 'input index'\n");
-    fprintf(fid,"set ylabel 'output index'\n");
-    fprintf(fid,"set nokey # disable legned\n");
-    //fprintf(fid,"set grid xtics ytics\n");
-    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
-    fprintf(fid,"set pointsize 1.0\n");
-    fprintf(fid,"plot '-' using 1:2 with points pointtype 7 linecolor rgb '%s'\n", LIQUID_DOC_COLOR_PURPLE);
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+    fprintf(fid,"n = %u;\n", 8*n);
 
     // export data to file
-    float g = 1.0f / (float)(8*n);
     for (i=0; i<8*n; i++)
-        fprintf(fid,"  %12.4e    %12.4e\n", i*g, index[i]*g);
-    fprintf(fid,"e\n");
+        fprintf(fid,"index(%6u) = %6u;\n", i+1, index[i]);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"i = [0:(n-1)];\n");
+    fprintf(fid,"plot(i/n,index/n,'x');\n");
+    fprintf(fid,"axis square\n");
+    fprintf(fid,"axis([0 1 0 1]);\n");
 
     // close it up
     fclose(fid);
 
+    printf("results written to '%s'\n", OUTPUT_FILENAME);
 
     printf("done.\n");
     return 0;
