@@ -27,11 +27,11 @@
     eqlms_cccf_train(eq, w, y, d, ntrain);
 
     // create filter from equalizer output and apply to signal
-    fir_filter_cccf f = fir_filter_cccf_create(w,p);
+    firfilt_cccf f = firfilt_cccf_create(w,p);
 
     // ...
 
     // clean up allocated memory
     eqlms_cccf_destroy(eq);
-    fir_filter_cccf_destroy(f);
+    firfilt_cccf_destroy(f);
 }

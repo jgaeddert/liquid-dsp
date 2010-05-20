@@ -109,7 +109,7 @@ int main(int argc, char*argv[]) {
     // apply channel phase offset
     for (i=0; i<h_len; i++)
         h[i] *= cexpf(_Complex_I*theta);
-    fir_filter_cccf f = fir_filter_cccf_create(h,h_len);
+    firfilt_cccf f = firfilt_cccf_create(h,h_len);
 
     // generate random data signal
     for (i=0; i<n; i++)
@@ -121,8 +121,8 @@ int main(int argc, char*argv[]) {
     float gamma = powf(10.0f, -SNRdB/10.0f); // * sqrtf(2.0f);
     //gamma = 0.0f;
     for (i=0; i<n; i++) {
-        fir_filter_cccf_push(f,d[i]);
-        fir_filter_cccf_execute(f,&y[i]);
+        firfilt_cccf_push(f,d[i]);
+        firfilt_cccf_execute(f,&y[i]);
 
         // add noise
         crandnf(&noise);
@@ -153,27 +153,27 @@ int main(int argc, char*argv[]) {
 
     // create filter from equalizer output
     eqlms_cccf_get_weights(eqlms, w_lms);
-    fir_filter_cccf feqlms = fir_filter_cccf_create(w_lms,p);
+    firfilt_cccf feqlms = firfilt_cccf_create(w_lms,p);
 
     // create filter from equalizer output
     eqrls_cccf_get_weights(eqrls, w_rls);
-    fir_filter_cccf feqrls = fir_filter_cccf_create(w_rls,p);
+    firfilt_cccf feqrls = firfilt_cccf_create(w_rls,p);
 
     // run equalizer filter
     for (i=0; i<n; i++) {
-        fir_filter_cccf_push(feqlms,y[i]);
-        fir_filter_cccf_execute(feqlms,&d_hat_lms[i]);
+        firfilt_cccf_push(feqlms,y[i]);
+        firfilt_cccf_execute(feqlms,&d_hat_lms[i]);
 
-        fir_filter_cccf_push(feqrls,y[i]);
-        fir_filter_cccf_execute(feqrls,&d_hat_rls[i]);
+        firfilt_cccf_push(feqrls,y[i]);
+        firfilt_cccf_execute(feqrls,&d_hat_rls[i]);
     }
 
     // clean up allocated memory
-    fir_filter_cccf_destroy(f);
+    firfilt_cccf_destroy(f);
     eqlms_cccf_destroy(eqlms);
     eqrls_cccf_destroy(eqrls);
-    fir_filter_cccf_destroy(feqlms);
-    fir_filter_cccf_destroy(feqrls);
+    firfilt_cccf_destroy(feqlms);
+    firfilt_cccf_destroy(feqrls);
 
     // 
     // generate plots

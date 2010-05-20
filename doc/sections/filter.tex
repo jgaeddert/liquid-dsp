@@ -16,8 +16,8 @@ where $N$ is the window length, and $d$ is the overlap delay.
 % dds
 \subsection{{\tt dds} (direct digital synthesizer)}
 
-% fir_filter
-\subsection{{\tt fir\_filter} (finite impulse response filter)}
+% firfilt
+\subsection{{\tt firfilt} (finite impulse response filter)}
 Finite impulse response filter.
 The output $y$ is the convolution of the input $x$ with the filter
 coefficients (impulse response) $h$, viz
@@ -127,7 +127,7 @@ where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
                 \frac{B_{r,0} + B_{r,1}z^{-1}}
                      {1       + A_{r,1}z^{-1}}
              \right]^r
-             \prod_{k=r}^{L} {\left[
+             \prod_{k=1}^{L} {\left[
                 \frac{B_{k,0} + B_{k,1}z^{-1} + B_{k,2}z^{-2}}
                      {1       + A_{k,1}z^{-1} + A_{k,2}z^{-2}}
              \right]}
