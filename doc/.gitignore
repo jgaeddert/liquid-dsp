@@ -3,6 +3,7 @@
 *.bbl
 *.blg
 *.log
+*.m
 *.pdf
 *.toc
 # ignore listings style (pygments)
@@ -13,6 +14,7 @@ src/agc_transient
 src/audio_cvsd
 src/doc-html-gen
 src/equalizer_cccf
+src/filter_firdespm
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
 src/filter_interp_crcf

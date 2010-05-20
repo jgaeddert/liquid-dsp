@@ -21,8 +21,11 @@ local_pdffiles :=					\
 	figures.gen/filter_bessel_psd.pdf		\
 	figures.gen/filter_bessel_zpk.pdf		\
 							\
+	figures.gen/filter_firdespm.pdf			\
+							\
 	figures.gen/filter_firhilb_decim_crcf_time.pdf	\
 	figures.gen/filter_firhilb_decim_crcf_freq.pdf	\
+							\
 	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
@@ -64,6 +67,14 @@ figures.gen/filter_ellip_zpk.gnu	: src/filter_iirdes
 figures.gen/filter_bessel_psd.gnu	\
 figures.gen/filter_bessel_zpk.gnu	: src/filter_iirdes
 	./$< $(filter_iirdes_opts) -t bessel
+
+##
+## firdespm
+## 
+src/filter_firdespm : src/filter_firdespm.c $(lib_objects)
+figures.gen/filter_firdespm.gnu : src/filter_firdespm
+	./$<
+
 
 ##
 ## firhilb decimator

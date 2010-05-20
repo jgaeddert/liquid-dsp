@@ -47,23 +47,6 @@ int main() {
     float h[h_len];
     fir_kaiser_window(h_len, 0.5f, slsl, 0.0f, h);
 
-    unsigned int nfft = 512;
-    float complex X[nfft];
-    float complex Y[nfft];
-    float complex H[nfft];
-    liquid_doc_compute_psdf( x,2*num_samples,X,nfft,LIQUID_DOC_PSDWINDOW_HAMMING,0);
-    liquid_doc_compute_psdcf(y,  num_samples,Y,nfft,LIQUID_DOC_PSDWINDOW_HAMMING,0);
-    liquid_doc_compute_psdf( h,  h_len,      H,nfft,LIQUID_DOC_PSDWINDOW_NONE,   1);
-    fft_shift(X,nfft);
-    //fft_shift(Y,nfft);
-    fft_shift(H,nfft);
-
-    // rotate H right by nfft/4 and compute image
-    float complex Himg[nfft];
-    memmove(Himg, H, sizeof(H));
-    for (i=0; i<nfft; i++)
-        H[(i+3*nfft/4)%nfft] = Himg[i];
-    float scaling_factor = 20*log10f(num_samples);
 
     // generate plots
     FILE * fid = NULL;
@@ -123,6 +106,24 @@ int main() {
     // 
     // generate frequency-domain plot
     //
+ 
+    unsigned int nfft = 512;
+    float complex X[nfft];
+    float complex Y[nfft];
+    float complex H[nfft];
+    liquid_doc_compute_psdf( x,2*num_samples,X,nfft,LIQUID_DOC_PSDWINDOW_HAMMING,0);
+    liquid_doc_compute_psdcf(y,  num_samples,Y,nfft,LIQUID_DOC_PSDWINDOW_HAMMING,0);
+    liquid_doc_compute_psdf( h,  h_len,      H,nfft,LIQUID_DOC_PSDWINDOW_NONE,   1);
+    fft_shift(X,nfft);
+    //fft_shift(Y,nfft);
+    fft_shift(H,nfft);
+
+    // rotate H right by nfft/4 and compute image
+    float complex Himg[nfft];
+    memmove(Himg, H, sizeof(H));
+    for (i=0; i<nfft; i++)
+        H[(i+3*nfft/4)%nfft] = Himg[i];
+    float scaling_factor = 20*log10f(num_samples);
 
     // open/initialize output file
     fid = fopen(OUTPUT_FILENAME_FREQ,"w");
