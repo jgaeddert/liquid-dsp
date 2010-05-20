@@ -30,6 +30,10 @@
 
 #include "liquid.internal.h"
 
+const unsigned char interleaver_mask[LIQUID_INTERLEAVER_NUM_MASKS] = {
+    0x33, 0x55, 0x17, 0x6c};
+
+// print interleaver internals
 void interleaver_print(interleaver _q)
 {
     unsigned int i;
@@ -38,6 +42,7 @@ void interleaver_print(interleaver _q)
         printf("  p[%u] : %u\n", i, _q->p[i]);
 }
 
+// print interleaver internals with debugging info
 void interleaver_debug_print(interleaver _q)
 {
     unsigned int n = (_q->len)*sizeof(unsigned char)*8;
@@ -98,19 +103,46 @@ void interleaver_debug_print(interleaver _q)
     printf("  dmin: %8.2f, dmean: %8.2f\n", dmin, dmean);
 }
 
-void interleaver_interleave(interleaver _q, unsigned char * _x, unsigned char * _y)
+// execute forward interleaver
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_interleave(interleaver _q,
+                            unsigned char * _msg_dec,
+                            unsigned char * _msg_enc)
 {
-    memcpy(_y, _x, _q->len);
+    memcpy(_msg_enc, _msg_dec, _q->len);
 
-    interleaver_circshift_L4(_y, _q->len);
-    interleaver_permute_forward_mask(_y, _q->p, _q->len, 0x55);
+    interleaver_permute_forward(_msg_enc, _q->p, _q->len);
+
+    unsigned int i;
+    unsigned char mask=0x00;
+    for (i=0; i<_q->num_iterations; i++) {
+        mask = interleaver_mask[i];
+        interleaver_circshift_L4(_msg_enc, _q->len);
+        interleaver_permute_forward_mask(_msg_enc, _q->p, _q->len, mask);
+    }
 }
 
-void interleaver_deinterleave(interleaver _q, unsigned char * _y, unsigned char * _x)
+// execute reverse interleaver
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_deinterleave(interleaver _q,
+                              unsigned char * _msg_enc,
+                              unsigned char * _msg_dec)
 {
-    memcpy(_x, _y, _q->len);
+    memcpy(_msg_dec, _msg_enc, _q->len);
 
-    interleaver_permute_reverse_mask(_x, _q->p, _q->len, 0x55);
-    interleaver_circshift_R4(_x, _q->len);
+    unsigned int i;
+    unsigned char mask=0x00;
+    for (i=0; i<_q->num_iterations; i++) {
+        mask = interleaver_mask[_q->num_iterations-i-1];
+
+        interleaver_permute_reverse_mask(_msg_dec, _q->p, _q->len, mask);
+        interleaver_circshift_R4(_msg_dec, _q->len);
+    }
+
+    interleaver_permute_reverse(_msg_dec, _q->p, _q->len);
 }
 

@@ -20,6 +20,7 @@ void usage()
     printf("interleaver_scatterplot_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : number of bytes, default: 8\n");
+    printf("  i     : number of iterations, default: 0\n");
     printf("  t     : interleaver type, 'sequence' or 'block'\n");
 }
 
@@ -30,14 +31,16 @@ unsigned int interleaver_find_bit(unsigned char * _x,
 int main(int argc, char*argv[]) {
     // options
     unsigned int n=8; // message length
+    unsigned int num_iterations = 0;
     interleaver_type type = INT_SEQUENCE; // interleaver type
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhn:i:t:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();                          return 0;
         case 'n': n = atoi(optarg);                 break;
+        case 'i': num_iterations = atoi(optarg);    break;
         case 't':
             if ( strcmp(optarg,"sequence")==0 ) {
                 type = INT_SEQUENCE;
@@ -59,6 +62,7 @@ int main(int argc, char*argv[]) {
 
     // create the interleaver
     interleaver q = interleaver_create(n, type);
+    interleaver_set_num_iterations(q, num_iterations);
 
     // create arrays
     unsigned char x[n]; // original message data

@@ -2073,19 +2073,35 @@ typedef enum {
 // create interleaver
 //   _n     : number of bytes
 //   _type  : type of re-ordering
-interleaver interleaver_create(unsigned int _n, interleaver_type _type);
+interleaver interleaver_create(unsigned int _n,
+                               interleaver_type _type);
 
-void interleaver_destroy(interleaver _i);
+void interleaver_destroy(interleaver _q);
 
-void interleaver_print(interleaver _i);
+void interleaver_print(interleaver _q);
 
-void interleaver_init_block(interleaver _i);
+void interleaver_init_block(interleaver _q);
 
-void interleaver_init_sequence(interleaver _i);
+void interleaver_init_sequence(interleaver _q);
 
-void interleaver_interleave(interleaver _i, unsigned char * _x, unsigned char * _y);
+void interleaver_set_num_iterations(interleaver _q,
+                                    unsigned int _n);
 
-void interleaver_deinterleave(interleaver _i, unsigned char * _y, unsigned char * _x);
+// execute forward interleaver
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_interleave(interleaver _q,
+                            unsigned char * _msg_dec,
+                            unsigned char * _msg_enc);
+
+// execute reverse interleaver
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_deinterleave(interleaver _i,
+                              unsigned char * _msg_enc,
+                              unsigned char * _msg_dec);
 
 void interleaver_debug_print(interleaver _i);
 

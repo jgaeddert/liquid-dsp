@@ -28,7 +28,8 @@
 
 #include "liquid.internal.h"
 
-interleaver interleaver_create(unsigned int _n, interleaver_type _type)
+interleaver interleaver_create(unsigned int _n,
+                               interleaver_type _type)
 {
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
     q->len = _n;
@@ -49,6 +50,9 @@ interleaver interleaver_create(unsigned int _n, interleaver_type _type)
         printf("error: interleaver_create(), invalid type\n");
         exit(1);
     }
+
+    // set default number of iterations
+    interleaver_set_num_iterations(q,2);
 
     return q;
 }
@@ -116,6 +120,18 @@ void interleaver_init_sequence(interleaver _q)
         do {
             index = ((index<<1) | msequence_advance(ms)) & n;
         } while (index >= _q->len);
+    }
+}
+
+void interleaver_set_num_iterations(interleaver _q,
+                                    unsigned int _n)
+{
+    _q->num_iterations = _n;
+
+    if (_q->num_iterations > LIQUID_INTERLEAVER_NUM_MASKS) {
+        fprintf(stderr,"warning: interleaver_set_num_iterations(), capping at %u\n",
+                LIQUID_INTERLEAVER_NUM_MASKS);
+        _q->num_iterations = LIQUID_INTERLEAVER_NUM_MASKS;
     }
 }
 

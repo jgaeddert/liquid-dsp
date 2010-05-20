@@ -965,7 +965,12 @@ struct interleaver_s {
     unsigned int len;   // number of bytes
 
     unsigned char * t;  // temporary buffer
+
+    unsigned int num_iterations;
 };
+
+#define LIQUID_INTERLEAVER_NUM_MASKS (4)
+extern const unsigned char interleaver_mask[LIQUID_INTERLEAVER_NUM_MASKS];
 
 //void interleaver_circshift_left(unsigned char *_x, unsigned int _n, unsigned int _s);
 //void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned int _s);
