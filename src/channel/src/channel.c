@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -33,11 +34,11 @@ channel channel_create()
     channel q = (channel) malloc(sizeof(struct channel_s));
 
     // generate fading filter
-    //q->f_ricek = cfir_filter_create();
+    //q->f_ricek = cfirfilt_create();
     q->f_ricek = NULL;
 
     // generate shadowing filter
-    //q->f_lognorm = fir_filter_create();
+    //q->f_lognorm = firfilt_create();
     q->f_lognorm = NULL;
 
     return q;
@@ -45,8 +46,8 @@ channel channel_create()
 
 void channel_destroy(channel _q)
 {
-    fir_filter_cccf_destroy(_q->f_ricek);
-    fir_filter_rrrf_destroy(_q->f_lognorm);
+    firfilt_cccf_destroy(_q->f_ricek);
+    firfilt_rrrf_destroy(_q->f_lognorm);
     free(_q);
 }
 
@@ -62,8 +63,8 @@ void channel_execute(channel _q, float complex _x, float complex *_y)
 
     // advance fading filter
     r = icrandnf();
-    fir_filter_cccf_push(_q->f_ricek, r);
-    fir_filter_cccf_execute(_q->f_ricek, &x);
+    firfilt_cccf_push(_q->f_ricek, r);
+    firfilt_cccf_execute(_q->f_ricek, &x);
 
     // TODO: compensate for filter
 
@@ -73,8 +74,8 @@ void channel_execute(channel _q, float complex _x, float complex *_y)
 
     // advance shadowing filter
     r = randnf();
-    fir_filter_rrrf_push(_q->f_lognorm, r);
-    fir_filter_rrrf_execute(_q->f_lognorm, &z);
+    firfilt_rrrf_push(_q->f_lognorm, r);
+    firfilt_rrrf_execute(_q->f_lognorm, &z);
 
 
     // additive white gaussian noise

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -62,15 +63,15 @@ void autotest_eqrls_rrrf_01()
     h[0] = 1.0f;
     for (i=1; i<h_len; i++)
         h[i] = 0.0f;
-    fir_filter_rrrf f = fir_filter_rrrf_create(h,h_len);
+    firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
 
     // data sequence
     float *d = (float*) eqrls_rrrf_autotest_data_sequence;
 
     // filter data signal through channel
     for (i=0; i<n; i++) {
-        fir_filter_rrrf_push(f,d[i]);
-        fir_filter_rrrf_execute(f,&y[i]);
+        firfilt_rrrf_push(f,d[i]);
+        firfilt_rrrf_execute(f,&y[i]);
     }
 
     // initialize weights, train equalizer
@@ -84,7 +85,7 @@ void autotest_eqrls_rrrf_01()
         CONTEND_DELTA(w[i], 0.0f, tol);
 
     // clean up objects
-    fir_filter_rrrf_destroy(f);
+    firfilt_rrrf_destroy(f);
     eqrls_rrrf_destroy(eq);
 }
 

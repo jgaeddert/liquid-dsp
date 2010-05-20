@@ -839,8 +839,8 @@ void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
 // the specifications
 //  _slsl   : sidelobe suppression level (_slsl < 0)
 //  _ft     : filter transition bandwidth (0 < _ft < 0.5)
-float num_fir_filter_taps(float _slsl,
-                          float _ft);
+float num_firfilt_taps(float _slsl,
+                       float _ft);
 
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl);
@@ -1207,42 +1207,42 @@ LIQUID_DDS_DEFINE_API(DDS_MANGLE_CCCF, liquid_float_complex)
 // Finite impulse response filter
 //
 
-#define FIR_FILTER_MANGLE_RRRF(name)  LIQUID_CONCAT(fir_filter_rrrf,name)
-#define FIR_FILTER_MANGLE_CRCF(name)  LIQUID_CONCAT(fir_filter_crcf,name)
-#define FIR_FILTER_MANGLE_CCCF(name)  LIQUID_CONCAT(fir_filter_cccf,name)
+#define FIRFILT_MANGLE_RRRF(name)  LIQUID_CONCAT(firfilt_rrrf,name)
+#define FIRFILT_MANGLE_CRCF(name)  LIQUID_CONCAT(firfilt_crcf,name)
+#define FIRFILT_MANGLE_CCCF(name)  LIQUID_CONCAT(firfilt_cccf,name)
 
 // Macro:
-//   FIR_FILTER : name-mangling macro
+//   FIRFILT : name-mangling macro
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER,TO,TC,TI)       \
-typedef struct FIR_FILTER(_s) * FIR_FILTER();                   \
-FIR_FILTER() FIR_FILTER(_create)(TC * _h, unsigned int _n);     \
-FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f,             \
-                                   TC * _h,                     \
-                                   unsigned int _n);            \
-void FIR_FILTER(_destroy)(FIR_FILTER() _f);                     \
-void FIR_FILTER(_clear)(FIR_FILTER() _f);                       \
-void FIR_FILTER(_print)(FIR_FILTER() _f);                       \
-void FIR_FILTER(_push)(FIR_FILTER() _f, TI _x);                 \
-void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y);             \
-unsigned int FIR_FILTER(_get_length)(FIR_FILTER() _f);
+#define LIQUID_FIRFILT_DEFINE_API(FIRFILT,TO,TC,TI)             \
+typedef struct FIRFILT(_s) * FIRFILT();                         \
+FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n);           \
+FIRFILT() FIRFILT(_recreate)(FIRFILT() _f,                      \
+                             TC * _h,                           \
+                             unsigned int _n);                  \
+void FIRFILT(_destroy)(FIRFILT() _f);                           \
+void FIRFILT(_clear)(FIRFILT() _f);                             \
+void FIRFILT(_print)(FIRFILT() _f);                             \
+void FIRFILT(_push)(FIRFILT() _f, TI _x);                       \
+void FIRFILT(_execute)(FIRFILT() _f, TO *_y);                   \
+unsigned int FIRFILT(_get_length)(FIRFILT() _f);
 
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_RRRF,
-                             float,
-                             float,
-                             float)
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRF,
+                          float,
+                          float,
+                          float)
 
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CRCF,
-                             liquid_float_complex,
-                             float,
-                             liquid_float_complex)
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CRCF,
+                          liquid_float_complex,
+                          float,
+                          liquid_float_complex)
 
-LIQUID_FIR_FILTER_DEFINE_API(FIR_FILTER_MANGLE_CCCF,
-                             liquid_float_complex,
-                             liquid_float_complex,
-                             liquid_float_complex)
+LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
+                          liquid_float_complex,
+                          liquid_float_complex,
+                          liquid_float_complex)
 
 //
 // FIR Hilbert transform

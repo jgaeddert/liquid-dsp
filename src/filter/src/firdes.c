@@ -32,12 +32,12 @@
 // the specifications
 //  _slsl   : sidelobe suppression level (_slsl < 0)
 //  _ft     : filter transition bandwidth (0 < _ft < 0.5)
-float num_fir_filter_taps(float _slsl,
+float num_firfilt_taps(float _slsl,
                           float _ft)
 {
     // error-checking
     if (_ft < 0.0f || _ft > 0.5f) {
-        printf("error: num_fir_filter_taps(), transition bandwidth (%12.4e) is out of range [0,0.5]\n", _ft);
+        printf("error: num_firfilt_taps(), transition bandwidth (%12.4e) is out of range [0,0.5]\n", _ft);
         exit(0);
     }
     return 2.0f * fabsf(_slsl) / (22.0f * _ft);

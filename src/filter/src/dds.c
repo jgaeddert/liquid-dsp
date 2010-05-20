@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -105,7 +106,7 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
 
         // compute (estimate) required filter length
         //q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.7;
-        q->h_len[i] = num_fir_filter_taps(q->slsl[i], q->ft[i]);
+        q->h_len[i] = num_firfilt_taps(q->slsl[i], q->ft[i]);
         if ((q->h_len[i] % 2) == 0) q->h_len[i]++;
 
         // update carrier, bandwidth parameters

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -73,18 +74,18 @@ ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, flo
         hc[i] = h[i];
 
     // create filter
-    q->f = fir_filter_cccf_create(hc, q->h_len);
+    q->f = firfilt_cccf_create(hc, q->h_len);
 
     // load with complex values
     for (i=0; i<q->h_len; i++)
-        fir_filter_cccf_push(q->f, icrandnf());
+        firfilt_cccf_push(q->f, icrandnf());
 
     return q;
 }
 
 void ricek_channel_destroy(ricek_channel _q)
 {
-    fir_filter_cccf_destroy(_q->f);
+    firfilt_cccf_destroy(_q->f);
     free(_q);
 }
 
@@ -98,8 +99,8 @@ void ricek_channel_execute(ricek_channel _q, float complex _x, float complex *_y
     float complex r, z;
 
     // advance fading filter
-    fir_filter_cccf_push(_q->f, icrandnf());
-    fir_filter_cccf_execute(_q->f, &r);
+    firfilt_cccf_push(_q->f, icrandnf());
+    firfilt_cccf_execute(_q->f, &r);
 
     // generate complex fading envelope
     z = ( crealf(r)*(_q->sig) + _q->s ) +

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,8 +19,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FIR_FILTER_RRRF_AUTOTEST_H__
-#define __FIR_FILTER_RRRF_AUTOTEST_H__
+#ifndef __FIRFILT_RRRF_AUTOTEST_H__
+#define __FIRFILT_RRRF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -30,12 +31,12 @@ void autotest_create_external_coeff_01() {
     float h[8] = { 0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f };
 
     // Create filter
-    fir_filter_rrrf f = fir_filter_rrrf_create(h, 8);
+    firfilt_rrrf f = firfilt_rrrf_create(h, 8);
 
     // Assert arrays are the same length
-    CONTEND_EQUALITY( fir_filter_rrrf_get_length(f), 8 );
+    CONTEND_EQUALITY( firfilt_rrrf_get_length(f), 8 );
 
-    fir_filter_rrrf_destroy(f);
+    firfilt_rrrf_destroy(f);
 }
 
 void autotest_impulse_response() {
@@ -49,24 +50,24 @@ void autotest_impulse_response() {
     float y;       // output
 
     // Load filter coefficients externally
-    fir_filter_rrrf f = fir_filter_rrrf_create(h, 10);
+    firfilt_rrrf f = firfilt_rrrf_create(h, 10);
 
     unsigned int i;
     // Resulting output should be equal to filter coefficients
     for (i=0; i<10; i++) {
-        fir_filter_rrrf_push(f, x[i]);
-        fir_filter_rrrf_execute(f, &y);
+        firfilt_rrrf_push(f, x[i]);
+        firfilt_rrrf_execute(f, &y);
         CONTEND_EQUALITY( y, h[i]);
     }
 
     // Impulse response should be finite
     for (i=10; i<20; i++) {
-        fir_filter_rrrf_push(f, x[i]);
-        fir_filter_rrrf_execute(f, &y);
+        firfilt_rrrf_push(f, x[i]);
+        firfilt_rrrf_execute(f, &y);
         CONTEND_DELTA( 0.0f, y, 0.001 );
     }
 
-    fir_filter_rrrf_destroy(f);
+    firfilt_rrrf_destroy(f);
 }
 
 void autotest_noise_01()
@@ -102,19 +103,19 @@ void autotest_noise_01()
 
 
     // Load filter coefficients externally
-    fir_filter_rrrf f = fir_filter_rrrf_create(h, 10);
+    firfilt_rrrf f = firfilt_rrrf_create(h, 10);
 
     unsigned int i;
     // 
     for (i=0; i<32; i++) {
-        fir_filter_rrrf_push(f, x[i]);
-        fir_filter_rrrf_execute(f, &y);
+        firfilt_rrrf_push(f, x[i]);
+        firfilt_rrrf_execute(f, &y);
         CONTEND_DELTA( test[i], y, 0.001 );
     }
 
-    fir_filter_rrrf_destroy(f);
+    firfilt_rrrf_destroy(f);
 }
 
 
-#endif // __FIR_FILTER_RRRF_AUTOTEST_H__
+#endif // __FIRFILT_RRRF_AUTOTEST_H__
 

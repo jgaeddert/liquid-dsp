@@ -20,7 +20,7 @@ struct ricek_channel_s {
     float s;
     float fd;
     float theta;
-    fir_filter_cccf f;
+    firfilt_cccf f;
 };
 
 struct channel_s {
@@ -31,8 +31,8 @@ struct channel_s {
     float std;      // log-normal shadowing std. dev.
     float n0;       // AWGN std. dev.
 
-    fir_filter_cccf f_ricek;     // doppler filter (Rice-K fading)
-    fir_filter_rrrf f_lognorm;   // doppler filter (Log-normal shadowing)
+    firfilt_cccf f_ricek;     // doppler filter (Rice-K fading)
+    firfilt_rrrf f_lognorm;   // doppler filter (Log-normal shadowing)
 
     // internal
     float s, sig;

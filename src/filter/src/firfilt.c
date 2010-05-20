@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +20,7 @@
  */
 
 //
-// Finite impulse response filter
+// firfilt : finite impulse response (FIR) filter
 //
 
 #include <stdio.h>
@@ -27,13 +28,13 @@
 #include <stdlib.h>
 
 // defined:
-//  FIR_FILTER()    name-mangling macro
+//  FIRFILT()       name-mangling macro
 //  T               coefficients type
 //  WINDOW()        window macro
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
-struct FIR_FILTER(_s) {
+struct FIRFILT(_s) {
     TC * h;
     unsigned int h_len;
 
@@ -43,9 +44,9 @@ struct FIR_FILTER(_s) {
     fir_prototype p;
 };
 
-FIR_FILTER() FIR_FILTER(_create)(TC * _h, unsigned int _n)
+FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n)
 {
-    FIR_FILTER() f = (FIR_FILTER()) malloc(sizeof(struct FIR_FILTER(_s)));
+    FIRFILT() f = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
     f->h_len = _n;
     f->h = (TC *) malloc((f->h_len)*sizeof(TC));
 
@@ -57,15 +58,15 @@ FIR_FILTER() FIR_FILTER(_create)(TC * _h, unsigned int _n)
     f->w = WINDOW(_create)(f->h_len);
     f->dp = DOTPROD(_create)(f->h, f->h_len);
 
-    FIR_FILTER(_clear)(f);
+    FIRFILT(_clear)(f);
 
     return f;
 }
 
-FIR_FILTER() FIR_FILTER(_create_prototype)(unsigned int _n)
+FIRFILT() FIRFILT(_create_prototype)(unsigned int _n)
 {
-    printf("warning: fir_filter_create_prototype(), not yet implemented\n");
-    FIR_FILTER() f = (FIR_FILTER()) malloc(sizeof(struct FIR_FILTER(_s)));
+    fprintf(stderr,"warning: firfilt_xxxt_create_prototype(), not yet implemented\n");
+    FIRFILT() f = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
     f->h_len = _n;
     f->h = (TC *) malloc((f->h_len)*sizeof(TC));
 
@@ -74,7 +75,7 @@ FIR_FILTER() FIR_FILTER(_create_prototype)(unsigned int _n)
     return f;
 }
 
-FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f, TC * _h, unsigned int _n)
+FIRFILT() FIRFILT(_recreate)(FIRFILT() _f, TC * _h, unsigned int _n)
 {
     unsigned int i;
     if (_n != _f->h_len) {
@@ -96,7 +97,7 @@ FIR_FILTER() FIR_FILTER(_recreate)(FIR_FILTER() _f, TC * _h, unsigned int _n)
 }
 
 
-void FIR_FILTER(_destroy)(FIR_FILTER() _f)
+void FIRFILT(_destroy)(FIRFILT() _f)
 {
     WINDOW(_destroy)(_f->w);
     DOTPROD(_destroy)(_f->dp);
@@ -104,12 +105,12 @@ void FIR_FILTER(_destroy)(FIR_FILTER() _f)
     free(_f);
 }
 
-void FIR_FILTER(_clear)(FIR_FILTER() _f)
+void FIRFILT(_clear)(FIRFILT() _f)
 {
     WINDOW(_clear)(_f->w);
 }
 
-void FIR_FILTER(_print)(FIR_FILTER() _f)
+void FIRFILT(_print)(FIRFILT() _f)
 {
     printf("filter coefficients:\n");
     unsigned int i, n = _f->h_len;
@@ -120,12 +121,12 @@ void FIR_FILTER(_print)(FIR_FILTER() _f)
     }
 }
 
-void FIR_FILTER(_push)(FIR_FILTER() _f, TI _x)
+void FIRFILT(_push)(FIRFILT() _f, TI _x)
 {
     WINDOW(_push)(_f->w, _x);
 }
 
-void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y)
+void FIRFILT(_execute)(FIRFILT() _f, TO *_y)
 {
     TI *r;
     WINDOW(_read)(_f->w, &r);
@@ -133,7 +134,7 @@ void FIR_FILTER(_execute)(FIR_FILTER() _f, TO *_y)
     DOTPROD(_execute)(_f->dp, r, _y);
 }
 
-unsigned int FIR_FILTER(_get_length)(FIR_FILTER() _f)
+unsigned int FIRFILT(_get_length)(FIRFILT() _f)
 {
     return _f->h_len;
 }

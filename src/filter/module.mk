@@ -60,8 +60,8 @@ local_t_files	:= 			\
 	decim_autotest.h		\
 	firdes_autotest.h		\
 	firdespm_autotest.h		\
-	fir_filter_rrrf_autotest.h	\
-	fir_filter_crcf_autotest.h	\
+	firfilt_rrrf_autotest.h		\
+	firfilt_crcf_autotest.h		\
 	firhilb_autotest.h		\
 	firpfb_autotest.h		\
 	iirdes_autotest.h		\
@@ -82,7 +82,7 @@ local_b_files	:=			\
 	dds_benchmark.h			\
 	decim_benchmark.h		\
 	firhilb_benchmark.h		\
-	fir_filter_benchmark.h		\
+	firfilt_rrrf_benchmark.h	\
 	iirfilt_benchmark.h		\
 	interp_benchmark.h		\
 	qmfb_benchmark.h		\

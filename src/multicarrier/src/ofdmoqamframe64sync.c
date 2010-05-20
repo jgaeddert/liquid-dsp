@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -95,7 +96,7 @@ struct ofdmoqamframe64sync_s {
 
     // cross-correlator
     float complex * hxy;
-    fir_filter_cccf crosscorr;
+    firfilt_cccf crosscorr;
 
     // carrier frequency offset (CFO) estimation, compensation
     float nu_hat;
@@ -230,7 +231,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
         q->hxy[i] = conjf(q->X0[64-i-1]);
     // fftshift
     //fft_shift(q->hxy,64);
-    q->crosscorr = fir_filter_cccf_create(q->hxy, q->num_subcarriers);
+    q->crosscorr = firfilt_cccf_create(q->hxy, q->num_subcarriers);
     ofdmoqam_destroy(cs);
 
     // input buffer
@@ -304,7 +305,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     autocorr_cccf_destroy(_q->autocorr);
 
     // free cross-correlator memory objects
-    fir_filter_cccf_destroy(_q->crosscorr);
+    firfilt_cccf_destroy(_q->crosscorr);
     free(_q->hxy);
 
     // free gain arrays
@@ -641,8 +642,8 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 {
     // cross-correlator
     float complex rxy;
-    fir_filter_cccf_push(_q->crosscorr, _x);
-    fir_filter_cccf_execute(_q->crosscorr, &rxy);
+    firfilt_cccf_push(_q->crosscorr, _x);
+    firfilt_cccf_execute(_q->crosscorr, &rxy);
 
     rxy *= _q->g;
 
@@ -687,8 +688,8 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 {
     // cross-correlator
     float complex rxy;
-    fir_filter_cccf_push(_q->crosscorr, _x);
-    fir_filter_cccf_execute(_q->crosscorr, &rxy);
+    firfilt_cccf_push(_q->crosscorr, _x);
+    firfilt_cccf_execute(_q->crosscorr, &rxy);
 
     rxy *= _q->g;
 

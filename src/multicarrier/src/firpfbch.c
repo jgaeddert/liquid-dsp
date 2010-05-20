@@ -31,7 +31,7 @@
 
 #define DEBUG_FIRPFBCH_PRINT    0
 
-#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_crcf,name)
+#define FIRFILT(name)       LIQUID_CONCAT(firfilt_crcf,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
 #define WINDOW(name)        LIQUID_CONCAT(cfwindow,name)
 

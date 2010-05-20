@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,15 +19,15 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FIR_FILTER_CRCF_AUTOTEST_H__
-#define __FIR_FILTER_CRCF_AUTOTEST_H__
+#ifndef __FIRFILT_CRCF_AUTOTEST_H__
+#define __FIRFILT_CRCF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-#define FIR_FILTER_CRCF_AUTOTEST_VERBOSE 0
+#define FIRFILT_CRCF_AUTOTEST_VERBOSE 0
 
-void autotest_fir_filter_crcf_noise_01()
+void autotest_firfilt_crcf_noise_01()
 {
     // Initialize variables
     float h[10] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
@@ -75,13 +76,13 @@ void autotest_fir_filter_crcf_noise_01()
 
 
     // Load filter coefficients externally
-    fir_filter_crcf f = fir_filter_crcf_create(h, 10);
+    firfilt_crcf f = firfilt_crcf_create(h, 10);
 
     unsigned int i;
     // compute output
     for (i=0; i<32; i++) {
-        fir_filter_crcf_push(f, x[i]);
-        fir_filter_crcf_execute(f, &y[i]);
+        firfilt_crcf_push(f, x[i]);
+        firfilt_crcf_execute(f, &y[i]);
     }
 
     // run check
@@ -90,7 +91,7 @@ void autotest_fir_filter_crcf_noise_01()
         CONTEND_DELTA( cimagf(test[i]), cimagf(y[i]), 0.001 );
     }
 
-#if FIR_FILTER_CRCF_AUTOTEST_VERBOSE
+#if FIRFILT_CRCF_AUTOTEST_VERBOSE
     printf("x = zeros(1,32); y = zeros(1,32); z = zeros(1,32);\n");
     printf("h = zeros(1,10);\n");
     for (i=0; i<10; i++)
@@ -107,9 +108,9 @@ void autotest_fir_filter_crcf_noise_01()
     printf("subplot(2,1,2); plot(1:32,imag(y),1:32,imag(z),'x',1:32,imag(z_hat),'s');\n");
 #endif
 
-    fir_filter_crcf_destroy(f);
+    firfilt_crcf_destroy(f);
 }
 
 
-#endif // __FIR_FILTER_CRCF_AUTOTEST_H__
+#endif // __FIRFILT_CRCF_AUTOTEST_H__
 

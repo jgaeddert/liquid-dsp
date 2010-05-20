@@ -28,7 +28,7 @@
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrf,name)
 #define FIR_FARROW(name)    LIQUID_CONCAT(fir_farrow_rrrf,name)
-#define FIR_FILTER(name)    LIQUID_CONCAT(fir_filter_rrrf,name)
+#define FIRFILT(name)       LIQUID_CONCAT(firfilt_rrrf,name)
 #define FIRHILB(name)       LIQUID_CONCAT(firhilb,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrf,name)
@@ -63,7 +63,7 @@
 // source files
 //#include "autocorr.c"
 #include "fir_farrow.c"
-#include "fir_filter.c"
+#include "firfilt.c"
 #include "firhilb.c"
 #include "firpfb.c"
 #include "iirfilt.c"
