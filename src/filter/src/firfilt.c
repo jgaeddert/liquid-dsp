@@ -34,108 +34,155 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
+// firfilt object structure
 struct FIRFILT(_s) {
-    TC * h;
-    unsigned int h_len;
+    TC * h;             // filter coefficients array [size; h_len x 1]
+    unsigned int h_len; // filter length
 
-    WINDOW() w;
-    DOTPROD() dp;
+    WINDOW() w;         // window object (internal buffer)
+    DOTPROD() dp;       // dot product object
 
-    fir_prototype p;
+#if 0
+    fir_prototype p;    // prototype object
+#endif
 };
 
-FIRFILT() FIRFILT(_create)(TC * _h, unsigned int _n)
+// create firfilt object
+//  _h      :   coefficients (filter taps) [size: _n x 1]
+//  _n      :   filter length
+FIRFILT() FIRFILT(_create)(TC * _h,
+                           unsigned int _n)
 {
-    FIRFILT() f = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
-    f->h_len = _n;
-    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
+    // validate input
+    if (_h == 0) {
+        fprintf(stderr,"error: firfilt_xxxt_create(), filter length must be greater than zero\n");
+        exit(1);
+    }
+
+    // create filter object and initialize
+    FIRFILT() q = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
+    q->h_len = _n;
+    q->h = (TC *) malloc((q->h_len)*sizeof(TC));
+
+    // create window (internal buffer)
+    q->w = WINDOW(_create)(q->h_len);
 
     // load filter in reverse order
     unsigned int i;
     for (i=_n; i>0; i--)
-        f->h[i-1] = _h[_n-i];
+        q->h[i-1] = _h[_n-i];
 
-    f->w = WINDOW(_create)(f->h_len);
-    f->dp = DOTPROD(_create)(f->h, f->h_len);
+    // create dot product object
+    q->dp = DOTPROD(_create)(q->h, q->h_len);
 
-    FIRFILT(_clear)(f);
+    // reset filter state (clear buffer)
+    FIRFILT(_clear)(q);
 
-    return f;
+    return q;
 }
 
+// create firfilt object from prototype
 FIRFILT() FIRFILT(_create_prototype)(unsigned int _n)
 {
-    fprintf(stderr,"warning: firfilt_xxxt_create_prototype(), not yet implemented\n");
-    FIRFILT() f = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
-    f->h_len = _n;
-    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
+    fprintf(stderr,"error: firfilt_xxxt_create_prototype(), not yet implemented\n");
+    exit(1);
 
-    // use remez here
+    FIRFILT() q = (FIRFILT()) malloc(sizeof(struct FIRFILT(_s)));
+    q->h_len = _n;
+    q->h = (TC *) malloc((q->h_len)*sizeof(TC));
 
-    return f;
+    // use firdespm here
+
+    return q;
 }
 
-FIRFILT() FIRFILT(_recreate)(FIRFILT() _f, TC * _h, unsigned int _n)
+// re-create firfilt object
+//  _q      :   original firfilt object
+//  _h      :   new coefficients [size: _n x 1]
+//  _n      :   new filter length
+FIRFILT() FIRFILT(_recreate)(FIRFILT() _q,
+                             TC * _h,
+                             unsigned int _n)
 {
     unsigned int i;
-    if (_n != _f->h_len) {
-        // reallocate memory
-        _f->h_len = _n;
-        _f->h = (TC*) realloc(_f->h, (_f->h_len)*sizeof(TC));
 
-        _f->w = WINDOW(_recreate)(_f->w, _f->h_len);
+    // reallocate memory array if filter length has changed
+    if (_n != _q->h_len) {
+        // reallocate memory
+        _q->h_len = _n;
+        _q->h = (TC*) realloc(_q->h, (_q->h_len)*sizeof(TC));
+
+        // recreate window object, preserving internal state
+        _q->w = WINDOW(_recreate)(_q->w, _q->h_len);
     }
 
     // load filter in reverse order
     for (i=_n; i>0; i--)
-        _f->h[i-1] = _h[_n-i];
+        _q->h[i-1] = _h[_n-i];
 
-    DOTPROD(_destroy)(_f->dp);
-    _f->dp = DOTPROD(_create)(_f->h, _f->h_len);
+    // re-create dot product object
+    DOTPROD(_destroy)(_q->dp);
+    _q->dp = DOTPROD(_create)(_q->h, _q->h_len);
 
-    return _f;
+    return _q;
 }
 
-
-void FIRFILT(_destroy)(FIRFILT() _f)
+// destroy firfilt object
+void FIRFILT(_destroy)(FIRFILT() _q)
 {
-    WINDOW(_destroy)(_f->w);
-    DOTPROD(_destroy)(_f->dp);
-    free(_f->h);
-    free(_f);
+    WINDOW(_destroy)(_q->w);
+    DOTPROD(_destroy)(_q->dp);
+    free(_q->h);
+    free(_q);
 }
 
-void FIRFILT(_clear)(FIRFILT() _f)
+// reset internal state of filter object
+void FIRFILT(_clear)(FIRFILT() _q)
 {
-    WINDOW(_clear)(_f->w);
+    WINDOW(_clear)(_q->w);
 }
 
-void FIRFILT(_print)(FIRFILT() _f)
+// print filter object internals (taps, buffer)
+void FIRFILT(_print)(FIRFILT() _q)
 {
     printf("filter coefficients:\n");
-    unsigned int i, n = _f->h_len;
+    unsigned int i, n = _q->h_len;
     for (i=0; i<n; i++) {
         printf("  h(%3u) = ", i+1);
-        PRINTVAL_TC(_f->h[n-i-1],%12.8f);
+        PRINTVAL_TC(_q->h[n-i-1],%12.8f);
         printf("\n");
     }
+
+    WINDOW(_print)(_q->w);
 }
 
-void FIRFILT(_push)(FIRFILT() _f, TI _x)
+// push sample into filter object's internal buffer
+//  _q      :   filter object
+//  _x      :   input sample
+void FIRFILT(_push)(FIRFILT() _q,
+                    TI _x)
 {
-    WINDOW(_push)(_f->w, _x);
+    WINDOW(_push)(_q->w, _x);
 }
 
-void FIRFILT(_execute)(FIRFILT() _f, TO *_y)
+// compute output sample (dot product between internal
+// filter coefficients and internal buffer)
+//  _q      :   filter object
+//  _y      :   output sample pointer
+void FIRFILT(_execute)(FIRFILT() _q,
+                       TO *_y)
 {
+    // read buffer (retrieve pointer to aligned memory array)
     TI *r;
-    WINDOW(_read)(_f->w, &r);
-    //DOTPROD(_run)(_f->h, r, _f->h_len, _y);
-    DOTPROD(_execute)(_f->dp, r, _y);
+    WINDOW(_read)(_q->w, &r);
+
+    // execute dot product
+    DOTPROD(_execute)(_q->dp, r, _y);
 }
 
-unsigned int FIRFILT(_get_length)(FIRFILT() _f)
+// get filter length
+unsigned int FIRFILT(_get_length)(FIRFILT() _q)
 {
-    return _f->h_len;
+    return _q->h_len;
 }
 
