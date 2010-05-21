@@ -19,17 +19,19 @@ local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 ## 
 src/interleaver_scatterplot : src/interleaver_scatterplot.c $(lib_objects)
 
+scatterplot_opts := -n 64 -t block
+
 figures.gen/interleaver_scatterplot_i0.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i0.gnu -n64 -t sequence -i0
+	./$< -f figures.gen/interleaver_scatterplot_i0.gnu $(scatterplot_opts) -i0
 
 figures.gen/interleaver_scatterplot_i1.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i1.gnu -n64 -t sequence -i1
+	./$< -f figures.gen/interleaver_scatterplot_i1.gnu $(scatterplot_opts) -i1
 
 figures.gen/interleaver_scatterplot_i2.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i2.gnu -n64 -t sequence -i2
+	./$< -f figures.gen/interleaver_scatterplot_i2.gnu $(scatterplot_opts) -i2
 
 figures.gen/interleaver_scatterplot_i3.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i3.gnu -n64 -t sequence -i3
+	./$< -f figures.gen/interleaver_scatterplot_i3.gnu $(scatterplot_opts) -i3
 
 ##
 ## target collection
