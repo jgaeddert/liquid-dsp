@@ -4,7 +4,33 @@
 
 \section{interleaver}
 \label{module:interleaver}
-bit- and symbol-level
+
+This section describes the functionality of the \liquid\
+{\tt interleaver} object.
+Interleavers serve to distribute grouped bit errors evenly throughout a block
+of data.
+This aids certain forward error-correction (FEC) codes in correcting
+bit errors (see section~\ref{module:fec} on error-correcting codes).
+On the transmit side of the wireless link, the interleaver re-orders the bits
+after FEC encoding and before modulation.
+On the receiving side, the de-interleaver re-shuffles the bits to their
+original position before attempting to run the FEC decoder.
+
+%The {\tt interleaver} object
+
+The bit-shuffling order must be known at both the transmitter and receiver.
+Two options are available in \liquid\ for shuffling bits:
+{\tt INT\_BLOCK} and {\tt INT\_SEQUENCE}.
+
+\subsection{{\tt INT\_BLOCK} (block interleaving)}
+\label{module:interleaver:block}
+
+\subsection{{\tt INT\_SEQUENCE} ($m$-sequence interleaving)}
+\label{module:interleaver:sequence}
+See also {\tt msequence} (section~\ref{module:sequence}).
+
+\subsection{interface}
+\label{module:interleaver:interface}
 
 %-------------------- FIGURE: interleaver scatterplot --------------------
 \begin{figure}
