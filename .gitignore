@@ -1,12 +1,18 @@
+# ignore all object files
 *.o
 *.d
 *.dylib
 *.dSYM
-*.m
 *.a
 *.so
+
+# ignore swap files for vim editing
 *.swp
+
+# build objects 
 autom4te.cache
+
+# ignore all aut-generated targets
 autotest_include.h
 benchmark
 benchmark_include.h
@@ -19,4 +25,7 @@ makefile
 todolist.txt
 todolist.html
 xautotest
+*.m
 
+# miscellany
+octave-core
