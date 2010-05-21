@@ -73,19 +73,22 @@ When using the direct memory access method, the size of the data request
 during lock is limited by the size of the port.
 [[race/lock conditions?]]
 
-\subsection{window}
-used to implement a sliding window
+\subsection{{\tt window} buffer}
+\label{module:buffer:window}
+The {\tt window} object is used to implement a sliding window buffer.
 
-{\tt window\_recreate()}
-Similar to the standard C library's realloc(), recreate() extends an existing
-window...
+\subsubsection{interface}
+\label{module:buffer:window:interface}
+
+\paragraph{{\tt window\_create()}}
+creates a new window of a certain length.
+
+\paragraph{{\tt window\_recreate()}}
+Similar to the standard C library's {\tt realloc()}, {\tt recreate()} extends
+an existing window...
 If the size of the new window is larger than the old one, the old values are
 pushed to the end
 
-\begin{verbatim}
-8   : 1 2 3 4 5 6 7 8
-16  : 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8
+Here is an example:
+\input{listings/window.example.c.tex}
 
-8   : 1 2 3 4 5 6 7 8
-4   : 5 6 7 8
-\end{verbatim}
