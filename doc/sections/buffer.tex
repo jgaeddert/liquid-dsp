@@ -76,6 +76,27 @@ during lock is limited by the size of the port.
 \subsection{{\tt window} buffer}
 \label{module:buffer:window}
 The {\tt window} object is used to implement a sliding window buffer.
+It is essentially a first-in, first-out queue but with the constraint that a
+fixed number of elements is always available, and the ability to read the
+entire queue at once.
+This is particularly useful for filtering objects which use time-domain
+convolution of a fixed length to compute its outputs.
+Unlike the {\tt gport} object, {\tt window} objects operate on a known data
+type, e.g.
+{\it float} ({\tt fwindow}), and
+{\it float complex} ({\tt cfwindow}).
+%{\it unsigned int} ({\tt uiwindow}).
+
+The buffer has a fixed number of elements which are initially zeros.
+Values may be pushed into the end of the buffer (into the ``right'' side)
+using the {\tt push()} method, or written in blocks via {\tt write()}.
+In both cases the oldest data samples are removed from the buffer (out of the
+``left'' side).
+When it is necessary to read the contents of the buffer, the {\tt read()}
+method returns a pointer to its contents.
+\liquid\ implements this shifting method in the same manner as a ring buffer,
+and linearizes the data very efficiently, without performing any unnecessary
+data memory copies.
 
 \subsubsection{interface}
 \label{module:buffer:window:interface}
