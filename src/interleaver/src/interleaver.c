@@ -114,12 +114,16 @@ void interleaver_encode(interleaver _q,
 {
     memcpy(_msg_enc, _msg_dec, _q->len);
 
-    interleaver_permute_forward(_msg_enc, _q->p, _q->len);
+    // first iteration operates just on bytes
+    if (_q->num_iterations > 0)
+        interleaver_permute_forward(_msg_enc, _q->p, _q->len);
 
     unsigned int i;
     unsigned char mask=0x00;
-    for (i=0; i<_q->num_iterations; i++) {
-        mask = interleaver_mask[i];
+    for (i=1; i<_q->num_iterations; i++) {
+        unsigned int mask_id = i-1;
+        mask = interleaver_mask[mask_id];
+
         interleaver_circshift_L4(_msg_enc, _q->len);
         interleaver_permute_forward_mask(_msg_enc, _q->p, _q->len, mask);
     }
@@ -137,13 +141,16 @@ void interleaver_decode(interleaver _q,
 
     unsigned int i;
     unsigned char mask=0x00;
-    for (i=0; i<_q->num_iterations; i++) {
-        mask = interleaver_mask[_q->num_iterations-i-1];
+    for (i=1; i<_q->num_iterations; i++) {
+        unsigned int mask_id = _q->num_iterations-i;
+        mask = interleaver_mask[mask_id];
 
         interleaver_permute_reverse_mask(_msg_dec, _q->p, _q->len, mask);
         interleaver_circshift_R4(_msg_dec, _q->len);
     }
 
-    interleaver_permute_reverse(_msg_dec, _q->p, _q->len);
+    // first iteration operates just on bytes
+    if (_q->num_iterations > 0)
+        interleaver_permute_reverse(_msg_dec, _q->p, _q->len);
 }
 
