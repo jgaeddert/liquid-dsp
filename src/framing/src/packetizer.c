@@ -74,7 +74,7 @@ packetizer packetizer_create(unsigned int _n,
     for (i=0; i<p->plan_len; i++) {
         // set schemes
         p->plan[i].fs = (i==0) ? _fec0 : _fec1;
-        p->plan[i].intlv_scheme = INT_BLOCK;
+        p->plan[i].intlv_scheme = LIQUID_INTERLEAVER_BLOCK;
 
         // compute lengths
         p->plan[i].dec_msg_len = n0;
@@ -201,9 +201,9 @@ void packetizer_encode(packetizer _p,
                    _p->buffer_1);
 
         // run the interleaver: buffer[1] > buffer[0]
-        interleaver_interleave(_p->plan[i].q,
-                               _p->buffer_1,
-                               _p->buffer_0);
+        interleaver_encode(_p->plan[i].q,
+                           _p->buffer_1,
+                           _p->buffer_0);
     }
 
     // copy result to output
@@ -229,9 +229,9 @@ int packetizer_decode(packetizer _p,
     unsigned int i;
     for (i=_p->plan_len; i>0; i--) {
         // run the de-interleaver: buffer[0] > buffer[1]
-        interleaver_deinterleave(_p->plan[i-1].q,
-                                 _p->buffer_0,
-                                 _p->buffer_1);
+        interleaver_decode(_p->plan[i-1].q,
+                           _p->buffer_0,
+                           _p->buffer_1);
 
         // run the decoder: buffer[1] > buffer[0]
         fec_decode(_p->plan[i-1].f,

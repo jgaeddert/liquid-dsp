@@ -41,6 +41,9 @@
 //  [Rabiner:1975] L. R. Rabiner, J. H. McClellan, T. W. Parks, "FIR
 //      Digital filter Design Techniques Using Weighted Chebyshev
 //      Approximations," Proceedings of the IEEE, March 1975.
+//  [Parks:1987] T. W. Parks and C. S. Burrus, "Digital Filter
+//      Design," Upper Saddle River, NJ, John Wiley & Sons, Inc., 1987
+//      (Section 3.3.3)
 //  [Janovetz:1998] J. Janovetz, online: http://www.janovetz.com/jake/
 
 #include <stdio.h>

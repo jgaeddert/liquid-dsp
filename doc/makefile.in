@@ -4,23 +4,23 @@
 # Includes targets for listings, figures, etc.
 #
 
-TEX = pdflatex
+TEX = @PDFLATEX@
 TEX_FLAGS = --shell-escape
-BIB = bibtex
+BIB = @BIBTEX@
 BIB_FLAGS =
-CC = gcc
+CC = @CC@
 CFLAGS :=
 LDFLAGS = -lliquid
 RM = rm -f
 MV = mv
 
-EPSTOPDF = epstopdf
+EPSTOPDF = @EPSTOPDF@
 EPSTOPDF_FLAGS = --compress
 
-GNUPLOT = gnuplot
+GNUPLOT = @GNUPLOT@
 GNUPLOT_VERSION = 4.2
 
-PYGMENTIZE = pygmentize
+PYGMENTIZE = @PYGMENTIZE@
 PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
@@ -44,7 +44,8 @@ LISTINGS = 					\
 	listings/matrix.example.c.tex		\
 	listings/nco.c++.tex			\
 	listings/packetizer.example.c.tex	\
-	listings/resamp_crcf.example.c.tex
+	listings/resamp_crcf.example.c.tex	\
+	listings/window.example.c.tex
 
 # .tex inputs
 SECTIONS :=					\

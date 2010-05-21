@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +20,9 @@
  */
 
 //
+// interleaver_create.c
 //
+// Create and initialize interleaver objects
 //
 
 #include <stdlib.h>
@@ -36,18 +39,18 @@ interleaver interleaver_create(unsigned int _n,
     q->p = (unsigned int *) malloc((q->len)*sizeof(unsigned int));
     q->t = (unsigned char*) malloc((q->len)*sizeof(unsigned char));
 
-    if (_n < 3) _type = INT_BLOCK;
+    if (_n < 3) _type = LIQUID_INTERLEAVER_BLOCK;
 
     // initialize here
     switch (_type) {
-    case INT_BLOCK:
+    case LIQUID_INTERLEAVER_BLOCK:
         interleaver_init_block(q);
         break;
-    case INT_SEQUENCE:
+    case LIQUID_INTERLEAVER_SEQUENCE:
         interleaver_init_sequence(q);
         break;
     default:
-        printf("error: interleaver_create(), invalid type\n");
+        fprintf(stderr,"error: interleaver_create(), invalid type\n");
         exit(1);
     }
 
@@ -57,6 +60,7 @@ interleaver interleaver_create(unsigned int _n,
     return q;
 }
 
+// destroy interleaver object
 void interleaver_destroy(interleaver _q)
 {
     free(_q->p);
@@ -64,6 +68,7 @@ void interleaver_destroy(interleaver _q)
     free(_q);
 }
 
+// initialize block interleaver
 void interleaver_init_block(interleaver _q)
 {
     unsigned int i,M=0,N,L=_q->len;
@@ -103,6 +108,7 @@ void interleaver_init_block(interleaver _q)
 
 }
 
+// initialize m-sequence interleaver
 void interleaver_init_sequence(interleaver _q)
 {
     // generate msequence
@@ -125,6 +131,7 @@ void interleaver_init_sequence(interleaver _q)
     }
 }
 
+// set number of internal iterations
 void interleaver_set_num_iterations(interleaver _q,
                                     unsigned int _n)
 {

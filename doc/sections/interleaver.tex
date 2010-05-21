@@ -4,7 +4,96 @@
 
 \section{interleaver}
 \label{module:interleaver}
-bit- and symbol-level
+
+This section describes the functionality of the \liquid\ {\tt interleaver}
+object.
+In wireless communications systems, bit errors are often grouped together as a
+result of multi-path fading, demodulator symbol errors, and synchronizer
+instability.
+Interleavers serve to distribute grouped bit errors evenly throughout a block
+of data which aids certain forward error-correction (FEC) codes in their
+decoding process (see section~\ref{module:fec} on error-correcting codes).
+On the transmit side of the wireless link, the interleaver re-orders the bits
+after FEC encoding and before modulation.
+On the receiving side, the de-interleaver re-shuffles the bits to their
+original position before attempting to run the FEC decoder.
+The bit-shuffling order must be known at both the transmitter and receiver.
+
+The {\tt interleaver} object operates by permuting indices on the input data
+sequence.
+The indices are computed during the {\tt interleaver\_create()} method and
+stored internally.
+At each iteration data bytes are re-shuffled using the permutation array.
+Depending upon the properties of the array, multiple iterations should not
+result in observing the original data sequence.
+Shown below is a simple example where 8 symbols ($0,\ldots,7$) are re-ordered
+using a random permutation.
+The data at iteration 0 are the original data which are permuted twice.
+% TODO : use graphic for this...
+\begin{verbatim}
+    forward
+    permutation     iter[0]     iter[1]     iter[2]
+    0 -> 6          0           6           1
+    1 -> 4          1           4           3
+    2 -> 7          2           7           5
+    3 -> 0          3           0           6
+    4 -> 3          4           3           0
+    5 -> 2          5           2           7
+    6 -> 1          6           1           4
+    7 -> 5          7           5           2
+\end{verbatim}
+%
+Reversing the process is as simple as computing the reverse permutation from
+the input; this is equivalent to reversing the arrows in the forward
+permutation
+(e.g. the $2 \rightarrow 7$ forward permutation becomes the $7 \rightarrow 2$
+reverse permutation).
+\begin{verbatim}
+    reverse
+    permutation     iter[2]     iter[1]     iter[0]
+    0 -> 3          1           6           0
+    1 -> 6          3           4           1
+    2 -> 5          5           7           2
+    3 -> 4          6           0           3
+    4 -> 1          0           3           4
+    5 -> 7          7           2           5
+    6 -> 0          4           1           6
+    7 -> 2          2           5           7
+\end{verbatim}
+%
+Notice that permuting indices only re-orders the bytes of data and does
+nothing to shuffle the bits within the byte.
+It is beneficial to FEC decoders to separate the bit errors as much as
+possible.
+Therefore, in addition to index permutation, \liquid\ also applies masks to
+the data while permuting.
+% TODO : explain more
+
+Two options are available in \liquid\ for shuffling bits:
+{\tt LIQUID\_INTERLEAVER\_BLOCK} and {\tt LIQUID\_INTERLEAVER\_SEQUENCE}.
+These two methods are described here.
+
+\subsection{{\tt LIQUID\_INTERLEAVER\_BLOCK} (block interleaving)}
+\label{module:interleaver:block}
+The block interleaver observes the block data as a matrix:
+samples are read in by rows and out by columns.
+
+% TODO : explain more...
+
+\subsection{{\tt LIQUID\_INTERLEAVER\_SEQUENCE} ($m$-sequence interleaving)}
+\label{module:interleaver:sequence}
+This type of interleaving uses a special linear feedback shift register called
+an $m$-sequence in order to compute its permutations.
+The $m$-sequence has the special property that each symbol in the register is
+both unique and pseudo-random.
+
+% TODO : explain more...
+
+See also {\tt msequence} (section~\ref{module:sequence}).
+
+\subsection{interface}
+\label{module:interleaver:interface}
+The {\tt interleaver} object operates like most objects in \liquid; a
 
 %-------------------- FIGURE: interleaver scatterplot --------------------
 \begin{figure}
@@ -33,8 +122,8 @@ bit- and symbol-level
       \label{fig:interleaver:scatterplot:3}
     } \quad
 }
-\caption{{\tt interleaver} demonstration of a 64-byte (512-bit) sequence with
-increasing number of iterations (interleaving depth)}
+\caption{{\tt interleaver} (block) demonstration of a 64-byte (512-bit) array
+with increasing number of iterations (interleaving depth)}
 \label{fig:module:interleaver:scatterplot}
 \end{figure}
 

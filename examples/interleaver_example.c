@@ -19,7 +19,7 @@
 int main() {
     // options
     unsigned int n=9; // message length
-    interleaver_type type = INT_SEQUENCE; // interleaver type
+    interleaver_type type = LIQUID_INTERLEAVER_SEQUENCE; // interleaver type
 
     // create the interleaver
     interleaver q = interleaver_create(n, type);
@@ -38,8 +38,8 @@ int main() {
         x[i] = rand()%256;
 
     // interleave/de-interleave the data
-    interleaver_interleave(q,x,y);
-    interleaver_deinterleave(q,y,z);
+    interleaver_encode(q,x,y);
+    interleaver_decode(q,y,z);
     //interleaver_print(q);
 
     // print, compute errors

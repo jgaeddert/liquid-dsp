@@ -116,7 +116,7 @@ framegen64 framegen64_create(
     fg->enc = fec_create(FEC_HAMMING74, NULL);
 
     // create interleaver
-    fg->intlv = interleaver_create(128, INT_BLOCK);
+    fg->intlv = interleaver_create(128, LIQUID_INTERLEAVER_BLOCK);
 
     // create modulator
     fg->mod = modem_create(MOD_QPSK, 2);
@@ -169,7 +169,7 @@ void framegen64_execute(framegen64 _fg, unsigned char * _header, unsigned char *
     fec_encode(_fg->enc, 64, _fg->payload, _fg->payload_enc);
 
     // interleave payload
-    interleaver_interleave(_fg->intlv, _fg->payload_enc, _fg->payload_intlv);
+    interleaver_encode(_fg->intlv, _fg->payload_enc, _fg->payload_intlv);
 
     // compute crc32 on header, append
     unsigned int header_key = crc32_generate_key(_fg->header, 28);

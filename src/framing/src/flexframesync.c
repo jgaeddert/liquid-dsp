@@ -171,7 +171,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->fec_header = fec_create(FEC_CONV_V27, NULL);
 #endif
     fs->mod_header = modem_create(MOD_BPSK, 1);
-    fs->intlv_header = interleaver_create(32, INT_BLOCK);
+    fs->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
 
     // agc, rssi, squelch
     fs->agc_rx = agc_crcf_create();
@@ -566,7 +566,7 @@ void flexframesync_configure_payload_buffers(flexframesync _fs)
 void flexframesync_decode_header(flexframesync _fs)
 {
     // de-interleave
-    interleaver_deinterleave(_fs->intlv_header, _fs->header_enc, _fs->header_enc);
+    interleaver_decode(_fs->intlv_header, _fs->header_enc, _fs->header_enc);
 
     // run decoder
     fec_decode(_fs->fec_header, 15, _fs->header_enc, _fs->header);
