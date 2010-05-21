@@ -23,6 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
+AC_PREREQ(2.61)
 AC_INIT([liquid-doc],[0.1.0],[liquid@vt.edu])
 AC_CONFIG_SRCDIR([liquid.tex])
 
@@ -77,12 +78,26 @@ else
     AC_MSG_ERROR(Need pygmentize)
 fi
 
-# Check for necessary libraries, library functions
+##
+## Check for necessary header files
+##
+
+# AC_CHECK_HEADERS (header-files, [action-if-found], [action-if-not-found], [includes])
+AC_CHECK_HEADERS([stdio.h stdlib.h stdbool.h complex.h string.h getopt.h liquid/liquid.h],
+                 [],
+                 [AC_MSG_ERROR(missing header files)],
+                 [])
+
+##
+## Check for necessary libraries, library functions
+##
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
+AC_C_CONST
+AC_C_INLINE
 # AC_CHECK_LIB (library, function, [action-if-found], [action-if-not-found], [other-libraries])
-AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove], [],
+AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove, strcspn, strstr], [],
              [AC_MSG_ERROR(Need standard c library!)],
              [])
 AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
@@ -91,15 +106,9 @@ AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
 AC_CHECK_LIB([liquid], [modem_create], [],
              [AC_MSG_ERROR(Need liquid-dsp library!)],
              [])
-
-# Check for necessary header files
-AC_CHECK_HEADERS([stdio.h stdlib.h stdbool.h complex.h string.h getopt.h])
-if test -z "$HAVE_stdio.h"
-then
-    AC_MSG_ERROR([Need stdio.h!])
-fi
-
-# Check for optional header files, libraries
+##
+## Check for optional header files, libraries
+##
 AC_CHECK_HEADERS(pthread.h fec.h fftw3.h)
 AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
              [AC_MSG_WARN(Need POSIX thread library!)],
@@ -140,5 +149,8 @@ AC_SUBST(EPSTOPDF)          # epstopdf
 AC_SUBST(GNUPLOT)           # gnuplot
 AC_SUBST(PYGMENTIZE)        # pygmentize
 
+##
+## export output
+##
 AC_CONFIG_FILES([makefile])
 AC_OUTPUT
