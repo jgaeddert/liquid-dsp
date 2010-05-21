@@ -44,7 +44,8 @@ LISTINGS = 					\
 	listings/matrix.example.c.tex		\
 	listings/nco.c++.tex			\
 	listings/packetizer.example.c.tex	\
-	listings/resamp_crcf.example.c.tex
+	listings/resamp_crcf.example.c.tex	\
+	listings/window.example.c.tex
 
 # .tex inputs
 SECTIONS :=					\
