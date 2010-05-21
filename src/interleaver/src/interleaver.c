@@ -142,7 +142,7 @@ void interleaver_decode(interleaver _q,
     unsigned int i;
     unsigned char mask=0x00;
     for (i=1; i<_q->num_iterations; i++) {
-        unsigned int mask_id = _q->num_iterations-i;
+        unsigned int mask_id = _q->num_iterations-i-1;
         mask = interleaver_mask[mask_id];
 
         interleaver_permute_reverse_mask(_msg_dec, _q->p, _q->len, mask);
