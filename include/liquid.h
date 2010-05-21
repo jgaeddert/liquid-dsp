@@ -2065,9 +2065,11 @@ int  packetizer_decode(packetizer _p,
 //
 
 typedef struct interleaver_s * interleaver;
+
+// interleaver type
 typedef enum {
-    INT_BLOCK=0,
-    INT_SEQUENCE
+    LIQUID_INTERLEAVER_BLOCK=0,
+    LIQUID_INTERLEAVER_SEQUENCE
 } interleaver_type;
 
 // create interleaver
@@ -2076,34 +2078,36 @@ typedef enum {
 interleaver interleaver_create(unsigned int _n,
                                interleaver_type _type);
 
+// destroy interleaver object
 void interleaver_destroy(interleaver _q);
 
+// print interleaver object internals
 void interleaver_print(interleaver _q);
 
-void interleaver_init_block(interleaver _q);
-
-void interleaver_init_sequence(interleaver _q);
-
+// set number of internal iterations
+//  _q      :   interleaver object
+//  _n      :   number of iterations
 void interleaver_set_num_iterations(interleaver _q,
                                     unsigned int _n);
 
-// execute forward interleaver
+// execute forward interleaver (encoder)
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-void interleaver_interleave(interleaver _q,
-                            unsigned char * _msg_dec,
-                            unsigned char * _msg_enc);
+void interleaver_encode(interleaver _q,
+                        unsigned char * _msg_dec,
+                        unsigned char * _msg_enc);
 
-// execute reverse interleaver
+// execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_deinterleave(interleaver _i,
-                              unsigned char * _msg_enc,
-                              unsigned char * _msg_dec);
+void interleaver_decode(interleaver _q,
+                        unsigned char * _msg_enc,
+                        unsigned char * _msg_dec);
 
-void interleaver_debug_print(interleaver _i);
+// print internal debugging information
+void interleaver_debug_print(interleaver _q);
 
 
 //

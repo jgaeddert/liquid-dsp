@@ -167,7 +167,7 @@ framesync64 framesync64_create(
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
     // create (de)interleaver
-    fs->intlv = interleaver_create(128, INT_BLOCK);
+    fs->intlv = interleaver_create(128, LIQUID_INTERLEAVER_BLOCK);
 
     // create decoder
     fs->dec = fec_create(FEC_HAMMING74, NULL);
@@ -463,7 +463,7 @@ void framesync64_decode_payload(framesync64 _fs)
         framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_intlv[i]));
 
     // deinterleave payload
-    interleaver_deinterleave(_fs->intlv, _fs->payload_intlv, _fs->payload_enc);
+    interleaver_decode(_fs->intlv, _fs->payload_intlv, _fs->payload_enc);
     
     // decode payload
     fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);

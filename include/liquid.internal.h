@@ -960,17 +960,26 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 // MODULE : interleaver
 //
 
+// structured interleaver object
 struct interleaver_s {
     unsigned int * p;   // byte permutation
     unsigned int len;   // number of bytes
 
     unsigned char * t;  // temporary buffer
 
+    // number of iterations (permutations) beyond
+    // initial block interleaving
     unsigned int num_iterations;
 };
 
 #define LIQUID_INTERLEAVER_NUM_MASKS (4)
 extern const unsigned char interleaver_mask[LIQUID_INTERLEAVER_NUM_MASKS];
+
+// initialize block interleaver
+void interleaver_init_block(interleaver _q);
+
+// initialize m-sequence interleaver
+void interleaver_init_sequence(interleaver _q);
 
 //void interleaver_circshift_left(unsigned char *_x, unsigned int _n, unsigned int _s);
 //void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned int _s);

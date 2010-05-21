@@ -32,7 +32,7 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int n=8; // message length
     unsigned int num_iterations = 0;
-    interleaver_type type = INT_SEQUENCE; // interleaver type
+    interleaver_type type = LIQUID_INTERLEAVER_SEQUENCE; // interleaver type
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhn:i:t:")) != EOF) {
@@ -43,10 +43,10 @@ int main(int argc, char*argv[]) {
         case 'i': num_iterations = atoi(optarg);    break;
         case 't':
             if ( strcmp(optarg,"sequence")==0 ) {
-                type = INT_SEQUENCE;
+                type = LIQUID_INTERLEAVER_SEQUENCE;
                 break;
             } else if ( strcmp(optarg,"block")==0 ) {
-                type = INT_BLOCK;
+                type = LIQUID_INTERLEAVER_BLOCK;
                 break;
             } else {
                 fprintf(stderr,"error: %s, unsupported type '%s'\n", argv[0], optarg);
@@ -82,7 +82,7 @@ int main(int argc, char*argv[]) {
 
             // run interleaver and find most significant
             // bit in resulting array
-            interleaver_interleave(q,x,y);
+            interleaver_encode(q,x,y);
             index[k] = interleaver_find_bit(y,n);
 
             // increment index counter

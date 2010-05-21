@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -77,7 +78,8 @@ void interleaver_permute_reverse_mask(unsigned char * _x,
     memcpy(_x, tmp, _n);
 }
 
-void interleaver_circshift_L4(unsigned char *_x, unsigned int _n)
+void interleaver_circshift_L4(unsigned char *_x,
+                              unsigned int _n)
 {
     unsigned int i;
     unsigned char head, tail, mask_lo=0x0f, mask_hi=0xf0;
@@ -96,7 +98,8 @@ void interleaver_circshift_L4(unsigned char *_x, unsigned int _n)
     _x[_n-1] = head | tmp;
 }
 
-void interleaver_circshift_R4(unsigned char *_x, unsigned int _n)
+void interleaver_circshift_R4(unsigned char *_x,
+                              unsigned int _n)
 {
     unsigned int i;
     unsigned char head, tail, mask_lo=0x0f, mask_hi=0xf0;
@@ -158,7 +161,8 @@ void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned in
 }
 #endif
 
-void interleaver_compute_bit_permutation(interleaver _q, unsigned int * _p)
+void interleaver_compute_bit_permutation(interleaver _q,
+                                         unsigned int * _p)
 {
     unsigned int i, j;
     unsigned char x[_q->len], y[_q->len];
@@ -169,7 +173,7 @@ void interleaver_compute_bit_permutation(interleaver _q, unsigned int * _p)
     for (i=0; i<_q->len; i++) {
         for (j=0; j<8; j++) {
             x[i] = 1<<j;
-            interleaver_interleave(_q, x, y);
+            interleaver_encode(_q, x, y);
             // find where the bit went!
             // look for byte containing bit
             unsigned int k;

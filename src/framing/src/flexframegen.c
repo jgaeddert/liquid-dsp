@@ -97,7 +97,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 #else
     fg->fec_header = fec_create(FEC_CONV_V27, NULL);
 #endif
-    fg->intlv_header = interleaver_create(32, INT_BLOCK);
+    fg->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
 
     // initialize properties
     if (_props != NULL)
@@ -310,7 +310,7 @@ void flexframegen_encode_header(flexframegen _fg,
 #endif
 
     // interleave header bits
-    interleaver_interleave(_fg->intlv_header, _fg->header_enc, _fg->header_enc);
+    interleaver_encode(_fg->intlv_header, _fg->header_enc, _fg->header_enc);
 
 #if DEBUG_FLEXFRAMEGEN_PRINT
     // print results

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +20,7 @@
  */
 
 //
-//
+// 
 //
 
 #include <stdlib.h>
@@ -103,13 +104,13 @@ void interleaver_debug_print(interleaver _q)
     printf("  dmin: %8.2f, dmean: %8.2f\n", dmin, dmean);
 }
 
-// execute forward interleaver
+// execute forward interleaver (encoder)
 //  _q          :   interleaver object
 //  _msg_dec    :   decoded (un-interleaved) message
 //  _msg_enc    :   encoded (interleaved) message
-void interleaver_interleave(interleaver _q,
-                            unsigned char * _msg_dec,
-                            unsigned char * _msg_enc)
+void interleaver_encode(interleaver _q,
+                        unsigned char * _msg_dec,
+                        unsigned char * _msg_enc)
 {
     memcpy(_msg_enc, _msg_dec, _q->len);
 
@@ -124,13 +125,13 @@ void interleaver_interleave(interleaver _q,
     }
 }
 
-// execute reverse interleaver
+// execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
 //  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_deinterleave(interleaver _q,
-                              unsigned char * _msg_enc,
-                              unsigned char * _msg_dec)
+void interleaver_decode(interleaver _q,
+                        unsigned char * _msg_enc,
+                        unsigned char * _msg_dec)
 {
     memcpy(_msg_dec, _msg_enc, _q->len);
 
