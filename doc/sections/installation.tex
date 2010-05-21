@@ -9,6 +9,12 @@ The basic installation is as follows:
     $ make
     # make install
 \end{verbatim}
+The {\tt install} target copies the global header file {\tt liquid.h} and the
+shared object file {\tt libliquid.a} to the system directories.
+You must have root access to run make with the {\tt install} target.
+Additionally, the {\tt uninstall} target removes these files from the system
+directory.
+
 The additional makefile targets are listed here.
 
 \section{Building \& Dependencies}

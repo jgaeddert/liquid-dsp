@@ -23,6 +23,9 @@ BUILD:
 INSTALL:
     # make install
 
+UNINSTALL:
+    # make uninstall
+
 TEST: (requires python to generate header file)
     $ make check
 

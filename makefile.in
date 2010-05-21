@@ -167,8 +167,10 @@ libliquid.dylib: $(objects)
 libliquid.so: $(libraries)
 	$(CC) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
 
-# TARGET: install
-#
+## 
+## TARGET: install
+##
+
 # Installs the libraries and header files in the host system
 install:
 	@echo "installing..."
@@ -177,6 +179,30 @@ install:
 	mkdir -p $(prefix)/include
 	mkdir -p $(prefix)/include/liquid
 	install -m 644 -p include/liquid.h $(prefix)/include/liquid
+	@echo ""
+	@echo "---------------------------------------------------------"
+	@echo "  liquid-dsp was successfully installed.     "
+	@echo ""
+	@echo "  On some machines (e.g. Linux) you should rebind your"
+	@echo "  libraries by running 'ldconfig' to make the shared"
+	@echo "  object available.  You might also need to modify your"
+	@echo "  LD_LIBRARY_PATH environment variable to include the"
+	@echo "  directory $(exec_prefix)"
+	@echo "---------------------------------------------------------"
+	@echo ""
+
+## 
+## TARGET: uninstall
+##
+
+# Uninstalls the libraries and header files in the host system
+uninstall:
+	@echo "uninstalling..."
+	@echo "removing header \"$(prefix)/include/liquid/liquid.h\" ..."
+	$(RM) $(prefix)/include/liquid/liquid.h
+	@echo "removing library \"$(exec_prefix)/lib/libliquid.a\" ..."
+	$(RM) $(exec_prefix)/lib/libliquid.a
+	@echo "done."
 
 # Autotests
 #
