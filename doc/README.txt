@@ -19,9 +19,11 @@ Documentation dependencies:
     gnuplot     : v4.2 (?)
     pygments    : (sudo apt-get install python-pygments)
     pgf 2.0     : (sudo apt-get install pgf)
+    liquid      : build and install the base DSP libraries
+
+    (experimental html dependencies)
     dvipng      : dvi to png converter (sudo apt-get install dvipng)
     convert     : ImageMagick's command-line image conversion (html)
-    liquid      : build and install the base DSP libraries
 
 Documentation targets:
     liquid.pdf      :   main documentation file

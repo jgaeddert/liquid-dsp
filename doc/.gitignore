@@ -1,3 +1,8 @@
+# configuration files
+autom4te.cache
+config.status
+config.log
+configure
 # ignore all TeX-generated files
 *.aux
 *.bbl
