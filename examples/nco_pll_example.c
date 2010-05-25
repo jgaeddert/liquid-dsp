@@ -27,20 +27,20 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  b     : pll bandwidth, default: 0.01\n");
     printf("  n     : number of samples, default: 512\n");
-    printf("  p     : phase offset (radians), default: 0\n");
+    printf("  p     : phase offset (radians), default: pi/4\n");
     printf("  f     : frequency offset (radians), default: 0.3\n");
 }
 
 int main(int argc, char*argv[]) {
     srand( time(NULL) );
     // parameters
-    float phase_offset = 0;
+    float phase_offset = M_PI / 4.0f;
     float frequency_offset = 0.3f;
     float pll_bandwidth = 0.01f;
     unsigned int n=512;     // number of iterations
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhb:n:p:f")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhb:n:p:f:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();    return 0;
@@ -81,8 +81,10 @@ int main(int argc, char*argv[]) {
 
     // run loop
     for (i=0; i<n; i++) {
-        if (i == n/2)
-            nco_pll_set_bandwidth(nco_rx, pll_bandwidth*0.5f);
+#if 0
+        // test resetting bandwidth in middle of acquisition
+        if (i == 100) nco_pll_set_bandwidth(nco_rx, pll_bandwidth*0.2f);
+#endif
 
         // generate complex sinusoid
         nco_cexpf(nco_rx, &y[i]);

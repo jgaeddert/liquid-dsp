@@ -39,15 +39,15 @@
 #define COS         cosf
 #define PI          (M_PI)
 
-#define NCO_PLL_BANDWIDTH_DEFAULT (0.1)
-#define NCO_PLL_GAIN_DEFAULT      (1000)
+#define NCO_PLL_BANDWIDTH_DEFAULT   (0.1)
+#define NCO_PLL_GAIN_DEFAULT        (1000)
 
 // internal PLL IIR filter form
 //  1   :   Direct Form-I   (suggested)
-//  2   :   Direct Form-II
-#define NCO_PLL_IIRFILT_FORM (1)
+//  2   :   Direct Form-II  (can become unstable if filter bandwidth changes)
+#define NCO_PLL_IIRFILT_FORM        (1)
 
-#define LIQUID_DEBUG_NCO (0)
+#define LIQUID_DEBUG_NCO            (0)
 
 // create nco/vco object
 NCO() NCO(_create)(liquid_ncotype _type)
@@ -208,6 +208,7 @@ void NCO(_pll_reset)(NCO() _q)
     printf("base frequency : %f\n", _q->pll_dtheta_base);
 #endif
 
+#if NCO_PLL_IIRFILT_FORM == 1
     // clear Direct Form I filter state
     _q->x[0] = 0;
     _q->x[1] = 0;
@@ -217,10 +218,14 @@ void NCO(_pll_reset)(NCO() _q)
     _q->y[1] = 0;
     _q->y[2] = 0;
 
+#elif NCO_PLL_IIRFILT_FORM == 2
     // clear Direct Form II filter state
     _q->v[0] = 0;
     _q->v[1] = 0;
     _q->v[2] = 0;
+#else
+#  error "invalid NCO_PLL_IIRFILT_FORM value"
+#endif
 
     // reset phase state
     _q->pll_phi_prime = 0;
@@ -237,8 +242,10 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
         exit(1);
     }
 
+#if NCO_PLL_IIRFILT_FORM == 2
     // reset pll, saving frequency state (pll_dtheta_base)
     NCO(_pll_reset)(_q);
+#endif
 
     // compute loop filter using active lag design
     NCO(_pll_set_bandwidth_active_lag)(_q, _b);
@@ -256,23 +263,7 @@ void NCO(_pll_step)(NCO() _q,
     // save pll phase state
     _q->pll_phi_prime = _q->pll_phi_hat;
 
-#if NCO_PLL_IIRFILT_FORM == 2
-    // Direct Form II
-
-    // advance buffer
-    _q->v[2] = _q->v[1];
-    _q->v[1] = _q->v[0];
-
-    // compute new v[0] from input
-    _q->v[0] = _dphi - 
-               _q->a[1]*_q->v[1] -
-               _q->a[2]*_q->v[2];
-
-    // compute output phase state
-    _q->pll_phi_hat = _q->b[0]*_q->v[0] +
-                      _q->b[1]*_q->v[1] +
-                      _q->b[2]*_q->v[2];
-#elif NCO_PLL_IIRFILT_FORM == 1
+#if NCO_PLL_IIRFILT_FORM == 1
     // Direct Form I
 
     // advance buffer x
@@ -295,6 +286,24 @@ void NCO(_pll_step)(NCO() _q,
                       _q->y[2] * _q->a[2];
 
     _q->y[0] = _q->pll_phi_hat;
+
+#elif NCO_PLL_IIRFILT_FORM == 2
+    // Direct Form II
+
+    // advance buffer
+    _q->v[2] = _q->v[1];
+    _q->v[1] = _q->v[0];
+
+    // compute new v[0] from input
+    _q->v[0] = _dphi - 
+               _q->a[1]*_q->v[1] -
+               _q->a[2]*_q->v[2];
+
+    // compute output phase state
+    _q->pll_phi_hat = _q->b[0]*_q->v[0] +
+                      _q->b[1]*_q->v[1] +
+                      _q->b[2]*_q->v[2];
+
 #else
 #  error "invalid NCO_PLL_IIRFILT_FORM value"
 #endif
