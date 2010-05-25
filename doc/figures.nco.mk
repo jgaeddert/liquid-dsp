@@ -17,7 +17,7 @@ local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 src/nco_pll : % : %.c $(lib_objects)
 figures.gen/nco_pll_sincos.gnu \
 figures.gen/nco_pll_error.gnu : src/nco_pll
-	./$< -n400
+	./$< -n 400 -p 0.8 -f 0.3 -b 0.01
 
 ##
 ## target collection

@@ -38,7 +38,7 @@ int main(int argc, char*argv[]) {
     unsigned int n=512;     // number of iterations
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhb:n:p:f")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhb:n:p:f:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();    return 0;
