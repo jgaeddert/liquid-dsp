@@ -98,17 +98,25 @@ method returns a pointer to its contents.
 and linearizes the data very efficiently, without performing any unnecessary
 data memory copies.
 
-\subsubsection{interface}
+\subsubsection{Interface}
 \label{module:buffer:window:interface}
 
-\paragraph{{\tt window\_create()}}
+\begin{description}
+\item[{\tt window\_create()}]
 creates a new window of a certain length.
 
-\paragraph{{\tt window\_recreate()}}
+\item[{\tt window\_recreate()}]
 Similar to the standard C library's {\tt realloc()}, {\tt recreate()} extends
 an existing window...
 If the size of the new window is larger than the old one, the old values are
-pushed to the end
+pushed to the end.
+
+\item[{\tt window\_clear()}]
+\item[{\tt window\_index()}]
+\item[{\tt window\_read()}]
+\item[{\tt window\_push()}]
+\item[{\tt window\_write()}]
+\end{description}
 
 Here is an example:
 \input{listings/window.example.c.tex}

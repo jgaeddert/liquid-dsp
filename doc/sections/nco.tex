@@ -4,7 +4,8 @@
 
 \section{nco (numerically-controlled oscillator)}
 \label{module:nco}
-numerically-controlled oscillator: mix, pll
+This section describes the numerically-controlled oscillator (NCO) for carrier
+synchronization.
 
 \subsection{{nco}}
 \label{module:nco:nco}
@@ -13,44 +14,85 @@ phase precision: {\tt LIQUID\_NCO} and {\tt LIQUID\_VCO}.
 The {\tt LIQUID\_NCO} implements a numerically-controlled oscillator that uses
 a look-up table to generate a complex sinusoid while
 the {\tt LIQUID\_VCO} implements a ``voltage-controlled'' oscillator that uses
-the {\tt sinf} and {\tt cosf} functions to generate a complex sinusoid.
+the {\tt sinf} and {\tt cosf} standard math functions to generate a complex
+sinusoid.
+
+\subsubsection{Description of operation}
+The {\tt nco} object maintains its phase and frequency states internally.
+Various computations--such as mixing--use the phase state for generating
+complex sinusoids.
+The phase $\theta$ of the {\tt nco} object is updated using the
+{\tt nco\_step()} method which increments $\theta$ by $\Delta\theta$, the
+frequency.
+Both the phase and frequency of the {\tt nco} object can be manipulated using
+the appropriate {\tt nco\_set} and {\tt nco\_adjust} methods.
 
 \subsubsection{Interface}
-\begin{itemize}
-\item {\tt nco\_create()} creates an {\tt nco} object
-\item {\tt nco\_destroy()} destroys an {\tt nco} object
-\item {\tt nco\_reset()} clears in internal state of an {\tt nco} object
-\item {\tt nco\_set\_frequency()} sets the frequency (phase step size)
-\item {\tt nco\_adjust\_frequency()} increments the frequency (phase step size)
-\item {\tt nco\_set\_phase()} sets the internal {\tt nco} phase
-\item {\tt nco\_adjust\_phase()} increments the internal {\tt nco} phase
-\item {\tt nco\_step()} increments the internal {\tt nco} phase by its
-    internal frequency
-\item {\tt nco\_get\_phase()} returns the internal phase
-\item {\tt nco\_get\_frequency()} returns the internal frequency (phase step
+\begin{description}
+\item[{\tt nco\_create()}] creates an {\tt nco} object
+\item[{\tt nco\_destroy()}] destroys an {\tt nco} object
+\item[{\tt nco\_reset()}] clears in internal state of an {\tt nco} object
+\item[{\tt nco\_set\_frequency()}] sets the frequency, $\Delta\theta$
+\item[{\tt nco\_adjust\_frequency()}] increments the frequency
+\item[{\tt nco\_set\_phase()}] sets the internal {\tt nco} phase, $\theta$
+\item[{\tt nco\_adjust\_phase()}] increments the internal {\tt nco} phase
+\item[{\tt nco\_step()}] increments the internal {\tt nco} phase by its
+    internal frequency, $\theta \leftarrow \theta + \Delta\theta$
+\item[{\tt nco\_get\_phase()}] returns the internal phase
+\item[{\tt nco\_get\_frequency()}] returns the internal frequency (phase step
     size)
-\item {\tt nco\_sin()} returns $\sin(\theta)$
-\item {\tt nco\_cos()} returns $\cos(\theta)$
-\item {\tt nco\_sincos()} returns $\sin(\theta)$, $\cos(\theta)$
-\item {\tt nco\_cexpf()} returns $e^{j\theta}$
-\item {\tt nco\_mix\_up()} rotates an input vector by $e^{j\theta}$
-\item {\tt nco\_mix\_down()} rotates an input vector by $e^{-j\theta}$
-\end{itemize}
+\item[{\tt nco\_sin()}] returns $\sin(\theta)$
+\item[{\tt nco\_cos()}] returns $\cos(\theta)$
+\item[{\tt nco\_sincos()}] returns $\sin(\theta)$, $\cos(\theta)$
+\item[{\tt nco\_cexpf()}] returns $e^{j\theta}$
+\item[{\tt nco\_mix\_up()}] rotates an input vector by $e^{j\theta}$
+\item[{\tt nco\_mix\_down()}] rotates an input vector by $e^{-j\theta}$
+\end{description}
 
-\subsection{{pll} (phase-locked loop)}
+\subsection{PLL (phase-locked loop)}
 \label{module:nco:pll}
+% NOTE : as of [21f7b4] PLL is internal to NCO object
 The phase-locked loop object provides a method for synchronizing oscillators
 on different platforms.
 It uses a second-order integrating loop filter to adjust the frequency of its
 {\tt nco} based on an instantaneous phase error input.
+As its name implies, a PLL locks the phase of the {\tt nco} object to a
+reference signal.
+The PLL accepts a phase error and updates the frequency (phase step size) of
+the {\tt nco} to track to the phase of the reference.
+The reference signal can be another {\tt nco} object, or a signal whose
+carrier is modulated with data.
+%Frequency modulation (FM), for example, changes its carrier frequency relative
+%to an analog audio signal.
 
-The integrator has a transfer function $G(s) = K/s$.
+% FIGURE : nco_pll_block diagram
+\begin{figure}
+\centering
+  \includegraphics[width=10cm]{figures.pgf/nco_pll_diagram}
+\caption{PLL block diagram}
+\label{fig:module:nco:pll_diagram}
+\end{figure}
+
+The PLL consists of three components: the phase detector, the loop filter, and
+the integrator.
+A block diagram of the PLL can be seen in
+Figure~\ref{fig:module:nco:pll_diagram} in which the phase detector is
+represented by the summing node, the loop filter is $F(s)$, and the integrator
+has a transfer function $G(s) = K/s$.
 For a given loop filter $F(s)$, the closed-loop transfer function becomes
 \[
     H(s) = \frac{ G(s)F(s) }{ 1 + G(s)F(s) }
          = \frac{ KF(s)    }{ s + KF(s)    }
 \]
 where the loop gain $K$ absorbs all the gains in the loop.
+
+There are several well-known options for designing the loop filter $F(s)$,
+which is, in general, a first-order low-pass filter.
+In particular we are interested in getting the denominator of $H(s)$ to the
+standard form $s^2 + 2\zeta\omega_n s + \omega_n^2$ where $\omega_n$ is the
+natural frequency of the filter and $\zeta$ is the damping factor.
+This simplifies analysis of the overall transfer function and allows the
+parameters of $F(s)$ to ensure stability.
 
 \subsubsection{Active lag design}
 From \cite{Best:1997}.
@@ -65,7 +107,7 @@ This gives a closed-loop transfer function
                 s^2 + s\frac{1 + K\tau_2}{\tau_1} + \frac{K}{\tau_1}
            }
 \]
-
+{\bf TODO : check these calculations}
 \[
     \omega_n = \sqrt{\frac{K}{\tau_1}}
     \,\,\,\,\,\,
@@ -142,5 +184,32 @@ Taking the bilinear $z$-transform gives the digital filter:
 \label{fig:module:nco:pll}
 \end{figure}
 
+\subsubsection{PLL Interface}
+
+% TODO : explain!
+Internally, the {\tt nco\_step()} method acts as the integrator, so the
+implementation of the PLL in \liquid\ is a little skewed...
+
 An example of the PLL can be seen in figure~\ref{fig:module:nco:pll}.
+
+\begin{description}
+\item[{\tt nco\_pll\_set\_bandwidth()}]
+    sets the bandwidth of the loop filter of the {\tt pll} internal to the
+    {\tt nco} object.
+\item[{\tt nco\_pll\_step()}]
+    advance the {\tt pll} phase with a phase error argument to the loop
+    filter.
+    This method only changes the frequency of the {\tt nco} object and does
+    not update the phase until {\tt nco\_step()} is invoked.
+    This is useful if one wants to only run the PLL periodically and ignore
+    several samples.
+\end{description}
+
+Here is a minimal example demonstrating the interface to the {\tt nco} object
+and the internal phase-locked loop:
+\input{listings/nco_pll.example.c.tex}
+
+See also
+{\tt examples/nco\_pll\_example.c},
+{\tt examples/nco\_pll\_modem\_example.c}
 

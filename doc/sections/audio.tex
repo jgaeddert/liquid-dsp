@@ -94,52 +94,56 @@ Here are some useful definitions, as used in the fbasc code:
 %                        |          |
 %                      ->|          |<- symbol (length = M samples)
 
-\paragraph{{\tt MDCT}}
+\begin{description}
+\item[MDCT]
 the modified discrete cosine transform is a lapped discrete cosine
 transform which uses a special windowing function to ensure perfect
-reconstruction on its inverse. The transform operates on 2*M time-domain
-samples (overlapped by M) to produce M frequency-domain samples.
-Conversely, the inverse MDCT accepts M frequency-domain samples and
-produces 2*M time-domain samples which are windowed and then overlapped to
-reconstruct the original signal.  For convenience, we may refer to M
+reconstruction on its inverse. The transform operates on $2M$ time-domain
+samples (overlapped by $M$) to produce $M$ frequency-domain samples.
+Conversely, the inverse MDCT accepts $M$ frequency-domain samples and
+produces $2M$ time-domain samples which are windowed and then overlapped to
+reconstruct the original signal.  For convenience, we may refer to $M$
 time-domain samples as a 'symbol.'
 
-\paragraph{{\tt symbol}}
-one block of M time-domain samples upon which the MDCT operates.
+\item[symbol]
+one block of $M$ time-domain samples upon which the MDCT operates.
  
-\paragraph{{\tt channel}}
-one of the M frequency-domain components as a result of applying the
+\item[channel]
+one of the $M$ frequency-domain components as a result of applying the
 MDCT.  This is somewhat equivalent to a discrete Fourier transform 'bin.'
-Note than M is equal to the number of channels in analysis.
+Note than $M$ is equal to the number of channels in analysis.
 
-\paragraph{{\tt frame}}
+\item[frame]
 a set of MDCT symbols upon which the fbasc codec runs its analysis.
 Because the codec uses time-frequency localization for its encoding, it is
 necessary for the codec to gain enough statistical information about the
 original signal without losing temporal stationarity. The codec typically
 operates on several symbols, however, the exact number depends on the
 application.
+\end{description}
 
 \subsubsection{Interface}
-\paragraph{{\tt fbasc\_create()}}
+\begin{description}
+\item[{\tt fbasc\_create()}]
         creates an fbasc encoder/decoder object, allocating memory as
         necessary, and computing internal parameters appropriately.
-\paragraph{{\tt fbasc\_destroy()}}
+\item[{\tt fbasc\_destroy()}]
         destroys an fbasc encoder/decoder object, freeing internally-allocated
         memory.
-\paragraph{{\tt fbasc\_encode()}}
+\item[{\tt fbasc\_encode()}]
         encode a frame of data, storing the header and frame data separately.
         This separation allows the user to use different forward
         error-correction codes (if desired) to protect the header differently
         than the rest of the frame.  It is important to keep the two together,
         however, as the header is a description of how to decode the frame.
-\paragraph{{\tt fbasc\_decode()}}
+\item[{\tt fbasc\_decode()}]
         decodes a frame of data, generating the reconstructed time series.
+\end{description}
 
 \subsubsection{Useful properties}
 \begin{itemize}
-\item Because of the nature of the MDCT, frames will overlap by M samples
-      (one symbol).  This introduces a reconstruction delay of M samples,
+\item Because of the nature of the MDCT, frames will overlap by $M$ samples
+      (one symbol).  This introduces a reconstruction delay of $M$ samples,
       noticeable at the decoder.
 \end{itemize}
 

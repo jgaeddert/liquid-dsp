@@ -1,0 +1,51 @@
+% 
+% figures.pgf/nco_pll_diagram.tex
+%
+% Author: Joseph D. Gaeddert
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc} % for manipulation of co-ordinates
+\usetikzlibrary{arrows}
+%\usetikzlibrary{positioning}
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+% define new style "block" with special parameters
+\tikzstyle{block}=[rectangle,draw=black,very thick,minimum size=12mm]
+\tikzstyle{sum}=[circle,draw=black,very thick,inner sep=0mm,minimum size=5mm]
+\tikzstyle{connector}=[->,thick]
+
+\begin{document}
+
+% options
+%   scale   set the relative scale of the figure
+%   auto    automatic anchor placement
+%   >=      right arrow tip (stealth, stealth', etc.)
+\begin{tikzpicture}[scale=1.2,auto,>=stealth']
+    % help lines
+    %\draw[step=5mm,help lines] (0,0) grid (6,3);
+    
+    % draw nodes
+    \node[sum]   (phase-detector) at (1,2) {+};
+    \node[block] (loop-filter)    at (5,2) {$F(s)$};
+    \node[block] (integrator)     at (3,0) {$\frac{K}{s}$};
+
+    \draw[connector] (0,2) node[anchor=east]{$\phi$} -- (phase-detector.west);
+    \draw[connector] (phase-detector.east) -- node {$\Delta\phi$} (loop-filter.west);
+    \draw[connector] (loop-filter.east) |- (6,2) |- (integrator.east);
+    \draw[connector] (integrator.west) -|
+        node[pos=0.96] {$-$}
+        node {$\hat{\phi}$} (phase-detector.south);
+
+\end{tikzpicture}
+
+\end{document}
+
