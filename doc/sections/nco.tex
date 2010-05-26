@@ -60,9 +60,14 @@ carrier is modulated with data.
 %Frequency modulation (FM), for example, changes its carrier frequency relative
 %to an analog audio signal.
 
-%
-% TODO : include block diagram here
-%
+% FIGURE : nco_pll_block diagram
+\begin{figure}
+\centering
+  \includegraphics[width=10cm]{figures.pgf/nco_pll_diagram}
+\caption{PLL block diagram}
+\label{fig:module:nco:pll_diagram}
+\end{figure}
+
 
 The integrator has a transfer function $G(s) = K/s$.
 For a given loop filter $F(s)$, the closed-loop transfer function becomes
