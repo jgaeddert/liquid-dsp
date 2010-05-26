@@ -137,6 +137,6 @@ $(local_epsfiles) : %.eps : %.gnu %.dat
 # accumulate target
 figures_generated += $(local_pdffiles)
 
-extra_clean +=				\
+figures_extra_clean +=			\
 	src/modem.genplot		\
 	src/modem.gendata

@@ -123,7 +123,7 @@ $(local_pdffiles) : %.pdf : %.eps
 # accumulate target
 figures_generated += $(local_pdffiles)
 
-extra_clean +=				\
+figures_extra_clean +=			\
 	src/filter_firhilb_decim_crcf	\
 	src/filter_iirdes		\
 	src/filter_interp_crcf		\
