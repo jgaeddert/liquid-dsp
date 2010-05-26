@@ -112,8 +112,21 @@ void POLY(_expandroots2)(T * _a,
                          T * _c)
 {
     unsigned int i;
-    for (i=0; i<=_n; i++)
-        _c[i] = 0.0f;
+
+    // factor _b[i] from each root : (x*b - a) = (x - a/b)*b
+    T g = 1.0;
+    T r[_n];
+    for (i=0; i<_n; i++) {
+        g *= _b[i];
+        r[i] = _a[i] / _b[i];
+    }
+
+    // expand new root set
+    POLY(_expandroots)(r, _n, _c);
+
+    // multiply by gain
+    for (i=0; i<_n+1; i++)
+        _c[i] *= g;
 }
 
 // expands the multiplication of two polynomials
