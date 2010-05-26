@@ -4,7 +4,8 @@
 
 \section{nco (numerically-controlled oscillator)}
 \label{module:nco}
-numerically-controlled oscillator: mix, pll
+This section describes the numerically-controlled oscillator (NCO) for carrier
+synchronization.
 
 \subsection{{nco}}
 \label{module:nco:nco}
@@ -13,7 +14,14 @@ phase precision: {\tt LIQUID\_NCO} and {\tt LIQUID\_VCO}.
 The {\tt LIQUID\_NCO} implements a numerically-controlled oscillator that uses
 a look-up table to generate a complex sinusoid while
 the {\tt LIQUID\_VCO} implements a ``voltage-controlled'' oscillator that uses
-the {\tt sinf} and {\tt cosf} functions to generate a complex sinusoid.
+the {\tt sinf} and {\tt cosf} standard math functions to generate a complex
+sinusoid.
+
+\subsubsection{Description of operation}
+The {\tt nco} object maintains its phase and frequency states internally.
+Various computations--such as mixing--use the phase state for generating
+complex sinusoids.
+The phase of the
 
 \subsubsection{Interface}
 \begin{description}
@@ -43,6 +51,23 @@ The phase-locked loop object provides a method for synchronizing oscillators
 on different platforms.
 It uses a second-order integrating loop filter to adjust the frequency of its
 {\tt nco} based on an instantaneous phase error input.
+As its name implies, a PLL locks the phase of the {\tt nco} object to a
+reference signal.
+The PLL accepts a phase error and updates the frequency (phase step size) of
+the {\tt nco} to track to the phase of the reference.
+The reference signal can be another {\tt nco} object, or a signal whose
+carrier is modulated with data.
+%Frequency modulation (FM), for example, changes its carrier frequency relative
+%to an analog audio signal.
+
+% FIGURE : nco_pll_block diagram
+\begin{figure}
+\centering
+  \includegraphics[width=10cm]{figures.pgf/nco_pll_diagram}
+\caption{PLL block diagram}
+\label{fig:module:nco:pll_diagram}
+\end{figure}
+
 
 The integrator has a transfer function $G(s) = K/s$.
 For a given loop filter $F(s)$, the closed-loop transfer function becomes
@@ -143,4 +168,22 @@ Taking the bilinear $z$-transform gives the digital filter:
 \end{figure}
 
 An example of the PLL can be seen in figure~\ref{fig:module:nco:pll}.
+
+\subsubsection{PLL Interface}
+\begin{description}
+\item[{\tt nco\_pll\_set\_bandwidth()}]
+    sets the bandwidth of the loop filter of the {\tt pll} internal to the
+    {\tt nco} object.
+\item[{\tt nco\_pll\_step()}]
+    advance the {\tt pll} phase with a phase error argument to the loop
+    filter.
+    This method only changes the frequency of the {\tt nco} object and does
+    not update the phase until {\tt nco\_step()} is invoked.
+    This is useful if one wants to only run the PLL periodically and ignore
+    several samples.
+\end{description}
+
+See also
+{\tt examples/nco\_pll\_example.c},
+{\tt examples/nco\_pll\_modem\_example.c}
 
