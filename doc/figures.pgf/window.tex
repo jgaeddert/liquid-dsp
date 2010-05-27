@@ -21,6 +21,7 @@
 
 \tikzstyle{inside}=[rectangle,draw=black,thick,minimum size=10mm]
 \tikzstyle{outside}=[rectangle,color=black!50,thick,minimum size=10mm]
+\tikzstyle{index}=[rectangle,fill=black,thin,font={\scriptsize\tt\color{white}},minimum size=3mm,inner sep=0mm]
 % color=black!50
 
 \begin{document}
@@ -39,6 +40,10 @@
 
     \foreach \n in {13,...,16}
         \node[outside] at (\n,0) {\n};
+        
+    % add indices
+    \foreach \n in {0,...,8}
+        \node[index] at (\n+4-0.5+0.15,0.5-0.15) {\n};
     
     \node at (17,0) {$\leftarrow$};
     
