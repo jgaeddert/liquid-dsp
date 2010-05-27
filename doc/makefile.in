@@ -36,6 +36,7 @@ LISTINGS = 					\
 	listings/crc32.example.c.tex		\
 	listings/dotprod_rrrf.example.c.tex	\
 	listings/eqlms_cccf.example.c.tex	\
+	listings/fec.example.c.tex		\
 	listings/firhilb.example.c.tex		\
 	listings/gradient_search.example.c.tex	\
 	listings/gport.direct.example.c.tex	\
@@ -128,10 +129,12 @@ clean-lib:
 
 # auto-generated figures, target collection variables
 figures_generated :=
+figures_extra_clean :=
 
 # module figure makefiles
 include figures.agc.mk
 include figures.audio.mk
+include figures.buffer.mk
 include figures.equalization.mk
 include figures.filter.mk
 include figures.interleaver.mk
@@ -142,15 +145,22 @@ include figures.nco.mk
 figures: $(figures_generated)
 
 # clean figures target (all supplemental files)
-clean-figures:
+clean-figures-gen:
 	$(RM) figures.gen/*.eps
 	$(RM) figures.gen/*.dat
 	$(RM) figures.gen/*.gnu
 	$(RM) figures.gen/*.pdf
+
+clean-figures-pgf:
 	$(RM) figures.pgf/*.aux
 	$(RM) figures.pgf/*.dat
 	$(RM) figures.pgf/*.log
 	$(RM) figures.pgf/*.pdf
+
+clean-figures-progs:
+	$(RM) $(figures_extra_clean)
+
+clean-figures: clean-figures-gen clean-figures-pgf clean-figures-progs
 
 ##
 ## PDF DOCUMENT

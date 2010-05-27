@@ -48,6 +48,6 @@ $(local_epsfiles) : %.eps : %.gnu
 # accumulate target
 figures_generated += $(local_pdffiles)
 
-extra_clean +=				\
+figures_extra_clean +=			\
 	src/interleaver_scatterplot
 

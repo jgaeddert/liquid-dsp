@@ -68,6 +68,89 @@ same port.
 For example, the producer thread may use the direct memory access mode while
 the consumer uses the indrect memory acess mode.
 
+\subsubsection{Interface}
+\label{module:buffer:gport:interface}
+
+\begin{description}
+\item[{\tt gport\_create()}]
+    creates a new {\tt gport} object with an internal buffer of a certain
+    length.
+\item[{\tt gport\_destroy()}]
+    destroys a {\tt gport} object, signaling {\it end of message} to any
+    connected ports.
+    %calling {\tt gport\_signal\_eom()}
+\item[{\tt gport\_producer\_lock()}]
+    locks a requested number of samples for producing, returning a {\tt void}
+    pointer to the locked data array directly.
+    Invoking this method can be thought of as asking the port to allocate a
+    certain number of samples for writing.
+    Special care must be taken by the user not to write more elements to the
+    buffer than were requested.
+    This function is a blocking call and waits for the data to become
+    available or an {\it end of message} signal to be received.
+    The data are locked until {\tt gport\_producer\_unlock()} is invoked.
+    The number of unlocked samples does not have to match but cannot exceed
+    those which are locked.
+\item[{\tt gport\_producer\_unlock()}]
+    unlocks a requested number of samples from the port.
+    Use in conjunction with {\tt gport\_producer\_lock()}.
+    Invoking this method can be thought of as telling the port ``I have
+    written $n$ samples to the buffer you gave me earlier; release them to the
+    consumer for reading.''
+\item[{\tt gport\_produce()}]
+    produces $n$ samples to the port from an external buffer.
+    This method is a blocking call and waits for the requested data to become
+    available or an {\it end of message} signal to be received.
+\item[{\tt gport\_produce\_available()}]
+    operates just like {\tt gport\_produce()} except will write as many
+    samples as are available when the function is called.
+    Invoking this method is like telling the buffer ``I have $n$ samples, so
+    write as many as you can right now.''
+    It will always wait for at least one sample to become available and blocks
+    until this condition is met.
+\item[{\tt gport\_consumer\_lock()}]
+    locks a requested number of samples for consuming, returning a {\tt void}
+    pointer to the locked data array directly.
+    Invoking this method can be thought of as asking the port to wait for a
+    certain number of samples to be read.
+    Special care must be taken by the user not to read more elements to the
+    buffer than were requested.
+    This function is a blocking call and waits for enough samples to become
+    available or an {\it end of message} signal to be received.
+    The data will be locked until {\tt gport\_consumer\_unlock()} is invoked.
+    The number of unlocked samples does not have to match but cannot exceed
+    those which are locked.
+\item[{\tt gport\_consumer\_unlock()}]
+    unlocks a requested number of samples from the port.
+    Use in conjunction with {\tt gport\_consumer\_lock()}.
+    Invoking this method can be though of as telling the port ``I have read
+    $n$ samples from the buffer you gave me earlier; release them to the
+    producer for writing.''
+\item[{\tt gport\_consume()}]
+    consumes $n$ samples from the port and writes to an external buffer.
+    This method is a blocking call and waits for the requested data to become
+    available or an {\it end of message} signal to be received.
+\item[{\tt gport\_consume\_available()}]
+    operates just like {\tt gport\_consume()} except will read as many samples
+    as are available when the function is called.
+    Invoking this method is like telling the buffer ``I have a buffer of $n$
+    samples, so write to it as many as you can right now.''
+    It will always wait for at least one sample to become available and blocks
+    until this condition is met.
+\item[{\tt gport\_signal\_eom()}]
+    signals {\it end of message} to any connected {\tt gport}.
+    This tells the port to stop waiting for data (on both the producer and
+    consumer side) and return.
+    This method prevents lock conditions where, e.g., the producer is waiting
+    for several samples to become available, but the consumer has finished its
+    process.
+    This method is normally invoked only during {\tt gport\_destroy()}.
+\item[{\tt gport\_clear\_eom()}]
+    ({\it untested})
+    clears the {\it end of message} signal.
+\end{description}
+
+
 \subsubsection{Problem areas}
 When using the direct memory access method, the size of the data request
 during lock is limited by the size of the port.
@@ -97,27 +180,43 @@ method returns a pointer to its contents.
 \liquid\ implements this shifting method in the same manner as a ring buffer,
 and linearizes the data very efficiently, without performing any unnecessary
 data memory copies.
+Effectively, the window looks like:
+
+\begin{centering}
+\includegraphics[width=16cm]{figures.pgf/window}
+\end{centering}
 
 \subsubsection{Interface}
 \label{module:buffer:window:interface}
 
 \begin{description}
 \item[{\tt window\_create()}]
-creates a new window of a certain length.
-
+    creates a new window of a certain length.
 \item[{\tt window\_recreate()}]
-Similar to the standard C library's {\tt realloc()}, {\tt recreate()} extends
-an existing window...
-If the size of the new window is larger than the old one, the old values are
-pushed to the end.
-
+    extends an existing window's size, similar to the standard C library's
+    {\tt realloc()}.
+    If the size of the new window is larger than the old one, the old values
+    are pushed to the end.
 \item[{\tt window\_clear()}]
+    clears the contents of the buffer (set to zero)
 \item[{\tt window\_index()}]
+    retrieves the $n^{th}$ sample in the window
 \item[{\tt window\_read()}]
+    reads the contents of the window by returning a pointer to the aligned
+    internal memory array.
+    This method guarantees that the elements are linearized.
+    This method should {\em only} be used for reading; writing values to the
+    buffer has unknown results.
 \item[{\tt window\_push()}]
+    shifts a single sample into the right side of the window, pushing the
+    oldest (left-most) sample out of the end.
 \item[{\tt window\_write()}]
+    writes a block of data to the window.
+    Effectively, it is equivalent to pushing each sample one at a time, but
+    executes much faster.
 \end{description}
 
-Here is an example:
+Here is an example demonstrating the basic functionality of the window object.
+The comments show the internal state of the window after each function call.
 \input{listings/window.example.c.tex}
 

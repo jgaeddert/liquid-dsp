@@ -1,0 +1,64 @@
+% 
+% figures.pgf/window.tex
+%
+% Author: Joseph D. Gaeddert
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations}
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+\tikzstyle{inside}=[rectangle,draw=black,thick,minimum size=10mm]
+\tikzstyle{outside}=[rectangle,color=black!50,thick,minimum size=10mm]
+\tikzstyle{index}=[rectangle,fill=black,thin,font={\scriptsize\tt\color{white}},minimum size=3mm,inner sep=0mm]
+% color=black!50
+
+\begin{document}
+
+\begin{tikzpicture}[scale=1];
+    % help lines
+    %\draw[step=5mm,help lines] (0,0) grid (20,2);
+
+    \node at (-1,0) {$\leftarrow$};
+    
+    \foreach \n in {0,...,3}
+        \node[outside] at (\n,0) {\n};
+
+    \foreach \n in {4,...,12}
+        \node[inside] at (\n,0) {\n};
+
+    \foreach \n in {13,...,16}
+        \node[outside] at (\n,0) {\n};
+        
+    % add indices
+    \foreach \n in {0,...,8}
+        \node[index] at (\n+4-0.5+0.15,0.5-0.15) {\n};
+    
+    \node at (17,0) {$\leftarrow$};
+    
+    % draw labels
+    \node at (1.5, -1) {\it old samples};
+    \node at (8,   -1) {\it window contents};
+    \node at (14.5,-1) {\it new samples};
+    
+    % draw braces
+    %\draw[decorate,decoration={brace,mirror,raise=1pt}] ( 0,0) -- ( 3,0); 
+    %\draw[decorate,decoration={brace,mirror,raise=1pt}] ( 4,0) -- (12,0); 
+    %\draw[decorate,decoration={brace,mirror,raise=1pt}] (13,0) -- (16,0); 
+
+    
+\end{tikzpicture}
+
+\end{document}
+

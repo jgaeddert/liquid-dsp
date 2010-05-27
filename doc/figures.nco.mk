@@ -38,6 +38,6 @@ figures.pgf/nco_pll_diagram.pdf : figures.pgf/nco_pll_diagram.tex
 # accumulate target
 figures_generated += $(local_pdffiles)
 
-extra_clean +=				\
+figures_extra_clean +=			\
 	src/nco_pll
 
