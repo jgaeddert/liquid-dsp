@@ -272,6 +272,7 @@ void * gport_producer_lock(gport _p,
     pthread_mutex_lock(&_p->internal_mutex);
 
     // TODO wait for _n elements to become available
+    // TODO exit on eom flag
     while (_n > _p->num_write_elements_available) {
         //printf("warning/todo: gport_producer_lock(), wait for _n elements to become available\n");
         //usleep(100000);
@@ -455,6 +456,7 @@ void * gport_consumer_lock(gport _p,
 
     pthread_mutex_lock(&_p->internal_mutex);
 
+    // TODO exit on eom flag
     while (_n > _p->num_read_elements_available) {
         //printf("warning/todo: gport_consumer_lock(), wait for _n elements to become available\n");
         //usleep(100000);
