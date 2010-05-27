@@ -148,6 +148,37 @@ void autotest_polyf_expandroots_11()
 }
 
 // 
+// AUTOTEST: poly_expandroots2
+//
+// expand (2*x-5)*(3*x+2)*(-1*x+3)
+//
+void autotest_polyf_expandroots2_3()
+{
+    unsigned int n=3;
+    float a[3] = {  2,  3, -1 };
+    float b[3] = { -5,  2,  3 };
+    float c[4];
+    float c_test[4] = { -6, 29, -23, -30 };
+    float tol = 1e-3f;
+
+    polyf_expandroots2(a,b,n,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        printf("c[%u] = ", n+1);
+        for (i=0; i<n+1; i++)
+            printf("%8.2f", c[i]);
+        printf("\n");
+    }
+    
+    CONTEND_DELTA(c[0], c_test[0], tol);
+    CONTEND_DELTA(c[1], c_test[1], tol);
+    CONTEND_DELTA(c[2], c_test[2], tol);
+    CONTEND_DELTA(c[3], c_test[3], tol);
+}
+
+
+// 
 // AUTOTEST: polycf_expandroots
 //
 void autotest_polycf_expandroots_4()
