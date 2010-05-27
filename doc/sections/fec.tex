@@ -12,17 +12,6 @@ errors introduced by the channel.
 
 See also: {\tt packetizer}, {\tt interleaver}
 
-\subsection{Interface}
-\label{module:fec:interface}
-
-\begin{description}
-\item[{\tt fec\_create()}]
-\item[{\tt fec\_destroy()}]
-\item[{\tt fec\_encode()}]
-\item[{\tt fec\_decode()}]
-\end{description}
-
-
 \subsection{{\tt checksum}}
 \label{module:fec:checksum}
 A checksum is a simple way to validate data received through un-reliable means
@@ -85,6 +74,43 @@ bound \cite{Proakis:2001}.
 However, their simplicity in implementation and computational complexity gains
 them a place in digital communications, particularly in software radios where
 spectral efficiency is secondary to computational complexity.
+
+\subsection{Interface}
+\label{module:fec:interface}
+
+\begin{description}
+\item[{\tt fec\_create()}]
+    creates a {\tt fec} object of a specific scheme.
+\item[{\tt fec\_recreate()}]
+    re-creates a {\tt fec} object with a different scheme.
+\item[{\tt fec\_destroy()}]
+    destroys a {\tt fec} object, freeing all internally-allocated memory
+    arrays.
+\item[{\tt fec\_encode()}]
+    runs the error-correction encoder scheme on an input data array.
+    The resulting encoded message is written to the output array, allocated by
+    the user.
+    To obtain the length of the output array necessary, use the
+    {\tt fec\_get\_enc\_msg\_length()} method.
+\item[{\tt fec\_decode()}]
+    runs the error-correction decoder on an input data array.
+    The resulting best-effort decoded message is written to the output array,
+    allocated by the user.
+    Depending upon the error-correction capabilities of the scheme, the
+    resulting data might have been corrupted, and therefore it is recommended
+    to use either a
+    checksum (section~\ref{module:fec:checksum} or a
+    cyclic redundancy check (section~\ref{module:fec:crc})
+    to validate data integrity.
+\item[{\tt fec\_get\_enc\_msg\_length()}]
+    returns the length of the encoded message in bytes.
+    This method can be called before the {\tt fec} object is created and is
+    useful for allocating initial memory arrays.
+\end{description}
+
+Here is a simple example demonstrating the basic interface to the {\tt fec}
+encoder/decoder object:
+\input{listings/fec.example.c.tex}
 
 \subsection{{\tt h74} (Hamming (7,4) code)}
 \label{module:fec:h74}
