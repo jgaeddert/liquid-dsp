@@ -379,6 +379,24 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     return NULL;
 }
 
+// recreate a fec object
+//  _q      :   initial fec object
+//  _scheme :   new scheme
+//  _opts   :   options (ignored)
+fec fec_recreate(fec _q,
+                 fec_scheme _scheme,
+                 void *_opts)
+{
+    if (_q->scheme == _scheme) {
+        // scheme hasn't changed; just return original object
+        return _q;
+    } else {
+        // destroy old object and create new one
+        fec_destroy(_q);
+        _q = fec_create(_scheme,_opts);
+    }
+}
+
 void fec_destroy(fec _q)
 {
     free(_q);

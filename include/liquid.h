@@ -726,6 +726,9 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len);
 float fec_get_rate(fec_scheme _scheme);
 
 fec fec_create(fec_scheme _scheme, void *_opts);
+fec fec_recreate(fec _q,
+                 fec_scheme _scheme,
+                 void *_opts);
 void fec_destroy(fec _q);
 void fec_print(fec _q);
 
