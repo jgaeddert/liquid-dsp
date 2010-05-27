@@ -180,6 +180,11 @@ method returns a pointer to its contents.
 \liquid\ implements this shifting method in the same manner as a ring buffer,
 and linearizes the data very efficiently, without performing any unnecessary
 data memory copies.
+Effectively, the window looks like:
+
+\begin{centering}
+\includegraphics[width=16cm]{figures.pgf/window}
+\end{centering}
 
 \subsubsection{Interface}
 \label{module:buffer:window:interface}
