@@ -462,6 +462,9 @@ int gport_consume_available(gport _p,
 // broadcast eom signal
 void gport_signal_eom(gport _p);
 
+// clear eom signal
+void gport_clear_eom(gport _p);
+
 #if 0
 enum {
     GPORT_SIGNAL_NULL=0,            // no signal

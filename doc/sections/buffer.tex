@@ -141,6 +141,13 @@ the consumer uses the indrect memory acess mode.
     signals {\it end of message} to any connected {\tt gport}.
     This tells the port to stop waiting for data (on both the producer and
     consumer side) and return.
+    This method prevents lock conditions where, e.g., the producer is waiting
+    for several samples to become available, but the consumer has finished its
+    process.
+    This method is normally invoked only during {\tt gport\_destroy()}.
+\item[{\tt gport\_clear\_eom()}]
+    ({\it untested})
+    clears the {\it end of message} signal.
 \end{description}
 
 

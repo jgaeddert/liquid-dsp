@@ -505,6 +505,7 @@ void gport_consumer_unlock(gport _p,
     pthread_mutex_unlock(&_p->consumer_mutex);
 }
 
+// signal end of message (eom) flag
 void gport_signal_eom(gport _p)
 {
     // lock internal mutex
@@ -524,3 +525,18 @@ void gport_signal_eom(gport _p)
     // unlock internal mutex
     pthread_mutex_unlock(&(_p->internal_mutex));
 }
+
+// clear end of message (eom) flag
+// TODO : test this method
+void gport_clear_eom(gport _p)
+{
+    // lock internal mutex
+    pthread_mutex_lock(&(_p->internal_mutex));
+
+    // clear eom flag
+    _p->eom = 0;
+
+    // unlock internal mutex
+    pthread_mutex_unlock(&(_p->internal_mutex));
+}
+
