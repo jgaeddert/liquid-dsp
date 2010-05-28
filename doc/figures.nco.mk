@@ -26,6 +26,13 @@ figures.gen/nco_pll_error.eps : figures.gen/nco_pll_error.gnu
 figures.gen/nco_pll_error.pdf : figures.gen/nco_pll_error.eps
 	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
 
+
+figures.gen/nco_pll_sincos.eps : figures.gen/nco_pll_sincos.gnu
+	$(GNUPLOT) $< > $@
+
+figures.gen/nco_pll_sincos.pdf : figures.gen/nco_pll_sincos.eps
+	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
+
 ## 
 ## nco_pll_diagram
 ##
