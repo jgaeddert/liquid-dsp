@@ -20,6 +20,12 @@ figures.gen/nco_pll_sincos.gnu \
 figures.gen/nco_pll_error.gnu : src/nco_pll
 	./$< -n 400 -p 0.8 -f 0.3 -b 0.01
 
+figures.gen/nco_pll_sincos.eps : figures.gen/nco_pll_sincos.gnu
+	$(GNUPLOT) $< > $@
+
+figures.gen/nco_pll_sincos.pdf : figures.gen/nco_pll_sincos.eps
+	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
+
 figures.gen/nco_pll_error.eps : figures.gen/nco_pll_error.gnu
 	$(GNUPLOT) $< > $@
 
