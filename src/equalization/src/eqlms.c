@@ -127,8 +127,10 @@ void EQLMS(_execute)(EQLMS() _eq,
 
     // check to see if buffer is full, return if not
     _eq->n++;
-    if (_eq->n < _eq->p)
+    if (_eq->n < _eq->p) {
+        *_d_hat = 0;
         return;
+    }
 
     // compute d_hat (dot product, estimated output)
     T d_hat = 0;
