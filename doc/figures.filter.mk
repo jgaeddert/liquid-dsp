@@ -124,6 +124,7 @@ $(local_pdffiles) : %.pdf : %.eps
 figures_generated += $(local_pdffiles)
 
 figures_extra_clean +=			\
+	src/filter_firdespm		\
 	src/filter_firhilb_decim_crcf	\
 	src/filter_iirdes		\
 	src/filter_interp_crcf		\

@@ -238,8 +238,12 @@ clean-html:
 ## OTHER
 ##
 
+
+# clean main documents
 clean: clean-doc
 
-distclean: clean clean-figures clean-listings
+# clean up nearly everything
+mostlyclean: clean-doc clean-figures clean-lib clean-listings clean-html
 	$(RM) $(extra_clean)
+	$(RM) -r src/*.dSYM
 

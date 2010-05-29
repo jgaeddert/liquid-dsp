@@ -49,5 +49,6 @@ figures.gen/agc_transient.pdf : figures.gen/agc_transient.eps
 figures_generated += $(local_pdffiles)
 
 figures_extra_clean +=			\
-	src/agc_squelch
+	src/agc_squelch			\
+	src/agc_transient
 

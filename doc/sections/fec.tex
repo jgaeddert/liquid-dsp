@@ -100,7 +100,7 @@ spectral efficiency is secondary to computational complexity.
     resulting data might have been corrupted, and therefore it is recommended
     to use either a
     checksum (section~\ref{module:fec:checksum} or a
-    cyclic redundancy check (section~\ref{module:fec:crc})
+    cyclic redundancy check (section~\ref{module:fec:crc32})
     to validate data integrity.
 \item[{\tt fec\_get\_enc\_msg\_length()}]
     returns the length of the encoded message in bytes.
@@ -112,24 +112,65 @@ Here is a simple example demonstrating the basic interface to the {\tt fec}
 encoder/decoder object:
 \input{listings/fec.example.c.tex}
 
-\subsection{{\tt h74} (Hamming (7,4) code)}
-\label{module:fec:h74}
+\subsection{encoder/decoder options}
+\label{module:fec:codecs}
+Table~\ref{tab:fec:codecs} lists the available codecs...
 
-\subsection{{\tt v27} (rate $1/2$, $K=7$ convolutional code)}
-\label{module:fec:v27}
+\subsubsection{basic codecs}
+\label{module:fec:codecs:basic}
 
-\subsection{{\tt v29} (rate $1/2$, $K=9$ convolutional code)}
-\label{module:fec:v29}
+\subsubsection{convolutional codecs}
+\label{module:fec:codecs:conv}
 
-\subsection{{\tt v39} (rate $1/3$, $K=9$ convolutional code)}
-\label{module:fec:v39}
+\subsubsection{punctured codes}
+\label{module:fec:codecs:punctured}
 
-\subsection{{\tt v615} (rate $1/6$, $K=15$ convolutional code)}
-\label{module:fec:v615}
+\subsubsection{Reed-Solomon codecs}
+\label{module:fec:codecs:rs}
 
-\subsection{{\tt rs8} (Reed-Solomon code)}
-\label{module:fec:rs8}
+% ------------ TABLE: MODULATION/CODING SCHEME PAIRS ------------
+\begin{table*}
+\caption{Forward error-correction codecs available in \liquid}
+\label{tab:fec:codecs}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}ll}
+\toprule
+{\it scheme} &
+{\it rate} &
+{\it description}\\\otoprule
+%
+{\tt FEC\_UNKNOWN}              & -         & unknown/unsupported scheme\\
+{\tt FEC\_NONE}                 & 1         & no error-correction\\
+{\tt FEC\_REP3}                 & 1/3       & simple repeat code\\
+{\tt FEC\_HAMMING74}            & 1/2       & Hamming (7,4) block code\\
+{\tt FEC\_HAMMING84}            & 1/2       & Hamming (7,4) with extra parity bit\\\midrule
+%
+% codecs not defined internally (see http://www.ka9q.net/code/fec/)
+{\tt FEC\_CONV\_V27}            & 1/2       & $K=7$, $d_{free}=10$\\
+{\tt FEC\_CONV\_V29}            & 1/2       & $K=9$, $d_{free}=12$\\
+{\tt FEC\_CONV\_V39}            & 1/3       & $K=9$, $d_{free}=18$\\
+{\tt FEC\_CONV\_V615}           & 1/6       & $K=15$, $d_{free}<=57$ (Heller 1968)\\\midrule
+%
+% punctured (perforated) codes
+{\tt FEC\_CONV\_V27P23}         & 2/3       & $K=7$, $d_{free}=6$\\
+{\tt FEC\_CONV\_V27P34}         & 3/4       & $K=7$, $d_{free}=5$\\
+{\tt FEC\_CONV\_V27P45}         & 4/5       & $K=7$, $d_{free}=4$\\
+{\tt FEC\_CONV\_V27P56}         & 5/6       & $K=7$, $d_{free}=4$\\
+{\tt FEC\_CONV\_V27P67}         & 6/7       & $K=7$, $d_{free}=3$\\
+{\tt FEC\_CONV\_V27P78}         & 7/8       & $K=7$, $d_{free}=3$\\\midrule
+%
+{\tt FEC\_CONV\_V29P23}         & 2/3       & $K=9$, $d_{free}=7$\\
+{\tt FEC\_CONV\_V29P34}         & 3/4       & $K=9$, $d_{free}=6$\\
+{\tt FEC\_CONV\_V29P45}         & 4/5       & $K=9$, $d_{free}=5$\\
+{\tt FEC\_CONV\_V29P56}         & 5/6       & $K=9$, $d_{free}=5$\\
+{\tt FEC\_CONV\_V29P67}         & 6/7       & $K=9$, $d_{free}=4$\\
+{\tt FEC\_CONV\_V29P78}         & 7/8       & $K=9$, $d_{free}=4$\\\bottomrule
 
-\subsection{punctured codes}
-\label{module:fec:punctured}
+
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
 
