@@ -1,4 +1,6 @@
 //
+// flexframesync_example.c
+//
 //
 //
 
@@ -13,6 +15,22 @@
 
 #define OUTPUT_FILENAME  "flexframesync_example.m"
 
+void usage()
+{
+    printf("flexframesync_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  f     : frame length [bytes], default: 64\n");
+    printf("  n     : number of frames, default: 3\n");
+    printf("  p     : modulation depth (default 2 bits/symbol)\n");
+    printf("  m     : modulation scheme (psk default)\n");
+    // print all available MOD schemes
+    unsigned int i;
+    for (i=0; i<LIQUID_NUM_MOD_SCHEMES; i++)
+        printf("          %s\n", modulation_scheme_str[i]);
+}
+
+// flexframesync callback function
 static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
@@ -24,8 +42,6 @@ typedef struct {
     unsigned char * payload;
     unsigned int num_frames_received;
 } framedata;
-
-void usage();
 
 int main(int argc, char *argv[]) {
     srand( time(NULL) );
@@ -44,10 +60,12 @@ int main(int argc, char *argv[]) {
     int dopt;
     while((dopt = getopt(argc,argv,"uhs:f:m:p:n:")) != EOF){
         switch (dopt) {
-        case 'h':
-        case 'u': usage(); return 0;
+        case 'u':
+        case 'h': usage(); return 0;
         case 's': SNRdB = atof(optarg); break;
         case 'f': packet_len = atol(optarg); break;
+        case 'n': num_frames = atoi(optarg); break;
+        case 'p': bps = atoi(optarg); break;
         case 'm':
             mod_scheme = liquid_getopt_str2mod(optarg);
             if (mod_scheme == MOD_UNKNOWN) {
@@ -56,15 +74,12 @@ int main(int argc, char *argv[]) {
                 exit(-1);
             }
             break;
-        case 'p': bps = atoi(optarg); break;
-        case 'n': num_frames = atoi(optarg); break;
         default:
             printf("error: unknown option\n");
             usage();
             exit(-1);
         }
     }
-    printf("blah\n");
 
     // create flexframegen object
     flexframegenprops_s fgprops;
@@ -254,16 +269,6 @@ int main(int argc, char *argv[]) {
 
     printf("done.\n");
     return 0;
-}
-
-void usage()
-{
-    printf("  u/h   :   print usage\n");
-    printf("  s     :   SNR [dB], 30\n");
-    printf("  f     :   frame bytes (packet len), 64\n");
-    printf("  m     :   mod scheme, [psk], dpsk, pam, qam\n");
-    printf("  p     :   bits per symbol, 1\n");
-    printf("  n     :   num frames, 3\n");
 }
 
 static int callback(unsigned char * _rx_header,
