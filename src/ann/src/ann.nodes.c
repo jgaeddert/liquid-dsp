@@ -217,30 +217,30 @@ ANN() ANN(_load_from_file)(char * _filename)
         exit(1);
     }
 
-    // character buffer
-    char buffer[64];
+    char buffer[64];    // character buffer
+    int retval=0;       // fscanf return value
 
     // first line: number of layers
-    fscanf(fid,"%s", buffer);   // "NUM_LAYERS:"
+    retval = fscanf(fid,"%s", buffer);   // "NUM_LAYERS:"
     unsigned int num_layers;
-    fscanf(fid,"%u\n", &num_layers);
+    retval = fscanf(fid,"%u\n", &num_layers);
 
     // next line: network structure
-    fscanf(fid,"%s", buffer);   // "STRUCTURE:"
+    retval = fscanf(fid,"%s", buffer);   // "STRUCTURE:"
     unsigned int i;
     unsigned int structure[num_layers];
     for (i=0; i<num_layers; i++)
-        fscanf(fid,"%u", &structure[i]);
+        retval = fscanf(fid,"%u", &structure[i]);
 
     // next line: activation function (hidden layers)
-    fscanf(fid,"%s", buffer);   // "ACTIVATION_HIDDEN:"
+    retval = fscanf(fid,"%s", buffer);   // "ACTIVATION_HIDDEN:"
     int activation_func_hidden;
-    fscanf(fid,"%d", &activation_func_hidden);
+    retval = fscanf(fid,"%d", &activation_func_hidden);
 
     // next line: activation function (output layer)
-    fscanf(fid,"%s", buffer);   // "ACTIVATION_OUTPUT:"
+    retval = fscanf(fid,"%s", buffer);   // "ACTIVATION_OUTPUT:"
     int activation_func_output;
-    fscanf(fid,"%d", &activation_func_output);
+    retval = fscanf(fid,"%d", &activation_func_output);
 
     // create network object
     ANN() q = ANN(_create)(structure,
@@ -249,9 +249,9 @@ ANN() ANN(_load_from_file)(char * _filename)
                            activation_func_output);
 
     // read weights from file, overloading initialized values
-    fscanf(fid,"%s", buffer); // "WEIGHTS:"
+    retval = fscanf(fid,"%s", buffer); // "WEIGHTS:"
     for (i=0; i<q->num_weights; i++) {
-        fscanf(fid,"%f", &(q->w[i]));
+        retval = fscanf(fid,"%f", &(q->w[i]));
         if (feof(fid)) {
             printf("error: ann_load_from_file(), invalid file : premature EOF\n");
             fclose(fid);
