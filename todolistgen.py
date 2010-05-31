@@ -43,6 +43,7 @@ included_files = []
 listed_files = []
 packages = []
 version_number = "0.1.0"
+repo = "github" # github [github.com/jgaeddert], ganymede [ganymede.ece.vt.edu]
 
 def main():
     '''The main program'''
@@ -181,7 +182,7 @@ def writeOutputHTMLFile( filename = outputFileName ):
     f.write("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">\n")
     f.write("<head>\n")
     f.write("<!-- <style type=\"text/css\" media=\"all\">@import url(http://computing.ece.vt.edu/~jgaeddert/web.css);</style> -->\n")
-    f.write("<title>jgaeddert</title>\n")
+    f.write("<title>liquid-dsp : todo list</title>\n")
     f.write("<meta name=\"description\" content=\"Gaeddert Virginia Tech\" />\n")
     f.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n")
     f.write("<!-- <link rel=\"Shortcut Icon\" type=\"image/png\" href=\"img/favicon.png\" /> -->\n")
@@ -189,23 +190,48 @@ def writeOutputHTMLFile( filename = outputFileName ):
     f.write("<body>\n")
     f.write("    <h1>liquid // todolist</h1>\n")
 
-    basepath = "https://ganymede.ece.vt.edu/trac/liquid/browser/liquid/trunk/"
+    if repo == "ganymede":
+        # gitweb example : http://ganymede.ece.vt.edu/projects/liquid-dsp/.git/?p=liquid-dsp/.git;a=blob;f=src/fec/src/fec.c;hb=HEAD
+        basepath = "http://ganymede.ece.vt.edu/projects/liquid-dsp/.git/?p=liquid-dsp/.git;a=blob;f="
+    elif repo == "github":
+        # github example : http://github.com/jgaeddert/liquid-dsp/blob/master/src/modem/src/modem_demodulate.c#L29
+        basepath = "http://github.com/jgaeddert/liquid-dsp/blob/master/"
+    else:
+        sys.stderr.write( "error: unknown repo option : " + repo + "\n" )
+        sys.exit(2)
 
     # write list
     for p in packages:
-        long_filename = basepath + p.file_name
+        if repo == "ganymede":
+            long_filename = basepath + p.file_name + ";hb=HEAD"
+        elif repo == "github":
+            long_filename = basepath + p.file_name
+        else:
+            sys.stderr.write( "error: unknown repo option : " + repo + "\n" )
+            sys.exit(2)
+
         f.write("    <p><a href=\"" + long_filename + "\">" + p.file_name + "</a></p>\n")
         f.write("    <ul>\n");
         for t in p.tasks:
-            f.write("      <li>" + "[<a href=\"" + long_filename + "#L" + str(t.line_number) + "\">" +
-                    str(t.line_number) + "</a>] : " + t.task + "</li>\n")
+            if repo == "ganymede":
+                # ganymede.ece.vt.edu
+                f.write("      <li>" + "[<a href=\"" + long_filename + "#l" + str(t.line_number) + "\">" +
+                        str(t.line_number) + "</a>] : " + t.task + "</li>\n")
+            elif repo == "github":
+                # github.com
+                f.write("      <li>" + "[<a href=\"" + long_filename + "#L" + str(t.line_number) + "\">" +
+                        str(t.line_number) + "</a>] : " + t.task + "</li>\n")
+            else:
+                sys.stderr.write( "error: unknown repo option : " + repo + "\n" )
+                sys.exit(2)
+        # end the list
         f.write("    </ul>\n");
 
     # write footer
     f.write("    <p>\n")
     f.write("    Validate:\n")
-    f.write("    <a href=\"http://validator.w3.org/check?uri=https://ganymede.ece.vt.edu/\">XHTML 1.0</a>&nbsp;|\n")
-    f.write("    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n")
+    f.write("    <a href=\"http://validator.w3.org/check?uri=http://ganymede.ece.vt.edu/todolist.html\">XHTML 1.0</a>&nbsp;|\n")
+    #f.write("    <a href=\"http://jigsaw.w3.org/css-validator/check/referer\">CSS</a>\n")
     f.write("    </p>\n")
     f.write("    <p>Last updated: <em>" + 
                     date.today().strftime("%A, %d %B %Y %I:%M%p") +
