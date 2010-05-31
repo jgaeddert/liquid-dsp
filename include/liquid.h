@@ -1885,11 +1885,24 @@ void flexframegen_flush(flexframegen _fg,
                         liquid_float_complex * _y);
 
 // frame synchronizer
+
+// callback
+//  _header             :   header data [size: 8 bytes]
+//  _header_valid       :   is header valid? (0:no, 1:yes)
+//  _payload            :   payload data [size: _payload_len]
+//  _payload_len        :   length of payload (bytes)
+//  _userdata           :   pointer to userdata
+//
+// extensions:
+//  _frame_samples      :   frame symbols (synchronized modem) [size: _framesyms_len]
+//  _frame_samples_len  :   number of frame symbols
 typedef int (*flexframesync_callback)(unsigned char * _header,
                                       int _header_valid,
                                       unsigned char * _payload,
                                       unsigned int _payload_len,
-                                      void * _userdata);
+                                      void * _userdata,
+                                      liquid_float_complex * _frame_samples,
+                                      unsigned int _frame_samples_len);
 typedef struct {
     float agc_bw0, agc_bw1;     // automatic gain control bandwidth
     float agc_gmin, agc_gmax;   // automatic gain control gain limits

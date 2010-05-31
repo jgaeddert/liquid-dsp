@@ -456,7 +456,8 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                         // invoke callback anyway, but escape ignore rest of payload
                         _fs->callback(_fs->header,  _fs->header_valid,
                                       NULL,         0,
-                                      _fs->userdata);
+                                      _fs->userdata,
+                                      NULL, 0);
                         _fs->state = FLEXFRAMESYNC_STATE_RESET;
                     }
                 }
@@ -466,6 +467,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             cfwindow_push(_fs->debug_framesyms, nco_rx_out);
 #endif
             //if (_fs->rssi < _fs->squelch_threshold)
+                _fs->payload_samples[_fs->num_symbols_collected] = nco_rx_out;
                 _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
                 _fs->num_symbols_collected++;
                 // TODO: fix hard-coded value
@@ -476,7 +478,9 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     // invoke callback method
                     _fs->callback(_fs->header,  _fs->header_valid,
                                   _fs->payload, _fs->payload_len,
-                                  _fs->userdata);
+                                  _fs->userdata,
+                                  _fs->payload_samples,
+                                  _fs->num_payload_symbols);
 
                     _fs->state = FLEXFRAMESYNC_STATE_RESET;
 //#ifdef DEBUG_FLEXFRAMESYNC
