@@ -71,9 +71,9 @@ extern "C" {
 #elif defined _GLIBCXX_COMPLEX
 #   define LIQUID_DEFINE_COMPLEX(R,C) typedef std::complex<R> C
 #else
-#   define LIQUID_DEFINE_COMPLEX(R,C) typedef R C[2]
+#   define LIQUID_DEFINE_COMPLEX(R,C) typedef struct {R real; R imag;} C;
 #endif
-//#   define LIQUID_DEFINE_COMPLEX(R,C) typedef C struct {R real; R imag;};
+//#   define LIQUID_DEFINE_COMPLEX(R,C) typedef R C[2]
 
 LIQUID_DEFINE_COMPLEX(float,  liquid_float_complex);
 LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
