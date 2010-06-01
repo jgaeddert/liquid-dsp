@@ -145,6 +145,70 @@ See also: {\tt iirdes} (IIR filter design).
 
 
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
+\liquid\ implements infinite impulse respone (IIR) filter design for the four
+major classes of filters (Butterworth, Chebyshev, elliptic, and Bessel) by
+first computing their analog low-pass prototypes, performing a bilinear
+$z$-transform to convert to the digital domain, then transforming to the
+appropriate band type (e.g. high pass) if necessary.
+Externally, the user may abstract the entire process by using the {\tt iirdes}
+method.
+
+The internal IIR filter design process is described here:
+\begin{enumerate}
+\item Use {\tt butterf()}, {\tt cheby1f()}, {\tt cheby2f()}, {\tt ellipf()},
+      {\tt besself()} to design a low-pass analog prototype in terms of
+      complex zeros, poles, and gain.
+      The {\tt azpkf} extension stands for ``analog zeros, poles, gain
+      (floating-point).''
+
+    \begin{description}
+    \item[{\tt butter\_azpkf()}] Butterworth (maximally flat in the pass-band)
+    \item[{\tt cheby1\_azpkf()}] Chebyshev Type-I (equiripple in the pass-band)
+    \item[{\tt cheby2\_azpkf()}] Chebyshev Type-II (equiripple in the stop-band)
+    \item[{\tt ellip\_azpkf() }] elliptic filter (equiripple in the pass- and
+        stop-bands)
+    \item[{\tt bessel\_azpkf()}] Bessel (maximally flat group delay)
+    \end{description}
+
+\item Compute frequency pre-warping factor, $m$, to set cutoff frequency (and
+      center frequency if designing a band-pass or band-stop filter) using the
+      {\tt iirdes\_freqprewarp()} method.
+
+\item Convert the low-pass analog prototype to its digital equivalent (also in
+      terms of zeros, poles, and gain) using the bilinear $z$-transform using
+      the {\tt bilinear\_zpkf()} method.
+
+\item Transform the low-pass digital prototype to high-pass, band-pass, or
+      band-stop using the {\tt iirdes\_dzpk\_lp2bp()} method.
+      For the band-pass and band-stop cases, the number of poles and zeros
+      will need to be doubled.
+    \begin{description}
+    \item[LP] low-pass filter   : $s = m (1+z^{-1}) / (1-z^{-1})$
+    \item[HP] high-pass filter  : $s = m (1-z^{-1}) / (1+z^{-1})$
+    \item[BP] band-pass filter  : $s = m (1-c_0 z^{-1}+z^{-2}) / (1-z^{-2})$
+    \item[BS] band-stop filter  : $s = m (1-z^{-2}) / (1-c_0 z^{-1}+z^{-2})$
+    \end{description}
+
+\item Transform the digital $z/p/k$ form of the filter to one of the two forms:
+    \begin{itemize}
+    \item[tf]  typical transfer function for digital iir filters of the form
+        $B(z)/A(z)$, {\tt iirdes\_dzpk2tff()}
+    \item[sos] second-order sections form : $\prod_k{ B_k(z)/A_k(z) }$, 
+        {\tt iirdes\_dzpk2sosf()}.
+        This is the preferred method.
+    \end{itemize}
+
+\item Create the filter object (e.g. iirfilt, iirqmfb) from the resulting
+      structure using either {\tt iirfilt\_crcf\_create()} or
+      {\tt iirfilt\_crcf\_create\_sosf()}
+
+\end{enumerate}
+
+%An extensive example is given in {\tt sandbox/iirdes\_example.c} while
+%{\tt examples/iirdes\_example.c} gives the simplified interface.
+A simplified example is given in {\tt examples/iirdes\_example.c}.
+
+
 Butterworth prototype:
 \[
     H_a(s) = \frac{1}{B_n(s)}
