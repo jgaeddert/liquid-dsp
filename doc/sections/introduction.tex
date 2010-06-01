@@ -2,6 +2,14 @@
 % introduction
 %
 
+\liquid\ is a free and open-source digital signal processing (DSP) library
+designed specifically for software-defined radios on embedded platforms.
+The aim is to provide a lightweight DSP library that does not rely on a myriad
+of external dependencies or proprietary and otherwise cumbersome frameworks.
+All signal processing elements are designed to be flexible, scalable, and
+dynamic, including filters, filter design, oscillators, modems, synchronizers,
+and complex mathematical operations.
+
 \section{Key points}
 \begin{itemize}
 \item open-source software-defined radio DSP algorithms
@@ -22,23 +30,23 @@
 \section{Quick Start Guide}
 To build:
 \begin{verbatim}
-cd /path/to/liquid/
-./reconf
-./configure
-make
-sudo make install
+    $ cd /path/to/liquid/
+    $ ./reconf
+    $ ./configure
+    $ make
+    # make install
 \end{verbatim}
 You may also want to build and run the optional validation program via
 \begin{verbatim}
-make check
+    $ make check
 \end{verbatim}
 and the benchmarking tool,
 \begin{verbatim}
-make bench
+    $ make bench
 \end{verbatim}
 
 \section{Tutorial}
-Most of {\it liquid}'s signal processing elements are C structures which
+Most of \liquid's signal processing elements are C structures which
 retain the object's parameters, state, and other useful information.
 The naming convention is
 {\tt basename\_xxxt\_method} where
@@ -61,19 +69,30 @@ and
 {\tt execute()}.
 Certain object also implement a {\tt recreate()} method which operates similar
 to that of {\tt realloc()} in C.
+Typically, the user will create the signal processing object independent of
+the data array.
+The object will manage its own memory until its {\tt destroy()} method is
+invoked.
 A few points to note:
 \begin{enumerate}
 \item While the objects do retain internal memory, they operate on external
-arrays defined by the user. That is... It is strictly up to the user to manage
-his/her own memory.
+      arrays defined by the user.
+      It is strictly up to the user to manage his/her own memory.
+      Shared pointers are a great way to cause memory leaks, double-free bugs,
+      and severe headaches.
 \item ...
 \end{enumerate}
 
 \section{Learning by example}
-The {\tt examples/} subdirectory includes numerous examples for nearly all the
-signal processing components.
+While this document contains numerous examples listed in the text, they are
+typically condensed to demonstrate only the interface.
+The {\tt examples/} subdirectory includes more extensive demonstrations and
+numerous examples for all the signal processing components.
+Many of these examples write an output file which can be read by
+octave~\cite{octave:web} to display the results.
+For a brief description of each of these examples, see {\tt examples/README}.
 
-\section{Sandbox}
+%\section{Sandbox}
 
 \subsection{Why C?}
 A commonly asked question is ``why C and not C++?''
