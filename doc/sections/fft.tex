@@ -2,7 +2,7 @@
 % MODULE : fft (fast Fourier transform)
 %
 
-\section{fft (fast Fourier transform)}
+\section{{\tt fft} (fast Fourier transform)}
 \label{module:fft}
 
 Given a vector of complex time-domain samples
@@ -19,6 +19,18 @@ Reverse transform:
 \]
 
 \liquid\ implements only the basic decimation-in-time FFT algorithm for
-radix-2 transforms, however, will use the fftw3 library [cite:fftw3.org] if
-available.
+radix-2 transforms and the slow DFT method otherwise.
+Internal methods requiring FFTs, however, will use the {\tt fftw3} library
+\cite{fftw:web} if available.
+The presence of {\tt fftw3.h} and {\tt libfftw3} are detected by the configure
+script at build time.
+If found, \liquid\ will link against {\tt fftw} for better performance (it is,
+however, the fastest FFT in the west, you know).
+If {\tt fftw} is unavailable, however, \liquid\ will use its own, slower FFT
+methods for internal processing.
+This eliminates {\tt libfftw} as an external dependency, but takes advantage
+of it when available.
+
+%\subsection{{\tt dct} (discrete cosine transform)}
+%\label{module:fft:dct}
 
