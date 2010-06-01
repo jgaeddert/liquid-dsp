@@ -1,7 +1,14 @@
 //
 // resamp2_crcf_decim_example.c
 //
-// Halfband decimator (complex)
+// Halfband decimator.  This example demonstrates the interface to the
+// decimating halfband resampler.  A low-frequency input sinusoid is
+// generated and fed into the decimator two samples at a time,
+// producing one output at each iteration.  The results are written to
+// an output file.
+//
+// SEE ALSO: resamp2_crcf_interp_example.c
+//           decim_rrrf_example.c
 //
 
 #include <stdio.h>

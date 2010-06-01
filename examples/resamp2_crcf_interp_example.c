@@ -1,8 +1,16 @@
 //
 // resamp2_crcf_interp_example.c
 //
-// Halfband interpolator (complex)
+// Halfband interpolator.  This example demonstrates the interface to the
+// interpolating halfband resampler.  A low-frequency input sinusoid is
+// generated and fed into the interpolator one sample at a time,
+// producing two outputs at each iteration.  The results are written to
+// an output file.
 //
+// SEE ALSO: resamp2_crcf_decim_example.c
+//           interp_crcf_example.c
+//
+
 
 #include <stdio.h>
 #include <complex.h>
