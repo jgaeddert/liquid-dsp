@@ -75,6 +75,14 @@ However, their simplicity in implementation and computational complexity gains
 them a place in digital communications, particularly in software radios where
 spectral efficiency is secondary to computational complexity.
 
+\subsection{Convolutional, Reed-Solomon codes}
+\label{module:fec:conv}
+\liquid\ takes advantage of convolutional and Reed-Solomon codes defined in
+{\tt libfec} \cite{fec:web}.
+These codes have much stronger error-correction capabilities than {\tt rep3}
+and {\tt h74}, but are also much more computationally intensive to the host
+processor.
+
 \subsection{Interface}
 \label{module:fec:interface}
 
@@ -114,19 +122,10 @@ encoder/decoder object:
 
 \subsection{encoder/decoder options}
 \label{module:fec:codecs}
-Table~\ref{tab:fec:codecs} lists the available codecs...
-
-\subsubsection{basic codecs}
-\label{module:fec:codecs:basic}
-
-\subsubsection{convolutional codecs}
-\label{module:fec:codecs:conv}
-
-\subsubsection{punctured codes}
-\label{module:fec:codecs:punctured}
-
-\subsubsection{Reed-Solomon codecs}
-\label{module:fec:codecs:rs}
+Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
+description for each.
+All convolutional and Reed-Solomon codes are available only if {\tt libfec} is
+installed \cite{fec:web}.
 
 % ------------ TABLE: MODULATION/CODING SCHEME PAIRS ------------
 \begin{table*}
@@ -165,7 +164,11 @@ Table~\ref{tab:fec:codecs} lists the available codecs...
 {\tt FEC\_CONV\_V29P45}         & 4/5       & $K=9$, $d_{free}=5$\\
 {\tt FEC\_CONV\_V29P56}         & 5/6       & $K=9$, $d_{free}=5$\\
 {\tt FEC\_CONV\_V29P67}         & 6/7       & $K=9$, $d_{free}=4$\\
-{\tt FEC\_CONV\_V29P78}         & 7/8       & $K=9$, $d_{free}=4$\\\bottomrule
+{\tt FEC\_CONV\_V29P78}         & 7/8       & $K=9$, $d_{free}=4$\\\midrule
+
+% 
+% Reed-Solomon codes
+{\tt FEC\_RS\_M8}               & 223/255   & Reed-Solomon block code, $m=8$\\\bottomrule
 
 
 \end{tabular*}
