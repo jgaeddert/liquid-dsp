@@ -111,13 +111,21 @@ are simply to save the internal state of the object.
 For instance, a {\tt firfilt\_crcf} (finite impulse response filter) object
 is just a structure which contains--among other things--the filter taps
 (coefficients) and an input buffer.
-For the most part, C++ polymorphic data types and abstract base classes are
-unnecessary for basic signal processing, and primarily serve to reduce the
-code base of a project.
-Furthermore, while templates can certainly be useful for library development,
+This simplifies the interface to the user; one only needs to ``push'' elements
+into the filter's internal buffer and ``execute'' the dot product when
+desired.
+This could also be accomplished with classes, a construct specific to C++ and
+other high-level object-oriented programming languages, however,
+for the most part, C++ polymorphic data types and abstract base classes are
+unnecessary for basic signal processing, and primarily just serve to reduce
+the code base of a project.
+Furthermore, while C++ templates can certainly be useful for library development,
 their benefits are of limited use to signal processing and can be circumvented
 through the use of pre-processor macros at the gain of targeting more embedded
 processors.
+Under the hood, the C++ compiler's pre-processor expands templates and classes
+before actually compiling the source anyway, so in this sense they are
+equivalent to the second-order macros used in \liquid.
 
 The C programming language has a rich history in system programming--
 specifically targeting embedded applications--and is the basis behind many
