@@ -28,79 +28,73 @@
 #include <string.h>
 #include "liquid.internal.h"
 
-// create rep3 codec object
-fec fec_rep3_create(void * _opts)
+// create rep5 codec object
+fec fec_rep5_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
-    q->scheme = FEC_REP3;
+    q->scheme = FEC_REP5;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_rep3_encode;
-    q->decode_func = &fec_rep3_decode;
+    q->encode_func = &fec_rep5_encode;
+    q->decode_func = &fec_rep5_decode;
 
     return q;
 }
 
-// destroy rep3 object
-void fec_rep3_destroy(fec _q)
+// destroy rep5 object
+void fec_rep5_destroy(fec _q)
 {
     free(_q);
 }
 
-// print rep3 object
-void fec_rep3_print(fec _q)
+// print rep5 object
+void fec_rep5_print(fec _q)
 {
-    printf("fec_rep3 [r: %3.2f]\n", _q->rate);
+    printf("fec_rep5 [r: %3.2f]\n", _q->rate);
 }
 
-// encode block of data using rep3 encoder
+// encode block of data using rep5 encoder
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
-//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-void fec_rep3_encode(fec _q,
+//  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
+void fec_rep5_encode(fec _q,
                      unsigned int _dec_msg_len,
                      unsigned char *_msg_dec,
                      unsigned char *_msg_enc)
 {
     unsigned int i;
-    for (i=0; i<3; i++) {
+    for (i=0; i<5; i++) {
         memcpy(&_msg_enc[i*_dec_msg_len], _msg_dec, _dec_msg_len);
     }
 }
 
-// decode block of data using rep3 decoder
+// decode block of data using rep5 decoder
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
-//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+//  _msg_enc        :   encoded message [size: 1 x 5*_dec_msg_len]
 //  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
-void fec_rep3_decode(fec _q,
+void fec_rep5_decode(fec _q,
                      unsigned int _dec_msg_len,
                      unsigned char *_msg_enc,
                      unsigned char *_msg_dec)
 {
-    unsigned char s0, s1, s2;
+    unsigned char s0, s1, s2, s3, s4;
     unsigned int i, num_errors=0;
     for (i=0; i<_dec_msg_len; i++) {
-        s0 = _msg_enc[i];
+        s0 = _msg_enc[i                 ];
         s1 = _msg_enc[i +   _dec_msg_len];
         s2 = _msg_enc[i + 2*_dec_msg_len];
+        s3 = _msg_enc[i + 3*_dec_msg_len];
+        s4 = _msg_enc[i + 4*_dec_msg_len];
 
-        //  s0  s1  s2  |   y   e
-        //  ------------+---------
-        //  0   0   0   |   0   0
-        //  0   0   1   |   0   1
-        //  0   1   0   |   0   1
-        //  0   1   1   |   1   1
-        //  1   0   0   |   0   1
-        //  1   0   1   |   1   1
-        //  1   1   0   |   1   1
-        //  1   1   1   |   1   0
-
-        _msg_dec[i] = (s0 & s1) | (s0 & s2) | (s1 & s2);
+        _msg_dec[i] = (s0 & s1) | (s0 & s2) | (s0 & s3) | (s0 & s4) |
+                                  (s1 & s2) | (s1 & s3) | (s1 & s4) |
+                                              (s2 & s3) | (s2 & s4) |
+                                                          (s3 & s4);
     
         //num_errors += (s0 ^ s1) | (s0 ^ s2) | (s1 ^ s2) ? 1 : 0;
         num_errors += 0;

@@ -105,6 +105,7 @@ void fec_encode_bench(
 // BENCHMARKS
 //
 void benchmark_fec_enc_rep3_n64         FEC_ENCODE_BENCH_API(FEC_REP3,      64,  NULL)
+void benchmark_fec_enc_rep5_n64         FEC_ENCODE_BENCH_API(FEC_REP5,      64,  NULL)
 void benchmark_fec_enc_hamming74_n64    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
 
 void benchmark_fec_enc_conv27_n64       FEC_ENCODE_BENCH_API(FEC_CONV_V27,  64,  NULL)

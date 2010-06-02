@@ -35,6 +35,7 @@ const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES] = {
     "[unknown]",
     "[none]",
     "[r3] repeat(3)",
+    "[r5] repeat(5)",
     "[h74] hamming(7,4)",
     "[h84] hamming(8,4)",
     "[v27] convolutional r1/2 K=7",
@@ -99,6 +100,8 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
         return FEC_RS_M8;
     } else if (strcmp(_str, "r3")==0) {
         return FEC_REP3;
+    } else if (strcmp(_str, "r5")==0) {
+        return FEC_REP5;
     } else if (strcmp(_str, "h74")==0) {
         return FEC_HAMMING74;
     }
@@ -113,6 +116,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_UNKNOWN:   return 0;
     case FEC_NONE:      return _msg_len;
     case FEC_REP3:      return 3*_msg_len;
+    case FEC_REP5:      return 5*_msg_len;
     case FEC_HAMMING74: return 2*_msg_len;
     case FEC_HAMMING84: return 2*_msg_len;
 
@@ -259,6 +263,7 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_UNKNOWN:   return 0;
     case FEC_NONE:      return 1.;
     case FEC_REP3:      return 1./3.;
+    case FEC_REP5:      return 1./5.;
     case FEC_HAMMING74: return 1./2.;
     case FEC_HAMMING84: return 1./2.;
 
@@ -316,6 +321,8 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         return fec_pass_create(NULL);
     case FEC_REP3:
         return fec_rep3_create(_opts);
+    case FEC_REP5:
+        return fec_rep5_create(_opts);
     case FEC_HAMMING74:
         return fec_hamming74_create(_opts);
     case FEC_HAMMING84:
