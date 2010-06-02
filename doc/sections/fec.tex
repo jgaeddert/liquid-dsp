@@ -36,8 +36,8 @@ Here is a simple example:
 %
 \input{listings/crc32.example.c.tex}
 
-\subsection{{\tt rep3} (simple repeat code)}
-\label{module:fec:rep3}
+\subsection{{\tt rep3}, {\tt rep5} (simple repeat codes)}
+\label{module:fec:rep}
 The {\tt rep3} code is a simple repeat code which simply repeats the message
 twice (transmits it three times).
 The decoder takes a majority vote of the bits received by applying a simple
@@ -68,20 +68,40 @@ can compute logical {\it exclusive or} and {\it or} very quickly.
 This is precisely how \liquid\ decodes {\tt rep3} data, only in this case,
 $s$, $r_0$, $r_1$, and $r_2$ represent a bytes of data rather than bits.
 
+The {\tt rep5} code operates similarly, except that it transmits five copies
+of the original data sequence, rather than just three.
+The decoder takes the five received bits $r_0,\ldots,r_4$ and adds (modulo
+2) the {\it exclusive or} of every combination of bits, viz.
+\[
+    \hat{s} =   \sum_{j=0}^{3} {
+                    \sum_{k=j+1}^{4} {
+                        (r_j \land r_k)
+                    }
+                }
+%            =   (r_0 \land r_1) + 
+%                (r_0 \land r_2) + 
+%                (r_0 \land r_3) +
+%                    \cdots +
+%                (r_3 \land r_4) 
+\]
+This roughly doubles the number of clock cycles to decode over {\tt rep3}.
+
 It is well-known that repeat codes do not have strong error-correction
 capabilities for their rate, are are located far from the Shannon capacity
 bound \cite{Proakis:2001}.
-However, their simplicity in implementation and computational complexity gains
-them a place in digital communications, particularly in software radios where
-spectral efficiency is secondary to computational complexity.
+They are exceptionally weak relative to convolutional Viterbi and Reed-Solomon
+codes.
+However, their simplicity in implementation and low computational complexity
+gains them a place in digital communications, particularly in software radios
+where spectral efficiency goals might be secondary to processing contraints.
 
 \subsection{Convolutional, Reed-Solomon codes}
 \label{module:fec:conv}
 \liquid\ takes advantage of convolutional and Reed-Solomon codes defined in
 {\tt libfec} \cite{fec:web}.
-These codes have much stronger error-correction capabilities than {\tt rep3}
-and {\tt h74}, but are also much more computationally intensive to the host
-processor.
+These codes have much stronger error-correction capabilities than {\tt rep3},
+{\tt rep5}, {\tt h74}, and {\tt h84}, but are also much more computationally
+intensive to the host processor.
 
 \subsection{Interface}
 \label{module:fec:interface}
@@ -90,7 +110,7 @@ processor.
 \item[{\tt fec\_create()}]
     creates a {\tt fec} object of a specific scheme.
 \item[{\tt fec\_recreate()}]
-    re-creates a {\tt fec} object with a different scheme.
+    recreates an existing {\tt fec} object with a different scheme.
 \item[{\tt fec\_destroy()}]
     destroys a {\tt fec} object, freeing all internally-allocated memory
     arrays.
@@ -142,6 +162,7 @@ installed \cite{fec:web}.
 {\tt FEC\_UNKNOWN}              & -         & unknown/unsupported scheme\\
 {\tt FEC\_NONE}                 & 1         & no error-correction\\
 {\tt FEC\_REP3}                 & 1/3       & simple repeat code\\
+{\tt FEC\_REP5}                 & 1/5       & simple repeat code\\
 {\tt FEC\_HAMMING74}            & 1/2       & Hamming (7,4) block code\\
 {\tt FEC\_HAMMING84}            & 1/2       & Hamming (7,4) with extra parity bit\\\midrule
 %
