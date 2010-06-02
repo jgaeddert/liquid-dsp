@@ -47,11 +47,31 @@ void autotest_rep5_codec()
     // encode message
     fec_encode(q, n, msg, msg_enc);
     
-    // corrupt encoded message
-    msg_enc[0] = ~msg_enc[0];
-    msg_enc[1] = ~msg_enc[1];
-    msg_enc[2] = ~msg_enc[2];
-    msg_enc[3] = ~msg_enc[3];
+    // corrupt encoded message, but no so much that it
+    // can't be decoded
+    msg_enc[ 0] = ~msg_enc[ 0];
+    msg_enc[ 4] = ~msg_enc[ 4];
+//  msg_enc[ 8] = ~msg_enc[ 8];
+//  msg_enc[12] = ~msg_enc[12];
+//  msg_enc[16] = ~msg_enc[16];
+
+    msg_enc[ 1] = ~msg_enc[ 1];
+//  msg_enc[ 5] = ~msg_enc[ 5];
+    msg_enc[ 9] = ~msg_enc[ 9];
+//  msg_enc[13] = ~msg_enc[13];
+//  msg_enc[17] = ~msg_enc[17];
+
+//  msg_enc[ 2] = ~msg_enc[ 2];
+//  msg_enc[ 6] = ~msg_enc[ 6];
+    msg_enc[10] = ~msg_enc[10];
+    msg_enc[14] = ~msg_enc[14];
+//  msg_enc[18] = ~msg_enc[18];
+
+    msg_enc[ 3] = ~msg_enc[ 3];
+//  msg_enc[ 7] = ~msg_enc[ 7];
+//  msg_enc[11] = ~msg_enc[11];
+//  msg_enc[15] = ~msg_enc[15];
+    msg_enc[19] = ~msg_enc[19];
 
     // decode message
     fec_decode(q, n, msg_enc, msg_dec);

@@ -91,10 +91,17 @@ void fec_rep5_decode(fec _q,
         s3 = _msg_enc[i + 3*_dec_msg_len];
         s4 = _msg_enc[i + 4*_dec_msg_len];
 
-        _msg_dec[i] = (s0 & s1) | (s0 & s2) | (s0 & s3) | (s0 & s4) |
-                                  (s1 & s2) | (s1 & s3) | (s1 & s4) |
-                                              (s2 & s3) | (s2 & s4) |
-                                                          (s3 & s4);
+        // compute all triplet combinations
+        _msg_dec[i] =   (s0 & s1 & s2) |
+                        (s0 & s1 & s3) |
+                        (s0 & s1 & s4) |
+                        (s0 & s2 & s3) |
+                        (s0 & s2 & s4) |
+                        (s0 & s3 & s4) |
+                        (s1 & s2 & s3) |
+                        (s1 & s2 & s4) |
+                        (s1 & s3 & s4) |
+                        (s2 & s3 & s4);
     
         //num_errors += (s0 ^ s1) | (s0 ^ s2) | (s1 ^ s2) ? 1 : 0;
         num_errors += 0;
