@@ -399,6 +399,19 @@ void fec_rep3_decode(fec _q,
                      unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
 
+// Repeat (5)
+fec fec_rep5_create(void *_opts);
+void fec_rep5_destroy(fec _q);
+void fec_rep5_print(fec _q);
+void fec_rep5_encode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char * _msg_dec,
+                     unsigned char * _msg_enc);
+void fec_rep5_decode(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char * _msg_enc,
+                     unsigned char * _msg_dec);
+
 // Hamming(8,4)
 unsigned char fec_hamming84_compute_syndrome(unsigned char _r);
 unsigned char fec_hamming84_decode_symbol(unsigned char _r);

@@ -36,8 +36,8 @@ Here is a simple example:
 %
 \input{listings/crc32.example.c.tex}
 
-\subsection{{\tt rep3} (simple repeat code)}
-\label{module:fec:rep3}
+\subsection{{\tt rep3}, {\tt rep5} (simple repeat codes)}
+\label{module:fec:rep}
 The {\tt rep3} code is a simple repeat code which simply repeats the message
 twice (transmits it three times).
 The decoder takes a majority vote of the bits received by applying a simple
@@ -49,31 +49,59 @@ The estimated transmitted bit is {\tt 0} if the sum of the received bits is
 less than 2, and {\tt 1} otherwise.
 This is equivalent to
 \[
-    \hat{s} =   \Bigl(
-                (r_0 \oplus r_1) + 
+    \hat{s} =   (r_0 \land r_1) + 
+                (r_0 \land r_2) + 
+                (r_1 \land r_2) 
+\]
+where $+$ represents logical {\it or} and $\land$ represents
+logical {\it and}.
+An error is detected if
+\[
+    \hat{e} =   (r_0 \oplus r_1) + 
                 (r_0 \oplus r_2) + 
                 (r_1 \oplus r_2) 
-                \Bigr)
-                \oplus
-                (r_1 \oplus r_1 \oplus r_2)
 \]
-where $\oplus$ represents logical {\it exclusive or} and $+$ represents
-logical {\it or}.
+where $\oplus$ represents logical {\it exclusive or}.
 In this fashion it is easy to decode several bytes of data at a time because
 machine architectures have low-level bit-wise manipulation instructions which
 can compute logical {\it exclusive or} and {\it or} very quickly.
 This is precisely how \liquid\ decodes {\tt rep3} data, only in this case,
 $s$, $r_0$, $r_1$, and $r_2$ represent a bytes of data rather than bits.
-The above notation is useful because the quantity
-$(r_0 \oplus r_1) + (r_0 \oplus r_2) + (r_1 \oplus r_2)$
-represents the number of errors corrected.
+
+The {\tt rep5} code operates similarly, except that it transmits five copies
+of the original data sequence, rather than just three.
+The decoder takes the five received bits $r_0,\ldots,r_4$ and adds (modulo
+2) the {\it exclusive or} of every combination of bits, viz.
+\[
+    \hat{s} =   \sum_{j=0}^{3} {
+                    \sum_{k=j+1}^{4} {
+                        (r_j \land r_k)
+                    }
+                }
+%            =   (r_0 \land r_1) + 
+%                (r_0 \land r_2) + 
+%                (r_0 \land r_3) +
+%                    \cdots +
+%                (r_3 \land r_4) 
+\]
+This roughly doubles the number of clock cycles to decode over {\tt rep3}.
 
 It is well-known that repeat codes do not have strong error-correction
 capabilities for their rate, are are located far from the Shannon capacity
 bound \cite{Proakis:2001}.
-However, their simplicity in implementation and computational complexity gains
-them a place in digital communications, particularly in software radios where
-spectral efficiency is secondary to computational complexity.
+They are exceptionally weak relative to convolutional Viterbi and Reed-Solomon
+codes.
+However, their simplicity in implementation and low computational complexity
+gains them a place in digital communications, particularly in software radios
+where spectral efficiency goals might be secondary to processing contraints.
+
+\subsection{Convolutional, Reed-Solomon codes}
+\label{module:fec:conv}
+\liquid\ takes advantage of convolutional and Reed-Solomon codes defined in
+{\tt libfec} \cite{fec:web}.
+These codes have much stronger error-correction capabilities than {\tt rep3},
+{\tt rep5}, {\tt h74}, and {\tt h84}, but are also much more computationally
+intensive to the host processor.
 
 \subsection{Interface}
 \label{module:fec:interface}
@@ -82,7 +110,7 @@ spectral efficiency is secondary to computational complexity.
 \item[{\tt fec\_create()}]
     creates a {\tt fec} object of a specific scheme.
 \item[{\tt fec\_recreate()}]
-    re-creates a {\tt fec} object with a different scheme.
+    recreates an existing {\tt fec} object with a different scheme.
 \item[{\tt fec\_destroy()}]
     destroys a {\tt fec} object, freeing all internally-allocated memory
     arrays.
@@ -114,19 +142,10 @@ encoder/decoder object:
 
 \subsection{encoder/decoder options}
 \label{module:fec:codecs}
-Table~\ref{tab:fec:codecs} lists the available codecs...
-
-\subsubsection{basic codecs}
-\label{module:fec:codecs:basic}
-
-\subsubsection{convolutional codecs}
-\label{module:fec:codecs:conv}
-
-\subsubsection{punctured codes}
-\label{module:fec:codecs:punctured}
-
-\subsubsection{Reed-Solomon codecs}
-\label{module:fec:codecs:rs}
+Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
+description for each.
+All convolutional and Reed-Solomon codes are available only if {\tt libfec} is
+installed \cite{fec:web}.
 
 % ------------ TABLE: MODULATION/CODING SCHEME PAIRS ------------
 \begin{table*}
@@ -143,6 +162,7 @@ Table~\ref{tab:fec:codecs} lists the available codecs...
 {\tt FEC\_UNKNOWN}              & -         & unknown/unsupported scheme\\
 {\tt FEC\_NONE}                 & 1         & no error-correction\\
 {\tt FEC\_REP3}                 & 1/3       & simple repeat code\\
+{\tt FEC\_REP5}                 & 1/5       & simple repeat code\\
 {\tt FEC\_HAMMING74}            & 1/2       & Hamming (7,4) block code\\
 {\tt FEC\_HAMMING84}            & 1/2       & Hamming (7,4) with extra parity bit\\\midrule
 %
@@ -165,7 +185,11 @@ Table~\ref{tab:fec:codecs} lists the available codecs...
 {\tt FEC\_CONV\_V29P45}         & 4/5       & $K=9$, $d_{free}=5$\\
 {\tt FEC\_CONV\_V29P56}         & 5/6       & $K=9$, $d_{free}=5$\\
 {\tt FEC\_CONV\_V29P67}         & 6/7       & $K=9$, $d_{free}=4$\\
-{\tt FEC\_CONV\_V29P78}         & 7/8       & $K=9$, $d_{free}=4$\\\bottomrule
+{\tt FEC\_CONV\_V29P78}         & 7/8       & $K=9$, $d_{free}=4$\\\midrule
+
+% 
+% Reed-Solomon codes
+{\tt FEC\_RS\_M8}               & 223/255   & Reed-Solomon block code, $m=8$\\\bottomrule
 
 
 \end{tabular*}

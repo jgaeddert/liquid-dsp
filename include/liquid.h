@@ -679,11 +679,12 @@ int crc32_validate_message(unsigned char *_data,
                            unsigned int _key);
 
 // available FEC schemes
-#define LIQUID_NUM_FEC_SCHEMES  22
+#define LIQUID_NUM_FEC_SCHEMES  23
 typedef enum {
     FEC_UNKNOWN=0,
     FEC_NONE,           // no error-correction
     FEC_REP3,           // simple repeat code, r1/3
+    FEC_REP5,           // simple repeat code, r1/5
     FEC_HAMMING74,      // Hamming (7,4) block code, r1/2 (really 4/7)
     FEC_HAMMING84,      // Hamming (7,4) with extra parity bit, r1/2
 
