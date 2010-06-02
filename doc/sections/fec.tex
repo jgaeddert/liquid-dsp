@@ -49,24 +49,24 @@ The estimated transmitted bit is {\tt 0} if the sum of the received bits is
 less than 2, and {\tt 1} otherwise.
 This is equivalent to
 \[
-    \hat{s} =   \Bigl(
-                (r_0 \oplus r_1) + 
+    \hat{s} =   (r_0 \land r_1) + 
+                (r_0 \land r_2) + 
+                (r_1 \land r_2) 
+\]
+where $+$ represents logical {\it or} and $\land$ represents
+logical {\it and}.
+An error is detected if
+\[
+    \hat{e} =   (r_0 \oplus r_1) + 
                 (r_0 \oplus r_2) + 
                 (r_1 \oplus r_2) 
-                \Bigr)
-                \oplus
-                (r_1 \oplus r_1 \oplus r_2)
 \]
-where $\oplus$ represents logical {\it exclusive or} and $+$ represents
-logical {\it or}.
+where $\oplus$ represents logical {\it exclusive or}.
 In this fashion it is easy to decode several bytes of data at a time because
 machine architectures have low-level bit-wise manipulation instructions which
 can compute logical {\it exclusive or} and {\it or} very quickly.
 This is precisely how \liquid\ decodes {\tt rep3} data, only in this case,
 $s$, $r_0$, $r_1$, and $r_2$ represent a bytes of data rather than bits.
-The above notation is useful because the quantity
-$(r_0 \oplus r_1) + (r_0 \oplus r_2) + (r_1 \oplus r_2)$
-represents the number of errors corrected.
 
 It is well-known that repeat codes do not have strong error-correction
 capabilities for their rate, are are located far from the Shannon capacity
