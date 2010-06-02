@@ -1,0 +1,272 @@
+//
+// flexframesync_reconfig_example.c
+//
+// Demonstrates the reconfigurability of the flexframegen and
+// flexframesync objects.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#include <getopt.h>
+
+#include "liquid.h"
+
+#define OUTPUT_FILENAME  "flexframesync_reconfig_example.m"
+#define OUTPUT_SYMBOLS_FILE 0
+
+void usage()
+{
+    printf("flexframesync_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  n     : number of frames, default: 3\n");
+}
+
+// flexframesync callback function
+static int callback(unsigned char * _rx_header,
+                    int _rx_header_valid,
+                    unsigned char * _rx_payload,
+                    unsigned int _rx_payload_len,
+                    void * _userdata,
+                    float complex * _frame_samples,
+                    unsigned int _frame_samples_len);
+
+typedef struct {
+    unsigned char * header;
+    unsigned char * payload;
+    unsigned int num_frames_received;
+} framedata;
+
+int main(int argc, char *argv[]) {
+    srand( time(NULL) );
+
+    // define parameters
+    float SNRdB = 30.0f;
+    unsigned int m = 3;     // filter delay
+    float beta = 0.7f;      // filter excess bandwidth
+    float noise_floor = -30.0f;
+    modulation_scheme mod_scheme = MOD_PSK;
+    unsigned int bps = 1;
+    unsigned int num_frames = 3;
+
+    // get options
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhs:f:m:p:n:")) != EOF){
+        switch (dopt) {
+        case 'u':
+        case 'h': usage(); return 0;
+        case 's': SNRdB = atof(optarg); break;
+        case 'n': num_frames = atoi(optarg); break;
+        default:
+            printf("error: unknown option\n");
+            usage();
+            exit(-1);
+        }
+    }
+
+    // create flexframegen object
+    flexframegenprops_s fgprops;
+    flexframegen fg = flexframegen_create(NULL);
+
+    // frame data
+    unsigned char header[8];
+    unsigned char * payload = NULL;
+    framedata fd = {NULL, NULL, 0};
+
+    // create interpolator
+    unsigned int h_len = 2*2*m + 1;
+    float h[h_len];
+    design_rrc_filter(2,m,beta,0,h);
+    interp_crcf interp = interp_crcf_create(2,h,h_len);
+
+    // create flexframesync object with default properties
+    flexframesyncprops_s fsprops;
+    flexframesyncprops_init_default(&fsprops);
+    fsprops.squelch_threshold = noise_floor + 3.0f;
+    fsprops.agc_bw0 = 1e-3f;
+    fsprops.agc_bw1 = 1e-5f;
+    fsprops.agc_gmin = 1e-3f;
+    fsprops.agc_gmax = 1e4f;
+    fsprops.pll_bw0 = 1e-1f;
+    fsprops.pll_bw1 = 1e-2f;
+    flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
+    flexframesync_print(fs);
+
+    // channel
+    float phi=0.0f;
+    float dphi=0.02f;
+    nco nco_channel = nco_create(LIQUID_VCO);
+    nco_set_phase(nco_channel, phi);
+    nco_set_frequency(nco_channel, dphi);
+    float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
+    float mu    = 0.3f; // fractional sample delay
+    fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,0.9f,60.0f);
+    fir_farrow_crcf_set_delay(delay_filter,mu);
+
+    unsigned int i;
+    // initialize header, payload
+    for (i=0; i<8; i++)
+        header[i] = i;
+
+    // frame buffers, properties
+    unsigned int frame_len;
+    float complex * frame = NULL;
+
+    // interpolate, push through synchronizer
+    float complex x;
+    float complex y[2];
+    float complex z[2];
+    float complex noise;
+    for (i=0; i<512; i++) {
+        noise = 0.0f;
+        cawgn(&noise, nstd);
+        // push noise through sync
+        flexframesync_execute(fs, &noise, 1);
+    }
+
+    unsigned int j;
+    for (j=0; j<num_frames; j++) {
+        // configure frame generator properties
+        fgprops.rampup_len =    64;
+        fgprops.phasing_len =   64;
+        fgprops.payload_len =   (rand() % 1024) + 1;    // random payload length
+        fgprops.mod_scheme =    MOD_PSK;                // PSK
+        fgprops.mod_bps =       (rand() % 4) + 1;       // random bits/symbol
+        fgprops.rampdn_len =    64;
+
+        // set properties
+        flexframegen_setprops(fg, &fgprops);
+        flexframegen_print(fg);
+
+        // reallocate memory for payload
+        payload = realloc(payload, fgprops.payload_len*sizeof(unsigned char));
+
+        // initialize payload
+        for (i=0; i<fgprops.payload_len; i++)
+            payload[i] = rand() & 0xff;
+
+        // compute frame length
+        frame_len = flexframegen_getframelen(fg);
+
+        // reallocate memory for frame
+        frame = realloc(frame, frame_len*sizeof(float complex));
+
+        // set framedata pointers
+        fd.header = header;
+        fd.payload = payload;
+
+        // generate the frame
+        flexframegen_execute(fg, header, payload, frame);
+
+        for (i=0; i<frame_len+2*m; i++) {
+            // compensate for filter delay
+            x = (i<frame_len) ? frame[i] : 0.0f;
+
+            // run interpolator
+            interp_crcf_execute(interp, x, y);
+
+            // add channel impairments
+            nco_mix_up(nco_channel, y[0], &z[0]);
+            nco_step(nco_channel);
+            nco_mix_up(nco_channel, y[1], &z[1]);
+            nco_step(nco_channel);
+
+            // apply channel gain
+            z[0] *= gamma;
+            z[1] *= gamma;
+
+            // add noise
+            cawgn(&z[0], nstd);
+            cawgn(&z[1], nstd);
+
+            // emulate sample timing offset with Farrow filter
+            fir_farrow_crcf_push(delay_filter, z[0]);
+            fir_farrow_crcf_execute(delay_filter, &z[0]);
+            fir_farrow_crcf_push(delay_filter, z[1]);
+            fir_farrow_crcf_execute(delay_filter, &z[1]);
+
+            // push through sync
+            flexframesync_execute(fs, z, 2);
+        }
+
+        // flush frame
+        for (i=0; i<64; i++) {
+            noise = 0.0f;
+            cawgn(&noise, nstd);
+            // push noise through sync
+            interp_crcf_execute(interp, noise, y);
+            fir_farrow_crcf_push(delay_filter, y[0]);
+            fir_farrow_crcf_execute(delay_filter, &z[0]);
+            fir_farrow_crcf_push(delay_filter, y[1]);
+            fir_farrow_crcf_execute(delay_filter, &z[1]);
+            flexframesync_execute(fs, z, 2);
+        }
+    } // num frames
+
+    printf("num frames received : %3u / %3u\n", fd.num_frames_received, num_frames);
+
+    // clean up allocated memory
+    flexframegen_destroy(fg);
+    flexframesync_destroy(fs);
+    nco_destroy(nco_channel);
+    interp_crcf_destroy(interp);
+    free(payload);
+    free(frame);
+
+    printf("done.\n");
+    return 0;
+}
+
+static int callback(unsigned char * _rx_header,
+                    int _rx_header_valid,
+                    unsigned char * _rx_payload,
+                    unsigned int _rx_payload_len,
+                    void * _userdata,
+                    float complex * _frame_samples,
+                    unsigned int _frame_samples_len)
+{
+    printf("callback invoked\n");
+
+    framedata * fd = (framedata*)_userdata;
+
+    printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
+    printf("    payload length      : %u\n", _rx_payload_len);
+    if (!_rx_header_valid)
+        return 0;
+
+    // validate payload
+    unsigned int i;
+    unsigned int num_header_errors=0;
+    for (i=0; i<8; i++)
+        num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
+    printf("    num header errors   : %u\n", num_header_errors);
+
+    unsigned int num_payload_errors=0;
+    for (i=0; i<_rx_payload_len; i++)
+        num_payload_errors += (_rx_payload[i] == fd->payload[i]) ? 0 : 1;
+    printf("    num payload errors  : %u\n", num_payload_errors);
+
+    fd->num_frames_received++;
+
+    // print frame_samples to output file
+#if OUTPUT_SYMBOLS_FILE == 1
+    FILE * fid = fopen("frame_samples.m","w");
+    fprintf(fid,"clear all; close all;\n");
+    for (i=0; i<_frame_samples_len; i++)
+        fprintf(fid,"s(%6u) = %16.8e + j*%16.8e;\n", i+1,
+                                                     crealf(_frame_samples[i]),
+                                                     cimagf(_frame_samples[i]));
+    fprintf(fid,"plot(real(s),imag(s),'x');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"axis square;\n");
+    fclose(fid);
+    printf("frame syms written to frame_samples.m\n");
+#endif
+
+    return 0;
+}
+
