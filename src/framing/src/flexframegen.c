@@ -99,6 +99,14 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 #endif
     fg->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
 
+    // initial memory allocation for payload
+    fg->payload = (unsigned char*) malloc(1*sizeof(unsigned char));
+    fg->payload_numalloc = 1;
+    fg->payload_sym = (unsigned char*) malloc(1*sizeof(unsigned char));
+    fg->payload_sym_numalloc = 1;
+    fg->payload_samples = (float complex*) malloc(1*sizeof(float complex));
+    fg->payload_samples_numalloc = 1;
+
     // initialize properties
     if (_props != NULL)
         flexframegen_setprops(fg, _props);
@@ -108,13 +116,6 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     // create payload objects
     fg->mod_payload = modem_create(fg->props.mod_scheme, fg->props.mod_bps);
 
-    // 
-    fg->payload = NULL;
-    fg->payload_numalloc = 0;
-    fg->payload_sym = NULL;
-    fg->payload_sym_numalloc = 0;
-    fg->payload_samples = NULL;
-    fg->payload_samples_numalloc = 0;
     flexframegen_configure_payload_buffers(fg);
 
     return fg;
