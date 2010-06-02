@@ -154,6 +154,9 @@ void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props)
     memmove(&_fg->props, _props, sizeof(flexframegenprops_s));
     flexframegen_compute_payload_len(_fg);
     flexframegen_compute_frame_len(_fg);
+
+    // re-configure payload buffers (reallocate as necessary)
+    flexframegen_configure_payload_buffers(_fg);
 }
 
 void flexframegen_print(flexframegen _fg)
