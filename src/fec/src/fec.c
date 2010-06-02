@@ -387,14 +387,14 @@ fec fec_recreate(fec _q,
                  fec_scheme _scheme,
                  void *_opts)
 {
-    if (_q->scheme == _scheme) {
-        // scheme hasn't changed; just return original object
-        return _q;
-    } else {
+    if (_q->scheme != _scheme) {
         // destroy old object and create new one
         fec_destroy(_q);
         _q = fec_create(_scheme,_opts);
     }
+
+    // scheme hasn't changed; just return original object
+    return _q;
 }
 
 void fec_destroy(fec _q)
