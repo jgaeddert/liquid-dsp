@@ -14,12 +14,13 @@ int main() {
     // options
     float mod_index = 0.1f;         // modulation index (bandwidth)
     float fc = 0.1371f*2.0f*M_PI;   // FM carrier
+    liquid_fmtype type = LIQUID_MODEM_FM_DELAY_CONJ;
     unsigned int num_samples = 256; // number of samples
     float SNRdB = 30.0f;            // signal-to-noise ratio [dB]
 
     // create mod/demod objects
-    freqmodem mod   = freqmodem_create(mod_index,fc);
-    freqmodem demod = freqmodem_create(mod_index,fc);
+    freqmodem mod   = freqmodem_create(mod_index,fc,type);
+    freqmodem demod = freqmodem_create(mod_index,fc,type);
     freqmodem_print(mod);
 
     unsigned int i;

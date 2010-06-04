@@ -1326,6 +1326,21 @@ void modem_demodulate_linear_array_ref(
     unsigned int *_s,
     float *_res);
 
+// 
+// analog modems
+//
+
+// freqmodem
+struct freqmodem_s {
+    liquid_fmtype type; // demodulator type (PLL, DELAY_CONJ)
+    nco oscillator;     // nco
+    float fc;           // carrier frequency
+    float m;            // modulation index
+    float m_inv;        // 1/m
+
+    // phase difference
+    float complex q;
+};
 
 //
 // MODULE : multicarrier

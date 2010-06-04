@@ -2542,7 +2542,8 @@ typedef enum {
 } liquid_fmtype;
 typedef struct freqmodem_s * freqmodem;
 freqmodem freqmodem_create(float _m,
-                           float _fc);
+                           float _fc,
+                           liquid_fmtype _type);
 void freqmodem_destroy(freqmodem _fm);
 void freqmodem_print(freqmodem _fm);
 void freqmodem_reset(freqmodem _fm);
