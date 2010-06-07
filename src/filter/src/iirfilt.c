@@ -303,7 +303,7 @@ void IIRFILT(_execute_sos)(IIRFILT() _q,
                            TO *_y)
 {
     TI t0 = _x;     // intermediate input
-    TO t1;          // intermediate output
+    TO t1 = 0.;     // intermediate output
     unsigned int i;
     for (i=0; i<_q->nsos; i++) {
         // run each filter separately

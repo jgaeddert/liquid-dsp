@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -24,20 +25,45 @@
 #include <sys/resource.h>
 #include "liquid.h"
 
-#define MODEM_DEMODULATE_BENCH_API(MS,BPS) \
-(   struct rusage *_start, \
-    struct rusage *_finish, \
-    unsigned long int *_num_iterations) \
+#define MODEM_DEMODULATE_BENCH_API(MS,BPS)  \
+(   struct rusage *_start,                  \
+    struct rusage *_finish,                 \
+    unsigned long int *_num_iterations)     \
 { modem_demodulate_bench(_start, _finish, _num_iterations, MS, BPS); }
 
 // Helper function to keep code base small
-void modem_demodulate_bench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations,
-    modulation_scheme _ms,
-    unsigned int _bps)
+void modem_demodulate_bench(struct rusage *_start,
+                            struct rusage *_finish,
+                            unsigned long int *_num_iterations,
+                            modulation_scheme _ms,
+                            unsigned int _bps)
 {
+    // normalize number of iterations
+    switch (_ms) {
+    case MOD_UNKNOWN:
+        fprintf(stderr,"error: modem_modulate_bench(), unknown modem scheme\n");
+        exit(1);
+    case MOD_PSK:       *_num_iterations *= 10;     break;
+    case MOD_DPSK:      *_num_iterations *= 10;     break;
+    case MOD_ASK:       *_num_iterations /= 1;      break;
+    case MOD_QAM:       *_num_iterations /= 1;      break;
+    case MOD_APSK:      *_num_iterations /= 10;     break;
+    case MOD_ARB:       *_num_iterations /= 1;      break;
+    case MOD_BPSK:      *_num_iterations /= 1;      break;
+    case MOD_QPSK:      *_num_iterations /= 1;      break;
+    case MOD_APSK4:     *_num_iterations /= 10;     break;
+    case MOD_APSK8:     *_num_iterations /= 10;     break;
+    case MOD_APSK16:    *_num_iterations /= 10;     break;
+    case MOD_APSK32:    *_num_iterations /= 10;     break;
+    case MOD_APSK64:    *_num_iterations /= 10;     break;
+    case MOD_APSK128:   *_num_iterations /= 10;     break;
+    case MOD_ARB16OPT:  *_num_iterations /= 1;      break;
+    case MOD_ARB64VT:   *_num_iterations /= 1;      break;
+    default:;
+    }
+    if (*_num_iterations < 1) *_num_iterations = 1;
+
+
     // initialize modulator
     modem demod = modem_create(_ms, _bps);
 

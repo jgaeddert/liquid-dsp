@@ -69,10 +69,14 @@ void fec_decode_bench(
 #endif
 
     // normalize number of iterations
-    if (_fs != FEC_NONE)
-        *_num_iterations /= _n;
+    *_num_iterations /= _n;
 
     switch (_fs) {
+    case FEC_NONE:      *_num_iterations *= 500;    break;
+    case FEC_REP3:      *_num_iterations *= 200;    break;
+    case FEC_REP5:      *_num_iterations *= 100;    break;
+    case FEC_HAMMING74: *_num_iterations *= 10;     break;
+    case FEC_HAMMING84: *_num_iterations *= 10;     break;
     case FEC_CONV_V27:  *_num_iterations /= 5;      break;
     case FEC_CONV_V29:  *_num_iterations /= 10;     break;
     case FEC_CONV_V39:  *_num_iterations /= 100;    break;
@@ -92,6 +96,9 @@ void fec_decode_bench(
     case FEC_CONV_V29P67:
     case FEC_CONV_V29P78:
         *_num_iterations /= 50;
+        break;
+    case FEC_RS_M8:
+        *_num_iterations *= 1;
         break;
     default:;
     }
