@@ -38,6 +38,7 @@ typedef struct {
     unsigned char * header;
     unsigned char * payload;
     unsigned int num_frames_received;
+    unsigned int num_payloads_decoded;
 } framedata;
 
 int main(int argc, char *argv[]) {
@@ -74,7 +75,7 @@ int main(int argc, char *argv[]) {
     // frame data
     unsigned char header[8];
     unsigned char * payload = NULL;
-    framedata fd = {NULL, NULL, 0};
+    framedata fd = {NULL, NULL, 0, 0};
 
     // create interpolator
     unsigned int h_len = 2*2*m + 1;
@@ -86,14 +87,16 @@ int main(int argc, char *argv[]) {
     flexframesyncprops_s fsprops;
     flexframesyncprops_init_default(&fsprops);
     fsprops.squelch_threshold = noise_floor + 3.0f;
+#if 0
+    // override default properties
     fsprops.agc_bw0 = 1e-3f;
     fsprops.agc_bw1 = 1e-5f;
     fsprops.agc_gmin = 1e-3f;
     fsprops.agc_gmax = 1e4f;
     fsprops.pll_bw0 = 1e-1f;
     fsprops.pll_bw1 = 1e-2f;
+#endif
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
-    flexframesync_print(fs);
 
     // channel
     float phi=0.0f;
@@ -133,14 +136,14 @@ int main(int argc, char *argv[]) {
         // configure frame generator properties
         fgprops.rampup_len =    64;
         fgprops.phasing_len =   64;
-        fgprops.payload_len =   (rand() % 1024) + 1;    // random payload length
+        fgprops.payload_len =   (rand() % 256) + 1;     // random payload length
         fgprops.mod_scheme =    MOD_PSK;                // PSK
         fgprops.mod_bps =       (rand() % 4) + 1;       // random bits/symbol
         fgprops.rampdn_len =    64;
 
         // set properties
         flexframegen_setprops(fg, &fgprops);
-        flexframegen_print(fg);
+        //flexframegen_print(fg);
 
         // reallocate memory for payload
         payload = realloc(payload, fgprops.payload_len*sizeof(unsigned char));
@@ -207,7 +210,8 @@ int main(int argc, char *argv[]) {
         }
     } // num frames
 
-    printf("num frames received : %3u / %3u\n", fd.num_frames_received, num_frames);
+    printf("num frames received  : %3u / %3u\n", fd.num_frames_received,  num_frames);
+    printf("num payloads decoded : %3u / %3u\n", fd.num_payloads_decoded, num_frames);
 
     // clean up allocated memory
     flexframegen_destroy(fg);
@@ -251,6 +255,9 @@ static int callback(unsigned char * _rx_header,
     printf("    num payload errors  : %u\n", num_payload_errors);
 
     fd->num_frames_received++;
+
+    if (num_payload_errors == 0)
+        fd->num_payloads_decoded++;
 
     // print frame_samples to output file
 #if OUTPUT_SYMBOLS_FILE == 1

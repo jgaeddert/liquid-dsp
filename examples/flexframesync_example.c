@@ -114,8 +114,8 @@ int main(int argc, char *argv[]) {
     fsprops.agc_bw1 = 1e-5f;
     fsprops.agc_gmin = 1e-3f;
     fsprops.agc_gmax = 1e4f;
-    fsprops.pll_bw0 = 1e-1f;
-    fsprops.pll_bw1 = 1e-2f;
+    fsprops.pll_bw0 = 0.020f;
+    fsprops.pll_bw1 = 0.005f;
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
     flexframesync_print(fs);
 
