@@ -28,7 +28,9 @@
 //
 // Helper function: run loop
 //
-void pll_run_loop(nco _nco_tx, nco _nco_rx, pll _pll_rx, unsigned int _n)
+void pll_run_loop(nco _nco_tx,
+                  nco _nco_rx,
+                  unsigned int _n)
 {
     // run loop
     unsigned int i;
@@ -42,9 +44,11 @@ void pll_run_loop(nco _nco_tx, nco _nco_rx, pll _pll_rx, unsigned int _n)
         // error estimation
         phase_error = cargf(r*conjf(v));
 
-        // update NCO objects
+        // update pll
+        nco_pll_step(_nco_rx, phase_error);
+
+        // update nco objects
         nco_step(_nco_tx);
-        pll_step(_pll_rx, _nco_rx, phase_error);
         nco_step(_nco_rx);
     }
 }
@@ -56,22 +60,21 @@ void autotest_pll_phase_offset() {
     // parameters
     float phase_offset = M_PI/2;
     float frequency_offset = 0.0f;
-    float pll_bandwidth = 1e-2f;
+    float pll_bandwidth = 0.1f;
     unsigned int n=256;     // number of iterations
-    float tol = 1e-4f;      // error tolerance
+    float tol = 1e-3f;      // error tolerance
 
     // objects
     nco nco_tx = nco_create(LIQUID_VCO);
     nco nco_rx = nco_create(LIQUID_VCO);
-    pll pll_rx = pll_create();
 
     // initialize objects
     nco_set_phase(nco_tx, phase_offset);
     nco_set_frequency(nco_tx, frequency_offset);
-    pll_set_bandwidth(pll_rx, pll_bandwidth);
+    nco_pll_set_bandwidth(nco_rx, pll_bandwidth);
 
     // run loop
-    pll_run_loop(nco_tx, nco_rx, pll_rx, n);
+    pll_run_loop(nco_tx, nco_rx, n);
 
     // run tests
     float nco_tx_phase = nco_get_phase(nco_tx);
@@ -85,7 +88,6 @@ void autotest_pll_phase_offset() {
     // clean it up
     nco_destroy(nco_tx);
     nco_destroy(nco_rx);
-    pll_destroy(pll_rx);
 }
 
 //
@@ -95,22 +97,21 @@ void autotest_pll_frequency_offset() {
     // parameters
     float phase_offset = 0.0f;
     float frequency_offset = 0.5f;
-    float pll_bandwidth = 1e-2f;
+    float pll_bandwidth = 0.1f;
     unsigned int n=256;     // number of iterations
-    float tol = 1e-4f;      // error tolerance
+    float tol = 1e-3f;      // error tolerance
 
     // objects
     nco nco_tx = nco_create(LIQUID_VCO);
     nco nco_rx = nco_create(LIQUID_VCO);
-    pll pll_rx = pll_create();
 
     // initialize objects
     nco_set_phase(nco_tx, phase_offset);
     nco_set_frequency(nco_tx, frequency_offset);
-    pll_set_bandwidth(pll_rx, pll_bandwidth);
+    nco_pll_set_bandwidth(nco_rx, pll_bandwidth);
 
     // run loop
-    pll_run_loop(nco_tx, nco_rx, pll_rx, n);
+    pll_run_loop(nco_tx, nco_rx, n);
 
     // run tests
     float nco_tx_phase = nco_get_phase(nco_tx);
@@ -124,7 +125,6 @@ void autotest_pll_frequency_offset() {
     // clean it up
     nco_destroy(nco_tx);
     nco_destroy(nco_rx);
-    pll_destroy(pll_rx);
 }
 
 #endif // __LIQUID_NCO_AUTOTEST_H__

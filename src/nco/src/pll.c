@@ -19,7 +19,7 @@
  */
 
 //
-// Phase-locked loop
+// Phase-locked loop [DEPRECATED]
 //
 
 #include <math.h>
