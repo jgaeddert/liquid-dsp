@@ -35,7 +35,6 @@ struct ampmodem_s {
 
     // demod objects
     nco oscillator;
-    pll sync;
 
     // ssb
     // TODO : replace DC bias removal with iir filter object
@@ -55,10 +54,8 @@ ampmodem ampmodem_create(float _m,
     // create nco, pll objects
     q->oscillator = nco_create(LIQUID_NCO);
     nco_reset(q->oscillator);
-    q->sync = pll_create();
-    pll_reset(q->sync);
-    pll_set_bandwidth(q->sync,1e-2f);
-    pll_set_damping_factor(q->sync,4.0f);
+    
+    nco_pll_set_bandwidth(q->oscillator,1e-1f);
 
     // single side-band
     q->ssb_alpha = 0.01f;
@@ -74,7 +71,6 @@ ampmodem ampmodem_create(float _m,
 void ampmodem_destroy(ampmodem _q)
 {
     nco_destroy(_q->oscillator);
-    pll_destroy(_q->sync);
     free(_q);
 }
 
@@ -137,7 +133,7 @@ void ampmodem_demodulate(ampmodem _q,
         t *= cabsf(_y);
 
         // adjust nco, pll objects
-        pll_step(_q->sync, _q->oscillator, t);
+        nco_pll_step(_q->oscillator, t);
         nco_step(_q->oscillator);
         *_x = crealf(_y);
         break;

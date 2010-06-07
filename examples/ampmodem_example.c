@@ -93,6 +93,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_samples; i++) {
         cawgn(&y[i], nstd);
         nco_mix_up(nco_channel, y[i], &y[i]);
+        nco_step(nco_channel);
     }
     nco_destroy(nco_channel);
 
