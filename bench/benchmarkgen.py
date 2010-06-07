@@ -148,15 +148,20 @@ def parseHeader( filename ):
         if base_index >= 0:
             line_sub = line[len(function_key)+1:len(line)]
 
-            # search for space or "("
-            end_index = string.find(line_sub, " ")
-            if end_index < 0:
-                # no whitespace found
-                end_index = string.find(line_sub, "(")
+            # search for space or "(" or new line
+            # TODO also search for tab
+            end_index_newline = len(line_sub)-1
+            end_index_space   = string.find(line_sub, " ")
+            end_index_paren   = string.find(line_sub, "(")
 
-            if end_index < 0:
-                # no "(" found: assume we should read entire line
-                end_index = len(line_sub)-1
+            # use smallest end index greater than zero
+            end_index = end_index_newline
+
+            if end_index_space > 0:
+                end_index = min(end_index,end_index_space)
+
+            if end_index_paren > 0:
+                end_index = min(end_index,end_index_paren)
 
             function_name = line[base_index+5:end_index+len(function_key)+1]
             short_name = line[base_index+len(function_key):end_index+len(function_key)+1]
