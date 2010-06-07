@@ -64,9 +64,10 @@ void decim_rrrf_bench(struct rusage *_start,
     unsigned long int *_num_iterations) \
 { decim_rrrf_bench(_start, _finish, _num_iterations, M, H_LEN); }
 
-void benchmark_decim_m2_h8      DECIM_RRRF_BENCHMARK_API(2,8)
-void benchmark_decim_m4_h16     DECIM_RRRF_BENCHMARK_API(4,16)
-void benchmark_decim_m8_h64     DECIM_RRRF_BENCHMARK_API(8,64)
+void benchmark_decim_m2_h8      DECIM_RRRF_BENCHMARK_API(2, 8)
+void benchmark_decim_m4_h16     DECIM_RRRF_BENCHMARK_API(4, 16)
+void benchmark_decim_m8_h32     DECIM_RRRF_BENCHMARK_API(8, 32)
+void benchmark_decim_m16_h64    DECIM_RRRF_BENCHMARK_API(16,64)
 
 #endif // __LIQUID_BENCH_BENCHMARK_H__
 
