@@ -69,8 +69,37 @@ void fec_encode_bench(
 #endif
 
     // normalize number of iterations
-    if (_fs > 3)
-        *_num_iterations /= _n;
+    *_num_iterations /= _n;
+
+    switch (_fs) {
+    case FEC_NONE:      *_num_iterations *= 500;    break;
+    case FEC_REP3:      *_num_iterations *= 200;    break;
+    case FEC_REP5:      *_num_iterations *= 100;    break;
+    case FEC_HAMMING74: *_num_iterations *= 100;    break;
+    case FEC_HAMMING84: *_num_iterations *= 100;    break;
+    case FEC_CONV_V27:
+    case FEC_CONV_V29:
+    case FEC_CONV_V39:
+    case FEC_CONV_V615:
+    case FEC_CONV_V27P23:
+    case FEC_CONV_V27P34:
+    case FEC_CONV_V27P45:
+    case FEC_CONV_V27P56:
+    case FEC_CONV_V27P67:
+    case FEC_CONV_V27P78:
+    case FEC_CONV_V29P23:
+    case FEC_CONV_V29P34:
+    case FEC_CONV_V29P45:
+    case FEC_CONV_V29P56:
+    case FEC_CONV_V29P67:
+    case FEC_CONV_V29P78:
+    case FEC_RS_M8:
+        *_num_iterations *= 1;
+        break;
+    default:;
+    }
+    if (*_num_iterations < 1) *_num_iterations = 1;
+
 
     // generate fec object
     fec q = fec_create(_fs,_opts);
@@ -104,6 +133,8 @@ void fec_encode_bench(
 //
 // BENCHMARKS
 //
+void benchmark_fec_enc_none_n64         FEC_ENCODE_BENCH_API(FEC_NONE,      64,  NULL)
+
 void benchmark_fec_enc_rep3_n64         FEC_ENCODE_BENCH_API(FEC_REP3,      64,  NULL)
 void benchmark_fec_enc_rep5_n64         FEC_ENCODE_BENCH_API(FEC_REP5,      64,  NULL)
 void benchmark_fec_enc_hamming74_n64    FEC_ENCODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
