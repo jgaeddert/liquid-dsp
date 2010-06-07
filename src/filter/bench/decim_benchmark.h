@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -25,13 +26,16 @@
 #include "liquid.h"
 
 // Helper function to keep code base small
-void decim_rrrf_bench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations,
-    unsigned int _M,
-    unsigned int _h_len)
+void decim_rrrf_bench(struct rusage *_start,
+                      struct rusage *_finish,
+                      unsigned long int *_num_iterations,
+                      unsigned int _M,
+                      unsigned int _h_len)
 {
+    // normalize number of iterations
+    *_num_iterations /= _h_len;
+    if (*_num_iterations < 1) *_num_iterations = 1;
+
     float h[_h_len];
     unsigned int i;
     for (i=0; i<_h_len; i++)
