@@ -41,7 +41,10 @@ void dds_crcf_bench(
     liquid_dds_benchmark_type _type)
 {
     unsigned long int i;
-    *_num_iterations /= _num_stages;
+
+    // normalize number of iterations
+    *_num_iterations /= 1<<_num_stages;
+    if (*_num_iterations < 1) *_num_iterations = 1;
 
     // up-converted center frequency
     float fc = 0.0f;
