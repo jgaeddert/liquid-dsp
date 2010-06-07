@@ -107,14 +107,14 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     fg->payload_samples = (float complex*) malloc(1*sizeof(float complex));
     fg->payload_samples_numalloc = 1;
 
+    // create payload modem (initially bpsk, overridden by properties)
+    fg->mod_payload = modem_create(MOD_BPSK, 1);
+
     // initialize properties
     if (_props != NULL)
         flexframegen_setprops(fg, _props);
     else
         flexframegen_setprops(fg, &flexframegenprops_default);
-
-    // create payload objects
-    fg->mod_payload = modem_create(fg->props.mod_scheme, fg->props.mod_bps);
 
     flexframegen_configure_payload_buffers(fg);
 
@@ -153,6 +153,12 @@ void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props)
         exit(1);
     }
     memmove(&_fg->props, _props, sizeof(flexframegenprops_s));
+
+    // re-create modem
+    modem_destroy(_fg->mod_payload);
+    _fg->mod_payload = modem_create(_fg->props.mod_scheme, _fg->props.mod_bps);
+
+    // re-compute payload and frame lengths
     flexframegen_compute_payload_len(_fg);
     flexframegen_compute_frame_len(_fg);
 
