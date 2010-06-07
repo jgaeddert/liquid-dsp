@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -27,11 +28,13 @@
 // 
 // BENCHMARK: uniform
 //
-void benchmark_random_uniform(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+void benchmark_random_uniform(struct rusage *_start,
+                              struct rusage *_finish,
+                              unsigned long int *_num_iterations)
 {
+    // normalize number of iterations
+    *_num_iterations *= 10;
+
     float x;
     unsigned long int i;
 
@@ -50,11 +53,13 @@ void benchmark_random_uniform(
 // 
 // BENCHMARK: normal
 //
-void benchmark_random_normal(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+void benchmark_random_normal(struct rusage *_start,
+                             struct rusage *_finish,
+                             unsigned long int *_num_iterations)
 {
+    // normalize number of iterations
+    *_num_iterations *= 1;
+
     float x;
     unsigned long int i;
 
@@ -73,11 +78,13 @@ void benchmark_random_normal(
 // 
 // BENCHMARK: complex normal
 //
-void benchmark_random_complex_normal(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+void benchmark_random_complex_normal(struct rusage *_start,
+                                     struct rusage *_finish,
+                                     unsigned long int *_num_iterations)
 {
+    // normalize number of iterations
+    *_num_iterations /= 2;
+
     float complex x;
     unsigned long int i;
 
@@ -96,11 +103,13 @@ void benchmark_random_complex_normal(
 // 
 // BENCHMARK: Weibull
 //
-void benchmark_random_weibull(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+void benchmark_random_weibull(struct rusage *_start,
+                              struct rusage *_finish,
+                              unsigned long int *_num_iterations)
 {
+    // normalize number of iterations
+    *_num_iterations *= 2;
+
     float x, alpha=1.0f, beta=2.0f, gamma=6.0f;
     unsigned long int i;
 
@@ -119,11 +128,13 @@ void benchmark_random_weibull(
 // 
 // BENCHMARK: Rice-K
 //
-void benchmark_random_ricek(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
+void benchmark_random_ricek(struct rusage *_start,
+                            struct rusage *_finish,
+                            unsigned long int *_num_iterations)
 {
+    // normalize number of iterations
+    *_num_iterations /= 3;
+
     float x, K=2.0f, omega=1.0f;
     unsigned long int i;
 
