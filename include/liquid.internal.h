@@ -915,9 +915,6 @@ float complex ellip_asnf(float complex _u,
 // MODULE : framing
 //
 
-// force use of Hamming(7,4) code for header
-#define LIQUID_FLEXFRAME_FORCE_H74 1
-
 // flexframegen
 void flexframegen_compute_payload_len(flexframegen _fg);
 void flexframegen_compute_frame_len(flexframegen _fg);

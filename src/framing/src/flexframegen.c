@@ -92,11 +92,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_BPSK, 1);
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0 || LIQUID_FLEXFRAME_FORCE_H74==1
     fg->fec_header = fec_create(FEC_HAMMING74, NULL);
-#else
-    fg->fec_header = fec_create(FEC_CONV_V27, NULL);
-#endif
     fg->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
 
     // initial memory allocation for payload

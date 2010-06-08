@@ -165,11 +165,7 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
         flexframesync_setprops(fs, &flexframesyncprops_default);
 
     // header objects
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0 || LIQUID_FLEXFRAME_FORCE_H74==1
     fs->fec_header = fec_create(FEC_HAMMING74, NULL);
-#else
-    fs->fec_header = fec_create(FEC_CONV_V27, NULL);
-#endif
     fs->mod_header = modem_create(MOD_BPSK, 1);
     fs->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
 
