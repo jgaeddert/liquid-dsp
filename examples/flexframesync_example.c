@@ -20,6 +20,7 @@ void usage()
 {
     printf("flexframesync_example [options]\n");
     printf("  u/h   : print usage\n");
+    printf("  v/q   : verbose/quiet output\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
     printf("  f     : frame length [bytes], default: 64\n");
     printf("  n     : number of frames, default: 3\n");
@@ -40,11 +41,15 @@ static int callback(unsigned char * _rx_header,
                     float complex * _frame_samples,
                     unsigned int _frame_samples_len);
 
+// framedata object definition
 typedef struct {
     unsigned char * header;
     unsigned char * payload;
     unsigned int num_frames_received;
 } framedata;
+
+// global verbose flag
+int verbose = 1;
 
 int main(int argc, char *argv[]) {
     srand( time(NULL) );
@@ -61,14 +66,16 @@ int main(int argc, char *argv[]) {
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhs:f:m:p:n:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhvqs:f:m:p:n:")) != EOF){
         switch (dopt) {
         case 'u':
-        case 'h': usage(); return 0;
-        case 's': SNRdB = atof(optarg); break;
-        case 'f': packet_len = atol(optarg); break;
-        case 'n': num_frames = atoi(optarg); break;
-        case 'p': bps = atoi(optarg); break;
+        case 'h': usage();                      return 0;
+        case 'v': verbose=1;                    break;
+        case 'q': verbose=0;                    break;
+        case 's': SNRdB = atof(optarg);         break;
+        case 'f': packet_len = atol(optarg);    break;
+        case 'n': num_frames = atoi(optarg);    break;
+        case 'p': bps = atoi(optarg);           break;
         case 'm':
             mod_scheme = liquid_getopt_str2mod(optarg);
             if (mod_scheme == MOD_UNKNOWN) {
@@ -93,7 +100,8 @@ int main(int argc, char *argv[]) {
     fgprops.mod_bps = bps;
     fgprops.rampdn_len = 64;
     flexframegen fg = flexframegen_create(&fgprops);
-    flexframegen_print(fg);
+    if (verbose)
+        flexframegen_print(fg);
 
     // frame data
     unsigned char header[8];
@@ -117,7 +125,8 @@ int main(int argc, char *argv[]) {
     fsprops.pll_bw0 = 0.020f;
     fsprops.pll_bw1 = 0.005f;
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
-    flexframesync_print(fs);
+    if (verbose)
+        flexframesync_print(fs);
 
     // channel
     float phi=0.0f;
@@ -282,12 +291,15 @@ static int callback(unsigned char * _rx_header,
                     float complex * _frame_samples,
                     unsigned int _frame_samples_len)
 {
-    printf("callback invoked\n");
+    if (verbose)
+        printf("callback invoked\n");
 
     framedata * fd = (framedata*)_userdata;
 
-    printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
-    printf("    payload length      : %u\n", _rx_payload_len);
+    if (verbose) {
+        printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
+        printf("    payload length      : %u\n", _rx_payload_len);
+    }
     if (!_rx_header_valid)
         return 0;
 
@@ -296,12 +308,14 @@ static int callback(unsigned char * _rx_header,
     unsigned int num_header_errors=0;
     for (i=0; i<8; i++)
         num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
-    printf("    num header errors   : %u\n", num_header_errors);
+    if (verbose)
+        printf("    num header errors   : %u\n", num_header_errors);
 
     unsigned int num_payload_errors=0;
     for (i=0; i<_rx_payload_len; i++)
         num_payload_errors += (_rx_payload[i] == fd->payload[i]) ? 0 : 1;
-    printf("    num payload errors  : %u\n", num_payload_errors);
+    if (verbose)
+        printf("    num payload errors  : %u\n", num_payload_errors);
 
     fd->num_frames_received++;
 
@@ -317,7 +331,8 @@ static int callback(unsigned char * _rx_header,
     fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
     fclose(fid);
-    printf("frame syms written to frame_samples.m\n");
+    if (verbose)
+        printf("frame syms written to frame_samples.m\n");
 #endif
 
     return 0;
