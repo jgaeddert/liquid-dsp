@@ -787,7 +787,10 @@ asgram asgram_create(liquid_float_complex *_x, unsigned int _n);
 void asgram_set_scale(asgram _q, float _scale);
 void asgram_set_offset(asgram _q, float _offset);
 void asgram_destroy(asgram _q);
-void asgram_execute(asgram _q);
+void asgram_execute(asgram _q,
+                    char * _ascii,
+                    float * _peakval,
+                    float * _peakfreq);
 
 // real, even DFT: DCT-II
 void  dct(float *_x, float * _y, unsigned int _n);
