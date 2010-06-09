@@ -27,6 +27,11 @@ int main() {
     unsigned int i,n;
     float theta=0.0f, dtheta=0.0f;
     float phi=0.0f, dphi = 0.001f;
+
+    float maxval;
+    float maxfreq;
+    char ascii[nfft+1];
+    ascii[nfft] = '\0'; // append null character to end of string
     for (n=0; n<num_frames; n++) {
         // generate data
         for (i=0; i<nfft; i++) {
@@ -38,7 +43,10 @@ int main() {
         }
 
         // execute the spectrogram
-        asgram_execute(q);
+        asgram_execute(q, ascii, &maxval, &maxfreq);
+
+        // print the spectrogram
+        printf(" > %s < pk%5.1fdB [%5.2f]\n", ascii, maxval, maxfreq);
 
         // sleep
         usleep(msdelay*1000);

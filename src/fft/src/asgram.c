@@ -43,7 +43,8 @@ struct asgram_s {
     float offset;   // dB offset (max)
 };
 
-asgram asgram_create(float complex * _x, unsigned int _n)
+asgram asgram_create(float complex * _x,
+                     unsigned int _n)
 {
     asgram q = (asgram) malloc(sizeof(struct asgram_s));
     q->n = (_n>64) ? 64 : _n;
@@ -85,7 +86,15 @@ void asgram_destroy(asgram _q)
     free(_q);
 }
 
-void asgram_execute(asgram _q)
+// execute ascii spectrogram
+//  _q          :   ascii spectrogram object
+//  _ascii      :   character buffer [size: 1 x n]
+//  _peakval    :   value at peak (returned value)
+//  _peakfreq   :   frequency at peak (returned value)
+void asgram_execute(asgram _q,
+                    char * _ascii,
+                    float * _peakval,
+                    float * _peakfreq)
 {
     // copy x and execute fft plan
     fft_execute(_q->p);
@@ -98,29 +107,24 @@ void asgram_execute(asgram _q)
     for (i=0; i<_q->n; i++)
         _q->psd[i] = 20*log10f(cabsf(_q->y[i]));
 
-    float maxval=-99.9f, maxfreq=-0.0f;
     unsigned int j;
-    printf(" > ");
     for (i=0; i<_q->n; i++) {
         // find peak
-        if (_q->psd[i] > maxval) {
-            maxval = _q->psd[i];
-            maxfreq = (float)(i) / (float)(_q->n) - 0.5f;
+        if (i==0 || _q->psd[i] > *_peakval) {
+            *_peakval = _q->psd[i];
+            *_peakfreq = (float)(i) / (float)(_q->n) - 0.5f;
         }
 
+        // determine ascii level (which character to use)
         for (j=0; j<_q->num_levels-1; j++) {
             if ( _q->psd[i] > ( _q->offset - j*(_q->scale)) )
                 break;
         }
-        printf("%c", _q->levelchar[j]);
-    }   
-    printf(" < ");
+        _ascii[i] = _q->levelchar[j];
+    }
 
-    // print peak
-    printf("pk:%5.1fdB [%5.2f]", maxval, maxfreq);
-
-    // print scale
-    printf("\n");
+    // append null character to end of string
+    //_ascii[i] = '\0';
 }
 
 
