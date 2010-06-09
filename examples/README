@@ -63,6 +63,14 @@ asgram_example.c
     resulting frequency response is printed to the screen.
 
 autocorr_cccf_example.c
+    This example demonstrates the autocorr (auto-correlation) object
+    functionality.  A random time-domain sequence is generated which exhibits
+    time-domain repetitions (auto-correlation properties), for example:
+    abcdabcdabcd....abcd.  The sequence is pushed through the autocorr object,
+    and the results are written to an output file. The command-line arguments
+    allow the user to experiment with the sequence length, number of sequence
+    repetitions, and properties of the auto-correlator, as well as signal-to-
+    noise ratio.
 
 bsequence_example.c
 
