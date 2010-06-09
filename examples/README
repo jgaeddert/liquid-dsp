@@ -62,7 +62,7 @@ asgram_example.c
     the ASCII spectrogram.  A sweeping complex sinusoid is generated and the
     resulting frequency response is printed to the screen.
 
-autocorr_cccf_example.c
+autocorr_cccf_example.c *
     This example demonstrates the autocorr (auto-correlation) object
     functionality.  A random time-domain sequence is generated which exhibits
     time-domain repetitions (auto-correlation properties), for example:
@@ -73,6 +73,9 @@ autocorr_cccf_example.c
     noise ratio.
 
 bsequence_example.c
+    This example demonstrates the interface to the bsequence (binary sequence)
+    object.  The bsequence object acts like a buffer of bits which are stored
+    and manipulated efficiently in memory.
 
 buffer_example.c
 
@@ -95,6 +98,11 @@ chromosome_example.c
 compand_cf_example.c
 
 compand_example.c
+    This example demonstrates the interface to the compand function
+    (compression, expansion).  The compander is typically used with the
+    quantizer to increase the dynamic range of the converter, particularly for
+    low-level signals.  The transfer function is computed (emperically) and
+    printed to the screen.
 
 crc_example.c
     Cyclic redundancy check (CRC) example.  This example demonstrates how a

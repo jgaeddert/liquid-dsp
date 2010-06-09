@@ -1,7 +1,9 @@
 //
 // bsequence_example.c
 //
-// Binary sequence example
+// This example demonstrates the interface to the bsequence (binary
+// sequence) object.  The bsequence object acts like a buffer of bits
+// which are stored and manipulated efficiently in memory.
 //
 
 #include <stdio.h>
@@ -13,7 +15,7 @@
 //#define OUTPUT_FILENAME "bsequence_example.m"
 
 int main() {
-    // create and initialize m-sequence
+    // create and initialize binary sequence
     unsigned int n=32;
     bsequence q = bsequence_create(n);
 
