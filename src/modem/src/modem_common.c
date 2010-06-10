@@ -37,8 +37,6 @@ const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES] = {
     "qam",
     "apsk",
     "arb",
-    "arb (mirrored)",
-    "arb (rotated)",
     "bpsk",
     "qpsk",
     "apsk4(1,3)",

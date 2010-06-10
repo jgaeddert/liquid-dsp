@@ -2418,7 +2418,7 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_NUM_MOD_SCHEMES  19
+#define LIQUID_NUM_MOD_SCHEMES  17
 typedef enum {
     MOD_UNKNOWN=0,      // Unknown modulation scheme
     MOD_PSK,            // Phase-shift keying (PSK)
@@ -2427,22 +2427,6 @@ typedef enum {
     MOD_QAM,            // quadrature amplitude-shift keying (QAM)
     MOD_APSK,           // amplitude phase-shift keying (APSK)
     MOD_ARB,            // arbitrary QAM
-
-    /* \brief Arbitrary QAM, only the constellation points in the first
-     * quadrant are defined, the rest are mirrored about the abscissa and
-     * ordinate
-     *
-     * \image html Constellation64ARBM.png "64-QAM (arb, mirrored) constellation"
-     */
-    MOD_ARB_MIRRORED,
-
-    /* \brief Arbitrary QAM, only the constellation points in the first
-     * quadrant are defined, the rest are rotated about the origin to the
-     * other three quadrants
-     *
-     * \image html Constellation64ARBR.png "64-QAM (arb, rotated) constellation"
-     */
-    MOD_ARB_ROTATED,
 
     MOD_BPSK,           // Specific: binary PSK
     MOD_QPSK,           // specific: quaternary PSK

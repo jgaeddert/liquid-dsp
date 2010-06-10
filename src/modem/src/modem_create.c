@@ -58,10 +58,6 @@ modem modem_create(
     // arbitrary modem definitions
     case MOD_ARB:
         return modem_create_arb(_bits_per_symbol);
-    case MOD_ARB_MIRRORED:
-        return modem_create_arb_mirrored(_bits_per_symbol);
-    case MOD_ARB_ROTATED:
-        return modem_create_arb_rotated(_bits_per_symbol);
 
     // specific modems
     case MOD_BPSK:
@@ -486,42 +482,6 @@ modem modem_create_arb(
     return mod;
 }
 
-modem modem_create_arb_mirrored(
-    unsigned int _bits_per_symbol)
-{
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_ARB_MIRRORED;
-
-    modem_init(mod, _bits_per_symbol);
-
-    /// \bug
-    mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
-    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
-
-    mod->modulate_func = &modem_modulate_arb;
-    mod->demodulate_func = &modem_demodulate_arb;
-
-    return mod;
-}
-
-modem modem_create_arb_rotated(
-    unsigned int _bits_per_symbol)
-{
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_ARB_ROTATED;
-
-    modem_init(mod, _bits_per_symbol);
-
-    /// \bug
-    mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
-    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
-
-    mod->modulate_func = &modem_modulate_arb;
-    mod->demodulate_func = &modem_demodulate_arb;
-
-    return mod;
-}
-
 modem modem_create_arb16opt(
     unsigned int _bits_per_symbol)
 {
@@ -551,9 +511,7 @@ modem modem_create_arb64vt(
 void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if ( (_mod->scheme != MOD_ARB) && (_mod->scheme != MOD_ARB_MIRRORED) &&
-         (_mod->scheme != MOD_ARB_ROTATED) )
-    {
+    if (_mod->scheme != MOD_ARB) {
         fprintf(stderr,"error: modem_arb_init(), modem is not of arbitrary type\n");
         exit(1);
     } else if (_len != _mod->M) {
@@ -563,17 +521,8 @@ void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len)
 #endif
 
     unsigned int i;
-    for (i=0; i<_len; i++) {
-#ifdef LIQUID_VALIDATE_INPUT
-        if ((_mod->scheme == MOD_ARB_MIRRORED) || (_mod->scheme == MOD_ARB_ROTATED)) {
-            // symbols should only exist in first quadrant
-            if ( crealf(_symbol_map[i]) <= 0 || cimagf(_symbol_map[i]) <= 0 )
-                printf("WARNING: modem_arb_init(), symbols exist outside first quadrant\n");
-        }
-#endif
-
+    for (i=0; i<_len; i++)
         _mod->symbol_map[i] = _symbol_map[i];
-    }
 
     // balance I/Q channels
     if (_mod->scheme == MOD_ARB)
@@ -603,15 +552,6 @@ void modem_arb_init_file(modem _mod, char* filename) {
             fprintf(stderr,"modem_arb_init_file() unable to parse line\n");
             exit(-1);
         }
-
-#ifdef LIQUID_VALIDATE_INPUT
-        if ((_mod->scheme == MOD_ARB_MIRRORED) || (_mod->scheme == MOD_ARB_ROTATED)) {
-        // symbols should only exist in first quadrant
-            if ( sym_i < 0.0f || sym_q < 0.0f )
-                printf("WARNING: modem_arb_init_file(), symbols exist outside first quadrant\n");
-        }
-#endif
-
     }
 
     fclose(f);

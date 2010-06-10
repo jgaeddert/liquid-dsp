@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -270,115 +271,6 @@ void modem_demodulate_apsk(modem _mod,
     _mod->res = _x - x_hat;
 }
 
-#if 0
-void modem_demodulate_arb_mirrored(modem _mod, float I_in, float Q_in, unsigned int *symbol_out)
-{
-    //printf("modem_demodulate_arb_mirrored() invoked with I=%d, Q=%d\n", x);
-    
-    unsigned int i;
-    unsigned int s_quad=0;
-    unsigned int s_q1=0;
-    float d, d_min = 1e9;
-
-    // determine quadrant, demodulate 2 most-significant bits appropriately
-    // IQ:
-    // -----
-    // 01 00
-    // 11 10
-    if ( I_in < 0 )
-        s_quad |= 0x01;
-
-    if ( Q_in < 0 )
-        s_quad |= 0x02;
-
-    // mirrored
-    I_in = fabsf(I_in);
-    Q_in = fabsf(Q_in);
-
-    for (i=0; i<_mod->M; i++) {
-        d = liquid_cabsf(
-            I_in - _mod->levels_i[i],
-            Q_in - _mod->levels_q[i]);
-
-        //printf("  d[%u] = %u\n", i, d);
-
-        if ( d < d_min ) {
-            d_min = d;
-            s_q1 = i;
-        }
-    }
-    //printf(" > s = %d\n", *symbol_out);
-    _mod->res_i = I_in - _mod->levels_i[s_q1];
-    _mod->res_q = Q_in - _mod->levels_q[s_q1];
-    _mod->state_i = I_in;
-    _mod->state_q = Q_in;
-
-    // output symbol : <q(1) q(0)> <b(m-2-1) b(m-2-2) ... b(0)>
-    *symbol_out = (s_quad << (_mod->m - 2)) | s_q1;
-}
-#endif
-
-#if 0
-void modem_modem_demodulate_arb_rotated(modem _mod, float I_in, float Q_in, unsigned int *symbol_out)
-{
-    //printf("demodulate_arb_rotated() invoked with I=%d, Q=%d\n", x);
-    
-    unsigned int i;
-    unsigned int s_quad=0;
-    unsigned int s_q1=0;
-    float d, d_min = 1e9;
-
-    // determine quadrant, demodulate 2 most-significant bits appropriately
-    // IQ:
-    // -----
-    // 01 00
-    // 11 10
-    if ( I_in < 0 )
-        s_quad |= 0x01;
-
-    if ( Q_in < 0 )
-        s_quad |= 0x02;
-
-    // rotated
-    float I = I_in;
-    float Q = Q_in;
-    if (s_quad == 0) {
-        I_in =  I;
-        Q_in =  Q;
-    } else if (s_quad == 1) {
-        I_in =  Q;
-        Q_in =-I;
-    } else if (s_quad == 3) {
-        I_in = -I;
-        Q_in = -Q;
-    } else if (s_quad == 2) {
-        I_in = -Q;
-        Q_in =  I;
-    }
-
-    for (i=0; i<_mod->M; i++) {
-        d = liquid_cabsf(
-            I_in - _mod->levels_i[i],
-            Q_in - _mod->levels_q[i]);
-
-        //printf("  d[%u] = %u\n", i, d);
-
-        if ( d < d_min ) {
-            d_min = d;
-            s_q1 = i;
-        }
-    }
-    //printf(" > s = %d\n", *symbol_out);
-    _mod->res_i = I_in - _mod->levels_i[s_q1];
-    _mod->res_q = Q_in - _mod->levels_q[s_q1];
-    _mod->state_i = I_in;
-    _mod->state_q = Q_in;
-
-    // output symbol : <q(1) q(0)> <b(m-2-1) b(m-2-2) ... b(0)>
-    *symbol_out = (s_quad << (_mod->m - 2)) | s_q1;
-}
-#endif
-
 // get demodulator phase error
 void get_demodulator_phase_error(modem _demod, float* _phi)
 {
@@ -394,7 +286,7 @@ void get_demodulator_evm(modem _demod, float* _evm)
     case MOD_BPSK:
     case MOD_QPSK:
     case MOD_DPSK:
-        ///\todo figure out more efficient way of calculating evm
+        // TODO : figure out more efficient way of calculating evm
         r = cabsf(_demod->state);
         _demod->evm = 1.0f + r*r - 2.0f*r*cos(_demod->phase_error);
         _demod->evm = sqrtf( fabsf(_demod->evm) );
@@ -409,8 +301,6 @@ void get_demodulator_evm(modem _demod, float* _evm)
     case MOD_APSK64:
     case MOD_APSK128:
     case MOD_ARB:
-    case MOD_ARB_MIRRORED:
-    case MOD_ARB_ROTATED:
         _demod->evm = cabsf(_demod->res);
         break;
     default:
