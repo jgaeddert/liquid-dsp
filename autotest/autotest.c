@@ -37,26 +37,26 @@ typedef void(*autotest_function) (void);
 
 // define autotest_s
 struct autotest_s {
-    unsigned int id;
-    autotest_function api;
-    const char* name;
-    long unsigned int num_checks;
-    long unsigned int num_passed;
-    long unsigned int num_failed;
-    long unsigned int num_warnings;
-    float percent_passed;
-    bool executed;
-    bool pass;
+    unsigned int id;                // test identification
+    autotest_function api;          // test function, e.g. autotest_modem()
+    const char* name;               // test name
+    long unsigned int num_checks;   // number of checks that were run for this test
+    long unsigned int num_passed;   // number of checks that passed
+    long unsigned int num_failed;   // number of checks that failed
+    long unsigned int num_warnings; // number of warnings 
+    float percent_passed;           // percent of checks that passed
+    bool executed;                  // was the test executed?
+    bool pass;                      // did the test pass? (i.e. no failures)
 };
 
 typedef struct autotest_s * autotest;
 
 // define package_s
 struct package_s {
-    unsigned int id;
-    unsigned int autotest_index;
-    unsigned int num_autotests;
-    const char* name;
+    unsigned int id;                // package identification
+    unsigned int autotest_index;    // index of first autotest
+    unsigned int num_autotests;     // number of tests in package
+    const char* name;               // package name
 };
 
 typedef struct package_s * package;
@@ -70,27 +70,43 @@ typedef struct package_s * package;
 //   struct package_s packages[NUM_PACKAGES]
 #include "../autotest_include.h"
 
+// 
 // helper functions:
+//
+
+// print help/usage and exit
 void print_help();
+
+// execute a specific test
 void execute_autotest(autotest _test, bool _verbose);
+
+// execute a specific package
 void execute_package(package _p, bool _verbose);
+
+// print all autotest results
 void print_autotest_results(autotest _test);
+
+// print the results of a particular package
 void print_package_results(package _p);
+
+// print all unstable tests (those which failed or gave warnings)
 void print_unstable_tests(void);
 
 // main function
 int main(int argc, char *argv[])
 {
-
-    // initialize timing variables
-    unsigned int i, j;
-
     // options
-    enum {RUN_ALL, RUN_SINGLE_TEST, RUN_SINGLE_PACKAGE} mode = RUN_ALL;
+    enum {RUN_ALL,              // run all tests
+          RUN_SINGLE_TEST,      // run just a single test
+          RUN_SINGLE_PACKAGE    // run just a single package
+    } mode = RUN_ALL;
+
     unsigned int autotest_id = 0;
     unsigned int package_id = 0;
     bool verbose = true;
     bool stop_on_fail = false;
+
+    unsigned int i, j;
 
     // get input options
     int d;
@@ -197,7 +213,11 @@ void print_help()
     printf("  -q    : quiet\n");
 }
 
-void execute_autotest(autotest _test, bool _verbose)
+// execute a specific autotest
+//  _test       :   pointer to autotest object
+//  _verbose    :   verbose output flag
+void execute_autotest(autotest _test,
+                      bool _verbose)
 {
     unsigned long int autotest_num_passed_init = liquid_autotest_num_passed;
     unsigned long int autotest_num_failed_init = liquid_autotest_num_failed;
@@ -222,7 +242,11 @@ void execute_autotest(autotest _test, bool _verbose)
     //    print_autotest_results(_test);
 }
 
-void execute_package(package _p, bool _verbose)
+// execute a specific package
+//  _p          :   pointer to package object
+//  _verbose    :   verbose output flag
+void execute_package(package _p,
+                     bool _verbose)
 {
     if (_verbose)
         printf("%u: %s\n", _p->id, _p->name);
@@ -233,14 +257,15 @@ void execute_package(package _p, bool _verbose)
     }
 }
 
+// print results of a particular test
 void print_autotest_results(autotest _test)
 {
     if (!_test->executed)
-        printf("    IGNORED ");
+        printf("    %3u :   IGNORED ", _test->id);
     else if (_test->pass)
-        printf("    PASS    ");
+        printf("    %3u :   PASS    ", _test->id);
     else
-        printf("  <<FAIL>>  ");
+        printf("    %3u : <<FAIL>>  ", _test->id);
 
     printf("passed %4lu / %4lu checks (%5.1f%%) : %s\n",
             _test->num_passed,
@@ -249,6 +274,7 @@ void print_autotest_results(autotest _test)
             _test->name);
 }
 
+// print results of a particular package
 void print_package_results(package _p)
 {
     unsigned int i;
@@ -259,6 +285,7 @@ void print_package_results(package _p)
     printf("\n");
 }
 
+// print all unstable tests (those which failed or gave warnings)
 void print_unstable_tests(void)
 {
     if (liquid_autotest_num_failed == 0 &&
