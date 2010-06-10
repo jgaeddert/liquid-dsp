@@ -76,7 +76,7 @@ void execute_autotest(autotest _test, bool _verbose);
 void execute_package(package _p, bool _verbose);
 void print_autotest_results(autotest _test);
 void print_package_results(package _p);
-void print_volatile_tests(void);
+void print_unstable_tests(void);
 
 // main function
 int main(int argc, char *argv[])
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     }
 
     if (liquid_autotest_verbose)
-        print_volatile_tests();
+        print_unstable_tests();
 
     autotest_print_results();
     return 0;
@@ -259,7 +259,7 @@ void print_package_results(package _p)
     printf("\n");
 }
 
-void print_volatile_tests(void)
+void print_unstable_tests(void)
 {
     if (liquid_autotest_num_failed == 0 &&
         liquid_autotest_num_warnings == 0)
@@ -268,7 +268,7 @@ void print_volatile_tests(void)
     }
 
     printf("==================================\n");
-    printf(" VOLATILE TESTS:\n");
+    printf(" UNSTABLE TESTS:\n");
     unsigned int t;
     for (t=0; t<NUM_AUTOTESTS; t++) {
         if (autotests[t].executed) {
