@@ -39,7 +39,7 @@ ann_example.c
 
 ann_layer_example.c
 
-ann_maxnet_example.c
+ann_maxnet_example.c *
    Artificial neural network (ann) maxnet example. This example demonstrates
    the functionality of the ann maxnet by training a network to recognize and
    separate two input patterns in a 2-dimensional plane.
@@ -180,10 +180,37 @@ firpfb_rrrf_example.c
 firpfbch_analysis_example.c
 firpfbch_example.c
 firpfbch_synthesis_example.c
+
 flexframesync_example.c
+    This example demonstrates the interfaces to the flexframegen and
+    flexframesync objects used to completely encapsulate raw data bytes
+    into frame samples (nearly) ready for over-the-air transmission. An
+    8-byte header and variable length payload are encoded into baseband
+    symbols using the flexframegen object.  The resulting symbols are
+    interpolated using a root-Nyquist filter before adding channel
+    impairments (noise, carrier frequency/phase offset, timing phase
+    offset, etc).  The resulting samples are then fed into the
+    flexframesync object which attempts to decode the frames.  Whenever
+    a frame is found and properly decoded, its callback function is
+    invoked.
+
+    SEE ALSO: flexframesync_reconf_example.c
+              framesync64_example.c
+
 flexframesync_reconf_example.c
-framegen64_example.c
+
 framesync64_example.c
+    This example demonstrates the interfaces to the framegen64 and
+    framesync64 objects used to completely encapsulate data for
+    over-the-air transmission.  A 24-byte header and 64-byte payload are
+    encoded, modulated, and interpolated using the framegen64 object.
+    The resulting complex baseband samples are corrupted with noise and
+    moderate carrier frequency and phase offsets before the framesync64
+    object attempts to decode the frame.  The resulting data are
+    compared to the original to validate correctness.
+
+    SEE ALSO: flexframesync_example.c
+
 freqmodem_example.c
 fwdelay_example.c
 fwindow_example.c
@@ -253,7 +280,11 @@ interleaver_example.c
 
 interleaver_scatterplot_example.c
 
-interp_crcf_example.c
+interp_crcf_example.c *
+    This example demonstrates the interp object (interpolator)
+    interface. Data symbols are generated and then interpolated
+    according to a finite impulse response Nyquist filter.
+
 itqmfb_crcf_example.c
 itqmfb_rrrf_example.c
 kbd_window_example.c

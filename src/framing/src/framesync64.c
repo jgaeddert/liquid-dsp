@@ -38,8 +38,8 @@
 #define FRAMESYNC64_AGC_BW_0        (3e-3f)
 #define FRAMESYNC64_AGC_BW_1        (1e-5f)
 
-#define FRAMESYNC64_PLL_BW_0        (0.10f)
-#define FRAMESYNC64_PLL_BW_1        (0.01f)
+#define FRAMESYNC64_PLL_BW_0        (0.020f)
+#define FRAMESYNC64_PLL_BW_1        (0.005f)
 
 #define FRAMESYNC64_SQUELCH_THRESH  (-25.0f)
 #define FRAMESYNC64_SQUELCH_TIMEOUT (32)

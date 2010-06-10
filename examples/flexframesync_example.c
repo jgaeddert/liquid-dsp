@@ -1,7 +1,20 @@
 //
 // flexframesync_example.c
 //
+// This example demonstrates the interfaces to the flexframegen and
+// flexframesync objects used to completely encapsulate raw data bytes
+// into frame samples (nearly) ready for over-the-air transmission. An
+// 8-byte header and variable length payload are encoded into baseband
+// symbols using the flexframegen object.  The resulting symbols are
+// interpolated using a root-Nyquist filter before adding channel
+// impairments (noise, carrier frequency/phase offset, timing phase
+// offset, etc).  The resulting samples are then fed into the
+// flexframesync object which attempts to decode the frames.  Whenever a
+// frame is found and properly decoded, its callback function is
+// invoked.
 //
+// SEE ALSO: flexframesync_reconf_example.c
+//           framesync64_example.c
 //
 
 #include <stdio.h>
@@ -14,7 +27,9 @@
 #include "liquid.h"
 
 #define OUTPUT_FILENAME  "flexframesync_example.m"
-#define OUTPUT_SYMBOLS_FILE 1
+
+// output frame symbols to file?
+#define OUTPUT_SYMBOLS_FILE 0
 
 void usage()
 {
@@ -118,12 +133,12 @@ int main(int argc, char *argv[]) {
     flexframesyncprops_s fsprops;
     flexframesyncprops_init_default(&fsprops);
     fsprops.squelch_threshold = noise_floor + 3.0f;
-    fsprops.agc_bw0 = 1e-3f;
-    fsprops.agc_bw1 = 1e-5f;
-    fsprops.agc_gmin = 1e-3f;
-    fsprops.agc_gmax = 1e4f;
-    fsprops.pll_bw0 = 0.020f;
-    fsprops.pll_bw1 = 0.005f;
+    //fsprops.agc_bw0 = 1e-3f;
+    //fsprops.agc_bw1 = 1e-5f;
+    //fsprops.agc_gmin = 1e-3f;
+    //fsprops.agc_gmax = 1e4f;
+    //fsprops.pll_bw0 = 0.020f;
+    //fsprops.pll_bw1 = 0.005f;
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
     if (verbose)
         flexframesync_print(fs);
@@ -146,16 +161,6 @@ int main(int argc, char *argv[]) {
         header[i] = i;
     for (i=0; i<fgprops.payload_len; i++)
         payload[i] = rand() & 0xff;
-
-    // internal test : encode/decode header
-#if 0
-    float complex header_modulated[128];
-    flexframegen_encode_header(fg, header);
-    flexframegen_modulate_header(fg, header_modulated);
-
-    flexframesync_demodulate_header(fs, header_modulated);
-    flexframesync_decode_header(fs, NULL);
-#endif
 
     // generate the frame
     unsigned int frame_len = flexframegen_getframelen(fg);
@@ -220,6 +225,12 @@ int main(int argc, char *argv[]) {
     }
     } // num frames
 
+    // destroy allocated objects
+    flexframegen_destroy(fg);
+    flexframesync_destroy(fs);
+    nco_destroy(nco_channel);
+    interp_crcf_destroy(interp);
+
     printf("num frames received : %3u / %3u\n", fd.num_frames_received, num_frames);
 
     // write to file
@@ -234,50 +245,6 @@ int main(int argc, char *argv[]) {
     fprintf(fid,"plot(1:frame_len,real(frame),1:frame_len,imag(frame));\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
-#if 0
-    float complex frame_rx[2048];
-    
-    // push noise
-    for (i=0; i<2048; i++) {
-        frame_rx[i] = (randnf() + _Complex_I*randnf())*0.01f*gamma;
-    }
-    flexframesync_execute(fs, frame_rx, 2048);
-
-    flexframegen_execute(fg, header, payload, frame_rx);
-
-    // add channel impairments
-    for (i=0; i<2048; i++) {
-        frame_rx[i] *= cexpf(_Complex_I*phi);
-        frame_rx[i] += (randnf() + _Complex_I*randnf())*0.01f;
-        frame_rx[i] *= gamma;
-        nco_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
-
-        nco_step(nco_channel);
-    }
-
-    // synchronize/receive the frame
-    flexframesync_execute(fs, frame_rx, 2048);
-
-    // write frame to output file
-    FILE* fid = fopen(OUTPUT_FILENAME, "w");
-    fprintf(fid,"%% %s: auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid,"\n\n");
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"\n\n");
-    for (i=0; i<2048; i++)
-        fprintf(fid, "frame_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
-
-    fprintf(fid,"t=0:2047;\n");
-    fprintf(fid,"plot(t,real(frame_rx),t,imag(frame_rx));\n");
-    fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
-#endif
-
-    flexframegen_destroy(fg);
-    flexframesync_destroy(fs);
-    nco_destroy(nco_channel);
-    interp_crcf_destroy(interp);
 
     printf("done.\n");
     return 0;

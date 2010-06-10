@@ -1,5 +1,16 @@
 //
+// framegen64_example.c
 //
+// This example demonstrates the interfaces to the framegen64 and
+// framesync64 objects used to completely encapsulate data for
+// over-the-air transmission.  A 24-byte header and 64-byte payload are
+// encoded, modulated, and interpolated using the framegen64 object.
+// The resulting complex baseband samples are corrupted with noise and
+// moderate carrier frequency and phase offsets before the framesync64
+// object attempts to decode the frame.  The resulting data are compared
+// to the original to validate correctness.
+//
+// SEE ALSO: flexframesync_example.c
 //
 
 #include <stdio.h>
@@ -10,15 +21,20 @@
 
 #define OUTPUT_FILENAME  "framesync64_example.m"
 
-static int callback(unsigned char * _header,  int _header_valid,
-                    unsigned char * _payload, int _payload_valid,
+// static callback function
+static int callback(unsigned char * _header,
+                    int _header_valid,
+                    unsigned char * _payload,
+                    int _payload_valid,
                     void * _userdata);
 
+// global header, payload arrays
 unsigned char header[24];
 unsigned char payload[64];
 
 int main() {
     srand( time(NULL) );
+
     // create framegen64 object
     unsigned int m=3;
     float beta=0.7f;
@@ -41,15 +57,18 @@ int main() {
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
 
-    // generate the frame
+    // allocate memory for the frame samples
     float complex frame_rx[2048];
     
-    // push noise
+#if 0
+    // push noise (flush the frame buffers)
     for (i=0; i<2048; i++) {
         frame_rx[i] = (randnf() + _Complex_I*randnf())*0.01f*gamma;
     }
     framesync64_execute(fs, frame_rx, 2048);
+#endif
 
+    // generate the frame
     framegen64_execute(fg, header, payload, frame_rx);
 
     // add channel impairments
@@ -64,6 +83,11 @@ int main() {
 
     // synchronize/receive the frame
     framesync64_execute(fs, frame_rx, 2048);
+
+    // clean up allocated objects
+    framegen64_destroy(fg);
+    framesync64_destroy(fs);
+    nco_destroy(nco_channel);
 
     // write frame to output file
     FILE* fid = fopen(OUTPUT_FILENAME, "w");
@@ -80,16 +104,15 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    framegen64_destroy(fg);
-    framesync64_destroy(fs);
-    nco_destroy(nco_channel);
-
     printf("done.\n");
     return 0;
 }
 
-static int callback(unsigned char * _rx_header,  int _rx_header_valid,
-                    unsigned char * _rx_payload, int _rx_payload_valid,
+// static callback function
+static int callback(unsigned char * _rx_header,
+                    int _rx_header_valid,
+                    unsigned char * _rx_payload,
+                    int _rx_payload_valid,
                     void * _userdata)
 {
     printf("callback invoked\n");

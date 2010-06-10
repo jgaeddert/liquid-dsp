@@ -1196,14 +1196,14 @@ modem modem_create_arb_rotated(unsigned int _bits_per_symbol);
 // specific modem create routines
 modem modem_create_bpsk(void);
 modem modem_create_qpsk(void);
-modem modem_create_apsk4(unsigned int _bits_per_symbol);
-modem modem_create_apsk8(unsigned int _bits_per_symbol);
-modem modem_create_apsk16(unsigned int _bits_per_symbol);
-modem modem_create_apsk32(unsigned int _bits_per_symbol);
-modem modem_create_apsk64(unsigned int _bits_per_symbol);
-modem modem_create_apsk128(unsigned int _bits_per_symbol);
-modem modem_create_arb16opt(unsigned int _bits_per_symbol);
-modem modem_create_arb64vt(unsigned int _bits_per_symbol);
+modem modem_create_apsk4(void);
+modem modem_create_apsk8(void);
+modem modem_create_apsk16(void);
+modem modem_create_apsk32(void);
+modem modem_create_apsk64(void);
+modem modem_create_apsk128(void);
+modem modem_create_arb16opt(void);
+modem modem_create_arb64vt(void);
 
 /// Scale arbitrary modem energy to unity
 void modem_arb_scale(modem _mod);

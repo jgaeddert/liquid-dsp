@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -153,70 +154,4 @@ void modem_modulate_arb(
 
     *y = _mod->symbol_map[symbol_in]; 
 }
-
-#if 0
-void modem_modulate_arb_mirrored(modem _mod, unsigned int symbol_in, float complex *y)
-{
-    if (symbol_in >= _mod->M) {
-        perror("ERROR: modulate_arb_mirrored(), input symbol exceeds maximum\n");
-        return;
-    }
-
-    // IQ:
-    // -----
-    // 01 00
-    // 11 10
-    unsigned int quadrant = symbol_in >> (_mod->m - 2);
-    symbol_in &= _mod->M - 1;
-
-    *y = _mod->symbol_map[symbol_in]; 
-
-    // mirrored
-    if ( quadrant & 0x01 )
-        *I_out = -I;
-    else
-        *I_out =  I;
-
-    if ( quadrant & 0x02 )
-        *Q_out = -Q;
-    else
-        *Q_out =  Q;
-}
-#endif
-
-#if 0
-void modem_modulate_arb_rotated(modem _mod, unsigned int symbol_in, float complex *y)
-{
-    if (symbol_in >= _mod->M) {
-        perror("ERROR: modulate_arb_rotated(), input symbol exceeds maximum\n");
-        return;
-    }
-
-    // IQ:
-    // -----
-    // 01 00
-    // 11 10
-    unsigned int quadrant = symbol_in >> (_mod->m - 2);
-    symbol_in &= _mod->M - 1;
-
-    *y = _mod->symbol_map[symbol_in]; 
-
-    // rotated
-    if (quadrant == 0) {
-        *I_out =  I;
-        *Q_out =  Q;
-    } else if (quadrant == 1) {
-        *I_out = -Q;
-        *Q_out =  I;
-    } else if (quadrant == 3) {
-        *I_out = -I;
-        *Q_out = -Q;
-    } else {
-        *I_out =  Q;
-        *Q_out = -I;
-    }
-}
-#endif
-
-
 

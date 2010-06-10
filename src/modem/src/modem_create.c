@@ -20,7 +20,9 @@
  */
 
 //
+// modem_create.c
 //
+// Create and initialize digital modem schemes.
 //
 
 #include <stdio.h>
@@ -30,9 +32,9 @@
 
 #include "liquid.internal.h"
 
-modem modem_create(
-    modulation_scheme _scheme,
-    unsigned int _bits_per_symbol)
+// create digital modem of a specific scheme and bits/symbol
+modem modem_create(modulation_scheme _scheme,
+                   unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 ) {
         fprintf(stderr,"error: modem_create(), modem must have at least 1 bit/symbol\n");
@@ -58,10 +60,6 @@ modem modem_create(
     // arbitrary modem definitions
     case MOD_ARB:
         return modem_create_arb(_bits_per_symbol);
-    case MOD_ARB_MIRRORED:
-        return modem_create_arb_mirrored(_bits_per_symbol);
-    case MOD_ARB_ROTATED:
-        return modem_create_arb_rotated(_bits_per_symbol);
 
     // specific modems
     case MOD_BPSK:
@@ -69,21 +67,21 @@ modem modem_create(
     case MOD_QPSK:
         return modem_create_qpsk();
     case MOD_APSK4:
-        return modem_create_apsk4(_bits_per_symbol);
+        return modem_create_apsk4();
     case MOD_APSK8:
-        return modem_create_apsk8(_bits_per_symbol);
+        return modem_create_apsk8();
     case MOD_APSK16:
-        return modem_create_apsk16(_bits_per_symbol);
+        return modem_create_apsk16();
     case MOD_APSK32:
-        return modem_create_apsk32(_bits_per_symbol);
+        return modem_create_apsk32();
     case MOD_APSK64:
-        return modem_create_apsk64(_bits_per_symbol);
+        return modem_create_apsk64();
     case MOD_APSK128:
-        return modem_create_apsk128(_bits_per_symbol);
+        return modem_create_apsk128();
     case MOD_ARB16OPT:
-        return modem_create_arb16opt(4);
+        return modem_create_arb16opt();
     case MOD_ARB64VT:
-        return modem_create_arb64vt(6);
+        return modem_create_arb64vt();
     default:
         fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u (%u b/s)\n",
                 _scheme, _bits_per_symbol);
@@ -95,7 +93,31 @@ modem modem_create(
     return NULL;
 }
 
-void modem_init(modem _mod, unsigned int _bits_per_symbol)
+// destroy a modem object
+void modem_destroy(modem _mod)
+{
+    free(_mod->symbol_map);
+    free(_mod);
+}
+
+// print a modem object
+void modem_print(modem _mod)
+{
+    printf("linear modem:\n");
+    printf("    scheme:         %s\n", modulation_scheme_str[_mod->scheme]);
+    printf("    bits/symbol:    %u\n", _mod->m);
+}
+
+// reset a modem object (only an issue with dpsk)
+void modem_reset(modem _mod)
+{
+    _mod->state = 1.0f;
+    _mod->state_theta = 0.0f;
+}
+
+// initialize a generic modem object
+void modem_init(modem _mod,
+                unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 ) {
         fprintf(stderr,"error: modem_init(), modem must have at least 1 bit/symbol\n");
@@ -105,19 +127,19 @@ void modem_init(modem _mod, unsigned int _bits_per_symbol)
         exit(1);
     }
 
-    _mod->m = _bits_per_symbol;
-    _mod->M = 1 << (_mod->m);
-    _mod->m_i = 0;
-    _mod->M_i = 0;
-    _mod->m_q = 0;
-    _mod->M_q = 0;
+    _mod->m = _bits_per_symbol; // bits/symbol
+    _mod->M = 1 << (_mod->m);   // constellation size (2^m)
+    _mod->m_i = 0;              // bits/symbol (in-phase)
+    _mod->M_i = 0;              // constellation size (in-phase)
+    _mod->m_q = 0;              // bits/symbol (quadrature-phase)
+    _mod->M_q = 0;              // constellation size (quadrature-phase)
 
-    _mod->alpha = 0.0f;
+    _mod->alpha = 0.0f;         // scaling factor
 
-    _mod->symbol_map = NULL;
+    _mod->symbol_map = NULL;    // symbol map (MOD_ARB only)
 
-    _mod->state = 0.0f;
-    _mod->state_theta = 0.0f;
+    _mod->state = 0.0f;         // symbol state
+    _mod->state_theta = 0.0f;   // phase state
 
     _mod->res = 0.0f;
 
@@ -126,12 +148,13 @@ void modem_init(modem _mod, unsigned int _bits_per_symbol)
 
     _mod->d_phi = 0.0f;
 
+    // set function pointers initially to NULL
     _mod->modulate_func = NULL;
     _mod->demodulate_func = NULL;
 }
 
-modem modem_create_ask(
-    unsigned int _bits_per_symbol)
+// create an ask (amplitude-shift keying) modem object
+modem modem_create_ask(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_ASK;
@@ -163,8 +186,8 @@ modem modem_create_ask(
     return mod;
 }
 
-modem modem_create_qam(
-    unsigned int _bits_per_symbol)
+// create a qam (quaternary amplitude-shift keying) modem object
+modem modem_create_qam(unsigned int _bits_per_symbol)
 {
     if (_bits_per_symbol < 1 ) {
         fprintf(stderr,"error: modem_create_qam(), modem must have at least 2 bits/symbol\n");
@@ -220,8 +243,8 @@ modem modem_create_qam(
     return mod;
 }
 
-modem modem_create_psk(
-    unsigned int _bits_per_symbol)
+// create a psk (phase-shift keying) modem object
+modem modem_create_psk(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_PSK;
@@ -242,6 +265,7 @@ modem modem_create_psk(
     return mod;
 }
 
+// create a bpsk (binary phase-shift keying) modem object
 modem modem_create_bpsk()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -255,6 +279,7 @@ modem modem_create_bpsk()
     return mod;
 }
 
+// create a qpsk (quaternary phase-shift keying) modem object
 modem modem_create_qpsk()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -268,8 +293,8 @@ modem modem_create_qpsk()
     return mod;
 }
 
-modem modem_create_dpsk(
-    unsigned int _bits_per_symbol)
+// create a dpsk (differential phase-shift keying) modem object
+modem modem_create_dpsk(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_DPSK;
@@ -293,16 +318,16 @@ modem modem_create_dpsk(
     return mod;
 }
 
-modem modem_create_apsk(
-    unsigned int _bits_per_symbol)
+// create an apsk (amplitude/phase-shift keying) modem object
+modem modem_create_apsk(unsigned int _bits_per_symbol)
 {
     switch (_bits_per_symbol) {
-    case 2:     return modem_create_apsk4(_bits_per_symbol);
-    case 3:     return modem_create_apsk8(_bits_per_symbol);
-    case 4:     return modem_create_apsk16(_bits_per_symbol);
-    case 5:     return modem_create_apsk32(_bits_per_symbol);
-    case 6:     return modem_create_apsk64(_bits_per_symbol);
-    case 7:     return modem_create_apsk128(_bits_per_symbol);
+    case 2:     return modem_create_apsk4();
+    case 3:     return modem_create_apsk8();
+    case 4:     return modem_create_apsk16();
+    case 5:     return modem_create_apsk32();
+    case 6:     return modem_create_apsk64();
+    case 7:     return modem_create_apsk128();
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
@@ -312,13 +337,8 @@ modem modem_create_apsk(
     return NULL;
 }
 
-modem modem_create_apsk4(
-    unsigned int _bits_per_symbol)
+modem modem_create_apsk4()
 {
-    if (_bits_per_symbol != 2) {
-        fprintf(stderr,"error: modem_create_apsk4(), bits/symbol is not exactly 2\n");
-        exit(1);
-    }
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_APSK4;
 
@@ -339,13 +359,8 @@ modem modem_create_apsk4(
 }
 
 
-modem modem_create_apsk8(
-    unsigned int _bits_per_symbol)
+modem modem_create_apsk8()
 {
-    if (_bits_per_symbol != 3) {
-        fprintf(stderr,"error: modem_create_apsk8(), bits/symbol is not exactly 3\n");
-        exit(1);
-    }
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_APSK8;
 
@@ -365,13 +380,8 @@ modem modem_create_apsk8(
     return mod;
 }
 
-modem modem_create_apsk16(
-    unsigned int _bits_per_symbol)
+modem modem_create_apsk16()
 {
-    if (_bits_per_symbol != 4) {
-        fprintf(stderr,"error: modem_create_apsk16(), bits/symbol is not exactly 4\n");
-        exit(1);
-    }
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_APSK16;
 
@@ -391,13 +401,8 @@ modem modem_create_apsk16(
     return mod;
 }
 
-modem modem_create_apsk32(
-    unsigned int _bits_per_symbol)
+modem modem_create_apsk32()
 {
-    if (_bits_per_symbol != 5) {
-        fprintf(stderr,"error: modem_create_apsk32(), bits/symbol is not exactly 5\n");
-        exit(1);
-    }
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_APSK32;
 
@@ -417,13 +422,8 @@ modem modem_create_apsk32(
     return mod;
 }
 
-modem modem_create_apsk64(
-    unsigned int _bits_per_symbol)
+modem modem_create_apsk64()
 {
-    if (_bits_per_symbol != 6) {
-        fprintf(stderr,"error: modem_create_apsk64(), bits/symbol is not exactly 6\n");
-        exit(1);
-    }
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_APSK64;
 
@@ -443,13 +443,8 @@ modem modem_create_apsk64(
     return mod;
 }
 
-modem modem_create_apsk128(
-    unsigned int _bits_per_symbol)
+modem modem_create_apsk128()
 {
-    if (_bits_per_symbol != 7) {
-        fprintf(stderr,"error: modem_create_apsk128(), bits/symbol is not exactly 7\n");
-        exit(1);
-    }
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_APSK128;
 
@@ -469,8 +464,8 @@ modem modem_create_apsk128(
     return mod;
 }
 
-modem modem_create_arb(
-    unsigned int _bits_per_symbol)
+// create an arbitrary modem object
+modem modem_create_arb(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = MOD_ARB;
@@ -486,74 +481,32 @@ modem modem_create_arb(
     return mod;
 }
 
-modem modem_create_arb_mirrored(
-    unsigned int _bits_per_symbol)
+// create an arb16opt (optimal 16-qam) modem object
+modem modem_create_arb16opt()
 {
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_ARB_MIRRORED;
-
-    modem_init(mod, _bits_per_symbol);
-
-    /// \bug
-    mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
-    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
-
-    mod->modulate_func = &modem_modulate_arb;
-    mod->demodulate_func = &modem_demodulate_arb;
-
-    return mod;
-}
-
-modem modem_create_arb_rotated(
-    unsigned int _bits_per_symbol)
-{
-    modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_ARB_ROTATED;
-
-    modem_init(mod, _bits_per_symbol);
-
-    /// \bug
-    mod->M = (mod->M) >> 2;    // 2^(m-2) = M/4
-    mod->symbol_map = (float complex*) calloc( mod->M, sizeof(float complex) );
-
-    mod->modulate_func = &modem_modulate_arb;
-    mod->demodulate_func = &modem_demodulate_arb;
-
-    return mod;
-}
-
-modem modem_create_arb16opt(
-    unsigned int _bits_per_symbol)
-{
-    if (_bits_per_symbol != 4) {
-        fprintf(stderr,"error: modem_create_arb16opt(), bits/symbol is not exactly 4\n");
-        exit(1);
-    }
-
     modem mod = modem_create_arb(4);
     modem_arb_init(mod,(float complex*)modem_arb_opt16,16);
     return mod;
 }
 
-modem modem_create_arb64vt(
-    unsigned int _bits_per_symbol)
+// create an arb64vt (64-qam vt logo) modem object
+modem modem_create_arb64vt()
 {
-    if (_bits_per_symbol != 6) {
-        fprintf(stderr,"error: modem_create_arb64vt(), bits/symbol is not exactly 6\n");
-        exit(1);
-    }
-
     modem mod = modem_create_arb(6);
     modem_arb_init(mod,(float complex*)modem_arb_vt64,64);
     return mod;
 }
 
-void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len)
+// initialize an arbitrary modem object
+//  _mod        :   modem object
+//  _symbol_map :   arbitrary modem symbol map
+//  _len        :   number of symbols in the map
+void modem_arb_init(modem _mod,
+                    float complex *_symbol_map,
+                    unsigned int _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if ( (_mod->scheme != MOD_ARB) && (_mod->scheme != MOD_ARB_MIRRORED) &&
-         (_mod->scheme != MOD_ARB_ROTATED) )
-    {
+    if (_mod->scheme != MOD_ARB) {
         fprintf(stderr,"error: modem_arb_init(), modem is not of arbitrary type\n");
         exit(1);
     } else if (_len != _mod->M) {
@@ -563,17 +516,8 @@ void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len)
 #endif
 
     unsigned int i;
-    for (i=0; i<_len; i++) {
-#ifdef LIQUID_VALIDATE_INPUT
-        if ((_mod->scheme == MOD_ARB_MIRRORED) || (_mod->scheme == MOD_ARB_ROTATED)) {
-            // symbols should only exist in first quadrant
-            if ( crealf(_symbol_map[i]) <= 0 || cimagf(_symbol_map[i]) <= 0 )
-                printf("WARNING: modem_arb_init(), symbols exist outside first quadrant\n");
-        }
-#endif
-
+    for (i=0; i<_len; i++)
         _mod->symbol_map[i] = _symbol_map[i];
-    }
 
     // balance I/Q channels
     if (_mod->scheme == MOD_ARB)
@@ -584,7 +528,12 @@ void modem_arb_init(modem _mod, float complex *_symbol_map, unsigned int _len)
 
 }
 
-void modem_arb_init_file(modem _mod, char* filename) {
+// initialize an arbitrary modem object on a file
+//  _mod        :   modem object
+//  _filename   :   name of the data file
+void modem_arb_init_file(modem _mod,
+                         char* filename)
+{
     // try to open file
     FILE * f = fopen(filename, "r");
     if (f == NULL) {
@@ -603,15 +552,6 @@ void modem_arb_init_file(modem _mod, char* filename) {
             fprintf(stderr,"modem_arb_init_file() unable to parse line\n");
             exit(-1);
         }
-
-#ifdef LIQUID_VALIDATE_INPUT
-        if ((_mod->scheme == MOD_ARB_MIRRORED) || (_mod->scheme == MOD_ARB_ROTATED)) {
-        // symbols should only exist in first quadrant
-            if ( sym_i < 0.0f || sym_q < 0.0f )
-                printf("WARNING: modem_arb_init_file(), symbols exist outside first quadrant\n");
-        }
-#endif
-
     }
 
     fclose(f);
@@ -624,6 +564,7 @@ void modem_arb_init_file(modem _mod, char* filename) {
     modem_arb_scale(_mod);
 }
 
+// scale arbitrary modem constellation points
 void modem_arb_scale(modem _mod)
 {
     unsigned int i;
@@ -642,9 +583,10 @@ void modem_arb_scale(modem _mod)
     }
 }
 
+// balance an arbitrary modem's I/Q points
 void modem_arb_balance_iq(modem _mod)
 {
-    float mean=0.0f;
+    float complex mean=0.0f;
     unsigned int i;
 
     // accumulate average signal
@@ -658,24 +600,4 @@ void modem_arb_balance_iq(modem _mod)
         _mod->symbol_map[i] -= mean;
     }
 }
-
-void modem_destroy(modem _mod)
-{
-    free(_mod->symbol_map);
-    free(_mod);
-}
-
-void modem_print(modem _mod)
-{
-    printf("linear modem:\n");
-    printf("    scheme:         %s\n", modulation_scheme_str[_mod->scheme]);
-    printf("    bits/symbol:    %u\n", _mod->m);
-}
-
-void modem_reset(modem _mod)
-{
-    _mod->state = 1.0f;
-    _mod->state_theta = 0.0f;
-}
-
 
