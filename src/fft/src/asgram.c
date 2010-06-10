@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -47,8 +48,8 @@ asgram asgram_create(float complex * _x,
                      unsigned int _n)
 {
     asgram q = (asgram) malloc(sizeof(struct asgram_s));
-    q->n = (_n>64) ? 64 : _n;
 
+    q->n = _n;
     q->x = _x;
     q->y = (float complex*) malloc((q->n)*sizeof(float complex));
     q->psd = (float*) malloc((q->n)*sizeof(float));
