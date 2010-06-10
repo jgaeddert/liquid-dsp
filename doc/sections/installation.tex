@@ -67,6 +67,9 @@ Packaged with \liquid\ are a number of automatic test scripts to validate the
 correctness of the source code.
 The test scripts are located under each module's {\tt tests} directory and
 take the form of a C header file.
+The testing framework operates similarly to CppUnit \cite{cppunit:web} and
+cxxtest \cite{cxxtest:web}, however it is written in C (except for the
+parser which, at the time of writing this, is in Python).
 The python script {\tt autotest\_gen.py} parses these header files looking for
 the key ``{\tt void autotest\_}'' which corresponds to a specific test.
 %Each test that is found is appended to a list
@@ -77,26 +80,28 @@ The result is an executable file, {\tt xautotest}, which can be run to
 validate the functional correctess of \liquid\ on your target platform.
 
 \subsubsection{Macros}
-Each module contains a number of autotest scripts which using pre-processor
+Each module contains a number of autotest scripts which use pre-processor
 macros for asserting the functional correctness of the souce code.
 
-\paragraph{{\tt CONTEND\_EQUALITY}$(x,y)$} asserts that $x==y$ and fails if
+\begin{description}
+\item[{\tt CONTEND\_EQUALITY}$(x,y)$] asserts that $x==y$ and fails if
 false.
-\paragraph{{\tt CONTEND\_INEQUALITY}$(x,y)$} asserts that $x$ differs from
+\item[{\tt CONTEND\_INEQUALITY}$(x,y)$] asserts that $x$ differs from
 $y$.
-\paragraph{{\tt CONTEND\_GREATER\_THAN}$(x,y)$} asserts that $x>y$.
-\paragraph{{\tt CONTEND\_LESS\_THAN}$(x,y)$} asserts that $x<y$.
-\paragraph{{\tt CONTEND\_DELTA}$(x,y,\Delta)$} asserts thaat $|x-y|<\Delta$
-\paragraph{{\tt CONTEND\_EXPRESSION}$(expr)$} asserts that some expression is
+\item[{\tt CONTEND\_GREATER\_THAN}$(x,y)$] asserts that $x>y$.
+\item[{\tt CONTEND\_LESS\_THAN}$(x,y)$] asserts that $x<y$.
+\item[{\tt CONTEND\_DELTA}$(x,y,\Delta)$] asserts thaat $|x-y|<\Delta$
+\item[{\tt CONTEND\_EXPRESSION}$(expr)$] asserts that some expression is
 true.
-\paragraph{{\tt CONTEND\_SAME\_DATA}$(ptrA,ptrB,n)$} asserts that each of $n$
+\item[{\tt CONTEND\_SAME\_DATA}$(ptrA,ptrB,n)$] asserts that each of $n$
 byte values in the arrays referenced by $ptrA$ and $ptrB$ are equal.
-\paragraph{{\tt AUTOTEST\_PASS}$()$} passes unconditionally.
-\paragraph{{\tt AUTOTEST\_FAIL}$(string)$} prints $string$ and fails
+\item[{\tt AUTOTEST\_PASS}$()$] passes unconditionally.
+\item[{\tt AUTOTEST\_FAIL}$(string)$] prints $string$ and fails
 unconditionaly.
-\paragraph{{\tt AUTOTEST\_WARN}$(string)$} simply prints a warning.
+\item[{\tt AUTOTEST\_WARN}$(string)$] simply prints a warning.
 The autotest program will keep track of which tests elicit warnings and add
-them to the list of volatile tests.
+them to the list of unstable tests.
+\end{description}
 
 Here are some examples:
 \begin{itemize}
@@ -121,8 +126,8 @@ help/usage information).
       -v    : verbose
       -q    : quiet
 \end{verbatim}
-Simply running the program executes all the tests and displays the results to
-the screen.
+Simply running the program without any arguments executes all the tests and
+displays the results to the screen.
 The is the default response of the target {\tt make check}.
 
 \subsection{Benchmarks ({\tt make bench})}
