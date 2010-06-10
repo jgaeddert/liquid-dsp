@@ -50,7 +50,6 @@ local_src	:=			\
 	firpfbch_synthesis_example.c	\
 	flexframesync_example.c		\
 	flexframesync_reconfig_example.c		\
-	framegen64_example.c		\
 	framesync64_example.c		\
 	freqmodem_example.c		\
 	ga_search_example.c		\
