@@ -212,7 +212,7 @@ uninstall:
 autotest_prog	= xautotest
 
 # run the autotest generator script to create autotest_include.h
-autotest_include.h: $(autotest_headers)
+autotest_include.h: $(autotest_headers) include/liquid.h include/liquid.internal.h
 	python autotest/autotest_gen.py $(autotest_headers)
 
 # compile the autotest program without linking
@@ -244,7 +244,7 @@ BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS) -pthread
 
 # run the benchmark generator scrip to create benchmark_include.h
-benchmark_include.h: $(benchmark_headers) include/liquid.h
+benchmark_include.h: $(benchmark_headers) include/liquid.h include/liquid.internal.h
 	python bench/benchmarkgen.py $(benchmark_headers)
 
 # compile the benchmark program without linking
