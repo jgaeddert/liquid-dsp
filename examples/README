@@ -280,7 +280,11 @@ interleaver_example.c
 
 interleaver_scatterplot_example.c
 
-interp_crcf_example.c
+interp_crcf_example.c *
+    This example demonstrates the interp object (interpolator)
+    interface. Data symbols are generated and then interpolated
+    according to a finite impulse response Nyquist filter.
+
 itqmfb_crcf_example.c
 itqmfb_rrrf_example.c
 kbd_window_example.c

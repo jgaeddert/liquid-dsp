@@ -1,21 +1,73 @@
 //
 // interp_crcf_example.c
 //
+// This example demonstrates the interp object (interpolator) interface.
+// Data symbols are generated and then interpolated according to a
+// finite impulse response Nyquist filter.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <getopt.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "interp_crcf_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("interp_crcf_example:\n");
+    printf("  u/h   : print usage/help\n");
+    printf("  k     : samples/symbol (interp factor), k > 1, default: 4\n");
+    printf("  m     : filter delay (symbols), m > 0, default: 3\n");
+    printf("  b     : beta, excess bandwidth factor, 0 < beta < 1, default: 0.3\n");
+    printf("  n     : number of data symbols, default: 16\n");
+}
+
+
+int main(int argc, char*argv[]) {
     // options
     unsigned int k=4;                   // samples/symbol
     unsigned int m=3;                   // filter delay
     float beta = 0.3f;                  // filter excess bandwidth
     unsigned int num_data_symbols=16;   // number of data symbols
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhk:m:b:n:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();                          return 0;
+        case 'k': k = atoi(optarg);                 break;
+        case 'm': m = atoi(optarg);                 break;
+        case 'b': beta = atof(optarg);              break;
+        case 'n': num_data_symbols = atoi(optarg);  break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
+
+    // validate options
+    if (k < 2) {
+        fprintf(stderr,"error: %s, interp factor must be greater than 1\n", argv[0]);
+        usage();
+        return 1;
+    } else if (m < 1) {
+        fprintf(stderr,"error: %s, filter delay must be greater than 0\n", argv[0]);
+        usage();
+        return 1;
+    } else if (beta <= 0.0 || beta > 1.0f) {
+        fprintf(stderr,"error: %s, beta (excess bandwidth factor) must be in (0,1]\n", argv[0]);
+        usage();
+        return 1;
+    } else if (num_data_symbols < 1) {
+        fprintf(stderr,"error: %s, must have at least one data symbol\n", argv[0]);
+        usage();
+        return 1;
+    }
 
     // derived values
     unsigned int h_len = 2*k*m+1;
@@ -31,10 +83,9 @@ int main() {
     float complex x[num_symbols];
     float complex y[num_samples];
     unsigned int i;
-    float theta;
     for (i=0; i<num_data_symbols; i++) {
-        theta = M_PI * (0.5f*(rand()%4) + 0.25f);
-        x[i] = cexpf(_Complex_I * theta);
+        x[i] = (rand() % 2 ? 1.0f : -1.0f) +
+               (rand() % 2 ? 1.0f : -1.0f) * _Complex_I;
     }
     for ( ; i<num_symbols; i++)
         x[i] = 0.0f;
