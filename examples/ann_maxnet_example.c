@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <math.h>
 #include <time.h>
 
@@ -16,16 +17,43 @@
 
 #define OUTPUT_FILENAME "ann_maxnet_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("ann_maxnet_example:\n");
+    printf("  u/h   : print usage/help\n");
+    printf("  t     : number of training epochs, default: 1000\n");
+    printf("  n     : number of neurons in hidden layer, default: 6\n");
+    printf("  p     : number of patterns to train, default: 250\n");
+}
+
+int main(int argc, char*argv[]) {
     // set random seed
     srand(time(NULL));
 
-    // number of patterns over which to train
-    unsigned int num_patterns = 250;
+    // options
+    unsigned int num_trials = 1000;     // number of training epochs
+    unsigned int num_hidden = 6;        // number of hidden neurons
+    unsigned int num_patterns = 250;    // number of training patterns
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uht:n:p:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();                      return 0;
+        case 't': num_trials = atoi(optarg);    break;
+        case 'n': num_hidden = atoi(optarg);    break;
+        case 'p': num_patterns = atoi(optarg);  break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
 
     // create network structure:
     //      2 inputs, 6 hidden neurons, 1 output
-    unsigned int structure[3] = {2, 6, 1};
+    unsigned int structure[3] = {2, num_hidden, 1};
 
     // input sequence in 2-dimensional plane
     float x[2*num_patterns];
@@ -41,8 +69,8 @@ int main() {
 
         float r = sqrtf(x0*x0 + x1*x1);
         if (r < 0.8f) {
-            x[2*i+0] = 0.7f * x0;
-            x[2*i+1] = 0.7f * x1;
+            x[2*i+0] = 0.5f * x0;
+            x[2*i+1] = 0.5f * x1;
             class[i] = 0;
         } else {
             x[2*i+0] = x0;
@@ -72,7 +100,6 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n\n");
 
-    unsigned int num_trials=1000;
     unsigned int n;
     unsigned int num_errors;    // number of classification errors
     for (n=0; n<num_trials; n++) {
