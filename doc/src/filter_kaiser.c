@@ -21,7 +21,7 @@ int main() {
     float mu=0.0f;          // fractional timing offset
 
     // estimate required filter length and generate filter
-    unsigned int h_len=(unsigned int)num_firfilt_taps(slsl,ft);
+    unsigned int h_len = estimate_req_filter_len(ft,slsl);
     float h[h_len];
 
     // Compute filter coefficients.
