@@ -76,12 +76,13 @@ void autotest_cfbuffer_static()
 }
 
 
+#if 0
 //
 // AUTOTEST: static unsigned int buffer
 //
-void autotest_uibuffer_static()
+void xautotest_uibuffer_static()
 {
     SBUFFER_AUTOTEST_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
 }
-
+#endif
 

@@ -283,9 +283,9 @@ void fbasc_decode(fbasc _q,
 //
 
 // Buffer
-#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(fbuffer, name)
-#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfbuffer, name)
-#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(uibuffer, name)
+#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(bufferf,  name)
+#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(buffercf, name)
+//#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(bufferui, name)
 
 typedef enum {
     CIRCULAR=0,
@@ -311,15 +311,15 @@ void BUFFER(_push)(BUFFER() _b, T _v);
 //void BUFFER(_force_write)(BUFFER() _b, T * _v, unsigned int _n);
 
 // Define buffer APIs
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT, float)
+LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT,  float)
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
+//LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT,   unsigned int)
 
 
 // Windowing functions
-#define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(fwindow, name)
-#define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfwindow, name)
-#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(uiwindow, name)
+#define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(windowf,  name)
+#define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
+//#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(windowui, name)
 
 // large macro
 //   WINDOW : name-mangling macro
@@ -339,16 +339,16 @@ void WINDOW(_push)(WINDOW() _b, T _v);                          \
 void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
 
 // Define window APIs
-LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT, float)
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
-LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT, unsigned int)
+//LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT,   unsigned int)
 
 
 // wdelay functions : windowed-delay
 // Implements an efficient z^-k delay with minimal memory
-#define WDELAY_MANGLE_FLOAT(name)   LIQUID_CONCAT(fwdelay, name)
-#define WDELAY_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfwdelay, name)
-#define WDELAY_MANGLE_UINT(name)    LIQUID_CONCAT(uiwdelay, name)
+#define WDELAY_MANGLE_FLOAT(name)   LIQUID_CONCAT(wdelayf,  name)
+#define WDELAY_MANGLE_CFLOAT(name)  LIQUID_CONCAT(wdelaycf, name)
+#define WDELAY_MANGLE_UINT(name)    LIQUID_CONCAT(wdelayui, name)
 
 // large macro
 //   WDELAY : name-mangling macro
@@ -366,9 +366,9 @@ void WDELAY(_read)(WDELAY() _w, T * _v);                        \
 void WDELAY(_push)(WDELAY() _b, T _v);
 
 // Define wdelay APIs
-LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT, float)
+LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT,  float)
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
-LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT, unsigned int)
+//LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT,   unsigned int)
 
 
 //

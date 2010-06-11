@@ -73,9 +73,9 @@ struct SYMSYNCLP(_s) {
 
 #if DEBUG_SYMSYNCLP
     FILE * fid;
-    fwindow debug_tau;
-    fwindow debug_delta;
-    fwindow debug_q_hat;
+    windowf debug_tau;
+    windowf debug_delta;
+    windowf debug_q_hat;
 #endif
 };
 
@@ -107,9 +107,9 @@ SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
     SYMSYNCLP(_set_lf_bw)(q, 0.01f);
 
 #if DEBUG_SYMSYNCLP
-    q->debug_tau   =  fwindow_create(DEBUG_BUFFER_LEN);
-    q->debug_delta =  fwindow_create(DEBUG_BUFFER_LEN);
-    q->debug_q_hat =  fwindow_create(DEBUG_BUFFER_LEN);
+    q->debug_tau   =  windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_delta =  windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_q_hat =  windowf_create(DEBUG_BUFFER_LEN);
 #endif
 
     return q;
@@ -119,9 +119,9 @@ void SYMSYNCLP(_destroy)(SYMSYNCLP() _q)
 {
 #if DEBUG_SYMSYNCLP
     SYMSYNCLP(_output_debug_file)(_q);
-    fwindow_destroy(_q->debug_tau);
-    fwindow_destroy(_q->debug_delta);
-    fwindow_destroy(_q->debug_q_hat);
+    windowf_destroy(_q->debug_tau);
+    windowf_destroy(_q->debug_delta);
+    windowf_destroy(_q->debug_q_hat);
 #endif
     WINDOW(_destroy)(_q->wmf);
     free(_q->x);
@@ -226,21 +226,21 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q)
 
     // print
     fprintf(fid,"tau = zeros(1,n);\n");
-    fwindow_read(_q->debug_tau, &r);
+    windowf_read(_q->debug_tau, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"tau(%4u) = %12.8f;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
 
     // print delta buffer (timing frequency)
     fprintf(fid,"delta = zeros(1,n);\n");
-    fwindow_read(_q->debug_delta, &r);
+    windowf_read(_q->debug_delta, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"delta(%4u) = %12.8f;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
 
     // print filtered error signal
     fprintf(fid,"q_hat = zeros(1,n);\n");
-    fwindow_read(_q->debug_q_hat, &r);
+    windowf_read(_q->debug_q_hat, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
         fprintf(fid,"q_hat(%4u) = %12.8f;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
@@ -260,10 +260,10 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q, TI _x, TO * _y, unsigned int *_ny)
 
     while (_q->tau < 1.0f) {
 #if DEBUG_SYMSYNC
-        fwindow_push(_q->debug_tau,  _q->tau);
+        windowf_push(_q->debug_tau,  _q->tau);
         //uiwindow_push(_q->debug_b,     _q->b);
-        fwindow_push(_q->debug_delta,  _q->del);
-        fwindow_push(_q->debug_q_hat,  _q->q_hat);
+        windowf_push(_q->debug_delta,  _q->del);
+        windowf_push(_q->debug_q_hat,  _q->q_hat);
         // printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->b_soft);
 #endif
         // compute interpolants

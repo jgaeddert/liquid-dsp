@@ -138,14 +138,14 @@ struct flexframesync_s {
 
 #ifdef DEBUG_FLEXFRAMESYNC
     FILE*fid;
-    fwindow  debug_agc_rssi;
-    cfwindow debug_agc_out;
-    cfwindow debug_x;
-    cfwindow debug_rxy;
-    cfwindow debug_nco_rx_out;
-    cfwindow debug_framesyms;
-    fwindow  debug_nco_phase;
-    fwindow  debug_nco_freq;
+    windowf  debug_agc_rssi;
+    windowcf debug_agc_out;
+    windowcf debug_x;
+    windowcf debug_rxy;
+    windowcf debug_nco_rx_out;
+    windowcf debug_framesyms;
+    windowf  debug_nco_phase;
+    windowf  debug_nco_freq;
 #endif
 };
 
@@ -233,14 +233,14 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     flexframesync_open_bandwidth(fs);
 
 #ifdef DEBUG_FLEXFRAMESYNC
-    fs->debug_agc_rssi  =  fwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_agc_out   = cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_x         = cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_rxy       = cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_nco_rx_out= cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_framesyms = cfwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_nco_phase=   fwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_nco_freq =   fwindow_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_agc_rssi  =  windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_agc_out   = windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_x         = windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_rxy       = windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_nco_rx_out= windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_framesyms = windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_nco_phase=   windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_nco_freq =   windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
 #endif
 
     return fs;
@@ -345,9 +345,9 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         agc_crcf_execute(_fs->agc_rx, _x[i], &agc_rx_out);
         _fs->rssi = agc_crcf_get_signal_level(_fs->agc_rx);
 #ifdef DEBUG_FLEXFRAMESYNC
-        cfwindow_push(_fs->debug_x, _x[i]);
-        fwindow_push(_fs->debug_agc_rssi, agc_crcf_get_signal_level(_fs->agc_rx));
-        cfwindow_push(_fs->debug_agc_out, agc_rx_out);
+        windowcf_push(_fs->debug_x, _x[i]);
+        windowf_push(_fs->debug_agc_rssi, agc_crcf_get_signal_level(_fs->agc_rx));
+        windowcf_push(_fs->debug_agc_out, agc_rx_out);
 #endif
 
         // squelch: block agc output from synchronizer only if
@@ -399,9 +399,9 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             */
             nco_step(_fs->nco_rx);
 #ifdef DEBUG_FLEXFRAMESYNC
-            fwindow_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
-            fwindow_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
-            cfwindow_push(_fs->debug_nco_rx_out, nco_rx_out);
+            windowf_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
+            windowf_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
+            windowcf_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
             //if (_fs->rssi < _fs->squelch_threshold)
             //    continue;
@@ -412,7 +412,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 //
                 bsync_rrrf_correlate(_fs->fsync, nco_rx_out, &rxy);
 #ifdef DEBUG_FLEXFRAMESYNC
-                cfwindow_push(_fs->debug_rxy, rxy);
+                windowcf_push(_fs->debug_rxy, rxy);
 #endif
                 if (fabsf(rxy) > 0.7f) {
                     //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
@@ -460,7 +460,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
 #ifdef DEBUG_FLEXFRAMESYNC
-            cfwindow_push(_fs->debug_framesyms, nco_rx_out);
+            windowcf_push(_fs->debug_framesyms, nco_rx_out);
 #endif
             //if (_fs->rssi < _fs->squelch_threshold)
                 _fs->payload_samples[_fs->num_symbols_collected] = nco_rx_out;
@@ -680,7 +680,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write agc_rssi
     fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fwindow_read(_fs->debug_agc_rssi, &r);
+    windowf_read(_fs->debug_agc_rssi, &r);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
@@ -690,7 +690,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write agc out
     fprintf(fid,"agc_out = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_agc_out, &rc);
+    windowcf_read(_fs->debug_agc_out, &rc);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"agc_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
@@ -701,7 +701,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write x
     fprintf(fid,"x = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_x, &rc);
+    windowcf_read(_fs->debug_x, &rc);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
@@ -711,7 +711,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write rxy
     fprintf(fid,"rxy = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_rxy, &rc);
+    windowcf_read(_fs->debug_rxy, &rc);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
@@ -721,7 +721,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write nco_rx_out
     fprintf(fid,"nco_rx_out = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_nco_rx_out, &rc);
+    windowcf_read(_fs->debug_nco_rx_out, &rc);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"nco_rx_out(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
@@ -734,7 +734,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write frame symbols
     fprintf(fid,"framesyms = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    cfwindow_read(_fs->debug_framesyms, &rc);
+    windowcf_read(_fs->debug_framesyms, &rc);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
@@ -747,7 +747,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write nco_phase
     fprintf(fid,"nco_phase = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fwindow_read(_fs->debug_nco_phase, &r);
+    windowf_read(_fs->debug_nco_phase, &r);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"nco_phase(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
@@ -757,7 +757,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     // write nco_freq
     fprintf(fid,"nco_freq = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fwindow_read(_fs->debug_nco_freq, &r);
+    windowf_read(_fs->debug_nco_freq, &r);
     for (i=0; i<DEBUG_FLEXFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"nco_freq(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"\n\n");
@@ -772,11 +772,11 @@ void flexframesync_output_debug_file(flexframesync _fs)
     printf("flexframesync/debug: results written to %s\n", DEBUG_FLEXFRAMESYNC_FILENAME);
 
     // clean up debug windows
-    fwindow_destroy(_fs->debug_agc_rssi);
-    cfwindow_destroy(_fs->debug_agc_out);
-    cfwindow_destroy(_fs->debug_rxy);
-    cfwindow_destroy(_fs->debug_x);
-    cfwindow_destroy(_fs->debug_nco_rx_out);
-    cfwindow_destroy(_fs->debug_framesyms);
+    windowf_destroy(_fs->debug_agc_rssi);
+    windowcf_destroy(_fs->debug_agc_out);
+    windowcf_destroy(_fs->debug_rxy);
+    windowcf_destroy(_fs->debug_x);
+    windowcf_destroy(_fs->debug_nco_rx_out);
+    windowcf_destroy(_fs->debug_framesyms);
 }
 #endif

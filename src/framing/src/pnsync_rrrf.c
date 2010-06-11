@@ -34,7 +34,7 @@
 #define TC                  float
 #define TI                  float
 #define ABS(X)              fabsf(X)
-#define WINDOW(name)        LIQUID_CONCAT(fwindow,name)
+#define WINDOW(name)        LIQUID_CONCAT(windowf,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
 
 #undef  TO_COMPLEX

@@ -22,24 +22,24 @@ int main() {
     complex float *r; // reader
     unsigned int n=3;
 
-    //buffer cb = cfbuffer_create(CIRCULAR, 10);
-    cfbuffer cb = cfbuffer_create(STATIC, 10);
+    //buffer cb = buffercf_create(CIRCULAR, 10);
+    buffercf cb = buffercf_create(STATIC, 10);
 
-    cfbuffer_write(cb, v, 4);
-    cfbuffer_read(cb, &r, &n);
+    buffercf_write(cb, v, 4);
+    buffercf_read(cb, &r, &n);
     printf("buffer read %u elements\n", n);
     unsigned int i;
     for (i=0;i<n;i++)
         printf("  %u : %f + j%f\n", i, crealf(r[i]), cimagf(r[i]));
 
-    cfbuffer_release(cb, 2);
+    buffercf_release(cb, 2);
 
-    cfbuffer_write(cb, v, 8);
+    buffercf_write(cb, v, 8);
 
-    cfbuffer_debug_print(cb);
-    cfbuffer_print(cb);
+    buffercf_debug_print(cb);
+    buffercf_print(cb);
 
-    cfbuffer_destroy(cb);
+    buffercf_destroy(cb);
 
     printf("done.\n");
     return 0;

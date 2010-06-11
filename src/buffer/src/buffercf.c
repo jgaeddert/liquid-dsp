@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,24 +20,24 @@
  */
 
 //
-// Float buffer
+// Complex Float buffer
 //
 
 #include "liquid.internal.h"
 
-#define BUFFER_TYPE_FLOAT
+#define BUFFER_TYPE_CFLOAT
 
-#define BUFFER(name)    LIQUID_CONCAT(fbuffer, name)
-#define WDELAY(name)    LIQUID_CONCAT(fwdelay, name)
-#define WINDOW(name)    LIQUID_CONCAT(fwindow, name)
+#define BUFFER(name)    LIQUID_CONCAT(buffercf, name)
+#define WDELAY(name)    LIQUID_CONCAT(wdelaycf, name)
+#define WINDOW(name)    LIQUID_CONCAT(windowcf, name)
 
-#define T float
+#define T float complex
 #define BUFFER_PRINT_LINE(B,I) \
-    printf("\t: %f", B->v[I]);
+    printf("\t: %f + %f", crealf(B->v[I]), cimagf(B->v[I]));
 #define BUFFER_PRINT_VALUE(V) \
-    printf("\t: %12.4e", V);
+    printf("\t: %12.4e + %12.4e", crealf(V), cimagf(V));
 
 #include "buffer.c"
-#include "wdelay.c"
 #include "window.c"
+#include "wdelay.c"
 

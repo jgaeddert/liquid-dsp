@@ -38,7 +38,7 @@ struct EQLMS(_s) {
 
     unsigned int n;     // input counter
     WINDOW() buffer;    // input buffer
-    fwindow ex2_buffer; // input energy buffer
+    windowf ex2_buffer; // input energy buffer
 };
 
 // create least mean-squares (LMS) equalizer object
@@ -54,7 +54,7 @@ EQLMS() EQLMS(_create)(unsigned int _p)
     eq->w0 = (T*) malloc((eq->p)*sizeof(T));
     eq->w1 = (T*) malloc((eq->p)*sizeof(T));
     eq->buffer = WINDOW(_create)(eq->p);
-    eq->ex2_buffer = fwindow_create(eq->p);
+    eq->ex2_buffer = windowf_create(eq->p);
 
     EQLMS(_reset)(eq);
 
@@ -68,7 +68,7 @@ void EQLMS(_destroy)(EQLMS() _eq)
     free(_eq->w1);
 
     WINDOW(_destroy)(_eq->buffer);
-    fwindow_destroy(_eq->ex2_buffer);
+    windowf_destroy(_eq->ex2_buffer);
     free(_eq);
 }
 
@@ -101,7 +101,7 @@ void EQLMS(_reset)(EQLMS() _eq)
         _eq->w0[i] = 0;
 
     WINDOW(_clear)(_eq->buffer);
-    fwindow_clear(_eq->ex2_buffer);
+    windowf_clear(_eq->ex2_buffer);
     _eq->n=0;
 }
 
@@ -123,7 +123,7 @@ void EQLMS(_execute)(EQLMS() _eq,
     T * x;
 
     // push |x|^2
-    fwindow_push(_eq->ex2_buffer, crealf(_x*conj(_x)));
+    windowf_push(_eq->ex2_buffer, crealf(_x*conj(_x)));
 
     // check to see if buffer is full, return if not
     _eq->n++;
@@ -145,7 +145,7 @@ void EQLMS(_execute)(EQLMS() _eq,
 
     // compute signal energy
     float *x2, ex2=0.0f;
-    fwindow_read(_eq->ex2_buffer, &x2);
+    windowf_read(_eq->ex2_buffer, &x2);
     for (i=0; i<p; i++)
         ex2 += x2[i];
 

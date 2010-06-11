@@ -122,7 +122,7 @@ struct ofdmoqamframe64sync_s {
     unsigned int num_data_symbols;
     unsigned int num_samples;
     unsigned int sample_phase;
-    cfwindow input_buffer;
+    windowcf input_buffer;
 
     // output data buffer, ready for demodulation
     float complex * data;
@@ -131,13 +131,13 @@ struct ofdmoqamframe64sync_s {
     void * userdata;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    cfwindow debug_x;
-    cfwindow debug_rxx;
-    cfwindow debug_rxy;
-    cfwindow debug_framesyms;
-    fwindow debug_pilotphase;
-    fwindow debug_pilotphase_hat;
-    fwindow debug_rssi;
+    windowcf debug_x;
+    windowcf debug_rxx;
+    windowcf debug_rxy;
+    windowcf debug_framesyms;
+    windowf debug_pilotphase;
+    windowf debug_pilotphase_hat;
+    windowf debug_rssi;
 #endif
 };
 
@@ -235,7 +235,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     ofdmoqam_destroy(cs);
 
     // input buffer
-    q->input_buffer = cfwindow_create((q->num_subcarriers));
+    q->input_buffer = windowcf_create((q->num_subcarriers));
 
     // gain
     q->g = 1.0f;
@@ -249,13 +249,13 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     ofdmoqamframe64sync_reset(q);
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    q->debug_x =        cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxy=       cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_framesyms= cfwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_pilotphase= fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_pilotphase_hat= fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rssi=       fwindow_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_x =        windowcf_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx=       windowcf_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxy=       windowcf_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_framesyms= windowcf_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase= windowf_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase_hat= windowf_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rssi=       windowf_create(DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     q->callback = _callback;
@@ -268,13 +268,13 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
 {
 #if DEBUG_OFDMOQAMFRAME64SYNC
     ofdmoqamframe64sync_debug_print(_q);
-    cfwindow_destroy(_q->debug_x);
-    cfwindow_destroy(_q->debug_rxx);
-    cfwindow_destroy(_q->debug_rxy);
-    cfwindow_destroy(_q->debug_framesyms);
-    fwindow_destroy(_q->debug_pilotphase);
-    fwindow_destroy(_q->debug_pilotphase_hat);
-    fwindow_destroy(_q->debug_rssi);
+    windowcf_destroy(_q->debug_x);
+    windowcf_destroy(_q->debug_rxx);
+    windowcf_destroy(_q->debug_rxy);
+    windowcf_destroy(_q->debug_framesyms);
+    windowf_destroy(_q->debug_pilotphase);
+    windowf_destroy(_q->debug_pilotphase_hat);
+    windowf_destroy(_q->debug_rssi);
 #endif
 
     // free analysis filter bank memory objects
@@ -317,7 +317,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     free(_q->data);
 
     // free input buffer
-    cfwindow_destroy(_q->input_buffer);
+    windowcf_destroy(_q->input_buffer);
 
     nco_destroy(_q->nco_pilot);
     pll_destroy(_q->pll_pilot);
@@ -350,7 +350,7 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
     pll_reset(_q->pll_pilot);
 
     // clear input buffer
-    cfwindow_clear(_q->input_buffer);
+    windowcf_clear(_q->input_buffer);
 
     // clear analysis filter bank objects
     firpfbch_clear(_q->ca0);
@@ -383,7 +383,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
     for (i=0; i<_n; i++) {
         x = _x[i];
 #if DEBUG_OFDMOQAMFRAME64SYNC
-        cfwindow_push(_q->debug_x,x);
+        windowcf_push(_q->debug_x,x);
 #endif
         _q->num_samples++;
 
@@ -396,10 +396,10 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         // push sample into analysis filter banks
         float complex x_delay0;
         float complex x_delay1;
-        cfwindow_index(_q->input_buffer,0, &x_delay0); // full symbol delay
-        cfwindow_index(_q->input_buffer,32,&x_delay1); // half symbol delay
+        windowcf_index(_q->input_buffer,0, &x_delay0); // full symbol delay
+        windowcf_index(_q->input_buffer,32,&x_delay1); // half symbol delay
 
-        cfwindow_push(_q->input_buffer,x);
+        windowcf_push(_q->input_buffer,x);
         firpfbch_analyzer_push(_q->ca0, x_delay0);  // push input sample
         firpfbch_analyzer_push(_q->ca1, x_delay1);  // push delayed sample
 
@@ -476,7 +476,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     }
 
     fprintf(fid,"x = zeros(1,n);\n");
-    cfwindow_read(_q->debug_x, &rc);
+    windowcf_read(_q->debug_x, &rc);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -485,7 +485,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"ylabel('received signal, x');\n");
 
     fprintf(fid,"rxx = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxx, &rc);
+    windowcf_read(_q->debug_rxx, &rc);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -494,7 +494,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
     fprintf(fid,"ylabel('|r_{xx}|');\n");
 
     fprintf(fid,"rxy = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxy, &rc);
+    windowcf_read(_q->debug_rxy, &rc);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -543,12 +543,12 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
   
     // pilot phase
     fprintf(fid,"pilotphase = zeros(1,n);\n");
-    fwindow_read(_q->debug_pilotphase, &r);
+    windowf_read(_q->debug_pilotphase, &r);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"pilotphase(%4u) = %12.4e;\n", i+1, r[i]);
 
     fprintf(fid,"pilotphase_hat = zeros(1,n);\n");
-    fwindow_read(_q->debug_pilotphase_hat, &r);
+    windowf_read(_q->debug_pilotphase_hat, &r);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"pilotphase_hat(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"figure;\n");
@@ -558,7 +558,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
 
     // rssi (received signal strength indication)
     fprintf(fid,"rssi = zeros(1,n);\n");
-    fwindow_read(_q->debug_rssi, &r);
+    windowf_read(_q->debug_rssi, &r);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"rssi(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"figure;\n");
@@ -568,7 +568,7 @@ void ofdmoqamframe64sync_debug_print(ofdmoqamframe64sync _q)
 
     // frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
-    cfwindow_read(_q->debug_framesyms, &rc);
+    windowcf_read(_q->debug_framesyms, &rc);
     for (i=0; i<DEBUG_OFDMOQAMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -600,9 +600,9 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     autocorr_cccf_execute(_q->autocorr, &_q->rxx);
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    cfwindow_push(_q->debug_rxx, _q->rxx);
+    windowcf_push(_q->debug_rxx, _q->rxx);
 
-    fwindow_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->sigdet));
+    windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->sigdet));
 #endif
     float rxx_mag = cabsf(_q->rxx);
 
@@ -648,7 +648,7 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
     rxy *= _q->g;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    cfwindow_push(_q->debug_rxy, rxy);
+    windowcf_push(_q->debug_rxy, rxy);
 #endif
 
     _q->timer++;
@@ -676,7 +676,7 @@ void ofdmoqamframe64sync_execute_plcplong0(ofdmoqamframe64sync _q, float complex
 #endif
         // 
         float complex * rc;
-        cfwindow_read(_q->input_buffer, &rc);
+        windowcf_read(_q->input_buffer, &rc);
         memmove(_q->S1a, rc, 64*sizeof(float complex));
 
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG1;
@@ -694,7 +694,7 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
     rxy *= _q->g;
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    cfwindow_push(_q->debug_rxy, rxy);
+    windowcf_push(_q->debug_rxy, rxy);
 #endif
 
     _q->timer++;
@@ -715,7 +715,7 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
 
         // 
         float complex * rc;
-        cfwindow_read(_q->input_buffer, &rc);
+        windowcf_read(_q->input_buffer, &rc);
         memmove(_q->S1b, rc, 64*sizeof(float complex));
 
         // estimate frequency offset
@@ -893,8 +893,8 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 #endif
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
-    fwindow_push(_q->debug_pilotphase,      _q->p_phase[0]);
-    fwindow_push(_q->debug_pilotphase_hat,  theta_hat);
+    windowf_push(_q->debug_pilotphase,      _q->p_phase[0]);
+    windowf_push(_q->debug_pilotphase_hat,  theta_hat);
 #endif
 
     // compensate for phase shift due to timing offset
@@ -936,7 +936,7 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 
 #if DEBUG_OFDMOQAMFRAME64SYNC
     for (i=0; i<48; i++)
-        cfwindow_push(_q->debug_framesyms,_q->data[i]);
+        windowcf_push(_q->debug_framesyms,_q->data[i]);
 #endif
 
     if (_q->callback != NULL) {

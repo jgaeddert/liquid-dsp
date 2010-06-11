@@ -11,37 +11,32 @@ int main() {
     float *r; // reader
     unsigned int n=3;
 
-    fbuffer cb = fbuffer_create(CIRCULAR, 10);
-    //fbuffer cb = fbuffer_create(STATIC, 10);
+    bufferf cb = bufferf_create(CIRCULAR, 10);
+    //bufferf cb = bufferf_create(STATIC, 10);
 
-    fbuffer_zero(cb);
-    fbuffer_push(cb, 1);
-    fbuffer_push(cb, 2);
-    fbuffer_push(cb, 3);
-    fbuffer_debug_print(cb);
-    return 0;
+    bufferf_zero(cb);
+    bufferf_push(cb, 1);
+    bufferf_push(cb, 2);
+    bufferf_push(cb, 3);
     unsigned int j;
     for (j=0; j<10; j++)
-        fbuffer_push(cb, 100 + j);
+        bufferf_push(cb, 100 + j);
 
-    fbuffer_debug_print(cb);
-    return 0;
-
-    fbuffer_write(cb, v, 4);
-    fbuffer_read(cb, &r, &n);
+    bufferf_write(cb, v, 4);
+    bufferf_read(cb, &r, &n);
     printf("buffer read %u elements\n", n);
     unsigned int i;
     for (i=0;i<n;i++)
         printf("  %u : %f\n", i, r[i]);
 
-    fbuffer_release(cb, 2);
+    bufferf_release(cb, 2);
 
-    fbuffer_write(cb, v, 8);
+    bufferf_write(cb, v, 8);
 
-    fbuffer_debug_print(cb);
-    fbuffer_print(cb);
+    bufferf_debug_print(cb);
+    bufferf_print(cb);
 
-    fbuffer_destroy(cb);
+    bufferf_destroy(cb);
 
     printf("done.\n");
     return 0;

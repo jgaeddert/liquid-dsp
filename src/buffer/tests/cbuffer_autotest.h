@@ -86,12 +86,13 @@ void autotest_cfbuffer_circular()
     CBUFFER_AUTOTEST_DEFINE_API(BUFFER_MANGLE_CFLOAT, float complex)
 }
 
+#if 0
 //
 // AUTOTEST: unsigned int buffer
 //
-void autotest_uibuffer_circular()
+void xautotest_uibuffer_circular()
 {
     CBUFFER_AUTOTEST_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
 }
-
+#endif
 
