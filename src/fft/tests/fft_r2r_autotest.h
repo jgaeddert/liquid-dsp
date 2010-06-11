@@ -45,6 +45,12 @@ void fft_r2r_test(float *_x,
     fftplan q = fft_create_plan_r2r_1d(_n, _x, y, _kind, _flags);
     fft_execute(q);
 
+    // print results
+    if (liquid_autotest_verbose) {
+        for (i=0; i<_n; i++)
+            printf("%12.8f %12.8f\n", y[i], _test[i]);
+    }
+
     // validate results
     for (i=0; i<_n; i++)
         CONTEND_DELTA( y[i], _test[i], tol);
@@ -57,7 +63,18 @@ void fft_r2r_test(float *_x,
 // 
 // AUTOTESTS: n-point real-to-real ffts
 //
-void xautotest_fft_r2r_REDFT00_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT00_n8, 8, FFT_REDFT00); }
+
+//void xautotest_fft_r2r_REDFT00_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT00_n8, 8, FFT_REDFT00); }
+void autotest_fft_r2r_REDFT10_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT10_n8, 8, FFT_REDFT10); }
+void autotest_fft_r2r_REDFT01_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT01_n8, 8, FFT_REDFT01); }
+//void xautotest_fft_r2r_REDFT11_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT11_n8, 8, FFT_REDFT11); }
+
+#if 0
+void xautotest_fft_r2r_RODFT00_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT00_n8, 8, FFT_RODFT00); }
+void xautotest_fft_r2r_RODFT10_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT10_n8, 8, FFT_RODFT10); }
+void xautotest_fft_r2r_RODFT01_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT01_n8, 8, FFT_RODFT01); }
+void xautotest_fft_r2r_RODFT11_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT11_n8, 8, FFT_RODFT11); }
+#endif
 
 #endif 
 

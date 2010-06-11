@@ -613,7 +613,7 @@ void FFT(_execute_REDFT10)(FFT(plan) _p);   /* DCT-II  */       \
 void FFT(_execute_REDFT01)(FFT(plan) _p);   /* DCT-III */       \
 void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */       \
                                                                 \
-/* discrete cosine transform (DCT) prototypes */                \
+/* discrete sine transform (DST) prototypes */                  \
 void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
 void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
 void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \

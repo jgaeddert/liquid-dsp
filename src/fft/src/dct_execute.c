@@ -47,6 +47,9 @@ void FFT(_execute_REDFT10)(FFT(plan) _p)
             phi = M_PI*n_inv*((float)k + 0.5f)*i;
             _p->yr[i] += _p->xr[k]*cosf(phi);
         }
+
+        // compensate for discrepancy
+        _p->yr[i] *= 2.0f;
     }
 }
 
@@ -63,6 +66,9 @@ void FFT(_execute_REDFT01)(FFT(plan) _p)
             phi = M_PI*n_inv*((float)i + 0.5f)*k;
             _p->yr[i] += _p->xr[k]*cosf(phi);
         }
+
+        // compensate for discrepancy
+        _p->yr[i] *= 2.0f;
     }
 }
 
