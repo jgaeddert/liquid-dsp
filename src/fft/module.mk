@@ -41,6 +41,7 @@ local_s_files	:= 		\
 #
 local_t_files	:= 		\
 	fft_autotest.h		\
+	fft_r2r_autotest.h	\
 	fft_radix2_autotest.h	\
 	fft_shift_autotest.h
 

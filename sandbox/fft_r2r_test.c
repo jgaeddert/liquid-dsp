@@ -57,22 +57,36 @@ int main(int argc, char*argv[]) {
     plan[6] = fftw_plan_r2r_1d(n, x, y, FFTW_RODFT01, FFTW_ESTIMATE);
     plan[7] = fftw_plan_r2r_1d(n, x, y, FFTW_RODFT11, FFTW_ESTIMATE);
 
-    printf("executing plans...\n");
+    char plan_name[][8] = {"REDFT00",
+                           "REDFT10",
+                           "REDFT01",
+                           "REDFT11",
+                           "RODFT00",
+                           "RODFT10",
+                           "RODFT01",
+                           "RODFT11"};
+
+    printf("// %u-point real even/odd dft data\n", n);
+    printf("float fftdata_r2r_n%u[] = {\n", n);
+    for (i=0; i<n; i++)
+        printf("  %16.10f%s\n", x[i], i==(n-1) ? "};" : ",");
+
     // execute plans and print
     for (i=0; i<8; i++) {
         fftw_execute(plan[i]);
 
         unsigned int j;
-        printf("plan %u:\n", i);
+        printf("\n");
+        printf("// %s\n", plan_name[i]);
+        printf("float fftdata_r2r_%s_n%u[] = {\n", plan_name[i], n);
         for (j=0; j<n; j++)
-            printf("  %12.8f\n", y[j]);
+            printf("  %16.10f%s\n", y[j], j==(n-1) ? "};" : ",");
     }
 
     // destroy plans
     for (i=0; i<8; i++)
         fftw_destroy_plan(plan[i]);
 
-    printf("done.\n");
     return 0;
 }
 
