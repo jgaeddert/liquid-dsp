@@ -68,7 +68,9 @@ struct RESAMP(_s) {
     unsigned int npfb;
     FIRPFB() f;
 
-    fir_prototype p;
+#if 0
+    fir_prototype p;    // prototype object
+#endif
 };
 
 RESAMP() RESAMP(_create)(float _r,

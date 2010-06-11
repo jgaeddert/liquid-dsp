@@ -57,8 +57,6 @@ struct SYMSYNC(_s) {
     FIRPFB() mf;    // matched filter
     FIRPFB() dmf;   // derivative matched filter
 
-    fir_prototype p;
-
     // timing error loop filter
     float bt;       // filter bandwidth
     float alpha;    // percent of old error sample to retain
@@ -79,6 +77,10 @@ struct SYMSYNC(_s) {
 
     // lock
     int is_locked;
+
+#if 0
+    fir_prototype p;    // prototype object
+#endif
 
 #if DEBUG_SYMSYNC
     FILE * fid;

@@ -28,20 +28,31 @@
 
 #include "liquid.internal.h"
 
-// estimates the number of filter taps required to meet
-// the specifications
-//  _slsl   : sidelobe suppression level (_slsl < 0)
-//  _ft     : filter transition bandwidth (0 < _ft < 0.5)
-float num_firfilt_taps(float _slsl,
-                          float _ft)
+// esimate required filter length given
+//   _b    : transition bandwidth (0 < b < 0.5)
+//   _slsl : sidelobe suppression level [dB]
+unsigned int estimate_req_filter_len(float _b, float _slsl)
 {
-    // error-checking
-    if (_ft < 0.0f || _ft > 0.5f) {
-        printf("error: num_firfilt_taps(), transition bandwidth (%12.4e) is out of range [0,0.5]\n", _ft);
+    if (_b > 0.5f || _b <= 0.0f) {
+        printf("error: estimate_req_filter_len(), invalid bandwidth : %f\n", _b);
         exit(0);
     }
-    return 2.0f * fabsf(_slsl) / (22.0f * _ft);
+
+    if (_slsl <= 0.0f) {
+        printf("error: estimate_req_filter_len(), invalid sidelobe level : %f\n", _slsl);
+        exit(0);
+    }
+
+    unsigned int h_len;
+    if (_slsl < 8) {
+        h_len = 2;
+    } else {
+        h_len = (unsigned int) lroundf((_slsl-8)/(14*_b));
+    }
+    
+    return h_len;
 }
+
 
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl)

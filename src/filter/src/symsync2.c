@@ -54,7 +54,9 @@ struct SYMSYNC2(_s) {
     FIRPFB() mf;    // matched filter
     FIRPFB() dmf;   // derivative matched filter
 
-    fir_prototype p;
+#if 0
+    fir_prototype p;    // prototype object
+#endif
 
     // loop filter
     float delay;    // filter delay

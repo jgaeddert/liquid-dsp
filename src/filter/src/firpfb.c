@@ -45,7 +45,9 @@ struct FIRPFB(_s) {
     WINDOW() w;
     DOTPROD() * dp;
 
-    fir_prototype p;
+#if 0
+    fir_prototype p;    // prototype object
+#endif
 };
 
 FIRPFB() FIRPFB(_create)(unsigned int _num_filters, TC * _h, unsigned int _h_len)

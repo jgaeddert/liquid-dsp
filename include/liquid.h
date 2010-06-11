@@ -810,6 +810,7 @@ void imdct(float *_X, float * _x, float * _w, unsigned int _N);
 //   _slsl : sidelobe suppression level [dB]
 unsigned int estimate_req_filter_len(float _b, float _slsl);
 
+#if 0
 // generic prototypes
 #define FIR_TEMPLATE    0   // Remez, e.g.
 #define FIR_LOWPASS     1
@@ -851,6 +852,7 @@ void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
 //  _ft     : filter transition bandwidth (0 < _ft < 0.5)
 float num_firfilt_taps(float _slsl,
                        float _ft);
+#endif
 
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl);
