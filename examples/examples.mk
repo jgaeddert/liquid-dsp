@@ -16,8 +16,7 @@ local_src	:=			\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\
 	bsequence_example.c		\
-	buffer_example.c		\
-	cfbuffer_example.c		\
+	bufferf_example.c		\
 	checksum_example.c		\
 	chromosome_example.c		\
 	compand_example.c		\
@@ -30,9 +29,6 @@ local_src	:=			\
 	dotprod_cccf_example.c		\
 	eqlms_cccf_example.c		\
 	eqrls_cccf_example.c		\
-	fbuffer_example.c		\
-	fwdelay_example.c		\
-	fwindow_example.c		\
 	fading_channel_example.c	\
 	fading_generator_example.c	\
 	fbasc_example.c			\
@@ -112,7 +108,9 @@ local_src	:=			\
 	symsync2_crcf_example.c		\
 	symsync_crcf_example.c		\
 	symsync_rrrf_example.c		\
-	symsynclp_crcf_example.c
+	symsynclp_crcf_example.c	\
+	wdelayf_example.c		\
+	windowf_example.c
 #	metadata_example.c		\
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
