@@ -54,7 +54,8 @@ local_t_files	:= 		\
 #
 local_b_files	:=		\
 	mdct_benchmark.h	\
-	fft_benchmark.h
+	fft_benchmark.h		\
+	fft_r2r_benchmark.h
 
 
 include common.mk
