@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -24,8 +25,50 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-#include "fft_helper.h"
+// autotest data
 #include "fft_data.h"
+
+// autotest helper function
+//  _x      :   fft input array
+//  _test   :   expected fft output
+//  _n      :   fft size
+void fft_test(float complex *_x,
+              float complex *_test,
+              unsigned int _n)
+{
+    int _method = 0;
+    float tol=1e-4f;
+
+    unsigned int i;
+
+    float complex y[_n], z[_n];
+
+    // compute FFT
+    fftplan pf = fft_create_plan(_n, _x, y, FFT_FORWARD, _method);
+    fft_execute(pf);
+
+    // compute IFFT
+    fftplan pr = fft_create_plan(_n, y, z, FFT_REVERSE, _method);
+    fft_execute(pr);
+
+    // normalize inverse
+    for (i=0; i<_n; i++)
+        z[i] /= (float) _n;
+
+    // validate results
+    float fft_error, ifft_error;
+    for (i=0; i<_n; i++) {
+        fft_error = cabsf( y[i] - _test[i] );
+        ifft_error = cabsf( _x[i] - z[i] );
+        CONTEND_DELTA( fft_error, 0, tol);
+        CONTEND_DELTA( ifft_error, 0, tol);
+    }
+
+    // destroy plans
+    fft_destroy_plan(pf);
+    fft_destroy_plan(pr);
+}
+
 
 // 
 // AUTOTESTS: n-point ffts
@@ -39,6 +82,8 @@ void autotest_fft_9()       { fft_test(x9,      test9,      9);     }
 void autotest_fft_10()      { fft_test(x10,     test10,     10);    }
 void autotest_fft_16()      { fft_test(x16,     test16,     16);    }
 void autotest_fft_20()      { fft_test(x20,     test20,     20);    }
+void autotest_fft_32()      { fft_test(x32,     test32,     32);    }
+void autotest_fft_64()      { fft_test(x64,     test64,     64);    }
 
 #endif 
 
