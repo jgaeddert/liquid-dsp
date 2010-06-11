@@ -20,7 +20,7 @@
  */
 
 //
-// fft
+// fft_create_plan.c
 //
 
 #include <stdio.h>
@@ -29,12 +29,7 @@
 
 #include "liquid.internal.h"
 
-void FFT(_destroy_plan)(FFT(plan) _p)
-{
-    free(_p->twiddle);
-    free(_p->index_rev);
-    free(_p);
-}
+#define liquid_safe_free(q) { if (q != NULL) free(q); }
 
 FFT(plan) FFT(_create_plan)(unsigned int _n,
                             TC * _x,
@@ -85,6 +80,14 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
     return p;
 }
 
+void FFT(_destroy_plan)(FFT(plan) _p)
+{
+    // safely free arrays
+    liquid_safe_free(_p->twiddle);
+    liquid_safe_free(_p->index_rev);
+
+    free(_p);
+}
 
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
                                    T * _x,
@@ -98,6 +101,10 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     p->xr = _x;
     p->yr = _y;
     p->flags = _flags;
+
+    p->twiddle = NULL;
+    p->index_rev = NULL;
+
     switch (_kind) {
     case FFT_REDFT00:
         // DCT-I
