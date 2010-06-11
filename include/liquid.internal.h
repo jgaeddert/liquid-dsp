@@ -552,10 +552,18 @@ void fec_rs_decode(fec _q,
 
 typedef enum {
     LIQUID_FFT_DFT_1D   = 0,    // complex one-dimensional FFT
+
+    // discrete cosine transforms
     LIQUID_FFT_REDFT00,         // real one-dimensional DCT-I
     LIQUID_FFT_REDFT10,         // real one-dimensional DCT-II
     LIQUID_FFT_REDFT01,         // real one-dimensional DCT-III
-    LIQUID_FFT_REDFT11          // real one-dimensional DCT-IV
+    LIQUID_FFT_REDFT11,         // real one-dimensional DCT-IV
+
+    // discrete sine transforms
+    LIQUID_FFT_RODFT00,         // real one-dimensional DST-I
+    LIQUID_FFT_RODFT10,         // real one-dimensional DST-II
+    LIQUID_FFT_RODFT01,         // real one-dimensional DST-III
+    LIQUID_FFT_RODFT11,         // real one-dimensional DST-IV
 } liquid_fft_kind;
 
 // Macro    :   FFT (internal)
@@ -569,7 +577,7 @@ struct FFT(plan_s) {                                            \
     TC * x;                     /* input array */               \
     TC * y;                     /* output array */              \
     int direction;              /* forward/reverse */           \
-    int method;                                                 \
+    int flags;                                                  \
     liquid_fft_kind kind;                                       \
                                                                 \
     /* real even/odd DFTs parameters */                         \
@@ -603,7 +611,13 @@ void FFT(_execute_radix2)(FFT(plan) _p);                        \
 void FFT(_execute_REDFT00)(FFT(plan) _p);   /* DCT-I   */       \
 void FFT(_execute_REDFT10)(FFT(plan) _p);   /* DCT-II  */       \
 void FFT(_execute_REDFT01)(FFT(plan) _p);   /* DCT-III */       \
-void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */
+void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */       \
+                                                                \
+/* discrete cosine transform (DCT) prototypes */                \
+void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
+void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
+void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
+void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */
 
 // miscellaneous functions
 unsigned int reverse_index(unsigned int _i, unsigned int _n);

@@ -750,10 +750,15 @@ void fec_decode(fec _q,
 #define FFT_FORWARD 0
 #define FFT_REVERSE 1
 
-#define FFT_REDFT00 0   // DCT-I
-#define FFT_REDFT10 1   // DCT-II
-#define FFT_REDFT01 2   // DCT-III
-#define FFT_REDFT11 3   // DCT-IV
+#define FFT_REDFT00 3   // DCT-I
+#define FFT_REDFT10 4   // DCT-II
+#define FFT_REDFT01 5   // DCT-III
+#define FFT_REDFT11 6   // DCT-IV
+
+#define FFT_RODFT00 7   // DST-I
+#define FFT_RODFT10 8   // DST-II
+#define FFT_RODFT01 9   // DST-III
+#define FFT_RODFT11 10  // DST-IV
 
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
 
@@ -768,12 +773,12 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,                    \
                             TC * _x,                            \
                             TC * _y,                            \
                             int _dir,                           \
-                            int _method);                       \
+                            int _flags);                        \
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
                                    T * _x,                      \
                                    T * _y,                      \
                                    int _kind,                   \
-                                   int _method);                \
+                                   int _flags);                 \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
