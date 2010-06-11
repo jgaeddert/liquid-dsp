@@ -12,7 +12,7 @@
 # build objects 
 autom4te.cache
 
-# ignore all aut-generated targets
+# ignore all auto-generated targets
 autotest_include.h
 benchmark
 benchmark_include.h
@@ -31,3 +31,7 @@ xautotest
 # miscellany
 octave-core
 autotest/autotest_example
+
+# sandbox
+sandbox/*_test
+sandbox/*_example
