@@ -20,24 +20,35 @@
  */
 
 //
-// FFT API: floating-point (single precision)
+// DST : Discrete Sine Transforms
 //
+
+#include <stdlib.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
-// Macro definitions
-#define FFT(name)           LIQUID_CONCAT(fft,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
+// DST-I
+void FFT(_execute_RODFT00)(FFT(plan) _p)
+{
+    fprintf(stderr,"warning, fft_execute_RODFT00() not yet implemented!\n");
+}
 
-#define T                   float           /* primitive type */
-#define TC                  float complex   /* primitive type (complex) */
+// DST-II
+void FFT(_execute_RODFT10)(FFT(plan) _p)
+{
+    fprintf(stderr,"warning, fft_execute_RODFT10() not yet implemented!\n");
+}
 
-#define PRINTVAL_T(X,F)     PRINTVAL_FLOAT(X,F)
-#define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
+// DST-III
+void FFT(_execute_RODFT01)(FFT(plan) _p)
+{
+    fprintf(stderr,"warning, fft_execute_RODFT01() not yet implemented!\n");
+}
 
-// include main files
-#include "fft_create_plan.c"
-#include "dct_execute.c"
-#include "dst_execute.c"
-#include "fft_execute.c"
-#include "fft_shift.c"
+// DST-IV
+void FFT(_execute_RODFT11)(FFT(plan) _p)
+{
+    fprintf(stderr,"warning, fft_execute_RODFT11() not yet implemented!\n");
+}
+
