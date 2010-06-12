@@ -40,14 +40,14 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
                             TC * _x,
                             TC * _y,
                             int _dir,
-                            int _method)
+                            int _flags)
 {
     FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
 
     p->n = _n;
     p->x = _x;
     p->y = _y;
-    p->method = _method;
+    p->flags = _flags;
     p->kind = LIQUID_FFT_DFT_1D;
 
     if (_dir == FFT_FORWARD)
@@ -90,14 +90,14 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
                                    T * _x,
                                    T * _y,
                                    int _kind,
-                                   int _method)
+                                   int _flags)
 {
     FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
 
     p->n  = _n;
     p->xr = _x;
     p->yr = _y;
-    p->method = _method;
+    p->flags = _flags;
     switch (_kind) {
     case FFT_REDFT00:
         // DCT-I

@@ -283,9 +283,9 @@ void fbasc_decode(fbasc _q,
 //
 
 // Buffer
-#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(fbuffer, name)
-#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfbuffer, name)
-#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(uibuffer, name)
+#define BUFFER_MANGLE_FLOAT(name)  LIQUID_CONCAT(bufferf,  name)
+#define BUFFER_MANGLE_CFLOAT(name) LIQUID_CONCAT(buffercf, name)
+//#define BUFFER_MANGLE_UINT(name)   LIQUID_CONCAT(bufferui, name)
 
 typedef enum {
     CIRCULAR=0,
@@ -311,15 +311,15 @@ void BUFFER(_push)(BUFFER() _b, T _v);
 //void BUFFER(_force_write)(BUFFER() _b, T * _v, unsigned int _n);
 
 // Define buffer APIs
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT, float)
+LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_FLOAT,  float)
 LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_CFLOAT, liquid_float_complex)
-LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT, unsigned int)
+//LIQUID_BUFFER_DEFINE_API(BUFFER_MANGLE_UINT,   unsigned int)
 
 
 // Windowing functions
-#define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(fwindow, name)
-#define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(cfwindow, name)
-#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(uiwindow, name)
+#define WINDOW_MANGLE_FLOAT(name)  LIQUID_CONCAT(windowf,  name)
+#define WINDOW_MANGLE_CFLOAT(name) LIQUID_CONCAT(windowcf, name)
+//#define WINDOW_MANGLE_UINT(name)   LIQUID_CONCAT(windowui, name)
 
 // large macro
 //   WINDOW : name-mangling macro
@@ -339,16 +339,16 @@ void WINDOW(_push)(WINDOW() _b, T _v);                          \
 void WINDOW(_write)(WINDOW() _b, T * _v, unsigned int _n);
 
 // Define window APIs
-LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT, float)
+LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_FLOAT,  float)
 LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_CFLOAT, liquid_float_complex)
-LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT, unsigned int)
+//LIQUID_WINDOW_DEFINE_API(WINDOW_MANGLE_UINT,   unsigned int)
 
 
 // wdelay functions : windowed-delay
 // Implements an efficient z^-k delay with minimal memory
-#define WDELAY_MANGLE_FLOAT(name)   LIQUID_CONCAT(fwdelay, name)
-#define WDELAY_MANGLE_CFLOAT(name)  LIQUID_CONCAT(cfwdelay, name)
-#define WDELAY_MANGLE_UINT(name)    LIQUID_CONCAT(uiwdelay, name)
+#define WDELAY_MANGLE_FLOAT(name)   LIQUID_CONCAT(wdelayf,  name)
+#define WDELAY_MANGLE_CFLOAT(name)  LIQUID_CONCAT(wdelaycf, name)
+#define WDELAY_MANGLE_UINT(name)    LIQUID_CONCAT(wdelayui, name)
 
 // large macro
 //   WDELAY : name-mangling macro
@@ -366,9 +366,9 @@ void WDELAY(_read)(WDELAY() _w, T * _v);                        \
 void WDELAY(_push)(WDELAY() _b, T _v);
 
 // Define wdelay APIs
-LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT, float)
+LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_FLOAT,  float)
 LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
-LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT, unsigned int)
+//LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT,   unsigned int)
 
 
 //
@@ -750,10 +750,15 @@ void fec_decode(fec _q,
 #define FFT_FORWARD 0
 #define FFT_REVERSE 1
 
-#define FFT_REDFT00 0   // DCT-I
-#define FFT_REDFT10 1   // DCT-II
-#define FFT_REDFT01 2   // DCT-III
-#define FFT_REDFT11 3   // DCT-IV
+#define FFT_REDFT00 3   // DCT-I
+#define FFT_REDFT10 4   // DCT-II
+#define FFT_REDFT01 5   // DCT-III
+#define FFT_REDFT11 6   // DCT-IV
+
+#define FFT_RODFT00 7   // DST-I
+#define FFT_RODFT10 8   // DST-II
+#define FFT_RODFT01 9   // DST-III
+#define FFT_RODFT11 10  // DST-IV
 
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
 
@@ -768,12 +773,12 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,                    \
                             TC * _x,                            \
                             TC * _y,                            \
                             int _dir,                           \
-                            int _method);                       \
+                            int _flags);                        \
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
                                    T * _x,                      \
                                    T * _y,                      \
                                    int _kind,                   \
-                                   int _method);                \
+                                   int _flags);                 \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
@@ -810,6 +815,7 @@ void imdct(float *_X, float * _x, float * _w, unsigned int _N);
 //   _slsl : sidelobe suppression level [dB]
 unsigned int estimate_req_filter_len(float _b, float _slsl);
 
+#if 0
 // generic prototypes
 #define FIR_TEMPLATE    0   // Remez, e.g.
 #define FIR_LOWPASS     1
@@ -851,6 +857,7 @@ void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
 //  _ft     : filter transition bandwidth (0 < _ft < 0.5)
 float num_firfilt_taps(float _slsl,
                        float _ft);
+#endif
 
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl);

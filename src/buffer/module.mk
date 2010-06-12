@@ -27,10 +27,10 @@ module_name     := buffer
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 	\
-	fbuffer.c	\
-	cfbuffer.c	\
-	uibuffer.c	\
+	bufferf.c	\
+	buffercf.c	\
 	gport.c
+#	bufferui.c
 
 # local_t_files
 #

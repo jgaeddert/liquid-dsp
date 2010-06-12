@@ -36,7 +36,6 @@ local_s_files	:= 			\
 	filter_rrrf.c			\
 	filter_crcf.c			\
 	filter_cccf.c			\
-	filter_common.c			\
 	firdes.c			\
 	firdespm.c			\
 	group_delay.c			\

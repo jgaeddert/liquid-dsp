@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,21 +20,25 @@
  */
 
 //
-// Float window declaration
+// Buffer: unsigned int [DEPRECATED]
 //
 
-// Include header with API macros
-#include "window.h"
+#include "liquid.internal.h"
 
-// Define name-mangling macro (short version)
-#define X(name) LIQUID_CONCAT(fwindow, name)
+#define BUFFER_TYPE_UINT
 
-// Define data type
-#define T float
+#define BUFFER(name)    LIQUID_CONCAT(bufferui, name)
+#define WDELAY(name)    LIQUID_CONCAT(wdelayui, name)
+#define WINDOW(name)    LIQUID_CONCAT(windowui, name)
 
-// Define output line print
-#define WINDOW_PRINT_LINE(B,I) \
-    printf("\t: %f", B->v[I]);
+#define T unsigned int
+#define BUFFER_PRINT_LINE(B,I) \
+    printf("\t: %u", B->v[I]);
+#define BUFFER_PRINT_VALUE(V) \
+    printf("\t: %u", V);
 
+
+#include "buffer.c"
 #include "window.c"
+#include "wdelay.c"
 

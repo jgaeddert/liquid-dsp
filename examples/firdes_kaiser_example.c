@@ -20,7 +20,7 @@ int main() {
     float mu=0.0f;          // fractional timing offset
 
     // derived values
-    unsigned int h_len=(unsigned int)num_firfilt_taps(slsl,ft);
+    unsigned int h_len = estimate_req_filter_len(ft,slsl);
     printf("h_len : %u\n", h_len);
 
     // generate the filter

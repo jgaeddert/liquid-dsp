@@ -77,9 +77,7 @@ bsequence_example.c
     object.  The bsequence object acts like a buffer of bits which are stored
     and manipulated efficiently in memory.
 
-buffer_example.c
-
-cfbuffer_example.c
+bufferf_example.c
 
 checksum_example.c
     This example demonstrates how a checksum can be used to validate data
@@ -147,7 +145,6 @@ eqrls_cccf_example.c
 fading_channel_example.c
 fading_generator_example.c
 fbasc_example.c
-fbuffer_example.c
 fct_example.c
 
 fec_example.c *
@@ -219,8 +216,6 @@ framesync64_example.c
     SEE ALSO: flexframesync_example.c
 
 freqmodem_example.c
-fwdelay_example.c
-fwindow_example.c
 ga_search_example.c
 gport_dma_example.c
 gport_dma_threaded_example.c
@@ -440,3 +435,14 @@ symsync2_crcf_example.c
 symsync_crcf_example.c
 symsync_rrrf_example.c
 symsynclp_crcf_example.c
+wdelayf_example.c
+
+windowf_example.c
+    This example demonstrates the functionality of a window buffer (also
+    known as a circular or ring buffer) of floating-point values.
+    Values are written to and read from the buffer using several
+    different methods.
+
+    SEE ALSO: bufferf_example.c
+              wdelayf_example.c
+

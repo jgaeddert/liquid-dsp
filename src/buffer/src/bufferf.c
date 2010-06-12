@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,25 +20,24 @@
  */
 
 //
-// Buffer: unsigned int
+// Float buffer
 //
 
 #include "liquid.internal.h"
 
-#define BUFFER_TYPE_UINT
+#define BUFFER_TYPE_FLOAT
 
-#define BUFFER(name)    LIQUID_CONCAT(uibuffer, name)
-#define WDELAY(name)    LIQUID_CONCAT(uiwdelay, name)
-#define WINDOW(name)    LIQUID_CONCAT(uiwindow, name)
+#define BUFFER(name)    LIQUID_CONCAT(bufferf, name)
+#define WDELAY(name)    LIQUID_CONCAT(wdelayf, name)
+#define WINDOW(name)    LIQUID_CONCAT(windowf, name)
 
-#define T unsigned int
+#define T float
 #define BUFFER_PRINT_LINE(B,I) \
-    printf("\t: %u", B->v[I]);
+    printf("\t: %f", B->v[I]);
 #define BUFFER_PRINT_VALUE(V) \
-    printf("\t: %u", V);
-
+    printf("\t: %12.4e", V);
 
 #include "buffer.c"
-#include "window.c"
 #include "wdelay.c"
+#include "window.c"
 

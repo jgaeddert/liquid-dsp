@@ -47,7 +47,7 @@
 #define TO                  float complex   // output
 #define TC                  float           // coefficients
 #define TI                  float complex   // input
-#define WINDOW(name)        LIQUID_CONCAT(cfwindow,name)
+#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
 #define POLY(name)          LIQUID_CONCAT(polyf,name)
 

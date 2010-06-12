@@ -80,8 +80,8 @@ struct ofdmframe64sync_s {
     float complex rxy;
     float complex rxy0;
     float complex rxy1;
-    cfwindow rxy_buffer;
-    cfwindow Lt_buffer;
+    windowcf rxy_buffer;
+    windowcf Lt_buffer;
     float complex Lt0[64], Lf0[64]; // received PLCP long sequence (first)
     float complex Lt1[64], Lf1[64]; // received PLCP long sequence (second)
     float complex G0[64], G1[64];
@@ -109,12 +109,12 @@ struct ofdmframe64sync_s {
     } state;
 
 #if DEBUG_OFDMFRAME64SYNC
-    cfwindow debug_x;
-    cfwindow debug_rxx;
-    cfwindow debug_rxy;
-    cfwindow debug_framesyms;
-    fwindow debug_pilotphase;
-    fwindow debug_pilotphase_hat;
+    windowcf debug_x;
+    windowcf debug_rxx;
+    windowcf debug_rxy;
+    windowcf debug_framesyms;
+    windowf debug_pilotphase;
+    windowf debug_pilotphase_hat;
 #endif
 };
 
@@ -152,16 +152,16 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     for (i=0; i<64; i++)
         h[i] = conjf(ofdmframe64_plcp_Lt[i]);
     q->cross_correlator = dotprod_cccf_create(h,64);
-    q->rxy_buffer = cfwindow_create(64);
-    q->Lt_buffer = cfwindow_create(160);
+    q->rxy_buffer = windowcf_create(64);
+    q->Lt_buffer = windowcf_create(160);
     
 #if DEBUG_OFDMFRAME64SYNC
-    q->debug_x   = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxx = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
-    q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
-    q->debug_framesyms = cfwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
-    q->debug_pilotphase = fwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
-    q->debug_pilotphase_hat = fwindow_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_x   = windowcf_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxx = windowcf_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_rxy = windowcf_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_framesyms = windowcf_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase = windowf_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
+    q->debug_pilotphase_hat = windowf_create(DEBUG_OFDMFRAME64SYNC_BUFFER_LEN);
 #endif
 
     // pilot sequence generator
@@ -188,18 +188,18 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
 {
 #if DEBUG_OFDMFRAME64SYNC
     ofdmframe64sync_debug_print(_q);
-    cfwindow_destroy(_q->debug_x);
-    cfwindow_destroy(_q->debug_rxx);
-    cfwindow_destroy(_q->debug_rxy);
-    cfwindow_destroy(_q->debug_framesyms);
-    fwindow_destroy(_q->debug_pilotphase);
-    fwindow_destroy(_q->debug_pilotphase_hat);
+    windowcf_destroy(_q->debug_x);
+    windowcf_destroy(_q->debug_rxx);
+    windowcf_destroy(_q->debug_rxy);
+    windowcf_destroy(_q->debug_framesyms);
+    windowf_destroy(_q->debug_pilotphase);
+    windowf_destroy(_q->debug_pilotphase_hat);
 #endif
 
     free(_q->x);
     free(_q->X);
-    cfwindow_destroy(_q->rxy_buffer);
-    cfwindow_destroy(_q->Lt_buffer);
+    windowcf_destroy(_q->rxy_buffer);
+    windowcf_destroy(_q->Lt_buffer);
     FFT_DESTROY_PLAN(_q->fft);
 
     agc_crcf_destroy(_q->sigdet);
@@ -263,7 +263,7 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
     for (i=0; i<_n; i++) {
         x = _x[i];
 #if DEBUG_OFDMFRAME64SYNC
-        cfwindow_push(_q->debug_x,x);
+        windowcf_push(_q->debug_x,x);
 #endif
 
         // coarse gain correction
@@ -319,7 +319,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     }
  
     fprintf(fid,"x = zeros(1,n);\n");
-    cfwindow_read(_q->debug_x, &rc);
+    windowcf_read(_q->debug_x, &rc);
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -328,7 +328,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"ylabel('received signal, x');\n");
 
     fprintf(fid,"rxx = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxx, &rc);
+    windowcf_read(_q->debug_rxx, &rc);
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -337,7 +337,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     fprintf(fid,"ylabel('|r_{xx}|');\n");
 
     fprintf(fid,"rxy = zeros(1,n);\n");
-    cfwindow_read(_q->debug_rxy, &rc);
+    windowcf_read(_q->debug_rxy, &rc);
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -379,7 +379,7 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
 
     // frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
-    cfwindow_read(_q->debug_framesyms, &rc);
+    windowcf_read(_q->debug_framesyms, &rc);
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -393,11 +393,11 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
     // pilot phase
     float * r;
     fprintf(fid,"pilotphase = zeros(1,n);\n");
-    fwindow_read(_q->debug_pilotphase, &r);
+    windowf_read(_q->debug_pilotphase, &r);
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"pilotphase(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"pilotphase_hat = zeros(1,n);\n");
-    fwindow_read(_q->debug_pilotphase_hat, &r);
+    windowf_read(_q->debug_pilotphase_hat, &r);
     for (i=0; i<DEBUG_OFDMFRAME64SYNC_BUFFER_LEN; i++)
         fprintf(fid,"pilotphase_hat(%4u) = %12.4e;\n", i+1, r[i]);
     fprintf(fid,"figure; plot(0:127,pilotphase([n-128+1]:n),'-k','LineWidth',1,0:127,pilotphase_hat([n-128+1]:n),'-k','LineWidth',2);\n");
@@ -424,7 +424,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     autocorr_cccf_execute(_q->delay_correlator, &rxx);
 
 #if DEBUG_OFDMFRAME64SYNC
-    cfwindow_push(_q->debug_rxx,rxx);
+    windowcf_push(_q->debug_rxx,rxx);
 #endif
 
     if (cabsf(rxx) > 0.75f*OFDMFRAME64SYNC_AUTOCORR_LEN) {
@@ -446,13 +446,13 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
 {
     // run cross-correlator
     float complex rxy, *rc;
-    cfwindow_push(_q->Lt_buffer, _x);
-    cfwindow_push(_q->rxy_buffer, _x);
-    cfwindow_read(_q->rxy_buffer, &rc);
+    windowcf_push(_q->Lt_buffer, _x);
+    windowcf_push(_q->rxy_buffer, _x);
+    windowcf_read(_q->rxy_buffer, &rc);
     dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
 
 #if DEBUG_OFDMFRAME64SYNC
-    cfwindow_push(_q->debug_rxy,rxy);
+    windowcf_push(_q->debug_rxy,rxy);
 #endif
 
     _q->timer++;
@@ -480,13 +480,13 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 {
     // push sample into cross-correlator buffer
     float complex rxy, *rc;
-    cfwindow_push(_q->Lt_buffer, _x);
-    cfwindow_push(_q->rxy_buffer, _x);
+    windowcf_push(_q->Lt_buffer, _x);
+    windowcf_push(_q->rxy_buffer, _x);
 
 #if DEBUG_OFDMFRAME64SYNC
-    cfwindow_read(_q->rxy_buffer, &rc);
+    windowcf_read(_q->rxy_buffer, &rc);
     dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
-    cfwindow_push(_q->debug_rxy,rxy);
+    windowcf_push(_q->debug_rxy,rxy);
 #endif
 
     _q->timer++;
@@ -498,7 +498,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 
     // run cross-correlator
     // TODO : back off PLCP long by a sample or 2 to help ensure no ISI
-    cfwindow_read(_q->rxy_buffer, &rc);
+    windowcf_read(_q->rxy_buffer, &rc);
     dotprod_cccf_execute(_q->cross_correlator, rc, &rxy);
 
     // at this point we expect the cross-correlator output to be
@@ -511,7 +511,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
 
         // store sequence
         //memmove(_q->Lt1, rc, 64*sizeof(float complex));
-        cfwindow_read(_q->Lt_buffer, &rc);
+        windowcf_read(_q->Lt_buffer, &rc);
         // estimate frequency offset
         unsigned int j;
         float complex rxx=0.0f;
@@ -805,8 +805,8 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     pll_step(_q->pll_pilot, _q->nco_pilot, phase_error);
 
 #if DEBUG_OFDMFRAME64SYNC
-    fwindow_push(_q->debug_pilotphase,      _q->p_phase[0]);
-    fwindow_push(_q->debug_pilotphase_hat,  theta_hat);
+    windowf_push(_q->debug_pilotphase,      _q->p_phase[0]);
+    windowf_push(_q->debug_pilotphase_hat,  theta_hat);
 #endif
 
     // extract average pilot phase difference and unwrap
@@ -867,7 +867,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
 #if DEBUG_OFDMFRAME64SYNC
     for (i=0; i<48; i++)
-        cfwindow_push(_q->debug_framesyms,_q->data[i]);
+        windowcf_push(_q->debug_framesyms,_q->data[i]);
 #endif
 
     if (_q->callback != NULL) {

@@ -40,9 +40,12 @@ struct DECIM(_s) {
     unsigned int h_len;
     unsigned int D;
 
-    fir_prototype p;
     WINDOW() w;
     //DOTPROD() dp;
+
+#if 0
+    fir_prototype p;    // prototype object
+#endif
 };
 
 DECIM() DECIM(_create)(unsigned int _D, TC *_h, unsigned int _h_len)

@@ -33,7 +33,7 @@
 
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_crcf,name)
 #define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
-#define WINDOW(name)        LIQUID_CONCAT(cfwindow,name)
+#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
 
 struct firpfbch_s {
     unsigned int num_channels;

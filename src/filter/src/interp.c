@@ -40,9 +40,12 @@ struct INTERP(_s) {
     unsigned int h_len;
     unsigned int M;
 
-    fir_prototype p;
     WINDOW() w;
     //DOTPROD() dp;
+
+#if 0
+    fir_prototype p;    // prototype object
+#endif
 };
 
 // interp_xxxt_create()

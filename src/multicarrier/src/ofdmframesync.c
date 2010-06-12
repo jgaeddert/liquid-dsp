@@ -45,8 +45,8 @@ struct ofdmframesync_s {
     float complex * X; // freq-domain buffer
 
     // delay correlator
-    cfwindow wcp;
-    cfwindow wdelay;
+    windowcf wcp;
+    windowcf wdelay;
     float complex rxy;
     float complex * rxy_buffer;
     float rxy_magnitude;
@@ -66,7 +66,7 @@ struct ofdmframesync_s {
     void * userdata;
 
 #if DEBUG_OFDMFRAMESYNC
-    cfwindow debug_rxy;
+    windowcf debug_rxy;
 #endif
 };
 
@@ -101,8 +101,8 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
 
     // cyclic prefix correlation windows
-    q->wcp    = cfwindow_create(q->cp_len);
-    q->wdelay = cfwindow_create(q->cp_len + q->num_subcarriers);
+    q->wcp    = windowcf_create(q->cp_len);
+    q->wdelay = windowcf_create(q->cp_len + q->num_subcarriers);
     q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
     q->rxy_threshold = 0.75f*(float)(q->cp_len)*(q->zeta);
     q->rxy_buffer = (float complex*) malloc((q->cp_len)*sizeof(float complex));
@@ -111,7 +111,7 @@ ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
     printf("rxy threshold : %12.8f\n", q->rxy_threshold);
 #endif
 #if DEBUG_OFDMFRAMESYNC
-    q->debug_rxy = cfwindow_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_rxy = windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
 
     q->cp_detected = false;
@@ -134,7 +134,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     fprintf(fid,"rxy = zeros(1,n);\n");
     float complex * rc;
-    cfwindow_read(_q->debug_rxy, &rc);
+    windowcf_read(_q->debug_rxy, &rc);
     for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
@@ -145,7 +145,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     fclose(fid);
     printf("ofdmframesync/debug: results written to %s\n", DEBUG_OFDMFRAMESYNC_FILENAME);
 
-    cfwindow_destroy(_q->debug_rxy);
+    windowcf_destroy(_q->debug_rxy);
 #endif
 
     free(_q->x);
@@ -153,8 +153,8 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->rxy_buffer);
     FFT_DESTROY_PLAN(_q->fft);
 
-    cfwindow_destroy(_q->wcp);
-    cfwindow_destroy(_q->wdelay);
+    windowcf_destroy(_q->wcp);
+    windowcf_destroy(_q->wdelay);
     free(_q);
 }
 
@@ -177,13 +177,13 @@ void ofdmframesync_execute(ofdmframesync _q,
 
     unsigned int i;
     for (i=0; i<_n; i++) {
-        cfwindow_push(_q->wcp,   conj(_x[i]));
-        cfwindow_push(_q->wdelay,     _x[i]*_q->zeta);
+        windowcf_push(_q->wcp,   conj(_x[i]));
+        windowcf_push(_q->wdelay,     _x[i]*_q->zeta);
 
         ofdmframesync_cpcorrelate(_q);
         _q->rxy_magnitude = cabsf(_q->rxy);
 #if DEBUG_OFDMFRAMESYNC
-        cfwindow_push(_q->debug_rxy, _q->rxy);
+        windowcf_push(_q->debug_rxy, _q->rxy);
 #endif
         if (_q->cp_timer > 0) {
             // not enough samples gathered to merit running correlator
@@ -232,7 +232,7 @@ void ofdmframesync_rxpayload(ofdmframesync _q)
 {
     // read samples from buffer
     float complex *rc;
-    cfwindow_read(_q->wdelay,&rc);
+    windowcf_read(_q->wdelay,&rc);
 
     // compensate for sample delay
     rc += _q->cp_excess_delay;
@@ -266,8 +266,8 @@ void ofdmframesync_cpcorrelate(ofdmframesync _q)
     float complex * rcp;    // read pointer: cyclic prefix
     float complex * rdelay; // read pointer: delay line
 
-    cfwindow_read(_q->wcp,    &rcp);
-    cfwindow_read(_q->wdelay, &rdelay);
+    windowcf_read(_q->wcp,    &rcp);
+    windowcf_read(_q->wdelay, &rdelay);
 
     // TODO : cpcorrelate uses unnecessary cycles: should rather store _correlation_ in buffers
     dotprod_cccf_run(rcp,rdelay,_q->cp_len,&_q->rxy);

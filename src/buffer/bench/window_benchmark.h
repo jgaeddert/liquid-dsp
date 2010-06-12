@@ -41,7 +41,7 @@ void window_bench(struct rusage *_start,
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     // initialize port
-    cfwindow w = cfwindow_create(_n);
+    windowcf w = windowcf_create(_n);
 
     unsigned long int i;
 
@@ -50,23 +50,23 @@ void window_bench(struct rusage *_start,
     *_num_iterations *= 32;
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        cfwindow_push(w, 1.0f);
-        cfwindow_push(w, 1.0f);
-        cfwindow_push(w, 1.0f);
-        cfwindow_push(w, 1.0f);
+        windowcf_push(w, 1.0f);
+        windowcf_push(w, 1.0f);
+        windowcf_push(w, 1.0f);
+        windowcf_push(w, 1.0f);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    cfwindow_destroy(w);
+    windowcf_destroy(w);
 }
 
 // 
-void benchmark_cfwindow_n16     WINDOW_BENCH_API(16)
-void benchmark_cfwindow_n32     WINDOW_BENCH_API(32)
-void benchmark_cfwindow_n64     WINDOW_BENCH_API(64)
-void benchmark_cfwindow_n128    WINDOW_BENCH_API(128)
-void benchmark_cfwindow_n256    WINDOW_BENCH_API(256)
+void benchmark_windowcf_n16     WINDOW_BENCH_API(16)
+void benchmark_windowcf_n32     WINDOW_BENCH_API(32)
+void benchmark_windowcf_n64     WINDOW_BENCH_API(64)
+void benchmark_windowcf_n128    WINDOW_BENCH_API(128)
+void benchmark_windowcf_n256    WINDOW_BENCH_API(256)
 
 #endif // __LIQUID_WINDOW_BENCHMARK_H__
 
