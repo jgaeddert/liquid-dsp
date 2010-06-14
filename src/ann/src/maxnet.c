@@ -25,8 +25,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -40,6 +38,10 @@
 
 #define DEBUG_MAXNET  0
 
+// create maxnet object
+//  _num_classes    :   number of distinct classes to identify
+//  _structure      :   structure for each network [size: _num_layers x 1]
+//  _num_layers     :   number of layers in _structure
 MAXNET() MAXNET(_create)(unsigned int _num_classes,
                          unsigned int * _structure,
                          unsigned int _num_layers)
@@ -75,6 +77,7 @@ MAXNET() MAXNET(_create)(unsigned int _num_classes,
     return q;
 }
 
+// destroy maxnet object
 void MAXNET(_destroy)(MAXNET() _q)
 {
     // destroy networks
@@ -87,12 +90,18 @@ void MAXNET(_destroy)(MAXNET() _q)
     free(_q);
 }
 
+// print maxnet parameters
 void MAXNET(_print)(MAXNET() _q)
 {
     printf("maxnet:\n");
     printf("  num classes   :   %u\n", _q->num_classes);
 }
 
+// evaluate maxnet
+//  _q      :   maxnet object
+//  _x      :   multi-dimensional input [size: internal.num_inputs x 1]
+//  _y      :   class network raw output [size: internal.num_classes x 1]
+//  _class  :   index to maximum class (max(_y))
 void MAXNET(_evaluate)(MAXNET() _q,
                        T * _x,
                        T * _y,
@@ -123,6 +132,10 @@ void MAXNET(_evaluate)(MAXNET() _q,
 #endif
 }
 
+// train maxnet on single input
+//  _q      :   maxnet object
+//  _x      :   multi-dimensional input [size: internal.num_inputs x 1]
+//  _class  :   output class
 void MAXNET(_train)(MAXNET() _q,
                     float * _x,
                     unsigned int _class)
@@ -136,34 +149,52 @@ void MAXNET(_train)(MAXNET() _q,
     }
 }
 
+// train maxnet on batch of inputs
+//  _q              :   maxnet object
+//  _x              :   multi-dimensional input [size: _num_patterns x internal.num_inputs]
+//  _class          :   output classes [size: _num_patterns x 1]
+//  _num_patterns   :   number of patterns in input
+//  _max_num_trials :   maximum number of trials
 void MAXNET(_train_group)(MAXNET() _q,
                           float * _x,
                           unsigned int * _class,
                           unsigned int _num_patterns,
                           unsigned int _max_num_trials)
 {
-    float y;
+    float * x_train;            // pointer to training input
+    unsigned int class_train;   // output class
+
     unsigned int i;
     for (i=0; i<_num_patterns; i++) {
-        // train each network
-        unsigned int j;
-        for (j=0; j<_q->num_classes; j++) {
-            y = (j == _class[i]) ? 1.0f : -1.0f;
-            //ANN(_train_bp)(_q->networks[j], x,
-        }
+        // assign input pointer
+        x_train = &_x[i*_q->num_inputs];
+
+        // assign output class
+        class_train = _class[i];
+
+        // run training algorithm
+        MAXNET(_train)(_q, x_train, class_train);
     }
 }
 
+// compute maxnet root mean-squared error on input pattern set,
+// expecting +1 for correct class, -1 for incorrect class.
+//  _q              :   maxnet object
+//  _x              :   input pattern [size: _num_patterns x internal.num_inputs]
+//  _class          :   output class [size: _num_patterns x 1]
+//  _num_patterns   :   number of input patterns
 float MAXNET(_compute_rmse)(MAXNET() _q,
                             float * _x,
                             unsigned int * _class,
                             unsigned int _num_patterns)
 {
-    float y[_q->num_classes];
-    unsigned int c;
-    unsigned int i;
-    float e, rmse=0.0f;
+    float y[_q->num_classes];       // maxnet soft output
+    unsigned int c;                 // maxnet hard class output
+    float e;                        // soft output error
+    float rmse=0.0f;                // root mean-squared error
     unsigned int num_errors = 0;
+
+    unsigned int i;
     for (i=0; i<_num_patterns; i++) {
         // evaluate maxnet
         MAXNET(_evaluate)(_q, &_x[i*_q->num_inputs], y, &c);
