@@ -22,6 +22,7 @@ void usage()
 {
     printf("ann_maxnet_example:\n");
     printf("  u/h   : print usage/help\n");
+    printf("  c     : number of classes (at least 2), default: 3\n");
     printf("  t     : number of training epochs, default: 1000\n");
     printf("  n     : number of neurons in hidden layer, default: 6\n");
     printf("  p     : number of patterns to train, default: 250\n");
@@ -32,15 +33,17 @@ int main(int argc, char*argv[]) {
     srand(time(NULL));
 
     // options
+    unsigned int num_classes = 3;       // number of classes
     unsigned int num_trials = 1000;     // number of training epochs
     unsigned int num_hidden = 6;        // number of hidden neurons
     unsigned int num_patterns = 250;    // number of training patterns
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:n:p:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhc:t:n:p:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
+        case 'c': num_classes = atoi(optarg);   break;
         case 't': num_trials = atoi(optarg);    break;
         case 'n': num_hidden = atoi(optarg);    break;
         case 'p': num_patterns = atoi(optarg);  break;
@@ -49,6 +52,12 @@ int main(int argc, char*argv[]) {
             usage();
             return 1;
         }
+    }
+
+    // validate input
+    if (num_classes < 2) {
+        fprintf(stderr,"error: %s, must have at least 2 classes\n", argv[0]);
+        exit(1);
     }
 
     // create network structure:
@@ -64,23 +73,17 @@ int main(int argc, char*argv[]) {
     // generate random sample points
     unsigned int i;
     for (i=0; i<num_patterns; i++) {
-        float x0 = 2.0f*randf()-1.0f;
-        float x1 = 2.0f*randf()-1.0f;
+        // assign class randomly
+        class[i] = rand() % num_classes;
 
-        float r = sqrtf(x0*x0 + x1*x1);
-        if (r < 0.8f) {
-            x[2*i+0] = 0.5f * x0;
-            x[2*i+1] = 0.5f * x1;
-            class[i] = 0;
-        } else {
-            x[2*i+0] = x0;
-            x[2*i+1] = x1;
-            class[i] = 1;
-        }
+        // (x,y) point lies on circle with small amount of noise
+        float theta = class[i] / (float)num_classes * 2 * M_PI;
+        x[2*i+0] = cosf(theta) + randnf()*0.15f;
+        x[2*i+1] = sinf(theta) + randnf()*0.15f;
     }
 
     // create network and initialize weights randomly
-    maxnet q = maxnet_create(2, structure, 3);
+    maxnet q = maxnet_create(num_classes, structure, 3);
     maxnet_print(q);
 
     float x_test[2] = {1,1};
@@ -132,6 +135,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"xlabel('training epoch');\n");
     fprintf(fid,"ylabel('RMS error');\n");
 
+#if 0
     // evaluate maxnet and plot results
     fprintf(fid,"c0 = []; %% class 0 indices\n");
     fprintf(fid,"c1 = []; %% class 1 indices\n");
@@ -145,6 +149,15 @@ int main(int argc, char*argv[]) {
         else
             fprintf(fid,"c1(%3u) = %3u;\n", n1++, i+1);
     }
+#else
+    fprintf(fid,"num_classes = %u;\n", num_classes);
+    for (i=0; i<num_patterns; i++) {
+        fprintf(fid,"x(%3u) = %12.8f + j*%12.8f;  class(%3u) = %3u;\n", i+1, x[2*i+0], x[2*i+1], i+1, class[i]);
+    }
+    for (i=0; i<num_classes; i++) {
+        fprintf(fid,"i_%u = find(class==%u);\n", i, i);
+    }
+#endif
 
     // compute discriminating regions
     printf("computing discriminating regions...\n");
@@ -175,10 +188,19 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
+#if 0
     fprintf(fid,"plot(x(c0),'sr',x(c1),'sb',d,'o','MarkerSize',1,'Color',[1 1 1]*0.7);\n");
+#else
+    fprintf(fid,"hold on;\n");
+    for (i=0; i<num_classes; i++)
+        fprintf(fid,"plot(real(x(i_%u)), imag(x(i_%u)), 's', 'Color', rand(1,3));\n", i, i);
+    if (n>0)
+        fprintf(fid,"plot(d,'o','MarkerSize',1,'Color',[1 1 1]*0.0);\n");
+    fprintf(fid,"hold off;\n");
+#endif
     fprintf(fid,"xlabel('x_0');\n");
     fprintf(fid,"ylabel('x_1');\n");
-    fprintf(fid,"axis([-1 1 -1 1]);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
 
     fclose(fid);
