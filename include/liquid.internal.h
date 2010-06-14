@@ -140,35 +140,44 @@ void   NODE(_train)(NODE() _n, float _eta);
 // Define ann APIs
 LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
 
-typedef struct annlayer_s * annlayer;
 
-struct annlayer_s {
-    unsigned int num_inputs;    // number of inputs into this layer
-    unsigned int num_nodes;     // number of nodes in this layer
-    node * nodes;               // nodes in this layer
-    int is_output_layer;        // output layer flag
-    int is_input_layer;         // input layer flag
+#define ANNLAYER_MANGLE_FLOAT(name)  LIQUID_CONCAT(annlayer, name)
+// large macro (internal)
+//   ANNLAYER   : name-mangling macro
+//   T          : primitive data type
+#define LIQUID_ANNLAYER_DEFINE_INTERNAL_API(ANNLAYER,T)         \
+                                                                \
+typedef struct ANNLAYER(_s) * ANNLAYER();                       \
+                                                                \
+struct ANNLAYER(_s) {                                           \
+    unsigned int num_inputs;    /* number of inputs         */  \
+    unsigned int num_nodes;     /* number of nodes          */  \
+    node * nodes;               /* nodes in this layer      */  \
+    int is_output_layer;        /* output layer flag        */  \
+    int is_input_layer;         /* input layer flag         */  \
+                                                                \
+    /* back-propagation input error [num_inputs x 1]        */  \
+    float * error;                                              \
+                                                                \
+};                                                              \
+                                                                \
+ANNLAYER() ANNLAYER(_create)(T * _w,                            \
+                             T * _x,                            \
+                             T * _y,                            \
+                             unsigned int _num_inputs,          \
+                             unsigned int _num_outputs,         \
+                             int is_input_layer,                \
+                             int is_output_layer,               \
+                             int _activation_func,              \
+                             T _mu);                            \
+void ANNLAYER(_destroy)(annlayer _q);                           \
+void ANNLAYER(_print)(annlayer _q);                             \
+void ANNLAYER(_evaluate)(annlayer _q);                          \
+void ANNLAYER(_compute_bp_error)(annlayer _q, T * _error);      \
+void ANNLAYER(_train)(annlayer _q, T _eta);
 
-    float * error;              // back-propagation input error [num_inputs x 1]
-
-    //ANNLAYER() * prev_layer;    // pointer to previous layer in network
-    //ANNLAYER() * next_layer;    // pointer to next layer in network
-};
-
-annlayer annlayer_create(float * _w,
-                         float * _x,
-                         float * _y,
-                         unsigned int _num_inputs,
-                         unsigned int _num_outputs,
-                         int is_input_layer,
-                         int is_output_layer,
-                         int _activation_func,
-                         float _mu);
-void annlayer_destroy(annlayer _q);
-void annlayer_print(annlayer _q);
-void annlayer_evaluate(annlayer _q);
-void annlayer_compute_bp_error(annlayer _q, float * _error);
-void annlayer_train(annlayer _q, float _eta);
+// Define ann APIs
+LIQUID_ANNLAYER_DEFINE_INTERNAL_API(ANNLAYER_MANGLE_FLOAT, float)
 
 // maxnet
 struct maxnet_s {
