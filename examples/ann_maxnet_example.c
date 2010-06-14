@@ -94,17 +94,9 @@ int main(int argc, char*argv[]) {
     maxnet q = maxnet_create(num_classes, structure, 3);
     maxnet_print(q);
 
-    float x_test[2] = {1,1};
-    float y_test[2];
+    float x_test[2];
+    float y_test[num_classes];
     unsigned int c_test;
-    maxnet_evaluate(q,x_test,y_test,&c_test);
-
-    for (i=0; i<2; i++) {
-        printf("  %3u : %12.8f", i, y_test[i]);
-        if (i == c_test)
-            printf(" *");
-        printf("\n");
-    }
 
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
@@ -188,7 +180,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_classes; i++)
         fprintf(fid,"plot(real(x(i_%u)), imag(x(i_%u)), 's', 'Color', rand(1,3));\n", i, i);
     if (n>0)
-        fprintf(fid,"plot(d,'o','MarkerSize',1,'Color',[1 1 1]*0.0);\n");
+        fprintf(fid,"plot(d,'sk','MarkerSize',2);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('x_0');\n");
     fprintf(fid,"ylabel('x_1');\n");
