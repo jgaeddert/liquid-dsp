@@ -131,8 +131,15 @@ dds_cccf_example.c
               nco_example.c
 
 decim_rrrf_example.c
+
 dotprod_cccf_example.c
+    This example demonstrates the interface to the complex
+    floating-point dot product object (dotprod_cccf).
+
 dotprod_rrrf_example.c
+    This example demonstrates the interface to the floating-point dot
+    product object (dotprod_rrrf).
+
 eqlms_cccf_example.c
 eqrls_cccf_example.c
 fading_channel_example.c

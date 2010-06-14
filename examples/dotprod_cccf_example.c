@@ -1,23 +1,45 @@
 //
 // dotprod_cccf_example.c
 //
-// Test floating-point dot product.
+// This example demonstrates the interface to the complex floating-point
+// dot product object (dotprod_cccf).
 //
 
 #include <stdio.h>
 #include "liquid.h"
 
 int main() {
-    float complex x[] = {1, 2, 3, 4, 5};
-    float complex y[] = {1, 1, 1, 1, 1};
+    // input array
+    float complex x[] = { 1 + 1 * _Complex_I,
+                          2 + 1 * _Complex_I,
+                          3 + 1 * _Complex_I,
+                          4 + 1 * _Complex_I,
+                          5 + 1 * _Complex_I};
 
-    float complex z;
-    dotprod_cccf_run(x,y,5,&z);
-    printf("fdotprod:  %8.2f + j%8.2f\n", crealf(z), cimagf(z));
+    // coefficients array
+    float complex h[] = { 1 + 1 * _Complex_I,
+                         -1 + 1 * _Complex_I,
+                          1 + 1 * _Complex_I,
+                         -1 + 1 * _Complex_I,
+                          1 + 1 * _Complex_I};
 
-    float complex z4;
-    dotprod_cccf_run4(x,y,5,&z4);
-    printf("fdotprod:  %8.2f + j%8.2f\n", crealf(z4), cimagf(z4));
+    // dot product result
+    float complex y;
+
+    // run regular dot product
+    dotprod_cccf_run(x,h,5,&y);
+    printf("dotprod_cccf              : %8.2f + j%8.2f\n", crealf(y), cimagf(y));
+
+    // run dot product, unrolled loops
+    dotprod_cccf_run4(x,h,5,&y);
+    printf("dotprod_cccf (unrolled)   : %8.2f + j%8.2f\n", crealf(y), cimagf(y));
+
+    // run structured dot product
+    dotprod_cccf q = dotprod_cccf_create(x,5);
+    dotprod_cccf_execute(q,h,&y);
+    printf("dotprod_cccf (structured) : %8.2f + j%8.2f\n", crealf(y), cimagf(y));
+    dotprod_cccf_destroy(q);
+
     return 0;
 }
 

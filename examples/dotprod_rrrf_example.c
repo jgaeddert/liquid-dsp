@@ -1,29 +1,37 @@
 //
-// Test floating-point dot product
+// dotprod_rrrf_example.c
+//
+// This example demonstrates the interface to the floating-point dot
+// product object (dotprod_rrrf).
 //
 
 #include <stdio.h>
 #include "liquid.h"
 
 int main() {
-    float x[] = {1, 2, 3, 4, 5};
-    float y[] = {1, 1, 1, 1, 1};
+    // input array
+    float x[] = { 1,  2,  3,  4,  5};
 
-    float z;
-    dotprod_rrrf_run(x,y,5,&z);
-    printf("dotprod:  %8.2f\n", z);
+    // coefficients array
+    float h[] = { 1, -1,  1, -1,  1};
 
-    float z4;
-    dotprod_rrrf_run4(x,y,5,&z4);
-    printf("dotprod4: %8.2f\n", z4);
+    // dot product result
+    float y;
 
-    printf("---\n");
+    // run regular dot product
+    dotprod_rrrf_run(x,h,5,&y);
+    printf("dotprod_rrrf              : %8.2f\n", y);
 
+    // run dot product, unrolled loops
+    dotprod_rrrf_run4(x,h,5,&y);
+    printf("dotprod_rrrf (unrolled)   : %8.2f\n", y);
+
+    // run structured dot product
     dotprod_rrrf q = dotprod_rrrf_create(x,5);
-    float zq;
-    dotprod_rrrf_execute(q,y,&zq);
-    printf("dotprodq: %8.2f\n", zq);
+    dotprod_rrrf_execute(q,h,&y);
+    printf("dotprod_rrrf (structured) : %8.2f\n", y);
     dotprod_rrrf_destroy(q);
+
     return 0;
 }
 
