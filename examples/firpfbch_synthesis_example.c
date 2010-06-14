@@ -1,5 +1,12 @@
 //
+// firpfbch_synthesis_example.c
 //
+// Example of the synthesis channelizer filterbank.  Random symbols are
+// generated and loaded into the bins of the channelizer and the time-
+// domain signal is synthesized.  Subcarriers around the band edges are
+// disabled as well as those near 0.25 to demonstrate the synthesizer's
+// ability to efficiently notch the spectrum. The results are printed to
+// a file for plotting.
 //
 
 #include <stdio.h>
@@ -13,12 +20,24 @@ int main() {
     // options
     unsigned int m=4;               // filter delay
     float slsl=-60;                 // sidelobe suppression level
-    unsigned int num_symbols=32;    // number of symbols per channel
+    unsigned int num_symbols=1;     // number of symbols per channel
     unsigned int num_channels=16;   // number of channels
-    float gain[16] = {1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,0}; // channel gain vector
 
+    unsigned int i;
     unsigned int num_frames = num_symbols + 2*m;
     unsigned int num_samples = num_frames*num_channels;
+
+    // compute channel gain, nominally 1, but 0 at band edges and
+    // notched at 0.25
+    float gain[num_channels]; // channel gain vector
+    for (i=0; i<num_channels; i++) {
+        if (i > 0.4*num_channels && i < 0.6*num_channels)
+            gain[i] = 0;
+        else if (i > 0.2*num_channels && i < 0.3*num_channels)
+            gain[i] = 0;
+        else
+            gain[i] = 1;
+    }
 
     // create synthesizer object
     firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, 0);
@@ -34,7 +53,7 @@ int main() {
     fprintf(fid,"X = zeros(%u,%u);\n", num_channels, num_frames);
     fprintf(fid,"y = zeros(1,%u);\n",  num_samples);
 
-    unsigned int i, j, n=0;
+    unsigned int j, n=0;
     float complex X[num_channels];  // channelized symbols
     float complex y[num_channels];  // interpolated time-domain samples
     float g;
@@ -43,8 +62,14 @@ int main() {
         // generate frame data
         for (j=0; j<num_channels; j++) {
             g = (i<num_symbols) ? gain[j] : 0.0f;
-            //X[j] = g*cexpf(_Complex_I*2*M_PI*randf());
-            X[j] = g*0.7071f*(randnf() + _Complex_I*randnf());
+
+            if (num_symbols == 1) {
+                // set symbol to unity gain
+                X[j] = g;
+            } else  {
+                // set random symbol
+                X[j] = g*0.7071f*(randnf() + _Complex_I*randnf());
+            }
         }
 
         // execute synthesis filter bank
@@ -75,13 +100,14 @@ int main() {
 
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Y = 20*log10(abs(fft(y,nfft)));\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(fft(y,nfft))));\n");
     fprintf(fid,"Y = Y - 10*log10(num_symbols);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Y,'LineWidth',2,'Color',[0.25 0.5 0.5]);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
     fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([-0.5 0.5 -100 20]);\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

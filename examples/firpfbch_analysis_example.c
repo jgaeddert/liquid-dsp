@@ -1,8 +1,9 @@
 //
-// Example of an analysis channelizer filterbank.
-// Input signal is a frequency-modulated sweep over the entire band.
-// Each filter is illuminated as the carrier passes through its
-// bandwidth.
+// firpfbch_analysis_example.c
+//
+// Example of the analysis channelizer filterbank. The input signal is a
+// frequency-modulated sweep over the entire band. Each filter is
+// illuminated as the carrier passes through its bandwidth.
 //
 
 #include <stdio.h>
@@ -17,7 +18,7 @@ int main() {
     unsigned int num_channels=8;    // number of channels
     unsigned int m=2;               // filter delay
     float slsl=-60;                 // sidelobe suppression level
-    unsigned int num_frames=25;     // num frames
+    unsigned int num_frames=25;     // number of frames
 
     // create objects
     firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, 0);
@@ -34,7 +35,8 @@ int main() {
     fprintf(fid,"y  = zeros(%u,%u);\n", num_channels, num_frames);
 
     unsigned int i, j, n=0;
-    float complex x[num_channels], y[num_channels];
+    float complex x[num_channels];  // time-domain input
+    float complex y[num_channels];  // channelized output
 
     // create nco: sweeps entire range of frequencies over the evaluation interval
     nco nco_tx = nco_create(LIQUID_VCO);
@@ -75,6 +77,10 @@ int main() {
         }
     }
 
+    // destroy objects
+    nco_destroy(nco_tx);
+    firpfbch_destroy(c);
+
     // plot results
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
@@ -99,9 +105,6 @@ int main() {
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
-
-    nco_destroy(nco_tx);
-    firpfbch_destroy(c);
 
     printf("done.\n");
     return 0;

@@ -181,9 +181,27 @@ firdespm_example.c
     SEE ALSO: firdes_kaiser_example.c
 
 firpfb_rrrf_example.c
+
 firpfbch_analysis_example.c
+    Example of the analysis channelizer filterbank. The input signal is
+    a frequency-modulated sweep over the entire band. Each filter is
+    illuminated as the carrier passes through its bandwidth.
+
 firpfbch_example.c
+    Finite impulse response (FIR) polyphase filter bank (PFB)
+    channelizer example.  This example demonstrates the functionality of
+    the polyphase filter bank channelizer and how its output is
+    mathematically equivalent to a series of parallel down-converters
+    (mixers/decimators). Both the synthesis and analysis filter banks
+    are presented.
+
 firpfbch_synthesis_example.c
+    Example of the synthesis channelizer filterbank.  Random symbols are
+    generated and loaded into the bins of the channelizer and the
+    time-domain signal is synthesized.  Subcarriers around the band
+    edges are disabled as well as those near 0.25 to demonstrate the
+    synthesizer's ability to efficiently notch the spectrum. The results
+    are printed to a file for plotting.
 
 flexframesync_example.c
     This example demonstrates the interfaces to the flexframegen and
