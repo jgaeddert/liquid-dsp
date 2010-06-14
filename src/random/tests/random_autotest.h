@@ -24,13 +24,16 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
+#define LIQUID_RANDOM_AUTOTEST_NUM_TRIALS (100000)
+#define LIQUID_RANDOM_AUTOTEST_ERROR_TOL  (0.1)
+
 // uniform
 void autotest_randf()
 {
-    unsigned long int N=250000; // number of trials
+    unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.02f;
+    float tol = LIQUID_RANDOM_AUTOTEST_ERROR_TOL;
 
     // uniform
     for (i=0; i<N; i++) {
@@ -48,10 +51,10 @@ void autotest_randf()
 // Gauss
 void autotest_randnf()
 {
-    unsigned long int N=250000; // number of trials
+    unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS; // number of trials
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.02f;
+    float tol = LIQUID_RANDOM_AUTOTEST_ERROR_TOL;
 
     // uniform
     for (i=0; i<N; i++) {
@@ -69,11 +72,11 @@ void autotest_randnf()
 // complex Gauss
 void autotest_crandnf()
 {
-    unsigned long int N=250000; // number of trials
+    unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
     float complex x;
     float m1=0.0f, m2=0.0f;
-    float tol=0.02f;
+    float tol = LIQUID_RANDOM_AUTOTEST_ERROR_TOL;
 
     // uniform
     for (i=0; i<N; i++) {
@@ -92,10 +95,10 @@ void autotest_crandnf()
 // Weibull
 void autotest_rand_weibullf()
 {
-    unsigned long int N=250000; // number of trials
+    unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.02f;
+    float tol = LIQUID_RANDOM_AUTOTEST_ERROR_TOL;
     float alpha=1.0f, beta=2.0f, gamma=6.0f;
 
     // uniform
@@ -114,10 +117,10 @@ void autotest_rand_weibullf()
 // Rice-K
 void autotest_rand_ricekf()
 {
-    unsigned long int N=250000; // number of trials
+    unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
     float x, m1=0.0f, m2=0.0f;
-    float tol=0.02f;
+    float tol = LIQUID_RANDOM_AUTOTEST_ERROR_TOL;
     float K=2.0f, omega=1.0f;
 
     // uniform
