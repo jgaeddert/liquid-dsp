@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -21,6 +22,11 @@
 //
 // Finite impulse response filter design
 //
+// References:
+//  [Herrmann:1973] O. Herrmann, L. R. Rabiner, and D. S. K. Chan,
+//      "Practical design rules for optimum finite impulse response
+//      lowpass digital filters," Bell Syst. Tech. Journal, vol. 52,
+//      pp. 769--99, July-Aug. 1973
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,27 +34,38 @@
 
 #include "liquid.internal.h"
 
-// esimate required filter length given
-//   _b    : transition bandwidth (0 < b < 0.5)
-//   _slsl : sidelobe suppression level [dB]
-unsigned int estimate_req_filter_len(float _b, float _slsl)
+// esimate required filter length given transition bandwidth and
+// sidelobe suppression level (algorithm from [Herrmann:1973])
+//   _df   : transition bandwidth (0 < _df < 0.5)
+//   _As   : sidelobe suppression level [dB] (_As < 0)
+unsigned int estimate_req_filter_len(float _df,
+                                     float _As)
 {
-    if (_b > 0.5f || _b <= 0.0f) {
-        printf("error: estimate_req_filter_len(), invalid bandwidth : %f\n", _b);
+    if (_df > 0.5f || _df <= 0.0f) {
+        fprintf(stderr,"error: estimate_req_filter_len(), invalid bandwidth : %f\n", _df);
+        exit(0);
+    } else if (_As <= 0.0f) {
+        fprintf(stderr,"error: estimate_req_filter_len(), invalid sidelobe level : %f\n", _As);
         exit(0);
     }
 
-    if (_slsl <= 0.0f) {
-        printf("error: estimate_req_filter_len(), invalid sidelobe level : %f\n", _slsl);
-        exit(0);
-    }
+    // compute delta_1, delta_2
+    float d1, d2;
+    d1 = d2 = powf(10.0, - _As / 10.0);
 
-    unsigned int h_len;
-    if (_slsl < 8) {
-        h_len = 2;
-    } else {
-        h_len = (unsigned int) lroundf((_slsl-8)/(14*_b));
-    }
+    // compute log of delta_1, delta_2
+    float t1 = log10f(d1);
+    float t2 = log10f(d2);
+
+    // compute D_infinity(delta_1, delta_2)
+    float Dinf = (0.005309f*t1*t1 + 0.07114f*t1 - 0.4761f)*t2 -
+                 (0.002660f*t1*t1 + 0.59410f*t1 + 0.4278f);
+
+    // compute f(delta_1, delta_2)
+    float f = 11.012f + 0.51244f*(t1-t2);
+
+    // compute filter length estimate
+    unsigned int h_len = (unsigned int) ( (Dinf - f*_df*_df) / _df + 1 );
     
     return h_len;
 }
