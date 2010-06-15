@@ -58,9 +58,6 @@ int main() {
         f = iirfilt_crcf_create(b,h_len, a,h_len);
     iirfilt_crcf_print(f);
 
-    // destroy filter object
-    iirfilt_crcf_destroy(f);
-
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
@@ -87,6 +84,9 @@ int main() {
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x), cimagf(x));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y), cimagf(y));
     }
+
+    // destroy filter object
+    iirfilt_crcf_destroy(f);
 
     // output filter coefficients using extra precision
     if (format == LIQUID_IIRDES_SOS) {
