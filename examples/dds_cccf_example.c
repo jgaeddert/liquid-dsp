@@ -23,7 +23,7 @@
 
 int main() {
     // options
-    float fc=-0.4f;                 // input (output) decim (interp) frequency
+    float fc=-0.0f;                 // input (output) decim (interp) frequency
     unsigned int num_stages=3;      // number of halfband interp/decim stages
     unsigned int num_samples=64;    // number of input samples
     float slsl=60.0f;               // DDS sidelobe suppression level
@@ -97,14 +97,14 @@ int main() {
     fprintf(fid,"t1 = 0:[n*r-1];\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(3,1,1);\n");
-    fprintf(fid,"  plot(t0,real(x),t0,imag(x));\n");
+    fprintf(fid,"  plot(t0,real(x),'-s','MarkerSize',3,t0,imag(x),'-s','MarkerSize',3);\n");
     fprintf(fid,"  legend('I','Q',0);\n");
     fprintf(fid,"  axis([0 n -0.55 0.55]);\n");
     fprintf(fid,"subplot(3,1,2);\n");
     fprintf(fid,"  plot(t1,real(y),t1,imag(y));\n");
     fprintf(fid,"  axis([0 n*r -0.55 0.55]);\n");
     fprintf(fid,"subplot(3,1,3);\n");
-    fprintf(fid,"  plot(t0,real(z),t0,imag(z));\n");
+    fprintf(fid,"  plot(t0,real(z),'-s','MarkerSize',3,t0,imag(z),'-s','MarkerSize',3);\n");
     fprintf(fid,"  axis([0 n -0.55 0.55]);\n");
 
     fclose(fid);

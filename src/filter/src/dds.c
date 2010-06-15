@@ -227,6 +227,7 @@ void DDS(_decim_execute)(DDS() _q,
 
     // increment NCO
     nco_mix_down(_q->ncox, y, &y);
+    nco_step(_q->ncox);
 
     // set output, normalizing by scaling factor
     *_y = y * _q->zeta;
@@ -239,6 +240,7 @@ void DDS(_interp_execute)(DDS() _q,
 {
     // increment NCO
     nco_mix_up(_q->ncox, _x, &_x);
+    nco_step(_q->ncox);
 
     unsigned int s;     // stage counter
     unsigned int i;     // input counter
