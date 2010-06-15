@@ -64,6 +64,7 @@ static flexframesyncprops_s flexframesyncprops_default = {
     3,          // m
     0.7f,       // beta
     // squelch
+    1,          // squelch_enabled
     -15.0f      // squelch_threshold
 };
 
@@ -305,6 +306,7 @@ void flexframesync_print(flexframesync _fs)
     printf("    filter length       :   %u\n", _fs->props.m);
     printf("    num filters (ppfb)  :   %u\n", _fs->props.npfb);
     printf("    filter excess b/w   :   %6.4f\n", _fs->props.beta);
+    printf("    squelch             :   %s\n", _fs->props.squelch_enabled ? "enabled" : "disabled");
     printf("    squelch threshold   :   %6.2f dB\n", _fs->props.squelch_threshold);
     printf("    ----\n");
     printf("    p/n sequence len    :   %u\n", _fs->pnsequence_len);
@@ -326,6 +328,12 @@ void flexframesync_reset(flexframesync _fs)
     // SINDR estimate
     _fs->evm_hat = 0.0f;
     _fs->SINDRdB_hat = 0.0f;
+
+    // enable/disable squelch
+    if (_fs->props.squelch_enabled)
+        agc_crcf_squelch_activate(_fs->agc_rx);
+    else
+        agc_crcf_squelch_deactivate(_fs->agc_rx);
 }
 
 // TODO: break flexframesync_execute method into manageable pieces

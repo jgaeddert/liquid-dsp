@@ -1923,6 +1923,7 @@ typedef struct {
     unsigned int npfb;          // number of filters in symbol sync.
     unsigned int m;             // filter length
     float beta;                 // excess bandwidth
+    int squelch_enabled;        // enable/disable squelch
     float squelch_threshold;    // squelch enable/disable threshold
     //flexframesync_callback callback;
     //void * userdata;
