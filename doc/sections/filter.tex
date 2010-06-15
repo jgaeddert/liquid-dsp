@@ -145,6 +145,7 @@ See also: {\tt iirdes} (IIR filter design).
 
 
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
+\label{module:filter:iirdes}
 \liquid\ implements infinite impulse respone (IIR) filter design for the four
 major classes of filters (Butterworth, Chebyshev, elliptic, and Bessel) by
 first computing their analog low-pass prototypes, performing a bilinear
@@ -208,6 +209,46 @@ The internal IIR filter design process is described here:
 %{\tt examples/iirdes\_example.c} gives the simplified interface.
 A simplified example is given in {\tt examples/iirdes\_example.c}.
 
+\subsubsection{iirdes filter types}
+\label{module:filter:iirdes:types}
+There are currently five low-pass prototypes available for inifinite impulse
+response filter design in \liquid,
+\begin{description}
+\item[{\tt LIQUID\_IIRDES\_BUTTER}]
+    is a Butterworth filter.
+    This is an all-pole design that has a maximally flat magnitude response in
+    the pass-band.
+    The analog prototype interface is {\tt butter\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:butter}
+\item[{\tt LIQUID\_IIRDES\_CHEBY1}]
+    is a Chebyshev Type-I filter.
+    The design... [xxx]
+    The analog prototype interface is {\tt cheby1\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:cheby1}
+\item[{\tt LIQUID\_IIRDES\_CHEBY2}]
+    is a Chebyshev Type-II filter.
+    This design is similar to that of Chebyshev Type-I, except that the
+    polynomial in the denominator has been inverted.
+    As a result, it exhibits an equiripple behavior in the stop-band, rather
+    than the pass-band.
+    The analog prototype interface is {\tt cheby2\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:cheby2}
+\item[{\tt LIQUID\_IIRDES\_ELLIP}]
+    is an elliptic filter.
+    The design... [xxx]
+    The analog prototype interface is {\tt ellip\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:ellip}
+\item[{\tt LIQUID\_IIRDES\_BESSEL}]
+    is a Bessel filter.
+    The design... [xxx]
+    The analog prototype interface is {\tt bessel\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:bessel}
+\end{description}
 
 Butterworth prototype:
 \[
