@@ -101,8 +101,15 @@ input-to-output resampling ratio.
 \subsection{{\tt qmfb} (quadrature mirror filter bank)}
 
 % iirfilt
-\subsection{{\tt iirfilt}}
-Infinite impulse response filter.
+\subsection{{\tt iirfilt} (infinite impulse response filter)}
+\label{module:filter:iirfilt}
+The {\tt iirfilt\_crcf} object and family implement the infinite impulse
+response (IIR) filters.
+Also known as recursive filters, IIR filters allow a portion of the output to
+be fed back into the input, thus creating an impulse response which is
+non-zero for an infinite amount of time.
+Formally, the output signal $y[n]$ may be written in terms of the input signal
+$x[n]$ as
 \[
     y[n] = \frac{1}{a_0} \left(
            \sum_{j=0}^{n_b-1}{ b_j x[n-j] } -
@@ -122,12 +129,12 @@ The $z$-transform of the transfer function is therefore
 \]
 Typically, $H(z)$ is normalized such that $a_0=1$.
 
-For larger order filters (even for $n\approx 8$) the filter can become
+For larger order filters (even as small as $n\approx 8$) the filter can become
 unstable due to finite machine precision.
 It is often therefore useful to express $H(z)$ in terms of second-order
 sections.
-For a filter of order $n$, these sections are denoted by the two $L+r\times 3$
-matrices $\vec{B}$ and $\vec{A}$
+For a filter of order $n$, these sections are denoted by the two
+$(L+r)\times 3$ matrices $\vec{B}$ and $\vec{A}$
 where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
 \[
     H_d(z) = 
@@ -150,7 +157,35 @@ For a cascaded second-order section IIR filter, use
 
 See also: {\tt iirdes} (IIR filter design).
 
+\subsubsection{interface}
+\label{module:filter:iirfilt:interface}
+The interface to the {\tt iirfilt} object follows the convention of other
+\liquid\ signal processing objects in that the ``{\tt xxxt}'' extension in
+this section is only a placeholder for ``{\tt crcf}'' etc.
 
+\begin{description}
+\item[{\tt iirfilt\_xxxt\_create()}]
+    creates a new {\tt iirfilt} object
+\item[{\tt iirfilt\_xxxt\_create\_sos()}]
+    creates a new {\tt iirfilt} object using second-order sections.
+\item[{\tt iirfilt\_xxxt\_destroy()}]
+    destroys an {\tt iirfilt} object, freeing all internally-allocated memory
+    arrays and buffers.
+\item[{\tt iirfilt\_xxxt\_print()}]
+    prints the internals of an {\tt iirfilt} object.
+\item[{\tt iirfilt\_xxxt\_clear()}]
+    clears the filter's internal state.
+\item[{\tt iirfilt\_xxxt\_execute()}]
+    accepts one input sample and computes one output sample (i.e. executes one
+    iteration of the filter).
+\item[{\tt iirfilt\_xxxt\_get\_length()}]
+    returns the order of the filter.
+\end{description}
+
+Listed below is a basic example of the interface.
+For more detailed and extensive examples, refer to the {\tt examples/}
+source directory.
+\input{listings/iirfilt.example.c.tex}
 
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
 \liquid\ implements infinite impulse respone (IIR) filter design for the four
