@@ -727,9 +727,9 @@ struct IIRFILTSOS(_s) {                                         \
     TC a[3];    /* feed-back coefficients                   */  \
                                                                 \
     /* internal buffering                                   */  \
-    TC x[3];    /* Direct form I  buffer (input)            */  \
-    TC y[3];    /* Direct form I  buffer (output)           */  \
-    TC v[3];    /* Direct form II buffer                    */  \
+    TI x[3];    /* Direct form I  buffer (input)            */  \
+    TO y[3];    /* Direct form I  buffer (output)           */  \
+    TO v[3];    /* Direct form II buffer                    */  \
 };                                                              \
                                                                 \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
