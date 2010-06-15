@@ -78,7 +78,7 @@ struct flexframesync_s {
     // synchronizer objects
     agc_crcf agc_rx;
     symsync_crcf mfdecim;
-    nco nco_rx;
+    nco_crcf nco_rx;
     bsync_rrrf fsync;
 
     //
@@ -184,8 +184,8 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
 
     // pll, nco
-    fs->nco_rx = nco_create(LIQUID_NCO);
-    nco_pll_set_bandwidth(fs->nco_rx, fs->props.pll_bw0);
+    fs->nco_rx = nco_crcf_create(LIQUID_NCO);
+    nco_crcf_pll_set_bandwidth(fs->nco_rx, fs->props.pll_bw0);
 
     // bsync (p/n synchronizer)
     // TODO : add separate method to configure p/n sequence
@@ -255,7 +255,7 @@ void flexframesync_destroy(flexframesync _fs)
 
     // destroy synchronizer objects
     agc_crcf_destroy(_fs->agc_rx);
-    nco_destroy(_fs->nco_rx);
+    nco_crcf_destroy(_fs->nco_rx);
     bsync_rrrf_destroy(_fs->fsync);
     symsync_crcf_destroy(_fs->mfdecim);
 
@@ -323,7 +323,7 @@ void flexframesync_reset(flexframesync _fs)
     //agc_crcf_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
     agc_crcf_unlock(_fs->agc_rx);
     symsync_crcf_unlock(_fs->mfdecim);
-    nco_reset(_fs->nco_rx);
+    nco_crcf_reset(_fs->nco_rx);
 
     // SINDR estimate
     _fs->evm_hat = 0.0f;
@@ -382,7 +382,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 
         for (j=0; j<nw; j++) {
             // mix down, demodulate, run PLL
-            nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
+            nco_crcf_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             if (_fs->state == FLEXFRAMESYNC_STATE_SEEKPN) {
             //if (false) {
                 modem_demodulate(_fs->mod_preamble, nco_rx_out, &demod_sym);
@@ -399,13 +399,13 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             //if (_fs->rssi < _fs->squelch_threshold)
             //    phase_error *= 0.01f;
 
-            nco_pll_step(_fs->nco_rx, phase_error);
+            nco_crcf_pll_step(_fs->nco_rx, phase_error);
             /*
             float fmax = 0.05f;
             if (_fs->nco_rx->d_theta >  fmax) _fs->nco_rx->d_theta =  fmax;
             if (_fs->nco_rx->d_theta < -fmax) _fs->nco_rx->d_theta = -fmax;
             */
-            nco_step(_fs->nco_rx);
+            nco_crcf_step(_fs->nco_rx);
 #ifdef DEBUG_FLEXFRAMESYNC
             windowf_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
             windowf_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
@@ -426,7 +426,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                     //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     flexframesync_close_bandwidth(_fs);
-                    nco_adjust_phase(_fs->nco_rx, cargf(rxy));
+                    nco_crcf_adjust_phase(_fs->nco_rx, cargf(rxy));
                     symsync_crcf_lock(_fs->mfdecim);
 
                     // deactivate squelch as not to suppress signal in the
@@ -504,7 +504,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 symsync_crcf_unlock(_fs->mfdecim);
                 flexframesync_open_bandwidth(_fs);
                 _fs->num_symbols_collected = 0;
-                nco_reset(_fs->nco_rx);
+                nco_crcf_reset(_fs->nco_rx);
 
                 // Don't actually reset the synchronizer
                 //flexframesync_reset(_fs);
@@ -525,7 +525,7 @@ void flexframesync_open_bandwidth(flexframesync _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw0);
-    nco_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw0);
+    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw0);
 }
 
 // close bandwidth of synchronizer objects (tracking mode)
@@ -533,7 +533,7 @@ void flexframesync_close_bandwidth(flexframesync _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
-    nco_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
+    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
 }
 
 void flexframesync_configure_payload_buffers(flexframesync _fs)

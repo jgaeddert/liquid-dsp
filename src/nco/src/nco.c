@@ -29,16 +29,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "liquid.internal.h"
-
-#define NCO(name)   LIQUID_CONCAT(nco,name)
-#define T           float
-#define TC          float complex
-
-#define SIN         sinf
-#define COS         cosf
-#define PI          (M_PI)
-
 #define NCO_PLL_BANDWIDTH_DEFAULT   (0.1)
 #define NCO_PLL_GAIN_DEFAULT        (1000)
 

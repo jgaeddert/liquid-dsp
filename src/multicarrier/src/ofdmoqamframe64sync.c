@@ -81,7 +81,7 @@ struct ofdmoqamframe64sync_s {
     float y_phase[4];
     float p_phase[2];       // polynomial fit
 
-    nco nco_pilot;
+    nco_crcf nco_pilot;
     pll pll_pilot;
 
     // signal detection | automatic gain control
@@ -100,7 +100,7 @@ struct ofdmoqamframe64sync_s {
 
     // carrier frequency offset (CFO) estimation, compensation
     float nu_hat;
-    nco nco_rx;     //numerically-controlled oscillator
+    nco_crcf nco_rx;     //numerically-controlled oscillator
 
     // gain
     float g;    // coarse gain estimate
@@ -198,7 +198,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->x_phase[3] =  21.0f;
 
     // create NCO for pilots
-    q->nco_pilot = nco_create(LIQUID_VCO);
+    q->nco_pilot = nco_crcf_create(LIQUID_VCO);
     q->pll_pilot = pll_create();
     pll_set_bandwidth(q->pll_pilot,0.01f);
     pll_set_damping_factor(q->pll_pilot,4.0f);
@@ -209,7 +209,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     agc_crcf_set_bandwidth(q->sigdet,0.1f);
 
     // create NCO for CFO compensation
-    q->nco_rx = nco_create(LIQUID_VCO);
+    q->nco_rx = nco_crcf_create(LIQUID_VCO);
 
     // create auto-correlator objects
     q->autocorr_length = OFDMOQAMFRAME64SYNC_AUTOCORR_LEN;
@@ -299,7 +299,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     agc_crcf_destroy(_q->sigdet);
 
     // free NCO object memory
-    nco_destroy(_q->nco_rx);
+    nco_crcf_destroy(_q->nco_rx);
 
     // free auto-correlator memory objects
     autocorr_cccf_destroy(_q->autocorr);
@@ -319,7 +319,7 @@ void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q)
     // free input buffer
     windowcf_destroy(_q->input_buffer);
 
-    nco_destroy(_q->nco_pilot);
+    nco_crcf_destroy(_q->nco_pilot);
     pll_destroy(_q->pll_pilot);
 
     // free main object memory
@@ -345,8 +345,8 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q)
 
     // reset frequency offset estimation, correction
     _q->nu_hat = 0.0f;
-    nco_reset(_q->nco_rx);
-    nco_reset(_q->nco_pilot);
+    nco_crcf_reset(_q->nco_rx);
+    nco_crcf_reset(_q->nco_pilot);
     pll_reset(_q->pll_pilot);
 
     // clear input buffer
@@ -391,7 +391,7 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
         //x *= _q->g;
         
         // compensate for CFO
-        nco_mix_down(_q->nco_rx, x, &x);
+        nco_crcf_mix_down(_q->nco_rx, x, &x);
 
         // push sample into analysis filter banks
         float complex x_delay0;
@@ -626,7 +626,7 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
         printf("nu_hat =  %12.8f\n", _q->nu_hat);
 #endif
 
-        nco_set_frequency(_q->nco_rx, _q->nu_hat);
+        nco_crcf_set_frequency(_q->nco_rx, _q->nu_hat);
         _q->state = OFDMOQAMFRAME64SYNC_STATE_PLCPLONG0;
 
         _q->g = agc_crcf_get_gain(_q->sigdet);
@@ -732,7 +732,7 @@ void ofdmoqamframe64sync_execute_plcplong1(ofdmoqamframe64sync _q, float complex
         printf("nu_hat[0] = %12.8f\n", _q->nu_hat);
         printf("nu_hat[1] = %12.8f\n", nu_hat1);
 #endif
-        nco_adjust_frequency(_q->nco_rx, nu_hat1);
+        nco_crcf_adjust_frequency(_q->nco_rx, nu_hat1);
 
         /*
         printf("exiting prematurely\n");
@@ -876,8 +876,8 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
-    //nco_step(_q->nco_pilot);
-    float theta_hat = nco_get_phase(_q->nco_pilot);
+    //nco_crcf_step(_q->nco_pilot);
+    float theta_hat = nco_crcf_get_phase(_q->nco_pilot);
     float phase_error = _q->p_phase[0] - theta_hat;
     while (phase_error >  M_PI) phase_error -= 2.0f*M_PI;
     while (phase_error < -M_PI) phase_error += 2.0f*M_PI;
@@ -907,7 +907,7 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
         _Y0[i] *= liquid_crotf_vect(-theta);
         _Y1[i] *= liquid_crotf_vect(-theta);
     }
-    nco_step(_q->nco_pilot);
+    nco_crcf_step(_q->nco_pilot);
 
     // strip data subcarriers
     for (i=0; i<_q->num_subcarriers; i++) {

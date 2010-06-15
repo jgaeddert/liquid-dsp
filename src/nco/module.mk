@@ -27,7 +27,7 @@ module_name     := nco
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=		\
-	nco.c				\
+	nco_crcf.c				\
 	pll.c
 
 # local_t_files

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,88 +19,88 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __AUTOTEST_VCO__
-#define __AUTOTEST_VCO__
+#ifndef __LIQUID_AUTOTEST_VCO__
+#define __LIQUID_AUTOTEST_VCO__
 
 #include <complex.h>
 #include "autotest/autotest.h"
 #include "liquid.h"
 
 //
-// test floating point precision nco
+// test floating point precision vco
 //
 void autotest_vco_basic() {
-    nco p = nco_create(LIQUID_VCO);
+    nco_crcf p = nco_crcf_create(LIQUID_VCO);
 
     unsigned int i;     // loop index
     float s, c;         // sine/cosine result
     float tol=1e-4f;    // error tolerance
     float f=0.0f;       // frequency to test
 
-    nco_set_phase( p, 0.0f);
-    CONTEND_DELTA( nco_cos(p), 1.0f, tol );
-    CONTEND_DELTA( nco_sin(p), 0.0f, tol );
-    nco_sincos(p, &s, &c);
+    nco_crcf_set_phase( p, 0.0f);
+    CONTEND_DELTA( nco_crcf_cos(p), 1.0f, tol );
+    CONTEND_DELTA( nco_crcf_sin(p), 0.0f, tol );
+    nco_crcf_sincos(p, &s, &c);
     CONTEND_DELTA( s, 0.0f, tol );
     CONTEND_DELTA( c, 1.0f, tol );
 
-    nco_set_phase(p, M_PI/2);
-    CONTEND_DELTA( nco_cos(p), 0.0f, tol );
-    CONTEND_DELTA( nco_sin(p), 1.0f, tol );
-    nco_sincos(p, &s, &c);
+    nco_crcf_set_phase(p, M_PI/2);
+    CONTEND_DELTA( nco_crcf_cos(p), 0.0f, tol );
+    CONTEND_DELTA( nco_crcf_sin(p), 1.0f, tol );
+    nco_crcf_sincos(p, &s, &c);
     CONTEND_DELTA( s, 1.0f, tol );
     CONTEND_DELTA( c, 0.0f, tol );
 
     // cycle through one full period in 64 steps
-    nco_set_phase(p, 0.0f);
+    nco_crcf_set_phase(p, 0.0f);
     f = 2.0f * M_PI / 64.0f;
-    nco_set_frequency(p, f);
+    nco_crcf_set_frequency(p, f);
     for (i=0; i<128; i++) {
-        nco_sincos(p, &s, &c);
+        nco_crcf_sincos(p, &s, &c);
         CONTEND_DELTA( s, sinf(i*f), tol );
         CONTEND_DELTA( c, cosf(i*f), tol );
-        nco_step(p);
+        nco_crcf_step(p);
     }
 
     // double frequency: cycle through one full period in 32 steps
-    nco_set_phase(p, 0.0f);
+    nco_crcf_set_phase(p, 0.0f);
     f = 2.0f * M_PI / 32.0f;
-    nco_set_frequency(p, f);
+    nco_crcf_set_frequency(p, f);
     for (i=0; i<128; i++) {
-        nco_sincos(p, &s, &c);
+        nco_crcf_sincos(p, &s, &c);
         CONTEND_DELTA( s, sinf(i*f), tol );
         CONTEND_DELTA( c, cosf(i*f), tol );
-        nco_step(p);
+        nco_crcf_step(p);
     }
 
 }
 
 //
-// test nco mixing
+// test vco mixing
 //
 void autotest_vco_mixing() {
     // frequency, phase
     float f = 0.1f;
     float phi = M_PI;
 
-    // error tolerance (low for VCO)
-    float tol = 1e-4f;
+    // error tolerance (high for VCO)
+    float tol = 0.05f;
 
     // initialize nco object
-    nco p = nco_create(LIQUID_VCO);
-    nco_set_frequency(p, f);
-    nco_set_phase(p, phi);
+    nco_crcf p = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_frequency(p, f);
+    nco_crcf_set_phase(p, phi);
 
     unsigned int i;
     float nco_i, nco_q;
     for (i=0; i<64; i++) {
         // generate sin/cos
-        nco_sincos(p, &nco_q, &nco_i);
+        nco_crcf_sincos(p, &nco_q, &nco_i);
 
         // mix back to zero phase
         complex float nco_cplx_in = nco_i + _Complex_I*nco_q;
         complex float nco_cplx_out;
-        nco_mix_down(p, nco_cplx_in, &nco_cplx_out);
+        nco_crcf_mix_down(p, nco_cplx_in, &nco_cplx_out);
 
         // assert mixer output is correct
         CONTEND_DELTA(crealf(nco_cplx_out), 1.0f, tol);
@@ -107,7 +108,7 @@ void autotest_vco_mixing() {
         //printf("%3u : %12.8f + j*%12.8f\n", i, crealf(nco_cplx_out), cimagf(nco_cplx_out));
 
         // step nco
-        nco_step(p);
+        nco_crcf_step(p);
     }
 }
 

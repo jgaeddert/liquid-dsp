@@ -82,16 +82,16 @@ int main(int argc, char*argv[]) {
     fprintf(fid, "r=zeros(1,%u);\n",n);
 
     // objects
-    nco nco_tx = nco_create(LIQUID_VCO);
-    nco nco_rx = nco_create(LIQUID_VCO);
+    nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
+    nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
 
     modem mod = modem_create(ms,bps);
     modem demod = modem_create(ms,bps);
 
     // initialize objects
-    nco_set_phase(nco_tx, phase_offset);
-    nco_set_frequency(nco_tx, frequency_offset);
-    nco_pll_set_bandwidth(nco_rx, pll_bandwidth);
+    nco_crcf_set_phase(nco_tx, phase_offset);
+    nco_crcf_set_frequency(nco_tx, frequency_offset);
+    nco_crcf_pll_set_bandwidth(nco_rx, pll_bandwidth);
 
     float noise_power = powf(10.0f, -SNRdB/20.0f);
 
@@ -113,16 +113,16 @@ int main(int argc, char*argv[]) {
         modem_modulate(mod, sym_in, &x);
 
         // channel
-        //r = nco_cexpf(nco_tx);
-        nco_mix_up(nco_tx, x, &r);
+        //r = nco_crcf_cexpf(nco_tx);
+        nco_crcf_mix_up(nco_tx, x, &r);
 
         // add complex white noise
         crandnf(&noise);
         r += noise * noise_power;
 
         // 
-        //v = nco_cexpf(nco_rx);
-        nco_mix_down(nco_rx, r, &v);
+        //v = nco_crcf_cexpf(nco_rx);
+        nco_crcf_mix_down(nco_rx, r, &v);
 
         // demodulate
         modem_demodulate(demod, v, &sym_out);
@@ -144,19 +144,19 @@ int main(int argc, char*argv[]) {
             printf("  %4u: e_hat : %6.3f, phase error : %6.3f, freq error : %6.3f\n",
                     i+1,                                // iteration
                     phase_error,                        // estimated phase error
-                    nco_get_phase(nco_tx) - nco_get_phase(nco_rx),// true phase error
-                    nco_get_frequency(nco_tx) - nco_get_frequency(nco_rx)// true frequency error
+                    nco_crcf_get_phase(nco_tx) - nco_crcf_get_phase(nco_rx),// true phase error
+                    nco_crcf_get_frequency(nco_tx) - nco_crcf_get_frequency(nco_rx)// true frequency error
                   );
         }
 
         // update tx nco object
-        nco_step(nco_tx);
+        nco_crcf_step(nco_tx);
 
         // update pll
-        nco_pll_step(nco_rx, phase_error);
+        nco_crcf_pll_step(nco_rx, phase_error);
 
         // update rx nco object
-        nco_step(nco_rx);
+        nco_crcf_step(nco_rx);
     }
 
     fprintf(fid, "figure;\n");
@@ -178,8 +178,8 @@ int main(int argc, char*argv[]) {
 
     printf("results written to %s.\n",OUTPUT_FILENAME);
 
-    nco_destroy(nco_tx);
-    nco_destroy(nco_rx);
+    nco_crcf_destroy(nco_tx);
+    nco_crcf_destroy(nco_rx);
 
     modem_destroy(mod);
     modem_destroy(demod);

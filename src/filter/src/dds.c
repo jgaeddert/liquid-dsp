@@ -59,7 +59,7 @@ struct DDS(_s) {
     T * buffer1;
 
     // low-rate mixing stage
-    nco ncox;
+    NCO() ncox;
 
     // down-converter scaling factor
     float zeta;
@@ -131,9 +131,9 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
     q->zeta = 1.0f / ((float)(q->rate));
 
     // create NCO and set frequency
-    q->ncox = nco_create(LIQUID_VCO);
+    q->ncox = NCO(_create)(LIQUID_VCO);
     // TODO : ensure range is in [-pi,pi]
-    nco_set_frequency(q->ncox, 2*M_PI*(q->rate)*(q->fc0));
+    NCO(_set_frequency)(q->ncox, 2*M_PI*(q->rate)*(q->fc0));
 
     return q;
 }
@@ -155,7 +155,7 @@ void DDS(_destroy)(DDS() _q)
     free(_q->halfband_resamp);
 
     // destroy NCO object
-    nco_destroy(_q->ncox);
+    NCO(_destroy)(_q->ncox);
 
     // destroy DDS object
     free(_q);
@@ -189,7 +189,7 @@ void DDS(_reset)(DDS() _q)
         RESAMP2(_clear)(_q->halfband_resamp[i]);
     }
 
-    nco_set_phase(_q->ncox,0.0f);
+    NCO(_set_phase)(_q->ncox,0.0f);
 }
 
 // execute decimator
@@ -226,7 +226,7 @@ void DDS(_decim_execute)(DDS() _q,
     T y = b1[0];
 
     // increment NCO
-    nco_mix_down(_q->ncox, y, &y);
+    NCO(_mix_down)(_q->ncox, y, &y);
 
     // set output, normalizing by scaling factor
     *_y = y * _q->zeta;
@@ -238,7 +238,7 @@ void DDS(_interp_execute)(DDS() _q,
                           T * _y)
 {
     // increment NCO
-    nco_mix_up(_q->ncox, _x, &_x);
+    NCO(_mix_up)(_q->ncox, _x, &_x);
 
     unsigned int s;     // stage counter
     unsigned int i;     // input counter

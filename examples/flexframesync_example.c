@@ -146,9 +146,9 @@ int main(int argc, char *argv[]) {
     // channel
     float phi=0.0f;
     float dphi=0.02f;
-    nco nco_channel = nco_create(LIQUID_VCO);
-    nco_set_phase(nco_channel, phi);
-    nco_set_frequency(nco_channel, dphi);
+    nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_phase(nco_channel, phi);
+    nco_crcf_set_frequency(nco_channel, dphi);
     float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
     float mu    = 0.3f; // fractional sample delay
@@ -189,10 +189,10 @@ int main(int argc, char *argv[]) {
         interp_crcf_execute(interp, x, y);
 
         // add channel impairments
-        nco_mix_up(nco_channel, y[0], &z[0]);
-        nco_step(nco_channel);
-        nco_mix_up(nco_channel, y[1], &z[1]);
-        nco_step(nco_channel);
+        nco_crcf_mix_up(nco_channel, y[0], &z[0]);
+        nco_crcf_step(nco_channel);
+        nco_crcf_mix_up(nco_channel, y[1], &z[1]);
+        nco_crcf_step(nco_channel);
 
         // apply channel gain
         z[0] *= gamma;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
     // destroy allocated objects
     flexframegen_destroy(fg);
     flexframesync_destroy(fs);
-    nco_destroy(nco_channel);
+    nco_crcf_destroy(nco_channel);
     interp_crcf_destroy(interp);
 
     printf("num frames received : %3u / %3u\n", fd.num_frames_received, num_frames);

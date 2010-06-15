@@ -70,7 +70,7 @@ struct framesync64_s {
     // synchronizer objects
     agc_crcf agc_rx;
     symsync_crcf mfdecim;
-    nco nco_rx;
+    nco_crcf nco_rx;
     bsync_rrrf fsync;
 
     // synchronizer bandwidths
@@ -147,8 +147,8 @@ framesync64 framesync64_create(
     fs->squelch_status = LIQUID_AGC_SQUELCH_SIGNALHI;
 
     // pll, nco
-    fs->nco_rx = nco_create(LIQUID_VCO);
-    nco_pll_set_bandwidth(fs->nco_rx, FRAMESYNC64_PLL_BW_0);
+    fs->nco_rx = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_pll_set_bandwidth(fs->nco_rx, FRAMESYNC64_PLL_BW_0);
 
     // bsync (p/n synchronizer)
     unsigned int i;
@@ -216,7 +216,7 @@ void framesync64_destroy(framesync64 _fs)
     fec_destroy(_fs->dec);
     interleaver_destroy(_fs->intlv);
     agc_crcf_destroy(_fs->agc_rx);
-    nco_destroy(_fs->nco_rx);
+    nco_crcf_destroy(_fs->nco_rx);
     bsync_rrrf_destroy(_fs->fsync);
     modem_destroy(_fs->bpsk);
     modem_destroy(_fs->demod);
@@ -233,7 +233,7 @@ void framesync64_reset(framesync64 _fs)
 {
     symsync_crcf_clear(_fs->mfdecim);
     agc_crcf_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_0);
-    nco_reset(_fs->nco_rx);
+    nco_crcf_reset(_fs->nco_rx);
 }
 
 // TODO: break framesync64_execute method into manageable pieces
@@ -282,7 +282,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
 
         for (j=0; j<nw; j++) {
             // mix down, demodulate, run PLL
-            nco_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
+            nco_crcf_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             if (_fs->state == FRAMESYNC64_STATE_SEEKPN) {
             //if (false) {
                 modem_demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
@@ -292,13 +292,13 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 get_demodulator_phase_error(_fs->demod, &phase_error);
             }
 
-            nco_pll_step(_fs->nco_rx, phase_error);
+            nco_crcf_pll_step(_fs->nco_rx, phase_error);
             /*
             float fmax = 0.05f;
             if (_fs->nco_rx->d_theta >  fmax) _fs->nco_rx->d_theta =  fmax;
             if (_fs->nco_rx->d_theta < -fmax) _fs->nco_rx->d_theta = -fmax;
             */
-            nco_step(_fs->nco_rx);
+            nco_crcf_step(_fs->nco_rx);
 #if DEBUG_FRAMESYNC64
             windowf_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
             windowf_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
@@ -317,7 +317,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                     //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
                     // close bandwidth
                     framesync64_close_bandwidth(_fs);
-                    nco_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
+                    nco_crcf_adjust_phase(_fs->nco_rx, M_PI - cargf(rxy));
 
                     // deactivate squelch as not to suppress signal in the
                     // middle of the frame
@@ -366,7 +366,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
                 _fs->state = FRAMESYNC64_STATE_SEEKPN;
                 _fs->num_symbols_collected = 0;
 
-                nco_reset(_fs->nco_rx);
+                nco_crcf_reset(_fs->nco_rx);
                 break;
             default:;
             }
@@ -394,14 +394,14 @@ void framesync64_open_bandwidth(framesync64 _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->agc_bw0);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw0);
-    nco_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw0);
+    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw0);
 }
 
 void framesync64_close_bandwidth(framesync64 _fs)
 {
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw1);
-    nco_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw1);
+    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw1);
 }
 
 void framesync64_decode_header(framesync64 _fs)

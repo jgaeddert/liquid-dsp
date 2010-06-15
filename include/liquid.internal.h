@@ -1344,7 +1344,7 @@ void modem_demodulate_linear_array_ref(
 // freqmodem
 struct freqmodem_s {
     liquid_fmtype type; // demodulator type (PLL, DELAY_CONJ)
-    nco oscillator;     // nco
+    nco_crcf oscillator;// nco
     float fc;           // carrier frequency
     float m;            // modulation index
     float m_inv;        // 1/m

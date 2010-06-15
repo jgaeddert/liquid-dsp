@@ -38,17 +38,17 @@ int main() {
     float complex x[2*n], y[2][n];
 
     // generate time-domain signal (windowed sinusoidal pulses)
-    nco nco_0 = nco_create(LIQUID_VCO);
-    nco nco_1 = nco_create(LIQUID_VCO);
-    nco_set_frequency(nco_0, 0.122*M_PI);
-    nco_set_frequency(nco_1, 0.779*M_PI);
+    nco_crcf nco_0 = nco_crcf_create(LIQUID_VCO);
+    nco_crcf nco_1 = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_frequency(nco_0, 0.122*M_PI);
+    nco_crcf_set_frequency(nco_1, 0.779*M_PI);
     float complex x0,x1;
     for (i=0; i<2*num_samples; i++) {
-        nco_cexpf(nco_0, &x0);
-        nco_cexpf(nco_1, &x1);
+        nco_crcf_cexpf(nco_0, &x0);
+        nco_crcf_cexpf(nco_1, &x1);
         x[i] = (x0 + x1) * kaiser(i,2*num_samples,10.0f,0.0f);
-        nco_step(nco_0);
-        nco_step(nco_1);
+        nco_crcf_step(nco_0);
+        nco_crcf_step(nco_1);
     }
     // pad end with zeros
     for (i=2*num_samples; i<2*n; i++)
@@ -100,8 +100,8 @@ int main() {
     printf("results written to %s\n", OUTPUT_FILENAME);
 
     qmfb_crcf_destroy(q);
-    nco_destroy(nco_0);
-    nco_destroy(nco_1);
+    nco_crcf_destroy(nco_0);
+    nco_crcf_destroy(nco_1);
     printf("done.\n");
     return 0;
 }

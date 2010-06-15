@@ -108,9 +108,9 @@ int main() {
     ofdmoqamframe64sync_print(fs);
 
     // channel impairments
-    nco nco_rx = nco_create(LIQUID_VCO);
-    nco_set_frequency(nco_rx,cfo);
-    nco_set_phase(nco_rx,cpo);
+    nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_frequency(nco_rx,cfo);
+    nco_crcf_set_phase(nco_rx,cpo);
     float nstd = powf(10.0f, -SNRdB/20.0f);
     float complex h[p+1];
     for (i=0; i<p+1; i++) {
@@ -172,7 +172,7 @@ int main() {
         firfilt_cccf_push(fchannel,y[i]);
         firfilt_cccf_execute(fchannel,&z[i]);
 
-        nco_mix_up(nco_rx,z[i],&z[i]);
+        nco_crcf_mix_up(nco_rx,z[i],&z[i]);
 
         cawgn(&z[i],nstd);
 
@@ -234,7 +234,7 @@ int main() {
     ofdmoqamframe64gen_destroy(fg);
     ofdmoqamframe64sync_destroy(fs);
     modem_destroy(mod);
-    nco_destroy(nco_rx);
+    nco_crcf_destroy(nco_rx);
     firfilt_cccf_destroy(fchannel);
 
     // destroy simulation data object internals
