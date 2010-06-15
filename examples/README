@@ -174,7 +174,7 @@ firdes_kaiser_example.c *
     
     SEE ALSO: firdespm_example.c
 
-firdespm_example.c
+firdespm_example.c *
     This example demonstrates finite impulse response filter design using the
     Parks-McClellan algorithm.
 
