@@ -58,8 +58,29 @@ int main() {
         f = iirfilt_crcf_create(b,h_len, a,h_len);
     iirfilt_crcf_print(f);
 
-    // open output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
+    unsigned int i;
+
+    // allocate memory for data arrays
+    float complex x[n];
+    float complex y[n];
+
+    // generate input signal (noisy sine wave with decaying amplitude)
+    for (i=0; i<n; i++) {
+        x[i] = cexpf((2*M_PI*0.057f*_Complex_I - 0.04f)*i);
+        x[i] += 0.1f*(randnf() + _Complex_I*randnf());
+    }
+
+    // run filter
+    for (i=0; i<n; i++)
+        iirfilt_crcf_execute(f, x[i], &y[i]);
+
+    // destroy filter object
+    iirfilt_crcf_destroy(f);
+
+    // 
+    // plot results to output file
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
@@ -69,24 +90,11 @@ int main() {
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
 
-    unsigned int i;
-    float complex x;
-    float complex y;
     for (i=0; i<n; i++) {
-        // generate input signal (noisy sine wave with decaying amplitude)
-        x = cexpf((2*M_PI*0.057f*_Complex_I - 0.04f)*i);
-        cawgn(&x,0.1f);
-
-        // run filter
-        iirfilt_crcf_execute(f, x, &y);
-
         //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x), cimagf(x));
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y), cimagf(y));
+        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
-
-    // destroy filter object
-    iirfilt_crcf_destroy(f);
 
     // output filter coefficients using extra precision
     if (format == LIQUID_IIRDES_SOS) {
