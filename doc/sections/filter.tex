@@ -3,6 +3,14 @@
 %
 \section{filter}
 \label{module:filter}
+The filter module is at the core of \liquid's digital signal processing
+functionality.
+Filter design and implementation is a significant portion of radio
+engineering, and consumes a considerable portion of the baseband receiver's
+energy.
+For linear digital modulation techniques (see section~\ref{module:modem}),
+the matched filter is responsible for limiting the occupied bandwidth of the
+transmitted signal while eliminating inter-symbol interference.
 
 % autocorr
 \subsection{{\tt autocorr} (auto-correlator)}
@@ -18,7 +26,7 @@ where $N$ is the window length, and $d$ is the overlap delay.
 
 % firfilt
 \subsection{{\tt firfilt} (finite impulse response filter)}
-Finite impulse response filter.
+Finite impulse response (FIR) filter.
 The output $y$ is the convolution of the input $x$ with the filter
 coefficients (impulse response) $h$, viz
 \[
