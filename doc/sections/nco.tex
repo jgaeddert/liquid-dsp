@@ -22,31 +22,31 @@ The {\tt nco} object maintains its phase and frequency states internally.
 Various computations--such as mixing--use the phase state for generating
 complex sinusoids.
 The phase $\theta$ of the {\tt nco} object is updated using the
-{\tt nco\_step()} method which increments $\theta$ by $\Delta\theta$, the
+{\tt nco\_crcf\_step()} method which increments $\theta$ by $\Delta\theta$, the
 frequency.
 Both the phase and frequency of the {\tt nco} object can be manipulated using
-the appropriate {\tt nco\_set} and {\tt nco\_adjust} methods.
+the appropriate {\tt nco\_crcf\_set} and {\tt nco\_crcf\_adjust} methods.
 
 \subsubsection{Interface}
 \begin{description}
-\item[{\tt nco\_create()}] creates an {\tt nco} object
-\item[{\tt nco\_destroy()}] destroys an {\tt nco} object
-\item[{\tt nco\_reset()}] clears in internal state of an {\tt nco} object
-\item[{\tt nco\_set\_frequency()}] sets the frequency, $\Delta\theta$
-\item[{\tt nco\_adjust\_frequency()}] increments the frequency
-\item[{\tt nco\_set\_phase()}] sets the internal {\tt nco} phase, $\theta$
-\item[{\tt nco\_adjust\_phase()}] increments the internal {\tt nco} phase
-\item[{\tt nco\_step()}] increments the internal {\tt nco} phase by its
+\item[{\tt nco\_crcf\_create()}] creates an {\tt nco} object
+\item[{\tt nco\_crcf\_destroy()}] destroys an {\tt nco} object
+\item[{\tt nco\_crcf\_reset()}] clears in internal state of an {\tt nco} object
+\item[{\tt nco\_crcf\_set\_frequency()}] sets the frequency, $\Delta\theta$
+\item[{\tt nco\_crcf\_adjust\_frequency()}] increments the frequency
+\item[{\tt nco\_crcf\_set\_phase()}] sets the internal {\tt nco} phase, $\theta$
+\item[{\tt nco\_crcf\_adjust\_phase()}] increments the internal {\tt nco} phase
+\item[{\tt nco\_crcf\_step()}] increments the internal {\tt nco} phase by its
     internal frequency, $\theta \leftarrow \theta + \Delta\theta$
-\item[{\tt nco\_get\_phase()}] returns the internal phase
-\item[{\tt nco\_get\_frequency()}] returns the internal frequency (phase step
+\item[{\tt nco\_crcf\_get\_phase()}] returns the internal phase
+\item[{\tt nco\_crcf\_get\_frequency()}] returns the internal frequency (phase step
     size)
-\item[{\tt nco\_sin()}] returns $\sin(\theta)$
-\item[{\tt nco\_cos()}] returns $\cos(\theta)$
-\item[{\tt nco\_sincos()}] returns $\sin(\theta)$, $\cos(\theta)$
-\item[{\tt nco\_cexpf()}] returns $e^{j\theta}$
-\item[{\tt nco\_mix\_up()}] rotates an input vector by $e^{j\theta}$
-\item[{\tt nco\_mix\_down()}] rotates an input vector by $e^{-j\theta}$
+\item[{\tt nco\_crcf\_sin()}] returns $\sin(\theta)$
+\item[{\tt nco\_crcf\_cos()}] returns $\cos(\theta)$
+\item[{\tt nco\_crcf\_sincos()}] returns $\sin(\theta)$, $\cos(\theta)$
+\item[{\tt nco\_crcf\_cexpf()}] returns $e^{j\theta}$
+\item[{\tt nco\_crcf\_mix\_up()}] rotates an input vector by $e^{j\theta}$
+\item[{\tt nco\_crcf\_mix\_down()}] rotates an input vector by $e^{-j\theta}$
 \end{description}
 
 \subsection{PLL (phase-locked loop)}
@@ -187,20 +187,20 @@ Taking the bilinear $z$-transform gives the digital filter:
 \subsubsection{PLL Interface}
 
 % TODO : explain!
-Internally, the {\tt nco\_step()} method acts as the integrator, so the
+Internally, the {\tt nco\_crcf\_step()} method acts as the integrator, so the
 implementation of the PLL in \liquid\ is a little skewed...
 
 An example of the PLL can be seen in figure~\ref{fig:module:nco:pll}.
 
 \begin{description}
-\item[{\tt nco\_pll\_set\_bandwidth()}]
+\item[{\tt nco\_crcf\_pll\_set\_bandwidth()}]
     sets the bandwidth of the loop filter of the {\tt pll} internal to the
     {\tt nco} object.
-\item[{\tt nco\_pll\_step()}]
+\item[{\tt nco\_crcf\_pll\_step()}]
     advance the {\tt pll} phase with a phase error argument to the loop
     filter.
     This method only changes the frequency of the {\tt nco} object and does
-    not update the phase until {\tt nco\_step()} is invoked.
+    not update the phase until {\tt nco\_crcf\_step()} is invoked.
     This is useful if one wants to only run the PLL periodically and ignore
     several samples.
 \end{description}
