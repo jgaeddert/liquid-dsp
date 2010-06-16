@@ -736,9 +736,9 @@ struct IIRFILTSOS(_s) {                                         \
     TC a[3];    /* feed-back coefficients                   */  \
                                                                 \
     /* internal buffering                                   */  \
-    TC x[3];    /* Direct form I  buffer (input)            */  \
-    TC y[3];    /* Direct form I  buffer (output)           */  \
-    TC v[3];    /* Direct form II buffer                    */  \
+    TI x[3];    /* Direct form I  buffer (input)            */  \
+    TO y[3];    /* Direct form I  buffer (output)           */  \
+    TO v[3];    /* Direct form II buffer                    */  \
 };                                                              \
                                                                 \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
@@ -1353,7 +1353,7 @@ void modem_demodulate_linear_array_ref(
 // freqmodem
 struct freqmodem_s {
     liquid_fmtype type; // demodulator type (PLL, DELAY_CONJ)
-    nco oscillator;     // nco
+    nco_crcf oscillator;// nco
     float fc;           // carrier frequency
     float m;            // modulation index
     float m_inv;        // 1/m

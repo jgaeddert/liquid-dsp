@@ -58,11 +58,11 @@ void autotest_firpfbch_analysis() {
 
     // objects to run conventional channelizer
     decim_crcf decim[num_channels];
-    nco ncox[num_channels];
+    nco_crcf ncox[num_channels];
     for (i=0; i<num_channels; i++) {
         decim[i] = decim_crcf_create(num_channels, h, h_len);
-        ncox[i] = nco_create(LIQUID_VCO);
-        nco_set_frequency(ncox[i], 2.0f*M_PI*(float)(i)/(float)(num_channels));
+        ncox[i] = nco_crcf_create(LIQUID_VCO);
+        nco_crcf_set_frequency(ncox[i], 2.0f*M_PI*(float)(i)/(float)(num_channels));
     }
 
     // analyze time series
@@ -80,7 +80,7 @@ void autotest_firpfbch_analysis() {
 
         for (j=0; j<num_channels; j++) {
             // down-convert
-            nco_mix_block_down(ncox[j],y,z0a,num_channels);
+            nco_crcf_mix_block_down(ncox[j],y,z0a,num_channels);
 
             // run decimator
             decim_crcf_execute(decim[j],z0a,&z0[j],0);
@@ -103,7 +103,7 @@ void autotest_firpfbch_analysis() {
     // clean up allocated objects
     for (i=0; i<num_channels; i++) {
         decim_crcf_destroy(decim[i]);
-        nco_destroy(ncox[i]);
+        nco_crcf_destroy(ncox[i]);
     }
     firpfbch_destroy(ca);
 
@@ -218,7 +218,7 @@ void xautotest_firpfbch_analysis_energy()
     float tol=0.05f;
 
     float f;
-    nco nco_synth = nco_create(LIQUID_VCO);
+    nco_crcf nco_synth = nco_crcf_create(LIQUID_VCO);
 
     firpfbch c = firpfbch_create(num_channels,
                                  m,
@@ -233,15 +233,15 @@ void xautotest_firpfbch_analysis_energy()
     for (i=0; i<num_channels; i++) {
         // channel center frequency
         f = 2*M_PI * i / (float)num_channels;
-        nco_set_frequency(nco_synth, f);
+        nco_crcf_set_frequency(nco_synth, f);
 
         // generate tone centered on sub-channel (need to generate
         // enough frames to flush buffers of other channels)
         for (j=0; j<4*m; j++) {
             // generate frame of data
             for (k=0; k<num_channels; k++) {
-                nco_cexpf(nco_synth, &x[k]);
-                nco_step(nco_synth);
+                nco_crcf_cexpf(nco_synth, &x[k]);
+                nco_crcf_step(nco_synth);
             }
 
             // execute analysis filter bank
@@ -264,7 +264,7 @@ void xautotest_firpfbch_analysis_energy()
     }
 
     firpfbch_destroy(c);
-    nco_destroy(nco_synth);
+    nco_crcf_destroy(nco_synth);
 }
 
 

@@ -49,12 +49,12 @@ freqmodem freqmodem_create(float _m,
     fm->m_inv = 1.0f / fm->m;
 
     // create oscillator
-    fm->oscillator = nco_create(LIQUID_VCO);
+    fm->oscillator = nco_crcf_create(LIQUID_VCO);
 
     if (fm->type == LIQUID_MODEM_FM_PLL) {
         // TODO : set initial NCO frequency ?
         // create phase-locked loop
-        nco_pll_set_bandwidth(fm->oscillator, 0.05f);
+        nco_crcf_pll_set_bandwidth(fm->oscillator, 0.05f);
     }
 
     freqmodem_reset(fm);
@@ -64,7 +64,7 @@ freqmodem freqmodem_create(float _m,
 
 void freqmodem_destroy(freqmodem _fm)
 {
-    nco_destroy(_fm->oscillator);
+    nco_crcf_destroy(_fm->oscillator);
     free(_fm);
 }
 
@@ -78,7 +78,7 @@ void freqmodem_print(freqmodem _fm)
 void freqmodem_reset(freqmodem _fm)
 {
     // reset oscillator, phase-locked loop
-    nco_reset(_fm->oscillator);
+    nco_crcf_reset(_fm->oscillator);
 
     // clear complex phase term
     _fm->q = 0.0f;
@@ -88,11 +88,11 @@ void freqmodem_modulate(freqmodem _fm,
                         float _x,
                         float complex *_y)
 {
-    nco_set_frequency(_fm->oscillator,
+    nco_crcf_set_frequency(_fm->oscillator,
                       (_fm->m)*_x + _fm->fc);
 
-    nco_cexpf(_fm->oscillator, _y);
-    nco_step(_fm->oscillator);
+    nco_crcf_cexpf(_fm->oscillator, _y);
+    nco_crcf_step(_fm->oscillator);
 }
 
 void freqmodem_demodulate(freqmodem _fm,
@@ -106,15 +106,15 @@ void freqmodem_demodulate(freqmodem _fm,
 
         // compute phase error from internal NCO complex exponential
         float complex p;
-        nco_cexpf(_fm->oscillator, &p);
+        nco_crcf_cexpf(_fm->oscillator, &p);
         float phase_error = cargf( conjf(p)*_y );
 
         // step the PLL and the internal NCO object
-        nco_pll_step(_fm->oscillator, phase_error);
-        nco_step(_fm->oscillator);
+        nco_crcf_pll_step(_fm->oscillator, phase_error);
+        nco_crcf_step(_fm->oscillator);
 
         // demodulated signal is (weighted) nco frequency
-        *_x = (nco_get_frequency(_fm->oscillator) -_fm->fc) * _fm->m_inv;
+        *_x = (nco_crcf_get_frequency(_fm->oscillator) -_fm->fc) * _fm->m_inv;
     } else {
         // compute phase difference and normalize by modulation index
         *_x = (cargf(conjf(_fm->q)*(_y)) - _fm->fc) * _fm->m_inv;

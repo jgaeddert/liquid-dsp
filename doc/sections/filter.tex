@@ -3,6 +3,14 @@
 %
 \section{filter}
 \label{module:filter}
+The filter module is at the core of \liquid's digital signal processing
+functionality.
+Filter design and implementation is a significant portion of radio
+engineering, and consumes a considerable portion of the baseband receiver's
+energy.
+For linear digital modulation techniques (see section~\ref{module:modem}),
+the matched filter is responsible for limiting the occupied bandwidth of the
+transmitted signal while eliminating inter-symbol interference.
 
 % autocorr
 \subsection{{\tt autocorr} (auto-correlator)}
@@ -18,7 +26,7 @@ where $N$ is the window length, and $d$ is the overlap delay.
 
 % firfilt
 \subsection{{\tt firfilt} (finite impulse response filter)}
-Finite impulse response filter.
+Finite impulse response (FIR) filter.
 The output $y$ is the convolution of the input $x$ with the filter
 coefficients (impulse response) $h$, viz
 \[
@@ -93,8 +101,15 @@ input-to-output resampling ratio.
 \subsection{{\tt qmfb} (quadrature mirror filter bank)}
 
 % iirfilt
-\subsection{{\tt iirfilt}}
-Infinite impulse response filter.
+\subsection{{\tt iirfilt} (infinite impulse response filter)}
+\label{module:filter:iirfilt}
+The {\tt iirfilt\_crcf} object and family implement the infinite impulse
+response (IIR) filters.
+Also known as recursive filters, IIR filters allow a portion of the output to
+be fed back into the input, thus creating an impulse response which is
+non-zero for an infinite amount of time.
+Formally, the output signal $y[n]$ may be written in terms of the input signal
+$x[n]$ as
 \[
     y[n] = \frac{1}{a_0} \left(
            \sum_{j=0}^{n_b-1}{ b_j x[n-j] } -
@@ -114,12 +129,12 @@ The $z$-transform of the transfer function is therefore
 \]
 Typically, $H(z)$ is normalized such that $a_0=1$.
 
-For larger order filters (even for $n\approx 8$) the filter can become
+For larger order filters (even as small as $n\approx 8$) the filter can become
 unstable due to finite machine precision.
 It is often therefore useful to express $H(z)$ in terms of second-order
 sections.
-For a filter of order $n$, these sections are denoted by the two $L+r\times 3$
-matrices $\vec{B}$ and $\vec{A}$
+For a filter of order $n$, these sections are denoted by the two
+$(L+r)\times 3$ matrices $\vec{B}$ and $\vec{A}$
 where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
 \[
     H_d(z) = 
@@ -142,9 +157,46 @@ For a cascaded second-order section IIR filter, use
 
 See also: {\tt iirdes} (IIR filter design).
 
+\subsubsection{interface}
+\label{module:filter:iirfilt:interface}
+The interface to the {\tt iirfilt} object follows the convention of other
+\liquid\ signal processing objects in that the ``{\tt xxxt}'' extension in
+this section is only a placeholder for ``{\tt crcf}'' etc.
+
+\begin{description}
+\item[{\tt iirfilt\_xxxt\_create()}]
+    creates a new {\tt iirfilt} object
+\item[{\tt iirfilt\_xxxt\_create\_sos()}]
+    creates a new {\tt iirfilt} object using second-order sections.
+\item[{\tt iirfilt\_xxxt\_destroy()}]
+    destroys an {\tt iirfilt} object, freeing all internally-allocated memory
+    arrays and buffers.
+\item[{\tt iirfilt\_xxxt\_print()}]
+    prints the internals of an {\tt iirfilt} object.
+\item[{\tt iirfilt\_xxxt\_clear()}]
+    clears the filter's internal state.
+\item[{\tt iirfilt\_xxxt\_execute()}]
+    accepts one input sample and computes one output sample (i.e. executes one
+    iteration of the filter).
+\item[{\tt iirfilt\_xxxt\_get\_length()}]
+    returns the order of the filter.
+\end{description}
+
+Listed below is a basic example of the interface.
+For more detailed and extensive examples, refer to the {\tt examples/}
+source directory.
+\input{listings/iirfilt.example.c.tex}
+
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_iirfilt_crcf_time}
+\caption{{\tt iirfilt\_crcf} (infinite impulse response filter) demonstration}
+\label{fig:module:filter:iirfilt_crcf}
+\end{figure}
 
 
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
+\label{module:filter:iirdes}
 \liquid\ implements infinite impulse respone (IIR) filter design for the four
 major classes of filters (Butterworth, Chebyshev, elliptic, and Bessel) by
 first computing their analog low-pass prototypes, performing a bilinear
@@ -162,11 +214,11 @@ The internal IIR filter design process is described here:
       (floating-point).''
 
     \begin{description}
-    \item[{\tt butter\_azpkf()}] Butterworth (maximally flat in the pass-band)
-    \item[{\tt cheby1\_azpkf()}] Chebyshev Type-I (equiripple in the pass-band)
-    \item[{\tt cheby2\_azpkf()}] Chebyshev Type-II (equiripple in the stop-band)
+    \item[{\tt butter\_azpkf()}] Butterworth (maximally flat in the passband)
+    \item[{\tt cheby1\_azpkf()}] Chebyshev Type-I (equiripple in the passband)
+    \item[{\tt cheby2\_azpkf()}] Chebyshev Type-II (equiripple in the stopband)
     \item[{\tt ellip\_azpkf() }] elliptic filter (equiripple in the pass- and
-        stop-bands)
+        stopbands)
     \item[{\tt bessel\_azpkf()}] Bessel (maximally flat group delay)
     \end{description}
 
@@ -208,6 +260,60 @@ The internal IIR filter design process is described here:
 %{\tt examples/iirdes\_example.c} gives the simplified interface.
 A simplified example is given in {\tt examples/iirdes\_example.c}.
 
+\subsubsection{{\tt iirdes} filter types}
+\label{module:filter:iirdes:types}
+There are currently five low-pass prototypes available for inifinite impulse
+response filter design in \liquid,
+\begin{description}
+\item[{\tt LIQUID\_IIRDES\_BUTTER}]
+    is a Butterworth filter.
+    This is an all-pole analog design that has a maximally flat magnitude
+    response in the passband.
+    The analog prototype interface is {\tt butter\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:butter}
+\item[{\tt LIQUID\_IIRDES\_CHEBY1}]
+    is a Chebyshev Type-I filter.
+    This design uses Chebyshev polynomials to create a filter with a sharper
+    transition band than the Butterworth design by allowing ripples in the
+    passband.
+    The analog prototype interface is {\tt cheby1\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:cheby1}
+\item[{\tt LIQUID\_IIRDES\_CHEBY2}]
+    is a Chebyshev Type-II filter.
+    This design is similar to that of Chebyshev Type-I, except that the
+    Chebyshev polynomial is inverted.
+    This inverts the magnitude response of the filter and exhibits an
+    equiripple behavior in the stopband, rather than the passband.
+    The analog prototype interface is {\tt cheby2\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:cheby2}
+\item[{\tt LIQUID\_IIRDES\_ELLIP}]
+    is an elliptic (Cauer) filter.
+    This design allows ripples in both the passband and stopbands to create a
+    filter with a very sharp transition band.
+    The design process is somewhat more involved than the Butterworth and
+    Chebyshev prototypes and requires solving the elliptic integral of
+    different moduli.
+    For a more detailed description we refer the interested reader to
+    \cite{Orfanidis:2006}.
+    The analog prototype interface is {\tt ellip\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:ellip}
+\item[{\tt LIQUID\_IIRDES\_BESSEL}]
+    is a Bessel filter.
+    This is an all-pole analog design that has a maximally flat group delay
+    response (maximally linear phase response).
+    The solution to the design happens to be the roots to the Bessel
+    polynomials of equal order.
+    Computing the roots to the polynomial is, again, somewhat complex.
+    For a more detailed description we refer the interested reader to
+    \cite{Orchard:1965}.
+    The analog prototype interface is {\tt bessel\_azpkf()}.
+    An example of a digital filter response can be found in
+    figure~\ref{fig:module:filter:bessel}
+\end{description}
 
 Butterworth prototype:
 \[

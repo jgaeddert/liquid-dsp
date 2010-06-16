@@ -52,8 +52,8 @@ int main() {
 
     // objects to run conventional channelizer
     interp_crcf interp[num_channels];
-    nco nco_cs[num_channels];
-    nco nco_ca[num_channels];
+    nco_crcf nco_cs[num_channels];
+    nco_crcf nco_ca[num_channels];
     decim_crcf decim[num_channels];
 
     // retrieve filter taps from channelizer objects
@@ -68,13 +68,13 @@ int main() {
         f = 2.0f * M_PI * (float)(i) / (float)(num_channels);
         // synthesis
         interp[i] = interp_crcf_create(num_channels, hcs, h_len);
-        nco_cs[i] = nco_create(LIQUID_VCO);
-        nco_set_frequency(nco_cs[i], f);
+        nco_cs[i] = nco_crcf_create(LIQUID_VCO);
+        nco_crcf_set_frequency(nco_cs[i], f);
 
         // analysis
         decim[i] = decim_crcf_create(num_channels, hca, h_len);
-        nco_ca[i] = nco_create(LIQUID_VCO);
-        nco_set_frequency(nco_ca[i], f);
+        nco_ca[i] = nco_crcf_create(LIQUID_VCO);
+        nco_crcf_set_frequency(nco_ca[i], f);
     }
 
     //for (i=0; i<h_len; i++)
@@ -106,7 +106,7 @@ int main() {
             interp_crcf_execute(interp[j],x[j],y0a);
 
             // up-convert
-            nco_mix_block_up(nco_cs[j],y0a,y0b,num_channels);
+            nco_crcf_mix_block_up(nco_cs[j],y0a,y0b,num_channels);
 
             // append to output buffer
             for (k=0; k<num_channels; k++) {
@@ -128,7 +128,7 @@ int main() {
             z0[j] = 0.0f;
         for (j=0; j<num_channels; j++) {
             // down-convert
-            nco_mix_block_down(nco_ca[j],y0,z0a,num_channels);
+            nco_crcf_mix_block_down(nco_ca[j],y0,z0a,num_channels);
 
             // run decimator
             //decim_crcf_execute(decim[j],z0a,&z0[j],num_channels-1);
@@ -214,7 +214,7 @@ int main() {
     // clean up allocated objects
     for (i=0; i<num_channels; i++) {
         interp_crcf_destroy(interp[i]);
-        nco_destroy(nco_cs[i]);
+        nco_crcf_destroy(nco_cs[i]);
     }
     firpfbch_destroy(cs);
 

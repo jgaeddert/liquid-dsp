@@ -58,11 +58,11 @@ void autotest_firpfbch_synthesis() {
 
     // objects to run conventional channelizer
     interp_crcf interp[num_channels];
-    nco ncox[num_channels];
+    nco_crcf ncox[num_channels];
     for (i=0; i<num_channels; i++) {
         interp[i] = interp_crcf_create(num_channels, h, h_len);
-        ncox[i] = nco_create(LIQUID_VCO);
-        nco_set_frequency(ncox[i], 2.0f*M_PI*(float)(i)/(float)(num_channels));
+        ncox[i] = nco_crcf_create(LIQUID_VCO);
+        nco_crcf_set_frequency(ncox[i], 2.0f*M_PI*(float)(i)/(float)(num_channels));
     }
 
     // synthesize time series
@@ -84,7 +84,7 @@ void autotest_firpfbch_synthesis() {
             interp_crcf_execute(interp[j],x[j],y0a);
 
             // up-convert
-            nco_mix_block_up(ncox[j],y0a,y0b,num_channels);
+            nco_crcf_mix_block_up(ncox[j],y0a,y0b,num_channels);
 
             // append to output buffer
             for (k=0; k<num_channels; k++) {
@@ -109,7 +109,7 @@ void autotest_firpfbch_synthesis() {
     // clean up allocated objects
     for (i=0; i<num_channels; i++) {
         interp_crcf_destroy(interp[i]);
-        nco_destroy(ncox[i]);
+        nco_crcf_destroy(ncox[i]);
     }
     firpfbch_destroy(cs);
 

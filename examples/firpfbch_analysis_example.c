@@ -39,8 +39,8 @@ int main() {
     float complex y[num_channels];  // channelized output
 
     // create nco: sweeps entire range of frequencies over the evaluation interval
-    nco nco_tx = nco_create(LIQUID_VCO);
-    nco_set_frequency(nco_tx, 0.0f);
+    nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_frequency(nco_tx, 0.0f);
     float df = 2*M_PI/(num_channels*num_frames);
     printf("fr/ch:");
     for (j=0; j<num_channels; j++)  printf("%3u",j);
@@ -49,9 +49,9 @@ int main() {
 
         // generate frame of data
         for (j=0; j<num_channels; j++) {
-            nco_cexpf(nco_tx, &x[j]);
-            nco_adjust_frequency(nco_tx, df);
-            nco_step(nco_tx);
+            nco_crcf_cexpf(nco_tx, &x[j]);
+            nco_crcf_adjust_frequency(nco_tx, df);
+            nco_crcf_step(nco_tx);
         }
 
         // execute analysis filter bank
@@ -78,7 +78,7 @@ int main() {
     }
 
     // destroy objects
-    nco_destroy(nco_tx);
+    nco_crcf_destroy(nco_tx);
     firpfbch_destroy(c);
 
     // plot results

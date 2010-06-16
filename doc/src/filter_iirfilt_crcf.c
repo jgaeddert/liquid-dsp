@@ -1,5 +1,5 @@
 //
-// iirfilt_crcf_example.c
+// filter_iirfilt_crcf.c
 //
 // Complex infinite impulse response filter example. Demonstrates
 // the functionality of iirfilt by designing a low-order
@@ -13,9 +13,10 @@
 #include <math.h>
 #include <complex.h>
 
-#include "liquid.h"
+#include <liquid/liquid.h>
+#include "liquid.doc.h"
 
-#define OUTPUT_FILENAME "iirfilt_crcf_example.m"
+#define OUTPUT_FILENAME_TIME "figures.gen/filter_iirfilt_crcf_time.gnu"
 
 int main() {
     // options
@@ -77,67 +78,66 @@ int main() {
     // destroy filter object
     iirfilt_crcf_destroy(f);
 
+
+    // generate plots
+    FILE * fid = NULL;
+
     // 
-    // plot results to output file
+    // generate time-domain plot
     //
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"\n");
-    fprintf(fid,"order=%u;\n", order);
-    fprintf(fid,"n=%u;\n",n);
-    fprintf(fid,"x=zeros(1,n);\n");
-    fprintf(fid,"y=zeros(1,n);\n");
+
+    // open/initialize output file
+    fid = fopen(OUTPUT_FILENAME_TIME,"w");
+    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_TIME);
+    fprintf(fid,"reset\n");
+    // TODO : switch terminal types here
+    fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
+    //fprintf(fid,"set xrange [0:%u];\n",n);
+    fprintf(fid,"set yrange [-1.5:1.5]\n");
+    fprintf(fid,"set size ratio 0.3\n");
+    fprintf(fid,"set xlabel 'Sample Index'\n");
+    fprintf(fid,"set key top right nobox\n");
+    fprintf(fid,"set ytics -5,1,5\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set pointsize 0.6\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"set multiplot layout 2,1 scale 1.0,1.0\n");
+
+    fprintf(fid,"# real\n");
+    fprintf(fid,"set ylabel 'real'\n");
+    fprintf(fid,"set xrange [0:%u]\n", n);
+    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'input',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'filtered'\n", LIQUID_DOC_COLOR_BLUE);
+    // export output
+    for (i=0; i<n; i++) {
+        fprintf(fid,"%6u %12.4e\n", i, crealf(x[i]));
+    }
+    fprintf(fid,"e\n");
 
     for (i=0; i<n; i++) {
-        //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
-        fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        fprintf(fid,"%6u %12.4e\n", i, crealf(y[i]));
     }
+    fprintf(fid,"e\n");
 
-    // output filter coefficients using extra precision
-    if (format == LIQUID_IIRDES_SOS) {
-        // convert to transfer function form by convolving second-order
-        // sections (effectively this expands the polynomial)
-        fprintf(fid,"b = [1];\n");
-        fprintf(fid,"a = [1];\n");
-        for (i=0; i<L+r; i++) {
-            fprintf(fid,"b = conv(b,[%16.8e %16.8e %16.8e]);\n", b[3*i+0], b[3*i+1], b[3*i+2]);
-            fprintf(fid,"a = conv(a,[%16.8e %16.8e %16.8e]);\n", a[3*i+0], a[3*i+1], a[3*i+2]);
-        }
 
-    } else {
-        for (i=0; i<h_len; i++) {
-            fprintf(fid,"b(%3u) = %16.8e;\n", i+1, b[i]);
-            fprintf(fid,"a(%3u) = %16.8e;\n", i+1, a[i]);
-        }
+    fprintf(fid,"# imag\n");
+    fprintf(fid,"set ylabel 'complex'\n");
+    fprintf(fid,"set xrange [0:%u]\n", n);
+    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'input',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'filtered'\n", LIQUID_DOC_COLOR_GREEN);
+    // export output
+    for (i=0; i<n; i++) {
+        fprintf(fid,"%6u %12.4e\n", i, cimagf(x[i]));
     }
+    fprintf(fid,"e\n");
 
-    // plot filter response
-    fprintf(fid,"\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"freqz(b,a);\n");
-
-    // plot output
-    fprintf(fid,"t=0:(n-1);\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(t,real(x),'-','Color',[1 1 1]*0.5,'LineWidth',1,...\n");
-    fprintf(fid,"       t,real(y),'-','Color',[0 0.5 0.25],'LineWidth',2);\n");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"  legend('input','filtered output',1);\n");
-    fprintf(fid,"  grid on;\n");
-    fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(t,imag(x),'-','Color',[1 1 1]*0.5,'LineWidth',1,...\n");
-    fprintf(fid,"       t,imag(y),'-','Color',[0 0.25 0.5],'LineWidth',2);\n");
-    fprintf(fid,"  xlabel('time');\n");
-    fprintf(fid,"  ylabel('imag');\n");
-    fprintf(fid,"  legend('input','filtered output',1);\n");
-    fprintf(fid,"  grid on;\n");
+    for (i=0; i<n; i++) {
+        fprintf(fid,"%6u %12.4e\n", i, cimagf(y[i]));
+    }
+    fprintf(fid,"e\n");
+    fprintf(fid,"unset multiplot\n");
     fclose(fid);
-    printf("results written to %s.\n", OUTPUT_FILENAME);
+    printf("results written to %s\n", OUTPUT_FILENAME_TIME);
 
     printf("done.\n");
     return 0;

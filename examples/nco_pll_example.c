@@ -57,13 +57,13 @@ int main(int argc, char*argv[]) {
     unsigned int d=n/32;      // print every "d" lines
 
     // objects
-    nco nco_tx = nco_create(LIQUID_VCO);
-    nco nco_rx = nco_create(LIQUID_VCO);
+    nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);
+    nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
 
     // initialize objects
-    nco_set_phase(nco_tx, phase_offset);
-    nco_set_frequency(nco_tx, frequency_offset);
-    nco_pll_set_bandwidth(nco_rx, pll_bandwidth);
+    nco_crcf_set_phase(nco_tx, phase_offset);
+    nco_crcf_set_frequency(nco_tx, frequency_offset);
+    nco_crcf_pll_set_bandwidth(nco_rx, pll_bandwidth);
 
     // generate input
     float complex x[n];
@@ -73,10 +73,10 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     for (i=0; i<n; i++) {
         // generate complex sinusoid
-        nco_cexpf(nco_tx, &x[i]);
+        nco_crcf_cexpf(nco_tx, &x[i]);
 
         // update nco
-        nco_step(nco_tx);
+        nco_crcf_step(nco_tx);
     }
 
     // run loop
@@ -87,23 +87,23 @@ int main(int argc, char*argv[]) {
 #endif
 
         // generate complex sinusoid
-        nco_cexpf(nco_rx, &y[i]);
+        nco_crcf_cexpf(nco_rx, &y[i]);
 
         // compute phase error
         phase_error[i] = cargf(x[i]*conjf(y[i]));
 
         // update pll
-        nco_pll_step(nco_rx, phase_error[i]);
+        nco_crcf_pll_step(nco_rx, phase_error[i]);
 
         // update rx nco object
-        nco_step(nco_rx);
+        nco_crcf_step(nco_rx);
 
         // print phase error
         if ((i)%d == 0 || i==n-1 || i==0)
             printf("%4u : phase error = %12.8f\n", i, phase_error[i]);
     }
-    nco_destroy(nco_tx);
-    nco_destroy(nco_rx);
+    nco_crcf_destroy(nco_tx);
+    nco_crcf_destroy(nco_rx);
 
     // write output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");

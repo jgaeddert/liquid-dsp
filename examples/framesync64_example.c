@@ -45,9 +45,9 @@ int main() {
     float phi=0.3f;
     float dphi=0.05f;
     float gamma=0.1f;  // channel gain
-    nco nco_channel = nco_create(LIQUID_VCO);
-    nco_set_phase(nco_channel, phi);
-    nco_set_frequency(nco_channel, dphi);
+    nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_phase(nco_channel, phi);
+    nco_crcf_set_frequency(nco_channel, dphi);
 
     // data payload
     unsigned int i;
@@ -76,9 +76,9 @@ int main() {
         frame_rx[i] *= cexpf(_Complex_I*phi);
         frame_rx[i] += (randnf() + _Complex_I*randnf())*0.01f;
         frame_rx[i] *= gamma;
-        nco_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
+        nco_crcf_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
 
-        nco_step(nco_channel);
+        nco_crcf_step(nco_channel);
     }
 
     // synchronize/receive the frame
@@ -87,7 +87,7 @@ int main() {
     // clean up allocated objects
     framegen64_destroy(fg);
     framesync64_destroy(fs);
-    nco_destroy(nco_channel);
+    nco_crcf_destroy(nco_channel);
 
     // write frame to output file
     FILE* fid = fopen(OUTPUT_FILENAME, "w");

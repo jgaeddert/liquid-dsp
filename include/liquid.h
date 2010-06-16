@@ -1923,6 +1923,7 @@ typedef struct {
     unsigned int npfb;          // number of filters in symbol sync.
     unsigned int m;             // filter length
     float beta;                 // excess bandwidth
+    int squelch_enabled;        // enable/disable squelch
     float squelch_threshold;    // squelch enable/disable threshold
     //flexframesync_callback callback;
     //void * userdata;
@@ -2751,7 +2752,7 @@ typedef enum {
     LIQUID_VCO
 } liquid_ncotype;
 
-#define NCO_MANGLE_FLOAT(name)  LIQUID_CONCAT(nco, name)
+#define NCO_MANGLE_FLOAT(name)  LIQUID_CONCAT(nco_crcf, name)
 
 // large macro
 //   NCO    : name-mangling macro
@@ -2817,7 +2818,7 @@ void pll_reset(pll _p);
 void pll_set_bandwidth(pll _p, float _bt);
 void pll_set_damping_factor(pll _p, float _xi);
 //void pll_execute(pll _p, liquid_float_complex _x, liquid_float_complex *_y, float _e);
-void pll_step(pll _p, nco _nco, float _e);
+void pll_step(pll _p, nco_crcf _nco, float _e);
 
 
 

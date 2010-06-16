@@ -35,6 +35,7 @@
 #define INTERP(name)        LIQUID_CONCAT(interp_cccf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
 //#define QMFB(name)          LIQUID_CONCAT(qmfb_cccf,name)
+#define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 //#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)

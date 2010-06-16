@@ -76,7 +76,7 @@ void pll_execute(pll _p, float complex _x, float complex *_y, float _e)
 }
 #endif
 
-void pll_step(pll _p, nco _nco, float _e)
+void pll_step(pll _p, nco_crcf _nco, float _e)
 {
     // advance loop filter
     lf2_advance(_p->f, _e, &(_nco->d_theta));

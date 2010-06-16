@@ -14,18 +14,21 @@
 
 int main() {
     // create the NCO object
-    nco p = nco_create(LIQUID_NCO);
-    nco_set_phase(p, 0.0f);
-    nco_set_frequency(p, M_PI/10);
+    nco_crcf p = nco_crcf_create(LIQUID_NCO);
+    nco_crcf_set_phase(p, 0.0f);
+    nco_crcf_set_frequency(p, M_PI/10);
 
     unsigned int i;
     float s, c;
     for (i=0; i<11; i++) {
-        nco_sincos(p, &s, &c);
+        nco_crcf_sincos(p, &s, &c);
         printf("  %3u : %8.5f + j %8.5f\n",
                 i, c, s);
-        nco_step(p);
+        nco_crcf_step(p);
     }
+
+    // clean up allocated memory
+    nco_crcf_destroy(p);
 
     printf("done.\n");
     return 0;

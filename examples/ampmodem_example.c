@@ -86,16 +86,16 @@ int main(int argc, char*argv[]) {
         ampmodem_modulate(mod, x[i], &y[i]);
 
     // add channel impairments
-    nco nco_channel = nco_create(LIQUID_VCO);
-    nco_set_frequency(nco_channel, cfo);
-    nco_set_phase(nco_channel, cpo);
+    nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
+    nco_crcf_set_frequency(nco_channel, cfo);
+    nco_crcf_set_phase(nco_channel, cpo);
     float nstd = powf(10.0f,-SNRdB*0.1f);
     for (i=0; i<num_samples; i++) {
         cawgn(&y[i], nstd);
-        nco_mix_up(nco_channel, y[i], &y[i]);
-        nco_step(nco_channel);
+        nco_crcf_mix_up(nco_channel, y[i], &y[i]);
+        nco_crcf_step(nco_channel);
     }
-    nco_destroy(nco_channel);
+    nco_crcf_destroy(nco_channel);
 
     // demodulate signal
     for (i=0; i<num_samples; i++)

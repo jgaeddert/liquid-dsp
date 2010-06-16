@@ -34,7 +34,7 @@ struct ampmodem_s {
     liquid_modem_amtype type;
 
     // demod objects
-    nco oscillator;
+    nco_crcf oscillator;
 
     // ssb
     // TODO : replace DC bias removal with iir filter object
@@ -52,10 +52,10 @@ ampmodem ampmodem_create(float _m,
     q->m    = _m;
 
     // create nco, pll objects
-    q->oscillator = nco_create(LIQUID_NCO);
-    nco_reset(q->oscillator);
+    q->oscillator = nco_crcf_create(LIQUID_NCO);
+    nco_crcf_reset(q->oscillator);
     
-    nco_pll_set_bandwidth(q->oscillator,1e-1f);
+    nco_crcf_pll_set_bandwidth(q->oscillator,1e-1f);
 
     // single side-band
     q->ssb_alpha = 0.01f;
@@ -70,7 +70,7 @@ ampmodem ampmodem_create(float _m,
 
 void ampmodem_destroy(ampmodem _q)
 {
-    nco_destroy(_q->oscillator);
+    nco_crcf_destroy(_q->oscillator);
     free(_q);
 }
 
@@ -123,7 +123,7 @@ void ampmodem_demodulate(ampmodem _q,
         // coherent demodulation
 
         // mix signal down
-        nco_cexpf(_q->oscillator, &s);
+        nco_crcf_cexpf(_q->oscillator, &s);
         _y *= s;
 
         // compute constrained phase error
@@ -133,8 +133,8 @@ void ampmodem_demodulate(ampmodem _q,
         t *= cabsf(_y);
 
         // adjust nco, pll objects
-        nco_pll_step(_q->oscillator, t);
-        nco_step(_q->oscillator);
+        nco_crcf_pll_step(_q->oscillator, t);
+        nco_crcf_step(_q->oscillator);
         *_x = crealf(_y);
         break;
     default:

@@ -59,7 +59,7 @@ struct ofdmframe64sync_s {
     float y_phase[4];       // pilot subcarrier phase
     float p_phase[2];       // polynomial fit
 
-    nco nco_pilot;          // pilot phase nco
+    nco_crcf nco_pilot;          // pilot phase nco
     pll pll_pilot;          // pilot phase pll
 
     float phi_prime;        // previous average pilot phase
@@ -69,7 +69,7 @@ struct ofdmframe64sync_s {
     unsigned int num_symbols_rx;
 
     // numerically-controlled oscillator for carrier offset correction
-    nco nco_rx;
+    nco_crcf nco_rx;
 
     // PLCP SHORT : delay correlator
     autocorr_cccf delay_correlator;
@@ -137,8 +137,8 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     agc_crcf_set_bandwidth(q->sigdet,0.1f);
 
     // carrier offset correction
-    q->nco_rx = nco_create(LIQUID_VCO);
-    q->nco_pilot = nco_create(LIQUID_VCO);
+    q->nco_rx = nco_crcf_create(LIQUID_VCO);
+    q->nco_pilot = nco_crcf_create(LIQUID_VCO);
     q->pll_pilot = pll_create();
     pll_set_bandwidth(q->pll_pilot,0.01f);
     pll_set_damping_factor(q->pll_pilot,4.0f);
@@ -206,8 +206,8 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     msequence_destroy(_q->ms_pilot);
     autocorr_cccf_destroy(_q->delay_correlator);
     dotprod_cccf_destroy(_q->cross_correlator);
-    nco_destroy(_q->nco_rx);
-    nco_destroy(_q->nco_pilot);
+    nco_crcf_destroy(_q->nco_rx);
+    nco_crcf_destroy(_q->nco_pilot);
     pll_destroy(_q->pll_pilot);
     free(_q);
 }
@@ -227,9 +227,9 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     _q->state = OFDMFRAME64SYNC_STATE_PLCPSHORT;
     autocorr_cccf_clear(_q->delay_correlator);
     _q->rxx_max = 0.0f;
-    nco_set_frequency(_q->nco_rx, 0.0f);
-    nco_set_phase(_q->nco_rx, 0.0f);
-    nco_reset(_q->nco_pilot);
+    nco_crcf_set_frequency(_q->nco_rx, 0.0f);
+    nco_crcf_set_phase(_q->nco_rx, 0.0f);
+    nco_crcf_reset(_q->nco_pilot);
     pll_reset(_q->pll_pilot);
 
     // reset symbol timer
@@ -270,7 +270,7 @@ void ofdmframe64sync_execute(ofdmframe64sync _q,
         x *= _q->g;
         
         // carrier frequency offset estimation
-        nco_mix_up(_q->nco_rx, x, &x);
+        nco_crcf_mix_up(_q->nco_rx, x, &x);
 
         switch (_q->state) {
         case OFDMFRAME64SYNC_STATE_PLCPSHORT:
@@ -434,7 +434,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
         printf("rxx = %12.8f (angle : %12.8f);\n", cabsf(rxx),cargf(rxx)/16.0f);
 #endif
         _q->nu_hat0 = -cargf(rxx)/16.0f;
-        nco_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
+        nco_crcf_set_frequency(_q->nco_rx, -cargf(rxx)/16.0f);
         _q->state = OFDMFRAME64SYNC_STATE_PLCPLONG0;
         _q->timer = 0;
         _q->g = agc_crcf_get_gain(_q->sigdet);
@@ -461,7 +461,7 @@ void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q,
 #if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("rxy = %12.8f (angle : %12.8f);\n", cabsf(rxy),cargf(rxy));
 #endif
-        //nco_set_phase(_q->nco_rx, -cargf(rxy));
+        //nco_crcf_set_phase(_q->nco_rx, -cargf(rxy));
 
         // store sequence
         // TODO : back off PLCP long by a sample or 2 to help ensure no ISI
@@ -548,7 +548,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         // run fine CFO estimation and correct offset for
         // PLCP long sequences
         //ofdmframe64sync_estimate_cfo_plcplong(_q);
-        nco_adjust_frequency(_q->nco_rx, _q->nu_hat1);
+        nco_crcf_adjust_frequency(_q->nco_rx, _q->nu_hat1);
 #if DEBUG_OFDMFRAME64SYNC_PRINT
         printf("nu_hat0 = %12.8f;\n", _q->nu_hat0);
         printf("nu_hat1 = %12.8f;\n", _q->nu_hat1);
@@ -800,7 +800,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(_q->x_phase, _q->y_phase, 4, _q->p_phase, 2);
 
-    float theta_hat = nco_get_phase(_q->nco_pilot);
+    float theta_hat = nco_crcf_get_phase(_q->nco_pilot);
     float phase_error = _q->p_phase[0] - theta_hat;
     pll_step(_q->pll_pilot, _q->nco_pilot, phase_error);
 
@@ -823,7 +823,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     */
     // adjust nco frequency based on some small percentage of
     // the differential average pilot phase
-    nco_adjust_frequency(_q->nco_rx, -0.1f*_q->dphi / 64.0f);
+    nco_crcf_adjust_frequency(_q->nco_rx, -0.1f*_q->dphi / 64.0f);
 
     // filter phase slope
     float zeta = 0.02f;
@@ -842,7 +842,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
         theta = polyf_val(_q->p_phase, 2, (float)(i)-32.0f);
         _q->X[i] *= liquid_crotf_vect(-theta);
     }
-    nco_step(_q->nco_pilot);
+    nco_crcf_step(_q->nco_pilot);
 
     // TODO: perform additional polynomial gain compensation
 
