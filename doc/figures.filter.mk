@@ -26,6 +26,8 @@ local_pdffiles :=					\
 	figures.gen/filter_firhilb_decim_crcf_time.pdf	\
 	figures.gen/filter_firhilb_decim_crcf_freq.pdf	\
 							\
+	figures.gen/filter_iirfilt_crcf_time.pdf	\
+							\
 	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
@@ -84,6 +86,13 @@ figures.gen/filter_firdespm.gnu : src/filter_firdespm
 src/filter_firhilb_decim_crcf : src/filter_firhilb_decim_crcf.c $(lib_objects)
 figures.gen/filter_firhilb_decim_crcf_time.gnu \
 figures.gen/filter_firhilb_decim_crcf_freq.gnu : src/filter_firhilb_decim_crcf
+	./$<
+
+## 
+## iirfilt
+##
+src/filter_iirfilt_crcf : src/filter_iirfilt_crcf.c $(lib_objects)
+figures.gen/filter_iirfilt_crcf_time.gnu : src/filter_iirfilt_crcf
 	./$<
 
 ## 
