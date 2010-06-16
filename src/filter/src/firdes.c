@@ -27,6 +27,8 @@
 //      "Practical design rules for optimum finite impulse response
 //      lowpass digital filters," Bell Syst. Tech. Journal, vol. 52,
 //      pp. 769--99, July-Aug. 1973
+//  [Vaidyanathan:1993] Vaidyanathan, P. P., "Multirate Systems and
+//      Filter Banks," 1993, Prentice Hall, Section 3.2.1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,8 +76,7 @@ unsigned int estimate_req_filter_len(float _df,
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl)
 {
-    // from:
-    //  P.P. Vaidyanathan, "Multirate Systems and Filter Banks
+    // from [Vaidyanathan:1993]
     _slsl = fabsf(_slsl);
     float beta;
     if (_slsl > 50.0f)

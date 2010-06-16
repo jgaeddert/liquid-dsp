@@ -537,21 +537,10 @@ The sum (\ref{eqn:besseli_infinite_sum}) converges quickly due to the
 denominator increasing rapidly, thus only a few terms are necessary for
 sufficient approximation.
 An approximation for the value of $\beta$ to give a particular sidelobe level
-for the window is
-\begin{equation}
-    \beta =
-    \begin{cases}
-        0.1102 (A_s - 8.7)      &   A_s > 50 \\
-        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
-        0                       & \text{else}
-    \end{cases}
-\end{equation}
-where $A_s$ is the sidelobe suppression in decibels.
-The length of the filter is approximated as
-\[
-    N = \frac{A_s}{11 \Delta f}
-\]
-where $\Delta f$ is the desired transition bandwidth of the filter.
+for the window is given by {\tt kaiser\_beta\_slsl()}, and
+the length of the filter can be approximated with
+{\tt estimate\_req\_filter\_len()} (see section~\ref{module:filter:misc} for
+more detail on these methods).
 
 TODO : add discussion of interface for {\tt firdes\_kaiser\_window}.
 
@@ -622,4 +611,65 @@ FIR filter desing using the Parks-McClellan algorithm.
 \label{fig:module:filter:firdespm}
 \end{figure}
 
+\subsubsection{Miscellaneous functions}
+\label{module:filter:misc}
+Included in \liquid's 
+
+\begin{description}
+\item[{\tt estimate\_req\_filter\_len()}]
+    returns an estimate of the required filter length, given a transition
+    bandwidth $\Delta f$ and stopband attenuation $A_s$.
+    The estimate uses Hermann's formula \cite{Herrmann:1973}
+    \[
+        N \approx \frac{
+                D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
+            }{
+                \Delta f
+            }
+    \]
+    where
+    \[
+        D_{\infty} (\delta_1,\delta_2) =
+            \left[0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \right] t_2
+           -\left[0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \right]
+    \]
+    and
+    \[
+        f(\delta_1,\delta_2) = 11.012 + 0.51244(t_1 - t_2)
+    \]
+    with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
+
+\item[{\tt fir\_group\_delay()}]
+    computes the group delay for a finite impulse-response filter.
+
+\item[{\tt iir\_group\_delay()}]
+    computes the group delay for an infinite impulse-response filter.
+
+\item[{\tt iirdes\_isstable()}]
+    checks the stability of an infinite impulse-response filter by computing
+    the roots of the denominator (poles) and ensuring that they lie within the
+    unit circle.
+
+\item[{\tt kaiser\_beta\_slsl()}]
+    returns an estimate of the Kaiser $\beta$ factor for a particular
+    stop-band attenuation $A_s$.
+    The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz.
+    \[
+    \beta =
+    \begin{cases}
+        0.1102 (A_s - 8.7)      &   A_s > 50 \\
+        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+        0                       & \text{else}
+    \end{cases}
+    \]
+
+\item[{\tt liquid\_filter\_autocorr()}]
+    computes the auto-correlation of a filter at a specific lag.
+\item[{\tt liquid\_filter\_isi()}]
+    computes a filter's inter-symbol interference (both mean-squared error and
+    maximum error).
+    This is useful in comparing the performance of matched filter designs
+    (e.g. root raised-cosine).
+
+\end{description}
 
