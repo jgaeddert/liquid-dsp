@@ -2,6 +2,24 @@
 % figures.pgf/agc_squelch.tex
 %
 % Author: Joseph D. Gaeddert
+%
+%              _____________________
+%             /                     \
+%            /                       \
+%           /                         \
+%          /                           \
+%         /                             \
+%     ---X--- threshold      ...      ---X---
+%       /                                 \
+% _____/___       ...     noise floor______\_____|_____
+%
+% ta   tb     tc                    td      te          tf
+% |    |      |                     |       |           |
+% +----+-+----+---------------------+----+--+----+------+----> time
+%        |                               |       |
+%        rise                            fall    timeout
+%        
+
 \documentclass[a4paper,landscape]{article}
 
 \usepackage{pgf,tikz}
@@ -18,6 +36,8 @@
 \end{comment}
 
 \usetikzlibrary{calc,arrows,positioning}
+\usetikzlibrary{decorations.pathmorphing} % random steps (noise floor)
+
 \usepackage{amsmath}
 \usepackage[left=1cm,right=1cm]{geometry}
 \pagestyle{empty}
@@ -25,22 +45,50 @@
 \begin{document}
 
 \begin{tikzpicture}[scale=10];
-    \def\threshold{0.3} % squelch threshold
-    \def\rise{0.354}    % rising edge
-    \def\fall{1.430}    % falling edge
-    \def\timeout{1.8}   % timeout
+    \def\threshold{0.3}     % squelch threshold
+    \def\noisefloor{0.15}   % noise floor level
+    \def\ta{0.0}            %
+    \def\tb{0.3}            %
+    \def\rise{0.4}          % rising edge
+    \def\tc{0.6}            %
+    \def\td{1.2}            %
+    \def\fall{1.4}          % falling edge
+    \def\te{1.5}            %
+    \def\timeout{1.8}       % timeout
+    \def\tf{2.0}            %
     %\draw[step=2.5mm,help lines] (0,0) grid (2,1);
+
+    % derived constants
+    \def\cb{0.3*\tb   + 0.7*\rise}
+    \def\cc{0.3*\rise + 0.7*\tc}
+    \def\cd{0.7*\td   + 0.3*\fall}
+    \def\ce{0.7*\fall + 0.3*\te}
 
     % axis 
     \draw[very thick, black,->] (-0.02, 0.0 ) -- (2,0) node[anchor=south] {{\it time}};
     \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1) node[left=7pt,rotate=90] {{\it signal strength}};
 
     % draw curve
-    \draw[thick,black] plot[very thick,black] file {figures.pgf/agc_squelch.dat};
+    \draw[very thick, black]
+        (0,         \noisefloor) --
+        (\ta,       \noisefloor) --
+        (\tb,       \noisefloor) .. controls (\cb, \noisefloor) ..
+        (\rise,     \threshold) .. controls (\cc, 1) ..
+        (\tc,       1) --
+        (\td,       1) .. controls (\cd, 1) ..
+        (\fall,     \threshold) .. controls (\ce, \noisefloor) ..
+        (\te,       \noisefloor) --
+        (\timeout,  \noisefloor) --
+        (\tf,       \noisefloor);
 
     % draw squelch threshold line
     \draw[thin, gray] (-0.02, \threshold) -- (2,\threshold)
         node[black,anchor=south] {{\it squelch threshold}};
+
+    % draw noise floor
+    \draw[thick, gray, decorate, decoration={random steps, segment length=4pt, amplitude=2pt}]
+        (0, \noisefloor) -- (2,\noisefloor)
+        node[black,anchor=south] {{\it noise floor}};
 
     % intersection lines
     \draw[thin,gray] (\rise,   \threshold)      -- (\rise,   -0.02);
@@ -62,19 +110,18 @@
 
     % squelch code labels
     \def\q{-0.05};
-    \path (0.00, \q) node[anchor=east] {{\it agc code:\,\,}}
+    \path (0.00, \q) node[anchor=east] {{\it code:\,\,}}
           (0.00, \q) node {{\tt 0}}
           (0.05, \q) node {{\tt 0}}
           %(0.10, \q) node {{\tt 0}}
-          (0.15, \q) node {$\cdots$}
+          (0.5*\rise, \q) node {$\cdots$}
           %(0.20, \q) node {{\tt 0}}
-          (0.25, \q) node {{\tt 0}}
-          (0.30, \q) node {{\tt 0}}
-          (\rise,\q) node {{\tt 1}}
-          (0.40, \q) node {{\tt 2}}
-          (0.45, \q) node {{\tt 2}}
-          (0.50, \q) node {{\tt 2}}
-          (0.55, \q) node {$\cdots$}
+          (\rise-0.10, \q) node {{\tt 0}}
+          (\rise-0.05, \q) node {{\tt 0}}
+          (\rise,      \q) node {{\tt 1}}
+          (\rise+0.05, \q) node {{\tt 2}}
+          (\rise+0.10, \q) node {{\tt 2}}
+          (\rise+0.15, \q) node {{\tt 2}}
           (0.5*\rise+0.5*\fall, \q) node {$\cdots$}
           (\fall-0.20, \q) node {$\cdots$}
           (\fall-0.15, \q) node {{\tt 2}}

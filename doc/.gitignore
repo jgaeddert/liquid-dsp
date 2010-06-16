@@ -14,7 +14,6 @@ configure
 # ignore listings style (pygments)
 highlight.sty
 # ignore all programs
-src/agc_squelch
 src/agc_transient
 src/audio_cvsd
 src/doc-html-gen
