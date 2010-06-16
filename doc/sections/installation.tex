@@ -132,6 +132,26 @@ The is the default response of the target {\tt make check}.
 
 \subsection{Benchmarks ({\tt make bench})}
 \label{ch:installation:targets:benchmarks}
+Packaged with \liquid\ are benchmarks to determine the speed each signal
+processing element can run on your machine.
+You can build the benchmark program with {\tt make benchmark}, and view the
+execution options with a {\tt -u} or {\tt -h} flag for usage/help information:
+\begin{verbatim}
+    $ ./benchmark -h
+    bench options:
+      -h : prints this help file
+      -e : estimate cpu clock frequency and exit
+      -c : set cpu clock frequency (Hz)
+      -n<num_trials>
+      -p<package_index>
+      -b<benchmark_index>
+      -t<time> minimum execution time (ms)
+      -l : lists available packages
+      -L : lists all available benchmarks
+      -v : verbose
+      -q : quiet
+      -o<output filename>
+\end{verbatim}
 
 \subsection{Targets summary}
 
