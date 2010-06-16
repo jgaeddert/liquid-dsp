@@ -97,11 +97,28 @@ The {\tt interleaver} object operates like most objects in \liquid; ...
 
 \begin{description}
 \item[{\tt interleaver\_create()}]
+    creates an interleaver object, defaulting to 2 iterations.
 \item[{\tt interleaver\_destroy()}]
+    destroys the interleaver object, freeing all internally-allocated memory
+    arrays.
 \item[{\tt interleaver\_set\_num\_iterations()}]
+    sets the number of iterations of the interleaver
 \item[{\tt interleaver\_encode()}]
+    runs the forward interleaver
 \item[{\tt interleaver\_decode()}]
+    runs the reverse interleaver
 \end{description}
+
+A visualization of the interleaver can be seen in
+figure~\ref{fig:module:interleaver:scatterplot}
+where the input index is plotted against the output index for varying number
+of interations.
+Notice that with zero iterations, the output and input are identical (no
+interleaving).
+With one iteration only the bytes are interleaved, and so the output is
+grouped into 8-bit blocks.
+Further iterations, however, result in sufficiently dispersed bits, and
+patterns between input and output indices become less evident.
 
 %-------------------- FIGURE: interleaver scatterplot --------------------
 \begin{figure}
@@ -135,4 +152,6 @@ with increasing number of iterations (interleaving depth)}
 \label{fig:module:interleaver:scatterplot}
 \end{figure}
 
+This listing demonstrates the interface to the {\tt interleaver} object.
+\input{listings/interleaver.example.c.tex}
 
