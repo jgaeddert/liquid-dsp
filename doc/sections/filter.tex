@@ -328,7 +328,6 @@ response filter design in \liquid,
 % 
 % bilinear z-transform
 %
-
 \subsubsection{{\tt bilinear\_zpkf} (Bilinear $z$-transform)}
 \label{module:filter:iirdes:bilinear}
 The bilinear $z$-transform converts an analog prototype to its digital
@@ -397,6 +396,18 @@ to digital $\{z_{i},p_{i}\}$...
 \]
 %
 \liquid\ computes all of this with the {\tt bilinear\_zpk()} method.
+
+% 
+% filter transformations
+%
+\subsubsection{Filter transformations}
+\label{module:filter:iirdes:transformations}
+\begin{description}
+\item[{\tt iirdes\_dzpk\_lp2hp()}]
+    Converts a low-pass prototype to a high-pass prototype.
+\item[{\tt iirdes\_dzpk\_lp2bp()}]
+    Converts a low-pass prototype to a band-pass prototype.
+\end{description}
 
 ...second-order sections form:
 \[

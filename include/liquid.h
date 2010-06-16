@@ -1117,6 +1117,18 @@ void bilinear_zpkf(liquid_float_complex * _za,
                    liquid_float_complex * _pd,
                    liquid_float_complex * _kd);
 
+// digital z/p/k low-pass to high-pass
+//  _zd     :   digital zeros (low-pass prototype), [length: _n]
+//  _pd     :   digital poles (low-pass prototype), [length: _n]
+//  _n      :   low-pass filter order
+//  _zdt    :   output digital zeros transformed [length: _n]
+//  _pdt    :   output digital poles transformed [length: _n]
+void iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
+                       liquid_float_complex * _pd,
+                       unsigned int _n,
+                       liquid_float_complex * _zdt,
+                       liquid_float_complex * _pdt);
+
 // digital z/p/k low-pass to band-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
 //  _pd     :   digital poles (low-pass prototype), [length: _n]
