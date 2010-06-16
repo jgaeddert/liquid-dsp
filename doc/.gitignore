@@ -25,6 +25,7 @@ src/filter_iirdes
 src/filter_interp_crcf
 src/filter_kaiser
 src/filter_resamp_crcf
+src/filter_window
 src/interleaver_scatterplot
 src/modem.gendata
 src/modem.genplot
