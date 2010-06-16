@@ -269,7 +269,17 @@ response filter design in \liquid,
     is a Butterworth filter.
     This is an all-pole analog design that has a maximally flat magnitude
     response in the passband.
-    The analog prototype interface is {\tt butter\_azpkf()}.
+    The analog prototype interface is {\tt butter\_azpkf()} which computes the
+    roots $s_0,s_1,\ldots,s_{n-1}$ of the $n^{th}$-order Butterworth
+    polynomial,
+    \[
+        s_k = \omega_c \exp\left\{
+                    j \frac{\left(2k+n+1\right)\pi}{2n}
+              \right\}
+    \]
+    for $k=0,1,\ldots,n-1$.
+    Note that this results in a set of complex conjugate pairs such that
+    $(-1)^n s_0 s_1 \cdots s_{n-1} = 1$.
     An example of a digital filter response can be found in
     figure~\ref{fig:module:filter:butter}
 \item[{\tt LIQUID\_IIRDES\_CHEBY1}]
@@ -315,68 +325,23 @@ response filter design in \liquid,
     figure~\ref{fig:module:filter:bessel}
 \end{description}
 
-Butterworth prototype:
-\[
-    H_a(s) = \frac{1}{B_n(s)}
-           = \frac{
-                (-1)^n s_0 s_1 \cdots s_{n-1}
-            }{
-                (s-s_0)(s-s_1) \cdots (s-s_{n-1})
-            }
-\]
-where $B_n(s)$ is the $n^{th}$-order Butterworth polynomial with roots
-$s_0,s_1,\ldots,s_{n-1}$.
-\[
-    s_k = \omega_c \exp\left\{
-                j \frac{\left(2k+n+1\right)\pi}{2n}
-          \right\}
-\]
-for $k=0,1,\ldots,n-1$.
-Note that this results in a set of complex conjugate pairs... such that
-$(-1)^n s_0 s_1 \cdots s_{n-1} = 1$.
-Taking the bilinear $z$-transform
-\[
-    s \rightarrow \omega_c
-                  \cot\left(\frac{\pi \omega_c}{\omega_s}\right)
-                  \frac{1+z^{-1}}{1-z^{-1}}
-\]
-gives the discrete-time transfer function
-\[
-    H(z) = \frac{
-            %(-1)^n s_0 s_1 \cdots s_{n-1}
-            1
-           }{
-            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_0\right)
-            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_1\right)
-            \cdots
-            \left(m\frac{1-z^{-1}}{1+z^{-1}}-s_{n-1}\right)
-           }
-\]
-Multiplying both the numerator an denominator by $(1+z^{-1})^{n-1}$...
+% 
+% bilinear z-transform
+%
 
-\subsubsection{Bilinear $z$-transform}
-Given a continuous time analog transfer function
-\[
-    H(s) =  \frac{
-                r_0 + r_1 s + r_2 s^2 + \cdots + r_n s^n
-            }{
-                q_0 + q_1 s + q_2 s^2 + \cdots + q_m s^m
-            }
-\]
-{\tt bilinear\_nd()} converts into discretized transfer function
-\[
-    H_d(z) = H_a(s)\Bigl.\Bigr|_{s = m\frac{1-z^{-1}}{1+z^{-1}}}
-           =    \frac{
-                    b_0 + b_1 z^{-1} + b_2 z^{-2} + \cdots + b_n z^{-n}
-                }{
-                    1   + a_1 z^{-1} + a_2 z^{-2} + \cdots + a_m z^{-m}
-                }
-\]
-by expanding the polynomials in the numerator and denominator.
-See {\tt poly\_binomial\_expand\_pm()} in the math section.
-
-{\tt bilinear\_zpk()} converts from the analog zeros ($z_k$), poles ($p_k$),
-gain ($k$) form
+\subsubsection{{\tt bilinear\_zpkf} (Bilinear $z$-transform)}
+\label{module:filter:iirdes:bilinear}
+The bilinear $z$-transform converts an analog prototype to its digital
+counterpart.
+Given a continuous time analog transfer function in zeros/poles/gain form
+(``zpk''),
+%\[
+%    H(s) =  \frac{
+%                r_0 + r_1 s + r_2 s^2 + \cdots + r_n s^n
+%            }{
+%                q_0 + q_1 s + q_2 s^2 + \cdots + q_m s^m
+%            }
+%\]
 \[
     H_a(s) = k_a
             \frac{
@@ -385,6 +350,41 @@ gain ($k$) form
                 (s-p_{a0})(s-p_{a1})\cdots(s-p_{am-1})
             }
 \]
+the bilinear $z$-transform converts $H_a(s)$ into the discretized transfer
+function $H_d(z)$ by mapping the $s$-plane onto the $z$-plane with the
+approximation
+\[
+    s \approx \frac{2}{T}
+              \frac{1-z^{-1}}{1 + z^{-1}}
+\]
+This maps $H_a(0) \rightarrow H_d(0)$ and
+$H_a(\infty) \rightarrow H_d(\omega_s/2)$, however we are free to choose the
+pre-warping factor which maps the cutoff frequency $\omega_c$.
+\[
+    s \rightarrow \omega_c
+                  \cot\left(\frac{\pi \omega_c}{\omega_s}\right)
+                  \frac{1-z^{-1}}{1+z^{-1}}
+\]
+Substituting this into $H_a(s)$ gives the discrete-time transfer function
+\[
+    H(z) = k_a \frac{
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{a0}\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{a1}\right)
+            \cdots
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{an-1}\right)
+           }{
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{a0}\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{a1}\right)
+            \cdots
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{am-1}\right)
+           }
+\]
+where $m=\omega_c \cot\left(\pi \omega_c / \omega_s\right)$ is the
+frequency pre-warping factor, computed in \liquid\ via the method
+{\tt iirdes\_freqprewarp()}.
+Multiplying both the numerator an denominator by $(1+z^{-1})^{m-1}$...
+...transforming the the analog zeros ($z_k$), poles ($p_k$), and gain ($k$) into
+their digital equivalents. [reword]
 ...maps the analog zeros and poles $\{z_{ai},p_{ai}\}$
 to digital $\{z_{i},p_{i}\}$...
 \[
@@ -395,6 +395,9 @@ to digital $\{z_{i},p_{i}\}$...
                 (1-p_{0}z^{-1})(1-p_{1}z^{-1})\cdots(1-p_{n-1}z^{-1})
             }
 \]
+%
+\liquid\ computes all of this with the {\tt bilinear\_zpk()} method.
+
 ...second-order sections form:
 \[
     H_d(z) = H_0
