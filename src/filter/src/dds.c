@@ -65,10 +65,15 @@ struct DDS(_s) {
     float zeta;
 };
 
-DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
-                   float _fc,               // input carrier
-                   float _bw,               // input signal bandwidth
-                   float _slsl)             // sidelobe suppression level
+// create dds object
+//  _num_stages     :   number of halfband stages
+//  _fc             :   input carrier
+//  _bw             :   input signal bandwidth
+//  _As             :   sidelobe suppression level
+DDS() DDS(_create)(unsigned int _num_stages,
+                   float _fc,
+                   float _bw,
+                   float _slsl)
 {
     // create object
     DDS() q = (DDS()) malloc(sizeof(struct DDS(_s)));
@@ -100,14 +105,19 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
         while (q->fc[i] < -0.5f) q->fc[i] += 1.0f;
 
         // compute transition bandwidth
-        // TODO : verify this calculation
         q->ft[i] = 0.5f*(1.0f - bw);
+        if (q->ft[i] > 0.45) q->ft[i] = 0.45f; // set maximum bandwidth
         q->slsl[i] = q->slsl0;
 
         // compute (estimate) required filter length
         //q->h_len[i] = i==0 ? 37 : q->h_len[i-1]*0.7;
         q->h_len[i] = estimate_req_filter_len(q->ft[i], q->slsl[i]);
         if ((q->h_len[i] % 2) == 0) q->h_len[i]++;
+
+        // ensure h_len[i] is of form 4*m+1
+        unsigned int m = (q->h_len[i]-1)/4;
+        if (m < 1) m = 1;
+        q->h_len[i] = 4*m+1;
 
         // update carrier, bandwidth parameters
         fc *= 0.5f;
@@ -138,8 +148,10 @@ DDS() DDS(_create)(unsigned int _num_stages,// number of halfband stages
     return q;
 }
 
+// destroy dds object, freeing all internally-allocated memory
 void DDS(_destroy)(DDS() _q)
 {
+    // free filter parameter arrays
     free(_q->h_len);
     free(_q->fc);
     free(_q->ft);
@@ -161,6 +173,7 @@ void DDS(_destroy)(DDS() _q)
     free(_q);
 }
 
+// print dds object internals
 void DDS(_print)(DDS() _q)
 {
     printf("direct digital synthesizer (dds), rate : %u\n", _q->rate);
@@ -181,6 +194,7 @@ void DDS(_print)(DDS() _q)
     printf("    complexity : %12.4f\n",0.0f);
 }
 
+// reset dds object internals, clear filters and nco phase
 void DDS(_reset)(DDS() _q)
 {
     // reset internal filter state variables
@@ -193,6 +207,9 @@ void DDS(_reset)(DDS() _q)
 }
 
 // execute decimator
+//  _q      :   dds object
+//  _x      :   input sample array [size: 2^num_stages x 1]
+//  _y      :   output sample
 void DDS(_decim_execute)(DDS() _q,
                          T * _x,
                          T * _y)
@@ -234,6 +251,9 @@ void DDS(_decim_execute)(DDS() _q,
 }
 
 // execute interpolator
+//  _q      :   dds object
+//  _x      :   input sample
+//  _y      :   output sample array [size: 2^num_stages x 1]
 void DDS(_interp_execute)(DDS() _q,
                           T _x,
                           T * _y)
