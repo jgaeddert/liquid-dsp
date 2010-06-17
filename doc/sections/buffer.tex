@@ -195,12 +195,21 @@ Effectively, the window looks like:
 \item[{\tt window\_recreate()}]
     extends an existing window's size, similar to the standard C library's
     {\tt realloc()}.
-    If the size of the new window is larger than the old one, the old values
-    are pushed to the end.
+    If the size of the new window is larger than the old one, the newest
+    values are retained at the beginning of the buffer and the oldest values
+    are truncated.
+    % see \ref{listing:buffer:window}~line~23
+    If the size of the new window is smaller than the old one, the oldest
+    values are truncated.
+    % see \ref{listing:buffer:window}~line~27
 \item[{\tt window\_clear()}]
-    clears the contents of the buffer (set to zero)
+    clears the contents of the buffer by setting all internal values to zero.
 \item[{\tt window\_index()}]
-    retrieves the $n^{th}$ sample in the window
+    retrieves the $n^{th}$ sample in the window.
+    This is equivalent to first invoking {\tt read()} and then indexing on the
+    resulting pointer, however the result is obtained much faster.
+    Therefore invoking {\tt window\_index(w,0)} returns the {\em oldest} value
+    in the window.
 \item[{\tt window\_read()}]
     reads the contents of the window by returning a pointer to the aligned
     internal memory array.
@@ -210,6 +219,8 @@ Effectively, the window looks like:
 \item[{\tt window\_push()}]
     shifts a single sample into the right side of the window, pushing the
     oldest (left-most) sample out of the end.
+    Unlike stacks, the {\tt window} object has no equivalent ``pop'' method,
+    as values are retained in memory until they are overwritten.
 \item[{\tt window\_write()}]
     writes a block of data to the window.
     Effectively, it is equivalent to pushing each sample one at a time, but
@@ -217,6 +228,7 @@ Effectively, the window looks like:
 \end{description}
 
 Here is an example demonstrating the basic functionality of the window object.
-The comments show the internal state of the window after each function call.
+The comments show the internal state of the window after each function call as
+if the window were a simple C array.
 \input{listings/window.example.c.tex}
 
