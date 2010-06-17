@@ -417,6 +417,8 @@ random_example.c
     This example tests the random number generators for different
     distributions.
 
+resamp2_crcf_example.c
+
 resamp2_crcf_decim_example.c
     Halfband decimator.  This example demonstrates the interface to the
     decimating halfband resampler.  A low-frequency input sinusoid is
