@@ -27,25 +27,27 @@
 \begin{tikzpicture}[scale=4];
     % help lines
     %\draw[step=2.5mm,help lines] (0,0) grid (2,1);
-    %
-    \def\dv{0.015}    % voltage deviation
+    \def\dv{0.16}
 
     % axis 
     \draw[very thick, black,->] (-0.02, 0.0 ) -- (2,0)
-        node[anchor=north] {{\it input energy}};
+        node[anchor=north] {{\scriptsize\it input energy}};
     \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1)
-        node[left=7pt,rotate=90] {{\it output energy}};
-
-    % curve
-    \draw[thick, black] (0.0, 0.0      ) -- 
-                             (0.5, 0.5 - \dv) --
-                             (1.5, 0.5 + \dv) --
-                             (2.0, 1.0      );
+        node[left=7pt,rotate=90] {{\scriptsize\it output energy}};
 
     % other lines
-    \draw[thin, gray] (0.0, 0.5) -- (2.0, 0.5) node[anchor=south,black] {$\bar{e}$}; % horizontal
-    \draw[thin, gray] (0.5, 0.0) -- (0.5, 0.5 - \dv);
-    \draw[thin, gray] (1.5, 0.0) -- (1.5, 0.5 + \dv);
+    \draw[thin, gray] (0.0, 0.5) -- (2.0, 0.5)
+        node[anchor=south,black]
+        {{\scriptsize\it target energy,} $\bar{e}$}; % horizontal
+    \draw[thin, gray] (0.5, 0.0) -- (0.5, 0.5);
+    \draw[thin, gray] (1.5, 0.0) -- (1.5, 0.5);
+
+    % curve
+    \draw[thick, black, rounded corners=\dv cm]
+        (0.0,           0.0) -- 
+        (0.5 - 0.2*\dv, 0.5) --
+        (1.5 + 0.2*\dv, 0.5) --
+        (2.0,           1.0);
 
     % tic marks and labels
     \draw[very thick, black] (-0.5pt, 0.5) -- (0.5pt, 0.5);% node[left=7pt] {$\hat{e}$};
