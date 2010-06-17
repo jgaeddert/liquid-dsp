@@ -65,6 +65,7 @@ static flexframesyncprops_s flexframesyncprops_default = {
     0.7f,       // beta
     // squelch
     1,          // squelch_enabled
+    0,          // autosquelch_enabled
     -15.0f      // squelch_threshold
 };
 
@@ -306,7 +307,8 @@ void flexframesync_print(flexframesync _fs)
     printf("    filter length       :   %u\n", _fs->props.m);
     printf("    num filters (ppfb)  :   %u\n", _fs->props.npfb);
     printf("    filter excess b/w   :   %6.4f\n", _fs->props.beta);
-    printf("    squelch             :   %s\n", _fs->props.squelch_enabled ? "enabled" : "disabled");
+    printf("    squelch             :   %s\n", _fs->props.squelch_enabled     ? "enabled" : "disabled");
+    printf("    auto-squelch        :   %s\n", _fs->props.autosquelch_enabled ? "enabled" : "disabled");
     printf("    squelch threshold   :   %6.2f dB\n", _fs->props.squelch_threshold);
     printf("    ----\n");
     printf("    p/n sequence len    :   %u\n", _fs->pnsequence_len);
@@ -334,6 +336,12 @@ void flexframesync_reset(flexframesync _fs)
         agc_crcf_squelch_activate(_fs->agc_rx);
     else
         agc_crcf_squelch_deactivate(_fs->agc_rx);
+
+    // enable/disable auto-squelch
+    if (_fs->props.autosquelch_enabled)
+        agc_crcf_squelch_enable_auto(_fs->agc_rx);
+    else
+        agc_crcf_squelch_disable_auto(_fs->agc_rx);
 }
 
 // TODO: break flexframesync_execute method into manageable pieces

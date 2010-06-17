@@ -1924,6 +1924,7 @@ typedef struct {
     unsigned int m;             // filter length
     float beta;                 // excess bandwidth
     int squelch_enabled;        // enable/disable squelch
+    int autosquelch_enabled;    // enable/disable automatic squelch
     float squelch_threshold;    // squelch enable/disable threshold
     //flexframesync_callback callback;
     //void * userdata;
