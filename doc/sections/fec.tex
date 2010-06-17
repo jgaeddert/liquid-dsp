@@ -9,6 +9,12 @@ The fec module implements a set of forward error-correction codes for
 ensuring and validating data integrity through a noisy channel.
 Redudant (``parity'') bits are added to a data sequence to help correct for
 errors introduced by the channel.
+The {\tt fec} object realizes forward error-correction capabilities in
+\liquid\ while the methods {\tt checksum()} and {\tt crc32()} implement error
+detection.
+Certain FEC schemes are only available to \liquid\ by installing the external
+{\tt libfec} library \cite{fec:web}, available as a free download.
+A few low-rate (and low efficiency) codes are availble internally.
 
 See also: {\tt packetizer}, {\tt interleaver}
 
@@ -24,7 +30,9 @@ Here is a simple example:
 %
 \input{listings/checksum.example.c.tex}
 %
-For a much much stronger eror detection, use the cyclic redundancy check.
+It is important to realize that a checksum does not correct any errors, but
+can only detect their presence.
+For a much much stronger error detection, use the cyclic redundancy check.
 
 \subsection{{\tt crc32} (32-bit cyclic redundancy check)}
 \label{module:fec:crc32}
@@ -32,6 +40,8 @@ This example demonstrates how a cyclic redundancy check (CRC) can be used to
 validate data received through un-reliable means (e.g. a noisy channel).
 A CRC is, in essence, a strong algebraic error detection code that computes a
 key on a block of data using base-2 polynomials.
+While it is a strong error-detection method, a CRC is not an error-correction
+code.
 Here is a simple example:
 %
 \input{listings/crc32.example.c.tex}
@@ -96,10 +106,16 @@ intensive to the host processor.
 
 \subsection{Interface}
 \label{module:fec:interface}
+In designing the {\tt fec} interface, we have tried to keep simplicity and
+reconfigurability in mind.
+%The goal is to allow flexibility in the allocation ...
+%TODO finish interface description
 
 \begin{description}
 \item[{\tt fec\_create()}]
     creates a {\tt fec} object of a specific scheme.
+    Notice that the length of the input message does not need to be specified
+    until {\tt encode()} or {\tt decode()} is invoked.
 \item[{\tt fec\_recreate()}]
     recreates an existing {\tt fec} object with a different scheme.
 \item[{\tt fec\_destroy()}]
@@ -109,6 +125,12 @@ intensive to the host processor.
     runs the error-correction encoder scheme on an input data array.
     The resulting encoded message is written to the output array, allocated by
     the user.
+    The first argument is the {\tt fec} object pointer, instantiated with the
+    {\tt create()} method.
+    The second argument is an integer representing the size of the decoded
+    message in bytes.
+    The third and fourth arguments are the externally allocated input message
+    and the resulting output message, respectively.
     To obtain the length of the output array necessary, use the
     {\tt fec\_get\_enc\_msg\_length()} method.
 \item[{\tt fec\_decode()}]
@@ -130,9 +152,11 @@ intensive to the host processor.
 Here is a simple example demonstrating the basic interface to the {\tt fec}
 encoder/decoder object:
 \input{listings/fec.example.c.tex}
+For a more detailed example demonstrating the full capabilities of the
+{\tt fec} object, see {\tt examples/fec\_example.c}.
 
-\subsection{encoder/decoder options}
-\label{module:fec:codecs}
+%\subsection{encoder/decoder options}
+%\label{module:fec:codecs}
 Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
 description for each.
 All convolutional and Reed-Solomon codes are available only if {\tt libfec} is
@@ -177,7 +201,6 @@ installed \cite{fec:web}.
 {\tt FEC\_CONV\_V29P56}         & 5/6       & $K=9$, $d_{free}=5$\\
 {\tt FEC\_CONV\_V29P67}         & 6/7       & $K=9$, $d_{free}=4$\\
 {\tt FEC\_CONV\_V29P78}         & 7/8       & $K=9$, $d_{free}=4$\\\midrule
-
 % 
 % Reed-Solomon codes
 {\tt FEC\_RS\_M8}               & 223/255   & Reed-Solomon block code, $m=8$\\\bottomrule
