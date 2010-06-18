@@ -31,6 +31,28 @@ methods for internal processing.
 This eliminates {\tt libfftw} as an external dependency, but takes advantage
 of it when available.
 
-%\subsection{{\tt dct} (discrete cosine transform)}
-%\label{module:fft:dct}
+\subsection{Real even/odd DFTs ({\it not yet implemented})}
+\label{module:fft:r2r}
+
+\begin{itemize}
+\item {\tt FFT\_REDFT00} (DCT-I)
+\item {\tt FFT\_REDFT10} (DCT-II)
+\item {\tt FFT\_REDFT01} (DCT-III)
+\item {\tt FFT\_REDFT11} (DCT-IV)
+
+\item {\tt FFT\_RODFT00} (DST-I)
+\item {\tt FFT\_RODFT10} (DST-II)
+\item {\tt FFT\_RODFT01} (DST-III)
+\item {\tt FFT\_RODFT11} (DST-IV)
+\end{itemize}
+
+\subsection{{\tt mdct} (modified discrete cosine transform)}
+\label{module:fft:mdct}
+
+\subsection{interface}
+The basic usage to compute a one-dimensional FFT looks something like this:
+%
+\input{listings/fft.example.c.tex}
+%
+Notice the stark similarity to {\tt libfftw3}'s interface.
 
