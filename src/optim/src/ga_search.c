@@ -208,7 +208,7 @@ float ga_search_evaluate_chromosome(ga_search _g, chromosome _c)
 {
     unsigned int i;
     for (i=0; i<_g->num_parameters; i++)
-        (_g->v)[i] = chromosome_value( _c, i );
+        (_g->v)[i] = chromosome_valuef( _c, i );
     return _g->get_utility(_g->userdata, _g->v, _g->num_parameters );
 }
 
