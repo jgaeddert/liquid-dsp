@@ -3,6 +3,7 @@ autom4te.cache
 config.status
 config.log
 configure
+
 # ignore all TeX-generated files
 *.aux
 *.bbl
@@ -11,8 +12,10 @@ configure
 *.m
 *.pdf
 *.toc
+
 # ignore listings style (pygments)
 highlight.sty
+
 # ignore all programs
 src/agc_transient
 src/audio_cvsd
@@ -30,7 +33,12 @@ src/interleaver_scatterplot
 src/modem.gendata
 src/modem.genplot
 src/nco_pll
+
 # ignore all object files
 *.o
+
 # ignore all html files
 html/*
+
+# miscellany
+.DS_Store
