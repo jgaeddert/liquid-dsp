@@ -1,5 +1,5 @@
 //
-// filter_window.c : demonstrate windowing functions
+// math_window.c : demonstrate windowing functions
 //
 
 #include <stdio.h>
@@ -10,7 +10,7 @@
 
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME "figures.gen/filter_window.gnu"
+#define OUTPUT_FILENAME "figures.gen/math_window.gnu"
 
 int main() {
     // options

@@ -32,9 +32,7 @@ local_pdffiles :=					\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
 	figures.gen/filter_resamp_crcf.pdf		\
-	figures.gen/filter_resamp_crcf_psd.pdf		\
-							\
-	figures.gen/filter_window.pdf
+	figures.gen/filter_resamp_crcf_psd.pdf
 
 local_gnufiles := $(patsubst %.pdf,%.gnu,$(local_pdffiles))
 local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
@@ -120,14 +118,6 @@ figures.gen/filter_resamp_crcf_psd.gnu: src/filter_resamp_crcf
 
 
 ##
-## window
-## 
-src/filter_window : src/filter_window.c $(lib_objects)
-figures.gen/filter_window.gnu : src/filter_window
-	./$<
-
-
-##
 ## target collection
 ## 
 
@@ -149,6 +139,5 @@ figures_extra_clean +=			\
 	src/filter_iirfilt_crcf		\
 	src/filter_interp_crcf		\
 	src/filter_kaiser		\
-	src/filter_resamp_crcf		\
-	src/filter_window
+	src/filter_resamp_crcf
 
