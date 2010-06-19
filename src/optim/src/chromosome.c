@@ -31,103 +31,226 @@
 
 #define LIQUID_CHROMOSOME_MAX_SIZE (32)
 
-chromosome chromosome_create(unsigned int _num_parameters,
-                             unsigned int _bits_per_parameter)
+// create chromosome with varying bits/trait
+//  _bits_per_trait     :   array of bits/trait [size: _num_traits x 1]
+//  _num_traits         :   number of traits in this chromosome
+chromosome chromosome_create(unsigned int * _bits_per_trait,
+                             unsigned int _num_traits)
 {
-    chromosome c;
-    c = (chromosome) malloc( sizeof(struct chromosome_s) );
+    chromosome q;
+    q = (chromosome) malloc( sizeof(struct chromosome_s) );
+    q->num_traits = _num_traits;
 
-    c->num_parameters = _num_parameters;
-    c->s = (unsigned long*) calloc( sizeof(unsigned long), c->num_parameters );
-
-    if (_bits_per_parameter >= LIQUID_CHROMOSOME_MAX_SIZE) {
-        printf("warning: chromosome_create(), truncating bits_per_parameter to maximum (%d)\n",
-                LIQUID_CHROMOSOME_MAX_SIZE);
-        c->bits_per_parameter = LIQUID_CHROMOSOME_MAX_SIZE;
-        c->max_int_value = LONG_MAX;
-    } else {
-        c->bits_per_parameter = _bits_per_parameter;
-        c->max_int_value = (1 << c->bits_per_parameter) - 1;
+    // validate input
+    if (q->num_traits < 1) {
+        fprintf(stderr,"error: chromosome_create(), must have at least one trait\n");
+        exit(1);
     }
-    c->num_bits = c->bits_per_parameter * c->num_parameters;
-    c->scaling_factor = 1 / (float) (c->max_int_value);
 
-    //printf("max_int_value: %ld\n", c->max_int_value);
-    //printf("bits_per_parameter: %d\n", c->bits_per_parameter);
-    //printf("scaling_factor: %E\n", c->scaling_factor);
-    
-    return c;
+    // initialize internal arrays
+    q->bits_per_trait = (unsigned int *) malloc(q->num_traits*sizeof(unsigned int));
+    q->max_value =      (unsigned long*) malloc(q->num_traits*sizeof(unsigned long));
+    q->traits =         (unsigned long*) malloc(q->num_traits*sizeof(unsigned long));
+
+    // copy/initialize values
+    unsigned int i;
+    q->num_bits = 0;
+    for (i=0; i<q->num_traits; i++) {
+        q->bits_per_trait[i] = _bits_per_trait[i];
+
+        if (q->bits_per_trait[i] > LIQUID_CHROMOSOME_MAX_SIZE) {
+            fprintf(stderr,"error: chromosome_create(), bits/trait cannot exceed %u\n", LIQUID_CHROMOSOME_MAX_SIZE);
+            exit(1);
+        }
+
+        q->max_value[i] = 1 << q->bits_per_trait[i];
+        q->traits[i] = 0;
+
+        q->num_bits += q->bits_per_trait[i];
+    }
+
+    return q;
 }
 
-void chromosome_destroy(chromosome _c)
+// create basic chromosome
+//  _num_traits         :   number of traits in this chromosome
+//  _bits_per_trait     :   number of bits/trait for all traits
+chromosome chromosome_create_basic(unsigned int _num_traits,
+                                   unsigned int _bits_per_trait)
 {
-    free(_c->s);
-    free(_c);
+    if (_num_traits < 1) {
+    }
+    unsigned int * bpt = (unsigned int *) malloc(_num_traits*sizeof(unsigned int));
+    unsigned int i;
+    for (i=0; i<_num_traits; i++)
+        bpt[i] = _bits_per_trait;
+
+    // create chromosome
+    chromosome q = chromosome_create(bpt, _num_traits);
+
+    // free bits/trait array
+    free(bpt);
+
+    return q;
 }
 
-void chromosome_print(chromosome _c)
+void chromosome_destroy(chromosome _q)
+{
+    free(_q->bits_per_trait);
+    free(_q->max_value);
+    free(_q->traits);
+
+    free(_q);
+}
+
+void chromosome_print(chromosome _q)
+{
+#if 0
+    unsigned int i;
+    printf("chromosome: ");
+    for (i=0; i<_q->num_traits; i++)
+        printf("%lu.", _q->traits[i]);
+    printf("\n");
+#else
+    unsigned int i,j;
+    printf("chromosome: ");
+    // print one bit at a time
+    for (i=0; i<_q->num_traits; i++) {
+        for (j=0; j<_q->bits_per_trait[i]; j++) {
+            unsigned int bit = (_q->traits[i] >> (_q->bits_per_trait[i]-j-1) ) & 1;
+            printf("%c", bit ? '1' : '0');
+        }
+        
+        if (i != _q->num_traits-1)
+            printf(".");
+    }
+    printf("\n");
+#endif
+}
+
+// clear chromosome (set traits to zero)
+void chromosome_clear(chromosome _q)
 {
     unsigned int i;
-    for (i=0; i<_c->num_parameters; i++)
-        printf("%6.3f ", chromosome_value(_c, i));
-
-    printf("\n");
+    for (i=0; i<_q->num_traits; i++)
+        _q->traits[i] = 0;
 }
 
-void chromosome_mutate(chromosome _c, unsigned int _index)
+// mutate bit at _index
+void chromosome_mutate(chromosome _q,
+                       unsigned int _index)
 {
-    // ensure _index does not exceed maximum
-    _index = (_index >= _c->num_bits) ? 0 : _index;
+    if (_index >= _q->num_bits) {
+        fprintf(stderr,"error: chromosome_mutate(), maximum index exceeded\n");
+        exit(1);
+    }
 
-    div_t d = div(_index, _c->bits_per_parameter);
-    _c->s[d.quot] ^= (unsigned long) (1 << d.rem);
+    // search for
+    unsigned int i;
+    unsigned int t=0;
+    for (i=0; i<_q->num_traits; i++) {
+        unsigned int b = _q->bits_per_trait[i];
+        if (t == _index) {
+            _q->traits[i] ^= (unsigned long)(1 << (b-1));
+            return;
+        } else if (t > _index) {
+            _q->traits[i-1] ^= (unsigned long)(1 << (t-_index-1));
+            return;
+        } else {
+            t += b;
+        }
+    }
+
+    _q->traits[i-1] ^= (unsigned long)(1 << (t-_index-1));
 }
 
+// crossover parent chromosomes and store in child
+//  _p1         :   first parent chromosome
+//  _p2         :   second parent chromosome
+//  _q          :   child chromosome
+//  _threshold  :   crossover point
 void chromosome_crossover(chromosome _p1,
                           chromosome _p2,
-                          chromosome _c,
+                          chromosome _q,
                           unsigned int _threshold)
 {
-    // TODO : ensure _p1, _p2, and _c are all the same length
+    if (_threshold > _q->num_bits) {
+        fprintf(stderr,"error: chromosome_crossover(), maximum index exceeded\n");
+        exit(1);
+    }
 
-    // ensure _threshold does not exceed maximum
-    _threshold = (_threshold > _c->num_bits) ? 0 : _threshold;
+    // TODO : validate input on all properties of _p1, _p2, and _q
 
-    div_t d = div(_threshold, _c->bits_per_parameter);
-
+    // find crossover point
     unsigned int i;
-    for (i=0; i<d.quot; i++)
-        _c->s[i] = _p1->s[i];
+    unsigned int t=0;
+    for (i=0; i<_q->num_traits; i++) {
+        if (t >= _threshold)
+            break;
+        else
+            t += _q->bits_per_trait[i];
 
-    for (i=d.quot; i<_c->num_parameters; i++)
-        _c->s[i] = _p2->s[i];
+        // child gets first parent's traits up until
+        // threshold is reached
+        _q->traits[i] = _p1->traits[i];
+    }
 
-    // handle condition where crossover lies within a single parameter
-    if (d.rem != 0) {
-        unsigned long mask = (1 << d.rem) - 1;
-        mask <<= _c->bits_per_parameter - d.rem;
-        _c->s[d.quot] = (_p1->s[d.quot] & mask) | (_p2->s[d.quot] & ~mask);
+#if 0
+    printf("  crossover point   : %u\n", i);
+    printf("  accumulator       : %u\n", t);
+    printf("  remainder         : %u\n", t - _threshold);
+#endif
+
+    // determine if trait is split
+    unsigned int rem = t - _threshold;
+    if (rem > 0) {
+        // split trait on remainder
+        unsigned int b = _q->bits_per_trait[i-1];
+        unsigned int mask1 = ((1 << (b-rem)) - 1) << rem;
+        unsigned int mask2 = ((1 << rem    ) - 1);
+        _q->traits[i-1] = (_p1->traits[i-1] & mask1) |
+                          (_p2->traits[i-1] & mask2);
+#if 0
+        printf("  b                 : %u\n", b);
+        printf("  mask1             : %.8x\n", mask1);
+        printf("  mask2             : %.8x\n", mask2);
+#endif
+    }
+
+    // finish crossover
+    for ( ; i<_q->num_traits; i++) {
+        // child gets second parent's traits beyond threshold
+        _q->traits[i] = _p2->traits[i];
     }
 
 }
     
-void chromosome_init_random(chromosome _c)
+void chromosome_init_random(chromosome _q)
 {
     unsigned int i;
-    for (i=0; i<_c->num_parameters; i++)
-        (_c->s)[i] = rand() % _c->max_int_value;
-
+    for (i=0; i<_q->num_traits; i++)
+        _q->traits[i] = rand() && (_q->max_value[i]-1);
 }
 
-float chromosome_value(chromosome _c, unsigned int _index)
+float chromosome_valuef(chromosome _q,
+                        unsigned int _index)
 {
-    // translate v from integer to float on [0,1]
-    float v = (_c->s)[_index] * _c->scaling_factor;
+    if (_index > _q->num_traits) {
+        fprintf(stderr,"error: chromosome_valuef(), trait index exceeded\n");
+        exit(1);
+    }
 
-    if (1)
-        // apply activation function; expanding [0,1] to [-4,4]
-        return 8.0f*(v-0.5f);
-    else
-        return v;
+    return (float) (_q->traits[_index]) / (float)(_q->max_value[_index]);
+}
+
+unsigned int chromosome_value(chromosome _q,
+                              unsigned int _index)
+{
+    if (_index > _q->num_traits) {
+        fprintf(stderr,"error: chromosome_value(), trait index exceeded\n");
+        exit(1);
+    }
+
+    return _q->traits[_index];
 }
 

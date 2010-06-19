@@ -1550,14 +1550,12 @@ void optim_ps_increase_mem(optim_ps _ps, unsigned int _n);
 
 // Chromosome structure used in genetic algorithm searches
 struct chromosome_s {
-    unsigned int num_parameters;        // number of represented parameters
-
-    unsigned long* s;                   // chromosome data
-    unsigned int bits_per_parameter;    // bits to represent each parameter
+    unsigned int num_traits;            // number of represented traits
+    unsigned int * bits_per_trait;      // bits to represent each trait
+    unsigned long * max_value;          // maximum representable integer value
+    unsigned long * traits;             // chromosome data
 
     unsigned int num_bits;              // total number of bits
-    unsigned long max_int_value;        // maximum representable integer value
-    float scaling_factor;               // scaling factor
 };
 
 struct ga_search_s {

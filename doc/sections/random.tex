@@ -74,8 +74,32 @@ identically distributed underlying data symbols.
 If the message sequence, however, is too repetitive
 (such as '{\tt 00000....}' or '{\tt 11001100....}')
 and the modulation scheme is BPSK, the synchronizer probably won't be able to
-recover the symbol timing.
-It is imperative to increase the short-term entropy of the data for this to happen.
-The data scrambler routine attempts to 'whiten' the data sequence with a bit
+recover the symbol timing because adjacent symbols are too similar.
+This is a result of spectral correlation introduced which can prevent physical
+layer synchronization techniques from tracking or even acquisition.
+Having said that, certain patterns {\em are} beneficial to synchronization and
+actually help the receiver track to the incoming signal, however these are
+usually only introduced as a preamble to a frame or packet where the receiver
+knows what to expect.
+It is therefore imperative to increase the short-term entropy of the
+underlying data to prevent the receiver from losing its lock on the signal.
+The data scrambler routine attempts to ``whiten'' the data sequence with a bit
 mask in order to achieve maximum entropy.
+
+\subsubsection{iterface}
+The data scrambler has two methods, described here:
+\begin{description}
+\item[{\tt scramble\_data()}]
+    takes an input sequence of data and scrambles the bits by applying a
+    periodic mask.
+    The first argument is a pointer to the input data array; the second
+    argument is its length (number of bytes).
+\item[{\tt unscramble\_data()}]
+    takes an input sequence of data and unscrambles the bits by applying the
+    reverse mask applied by {\tt scramble\_data()}.
+    Just like {\tt scramble\_data()}, the first argument is a pointer to the
+    input data array; the second argument is its length (number of bytes).
+\end{description}
+
+See {\tt examples/scramble\_example.c} for a full example of the interface.
 

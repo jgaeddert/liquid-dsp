@@ -114,7 +114,7 @@ ga_search ga_search_create_advanced(void * _userdata,
     unsigned int i;
     // TODO : initialize first chromosome on input vector
     for (i=0; i<ga->population_size; i++) {
-        ga->population[i] = chromosome_create( ga->num_parameters, ga->bits_per_parameter );
+        ga->population[i] = chromosome_create_basic( ga->num_parameters, ga->bits_per_parameter );
         chromosome_init_random( ga->population[i] );
         ga->utility[i] = ga_search_evaluate_chromosome(ga, ga->population[i]);
     }
@@ -208,7 +208,7 @@ float ga_search_evaluate_chromosome(ga_search _g, chromosome _c)
 {
     unsigned int i;
     for (i=0; i<_g->num_parameters; i++)
-        (_g->v)[i] = chromosome_value( _c, i );
+        (_g->v)[i] = chromosome_valuef( _c, i );
     return _g->get_utility(_g->userdata, _g->v, _g->num_parameters );
 }
 

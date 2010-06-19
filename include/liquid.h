@@ -1117,6 +1117,18 @@ void bilinear_zpkf(liquid_float_complex * _za,
                    liquid_float_complex * _pd,
                    liquid_float_complex * _kd);
 
+// digital z/p/k low-pass to high-pass
+//  _zd     :   digital zeros (low-pass prototype), [length: _n]
+//  _pd     :   digital poles (low-pass prototype), [length: _n]
+//  _n      :   low-pass filter order
+//  _zdt    :   output digital zeros transformed [length: _n]
+//  _pdt    :   output digital poles transformed [length: _n]
+void iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
+                       liquid_float_complex * _pd,
+                       unsigned int _n,
+                       liquid_float_complex * _zdt,
+                       liquid_float_complex * _pdt);
+
 // digital z/p/k low-pass to band-pass
 //  _zd     :   digital zeros (low-pass prototype), [length: _n]
 //  _pd     :   digital poles (low-pass prototype), [length: _n]
@@ -2942,18 +2954,27 @@ float quasinewton_search_execute(quasinewton_search _g,
                                  unsigned int _max_iterations,
                                  float _target_utility);
 
-// genetic algorithm search
+// 
+// chromosome (for genetic algorithm search)
+//
 typedef struct chromosome_s * chromosome;
 
-// Create a chromosome object
-chromosome chromosome_create(unsigned int _num_parameters,
-                             unsigned int _bits_per_parameter);
+// create a chromosome object, variable bits/trait
+chromosome chromosome_create(unsigned int * _bits_per_trait,
+                             unsigned int _num_traits);
+
+// create a chromosome object, all traits same resolution
+chromosome chromosome_create_basic(unsigned int _num_traits,
+                                   unsigned int _bits_per_trait);
 
 // Destroy a chromosome object
 void chromosome_destroy(chromosome _c);
 
 // Print chromosome values to screen
 void chromosome_print(chromosome _c);
+
+// clear chromosome (set traits to zero)
+void chromosome_clear(chromosome _c);
 
 // Mutates chromosome _c at _index
 void chromosome_mutate(chromosome _c, unsigned int _index);
@@ -2967,9 +2988,17 @@ void chromosome_crossover(chromosome _p1,
 // Initializes chromosome to random value
 void chromosome_init_random(chromosome _c);
 
-// Returns floating point representation of chromosome
-float chromosome_value(chromosome _c, unsigned int _index);
+// Returns integer representation of chromosome
+unsigned int chromosome_value(chromosome _c,
+                              unsigned int _index);
 
+// Returns floating-point representation of chromosome
+float chromosome_valuef(chromosome _c,
+                        unsigned int _index);
+
+// 
+// genetic algorithm search
+//
 typedef struct ga_search_s * ga_search;
 
 // Create a simple ga_search object; parameters are specified internally

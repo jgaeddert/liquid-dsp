@@ -402,6 +402,26 @@ void iirdes_dzpk2sosf(float complex * _zd,
     _B[2] *= crealf(_kd);
 }
 
+// digital z/p/k low-pass to high-pass transformation
+//  _zd     :   digital zeros (low-pass prototype)
+//  _pd     :   digital poles (low-pass prototype)
+//  _n      :   low-pass filter order
+//  _zdt    :   digital zeros transformed [length: _n]
+//  _pdt    :   digital poles transformed [length: _n]
+void iirdes_dzpk_lp2hp(liquid_float_complex * _zd,
+                       liquid_float_complex * _pd,
+                       unsigned int _n,
+                       liquid_float_complex * _zdt,
+                       liquid_float_complex * _pdt)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++) {
+        _zdt[i] = -_zd[i];
+        _pdt[i] = -_pd[i];
+    }
+}
+
+
 // digital z/p/k low-pass to band-pass transformation
 //  _zd     :   digital zeros (low-pass prototype)
 //  _pd     :   digital poles (low-pass prototype)
@@ -573,10 +593,9 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     if (_btype == LIQUID_IIRDES_HIGHPASS ||
         _btype == LIQUID_IIRDES_BANDSTOP)
     {
-        for (i=0; i<_n; i++) {
-            zd[i] = -zd[i];
-            pd[i] = -pd[i];
-        }
+        // run transform, place resulting zeros, poles
+        // back in same original arrays
+        iirdes_dzpk_lp2hp(zd, pd, _n, zd, pd);
     }
 
     // transform zeros, poles in band-pass, band-stop cases
