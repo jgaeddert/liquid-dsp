@@ -7,7 +7,11 @@
 transcendental functions not in the C standard library (gamma, besseli, etc.)
 and polynomial operations
 
-{\tt liquid\_lngammaf}
+\subsection{transcendental functions}
+\label{module:math:transcendentals}
+
+\begin{description}
+\item[{\tt liquid\_lngammaf}]
 \[
     \ln\left[ \Gamma(z) \right] \approx
     \begin{cases}
@@ -29,7 +33,7 @@ and polynomial operations
 \]
 where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
 
-{\tt liquid\_sincf}
+\item[{\tt liquid\_sincf}]
 \[ \sinc(z) = \frac{\sin(\pi z)}{\pi z} \]
 For small $z$, this can be approximated by expanding the first few terms of
 the series
@@ -37,7 +41,7 @@ the series
     \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
 \]
 
-{\tt liquid\_besseli0}
+\item[{\tt liquid\_besseli0}]
 \[
     \ln\Bigl[\ln\left(I_0(z)\right)\Bigr] \approx
     c_0 + c_1 t + c_2 t ^2 + c_3 t^3
@@ -53,22 +57,72 @@ where $t=\ln(z)$ and
 \]
 This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
-
+%
 An iterative method comes from Gross(1995),
 %\cite{Gross:1995}
 \[
     I_\nu(z) = \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
 \]
 
-{\tt liquid\_nchoosek()}
+\item[{\tt liquid\_nchoosek()}]
 \[
     {n \choose k} = \frac{n!}{(n-k)!k!}
 \]
 
-{\tt liquid\_nextpow2()} computes $\lceil \log_2(x) \rceil$
+\item[{\tt liquid\_nextpow2()}]
+    computes $\lceil \log_2(x) \rceil$
+
+\end{description}
 
 \subsection{Windowing functions}
 Kaiser, Hamming, Hann, Blackman-harris.
+
+\begin{description}
+\item[{\tt hamming()}]
+    computes the Hamming window
+    \[
+        w(n) = 0.53836 - 0.46164 \cos\left( 2 \pi n / (N-1) \right)
+    \]
+\item[{\tt hann()}]
+    computes the Hann window
+    \[
+        w(n) = 0.5 - 0.5 \cos\left( 2 \pi n / (N-1) \right)
+    \]
+\item[{\tt blackmanharris()}]
+    computes the Blackman-harris window
+    \[
+        w(n) = \sum_{k=0}^{3} { a_k \cos\left( 2 \pi k n / (N-1)\right) }
+    \]
+    where
+    $a_0 =  0.35875$,
+    $a_1 = -0.48829$,
+    $a_2 =  0.14128$, and
+    $a_3 = -0.01168$.
+\item[{\tt kaiser()}]
+    computes the Kaiser-$\beta$ window
+    \[
+        w(n,\beta) = \frac{
+            I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right)
+        }{
+            I_0\left(\pi\beta\right)
+        }
+    \]
+    where $I_\nu(z)$ is the modified Bessel function of the first kind of
+    order $\nu$, and $\beta$ is a parameter controlling the width of the
+    window and its stop-band attenuation.
+    In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0()} (see
+    section~\ref{module:math:transcendentals}.
+\item[{\tt liquid\_kbd()}]
+    computes the Kaiser-Bessel derived window.
+    The length of the window {\em must} be even.
+\end{description}
+
+Temporal and spectral examples of all these windows can be seen in
+figure~\ref{fig:module:math:window}.
+Notice that as the power spectral density main lobe increases in width, its
+stop-band attenuation decreases.
+Furthermore, windows with wider temporal widths exhibit more narrow spectral
+main lobes, but have less stop-band attenuation.
 
 \begin{figure}
 \centering
