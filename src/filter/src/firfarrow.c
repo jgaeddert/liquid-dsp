@@ -35,7 +35,7 @@
 #define FIRFARROW_DEBUG 0
 
 // defined:
-//  FIRFARROW()    name-mangling macro
+//  FIRFARROW()     name-mangling macro
 //  T               coefficients type
 //  WINDOW()        window macro
 //  DOTPROD()       dotprod macro
@@ -45,7 +45,7 @@ struct FIRFARROW(_s) {
     TC * h;
     unsigned int h_len; // filter length
     float fc;           // filter cutoff
-    float slsl;         // sidelobe suppression level
+    float As;           // sidelobe suppression level
     unsigned int Q;     // polynomial order
 
     float mu;           // fractional sample delay
@@ -60,10 +60,15 @@ struct FIRFARROW(_s) {
 #endif
 };
 
+// create firfarrow object
+//  _h_len      :   filter length
+//  _p          :   polynomial order
+//  _fc         :   filter cutoff frequency
+//  _As         :   stopband attenuation [dB]
 FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
                                unsigned int _p,
                                float _fc,
-                               float _slsl)
+                               float _As)
 {
     // validate input
     if (_h_len < 2) {
@@ -80,7 +85,7 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
     FIRFARROW() f = (FIRFARROW()) malloc(sizeof(struct FIRFARROW(_s)));
     f->h_len = _h_len;  // filter length
     f->Q     = _p;      // polynomial order
-    f->slsl  = _slsl;   // filter sidelobe suppression level
+    f->As    = _As;     // filter sidelobe suppression level
     f->fc    = _fc;     // filter cutoff frequency
 
     // allocate memory for filter coefficients
@@ -107,6 +112,7 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
     return f;
 }
 
+// destroy firfarrow object
 void FIRFARROW(_destroy)(FIRFARROW() _f)
 {
 #if FIRFARROW_USE_DOTPROD
@@ -119,6 +125,7 @@ void FIRFARROW(_destroy)(FIRFARROW() _f)
     free(_f);
 }
 
+// clear firfarrow object
 void FIRFARROW(_clear)(FIRFARROW() _f)
 {
 #if FIRFARROW_USE_DOTPROD
@@ -131,6 +138,7 @@ void FIRFARROW(_clear)(FIRFARROW() _f)
 #endif
 }
 
+// print firfarrow object internals
 void FIRFARROW(_print)(FIRFARROW() _f)
 {
     printf("fir_farrow [len : %u, poly-order : %u]\n", _f->h_len, _f->Q);
@@ -154,7 +162,11 @@ void FIRFARROW(_print)(FIRFARROW() _f)
     }
 }
 
-void FIRFARROW(_push)(FIRFARROW() _f, TI _x)
+// push sample into firfarrow object
+//  _f      :   firfarrow object
+//  _x      :   input sample
+void FIRFARROW(_push)(FIRFARROW() _f,
+                      TI _x)
 {
 #if FIRFARROW_USE_DOTPROD
     WINDOW(_push)(_f->w, _x);
@@ -165,7 +177,11 @@ void FIRFARROW(_push)(FIRFARROW() _f, TI _x)
 #endif
 }
 
-void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu)
+// set fractional delay of firfarrow object
+//  _f      :   firfarrow object
+//  _mu     :   fractional sample delay
+void FIRFARROW(_set_delay)(FIRFARROW() _f,
+                           float _mu)
 {
     // validate input
     if (_mu < -1.0f || _mu > 1.0f) {
@@ -187,7 +203,11 @@ void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu)
     }
 }
 
-void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y)
+// execute firfarrow internal dot product
+//  _f      :   firfarrow object
+//  _y      :   output sample pointer
+void FIRFARROW(_execute)(FIRFARROW() _f,
+                         TO *_y)
 {
 #if FIRFARROW_USE_DOTPROD
     TI *r;
@@ -202,14 +222,19 @@ void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y)
 #endif
 }
 
+// get length of firfarrow object (number of filter taps)
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _f)
 {
     return _f->h_len;
 }
 
-void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h)
+// get coefficients of firfarrow object
+//  _f      :   firfarrow object
+//  _h      :   output coefficients pointer
+void FIRFARROW(_get_coefficients)(FIRFARROW() _f,
+                                  TC * _h)
 {
-    memmove(_h, _f->h, (_f->h_len)*sizeof(float));
+    memmove(_h, _f->h, (_f->h_len)*sizeof(TC));
 }
 
 // 
@@ -219,12 +244,13 @@ void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h)
 // generate polynomials to represent filter coefficients
 void FIRFARROW(_genpoly)(FIRFARROW() _q)
 {
+    // TODO : shy away from 'float' and use 'TC' types
     unsigned int i, j, n=0;
     float x, mu, h0, h1;
     float mu_vect[_q->Q+1];
     float hp_vect[_q->Q+1];
     float p[_q->Q];
-    float beta = kaiser_beta_slsl(_q->slsl);
+    float beta = kaiser_beta_slsl(_q->As);
     for (i=0; i<_q->h_len; i++) {
 #if FIRFARROW_DEBUG
         printf("i : %3u / %3u\n", i, _n);

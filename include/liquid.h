@@ -1766,16 +1766,16 @@ LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP_MANGLE_CRCF,
 //#define FIRFARROW_MANGLE_CCCF(name)     LIQUID_CONCAT(firfarrow_cccf,name)
 
 // Macro:
-//   FIRFARROW : name-mangling macro
+//   FIRFARROW  : name-mangling macro
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
 #define LIQUID_FIRFARROW_DEFINE_API(FIRFARROW,TO,TC,TI)         \
 typedef struct FIRFARROW(_s) * FIRFARROW();                     \
 FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,             \
-                                 unsigned int _p,               \
-                                 float _fc,                     \
-                                 float _beta);                  \
+                               unsigned int _p,                 \
+                               float _fc,                       \
+                               float _As);                      \
 void FIRFARROW(_destroy)(FIRFARROW() _f);                       \
 void FIRFARROW(_clear)(FIRFARROW() _f);                         \
 void FIRFARROW(_print)(FIRFARROW() _f);                         \
