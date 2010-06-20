@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,6 +20,8 @@
  */
 
 //
+// firfarrow.c
+//
 // Finite impulse response Farrow filter
 //
 
@@ -27,18 +30,18 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define FIR_FARROW_USE_DOTPROD 1
+#define FIRFARROW_USE_DOTPROD 1
 
-#define FIR_FARROW_DEBUG 0
+#define FIRFARROW_DEBUG 0
 
 // defined:
-//  FIR_FARROW()    name-mangling macro
+//  FIRFARROW()    name-mangling macro
 //  T               coefficients type
 //  WINDOW()        window macro
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
-struct FIR_FARROW(_s) {
+struct FIRFARROW(_s) {
     TC * h;
     unsigned int h_len; // filter length
     float fc;           // filter cutoff
@@ -49,7 +52,7 @@ struct FIR_FARROW(_s) {
     float * P;          // polynomail coefficients matrix [ h_len x Q+1 ]
     float gamma;        // inverse of DC response (normalization factor)
 
-#if FIR_FARROW_USE_DOTPROD
+#if FIRFARROW_USE_DOTPROD
     WINDOW() w;
 #else
     TI * v;
@@ -57,10 +60,10 @@ struct FIR_FARROW(_s) {
 #endif
 };
 
-FIR_FARROW() FIR_FARROW(_create)(unsigned int _h_len,
-                                 unsigned int _p,
-                                 float _fc,
-                                 float _slsl)
+FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
+                               unsigned int _p,
+                               float _fc,
+                               float _slsl)
 {
     // validate input
     if (_h_len < 2) {
@@ -74,7 +77,7 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _h_len,
         exit(1);
     }
 
-    FIR_FARROW() f = (FIR_FARROW()) malloc(sizeof(struct FIR_FARROW(_s)));
+    FIRFARROW() f = (FIRFARROW()) malloc(sizeof(struct FIRFARROW(_s)));
     f->h_len = _h_len;  // filter length
     f->Q     = _p;      // polynomial order
     f->slsl  = _slsl;   // filter sidelobe suppression level
@@ -83,7 +86,7 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _h_len,
     // allocate memory for filter coefficients
     f->h = (TC *) malloc((f->h_len)*sizeof(TC));
 
-#if FIR_FARROW_USE_DOTPROD
+#if FIRFARROW_USE_DOTPROD
     f->w = WINDOW(_create)(f->h_len);
 #else
     f->v = malloc((f->h_len)*sizeof(TI));
@@ -93,20 +96,20 @@ FIR_FARROW() FIR_FARROW(_create)(unsigned int _h_len,
     f->P = (float*) malloc((f->h_len)*(f->Q+1)*sizeof(float));
 
     // clear the filter object
-    FIR_FARROW(_clear)(f);
+    FIRFARROW(_clear)(f);
 
     // generate polynomials
-    FIR_FARROW(_genpoly)(f);
+    FIRFARROW(_genpoly)(f);
 
     // set nominal delay of 0
-    FIR_FARROW(_set_delay)(f,0.0f);
+    FIRFARROW(_set_delay)(f,0.0f);
 
     return f;
 }
 
-void FIR_FARROW(_destroy)(FIR_FARROW() _f)
+void FIRFARROW(_destroy)(FIRFARROW() _f)
 {
-#if FIR_FARROW_USE_DOTPROD
+#if FIRFARROW_USE_DOTPROD
     WINDOW(_destroy)(_f->w);
 #else
     free(_f->v);
@@ -116,9 +119,9 @@ void FIR_FARROW(_destroy)(FIR_FARROW() _f)
     free(_f);
 }
 
-void FIR_FARROW(_clear)(FIR_FARROW() _f)
+void FIRFARROW(_clear)(FIRFARROW() _f)
 {
-#if FIR_FARROW_USE_DOTPROD
+#if FIRFARROW_USE_DOTPROD
     WINDOW(_clear)(_f->w);
 #else
     unsigned int i;
@@ -128,7 +131,7 @@ void FIR_FARROW(_clear)(FIR_FARROW() _f)
 #endif
 }
 
-void FIR_FARROW(_print)(FIR_FARROW() _f)
+void FIRFARROW(_print)(FIRFARROW() _f)
 {
     printf("fir_farrow [len : %u, poly-order : %u]\n", _f->h_len, _f->Q);
     printf("polynomial coefficients:\n");
@@ -151,9 +154,9 @@ void FIR_FARROW(_print)(FIR_FARROW() _f)
     }
 }
 
-void FIR_FARROW(_push)(FIR_FARROW() _f, TI _x)
+void FIRFARROW(_push)(FIRFARROW() _f, TI _x)
 {
-#if FIR_FARROW_USE_DOTPROD
+#if FIRFARROW_USE_DOTPROD
     WINDOW(_push)(_f->w, _x);
 #else
     _f->v[ _f->v_index ] = _x;
@@ -162,7 +165,7 @@ void FIR_FARROW(_push)(FIR_FARROW() _f, TI _x)
 #endif
 }
 
-void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
+void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu)
 {
     // validate input
     if (_mu < -1.0f || _mu > 1.0f) {
@@ -184,9 +187,9 @@ void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu)
     }
 }
 
-void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y)
+void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y)
 {
-#if FIR_FARROW_USE_DOTPROD
+#if FIRFARROW_USE_DOTPROD
     TI *r;
     WINDOW(_read)(_f->w, &r);
     DOTPROD(_run4)(_f->h, r, _f->h_len, _y);
@@ -199,12 +202,12 @@ void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y)
 #endif
 }
 
-unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f)
+unsigned int FIRFARROW(_get_length)(FIRFARROW() _f)
 {
     return _f->h_len;
 }
 
-void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h)
+void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h)
 {
     memmove(_h, _f->h, (_f->h_len)*sizeof(float));
 }
@@ -214,7 +217,7 @@ void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h)
 //
 
 // generate polynomials to represent filter coefficients
-void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
+void FIRFARROW(_genpoly)(FIRFARROW() _q)
 {
     unsigned int i, j, n=0;
     float x, mu, h0, h1;
@@ -223,7 +226,7 @@ void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
     float p[_q->Q];
     float beta = kaiser_beta_slsl(_q->slsl);
     for (i=0; i<_q->h_len; i++) {
-#if FIR_FARROW_DEBUG
+#if FIRFARROW_DEBUG
         printf("i : %3u / %3u\n", i, _n);
 #endif
         x = (float)(i) - (float)(_q->h_len-1)/2.0f;
@@ -232,7 +235,7 @@ void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
 
             h0 = sincf((_q->fc)*(x + mu));
             h1 = kaiser(i,_q->h_len,beta,mu);
-#if FIR_FARROW_DEBUG
+#if FIRFARROW_DEBUG
             printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
                     j, x, mu, h0, h1, h0*h1);
 #endif
@@ -241,7 +244,7 @@ void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
             hp_vect[j] = h0*h1;
         }
         POLY(_fit)(mu_vect,hp_vect,_q->Q+1,p,_q->Q+1);
-#if FIR_FARROW_DEBUG
+#if FIRFARROW_DEBUG
         printf("  polynomial : ");
         for (j=0; j<=_p; j++)
             printf("%8.4f,", p[j]);
@@ -253,7 +256,7 @@ void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
         n += _q->Q+1;
     }
 
-#if FIR_FARROW_DEBUG
+#if FIRFARROW_DEBUG
     // print coefficients
     n=0;
     for (i=0; i<_q->h_len; i++) {
@@ -266,7 +269,7 @@ void FIR_FARROW(_genpoly)(FIR_FARROW() _q)
 
     // normalize DC gain
     _q->gamma = 1.0f;                // initialize gamma to 1
-    FIR_FARROW(_set_delay)(_q,0.0f); // compute filter taps with zero delay
+    FIRFARROW(_set_delay)(_q,0.0f); // compute filter taps with zero delay
     _q->gamma = 0.0f;                // clear gamma
     for (i=0; i<_q->h_len; i++)      // compute DC response
         _q->gamma += _q->h[i];

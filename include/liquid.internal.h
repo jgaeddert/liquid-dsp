@@ -673,11 +673,18 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 
 
 // fir_farrow
-#define LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW,TO,TC,TI)  \
-void FIR_FARROW(_genpoly)(FIR_FARROW() _q);
+#define LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW,TO,TC,TI)  \
+void FIRFARROW(_genpoly)(FIRFARROW() _q);
 
-LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW_MANGLE_RRRF, float, float, float)
-LIQUID_FIR_FARROW_DEFINE_INTERNAL_API(FIR_FARROW_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
+LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_RRRF,
+                                     float,
+                                     float,
+                                     float)
+
+LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
+                                     liquid_float_complex,
+                                     float,
+                                     liquid_float_complex)
 
 
 // qmfb

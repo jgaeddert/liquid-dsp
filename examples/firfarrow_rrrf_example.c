@@ -1,5 +1,5 @@
 //
-// fir_farrow_rrrf_example.c
+// firfarrow_rrrf_example.c
 //
 // Demonstrates the functionality of the finite impulse response Farrow
 // filter for arbitrary fractional sample group delay.
@@ -9,7 +9,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "fir_farrow_rrrf_example.m"
+#define OUTPUT_FILENAME "firfarrow_rrrf_example.m"
 
 int main() {
     // options
@@ -23,7 +23,7 @@ int main() {
     float h[h_len];
     float tao = ((float)h_len-1)/2.0f;  // nominal filter delay
 
-    fir_farrow_rrrf f = fir_farrow_rrrf_create(h_len, p, fc, slsl);
+    firfarrow_rrrf f = firfarrow_rrrf_create(h_len, p, fc, slsl);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
@@ -42,12 +42,12 @@ int main() {
         fprintf(fid,"mu(%3u) = %12.8f;\n", i+1, mu_vect[i]);
     }
 
-    fir_farrow_rrrf_print(f);
+    firfarrow_rrrf_print(f);
     printf("Farrow filter group delay error for certain frequencies:\n");
     printf("%8s %8s  : %8.4f   %8.4f   %8.4f\n", "mu", "delay", 0.0f, 0.2f, 0.4f);
     for (i=0; i<m; i++) {
-        fir_farrow_rrrf_set_delay(f,mu_vect[i]);
-        fir_farrow_rrrf_get_coefficients(f,h);
+        firfarrow_rrrf_set_delay(f,mu_vect[i]);
+        firfarrow_rrrf_get_coefficients(f,h);
         for (j=0; j<h_len; j++)
             fprintf(fid,"  h(%3u,%3u) = %12.4e;\n", i+1, j+1, h[j]);
 
@@ -93,7 +93,7 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    fir_farrow_rrrf_destroy(f);
+    firfarrow_rrrf_destroy(f);
 
     printf("done.\n");
     return 0;
