@@ -10,15 +10,31 @@
 
 #define OUTPUT_FILENAME "ga_search_example.m"
 
-int main() {
-    unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
-    unsigned int num_iterations = 4000; // number of iterations to run
+// utility callback function
+float utility_callback(void * _userdata, chromosome _c)
+{
+    unsigned int n = chromosome_get_num_traits(_c);
+    float v;    // chromosome value
+    float u=0;  // total utility
 
-    float optimum_vect[num_parameters];
     unsigned int i;
-    for (i=0; i<num_parameters; i++)
-        optimum_vect[i] = 0.0f;
+    for (i=0; i<n; i++) {
+        // extract chromosome value
+        v = chromosome_valuef(_c,i);
 
+        // accumulate utility
+        u += (v-0.5f)*(v-0.5f);
+    }
+
+    return u;
+}
+
+int main() {
+    unsigned int num_parameters = 8;    // dimensionality of search (minimum 1)
+    unsigned int bits_per_parameter = 12;
+    unsigned int num_iterations = 1000; // number of iterations to run
+
+    unsigned int i;
     float optimum_utility;
 
     // open output file
@@ -27,9 +43,14 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
+    // create prototype chromosome
+    chromosome prototype = chromosome_create_basic(num_parameters, bits_per_parameter);
+
     // create ga_search object
-    ga_search ga = ga_search_create(
-        NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
+    ga_search ga = ga_search_create(&utility_callback,
+                                    NULL,
+                                    prototype,
+                                    LIQUID_OPTIM_MINIMIZE);
     ga_search_print(ga);
 
     // execute search
@@ -38,23 +59,23 @@ int main() {
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
     for (i=0; i<num_iterations; i++) {
-        optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
-        fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
-
         ga_search_evolve(ga);
 
-        if (((i+1)%100)==0)
-            ga_search_print(ga);
+        ga_search_getopt(ga, prototype, &optimum_utility);
+        fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
+
+        if (((i+1)%100)==0) {
+            //ga_search_print(ga);
+            printf("%4u : %16.8f\n", i, optimum_utility);
+        }
     }
 
     // print results
     printf("\n");
     ga_search_print(ga);
 
-    printf("optimum utility : %12.8f [", optimum_utility);
-    for (i=0; i<num_parameters; i++)
-        printf("%.3f ", optimum_vect[i]);
-    printf("]\n");
+    printf("optimum utility : %12.8f\n");
+    chromosome_printf(prototype);
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(u);\n");
@@ -67,6 +88,7 @@ int main() {
 
     // test results, optimum at [1, 1, 1, ... 1];
 
+    chromosome_destroy(prototype);
     ga_search_destroy(ga);
 
     return 0;

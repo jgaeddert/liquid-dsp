@@ -2968,8 +2968,18 @@ chromosome chromosome_create(unsigned int * _bits_per_trait,
 chromosome chromosome_create_basic(unsigned int _num_traits,
                                    unsigned int _bits_per_trait);
 
+// create a chromosome object, cloning a parent
+chromosome chromosome_create_clone(chromosome _parent);
+
+// copy existing chromosomes' internal traits (all other internal
+// parameters must be equal)
+void chromosome_copy(chromosome _parent, chromosome _child);
+
 // Destroy a chromosome object
 void chromosome_destroy(chromosome _c);
+
+// get number of traits in chromosome
+unsigned int chromosome_get_num_traits(chromosome _c);
 
 // Print chromosome values to screen (binary representation)
 void chromosome_print(chromosome _c);
@@ -2979,6 +2989,14 @@ void chromosome_printf(chromosome _c);
 
 // clear chromosome (set traits to zero)
 void chromosome_clear(chromosome _c);
+
+// initialize chromosome on integer values
+void chromosome_init(chromosome _c,
+                     unsigned int * _v);
+
+// initialize chromosome on floating-point values
+void chromosome_initf(chromosome _c,
+                      float * _v);
 
 // Mutates chromosome _c at _index
 void chromosome_mutate(chromosome _c, unsigned int _index);
@@ -3006,42 +3024,54 @@ float chromosome_valuef(chromosome _c,
 typedef struct ga_search_s * ga_search;
 
 // Create a simple ga_search object; parameters are specified internally
-ga_search ga_search_create(void * _userdata,
-                           float * _v,
-                           unsigned int _num_parameters,
-                           float (*_get_utility)(void*, float*, unsigned int),
+//  _get_utility        :   chromosome fitness utility function
+//  _userdata           :   user data, void pointer passed to _get_utility() callback
+//  _parent             :   initial population parent chromosome, governs precision, etc.
+//  _minmax             :   search direction
+ga_search ga_search_create(float (*_get_utility)(void*, chromosome),
+                           void * _userdata,
+                           chromosome _parent,
                            int _minmax);
 
 // Create a ga_search object, specifying search parameters
-ga_search ga_search_create_advanced(void * _userdata,
-                                    float * _v,
-                                    unsigned int _num_parameters,
-                                    unsigned int _bits_per_parameter,
+//  _get_utility        :   chromosome fitness utility function
+//  _userdata           :   user data, void pointer passed to _get_utility() callback
+//  _parent             :   initial population parent chromosome, governs precision, etc.
+//  _minmax             :   search direction
+//  _population_size    :   number of chromosomes in population
+//  _mutation_rate      :   probability of mutating chromosomes
+ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
+                                    void * _userdata,
+                                    chromosome _parent,
+                                    int _minmax,
                                     unsigned int _population_size,
-                                    float _mutation_rate,
-                                    float (*_get_utility)(void*, float*, unsigned int),
-                                    int _minmax);
+                                    float _mutation_rate);
+
 
 // Destroy a ga_search object
 void ga_search_destroy(ga_search);
 
+// print search parameter internals
+void ga_search_print(ga_search);
+
 // Execute the search
+//  _g              :   ga search object
+//  _max_iterations :   maximum number of iterations to run before bailing
+//  _target_utility :   target utility
 float ga_search_run(ga_search _g,
                     unsigned int _max_iterations,
                     float _target_utility);
 
+// iterate over one evolution of the search algorithm
 void ga_search_evolve(ga_search);
 
-float ga_search_evaluate_chromosome(ga_search _g, chromosome _c);
-
-void ga_search_rank(ga_search);
-
-void ga_search_crossover(ga_search);
-
-void ga_search_mutate(ga_search);
-
-void ga_search_print(ga_search);
-
+// get optimal chromosome
+//  _g              :   ga search object
+//  _c              :   output optimal chromosome
+//  _utility_opt    :   fitness of _c
+void ga_search_getopt(ga_search,
+                      chromosome _c,
+                      float * _utility_opt);
 
 //
 // MODULE : quantization

@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
@@ -94,6 +95,29 @@ chromosome chromosome_create_basic(unsigned int _num_traits,
     return q;
 }
 
+// create chromosome cloning a parent
+chromosome chromosome_create_clone(chromosome _parent)
+{
+    // create chromosome
+    chromosome q = chromosome_create(_parent->bits_per_trait,
+                                     _parent->num_traits);
+
+    // copy internal values
+    chromosome_copy(_parent, q);
+
+    return q;
+}
+
+// copy chromosome
+void chromosome_copy(chromosome _parent,
+                     chromosome _child)
+{
+    // copy internal values
+    unsigned int i;
+    for (i=0; i<_parent->num_traits; i++)
+        _child->traits[i] = _parent->traits[i];
+}
+
 void chromosome_destroy(chromosome _q)
 {
     free(_q->bits_per_trait);
@@ -101,6 +125,11 @@ void chromosome_destroy(chromosome _q)
     free(_q->traits);
 
     free(_q);
+}
+
+unsigned int chromosome_get_num_traits(chromosome _q)
+{
+    return _q->num_traits;
 }
 
 void chromosome_print(chromosome _q)
@@ -135,6 +164,37 @@ void chromosome_clear(chromosome _q)
     unsigned int i;
     for (i=0; i<_q->num_traits; i++)
         _q->traits[i] = 0;
+}
+
+// initialize chromosome on integer values
+void chromosome_init(chromosome _c,
+                     unsigned int * _v)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_traits; i++) {
+        if (_v[i] >= _c->max_value[i]) {
+            fprintf(stderr,"error: chromosome_init(), value exceeds maximum\n");
+            exit(1);
+        }
+        _c->traits[i] = _v[i];
+    }
+}
+
+// initialize chromosome on floating-point values
+void chromosome_initf(chromosome _c,
+                      float * _v)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_traits; i++) {
+        if (_v[i] > 1.0f || _v[i] < 0.0f) {
+            fprintf(stderr,"error: chromosome_initf(), value must be in [0,1]\n");
+            exit(1);
+        }
+
+        // quantize sample
+        unsigned int N = 1 << _c->bits_per_trait[i];
+        _c->traits[i] = (unsigned int) floorf( _v[i] * N );
+    }
 }
 
 // mutate bit at _index

@@ -1569,17 +1569,15 @@ struct ga_search_s {
     chromosome * population;            // population of chromosomes
     unsigned int population_size;       // size of the population
     unsigned int selection_size;        // number of 
-    unsigned int num_mutations;         // number of mutations per evolution
+    float mutation_rate;                // rate of mutation
 
-    float* v;                           // vector buffer to optimize
     unsigned int num_parameters;        // number of parameters to optimize
-    unsigned int bits_per_parameter;    // num bits to represent each parmeter 
     unsigned int bits_per_chromosome;   // total number of bits in each chromosome
 
     float *utility;                     // utility array
     unsigned int *rank;                 // rank indices of chromosomes (best to worst)
 
-    float* v_opt;                       // optimum vector (best solution)
+    chromosome c;                       // copy of best chromosome, optimal solution
     float utility_opt;                  // optimum utility (fitness of best solution)
 
     // External utility function.
@@ -1592,11 +1590,36 @@ struct ga_search_s {
     //   - maps the [0,1] bounded output vector to desired range
     //   - for multiple objectives, utility should be high \em only when
     //         all objectives are met (multiplicative, not additive)
-    float (*get_utility)(void*, float*, unsigned int);
-    void* userdata;         // object to optimize
-    int minimize;           // minimize/maximize utility
+    float (*get_utility)(void*, chromosome);
+    void * userdata;                    // object to optimize
+    int minimize;                       // minimize/maximize utility (search direction)
 };
 
+//
+// ga_search internal methods
+//
+
+// evaluate fitness of entire population
+void ga_search_evaluate(ga_search _g);
+
+// crossover population
+void ga_search_crossover(ga_search);
+
+// mutate population
+void ga_search_mutate(ga_search);
+
+// rank population by fitness
+void ga_search_rank(ga_search);
+
+// sort values by index
+//  _v          :   input values [size: _len x 1]
+//  _rank       :   output rank array (indices) [size: _len x 1]
+//  _len        :   length of input array
+//  _descending :   descending/ascending
+void ga_search_sort(float *_v,
+                    unsigned int* _rank,
+                    unsigned int _len,
+                    int _descending);
 
 
 //
