@@ -3009,7 +3009,7 @@ typedef struct ga_search_s * ga_search;
 ga_search ga_search_create(void * _userdata,
                            float * _v,
                            unsigned int _num_parameters,
-                           float (*_get_utility)(void*, float*, unsigned int),
+                           float (*_get_utility)(void*, chromosome),
                            int _minmax);
 
 // Create a ga_search object, specifying search parameters
@@ -3019,7 +3019,7 @@ ga_search ga_search_create_advanced(void * _userdata,
                                     unsigned int _bits_per_parameter,
                                     unsigned int _population_size,
                                     float _mutation_rate,
-                                    float (*_get_utility)(void*, float*, unsigned int),
+                                    float (*_get_utility)(void*, chromosome),
                                     int _minmax);
 
 // Destroy a ga_search object
@@ -3031,6 +3031,8 @@ float ga_search_run(ga_search _g,
                     float _target_utility);
 
 void ga_search_evolve(ga_search);
+
+float ga_search_getopt(ga_search);
 
 float ga_search_evaluate_chromosome(ga_search _g, chromosome _c);
 

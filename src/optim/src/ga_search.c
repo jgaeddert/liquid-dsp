@@ -40,7 +40,7 @@
 ga_search ga_search_create(void * _userdata,
                            float* _v,
                            unsigned int _num_parameters,
-                           float (*_get_utility)(void*, float*, unsigned int),
+                           float (*_get_utility)(void*, chromosome),
                            int _minmax)
 {
     return ga_search_create_advanced(
@@ -61,7 +61,7 @@ ga_search ga_search_create_advanced(void * _userdata,
                                     unsigned int _bits_per_parameter,
                                     unsigned int _population_size,
                                     float _mutation_rate,
-                                    float (*_get_utility)(void*, float*, unsigned int),
+                                    float (*_get_utility)(void*, chromosome),
                                     int _minmax)
 {
     ga_search ga;
@@ -204,12 +204,17 @@ void ga_search_evolve(ga_search _g)
     memmove(_g->v, _g->v_opt, sizeof(float)*_g->num_parameters);
 }
 
+float ga_search_getopt(ga_search _g)
+{
+    return _g->utility_opt;
+}
+
 float ga_search_evaluate_chromosome(ga_search _g, chromosome _c)
 {
     unsigned int i;
     for (i=0; i<_g->num_parameters; i++)
         (_g->v)[i] = chromosome_valuef( _c, i );
-    return _g->get_utility(_g->userdata, _g->v, _g->num_parameters );
+    return _g->get_utility(_g->userdata, _c);
 }
 
 void ga_search_crossover(ga_search _g)

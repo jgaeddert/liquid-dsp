@@ -10,6 +10,24 @@
 
 #define OUTPUT_FILENAME "ga_search_example.m"
 
+// example data
+typedef struct {
+    float * v;      // parameter vector
+    unsigned int n; // vector length
+} exampledata;
+
+// utility callback function
+float utility_callback(void * _userdata, chromosome _c)
+{
+    exampledata * q = (exampledata*) _userdata;
+
+    unsigned int i;
+    for (i=0; i<q->n; i++)
+        q->v[i] = chromosome_valuef(_c,i);
+
+    return rosenbrock(NULL, q->v, q->n);
+}
+
 int main() {
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
     unsigned int num_iterations = 4000; // number of iterations to run
@@ -18,6 +36,9 @@ int main() {
     unsigned int i;
     for (i=0; i<num_parameters; i++)
         optimum_vect[i] = 0.0f;
+
+    // create example user data
+    exampledata u = {optimum_vect, num_parameters};
 
     float optimum_utility;
 
@@ -28,8 +49,11 @@ int main() {
     fprintf(fid,"close all;\n");
 
     // create ga_search object
-    ga_search ga = ga_search_create(
-        NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
+    ga_search ga = ga_search_create((void*)&u,
+                                    optimum_vect,
+                                    num_parameters,
+                                    &utility_callback,
+                                    LIQUID_OPTIM_MINIMIZE);
     ga_search_print(ga);
 
     // execute search
@@ -38,13 +62,17 @@ int main() {
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
     for (i=0; i<num_iterations; i++) {
-        optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
-        fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
+        //optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
 
         ga_search_evolve(ga);
 
-        if (((i+1)%100)==0)
-            ga_search_print(ga);
+        optimum_utility = ga_search_getopt(ga);
+        fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
+
+        if (((i+1)%100)==0) {
+            //ga_search_print(ga);
+            printf("%4u : %16.8f\n", i, optimum_utility);
+        }
     }
 
     // print results

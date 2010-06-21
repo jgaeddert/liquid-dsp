@@ -1592,7 +1592,8 @@ struct ga_search_s {
     //   - maps the [0,1] bounded output vector to desired range
     //   - for multiple objectives, utility should be high \em only when
     //         all objectives are met (multiplicative, not additive)
-    float (*get_utility)(void*, float*, unsigned int);
+    //float (*get_utility)(void*, float*, unsigned int);
+    float (*get_utility)(void*, chromosome);
     void* userdata;         // object to optimize
     int minimize;           // minimize/maximize utility
 };
