@@ -229,7 +229,7 @@ void chromosome_init_random(chromosome _q)
 {
     unsigned int i;
     for (i=0; i<_q->num_traits; i++)
-        _q->traits[i] = rand() && (_q->max_value[i]-1);
+        _q->traits[i] = rand() & (_q->max_value[i]-1);
 }
 
 float chromosome_valuef(chromosome _q,
