@@ -14,19 +14,25 @@
 float utility_callback(void * _userdata, chromosome _c)
 {
     unsigned int n = chromosome_get_num_traits(_c);
-    float v[n];
+    float v;    // chromosome value
+    float u=0;  // total utility
 
     unsigned int i;
-    for (i=0; i<n; i++)
-        v[i] = chromosome_valuef(_c,i);
+    for (i=0; i<n; i++) {
+        // extract chromosome value
+        v = chromosome_valuef(_c,i);
 
-    return rosenbrock(NULL, v, n);
+        // accumulate utility
+        u += (v-0.5f)*(v-0.5f);
+    }
+
+    return u;
 }
 
 int main() {
-    unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
-    unsigned int bits_per_parameter = 3;
-    unsigned int num_iterations = 4000; // number of iterations to run
+    unsigned int num_parameters = 8;    // dimensionality of search (minimum 1)
+    unsigned int bits_per_parameter = 12;
+    unsigned int num_iterations = 1000; // number of iterations to run
 
     unsigned int i;
     float optimum_utility;
