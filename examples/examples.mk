@@ -49,6 +49,7 @@ local_src	:=			\
 	framesync64_example.c		\
 	freqmodem_example.c		\
 	ga_search_example.c		\
+	ga_search_knapsack_example.c	\
 	gport_dma_example.c		\
 	gport_dma_threaded_example.c	\
 	gport_ima_example.c		\
