@@ -55,13 +55,13 @@ int main() {
     fprintf(fid,"set ytics -5,1,5\n");
     fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set pointsize 0.6\n");
-    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set multiplot layout 2,1 scale 1.0,1.0\n");
 
     fprintf(fid,"# real\n");
     fprintf(fid,"set ylabel 'Real'\n");
-    fprintf(fid,"plot '-' using 1:2 with linespoints pointtype 7 pointsize 0.3 linecolor rgb '%s' linewidth 1 title 'interp',\\\n",LIQUID_DOC_COLOR_GRAY);
-    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'symbols'\n",LIQUID_DOC_COLOR_GREEN);
+    fprintf(fid,"plot '-' using 1:2 with linespoints pointtype 7 pointsize 0.3 linecolor rgb '%s' linewidth 1 title 'input',\\\n",LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'decimated'\n",LIQUID_DOC_COLOR_GREEN);
 
     for (i=0; i<num_samples; i++)
         fprintf(fid,"%4u %12.4e\n", i, crealf(x[i]));
@@ -73,8 +73,8 @@ int main() {
 
     fprintf(fid,"# imag\n");
     fprintf(fid,"set ylabel 'Imag'\n");
-    fprintf(fid,"plot '-' using 1:2 with linespoints pointtype 7 pointsize 0.3 linecolor rgb '%s' linewidth 1 title 'interp',\\\n",LIQUID_DOC_COLOR_GRAY);
-    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'symbols'\n", LIQUID_DOC_COLOR_RED);
+    fprintf(fid,"plot '-' using 1:2 with linespoints pointtype 7 pointsize 0.3 linecolor rgb '%s' linewidth 1 title 'input',\\\n",LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with points pointtype 7 linecolor rgb '%s' title 'decimated'\n", LIQUID_DOC_COLOR_RED);
 
     for (i=0; i<num_samples; i++)
         fprintf(fid,"%4u %12.4e\n", i, cimagf(x[i]));
