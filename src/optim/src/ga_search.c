@@ -68,11 +68,11 @@ ga_search ga_search_create_advanced(void * _userdata,
     ga = (ga_search) malloc( sizeof(struct ga_search_s) );
 
     if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE) {
-        perror("error: ga_search_create(), population_size exceeds maximum\n");
-        return NULL;
+        fprintf(stderr,"error: ga_search_create(), population_size exceeds maximum\n");
+        exit(1);
     } else if (_bits_per_parameter > LIQUID_GA_SEARCH_MAX_CHROMOSOME_SIZE) {
-        perror("error: ga_search_create(), bits_per_parameter exceeds maximum\n");
-        return NULL;
+        fprintf(stderr,"error: ga_search_create(), bits_per_parameter exceeds maximum\n");
+        exit(1);
     } else;
 
     _mutation_rate = (_mutation_rate > 0.2f) ? 0.2f : _mutation_rate;
@@ -145,8 +145,8 @@ void ga_search_print(ga_search _g)
     unsigned int k; // rank[i]
     for (i=0; i<_g->population_size; i++) {
         k = _g->rank[i];
-        printf("%d:\t[%.3f] ", k, _g->utility[k]);
-        chromosome_print( _g->population[k] );
+        printf("%4u: [%8.4f] ", k, _g->utility[k]);
+        chromosome_printf( _g->population[k] );
     }
 }
 

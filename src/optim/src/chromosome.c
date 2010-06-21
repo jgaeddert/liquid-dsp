@@ -105,13 +105,6 @@ void chromosome_destroy(chromosome _q)
 
 void chromosome_print(chromosome _q)
 {
-#if 0
-    unsigned int i;
-    printf("chromosome: ");
-    for (i=0; i<_q->num_traits; i++)
-        printf("%lu.", _q->traits[i]);
-    printf("\n");
-#else
     unsigned int i,j;
     printf("chromosome: ");
     // print one bit at a time
@@ -125,7 +118,15 @@ void chromosome_print(chromosome _q)
             printf(".");
     }
     printf("\n");
-#endif
+}
+
+void chromosome_printf(chromosome _q)
+{
+    unsigned int i;
+    printf("chromosome: ");
+    for (i=0; i<_q->num_traits; i++)
+        printf("%6.3f", chromosome_valuef(_q,i));
+    printf("\n");
 }
 
 // clear chromosome (set traits to zero)
@@ -240,7 +241,7 @@ float chromosome_valuef(chromosome _q,
         exit(1);
     }
 
-    return (float) (_q->traits[_index]) / (float)(_q->max_value[_index]);
+    return (float) (_q->traits[_index]) / (float)(_q->max_value[_index] - 1);
 }
 
 unsigned int chromosome_value(chromosome _q,

@@ -34,8 +34,12 @@ float rosenbrock(void * _userdata,
                  float * _v,
                  unsigned int _n)
 {
-    if (_n < 2)
+    if (_n == 0) {
+        fprintf(stderr,"error: rosenbrock(), input vector length cannot be zero\n");
+        exit(1);
+    } else if (_n == 1) {
         return (1.0f-_v[0])*(1.0f-_v[0]);
+    }
 
     float u=0.0f;
     unsigned int i;

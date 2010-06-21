@@ -1579,8 +1579,8 @@ struct ga_search_s {
     float *utility;                     // utility array
     unsigned int *rank;                 // rank indices of chromosomes (best to worst)
 
-    float* v_opt;
-    float utility_opt;
+    float* v_opt;                       // optimum vector (best solution)
+    float utility_opt;                  // optimum utility (fitness of best solution)
 
     // External utility function.
     //

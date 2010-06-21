@@ -2971,8 +2971,11 @@ chromosome chromosome_create_basic(unsigned int _num_traits,
 // Destroy a chromosome object
 void chromosome_destroy(chromosome _c);
 
-// Print chromosome values to screen
+// Print chromosome values to screen (binary representation)
 void chromosome_print(chromosome _c);
+
+// Print chromosome values to screen (floating-point representation)
+void chromosome_printf(chromosome _c);
 
 // clear chromosome (set traits to zero)
 void chromosome_clear(chromosome _c);
