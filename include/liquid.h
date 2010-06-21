@@ -2978,6 +2978,9 @@ void chromosome_copy(chromosome _parent, chromosome _child);
 // Destroy a chromosome object
 void chromosome_destroy(chromosome _c);
 
+// get number of traits in chromosome
+unsigned int chromosome_get_num_traits(chromosome _c);
+
 // Print chromosome values to screen (binary representation)
 void chromosome_print(chromosome _c);
 

@@ -10,22 +10,17 @@
 
 #define OUTPUT_FILENAME "ga_search_example.m"
 
-// example data
-typedef struct {
-    float * v;      // parameter vector
-    unsigned int n; // vector length
-} exampledata;
-
 // utility callback function
 float utility_callback(void * _userdata, chromosome _c)
 {
-    exampledata * q = (exampledata*) _userdata;
+    unsigned int n = chromosome_get_num_traits(_c);
+    float v[n];
 
     unsigned int i;
-    for (i=0; i<q->n; i++)
-        q->v[i] = chromosome_valuef(_c,i);
+    for (i=0; i<n; i++)
+        v[i] = chromosome_valuef(_c,i);
 
-    return rosenbrock(NULL, q->v, q->n);
+    return rosenbrock(NULL, v, n);
 }
 
 int main() {
@@ -33,14 +28,7 @@ int main() {
     unsigned int bits_per_parameter = 3;
     unsigned int num_iterations = 4000; // number of iterations to run
 
-    float optimum_vect[num_parameters];
     unsigned int i;
-    for (i=0; i<num_parameters; i++)
-        optimum_vect[i] = 0.0f;
-
-    // create example user data
-    exampledata u = {optimum_vect, num_parameters};
-
     float optimum_utility;
 
     // open output file
@@ -54,7 +42,7 @@ int main() {
 
     // create ga_search object
     ga_search ga = ga_search_create(&utility_callback,
-                                    (void*)&u,
+                                    NULL,
                                     prototype,
                                     LIQUID_OPTIM_MINIMIZE);
     ga_search_print(ga);
@@ -65,8 +53,6 @@ int main() {
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
     for (i=0; i<num_iterations; i++) {
-        //optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
-
         ga_search_evolve(ga);
 
         ga_search_getopt(ga, prototype, &optimum_utility);

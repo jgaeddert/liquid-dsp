@@ -127,6 +127,11 @@ void chromosome_destroy(chromosome _q)
     free(_q);
 }
 
+unsigned int chromosome_get_num_traits(chromosome _q)
+{
+    return _q->num_traits;
+}
+
 void chromosome_print(chromosome _q)
 {
     unsigned int i,j;
