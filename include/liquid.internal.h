@@ -1569,7 +1569,6 @@ struct ga_search_s {
     chromosome * population;            // population of chromosomes
     unsigned int population_size;       // size of the population
     unsigned int selection_size;        // number of 
-    unsigned int num_mutations;         // number of mutations per evolution
     float mutation_rate;                // rate of mutation
 
     unsigned int num_parameters;        // number of parameters to optimize

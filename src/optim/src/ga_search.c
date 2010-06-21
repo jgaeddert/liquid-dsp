@@ -86,14 +86,9 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
 
     ga->mutation_rate = (_mutation_rate > 0.2f) ? 0.2f : _mutation_rate;
     ga->bits_per_chromosome = _parent->num_bits;
-    ga->num_mutations = (unsigned int) ceil(fabsf(ga->mutation_rate * ga->bits_per_chromosome));
 
     // initialize selection size be be 25% of population, minimum of 2
     ga->selection_size = ( ga->population_size >> 2 ) < 2 ? 2 : ga->population_size >> 2;
-
-    if (ga->num_mutations < 1 )
-        ga->num_mutations = 1;
-    //printf("mutation rate: %0.5f, num_mutations: %u\n\n", ga->mutation_rate, _num_mutations);
 
     // allocate internal arrays
     ga->population = (chromosome*) malloc( sizeof(struct chromosome_s)*(ga->population_size) );
@@ -106,7 +101,6 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
 
     //printf("num_parameters: %d\n", ga->num_parameters);
     //printf("population_size: %d\n", ga->population_size);
-    //printf("num_mutations: %d\n", ga->num_mutations);
     //printf("\nbits_per_chromosome: %d\n", ga->bits_per_chromosome);
 
     // create population
@@ -150,7 +144,7 @@ void ga_search_print(ga_search _g)
     printf("    num traits      :   %u\n", _g->num_parameters);
     printf("    population size :   %u\n", _g->population_size);
     printf("    selection size  :   %u\n", _g->selection_size);
-    printf("    mutation rate   :   %u\n", _g->mutation_rate);
+    printf("    mutation rate   :   %12.8f\n", _g->mutation_rate);
     printf("population:\n");
     unsigned int i;
     unsigned int k; // rank[i]
@@ -263,11 +257,16 @@ void ga_search_crossover(ga_search _g)
 // mutate population
 void ga_search_mutate(ga_search _g)
 {
-    unsigned int i, j;
+    unsigned int i;
     unsigned int index;
     for (i=0; i<_g->population_size; i++) {
-        for (j=0; j<_g->num_mutations; j++) {
+
+        // generate random number and mutate if within mutation_rate range
+        while ( randf() < _g->mutation_rate ) {
+            // generate random mutation index
             index = rand() % _g->bits_per_chromosome;
+
+            // mutate chromosome at index
             chromosome_mutate( _g->population[i], index );
         }
     }
