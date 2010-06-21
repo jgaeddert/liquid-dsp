@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
@@ -135,6 +136,37 @@ void chromosome_clear(chromosome _q)
     unsigned int i;
     for (i=0; i<_q->num_traits; i++)
         _q->traits[i] = 0;
+}
+
+// initialize chromosome on integer values
+void chromosome_init(chromosome _c,
+                     unsigned int * _v)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_traits; i++) {
+        if (_v[i] >= _c->max_value[i]) {
+            fprintf(stderr,"error: chromosome_init(), value exceeds maximum\n");
+            exit(1);
+        }
+        _c->traits[i] = _v[i];
+    }
+}
+
+// initialize chromosome on floating-point values
+void chromosome_initf(chromosome _c,
+                      float * _v)
+{
+    unsigned int i;
+    for (i=0; i<_c->num_traits; i++) {
+        if (_v[i] > 1.0f || _v[i] < 0.0f) {
+            fprintf(stderr,"error: chromosome_initf(), value must be in [0,1]\n");
+            exit(1);
+        }
+
+        // quantize sample
+        unsigned int N = 1 << _c->bits_per_trait[i];
+        _c->traits[i] = (unsigned int) floorf( _v[i] * N );
+    }
 }
 
 // mutate bit at _index

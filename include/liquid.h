@@ -2980,6 +2980,14 @@ void chromosome_printf(chromosome _c);
 // clear chromosome (set traits to zero)
 void chromosome_clear(chromosome _c);
 
+// initialize chromosome on integer values
+void chromosome_init(chromosome _c,
+                     unsigned int * _v);
+
+// initialize chromosome on floating-point values
+void chromosome_initf(chromosome _c,
+                      float * _v);
+
 // Mutates chromosome _c at _index
 void chromosome_mutate(chromosome _c, unsigned int _index);
 
