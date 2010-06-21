@@ -3035,7 +3035,7 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
                                     chromosome _parent,
                                     int _minmax,
                                     unsigned int _population_size,
-                                    unsigned int _mutation_rate);
+                                    float _mutation_rate);
 
 
 // Destroy a ga_search object
