@@ -107,8 +107,10 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     for (i=0; i<ga->population_size; i++) {
         ga->population[i] = chromosome_create_clone(_parent);
         chromosome_init_random( ga->population[i] );
-        ga->utility[i] = ga_search_evaluate_chromosome(ga, ga->population[i]);
     }
+
+    // evaluate population
+    ga_search_evaluate(ga);
 
     // rank chromosomes
     ga_search_rank(ga);
@@ -128,7 +130,7 @@ void ga_search_destroy(ga_search _g)
 
     free(_g->utility);
     free(_g->rank);
-    free(_g); // TODO : fix double-free bug
+    free(_g);
 }
 
 void ga_search_print(ga_search _g)
@@ -160,17 +162,14 @@ float ga_search_run(ga_search _g, unsigned int _max_iterations, float _target_ut
 
 void ga_search_evolve(ga_search _g)
 {
-    unsigned int i;
-
     // Crossover
     ga_search_crossover(_g);
 
     // Mutation
     ga_search_mutate(_g);
 
-    // Evaluate fitness
-    for (i=_g->selection_size; i<_g->population_size; i++)
-        _g->utility[i] = ga_search_evaluate_chromosome( _g, _g->population[i] );
+    // Evaluation
+    ga_search_evaluate(_g);
 
     // Rank
     ga_search_rank(_g);
@@ -207,9 +206,12 @@ void ga_search_getopt(ga_search _g,
     *_optimum_utility = _g->utility_opt;
 }
 
-float ga_search_evaluate_chromosome(ga_search _g, chromosome _c)
+// evaluate fitness
+void ga_search_evaluate(ga_search _g)
 {
-    return _g->get_utility(_g->userdata, _c);
+    unsigned int i;
+    for (i=0; i<_g->population_size; i++)
+        _g->utility[i] = _g->get_utility(_g->userdata, _g->population[i]);
 }
 
 void ga_search_crossover(ga_search _g)

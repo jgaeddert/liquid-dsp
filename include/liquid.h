@@ -3052,7 +3052,7 @@ void ga_search_getopt(ga_search,
                       chromosome _c,
                       float * _optimum_utility);
 
-float ga_search_evaluate_chromosome(ga_search _g, chromosome _c);
+void ga_search_evaluate(ga_search _g);
 
 void ga_search_rank(ga_search);
 
