@@ -54,7 +54,7 @@ FIRFILT() FIRFILT(_create)(TC * _h,
                            unsigned int _n)
 {
     // validate input
-    if (_h == 0) {
+    if (_n == 0) {
         fprintf(stderr,"error: firfilt_xxxt_create(), filter length must be greater than zero\n");
         exit(1);
     }
