@@ -95,6 +95,29 @@ chromosome chromosome_create_basic(unsigned int _num_traits,
     return q;
 }
 
+// create chromosome cloning a parent
+chromosome chromosome_create_clone(chromosome _parent)
+{
+    // create chromosome
+    chromosome q = chromosome_create(_parent->bits_per_trait,
+                                     _parent->num_traits);
+
+    // copy internal values
+    chromosome_copy(_parent, q);
+
+    return q;
+}
+
+// copy chromosome
+void chromosome_copy(chromosome _parent,
+                     chromosome _child)
+{
+    // copy internal values
+    unsigned int i;
+    for (i=0; i<_parent->num_traits; i++)
+        _child->traits[i] = _parent->traits[i];
+}
+
 void chromosome_destroy(chromosome _q)
 {
     free(_q->bits_per_trait);

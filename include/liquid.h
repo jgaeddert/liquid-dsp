@@ -2968,6 +2968,13 @@ chromosome chromosome_create(unsigned int * _bits_per_trait,
 chromosome chromosome_create_basic(unsigned int _num_traits,
                                    unsigned int _bits_per_trait);
 
+// create a chromosome object, cloning a parent
+chromosome chromosome_create_clone(chromosome _parent);
+
+// copy existing chromosomes' internal traits (all other internal
+// parameters must be equal)
+void chromosome_copy(chromosome _parent, chromosome _child);
+
 // Destroy a chromosome object
 void chromosome_destroy(chromosome _c);
 
@@ -3014,21 +3021,19 @@ float chromosome_valuef(chromosome _c,
 typedef struct ga_search_s * ga_search;
 
 // Create a simple ga_search object; parameters are specified internally
-ga_search ga_search_create(void * _userdata,
-                           float * _v,
-                           unsigned int _num_parameters,
-                           float (*_get_utility)(void*, chromosome),
+ga_search ga_search_create(float (*_get_utility)(void*, chromosome),
+                           void * _userdata,
+                           chromosome _parent,
                            int _minmax);
 
 // Create a ga_search object, specifying search parameters
-ga_search ga_search_create_advanced(void * _userdata,
-                                    float * _v,
-                                    unsigned int _num_parameters,
-                                    unsigned int _bits_per_parameter,
+ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
+                                    void * _userdata,
+                                    chromosome _parent,
+                                    int _minmax,
                                     unsigned int _population_size,
-                                    float _mutation_rate,
-                                    float (*_get_utility)(void*, chromosome),
-                                    int _minmax);
+                                    unsigned int _mutation_rate);
+
 
 // Destroy a ga_search object
 void ga_search_destroy(ga_search);
@@ -3040,7 +3045,9 @@ float ga_search_run(ga_search _g,
 
 void ga_search_evolve(ga_search);
 
-float ga_search_getopt(ga_search);
+void ga_search_getopt(ga_search,
+                      chromosome _c,
+                      float * _optimum_utility);
 
 float ga_search_evaluate_chromosome(ga_search _g, chromosome _c);
 

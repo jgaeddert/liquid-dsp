@@ -482,6 +482,7 @@ void ANN(_train_ga)(ANN() _q,
                     float _emax,
                     unsigned int _nmax)
 {
+#if 0
     // create search structure
     struct ANN(_ga_search_object) obj = {_q, _x, _y, _num_patterns};
 
@@ -524,5 +525,7 @@ void ANN(_train_ga)(ANN() _q,
 
     // clean it up
     ga_search_destroy(ga);
+
+#endif
 }
 

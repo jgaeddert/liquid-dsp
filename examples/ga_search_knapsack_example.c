@@ -52,6 +52,9 @@ int main() {
                                    num_items);
     knapsack_print(bag);
 
+    // create prototype chromosome (1 bit/item)
+    chromosome prototype = chromosome_create_basic(num_items, 1);
+
     float optimum_vect[num_items];
     for (i=0; i<num_items; i++)
         optimum_vect[i] = 0.0f;
@@ -65,14 +68,10 @@ int main() {
     fprintf(fid,"close all;\n");
 
     // create ga_search object
-    ga_search ga = ga_search_create_advanced((void*)bag,
-                                             optimum_vect,
-                                             num_items,
-                                             4,     // bits per parameter, max items: (1<<bits)-1
-                                             16,    // population size
-                                             0.01f, // mutation rate
-                                             &knapsack_utility,
-                                             LIQUID_OPTIM_MAXIMIZE);
+    ga_search ga = ga_search_create(&knapsack_utility,
+                                    (void*)bag,
+                                    prototype,
+                                    LIQUID_OPTIM_MAXIMIZE);
     ga_search_print(ga);
 
     // execute search
@@ -83,7 +82,7 @@ int main() {
     for (i=0; i<num_iterations; i++) {
         ga_search_evolve(ga);
 
-        optimum_utility = ga_search_getopt(ga);
+        ga_search_getopt(ga, prototype, &optimum_utility);
         fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
 
         if (((i+1)%100)==0)
@@ -106,6 +105,7 @@ int main() {
 
     // test results, optimum at [1, 1, 1, ... 1];
 
+    chromosome_destroy(prototype);
     ga_search_destroy(ga);
     knapsack_destroy(bag);
 

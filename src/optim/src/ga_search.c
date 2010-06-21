@@ -37,32 +37,27 @@
 
 #define LIQUID_DEBUG_GA_SEARCH 0
 
-ga_search ga_search_create(void * _userdata,
-                           float* _v,
-                           unsigned int _num_parameters,
-                           float (*_get_utility)(void*, chromosome),
+// Create a simple ga_search object; parameters are specified internally
+ga_search ga_search_create(float (*_get_utility)(void*, chromosome),
+                           void * _userdata,
+                           chromosome _parent,
                            int _minmax)
 {
-    return ga_search_create_advanced(
-        _userdata,
-        _v,
-        _num_parameters,
-        16,     // bits_per_parameter
-        16,     // population_size
-        0.02f,  // mutation_rate
-        _get_utility,
-        _minmax
-        );
+    return ga_search_create_advanced(_get_utility,
+                                     _userdata,
+                                     _parent,
+                                     _minmax,
+                                     16,        // population size
+                                     0.02f);    // mutation rate
 }
 
-ga_search ga_search_create_advanced(void * _userdata,
-                                    float* _v,
-                                    unsigned int _num_parameters,
-                                    unsigned int _bits_per_parameter,
+// Create a ga_search object, specifying search parameters
+ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
+                                    void * _userdata,
+                                    chromosome _parent,
+                                    int _minmax,
                                     unsigned int _population_size,
-                                    float _mutation_rate,
-                                    float (*_get_utility)(void*, chromosome),
-                                    int _minmax)
+                                    unsigned int _mutation_rate)
 {
     ga_search ga;
     ga = (ga_search) malloc( sizeof(struct ga_search_s) );
@@ -70,22 +65,18 @@ ga_search ga_search_create_advanced(void * _userdata,
     if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE) {
         fprintf(stderr,"error: ga_search_create(), population_size exceeds maximum\n");
         exit(1);
-    } else if (_bits_per_parameter > LIQUID_GA_SEARCH_MAX_CHROMOSOME_SIZE) {
-        fprintf(stderr,"error: ga_search_create(), bits_per_parameter exceeds maximum\n");
-        exit(1);
     } else;
 
     _mutation_rate = (_mutation_rate > 0.2f) ? 0.2f : _mutation_rate;
-    unsigned int total_bits = _num_parameters*_bits_per_parameter;
+    unsigned int total_bits = _parent->num_bits;
     unsigned int _num_mutations = (unsigned int) ceil(fabsf(_mutation_rate*total_bits));
     _num_mutations = (_num_mutations < 1 ) ? 1 : _num_mutations;
     //printf("mutation rate: %0.5f, num_mutations: %u\n\n", _mutation_rate, _num_mutations);
 
     // initialize public values
     ga->userdata = _userdata;
-    ga->v = _v;
-    ga->num_parameters = _num_parameters;
-    ga->bits_per_parameter = _bits_per_parameter;
+    //ga->v = _v;
+    ga->num_parameters = _parent->num_traits;
     ga->population_size = _population_size;
     ga->num_mutations = _num_mutations;
     ga->get_utility = _get_utility;
@@ -93,7 +84,7 @@ ga_search ga_search_create_advanced(void * _userdata,
 
     // initialize private values
 
-    ga->bits_per_chromosome = ga->bits_per_parameter * ga->num_parameters;
+    ga->bits_per_chromosome = _parent->num_bits;
     ga->population = (chromosome*) malloc( sizeof(struct chromosome_s)*(ga->population_size) );
     ga->utility = (float*) calloc( sizeof(float), ga->population_size );
     ga->rank = (unsigned int*) calloc( sizeof(unsigned int), ga->population_size );
@@ -101,11 +92,11 @@ ga_search ga_search_create_advanced(void * _userdata,
     // initialize selection size be be 25% of population, minimum of 2
     ga->selection_size = ( ga->population_size >> 2 ) < 2 ? 2 : ga->population_size >> 2;
 
-    ga->v_opt = (float*) calloc( sizeof(float), ga->num_parameters );
+    // create optimum chromosome (clone)
+    ga->c = chromosome_create_clone(_parent);
     ga->utility_opt = ga->minimize ? FLT_MAX : -FLT_MAX;
 
     //printf("num_parameters: %d\n", ga->num_parameters);
-    //printf("bits_per_parameter: %d\n", ga->bits_per_parameter);
     //printf("population_size: %d\n", ga->population_size);
     //printf("num_mutations: %d\n", ga->num_mutations);
     //printf("\nbits_per_chromosome: %d\n", ga->bits_per_chromosome);
@@ -114,7 +105,7 @@ ga_search ga_search_create_advanced(void * _userdata,
     unsigned int i;
     // TODO : initialize first chromosome on input vector
     for (i=0; i<ga->population_size; i++) {
-        ga->population[i] = chromosome_create_basic( ga->num_parameters, ga->bits_per_parameter );
+        ga->population[i] = chromosome_create_clone(_parent);
         chromosome_init_random( ga->population[i] );
         ga->utility[i] = ga_search_evaluate_chromosome(ga, ga->population[i]);
     }
@@ -132,9 +123,11 @@ void ga_search_destroy(ga_search _g)
         chromosome_destroy( _g->population[i] );
     free(_g->population);
 
+    // destroy optimum chromosome
+    chromosome_destroy(_g->c);
+
     free(_g->utility);
     free(_g->rank);
-    free(_g->v_opt);
     free(_g); // TODO : fix double-free bug
 }
 
@@ -161,7 +154,7 @@ float ga_search_run(ga_search _g, unsigned int _max_iterations, float _target_ut
         i < _max_iterations);
 
     // store optimum vector in buffer
-    memmove(_g->v, _g->v_opt, (size_t) (sizeof(float)*_g->num_parameters) );
+    //memmove(_g->v, _g->v_opt, (size_t) (sizeof(float)*_g->num_parameters) );
     return _g->utility_opt;
 }
 
@@ -187,33 +180,35 @@ void ga_search_evolve(ga_search _g)
                                 _g->minimize) )
     {
         // update optimum
-        ga_search_evaluate_chromosome( _g, _g->population[_g->rank[0]] );
         _g->utility_opt = _g->utility[_g->rank[0]];
-        memmove(_g->v_opt, _g->v, sizeof(float)*_g->num_parameters);
+
+        // copy optimum chromosome
+        chromosome_copy(_g->population[_g->rank[0]], _g->c);
+        //memmove(_g->v_opt, _g->v, sizeof(float)*_g->num_parameters);
 
 #if LIQUID_DEBUG_GA_SEARCH
         printf("  utility: %0.2E", _g->utility_opt);
-        printf("  [");
-        for (i=0; i<_g->num_parameters; i++)
-            printf(" %6.3f", _g->v_opt[i]);
-        printf(" ]\n");
+        chromosome_printf(_g->c);
 #endif
     }
     
     // set optimum vector to output
-    memmove(_g->v, _g->v_opt, sizeof(float)*_g->num_parameters);
+    //memmove(_g->v, _g->v_opt, sizeof(float)*_g->num_parameters);
 }
 
-float ga_search_getopt(ga_search _g)
+void ga_search_getopt(ga_search _g,
+                      chromosome _c,
+                      float * _optimum_utility)
 {
-    return _g->utility_opt;
+    // copy optimum chromosome
+    chromosome_copy(_g->c, _c);
+
+    // copy optimum utility
+    *_optimum_utility = _g->utility_opt;
 }
 
 float ga_search_evaluate_chromosome(ga_search _g, chromosome _c)
 {
-    unsigned int i;
-    for (i=0; i<_g->num_parameters; i++)
-        (_g->v)[i] = chromosome_valuef( _c, i );
     return _g->get_utility(_g->userdata, _c);
 }
 
@@ -228,10 +223,7 @@ void ga_search_crossover(ga_search _g)
         // ensure fittest member is used at least once as parent
         p1 = (i==_g->selection_size) ? _g->rank[0] : _g->rank[rand() % _g->selection_size];
         p2 = _g->rank[rand() % _g->selection_size];
-        if (0) // (_g->restrict_crossover_level)
-            threshold = (rand() % _g->num_parameters) * _g->bits_per_parameter;
-        else
-            threshold = rand() % _g->bits_per_chromosome;
+        threshold = rand() % _g->bits_per_chromosome;
 
         c = _g->rank[i];
 

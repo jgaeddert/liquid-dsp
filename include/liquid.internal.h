@@ -1571,7 +1571,7 @@ struct ga_search_s {
     unsigned int selection_size;        // number of 
     unsigned int num_mutations;         // number of mutations per evolution
 
-    float* v;                           // vector buffer to optimize
+    chromosome c;                       // chromosome to optimize
     unsigned int num_parameters;        // number of parameters to optimize
     unsigned int bits_per_parameter;    // num bits to represent each parmeter 
     unsigned int bits_per_chromosome;   // total number of bits in each chromosome
