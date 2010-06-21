@@ -4,6 +4,15 @@
 
 \section{framing}
 \label{module:framing}
+The framing module contains objects and methods for packaging data into
+manageable frames and packets.
+For convention, \liquid\ refers to a ``packet'' as a group of binary
+data bytes that need to be communicated over a wireless link.
+A ``frame'' is a representation of the data once it has been properly
+partitioned, encoded, and modulated before transmitting over the air.
+Included in this module are the {\tt packetizer}, 
+{\tt frame[gen|sync]64}, and {\tt flexframe[gen|sync]} objects which
+greatly simplify over-the-air digital communication of data.
 
 \subsection{packetizer}
 \label{module:framing:packetizer}
@@ -30,4 +39,9 @@ functionality:
 
 See also: fec module, {\tt examples/packetizer\_example.c}
 
+\subsection{frame64}
+\label{module:framing:frame64}
+
+\subsection{flexframe}
+\label{module:framing:flexframe}
 

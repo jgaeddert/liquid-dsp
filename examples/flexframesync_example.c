@@ -152,8 +152,8 @@ int main(int argc, char *argv[]) {
     float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
     float mu    = 0.3f; // fractional sample delay
-    fir_farrow_crcf delay_filter = fir_farrow_crcf_create(27,5,0.9f,60.0f);
-    fir_farrow_crcf_set_delay(delay_filter,mu);
+    firfarrow_crcf delay_filter = firfarrow_crcf_create(27,5,0.9f,60.0f);
+    firfarrow_crcf_set_delay(delay_filter,mu);
 
     unsigned int i;
     // initialize header, payload
@@ -203,10 +203,10 @@ int main(int argc, char *argv[]) {
         cawgn(&z[1], nstd);
 
         // emulate sample timing offset with Farrow filter
-        fir_farrow_crcf_push(delay_filter, z[0]);
-        fir_farrow_crcf_execute(delay_filter, &z[0]);
-        fir_farrow_crcf_push(delay_filter, z[1]);
-        fir_farrow_crcf_execute(delay_filter, &z[1]);
+        firfarrow_crcf_push(delay_filter, z[0]);
+        firfarrow_crcf_execute(delay_filter, &z[0]);
+        firfarrow_crcf_push(delay_filter, z[1]);
+        firfarrow_crcf_execute(delay_filter, &z[1]);
 
         // push through sync
         flexframesync_execute(fs, z, 2);
@@ -217,10 +217,10 @@ int main(int argc, char *argv[]) {
         cawgn(&noise, nstd);
         // push noise through sync
         interp_crcf_execute(interp, noise, y);
-        fir_farrow_crcf_push(delay_filter, y[0]);
-        fir_farrow_crcf_execute(delay_filter, &z[0]);
-        fir_farrow_crcf_push(delay_filter, y[1]);
-        fir_farrow_crcf_execute(delay_filter, &z[1]);
+        firfarrow_crcf_push(delay_filter, y[0]);
+        firfarrow_crcf_execute(delay_filter, &z[0]);
+        firfarrow_crcf_push(delay_filter, y[1]);
+        firfarrow_crcf_execute(delay_filter, &z[1]);
         flexframesync_execute(fs, z, 2);
     }
     } // num frames

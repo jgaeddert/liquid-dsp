@@ -616,6 +616,27 @@ This delay is a by-product of the matched filter itself, in the sense that the
 timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
 
 \subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
+\begin{description}
+\item[{\tt firfarrow\_crcf\_create()}]
+    creates a {\tt firfarrow} object.
+\item[{\tt firfarrow\_crcf\_destroy()}]
+    destroy object, freeing all internally-allocated memory.
+\item[{\tt firfarrow\_crcf\_clear()}]
+    clear filter internal memory buffer.
+    This does not reset the delay.
+\item[{\tt firfarrow\_crcf\_print()}]
+    prints the filter's internal state to {\tt stdout}.
+\item[{\tt firfarrow\_crcf\_push()}]
+    push a single sample into the filter's internal buffer.
+\item[{\tt firfarrow\_crcf\_set\_delay()}]
+    set fractional delay of filter.
+\item[{\tt firfarrow\_crcf\_execute()}]
+    computes sample output.
+\item[{\tt firfarrow\_crcf\_get\_length()}]
+    returns length of the filter (number of taps)
+\item[{\tt firfarrow\_crcf\_get\_coefficients()}]
+    returns the internal filter coefficients.
+\end{description}
 
 \subsection{{\tt firdes} (finite impulse response filter design)}
 \label{module:filter:firdes}

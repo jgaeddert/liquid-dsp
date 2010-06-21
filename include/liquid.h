@@ -1761,44 +1761,44 @@ LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP_MANGLE_CRCF,
 // Finite impulse response Farrow filter
 //
 
-#define FIR_FARROW_MANGLE_RRRF(name)  LIQUID_CONCAT(fir_farrow_rrrf,name)
-#define FIR_FARROW_MANGLE_CRCF(name)  LIQUID_CONCAT(fir_farrow_crcf,name)
-//#define FIR_FARROW_MANGLE_CCCF(name)  LIQUID_CONCAT(fir_farrow_cccf,name)
+#define FIRFARROW_MANGLE_RRRF(name)     LIQUID_CONCAT(firfarrow_rrrf,name)
+#define FIRFARROW_MANGLE_CRCF(name)     LIQUID_CONCAT(firfarrow_crcf,name)
+//#define FIRFARROW_MANGLE_CCCF(name)     LIQUID_CONCAT(firfarrow_cccf,name)
 
 // Macro:
-//   FIR_FARROW : name-mangling macro
+//   FIRFARROW  : name-mangling macro
 //   TO         : output data type
 //   TC         : coefficients data type
 //   TI         : input data type
-#define LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW,TO,TC,TI)       \
-typedef struct FIR_FARROW(_s) * FIR_FARROW();                   \
-FIR_FARROW() FIR_FARROW(_create)(unsigned int _h_len,           \
-                                 unsigned int _p,               \
-                                 float _fc,                     \
-                                 float _beta);                  \
-void FIR_FARROW(_destroy)(FIR_FARROW() _f);                     \
-void FIR_FARROW(_clear)(FIR_FARROW() _f);                       \
-void FIR_FARROW(_print)(FIR_FARROW() _f);                       \
-void FIR_FARROW(_push)(FIR_FARROW() _f, TI _x);                 \
-void FIR_FARROW(_set_delay)(FIR_FARROW() _f, float _mu);        \
-void FIR_FARROW(_execute)(FIR_FARROW() _f, TO *_y);             \
-unsigned int FIR_FARROW(_get_length)(FIR_FARROW() _f);          \
-void FIR_FARROW(_get_coefficients)(FIR_FARROW() _f, float * _h);
+#define LIQUID_FIRFARROW_DEFINE_API(FIRFARROW,TO,TC,TI)         \
+typedef struct FIRFARROW(_s) * FIRFARROW();                     \
+FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,             \
+                               unsigned int _p,                 \
+                               float _fc,                       \
+                               float _As);                      \
+void FIRFARROW(_destroy)(FIRFARROW() _f);                       \
+void FIRFARROW(_clear)(FIRFARROW() _f);                         \
+void FIRFARROW(_print)(FIRFARROW() _f);                         \
+void FIRFARROW(_push)(FIRFARROW() _f, TI _x);                   \
+void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu);          \
+void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y);               \
+unsigned int FIRFARROW(_get_length)(FIRFARROW() _f);            \
+void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);
 
-LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_RRRF,
-                             float,
-                             float,
-                             float)
+LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_RRRF,
+                            float,
+                            float,
+                            float)
 
-LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CRCF,
-                             liquid_float_complex,
-                             float,
-                             liquid_float_complex)
+LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_CRCF,
+                            liquid_float_complex,
+                            float,
+                            liquid_float_complex)
 
-//LIQUID_FIR_FARROW_DEFINE_API(FIR_FARROW_MANGLE_CCCF,
-//                             liquid_float_complex,
-//                             liquid_float_complex,
-//                             liquid_float_complex)
+//LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_CCCF,
+//                            liquid_float_complex,
+//                            liquid_float_complex,
+//                            liquid_float_complex)
 
 
 //
