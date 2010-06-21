@@ -21,6 +21,25 @@ Implements an auto-correlator
 \]
 where $N$ is the window length, and $d$ is the overlap delay.
 
+% decim
+\subsection{{\tt decim} (decimator)}
+The {\tt decim} object family implements a basic interpolator with an integer
+output-to-input resampling ratio.
+It is essentially just a {\tt firfilt} object which operates on a block of
+samples at a time.
+An example of the decimator can be seen in figure~\ref{fig:module:filter:decim_crcf}.
+
+%The same result can be accomplished with a {\tt firfilt} object...
+
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_decim_crcf}
+\caption{{\tt decim\_crcf} (decimator) demonstration, $D=4$}
+\label{fig:module:filter:decim_crcf}
+\end{figure}
+
+
+
 % dds
 \subsection{{\tt dds} (direct digital synthesizer)}
 
@@ -91,11 +110,6 @@ output-to-input resampling ratio.
 \label{fig:module:filter:interp_crcf}
 \end{figure}
 
-
-% decim
-\subsection{{\tt decim} (decimator)}
-The {\tt decim} object implements a basic interpolator with an integer
-input-to-output resampling ratio.
 
 % qmfb
 \subsection{{\tt qmfb} (quadrature mirror filter bank)}
