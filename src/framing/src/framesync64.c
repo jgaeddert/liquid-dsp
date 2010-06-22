@@ -73,10 +73,8 @@ struct framesync64_s {
     nco_crcf nco_rx;
     bsync_rrrf fsync;
 
-    // synchronizer bandwidths
-    float agc_bw0, agc_bw1; // automatic gain control
-    float pll_bw0, pll_bw1; // phase-locked loop
-    float sym_bw0, sym_bw1; // symbol timing recovery
+    // generic user-configurable properties
+    framesyncprops_s props;
 
     // squelch
     float rssi;     // received signal strength indicator [dB]
@@ -122,25 +120,29 @@ struct framesync64_s {
 #endif
 };
 
-framesync64 framesync64_create(
-//    unsigned int _k,
-    unsigned int _m,
-    float _beta,
-    framesync64_callback _callback,
-    void * _userdata)
+framesync64 framesync64_create(framesyncprops_s * _props,
+                               framesync64_callback _callback,
+                               void * _userdata)
 {
     framesync64 fs = (framesync64) malloc(sizeof(struct framesync64_s));
     fs->callback = _callback;
     fs->userdata = _userdata;
 
+    // set properties (initial memmove to prevent internal warnings)
+    memmove(&fs->props, &framesyncprops_default, sizeof(framesyncprops_s));
+    if (_props != NULL)
+        framesync64_setprops(fs,_props);
+    else
+        framesync64_setprops(fs, &framesyncprops_default);
+
     // agc, rssi, squelch
     fs->agc_rx = agc_crcf_create();
     agc_crcf_set_target(fs->agc_rx, 1.0f);
-    agc_crcf_set_bandwidth(fs->agc_rx, FRAMESYNC64_AGC_BW_0);
-    agc_crcf_set_gain_limits(fs->agc_rx, 1e-6, 1e4);
+    agc_crcf_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
+    agc_crcf_set_gain_limits(fs->agc_rx, fs->props.agc_gmin, fs->props.agc_gmax);
 
     agc_crcf_squelch_activate(fs->agc_rx);
-    agc_crcf_squelch_set_threshold(fs->agc_rx, FRAMESYNC64_SQUELCH_THRESH);
+    agc_crcf_squelch_set_threshold(fs->agc_rx, fs->props.squelch_threshold);
     agc_crcf_squelch_set_timeout(fs->agc_rx, FRAMESYNC64_SQUELCH_TIMEOUT);
 
     agc_crcf_squelch_enable_auto(fs->agc_rx);
@@ -148,7 +150,7 @@ framesync64 framesync64_create(
 
     // pll, nco
     fs->nco_rx = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_pll_set_bandwidth(fs->nco_rx, FRAMESYNC64_PLL_BW_0);
+    nco_crcf_pll_set_bandwidth(fs->nco_rx, fs->props.pll_bw0);
 
     // bsync (p/n synchronizer)
     unsigned int i;
@@ -161,9 +163,11 @@ framesync64 framesync64_create(
 
     // design symsync (k=2)
     unsigned int npfb = 32;
-    unsigned int H_len = 2*2*npfb*_m + 1;
+    unsigned int m=3;
+    float beta=0.7f;
+    unsigned int H_len = 2*2*npfb*m + 1;
     float H[H_len];
-    design_rrc_filter(2*npfb,_m,_beta,0,H);
+    design_rrc_filter(2*npfb,m,beta,0,H);
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
     // create (de)interleaver
@@ -180,16 +184,8 @@ framesync64 framesync64_create(
     fs->state = FRAMESYNC64_STATE_SEEKPN;
     fs->num_symbols_collected = 0;
 
-    // set open/closed bandwidth values
-    framesync64_set_agc_bw0(fs,FRAMESYNC64_AGC_BW_0);
-    framesync64_set_agc_bw1(fs,FRAMESYNC64_AGC_BW_1);
-    framesync64_set_pll_bw0(fs,FRAMESYNC64_PLL_BW_0);
-    framesync64_set_pll_bw1(fs,FRAMESYNC64_PLL_BW_1);
-    framesync64_set_sym_bw0(fs,FRAMESYNC64_SYM_BW_0);
-    framesync64_set_sym_bw1(fs,FRAMESYNC64_SYM_BW_1);
-    framesync64_set_squelch_threshold(fs,FRAMESYNC64_SQUELCH_THRESH);
-
-    // open bandwidth
+    // reset, open bandwidths
+    framesync64_reset(fs);
     framesync64_open_bandwidth(fs);
 
 #if DEBUG_FRAMESYNC64
@@ -205,6 +201,27 @@ framesync64 framesync64_create(
 
     return fs;
 }
+
+void framesync64_getprops(framesync64 _fs, framesyncprops_s * _props)
+{
+    memmove(_props, &_fs->props, sizeof(framesyncprops_s));
+}
+
+void framesync64_setprops(framesync64 _fs, framesyncprops_s * _props)
+{
+    // TODO : framesync64_setprops() validate input
+
+    if (_props->k       != _fs->props.k     ||
+        _props->npfb    != _fs->props.npfb  ||
+        _props->m       != _fs->props.m     ||
+        _props->beta    != _fs->props.beta)
+    {
+        printf("warning: framesync64_setprops(), ignoring filter change\n");
+        // TODO : destroy/recreate filter
+    }
+    memmove(&_fs->props, _props, sizeof(framesyncprops_s));
+}
+
 
 void framesync64_destroy(framesync64 _fs)
 {
@@ -227,13 +244,51 @@ void framesync64_destroy(framesync64 _fs)
 void framesync64_print(framesync64 _fs)
 {
     printf("framesync64:\n");
+    printf("    agc b/w open/closed :   %8.2e / %8.2e\n", _fs->props.agc_bw0, _fs->props.agc_bw1);
+    printf("    sym b/w open/closed :   %8.2e / %8.2e\n", _fs->props.sym_bw0, _fs->props.sym_bw1);
+    printf("    pll b/w open/closed :   %8.2e / %8.2e\n", _fs->props.pll_bw0, _fs->props.pll_bw1);
+    printf("    samples/symbol      :   %u\n", _fs->props.k);
+    printf("    filter length       :   %u\n", _fs->props.m);
+    printf("    num filters (ppfb)  :   %u\n", _fs->props.npfb);
+    printf("    filter excess b/w   :   %6.4f\n", _fs->props.beta);
+    printf("    squelch             :   %s\n", _fs->props.squelch_enabled     ? "enabled" : "disabled");
+    printf("    auto-squelch        :   %s\n", _fs->props.autosquelch_enabled ? "enabled" : "disabled");
+    printf("    squelch threshold   :   %6.2f dB\n", _fs->props.squelch_threshold);
+    printf("    ----\n");
+    printf("    p/n sequence len    :   %u\n", FRAME64_PN_LEN);
+#if 0
+    printf("    modulation scheme   :   %u-%s\n",
+        1<<(_fs->bps_payload),
+        modulation_scheme_str[_fs->ms_payload]);
+#endif
+    printf("    payload len         :   %u bytes\n", 64);
 }
 
 void framesync64_reset(framesync64 _fs)
 {
     symsync_crcf_clear(_fs->mfdecim);
-    agc_crcf_set_bandwidth(_fs->agc_rx, FRAMESYNC64_AGC_BW_0);
+    //agc_crcf_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
+    agc_crcf_unlock(_fs->agc_rx);
+    symsync_crcf_unlock(_fs->mfdecim);
     nco_crcf_reset(_fs->nco_rx);
+
+#if 0
+    // SINDR estimate
+    _fs->evm_hat = 0.0f;
+    _fs->SINDRdB_hat = 0.0f;
+#endif
+
+    // enable/disable squelch
+    if (_fs->props.squelch_enabled)
+        agc_crcf_squelch_activate(_fs->agc_rx);
+    else
+        agc_crcf_squelch_deactivate(_fs->agc_rx);
+
+    // enable/disable auto-squelch
+    if (_fs->props.autosquelch_enabled)
+        agc_crcf_squelch_enable_auto(_fs->agc_rx);
+    else
+        agc_crcf_squelch_disable_auto(_fs->agc_rx);
 }
 
 // TODO: break framesync64_execute method into manageable pieces
@@ -261,7 +316,7 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
         // squelch: block agc output from synchronizer only if
         // 1. received signal strength indicator has not exceeded squelch
         //    threshold at any time within the past <squelch_timeout> samples
-        // 2. mode is FLEXFRAMESYNC_STATE_SEEKPN (seek p/n sequence)
+        // 2. mode is FRAMESYNC64_STATE_SEEKPN (seek p/n sequence)
         _fs->squelch_status = agc_crcf_squelch_get_status(_fs->agc_rx);
 #if DEBUG_FRAMESYNC64_PRINT
         if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT)
@@ -375,33 +430,22 @@ void framesync64_execute(framesync64 _fs, float complex *_x, unsigned int _n)
     //printf("rssi: %8.4f\n", 10*log10(agc_get_signal_level(_fs->agc_rx)));
 }
 
-void framesync64_set_agc_bw0(framesync64 _fs, float _agc_bw0) { _fs->agc_bw0 = _agc_bw0;}
-void framesync64_set_agc_bw1(framesync64 _fs, float _agc_bw1) { _fs->agc_bw1 = _agc_bw1;}
-void framesync64_set_pll_bw0(framesync64 _fs, float _pll_bw0) { _fs->pll_bw0 = _pll_bw0;}
-void framesync64_set_pll_bw1(framesync64 _fs, float _pll_bw1) { _fs->pll_bw1 = _pll_bw1;}
-void framesync64_set_sym_bw0(framesync64 _fs, float _sym_bw0) { _fs->sym_bw0 = _sym_bw0;}
-void framesync64_set_sym_bw1(framesync64 _fs, float _sym_bw1) { _fs->sym_bw1 = _sym_bw1;}
-void framesync64_set_squelch_threshold(framesync64 _fs, float _squelch_threshold)
-{
-    agc_crcf_squelch_set_threshold(_fs->agc_rx, _squelch_threshold);
-}
-
 // 
 // internal
 //
 
 void framesync64_open_bandwidth(framesync64 _fs)
 {
-    agc_crcf_set_bandwidth(_fs->agc_rx, _fs->agc_bw0);
-    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw0);
-    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw0);
+    agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw0);
+    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw0);
 }
 
 void framesync64_close_bandwidth(framesync64 _fs)
 {
-    agc_crcf_set_bandwidth(_fs->agc_rx, _fs->agc_bw1);
-    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->sym_bw1);
-    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->pll_bw1);
+    agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
+    symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
+    nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
 }
 
 void framesync64_decode_header(framesync64 _fs)

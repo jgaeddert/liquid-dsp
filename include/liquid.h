@@ -1836,6 +1836,25 @@ void lf2_generate_filter(lf2 _f);
 // MODULE : framing
 //
 
+// framesyncprops : generic frame synchronizer properties structure
+
+typedef struct {
+    float agc_bw0, agc_bw1;     // automatic gain control bandwidth
+    float agc_gmin, agc_gmax;   // automatic gain control gain limits
+    float sym_bw0, sym_bw1;     // symbol synchronizer bandwidth
+    float pll_bw0, pll_bw1;     // phase-locked loop bandwidth
+    unsigned int k;             // decimation rate
+    unsigned int npfb;          // number of filters in symbol sync.
+    unsigned int m;             // filter length
+    float beta;                 // excess bandwidth
+    int squelch_enabled;        // enable/disable squelch
+    int autosquelch_enabled;    // enable/disable automatic squelch
+    float squelch_threshold;    // squelch enable/disable threshold
+} framesyncprops_s;
+
+extern framesyncprops_s framesyncprops_default;
+void framesyncprops_init_default(framesyncprops_s * _props);
+
 //
 // Basic frame generator (64 bytes data payload)
 //
@@ -1859,8 +1878,12 @@ typedef int (*framesync64_callback)(unsigned char * _header,
                                     int _payload_valid,
                                     void * _userdata);
 typedef struct framesync64_s * framesync64;
-framesync64 framesync64_create(unsigned int _m,
-                               float _beta,
+
+// create framesync64 object
+//  _props      :   properties structure (default if NULL)
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+framesync64 framesync64_create(framesyncprops_s * _props,
                                framesync64_callback _callback,
                                void * _userdata);
 void framesync64_destroy(framesync64 _fs);
@@ -1870,13 +1893,8 @@ void framesync64_execute(framesync64 _fs,
                          liquid_float_complex * _x,
                          unsigned int _n);
 
-void framesync64_set_agc_bw0(framesync64 _fs, float _agc_bw0);
-void framesync64_set_agc_bw1(framesync64 _fs, float _agc_bw1);
-void framesync64_set_pll_bw0(framesync64 _fs, float _pll_bw0);
-void framesync64_set_pll_bw1(framesync64 _fs, float _pll_bw1);
-void framesync64_set_sym_bw0(framesync64 _fs, float _sym_bw0);
-void framesync64_set_sym_bw1(framesync64 _fs, float _sym_bw1);
-void framesync64_set_squelch_threshold(framesync64 _fs, float _squelch_threshold);
+void framesync64_getprops(framesync64 _fs, framesyncprops_s * _props);
+void framesync64_setprops(framesync64 _fs, framesyncprops_s * _props);
 
 //
 // Flexible frame : adjustable payload, mod scheme, etc., but bring
@@ -1926,29 +1944,18 @@ typedef int (*flexframesync_callback)(unsigned char * _header,
                                       void * _userdata,
                                       liquid_float_complex * _frame_samples,
                                       unsigned int _frame_samples_len);
-typedef struct {
-    float agc_bw0, agc_bw1;     // automatic gain control bandwidth
-    float agc_gmin, agc_gmax;   // automatic gain control gain limits
-    float sym_bw0, sym_bw1;     // symbol synchronizer bandwidth
-    float pll_bw0, pll_bw1;     // phase-locked loop bandwidth
-    unsigned int k;             // decimation rate
-    unsigned int npfb;          // number of filters in symbol sync.
-    unsigned int m;             // filter length
-    float beta;                 // excess bandwidth
-    int squelch_enabled;        // enable/disable squelch
-    int autosquelch_enabled;    // enable/disable automatic squelch
-    float squelch_threshold;    // squelch enable/disable threshold
-    //flexframesync_callback callback;
-    //void * userdata;
-} flexframesyncprops_s;
-void flexframesyncprops_init_default(flexframesyncprops_s * _props);
 typedef struct flexframesync_s * flexframesync;
-flexframesync flexframesync_create(flexframesyncprops_s * _props,
+
+// create flexframesync object
+//  _props      :   properties structure (default if NULL)
+//  _callback   :   callback function
+//  _userdata   :   user data pointer passed to callback function
+flexframesync flexframesync_create(framesyncprops_s * _props,
                                    flexframesync_callback _callback,
                                    void * _userdata);
 void flexframesync_destroy(flexframesync _fs);
-void flexframesync_getprops(flexframesync _fs, flexframesyncprops_s * _props);
-void flexframesync_setprops(flexframesync _fs, flexframesyncprops_s * _props);
+void flexframesync_getprops(flexframesync _fs, framesyncprops_s * _props);
+void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props);
 void flexframesync_print(flexframesync _fs);
 void flexframesync_reset(flexframesync _fs);
 void flexframesync_execute(flexframesync _fs,

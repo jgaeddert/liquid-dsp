@@ -39,7 +39,7 @@ int main() {
     unsigned int m=3;
     float beta=0.7f;
     framegen64 fg = framegen64_create(m,beta);
-    framesync64 fs = framesync64_create(m,beta,callback,NULL);
+    framesync64 fs = framesync64_create(NULL,callback,NULL);
 
     // channel
     float phi=0.3f;

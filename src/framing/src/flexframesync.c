@@ -46,34 +46,6 @@
 void flexframesync_output_debug_file(flexframesync _fs);
 #endif
 
-static flexframesyncprops_s flexframesyncprops_default = {
-    // automatic gain control
-    1e-3f,      // agc_bw0
-    1e-5f,      // agc_bw1
-    1e-3f,      // agc_gmin
-    1e4f,       // agc_gmax
-    // symbol timing recovery
-    0.08f,      // sym_bw0
-    0.05f,      // sym_bw1
-    // phase-locked loop
-    0.020f,     // pll_bw0
-    0.005f,     // pll_bw1
-    // symbol timing recovery
-    2,          // k
-    32,         // npfb
-    3,          // m
-    0.7f,       // beta
-    // squelch
-    1,          // squelch_enabled
-    0,          // autosquelch_enabled
-    -15.0f      // squelch_threshold
-};
-
-void flexframesyncprops_init_default(flexframesyncprops_s * _props)
-{
-    memmove(_props, &flexframesyncprops_default, sizeof(flexframesyncprops_s));
-}
-
 struct flexframesync_s {
 
     // synchronizer objects
@@ -132,7 +104,7 @@ struct flexframesync_s {
     unsigned int payload_numalloc;
 
     // generic user-configurable properties
-    flexframesyncprops_s props;
+    framesyncprops_s props;
 
     // callback
     flexframesync_callback callback;
@@ -151,7 +123,7 @@ struct flexframesync_s {
 #endif
 };
 
-flexframesync flexframesync_create(flexframesyncprops_s * _props,
+flexframesync flexframesync_create(framesyncprops_s * _props,
                                    flexframesync_callback _callback,
                                    void * _userdata)
 {
@@ -160,11 +132,11 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     fs->userdata = _userdata;
 
     // set properties (initial memmove to prevent internal warnings)
-    memmove(&fs->props, &flexframesyncprops_default, sizeof(flexframesyncprops_s));
+    memmove(&fs->props, &framesyncprops_default, sizeof(framesyncprops_s));
     if (_props != NULL)
         flexframesync_setprops(fs,_props);
     else
-        flexframesync_setprops(fs, &flexframesyncprops_default);
+        flexframesync_setprops(fs, &framesyncprops_default);
 
     // header objects
     fs->fec_header = fec_create(FEC_HAMMING74, NULL);
@@ -203,9 +175,10 @@ flexframesync flexframesync_create(flexframesyncprops_s * _props,
     // design symsync (k=2)
     unsigned int npfb = 32;
     unsigned int m=3;
+    float beta=0.7f;
     unsigned int H_len = 2*2*npfb*m + 1;// 2*2*npfb*_m + 1;
     float H[H_len];
-    design_rrc_filter(2*npfb,m,0.7f,0,H);
+    design_rrc_filter(2*npfb,m,beta,0,H);
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
     // 
@@ -277,12 +250,12 @@ void flexframesync_destroy(flexframesync _fs)
     free(_fs);
 }
 
-void flexframesync_getprops(flexframesync _fs, flexframesyncprops_s * _props)
+void flexframesync_getprops(flexframesync _fs, framesyncprops_s * _props)
 {
-    memmove(_props, &_fs->props, sizeof(flexframesyncprops_s));
+    memmove(_props, &_fs->props, sizeof(framesyncprops_s));
 }
 
-void flexframesync_setprops(flexframesync _fs, flexframesyncprops_s * _props)
+void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props)
 {
     // TODO : flexframesync_setprops() validate input
 
@@ -294,7 +267,7 @@ void flexframesync_setprops(flexframesync _fs, flexframesyncprops_s * _props)
         printf("warning: flexframesync_setprops(), ignoring filter change\n");
         // TODO : destroy/recreate filter
     }
-    memmove(&_fs->props, _props, sizeof(flexframesyncprops_s));
+    memmove(&_fs->props, _props, sizeof(framesyncprops_s));
 }
 
 void flexframesync_print(flexframesync _fs)
