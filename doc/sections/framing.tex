@@ -7,27 +7,30 @@
 The framing module contains objects and methods for packaging data into
 manageable frames and packets.
 For convention, \liquid\ refers to a ``packet'' as a group of binary
-data bytes that need to be communicated over a wireless link.
-A ``frame'' is a representation of the data once it has been properly
-partitioned, encoded, and modulated before transmitting over the air.
+data bytes (often with forward error-correction applied)
+that need to be communicated over a wireless link.
+By contrast, a ``frame'' is a representation of the data once it has been
+properly partitioned, encapsulated, and modulated before transmitting over the
+air.
 Included in this module are the {\tt packetizer}, 
-{\tt frame[gen|sync]64}, and {\tt flexframe[gen|sync]} objects which
-greatly simplify over-the-air digital communication of data.
+{\tt frame64}, and {\tt flexframe} structures which
+greatly simplify over-the-air digital communication of raw data.
 
 \subsection{{\tt packetizer}}
 \label{module:framing:packetizer}
-
-The liquid packetizer is a structure for abstracting multi-level forward
+The \liquid\ packetizer is a structure for abstracting multi-level forward
 error-correction from the user.
 The packetizer accepts a buffer of uncoded data bytes and adds a 32-bit
-cyclic redundancy check (crc) before applying two levels of forward error-
-correction and bit-level interleaving.  The user may choose any two 
-supported FEC schemes (including none) and the packetizer object will
-handle buffering and data management internally, providing a truly abstract
-interface.  The same is true for the packet decoder which accepts an array
+cyclic redundancy check (crc) before applying two levels of forward
+error-correction and bit-level interleaving.
+The user may choose any two supported FEC schemes (including none) and the
+packetizer object will handle buffering and data management internally,
+providing a truly abstract interface.
+The same is true for the packet decoder which accepts an array
 of possibly corrupt data and attempts to recover the original message using
-the FEC schemes provided.  The packet decoder returns the validity of the
-resulting CRC as well as its best effort of decoding the message.
+the FEC schemes provided.
+The packet decoder returns the validity of the resulting CRC as well as its
+best effort of decoding the message.
 
 The packetizer also allows for re-structuring if the user wishes to change
 error-correction schemes or data lengths.  This is accomplished with the
@@ -40,7 +43,7 @@ functionality:
 See also: fec module, {\tt examples/packetizer\_example.c}
 
 \subsection{{\tt frame64}, {\tt flexframe} (basic framing structures)}
-\label{module:framing:frame}
+\label{module:framing:frames}
 \liquid\ comes packaged with two basic framing structures: {\tt frame64} and
 {\tt flexframe} which can be used with little modification to transmit data
 over a wireless link.
@@ -51,15 +54,36 @@ configured, and executed.
 The receiver side uses an appropriate frame synchronizer object which simply
 picks packets of a stream of samples, invoking a callback function for each
 packet it finds.
-The simplicity of the reciver is that the frame synchronizer object
+The simplicity of the receiver is that the frame synchronizer object
 automatically reconfigures itself for packets of different size, modulation
 scheme, and other parameters.
 
+\subsubsection{{\tt frame64} description}
+\label{module:framing:frames:frame64}
 The {\tt framegen64} and {\tt framesync64} objects implement a basic framing
 structure for communicating packetized data over the air.
+The {\tt framegen64} object accepts a 24-byte header and 64-byte payload and
+assemble a 2048-sample frame.
+Internally, the frame generator encodes the header and payload each with a
+Hamming(7,4) block code, 32-bit cyclic redundancy check, and modulates the
+result with a QPSK modem.
+The header and payload are encapsulated with special phasing sequences, and
+finally the resulting symbols are interpolated using a half-rate root-raised
+cosine filter (see section~\ref{module:filter:firdes:rrcos}).
+
+The true spectral efficiency of the frame is exactly $1/2$; 64 bytes of data
+(512 bits) encoded into 1024 symbols.
+The {\tt frame64} structure has the advantage of simplicity but lacks the
+ability for true flexibility.
+
+\subsubsection{{\tt flexframe} description}
+\label{module:framing:frames:flexframe}
 The {\tt flexframegen} and {\tt flexframesync} objects are similar to their
 {\tt frame[gen|sync]64} counterparts, however extend functionality to include
 a number of options in structuring the frame.
+
+\subsubsection{framing structures}
+\label{module:framing:frames:structures}
 Both frames consist of six basic parts:
 
 %\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}lll}
@@ -142,5 +166,46 @@ NOTE: while the {\tt flexframegen} and {\tt flexframesync} objects are
 intended to be used in conjunction with one another, the output of
 {\tt flexframegen} requires matched-filtering interpolation before the
 {\tt flexframesync} object can recover the data.
+
+
+\subsubsection{the decoding process}
+\label{module:framing:frames:decoding}
+Both the {\tt frame64} and {\tt flexframe} objects operate very similarly in
+their decoding process.
+On the receiver, frames are pulled from a stream of input samples which can
+exhibit channel impairments such as noise, sample timing offset, and carrier
+frequency and phase offsets.
+The receiver corrects for these impairments as best it can using various other
+signal processing elements in \liquid\ and attempts to decode the frame.
+If at any time a frame is decoded (even if improperly), its appropriate
+user-defined callback function is invoked.
+
+Internally, the frame synchronizers...
+When seeking a frame the synchronizer initially sets its internal loop
+bandwidths high for acquisition, including those for the automatic gain
+control, symbol timing recovery, and carrier frequency/phase recovery.
+This is known as {\em acquisition} mode, and is typical for packet-based
+communications systems.
+% ...
+Once the p/n sequence has been found, the receiver assumes it has a sufficient
+lock on the channel impairments and reduces its control loop bandwidths
+significantly, moving to {\em tracking} mode.
+
+At the heart of the decoder is the {\tt framesync\_props} object which governs
+the behavior of the frame synchronizers.
+\begin{description}
+\item[{\tt agc\_bw0/agc\_bw1}]
+    are the respective open/closed automatic gain control bandwidths.
+\item[{\tt agc\_gmin/agc\_gmax}]
+    are the respective maximum/minimum automatic gain control gain values.
+\item[{\tt sym\_bw0/sym\_bw1}]
+    are the respective open/closed symbol synchronizer bandwidths.
+\item[{\tt pll\_bw0/pll\_bw1}]
+    are the respective open/closed carrier phase-locked loop bandwidths.
+\item[...]
+\item[{\tt squelch\_enabled}]
+\item[{\tt autosquelch\_enabled}]
+\item[{\tt squelch\_threshold}]
+\end{description}
 
 
