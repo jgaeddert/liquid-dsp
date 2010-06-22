@@ -73,6 +73,17 @@ Additional:
     automatic test scripts
     full documentation (NOT doxygen)
 
+Dependencies
+    liquid-dsp only relies on libc (standard C) and libm (math)
+    libraries to run, however takes advantage of other packages if they
+    are available.
+
+    Mac OS X:
+        $ sudo port install fftw-3-single
+
+    Ubuntu
+        $ sudo apt-get install libfftw3-dev
+
 Source code organization
 liquid/
     README.txt                  <-- this file
