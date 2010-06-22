@@ -33,6 +33,7 @@
 \begin{tikzpicture}[scale=6];
     \def\dt{0.3}        % default time step between sections
     \def\ds{0.05}       % default signal level vertical line extensions
+    \def\height{0.6}    % peak height of signal
 
     \def\ta{0.1}        % beginning of ramp up...
     \def\tb{\ta+\dt}
@@ -57,32 +58,36 @@
     \def\payload{1.9}
     \def\rampdn{2.8}
 
-    % draw axis 
-    \draw[very thick, black,->] (-0.02, 0.0 ) -- (3,0) node[anchor=south] {{\it time}};
-    \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1) node[left=7pt,rotate=90] {{\it signal level}};
+    % draw x-axis 
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (3,0)
+        node[anchor=south] {{\it time}};
+
+    % draw y-axis
+    \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1.2*\height)
+        node[left=7pt,rotate=90] {{\it signal level}};
 
     % draw curve
     \draw[very thick, black]
         (0,         0) --
-        (\ta,       0) .. controls (\cta,0) and (\ctb,1) ..
-        (\tb,       1) --
-        (\tf,       1) .. controls (\ctf,1) and (\ctg,0) ..
+        (\ta,       0) .. controls (\cta,0) and (\ctb,\height) ..
+        (\tb,       \height) --
+        (\tf,       \height) .. controls (\ctf,\height) and (\ctg,0) ..
         (\tg,       0);
 
     % intersection lines
-    \draw[thin,gray] (\tb,  -\ds)   --  (\tb,   1+\ds);
-    \draw[thin,gray] (\tc,  -\ds)   --  (\tc,   1+\ds);
-    \draw[thin,gray] (\td,  -\ds)   --  (\td,   1+\ds);
-    \draw[thin,gray] (\te,  -\ds)   --  (\te,   1+\ds);
-    \draw[thin,gray] (\tf,  -\ds)   --  (\tf,   1+\ds);
+    \draw[thin,gray] (\tb,  -\ds)   --  (\tb,   \height+\ds);
+    \draw[thin,gray] (\tc,  -\ds)   --  (\tc,   \height+\ds);
+    \draw[thin,gray] (\td,  -\ds)   --  (\td,   \height+\ds);
+    \draw[thin,gray] (\te,  -\ds)   --  (\te,   \height+\ds);
+    \draw[thin,gray] (\tf,  -\ds)   --  (\tf,   \height+\ds);
 
     % add text labels
-    \draw (\rampup,     0.5) node[rotate=45] {\small\sf ramp up};
-    \draw (\preamble,   0.5) node[rotate=45] {\small\sf preamble phasing};
-    \draw (\pnsequence, 0.5) node[rotate=45] {\small\sf p/n sequence};
-    \draw (\header,     0.5) node[rotate=45] {\small\sf header};
-    \draw (\payload,    0.5) node[rotate=45] {\small\sf payload};
-    \draw (\rampdn,     0.5) node[rotate=45] {\small\sf ramp down};
+    \draw (\rampup,     0.5*\height) node[rotate=45] {\small\sf ramp up};
+    \draw (\preamble,   0.5*\height) node[rotate=45] {\small\sf preamble phasing};
+    \draw (\pnsequence, 0.5*\height) node[rotate=45] {\small\sf p/n sequence};
+    \draw (\header,     0.5*\height) node[rotate=45] {\small\sf header};
+    \draw (\payload,    0.5*\height) node[rotate=45] {\small\sf payload};
+    \draw (\rampdn,     0.5*\height) node[rotate=45] {\small\sf ramp down};
 
 \end{tikzpicture}
 
