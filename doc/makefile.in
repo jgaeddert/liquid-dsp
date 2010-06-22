@@ -169,6 +169,7 @@ include figures.audio.mk
 include figures.buffer.mk
 include figures.equalization.mk
 include figures.filter.mk
+include figures.framing.mk
 include figures.interleaver.mk
 include figures.math.mk
 include figures.modem.mk
