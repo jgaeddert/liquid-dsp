@@ -14,7 +14,7 @@ Included in this module are the {\tt packetizer},
 {\tt frame[gen|sync]64}, and {\tt flexframe[gen|sync]} objects which
 greatly simplify over-the-air digital communication of data.
 
-\subsection{packetizer}
+\subsection{{\tt packetizer}}
 \label{module:framing:packetizer}
 
 The liquid packetizer is a structure for abstracting multi-level forward
@@ -39,9 +39,108 @@ functionality:
 
 See also: fec module, {\tt examples/packetizer\_example.c}
 
-\subsection{frame64}
-\label{module:framing:frame64}
+\subsection{{\tt frame64}, {\tt flexframe} (basic framing structures)}
+\label{module:framing:frame}
+\liquid\ comes packaged with two basic framing structures: {\tt frame64} and
+{\tt flexframe} which can be used with little modification to transmit data
+over a wireless link.
+The interface for both of these objects is intended to be as simple as
+possible while allowing control over some of the parameters of the system.
+On the transmitter side, the appropriate frame generator object is created,
+configured, and executed.
+The receiver side uses an appropriate frame synchronizer object which simply
+picks packets of a stream of samples, invoking a callback function for each
+packet it finds.
+The simplicity of the reciver is that the frame synchronizer object
+automatically reconfigures itself for packets of different size, modulation
+scheme, and other parameters.
 
-\subsection{flexframe}
-\label{module:framing:flexframe}
+The {\tt framegen64} and {\tt framesync64} objects implement a basic framing
+structure for communicating packetized data over the air.
+The {\tt flexframegen} and {\tt flexframesync} objects are similar to their
+{\tt frame[gen|sync]64} counterparts, however extend functionality to include
+a number of options in structuring the frame.
+Both frames consist of six basic parts:
+
+%\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}lll}
+%\toprule
+%{\it name}      & {\it \# symbols}  & {\it \# bytes}& {\it description}  \\
+%\otoprule
+%ramp up         & 64                & -             & BPSK ramp up sequence \\
+%phasing pattern & 64                & -             & BSPK preamble phasing pattern \\
+%p/n sequence    & 64                & -             & BPSK p/n synchronization sequence \\
+%header          & 256               & 32            & QPSK, $r=1/2$-coded header \\
+%payload         & 512               & 64            & QPSK, $r=1/2$-coded payload \\
+%ramp down.      & 64                & -             & ramp down sequence \\
+%\bottomrule
+%\end{tabular*}
+
+% 
+% FIGURE: framing:structure
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
+\caption{framing structure}
+\label{fig:module:framing:structure}
+\end{figure}
+
+
+\begin{description}
+\item[{\sf ramp/up}]
+    gracefully increases the output signal level to avoid ``key clicking'' and
+    reduce spectral side-lobes in the transmitted signal.
+    Furthermore, it allows the receiver's automatic gain control unit to
+    lock on to the incoming signal, preventing sharp transitions in its
+    output.
+\item[{\sf preamble phasing}]
+    is a BPSK pattern which flips phase for each transmitted symbol
+    ({\tt +1,-1,+1,-1,$\ldots$}).
+    This sequence serves several purposes but primarily to help the receiver's
+    symbol synchronization circuit lock onto the proper timing phase.
+    [This works] because the phasing pattern maximizes the number of symbol
+    transitions [reword].
+\item[{\sf p/n sequence}]
+    is an $m$-sequence (see section~\ref{module:sequence}) exhibiting good
+    auto- and cross-correlation properties.
+    %The binary sequence is modulated using BPSK so that 
+    This sequence aligns the frame synchronizers to the remainder of the
+    frame, telling them when to start receiving and decoding the frame header,
+    as well as if the phase of the received signal needs to be reversed.
+    At this point, the receiver's AGC, carrier PLL, and timing PLL should all
+    have locked.
+    The p/n sequence is of length 64 for both the {\tt frame64} and
+    {\tt flexframe} structures (63-bit $m$-sequence with additional padded
+    bit).
+\item[{\sf header}]
+    is a fixed-length data sequence which contains a small amount of
+    information about the rest of the frame.
+    The headers for the {\tt frame64} and {\tt flexframe} structures are
+    vastly different and are described independently.
+\item[{\sf payload}]
+    is the meat of the frame, containing the raw data to be transferred across
+    the link.
+    For the {\tt frame64} structure, the payload is fixed at 64 bytes (hence
+    its moniker), encoded using the Hamming~(7,4) code
+    (section~\ref{module:fec}), and modulated using QPSK.
+    The {\tt flexframe} structure has a variable length payload and can be
+    modulated using whatever schemes the user desires, however forward
+    error-correction is executed externally.
+    In both cases the synchronizer object invokes the callback upon receiving
+    the payload.
+\item[{\sf ramp/down}]
+    gracefully decreases the output signal level as per ramp/up.
+\end{description}
+
+A graphical depiction of the framing signal level can be seen in
+figure~\ref{fig:module:framing:structure}.
+The relative lengths of each section are not necessarily to scale,
+particularly as the {\tt flexframe} structure allows many of these sections to
+be variable in length.
+
+NOTE: while the {\tt flexframegen} and {\tt flexframesync} objects are
+intended to be used in conjunction with one another, the output of
+{\tt flexframegen} requires matched-filtering interpolation before the
+{\tt flexframesync} object can recover the data.
+
 

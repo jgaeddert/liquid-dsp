@@ -1,0 +1,90 @@
+% 
+% figures.pgf/framing_structure.tex
+%
+% Author: Joseph D. Gaeddert
+%
+%   |          ________________________________
+%   |         /|    |    |    |               |\
+%   |        / |    |    |    |               | \
+%   |      r/u |phas| pn |head|    payload    | r\d
+%   |      /   |    |    |    |               |   \
+%   |_____/____|____|____|____|_______________|____\________
+%        |     |    |    |    |               |     |
+%        ta    tb   tc   td   te              tf    tg
+%        
+
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc,arrows,positioning}
+\usetikzlibrary{decorations.pathmorphing} % random steps (noise floor)
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{tikzpicture}[scale=6];
+    \def\dt{0.3}        % default time step between sections
+    \def\ds{0.05}       % default signal level vertical line extensions
+
+    \def\ta{0.1}        % beginning of ramp up...
+    \def\tb{\ta+\dt}
+    \def\tc{\tb+\dt}
+    \def\td{\tc+\dt}
+    \def\te{\td+\dt}
+    \def\tf{\te + 1.2}
+    \def\tg{\tf+\dt}    % ...end of ramp down
+
+    %\draw[step=2.5mm,help lines] (0,0) grid (3,1);
+
+    % derived constants: control points for curve
+    \def\cta{\ta + 0.5*\dt}
+    \def\ctb{\tb - 0.5*\dt}
+    \def\ctf{\tf + 0.5*\dt}
+    \def\ctg{\tg - 0.5*\dt}
+
+    \def\rampup{0.15}
+    \def\preamble{0.55}
+    \def\pnsequence{0.85}
+    \def\header{1.15}
+    \def\payload{1.9}
+    \def\rampdn{2.8}
+
+    % draw axis 
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (3,0) node[anchor=south] {{\it time}};
+    \draw[very thick, black,->] ( 0.0, -0.02) -- (0,1) node[left=7pt,rotate=90] {{\it signal level}};
+
+    % draw curve
+    \draw[very thick, black]
+        (0,         0) --
+        (\ta,       0) .. controls (\cta,0) and (\ctb,1) ..
+        (\tb,       1) --
+        (\tf,       1) .. controls (\ctf,1) and (\ctg,0) ..
+        (\tg,       0);
+
+    % intersection lines
+    \draw[thin,gray] (\tb,  -\ds)   --  (\tb,   1+\ds);
+    \draw[thin,gray] (\tc,  -\ds)   --  (\tc,   1+\ds);
+    \draw[thin,gray] (\td,  -\ds)   --  (\td,   1+\ds);
+    \draw[thin,gray] (\te,  -\ds)   --  (\te,   1+\ds);
+    \draw[thin,gray] (\tf,  -\ds)   --  (\tf,   1+\ds);
+
+    % add text labels
+    \draw (\rampup,     0.5) node[rotate=45] {\small\sf ramp up};
+    \draw (\preamble,   0.5) node[rotate=45] {\small\sf preamble phasing};
+    \draw (\pnsequence, 0.5) node[rotate=45] {\small\sf p/n sequence};
+    \draw (\header,     0.5) node[rotate=45] {\small\sf header};
+    \draw (\payload,    0.5) node[rotate=45] {\small\sf payload};
+    \draw (\rampdn,     0.5) node[rotate=45] {\small\sf ramp down};
+
+\end{tikzpicture}
+
+\end{document}
+
