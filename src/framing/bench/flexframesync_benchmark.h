@@ -35,9 +35,8 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
-                    void * _userdata,
-                    float complex * _frame_samples,
-                    unsigned int _frame_samples_len)
+                    framesyncstats_s _stats,
+                    void * _userdata)
 {
     //printf("callback invoked\n");
     framedata * fd = (framedata*) _userdata;

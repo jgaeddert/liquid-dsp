@@ -109,6 +109,7 @@ struct flexframesync_s {
     // callback
     flexframesync_callback callback;
     void * userdata;
+    framesyncstats_s framestats;
 
 #ifdef DEBUG_FLEXFRAMESYNC
     FILE*fid;
@@ -206,6 +207,12 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     // reset, open bandwidth
     flexframesync_reset(fs);
     flexframesync_open_bandwidth(fs);
+
+    // clear stats object
+    fs->framestats.SNR = 0;
+    fs->framestats.rssi = 0;
+    fs->framestats.framesyms = NULL;
+    fs->framestats.num_framesyms = 0;
 
 #ifdef DEBUG_FLEXFRAMESYNC
     fs->debug_agc_rssi  =  windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
@@ -487,8 +494,8 @@ void flexframesync_execute_rxheader(flexframesync _fs,
             // invoke callback anyway, but escape ignore rest of payload
             _fs->callback(_fs->header,  _fs->header_valid,
                           NULL,         0,
-                          _fs->userdata,
-                          NULL, 0);
+                          _fs->framestats,
+                          _fs->userdata);
             _fs->state = FLEXFRAMESYNC_STATE_RESET;
         }
     }
@@ -514,9 +521,8 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
         // invoke callback method
         _fs->callback(_fs->header,  _fs->header_valid,
                       _fs->payload, _fs->payload_len,
-                      _fs->userdata,
-                      _fs->payload_samples,
-                      _fs->num_payload_symbols);
+                      _fs->framestats,
+                      _fs->userdata);
 
         _fs->state = FLEXFRAMESYNC_STATE_RESET;
 //#ifdef DEBUG_FLEXFRAMESYNC

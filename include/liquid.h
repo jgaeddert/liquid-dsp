@@ -1960,9 +1960,8 @@ typedef int (*flexframesync_callback)(unsigned char * _header,
                                       int _header_valid,
                                       unsigned char * _payload,
                                       unsigned int _payload_len,
-                                      void * _userdata,
-                                      liquid_float_complex * _frame_samples,
-                                      unsigned int _frame_samples_len);
+                                      framesyncstats_s _stats,
+                                      void * _userdata);
 typedef struct flexframesync_s * flexframesync;
 
 // create flexframesync object
