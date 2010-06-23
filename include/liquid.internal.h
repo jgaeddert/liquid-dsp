@@ -957,7 +957,7 @@ void framegen64_byte_to_syms(unsigned char _byte,
 void flexframegen_compute_payload_len(flexframegen _fg);
 void flexframegen_compute_frame_len(flexframegen _fg);
 void flexframegen_configure_payload_buffers(flexframegen _fg);
-void flexframegen_encode_header(flexframegen _fg, unsigned char * _user_header);
+void flexframegen_encode_header(flexframegen _fg);
 void flexframegen_modulate_header(flexframegen _fg);
 void flexframegen_modulate_payload(flexframegen _fg);
 //void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
