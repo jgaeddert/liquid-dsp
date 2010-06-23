@@ -92,6 +92,12 @@ struct framesync64_s {
     unsigned char payload_intlv[128];
     unsigned char payload[64];          // payload data (decoded)
 
+    // SINDR estimate (signal to interference, noise, and distortion
+    // ratio), average modem error vector magnitude
+    float evm_hat;
+
+    framesyncstats_s framestats;        // frame statistics object
+
 #if DEBUG_FRAMESYNC64
     windowf  debug_agc_rssi;
     windowcf debug_agc_out;
@@ -271,11 +277,8 @@ void framesync64_reset(framesync64 _fs)
     agc_crcf_unlock(_fs->agc_rx);       // automatic gain control (unlock)
     nco_crcf_reset(_fs->nco_rx);        // nco/pll (reset phase)
 
-#if 0
-    // SINDR estimate
+    // SNR estimate
     _fs->evm_hat = 0.0f;
-    _fs->SINDRdB_hat = 0.0f;
-#endif
 
     // enable/disable squelch
     if (_fs->props.squelch_enabled)
@@ -492,6 +495,11 @@ void framesync64_execute_rxpayload(framesync64 _fs,
     _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) _sym;
     _fs->num_symbols_collected++;
 
+    // SNR estimate
+    float evm;
+    get_demodulator_evm(_fs->demod_header, &evm);
+    _fs->evm_hat += evm;
+
     // check to see if full payload has been received
     if (_fs->num_symbols_collected==512) {
         // reset symbol counter
@@ -500,9 +508,18 @@ void framesync64_execute_rxpayload(framesync64 _fs,
         // decode frame payload
         framesync64_decode_payload(_fs);
 
+        // framestats: compute SNR estimate, rssi
+        _fs->framestats.SNR  = -10*log10f( (_fs->evm_hat / 512.0f) );
+        _fs->framestats.rssi  = 10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
+
+        // framestats: set pointer to frame symbols
+        _fs->framestats.framesyms = NULL;
+        _fs->framestats.num_framesyms = 0;
+
         // invoke callback method
         _fs->callback(_fs->header,  _fs->header_valid,
                       _fs->payload, _fs->payload_valid,
+                      _fs->framestats,
                       _fs->userdata);
 
         // update synchronizer state

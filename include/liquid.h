@@ -1855,6 +1855,18 @@ typedef struct {
 extern framesyncprops_s framesyncprops_default;
 void framesyncprops_init_default(framesyncprops_s * _props);
 
+
+// framesyncstats : generic frame synchronizer statistic structure
+
+typedef struct {
+    float SNR;      // signal-to-(interference-and-)noise ratio estimate [dB]
+    float rssi;     // received signal strength indicator [dB]
+
+    // demodulated frame symbols
+    liquid_float_complex * framesyms;   // pointer to array [size: framesyms x 1]
+    unsigned int num_framesyms;         // length of framesyms
+} framesyncstats_s;
+
 //
 // Basic frame generator (64 bytes data payload)
 //
@@ -1872,10 +1884,17 @@ void framegen64_flush(framegen64 _fg,
                       liquid_float_complex * _y);
 
 // Basic frame synchronizer (64 bytes data payload)
+//  _header         :   pointer to decoded header [size: 24 x 1]
+//  _header_valid   :   header passed cyclic redundancy check? 1 (yes), 0 (no)
+//  _payload        :   pointer to decoded payload [size: 64 x 1]
+//  _payload_valid  :   payload passed cyclic redundancy check? 1 (yes), 0 (no)
+//  _stats          :   frame statistics structure
+//  _userdata       :   user-defined data pointer
 typedef int (*framesync64_callback)(unsigned char * _header,
                                     int _header_valid,
                                     unsigned char * _payload,
                                     int _payload_valid,
+                                    framesyncstats_s _stats,
                                     void * _userdata);
 typedef struct framesync64_s * framesync64;
 

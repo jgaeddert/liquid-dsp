@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 
 #include "liquid.h"
@@ -26,6 +27,7 @@ static int callback(unsigned char * _header,
                     int _header_valid,
                     unsigned char * _payload,
                     int _payload_valid,
+                    framesyncstats_s _stats,
                     void * _userdata);
 
 // global header, payload arrays
@@ -34,6 +36,10 @@ unsigned char payload[64];
 
 int main() {
     srand( time(NULL) );
+
+    // options
+    float SNRdB = 10.0f;
+    float noise_floor = -20.0f;
 
     // create framegen64 object
     unsigned int m=3;
@@ -49,7 +55,8 @@ int main() {
     // channel
     float phi=0.3f;
     float dphi=0.05f;
-    float gamma=0.1f;  // channel gain
+    float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
     nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
     nco_crcf_set_phase(nco_channel, phi);
     nco_crcf_set_frequency(nco_channel, dphi);
@@ -79,8 +86,8 @@ int main() {
     // add channel impairments
     for (i=0; i<2048; i++) {
         frame_rx[i] *= cexpf(_Complex_I*phi);
-        frame_rx[i] += (randnf() + _Complex_I*randnf())*0.01f;
         frame_rx[i] *= gamma;
+        frame_rx[i] += (randnf() + _Complex_I*randnf()) * 0.707f * nstd;
         nco_crcf_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
 
         nco_crcf_step(nco_channel);
@@ -118,24 +125,27 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     int _rx_payload_valid,
+                    framesyncstats_s _stats,
                     void * _userdata)
 {
-    printf("callback invoked\n");
+    printf("*** callback invoked ***\n");
+    printf("    SNR                 : %12.8f dB\n", _stats.SNR);
+    printf("    rssi                : %12.8f dB\n", _stats.rssi);
 
-    printf("header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
-    printf("payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");
+    printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
+    printf("    payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");
 
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
     for (i=0; i<24; i++)
         num_header_errors += (_rx_header[i] == header[i]) ? 0 : 1;
-    printf("num header errors   : %u\n", num_header_errors);
+    printf("    num header errors   : %u\n", num_header_errors);
 
     unsigned int num_payload_errors=0;
     for (i=0; i<64; i++)
         num_payload_errors += (_rx_payload[i] == payload[i]) ? 0 : 1;
-    printf("num payload errors  : %u\n", num_payload_errors);
+    printf("    num payload errors  : %u\n", num_payload_errors);
 
     return 0;
 }
