@@ -953,6 +953,26 @@ float complex ellip_asnf(float complex _u,
 void framegen64_byte_to_syms(unsigned char _byte,
                              unsigned char * _syms);
 
+// framesync64
+
+void framesync64_open_bandwidth(framesync64 _fs);
+void framesync64_close_bandwidth(framesync64 _fs);
+void framesync64_decode_header(framesync64 _fs);
+void framesync64_decode_payload(framesync64 _fs);
+
+// convert four 2-bit symbols into one 8-bit byte
+//  _syms   :   input symbols [size: 4 x 1]
+//  _byte   :   output byte
+void framesync64_syms_to_byte(unsigned char * _syms,
+                              unsigned char * _byte);
+
+// execute methods
+void framesync64_execute_seekpn(    framesync64 _fs, float complex _x, unsigned int _sym);
+void framesync64_execute_rxheader(  framesync64 _fs, float complex _x, unsigned int _sym);
+void framesync64_execute_rxpayload( framesync64 _fs, float complex _x, unsigned int _sym);
+void framesync64_execute_reset(     framesync64 _fs, float complex _x, unsigned int _sym);
+
+
 // flexframegen
 void flexframegen_compute_payload_len(flexframegen _fg);
 void flexframegen_compute_frame_len(flexframegen _fg);
