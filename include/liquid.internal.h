@@ -945,22 +945,56 @@ float complex ellip_asnf(float complex _u,
 // MODULE : framing
 //
 
+// framegen64
+
+// convert one 8-bit byte to four 2-bit symbols
+//  _byte   :   input byte
+//  _syms   :   output symbols [size: 4 x 1]
+void framegen64_byte_to_syms(unsigned char _byte,
+                             unsigned char * _syms);
+
+// framesync64
+
+void framesync64_open_bandwidth(framesync64 _fs);
+void framesync64_close_bandwidth(framesync64 _fs);
+void framesync64_decode_header(framesync64 _fs);
+void framesync64_decode_payload(framesync64 _fs);
+
+// convert four 2-bit symbols into one 8-bit byte
+//  _syms   :   input symbols [size: 4 x 1]
+//  _byte   :   output byte
+void framesync64_syms_to_byte(unsigned char * _syms,
+                              unsigned char * _byte);
+
+// execute methods
+void framesync64_execute_seekpn(    framesync64 _fs, float complex _x, unsigned int _sym);
+void framesync64_execute_rxheader(  framesync64 _fs, float complex _x, unsigned int _sym);
+void framesync64_execute_rxpayload( framesync64 _fs, float complex _x, unsigned int _sym);
+void framesync64_execute_reset(     framesync64 _fs, float complex _x, unsigned int _sym);
+
+
 // flexframegen
 void flexframegen_compute_payload_len(flexframegen _fg);
 void flexframegen_compute_frame_len(flexframegen _fg);
 void flexframegen_configure_payload_buffers(flexframegen _fg);
-void flexframegen_encode_header(flexframegen _fg, unsigned char * _user_header);
+void flexframegen_encode_header(flexframegen _fg);
 void flexframegen_modulate_header(flexframegen _fg);
 void flexframegen_modulate_payload(flexframegen _fg);
 //void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
 
+// flexframesync
 void flexframesync_configure_payload_buffers(flexframesync _fs);
 void flexframesync_demodulate_header(flexframesync _fs);
 void flexframesync_decode_header(flexframesync _fs);
 void flexframesync_assemble_payload(flexframesync _fs);
 void flexframesync_open_bandwidth(flexframesync _fs);
 void flexframesync_close_bandwidth(flexframesync _fs);
-//void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc);
+
+// 
+void flexframesync_execute_seekpn(   flexframesync _fs, float complex _x, unsigned int _sym);
+void flexframesync_execute_rxheader( flexframesync _fs, float complex _x, unsigned int _sym);
+void flexframesync_execute_rxpayload(flexframesync _fs, float complex _x, unsigned int _sym);
+void flexframesync_execute_reset(    flexframesync _fs, float complex _x, unsigned int _sym);
 
 // packetizer
 

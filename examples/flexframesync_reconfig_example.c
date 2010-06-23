@@ -31,9 +31,8 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
-                    void * _userdata,
-                    float complex * _frame_samples,
-                    unsigned int _frame_samples_len);
+                    framesyncstats_s _stats,
+                    void * _userdata);
 
 typedef struct {
     unsigned char * header;
@@ -77,7 +76,7 @@ int main(int argc, char *argv[]) {
     flexframegen fg = flexframegen_create(NULL);
 
     // frame data
-    unsigned char header[8];
+    unsigned char header[9];
     unsigned char * payload = NULL;
     framedata fd = {NULL, NULL, 0, 0};
 
@@ -88,8 +87,8 @@ int main(int argc, char *argv[]) {
     interp_crcf interp = interp_crcf_create(2,h,h_len);
 
     // create flexframesync object with default properties
-    flexframesyncprops_s fsprops;
-    flexframesyncprops_init_default(&fsprops);
+    framesyncprops_s fsprops;
+    framesyncprops_init_default(&fsprops);
     fsprops.squelch_threshold = noise_floor + 3.0f;
 #if 0
     // override default properties
@@ -116,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     unsigned int i;
     // initialize header, payload
-    for (i=0; i<8; i++)
+    for (i=0; i<9; i++)
         header[i] = i;
 
     // frame buffers, properties
@@ -234,9 +233,8 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
-                    void * _userdata,
-                    float complex * _frame_samples,
-                    unsigned int _frame_samples_len)
+                    framesyncstats_s _stats,
+                    void * _userdata)
 {
     if (verbose)
         printf("callback invoked\n");
@@ -253,7 +251,7 @@ static int callback(unsigned char * _rx_header,
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
-    for (i=0; i<8; i++)
+    for (i=0; i<9; i++)
         num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
     if (verbose)
         printf("    num header errors   : %u\n", num_header_errors);
@@ -273,10 +271,10 @@ static int callback(unsigned char * _rx_header,
 #if OUTPUT_SYMBOLS_FILE == 1
     FILE * fid = fopen("frame_samples.m","w");
     fprintf(fid,"clear all; close all;\n");
-    for (i=0; i<_frame_samples_len; i++)
+    for (i=0; i<_stats.num_framesyms; i++)
         fprintf(fid,"s(%6u) = %16.8e + j*%16.8e;\n", i+1,
-                                                     crealf(_frame_samples[i]),
-                                                     cimagf(_frame_samples[i]));
+                                                     crealf(_stats.framesyms[i]),
+                                                     cimagf(_stats.framesyms[i]));
     fprintf(fid,"plot(real(s),imag(s),'x');\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
     fprintf(fid,"axis square;\n");
