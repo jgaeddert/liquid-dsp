@@ -38,8 +38,13 @@ int main() {
     // create framegen64 object
     unsigned int m=3;
     float beta=0.7f;
+    
+    // create frame generator
     framegen64 fg = framegen64_create(m,beta);
+
+    // create frame synchronizer using default properties
     framesync64 fs = framesync64_create(NULL,callback,NULL);
+    framesync64_print(fs);
 
     // channel
     float phi=0.3f;
