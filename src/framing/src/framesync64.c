@@ -47,8 +47,8 @@ void framesync64_debug_print(framesync64 _fs);
 
 // framesync64 object structure
 struct framesync64_s {
-    modem demod;        // payload demodulator
-    modem bpsk;         // preamble/header demodulator
+    modem demod_payload;    // payload demodulator (bpsk)
+    modem demod_header;     // preamble/header demodulator (qpsk)
     interleaver intlv;
     fec dec;
 
@@ -93,7 +93,6 @@ struct framesync64_s {
     unsigned char payload[64];          // payload data (decoded)
 
 #if DEBUG_FRAMESYNC64
-    FILE*fid;
     windowf  debug_agc_rssi;
     windowcf debug_agc_out;
     windowcf debug_x;
@@ -166,8 +165,8 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->dec = fec_create(FEC_HAMMING74, NULL);
 
     // create demod
-    fs->demod = modem_create(MOD_QPSK, 2);
-    fs->bpsk = modem_create(MOD_BPSK, 1);
+    fs->demod_payload = modem_create(MOD_QPSK, 2);
+    fs->demod_header  = modem_create(MOD_BPSK, 1);
 
     // set status flags
     fs->state = FRAMESYNC64_STATE_SEEKPN;
@@ -226,15 +225,19 @@ void framesync64_destroy(framesync64 _fs)
     framesync64_debug_print(_fs);
 #endif
 
-    symsync_crcf_destroy(_fs->mfdecim);
-    fec_destroy(_fs->dec);
-    interleaver_destroy(_fs->intlv);
-    agc_crcf_destroy(_fs->agc_rx);
-    nco_crcf_destroy(_fs->nco_rx);
-    bsync_rrrf_destroy(_fs->fsync);
-    modem_destroy(_fs->bpsk);
-    modem_destroy(_fs->demod);
+    // destroy synchronization objects
+    symsync_crcf_destroy(_fs->mfdecim); // symbol synchronizer
+    fec_destroy(_fs->dec);              // forward error-correction codec
+    interleaver_destroy(_fs->intlv);    // interleaver
+    agc_crcf_destroy(_fs->agc_rx);      // automatic gain control
+    nco_crcf_destroy(_fs->nco_rx);      // nco/pll for carrier recovery
+    bsync_rrrf_destroy(_fs->fsync);     // p/n sequence correlator
 
+    // destroy modem objects
+    modem_destroy(_fs->demod_header);
+    modem_destroy(_fs->demod_payload);
+
+    // free main object memory
     free(_fs);
 }
 
@@ -262,10 +265,11 @@ void framesync64_print(framesync64 _fs)
 // reset frame synchronizer object
 void framesync64_reset(framesync64 _fs)
 {
-    symsync_crcf_clear(_fs->mfdecim);
-    agc_crcf_unlock(_fs->agc_rx);
-    symsync_crcf_unlock(_fs->mfdecim);
-    nco_crcf_reset(_fs->nco_rx);
+    // reset synchronization objects
+    symsync_crcf_clear(_fs->mfdecim);   // symbol synchronizer (clear state)
+    symsync_crcf_unlock(_fs->mfdecim);  // symbol synchronizer (unlock)
+    agc_crcf_unlock(_fs->agc_rx);       // automatic gain control (unlock)
+    nco_crcf_reset(_fs->nco_rx);        // nco/pll (reset phase)
 
 #if 0
     // SINDR estimate
@@ -288,7 +292,6 @@ void framesync64_reset(framesync64 _fs)
     // TODO open bandwidth?
 }
 
-// TODO: break framesync64_execute method into manageable pieces
 // execute frame synchronizer
 //  _fs     :   frame synchronizer object
 //  _x      :   input sample array
@@ -341,12 +344,12 @@ void framesync64_execute(framesync64 _fs,
             // run demodulator and retrieve phase error
             if (_fs->state == FRAMESYNC64_STATE_SEEKPN) {
                 // use preamble/header demodulator
-                modem_demodulate(_fs->bpsk, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->bpsk, &phase_error);
+                modem_demodulate(_fs->demod_header, nco_rx_out, &demod_sym);
+                get_demodulator_phase_error(_fs->demod_header, &phase_error);
             } else {
                 // use payload demodulator
-                modem_demodulate(_fs->demod, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->demod, &phase_error);
+                modem_demodulate(_fs->demod_payload, nco_rx_out, &demod_sym);
+                get_demodulator_phase_error(_fs->demod_payload, &phase_error);
             }
 
             // step pll, nco objects
@@ -359,7 +362,7 @@ void framesync64_execute(framesync64 _fs,
             windowcf_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
 
-            //
+            // run state-specific execute method
             switch (_fs->state) {
             case FRAMESYNC64_STATE_SEEKPN:
                 framesync64_execute_seekpn(_fs, nco_rx_out, demod_sym);
@@ -386,21 +389,31 @@ void framesync64_execute(framesync64 _fs,
 // open bandwidth of synchronizers (acquisition mode)
 void framesync64_open_bandwidth(framesync64 _fs)
 {
+    // open bandwidth of automatic gain control
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
+
+    // open bandwidth of symbol synchronizer
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw0);
+
+    // open bandwidth of nco/pll
     nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw0);
 }
 
 // close bandwidth of synchronizers (tracking mode)
 void framesync64_close_bandwidth(framesync64 _fs)
 {
+    // close bandwidth of automatic gain control
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
+
+    // close bandwidth of symbol synchronizer
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
+
+    // close bandwidth of nco/pll
     nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
 }
 
 // 
-// execute methods
+// state-specific execute methods
 //
 
 // execute synchronizer, seeking p/n sequence
@@ -621,6 +634,7 @@ void framesync64_syms_to_byte(unsigned char * _syms,
     *_byte = b;
 }
 
+// huge method to write debugging data to file
 void framesync64_debug_print(framesync64 _fs)
 {
 #if DEBUG_FRAMESYNC64
