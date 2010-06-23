@@ -982,13 +982,19 @@ void flexframegen_modulate_header(flexframegen _fg);
 void flexframegen_modulate_payload(flexframegen _fg);
 //void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc);
 
+// flexframesync
 void flexframesync_configure_payload_buffers(flexframesync _fs);
 void flexframesync_demodulate_header(flexframesync _fs);
 void flexframesync_decode_header(flexframesync _fs);
 void flexframesync_assemble_payload(flexframesync _fs);
 void flexframesync_open_bandwidth(flexframesync _fs);
 void flexframesync_close_bandwidth(flexframesync _fs);
-//void flexframesync_tmp_setheaderenc(flexframesync _fs, unsigned char * _header_enc);
+
+// 
+void flexframesync_execute_seekpn(   flexframesync _fs, float complex _x, unsigned int _sym);
+void flexframesync_execute_rxheader( flexframesync _fs, float complex _x, unsigned int _sym);
+void flexframesync_execute_rxpayload(flexframesync _fs, float complex _x, unsigned int _sym);
+void flexframesync_execute_reset(    flexframesync _fs, float complex _x, unsigned int _sym);
 
 // packetizer
 

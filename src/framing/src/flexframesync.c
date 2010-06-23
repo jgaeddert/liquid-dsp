@@ -325,8 +325,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
     float complex mfdecim_out[4];
     float complex nco_rx_out;
     float phase_error;
-    //float complex rxy;
-    float rxy;
     unsigned int demod_sym;
 
     for (i=0; i<_n; i++) {
@@ -398,97 +396,16 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             //
             switch (_fs->state) {
             case FLEXFRAMESYNC_STATE_SEEKPN:
-                //
-                bsync_rrrf_correlate(_fs->fsync, nco_rx_out, &rxy);
-#ifdef DEBUG_FLEXFRAMESYNC
-                windowcf_push(_fs->debug_rxy, rxy);
-#endif
-                if (fabsf(rxy) > 0.7f) {
-                    //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
-                    // close bandwidth
-                    flexframesync_close_bandwidth(_fs);
-                    nco_crcf_adjust_phase(_fs->nco_rx, cargf(rxy));
-                    symsync_crcf_lock(_fs->mfdecim);
-
-                    // deactivate squelch as not to suppress signal in the
-                    // middle of the frame
-                    agc_crcf_squelch_deactivate(_fs->agc_rx);
-                    _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
-                }
+                flexframesync_execute_seekpn(_fs, nco_rx_out, demod_sym);
                 break;
             case FLEXFRAMESYNC_STATE_RXHEADER:
-                //_fs->header_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
-                _fs->header_samples[_fs->num_symbols_collected] = nco_rx_out;
-                _fs->num_symbols_collected++;
-
-                // SINDR estimation
-                get_demodulator_evm(_fs->mod_header, &_fs->evm);
-                _fs->evm_hat += _fs->evm;
-                if (_fs->num_symbols_collected==256) {
-                    _fs->evm_hat /= 256.0f;
-                    _fs->SINDRdB_hat = -10*log10f(_fs->evm_hat);
-#if DEBUG_FLEXFRAMESYNC_PRINT
-                    printf("SINDR   :   %12.8f dB\n", _fs->SINDRdB_hat);
-#endif
-                    _fs->num_symbols_collected = 0;
-                    flexframesync_demodulate_header(_fs);
-                    flexframesync_decode_header(_fs);
-                    if (_fs->header_valid) {
-                        agc_crcf_lock(_fs->agc_rx);
-                        _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
-                    } else {
-                        //printf("***** header invalid!\n");
-                        // invoke callback anyway, but escape ignore rest of payload
-                        _fs->callback(_fs->header,  _fs->header_valid,
-                                      NULL,         0,
-                                      _fs->userdata,
-                                      NULL, 0);
-                        _fs->state = FLEXFRAMESYNC_STATE_RESET;
-                    }
-                }
+                flexframesync_execute_rxheader(_fs, nco_rx_out, demod_sym);
                 break;
             case FLEXFRAMESYNC_STATE_RXPAYLOAD:
-#ifdef DEBUG_FLEXFRAMESYNC
-            windowcf_push(_fs->debug_framesyms, nco_rx_out);
-#endif
-            //if (_fs->rssi < _fs->squelch_threshold)
-                _fs->payload_samples[_fs->num_symbols_collected] = nco_rx_out;
-                _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) demod_sym;
-                _fs->num_symbols_collected++;
-                // TODO: fix hard-coded value
-                if (_fs->num_symbols_collected==_fs->num_payload_symbols) {
-                    _fs->num_symbols_collected = 0;
-                    flexframesync_assemble_payload(_fs);
-
-                    // invoke callback method
-                    _fs->callback(_fs->header,  _fs->header_valid,
-                                  _fs->payload, _fs->payload_len,
-                                  _fs->userdata,
-                                  _fs->payload_samples,
-                                  _fs->num_payload_symbols);
-
-                    _fs->state = FLEXFRAMESYNC_STATE_RESET;
-//#ifdef DEBUG_FLEXFRAMESYNC
-#if 0
-                    printf("flexframesync exiting prematurely\n");
-                    flexframesync_destroy(_fs);
-                    exit(0);
-#endif
-                } else {
-                    break;
-                }
+                flexframesync_execute_rxpayload(_fs, nco_rx_out, demod_sym);
+                break;
             case FLEXFRAMESYNC_STATE_RESET:
-                // open bandwidth
-                _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
-                agc_crcf_unlock(_fs->agc_rx);
-                agc_crcf_squelch_activate(_fs->agc_rx);
-                symsync_crcf_unlock(_fs->mfdecim);
-                flexframesync_open_bandwidth(_fs);
-                _fs->num_symbols_collected = 0;
-                nco_crcf_reset(_fs->nco_rx);
-
-                // Don't actually reset the synchronizer
-                //flexframesync_reset(_fs);
+                flexframesync_execute_reset(_fs, nco_rx_out, demod_sym);
                 break;
             default:;
             }
@@ -515,6 +432,121 @@ void flexframesync_close_bandwidth(flexframesync _fs)
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
     nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
+}
+
+// 
+void flexframesync_execute_seekpn(flexframesync _fs,
+                                  float complex _x,
+                                  unsigned int _sym)
+{
+    //
+    float rxy;
+    bsync_rrrf_correlate(_fs->fsync, _x, &rxy);
+#ifdef DEBUG_FLEXFRAMESYNC
+    windowcf_push(_fs->debug_rxy, rxy);
+#endif
+    if (fabsf(rxy) > 0.7f) {
+        //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
+        // close bandwidth
+        flexframesync_close_bandwidth(_fs);
+        nco_crcf_adjust_phase(_fs->nco_rx, cargf(rxy));
+        symsync_crcf_lock(_fs->mfdecim);
+
+        // deactivate squelch as not to suppress signal in the
+        // middle of the frame
+        agc_crcf_squelch_deactivate(_fs->agc_rx);
+        _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
+    }
+
+}
+
+void flexframesync_execute_rxheader(flexframesync _fs,
+                                    float complex _x,
+                                    unsigned int _sym)
+{
+    _fs->header_samples[_fs->num_symbols_collected] = _x;
+    _fs->num_symbols_collected++;
+
+    // SINDR estimation
+    get_demodulator_evm(_fs->mod_header, &_fs->evm);
+    _fs->evm_hat += _fs->evm;
+    if (_fs->num_symbols_collected==256) {
+        _fs->evm_hat /= 256.0f;
+        _fs->SINDRdB_hat = -10*log10f(_fs->evm_hat);
+#if DEBUG_FLEXFRAMESYNC_PRINT
+        printf("SINDR   :   %12.8f dB\n", _fs->SINDRdB_hat);
+#endif
+        _fs->num_symbols_collected = 0;
+        flexframesync_demodulate_header(_fs);
+        flexframesync_decode_header(_fs);
+        if (_fs->header_valid) {
+            agc_crcf_lock(_fs->agc_rx);
+            _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
+        } else {
+            //printf("***** header invalid!\n");
+            // invoke callback anyway, but escape ignore rest of payload
+            _fs->callback(_fs->header,  _fs->header_valid,
+                          NULL,         0,
+                          _fs->userdata,
+                          NULL, 0);
+            _fs->state = FLEXFRAMESYNC_STATE_RESET;
+        }
+    }
+
+
+}
+
+void flexframesync_execute_rxpayload(flexframesync _fs,
+                                     float complex _x,
+                                     unsigned int _sym)
+{
+#ifdef DEBUG_FLEXFRAMESYNC
+    windowcf_push(_fs->debug_framesyms, _x);
+#endif
+    _fs->payload_samples[_fs->num_symbols_collected] = _x;
+    _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) _sym;
+    _fs->num_symbols_collected++;
+    // TODO: fix hard-coded value
+    if (_fs->num_symbols_collected==_fs->num_payload_symbols) {
+        _fs->num_symbols_collected = 0;
+        flexframesync_assemble_payload(_fs);
+
+        // invoke callback method
+        _fs->callback(_fs->header,  _fs->header_valid,
+                      _fs->payload, _fs->payload_len,
+                      _fs->userdata,
+                      _fs->payload_samples,
+                      _fs->num_payload_symbols);
+
+        _fs->state = FLEXFRAMESYNC_STATE_RESET;
+//#ifdef DEBUG_FLEXFRAMESYNC
+#if 0
+        printf("flexframesync exiting prematurely\n");
+        flexframesync_destroy(_fs);
+        exit(0);
+#endif
+    }
+
+
+}
+
+void flexframesync_execute_reset(flexframesync _fs,
+                                 float complex _x,
+                                 unsigned int _sym)
+{
+
+    // open bandwidth
+    _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
+    agc_crcf_unlock(_fs->agc_rx);
+    agc_crcf_squelch_activate(_fs->agc_rx);
+    symsync_crcf_unlock(_fs->mfdecim);
+    flexframesync_open_bandwidth(_fs);
+    _fs->num_symbols_collected = 0;
+    nco_crcf_reset(_fs->nco_rx);
+
+    // Don't actually reset the synchronizer
+    //flexframesync_reset(_fs);
+
 }
 
 void flexframesync_configure_payload_buffers(flexframesync _fs)
