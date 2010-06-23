@@ -56,9 +56,8 @@ struct flexframegen_s {
     // header (QPSK)
     // TODO : use packetizer object for this
     modem mod_header;                   // header QPSK modulator
-    fec fec_header;
-    interleaver intlv_header;
-    unsigned char header[15];
+    packetizer p_header;                // header packetizer
+    unsigned char header[12];
     unsigned char header_enc[32];
     unsigned char header_sym[256];
     float complex header_samples[256];
@@ -95,8 +94,8 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_BPSK, 1);
-    fg->fec_header = fec_create(FEC_HAMMING74, NULL);
-    fg->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
+    fg->p_header   = packetizer_create(12, FEC_HAMMING74, FEC_NONE);
+    assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
     // initial memory allocation for payload
     fg->payload = (unsigned char*) malloc(1*sizeof(unsigned char));
@@ -123,8 +122,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 void flexframegen_destroy(flexframegen _fg)
 {
     // destroy header objects
-    fec_destroy(_fg->fec_header);
-    interleaver_destroy(_fg->intlv_header);
+    packetizer_destroy(_fg->p_header);
     modem_destroy(_fg->mod_header);
 
     // free internal payload buffers
@@ -199,7 +197,7 @@ unsigned int flexframegen_getframelen(flexframegen _fg)
 
 // exectue frame generator (create the frame)
 //  _fg         :   frame generator object
-//  _header     :   8-byte header
+//  _header     :   9-byte header
 //  _payload    :   variable payload buffer (configured by setprops method)
 //  _y          :   output frame symbols [size: frame_len x 1]
 void flexframegen_execute(flexframegen _fg,
@@ -230,7 +228,7 @@ void flexframegen_execute(flexframegen _fg,
         _y[n++] = _fg->pn_sequence[i];
 
     // copy and encode header
-    memmove(_fg->header, _header, 8*sizeof(unsigned char));
+    memmove(_fg->header, _header, 9*sizeof(unsigned char));
     flexframegen_encode_header(_fg);
     flexframegen_modulate_header(_fg);
     memmove(&_y[n], _fg->header_samples, 256*sizeof(float complex));
@@ -316,36 +314,21 @@ void flexframegen_configure_payload_buffers(flexframegen _fg)
 // encode header of flexframe
 void flexframegen_encode_header(flexframegen _fg)
 {
-    // first 8 bytes of header are user-defined
+    // first 9 bytes of header are user-defined
 
     // add payload length
-    _fg->header[8] = (_fg->props.payload_len >> 8) & 0xff;
-    _fg->header[9] = (_fg->props.payload_len     ) & 0xff;
+    _fg->header[ 9] = (_fg->props.payload_len >> 8) & 0xff;
+    _fg->header[10] = (_fg->props.payload_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    _fg->header[10]  = (_fg->props.mod_scheme << 4) & 0xf0;
-    _fg->header[10] |= (_fg->props.mod_bps) & 0x0f;
-
-    // compute crc
-    unsigned int header_key = crc32_generate_key(_fg->header, 11);
-    _fg->header[11] = (header_key >> 24) & 0xff;
-    _fg->header[12] = (header_key >> 16) & 0xff;
-    _fg->header[13] = (header_key >>  8) & 0xff;
-    _fg->header[14] = (header_key      ) & 0xff;
+    _fg->header[11]  = (_fg->props.mod_scheme << 4) & 0xf0;
+    _fg->header[11] |= (_fg->props.mod_bps) & 0x0f;
 
     // scramble header
-    scramble_data(_fg->header, 15);
+    scramble_data(_fg->header, 12);
 
-    // run encoder
-    fec_encode(_fg->fec_header, 15, _fg->header, _fg->header_enc);
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0 || LIQUID_FLEXFRAME_FORCE_H74==1
-    // append 2 bytes of random data to end of header for Hamming(7,4) code
-    _fg->header_enc[30] = 0xa7;
-    _fg->header_enc[31] = 0x9e;
-#endif
-
-    // interleave header bits
-    interleaver_encode(_fg->intlv_header, _fg->header_enc, _fg->header_enc);
+    // run packet encoder
+    packetizer_encode(_fg->p_header, _fg->header, _fg->header_enc);
 
 #if DEBUG_FLEXFRAMEGEN_PRINT
     // print results
@@ -356,7 +339,7 @@ void flexframegen_encode_header(flexframegen _fg)
     printf("    header key  : 0x%.8x\n", header_key);
 
     printf("    user data   :");
-    for (i=0; i<8; i++)
+    for (i=0; i<9; i++)
         printf(" %.2x", _user_header[i]);
     printf("\n");
 #endif

@@ -4,7 +4,7 @@
 // This example demonstrates the interfaces to the flexframegen and
 // flexframesync objects used to completely encapsulate raw data bytes
 // into frame samples (nearly) ready for over-the-air transmission. An
-// 8-byte header and variable length payload are encoded into baseband
+// 9-byte header and variable length payload are encoded into baseband
 // symbols using the flexframegen object.  The resulting symbols are
 // interpolated using a root-Nyquist filter before adding channel
 // impairments (noise, carrier frequency/phase offset, timing phase
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
         flexframegen_print(fg);
 
     // frame data
-    unsigned char header[8];
+    unsigned char header[9];
     unsigned char payload[fgprops.payload_len];
     framedata fd = {header, payload, 0};
 
@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
 
     unsigned int i;
     // initialize header, payload
-    for (i=0; i<8; i++)
+    for (i=0; i<9; i++)
         header[i] = i;
     for (i=0; i<fgprops.payload_len; i++)
         payload[i] = rand() & 0xff;
@@ -273,7 +273,7 @@ static int callback(unsigned char * _rx_header,
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
-    for (i=0; i<8; i++)
+    for (i=0; i<9; i++)
         num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
     if (verbose)
         printf("    num header errors   : %u\n", num_header_errors);

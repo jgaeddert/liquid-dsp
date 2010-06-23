@@ -29,6 +29,7 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -75,12 +76,11 @@ struct flexframesync_s {
 
     // header
     modem mod_header;
-    fec fec_header;
-    interleaver intlv_header;
+    packetizer p_header;
     float complex header_samples[256];
     unsigned char header_sym[256];
     unsigned char header_enc[32];
-    unsigned char header[15];
+    unsigned char header[12];
 
     // SINDR estimate (signal to interference, noise,
     // and distortion ratio)
@@ -139,9 +139,9 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
         flexframesync_setprops(fs, &framesyncprops_default);
 
     // header objects
-    fs->fec_header = fec_create(FEC_HAMMING74, NULL);
     fs->mod_header = modem_create(MOD_BPSK, 1);
-    fs->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
+    fs->p_header = packetizer_create(12, FEC_HAMMING74, FEC_NONE);
+    assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
     // agc, rssi, squelch
     fs->agc_rx = agc_crcf_create();
@@ -237,9 +237,8 @@ void flexframesync_destroy(flexframesync _fs)
     modem_destroy(_fs->mod_preamble);
 
     // destroy header objects
-    fec_destroy(_fs->fec_header);
     modem_destroy(_fs->mod_header);
-    interleaver_destroy(_fs->intlv_header);
+    packetizer_destroy(_fs->p_header);
 
     // free payload objects
     modem_destroy(_fs->mod_payload);
@@ -554,32 +553,19 @@ void flexframesync_configure_payload_buffers(flexframesync _fs)
 
 void flexframesync_decode_header(flexframesync _fs)
 {
-    // de-interleave
-    interleaver_decode(_fs->intlv_header, _fs->header_enc, _fs->header_enc);
-
-    // run decoder
-    fec_decode(_fs->fec_header, 15, _fs->header_enc, _fs->header);
+    // run packet decoder
+    _fs->header_valid =
+    packetizer_decode(_fs->p_header, _fs->header_enc, _fs->header);
 
     // unscramble header
-    unscramble_data(_fs->header, 15);
-
-    // strip off crc32
-    unsigned int header_key=0;
-    header_key |= ( _fs->header[11] << 24 );
-    header_key |= ( _fs->header[12] << 16 );
-    header_key |= ( _fs->header[13] <<  8 );
-    header_key |= ( _fs->header[14]       );
-    _fs->header_key = header_key;
-
-    // validate crc
-    _fs->header_valid = crc32_validate_message(_fs->header,11,_fs->header_key);
+    unscramble_data(_fs->header, 12);
 
     // strip off modulation scheme/depth
-    unsigned int mod_scheme = (_fs->header[10] >> 4) & 0x0f;
-    unsigned int mod_depth  = (_fs->header[10]     ) & 0x0f;
+    unsigned int mod_scheme = (_fs->header[11] >> 4) & 0x0f;
+    unsigned int mod_depth  = (_fs->header[11]     ) & 0x0f;
 
     // strip off payload length
-    unsigned int payload_len = (_fs->header[8] << 8) | (_fs->header[9]);
+    unsigned int payload_len = (_fs->header[9] << 8) | (_fs->header[10]);
     _fs->payload_len = payload_len;
 
     // configure payload receiver
@@ -609,7 +595,7 @@ void flexframesync_decode_header(flexframesync _fs)
 
     printf("    user data   :");
     unsigned int i;
-    for (i=0; i<8; i++)
+    for (i=0; i<9; i++)
         printf(" %.2x", _fs->header[i]);
     printf("\n");
 #endif
