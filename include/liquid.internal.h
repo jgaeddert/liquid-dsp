@@ -945,6 +945,14 @@ float complex ellip_asnf(float complex _u,
 // MODULE : framing
 //
 
+// framegen64
+
+// convert one 8-bit byte to four 2-bit symbols
+//  _byte   :   input byte
+//  _syms   :   output symbols [size: 4 x 1]
+void framegen64_byte_to_syms(unsigned char _byte,
+                             unsigned char * _syms);
+
 // flexframegen
 void flexframegen_compute_payload_len(flexframegen _fg);
 void flexframegen_compute_frame_len(flexframegen _fg);
