@@ -39,7 +39,7 @@ int main() {
 
     // options
     float SNRdB = 10.0f;
-    float noise_floor = -20.0f;
+    float noise_floor = -40.0f;
 
     // create framegen64 object
     unsigned int m=3;

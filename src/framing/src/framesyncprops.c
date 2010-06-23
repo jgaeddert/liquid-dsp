@@ -54,7 +54,7 @@ framesyncprops_s framesyncprops_default = {
     // squelch
     1,          // squelch_enabled
     0,          // autosquelch_enabled
-    -15.0f      // squelch_threshold
+    -35.0f      // squelch_threshold
 };
 
 void framesyncprops_init_default(framesyncprops_s * _props)
