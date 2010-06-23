@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <complex.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 #define FRAME64_RAMP_UP_LEN 64
 #define FRAME64_PHASING_LEN 64
