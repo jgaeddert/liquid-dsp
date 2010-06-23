@@ -88,8 +88,8 @@ int main(int argc, char *argv[]) {
     interp_crcf interp = interp_crcf_create(2,h,h_len);
 
     // create flexframesync object with default properties
-    flexframesyncprops_s fsprops;
-    flexframesyncprops_init_default(&fsprops);
+    framesyncprops_s fsprops;
+    framesyncprops_init_default(&fsprops);
     fsprops.squelch_threshold = noise_floor + 3.0f;
 #if 0
     // override default properties
