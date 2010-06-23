@@ -62,7 +62,6 @@ struct framesync64_s {
     framesyncprops_s props;
 
     // squelch
-    float rssi;             // received signal strength indicator [dB]
     int squelch_status;     // status of AGC squelch
 
     // status variables
@@ -80,6 +79,7 @@ struct framesync64_s {
 
     framesync64_callback callback;      // user-defined callback function
     void * userdata;                    // user-defined data structure
+    framesyncstats_s framestats;        // frame statistics object
 
     // header
     unsigned char header_sym[256];      // header symbols (modem output)
@@ -95,8 +95,6 @@ struct framesync64_s {
     // SINDR estimate (signal to interference, noise, and distortion
     // ratio), average modem error vector magnitude
     float evm_hat;
-
-    framesyncstats_s framestats;        // frame statistics object
 
 #if DEBUG_FRAMESYNC64
     windowf  debug_agc_rssi;
@@ -316,7 +314,6 @@ void framesync64_execute(framesync64 _fs,
         agc_crcf_execute(_fs->agc_rx, _x[i], &agc_rx_out);
 
 #if DEBUG_FRAMESYNC64
-        _fs->rssi = 10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
         windowcf_push(_fs->debug_x, _x[i]);
         windowf_push(_fs->debug_agc_rssi, agc_crcf_get_signal_level(_fs->agc_rx));
         windowcf_push(_fs->debug_agc_out, agc_rx_out);

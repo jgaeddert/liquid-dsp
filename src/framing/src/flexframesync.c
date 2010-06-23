@@ -20,7 +20,9 @@
  */
 
 //
+// flexframesync.c
 //
+// flexible frame synchronizer object
 //
 
 #include <stdlib.h>
@@ -50,37 +52,36 @@ void flexframesync_output_debug_file(flexframesync _fs);
 struct flexframesync_s {
 
     // synchronizer objects
-    agc_crcf agc_rx;
-    symsync_crcf mfdecim;
-    nco_crcf nco_rx;
-    bsync_rrrf fsync;
+    agc_crcf agc_rx;                    // automatic gain control
+    symsync_crcf mfdecim;               // symbol synchronizer (timing recovery)
+    nco_crcf nco_rx;                    // oscillator and phase-locked loop
+    bsync_rrrf fsync;                   // p/n sequence correlator
 
-    //
-    float rssi;
-    int squelch_status;
+    // squelch
+    int squelch_status;                 // status of AGC squelch
 
     // status variables
     enum {
-        FLEXFRAMESYNC_STATE_SEEKPN=0,
-        FLEXFRAMESYNC_STATE_RXHEADER,
-        FLEXFRAMESYNC_STATE_RXPAYLOAD,
-        FLEXFRAMESYNC_STATE_RESET
+        FLEXFRAMESYNC_STATE_SEEKPN=0,   // seek p/n sequence
+        FLEXFRAMESYNC_STATE_RXHEADER,   // receive header data
+        FLEXFRAMESYNC_STATE_RXPAYLOAD,  // receive payload data
+        FLEXFRAMESYNC_STATE_RESET       // reset synchronizer
     } state;
-    unsigned int num_symbols_collected;
-    unsigned int header_key;
-    bool header_valid;
+    unsigned int num_symbols_collected; // symbols collected counter
+    unsigned int header_key;            // header cyclic redundancy check
+    bool header_valid;                  // header valid?
 
     // preamble
-    modem mod_preamble;
-    unsigned int pnsequence_len;
+    modem mod_preamble;                 // preamble demodulator (BPSK)
+    unsigned int pnsequence_len;        // p/n sequence length
 
     // header
-    modem mod_header;
-    packetizer p_header;
-    float complex header_samples[256];
-    unsigned char header_sym[256];
-    unsigned char header_enc[32];
-    unsigned char header[12];
+    modem mod_header;                   // header demodulator (QPSK)
+    packetizer p_header;                // header packetizer decoder
+    float complex header_samples[256];  // header samples (modem input)
+    unsigned char header_sym[256];      // header symbols (modem output)
+    unsigned char header_enc[32];       // header data (encoded)
+    unsigned char header[12];           // header data (decoded)
 
     // SINDR estimate (signal to interference, noise,
     // and distortion ratio)
@@ -89,16 +90,16 @@ struct flexframesync_s {
     float SINDRdB_hat;  // estimated SINDR (dB)
 
     // header properties
-    modulation_scheme ms_payload;
-    unsigned int bps_payload;
-    unsigned int payload_len;
+    modulation_scheme ms_payload;       // payload modulation scheme
+    unsigned int bps_payload;           // payload modulation depth (bits/symbol)
+    unsigned int payload_len;           // payload length (number of bytes)
 
     // payload
-    unsigned int num_payload_symbols;
-    modem mod_payload;
-    float complex * payload_samples;
-    unsigned char * payload_sym;
-    unsigned char * payload;
+    unsigned int num_payload_symbols;   // payload length (number of symbols)
+    modem mod_payload;                  // payload demodulator (variable)
+    float complex * payload_samples;    // payload samples (modem input)
+    unsigned char * payload_sym;        // payload symbols (modem output)
+    unsigned char * payload;            // paylod data
     unsigned int payload_samples_numalloc;
     unsigned int payload_sym_numalloc;
     unsigned int payload_numalloc;
@@ -107,9 +108,9 @@ struct flexframesync_s {
     framesyncprops_s props;
 
     // callback
-    flexframesync_callback callback;
-    void * userdata;
-    framesyncstats_s framestats;
+    flexframesync_callback callback;    // user-defined callback function
+    void * userdata;                    // user-defined data structure
+    framesyncstats_s framestats;        // frame statistic object
 
 #ifdef DEBUG_FLEXFRAMESYNC
     FILE*fid;
@@ -337,7 +338,7 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
     for (i=0; i<_n; i++) {
         // agc
         agc_crcf_execute(_fs->agc_rx, _x[i], &agc_rx_out);
-        _fs->rssi = agc_crcf_get_signal_level(_fs->agc_rx);
+
 #ifdef DEBUG_FLEXFRAMESYNC
         windowcf_push(_fs->debug_x, _x[i]);
         windowf_push(_fs->debug_agc_rssi, agc_crcf_get_signal_level(_fs->agc_rx));
@@ -382,9 +383,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
                 phase_error *= cabsf(nco_rx_out);
             }
 
-            //if (_fs->rssi < _fs->squelch_threshold)
-            //    phase_error *= 0.01f;
-
             nco_crcf_pll_step(_fs->nco_rx, phase_error);
             /*
             float fmax = 0.05f;
@@ -397,9 +395,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             windowf_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
             windowcf_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
-            //if (_fs->rssi < _fs->squelch_threshold)
-            //    continue;
-
             //
             switch (_fs->state) {
             case FLEXFRAMESYNC_STATE_SEEKPN:
@@ -418,7 +413,6 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             }
         }
     }
-    //printf("rssi: %8.4f\n", 10*log10(agc_crcf_get_signal_level(_fs->agc_rx)));
 }
 
 // 
