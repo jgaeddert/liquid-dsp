@@ -807,13 +807,12 @@ useful to filtering and filter design.
     checks the stability of an infinite impulse-response filter by computing
     the roots of the denominator (poles) and ensuring that they lie within the
     unit circle.
-    % TODO : use cref (cleveref) to handle multiple references
     Notice that the poles in
-    Figures~\ref{fig:module:filter:butter},
-    \ref{fig:module:filter:cheby1},
-    \ref{fig:module:filter:cheby2},
-    \ref{fig:module:filter:ellip}, and
-    \ref{fig:module:filter:bessel}
+    \cref{fig:module:filter:butter,%
+          fig:module:filter:cheby1,%
+          fig:module:filter:cheby2,%
+          fig:module:filter:ellip,%
+          fig:module:filter:bessel}
     all have their poles within the unit circle and are therefore stable (as
     expected).
 
