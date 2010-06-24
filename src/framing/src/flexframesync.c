@@ -521,9 +521,10 @@ void flexframesync_execute_rxheader(flexframesync _fs,
 
     if (_fs->num_symbols_collected==256) {
 
-        // estimate signal-to-noise ratio
+        // estimate signal-to-noise ratio, rssi
         _fs->framestats.SNR  = -10*log10f(_fs->evm_hat / 256.0f);
         _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
+        _fs->evm_hat = 0.0f;
 #if DEBUG_FLEXFRAMESYNC_PRINT
         printf("SINDR   :   %12.8f dB\n", _fs->framestats.SNR);
 #endif
