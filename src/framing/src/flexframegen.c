@@ -19,6 +19,8 @@
  */
 
 //
+// flexframegen.c
+//
 // flexible frame generator
 //
 
@@ -36,35 +38,35 @@
 
 // default flexframegen properties
 static flexframegenprops_s flexframegenprops_default = {
-    0,          // rampup_len
-    0,          // phasing_len
+    16,         // rampup_len
+    16,         // phasing_len
     0,          // payload_len
     MOD_BPSK,   // mod_scheme
     1,          // mod_bps
-    0           // rampdn_len
+    16          // rampdn_len
 };
 
 struct flexframegen_s {
     // buffers: preamble (BPSK)
-    float complex * ramp_up;
-    float complex * phasing;
-    float complex   pn_sequence[64];
-    float complex * ramp_dn;
+    float complex * ramp_up;            // ramp up sequence
+    float complex * phasing;            // phasing pattern sequence
+    float complex   pn_sequence[64];    // p/n sequence
+    float complex * ramp_dn;            // ramp down sequence
 
     // header (QPSK)
-    modem mod_header;
-    fec fec_header;
-    interleaver intlv_header;
-    unsigned char header[15];
+    // TODO : use packetizer object for this
+    modem mod_header;                   // header QPSK modulator
+    packetizer p_header;                // header packetizer
+    unsigned char header[12];
     unsigned char header_enc[32];
     unsigned char header_sym[256];
     float complex header_samples[256];
 
     // payload
     modem mod_payload;
-    unsigned char * payload;
-    unsigned char * payload_sym;
-    float complex * payload_samples;
+    unsigned char * payload;            // payload data (bytes)
+    unsigned char * payload_sym;        // payload symbols (modem input)
+    float complex * payload_samples;    // payload samples (modem output)
     unsigned int payload_numalloc;
     unsigned int payload_sym_numalloc;
     unsigned int payload_samples_numalloc;
@@ -72,9 +74,9 @@ struct flexframegen_s {
     // properties
     flexframegenprops_s props;
 
-    unsigned int pnsequence_len;    // p/n sequence length
-    unsigned int num_payload_symbols;   // number of symbols
-    unsigned int frame_len;         // number of symbols
+    unsigned int pnsequence_len;        // p/n sequence length
+    unsigned int num_payload_symbols;   // number of paylod symbols
+    unsigned int frame_len;             // number of frame symbols
 };
 
 flexframegen flexframegen_create(flexframegenprops_s * _props)
@@ -92,8 +94,8 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_BPSK, 1);
-    fg->fec_header = fec_create(FEC_HAMMING74, NULL);
-    fg->intlv_header = interleaver_create(32, LIQUID_INTERLEAVER_BLOCK);
+    fg->p_header   = packetizer_create(12, FEC_HAMMING74, FEC_NONE);
+    assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
     // initial memory allocation for payload
     fg->payload = (unsigned char*) malloc(1*sizeof(unsigned char));
@@ -120,8 +122,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 void flexframegen_destroy(flexframegen _fg)
 {
     // destroy header objects
-    fec_destroy(_fg->fec_header);
-    interleaver_destroy(_fg->intlv_header);
+    packetizer_destroy(_fg->p_header);
     modem_destroy(_fg->mod_header);
 
     // free internal payload buffers
@@ -136,18 +137,29 @@ void flexframegen_destroy(flexframegen _fg)
     free(_fg);
 }
 
-void flexframegen_getprops(flexframegen _fg, flexframegenprops_s * _props)
+// get flexframegen properties
+//  _fg     :   frame generator object
+//  _props  :   frame generator properties structure pointer
+void flexframegen_getprops(flexframegen _fg,
+                           flexframegenprops_s * _props)
 {
+    // copy properties structure to output pointer
     memmove(_props, &_fg->props, sizeof(flexframegenprops_s));
 }
 
-void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props)
+// set flexframegen properties
+//  _fg     :   frame generator object
+//  _props  :   frame generator properties structure pointer
+void flexframegen_setprops(flexframegen _fg,
+                           flexframegenprops_s * _props)
 {
     // TODO : flexframegen_setprops() validate input
     if (_props->mod_bps == 0) {
         printf("error: flexframegen_setprops(), modulation depth must be greater than 0\n");
         exit(1);
     }
+
+    // copy properties to internal structure
     memmove(&_fg->props, _props, sizeof(flexframegenprops_s));
 
     // re-create modem
@@ -158,13 +170,14 @@ void flexframegen_setprops(flexframegen _fg, flexframegenprops_s * _props)
     flexframegen_compute_payload_len(_fg);
     flexframegen_compute_frame_len(_fg);
 
-    // re-configure payload buffers (reallocate as necessary)
+    // reconfigure payload buffers (reallocate as necessary)
     flexframegen_configure_payload_buffers(_fg);
 }
 
+// print flexframegen object internals
 void flexframegen_print(flexframegen _fg)
 {
-    printf("flexframegen [%u]:\n", _fg->frame_len);
+    printf("flexframegen [%u samples]:\n", _fg->frame_len);
     printf("    ramp up len         :   %u\n", _fg->props.rampup_len);
     printf("    phasing len         :   %u\n", _fg->props.phasing_len);
     printf("    p/n sequence len    :   %u\n", _fg->pnsequence_len);
@@ -176,11 +189,17 @@ void flexframegen_print(flexframegen _fg)
     printf("    ramp dn len         :   %u\n", _fg->props.rampdn_len);
 }
 
+// get frame length (number of samples)
 unsigned int flexframegen_getframelen(flexframegen _fg)
 {
     return _fg->frame_len;
 }
 
+// exectue frame generator (create the frame)
+//  _fg         :   frame generator object
+//  _header     :   9-byte header
+//  _payload    :   variable payload buffer (configured by setprops method)
+//  _y          :   output frame symbols [size: frame_len x 1]
 void flexframegen_execute(flexframegen _fg,
                           unsigned char * _header,
                           unsigned char * _payload,
@@ -191,27 +210,31 @@ void flexframegen_execute(flexframegen _fg,
     unsigned int i, n=0;
 
     // ramp up
-    for (i=0; i<_fg->props.rampup_len; i++)
-        _y[n++] = ((i%2) ? 1.0f : -1.0f) * 0.5f * (1.0f - cos(M_PI*(float)(i)/(float)(_fg->props.rampup_len)));
+    for (i=0; i<_fg->props.rampup_len; i++) {
+        _y[n] = ((n%2) ? 1.0f : -1.0f) * 0.5f * (1.0f - cos(M_PI*(float)(i)/(float)(_fg->props.rampup_len)));
         //_y[n++] = ((i%2) ? 1.0f : -1.0f) * kaiser(i, 2*_fg->props.rampup_len, 10.0f, 0.0f);
         //_y[n++] = ((i%2) ? 1.0f : -1.0f) * ((float)(i) / (float)(_fg->props.rampup_len));
+        n++;
+    }
 
     // phasing pattern
-    // TODO: ensure proper transitioning between ramp/up and phasing
-    for (i=0; i<_fg->props.phasing_len; i++)
-        _y[n++] = (i%2) ? 1.0f : -1.0f;
+    for (i=0; i<_fg->props.phasing_len; i++) {
+        _y[n] = (n%2) ? 1.0f : -1.0f;
+        n++;
+    }
 
     // p/n sequence
     for (i=0; i<64; i++)
         _y[n++] = _fg->pn_sequence[i];
 
-    // header
-    flexframegen_encode_header(_fg, _header);
+    // copy and encode header
+    memmove(_fg->header, _header, 9*sizeof(unsigned char));
+    flexframegen_encode_header(_fg);
     flexframegen_modulate_header(_fg);
     memmove(&_y[n], _fg->header_samples, 256*sizeof(float complex));
     n += 256;
 
-    // payload
+    // copy and encode payload
     memmove(_fg->payload, _payload, _fg->props.payload_len);
     flexframegen_modulate_payload(_fg);
     memmove(&_y[n], _fg->payload_samples, (_fg->num_payload_symbols)*sizeof(float complex));
@@ -223,10 +246,6 @@ void flexframegen_execute(flexframegen _fg,
         //_y[n++] = ((i%2) ? 1.0f : -1.0f) * (1.0f - kaiser(i, 2*_fg->props.rampdn_len, 10.0f, 0.0f));
         //_y[n++] = ((i%2) ? 1.0f : -1.0f) * ((float)(_fg->props.rampdn_len-i) / (float)(_fg->props.rampdn_len));
 
-#if DEBUG_FLEXFRAMEGEN_PRINT
-    printf("  n         : %u\n", n);
-    printf("  frame len : %u\n", _fg->frame_len);
-#endif
     assert(n == _fg->frame_len);
 }
 
@@ -234,44 +253,55 @@ void flexframegen_execute(flexframegen _fg,
 // internal
 //
 
+// compute length of payload (number of symbols)
 void flexframegen_compute_payload_len(flexframegen _fg)
 {
+    // num_payload_symbols = ceil( payload_len / mod_bps )
+
+    // compute integer division, keeping track of remainder
     div_t d = div(8*_fg->props.payload_len, _fg->props.mod_bps);
+
+    // extend number of payload symbols if remainder is present
     _fg->num_payload_symbols = d.quot + (d.rem ? 1 : 0);
 }
 
+// compute length of frame (number of symbols)
 void flexframegen_compute_frame_len(flexframegen _fg)
 {
+    // compute payload length
+    flexframegen_compute_payload_len(_fg);
+
     _fg->frame_len = 0;
 
     _fg->frame_len += _fg->props.rampup_len;    // ramp up length
     _fg->frame_len += _fg->props.phasing_len;   // phasing length
     _fg->frame_len += _fg->pnsequence_len;      // p/n sequence length
     _fg->frame_len += 256;                      // header length
-
-    // payload length
-    flexframegen_compute_payload_len(_fg);
-    _fg->frame_len += _fg->num_payload_symbols;
-
+    _fg->frame_len += _fg->num_payload_symbols; // payload length
     _fg->frame_len += _fg->props.rampdn_len;    // ramp down length
 }
 
+// configures payload buffers, reallocating memory if necessary
 void flexframegen_configure_payload_buffers(flexframegen _fg)
 {
+    // compute frame length, including payload length
     flexframegen_compute_frame_len(_fg);
 
+    // payload data (bytes)
     if (_fg->payload_numalloc != _fg->props.payload_len) {
         _fg->payload = (unsigned char*) realloc(_fg->payload, _fg->props.payload_len);
         _fg->payload_numalloc = _fg->props.payload_len;
         //printf("reallocating payload (payload data) : %u\n", _fg->payload_numalloc);
     }
 
+    // payload symbols (modem input)
     if (_fg->payload_sym_numalloc != _fg->num_payload_symbols) {
         _fg->payload_sym = (unsigned char*) realloc(_fg->payload_sym, _fg->num_payload_symbols);
         _fg->payload_sym_numalloc = _fg->num_payload_symbols;
         //printf("reallocating payload_sym (payload symbols) : %u\n", _fg->payload_sym_numalloc);
     }
 
+    // payload symbols (modem output)
     if (_fg->payload_samples_numalloc != _fg->num_payload_symbols) {
         _fg->payload_samples = (float complex*) realloc(_fg->payload_samples, _fg->num_payload_symbols*sizeof(float complex));
         _fg->payload_samples_numalloc = _fg->num_payload_symbols;
@@ -281,42 +311,24 @@ void flexframegen_configure_payload_buffers(flexframegen _fg)
 
 }
 
-// TODO : flexframegen_encode_header() ignore second argument and use internal array
-void flexframegen_encode_header(flexframegen _fg,
-                                unsigned char * _user_header)
+// encode header of flexframe
+void flexframegen_encode_header(flexframegen _fg)
 {
-    unsigned int i;
-    // copy 8 bytes of user data
-    for (i=0; i<8; i++)
-        _fg->header[i] = _user_header[i];
+    // first 9 bytes of header are user-defined
 
     // add payload length
-    _fg->header[8] = (_fg->props.payload_len >> 8) & 0xff;
-    _fg->header[9] = (_fg->props.payload_len     ) & 0xff;
+    _fg->header[ 9] = (_fg->props.payload_len >> 8) & 0xff;
+    _fg->header[10] = (_fg->props.payload_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    _fg->header[10]  = (_fg->props.mod_scheme << 4) & 0xf0;
-    _fg->header[10] |= (_fg->props.mod_bps) & 0x0f;
-
-    // compute crc
-    unsigned int header_key = crc32_generate_key(_fg->header, 11);
-    _fg->header[11] = (header_key >> 24) & 0xff;
-    _fg->header[12] = (header_key >> 16) & 0xff;
-    _fg->header[13] = (header_key >>  8) & 0xff;
-    _fg->header[14] = (header_key      ) & 0xff;
+    _fg->header[11]  = (_fg->props.mod_scheme << 4) & 0xf0;
+    _fg->header[11] |= (_fg->props.mod_bps) & 0x0f;
 
     // scramble header
-    scramble_data(_fg->header, 15);
+    scramble_data(_fg->header, 12);
 
-    // run encoder
-    fec_encode(_fg->fec_header, 15, _fg->header, _fg->header_enc);
-#if !defined HAVE_FEC_H || HAVE_FEC_H==0 || LIQUID_FLEXFRAME_FORCE_H74==1
-    _fg->header_enc[30] = 0xa7;
-    _fg->header_enc[31] = 0x9e;
-#endif
-
-    // interleave header bits
-    interleaver_encode(_fg->intlv_header, _fg->header_enc, _fg->header_enc);
+    // run packet encoder
+    packetizer_encode(_fg->p_header, _fg->header, _fg->header_enc);
 
 #if DEBUG_FLEXFRAMEGEN_PRINT
     // print results
@@ -327,12 +339,13 @@ void flexframegen_encode_header(flexframegen _fg,
     printf("    header key  : 0x%.8x\n", header_key);
 
     printf("    user data   :");
-    for (i=0; i<8; i++)
+    for (i=0; i<9; i++)
         printf(" %.2x", _user_header[i]);
     printf("\n");
 #endif
 }
 
+// modulate header into QPSK symbols
 void flexframegen_modulate_header(flexframegen _fg)
 {
     unsigned int i;
@@ -354,26 +367,21 @@ void flexframegen_modulate_header(flexframegen _fg)
         modem_modulate(_fg->mod_header, _fg->header_sym[i], &_fg->header_samples[i]);
 }
 
+// modulate payload into symbols using user-defined modem
 void flexframegen_modulate_payload(flexframegen _fg)
 {
-    unsigned int i;
-
+    // clear payload
     memset(_fg->payload_sym, 0x00, _fg->props.payload_len);
 
+    // repack 8-bit payload bytes into 'mod_bps'-bit payload symbols
     unsigned int num_written;
     repack_bytes(_fg->payload,     8, _fg->props.payload_len,
                  _fg->payload_sym,  _fg->props.mod_bps,   _fg->num_payload_symbols,
                  &num_written);
 
     // modulate symbols
+    unsigned int i;
     for (i=0; i<_fg->num_payload_symbols; i++)
         modem_modulate(_fg->mod_payload, _fg->payload_sym[i], &_fg->payload_samples[i]);
 }
-
-#if 0
-void flexframegen_tmp_getheaderenc(flexframegen _fg, unsigned char * _header_enc)
-{
-    memmove(_header_enc, _fg->header_enc, 32);
-}
-#endif
 

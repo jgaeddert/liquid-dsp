@@ -30,6 +30,7 @@ local_s_files	:=		\
 	pnsync_rrrf.c		\
 	pnsync_crcf.c		\
 	pnsync_cccf.c		\
+	framesyncprops.c	\
 	framegen64.c		\
 	framesync64.c		\
 	flexframegen.c		\
