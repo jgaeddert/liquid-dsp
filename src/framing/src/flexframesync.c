@@ -76,18 +76,15 @@ struct flexframesync_s {
     unsigned int pnsequence_len;        // p/n sequence length
 
     // header
-    modem mod_header;                   // header demodulator (QPSK)
+    modem mod_header;                   // header demodulator (BPSK)
     packetizer p_header;                // header packetizer decoder
-    float complex header_samples[256];  // header samples (modem input)
     unsigned char header_sym[256];      // header symbols (modem output)
     unsigned char header_enc[32];       // header data (encoded)
     unsigned char header[12];           // header data (decoded)
 
     // SINDR estimate (signal to interference, noise,
     // and distortion ratio)
-    float evm;          // instantaneous error vector magnitude
     float evm_hat;      // averaged EVM
-    float SINDRdB_hat;  // estimated SINDR (dB)
 
     // header properties
     modulation_scheme ms_payload;       // payload modulation scheme
@@ -125,6 +122,10 @@ struct flexframesync_s {
 #endif
 };
 
+// create flexframesync object
+//  _props          :   properties structure pointer (default if NULL)
+//  _callback       :   callback function invoked when frame is received
+//  _userdata       :   user-defined data object passed to callback
 flexframesync flexframesync_create(framesyncprops_s * _props,
                                    flexframesync_callback _callback,
                                    void * _userdata)
@@ -236,33 +237,42 @@ void flexframesync_destroy(flexframesync _fs)
 #endif
 
     // destroy synchronizer objects
-    agc_crcf_destroy(_fs->agc_rx);
-    nco_crcf_destroy(_fs->nco_rx);
-    bsync_rrrf_destroy(_fs->fsync);
-    symsync_crcf_destroy(_fs->mfdecim);
+    agc_crcf_destroy(_fs->agc_rx);      // automatic gain control
+    symsync_crcf_destroy(_fs->mfdecim); // symbol synchronizer
+    nco_crcf_destroy(_fs->nco_rx);      // nco/pll for carrier recovery
+    bsync_rrrf_destroy(_fs->fsync);     // p/n sequence correlator
 
     // destroy preamble objects
-    modem_destroy(_fs->mod_preamble);
+    modem_destroy(_fs->mod_preamble);   // preamble modem
 
     // destroy header objects
-    modem_destroy(_fs->mod_header);
-    packetizer_destroy(_fs->p_header);
+    modem_destroy(_fs->mod_header);     // header modem
+    packetizer_destroy(_fs->p_header);  // header packetizer
 
     // free payload objects
-    modem_destroy(_fs->mod_payload);
-    free(_fs->payload_samples);
-    free(_fs->payload_sym);
-    free(_fs->payload);
+    modem_destroy(_fs->mod_payload);    // payload modem
+    free(_fs->payload_samples);         // payload samples buffer
+    free(_fs->payload_sym);             // payload symbols buffer
+    free(_fs->payload);                 // payload data buffer (bytes)
 
+    // free main object memory
     free(_fs);
 }
 
-void flexframesync_getprops(flexframesync _fs, framesyncprops_s * _props)
+// get flexframesync properties
+//  _fs     :   frame synchronizer object
+//  _props  :   frame synchronizer properties structure pointer
+void flexframesync_getprops(flexframesync _fs,
+                            framesyncprops_s * _props)
 {
     memmove(_props, &_fs->props, sizeof(framesyncprops_s));
 }
 
-void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props)
+// set flexframesync properties
+//  _fs     :   frame synchronizer object
+//  _props  :   frame synchronizer properties structure pointer
+void flexframesync_setprops(flexframesync _fs,
+                            framesyncprops_s * _props)
 {
     // TODO : flexframesync_setprops() validate input
 
@@ -277,6 +287,7 @@ void flexframesync_setprops(flexframesync _fs, framesyncprops_s * _props)
     memmove(&_fs->props, _props, sizeof(framesyncprops_s));
 }
 
+// print flexframesync object internals
 void flexframesync_print(flexframesync _fs)
 {
     printf("flexframesync:\n");
@@ -300,17 +311,16 @@ void flexframesync_print(flexframesync _fs)
     printf("    num payload symbols :   %u\n", _fs->num_payload_symbols);
 }
 
+// reset frame synchronizer object
 void flexframesync_reset(flexframesync _fs)
 {
-    symsync_crcf_clear(_fs->mfdecim);
-    //agc_crcf_set_bandwidth(_fs->agc_rx, FLEXFRAMESYNC_AGC_BW_0);
-    agc_crcf_unlock(_fs->agc_rx);
-    symsync_crcf_unlock(_fs->mfdecim);
-    nco_crcf_reset(_fs->nco_rx);
+    agc_crcf_unlock(_fs->agc_rx);       // automatic gain control (unlock)
+    symsync_crcf_clear(_fs->mfdecim);   // symbol synchronizer (clear state)
+    symsync_crcf_unlock(_fs->mfdecim);  // symbol synchronizer (unlock)
+    nco_crcf_reset(_fs->nco_rx);        // nco/pll (reset phase)
 
-    // SINDR estimate
+    // SNR estimate
     _fs->evm_hat = 0.0f;
-    _fs->SINDRdB_hat = 0.0f;
 
     // enable/disable squelch
     if (_fs->props.squelch_enabled)
@@ -323,9 +333,14 @@ void flexframesync_reset(flexframesync _fs)
         agc_crcf_squelch_enable_auto(_fs->agc_rx);
     else
         agc_crcf_squelch_disable_auto(_fs->agc_rx);
+
+    // TODO open bandwidth?
 }
 
-// TODO: break flexframesync_execute method into manageable pieces
+// execute frame synchronizer
+//  _fs     :   frame synchronizer object
+//  _x      :   input sample array [size: _n x 1]
+//  _n      :   number of input samples
 void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n)
 {
     unsigned int i, j, nw;
@@ -422,74 +437,124 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
 // open bandwidth of synchronizer objects (acquisition mode)
 void flexframesync_open_bandwidth(flexframesync _fs)
 {
+    // open bandwidth of automatic gain control
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw0);
+
+    // open bandwidth of symbol synchronizer
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw0);
+
+    // open bandwidth of nco/pll
     nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw0);
 }
 
 // close bandwidth of synchronizer objects (tracking mode)
 void flexframesync_close_bandwidth(flexframesync _fs)
 {
+    // close bandwidth of automatic gain control
     agc_crcf_set_bandwidth(_fs->agc_rx, _fs->props.agc_bw1);
+
+    // close bandwidth of symbol synchronizer
     symsync_crcf_set_lf_bw(_fs->mfdecim, _fs->props.sym_bw1);
+
+    // close bandwidth of nco/pll
     nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
 }
 
 // 
+// state-specific execute methods
+//
+
+// execute synchronizer, seeking p/n sequence
+//  _fs     :   frame synchronizer object
+//  _x      :   input sample
+//  _sym    :   demodulated symbol
 void flexframesync_execute_seekpn(flexframesync _fs,
                                   float complex _x,
                                   unsigned int _sym)
 {
-    //
+    // run cross-correlator to find p/n sequence
     float rxy;
     bsync_rrrf_correlate(_fs->fsync, _x, &rxy);
+
 #ifdef DEBUG_FLEXFRAMESYNC
     windowcf_push(_fs->debug_rxy, rxy);
 #endif
+
+    // check if p/n sequence is found (correlation value
+    // exceeds threshold)
     if (fabsf(rxy) > 0.7f) {
-        //printf("|rxy| = %8.4f, angle: %8.4f\n",cabsf(rxy),cargf(rxy));
         // close bandwidth
         flexframesync_close_bandwidth(_fs);
+
+        // adjust phase of receiver NCO based on p/n correlation phase
         nco_crcf_adjust_phase(_fs->nco_rx, cargf(rxy));
+
+        // lock symbol synchronizer timing phase
         symsync_crcf_lock(_fs->mfdecim);
 
         // deactivate squelch as not to suppress signal in the
         // middle of the frame
         agc_crcf_squelch_deactivate(_fs->agc_rx);
+
+        // update synchronizer state
         _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
     }
 
 }
 
+// execute synchronizer, receiving header
+//  _fs     :   frame synchronizer object
+//  _x      :   input sample
+//  _sym    :   demodulated symbol
 void flexframesync_execute_rxheader(flexframesync _fs,
                                     float complex _x,
                                     unsigned int _sym)
 {
-    _fs->header_samples[_fs->num_symbols_collected] = _x;
+    // append symbol to buffer
+    _fs->header_sym[_fs->num_symbols_collected] = _sym;
     _fs->num_symbols_collected++;
 
     // SINDR estimation
-    get_demodulator_evm(_fs->mod_header, &_fs->evm);
-    _fs->evm_hat += _fs->evm;
+    float evm;
+    get_demodulator_evm(_fs->mod_header, &evm);
+    _fs->evm_hat += evm;
+
     if (_fs->num_symbols_collected==256) {
-        _fs->evm_hat /= 256.0f;
-        _fs->SINDRdB_hat = -10*log10f(_fs->evm_hat);
+
+        // estimate signal-to-noise ratio
+        _fs->framestats.SNR  = -10*log10f(_fs->evm_hat / 256.0f);
+        _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
 #if DEBUG_FLEXFRAMESYNC_PRINT
-        printf("SINDR   :   %12.8f dB\n", _fs->SINDRdB_hat);
+        printf("SINDR   :   %12.8f dB\n", _fs->framestats.SNR);
 #endif
+
+        // reset symbol counter
         _fs->num_symbols_collected = 0;
-        flexframesync_demodulate_header(_fs);
+
+        // decode frame header
         flexframesync_decode_header(_fs);
+
+        // check to see if header is valid
+        //  yes :   continue on to receive payload
+        //  no  :   invoke callback, flagging frame as invalid
         if (_fs->header_valid) {
+            // fully lock automatic gain control
             agc_crcf_lock(_fs->agc_rx);
+
+            // update synchronizer state
             _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
         } else {
-            //printf("***** header invalid!\n");
-            // invoke callback anyway, but escape ignore rest of payload
+            // cannot decode frame: invoke callback anyway, but
+            // ignore rest of payload
+            _fs->framestats.framesyms = NULL;
+            _fs->framestats.num_framesyms = 0;
+
             _fs->callback(_fs->header,  _fs->header_valid,
                           NULL,         0,
                           _fs->framestats,
                           _fs->userdata);
+
+            // update synchronizer state
             _fs->state = FLEXFRAMESYNC_STATE_RESET;
         }
     }
@@ -497,6 +562,10 @@ void flexframesync_execute_rxheader(flexframesync _fs,
 
 }
 
+// execute synchronizer, receiving payload
+//  _fs     :   frame synchronizer object
+//  _x      :   input sample
+//  _sym    :   demodulated symbol
 void flexframesync_execute_rxpayload(flexframesync _fs,
                                      float complex _x,
                                      unsigned int _sym)
@@ -504,12 +573,19 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
 #ifdef DEBUG_FLEXFRAMESYNC
     windowcf_push(_fs->debug_framesyms, _x);
 #endif
+
+    // append symbol to buffer
     _fs->payload_samples[_fs->num_symbols_collected] = _x;
     _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) _sym;
     _fs->num_symbols_collected++;
-    // TODO: fix hard-coded value
+
+    // check to see if full payload has been received
     if (_fs->num_symbols_collected==_fs->num_payload_symbols) {
+        // reset symbol counter
         _fs->num_symbols_collected = 0;
+
+        // assemble raw payload by packing frame data symbols into
+        // output buffer
         flexframesync_assemble_payload(_fs);
 
         // invoke callback method
@@ -518,64 +594,79 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
                       _fs->framestats,
                       _fs->userdata);
 
+        // update synchronizer state
         _fs->state = FLEXFRAMESYNC_STATE_RESET;
-//#ifdef DEBUG_FLEXFRAMESYNC
-#if 0
-        printf("flexframesync exiting prematurely\n");
-        flexframesync_destroy(_fs);
-        exit(0);
-#endif
+        //_fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
     }
 
 
 }
 
+// execute synchronizer, resetting object
+//  _fs     :   frame synchronizer object
+//  _x      :   input sample
 void flexframesync_execute_reset(flexframesync _fs,
                                  float complex _x,
                                  unsigned int _sym)
 {
 
     // open bandwidth
-    _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
-    agc_crcf_unlock(_fs->agc_rx);
-    agc_crcf_squelch_activate(_fs->agc_rx);
-    symsync_crcf_unlock(_fs->mfdecim);
     flexframesync_open_bandwidth(_fs);
-    _fs->num_symbols_collected = 0;
+
+    // unlock automatic gain control
+    agc_crcf_unlock(_fs->agc_rx);
+
+    // re-activate squelch
+    if (_fs->props.squelch_enabled)
+        agc_crcf_squelch_activate(_fs->agc_rx);
+
+    // unlock symbol synchronizer
+    symsync_crcf_unlock(_fs->mfdecim);
+
+    // reset oscillator
     nco_crcf_reset(_fs->nco_rx);
 
-    // Don't actually reset the synchronizer
-    //flexframesync_reset(_fs);
-
+    // update synchronizer state
+    _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
 }
 
+// 
+// decoding methods
+//
+
+// configure payload buffers, reallocating memory as necessary
 void flexframesync_configure_payload_buffers(flexframesync _fs)
 {
     //printf("flexframesync : payload symbols : %u\n", _fs->num_payload_symbols);
 
     div_t d;
 
-    // compute payload length (symbols)
+    // compute payload length (symbols) from number of payload bytes
+    //  # payload symbols = ceil( 8 [bits/byte] * payload_len [bytes] / modem depth [bits/symbol] )
     d = div(8*_fs->payload_len, _fs->bps_payload);
     _fs->num_payload_symbols = d.quot + (d.rem ? 1 : 0);
 
     // required payload allocation size, considering the total number of
     // bits might not divide evenly by the modulation depth
+    //  
     d = div(_fs->num_payload_symbols*_fs->bps_payload, 8);
     unsigned int payload_numalloc_req = d.quot + (d.rem ? 1 : 0);
 
+    // allocate memory for payload symbols
     if (_fs->payload_numalloc < payload_numalloc_req) {
         _fs->payload_numalloc = payload_numalloc_req;
         _fs->payload = (unsigned char*) realloc(_fs->payload, _fs->payload_numalloc);
         //printf("    flexframsync: reallocating payload (payload data) : %u\n", _fs->payload_numalloc);
     }
 
+    // allocate memory for payload data (bytes)
     if (_fs->payload_sym_numalloc < _fs->num_payload_symbols) {
         _fs->payload_sym_numalloc = _fs->num_payload_symbols;
         _fs->payload_sym = (unsigned char*) realloc(_fs->payload_sym, _fs->payload_sym_numalloc);
         //printf("reallocating payload_sym (payload symbols) : %u\n", _fs->payload_sym_numalloc);
     }
 
+    // allocate memory for payload samples
     if (_fs->payload_samples_numalloc < _fs->num_payload_symbols) {
         _fs->payload_samples_numalloc = _fs->num_payload_symbols;
         _fs->payload_samples = (float complex*) realloc(_fs->payload_samples, _fs->payload_samples_numalloc*sizeof(float complex));
@@ -584,8 +675,16 @@ void flexframesync_configure_payload_buffers(flexframesync _fs)
     }
 }
 
+// decode frame header
 void flexframesync_decode_header(flexframesync _fs)
 {
+    // pack 256 1-bit header symbols into 32 8-bit bytes
+    unsigned int num_written;
+    pack_bytes(_fs->header_sym, 256,
+               _fs->header_enc, 32,
+               &num_written);
+    assert(num_written==32);
+
     // run packet decoder
     _fs->header_valid =
     packetizer_decode(_fs->p_header, _fs->header_enc, _fs->header);
@@ -610,8 +709,11 @@ void flexframesync_decode_header(flexframesync _fs)
                     1<<mod_depth,
                     modulation_scheme_str[mod_scheme]);
 #endif
+            // set new modem properties
             _fs->ms_payload = mod_scheme;
             _fs->bps_payload = mod_depth;
+
+            // recreate modem (destroy/create)
             modem_destroy(_fs->mod_payload);
             _fs->mod_payload = modem_create(_fs->ms_payload, _fs->bps_payload);
         }
@@ -634,32 +736,7 @@ void flexframesync_decode_header(flexframesync _fs)
 #endif
 }
 
-void flexframesync_demodulate_header(flexframesync _fs)
-{
-    unsigned int i, sym;
-
-    // run demodulator
-    for (i=0; i<256; i++) {
-        modem_demodulate(_fs->mod_header, _fs->header_samples[i], &sym);
-        _fs->header_sym[i] = (unsigned char)sym;
-    }
-
-    // pack header symbols
-    unsigned char byte;
-    for (i=0; i<32; i++) {
-        byte = 0;
-        byte |= (_fs->header_sym[8*i+0] << 7);
-        byte |= (_fs->header_sym[8*i+1] << 6);
-        byte |= (_fs->header_sym[8*i+2] << 5);
-        byte |= (_fs->header_sym[8*i+3] << 4);
-        byte |= (_fs->header_sym[8*i+4] << 3);
-        byte |= (_fs->header_sym[8*i+5] << 2);
-        byte |= (_fs->header_sym[8*i+6] << 1);
-        byte |= (_fs->header_sym[8*i+7]     );
-        _fs->header_enc[i] = byte;
-    }
-}
-
+// assemble raw payload by packing frame data symbols into output buffer
 void flexframesync_assemble_payload(flexframesync _fs)
 {
     // pack (8-bit) bytes from (bps_payload-bit) symbols
@@ -671,6 +748,7 @@ void flexframesync_assemble_payload(flexframesync _fs)
 
 
 #ifdef DEBUG_FLEXFRAMESYNC
+// huge method to write debugging data to file
 void flexframesync_output_debug_file(flexframesync _fs)
 {
     unsigned int i;
@@ -678,7 +756,7 @@ void flexframesync_output_debug_file(flexframesync _fs)
     float complex * rc;
     FILE* fid = fopen(DEBUG_FLEXFRAMESYNC_FILENAME,"w");
     if (!fid) {
-        printf("error: flexframesync_output_debug_file(), could not open file for writing\n");
+        fprintf(stderr, "error: flexframesync_output_debug_file(), could not open file for writing\n");
         return;
     }
     fprintf(fid,"%% %s: auto-generated file", DEBUG_FLEXFRAMESYNC_FILENAME);
