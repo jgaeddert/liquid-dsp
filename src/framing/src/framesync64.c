@@ -230,12 +230,12 @@ void framesync64_destroy(framesync64 _fs)
 #endif
 
     // destroy synchronization objects
-    symsync_crcf_destroy(_fs->mfdecim); // symbol synchronizer
-    fec_destroy(_fs->dec);              // forward error-correction codec
-    interleaver_destroy(_fs->intlv);    // interleaver
     agc_crcf_destroy(_fs->agc_rx);      // automatic gain control
+    symsync_crcf_destroy(_fs->mfdecim); // symbol synchronizer
     nco_crcf_destroy(_fs->nco_rx);      // nco/pll for carrier recovery
     bsync_rrrf_destroy(_fs->fsync);     // p/n sequence correlator
+    fec_destroy(_fs->dec);              // forward error-correction codec
+    interleaver_destroy(_fs->intlv);    // interleaver
 
     // destroy modem objects
     modem_destroy(_fs->demod_header);
@@ -271,9 +271,9 @@ void framesync64_print(framesync64 _fs)
 void framesync64_reset(framesync64 _fs)
 {
     // reset synchronization objects
+    agc_crcf_unlock(_fs->agc_rx);       // automatic gain control (unlock)
     symsync_crcf_clear(_fs->mfdecim);   // symbol synchronizer (clear state)
     symsync_crcf_unlock(_fs->mfdecim);  // symbol synchronizer (unlock)
-    agc_crcf_unlock(_fs->agc_rx);       // automatic gain control (unlock)
     nco_crcf_reset(_fs->nco_rx);        // nco/pll (reset phase)
 
     // SNR estimate
@@ -296,8 +296,8 @@ void framesync64_reset(framesync64 _fs)
 
 // execute frame synchronizer
 //  _fs     :   frame synchronizer object
-//  _x      :   input sample array
-//  _n      :   
+//  _x      :   input sample array [size: _n x 1]
+//  _n      :   number of input samples
 void framesync64_execute(framesync64 _fs,
                          float complex *_x,
                          unsigned int _n)
@@ -508,7 +508,7 @@ void framesync64_execute_rxpayload(framesync64 _fs,
 
         // framestats: compute SNR estimate, rssi
         _fs->framestats.SNR  = -10*log10f( (_fs->evm_hat / 512.0f) );
-        _fs->framestats.rssi  = 10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
+        _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
 
         // framestats: set pointer to frame symbols
         _fs->framestats.framesyms = NULL;
@@ -541,11 +541,11 @@ void framesync64_execute_reset(framesync64 _fs,
     if (_fs->props.squelch_enabled)
         agc_crcf_squelch_activate(_fs->agc_rx);
 
+    // reset oscillator
+    nco_crcf_reset(_fs->nco_rx);
+
     // update synchronizer state
     _fs->state = FRAMESYNC64_STATE_SEEKPN;
-
-    // reset nco
-    nco_crcf_reset(_fs->nco_rx);
 }
 
 
