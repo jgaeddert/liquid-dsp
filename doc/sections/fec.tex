@@ -46,6 +46,13 @@ Here is a simple example:
 %
 \input{listings/crc32.example.c.tex}
 
+\subsection{{\tt h74}, {\tt h84} (Hamming(7,4) and Hamming(8,4) codes)}
+\label{module:fec:hamming}
+Without going into great detail, Hamming block codes are a specific type of
+code which uses parity bits to detect and correct one bit error in the block.
+With the addition of an extra parity bit, they are able to detect up to two
+errors, but are still only able to correct one.
+
 \subsection{{\tt rep3}, {\tt rep5} (simple repeat codes)}
 \label{module:fec:rep}
 The {\tt rep3} code is a simple repeat code which simply repeats the message
