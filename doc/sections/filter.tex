@@ -770,7 +770,8 @@ FIR filter desing using the Parks-McClellan algorithm.
 
 \subsubsection{Miscellaneous functions}
 \label{module:filter:misc}
-Included in \liquid's 
+Here are several miscellaneous functions used in \liquid's filter module,
+useful to filtering and filter design.
 
 \begin{description}
 \item[{\tt estimate\_req\_filter\_len()}]
@@ -787,12 +788,12 @@ Included in \liquid's
     where
     \[
         D_{\infty} (\delta_1,\delta_2) =
-            \left[0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \right] t_2
-           -\left[0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \right]
+            \Bigl(0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \Bigr) t_2
+           -\Bigl(0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \Bigr)
     \]
     and
     \[
-        f(\delta_1,\delta_2) = 11.012 + 0.51244(t_1 - t_2)
+        f(\delta_1,\delta_2) = 11.012 + 0.51244\left(t_1 - t_2\right)
     \]
     with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
 
@@ -806,6 +807,15 @@ Included in \liquid's
     checks the stability of an infinite impulse-response filter by computing
     the roots of the denominator (poles) and ensuring that they lie within the
     unit circle.
+    % TODO : use cref (cleveref) to handle multiple references
+    Notice that the poles in
+    Figures~\ref{fig:module:filter:butter},
+    \ref{fig:module:filter:cheby1},
+    \ref{fig:module:filter:cheby2},
+    \ref{fig:module:filter:ellip}, and
+    \ref{fig:module:filter:bessel}
+    all have their poles within the unit circle and are therefore stable (as
+    expected).
 
 \item[{\tt kaiser\_beta\_slsl()}]
     returns an estimate of the Kaiser $\beta$ factor for a particular
@@ -816,17 +826,25 @@ Included in \liquid's
     \begin{cases}
         0.1102 (A_s - 8.7)      &   A_s > 50 \\
         0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
-        0                       & \text{else}
+        0                       &   \text{else}
     \end{cases}
     \]
 
 \item[{\tt liquid\_filter\_autocorr()}]
-    computes the auto-correlation of a filter at a specific lag.
+    computes the auto-correlation of a filter with an array of coefficients
+    $\vec{h}$ of length $N$ at a specific lag $n$ as
+    \[
+        r_{hh}(n) = \sum_{k=n}^{N-1} {h(k)h^*(k-n)}
+    \]
+
 \item[{\tt liquid\_filter\_isi()}]
     computes a filter's inter-symbol interference (both mean-squared error and
     maximum error).
-    This is useful in comparing the performance of matched filter designs
-    (e.g. root raised-cosine).
+    This is useful in comparing the performance of root-Nyquist matched filter
+    designs (e.g. root raised-cosine).
+    %The inter-symbol interference of a filter is simply its auto-correlation
+    %at a lag equal to its...
+    %The total interference is the ...
 
 \end{description}
 
