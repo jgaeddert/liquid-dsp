@@ -509,6 +509,7 @@ void framesync64_execute_rxpayload(framesync64 _fs,
         // framestats: compute SNR estimate, rssi
         _fs->framestats.SNR  = -10*log10f( (_fs->evm_hat / 512.0f) );
         _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
+        _fs->evm_hat = 0.0f;
 
         // framestats: set pointer to frame symbols
         _fs->framestats.framesyms = NULL;
