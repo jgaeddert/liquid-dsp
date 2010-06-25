@@ -46,7 +46,7 @@ Here is a simple example:
 %
 \input{listings/crc32.example.c.tex}
 
-\subsection{{\tt h74}, {\tt h84} (Hamming(7,4) and Hamming(8,4) codes)}
+\subsection{{\tt h74}, {\tt h84}, {\tt h128} (Hamming codes)}
 \label{module:fec:hamming}
 Hamming codes are a specific type of
 code which uses parity bits to detect and correct one bit error in the block.
@@ -58,6 +58,10 @@ doesn't pass detected errors to the user.
 Additionally, the Hamming(7,4) code does not compact the 7-bit output symbols,
 but uses a full 8-bit byte, thus its actual rate is $1/2$, not $4/7$ (see
 Table~\ref{tab:fec:codecs}).
+Additionally, \liquid\ implements the Hamming(12,8) code which accepts an
+8-bit symbol and adds four parity bits, extending it to a 12-bit symbol.
+This yields a theoretical rate of $2/3$, and actually has a performance very
+similar to that of the Hamming(7,4) code, even with a higher rate.
 
 \subsection{{\tt rep3}, {\tt rep5} (simple repeat codes)}
 \label{module:fec:rep}
@@ -192,7 +196,8 @@ installed \cite{fec:web}.
 {\tt FEC\_REP3}                 & 1/3       & simple repeat code\\
 {\tt FEC\_REP5}                 & 1/5       & simple repeat code\\
 {\tt FEC\_HAMMING74}            & 1/2       & Hamming (7,4) block code\\
-{\tt FEC\_HAMMING84}            & 1/2       & Hamming (7,4) with extra parity bit\\\midrule
+{\tt FEC\_HAMMING84}            & 1/2       & Hamming (7,4) with extra parity bit\\
+{\tt FEC\_HAMMING128}           & 2/3       & Hamming (12,8) block code\\\midrule
 %
 % codecs not defined internally (see http://www.ka9q.net/code/fec/)
 {\tt FEC\_CONV\_V27}            & 1/2       & $K=7$, $d_{free}=10$\\
