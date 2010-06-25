@@ -48,10 +48,16 @@ Here is a simple example:
 
 \subsection{{\tt h74}, {\tt h84} (Hamming(7,4) and Hamming(8,4) codes)}
 \label{module:fec:hamming}
-Without going into great detail, Hamming block codes are a specific type of
+Hamming codes are a specific type of
 code which uses parity bits to detect and correct one bit error in the block.
 With the addition of an extra parity bit, they are able to detect up to two
 errors, but are still only able to correct one.
+\liquid\ implements just the Hamming(7,4) and Hamming(8,4) codes, however at
+this time they are effectively identical because the decoder interface
+doesn't pass detected errors to the user.
+Additionally, the Hamming(7,4) code does not compact the 7-bit output symbols,
+but uses a full 8-bit byte, thus its actual rate is $1/2$, not $4/7$ (see
+Table~\ref{tab:fec:codecs}).
 
 \subsection{{\tt rep3}, {\tt rep5} (simple repeat codes)}
 \label{module:fec:rep}
