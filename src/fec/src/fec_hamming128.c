@@ -32,11 +32,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
-// parity bit coverage mask (collapsed version of figure above, stripping
-// out parity bits P1, P2, P4, P8 and only including data bits 1:8)
+#define DEBUG_FEC_HAMMING128 0
+
+// parity bit coverage mask for encoder (collapsed version of figure
+// above, stripping out parity bits P1, P2, P4, P8 and only including
+// data bits 1:8)
 //
 // bit position     3   5   6   7   9   10  11  12
 //
@@ -49,52 +53,17 @@
 #define HAMMING128_M4   0x71    // 0111 0001
 #define HAMMING128_M8   0x0f    // 0000 1111
 
-#if 0
-// syndrome bit mask (same as a figure XXX but with self-parity bits
-// disabled)
-//
-//  bit position    1   2   3   4   5   6   7   8   9   10  11  12
-//  encoded bits    P1  P2  1   P4  2   3   4   P8  5   6   7   8
-//
-//  parity bit  P1  .   .   x   .   x   .   x   .   x   .   x   .   =   0010 1010 1010
-//  coveratge   P2  .   .   x   .   .   x   x   .   .   x   x   .   =   0010 0110 0110
-//              P4  .   .   .   .   x   x   x   .   .   .   .   x   =   0000 1110 0001
-//              P8  .   .   .   .   .   .   .   .   x   x   x   x   =   0000 0000 1111
-#define HAMMING128_S1   0x02aa  // .... 0010 1010 1010
-#define HAMMING128_S2   0x0266  // .... 0010 0110 0110
-#define HAMMING128_S4   0x00e1  // .... 0000 1110 0001
-#define HAMMING128_S8   0x000f  // .... 0000 0000 1111
-
-#else
-/*
-#define HAMMING128_S1   0x0555  // .... 0101 0101 0101
-#define HAMMING128_S2   0x0333  // .... 0011 0011 0011
-#define HAMMING128_S4   0x0f0f  // .... 1111 0000 1111
-#define HAMMING128_S8   0x00ff  // .... 0000 1111 1111
-*/
-
+// parity bit coverage mask for decoder; used to compute syndromes
+// for decoding a received message (see first figure, above).
 #define HAMMING128_S1   0x0aaa  // .... 1010 1010 1010
 #define HAMMING128_S2   0x0666  // .... 0110 0110 0110
 #define HAMMING128_S4   0x01e1  // .... 0001 1110 0001
 #define HAMMING128_S8   0x001f  // .... 0000 0001 1111
 
-#endif
-
-// decode Hamming(12,8) symbol by simply stripping out
-// original data bits: symbol:  [..x. xxx. xxxx]
-//                               0000 0000 1111     0x000f
-//                               0000 1110 0000     0x00e0
-//                               0010 0000 0000     0x0200
-#define fec_hamming128_decode_symbol(_s)    \
-    ( ((_s & 0x000f)     )   |              \
-      ((_s & 0x00e0) >> 1)   |              \
-      ((_s & 0x0200) >> 2)                  \
-    )
-
 // binary dot-product (count ones modulo 2)
 #define bdotprod(x,y) (count_ones_static((x)&(y)) & 0x0001)
 
-unsigned int fec_hamming128_encode(unsigned int _sym_dec)
+unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec)
 {
     // validate input
     if (_sym_dec >= (1<<8)) {
@@ -108,9 +77,12 @@ unsigned int fec_hamming128_encode(unsigned int _sym_dec)
     unsigned int p4 = bdotprod(_sym_dec, HAMMING128_M4);
     unsigned int p8 = bdotprod(_sym_dec, HAMMING128_M8);
 
+#if DEBUG_FEC_HAMMING128
     printf("parity bits (p1,p2,p4,p8) : (%1u,%1u,%1u,%1u)\n", p1, p2, p4, p8);
+#endif
 
-    // encode symbol    [..x. xxx. xxxx]
+    // encode symbol by inserting parity bits with data bits to
+    // make a 12-bit symbol
     unsigned int sym_enc = ((_sym_dec & 0x000f) << 0) |
                            ((_sym_dec & 0x0070) << 1) |
                            ((_sym_dec & 0x0080) << 2) |
@@ -122,7 +94,7 @@ unsigned int fec_hamming128_encode(unsigned int _sym_dec)
     return sym_enc;
 }
 
-unsigned int fec_hamming128_decode(unsigned int _sym_enc)
+unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc)
 {
     // validate input
     if (_sym_enc >= (1<<12)) {
@@ -136,32 +108,45 @@ unsigned int fec_hamming128_decode(unsigned int _sym_enc)
     unsigned int s4 = bdotprod(_sym_enc, HAMMING128_S4);
     unsigned int s8 = bdotprod(_sym_enc, HAMMING128_S8);
 
-    printf("syndrome bits (s1,s2,s4,s8) : (%1u,%1u,%1u,%1u)\n", s1, s2, s4, s8);
-
     // index
     unsigned int z = (s8<<3) | (s4<<2) | (s2<<1) | s1;
+
+#if DEBUG_FEC_HAMMING128
+    printf("syndrome bits (s1,s2,s4,s8) : (%1u,%1u,%1u,%1u)\n", s1, s2, s4, s8);
     printf("syndrome z : %u\n", z);
+#endif
 
     // flip bit at this position
     if (z) {
-        printf("error detected!\n");
-        _sym_enc ^= 1 << (12-z);
+        if (z > 12) {
+            // this should never happen, but handle it anyway
+            fprintf(stderr,"warning, fec_hamming128_decode_symbol(), syndrome index exceeds 12\n");
+        } else {
+            //printf("error detected!\n");
+            _sym_enc ^= 1 << (12-z);
+        }
     }
 
-    // strip data bits from encoded symbol
-    unsigned int sym_dec = fec_hamming128_decode_symbol(_sym_enc);
+    // strip data bits (x) from encoded symbol with parity bits (.)
+    //      symbol:  [..x. xxx. xxxx]
+    //                0000 0000 1111     >  0x000f
+    //                0000 1110 0000     >  0x00e0
+    //                0010 0000 0000     >  0x0200
+    unsigned int sym_dec = ((_sym_enc & 0x000f)     )   |
+                           ((_sym_enc & 0x00e0) >> 1)   |
+                           ((_sym_enc & 0x0200) >> 2);
+
 
     return sym_dec;
 }
 
-#if 0
 // create Hamming(12,8) codec object
 fec fec_hamming128_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
-    q->scheme = FEC_hamming128;
+    q->scheme = FEC_HAMMING128;
     q->rate = fec_get_rate(q->scheme);
 
     // set internal function pointers
@@ -188,15 +173,47 @@ void fec_hamming128_encode(fec _q,
                           unsigned char *_msg_dec,
                           unsigned char *_msg_enc)
 {
-    unsigned int i, j=0;
-    unsigned char s0, s1;
-    for (i=0; i<_dec_msg_len; i++) {
-        s0 = (_msg_dec[i] >> 4) & 0x0f;
-        s1 = (_msg_dec[i] >> 0) & 0x0f;
-        _msg_enc[j+0] = hamming128_enc[s0];
-        _msg_enc[j+1] = hamming128_enc[s1];
-        j+=2;
+    unsigned int i, j=0;    // input/output symbol counters
+    unsigned char s0, s1;   // input 8-bit symbols
+    unsigned int m0, m1;    // output 12-bit symbols
+
+    // determine if input length is odd
+    unsigned int r = _dec_msg_len % 2;
+
+    for (i=0; i<_dec_msg_len-r; i+=2) {
+        // strip two input bytes
+        s0 = _msg_dec[i+0];
+        s1 = _msg_dec[i+1];
+
+        // encode each byte into 12-bit symbols
+        m0 = fec_hamming128_encode_symbol(s0);
+        m1 = fec_hamming128_encode_symbol(s1);
+
+        // append both 12-bit symbols to output (three 8-bit bytes)
+        _msg_enc[j+0] = m0 & 0xff;              // lower 8 bits of m0
+        _msg_enc[j+1] = m1 & 0xff;              // lower 8 bits of m1
+        _msg_enc[j+2] = ((m0 & 0x0f00) >> 8) |  // upper 4 bits of m0
+                        ((m1 & 0x0f00) >> 4);   // upper 4 bits of m1
+
+        j += 3;
     }
+
+    // if input length is even, encode last symbol by itself
+    if (r) {
+        // strip last input symbol
+        s0 = _msg_dec[_dec_msg_len-1];
+
+        // encode into 12-bit symbol
+        m0 = fec_hamming128_encode_symbol(s0);
+
+        // append to output
+        _msg_enc[j+0] = m0 & 0xff;  // lower 8 bits of m0
+        _msg_enc[j+1] = m0 >> 8;    // upper 4 bits of m0
+
+        j += 2;
+    }
+
+    assert(j== fec_get_enc_msg_length(FEC_HAMMING128,_dec_msg_len));
 }
 
 // decode block of data using Hamming(12,8) decoder
@@ -212,38 +229,47 @@ void fec_hamming128_decode(fec _q,
                           unsigned char *_msg_enc,
                           unsigned char *_msg_dec)
 {
-    unsigned int i, num_errors=0;
-    unsigned char r0, r1, z0, z1, s0, s1;
-    for (i=0; i<_dec_msg_len; i++) {
-        r0 = _msg_enc[2*i+0];
-        r1 = _msg_enc[2*i+1];
+    unsigned int i=0,j=0;
+    unsigned int r = _dec_msg_len % 2;
+    unsigned char r0, r1, r2;
+    unsigned int m0, m1;
 
-        //printf("%u :\n", i);
+    for (i=0; i<_dec_msg_len-r; i+=2) {
+        // strip three input symbols
+        r0 = _msg_enc[j+0];
+        r1 = _msg_enc[j+1];
+        r2 = _msg_enc[j+2];
 
-        // compute syndromes
-        z0 = fec_hamming128_compute_syndrome(r0);
-        z1 = fec_hamming128_compute_syndrome(r1);
+        // combine three 8-bit symbols into two 12-bit symbols
+        m0 = r0 | ((r2 & 0x0f) << 8);
+        m1 = r1 | ((r2 & 0xf0) << 4);
 
-        //printf("  syndrome[%u]          : %d, %d\n", i, (int)z0, (int)z1);
-        //printf("  input symbols[%u]     : 0x%.2x, 0x%.2x\n", i, r0, r1);
+        // decode each symbol into an 8-bit byte
+        _msg_dec[i+0] = fec_hamming128_decode_symbol(m0);
+        _msg_dec[i+1] = fec_hamming128_decode_symbol(m1);
 
-        if (z0) r0 ^= hamming128_bflip[z0];
-        if (z1) r1 ^= hamming128_bflip[z1];
-
-        num_errors += (z0) ? 1 : 0;
-        num_errors += (z1) ? 1 : 0;
-
-        //printf("  corrected symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
-
-        s0 = fec_hamming128_decode_symbol(r0);
-        s1 = fec_hamming128_decode_symbol(r1);
-
-        //printf("  decoded symbols[%u]   : 0x%.1x%.1x\n", i, s0, s1);
-
-        _msg_dec[i] = (s0 << 4) | s1;
+        j += 3;
     }
+
+    // if input length is even, decode last symbol by itself
+    if (r) {
+        // strip last two input bytes (last byte should only contain
+        // for bits)
+        r0 = _msg_enc[j+0];
+        r1 = _msg_enc[j+1];
+
+        // pack into 12-bit symbol
+        m0 = r0 | ((r1 & 0x0f) << 8);
+
+        // decode symbol into an 8-bit byte
+        _msg_dec[i++] = fec_hamming128_decode_symbol(m0);
+
+        j += 2;
+    }
+
+    assert(j== fec_get_enc_msg_length(FEC_HAMMING128,_dec_msg_len));
+
     //return num_errors;
 }
-#endif
 
 

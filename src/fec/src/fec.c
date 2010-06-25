@@ -38,6 +38,7 @@ const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES] = {
     "[r5] repeat(5)",
     "[h74] hamming(7,4)",
     "[h84] hamming(8,4)",
+    "[h128] hamming(12,8)",
     "[v27] convolutional r1/2 K=7",
     "[v29] convolutional r1/2 K=9",
     "[v39] convolutional r1/3 K=9",
@@ -104,6 +105,8 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
         return FEC_REP5;
     } else if (strcmp(_str, "h74")==0) {
         return FEC_HAMMING74;
+    } else if (strcmp(_str, "h128")==0) {
+        return FEC_HAMMING128;
     }
     fprintf(stderr,"warning: liquid_getopt_str2fec(), unknown/unsupported fec scheme : %s\n", _str);
     return FEC_UNKNOWN;
@@ -113,19 +116,20 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
 unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
 {
     switch (_scheme) {
-    case FEC_UNKNOWN:   return 0;
-    case FEC_NONE:      return _msg_len;
-    case FEC_REP3:      return 3*_msg_len;
-    case FEC_REP5:      return 5*_msg_len;
-    case FEC_HAMMING74: return 2*_msg_len;
-    case FEC_HAMMING84: return 2*_msg_len;
+    case FEC_UNKNOWN:       return 0;
+    case FEC_NONE:          return _msg_len;
+    case FEC_REP3:          return 3*_msg_len;
+    case FEC_REP5:          return 5*_msg_len;
+    case FEC_HAMMING74:     return 2*_msg_len;
+    case FEC_HAMMING84:     return 2*_msg_len;
+    case FEC_HAMMING128:    return 3*(_msg_len>>1) + 2*(_msg_len%2);
 
     // convolutional codes
 #if HAVE_FEC_H
-    case FEC_CONV_V27:  return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
-    case FEC_CONV_V29:  return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
-    case FEC_CONV_V39:  return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
-    case FEC_CONV_V615: return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
+    case FEC_CONV_V27:      return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
+    case FEC_CONV_V29:      return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
+    case FEC_CONV_V39:      return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
+    case FEC_CONV_V615:     return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
     case FEC_CONV_V27P23:   return fec_conv_get_enc_msg_len(_msg_len,7,2);
     case FEC_CONV_V27P34:   return fec_conv_get_enc_msg_len(_msg_len,7,3);
     case FEC_CONV_V27P45:   return fec_conv_get_enc_msg_len(_msg_len,7,4);
@@ -260,19 +264,20 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
 float fec_get_rate(fec_scheme _scheme)
 {
     switch (_scheme) {
-    case FEC_UNKNOWN:   return 0;
-    case FEC_NONE:      return 1.;
-    case FEC_REP3:      return 1./3.;
-    case FEC_REP5:      return 1./5.;
-    case FEC_HAMMING74: return 1./2.;
-    case FEC_HAMMING84: return 1./2.;
+    case FEC_UNKNOWN:       return 0;
+    case FEC_NONE:          return 1.;
+    case FEC_REP3:          return 1./3.;
+    case FEC_REP5:          return 1./5.;
+    case FEC_HAMMING74:     return 1./2.;
+    case FEC_HAMMING84:     return 1./2.;
+    case FEC_HAMMING128:    return 2./3.;
 
     // convolutional codes
 #if HAVE_FEC_H
-    case FEC_CONV_V27:  return 1./2.;
-    case FEC_CONV_V29:  return 1./2.;
-    case FEC_CONV_V39:  return 1./3.;
-    case FEC_CONV_V615: return 1./6.;
+    case FEC_CONV_V27:      return 1./2.;
+    case FEC_CONV_V29:      return 1./2.;
+    case FEC_CONV_V39:      return 1./3.;
+    case FEC_CONV_V615:     return 1./6.;
     case FEC_CONV_V27P23:   return 2./3.;
     case FEC_CONV_V27P34:   return 3./4.;
     case FEC_CONV_V27P45:   return 4./5.;
@@ -329,6 +334,8 @@ fec fec_create(fec_scheme _scheme, void *_opts)
         //return fec_hamming84_create(_opts);
         printf("error: fec_create(), unsupported scheme: fec_hamming84\n");
         exit(-1);
+    case FEC_HAMMING128:
+        return fec_hamming128_create(_opts);
 
     // convolutional codes
 #if HAVE_FEC_H

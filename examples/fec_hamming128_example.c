@@ -6,8 +6,8 @@
 #include <stdlib.h>
 
 // forward declaration of internal methods
-unsigned int fec_hamming128_encode(unsigned int);
-unsigned int fec_hamming128_decode(unsigned int);
+unsigned int fec_hamming128_encode_symbol(unsigned int);
+unsigned int fec_hamming128_decode_symbol(unsigned int);
 unsigned int count_ones_static(unsigned int);
 
 void print_bitstring(unsigned int _x,
@@ -24,14 +24,14 @@ int main(int argc, char*argv[])
     unsigned int sym_org = 139;
 
     // encoded symbol
-    unsigned int sym_enc = fec_hamming128_encode(sym_org);
+    unsigned int sym_enc = fec_hamming128_encode_symbol(sym_org);
 
     // received symbol
     unsigned int n=7;  // index of bit to corrupt
     unsigned int sym_rec = sym_enc ^ (1<<(12-n));
 
     // decoded symbol
-    unsigned int sym_dec = fec_hamming128_decode(sym_rec);
+    unsigned int sym_dec = fec_hamming128_decode_symbol(sym_rec);
 
     // print results
     printf("    sym org     :       "); print_bitstring(sym_org,  8); printf("\n");
