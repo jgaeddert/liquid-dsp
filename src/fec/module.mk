@@ -37,6 +37,7 @@ local_s_files	:=			\
 	fec_conv_punctured.c		\
 	fec_hamming74.c			\
 	fec_hamming84.c			\
+	fec_hamming128.c		\
 	fec_pass.c			\
 	fec_rep3.c			\
 	fec_rep5.c			\
@@ -55,6 +56,7 @@ local_t_files	:=			\
 	fec_autotest.h			\
 	fec_conv_autotest.h		\
 	fec_hamming74_autotest.h	\
+	fec_hamming128_autotest.h	\
 	fec_rep3_autotest.h		\
 	fec_rep5_autotest.h
 

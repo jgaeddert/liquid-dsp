@@ -72,15 +72,16 @@ void fec_decode_bench(
     *_num_iterations /= _n;
 
     switch (_fs) {
-    case FEC_NONE:      *_num_iterations *= 500;    break;
-    case FEC_REP3:      *_num_iterations *= 200;    break;
-    case FEC_REP5:      *_num_iterations *= 100;    break;
-    case FEC_HAMMING74: *_num_iterations *= 10;     break;
-    case FEC_HAMMING84: *_num_iterations *= 10;     break;
-    case FEC_CONV_V27:  *_num_iterations /= 5;      break;
-    case FEC_CONV_V29:  *_num_iterations /= 10;     break;
-    case FEC_CONV_V39:  *_num_iterations /= 100;    break;
-    case FEC_CONV_V615: *_num_iterations /= 200;    break;
+    case FEC_NONE:          *_num_iterations *= 500;    break;
+    case FEC_REP3:          *_num_iterations *= 200;    break;
+    case FEC_REP5:          *_num_iterations *= 100;    break;
+    case FEC_HAMMING74:     *_num_iterations *= 10;     break;
+    case FEC_HAMMING84:     *_num_iterations *= 10;     break;
+    case FEC_HAMMING128:    *_num_iterations *= 10;     break;
+    case FEC_CONV_V27:      *_num_iterations /= 5;      break;
+    case FEC_CONV_V29:      *_num_iterations /= 10;     break;
+    case FEC_CONV_V39:      *_num_iterations /= 100;    break;
+    case FEC_CONV_V615:     *_num_iterations /= 200;    break;
     case FEC_CONV_V27P23:
     case FEC_CONV_V27P34:
     case FEC_CONV_V27P45:
@@ -144,6 +145,7 @@ void benchmark_fec_dec_none_n64         FEC_DECODE_BENCH_API(FEC_NONE,      64, 
 void benchmark_fec_dec_rep3_n64         FEC_DECODE_BENCH_API(FEC_REP3,      64,  NULL)
 void benchmark_fec_dec_rep5_n64         FEC_DECODE_BENCH_API(FEC_REP5,      64,  NULL)
 void benchmark_fec_dec_hamming74_n64    FEC_DECODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
+void benchmark_fec_dec_hamming128_n64   FEC_DECODE_BENCH_API(FEC_HAMMING128,64,  NULL)
 
 void benchmark_fec_dec_conv27_n64       FEC_DECODE_BENCH_API(FEC_CONV_V27,  64,  NULL)
 void benchmark_fec_dec_conv29_n64       FEC_DECODE_BENCH_API(FEC_CONV_V29,  64,  NULL)

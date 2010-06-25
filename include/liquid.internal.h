@@ -439,6 +439,23 @@ void fec_hamming74_decode(fec _q,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
 
+// Hamming(12,8)
+
+unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec);
+unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc);
+
+fec fec_hamming128_create(void *_opts);
+void fec_hamming128_destroy(fec _q);
+void fec_hamming128_print(fec _q);
+void fec_hamming128_encode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_dec,
+                           unsigned char * _msg_enc);
+void fec_hamming128_decode(fec _q,
+                           unsigned int _dec_msg_len,
+                           unsigned char * _msg_enc,
+                           unsigned char * _msg_dec);
+
 // Convolutional: r1/2 K=7
 //                r1/2 K=9
 //                r1/3 K=9
