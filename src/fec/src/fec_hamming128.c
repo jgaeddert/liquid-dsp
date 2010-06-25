@@ -61,7 +61,12 @@
 #define HAMMING128_S8   0x001f  // .... 0000 0001 1111
 
 // binary dot-product (count ones modulo 2)
-#define bdotprod(x,y) (count_ones_static((x)&(y)) & 0x0001)
+// same as
+//  #define bdotprod(x,y) (count_ones_static((x)&(y)) & 0x0001)
+// but much faster
+#define bdotprod(x,y) ( (c_ones_mod2[ (x & y & 0x00ff)>>0] +  \
+                         c_ones_mod2[ (x & y & 0x0f00)>>8]    \
+                        ) & 0x0001)
 
 unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec)
 {
