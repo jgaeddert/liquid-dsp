@@ -5,10 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// forward declaration of internal methods
-unsigned int fec_hamming128_encode_symbol(unsigned int);
-unsigned int fec_hamming128_decode_symbol(unsigned int);
-unsigned int count_ones_static(unsigned int);
+#include "liquid.h"
 
 void print_bitstring(unsigned int _x,
                      unsigned int _n)
@@ -40,7 +37,7 @@ int main(int argc, char*argv[])
     printf("    sym dec     :       "); print_bitstring(sym_dec,  8); printf("\n");
 
     // print number of bit errors
-    printf("    bit errors  :   %u\n", count_ones_static(sym_org ^ sym_dec));
+    printf("    bit errors  :   %u\n", count_bit_errors(sym_org, sym_dec));
 
     return 0;
 }

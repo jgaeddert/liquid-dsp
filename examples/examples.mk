@@ -4,8 +4,6 @@
 
 local_dir	:= examples
 local_src	:=			\
-	fec_hamming128_example.c	\
-					\
 	agc_example.c			\
 	agc_qpsk_example.c		\
 	agc_squelch_example.c		\

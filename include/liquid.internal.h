@@ -440,7 +440,10 @@ void fec_hamming74_decode(fec _q,
                           unsigned char * _msg_dec);
 
 // Hamming(12,8)
-unsigned char fec_hamming128_compute_syndrome(unsigned char _r);
+
+unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec);
+unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc);
+
 fec fec_hamming128_create(void *_opts);
 void fec_hamming128_destroy(fec _q);
 void fec_hamming128_print(fec _q);
