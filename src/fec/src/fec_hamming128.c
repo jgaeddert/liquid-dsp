@@ -119,8 +119,9 @@ unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc)
     // flip bit at this position
     if (z) {
         if (z > 12) {
-            // this should never happen, but handle it anyway
-            fprintf(stderr,"warning, fec_hamming128_decode_symbol(), syndrome index exceeds 12\n");
+            // if this happens there are likely too many errors
+            // to correct; just pass without trying to do anything
+            //fprintf(stderr,"warning, fec_hamming128_decode_symbol(), syndrome index exceeds 12\n");
         } else {
             //printf("error detected!\n");
             _sym_enc ^= 1 << (12-z);
