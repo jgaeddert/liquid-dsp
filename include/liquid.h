@@ -1922,6 +1922,12 @@ void framesync64_execute(framesync64 _fs,
 void framesync64_getprops(framesync64 _fs, framesyncprops_s * _props);
 void framesync64_setprops(framesync64 _fs, framesyncprops_s * _props);
 
+// advanced modes
+void framesync64_set_csma_callbacks(framesync64 _fs,
+                                    framesync_csma_callback _csma_lock,
+                                    framesync_csma_callback _csma_unlock,
+                                    void * _csma_userdata);
+
 //
 // Flexible frame : adjustable payload, mod scheme, etc., but bring
 //                  your own error correction, redundancy check

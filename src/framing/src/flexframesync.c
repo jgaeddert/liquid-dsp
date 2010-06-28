@@ -649,9 +649,14 @@ void flexframesync_execute_reset(flexframesync _fs,
 }
 
 // 
-// advanced mode
+// advanced modes
 //
 
+// enable csma and set external callback functions
+//  _fs             :   frame synchronizer object
+//  _csma_lock      :   callback to be invoked when signal is high
+//  _csma_unlock    :   callback to be invoked when signal is again low
+//  _csma_userdata  :   structure passed to callback functions
 void flexframesync_set_csma_callbacks(flexframesync _fs,
                                       framesync_csma_callback _csma_lock,
                                       framesync_csma_callback _csma_unlock,
@@ -668,12 +673,14 @@ void flexframesync_set_csma_callbacks(flexframesync _fs,
     _fs->csma_userdata = _csma_userdata;
 }
 
+// if enabled, invoke external csma lock callback
 void flexframesync_csma_lock(flexframesync _fs)
 {
     if (_fs->csma_enabled && _fs->csma_lock != NULL)
         _fs->csma_lock( _fs->csma_userdata );
 }
 
+// if enabled, invoke external csma unlock callback
 void flexframesync_csma_unlock(flexframesync _fs)
 {
     if (_fs->csma_enabled && _fs->csma_unlock != NULL)
