@@ -55,6 +55,9 @@ static int callback(unsigned char * _rx_header,
                     framesyncstats_s _stats,
                     void * _userdata);
 
+static void callback_csma_lock(void * _userdata);
+static void callback_csma_unlock(void * _userdata);
+
 // framedata object definition
 typedef struct {
     unsigned char * header;
@@ -139,6 +142,10 @@ int main(int argc, char *argv[]) {
     //fsprops.pll_bw0 = 0.020f;
     //fsprops.pll_bw1 = 0.005f;
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
+
+    // set advanced csma callback functions
+    flexframesync_set_csma_callbacks(fs, callback_csma_lock, callback_csma_unlock, NULL);
+
     if (verbose)
         flexframesync_print(fs);
 
@@ -303,5 +310,15 @@ static int callback(unsigned char * _rx_header,
 #endif
 
     return 0;
+}
+
+static void callback_csma_lock(void * _userdata)
+{
+    printf("*** SIGNAL HIGH ***\n");
+}
+
+static void callback_csma_unlock(void * _userdata)
+{
+    printf("*** SIGNAL LOW ***\n");
 }
 

@@ -1012,6 +1012,10 @@ void flexframesync_execute_rxheader( flexframesync _fs, float complex _x, unsign
 void flexframesync_execute_rxpayload(flexframesync _fs, float complex _x, unsigned int _sym);
 void flexframesync_execute_reset(    flexframesync _fs, float complex _x, unsigned int _sym);
 
+// advanced mode
+void flexframesync_csma_lock(flexframesync _fs);
+void flexframesync_csma_unlock(flexframesync _fs);
+
 // packetizer
 
 struct fecintlv_plan {
