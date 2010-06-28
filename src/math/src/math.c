@@ -142,18 +142,31 @@ unsigned int liquid_nextpow2(unsigned int _x)
 }
 
 // (n choose k) = n! / ( k! (n-k)! )
-unsigned int liquid_nchoosek(unsigned int _n, unsigned int _k)
+float liquid_nchoosek(unsigned int _n, unsigned int _k)
 {
-    // quick-and-dirty method
-    // TODO : implement floating-point method when _n is large
-    if (_k == 0 || _k == _n)
+    // 
+    if (_k > _n) {
+        fprintf(stderr,"error: liquid_nchoosek(), _k cannot exceed _n\n");
+        exit(1);
+    } else if (_k == 0 || _k == _n) {
         return 1;
+    }
 
     // take advantage of symmetry and take larger value
     if (_k < _n/2)
         _k = _n - _k;
 
-    unsigned int rnum=1, rden=1;
+    // use lngamma() function when _n is large
+    if (_n > 12) {
+        float t0 = liquid_lngammaf(_n + 1.0f);
+        float t1 = liquid_lngammaf(_n - _k + 1.0f);
+        float t2 = liquid_lngammaf(_k + 1.0f);
+
+        return roundf(expf( t0 - t1 - t2 ));
+    }
+
+    // old method
+    float rnum=1, rden=1;
     unsigned int i;
     for (i=_n; i>_k; i--)
         rnum *= i;

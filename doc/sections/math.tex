@@ -12,6 +12,8 @@ and polynomial operations
 
 \begin{description}
 \item[{\tt liquid\_lngammaf}]
+    computes the natural log of the complete gamma function by splitting into
+    discrete piecewise sections:
 \[
     \ln\left[ \Gamma(z) \right] \approx
     \begin{cases}
@@ -34,14 +36,20 @@ and polynomial operations
 where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
 
 \item[{\tt liquid\_sincf}]
-\[ \sinc(z) = \frac{\sin(\pi z)}{\pi z} \]
-For small $z$, this can be approximated by expanding the first few terms of
-the series
+    computes the $\sinc$ function,
+\[
+    \sinc(z) = \frac{\sin(\pi z)}{\pi z}
+\]
+Simply evaluating the above equation with finite precision for $z$ results in
+a discontinuity for small $z$, and is approximated by expanding the first few
+terms of the series
 \[
     \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
 \]
 
 \item[{\tt liquid\_besseli0}]
+    approximates the modified Bessel function of the first kind (order 0)
+    using piecewise polynomials,
 \[
     \ln\Bigl[\ln\left(I_0(z)\right)\Bigr] \approx
     c_0 + c_1 t + c_2 t ^2 + c_3 t^3
@@ -65,9 +73,7 @@ An iterative method comes from Gross(1995),
 \]
 
 \item[{\tt liquid\_nchoosek()}]
-\[
-    {n \choose k} = \frac{n!}{(n-k)!k!}
-\]
+    computes the binomial coefficient ${n \choose k} = \frac{n!}{(n-k)!k!}$
 
 \item[{\tt liquid\_nextpow2()}]
     computes $\lceil \log_2(x) \rceil$
