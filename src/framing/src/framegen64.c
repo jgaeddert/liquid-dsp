@@ -48,9 +48,9 @@
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
 
 struct framegen64_s {
-    modem mod;          // QPSK modulator
-    fec enc;            // encoder
-    interleaver intlv;  // interleaver
+    modem mod;              // QPSK modulator
+    packetizer p_header;    // header packetizer
+    packetizer p_payload;   // payload packetizer
 
     // buffers: preamble (BPSK)
     float complex ramp_up[FRAME64_RAMP_UP_LEN];
@@ -59,15 +59,12 @@ struct framegen64_s {
     float complex ramp_dn[FRAME64_RAMP_DN_LEN];
 
     // header (QPSK)
-    unsigned char header[32];
-    unsigned char header_enc[64];
-    unsigned char header_sym[256];
+    unsigned char header_enc[56];   // 56 = (24+4)*2
+    unsigned char header_sym[224];  // 224 = 56*4
 
     // payload (QPSK)
-    unsigned char payload[64];
-    unsigned char payload_enc[128];
-    unsigned char payload_intlv[128];
-    unsigned char payload_sym[512];
+    unsigned char payload_enc[136]; // 136 = (64+4)*2
+    unsigned char payload_sym[544]; // 544 = 136*2
 
     // pulse-shaping filter
     interp_crcf interp;
@@ -115,11 +112,9 @@ framegen64 framegen64_create(unsigned int _m,
     design_rrc_filter(2,_m,_beta,0,h);
     fg->interp = interp_crcf_create(2, h, h_len);
 
-    // create FEC encoder
-    fg->enc = fec_create(FEC_HAMMING74, NULL);
-
-    // create interleaver
-    fg->intlv = interleaver_create(128, LIQUID_INTERLEAVER_BLOCK);
+    // create header/payload packetizers
+    fg->p_header  = packetizer_create(24, FEC_NONE, FEC_HAMMING74);
+    fg->p_payload = packetizer_create(64, FEC_NONE, FEC_HAMMING74);
 
     // create modulator
     fg->mod = modem_create(MOD_QPSK, 2);
@@ -130,10 +125,12 @@ framegen64 framegen64_create(unsigned int _m,
 // destroy framegen64 object
 void framegen64_destroy(framegen64 _fg)
 {
-    interp_crcf_destroy(_fg->interp);
-    fec_destroy(_fg->enc);
-    interleaver_destroy(_fg->intlv);
-    modem_destroy(_fg->mod);
+    interp_crcf_destroy(_fg->interp);       // interpolator (matched filter)
+    packetizer_destroy(_fg->p_header);      // header packetizer (encoder)
+    packetizer_destroy(_fg->p_payload);     // payload packetizer (decoder)
+    modem_destroy(_fg->mod);                // QPSK header/payload modulator
+
+    // free main object memory
     free(_fg);
 }
 
@@ -155,52 +152,21 @@ void framegen64_execute(framegen64 _fg,
 {
     unsigned int i;
 
-    // copy input header to internal array
-    memcpy(_fg->header, _header, 24);
+    // encode header and scramble result
+    packetizer_encode(_fg->p_header, _header, _fg->header_enc);
+    scramble_data(_fg->header_enc, 56);
 
-    // copy input payload to internal array
-    memcpy(_fg->payload, _payload, 64);
-
-    // compute crc32 on payload, append to header at [24:27]
-    unsigned int payload_key = crc32_generate_key(_fg->payload, 64);
-    //printf("tx: payload_key: 0x%8x\n", payload_key);
-    _fg->header[24] = (payload_key >> 24) & 0xff;
-    _fg->header[25] = (payload_key >> 16) & 0xff;
-    _fg->header[26] = (payload_key >>  8) & 0xff;
-    _fg->header[27] = (payload_key      ) & 0xff;
-    //printf("tx: payload_key: 0x%8x\n", payload_key);
-
-    // scramble payload data
-    scramble_data(_fg->payload, 64);
-
-    // encode payload
-    fec_encode(_fg->enc, 64, _fg->payload, _fg->payload_enc);
-
-    // interleave payload
-    interleaver_encode(_fg->intlv, _fg->payload_enc, _fg->payload_intlv);
-
-    // compute crc32 on header, append to header at [28:31]
-    unsigned int header_key = crc32_generate_key(_fg->header, 28);
-    //printf("tx: header_key:  0x%8x\n", header_key);
-    _fg->header[28] = (header_key >> 24) & 0xff;
-    _fg->header[29] = (header_key >> 16) & 0xff;
-    _fg->header[30] = (header_key >>  8) & 0xff;
-    _fg->header[31] = (header_key      ) & 0xff;
-    //printf("tx: header_key:  0x%8x\n", header_key);
-
-    // scramble header data
-    scramble_data(_fg->header, 32);
-
-    // encode header
-    fec_encode(_fg->enc, 32, _fg->header, _fg->header_enc);
+    // encode payload and scramble result
+    packetizer_encode(_fg->p_payload, _payload, _fg->payload_enc);
+    scramble_data(_fg->payload_enc, 136);
 
     // generate header symbols
-    for (i=0; i<64; i++)
+    for (i=0; i<56; i++)
         framegen64_byte_to_syms(_fg->header_enc[i], &(_fg->header_sym[4*i]));
 
     // generate payload symbols
-    for (i=0; i<128; i++)
-        framegen64_byte_to_syms(_fg->payload_intlv[i], &(_fg->payload_sym[4*i]));
+    for (i=0; i<136; i++)
+        framegen64_byte_to_syms(_fg->payload_enc[i], &(_fg->payload_sym[4*i]));
 
     unsigned int n=0;
 
@@ -224,14 +190,14 @@ void framegen64_execute(framegen64 _fg,
 
     float complex x;
     // header
-    for (i=0; i<256; i++) {
+    for (i=0; i<224; i++) {
         modem_modulate(_fg->mod, _fg->header_sym[i], &x);
         interp_crcf_execute(_fg->interp, x, &_y[n]);
         n+=2;
     }
 
     // payload
-    for (i=0; i<512; i++) {
+    for (i=0; i<544; i++) {
         modem_modulate(_fg->mod, _fg->payload_sym[i], &x);
         interp_crcf_execute(_fg->interp, x, &_y[n]);
         n+=2;
