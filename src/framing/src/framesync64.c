@@ -77,6 +77,7 @@ struct framesync64_s {
     bool header_valid;                  // header valid?
     bool payload_valid;                 // payload valid?
 
+    // callback
     framesync64_callback callback;      // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistics object
@@ -94,6 +95,13 @@ struct framesync64_s {
     // SINDR estimate (signal to interference, noise, and distortion
     // ratio), average modem error vector magnitude
     float evm_hat;
+
+    // medium access control
+    unsigned int csma_enabled;
+    framesync_csma_callback csma_lock;
+    framesync_csma_callback csma_unlock;
+    void * csma_userdata;
+
 
 #if DEBUG_FRAMESYNC64
     windowf  debug_agc_rssi;
@@ -187,6 +195,12 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->debug_nco_phase =  windowf_create(DEBUG_BUFFER_LEN);
     fs->debug_nco_freq  =  windowf_create(DEBUG_BUFFER_LEN);
 #endif
+
+    // advanced mode : csma
+    fs->csma_enabled = 0;
+    fs->csma_lock = NULL;
+    fs->csma_unlock = NULL;
+    fs->csma_userdata = NULL;
 
     return fs;
 }
@@ -544,6 +558,42 @@ void framesync64_execute_reset(framesync64 _fs,
 
     // update synchronizer state
     _fs->state = FRAMESYNC64_STATE_SEEKPN;
+}
+
+
+// enable csma and set external callback functions
+//  _fs             :   frame synchronizer object
+//  _csma_lock      :   callback to be invoked when signal is high
+//  _csma_unlock    :   callback to be invoked when signal is again low
+//  _csma_userdata  :   structure passed to callback functions
+void framesync64_set_csma_callbacks(framesync64 _fs,
+                                    framesync_csma_callback _csma_lock,
+                                    framesync_csma_callback _csma_unlock,
+                                    void * _csma_userdata)
+{
+    // enable csma
+    _fs->csma_enabled = 1;
+
+    // set internal callback functions
+    _fs->csma_lock = _csma_lock;
+    _fs->csma_unlock = _csma_unlock;
+
+    // set internal user data
+    _fs->csma_userdata = _csma_userdata;
+}
+
+// if enabled, invoke external csma lock callback
+void framesync64_csma_lock(framesync64 _fs)
+{
+    if (_fs->csma_enabled && _fs->csma_lock != NULL)
+        _fs->csma_lock( _fs->csma_userdata );
+}
+
+// if enabled, invoke external csma unlock callback
+void framesync64_csma_unlock(framesync64 _fs)
+{
+    if (_fs->csma_enabled && _fs->csma_unlock != NULL)
+        _fs->csma_unlock( _fs->csma_userdata );
 }
 
 

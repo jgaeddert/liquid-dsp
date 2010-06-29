@@ -1868,6 +1868,12 @@ typedef struct {
     unsigned int num_framesyms;         // length of framesyms
 } framesyncstats_s;
 
+
+// framesync csma callback functions invoked when signal levels is high or low
+//  _userdata       :   user-defined data pointer
+typedef void (*framesync_csma_callback)(void * _userdata);
+
+
 //
 // Basic frame generator (64 bytes data payload)
 //
@@ -1915,6 +1921,12 @@ void framesync64_execute(framesync64 _fs,
 
 void framesync64_getprops(framesync64 _fs, framesyncprops_s * _props);
 void framesync64_setprops(framesync64 _fs, framesyncprops_s * _props);
+
+// advanced modes
+void framesync64_set_csma_callbacks(framesync64 _fs,
+                                    framesync_csma_callback _csma_lock,
+                                    framesync_csma_callback _csma_unlock,
+                                    void * _csma_userdata);
 
 //
 // Flexible frame : adjustable payload, mod scheme, etc., but bring
@@ -1981,6 +1993,11 @@ void flexframesync_execute(flexframesync _fs,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
+// advanced modes
+void flexframesync_set_csma_callbacks(flexframesync _fs,
+                                      framesync_csma_callback _csma_lock,
+                                      framesync_csma_callback _csma_unlock,
+                                      void * _csma_userdata);
 //
 // P/N synchronizer
 //
