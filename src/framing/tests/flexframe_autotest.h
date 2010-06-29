@@ -48,8 +48,8 @@ void autotest_flexframe_decode_header()
     flexframesync fs = flexframesync_create(NULL,NULL,NULL);
 
     // initialize header, payload
-    unsigned char header[8];
-    for (i=0; i<8; i++)
+    unsigned char header[14];
+    for (i=0; i<14; i++)
         header[i] = i;
 
     // internal test : encode/decode header

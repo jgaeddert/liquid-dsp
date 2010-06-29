@@ -80,7 +80,7 @@ struct flexframesync_s {
     packetizer p_header;                // header packetizer decoder
     unsigned char header_sym[256];      // header symbols (modem output)
     unsigned char header_enc[32];       // header data (encoded)
-    unsigned char header[12];           // header data (decoded)
+    unsigned char header[17];           // header data (decoded)
 
     // SINDR estimate (signal to interference, noise,
     // and distortion ratio)
@@ -108,6 +108,12 @@ struct flexframesync_s {
     flexframesync_callback callback;    // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistic object
+
+    // medium access control
+    unsigned int csma_enabled;
+    framesync_csma_callback csma_lock;
+    framesync_csma_callback csma_unlock;
+    void * csma_userdata;
 
 #ifdef DEBUG_FLEXFRAMESYNC
     FILE*fid;
@@ -143,7 +149,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // header objects
     fs->mod_header = modem_create(MOD_BPSK, 1);
-    fs->p_header = packetizer_create(12, FEC_HAMMING74, FEC_NONE);
+    fs->p_header = packetizer_create(17, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
     // agc, rssi, squelch
@@ -215,6 +221,12 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->framestats.rssi = 0;
     fs->framestats.framesyms = NULL;
     fs->framestats.num_framesyms = 0;
+
+    // advanced mode : csma
+    fs->csma_enabled = 0;
+    fs->csma_lock = NULL;
+    fs->csma_unlock = NULL;
+    fs->csma_userdata = NULL;
 
 #ifdef DEBUG_FLEXFRAMESYNC
     fs->debug_agc_rssi  =  windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
@@ -365,16 +377,21 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         //    threshold at any time within the past <squelch_timeout> samples
         // 2. mode is FLEXFRAMESYNC_STATE_SEEKPN (seek p/n sequence)
         _fs->squelch_status = agc_crcf_squelch_get_status(_fs->agc_rx);
-#if DEBUG_FLEXFRAMESYNC_PRINT
-        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT)
-            printf("squelch active\n");
-#endif
+
         // if squelch is enabled, skip remaining of synchronizer
         // NOTE : if squelch is deactivated, the default status
         //        value is LIQUID_AGC_SQUELCH_SIGNALHI
-        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT) {
+        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_RISE) {
+            // invoke csma lock function, if enabled
+            flexframesync_csma_lock(_fs);
+
+        } else if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT) {
+            // invoke csma unlock function, if enabled
+            flexframesync_csma_unlock(_fs);
+
             // reset on timeout (very important!)
             flexframesync_reset(_fs);
+
         } else if (_fs->squelch_status == LIQUID_AGC_SQUELCH_ENABLED) {
             continue;
         }
@@ -632,6 +649,46 @@ void flexframesync_execute_reset(flexframesync _fs,
 }
 
 // 
+// advanced modes
+//
+
+// enable csma and set external callback functions
+//  _fs             :   frame synchronizer object
+//  _csma_lock      :   callback to be invoked when signal is high
+//  _csma_unlock    :   callback to be invoked when signal is again low
+//  _csma_userdata  :   structure passed to callback functions
+void flexframesync_set_csma_callbacks(flexframesync _fs,
+                                      framesync_csma_callback _csma_lock,
+                                      framesync_csma_callback _csma_unlock,
+                                      void * _csma_userdata)
+{
+    // enable csma
+    _fs->csma_enabled = 1;
+
+    // set internal callback functions
+    _fs->csma_lock = _csma_lock;
+    _fs->csma_unlock = _csma_unlock;
+
+    // set internal user data
+    _fs->csma_userdata = _csma_userdata;
+}
+
+// if enabled, invoke external csma lock callback
+void flexframesync_csma_lock(flexframesync _fs)
+{
+    if (_fs->csma_enabled && _fs->csma_lock != NULL)
+        _fs->csma_lock( _fs->csma_userdata );
+}
+
+// if enabled, invoke external csma unlock callback
+void flexframesync_csma_unlock(flexframesync _fs)
+{
+    if (_fs->csma_enabled && _fs->csma_unlock != NULL)
+        _fs->csma_unlock( _fs->csma_userdata );
+}
+
+
+// 
 // decoding methods
 //
 
@@ -694,11 +751,11 @@ void flexframesync_decode_header(flexframesync _fs)
     unscramble_data(_fs->header, 12);
 
     // strip off modulation scheme/depth
-    unsigned int mod_scheme = (_fs->header[11] >> 4) & 0x0f;
-    unsigned int mod_depth  = (_fs->header[11]     ) & 0x0f;
+    unsigned int mod_scheme = (_fs->header[16] >> 4) & 0x0f;
+    unsigned int mod_depth  = (_fs->header[16]     ) & 0x0f;
 
     // strip off payload length
-    unsigned int payload_len = (_fs->header[9] << 8) | (_fs->header[10]);
+    unsigned int payload_len = (_fs->header[14] << 8) | (_fs->header[15]);
     _fs->payload_len = payload_len;
 
     // configure payload receiver

@@ -4,7 +4,7 @@
 // This example demonstrates the interfaces to the flexframegen and
 // flexframesync objects used to completely encapsulate raw data bytes
 // into frame samples (nearly) ready for over-the-air transmission. An
-// 9-byte header and variable length payload are encoded into baseband
+// 14-byte header and variable length payload are encoded into baseband
 // symbols using the flexframegen object.  The resulting symbols are
 // interpolated using a root-Nyquist filter before adding channel
 // impairments (noise, carrier frequency/phase offset, timing phase
@@ -54,6 +54,9 @@ static int callback(unsigned char * _rx_header,
                     unsigned int _rx_payload_len,
                     framesyncstats_s _stats,
                     void * _userdata);
+
+static void callback_csma_lock(void * _userdata);
+static void callback_csma_unlock(void * _userdata);
 
 // framedata object definition
 typedef struct {
@@ -118,7 +121,7 @@ int main(int argc, char *argv[]) {
         flexframegen_print(fg);
 
     // frame data
-    unsigned char header[9];
+    unsigned char header[14];
     unsigned char payload[fgprops.payload_len];
     framedata fd = {header, payload, 0};
 
@@ -139,6 +142,10 @@ int main(int argc, char *argv[]) {
     //fsprops.pll_bw0 = 0.020f;
     //fsprops.pll_bw1 = 0.005f;
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
+
+    // set advanced csma callback functions
+    flexframesync_set_csma_callbacks(fs, callback_csma_lock, callback_csma_unlock, NULL);
+
     if (verbose)
         flexframesync_print(fs);
 
@@ -156,7 +163,7 @@ int main(int argc, char *argv[]) {
 
     unsigned int i;
     // initialize header, payload
-    for (i=0; i<9; i++)
+    for (i=0; i<14; i++)
         header[i] = i;
     for (i=0; i<fgprops.payload_len; i++)
         payload[i] = rand() & 0xff;
@@ -273,7 +280,7 @@ static int callback(unsigned char * _rx_header,
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
-    for (i=0; i<9; i++)
+    for (i=0; i<14; i++)
         num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
     if (verbose)
         printf("    num header errors   : %u\n", num_header_errors);
@@ -303,5 +310,15 @@ static int callback(unsigned char * _rx_header,
 #endif
 
     return 0;
+}
+
+static void callback_csma_lock(void * _userdata)
+{
+    printf("*** SIGNAL HIGH ***\n");
+}
+
+static void callback_csma_unlock(void * _userdata)
+{
+    printf("*** SIGNAL LOW ***\n");
 }
 

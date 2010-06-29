@@ -20,7 +20,7 @@
  */
 
 //
-// 2/3-rate (8,12) Hamming code
+// 2/3-rate (12,8) Hamming code
 //
 //  bit position    1   2   3   4   5   6   7   8   9   10  11  12
 //  encoded bits    P1  P2  1   P4  2   3   4   P8  5   6   7   8
