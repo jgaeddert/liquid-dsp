@@ -53,6 +53,36 @@ void autotest_factorial()
 }
 
 // 
+// AUTOTEST: nchoosek
+//
+void autotest_nchoosek()
+{
+    float tol = 1e-3f;
+
+    // nchoosek(6, k)
+    CONTEND_DELTA(liquid_nchoosek(6,    0),      1,     tol);
+    CONTEND_DELTA(liquid_nchoosek(6,    1),      6,     tol);
+    CONTEND_DELTA(liquid_nchoosek(6,    2),     15,     tol);
+    CONTEND_DELTA(liquid_nchoosek(6,    3),     20,     tol);
+    CONTEND_DELTA(liquid_nchoosek(6,    4),     15,     tol);
+    CONTEND_DELTA(liquid_nchoosek(6,    5),      6,     tol);
+    CONTEND_DELTA(liquid_nchoosek(6,    6),      1,     tol);
+
+    // nchoosek(7, k)
+    CONTEND_DELTA(liquid_nchoosek(7,    0),      1,     tol);
+    CONTEND_DELTA(liquid_nchoosek(7,    1),      7,     tol);
+    CONTEND_DELTA(liquid_nchoosek(7,    2),     21,     tol);
+    CONTEND_DELTA(liquid_nchoosek(7,    3),     35,     tol);
+    CONTEND_DELTA(liquid_nchoosek(7,    4),     35,     tol);
+    CONTEND_DELTA(liquid_nchoosek(7,    5),     21,     tol);
+    CONTEND_DELTA(liquid_nchoosek(7,    6),      7,     tol);
+    CONTEND_DELTA(liquid_nchoosek(7,    7),      1,     tol);
+
+    // test very large numbers
+    CONTEND_DELTA(liquid_nchoosek(124,  5),     225150024,  5000);
+}
+
+// 
 // AUTOTEST: Bessel function of the first kind
 //
 void autotest_besselj_0()

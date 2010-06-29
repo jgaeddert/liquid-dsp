@@ -2233,7 +2233,7 @@ float sincf(float _x);
 unsigned int liquid_nextpow2(unsigned int _x);
 
 // (n choose k) = n! / ( k! (n-k)! )
-unsigned int liquid_nchoosek(unsigned int _n, unsigned int _k);
+float liquid_nchoosek(unsigned int _n, unsigned int _k);
 
 // 
 // Windowing functions

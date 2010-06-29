@@ -78,11 +78,14 @@ The {\tt add}, {\tt sub}, {\tt pmul}, and {\tt pdiv} methods perform
 point-wise addition, subtraction, multiplication, and division of the elements
 of two $n \times m$ matrices, $\vec{X}$ and $\vec{Y}$.
 That is, $\vec{Z}_{i,k} = \vec{X}_{i,k} + \vec{Y}_{i,k}$ for all $i$, $k$.
-
+The same holds true for subtraction, multiplication, and division.
 It is very important to understand the difference between the methods
 {\tt matrix\_pmul()} and {\tt matrix\_mul()}, as well as
 {\tt matrix\_pdiv()} and {\tt matrix\_div()}.
-In each case, the latter performs a vastly different operation.
+In each case the latter performs a vastly different operation from {\tt
+matrix\_mul()} and {\tt matrix\_div()}
+(see Sections~\ref{module:matrix:mul} and \ref{module:matrix:div},
+respectively).
 %
 \begin{verbatim}
     X =                         Y =
@@ -195,6 +198,35 @@ $\vec{x}_{1,2}$ gives:
      -5.03205967  4.16144180  0.00000000  0.53803295
 \end{verbatim}
 
+% matrix_mul()
+\subsubsection{{\tt matrix\_mul} (multiplication)}
+\label{module:matrix:mul}
+Multiplication of two input matrices $\vec{A}$ and $\vec{B}$ is accomplished
+with the {\tt matrix\_mul()} method, and is not to be confused with {\tt
+matrix\_pmul()} in Section~\ref{module:matrix:mathop}.
+If $\vec{A}$ is $m \times n$ and $\vec{B}$ is $n \times p$, then their product
+is computed as
+\[
+    \bigl( \vec{A} \vec{B} \bigr)_{i,j}
+        = \sum_{r=0}^{n-1} { \vec{A}_{i,r} \vec{B}_{r,j} }
+\]
+Note that the number of columns of $\vec{A}$ must be equal to the number of
+rows of $\vec{B}$, and that the resulting matrix is of size $m \times p$
+(the number of rows in $\vec{A}$ and columns in $\vec{B}$).
+
+% TODO : come up with better example
+%\begin{verbatim}
+%    A =                 B =
+%        1   2   3           1   2   3
+%        4   5   6           4   5   6
+%                            7   8   9
+%    matrix_mul(A,2,3, B,3,3, Z,2,3);
+%    
+%    Z =
+%        30  36  42
+%        66  81  96
+%\end{verbatim}
+
 % 
 % complex math operations 
 %
@@ -247,6 +279,11 @@ stability in floating-point arithmetic.
       0.13544561 -0.01930523  0.11944833 -0.14921521
 \end{verbatim}
 
+\subsubsection{{\tt matrix\_inv} (solve linear system of equations)}
+\label{module:matrix:div}
+The {\tt matrix\_div()} method solves a set of linear equations...
+% TODO flesh out description
+
 \subsubsection{{\tt matrix\_det} (determinant)}
 \label{module:matrix:det}
 The determinant of an $n \times n$ matrix $\vec{A}$...
@@ -264,7 +301,7 @@ then computing the product of the diagonal elements of $\vec{L}$.
     matrixf_det(X,4,4) = 585.40289307
 \end{verbatim}
 
-\subsubsection{{\tt matrix\_ludecom\_crout} (LU Decomposition, Crout's Method)}
+\subsubsection{{\tt matrix\_ludecomp\_crout} (LU Decomposition, Crout's Method)}
 \label{module:matrix:ludecomp_crout}
 Crout's method decomposes a non-singular $n\times n$ matrix $\vec{A}$ into a
 product of a lower triangular $n \times n$ matrix $\vec{L}$ and an upper
@@ -300,7 +337,7 @@ diagonal are 1).
       0.00000000  0.00000000  0.00000000  1.00000000
 \end{verbatim}
 
-\subsubsection{{\tt matrix\_ludecom\_doolittle} (LU Decomposition, Doolittle's Method)}
+\subsubsection{{\tt matrix\_ludecomp\_doolittle} (LU Decomposition, Doolittle's Method)}
 \label{module:matrix:ludecomp_doolittle}
 Doolittle's method is similar to Crout's except it is the lower triangular
 matrix that is left with ones on the diagonal.
