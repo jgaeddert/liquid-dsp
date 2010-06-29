@@ -10,7 +10,7 @@
 // object attempts to decode the frame.  The resulting data are compared
 // to the original to validate correctness.
 //
-// SEE ALSO: flexframesync_example.c
+// SEE ALSO: framesync64_example.c
 //
 
 #include <stdio.h>
@@ -29,6 +29,9 @@ static int callback(unsigned char * _header,
                     int _payload_valid,
                     framesyncstats_s _stats,
                     void * _userdata);
+
+static void callback_csma_lock(void * _userdata);
+static void callback_csma_unlock(void * _userdata);
 
 // global header, payload arrays
 unsigned char header[24];
@@ -51,6 +54,9 @@ int main() {
     // create frame synchronizer using default properties
     framesync64 fs = framesync64_create(NULL,callback,NULL);
     framesync64_print(fs);
+
+    // set advanced csma callback functions
+    framesync64_set_csma_callbacks(fs, callback_csma_lock, callback_csma_unlock, NULL);
 
     // channel
     float phi=0.3f;
@@ -148,5 +154,15 @@ static int callback(unsigned char * _rx_header,
     printf("    num payload errors  : %u\n", num_payload_errors);
 
     return 0;
+}
+
+static void callback_csma_lock(void * _userdata)
+{
+    printf("*** SIGNAL HIGH ***\n");
+}
+
+static void callback_csma_unlock(void * _userdata)
+{
+    printf("*** SIGNAL LOW ***\n");
 }
 

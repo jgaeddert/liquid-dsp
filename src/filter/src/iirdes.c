@@ -493,8 +493,6 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         exit(1);
     }
 
-    unsigned int i;
-
     // number of analaog poles/zeros
     unsigned int npa = _n;
     unsigned int nza;
@@ -556,6 +554,8 @@ void iirdes(liquid_iirdes_filtertype _ftype,
     }
 
 #if LIQUID_IIRDES_DEBUG_PRINT
+    unsigned int i;
+
     printf("poles (analog):\n");
     for (i=0; i<npa; i++)
         printf("  pa[%3u] = %12.8f + j*%12.8f\n", i, crealf(pa[i]), cimagf(pa[i]));

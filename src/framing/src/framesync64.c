@@ -48,9 +48,9 @@ void framesync64_debug_print(framesync64 _fs);
 // framesync64 object structure
 struct framesync64_s {
     modem demod_payload;    // payload demodulator (bpsk)
-    modem demod_header;     // preamble/header demodulator (qpsk)
-    interleaver intlv;
-    fec dec;
+    modem demod_header;     // preamble/header/payload demodulator (qpsk)
+    packetizer p_header;    // header packetizer
+    packetizer p_payload;   // payload packetizer
 
     // synchronizer objects
     agc_crcf agc_rx;        // automatic gain control
@@ -77,24 +77,31 @@ struct framesync64_s {
     bool header_valid;                  // header valid?
     bool payload_valid;                 // payload valid?
 
+    // callback
     framesync64_callback callback;      // user-defined callback function
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistics object
 
     // header
-    unsigned char header_sym[256];      // header symbols (modem output)
-    unsigned char header_enc[64];       // header data (encoded)
-    unsigned char header[32];           // header data (decoded)
+    unsigned char header_sym[224];      // header symbols (modem output)
+    unsigned char header_enc[56];       // header data (encoded)
+    unsigned char header[24];           // header data (decoded)
 
     // payload
-    unsigned char payload_sym[512];     // payload symbols (modem output)
-    unsigned char payload_enc[128];     // payload data (encoded)
-    unsigned char payload_intlv[128];
+    unsigned char payload_sym[544];     // payload symbols (modem output)
+    unsigned char payload_enc[136];     // payload data (encoded)
     unsigned char payload[64];          // payload data (decoded)
 
     // SINDR estimate (signal to interference, noise, and distortion
     // ratio), average modem error vector magnitude
     float evm_hat;
+
+    // medium access control
+    unsigned int csma_enabled;
+    framesync_csma_callback csma_lock;
+    framesync_csma_callback csma_unlock;
+    void * csma_userdata;
+
 
 #if DEBUG_FRAMESYNC64
     windowf  debug_agc_rssi;
@@ -162,11 +169,9 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     design_rrc_filter(2*npfb,m,beta,0,H);
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
-    // create (de)interleaver
-    fs->intlv = interleaver_create(128, LIQUID_INTERLEAVER_BLOCK);
-
-    // create decoder
-    fs->dec = fec_create(FEC_HAMMING74, NULL);
+    // create header/payload packetizers
+    fs->p_header  = packetizer_create(24, FEC_NONE, FEC_HAMMING74);
+    fs->p_payload = packetizer_create(64, FEC_NONE, FEC_HAMMING74);
 
     // create demod
     fs->demod_payload = modem_create(MOD_QPSK, 2);
@@ -190,6 +195,12 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->debug_nco_phase =  windowf_create(DEBUG_BUFFER_LEN);
     fs->debug_nco_freq  =  windowf_create(DEBUG_BUFFER_LEN);
 #endif
+
+    // advanced mode : csma
+    fs->csma_enabled = 0;
+    fs->csma_lock = NULL;
+    fs->csma_unlock = NULL;
+    fs->csma_userdata = NULL;
 
     return fs;
 }
@@ -234,8 +245,8 @@ void framesync64_destroy(framesync64 _fs)
     symsync_crcf_destroy(_fs->mfdecim); // symbol synchronizer
     nco_crcf_destroy(_fs->nco_rx);      // nco/pll for carrier recovery
     bsync_rrrf_destroy(_fs->fsync);     // p/n sequence correlator
-    fec_destroy(_fs->dec);              // forward error-correction codec
-    interleaver_destroy(_fs->intlv);    // interleaver
+    packetizer_destroy(_fs->p_header);  // header packetizer
+    packetizer_destroy(_fs->p_payload); // payload packetizer
 
     // destroy modem objects
     modem_destroy(_fs->demod_header);
@@ -464,7 +475,7 @@ void framesync64_execute_rxheader(framesync64 _fs,
     _fs->num_symbols_collected++;
 
     // check to see if full header has been received
-    if (_fs->num_symbols_collected==256) {
+    if (_fs->num_symbols_collected==224) {
         // reset symbol counter
         _fs->num_symbols_collected = 0;
 
@@ -499,7 +510,7 @@ void framesync64_execute_rxpayload(framesync64 _fs,
     _fs->evm_hat += evm;
 
     // check to see if full payload has been received
-    if (_fs->num_symbols_collected==512) {
+    if (_fs->num_symbols_collected==544) {
         // reset symbol counter
         _fs->num_symbols_collected = 0;
 
@@ -550,6 +561,42 @@ void framesync64_execute_reset(framesync64 _fs,
 }
 
 
+// enable csma and set external callback functions
+//  _fs             :   frame synchronizer object
+//  _csma_lock      :   callback to be invoked when signal is high
+//  _csma_unlock    :   callback to be invoked when signal is again low
+//  _csma_userdata  :   structure passed to callback functions
+void framesync64_set_csma_callbacks(framesync64 _fs,
+                                    framesync_csma_callback _csma_lock,
+                                    framesync_csma_callback _csma_unlock,
+                                    void * _csma_userdata)
+{
+    // enable csma
+    _fs->csma_enabled = 1;
+
+    // set internal callback functions
+    _fs->csma_lock = _csma_lock;
+    _fs->csma_unlock = _csma_unlock;
+
+    // set internal user data
+    _fs->csma_userdata = _csma_userdata;
+}
+
+// if enabled, invoke external csma lock callback
+void framesync64_csma_lock(framesync64 _fs)
+{
+    if (_fs->csma_enabled && _fs->csma_lock != NULL)
+        _fs->csma_lock( _fs->csma_userdata );
+}
+
+// if enabled, invoke external csma unlock callback
+void framesync64_csma_unlock(framesync64 _fs)
+{
+    if (_fs->csma_enabled && _fs->csma_unlock != NULL)
+        _fs->csma_unlock( _fs->csma_userdata );
+}
+
+
 // 
 // decoding methods
 //
@@ -558,7 +605,7 @@ void framesync64_execute_reset(framesync64 _fs,
 void framesync64_decode_header(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<64; i++)
+    for (i=0; i<56; i++)
         framesync64_syms_to_byte(_fs->header_sym+(4*i), _fs->header_enc+i);
 
 #if DEBUG_FRAMESYNC64_PRINT
@@ -570,11 +617,12 @@ void framesync64_decode_header(framesync64 _fs)
     printf("\n");
 #endif
 
-    // decode header
-    fec_decode(_fs->dec, 32, _fs->header_enc, _fs->header);
-
     // unscramble header data
-    unscramble_data(_fs->header, 32);
+    unscramble_data(_fs->header_enc, 56);
+
+    // decode header and validate crc
+    _fs->header_valid = packetizer_decode(_fs->p_header, _fs->header_enc, _fs->header);
+
 
 #if DEBUG_FRAMESYNC64_PRINT
     printf("header (rx):\n");
@@ -584,46 +632,19 @@ void framesync64_decode_header(framesync64 _fs)
     }
     printf("\n");
 #endif
-
-    // strip off crc32
-    unsigned int header_key=0;
-    header_key |= ( _fs->header[28] << 24 );
-    header_key |= ( _fs->header[29] << 16 );
-    header_key |= ( _fs->header[30] <<  8 );
-    header_key |= ( _fs->header[31]       );
-    _fs->header_key = header_key;
-    //printf("rx: header_key:  0x%8x\n", header_key);
-
-    // strip off crc32
-    unsigned int payload_key=0;
-    payload_key |= ( _fs->header[24] << 24 );
-    payload_key |= ( _fs->header[25] << 16 );
-    payload_key |= ( _fs->header[26] <<  8 );
-    payload_key |= ( _fs->header[27]       );
-    _fs->payload_key = payload_key;
-    //printf("rx: payload_key: 0x%8x\n", payload_key);
-
-    // validate crc
-    _fs->header_valid = crc32_validate_message(_fs->header,28,_fs->header_key);
 }
 
 void framesync64_decode_payload(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<128; i++)
-        framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_intlv[i]));
-
-    // deinterleave payload
-    interleaver_decode(_fs->intlv, _fs->payload_intlv, _fs->payload_enc);
-    
-    // decode payload
-    fec_decode(_fs->dec, 64, _fs->payload_enc, _fs->payload);
+    for (i=0; i<136; i++)
+        framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_enc[i]));
 
     // unscramble payload data
-    unscramble_data(_fs->payload, 64);
+    unscramble_data(_fs->payload_enc, 136);
 
-    // validate crc
-    _fs->payload_valid = crc32_validate_message(_fs->payload,64,_fs->payload_key);
+    // decode payload and validate crc
+    _fs->payload_valid = packetizer_decode(_fs->p_payload, _fs->payload_enc, _fs->payload);
 
 #if DEBUG_FRAMESYNC64_PRINT
     printf("payload (rx):\n");

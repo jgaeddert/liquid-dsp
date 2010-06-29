@@ -989,6 +989,10 @@ void framesync64_execute_rxheader(  framesync64 _fs, float complex _x, unsigned 
 void framesync64_execute_rxpayload( framesync64 _fs, float complex _x, unsigned int _sym);
 void framesync64_execute_reset(     framesync64 _fs, float complex _x, unsigned int _sym);
 
+// advanced mode
+void framesync64_csma_lock(framesync64 _fs);
+void framesync64_csma_unlock(framesync64 _fs);
+
 
 // flexframegen
 void flexframegen_compute_payload_len(flexframegen _fg);
@@ -1011,6 +1015,10 @@ void flexframesync_execute_seekpn(   flexframesync _fs, float complex _x, unsign
 void flexframesync_execute_rxheader( flexframesync _fs, float complex _x, unsigned int _sym);
 void flexframesync_execute_rxpayload(flexframesync _fs, float complex _x, unsigned int _sym);
 void flexframesync_execute_reset(    flexframesync _fs, float complex _x, unsigned int _sym);
+
+// advanced mode
+void flexframesync_csma_lock(flexframesync _fs);
+void flexframesync_csma_unlock(flexframesync _fs);
 
 // packetizer
 

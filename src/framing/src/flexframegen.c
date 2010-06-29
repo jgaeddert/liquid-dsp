@@ -57,7 +57,7 @@ struct flexframegen_s {
     // TODO : use packetizer object for this
     modem mod_header;                   // header QPSK modulator
     packetizer p_header;                // header packetizer
-    unsigned char header[12];
+    unsigned char header[17];
     unsigned char header_enc[32];
     unsigned char header_sym[256];
     float complex header_samples[256];
@@ -94,7 +94,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_BPSK, 1);
-    fg->p_header   = packetizer_create(12, FEC_HAMMING74, FEC_NONE);
+    fg->p_header   = packetizer_create(17, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
     // initial memory allocation for payload
@@ -317,12 +317,12 @@ void flexframegen_encode_header(flexframegen _fg)
     // first 9 bytes of header are user-defined
 
     // add payload length
-    _fg->header[ 9] = (_fg->props.payload_len >> 8) & 0xff;
-    _fg->header[10] = (_fg->props.payload_len     ) & 0xff;
+    _fg->header[14] = (_fg->props.payload_len >> 8) & 0xff;
+    _fg->header[15] = (_fg->props.payload_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    _fg->header[11]  = (_fg->props.mod_scheme << 4) & 0xf0;
-    _fg->header[11] |= (_fg->props.mod_bps) & 0x0f;
+    _fg->header[16]  = (_fg->props.mod_scheme << 4) & 0xf0;
+    _fg->header[16] |= (_fg->props.mod_bps) & 0x0f;
 
     // scramble header
     scramble_data(_fg->header, 12);

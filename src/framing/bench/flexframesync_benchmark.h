@@ -66,10 +66,10 @@ void benchmark_flexframesync(
     flexframegen_print(fg);
 
     // frame data
-    unsigned char header[8];
+    unsigned char header[14];
     unsigned char payload[fgprops.payload_len];
     // initialize header, payload
-    for (i=0; i<8; i++)
+    for (i=0; i<14; i++)
         header[i] = i;
     for (i=0; i<fgprops.payload_len; i++)
         payload[i] = rand() & 0xff;
