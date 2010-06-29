@@ -207,7 +207,7 @@ flexframesync_example.c
     This example demonstrates the interfaces to the flexframegen and
     flexframesync objects used to completely encapsulate raw data bytes
     into frame samples (nearly) ready for over-the-air transmission. An
-    8-byte header and variable length payload are encoded into baseband
+    14-byte header and variable length payload are encoded into baseband
     symbols using the flexframegen object.  The resulting symbols are
     interpolated using a root-Nyquist filter before adding channel
     impairments (noise, carrier frequency/phase offset, timing phase

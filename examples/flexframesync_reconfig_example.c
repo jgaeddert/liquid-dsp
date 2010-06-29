@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     flexframegen fg = flexframegen_create(NULL);
 
     // frame data
-    unsigned char header[9];
+    unsigned char header[14];
     unsigned char * payload = NULL;
     framedata fd = {NULL, NULL, 0, 0};
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     unsigned int i;
     // initialize header, payload
-    for (i=0; i<9; i++)
+    for (i=0; i<14; i++)
         header[i] = i;
 
     // frame buffers, properties
@@ -253,7 +253,7 @@ static int callback(unsigned char * _rx_header,
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
-    for (i=0; i<9; i++)
+    for (i=0; i<14; i++)
         num_header_errors += (_rx_header[i] == fd->header[i]) ? 0 : 1;
     if (verbose)
         printf("    num header errors   : %u\n", num_header_errors);

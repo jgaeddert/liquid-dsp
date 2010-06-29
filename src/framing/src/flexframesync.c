@@ -80,7 +80,7 @@ struct flexframesync_s {
     packetizer p_header;                // header packetizer decoder
     unsigned char header_sym[256];      // header symbols (modem output)
     unsigned char header_enc[32];       // header data (encoded)
-    unsigned char header[12];           // header data (decoded)
+    unsigned char header[17];           // header data (decoded)
 
     // SINDR estimate (signal to interference, noise,
     // and distortion ratio)
@@ -143,7 +143,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // header objects
     fs->mod_header = modem_create(MOD_BPSK, 1);
-    fs->p_header = packetizer_create(12, FEC_HAMMING74, FEC_NONE);
+    fs->p_header = packetizer_create(17, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
     // agc, rssi, squelch
@@ -694,11 +694,11 @@ void flexframesync_decode_header(flexframesync _fs)
     unscramble_data(_fs->header, 12);
 
     // strip off modulation scheme/depth
-    unsigned int mod_scheme = (_fs->header[11] >> 4) & 0x0f;
-    unsigned int mod_depth  = (_fs->header[11]     ) & 0x0f;
+    unsigned int mod_scheme = (_fs->header[16] >> 4) & 0x0f;
+    unsigned int mod_depth  = (_fs->header[16]     ) & 0x0f;
 
     // strip off payload length
-    unsigned int payload_len = (_fs->header[9] << 8) | (_fs->header[10]);
+    unsigned int payload_len = (_fs->header[14] << 8) | (_fs->header[15]);
     _fs->payload_len = payload_len;
 
     // configure payload receiver

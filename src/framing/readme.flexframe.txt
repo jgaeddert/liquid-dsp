@@ -19,9 +19,9 @@ header              256
     crc             4               cyclic redundancy check
     mod scheme/bps  1               modulation scheme, depth
     payload_len     2               # bytes in payload (up to 65536)
-    user data       9               space for user-defined data
-    total           15
-    encoded         32              h74
+    user data       14              space for user-defined data
+    total           17
+    encoded         32              Hamming(12,8)
 payload             [variable]      data payload using arbitrary linear
                                     modulation
 ramp down (r\d)     0+              phasing (1010...) with ramp down
