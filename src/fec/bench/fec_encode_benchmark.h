@@ -22,8 +22,10 @@
 #ifndef __LIQUID_FEC_ENCODE_BENCHMARK_H__
 #define __LIQUID_FEC_ENCODE_BENCHMARK_H__
 
-#include <sys/resource.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/resource.h>
 
 #include "liquid.internal.h"
 
