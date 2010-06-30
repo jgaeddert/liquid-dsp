@@ -63,6 +63,7 @@ local_t_files	:= 			\
 	firfilt_crcf_autotest.h		\
 	firhilb_autotest.h		\
 	firpfb_autotest.h		\
+	groupdelay_autotest.h		\
 	iirdes_autotest.h		\
 	iirfilt_rrrf_autotest.h		\
 	iirfilt_crcf_autotest.h		\
