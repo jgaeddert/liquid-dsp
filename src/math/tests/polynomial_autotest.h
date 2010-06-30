@@ -22,6 +22,7 @@
 #ifndef __LIQUID_POLYNOMIAL_AUTOTEST_H__
 #define __LIQUID_POLYNOMIAL_AUTOTEST_H__
 
+#include <string.h>
 #include <stdbool.h>
 
 #include "autotest/autotest.h"
