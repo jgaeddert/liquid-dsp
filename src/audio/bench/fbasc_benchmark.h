@@ -22,6 +22,9 @@
 #ifndef __LIQUID_FBASC_BENCHMARK_H__
 #define __LIQUID_FBASC_BENCHMARK_H__
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include <sys/resource.h>
 #include "liquid.h"
 

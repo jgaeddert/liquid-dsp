@@ -22,6 +22,8 @@
 #ifndef __LIQUID_MODEM_BENCH_H__
 #define __LIQUID_MODEM_BENCH_H__
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/resource.h>
 #include "liquid.h"
 

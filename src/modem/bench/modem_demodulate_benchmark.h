@@ -22,6 +22,8 @@
 #ifndef __LIQUID_MODEM_DEMODULATE_BENCHMARK_H__
 #define __LIQUID_MODEM_DEMODULATE_BENCHMARK_H__
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/resource.h>
 #include "liquid.h"
 

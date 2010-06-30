@@ -21,8 +21,10 @@
 #ifndef __LIQUID_OFDMOQAMFRAME64SYNC_BENCH_H__
 #define __LIQUID_OFDMOQAMFRAME64SYNC_BENCH_H__
 
-#include <sys/resource.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+#include <sys/resource.h>
 #include "liquid.h"
 
 // 

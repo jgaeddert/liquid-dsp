@@ -21,8 +21,10 @@
 #ifndef __LIQUID_OFDMFRAMESYNC_BENCH_H__
 #define __LIQUID_OFDMFRAMESYNC_BENCH_H__
 
-#include <sys/resource.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+#include <sys/resource.h>
 #include "liquid.h"
 
 #define OFDMFRAMESYNC_EXECUTE_BENCH_API(NUM_SUBCARRIERS,CP_LEN) \

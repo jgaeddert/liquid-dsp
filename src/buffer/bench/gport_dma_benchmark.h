@@ -29,6 +29,8 @@
 #ifndef __LIQUID_GPORT_DMA_BENCHMARK_H__
 #define __LIQUID_GPORT_DMA_BENCHMARK_H__
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/resource.h>
 #include "liquid.h"
 

@@ -251,8 +251,10 @@ clean-check:
 
 
 
-# Benchmarks
-#
+##
+## benchmark
+##
+
 # Benchmarks measure the relative speed of the DSP algorithms running
 # on the target platform.
 .PHONY: bench
@@ -260,18 +262,25 @@ bench_prog	= benchmark
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS) -pthread
 
-# run the benchmark generator scrip to create benchmark_include.h
+# run the benchmark generator script to create benchmark_include.h
 benchmark_include.h: $(benchmark_headers) include/liquid.h include/liquid.internal.h
 	python bench/benchmarkgen.py $(benchmark_headers)
 
+# benchmark objects
+# NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
+#       header' so we need to explicity tell it to compile as a c source file with
+#       the '-x c' flag
+benchmark_obj = $(patsubst %.h,%.o,$(benchmark_headers))
+$(benchmark_obj) : %.o : %.h include/liquid.h include/liquid.internal.h
+	$(CC) $(CFLAGS) -x c $< -c -o $@
+
 # compile the benchmark program without linking
-$(bench_prog).o: benchmark_include.h bench/bench.c
-	$(RM) bench/benchmark_include.h
-	$(CC) $(BENCH_CFLAGS) -c bench/bench.c -o $(bench_prog).o
+$(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
+	$(CC) $(BENCH_CFLAGS) $< -c -o $(bench_prog).o
 
 # link the benchmark program with the library objects
 # NOTE: linked libraries must come _after_ the target program
-$(bench_prog): $(bench_prog).o libliquid.a
+$(bench_prog): $(bench_prog).o $(benchmark_obj) libliquid.a
 	$(CC) $^ $(BENCH_LDFLAGS) -o $(bench_prog)
 
 # run the benchmark program
@@ -280,6 +289,7 @@ bench: $(bench_prog)
 
 # clean up the generated files
 clean-bench:
+	$(RM) $(benchmark_obj)
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
 

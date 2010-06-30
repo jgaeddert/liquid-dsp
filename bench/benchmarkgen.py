@@ -189,11 +189,23 @@ def writeOutputFile( filename = outputFileName ):
     f.write("#ifndef __BENCHINCLUDE_H__\n");
     f.write("#define __BENCHINCLUDE_H__\n\n");
     f.write("#define BENCHMARK_VERSION " + "\"" + version_number + "\"" + "\n\n");
-    f.write("// header files from which this file was generated:\n")
-    for h in included_headers:
-        # write header, if not already written
-        f.write("#include \"" + h + "\"\n")
+
+    #
+    # benchmarks declarations
+    #
+    f.write("// benchmark arguments pre-processor directive\n");
+    f.write("#define BENCHMARK_ARGS                 \\\n");
+    f.write("   struct rusage * _start,             \\\n");
+    f.write("   struct rusage * _finish,            \\\n");
+    f.write("   unsigned long int * _num_iterations\n");
     f.write("\n");
+
+    f.write("// function declarations\n");
+    for i in range(len(benchmark_functions)):
+        bf = benchmark_functions[i]
+        # append benchmark function to array
+        f.write("void " + bf.function_name + "(BENCHMARK_ARGS);\n");
+    f.write("\n")
 
     f.write("// number of benchmarks\n");
     f.write("#define NUM_BENCHMARKS " + str(len(benchmark_functions)) + "\n\n");
