@@ -95,8 +95,5 @@ void autotest_conv29p56_codec() { conv_test(FEC_CONV_V29P56,8); }
 void autotest_conv29p67_codec() { conv_test(FEC_CONV_V29P67,8); }
 void autotest_conv29p78_codec() { conv_test(FEC_CONV_V29P78,8); }
 
-// Reed-Solomon codes
-void autotest_rs8_codec()       { conv_test(FEC_RS_M8,8);       }
-
 #endif // __LIQUID_FEC_CONV_AUTOTEST_H__
 
