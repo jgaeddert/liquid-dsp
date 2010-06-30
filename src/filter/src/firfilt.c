@@ -186,3 +186,19 @@ unsigned int FIRFILT(_get_length)(FIRFILT() _q)
     return _q->h_len;
 }
 
+// compute group delay in samples
+//  _q      :   filter object
+//  _fc     :   frequency
+float FIRFILT(_groupdelay)(FIRFILT() _q,
+                           float _fc)
+{
+    // copy coefficients to be in correct order
+    float h[_q->h_len];
+    unsigned int i;
+    unsigned int n = _q->h_len;
+    for (i=0; i<n; i++)
+        h[i] = crealf(_q->h[n-i-1]);
+
+    return fir_group_delay(h, n, _fc);
+}
+

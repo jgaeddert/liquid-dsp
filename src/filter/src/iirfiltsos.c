@@ -152,4 +152,20 @@ void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,
           _q->b[2]*_q->v[2];
 }
 
+// compute group delay in samples
+//  _q      :   filter object
+//  _fc     :   frequency
+float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,
+                              float _fc)
+{
+    // copy coefficients
+    float b[3];
+    float a[3];
+    unsigned int i;
+    for (i=0; i<3; i++) {
+        b[i] = crealf(_q->b[i]);
+        a[i] = crealf(_q->a[i]);
+    }
+    return iir_group_delay(b, 3, a, 3, _fc);
+}
 

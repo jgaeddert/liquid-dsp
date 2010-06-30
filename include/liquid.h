@@ -1257,7 +1257,8 @@ void FIRFILT(_clear)(FIRFILT() _f);                             \
 void FIRFILT(_print)(FIRFILT() _f);                             \
 void FIRFILT(_push)(FIRFILT() _f, TI _x);                       \
 void FIRFILT(_execute)(FIRFILT() _f, TO *_y);                   \
-unsigned int FIRFILT(_get_length)(FIRFILT() _f);
+unsigned int FIRFILT(_get_length)(FIRFILT() _f);                \
+float FIRFILT(_groupdelay)(FIRFILT() _f, float _fc);
 
 LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRF,
                           float,
@@ -1325,7 +1326,8 @@ void IIRFILT(_destroy)(IIRFILT() _f);                           \
 void IIRFILT(_print)(IIRFILT() _f);                             \
 void IIRFILT(_clear)(IIRFILT() _f);                             \
 void IIRFILT(_execute)(IIRFILT() _f, TI _x, TO *_y);            \
-unsigned int IIRFILT(_get_length)(IIRFILT() _f);
+unsigned int IIRFILT(_get_length)(IIRFILT() _f);                \
+float IIRFILT(_groupdelay)(IIRFILT() _f, float _fc);
 
 LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_RRRF,
                           float,

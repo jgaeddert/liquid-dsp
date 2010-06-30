@@ -778,7 +778,8 @@ void IIRFILTSOS(_execute_df1)(IIRFILTSOS() _q,                  \
                               TO * _y);                         \
 void IIRFILTSOS(_execute_df2)(IIRFILTSOS() _q,                  \
                               TI   _x,                          \
-                              TO * _y);
+                              TO * _y);                         \
+float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q, float _fc);
 
 LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_RRRF,
                                       float,

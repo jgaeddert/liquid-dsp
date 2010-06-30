@@ -335,3 +335,30 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
     return _q->n;
 }
 
+// compute group delay in samples
+//  _q      :   filter object
+//  _fc     :   frequency
+float IIRFILT(_groupdelay)(IIRFILT() _q,
+                           float _fc)
+{
+    float groupdelay = 0;
+    unsigned int i;
+
+    if (_q->type == IIRFILT_TYPE_NORM) {
+        // compute gropu delay from regular transfer function form
+
+        // copy coefficients
+        float b[_q->nb];
+        float a[_q->na];
+        for (i=0; i<_q->nb; i++) b[i] = crealf(_q->b[i]);
+        for (i=0; i<_q->na; i++) a[i] = crealf(_q->a[i]);
+        groupdelay = iir_group_delay(b, _q->nb, a, _q->na, _fc);
+    } else {
+        // accumulate group delay from second-order sections
+        for (i=0; i<_q->nsos; i++)
+            groupdelay += IIRFILTSOS(_groupdelay)(_q->qsos[i], _fc) - 2;
+    }
+
+    return groupdelay;
+}
+
