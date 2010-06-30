@@ -166,6 +166,6 @@ float IIRFILTSOS(_groupdelay)(IIRFILTSOS() _q,
         b[i] = crealf(_q->b[i]);
         a[i] = crealf(_q->a[i]);
     }
-    return iir_group_delay(b, 3, a, 3, _fc);
+    return iir_group_delay(b, 3, a, 3, _fc) + 2.0;
 }
 
