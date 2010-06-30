@@ -23,10 +23,11 @@
 #define __LIQUID_SCRAMBLE_AUTOTEST_H__
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // compute basic entropy metric
 float liquid_scramble_test_entropy(unsigned char * _x,

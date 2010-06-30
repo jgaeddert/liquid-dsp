@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include "autotest/autotest.h"
 
 // define autotest function pointer
 typedef void(*autotest_function) (void);

@@ -204,10 +204,13 @@ uninstall:
 	$(RM) $(exec_prefix)/lib/libliquid.a
 	@echo "done."
 
-# Autotests
-#
+##
+## autotest
+##
+
 # Autotests are used to check the validity and accuracy of the
 # DSP libraries.
+
 .PHONY: autotest
 autotest_prog	= xautotest
 
@@ -215,13 +218,25 @@ autotest_prog	= xautotest
 autotest_include.h: $(autotest_headers) include/liquid.h include/liquid.internal.h
 	python autotest/autotest_gen.py $(autotest_headers)
 
+# autotest objects
+# NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
+#       header' so we need to explicity tell it to compile as a c source file with
+#       the '-x c' flag
+autotest_obj = $(patsubst %.h,%.o,$(autotest_headers))
+$(autotest_obj) : %.o : %.h include/liquid.h include/liquid.internal.h
+	$(CC) $(CFLAGS) -x c $< -c -o $@
+
+# compile the autotest internal library functions without linking
+autotest/autotestlib.o : autotest/autotestlib.c autotest/autotest.h
+	$(CC) $(CFLAGS) $< -c -o $@
+
 # compile the autotest program without linking
-$(autotest_prog).o: autotest/autotest.c autotest/autotest.h autotest_include.h
+$(autotest_prog).o : autotest/autotest.c autotest/autotest.h autotest_include.h
 	$(CC) $(CFLAGS) $< -c -o $@
 
 # link the autotest program with the objects
 # NOTE: linked libraries must come _after_ the target program
-$(autotest_prog): $(autotest_prog).o libliquid.a
+$(autotest_prog): $(autotest_prog).o $(autotest_obj) autotest/autotestlib.o libliquid.a
 	$(CC) $^ $(LDFLAGS) -o $@
 
 # run the autotest program
@@ -231,6 +246,8 @@ check: $(autotest_prog)
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
+	$(RM) $(autotest_src)
+	$(RM) $(autotest_obj)
 
 
 

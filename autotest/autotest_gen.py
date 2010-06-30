@@ -176,11 +176,17 @@ def writeOutputFile( filename = outputFileName ):
     # include guard
     f.write("#ifndef __AUTOTEST_INCLUDE_H__\n");
     f.write("#define __AUTOTEST_INCLUDE_H__\n\n");
-    f.write("// header files from which this file was generated:\n")
-    for h in included_headers:
-        # write header, if not already written
-        f.write("#include \"" + h + "\"\n")
+
+    #
+    # autotests declarations
+    #
+    f.write("// function declarations\n");
     f.write("\n");
+    for i in range(len(benchmark_functions)):
+        bf = benchmark_functions[i]
+        # append benchmark function to array
+        f.write("void " + bf.function_name + "();\n");
+    f.write("\n")
 
     f.write("// number of autotests\n");
     f.write("#define NUM_AUTOTESTS " + str(len(benchmark_functions)) + "\n\n");

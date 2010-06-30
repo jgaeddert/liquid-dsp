@@ -33,71 +33,81 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-static unsigned long int liquid_autotest_num_checks=0;
-static unsigned long int liquid_autotest_num_passed=0;
-static unsigned long int liquid_autotest_num_failed=0;
+// total number of checks invoked
+extern unsigned long int liquid_autotest_num_checks;
 
-static unsigned long int liquid_autotest_num_warnings=0;
+// total number of checks which passed
+extern unsigned long int liquid_autotest_num_passed;
 
-static bool liquid_autotest_verbose = true;
+// total number of checks which failed
+extern unsigned long int liquid_autotest_num_failed;
 
-static inline void liquid_autotest_failed()
-{
-    liquid_autotest_num_checks++;
-    liquid_autotest_num_failed++;
-}
+// total number of warnings
+extern unsigned long int liquid_autotest_num_warnings;
 
-static inline void liquid_autotest_passed()
-{
-    liquid_autotest_num_checks++;
-    liquid_autotest_num_passed++;
-}
+// verbosity flag
+extern int liquid_autotest_verbose;
 
-static inline void liquid_autotest_failed_expr(const char * _file,
-                                               unsigned int _line,
-                                               const char * _exprL,
-                                               double _valueL,
-                                               const char * _qualifier,
-                                               const char * _exprR,
-                                               double _valueR)
-{
-    if (liquid_autotest_verbose) {
-        printf("  TEST FAILED: %s line %u : expected %s (%0.2E) %s %s (%0.2E)\n",
-                _file, _line, _exprL, _valueL, _qualifier, _exprR, _valueR);
-    }
-    liquid_autotest_failed();
-}
+// fail test
+// increment liquid_autotest_num_checks
+// increment liquid_autotest_num_failed
+void liquid_autotest_failed();
 
-static inline void liquid_autotest_failed_msg(const char * _file,
-                                              unsigned int _line,
-                                              const char * _message)
-{
-    if (liquid_autotest_verbose)
-        printf("  TEST FAILED: %s line %u : %s\n", _file, _line, _message);
-    liquid_autotest_failed();
-}
+// pass test
+// increment liquid_autotest_num_checks
+// increment liquid_autotest_num_passed
+void liquid_autotest_passed();
 
-static void autotest_print_results(void)
-{
-    if (liquid_autotest_num_warnings > 0) {
-        printf("==================================\n");
-        printf(" WARNINGS : %-lu\n", liquid_autotest_num_warnings);
-    }
+// fail test, given expression
+//  _file       :   filename (string)
+//  _line       :   line number of test
+//  _exprL      :   left side of expression (string)
+//  _valueL     :   left side of expression (value)
+//  _qualifier  :   expression qualifier
+//  _exprR      :   right side of expression (string)
+//  _valueR     :   right side of expression (value)
+void liquid_autotest_failed_expr(const char * _file,
+                                 unsigned int _line,
+                                 const char * _exprL,
+                                 double _valueL,
+                                 const char * _qualifier,
+                                 const char * _exprR,
+                                 double _valueR);
 
-    printf("==================================\n");
-    if (liquid_autotest_num_failed==0) {
-        printf(" PASSED ALL %lu CHECKS\n", liquid_autotest_num_passed);
-    } else {
-        // compute and print percentage of failed tests
-        double percent_failed = (double) liquid_autotest_num_failed /
-                                (double) liquid_autotest_num_checks;
-        printf(" FAILED %lu / %lu CHECKS (%7.2f%%)\n",
-                liquid_autotest_num_failed,
-                liquid_autotest_num_checks,
-                100.0*percent_failed);
-    }
-    printf("==================================\n");
-}
+// fail test with message
+//  _file       :   filename (string)
+//  _line       :   line number of test
+//  _message    :   message string
+void liquid_autotest_failed_msg(const char * _file,
+                                unsigned int _line,
+                                const char * _message);
+
+// print basic autotest results to stdout
+void autotest_print_results(void);
+
+// print warning to stderr
+// increment liquid_autotest_num_warnings
+//  _file       :   filename (string)
+//  _line       :   line number of test
+//  _message    :   message string
+void liquid_autotest_warn(const char * _file,
+                          unsigned int _line,
+                          const char * _message);
+
+
+// contend that data in two arrays are identical
+//  _x      :   input array [size: _n x 1]
+//  _y      :   input array [size: _n x 1]
+//  _n      :   input array size
+int liquid_autotest_same_data(unsigned char * _x,
+                              unsigned char * _y,
+                              unsigned int _n);
+
+// print array to standard out
+//  _x      :   input array [size: _n x 1]
+//  _n      :   input array size
+void liquid_autotest_print_array(unsigned char * _x,
+                                 unsigned int _n);
 
 // CONTEND_EQUALITY
 #  define TEST_EQUALITY(F,L,EX,X,EY,Y)                              \
@@ -144,28 +154,6 @@ static void autotest_print_results(void)
 #  define CONTEND_EXPRESSION_FL(F,L,X)      TEST_EXPRESSION(F,L,#X,(X))
 #  define CONTEND_EXPRESSION(X)             CONTEND_EXPRESSION_FL(__FILE__,__LINE__,X)
 
-static inline bool liquid_autotest_same_data(uint8_t * _x, uint8_t * _y, unsigned int _n)
-{
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        if (_x[i] != _y[i])
-            return false;
-    }
-    return true;
-}
-
-static inline void liquid_autotest_print_array(uint8_t * _x, unsigned int _n)
-{
-    unsigned int i;
-    printf("   {");
-    for (i=0; i<_n; i++) {
-        printf("%.2x, ", (unsigned int)(_x[i]));
-        if ( ((i+1)%16 == 0) && (i != (_n-1)) )
-            printf("\n    ");
-    }
-    printf("}\n");
-}
-
 // CONTEND_SAME_DATA
 #  define TEST_SAME_DATA(F,L,EX,X,EY,Y,EN,N)                                    \
     if (!liquid_autotest_same_data((uint8_t*)(X),(uint8_t*)(Y),(N))) {          \
@@ -180,17 +168,6 @@ static inline void liquid_autotest_print_array(uint8_t * _x, unsigned int _n)
 #  define CONTEND_SAME_DATA_FL(F,L,X,Y,N)  TEST_SAME_DATA(F,L,#X,(X),#Y,(Y),#N,(N))
 #  define CONTEND_SAME_DATA(X,Y,N)         CONTEND_SAME_DATA_FL(__FILE__,__LINE__,X,Y,N)
 
-
-// print warning
-void liquid_autotest_warn(const char * _file,
-                          unsigned int _line,
-                          const char * _message)
-{
-    if (liquid_autotest_verbose)
-        fprintf(stderr,"  WARNING: %s line %u : %s\n", _file, _line, _message);
-
-    liquid_autotest_num_warnings++;
-}
 
 // AUTOTEST WARN
 #  define AUTOTEST_WARN_FL(F,L,MSG)      liquid_autotest_warn(F,L,#MSG)
