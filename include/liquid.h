@@ -714,30 +714,61 @@ typedef enum {
     FEC_RS_M8           // m=8, n=255, k=223
 } fec_scheme;
 
-struct fec_conv_opts {int puncture;};
-
+// pretty names for fec schemes
 extern const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES];
 
 // returns fec_scheme based on input string
 fec_scheme liquid_getopt_str2fec(const char * _str);
 
+// fec object (pointer to fec structure)
 typedef struct fec_s * fec;
 
-// object-independent methods
-unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len);
+// return the encoded message length using a particular error-
+// correction scheme (object-independent method)
+//  _scheme     :   forward error-correction scheme
+//  _msg_len    :   raw, uncoded message length
+unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
+                                    unsigned int _msg_len);
+
+// get the theoretical rate of a particular forward error-
+// correction scheme (object-independent method)
 float fec_get_rate(fec_scheme _scheme);
 
-fec fec_create(fec_scheme _scheme, void *_opts);
+// create a fec object of a particular scheme
+//  _scheme     :   error-correction scheme
+//  _opts       :   (ignored)
+fec fec_create(fec_scheme _scheme,
+               void *_opts);
+
+// recreate fec object
+//  _q          :   old fec object
+//  _scheme     :   new error-correction scheme
+//  _opts       :   (ignored)
 fec fec_recreate(fec _q,
                  fec_scheme _scheme,
                  void *_opts);
+
+// destroy fec object
 void fec_destroy(fec _q);
+
+// print fec object internals
 void fec_print(fec _q);
 
+// encode a block of data using a fec scheme
+//  _q              :   fec object
+//  _dec_msg_len    :   decoded message length
+//  _msg_dec        :   decoded message
+//  _msg_enc        :   encoded message
 void fec_encode(fec _q,
                 unsigned int _dec_msg_len,
                 unsigned char * _msg_dec,
                 unsigned char * _msg_enc);
+
+// decode a block of data using a fec scheme
+//  _q              :   fec object
+//  _dec_msg_len    :   decoded message length
+//  _msg_enc        :   encoded message
+//  _msg_dec        :   decoded message
 void fec_decode(fec _q,
                 unsigned int _dec_msg_len,
                 unsigned char * _msg_enc,
