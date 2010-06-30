@@ -99,17 +99,18 @@ void fec_rs_encode(fec _q,
     unsigned int i;
     unsigned int n0=0;  // input index
     unsigned int n1=0;  // output index
-    unsigned int block_size=0;
+    unsigned int block_size = _q->dec_block_len;
     for (i=0; i<_q->num_blocks; i++) {
-        if (i < _q->num_blocks-1)
-            block_size = _q->dec_block_len;
-        else
-            block_size = _q->dec_block_len - _q->res_block_len;
+
+        // the last block is smaller by the residual block length
+        if (i == _q->num_blocks-1)
+            block_size -= _q->res_block_len;
 
         // copy sequence
         memmove(_q->tblock, &_msg_dec[n0], block_size*sizeof(unsigned char));
 
-        // TODO : pad end with zeros (if necessary)
+        // last block: we could pad end with zeros, but it's not really
+        // necessary as these bits are going to be thrown away anyway
 
         // encode data, appending parity bits to end of sequence
         encode_rs_char(_q->rs, _q->tblock, &_q->tblock[_q->dec_block_len]);
@@ -121,6 +122,10 @@ void fec_rs_encode(fec _q,
         n0 += _q->dec_block_len;
         n1 += _q->enc_block_len;
     }
+
+    // sanity check
+    assert( n0 == _q->num_dec_bytes );
+    assert( n1 == _q->num_enc_bytes );
 }
 
 //unsigned int
@@ -146,13 +151,13 @@ void fec_rs_decode(fec _q,
     unsigned int i;
     unsigned int n0=0;
     unsigned int n1=0;
-    unsigned int block_size=0;
+    unsigned int block_size = _q->dec_block_len;
     int derrors; // number of decoder errors
     for (i=0; i<_q->num_blocks; i++) {
-        if (i < _q->num_blocks-1)
-            block_size = _q->dec_block_len;
-        else
-            block_size = _q->dec_block_len - _q->res_block_len;
+
+        // the last block is smaller by the residual block length
+        if (i == _q->num_blocks-1)
+            block_size -= _q->res_block_len;
 
         // copy sequence
         memmove(_q->tblock, &_msg_enc[n0], _q->enc_block_len*sizeof(unsigned char));
@@ -170,10 +175,45 @@ void fec_rs_decode(fec _q,
         n0 += _q->enc_block_len;
         n1 += _q->dec_block_len;
     }
+
+    // sanity check
+    assert( n0 == _q->num_enc_bytes );
+    assert( n1 == _q->num_dec_bytes );
 }
 
-// set dec_msg_len, re-allocating resources as necessary
-void fec_rs_setlength(fec _q, unsigned int _dec_msg_len)
+// Set dec_msg_len, re-allocating resources as necessary.  Effectively, it
+// divides the input message into several blocks and allows the decoder to
+// pad each block appropraitely.
+//
+// For example : if we are using the 8-bit code,
+//      nroots  = 32
+//      nn      = 255
+//      kk      = 223
+// Let _dec_msg_len = 1024, then
+//      num_blocks = ceil(1024/223)
+//                 = ceil(4.5919)
+//                 = 5
+//      dec_block_len = ceil(1024/num_blocks)
+//                    = ceil(204.8)
+//                    = 205
+//      enc_block_len = dec_block_len + nroots
+//                    = 237
+//      res_block_len = mod(num_blocks*dec_block_len,_dec_msg_len)
+//                    = mod(5*205,1024)
+//                    = mod(1025,1024)
+//                    = 1 (cannot evenly divide input sequence)
+//      pad = kk - dec_block_len
+//          = 223 - 205
+//          = 18
+//
+// Thus, the 1024-byte input message is broken into 5 blocks, the first
+// four have a length 205, and the last block has a length 204 (which is
+// externally padded to 205, e.g. res_block_len = 1). This code adds 32
+// parity symbols, so each block is extended to 237 bytes. libfec auto-
+// matically extends the internal data to 255 bytes by padding with 18
+// symbols.  Therefore, the final output length is 237 * 5 = 1185 symbols.
+void fec_rs_setlength(fec _q,
+                      unsigned int _dec_msg_len)
 {
     // return if length has not changed
     if (_dec_msg_len == _q->num_dec_bytes)
@@ -182,35 +222,27 @@ void fec_rs_setlength(fec _q, unsigned int _dec_msg_len)
     // reset lengths
     _q->num_dec_bytes = _dec_msg_len;
 
-    // example : if we are using the 8-bit code,
-    //      nroots  = 32
-    //      nn      = 255
-    //      kk      = 223
-    // Let _dec_msg_len = 1024, then
-    //      num_blocks = ceil(1024/223)
-    //                 = ceil(4.5919)
-    //                 = 5
-    //      dec_block_len = ceil(1024/num_blocks)
-    //                    = ceil(204.8)
-    //                    = 205
-    //      enc_block_len = dec_block_len + nroots
-    //                    = 237
-    //      res_block_len = mod(num_blocks*dec_block_len,_dec_msg_len)
-    //                    = mod(5*205,1024)
-    //                    = mod(1025,1024)
-    //                    = 1
-    //      pad = kk - dec_block_len
-    //          = 223 - 205
-    //          = 18
     div_t d;
+
+    // compute the total number of blocks necessary: ceil(num_dec_bytes / kk)
     d = div(_q->num_dec_bytes, _q->kk);
     _q->num_blocks = d.quot + (d.rem==0 ? 0 : 1);
+
+    // compute the decoded block length: ceil(num_dec_bytes / num_blocks)
     d = div(_dec_msg_len, _q->num_blocks);
     _q->dec_block_len = d.quot + (d.rem == 0 ? 0 : 1);
+
+    // compute the encoded block length: dec_block_len + nroots
     _q->enc_block_len = _q->dec_block_len + _q->nroots;
+
+    // compute the residual padding symbols in the last block:
+    // mod(num_blocks*dec_block_len, num_dec_bytes)
     _q->res_block_len = (_q->num_blocks*_q->dec_block_len) % _q->num_dec_bytes;
+
+    // compute the internal libfec padding factor: kk - dec_block_len
     _q->pad = _q->kk - _q->dec_block_len;
 
+    // compute the final encoded block length: enc_block_len * num_blocks
     _q->num_enc_bytes = _q->enc_block_len * _q->num_blocks;
     
 #if VERBOSE_FEC_RS
