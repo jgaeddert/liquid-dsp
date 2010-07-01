@@ -3363,6 +3363,22 @@ void repack_bytes(unsigned char * _sym_in,
                   unsigned int _sym_out_bps,
                   unsigned int _sym_out_len,
                   unsigned int * _num_written);
+ 
+// Count the number of ones in an integer
+unsigned int liquid_count_ones(unsigned int _x); 
+
+// count number of ones in an integer, modulo 2
+unsigned int liquid_count_ones_mod2(unsigned int _x);
+
+// compute bindary dot-product between two integers
+unsigned int liquid_bdotprod(unsigned int _x,
+                             unsigned int _y);
+
+// Count leading zeros in an integer
+unsigned int liquid_count_leading_zeros(unsigned int _x); 
+
+// Most-significant bit index
+unsigned int liquid_msb_index(unsigned int _x);
 
 #ifdef __cplusplus
 } /* extern "C" */

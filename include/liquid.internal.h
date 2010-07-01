@@ -1724,9 +1724,6 @@ extern struct msequence_s msequence_default[13];
 // number of 1's in byte
 extern unsigned int liquid_c_ones[256];
 
-// Count the number of ones in an integer
-unsigned int liquid_count_ones(unsigned int _x); 
-
 // Count the number of ones in an integer, inline insertion
 #define liquid_count_ones_uint16(x) (           \
     liquid_c_ones[  (x)      & 0xff ] +         \
@@ -1739,13 +1736,10 @@ unsigned int liquid_count_ones(unsigned int _x);
     liquid_c_ones[ ((x)>>24) & 0xff ])
 
 
-// count 1's in a byte modulo 2
+// number of 1's in a byte modulo 2
 extern unsigned char liquid_c_ones_mod2[256];
 
-// count number of ones in an integer, modulo 2
-unsigned int liquid_count_ones_mod2(unsigned int _x);
-
-// Count the number of ones in an integer, inline insertion
+// Count the number of ones in an integer modulo 2, inline insertion
 #define liquid_count_ones_mod2_uint16(x) ((         \
     liquid_c_ones_mod2[  (x)      & 0xff ] +        \
     liquid_c_ones_mod2[ ((x)>>8)  & 0xff ]) % 2)
@@ -1761,18 +1755,8 @@ unsigned int liquid_count_ones_mod2(unsigned int _x);
 #define liquid_bdotprod_uint16(x,y) liquid_count_ones_mod2_uint16((x)&(y))
 #define liquid_bdotprod_uint32(x,y) liquid_count_ones_mod2_uint32((x)&(y))
 
-// compute bindary dot-product between two integers
-unsigned int liquid_bdotprod(unsigned int _x,
-                             unsigned int _y);
-
 // number of leading zeros in byte
 extern unsigned int liquid_c_leading_zeros[256];
-
-// Count leading zeros in an integer
-unsigned int liquid_count_leading_zeros(unsigned int _x); 
-
-// Most-significant bit index
-unsigned int liquid_msb_index(unsigned int _x);
 
 #endif // __LIQUID_INTERNAL_H__
 
