@@ -36,7 +36,7 @@
 //  253 1111 1101   :   0
 //  254 1111 1110   :   0
 //  255 1111 1111   :   0
-unsigned int leading_zeros[256] = {
+unsigned int liquid_c_leading_zeros[256] = {
     8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -57,7 +57,7 @@ unsigned int leading_zeros[256] = {
 
 // count leading zeros in an integer (like leading_zeros[], but
 // extending to integer)
-unsigned int count_leading_zeros(unsigned int _x) 
+unsigned int liquid_count_leading_zeros(unsigned int _x) 
 {
 #if 0
     // look for first non-zero byte in _x
@@ -73,7 +73,7 @@ unsigned int count_leading_zeros(unsigned int _x)
     }   
     return (SIZEOF_UNSIGNED_INT*8);
 #else
-    return SIZEOF_UNSIGNED_INT*8 - msb_index(_x);
+    return SIZEOF_UNSIGNED_INT*8 - liquid_msb_index(_x);
 #endif
 }
 
@@ -90,7 +90,7 @@ unsigned int count_leading_zeros(unsigned int _x)
 //  ...
 //  0x80000000  :   32
 //
-unsigned int msb_index(unsigned int _x)
+unsigned int liquid_msb_index(unsigned int _x)
 {
     unsigned int bits;
 
@@ -111,9 +111,9 @@ unsigned int msb_index(unsigned int _x)
     unsigned int i, b;
     bits = 8*SIZEOF_UNSIGNED_INT;
     for (i=SIZEOF_UNSIGNED_INT*8; i>0; i-=8) {
-        b = (_x >> (i-8)) & 0xFF;
+        b = (_x >> (i-8)) & 0xff;
         if ( b )
-            return bits - leading_zeros[b];
+            return bits - liquid_c_leading_zeros[b];
         else
             bits -= 8;
     }

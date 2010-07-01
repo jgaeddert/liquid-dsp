@@ -1766,13 +1766,13 @@ unsigned int liquid_bdotprod(unsigned int _x,
                              unsigned int _y);
 
 // number of leading zeros in byte
-extern unsigned int leading_zeros[256];
+extern unsigned int liquid_c_leading_zeros[256];
 
 // Count leading zeros in an integer
-unsigned int count_leading_zeros(unsigned int _x); 
+unsigned int liquid_count_leading_zeros(unsigned int _x); 
 
 // Most-significant bit index
-unsigned int msb_index(unsigned int _x);
+unsigned int liquid_msb_index(unsigned int _x);
 
 #endif // __LIQUID_INTERNAL_H__
 

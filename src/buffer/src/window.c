@@ -44,7 +44,7 @@ WINDOW() WINDOW(_create)(unsigned int _n)
     WINDOW() w = (WINDOW()) malloc(sizeof(struct WINDOW(_s)));
     w->len = _n;
 
-    w->m = msb_index(_n);   // effectively floor(log2(len))+1
+    w->m = liquid_msb_index(_n);    // effectively floor(log2(len))+1
     w->n = 1<<(w->m);       // 
     w->mask = w->n - 1;     // bit mask
 
