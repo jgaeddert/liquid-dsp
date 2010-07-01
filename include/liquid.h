@@ -3251,6 +3251,10 @@ void bsequence_destroy(bsequence _bs);
 // Clear binary sequence (set to 0's)
 void bsequence_clear(bsequence _bs);
 
+// initialize sequence on external array
+void bsequence_init(bsequence _bs,
+                    unsigned char * _v);
+
 // Print sequence to the screen
 void bsequence_print(bsequence _bs);
 

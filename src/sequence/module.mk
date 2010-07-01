@@ -38,6 +38,7 @@ local_s_files	:=			\
 # within $(local_dir)
 #
 local_t_files	:=			\
+	bsequence_autotest.h		\
 	complementary_codes_autotest.h	\
 	msequence_autotest.h
 

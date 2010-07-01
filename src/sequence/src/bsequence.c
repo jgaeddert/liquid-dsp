@@ -27,7 +27,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 
@@ -76,11 +75,22 @@ void bsequence_clear(bsequence _bs)
     memset( _bs->s, 0x00, (_bs->s_len)*sizeof(unsigned char) );
 }
 
+// initialize sequence on external array
+void bsequence_init(bsequence _bs,
+                    unsigned char * _v)
+{
+    // copy external array to internal buffer
+    memmove(_bs->s, _v, _bs->s_len * sizeof(unsigned char));
+
+    // apply mask to first block
+    _bs->s[0] &= _bs->bit_mask_msb;
+}
+
 // Print sequence to the screen
 void bsequence_print(bsequence _bs)
 {
     unsigned int i, j;
-    unsigned int byte;
+    unsigned char byte;
 
     printf("bsequence[%6u]:     ", _bs->num_bits);
     for (i=0; i<_bs->s_len; i++) {
