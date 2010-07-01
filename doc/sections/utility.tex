@@ -4,5 +4,56 @@
 
 \section{utility}
 \label{module:utility}
-useful miscellany: bit packing, etc. 
+The utility module contains useful functions, primarily for bit fast bit
+manipulation.
+This includes packing/unpacking byte arrays, counting ones in an integer,
+computing a binary dot-product, and others.
+
+\subsection{{\tt liquid\_pack\_bytes()},
+            {\tt liquid\_unpack\_bytes()}, and
+            {\tt liquid\_repack\_bytes()}}
+\label{module:utility:pack_bytes}
+Byte packing is used extensively in the
+{\tt fec} (Section~\ref{module:fec}) and
+{\tt framing} (Section~\ref{module:framing}) modules.
+These methods resize symbols represented by various numbers of bits.
+This is necessary to move between raw data arrays which use full bytes (eight
+bits per symbol) to methods expecting symbols of different sizes.
+For example, the {\tt liquid\_repack\_bytes()} method is useful when one wants
+to transmit a block of 64 data bytes using an 8-PSK modem which requires a
+3-bit input symbol.
+
+\subsection{miscellany}
+\label{module:utility:misc}
+This section describes the bit-counting methods which are used extensively
+throughout \liquid, particularly the
+{\tt fec} (Section~\ref{module:fec}) and
+{\tt sequence} (Section~\ref{module:sequence}) modules.
+Integer sizes vary for different machines;
+when \liquid\ is initially configured (see Chapter~\ref{ch:installation}), the
+size of the integer is computed such that the fastest method can be computed
+without performing unnecessary loop iterations or comparisons.
+
+\begin{description}
+\item[{\tt liquid\_count\_ones(x)}]
+    counts the number of {\tt 1}s that exist in the integer $x$.
+    For example, {\tt liquid\_count\_ones(255)} returns {\tt 8}.
+\item[{\tt liquid\_count\_ones\_mod2(x)}]
+    counts the number of {\tt 1}s that exist in the integer $x$, modulo 2; in
+    other words, it returns {\tt 1} if the number of ones in $x$ is odd,
+    {\tt 0} if the number is even.
+\item[{\tt liquid\_bdotprod(x,y)}]
+    computes the binary dot-product between two itegers $x$ and $y$ as the sum
+    of ones in $x \land y$, modulo 2 (where $\land$ is the logical `and'
+    operation).
+\item[{\tt liquid\_count\_leading\_zeros(x)}]
+    counts the number of leading zeros in the integer $x$.
+    This is dependent upon the size of the integer for the target machine
+    which is usually either two or four bytes.
+\item[{\tt liquid\_msb\_index(x)}]
+    computes the index of the most-significant bit in the integer $x$.
+    The function will return {\tt 0} for $x=0$.
+    For example if $x=129$ ({\tt 10000001}), the function will return {\tt 8}.
+\end{description}
+
 

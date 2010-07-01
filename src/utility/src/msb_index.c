@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -90,6 +91,21 @@ unsigned int liquid_count_leading_zeros(unsigned int _x)
 //  ...
 //  0x80000000  :   32
 //
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   2
+//  3   0000 0011   :   2
+//  4   0000 0100   :   3
+//  ...
+//  126 0111 1110   :   7
+//  127 0111 1111   :   7
+//  128 1000 0000   :   8
+//  129 1000 0001   :   8
+//  ...
+//  253 1111 1101   :   8
+//  254 1111 1110   :   8
+//  255 1111 1111   :   8
+
 unsigned int liquid_msb_index(unsigned int _x)
 {
     unsigned int bits;
