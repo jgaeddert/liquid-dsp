@@ -60,14 +60,6 @@
 #define HAMMING128_S4   0x01e1  // .... 0001 1110 0001
 #define HAMMING128_S8   0x001f  // .... 0000 0001 1111
 
-// binary dot-product (count ones modulo 2)
-// same as
-//  #define bdotprod(x,y) (count_ones_static((x)&(y)) & 0x0001)
-// but much faster
-#define bdotprod(x,y) ( (c_ones_mod2[ (x & y & 0x00ff)>>0] +  \
-                         c_ones_mod2[ (x & y & 0x0f00)>>8]    \
-                        ) & 0x0001)
-
 unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec)
 {
     // validate input
@@ -77,10 +69,10 @@ unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec)
     }
 
     // compute parity bits
-    unsigned int p1 = bdotprod(_sym_dec, HAMMING128_M1);
-    unsigned int p2 = bdotprod(_sym_dec, HAMMING128_M2);
-    unsigned int p4 = bdotprod(_sym_dec, HAMMING128_M4);
-    unsigned int p8 = bdotprod(_sym_dec, HAMMING128_M8);
+    unsigned int p1 = liquid_bdotprod_uint16(_sym_dec, HAMMING128_M1);
+    unsigned int p2 = liquid_bdotprod_uint16(_sym_dec, HAMMING128_M2);
+    unsigned int p4 = liquid_bdotprod_uint16(_sym_dec, HAMMING128_M4);
+    unsigned int p8 = liquid_bdotprod_uint16(_sym_dec, HAMMING128_M8);
 
 #if DEBUG_FEC_HAMMING128
     printf("parity bits (p1,p2,p4,p8) : (%1u,%1u,%1u,%1u)\n", p1, p2, p4, p8);
@@ -108,10 +100,10 @@ unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc)
     }
 
     // compute syndrome bits
-    unsigned int s1 = bdotprod(_sym_enc, HAMMING128_S1);
-    unsigned int s2 = bdotprod(_sym_enc, HAMMING128_S2);
-    unsigned int s4 = bdotprod(_sym_enc, HAMMING128_S4);
-    unsigned int s8 = bdotprod(_sym_enc, HAMMING128_S8);
+    unsigned int s1 = liquid_bdotprod_uint16(_sym_enc, HAMMING128_S1);
+    unsigned int s2 = liquid_bdotprod_uint16(_sym_enc, HAMMING128_S2);
+    unsigned int s4 = liquid_bdotprod_uint16(_sym_enc, HAMMING128_S4);
+    unsigned int s8 = liquid_bdotprod_uint16(_sym_enc, HAMMING128_S8);
 
     // index
     unsigned int z = (s8<<3) | (s4<<2) | (s2<<1) | s1;

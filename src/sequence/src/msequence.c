@@ -88,7 +88,7 @@ void msequence_init(msequence _ms, unsigned int _m, unsigned int _g, unsigned in
 // Advance msequence on shift register
 unsigned int msequence_advance(msequence _ms)
 {
-    _ms->b = count_ones( _ms->v & _ms->g ) % 2;
+    _ms->b = liquid_bdotprod( _ms->v, _ms->g );
     _ms->v <<= 1;       // shift register
     _ms->v |= _ms->b;   // push bit onto register
     _ms->v &= _ms->n;   // apply mask to register

@@ -24,7 +24,22 @@
 
 #include "liquid.internal.h"
 
-unsigned int c_ones[256] = {
+// number of ones in a byte
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   2
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   6
+//  127 0111 1111   :   7
+//  128 1000 0000   :   1
+//  129 1000 0001   :   2
+//  ...
+//  253 1111 1101   :   7
+//  254 1111 1110   :   7
+//  255 1111 1111   :   8
+unsigned int liquid_c_ones[256] = {
     0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
     1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
     1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
@@ -43,59 +58,91 @@ unsigned int c_ones[256] = {
     4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
 };
 
-unsigned int leading_zeros[256] = {
-    8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+// number of ones in a byte, modulo 2
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   0
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   0
+//  127 0111 1111   :   1
+//  128 1000 0000   :   1
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   1
+//  254 1111 1110   :   1
+//  255 1111 1111   :   0
+unsigned char liquid_c_ones_mod2[256] = {
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0
 };
 
-unsigned int count_ones_static(unsigned int _x) {
-    unsigned int c=0;
-#if SIZEOF_INT == 4
-    c += c_ones[  _x      & 0xFF ];
-    c += c_ones[ (_x>> 8) & 0xFF ];
-    c += c_ones[ (_x>>16) & 0xFF ];
-    c += c_ones[ (_x>>24) & 0xFF ];
+// count the number of ones in an integer
+unsigned int liquid_count_ones(unsigned int _x) {
+#if SIZEOF_INT == 2
+    return liquid_count_ones_uint16(_x);
+#elif SIZEOF_INT == 4
+    return liquid_count_ones_uint32(_x);
 #else
     unsigned int i;
+    unsigned int c=0;
     for (i=0; i<SIZEOF_INT; i++) {
-        c += c_ones[ _x & 0xFF ];
+        c += liquid_c_ones[ _x & 0xff ];
         _x >>= 8;
     }   
-#endif
     return c;
+#endif
 }
 
-unsigned int count_leading_zeros(unsigned int _x) 
+// count the number of ones in an integer, modulo 2
+unsigned int liquid_count_ones_mod2(unsigned int _x)
 {
-#if 0
-    // look for first non-zero byte in _x
-
-    int i, B, clz=0;
-
-    for (i=(SIZEOF_UNSIGNED_INT-1)*8; i>=0; i-=8) {
-        B = (_x >> i) & 0xFF;
-        if ( B ) // B != 0
-            return clz + leading_zeros[B];
-        else
-            clz += 8;
-    }   
-    return (SIZEOF_UNSIGNED_INT*8);
+#if SIZEOF_INT == 2
+    return liquid_count_ones_mod2_uint16(_x);
+#elif SIZEOF_INT == 4
+    return liquid_count_ones_mod2_uint32(_x);
 #else
-    return SIZEOF_UNSIGNED_INT*8 - msb_index(_x);
+    unsigned int i;
+    unsigned int c=0;
+    for (i=0; i<SIZEOF_INT; i++) {
+        c += liquid_c_ones_mod2[ _x & 0xff ];
+        _x >>= 8;
+    }   
+    return c & 1;
+#endif
+}
+
+// count the binary dot-product between two integers
+unsigned int liquid_bdotprod(unsigned int _x,
+                             unsigned int _y)
+{
+    unsigned int t = _x & _y;
+#if SIZEOF_INT == 2
+    return liquid_count_ones_mod2_uint16(t);
+#elif SIZEOF_INT == 4
+    return liquid_count_ones_mod2_uint32(t);
+#else
+    unsigned int c=0;
+    for (i=0; i<SIZEOF_INT; i++) {
+        c += liquid_c_ones_mod2[ t & 0xff ];
+        t >>= 8;
+    }   
+    return c & 1;
 #endif
 }
 

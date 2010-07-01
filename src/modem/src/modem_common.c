@@ -132,7 +132,7 @@ unsigned int count_bit_errors(
     unsigned int _s1,
     unsigned int _s2)
 {
-    return count_ones(_s1^_s2);
+    return liquid_count_ones(_s1^_s2);
 }
 
 

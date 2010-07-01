@@ -139,7 +139,7 @@ signed int bsequence_correlate(bsequence _bs1, bsequence _bs2)
         byte = (_bs1->s)[i] ^ (_bs2->s)[i];
         byte = ~byte;
 
-        rxy += 2*c_ones[byte & 0xFF] - 8;
+        rxy += 2*liquid_c_ones[byte & 0xFF] - 8;
     }
 
     // compensate for most-significant block and return
@@ -173,7 +173,7 @@ unsigned int bsequence_accumulate(bsequence _bs)
     unsigned int r=0;
 
     for (i=0; i<_bs->s_len; i++)
-        r += c_ones[(_bs->s)[i] & 0xFF];
+        r += liquid_c_ones[(_bs->s)[i] & 0xFF];
 
     return r;
 }

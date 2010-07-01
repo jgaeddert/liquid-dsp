@@ -92,14 +92,13 @@ void fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsign
 
 // internal
 
-#define bdotprod(x,y) c_ones_mod2[(x)&(y)]
 unsigned char fec_hamming84_compute_syndrome(unsigned char _r)
 {
     printf("  r : 0x%.2X\n", (int)_r);
     return
-        (bdotprod(_r,HAMMING84_H0) << 2) |
-        (bdotprod(_r,HAMMING84_H1) << 1) |
-         bdotprod(_r,HAMMING84_H2);
+        (liquid_bdotprod_uint8(_r,HAMMING84_H0) << 2) |
+        (liquid_bdotprod_uint8(_r,HAMMING84_H1) << 1) |
+         liquid_bdotprod_uint8(_r,HAMMING84_H2);
 }
 
 unsigned char fec_hamming84_decode_symbol(unsigned char _s)

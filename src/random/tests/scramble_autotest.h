@@ -38,7 +38,7 @@ float liquid_scramble_test_entropy(unsigned char * _x,
     // count ones
     unsigned int num_ones=0;
     for (i=0; i<_n; i++)
-        num_ones += c_ones[_x[i]];
+        num_ones += liquid_c_ones[_x[i]];
 
     // compute probabilities (add small value to prevent
     // possible log(0))

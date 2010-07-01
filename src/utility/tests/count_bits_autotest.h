@@ -28,12 +28,12 @@
 // AUTOTEST: count number of ones in an integer
 //
 void autotest_count_ones() {
-    CONTEND_EQUALITY( count_ones(0x0000), 0 );
-    CONTEND_EQUALITY( count_ones(0x0001), 1 );
-    CONTEND_EQUALITY( count_ones(0x0003), 2 );
-    CONTEND_EQUALITY( count_ones(0xFFFF), 16 );
-    CONTEND_EQUALITY( count_ones(0x00FF), 8 );
-    CONTEND_EQUALITY( count_ones(0x5555), 8 );
+    CONTEND_EQUALITY( liquid_count_ones(0x0000), 0 );
+    CONTEND_EQUALITY( liquid_count_ones(0x0001), 1 );
+    CONTEND_EQUALITY( liquid_count_ones(0x0003), 2 );
+    CONTEND_EQUALITY( liquid_count_ones(0xFFFF), 16 );
+    CONTEND_EQUALITY( liquid_count_ones(0x00FF), 8 );
+    CONTEND_EQUALITY( liquid_count_ones(0x5555), 8 );
 }
 
 // 

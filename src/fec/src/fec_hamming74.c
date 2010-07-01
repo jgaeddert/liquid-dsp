@@ -153,14 +153,11 @@ void fec_hamming74_decode(fec _q,
 // internal
 //
 
-// binary dot-product (count ones modulo 2)
-#define bdotprod(x,y) c_ones_mod2[(x)&(y)]
-
 // compute syndrome on received symbol _r
 unsigned char fec_hamming74_compute_syndrome(unsigned char _r)
 {
-    return (bdotprod(_r,HAMMING74_H0) << 0) |
-           (bdotprod(_r,HAMMING74_H1) << 1) |
-           (bdotprod(_r,HAMMING74_H2) << 2);
+    return (liquid_bdotprod_uint8(_r,HAMMING74_H0) << 0) |
+           (liquid_bdotprod_uint8(_r,HAMMING74_H1) << 1) |
+           (liquid_bdotprod_uint8(_r,HAMMING74_H2) << 2);
 }
 

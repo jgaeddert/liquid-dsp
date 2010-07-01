@@ -18,8 +18,66 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//
-// Index of most-significant bit
+
+#include "liquid.internal.h"
+
+// number of leading zeros in a byte
+//  0   0000 0000   :   8
+//  1   0000 0001   :   7
+//  2   0000 0010   :   6
+//  3   0000 0011   :   6
+//  4   0000 0100   :   5
+//  ...
+//  126 0111 1110   :   1
+//  127 0111 1111   :   1
+//  128 1000 0000   :   0
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   0
+//  254 1111 1110   :   0
+//  255 1111 1111   :   0
+unsigned int leading_zeros[256] = {
+    8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+// count leading zeros in an integer (like leading_zeros[], but
+// extending to integer)
+unsigned int count_leading_zeros(unsigned int _x) 
+{
+#if 0
+    // look for first non-zero byte in _x
+
+    int i, B, clz=0;
+
+    for (i=(SIZEOF_UNSIGNED_INT-1)*8; i>=0; i-=8) {
+        B = (_x >> i) & 0xff;
+        if ( B ) // B != 0
+            return clz + leading_zeros[B];
+        else
+            clz += 8;
+    }   
+    return (SIZEOF_UNSIGNED_INT*8);
+#else
+    return SIZEOF_UNSIGNED_INT*8 - msb_index(_x);
+#endif
+}
+
+// computes the index of the most-significant bit
 //
 // Examples:
 //  0x00000000  :   0
@@ -32,9 +90,6 @@
 //  ...
 //  0x80000000  :   32
 //
-
-#include "liquid.internal.h"
-
 unsigned int msb_index(unsigned int _x)
 {
     unsigned int bits;

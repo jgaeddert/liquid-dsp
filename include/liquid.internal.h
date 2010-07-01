@@ -308,8 +308,6 @@ struct channel_s {
 #define FEC_SOFTBIT_1       (255)
 #define FEC_SOFTBIT_ERASURE (127)
 
-extern unsigned char c_ones_mod2[256];
-
 // checksum / cyclic redundancy check (crc)
 
 #define CRC32_POLY 0x04C11DB7
@@ -1722,31 +1720,50 @@ extern struct msequence_s msequence_default[13];
 // Miscellaneous utilities
 //
 
+
 // number of 1's in byte
-extern unsigned int c_ones[256];
+extern unsigned int liquid_c_ones[256];
 
 // Count the number of ones in an integer
-unsigned int count_ones_static(unsigned int _x); 
+unsigned int liquid_count_ones(unsigned int _x); 
 
 // Count the number of ones in an integer, inline insertion
-#define count_ones_inline_uint2(x) (    \
-    c_ones[  (x)      & 0xFF ] +        \
-    c_ones[ ((x)>>8)  & 0xFF ])
+#define liquid_count_ones_uint16(x) (           \
+    liquid_c_ones[  (x)      & 0xff ] +         \
+    liquid_c_ones[ ((x)>>8)  & 0xff ])
 
-#define count_ones_inline_uint4(x) (    \
-    c_ones[  (x)      & 0xFF ] +        \
-    c_ones[ ((x)>> 8) & 0xFF ] +        \
-    c_ones[ ((x)>>16) & 0xFF ] +        \
-    c_ones[ ((x)>>24) & 0xFF ])
+#define liquid_count_ones_uint32(x) (           \
+    liquid_c_ones[  (x)      & 0xff ] +         \
+    liquid_c_ones[ ((x)>> 8) & 0xff ] +         \
+    liquid_c_ones[ ((x)>>16) & 0xff ] +         \
+    liquid_c_ones[ ((x)>>24) & 0xff ])
 
-#if SIZEOF_INT == 2
-#  define count_ones(x) count_ones_inline_uint2(x)
-#elif SIZEOF_INT == 4
-#  define count_ones(x) count_ones_inline_uint4(x)
-#endif
 
-//#define count_ones(x) count_ones_static(x)
+// count 1's in a byte modulo 2
+extern unsigned char liquid_c_ones_mod2[256];
 
+// count number of ones in an integer, modulo 2
+unsigned int liquid_count_ones_mod2(unsigned int _x);
+
+// Count the number of ones in an integer, inline insertion
+#define liquid_count_ones_mod2_uint16(x) ((         \
+    liquid_c_ones_mod2[  (x)      & 0xff ] +        \
+    liquid_c_ones_mod2[ ((x)>>8)  & 0xff ]) % 2)
+
+#define liquid_count_ones_mod2_uint32(x) ((         \
+    liquid_c_ones_mod2[  (x)       & 0xff ] +       \
+    liquid_c_ones_mod2[ ((x)>> 8)  & 0xff ] +       \
+    liquid_c_ones_mod2[ ((x)>>16)  & 0xff ] +       \
+    liquid_c_ones_mod2[ ((x)>>24)  & 0xff ]) % 2)
+
+// compute binary dot-products (inline pre-processor macros)
+#define liquid_bdotprod_uint8(x,y)  liquid_c_ones_mod2[(x)&(y)]
+#define liquid_bdotprod_uint16(x,y) liquid_count_ones_mod2_uint16((x)&(y))
+#define liquid_bdotprod_uint32(x,y) liquid_count_ones_mod2_uint32((x)&(y))
+
+// compute bindary dot-product between two integers
+unsigned int liquid_bdotprod(unsigned int _x,
+                             unsigned int _y);
 
 // number of leading zeros in byte
 extern unsigned int leading_zeros[256];
@@ -1758,3 +1775,4 @@ unsigned int count_leading_zeros(unsigned int _x);
 unsigned int msb_index(unsigned int _x);
 
 #endif // __LIQUID_INTERNAL_H__
+
