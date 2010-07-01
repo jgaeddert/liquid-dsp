@@ -3242,7 +3242,7 @@ void unscramble_data(unsigned char * _x, unsigned int _len);
 
 typedef struct bsequence_s * bsequence;
 
-// Create a binary sequence of a specific length
+// Create a binary sequence of a specific length (number of bits)
 bsequence bsequence_create(unsigned int num_bits);
 
 // Free memory in a binary sequence
@@ -3255,18 +3255,22 @@ void bsequence_clear(bsequence _bs);
 void bsequence_print(bsequence _bs);
 
 // Push bit into to back of a binary sequence
-void bsequence_push(bsequence _bs, unsigned int b);
+void bsequence_push(bsequence _bs,
+                    unsigned int _bit);
 
 // circular shift (left)
 void bsequence_circshift(bsequence _bs);
 
-// Correlates two binary sequences together
+// Correlate two binary sequences together
 int bsequence_correlate(bsequence _bs1, bsequence _bs2);
 
-// Binary addition of two bit sequences
+// compute the binary addition of two bit sequences
 void bsequence_add(bsequence _bs1, bsequence _bs2, bsequence _bs3);
 
-// Accumulates the 1's in a binary sequence
+// compute the binary multiplication of two bit sequences
+void bsequence_mul(bsequence _bs1, bsequence _bs2, bsequence _bs3);
+
+// accumulate the 1's in a binary sequence
 unsigned int bsequence_accumulate(bsequence _bs);
 
 // accessor functions
@@ -3318,6 +3322,8 @@ unsigned int msequence_get_length(msequence _ms);
 
 //typedef struct csequence_s * csequence;
 
+// intialize two sequences to complementary codes.  sequences must
+// be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
 void bsequence_create_ccodes(bsequence _a, bsequence _b);
 
 // 

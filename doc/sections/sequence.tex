@@ -6,3 +6,55 @@
 \label{module:sequence}
 linear feedback shift registers, complementary codes, etc.
 
+\subsection{{\tt bsequence}, generic binary sequence}
+\label{module:sequence:bsequence}
+...
+This is particularly useful in wireless communications for correlating long
+bit sequences in seeking frame preambles and packet headers.
+%This is also useful in the physical layer description 
+The {\tt bsequence} object internally stores its sequence of bits as an array
+of bytes which handles shifting values even faster than the {\tt window}
+family of objects.
+
+\begin{description}
+\item[{\tt bsequence\_create(num\_bits)}]
+    creates a {\tt bsequence} object of length {\tt num\_bits}, filled
+    initially with zeros.
+\item[{\tt bsequence\_destroy()}]
+    destroys the object, freeing all internally-allocated memory.
+\item[{\tt bsequence\_clear()}]
+    resets the sequence to all zeros.
+\item[{\tt bsequence\_print()}]
+    prints the contents of the sequence to the screen.
+\item[{\tt bsequence\_push()}]
+    pushes a bit into the back (right side) of a binary sequence, and in turn
+    drops the left-most bit.
+    Only the right-most (least-significant) bit of the input is regarded.
+\item[{\tt bsequence\_circshift()}]
+    circularly shifts a binary sequence left, pushing the left-most bit back
+    into the right-most position.
+\item[{\tt bsequence\_correlate()}]
+    runs a binary correlation of two {\tt bsequence} objects, and returns XXX.
+\item[{\tt bsequence\_add()}]
+    computes the binary addition of two sequences
+\item[{\tt bsequence\_mul()}]
+    computes the binary multiplication of two sequences
+\item[{\tt bsequence\_accumulate()}]
+    accumulates the {\tt 1}s in a binary sequence
+\item[{\tt bsequence\_get\_length()}]
+    returns the length of the sequence (number of bits)
+\item[{\tt bsequence\_index()}]
+    returns the bit at a particular index of the sequence
+\end{description}
+
+
+\subsection{{\tt msequence}, $m$-sequence}
+\label{module:sequence:msequence}
+The {\tt msequence} object in \liquid\ is really just a linear feedback shift
+register (LFSR).
+
+
+\subsection{complementary codes}
+\label{module:sequence:ccodes}
+
+
