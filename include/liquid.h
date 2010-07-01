@@ -3324,28 +3324,45 @@ void bsequence_create_ccodes(bsequence _a, bsequence _b);
 // MODULE : utility
 //
 
-// packs bytes with one bit of information into a byte
-void pack_bytes(unsigned char * input,
-                unsigned int input_length,
-                unsigned char * output,
-                unsigned int output_length,
-                unsigned int *num_written);
+// pack one-bit symbols into bytes (8-bit symbols)
+//  _sym_in             :   input symbols array [size: _sym_in_len x 1]
+//  _sym_in_len         :   number of input symbols
+//  _sym_out            :   output symbols
+//  _sym_out_len        :   number of bytes allocated to output symbols array
+//  _num_written        :   number of output symbols actually written
+void pack_bytes(unsigned char * _sym_in,
+                unsigned int _sym_in_len,
+                unsigned char * _sym_out,
+                unsigned int _sym_out_len,
+                unsigned int * _num_written);
 
-// unpacks bytes with 8 bits of information
-void unpack_bytes(unsigned char * input,
-                  unsigned int input_length,
-                  unsigned char * output,
-                  unsigned int output_length,
-                  unsigned int *num_written);
+// unpack 8-bit symbols (full bytes) into one-bit symbols
+//  _sym_in             :   input symbols array [size: _sym_in_len x 1]
+//  _sym_in_len         :   number of input symbols
+//  _sym_out            :   output symbols array
+//  _sym_out_len        :   number of bytes allocated to output symbols array
+//  _num_written        :   number of output symbols actually written
+void unpack_bytes(unsigned char * _sym_in,
+                  unsigned int _sym_in_len,
+                  unsigned char * _sym_out,
+                  unsigned int _sym_out_len,
+                  unsigned int * _num_written);
 
-// repacks bytes with arbitrary symbol sizes
-void repack_bytes(unsigned char * input,
-                  unsigned int input_sym_size,
-                  unsigned int input_length,
-                  unsigned char * output,
-                  unsigned int output_sym_size,
-                  unsigned int output_length,
-                  unsigned int *num_written);
+// repack bytes with arbitrary symbol sizes
+//  _sym_in             :   input symbols array [size: _sym_in_len x 1]
+//  _sym_in_bps         :   number of bits per input symbol
+//  _sym_in_len         :   number of input symbols
+//  _sym_out            :   output symbols array
+//  _sym_out_bps        :   number of bits per output symbol
+//  _sym_out_len        :   number of bytes allocated to output symbols array
+//  _num_written        :   number of output symbols actually written
+void repack_bytes(unsigned char * _sym_in,
+                  unsigned int _sym_in_bps,
+                  unsigned int _sym_in_len,
+                  unsigned char * _sym_out,
+                  unsigned int _sym_out_bps,
+                  unsigned int _sym_out_len,
+                  unsigned int * _num_written);
 
 #ifdef __cplusplus
 } /* extern "C" */

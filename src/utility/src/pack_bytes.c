@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +20,9 @@
  */
 
 //
-// Byte-packing utilities
+// pack_bytes.c
+//
+// Useful byte-packing utilities
 //
 
 #include <stdio.h>
@@ -27,18 +30,23 @@
 
 #include "liquid.internal.h"
 
-void pack_bytes(
-    unsigned char * input,
-    unsigned int input_length,
-    unsigned char * output,
-    unsigned int output_length,
-    unsigned int * num_written)
+// pack one-bit symbols into bytes (8-bit symbols)
+//  _sym_in             :   input symbols array [size: _sym_in_len x 1]
+//  _sym_in_len         :   number of input symbols
+//  _sym_out            :   output symbols
+//  _sym_out_len        :   number of bytes allocated to output symbols array
+//  _num_written        :   number of output symbols actually written
+void pack_bytes(unsigned char * _sym_in,
+                unsigned int _sym_in_len,
+                unsigned char * _sym_out,
+                unsigned int _sym_out_len,
+                unsigned int * _num_written)
 {
-    div_t d = div(input_length,8);
-    unsigned int req_output_length = d.quot;
-    req_output_length += ( d.rem > 0 ) ? 1 : 0;
-    if ( output_length < req_output_length ) {
-        perror("error: pack_bytes(), output too short\n");
+    div_t d = div(_sym_in_len,8);
+    unsigned int req__sym_out_len = d.quot;
+    req__sym_out_len += ( d.rem > 0 ) ? 1 : 0;
+    if ( _sym_out_len < req__sym_out_len ) {
+        fprintf(stderr,"error: pack_bytes(), output too short\n");
         exit(-1);
     }
     
@@ -46,11 +54,11 @@ void pack_bytes(
     unsigned int N = 0;         // number of bytes written to output
     unsigned char byte = 0;
     
-    for (i=0; i<input_length; i++) {
-        byte |= input[i] & 0x01;
+    for (i=0; i<_sym_in_len; i++) {
+        byte |= _sym_in[i] & 0x01;
         
         if ( (i+1)%8 == 0 ) {
-            output[N++] = byte;
+            _sym_out[N++] = byte;
             byte = 0;
         } else {
             byte <<= 1;
@@ -58,107 +66,128 @@ void pack_bytes(
     }
 
     if ( i%8 != 0 )
-        output[N++] = byte >> 1;
+        _sym_out[N++] = byte >> 1;
     
-    *num_written = N;
+    *_num_written = N;
 }
 
 
 
-void unpack_bytes(
-    unsigned char * input,
-    unsigned int input_length,
-    unsigned char * output,
-    unsigned int output_length,
-    unsigned int * num_written)
+// unpack 8-bit symbols (full bytes) into one-bit symbols
+//  _sym_in             :   input symbols array [size: _sym_in_len x 1]
+//  _sym_in_len         :   number of input symbols
+//  _sym_out            :   output symbols array
+//  _sym_out_len        :   number of bytes allocated to output symbols array
+//  _num_written        :   number of output symbols actually written
+void unpack_bytes(unsigned char * _sym_in,
+                  unsigned int _sym_in_len,
+                  unsigned char * _sym_out,
+                  unsigned int _sym_out_len,
+                  unsigned int * _num_written)
 {
     unsigned int i;
-    unsigned int N = 0;
+    unsigned int n = 0;
     unsigned char byte;
 
-    if ( output_length < 8*input_length ) {
-        perror("error: unpack_bytes(), output too short\n");
+    if ( _sym_out_len < 8*_sym_in_len ) {
+        fprintf(stderr,"error: unpack_bytes(), output too short\n");
         exit(-1);
     }
     
-    for (i=0; i<input_length; i++) {
-        byte = input[i];
-        output[N++] = (byte >> 7) & 0x01;
-        output[N++] = (byte >> 6) & 0x01;
-        output[N++] = (byte >> 5) & 0x01;
-        output[N++] = (byte >> 4) & 0x01;
-        output[N++] = (byte >> 3) & 0x01;
-        output[N++] = (byte >> 2) & 0x01;
-        output[N++] = (byte >> 1) & 0x01;
-        output[N++] =  byte       & 0x01;
+    for (i=0; i<_sym_in_len; i++) {
+        // read input byte
+        byte = _sym_in[i];
+
+        // unpack byte into 8 one-bit symbols
+        _sym_out[n++] = (byte >> 7) & 0x01;
+        _sym_out[n++] = (byte >> 6) & 0x01;
+        _sym_out[n++] = (byte >> 5) & 0x01;
+        _sym_out[n++] = (byte >> 4) & 0x01;
+        _sym_out[n++] = (byte >> 3) & 0x01;
+        _sym_out[n++] = (byte >> 2) & 0x01;
+        _sym_out[n++] = (byte >> 1) & 0x01;
+        _sym_out[n++] =  byte       & 0x01;
     }
 
-    *num_written = N;
+    *_num_written = n;
 }
 
-void repack_bytes(
-    unsigned char * input,
-    unsigned int input_sym_size,
-    unsigned int input_length,
-    unsigned char * output,
-    unsigned int output_sym_size,
-    unsigned int output_length,
-    unsigned int * num_written)
+// repack bytes with arbitrary symbol sizes
+//  _sym_in             :   input symbols array [size: _sym_in_len x 1]
+//  _sym_in_bps         :   number of bits per input symbol
+//  _sym_in_len         :   number of input symbols
+//  _sym_out            :   output symbols array
+//  _sym_out_bps        :   number of bits per output symbol
+//  _sym_out_len        :   number of bytes allocated to output symbols array
+//  _num_written        :   number of output symbols actually written
+void repack_bytes(unsigned char * _sym_in,
+                  unsigned int _sym_in_bps,
+                  unsigned int _sym_in_len,
+                  unsigned char * _sym_out,
+                  unsigned int _sym_out_bps,
+                  unsigned int _sym_out_len,
+                  unsigned int * _num_written)
 {
-    div_t d = div(input_length*input_sym_size,output_sym_size);
-    unsigned int req_output_length = d.quot;
-    req_output_length += ( d.rem > 0 ) ? 1 : 0;
-    if ( output_length < req_output_length ) {
-        perror("error: repack_bytes(), output too short\n");
-        printf("  %u %u-bit symbols cannot be packed into %u %u-bit elements\n",
-                input_length, input_sym_size,
-                output_length, output_sym_size);
+    // compute number of output symbols and determine if output array
+    // is sufficiently sized
+    div_t d = div(_sym_in_len*_sym_in_bps,_sym_out_bps);
+    unsigned int req__sym_out_len = d.quot;
+    req__sym_out_len += ( d.rem > 0 ) ? 1 : 0;
+    if ( _sym_out_len < req__sym_out_len ) {
+        fprintf(stderr,"error: repack_bytes(), output too short\n");
+        fprintf(stderr,"  %u %u-bit symbols cannot be packed into %u %u-bit elements\n",
+                _sym_in_len, _sym_in_bps,
+                _sym_out_len, _sym_out_bps);
         exit(-1);
     }
     
     unsigned int i;
-    unsigned char sym_in = 0;
-    unsigned char sym_out = 0;
+    unsigned char s_in = 0;     // input symbol
+    unsigned char s_out = 0;    // output symbol
 
     // there is probably a more efficient way to do this, but...
-    unsigned int total_bits = input_length*input_sym_size;
-    unsigned int i_in = 0;  // input index
-    unsigned int i_out = 0; // output index
+    unsigned int total_bits = _sym_in_len*_sym_in_bps;
+    unsigned int i_in = 0;  // input index counter
+    unsigned int i_out = 0; // output index counter
     unsigned int k=0;       // input symbol enable
     unsigned int n=0;       // output symbol enable
     unsigned int v;         // bit mask
 
     for (i=0; i<total_bits; i++) {
-        sym_out <<= 1;
+        // shift output symbol by one bit
+        s_out <<= 1;
 
-        // push input if necessary
+        // pop input if necessary
         if ( k == 0 ) {
-            //printf("\n\ninput[%d] = %d", i_in, input[i_in]);
-            sym_in = input[i_in++];
+            //printf("\n\n_sym_in[%d] = %d", i_in, _sym_in[i_in]);
+            s_in = _sym_in[i_in++];
         }
 
-        v = input_sym_size - k - 1;
-        sym_out |= (sym_in >> v) & 0x01;
-        //printf("\n    b = %d, v = %d, sym_in = %d, sym_out = %d", (sym_in >> v) & 0x01, v, sym_in, sym_out );
+        // compute shift amount and append input bit at index
+        // to output symbol
+        v = _sym_in_bps - k - 1;
+        s_out |= (s_in >> v) & 0x01;
+        //printf("\n    b = %d, v = %d, s_in = %d, sym_out = %d", (sym_in >> v) & 0x01, v, s_in, sym_out );
 
         // push output if available    
-        if ( n == output_sym_size-1 ) {
-            //printf("\n  output[%d] = %d", i_out, sym_out);
-            output[i_out++] = sym_out;
-            sym_out = 0;
+        if ( n == _sym_out_bps-1 ) {
+            //printf("\n  _sym_out[%d] = %d", i_out, sym_out);
+            _sym_out[i_out++] = s_out;
+            s_out = 0;
         }
-        k = (k+1) % input_sym_size;
-        n = (n+1) % output_sym_size;
 
+        // update input/output symbol pop/push flags
+        k = (k+1) % _sym_in_bps;
+        n = (n+1) % _sym_out_bps;
     }
 
     // if uneven, push zeros into remaining output symbol
-    if (i_out != req_output_length) {
-        for (i=n; i<output_sym_size; i++)
-            sym_out <<= 1;
-        output[i_out++] = sym_out;
+    if (i_out != req__sym_out_len) {
+        for (i=n; i<_sym_out_bps; i++)
+            s_out <<= 1;
+        _sym_out[i_out++] = s_out;
     }
     
-    *num_written = i_out;
+    *_num_written = i_out;
 }
 
