@@ -37,25 +37,25 @@ void autotest_pack_bytes_01() {
 
     // Test packing entire array
     unsigned char output_test_01[4] = {0x00, 0xFF, 0x0F, 0xAA};
-    pack_bytes( input, 32, output, 8, &N );
+    liquid_pack_bytes( input, 32, output, 8, &N );
     CONTEND_EQUALITY( N, 4 );
     CONTEND_SAME_DATA( output, output_test_01, 4 );
 
     // Test packing only 28 elements
     unsigned char output_test_02[4] = {0x00, 0xFF, 0x0F, 0x0A};
-    pack_bytes( input, 28, output, 8, &N );
+    liquid_pack_bytes( input, 28, output, 8, &N );
     CONTEND_EQUALITY( N, 4 );
     CONTEND_SAME_DATA( output, output_test_02, 4 );
     
     // Test packing only 25 elements
     unsigned char output_test_03[4] = {0x00, 0xFF, 0x0F, 0x01};
-    pack_bytes( input, 25, output, 8, &N );
+    liquid_pack_bytes( input, 25, output, 8, &N );
     CONTEND_EQUALITY( N, 4 );
     CONTEND_SAME_DATA( output, output_test_03, 4 );
 
     // Test packing only 24 elements (3 bytes)
     unsigned char output_test_04[3] = {0x00, 0xFF, 0x0F};
-    pack_bytes( input, 24, output, 8, &N );
+    liquid_pack_bytes( input, 24, output, 8, &N );
     CONTEND_EQUALITY( N, 3 );
     CONTEND_SAME_DATA( output, output_test_04, 3 );
 }
@@ -80,7 +80,7 @@ void autotest_unpack_bytes_01() {
     };
     
     // Test packing entire array
-    unpack_bytes( input, 4, output, 40, &N );
+    liquid_unpack_bytes( input, 4, output, 40, &N );
     CONTEND_EQUALITY( N, 32 );
     CONTEND_SAME_DATA( output, output_test, 32 );
 }
@@ -110,7 +110,7 @@ void autotest_repack_bytes_01() {
     unsigned char output[6];
     unsigned int N;
 
-    repack_bytes( input, 3, 4, output, 2, 6, &N );
+    liquid_repack_bytes( input, 3, 4, output, 2, 6, &N );
 
     CONTEND_EQUALITY( N, 6 );
     CONTEND_SAME_DATA( output, output_test, 6 );
@@ -134,7 +134,7 @@ void autotest_repack_bytes_02() {
     unsigned char output[5];
     unsigned int N;
 
-    repack_bytes( input, 5, 3, output, 3, 5, &N );
+    liquid_repack_bytes( input, 5, 3, output, 3, 5, &N );
 
     CONTEND_EQUALITY( N, 5 );
     CONTEND_SAME_DATA( output, output_test, 5 );
@@ -158,7 +158,7 @@ void autotest_repack_bytes_03() {
     unsigned char output[3];
     unsigned int N;
 
-    repack_bytes( input, 3, 5, output, 5, 3, &N );
+    liquid_repack_bytes( input, 3, 5, output, 5, 3, &N );
 
     CONTEND_EQUALITY( N, 3 );
     CONTEND_SAME_DATA( output, output_test, 3 );
@@ -182,7 +182,7 @@ void autotest_repack_bytes_04_uneven() {
     unsigned char output[5];
     unsigned int N;
 
-    repack_bytes( input, 3, 3, output, 2, 5, &N );
+    liquid_repack_bytes( input, 3, 3, output, 2, 5, &N );
 
     CONTEND_EQUALITY( N, 5 );
     CONTEND_SAME_DATA( output, output_test, 5 );

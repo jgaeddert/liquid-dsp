@@ -3330,11 +3330,11 @@ void bsequence_create_ccodes(bsequence _a, bsequence _b);
 //  _sym_out            :   output symbols
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void pack_bytes(unsigned char * _sym_in,
-                unsigned int _sym_in_len,
-                unsigned char * _sym_out,
-                unsigned int _sym_out_len,
-                unsigned int * _num_written);
+void liquid_pack_bytes(unsigned char * _sym_in,
+                       unsigned int _sym_in_len,
+                       unsigned char * _sym_out,
+                       unsigned int _sym_out_len,
+                       unsigned int * _num_written);
 
 // unpack 8-bit symbols (full bytes) into one-bit symbols
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
@@ -3342,11 +3342,11 @@ void pack_bytes(unsigned char * _sym_in,
 //  _sym_out            :   output symbols array
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void unpack_bytes(unsigned char * _sym_in,
-                  unsigned int _sym_in_len,
-                  unsigned char * _sym_out,
-                  unsigned int _sym_out_len,
-                  unsigned int * _num_written);
+void liquid_unpack_bytes(unsigned char * _sym_in,
+                         unsigned int _sym_in_len,
+                         unsigned char * _sym_out,
+                         unsigned int _sym_out_len,
+                         unsigned int * _num_written);
 
 // repack bytes with arbitrary symbol sizes
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
@@ -3356,13 +3356,13 @@ void unpack_bytes(unsigned char * _sym_in,
 //  _sym_out_bps        :   number of bits per output symbol
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void repack_bytes(unsigned char * _sym_in,
-                  unsigned int _sym_in_bps,
-                  unsigned int _sym_in_len,
-                  unsigned char * _sym_out,
-                  unsigned int _sym_out_bps,
-                  unsigned int _sym_out_len,
-                  unsigned int * _num_written);
+void liquid_repack_bytes(unsigned char * _sym_in,
+                         unsigned int _sym_in_bps,
+                         unsigned int _sym_in_len,
+                         unsigned char * _sym_out,
+                         unsigned int _sym_out_bps,
+                         unsigned int _sym_out_len,
+                         unsigned int * _num_written);
  
 // Count the number of ones in an integer
 unsigned int liquid_count_ones(unsigned int _x); 

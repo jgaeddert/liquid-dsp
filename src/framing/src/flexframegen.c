@@ -375,9 +375,9 @@ void flexframegen_modulate_payload(flexframegen _fg)
 
     // repack 8-bit payload bytes into 'mod_bps'-bit payload symbols
     unsigned int num_written;
-    repack_bytes(_fg->payload,     8, _fg->props.payload_len,
-                 _fg->payload_sym,  _fg->props.mod_bps,   _fg->num_payload_symbols,
-                 &num_written);
+    liquid_repack_bytes(_fg->payload,     8, _fg->props.payload_len,
+                        _fg->payload_sym,  _fg->props.mod_bps,   _fg->num_payload_symbols,
+                        &num_written);
 
     // modulate symbols
     unsigned int i;

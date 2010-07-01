@@ -738,9 +738,9 @@ void flexframesync_decode_header(flexframesync _fs)
 {
     // pack 256 1-bit header symbols into 32 8-bit bytes
     unsigned int num_written;
-    pack_bytes(_fs->header_sym, 256,
-               _fs->header_enc, 32,
-               &num_written);
+    liquid_pack_bytes(_fs->header_sym, 256,
+                      _fs->header_enc, 32,
+                      &num_written);
     assert(num_written==32);
 
     // run packet decoder
@@ -799,9 +799,9 @@ void flexframesync_assemble_payload(flexframesync _fs)
 {
     // pack (8-bit) bytes from (bps_payload-bit) symbols
     unsigned int num_written;
-    repack_bytes(_fs->payload_sym, _fs->bps_payload, _fs->num_payload_symbols,
-                 _fs->payload,     8,                _fs->payload_numalloc,
-                 &num_written);
+    liquid_repack_bytes(_fs->payload_sym, _fs->bps_payload, _fs->num_payload_symbols,
+                        _fs->payload,     8,                _fs->payload_numalloc,
+                        &num_written);
 }
 
 

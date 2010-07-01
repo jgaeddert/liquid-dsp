@@ -36,11 +36,11 @@
 //  _sym_out            :   output symbols
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void pack_bytes(unsigned char * _sym_in,
-                unsigned int _sym_in_len,
-                unsigned char * _sym_out,
-                unsigned int _sym_out_len,
-                unsigned int * _num_written)
+void liquid_pack_bytes(unsigned char * _sym_in,
+                       unsigned int _sym_in_len,
+                       unsigned char * _sym_out,
+                       unsigned int _sym_out_len,
+                       unsigned int * _num_written)
 {
     div_t d = div(_sym_in_len,8);
     unsigned int req__sym_out_len = d.quot;
@@ -79,11 +79,11 @@ void pack_bytes(unsigned char * _sym_in,
 //  _sym_out            :   output symbols array
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void unpack_bytes(unsigned char * _sym_in,
-                  unsigned int _sym_in_len,
-                  unsigned char * _sym_out,
-                  unsigned int _sym_out_len,
-                  unsigned int * _num_written)
+void liquid_unpack_bytes(unsigned char * _sym_in,
+                         unsigned int _sym_in_len,
+                         unsigned char * _sym_out,
+                         unsigned int _sym_out_len,
+                         unsigned int * _num_written)
 {
     unsigned int i;
     unsigned int n = 0;
@@ -120,13 +120,13 @@ void unpack_bytes(unsigned char * _sym_in,
 //  _sym_out_bps        :   number of bits per output symbol
 //  _sym_out_len        :   number of bytes allocated to output symbols array
 //  _num_written        :   number of output symbols actually written
-void repack_bytes(unsigned char * _sym_in,
-                  unsigned int _sym_in_bps,
-                  unsigned int _sym_in_len,
-                  unsigned char * _sym_out,
-                  unsigned int _sym_out_bps,
-                  unsigned int _sym_out_len,
-                  unsigned int * _num_written)
+void liquid_repack_bytes(unsigned char * _sym_in,
+                         unsigned int _sym_in_bps,
+                         unsigned int _sym_in_len,
+                         unsigned char * _sym_out,
+                         unsigned int _sym_out_bps,
+                         unsigned int _sym_out_len,
+                         unsigned int * _num_written)
 {
     // compute number of output symbols and determine if output array
     // is sufficiently sized

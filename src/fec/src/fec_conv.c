@@ -136,11 +136,11 @@ void fec_conv_decode(fec _q,
 
     // unpack bytes
     unsigned int num_written;
-    unpack_bytes(_msg_enc,              // encoded message (bytes)
-                 _q->num_enc_bytes,     // encoded message length (#bytes)
-                 _q->enc_bits,          // encoded messsage (bits)
-                 _q->num_enc_bytes*8,   // encoded message length (#bits)
-                 &num_written);
+    liquid_unpack_bytes(_msg_enc,               // encoded message (bytes)
+                        _q->num_enc_bytes,      // encoded message length (#bytes)
+                        _q->enc_bits,           // encoded messsage (bits)
+                        _q->num_enc_bytes*8,    // encoded message length (#bits)
+                        &num_written);
 
 #if VERBOSE_FEC_CONV
     unsigned int i;
