@@ -25,7 +25,7 @@ family of objects.
 \item[{\tt bsequence\_clear()}]
     resets the sequence to all zeros.
 \item[{\tt bsequence\_init()}]
-    initializes the sequence on an external array of characters.
+    initializes the sequence on an external array.
 \item[{\tt bsequence\_print()}]
     prints the contents of the sequence to the screen.
 \item[{\tt bsequence\_push()}]
@@ -45,15 +45,30 @@ family of objects.
     For example, correlating the sequence {\tt 11110000} with {\tt 11001100}
     yields {\tt 4}.
 \item[{\tt bsequence\_add()}]
-    computes the binary addition of two sequences
+    computes the binary addition of two sequences.
+    Binary addition of two bits is equivalent to their logical
+    {\em exclusive or}, $\oplus$.
+    For example, the binary addition of
+    {\tt 01100011} and
+    {\tt 11011001} is
+    {\tt 10111010}.
 \item[{\tt bsequence\_mul()}]
-    computes the binary multiplication of two sequences
+    computes the binary multiplication of two sequences.
+    Binary multiplication of two bits is equivalent to their logical
+    {\em and}, $\land$.
+    For example, the binary multiplication of
+    {\tt 01100011} and
+    {\tt 11011001} is
+    {\tt 01000001}.
 \item[{\tt bsequence\_accumulate()}]
     accumulates the {\tt 1}s in a binary sequence
 \item[{\tt bsequence\_get\_length()}]
     returns the length of the sequence (number of bits)
 \item[{\tt bsequence\_index()}]
-    returns the bit at a particular index of the sequence
+    returns the bit at a particular index of the sequence, starting from the
+    right-most bit.
+    For example, indexing the sequence {\tt 00000001} at index {\tt 0} gives
+    the value {\tt 1}.
 \end{description}
 
 
