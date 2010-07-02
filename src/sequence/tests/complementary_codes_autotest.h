@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __COMPLEMENTARY_CODES_AUTOTEST_H__
-#define __COMPLEMENTARY_CODES_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -29,11 +26,11 @@
 // AUTOTEST: validate autocorrelation properties of
 //           complementary codes
 //
-void autotest_ccodes() {
+void complementary_codes_test(unsigned int _n)
+{
     // create and initialize codes
-    unsigned int n=32;
-    bsequence a = bsequence_create(n);
-    bsequence b = bsequence_create(n);
+    bsequence a = bsequence_create(_n);
+    bsequence b = bsequence_create(_n);
     bsequence_create_ccodes(a, b);
 
     // print
@@ -43,21 +40,21 @@ void autotest_ccodes() {
     }
 
     // generate test sequences
-    bsequence ax = bsequence_create(n);
-    bsequence bx = bsequence_create(n);
+    bsequence ax = bsequence_create(_n);
+    bsequence bx = bsequence_create(_n);
     bsequence_create_ccodes(ax, bx);
 
     unsigned int i;
     signed int raa, rbb;
-    for (i=0; i<n; i++) {
+    for (i=0; i<_n; i++) {
         // correlate like sequences
-        raa = 2*bsequence_correlate(a,ax) - n;
-        rbb = 2*bsequence_correlate(b,bx) - n;
+        raa = 2*bsequence_correlate(a,ax) - _n;
+        rbb = 2*bsequence_correlate(b,bx) - _n;
 
         if (liquid_autotest_verbose)
             printf("    %3u : raa + rbb = %d\n", i, raa+rbb);
 
-        if (i==0) { CONTEND_EQUALITY(raa+rbb,2*n);  }
+        if (i==0) { CONTEND_EQUALITY(raa+rbb,2*_n); }
         else      { CONTEND_EQUALITY(raa+rbb,0);    }
 
         bsequence_circshift(ax);
@@ -71,5 +68,11 @@ void autotest_ccodes() {
     bsequence_destroy(bx);
 }
 
-#endif 
+void autotest_complementary_code_n8()       {   complementary_codes_test(8);    }
+void autotest_complementary_code_n16()      {   complementary_codes_test(16);   }
+void autotest_complementary_code_n32()      {   complementary_codes_test(32);   }
+void autotest_complementary_code_n64()      {   complementary_codes_test(64);   }
+void autotest_complementary_code_n128()     {   complementary_codes_test(128);  }
+void autotest_complementary_code_n256()     {   complementary_codes_test(256);  }
+void autotest_complementary_code_n512()     {   complementary_codes_test(512);  }
 
