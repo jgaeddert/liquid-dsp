@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -50,27 +51,47 @@ struct msequence_s msequence_default[13] = {
     {12,    0x0829, 0x0800, 4095,   0x0800, 0}
 };
 
+// create a maximal-length sequence (m-sequence) object with
+// an internal shift register length of _m bits.  sequence will
+// be initialized to default sequence
 msequence msequence_create(unsigned int _m)
 {
+    // validate input
     if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M) {
-        printf("error: msequence_create(), m not in range\n");
+        fprintf(stderr,"error: msequence_create(), m not in range\n");
         exit(1);
     }
+    
+    // allocate memory for msequence object
     msequence ms = (msequence) malloc(sizeof(struct msequence_s));
+
+    // copy default sequence
     memmove(ms, &msequence_default[_m], sizeof(struct msequence_s));
+
     return ms;
 }
 
+// destroy an msequence object, freeing all internal memory
 void msequence_destroy(msequence _ms)
 {
     free(_ms);
 }
 
-void msequence_init(msequence _ms, unsigned int _m, unsigned int _g, unsigned int _a)
+// initialize msequence generator object
+//  _ms     :   m-sequence object
+//  _m      :   generator polynomial length, sequence length is (2^m)-1
+//  _g      :   generator polynomial, starting with most-significant bit
+//  _a      :   initial shift register state, default: 000...001
+void msequence_init(msequence _ms,
+                    unsigned int _m,
+                    unsigned int _g,
+                    unsigned int _a)
 {
-    _ms->m = _m;
-    _ms->g = _g >> 1;
-    // reverse initial state register:
+    // set internal values
+    _ms->m = _m;        // generator polynomial length
+    _ms->g = _g >> 1;   // generator polynomial (clip off most significant bit)
+
+    // initialize state register, reversing order
     // 0001 -> 1000
     unsigned int i;
     _ms->a = 0;
@@ -80,25 +101,34 @@ void msequence_init(msequence _ms, unsigned int _m, unsigned int _g, unsigned in
         _a >>= 1;
     }
 
-    _ms->n = (1<<_m)-1;
-    _ms->v = _ms->a;
-    _ms->b = 0;
+    _ms->n = (1<<_m)-1; // sequence length, (2^m)-1
+    _ms->v = _ms->a;    // shift register
+    _ms->b = 0;         // return bit
 }
 
-// Advance msequence on shift register
+// advance msequence on shift register, returning output bit
 unsigned int msequence_advance(msequence _ms)
 {
+    // compute return bit as binary dot product between the
+    // internal shift register and the generator polynomial
     _ms->b = liquid_bdotprod( _ms->v, _ms->g );
-    _ms->v <<= 1;       // shift register
+
+    _ms->v <<= 1;       // shift internal register
     _ms->v |= _ms->b;   // push bit onto register
     _ms->v &= _ms->n;   // apply mask to register
+
     return _ms->b;      // return result
 }
 
 
-unsigned int msequence_generate_symbol(msequence _ms, unsigned int _bps)
+// generate pseudo-random symbol from shift register
+//  _ms     :   m-sequence object
+//  _bps    :   bits per symbol of output
+unsigned int msequence_generate_symbol(msequence _ms,
+                                       unsigned int _bps)
 {
-    unsigned int i, s = 0;
+    unsigned int i;
+    unsigned int s = 0;
     for (i=0; i<_bps; i++) {
         s <<= 1;
         s |= msequence_advance(_ms);
@@ -106,19 +136,21 @@ unsigned int msequence_generate_symbol(msequence _ms, unsigned int _bps)
     return s;
 }
 
+// reset msequence shift register to original state, typically '1'
 void msequence_reset(msequence _ms)
 {
     _ms->v = _ms->a;
 }
 
-
-void bsequence_init_msequence(
-    bsequence _bs,
-    msequence _ms)
+// initialize a bsequence object on an msequence object
+//  _bs     :   bsequence object
+//  _ms     :   msequence object
+void bsequence_init_msequence(bsequence _bs,
+                              msequence _ms)
 {
     if (_ms->n > LIQUID_MAX_MSEQUENCE_LENGTH) {
-        perror("error: bsequence_init_msequence(), msequence length exceeds maximum\n");
-        exit(-1);
+        fprintf(stderr,"error: bsequence_init_msequence(), msequence length exceeds maximum\n");
+        exit(1);
     }
 
     // clear binary sequence
@@ -129,8 +161,15 @@ void bsequence_init_msequence(
         bsequence_push(_bs, msequence_advance(_ms));
 }
 
+// get the length of the sequence
 unsigned int msequence_get_length(msequence _ms)
 {
     return _ms->n;
+}
+
+// get the internal state of the sequence
+unsigned int msequence_get_state(msequence _ms)
+{
+    return _ms->v;
 }
 

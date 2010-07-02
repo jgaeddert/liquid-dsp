@@ -1702,19 +1702,20 @@ struct bsequence_s {
     unsigned int s_len;         // length of array, number of allocated blocks
 };
 
-
+// maximal-length sequence
 struct msequence_s {
     unsigned int m;     // length generator polynomial, shift register
     unsigned int g;     // generator polynomial
     unsigned int a;     // initial shift register state, default: 1
 
-    unsigned int n;     // length of sequence, \f$ n=2^m-1 \f$
+    unsigned int n;     // length of sequence, n = (2^m)-1
     unsigned int v;     // shift register
     unsigned int b;     // return bit
 };
 
 // Default msequence generator objects
 extern struct msequence_s msequence_default[13];
+
 
 //
 // Miscellaneous utilities

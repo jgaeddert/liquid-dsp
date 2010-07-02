@@ -3281,6 +3281,16 @@ unsigned int bsequence_accumulate(bsequence _bs);
 unsigned int bsequence_get_length(bsequence _bs);
 unsigned int bsequence_index(bsequence _bs, unsigned int _i);
 
+// Complementary codes
+
+// intialize two sequences to complementary codes.  sequences must
+// be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
+//  _a      :   sequence 'a' (bsequence object)
+//  _b      :   sequence 'b' (bsequence object)
+void bsequence_create_ccodes(bsequence _a,
+                             bsequence _b);
+
+
 // M-Sequence
 
 #define LIQUID_MAX_MSEQUENCE_LENGTH   4095
@@ -3300,35 +3310,48 @@ unsigned int bsequence_index(bsequence _bs, unsigned int _i);
 
 typedef struct msequence_s * msequence;
 
+// create a maximal-length sequence (m-sequence) object with
+// an internal shift register length of _m bits.  sequence will
+// be initialized to default sequence
 msequence msequence_create(unsigned int _m);
+
+// destroy an msequence object, freeing all internal memory
 void msequence_destroy(msequence _m);
 
-// Initialize msequence generator
-void msequence_init(msequence _ms, unsigned int _m, unsigned int _g, unsigned int _a);
+// initialize msequence generator object
+//  _ms     :   m-sequence object
+//  _m      :   generator polynomial length, sequence length is (2^m)-1
+//  _g      :   generator polynomial, starting with most-significant bit
+//  _a      :   initial shift register state, default: 000...001
+void msequence_init(msequence _ms,
+                    unsigned int _m,
+                    unsigned int _g,
+                    unsigned int _a);
 
-// Advance msequence on shift register
+// advance msequence on shift register, returning output bit
 unsigned int msequence_advance(msequence _ms);
 
-// Generate symbol
-unsigned int msequence_generate_symbol(msequence _ms, unsigned int _bps);
+// generate pseudo-random symbol from shift register
+//  _ms     :   m-sequence object
+//  _bps    :   bits per symbol of output
+unsigned int msequence_generate_symbol(msequence _ms,
+                                       unsigned int _bps);
 
-// Reset msequence shift register to original state
+// reset msequence shift register to original state, typically '1'
 void msequence_reset(msequence _ms);
 
-// Initializes a bsequence object on a maximum length P/N sequence
-void bsequence_init_msequence(bsequence _bs, msequence _ms);
+// initialize a bsequence object on an msequence object
+//  _bs     :   bsequence object
+//  _ms     :   msequence object
+void bsequence_init_msequence(bsequence _bs,
+                              msequence _ms);
 
-// accessor methods
+// get the length of the sequence
 unsigned int msequence_get_length(msequence _ms);
 
+// get the internal state of the sequence
+unsigned int msequence_get_state(msequence _ms);
 
-// Complementary codes
-
-//typedef struct csequence_s * csequence;
-
-// intialize two sequences to complementary codes.  sequences must
-// be of length at least 8 and a power of 2 (e.g. 8, 16, 32, 64,...)
-void bsequence_create_ccodes(bsequence _a, bsequence _b);
 
 // 
 // MODULE : utility
