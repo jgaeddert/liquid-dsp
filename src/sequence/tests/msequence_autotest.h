@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -17,9 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef __MSEQUENCE_AUTOTEST_H__
-#define __MSEQUENCE_AUTOTEST_H__
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -43,10 +41,11 @@ void autotest_bsequence_init_msequence() {
     msequence_destroy(ms);
 }
 
-// test auto-correlation properties of m-sequence
-void autotest_msequence_rxy() {
+// helper function to test auto-correlation properties of m-sequence
+void msequence_test_autocorrelation(unsigned int _m)
+{
     // create and initialize m-sequence
-    msequence ms = msequence_create(4);
+    msequence ms = msequence_create(_m);
     unsigned int n = msequence_get_length(ms);
     
     // create and initialize first binary sequence on m-sequence
@@ -80,5 +79,15 @@ void autotest_msequence_rxy() {
     msequence_destroy(ms);
 }
 
-#endif 
+void autotest_msequence_m2()    {   msequence_test_autocorrelation(2);  }   // n = 3
+void autotest_msequence_m3()    {   msequence_test_autocorrelation(3);  }   // n = 7
+void autotest_msequence_m4()    {   msequence_test_autocorrelation(4);  }   // n = 15
+void autotest_msequence_m5()    {   msequence_test_autocorrelation(5);  }   // n = 31
+void autotest_msequence_m6()    {   msequence_test_autocorrelation(6);  }   // n = 63
+void autotest_msequence_m7()    {   msequence_test_autocorrelation(7);  }   // n = 127
+void autotest_msequence_m8()    {   msequence_test_autocorrelation(8);  }   // n = 255
+void autotest_msequence_m9()    {   msequence_test_autocorrelation(9);  }   // n = 511
+void autotest_msequence_m10()   {   msequence_test_autocorrelation(10); }   // n = 1023
+void autotest_msequence_m11()   {   msequence_test_autocorrelation(11); }   // n = 2047
+void autotest_msequence_m12()   {   msequence_test_autocorrelation(12); }   // n = 4095
 
