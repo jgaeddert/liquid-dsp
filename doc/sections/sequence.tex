@@ -24,17 +24,26 @@ family of objects.
     destroys the object, freeing all internally-allocated memory.
 \item[{\tt bsequence\_clear()}]
     resets the sequence to all zeros.
+\item[{\tt bsequence\_init()}]
+    initializes the sequence on an external array of characters.
 \item[{\tt bsequence\_print()}]
     prints the contents of the sequence to the screen.
 \item[{\tt bsequence\_push()}]
     pushes a bit into the back (right side) of a binary sequence, and in turn
     drops the left-most bit.
     Only the right-most (least-significant) bit of the input is regarded.
+    For example, pushing a {\tt 1} into the sequence {\tt 0010011} results in
+    {\tt 0100111}.
 \item[{\tt bsequence\_circshift()}]
     circularly shifts a binary sequence left, pushing the left-most bit back
     into the right-most position.
+    For example, invoking a circular shift on the sequence {\tt 1001110}
+    results in {\tt 0011101}.
 \item[{\tt bsequence\_correlate()}]
-    runs a binary correlation of two {\tt bsequence} objects, and returns XXX.
+    runs a binary correlation of two {\tt bsequence} objects, and returns the
+    number of similar bits in both sequences.
+    For example, correlating the sequence {\tt 11110000} with {\tt 11001100}
+    yields {\tt 4}.
 \item[{\tt bsequence\_add()}]
     computes the binary addition of two sequences
 \item[{\tt bsequence\_mul()}]

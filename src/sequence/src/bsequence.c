@@ -163,7 +163,7 @@ signed int bsequence_correlate(bsequence _bs1,
         byte = _bs1->s[i] ^ _bs2->s[i];
         byte = ~byte;
 
-        rxy += 2*liquid_c_ones[byte] - 8;
+        rxy += liquid_c_ones[byte];
     }
 
     // compensate for most-significant block and return

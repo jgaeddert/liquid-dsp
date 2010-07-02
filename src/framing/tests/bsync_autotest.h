@@ -92,15 +92,15 @@ void autotest_bsync_crcf_15()
     for (i=0; i<15; i++)
         bsync_crcf_correlate(fs,h[i],&rxy);
 
-    // correlation should be 1.0
-    CONTEND_DELTA( crealf(rxy), 1.0f, tol );
-    CONTEND_DELTA( cimagf(rxy), 0.0f, tol );
+    // correlation should be 1.0  + j*(-1/15)
+    CONTEND_DELTA( crealf(rxy),  1.0f,       tol );
+    CONTEND_DELTA( cimagf(rxy), -1.0f/15.0f, tol );
 
     // all other cross-correlations should be exactly -1/15
     for (i=0; i<14; i++) {
         bsync_crcf_correlate(fs,h[i],&rxy);
         CONTEND_DELTA( crealf(rxy), -1.0f/15.0f, tol );
-        CONTEND_DELTA( cimagf(rxy), 0.0f,        tol );
+        CONTEND_DELTA( cimagf(rxy), -1.0f/15.0f, tol );
     }
 
     // clean it up

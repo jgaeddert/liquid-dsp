@@ -70,7 +70,7 @@ void autotest_msequence_rxy() {
     unsigned int i;
     for (i=0; i<n-1; i++) {
         bsequence_push(bs2, msequence_advance(ms));
-        rxy = bsequence_correlate(bs1, bs2);
+        rxy = 2*bsequence_correlate(bs1, bs2) - n;
         CONTEND_EQUALITY( rxy, -1 );
     }
 

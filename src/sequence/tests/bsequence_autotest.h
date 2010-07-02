@@ -77,7 +77,7 @@ void autotest_bsequence_correlate()
     bsequence_init(q1,v1);
 
     // run tests
-    CONTEND_EQUALITY( bsequence_correlate(q0,q1), -2 ); // -2 = 2*7 - 16
+    CONTEND_EQUALITY( bsequence_correlate(q0,q1), 7 );
     
     // clean up memory
     bsequence_destroy(q0);

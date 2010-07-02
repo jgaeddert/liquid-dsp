@@ -31,10 +31,16 @@
 
 struct BSYNC(_s) {
     unsigned int n;     // sequence length
-    bsequence sync_i;   // synchronization pattern
-    bsequence sync_q;   //
-    bsequence sym_i;    // received symbols
-    bsequence sym_q;    //
+
+    bsequence sync_i;   // synchronization pattern (in-phase)
+    bsequence sym_i;    // received symbols (in-phase)
+//#if defined TC_COMPLEX
+    bsequence sync_q;   // synchronization pattern (quadrature)
+//#endif
+
+//#if defined TI_COMPLEX
+    bsequence sym_q;    // received symbols (quadrature)
+//#endif
     TO rxy;             // cross correlation
 };
 
@@ -138,21 +144,26 @@ void BSYNC(_correlate)(BSYNC() _fs, TI _sym, TO *_y)
 #endif
 
     // compute dotprod
-#if   defined TC_COMPLEX && defined TO_COMPLEX
+#if   defined TC_COMPLEX && defined TI_COMPLEX
     // cccx
-    _fs->rxy = bsequence_correlate(_fs->sync_i, _fs->sym_i)
-             - bsequence_correlate(_fs->sync_q, _fs->sym_q)
-             +(bsequence_correlate(_fs->sync_i, _fs->sym_q)
-             + bsequence_correlate(_fs->sync_q, _fs->sym_i)) * _Complex_I;
-#elif defined TC_COMPLEX
+    TO rxy_ii = 2.*bsequence_correlate(_fs->sync_i, _fs->sym_i) - (float)(_fs->n);
+    TO rxy_qq = 2.*bsequence_correlate(_fs->sync_q, _fs->sym_q) - (float)(_fs->n);
+    TO rxy_iq = 2.*bsequence_correlate(_fs->sync_i, _fs->sym_q) - (float)(_fs->n);
+    TO rxy_qi = 2.*bsequence_correlate(_fs->sync_q, _fs->sym_i) - (float)(_fs->n);
+
+    _fs->rxy = (rxy_ii - rxy_qq) + _Complex_I*(rxy_iq + rxy_qi);
+#elif defined TI_COMPLEX
     // crcx
-    _fs->rxy = bsequence_correlate(_fs->sync_i, _fs->sym_i)
-             + bsequence_correlate(_fs->sync_i, _fs->sym_q) * _Complex_I;
+    float rxy_ii = 2.*bsequence_correlate(_fs->sync_i, _fs->sym_i) - (float)(_fs->n);
+    float rxy_iq = 2.*bsequence_correlate(_fs->sync_i, _fs->sym_q) - (float)(_fs->n);
+
+    _fs->rxy = rxy_ii + _Complex_I * rxy_iq;
 #else
     // rrrx
-    _fs->rxy = bsequence_correlate(_fs->sync_i, _fs->sym_i);
+    _fs->rxy = 2.*bsequence_correlate(_fs->sync_i, _fs->sym_i) - (float)(_fs->n);
 #endif
 
+    // divide by sequence length
     *_y = _fs->rxy / (float)(_fs->n);
 }
 
