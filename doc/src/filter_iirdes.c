@@ -217,11 +217,11 @@ int main(int argc, char*argv[]) {
     // open output file
     fid = fopen(filename_psd,"w");
     if (fid == NULL) {
-        fprintf(stderr,"error: %s, could not open file \"%s\" for writing.\n", argv[0], filename_zpk);
+        fprintf(stderr,"error: %s, could not open file \"%s\" for writing.\n", argv[0], filename_psd);
         exit(1);
     }
     // print header
-    fprintf(fid,"# %s : auto-generated file (do not edit)\n", filename_zpk);
+    fprintf(fid,"# %s : auto-generated file (do not edit)\n", filename_psd);
     fprintf(fid,"# invoked as :");
     for (i=0; i<argc; i++)
         fprintf(fid," %s",argv[i]);
