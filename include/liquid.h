@@ -3312,11 +3312,15 @@ typedef struct msequence_s * msequence;
 
 // create a maximal-length sequence (m-sequence) object with
 // an internal shift register length of _m bits.  sequence will
-// be initialized to default sequence
+// be initialized to the default sequence of that length, e.g.
+// LIQUID_MSEQUENCE_N511
 msequence msequence_create(unsigned int _m);
 
 // destroy an msequence object, freeing all internal memory
 void msequence_destroy(msequence _m);
+
+// prints the sequence's internal state to the screen
+void msequence_print(msequence _m);
 
 // initialize msequence generator object
 //  _ms     :   m-sequence object

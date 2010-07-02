@@ -24,6 +24,7 @@ int main() {
 
     // create and initialize m-sequence
     msequence ms = msequence_create(m);
+    msequence_print(ms);
     unsigned int n = msequence_get_length(ms);
     signed int rxx[n];   // auto-correlation
     
@@ -37,13 +38,13 @@ int main() {
 
     // when sequences are aligned, autocorrelation is equal to length
     unsigned int k=0;
-    rxx[k++] = bsequence_correlate(bs1, bs2);
+    rxx[k++] = 2*bsequence_correlate(bs1, bs2) - n;
 
     // when sequences are misaligned, autocorrelation is equal to -1
     unsigned int i;
     for (i=0; i<n-1; i++) {
         bsequence_push(bs2, msequence_advance(ms));
-        rxx[k++] = bsequence_correlate(bs1, bs2);
+        rxx[k++] = 2*bsequence_correlate(bs1, bs2)-n;
     }
 
     // print results

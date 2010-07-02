@@ -53,7 +53,8 @@ struct msequence_s msequence_default[13] = {
 
 // create a maximal-length sequence (m-sequence) object with
 // an internal shift register length of _m bits.  sequence will
-// be initialized to default sequence
+// be initialized to the default sequence of that length, e.g.
+// LIQUID_MSEQUENCE_N511
 msequence msequence_create(unsigned int _m)
 {
     // validate input
@@ -75,6 +76,26 @@ msequence msequence_create(unsigned int _m)
 void msequence_destroy(msequence _ms)
 {
     free(_ms);
+}
+
+// prints the sequence's internal state to the screen
+void msequence_print(msequence _m)
+{
+    unsigned int i;
+
+    printf("msequence: m=%u (n=%u):\n", _m->m, _m->n);
+
+    // print shift register
+    printf("    shift register: ");
+    for (i=0; i<_m->m; i++)
+        printf("%c", ((_m->v) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
+    printf("\n");
+
+    // print generator polynomial
+    printf("    generator poly: ");
+    for (i=0; i<_m->m; i++)
+        printf("%c", ((_m->g) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
+    printf("\n");
 }
 
 // initialize msequence generator object
