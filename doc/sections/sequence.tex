@@ -133,6 +133,14 @@ Here is a brief description of the {\tt msequence} oject's interface in
     returns the internal state of the sequence, $v$
 \end{description}
 
+The auto-correlation of the $m$-sequence with generator polynomial
+$g=${\tt 1000011}
+can be seen in Figure~\ref{fig:module:sequence:msequence}.
+The shift register has six bits ($m=6$) and therefore the output sequence is
+of length $n=2^m-1=63$.
+Notice that the autocorrelation is equal to unity with no delay, and nearly
+zero ($-1/63$) for all other delays.
+
 % FIGURE: msequence autocorrelation
 \begin{figure}
 \centering
