@@ -181,9 +181,60 @@ $g$ (binary)\\\otoprule
 % ------------------------
 
 
-
-
 \subsection{complementary codes}
 \label{module:sequence:ccodes}
+In addition to $m$-sequences, \liquid\ also implements complementary codes:
+P/N sequence pairs which have similar properties to $m$-sequences.
+A complementary code pair is one in which the sum of individual
+auto-correlations is identically zero for all delays except for the zero-delay
+which provides an auto-correlation of unity.
+
+The two codes $\vec{a}$ and $\vec{b}$ are generated recursively as
+\begin{eqnarray*}
+    \vec{a}_{k+1} & = & \left[ \vec{a}_k \,\,\,      \vec{b}_k  \right] \\
+    \vec{b}_{k+1} & = & \left[ \vec{a}_k \,\,\, \bar{\vec{b}}_k \right] \\
+\end{eqnarray*}
+where $[\cdot,\cdot]$ represents concatenation and
+$\bar{(\cdot)}$ denotes a binary inversion.
+Table~\ref{tab:sequence:ccodes} shows the first several iterations of the
+sequence.
+Notice that the sequence length doubles for each iteration, and that (with the
+exception of $k=0$) the first half of $\vec{a}_k$ and $\vec{b}_k$ are
+identical.
+
+% ------------ TABLE: COMPLEMENTARY CODE SEQUENCE ------------
+\begin{table*}
+\caption{Default complementary codes in \liquid}
+\label{tab:sequence:ccodes}
+\centering
+{\small
+\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}l}
+\toprule
+%
+$1$     & $\vec{a}_{0}$ = {\tt 1} \\
+        & $\vec{b}_{0}$ = {\tt 0} \\[6pt]
+%
+$2$     & $\vec{a}_{1}$ = {\tt 10} \\
+        & $\vec{b}_{1}$ = {\tt 11} \\[6pt]
+%
+$4$     & $\vec{a}_{2}$ = {\tt 1011} \\
+        & $\vec{b}_{2}$ = {\tt 1000} \\[6pt]
+%
+$8$     & $\vec{a}_{3}$ = {\tt 10111000} \\
+        & $\vec{b}_{3}$ = {\tt 10110111} \\[6pt]
+%
+$16$    & $\vec{a}_{4}$ = {\tt 10111000 10110111} \\
+        & $\vec{b}_{4}$ = {\tt 10111000 01001000} \\[6pt]
+%
+$32$    & $\vec{a}_{5}$ = {\tt 10111000 10110111 10111000 01001000} \\
+        & $\vec{b}_{5}$ = {\tt 10111000 10110111 01000111 10110111} \\[6pt]
+%
+$64$    & $\vec{a}_{6}$ = {\tt 10111000 10110111 10111000 01001000 10111000 10110111 01000111 10110111} \\
+        & $\vec{b}_{6}$ = {\tt 10111000 10110111 10111000 01001000 01000111 01001000 10111000 01001000} \\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
 
 
