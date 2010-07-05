@@ -21,6 +21,7 @@ local_src	:=			\
 	chromosome_example.c		\
 	compand_example.c		\
 	compand_cf_example.c		\
+	complementary_codes_example.c	\
 	crc_example.c			\
 	cvsd_sine_example.c		\
 	dds_cccf_example.c		\

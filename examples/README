@@ -102,6 +102,17 @@ compand_example.c
     low-level signals.  The transfer function is computed (emperically) and
     printed to the screen.
 
+complementary_codes_example.c
+    This example demonstrates how to generate complementary binary codes
+    in liquid.  A pair of codes is generated using the bsequence
+    interface, their auto-correlations are computed, and the result is
+    summed and printed to the screen.  The results are also printed to
+    an output file, which plots the sequences and their
+    auto-correlations.
+
+    SEE ALSO: bsequence_example.c
+              msequence_example.c
+
 crc_example.c
     Cyclic redundancy check (CRC) example.  This example demonstrates how a
     CRC can be used to validate data received through un-reliable means (e.g.
