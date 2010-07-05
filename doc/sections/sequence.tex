@@ -201,6 +201,9 @@ sequence.
 Notice that the sequence length doubles for each iteration, and that (with the
 exception of $k=0$) the first half of $\vec{a}_k$ and $\vec{b}_k$ are
 identical.
+Figure~\ref{fig:module:sequence:ccodes} shows that the auto-correlation of the two
+sequences is non-zero for delays other than zero, but that they indeed do sum
+to zero.
 
 % ------------ TABLE: COMPLEMENTARY CODE SEQUENCE ------------
 \begin{table*}
@@ -235,6 +238,14 @@ $64$    & $\vec{a}_{6}$ = {\tt 10111000 10110111 10111000 01001000 10111000 1011
 }
 \end{table*}%
 % ------------------------
+
+% FIGURE: complementary codes autocorrelation
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/sequence_ccodes}
+\caption{Complementary codes autocorrelation, $n=64$}
+\label{fig:module:sequence:ccodes}
+\end{figure}
 
 
 

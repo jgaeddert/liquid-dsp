@@ -49,6 +49,12 @@ int main(int argc, char*argv[]) {
         exit(1);
     }
 
+    // validate m
+    if (m < 2) {
+        fprintf(stderr,"error: %s, m is out of range\n", argv[0]);
+        exit(1);
+    }
+
     // create and initialize m-sequence
     msequence ms = msequence_create(m);
     msequence_print(ms);
@@ -125,7 +131,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"# auto-correlation\n");
     fprintf(fid,"set ylabel 'auto-correlation'\n");
     fprintf(fid,"set yrange [%f:1.1]\n", -5.0f / (float)n);
-    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '%s'\n",LIQUID_DOC_COLOR_PURPLE);
+    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 4 linecolor rgb '%s'\n",LIQUID_DOC_COLOR_GREEN);
     for (i=0; i<n; i++) {
         fprintf(fid,"  %6u %12.4e\n", i, (float)rxx[i] / (float)n);
     }
@@ -134,6 +140,7 @@ int main(int argc, char*argv[]) {
 
     // close output file
     fclose(fid);
+    printf("results written to %s.\n", filename);
 
     return 0;
 }

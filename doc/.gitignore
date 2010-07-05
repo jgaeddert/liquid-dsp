@@ -34,6 +34,7 @@ src/math_window
 src/modem.gendata
 src/modem.genplot
 src/nco_pll
+src/sequence_ccodes
 src/sequence_msequence
 
 # ignore all object files

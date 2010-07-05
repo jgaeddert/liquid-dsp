@@ -6,10 +6,20 @@
 
 # local targets
 local_pdffiles :=					\
+	figures.gen/sequence_ccodes.pdf			\
 	figures.gen/sequence_msequence.pdf
 
 local_gnufiles := $(patsubst %.pdf,%.gnu,$(local_pdffiles))
 local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
+
+##
+## ccodes
+## 
+src/sequence_ccodes : % : %.c $(lib_objects)
+
+figures.gen/sequence_ccodes.gnu : src/sequence_ccodes
+	./$< -n 64 -f $@
+
 
 ##
 ## msequence
@@ -17,7 +27,7 @@ local_epsfiles := $(patsubst %.pdf,%.eps,$(local_pdffiles))
 src/sequence_msequence : % : %.c $(lib_objects)
 
 figures.gen/sequence_msequence.gnu : src/sequence_msequence
-	./$< -f figures.gen/sequence_msequence -m 6 -f $@
+	./$< -m 6 -f $@
 
 ##
 ## target collection
@@ -35,5 +45,6 @@ $(local_epsfiles) : %.eps : %.gnu
 figures_generated += $(local_pdffiles)
 
 figures_extra_clean +=			\
+	src/sequence_ccodes		\
 	src/sequence_msequence
 
