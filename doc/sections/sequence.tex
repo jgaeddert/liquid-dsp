@@ -149,44 +149,32 @@ zero ($-1/63$) for all other delays.
 \label{fig:module:sequence:msequence}
 \end{figure}
 
+%\cite{Peterson:1995}
 
 % ------------ TABLE: M-SEQUENCE GENERATOR POLYNOMIALS ------------
 \begin{table*}
-\caption{$m$-sequence generator polynomials \cite{Peterson:1995}
-         available in \liquid}
+\caption{Default $m$-sequence generator polynomials in \liquid}
 \label{tab:sequence:genpoly}
 \centering
 {\small
-\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}ll}
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}lllr}
 \toprule
 $m$ &
 $n$ &
-$g$ (octal)\\\otoprule
-%
-        &       & TODO : re-format numbers \\
-    2   & 3     & [7] \\
-    3   & 7     & [13] \\
-    4   & 15    & [23] \\
-    5   & 31    & [45], [75], [67] \\
-    6   & 63    & [103], [147], [155] \\
-    7   & 127   & [211], [217], [235], [367], [277], [325], [203], [313], [345] \\
-    8   & 255   & [435], [551], [747], [453], [545], [537], [703], [543] \\
-    9   & 511   & [1021] \\
-    10  & 1023  & [2011] \\
-    11  & 2047  & [4005] \\
-    12  & 4095  & [10123] \\\bottomrule
-% binary/hexadecimal
-%    2   & 3     & [7:111] \\
-%    3   & 7     & [13:1011] \\
-%    4   & 15    & [23:10011] \\
-%    5   & 31    & [45:100101], [75:111101], [67:110111] \\
-%    6   & 63    & [103:1000011], [147:1100111], [155:1101101] \\
-%    7   & 127   & [211:10001001], [217:10001111], [235:10011101], [367], [277], [325], [203], [313], [345] \\
-%    8   & 255   & [435], [551], [747], [453], [545], [537], [703], [543] \\
-%    9   & 511   & [1021] \\
-%    10  & 1023  & [2011] \\
-%    11  & 2047  & [4005] \\
-%    12  & 4095  & [10123] \\\bottomrule
+$g$ (hex) &
+$g$ (octal) &
+$g$ (binary)\\\otoprule
+    2   & 3     & {\tt 0x0007}  & {\tt 000007}  & {\tt           111} \\
+    3   & 7     & {\tt 0x000b}  & {\tt 000013}  & {\tt          1011} \\
+    4   & 15    & {\tt 0x0013}  & {\tt 000023}  & {\tt         10011} \\
+    5   & 31    & {\tt 0x0025}  & {\tt 000045}  & {\tt        100101} \\
+    6   & 63    & {\tt 0x0043}  & {\tt 000103}  & {\tt       1000011} \\
+    7   & 127   & {\tt 0x0089}  & {\tt 000211}  & {\tt      10001001} \\
+    8   & 255   & {\tt 0x012d}  & {\tt 000455}  & {\tt     100101101} \\
+    9   & 511   & {\tt 0x0211}  & {\tt 001021}  & {\tt    1000010001} \\
+    10  & 1023  & {\tt 0x0409}  & {\tt 002011}  & {\tt   10000001001} \\
+    11  & 2047  & {\tt 0x0805}  & {\tt 004005}  & {\tt  100000000101} \\
+    12  & 4095  & {\tt 0x1053}  & {\tt 010123}  & {\tt 1000001010011} \\\bottomrule
 \end{tabular*}
 }
 \end{table*}%
