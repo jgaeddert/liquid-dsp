@@ -1,5 +1,5 @@
 //
-//
+// pnsync_crcf_example
 //
 
 #include <stdio.h>
@@ -17,7 +17,7 @@ int main() {
 
     // create objects
     float snr = powf(10.0f, snr_db/10.0f); // TODO: scale snr for complex signal?
-    pnsync_crcf fs = pnsync_crcf_create_msequence(LIQUID_MSEQUENCE_N63);
+    pnsync_crcf fs = pnsync_crcf_create_msequence(LIQUID_MSEQUENCE_GENPOLY_M6);
     msequence ms = msequence_create(6);
 
     unsigned int i;
