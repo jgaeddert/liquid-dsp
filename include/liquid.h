@@ -3293,7 +3293,7 @@ void bsequence_create_ccodes(bsequence _a,
 
 // M-Sequence
 
-#define LIQUID_MAX_MSEQUENCE_LENGTH   4095
+#define LIQUID_MAX_MSEQUENCE_LENGTH   32767
 
 // default m-sequence generators:   g (hex)    m    n       g (octal)
 #define LIQUID_MSEQUENCE_N3         0x0007  // 2    3       7

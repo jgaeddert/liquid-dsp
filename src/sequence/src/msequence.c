@@ -32,9 +32,13 @@
 #include "liquid.internal.h"
 
 #define LIQUID_MIN_MSEQUENCE_M  2
-#define LIQUID_MAX_MSEQUENCE_M  12
+#define LIQUID_MAX_MSEQUENCE_M  15
 
-struct msequence_s msequence_default[13] = {
+// msequence structure
+//  Note that 'g' is stored as the default polynomial shifted to the
+//  right by one bit; this bit is implied and not actually used in
+//  the shift register's feedback bit computation.
+struct msequence_s msequence_default[16] = {
 //   m,     g,      a,      n,      v,      b
     {0,     0,      1,      0,      1,      0}, // dummy placeholder
     {0,     0,      1,      0,      1,      0}, // dummy placeholder
@@ -48,7 +52,10 @@ struct msequence_s msequence_default[13] = {
     {9,     0x0108, 0x0100, 511,    0x0100, 0},
     {10,    0x0204, 0x0200, 1023,   0x0200, 0},
     {11,    0x0402, 0x0400, 2047,   0x0400, 0},
-    {12,    0x0829, 0x0800, 4095,   0x0800, 0}
+    {12,    0x0829, 0x0800, 4095,   0x0800, 0},
+    {13,    0x100d, 0x1000, 8191,   0x1000, 0},
+    {14,    0x2015, 0x2000, 16383,  0x2000, 0},
+    {15,    0x4001, 0x4000, 32767,  0x4000, 0}
 };
 
 // create a maximal-length sequence (m-sequence) object with
@@ -169,10 +176,12 @@ void msequence_reset(msequence _ms)
 void bsequence_init_msequence(bsequence _bs,
                               msequence _ms)
 {
+#if 0
     if (_ms->n > LIQUID_MAX_MSEQUENCE_LENGTH) {
         fprintf(stderr,"error: bsequence_init_msequence(), msequence length exceeds maximum\n");
         exit(1);
     }
+#endif
 
     // clear binary sequence
     bsequence_clear(_bs);

@@ -1714,7 +1714,7 @@ struct msequence_s {
 };
 
 // Default msequence generator objects
-extern struct msequence_s msequence_default[13];
+extern struct msequence_s msequence_default[16];
 
 
 //
