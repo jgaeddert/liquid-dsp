@@ -70,26 +70,14 @@ BSYNC() BSYNC(_create)(unsigned int _n, TC * _v)
     return fs;
 }
 
+// TODO : test this method
 BSYNC() BSYNC(_create_msequence)(unsigned int _g)
 {
-    unsigned int m;
-    switch (_g) {
-    case LIQUID_MSEQUENCE_N3:       m=2;    break;
-    case LIQUID_MSEQUENCE_N7:       m=3;    break;
-    case LIQUID_MSEQUENCE_N15:      m=4;    break;
-    case LIQUID_MSEQUENCE_N31:      m=5;    break;
-    case LIQUID_MSEQUENCE_N63:      m=6;    break;
-    case LIQUID_MSEQUENCE_N127:     m=7;    break;
-    case LIQUID_MSEQUENCE_N255:     m=8;    break;
-    case LIQUID_MSEQUENCE_N511:     m=9;    break;
-    case LIQUID_MSEQUENCE_N1023:    m=10;   break;
-    case LIQUID_MSEQUENCE_N2047:    m=11;   break;
-    case LIQUID_MSEQUENCE_N4095:    m=12;   break;
-    default:
-        printf("error: framesync_create_msequence(), unsupported generator polynomial %.32x\n", _g);
-        exit(0);
-    }
+    unsigned int m = liquid_msb_index(_g) - 1;
+
+    // create/initialize msequence
     msequence ms = msequence_create(m);
+    msequence_init(ms, m, _g, 1);
 
     BSYNC() fs = (BSYNC()) malloc(sizeof(struct BSYNC(_s)));
     fs->n = msequence_get_length(ms);

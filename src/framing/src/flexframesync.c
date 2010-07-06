@@ -788,7 +788,7 @@ void flexframesync_decode_header(flexframesync _fs)
 
     printf("    user data   :");
     unsigned int i;
-    for (i=0; i<9; i++)
+    for (i=0; i<14; i++)
         printf(" %.2x", _fs->header[i]);
     printf("\n");
 #endif

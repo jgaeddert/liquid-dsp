@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -197,7 +198,7 @@ unsigned int flexframegen_getframelen(flexframegen _fg)
 
 // exectue frame generator (create the frame)
 //  _fg         :   frame generator object
-//  _header     :   9-byte header
+//  _header     :   14-byte header
 //  _payload    :   variable payload buffer (configured by setprops method)
 //  _y          :   output frame symbols [size: frame_len x 1]
 void flexframegen_execute(flexframegen _fg,
@@ -228,7 +229,7 @@ void flexframegen_execute(flexframegen _fg,
         _y[n++] = _fg->pn_sequence[i];
 
     // copy and encode header
-    memmove(_fg->header, _header, 9*sizeof(unsigned char));
+    memmove(_fg->header, _header, 14*sizeof(unsigned char));
     flexframegen_encode_header(_fg);
     flexframegen_modulate_header(_fg);
     memmove(&_y[n], _fg->header_samples, 256*sizeof(float complex));
@@ -314,7 +315,7 @@ void flexframegen_configure_payload_buffers(flexframegen _fg)
 // encode header of flexframe
 void flexframegen_encode_header(flexframegen _fg)
 {
-    // first 9 bytes of header are user-defined
+    // first 14 bytes of header are user-defined
 
     // add payload length
     _fg->header[14] = (_fg->props.payload_len >> 8) & 0xff;
@@ -339,7 +340,7 @@ void flexframegen_encode_header(flexframegen _fg)
     printf("    header key  : 0x%.8x\n", header_key);
 
     printf("    user data   :");
-    for (i=0; i<9; i++)
+    for (i=0; i<14; i++)
         printf(" %.2x", _user_header[i]);
     printf("\n");
 #endif

@@ -1,5 +1,5 @@
 //
-//
+// pnsync_rrrf_example
 //
 
 #include <stdio.h>
@@ -15,7 +15,7 @@ int main() {
 
     // create objects
     float snr = powf(10.0f, snr_db/10.0f);
-    pnsync_rrrf fs = pnsync_rrrf_create_msequence(LIQUID_MSEQUENCE_N63);
+    pnsync_rrrf fs = pnsync_rrrf_create_msequence(LIQUID_MSEQUENCE_GENPOLY_M6);
     msequence ms = msequence_create(6);
 
     unsigned int i;
