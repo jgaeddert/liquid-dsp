@@ -65,18 +65,17 @@ fsk, msk, etc. [NOTE: not yet implemented]
 
 \subsection{Linear digital modulation schemes}
 \label{module:modem:digital}
-(d)psk, apsk, ask, qam
-
 The {\tt modem} object realizes the linear digital modulation library in which
 the information from a symbol is encoded into the amplitude and phase of a
 sample.
 The modem structure implements a variety of common modulation schemes,
-including (differential) phase-shift keying, and (quadrature) amplitude
-modulation.
-The input/output relationship for modulation/demodulation for {\tt modem} is
+including (differential) phase-shift keying, and (quadrature) amplitude-shift
+keying.
+The input/output relationship for modulation/demodulation for the {\tt modem}
+object is
 strictly one-to-one and is independent of any pulse shaping, or interpolation.
-This differs from {\tt cpmodem} in which the pulse shaping filter is
-integrated into the modem itself.
+%This differs from {\tt cpmodem} in which the pulse shaping filter is
+%integrated into the modem itself.
 
 In general, linear modems demodulate by finding the closest of $M$ symbols in
 the set $\mathcal{S}$ to the received symbol $\vec{r}$, viz.
@@ -89,18 +88,27 @@ the set $\mathcal{S}$ to the received symbol $\vec{r}$, viz.
 For arbitrary modulation schemes a linear search over all symbols in
 $\mathcal{S}$ is required which has a complexity of $\ord(M^2)$, however one may
 take advantage of symmetries in certain constellations to reduce this.
-%For example...
+%For example, $M$-ary PSK distributes its symbols evenly throughout the phase
+%of the transmitted signal...
 
 \subsubsection{Usage}
-\begin{itemize}
-\item[] {\tt modem\_modulate()} converts an input symbol into an output sample
-\item[] {\tt modem\_demodulate()} finds the closest symbol which matches the
-input sample
-\item[] {\tt modem\_get\_demodulator\_phase\_error()} returns an angle
-proportional to the phase error after demodulation
-\item[] {\tt modem\_get\_demodulator\_evm()} returns a value equal to the
-error vector magnitude after demodulation
-\end{itemize}
+\begin{description}
+\item[{\tt modem\_modulate()}]
+    converts an input symbol into an output sample
+\item[{\tt modem\_demodulate()}]
+    finds the closest symbol which matches the input sample
+\item {\tt modem\_get\_demodulator\_phase\_error()}]
+    returns an angle proportional to the phase error after demodulation.
+    This value can be used in a phase-locked loop
+    (see Section~\ref{module:nco:pll})
+    to correct for carrier phase recovery.
+\item[{\tt modem\_get\_demodulator\_evm()}]
+    returns a value equal to the error vector magnitude after demodulation.
+    The error vector is the difference between the received symbol and the
+    estimated transmitted symbol, $e = r - \hat{s}$.
+    The magnitude of the error vector is an indication to the
+    signal-to-noise/distortion ratio at receiver.
+\end{description}
 
 While the same modem structure may be used for both modulation and
 demodulation for most schemes, it is important to use separate objects
@@ -159,7 +167,7 @@ There are a few interesting characteristics of Gray encoding:
 It is also interesting to note that in linear modems (e.g. PSK), the
 {\tt decoder} is actually applied to the symbol at the transmitter while the
 {\tt encoder} is applied to the received symbol at the receiver.
-This is somewhat counterintuitive and is because...
+%This is somewhat counterintuitive and is because...
 In \liquid, Gray encoding and decoding are computed with the
 {\tt gray\_encode()} {\tt gray\_decode()} methods, respectively.
 
@@ -342,14 +350,18 @@ where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \end{figure}
 
 \subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
-Also known as quadrature amplitude-shift keying
-\begin{itemize}
-\item I/Q symbols are decoded as separate {\tt MOD\_ASK} symbols
-\item gray encoding is applied to I/Q symbols separately to help ensure
-minimal bit changes between adjacent samples across both in-phase and
-quadrature-phase dimensions
-\end{itemize}
-
+Also known as quadrature amplitude-shift keying, QAM modems encode data using
+both the in-phase and quadrature components of a signal amplitude.
+In fact, the symbol is split into independent in-phase and quadrature symbols
+which are encoded separately as {\tt MOD\_ASK} symbols.
+Gray encoding is applited to both the I and Q symbols separately to help
+ensure minimal bit changes between adjacent samples across both in-phase and
+quadrature-phase dimensions.
+This is made evident in Figure~\ref{fig:modem:qam:64} where one can see that
+the first three bits of the symbol encode the in-phase component of the
+sample, and the last thre bits encode the quadrature component of the sample.
+%
+We may formally describe the encoded sample is
 \[
     s_k = \alpha \{ ( 2 k_i - M_i - 1 ) + j(2 k_q - M_q - 1) \}
 \]
@@ -378,8 +390,6 @@ $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
     \sqrt{2/M}      &   \text{else}
     \end{cases}
 \]
-
-
 
 
 %-------------------- FIGURE: QAM MODEM --------------------
