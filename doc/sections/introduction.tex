@@ -36,11 +36,13 @@ To build:
     $ make
     # make install
 \end{verbatim}
-You may also want to build and run the optional validation program via
+You may also want to build and run the optional validation program
+(see Section~\ref{ch:installation:targets:autotests}) via
 \begin{verbatim}
     $ make check
 \end{verbatim}
-and the benchmarking tool,
+and the benchmarking tool
+(see Section~\ref{ch:installation:targets:benchmarks})
 \begin{verbatim}
     $ make bench
 \end{verbatim}
@@ -67,20 +69,32 @@ Most objects have at least four standard methods:
 {\tt print()},
 and
 {\tt execute()}.
-Certain object also implement a {\tt recreate()} method which operates similar
-to that of {\tt realloc()} in C.
+Certain objects also implement a {\tt recreate()} method which operates
+similar to that of {\tt realloc()} in C and are used to restructure or
+reconfigure an object without completely destroying it and creating it again.
 Typically, the user will create the signal processing object independent of
-the data array.
+the external (user-defined) data array.
 The object will manage its own memory until its {\tt destroy()} method is
 invoked.
 A few points to note:
 \begin{enumerate}
-\item While the objects do retain internal memory, they operate on external
-      arrays defined by the user.
-      It is strictly up to the user to manage his/her own memory.
+\item The object is only used to maintain the state of the signal processing
+      algorithm.
+      For example, a finite impulse response filter
+      (Section~\ref{module:filter:firfilt}) needs to retain the filter
+      coefficients and a buffer of input samples.
+      Certain algorithms which do not retain information (those which are
+      memoryless) do not use objects.
+      For example, {\tt design\_rrc\_filter()}
+      (Section~\ref{module:filter:firdes:rrcos})
+      calculates the coefficients of a root raised-cosine filter, a processing
+      algorithm which does not need to maintain a state after its completion.
+\item While the objects do retain internal memory, they typically operate on
+      external user-defined arrays.
+      As such, it is strictly up to the user to manage his/her own memory.
       Shared pointers are a great way to cause memory leaks, double-free bugs,
       and severe headaches.
-\item ...
+%\item ...
 \end{enumerate}
 
 \section{Learning by example}
@@ -92,8 +106,6 @@ Many of these examples write an output file which can be read by
 octave~\cite{octave:web} to display the results.
 For a brief description of each of these examples, see {\tt examples/README}.
 
-%\section{Sandbox}
-
 \subsection{Why C?}
 A commonly asked question is ``why C and not C++?''
 The answer is simple: {\em portability}.
@@ -104,7 +116,8 @@ fast as C), it is not as portable to embedded platforms as C.
 Furthermore, the majority of functions simply perform complex operations on a
 data sequence and do not require a high-level object-oriented programming
 interface.
-This we will leave to framework developers and interface builders.
+The importance in object-oriented programming is the techniques used, not the
+languages describing it.
 
 While a number of signal processing elements in \liquid\ use structures, these
 are simply to save the internal state of the object.
@@ -131,6 +144,9 @@ The C programming language has a rich history in system programming--
 specifically targeting embedded applications--and is the basis behind many
 well-known projects including the linux kernel and the python programming
 language.
+Having said this, high-level frameworks and graphical interfaces are much more
+suited to be written in C++ and will beat an implementation in C any day,
+but lie far outside the scope of this project.
 
 \subsection{Data Types}
 The majority of signal processing for SDR is performed at complex baseband.
