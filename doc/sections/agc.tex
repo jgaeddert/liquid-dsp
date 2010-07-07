@@ -28,88 +28,141 @@ function of the input.
 \label{fig:module:agc:transfer_function}
 \end{figure}
 
-%The energy of a signal $\vec{x} = [x(0), x(1), \ldots, x(N-1) ]$ is
-%\[
-%    E\{\|\vec{x}\|\} = 
-%        \left[
-%        \sum\limits_{k=0}^{N-1} {\|x^2(k)\|}
-%        \right]^{1/2}
-%\]
-
 \liquid\ implements automatic gain controlling with the {\tt agc\_xxxt}
 family of objects.
 The goal is to estimate the gain required to force a signal to have a specific
 target energy, $\bar{e}$.
 Operating one sample at a time, the {\tt agc} object makes an estimate
-$\hat{e}$ of the signal energy and updates the internal gain $\hat{g}$,
+$\hat{e}$ of the signal energy and updates the internal gain $g$,
 applying it to the input to produce an output with the target energy.
 The gain estimate is updated by way of an open loop filter whose bandwidth
 determines the update rate of the AGC.
 
-Loop filter coefficients for a bandwidth $w$,
-\[  \alpha = \sqrt{w}   \]
-\[  \beta = 1 - \alpha  \]
+Given an input signal
+$\vec{x} = [\vec{x}_0, \vec{x}_1, \ldots, \vec{x}_{N-1}]$,
+its energy is computed as its $L_2$ norm over the entire sequence, viz.
+\[
+    E\{ \|\vec{x}\| \} = 
+        \sqrt{
+            \sum\limits_{k=0}^{N-1} {\|\vec{x}_k^2\|}
+        }
+\]
+%For a continuous signal, this is
+%\[
+%    E\{\| x(t) \|\} =
+%        \sqrt{
+%            \frac{1}{T}\int_0^{T} { x^2(t) dt }
+%        }
+%\]
+For received communications signals, however, the goal is to adjust to the
+gain of the receiver relative to the slowly-varying amplitude of the incoming
+receiver due to shadowing, path loss, etc.
+%Furthermore, it is impractical to estimate the signal energy of an entire
+%vector for each sample of input.
+Therefore it is necessary to make an estimate of the instantaneous signal
+energy, one sample at at time.
+The time-average signal energy may be estimated at time $k$ as a partial
+feedback sum of the previous estimate
+\begin{equation}
+\label{eq:module:agc:ehat}
+    \hat{e}_k =
+        \Bigl[
+            \zeta\|\vec{x}_k\|^2 + (1-\zeta)\hat{e}_{k-1}^2
+        \Bigr]^{1/2}
+\end{equation}
+where $\| \vec{x}_k \|^2$ is the instantaneous signal energy estimate at time
+$k$ and $\zeta$ is the smoothing factor, commensurate of the filter bandwidth%
+\footnote{This smoothing factor is necessary to help prevent wild fluctuations
+in $\hat{e}_k$ which can occur if the input signal's instantaneous amplitude
+has significant variation, such as in digitally-modulated signals.}
+The choice of $\zeta$ affects the both the amount of noise allowed in the
+signal energy estimate, and its speed of adjustment to the dynamics of
+$vec{x}$.
+%A smaller value of $\zeta$ decreases the...
+\liquid\ uses an internal fixed value of $0.1$ for $\zeta$.
+
+Now that the signal energy has been estimated, all that remains is to adjust
+the gain of the receiver accordingly.
+\liquid\ implements three types of open-loop gain controls, described in the
+next three sections.
+Each uses a common loop filter parameter for a given bandwidth, $w$, as
+\[
+    \alpha = \sqrt{w}
+\]
+Notice the similarity of $\alpha$ in estimating the gain to $\zeta$ in
+(\ref{eq:module:agc:ehat}) to estimating the signal energy.
+If you are unsure which type of AGC to use, we recommend
+{\tt LIQUID\_AGC\_DEFAULT} as a good all-around control.
+The reason for three is to allow flexibility in the receiver as
+each control mechanism has slight performance differences and might require
+fewer clock clycles, depending upon the architecture of the target platform
+and the precision of the data type used.
 
 \subsection{{\tt LIQUID\_AGC\_DEFAULT}}
-The default {\tt agc} type is a... For a given input sample $x$ at time $n$,
-the filtered signal energy estimate $\hat{e}$ is
-\[  q(n) = \zeta\|x\|^2 + (1-\zeta)q(n-1)   \]
-\[  \hat{e}(n) = \sqrt{q(n)}                \]
-where $q(0)=0$ and $\zeta=0.1$ is a smoothing factor.%
-\footnote{This smoothing factor is necessary to help prevent wild fluctuations
-in $\hat{e}(n)$ which can occur if the input signal's instantaneous amplitude
-has significant variation.}
-The instantaneous ideal gain is
+The default {\tt agc} type is a... 
+%
+The instantaneous signal energy estimate is given in
+(\ref{eq:module:agc:ehat}).
+In order to achieve a target energy $\bar{e}$, the instantaneous ideal gain is
+thereefore the ratio of the target to the estimated energy vectors,
 \[
-    \bar{g}(n) = \bar{e}(n) / \hat{e}(n)
+    \hat{g}_k = \bar{e} / \hat{e}_k
 \]
-and the filtered gain estimate is
+Rather than applying the gain directly to the input signal it is first
+filtered as
 \[
-    \hat{g}(n+1) = \beta \hat{g}(n) + \alpha \bar{g}(n)
+    g_k = \alpha \hat{g}_k + (1-\alpha) g_{k-1}
 \]
+where again $\alpha = \sqrt{w}$ is the smoothing factor of the gain estimate
+and controls the attack and release time the {\tt agc} object has on an input
+signal.
+Notice the similarity the above equation has to (\ref{eq:module:agc:ehat}).
 
 \subsection{{\tt LIQUID\_AGC\_LOG}}
 As in the default case, the log {\tt agc} type makes an estimate of the
-instantaneous gain,
+instantaneous signal energy estimate as given by (\ref{eq:module:agc:ehat})
+and an estimate of the instantaneous gain as
+$\hat{g}_k = \bar{e} / \hat{e}_k$.
+The loop control, however, operates on the log of the gain difference rather
+than its linear component.
+Therefore the gain error at time $k$ can be represented as
 \[
-    \bar{g}(n) = \bar{e}(n) / \hat{e}(n)
-\]
-however the loop control operates on the log of the gain error, viz
-\[
-    \gamma(n) = \ln\bigl( \bar{g}(n) / \hat{g}(n) \bigr)
+    \gamma_k = \ln\bigl( \hat{g}_k / g_{k-1} \bigr)
 \]
 The {\tt agc} then updates its gain estimate according to the magnitude of the
-error.
+error, viz.
 \[
-    \hat{g}(n+1) = \hat{g}(n) e^{ \alpha \gamma(n) }
+    %g_k = g_{k-1} e^{ \alpha \gamma_k }
+    g_k = g_{k-1} \exp\bigl\{ \alpha \gamma_k \bigr\}
 \]
-Notice that when $\gamma(n)=0$, the gain is not updated
-(i.e. $\hat{g}(n+1) = \hat{g}(n)$).
-
+Notice that when $\gamma_k=0$, the gain is not updated
+(i.e. $\hat{g}_k = \hat{g}_{k-1}$).
 
 \subsection{{\tt LIQUID\_AGC\_EXP}}
 The exponential gain update method does not...
 The instantaneous output energy is
-\[  \|y(n)\| = \hat{g}(n)\|x(n)\|      \]
+\[
+    \|\vec{y}_k\| = g_{k-1}\|\vec{x}_k\|
+\]
 and the gain error is
 \[
-    \gamma(n) = \|y(n)\| - \bar{e}
+    \gamma_k = \| \vec{y}_k\| - \bar{e}
 \]
 The gain estimate is updated proportional to the gain error, viz
 \[
-    \hat{g}(n+1) =
-        \hat{g}(n) \left(1 -
+    g_k =
+        g_{k-1} \left(1 -
          \frac{
-            \gamma(n)\sqrt{\alpha}
+            \gamma_k \sqrt{\alpha}
         }{
-            \text{argmax}\left\{\bar{e}(n),\|y(n)\|\right\}
+            \text{argmax}\left\{\bar{e}, \|\vec{y}_k\|\right\}
         }
     \right)
 \]
 The multiplier in to the right of the above equation is always positive
 and proportional to the gain error.
-Notice that when the error is zero ($\|y(n)\| = \bar{e}$),
-$\hat{g}(n+1) = \hat{g}(n)$
+Notice that when the error is zero ($\| \vec{y}_k \| = \bar{e}$),
+$g_k = g_{k-1}$.
 
 
 \subsection{Locking}
