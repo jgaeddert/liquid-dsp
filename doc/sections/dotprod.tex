@@ -26,7 +26,8 @@ Software-defined radio is no exception as basic profiling will likely
 demonstrate that a considerable portion of the processor is spent computing
 it.
 Certain machine architectures have specific instructions for computing vector
-dot products... SIMD, mmx, sse, AltiVec, etc.
+dot products, particularly those which use a single instruction for
+multiple data (SIMD) such as mmx, sse, AltiVec, etc.
 
 \subsection{Usage}
 \label{module:dotprod:usage}
@@ -39,8 +40,65 @@ In the second case, a {\tt dotprod} object is created around vector $\vec{v}$
 which does not change (or rarely changes) throughout its life cycle.
 This is the more convenient method for filtering objects which don't usually
 have time-dependent coefficients.
-
+Listed below is a simple interface example to the {\tt dotprod} module
+object:
+%
 \input{listings/dotprod_rrrf.example.c.tex}
-
+%
 In both cases the {\tt dotprod} can be easily integrated with the
-{\tt window} object for managing input data and alignment.
+{\tt window} object (Section~\ref{module:buffer:window})
+for managing input data and alignment.
+There are three types of dot product objects and are listed in
+Table~\ref{tab:dotprod:objects}.
+
+% ------------ TABLE: DOTPROD OBJECT TYPES ------------
+\begin{table*}
+\caption{{\tt dotprod} object types}
+\label{tab:dotprod:objects}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}lll}
+\toprule
+{\it precision} &
+{\it input/output} &
+{\it coefficients} &
+{\it interface}\\\otoprule
+%
+{\it float} & real      & real      & {\tt dotprod\_rrrf} \\
+{\it float} & complex   & complex   & {\tt dotprod\_cccf} \\
+{\it float} & complex   & real      & {\tt dotprod\_crcf} \\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
+Here is a brief description of the {\tt dotprod} object interfaces.
+While the types are described using the {\tt dotprod\_rrrf} object, the
+same holds true for all other types.
+\begin{description}
+\item[{\tt dotprod\_run(h,x,n,y)}]
+    executes a vector dot product between two vectors $\vec{h}$ and
+    $\vec{x}$, each of length $n$ and stores the result in the output
+    $y$.
+    This is not a structured method and does not require creating a
+    {\tt dotprod} object, however does not take advantage of SIMD
+    instructions if available.
+    Rather than speed, its intent is to provide a simple interface to
+    demonstrate functional correctness.
+\item[{\tt dotprod\_rrrf\_create(v,n)}]
+    creates a {\tt dotprod} object with coefficients $\vec{v}$ of length
+    $n$.
+    %Certain machines can make use of special SIMD instructions, and
+    %therefore the specific types of dot product
+\item[{\tt dotprod\_rrrf\_recreate(q,v,n)}]
+    recreates a {\tt dotprod} object with a new set of coefficients
+    $\vec{v}$ with a (possibly) different length $n$.
+\item[{\tt dotprod\_rrrf\_destroy(q)}]
+    destroys a {\tt dotprod} object, freeing all internally-allocated
+    memory.
+\item[{\tt dotprod\_rrrf\_print(q)}]
+    prints the object internals to the screen.
+\item[{\tt dotprod\_rrrf\_execute(q,v,y)}]
+    executes a dot product with an input vector $\vec{v}$ and stores the
+    result in $y$.
+\end{description}
