@@ -301,13 +301,14 @@ void AGC(_estimate_gain_log)(AGC() _q, TC _x)
 
 void AGC(_estimate_gain_exp)(AGC() _q, TC _x)
 {
-    // compute estimate of instantaneous input signal level
+    float zeta = 0.1f;
 #if TC_COMPLEX
     _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
 #else
     _q->e = _x*_x;
 #endif
-    _q->e_hat = sqrtf(_q->e);
+    _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
+    _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
 
     // compute estimate of output signal level
     T e_out = _q->e_hat * _q->g;
