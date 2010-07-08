@@ -54,7 +54,7 @@
 
 // 
 #define LIQUID_AGC_DEFINE_INTERNAL_API(AGC,T,TC)                \
-void AGC(_init)(AGC() _q);                                      \
+                                                                \
 void AGC(_estimate_input_energy)(AGC() _q, TC _x);              \
 void AGC(_estimate_gain_default)(AGC() _q, TC _x);              \
 void AGC(_estimate_gain_log)(AGC() _q, TC _x);                  \
