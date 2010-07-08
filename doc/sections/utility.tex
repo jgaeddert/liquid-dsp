@@ -19,9 +19,14 @@ Byte packing is used extensively in the
 These methods resize symbols represented by various numbers of bits.
 This is necessary to move between raw data arrays which use full bytes (eight
 bits per symbol) to methods expecting symbols of different sizes.
-For example, the {\tt liquid\_repack\_bytes()} method is useful when one wants
+In particular, the {\tt liquid\_repack\_bytes()} method is useful when one wants
 to transmit a block of 64 data bytes using an 8-PSK modem which requires a
 3-bit input symbol.
+For example repacking two 8-bit symbols {\tt 00000000},{\tt 11111111} into six
+3-bit symbols gives
+{\tt 000},{\tt 000},{\tt 001},{\tt 111},{\tt 111},{\tt 100}.
+Because 16 bits cannot be divided evenly among 3-bit symbols, the last symbol
+is padded with zeros.
 
 \subsection{miscellany}
 \label{module:utility:misc}
@@ -37,15 +42,27 @@ without performing unnecessary loop iterations or comparisons.
 \begin{description}
 \item[{\tt liquid\_count\_ones(x)}]
     counts the number of {\tt 1}s that exist in the integer $x$.
-    For example, {\tt liquid\_count\_ones(255)} returns {\tt 8}.
+    For example, the number {\tt 237} is represented in binary as
+    {\tt 11101101}, therefore {\tt liquid\_count\_ones(237)} returns {\tt 6}.
 \item[{\tt liquid\_count\_ones\_mod2(x)}]
     counts the number of {\tt 1}s that exist in the integer $x$, modulo 2; in
     other words, it returns {\tt 1} if the number of ones in $x$ is odd,
     {\tt 0} if the number is even.
+    For example, {\tt liquid\_count\_ones\_mod2(237)} return {\tt 0}.
 \item[{\tt liquid\_bdotprod(x,y)}]
     computes the binary dot-product between two itegers $x$ and $y$ as the sum
     of ones in $x \land y$, modulo 2 (where $\land$ is the logical `and'
     operation).
+    This is useful in linear feedback shift registers
+    (see Section~\ref{module:sequence:msequence} on $m$-sequences)
+    as well as certain forward error-correction codes
+    (see Section~\ref{module:fec:hamming} on Hamming codes).
+    For example, the binary dot product between
+    {\tt 10110011} and
+    {\tt 11101110} is
+    {\tt 1} because
+    {\tt 10110011} $\land$ {\tt 11101110} $=$ {\tt 10100010} which has an odd
+    number of {\tt 1}s.
 \item[{\tt liquid\_count\_leading\_zeros(x)}]
     counts the number of leading zeros in the integer $x$.
     This is dependent upon the size of the integer for the target machine
