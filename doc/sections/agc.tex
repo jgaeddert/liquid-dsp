@@ -296,10 +296,77 @@ Auto-squelch is enabled/disabled using the
 {\tt agc\_crcf\_squelch\_enable\_auto()} and 
 {\tt agc\_crcf\_squelch\_disable\_auto()} methods respectively.
 
-\subsection{Usage}
-Basic usage:
+\subsection{Interface}
+Listed below is the full interface to the {\tt agc} family of objects.
+While each method is listed for the {\tt agc\_crcf} object, the same
+functionality applies to the {\tt agc\_rrrf} object.
+\begin{description}
+\item[{\tt agc\_crcf\_create()}]
+    creates an {\tt agc} object with default parameters.
+    By default the minimum gain is $10^{-6}$, the maximum gain is $10^6$, the
+    initial gain is $1$, and the estimate of the input signal level is $0$.
+    Also the AGC type is set to {\tt LIQUID\_AGC\_DEFAULT}.
+\item[{\tt agc\_crcf\_destroy(q)}]
+    destroys the object, freeing all internally-allocated memory.
+\item[{\tt agc\_crcf\_print(q)}]
+    prints the {\tt agc} object's internals to {\tt stdout}.
+\item[{\tt agc\_crcf\_reset(q)}]
+    resets the state of the {\tt agc} object.
+    This unlocks the AGC and clears the estimate of the input signal level.
+\item[{\tt agc\_crcf\_set\_type(q,t)}]
+    sets the type of the agc to one of
+    {\tt LIQUID\_AGC\_DEFAULT},
+    {\tt LIQUID\_AGC\_LOG}, or
+    {\tt LIQUID\_AGC\_EXP}.
+\item[{\tt agc\_crcf\_set\_gain\_limits(q,gmin,gmax)}]
+    sets the minimum and maximum gain values, respectively.
+    This effectively specifies $e_0$ and $e_1$ as in
+    Figure~\ref{fig:module:agc:transfer_function}.
+\item[{\tt agc\_crcf\_lock(q)}]
+    prevents the AGC from updating its gain estimate.
+    The internal gain is stored at the time of lock and used for all
+    subsequence occurrances of {\tt \_execute()}.
+    This is primarily used when the beginning of a frame has been detected,
+    and perhaps the payload contains amplitude-modulated data which can be
+    corrupted with an AGC with an aggressive attack.
+    Also, locking the AGC conserves clock cycles as the gain update is not
+    computed.
+    Typically, the locked AGC consumes about $5\times$ fewer clock cycles than
+    its unlocked state.
+\item[{\tt agc\_crcf\_unlock(q)}]
+    unlocks the AGC from a locked state and resumes estimating the input
+    signal level and internal gain.
+\item[{\tt agc\_crcf\_execute(q,x,y)}]
+    applies the gain to the input $x$, storing in the output sample $y$ and
+    updates the AGC's internal tracking loops.
+\item[{\tt agc\_crcf\_get\_signal\_level(q)}]
+    returns a linear estimate of the input signal's energy level.
+\item[{\tt agc\_crcf\_get\_gain(q)}]
+    returns the {\tt agc} object's internal gain.
+\item[{\tt agc\_crcf\_squelch\_activate(q)}]
+    activates the AGC's squelch module.
+\item[{\tt agc\_crcf\_squelch\_deactivate(q)}]
+    deactivates the AGC's squelch module.
+\item[{\tt agc\_crcf\_squelch\_enable\_auto(q)}]
+    activates the AGC's automatic squelch module.
+\item[{\tt agc\_crcf\_squelch\_disable\_auto(q)}]
+    deactivates the AGC's automatic squelch module.
+\item[{\tt agc\_crcf\_squelch\_set\_threshold(q,t)}]
+    sets the threshold of the squelch.
+\item[{\tt agc\_crcf\_squelch\_set\_timeout(q,t)}]
+    sets the timeout (number of samples) after the signal level has dropped
+    before enabling the squelch again.
+\item[{\tt agc\_crcf\_squelch\_get\_status(q)}]
+    returns the squelch status.
+\end{description}
+
+Here is a basic example of the {\tt agc} object in \liquid:
 \input{listings/agc.example.c.tex}
 
+A demonstration of the transient response of the {\tt agc\_crcf} type can be
+found in Figure~\ref{fig:module:agc:transient} in which an input complex
+sinusoidal pulse is fed into the AGC.
+Notice the initial overshoot at the output signal.%due to...
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.gen/agc_transient}
