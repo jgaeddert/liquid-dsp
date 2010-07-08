@@ -34,6 +34,56 @@ void autotest_count_ones() {
     CONTEND_EQUALITY( liquid_count_ones(0xFFFF), 16 );
     CONTEND_EQUALITY( liquid_count_ones(0x00FF), 8 );
     CONTEND_EQUALITY( liquid_count_ones(0x5555), 8 );
+    CONTEND_EQUALITY( liquid_count_ones(0x0007), 3 );
+    CONTEND_EQUALITY( liquid_count_ones(0x0037), 5 );
+    CONTEND_EQUALITY( liquid_count_ones(0x0137), 6 );
+    CONTEND_EQUALITY( liquid_count_ones(0xf137), 10 );
+}
+
+// 
+// AUTOTEST: count number of ones in an integer (modulo 2)
+//
+void autotest_count_ones_mod2() {
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x0000), 0 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x0001), 1 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x0003), 0 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0xFFFF), 0 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x00FF), 0 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x5555), 0 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x0007), 1 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x0037), 1 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0x0137), 0 );
+    CONTEND_EQUALITY( liquid_count_ones_mod2(0xf137), 0 );
+}
+
+// 
+// AUTOTEST: binary dot product
+//
+void autotest_bdotprod()
+{
+    // simple checks
+    CONTEND_EQUALITY( liquid_bdotprod(0x1111,0x1111), 0 );
+    CONTEND_EQUALITY( liquid_bdotprod(0xffff,0xffff), 0 );
+    CONTEND_EQUALITY( liquid_bdotprod(0xffff,0x0000), 0 );
+    CONTEND_EQUALITY( liquid_bdotprod(0x0001,0x0001), 1 );
+
+    // random data
+    CONTEND_EQUALITY( liquid_bdotprod(0x4379, 0xf2dc), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0xc9a1, 0xc99d), 0);
+    CONTEND_EQUALITY( liquid_bdotprod(0xa8ba, 0x26d9), 0);
+    CONTEND_EQUALITY( liquid_bdotprod(0x5235, 0x8e1b), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0x0f85, 0xa3d1), 0);
+    CONTEND_EQUALITY( liquid_bdotprod(0x23e0, 0x5869), 0);
+    CONTEND_EQUALITY( liquid_bdotprod(0xc8a4, 0x32a4), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0xe1c3, 0x000c), 0);
+    CONTEND_EQUALITY( liquid_bdotprod(0x4039, 0x192d), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0x2e1c, 0x55a3), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0x5a1b, 0x0241), 0);
+    CONTEND_EQUALITY( liquid_bdotprod(0x440c, 0x7ddb), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0xd2e2, 0x5c98), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0xe36c, 0x5bc9), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0xaa96, 0xf233), 1);
+    CONTEND_EQUALITY( liquid_bdotprod(0xab0f, 0x3912), 0);
 }
 
 // 

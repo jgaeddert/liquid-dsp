@@ -1,0 +1,4 @@
+# m-sequence generator polynomials (m=3)
+# hex       oct       bin
+  0x000b    000013    1011
+  0x000d    000015    1101

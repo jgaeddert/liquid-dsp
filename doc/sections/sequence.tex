@@ -89,47 +89,57 @@ and consists of several useful properties:
       exactly $-1/n$.
 \item the sequence is easily generated using a linear feedback shift register
 \end{enumerate}
+Only a certain subset of all possible generator polynomials produce this
+maximal length sequence.
+The default generator polynomials are listed in
+Table~\ref{tab:sequence:genpoly}, however many more exist.
+Notice that both the first and last bit of each generator polynomial is a
+{\tt 1}.
+This holds true for all $m$-sequence generator polynomials.
+All generator polymomials of length $m=2$ $(n=3)$ through $m=15$ $(n=32767)$
+are given in the {\tt data/msequence/} subdirectory of this documentation
+directory.
 
-Here is a brief description of the {\tt msequence} oject's interface in
+Here is a brief description of the {\tt msequence} object's interface in
 \liquid:
 \begin{description}
-\item[{\tt msequence\_create(\_m)}]
+\item[{\tt msequence\_create(m)}]
     creates an {\tt msequence} object with an internal shift register length
-    of {\tt \_m} bits.
+    of $m$ bits.
     The sequence is automatically initialized to the default sequence of that
-    length, e.g. {\tt LIQUID\_MSEQUENCE\_N511}, and the initial state is set
+    length, e.g. {\tt LIQUID\_MSEQUENCE\_GENPOLY\_M6}, and the initial state is set
     to {\tt 000...001}.
-\item[{\tt msequence\_destroy()}]
-    destroys the object, freeing all internal memory.
-\item[{\tt msequence\_init()}]
-    initializes the {\tt msequence} generator object {\tt \_ms} where
+\item[{\tt msequence\_destroy(ms)}]
+    destroys the object {\tt ms}, freeing all internal memory.
+\item[{\tt msequence\_init(ms,m,g,a)}]
+    initializes the {\tt msequence} generator object {\tt ms} where
     $m$ is the generator polynomial length (number of bits),
     $g$ is the generator polynomial, and
     $a$ is the initial state of the internal shift register (initially
     {\tt  1}).
-\item[{\tt msequence\_print()}]
+\item[{\tt msequence\_print(ms)}]
     prints the contents of the sequence to the screen.
-\item[{\tt msequence\_advance()}]
+\item[{\tt msequence\_advance(ms)}]
     advances the {\tt msequence} object's shift register by computing the
     binary dot product of the register with the generator polynomial.
     The resulting bit is sum of {\tt 1}s modulo 2 of the dot product and is
     fed back into the end of the shift register, as well as returned to the
     user.
-\item[{\tt msequence\_generate\_symbol()}]
-    generates a pseudo-random {\tt \_bps}-bit symbol from the shift register.
-    This is accomplished by advancing the {\tt msequence} object {\tt \_bps}
+\item[{\tt msequence\_generate\_symbol(ms,bps)}]
+    generates a pseudo-random {\tt bps}-bit symbol from the shift register.
+    This is accomplished by advancing the {\tt msequence} object {\tt bps}
     times and shifting the result back into the symbol.
     It is important to note that because the sequence repeats every $n$ bits,
     if the random number is an even multiple of $n$, the random sequence will
-    repeat every {\tt \_bps} symbols.
+    repeat every {\tt bps} symbols.
     For example, if $m=4$ ($n=15$) and {\tt \_bps} is 3, then the sequence
     will repeat 5 times.
-\item[{\tt msequence\_reset()}]
+\item[{\tt msequence\_reset(ms)}]
     resets the {\tt msequence} object's internal shift register to the
     original state (typically {\tt 000...001}).
-\item[{\tt msequence\_get\_length()}]
+\item[{\tt msequence\_get\_length(ms)}]
     returns the length of the sequence, $n$
-\item[{\tt msequence\_get\_state()}]
+\item[{\tt msequence\_get\_state(ms)}]
     returns the internal state of the sequence, $v$
 \end{description}
 
