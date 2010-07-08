@@ -29,6 +29,8 @@
 
 #include "liquid.internal.h"
 
+#define LIQUID_AGC_ZETA (0.1)
+
 struct AGC(_s) {
     liquid_agc_type type;
 
@@ -261,17 +263,22 @@ int AGC(_squelch_get_status)(AGC() _q)
 // internal methods
 //
 
-void AGC(_estimate_gain_default)(AGC() _q, TC _x)
+void AGC(_estimate_input_energy)(AGC() _q,
+                                 TC _x)
 {
-    float zeta = 0.1f;
-    // estimate normalized energy, should be equal to 1.0 when locked
 #if TC_COMPLEX
     _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
 #else
     _q->e = _x*_x;
 #endif
-    _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
-    _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
+    _q->e_prime = (_q->e)*LIQUID_AGC_ZETA + (_q->e_prime)*(1.0 - LIQUID_AGC_ZETA);
+    _q->e_hat = sqrtf(_q->e_prime);
+}
+
+void AGC(_estimate_gain_default)(AGC() _q, TC _x)
+{
+    // estimate input energy, result is in _q->e_hat
+    AGC(_estimate_input_energy)(_q, _x);
 
     // ideal gain
     T g = _q->e_target / _q->e_hat;
@@ -282,15 +289,8 @@ void AGC(_estimate_gain_default)(AGC() _q, TC _x)
 
 void AGC(_estimate_gain_log)(AGC() _q, TC _x)
 {
-    float zeta = 0.1f;
-    // estimate normalized energy, should be equal to 1.0 when locked
-#if TC_COMPLEX
-    _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
-#else
-    _q->e = _x*_x;
-#endif
-    _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
-    _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
+    // estimate input energy, result is in _q->e_hat
+    AGC(_estimate_input_energy)(_q, _x);
 
     // loop filter : compute gain error
     T gain_error = _q->e_target / (_q->e_hat * _q->g);
@@ -301,14 +301,8 @@ void AGC(_estimate_gain_log)(AGC() _q, TC _x)
 
 void AGC(_estimate_gain_exp)(AGC() _q, TC _x)
 {
-    float zeta = 0.1f;
-#if TC_COMPLEX
-    _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
-#else
-    _q->e = _x*_x;
-#endif
-    _q->e_prime = (_q->e)*zeta + (_q->e_prime)*(1.0f-zeta);
-    _q->e_hat = sqrtf(_q->e_prime);// * (_q->g) / (_q->e_target);
+    // estimate input energy, result is in _q->e_hat
+    AGC(_estimate_input_energy)(_q, _x);
 
     // compute estimate of output signal level
     T e_out = _q->e_hat * _q->g;
