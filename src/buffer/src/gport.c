@@ -264,6 +264,12 @@ int gport_produce_available(gport _p,
 void * gport_producer_lock(gport _p,
                            unsigned int _n)
 {
+    // validate input
+    if (_n > _p->n) {
+        fprintf(stderr,"error: gport_producer_lock(), lock requested for %u samples, exceeding buffer size\n", _n);
+        exit(1);
+    }
+
     // lock main producer mutex: only one producer at a time
     //printf("gport: producer waiting for lock...\n");
     pthread_mutex_lock(&_p->producer_mutex);
@@ -449,6 +455,12 @@ int gport_consume_available(gport _p,
 void * gport_consumer_lock(gport _p,
                            unsigned int _n)
 {
+    // validate input
+    if (_n > _p->n) {
+        fprintf(stderr,"error: gport_consumer_lock(), lock requested for %u samples, exceeding buffer size\n", _n);
+        exit(1);
+    }
+
     // lock main consumer mutex: only one consumer at a time
     //printf("gport: consumer waiting for lock...\n");
     pthread_mutex_lock(&_p->consumer_mutex);
