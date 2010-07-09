@@ -592,11 +592,6 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
     windowcf_push(_fs->debug_framesyms, _x);
 #endif
 
-    // append symbol to buffer
-    _fs->payload_samples[_fs->num_symbols_collected] = _x;
-    _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) _sym;
-    _fs->num_symbols_collected++;
-
     // check to see if full payload has been received
     if (_fs->num_symbols_collected==_fs->num_payload_symbols) {
         // reset symbol counter
@@ -615,9 +610,12 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
         // update synchronizer state
         _fs->state = FLEXFRAMESYNC_STATE_RESET;
         //_fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
+    } else {
+        // append symbol to buffer
+        _fs->payload_samples[_fs->num_symbols_collected] = _x;
+        _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) _sym;
+        _fs->num_symbols_collected++;
     }
-
-
 }
 
 // execute synchronizer, resetting object
