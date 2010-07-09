@@ -25,6 +25,7 @@ local_src	:=			\
 	crc_example.c			\
 	cvsd_sine_example.c		\
 	dds_cccf_example.c		\
+	decim_crcf_example.c		\
 	decim_rrrf_example.c		\
 	dotprod_rrrf_example.c		\
 	dotprod_cccf_example.c		\
