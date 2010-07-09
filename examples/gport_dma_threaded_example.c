@@ -18,9 +18,10 @@
 void producer_handler ( void *ptr );
 void consumer_handler ( void *ptr );
 
-#define PRODUCER_TIMER  100 // sleep (ms)
-#define PRODUCER_SIZE   3
-#define CONSUMER_SIZE   5
+#define PRODUCER_TIMER      100     // sleep time (ms) after producer writes samples
+#define NUM_SAMPLES_TOTAL   20      // total number of samples to flow through port
+#define PRODUCER_SIZE_MAX   3       // maximum producer size
+#define CONSUMER_SIZE_MAX   5       // maximum consumer size
 
 int main()
 {
@@ -30,7 +31,7 @@ int main()
     void * status;
     
     // create port: interface between threads
-    gport p = gport_create(PRODUCER_SIZE+CONSUMER_SIZE, sizeof(unsigned int));
+    gport p = gport_create(PRODUCER_SIZE_MAX + CONSUMER_SIZE_MAX, sizeof(unsigned int));
     
     // set thread attributes
     pthread_attr_init(&thread_attr);
@@ -58,20 +59,28 @@ void producer_handler ( void *_ptr )
     gport p = (gport) _ptr;
     unsigned int i, j, n=0;
     int * w;
+    unsigned int num_samples_remaining = NUM_SAMPLES_TOTAL;
 
-    for (i=0; i<CONSUMER_SIZE; i++) {
-        printf("  producer waiting for %u samples...\n", PRODUCER_SIZE);
-        w = (int*) gport_producer_lock(p,PRODUCER_SIZE);
+    while (num_samples_remaining > 0) {
+        // randomly choose producer size
+        unsigned int k = (rand() % PRODUCER_SIZE_MAX) + 1;
+        if (k > num_samples_remaining)
+            k = num_samples_remaining;
 
-        printf("  producer writing %u samples...\n", PRODUCER_SIZE);
-        for (j=0; j<PRODUCER_SIZE; j++)
+        printf("  producer waiting for %u samples...\n", k);
+        w = (int*) gport_producer_lock(p,k);
+
+        printf("  producer writing %u samples...\n", k);
+        for (j=0; j<k; j++)
             w[j] = n++;
 
         printf("  producer waiting %u ms\n", PRODUCER_TIMER);
         usleep(PRODUCER_TIMER*1000);
 
         printf("  producer unlocking port\n");
-        gport_producer_unlock(p,PRODUCER_SIZE);
+        gport_producer_unlock(p,k);
+
+        num_samples_remaining -= k;
     }
     
     printf("  producer exiting thread\n");
@@ -84,16 +93,24 @@ void consumer_handler ( void *_ptr )
     gport p = (gport) _ptr;
     unsigned int i, j, n=0;
     int * r;
+    unsigned int num_samples_remaining = NUM_SAMPLES_TOTAL;
 
-    for (i=0; i<PRODUCER_SIZE; i++) {
-        printf("  consumer waiting for %u samples...\n", CONSUMER_SIZE);
-        r = (int*) gport_consumer_lock(p,CONSUMER_SIZE);
+    while (num_samples_remaining > 0) {
+        // randomly choose consumer size
+        unsigned int k = (rand() % CONSUMER_SIZE_MAX) + 1;
+        if (k > num_samples_remaining)
+            k = num_samples_remaining;
 
-        for (j=0; j<CONSUMER_SIZE; j++)
+        printf("  consumer waiting for %u samples...\n", k);
+        r = (int*) gport_consumer_lock(p,k);
+
+        for (j=0; j<k; j++)
             printf("  %3u: %d\n", n++, r[j]);
 
         printf("  consumer unlocking port\n");
-        gport_consumer_unlock(p, CONSUMER_SIZE);
+        gport_consumer_unlock(p, k);
+
+        num_samples_remaining -= k;
     }
 
     printf("  consumer exiting thread\n");
