@@ -49,7 +49,7 @@ int main() {
     printf("fs_new      : %12.8f\n", fs_new);
 
     unsigned int L = (unsigned int)(floorf(N/2.0f)); // 2
-    unsigned int r = ((unsigned int)N) % 2;
+    //unsigned int r = ((unsigned int)N) % 2;
     float u[L];
     unsigned int i;
     for (i=0; i<L; i++) {

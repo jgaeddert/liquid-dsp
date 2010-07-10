@@ -55,3 +55,9 @@ References
     [imagemagick:web] ImageMagick command-line image converter, Online:
         http://www.imagemagick.org/script/convert.php
 
+Installing on Mac OS X
+    $ sudo port install texlive
+
+Installing on Ubuntu Linux
+    $ sudo apt-get install texlive-full
+
