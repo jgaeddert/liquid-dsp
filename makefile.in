@@ -24,6 +24,7 @@
 #    all                 :   dynamic shared-library object (e.g. libliquid.so)
 #    install             :   install the dynamic shared library object and
 #                            header file(s)
+#    uninstall           :   uninstall the library and header file(s)
 #    clean               :   clean all targets (bench, check, examples, etc)
 #    check               :   build and run autotest program
 #    bench               :   build and run benchmarking program
@@ -202,6 +203,8 @@ uninstall:
 	$(RM) $(prefix)/include/liquid/liquid.h
 	@echo "removing library \"$(exec_prefix)/lib/libliquid.a\" ..."
 	$(RM) $(exec_prefix)/lib/libliquid.a
+	@echo "removing library \"$(exec_prefix)/lib/$(SHARED_LIB)\" ..."
+	$(RM) $(exec_prefix)/lib/$(SHARED_LIB)
 	@echo "done."
 
 ##
@@ -353,6 +356,4 @@ clean: clean-check clean-bench clean-examples clean-modules
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
-#	$(RM) $(objects)
-#	$(RM) $(dependencies)
 
