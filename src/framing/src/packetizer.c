@@ -106,6 +106,11 @@ packetizer packetizer_recreate(packetizer _p,
                                int _fec0,
                                int _fec1)
 {
+    if (_p == NULL) {
+        // packetizer was never created
+        return packetizer_create(_n, _fec0, _fec1);
+    }
+
     // check values
     if (_p->msg_len     ==  _n      &&
         _p->plan[0].fs  ==  _fec0   &&
