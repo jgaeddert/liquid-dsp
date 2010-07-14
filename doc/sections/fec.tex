@@ -7,16 +7,19 @@
 %(basic), checksum, crc, Hamming block codes...
 The fec module implements a set of forward error-correction codes for
 ensuring and validating data integrity through a noisy channel.
-Redudant (``parity'') bits are added to a data sequence to help correct for
+Redundant ``parity'' bits are added to a data sequence to help correct
 errors introduced by the channel.
+The number of correctable errors depends on the number of parity bits of the
+coding scheme, which in turn affects its rate (efficiency).
 The {\tt fec} object realizes forward error-correction capabilities in
-\liquid\ while the methods {\tt checksum()} and {\tt crc32()} implement error
-detection.
+\liquid\ while the methods {\tt checksum()} and {\tt crc32()} strictly
+implement error detection.
 Certain FEC schemes are only available to \liquid\ by installing the external
 {\tt libfec} library \cite{fec:web}, available as a free download.
-A few low-rate (and low efficiency) codes are availble internally.
+A few low-rate (and fairly low efficiency) codes are availble internally.
 
-See also: {\tt packetizer}, {\tt interleaver}
+%The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
+%relies on the {\tt fec} objects and {\tt crc32} functions.
 
 \subsection{{\tt checksum}}
 \label{module:fec:checksum}
@@ -32,14 +35,14 @@ Here is a simple example:
 %
 It is important to realize that a checksum does not correct any errors, but
 can only detect their presence.
-For a much much stronger error detection, use the cyclic redundancy check.
+For a much much stronger error detection algorithm, use the cyclic redundancy
+check, below.
 
 \subsection{{\tt crc32} (32-bit cyclic redundancy check)}
 \label{module:fec:crc32}
-This example demonstrates how a cyclic redundancy check (CRC) can be used to
-validate data received through un-reliable means (e.g. a noisy channel).
-A CRC is, in essence, a strong algebraic error detection code that computes a
-key on a block of data using base-2 polynomials.
+A cyclic redundancy check (CRC) is, in essence, a strong algebraic error
+detection code that computes a key on a block of data using base-2
+polynomials.
 While it is a strong error-detection method, a CRC is not an error-correction
 code.
 Here is a simple example:
@@ -48,8 +51,8 @@ Here is a simple example:
 
 \subsection{{\tt h74}, {\tt h84}, {\tt h128} (Hamming codes)}
 \label{module:fec:hamming}
-Hamming codes are a specific type of
-code which uses parity bits to detect and correct one bit error in the block.
+Hamming codes are a specific type of block
+code which use parity bits capable of correcting one bit error in the block.
 With the addition of an extra parity bit, they are able to detect up to two
 errors, but are still only able to correct one.
 \liquid\ implements just the Hamming(7,4) and Hamming(8,4) codes, however at
@@ -58,6 +61,7 @@ doesn't pass detected errors to the user.
 Additionally, the Hamming(7,4) code does not compact the 7-bit output symbols,
 but uses a full 8-bit byte, thus its actual rate is $1/2$, not $4/7$ (see
 Table~\ref{tab:fec:codecs}).
+
 Additionally, \liquid\ implements the Hamming(12,8) code which accepts an
 8-bit symbol and adds four parity bits, extending it to a 12-bit symbol.
 This yields a theoretical rate of $2/3$, and actually has a performance very
@@ -113,18 +117,37 @@ However, their simplicity in implementation and low computational complexity
 gains them a place in digital communications, particularly in software radios
 where spectral efficiency goals might be secondary to processing contraints.
 
-\subsection{Convolutional, Reed-Solomon codes}
-\label{module:fec:conv}
+\subsection{{\tt libfec} (convolutional and  Reed-Solomon codes)}
+\label{module:fec:libfecv}
 \liquid\ takes advantage of convolutional and Reed-Solomon codes defined in
 {\tt libfec} \cite{fec:web}.
 These codes have much stronger error-correction capabilities than {\tt rep3},
-{\tt rep5}, {\tt h74}, and {\tt h84}, but are also much more computationally
-intensive to the host processor.
+{\tt rep5}, {\tt h74}, {\tt h84}, and {\tt h128}
+but are also much more computationally intensive to the host processor.
+\liquid\ uses the rate $1/2 (K=7)$, $1/2 (K=9)$, $1/3 (K=9)$, and
+$r1/6 (K=15)$ codes defined in {\tt libfec}, but extends the two half-rate
+codes to punctured codes.
+These punctured codes (also known as ``perforated'' codes) are not as strong
+and cannot correct as many errors, but are more efficient and use less
+overhead than their half-rate counterparts.
+
+The 8-bit Reed-Solomon code is a (255,223) block code, also defined in
+{\tt libfec}.
+Nominally, the scheme accepts 223 bytes (8-bit symbols) and adds 32 parity
+symbols to form a 255-symbol encoded block.
 
 \subsection{Interface}
 \label{module:fec:interface}
 In designing the {\tt fec} interface, we have tried to keep simplicity and
 reconfigurability in mind.
+The various forward error-correction schemes accept bits or symbols
+formatted in different lengths and have vastly different interfaces.
+This potentially makes switching from one scheme to another difficult as one
+needs to restructure the data accordingly.
+\liquid\ takes care of all this formatting under the hood; regardless of the
+scheme used, the {\tt fec} object accepts a block of uncoded data bytes and
+encodes them into an output block of coded data bytes.
+
 %The goal is to allow flexibility in the allocation ...
 %TODO finish interface description
 

@@ -32,6 +32,11 @@ the FEC schemes provided.
 The packet decoder returns the validity of the resulting CRC as well as its
 best effort of decoding the message.
 
+%The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
+%uses two {\tt fec} objects (an inner and outer code) in conjunction with an
+%{\tt interleaver} object (Section~\ref{module:interleaver})
+%and a 32-bit cyclic redundancy check.
+
 The packetizer also allows for re-structuring if the user wishes to change
 error-correction schemes or data lengths.  This is accomplished with the
 {\tt packetier\_recreate()} method.
