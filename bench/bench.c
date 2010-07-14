@@ -97,7 +97,11 @@ int main(int argc, char *argv[])
     unsigned int i, j;
 
     // options
-    enum {RUN_ALL, RUN_SINGLE_BENCH, RUN_SINGLE_PACKAGE} mode = RUN_ALL;
+    enum {RUN_ALL,
+          RUN_SINGLE_BENCH,
+          RUN_SINGLE_PACKAGE,
+          RUN_SEARCH
+    } mode = RUN_ALL;
     unsigned int benchmark_id = 0;
     unsigned int package_id = 0;
     bool verbose = true;
@@ -105,10 +109,11 @@ int main(int argc, char *argv[])
     bool cpu_clock_detect = true;
     bool output_to_file = false;
     char filename[128];
+    char search_string[128];
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ec:n:b:p:t:lLhvqo:")) != EOF){
+    while((d = getopt(argc,argv,"ec:n:b:p:t:lLhs:vqo:")) != EOF){
         switch (d) {
         case 'e':
             estimate_cpu_clock();
@@ -163,6 +168,10 @@ int main(int argc, char *argv[])
                     printf("    %-3u: %-22s\n", benchmarks[j].id, benchmarks[j].name);
             }
             return 0;
+        case 's':
+            mode = RUN_SEARCH;
+            strncpy(search_string, optarg, 128);
+            search_string[127] = '\0';
         case 'v':
             verbose = true;
             break;
@@ -211,6 +220,19 @@ int main(int argc, char *argv[])
         execute_package( &packages[package_id], verbose );
         //print_package_results( &packages[package_id] );
         break;
+    case RUN_SEARCH:
+        printf("running all benchmarks matching '%s'...\n", search_string);
+        for (i=0; i<NUM_BENCHMARKS; i++) {
+            // see if search string matches benchmark name
+            if (strstr(benchmarks[i].name, search_string) != NULL) {
+                // run the benchmark
+                execute_benchmark( &benchmarks[i], verbose );
+            }
+        }
+        break;
+    default:
+        fprintf(stderr,"invalid mode\n");
+        exit(1);
     }
 
     if (output_to_file) {
@@ -244,6 +266,7 @@ void print_help()
     printf("  -t<time> minimum execution time (ms)\n");
     printf("  -l : lists available packages\n");
     printf("  -L : lists all available benchmarks\n");
+    printf("  -s<string>: run all benchmarks matching search string\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
     printf("  -o<output filename>\n");
