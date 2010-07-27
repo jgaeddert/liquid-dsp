@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <getopt.h>
 #include "autotest/autotest.h"
 
@@ -99,19 +100,21 @@ int main(int argc, char *argv[])
     // options
     enum {RUN_ALL,              // run all tests
           RUN_SINGLE_TEST,      // run just a single test
-          RUN_SINGLE_PACKAGE    // run just a single package
+          RUN_SINGLE_PACKAGE,   // run just a single package
+          RUN_SEARCH
     } mode = RUN_ALL;
 
     unsigned int autotest_id = 0;
     unsigned int package_id = 0;
     bool verbose = true;
     bool stop_on_fail = false;
+    char search_string[128];
 
     unsigned int i, j;
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"hut:p:Llsvq")) != EOF){
+    while((d = getopt(argc,argv,"hut:p:Llxs:vq")) != EOF){
         switch (d) {
         case 'h':
         case 'u':
@@ -148,8 +151,13 @@ int main(int argc, char *argv[])
             for (i=0; i<NUM_PACKAGES; i++)
                 printf("%u: %s\n", packages[i].id, packages[i].name);
             return 0;
-        case 's':
+        case 'x':
             stop_on_fail = true;
+            break;
+        case 's':
+            mode = RUN_SEARCH;
+            strncpy(search_string, optarg, 128);
+            search_string[127] = '\0';
             break;
         case 'v':
             verbose = true;
@@ -191,6 +199,16 @@ int main(int argc, char *argv[])
         if (verbose)
             print_package_results( &packages[package_id] );
         break;
+    case RUN_SEARCH:
+        printf("running all autotests matching '%s'...\n", search_string);
+        for (i=0; i<NUM_AUTOTESTS; i++) {
+            // see if search string matches autotest name
+            if (strstr(autotests[i].name, search_string) != NULL) {
+                // run the autotest
+                execute_autotest( &autotests[i], verbose );
+            }
+        }
+        break;
     }
 
     if (liquid_autotest_verbose)
@@ -209,7 +227,8 @@ void print_help()
     printf("  -p<n> : run specific package\n");
     printf("  -L    : lists all autotests\n");
     printf("  -l    : lists all packages\n");
-    printf("  -s    : stop on fail\n");
+    printf("  -x    : stop on fail\n");
+    printf("  -s<string>: run all tests matching search string\n");
     printf("  -v    : verbose\n");
     printf("  -q    : quiet\n");
 }
