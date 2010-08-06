@@ -746,7 +746,7 @@ void flexframesync_decode_header(flexframesync _fs)
     packetizer_decode(_fs->p_header, _fs->header_enc, _fs->header);
 
     // unscramble header
-    unscramble_data(_fs->header, 12);
+    unscramble_data(_fs->header, 17);
 
     // strip off modulation scheme/depth
     unsigned int mod_scheme = (_fs->header[16] >> 4) & 0x0f;

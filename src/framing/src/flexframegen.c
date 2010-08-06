@@ -58,10 +58,10 @@ struct flexframegen_s {
     // TODO : use packetizer object for this
     modem mod_header;                   // header QPSK modulator
     packetizer p_header;                // header packetizer
-    unsigned char header[17];
-    unsigned char header_enc[32];
-    unsigned char header_sym[256];
-    float complex header_samples[256];
+    unsigned char header[17];           // header data (uncoded)
+    unsigned char header_enc[32];       // header data (encoded)
+    unsigned char header_sym[256];      // header symbols
+    float complex header_samples[256];  // header samples
 
     // payload
     modem mod_payload;
@@ -326,7 +326,7 @@ void flexframegen_encode_header(flexframegen _fg)
     _fg->header[16] |= (_fg->props.mod_bps) & 0x0f;
 
     // scramble header
-    scramble_data(_fg->header, 12);
+    scramble_data(_fg->header, 17);
 
     // run packet encoder
     packetizer_encode(_fg->p_header, _fg->header, _fg->header_enc);
