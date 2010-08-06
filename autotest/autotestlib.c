@@ -105,7 +105,9 @@ void autotest_print_results(void)
     }
 
     printf("==================================\n");
-    if (liquid_autotest_num_failed==0) {
+    if (liquid_autotest_num_checks==0) {
+        printf(" NO CHECKS RUN\n");
+    } else if (liquid_autotest_num_failed==0) {
         printf(" PASSED ALL %lu CHECKS\n", liquid_autotest_num_passed);
     } else {
         // compute and print percentage of failed tests
