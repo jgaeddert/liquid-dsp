@@ -113,7 +113,12 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
 }
 
 
-unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
+// return the encoded message length using a particular error-
+// correction scheme (object-independent method)
+//  _scheme     :   forward error-correction scheme
+//  _msg_len    :   raw, uncoded message length
+unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
+                                    unsigned int _msg_len)
 {
     switch (_scheme) {
     case FEC_UNKNOWN:       return 0;
@@ -124,8 +129,8 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_HAMMING84:     return 2*_msg_len;
     case FEC_HAMMING128:    return 3*(_msg_len>>1) + 2*(_msg_len%2);
 
-    // convolutional codes
 #if HAVE_FEC_H
+    // convolutional codes
     case FEC_CONV_V27:      return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
     case FEC_CONV_V29:      return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
     case FEC_CONV_V39:      return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
@@ -143,11 +148,15 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V29P56:   return fec_conv_get_enc_msg_len(_msg_len,9,5);
     case FEC_CONV_V29P67:   return fec_conv_get_enc_msg_len(_msg_len,9,6);
     case FEC_CONV_V29P78:   return fec_conv_get_enc_msg_len(_msg_len,9,7);
+
+    // Reed-Solomon codes
+    case FEC_RS_M8:         return fec_rs_get_enc_msg_len(_msg_len,32,255,223);
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
     case FEC_CONV_V39:
     case FEC_CONV_V615:
+
     case FEC_CONV_V27P23:
     case FEC_CONV_V27P34:
     case FEC_CONV_V27P45:
@@ -163,12 +172,7 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme, unsigned int _msg_len)
     case FEC_CONV_V29P78:
         fprintf(stderr, "error: fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
-#endif
 
-    // Reed-Solomon codes
-#if HAVE_FEC_H
-    case FEC_RS_M8:         return fec_rs_get_enc_msg_len(_msg_len,32,255,223);
-#else
     case FEC_RS_M8:
         fprintf(stderr, "error: fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
@@ -261,6 +265,8 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
 }
 
 
+// get the theoretical rate of a particular forward error-
+// correction scheme (object-independent method)
 float fec_get_rate(fec_scheme _scheme)
 {
     switch (_scheme) {
@@ -290,20 +296,31 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_CONV_V29P56:   return 5./6.;
     case FEC_CONV_V29P67:   return 6./7.;
     case FEC_CONV_V29P78:   return 7./8.;
+
+    // Reed-Solomon codes
+    case FEC_RS_M8:          return 223./255.;
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
     case FEC_CONV_V39:
     case FEC_CONV_V615:
+
     case FEC_CONV_V27P23:
+    case FEC_CONV_V27P34:
+    case FEC_CONV_V27P45:
+    case FEC_CONV_V27P56:
+    case FEC_CONV_V27P67:
+    case FEC_CONV_V27P78:
+
+    case FEC_CONV_V29P23:
+    case FEC_CONV_V29P34:
+    case FEC_CONV_V29P45:
+    case FEC_CONV_V29P56:
+    case FEC_CONV_V29P67:
+    case FEC_CONV_V29P78:
         fprintf(stderr,"error: fec_get_rate(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
-#endif
 
-    // Reed-Solomon codes
-#if HAVE_FEC_H
-    case FEC_RS_M8:          return 223./255.;
-#else
     case FEC_RS_M8:
         fprintf(stderr,"error: fec_get_rate(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
@@ -316,6 +333,9 @@ float fec_get_rate(fec_scheme _scheme)
     return 0;
 }
 
+// create a fec object of a particular scheme
+//  _scheme     :   error-correction scheme
+//  _opts       :   (ignored)
 fec fec_create(fec_scheme _scheme, void *_opts)
 {
     switch (_scheme) {
@@ -344,6 +364,8 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_CONV_V39:
     case FEC_CONV_V615:
         return fec_conv_create(_scheme);
+
+    // punctured
     case FEC_CONV_V27P23:
     case FEC_CONV_V27P34:
     case FEC_CONV_V27P45:
@@ -358,26 +380,32 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_CONV_V29P67:
     case FEC_CONV_V29P78:
         return fec_conv_punctured_create(_scheme);
+
+    // Reed-Solomon codes
+    case FEC_RS_M8:
+        return fec_rs_create(_scheme);
 #else
     case FEC_CONV_V27:
     case FEC_CONV_V29:
     case FEC_CONV_V39:
     case FEC_CONV_V615:
+
     case FEC_CONV_V27P23:
     case FEC_CONV_V27P34:
     case FEC_CONV_V27P45:
     case FEC_CONV_V27P56:
     case FEC_CONV_V27P67:
     case FEC_CONV_V27P78:
+
+    case FEC_CONV_V29P23:
+    case FEC_CONV_V29P34:
+    case FEC_CONV_V29P45:
+    case FEC_CONV_V29P56:
+    case FEC_CONV_V29P67:
+    case FEC_CONV_V29P78:
         fprintf(stderr,"error: fec_create(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
-#endif
 
-    // Reed-Solomon codes
-#if HAVE_FEC_H
-    case FEC_RS_M8:
-        return fec_rs_create(_scheme);
-#else
     case FEC_RS_M8:
         fprintf(stderr,"error: fec_create(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
@@ -411,11 +439,13 @@ fec fec_recreate(fec _q,
     return _q;
 }
 
+// destroy fec object
 void fec_destroy(fec _q)
 {
     free(_q);
 }
 
+// print basic fec object internals
 void fec_print(fec _q)
 {
     printf("fec: %s [rate: %4.3f]\n",
@@ -423,13 +453,31 @@ void fec_print(fec _q)
         _q->rate);
 }
 
-void fec_encode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_dec, unsigned char * _msg_enc)
+// encode a block of data using a fec scheme
+//  _q              :   fec object
+//  _dec_msg_len    :   decoded message length
+//  _msg_dec        :   decoded message
+//  _msg_enc        :   encoded message
+void fec_encode(fec _q,
+                unsigned int _dec_msg_len,
+                unsigned char * _msg_dec,
+                unsigned char * _msg_enc)
 {
+    // call internal encoding method
     _q->encode_func(_q, _dec_msg_len, _msg_dec, _msg_enc);
 }
 
-void fec_decode(fec _q, unsigned int _dec_msg_len, unsigned char * _msg_enc, unsigned char * _msg_dec)
+// decode a block of data using a fec scheme
+//  _q              :   fec object
+//  _dec_msg_len    :   decoded message length
+//  _msg_enc        :   encoded message
+//  _msg_dec        :   decoded message
+void fec_decode(fec _q,
+                unsigned int _dec_msg_len,
+                unsigned char * _msg_enc,
+                unsigned char * _msg_dec)
 {
+    // call internal decoding method
     _q->decode_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
 }
 
