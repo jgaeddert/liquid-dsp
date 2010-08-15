@@ -38,6 +38,7 @@ local_src	:=			\
 	fct_example.c			\
 	fft_example.c			\
 	firfarrow_rrrf_example.c	\
+	firfarrow_rrrf_sine_example.c	\
 	firfilt_rrrf_example.c		\
 	firfilt_rrrf_recreate_example.c	\
 	firdes_kaiser_example.c		\
