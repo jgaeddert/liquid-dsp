@@ -27,7 +27,7 @@ void usage()
     // print all available FEC schemes
     unsigned int i;
     for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++)
-        printf("          %s\n", fec_scheme_str[i]);
+        printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
 }
 
 

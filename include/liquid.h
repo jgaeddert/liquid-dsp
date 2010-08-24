@@ -716,7 +716,7 @@ typedef enum {
 } fec_scheme;
 
 // pretty names for fec schemes
-extern const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES];
+extern const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES][2];
 
 // returns fec_scheme based on input string
 fec_scheme liquid_getopt_str2fec(const char * _str);
