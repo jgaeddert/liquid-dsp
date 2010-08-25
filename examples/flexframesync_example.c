@@ -44,7 +44,7 @@ void usage()
     // print all available MOD schemes
     unsigned int i;
     for (i=0; i<LIQUID_NUM_MOD_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i]);
+        printf("          %s\n", modulation_scheme_str[i][0]);
 }
 
 // flexframesync callback function

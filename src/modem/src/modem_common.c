@@ -29,63 +29,34 @@
 
 #include "liquid.internal.h"
 
-const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES] = {
-    "unknown",
-    "psk",
-    "dpsk",
-    "ask",
-    "qam",
-    "apsk",
-    "arb",
-    "bpsk",
-    "qpsk",
-    "apsk4(1,3)",
-    "apsk8(1,7)",
-    "apsk16(4,12)",
-    "apsk32(4,12,16)",
-    "apsk64(4,14,20,26)",
-    "apsk128(8,18,24,36,42)",
-    "arb16opt (optimal 16-qam)",
-    "arb64vt (64-qam vt logo)"
+const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES][2] = {
+    // short name,  long name
+    {"unknown",     "unknown"},
+    {"psk",         "psk"},
+    {"dpsk",        "dpsk"},
+    {"ask",         "ask"},
+    {"qam",         "qam"},
+    {"apsk",        "apsk"},
+    {"arb",         "arb"},
+    {"bpsk",        "bpsk"},
+    {"qpsk",        "qpsk"},
+    {"apsk4",       "apsk4(1,3)"},
+    {"apsk8",       "apsk8(1,7)"},
+    {"apsk16",      "apsk16(4,12)"},
+    {"apsk32",      "apsk32(4,12,16)"},
+    {"apsk64",      "apsk64(4,14,20,26)"},
+    {"apsk128",     "apsk128(8,18,24,36,42)"},
+    {"arb16opt",    "arb16opt (optimal 16-qam)"},
+    {"arb64vt",     "arb64vt (64-qam vt logo)"}
 };
 
 modulation_scheme liquid_getopt_str2mod(const char * _str)
 {
-    if (strcmp(_str,"unknown")==0) {
-        return MOD_UNKNOWN;
-    } else if (strcmp(_str,"psk")==0) {
-        return MOD_PSK;
-    } else if (strcmp(_str,"dpsk")==0) {
-        return MOD_DPSK;
-    } else if (strcmp(_str,"ask")==0) {
-        return MOD_ASK;
-    } else if (strcmp(_str,"qam")==0) {
-        return MOD_QAM;
-    } else if (strcmp(_str,"apsk")==0) {
-        return MOD_APSK;
-    } else if (strcmp(_str,"arb")==0) {
-        return MOD_ARB;
-
-    } else if (strcmp(_str,"bpsk")==0) {
-        return MOD_BPSK;
-    } else if (strcmp(_str,"qpsk")==0) {
-        return MOD_QPSK;
-    } else if (strcmp(_str,"apsk4")==0) {
-        return MOD_APSK4;
-    } else if (strcmp(_str,"apsk8")==0) {
-        return MOD_APSK8;
-    } else if (strcmp(_str,"apsk16")==0) {
-        return MOD_APSK16;
-    } else if (strcmp(_str,"apsk32")==0) {
-        return MOD_APSK32;
-    } else if (strcmp(_str,"apsk64")==0) {
-        return MOD_APSK64;
-    } else if (strcmp(_str,"apsk128")==0) {
-        return MOD_APSK128;
-    } else if (strcmp(_str,"arb16opt")==0) {
-        return MOD_ARB16OPT;
-    } else if (strcmp(_str,"arb64vt")==0) {
-        return MOD_ARB64VT;
+    // compare each string to short name
+    unsigned int i;
+    for (i=0; i<LIQUID_NUM_MOD_SCHEMES; i++) {
+        if (strcmp(_str,modulation_scheme_str[i][0])==0)
+            return i;
     }
     fprintf(stderr,"warning: liquid_getopt_str2mod(), unknown/unsupported mod scheme : %s\n", _str);
     return MOD_UNKNOWN;
