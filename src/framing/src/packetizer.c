@@ -158,7 +158,7 @@ void packetizer_print(packetizer _p)
             i,
             _p->plan[i].dec_msg_len,
             _p->plan[i].enc_msg_len,
-            fec_scheme_str[_p->plan[i].fs]);
+            fec_scheme_str[_p->plan[i].fs][1]);
     }
 }
 

@@ -35,7 +35,7 @@ void usage()
     // print all available MOD schemes
     unsigned int i;
     for (i=0; i<LIQUID_NUM_MOD_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i]);
+        printf("          %s\n", modulation_scheme_str[i][0]);
 }
 
 int main(int argc, char*argv[]) {
@@ -97,7 +97,7 @@ int main(int argc, char*argv[]) {
 
     // print parameters
     printf("PLL example :\n");
-    printf("modem : %u-%s\n", 1<<bps, modulation_scheme_str[ms]);
+    printf("modem : %u-%s\n", 1<<bps, modulation_scheme_str[0][ms]);
     printf("frequency offset: %6.3f, phase offset: %6.3f, SNR: %6.2fdB, pll b/w: %6.3f\n",
             frequency_offset, phase_offset, SNRdB, pll_bandwidth);
 

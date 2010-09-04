@@ -716,7 +716,7 @@ typedef enum {
 } fec_scheme;
 
 // pretty names for fec schemes
-extern const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES];
+extern const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES][2];
 
 // returns fec_scheme based on input string
 fec_scheme liquid_getopt_str2fec(const char * _str);
@@ -2539,7 +2539,7 @@ typedef enum {
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
-extern const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES];
+extern const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES][2];
 
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);

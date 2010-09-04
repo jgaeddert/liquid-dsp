@@ -185,7 +185,7 @@ void flexframegen_print(flexframegen _fg)
     printf("    payload len         :   %u bytes\n", _fg->props.payload_len);
     printf("    modulation scheme   :   %u-%s\n",
         1<<_fg->props.mod_bps,
-        modulation_scheme_str[_fg->props.mod_scheme]);
+        modulation_scheme_str[_fg->props.mod_scheme][0]);
     printf("    num payload symbols :   %u\n", _fg->num_payload_symbols);
     printf("    ramp dn len         :   %u\n", _fg->props.rampdn_len);
 }
