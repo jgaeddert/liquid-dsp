@@ -96,7 +96,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
         float fc = 1/(float)(c->num_channels);  // cutoff frequency
         fir_kaiser_window(c->h_len+1, fc, c->beta, 0.0f, c->h);
     } else if (c->nyquist == FIRPFBCH_ROOTNYQUIST) {
-        design_rrc_filter(c->num_channels, c->m, c->beta, c->dt, c->h);
+        design_rkaiser_filter(c->num_channels, c->m, c->beta, c->dt, c->h);
     } else {
         printf("error: firpfbch_create(), unsupported nyquist flag: %d\n", _nyquist);
         exit(1);
