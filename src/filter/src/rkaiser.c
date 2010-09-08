@@ -92,16 +92,24 @@ void design_rkaiser_filter_internal(unsigned int _k,
     float fc;                   // filter cutoff
     float h[n];                 // temporary coefficients array
 
+    // compute bandwidth adjustment estimate
+    float c0=0.0f, c1=0.0f, c2=0.0f;
+    switch (_m) {
+    case 1:  c0=0.78583556; c1=0.05439958; c2=0.37818679; break;
+    case 2:  c0=0.82194722; c1=0.06170731; c2=0.16362774; break;
+    case 3:  c0=0.84686762; c1=0.07475776; c2=0.05263769; break;
+    case 4:  c0=0.86538726; c1=0.07374587; c2=0.03491642; break;
+    case 5:  c0=0.87861007; c1=0.06981039; c2=0.03553645; break;
+    default: c0=0.88901162; c1=0.06708569; c2=0.03459680; break;
+    }
+    float rho_hat = c0 + c1*logf(_beta - c2);
+    float gamma_hat = rho_hat*_beta;
+
     // bandwidth adjustment array (3 points makes a parabola)
-    float p0 = (_m == 1) ? -0.12861f : 0.011*logf(_m-1.8f) - 0.046f;
-    float p1 = (_m == 1) ?  0.90364f : 0.0064437f*_m + 0.863301f;
-    float gamma_hat = p1*_beta + p0;  // initial estimate
-    if (gamma_hat < _beta*0.10f) gamma_hat = 0.10f*_beta;
-    if (gamma_hat > _beta*0.95f) gamma_hat = 0.95f*_beta;
     float x[3] = {
         gamma_hat*0.9f,
         gamma_hat,
-        _beta*0.98f};
+        gamma_hat*1.1f};
 
     // evaluate performance (ISI) of each bandwidth adjustment
     float isi_max;
