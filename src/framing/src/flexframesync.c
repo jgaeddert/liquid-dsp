@@ -318,7 +318,7 @@ void flexframesync_print(flexframesync _fs)
     printf("    p/n sequence len    :   %u\n", _fs->pnsequence_len);
     printf("    modulation scheme   :   %u-%s\n",
         1<<(_fs->bps_payload),
-        modulation_scheme_str[_fs->ms_payload]);
+        modulation_scheme_str[_fs->ms_payload][0]);
     printf("    payload len         :   %u bytes\n", _fs->payload_len);
     printf("    num payload symbols :   %u\n", _fs->num_payload_symbols);
 }
@@ -602,7 +602,7 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
         flexframesync_assemble_payload(_fs);
 
         // set framestats internals
-        _fs->framestats.framesyms = _fs->payload_sym;
+        _fs->framestats.framesyms = _fs->payload_samples;
         _fs->framestats.num_framesyms = _fs->num_payload_symbols;
 
         // invoke callback method
