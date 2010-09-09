@@ -601,6 +601,10 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
         // output buffer
         flexframesync_assemble_payload(_fs);
 
+        // set framestats internals
+        _fs->framestats.framesyms = _fs->payload_sym;
+        _fs->framestats.num_framesyms = _fs->num_payload_symbols;
+
         // invoke callback method
         _fs->callback(_fs->header,  _fs->header_valid,
                       _fs->payload, _fs->payload_len,
