@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -71,7 +72,6 @@ struct SYMSYNC(_s) {
     float k_inv;
 
     // control
-    float r;        // rate
     float tau;
     float del;
 
@@ -83,11 +83,11 @@ struct SYMSYNC(_s) {
 #endif
 
 #if DEBUG_SYMSYNC
-    FILE * fid;
-    fwindow  debug_bsoft;
-    uiwindow debug_b;
-    fwindow  debug_delta;
-    fwindow  debug_q_hat;
+    windowf debug_del;
+    windowf debug_tau;
+    windowf debug_bsoft;
+    windowf debug_b;
+    windowf debug_q_hat;
 #endif
 };
 
@@ -124,10 +124,11 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
     q->is_locked = 0;
 
 #if DEBUG_SYMSYNC
-    q->debug_bsoft =  fwindow_create(DEBUG_BUFFER_LEN);
-    q->debug_b     = uiwindow_create(DEBUG_BUFFER_LEN);
-    q->debug_delta =  fwindow_create(DEBUG_BUFFER_LEN);
-    q->debug_q_hat =  fwindow_create(DEBUG_BUFFER_LEN);
+    q->debug_del   =  windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_tau   =  windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_bsoft =  windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_b     = windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_q_hat =  windowf_create(DEBUG_BUFFER_LEN);
 #endif
 
     return q;
@@ -236,79 +237,6 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
 #endif
 }
 
-//
-// internal debugging
-//
-
-#if DEBUG_SYMSYNC
-void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
-{
-    FILE * fid = fopen(DEBUG_SYMSYNC_FILENAME, "w");
-    if (!fid) {
-        printf("error: symsync_xxxt_output_debug_file(), could not open file for writing\n");
-        return;
-    }
-    fprintf(fid, "%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);
-
-    fprintf(fid,"num_filters = %u\n",_q->num_filters);
-    fprintf(fid,"k = %u\n",_q->k);
-    fprintf(fid,"\n\n");
-
-    fprintf(fid,"alpha = %12.5e\n",_q->alpha);
-    fprintf(fid,"beta = %12.5e\n",_q->beta);
-    fprintf(fid,"\n\n");
-
-    fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
-    float * r;
-    unsigned int * rui;
-    unsigned int i;
-
-    // print bsoft buffer
-    fprintf(fid,"b_soft = zeros(1,n);\n");
-    fwindow_read(_q->debug_bsoft, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"b_soft(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    // print b (filterbank index) buffer
-    fprintf(fid,"b = zeros(1,n);\n");
-    uiwindow_read(_q->debug_b, &rui);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"b(%4u) = %4u;\n", i+1, rui[i]);
-    fprintf(fid,"\n\n");
-
-    // print delta buffer (timing frequency)
-    fprintf(fid,"delta = zeros(1,n);\n");
-    fwindow_read(_q->debug_delta, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"delta(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    // print filtered error signal
-    fprintf(fid,"q_hat = zeros(1,n);\n");
-    fwindow_read(_q->debug_q_hat, &r);
-    for (i=0; i<DEBUG_BUFFER_LEN; i++)
-        fprintf(fid,"q_hat(%4u) = %12.8f;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
-
-    fprintf(fid,"\n\n");
-    fprintf(fid,"t=1:n;\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(t,b,'Color',[0.5 0.5 0.5]);\n");
-    fprintf(fid,"plot(t,b_soft,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
-    fprintf(fid,"hold off;\n");
-    fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([t(1) t(end) -1 num_filters]);\n");
-    fprintf(fid,"legend('b','b (soft)',0);\n");
-    fprintf(fid,"xlabel('Symbol Index')\n");
-    fprintf(fid,"ylabel('Polyphase Filter Index')\n");
-    fprintf(fid,"%% done.\n");
-    fclose(fid);
-    printf("symsync: internal results written to %s.\n", DEBUG_SYMSYNC_FILENAME);
-}
-#endif
-
 void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
 {
     FIRPFB(_push)(_q->mf,  _x);
@@ -321,10 +249,11 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
 
     while (_q->b < _q->num_filters) {
 #if DEBUG_SYMSYNC
-        fwindow_push(_q->debug_bsoft,  _q->b_soft);
-        uiwindow_push(_q->debug_b,     _q->b);
-        fwindow_push(_q->debug_delta,  _q->del);
-        fwindow_push(_q->debug_q_hat,  _q->q_hat);
+        windowf_push(_q->debug_del,    _q->del);
+        windowf_push(_q->debug_tau,    _q->tau);
+        windowf_push(_q->debug_bsoft,  _q->b_soft);
+        windowf_push(_q->debug_b,      _q->b);
+        windowf_push(_q->debug_q_hat,  _q->q_hat);
         // printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->b_soft);
 #endif
         // compute filterbank outputs
@@ -355,4 +284,84 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
     _q->b       -= _q->num_filters;
     *_ny = n;
 }
+
+//
+// internal debugging
+//
+
+#if DEBUG_SYMSYNC
+void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
+{
+    FILE * fid = fopen(DEBUG_SYMSYNC_FILENAME, "w");
+    if (!fid) {
+        fprintf(stderr,"error: symsync_xxxt_output_debug_file(), could not open file for writing\n");
+        return;
+    }
+    fprintf(fid,"%% %s, auto-generated file\n\n", DEBUG_SYMSYNC_FILENAME);
+
+    fprintf(fid,"num_filters = %u\n",_q->num_filters);
+    fprintf(fid,"k = %u\n",_q->k);
+    fprintf(fid,"\n\n");
+
+    fprintf(fid,"alpha = %12.5e\n",_q->alpha);
+    fprintf(fid,"beta = %12.5e\n",_q->beta);
+    fprintf(fid,"\n\n");
+
+    fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
+    float * r;
+    unsigned int i;
+
+    // print del buffer
+    fprintf(fid,"del = zeros(1,n);\n");
+    windowf_read(_q->debug_del, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"del(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+    // print tau buffer
+    fprintf(fid,"tau = zeros(1,n);\n");
+    windowf_read(_q->debug_tau, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"tau(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+    // print bsoft buffer
+    fprintf(fid,"b_soft = zeros(1,n);\n");
+    windowf_read(_q->debug_bsoft, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"b_soft(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+    // print b (filterbank index) buffer
+    fprintf(fid,"b = zeros(1,n);\n");
+    windowf_read(_q->debug_b, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"b(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+    // print filtered error signal
+    fprintf(fid,"q_hat = zeros(1,n);\n");
+    windowf_read(_q->debug_q_hat, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"q_hat(%4u) = %12.8f;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+
+    fprintf(fid,"\n\n");
+    fprintf(fid,"t=1:n;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"plot(t,b,'Color',[0.5 0.5 0.5]);\n");
+    fprintf(fid,"plot(t,b_soft,'LineWidth',2,'Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([t(1) t(end) -1 num_filters]);\n");
+    fprintf(fid,"legend('b','b (soft)',0);\n");
+    fprintf(fid,"xlabel('Symbol Index')\n");
+    fprintf(fid,"ylabel('Polyphase Filter Index')\n");
+    fprintf(fid,"%% done.\n");
+    fclose(fid);
+    printf("symsync: internal results written to %s.\n", DEBUG_SYMSYNC_FILENAME);
+}
+#endif
+
 
