@@ -49,34 +49,33 @@ void SYMSYNC(_output_debug_file)(SYMSYNC() _q);
 //  PRINTVAL()  print macro
 
 struct SYMSYNC(_s) {
-    TC * h;
-    TC * dh;
-    unsigned int k; // samples/symbol
-    unsigned int h_len;
-    unsigned int num_filters;
+    TC * h;                     // matched filter
+    TC * dh;                    // derivative matched filter
+    unsigned int h_len;         // matched filter length
+    unsigned int k;             // samples/symbol
+    unsigned int num_filters;   // number of filters in the bank
 
-    FIRPFB() mf;    // matched filter
-    FIRPFB() dmf;   // derivative matched filter
+    FIRPFB() mf;                // matched filter bank
+    FIRPFB() dmf;               // derivative matched filter bank
 
     // timing error loop filter
-    float bt;       // filter bandwidth
-    float alpha;    // percent of old error sample to retain
-    float beta;     // percent of new error sample to retain
-    float q;        // instantaneous timing error estimate
-    float q_hat;    // filtered timing error estimate
-    float q_prime;  // buffered timing error estimate
+    float bt;                   // loop filter bandwidth
+    float alpha;                // percent of old error sample to retain
+    float beta;                 // percent of new error sample to retain
+    float q;                    // instantaneous timing error estimate
+    float q_hat;                // filtered timing error estimate
+    float q_prime;              // buffered timing error estimate
 
-    unsigned int v;
-    float b_soft;
-    int b;
-    float k_inv;
+    float b_soft;               // soft filterbank index
+    int b;                      // hard filterbank index
+    float k_inv;                // 1/k
 
-    // control
-    float tau;
-    float del;
+    // flow control
+    float del;                  // input stride size (roughly k)
+    float tau;                  // output flow control (enabled when tau >= 1)
 
     // lock
-    int is_locked;
+    int is_locked;              // synchronizer locked flag
 
 #if 0
     fir_prototype p;    // prototype object
@@ -91,7 +90,16 @@ struct SYMSYNC(_s) {
 #endif
 };
 
-SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, unsigned int _h_len)
+// create synchronizer object
+//
+//  _k              :   samples per symbol
+//  _num_filters    :   number of filters in the bank
+//  _h              :   matched filter coefficients
+//  _h_len          :   length of matched filter
+SYMSYNC() SYMSYNC(_create)(unsigned int _k,
+                           unsigned int _num_filters,
+                           TC * _h,
+                           unsigned int _h_len)
 {
     SYMSYNC() q = (SYMSYNC()) malloc(sizeof(struct SYMSYNC(_s)));
     q->k = _k;
@@ -134,6 +142,7 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k, unsigned int _num_filters, TC * _h, 
     return q;
 }
 
+// destroy synchronizer object
 void SYMSYNC(_destroy)(SYMSYNC() _q)
 {
 #if DEBUG_SYMSYNC
@@ -144,6 +153,7 @@ void SYMSYNC(_destroy)(SYMSYNC() _q)
     free(_q);
 }
 
+// print synchronizer object internals
 void SYMSYNC(_print)(SYMSYNC() _q)
 {
     printf("symbol synchronizer [k: %u, num_filters: %u]\n",
@@ -152,6 +162,12 @@ void SYMSYNC(_print)(SYMSYNC() _q)
     FIRPFB(_print)(_q->dmf);
 }
 
+// execute synchronizer on input data array
+//  _q      :   synchronizer object
+//  _x      :   input data array
+//  _nx     :   number of input samples
+//  _y      :   output data array
+//  _ny     :   number of samples written to output buffer
 void SYMSYNC(_execute)(SYMSYNC() _q,
                        TI * _x,
                        unsigned int _nx,
@@ -167,7 +183,11 @@ void SYMSYNC(_execute)(SYMSYNC() _q,
     *_ny = ny;
 }
 
-void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
+// set synchronizer loop filter bandwidth
+//  _q      :   synchronizer object
+//  _bt     :   bandwidth
+void SYMSYNC(_set_lf_bw)(SYMSYNC() _q,
+                         float _bt)
 {
     // set loop filter bandwidth
     _q->bt = _bt;
@@ -176,17 +196,20 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt)
     _q->beta  = 0.22f * (_q->bt);   // percent of new sample to retain
 }
 
+// lock synchronizer object
 void SYMSYNC(_lock)(SYMSYNC() _q)
 {
     _q->is_locked = 1;
     _q->del = _q->k;    // fix step size to number of samples/symbol
 }
 
+// unlock synchronizer object
 void SYMSYNC(_unlock)(SYMSYNC() _q)
 {
     _q->is_locked = 0;
 }
 
+// clear synchronizer object
 void SYMSYNC(_clear)(SYMSYNC() _q)
 {
     // reset internal filterbank states
@@ -198,7 +221,6 @@ void SYMSYNC(_clear)(SYMSYNC() _q)
     _q->q_prime = 0.0f;
     _q->b_soft = 0.0f;
     _q->b = 0;
-    _q->v = 0;
 
     _q->tau = 0.0f;
     _q->q_hat   = 0.0f;
@@ -212,43 +234,57 @@ void SYMSYNC(_estimate_timing)(SYMSYNC() _q, TI * _v, unsigned int _n)
 {
 }
 
-void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q, TO mf, TO dmf)
+// 
+// internal methods
+//
+
+// advance synchronizer's internal loop filter
+//  _q      :   synchronizer object
+//  _mf     :   matched-filter output
+//  _dmf    :   derivative matched-filter output
+void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
+                                     TO _mf,
+                                     TO _dmf)
 {
     //  1.  compute timing error signal, clipping large levels
-    _q->q = 0.5f*(crealf(mf)*crealf(dmf) + cimagf(mf)*cimagf(dmf));
+    _q->q = 0.5f*(crealf(_mf)*crealf(_dmf) + cimagf(_mf)*cimagf(_dmf));
     if (_q->q > 1.0f)       _q->q =  1.0f;
     else if (_q->q < -1.0f) _q->q = -1.0f;
 
     //  2.  filter error signal: retain large percent (alpha) of
     //      old estimate and small percent (beta) of new estimate
-#if 0
-    _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
-    _q->q_prime = _q->q_hat;
-
-    _q->del -= _q->q_hat;
-#else
     _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
     _q->q_prime = _q->q_hat;
     _q->del = (float)(_q->k) + _q->q_hat;
-#endif
 
 #if DEBUG_SYMSYNC_PRINT
     printf("del : %12.8f, q_hat : %12.8f\n", _q->del, _q->q_hat);
 #endif
 }
 
-void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
+// step synchronizer (execute on single input)
+//
+//  _q      :   synchronizer object
+//  _x      :   input sample
+//  _y      :   output sample buffer
+//  _ny     :   number of output samples written to buffer
+void SYMSYNC(_step)(SYMSYNC() _q,
+                    TI _x,
+                    TO * _y,
+                    unsigned int *_ny)
 {
+    // push sample into MF and dMF filterbanks
     FIRPFB(_push)(_q->mf,  _x);
     FIRPFB(_push)(_q->dmf, _x);
 
-    TO mf;
-    TO dmf;
+    TO mf;      // matched-filter output
+    TO dmf;     // derivative matched-filter output
 
     unsigned int n = 0;
 
     while (_q->b < _q->num_filters) {
 #if DEBUG_SYMSYNC
+        // save debugging variables
         windowf_push(_q->debug_del,    _q->del);
         windowf_push(_q->debug_tau,    _q->tau);
         windowf_push(_q->debug_bsoft,  _q->b_soft);
@@ -262,7 +298,7 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
             FIRPFB(_execute)(_q->dmf, _q->b, &dmf);
         mf *= _q->k_inv;
 
-        // store output
+        // store matched-filter output
         _y[n] = mf;
 #if DEBUG_SYMSYNC_PRINT
         printf("mf : %12.8f + j*%12.8f\n", crealf(mf), cimagf(mf));
@@ -272,24 +308,31 @@ void SYMSYNC(_step)(SYMSYNC() _q, TI _x, TO * _y, unsigned int *_ny)
         if (!_q->is_locked)
             SYMSYNC(_advance_internal_loop)(_q, mf, dmf);
 
+        // update flow control variables
         _q->tau     += _q->del;
         _q->b_soft  =  _q->tau * (float)(_q->num_filters);
         _q->b       =  (int)roundf(_q->b_soft);
 
+        // increment output counter
         n++;
     }
 
+    // decrement flow control variables
     _q->tau     -= 1.0f;
     _q->b_soft  -= (float)(_q->num_filters);
     _q->b       -= _q->num_filters;
+
+    // set number of outputs that were written to buffer
     *_ny = n;
 }
+
 
 //
 // internal debugging
 //
 
 #if DEBUG_SYMSYNC
+// print results to output debugging file
 void SYMSYNC(_output_debug_file)(SYMSYNC() _q)
 {
     FILE * fid = fopen(DEBUG_SYMSYNC_FILENAME, "w");
