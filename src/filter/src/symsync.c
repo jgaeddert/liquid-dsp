@@ -234,6 +234,11 @@ void SYMSYNC(_estimate_timing)(SYMSYNC() _q, TI * _v, unsigned int _n)
 {
 }
 
+float SYMSYNC(_get_tau)(SYMSYNC() _q)
+{
+    return _q->tau;
+}
+
 // 
 // internal methods
 //

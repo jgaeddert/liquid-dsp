@@ -1701,6 +1701,7 @@ void SYMSYNC(_set_lf_bw)(SYMSYNC() _q, float _bt);              \
 void SYMSYNC(_lock)(SYMSYNC() _q);                              \
 void SYMSYNC(_unlock)(SYMSYNC() _q);                            \
 void SYMSYNC(_clear)(SYMSYNC() _q);                             \
+float SYMSYNC(_get_tau)(SYMSYNC() _q);                          \
 void SYMSYNC(_estimate_timing)(SYMSYNC() _q,                    \
                                TI * _x,                         \
                                unsigned int _n);

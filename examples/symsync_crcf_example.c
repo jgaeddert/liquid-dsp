@@ -76,8 +76,14 @@ int main() {
     }
 
     // run symbol synchronizer
-    unsigned int num_symbols_sync;
-    symsync_crcf_execute(d, &y[ds], num_samples-ds, z, &num_symbols_sync);
+    unsigned int num_symbols_sync=0;
+    unsigned int nn;
+    float tau[num_samples];
+    for (i=ds; i<num_samples; i++) {
+        tau[num_symbols_sync] = symsync_crcf_get_tau(d);
+        symsync_crcf_execute(d, &y[i], 1, &z[num_symbols_sync], &nn);
+        num_symbols_sync += nn;
+    }
 
     printf("h(t) :\n");
     for (i=0; i<h_len; i++) {
@@ -105,6 +111,12 @@ int main() {
         fprintf(fid,"z(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(z[i]), cimagf(z[i]));
     }
 
+    // save timing offset
+    for (i=0; i<num_symbols_sync; i++) {
+        //printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
+        fprintf(fid,"tau(%3u) = %12.8f;\n", i+1, tau[i]);
+    }
+
 
     fprintf(fid,"\n\n");
     fprintf(fid,"zp = filter(h,1,y);\n");
@@ -130,6 +142,12 @@ int main() {
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"legend(['first 25%%'],['last 75%%'],1);\n");
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(1:length(tau),tau);\n");
+    fprintf(fid,"xlabel('time');\n");
+    fprintf(fid,"ylabel('timing error');\n");
+    fprintf(fid,"grid on;\n");
     fclose(fid);
 
     printf("results written to %s.\n", OUTPUT_FILENAME);
