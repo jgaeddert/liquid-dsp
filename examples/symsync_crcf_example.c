@@ -12,15 +12,15 @@
 
 int main() {
     // options
-    unsigned int k=2;
-    unsigned int m=3;
-    float beta=0.3f;
-    unsigned int num_filters=16;
-    unsigned int num_symbols=1000;
+    unsigned int k=2;   // samples/symbol
+    unsigned int m=3;   // filter delay (symbols)
+    float beta=0.3f;    // filter excess bandwidth factor
+    unsigned int num_filters=32;
+    unsigned int num_symbols=1024;
 
     float bt=0.02f;     // loop filter bandwidth
-    float dt=0.1f;      // fractional sample offset
-    unsigned int ds=0;  // additional symbol delay
+    float dt=0.2f;      // fractional sample offset
+    unsigned int ds=1;  // additional symbol delay
     
     // use random data or 101010 phasing pattern
     bool random_data=true;
@@ -124,7 +124,7 @@ int main() {
     fprintf(fid,"plot([0:length(x)-1],          real(x),    'ob');\n");
     fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-','Color',[0.8 0.8 0.8]);\n");
     fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b');\n");
-    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z/k),  'xr');\n");
+    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'xr');\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('Symbol Index');\n");
     fprintf(fid,"ylabel('Output Signal');\n");
@@ -135,8 +135,8 @@ int main() {
     fprintf(fid,"t1=ceil(0.25*length(z)):length(z);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(z(t0)/k,'x','Color',[0.6 0.6 0.6]);\n");
-    fprintf(fid,"plot(z(t1)/k,'x','Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"plot(real(z(t0)/k),imag(z(t0)/k),'x','Color',[0.6 0.6 0.6]);\n");
+    fprintf(fid,"plot(real(z(t1)/k),imag(z(t1)/k),'x','Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square; grid on;\n");
     fprintf(fid,"xlabel('In-phase');\n");
@@ -144,10 +144,13 @@ int main() {
     fprintf(fid,"legend(['first 25%%'],['last 75%%'],1);\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(1:length(tau),tau);\n");
+    fprintf(fid,"tt = 0:(length(tau)-1);\n");
+    fprintf(fid,"b = floor(num_filters*tau + 0.5);\n");
+    fprintf(fid,"plot(tt,tau*num_filters,tt,b);\n");
     fprintf(fid,"xlabel('time');\n");
-    fprintf(fid,"ylabel('timing error');\n");
+    fprintf(fid,"ylabel('filterbank index');\n");
     fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([0 length(tau) -1 num_filters]);\n");
     fclose(fid);
 
     printf("results written to %s.\n", OUTPUT_FILENAME);
