@@ -120,6 +120,10 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
         } else {
             dh[i] = _h[i+1] - _h[i-1];
         }
+
+        // apply scaling factor (derivative approximation is
+        // scaled by the number of filters in the bank)
+        dh[i] *= (float)_num_filters / 16.0f;
     }
     q->mf  = FIRPFB(_create)(q->num_filters, _h, _h_len);
     q->dmf = FIRPFB(_create)(q->num_filters, dh, _h_len);
