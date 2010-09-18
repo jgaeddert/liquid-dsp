@@ -867,6 +867,14 @@ LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
 
 // firdes : finite impulse response filter design
 
+// Find approximate bandwidth adjustment factor rho based on
+// filter delay and desired excess bandwdith factor.
+//
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+float rkaiser_approximate_rho(unsigned int _m,
+                              float _beta);
+
 // design_rkaiser_filter_internal()
 //
 // Design frequency-shifted root-Nyquist filter based on
