@@ -49,9 +49,29 @@ void design_rkaiser_filter(unsigned int _k,
                            float _dt,
                            float * _h)
 {
+#if 0
+    // compute bandwidth adjustment estimate
+    float rho_hat = rkaiser_approximate_rho(_m,_beta);
+    float gamma_hat = rho_hat*_beta;
+
+    unsigned int n=2*_k*_m+1;                       // filter length
+    float del = gamma_hat / (float)_k;              // transition bandwidth
+    float As  = 14.26f*del*n + 7.95f;               // sidelobe attenuation
+    float fc  = (1 + _beta - gamma_hat)/(float)_k;  // filter cutoff
+
+    // compute filter coefficients
+    fir_kaiser_window(n,fc,As,_dt,_h);
+
+    // normalize coefficients
+    float e2 = 0.0f;
+    unsigned int i;
+    for (i=0; i<n; i++) e2 += _h[i]*_h[i];
+    for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
+#else
     // simply call internal method, ignoring gamma
     float gamma;
     design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&gamma);
+#endif
 }
 
 // Find approximate bandwidth adjustment factor rho based on
