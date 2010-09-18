@@ -100,8 +100,18 @@ void design_rkaiser_filter_internal(unsigned int _k,
     case 3:  c0=0.84686762; c1=0.07475776; c2=0.05263769; break;
     case 4:  c0=0.86538726; c1=0.07374587; c2=0.03491642; break;
     case 5:  c0=0.87861007; c1=0.06981039; c2=0.03553645; break;
-    default: c0=0.88901162; c1=0.06708569; c2=0.03459680; break;
+    case 6:  c0=0.88901162; c1=0.06708569; c2=0.03459680; break;
+    default:
+             c0 = 0.057918*logf(_m) + 0.784313;
+             c1 = _m <= 3 ?
+                     0.0099427*_m + 0.0447250 :
+                    -0.0026685*_m + 0.0835030;
+             c2 = 0.03373 + expf((-0.30382*_m*_m -0.19451*_m -0.56171));
     }
+    // ensure no invalid log taken
+    if (c2 >= _beta)
+        c2 = 0.999f*_beta;
+
     float rho_hat = c0 + c1*logf(_beta - c2);
     float gamma_hat = rho_hat*_beta;
 
