@@ -1539,9 +1539,7 @@ struct NCO(_s) {                                                \
     T zeta;             /* loop filter damping factor   */      \
     T a[3];             /* feed-back coefficients       */      \
     T b[3];             /* feed-forward coefficients    */      \
-    T x[3];             /* buffer, Direct Form I        */      \
-    T y[3];             /* buffer, Direct Form I        */      \
-    T v[3];             /* buffer, Direct Form II       */      \
+    iirfiltsos_rrrf pll_filter; /* iir filter object    */      \
     T pll_phi_prime;    /* pll phase state              */      \
     T pll_phi_hat;      /* pll output phase             */      \
     T pll_dtheta_base;  /* NCO base frequency           */      \
