@@ -6,19 +6,38 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "symsync_crcf_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("symsync_crcf_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  k     : filter samples/symbol, default: 2\n");
+    printf("  m     : filter delay (symbols), default: 3\n");
+    printf("  b     : filter excess bandwidth, default: 0.3\n");
+    printf("  B     : filter polyphase banks, default: 32\n");
+    printf("  s     : signal-to-noise ratio, default: 30dB\n");
+    printf("  w     : timing pll bandwidth, default: 0.02\n");
+    printf("  n     : number of symbols, default: 1024\n");
+    printf("  t     : timing phase offset [%% symbol], -0.5 < t <= 0.5, default: 0\n");
+    printf("  r     : timing freq. offset [%% symbol], default: 1.000\n");
+}
+
+
+int main(int argc, char*argv[]) {
     // options
     unsigned int k=2;   // samples/symbol
     unsigned int m=3;   // filter delay (symbols)
     float beta=0.3f;    // filter excess bandwidth factor
     unsigned int num_filters=32;
     unsigned int num_symbols=1024;
+    float SNRdB = 30.0f;
 
     float bt=0.02f;     // loop filter bandwidth
     float dt=0.2f;      // fractional sample offset
@@ -28,6 +47,53 @@ int main() {
     // use random data or 101010 phasing pattern
     bool random_data=true;
 
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhk:m:b:B:s:w:n:t:r:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h':   usage();    return 0;
+        case 'k':   k = atoi(optarg);               break;
+        case 'm':   m = atoi(optarg);               break;
+        case 'b':   beta = atof(optarg);            break;
+        case 'B':   num_filters = atoi(optarg);     break;
+        case 's':   SNRdB = atof(optarg);           break;
+        case 'w':   bt = atof(optarg);              break;
+        case 'n':   num_symbols = atoi(optarg);     break;
+        case 't':   dt = atof(optarg);              break;
+        case 'r':   r = atof(optarg);               break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
+
+    // validate input
+    if (k < 2) {
+        fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
+        return 1;
+    } else if (m < 1) {
+        fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
+        return 1;
+    } else if (beta <= 0.0f || beta > 1.0f) {
+        fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
+        return 1;
+    } else if (num_filters == 0) {
+        fprintf(stderr,"error: number of polyphase filters must be greater than 0\n");
+        return 1;
+    } else if (bt <= 0.0f) {
+        fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
+        return 1;
+    } else if (num_symbols == 0) {
+        fprintf(stderr,"error: number of symbols must be greater than 0\n");
+        return 1;
+    } else if (dt < -1.0f || dt > 1.0f) {
+        fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
+        return 1;
+    } else if (r < 0.5f || r > 2.0f) {
+        fprintf(stderr,"error: timing frequency offset must be in [0.5,2]\n");
+        return 1;
+    }
 
     unsigned int i, n=0;
 
@@ -91,6 +157,12 @@ int main() {
 #endif
     }
     resamp_crcf_destroy(f);
+
+    // add noise
+    // TODO : add noise appropriately
+    float nstd = 0.0f;
+    for (i=0; i<num_samples_resampled; i++)
+        y[i] += nstd*(randnf() + _Complex_I*randnf());
 
     // run symbol synchronizer
     unsigned int num_symbols_sync=0;
@@ -160,10 +232,10 @@ int main() {
     fprintf(fid,"\n\n");
     fprintf(fid,"zp = filter(h,1,y);\n");
     fprintf(fid,"figure;\nhold on;\n");
-    fprintf(fid,"plot([0:length(s)-1],          real(s),    'ob');\n");
-    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-','Color',[0.8 0.8 0.8]);\n");
-    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b');\n");
-    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'xr');\n");
+    fprintf(fid,"plot([0:length(s)-1],          real(s),    'ob', 'MarkerSize',3);\n");
+    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-',  'MarkerSize',3, 'Color',[0.8 0.8 0.8]);\n");
+    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b', 'MarkerSize',3);\n");
+    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'xr', 'MarkerSize',3);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('Symbol Index');\n");
     fprintf(fid,"ylabel('Output Signal');\n");
@@ -174,8 +246,8 @@ int main() {
     fprintf(fid,"t1=ceil(0.25*length(z)):length(z);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(real(z(t0)),imag(z(t0)),'x','Color',[0.6 0.6 0.6]);\n");
-    fprintf(fid,"plot(real(z(t1)),imag(z(t1)),'x','Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"plot(real(z(t0)),imag(z(t0)),'x','MarkerSize',3,'Color',[0.6 0.6 0.6]);\n");
+    fprintf(fid,"plot(real(z(t1)),imag(z(t1)),'x','MarkerSize',3,'Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square; grid on;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.8);\n");
