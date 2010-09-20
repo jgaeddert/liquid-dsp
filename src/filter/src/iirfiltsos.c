@@ -38,24 +38,37 @@
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,
                                  TC * _a)
 {
+    // create filter object
     IIRFILTSOS() q = (IIRFILTSOS()) malloc(sizeof(struct IIRFILTSOS(_s)));
 
-    TC a0 = _a[0];
-
-    // copy feed-forward coefficients (numerator)
-    q->b[0] = _b[0] / a0;
-    q->b[1] = _b[1] / a0;
-    q->b[2] = _b[2] / a0;
-
-    // copy feed-back coefficients (denominator)
-    q->a[0] = _a[0] / a0;
-    q->a[1] = _a[1] / a0;
-    q->a[2] = _a[2] / a0;
+    // set the internal coefficients
+    IIRFILTSOS(_set_coefficients)(q, _b, _a);
 
     // clear filter state
     IIRFILTSOS(_clear)(q);
 
     return q;
+}
+
+// set internal filter coefficients
+// NOTE : this does not reset the internal state of the filter and
+//        could result in instability if executed on existing filter!
+void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,
+                                   TC * _b,
+                                   TC * _a)
+{
+    // retain a0 coefficient for normalization
+    TC a0 = _a[0];
+
+    // copy feed-forward coefficients (numerator)
+    _q->b[0] = _b[0] / a0;
+    _q->b[1] = _b[1] / a0;
+    _q->b[2] = _b[2] / a0;
+
+    // copy feed-back coefficients (denominator)
+    _q->a[0] = _a[0] / a0;
+    _q->a[1] = _a[1] / a0;
+    _q->a[2] = _a[2] / a0;
 }
 
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q)

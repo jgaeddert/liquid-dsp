@@ -792,6 +792,9 @@ struct IIRFILTSOS(_s) {                                         \
                                                                 \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
                                  TC * _a);                      \
+void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,             \
+                                   TC * _b,                     \
+                                   TC * _a);                    \
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
 void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
 void IIRFILTSOS(_clear)(IIRFILTSOS() _q);                       \
