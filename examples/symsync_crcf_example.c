@@ -97,22 +97,6 @@ int main(int argc, char*argv[]) {
 
     unsigned int i, n=0;
 
-    // design interpolating filter
-    unsigned int h_len = 2*k*m+1;
-    float h[h_len];
-    design_rrc_filter(k,m,beta,dt,h);
-
-    // create interpolator
-    interp_crcf q = interp_crcf_create(k,h,h_len);
-
-    // design polyphase filter
-    unsigned int H_len = 2*num_filters*k*m + 1;
-    float H[H_len];
-    design_rrc_filter(k*num_filters,m,beta,0,H);
-    // create symbol synchronizer
-    symsync_crcf d = symsync_crcf_create(k, num_filters, H, H_len);
-    symsync_crcf_set_lf_bw(d,bt);
-
     unsigned int num_samples = k*num_symbols;
     unsigned int num_samples_resamp = (unsigned int) ceilf(num_samples*r*1.1f) + 4;
     float complex s[num_symbols];           // data symbols
@@ -130,14 +114,25 @@ int main(int argc, char*argv[]) {
         }
     }
 
-    // run interpolator
+    // 
+    // create and run interpolator
+    //
+
+    // design interpolating filter
+    unsigned int h_len = 2*k*m+1;
+    float h[h_len];
+    design_rrc_filter(k,m,beta,dt,h);
+    interp_crcf q = interp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
         interp_crcf_execute(q, s[i], &x[n]);
         n+=k;
     }
     assert(n == num_samples);
+    interp_crcf_destroy(q);
 
+    // 
     // run resampler
+    //
     unsigned int resamp_len = 10*k; // resampling filter semi-length (filter delay)
     float resamp_bw = 0.9f;         // resampling filter bandwidth
     float resamp_As = 60.0f;        // resampling filter stop-band attenuation
@@ -158,13 +153,26 @@ int main(int argc, char*argv[]) {
     }
     resamp_crcf_destroy(f);
 
+    // 
     // add noise
-    // TODO : add noise appropriately
-    float nstd = 0.0f;
+    //
+    float nstd = powf(10.0f, -SNRdB/20.0f) / sqrtf(2.0f);
     for (i=0; i<num_samples_resampled; i++)
         y[i] += nstd*(randnf() + _Complex_I*randnf());
 
-    // run symbol synchronizer
+
+    // 
+    // create and run symbol synchronizer
+    //
+
+    // design polyphase filter
+    unsigned int H_len = 2*num_filters*k*m + 1;
+    float H[H_len];
+    design_rrc_filter(k*num_filters,m,beta,0,H);
+    // create symbol synchronizer
+    symsync_crcf d = symsync_crcf_create(k, num_filters, H, H_len);
+    symsync_crcf_set_lf_bw(d,bt);
+
     unsigned int num_symbols_sync=0;
     unsigned int nn;
     float tau[num_samples];
@@ -173,25 +181,10 @@ int main(int argc, char*argv[]) {
         symsync_crcf_execute(d, &y[i], 1, &z[num_symbols_sync], &nn);
         num_symbols_sync += nn;
     }
+    symsync_crcf_destroy(d);
 
-    printf("h(t) :\n");
-    for (i=0; i<h_len; i++)
-        printf("  h(%2u) = %8.4f;\n", i+1, h[i]);
 
-#if 0
-    printf("x(t) :\n");
-    for (i=0; i<num_symbols; i++) {
-        //printf("  x(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(x[i]), cimagf(x[i]));
-        fprintf(fid,"x(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(x[i]), cimagf(x[i]));
-    }
-
-    printf("y(t) :\n");
-    for (i=0; i<num_samples; i++) {
-        //printf("  y(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"y(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-    }
-#endif
-
+    // print last several symbols to screen
     printf("z(t) :\n");
     for (i=num_symbols_sync-10; i<num_symbols_sync; i++)
         printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
@@ -271,8 +264,6 @@ int main(int argc, char*argv[]) {
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
     // clean it up
-    interp_crcf_destroy(q);
-    symsync_crcf_destroy(d);
     printf("done.\n");
     return 0;
 }
