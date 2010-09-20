@@ -40,6 +40,7 @@ local_s_files	:= 			\
 	firdespm.c			\
 	group_delay.c			\
 	hM3.c				\
+	iirdes.pll.c			\
 	iirdes.c			\
 	rcos.c				\
 	rkaiser.c			\

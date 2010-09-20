@@ -1205,6 +1205,40 @@ void iirdes_dzpk2sosf(liquid_float_complex * _zd,
                       float * _B,
                       float * _A);
 
+// additional IIR filter design templates
+
+// design 2nd-order IIR filter (active lag)
+//          1 + t2 * s
+//  F(s) = ------------
+//          1 + t1 * s
+//
+//  _w      :   filter bandwidth
+//  _zeta   :   damping factor (1/sqrt(2) suggested)
+//  _K      :   loop gain (1000 suggested)
+//  _b      :   output feed-forward coefficients [size: 3 x 1]
+//  _a      :   output feed-back coefficients [size: 3 x 1]
+void iirdes_pll_active_lag(float _w,
+                           float _zeta,
+                           float _K,
+                           float * _b,
+                           float * _a);
+
+// design 2nd-order IIR filter (active PI)
+//          1 + t2 * s
+//  F(s) = ------------
+//           t1 * s
+//
+//  _w      :   filter bandwidth
+//  _zeta   :   damping factor (1/sqrt(2) suggested)
+//  _K      :   loop gain (1000 suggested)
+//  _b      :   output feed-forward coefficients [size: 3 x 1]
+//  _a      :   output feed-back coefficients [size: 3 x 1]
+void iirdes_pll_active_PI(float _w,
+                          float _zeta,
+                          float _K,
+                          float * _b,
+                          float * _a);
+
 // checks stability of iir filter
 //  _b      :   feed-forward coefficients [size: _n x 1]
 //  _a      :   feed-back coefficients [size: _n x 1]
