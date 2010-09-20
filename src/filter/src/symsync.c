@@ -287,7 +287,7 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
                                      TO _dmf)
 {
     //  1.  compute timing error signal, clipping large levels
-    _q->q = 0.5f*(crealf(_mf)*crealf(_dmf) + cimagf(_mf)*cimagf(_dmf));
+    _q->q = crealf(_mf)*crealf(_dmf) + cimagf(_mf)*cimagf(_dmf);
     if (_q->q > 1.0f)       _q->q =  1.0f;
     else if (_q->q < -1.0f) _q->q = -1.0f;
 
