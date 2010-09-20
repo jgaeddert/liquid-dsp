@@ -58,6 +58,7 @@ struct package_s {
     unsigned int id;                // package identification
     unsigned int autotest_index;    // index of first autotest
     unsigned int num_autotests;     // number of tests in package
+    bool executed;                  // were any tests executed?
     const char* name;               // package name
 };
 
@@ -84,6 +85,9 @@ void execute_autotest(autotest _test, bool _verbose);
 
 // execute a specific package
 void execute_package(package _p, bool _verbose);
+
+// execute a specific package if string matches
+void execute_package_search(package _p, char * _str, bool _verbose);
 
 // print all autotest results
 void print_autotest_results(autotest _test);
@@ -201,12 +205,15 @@ int main(int argc, char *argv[])
         break;
     case RUN_SEARCH:
         printf("running all autotests matching '%s'...\n", search_string);
-        for (i=0; i<NUM_AUTOTESTS; i++) {
-            // see if search string matches autotest name
-            if (strstr(autotests[i].name, search_string) != NULL) {
-                // run the autotest
-                execute_autotest( &autotests[i], verbose );
-            }
+
+        // search all packages
+        for (i=0; i<NUM_PACKAGES; i++)
+            execute_package_search( &packages[i], search_string, verbose);
+
+        // print results
+        for (i=0; i<NUM_PACKAGES; i++) {
+            if (verbose && packages[i].executed)
+                print_package_results( &packages[i] );
         }
         break;
     }
@@ -274,6 +281,30 @@ void execute_package(package _p,
     unsigned int i;
     for (i=0; i<_p->num_autotests; i++) {
         execute_autotest( &autotests[ i + _p->autotest_index ], _verbose );
+    }
+    
+    _p->executed = true;
+}
+
+// execute a specific package if string matches
+void execute_package_search(package _p, char * _str, bool _verbose)
+{
+    // see if search string matches autotest name
+    if (strstr(_p->name, _str) != NULL) {
+        // run the package
+        execute_package(_p, _verbose);
+    } else {
+
+        unsigned int i;
+        unsigned int i0 = _p->autotest_index;
+        unsigned int i1 = _p->num_autotests + i0;
+        for (i=i0; i<i1; i++) {
+            // see if search string matches autotest name
+            if (strstr(autotests[i].name, _str) != NULL) {
+                // run the autotest
+                execute_autotest( &autotests[i], _verbose );
+            }
+        }
     }
 }
 

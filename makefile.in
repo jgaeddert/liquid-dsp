@@ -218,7 +218,7 @@ uninstall:
 autotest_prog	= xautotest
 
 # run the autotest generator script to create autotest_include.h
-autotest_include.h: $(autotest_headers) include/liquid.h include/liquid.internal.h
+autotest_include.h: $(autotest_headers) include/liquid.h include/liquid.internal.h autotest/autotest_gen.py
 	python autotest/autotest_gen.py $(autotest_headers)
 
 # autotest objects

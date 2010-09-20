@@ -213,7 +213,7 @@ def writeOutputFile( filename = outputFileName ):
     for i in range(len(packages)):
         p = packages[i];
         # append packages to array
-        f.write(" "*4 + "{" + str(i) + "," + str(p.benchmark_index) + "," + str(p.num_benchmarks) + ",\"" + p.name + "\"}")
+        f.write(" "*4 + "{" + str(i) + "," + str(p.benchmark_index) + "," + str(p.num_benchmarks) + ",0,\"" + p.name + "\"}")
         if not i == len(packages)-1:
             f.write(",\n")
     f.write("\n};\n")
