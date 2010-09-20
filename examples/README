@@ -308,6 +308,13 @@ iirdes_example.c *
     SEE ALSO: iirdes_analog_example.c
               iirfilt_crcf_example.c
 
+iirdes_pll_example.c *
+    This example demonstrates 2nd-order IIR phase-locked loop filter
+    design with a practical simulation.
+
+    SEE ALSO: nco_pll_example.c
+              nco_pll_modem_example.c
+
 iirqmfb_crcf_example.c
 
 interleaver_example.c
