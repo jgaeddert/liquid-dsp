@@ -216,11 +216,16 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
         exit(1);
     }
 
+    _q->bandwidth = _b;
+    _q->zeta = 1/sqrtf(2.0f);
+
     // compute loop filter using active lag design
-    NCO(_pll_set_bandwidth_active_lag)(_q, _b);
+    iirdes_pll_active_lag(_q->bandwidth, _q->zeta, NCO_PLL_GAIN_DEFAULT, _q->b, _q->a);
 
     // compute loop filter using active PI design
-    //NCO(_pll_set_bandwidth_active_PI)(_q, _b);
+    //iirdes_pll_active_PI(_q->bandwidth, _q->zeta, NCO_PLL_GAIN_DEFAULT, _q->b, _q->a);
+    
+    iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
 }
 
 // advance pll phase
@@ -362,63 +367,4 @@ void NCO(_compute_sincos_vco)(NCO() _q)
     _q->sine   = SIN(_q->theta);
     _q->cosine = COS(_q->theta);
 }
-
-// use active lag loop filter
-//          1 + t2 * s
-//  F(s) = ------------
-//          1 + t1 * s
-void NCO(_pll_set_bandwidth_active_lag)(NCO() _q,
-                                        float _b)
-{
-    _q->bandwidth = _b;
-    _q->zeta = 1.0f / sqrt(2.0f);
-
-    // loop filter (active lag)
-    T wn = _q->bandwidth;       // natural frequency
-    T zeta = _q->zeta;          // damping factor
-    T K = NCO_PLL_GAIN_DEFAULT; // loop gain
-    T t1 = K/(wn*wn);
-    T t2 = 2*zeta/wn - 1/K;
-
-    _q->b[0] = 2*K*(1.+t2/2.0f);
-    _q->b[1] = 2*K*2.;
-    _q->b[2] = 2*K*(1.-t2/2.0f);
-
-    _q->a[0] =  1 + t1/2.0f;
-    _q->a[1] = -t1;
-    _q->a[2] = -1 + t1/2.0f;
-
-    // set filter coefficients
-    iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
-}
-
-// use active PI ("proportional + integration") loop filter
-//          1 + t2 * s
-//  F(s) = ------------
-//           t1 * s
-void NCO(_pll_set_bandwidth_active_PI)(NCO() _q,
-                                       float _b)
-{
-    _q->bandwidth = _b;
-    _q->zeta = 1.0f / sqrt(2.0f);
-
-    // loop filter (active lag)
-    T wn = _q->bandwidth;       // natural frequency
-    T zeta = _q->zeta;          // damping factor
-    T K = NCO_PLL_GAIN_DEFAULT; // loop gain
-    T t1 = K/(wn*wn);
-    T t2 = 2*zeta/wn;
-
-    _q->b[0] = 2*K*(1.+t2/2.0f);
-    _q->b[1] = 2*K*2.;
-    _q->b[2] = 2*K*(1.-t2/2.0f);
-
-    _q->a[0] =  t1/2.0f;
-    _q->a[1] = -t1;
-    _q->a[2] =  t1/2.0f;
-
-    // set filter coefficients
-    iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
-}
-
 
