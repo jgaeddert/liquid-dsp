@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <getopt.h>
+#include <time.h>
 #include <assert.h>
 
 #include "liquid.h"
@@ -31,6 +32,8 @@ void usage()
 
 
 int main(int argc, char*argv[]) {
+    srand(time(NULL));
+
     // options
     unsigned int k=2;   // samples/symbol
     unsigned int m=3;   // filter delay (symbols)
@@ -40,9 +43,8 @@ int main(int argc, char*argv[]) {
     float SNRdB = 30.0f;
 
     float bt=0.02f;     // loop filter bandwidth
-    float dt=0.2f;      // fractional sample offset
+    float tau=0.2f;     // fractional symbol offset
     float r = 1.00f;    // resampled rate
-    unsigned int ds=1;  // additional symbol delay
     
     // use random data or 101010 phasing pattern
     bool random_data=true;
@@ -59,7 +61,7 @@ int main(int argc, char*argv[]) {
         case 's':   SNRdB = atof(optarg);           break;
         case 'w':   bt = atof(optarg);              break;
         case 'n':   num_symbols = atoi(optarg);     break;
-        case 't':   dt = atof(optarg);              break;
+        case 't':   tau = atof(optarg);             break;
         case 'r':   r = atof(optarg);               break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
@@ -87,13 +89,19 @@ int main(int argc, char*argv[]) {
     } else if (num_symbols == 0) {
         fprintf(stderr,"error: number of symbols must be greater than 0\n");
         return 1;
-    } else if (dt < -1.0f || dt > 1.0f) {
+    } else if (tau < -1.0f || tau > 1.0f) {
         fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
         return 1;
     } else if (r < 0.5f || r > 2.0f) {
         fprintf(stderr,"error: timing frequency offset must be in [0.5,2]\n");
         return 1;
     }
+
+    // compute delay
+    while (tau < 0) tau += 1.0f;    // ensure positive tau
+    float g = k*tau;                // number of samples offset
+    int ds=floorf(g);               // additional symbol delay
+    float dt = (g - (float)ds);     // fractional sample offset
 
     unsigned int i, n=0;
 
@@ -107,8 +115,7 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_symbols; i++) {
         if (random_data) {
             // random signal (QPSK)
-            s[i]  = rand() % 2 ? 1.0f : -1.0f;
-            s[i] += rand() % 2 ? _Complex_I * 1.0f : -_Complex_I*1.0f;
+            s[i]  = cexpf(_Complex_I*0.5f*M_PI*((rand() % 4) + 0.5f));
         } else {
             s[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
         }
@@ -175,9 +182,9 @@ int main(int argc, char*argv[]) {
 
     unsigned int num_symbols_sync=0;
     unsigned int nn;
-    float tau[num_samples];
+    float tau_hat[num_samples];
     for (i=ds; i<num_samples_resampled; i++) {
-        tau[num_symbols_sync] = symsync_crcf_get_tau(d);
+        tau_hat[num_symbols_sync] = symsync_crcf_get_tau(d);
         symsync_crcf_execute(d, &y[i], 1, &z[num_symbols_sync], &nn);
         num_symbols_sync += nn;
     }
@@ -219,7 +226,7 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"z(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]), cimagf(z[i]));
         
     for (i=0; i<num_symbols_sync; i++)
-        fprintf(fid,"tau(%3u) = %12.8f;\n", i+1, tau[i]);
+        fprintf(fid,"tau_hat(%3u) = %12.8f;\n", i+1, tau_hat[i]);
 
 
     fprintf(fid,"\n\n");
@@ -243,22 +250,22 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"plot(real(z(t1)),imag(z(t1)),'x','MarkerSize',3,'Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square; grid on;\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.8);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"legend(['first 25%%'],['last 75%%'],1);\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"tt = 0:(length(tau)-1);\n");
-    fprintf(fid,"b = floor(num_filters*tau + 0.5);\n");
-    fprintf(fid,"stairs(tt,tau*num_filters);\n");
+    fprintf(fid,"tt = 0:(length(tau_hat)-1);\n");
+    fprintf(fid,"b = floor(num_filters*tau_hat + 0.5);\n");
+    fprintf(fid,"stairs(tt,tau_hat*num_filters);\n");
     fprintf(fid,"hold on;\n");
     fprintf(fid,"plot(tt,b,'-k','Color',[0 0 0]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('filterbank index');\n");
     fprintf(fid,"grid on;\n");
-    fprintf(fid,"axis([0 length(tau) -1 num_filters]);\n");
+    fprintf(fid,"axis([0 length(tau_hat) -1 num_filters]);\n");
     fclose(fid);
 
     printf("results written to %s.\n", OUTPUT_FILENAME);
