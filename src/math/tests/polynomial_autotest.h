@@ -364,7 +364,7 @@ void autotest_polyf_findroots()
 void autotest_polycf_findroots_rand()
 {
     unsigned int n=5;
-    float tol=1e-6f;
+    float tol=1e-4f;
 
     float complex p[n];
     float complex roots[n-1];
