@@ -32,11 +32,6 @@
 #define NCO_PLL_BANDWIDTH_DEFAULT   (0.1)
 #define NCO_PLL_GAIN_DEFAULT        (1000)
 
-// internal PLL IIR filter form
-//  1   :   Direct Form-I   (suggested)
-//  2   :   Direct Form-II  (can become unstable if filter bandwidth changes)
-#define NCO_PLL_IIRFILT_FORM        (1)
-
 #define LIQUID_DEBUG_NCO            (0)
 
 // create nco/vco object
@@ -51,6 +46,10 @@ NCO() NCO(_create)(liquid_ncotype _type)
         q->sintab[i] = SIN(2.0f*M_PI*(float)(i)/256.0f);
 
     // set default pll bandwidth
+    q->a[0] = 1.0f;     q->b[0] = 0.0f;
+    q->a[1] = 0.0f;     q->b[1] = 0.0f;
+    q->a[2] = 0.0f;     q->b[2] = 0.0f;
+    q->pll_filter = iirfiltsos_rrrf_create(q->b, q->a);
     NCO(_reset)(q);
     NCO(_pll_set_bandwidth)(q, NCO_PLL_BANDWIDTH_DEFAULT);
 
@@ -70,6 +69,7 @@ NCO() NCO(_create)(liquid_ncotype _type)
 // destroy nco object
 void NCO(_destroy)(NCO() _q)
 {
+    iirfiltsos_rrrf_destroy(_q->pll_filter);
     free(_q);
 }
 
@@ -198,24 +198,8 @@ void NCO(_pll_reset)(NCO() _q)
     printf("base frequency : %f\n", _q->pll_dtheta_base);
 #endif
 
-#if NCO_PLL_IIRFILT_FORM == 1
-    // clear Direct Form I filter state
-    _q->x[0] = 0;
-    _q->x[1] = 0;
-    _q->x[2] = 0;
-
-    _q->y[0] = 0;
-    _q->y[1] = 0;
-    _q->y[2] = 0;
-
-#elif NCO_PLL_IIRFILT_FORM == 2
-    // clear Direct Form II filter state
-    _q->v[0] = 0;
-    _q->v[1] = 0;
-    _q->v[2] = 0;
-#else
-#  error "invalid NCO_PLL_IIRFILT_FORM value"
-#endif
+    // clear phase-locked loop filter
+    iirfiltsos_rrrf_clear(_q->pll_filter);
 
     // reset phase state
     _q->pll_phi_prime = 0;
@@ -232,16 +216,16 @@ void NCO(_pll_set_bandwidth)(NCO() _q,
         exit(1);
     }
 
-#if NCO_PLL_IIRFILT_FORM == 2
-    // reset pll, saving frequency state (pll_dtheta_base)
-    NCO(_pll_reset)(_q);
-#endif
+    _q->bandwidth = _b;
+    _q->zeta = 1/sqrtf(2.0f);
 
     // compute loop filter using active lag design
-    NCO(_pll_set_bandwidth_active_lag)(_q, _b);
+    iirdes_pll_active_lag(_q->bandwidth, _q->zeta, NCO_PLL_GAIN_DEFAULT, _q->b, _q->a);
 
     // compute loop filter using active PI design
-    //NCO(_pll_set_bandwidth_active_PI)(_q, _b);
+    //iirdes_pll_active_PI(_q->bandwidth, _q->zeta, NCO_PLL_GAIN_DEFAULT, _q->b, _q->a);
+    
+    iirfiltsos_rrrf_set_coefficients(_q->pll_filter, _q->b, _q->a);
 }
 
 // advance pll phase
@@ -253,50 +237,10 @@ void NCO(_pll_step)(NCO() _q,
     // save pll phase state
     _q->pll_phi_prime = _q->pll_phi_hat;
 
-#if NCO_PLL_IIRFILT_FORM == 1
-    // Direct Form I
-
-    // advance buffer x
-    _q->x[2] = _q->x[1];
-    _q->x[1] = _q->x[0];
-    _q->x[0] = _dphi;
-
-    // advance buffer y
-    _q->y[2] = _q->y[1];
-    _q->y[1] = _q->y[0];
-
-    // compute new v
-    float v = _q->x[0] * _q->b[0] +
-              _q->x[1] * _q->b[1] +
-              _q->x[2] * _q->b[2];
-
-    // compute new y[0]
-    _q->pll_phi_hat = v -
-                      _q->y[1] * _q->a[1] -
-                      _q->y[2] * _q->a[2];
-
-    _q->y[0] = _q->pll_phi_hat;
-
-#elif NCO_PLL_IIRFILT_FORM == 2
-    // Direct Form II
-
-    // advance buffer
-    _q->v[2] = _q->v[1];
-    _q->v[1] = _q->v[0];
-
-    // compute new v[0] from input
-    _q->v[0] = _dphi - 
-               _q->a[1]*_q->v[1] -
-               _q->a[2]*_q->v[2];
-
-    // compute output phase state
-    _q->pll_phi_hat = _q->b[0]*_q->v[0] +
-                      _q->b[1]*_q->v[1] +
-                      _q->b[2]*_q->v[2];
-
-#else
-#  error "invalid NCO_PLL_IIRFILT_FORM value"
-#endif
+    // execute internal filter (direct form I)
+    iirfiltsos_rrrf_execute_df1(_q->pll_filter,
+                                _dphi,
+                                &_q->pll_phi_hat);
 
     // compute new phase step (frequency)
     NCO(_set_frequency)(_q, _q->pll_phi_hat - _q->pll_phi_prime);
@@ -423,78 +367,4 @@ void NCO(_compute_sincos_vco)(NCO() _q)
     _q->sine   = SIN(_q->theta);
     _q->cosine = COS(_q->theta);
 }
-
-// use active lag loop filter
-//          1 + t2 * s
-//  F(s) = ------------
-//          1 + t1 * s
-void NCO(_pll_set_bandwidth_active_lag)(NCO() _q,
-                                        float _b)
-{
-    _q->bandwidth = _b;
-    _q->zeta = 1.0f / sqrt(2.0f);
-
-    // loop filter (active lag)
-    T wn = _q->bandwidth;       // natural frequency
-    T zeta = _q->zeta;          // damping factor
-    T K = NCO_PLL_GAIN_DEFAULT; // loop gain
-    T t1 = K/(wn*wn);
-    T t2 = 2*zeta/wn - 1/K;
-
-    _q->b[0] = 2*K*(1.+t2/2.0f);
-    _q->b[1] = 2*K*2.;
-    _q->b[2] = 2*K*(1.-t2/2.0f);
-
-    _q->a[0] =  1 + t1/2.0f;
-    _q->a[1] = -t1;
-    _q->a[2] = -1 + t1/2.0f;
-
-    // normalize coefficients
-    T a0 = _q->a[0];
-    _q->b[0] /= a0;
-    _q->b[1] /= a0;
-    _q->b[2] /= a0;
-
-    _q->a[1] /= a0;
-    _q->a[2] /= a0;
-    _q->a[0] /= a0;
-}
-
-// use active PI ("proportional + integration") loop filter
-//          1 + t2 * s
-//  F(s) = ------------
-//           t1 * s
-void NCO(_pll_set_bandwidth_active_PI)(NCO() _q,
-                                       float _b)
-{
-    _q->bandwidth = _b;
-    _q->zeta = 1.0f / sqrt(2.0f);
-
-    // loop filter (active lag)
-    T wn = _q->bandwidth;       // natural frequency
-    T zeta = _q->zeta;          // damping factor
-    T K = NCO_PLL_GAIN_DEFAULT; // loop gain
-    T t1 = K/(wn*wn);
-    T t2 = 2*zeta/wn;
-
-    _q->b[0] = 2*K*(1.+t2/2.0f);
-    _q->b[1] = 2*K*2.;
-    _q->b[2] = 2*K*(1.-t2/2.0f);
-
-    _q->a[0] =  t1/2.0f;
-    _q->a[1] = -t1;
-    _q->a[2] =  t1/2.0f;
-
-    // normalize coefficients
-    T a0 = _q->a[0];
-    _q->b[0] /= a0;
-    _q->b[1] /= a0;
-    _q->b[2] /= a0;
-
-    _q->a[1] /= a0;
-    _q->a[2] /= a0;
-    _q->a[0] /= a0;
-
-}
-
 

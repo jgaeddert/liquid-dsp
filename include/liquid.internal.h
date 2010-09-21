@@ -792,6 +792,9 @@ struct IIRFILTSOS(_s) {                                         \
                                                                 \
 IIRFILTSOS() IIRFILTSOS(_create)(TC * _b,                       \
                                  TC * _a);                      \
+void IIRFILTSOS(_set_coefficients)(IIRFILTSOS() _q,             \
+                                   TC * _b,                     \
+                                   TC * _a);                    \
 void IIRFILTSOS(_destroy)(IIRFILTSOS() _q);                     \
 void IIRFILTSOS(_print)(IIRFILTSOS() _q);                       \
 void IIRFILTSOS(_clear)(IIRFILTSOS() _q);                       \
@@ -866,6 +869,14 @@ LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
                                      liquid_float_complex)
 
 // firdes : finite impulse response filter design
+
+// Find approximate bandwidth adjustment factor rho based on
+// filter delay and desired excess bandwdith factor.
+//
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+float rkaiser_approximate_rho(unsigned int _m,
+                              float _beta);
 
 // design_rkaiser_filter_internal()
 //
@@ -1528,9 +1539,7 @@ struct NCO(_s) {                                                \
     T zeta;             /* loop filter damping factor   */      \
     T a[3];             /* feed-back coefficients       */      \
     T b[3];             /* feed-forward coefficients    */      \
-    T x[3];             /* buffer, Direct Form I        */      \
-    T y[3];             /* buffer, Direct Form I        */      \
-    T v[3];             /* buffer, Direct Form II       */      \
+    iirfiltsos_rrrf pll_filter; /* iir filter object    */      \
     T pll_phi_prime;    /* pll phase state              */      \
     T pll_phi_hat;      /* pll output phase             */      \
     T pll_dtheta_base;  /* NCO base frequency           */      \
@@ -1542,9 +1551,7 @@ void NCO(_compute_sincos_nco)(NCO() _q);                        \
 void NCO(_compute_sincos_vco)(NCO() _q);                        \
                                                                 \
 /* phase-locked loop methods */                                 \
-void NCO(_pll_reset)(NCO() _q);                                 \
-void NCO(_pll_set_bandwidth_active_lag)(NCO() _q, float _b);    \
-void NCO(_pll_set_bandwidth_active_PI)(NCO() _q, float _b);
+void NCO(_pll_reset)(NCO() _q);
 
 // Define nco internal APIs
 LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,

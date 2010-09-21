@@ -5,36 +5,172 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
+#include <getopt.h>
+#include <time.h>
+#include <assert.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "symsync_crcf_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("symsync_crcf_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  k     : filter samples/symbol, default: 2\n");
+    printf("  m     : filter delay (symbols), default: 3\n");
+    printf("  b     : filter excess bandwidth, default: 0.3\n");
+    printf("  B     : filter polyphase banks, default: 32\n");
+    printf("  s     : signal-to-noise ratio, default: 30dB\n");
+    printf("  w     : timing pll bandwidth, default: 0.02\n");
+    printf("  n     : number of symbols, default: 1024\n");
+    printf("  t     : timing phase offset [%% symbol], -0.5 < t <= 0.5, default: 0\n");
+    printf("  r     : timing freq. offset [%% symbol], default: 1.000\n");
+}
+
+
+int main(int argc, char*argv[]) {
+    srand(time(NULL));
+
     // options
-    unsigned int k=2;
-    unsigned int m=3;
-    float beta=0.3f;
-    unsigned int num_filters=16;
-    unsigned int num_symbols=1000;
+    unsigned int k=2;   // samples/symbol
+    unsigned int m=3;   // filter delay (symbols)
+    float beta=0.3f;    // filter excess bandwidth factor
+    unsigned int num_filters=32;
+    unsigned int num_symbols=1024;
+    float SNRdB = 30.0f;
 
     float bt=0.02f;     // loop filter bandwidth
-    float dt=0.1f;      // fractional sample offset
-    unsigned int ds=0;  // additional symbol delay
+    float tau=0.2f;     // fractional symbol offset
+    float r = 1.00f;    // resampled rate
     
     // use random data or 101010 phasing pattern
     bool random_data=true;
 
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhk:m:b:B:s:w:n:t:r:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h':   usage();    return 0;
+        case 'k':   k = atoi(optarg);               break;
+        case 'm':   m = atoi(optarg);               break;
+        case 'b':   beta = atof(optarg);            break;
+        case 'B':   num_filters = atoi(optarg);     break;
+        case 's':   SNRdB = atof(optarg);           break;
+        case 'w':   bt = atof(optarg);              break;
+        case 'n':   num_symbols = atoi(optarg);     break;
+        case 't':   tau = atof(optarg);             break;
+        case 'r':   r = atof(optarg);               break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
+
+    // validate input
+    if (k < 2) {
+        fprintf(stderr,"error: k (samples/symbol) must be at least 2\n");
+        return 1;
+    } else if (m < 1) {
+        fprintf(stderr,"error: m (filter delay) must be greater than 0\n");
+        return 1;
+    } else if (beta <= 0.0f || beta > 1.0f) {
+        fprintf(stderr,"error: beta (excess bandwidth factor) must be in (0,1]\n");
+        return 1;
+    } else if (num_filters == 0) {
+        fprintf(stderr,"error: number of polyphase filters must be greater than 0\n");
+        return 1;
+    } else if (bt <= 0.0f) {
+        fprintf(stderr,"error: timing PLL bandwidth must be greater than 0\n");
+        return 1;
+    } else if (num_symbols == 0) {
+        fprintf(stderr,"error: number of symbols must be greater than 0\n");
+        return 1;
+    } else if (tau < -1.0f || tau > 1.0f) {
+        fprintf(stderr,"error: timing phase offset must be in [-1,1]\n");
+        return 1;
+    } else if (r < 0.5f || r > 2.0f) {
+        fprintf(stderr,"error: timing frequency offset must be in [0.5,2]\n");
+        return 1;
+    }
+
+    // compute delay
+    while (tau < 0) tau += 1.0f;    // ensure positive tau
+    float g = k*tau;                // number of samples offset
+    int ds=floorf(g);               // additional symbol delay
+    float dt = (g - (float)ds);     // fractional sample offset
 
     unsigned int i, n=0;
+
+    unsigned int num_samples = k*num_symbols;
+    unsigned int num_samples_resamp = (unsigned int) ceilf(num_samples*r*1.1f) + 4;
+    float complex s[num_symbols];           // data symbols
+    float complex x[num_samples];           // interpolated samples
+    float complex y[num_samples_resamp];    // resampled data (resamp_crcf)
+    float complex z[num_symbols + 64];      // synchronized symbols
+
+    for (i=0; i<num_symbols; i++) {
+        if (random_data) {
+            // random signal (QPSK)
+            s[i]  = cexpf(_Complex_I*0.5f*M_PI*((rand() % 4) + 0.5f));
+        } else {
+            s[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
+        }
+    }
+
+    // 
+    // create and run interpolator
+    //
 
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     design_rrc_filter(k,m,beta,dt,h);
-
-    // create interpolator
     interp_crcf q = interp_crcf_create(k,h,h_len);
+    for (i=0; i<num_symbols; i++) {
+        interp_crcf_execute(q, s[i], &x[n]);
+        n+=k;
+    }
+    assert(n == num_samples);
+    interp_crcf_destroy(q);
+
+    // 
+    // run resampler
+    //
+    unsigned int resamp_len = 10*k; // resampling filter semi-length (filter delay)
+    float resamp_bw = 0.9f;         // resampling filter bandwidth
+    float resamp_As = 60.0f;        // resampling filter stop-band attenuation
+    unsigned int resamp_npfb = 64;  // number of filters in bank
+    resamp_crcf f = resamp_crcf_create(r, resamp_len, resamp_bw, resamp_As, resamp_npfb);
+    unsigned int num_samples_resampled = 0;
+    unsigned int num_written;
+    for (i=0; i<num_samples; i++) {
+#if 0
+        // bypass arbitrary resampler
+        y[i] = x[i];
+        num_samples_resampled = num_samples;
+#else
+        // TODO : compensate for resampler filter delay
+        resamp_crcf_execute(f, x[i], &y[num_samples_resampled], &num_written);
+        num_samples_resampled += num_written;
+#endif
+    }
+    resamp_crcf_destroy(f);
+
+    // 
+    // add noise
+    //
+    float nstd = powf(10.0f, -SNRdB/20.0f) / sqrtf(2.0f);
+    for (i=0; i<num_samples_resampled; i++)
+        y[i] += nstd*(randnf() + _Complex_I*randnf());
+
+
+    // 
+    // create and run symbol synchronizer
+    //
 
     // design polyphase filter
     unsigned int H_len = 2*num_filters*k*m + 1;
@@ -44,10 +180,25 @@ int main() {
     symsync_crcf d = symsync_crcf_create(k, num_filters, H, H_len);
     symsync_crcf_set_lf_bw(d,bt);
 
-    unsigned int num_samples = k*num_symbols;
-    float complex x[num_symbols];
-    float complex y[num_samples];
-    float complex z[num_samples];
+    unsigned int num_symbols_sync=0;
+    unsigned int nn;
+    float tau_hat[num_samples];
+    for (i=ds; i<num_samples_resampled; i++) {
+        tau_hat[num_symbols_sync] = symsync_crcf_get_tau(d);
+        symsync_crcf_execute(d, &y[i], 1, &z[num_symbols_sync], &nn);
+        num_symbols_sync += nn;
+    }
+    symsync_crcf_destroy(d);
+
+
+    // print last several symbols to screen
+    printf("z(t) :\n");
+    for (i=num_symbols_sync-10; i<num_symbols_sync; i++)
+        printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
+
+    //
+    // export output file
+    //
 
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s, auto-generated file\n\n", OUTPUT_FILENAME);
@@ -59,60 +210,32 @@ int main() {
     fprintf(fid,"num_filters=%u;\n",num_filters);
     fprintf(fid,"num_symbols=%u;\n",num_symbols);
 
-    for (i=0; i<num_symbols; i++) {
-        if (random_data) {
-            // random signal (QPSK)
-            x[i]  = rand() % 2 ? 1.0f : -1.0f;
-            x[i] += rand() % 2 ? _Complex_I * 1.0f : -_Complex_I*1.0f;
-        } else {
-            x[i] = (i%2) ? 1.0f : -1.0f;  // 101010 phasing pattern
-        }
-    }
-
-    // run interpolator
-    for (i=0; i<num_symbols; i++) {
-        interp_crcf_execute(q, x[i], &y[n]);
-        n+=k;
-    }
-
-    // run symbol synchronizer
-    unsigned int num_symbols_sync;
-    symsync_crcf_execute(d, &y[ds], num_samples-ds, z, &num_symbols_sync);
-
-    printf("h(t) :\n");
-    for (i=0; i<h_len; i++) {
-        printf("  h(%2u) = %8.4f;\n", i+1, h[i]);
+    for (i=0; i<h_len; i++)
         fprintf(fid,"h(%3u) = %12.5f;\n", i+1, h[i]);
-    }
 
-    printf("x(t) :\n");
-    for (i=0; i<num_symbols; i++) {
-        //printf("  x(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(x[i]), cimagf(x[i]));
-        fprintf(fid,"x(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(x[i]), cimagf(x[i]));
-    }
+    for (i=0; i<num_symbols; i++)
+        fprintf(fid,"s(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(s[i]), cimagf(s[i]));
 
-    printf("y(t) :\n");
-    for (i=0; i<num_samples; i++) {
-        //printf("  y(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        fprintf(fid,"y(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-    }
-
-    printf("z(t) :\n");
-    for (i=num_symbols_sync-10; i<num_symbols_sync; i++)
-        printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
-    for (i=0; i<num_symbols_sync; i++) {
-        //printf("  z(%2u) = %8.4f + j*%8.4f;\n", i+1, crealf(z[i]), cimagf(z[i]));
-        fprintf(fid,"z(%3u) = %12.5f + j*%12.5f;\n", i+1, crealf(z[i]), cimagf(z[i]));
-    }
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"x(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(x[i]), cimagf(x[i]));
+        
+    for (i=0; i<num_samples_resampled; i++)
+        fprintf(fid,"y(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        
+    for (i=0; i<num_symbols_sync; i++)
+        fprintf(fid,"z(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(z[i]), cimagf(z[i]));
+        
+    for (i=0; i<num_symbols_sync; i++)
+        fprintf(fid,"tau_hat(%3u) = %12.8f;\n", i+1, tau_hat[i]);
 
 
     fprintf(fid,"\n\n");
     fprintf(fid,"zp = filter(h,1,y);\n");
     fprintf(fid,"figure;\nhold on;\n");
-    fprintf(fid,"plot([0:length(x)-1],          real(x),    'ob');\n");
-    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-','Color',[0.8 0.8 0.8]);\n");
-    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b');\n");
-    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z/k),  'xr');\n");
+    fprintf(fid,"plot([0:length(s)-1],          real(s),    'ob', 'MarkerSize',3);\n");
+    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-',  'MarkerSize',3, 'Color',[0.8 0.8 0.8]);\n");
+    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b', 'MarkerSize',3);\n");
+    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'xr', 'MarkerSize',3);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('Symbol Index');\n");
     fprintf(fid,"ylabel('Output Signal');\n");
@@ -123,20 +246,31 @@ int main() {
     fprintf(fid,"t1=ceil(0.25*length(z)):length(z);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"hold on;\n");
-    fprintf(fid,"plot(z(t0)/k,'x','Color',[0.6 0.6 0.6]);\n");
-    fprintf(fid,"plot(z(t1)/k,'x','Color',[0 0.25 0.5]);\n");
+    fprintf(fid,"plot(real(z(t0)),imag(z(t0)),'x','MarkerSize',3,'Color',[0.6 0.6 0.6]);\n");
+    fprintf(fid,"plot(real(z(t1)),imag(z(t1)),'x','MarkerSize',3,'Color',[0 0.25 0.5]);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis square; grid on;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
     fprintf(fid,"xlabel('In-phase');\n");
     fprintf(fid,"ylabel('Quadrature');\n");
     fprintf(fid,"legend(['first 25%%'],['last 75%%'],1);\n");
+
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"tt = 0:(length(tau_hat)-1);\n");
+    fprintf(fid,"b = floor(num_filters*tau_hat + 0.5);\n");
+    fprintf(fid,"stairs(tt,tau_hat*num_filters);\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"plot(tt,b,'-k','Color',[0 0 0]);\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"xlabel('time');\n");
+    fprintf(fid,"ylabel('filterbank index');\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"axis([0 length(tau_hat) -1 num_filters]);\n");
     fclose(fid);
 
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
     // clean it up
-    interp_crcf_destroy(q);
-    symsync_crcf_destroy(d);
     printf("done.\n");
     return 0;
 }

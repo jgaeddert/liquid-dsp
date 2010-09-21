@@ -65,6 +65,7 @@ local_src	:=			\
 	interleaver_scatterplot_example.c	\
 	iirdes_example.c		\
 	iirdes_analog_example.c		\
+	iirdes_pll_example.c		\
 	iirfilt_crcf_example.c		\
 	iirqmfb_crcf_example.c		\
 	interp_crcf_example.c		\
