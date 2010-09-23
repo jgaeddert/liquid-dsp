@@ -136,6 +136,14 @@ SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
     q->k_inv = 1.0f / (float)(q->k);
     q->order = _order;
 
+    // TODO : do not restrict order
+#if 0
+    if (q->order != 1) {
+        fprintf(stderr,"error: symsynclp_xxxt_create(), order must be 1 (for now)\n");
+        exit(1);
+    }
+#endif
+
     // TODO: validate length
     q->h_len = _h_len;
 
@@ -147,6 +155,8 @@ SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
     q->c[1] = 1.0f;
     q->c[2] = 0.0f;
     q->c[3] = 0.0f;
+    float mu = 0.0f;
+    SYMSYNCLP(_compute_coefficients)(q, q->order, mu, q->c);
     
     // compute derivative filter
     TC dh[_h_len];
@@ -251,13 +261,13 @@ void SYMSYNCLP(_set_lf_bw)(SYMSYNCLP() _q,
     _q->bt = _bt;
 
 #if SYMSYNCLP_USE_PLL
-    float zeta = 1.1f;
+    float zeta = 1.0f / sqrtf(2.0f);
     float K = 1000.0f;
-    iirdes_pll_active_lag(0.5f*_q->bt, zeta, K, _q->B, _q->A);
+    iirdes_pll_active_lag(_q->bt, zeta, K, _q->B, _q->A);
     iirfiltsos_rrrf_set_coefficients(_q->pll, _q->B, _q->A);
 #else
-    _q->alpha = 1.00f - (_q->bt);   // percent of old sample to retain
-    _q->beta  = 0.22f * (_q->bt);   // percent of new sample to retain
+    _q->alpha = 1.00f - 1.0f*(_q->bt);  // percent of old sample to retain
+    _q->beta  = 0.02f * (_q->bt);       // percent of new sample to retain
 #endif
 }
 
@@ -293,6 +303,10 @@ void SYMSYNCLP(_clear)(SYMSYNCLP() _q)
     iirfiltsos_rrrf_clear(_q->pll);
 #endif
 
+    // clear post-filter windows
+    WINDOW(_clear)(_q->wmf);
+    WINDOW(_clear)(_q->wdmf);
+
     _q->is_locked = 0;
 }
 
@@ -319,26 +333,26 @@ void SYMSYNCLP(_compute_coefficients)(SYMSYNCLP() _q,
     case 1:
         // linear interpolator
         // TODO : adjust length...
-        _c[0] = _mu;
-        _c[1] = 1.0f - _mu;
-        _c[2] = 0.0f;
         _c[3] = 0.0f;
+        _c[2] = _mu;
+        _c[1] = 1.0f - _mu;
+        _c[0] = 0.0f;
         break;
     case 2:
         // parabolic interpolator
         mu2 = _mu*_mu;
-        _c[0] =  alpha*mu2 - alpha*_mu;
-        _c[1] = -alpha*mu2 + (1+alpha)*_mu;
-        _c[2] = -alpha*mu2 - (1-alpha)*_mu + 1;
         _c[3] =  alpha*mu2 - alpha*_mu;
+        _c[2] = -alpha*mu2 + (1+alpha)*_mu;
+        _c[1] = -alpha*mu2 - (1-alpha)*_mu + 1;
+        _c[0] =  alpha*mu2 - alpha*_mu;
         break;
     case 3:
         mu2 = _mu * _mu;  // mu^2
         mu3 = _mu * mu2;  // mu^3
-        _c[0] =  mu3/6           - _mu/6;
-        _c[1] = -mu3/2   + mu2/2 + _mu;
-        _c[2] =  mu3/2   - mu2   - _mu/2  + 1;
-        _c[3] = -mu3/6   + mu2/2 - _mu/3;
+        _c[3] =  mu3/6           - _mu/6;
+        _c[2] = -mu3/2   + mu2/2 + _mu;
+        _c[1] =  mu3/2   - mu2   - _mu/2  + 1;
+        _c[0] = -mu3/6   + mu2/2 - _mu/3;
         break;
     default:
         fprintf(stderr,"error: symsynclp_xxxt_compute_coefficients(), invalid order %u\n", _order);
@@ -367,12 +381,10 @@ void SYMSYNCLP(_advance_internal_loop)(SYMSYNCLP() _q,
     _q->del = (float)(_q->k) + _q->q_hat;
     //_q->del = (float)(_q->k) * (1 + _q->q_hat);
 #else
-    /*
     _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
     _q->q_prime = _q->q_hat;
     _q->del = (float)(_q->k) + _q->q_hat;
-    */
-    _q->del = (float)(_q->k);
+    //_q->del = (float)(_q->k);
 #endif
 
 #if DEBUG_SYMSYNCLP_PRINT
@@ -419,6 +431,10 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q,
         // 
         // compute post-filter outputs
         //
+
+        // TODO : compute new coefficients
+        SYMSYNCLP(_compute_coefficients)(_q, _q->order, _q->tau, _q->c);
+
         TO * r;
 
         // MF : read buffer an execute dot product
@@ -426,15 +442,12 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q,
         DOTPROD(_run4)(_q->c, r, 4, &mf);
         
         // dMF : read buffer an execute dot product
-        WINDOW(_read)(_q->wdmf, &r);
-        DOTPROD(_run4)(_q->c, r, 4, &dmf);
+        if (!_q->is_locked) {
+            WINDOW(_read)(_q->wdmf, &r);
+            DOTPROD(_run4)(_q->c, r, 4, &dmf);
+        }
 
         mf *= _q->k_inv;
-
-        /*
-        if (!_q->is_locked)
-            FIRFILT(_execute)(_q->dmf, &dmf);
-        */
 
         // store matched-filter output
         _y[n] = mf;
@@ -459,8 +472,6 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q,
 
     // decrement flow control variables
     _q->tau     -= 1.0f;
-
-    // TODO : compute new coefficients
 
     // set number of outputs that were written to buffer
     *_ny = n;

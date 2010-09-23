@@ -22,7 +22,7 @@ void usage()
     printf("  k     : filter samples/symbol, default: 2\n");
     printf("  m     : filter delay (symbols), default: 3\n");
     printf("  b     : filter excess bandwidth, default: 0.3\n");
-    printf("  o     : filter polynomial order, default: 1\n");
+    printf("  o     : filter polynomial order (1,2,3), default: 2\n");
     printf("  s     : signal-to-noise ratio, default: 30dB\n");
     printf("  w     : timing pll bandwidth, default: 0.02\n");
     printf("  n     : number of symbols, default: 1024\n");
@@ -37,8 +37,8 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int k=2;   // samples/symbol
     unsigned int m=3;   // filter delay (symbols)
-    float beta=0.3f;    // filter excess bandwidth factor
-    unsigned int order=1;
+    float beta=0.9f;    // filter excess bandwidth factor
+    unsigned int order=2;
     unsigned int num_symbols=1024;
     float SNRdB = 30.0f;
 
@@ -50,14 +50,14 @@ int main(int argc, char*argv[]) {
     bool random_data=true;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhk:m:b:B:s:w:n:t:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhk:m:b:o:s:w:n:t:r:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();    return 0;
         case 'k':   k = atoi(optarg);               break;
         case 'm':   m = atoi(optarg);               break;
         case 'b':   beta = atof(optarg);            break;
-        case 'B':   order = atoi(optarg);     break;
+        case 'o':   order = atoi(optarg);           break;
         case 's':   SNRdB = atof(optarg);           break;
         case 'w':   bt = atof(optarg);              break;
         case 'n':   num_symbols = atoi(optarg);     break;
@@ -231,9 +231,9 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"zp = filter(h,1,y);\n");
     fprintf(fid,"figure;\nhold on;\n");
     fprintf(fid,"plot([0:length(s)-1],          real(s),    'ob', 'MarkerSize',ms);\n");
-    fprintf(fid,"plot([0:length(y)-1]/2  -m,    real(y),    '-',  'MarkerSize',ms, 'Color',[0.8 0.8 0.8]);\n");
-    fprintf(fid,"plot([0:length(zp)-1]/2 -2*m,  real(zp/k), '-b', 'MarkerSize',ms);\n");
-    fprintf(fid,"plot([0:length(z)-1]    -2*m+1,real(z),    'xr', 'MarkerSize',ms);\n");
+    fprintf(fid,"plot([0:length(y)-1]/k  -m,    real(y),    '-',  'MarkerSize',ms, 'Color',[0.8 0.8 0.8]);\n");
+    fprintf(fid,"plot([0:length(zp)-1]/k -k*m,  real(zp/k), '-b', 'MarkerSize',ms);\n");
+    fprintf(fid,"plot([0:length(z)-1]    -k*m+1,real(z),    'xr', 'MarkerSize',ms);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('Symbol Index');\n");
     fprintf(fid,"ylabel('Output Signal');\n");
