@@ -1806,7 +1806,9 @@ LIQUID_SYMSYNC2_DEFINE_API(SYMSYNC2_MANGLE_CCCF,
 #define LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP,TO,TC,TI)         \
 typedef struct SYMSYNCLP(_s) * SYMSYNCLP();                     \
 SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k, /*samp/symbol*/ \
-                               unsigned int _p);/*poly order*/  \
+                               unsigned int _p, /*poly order */ \
+                               TC * _h,         /*coefficients*/\
+                               unsigned int _h_len);            \
 void SYMSYNCLP(_destroy)(SYMSYNCLP() _q);                       \
 void SYMSYNCLP(_print)(SYMSYNCLP() _q);                         \
 void SYMSYNCLP(_clear)(SYMSYNCLP() _q);                         \
@@ -1815,6 +1817,7 @@ void SYMSYNCLP(_execute)(SYMSYNCLP() _q,                        \
                          unsigned int _nx,                      \
                          TO * _y,                               \
                          unsigned int *_num_written);           \
+float SYMSYNCLP(_get_tau)(SYMSYNCLP() _q);                      \
 void SYMSYNCLP(_set_lf_bw)(SYMSYNCLP() _q, float _bt);
 
 LIQUID_SYMSYNCLP_DEFINE_API(SYMSYNCLP_MANGLE_RRRF,
