@@ -119,7 +119,7 @@ void fec_rs_encode(fec _q,
         memmove(&_msg_enc[n1], _q->tblock, _q->enc_block_len*sizeof(unsigned char));
 
         // increment counters
-        n0 += _q->dec_block_len;
+        n0 += block_size;
         n1 += _q->enc_block_len;
     }
 
@@ -173,7 +173,7 @@ void fec_rs_decode(fec _q,
 
         // increment counters
         n0 += _q->enc_block_len;
-        n1 += _q->dec_block_len;
+        n1 += block_size;
     }
 
     // sanity check
