@@ -503,6 +503,13 @@ void ricek_channel_execute(ricek_channel _q,
 
 // Log-normal channel
 typedef struct lognorm_channel_s * lognorm_channel;
+lognorm_channel lognorm_channel_create(unsigned int _h_len,
+                                       float _sig_dB,
+                                       float _fd);
+void lognorm_channel_destroy(lognorm_channel _q);
+void lognorm_channel_execute(lognorm_channel _q,
+                             liquid_float_complex _x,
+                             liquid_float_complex * _y);
 
 // Composite channel
 typedef struct channel_s * channel;

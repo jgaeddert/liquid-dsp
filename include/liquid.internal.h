@@ -281,6 +281,13 @@ struct ricek_channel_s {
     firfilt_cccf f;
 };
 
+struct lognorm_channel_s {
+    unsigned int h_len;
+    float sig;
+    float fd;
+    firfilt_rrrf f;
+};
+
 struct channel_s {
     float K;        // Rice-K fading
     //float omega;    // Mean power (omega=1)
