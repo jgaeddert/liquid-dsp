@@ -388,6 +388,53 @@ unsigned int IIRFILT(_get_length)(IIRFILT() _q)
     return _q->n;
 }
 
+// compute complex frequency response
+//  _q      :   filter object
+//  _fc     :   frequency
+//  _H      :   output frequency response
+void IIRFILT(_freqresponse)(IIRFILT() _q,
+                            float _fc,
+                            float complex * _H)
+{
+    unsigned int i;
+    float complex H = 0.0f;
+
+    if (_q->type == IIRFILT_TYPE_NORM) {
+        // 
+        float complex Ha = 0.0f;
+        float complex Hb = 0.0f;
+
+        for (i=0; i<_q->nb; i++)
+            Hb += _q->b[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+
+        for (i=0; i<_q->na; i++)
+            Ha += _q->a[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+
+        // TODO : check to see if we need to take conjugate
+        H = Hb / Ha;
+    } else {
+
+        H = 1.0f;
+
+        // compute 3-point DFT for each second-order section
+        for (i=0; i<_q->nsos; i++) {
+            float complex Hb =  _q->b[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
+                                _q->b[3*i+1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
+                                _q->b[3*i+2] * cexpf(_Complex_I*2*M_PI*_fc*2);
+
+            float complex Ha =  _q->a[3*i+0] * cexpf(_Complex_I*2*M_PI*_fc*0) +
+                                _q->a[3*i+1] * cexpf(_Complex_I*2*M_PI*_fc*1) +
+                                _q->a[3*i+2] * cexpf(_Complex_I*2*M_PI*_fc*2);
+
+            // TODO : check to see if we need to take conjugate
+            H *= Hb / Ha;
+        }
+    }
+
+    // set return value
+    *_H = H;
+}
+
 // compute group delay in samples
 //  _q      :   filter object
 //  _fc     :   frequency
@@ -398,7 +445,7 @@ float IIRFILT(_groupdelay)(IIRFILT() _q,
     unsigned int i;
 
     if (_q->type == IIRFILT_TYPE_NORM) {
-        // compute gropu delay from regular transfer function form
+        // compute group delay from regular transfer function form
 
         // copy coefficients
         float b[_q->nb];

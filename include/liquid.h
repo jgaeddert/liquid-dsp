@@ -1409,6 +1409,9 @@ void IIRFILT(_print)(IIRFILT() _f);                             \
 void IIRFILT(_clear)(IIRFILT() _f);                             \
 void IIRFILT(_execute)(IIRFILT() _f, TI _x, TO *_y);            \
 unsigned int IIRFILT(_get_length)(IIRFILT() _f);                \
+void IIRFILT(_freqresponse)(IIRFILT() _f,                       \
+                            float _fc,                          \
+                            liquid_float_complex * _H);         \
 float IIRFILT(_groupdelay)(IIRFILT() _f, float _fc);
 
 LIQUID_IIRFILT_DEFINE_API(IIRFILT_MANGLE_RRRF,

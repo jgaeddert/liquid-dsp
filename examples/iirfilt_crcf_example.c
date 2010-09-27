@@ -74,6 +74,14 @@ int main() {
     for (i=0; i<n; i++)
         iirfilt_crcf_execute(f, x[i], &y[i]);
 
+    // compute response
+    unsigned int nfft=512;
+    float complex H[nfft];
+    for (i=0; i<nfft; i++) {
+        float freq = 0.5f * (float)i / (float)nfft;
+        iirfilt_crcf_freqresponse(f, freq, &H[i]);
+    }
+
     // destroy filter object
     iirfilt_crcf_destroy(f);
 
@@ -87,14 +95,19 @@ int main() {
     fprintf(fid,"\n");
     fprintf(fid,"order=%u;\n", order);
     fprintf(fid,"n=%u;\n",n);
+    fprintf(fid,"nfft=%u;\n",nfft);
     fprintf(fid,"x=zeros(1,n);\n");
     fprintf(fid,"y=zeros(1,n);\n");
+    fprintf(fid,"H=zeros(1,nfft);\n");
 
     for (i=0; i<n; i++) {
         //printf("%4u : %12.8f + j*%12.8f\n", i, crealf(y), cimagf(y));
         fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
+
+    for (i=0; i<nfft; i++)
+        fprintf(fid,"H(%4u) = %12.8f + j*%12.8f;\n", i+1, crealf(H[i]), cimagf(H[i]));
 
     // output filter coefficients using extra precision
     if (format == LIQUID_IIRDES_SOS) {
@@ -136,6 +149,25 @@ int main() {
     fprintf(fid,"  ylabel('imag');\n");
     fprintf(fid,"  legend('input','filtered output',1);\n");
     fprintf(fid,"  grid on;\n");
+
+    // plot frequency response
+    fprintf(fid,"f=0.5*[0:(nfft-1)]/nfft;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(3,1,1);\n");
+    fprintf(fid,"  plot(f,20*log10(abs(H)));\n");
+    fprintf(fid,"  axis([0 0.5 -3 0]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  legend('Pass band (dB)',0);\n");
+    fprintf(fid,"subplot(3,1,2);\n");
+    fprintf(fid,"  plot(f,20*log10(abs(H)));\n");
+    fprintf(fid,"  axis([0 0.5 -100 0]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  legend('Stop band (dB)',0);\n");
+    fprintf(fid,"subplot(3,1,3);\n");
+    fprintf(fid,"  plot(f,180/pi*arg(H));\n");
+    //fprintf(fid,"  axis([0 0.5 -100 0]);\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  legend('Phase (degrees)',0);\n");
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
