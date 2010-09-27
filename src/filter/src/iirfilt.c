@@ -176,11 +176,64 @@ IIRFILT() IIRFILT(_create_sos)(TC * _B,
     return q;
 }
 
-
-IIRFILT() IIRFILT(_create_prototype)(unsigned int _n)
+// create iirfilt (infinite impulse response filter) object based
+// on prototype
+//  _ftype      :   filter type (e.g. LIQUID_IIRDES_BUTTER)
+//  _btype      :   band type (e.g. LIQUID_IIRDES_BANDPASS)
+//  _format     :   coefficients format (e.g. LIQUID_IIRDES_SOS)
+//  _order      :   filter order
+//  _fc         :   low-pass prototype cut-off frequency
+//  _f0         :   center frequency (band-pass, band-stop)
+//  _Ap         :   pass-band ripple in dB
+//  _As         :   stop-band ripple in dB
+IIRFILT() IIRFILT(_create_prototype)(liquid_iirdes_filtertype _ftype,
+                                     liquid_iirdes_bandtype   _btype,
+                                     liquid_iirdes_format     _format,
+                                     unsigned int _order,
+                                     float _fc,
+                                     float _f0,
+                                     float _Ap,
+                                     float _As)
 {
-    printf("warning: iirfilt_create_prototype(), not yet implemented\n");
-    return NULL;
+    // derived values : compute filter length
+    unsigned int N = _order; // effective order
+    // filter order effectively doubles for band-pass, band-stop
+    // filters due to doubling the number of poles and zeros as
+    // a result of filter transformation
+    if (_btype == LIQUID_IIRDES_BANDPASS ||
+        _btype == LIQUID_IIRDES_BANDSTOP)
+    {
+        N *= 2;
+    }
+    unsigned int r = N%2;       // odd/even order
+    unsigned int L = (N-r)/2;   // filter semi-length
+
+    // allocate memory for filter coefficients
+    unsigned int h_len = (_format == LIQUID_IIRDES_SOS) ? 3*(L+r) : N+1;
+    float B[h_len];
+    float A[h_len];
+
+    // design filter (compute coefficients)
+    iirdes(_ftype, _btype, _format, _order, _fc, _f0, _Ap, _As, B, A);
+
+    // move coefficients to type-specific arrays (e.g. float complex)
+    TC Bc[h_len];
+    TC Ac[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++) {
+        Bc[i] = B[i];
+        Ac[i] = A[i];
+    }
+
+    // create filter object
+    IIRFILT() q = NULL;
+    if (_format == LIQUID_IIRDES_SOS)
+        q = IIRFILT(_create_sos)(Bc, Ac, L+r);
+    else
+        q = IIRFILT(_create)(Bc, h_len, Ac, h_len);
+
+    // return filter object
+    return q;
 }
 
 // destroy iirfilt object

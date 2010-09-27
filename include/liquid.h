@@ -1395,6 +1395,15 @@ IIRFILT() IIRFILT(_create)(TC * _b,                             \
 IIRFILT() IIRFILT(_create_sos)(TC * _B,                         \
                                TC * _A,                         \
                                unsigned int _nsos);             \
+IIRFILT() IIRFILT(_create_prototype)(                           \
+            liquid_iirdes_filtertype _ftype,                    \
+            liquid_iirdes_bandtype   _btype,                    \
+            liquid_iirdes_format     _format,                   \
+            unsigned int _order,                                \
+            float _fc,                                          \
+            float _f0,                                          \
+            float _Ap,                                          \
+            float _As);                                         \
 void IIRFILT(_destroy)(IIRFILT() _f);                           \
 void IIRFILT(_print)(IIRFILT() _f);                             \
 void IIRFILT(_clear)(IIRFILT() _f);                             \
