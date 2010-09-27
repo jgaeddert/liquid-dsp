@@ -1331,6 +1331,9 @@ void FIRFILT(_print)(FIRFILT() _f);                             \
 void FIRFILT(_push)(FIRFILT() _f, TI _x);                       \
 void FIRFILT(_execute)(FIRFILT() _f, TO *_y);                   \
 unsigned int FIRFILT(_get_length)(FIRFILT() _f);                \
+void FIRFILT(_freqresponse)(FIRFILT() _f,                       \
+                            float _fc,                          \
+                            liquid_float_complex * _H);         \
 float FIRFILT(_groupdelay)(FIRFILT() _f, float _fc);
 
 LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_RRRF,

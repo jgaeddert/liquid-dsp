@@ -186,6 +186,25 @@ unsigned int FIRFILT(_get_length)(FIRFILT() _q)
     return _q->h_len;
 }
 
+// compute complex frequency response
+//  _q      :   filter object
+//  _fc     :   frequency
+//  _H      :   output frequency response
+void FIRFILT(_freqresponse)(FIRFILT() _q,
+                            float _fc,
+                            float complex * _H)
+{
+    unsigned int i;
+    float complex H = 0.0f;
+
+    for (i=0; i<_q->h_len; i++)
+        H += _q->h[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+
+    // set return value
+    *_H = H;
+}
+
+
 // compute group delay in samples
 //  _q      :   filter object
 //  _fc     :   frequency
