@@ -49,6 +49,21 @@ void design_rkaiser_filter(unsigned int _k,
                            float _dt,
                            float * _h)
 {
+    // validate input
+    if (_k < 2) {
+        fprintf(stderr,"error: design_rkaiser_filter(), k must be at least 2\n");
+        exit(1);
+    } else if (_m < 1) {
+        fprintf(stderr,"error: design_rkaiser_filter(), m must be at least 1\n");
+        exit(1);
+    } else if (_beta <= 0.0f || _beta >= 1.0f) {
+        fprintf(stderr,"error: design_rkaiser_filter(), beta must be in (0,1)\n");
+        exit(1);
+    } else if (_dt < -1.0f || _dt > 1.0f) {
+        fprintf(stderr,"error: design_rkaiser_filter(), dt must be in [-1,1]\n");
+        exit(1);
+    }
+
     // simply call internal method and ignore output gamma value
     float gamma;
     design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&gamma);
@@ -70,6 +85,21 @@ void design_arkaiser_filter(unsigned int _k,
                             float _dt,
                             float * _h)
 {
+    // validate input
+    if (_k < 2) {
+        fprintf(stderr,"error: design_arkaiser_filter(), k must be at least 2\n");
+        exit(1);
+    } else if (_m < 1) {
+        fprintf(stderr,"error: design_arkaiser_filter(), m must be at least 1\n");
+        exit(1);
+    } else if (_beta <= 0.0f || _beta >= 1.0f) {
+        fprintf(stderr,"error: design_arkaiser_filter(), beta must be in (0,1)\n");
+        exit(1);
+    } else if (_dt < -1.0f || _dt > 1.0f) {
+        fprintf(stderr,"error: design_arkaiser_filter(), dt must be in [-1,1]\n");
+        exit(1);
+    }
+
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
     float gamma_hat = rho_hat*_beta;
@@ -156,14 +186,14 @@ void design_rkaiser_filter_internal(unsigned int _k,
                                     float * _gamma)
 {
     if ( _k < 1 ) {
-        printf("error: design_rkaiser_filter(): k must be greater than 0\n");
-        exit(0);
+        fprintf(stderr,"error: design_rkaiser_filter_internal(): k must be greater than 0\n");
+        exit(1);
     } else if ( _m < 1 ) {
-        printf("error: design_rkaiser_filter(): m must be greater than 0\n");
-        exit(0);
+        fprintf(stderr,"error: design_rkaiser_filter_internal(): m must be greater than 0\n");
+        exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        printf("error: design_rkaiser_filter(): beta must be in [0,1]\n");
-        exit(0);
+        fprintf(stderr,"error: design_rkaiser_filter_internal(): beta must be in [0,1]\n");
+        exit(1);
     } else;
 
     unsigned int i;
