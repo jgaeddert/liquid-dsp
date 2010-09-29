@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -88,6 +89,34 @@ void autotest_design_rrcos_filter() {
     unsigned int i;
     for (i=0; i<13; i++)
         CONTEND_DELTA( h[i], h0[i], 0.00001f );
+}
+
+
+void autotest_design_rkaiser_filter()
+{
+    // Initialize variables
+    unsigned int k=2, m=3;
+    float beta=0.3f;
+    float offset=0.0f;
+    float isi_test = -30.0f;
+
+    // Create filter
+    unsigned int h_len = 2*k*m+1;
+    float h[h_len];
+    design_rkaiser_filter(k,m,beta,offset,h);
+
+    // compute filter ISI
+    float isi_max;
+    float isi_mse;
+    liquid_filter_isi(h,k,m,&isi_mse,&isi_max);
+
+    // convert to log scale
+    isi_max = 20*log10f(isi_max);
+    isi_mse = 20*log10f(isi_mse);
+
+    // ensure ISI is sufficiently small
+    CONTEND_LESS_THAN(isi_max, isi_test);
+    CONTEND_LESS_THAN(isi_mse, isi_test);
 }
 
 
