@@ -1,29 +1,108 @@
 //
-// Matched filter example
+// matched_filter_example.c
 //
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 #include <math.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "matched_filter_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("matched_filter_example options:\n");
+    printf("  u/h   : print usage/help\n");
+    printf("  t     : filter type: [rrcos], rkaiser, arkaiser, hM3\n");
+    printf("  k     : filter samples/symbol, k >= 2, default: 2\n");
+    printf("  m     : filter delay (symbols), m >= 1, default: 3\n");
+    printf("  b     : filter excess bandwidth factor, 0 < b < 1, default: 0.5\n");
+    printf("  n     : number of symbols, default: 16\n");
+}
+
+
+int main(int argc, char*argv[]) {
     // options
     unsigned int k=2;   // samples/symbol
     unsigned int m=3;   // symbol delay
     float beta=0.7f;    // excess bandwidth factor
     unsigned int num_symbols=16;
+    enum {
+        FILTER_RRCOS=0,
+        FILTER_RKAISER,
+        FILTER_ARKAISER,
+        FILTER_hM3
+    } ftype = 0;        // filter prototype
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uht:k:m:b:n:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h':   usage();            return 0;
+        case 't':
+            if (strcmp(optarg,"rrcos")==0) {
+                ftype = FILTER_RRCOS;
+            } else if (strcmp(optarg,"rkaiser")==0) {
+                ftype = FILTER_RKAISER;
+            } else if (strcmp(optarg,"arkaiser")==0) {
+                ftype = FILTER_ARKAISER;
+            } else if (strcmp(optarg,"hM3")==0) {
+                ftype = FILTER_hM3;
+            } else {
+                fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
+                exit(1);
+            }
+            break;
+        case 'k':   k = atoi(optarg);           break;
+        case 'm':   m = atoi(optarg);           break;
+        case 'b':   beta = atof(optarg);        break;
+        case 'n':   num_symbols = atoi(optarg); break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
+
+    if (k < 2) {
+        fprintf(stderr,"error: %s, k must be at least 2\n", argv[0]);
+        exit(1);
+    } else if (m < 1) {
+        fprintf(stderr,"error: %s, m must be at least 1\n", argv[0]);
+        exit(1);
+    } else if (beta <= 0.0f || beta >= 1.0f) {
+        fprintf(stderr,"error: %s, beta must be in (0,1)\n", argv[0]);
+        exit(1);
+    }
 
     // initialize objects
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    //design_hM3_filter(k,m,beta,0,h);
-    design_rkaiser_filter(k,m,beta,0,h);
-    //design_rrc_filter(k,m,beta,0,h);
+
+    switch (ftype) {
+    case FILTER_RRCOS:
+        design_rrc_filter(k,m,beta,0,h);
+        break;
+    case FILTER_RKAISER:
+        design_rkaiser_filter(k,m,beta,0,h);
+        break;
+    case FILTER_ARKAISER:
+        design_arkaiser_filter(k,m,beta,0,h);
+        break;
+    case FILTER_hM3:
+        design_hM3_filter(k,m,beta,0,h);
+        break;
+    default:
+        // should never get to this point
+        fprintf(stderr,"error: %s, invalid filter type\n", argv[0]);
+        exit(1);
+    }
+
+    // create interpolator and decimator
     interp_rrrf q  = interp_rrrf_create(k,h,h_len);
     decim_rrrf d   = decim_rrrf_create(k,h,h_len);
 
