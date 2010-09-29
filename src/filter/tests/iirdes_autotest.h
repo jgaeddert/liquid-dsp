@@ -236,23 +236,27 @@ void autotest_iirdes_dzpk2sosf()
                   ka,  m,
                   zd, pd, &kd);
 
-    printf("poles (digital):\n");
-    for (i=0; i<n; i++)
-        printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(pd[i]), cimagf(pd[i]));
+    if (liquid_autotest_verbose) {
+        printf("poles (digital):\n");
+        for (i=0; i<n; i++)
+            printf("  pd[%3u] = %12.8f + j*%12.8f\n", i, crealf(pd[i]), cimagf(pd[i]));
 
-    printf("zeros (digital):\n");
-    for (i=0; i<n; i++)
-        printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(zd[i]), cimagf(zd[i]));
+        printf("zeros (digital):\n");
+        for (i=0; i<n; i++)
+            printf("  zd[%3u] = %12.8f + j*%12.8f\n", i, crealf(zd[i]), cimagf(zd[i]));
+    }
 
     iirdes_dzpk2sosf(zd,pd,n,kd,B,A);
 
-    printf("B:\n");
-    for (i=0; i<L; i++)
-        printf("  %12.8f %12.8f %12.8f\n", B[3*i+0], B[3*i+1], B[3*i+2]);
+    if (liquid_autotest_verbose) {
+        printf("B:\n");
+        for (i=0; i<L; i++)
+            printf("  %12.8f %12.8f %12.8f\n", B[3*i+0], B[3*i+1], B[3*i+2]);
 
-    printf("A:\n");
-    for (i=0; i<L; i++)
-        printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
+        printf("A:\n");
+        for (i=0; i<L; i++)
+            printf("  %12.8f %12.8f %12.8f\n", A[3*i+0], A[3*i+1], A[3*i+2]);
+    }
 }
 
 // 
