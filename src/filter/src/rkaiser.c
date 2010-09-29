@@ -49,7 +49,27 @@ void design_rkaiser_filter(unsigned int _k,
                            float _dt,
                            float * _h)
 {
-#if 0
+    // simply call internal method and ignore output gamma value
+    float gamma;
+    design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&gamma);
+}
+
+// design_arkaiser_filter()
+//
+// Design frequency-shifted root-Nyquist filter based on
+// the Kaiser-windowed sinc using approximation for rho.
+//
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+//  _dt     :   filter fractional sample delay
+//  _h      :   resulting filter [size: 2*_k*_m+1]
+void design_arkaiser_filter(unsigned int _k,
+                            unsigned int _m,
+                            float _beta,
+                            float _dt,
+                            float * _h)
+{
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
     float gamma_hat = rho_hat*_beta;
@@ -67,11 +87,6 @@ void design_rkaiser_filter(unsigned int _k,
     unsigned int i;
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
-#else
-    // simply call internal method, ignoring gamma
-    float gamma;
-    design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&gamma);
-#endif
 }
 
 // Find approximate bandwidth adjustment factor rho based on

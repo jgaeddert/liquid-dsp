@@ -997,6 +997,18 @@ void design_rkaiser_filter(unsigned int _k,
                            float _dt,
                            float * _h);
 
+// Design (approximate) root-Nyquist Kaiser filter
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_arkaiser_filter(unsigned int _k,
+                            unsigned int _m,
+                            float _beta,
+                            float _dt,
+                            float * _h);
+
 // Design root-Nyquist harris-Moerder filter
 //  _k      : samples/symbol
 //  _m      : symbol delay
