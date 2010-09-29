@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ *                                      Institute & State University
  *
  * This file is part of liquid.
  *
@@ -22,7 +23,7 @@
 #define __DOTPROD_CRCF_AUTOTEST_H__
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // 
 // AUTOTEST: dot product with floating-point data
@@ -52,6 +53,10 @@ void autotest_dotprod_crcf_rand01()
     float tol = 1e-3f;
 
     dotprod_crcf_run(h,x,16,&y);
+    CONTEND_DELTA( crealf(y), crealf(test), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    dotprod_crcf_run4(h,x,16,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
 }
@@ -86,6 +91,10 @@ void autotest_dotprod_crcf_rand02()
     float tol = 1e-3f;
 
     dotprod_crcf_run(h,x,16,&y);
+    CONTEND_DELTA( crealf(y), crealf(test), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    dotprod_crcf_run4(h,x,16,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
 }
