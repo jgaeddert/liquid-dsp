@@ -2688,6 +2688,22 @@ void cpmodem_demodulate(cpmodem _mod,
                         liquid_float_complex *_x,
                         unsigned int * _s);
 
+
+// gmskmodem
+typedef struct gmskmodem_s * gmskmodem;
+gmskmodem gmskmodem_create(unsigned int _k,
+                           unsigned int _m,
+                           float _BT);
+void gmskmodem_destroy(gmskmodem _q);
+void gmskmodem_print(gmskmodem _q);
+void gmskmodem_reset(gmskmodem _q);
+void gmskmodem_modulate(gmskmodem _q,
+                        unsigned int _sym,
+                        liquid_float_complex * _y);
+void gmskmodem_demodulate(gmskmodem _q,
+                          liquid_float_complex * _y,
+                          unsigned int * _sym);
+
 // 
 // Analog modems
 //
