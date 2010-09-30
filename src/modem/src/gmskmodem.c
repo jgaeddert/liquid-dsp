@@ -76,10 +76,13 @@ gmskmodem gmskmodem_create(unsigned int _k,
 #if 0
     design_rrc_filter(q->k, q->m, 0.99f, 0.0f, q->h);
 #else
-    int t = - (int)(q->m * q->k);
+    float t;
+    float c0 = 1.0f / sqrtf(logf(2.0f));
     for (i=0; i<q->h_len; i++) {
-        q->h[i] = expf(-t*t/4.0f);
-        t++;
+        t = (float)i/(float)(q->k)-(float)(q->m);
+
+        q->h[i] = liquid_Qf(2*M_PI*q->BT*(t-0.5f)*c0) -
+                  liquid_Qf(2*M_PI*q->BT*(t+0.5f)*c0);
     }
 #endif
 
