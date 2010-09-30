@@ -57,7 +57,10 @@ local_t_files	:=		\
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:= modem_modulate_benchmark.h modem_demodulate_benchmark.h
+local_b_files	:=			\
+	gmskmodem_benchmark.h		\
+	modem_modulate_benchmark.h	\
+	modem_demodulate_benchmark.h
 
 
 include common.mk
