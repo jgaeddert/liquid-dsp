@@ -158,8 +158,7 @@ void gmskmodem_modulate(gmskmodem _q,
         _q->theta += phi;
 
         // compute output
-        // TODO : use more efficient computation
-        _y[i] = cexpf(_Complex_I*_q->theta);
+        _y[i] = liquid_crotf_vect(_q->theta);
     }
 
 
