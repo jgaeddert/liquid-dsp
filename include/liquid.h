@@ -2332,6 +2332,9 @@ float besselj_0(float _z);
 // Modified Bessel function of the first kind
 float besseli_0(float _z);
 
+// Q function
+float liquid_Qf(float _z);
+
 // sin(pi x) / (pi x)
 float sincf(float _x);
 

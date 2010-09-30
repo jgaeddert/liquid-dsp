@@ -116,6 +116,24 @@ void autotest_besseli_0()
     CONTEND_DELTA(besseli_0(3.0f), 4.88079258586503f, tol);
 }
 
+
+// 
+// AUTOTEST: Q function
+//
+void autotest_Q()
+{
+    float tol = 1e-6f;
+    CONTEND_DELTA(liquid_Qf(-4.0f), 0.999968329f, tol);
+    CONTEND_DELTA(liquid_Qf(-3.0f), 0.998650102f, tol);
+    CONTEND_DELTA(liquid_Qf(-2.0f), 0.977249868f, tol);
+    CONTEND_DELTA(liquid_Qf(-1.0f), 0.841344746f, tol);
+    CONTEND_DELTA(liquid_Qf( 0.0f), 0.5f,         tol);
+    CONTEND_DELTA(liquid_Qf( 1.0f), 0.158655254f, tol);
+    CONTEND_DELTA(liquid_Qf( 2.0f), 0.022750132f, tol);
+    CONTEND_DELTA(liquid_Qf( 3.0f), 0.001349898f, tol);
+    CONTEND_DELTA(liquid_Qf( 4.0f), 0.000031671f, tol);
+}
+
 // 
 // AUTOTEST: sincf
 //

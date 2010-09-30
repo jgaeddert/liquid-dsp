@@ -109,6 +109,16 @@ float besseli_0(float _z)
     return y;
 }
 
+//                    infty
+// Q(z) = 1/sqrt(2 pi) int { exp(-u^2/2) du }
+//                      z
+//
+// Q(z) = (1/2)*(1 - erf(z/sqrt(2)))
+float liquid_Qf(float _z)
+{
+    return 0.5f * (1.0f - erff(_z*M_SQRT1_2));
+}
+
 //
 float sincf(float _x) {
     // _x ~ 0 approximation
