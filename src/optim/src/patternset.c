@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "liquid.internal.h"
 
 // create pattern set
@@ -37,8 +38,12 @@ patternset patternset_create(unsigned int _num_inputs,
     patternset q = (patternset) malloc(sizeof(struct patternset_s));
     q->num_inputs  = _num_inputs;
     q->num_outputs = _num_outputs;
+
+    // set internal counters
     q->num_patterns = 0;
     q->num_allocated = 1;
+
+    // allocate memory for input/output arrays
     q->x = (float*) malloc((q->num_allocated)*(q->num_inputs)*sizeof(float));
     q->y = (float*) malloc((q->num_allocated)*(q->num_outputs)*sizeof(float));
 
@@ -48,8 +53,11 @@ patternset patternset_create(unsigned int _num_inputs,
 // destroy pattern set object
 void patternset_destroy(patternset _q)
 {
+    // free internally-allocated memory
     free(_q->x);
     free(_q->y);
+
+    // free main object memory
     free(_q);
 }
 
@@ -122,7 +130,7 @@ void patternset_delete_pattern(patternset _q,
                                unsigned int _i)
 {
     if (_i > _q->num_patterns) {
-        printf("error: patternset_delete_pattern(), index exceeds available patterns\n");
+        fprintf(stderr,"error: patternset_delete_pattern(), index exceeds available patterns\n");
         exit(1);
     }
 
@@ -130,10 +138,12 @@ void patternset_delete_pattern(patternset _q,
     if (_q->num_patterns == _i)
         return;
 
+    // shift input values back one slot
     unsigned int ix1 = (_q->num_inputs)*(_i);
     unsigned int ix2 = (_q->num_inputs)*(_i+1);
     memmove(&(_q->x[ix1]), &(_q->x[ix2]), (_q->num_inputs)*(_q->num_patterns - _i)*sizeof(float));
 
+    // shift output values back one slot
     unsigned int iy1 = (_q->num_outputs)*(_i);
     unsigned int iy2 = (_q->num_outputs)*(_i+1);
     memmove(&(_q->y[iy1]), &(_q->y[iy2]), (_q->num_outputs)*(_q->num_patterns - _i)*sizeof(float));
@@ -156,17 +166,22 @@ void patternset_access(patternset _q,
                        float ** _y)
 {
     if (_i > _q->num_patterns) {
-        printf("error: patternset_access(), index exceeds available patterns\n");
+        fprintf(stderr,"error: patternset_access(), index exceeds available patterns\n");
         exit(1);
     }
 
+    // set output pointers accordingly
     *_x = &(_q->x[(_q->num_inputs)*_i]);
     *_y = &(_q->y[(_q->num_outputs)*_i]);
 }
 
-// protected
 
-// increase memory size
+
+// 
+// internal methods
+//
+
+// increase memory size by _n slots
 void patternset_increase_mem(patternset _q,
                              unsigned int _n)
 {
