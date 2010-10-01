@@ -79,6 +79,12 @@ void patternset_print(patternset _q)
     }
 }
 
+// get number of patterns currently in the set
+unsigned int patternset_get_num_patterns(patternset _q)
+{
+    return _q->num_patterns;
+}
+
 // append single pattern to set
 //  _q      :   pattern set object
 //  _x      :   input [size: _num_inputs x 1]
@@ -155,7 +161,7 @@ void patternset_clear(patternset _q)
     _q->num_patterns = 0;
 }
 
-// access a single pattern from the set
+// access a single pattern in the set
 //  _q      :   pattern set object
 //  _i      :   index of pattern
 //  _x      :   input pointer
@@ -173,6 +179,20 @@ void patternset_access(patternset _q,
     // set output pointers accordingly
     *_x = &(_q->x[(_q->num_inputs)*_i]);
     *_y = &(_q->y[(_q->num_outputs)*_i]);
+}
+
+
+// access all patterns in the set
+//  _q      :   pattern set object
+//  _x      :   input pointer
+//  _y      :   output pointer
+void patternset_access_all(patternset _q,
+                           float ** _x,
+                           float ** _y)
+{
+    // set output pointers accordingly
+    *_x = _q->x;    // inputs
+    *_y = _q->y;    // outputs
 }
 
 

@@ -3028,6 +3028,9 @@ void patternset_destroy(patternset _q);
 // print pattern set
 void patternset_print(patternset _q);
 
+// get number of patterns currently in the set
+unsigned int patternset_get_num_patterns(patternset _q);
+
 // append single pattern to set
 //  _q      :   pattern set object
 //  _x      :   input [size: _num_inputs x 1]
@@ -3053,7 +3056,7 @@ void patternset_delete_pattern(patternset _q,
 // remove all patterns from the set
 void patternset_clear(patternset _q);
 
-// access a single pattern from the set
+// access a single pattern in the set
 //  _q      :   pattern set object
 //  _i      :   index of pattern
 //  _x      :   input pointer
@@ -3062,6 +3065,14 @@ void patternset_access(patternset _q,
                        unsigned int _i,
                        float ** _x,
                        float ** _y);
+
+// access all patterns in the set
+//  _q      :   pattern set object
+//  _x      :   input pointer
+//  _y      :   output pointer
+void patternset_access_all(patternset _q,
+                           float ** _x,
+                           float ** _y);
 
 typedef void(*optim_target_function)(float *_x, float *_y, void *_p);
 typedef float(*optim_obj_function)(patternset _q, void *_p, optim_target_function _f);
