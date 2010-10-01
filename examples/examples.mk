@@ -8,6 +8,7 @@ local_src	:=			\
 	agc_qpsk_example.c		\
 	agc_squelch_example.c		\
 	ampmodem_example.c		\
+	ann_bitpattern_example.c	\
 	ann_example.c			\
 	ann_layer_example.c		\
 	ann_maxnet_example.c		\

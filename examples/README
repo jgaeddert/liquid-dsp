@@ -32,6 +32,22 @@ ampmodem_example.c
     modulator/demodulator) with noise, carrier phase, and carrier frequency
     offsets.
 
+ann_bitpattern_example.c
+    Artificial neural network (ann) bit pattern example.  This example
+    demonstrates the functionality of the ann module by training a
+    simple network to learn prime numbers:
+        n   :   b0  b1  b2  |   y
+        --------------------+------
+        0   :   0   0   0   |   1
+        1   :   0   0   1   |   1
+        2   :   0   1   0   |   1
+        3   :   0   1   1   |   1
+        4   :   1   0   0   |   0
+        5   :   1   0   1   |   1
+        6   :   1   1   0   |   0
+        7   :   1   1   1   |   1
+
+
 ann_example.c
     Artificial neural network (ann) example. This example demonstrates the
     functionality of the ann module by training a simple network to learn the
