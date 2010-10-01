@@ -92,8 +92,8 @@ local_src	:=			\
 	ofdmoqam_firpfbch_example.c	\
 	ofdmoqamframe64gen_example.c	\
 	ofdmoqamframe64sync_example.c	\
-	optim_ps_example.c		\
 	packetizer_example.c		\
+	patternset_example.c		\
 	pll_example.c			\
 	polyfit_example.c		\
 	polyfit_lagrange_example.c	\

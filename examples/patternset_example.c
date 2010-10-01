@@ -1,9 +1,9 @@
 //
-// optim_ps_example.c
+// patternset_example.c
 //
 // optimization pattern set example
 //
-// This example demonstrates the functionality of the optim_ps
+// This example demonstrates the functionality of the patternset
 // structure for easily managing pattern sets for optimization.
 //
 
@@ -30,21 +30,21 @@ int main() {
     }
 
     // create pattern set (empty by default)
-    optim_ps ps = optim_ps_create(num_inputs, num_outputs);
-    optim_ps_print(ps);
+    patternset ps = patternset_create(num_inputs, num_outputs);
+    patternset_print(ps);
 
     // add patterns to the set
     printf("\n");
     printf("appending patterns...\n");
-    optim_ps_append_patterns(ps,x,y,num_patterns);
-    optim_ps_print(ps);
+    patternset_append_patterns(ps,x,y,num_patterns);
+    patternset_print(ps);
 
     // retrieve pattern and print
     float *a, *b;   // read pointers
     unsigned int index = 7;
     printf("\n");
     printf("retrieving pattern %u...\n", index);
-    optim_ps_access(ps, index, &a, &b);
+    patternset_access(ps, index, &a, &b);
     printf("[%3u]   : ", index);
     for (i=0; i<num_inputs; i++)
         printf("%8.5f ", a[i]);
@@ -56,16 +56,16 @@ int main() {
     // delete pattern 1
     printf("\n");
     printf("deleting pattern 1...\n");
-    optim_ps_delete_pattern(ps, 1);
-    optim_ps_print(ps);
+    patternset_delete_pattern(ps, 1);
+    patternset_print(ps);
 
     // clear pattern set
     printf("clearing pattern set...\n");
-    optim_ps_clear(ps);
-    optim_ps_print(ps);
+    patternset_clear(ps);
+    patternset_print(ps);
 
     // clean up allocated memory objects
-    optim_ps_destroy(ps);
+    patternset_destroy(ps);
 
     printf("done.\n");
     return 0;

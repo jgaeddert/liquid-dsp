@@ -407,8 +407,6 @@ ofdmoqam_example.c
 ofdmoqam_firpfbch_example.c
 ofdmoqamframe64gen_example.c
 ofdmoqamframe64sync_example.c
-optim_ps_example.c
-
 packetizer_example.c *
     Demonstrates the functionality of the packetizer object.  Data are encoded
     using two forward error-correction schemes (an inner and outer code)
@@ -417,6 +415,10 @@ packetizer_example.c *
 
     SEE ALSO: fec_example.c
               crc_example.c
+
+patternset_example.c
+    This example demonstrates the functionality of the patternset
+    structure for easily managing pattern sets for optimization.
 
 pll_example.c
     Demonstrates a basic phase-locked loop to track the phase of a

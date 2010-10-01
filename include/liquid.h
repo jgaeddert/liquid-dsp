@@ -3010,20 +3010,61 @@ void pll_step(pll _p, nco_crcf _nco, float _e);
 // n-dimensional rosenbrock function (minimum at _v = {1,1,1...}
 float rosenbrock(void * _userdata, float * _v, unsigned int _n);
 
-typedef struct optim_ps_s * optim_ps;
+//
+// optimization pattern set
+//
 
-optim_ps optim_ps_create(unsigned int _num_inputs,
-                         unsigned int _num_outputs);
-void optim_ps_destroy(optim_ps _ps);
-void optim_ps_print(optim_ps _ps);
-void optim_ps_append_pattern(optim_ps _ps, float *_x, float *_y);
-void optim_ps_append_patterns(optim_ps _ps, float *_x, float *_y, unsigned int _np);
-void optim_ps_delete_pattern(optim_ps _ps, unsigned int _i);
-void optim_ps_clear(optim_ps _ps);
-void optim_ps_access(optim_ps _ps, unsigned int _i, float **_x, float **_y);
+typedef struct patternset_s * patternset;
+
+// create pattern set
+//  _num_inputs     :   number of inputs in the set
+//  _num_outputs    :   number of output in the set
+patternset patternset_create(unsigned int _num_inputs,
+                             unsigned int _num_outputs);
+
+// destroy pattern set object
+void patternset_destroy(patternset _q);
+
+// print pattern set
+void patternset_print(patternset _q);
+
+// append single pattern to set
+//  _q      :   pattern set object
+//  _x      :   input [size: _num_inputs x 1]
+//  _y      :   output [size: _num_outputs x 1]
+void patternset_append_pattern(patternset _q,
+                               float *_x,
+                               float *_y);
+
+// append multiple patterns to the set
+//  _q      :   pattern set object
+//  _x      :   inputs [size: _num_inputs x _n]
+//  _y      :   outputs [size: _num_outputs x _n]
+//  _n      :   number of patterns to append
+void patternset_append_patterns(patternset _q,
+                                float * _x,
+                                float * _y,
+                                unsigned int _n);
+
+// remove pattern from set at index _i
+void patternset_delete_pattern(patternset _q,
+                               unsigned int _i);
+
+// remove all patterns from the set
+void patternset_clear(patternset _q);
+
+// access a single pattern from the set
+//  _q      :   pattern set object
+//  _i      :   index of pattern
+//  _x      :   input pointer
+//  _y      :   output pointer
+void patternset_access(patternset _q,
+                       unsigned int _i,
+                       float ** _x,
+                       float ** _y);
 
 typedef void(*optim_target_function)(float *_x, float *_y, void *_p);
-typedef float(*optim_obj_function)(optim_ps _ps, void *_p, optim_target_function _f);
+typedef float(*optim_obj_function)(patternset _q, void *_p, optim_target_function _f);
 
 
 //
