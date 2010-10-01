@@ -315,6 +315,65 @@ void ANN(_evaluate)(ANN() _q, T * _x, T * _y)
     memmove(_y, &_q->y_hat[_q->num_nodes + _q->num_inputs - _q->num_outputs], (_q->num_outputs)*sizeof(float));
 }
 
+// train network on pattern set
+//
+// _q               :   network object
+// _set             :   input pattern set
+// _emax            :   maximum error tolerance
+// _nmax            :   maximum number of iterations
+void ANN(_train_patternset)(ANN() _q,
+                            patternset _set,
+                            T _emax,
+                            unsigned int _nmax)
+{
+    // validate input
+    if (_set->num_inputs != _q->num_inputs) {
+        fprintf(stderr,"error: ann_train_patternset(), ann and patternset input sizes do not match\n");
+        exit(1);
+    } else if (_set->num_outputs != _q->num_outputs) {
+        fprintf(stderr,"error: ann_train_patternset(), ann and patternset output sizes do not match\n");
+        exit(1);
+    }
+
+    unsigned int i, j;
+    float * x;  // input pattern
+    float * y;  // output pattern
+    float rmse;
+    FILE * fid = fopen("ann_debug.m","w");
+    fprintf(fid,"%% %s : auto-generated file\n", "ann_debug.m");
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+    for (i=0; i<_nmax; i++) {
+        for (j=0; j<_set->num_patterns; j++) {
+            x = &_set->x[j * _q->num_inputs];
+            y = &_set->y[j * _q->num_outputs];
+
+            ANN(_train_bp)(_q,x,y);
+        }
+
+        // compute error
+        rmse = ANN(_compute_rmse)(_q, _set->x, _set->y, _set->num_patterns);
+        fprintf(fid,"rmse(%6u) = %16.8e;\n", i+1, rmse);
+
+        if ((i%100)==0)
+            printf("%6u : %12.4e\n", i, rmse);
+
+        // break if error is below tolerance
+        if (rmse < _emax)
+            break;
+    }
+
+    fprintf(fid,"\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"semilogy(rmse)\n");
+    fprintf(fid,"xlabel('training epoch');\n");
+    fprintf(fid,"ylabel('RMSE');\n");
+    fprintf(fid,"grid on;\n");
+    fclose(fid);
+    printf("training results written to %s\n", "ann_debug.m");
+}
+
+
 // train network
 //
 // _q               :   network object

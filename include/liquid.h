@@ -156,6 +156,8 @@ LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
 // MODULE : ann (artificial neural network)
 //
 
+typedef struct patternset_s * patternset;
+
 typedef enum {
     LIQUID_ANN_AF_LINEAR=0,
     LIQUID_ANN_AF_LOGISTIC,
@@ -184,6 +186,10 @@ void  ANN(_init_random_weights)(ANN() _q);                      \
 void  ANN(_evaluate)(ANN() _q,                                  \
                      T * _x,                                    \
                      T * _y);                                   \
+void  ANN(_train_patternset)(ANN() _q,                          \
+                             patternset _set,                   \
+                             T _emax,                           \
+                             unsigned int _nmax);               \
 void  ANN(_train)(ANN() _q,                                     \
                   T * _x,                                       \
                   T * _y,                                       \
@@ -3014,7 +3020,9 @@ float rosenbrock(void * _userdata, float * _v, unsigned int _n);
 // optimization pattern set
 //
 
-typedef struct patternset_s * patternset;
+// forward declaration of patternset is in artificial
+// neural network module
+//typedef struct patternset_s * patternset;
 
 // create pattern set
 //  _num_inputs     :   number of inputs in the set
