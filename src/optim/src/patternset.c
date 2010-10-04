@@ -97,7 +97,7 @@ void patternset_append_pattern(patternset _q,
     if (_q->num_allocated == _q->num_patterns)
         patternset_increase_mem(_q,4);
 
-    // intput, output write pointers
+    // input, output write pointers
     float * wx = _q->x + _q->num_patterns * _q->num_inputs;
     float * wy = _q->y + _q->num_patterns * _q->num_outputs;
 
@@ -121,7 +121,7 @@ void patternset_append_patterns(patternset _q,
     if (_q->num_allocated < (_q->num_patterns + _num_patterns))
         patternset_increase_mem(_q, _num_patterns);
 
-    // intput, output write pointers
+    // input, output write pointers
     float * wx = _q->x + _q->num_patterns * _q->num_inputs;
     float * wy = _q->y + _q->num_patterns * _q->num_outputs;
 
@@ -135,7 +135,7 @@ void patternset_append_patterns(patternset _q,
 void patternset_delete_pattern(patternset _q,
                                unsigned int _i)
 {
-    if (_i > _q->num_patterns) {
+    if (_i >= _q->num_patterns) {
         fprintf(stderr,"error: patternset_delete_pattern(), index exceeds available patterns\n");
         exit(1);
     }
@@ -171,7 +171,7 @@ void patternset_access(patternset _q,
                        float ** _x,
                        float ** _y)
 {
-    if (_i > _q->num_patterns) {
+    if (_i >= _q->num_patterns) {
         fprintf(stderr,"error: patternset_access(), index exceeds available patterns\n");
         exit(1);
     }
