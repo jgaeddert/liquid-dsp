@@ -908,34 +908,67 @@ float num_firfilt_taps(float _slsl,
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl);
 
+
+
 // Design FIR filter using Parks-McClellan algorithm
 
+// band type specifier
 typedef enum {
-    LIQUID_FIRDESPM_BANDPASS=0,
-    LIQUID_FIRDESPM_DIFFERENTIATOR,
-    LIQUID_FIRDESPM_HILBERT
+    LIQUID_FIRDESPM_BANDPASS=0,     // regular band-pass filter
+    LIQUID_FIRDESPM_DIFFERENTIATOR, // differentiating filter
+    LIQUID_FIRDESPM_HILBERT         // Hilbert transform
 } liquid_firdespm_btype;
 
+// weighting type specifier
+typedef enum {
+    LIQUID_FIRDESPM_FLATWEIGHT=0,   // flat weighting
+    LIQUID_FIRDESPM_EXPWEIGHT       // exponential weighting
+} liquid_firdespm_wtype;
+
 // run filter design (full life cycle of object)
+//  _h_len      :   length of filter (number of taps)
+//  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
+//  _des        :   desired response [size: _num_bands x 1]
+//  _weights    :   response weighting [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
+//  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _h          :   output coefficients array [size: _h_len x 1]
 void firdespm_run(unsigned int _h_len,
                   float * _bands,
                   float * _des,
                   float * _weights,
                   unsigned int _num_bands,
                   liquid_firdespm_btype _btype,
+                  liquid_firdespm_wtype * _wtype,
                   float * _h);
 
 // structured object
 typedef struct firdespm_s * firdespm;
+
+// create firdespm object
+//  _h_len      :   length of filter (number of taps)
+//  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
+//  _des        :   desired response [size: _num_bands x 1]
+//  _weights    :   response weighting [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
+//  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 firdespm firdespm_create(unsigned int _h_len,
                          float * _bands,
                          float * _des,
                          float * _weights,
                          unsigned int _num_bands,
-                         liquid_firdespm_btype _btype);
+                         liquid_firdespm_btype _btype,
+                         liquid_firdespm_wtype * _wtype);
+
+// destroy firdespm object
 void firdespm_destroy(firdespm _q);
+
+// print firdespm object internals
 void firdespm_print(firdespm _q);
+
+// execute filter design, storing result in _h
 void firdespm_execute(firdespm _q, float * _h);
+
 
 // Design FIR using kaiser window
 //  _n      : filter length

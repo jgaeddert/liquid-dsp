@@ -75,10 +75,12 @@ void design_hM3_filter(unsigned int _k,
     float weights[3] = {1.0f, 1.0f, 1.0f};
 
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT,
+                                      LIQUID_FIRDESPM_EXPWEIGHT};
 
     //unsigned int i;
     float h[n];
-    firdespm_run(n,bands,des,weights,num_bands,btype,h);
+    firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
     // copy results
     memmove(_h, h, n*sizeof(float));
 
@@ -95,7 +97,7 @@ void design_hM3_filter(unsigned int _k,
         bands[1] = fp;
 
         // execute filter design
-        firdespm_run(n,bands,des,weights,num_bands,btype,h);
+        firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
 
         // compute inter-symbol interference (MSE, max)
         liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);

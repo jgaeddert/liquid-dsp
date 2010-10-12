@@ -76,7 +76,7 @@ void autotest_firdespm_bandpass_n24()
 
     // Create filter
     float h[n];
-    firdespm_run(n,bands,des,weights,num_bands,btype,h);
+    firdespm_run(n,bands,des,weights,num_bands,btype,NULL,h);
 
     // Ensure data are equal
     unsigned int i;
@@ -139,7 +139,7 @@ void autotest_firdespm_bandpass_n32()
 
     // Create filter
     float h[n];
-    firdespm_run(n,bands,des,weights,num_bands,btype,h);
+    firdespm_run(n,bands,des,weights,num_bands,btype,NULL,h);
 
     // Ensure data are equal
     unsigned int i;

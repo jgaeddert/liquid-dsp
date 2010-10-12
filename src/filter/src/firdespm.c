@@ -81,6 +81,7 @@ struct firdespm_s {
     double * bands;             // bands array [size: 2*num_bands]
     double * des;               // desired response [size: num_bands]
     double * weights;           // weights [size: num_bands]
+    liquid_firdespm_wtype * wtype;
     
     // dense grid elements
     double * F;                 // frequencies, [0, 0.5]
@@ -103,16 +104,24 @@ struct firdespm_s {
 };
 
 // run filter design (full life cycle of object)
+//  _h_len      :   length of filter (number of taps)
+//  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
+//  _des        :   desired response [size: _num_bands x 1]
+//  _weights    :   response weighting [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
+//  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _h          :   output coefficients array [size: _h_len x 1]
 void firdespm_run(unsigned int _h_len,
                   float * _bands,
                   float * _des,
                   float * _weights,
                   unsigned int _num_bands,
                   liquid_firdespm_btype _btype,
+                  liquid_firdespm_wtype * _wtype,
                   float * _h)
 {
     // create object
-    firdespm q = firdespm_create(_h_len,_bands,_des,_weights,_num_bands,_btype);
+    firdespm q = firdespm_create(_h_len,_bands,_des,_weights,_num_bands,_btype,_wtype);
 
     // execute
     firdespm_execute(q,_h);
@@ -121,14 +130,20 @@ void firdespm_run(unsigned int _h_len,
     firdespm_destroy(q);
 }
 
-
 // create filter design object
+//  _h_len      :   length of filter (number of taps)
+//  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
+//  _des        :   desired response [size: _num_bands x 1]
+//  _weights    :   response weighting [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
+//  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
 firdespm firdespm_create(unsigned int _h_len,
                          float * _bands,
                          float * _des,
                          float * _weights,
                          unsigned int _num_bands,
-                         liquid_firdespm_btype _btype)
+                         liquid_firdespm_btype _btype,
+                         liquid_firdespm_wtype * _wtype)
 {
     unsigned int i;
 
@@ -178,6 +193,18 @@ firdespm firdespm_create(unsigned int _h_len,
     q->des      = (double*) malloc(  q->num_bands*sizeof(double));
     q->weights  = (double*) malloc(  q->num_bands*sizeof(double));
 
+    // allocate memory for weighting types
+    q->wtype = (liquid_firdespm_wtype*) malloc(q->num_bands*sizeof(liquid_firdespm_wtype));
+    if (_wtype == NULL) {
+        // set to default (LIQUID_FIRDESPM_FLATWEIGHT)
+        for (i=0; i<q->num_bands; i++)
+            q->wtype[i] = LIQUID_FIRDESPM_FLATWEIGHT;
+    } else {
+        // copy from input
+        for (i=0; i<q->num_bands; i++)
+            q->wtype[i] = _wtype[i];
+    }
+
     // copy input arrays
     for (i=0; i<q->num_bands; i++) {
         q->bands[2*i+0] = _bands[2*i+0];
@@ -210,6 +237,7 @@ firdespm firdespm_create(unsigned int _h_len,
     return q;
 }
 
+// destroy firdespm object
 void firdespm_destroy(firdespm _q)
 {
 #if LIQUID_FIRDESPM_DEBUG
@@ -226,11 +254,13 @@ void firdespm_destroy(firdespm _q)
     free(_q->bands);
     free(_q->des);
     free(_q->weights);
+    free(_q->wtype);
 
     // free object
     free(_q);
 }
 
+// print firdespm object internals
 void firdespm_print(firdespm _q)
 {
     unsigned int i;
@@ -256,6 +286,7 @@ void firdespm_print(firdespm _q)
     printf("\n");
 }
 
+// execute filter design, storing result in _h
 void firdespm_execute(firdespm _q, float * _h)
 {
     unsigned int i;
@@ -368,7 +399,17 @@ void firdespm_init_grid(firdespm _q)
 
             // compute weight
             // TODO : use function pointer?
-            _q->W[n] = _q->weights[i];
+            switch (_q->wtype[i]) {
+            case LIQUID_FIRDESPM_FLATWEIGHT:
+                _q->W[n] = _q->weights[i];
+                break;
+            case LIQUID_FIRDESPM_EXPWEIGHT:
+                _q->W[n] = _q->weights[i]*expf(2.0f*j*df);
+                break;
+            default:
+                fprintf(stderr,"error: firdespm_init_grid(), invalid weighting specifyer: %d\n", _q->wtype[i]);
+                exit(1);
+            }
 
             n++;
         }

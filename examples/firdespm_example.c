@@ -62,16 +62,18 @@ int main(int argc, char*argv[]) {
     float bands[4]   = {0.0f, fp, fs, 0.5f};
     float des[2]     = {1.0f, 0.0f};
     float weights[2] = {1.0f, 1.0f};
+    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT,
+                                      LIQUID_FIRDESPM_EXPWEIGHT};
 
     unsigned int i;
     float h[h_len];
 #if 0
-    firdespm q = firdespm_create(n,bands,des,weights,num_bands,btype);
+    firdespm q = firdespm_create(n,bands,des,weights,num_bands,btype,wtype);
     firdespm_print(q);
     firdespm_execute(q,h);
     firdespm_destroy(q);
 #else
-    firdespm_run(h_len,bands,des,weights,num_bands,btype,h);
+    firdespm_run(h_len,bands,des,weights,num_bands,btype,wtype,h);
 #endif
 
     // print coefficients
