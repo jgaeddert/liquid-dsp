@@ -370,6 +370,7 @@ void firdespm_init_grid(firdespm _q)
     unsigned int n = 0;
 
     double f0, f1;
+    double fw = 1.0f;   // weighting function
     for (i=0; i<_q->num_bands; i++) {
         // extract band edges
         f0 = _q->bands[2*i+0];
@@ -397,22 +398,17 @@ void firdespm_init_grid(firdespm _q)
             // TODO : use function pointer
             _q->D[n] = _q->des[i];
 
-            // compute weight
+            // compute weight, applying weighting function
             // TODO : use function pointer?
             switch (_q->wtype[i]) {
-            case LIQUID_FIRDESPM_FLATWEIGHT:
-                _q->W[n] = _q->weights[i];
-                break;
-            case LIQUID_FIRDESPM_EXPWEIGHT:
-                _q->W[n] = _q->weights[i]*expf(2.0f*j*df);
-                break;
-            case LIQUID_FIRDESPM_LINWEIGHT:
-                _q->W[n] = _q->weights[i]*(1.0f + 2.7f*j*df);
-                break;
+            case LIQUID_FIRDESPM_FLATWEIGHT: fw = 1.0f;             break;
+            case LIQUID_FIRDESPM_EXPWEIGHT:  fw = expf(2.0f*j*df);  break;
+            case LIQUID_FIRDESPM_LINWEIGHT:  fw = 1.0f + 2.7f*j*df; break;
             default:
                 fprintf(stderr,"error: firdespm_init_grid(), invalid weighting specifyer: %d\n", _q->wtype[i]);
                 exit(1);
             }
+            _q->W[n] = _q->weights[i] * fw;
 
             n++;
         }
