@@ -922,7 +922,8 @@ typedef enum {
 // weighting type specifier
 typedef enum {
     LIQUID_FIRDESPM_FLATWEIGHT=0,   // flat weighting
-    LIQUID_FIRDESPM_EXPWEIGHT       // exponential weighting
+    LIQUID_FIRDESPM_EXPWEIGHT,      // exponential weighting
+    LIQUID_FIRDESPM_LINWEIGHT,      // linear weighting
 } liquid_firdespm_wtype;
 
 // run filter design (full life cycle of object)

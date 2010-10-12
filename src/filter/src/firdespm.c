@@ -406,6 +406,9 @@ void firdespm_init_grid(firdespm _q)
             case LIQUID_FIRDESPM_EXPWEIGHT:
                 _q->W[n] = _q->weights[i]*expf(2.0f*j*df);
                 break;
+            case LIQUID_FIRDESPM_LINWEIGHT:
+                _q->W[n] = _q->weights[i]*(1.0f + 2.7f*j*df);
+                break;
             default:
                 fprintf(stderr,"error: firdespm_init_grid(), invalid weighting specifyer: %d\n", _q->wtype[i]);
                 exit(1);
