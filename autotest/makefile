@@ -4,15 +4,16 @@
 
 all: autotest_example
 
-autotest_example.o: autotest_example.c autotest.h
-	gcc -Wall -c $< -o $@
+CC	:= gcc
+CFLAGS	:= -I.. -Wall
 
-autotest_example: autotest_example.o
-	gcc -Wall $< -o $@
+autotestlib.o autotest_example.o : %.o : %.c autotest.h
+
+autotest_example: autotest_example.o autotestlib.o
 
 check: autotest_example
 	./$<
 
 clean:
-	rm -f autotest_example.o autotest_example
+	rm -f autotestlib.o autotest_example.o autotest_example
 

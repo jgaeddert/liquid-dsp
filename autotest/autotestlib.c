@@ -41,7 +41,7 @@ unsigned long int liquid_autotest_num_failed=0;
 unsigned long int liquid_autotest_num_warnings=0;
 
 // verbosity flag
-int liquid_autotest_verbose = true;
+int liquid_autotest_verbose = 1;
 
 // fail test
 // increment liquid_autotest_num_checks
