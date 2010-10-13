@@ -39,7 +39,7 @@
 // esimate required filter length given transition bandwidth and
 // sidelobe suppression level (algorithm from [Herrmann:1973])
 //   _df   : transition bandwidth (0 < _df < 0.5)
-//   _As   : sidelobe suppression level [dB] (_As < 0)
+//   _As   : stopband suppression level [dB] (_As > 0)
 unsigned int estimate_req_filter_len(float _df,
                                      float _As)
 {
@@ -47,7 +47,7 @@ unsigned int estimate_req_filter_len(float _df,
         fprintf(stderr,"error: estimate_req_filter_len(), invalid bandwidth : %f\n", _df);
         exit(0);
     } else if (_As <= 0.0f) {
-        fprintf(stderr,"error: estimate_req_filter_len(), invalid sidelobe level : %f\n", _As);
+        fprintf(stderr,"error: estimate_req_filter_len(), invalid stopband level : %f\n", _As);
         exit(0);
     }
 
