@@ -3042,6 +3042,15 @@ void pll_set_damping_factor(pll _p, float _xi);
 void pll_step(pll _p, nco_crcf _nco, float _e);
 
 
+// nco utilities
+
+// unwrap phase of array (basic)
+void liquid_unwrap_phase(float * _theta, unsigned int _n);
+
+// unwrap phase of array (advanced)
+void liquid_unwrap_phase(float * _theta, unsigned int _n);
+
+
 
 //
 // MODULE : optimization

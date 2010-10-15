@@ -27,7 +27,8 @@ module_name     := nco
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=		\
-	nco_crcf.c				\
+	nco_crcf.c		\
+	nco.utilities.c		\
 	pll.c
 
 # local_t_files
@@ -40,6 +41,7 @@ local_s_files	:=		\
 local_t_files	:=		\
 	nco_autotest.h		\
 	pll_autotest.h		\
+	unwrap_phase_autotest.h	\
 	vco_autotest.h
 
 
