@@ -75,7 +75,8 @@ void design_hM3_filter(unsigned int _k,
     float weights[3] = {1.0f, 1.0f, 1.0f};
 
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
-    liquid_firdespm_wtype wtype[2] = {LIQUID_FIRDESPM_FLATWEIGHT,
+    liquid_firdespm_wtype wtype[3] = {LIQUID_FIRDESPM_FLATWEIGHT,
+                                      LIQUID_FIRDESPM_FLATWEIGHT,
                                       LIQUID_FIRDESPM_EXPWEIGHT};
 
     //unsigned int i;
