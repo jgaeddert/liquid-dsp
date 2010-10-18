@@ -30,6 +30,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_CARRIER_ESTIMATION (0)
+
 // estimate carrier frequency, phase parameters using first-order
 // polynomial fit
 //  _g          :   complex sinusoidal input
@@ -119,7 +121,7 @@ float liquid_estimate_carrier_frequency(float * _t,
         // increment estimate by difference
         dphi_hat += err;
 
-#if 1
+#if DEBUG_CARRIER_ESTIMATION
         // print results to screen
         printf("%3u : %12.8f (e=%12.8f)\n", n, dphi_hat, err);
 #endif
