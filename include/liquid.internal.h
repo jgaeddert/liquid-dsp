@@ -348,13 +348,21 @@ float liquid_estimate_carrier_frequency(float * _t,
                                         float complex * _g,
                                         unsigned int _n);
 
-// iterative derivative estimation step
+// iterative derivative estimation step (mean)
 //  _t      :   time vector
 //  _g_hat  :   complex input
 //  _n      :   size of inputs _t, _g
 float liquid_unwrapcf_iterative_step(float * _t,
                                      float complex * _g_hat,
                                      unsigned int _n);
+
+// iterative derivative estimation step (median)
+//  _t      :   time vector
+//  _g_hat  :   complex input
+//  _n      :   size of inputs _t, _g
+float liquid_unwrapcf_iterative_median_step(float * _t,
+                                            float complex * _g_hat,
+                                            unsigned int _n);
 
 
 

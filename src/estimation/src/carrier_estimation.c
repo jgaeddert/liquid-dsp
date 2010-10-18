@@ -132,6 +132,7 @@ float liquid_estimate_carrier_frequency(float * _t,
 
         // estimate step
         err = liquid_unwrapcf_iterative_step(_t, g_hat, _n);
+        //err = liquid_unwrapcf_iterative_median_step(_t, g_hat, _n);
 
         // increment estimate by difference
         dphi_hat += err;
@@ -176,6 +177,68 @@ float liquid_unwrapcf_iterative_step(float * _t,
     dphi_mean /= (float)(_n-1);
 
     return dphi_mean;
+}
+
+
+// iterative derivative estimation step
+//  _t      :   time vector
+//  _g_hat  :   complex input
+//  _n      :   size of inputs _t, _g
+float liquid_unwrapcf_iterative_median_step(float * _t,
+                                            float complex * _g_hat,
+                                            unsigned int _n)
+{
+    // find median of phase difference
+    float dphi;
+    float dphi_rank[_n-1];
+    unsigned int i;
+    for (i=1; i<_n; i++) {
+        // unwrap phase
+        dphi = cargf( _g_hat[i] * conjf(_g_hat[i-1]) ) / (_t[i] - _t[i-1]);
+
+        // constrain dphi to be in [-pi,pi)
+        while ( dphi >  M_PI ) dphi -= 2*M_PI;
+        while ( dphi < -M_PI ) dphi += 2*M_PI;
+
+        dphi_rank[i-1] = dphi;
+    }
+
+    // sort dphi_rank
+    unsigned int j;
+    float tmp;
+    for (i=0; i<_n-1; i++) {
+        for (j=_n-1; j>i; j--) {
+            // compare
+            if (dphi_rank[j] > dphi_rank[j-1]) {
+                // swap elements
+                tmp = dphi_rank[j];
+                dphi_rank[j] = dphi_rank[j-1];
+                dphi_rank[j-1] = tmp;
+            }
+        }
+    }
+
+#if DEBUG_CARRIER_ESTIMATION
+    // print
+    for (i=0; i<_n-1; i++)
+        printf(" phi[%3u] = %12.8f\n", i, dphi_rank[i]);
+#endif
+
+    // compute median
+    float dphi_median;
+    if ( (_n-1)%2 ) {
+        // odd : choose center index
+        // n = 6: n-1 = 5: 0 1 [2] 3 4
+        dphi_median = dphi_rank[_n/2 - 1];
+    } else {
+        // even : compute average of center values
+        // n = 7: n-1 = 6: 0 1 [2 3] 4 5
+        unsigned int n0 = (_n-1)/2 - 1;
+        unsigned int n1 = n0+1;
+        dphi_median = 0.5f*dphi_rank[n0] + 0.5f*dphi_rank[n1];
+    }
+
+    return dphi_median;
 }
 
 
