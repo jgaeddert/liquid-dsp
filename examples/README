@@ -95,6 +95,8 @@ bsequence_example.c
 
 bufferf_example.c
 
+carrier_estimation_example.c
+
 checksum_example.c
     This example demonstrates how a checksum can be used to validate data
     received through un-reliable means (e.g. a noisy channel). A checksum is,

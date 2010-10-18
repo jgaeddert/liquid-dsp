@@ -18,6 +18,7 @@ local_src	:=			\
 	autocorr_cccf_example.c		\
 	bsequence_example.c		\
 	bufferf_example.c		\
+	carrier_estimation_example.c	\
 	checksum_example.c		\
 	chromosome_example.c		\
 	compand_example.c		\

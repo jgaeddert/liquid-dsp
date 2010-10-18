@@ -648,6 +648,32 @@ float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
 //float estimate_timingoffset(liquid_float_complex * _x, unsigned int _n);
 
 
+// estimate carrier frequency, phase parameters using first-order
+// polynomial fit
+//  _g          :   complex sinusoidal input
+//  _n          :   length of _g
+//  _dphi_hat   :   output frequency estimate (phase slope)
+//  _phi_hat    :   output phase estimate
+void liquid_estimate_carrier(float complex * _g,
+                             unsigned int _n,
+                             float * _dphi_hat,
+                             float * _phi_hat);
+
+// estimate carrier frequency, phase parameters using first-order
+// polynomial fit (non-linear time step)
+//  _t          :   time vector
+//  _g          :   complex sinusoidal input
+//  _n          :   length of _t, _g
+//  _dphi_hat   :   output frequency estimate (phase slope)
+//  _phi_hat    :   output phase estimate
+void liquid_estimate_carrier_nonlinear(float * _t,
+                                       float complex * _g,
+                                       unsigned int _n,
+                                       float * _dphi_hat,
+                                       float * _phi_hat);
+
+
+
 //
 // MODULE : fec (forward error-correction)
 //

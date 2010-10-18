@@ -26,7 +26,9 @@ module_name     := estimation
 # This is a list of local source files to compile into objects,
 # referenced from the $(modulesdir) subdirectory under $(local_dir)
 #
-local_s_files	:= frequency_offset.c
+local_s_files	:=		\
+	carrier_estimation.c	\
+	frequency_offset.c
 
 # local_t_files
 #
