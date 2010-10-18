@@ -21,6 +21,7 @@ int main() {
     float dphi = 0.50;      // carrier frequency [-pi,pi]
     float phi = 0.8f;       // carrier phase [-pi,pi]
     float SNRdB = 20.0f;    // signal-to-noise ratio [dB]
+    int method = LIQUID_ESTIMATE_CARRIER_ITERATIVE;
 
     //
     float nstd = powf(10.0f, -SNRdB/20.0f);
@@ -35,7 +36,7 @@ int main() {
     // estimate carrier frequency, phase
     float dphi_hat;
     float phi_hat;
-    liquid_estimate_carrier(y,n,&dphi_hat,&phi_hat);
+    liquid_estimate_carrier(y,n,method,&dphi_hat,&phi_hat);
 
     // print results
     printf(" dphi_hat   :   %12.8f (true : %12.8f)\n", dphi_hat, dphi);

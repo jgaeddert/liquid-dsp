@@ -36,10 +36,12 @@
 // polynomial fit
 //  _g          :   complex sinusoidal input
 //  _n          :   length of _g
+//  _method     :   initial carrier estimation method
 //  _dphi_hat   :   output frequency estimate (phase slope)
 //  _phi_hat    :   output phase estimate
 void liquid_estimate_carrier(float complex * _g,
                              unsigned int _n,
+                             int _method,
                              float * _dphi_hat,
                              float * _phi_hat)
 {
@@ -48,7 +50,7 @@ void liquid_estimate_carrier(float complex * _g,
     for (i=0; i<_n; i++)
         t[i] = (float)i;
 
-    liquid_estimate_carrier_nonlinear(t, _g, _n, _dphi_hat, _phi_hat);
+    liquid_estimate_carrier_nonlinear(t, _g, _n, _method, _dphi_hat, _phi_hat);
 }
 
 // estimate carrier frequency, phase parameters using first-order
@@ -56,16 +58,29 @@ void liquid_estimate_carrier(float complex * _g,
 //  _t          :   time vector
 //  _g          :   complex sinusoidal input
 //  _n          :   length of _t, _g
+//  _method     :   initial carrier estimation method
 //  _dphi_hat   :   output frequency estimate (phase slope)
 //  _phi_hat    :   output phase estimate
 void liquid_estimate_carrier_nonlinear(float * _t,
                                        float complex * _g,
                                        unsigned int _n,
+                                       int _method,
                                        float * _dphi_hat,
                                        float * _phi_hat)
 {
     // make initial estimate of carrier frequency
-    float dphi_hat = liquid_estimate_carrier_frequency(_t, _g, _n);
+    float dphi_hat = 0.0f;
+    switch (_method) {
+    case LIQUID_ESTIMATE_CARRIER_FLAT:
+        dphi_hat = estimate_freqoffset(_g, _n);
+        break;
+    case LIQUID_ESTIMATE_CARRIER_ITERATIVE:
+        dphi_hat = liquid_estimate_carrier_frequency(_t, _g, _n);
+        break;
+    default:
+        fprintf(stderr,"error: liquid_estimate_carrier_nonlinear(), uknown method\n");
+        exit(1);
+    }
 
     // unwrap complex phase
     float phi[_n];
