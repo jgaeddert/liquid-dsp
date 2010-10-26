@@ -657,7 +657,7 @@ float estimate_freqoffset(liquid_float_complex * _x, unsigned int _n);
 //  _method     :   initial carrier estimation method
 //  _dphi_hat   :   output frequency estimate (phase slope)
 //  _phi_hat    :   output phase estimate
-void liquid_estimate_carrier(float complex * _g,
+void liquid_estimate_carrier(liquid_float_complex * _g,
                              unsigned int _n,
                              int _method,
                              float * _dphi_hat,
@@ -672,7 +672,7 @@ void liquid_estimate_carrier(float complex * _g,
 //  _dphi_hat   :   output frequency estimate (phase slope)
 //  _phi_hat    :   output phase estimate
 void liquid_estimate_carrier_nonlinear(float * _t,
-                                       float complex * _g,
+                                       liquid_float_complex * _g,
                                        unsigned int _n,
                                        int _method,
                                        float * _dphi_hat,
