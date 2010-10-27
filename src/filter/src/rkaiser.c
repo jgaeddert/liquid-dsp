@@ -33,6 +33,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_RKAISER 0
+
 // design_rkaiser_filter()
 //
 // Design frequency-shifted root-Nyquist filter based on
@@ -197,102 +199,71 @@ void design_rkaiser_filter_internal(unsigned int _k,
     } else;
 
     unsigned int i;
-    float kf = (float)_k;
 
     unsigned int n=2*_k*_m+1;   // filter length
-    float del;                  // transition bandwidth
-    float As;                   // sidelobe attenuation
-    float fc;                   // filter cutoff
-    float h[n];                 // temporary coefficients array
 
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
     float gamma_hat = rho_hat*_beta;
 
     // bandwidth adjustment array (3 points makes a parabola)
-    float x[3] = {
-        gamma_hat*0.9f,
-        gamma_hat,
-        gamma_hat*1.1f};
+    float x0 = gamma_hat*0.9f;
+    float x1;
+    float x2 = gamma_hat*1.1f;
 
     // evaluate performance (ISI) of each bandwidth adjustment
-    float isi_max;
-    float isi_mse;
-    float y[3];
-    for (i=0; i<3; i++) {
-        // re-compute transition band, As, and cutoff frequency
-        del = x[i] / kf;
-        As  = 14.26f*del*n + 7.95f;
-        fc  = (1 + _beta - x[i])/kf;
-
-        // compute filter, isi
-        fir_kaiser_window(n,fc,As,_dt,h);
-        liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
-        y[i] = isi_mse;
-    }
+    float y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
+    float y1;
+    float y2 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x2,_h);
 
     // run parabolic search to find bandwidth adjustment x_hat which
     // minimizes the inter-symbol interference of the filter
     unsigned int p, pmax=10;
     float t0, t1;
-    float x_hat = x[1];
+    float x_hat = gamma_hat;
     float y_hat;
-    unsigned int imax;
     for (p=0; p<pmax; p++) {
+        // choose center point of [x0,x2]
+        x1 = 0.5f*(x0 + x2);
+        y1 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x1,_h);
+
         // numerator
-        t0 = y[0] * (x[1]*x[1] - x[2]*x[2]) +
-             y[1] * (x[2]*x[2] - x[0]*x[0]) +
-             y[2] * (x[0]*x[0] - x[1]*x[1]);
+        t0 = y0 * (x1*x1 - x2*x2) +
+             y1 * (x2*x2 - x0*x0) +
+             y2 * (x0*x0 - x1*x1);
 
         // denominator
-        t1 = y[0] * (x[1] - x[2]) +
-             y[1] * (x[2] - x[0]) +
-             y[2] * (x[0] - x[1]);
+        t1 = y0 * (x1 - x2) +
+             y1 * (x2 - x0) +
+             y2 * (x0 - x1);
 
         // break if denominator is sufficiently small
-        if (fabsf(t1) < 1e-12f) break;
+        if (fabsf(t1) < 1e-9f) break;
 
         // compute new estimate
         x_hat = 0.5f * t0 / t1;
-        if (x_hat < 0) {
-            printf("gamma too small; exiting prematurely\n");
-            x_hat = 0.01f;
-            break;
-        } else if (x_hat > _beta) {
-            printf("gamma too large; exiting prematurely\n");
-            x_hat = _beta;
-            break;
-        }
-
-        // re-compute transition band, As, and cutoff frequency
-        del = x_hat / kf;
-        As  = 14.26f*del*n + 7.95f;
-        fc  = (1 + _beta - x_hat)/kf;
-
-        // execute filter design
-        fir_kaiser_window(n,fc,As,_dt,h);
-
-        // compute inter-symbol interference (MSE, max)
-        liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
-        y_hat = isi_mse;
 
         // search index of maximum
-        if      (y[0] > y[1] && y[0] > y[2])    imax = 0;
-        else if (y[1] > y[0] && y[1] > y[2])    imax = 1;
-        else                                    imax = 2;
+        if (x_hat > x1) {
+            // new minimum
+            x0 = x1;
+            y0 = y1;
+        } else {
+            // new maximum
+            x2 = x1;
+            y2 = y1;
+        }
 
-        // replace old estimate
-        x[imax] = x_hat;
-        y[imax] = y_hat;
-
-        //printf("  %4u : x_hat=%12.8f, y_hat=%20.8e\n", p+1, x_hat, y_hat);
+#if DEBUG_RKAISER
+        y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+        printf("  %4u : gamma=%12.8f, isi=%12.6f dB\n", p+1, x_hat, 20*log10f(y_hat));
+#endif
     };
 
-    // compute optimum filter and normalize
-        del = x_hat / kf;
-        As  = 14.26f*del*n + 7.95f;
-        fc  = (1 + _beta - x_hat)/kf;
-    fir_kaiser_window(n,fc,As,_dt,_h);
+    // re-design filter with optimal value for gamma
+    y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
+
+    // normalize filter magnitude
     float e2 = 0.0f;
     for (i=0; i<n; i++) e2 += _h[i]*_h[i];
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
@@ -300,4 +271,40 @@ void design_rkaiser_filter_internal(unsigned int _k,
     // save trasition bandwidth adjustment
     *_gamma = x_hat;
 }
+
+// compute filter coefficients and determine resulting ISI
+//  
+//  _k      :   filter over-sampling rate (samples/symbol)
+//  _m      :   filter delay (symbols)
+//  _beta   :   filter excess bandwidth factor (0,1)
+//  _dt     :   filter fractional sample delay
+//  _gamma  :   transition bandwidth adjustment, 0 < _gamma < 1
+//  _h      :   filter buffer [size: 2*_k*_m+1]
+float design_rkaiser_filter_internal_isi(unsigned int _k,
+                                         unsigned int _m,
+                                         float _beta,
+                                         float _dt,
+                                         float _gamma,
+                                         float * _h)
+{
+    unsigned int n=2*_k*_m+1;           // filter length
+    float kf = (float)_k;               // samples/symbol (float)
+    float del = _gamma / kf;            // transition bandwidth
+    float As = 14.26f*del*n + 7.95f;    // sidelobe attenuation
+    float fc = (1 + _beta - _gamma)/kf; // filter cutoff
+
+    // evaluate performance (ISI)
+    float isi_max;
+    float isi_mse;
+
+    // compute filter
+    fir_kaiser_window(n,fc,As,_dt,_h);
+
+    // compute filter ISI
+    liquid_filter_isi(_h,_k,_m,&isi_mse,&isi_max);
+
+    // return RMS of ISI
+    return isi_mse;
+}
+
 
