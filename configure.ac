@@ -52,6 +52,7 @@ AC_ARG_ENABLE(profile,
 
 # Check for necessary programs
 AC_PROG_CC
+AC_PROG_SED
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
