@@ -1023,11 +1023,15 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
 #if FLEXFRAMESYNC_USE_EQ
     // write equalizer taps
-    windowcf_read(_fs->debug_heq, &rc);
-    rc = &rc[64-_fs->debug_heq_len-1];  // offset by window length
-    fprintf(fid,"heq = zeros(1,%u);\n", _fs->debug_heq_len);
-    for (i=0; i<_fs->debug_heq_len; i++)
-        fprintf(fid,"heq(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    if (_fs->debug_heq_len > 0) {
+        windowcf_read(_fs->debug_heq, &rc);
+        rc = &rc[64-_fs->debug_heq_len-1];  // offset by window length
+        fprintf(fid,"heq = zeros(1,%u);\n", _fs->debug_heq_len);
+        for (i=0; i<_fs->debug_heq_len; i++)
+            fprintf(fid,"heq(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    } else {
+        fprintf(fid,"heq = 1;\n");
+    }
     fprintf(fid,"figure;\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
