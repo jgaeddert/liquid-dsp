@@ -660,15 +660,16 @@ void flexframesync_execute_rxheader(flexframesync _fs,
         // check to see if header is valid
         //  yes :   continue on to receive payload
         //  no  :   invoke callback, flagging frame as invalid
-        if (_fs->header_valid) {
+        if (_fs->header_valid && _fs->num_payload_symbols > 0) {
             // fully lock automatic gain control
             agc_crcf_lock(_fs->agc_rx);
 
             // update synchronizer state
             _fs->state = FLEXFRAMESYNC_STATE_RXPAYLOAD;
         } else {
-            // cannot decode frame: invoke callback anyway, but
-            // ignore rest of payload
+            // invoke callback method
+            // cannot decode frame: invoke callback anyway, but ignore rest of payload
+            // payload lengt is 0 : ignore payload
             _fs->framestats.framesyms = NULL;
             _fs->framestats.num_framesyms = 0;
 
@@ -697,6 +698,13 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
     windowcf_push(_fs->debug_framesyms, _x);
 #endif
 
+    assert(_fs->num_payload_symbols > 0);
+
+    // append symbol to buffer
+    _fs->payload_samples[_fs->num_symbols_collected] = _x;
+    _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) _sym;
+    _fs->num_symbols_collected++;
+
     // check to see if full payload has been received
     if (_fs->num_symbols_collected==_fs->num_payload_symbols) {
         // reset symbol counter
@@ -719,11 +727,6 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
         // update synchronizer state
         _fs->state = FLEXFRAMESYNC_STATE_RESET;
         //_fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
-    } else {
-        // append symbol to buffer
-        _fs->payload_samples[_fs->num_symbols_collected] = _x;
-        _fs->payload_sym[_fs->num_symbols_collected] = (unsigned char) _sym;
-        _fs->num_symbols_collected++;
     }
 }
 
@@ -895,10 +898,10 @@ void flexframesync_decode_header(flexframesync _fs)
 #if DEBUG_FLEXFRAMESYNC_PRINT
     // print results
     printf("flexframesync_decode_header():\n");
-    printf("    mod scheme  : %u-%s\n", 1<<mod_depth, modulation_scheme_str[mod_scheme]);
-    printf("    payload len : %u\n", payload_len);
-    printf("    header key  : 0x%.8x\n", header_key);
     printf("    header crc  : %s\n", _fs->header_valid ? "pass" : "FAIL");
+    printf("    mod scheme  : %u-%s\n", 1<<mod_depth, modulation_scheme_str[mod_scheme][0]);
+    printf("    payload len : %u\n", payload_len);
+    printf("    num symbols : %u\n", _fs->num_payload_symbols);
 
     printf("    user data   :");
     unsigned int i;
