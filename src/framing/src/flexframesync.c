@@ -368,6 +368,7 @@ void flexframesync_reset(flexframesync _fs)
     unsigned int i;
     for (i=0; i<_fs->eq_len; i++)
         _fs->heq[i] = (i==0) ? 1.0f : 0.0f;
+    _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
 #endif
 
     // SNR estimate
@@ -705,7 +706,6 @@ void flexframesync_execute_reset(flexframesync _fs,
                                  float complex _x,
                                  unsigned int _sym)
 {
-
     // open bandwidth
     flexframesync_open_bandwidth(_fs);
 
@@ -721,6 +721,14 @@ void flexframesync_execute_reset(flexframesync _fs,
 
     // reset oscillator
     nco_crcf_reset(_fs->nco_rx);
+
+#if FLEXFRAMESYNC_USE_EQ
+    // reset equalizer
+    unsigned int i;
+    for (i=0; i<_fs->eq_len; i++)
+        _fs->heq[i] = (i==0) ? 1.0f : 0.0f;
+    _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
+#endif
 
     // update synchronizer state
     _fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
