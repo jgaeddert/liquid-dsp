@@ -2029,6 +2029,7 @@ typedef struct {
     int squelch_enabled;        // enable/disable squelch
     int autosquelch_enabled;    // enable/disable automatic squelch
     float squelch_threshold;    // squelch enable/disable threshold
+    unsigned int eq_len;        // number of equalizer taps
 } framesyncprops_s;
 
 extern framesyncprops_s framesyncprops_default;
