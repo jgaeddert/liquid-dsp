@@ -161,7 +161,28 @@ int main(int argc, char *argv[]) {
     firfarrow_crcf delay_filter = firfarrow_crcf_create(27,5,0.9f,60.0f);
     firfarrow_crcf_set_delay(delay_filter,mu);
 
+    // multi-path channel
     unsigned int i;
+#if 0
+    unsigned int hc_len = 4;    // number of multi-path channel taps
+    float complex hc[hc_len];
+    hc[0] = 1.0f;
+    for (i=1; i<hc_len; i++)
+        hc[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
+#else
+    unsigned int hc_len = 4;
+    float complex hc[] = {
+          1.0000e+00 + _Complex_I*  0.0000e+00,
+         -1.6906e-02 + _Complex_I*  1.8315e-01,
+         -2.8418e-02 + _Complex_I* -3.3650e-02,
+          2.0329e-01 + _Complex_I* -1.0482e-01};
+
+#endif
+    firfilt_cccf fchannel = firfilt_cccf_create(hc,hc_len);
+    for (i=0; i<hc_len; i++)
+        printf("hc(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(hc[i]), cimagf(hc[i]));
+
+
     // initialize header, payload
     for (i=0; i<14; i++)
         header[i] = i;
@@ -214,6 +235,12 @@ int main(int argc, char *argv[]) {
         firfarrow_crcf_push(delay_filter, z[1]);
         firfarrow_crcf_execute(delay_filter, &z[1]);
 
+        // push through multi-path channel
+        firfilt_cccf_push(fchannel, z[0]);
+        firfilt_cccf_execute(fchannel, &z[0]);
+        firfilt_cccf_push(fchannel, z[1]);
+        firfilt_cccf_execute(fchannel, &z[1]);
+
         // push through sync
         flexframesync_execute(fs, z, 2);
     }
@@ -236,6 +263,7 @@ int main(int argc, char *argv[]) {
     flexframesync_destroy(fs);
     nco_crcf_destroy(nco_channel);
     interp_crcf_destroy(interp);
+    firfilt_cccf_destroy(fchannel);
 
     printf("num frames received : %3u / %3u\n", fd.num_frames_received, num_frames);
 
