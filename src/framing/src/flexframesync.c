@@ -957,11 +957,12 @@ void flexframesync_output_debug_file(flexframesync _fs)
         fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(framesyms,'x','MarkerSize',1)\n");
+    fprintf(fid,"plot(framesyms,'x','MarkerSize',4)\n");
     fprintf(fid,"xlabel('I');\n");
     fprintf(fid,"ylabel('Q');\n");
     fprintf(fid,"axis([-1.5 1.5 -1.5 1.5]);\n");
     fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on\n");
 
     // write nco_phase
     fprintf(fid,"nco_phase = zeros(1,%u);\n", DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
@@ -983,6 +984,21 @@ void flexframesync_output_debug_file(flexframesync _fs)
     fprintf(fid,"plot(nco_freq)\n");
     fprintf(fid,"ylabel('nco freq');\n");
 
+#if FLEXFRAMESYNC_USE_EQ
+    // write equalizer taps
+    fprintf(fid,"heq = zeros(1,%u);\n", _fs->eq_len);
+    for (i=0; i<_fs->eq_len; i++)
+        fprintf(fid,"heq(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_fs->heq[i]), cimagf(_fs->heq[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"nfft = 1024;\n");
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"Heq = 20*log10(abs(fftshift(fft(heq,nfft))));\n");
+    fprintf(fid,"plot(f,Heq);\n");
+    fprintf(fid,"axis([-0.5 0.5 min(Heq)-10 20]);\n");
+    fprintf(fid,"xlabel('normalized frequency');\n");
+    fprintf(fid,"ylabel('equalizer response');\n");
+    fprintf(fid,"grid on;\n");
+#endif
 
     fprintf(fid,"\n\n");
     fclose(fid);
