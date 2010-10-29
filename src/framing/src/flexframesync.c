@@ -39,7 +39,7 @@
 
 #define FLEXFRAMESYNC_PN_LEN            (64)
 
-#define FLEXFRAMESYNC_USE_EQ            1
+#define FLEXFRAMESYNC_USE_EQ            0
 
 #define DEBUG_FLEXFRAMESYNC             1
 #define DEBUG_FLEXFRAMESYNC_PRINT       0
@@ -532,6 +532,7 @@ void flexframesync_close_bandwidth(flexframesync _fs)
 // train equalizer
 void flexframesync_train_eq(flexframesync _fs)
 {
+#if FLEXFRAMESYNC_USE_EQ
     // read received P/N sequence from buffer
     float complex * y;
     windowcf_read(_fs->weq, &y);
@@ -566,6 +567,8 @@ void flexframesync_train_eq(flexframesync _fs)
     for (i=0; i<_fs->eq_len; i++)
         windowcf_push(_fs->debug_heq, _fs->heq[i]);
     _fs->debug_heq_len = _fs->eq_len;
+#endif
+
 #endif
 }
 
