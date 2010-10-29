@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
     unsigned int bps = 1;
     unsigned int packet_len = 64;
     unsigned int num_frames = 3;
+    int use_multipath_channel = 1;
 
     // get options
     int dopt;
@@ -164,18 +165,22 @@ int main(int argc, char *argv[]) {
     // multi-path channel
     unsigned int i;
 #if 0
-    unsigned int hc_len = 4;    // number of multi-path channel taps
+    // random equalizer taps
+    unsigned int hc_len = 6;    // number of multi-path channel taps
     float complex hc[hc_len];
     hc[0] = 1.0f;
     for (i=1; i<hc_len; i++)
-        hc[i] = (randnf() + randnf()*_Complex_I) * 0.1f;
+        hc[i] = (randnf() + randnf()*_Complex_I) * 0.2f;
 #else
-    unsigned int hc_len = 4;
+    // fixed equalizer taps
+    unsigned int hc_len = 6;
     float complex hc[] = {
           1.0000e+00 + _Complex_I*  0.0000e+00,
-         -1.6906e-02 + _Complex_I*  1.8315e-01,
-         -2.8418e-02 + _Complex_I* -3.3650e-02,
-          2.0329e-01 + _Complex_I* -1.0482e-01};
+         -4.0412e-01 + _Complex_I*  2.0199e-01,
+          1.2094e-01 + _Complex_I* -3.8529e-01,
+         -9.7195e-02 + _Complex_I* -9.8874e-02,
+         -1.3591e-01 + _Complex_I*  6.5303e-02,
+         -3.1153e-02 + _Complex_I* -8.8593e-02};
 
 #endif
     firfilt_cccf fchannel = firfilt_cccf_create(hc,hc_len);
@@ -235,11 +240,13 @@ int main(int argc, char *argv[]) {
         firfarrow_crcf_push(delay_filter, z[1]);
         firfarrow_crcf_execute(delay_filter, &z[1]);
 
-        // push through multi-path channel
-        firfilt_cccf_push(fchannel, z[0]);
-        firfilt_cccf_execute(fchannel, &z[0]);
-        firfilt_cccf_push(fchannel, z[1]);
-        firfilt_cccf_execute(fchannel, &z[1]);
+        if (use_multipath_channel) {
+            // push through multi-path channel
+            firfilt_cccf_push(fchannel, z[0]);
+            firfilt_cccf_execute(fchannel, &z[0]);
+            firfilt_cccf_push(fchannel, z[1]);
+            firfilt_cccf_execute(fchannel, &z[1]);
+        }
 
         // push through sync
         flexframesync_execute(fs, z, 2);

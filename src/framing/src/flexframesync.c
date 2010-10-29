@@ -39,6 +39,7 @@
 
 #define FLEXFRAMESYNC_PN_LEN            (64)
 
+#define FLEXFRAMESYNC_USE_EQ            1
 
 #define DEBUG_FLEXFRAMESYNC             1
 #define DEBUG_FLEXFRAMESYNC_PRINT       0
@@ -56,6 +57,14 @@ struct flexframesync_s {
     symsync_crcf mfdecim;               // symbol synchronizer (timing recovery)
     nco_crcf nco_rx;                    // oscillator and phase-locked loop
     bsync_rrrf fsync;                   // p/n sequence correlator
+#if FLEXFRAMESYNC_USE_EQ
+    windowcf weq;                       // equalizer window (size: p/n length)
+    eqrls_cccf eq;                      // RLS equalizer
+    firfilt_cccf fireq;                 // FIR filter (equalizer)
+    unsigned int eq_len;                // equalizer filter length
+    float complex * heq;                // equalizer filter taps
+    float complex * pnsequence;         // p/n sequence (float)
+#endif
 
     // squelch
     int squelch_status;                 // status of AGC squelch
@@ -193,6 +202,20 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     // 
     fs->mod_preamble = modem_create(MOD_BPSK, 1);
 
+#if FLEXFRAMESYNC_USE_EQ
+    // equalizer
+    fs->eq_len = 8;
+    fs->heq = (float complex*) malloc(fs->eq_len*sizeof(float complex));
+    for (i=0; i<fs->eq_len; i++)
+        fs->heq[i] = (i==0) ? 1.0f : 0.0f;
+    fs->weq = windowcf_create(fs->pnsequence_len); // equalizer window (size: p/n length)
+    fs->eq = eqrls_cccf_create(fs->eq_len);         // RLS equalizer
+    fs->fireq = firfilt_cccf_create(fs->heq, fs->eq_len);    // FIR filter (equalizer)
+    fs->pnsequence = (float complex*) malloc(fs->pnsequence_len*sizeof(complex float));
+    for (i=0; i<fs->pnsequence_len; i++)
+        fs->pnsequence[i] = pn_sequence[i];
+#endif
+
     // flexible frame properties (default values to be over-written
     // when frame header is received and decoded)
     fs->ms_payload  = MOD_PSK;
@@ -267,6 +290,15 @@ void flexframesync_destroy(flexframesync _fs)
     free(_fs->payload_sym);             // payload symbols buffer
     free(_fs->payload);                 // payload data buffer (bytes)
 
+#if FLEXFRAMESYNC_USE_EQ
+    // destroy equalizer objects
+    windowcf_destroy(_fs->weq);
+    eqrls_cccf_destroy(_fs->eq);
+    firfilt_cccf_destroy(_fs->fireq);
+    free(_fs->heq);
+    free(_fs->pnsequence);
+#endif
+
     // free main object memory
     free(_fs);
 }
@@ -330,6 +362,13 @@ void flexframesync_reset(flexframesync _fs)
     symsync_crcf_clear(_fs->mfdecim);   // symbol synchronizer (clear state)
     symsync_crcf_unlock(_fs->mfdecim);  // symbol synchronizer (unlock)
     nco_crcf_reset(_fs->nco_rx);        // nco/pll (reset phase)
+
+#if FLEXFRAMESYNC_USE_EQ
+    // reset equalizer
+    unsigned int i;
+    for (i=0; i<_fs->eq_len; i++)
+        _fs->heq[i] = (i==0) ? 1.0f : 0.0f;
+#endif
 
     // SNR estimate
     _fs->evm_hat = 0.0f;
@@ -400,6 +439,11 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
         symsync_crcf_execute(_fs->mfdecim, &agc_rx_out, 1, mfdecim_out, &nw);
 
         for (j=0; j<nw; j++) {
+#if FLEXFRAMESYNC_USE_EQ
+            // push through equalizer
+            firfilt_cccf_push(_fs->fireq, mfdecim_out[j]);
+            firfilt_cccf_execute(_fs->fireq, &mfdecim_out[j]);
+#endif
             // mix down, demodulate, run PLL
             nco_crcf_mix_down(_fs->nco_rx, mfdecim_out[j], &nco_rx_out);
             if (_fs->state == FLEXFRAMESYNC_STATE_SEEKPN) {
@@ -422,11 +466,14 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             if (_fs->nco_rx->d_theta < -fmax) _fs->nco_rx->d_theta = -fmax;
             */
             nco_crcf_step(_fs->nco_rx);
+
+
 #ifdef DEBUG_FLEXFRAMESYNC
             windowf_push(_fs->debug_nco_phase, _fs->nco_rx->theta);
             windowf_push(_fs->debug_nco_freq,  _fs->nco_rx->d_theta);
             windowcf_push(_fs->debug_nco_rx_out, nco_rx_out);
 #endif
+
             //
             switch (_fs->state) {
             case FLEXFRAMESYNC_STATE_SEEKPN:
@@ -493,6 +540,11 @@ void flexframesync_execute_seekpn(flexframesync _fs,
     float rxy;
     bsync_rrrf_correlate(_fs->fsync, _x, &rxy);
 
+#if FLEXFRAMESYNC_USE_EQ
+    // save symbols to equalizer window
+    windowcf_push(_fs->weq, _x);
+#endif
+
 #ifdef DEBUG_FLEXFRAMESYNC
     windowcf_push(_fs->debug_rxy, rxy);
 #endif
@@ -515,6 +567,26 @@ void flexframesync_execute_seekpn(flexframesync _fs,
 
         // update synchronizer state
         _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
+
+#if FLEXFRAMESYNC_USE_EQ
+        // train equalizer
+        float complex * y;
+        windowcf_read(_fs->weq, &y);
+        eqrls_cccf_set_bw(_fs->eq, 0.9);
+        eqrls_cccf_train(_fs->eq, _fs->heq, y, _fs->pnsequence, _fs->pnsequence_len);
+        _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
+#  if 0
+        // print received P/N sequence
+        unsigned int i;
+        for (i=0; i<_fs->pnsequence_len; i++)
+            printf("pn(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_fs->pnsequence[i]), cimagf(_fs->pnsequence[i]));
+        for (i=0; i<_fs->pnsequence_len; i++)
+            printf("rpn(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        for (i=0; i<_fs->eq_len; i++)
+            printf("heq(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_fs->heq[i]), cimagf(_fs->heq[i]));
+#  endif
+#endif
+
     }
 
 }
