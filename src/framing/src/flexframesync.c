@@ -134,6 +134,8 @@ struct flexframesync_s {
     windowcf debug_framesyms;
     windowf  debug_nco_phase;
     windowf  debug_nco_freq;
+    windowcf debug_heq;
+    unsigned int debug_heq_len;
 #endif
 };
 
@@ -258,8 +260,10 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->debug_rxy       = windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
     fs->debug_nco_rx_out= windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
     fs->debug_framesyms = windowcf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_nco_phase=   windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
-    fs->debug_nco_freq =   windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_nco_phase =  windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_nco_freq  =  windowf_create(DEBUG_FLEXFRAMESYNC_BUFFER_LEN);
+    fs->debug_heq       = windowcf_create(64);
+    fs->debug_heq_len   = 0;
 #endif
 
     return fs;
@@ -581,6 +585,11 @@ void flexframesync_execute_seekpn(flexframesync _fs,
         for (i=0; i<_fs->eq_len; i++)
             _fs->heq[i] *= (rxy < 0) ? -1.0f : 1.0f;
         _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
+#ifdef DEBUG_FLEXFRAMESYNC
+        for (i=0; i<_fs->eq_len; i++)
+            windowcf_push(_fs->debug_heq, _fs->heq[i]);
+        _fs->debug_heq_len = _fs->eq_len;
+#endif
 #  if 0
         // print received P/N sequence
         for (i=0; i<_fs->pnsequence_len; i++)
@@ -998,9 +1007,11 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
 #if FLEXFRAMESYNC_USE_EQ
     // write equalizer taps
-    fprintf(fid,"heq = zeros(1,%u);\n", _fs->eq_len);
-    for (i=0; i<_fs->eq_len; i++)
-        fprintf(fid,"heq(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_fs->heq[i]), cimagf(_fs->heq[i]));
+    windowcf_read(_fs->debug_heq, &rc);
+    rc = &rc[64-_fs->debug_heq_len-1];  // offset by window length
+    fprintf(fid,"heq = zeros(1,%u);\n", _fs->debug_heq_len);
+    for (i=0; i<_fs->debug_heq_len; i++)
+        fprintf(fid,"heq(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
     fprintf(fid,"figure;\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
@@ -1024,5 +1035,6 @@ void flexframesync_output_debug_file(flexframesync _fs)
     windowcf_destroy(_fs->debug_x);
     windowcf_destroy(_fs->debug_nco_rx_out);
     windowcf_destroy(_fs->debug_framesyms);
+    windowcf_destroy(_fs->debug_heq);
 }
 #endif
