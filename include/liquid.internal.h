@@ -1101,6 +1101,7 @@ void flexframesync_decode_header(flexframesync _fs);
 void flexframesync_assemble_payload(flexframesync _fs);
 void flexframesync_open_bandwidth(flexframesync _fs);
 void flexframesync_close_bandwidth(flexframesync _fs);
+void flexframesync_train_eq(flexframesync _fs);
 
 // 
 void flexframesync_execute_seekpn(   flexframesync _fs, float complex _x, unsigned int _sym);

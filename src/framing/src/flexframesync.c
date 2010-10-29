@@ -529,6 +529,46 @@ void flexframesync_close_bandwidth(flexframesync _fs)
     nco_crcf_pll_set_bandwidth(_fs->nco_rx, _fs->props.pll_bw1);
 }
 
+// train equalizer
+void flexframesync_train_eq(flexframesync _fs)
+{
+    // read received P/N sequence from buffer
+    float complex * y;
+    windowcf_read(_fs->weq, &y);
+
+    // set the equalizer training factor and train
+    eqrls_cccf_set_bw(_fs->eq, 0.9);
+    eqrls_cccf_train(_fs->eq, _fs->heq, y, _fs->pnsequence, _fs->pnsequence_len);
+
+    // ensure phase of first tap of equalizer is zero, de-rotate
+    // all taps by same complex phase gain
+    // TODO : look at tap with highest magnitude (not necessarily
+    //        the first one?)
+    float complex g = cexpf(-_Complex_I*cargf(_fs->heq[0]));
+    unsigned int i;
+    for (i=0; i<_fs->eq_len; i++)
+        _fs->heq[i] *= g;
+
+    // re-create equalizer filter
+    _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
+
+#  if 0
+    // print received P/N sequence
+    for (i=0; i<_fs->pnsequence_len; i++)
+        printf("pn(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_fs->pnsequence[i]), cimagf(_fs->pnsequence[i]));
+    for (i=0; i<_fs->pnsequence_len; i++)
+        printf("rpn(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+    for (i=0; i<_fs->eq_len; i++)
+        printf("heq(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_fs->heq[i]), cimagf(_fs->heq[i]));
+#  endif
+
+#ifdef DEBUG_FLEXFRAMESYNC
+    for (i=0; i<_fs->eq_len; i++)
+        windowcf_push(_fs->debug_heq, _fs->heq[i]);
+    _fs->debug_heq_len = _fs->eq_len;
+#endif
+}
+
 // 
 // state-specific execute methods
 //
@@ -574,31 +614,7 @@ void flexframesync_execute_seekpn(flexframesync _fs,
         _fs->state = FLEXFRAMESYNC_STATE_RXHEADER;
 
 #if FLEXFRAMESYNC_USE_EQ
-        // train equalizer
-        float complex * y;
-        windowcf_read(_fs->weq, &y);
-        eqrls_cccf_set_bw(_fs->eq, 0.9);
-        eqrls_cccf_train(_fs->eq, _fs->heq, y, _fs->pnsequence, _fs->pnsequence_len);
-        // flip phase of equalizer (NCO already takes
-        // care of possible phase reversal)
-        unsigned int i;
-        for (i=0; i<_fs->eq_len; i++)
-            _fs->heq[i] *= (rxy < 0) ? -1.0f : 1.0f;
-        _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
-#ifdef DEBUG_FLEXFRAMESYNC
-        for (i=0; i<_fs->eq_len; i++)
-            windowcf_push(_fs->debug_heq, _fs->heq[i]);
-        _fs->debug_heq_len = _fs->eq_len;
-#endif
-#  if 0
-        // print received P/N sequence
-        for (i=0; i<_fs->pnsequence_len; i++)
-            printf("pn(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_fs->pnsequence[i]), cimagf(_fs->pnsequence[i]));
-        for (i=0; i<_fs->pnsequence_len; i++)
-            printf("rpn(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
-        for (i=0; i<_fs->eq_len; i++)
-            printf("heq(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_fs->heq[i]), cimagf(_fs->heq[i]));
-#  endif
+        flexframesync_train_eq(_fs);
 #endif
 
     }
