@@ -61,6 +61,25 @@ EQLMS() EQLMS(_create)(unsigned int _p)
     return eq;
 }
 
+// re-create least mean-squares (LMS) equalizer object
+//  _eq     :   old equalizer object
+//  _p      :   equalizer length (number of taps)
+EQLMS() EQLMS(_recreate)(EQLMS() _eq,
+                         unsigned int _p)
+{
+    if (_eq->p == _p) {
+        // nothing has changed
+        return _eq;
+    }
+
+    // completely destroy old equalizer object
+    EQLMS(_destroy)(_eq);
+
+    // create new one and return
+    return EQLMS(_create)(_p);
+}
+
+
 // destroy eqlms object
 void EQLMS(_destroy)(EQLMS() _eq)
 {

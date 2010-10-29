@@ -50,6 +50,7 @@ struct EQRLS(_s) {
     WINDOW() buffer;    // input buffer
 };
 
+
 // create recursive least-squares (RLS) equalizer object
 //  _p      :   equalizer length (number of taps)
 EQRLS() EQRLS(_create)(unsigned int _p)
@@ -78,6 +79,25 @@ EQRLS() EQRLS(_create)(unsigned int _p)
     EQRLS(_reset)(eq);
 
     return eq;
+}
+
+
+// re-create recursive least-squares (RLS) equalizer object
+//  _eq     :   old equalizer object
+//  _p      :   equalizer length (number of taps)
+EQRLS() EQRLS(_recreate)(EQRLS() _eq,
+                         unsigned int _p)
+{
+    if (_eq->p == _p) {
+        // nothing has changed
+        return _eq;
+    }
+
+    // completely destroy old equalizer object
+    EQRLS(_destroy)(_eq);
+
+    // create new one and return
+    return EQRLS(_create)(_p);
 }
 
 // destroy eqrls object
