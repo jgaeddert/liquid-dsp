@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
         flexframesync_print(fs);
 
     // channel
-    float phi=0.0f;
+    float phi=2.0f;
     float dphi=0.02f;
     nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
     nco_crcf_set_phase(nco_channel, phi);
