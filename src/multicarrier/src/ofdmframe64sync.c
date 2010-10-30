@@ -174,7 +174,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     q->backoff = 2;
     float phi = (float)(q->backoff)*2.0f*M_PI/64.0f;
     for (i=0; i<64; i++)
-        q->B[i] = liquid_crotf_vect(i*phi);
+        q->B[i] = liquid_cexpjf(i*phi);
 
     q->callback = _callback;
     q->userdata = _userdata;
@@ -416,7 +416,7 @@ void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q,
     //if (agc_crcf_get_signal_level(_q->sigdet) < -15.0f)
     //    return;
     if (cabsf(y) > 2.0f)
-        y = 2.0f*liquid_crotf_vect(cargf(y));
+        y = 2.0f*liquid_cexpjf(cargf(y));
 
     // run auto-correlator
     float complex rxx;
@@ -521,7 +521,7 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         // correct frequency offset
         float theta=0.0f;
         for (j=0; j<160; j++) {
-            rc[j] *= liquid_crotf_vect(theta);
+            rc[j] *= liquid_cexpjf(theta);
             theta += _q->nu_hat1;
         }
         // compute cross-correlation
@@ -539,8 +539,8 @@ void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q,
         float theta0 = cargf(_q->rxy0);
         float theta1 = cargf(_q->rxy1);
         for (j=0; j<64; j++) {
-            _q->Lt0[j] *= liquid_crotf_vect(theta0);
-            _q->Lt1[j] *= liquid_crotf_vect(theta1);
+            _q->Lt0[j] *= liquid_cexpjf(theta0);
+            _q->Lt1[j] *= liquid_cexpjf(theta1);
             //theta0 += -2.0f*M_PI*(float)(backoff)/64.0f;
             //theta1 += -2.0f*M_PI*(float)(backoff)/64.0f;
         }
@@ -616,10 +616,10 @@ void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q)
             if (theta1 < 0) theta1 += 2.0f*M_PI;    // ensure 0 <= theta0 <= 2*pi
 #if 1
             // average amplitude and phase
-            _q->G[i] = 0.5f*(g0+g1)*liquid_crotf_vect(0.5f*(theta0+theta1));
+            _q->G[i] = 0.5f*(g0+g1)*liquid_cexpjf(0.5f*(theta0+theta1));
 #else
             // average amplitude; retain phase from first estimate
-            _q->G[i] = 0.5f*(g0+g1)*liquid_crotf_vect(theta0);
+            _q->G[i] = 0.5f*(g0+g1)*liquid_cexpjf(theta0);
 #endif
             //_q->G[i] = _q->G0[i]; // use only first estimate
         }
@@ -751,8 +751,8 @@ void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q)
     unsigned int i;
     float theta=0.0f;
     for (i=0; i<64; i++) {
-        _q->Lt0[i] *= liquid_crotf_vect(theta);
-        _q->Lt1[i] *= liquid_crotf_vect(theta);
+        _q->Lt0[i] *= liquid_cexpjf(theta);
+        _q->Lt1[i] *= liquid_cexpjf(theta);
         theta += _q->nu_hat1;
     }
 }
@@ -840,7 +840,7 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
     */
     for (i=0; i<64; i++) {
         theta = polyf_val(_q->p_phase, 2, (float)(i)-32.0f);
-        _q->X[i] *= liquid_crotf_vect(-theta);
+        _q->X[i] *= liquid_cexpjf(-theta);
     }
     nco_crcf_step(_q->nco_pilot);
 
