@@ -37,6 +37,8 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  v/q   : verbose/quiet output\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  c     : multi-path channel taps, default: 0\n");
+    printf("  e     : equalizer taps, default: 0\n");
     printf("  f     : frame length [bytes], default: 64\n");
     printf("  n     : number of frames, default: 3\n");
     printf("  p     : modulation depth (default 2 bits/symbol)\n");
@@ -80,17 +82,20 @@ int main(int argc, char *argv[]) {
     unsigned int bps = 1;
     unsigned int packet_len = 64;
     unsigned int num_frames = 3;
-    int use_multipath_channel = 1;
+    unsigned int hc_len = 1;        // multi-path channel taps
+    unsigned int eq_len = 0;        // equalizer taps
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhvqs:f:m:p:n:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhvqs:c:e:f:m:p:n:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
         case 'v': verbose=1;                    break;
         case 'q': verbose=0;                    break;
         case 's': SNRdB = atof(optarg);         break;
+        case 'c': hc_len = atoi(optarg)+1;      break;
+        case 'e': eq_len = atoi(optarg);        break;
         case 'f': packet_len = atol(optarg);    break;
         case 'n': num_frames = atoi(optarg);    break;
         case 'p': bps = atoi(optarg);           break;
@@ -142,8 +147,8 @@ int main(int argc, char *argv[]) {
     //fsprops.agc_gmax = 1e4f;
     //fsprops.pll_bw0 = 0.020f;
     //fsprops.pll_bw1 = 0.005f;
-    fsprops.eq_len = 6;             // number of equalizer taps
-    fsprops.eqrls_lambda = 0.999f;  // RLS equalizer forgetting factor, 0.999 typical
+    fsprops.eq_len = eq_len;        // number of equalizer taps
+    //fsprops.eqrls_lambda = 0.999f;  // RLS equalizer forgetting factor, 0.999 typical
     flexframesync fs = flexframesync_create(&fsprops,callback,(void*)&fd);
 
     // set advanced csma callback functions
@@ -167,15 +172,8 @@ int main(int argc, char *argv[]) {
     // multi-path channel
     unsigned int i;
 #if 0
-    // random equalizer taps
-    unsigned int hc_len = 6;    // number of multi-path channel taps
-    float complex hc[hc_len];
-    hc[0] = 1.0f;
-    for (i=1; i<hc_len; i++)
-        hc[i] = (randnf() + randnf()*_Complex_I) * 0.2f;
-#else
     // fixed equalizer taps
-    unsigned int hc_len = 6;
+    hc_len = 6;
     float complex hc[] = {
           1.0000e+00 + _Complex_I*  0.0000e+00,
          -4.0412e-01 + _Complex_I*  2.0199e-01,
@@ -183,12 +181,16 @@ int main(int argc, char *argv[]) {
          -9.7195e-02 + _Complex_I* -9.8874e-02,
          -1.3591e-01 + _Complex_I*  6.5303e-02,
          -3.1153e-02 + _Complex_I* -8.8593e-02};
-
+#else
+    // random equalizer taps
+    float complex hc[hc_len];
+    hc[0] = 1.0f;
+    for (i=1; i<hc_len; i++)
+        hc[i] = (randnf() + randnf()*_Complex_I) * 0.2f;
 #endif
     firfilt_cccf fchannel = firfilt_cccf_create(hc,hc_len);
     for (i=0; i<hc_len; i++)
         printf("hc(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(hc[i]), cimagf(hc[i]));
-
 
     // initialize header, payload
     for (i=0; i<14; i++)
@@ -242,13 +244,11 @@ int main(int argc, char *argv[]) {
         firfarrow_crcf_push(delay_filter, z[1]);
         firfarrow_crcf_execute(delay_filter, &z[1]);
 
-        if (use_multipath_channel) {
-            // push through multi-path channel
-            firfilt_cccf_push(fchannel, z[0]);
-            firfilt_cccf_execute(fchannel, &z[0]);
-            firfilt_cccf_push(fchannel, z[1]);
-            firfilt_cccf_execute(fchannel, &z[1]);
-        }
+        // push through multi-path channel
+        firfilt_cccf_push(fchannel, z[0]);
+        firfilt_cccf_execute(fchannel, &z[0]);
+        firfilt_cccf_push(fchannel, z[1]);
+        firfilt_cccf_execute(fchannel, &z[1]);
 
         // push through sync
         flexframesync_execute(fs, z, 2);
