@@ -563,6 +563,13 @@ void flexframesync_train_eq(flexframesync _fs)
     for (i=0; i<_fs->eq_len; i++)
         _fs->heq[i] *= g;
 
+    // normalize equalizer gain
+    float e2 = 0.0f;
+    for (i=0; i<_fs->eq_len; i++)
+        e2 += crealf(_fs->heq[i] * conjf(_fs->heq[i]));
+    for (i=0; i<_fs->eq_len; i++)
+        _fs->heq[i] *= sqrtf(1.0f / e2);
+
     // re-create equalizer filter
     _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
 
