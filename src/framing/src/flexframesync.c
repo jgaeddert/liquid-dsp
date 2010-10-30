@@ -37,9 +37,7 @@
 
 #define FLEXFRAMESYNC_SQUELCH_TIMEOUT   (32)
 
-#define FLEXFRAMESYNC_PN_LEN            (64)
-
-#define FLEXFRAMESYNC_USE_EQ            1
+#define FLEXFRAMESYNC_EQRLS_LAMBDA      (0.999f)
 
 #define DEBUG_FLEXFRAMESYNC             1
 #define DEBUG_FLEXFRAMESYNC_PRINT       0
@@ -183,7 +181,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     // bsync (p/n synchronizer)
     // TODO : add separate method to configure p/n sequence
     unsigned int i;
-    fs->pnsequence_len = FLEXFRAMESYNC_PN_LEN;
+    fs->pnsequence_len = 64;
     // TODO : adjust msequence based on p/n sequence length
     msequence ms = msequence_create(6);
     float pn_sequence[fs->pnsequence_len];
@@ -553,7 +551,7 @@ void flexframesync_train_eq(flexframesync _fs)
     windowcf_read(_fs->weq, &y);
 
     // set the equalizer training factor and train
-    eqrls_cccf_set_bw(_fs->eq, 0.9);
+    eqrls_cccf_set_bw(_fs->eq, _fs->props.eqrls_lambda);
     eqrls_cccf_train(_fs->eq, _fs->heq, y, _fs->pnsequence, _fs->pnsequence_len);
 
     // ensure phase of first tap of equalizer is zero, de-rotate
