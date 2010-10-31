@@ -1048,11 +1048,11 @@ void flexframesync_output_debug_file(flexframesync _fs)
     fprintf(fid,"figure;\n");
     fprintf(fid,"nfft = 1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"Heq = 20*log10(abs(fftshift(fft(heq,nfft))));\n");
+    fprintf(fid,"Heq = -20*log10(abs(fftshift(fft(heq,nfft))));\n");
     fprintf(fid,"plot(f,Heq);\n");
     fprintf(fid,"axis([-0.5 0.5 min(Heq)-10 20]);\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
-    fprintf(fid,"ylabel('equalizer response');\n");
+    fprintf(fid,"ylabel('inverted equalizer response');\n");
     fprintf(fid,"grid on;\n");
 
     fprintf(fid,"\n\n");
