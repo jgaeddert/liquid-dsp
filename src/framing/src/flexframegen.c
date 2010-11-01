@@ -156,7 +156,7 @@ void flexframegen_setprops(flexframegen _fg,
 {
     // TODO : flexframegen_setprops() validate input
     if (_props->mod_bps == 0) {
-        printf("error: flexframegen_setprops(), modulation depth must be greater than 0\n");
+        fprintf(stderr, "error: flexframegen_setprops(), modulation depth must be greater than 0\n");
         exit(1);
     }
 
@@ -322,8 +322,8 @@ void flexframegen_encode_header(flexframegen _fg)
     _fg->header[15] = (_fg->props.payload_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    _fg->header[16]  = (_fg->props.mod_scheme << 4) & 0xf0;
-    _fg->header[16] |= (_fg->props.mod_bps) & 0x0f;
+    _fg->header[16]  = (_fg->props.mod_scheme & 0x1f) << 3;
+    _fg->header[16] |= (_fg->props.mod_bps    & 0x07);
 
     // scramble header
     scramble_data(_fg->header, 17);
