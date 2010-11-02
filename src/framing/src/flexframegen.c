@@ -322,8 +322,10 @@ void flexframegen_encode_header(flexframegen _fg)
     _fg->header[15] = (_fg->props.payload_len     ) & 0xff;
 
     // add modulation scheme/depth (pack into single byte)
-    _fg->header[16]  = (_fg->props.mod_scheme & 0x1f) << 3; // strip most-significant 5 bits
-    _fg->header[16] |= (_fg->props.mod_bps    & 0x07);      // strip least-significant 3 bits
+    //  mod. scheme : most-significant five bits
+    //  mod. depth  : least-significant three bits (-1)
+    _fg->header[16]  = ( _fg->props.mod_scheme & 0x1f) << 3;
+    _fg->header[16] |= ((_fg->props.mod_bps-1) & 0x07);
 
     // scramble header
     scramble_data(_fg->header, 17);

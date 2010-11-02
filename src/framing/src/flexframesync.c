@@ -881,8 +881,10 @@ void flexframesync_decode_header(flexframesync _fs)
     unscramble_data(_fs->header, 17);
 
     // strip off modulation scheme/depth
-    unsigned int mod_scheme = (_fs->header[16] >> 3) & 0x1f;    // strip most-significant 5 bits
-    unsigned int mod_depth  = (_fs->header[16]     ) & 0x07;    // strip least-significant 3 bits
+    //  mod. scheme : most-significant five bits
+    //  mod. depth  : least-significant three bits (+1)
+    unsigned int mod_scheme = ( _fs->header[16] >> 3) & 0x1f;
+    unsigned int mod_depth  = ((_fs->header[16]     ) & 0x07)+1;
 
     // strip off payload length
     unsigned int payload_len = (_fs->header[14] << 8) | (_fs->header[15]);
