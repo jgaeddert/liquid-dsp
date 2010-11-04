@@ -2807,8 +2807,8 @@ void freqmodem_demodulate(freqmodem _fm,
                           float *_x);
 
 typedef enum {
-    LIQUID_MODEM_AM_DSB=0,
-    LIQUID_MODEM_AM_SSB
+    LIQUID_MODEM_AM_DSB=0,  // FIXME : AM/DSB is actually suppressed carrier
+    LIQUID_MODEM_AM_SSB     // FIXME : AM/SSB is actually un-suppressed carrier
 } liquid_modem_amtype;
 typedef struct ampmodem_s * ampmodem;
 ampmodem ampmodem_create(float _m,
