@@ -2,11 +2,10 @@
 // ...
 {
     unsigned int m=5;           // filter semi-length
-    unsigned int h_len = 4*m+1; // filter length
     float slsl=60.0f;           // filter sidelobe suppression level
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(h_len,slsl);
+    firhilb f = firhilb_create(m,slsl);
 
     float complex x;    // interpolator input
     float y[2];         // interpolator output

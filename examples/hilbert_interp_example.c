@@ -20,20 +20,21 @@
 
 int main() {
     unsigned int m=5;           // filter semi-length
-    unsigned int h_len = 4*m+1; // filter length
     float slsl=60.0f;           // filter sidelobe suppression level
     float fc=0.73f;             // signal center frequency
     unsigned int N=128;         // number of samples
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(h_len,slsl);
+    firhilb f = firhilb_create(m,slsl);
     firhilb_print(f);
 
     // open output file
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
-    fprintf(fid,"h_len=%u;\nN=%u;\n", h_len, N);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"h_len=%u;\n", 4*m+1);
+    fprintf(fid,"N=%u;\n", N);
 
     unsigned int i;
     float y[2], theta=0.0f, dtheta=2*M_PI*fc;

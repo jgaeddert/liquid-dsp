@@ -1451,7 +1451,7 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 //   interpolation, separate objects should be used for each task.
 #define LIQUID_FIRHILB_DEFINE_API(FIRHILB,T,TC)                 \
 typedef struct FIRHILB(_s) * FIRHILB();                         \
-FIRHILB() FIRHILB(_create)(unsigned int _h_len,                 \
+FIRHILB() FIRHILB(_create)(unsigned int _m,                     \
                            float _As);                          \
 void FIRHILB(_destroy)(FIRHILB() _f);                           \
 void FIRHILB(_print)(FIRHILB() _f);                             \

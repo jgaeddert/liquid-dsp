@@ -56,26 +56,20 @@ struct FIRHILB(_s) {
 };
 
 // create firhilb object
-//  _h_len  :   filter length
+//  _m      :   filter semi-length (delay: 2*m+1)
 //  _As     :   stop-band attenuation [dB]
-FIRHILB() FIRHILB(_create)(unsigned int _h_len,
+FIRHILB() FIRHILB(_create)(unsigned int _m,
                            float _As)
 {
     // validate firhilb inputs
-    if (_h_len < 1) {
-        fprintf(stderr,"error(), firhilb_create(), filter length must be greater than 0\n");
+    if (_m < 2) {
+        fprintf(stderr,"error(), firhilb_create(), filter semi-length (m) must be at least 2\n");
         exit(1);
     }
 
     FIRHILB() f = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
-    f->h_len = _h_len;
+    f->m  = _m;
     f->As = fabsf(_As);
-
-    // change filter length as necessary
-    // h_len = 2*(2*m) + 1
-    f->m = (_h_len-1)/4;
-    if (f->m < 2)
-        f->m = 2;
 
     f->h_len = 4*(f->m) + 1;
     f->h = (T *) malloc((f->h_len)*sizeof(T));
