@@ -57,7 +57,7 @@ int main()
 void producer_handler ( void *_ptr )
 {
     gport p = (gport) _ptr;
-    unsigned int i, j, n=0;
+    unsigned int i, n=0;
     int * w;
     unsigned int num_samples_remaining = NUM_SAMPLES_TOTAL;
 
@@ -71,8 +71,8 @@ void producer_handler ( void *_ptr )
         w = (int*) gport_producer_lock(p,k);
 
         printf("  producer writing %u samples...\n", k);
-        for (j=0; j<k; j++)
-            w[j] = n++;
+        for (i=0; i<k; i++)
+            w[i] = n++;
 
         printf("  producer waiting %u ms\n", PRODUCER_TIMER);
         usleep(PRODUCER_TIMER*1000);
@@ -91,7 +91,7 @@ void producer_handler ( void *_ptr )
 void consumer_handler ( void *_ptr )
 {
     gport p = (gport) _ptr;
-    unsigned int i, j, n=0;
+    unsigned int i, n=0;
     int * r;
     unsigned int num_samples_remaining = NUM_SAMPLES_TOTAL;
 
@@ -104,8 +104,8 @@ void consumer_handler ( void *_ptr )
         printf("  consumer waiting for %u samples...\n", k);
         r = (int*) gport_consumer_lock(p,k);
 
-        for (j=0; j<k; j++)
-            printf("  %3u: %d\n", n++, r[j]);
+        for (i=0; i<k; i++)
+            printf("  %3u: %d\n", n++, r[i]);
 
         printf("  consumer unlocking port\n");
         gport_consumer_unlock(p, k);
