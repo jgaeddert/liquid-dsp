@@ -78,8 +78,26 @@ int main(int argc, char*argv[]) {
     float complex y[num_samples];
     float z[num_samples];
 
-    // generate un-modulated signal (band-limited pulse)
-    fir_kaiser_window(num_samples, 0.1f, -40.0f, 0.0f, x);
+    // generate 'audio' signal
+    unsigned int h_len = 21;
+    float h[h_len];
+    fir_kaiser_window(h_len, 0.06f, -40.0f, 0.0f, h);
+    firfilt_rrrf faudio = firfilt_rrrf_create(h,h_len);
+    for (i=0; i<num_samples; i++) {
+        // push random sample
+        firfilt_rrrf_push(faudio, 0.3f*randnf());
+        firfilt_rrrf_execute(faudio, &x[i]);
+
+        // clip
+        x[i] = tanhf(x[i]);
+
+        // add frequency offset (not centered at zero)
+        x[i] *= sinf(2*M_PI*i*0.13f);
+
+        // apply window
+        //x[i] *= hamming(i,num_samples);
+    }
+    firfilt_rrrf_destroy(faudio);
 
     // modulate signal
     for (i=0; i<num_samples; i++)
@@ -116,7 +134,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,x,t,z);\n");
-    fprintf(fid,"axis([0 n -0.4 1.2]);\n");
+    fprintf(fid,"axis([0 n -1.2 1.2]);\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('signal');\n");
     fprintf(fid,"legend('original','demodulated',1);\n");

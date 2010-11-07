@@ -29,17 +29,19 @@ void firhilb_decim_bench(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations,
-    unsigned int _h_len)
+    unsigned int _m)
 {
-    float h[_h_len];
-    unsigned int i;
-    for (i=0; i<_h_len; i++)
-        h[i] = 1.0f;
+    // normalize number of trials
+    *_num_iterations *= 20;
+    *_num_iterations /= liquid_nextpow2(_m+1);
 
-    firhilb q = firhilb_create(_h_len,60.0f);
+    // create hilber transform object
+    firhilb q = firhilb_create(_m,60.0f);
 
     float x[] = {1.0f, -1.0f};
     float complex y;
+    unsigned long int i;
+
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
@@ -54,16 +56,16 @@ void firhilb_decim_bench(
     firhilb_destroy(q);
 }
 
-#define FIRHILB_DECIM_BENCHMARK_API(H_LEN)    \
+#define FIRHILB_DECIM_BENCHMARK_API(M)  \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ firhilb_decim_bench(_start, _finish, _num_iterations, H_LEN); }
+{ firhilb_decim_bench(_start, _finish, _num_iterations, M); }
 
-void benchmark_firhilb_decim_h13    FIRHILB_DECIM_BENCHMARK_API(13)   // m=3
-void benchmark_firhilb_decim_h21    FIRHILB_DECIM_BENCHMARK_API(21)   // m=5
-void benchmark_firhilb_decim_h37    FIRHILB_DECIM_BENCHMARK_API(37)   // m=9
-void benchmark_firhilb_decim_h53    FIRHILB_DECIM_BENCHMARK_API(53)   // m=13
+void benchmark_firhilb_decim_m3     FIRHILB_DECIM_BENCHMARK_API(3)  // m=3
+void benchmark_firhilb_decim_m5     FIRHILB_DECIM_BENCHMARK_API(5)  // m=5
+void benchmark_firhilb_decim_m9     FIRHILB_DECIM_BENCHMARK_API(9)  // m=9
+void benchmark_firhilb_decim_m13    FIRHILB_DECIM_BENCHMARK_API(13) // m=13
 
 #endif // __LIQUID_FIRHILB_BENCHMARK_H__
 

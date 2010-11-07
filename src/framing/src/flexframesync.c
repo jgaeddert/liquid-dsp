@@ -37,9 +37,7 @@
 
 #define FLEXFRAMESYNC_SQUELCH_TIMEOUT   (32)
 
-#define FLEXFRAMESYNC_PN_LEN            (64)
-
-#define FLEXFRAMESYNC_USE_EQ            1
+#define FLEXFRAMESYNC_EQRLS_LAMBDA      (0.999f)
 
 #define DEBUG_FLEXFRAMESYNC             1
 #define DEBUG_FLEXFRAMESYNC_PRINT       0
@@ -183,7 +181,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     // bsync (p/n synchronizer)
     // TODO : add separate method to configure p/n sequence
     unsigned int i;
-    fs->pnsequence_len = FLEXFRAMESYNC_PN_LEN;
+    fs->pnsequence_len = 64;
     // TODO : adjust msequence based on p/n sequence length
     msequence ms = msequence_create(6);
     float pn_sequence[fs->pnsequence_len];
@@ -553,7 +551,7 @@ void flexframesync_train_eq(flexframesync _fs)
     windowcf_read(_fs->weq, &y);
 
     // set the equalizer training factor and train
-    eqrls_cccf_set_bw(_fs->eq, 0.9);
+    eqrls_cccf_set_bw(_fs->eq, _fs->props.eqrls_lambda);
     eqrls_cccf_train(_fs->eq, _fs->heq, y, _fs->pnsequence, _fs->pnsequence_len);
 
     // ensure phase of first tap of equalizer is zero, de-rotate
@@ -564,6 +562,13 @@ void flexframesync_train_eq(flexframesync _fs)
     unsigned int i;
     for (i=0; i<_fs->eq_len; i++)
         _fs->heq[i] *= g;
+
+    // normalize equalizer gain
+    float e2 = 0.0f;
+    for (i=0; i<_fs->eq_len; i++)
+        e2 += crealf(_fs->heq[i] * conjf(_fs->heq[i]));
+    for (i=0; i<_fs->eq_len; i++)
+        _fs->heq[i] *= sqrtf(1.0f / e2);
 
     // re-create equalizer filter
     _fs->fireq = firfilt_cccf_recreate(_fs->fireq, _fs->heq, _fs->eq_len);
@@ -876,8 +881,10 @@ void flexframesync_decode_header(flexframesync _fs)
     unscramble_data(_fs->header, 17);
 
     // strip off modulation scheme/depth
-    unsigned int mod_scheme = (_fs->header[16] >> 4) & 0x0f;
-    unsigned int mod_depth  = (_fs->header[16]     ) & 0x0f;
+    //  mod. scheme : most-significant five bits
+    //  mod. depth  : least-significant three bits (+1)
+    unsigned int mod_scheme = ( _fs->header[16] >> 3) & 0x1f;
+    unsigned int mod_depth  = ((_fs->header[16]     ) & 0x07)+1;
 
     // strip off payload length
     unsigned int payload_len = (_fs->header[14] << 8) | (_fs->header[15]);

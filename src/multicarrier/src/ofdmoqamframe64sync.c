@@ -592,7 +592,7 @@ void ofdmoqamframe64sync_execute_plcpshort(ofdmoqamframe64sync _q, float complex
     //if (agc_crcf_get_signal_level(_q->sigdet) < -15.0f)
     //    return;
     if (cabsf(y) > 2.0f)
-        y = 2.0f*liquid_crotf_vect(cargf(y));
+        y = 2.0f*liquid_cexpjf(cargf(y));
 
     // auto-correlators
     //autocorr_cccf_push(_q->autocorr, _x);
@@ -904,8 +904,8 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
     for (i=0; i<_q->num_subcarriers; i++) {
         // TODO : compute phase for delayed symbol (different from non-delayed symbol)
         theta = polyf_val(_q->p_phase, 2, (float)(i)-32.0f);
-        _Y0[i] *= liquid_crotf_vect(-theta);
-        _Y1[i] *= liquid_crotf_vect(-theta);
+        _Y0[i] *= liquid_cexpjf(-theta);
+        _Y1[i] *= liquid_cexpjf(-theta);
     }
     nco_crcf_step(_q->nco_pilot);
 

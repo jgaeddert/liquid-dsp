@@ -22,6 +22,16 @@
 //
 // Symbol synchronizer
 //
+// References:
+//  [Mengali:1997] Umberto Mengali and ALdo N. D'Andrea,
+//      "Synchronization Techniques for Digital Receivers,"
+//      Plenum Press, New York & London, 1997.
+//  [harris:2001] frederic j. harris and Michael Rice,
+//      "Multirate Digital Filters for Symbol Timing Synchronization
+//      in Software Defined Radios," IEEE Journal on Selected Areas
+//      of Communications, vol. 19, no. 12, December, 2001, pp.
+//      2346-2357.
+//
 
 #include <stdio.h>
 #include <string.h>
@@ -287,7 +297,11 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,
                                      TO _dmf)
 {
     //  1.  compute timing error signal, clipping large levels
+#if 0
     _q->q = crealf(_mf)*crealf(_dmf) + cimagf(_mf)*cimagf(_dmf);
+#else
+    _q->q = crealf( conjf(_mf)*_dmf );  // [Mengali:1997] Eq.~(8.3.5)
+#endif
     if (_q->q > 1.0f)       _q->q =  1.0f;
     else if (_q->q < -1.0f) _q->q = -1.0f;
 

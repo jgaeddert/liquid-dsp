@@ -56,7 +56,8 @@ framesyncprops_s framesyncprops_default = {
     0,          // autosquelch_enabled
     -35.0f,     // squelch_threshold
     // equalizer
-    0           // number of equalizer taps
+    0,          // number of equalizer taps
+    0.999       // RLS equalizer forgetting factor
 };
 
 void framesyncprops_init_default(framesyncprops_s * _props)

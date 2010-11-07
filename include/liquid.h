@@ -1451,8 +1451,8 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 //   interpolation, separate objects should be used for each task.
 #define LIQUID_FIRHILB_DEFINE_API(FIRHILB,T,TC)                 \
 typedef struct FIRHILB(_s) * FIRHILB();                         \
-FIRHILB() FIRHILB(_create)(unsigned int _h_len,                 \
-                           float _slsl);                        \
+FIRHILB() FIRHILB(_create)(unsigned int _m,                     \
+                           float _As);                          \
 void FIRHILB(_destroy)(FIRHILB() _f);                           \
 void FIRHILB(_print)(FIRHILB() _f);                             \
 void FIRHILB(_clear)(FIRHILB() _f);                             \
@@ -2031,7 +2031,8 @@ typedef struct {
     int squelch_enabled;        // enable/disable squelch
     int autosquelch_enabled;    // enable/disable automatic squelch
     float squelch_threshold;    // squelch enable/disable threshold
-    unsigned int eq_len;        // number of equalizer taps
+    unsigned int eq_len;        // number of equalizer taps, eq_len >= 0
+    float eqrls_lambda;         // RLS equalizer forgetting factor, 0.999 typical
 } framesyncprops_s;
 
 extern framesyncprops_s framesyncprops_default;
@@ -2806,8 +2807,8 @@ void freqmodem_demodulate(freqmodem _fm,
                           float *_x);
 
 typedef enum {
-    LIQUID_MODEM_AM_DSB=0,
-    LIQUID_MODEM_AM_SSB
+    LIQUID_MODEM_AM_DSB=0,  // FIXME : AM/DSB is actually suppressed carrier
+    LIQUID_MODEM_AM_SSB     // FIXME : AM/SSB is actually un-suppressed carrier
 } liquid_modem_amtype;
 typedef struct ampmodem_s * ampmodem;
 ampmodem ampmodem_create(float _m,

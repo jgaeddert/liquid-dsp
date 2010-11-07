@@ -15,7 +15,6 @@
 
 int main() {
     unsigned int m=3;               // filter semi-length
-    unsigned int h_len = 4*m+1;     // filter length
     float slsl=60.0f;               // filter sidelobe suppression level
     float fc=0.37f;                 // signal center frequency
     unsigned int num_samples=100;   // number of samples
@@ -25,7 +24,7 @@ int main() {
     float complex y[num_samples];   // complex output
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(h_len,slsl);
+    firhilb f = firhilb_create(m,slsl);
 
     // generate input sequence
     unsigned int i;
@@ -44,6 +43,7 @@ int main() {
     firhilb_destroy(f);
 
     // compute filter
+    unsigned int h_len = 4*m+1;     // filter length
     float h[h_len];
     fir_kaiser_window(h_len, 0.5f, slsl, 0.0f, h);
 

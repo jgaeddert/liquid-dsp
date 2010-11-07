@@ -298,7 +298,7 @@ void NCO(_mix_block_up)(NCO() _q,
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
         // multiply _x[i] by [cos(theta) + _Complex_I*sin(theta)]
-        _y[i] = _x[i] * liquid_crotf_vect(theta);
+        _y[i] = _x[i] * liquid_cexpjf(theta);
         
         theta += d_theta;
     }
@@ -324,7 +324,7 @@ void NCO(_mix_block_down)(NCO() _q,
     T d_theta = _q->d_theta;
     for (i=0; i<_n; i++) {
         // multiply _x[i] by [cos(-theta) + _Complex_I*sin(-theta)]
-        _y[i] = _x[i] * liquid_crotf_vect(-theta);
+        _y[i] = _x[i] * liquid_cexpjf(-theta);
         
         theta += d_theta;
     }

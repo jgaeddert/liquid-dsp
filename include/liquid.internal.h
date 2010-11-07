@@ -1208,10 +1208,7 @@ void interleaver_circshift_R4(unsigned char *_x, unsigned int _n);
 // internal trig helper functions
 
 // complex rotation vector: cexpf(_Complex_I*THETA)
-#define liquid_crotf_vect(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
-
-// complex rotation by cexpf(_Complex_I*THETA)
-#define liquid_crotf(X,THETA) ((X)*liquid_crotf_vect(THETA))
+#define liquid_cexpjf(THETA) (cosf(THETA) + _Complex_I*sinf(THETA))
 
 // polynomials
 #define LIQUID_POLY_DEFINE_INTERNAL_API(POLY,T,TC)          \

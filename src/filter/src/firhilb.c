@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute &
+ *                                State University
  *
  * This file is part of liquid.
  *
@@ -19,7 +20,9 @@
  */
 
 //
-// FIR Hilbert transform
+// firhilb.c
+//
+// finite impulse response (FIR) Hilbert transform
 //
 
 #include <stdio.h>
@@ -37,7 +40,7 @@
 struct FIRHILB(_s) {
     T * h;                  // filter coefficients
     unsigned int h_len;     // length of filter
-    float slsl;             // filter sidelobe suppression level [dB]
+    float As;               // filter stop-band attenuation [dB]
 
     unsigned int m;         // primitive filter length (filter semi-
                             // length), h_len = 4*m+1
@@ -52,20 +55,21 @@ struct FIRHILB(_s) {
     unsigned int wi_index;  // index
 };
 
-FIRHILB() FIRHILB(_create)(unsigned int _h_len,
-                           float _slsl)
+// create firhilb object
+//  _m      :   filter semi-length (delay: 2*m+1)
+//  _As     :   stop-band attenuation [dB]
+FIRHILB() FIRHILB(_create)(unsigned int _m,
+                           float _As)
 {
+    // validate firhilb inputs
+    if (_m < 2) {
+        fprintf(stderr,"error(), firhilb_create(), filter semi-length (m) must be at least 2\n");
+        exit(1);
+    }
+
     FIRHILB() f = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
-    f->h_len = _h_len;
-    f->slsl = _slsl;
-
-    // TODO : validate firhilb inputs
-
-    // change filter length as necessary
-    // h_len = 2*(2*m) + 1
-    f->m = (_h_len-1)/4;
-    if (f->m < 2)
-        f->m = 2;
+    f->m  = _m;
+    f->As = fabsf(_As);
 
     f->h_len = 4*(f->m) + 1;
     f->h = (T *) malloc((f->h_len)*sizeof(T));
@@ -76,7 +80,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _h_len,
     // compute filter coefficients, alternating sign
     unsigned int i;
     float t, h1, h2, s;
-    float beta = kaiser_beta_slsl(f->slsl);
+    float beta = kaiser_beta_slsl(f->As);
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
@@ -101,6 +105,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _h_len,
     return f;
 }
 
+// destroy firhilb object
 void FIRHILB(_destroy)(FIRHILB() _f)
 {
     WINDOW(_destroy)(_f->wq);
@@ -110,6 +115,7 @@ void FIRHILB(_destroy)(FIRHILB() _f)
     free(_f);
 }
 
+// print firhilb object internals
 void FIRHILB(_print)(FIRHILB() _f)
 {
     printf("fir hilbert transform: [%u]\n", _f->h_len);
@@ -123,6 +129,7 @@ void FIRHILB(_print)(FIRHILB() _f)
     }
 }
 
+// clear firhilb object buffers
 void FIRHILB(_clear)(FIRHILB() _f)
 {
     WINDOW(_clear)(_f->wq);
@@ -132,7 +139,13 @@ void FIRHILB(_clear)(FIRHILB() _f)
     _f->wi_index = 0;
 }
 
-void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, T complex *_y)
+// execute Hilbert transform decimator (real to complex)
+//  _f      :   firhilb object
+//  _x      :   real-valued input array [size: 2 x 1]
+//  _y      :   complex-valued output sample
+void FIRHILB(_decim_execute)(FIRHILB() _f,
+                             T * _x,
+                             T complex *_y)
 {
     T * r;
     T yi, yq;
@@ -152,7 +165,13 @@ void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, T complex *_y)
     *_y = yi + _Complex_I * yq;
 }
 
-void FIRHILB(_interp_execute)(FIRHILB() _f, T complex _x, T *_y)
+// execute Hilbert transform interpolator (complex to real)
+//  _f      :   firhilb object
+//  _y      :   complex-valued input sample
+//  _x      :   real-valued output array [size: 2 x 1]
+void FIRHILB(_interp_execute)(FIRHILB() _f,
+                              T complex _x,
+                              T *_y)
 {
     T * r;  // read pointer
 
