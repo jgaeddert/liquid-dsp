@@ -22,9 +22,6 @@ int main() {
     unsigned int num_samples=32;    // number of samples to evaluate
     float f0=0.125f;                // sine wave frequency
 
-    // coefficients array
-    float tao = ((float)h_len-1)/2.0f;  // nominal filter delay
-
     // data arrays
     float x[num_samples];           // input data array
     float y[num_samples];           // output data array
