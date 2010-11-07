@@ -30,10 +30,6 @@ int main() {
     dotprod_cccf_run(x,h,5,&y);
     printf("dotprod_cccf              : %8.2f + j%8.2f\n", crealf(y), cimagf(y));
 
-    // run dot product, unrolled loops
-    dotprod_cccf_run4(x,h,5,&y);
-    printf("dotprod_cccf (unrolled)   : %8.2f + j%8.2f\n", crealf(y), cimagf(y));
-
     // run structured dot product
     dotprod_cccf q = dotprod_cccf_create(x,5);
     dotprod_cccf_execute(q,h,&y);

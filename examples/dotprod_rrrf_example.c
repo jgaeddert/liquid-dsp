@@ -22,10 +22,6 @@ int main() {
     dotprod_rrrf_run(x,h,5,&y);
     printf("dotprod_rrrf              : %8.2f\n", y);
 
-    // run dot product, unrolled loops
-    dotprod_rrrf_run4(x,h,5,&y);
-    printf("dotprod_rrrf (unrolled)   : %8.2f\n", y);
-
     // run structured dot product
     dotprod_rrrf q = dotprod_rrrf_create(x,5);
     dotprod_rrrf_execute(q,h,&y);
