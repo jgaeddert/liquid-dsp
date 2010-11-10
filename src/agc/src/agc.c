@@ -29,7 +29,7 @@
 
 #include "liquid.internal.h"
 
-#define LIQUID_AGC_ZETA (0.1)
+#define LIQUID_AGC_ZETA (0.5)
 
 struct AGC(_s) {
     liquid_agc_type type;
@@ -53,6 +53,8 @@ struct AGC(_s) {
 
     // is agc locked?
     int is_locked;
+    unsigned int decim_timer;
+    unsigned int decim_timeout;
 
     // squelch
     int squelch_activated;          // squelch activated/deactivated?
@@ -84,6 +86,8 @@ AGC() AGC(_create)()
     AGC(_set_bandwidth)(_q, 0.0);
 
     _q->is_locked = 0;
+    _q->decim_timer = 0;
+    AGC(_set_decim)(_q, 1);
 
     // squelch
     _q->squelch_headroom = 0.39811f;    // roughly 4dB
@@ -152,9 +156,35 @@ void AGC(_set_bandwidth)(AGC() _q, T _BT)
         exit(-1);
     }
 
+    // set internal bandwidth
     _q->BT = _BT;
-    _q->alpha = sqrtf(_q->BT);
+
+    // normalize bandwidth by decimation factor
+    float bt = _q->BT * _q->decim_timeout;
+
+    // ensure normalized bandwidth is less than one
+    if (bt >= 1.0f) bt = 0.99f;
+
+    // compute coefficients
+    _q->alpha = sqrtf(bt);
     _q->beta = 1 - _q->alpha;
+}
+
+// Set internal decimation level, D > 0, D=4 typical
+void AGC(_set_decim)(AGC() _q,
+                     unsigned int _D)
+{
+    // validate input
+    if ( _D == 0 ) {
+        fprintf(stderr,"error: agc_set_decim(), decimation factor must be greater than zero\n");
+        exit(1);
+    }
+
+    // set decimation factor
+    _q->decim_timeout = _D;
+
+    // re-compute filter bandwidth
+    AGC(_set_bandwidth)(_q, _q->BT);
 }
 
 void AGC(_lock)(AGC() _q)
@@ -171,6 +201,15 @@ void AGC(_execute)(AGC() _q, TC _x, TC *_y)
 {
     if (_q->is_locked) {
         *_y = _x * (_q->g);
+        return;
+    }
+
+    _q->decim_timer++;
+    if (_q->decim_timer == _q->decim_timeout) {
+        _q->decim_timer = 0;
+    } else {
+        // apply gain to input and return
+        *_y = _x * _q->g;
         return;
     }
 

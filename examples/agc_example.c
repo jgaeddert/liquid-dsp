@@ -18,13 +18,15 @@ int main() {
     float etarget=1.0f;                 // target level
     float gamma=1.0f;                   // channel gain
     float noise_floor = -25.0f;         // noise floor [dB]
-    float bt=0.001f;                    // agc loop bandwidth
+    float bt=0.01f;                     // agc loop bandwidth
+    unsigned int D = 4;                 // AGC internal decimation factor
     unsigned int num_samples = 2048;    // number of samples
     unsigned int d=num_samples/32;      // print every d iterations
 
     // create objects
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_target(p, etarget);
+    agc_crcf_set_decim(p, D);
     agc_crcf_set_bandwidth(p, bt);
 
     // squelch
