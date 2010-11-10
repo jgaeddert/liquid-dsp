@@ -72,8 +72,8 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
     f->fc = _fc;
     f->slsl = _slsl;
     if ( f->fc < -0.5f || f->fc > 0.5f ) {
-        printf("error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
-        exit(-1);
+        fprintf(stderr,"error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
+        exit(1);
     }
 
     // change filter length as necessary
@@ -180,8 +180,8 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     }
     _f->w0 = realloc(_f->w0, (_f->m)*sizeof(TI));   // reallocate memory
     if (_f->w0 == NULL) {
-        printf("error: could not reallocate delay line memory array\n");
-        exit(0);
+        fprintf(stderr,"error: could not reallocate delay line memory array\n");
+        exit(1);
     }
     if (m1 > m0) {
         printf("  resamp2_xxxf_recreate(): extending filter\n");
@@ -219,7 +219,8 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
         h1 = sincf(t/2.0f);
         h2 = kaiser(i,_f->h_len,beta,0);
 #if TC_COMPLEX == 1
-        h3 = cosf(M_PI*t*_f->fc) + _Complex_I*sinf(M_PI*t*_f->fc);
+        //h3 = cosf(M_PI*t*_f->fc) + _Complex_I*sinf(M_PI*t*_f->fc);
+        h3 = liquid_cexpjf(M_PI*t*_f->fc);
 #else
         h3 = cosf(M_PI*t*_f->fc);
 #endif
