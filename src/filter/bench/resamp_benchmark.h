@@ -68,6 +68,8 @@ void resamp_crcf_bench(
 //
 // Resampler benchmark prototypes
 //
+void benchmark_resamp_crcf_h3    RESAMP_CRCF_BENCHMARK_API(3)
+void benchmark_resamp_crcf_h7    RESAMP_CRCF_BENCHMARK_API(7)
 void benchmark_resamp_crcf_h13   RESAMP_CRCF_BENCHMARK_API(13)
 void benchmark_resamp_crcf_h21   RESAMP_CRCF_BENCHMARK_API(21)
 void benchmark_resamp_crcf_h37   RESAMP_CRCF_BENCHMARK_API(37)

@@ -79,7 +79,17 @@ RESAMP() RESAMP(_create)(float _r,
                          float _slsl,
                          unsigned int _npfb)
 {
-    // TODO: validate input
+    // validate input
+    if (_h_len < 1) {
+        fprintf(stderr,"error: resamp_xxxt_create(), filter length must be greater than one\n");
+        exit(1);
+    } else if (_npfb == 0) {
+        fprintf(stderr,"error: resamp_xxxt_create(), number of filter banks must be greater than zero\n");
+        exit(1);
+    } else if (_fc <= 0.0f) {
+        fprintf(stderr,"error: resamp_xxxt_create(), filter cutoff must be greater than zero\n");
+        exit(1);
+    }
 
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
     q->r     = _r;
@@ -181,11 +191,11 @@ void RESAMP(_execute)(RESAMP() _q,
 #endif
 
 #if DEBUG_RESAMP_PRINT
-#if RESAMP_USE_FIXED_POINT_PHASE
+#  if RESAMP_USE_FIXED_POINT_PHASE
         printf("  [%2u] : theta = %6u, b : %6u\n", n, _q->theta, _q->b);
-#else
+#  else
         printf("  [%2u] : tau : %12.8f, b : %4u (%12.8f)\n", n, _q->tau, _q->b, _q->bf);
-#endif
+#  endif
 #endif
         FIRPFB(_execute)(_q->f, _q->b, &_y[n]);
 
