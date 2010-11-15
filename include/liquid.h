@@ -125,6 +125,9 @@ void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
 /* Set loop filter bandwidth; attack/release time */            \
 void AGC(_set_bandwidth)(AGC() _q, T _bt);                      \
                                                                 \
+/* Set internal decimation level, D > 0, D=4 typical */         \
+void AGC(_set_decim)(AGC() _q, unsigned int _D);                \
+                                                                \
 /* lock/unlock gain control */                                  \
 void AGC(_lock)(AGC() _q);                                      \
 void AGC(_unlock)(AGC() _q);                                    \

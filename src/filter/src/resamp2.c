@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute &
+ *                                State University
  *
  * This file is part of liquid.
  *
@@ -36,7 +37,7 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
-#define RESAMP2_USE_FIR_FILTER 0
+#define RESAMP2_USE_FIRFILT 0
 
 struct RESAMP2(_s) {
     TC * h;             // filter prototype
@@ -49,8 +50,8 @@ struct RESAMP2(_s) {
     TC * h1;
     WINDOW() w1;
     unsigned int h1_len;
-#if RESAMP2_USE_FIR_FILTER
-    FIR_FILTER() f1;
+#if RESAMP2_USE_FIRFILT
+    FIRFILT() f1;
 #endif
 
     // upper branch (delay line)
@@ -71,8 +72,8 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
     f->fc = _fc;
     f->slsl = _slsl;
     if ( f->fc < -0.5f || f->fc > 0.5f ) {
-        printf("error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
-        exit(-1);
+        fprintf(stderr,"error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
+        exit(1);
     }
 
     // change filter length as necessary
@@ -106,10 +107,10 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
 
     // resample, alternate sign, [reverse direction]
     unsigned int j=0;
-#if RESAMP2_USE_FIR_FILTER
+#if RESAMP2_USE_FIRFILT
     for (i=1; i<f->h_len; i+=2)
         f->h1[j++] = f->h[i];
-    f->f1 = FIR_FILTER(_create)(f->h1, f->h1_len);
+    f->f1 = FIRFILT(_create)(f->h1, f->h1_len);
 #else
     for (i=1; i<f->h_len; i+=2)
         f->h1[j++] = f->h[f->h_len - i - 1];
@@ -179,8 +180,8 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     }
     _f->w0 = realloc(_f->w0, (_f->m)*sizeof(TI));   // reallocate memory
     if (_f->w0 == NULL) {
-        printf("error: could not reallocate delay line memory array\n");
-        exit(0);
+        fprintf(stderr,"error: could not reallocate delay line memory array\n");
+        exit(1);
     }
     if (m1 > m0) {
         printf("  resamp2_xxxf_recreate(): extending filter\n");
@@ -218,7 +219,8 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
         h1 = sincf(t/2.0f);
         h2 = kaiser(i,_f->h_len,beta,0);
 #if TC_COMPLEX == 1
-        h3 = cosf(M_PI*t*_f->fc) + _Complex_I*sinf(M_PI*t*_f->fc);
+        //h3 = cosf(M_PI*t*_f->fc) + _Complex_I*sinf(M_PI*t*_f->fc);
+        h3 = liquid_cexpjf(M_PI*t*_f->fc);
 #else
         h3 = cosf(M_PI*t*_f->fc);
 #endif
@@ -240,8 +242,8 @@ void RESAMP2(_destroy)(RESAMP2() _f)
     free(_f->w0);
     free(_f->h);
     free(_f->h1);
-#if RESAMP2_USE_FIR_FILTER
-    FIR_FILTER(_destroy)(_f->f1);
+#if RESAMP2_USE_FIRFILT
+    FIRFILT(_destroy)(_f->f1);
 #endif
     free(_f);
 }
@@ -287,9 +289,9 @@ void RESAMP2(_decim_execute)(RESAMP2() _f,
     TO y0, y1;
 
     // compute filter branch
-#if RESAMP2_USE_FIR_FILTER
-    FIR_FILTER(_push)(_f->f1, _x[0]);
-    FIR_FILTER(_execute)(_f->f1, &y1);
+#if RESAMP2_USE_FIRFILT
+    FIRFILT(_push)(_f->f1, _x[0]);
+    FIRFILT(_execute)(_f->f1, &y1);
 #else
     TI * r;
     WINDOW(_push)(_f->w1, _x[0]);
@@ -319,9 +321,9 @@ void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
     _f->w0_index = (_f->w0_index+1) % (_f->m);
 
     // compute second branch (filter)
-#if RESAMP2_USE_FIR_FILTER
-    FIR_FILTER(_push)(_f->f1, _x);
-    FIR_FILTER(_execute)(_f->f1, &_y[1]);
+#if RESAMP2_USE_FIRFILT
+    FIRFILT(_push)(_f->f1, _x);
+    FIRFILT(_execute)(_f->f1, &_y[1]);
 #else
     TI * r;  // read pointer
     WINDOW(_push)(_f->w1, _x);

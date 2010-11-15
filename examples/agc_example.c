@@ -7,24 +7,73 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <complex.h>
+#include <getopt.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "agc_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("agc_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  n     : number of samples, n>=100, default: 2048\n");
+    printf("  N     : noise floor [dB], default: -25.0\n");
+    printf("  s     : SNR [dB], default: 25.0\n");
+    printf("  b     : AGC bandwidth, b >= 0, default: 0.01\n");
+    printf("  D     : AGC internal decimation factor, D>0, default: 4\n");
+}
+
+
+int main(int argc, char*argv[])
+{
     // options
     float etarget=1.0f;                 // target level
-    float gamma=1.0f;                   // channel gain
     float noise_floor = -25.0f;         // noise floor [dB]
-    float bt=0.001f;                    // agc loop bandwidth
+    float SNRdB = 25.0f;                // signal-to-noise ratio [dB]
+    float bt=0.01f;                     // agc loop bandwidth
+    unsigned int D = 4;                 // AGC internal decimation factor
     unsigned int num_samples = 2048;    // number of samples
     unsigned int d=num_samples/32;      // print every d iterations
+
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhn:N:s:b:D:")) != EOF){
+        switch (dopt) {
+        case 'h':
+        case 'u': usage(); return 0;
+        case 'n': num_samples = atoi(optarg);   break;
+        case 'N': noise_floor = atof(optarg);   break;
+        case 's': SNRdB = atof(optarg);         break;
+        case 'b': bt = atof(optarg);            break;
+        case 'D': D = atoi(optarg);             break;
+        default:
+            fprintf(stderr,"error: %s, unknown option: %c\n", argv[0], dopt);
+            exit(1);
+        }
+    }
+
+    // validate input
+    if (bt < 0.0f) {
+        fprintf(stderr,"error: %s, bandwidth must be positive\n", argv[0]);
+        exit(1);
+    } else if (D == 0) {
+        fprintf(stderr,"error: %s, decimation factor must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (num_samples < 100) {
+        fprintf(stderr,"error: %s, must have at least 100 samples\n", argv[0]);
+        exit(1);
+    }
+
+    // derived values
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f);   // channel gain
 
     // create objects
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_target(p, etarget);
+    agc_crcf_set_decim(p, D);
     agc_crcf_set_bandwidth(p, bt);
 
     // squelch
