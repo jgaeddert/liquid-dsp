@@ -25,7 +25,7 @@
 
 // compile and run:
 //   $ gcc -Wall -I/opt/local/include -I. -I./include -c fft_r2r_test.c -o fft_r2r_test.o 
-//   $ gcc fft_r2r_test.o -lm -lc -lfftw3 -o fft_r2r_test 
+//   $ gcc fft_r2r_test.o -lm -lc -lfftw3f -o fft_r2r_test 
 //   $ ./fft_r2r_test
 
 #include <stdio.h>
@@ -39,23 +39,23 @@ int main(int argc, char*argv[]) {
     unsigned int n = 8;
 
     // create and initialize data arrays
-    double x[n];
-    double y[n];
+    float x[n];
+    float y[n];
     unsigned int i;
     for (i=0; i<n; i++)
-        x[i] = (double)(i);
+        x[i] = (float)(i);
 
     // create fftw plans
-    fftw_plan plan[8];
-    plan[0] = fftw_plan_r2r_1d(n, x, y, FFTW_REDFT00, FFTW_ESTIMATE);
-    plan[1] = fftw_plan_r2r_1d(n, x, y, FFTW_REDFT10, FFTW_ESTIMATE);
-    plan[2] = fftw_plan_r2r_1d(n, x, y, FFTW_REDFT01, FFTW_ESTIMATE);
-    plan[3] = fftw_plan_r2r_1d(n, x, y, FFTW_REDFT11, FFTW_ESTIMATE);
+    fftwf_plan plan[8];
+    plan[0] = fftwf_plan_r2r_1d(n, x, y, FFTW_REDFT00, FFTW_ESTIMATE);
+    plan[1] = fftwf_plan_r2r_1d(n, x, y, FFTW_REDFT10, FFTW_ESTIMATE);
+    plan[2] = fftwf_plan_r2r_1d(n, x, y, FFTW_REDFT01, FFTW_ESTIMATE);
+    plan[3] = fftwf_plan_r2r_1d(n, x, y, FFTW_REDFT11, FFTW_ESTIMATE);
 
-    plan[4] = fftw_plan_r2r_1d(n, x, y, FFTW_RODFT00, FFTW_ESTIMATE);
-    plan[5] = fftw_plan_r2r_1d(n, x, y, FFTW_RODFT10, FFTW_ESTIMATE);
-    plan[6] = fftw_plan_r2r_1d(n, x, y, FFTW_RODFT01, FFTW_ESTIMATE);
-    plan[7] = fftw_plan_r2r_1d(n, x, y, FFTW_RODFT11, FFTW_ESTIMATE);
+    plan[4] = fftwf_plan_r2r_1d(n, x, y, FFTW_RODFT00, FFTW_ESTIMATE);
+    plan[5] = fftwf_plan_r2r_1d(n, x, y, FFTW_RODFT10, FFTW_ESTIMATE);
+    plan[6] = fftwf_plan_r2r_1d(n, x, y, FFTW_RODFT01, FFTW_ESTIMATE);
+    plan[7] = fftwf_plan_r2r_1d(n, x, y, FFTW_RODFT11, FFTW_ESTIMATE);
 
     char plan_name[][8] = {"REDFT00",
                            "REDFT10",
@@ -73,7 +73,7 @@ int main(int argc, char*argv[]) {
 
     // execute plans and print
     for (i=0; i<8; i++) {
-        fftw_execute(plan[i]);
+        fftwf_execute(plan[i]);
 
         unsigned int j;
         printf("\n");
@@ -85,7 +85,7 @@ int main(int argc, char*argv[]) {
 
     // destroy plans
     for (i=0; i<8; i++)
-        fftw_destroy_plan(plan[i]);
+        fftwf_destroy_plan(plan[i]);
 
     return 0;
 }
