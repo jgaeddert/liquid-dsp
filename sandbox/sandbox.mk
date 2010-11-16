@@ -10,6 +10,7 @@ local_src	:=			\
 	fec_rep3_test.c			\
 	fec_rep5_test.c			\
 	fft_r2r_test.c			\
+	firpfbch_analysis_test.c	\
 	iirdes_example.c
 
 local_sandbox	:= $(addprefix $(local_dir)/, $(local_src))
