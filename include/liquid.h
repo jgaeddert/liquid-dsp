@@ -2934,6 +2934,73 @@ void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
 
 
 
+
+// 
+// ofdmoqamframegen
+//
+typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
+
+void ofdmoqamframe_init_default_sctype(unsigned int _M,
+                                       unsigned int * _p);
+
+// create OFDM/OQAM framing generator object
+//  _M      :   number of subcarriers, >10 typical
+//  _m      :   filter delay (symbols), 3 typical
+//  _beta   :   filter excess bandwidth factor, 0.9 typical
+//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  TODO    :   include placeholder for guard bands, pilots
+//  NOTES
+//    - The number of subcarriers must be even, typically at least 16
+//    - If _p is a NULL pointer, then the frame generator will use
+//      the default subcarrier allocation
+ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
+                                         unsigned int _m,
+                                         float _beta,
+                                         unsigned int * _p);
+
+// destroy OFDM/OQAM framing generator object
+void ofdmoqamframegen_destroy(ofdmoqamframegen _q);
+
+void ofdmoqamframegen_print(ofdmoqamframegen _q);
+
+void ofdmoqamframegen_reset(ofdmoqamframegen _q);
+
+// short PLCP training sequence
+void ofdmoqamframegen_writeshortsequence(ofdmoqamframegen _q,
+                                         liquid_float_complex *_y);
+// long PLCP training sequence
+void ofdmoqamframegen_writelongsequence(ofdmoqamframegen _q,
+                                        liquid_float_complex *_y);
+// gain PLCP training sequence
+void ofdmoqamframegen_writetrainingsequence(ofdmoqamframegen _q,
+                                            liquid_float_complex *_y);
+void ofdmoqamframegen_writeheader(ofdmoqamframegen _q,
+                                  liquid_float_complex *_y);
+void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
+                                  liquid_float_complex *_x,
+                                  liquid_float_complex *_y);
+void ofdmoqamframegen_flush(ofdmoqamframegen _q,
+                            liquid_float_complex *_y);
+
+// 
+// ofdmoqamframesync
+//
+typedef int (*ofdmoqamframesync_callback)(liquid_float_complex * _y,
+                                          void * _userdata);
+typedef struct ofdmoqamframesync_s * ofdmoqamframesync;
+ofdmoqamframesync ofdmoqamframesync_create(unsigned int _m,
+                                           float _beta,
+                                           ofdmoqamframesync_callback _callback,
+                                           void * _userdata);
+void ofdmoqamframesync_destroy(ofdmoqamframesync _q);
+void ofdmoqamframesync_print(ofdmoqamframesync _q);
+void ofdmoqamframesync_reset(ofdmoqamframesync _q);
+void ofdmoqamframesync_execute(ofdmoqamframesync _q,
+                               liquid_float_complex * _x,
+                               unsigned int _n);
+
+
+
 // OFDM frame (symbol) generator
 typedef struct ofdmframegen_s * ofdmframegen;
 ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
