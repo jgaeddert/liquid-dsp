@@ -68,13 +68,13 @@ int main() {
 #endif
     }
 
-    // generate inverse DFT object
+    // generate DFT object
     float complex x[num_channels];  // time-domain buffer
     float complex X[num_channels];  // freq-domain buffer
 #if 0
-    fftplan ifft = fft_create_plan(num_channels, X, x, FFT_REVERSE, 0);
+    fftplan fft = fft_create_plan(num_channels, X, x, FFT_REVERSE, 0);
 #else
-    fftplan ifft = fft_create_plan(num_channels, X, x, FFT_FORWARD, 0);
+    fftplan fft = fft_create_plan(num_channels, X, x, FFT_FORWARD, 0);
 #endif
 
     // generate filter object
@@ -120,8 +120,8 @@ int main() {
             dotprod_crcf_execute(dp[j], r, &X[num_channels-j-1]);
         }
 
-        // execute inverse DFT, store result in buffer 'x'
-        fft_execute(ifft);
+        // execute DFT, store result in buffer 'x'
+        fft_execute(fft);
 
         // move to output array
         for (j=0; j<num_channels; j++)
@@ -164,7 +164,7 @@ int main() {
         dotprod_crcf_destroy(dp[i]);
         windowcf_destroy(w[i]);
     }
-    fft_destroy_plan(ifft);
+    fft_destroy_plan(fft);
 
     firfilt_crcf_destroy(f);
 
