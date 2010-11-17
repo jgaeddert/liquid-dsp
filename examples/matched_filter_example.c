@@ -102,9 +102,15 @@ int main(int argc, char*argv[]) {
         exit(1);
     }
 
+    // generate receive filter coefficients (reverse of transmit)
+    float g[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        g[i] = h[h_len-i-1];
+
     // create interpolator and decimator
     interp_rrrf q  = interp_rrrf_create(k,h,h_len);
-    decim_rrrf d   = decim_rrrf_create(k,h,h_len);
+    decim_rrrf d   = decim_rrrf_create(k,g,h_len);
 
     // compute filter inter-symbol interference
     float isi_mse=0;
@@ -116,7 +122,6 @@ int main(int argc, char*argv[]) {
     // generate signal
     float sym_in, buff[k], sym_out;
 
-    unsigned int i;
     for (i=0; i<h_len; i++)
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);
 

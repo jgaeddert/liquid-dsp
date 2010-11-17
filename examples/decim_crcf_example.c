@@ -75,17 +75,20 @@ int main(int argc, char*argv[]) {
     unsigned int num_samples = k*num_symbols;
 
     // design filter and create interpolator and decimator objects
-    float h[h_len];
-    design_rrc_filter(k,m,beta,0.0f,h);
+    float h[h_len];     // transmit filter
+    float g[h_len];     // receive filter (reverse of h)
+    design_rrc_filter(k,m,beta,0.3f,h);
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        g[i] = h[h_len-i-1];
     interp_crcf interp = interp_crcf_create(k,h,h_len);
-    decim_crcf  decim  = decim_crcf_create(k,h,h_len);
+    decim_crcf  decim  = decim_crcf_create(k,g,h_len);
 
     // allocate memory for buffers
     float complex x[num_symbols];   // input symbols
     float complex y[num_samples];   // interpolated sequence
     float complex z[num_symbols];   // decimated (received) symbols
 
-    unsigned int i;
     // generate input symbols, padded with zeros at the end
     for (i=0; i<num_data_symbols; i++) {
         x[i] = (rand() % 2 ? 1.0f : -1.0f) +
