@@ -11,6 +11,7 @@ local_src	:=			\
 	fec_rep5_test.c			\
 	fft_r2r_test.c			\
 	firpfbch_analysis_test.c	\
+	firpfbch_equivalence_test.c	\
 	iirdes_example.c		\
 	matched_filter_test.c
 
