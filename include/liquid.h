@@ -2905,8 +2905,8 @@ void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,              \
 void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
                                  TI * _x,                       \
                                  TO * _X);                      \
-void FIRPFBCH(_push)(FIRPFBCH() _q, TI _x);                     \
-void FIRPFBCH(_run)(FIRPFBCH() _q, TO * _X);
+void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q, TI _x);            \
+void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q, TO * _X);
 
 
 LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,
