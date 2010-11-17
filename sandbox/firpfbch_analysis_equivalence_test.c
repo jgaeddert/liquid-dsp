@@ -1,5 +1,5 @@
 //
-// firpfbch_equivalence_test.c
+// firpfbch_analysis_equivalence_test.c
 //
 
 #include <stdio.h>
