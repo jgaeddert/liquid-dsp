@@ -171,7 +171,7 @@ void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,
 {
     unsigned int i;
 
-    memmove(_q->X, _y, _q->num_channels*sizeof(TI));
+    memmove(_q->X, _x, _q->num_channels*sizeof(TI));
 
     // execute inverse DFT, store result in buffer 'x'
     FFT_EXECUTE(_q->fft);
