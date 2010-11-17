@@ -2831,10 +2831,12 @@ void ampmodem_demodulate(ampmodem _fm,
 // MODULE : multicarrier
 //
 
+
 // FIR polyphase filterbank channelizer
 // NOTES:
-//   Although firpfbch is a placeholder for both the synthesizer and
-//   analyzer, separate objects should be used for each task.
+//   - Although firpfbch is a placeholder for both the synthesizer and
+//     analyzer, separate objects should be used for each task.
+//   - THIS OBJECT IS SOON TO BE REMOVED! replace with firpfbch_xxxt family.
 typedef struct firpfbch_s * firpfbch;
 
 #define FIRPFBCH_NYQUIST        0
@@ -2871,6 +2873,49 @@ void firpfbch_analyzer_clearrunstate(firpfbch _c);
 void firpfbch_analyzer_execute(firpfbch _c,
                                liquid_float_complex * _X,
                                liquid_float_complex * _x);
+
+
+//
+// Finite impulse response polyphase filterbank channelizer
+//
+
+#define FIRPFBCH_MANGLE_CRCF(name)  LIQUID_CONCAT(firpfbch_crcf,name)
+
+// Macro:
+//   FIRPFBCH   : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH,TO,TC,TI)           \
+typedef struct FIRPFBCH(_s) * FIRPFBCH();                       \
+FIRPFBCH() FIRPFBCH(_create)(int _type,                         \
+                             unsigned int _num_channels,        \
+                             unsigned int _p,                   \
+                             TC * _h);                          \
+void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
+void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
+void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
+                                                                \
+/* synthesizer */                                               \
+void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,              \
+                                    TI * _x,                    \
+                                    TO * _X);                   \
+                                                                \
+/* analyzer */                                                  \
+void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
+                                 TI * _x,                       \
+                                 TO * _X);                      \
+void FIRPFBCH(_push)(FIRPFBCH() _q, TI _x);                     \
+void FIRPFBCH(_run)(FIRPFBCH() _q, TO * _X);
+
+
+LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+
+
 
 // FIR OFDM/OQAM
 typedef struct ofdmoqam_s * ofdmoqam;

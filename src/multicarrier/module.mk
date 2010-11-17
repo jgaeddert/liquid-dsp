@@ -27,7 +27,8 @@ module_name     := multicarrier
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=			\
-	firpfbch.c			\
+	firpfbch_old.c			\
+	firpfbch_crcf.c			\
 	ofdmframe64.common.c		\
 	ofdmframe64gen.c		\
 	ofdmframe64sync.c		\

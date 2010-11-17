@@ -1,0 +1,47 @@
+/*
+ * Copyright (c) 2010 Joseph Gaeddert
+ * Copyright (c) 2010 Virginia Polytechnic Institute & State University
+ *
+ * This file is part of liquid.
+ *
+ * liquid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * liquid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+//
+// multicarrier API: complex floating-point
+//
+
+#include "liquid.internal.h"
+
+// 
+#define FIRPFBCH(name)      LIQUID_CONCAT(firpfbch_crcf,name)
+
+#define T                   float complex   // general
+#define TO                  float complex   // output
+#define TC                  float           // coefficients
+#define TI                  float complex   // input
+#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
+#define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
+
+#define TO_COMPLEX          1
+#define TC_COMPLEX          0
+#define TI_COMPLEX          1
+
+#define PRINTVAL_TO(X,F)    PRINTVAL_CFLOAT(X,F)
+#define PRINTVAL_TC(X,F)    PRINTVAL_FLOAT(X,F)
+#define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
+
+// source files
+#include "firpfbch.c"
+
