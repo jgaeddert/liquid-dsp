@@ -40,7 +40,7 @@ void autotest_ofdmoqam_reconstruction()
     float dt   = 0.0f;              // timing offset (fractional sample) 
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 2;           // modulation depth (bits/symbol)
-    float tol = 1e-2f;              // error tolerance
+    float tol = 1e-3f;              // error tolerance
 
     // derived values
     unsigned int num_frames = num_symbols + 2*m + 1;        // number of frames (compensate for filter delay)
@@ -87,6 +87,12 @@ void autotest_ofdmoqam_reconstruction()
     for (i=0; i<num_frames; i++)
         ofdmoqam_execute(ca, &y[i*num_channels], &Y[i][0]);
 
+    // scale by fft size
+    for (i=0; i<num_frames; i++) {
+        for (j=0; j<num_channels; j++)
+            Y[i][j] /= (float)num_channels;
+    }
+
     // destroy objects
     ofdmoqam_destroy(cs);
     ofdmoqam_destroy(ca);
@@ -98,8 +104,8 @@ void autotest_ofdmoqam_reconstruction()
     for (i=0; i<num_symbols; i++) {
         for (j=0; j<num_channels; j++) {
             // check reconstructed symbols, compensating for delay (2*m+1)
-            CONTEND_DELTA( crealf(Y[i+2*m+1][j]), crealf(X[i][j]), tol );
-            CONTEND_DELTA( cimagf(Y[i+2*m+1][j]), cimagf(X[i][j]), tol );
+            CONTEND_DELTA( crealf(Y[i+2*m][j]), crealf(X[i][j]), tol );
+            CONTEND_DELTA( cimagf(Y[i+2*m][j]), cimagf(X[i][j]), tol );
 
             // update error
             float e = cabsf(Y[i+2*m+1][j] - X[i][j]);

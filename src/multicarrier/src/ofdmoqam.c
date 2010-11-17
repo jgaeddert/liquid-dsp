@@ -46,8 +46,8 @@ struct ofdmoqam_s {
     float complex * x0_prime;
     float complex * x1_prime;
     
-    firpfbch c0;        // upper bank
-    firpfbch c1;        // lower bank
+    firpfbch_crcf c0;       // upper bank
+    firpfbch_crcf c1;       // lower bank
 
     unsigned int type;  // synthesis/analysis
 };
@@ -87,10 +87,26 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
     c->x0_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     c->x1_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
 
+    // create prototype filter
+    unsigned int h_len = 2*c->num_channels*c->m + 1;
+    float h[h_len];
+    design_rkaiser_filter(c->num_channels, c->m, c->beta, c->dt, h);
+
     // create filterbank channelizers
-    // TODO: use actual prototype (get rid of _slsl input)
-    c->c0 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, _gradient);
-    c->c1 = firpfbch_create(_num_channels, c->m, c->beta, c->dt, FIRPFBCH_ROOTNYQUIST, _gradient);
+    if (c->type == OFDMOQAM_SYNTHESIZER) {
+        c->c0 = firpfbch_crcf_create(FIRPFBCH_SYNTHESIZER, c->num_channels, 2*c->m, h);
+        c->c1 = firpfbch_crcf_create(FIRPFBCH_SYNTHESIZER, c->num_channels, 2*c->m, h);
+    } else {
+        // reverse transmit filter
+        unsigned int g_len = 2*c->num_channels*c->m;
+        float g[g_len];
+        unsigned int i;
+        for (i=0; i<g_len; i++)
+            g[i] = h[g_len-i-1];
+
+        c->c0 = firpfbch_crcf_create(FIRPFBCH_ANALYZER, c->num_channels, 2*c->m, g);
+        c->c1 = firpfbch_crcf_create(FIRPFBCH_ANALYZER, c->num_channels, 2*c->m, g);
+    }
 
     // clear buffers, etc.
     ofdmoqam_clear(c);
@@ -100,12 +116,12 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
 
 void ofdmoqam_destroy(ofdmoqam _c)
 {
-    firpfbch_destroy(_c->c0);
+    firpfbch_crcf_destroy(_c->c0);
     free(_c->x0);
     free(_c->X0);
     free(_c->x0_prime);
 
-    firpfbch_destroy(_c->c1);
+    firpfbch_crcf_destroy(_c->c1);
     free(_c->x1);
     free(_c->X1);
     free(_c->x1_prime);
@@ -121,8 +137,8 @@ void ofdmoqam_print(ofdmoqam _c)
 void ofdmoqam_clear(ofdmoqam _c)
 {
     // clear filterbank channelizers
-    firpfbch_clear(_c->c0);
-    firpfbch_clear(_c->c1);
+    firpfbch_crcf_clear(_c->c0);
+    firpfbch_crcf_clear(_c->c1);
 
     // clear buffers
     unsigned int i;
@@ -154,8 +170,8 @@ void ofdmoqam_synthesizer_execute(ofdmoqam _c, float complex * _X, float complex
     }
 
     // execute synthesis filter banks
-    firpfbch_synthesizer_execute(_c->c0, _c->X0, _c->x0);
-    firpfbch_synthesizer_execute(_c->c1, _c->X1, _c->x1);
+    firpfbch_crcf_synthesizer_execute(_c->c0, _c->X0, _c->x0);
+    firpfbch_crcf_synthesizer_execute(_c->c1, _c->X1, _c->x1);
 
     // delay the upper branch
     memmove(_c->x0_prime + k2, _c->x0, k2*sizeof(float complex));
@@ -184,8 +200,8 @@ void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * 
     memmove(_c->x0_prime, _x + k2, k2*sizeof(float complex));
 
     // execute analysis filter banks
-    firpfbch_analyzer_execute(_c->c0, _c->x0, _c->X0);
-    firpfbch_analyzer_execute(_c->c1, _c->x1, _c->X1);
+    firpfbch_crcf_analyzer_execute(_c->c0, _c->x0, _c->X0);
+    firpfbch_crcf_analyzer_execute(_c->c1, _c->x1, _c->X1);
 
     // re-combine channels, delay upper branch by one symbol
     for (i=0; i<_c->num_channels; i+=2) {
