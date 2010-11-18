@@ -2892,6 +2892,15 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,                         \
                              unsigned int _num_channels,        \
                              unsigned int _p,                   \
                              TC * _h);                          \
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,                  \
+                                    unsigned int _M,            \
+                                    unsigned int _m,            \
+                                    float _As);                 \
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,                \
+                                      unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float _beta,              \
+                                      int _ftype);              \
 void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
 void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
 void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
