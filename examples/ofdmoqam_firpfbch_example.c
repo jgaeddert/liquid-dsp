@@ -1,5 +1,8 @@
 //
+// ofdmoqam_firpfbch_test.c
 //
+// Tests the validity of OFDM/OQAM using firpfbch_crcf channelizer
+// objects.
 //
 
 #include <stdio.h>
@@ -13,34 +16,29 @@
 
 int main() {
     // options
-    unsigned int num_channels=6;    // for now, must be even number
-    unsigned int num_symbols=32;    // num symbols
-    unsigned int m=2;               // ofdm/oqam symbol delay
-    float beta = 0.99f;             // excess bandwidth factor
-    //float dt   = 0.0f;              // timing offset (fractional sample) 
-    modulation_scheme ms = MOD_QAM; // modulation scheme
-    unsigned int bps = 2;           // modulation depth (bits/symbol)
+    unsigned int num_channels=6;    // must be even number
+    unsigned int num_symbols=32;    // number of symbols
+    unsigned int m=3;               // filter delay (symbols)
+    float beta = 0.9f;              // filter excess bandwidth factor
 
     // number of frames (compensate for filter delay)
-    unsigned int num_frames = num_symbols + 2*m + 1;
+    unsigned int num_frames = num_symbols + 2*m;
 
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    firpfbch cs0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
-    firpfbch cs1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
+    firpfbch_crcf cs0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, 0);
+    firpfbch_crcf cs1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, 0);
 
-    firpfbch ca0 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
-    firpfbch ca1 = firpfbch_create(num_channels, m, beta, 0, FIRPFBCH_ROOTNYQUIST, 0);
-
-    // modem
-    modem mod = modem_create(ms,bps);
+    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, 0);
+    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, 0);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
     fprintf(fid,"num_symbols=%u;\n", num_symbols);
+    fprintf(fid,"num_samples=%u;\n", num_samples);
 
     fprintf(fid,"X = zeros(%u,%u);\n", num_channels, num_frames);
     fprintf(fid,"y = zeros(1,%u);\n",  num_samples);
@@ -48,7 +46,6 @@ int main() {
 
     unsigned int i, j, n=0;
     unsigned int k2 = num_channels/2;
-    unsigned int s[num_symbols][num_channels];
     float complex X[num_channels];  // channelized symbols
     float complex y[num_channels];  // interpolated time-domain samples
     float complex Y[num_channels];  // received symbols
@@ -70,27 +67,12 @@ int main() {
     for (i=0; i<num_channels; i++) z0[i] = 0.0f;
     for (i=0; i<num_channels; i++) z1[i] = 0.0f;
 
-    // generate random symbols
-    for (i=0; i<num_symbols; i++) {
-        for (j=0; j<num_channels; j++) {
-            s[i][j] = modem_gen_rand_sym(mod);
-        }
-    }
-
     for (i=0; i<num_frames; i++) {
 
-        // generate frame data
+        // generate frame data (random QPSK symbols)
         for (j=0; j<num_channels; j++) {
-            if (i<num_symbols) {
-                modem_modulate(mod,s[i][j],&X[j]);
-            } else {
-                X[j] = 0.0f;
-            }
-            if (0)
-                X[j] = 0.0f;
-            else
-                X[j] = (rand()%2 ? 1.0f : -1.0f) +
-                       (rand()%2 ? 1.0f : -1.0f)*_Complex_I;
+            X[j] = (rand()%2 ? 1.0f : -1.0f) +
+                   (rand()%2 ? 1.0f : -1.0f)*_Complex_I;
         }
 
         // execute synthesyzer
@@ -112,8 +94,8 @@ int main() {
             printf("X0(%3u) = %12.8f + j*%12.8f\n", j, crealf(X0[j]), cimagf(X0[j]));
         printf("\n");
         */
-        firpfbch_synthesizer_execute(cs0, X0, y0);
-        firpfbch_synthesizer_execute(cs1, X1, y1);
+        firpfbch_crcf_synthesizer_execute(cs0, X0, y0);
+        firpfbch_crcf_synthesizer_execute(cs1, X1, y1);
         // delay lower branch by half a symbol:
         // copy first half of symbol from lower branch
         memmove(&y1_prime[k2], &y1[0], k2*sizeof(float complex));
@@ -132,8 +114,8 @@ int main() {
         // copy first half of symbol to lower branch
         memmove(&z1[k2], &y[0], k2*sizeof(float complex));
         // run analyzer
-        firpfbch_analyzer_execute(ca0, z0, Z0);
-        firpfbch_analyzer_execute(ca1, z1, Z1);
+        firpfbch_crcf_analyzer_execute(ca0, z0, Z0);
+        firpfbch_crcf_analyzer_execute(ca1, z1, Z1);
         // finish delay
         // copy last half of symbol to lower branch
         memmove(&z1[0], &y[k2], k2*sizeof(float complex));
@@ -163,29 +145,37 @@ int main() {
 
     // print results
     fprintf(fid,"\n\n");
-    fprintf(fid,"x = X(:,1:%u);\n", num_symbols);
-    fprintf(fid,"y = Y(:,%u:%u);\n", 2*m+2, num_symbols + 2*m+1);
-    fprintf(fid,"for i=1:num_channels,\n");
+    fprintf(fid,"s0 =  1:%u;\n", num_symbols);
+    fprintf(fid,"s1 = %u:%u;\n", 2*m+1, num_symbols + 2*m);
+    fprintf(fid,"Y = Y / num_channels; %% normalize by fft size\n");
+    fprintf(fid,"for i=1:min(6,num_channels),\n");
     fprintf(fid,"    figure;\n");
     fprintf(fid,"    subplot(2,1,1);\n");
-    fprintf(fid,"    plot(1:num_symbols,real(x(i,:)),'-x',1:num_symbols,real(y(i,:)),'-x');\n");
+    fprintf(fid,"    plot(1:num_symbols,real(X(i,s0)),'-x',1:num_symbols,real(Y(i,s1)),'-x');\n");
     fprintf(fid,"    ylabel('Re');\n");
     fprintf(fid,"    title(['channel ' num2str(i-1)]);\n");
     fprintf(fid,"    subplot(2,1,2);\n");
-    fprintf(fid,"    plot(1:num_symbols,imag(x(i,:)),'-x',1:num_symbols,imag(y(i,:)),'-x');\n");
+    fprintf(fid,"    plot(1:num_symbols,imag(X(i,s0)),'-x',1:num_symbols,imag(Y(i,s1)),'-x');\n");
     fprintf(fid,"    ylabel('Im');\n");
     fprintf(fid,"    pause(0.2);\n");
     fprintf(fid,"end;\n");
+
+    // plot time-domain output
+    fprintf(fid,"\n\n");
+    fprintf(fid,"t =  1:num_samples;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,real(y),'-', t,imag(y),'-');\n");
+    fprintf(fid,"xlabel('time');\n");
+    fprintf(fid,"ylabel('time series');\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
     // destroy objects
-    firpfbch_destroy(cs0);
-    firpfbch_destroy(cs1);
-    firpfbch_destroy(ca0);
-    firpfbch_destroy(ca1);
-    modem_destroy(mod);
+    firpfbch_crcf_destroy(cs0);
+    firpfbch_crcf_destroy(cs1);
+    firpfbch_crcf_destroy(ca0);
+    firpfbch_crcf_destroy(ca1);
 
     printf("done.\n");
     return 0;

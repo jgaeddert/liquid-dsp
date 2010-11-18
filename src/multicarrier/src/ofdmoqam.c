@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
@@ -35,6 +36,7 @@ struct ofdmoqam_s {
     unsigned int m;
     float beta;
     float dt;
+    float gamma;        // gain correction factor
 
     float complex * x0; // time-domain buffer (upper bank)
     float complex * x1; // time-domain buffer (lower bank)
@@ -66,6 +68,9 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
     c->beta = _beta;
     c->dt   = _dt;
 
+    // derived values
+    c->gamma = 1.0f / sqrtf(c->num_channels);
+
     // validate input
     if ( ((c->num_channels)%2) != 0 ) {
         printf("error: ofdmoqam_create(), invalid channel number %u (must be even)\n", c->num_channels);
@@ -87,25 +92,13 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
     c->x0_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
     c->x1_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
 
-    // create prototype filter
-    unsigned int h_len = 2*c->num_channels*c->m + 1;
-    float h[h_len];
-    design_rkaiser_filter(c->num_channels, c->m, c->beta, c->dt, h);
-
     // create filterbank channelizers
     if (c->type == OFDMOQAM_SYNTHESIZER) {
-        c->c0 = firpfbch_crcf_create(FIRPFBCH_SYNTHESIZER, c->num_channels, 2*c->m, h);
-        c->c1 = firpfbch_crcf_create(FIRPFBCH_SYNTHESIZER, c->num_channels, 2*c->m, h);
+        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, 0);
+        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, 0);
     } else {
-        // reverse transmit filter
-        unsigned int g_len = 2*c->num_channels*c->m;
-        float g[g_len];
-        unsigned int i;
-        for (i=0; i<g_len; i++)
-            g[i] = h[g_len-i-1];
-
-        c->c0 = firpfbch_crcf_create(FIRPFBCH_ANALYZER, c->num_channels, 2*c->m, g);
-        c->c1 = firpfbch_crcf_create(FIRPFBCH_ANALYZER, c->num_channels, 2*c->m, g);
+        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, 0);
+        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, 0);
     }
 
     // clear buffers, etc.
@@ -177,7 +170,7 @@ void ofdmoqam_synthesizer_execute(ofdmoqam _c, float complex * _X, float complex
     memmove(_c->x0_prime + k2, _c->x0, k2*sizeof(float complex));
 
     for (i=0; i<_c->num_channels; i++)
-        _x[i] = _c->x0_prime[i] + _c->x1[i];
+        _x[i] = (_c->x0_prime[i] + _c->x1[i]) * _c->gamma;
 
     // finish delay operation
     memmove(_c->x0_prime, _c->x0 + k2, k2*sizeof(float complex));
@@ -214,6 +207,10 @@ void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * 
 
     // complete upper-branch delay operation
     memmove(_c->x1_prime, _c->X0, (_c->num_channels)*sizeof(float complex));
+
+    // scale output
+    for (i=0; i<_c->num_channels; i++)
+        _X[i] *= _c->gamma;
 }
 
 void ofdmoqam_execute(ofdmoqam _c, float complex * _x, float complex * _y)

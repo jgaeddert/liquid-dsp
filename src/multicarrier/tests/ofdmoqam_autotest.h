@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_OFDMOQAM_AUTOTEST_H__
-#define __LIQUID_OFDMOQAM_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -40,7 +37,7 @@ void autotest_ofdmoqam_reconstruction()
     float dt   = 0.0f;              // timing offset (fractional sample) 
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 2;           // modulation depth (bits/symbol)
-    float tol = 1e-3f;              // error tolerance
+    float tol = 4e-3f;              // error tolerance
 
     // derived values
     unsigned int num_frames = num_symbols + 2*m + 1;        // number of frames (compensate for filter delay)
@@ -87,12 +84,6 @@ void autotest_ofdmoqam_reconstruction()
     for (i=0; i<num_frames; i++)
         ofdmoqam_execute(ca, &y[i*num_channels], &Y[i][0]);
 
-    // scale by fft size
-    for (i=0; i<num_frames; i++) {
-        for (j=0; j<num_channels; j++)
-            Y[i][j] /= (float)num_channels;
-    }
-
     // destroy objects
     ofdmoqam_destroy(cs);
     ofdmoqam_destroy(ca);
@@ -108,7 +99,7 @@ void autotest_ofdmoqam_reconstruction()
             CONTEND_DELTA( cimagf(Y[i+2*m][j]), cimagf(X[i][j]), tol );
 
             // update error
-            float e = cabsf(Y[i+2*m+1][j] - X[i][j]);
+            float e = cabsf(Y[i+2*m][j] - X[i][j]);
             rmse += e*e;
             if ( (i==0 && j==0) || (e > emax) )
                 emax = e;
@@ -123,5 +114,80 @@ void autotest_ofdmoqam_reconstruction()
     }
 }
 
-#endif // __LIQUID_OFDMOQAM_AUTOTEST_H__
+
+// 
+// AUTOTEST : output synthesis signal level
+//
+void autotest_ofdmoqam_synthesis_level()
+{
+    // options
+    unsigned int num_channels=64;   // must be even number
+    unsigned int num_symbols=30;    // num symbols
+    unsigned int m=4;               // filter symbol delay
+    float beta = 0.80f;             // excess bandwidth factor
+    float dt   = 0.0f;              // timing offset (fractional sample) 
+    modulation_scheme ms = MOD_QAM; // modulation scheme
+    unsigned int bps = 2;           // modulation depth (bits/symbol)
+    float tol = 1e-3f;              // error tolerance
+
+    // derived values
+    unsigned int num_frames = num_symbols + 2*m;            // number of frames (compensate for filter delay)
+    unsigned int num_samples = num_channels * num_frames;   // number of samples
+
+    // create synthesizer/analyzer objects
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_SYNTHESIZER,0);
+
+    // modem
+    modem mod = modem_create(ms,bps);
+
+    unsigned int i, j;
+    float complex X[num_frames][num_channels]; // channelized symbols
+    float complex y[num_samples];               // synthesized time-domain samples
+    
+    unsigned int s;
+
+    // generate frame data
+    for (i=0; i<num_frames; i++) {
+        for (j=0; j<num_channels; j++) {
+            s = modem_gen_rand_sym(mod);
+            modem_modulate(mod,s,&X[i][j]);
+        }
+    }
+
+    // execute synthesyzer
+    for (i=0; i<num_frames; i++)
+        ofdmoqam_execute(cs, &X[i][0], &y[i*num_channels]);
+
+#if 0
+    // output debugging file
+    FILE * fid = fopen("ofdmoqam_synthesis_level.m", "w");
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"y(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
+    fprintf(fid,"t = 0:(%u-1);\n", num_samples);
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,real(y), t,imag(y));\n");
+    fclose(fid);
+    printf("results written to 'ofdmoqam_synthesis_level.m'\n");
+#endif
+
+    // destroy objects
+    ofdmoqam_destroy(cs);
+    modem_destroy(mod);
+
+    // compute signal level on resulting time series
+    float e2 = 0.0f;
+    unsigned int n=0;
+    // remove effects of filter delay
+    for (i=m*num_channels; i<num_samples; i++) {
+        e2 += crealf( y[i]*conjf(y[i]) );
+        n++;
+    }
+    float rms = sqrtf( e2/n );
+    if (liquid_autotest_verbose)
+        printf("  ofdm/oqam rms level : %12.8f (expected 1)\n", rms);
+    CONTEND_DELTA( rms, 1.0f, tol );
+
+}
 

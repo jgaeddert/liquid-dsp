@@ -139,9 +139,9 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S2 = (float complex*) malloc((q->M)*sizeof(float complex));
-    ofdmoqamframe_init_S0(q->S0);   // ...(q->S0, q->p)
-    ofdmoqamframe_init_S1(q->S1);   // ...(q->S1, q->p)
-    ofdmoqamframe_init_S2(q->S2);   // ...(q->S2, q->p)
+    ofdmoqamframe_init_S0(q->p, q->M, q->S0);   // ...(q->S0, q->p)
+    ofdmoqamframe_init_S1(q->p, q->M, q->S1);   // ...(q->S1, q->p)
+    ofdmoqamframe_init_S2(q->p, q->M, q->S2);   // ...(q->S2, q->p)
     for (i=0; i<q->M; i++) {
         q->S0[i] *= q->zeta;
         q->S1[i] *= q->zeta;

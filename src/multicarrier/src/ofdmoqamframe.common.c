@@ -28,17 +28,9 @@
 
 #include "liquid.internal.h"
 
-int ofdmoqamframe_getsctype(unsigned int _id)
-{
-    if (_id==0 || (_id>26 && _id<38))
-        return OFDMOQAMFRAME_SCTYPE_NULL;
-    else if (_id==11 || _id==25 || _id==39 || _id==53)
-        return OFDMOQAMFRAME_SCTYPE_PILOT;
-    else
-        return OFDMOQAMFRAME_SCTYPE_DATA;
-}
-
-void ofdmoqamframe_init_S0(float complex * _S0)
+void ofdmoqamframe_init_S0(unsigned int * _p,
+                           unsigned int _num_subcarriers,
+                           float complex * _S0)
 {
     msequence ms = msequence_create(4);
     modem mod = modem_create(MOD_QPSK,2);
@@ -74,7 +66,9 @@ void ofdmoqamframe_init_S0(float complex * _S0)
     modem_destroy(mod);
 }
 
-void ofdmoqamframe_init_S1(float complex * _S1)
+void ofdmoqamframe_init_S1(unsigned int * _p,
+                           unsigned int _num_subcarriers,
+                           float complex * _S1)
 {
     msequence ms = msequence_create(5);
     modem mod = modem_create(MOD_QPSK,2);
@@ -100,42 +94,6 @@ void ofdmoqamframe_init_S1(float complex * _S1)
             } else {
                 // odd subcarrer
                 _S1[j] = zeta * sqrtf(2.0f) * cimagf(sym) * _Complex_I;
-            }
-        }
-    }
-    msequence_destroy(ms);
-    modem_destroy(mod);
-}
-
-void ofdmoqamframe_init_S2(float complex * _S2)
-{
-    msequence ms = msequence_create(4);
-    modem mod = modem_create(MOD_QPSK,2);
-    unsigned int s;
-    float complex sym;
-    unsigned int num_subcarriers = 64;
-    float zeta = 1.0f;
-    unsigned int j;
-    unsigned int sctype;
-
-    // short sequence
-    for (j=0; j<num_subcarriers; j++) {
-        sctype = ofdmoqamframe_getsctype(j);
-        if (sctype == OFDMOQAMFRAME_SCTYPE_NULL) {
-            // NULL subcarrier
-            _S2[j] = 0.0f;
-        } else {
-            if ((j%2) == 0) {
-                // even subcarrer
-                _S2[j] = 0.0f;
-            } else {
-                // odd subcarrer
-                s = msequence_generate_symbol(ms,2);
-                modem_modulate(mod,s,&sym);
-                // retain only quadrature component (time aligned
-                // without half-symbol delay), and amplitude-
-                // compensated.
-                _S2[j] = cimagf(sym) * _Complex_I * zeta * 2.0f;
             }
         }
     }

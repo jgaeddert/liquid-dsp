@@ -17,13 +17,13 @@ int main() {
     // options
     unsigned int num_channels=8;    // number of channels
     unsigned int m=2;               // filter delay
-    float slsl=-60;                 // sidelobe suppression level
+    float As=-60;                   // stop-band attenuation
     unsigned int num_frames=25;     // number of frames
 
     // create objects
-    firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, 0);
+    firpfbch_crcf c = firpfbch_crcf_create_kaiser(FIRPFBCH_ANALYZER, num_channels, m, As);
 
-    //firpfbch_print(c);
+    //firpfbch_crcf_print(c);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -55,7 +55,7 @@ int main() {
         }
 
         // execute analysis filter bank
-        firpfbch_analyzer_execute(c, x, y);
+        firpfbch_crcf_analyzer_execute(c, x, y);
 
         printf("%4u : ", i);
         for (j=0; j<num_channels; j++) {
@@ -79,7 +79,7 @@ int main() {
 
     // destroy objects
     nco_crcf_destroy(nco_tx);
-    firpfbch_destroy(c);
+    firpfbch_crcf_destroy(c);
 
     // plot results
     fprintf(fid,"\n\n");

@@ -21,7 +21,7 @@ int main() {
     unsigned int bps = 2;           // modulation depth (bits/symbol)
 
     // number of frames (compensate for filter delay)
-    unsigned int num_frames = num_symbols + 2*m + 1;
+    unsigned int num_frames = num_symbols + 2*m;
 
     unsigned int num_samples = num_channels * num_frames;
 
@@ -37,6 +37,8 @@ int main() {
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
     fprintf(fid,"num_symbols=%u;\n", num_symbols);
+    fprintf(fid,"num_frames = %u;\n", num_frames);
+    fprintf(fid,"num_samples = num_frames*num_channels;\n");
 
     fprintf(fid,"X = zeros(%u,%u);\n", num_channels, num_frames);
     fprintf(fid,"y = zeros(1,%u);\n",  num_samples);
@@ -91,7 +93,7 @@ int main() {
     // print results
     fprintf(fid,"\n\n");
     fprintf(fid,"X0 = X(:,1:%u);\n", num_symbols);
-    fprintf(fid,"Y0 = Y(:,%u:%u);\n", 2*m+2, num_symbols + 2*m+1);
+    fprintf(fid,"Y0 = Y(:,%u:%u);\n", 2*m+1, num_symbols + 2*m);
     fprintf(fid,"for i=1:num_channels,\n");
     fprintf(fid,"    figure;\n");
     fprintf(fid,"    subplot(2,1,1);\n");
@@ -103,6 +105,14 @@ int main() {
     fprintf(fid,"    ylabel('Im');\n");
     fprintf(fid,"    pause(0.2);\n");
     fprintf(fid,"end;\n");
+
+    // print results
+    fprintf(fid,"\n\n");
+    fprintf(fid,"t = 0:(num_samples-1);\n");
+    fprintf(fid,"    figure;\n");
+    fprintf(fid,"    plot(t,real(y),'-', t,imag(y),'-');\n");
+    fprintf(fid,"    xlabel('time');\n");
+    fprintf(fid,"    ylabel('signal');\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);

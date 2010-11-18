@@ -2892,6 +2892,15 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,                         \
                              unsigned int _num_channels,        \
                              unsigned int _p,                   \
                              TC * _h);                          \
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,                  \
+                                    unsigned int _M,            \
+                                    unsigned int _m,            \
+                                    float _As);                 \
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,                \
+                                      unsigned int _M,          \
+                                      unsigned int _m,          \
+                                      float _beta,              \
+                                      int _ftype);              \
 void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
 void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
 void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
@@ -2906,7 +2915,9 @@ void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
                                  TI * _x,                       \
                                  TO * _X);                      \
 void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q, TI _x);            \
-void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q, TO * _X);
+void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,                     \
+                             unsigned int _k,                   \
+                             TO * _X);
 
 
 LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,
@@ -3033,8 +3044,10 @@ void ofdmoqamframegen_flush(ofdmoqamframegen _q,
 typedef int (*ofdmoqamframesync_callback)(liquid_float_complex * _y,
                                           void * _userdata);
 typedef struct ofdmoqamframesync_s * ofdmoqamframesync;
-ofdmoqamframesync ofdmoqamframesync_create(unsigned int _m,
+ofdmoqamframesync ofdmoqamframesync_create(unsigned int _num_subcarriers,
+                                           unsigned int _m,
                                            float _beta,
+                                           unsigned int * _p,
                                            ofdmoqamframesync_callback _callback,
                                            void * _userdata);
 void ofdmoqamframesync_destroy(ofdmoqamframesync _q);

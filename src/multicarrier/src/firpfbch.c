@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
@@ -36,20 +37,20 @@ struct FIRPFBCH(_s) {
     int type;                   // synthesis/analysis
     unsigned int num_channels;  // number of channels
     unsigned int p;             // filter length (symbols)
-    TO * x;                     // time-domain buffer
-    TO * X;                     // freq-domain buffer
 
     // filter
     unsigned int h_len;         // filter length
     TC * h;                     // filter coefficients
-    unsigned int filter_index;
     
     // create separate bank of dotprod and window objects
     DOTPROD() * dp;             // dot product object array
     WINDOW() * w;               // window buffer object array
+    unsigned int filter_index;  // running filter index (analysis)
 
     // fft plan
     FFT_PLAN fft;               // fft|ifft object
+    TO * x;                     // fft|ifft transform input array
+    TO * X;                     // fft|ifft transform output array
 };
 
 // create FIR polyphase filterbank channelizer object
@@ -64,13 +65,13 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
 {
     // validate input
     if (_type != FIRPFBCH_ANALYZER && _type != FIRPFBCH_SYNTHESIZER) {
-        printf("error: firpfbch_xxxt_create(), invalid type %d\n", _type);
+        fprintf(stderr,"error: firpfbch_xxxt_create(), invalid type %d\n", _type);
         exit(1);
     } else if (_num_channels == 0) {
-        printf("error: firpfbch_xxxt_create(), number of channels must be greater than 0\n");
+        fprintf(stderr,"error: firpfbch_xxxt_create(), number of channels must be greater than 0\n");
         exit(1);
     } else if (_p == 0) {
-        printf("error: firpfbch_xxxt_create(), invalid filter size (must be greater than 0)\n");
+        fprintf(stderr,"error: firpfbch_xxxt_create(), invalid filter size (must be greater than 0)\n");
         exit(1);
     }
 
@@ -126,6 +127,107 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
     return q;
 }
 
+// create FIR polyphase filterbank channelizer object with
+// prototype filter based on windowed Kaiser design
+//  _type           :   channelizer type (FIRPFBCH_ANALYZER | FIRPFBCH_SYNTHESIZER)
+//  _num_channels   :   number of channels
+//  _m              :   filter delay (symbols)
+//  _As             :   stop-band attentuation [dB]
+FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
+                                    unsigned int _num_channels,
+                                    unsigned int _m,
+                                    float _As)
+{
+    // validate input
+    if (_num_channels == 0) {
+        fprintf(stderr,"error: firpfbch_xxxt_create_kaiser(), number of channels must be greater than 0\n");
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firpfbch_xxxt_create_kaiser(), invalid filter size (must be greater than 0)\n");
+        exit(1);
+    }
+    
+    _As = fabsf(_As);
+
+    // design filter
+    unsigned int h_len = 2*_num_channels*_m + 1;
+    float h[h_len];
+    float fc = 1.0f / (float)_num_channels; // TODO : check this value
+    fir_kaiser_window(h_len, fc, _As, 0.0f, h);
+
+    // copy coefficients to type-specfic array
+    TC hc[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        hc[i] = h[i];
+
+    // create filterbank object
+    unsigned int p = 2*_m;
+    FIRPFBCH() q = FIRPFBCH(_create)(_type, _num_channels, p, hc);
+
+    // return filterbank object
+    return q;
+}
+
+// create FIR polyphase filterbank channelizer object with
+// prototype root-Nyquist filter
+//  _type           :   channelizer type (FIRPFBCH_ANALYZER | FIRPFBCH_SYNTHESIZER)
+//  _num_channels   :   number of channels
+//  _m              :   filter delay (symbols)
+//  _beta           :   filter excess bandwidth factor, in [0,1]
+//  _ftype          :   filter prototype (rrcos, rkaiser, etc.)
+FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
+                                      unsigned int _num_channels,
+                                      unsigned int _m,
+                                      float _beta,
+                                      int _ftype)
+{
+    // validate input
+    if (_type != FIRPFBCH_ANALYZER && _type != FIRPFBCH_SYNTHESIZER) {
+        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), invalid type %d\n", _type);
+        exit(1);
+    } else if (_num_channels == 0) {
+        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), number of channels must be greater than 0\n");
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), invalid filter size (must be greater than 0)\n");
+        exit(1);
+    }
+    
+    // design filter
+    unsigned int h_len = 2*_num_channels*_m + 1;
+    float h[h_len];
+    // TODO : actually design based on requested filter prototype
+    switch (_ftype) {
+    case 0: // rrcos
+    case 1: // rKaiser
+    case 2: // arKaiser
+    case 3: // hM3
+    default:
+        design_rkaiser_filter(_num_channels, _m, _beta, 0.0f, h);
+    }
+
+    // copy coefficients to type-specfic array, reversing order if
+    // channelizer is an analyzer, matched filter: g(-t)
+    unsigned int g_len = 2*_num_channels*_m;
+    TC gc[g_len];
+    unsigned int i;
+    if (_type == FIRPFBCH_SYNTHESIZER) {
+        for (i=0; i<g_len; i++)
+            gc[i] = h[i];
+    } else {
+        for (i=0; i<g_len; i++)
+            gc[i] = h[g_len-i-1];
+    }
+
+    // create filterbank object
+    unsigned int p = 2*_m;
+    FIRPFBCH() q = FIRPFBCH(_create)(_type, _num_channels, p, gc);
+
+    // return filterbank object
+    return q;
+}
+
 // destroy firpfbch object
 void FIRPFBCH(_destroy)(FIRPFBCH() _q)
 {
@@ -166,19 +268,29 @@ void FIRPFBCH(_clear)(FIRPFBCH() _q)
 // print firpfbch object
 void FIRPFBCH(_print)(FIRPFBCH() _q)
 {
-    printf("firpfbch [%u channels]:\n", _q->num_channels);
+    unsigned int i;
+    printf("firpfbch (%s) [%u channels]:\n",
+            _q->type == FIRPFBCH_ANALYZER ? "analyzer" : "synthesizer",
+            _q->num_channels);
+    for (i=0; i<_q->h_len; i++)
+        printf("  h[%3u] = %12.8f + %12.8f*j\n", i, crealf(_q->h[i]), cimagf(_q->h[i]));
 }
 
 // 
 // SYNTHESIZER
 //
 
+// execute filterbank as synthesizer on block of samples
+//  _q      :   filterbank channelizer object
+//  _x      :   channelized input, [size: num_channels x 1]
+//  _y      :   output time series, [size: num_channels x 1]
 void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,
                                     TI * _x,
                                     TO * _y)
 {
     unsigned int i;
 
+    // copy channelized symbols to transform input
     memmove(_q->X, _x, _q->num_channels*sizeof(TI));
 
     // execute inverse DFT, store result in buffer 'x'
@@ -214,8 +326,9 @@ void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,
     for (i=0; i<_q->num_channels; i++)
         FIRPFBCH(_analyzer_push)(_q, _x[i]);
 
-    // execute analysis filters on the given input
-    FIRPFBCH(_analyzer_run)(_q, _y);
+    // execute analysis filters on the given input starting
+    // with filterbank at index zero
+    FIRPFBCH(_analyzer_run)(_q, 0, _y);
 }
 
 // push single sample into analysis filterbank, updating index
@@ -234,8 +347,10 @@ void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q,
 
 // run filterbank analyzer dot products, DFT
 //  _q      :   filterbank channelizer object
+//  _k      :   filterbank alignment index
 //  _y      :   output array, [size: num_channels x 1]
 void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,
+                             unsigned int _k,
                              TO * _y)
 {
     unsigned int i;
@@ -243,8 +358,15 @@ void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,
     // execute filter outputs, reversing order of output (not
     // sure why this is necessary)
     T * r;  // read pointer
+    unsigned int index;
     for (i=0; i<_q->num_channels; i++) {
-        WINDOW(_read)(_q->w[i], &r);
+        // compute appropriate index
+        index = (i+_k) % _q->num_channels;
+
+        // read buffer at specified index
+        WINDOW(_read)(_q->w[index], &r);
+
+        // compute dot product
         DOTPROD(_execute)(_q->dp[i], r, &_q->X[_q->num_channels-i-1]);
     }
 
