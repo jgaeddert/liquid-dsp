@@ -37,6 +37,8 @@ int main() {
     fprintf(fid,"clear all;\nclose all;\n\n");
     fprintf(fid,"num_channels=%u;\n", num_channels);
     fprintf(fid,"num_symbols=%u;\n", num_symbols);
+    fprintf(fid,"num_frames = %u;\n", num_frames);
+    fprintf(fid,"num_samples = num_frames*num_channels;\n");
 
     fprintf(fid,"X = zeros(%u,%u);\n", num_channels, num_frames);
     fprintf(fid,"y = zeros(1,%u);\n",  num_samples);
@@ -103,6 +105,14 @@ int main() {
     fprintf(fid,"    ylabel('Im');\n");
     fprintf(fid,"    pause(0.2);\n");
     fprintf(fid,"end;\n");
+
+    // print results
+    fprintf(fid,"\n\n");
+    fprintf(fid,"t = 0:(num_samples-1);\n");
+    fprintf(fid,"    figure;\n");
+    fprintf(fid,"    plot(t,real(y),'-', t,imag(y),'-');\n");
+    fprintf(fid,"    xlabel('time');\n");
+    fprintf(fid,"    ylabel('signal');\n");
 
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
