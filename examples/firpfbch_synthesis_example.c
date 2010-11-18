@@ -19,7 +19,7 @@
 int main() {
     // options
     unsigned int m=4;               // filter delay
-    float slsl=-60;                 // sidelobe suppression level
+    float As=-60;                   // stop-band attenuation
     unsigned int num_symbols=1;     // number of symbols per channel
     unsigned int num_channels=16;   // number of channels
 
@@ -40,7 +40,7 @@ int main() {
     }
 
     // create synthesizer object
-    firpfbch c = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, 0);
+    firpfbch_crcf c = firpfbch_crcf_create_kaiser(FIRPFBCH_SYNTHESIZER, num_channels, m, As);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
@@ -73,7 +73,11 @@ int main() {
         }
 
         // execute synthesis filter bank
-        firpfbch_synthesizer_execute(c, X, y);
+        firpfbch_crcf_synthesizer_execute(c, X, y);
+
+        // normalize signal level
+        for (j=0; j<num_channels; j++)
+            y[j] /= num_channels;
 
         // write output to file
         for (j=0; j<num_channels; j++) {
@@ -112,7 +116,7 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    firpfbch_destroy(c);
+    firpfbch_crcf_destroy(c);
 
     printf("done.\n");
     return 0;
