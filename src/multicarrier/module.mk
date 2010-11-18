@@ -26,17 +26,21 @@ module_name     := multicarrier
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:=		\
-	firpfbch.c		\
-	ofdmframe64.common.c	\
-	ofdmframe64gen.c	\
-	ofdmframe64sync.c	\
-	ofdmframegen.c		\
-	ofdmframesync.c		\
-	ofdmoqam.c		\
+local_s_files	:=			\
+	firpfbch_old.c			\
+	firpfbch_crcf.c			\
+	ofdmframe64.common.c		\
+	ofdmframe64gen.c		\
+	ofdmframe64sync.c		\
+	ofdmframegen.c			\
+	ofdmframesync.c			\
+	ofdmoqam.c			\
 	ofdmoqamframe64.common.c	\
-	ofdmoqamframe64gen.c	\
-	ofdmoqamframe64sync.c
+	ofdmoqamframe64gen.c		\
+	ofdmoqamframe64sync.c		\
+	ofdmoqamframe.common.c		\
+	ofdmoqamframegen.c		\
+	ofdmoqamframesync.c
 
 # local_t_files
 #

@@ -2831,10 +2831,12 @@ void ampmodem_demodulate(ampmodem _fm,
 // MODULE : multicarrier
 //
 
+
 // FIR polyphase filterbank channelizer
 // NOTES:
-//   Although firpfbch is a placeholder for both the synthesizer and
-//   analyzer, separate objects should be used for each task.
+//   - Although firpfbch is a placeholder for both the synthesizer and
+//     analyzer, separate objects should be used for each task.
+//   - THIS OBJECT IS SOON TO BE REMOVED! replace with firpfbch_xxxt family.
 typedef struct firpfbch_s * firpfbch;
 
 #define FIRPFBCH_NYQUIST        0
@@ -2871,6 +2873,49 @@ void firpfbch_analyzer_clearrunstate(firpfbch _c);
 void firpfbch_analyzer_execute(firpfbch _c,
                                liquid_float_complex * _X,
                                liquid_float_complex * _x);
+
+
+//
+// Finite impulse response polyphase filterbank channelizer
+//
+
+#define FIRPFBCH_MANGLE_CRCF(name)  LIQUID_CONCAT(firpfbch_crcf,name)
+
+// Macro:
+//   FIRPFBCH   : name-mangling macro
+//   TO         : output data type
+//   TC         : coefficients data type
+//   TI         : input data type
+#define LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH,TO,TC,TI)           \
+typedef struct FIRPFBCH(_s) * FIRPFBCH();                       \
+FIRPFBCH() FIRPFBCH(_create)(int _type,                         \
+                             unsigned int _num_channels,        \
+                             unsigned int _p,                   \
+                             TC * _h);                          \
+void FIRPFBCH(_destroy)(FIRPFBCH() _q);                         \
+void FIRPFBCH(_clear)(FIRPFBCH() _q);                           \
+void FIRPFBCH(_print)(FIRPFBCH() _q);                           \
+                                                                \
+/* synthesizer */                                               \
+void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,              \
+                                    TI * _x,                    \
+                                    TO * _X);                   \
+                                                                \
+/* analyzer */                                                  \
+void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,                 \
+                                 TI * _x,                       \
+                                 TO * _X);                      \
+void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q, TI _x);            \
+void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q, TO * _X);
+
+
+LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,
+                           liquid_float_complex,
+                           float,
+                           liquid_float_complex)
+
+
+
 
 // FIR OFDM/OQAM
 typedef struct ofdmoqam_s * ofdmoqam;
@@ -2931,6 +2976,73 @@ void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q);
 void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
                                  liquid_float_complex * _x,
                                  unsigned int _n);
+
+
+
+
+// 
+// ofdmoqamframegen
+//
+typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
+
+void ofdmoqamframe_init_default_sctype(unsigned int _M,
+                                       unsigned int * _p);
+
+// create OFDM/OQAM framing generator object
+//  _M      :   number of subcarriers, >10 typical
+//  _m      :   filter delay (symbols), 3 typical
+//  _beta   :   filter excess bandwidth factor, 0.9 typical
+//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  TODO    :   include placeholder for guard bands, pilots
+//  NOTES
+//    - The number of subcarriers must be even, typically at least 16
+//    - If _p is a NULL pointer, then the frame generator will use
+//      the default subcarrier allocation
+ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
+                                         unsigned int _m,
+                                         float _beta,
+                                         unsigned int * _p);
+
+// destroy OFDM/OQAM framing generator object
+void ofdmoqamframegen_destroy(ofdmoqamframegen _q);
+
+void ofdmoqamframegen_print(ofdmoqamframegen _q);
+
+void ofdmoqamframegen_reset(ofdmoqamframegen _q);
+
+// short PLCP training sequence
+void ofdmoqamframegen_writeshortsequence(ofdmoqamframegen _q,
+                                         liquid_float_complex *_y);
+// long PLCP training sequence
+void ofdmoqamframegen_writelongsequence(ofdmoqamframegen _q,
+                                        liquid_float_complex *_y);
+// gain PLCP training sequence
+void ofdmoqamframegen_writetrainingsequence(ofdmoqamframegen _q,
+                                            liquid_float_complex *_y);
+void ofdmoqamframegen_writeheader(ofdmoqamframegen _q,
+                                  liquid_float_complex *_y);
+void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
+                                  liquid_float_complex *_x,
+                                  liquid_float_complex *_y);
+void ofdmoqamframegen_flush(ofdmoqamframegen _q,
+                            liquid_float_complex *_y);
+
+// 
+// ofdmoqamframesync
+//
+typedef int (*ofdmoqamframesync_callback)(liquid_float_complex * _y,
+                                          void * _userdata);
+typedef struct ofdmoqamframesync_s * ofdmoqamframesync;
+ofdmoqamframesync ofdmoqamframesync_create(unsigned int _m,
+                                           float _beta,
+                                           ofdmoqamframesync_callback _callback,
+                                           void * _userdata);
+void ofdmoqamframesync_destroy(ofdmoqamframesync _q);
+void ofdmoqamframesync_print(ofdmoqamframesync _q);
+void ofdmoqamframesync_reset(ofdmoqamframesync _q);
+void ofdmoqamframesync_execute(ofdmoqamframesync _q,
+                               liquid_float_complex * _x,
+                               unsigned int _n);
 
 
 

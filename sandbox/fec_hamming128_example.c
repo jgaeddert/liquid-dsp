@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "liquid.h"
+#include "liquid.internal.h"
 
 void print_bitstring(unsigned int _x,
                      unsigned int _n)

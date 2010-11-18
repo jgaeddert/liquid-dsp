@@ -296,7 +296,9 @@ clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
 
+# 
 # Examples
+#
 .PHONY: examples
 include examples/examples.mk
 example_objs	= $(patsubst %.c,%.o,$(example_src))
@@ -313,6 +315,29 @@ $(example_progs): % : %.o libliquid.a
 clean-examples:
 	$(RM) examples/*.o
 	$(RM) $(example_progs)
+
+# 
+# sandbox
+#
+# NOTE: sandbox _requires_ fftw3 to build
+.PHONY: sandbox
+include sandbox/sandbox.mk
+sandbox_objs	= $(patsubst %.c,%.o,$(sandbox_src))
+sandbox_progs	= $(patsubst %.c,%,  $(sandbox_src))
+sandbox: $(sandbox_progs)
+SANDBOX_LDFLAGS = $(LDFLAGS) -pthread -lfftw3f
+
+# NOTE: linked libraries must come _after_ the target program
+$(sandbox_objs): %.o : %.c libliquid.a
+
+$(sandbox_progs): % : %.o libliquid.a
+	$(CC) $(SANDBOX_LDFLAGS) $^ -o $@
+
+# clean sandbox
+clean-sandbox:
+	$(RM) sandbox/*.o
+	$(RM) $(sandbox_progs)
+
 
 # 
 # todolist (tasks list)
@@ -350,7 +375,7 @@ $(addprefix clean-,$(modules)):
 	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.o
 	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.d
 
-clean: clean-check clean-bench clean-examples clean-modules
+clean: clean-check clean-bench clean-examples clean-sandbox clean-modules
 	$(RM) $(programs)
 	$(RM) $(libraries)
 	$(RM) $(extra_clean)
