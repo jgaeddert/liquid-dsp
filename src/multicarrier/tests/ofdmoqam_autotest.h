@@ -40,7 +40,7 @@ void autotest_ofdmoqam_reconstruction()
     float dt   = 0.0f;              // timing offset (fractional sample) 
     modulation_scheme ms = MOD_QAM; // modulation scheme
     unsigned int bps = 2;           // modulation depth (bits/symbol)
-    float tol = 1e-3f;              // error tolerance
+    float tol = 4e-3f;              // error tolerance
 
     // derived values
     unsigned int num_frames = num_symbols + 2*m + 1;        // number of frames (compensate for filter delay)
