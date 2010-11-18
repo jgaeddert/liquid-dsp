@@ -108,7 +108,7 @@ void autotest_ofdmoqam_reconstruction()
             CONTEND_DELTA( cimagf(Y[i+2*m][j]), cimagf(X[i][j]), tol );
 
             // update error
-            float e = cabsf(Y[i+2*m+1][j] - X[i][j]);
+            float e = cabsf(Y[i+2*m][j] - X[i][j]);
             rmse += e*e;
             if ( (i==0 && j==0) || (e > emax) )
                 emax = e;
