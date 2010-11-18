@@ -37,20 +37,20 @@ struct FIRPFBCH(_s) {
     int type;                   // synthesis/analysis
     unsigned int num_channels;  // number of channels
     unsigned int p;             // filter length (symbols)
-    TO * x;                     // time-domain buffer
-    TO * X;                     // freq-domain buffer
 
     // filter
     unsigned int h_len;         // filter length
     TC * h;                     // filter coefficients
-    unsigned int filter_index;
     
     // create separate bank of dotprod and window objects
     DOTPROD() * dp;             // dot product object array
     WINDOW() * w;               // window buffer object array
+    unsigned int filter_index;  // running filter index (analysis)
 
     // fft plan
     FFT_PLAN fft;               // fft|ifft object
+    TO * x;                     // fft|ifft transform input array
+    TO * X;                     // fft|ifft transform output array
 };
 
 // create FIR polyphase filterbank channelizer object
@@ -268,19 +268,29 @@ void FIRPFBCH(_clear)(FIRPFBCH() _q)
 // print firpfbch object
 void FIRPFBCH(_print)(FIRPFBCH() _q)
 {
-    printf("firpfbch [%u channels]:\n", _q->num_channels);
+    unsigned int i;
+    printf("firpfbch (%s) [%u channels]:\n",
+            _q->type == FIRPFBCH_ANALYZER ? "analyzer" : "synthesizer",
+            _q->num_channels);
+    for (i=0; i<_q->h_len; i++)
+        printf("  h[%3u] = %12.8f + %12.8f*j\n", i, crealf(_q->h[i]), cimagf(_q->h[i]));
 }
 
 // 
 // SYNTHESIZER
 //
 
+// execute filterbank as synthesizer on block of samples
+//  _q      :   filterbank channelizer object
+//  _x      :   channelized input, [size: num_channels x 1]
+//  _y      :   output time series, [size: num_channels x 1]
 void FIRPFBCH(_synthesizer_execute)(FIRPFBCH() _q,
                                     TI * _x,
                                     TO * _y)
 {
     unsigned int i;
 
+    // copy channelized symbols to transform input
     memmove(_q->X, _x, _q->num_channels*sizeof(TI));
 
     // execute inverse DFT, store result in buffer 'x'
