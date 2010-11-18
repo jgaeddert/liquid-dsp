@@ -326,8 +326,9 @@ void FIRPFBCH(_analyzer_execute)(FIRPFBCH() _q,
     for (i=0; i<_q->num_channels; i++)
         FIRPFBCH(_analyzer_push)(_q, _x[i]);
 
-    // execute analysis filters on the given input
-    FIRPFBCH(_analyzer_run)(_q, _y);
+    // execute analysis filters on the given input starting
+    // with filterbank at index zero
+    FIRPFBCH(_analyzer_run)(_q, 0, _y);
 }
 
 // push single sample into analysis filterbank, updating index
@@ -346,8 +347,10 @@ void FIRPFBCH(_analyzer_push)(FIRPFBCH() _q,
 
 // run filterbank analyzer dot products, DFT
 //  _q      :   filterbank channelizer object
+//  _k      :   filterbank alignment index
 //  _y      :   output array, [size: num_channels x 1]
 void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,
+                             unsigned int _k,
                              TO * _y)
 {
     unsigned int i;
@@ -355,8 +358,15 @@ void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,
     // execute filter outputs, reversing order of output (not
     // sure why this is necessary)
     T * r;  // read pointer
+    unsigned int index;
     for (i=0; i<_q->num_channels; i++) {
-        WINDOW(_read)(_q->w[i], &r);
+        // compute appropriate index
+        index = (i+_k) % _q->num_channels;
+
+        // read buffer at specified index
+        WINDOW(_read)(_q->w[index], &r);
+
+        // compute dot product
         DOTPROD(_execute)(_q->dp[i], r, &_q->X[_q->num_channels-i-1]);
     }
 
