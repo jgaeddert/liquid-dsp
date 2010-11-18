@@ -1576,14 +1576,18 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 // 
 // ofdm/oqam framing
 //
-void ofdmoqamframe_init_S0(float complex * _S0);
-void ofdmoqamframe_init_S1(float complex * _S1);
-void ofdmoqamframe_init_S2(float complex * _S2);
 
 #define OFDMOQAMFRAME_SCTYPE_NULL     0
 #define OFDMOQAMFRAME_SCTYPE_PILOT    1
 #define OFDMOQAMFRAME_SCTYPE_DATA     2
-int ofdmoqamframe_getsctype(unsigned int _id);
+
+void ofdmoqamframe_init_S0(unsigned int * _p,
+                           unsigned int _num_subcarriers,
+                           float complex * _S0);
+
+void ofdmoqamframe_init_S1(unsigned int * _p,
+                           unsigned int _num_subcarriers,
+                           float complex * _S1);
 
 void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q, float complex _x);
 void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q, float complex _x);
@@ -1592,8 +1596,8 @@ void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q, float complex _x)
 
 void ofdmoqamframesync_estimate_gain_plcplong(ofdmoqamframesync _q);
 void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
-                                   float complex * _Y0,
-                                   float complex * _Y1);
+                                 float complex * _Y0,
+                                 float complex * _Y1);
 
 // 
 // MODULE : nco (numerically-controlled oscillator)

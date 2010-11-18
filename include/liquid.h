@@ -3044,8 +3044,10 @@ void ofdmoqamframegen_flush(ofdmoqamframegen _q,
 typedef int (*ofdmoqamframesync_callback)(liquid_float_complex * _y,
                                           void * _userdata);
 typedef struct ofdmoqamframesync_s * ofdmoqamframesync;
-ofdmoqamframesync ofdmoqamframesync_create(unsigned int _m,
+ofdmoqamframesync ofdmoqamframesync_create(unsigned int _num_subcarriers,
+                                           unsigned int _m,
                                            float _beta,
+                                           unsigned int * _p,
                                            ofdmoqamframesync_callback _callback,
                                            void * _userdata);
 void ofdmoqamframesync_destroy(ofdmoqamframesync _q);
