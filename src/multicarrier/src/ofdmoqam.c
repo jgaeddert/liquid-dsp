@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "liquid.internal.h"
 
@@ -35,6 +36,7 @@ struct ofdmoqam_s {
     unsigned int m;
     float beta;
     float dt;
+    float gamma;        // gain correction factor
 
     float complex * x0; // time-domain buffer (upper bank)
     float complex * x1; // time-domain buffer (lower bank)
@@ -65,6 +67,9 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
     c->type = _type;
     c->beta = _beta;
     c->dt   = _dt;
+
+    // derived values
+    c->gamma = 1.0f / sqrtf(c->num_channels);
 
     // validate input
     if ( ((c->num_channels)%2) != 0 ) {
@@ -165,7 +170,7 @@ void ofdmoqam_synthesizer_execute(ofdmoqam _c, float complex * _X, float complex
     memmove(_c->x0_prime + k2, _c->x0, k2*sizeof(float complex));
 
     for (i=0; i<_c->num_channels; i++)
-        _x[i] = _c->x0_prime[i] + _c->x1[i];
+        _x[i] = (_c->x0_prime[i] + _c->x1[i]) * _c->gamma;
 
     // finish delay operation
     memmove(_c->x0_prime, _c->x0 + k2, k2*sizeof(float complex));
@@ -202,6 +207,10 @@ void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * 
 
     // complete upper-branch delay operation
     memmove(_c->x1_prime, _c->X0, (_c->num_channels)*sizeof(float complex));
+
+    // scale output
+    for (i=0; i<_c->num_channels; i++)
+        _X[i] *= _c->gamma;
 }
 
 void ofdmoqam_execute(ofdmoqam _c, float complex * _x, float complex * _y)
