@@ -1,5 +1,5 @@
 //
-// sandb0x/ofdmoqam_firpfbch_test.c
+// sandbox/ofdmoqam_firpfbch_test.c
 //
 // Tests the validity of OFDM/OQAM using firpfbch_crcf channelizer
 // objects.
