@@ -66,7 +66,7 @@ int main() {
     float cfo=0.0f;         // carrier frequency offset (max: pi/(2*num_channels) ~ 0.024544)
     float cpo=0.0f;         // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
-    unsigned int p=0;       // number of multi-path channel taps
+    unsigned int hc_len=0;  // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
     unsigned int d=0;       // sample delay (noise samples before frame)
 
@@ -87,7 +87,7 @@ int main() {
     fprintf(fid,"n = %u;\n", num_samples);
     fprintf(fid,"y = zeros(1,n);\n");
     fprintf(fid,"z = zeros(1,n);\n");
-    fprintf(fid,"h = zeros(1,%u);\n", p+1);
+    fprintf(fid,"h = zeros(1,%u);\n", hc_len+1);
 
     // create simulation data structure (pass to callback function)
     simulation_data simdata;
@@ -113,13 +113,13 @@ int main() {
     nco_crcf_set_frequency(nco_rx,cfo);
     nco_crcf_set_phase(nco_rx,cpo);
     float nstd = powf(10.0f, -SNRdB/20.0f);
-    float complex h[p+1];
-    for (i=0; i<p+1; i++) {
-        h[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.707f*fstd;
-        printf("h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
-        fprintf(fid,"h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(h[i]),cimagf(h[i]));
+    float complex hc[hc_len+1];
+    for (i=0; i<hc_len+1; i++) {
+        hc[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.707f*fstd;
+        printf("h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(hc[i]),cimagf(hc[i]));
+        fprintf(fid,"h(%3u) = %12.8f + j*%12.8f;\n",i+1,crealf(hc[i]),cimagf(hc[i]));
     }
-    firfilt_cccf fchannel = firfilt_cccf_create(h,p+1);
+    firfilt_cccf fchannel = firfilt_cccf_create(hc,hc_len+1);
 
     float complex x[num_channels];  // data buffer
     float complex y[num_samples];   // framegen output buffer
@@ -218,6 +218,7 @@ int main() {
     fprintf(fid,"Z = 20*log10(abs(fftshift(Z/k)));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,Z,f,H);\n");
+    fprintf(fid,"axis([-0.5 0.5 -40 10]);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"title('Multipath channel response');\n");
