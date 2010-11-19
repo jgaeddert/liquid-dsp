@@ -24,6 +24,8 @@
 //  - physical layer convergence procedure (PLCP)
 //
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -43,7 +45,7 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
 
     // short sequence
     for (j=0; j<num_subcarriers; j++) {
-        sctype = ofdmoqamframe_getsctype(j);
+        sctype = _p[j];
         if (sctype == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier
             _S0[j] = 0.0f;
@@ -81,7 +83,7 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
 
     // long sequence
     for (j=0; j<num_subcarriers; j++) {
-        sctype = ofdmoqamframe_getsctype(j);
+        sctype = _p[j];
         if (sctype == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier
             _S1[j] = 0.0f;
@@ -152,23 +154,28 @@ void ofdmoqamframe_validate_sctype(unsigned int * _p,
                                    unsigned int * _M_data)
 {
     // clear counters
-    *_M_null  = 0;
-    *_M_pilot = 0;
-    *_M_data  = 0;
+    unsigned int M_null  = 0;
+    unsigned int M_pilot = 0;
+    unsigned int M_data  = 0;
 
     unsigned int i;
     for (i=0; i<_M; i++) {
         // update appropriate counters
         if (_p[i] == OFDMOQAMFRAME_SCTYPE_NULL)
-            *_M_null++;
+            M_null++;
         else if (_p[i] == OFDMOQAMFRAME_SCTYPE_PILOT)
-            *_M_pilot++;
+            M_pilot++;
         else if (_p[i] == OFDMOQAMFRAME_SCTYPE_DATA)
-            *_M_data++;
+            M_data++;
         else {
             fprintf(stderr,"error: ofdmoqamframe_validate_sctype(), invalid subcarrier type (%u)\n", _p[i]);
             exit(1);
         }
     }
+
+    // set outputs
+    *_M_null  = M_null;
+    *_M_pilot = M_pilot;
+    *_M_data  = M_data;
 }
 
