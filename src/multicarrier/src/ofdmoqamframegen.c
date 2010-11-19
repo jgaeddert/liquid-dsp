@@ -109,26 +109,15 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
         // copy user-defined subcarrier allocation
         memmove(q->p, _p, q->M*sizeof(unsigned int));
     }
-    q->M_null  = 0;
-    q->M_pilot = 0;
-    q->M_data  = 0;
-    for (i=0; i<q->M; i++) {
-        q->p[i] = _p[i];
-        if (q->p[i] == OFDMOQAMFRAME_SCTYPE_NULL)
-            q->M_null++;
-        else if (q->p[i] == OFDMOQAMFRAME_SCTYPE_PILOT)
-            q->M_pilot++;
-        else if (q->p[i] == OFDMOQAMFRAME_SCTYPE_DATA)
-            q->M_data++;
-        else {
-            fprintf(stderr,"error: ofdmoqamframegen_create(), invalid subcarrier type (%u)\n", q->p[i]);
-            exit(1);
-        }
-    }
+
+    // validate and count subcarrier allocation
+    ofdmoqamframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
     if ( (q->M_pilot + q->M_data) == 0) {
         fprintf(stderr,"error: ofdmoqamframegen_create(), must have at least one enabled subcarrier\n");
         exit(1);
     }
+
+    // compute scaling factor
     q->zeta = q->M / sqrtf(q->M_pilot + q->M_data);
 
     // allocate memory for transform objects

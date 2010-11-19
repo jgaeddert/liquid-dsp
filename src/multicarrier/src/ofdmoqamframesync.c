@@ -133,11 +133,19 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     } else {
         memmove(q->p, _p, q->M*sizeof(unsigned int));
     }
-    // TODO : count and validate subcarrier allocation
+
+    // validate and count subcarrier allocation
+    ofdmoqamframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
+    if ( (q->M_pilot + q->M_data) == 0) {
+        fprintf(stderr,"error: ofdmoqamframesync_create(), must have at least one enabled subcarrier\n");
+        exit(1);
+    }
+
+    // compute scaling factor
+    q->zeta = q->M / sqrtf(q->M_pilot + q->M_data);
 
     // derived values
     q->M2 = q->M/2;
-    q->zeta = 1.0f;    // scaling factor
     
     // create analysis filter banks
     q->ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, q->M, q->m, q->beta, 0);

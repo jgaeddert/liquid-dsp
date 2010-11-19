@@ -1589,6 +1589,25 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S1);
 
+// initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+void ofdmoqamframe_init_default_sctype(unsigned int _M,
+                                       unsigned int * _p);
+
+// validate subcarrier type (count number of null, pilot, and data
+// subcarriers in the allocation)
+//  _p          :   subcarrier allocation array, [size: _M x 1]
+//  _M          :   number of subcarriers
+//  _M_null     :   output number of null subcarriers
+//  _M_pilot    :   output number of pilot subcarriers
+//  _M_data     :   output number of data subcarriers
+void ofdmoqamframe_validate_sctype(unsigned int * _p,
+                                   unsigned int _M,
+                                   unsigned int * _M_null,
+                                   unsigned int * _M_pilot,
+                                   unsigned int * _M_data);
+
 void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q, float complex _x);
 void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q, float complex _x);
 void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q, float complex _x);

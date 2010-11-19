@@ -102,6 +102,8 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
 }
 
 // initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
 //
 // key: '.' (null), 'P' (pilot), '+' (data)
 // .+++++++++++++++P.........P+++++++++++++
@@ -133,6 +135,40 @@ void ofdmoqamframe_init_default_sctype(unsigned int _M,
             _p[i] = OFDMOQAMFRAME_SCTYPE_PILOT;
         else
             _p[i] = OFDMOQAMFRAME_SCTYPE_DATA;
+    }
+}
+
+// validate subcarrier type (count number of null, pilot, and data
+// subcarriers in the allocation)
+//  _p          :   subcarrier allocation array, [size: _M x 1]
+//  _M          :   number of subcarriers
+//  _M_null     :   output number of null subcarriers
+//  _M_pilot    :   output number of pilot subcarriers
+//  _M_data     :   output number of data subcarriers
+void ofdmoqamframe_validate_sctype(unsigned int * _p,
+                                   unsigned int _M,
+                                   unsigned int * _M_null,
+                                   unsigned int * _M_pilot,
+                                   unsigned int * _M_data)
+{
+    // clear counters
+    *_M_null  = 0;
+    *_M_pilot = 0;
+    *_M_data  = 0;
+
+    unsigned int i;
+    for (i=0; i<_M; i++) {
+        // update appropriate counters
+        if (_p[i] == OFDMOQAMFRAME_SCTYPE_NULL)
+            *_M_null++;
+        else if (_p[i] == OFDMOQAMFRAME_SCTYPE_PILOT)
+            *_M_pilot++;
+        else if (_p[i] == OFDMOQAMFRAME_SCTYPE_DATA)
+            *_M_data++;
+        else {
+            fprintf(stderr,"error: ofdmoqamframe_validate_sctype(), invalid subcarrier type (%u)\n", _p[i]);
+            exit(1);
+        }
     }
 }
 
