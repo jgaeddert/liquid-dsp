@@ -60,7 +60,6 @@ struct ofdmoqamframegen_s {
     // PLCP
     float complex * S0;     // short sequence
     float complex * S1;     // long sequence
-    float complex * S2;     // training sequence
 
     // pilot sequence
     msequence ms_pilot;
@@ -101,7 +100,6 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
 
     // allocate memory for subcarrier allocation IDs
     q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
-    unsigned int i;
     if (_p == NULL) {
         // initialize default subcarrier allocation
         ofdmoqamframe_init_default_sctype(q->M, q->p);
@@ -127,18 +125,8 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->S2 = (float complex*) malloc((q->M)*sizeof(float complex));
     ofdmoqamframe_init_S0(q->p, q->M, q->S0);   // ...(q->S0, q->p)
     ofdmoqamframe_init_S1(q->p, q->M, q->S1);   // ...(q->S1, q->p)
-    ofdmoqamframe_init_S2(q->p, q->M, q->S2);   // ...(q->S2, q->p)
-    for (i=0; i<q->M; i++) {
-        q->S0[i] *= q->zeta;
-        q->S1[i] *= q->zeta;
-        q->S2[i] *= q->zeta;
-
-        // conjugate long sequence on transmitter side
-        q->S1[i] = conjf(q->S1[i]);
-    }
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
@@ -161,7 +149,6 @@ void ofdmoqamframegen_destroy(ofdmoqamframegen _q)
     // free PLCP memory arrays
     free(_q->S0);
     free(_q->S1);
-    free(_q->S2);
 
     // free pilot msequence object memory
     msequence_destroy(_q->ms_pilot);
@@ -206,16 +193,6 @@ void ofdmoqamframegen_writelongsequence(ofdmoqamframegen _q,
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
 
-void ofdmoqamframegen_writetrainingsequence(ofdmoqamframegen _q,
-                                            float complex * _y)
-{
-    // move short sequence to freq-domain buffer
-    memmove(_q->X, _q->S2, (_q->M)*sizeof(float complex));
-
-    // execute synthesizer, store result in output array
-    ofdmoqam_execute(_q->synthesizer, _q->X, _y);
-}
-
 
 void ofdmoqamframegen_writeheader(ofdmoqamframegen _q,
                                   float complex * _y)
@@ -233,7 +210,7 @@ void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
     unsigned int i, j=0;
     int sctype;
     for (i=0; i<_q->M; i++) {
-        sctype = ofdmoqamframe_getsctype(i);
+        sctype = _q->p[i];
         if (sctype==OFDMOQAMFRAME_SCTYPE_NULL) {
             // disabled subcarrier
             _q->X[i] = 0.0f;

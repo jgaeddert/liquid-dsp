@@ -3027,9 +3027,6 @@ void ofdmoqamframegen_writeshortsequence(ofdmoqamframegen _q,
 // long PLCP training sequence
 void ofdmoqamframegen_writelongsequence(ofdmoqamframegen _q,
                                         liquid_float_complex *_y);
-// gain PLCP training sequence
-void ofdmoqamframegen_writetrainingsequence(ofdmoqamframegen _q,
-                                            liquid_float_complex *_y);
 void ofdmoqamframegen_writeheader(ofdmoqamframegen _q,
                                   liquid_float_complex *_y);
 void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
