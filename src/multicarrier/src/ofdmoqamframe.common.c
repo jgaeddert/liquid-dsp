@@ -38,13 +38,12 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
     modem mod = modem_create(MOD_QPSK,2);
     unsigned int s;
     float complex sym;
-    unsigned int num_subcarriers = 64;
     float zeta = 1.0f;
     unsigned int j;
     unsigned int sctype;
 
     // short sequence
-    for (j=0; j<num_subcarriers; j++) {
+    for (j=0; j<_num_subcarriers; j++) {
         sctype = _p[j];
         if (sctype == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier
@@ -76,13 +75,12 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
     modem mod = modem_create(MOD_QPSK,2);
     unsigned int s;
     float complex sym;
-    unsigned int num_subcarriers = 64;
     float zeta = 1.0f;
     unsigned int j;
     unsigned int sctype;
 
     // long sequence
-    for (j=0; j<num_subcarriers; j++) {
+    for (j=0; j<_num_subcarriers; j++) {
         sctype = _p[j];
         if (sctype == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier

@@ -116,7 +116,8 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
     }
 
     // compute scaling factor
-    q->zeta = q->M / sqrtf(q->M_pilot + q->M_data);
+    //q->zeta = q->M / sqrtf(q->M_pilot + q->M_data);
+    q->zeta = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
 
     // allocate memory for transform objects
     q->X  = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -225,7 +226,6 @@ void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
 
         //printf("X[%3u] = %12.8f + j*%12.8f;\n",i+1,crealf(_q->X[i]),cimagf(_q->X[i]));
     }
-    assert(j==48);
 
     // execute synthesizer, store result in output array
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);

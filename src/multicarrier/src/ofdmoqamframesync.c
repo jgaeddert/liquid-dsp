@@ -106,7 +106,6 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
                                            void * _userdata)
 {
     ofdmoqamframesync q = (ofdmoqamframesync) malloc(sizeof(struct ofdmoqamframesync_s));
-    q->M = 64;
 
     // validate input
     if (_M % 2) {
