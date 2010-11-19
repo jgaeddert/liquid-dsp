@@ -1625,7 +1625,12 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q, float complex _x)
 void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q, float complex _x);
 void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q, float complex _x);
 
+void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
+                                  float complex * _g_hat,
+                                  float complex * _s_hat);
+
 void ofdmoqamframesync_estimate_gain_plcplong(ofdmoqamframesync _q);
+
 void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
                                  float complex * _Y0,
                                  float complex * _Y1);

@@ -34,7 +34,7 @@
 #include "liquid.internal.h"
 
 #define DEBUG_OFDMOQAMFRAMESYNC             1
-#define DEBUG_OFDMOQAMFRAMESYNC_PRINT       0
+#define DEBUG_OFDMOQAMFRAMESYNC_PRINT       1
 #define DEBUG_OFDMOQAMFRAMESYNC_FILENAME    "ofdmoqamframesync_internal_debug.m"
 #define DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN  (2048)
 
@@ -92,6 +92,8 @@ struct ofdmoqamframesync_s {
 
     // input delay buffer
     windowcf input_buffer;
+    unsigned int timer;
+    unsigned int k;         // analyzer alignment (timing)
 
     ofdmoqamframesync_callback callback;
     void * userdata;
@@ -165,6 +167,8 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
     q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
     q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
+    printf("M(S0) = %u\n", q->M_S0);
+    printf("g(S0) = %12.8f\n", q->g_S0);
 
     // input buffer
     q->input_buffer = windowcf_create((q->M));
@@ -186,7 +190,7 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     // agc, rssi, squelch
     q->agc_rx = agc_crcf_create();
     agc_crcf_set_target(q->agc_rx, 1.0f);
-    agc_crcf_set_bandwidth(q->agc_rx,  1e-3f);
+    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
     agc_crcf_set_gain_limits(q->agc_rx, 1e-3f, 1e4f);
 
     agc_crcf_squelch_activate(q->agc_rx);
@@ -254,6 +258,8 @@ void ofdmoqamframesync_reset(ofdmoqamframesync _q)
 {
     // clear input buffer
     windowcf_clear(_q->input_buffer);
+    _q->timer = _q->M;
+    _q->k = 0;
 
     // clear analysis filter bank objects
     firpfbch_crcf_clear(_q->ca0);
@@ -332,6 +338,56 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
 void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                                          float complex _x)
 {
+    // wait for timeout
+    _q->timer--;
+    if (_q->timer == 0) {
+        //printf("timeout\n");
+
+        // reset timer
+        _q->timer = _q->M;
+
+        // run analysis filters
+        firpfbch_crcf_analyzer_run(_q->ca0, _q->k, _q->X0);
+        firpfbch_crcf_analyzer_run(_q->ca1, _q->k, _q->X1);
+
+        // compute metrics
+        float complex g0_hat;
+        float complex s0_hat;
+
+        ofdmoqamframesync_S0_metrics(_q, &g0_hat, &s0_hat);
+
+        // compute carrier frequency offset estimate
+        float dphi_hat = cargf(g0_hat) / (float)(_q->M2);
+        float tau_hat  = cargf(s0_hat) * (float)(_q->M) / (2*2*M_PI);
+#if 0
+        int dt = 0;
+        // adjust timing
+        if (cabsf(g0_hat) > 0.7f) {
+            dt = (int) roundf(tau_hat);
+            if ( abs(dt) < _q->M)
+                _q->k = (_q->k + _q->M + dt) % _q->M;
+            //printf(" k : %3u (dt = %3d)\n", k, dt);
+        }
+#endif
+
+#if DEBUG_OFDMOQAMFRAMESYNC_PRINT
+        float complex t0_hat = 0.0f;
+        float complex t1_hat = 0.0f;
+        //printf("%4u|%4u: %c g |%7.4f|, dphi: %7.4f, tau: %7.3f, k=%2u, dt=%3d, %c t0[%7.4f], %c t1[%7.4f]\n",
+        printf("%c g |%7.4f|, dphi: %7.4f, tau: %7.3f, %c t0[%7.4f], %c t1[%7.4f]\n",
+                //n, i,
+                cabsf(g0_hat) > 0.7f ? '*' : ' ',
+                cabsf(g0_hat),
+                dphi_hat,
+                tau_hat,
+                //k, dt, 
+                cabsf(t0_hat) > 0.7f ? '*' : ' ',
+                cabsf(t0_hat),
+                cabsf(t1_hat) > 0.7f ? '*' : ' ',
+                cabsf(t1_hat));
+#endif
+
+    }
 }
 
 void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
@@ -364,6 +420,44 @@ float ofdmoqamframesync_estimate_pilot_phase(float complex _y0,
                                              float complex _p)
 {
     return 0.0f;
+}
+
+void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
+                                  float complex * _g_hat,
+                                  float complex * _s_hat)
+{
+    // timing, carrier offset correction
+    unsigned int i;
+    float complex g_hat = 0.0f;
+    float complex s_hat = 0.0f;
+
+    // compute complex gains
+    for (i=0; i<_q->M; i++) {
+        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL && (i%2)==0) {
+            _q->G0[i] = _q->X0[i] / _q->S0[i];
+            _q->G1[i] = _q->X1[i] / _q->S0[i];
+        } else {
+            _q->G0[i] = 0.0f;
+            _q->G1[i] = 0.0f;
+        }
+    }   
+
+    // compute carrier frequency offset metric
+    for (i=0; i<_q->M; i++)
+        g_hat += _q->G0[i] * conjf(_q->G1[i]);
+    g_hat *= 1.0f / (_q->M * _q->M_S0); // normalize output
+
+    // compute timing estimate, accumulate phase difference across
+    // gains on subsequent pilot subcarriers
+    // FIXME : need to assemble appropriate subcarriers
+    for (i=2; i<_q->M; i+=2) {
+        s_hat += _q->G0[i]*conjf(_q->G0[i-2]);
+        s_hat += _q->G1[i]*conjf(_q->G1[i-2]);
+    }
+
+    // set output values
+    *_g_hat = g_hat;
+    *_s_hat = s_hat;
 }
 
 
@@ -409,14 +503,23 @@ void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)
     fprintf(fid,"ylabel('received signal, x');\n");
 
     // write agc_rssi
+    fprintf(fid,"\n\n");
     fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
     windowf_read(_q->debug_rssi, &r);
     for (i=0; i<DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN; i++)
         fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
-    fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(10*log10(agc_rssi))\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
+
+    // write gain arrays
+    fprintf(fid,"\n\n");
+    fprintf(fid,"G0 = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"G1 = zeros(1,%u);\n", _q->M);
+    for (i=0; i<_q->M; i++) {
+        fprintf(fid,"G0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
+        fprintf(fid,"G1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
+    }
 
     fclose(fid);
     printf("ofdmoqamframesync/debug: results written to %s\n", DEBUG_OFDMOQAMFRAMESYNC_FILENAME);

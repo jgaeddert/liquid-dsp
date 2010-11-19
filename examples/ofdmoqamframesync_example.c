@@ -185,7 +185,11 @@ int main() {
     }
 
     // execute synchronizer on data samples
+#if 0
+    ofdmoqamframesync_execute(fs,z,800);
+#else
     ofdmoqamframesync_execute(fs,z,num_samples);
+#endif
 
     // print results
     fprintf(fid,"\n\n");
