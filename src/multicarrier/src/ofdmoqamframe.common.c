@@ -83,11 +83,6 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
         exit(1);
     }
 
-    // compute scaling factor and apply gain
-    float zeta = sqrtf(_num_subcarriers) / sqrtf(M_S0);
-    for (i=0; i<_num_subcarriers; i++)
-        _S0[i] *= zeta;
-
     // set return value(s)
     *_M_S0 = M_S0;
 }
@@ -147,11 +142,6 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
         fprintf(stderr,"error: ofdmoqamframe_init_S1(), no subcarriers enabled; check allocation\n");
         exit(1);
     }
-
-    // compute scaling factor and apply gain
-    float zeta = sqrtf(_num_subcarriers) / sqrtf(M_S1);
-    for (i=0; i<_num_subcarriers; i++)
-        _S1[i] *= zeta;
 
     // set return value(s)
     *_M_S1 = M_S1;

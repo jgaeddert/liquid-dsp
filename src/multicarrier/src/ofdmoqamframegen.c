@@ -187,6 +187,11 @@ void ofdmoqamframegen_writeshortsequence(ofdmoqamframegen _q,
     // move short sequence to freq-domain buffer
     memmove(_q->X, _q->S0, (_q->M)*sizeof(float complex));
 
+    // apply gain
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->g_S0;
+
     // execute synthesizer, store result in output array
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
@@ -197,6 +202,11 @@ void ofdmoqamframegen_writelongsequence(ofdmoqamframegen _q,
 {
     // move long sequence to freq-domain buffer
     memmove(_q->X, _q->S1, (_q->M)*sizeof(float complex));
+
+    // apply gain
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->g_S1;
 
     // execute synthesizer, store result in output array
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);

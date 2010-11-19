@@ -167,7 +167,7 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
     q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
     q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
-#if 0
+#if 1
     printf("M(S0) = %u\n", q->M_S0);
     printf("g(S0) = %12.8f\n", q->g_S0);
     printf("M(S1) = %u\n", q->M_S1);
@@ -287,14 +287,15 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
 {
     unsigned int i;
     float complex x;
+    float complex y;
     int squelch_status;
     for (i=0; i<_n; i++) {
-        //x = _x[i];
-        agc_crcf_execute(_q->agc_rx, _x[i], &x);
+        x = _x[i];
+        agc_crcf_execute(_q->agc_rx, x, &y);
 
 #if DEBUG_OFDMOQAMFRAMESYNC
-        windowcf_push(_q->debug_x,_x[i]);
-        windowcf_push(_q->debug_agc_out,x);
+        windowcf_push(_q->debug_x, x);
+        windowcf_push(_q->debug_agc_out, y);
         windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
 #endif
 
@@ -358,6 +359,14 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
         float complex g0_hat;
         float complex s0_hat;
         ofdmoqamframesync_S0_metrics(_q, &g0_hat, &s0_hat);
+
+#if 0
+        _q->g = 1.0f;
+#else
+        _q->g = agc_crcf_get_gain(_q->agc_rx);
+#endif
+        g0_hat *= _q->g * _q->g;
+        s0_hat *= _q->g * _q->g;
 
         float complex t0_hat;
         float complex t1_hat;
@@ -510,6 +519,7 @@ void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
     float complex s_hat = 0.0f;
 
     // compute complex gains
+    float gain = sqrtf(_q->M_S0) / (float)(_q->M);
     for (i=0; i<_q->M; i++) {
         if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL && (i%2)==0) {
             _q->G0[i] = _q->X0[i] / _q->S0[i];
@@ -518,12 +528,16 @@ void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
             _q->G0[i] = 0.0f;
             _q->G1[i] = 0.0f;
         }
+
+        // normalize gain
+        _q->G0[i] *= gain;
+        _q->G1[i] *= gain;
     }   
 
     // compute carrier frequency offset metric
     for (i=0; i<_q->M; i++)
         g_hat += _q->G0[i] * conjf(_q->G1[i]);
-    g_hat *= 1.0f / (_q->M * _q->M_S0); // normalize output
+    g_hat /= _q->M_S0; // normalize output
 
     // compute timing estimate, accumulate phase difference across
     // gains on subsequent pilot subcarriers
@@ -552,8 +566,8 @@ void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
         t0_hat += _q->X0[i] * conjf(_q->S1[i]);
         t1_hat += _q->X1[i] * conjf(_q->S1[i]);
     }
-    t0_hat /= (float)(_q->M * sqrtf(_q->M));
-    t1_hat /= (float)(_q->M * sqrtf(_q->M));
+    t0_hat /= (float)(_q->M * sqrtf(_q->M_S1));
+    t1_hat /= (float)(_q->M * sqrtf(_q->M_S1));
 
     // set output values
     *_t0_hat = t0_hat;
@@ -611,6 +625,16 @@ void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(10*log10(agc_rssi))\n");
     fprintf(fid,"ylabel('RSSI [dB]');\n");
+
+    // write short, long symbols
+    fprintf(fid,"\n\n");
+    fprintf(fid,"S0 = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"S1 = zeros(1,%u);\n", _q->M);
+    for (i=0; i<_q->M; i++) {
+        fprintf(fid,"S0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->S0[i]), cimagf(_q->S0[i]));
+        fprintf(fid,"S1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->S1[i]), cimagf(_q->S1[i]));
+    }
+
 
     // write gain arrays
     fprintf(fid,"\n\n");

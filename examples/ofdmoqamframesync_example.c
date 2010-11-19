@@ -165,7 +165,7 @@ int main() {
         firfilt_cccf_execute(fchannel,&z[i]);
 
         // add carrier phase/frequency offset
-        z[i] *= cexpf(_Complex_I*(phi + i*dphi));
+        z[i] *= 1.0f*cexpf(_Complex_I*(phi + i*dphi));
 
         cawgn(&z[i],nstd);
 
