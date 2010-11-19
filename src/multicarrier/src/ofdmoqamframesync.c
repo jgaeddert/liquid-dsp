@@ -357,7 +357,6 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
         // compute metrics
         float complex g0_hat;
         float complex s0_hat;
-
         ofdmoqamframesync_S0_metrics(_q, &g0_hat, &s0_hat);
 
         float complex t0_hat;
@@ -372,9 +371,12 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
         // adjust timing
         if (cabsf(g0_hat) > 0.7f) {
             dt = (int) roundf(tau_hat);
-            if ( abs(dt) < _q->M)
-                _q->k = (_q->k + _q->M + dt) % _q->M;
+            _q->k = (_q->k + _q->M + dt) % _q->M;
             //printf(" k : %3u (dt = %3d)\n", k, dt);
+            ofdmoqamframesync_estimate_gain(_q);
+
+            // lock AGC
+            agc_crcf_lock(_q->agc_rx);
         }
 
 #if DEBUG_OFDMOQAMFRAMESYNC_PRINT
@@ -416,8 +418,79 @@ void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
 {
 }
 
-void ofdmoqamframesync_estimate_gain_plcplong(ofdmoqamframesync _q)
+void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
 {
+    //
+    unsigned int i;
+    unsigned int j;
+
+#if 0
+    // estimate phase difference between gain arrays
+    float complex g_hat = 0.0f;
+    for (i=0; i<_q->M; i++)
+        g_hat += _q->G0[i] * conjf(_q->G1[i]);
+    float dphi_hat = cargf(g_hat);
+#endif
+
+    //printf(" dphi_hat : %12.8f\n", dphi_hat);
+
+    // estimate gain...
+    float w;
+    float w0;
+#if 0
+    unsigned int d;
+    float sig = 0.1f * _q->M;
+#else
+    float d;
+    float sig = 0.02f;
+#endif
+    for (i=0; i<_q->M; i++) {
+
+        if (_q->p[i] == OFDMOQAMFRAME_SCTYPE_NULL) {
+            _q->G[i] = 0.0f;
+            continue;
+        } else {
+            _q->G[i] = 0.0f;
+        }
+
+        // reset...
+        w0 = 0.0f;
+        for (j=0; j<_q->M; j++) {
+            // skip non-pilot subcarriers
+            if ( _q->p[j] == OFDMOQAMFRAME_SCTYPE_NULL || (j % 2) != 0)
+                continue;
+
+            // compute distance
+#if 0
+            d = (i + _q->M - j) % _q->M;
+#else
+            d = ((float)(i) - (float)(j)) / (float)(_q->M);
+            if (d >  0.5f) d -= 1.0f;
+            if (d < -0.5f) d += 1.0f;
+#endif
+
+            // Gauss window
+            // TODO : pre-compute window
+            w = exp(-(float)(d*d)/(2*sig*sig));
+
+#if 0
+            _q->G[i] += 0.5f*w*(_q->G0[j] + _q->G1[j]*liquid_cexpjf(-dphi_hat));
+#else
+            _q->G[i] += w*_q->G0[j];
+#endif
+            w0 += w;
+        }
+
+        // eliminate divide-by-zero issues
+        if (fabsf(w0) < 1e-4f) {
+            fprintf(stderr,"warning: weighting factor is zero; try increasing smoothing factor\n");
+            _q->G[i] = 1.0f;
+        } else {
+            _q->G[i] /= w0; 
+        }   
+        //printf("G[%3u] = %12.8f + j*%12.8f\n", i, crealf(_q->G[i]), cimagf(_q->G[i]));
+
+    }
 }
 
 float ofdmoqamframesync_estimate_pilot_phase(float complex _y0,
@@ -543,9 +616,11 @@ void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)
     fprintf(fid,"\n\n");
     fprintf(fid,"G0 = zeros(1,%u);\n", _q->M);
     fprintf(fid,"G1 = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"G  = zeros(1,%u);\n", _q->M);
     for (i=0; i<_q->M; i++) {
         fprintf(fid,"G0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
         fprintf(fid,"G1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
+        fprintf(fid,"G(%3u)  = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G[i]),  cimagf(_q->G[i]));
     }
 
     fclose(fid);

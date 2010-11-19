@@ -65,7 +65,7 @@ int main() {
     unsigned int bps = 2;
     float dphi=0.0f;        // carrier frequency offset (max: pi/(2*num_channels) ~ 0.024544)
     float phi=0.0f;         // carrier phase offset
-    float SNRdB=30.0f;      // signal-to-noise ratio (dB)
+    float SNRdB=60.0f;      // signal-to-noise ratio (dB)
     unsigned int hc_len=0;  // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
     unsigned int d=0;       // sample delay (noise samples before frame)
@@ -176,7 +176,6 @@ int main() {
 
     // execute synchronizer on noise samples (delay);
     float complex noise;
-    d = 1;
     for (i=0; i<d; i++) {
         noise = 0.0f;
         cawgn(&noise,nstd);
@@ -185,7 +184,7 @@ int main() {
 
     // execute synchronizer on data samples
 #if 0
-    ofdmoqamframesync_execute(fs,z,800);
+    ofdmoqamframesync_execute(fs,z,720);
 #else
     ofdmoqamframesync_execute(fs,z,num_samples);
 #endif
