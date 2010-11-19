@@ -115,7 +115,7 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
     unsigned int s;
     unsigned int M_S1 = 0;
 
-    // short sequence
+    // long sequence
     for (i=0; i<_num_subcarriers; i++) {
         // generate symbol
         s = msequence_generate_symbol(ms,1);
@@ -128,7 +128,7 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
             M_S1++;
 
             // rotate by pi/2 on odd subcarriers
-            _S1[i] *= (s%2)==0 ? 1.0f : _Complex_I;
+            _S1[i] *= (i%2)==0 ? 1.0f : _Complex_I;
         }
     }
 
