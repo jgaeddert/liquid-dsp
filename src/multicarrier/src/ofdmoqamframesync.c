@@ -87,6 +87,9 @@ struct ofdmoqamframesync_s {
         OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS     // receive payload symbols
     } state;
 
+    // synchronizer objects
+    agc_crcf agc_rx;        // automatic gain control
+
     // input delay buffer
     windowcf input_buffer;
 
@@ -95,12 +98,8 @@ struct ofdmoqamframesync_s {
 
 #if DEBUG_OFDMOQAMFRAMESYNC
     windowcf debug_x;
-    windowcf debug_rxx;
-    windowcf debug_rxy;
-    windowcf debug_framesyms;
-    windowf debug_pilotphase;
-    windowf debug_pilotphase_hat;
-    windowf debug_rssi;
+    windowcf debug_agc_out;
+    windowf  debug_rssi;
 #endif
 };
 
@@ -180,17 +179,29 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->callback = _callback;
     q->userdata = _userdata;
 
+    // 
+    // synchronizer objects
+    //
+
+    // agc, rssi, squelch
+    q->agc_rx = agc_crcf_create();
+    agc_crcf_set_target(q->agc_rx, 1.0f);
+    agc_crcf_set_bandwidth(q->agc_rx,  1e-3f);
+    agc_crcf_set_gain_limits(q->agc_rx, 1e-3f, 1e4f);
+
+    agc_crcf_squelch_activate(q->agc_rx);
+    agc_crcf_squelch_set_threshold(q->agc_rx, -35.0f);
+    agc_crcf_squelch_set_timeout(q->agc_rx, 32);
+
+    agc_crcf_squelch_enable_auto(q->agc_rx);
+
     // reset object
     ofdmoqamframesync_reset(q);
 
 #if DEBUG_OFDMOQAMFRAMESYNC
     q->debug_x =        windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
-    q->debug_rxx=       windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
-    q->debug_rxy=       windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
-    q->debug_framesyms= windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
-    q->debug_pilotphase= windowf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
-    q->debug_pilotphase_hat= windowf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
-    q->debug_rssi=       windowf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
+    q->debug_agc_out =  windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
+    q->debug_rssi =     windowf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
 #endif
 
     // return object
@@ -202,11 +213,7 @@ void ofdmoqamframesync_destroy(ofdmoqamframesync _q)
 #if DEBUG_OFDMOQAMFRAMESYNC
     ofdmoqamframesync_debug_print(_q);
     windowcf_destroy(_q->debug_x);
-    windowcf_destroy(_q->debug_rxx);
-    windowcf_destroy(_q->debug_rxy);
-    windowcf_destroy(_q->debug_framesyms);
-    windowf_destroy(_q->debug_pilotphase);
-    windowf_destroy(_q->debug_pilotphase_hat);
+    windowcf_destroy(_q->debug_agc_out);
     windowf_destroy(_q->debug_rssi);
 #endif
 
@@ -227,6 +234,9 @@ void ofdmoqamframesync_destroy(ofdmoqamframesync _q)
 
     // free input buffer
     windowcf_destroy(_q->input_buffer);
+
+    // destroy synchronizer objects
+    agc_crcf_destroy(_q->agc_rx);      // automatic gain control
 
     // free main object memory
     free(_q);
@@ -254,6 +264,9 @@ void ofdmoqamframesync_reset(ofdmoqamframesync _q)
     for (i=0; i<_q->M; i++)
         _q->G[i] = 1.0f;
 
+    // reset synchronizer objects
+    agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
+
     // reset state
     _q->state = OFDMOQAMFRAMESYNC_STATE_PLCPSHORT;
 }
@@ -264,11 +277,24 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
 {
     unsigned int i;
     float complex x;
+    int squelch_status;
     for (i=0; i<_n; i++) {
-        x = _x[i];
+        //x = _x[i];
+        agc_crcf_execute(_q->agc_rx, _x[i], &x);
+
 #if DEBUG_OFDMOQAMFRAMESYNC
-        windowcf_push(_q->debug_x,x);
+        windowcf_push(_q->debug_x,_x[i]);
+        windowcf_push(_q->debug_agc_out,x);
+        windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
 #endif
+
+        // squelch: block agc output from synchronizer only if
+        // 1. received signal strength indicator has not exceeded squelch
+        //    threshold at any time within the past <squelch_timeout> samples
+        // 2. mode is to seek preamble
+        squelch_status = agc_crcf_squelch_get_status(_q->agc_rx);
+        if (squelch_status == LIQUID_AGC_SQUELCH_ENABLED)
+            continue;
         
         // push sample into analysis filter banks
         float complex x_delay0;
@@ -355,7 +381,7 @@ void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)
     fprintf(fid,"n = %u;\n", DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
     unsigned int i;
     float complex * rc;
-    //float * r;
+    float * r;
 
 
     // short, long, training sequences
@@ -372,6 +398,25 @@ void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)
     fprintf(fid,"plot(0:(n-1),real(x),0:(n-1),imag(x));\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('received signal, x');\n");
+
+    fprintf(fid,"y = zeros(1,n);\n");
+    windowcf_read(_q->debug_agc_out, &rc);
+    for (i=0; i<DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(0:(n-1),real(y),0:(n-1),imag(y));\n");
+    fprintf(fid,"xlabel('sample index');\n");
+    fprintf(fid,"ylabel('received signal, x');\n");
+
+    // write agc_rssi
+    fprintf(fid,"agc_rssi = zeros(1,%u);\n", DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
+    windowf_read(_q->debug_rssi, &r);
+    for (i=0; i<DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"agc_rssi(%4u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(10*log10(agc_rssi))\n");
+    fprintf(fid,"ylabel('RSSI [dB]');\n");
 
     fclose(fid);
     printf("ofdmoqamframesync/debug: results written to %s\n", DEBUG_OFDMOQAMFRAMESYNC_FILENAME);

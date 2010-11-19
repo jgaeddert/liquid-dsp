@@ -58,7 +58,7 @@ int main() {
     unsigned int num_channels = 80; // number of subcarriers
     unsigned int num_symbols_S0=6;  // num short sequence symbols
     unsigned int num_symbols_S1=1;  // num long sequence symbols
-    unsigned int num_symbols_data=16;// num data symbols
+    unsigned int num_symbols_data=8;// num data symbols
     unsigned int m=3;
     float beta = 0.7f;
     modulation_scheme ms = MOD_QAM;
