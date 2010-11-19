@@ -1629,6 +1629,10 @@ void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
                                   float complex * _g_hat,
                                   float complex * _s_hat);
 
+void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
+                                  float complex * _t0_hat,
+                                  float complex * _t1_hat);
+
 void ofdmoqamframesync_estimate_gain_plcplong(ofdmoqamframesync _q);
 
 void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,

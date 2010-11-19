@@ -167,8 +167,12 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
     q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
     q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
+#if 0
     printf("M(S0) = %u\n", q->M_S0);
     printf("g(S0) = %12.8f\n", q->g_S0);
+    printf("M(S1) = %u\n", q->M_S1);
+    printf("g(S1) = %12.8f\n", q->g_S1);
+#endif
 
     // input buffer
     q->input_buffer = windowcf_create((q->M));
@@ -258,7 +262,7 @@ void ofdmoqamframesync_reset(ofdmoqamframesync _q)
 {
     // clear input buffer
     windowcf_clear(_q->input_buffer);
-    _q->timer = _q->M;
+    _q->timer = 0;
     _q->k = 0;
 
     // clear analysis filter bank objects
@@ -339,12 +343,12 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                                          float complex _x)
 {
     // wait for timeout
-    _q->timer--;
-    if (_q->timer == 0) {
+    _q->timer++;
+    if ( ((_q->timer + _q->k) % _q->M ) == 0) {
         //printf("timeout\n");
 
         // reset timer
-        _q->timer = _q->M;
+        //_q->timer = _q->M;
 
         // run analysis filters
         firpfbch_crcf_analyzer_run(_q->ca0, _q->k, _q->X0);
@@ -356,10 +360,14 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
 
         ofdmoqamframesync_S0_metrics(_q, &g0_hat, &s0_hat);
 
+        float complex t0_hat;
+        float complex t1_hat;
+        ofdmoqamframesync_S1_metrics(_q, &t0_hat, &t1_hat);
+
         // compute carrier frequency offset estimate
         float dphi_hat = cargf(g0_hat) / (float)(_q->M2);
         float tau_hat  = cargf(s0_hat) * (float)(_q->M) / (2*2*M_PI);
-#if 0
+
         int dt = 0;
         // adjust timing
         if (cabsf(g0_hat) > 0.7f) {
@@ -368,14 +376,11 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                 _q->k = (_q->k + _q->M + dt) % _q->M;
             //printf(" k : %3u (dt = %3d)\n", k, dt);
         }
-#endif
 
 #if DEBUG_OFDMOQAMFRAMESYNC_PRINT
-        float complex t0_hat = 0.0f;
-        float complex t1_hat = 0.0f;
         //printf("%4u|%4u: %c g |%7.4f|, dphi: %7.4f, tau: %7.3f, k=%2u, dt=%3d, %c t0[%7.4f], %c t1[%7.4f]\n",
-        printf("%c g |%7.4f|, dphi: %7.4f, tau: %7.3f, %c t0[%7.4f], %c t1[%7.4f]\n",
-                //n, i,
+        printf("%6u : %c g |%7.4f|, dphi: %7.4f, tau: %7.3f, %c t0[%7.4f], %c t1[%7.4f]\n",
+                _q->timer,
                 cabsf(g0_hat) > 0.7f ? '*' : ' ',
                 cabsf(g0_hat),
                 dphi_hat,
@@ -458,6 +463,28 @@ void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
     // set output values
     *_g_hat = g_hat;
     *_s_hat = s_hat;
+}
+
+
+void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
+                                  float complex * _t0_hat,
+                                  float complex * _t1_hat)
+{
+    // timing, carrier offset correction
+    unsigned int i;
+    float complex t0_hat = 0.0f;
+    float complex t1_hat = 0.0f;
+
+    for (i=0; i<_q->M; i++) {
+        t0_hat += _q->X0[i] * conjf(_q->S1[i]);
+        t1_hat += _q->X1[i] * conjf(_q->S1[i]);
+    }
+    t0_hat /= (float)(_q->M * sqrtf(_q->M));
+    t1_hat /= (float)(_q->M * sqrtf(_q->M));
+
+    // set output values
+    *_t0_hat = t0_hat;
+    *_t1_hat = t1_hat;
 }
 
 
