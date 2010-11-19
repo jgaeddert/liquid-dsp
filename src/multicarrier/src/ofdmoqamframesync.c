@@ -444,6 +444,7 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
     //printf(" dphi_hat : %12.8f\n", dphi_hat);
 
     // estimate gain...
+    float complex H_hat;
     float w;
     float w0;
 #if 0
@@ -455,15 +456,14 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
 #endif
     for (i=0; i<_q->M; i++) {
 
-        if (_q->p[i] == OFDMOQAMFRAME_SCTYPE_NULL) {
-            _q->G[i] = 0.0f;
+        _q->G[i] = 0.0f;
+        if (_q->p[i] == OFDMOQAMFRAME_SCTYPE_NULL)
             continue;
-        } else {
-            _q->G[i] = 0.0f;
-        }
 
-        // reset...
+        // reset 
+        H_hat = 0.0f;
         w0 = 0.0f;
+
         for (j=0; j<_q->M; j++) {
             // skip non-pilot subcarriers
             if ( _q->p[j] == OFDMOQAMFRAME_SCTYPE_NULL || (j % 2) != 0)
@@ -483,22 +483,23 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
             w = exp(-(float)(d*d)/(2*sig*sig));
 
 #if 0
-            _q->G[i] += 0.5f*w*(_q->G0[j] + _q->G1[j]*liquid_cexpjf(-dphi_hat));
+            H_hat += 0.5f*w*(_q->G0[j] + _q->G1[j]*liquid_cexpjf(-dphi_hat));
 #else
-            _q->G[i] += w*_q->G0[j];
+            H_hat += w*_q->G0[j];
 #endif
             w0 += w;
         }
 
         // eliminate divide-by-zero issues
         if (fabsf(w0) < 1e-4f) {
-            fprintf(stderr,"warning: weighting factor is zero; try increasing smoothing factor\n");
+            fprintf(stderr,"warning: ofdmoqamframesync_estimate_gain(), weighting factor is zero; try increasing smoothing factor\n");
+            _q->G[i] = 0.0f;
+        } else if (cabsf(H_hat) < 1e-4f) {
+            fprintf(stderr,"warning: ofdmoqamframesync_estimate_gain(), channel response is zero\n");
             _q->G[i] = 1.0f;
         } else {
-            _q->G[i] /= w0; 
+            _q->G[i] = w0 / H_hat;
         }   
-        //printf("G[%3u] = %12.8f + j*%12.8f\n", i, crealf(_q->G[i]), cimagf(_q->G[i]));
-
     }
 }
 
@@ -563,8 +564,8 @@ void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
     float complex t1_hat = 0.0f;
 
     for (i=0; i<_q->M; i++) {
-        t0_hat += _q->X0[i] * conjf(_q->S1[i]);
-        t1_hat += _q->X1[i] * conjf(_q->S1[i]);
+        t0_hat += _q->X0[i] * conjf(_q->S1[i]) * _q->G[i];
+        t1_hat += _q->X1[i] * conjf(_q->S1[i]) * _q->G[i];
     }
     t0_hat /= (float)(_q->M * sqrtf(_q->M_S1));
     t1_hat /= (float)(_q->M * sqrtf(_q->M_S1));
