@@ -56,7 +56,8 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
     // short sequence
     for (i=0; i<_num_subcarriers; i++) {
         // generate symbol
-        s = msequence_generate_symbol(ms,1);
+        //s = msequence_generate_symbol(ms,1);
+        s = msequence_generate_symbol(ms,3) & 0x01;
 
         if (_p[i] == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier
@@ -109,6 +110,11 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
     if (m < 4)      m = 4;
     else if (m > 8) m = 8;
 
+    // increase m such that the resulting S1 sequence will
+    // differ significantly from S0 with the same subcarrier
+    // allocation array
+    m++;
+
     // generate m-sequence generator object
     msequence ms = msequence_create(m);
 
@@ -118,7 +124,8 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
     // long sequence
     for (i=0; i<_num_subcarriers; i++) {
         // generate symbol
-        s = msequence_generate_symbol(ms,1);
+        //s = msequence_generate_symbol(ms,1);
+        s = msequence_generate_symbol(ms,3) & 0x01;
 
         if (_p[i] == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier
