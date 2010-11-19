@@ -53,7 +53,13 @@ struct ofdmoqamframesync_s {
     unsigned int M_null;    // number of null subcarriers
     unsigned int M_pilot;   // number of pilot subcarriers
     unsigned int M_data;    // number of data subcarriers
-    float zeta;             // scaling factor : zeta = M / sqrt(M_pilot + M_data)
+    unsigned int M_S0;      // number of enabled subcarriers in S0
+    unsigned int M_S1;      // number of enabled subcarriers in S1
+
+    // scaling factors
+    float g_data;           //
+    float g_S0;             //
+    float g_S1;             //
 
     // filterbank objects
     firpfbch_crcf ca0;      // upper analysis filterbank
@@ -140,9 +146,6 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
         exit(1);
     }
 
-    // compute scaling factor
-    q->zeta = q->M / sqrtf(q->M_pilot + q->M_data);
-
     // derived values
     q->M2 = q->M/2;
     
@@ -155,8 +158,14 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
-    ofdmoqamframe_init_S0(q->p, q->M, q->S0);
-    ofdmoqamframe_init_S1(q->p, q->M, q->S1);
+    ofdmoqamframe_init_S0(q->p, q->M, q->S0, &q->M_S0);
+    ofdmoqamframe_init_S1(q->p, q->M, q->S1, &q->M_S1);
+
+    // compute scaling factor
+    //q->g_data = q->M / sqrtf(q->M_pilot + q->M_data);
+    q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
+    q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
+    q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
 
     // input buffer
     q->input_buffer = windowcf_create((q->M));

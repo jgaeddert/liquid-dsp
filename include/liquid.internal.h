@@ -1581,13 +1581,25 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 #define OFDMOQAMFRAME_SCTYPE_PILOT    1
 #define OFDMOQAMFRAME_SCTYPE_DATA     2
 
+// generate short sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S0                 :   output symbol
+//  _M_S0               :   total number of enabled subcarriers in S0
 void ofdmoqamframe_init_S0(unsigned int * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S0);
+                           float complex * _S0,
+                           unsigned int * _M_S0);
 
+// generate long sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S1                 :   output symbol
+//  _M_S1               :   total number of enabled subcarriers in S1
 void ofdmoqamframe_init_S1(unsigned int * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S1);
+                           float complex * _S1,
+                           unsigned int * _M_S1);
 
 // initialize default subcarrier allocation
 //  _M      :   number of subcarriers
