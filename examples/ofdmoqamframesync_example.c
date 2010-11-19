@@ -63,8 +63,8 @@ int main() {
     float beta = 0.7f;
     modulation_scheme ms = MOD_QAM;
     unsigned int bps = 2;
-    float cfo=0.0f;         // carrier frequency offset (max: pi/(2*num_channels) ~ 0.024544)
-    float cpo=0.0f;         // carrier phase offset
+    float dphi=0.0f;        // carrier frequency offset (max: pi/(2*num_channels) ~ 0.024544)
+    float phi=0.0f;         // carrier phase offset
     float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int hc_len=0;  // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
@@ -109,9 +109,6 @@ int main() {
     ofdmoqamframesync_print(fs);
 
     // channel impairments
-    nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);
-    nco_crcf_set_frequency(nco_rx,cfo);
-    nco_crcf_set_phase(nco_rx,cpo);
     float nstd = powf(10.0f, -SNRdB/20.0f);
     float complex hc[hc_len+1];
     for (i=0; i<hc_len+1; i++) {
@@ -167,7 +164,8 @@ int main() {
         firfilt_cccf_push(fchannel,y[i]);
         firfilt_cccf_execute(fchannel,&z[i]);
 
-        nco_crcf_mix_up(nco_rx,z[i],&z[i]);
+        // add carrier phase/frequency offset
+        z[i] *= cexpf(_Complex_I*(phi + i*dphi));
 
         cawgn(&z[i],nstd);
 
@@ -178,6 +176,7 @@ int main() {
 
     // execute synchronizer on noise samples (delay);
     float complex noise;
+    d = 1;
     for (i=0; i<d; i++) {
         noise = 0.0f;
         cawgn(&noise,nstd);
@@ -234,7 +233,6 @@ int main() {
     ofdmoqamframegen_destroy(fg);
     ofdmoqamframesync_destroy(fs);
     modem_destroy(mod);
-    nco_crcf_destroy(nco_rx);
     firfilt_cccf_destroy(fchannel);
 
     // destroy simulation data object internals
