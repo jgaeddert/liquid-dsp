@@ -20,8 +20,8 @@ int main() {
     float gamma=1.0f;           // channel gain
     float noise_floor = -25.0f; // noise floor [dB]
     float bt=0.10f;             // agc loop bandwidth
-    unsigned int num_samples = 2048;
-    unsigned int d=num_samples/32;  // print every d iterations
+    unsigned int num_samples = 500;
+    unsigned int d=num_samples/25;  // print every d iterations
 
     // create objects
     agc_crcf p = agc_crcf_create();
@@ -30,7 +30,7 @@ int main() {
 
     // squelch
     agc_crcf_squelch_activate(p);
-    agc_crcf_squelch_set_threshold(p,noise_floor+5.0f);
+    agc_crcf_squelch_set_threshold(p,noise_floor+10.0f);
     agc_crcf_squelch_set_timeout(p,16);
     agc_crcf_squelch_enable_auto(p);
 
@@ -38,6 +38,7 @@ int main() {
     float complex x[num_samples];
     float complex y[num_samples];
     int squelch[num_samples];
+    int noise_floor_est[num_samples];
     float rssi[num_samples];
 
     // print info
@@ -69,10 +70,11 @@ int main() {
         agc_crcf_execute(p, x[i], &y[i]);
         rssi[i] = agc_crcf_get_signal_level(p);
         squelch[i] = agc_crcf_squelch_get_status(p);
+        noise_floor_est[i] = agc_crcf_squelch_get_threshold(p) - 4.0f;
 
         if ( ((i+1)%d) == 0 )
             printf("%4u: %12.8f %c\n", i+1,
-                                       rssi[i],
+                                       10*log10f(rssi[i]),
                                        squelch[i]==LIQUID_AGC_SQUELCH_ENABLED ? '*' : ' ');
 
     }
@@ -81,16 +83,25 @@ int main() {
     // open output file
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+    fprintf(fid,"num_samples = %u;\n", num_samples);
+
+    fprintf(fid,"x = zeros(1,num_samples);\n");
+    fprintf(fid,"y = zeros(1,num_samples);\n");
+    fprintf(fid,"rssi = zeros(1,num_samples);\n");
+    fprintf(fid,"squelch = zeros(1,num_samples);\n");
+    fprintf(fid,"noise_floor_est = zeros(1,num_samples);\n");
 
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"      x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"      y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"   rssi(%4u) = %12.4e;\n", i+1, rssi[i]);
         fprintf(fid,"squelch(%4u) = %d;\n", i+1, squelch[i]);
+        fprintf(fid,"noise_floor_est(%4u) = %d;\n", i+1, noise_floor_est[i]);
     }
 
-    fprintf(fid,"squelch_enabled = (squelch == 0);\n");
+    fprintf(fid,"squelch_enabled = (squelch == %u);\n", LIQUID_AGC_SQUELCH_ENABLED);
 
     fprintf(fid,"\n\n");
     fprintf(fid,"n = length(x);\n");
@@ -101,7 +112,7 @@ int main() {
     fprintf(fid,"  xlabel('sample index');\n");
     fprintf(fid,"  ylabel('input');\n");
     fprintf(fid,"subplot(3,1,2);\n");
-    fprintf(fid,"  plot(t,10*log10(rssi),'-k','LineWidth',2);\n");
+    fprintf(fid,"  plot(t,10*log10(rssi),'-k','LineWidth',2, t,noise_floor_est,'-b');\n");
     fprintf(fid,"  xlabel('sample index');\n");
     fprintf(fid,"  ylabel('rssi [dB]');\n");
     fprintf(fid,"subplot(3,1,3);\n");
