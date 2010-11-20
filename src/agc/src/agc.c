@@ -328,6 +328,12 @@ void AGC(_squelch_set_threshold)(AGC() _q,
     _q->squelch_threshold_auto = _q->squelch_threshold;
 }
 
+// get squelch threshold [dB]
+T AGC(_squelch_get_threshold)(AGC() _q)
+{
+    return 10.0f*log10f(_q->squelch_threshold);
+}
+
 // set squelch timeout (time before squelch is deactivated)
 //  _q      :   agc object
 //  _n      :   squelch timeout
@@ -437,17 +443,14 @@ void AGC(_update_auto_squelch)(AGC() _q,
     // if rssi dips too low (roughly 4dB below threshold),
     // decrease threshold slightly
     if (_rssi < _q->squelch_threshold * _q->squelch_headroom) {
-        _q->squelch_threshold *= 0.8f;
+        _q->squelch_threshold *= 0.95f;
 #if 0
         printf("agc auto-squelch threshold : %12.8f dB\n", 10*log10f(_q->squelch_threshold));
 #endif
-    }
-#if 0
-    else {
+    } else {
         // continuously increase threshold
-        _q->squelch_threshold *= 1.00001f;
+        _q->squelch_threshold *= 1.01f;
     }
-#endif
 }
 
 // execute squelch cycle

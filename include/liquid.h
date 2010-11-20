@@ -147,6 +147,7 @@ void AGC(_squelch_deactivate)(AGC() _q);                        \
 void AGC(_squelch_enable_auto)(AGC() _q);                       \
 void AGC(_squelch_disable_auto)(AGC() _q);                      \
 void AGC(_squelch_set_threshold)(AGC() _q, T _threshold);       \
+T    AGC(_squelch_get_threshold)(AGC() _q);                     \
 void AGC(_squelch_set_timeout)(AGC() _q, unsigned int _n);      \
 int  AGC(_squelch_get_status)(AGC() _q);
 
