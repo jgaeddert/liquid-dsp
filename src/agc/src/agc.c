@@ -29,9 +29,12 @@
 
 #include "liquid.internal.h"
 
+// signal level estimate feedback
 #define LIQUID_AGC_ZETA (0.5)
 
+// agc structure object
 struct AGC(_s) {
+    // automatic gain control type
     liquid_agc_type type;
 
     T e_target;     // target signal energy
@@ -67,9 +70,10 @@ struct AGC(_s) {
     int squelch_status;             // status
 };
 
-
-AGC() AGC(_create)()
+// create agc object
+AGC() AGC(_create)(void)
 {
+    // create object and initialize to default parameters
     AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
     _q->type = LIQUID_AGC_DEFAULT;
 
@@ -96,19 +100,23 @@ AGC() AGC(_create)()
     AGC(_squelch_set_timeout)(_q, 32);
     AGC(_squelch_deactivate)(_q);
 
+    // return object
     return _q;
 }
 
+// destroy agc object, freeing all internally-allocated memory
 void AGC(_destroy)(AGC() _q)
 {
     free(_q);
 }
 
+// print agc object internals
 void AGC(_print)(AGC() _q)
 {
     printf("agc [rssi: %12.4fdB]:\n", 10*log10(_q->e_target / _q->g));
 }
 
+// reset agc object
 void AGC(_reset)(AGC() _q)
 {
     _q->e_prime = 1.0f;
@@ -118,26 +126,41 @@ void AGC(_reset)(AGC() _q)
     AGC(_unlock)(_q);
 }
 
-void AGC(_set_type)(AGC() _q, liquid_agc_type _type)
+// set agc type
+//  _q      :   agc object
+//  _type   :   gain update type (e.g. LIQUID_AGC_DEFAULT)
+void AGC(_set_type)(AGC() _q,
+                    liquid_agc_type _type)
 {
     _q->type = _type;
 }
 
-void AGC(_set_target)(AGC() _q, T _e_target)
+// set agc target signal level
+//  _q          :   agc object
+//  _e_target   :   target signal level (RMS)
+void AGC(_set_target)(AGC() _q,
+                      T _e_target)
 {
     // validate input; check to ensure _e_target is reasonable
     if (_e_target <= 0.0f) {
-        fprintf(stderr,"error: agc_set_target(), target energy must be greater than 0\n");
+        fprintf(stderr,"error: agc_xxxt_set_target(), target energy must be greater than 0\n");
         exit(-1);
     }
 
     _q->e_target = _e_target;
 }
 
-void AGC(_set_gain_limits)(AGC() _q, T _g_min, T _g_max)
+// set agc gain limits
+//  _q      :   agc object
+//  _g_min  :   minimum allowable gain
+//  _g_max  :   maximum allowable gain
+void AGC(_set_gain_limits)(AGC() _q,
+                           T _g_min,
+                           T _g_max)
 {
+    // validate input
     if (_g_min > _g_max) {
-        fprintf(stderr,"error: agc_set_gain_limits(), _g_min < _g_max\n");
+        fprintf(stderr,"error: agc_xxxt_set_gain_limits(), _g_min < _g_max\n");
         exit(-1);
     }
 
@@ -145,14 +168,18 @@ void AGC(_set_gain_limits)(AGC() _q, T _g_min, T _g_max)
     _q->g_max = _g_max;
 }
 
-void AGC(_set_bandwidth)(AGC() _q, T _BT)
+// set agc loop bandwidth
+//  _q      :   agc object
+//  _BT     :   bandwidth
+void AGC(_set_bandwidth)(AGC() _q,
+                         T _BT)
 {
     // check to ensure _BT is reasonable
     if ( _BT < 0 ) {
-        fprintf(stderr,"error: agc_set_bandwidth(), bandwidth must be positive\n");
+        fprintf(stderr,"error: agc_xxxt_set_bandwidth(), bandwidth must be positive\n");
         exit(-1);
     } else if ( _BT > 1.0f ) {
-        fprintf(stderr,"error: agc_set_bandwidth(), bandwidth must less than 1.0\n");
+        fprintf(stderr,"error: agc_xxxt_set_bandwidth(), bandwidth must less than 1.0\n");
         exit(-1);
     }
 
@@ -170,13 +197,15 @@ void AGC(_set_bandwidth)(AGC() _q, T _BT)
     _q->beta = 1 - _q->alpha;
 }
 
-// Set internal decimation level, D > 0, D=4 typical
+// Set internal decimation level
+//  _q      :   agc object
+//  _D      :   decimation level, D > 0, D=4 typical
 void AGC(_set_decim)(AGC() _q,
                      unsigned int _D)
 {
     // validate input
     if ( _D == 0 ) {
-        fprintf(stderr,"error: agc_set_decim(), decimation factor must be greater than zero\n");
+        fprintf(stderr,"error: agc_xxxt_set_decim(), decimation factor must be greater than zero\n");
         exit(1);
     }
 
@@ -187,23 +216,33 @@ void AGC(_set_decim)(AGC() _q,
     AGC(_set_bandwidth)(_q, _q->BT);
 }
 
+// lock agc
 void AGC(_lock)(AGC() _q)
 {
     _q->is_locked = 1;
 }
 
+// unlock agc
 void AGC(_unlock)(AGC() _q)
 {
     _q->is_locked = 0;
 }
 
-void AGC(_execute)(AGC() _q, TC _x, TC *_y)
+// execute automatic gain control loop
+//  _q      :   agc object
+//  _x      :   input sample
+//  _y      :   output sample
+void AGC(_execute)(AGC() _q,
+                   TC _x,
+                   TC *_y)
 {
+    // if agc is locked, apply current gain and return
     if (_q->is_locked) {
         *_y = _x * (_q->g);
         return;
     }
 
+    // decimation: only execute gain control loop every D samples
     _q->decim_timer++;
     if (_q->decim_timer == _q->decim_timeout) {
         _q->decim_timer = 0;
@@ -213,6 +252,7 @@ void AGC(_execute)(AGC() _q, TC _x, TC *_y)
         return;
     }
 
+    // execute type-specific gain estimation
     switch (_q->type) {
     case LIQUID_AGC_DEFAULT:
         AGC(_estimate_gain_default)(_q,_x);
@@ -225,7 +265,7 @@ void AGC(_execute)(AGC() _q, TC _x, TC *_y)
         break;
     default:
         // should never get to this condition
-        fprintf(stderr,"error: agc_execute(), invalid agc type\n");
+        fprintf(stderr,"error: agc_xxxt_execute(), invalid agc type\n");
         exit(-1);
     }
 
@@ -235,16 +275,18 @@ void AGC(_execute)(AGC() _q, TC _x, TC *_y)
     // apply gain to input
     *_y = _x * _q->g;
 
-    // squelch
+    // update squelch control, if activated
     if (_q->squelch_activated)
         AGC(_execute_squelch)(_q);
 }
 
+// get estimated signal level
 T AGC(_get_signal_level)(AGC() _q)
 {
     return (_q->e_target / _q->g);
 }
 
+// get internal gain
 T AGC(_get_gain)(AGC() _q)
 {
     return _q->g;
@@ -277,6 +319,8 @@ void AGC(_squelch_disable_auto)(AGC() _q)
 }
 
 // set squelch threshold
+//  _q          :   agc object
+//  _threshold  :   squelch threshold level [dB]
 void AGC(_squelch_set_threshold)(AGC() _q,
                                  T _threshold)
 {
@@ -284,7 +328,9 @@ void AGC(_squelch_set_threshold)(AGC() _q,
     _q->squelch_threshold_auto = _q->squelch_threshold;
 }
 
-// set squelch timeout
+// set squelch timeout (time before squelch is deactivated)
+//  _q      :   agc object
+//  _n      :   squelch timeout
 void AGC(_squelch_set_timeout)(AGC() _q,
                                unsigned int _n)
 {
@@ -302,19 +348,29 @@ int AGC(_squelch_get_status)(AGC() _q)
 // internal methods
 //
 
+// estimate signal input energy
+//  _q      :   agc object
+//  _x      :   input sample
 void AGC(_estimate_input_energy)(AGC() _q,
                                  TC _x)
 {
+    // compute instantaneous signal energy
 #if TC_COMPLEX
     _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
 #else
     _q->e = _x*_x;
 #endif
+
+    // filter energy estimate
     _q->e_prime = (_q->e)*LIQUID_AGC_ZETA + (_q->e_prime)*(1.0 - LIQUID_AGC_ZETA);
     _q->e_hat = sqrtf(_q->e_prime);
 }
 
-void AGC(_estimate_gain_default)(AGC() _q, TC _x)
+// estimate necessary agc gain (default method)
+//  _q      :   agc object
+//  _x      :   input sample
+void AGC(_estimate_gain_default)(AGC() _q,
+                                 TC _x)
 {
     // estimate input energy, result is in _q->e_hat
     AGC(_estimate_input_energy)(_q, _x);
@@ -326,7 +382,11 @@ void AGC(_estimate_gain_default)(AGC() _q, TC _x)
     _q->g = (_q->beta)*(_q->g) + (_q->alpha)*g;
 }
 
-void AGC(_estimate_gain_log)(AGC() _q, TC _x)
+// estimate necessary agc gain (logarithmic method)
+//  _q      :   agc object
+//  _x      :   input sample
+void AGC(_estimate_gain_log)(AGC() _q,
+                             TC _x)
 {
     // estimate input energy, result is in _q->e_hat
     AGC(_estimate_input_energy)(_q, _x);
@@ -338,7 +398,11 @@ void AGC(_estimate_gain_log)(AGC() _q, TC _x)
     _q->g *= powf(gain_error, _q->alpha);
 }
 
-void AGC(_estimate_gain_exp)(AGC() _q, TC _x)
+// estimate necessary agc gain (exponential method)
+//  _q      :   agc object
+//  _x      :   input sample
+void AGC(_estimate_gain_exp)(AGC() _q,
+                             TC _x)
 {
     // estimate input energy, result is in _q->e_hat
     AGC(_estimate_input_energy)(_q, _x);
@@ -365,6 +429,8 @@ void AGC(_limit_gain)(AGC() _q)
 }
 
 // update automatic squelch threshold
+//  _q      :   agc object
+//  _rssi   :   estimated received signal strength (linear)
 void AGC(_update_auto_squelch)(AGC() _q,
                                T _rssi)
 {
