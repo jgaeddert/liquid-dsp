@@ -48,7 +48,13 @@ struct ofdmoqamframegen_s {
     unsigned int M_null;    // number of null subcarriers
     unsigned int M_pilot;   // number of pilot subcarriers
     unsigned int M_data;    // number of data subcarriers
-    float zeta;             // scaling factor : zeta = M / sqrt(M_pilot + M_data)
+    unsigned int M_S0;      // number of enabled subcarriers in S0
+    unsigned int M_S1;      // number of enabled subcarriers in S1
+
+    // scaling factors
+    float g_data;           //
+    float g_S0;             //
+    float g_S1;             //
 
     // filterbank objects
     ofdmoqam synthesizer;
@@ -60,7 +66,6 @@ struct ofdmoqamframegen_s {
     // PLCP
     float complex * S0;     // short sequence
     float complex * S1;     // long sequence
-    float complex * S2;     // training sequence
 
     // pilot sequence
     msequence ms_pilot;
@@ -101,7 +106,6 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
 
     // allocate memory for subcarrier allocation IDs
     q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
-    unsigned int i;
     if (_p == NULL) {
         // initialize default subcarrier allocation
         ofdmoqamframe_init_default_sctype(q->M, q->p);
@@ -109,27 +113,13 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
         // copy user-defined subcarrier allocation
         memmove(q->p, _p, q->M*sizeof(unsigned int));
     }
-    q->M_null  = 0;
-    q->M_pilot = 0;
-    q->M_data  = 0;
-    for (i=0; i<q->M; i++) {
-        q->p[i] = _p[i];
-        if (q->p[i] == OFDMOQAMFRAME_SCTYPE_NULL)
-            q->M_null++;
-        else if (q->p[i] == OFDMOQAMFRAME_SCTYPE_PILOT)
-            q->M_pilot++;
-        else if (q->p[i] == OFDMOQAMFRAME_SCTYPE_DATA)
-            q->M_data++;
-        else {
-            fprintf(stderr,"error: ofdmoqamframegen_create(), invalid subcarrier type (%u)\n", q->p[i]);
-            exit(1);
-        }
-    }
+
+    // validate and count subcarrier allocation
+    ofdmoqamframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
     if ( (q->M_pilot + q->M_data) == 0) {
         fprintf(stderr,"error: ofdmoqamframegen_create(), must have at least one enabled subcarrier\n");
         exit(1);
     }
-    q->zeta = q->M / sqrtf(q->M_pilot + q->M_data);
 
     // allocate memory for transform objects
     q->X  = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -138,18 +128,14 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->S2 = (float complex*) malloc((q->M)*sizeof(float complex));
-    ofdmoqamframe_init_S0(q->p, q->M, q->S0);   // ...(q->S0, q->p)
-    ofdmoqamframe_init_S1(q->p, q->M, q->S1);   // ...(q->S1, q->p)
-    ofdmoqamframe_init_S2(q->p, q->M, q->S2);   // ...(q->S2, q->p)
-    for (i=0; i<q->M; i++) {
-        q->S0[i] *= q->zeta;
-        q->S1[i] *= q->zeta;
-        q->S2[i] *= q->zeta;
+    ofdmoqamframe_init_S0(q->p, q->M, q->S0, &q->M_S0);
+    ofdmoqamframe_init_S1(q->p, q->M, q->S1, &q->M_S1);
 
-        // conjugate long sequence on transmitter side
-        q->S1[i] = conjf(q->S1[i]);
-    }
+    // compute scaling factors
+    //q->g_data = q->M / sqrtf(q->M_pilot + q->M_data);
+    q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
+    q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
+    q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
@@ -172,7 +158,6 @@ void ofdmoqamframegen_destroy(ofdmoqamframegen _q)
     // free PLCP memory arrays
     free(_q->S0);
     free(_q->S1);
-    free(_q->S2);
 
     // free pilot msequence object memory
     msequence_destroy(_q->ms_pilot);
@@ -202,6 +187,11 @@ void ofdmoqamframegen_writeshortsequence(ofdmoqamframegen _q,
     // move short sequence to freq-domain buffer
     memmove(_q->X, _q->S0, (_q->M)*sizeof(float complex));
 
+    // apply gain
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->g_S0;
+
     // execute synthesizer, store result in output array
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);
 }
@@ -213,15 +203,10 @@ void ofdmoqamframegen_writelongsequence(ofdmoqamframegen _q,
     // move long sequence to freq-domain buffer
     memmove(_q->X, _q->S1, (_q->M)*sizeof(float complex));
 
-    // execute synthesizer, store result in output array
-    ofdmoqam_execute(_q->synthesizer, _q->X, _y);
-}
-
-void ofdmoqamframegen_writetrainingsequence(ofdmoqamframegen _q,
-                                            float complex * _y)
-{
-    // move short sequence to freq-domain buffer
-    memmove(_q->X, _q->S2, (_q->M)*sizeof(float complex));
+    // apply gain
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->g_S1;
 
     // execute synthesizer, store result in output array
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);
@@ -244,22 +229,21 @@ void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
     unsigned int i, j=0;
     int sctype;
     for (i=0; i<_q->M; i++) {
-        sctype = ofdmoqamframe_getsctype(i);
+        sctype = _q->p[i];
         if (sctype==OFDMOQAMFRAME_SCTYPE_NULL) {
             // disabled subcarrier
             _q->X[i] = 0.0f;
         } else if (sctype==OFDMOQAMFRAME_SCTYPE_PILOT) {
             // pilot subcarrier
-            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->zeta;
+            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->g_data;
         } else {
             // data subcarrier
-            _q->X[i] = _x[j] * _q->zeta;
+            _q->X[i] = _x[j] * _q->g_data;
             j++;
         }
 
         //printf("X[%3u] = %12.8f + j*%12.8f;\n",i+1,crealf(_q->X[i]),cimagf(_q->X[i]));
     }
-    assert(j==48);
 
     // execute synthesizer, store result in output array
     ofdmoqam_execute(_q->synthesizer, _q->X, _y);

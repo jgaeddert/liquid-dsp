@@ -24,84 +24,132 @@
 //  - physical layer convergence procedure (PLCP)
 //
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "liquid.internal.h"
 
+// generate short sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S0                 :   output symbol
+//  _M_S0               :   total number of enabled subcarriers in S0
 void ofdmoqamframe_init_S0(unsigned int * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S0)
+                           float complex * _S0,
+                           unsigned int * _M_S0)
 {
-    msequence ms = msequence_create(4);
-    modem mod = modem_create(MOD_QPSK,2);
+    unsigned int i;
+
+    // compute m-sequence length
+    unsigned int m = liquid_nextpow2(_num_subcarriers);
+    if (m < 4)      m = 4;
+    else if (m > 8) m = 8;
+
+    // generate m-sequence generator object
+    msequence ms = msequence_create(m);
+
     unsigned int s;
-    float complex sym;
-    unsigned int num_subcarriers = 64;
-    float zeta = 1.0f;
-    unsigned int j;
-    unsigned int sctype;
+    unsigned int M_S0 = 0;
 
     // short sequence
-    for (j=0; j<num_subcarriers; j++) {
-        sctype = ofdmoqamframe_getsctype(j);
-        if (sctype == OFDMOQAMFRAME_SCTYPE_NULL) {
+    for (i=0; i<_num_subcarriers; i++) {
+        // generate symbol
+        //s = msequence_generate_symbol(ms,1);
+        s = msequence_generate_symbol(ms,3) & 0x01;
+
+        if (_p[i] == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier
-            _S0[j] = 0.0f;
+            _S0[i] = 0.0f;
         } else {
-            if ((j%4) == 2) {
-                // even subcarrer, skipping ever other (14 total)
-                s = msequence_generate_symbol(ms,2);
-                modem_modulate(mod,s,&sym);
-                // retain only quadrature component (time aligned
-                // without half-symbol delay), and amplitude-
-                // compensated.
-                _S0[j] = cimagf(sym) * _Complex_I * zeta * 2.0f * sqrtf(2.0f);
+            if ( (i%2) == 0 ) {
+                // even subcarrer
+                _S0[i] = s ? 1.0f : -1.0f;
+                M_S0++;
             } else {
-                // odd subcarrer
-                _S0[j] = 0.0f;
+                // odd subcarrer (ignore)
+                _S0[i] = 0.0f;
             }
         }
     }
+
+    // destroy objects
     msequence_destroy(ms);
-    modem_destroy(mod);
+
+    // ensure at least one subcarrier was enabled
+    if (M_S0 == 0) {
+        fprintf(stderr,"error: ofdmoqamframe_init_S0(), no subcarriers enabled; check allocation\n");
+        exit(1);
+    }
+
+    // set return value(s)
+    *_M_S0 = M_S0;
 }
 
+
+// generate long sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S1                 :   output symbol
+//  _M_S1               :   total number of enabled subcarriers in S1
 void ofdmoqamframe_init_S1(unsigned int * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S1)
+                           float complex * _S1,
+                           unsigned int * _M_S1)
 {
-    msequence ms = msequence_create(5);
-    modem mod = modem_create(MOD_QPSK,2);
+    unsigned int i;
+
+    // compute m-sequence length
+    unsigned int m = liquid_nextpow2(_num_subcarriers);
+    if (m < 4)      m = 4;
+    else if (m > 8) m = 8;
+
+    // increase m such that the resulting S1 sequence will
+    // differ significantly from S0 with the same subcarrier
+    // allocation array
+    m++;
+
+    // generate m-sequence generator object
+    msequence ms = msequence_create(m);
+
     unsigned int s;
-    float complex sym;
-    unsigned int num_subcarriers = 64;
-    float zeta = 1.0f;
-    unsigned int j;
-    unsigned int sctype;
+    unsigned int M_S1 = 0;
 
     // long sequence
-    for (j=0; j<num_subcarriers; j++) {
-        sctype = ofdmoqamframe_getsctype(j);
-        if (sctype == OFDMOQAMFRAME_SCTYPE_NULL) {
+    for (i=0; i<_num_subcarriers; i++) {
+        // generate symbol
+        //s = msequence_generate_symbol(ms,1);
+        s = msequence_generate_symbol(ms,3) & 0x01;
+
+        if (_p[i] == OFDMOQAMFRAME_SCTYPE_NULL) {
             // NULL subcarrier
-            _S1[j] = 0.0f;
+            _S1[i] = 0.0f;
         } else {
-            s = msequence_generate_symbol(ms,2);
-            modem_modulate(mod,s,&sym);
-            if ((j%2) == 0) {
-                // even subcarrer
-                _S1[j] = zeta * sqrtf(2.0f) * crealf(sym);
-            } else {
-                // odd subcarrer
-                _S1[j] = zeta * sqrtf(2.0f) * cimagf(sym) * _Complex_I;
-            }
+            _S1[i] = s ? 1.0f : -1.0f;
+            M_S1++;
+
+            // rotate by pi/2 on odd subcarriers
+            _S1[i] *= (i%2)==0 ? 1.0f : _Complex_I;
         }
     }
+
+    // destroy objects
     msequence_destroy(ms);
-    modem_destroy(mod);
+
+    // ensure at least one subcarrier was enabled
+    if (M_S1 == 0) {
+        fprintf(stderr,"error: ofdmoqamframe_init_S1(), no subcarriers enabled; check allocation\n");
+        exit(1);
+    }
+
+    // set return value(s)
+    *_M_S1 = M_S1;
 }
 
 // initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
 //
 // key: '.' (null), 'P' (pilot), '+' (data)
 // .+++++++++++++++P.........P+++++++++++++
@@ -134,5 +182,44 @@ void ofdmoqamframe_init_default_sctype(unsigned int _M,
         else
             _p[i] = OFDMOQAMFRAME_SCTYPE_DATA;
     }
+}
+
+// validate subcarrier type (count number of null, pilot, and data
+// subcarriers in the allocation)
+//  _p          :   subcarrier allocation array, [size: _M x 1]
+//  _M          :   number of subcarriers
+//  _M_null     :   output number of null subcarriers
+//  _M_pilot    :   output number of pilot subcarriers
+//  _M_data     :   output number of data subcarriers
+void ofdmoqamframe_validate_sctype(unsigned int * _p,
+                                   unsigned int _M,
+                                   unsigned int * _M_null,
+                                   unsigned int * _M_pilot,
+                                   unsigned int * _M_data)
+{
+    // clear counters
+    unsigned int M_null  = 0;
+    unsigned int M_pilot = 0;
+    unsigned int M_data  = 0;
+
+    unsigned int i;
+    for (i=0; i<_M; i++) {
+        // update appropriate counters
+        if (_p[i] == OFDMOQAMFRAME_SCTYPE_NULL)
+            M_null++;
+        else if (_p[i] == OFDMOQAMFRAME_SCTYPE_PILOT)
+            M_pilot++;
+        else if (_p[i] == OFDMOQAMFRAME_SCTYPE_DATA)
+            M_data++;
+        else {
+            fprintf(stderr,"error: ofdmoqamframe_validate_sctype(), invalid subcarrier type (%u)\n", _p[i]);
+            exit(1);
+        }
+    }
+
+    // set outputs
+    *_M_null  = M_null;
+    *_M_pilot = M_pilot;
+    *_M_data  = M_data;
 }
 

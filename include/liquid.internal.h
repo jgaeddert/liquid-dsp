@@ -1581,20 +1581,60 @@ void ofdmoqamframe64sync_rxpayload(ofdmoqamframe64sync _q,
 #define OFDMOQAMFRAME_SCTYPE_PILOT    1
 #define OFDMOQAMFRAME_SCTYPE_DATA     2
 
+// generate short sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S0                 :   output symbol
+//  _M_S0               :   total number of enabled subcarriers in S0
 void ofdmoqamframe_init_S0(unsigned int * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S0);
+                           float complex * _S0,
+                           unsigned int * _M_S0);
 
+// generate long sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S1                 :   output symbol
+//  _M_S1               :   total number of enabled subcarriers in S1
 void ofdmoqamframe_init_S1(unsigned int * _p,
                            unsigned int _num_subcarriers,
-                           float complex * _S1);
+                           float complex * _S1,
+                           unsigned int * _M_S1);
+
+// initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+void ofdmoqamframe_init_default_sctype(unsigned int _M,
+                                       unsigned int * _p);
+
+// validate subcarrier type (count number of null, pilot, and data
+// subcarriers in the allocation)
+//  _p          :   subcarrier allocation array, [size: _M x 1]
+//  _M          :   number of subcarriers
+//  _M_null     :   output number of null subcarriers
+//  _M_pilot    :   output number of pilot subcarriers
+//  _M_data     :   output number of data subcarriers
+void ofdmoqamframe_validate_sctype(unsigned int * _p,
+                                   unsigned int _M,
+                                   unsigned int * _M_null,
+                                   unsigned int * _M_pilot,
+                                   unsigned int * _M_data);
 
 void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q, float complex _x);
 void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q, float complex _x);
 void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q, float complex _x);
 void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q, float complex _x);
 
-void ofdmoqamframesync_estimate_gain_plcplong(ofdmoqamframesync _q);
+void ofdmoqamframesync_S0_metrics(ofdmoqamframesync _q,
+                                  float complex * _g_hat,
+                                  float complex * _s_hat);
+
+void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
+                                  float complex * _t0_hat,
+                                  float complex * _t1_hat);
+
+void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q);
+
 void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
                                  float complex * _Y0,
                                  float complex * _Y1);
