@@ -94,6 +94,7 @@ struct ofdmoqamframesync_s {
     windowcf input_buffer;
     unsigned int timer;
     unsigned int k;         // analyzer alignment (timing)
+    unsigned int num_S0;    // 
 
     ofdmoqamframesync_callback callback;
     void * userdata;
@@ -194,7 +195,7 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     // agc, rssi, squelch
     q->agc_rx = agc_crcf_create();
     agc_crcf_set_target(q->agc_rx, 1.0f);
-    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
+    agc_crcf_set_bandwidth(q->agc_rx,  1e-3f);
     agc_crcf_set_gain_limits(q->agc_rx, 1e-3f, 1e4f);
 
     agc_crcf_squelch_activate(q->agc_rx);
@@ -264,6 +265,7 @@ void ofdmoqamframesync_reset(ofdmoqamframesync _q)
     windowcf_clear(_q->input_buffer);
     _q->timer = 0;
     _q->k = 0;
+    _q->num_S0 = 0;
 
     // clear analysis filter bank objects
     firpfbch_crcf_clear(_q->ca0);
@@ -379,14 +381,30 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
         int dt = 0;
         // adjust timing
         if (cabsf(g0_hat) > 0.7f) {
-            dt = (int) roundf(tau_hat);
-            _q->k = (_q->k + _q->M + dt) % _q->M;
-            //printf(" k : %3u (dt = %3d)\n", k, dt);
-            ofdmoqamframesync_estimate_gain(_q);
+            // increment counter
+            _q->num_S0++;
 
             // lock AGC
             agc_crcf_lock(_q->agc_rx);
+
+            dt = (int) roundf(tau_hat);
+            _q->k = (_q->k + _q->M + dt) % _q->M;
+            //printf(" k : %3u (dt = %3d)\n", k, dt);
+
+            if (_q->num_S0 == _q->m) {
+                //
+                ofdmoqamframesync_estimate_gain(_q);
+            }
         }
+
+#if 1
+        if (_q->num_S0 > _q->m) {
+            if (cabsf(t0_hat) > 0.7f) {
+            } else if (cabsf(t1_hat) > 0.7f) {
+                _q->k = (_q->k + _q->M2) % _q->M;
+            }
+        }
+#endif
 
 #if DEBUG_OFDMOQAMFRAMESYNC_PRINT
         //printf("%4u|%4u: %c g |%7.4f|, dphi: %7.4f, tau: %7.3f, k=%2u, dt=%3d, %c t0[%7.4f], %c t1[%7.4f]\n",
