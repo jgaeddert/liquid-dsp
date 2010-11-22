@@ -12,11 +12,23 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <getopt.h>
 #include <assert.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "ofdmoqamframesync_example.m"
+
+void usage()
+{
+    printf("ofdmoqamframesync_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  k     : number of channels, default: 80\n");
+    printf("  m     : filter delay [symbols], default: 3\n");
+    printf("  b     : filter excess bandwidth, in [0,1], default: 0.7\n");
+    printf("  d     : delay [samples], default: 0\n");
+}
+
 
 // simulation data structure
 typedef struct {
@@ -51,7 +63,8 @@ static int callback(float complex * _y, void * _userdata)
     return 0;
 }
 
-int main() {
+int main(int argc, char *argv[])
+{
     srand(time(NULL));
 
     // options
@@ -69,6 +82,40 @@ int main() {
     unsigned int hc_len=0;  // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
     unsigned int d=0;       // sample delay (noise samples before frame)
+
+    // get options
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhk:m:b:d:")) != EOF){
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();                      return 0;
+        case 'k': num_channels = atoi(optarg);  break;
+        case 'm': m = atoi(optarg);             break;
+        case 'b': beta = atof(optarg);          break;
+        case 'd': d = atoi(optarg);             break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            exit(-1);
+        }
+    }
+
+    // validate input
+    if (num_channels < 8) {
+        fprintf(stderr,"error: %s, number of subcarriers exceeds minimum\n", argv[0]);
+        exit(1);
+    } else if ( (num_channels%2) == 1) {
+        fprintf(stderr,"error: %s, number of subcarriers must be even\n", argv[0]);
+        exit(1);
+    } else if (m == 0) {
+        fprintf(stderr,"error: %s, filter delay must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (beta < 0.0f || beta > 1.0f) {
+        fprintf(stderr,"error: %s, filter excess banwidth must be in [0,1]\n", argv[0]);
+        exit(1);
+    } else if (d > 10000) {
+        fprintf(stderr,"error: %s, delay is too large\n", argv[0]);
+        exit(1);
+    }
 
     unsigned int i;
     unsigned int num_symbols = num_symbols_S0 +
