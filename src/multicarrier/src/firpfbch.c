@@ -199,12 +199,25 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
     float h[h_len];
     // TODO : actually design based on requested filter prototype
     switch (_ftype) {
-    case 0: // rrcos
-    case 1: // rKaiser
-    case 2: // arKaiser
-    case 3: // hM3
-    default:
+    case LIQUID_RNYQUIST_ARKAISER:
+        // root-Nyquist Kaiser (approximate optimum)
+        design_arkaiser_filter(_num_channels, _m, _beta, 0.0f, h);
+        break;
+    case LIQUID_RNYQUIST_RKAISER:
+        // root-Nyquist Kaiser (true optimum)
         design_rkaiser_filter(_num_channels, _m, _beta, 0.0f, h);
+        break;
+    case LIQUID_RNYQUIST_RRC:
+        // root raised-cosine
+        design_rrc_filter(_num_channels, _m, _beta, 0.0f, h);
+        break;
+    case LIQUID_RNYQUIST_hM3:
+        // harris-Moerder-3 filter
+        design_hM3_filter(_num_channels, _m, _beta, 0.0f, h);
+        break;
+    default:
+        fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), unknown/invalid prototype (%d)\n", _ftype);
+        exit(1);
     }
 
     // copy coefficients to type-specfic array, reversing order if

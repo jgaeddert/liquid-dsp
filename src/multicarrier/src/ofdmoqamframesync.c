@@ -46,6 +46,7 @@ struct ofdmoqamframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int m;         // filter delay (symbols)
     float beta;             // filter excess bandwidth factor
+    int ftype;              // filter prototype (e.g. LIQUID_RNYQUIST_ARKAISER)
     unsigned int * p;       // subcarrier allocation (null, pilot, data)
 
     // constants
@@ -148,12 +149,13 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
         exit(1);
     }
 
-    // derived values
+    // default/derived values
+    q->ftype = LIQUID_RNYQUIST_ARKAISER;
     q->M2 = q->M/2;
     
     // create analysis filter banks
-    q->ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, q->M, q->m, q->beta, 0);
-    q->ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, q->M, q->m, q->beta, 0);
+    q->ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, q->M, q->m, q->beta, q->ftype);
+    q->ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, q->M, q->m, q->beta, q->ftype);
     q->X0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->X1 = (float complex*) malloc((q->M)*sizeof(float complex));
  

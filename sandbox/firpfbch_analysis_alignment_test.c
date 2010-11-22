@@ -18,6 +18,7 @@ int main() {
     unsigned int m=3;               // filter delay (symbols)
     float beta = 0.9f;              // filter excess bandwidth factor
     unsigned int delay = 3;         // initial sampling delay
+    int ftype = LIQUID_RNYQUIST_ARKAISER;
 
     // derived values
     unsigned int num_frames = num_symbols + 2*m;            // compensate for filter delay
@@ -29,8 +30,8 @@ int main() {
     float complex Y1[num_frames][num_channels];
 
     // create analyzer objects
-    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, num_channels, m, beta, 0);
-    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, num_channels, m, beta, 0);
+    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, num_channels, m, beta, ftype);
+    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, num_channels, m, beta, ftype);
 
     unsigned int i;
     unsigned int j;

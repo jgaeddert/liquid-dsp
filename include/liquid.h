@@ -1051,6 +1051,12 @@ void design_rcos_filter(unsigned int _k,
                         float _dt,
                         float * _h);
 
+// root-Nyquist filter prototypes
+#define LIQUID_RNYQUIST_ARKAISER    (0) // root-Nyquist Kaiser (approximate optimum)
+#define LIQUID_RNYQUIST_RKAISER     (1) // root-Nyquist Kaiser (true optimum)
+#define LIQUID_RNYQUIST_RRC         (2) // root raised-cosine
+#define LIQUID_RNYQUIST_hM3         (3) // harris-Moerder-3 filter
+
 // Design root-Nyquist raised-cosine filter
 //  _k      : samples/symbol
 //  _m      : symbol delay

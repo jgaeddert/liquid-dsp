@@ -20,6 +20,7 @@ int main() {
     unsigned int num_symbols=32;    // number of symbols
     unsigned int m=3;               // filter delay (symbols)
     float beta = 0.9f;              // filter excess bandwidth factor
+    int ftype = LIQUID_RNYQUIST_ARKAISER;
 
     // number of frames (compensate for filter delay)
     unsigned int num_frames = num_symbols + 2*m;
@@ -27,11 +28,11 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    firpfbch_crcf cs0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, 0);
-    firpfbch_crcf cs1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, 0);
+    firpfbch_crcf cs0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, ftype);
+    firpfbch_crcf cs1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, ftype);
 
-    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, 0);
-    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, 0);
+    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, ftype);
+    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, ftype);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);

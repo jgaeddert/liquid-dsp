@@ -37,6 +37,7 @@ struct ofdmoqam_s {
     float beta;
     float dt;
     float gamma;        // gain correction factor
+    int ftype;          // filter prototype (e.g. LIQUID_RNYQUIST_ARKAISER)
 
     float complex * x0; // time-domain buffer (upper bank)
     float complex * x1; // time-domain buffer (lower bank)
@@ -68,8 +69,9 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
     c->beta = _beta;
     c->dt   = _dt;
 
-    // derived values
+    // default/derived values
     c->gamma = 1.0f / sqrtf(c->num_channels);
+    c->ftype = LIQUID_RNYQUIST_RKAISER;
 
     // validate input
     if ( ((c->num_channels)%2) != 0 ) {
@@ -94,11 +96,11 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
 
     // create filterbank channelizers
     if (c->type == OFDMOQAM_SYNTHESIZER) {
-        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, 0);
-        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, 0);
+        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, c->ftype);
+        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, c->ftype);
     } else {
-        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, 0);
-        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, 0);
+        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, c->ftype);
+        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, c->ftype);
     }
 
     // clear buffers, etc.
