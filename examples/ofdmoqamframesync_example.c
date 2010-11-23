@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     unsigned int bps = 2;
     float dphi=0.0f;        // carrier frequency offset (max: pi/(2*num_channels) ~ 0.024544)
     float phi=0.0f;         // carrier phase offset
-    float SNRdB=60.0f;      // signal-to-noise ratio (dB)
+    float SNRdB=30.0f;      // signal-to-noise ratio (dB)
     unsigned int hc_len=0;  // number of multi-path channel taps
     float fstd=0.2f;        // multi-path channel taps standard deviation
     unsigned int d=0;       // sample delay (noise samples before frame)
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     ofdmoqamframesync_print(fs);
 
     // channel impairments
-    float nstd = powf(10.0f, -SNRdB/20.0f);
+    float nstd = powf(10.0f, -SNRdB/10.0f);
     float complex hc[hc_len+1];
     for (i=0; i<hc_len+1; i++) {
         hc[i] = (i==0) ? 1.0f : (randnf() + _Complex_I*randnf())*0.707f*fstd;
@@ -244,7 +244,8 @@ int main(int argc, char *argv[])
         // add carrier phase/frequency offset
         z[i] *= 1.0f*cexpf(_Complex_I*(phi + i*dphi));
 
-        cawgn(&z[i],nstd);
+        // add noise
+        z[i] += nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
 
         fprintf(fid,"y(%3u)  = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"z(%3u)  = %12.4e + j*%12.4e;\n", n+1, crealf(z[i]), cimagf(z[i]));
