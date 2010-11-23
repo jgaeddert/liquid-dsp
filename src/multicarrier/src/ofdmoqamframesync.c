@@ -395,7 +395,7 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
 
             if (_q->num_S0 == _q->m) {
                 //
-                ofdmoqamframesync_estimate_gain(_q);
+                ofdmoqamframesync_estimate_gain(_q, _q->G0, _q->G);
             }
         }
 
@@ -447,7 +447,9 @@ void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
 {
 }
 
-void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
+void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
+                                     float complex * _G_hat,
+                                     float complex * _G)
 {
     //
     unsigned int i;
@@ -476,7 +478,7 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
 #endif
     for (i=0; i<_q->M; i++) {
 
-        _q->G[i] = 0.0f;
+        _G[i] = 0.0f;
         if (_q->p[i] == OFDMOQAMFRAME_SCTYPE_NULL)
             continue;
 
@@ -505,7 +507,7 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
 #if 0
             H_hat += 0.5f*w*(_q->G0[j] + _q->G1[j]*liquid_cexpjf(-dphi_hat));
 #else
-            H_hat += w*_q->G0[j];
+            H_hat += w*_G_hat[j];
 #endif
             w0 += w;
         }
@@ -513,12 +515,12 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q)
         // eliminate divide-by-zero issues
         if (fabsf(w0) < 1e-4f) {
             fprintf(stderr,"warning: ofdmoqamframesync_estimate_gain(), weighting factor is zero; try increasing smoothing factor\n");
-            _q->G[i] = 0.0f;
+            _G[i] = 0.0f;
         } else if (cabsf(H_hat) < 1e-4f) {
             fprintf(stderr,"warning: ofdmoqamframesync_estimate_gain(), channel response is zero\n");
-            _q->G[i] = 1.0f;
+            _G[i] = 1.0f;
         } else {
-            _q->G[i] = w0 / H_hat;
+            _G[i] = w0 / H_hat;
         }   
     }
 }
