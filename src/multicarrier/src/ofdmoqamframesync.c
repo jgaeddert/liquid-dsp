@@ -91,6 +91,7 @@ struct ofdmoqamframesync_s {
 
     // synchronizer objects
     agc_crcf agc_rx;        // automatic gain control
+    //float dphi_hat;         // carrier frequency offset estimate
 
     // input delay buffer
     windowcf input_buffer;
@@ -378,9 +379,11 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
         g0_hat *= _q->g * _q->g;
         s0_hat *= _q->g * _q->g;
 
-        float complex t0_hat;
-        float complex t1_hat;
+        float complex t0_hat = 0.0f;
+        float complex t1_hat = 0.0f;
+#if 0
         ofdmoqamframesync_S1_metrics(_q, &t0_hat, &t1_hat);
+#endif
 
         // compute carrier frequency offset estimate
         float dphi_hat = cargf(g0_hat) / (float)(_q->M2);
@@ -389,9 +392,6 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
         int dt = 0;
         // adjust timing
         if (cabsf(g0_hat) > 0.7f) {
-            // increment counter
-            _q->num_S0++;
-
             // lock AGC
             agc_crcf_lock(_q->agc_rx);
 
@@ -399,13 +399,23 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
             _q->k = (_q->k + _q->M + dt) % _q->M;
             //printf(" k : %3u (dt = %3d)\n", k, dt);
 
-            if (_q->num_S0 == _q->m) {
+            if (dt < 0) {
+            } else {
+                // increment counter
+                _q->num_S0++;
+
+                //ofdmoqamframesync_estimate_gain(_q);
+                //_q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
+            }
+
+            if (_q->num_S0 == 2) { //_q->m) {
                 //
                 ofdmoqamframesync_estimate_gain(_q, _q->G0, _q->G);
+                _q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
         }
 
-#if 1
+#if 0
         if (_q->num_S0 > _q->m) {
             if (cabsf(t0_hat) > 0.7f) {
             } else if (cabsf(t1_hat) > 0.7f) {
@@ -435,6 +445,35 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
 void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
                                          float complex _x)
 {
+    // wait for timeout
+    _q->timer++;
+    if ( ((_q->timer + _q->k) % _q->M ) == 0) {
+        //printf("timeout\n");
+
+        // run analysis filters
+        firpfbch_crcf_analyzer_run(_q->ca0, _q->k, _q->X0);
+        firpfbch_crcf_analyzer_run(_q->ca1, _q->k, _q->X1);
+
+        // compute S1 metrics
+        float complex t0_hat;
+        float complex t1_hat;
+        ofdmoqamframesync_S1_metrics(_q, &t0_hat, &t1_hat);
+
+        if (cabsf(t0_hat) > 0.7f) {
+            printf("long sequence detected [t0] |%12.8f| {%12.8f}\n", cabsf(t0_hat), cargf(t0_hat));
+
+            _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
+        } else if (cabsf(t1_hat) > 0.7f) {
+            printf("long sequence detected [t1] |%12.8f| {%12.8f}\n", cabsf(t1_hat), cargf(t1_hat));
+            _q->k = (_q->k + _q->M2) % _q->M;
+
+            // re-compute gain on G1
+            ofdmoqamframesync_estimate_gain(_q, _q->G1, _q->G);
+            _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
+        }
+
+    }
+
 }
 
 void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q,
