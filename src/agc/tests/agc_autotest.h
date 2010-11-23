@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __AGC_AUTOTEST_H__
-#define __AGC_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -93,5 +90,87 @@ void autotest_ac_gain_control() {
 
 
 
-#endif // __AGC_AUTOTEST_H__
+// 
+// Test RSSI on sinusoidal input
+//
+void autotest_agc_rssi_sinusoid() {
+    // set paramaters
+    float gamma = 0.3f;             // nominal signal level
+    float bt = 1e-3f;               // agc bandwidth
+    float tol = 0.001f;             // error tolerance
+
+    // signal properties
+    float dphi = 0.1f;              // signal frequency
+
+    // create AGC object and initialize
+    agc_crcf q = agc_crcf_create();
+    agc_crcf_set_target(q, 1.0f);
+    agc_crcf_set_bandwidth(q, bt);
+
+    unsigned int i;
+    float complex x, y;
+    for (i=0; i<512; i++) {
+        // generate sample (complex sinusoid)
+        x = cexpf(_Complex_I*dphi*i) * gamma;
+
+        // execute agc
+        agc_crcf_execute(q, x, &y);
+    }
+
+    // get received signal strength indication
+    float rssi = agc_crcf_get_signal_level(q);
+
+    if (liquid_autotest_verbose)
+        printf("gamma : %12.8f, rssi : %12.8f\n", gamma, rssi);
+
+    // Check results
+    CONTEND_DELTA( rssi, gamma, tol );
+
+    // destroy agc object
+    agc_crcf_destroy(q);
+}
+
+
+// 
+// Test RSSI on noise input
+//
+void autotest_agc_rssi_noise() {
+    srand(time(NULL));
+    // set paramaters
+    float gamma = -30.0f;           // nominal signal level [dB]
+    float bt = 1e-3f;               // agc bandwidth
+    float tol = 2.0f;               // error tolerance [dB]
+
+    // signal properties
+    float nstd = powf(10.0f, gamma/10);
+
+    // create AGC object and initialize
+    agc_crcf q = agc_crcf_create();
+    agc_crcf_set_target(q, 1.0f);
+    agc_crcf_set_bandwidth(q, bt);
+
+    unsigned int i;
+    float complex x, y;
+    for (i=0; i<1024; i++) {
+        // generate sample (circular complex noise)
+        x = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
+
+        // execute agc
+        agc_crcf_execute(q, x, &y);
+    }
+
+    // get received signal strength indication
+    float rssi = 10*log10( agc_crcf_get_signal_level(q) );
+
+    if (liquid_autotest_verbose)
+        printf("gamma : %12.8f, rssi : %12.8f\n", gamma, rssi);
+
+    // Check results
+    CONTEND_DELTA( rssi, gamma, tol );
+
+    // destroy agc object
+    agc_crcf_destroy(q);
+}
+
+
 
