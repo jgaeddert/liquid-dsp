@@ -91,7 +91,8 @@ struct ofdmoqamframesync_s {
 
     // synchronizer objects
     agc_crcf agc_rx;        // automatic gain control
-    //float dphi_hat;         // carrier frequency offset estimate
+    float dphi_hat;         // carrier frequency offset estimate
+    float phi;              // carrier phase
 
     // input delay buffer
     windowcf input_buffer;
@@ -287,6 +288,8 @@ void ofdmoqamframesync_reset(ofdmoqamframesync _q)
 
     // reset synchronizer objects
     agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
+    _q->dphi_hat = 0.0f;
+    _q->phi = 0.0f;
 
     // reset state
     _q->state = OFDMOQAMFRAMESYNC_STATE_PLCPSHORT;
@@ -408,9 +411,14 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                 //_q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
 
-            if (_q->num_S0 == 2) { //_q->m) {
-                //
+            if (_q->num_S0 == _q->m) {
+                // estimate gain
                 ofdmoqamframesync_estimate_gain(_q, _q->G0, _q->G);
+
+                // estimate carrier frequency offset
+                _q->dphi_hat = cargf(g0_hat) / (float)(_q->M2);
+                _q->phi = 0.0f;
+                
                 _q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
         }
@@ -462,6 +470,9 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
         if (cabsf(t0_hat) > 0.7f) {
             printf("long sequence detected [t0] |%12.8f| {%12.8f}\n", cabsf(t0_hat), cargf(t0_hat));
 
+            // set internal phase
+            _q->phi = cargf(t0_hat);
+
             _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
         } else if (cabsf(t1_hat) > 0.7f) {
             printf("long sequence detected [t1] |%12.8f| {%12.8f}\n", cabsf(t1_hat), cargf(t1_hat));
@@ -469,7 +480,7 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
 
             // re-compute gain on G1
             ofdmoqamframesync_estimate_gain(_q, _q->G1, _q->G);
-            _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
+            //_q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
         }
 
     }
@@ -484,6 +495,38 @@ void ofdmoqamframesync_execute_plcplong1(ofdmoqamframesync _q,
 void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q,
                                          float complex _x)
 {
+    // wait for timeout
+    _q->timer++;
+    if ( ((_q->timer + _q->k) % _q->M ) == 0) {
+
+        // run analysis filters
+        firpfbch_crcf_analyzer_run(_q->ca0, _q->k, _q->X0);
+        firpfbch_crcf_analyzer_run(_q->ca1, _q->k, _q->X1);
+
+        // apply channel gain
+        unsigned int i;
+        for (i=0; i<_q->M; i++) {
+            _q->X0[i] *= _q->G[i];
+            _q->X1[i] *= _q->G[i];
+        }
+
+        // remove carrier frequency/phase offset
+        // TODO : check to ensure appropriate phase rotation is taken
+        //        into account for time delay between upper and lower
+        //        analysis banks
+        _q->phi += _q->dphi_hat * _q->M;
+        float complex g0 = liquid_cexpjf(-_q->phi);
+        float complex g1 = liquid_cexpjf(-_q->phi);
+        for (i=0; i<_q->M; i++) {
+            _q->X0[i] += g0;
+            _q->X1[i] += g1;
+        }
+
+        // extract pilots, track carrier phase offset
+
+
+    }
+
 }
 
 void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
