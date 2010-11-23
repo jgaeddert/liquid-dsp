@@ -26,6 +26,7 @@ void usage()
     printf("  k     : number of channels, default: 80\n");
     printf("  m     : filter delay [symbols], default: 3\n");
     printf("  b     : filter excess bandwidth, in [0,1], default: 0.7\n");
+    printf("  s     : signal-to-noise ratio [dB], default: 30\n");
     printf("  P     : carrier phase offset [radians], default: 0\n");
     printf("  F     : carrier frequency offset [radians/sample], default: 0\n");
     printf("  d     : delay [samples], default: 0\n");
@@ -105,13 +106,14 @@ int main(int argc, char *argv[])
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhk:m:b:P:F:d:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhk:m:b:s:P:F:d:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
         case 'k': num_channels = atoi(optarg);  break;
         case 'm': m = atoi(optarg);             break;
         case 'b': beta = atof(optarg);          break;
+        case 's': SNRdB = atof(optarg);         break;
         case 'P': phi = atof(optarg);           break;
         case 'F': dphi = atof(optarg);          break;
         case 'd': d = atoi(optarg);             break;
