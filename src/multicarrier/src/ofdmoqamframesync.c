@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
@@ -58,17 +57,17 @@ struct ofdmoqamframesync_s {
     unsigned int M_S1;      // number of enabled subcarriers in S1
 
     // scaling factors
-    float g_data;           //
-    float g_S0;             //
-    float g_S1;             //
+    float g_data;           // data symbols gain
+    float g_S0;             // S0 training symbols gain
+    float g_S1;             // S1 training symbols gain
 
     // filterbank objects
     firpfbch_crcf ca0;      // upper analysis filterbank
     firpfbch_crcf ca1;      // lower analysis filterbank
 
     // generic transform buffers
-    float complex * X0;     // 
-    float complex * X1;     // 
+    float complex * X0;     // upper analysis filterbank output
+    float complex * X1;     // lower analysis filterbank output
 
     // 
     float complex * S0;     // short sequence
@@ -94,12 +93,13 @@ struct ofdmoqamframesync_s {
     float dphi_hat;         // carrier frequency offset estimate
     float phi;              // carrier phase
 
-    // input delay buffer
-    windowcf input_buffer;
-    unsigned int timer;
+    // counters, timers, etc.
+    windowcf input_buffer;  // input delay buffer
+    unsigned int timer;     // input sample timer
     unsigned int k;         // analyzer alignment (timing)
-    unsigned int num_S0;    // 
+    unsigned int num_S0;    // number of full S0 symbols detected
 
+    // callback
     ofdmoqamframesync_callback callback;
     void * userdata;
 
