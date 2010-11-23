@@ -219,6 +219,9 @@ void ofdmoqamframegen_writeheader(ofdmoqamframegen _q,
 }
 
 // write OFDM/OQAM symbol
+//  _q      :   framging generator object
+//  _x      :   input symbols, [size: _M x 1]
+//  _y      :   output samples, [size: _M x 1]
 void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
                                   float complex * _x,
                                   float complex * _y)
@@ -226,7 +229,7 @@ void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
     unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
 
     // move frequency data to internal buffer
-    unsigned int i, j=0;
+    unsigned int i;
     int sctype;
     for (i=0; i<_q->M; i++) {
         sctype = _q->p[i];
@@ -238,8 +241,7 @@ void ofdmoqamframegen_writesymbol(ofdmoqamframegen _q,
             _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->g_data;
         } else {
             // data subcarrier
-            _q->X[i] = _x[j] * _q->g_data;
-            j++;
+            _q->X[i] = _x[i] * _q->g_data;
         }
 
         //printf("X[%3u] = %12.8f + j*%12.8f;\n",i+1,crealf(_q->X[i]),cimagf(_q->X[i]));

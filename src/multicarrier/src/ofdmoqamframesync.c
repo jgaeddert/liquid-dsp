@@ -79,6 +79,7 @@ struct ofdmoqamframesync_s {
     float complex * G0;     // complex subcarrier gain estimate, S2[0]
     float complex * G1;     // complex subcarrier gain estimate, S2[1]
     float complex * G;      // complex subcarrier gain estimate
+    float complex * Y;      // output symbols
 
     // receiver state
     enum {
@@ -107,6 +108,7 @@ struct ofdmoqamframesync_s {
     windowcf debug_x;
     windowcf debug_agc_out;
     windowf  debug_rssi;
+    windowcf debug_framesyms;
 #endif
 };
 
@@ -188,6 +190,7 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->G0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G  = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->Y  = (float complex*) malloc((q->M)*sizeof(float complex));
 
     // create/initialize gain estimation window
     q->wg = (float*) malloc((q->M)*sizeof(float));
@@ -220,6 +223,7 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->debug_x =        windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
     q->debug_agc_out =  windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
     q->debug_rssi =     windowf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
+    q->debug_framesyms =windowcf_create(DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN);
 #endif
 
     // return object
@@ -233,6 +237,7 @@ void ofdmoqamframesync_destroy(ofdmoqamframesync _q)
     windowcf_destroy(_q->debug_x);
     windowcf_destroy(_q->debug_agc_out);
     windowf_destroy(_q->debug_rssi);
+    windowcf_destroy(_q->debug_framesyms);
 #endif
 
     // free analysis filterbank objects
@@ -250,6 +255,7 @@ void ofdmoqamframesync_destroy(ofdmoqamframesync _q)
     free(_q->G0);
     free(_q->G1);
     free(_q->G);
+    free(_q->Y);
 
     // free input buffer
     windowcf_destroy(_q->input_buffer);
@@ -510,21 +516,45 @@ void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q,
             _q->X1[i] *= _q->G[i];
         }
 
+#if 0
         // remove carrier frequency/phase offset
         // TODO : check to ensure appropriate phase rotation is taken
         //        into account for time delay between upper and lower
         //        analysis banks
         _q->phi += _q->dphi_hat * _q->M;
-        float complex g0 = liquid_cexpjf(-_q->phi);
-        float complex g1 = liquid_cexpjf(-_q->phi);
+        float complex g0 = liquid_cexpjf(_q->phi);
+        float complex g1 = liquid_cexpjf(_q->phi);
         for (i=0; i<_q->M; i++) {
-            _q->X0[i] += g0;
-            _q->X1[i] += g1;
+            _q->X0[i] *= g0;
+            _q->X1[i] *= g1;
+        }
+#endif
+
+        // recover time-aligned symbols
+        float gain = sqrtf(_q->M_data) / (float)(_q->M);
+        for (i=0; i<_q->M; i++) {
+            if ( (i%2) == 0) {
+                // even subcarrier
+                _q->Y[i] = crealf(_q->X0[i]) + _Complex_I*cimagf(_q->X1[i]);
+            } else {
+                // odd subcarrier
+                _q->Y[i] = crealf(_q->X1[i]) + _Complex_I*cimagf(_q->X0[i]);
+            }
+
+            // apply gain
+            _q->Y[i] *= gain;
+
+#if DEBUG_OFDMOQAMFRAMESYNC
+            if (_q->p[i] == OFDMOQAMFRAME_SCTYPE_DATA)
+                windowcf_push(_q->debug_framesyms, _q->Y[i]);
+#endif
         }
 
         // extract pilots, track carrier phase offset
 
 
+        // invoke callback
+        _q->callback(_q->Y, _q->userdata);
     }
 
 }
@@ -764,6 +794,20 @@ void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)
         fprintf(fid,"G1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
         fprintf(fid,"G(%3u)  = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G[i]),  cimagf(_q->G[i]));
     }
+
+    // write frame symbols
+    fprintf(fid,"framesyms = zeros(1,n);\n");
+    windowcf_read(_q->debug_framesyms, &rc);
+    for (i=0; i<DEBUG_OFDMOQAMFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"framesyms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(framesyms), imag(framesyms), 'x');\n");
+    fprintf(fid,"xlabel('I');\n");
+    fprintf(fid,"ylabel('Q');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on;\n");
+
 
     fclose(fid);
     printf("ofdmoqamframesync/debug: results written to %s\n", DEBUG_OFDMOQAMFRAMESYNC_FILENAME);
