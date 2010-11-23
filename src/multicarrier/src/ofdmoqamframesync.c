@@ -423,7 +423,6 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
 
                 // estimate carrier frequency offset
                 _q->dphi_hat = cargf(g0_hat) / (float)(_q->M2);
-                _q->phi = 0.0f;
                 
                 _q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
@@ -475,9 +474,10 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
 
         if (cabsf(t0_hat) > 0.7f) {
             printf("long sequence detected [t0] |%12.8f| {%12.8f}\n", cabsf(t0_hat), cargf(t0_hat));
+            //printf("    dphi_hat = %16.12f\n", _q->dphi_hat);
 
             // set internal phase
-            _q->phi = cargf(t0_hat);
+            _q->phi = -cargf(t0_hat);
 
             _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
         } else if (cabsf(t1_hat) > 0.7f) {
@@ -516,19 +516,18 @@ void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q,
             _q->X1[i] *= _q->G[i];
         }
 
-#if 0
-        // remove carrier frequency/phase offset
-        // TODO : check to ensure appropriate phase rotation is taken
-        //        into account for time delay between upper and lower
-        //        analysis banks
+        // remove carrier frequency/phase offset, ensuring appropriate
+        // phase rotation, compensating for time delay between upper
+        // and lower analysis banks
         _q->phi += _q->dphi_hat * _q->M;
         float complex g0 = liquid_cexpjf(_q->phi);
-        float complex g1 = liquid_cexpjf(_q->phi);
+        float complex g1 = liquid_cexpjf(_q->phi + _q->dphi_hat*_q->M2);
         for (i=0; i<_q->M; i++) {
             _q->X0[i] *= g0;
             _q->X1[i] *= g1;
         }
-#endif
+
+        // TODO : extract pilots, track carrier phase offset
 
         // recover time-aligned symbols
         float gain = sqrtf(_q->M_data) / (float)(_q->M);
@@ -549,9 +548,6 @@ void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q,
                 windowcf_push(_q->debug_framesyms, _q->Y[i]);
 #endif
         }
-
-        // extract pilots, track carrier phase offset
-
 
         // invoke callback
         _q->callback(_q->Y, _q->userdata);
@@ -789,11 +785,26 @@ void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)
     fprintf(fid,"G0 = zeros(1,%u);\n", _q->M);
     fprintf(fid,"G1 = zeros(1,%u);\n", _q->M);
     fprintf(fid,"G  = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"X0 = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"X1 = zeros(1,%u);\n", _q->M);
     for (i=0; i<_q->M; i++) {
         fprintf(fid,"G0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
         fprintf(fid,"G1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
         fprintf(fid,"G(%3u)  = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G[i]),  cimagf(_q->G[i]));
+        fprintf(fid,"X0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->X0[i]), cimagf(_q->X0[i]));
+        fprintf(fid,"X1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->X1[i]), cimagf(_q->X1[i]));
     }
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"  plot(0:(length(G)-1), fftshift(abs(G)));\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('subcarrier index');\n");
+    fprintf(fid,"  ylabel('gain estimate (mag)');\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"  plot(0:(length(G)-1), fftshift(arg(G)));\n");
+    fprintf(fid,"  grid on;\n");
+    fprintf(fid,"  xlabel('subcarrier index');\n");
+    fprintf(fid,"  ylabel('gain estimate (phase)');\n");
 
     // write frame symbols
     fprintf(fid,"framesyms = zeros(1,n);\n");
