@@ -76,6 +76,7 @@ struct ofdmoqamframesync_s {
 
     // gain
     float g;                // coarse gain estimate
+    float * wg;             // gain estimation window
     float complex * G0;     // complex subcarrier gain estimate, S2[0]
     float complex * G1;     // complex subcarrier gain estimate, S2[1]
     float complex * G;      // complex subcarrier gain estimate
@@ -186,6 +187,10 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->G1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G  = (float complex*) malloc((q->M)*sizeof(float complex));
 
+    // create/initialize gain estimation window
+    q->wg = (float*) malloc((q->M)*sizeof(float));
+    ofdmoqamframesync_init_gain_window(q, 0.02f);
+
     // set callback data
     q->callback = _callback;
     q->userdata = _userdata;
@@ -239,6 +244,7 @@ void ofdmoqamframesync_destroy(ofdmoqamframesync _q)
     free(_q->S1);
 
     // free gain arrays
+    free(_q->wg);
     free(_q->G0);
     free(_q->G1);
     free(_q->G);
@@ -447,6 +453,29 @@ void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
 {
 }
 
+void ofdmoqamframesync_init_gain_window(ofdmoqamframesync _q,
+                                        float _sigma)
+{
+    // validate input
+    if (_sigma <= 0.0f) {
+        fprintf(stderr,"ofdmoqamframesync_init_gain_window(), sigma must be greater than zero\n");
+        exit(1);
+    }
+
+    unsigned int i;     // distance (index)
+    float d;            // distance
+
+    // pre-compute window
+    for (i=0; i<_q->M; i++) {
+        // compute distance
+        d = (float)(i) / (float)(_q->M);
+
+        // compute window element
+        _q->wg[i] = expf(-(float)(d*d)/(2.0f*_sigma*_sigma));
+    }
+}
+
+
 void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
                                      float complex * _G_hat,
                                      float complex * _G)
@@ -469,13 +498,7 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
     float complex H_hat;
     float w;
     float w0;
-#if 0
     unsigned int d;
-    float sig = 0.1f * _q->M;
-#else
-    float d;
-    float sig = 0.02f;
-#endif
     for (i=0; i<_q->M; i++) {
 
         _G[i] = 0.0f;
@@ -491,24 +514,14 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
             if ( _q->p[j] == OFDMOQAMFRAME_SCTYPE_NULL || (j % 2) != 0)
                 continue;
 
-            // compute distance
-#if 0
-            d = (i + _q->M - j) % _q->M;
-#else
-            d = ((float)(i) - (float)(j)) / (float)(_q->M);
-            if (d >  0.5f) d -= 1.0f;
-            if (d < -0.5f) d += 1.0f;
-#endif
+            // compute distance/window
+            d = abs( (int)(i) - (int)(j) );
+            w = _q->wg[d];
 
-            // Gauss window
-            // TODO : pre-compute window
-            w = exp(-(float)(d*d)/(2*sig*sig));
-
-#if 0
-            H_hat += 0.5f*w*(_q->G0[j] + _q->G1[j]*liquid_cexpjf(-dphi_hat));
-#else
+            // accumulate gain estimate
             H_hat += w*_G_hat[j];
-#endif
+
+            // accumulate window
             w0 += w;
         }
 
