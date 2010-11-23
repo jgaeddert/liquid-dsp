@@ -35,7 +35,11 @@ void usage()
 // simulation data structure
 typedef struct {
     unsigned int num_channels;      // number of subcarriers
-    unsigned int * data_tx;         // original transmitted data
+    unsigned int * p;               // subcarrier allocation
+    unsigned int M_null;            // number of null subcarriers
+    unsigned int M_pilot;           // number of pilot subcarriers
+    unsigned int M_data;            // number of data subcarriers
+    unsigned int * data_tx;         // original transmitted data, [size: M x num_symbols]
     modem demod;                    // demodulator
     unsigned int num_symbols;       // number of symbols
     unsigned int num_symbols_rx;    // number of symbols received
@@ -45,15 +49,29 @@ typedef struct {
 static int callback(float complex * _y, void * _userdata)
 {
     simulation_data * q = (simulation_data*) _userdata;
+
+    // check to see if frame has already been received
+    if (q->num_symbols_rx >= q->num_symbols) {
+        printf("callback invoked :: ignoring symbol\n");
+        return 0;
+    }
+
     unsigned int i;
     unsigned int num_sym_errors=0;          // number of symbol errors
     unsigned int n = q->num_channels*q->num_symbols_rx;  // array index counter
     unsigned int sym_rx;    // received, demodulated symbol
+
+    int sctype;
     for (i=0; i<q->num_channels; i++) {
-        modem_demodulate(q->demod,_y[i],&sym_rx);
-        num_sym_errors += (sym_rx==q->data_tx[n+i]) ? 0 : 1;
+        sctype = q->p[i];
+        if (sctype == OFDMOQAMFRAME_SCTYPE_DATA) {
+            modem_demodulate(q->demod,_y[i],&sym_rx);
+            num_sym_errors += (sym_rx==q->data_tx[n+i]) ? 0 : 1;
+        } else {
+            // not a data subcarrier
+        }
     }
-    printf("callback invoked [%3u] :: num symbol errors : %2u / num_channels\n", q->num_symbols_rx, num_sym_errors);
+    printf("callback invoked [%3u] :: num symbol errors : %2u / %u\n", q->num_symbols_rx, num_sym_errors, q->M_data);
     q->num_symbols_rx++;
 
     // choose appropriate return value
@@ -146,7 +164,15 @@ int main(int argc, char *argv[])
     simdata.num_symbols = num_symbols_data;
     simdata.num_symbols_rx = 0;
     simdata.demod = modem_create(ms,bps);
-    simdata.data_tx = (unsigned int*)malloc(num_channels*simdata.num_symbols*sizeof(unsigned int));
+    simdata.data_tx = (unsigned int*)malloc(num_channels*num_symbols_data*sizeof(unsigned int));
+    simdata.p       = (unsigned int*)malloc(num_channels*sizeof(unsigned int));
+
+    ofdmoqamframe_init_default_sctype(simdata.num_channels, simdata.p);
+    ofdmoqamframe_validate_sctype(simdata.p,
+                                  simdata.num_channels,
+                                  &simdata.M_null,
+                                  &simdata.M_pilot,
+                                  &simdata.M_data);
 
     // create modem
     modem mod = modem_create(ms,bps);
@@ -288,6 +314,7 @@ int main(int argc, char *argv[])
     // destroy simulation data object internals
     modem_destroy(simdata.demod);
     free(simdata.data_tx);
+    free(simdata.p);
 
     printf("done.\n");
     return 0;
