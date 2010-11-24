@@ -446,6 +446,8 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
 
                 // re-compute metrics
                 ofdmoqamframesync_S0_metrics(_q, &g0_hat, &s0_hat);
+                g0_hat *= _q->g * _q->g;
+                s0_hat *= _q->g * _q->g;
 
                 // re-estimate carrier frequency offset
                 dphi_hat = cargf(g0_hat) / (float)(_q->M2);
