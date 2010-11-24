@@ -432,7 +432,9 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                 // estimate carrier frequency offset
                 dphi_hat = cargf(g0_hat) / (float)(_q->M2);
                 _q->dphi_prime = dphi_hat;
+#if DEBUG_OFDMOQAMFRAMESYNC_PRINT
                 printf("dphi-prime : %16.12f\n", _q->dphi_prime);
+#endif
 
                 // correct filter buffer using initial carrier
                 // frequency offset estimate (dphi_prime)
@@ -448,7 +450,9 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                 // re-estimate carrier frequency offset
                 dphi_hat = cargf(g0_hat) / (float)(_q->M2);
                 _q->dphi_hat = dphi_hat;
+#if DEBUG_OFDMOQAMFRAMESYNC_PRINT
                 printf("dphi-hat   : %16.12f\n", _q->dphi_hat);
+#endif
 
                 // estimate gain
                 ofdmoqamframesync_estimate_gain(_q, _q->G0, _q->G);
@@ -501,7 +505,9 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
 
         if (cabsf(t0_hat) > 0.7f) {
             // symbol properly aligned with analysis filter bank
+#if DEBUG_OFDMOQAMFRAMESYNC_PRINT
             printf("long sequence detected [t0] |%12.8f| {%12.8f}\n", cabsf(t0_hat), cargf(t0_hat));
+#endif
 
             // set internal phase
             //_q->phi = -cargf(t0_hat);
@@ -509,7 +515,9 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
             _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
         } else if (cabsf(t1_hat) > 0.7f) {
             // sample timing off by half a symbol
+#if DEBUG_OFDMOQAMFRAMESYNC_PRINT
             printf("long sequence detected [t1] |%12.8f| {%12.8f}\n", cabsf(t1_hat), cargf(t1_hat));
+#endif
             _q->k = (_q->k + _q->M2) % _q->M;
 
             // re-compute gain on G1
