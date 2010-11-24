@@ -170,6 +170,13 @@ int main(int argc, char *argv[])
     simdata.p       = (unsigned int*)malloc(num_channels*sizeof(unsigned int));
 
     ofdmoqamframe_init_default_sctype(simdata.num_channels, simdata.p);
+
+#if 0
+    // notch the spectrum
+    for (i=12; i<24; i++)
+        simdata.p[i] = OFDMOQAMFRAME_SCTYPE_NULL;
+#endif
+
     ofdmoqamframe_validate_sctype(simdata.p,
                                   simdata.num_channels,
                                   &simdata.M_null,
@@ -180,11 +187,11 @@ int main(int argc, char *argv[])
     modem mod = modem_create(ms,bps);
 
     // create frame generator
-    ofdmoqamframegen fg = ofdmoqamframegen_create(num_channels,m,beta,NULL);
+    ofdmoqamframegen fg = ofdmoqamframegen_create(num_channels,m,beta,simdata.p);
     ofdmoqamframegen_print(fg);
 
     // create frame synchronizer
-    ofdmoqamframesync fs = ofdmoqamframesync_create(num_channels,m,beta,NULL,callback,(void*)&simdata);
+    ofdmoqamframesync fs = ofdmoqamframesync_create(num_channels,m,beta,simdata.p,callback,(void*)&simdata);
     ofdmoqamframesync_print(fs);
 
     // channel impairments
