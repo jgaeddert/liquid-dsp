@@ -591,7 +591,13 @@ void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q,
         }
 
         // invoke callback
-        _q->callback(_q->Y, _q->userdata);
+        int rc = _q->callback(_q->Y, _q->userdata);
+        if (rc == 0) {
+            // continue receiving frames...
+        } else {
+            printf("ofdmoqamframesync: end of frame signal received\n");
+            ofdmoqamframesync_reset(_q);
+        }
     }
 
 }

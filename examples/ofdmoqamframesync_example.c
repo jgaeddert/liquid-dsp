@@ -78,7 +78,7 @@ static int callback(float complex * _y, void * _userdata)
     // choose appropriate return value
     if (q->num_symbols_rx == q->num_symbols) {
         printf("frame received\n");
-        return 1;
+        //return 1;
     }
 
     return 0;
