@@ -177,7 +177,7 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
     q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
     q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
-#if 1
+#if 0
     printf("M(S0) = %u\n", q->M_S0);
     printf("g(S0) = %12.8f\n", q->g_S0);
     printf("M(S1) = %u\n", q->M_S1);
@@ -321,7 +321,7 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
     for (i=0; i<_n; i++) {
         x = _x[i];
 
-        // correct for carrier frequency offset
+        // correct for initial carrier frequency offset
         x *= liquid_cexpjf(_q->phi);
         _q->phi += _q->dphi_prime;
 
@@ -388,9 +388,6 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
     if ( ((_q->timer + _q->k) % _q->M ) == 0) {
         //printf("timeout\n");
 
-        // reset timer
-        //_q->timer = _q->M;
-
         // run analysis filters
         firpfbch_crcf_analyzer_run(_q->ca0, _q->k, _q->X0);
         firpfbch_crcf_analyzer_run(_q->ca1, _q->k, _q->X1);
@@ -401,18 +398,14 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
         ofdmoqamframesync_S0_metrics(_q, &g0_hat, &s0_hat);
 
 #if 0
+        // fixed gain
         _q->g = 1.0f;
 #else
+        // gain from automatic gain control
         _q->g = agc_crcf_get_gain(_q->agc_rx);
 #endif
         g0_hat *= _q->g * _q->g;
         s0_hat *= _q->g * _q->g;
-
-        float complex t0_hat = 0.0f;
-        float complex t1_hat = 0.0f;
-#if 0
-        ofdmoqamframesync_S1_metrics(_q, &t0_hat, &t1_hat);
-#endif
 
         // compute carrier frequency offset estimate
         float dphi_hat = cargf(g0_hat) / (float)(_q->M2);
@@ -424,17 +417,14 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
             // lock AGC
             agc_crcf_lock(_q->agc_rx);
 
+            // estimate sample timing offset
             dt = (int) roundf(tau_hat);
             _q->k = (_q->k + _q->M + dt) % _q->M;
             //printf(" k : %3u (dt = %3d)\n", k, dt);
 
-            if (dt < 0) {
-            } else {
-                // increment counter
+            if (dt >= 0) {
+                // increment S0 counter
                 _q->num_S0++;
-
-                //ofdmoqamframesync_estimate_gain(_q);
-                //_q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
 
             if (_q->num_S0 == _q->m+1) {
@@ -465,18 +455,16 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                 
                 _q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
+        } else {
+            // false alarm: reset counter, unlock agc
+            _q->num_S0 = 0;
+            agc_crcf_unlock(_q->agc_rx);
         }
-
-#if 0
-        if (_q->num_S0 > _q->m) {
-            if (cabsf(t0_hat) > 0.7f) {
-            } else if (cabsf(t1_hat) > 0.7f) {
-                _q->k = (_q->k + _q->M2) % _q->M;
-            }
-        }
-#endif
 
 #if DEBUG_OFDMOQAMFRAMESYNC_PRINT
+        float complex t0_hat = 0.0f;
+        float complex t1_hat = 0.0f;
+
         //printf("%4u|%4u: %c g |%7.4f|, dphi: %7.4f, tau: %7.3f, k=%2u, dt=%3d, %c t0[%7.4f], %c t1[%7.4f]\n",
         printf("%6u : %c g |%7.4f|, dphi: %7.4f, tau: %7.3f, %c t0[%7.4f], %c t1[%7.4f]\n",
                 _q->timer,
@@ -512,14 +500,15 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
         ofdmoqamframesync_S1_metrics(_q, &t0_hat, &t1_hat);
 
         if (cabsf(t0_hat) > 0.7f) {
+            // symbol properly aligned with analysis filter bank
             printf("long sequence detected [t0] |%12.8f| {%12.8f}\n", cabsf(t0_hat), cargf(t0_hat));
-            //printf("    dphi_hat = %16.12f\n", _q->dphi_hat);
 
             // set internal phase
             //_q->phi = -cargf(t0_hat);
 
             _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
         } else if (cabsf(t1_hat) > 0.7f) {
+            // sample timing off by half a symbol
             printf("long sequence detected [t1] |%12.8f| {%12.8f}\n", cabsf(t1_hat), cargf(t1_hat));
             _q->k = (_q->k + _q->M2) % _q->M;
 
@@ -608,6 +597,9 @@ void ofdmoqamframesync_rxpayload(ofdmoqamframesync _q,
 {
 }
 
+// initialize gain normalization window
+//  _q      :   synchronizer object
+//  _sigma  :   window standard deviation (width)
 void ofdmoqamframesync_init_gain_window(ofdmoqamframesync _q,
                                         float _sigma)
 {
@@ -630,7 +622,10 @@ void ofdmoqamframesync_init_gain_window(ofdmoqamframesync _q,
     }
 }
 
-
+// estimate/interpolate gain from available samples
+//  _q      :   synchronizer object
+//  _G_hat  :   initial gain estimate
+//  _G      :   resulting (interpolated) gain estimate
 void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
                                      float complex * _G_hat,
                                      float complex * _G)
@@ -638,16 +633,6 @@ void ofdmoqamframesync_estimate_gain(ofdmoqamframesync _q,
     //
     unsigned int i;
     unsigned int j;
-
-#if 0
-    // estimate phase difference between gain arrays
-    float complex g_hat = 0.0f;
-    for (i=0; i<_q->M; i++)
-        g_hat += _q->G0[i] * conjf(_q->G1[i]);
-    float dphi_hat = cargf(g_hat);
-#endif
-
-    //printf(" dphi_hat : %12.8f\n", dphi_hat);
 
     // estimate gain...
     float complex H_hat;
