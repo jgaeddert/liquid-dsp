@@ -437,7 +437,7 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
                 //_q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
 
-            if (_q->num_S0 == _q->m) {
+            if (_q->num_S0 == _q->m+1) {
 
                 // estimate carrier frequency offset
                 dphi_hat = cargf(g0_hat) / (float)(_q->M2);
