@@ -91,11 +91,13 @@ struct ofdmoqamframesync_s {
 
     // synchronizer objects
     agc_crcf agc_rx;        // automatic gain control
+    float dphi_prime;       // initial carrier frequency offset
     float dphi_hat;         // carrier frequency offset estimate
     float phi;              // carrier phase
 
     // counters, timers, etc.
-    windowcf input_buffer;  // input delay buffer
+    windowcf input_buffer;  // input sequence buffer
+    windowcf delay_buffer;  // input delay buffer
     unsigned int timer;     // input sample timer
     unsigned int k;         // analyzer alignment (timing)
     unsigned int num_S0;    // number of full S0 symbols detected
@@ -182,8 +184,11 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     printf("g(S1) = %12.8f\n", q->g_S1);
 #endif
 
-    // input buffer
-    q->input_buffer = windowcf_create((q->M));
+    // create delay buffer
+    q->delay_buffer = windowcf_create((q->M));
+
+    // create input buffer the length of the filter prototype
+    q->input_buffer = windowcf_create(2*(q->M)*(q->m));
 
     // gain
     q->g = 1.0f;
@@ -257,8 +262,9 @@ void ofdmoqamframesync_destroy(ofdmoqamframesync _q)
     free(_q->G);
     free(_q->Y);
 
-    // free input buffer
+    // free input/delay buffers
     windowcf_destroy(_q->input_buffer);
+    windowcf_destroy(_q->delay_buffer);
 
     // destroy synchronizer objects
     agc_crcf_destroy(_q->agc_rx);      // automatic gain control
@@ -277,8 +283,10 @@ void ofdmoqamframesync_print(ofdmoqamframesync _q)
 
 void ofdmoqamframesync_reset(ofdmoqamframesync _q)
 {
-    // clear input buffer
+    // clear input/delay buffer
+    windowcf_clear(_q->delay_buffer);
     windowcf_clear(_q->input_buffer);
+
     _q->timer = 0;
     _q->k = 0;
     _q->num_S0 = 0;
@@ -294,7 +302,8 @@ void ofdmoqamframesync_reset(ofdmoqamframesync _q)
 
     // reset synchronizer objects
     agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
-    _q->dphi_hat = 0.0f;
+    _q->dphi_prime = 0.0f;
+    _q->dphi_hat   = 0.0f;
     _q->phi = 0.0f;
 
     // reset state
@@ -311,6 +320,16 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
     int squelch_status;
     for (i=0; i<_n; i++) {
         x = _x[i];
+
+        // correct for carrier frequency offset
+        x *= liquid_cexpjf(_q->phi);
+        _q->phi += _q->dphi_prime;
+
+        // save input sample (only during initial state)
+        if (_q->state == OFDMOQAMFRAMESYNC_STATE_PLCPSHORT)
+            windowcf_push(_q->input_buffer,x);
+
+        // apply agc (estimate initial signal gain)
         agc_crcf_execute(_q->agc_rx, x, &y);
 
 #if DEBUG_OFDMOQAMFRAMESYNC
@@ -330,10 +349,11 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
         // push sample into analysis filter banks
         float complex x_delay0;
         float complex x_delay1;
-        windowcf_index(_q->input_buffer, 0,      &x_delay0); // full symbol delay
-        windowcf_index(_q->input_buffer, _q->M2, &x_delay1); // half symbol delay
+        windowcf_index(_q->delay_buffer, 0,      &x_delay0); // full symbol delay
+        windowcf_index(_q->delay_buffer, _q->M2, &x_delay1); // half symbol delay
 
-        windowcf_push(_q->input_buffer,x);
+        windowcf_push(_q->delay_buffer,x);
+
         firpfbch_crcf_analyzer_push(_q->ca0, x_delay0);  // push input sample
         firpfbch_crcf_analyzer_push(_q->ca1, x_delay1);  // push delayed sample
 
@@ -418,11 +438,30 @@ void ofdmoqamframesync_execute_plcpshort(ofdmoqamframesync _q,
             }
 
             if (_q->num_S0 == _q->m) {
-                // estimate gain
-                ofdmoqamframesync_estimate_gain(_q, _q->G0, _q->G);
 
                 // estimate carrier frequency offset
-                _q->dphi_hat = cargf(g0_hat) / (float)(_q->M2);
+                dphi_hat = cargf(g0_hat) / (float)(_q->M2);
+                _q->dphi_prime = dphi_hat;
+                printf("dphi-prime : %16.12f\n", _q->dphi_prime);
+
+                // correct filter buffer using initial carrier
+                // frequency offset estimate (dphi_prime)
+                ofdmoqamframesync_correct_buffer(_q);
+
+                // re-run analysis filters
+                firpfbch_crcf_analyzer_run(_q->ca0, _q->k, _q->X0);
+                firpfbch_crcf_analyzer_run(_q->ca1, _q->k, _q->X1);
+
+                // re-compute metrics
+                ofdmoqamframesync_S0_metrics(_q, &g0_hat, &s0_hat);
+
+                // re-estimate carrier frequency offset
+                dphi_hat = cargf(g0_hat) / (float)(_q->M2);
+                _q->dphi_hat = dphi_hat;
+                printf("dphi-hat   : %16.12f\n", _q->dphi_hat);
+
+                // estimate gain
+                ofdmoqamframesync_estimate_gain(_q, _q->G0, _q->G);
                 
                 _q->state = OFDMOQAMFRAMESYNC_STATE_PLCPLONG0;
             }
@@ -477,7 +516,7 @@ void ofdmoqamframesync_execute_plcplong0(ofdmoqamframesync _q,
             //printf("    dphi_hat = %16.12f\n", _q->dphi_hat);
 
             // set internal phase
-            _q->phi = -cargf(t0_hat);
+            //_q->phi = -cargf(t0_hat);
 
             _q->state = OFDMOQAMFRAMESYNC_STATE_RXSYMBOLS;
         } else if (cabsf(t1_hat) > 0.7f) {
@@ -516,6 +555,7 @@ void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q,
             _q->X1[i] *= _q->G[i];
         }
 
+#if 0
         // remove carrier frequency/phase offset, ensuring appropriate
         // phase rotation, compensating for time delay between upper
         // and lower analysis banks
@@ -526,6 +566,7 @@ void ofdmoqamframesync_execute_rxsymbols(ofdmoqamframesync _q,
             _q->X0[i] *= g0;
             _q->X1[i] *= g1;
         }
+#endif
 
         // TODO : extract pilots, track carrier phase offset
 
@@ -718,6 +759,34 @@ void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
     *_t1_hat = t1_hat;
 }
 
+void ofdmoqamframesync_correct_buffer(ofdmoqamframesync _q)
+{
+    // read buffer, re-fill filterbank
+    float complex * rc;
+    windowcf_read(_q->input_buffer, &rc);
+
+    // initialize internal phase to be zero
+    _q->phi = 0;
+
+    unsigned int i;
+    float complex x;
+    for (i=0; i<2*(_q->M)*(_q->m); i++) {
+        //printf("  %4u : phi = %12.8f\n", i, _q->phi);
+        x = rc[i] * liquid_cexpjf(_q->phi);
+        _q->phi += _q->dphi_prime;
+
+        // push sample into analysis filter banks
+        float complex x_delay0;
+        float complex x_delay1;
+        windowcf_index(_q->delay_buffer, 0,      &x_delay0); // full symbol delay
+        windowcf_index(_q->delay_buffer, _q->M2, &x_delay1); // half symbol delay
+
+        windowcf_push(_q->delay_buffer,x);
+        
+        firpfbch_crcf_analyzer_push(_q->ca0, x_delay0);  // push input sample
+        firpfbch_crcf_analyzer_push(_q->ca1, x_delay1);  // push delayed sample
+    }
+}
 
 #if DEBUG_OFDMOQAMFRAMESYNC
 void ofdmoqamframesync_debug_print(ofdmoqamframesync _q)

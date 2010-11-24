@@ -1610,6 +1610,8 @@ void ofdmoqamframesync_S1_metrics(ofdmoqamframesync _q,
                                   float complex * _t0_hat,
                                   float complex * _t1_hat);
 
+void ofdmoqamframesync_correct_buffer(ofdmoqamframesync _q);
+
 void ofdmoqamframesync_init_gain_window(ofdmoqamframesync _q,
                                         float _sigma);
 
