@@ -55,12 +55,10 @@ struct ofdmframegen_s {
     float g_S0;             //
     float g_S1;             //
 
-    // transform objects
-    // fft
-
-    // transform objects
-    float complex * X;
-    float complex * x;
+    // transform object
+    FFT_PLAN ifft;          // ifft object
+    float complex * X;      // frequency-domain buffer
+    float complex * x;      // time-domain buffer
 
     // PLCP
     float complex * S0;     // short sequence
@@ -102,8 +100,9 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
     }
 
     // allocate memory for transform objects
-    q->X  = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->x  = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->X = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -115,6 +114,11 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
     q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
     q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
     q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
+#if 1
+    q->g_data /= sqrtf(q->M);
+    q->g_S0   /= sqrtf(q->M);
+    q->g_S1   /= sqrtf(q->M);
+#endif
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
@@ -133,6 +137,7 @@ void ofdmframegen_destroy(ofdmframegen _q)
     // free transform array memory
     free(_q->X);
     free(_q->x);
+    FFT_DESTROY_PLAN(_q->ifft);
 
     // free PLCP memory arrays
     free(_q->S0);
@@ -171,10 +176,11 @@ void ofdmframegen_write_S0(ofdmframegen _q,
         _q->X[i] *= _q->g_S0;
 
     // execute transform
-    //
+    FFT_EXECUTE(_q->ifft);
 
     // copy result to output
-    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
+    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
+    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
 }
 
 
@@ -190,10 +196,11 @@ void ofdmframegen_write_S1(ofdmframegen _q,
         _q->X[i] *= _q->g_S1;
 
     // execute transform
-    // ...
+    FFT_EXECUTE(_q->ifft);
 
     // copy result to output
-    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
+    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
+    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
 }
 
 
@@ -202,8 +209,8 @@ void ofdmframegen_write_S1(ofdmframegen _q,
 //  _x      :   input symbols, [size: _M x 1]
 //  _y      :   output samples, [size: _M x 1]
 void ofdmframegen_writesymbol(ofdmframegen _q,
-                                  float complex * _x,
-                                  float complex * _y)
+                              float complex * _x,
+                              float complex * _y)
 {
     unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
 
@@ -227,10 +234,11 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
     }
 
     // execute transform
-    //
+    FFT_EXECUTE(_q->ifft);
 
     // copy result to output
-    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
+    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
+    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
 }
 
 

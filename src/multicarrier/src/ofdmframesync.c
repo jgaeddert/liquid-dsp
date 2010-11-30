@@ -59,11 +59,9 @@ struct ofdmframesync_s {
     float g_S1;             // S1 training symbols gain
 
     // transform object
-    // ...
-
-    // generic transform buffers
-    float complex * X0;     // upper analysis filterbank output
-    float complex * X1;     // lower analysis filterbank output
+    FFT_PLAN fft;           // ifft object
+    float complex * X;      // frequency-domain buffer
+    float complex * x;      // time-domain buffer
 
     // 
     float complex * S0;     // short sequence
@@ -132,9 +130,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     }
 
     // create transform object
-    // ...
-    q->X0 = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->X1 = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->X = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->fft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_FORWARD, FFT_METHOD);
  
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -199,9 +197,9 @@ void ofdmframesync_destroy(ofdmframesync _q)
 #endif
 
     // free transform object
-    // ...
-    free(_q->X0);
-    free(_q->X1);
+    free(_q->X);
+    free(_q->x);
+    FFT_DESTROY_PLAN(_q->fft);
 
     // clean up PLCP arrays
     free(_q->S0);
@@ -382,14 +380,10 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"G0 = zeros(1,%u);\n", _q->M);
     fprintf(fid,"G1 = zeros(1,%u);\n", _q->M);
     fprintf(fid,"G  = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"X0 = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"X1 = zeros(1,%u);\n", _q->M);
     for (i=0; i<_q->M; i++) {
         fprintf(fid,"G0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
         fprintf(fid,"G1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
         fprintf(fid,"G(%3u)  = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G[i]),  cimagf(_q->G[i]));
-        fprintf(fid,"X0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->X0[i]), cimagf(_q->X0[i]));
-        fprintf(fid,"X1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->X1[i]), cimagf(_q->X1[i]));
     }
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
