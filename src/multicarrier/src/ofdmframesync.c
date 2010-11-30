@@ -84,6 +84,7 @@ struct ofdmframesync_s {
 
     // synchronizer objects
     agc_crcf agc_rx;        // automatic gain control
+    autocorr_cccf autocorr; // auto-correlator
 
     // callback
     ofdmframesync_callback callback;
@@ -92,6 +93,7 @@ struct ofdmframesync_s {
 #if DEBUG_OFDMFRAMESYNC
     windowcf debug_x;
     windowcf debug_agc_out;
+    windowcf debug_rxx;
     windowf  debug_rssi;
     windowcf debug_framesyms;
 #endif
@@ -172,12 +174,16 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
 
     agc_crcf_squelch_enable_auto(q->agc_rx);
 
+    // auto-correlator
+    q->autocorr = autocorr_cccf_create(q->M, q->M / 2);
+
     // reset object
     ofdmframesync_reset(q);
 
 #if DEBUG_OFDMFRAMESYNC
     q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_agc_out =  windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_rxx =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rssi =     windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_framesyms =windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
@@ -190,8 +196,10 @@ void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
     ofdmframesync_debug_print(_q);
+
     windowcf_destroy(_q->debug_x);
     windowcf_destroy(_q->debug_agc_out);
+    windowcf_destroy(_q->debug_rxx);
     windowf_destroy(_q->debug_rssi);
     windowcf_destroy(_q->debug_framesyms);
 #endif
@@ -212,7 +220,8 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->Y);
 
     // destroy synchronizer objects
-    agc_crcf_destroy(_q->agc_rx);      // automatic gain control
+    agc_crcf_destroy(_q->agc_rx);           // automatic gain control
+    autocorr_cccf_destroy(_q->autocorr);    // auto-correlator
 
     // free main object memory
     free(_q);
@@ -253,9 +262,15 @@ void ofdmframesync_execute(ofdmframesync _q,
         // apply agc (estimate initial signal gain)
         agc_crcf_execute(_q->agc_rx, x, &y);
 
+        float complex rxx;
+        autocorr_cccf_push(_q->autocorr, x);
+        autocorr_cccf_execute(_q->autocorr, &rxx);
+        //printf("  rxx : %12.8f {%12.8f}\n", cabsf(rxx), cargf(rxx));
+
 #if DEBUG_OFDMFRAMESYNC
         windowcf_push(_q->debug_x, x);
         windowcf_push(_q->debug_agc_out, y);
+        windowcf_push(_q->debug_rxx, rxx);
         windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
 #endif
 
@@ -346,6 +361,22 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('received signal, x');\n");
 
+
+    fprintf(fid,"rxx = zeros(1,n);\n");
+    windowcf_read(_q->debug_rxx, &rc);
+    for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"   plot(0:(n-1),abs(rxx));\n");
+    fprintf(fid,"   xlabel('sample index');\n");
+    fprintf(fid,"   ylabel('auto-correlation, |rxx|');\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"   plot(0:(n-1),arg(rxx));\n");
+    fprintf(fid,"   xlabel('sample index');\n");
+    fprintf(fid,"   ylabel('auto-correlation, arg{rxx}');\n");
+
+
     fprintf(fid,"y = zeros(1,n);\n");
     windowcf_read(_q->debug_agc_out, &rc);
     for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
@@ -409,7 +440,6 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
-
 
     fclose(fid);
     printf("ofdmframesync/debug: results written to %s\n", DEBUG_OFDMFRAMESYNC_FILENAME);
