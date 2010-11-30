@@ -118,6 +118,29 @@ int main() {
     for (i=0; i<num_samples; i++)
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
+    fprintf(fid,"\n\n");
+    fprintf(fid,"%% compute spectral periodigram\n");
+    fprintf(fid,"nfft=256;\n");
+    fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
+    //fprintf(fid,"H = 20*log10(abs(fftshift(fft(h,nfft))));\n");
+    fprintf(fid,"Y = zeros(1,nfft);\n");
+    fprintf(fid,"v0=1; v1=v0+round(nfft); k=0;\n");
+    fprintf(fid,"while v1 <= num_samples,\n");
+    fprintf(fid,"    Y += abs(fft(y(v0:[v1-1]).*hamming(v1-v0).',nfft))/(sqrt(nfft)*0.53910);\n");
+    fprintf(fid,"    v0 = v0 + round(nfft/4);\n");
+    fprintf(fid,"    v1 = v1 + round(nfft/4);\n");
+    fprintf(fid,"    k = k+1;\n");
+    fprintf(fid,"end;\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(Y/k)));\n");
+    fprintf(fid,"figure;\n");
+    //fprintf(fid,"plot(f,Y,f,H);\n");
+    fprintf(fid,"plot(f,Y);\n");
+    fprintf(fid,"axis([-0.5 0.5 -40 10]);\n");
+    fprintf(fid,"xlabel('Normalized Frequency');\n");
+    fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
+    fprintf(fid,"title('Multipath channel response');\n");
+
+
     // print results
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
