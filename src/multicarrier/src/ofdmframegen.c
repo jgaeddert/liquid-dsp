@@ -179,8 +179,7 @@ void ofdmframegen_write_S0(ofdmframegen _q,
     FFT_EXECUTE(_q->ifft);
 
     // copy result to output
-    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
-    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
+    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
 }
 
 
@@ -199,8 +198,12 @@ void ofdmframegen_write_S1(ofdmframegen _q,
     FFT_EXECUTE(_q->ifft);
 
     // copy result to output
+#if 0
     memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
     memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
+#else
+    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
+#endif
 }
 
 

@@ -33,10 +33,15 @@ int main() {
 
     // derived values
     unsigned int frame_len = M + cp_len;
+#if 0
     unsigned int num_symbols = num_symbols_S0 +
                                num_symbols_S1 +
                                num_symbols_data;
     unsigned int num_samples = frame_len*num_symbols;
+#else
+    unsigned int num_samples = (num_symbols_S0 + num_symbols_S1)*M +
+                                num_symbols_data * frame_len;
+#endif
 
     // initialize subcarrier allocation
     unsigned int p[M];
@@ -61,13 +66,13 @@ int main() {
     // write short sequence(s)
     for (i=0; i<num_symbols_S0; i++) {
         ofdmframegen_write_S0(fg, &y[n]);
-        n += frame_len;
+        n += M;
     }
 
     // write long sequence(s)
     for (i=0; i<num_symbols_S1; i++) {
         ofdmframegen_write_S1(fg, &y[n]);
-        n += frame_len;
+        n += M;
     }
 
     // modulate data symbols
