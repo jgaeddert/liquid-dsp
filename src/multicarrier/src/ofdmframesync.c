@@ -62,6 +62,7 @@ struct ofdmframesync_s {
     FFT_PLAN fft;           // ifft object
     float complex * X;      // frequency-domain buffer
     float complex * x;      // time-domain buffer
+    windowcf input_buffer;  // input sequence buffer
 
     // 
     float complex * S0;     // short sequence
@@ -83,6 +84,7 @@ struct ofdmframesync_s {
     } state;
 
     // synchronizer objects
+    nco_crcf nco_rx;        // numerically-controlled oscillator
     agc_crcf agc_rx;        // automatic gain control
     autocorr_cccf autocorr; // auto-correlator
 
@@ -136,6 +138,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->x = (float complex*) malloc((q->M)*sizeof(float complex));
     q->fft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_FORWARD, FFT_METHOD);
  
+    // create input buffer the length of the transform
+    q->input_buffer = windowcf_create(q->M);
+
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -162,10 +167,13 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // synchronizer objects
     //
 
+    // numerically-controlled oscillator
+    q->nco_rx = nco_crcf_create(LIQUID_NCO);
+
     // agc, rssi, squelch
     q->agc_rx = agc_crcf_create();
     agc_crcf_set_target(q->agc_rx, 1.0f);
-    agc_crcf_set_bandwidth(q->agc_rx,  1e-3f);
+    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
     agc_crcf_set_gain_limits(q->agc_rx, 1e-3f, 1e4f);
 
     agc_crcf_squelch_activate(q->agc_rx);
@@ -205,6 +213,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
 #endif
 
     // free transform object
+    windowcf_destroy(_q->input_buffer);
     free(_q->X);
     free(_q->x);
     FFT_DESTROY_PLAN(_q->fft);
@@ -220,6 +229,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->Y);
 
     // destroy synchronizer objects
+    nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
     agc_crcf_destroy(_q->agc_rx);           // automatic gain control
     autocorr_cccf_destroy(_q->autocorr);    // auto-correlator
 
@@ -259,18 +269,15 @@ void ofdmframesync_execute(ofdmframesync _q,
     for (i=0; i<_n; i++) {
         x = _x[i];
 
+        // save input sample to buffer
+        windowcf_push(_q->input_buffer,x);
+
         // apply agc (estimate initial signal gain)
         agc_crcf_execute(_q->agc_rx, x, &y);
-
-        float complex rxx;
-        autocorr_cccf_push(_q->autocorr, x);
-        autocorr_cccf_execute(_q->autocorr, &rxx);
-        //printf("  rxx : %12.8f {%12.8f}\n", cabsf(rxx), cargf(rxx));
 
 #if DEBUG_OFDMFRAMESYNC
         windowcf_push(_q->debug_x, x);
         windowcf_push(_q->debug_agc_out, y);
-        windowcf_push(_q->debug_rxx, rxx);
         windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
 #endif
 
@@ -305,9 +312,25 @@ void ofdmframesync_execute(ofdmframesync _q,
 // internal
 //
 
+// frame detection
 void ofdmframesync_execute_plcpshort(ofdmframesync _q,
                                      float complex _x)
 {
+    float complex rxx;
+    autocorr_cccf_push(_q->autocorr, _x);
+    autocorr_cccf_execute(_q->autocorr, &rxx);
+    //printf("  rxx : %12.8f {%12.8f}\n", cabsf(rxx), cargf(rxx));
+
+    float g0 = agc_crcf_get_gain(_q->agc_rx);
+    float g1 = 1.0f / sqrtf(_q->M); // NOTE : this gain will change based on auto-correlator length
+    rxx *= g0*g1;
+
+#if DEBUG_OFDMFRAMESYNC
+    windowcf_push(_q->debug_rxx, rxx);
+#endif
+
+    // check to see if signal exceeds threshold
+    //if ( cabsf(rxx) > 0.7f ) printf("frame detected\n");
 }
 
 void ofdmframesync_execute_plcplong0(ofdmframesync _q,
@@ -334,7 +357,7 @@ void ofdmframesync_debug_print(ofdmframesync _q)
 {
     FILE * fid = fopen(DEBUG_OFDMFRAMESYNC_FILENAME,"w");
     if (!fid) {
-        printf("error: ofdmframe_debug_print(), could not open file for writing\n");
+        fprintf(stderr,"error: ofdmframe_debug_print(), could not open file for writing\n");
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAMESYNC_FILENAME);
