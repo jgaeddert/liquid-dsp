@@ -27,7 +27,7 @@ int main() {
     unsigned int num_symbols_data = 8;  // number of data symbols
     modulation_scheme ms = MOD_QAM;
     unsigned int bps = 4;
-    float nstd  = 0.01f;    // noise standard deviation
+    float SNRdB = 30.0f;    // signal-to-noise ratio [dB]
     float phi   = 0.0f;     // phase offset
     float dphi  = 0.005f;   // frequency offset
 
@@ -42,6 +42,7 @@ int main() {
     unsigned int num_samples = (num_symbols_S0 + num_symbols_S1)*M +
                                 num_symbols_data * frame_len;
 #endif
+    float nstd = powf(10.0f, -SNRdB/10.0f);
 
     // initialize subcarrier allocation
     unsigned int p[M];
@@ -94,8 +95,19 @@ int main() {
         // add carrier offset
         y[i] *= cexpf(_Complex_I*(phi + dphi*i));
 
+        // add channel gain
+        y[i] *= 0.1f;
+
         // add noise
         y[i] += nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
+    }
+
+    // push noise into synchronizer
+    unsigned int d=1000;
+    for (i=0; i<d; i++) {
+        float complex z = nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
+
+        ofdmframesync_execute(fs,&z,1);
     }
 
     // execute synchronizer
