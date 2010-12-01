@@ -88,6 +88,9 @@ struct ofdmframesync_s {
     agc_crcf agc_rx;        // automatic gain control
     autocorr_cccf autocorr; // auto-correlator
 
+    //
+    float complex rxx_max;  // maximum auto-correlator output
+
     // callback
     ofdmframesync_callback callback;
     void * userdata;
@@ -254,6 +257,9 @@ void ofdmframesync_reset(ofdmframesync _q)
     // reset synchronizer objects
     agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
 
+    // reset internal state variables
+    _q->rxx_max = 0.0f;
+
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT;
 }
@@ -330,7 +336,21 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
 #endif
 
     // check to see if signal exceeds threshold
-    //if ( cabsf(rxx) > 0.7f ) printf("frame detected\n");
+    if ( cabsf(rxx) > 0.7f ) {
+        printf("  rxx = |%12.8f| {%12.8f}\n", cabsf(rxx), cargf(rxx));
+
+        // auto-correlator output is high; wait for peak
+        if ( cabsf(rxx) > cabsf(_q->rxx_max) ) {
+            _q->rxx_max = rxx;
+            return;
+        } else {
+            // peak auto-correlator found
+            float dphi_hat = 2.0f * cargf(_q->rxx_max) / (float)(_q->M);
+            printf("  maximum rxx found, dphi-hat: %12.8f\n", dphi_hat);
+            _q->state = OFDMFRAMESYNC_STATE_PLCPLONG0;
+        }
+
+    }
 }
 
 void ofdmframesync_execute_plcplong0(ofdmframesync _q,
