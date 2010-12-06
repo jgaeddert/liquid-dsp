@@ -152,6 +152,10 @@ int main(int argc, char*argv[]) {
 
         // interpolate
         interp_crcf_execute(q, sym_in[i], &y[i*k]);
+
+#if 0
+        printf("  %3u : %8.5f + j*%8.5f\n", i, crealf(sym_in[i]), cimagf(sym_in[i]));
+#endif
     }
 
     // channel
@@ -169,6 +173,10 @@ int main(int argc, char*argv[]) {
 
         // compensate for carrier offset
         sym_out[i] *= cexpf(-_Complex_I*(dphi*i*k));
+
+        // compensate for consequental carrier phase offset
+        if (!cfo_compensation)
+            sym_out[i] *= cexpf(_Complex_I*dphi*m*k);
 
 #if 0
         printf("  %3u : %8.5f + j*%8.5f", i, crealf(sym_out[i]), cimagf(sym_out[i]));
