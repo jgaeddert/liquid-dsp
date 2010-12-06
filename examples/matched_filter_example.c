@@ -102,6 +102,9 @@ int main(int argc, char*argv[]) {
         exit(1);
     }
 
+    // derived values
+    unsigned int num_samples = num_symbols*k;
+
     // generate receive filter coefficients (reverse of transmit)
     float g[h_len];
     unsigned int i;
@@ -120,39 +123,30 @@ int main(int argc, char*argv[]) {
     printf("  isi (mse) : %12.8f dB\n", 20*log10f(isi_mse));
 
     // generate signal
-    float sym_in, buff[k], sym_out;
+    float sym_in[num_symbols];
+    float y[num_samples];
+    float sym_out[num_symbols];
 
     for (i=0; i<h_len; i++)
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);
 
-    unsigned int num_samples=k*num_symbols;
-    float y[num_samples];
-    unsigned int n=0;
-
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
-        sym_in = (rand() % 2) ? 1.0f : -1.0f;
+        sym_in[i] = (rand() % 2) ? 1.0f : -1.0f;
 
         // interpolate
-        interp_rrrf_execute(q, sym_in, buff);
+        interp_rrrf_execute(q, sym_in[i], &y[i*k]);
 
         // decimate
-        decim_rrrf_execute(d, buff, &sym_out, 0);
+        decim_rrrf_execute(d, &y[i*k], &sym_out[i], 0);
 
         // normalize output
-        sym_out /= k;
+        sym_out[i] /= k;
 
-        printf("  %3u : %8.5f", i, sym_out);
+        printf("  %3u : %8.5f", i, sym_out[i]);
         if (i>=2*m) printf(" *\n");
         else        printf("\n");
-
-        // save output symbols
-        memmove(&y[n], buff, k*sizeof(float));
-        n += k;
     }
-
-    //for (i=0; i<num_samples; i++)
-    //    printf(" y(%3u) = %8.5f;\n", i+1, y[i]);
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
@@ -161,6 +155,12 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"k = %u;\n", k);
     fprintf(fid,"m = %u;\n", m);
     fprintf(fid,"beta = %12.8f;\n", beta);
+    fprintf(fid,"num_symbols = %u;\n", num_symbols);
+    fprintf(fid,"num_samples = k*num_symbols;\n");
+
+    fprintf(fid,"y = zeros(1,num_samples);\n");
+    for (i=0; i<num_samples; i++)
+        fprintf(fid," y(%3u) = %12.8f;\n", i+1, y[i]);
 
     for (i=0; i<h_len; i++)
         fprintf(fid,"h(%3u) = %20.8e;\n", i+1, h[i]);
