@@ -34,7 +34,7 @@ void autotest_awgn_channel()
     float complex x;
     float m1=0.0f, m2=0.0f;
     float nvar = 3.0f;
-    float tol=0.01f;
+    float tol=0.05f;
 
     awgn_channel q = awgn_channel_create(nvar);
 
@@ -47,6 +47,11 @@ void autotest_awgn_channel()
     N *= 2; // double N for real and imag components
     m1 /= (float) N;
     m2 = (m2 / (float)N) - m1*m1;
+
+    if (liquid_autotest_verbose) {
+        printf("awgn mean       :   %12.8f (expected %12.8f)\n", m1, 0.0f);
+        printf("awgn variance   :   %12.8f (expected %12.8f)\n", m2, nvar);
+    }
 
     CONTEND_DELTA(m1, 0.0f, tol);
     CONTEND_DELTA(m2, nvar, tol);
