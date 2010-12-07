@@ -130,13 +130,6 @@ int main(int argc, char*argv[]) {
     interp_crcf q  = interp_crcf_create(k,h,h_len);
     decim_cccf d   = decim_cccf_create(k,gc,h_len);
 
-    // compute filter inter-symbol interference
-    float isi_mse=0;
-    float isi_max=0;
-    liquid_filter_isi(h,k,m,&isi_mse, &isi_max);
-    printf("  isi (max) : %12.8f dB\n", 20*log10f(isi_max));
-    printf("  isi (mse) : %12.8f dB\n", 20*log10f(isi_mse));
-
     // generate signal
     float complex sym_in[num_symbols];
     float complex y[num_samples];
