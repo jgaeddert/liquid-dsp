@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_DOTPROD_RRRF_BENCHMARK_H__
-#define __LIQUID_DOTPROD_RRRF_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -71,6 +68,4 @@ void benchmark_dotprod_rrrf_4       DOTPROD_RRRF_BENCHMARK_API(4)
 void benchmark_dotprod_rrrf_16      DOTPROD_RRRF_BENCHMARK_API(16)
 void benchmark_dotprod_rrrf_64      DOTPROD_RRRF_BENCHMARK_API(64)
 void benchmark_dotprod_rrrf_256     DOTPROD_RRRF_BENCHMARK_API(256)
-
-#endif // __LIQUID_DOTPROD_RRRF_BENCHMARK_H__
 
