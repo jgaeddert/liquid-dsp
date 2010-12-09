@@ -107,16 +107,16 @@ void autotest_design_rkaiser_filter()
 
     // compute filter ISI
     float isi_max;
-    float isi_mse;
-    liquid_filter_isi(h,k,m,&isi_mse,&isi_max);
+    float isi_rms;
+    liquid_filter_isi(h,k,m,&isi_rms,&isi_max);
 
     // convert to log scale
     isi_max = 20*log10f(isi_max);
-    isi_mse = 20*log10f(isi_mse);
+    isi_rms = 20*log10f(isi_rms);
 
     // ensure ISI is sufficiently small
     CONTEND_LESS_THAN(isi_max, isi_test);
-    CONTEND_LESS_THAN(isi_mse, isi_test);
+    CONTEND_LESS_THAN(isi_rms, isi_test);
 }
 
 

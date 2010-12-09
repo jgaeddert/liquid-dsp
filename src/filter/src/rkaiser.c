@@ -295,16 +295,16 @@ float design_rkaiser_filter_internal_isi(unsigned int _k,
 
     // evaluate performance (ISI)
     float isi_max;
-    float isi_mse;
+    float isi_rms;
 
     // compute filter
     fir_kaiser_window(n,fc,As,_dt,_h);
 
     // compute filter ISI
-    liquid_filter_isi(_h,_k,_m,&isi_mse,&isi_max);
+    liquid_filter_isi(_h,_k,_m,&isi_rms,&isi_max);
 
     // return RMS of ISI
-    return isi_mse;
+    return isi_rms;
 }
 
 

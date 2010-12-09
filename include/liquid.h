@@ -1139,18 +1139,18 @@ float liquid_filter_autocorr(float * _h,
 
 // liquid_filter_isi()
 //
-// Compute inter-symbol interference (ISI)--both MSE and
+// Compute inter-symbol interference (ISI)--both RMS and
 // maximum--for the filter _h.
 //
 //  _h      :   filter coefficients [size: 2*_k*_m+1]
 //  _k      :   filter over-sampling rate (samples/symbol)
 //  _m      :   filter delay (symbols)
-//  _mse    :   output mean-squared ISI
+//  _rms    :   output root mean-squared ISI
 //  _max    :   maximum ISI
 void liquid_filter_isi(float * _h,
                        unsigned int _k,
                        unsigned int _m,
-                       float * _mse,
+                       float * _rms,
                        float * _max);
 
 

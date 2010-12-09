@@ -113,11 +113,11 @@ int main(int argc, char*argv[]) {
     decim_rrrf d   = decim_rrrf_create(k,g,h_len);
 
     // compute filter inter-symbol interference
-    float isi_mse=0;
+    float isi_rms=0;
     float isi_max=0;
-    liquid_filter_isi(h,k,m,&isi_mse, &isi_max);
+    liquid_filter_isi(h,k,m,&isi_rms, &isi_max);
     printf("  isi (max) : %12.8f dB\n", 20*log10f(isi_max));
-    printf("  isi (mse) : %12.8f dB\n", 20*log10f(isi_mse));
+    printf("  isi (rms) : %12.8f dB\n", 20*log10f(isi_rms));
 
     // generate signal
     float sym_in, buff[k], sym_out;

@@ -86,11 +86,11 @@ void design_hM3_filter(unsigned int _k,
     memmove(_h, h, n*sizeof(float));
 
     float isi_max;
-    float isi_mse;
-    liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
+    float isi_rms;
+    liquid_filter_isi(h,_k,_m,&isi_rms,&isi_max);
 
     // iterate...
-    float isi_mse_min = isi_mse;
+    float isi_rms_min = isi_rms;
     unsigned int p, pmax=100;
     for (p=0; p<pmax; p++) {
         // increase pass-band edge
@@ -101,14 +101,14 @@ void design_hM3_filter(unsigned int _k,
         firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
 
         // compute inter-symbol interference (MSE, max)
-        liquid_filter_isi(h,_k,_m,&isi_mse,&isi_max);
+        liquid_filter_isi(h,_k,_m,&isi_rms,&isi_max);
 
-        printf("  isi mse : %20.8e (min: %20.8e)\n", isi_mse, isi_mse_min);
-        if (isi_mse > isi_mse_min) {
+        printf("  isi mse : %20.8e (min: %20.8e)\n", isi_rms, isi_rms_min);
+        if (isi_rms > isi_rms_min) {
             // search complete
             break;
         } else {
-            isi_mse_min = isi_mse;
+            isi_rms_min = isi_rms;
             // copy results
             memmove(_h, h, n*sizeof(float));
         }
