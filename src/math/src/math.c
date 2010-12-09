@@ -22,6 +22,13 @@
 //
 // Useful mathematical formulae
 //
+// References:
+//  [Kaiser:1980] James F. Kaiser and Ronald W. Schafer, "On
+//      the Use of I0-Sinh Window for Spectrum Analysis,"
+//      IEEE Transactions on Acoustics, Speech, and Signal
+//      Processing, vol. ASSP-28, no. 1, pp. 105--107,
+//      February, 1980.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +72,8 @@ float liquid_gammaf(float _z)
         //  gamma(z) = pi / ( gamma(1-z) * sin(pi*z) )
         float t0 = liquid_gammaf(1.0 - _z);
         float t1 = sinf(M_PI*_z);
-        // TODO : first check for singularities before dividing
+        if (t0==0 || t1==0)
+            fprintf(stderr,"warning: liquid_gammaf(), divide by zero\n");
         return M_PI / (t0 * t1);
     } else {
         return expf( liquid_lngammaf(_z) );
@@ -276,10 +284,28 @@ void liquid_kbd_window(unsigned int _n,
 }
 
 
-// Kaiser window
-float kaiser(unsigned int _n, unsigned int _N, float _beta, float _mu)
+// Kaiser window [Kaiser:1980]
+//  _n      :   sample index
+//  _N      :   window length (samples)
+//  _beta   :   window taper parameter
+//  _mu     :   fractional sample offset
+float kaiser(unsigned int _n,
+             unsigned int _N,
+             float _beta,
+             float _mu)
 {
-    // TODO add reference
+    // validate input
+    if (_n > _N) {
+        fprintf(stderr,"error: kaiser(), sample index must not exceed window length\n");
+        exit(1);
+    } else if (_beta < 0) {
+        fprintf(stderr,"error: kaiser(), beta must be greater than or equal to zero\n");
+        exit(1);
+    } else if (_mu < -1 || _mu > 1) {
+        fprintf(stderr,"error: kaiser(), fractional sample offset must be in [-1,1]\n");
+        exit(1);
+    }
+
     float t = (float)_n - (float)(_N-1)/2 + _mu;
     float r = 2.0f*t/(float)(_N);
     float a = besseli_0(_beta*sqrtf(1-r*r));
