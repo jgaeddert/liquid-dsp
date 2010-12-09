@@ -135,7 +135,6 @@ void autotest_agc_rssi_sinusoid() {
 // Test RSSI on noise input
 //
 void autotest_agc_rssi_noise() {
-    srand(time(NULL));
     // set paramaters
     float gamma = -30.0f;           // nominal signal level [dB]
     float bt = 1e-3f;               // agc bandwidth
