@@ -50,6 +50,7 @@ local_t_files	:= 			\
 #
 local_b_files	:=			\
 	dotprod_cccf_benchmark.h	\
+	dotprod_crcf_benchmark.h	\
 	dotprod_rrrf_benchmark.h
 
 

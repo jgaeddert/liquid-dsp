@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_RKAISER 0
+#define DEBUG_RKAISER 1
 
 // design_rkaiser_filter()
 //
@@ -66,9 +66,9 @@ void design_rkaiser_filter(unsigned int _k,
         exit(1);
     }
 
-    // simply call internal method and ignore output gamma value
-    float gamma;
-    design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&gamma);
+    // simply call internal method and ignore output rho value
+    float rho;
+    design_rkaiser_filter_internal(_k,_m,_beta,_dt,_h,&rho);
 }
 
 // design_arkaiser_filter()
@@ -104,7 +104,7 @@ void design_arkaiser_filter(unsigned int _k,
 
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
-    float gamma_hat = rho_hat*_beta;
+    float gamma_hat = rho_hat*_beta;                // un-normalized correction factor
 
     unsigned int n=2*_k*_m+1;                       // filter length
     float del = gamma_hat / (float)_k;              // transition bandwidth
@@ -179,13 +179,13 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-//  _gamma  :   transition bandwidth adjustment, 0 < _gamma < 1
+//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 void design_rkaiser_filter_internal(unsigned int _k,
                                     unsigned int _m,
                                     float _beta,
                                     float _dt,
                                     float * _h,
-                                    float * _gamma)
+                                    float * _rho)
 {
     if ( _k < 1 ) {
         fprintf(stderr,"error: design_rkaiser_filter_internal(): k must be greater than 0\n");
@@ -204,12 +204,11 @@ void design_rkaiser_filter_internal(unsigned int _k,
 
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
-    float gamma_hat = rho_hat*_beta;
 
     // bandwidth adjustment array (3 points makes a parabola)
-    float x0 = gamma_hat*0.9f;
+    float x0 = rho_hat*0.9f;
     float x1;
-    float x2 = gamma_hat*1.1f;
+    float x2 = rho_hat*1.1f;
 
     // evaluate performance (ISI) of each bandwidth adjustment
     float y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
@@ -220,7 +219,7 @@ void design_rkaiser_filter_internal(unsigned int _k,
     // minimizes the inter-symbol interference of the filter
     unsigned int p, pmax=10;
     float t0, t1;
-    float x_hat = gamma_hat;
+    float x_hat = rho_hat;
     float y_hat;
     for (p=0; p<pmax; p++) {
         // choose center point of [x0,x2]
@@ -256,11 +255,11 @@ void design_rkaiser_filter_internal(unsigned int _k,
 
 #if DEBUG_RKAISER
         y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
-        printf("  %4u : gamma=%12.8f, isi=%12.6f dB\n", p+1, x_hat, 20*log10f(y_hat));
+        printf("  %4u : rho=%12.8f, isi=%12.6f dB\n", p+1, x_hat, 20*log10f(y_hat));
 #endif
     };
 
-    // re-design filter with optimal value for gamma
+    // re-design filter with optimal value for rho
     y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
 
     // normalize filter magnitude
@@ -269,7 +268,7 @@ void design_rkaiser_filter_internal(unsigned int _k,
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
 
     // save trasition bandwidth adjustment
-    *_gamma = x_hat;
+    *_rho = rho_hat;
 }
 
 // compute filter coefficients and determine resulting ISI
@@ -278,20 +277,21 @@ void design_rkaiser_filter_internal(unsigned int _k,
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
-//  _gamma  :   transition bandwidth adjustment, 0 < _gamma < 1
+//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 //  _h      :   filter buffer [size: 2*_k*_m+1]
 float design_rkaiser_filter_internal_isi(unsigned int _k,
                                          unsigned int _m,
                                          float _beta,
                                          float _dt,
-                                         float _gamma,
+                                         float _rho,
                                          float * _h)
 {
     unsigned int n=2*_k*_m+1;           // filter length
+    float gamma = _rho * _beta;         // un-normalized correction factor
     float kf = (float)_k;               // samples/symbol (float)
-    float del = _gamma / kf;            // transition bandwidth
+    float del = gamma / kf;             // transition bandwidth
     float As = 14.26f*del*n + 7.95f;    // sidelobe attenuation
-    float fc = (1 + _beta - _gamma)/kf; // filter cutoff
+    float fc = (1 + _beta - gamma)/kf;  // filter cutoff
 
     // evaluate performance (ISI)
     float isi_max;

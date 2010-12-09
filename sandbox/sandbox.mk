@@ -16,7 +16,9 @@ local_src	:=				\
 	firpfbch_synthesis_equivalence_test.c	\
 	iirdes_example.c			\
 	matched_filter_test.c			\
-	ofdmoqam_firpfbch_test.c
+	matched_filter_cfo_test.c		\
+	ofdmoqam_firpfbch_test.c		\
+	ofdmoqam_firpfbch_cfo_test.c
 
 local_sandbox	:= $(addprefix $(local_dir)/, $(local_src))
 

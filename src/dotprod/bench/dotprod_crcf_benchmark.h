@@ -23,7 +23,7 @@
 #include "liquid.h"
 
 // Helper function to keep code base small
-void dotprod_cccf_bench(struct rusage *_start,
+void dotprod_crcf_bench(struct rusage *_start,
                         struct rusage *_finish,
                         unsigned long int *_num_iterations,
                         unsigned int _n)
@@ -33,34 +33,36 @@ void dotprod_cccf_bench(struct rusage *_start,
     *_num_iterations /= _n;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
-    float complex x[_n], h[_n], y;
+    float complex x[_n];
+    float h[_n];
+    float complex y;
     unsigned int i;
     for (i=0; i<_n; i++) {
         x[i] = 1.0f + _Complex_I*1.0f;
-        h[i] = 1.0f - _Complex_I*1.0f;
+        h[i] = 1.0f;
     }
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        dotprod_cccf_run(h, x, _n, &y);
-        dotprod_cccf_run(h, x, _n, &y);
-        dotprod_cccf_run(h, x, _n, &y);
-        dotprod_cccf_run(h, x, _n, &y);
+        dotprod_crcf_run(h, x, _n, &y);
+        dotprod_crcf_run(h, x, _n, &y);
+        dotprod_crcf_run(h, x, _n, &y);
+        dotprod_crcf_run(h, x, _n, &y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
 }
 
-#define DOTPROD_CCCF_BENCHMARK_API(N)   \
+#define DOTPROD_CRCF_BENCHMARK_API(N)   \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ dotprod_cccf_bench(_start, _finish, _num_iterations, N); }
+{ dotprod_crcf_bench(_start, _finish, _num_iterations, N); }
 
-void benchmark_dotprod_cccf_4      DOTPROD_CCCF_BENCHMARK_API(4)
-void benchmark_dotprod_cccf_16     DOTPROD_CCCF_BENCHMARK_API(16)
-void benchmark_dotprod_cccf_64     DOTPROD_CCCF_BENCHMARK_API(64)
-void benchmark_dotprod_cccf_256    DOTPROD_CCCF_BENCHMARK_API(256)
+void benchmark_dotprod_crcf_4      DOTPROD_CRCF_BENCHMARK_API(4)
+void benchmark_dotprod_crcf_16     DOTPROD_CRCF_BENCHMARK_API(16)
+void benchmark_dotprod_crcf_64     DOTPROD_CRCF_BENCHMARK_API(64)
+void benchmark_dotprod_crcf_256    DOTPROD_CRCF_BENCHMARK_API(256)
 

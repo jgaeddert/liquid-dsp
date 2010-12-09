@@ -2887,6 +2887,7 @@ void firpfbch_analyzer_execute(firpfbch _c,
 //
 
 #define FIRPFBCH_MANGLE_CRCF(name)  LIQUID_CONCAT(firpfbch_crcf,name)
+#define FIRPFBCH_MANGLE_CCCF(name)  LIQUID_CONCAT(firpfbch_cccf,name)
 
 // Macro:
 //   FIRPFBCH   : name-mangling macro
@@ -2930,6 +2931,11 @@ void FIRPFBCH(_analyzer_run)(FIRPFBCH() _q,                     \
 LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CRCF,
                            liquid_float_complex,
                            float,
+                           liquid_float_complex)
+
+LIQUID_FIRPFBCH_DEFINE_API(FIRPFBCH_MANGLE_CCCF,
+                           liquid_float_complex,
+                           liquid_float_complex,
                            liquid_float_complex)
 
 

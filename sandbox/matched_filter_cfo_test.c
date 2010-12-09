@@ -1,5 +1,5 @@
 //
-// matched_filter_example.c
+// sandbox/matched_filter_cfo_test.c
 //
 
 #include <stdio.h>
@@ -7,39 +7,46 @@
 #include <string.h>
 #include <getopt.h>
 #include <math.h>
+#include <complex.h>
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "matched_filter_example.m"
+#define OUTPUT_FILENAME "matched_filter_cfo_test.m"
 
 // print usage/help message
 void usage()
 {
-    printf("matched_filter_example options:\n");
+    printf("matched_filter_cfo_test options:\n");
     printf("  u/h   : print usage/help\n");
     printf("  t     : filter type: [rrcos], rkaiser, arkaiser, hM3\n");
     printf("  k     : filter samples/symbol, k >= 2, default: 2\n");
     printf("  m     : filter delay (symbols), m >= 1, default: 3\n");
     printf("  b     : filter excess bandwidth factor, 0 < b < 1, default: 0.5\n");
     printf("  n     : number of symbols, default: 16\n");
+    printf("  P     : carrier phase offset, default: 0\n");
+    printf("  F     : carrier frequency offset, default: 0.8\n");
+    printf("  c     : compensate for carrier frequency offset in matched filter? default: no\n");
 }
 
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int k=2;   // samples/symbol
-    unsigned int m=3;   // symbol delay
-    float beta=0.7f;    // excess bandwidth factor
-    unsigned int num_symbols=16;
+    unsigned int k=2;       // samples/symbol
+    unsigned int m=4;       // symbol delay
+    float beta=0.3f;        // excess bandwidth factor
+    float phi = 0.0f;       // carrier phase offset
+    float dphi = 0.8f;      // carrier frequency offset
+    unsigned int num_symbols=128;
+    int cfo_compensation=0; // compensate for carrier offset in matched filter?
     enum {
         FILTER_RRCOS=0,
         FILTER_RKAISER,
         FILTER_ARKAISER,
         FILTER_hM3
-    } ftype = 0;        // filter prototype
+    } ftype = 0;            // filter prototype
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uht:k:m:b:n:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uht:k:m:b:n:P:F:c")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();            return 0;
@@ -61,6 +68,9 @@ int main(int argc, char*argv[]) {
         case 'm':   m = atoi(optarg);           break;
         case 'b':   beta = atof(optarg);        break;
         case 'n':   num_symbols = atoi(optarg); break;
+        case 'P':   phi = atof(optarg);         break;
+        case 'F':   dphi = atof(optarg);        break;
+        case 'c':   cfo_compensation=1;         break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
@@ -106,47 +116,72 @@ int main(int argc, char*argv[]) {
     unsigned int num_samples = num_symbols*k;
 
     // generate receive filter coefficients (reverse of transmit)
-    float g[h_len];
+    float complex gc[h_len];
     unsigned int i;
     for (i=0; i<h_len; i++)
-        g[i] = h[h_len-i-1];
+        gc[i] = h[h_len-i-1];
+    // compensate for carrier frequency offset in matched filter?
+    if (cfo_compensation) {
+        for (i=0; i<h_len; i++)
+            gc[i] *= cexpf(_Complex_I*dphi*i);
+    }
 
     // create interpolator and decimator
-    interp_rrrf q  = interp_rrrf_create(k,h,h_len);
-    decim_rrrf d   = decim_rrrf_create(k,g,h_len);
-
-    // compute filter inter-symbol interference
-    float isi_rms=0;
-    float isi_max=0;
-    liquid_filter_isi(h,k,m,&isi_rms, &isi_max);
-    printf("  isi (max) : %12.8f dB\n", 20*log10f(isi_max));
-    printf("  isi (rms) : %12.8f dB\n", 20*log10f(isi_rms));
+    interp_crcf q  = interp_crcf_create(k,h,h_len);
+    decim_cccf d   = decim_cccf_create(k,gc,h_len);
 
     // generate signal
-    float sym_in[num_symbols];
-    float y[num_samples];
-    float sym_out[num_symbols];
+    float complex sym_in[num_symbols];
+    float complex y[num_samples];
+    float complex sym_out[num_symbols];
 
     for (i=0; i<h_len; i++)
         printf("h(%3u) = %12.8f;\n", i+1, h[i]);
 
+    // interpolation
     for (i=0; i<num_symbols; i++) {
         // generate random symbol
-        sym_in[i] = (rand() % 2) ? 1.0f : -1.0f;
+        sym_in[i] = cexpf(_Complex_I*( 0.25f*M_PI + 0.5f*M_PI*(rand()%4)) );
 
         // interpolate
-        interp_rrrf_execute(q, sym_in[i], &y[i*k]);
+        interp_crcf_execute(q, sym_in[i], &y[i*k]);
 
+#if 0
+        printf("  %3u : %8.5f + j*%8.5f\n", i, crealf(sym_in[i]), cimagf(sym_in[i]));
+#endif
+    }
+
+    // channel
+    for (i=0; i<num_samples; i++) {
+        y[i] *= cexpf(_Complex_I*(phi + dphi*i));
+    }
+
+    // decimation
+    for (i=0; i<num_symbols; i++) {
         // decimate
-        decim_rrrf_execute(d, &y[i*k], &sym_out[i], 0);
+        decim_cccf_execute(d, &y[i*k], &sym_out[i], 0);
 
         // normalize output
         sym_out[i] /= k;
 
-        printf("  %3u : %8.5f", i, sym_out[i]);
+        // compensate for carrier offset
+        sym_out[i] *= cexpf(-_Complex_I*(dphi*i*k));
+
+        // compensate for consequental carrier phase offset
+        if (!cfo_compensation)
+            sym_out[i] *= cexpf(_Complex_I*dphi*m*k);
+
+#if 0
+        printf("  %3u : %8.5f + j*%8.5f", i, crealf(sym_out[i]), cimagf(sym_out[i]));
         if (i>=2*m) printf(" *\n");
         else        printf("\n");
+#endif
     }
+
+    // clean up objects
+    interp_crcf_destroy(q);
+    decim_cccf_destroy(d);
+
 
     FILE * fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);
@@ -160,39 +195,23 @@ int main(int argc, char*argv[]) {
 
     fprintf(fid,"y = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++)
-        fprintf(fid," y(%3u) = %12.8f;\n", i+1, y[i]);
+        fprintf(fid," y(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
 
-    for (i=0; i<h_len; i++)
-        fprintf(fid,"h(%3u) = %20.8e;\n", i+1, h[i]);
-    fprintf(fid,"nfft=1024;\n");
-    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h/k,nfft))));\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,H,'-','LineWidth',2,...\n");
-    fprintf(fid,"     [0.5/k],[-3],'or',...\n");
-    fprintf(fid,"     [0.5/k*(1-beta) 0.5/k*(1-beta)],[-100 10],'-r',...\n");
-    fprintf(fid,"     [0.5/k*(1+beta) 0.5/k*(1+beta)],[-100 10],'-r');\n");
-    fprintf(fid,"xlabel('normalized frequency');\n");
-    fprintf(fid,"ylabel('PSD');\n");
-    fprintf(fid,"axis([-0.5 0.5 -100 10]);\n");
-    fprintf(fid,"grid on;\n");
+    fprintf(fid,"s = zeros(1,num_symbols);\n");
+    for (i=0; i<num_symbols; i++)
+        fprintf(fid," s(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(sym_out[i]), cimagf(sym_out[i]));
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"g = conv(h,fliplr(h))/k;\n");
-    fprintf(fid,"t = [(-2*k*m):(2*k*m)]/k;\n");
-    fprintf(fid,"i0 = [0:k:4*k*m]+1;\n");
-    fprintf(fid,"plot(t,g,'-s',...\n");
-    fprintf(fid,"     t(i0),g(i0),'or');\n");
-    fprintf(fid,"xlabel('symbol index');\n");
-    fprintf(fid,"ylabel('matched filter response');\n");
+    fprintf(fid,"plot(real(s), imag(s), 'x');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.2);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"xlabel('I');\n");
+    fprintf(fid,"ylabel('Q');\n");
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
     
-    // clean it up
-    interp_rrrf_destroy(q);
-    decim_rrrf_destroy(d);
     printf("done.\n");
     return 0;
 }
