@@ -928,13 +928,13 @@ float rkaiser_approximate_rho(unsigned int _m,
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
 //  _h      :   resulting filter [size: 2*_k*_m+1]
-//  _gamma  :   transition bandwidth adjustment, 0 < _gamma < 1
+//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 void design_rkaiser_filter_internal(unsigned int _k,
                                     unsigned int _m,
                                     float _beta,
                                     float _dt,
                                     float * _h,
-                                    float * _gamma);
+                                    float * _rho);
 
 // compute filter coefficients and determine resulting ISI
 //  
@@ -942,13 +942,13 @@ void design_rkaiser_filter_internal(unsigned int _k,
 //  _m      :   filter delay (symbols)
 //  _beta   :   filter excess bandwidth factor (0,1)
 //  _dt     :   filter fractional sample delay
-//  _gamma  :   transition bandwidth adjustment, 0 < _gamma < 1
+//  _rho    :   transition bandwidth adjustment, 0 < _rho < 1
 //  _h      :   filter buffer [size: 2*_k*_m+1]
 float design_rkaiser_filter_internal_isi(unsigned int _k,
                                          unsigned int _m,
                                          float _beta,
                                          float _dt,
-                                         float _gamma,
+                                         float _rho,
                                          float * _h);
 
 // initialize the frequency grid on the disjoint bounded set
