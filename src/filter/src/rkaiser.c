@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_RKAISER 1
+#define DEBUG_RKAISER 0
 
 // design_rkaiser_filter()
 //
