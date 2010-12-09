@@ -104,7 +104,7 @@ void MATRIX(_mul)(T * _X, unsigned int _XR, unsigned int _XC,
     // ensure lengths are valid
     if (_ZR != _XR || _ZC != _YC || _XC != _YR ) {
         fprintf(stderr,"error: matrix_mul(), invalid dimensions\n");
-        exit(0);
+        exit(1);
     }
 
     unsigned int r, c, i;
@@ -135,7 +135,7 @@ void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,
     // ensure lengths are valid
     if (_rz != _rx || _rz != _ry || _rx != _ry || _cz != _cx + _cy) {
         fprintf(stderr,"error: matrix_aug(), invalid dimensions\n");
-        exit(0);
+        exit(1);
     }
 
     unsigned int r, c, n;

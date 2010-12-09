@@ -49,8 +49,8 @@ fec fec_conv_create(fec_scheme _fs)
     case FEC_CONV_V39:  fec_conv_init_v39(q);   break;
     case FEC_CONV_V615: fec_conv_init_v615(q);  break;
     default:
-        printf("error: fec_conv_create(), invalid type\n");
-        exit(0);
+        fprintf(stderr,"error: fec_conv_create(), invalid type\n");
+        exit(1);
     }
 
     // convolutional-specific decoding

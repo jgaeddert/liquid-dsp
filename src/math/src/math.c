@@ -139,7 +139,7 @@ unsigned int liquid_nextpow2(unsigned int _x)
 {
     if (_x == 0) {
         fprintf(stderr,"error: liquid_nextpow2(), input must be greater than zero\n");
-        exit(0);
+        exit(1);
     }
 
     _x--;

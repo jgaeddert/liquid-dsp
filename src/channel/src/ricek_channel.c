@@ -35,11 +35,11 @@ ricek_channel ricek_channel_create(unsigned int _h_len, float _K, float _fd, flo
     ricek_channel q = (ricek_channel) malloc(sizeof(struct ricek_channel_s));
 
     if (_K < 0) {
-        printf("error: ricek_channel_create(), K (%f) is negative\n", _K);
-        exit(0);
+        fprintf(stderr,"error: ricek_channel_create(), K (%f) is negative\n", _K);
+        exit(1);
     } else if (_fd < 0) {
-        printf("error: ricek_channel_create()< fd (%f) is negative\n", _fd);
-        exit(0);
+        fprintf(stderr,"error: ricek_channel_create()< fd (%f) is negative\n", _fd);
+        exit(1);
     } else {
         q->K = _K;
         q->fd = _fd;
