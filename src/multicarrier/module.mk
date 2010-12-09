@@ -33,6 +33,7 @@ local_s_files	:=			\
 	ofdmframe64.common.c		\
 	ofdmframe64gen.c		\
 	ofdmframe64sync.c		\
+	ofdmframe.common.c		\
 	ofdmframegen.c			\
 	ofdmframesync.c			\
 	ofdmoqam.c			\

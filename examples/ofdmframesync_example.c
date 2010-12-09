@@ -20,99 +20,154 @@ int main() {
     srand(time(NULL));
 
     // options
-    unsigned int num_subcarriers=512;// 
-    unsigned int cp_len=64;         // cyclic prefix length
-    //unsigned int num_symbols=2;     // number of ofdm symbols
+    unsigned int M = 64;                // number of subcarriers
+    unsigned int cp_len = 16;           // cyclic prefix length
+    unsigned int num_symbols_S0 = 2;    // number of S0 symbols
+    unsigned int num_symbols_S1 = 2;    // number of S0 symbols
+    unsigned int num_symbols_data = 8;  // number of data symbols
     modulation_scheme ms = MOD_QAM;
-    unsigned int bps     = 4;
-    float nstd  = 0.01f;    // noise standard deviation
+    unsigned int bps = 4;
+    float SNRdB = 30.0f;    // signal-to-noise ratio [dB]
     float phi   = 0.0f;     // phase offset
     float dphi  = 0.005f;   // frequency offset
 
-    // 
-    unsigned int frame_len = num_subcarriers + cp_len;
+    // derived values
+    unsigned int frame_len = M + cp_len;
+#if 0
+    unsigned int num_symbols = num_symbols_S0 +
+                               num_symbols_S1 +
+                               num_symbols_data;
+    unsigned int num_samples = frame_len*num_symbols;
+#else
+    unsigned int num_samples = (num_symbols_S0 + num_symbols_S1)*M +
+                                num_symbols_data * frame_len;
+#endif
+    float nstd = powf(10.0f, -SNRdB/10.0f);
 
-    //unsigned int num_samples = num_subcarriers * num_frames;
+    // initialize subcarrier allocation
+    unsigned int p[M];
+    ofdmframe_init_default_sctype(M, p);
 
-    // create synthesizer/analyzer objects
-    ofdmframegen fg = ofdmframegen_create(num_subcarriers, cp_len);
+    // create frame generator
+    ofdmframegen fg = ofdmframegen_create(M, cp_len, p);
     ofdmframegen_print(fg);
+
+    // create frame synchronizer
+    ofdmframesync fs = ofdmframesync_create(M, cp_len, p, callback, NULL);
+    ofdmframesync_print(fs);
 
     modem mod = modem_create(ms,bps);
 
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\nclose all;\n\n");
-    fprintf(fid,"num_subcarriers=%u;\n", num_subcarriers);
-    fprintf(fid,"cp_len=%u;\n", cp_len);
-    fprintf(fid,"frame_len=%u;\n", frame_len);
-
-    fprintf(fid,"X = zeros(1,num_subcarriers);\n");
-    fprintf(fid,"x = zeros(1,frame_len);\n");
-    fprintf(fid,"y = zeros(1,3*frame_len);\n");
-    fprintf(fid,"Y = zeros(1,num_subcarriers);\n");
-
-    ofdmframesync fs = ofdmframesync_create(num_subcarriers,cp_len,callback,(void*)(fid));
-    ofdmframesync_print(fs);
-
     unsigned int i;
-    float complex X[num_subcarriers];   // channelized symbols
-    float complex x[frame_len];         // time-domain symbol
-    float complex y[3*frame_len];       // time-domain samples (with noise)
+    float complex X[M];             // channelized symbols
+    float complex y[num_samples];   // output time series
 
-    unsigned int s;
-    for (i=0; i<num_subcarriers; i++) {
-        s = modem_gen_rand_sym(mod);
-        modem_modulate(mod,s,&X[i]);
+    unsigned int n=0;
+
+    // write short sequence(s)
+    for (i=0; i<num_symbols_S0; i++) {
+        ofdmframegen_write_S0(fg, &y[n]);
+        n += M;
     }
 
-    ofdmframegen_execute(fg,X,x);
-    for (i=0; i<frame_len; i++) y[i]            = 0.0f;
-    for (i=0; i<frame_len; i++) y[i+frame_len]  = x[i];
-    for (i=0; i<frame_len; i++) y[i+2*frame_len]= 0.0f;
+    // write long sequence(s)
+    for (i=0; i<num_symbols_S1; i++) {
+        ofdmframegen_write_S1(fg, &y[n]);
+        n += M;
+    }
+
+    // modulate data symbols
+    unsigned int s;
+    for (i=0; i<num_symbols_data; i++) {
+
+        unsigned int j;
+        for (j=0; j<M; j++) {
+            s = modem_gen_rand_sym(mod);
+            modem_modulate(mod,s,&X[j]);
+        }
+
+        ofdmframegen_writesymbol(fg, X, &y[n]);
+        n += frame_len;
+    }
 
     // add noise, carrier offset
-    float theta = phi;
-    for (i=0; i<3*frame_len; i++) {
-        cawgn(&y[i],nstd);
-        y[i] *= cexpf(_Complex_I*theta);
-        theta += dphi;
+    for (i=0; i<num_samples; i++) {
+        // add carrier offset
+        y[i] *= cexpf(_Complex_I*(phi + dphi*i));
+
+        // add channel gain
+        y[i] *= 0.1f;
+
+        // add noise
+        y[i] += nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
     }
 
-    ofdmframesync_execute(fs,y,3*frame_len);
+    // push noise into synchronizer
+    unsigned int d=1000;
+    for (i=0; i<d; i++) {
+        float complex z = nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
 
-    //
-    for (i=0; i<num_subcarriers; i++)
-        fprintf(fid,"X(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(X[i]), cimagf(X[i]));
+        ofdmframesync_execute(fs,&z,1);
+    }
 
-    //
-    for (i=0; i<frame_len; i++)
-        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-
-    //
-    for (i=0; i<3*frame_len; i++)
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
-
-    // print results
-    fprintf(fid,"\n\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"t=0:(frame_len-1);\n");
-    //fprintf(fid,"plot(t,real(x),t,imag(x));\n");
-    fprintf(fid,"ty=0:(3*frame_len-1);\n");
-    fprintf(fid,"plot(ty,real(y),ty,imag(y));\n");
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(Y,'x');\n");
-    fprintf(fid,"axis square;\n");
-    fprintf(fid,"xlabel('in phase');\n");
-    fprintf(fid,"ylabel('quadrature phase');\n");
-
-    fclose(fid);
-    printf("results written to %s\n", OUTPUT_FILENAME);
+    // execute synchronizer
+    ofdmframesync_execute(fs,y,num_samples);
 
     // destroy objects
     ofdmframegen_destroy(fg);
     ofdmframesync_destroy(fs);
     modem_destroy(mod);
+
+
+    // 
+    // export output file
+    //
+
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\nclose all;\n\n");
+    fprintf(fid,"M = %u;\n", M);
+    fprintf(fid,"cp_len = %u;\n", cp_len);
+    fprintf(fid,"num_samples = %u;\n", num_samples);
+    fprintf(fid,"y = zeros(1,num_samples);\n");
+
+    //
+    for (i=0; i<num_samples; i++)
+        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+
+    fprintf(fid,"\n\n");
+    fprintf(fid,"%% compute spectral periodigram\n");
+    fprintf(fid,"nfft=256;\n");
+    fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
+    //fprintf(fid,"H = 20*log10(abs(fftshift(fft(h,nfft))));\n");
+    fprintf(fid,"Y = zeros(1,nfft);\n");
+    fprintf(fid,"v0=1; v1=v0+round(nfft); k=0;\n");
+    fprintf(fid,"while v1 <= num_samples,\n");
+    fprintf(fid,"    Y += abs(fft(y(v0:[v1-1]).*hamming(v1-v0).',nfft))/(sqrt(nfft)*0.53910);\n");
+    fprintf(fid,"    v0 = v0 + round(nfft/4);\n");
+    fprintf(fid,"    v1 = v1 + round(nfft/4);\n");
+    fprintf(fid,"    k = k+1;\n");
+    fprintf(fid,"end;\n");
+    fprintf(fid,"Y = 20*log10(abs(fftshift(Y/k)));\n");
+    fprintf(fid,"figure;\n");
+    //fprintf(fid,"plot(f,Y,f,H);\n");
+    fprintf(fid,"plot(f,Y);\n");
+    fprintf(fid,"axis([-0.5 0.5 -40 10]);\n");
+    fprintf(fid,"xlabel('Normalized Frequency');\n");
+    fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
+    fprintf(fid,"title('Multipath channel response');\n");
+
+
+    // print results
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"t=0:(num_samples-1);\n");
+    fprintf(fid,"plot(t,real(y),t,imag(y));\n");
+    fprintf(fid,"xlabel('time');\n");
+    fprintf(fid,"ylabel('received signal');\n");
+
+    fclose(fid);
+    printf("results written to %s\n", OUTPUT_FILENAME);
 
     printf("done.\n");
     return 0;
@@ -123,11 +178,6 @@ static int callback(float complex * _X,
                     void * _userdata)
 {
     printf("**** callback invoked\n");
-    FILE * fid = (FILE*)_userdata;
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        fprintf(fid,"Y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(_X[i]), cimagf(_X[i]));
-
     return 0;
 }
 

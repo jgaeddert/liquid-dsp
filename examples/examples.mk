@@ -88,7 +88,6 @@ local_src	:=			\
 	nco_pll_modem_example.c		\
 	ofdmframe64gen_example.c	\
 	ofdmframe64sync_example.c	\
-	ofdmframegen_example.c		\
 	ofdmframesync_example.c		\
 	ofdmoqam_example.c		\
 	ofdmoqam_firpfbch_example.c	\
@@ -123,7 +122,9 @@ local_src	:=			\
 	symsynclp_crcf_example.c	\
 	wdelayf_example.c		\
 	windowf_example.c
-#	metadata_example.c		\
+
+#	metadata_example.c
+#	ofdmframegen_example.c
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
 

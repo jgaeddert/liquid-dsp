@@ -1521,9 +1521,37 @@ struct freqmodem_s {
 // MODULE : multicarrier
 //
 
+// ofdm frame (common)
+
+// generate short sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S0                 :   output symbol
+//  _M_S0               :   total number of enabled subcarriers in S0
+void ofdmframe_init_S0(unsigned int * _p,
+                       unsigned int _num_subcarriers,
+                       float complex * _S0,
+                       unsigned int * _M_S0);
+
+// generate long sequence symbols
+//  _p                  :   subcarrier allocation array
+//  _num_subcarriers    :   total number of subcarriers
+//  _S1                 :   output symbol
+//  _M_S1               :   total number of enabled subcarriers in S1
+void ofdmframe_init_S1(unsigned int * _p,
+                       unsigned int _num_subcarriers,
+                       float complex * _S1,
+                       unsigned int * _M_S1);
+
+
 void ofdmframesync_cpcorrelate(ofdmframesync _q);
 void ofdmframesync_findrxypeak(ofdmframesync _q);
 void ofdmframesync_rxpayload(ofdmframesync _q);
+
+void ofdmframesync_execute_plcpshort(ofdmframesync _q, float complex _x);
+void ofdmframesync_execute_plcplong0(ofdmframesync _q, float complex _x);
+void ofdmframesync_execute_plcplong1(ofdmframesync _q, float complex _x);
+void ofdmframesync_execute_rxsymbols(ofdmframesync _q, float complex _x);
 
 #define OFDMFRAME64_SCTYPE_NULL     0
 #define OFDMFRAME64_SCTYPE_PILOT    1

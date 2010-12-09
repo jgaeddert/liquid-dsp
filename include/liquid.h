@@ -3091,24 +3091,70 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
 
 
 
-// OFDM frame (symbol) generator
-typedef struct ofdmframegen_s * ofdmframegen;
-ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
-                                 unsigned int  _cp_len);
-                                 //unsigned int  _taper_len);
-void ofdmframegen_destroy(ofdmframegen _q);
-void ofdmframegen_print(ofdmframegen _q);
-void ofdmframegen_execute(ofdmframegen _q,
-                          liquid_float_complex * _x,
-                          liquid_float_complex *_y);
+#define OFDMFRAME_SCTYPE_NULL   0
+#define OFDMFRAME_SCTYPE_PILOT  1
+#define OFDMFRAME_SCTYPE_DATA   2
 
+// initialize default subcarrier allocation
+//  _M      :   number of subcarriers
+//  _p      :   output subcarrier allocation array, [size: _M x 1]
+void ofdmframe_init_default_sctype(unsigned int _M,
+                                   unsigned int * _p);
+
+// validate subcarrier type (count number of null, pilot, and data
+// subcarriers in the allocation)
+//  _p          :   subcarrier allocation array, [size: _M x 1]
+//  _M          :   number of subcarriers
+//  _M_null     :   output number of null subcarriers
+//  _M_pilot    :   output number of pilot subcarriers
+//  _M_data     :   output number of data subcarriers
+void ofdmframe_validate_sctype(unsigned int * _p,
+                               unsigned int _M,
+                               unsigned int * _M_null,
+                               unsigned int * _M_pilot,
+                               unsigned int * _M_data);
+
+
+// 
+// OFDM frame (symbol) generator
+//
+typedef struct ofdmframegen_s * ofdmframegen;
+
+// create OFDM framing generator object
+//  _M      :   number of subcarriers, >10 typical
+//  _cp_len :   cyclic prefix length
+//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+ofdmframegen ofdmframegen_create(unsigned int _M,
+                                 unsigned int  _cp_len,
+                                 unsigned int * _p);
+                                 //unsigned int  _taper_len);
+
+void ofdmframegen_destroy(ofdmframegen _q);
+
+void ofdmframegen_print(ofdmframegen _q);
+
+void ofdmframegen_reset(ofdmframegen _q);
+
+void ofdmframegen_write_S0(ofdmframegen _q,
+                           liquid_float_complex *_y);
+
+void ofdmframegen_write_S1(ofdmframegen _q,
+                           liquid_float_complex *_y);
+
+void ofdmframegen_writesymbol(ofdmframegen _q,
+                              liquid_float_complex * _x,
+                              liquid_float_complex *_y);
+
+// 
 // OFDM frame (symbol) synchronizer
+//
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
                                       unsigned int _n,
                                       void * _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
 ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
                                    unsigned int  _cp_len,
+                                   unsigned int * _p,
                                    //unsigned int  _taper_len,
                                    ofdmframesync_callback _callback,
                                    void * _userdata);

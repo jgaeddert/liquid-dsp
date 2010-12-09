@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2010 Joseph Gaeddert
+ * Copyright (c) 2010 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -19,110 +19,229 @@
  */
 
 //
+// ofdmframegen.c
 //
+// OFDM frame generator
 //
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFRAMEGEN                  1
-#define OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS    (8)
+#if HAVE_FFTW3_H
+#   include <fftw3.h>
+#endif
+
+#define DEBUG_OFDMFRAMEGEN            1
 
 struct ofdmframegen_s {
-    unsigned int num_subcarriers;
-    unsigned int cp_len;
+    unsigned int M;         // number of subcarriers
+    unsigned int cp_len;    // cyclic prefix length
+    unsigned int * p;       // subcarrier allocation (null, pilot, data)
 
+    // constants
+    unsigned int M_null;    // number of null subcarriers
+    unsigned int M_pilot;   // number of pilot subcarriers
+    unsigned int M_data;    // number of data subcarriers
+    unsigned int M_S0;      // number of enabled subcarriers in S0
+    unsigned int M_S1;      // number of enabled subcarriers in S1
+
+    // scaling factors
+    float g_data;           //
+    float g_S0;             //
+    float g_S1;             //
+
+    // transform object
+    FFT_PLAN ifft;          // ifft object
+    float complex * X;      // frequency-domain buffer
     float complex * x;      // time-domain buffer
-    float complex * X;      // freq-domain buffer
 
-    float complex * xcp;    // cyclic prefix pointer (not allocated)
+    // PLCP
+    float complex * S0;     // short sequence
+    float complex * S1;     // long sequence
 
-    FFT_PLAN fft;
-
-    float zeta;             // fft scaling factor
+    // pilot sequence
+    msequence ms_pilot;
 };
 
-ofdmframegen ofdmframegen_create(unsigned int _num_subcarriers,
-                                 unsigned int _cp_len)
+ofdmframegen ofdmframegen_create(unsigned int _M,
+                                 unsigned int _cp_len,
+                                 unsigned int * _p)
 {
-    ofdmframegen q = (ofdmframegen) malloc(sizeof(struct ofdmframegen_s));
-
-    // error-checking
-    if (_num_subcarriers < OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS) {
-        printf("error: ofdmframegen_create(), num_subcarriers (%u) below minimum (%u)\n",
-                _num_subcarriers, OFDMFRAMEGEN_MIN_NUM_SUBCARRIERS);
-        exit(1);
-    } else if (_cp_len < 1) {
-        printf("error: ofdmframegen_create(), cp_len must be greater than 0\n");
-        exit(1);
-    } else if (_cp_len > _num_subcarriers) {
-        printf("error: ofdmframegen_create(), cp_len (%u) must be less than number of subcarriers(%u)\n",
-                _cp_len, _num_subcarriers);
+    // validate input
+    if (_M < 2) {
+        fprintf(stderr,"error: ofdmframesync_create(), number of subcarriers must be at least 2\n");
         exit(1);
     }
 
-    q->num_subcarriers = _num_subcarriers;
+    ofdmframegen q = (ofdmframegen) malloc(sizeof(struct ofdmframegen_s));
+    q->M = _M;
     q->cp_len = _cp_len;
 
-    // allocate memory for buffers
-    q->x = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
-    q->X = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
+    // allocate memory for subcarrier allocation IDs
+    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    if (_p == NULL) {
+        // initialize default subcarrier allocation
+        ofdmframe_init_default_sctype(q->M, q->p);
+    } else {
+        // copy user-defined subcarrier allocation
+        memmove(q->p, _p, q->M*sizeof(unsigned int));
+    }
 
-    q->fft = FFT_CREATE_PLAN(q->num_subcarriers, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
+    // validate and count subcarrier allocation
+    ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
+    if ( (q->M_pilot + q->M_data) == 0) {
+        fprintf(stderr,"error: ofdmframegen_create(), must have at least one enabled subcarrier\n");
+        exit(1);
+    }
 
-    q->zeta = 1.0f / sqrtf((float)(q->num_subcarriers));
+    // allocate memory for transform objects
+    q->X = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->ifft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
 
-    // set cyclic prefix array pointer
-    q->xcp = &(q->x[q->num_subcarriers - q->cp_len]);
+    // allocate memory for PLCP arrays
+    q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
+    ofdmframe_init_S0(q->p, q->M, q->S0, &q->M_S0);
+    ofdmframe_init_S1(q->p, q->M, q->S1, &q->M_S1);
+
+    // compute scaling factors
+    q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
+    q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
+    q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
+#if 1
+    q->g_data /= sqrtf(q->M);
+    q->g_S0   /= sqrtf(q->M);
+    q->g_S1   /= sqrtf(q->M);
+#endif
+
+    // set pilot sequence
+    q->ms_pilot = msequence_create(8);
 
     return q;
 }
 
 void ofdmframegen_destroy(ofdmframegen _q)
 {
-    free(_q->x);
-    free(_q->X);
+    // free transform object memory
+    //
 
-    FFT_DESTROY_PLAN(_q->fft);
+    // free subcarrier type array memory
+    free(_q->p);
+
+    // free transform array memory
+    free(_q->X);
+    free(_q->x);
+    FFT_DESTROY_PLAN(_q->ifft);
+
+    // free PLCP memory arrays
+    free(_q->S0);
+    free(_q->S1);
+
+    // free pilot msequence object memory
+    msequence_destroy(_q->ms_pilot);
+
+    // free main object memory
     free(_q);
 }
 
 void ofdmframegen_print(ofdmframegen _q)
 {
     printf("ofdmframegen:\n");
-    printf("    num subcarriers     :   %u\n", _q->num_subcarriers);
-    printf("    cyclic prefix len   :   %u (%6.2f%%)\n",
-                    _q->cp_len,
-                    100.0f*(float)(_q->cp_len)/(float)(_q->num_subcarriers));
+    printf("    num subcarriers     :   %-u\n", _q->M);
+    printf("      - NULL            :   %-u\n", _q->M_null);
+    printf("      - pilot           :   %-u\n", _q->M_pilot);
+    printf("      - data            :   %-u\n", _q->M_data);
+    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
 }
 
-void ofdmframegen_clear(ofdmframegen _q)
+void ofdmframegen_reset(ofdmframegen _q)
 {
 }
 
-void ofdmframegen_execute(ofdmframegen _q,
-                          float complex * _x,
-                          float complex * _y)
+void ofdmframegen_write_S0(ofdmframegen _q,
+                           float complex * _y)
 {
-    // move frequency data to internal buffer
-    memmove(_q->X, _x, (_q->num_subcarriers)*sizeof(float complex));
+    // move short sequence to freq-domain buffer
+    memmove(_q->X, _q->S0, (_q->M)*sizeof(float complex));
 
-    // execute inverse fft, store in buffer _q->x
-    FFT_EXECUTE(_q->fft);
-
-    // scaling
+    // apply gain
     unsigned int i;
-    for (i=0; i<_q->num_subcarriers; i++)
-        _q->x[i] *= _q->zeta;
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->g_S0;
 
-    // copy cyclic prefix
-    memmove(_y, _q->xcp, (_q->cp_len)*sizeof(float complex));
+    // execute transform
+    FFT_EXECUTE(_q->ifft);
 
-    // copy remainder of signal
-    memmove(&_y[_q->cp_len], _q->x, (_q->num_subcarriers)*sizeof(float complex));
+    // copy result to output
+    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
 }
+
+
+void ofdmframegen_write_S1(ofdmframegen _q,
+                           float complex * _y)
+{
+    // move long sequence to freq-domain buffer
+    memmove(_q->X, _q->S1, (_q->M)*sizeof(float complex));
+
+    // apply gain
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->g_S1;
+
+    // execute transform
+    FFT_EXECUTE(_q->ifft);
+
+    // copy result to output
+#if 0
+    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
+    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
+#else
+    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
+#endif
+}
+
+
+// write OFDM symbol
+//  _q      :   framging generator object
+//  _x      :   input symbols, [size: _M x 1]
+//  _y      :   output samples, [size: _M x 1]
+void ofdmframegen_writesymbol(ofdmframegen _q,
+                              float complex * _x,
+                              float complex * _y)
+{
+    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
+
+    // move frequency data to internal buffer
+    unsigned int i;
+    int sctype;
+    for (i=0; i<_q->M; i++) {
+        sctype = _q->p[i];
+        if (sctype==OFDMFRAME_SCTYPE_NULL) {
+            // disabled subcarrier
+            _q->X[i] = 0.0f;
+        } else if (sctype==OFDMFRAME_SCTYPE_PILOT) {
+            // pilot subcarrier
+            _q->X[i] = (pilot_phase ? 1.0f : -1.0f) * _q->g_data;
+        } else {
+            // data subcarrier
+            _q->X[i] = _x[i] * _q->g_data;
+        }
+
+        //printf("X[%3u] = %12.8f + j*%12.8f;\n",i+1,crealf(_q->X[i]),cimagf(_q->X[i]));
+    }
+
+    // execute transform
+    FFT_EXECUTE(_q->ifft);
+
+    // copy result to output
+    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
+    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
+}
+
 
