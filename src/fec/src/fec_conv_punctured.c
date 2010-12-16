@@ -58,8 +58,8 @@ fec fec_conv_punctured_create(fec_scheme _fs)
     case FEC_CONV_V29P67:   fec_conv_init_v29p67(q);    break;
     case FEC_CONV_V29P78:   fec_conv_init_v29p78(q);    break;
     default:
-        printf("error: fec_conv_punctured_create(), invalid type\n");
-        exit(0);
+        fprintf(stderr,"error: fec_conv_punctured_create(), invalid type\n");
+        exit(1);
     }
 
     // convolutional-specific decoding

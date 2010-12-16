@@ -112,8 +112,8 @@ INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
         design_rrc_filter(s->k, s->m, s->beta, s->dt, h);
         break;
     default:
-        printf("error: interp_create_prototype(), unknown/unsupported prototype\n");
-        exit(0);
+        fprintf(stderr,"error: interp_create_prototype(), unknown/unsupported prototype\n");
+        exit(1);
     }
 
     // copy filter into type-specific array

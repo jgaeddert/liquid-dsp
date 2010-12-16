@@ -60,7 +60,7 @@ NCO() NCO(_create)(liquid_ncotype _type)
         q->compute_sincos = &NCO(_compute_sincos_vco);
     } else {
         fprintf(stderr,"error: NCO(_create)(), unknown type : %u\n", q->type);
-        exit(0);
+        exit(1);
     }
 
     return q;

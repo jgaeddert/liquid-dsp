@@ -39,11 +39,11 @@ freqmodem freqmodem_create(float _m,
     fm->m = _m;
     fm->fc = _fc;
     if (fm->m <= 0.0f || fm->m > 2.0f*M_PI) {
-        printf("error: freqmodem_create(), modulation index %12.4e out of range (0,2*pi)\n", fm->m);
-        exit(0);
+        fprintf(stderr,"error: freqmodem_create(), modulation index %12.4e out of range (0,2*pi)\n", fm->m);
+        exit(1);
     } else if (fm->fc <= -M_PI || fm->fc >= M_PI) {
-        printf("error: freqmodem_create(), carrier frequency %12.4e out of range (-pi,pi)\n", fm->fc);
-        exit(0);
+        fprintf(stderr,"error: freqmodem_create(), carrier frequency %12.4e out of range (-pi,pi)\n", fm->fc);
+        exit(1);
     }
 
     fm->m_inv = 1.0f / fm->m;

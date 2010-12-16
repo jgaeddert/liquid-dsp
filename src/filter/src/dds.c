@@ -85,8 +85,8 @@ DDS() DDS(_create)(unsigned int _num_stages,
 
     // error checking
     if (q->fc0 > 0.5f || q->fc0 < -0.5f) {
-        printf("error: dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]\n", q->fc0);
-        exit(0);
+        fprintf(stderr,"error: dds_xxxf_create(), frequency %12.4e is out of range [-0.5,0.5]\n", q->fc0);
+        exit(1);
     }
 
     // allocate memory for filter properties

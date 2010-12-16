@@ -30,7 +30,7 @@ void MATRIX(_inv)(T * _X, unsigned int _XR, unsigned int _XC)
     // ensure lengths are valid
     if (_XR != _XC ) {
         fprintf(stderr, "error: matrix_inv(), invalid dimensions\n");
-        exit(0);
+        exit(1);
     }
 
     // X:

@@ -90,14 +90,14 @@ void design_rrc_filter(
     unsigned int h_len;
 
     if ( _k < 1 ) {
-        printf("error: design_rrc_filter(): k must be greater than 0\n");
-        exit(0);
+        fprintf(stderr,"error: design_rrc_filter(): k must be greater than 0\n");
+        exit(1);
     } else if ( _m < 1 ) {
-        printf("error: design_rrc_filter(): m must be greater than 0\n");
-        exit(0);
+        fprintf(stderr,"error: design_rrc_filter(): m must be greater than 0\n");
+        exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        printf("error: design_rrc_filter(): beta must be in [0,1]\n");
-        exit(0);
+        fprintf(stderr,"error: design_rrc_filter(): beta must be in [0,1]\n");
+        exit(1);
     } else;
 
     unsigned int n;

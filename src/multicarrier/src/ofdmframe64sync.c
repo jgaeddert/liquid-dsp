@@ -299,8 +299,8 @@ void ofdmframe64sync_debug_print(ofdmframe64sync _q)
 #if DEBUG_OFDMFRAME64SYNC
     FILE * fid = fopen(DEBUG_OFDMFRAME64SYNC_FILENAME,"w");
     if (!fid) {
-        printf("error: ofdmframe64_debug_print(), could not open file for writing\n");
-        return;
+        fprintf(stderr,"error: ofdmframe64_debug_print(), could not open file for writing\n");
+        exit(1);
     }
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAME64SYNC_FILENAME);
     fprintf(fid,"close all;\n");
@@ -647,11 +647,11 @@ void ofdmframe64sync_smooth_gain(ofdmframe64sync _q,
 
     // validate inputs
     if (_alpha < 0.0f) {
-        printf("error: ofdmframe64sync_smooth_gain(), smoothing factor is negative\n");
-        exit(0);
+        fprintf(stderr,"error: ofdmframe64sync_smooth_gain(), smoothing factor is negative\n");
+        exit(1);
     } else if (_range > 32) {
-        printf("error: ofdmframe64sync_smooth_gain(), range is too large\n");
-        exit(0);
+        fprintf(stderr,"error: ofdmframe64sync_smooth_gain(), range is too large\n");
+        exit(1);
     }
 
     float complex G_hat[64];// temporary gain array

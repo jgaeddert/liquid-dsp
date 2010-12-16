@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_RKAISER 1
+#define DEBUG_RKAISER 0
 
 // design_rkaiser_filter()
 //
@@ -131,10 +131,10 @@ float rkaiser_approximate_rho(unsigned int _m,
 {
     if ( _m < 1 ) {
         fprintf(stderr,"error: rkaiser_approximate_rho(): m must be greater than 0\n");
-        exit(0);
+        exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
         fprintf(stderr,"error: rkaiser_approximate_rho(): beta must be in [0,1]\n");
-        exit(0);
+        exit(1);
     } else;
 
     // compute bandwidth adjustment estimate

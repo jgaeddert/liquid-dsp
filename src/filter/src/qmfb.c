@@ -117,8 +117,8 @@ QMFB() QMFB(_create)(unsigned int _h_len, float _beta, int _type)
             q->h0[n] = conj(h_prim[n]);
             q->h1[n] = conj(h_prim[i]) * ((n%2)==0 ? 1.0f : -1.0f);
         } else {
-            printf("error: qmfb_xxxt_create(), unknown type %d\n", q->type);
-            exit(0);
+            fprintf(stderr,"error: qmfb_xxxt_create(), unknown type %d\n", q->type);
+            exit(1);
         }
     }
 

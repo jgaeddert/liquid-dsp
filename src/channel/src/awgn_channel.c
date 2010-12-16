@@ -55,8 +55,8 @@ void awgn_channel_execute(awgn_channel _q, float complex _x, float complex *_y)
 void awgn_channel_set_noise_variance(awgn_channel _q, float _nvar)
 {
     if (_nvar < 0) {
-        printf("error: awgn_channel_set_noise_variance(), variance is negative\n");
-        exit(0);
+        fprintf(stderr,"error: awgn_channel_set_noise_variance(), variance is negative\n");
+        exit(1);
     }
 
     _q->nvar = _nvar;

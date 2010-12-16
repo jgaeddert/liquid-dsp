@@ -48,8 +48,8 @@ fec fec_rs_create(fec_scheme _fs)
     switch (q->scheme) {
     case FEC_RS_M8: fec_rs_init_p8(q);   break;
     default:
-        printf("error: fec_rs_create(), invalid type\n");
-        exit(0);
+        fprintf(stderr,"error: fec_rs_create(), invalid type\n");
+        exit(1);
     }
 
     // initialize basic parameters

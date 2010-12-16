@@ -28,7 +28,9 @@
 //      IEEE Transactions on Acoustics, Speech, and Signal
 //      Processing, vol. ASSP-28, no. 1, pp. 105--107,
 //      February, 1980.
-//
+//  [harris:1978] frederic j. harris, "On the Use of Windows for Harmonic
+//      Analysis with the Discrete Fourier Transform," Proceedings of the
+//      IEEE, vol. 66, no. 1, January, 1978.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -147,7 +149,7 @@ unsigned int liquid_nextpow2(unsigned int _x)
 {
     if (_x == 0) {
         fprintf(stderr,"error: liquid_nextpow2(), input must be greater than zero\n");
-        exit(0);
+        exit(1);
     }
 
     _x--;
@@ -328,7 +330,7 @@ float hann(unsigned int _n, unsigned int _N)
     return 0.5f - 0.5f*cosf( (2*M_PI*(float)_n) / ((float)(_N-1)) );
 }
 
-// Blackman-harris window
+// Blackman-harris window [harris:1978]
 float blackmanharris(unsigned int _n, unsigned int _N)
 {
     // TODO test this function

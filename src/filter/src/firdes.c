@@ -45,10 +45,10 @@ unsigned int estimate_req_filter_len(float _df,
 {
     if (_df > 0.5f || _df <= 0.0f) {
         fprintf(stderr,"error: estimate_req_filter_len(), invalid bandwidth : %f\n", _df);
-        exit(0);
+        exit(1);
     } else if (_As <= 0.0f) {
         fprintf(stderr,"error: estimate_req_filter_len(), invalid stopband level : %f\n", _As);
-        exit(0);
+        exit(1);
     }
 
     // compute delta_1, delta_2
@@ -103,14 +103,14 @@ void fir_kaiser_window(unsigned int _n,
 {
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f) {
-        printf("error: fir_kaiser_window(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
-        exit(0);
+        fprintf(stderr,"error: fir_kaiser_window(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
+        exit(1);
     } else if (_fc < 0.0f || _fc > 1.0f) {
-        printf("error: fir_kaiser_window(), cutoff frequency (%12.4e) out of range [0.0,1.0]\n", _fc);
-        exit(0);
+        fprintf(stderr,"error: fir_kaiser_window(), cutoff frequency (%12.4e) out of range [0.0,1.0]\n", _fc);
+        exit(1);
     } else if (_n == 0) {
-        printf("error: fir_kaiser_window(), filter length must be greater than zero\n");
-        exit(0);
+        fprintf(stderr,"error: fir_kaiser_window(), filter length must be greater than zero\n");
+        exit(1);
     }
 
     // chooise kaiser beta parameter (approximate)

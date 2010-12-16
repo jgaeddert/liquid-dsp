@@ -51,14 +51,14 @@ void design_hM3_filter(unsigned int _k,
                        float * _h)
 {
     if ( _k < 2 ) {
-        printf("error: design_hM3_filter(): k must be greater than 1\n");
-        exit(0);
+        fprintf(stderr,"error: design_hM3_filter(): k must be greater than 1\n");
+        exit(1);
     } else if ( _m < 1 ) {
-        printf("error: design_hM3_filter(): m must be greater than 0\n");
-        exit(0);
+        fprintf(stderr,"error: design_hM3_filter(): m must be greater than 0\n");
+        exit(1);
     } else if ( (_beta < 0.0f) || (_beta > 1.0f) ) {
-        printf("error: design_hM3_filter(): beta must be in [0,1]\n");
-        exit(0);
+        fprintf(stderr,"error: design_hM3_filter(): beta must be in [0,1]\n");
+        exit(1);
     } else;
 
     unsigned int n=2*_k*_m+1;       // filter length
