@@ -42,6 +42,37 @@ unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
                 fec_get_enc_msg_length(_fec0, _n+4) );
 }
 
+// computes the number of decoded bytes before packetizing
+//
+//  _k      :   number of encoded bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
+                                            int _fec0,
+                                            int _fec1)
+{
+    unsigned int n_hat = 0;
+    unsigned int k_hat = 0;
+
+    // check for zero-length packet
+    // TODO : implement faster method
+    while (k_hat < _k) {
+        // compute encoded packet length
+        k_hat = packetizer_compute_enc_msg_len(n_hat, _fec0, _fec1);
+
+        //
+        if (k_hat == _k)
+            return n_hat;
+        else if (k_hat > _k)
+            return n_hat;   // TODO : check this special condition
+        else
+            n_hat++;
+    }
+
+    return 0;
+}
+
+
 // packetizer_create()
 //
 // create packetizer object

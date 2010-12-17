@@ -2277,6 +2277,15 @@ unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
                                             int _fec0,
                                             int _fec1);
 
+// computes the number of decoded bytes before packetizing
+//
+//  _k      :   number of encoded bytes
+//  _fec0   :   inner forward error-correction code
+//  _fec1   :   outer forward error-correction code
+unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
+                                            int _fec0,
+                                            int _fec1);
+
 typedef struct packetizer_s * packetizer;
 
 // packetizer_create()
