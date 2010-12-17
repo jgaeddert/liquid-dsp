@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,18 +18,33 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PACKETIZER_AUTOTEST_H__
-#define __PACKETIZER_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
+
+// AUTOTEST : test packet length computation
+void autotest_packetizer_length()
+{
+    // coding schemes
+    fec_scheme fec0 = FEC_CONV_V27;
+    fec_scheme fec1 = FEC_REP3;
+    unsigned int n = 10;  // decoded message length
+
+    // compute encoded message length
+    unsigned int k = packetizer_compute_enc_msg_len(n, fec0, fec1);
+
+    // estimate decoded message length
+    unsigned int m = packetizer_compute_dec_msg_len(k, fec0, fec1);
+
+    // ensure n==m
+    CONTEND_EQUALITY(n, m);
+}
 
 // Help function to keep code base small
 void packetizer_test_codec(unsigned int _n, fec_scheme _fec0, fec_scheme _fec1)
 {
     unsigned char msg_tx[_n];
     unsigned char msg_rx[_n];
-    unsigned int pkt_len = packetizer_get_packet_length(_n,_fec0,_fec1);
+    unsigned int pkt_len = packetizer_compute_enc_msg_len(_n,_fec0,_fec1);
     unsigned char packet[pkt_len];
 
     // create object
@@ -78,6 +93,4 @@ void autotest_packetizer_n16_1_2()  { packetizer_test_codec(16,ft[1],ft[2]); }
 void autotest_packetizer_n16_2_0()  { packetizer_test_codec(16,ft[2],ft[0]); }
 void autotest_packetizer_n16_2_1()  { packetizer_test_codec(16,ft[2],ft[1]); }
 void autotest_packetizer_n16_2_2()  { packetizer_test_codec(16,ft[2],ft[2]); }
-
-#endif 
 

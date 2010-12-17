@@ -208,7 +208,7 @@ void design_rkaiser_filter_internal(unsigned int _k,
     // bandwidth adjustment array (3 points makes a parabola)
     float x0 = rho_hat*0.9f;
     float x1;
-    float x2 = rho_hat*1.1f;
+    float x2 = 1.0f - 0.9f*(1-rho_hat);
 
     // evaluate performance (ISI) of each bandwidth adjustment
     float y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
@@ -241,6 +241,10 @@ void design_rkaiser_filter_internal(unsigned int _k,
 
         // compute new estimate
         x_hat = 0.5f * t0 / t1;
+        
+        // ensure x_hat is in (0,1)
+        if (x_hat < 0) x_hat = 0;
+        if (x_hat > 1) x_hat = 1;
 
         // search index of maximum
         if (x_hat > x1) {
@@ -286,6 +290,13 @@ float design_rkaiser_filter_internal_isi(unsigned int _k,
                                          float _rho,
                                          float * _h)
 {
+    // validate input
+    if (_rho < 0.0f) {
+        fprintf(stderr,"warning: design_rkaiser_filter_internal_isi(), rho < 0\n");
+    } else if (_rho > 1.0f) {
+        fprintf(stderr,"warning: design_rkaiser_filter_internal_isi(), rho > 1\n");
+    }
+
     unsigned int n=2*_k*_m+1;           // filter length
     float gamma = _rho * _beta;         // un-normalized correction factor
     float kf = (float)_k;               // samples/symbol (float)
