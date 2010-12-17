@@ -29,16 +29,14 @@
 
 #include "liquid.internal.h"
 
-// packetizer_get_packet_length()
-//
-// returns the length of encoded bytes after packetizing
+// computes the number of encoded bytes after packetizing
 //
 //  _n      :   number of uncoded input bytes
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
-unsigned int packetizer_get_packet_length(unsigned int _n,
-                                          int _fec0,
-                                          int _fec1)
+unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
+                                            int _fec0,
+                                            int _fec1)
 {
     return fec_get_enc_msg_length(_fec1,
                 fec_get_enc_msg_length(_fec0, _n+4) );
@@ -58,7 +56,7 @@ packetizer packetizer_create(unsigned int _n,
     packetizer p = (packetizer) malloc(sizeof(struct packetizer_s));
 
     p->msg_len = _n;
-    p->packet_len = packetizer_get_packet_length(_n, _fec0, _fec1);
+    p->packet_len = packetizer_compute_enc_msg_len(_n, _fec0, _fec1);
 
     // allocate memory for buffers
     p->buffer_len = p->packet_len;

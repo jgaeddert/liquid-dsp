@@ -29,7 +29,7 @@ void packetizer_test_codec(unsigned int _n, fec_scheme _fec0, fec_scheme _fec1)
 {
     unsigned char msg_tx[_n];
     unsigned char msg_rx[_n];
-    unsigned int pkt_len = packetizer_get_packet_length(_n,_fec0,_fec1);
+    unsigned int pkt_len = packetizer_compute_enc_msg_len(_n,_fec0,_fec1);
     unsigned char packet[pkt_len];
 
     // create object

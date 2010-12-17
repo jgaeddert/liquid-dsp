@@ -77,7 +77,7 @@ int main(int argc, char*argv[]) {
     }
 
     unsigned int i;
-    unsigned int k = packetizer_get_packet_length(n,fec0,fec1);
+    unsigned int k = packetizer_compute_enc_msg_len(n,fec0,fec1);
     packetizer p = packetizer_create(n,fec0,fec1);
     packetizer_print(p);
 
