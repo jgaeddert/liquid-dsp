@@ -272,7 +272,7 @@ void design_rkaiser_filter_internal(unsigned int _k,
     for (i=0; i<n; i++) _h[i] *= sqrtf(_k/e2);
 
     // save trasition bandwidth adjustment
-    *_rho = rho_hat;
+    *_rho = x_hat;
 }
 
 // compute filter coefficients and determine resulting ISI
