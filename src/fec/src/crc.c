@@ -61,10 +61,10 @@ unsigned int crc_get_length(crc_scheme _scheme)
     switch (_scheme) {
     case CRC_UNKNOWN:   return 0;
     case CRC_NONE:      return 0;
-    case CRC_CHECKSUM:  return 2;
-    case CRC_8:         return 2;
-    case CRC_16:        return 4;
-    case CRC_32:        return 8;
+    case CRC_CHECKSUM:  return 1;
+    case CRC_8:         return 1;
+    case CRC_16:        return 2;
+    case CRC_32:        return 4;
     default:
         fprintf(stderr,"error: crc_get_length(), unknown/unsupported scheme: %d\n", _scheme);
         exit(1);
