@@ -23,12 +23,10 @@
 // ga_search.c
 //
 
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <float.h>
 
 #include "liquid.internal.h"
 
@@ -98,7 +96,6 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
 
     // create optimum chromosome (clone)
     ga->c = chromosome_create_clone(_parent);
-    ga->utility_opt = ga->minimize ? FLT_MAX : -FLT_MAX;
 
     //printf("num_parameters: %d\n", ga->num_parameters);
     //printf("population_size: %d\n", ga->population_size);
@@ -119,6 +116,10 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     // rank chromosomes
     ga_search_rank(ga);
 
+    // set global utility optimum
+    ga->utility_opt = ga->utility[0];
+
+    // return object
     return ga;
 }
 
@@ -163,6 +164,46 @@ void ga_search_set_mutation_rate(ga_search _g,
     }
 
     _g->mutation_rate = _mutation_rate;
+
+// set population/selection size
+void ga_search_set_population_size(ga_search _g,
+                                   unsigned int _population_size,
+                                   unsigned int _selection_size)
+{
+    // validate input
+    if (_population_size < 2) {
+        fprintf(stderr,"error: ga_search_set_population_size(), population must be at least 2\n");
+        exit(1);
+    } else if (_selection_size == 0) {
+        fprintf(stderr,"error: ga_search_set_population_size(), selection size must be greater than zero\n");
+        exit(1);
+    } else if (_selection_size >= _population_size) {
+        fprintf(stderr,"error: ga_search_set_population_size(), selection size must be less than population\n");
+        exit(1);
+    }
+
+    // re-size arrays
+    _g->population = (chromosome*) realloc( _g->population, _population_size*sizeof(chromosome) );
+    _g->utility = (float*) realloc( _g->utility, _population_size*sizeof(float) );
+
+    // initialize new chromosomes (copies)
+    if (_population_size > _g->population_size) {
+
+        unsigned int i;
+        unsigned int k = _g->population_size-1; // least optimal
+
+        for (i=_g->population_size; i<_population_size; i++) {
+            // clone chromosome, copying internal values
+            _g->population[i] = chromosome_create_clone(_g->population[k]);
+
+            // copy utility
+            _g->utility[i] = _g->utility[k];
+        }
+    }
+
+    // set internal variables
+    _g->population_size = _population_size;
+    _g->selection_size  = _selection_size;
 }
 
 // Execute the search
