@@ -2186,12 +2186,15 @@ void framesync64_set_csma_callbacks(framesync64 _fs,
 
 // frame generator
 typedef struct {
-    unsigned int rampup_len;
-    unsigned int phasing_len;
-    unsigned int payload_len;
-    unsigned int mod_scheme;
-    unsigned int mod_bps;
-    unsigned int rampdn_len;
+    unsigned int rampup_len;    // number of ramp/up symbols
+    unsigned int phasing_len;   // number of phasing symbols
+    unsigned int payload_len;   // uncoded payload length (bytes)
+    unsigned int check;         // data validity check
+    unsigned int fec0;          // forward error-correction scheme (inner)
+    unsigned int fec1;          // forward error-correction scheme (outer)
+    unsigned int mod_scheme;    // modulation scheme
+    unsigned int mod_bps;       // modulation depth (bits/symbol)
+    unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
 typedef struct flexframegen_s * flexframegen;
 flexframegen flexframegen_create(flexframegenprops_s * _props);

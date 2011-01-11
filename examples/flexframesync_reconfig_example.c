@@ -137,12 +137,15 @@ int main(int argc, char *argv[]) {
     unsigned int j;
     for (j=0; j<num_frames; j++) {
         // configure frame generator properties
-        fgprops.rampup_len =    64;
-        fgprops.phasing_len =   64;
-        fgprops.payload_len =   (rand() % 256) + 1;     // random payload length
-        fgprops.mod_scheme =    MOD_PSK;                // PSK
-        fgprops.mod_bps =       (rand() % 4) + 1;       // random bits/symbol
-        fgprops.rampdn_len =    64;
+        fgprops.rampup_len  = 64;
+        fgprops.phasing_len = 64;
+        fgprops.payload_len = (rand() % 256) + 1;     // random payload length
+        fgprops.check       = CRC_NONE;
+        fgprops.fec0        = FEC_NONE;
+        fgprops.fec1        = FEC_NONE;
+        fgprops.mod_scheme  = MOD_PSK;                // PSK
+        fgprops.mod_bps     = (rand() % 4) + 1;       // random bits/symbol
+        fgprops.rampdn_len  = 64;
 
         // set properties
         flexframegen_setprops(fg, &fgprops);

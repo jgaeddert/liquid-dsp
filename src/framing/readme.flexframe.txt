@@ -4,7 +4,7 @@
 
 signal
   ^
-  |     .+---------+-----+--------+---------+.
+  |     .+---------+-----+--------+----//---+.
   |    / |         |     |        |         | \
   |  r/u | phasing | p/n | header | payload | r\d
   |__/   |         |     |        |         |   \__
@@ -16,11 +16,12 @@ phasing pattern     0+              10101010...
 p/n sequence        64              BPSK P/N sequence
 header              256
                     # bytes
-    crc             4               cyclic redundancy check
+    crc             2               cyclic redundancy check
+    packet fec      2               payload fec (inner/outer), check
     mod scheme/bps  1               modulation scheme, depth
-    payload_len     2               # bytes in payload (up to 65536)
+    payload_len     2               # bytes in payload (up to 65535)
     user data       14              space for user-defined data
-    total           17
+    total           19
     encoded         32              Hamming(12,8)
 payload             [variable]      data payload using arbitrary linear
                                     modulation
