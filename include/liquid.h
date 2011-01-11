@@ -3574,6 +3574,10 @@ void ga_search_destroy(ga_search);
 // print search parameter internals
 void ga_search_print(ga_search);
 
+// set mutation rate
+void ga_search_set_mutation_rate(ga_search,
+                                 float _mutation_rate);
+
 // Execute the search
 //  _g              :   ga search object
 //  _max_iterations :   maximum number of iterations to run before bailing
