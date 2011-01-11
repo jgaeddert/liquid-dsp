@@ -377,14 +377,14 @@ float liquid_unwrapcf_iterative_median_step(float * _t,
 
 // checksum / cyclic redundancy check (crc)
 
-#define CRC32_POLY 0x04C11DB7
-extern unsigned char crc32_tab[256];
+#define CRC8_POLY 0x07
 unsigned char reverse_byte(unsigned char _x);
-unsigned int reverse_uint32(unsigned int _x);
 
 #define CRC16_POLY 0x8005
-extern unsigned char crc16_tab[256];
 unsigned int reverse_uint16(unsigned int _x);
+
+#define CRC32_POLY 0x04C11DB7
+unsigned int reverse_uint32(unsigned int _x);
 
 // fec : basic object
 struct fec_s {

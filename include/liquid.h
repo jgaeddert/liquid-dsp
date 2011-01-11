@@ -726,15 +726,25 @@ int checksum_validate_message(unsigned char *_data,
 //
 // crc (cyclic redundancy check)
 //
-unsigned int crc32_generate_key(unsigned char *_data,
-                                unsigned int _n);
-int crc32_validate_message(unsigned char *_data,
-                           unsigned int _n,
-                           unsigned int _key);
 
+// 8-bit CRC
+unsigned int crc8_generate_key(unsigned char *_data,
+                               unsigned int _n);
+int crc8_validate_message(unsigned char *_data,
+                          unsigned int _n,
+                          unsigned int _key);
+
+// 16-bit CRC
 unsigned int crc16_generate_key(unsigned char *_data,
                                 unsigned int _n);
 int crc16_validate_message(unsigned char *_data,
+                           unsigned int _n,
+                           unsigned int _key);
+
+// 32-bit CRC
+unsigned int crc32_generate_key(unsigned char *_data,
+                                unsigned int _n);
+int crc32_validate_message(unsigned char *_data,
                            unsigned int _n,
                            unsigned int _key);
 
