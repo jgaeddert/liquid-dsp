@@ -380,6 +380,9 @@ float liquid_unwrapcf_iterative_median_step(float * _t,
 #define CRC8_POLY 0x07
 unsigned char reverse_byte(unsigned char _x);
 
+#define CRC24_POLY 0x5D6DCB
+unsigned int reverse_uint24(unsigned int _x);
+
 #define CRC16_POLY 0x8005
 unsigned int reverse_uint16(unsigned int _x);
 
@@ -389,6 +392,7 @@ unsigned int reverse_uint32(unsigned int _x);
 #define LIQUID_CRC_MANGLE_CHECKSUM(name)    LIQUID_CONCAT(checksum,name)
 #define LIQUID_CRC_MANGLE_CRC8(name)        LIQUID_CONCAT(crc8,name)
 #define LIQUID_CRC_MANGLE_CRC16(name)       LIQUID_CONCAT(crc16,name)
+#define LIQUID_CRC_MANGLE_CRC24(name)       LIQUID_CONCAT(crc24,name)
 #define LIQUID_CRC_MANGLE_CRC32(name)       LIQUID_CONCAT(crc32,name)
 
 // Macro: crc/checksum
@@ -402,6 +406,7 @@ int CRC(_validate_message)(unsigned char * _msg,                \
 
 LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC8)
 LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC16)
+LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC24)
 LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC32)
 LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CHECKSUM)
 

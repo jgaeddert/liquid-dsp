@@ -38,6 +38,7 @@ const char * crc_scheme_str[LIQUID_NUM_CRC_SCHEMES][2] = {
     {"checksum",    "checksum (8-bit)"},
     {"crc8",        "CRC (8-bit)"},
     {"crc16",       "CRC (16-bit)"},
+    {"crc24",       "CRC (24-bit)"},
     {"crc32",       "CRC (32-bit)"}
 };
 
@@ -64,6 +65,7 @@ unsigned int crc_get_length(crc_scheme _scheme)
     case CRC_CHECKSUM:  return 1;
     case CRC_8:         return 1;
     case CRC_16:        return 2;
+    case CRC_24:        return 3;
     case CRC_32:        return 4;
     default:
         fprintf(stderr,"error: crc_get_length(), unknown/unsupported scheme: %d\n", _scheme);
@@ -90,6 +92,7 @@ unsigned int crc_generate_key(crc_scheme _scheme,
     case CRC_CHECKSUM:  return checksum_generate_key(_msg, _n);
     case CRC_8:         return crc8_generate_key(_msg, _n);
     case CRC_16:        return crc16_generate_key(_msg, _n);
+    case CRC_24:        return crc24_generate_key(_msg, _n);
     case CRC_32:        return crc32_generate_key(_msg, _n);
     default:
         fprintf(stderr,"error: crc_generate_key(), unknown/unsupported scheme: %d\n", _scheme);
@@ -118,6 +121,7 @@ int crc_validate_message(crc_scheme _scheme,
     case CRC_CHECKSUM:  return checksum_validate_message(_msg, _n, _key);
     case CRC_8:         return crc8_validate_message(_msg, _n, _key);
     case CRC_16:        return crc16_validate_message(_msg, _n, _key);
+    case CRC_24:        return crc24_validate_message(_msg, _n, _key);
     case CRC_32:        return crc32_validate_message(_msg, _n, _key);
     default:
         fprintf(stderr,"error: crc_validate_message(), unknown/unsupported scheme: %d\n", _scheme);
@@ -276,6 +280,58 @@ int crc16_validate_message(unsigned char *_msg,
                            unsigned int _key)
 {
     return crc16_generate_key(_msg,_n)==_key;
+}
+
+
+
+// 
+// CRC-24
+//
+
+// reverse integer with 24 bits of data
+unsigned int reverse_uint24(unsigned int _x)
+{
+    unsigned int i, y=0;
+    for (i=0; i<24; i++) {
+        y <<= 1;
+        y |= _x & 1;
+        _x >>= 1;
+    }
+    return y;
+}
+
+// generate 24-bit cyclic redundancy check key.
+//
+// slow method, operates one bit at a time
+// algorithm from: http://www.hackersdelight.org/crc.pdf
+//
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+unsigned int crc24_generate_key(unsigned char *_msg,
+                                unsigned int _n)
+{
+    unsigned int i, j, b, mask, key24=~0;
+    unsigned int poly = reverse_uint24(CRC24_POLY);
+    for (i=0; i<_n; i++) {
+        b = _msg[i];
+        key24 ^= b;
+        for (j=0; j<8; j++) {
+            mask = -(key24 & 1);
+            key24 = (key24>>1) ^ (poly & mask);
+        }
+    }
+    return (~key24) & 0xffffff;
+}
+
+// validate message with 24-bit CRC
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+//  _key    :   24-bit CRC key
+int crc24_validate_message(unsigned char *_msg,
+                           unsigned int _n,
+                           unsigned int _key)
+{
+    return crc24_generate_key(_msg,_n)==_key;
 }
 
 

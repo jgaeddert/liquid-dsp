@@ -154,6 +154,45 @@ void autotest_crc16()
 
 
 //
+// AUTOTEST: crc24
+//
+void autotest_crc24()
+{
+    unsigned int i;
+    unsigned int n = 64;    // input data size (number of bytes)
+
+    // generate pseudo-random data
+    unsigned char data[n];
+    msequence ms = msequence_create(9);
+    for (i=0; i<n; i++)
+        data[i] = msequence_generate_symbol(ms,8);
+    msequence_destroy(ms);
+
+    // generate key
+    unsigned int key = crc24_generate_key(data, n);
+
+    // contend data/key are valid
+    CONTEND_EXPRESSION(crc24_validate_message(data, n, key));
+
+    //
+    unsigned char data_corrupt[n];
+    unsigned int j;
+    for (i=0; i<n; i++) {
+        for (j=0; j<8; j++) {
+            // copy original data sequence
+            memmove(data_corrupt, data, n*sizeof(unsigned char));
+
+            // flip bit j at byte i
+            data[i] ^= (1 << j);
+
+            // contend data/key are invalid
+            CONTEND_EXPRESSION(!crc24_validate_message(data, n, key));
+        }
+    }
+}
+
+
+//
 // AUTOTEST: crc32
 //
 void autotest_crc32()
