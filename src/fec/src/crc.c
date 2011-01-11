@@ -24,6 +24,10 @@
 
 #include "liquid.internal.h"
 
+// 
+// CRC-8
+//
+
 // slow implementation
 unsigned char reverse_byte(unsigned char _x)
 {
@@ -35,6 +39,40 @@ unsigned char reverse_byte(unsigned char _x)
         _x >>= 1;
     }
     return y;
+}
+
+
+// generate 8-bit cyclic redundancy check key.
+// slow method, operates one bit at a time
+// algorithm from: http://www.hackersdelight.org/crc.pdf
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+unsigned int crc8_generate_key(unsigned char *_msg,
+                               unsigned int _n)
+{
+    unsigned int i, j, b, mask, key8=~0;
+    unsigned int poly = reverse_byte(CRC8_POLY);
+    for (i=0; i<_n; i++) {
+        b = _msg[i];
+        key8 ^= b;
+        for (j=0; j<8; j++) {
+            mask = -(key8 & 1);
+            key8 = (key8>>1) ^ (poly & mask);
+        }
+    }
+    return ~key8;
+}
+
+
+// validate message with 8-bit CRC
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+//  _key    :   8-bit CRC key
+int crc8_validate_message(unsigned char *_msg,
+                          unsigned int _n,
+                          unsigned int _key)
+{
+    return crc8_generate_key(_msg,_n)==_key;
 }
 
 
@@ -75,17 +113,6 @@ unsigned int crc16_generate_key(unsigned char *_msg,
     }
     return ~key16;
 }
-
-#if 0
-void crc32_generate_key(unsigned char *_msg, unsigned int _n, unsigned char *_key)
-{
-    unsigned int key32 = crc32_generate_key32(_msg,_n);
-    _key[0] = (key32 & 0xFF000000) >> 24;
-    _key[1] = (key32 & 0x00FF0000) >> 16;
-    _key[2] = (key32 & 0x0000FF00) >> 8;
-    _key[3] = (key32 & 0x000000FF);
-}
-#endif
 
 // validate message with 16-bit CRC
 //  _msg    :   input data message [size: _n x 1]

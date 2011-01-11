@@ -41,9 +41,26 @@ void autotest_reverse_byte()
 }
 
 //
+// AUTOTEST: reverse uint16_t
+//
+void autotest_reverse_uint16()
+{
+    // 1111 0111 0101 1001
+    unsigned int b = 0xF759;
+
+    // 1001 1010 1110 1111
+    unsigned int r = 0x9AEF;
+
+    // 
+    CONTEND_EQUALITY(reverse_uint16(b),r);
+}
+
+
+
+//
 // AUTOTEST: reverse uint32_t
 //
-void autotest_reverse_uint()
+void autotest_reverse_uint32()
 {
     // 0110 0010 1101 1001 0011 1011 1111 0000
     unsigned int b = 0x62D93BF0;
@@ -56,13 +73,14 @@ void autotest_reverse_uint()
 }
 
 
+
 //
-// AUTOTEST: crc32
+// AUTOTEST: crc8
 //
-void autotest_crc32()
+void autotest_crc8()
 {
     unsigned int i;
-    unsigned int n = 64;    // input data size (number of bytes)
+    unsigned int n = 16;    // input data size (number of bytes)
 
     // generate random data
     unsigned char data[n];
@@ -70,10 +88,10 @@ void autotest_crc32()
         data[i] = rand() % 256;
 
     // generat key
-    unsigned int key = crc32_generate_key(data, n);
+    unsigned int key = crc8_generate_key(data, n);
 
     // contend data/key are valid
-    CONTEND_EXPRESSION(crc32_validate_message(data, n, key));
+    CONTEND_EXPRESSION(crc8_validate_message(data, n, key));
 
     //
     unsigned char data_corrupt[n];
@@ -87,7 +105,7 @@ void autotest_crc32()
             data[i] ^= (1 << j);
 
             // contend data/key are invalid
-            CONTEND_EXPRESSION(!crc32_validate_message(data, n, key));
+            CONTEND_EXPRESSION(!crc8_validate_message(data, n, key));
         }
     }
 }
@@ -126,6 +144,43 @@ void autotest_crc16()
 
             // contend data/key are invalid
             CONTEND_EXPRESSION(!crc16_validate_message(data, n, key));
+        }
+    }
+}
+
+
+//
+// AUTOTEST: crc32
+//
+void autotest_crc32()
+{
+    unsigned int i;
+    unsigned int n = 64;    // input data size (number of bytes)
+
+    // generate random data
+    unsigned char data[n];
+    for (i=0; i<n; i++)
+        data[i] = rand() % 256;
+
+    // generat key
+    unsigned int key = crc32_generate_key(data, n);
+
+    // contend data/key are valid
+    CONTEND_EXPRESSION(crc32_validate_message(data, n, key));
+
+    //
+    unsigned char data_corrupt[n];
+    unsigned int j;
+    for (i=0; i<n; i++) {
+        for (j=0; j<8; j++) {
+            // copy original data sequence
+            memmove(data_corrupt, data, n*sizeof(unsigned char));
+
+            // flip bit j at byte i
+            data[i] ^= (1 << j);
+
+            // contend data/key are invalid
+            CONTEND_EXPRESSION(!crc32_validate_message(data, n, key));
         }
     }
 }
