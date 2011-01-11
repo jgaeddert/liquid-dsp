@@ -4,7 +4,7 @@
 
 The liquid packetizer is a structure for abstracting multi-level forward
 error-correction from the user.
-The packetizer accepts a buffer of uncoded data bytes and adds a 32-bit
+The packetizer accepts a buffer of uncoded data bytes and adds a
 cyclic redundancy check (crc) before applying two levels of forward error-
 correction and bit-level interleaving.  The user may choose any two 
 supported FEC schemes (including none) and the packetizer object will
@@ -26,6 +26,7 @@ functionality:
     {
         // set up the options
         unsigned int n=16;                  // uncoded data length
+        crc_scheme check = CRC_32;          // data integrity check
         fec_scheme fec0 = FEC_HAMMING74;    // inner code
         fec_scheme fec1 = FEC_REP3;         // outer code
 
@@ -39,7 +40,7 @@ functionality:
         int crc_pass;                       // decoder validity check
 
         // create the packetizer object
-        packetizer p = packetizer_create(n,fec0,fec1);
+        packetizer p = packetizer_create(n,check,fec0,fec1);
 
         // initialize msg here
         unsigned int i;

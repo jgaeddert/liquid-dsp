@@ -32,22 +32,29 @@
 // computes the number of encoded bytes after packetizing
 //
 //  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
+                                            int _crc,
                                             int _fec0,
                                             int _fec1)
 {
-    return fec_get_enc_msg_length(_fec1,
-                fec_get_enc_msg_length(_fec0, _n+4) );
+    unsigned int k = _n + crc_get_length(_crc);
+    unsigned int n0 = fec_get_enc_msg_length(_fec0, k);
+    unsigned int n1 = fec_get_enc_msg_length(_fec1, n0);
+
+    return n1;
 }
 
 // computes the number of decoded bytes before packetizing
 //
 //  _k      :   number of encoded bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
+                                            int _crc,
                                             int _fec0,
                                             int _fec1)
 {
@@ -58,7 +65,7 @@ unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
     // TODO : implement faster method
     while (k_hat < _k) {
         // compute encoded packet length
-        k_hat = packetizer_compute_enc_msg_len(n_hat, _fec0, _fec1);
+        k_hat = packetizer_compute_enc_msg_len(n_hat, _crc, _fec0, _fec1);
 
         //
         if (k_hat == _k)
@@ -73,21 +80,23 @@ unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
 }
 
 
-// packetizer_create()
-//
 // create packetizer object
 //
 //  _n      :   number of uncoded intput bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_create(unsigned int _n,
+                             int _crc,
                              int _fec0,
                              int _fec1)
 {
     packetizer p = (packetizer) malloc(sizeof(struct packetizer_s));
 
-    p->msg_len = _n;
-    p->packet_len = packetizer_compute_enc_msg_len(_n, _fec0, _fec1);
+    p->msg_len      = _n;
+    p->packet_len   = packetizer_compute_enc_msg_len(_n, _crc, _fec0, _fec1);
+    p->check        = _crc;
+    p->crc_length   = crc_get_length(p->check);
 
     // allocate memory for buffers
     p->buffer_len = p->packet_len;
@@ -99,7 +108,8 @@ packetizer packetizer_create(unsigned int _n,
     p->plan = (struct fecintlv_plan*) malloc((p->plan_len)*sizeof(struct fecintlv_plan));
 
     // set schemes
-    unsigned int i, n0=_n+4;
+    unsigned int i;
+    unsigned int n0 = _n + p->crc_length;
     for (i=0; i<p->plan_len; i++) {
         // set schemes
         p->plan[i].fs = (i==0) ? _fec0 : _fec1;
@@ -122,26 +132,27 @@ packetizer packetizer_create(unsigned int _n,
     return p;
 }
 
-// packetizer_recreate()
-//
 // re-create packetizer object
 //
 //  _p      :   initialz packetizer object
 //  _n      :   number of uncoded intput bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_recreate(packetizer _p,
                                unsigned int _n,
+                               int _crc,
                                int _fec0,
                                int _fec1)
 {
     if (_p == NULL) {
         // packetizer was never created
-        return packetizer_create(_n, _fec0, _fec1);
+        return packetizer_create(_n, _crc, _fec0, _fec1);
     }
 
     // check values
     if (_p->msg_len     ==  _n      &&
+        _p->check       ==  _crc    &&
         _p->plan[0].fs  ==  _fec0   &&
         _p->plan[1].fs  ==  _fec1 )
     {
@@ -151,7 +162,7 @@ packetizer packetizer_recreate(packetizer _p,
         // something has changed; destroy old object and create new one
         // TODO : rather than completely destroying object, only change values that are necessary
         packetizer_destroy(_p);
-        return packetizer_create(_n,_fec0,_fec1);
+        return packetizer_create(_n,_crc,_fec0,_fec1);
     }
 }
 
@@ -180,7 +191,10 @@ void packetizer_destroy(packetizer _p)
 void packetizer_print(packetizer _p)
 {
     printf("packetizer [dec: %u, enc: %u]\n", _p->msg_len, _p->packet_len);
-    printf("     : crc32    %-10u %-10u %-16s\n",_p->msg_len,_p->msg_len+4,"crc32"); // crc-key
+    printf("     : crc      %-10u %-10u %-16s\n",
+            _p->msg_len,
+            _p->msg_len + _p->crc_length,
+            crc_scheme_str[_p->check][0]);
     unsigned int i;
     for (i=0; i<_p->plan_len; i++) {
         printf("%4u : fec      %-10u %-10u %-16s\n",
@@ -203,8 +217,6 @@ unsigned int packetizer_get_enc_msg_len(packetizer _p)
     return _p->packet_len;
 }
 
-// packetizer_encode()
-//
 // Execute the packetizer on an input message
 //
 //  _p      :   packetizer object
@@ -214,19 +226,22 @@ void packetizer_encode(packetizer _p,
                        unsigned char * _msg,
                        unsigned char * _pkt)
 {
+    unsigned int i;
+
     // copy input message to internal buffer[0]
     memmove(_p->buffer_0, _msg, _p->msg_len);
 
-    // compute crc32, append to buffer
-    _p->crc32_key = crc32_generate_key(_p->buffer_0, _p->msg_len);
-    unsigned int crc32_key = _p->crc32_key;
-    _p->buffer_0[_p->msg_len+0] = (crc32_key & 0x000000ff) >> 0;
-    _p->buffer_0[_p->msg_len+1] = (crc32_key & 0x0000ff00) >> 8;
-    _p->buffer_0[_p->msg_len+2] = (crc32_key & 0x00ff0000) >> 16;
-    _p->buffer_0[_p->msg_len+3] = (crc32_key & 0xff000000) >> 24;
+    // compute crc, append to buffer
+    unsigned int key = crc_generate_key(_p->check, _p->buffer_0, _p->msg_len);
+    for (i=0; i<_p->crc_length; i++) {
+        // append byte to buffer
+        _p->buffer_0[_p->msg_len+_p->crc_length-i-1] = key & 0xff;
+
+        // shift key by 8 bits
+        key >>= 8;
+    }
 
     // execute fec/interleaver plans
-    unsigned int i;
     for (i=0; i<_p->plan_len; i++) {
         // run the encoder: buffer[0] > buffer[1]
         fec_encode(_p->plan[i].f,
@@ -244,8 +259,6 @@ void packetizer_encode(packetizer _p,
     memmove(_pkt, _p->buffer_0, _p->packet_len);
 }
 
-// packetizer_decode()
-//
 // Execute the packetizer to decode an input message, return validity
 // check of resulting data
 //
@@ -274,20 +287,22 @@ int packetizer_decode(packetizer _p,
                    _p->buffer_0);
     }
 
-    // strip crc32, validate message
-    unsigned int crc32_key = 0;
-    crc32_key |= _p->buffer_0[_p->msg_len+0] << 0;
-    crc32_key |= _p->buffer_0[_p->msg_len+1] << 8;
-    crc32_key |= _p->buffer_0[_p->msg_len+2] << 16;
-    crc32_key |= _p->buffer_0[_p->msg_len+3] << 24;
+    // strip crc, validate message
+    unsigned int key = 0;
+    for (i=0; i<_p->crc_length; i++) {
+        key <<= 8;
+
+        key |= _p->buffer_0[_p->msg_len+i];
+    }
 
     // copy result to output
     memmove(_msg, _p->buffer_0, _p->msg_len);
 
     // return crc validity
-    return crc32_validate_message(_p->buffer_0,
-                                  _p->msg_len,
-                                  crc32_key);
+    return crc_validate_message(_p->check,
+                                _p->buffer_0,
+                                _p->msg_len,
+                                key);
 }
 
 void packetizer_set_scheme(packetizer _p, int _fec0, int _fec1)
