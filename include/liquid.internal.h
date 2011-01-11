@@ -1841,10 +1841,10 @@ void ga_search_rank(ga_search);
 //  _rank       :   output rank array (indices) [size: _len x 1]
 //  _len        :   length of input array
 //  _descending :   descending/ascending
-void ga_search_sort(float *_v,
-                    unsigned int* _rank,
-                    unsigned int _len,
-                    int _descending);
+void optim_sort(float *_v,
+                unsigned int * _rank,
+                unsigned int _len,
+                int _descending);
 
 
 //
