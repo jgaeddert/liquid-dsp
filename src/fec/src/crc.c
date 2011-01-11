@@ -133,7 +133,11 @@ int crc_validate_message(crc_scheme _scheme,
 // Checksum
 //
 
+// generate 8-bit checksum key
 //
+//  _scheme     :   error-detection scheme
+//  _msg        :   input data message, [size: _n x 1]
+//  _n          :   input data message size
 unsigned char checksum_generate_key(unsigned char *_data,
                                     unsigned int _n)
 {
@@ -148,7 +152,12 @@ unsigned char checksum_generate_key(unsigned char *_data,
     return key;
 }
 
+// validate message using 8-bit checksum key
 //
+//  _scheme     :   error-detection scheme
+//  _msg        :   input data message, [size: _n x 1]
+//  _n          :   input data message size
+//  _key        :   error-detection key
 int checksum_validate_message(unsigned char *_data,
                               unsigned int _n,
                               unsigned char _key)
@@ -183,8 +192,10 @@ unsigned char reverse_byte(unsigned char _x)
 
 
 // generate 8-bit cyclic redundancy check key.
+//
 // slow method, operates one bit at a time
 // algorithm from: http://www.hackersdelight.org/crc.pdf
+//
 //  _msg    :   input data message [size: _n x 1]
 //  _n      :   input data message size
 unsigned int crc8_generate_key(unsigned char *_msg,
@@ -200,7 +211,7 @@ unsigned int crc8_generate_key(unsigned char *_msg,
             key8 = (key8>>1) ^ (poly & mask);
         }
     }
-    return ~key8;
+    return (~key8) & 0xff;
 }
 
 
@@ -234,8 +245,10 @@ unsigned int reverse_uint16(unsigned int _x)
 }
 
 // generate 16-bit cyclic redundancy check key.
+//
 // slow method, operates one bit at a time
 // algorithm from: http://www.hackersdelight.org/crc.pdf
+//
 //  _msg    :   input data message [size: _n x 1]
 //  _n      :   input data message size
 unsigned int crc16_generate_key(unsigned char *_msg,
@@ -251,7 +264,7 @@ unsigned int crc16_generate_key(unsigned char *_msg,
             key16 = (key16>>1) ^ (poly & mask);
         }
     }
-    return ~key16;
+    return (~key16) & 0xffff;
 }
 
 // validate message with 16-bit CRC
@@ -302,11 +315,13 @@ unsigned int crc32_generate_key(unsigned char *_msg,
             key32 = (key32>>1) ^ (poly & mask);
         }
     }
-    return ~key32;
+    return (~key32) & 0xffffffff;
 }
 
 #if 0
-void crc32_generate_key(unsigned char *_msg, unsigned int _n, unsigned char *_key)
+void crc32_generate_key(unsigned char *_msg,
+                        unsigned int _n,
+                        unsigned char *_key)
 {
     unsigned int key32 = crc32_generate_key32(_msg,_n);
     _key[0] = (key32 & 0xFF000000) >> 24;
