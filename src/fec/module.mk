@@ -49,7 +49,6 @@ local_s_files	:=			\
 # within $(local_dir)
 #
 local_t_files	:=			\
-	checksum_autotest.h		\
 	crc_autotest.h			\
 	fec_autotest.h			\
 	fec_conv_autotest.h		\

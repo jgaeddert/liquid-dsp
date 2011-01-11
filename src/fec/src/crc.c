@@ -138,8 +138,8 @@ int crc_validate_message(crc_scheme _scheme,
 //  _scheme     :   error-detection scheme
 //  _msg        :   input data message, [size: _n x 1]
 //  _n          :   input data message size
-unsigned char checksum_generate_key(unsigned char *_data,
-                                    unsigned int _n)
+unsigned int checksum_generate_key(unsigned char *_data,
+                                   unsigned int _n)
 {
     unsigned int i, sum=0;
     for (i=0; i<_n; i++)
@@ -160,7 +160,7 @@ unsigned char checksum_generate_key(unsigned char *_data,
 //  _key        :   error-detection key
 int checksum_validate_message(unsigned char *_data,
                               unsigned int _n,
-                              unsigned char _key)
+                              unsigned int _key)
 {
     unsigned int i, sum=0;
     for (i=0; i<_n; i++)
