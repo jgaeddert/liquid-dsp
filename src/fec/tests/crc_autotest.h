@@ -82,12 +82,14 @@ void autotest_crc8()
     unsigned int i;
     unsigned int n = 16;    // input data size (number of bytes)
 
-    // generate random data
+    // generate pseudo-random data
     unsigned char data[n];
+    msequence ms = msequence_create(9);
     for (i=0; i<n; i++)
-        data[i] = rand() % 256;
+        data[i] = msequence_generate_symbol(ms,8);
+    msequence_destroy(ms);
 
-    // generat key
+    // generate key
     unsigned int key = crc8_generate_key(data, n);
 
     // contend data/key are valid
@@ -120,12 +122,14 @@ void autotest_crc16()
     unsigned int i;
     unsigned int n = 64;    // input data size (number of bytes)
 
-    // generate random data
+    // generate pseudo-random data
     unsigned char data[n];
+    msequence ms = msequence_create(9);
     for (i=0; i<n; i++)
-        data[i] = rand() % 256;
+        data[i] = msequence_generate_symbol(ms,8);
+    msequence_destroy(ms);
 
-    // generat key
+    // generate key
     unsigned int key = crc16_generate_key(data, n);
 
     // contend data/key are valid
@@ -157,12 +161,14 @@ void autotest_crc32()
     unsigned int i;
     unsigned int n = 64;    // input data size (number of bytes)
 
-    // generate random data
+    // generate pseudo-random data
     unsigned char data[n];
+    msequence ms = msequence_create(9);
     for (i=0; i<n; i++)
-        data[i] = rand() % 256;
+        data[i] = msequence_generate_symbol(ms,8);
+    msequence_destroy(ms);
 
-    // generat key
+    // generate key
     unsigned int key = crc32_generate_key(data, n);
 
     // contend data/key are valid
