@@ -19,13 +19,17 @@
 // print usage/help message
 void usage()
 {
+    unsigned int i;
     printf("fec_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : input data size (number of uncoded bytes): 8 default\n");
+    printf("  v     : data integrity check: crc32 default\n");
+    // print all available CRC schemes
+    for (i=0; i<LIQUID_NUM_CRC_SCHEMES; i++)
+        printf("          [%s] %s\n", crc_scheme_str[i][0], crc_scheme_str[i][1]);
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
     // print all available FEC schemes
-    unsigned int i;
     for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++)
         printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
 }
@@ -33,13 +37,14 @@ void usage()
 
 int main(int argc, char*argv[]) {
     // options
-    unsigned int n=8;                  // original data message length
+    unsigned int n=8;                   // original data message length
+    crc_scheme check = CRC_32;          // data integrity check
     fec_scheme fec0 = FEC_HAMMING74;    // inner code
     fec_scheme fec1 = FEC_NONE;         // outer code
 
     // read command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhn:v:c:k:")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage(); return 0;
@@ -51,34 +56,39 @@ int main(int argc, char*argv[]) {
                 exit(-1);
             }
             break;
+        case 'v':
+            // data integrity check
+            check = liquid_getopt_str2crc(optarg);
+            if (check == CRC_UNKNOWN) {
+                fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n\n",optarg);
+                exit(1);
+            }
+            break;
         case 'c':
             // inner FEC scheme
             fec0 = liquid_getopt_str2fec(optarg);
             if (fec0 == FEC_UNKNOWN) {
-                printf("error: unknown/unsupported modulation scheme \"%s\"\n\n",optarg);
-                usage();
-                exit(-1);
+                fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n\n",optarg);
+                exit(1);
             }
             break;
         case 'k':
             // outer FEC scheme
             fec1 = liquid_getopt_str2fec(optarg);
             if (fec1 == FEC_UNKNOWN) {
-                printf("error: unknown/unsupported modulation scheme \"%s\"\n\n",optarg);
-                usage();
-                exit(-1);
+                fprintf(stderr,"error: unknown/unsupported outer FEC scheme \"%s\"\n\n",optarg);
+                exit(1);
             }
             break;
         default:
             fprintf(stderr,"error: unknown/invalid option\n");
-            usage();
-            exit(-1);
+            exit(1);
         }
     }
 
     unsigned int i;
-    unsigned int k = packetizer_compute_enc_msg_len(n,fec0,fec1);
-    packetizer p = packetizer_create(n,fec0,fec1);
+    unsigned int k = packetizer_compute_enc_msg_len(n,check,fec0,fec1);
+    packetizer p = packetizer_create(n,check,fec0,fec1);
     packetizer_print(p);
 
     // initialize arrays

@@ -113,8 +113,8 @@ framegen64 framegen64_create(unsigned int _m,
     fg->interp = interp_crcf_create(2, h, h_len);
 
     // create header/payload packetizers
-    fg->p_header  = packetizer_create(24, FEC_NONE, FEC_HAMMING74);
-    fg->p_payload = packetizer_create(64, FEC_NONE, FEC_HAMMING74);
+    fg->p_header  = packetizer_create(24, CRC_32, FEC_NONE, FEC_HAMMING74);
+    fg->p_payload = packetizer_create(64, CRC_32, FEC_NONE, FEC_HAMMING74);
 
     // create modulator
     fg->mod = modem_create(MOD_QPSK, 2);

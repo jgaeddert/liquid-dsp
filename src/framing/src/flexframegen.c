@@ -95,7 +95,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_BPSK, 1);
-    fg->p_header   = packetizer_create(17, FEC_HAMMING128, FEC_NONE);
+    fg->p_header   = packetizer_create(17, CRC_32, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
     // initial memory allocation for payload

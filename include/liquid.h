@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ *                                        Institute & State University
  *
  * This file is part of liquid.
  *
@@ -2330,44 +2330,48 @@ LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF,
 // computes the number of encoded bytes after packetizing
 //
 //  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
+                                            int _crc,
                                             int _fec0,
                                             int _fec1);
 
 // computes the number of decoded bytes before packetizing
 //
 //  _k      :   number of encoded bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
+                                            int _crc,
                                             int _fec0,
                                             int _fec1);
 
 typedef struct packetizer_s * packetizer;
 
-// packetizer_create()
-//
 // create packetizer object
 //
 //  _n      :   number of uncoded intput bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_create(unsigned int _dec_msg_len,
+                             int _crc,
                              int _fec0,
                              int _fec1);
 
-// packetizer_recreate()
-//
 // re-create packetizer object
 //
 //  _p      :   initialz packetizer object
 //  _n      :   number of uncoded intput bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_recreate(packetizer _p,
                                unsigned int _dec_msg_len,
+                               int _crc,
                                int _fec0,
                                int _fec1);
 

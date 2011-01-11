@@ -158,7 +158,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // header objects
     fs->mod_header = modem_create(MOD_BPSK, 1);
-    fs->p_header = packetizer_create(17, FEC_HAMMING128, FEC_NONE);
+    fs->p_header = packetizer_create(17, CRC_32, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
     // agc, rssi, squelch
