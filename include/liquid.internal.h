@@ -389,26 +389,11 @@ unsigned int reverse_uint16(unsigned int _x);
 #define CRC32_POLY 0x04C11DB7
 unsigned int reverse_uint32(unsigned int _x);
 
-#define LIQUID_CRC_MANGLE_CHECKSUM(name)    LIQUID_CONCAT(checksum,name)
-#define LIQUID_CRC_MANGLE_CRC8(name)        LIQUID_CONCAT(crc8,name)
-#define LIQUID_CRC_MANGLE_CRC16(name)       LIQUID_CONCAT(crc16,name)
-#define LIQUID_CRC_MANGLE_CRC24(name)       LIQUID_CONCAT(crc24,name)
-#define LIQUID_CRC_MANGLE_CRC32(name)       LIQUID_CONCAT(crc32,name)
-
-// Macro: crc/checksum
-//  CRC : name-mangling macro
-#define LIQUID_CRC_DEFINE_API(CRC)                              \
-unsigned int CRC(_generate_key)(unsigned char * _msg,           \
-                                unsigned int _msg_len);         \
-int CRC(_validate_message)(unsigned char * _msg,                \
-                           unsigned int _msg_len,               \
-                           unsigned int _key);
-
-LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC8)
-LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC16)
-LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC24)
-LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CRC32)
-LIQUID_CRC_DEFINE_API(LIQUID_CRC_MANGLE_CHECKSUM)
+unsigned int checksum_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc8_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc16_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc24_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc32_generate_key(unsigned char * _msg, unsigned int _msg_len);
 
 
 // fec : basic object

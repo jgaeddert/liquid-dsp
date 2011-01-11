@@ -113,23 +113,14 @@ int crc_validate_message(crc_scheme _scheme,
                          unsigned int _n,
                          unsigned int _key)
 {
-    switch (_scheme) {
-    case CRC_UNKNOWN:
+    if (_scheme == CRC_UNKNOWN) {
         fprintf(stderr,"error: crc_validate_message(), cannot validate with CRC type \"UNKNOWN\"\n");
         exit(-1);
-    case CRC_NONE:      return 1;
-    case CRC_CHECKSUM:  return checksum_validate_message(_msg, _n, _key);
-    case CRC_8:         return crc8_validate_message(_msg, _n, _key);
-    case CRC_16:        return crc16_validate_message(_msg, _n, _key);
-    case CRC_24:        return crc24_validate_message(_msg, _n, _key);
-    case CRC_32:        return crc32_validate_message(_msg, _n, _key);
-    default:
-        fprintf(stderr,"error: crc_validate_message(), unknown/unsupported scheme: %d\n", _scheme);
-        exit(1);
+    } else if (_scheme == CRC_NONE) {
+        return 1;
     }
 
-    return 0;
-
+    return crc_generate_key(_scheme, _msg, _n) == _key;
 }
 
 
@@ -154,26 +145,6 @@ unsigned int checksum_generate_key(unsigned char *_data,
     unsigned char key = ~(sum&0x00ff) + 1;
 
     return key;
-}
-
-// validate message using 8-bit checksum key
-//
-//  _scheme     :   error-detection scheme
-//  _msg        :   input data message, [size: _n x 1]
-//  _n          :   input data message size
-//  _key        :   error-detection key
-int checksum_validate_message(unsigned char *_data,
-                              unsigned int _n,
-                              unsigned int _key)
-{
-    unsigned int i, sum=0;
-    for (i=0; i<_n; i++)
-        sum += (unsigned int) (_data[i]);
-    //sum &= 0x00ff;
-
-    unsigned char check = ((sum&0x00ff)+_key)&0x0ff;
-    //printf("check: 0x%0x\n", (unsigned int) check);
-    return (check==0);
 }
 
 
@@ -219,19 +190,6 @@ unsigned int crc8_generate_key(unsigned char *_msg,
 }
 
 
-// validate message with 8-bit CRC
-//  _msg    :   input data message [size: _n x 1]
-//  _n      :   input data message size
-//  _key    :   8-bit CRC key
-int crc8_validate_message(unsigned char *_msg,
-                          unsigned int _n,
-                          unsigned int _key)
-{
-    return crc8_generate_key(_msg,_n)==_key;
-}
-
-
-
 // 
 // CRC-16
 //
@@ -271,18 +229,6 @@ unsigned int crc16_generate_key(unsigned char *_msg,
     return (~key16) & 0xffff;
 }
 
-// validate message with 16-bit CRC
-//  _msg    :   input data message [size: _n x 1]
-//  _n      :   input data message size
-//  _key    :   16-bit CRC key
-int crc16_validate_message(unsigned char *_msg,
-                           unsigned int _n,
-                           unsigned int _key)
-{
-    return crc16_generate_key(_msg,_n)==_key;
-}
-
-
 
 // 
 // CRC-24
@@ -321,17 +267,6 @@ unsigned int crc24_generate_key(unsigned char *_msg,
         }
     }
     return (~key24) & 0xffffff;
-}
-
-// validate message with 24-bit CRC
-//  _msg    :   input data message [size: _n x 1]
-//  _n      :   input data message size
-//  _key    :   24-bit CRC key
-int crc24_validate_message(unsigned char *_msg,
-                           unsigned int _n,
-                           unsigned int _key)
-{
-    return crc24_generate_key(_msg,_n)==_key;
 }
 
 
@@ -386,16 +321,4 @@ void crc32_generate_key(unsigned char *_msg,
     _key[3] = (key32 & 0x000000FF);
 }
 #endif
-
-// validate message with 32-bit CRC
-//  _msg    :   input data message [size: _n x 1]
-//  _n      :   input data message size
-//  _key    :   32-bit CRC key
-int crc32_validate_message(unsigned char *_msg,
-                           unsigned int _n,
-                           unsigned int _key)
-{
-    return crc32_generate_key(_msg,_n)==_key;
-}
-
 
