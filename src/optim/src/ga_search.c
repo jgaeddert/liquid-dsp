@@ -23,12 +23,10 @@
 // ga_search.c
 //
 
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <float.h>
 
 #include "liquid.internal.h"
 
@@ -96,7 +94,6 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
 
     // create optimum chromosome (clone)
     ga->c = chromosome_create_clone(_parent);
-    ga->utility_opt = ga->minimize ? FLT_MAX : -FLT_MAX;
 
     //printf("num_parameters: %d\n", ga->num_parameters);
     //printf("population_size: %d\n", ga->population_size);
@@ -117,6 +114,10 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     // rank chromosomes
     ga_search_rank(ga);
 
+    // set global utility optimum
+    ga->utility_opt = ga->utility[0];
+
+    // return object
     return ga;
 }
 
