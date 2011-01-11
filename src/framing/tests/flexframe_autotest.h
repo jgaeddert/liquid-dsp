@@ -33,12 +33,15 @@ void autotest_flexframe_decode_header()
 
     // create flexframegen object
     flexframegenprops_s fgprops;
-    fgprops.rampup_len = 16;
+    fgprops.rampup_len  = 16;
     fgprops.phasing_len = 50;
     fgprops.payload_len = 64;
-    fgprops.mod_scheme = MOD_PSK;
-    fgprops.mod_bps = 3;
-    fgprops.rampdn_len = 16;
+    fgprops.check       = CRC_NONE;
+    fgprops.fec0        = FEC_NONE;
+    fgprops.fec1        = FEC_NONE;
+    fgprops.mod_scheme  = MOD_PSK;
+    fgprops.mod_bps     = 3;
+    fgprops.rampdn_len  = 16;
     flexframegen fg = flexframegen_create(&fgprops);
     if (liquid_autotest_verbose)
         flexframegen_print(fg);
