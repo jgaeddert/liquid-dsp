@@ -692,6 +692,7 @@ void liquid_estimate_carrier_nonlinear(float * _t,
 
 
 
+#define LIQUID_FEC_MANGLE_CRC16(name)       LIQUID_CONCAT(fec_crc16,name)
 #define LIQUID_FEC_MANGLE_CRC32(name)       LIQUID_CONCAT(fec_crc32,name)
 #define LIQUID_FEC_MANGLE_CHECKSUM32(name)  LIQUID_CONCAT(fec_checksum32,name)
 
@@ -709,6 +710,7 @@ int  CRC(_validate_key)(CRC() _crc,                             \
                         unsigned char * _msg,                   \
                         unsigned int _msg_len);
 
+LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CRC16)
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CRC32)
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CHECKSUM32)
 
@@ -727,6 +729,12 @@ int checksum_validate_message(unsigned char *_data,
 unsigned int crc32_generate_key(unsigned char *_data,
                                 unsigned int _n);
 int crc32_validate_message(unsigned char *_data,
+                           unsigned int _n,
+                           unsigned int _key);
+
+unsigned int crc16_generate_key(unsigned char *_data,
+                                unsigned int _n);
+int crc16_validate_message(unsigned char *_data,
                            unsigned int _n,
                            unsigned int _key);
 

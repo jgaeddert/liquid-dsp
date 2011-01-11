@@ -18,8 +18,7 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CRC_AUTOTEST_H__
-#define __CRC_AUTOTEST_H__
+#include <string.h>
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -56,23 +55,79 @@ void autotest_reverse_uint()
     CONTEND_EQUALITY(reverse_uint32(b),r);
 }
 
+
 //
 // AUTOTEST: crc32
 //
 void autotest_crc32()
 {
-    unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
-    unsigned int key = crc32_generate_key(data, 4);
+    unsigned int i;
+    unsigned int n = 64;    // input data size (number of bytes)
+
+    // generate random data
+    unsigned char data[n];
+    for (i=0; i<n; i++)
+        data[i] = rand() % 256;
+
+    // generat key
+    unsigned int key = crc32_generate_key(data, n);
 
     // contend data/key are valid
-    CONTEND_EXPRESSION(crc32_validate_message(data, 4, key));
+    CONTEND_EXPRESSION(crc32_validate_message(data, n, key));
 
-    // corrupt data
-    data[0]++;
+    //
+    unsigned char data_corrupt[n];
+    unsigned int j;
+    for (i=0; i<n; i++) {
+        for (j=0; j<8; j++) {
+            // copy original data sequence
+            memmove(data_corrupt, data, n*sizeof(unsigned char));
 
-    // contend data/key are invalid
-    CONTEND_EXPRESSION(!crc32_validate_message(data, 4, key));
+            // flip bit j at byte i
+            data[i] ^= (1 << j);
+
+            // contend data/key are invalid
+            CONTEND_EXPRESSION(!crc32_validate_message(data, n, key));
+        }
+    }
 }
 
-#endif 
+
+
+//
+// AUTOTEST: crc16
+//
+void autotest_crc16()
+{
+    unsigned int i;
+    unsigned int n = 64;    // input data size (number of bytes)
+
+    // generate random data
+    unsigned char data[n];
+    for (i=0; i<n; i++)
+        data[i] = rand() % 256;
+
+    // generat key
+    unsigned int key = crc16_generate_key(data, n);
+
+    // contend data/key are valid
+    CONTEND_EXPRESSION(crc16_validate_message(data, n, key));
+
+    //
+    unsigned char data_corrupt[n];
+    unsigned int j;
+    for (i=0; i<n; i++) {
+        for (j=0; j<8; j++) {
+            // copy original data sequence
+            memmove(data_corrupt, data, n*sizeof(unsigned char));
+
+            // flip bit j at byte i
+            data[i] ^= (1 << j);
+
+            // contend data/key are invalid
+            CONTEND_EXPRESSION(!crc16_validate_message(data, n, key));
+        }
+    }
+}
+
 

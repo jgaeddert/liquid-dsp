@@ -37,6 +37,73 @@ unsigned char reverse_byte(unsigned char _x)
     return y;
 }
 
+
+
+// 
+// CRC-16
+//
+
+// reverse integer with 16 bits of data
+unsigned int reverse_uint16(unsigned int _x)
+{
+    unsigned int i, y=0;
+    for (i=0; i<16; i++) {
+        y <<= 1;
+        y |= _x & 1;
+        _x >>= 1;
+    }
+    return y;
+}
+
+// generate 16-bit cyclic redundancy check key.
+// slow method, operates one bit at a time
+// algorithm from: http://www.hackersdelight.org/crc.pdf
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+unsigned int crc16_generate_key(unsigned char *_msg,
+                                unsigned int _n)
+{
+    unsigned int i, j, b, mask, key16=~0;
+    unsigned int poly = reverse_uint16(CRC16_POLY);
+    for (i=0; i<_n; i++) {
+        b = _msg[i];
+        key16 ^= b;
+        for (j=0; j<8; j++) {
+            mask = -(key16 & 1);
+            key16 = (key16>>1) ^ (poly & mask);
+        }
+    }
+    return ~key16;
+}
+
+#if 0
+void crc32_generate_key(unsigned char *_msg, unsigned int _n, unsigned char *_key)
+{
+    unsigned int key32 = crc32_generate_key32(_msg,_n);
+    _key[0] = (key32 & 0xFF000000) >> 24;
+    _key[1] = (key32 & 0x00FF0000) >> 16;
+    _key[2] = (key32 & 0x0000FF00) >> 8;
+    _key[3] = (key32 & 0x000000FF);
+}
+#endif
+
+// validate message with 16-bit CRC
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+//  _key    :   16-bit CRC key
+int crc16_validate_message(unsigned char *_msg,
+                           unsigned int _n,
+                           unsigned int _key)
+{
+    return crc16_generate_key(_msg,_n)==_key;
+}
+
+
+// 
+// CRC-32
+//
+
+// reverse integer with 32 bits of data
 unsigned int reverse_uint32(unsigned int _x)
 {
     unsigned int i, y=0;
@@ -48,9 +115,15 @@ unsigned int reverse_uint32(unsigned int _x)
     return y;
 }
 
+// generate 32-bit cyclic redundancy check key.
+//
 // slow method, operates one bit at a time
 // algorithm from: http://www.hackersdelight.org/crc.pdf
-unsigned int crc32_generate_key(unsigned char *_msg, unsigned int _n)
+//
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+unsigned int crc32_generate_key(unsigned char *_msg,
+                                unsigned int _n)
 {
     unsigned int i, j, b, mask, key32=~0;
     unsigned int poly = reverse_uint32(CRC32_POLY);
@@ -76,7 +149,15 @@ void crc32_generate_key(unsigned char *_msg, unsigned int _n, unsigned char *_ke
 }
 #endif
 
-int crc32_validate_message(unsigned char *_msg, unsigned int _n, unsigned int _key)
+// validate message with 32-bit CRC
+//  _msg    :   input data message [size: _n x 1]
+//  _n      :   input data message size
+//  _key    :   32-bit CRC key
+int crc32_validate_message(unsigned char *_msg,
+                           unsigned int _n,
+                           unsigned int _key)
 {
     return crc32_generate_key(_msg,_n)==_key;
 }
+
+

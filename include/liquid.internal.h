@@ -382,6 +382,10 @@ extern unsigned char crc32_tab[256];
 unsigned char reverse_byte(unsigned char _x);
 unsigned int reverse_uint32(unsigned int _x);
 
+#define CRC16_POLY 0x8005
+extern unsigned char crc16_tab[256];
+unsigned int reverse_uint16(unsigned int _x);
+
 // fec : basic object
 struct fec_s {
     // common
