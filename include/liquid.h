@@ -2162,6 +2162,7 @@ void flexframegen_flush(flexframegen _fg,
 //  _header_valid       :   is header valid? (0:no, 1:yes)
 //  _payload            :   payload data [size: _payload_len]
 //  _payload_len        :   length of payload (bytes)
+//  _payload_valid      :   is payload valid? (0:no, 1:yes)
 //  _userdata           :   pointer to userdata
 //
 // extensions:
@@ -2171,6 +2172,7 @@ typedef int (*flexframesync_callback)(unsigned char * _header,
                                       int _header_valid,
                                       unsigned char * _payload,
                                       unsigned int _payload_len,
+                                      int _payload_valid,
                                       framesyncstats_s _stats,
                                       void * _userdata);
 typedef struct flexframesync_s * flexframesync;

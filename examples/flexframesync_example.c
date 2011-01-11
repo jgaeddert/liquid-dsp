@@ -54,6 +54,7 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
+                    int _rx_payload_valid,
                     framesyncstats_s _stats,
                     void * _userdata);
 
@@ -300,6 +301,7 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
+                    int _rx_payload_valid,
                     framesyncstats_s _stats,
                     void * _userdata)
 {
@@ -313,6 +315,7 @@ static int callback(unsigned char * _rx_header,
         printf("    rssi                : %12.8f dB\n", _stats.rssi);
         printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
         printf("    payload length      : %u\n", _rx_payload_len);
+        printf("    payload crc         : %s\n", _rx_payload_valid ?  "pass" : "FAIL");
     }
     if (!_rx_header_valid)
         return 0;
