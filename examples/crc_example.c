@@ -33,7 +33,7 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int n = 16;            // data length (bytes)
+    unsigned int n = 32;            // data length (bytes)
     crc_scheme check = CRC_32;      // error-detection scheme
 
     int dopt;
