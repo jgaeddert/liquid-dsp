@@ -714,6 +714,47 @@ LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CRC16)
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CRC32)
 LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CHECKSUM32)
 
+
+// available CRC schemes
+#define LIQUID_NUM_CRC_SCHEMES  6
+typedef enum {
+    CRC_UNKNOWN=0,
+    CRC_NONE,           // no error-detection
+    CRC_CHECKSUM,       // 8-bit checksum
+    CRC_8,              // 8-bit CRC
+    CRC_16,             // 16-bit CRC
+    CRC_32              // 32-bit CRC
+} crc_scheme;
+
+// pretty names for crc schemes
+extern const char * crc_scheme_str[LIQUID_NUM_CRC_SCHEMES][2];
+
+// returns crc_scheme based on input string
+crc_scheme liquid_getopt_str2crc(const char * _str);
+
+// get length of CRC (bytes)
+unsigned int crc_get_length(crc_scheme _scheme);
+
+// generate error-detection key
+//
+//  _scheme     :   error-detection scheme
+//  _msg        :   input data message, [size: _n x 1]
+//  _n          :   input data message size
+unsigned int crc_generate_key(crc_scheme _scheme,
+                              unsigned char * _msg,
+                              unsigned int _n);
+
+// validate message using error-detection key
+//
+//  _scheme     :   error-detection scheme
+//  _msg        :   input data message, [size: _n x 1]
+//  _n          :   input data message size
+//  _key        :   error-detection key
+int crc_validate_message(crc_scheme _scheme,
+                         unsigned char * _msg,
+                         unsigned int _n,
+                         unsigned int _key);
+
 //
 // checksum
 //
