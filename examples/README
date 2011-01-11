@@ -97,18 +97,6 @@ bufferf_example.c
 
 carrier_estimation_example.c
 
-checksum_example.c
-    This example demonstrates how a checksum can be used to validate data
-    received through un-reliable means (e.g. a noisy channel). A checksum is,
-    in essence, a weak error detection code that simply counts the number of
-    ones in a block of data (modulo 256). The limitation, however, is that
-    multiple bit errors might result in a false positive validation of the
-    corrupted data.  For a much much stronger eror detection, use the cyclic
-    redundancy check.
-
-    SEE ALSO: crc_example.c
-              fec_example.c
-
 chromosome_example.c
 
 compand_cf_example.c
@@ -136,10 +124,10 @@ crc_example.c
     CRC can be used to validate data received through un-reliable means (e.g.
     a noisy channel).  A CRC is, in essence, a strong algebraic error
     detection code that computes a key on a block of data using base-2
-    polynomials.
+    polynomials.  Also available is a checksum for data validation.
 
-    SEE ALSO: checksum_example.c
-              fec_example.c
+    SEE ALSO: fec_example.c
+
 cvsd_sine_example.c
     Continuously-variable slope delta example, sinusoidal input. This example
     demonstrates the CVSD audio encoder interface, and its response to a
