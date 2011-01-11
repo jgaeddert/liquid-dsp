@@ -692,13 +692,14 @@ void liquid_estimate_carrier_nonlinear(float * _t,
 
 
 // available CRC schemes
-#define LIQUID_NUM_CRC_SCHEMES  6
+#define LIQUID_NUM_CRC_SCHEMES  7
 typedef enum {
     CRC_UNKNOWN=0,
     CRC_NONE,           // no error-detection
     CRC_CHECKSUM,       // 8-bit checksum
     CRC_8,              // 8-bit CRC
     CRC_16,             // 16-bit CRC
+    CRC_24,             // 24-bit CRC
     CRC_32              // 32-bit CRC
 } crc_scheme;
 
