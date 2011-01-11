@@ -87,7 +87,7 @@ struct flexframesync_s {
     packetizer p_header;                // header packetizer decoder
     unsigned char header_sym[256];      // header symbols (modem output)
     unsigned char header_enc[32];       // header data (encoded)
-    unsigned char header[17];           // header data (decoded)
+    unsigned char header[19];           // header data (decoded)
 
     // SINDR estimate (signal to interference, noise,
     // and distortion ratio)
@@ -158,7 +158,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // header objects
     fs->mod_header = modem_create(MOD_BPSK, 1);
-    fs->p_header = packetizer_create(17, CRC_32, FEC_HAMMING128, FEC_NONE);
+    fs->p_header = packetizer_create(19, CRC_16, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
     // agc, rssi, squelch
@@ -878,7 +878,29 @@ void flexframesync_decode_header(flexframesync _fs)
     packetizer_decode(_fs->p_header, _fs->header_enc, _fs->header);
 
     // unscramble header
-    unscramble_data(_fs->header, 17);
+    unscramble_data(_fs->header, 19);
+
+    // strip off CRC, forward error-correction schemes
+    //  CRC     : most-significant 3 bits of [17]
+    //  fec0    : least-significant 5 bits of [17]
+    //  fec1    : least-significant 5 bits of [18]
+    unsigned int check = (_fs->header[17] >> 5 ) & 0x07;
+    unsigned int fec0  = (_fs->header[17]      ) & 0x1f;
+    unsigned int fec1  = (_fs->header[18]      ) & 0x1f;
+
+    // validate properties
+    if (check >= LIQUID_NUM_CRC_SCHEMES) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), decoded CRC exceeds available\n");
+        check = CRC_UNKNOWN;
+    }
+    if (fec0 >= LIQUID_NUM_FEC_SCHEMES) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
+        fec0 = FEC_UNKNOWN;
+    }
+    if (fec1 >= LIQUID_NUM_FEC_SCHEMES) {
+        fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
+        fec1 = FEC_UNKNOWN;
+    }
 
     // strip off modulation scheme/depth
     //  mod. scheme : most-significant five bits
@@ -914,6 +936,9 @@ void flexframesync_decode_header(flexframesync _fs)
     // print results
     printf("flexframesync_decode_header():\n");
     printf("    header crc  : %s\n", _fs->header_valid ? "pass" : "FAIL");
+    printf("    check       : %s\n", crc_scheme_str[check][1]);
+    printf("    fec (inner) : %s\n", fec_scheme_str[fec0][1]);
+    printf("    fec (outer) : %s\n", fec_scheme_str[fec1][1]);
     printf("    mod scheme  : %u-%s\n", 1<<mod_depth, modulation_scheme_str[mod_scheme][0]);
     printf("    payload len : %u\n", payload_len);
     printf("    num symbols : %u\n", _fs->num_payload_symbols);

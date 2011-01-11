@@ -116,12 +116,15 @@ int main(int argc, char *argv[]) {
 
     // create flexframegen object
     flexframegenprops_s fgprops;
-    fgprops.rampup_len = 64;
+    fgprops.rampup_len  = 64;
     fgprops.phasing_len = 64;
     fgprops.payload_len = packet_len;
-    fgprops.mod_scheme = mod_scheme;
-    fgprops.mod_bps = bps;
-    fgprops.rampdn_len = 64;
+    fgprops.check       = CRC_NONE;
+    fgprops.fec0        = FEC_NONE;
+    fgprops.fec1        = FEC_NONE;
+    fgprops.mod_scheme  = mod_scheme;
+    fgprops.mod_bps     = bps;
+    fgprops.rampdn_len  = 64;
     flexframegen fg = flexframegen_create(&fgprops);
     if (verbose)
         flexframegen_print(fg);

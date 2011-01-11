@@ -42,6 +42,9 @@ static flexframegenprops_s flexframegenprops_default = {
     16,         // rampup_len
     16,         // phasing_len
     0,          // payload_len
+    CRC_NONE,   // check
+    FEC_NONE,   // fec0
+    FEC_NONE,   // fec1
     MOD_BPSK,   // mod_scheme
     1,          // mod_bps
     16          // rampdn_len
@@ -55,16 +58,16 @@ struct flexframegen_s {
     float complex * ramp_dn;            // ramp down sequence
 
     // header (QPSK)
-    // TODO : use packetizer object for this
     modem mod_header;                   // header QPSK modulator
     packetizer p_header;                // header packetizer
-    unsigned char header[17];           // header data (uncoded)
+    unsigned char header[19];           // header data (uncoded)
     unsigned char header_enc[32];       // header data (encoded)
     unsigned char header_sym[256];      // header symbols
     float complex header_samples[256];  // header samples
 
     // payload
-    modem mod_payload;
+    //packetizer p_payload;               // payload packetizer
+    modem mod_payload;                  // payload modulator
     unsigned char * payload;            // payload data (bytes)
     unsigned char * payload_sym;        // payload symbols (modem input)
     float complex * payload_samples;    // payload samples (modem output)
@@ -95,7 +98,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(MOD_BPSK, 1);
-    fg->p_header   = packetizer_create(17, CRC_32, FEC_HAMMING128, FEC_NONE);
+    fg->p_header   = packetizer_create(19, CRC_16, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
     // initial memory allocation for payload
@@ -154,9 +157,18 @@ void flexframegen_getprops(flexframegen _fg,
 void flexframegen_setprops(flexframegen _fg,
                            flexframegenprops_s * _props)
 {
-    // TODO : flexframegen_setprops() validate input
+    // validate input
     if (_props->mod_bps == 0) {
         fprintf(stderr, "error: flexframegen_setprops(), modulation depth must be greater than 0\n");
+        exit(1);
+    } else if (_props->check == CRC_UNKNOWN || _props->check >= LIQUID_NUM_CRC_SCHEMES) {
+        fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported CRC scheme\n");
+        exit(1);
+    } else if (_props->fec0 == FEC_UNKNOWN || _props->fec1 == FEC_UNKNOWN) {
+        fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported FEC scheme\n");
+        exit(1);
+    } else if (_props->mod_scheme == MOD_UNKNOWN ) {
+        fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported modulation scheme\n");
         exit(1);
     }
 
@@ -182,7 +194,11 @@ void flexframegen_print(flexframegen _fg)
     printf("    ramp up len         :   %u\n", _fg->props.rampup_len);
     printf("    phasing len         :   %u\n", _fg->props.phasing_len);
     printf("    p/n sequence len    :   %u\n", _fg->pnsequence_len);
-    printf("    payload len         :   %u bytes\n", _fg->props.payload_len);
+    printf("    payload len, uncoded:   %u bytes\n", 0);
+    printf("    validity check      :   %s\n", crc_scheme_str[_fg->props.check][1]);
+    printf("    fec (inner)         :   %s\n", fec_scheme_str[_fg->props.fec0][1]);
+    printf("    fec (outer)         :   %s\n", fec_scheme_str[_fg->props.fec0][1]);
+    printf("    payload len, coded  :   %u bytes\n", _fg->props.payload_len);
     printf("    modulation scheme   :   %u-%s\n",
         1<<_fg->props.mod_bps,
         modulation_scheme_str[_fg->props.mod_scheme][0]);
@@ -327,8 +343,16 @@ void flexframegen_encode_header(flexframegen _fg)
     _fg->header[16]  = ( _fg->props.mod_scheme & 0x1f) << 3;
     _fg->header[16] |= ((_fg->props.mod_bps-1) & 0x07);
 
+    // add CRC, forward error-correction schemes
+    //  CRC     : most-significant 3 bits of [17]
+    //  fec0    : least-significant 5 bits of [17]
+    //  fec1    : least-significant 5 bits of [18]
+    _fg->header[17]  = (_fg->props.check & 0x07) << 5;
+    _fg->header[17] |= (_fg->props.fec0) & 0x1f;
+    _fg->header[18]  = (_fg->props.fec1) & 0x1f;
+
     // scramble header
-    scramble_data(_fg->header, 17);
+    scramble_data(_fg->header, 19);
 
     // run packet encoder
     packetizer_encode(_fg->p_header, _fg->header, _fg->header_enc);
