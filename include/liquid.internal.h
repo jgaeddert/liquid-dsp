@@ -386,6 +386,41 @@ unsigned int reverse_uint16(unsigned int _x);
 #define CRC32_POLY 0x04C11DB7
 unsigned int reverse_uint32(unsigned int _x);
 
+//
+// checksum
+//
+unsigned char checksum_generate_key(unsigned char *_data,
+                                    unsigned int _n);
+int checksum_validate_message(unsigned char *_data,
+                              unsigned int _n,
+                              unsigned char _key);
+
+//
+// crc (cyclic redundancy check)
+//
+
+// 8-bit CRC
+unsigned int crc8_generate_key(unsigned char *_data,
+                               unsigned int _n);
+int crc8_validate_message(unsigned char *_data,
+                          unsigned int _n,
+                          unsigned int _key);
+
+// 16-bit CRC
+unsigned int crc16_generate_key(unsigned char *_data,
+                                unsigned int _n);
+int crc16_validate_message(unsigned char *_data,
+                           unsigned int _n,
+                           unsigned int _key);
+
+// 32-bit CRC
+unsigned int crc32_generate_key(unsigned char *_data,
+                                unsigned int _n);
+int crc32_validate_message(unsigned char *_data,
+                           unsigned int _n,
+                           unsigned int _key);
+
+
 // fec : basic object
 struct fec_s {
     // common
