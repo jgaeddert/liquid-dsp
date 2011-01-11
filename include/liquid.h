@@ -3574,6 +3574,11 @@ void ga_search_destroy(ga_search);
 // print search parameter internals
 void ga_search_print(ga_search);
 
+// set population/selection size
+void ga_search_set_population_size(ga_search,
+                                   unsigned int _population_size,
+                                   unsigned int _selection_size);
+
 // Execute the search
 //  _g              :   ga search object
 //  _max_iterations :   maximum number of iterations to run before bailing
