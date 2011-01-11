@@ -93,7 +93,7 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     ga->selection_size = ( ga->population_size >> 2 ) < 2 ? 2 : ga->population_size >> 2;
 
     // allocate internal arrays
-    ga->population = (chromosome*) malloc( sizeof(struct chromosome_s)*(ga->population_size) );
+    ga->population = (chromosome*) malloc( sizeof(chromosome)*(ga->population_size) );
     ga->utility = (float*) calloc( sizeof(float), ga->population_size );
 
     // create optimum chromosome (clone)
