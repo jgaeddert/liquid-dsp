@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ *                                        Institute & State University
  *
  * This file is part of liquid.
  *
@@ -691,44 +691,47 @@ void liquid_estimate_carrier_nonlinear(float * _t,
 //
 
 
+// available CRC schemes
+#define LIQUID_NUM_CRC_SCHEMES  7
+typedef enum {
+    CRC_UNKNOWN=0,
+    CRC_NONE,           // no error-detection
+    CRC_CHECKSUM,       // 8-bit checksum
+    CRC_8,              // 8-bit CRC
+    CRC_16,             // 16-bit CRC
+    CRC_24,             // 24-bit CRC
+    CRC_32              // 32-bit CRC
+} crc_scheme;
 
-#define LIQUID_FEC_MANGLE_CRC32(name)       LIQUID_CONCAT(fec_crc32,name)
-#define LIQUID_FEC_MANGLE_CHECKSUM32(name)  LIQUID_CONCAT(fec_checksum32,name)
+// pretty names for crc schemes
+extern const char * crc_scheme_str[LIQUID_NUM_CRC_SCHEMES][2];
 
-// Macro: crc/checksum
-//  CRC : name-mangling macro
-#define LIQUID_CRC_DEFINE_API(CRC)                              \
-typedef struct CRC(_s) * CRC();                                 \
-CRC() CRC(_create)();                                           \
-void CRC(_destroy)(CRC() _crc);                                 \
-void CRC(_print)(CRC() _crc);                                   \
-void CRC(_generate_key)(CRC() _crc,                             \
-                        unsigned char * _msg,                   \
-                        unsigned int _msg_len);                 \
-int  CRC(_validate_key)(CRC() _crc,                             \
-                        unsigned char * _msg,                   \
-                        unsigned int _msg_len);
+// returns crc_scheme based on input string
+crc_scheme liquid_getopt_str2crc(const char * _str);
 
-LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CRC32)
-LIQUID_CRC_DEFINE_API(LIQUID_FEC_MANGLE_CHECKSUM32)
+// get length of CRC (bytes)
+unsigned int crc_get_length(crc_scheme _scheme);
 
+// generate error-detection key
 //
-// checksum
-//
-unsigned char checksum_generate_key(unsigned char *_data,
-                                    unsigned int _n);
-int checksum_validate_message(unsigned char *_data,
-                              unsigned int _n,
-                              unsigned char _key);
+//  _scheme     :   error-detection scheme
+//  _msg        :   input data message, [size: _n x 1]
+//  _n          :   input data message size
+unsigned int crc_generate_key(crc_scheme _scheme,
+                              unsigned char * _msg,
+                              unsigned int _n);
 
+// validate message using error-detection key
 //
-// crc (cyclic redundancy check)
-//
-unsigned int crc32_generate_key(unsigned char *_data,
-                                unsigned int _n);
-int crc32_validate_message(unsigned char *_data,
-                           unsigned int _n,
-                           unsigned int _key);
+//  _scheme     :   error-detection scheme
+//  _msg        :   input data message, [size: _n x 1]
+//  _n          :   input data message size
+//  _key        :   error-detection key
+int crc_validate_message(crc_scheme _scheme,
+                         unsigned char * _msg,
+                         unsigned int _n,
+                         unsigned int _key);
+
 
 // available FEC schemes
 #define LIQUID_NUM_FEC_SCHEMES  24
@@ -2127,12 +2130,15 @@ void framesync64_set_csma_callbacks(framesync64 _fs,
 
 // frame generator
 typedef struct {
-    unsigned int rampup_len;
-    unsigned int phasing_len;
-    unsigned int payload_len;
-    unsigned int mod_scheme;
-    unsigned int mod_bps;
-    unsigned int rampdn_len;
+    unsigned int rampup_len;    // number of ramp/up symbols
+    unsigned int phasing_len;   // number of phasing symbols
+    unsigned int payload_len;   // uncoded payload length (bytes)
+    unsigned int check;         // data validity check
+    unsigned int fec0;          // forward error-correction scheme (inner)
+    unsigned int fec1;          // forward error-correction scheme (outer)
+    unsigned int mod_scheme;    // modulation scheme
+    unsigned int mod_bps;       // modulation depth (bits/symbol)
+    unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
 typedef struct flexframegen_s * flexframegen;
 flexframegen flexframegen_create(flexframegenprops_s * _props);
@@ -2156,6 +2162,7 @@ void flexframegen_flush(flexframegen _fg,
 //  _header_valid       :   is header valid? (0:no, 1:yes)
 //  _payload            :   payload data [size: _payload_len]
 //  _payload_len        :   length of payload (bytes)
+//  _payload_valid      :   is payload valid? (0:no, 1:yes)
 //  _userdata           :   pointer to userdata
 //
 // extensions:
@@ -2165,6 +2172,7 @@ typedef int (*flexframesync_callback)(unsigned char * _header,
                                       int _header_valid,
                                       unsigned char * _payload,
                                       unsigned int _payload_len,
+                                      int _payload_valid,
                                       framesyncstats_s _stats,
                                       void * _userdata);
 typedef struct flexframesync_s * flexframesync;
@@ -2271,44 +2279,48 @@ LIQUID_BSYNC_DEFINE_API(BSYNC_MANGLE_CCCF,
 // computes the number of encoded bytes after packetizing
 //
 //  _n      :   number of uncoded input bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_enc_msg_len(unsigned int _n,
+                                            int _crc,
                                             int _fec0,
                                             int _fec1);
 
 // computes the number of decoded bytes before packetizing
 //
 //  _k      :   number of encoded bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 unsigned int packetizer_compute_dec_msg_len(unsigned int _k,
+                                            int _crc,
                                             int _fec0,
                                             int _fec1);
 
 typedef struct packetizer_s * packetizer;
 
-// packetizer_create()
-//
 // create packetizer object
 //
 //  _n      :   number of uncoded intput bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_create(unsigned int _dec_msg_len,
+                             int _crc,
                              int _fec0,
                              int _fec1);
 
-// packetizer_recreate()
-//
 // re-create packetizer object
 //
 //  _p      :   initialz packetizer object
 //  _n      :   number of uncoded intput bytes
+//  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
 packetizer packetizer_recreate(packetizer _p,
                                unsigned int _dec_msg_len,
+                               int _crc,
                                int _fec0,
                                int _fec1);
 
@@ -3573,6 +3585,11 @@ void ga_search_destroy(ga_search);
 
 // print search parameter internals
 void ga_search_print(ga_search);
+
+// set population/selection size
+void ga_search_set_population_size(ga_search,
+                                   unsigned int _population_size,
+                                   unsigned int _selection_size);
 
 // Execute the search
 //  _g              :   ga search object

@@ -82,7 +82,10 @@ void interleaver_init_block(interleaver _q)
     L = _q->len;
 
     M = 1<<(M/2);   // M ~ sqrt(L)
-    M--;            // help ensure M is not exactly sqrt(L)
+    if (M>1) M--;   // help ensure M is not exactly sqrt(L)
+
+    if (M==0)
+        fprintf(stderr,"warning: interleaver_init_block(), M=0\n");
 
     N = L / M;
     N += (L > (M*N)) ? 1 : 0; // ensures m*n >= _q->len

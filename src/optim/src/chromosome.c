@@ -79,8 +79,12 @@ chromosome chromosome_create(unsigned int * _bits_per_trait,
 chromosome chromosome_create_basic(unsigned int _num_traits,
                                    unsigned int _bits_per_trait)
 {
-    if (_num_traits < 1) {
+    // validate input
+    if (_num_traits == 0) {
+        fprintf(stderr,"error: chromosome_create_basic(), must have at least one trait\n");
+        exit(1);
     }
+
     unsigned int * bpt = (unsigned int *) malloc(_num_traits*sizeof(unsigned int));
     unsigned int i;
     for (i=0; i<_num_traits; i++)

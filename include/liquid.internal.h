@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
- *                                      Institute & State University
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ *                                        Institute & State University
  *
  * This file is part of liquid.
  *
@@ -377,10 +377,24 @@ float liquid_unwrapcf_iterative_median_step(float * _t,
 
 // checksum / cyclic redundancy check (crc)
 
-#define CRC32_POLY 0x04C11DB7
-extern unsigned char crc32_tab[256];
+#define CRC8_POLY 0x07
 unsigned char reverse_byte(unsigned char _x);
+
+#define CRC24_POLY 0x5D6DCB
+unsigned int reverse_uint24(unsigned int _x);
+
+#define CRC16_POLY 0x8005
+unsigned int reverse_uint16(unsigned int _x);
+
+#define CRC32_POLY 0x04C11DB7
 unsigned int reverse_uint32(unsigned int _x);
+
+unsigned int checksum_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc8_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc16_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc24_generate_key(unsigned char * _msg, unsigned int _msg_len);
+unsigned int crc32_generate_key(unsigned char * _msg, unsigned int _msg_len);
+
 
 // fec : basic object
 struct fec_s {
@@ -1132,7 +1146,8 @@ struct packetizer_s {
     unsigned int msg_len;
     unsigned int packet_len;
 
-    unsigned int crc32_key;
+    crc_scheme check;
+    unsigned int crc_length;
 
     struct fecintlv_plan * plan;
     unsigned int plan_len;
@@ -1841,10 +1856,10 @@ void ga_search_rank(ga_search);
 //  _rank       :   output rank array (indices) [size: _len x 1]
 //  _len        :   length of input array
 //  _descending :   descending/ascending
-void ga_search_sort(float *_v,
-                    unsigned int* _rank,
-                    unsigned int _len,
-                    int _descending);
+void optim_sort(float *_v,
+                unsigned int * _rank,
+                unsigned int _len,
+                int _descending);
 
 
 //

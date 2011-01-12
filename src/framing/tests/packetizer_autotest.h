@@ -27,28 +27,32 @@ void autotest_packetizer_length()
     // coding schemes
     fec_scheme fec0 = FEC_CONV_V27;
     fec_scheme fec1 = FEC_REP3;
+    crc_scheme check = CRC_32;
     unsigned int n = 10;  // decoded message length
 
     // compute encoded message length
-    unsigned int k = packetizer_compute_enc_msg_len(n, fec0, fec1);
+    unsigned int k = packetizer_compute_enc_msg_len(n, check, fec0, fec1);
 
     // estimate decoded message length
-    unsigned int m = packetizer_compute_dec_msg_len(k, fec0, fec1);
+    unsigned int m = packetizer_compute_dec_msg_len(k, check, fec0, fec1);
 
     // ensure n==m
     CONTEND_EQUALITY(n, m);
 }
 
 // Help function to keep code base small
-void packetizer_test_codec(unsigned int _n, fec_scheme _fec0, fec_scheme _fec1)
+void packetizer_test_codec(unsigned int _n,
+                           crc_scheme _crc,
+                           fec_scheme _fec0,
+                           fec_scheme _fec1)
 {
     unsigned char msg_tx[_n];
     unsigned char msg_rx[_n];
-    unsigned int pkt_len = packetizer_compute_enc_msg_len(_n,_fec0,_fec1);
+    unsigned int pkt_len = packetizer_compute_enc_msg_len(_n,_crc,_fec0,_fec1);
     unsigned char packet[pkt_len];
 
     // create object
-    packetizer p = packetizer_create(_n,_fec0,_fec1);
+    packetizer p = packetizer_create(_n,_crc,_fec0,_fec1);
 
     if (liquid_autotest_verbose)
         packetizer_print(p);
@@ -73,24 +77,10 @@ void packetizer_test_codec(unsigned int _n, fec_scheme _fec0, fec_scheme _fec1)
     packetizer_destroy(p);
 }
 
-const fec_scheme ft[3] = {
-    FEC_NONE,
-    FEC_REP3,
-    FEC_HAMMING74
-};
-
 //
 // AUTOTESTS
 //
-void autotest_packetizer_n16_0_0()  { packetizer_test_codec(16,ft[0],ft[0]); }
-void autotest_packetizer_n16_0_1()  { packetizer_test_codec(16,ft[0],ft[1]); }
-void autotest_packetizer_n16_0_2()  { packetizer_test_codec(16,ft[0],ft[2]); }
-
-void autotest_packetizer_n16_1_0()  { packetizer_test_codec(16,ft[1],ft[0]); }
-void autotest_packetizer_n16_1_1()  { packetizer_test_codec(16,ft[1],ft[1]); }
-void autotest_packetizer_n16_1_2()  { packetizer_test_codec(16,ft[1],ft[2]); }
-
-void autotest_packetizer_n16_2_0()  { packetizer_test_codec(16,ft[2],ft[0]); }
-void autotest_packetizer_n16_2_1()  { packetizer_test_codec(16,ft[2],ft[1]); }
-void autotest_packetizer_n16_2_2()  { packetizer_test_codec(16,ft[2],ft[2]); }
+void autotest_packetizer_n16_0_0()  { packetizer_test_codec(16, CRC_32, FEC_NONE,      FEC_NONE);       }
+void autotest_packetizer_n16_0_1()  { packetizer_test_codec(16, CRC_32, FEC_NONE,      FEC_REP3);       }
+void autotest_packetizer_n16_0_2()  { packetizer_test_codec(16, CRC_32, FEC_NONE,      FEC_HAMMING74);  }
 

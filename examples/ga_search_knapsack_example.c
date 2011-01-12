@@ -33,17 +33,19 @@ void knapsack_print(knapsack _q);
 float knapsack_utility(void * _userdata, chromosome _c);
 
 int main() {
-    unsigned int num_items = 8;         // number of items in the knapsack
-    unsigned int num_iterations = 100;  // number of iterations to run
-    float capacity = 1.0f;
+    unsigned int num_items = 1000;      // number of items in the knapsack
+    unsigned int num_iterations = 8000; // number of iterations to run
+    float capacity = 20.0f;             // total capacity of the knapsack
+    unsigned int population_size = 100; // number of chromosomes in the population
+    float mutation_rate = 0.10f;        // mutation rate of the GA
 
     unsigned int i;
 
     // create items (random weight, value)
     struct knapsack_item_s items[num_items];
     for (i=0; i<num_items; i++) {
-        items[i].weight = (float)(1 + rand() % 9) / 10.0f; //randf();
-        items[i].value  = (float)(1 + rand() % 9) / 10.0f; //randf();
+        items[i].weight = randf();
+        items[i].value  = randf();
     }
 
     // create knapsack
@@ -54,10 +56,7 @@ int main() {
 
     // create prototype chromosome (1 bit/item)
     chromosome prototype = chromosome_create_basic(num_items, 1);
-
-    float optimum_vect[num_items];
-    for (i=0; i<num_items; i++)
-        optimum_vect[i] = 0.0f;
+    chromosome_print(prototype);
 
     float optimum_utility;
 
@@ -68,11 +67,12 @@ int main() {
     fprintf(fid,"close all;\n");
 
     // create ga_search object
-    ga_search ga = ga_search_create(&knapsack_utility,
-                                    (void*)bag,
-                                    prototype,
-                                    LIQUID_OPTIM_MAXIMIZE);
-    ga_search_print(ga);
+    ga_search ga = ga_search_create_advanced(&knapsack_utility,
+                                             (void*)bag,
+                                             prototype,
+                                             LIQUID_OPTIM_MAXIMIZE,
+                                             population_size,
+                                             mutation_rate);
 
     // execute search
     //optimum_utility = ga_search_run(ga, num_iterations, -1e-6f);
@@ -83,22 +83,34 @@ int main() {
         ga_search_evolve(ga);
 
         ga_search_getopt(ga, prototype, &optimum_utility);
-        fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
-
         if (((i+1)%100)==0)
-            ga_search_print(ga);
+            printf("  %4u : %12.8f;\n", i+1, optimum_utility);
+
+        fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
     }
 
     // print results
     printf("\n");
-    ga_search_print(ga);
+
+    ga_search_getopt(ga, prototype, &optimum_utility);
+    float total_value = 0.0f;
+    float total_weight = 0.0f;
+    for (i=0; i<num_items; i++) {
+        if ( chromosome_value(prototype,i) == 1 ) {
+            // include this item into knapsack
+            total_value  += items[i].value;
+            total_weight += items[i].weight;
+        }
+        printf("  %3u : %8.4f @ $%8.4f %c\n", i, items[i].weight, items[i].value, chromosome_value(prototype,i) ? '*' : ' ');
+    }
+
 
     fprintf(fid,"figure;\n");
     //fprintf(fid,"semilogy(u);\n");
     fprintf(fid,"plot(u);\n");
     fprintf(fid,"xlabel('iteration');\n");
     fprintf(fid,"ylabel('utility');\n");
-    fprintf(fid,"title('gradient search results');\n");
+    fprintf(fid,"title('GA search results');\n");
     fprintf(fid,"grid on;\n");
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
@@ -139,14 +151,12 @@ void knapsack_print(knapsack _q)
     unsigned int i;
     printf("knapsack: %u items, capacity : %12.8f\n", _q->num_items, _q->capacity);
     for (i=0; i<_q->num_items; i++)
-        printf("  %3u : %4.1f @ $%4.1f\n", i, _q->items[i].weight, _q->items[i].value);
+        printf("  %3u : %8.4f @ $%8.4f\n", i, _q->items[i].weight, _q->items[i].value);
 }
 
 // compute utility for this chromosome
 float knapsack_utility(void * _userdata, chromosome _c)
 {
-    // validate input...
-
     knapsack _q = (knapsack) _userdata;
 
     // chromosome represents number of each item in knapsack
@@ -154,10 +164,11 @@ float knapsack_utility(void * _userdata, chromosome _c)
     float total_weight = 0;
     unsigned int i;
     for (i=0; i<_q->num_items; i++) {
-        unsigned int n = chromosome_value(_c,i);
-
-        total_value  += n * _q->items[i].value;
-        total_weight += n * _q->items[i].weight;
+        if ( chromosome_value(_c,i) == 1 ) {
+            // include this item into knapsack
+            total_value  += _q->items[i].value;
+            total_weight += _q->items[i].weight;
+        }
     }
 
     // check for invalid solution

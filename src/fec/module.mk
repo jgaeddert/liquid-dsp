@@ -27,7 +27,6 @@ module_name     := fec
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=			\
-	checksum.c			\
 	crc.c				\
 	fec.c				\
 	fec_conv.c			\
@@ -50,7 +49,6 @@ local_s_files	:=			\
 # within $(local_dir)
 #
 local_t_files	:=			\
-	checksum_autotest.h		\
 	crc_autotest.h			\
 	fec_autotest.h			\
 	fec_conv_autotest.h		\

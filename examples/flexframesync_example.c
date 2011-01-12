@@ -54,6 +54,7 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
+                    int _rx_payload_valid,
                     framesyncstats_s _stats,
                     void * _userdata);
 
@@ -116,12 +117,15 @@ int main(int argc, char *argv[]) {
 
     // create flexframegen object
     flexframegenprops_s fgprops;
-    fgprops.rampup_len = 64;
+    fgprops.rampup_len  = 64;
     fgprops.phasing_len = 64;
     fgprops.payload_len = packet_len;
-    fgprops.mod_scheme = mod_scheme;
-    fgprops.mod_bps = bps;
-    fgprops.rampdn_len = 64;
+    fgprops.check       = CRC_NONE;
+    fgprops.fec0        = FEC_NONE;
+    fgprops.fec1        = FEC_NONE;
+    fgprops.mod_scheme  = mod_scheme;
+    fgprops.mod_bps     = bps;
+    fgprops.rampdn_len  = 64;
     flexframegen fg = flexframegen_create(&fgprops);
     if (verbose)
         flexframegen_print(fg);
@@ -297,6 +301,7 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
+                    int _rx_payload_valid,
                     framesyncstats_s _stats,
                     void * _userdata)
 {
@@ -310,6 +315,7 @@ static int callback(unsigned char * _rx_header,
         printf("    rssi                : %12.8f dB\n", _stats.rssi);
         printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
         printf("    payload length      : %u\n", _rx_payload_len);
+        printf("    payload crc         : %s\n", _rx_payload_valid ?  "pass" : "FAIL");
     }
     if (!_rx_header_valid)
         return 0;

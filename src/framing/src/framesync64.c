@@ -170,8 +170,8 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
     // create header/payload packetizers
-    fs->p_header  = packetizer_create(24, FEC_NONE, FEC_HAMMING74);
-    fs->p_payload = packetizer_create(64, FEC_NONE, FEC_HAMMING74);
+    fs->p_header  = packetizer_create(24, CRC_32, FEC_NONE, FEC_HAMMING74);
+    fs->p_payload = packetizer_create(64, CRC_32, FEC_NONE, FEC_HAMMING74);
 
     // create demod
     fs->demod_payload = modem_create(MOD_QPSK, 2);

@@ -18,8 +18,7 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CRC_AUTOTEST_H__
-#define __CRC_AUTOTEST_H__
+#include <string.h>
 
 #include "autotest/autotest.h"
 #include "liquid.h"
@@ -42,9 +41,26 @@ void autotest_reverse_byte()
 }
 
 //
+// AUTOTEST: reverse uint16_t
+//
+void autotest_reverse_uint16()
+{
+    // 1111 0111 0101 1001
+    unsigned int b = 0xF759;
+
+    // 1001 1010 1110 1111
+    unsigned int r = 0x9AEF;
+
+    // 
+    CONTEND_EQUALITY(reverse_uint16(b),r);
+}
+
+
+
+//
 // AUTOTEST: reverse uint32_t
 //
-void autotest_reverse_uint()
+void autotest_reverse_uint32()
 {
     // 0110 0010 1101 1001 0011 1011 1111 0000
     unsigned int b = 0x62D93BF0;
@@ -56,23 +72,51 @@ void autotest_reverse_uint()
     CONTEND_EQUALITY(reverse_uint32(b),r);
 }
 
+// 
+// autotest helper function
 //
-// AUTOTEST: crc32
-//
-void autotest_crc32()
+void validate_crc(crc_scheme _check,
+                  unsigned int _n)
 {
-    unsigned char data[] = {0x25, 0x62, 0x3F, 0x52};
-    unsigned int key = crc32_generate_key(data, 4);
+    unsigned int i;
+
+    // generate pseudo-random data
+    unsigned char data[_n];
+    msequence ms = msequence_create(9);
+    for (i=0; i<_n; i++)
+        data[i] = msequence_generate_symbol(ms,8);
+    msequence_destroy(ms);
+
+    // generate key
+    unsigned int key = crc_generate_key(_check, data, _n);
 
     // contend data/key are valid
-    CONTEND_EXPRESSION(crc32_validate_message(data, 4, key));
+    CONTEND_EXPRESSION(crc_validate_message(_check, data, _n, key));
 
-    // corrupt data
-    data[0]++;
+    //
+    unsigned char data_corrupt[_n];
+    unsigned int j;
+    for (i=0; i<_n; i++) {
+        for (j=0; j<8; j++) {
+            // copy original data sequence
+            memmove(data_corrupt, data, _n*sizeof(unsigned char));
 
-    // contend data/key are invalid
-    CONTEND_EXPRESSION(!crc32_validate_message(data, 4, key));
+            // flip bit j at byte i
+            data[i] ^= (1 << j);
+
+            // contend data/key are invalid
+            CONTEND_EXPRESSION(crc_validate_message(_check, data, _n, key)==0);
+        }
+    }
 }
 
-#endif 
+// 
+// AUTOTESTS : validate error-detection tests
+//
+void autotest_checksum() { validate_crc(CRC_CHECKSUM,   16); }
+void autotest_crc8()     { validate_crc(CRC_8,          16); }
+void autotest_crc16()    { validate_crc(CRC_16,         64); }
+void autotest_crc24()    { validate_crc(CRC_24,         64); }
+void autotest_crc32()    { validate_crc(CRC_32,         64); }
+
 

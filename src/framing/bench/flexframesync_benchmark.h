@@ -37,6 +37,7 @@ static int callback(unsigned char * _rx_header,
                     int _rx_header_valid,
                     unsigned char * _rx_payload,
                     unsigned int _rx_payload_len,
+                    int _rx_payload_valid,
                     framesyncstats_s _stats,
                     void * _userdata)
 {

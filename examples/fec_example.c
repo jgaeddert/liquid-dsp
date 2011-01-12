@@ -36,11 +36,11 @@ int main(int argc, char*argv[])
 {
     // options
     unsigned int n = 4;             // data length (bytes)
-    unsigned int nmax = 5000;       // maximum data length
+    unsigned int nmax = 2048;       // maximum data length
     fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
 
     int dopt;
-    while((dopt = getopt(argc,argv,"uhc:n:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhn:c:")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage(); return 0;
@@ -48,14 +48,13 @@ int main(int argc, char*argv[])
         case 'c':
             fs = liquid_getopt_str2fec(optarg);
             if (fs == FEC_UNKNOWN) {
-                printf("error: unknown/unsupported modulation scheme \"%s\"\n\n",optarg);
-                usage();
-                exit(-1);
+                fprintf(stderr,"error: unknown/unsupported fec scheme \"%s\"\n\n",optarg);
+                exit(1);
             }
             break;
         default:
-            printf("error: unknown option\n");
-            exit(-1);
+            fprintf(stderr,"error: unknown option\n");
+            exit(1);
         }
     }
 
@@ -87,7 +86,7 @@ int main(int argc, char*argv[])
     // corrupt encoded message
     memmove(msg_cor, msg_enc, n_enc);
     msg_cor[0] ^= 0x04; // position 5
-    /*
+#if 0
     msg_cor[1] ^= 0x04; //
     msg_cor[2] ^= 0x02; //
     msg_cor[3] ^= 0x01; //
@@ -95,7 +94,7 @@ int main(int argc, char*argv[])
     msg_cor[5] ^= 0x40; //
     msg_cor[6] ^= 0x20; //
     msg_cor[7] ^= 0x10; //
-    */
+#endif
 
     // decode message
     fec_decode(q, n, msg_cor, msg_dec);

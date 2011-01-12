@@ -23,12 +23,10 @@
 // ga_search.c
 //
 
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <float.h>
 
 #include "liquid.internal.h"
 
@@ -91,13 +89,11 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     ga->selection_size = ( ga->population_size >> 2 ) < 2 ? 2 : ga->population_size >> 2;
 
     // allocate internal arrays
-    ga->population = (chromosome*) malloc( sizeof(struct chromosome_s)*(ga->population_size) );
+    ga->population = (chromosome*) malloc( sizeof(chromosome)*(ga->population_size) );
     ga->utility = (float*) calloc( sizeof(float), ga->population_size );
-    ga->rank = (unsigned int*) calloc( sizeof(unsigned int), ga->population_size );
 
     // create optimum chromosome (clone)
     ga->c = chromosome_create_clone(_parent);
-    ga->utility_opt = ga->minimize ? FLT_MAX : -FLT_MAX;
 
     //printf("num_parameters: %d\n", ga->num_parameters);
     //printf("population_size: %d\n", ga->population_size);
@@ -118,6 +114,10 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     // rank chromosomes
     ga_search_rank(ga);
 
+    // set global utility optimum
+    ga->utility_opt = ga->utility[0];
+
+    // return object
     return ga;
 }
 
@@ -133,7 +133,6 @@ void ga_search_destroy(ga_search _g)
     chromosome_destroy(_g->c);
 
     free(_g->utility);
-    free(_g->rank);
     free(_g);
 }
 
@@ -147,12 +146,51 @@ void ga_search_print(ga_search _g)
     printf("    mutation rate   :   %12.8f\n", _g->mutation_rate);
     printf("population:\n");
     unsigned int i;
-    unsigned int k; // rank[i]
     for (i=0; i<_g->population_size; i++) {
-        k = _g->rank[i];
-        printf("%4u: [%8.4f] ", k, _g->utility[k]);
-        chromosome_printf( _g->population[k] );
+        printf("%4u: [%8.4f] ", i, _g->utility[i]);
+        chromosome_printf( _g->population[i] );
     }
+}
+
+// set population/selection size
+void ga_search_set_population_size(ga_search _g,
+                                   unsigned int _population_size,
+                                   unsigned int _selection_size)
+{
+    // validate input
+    if (_population_size < 2) {
+        fprintf(stderr,"error: ga_search_set_population_size(), population must be at least 2\n");
+        exit(1);
+    } else if (_selection_size == 0) {
+        fprintf(stderr,"error: ga_search_set_population_size(), selection size must be greater than zero\n");
+        exit(1);
+    } else if (_selection_size >= _population_size) {
+        fprintf(stderr,"error: ga_search_set_population_size(), selection size must be less than population\n");
+        exit(1);
+    }
+
+    // re-size arrays
+    _g->population = (chromosome*) realloc( _g->population, _population_size*sizeof(chromosome) );
+    _g->utility = (float*) realloc( _g->utility, _population_size*sizeof(float) );
+
+    // initialize new chromosomes (copies)
+    if (_population_size > _g->population_size) {
+
+        unsigned int i;
+        unsigned int k = _g->population_size-1; // least optimal
+
+        for (i=_g->population_size; i<_population_size; i++) {
+            // clone chromosome, copying internal values
+            _g->population[i] = chromosome_create_clone(_g->population[k]);
+
+            // copy utility
+            _g->utility[i] = _g->utility[k];
+        }
+    }
+
+    // set internal variables
+    _g->population_size = _population_size;
+    _g->selection_size  = _selection_size;
 }
 
 // Execute the search
@@ -168,7 +206,7 @@ float ga_search_run(ga_search _g,
         i++;
         ga_search_evolve(_g);
     } while (
-        optim_threshold_switch(_g->utility[_g->rank[0]], _target_utility, _g->minimize) &&
+        optim_threshold_switch(_g->utility[0], _target_utility, _g->minimize) &&
         i < _max_iterations);
 
     // return optimum utility
@@ -191,14 +229,14 @@ void ga_search_evolve(ga_search _g)
     ga_search_rank(_g);
 
     if ( optim_threshold_switch(_g->utility_opt,
-                                _g->utility[_g->rank[0]],
+                                _g->utility[0],
                                 _g->minimize) )
     {
         // update optimum
-        _g->utility_opt = _g->utility[_g->rank[0]];
+        _g->utility_opt = _g->utility[0];
 
         // copy optimum chromosome
-        chromosome_copy(_g->population[_g->rank[0]], _g->c);
+        chromosome_copy(_g->population[0], _g->c);
 
 #if LIQUID_DEBUG_GA_SEARCH
         printf("  utility: %0.2E", _g->utility_opt);
@@ -233,24 +271,21 @@ void ga_search_evaluate(ga_search _g)
 // crossover population
 void ga_search_crossover(ga_search _g)
 {
-    unsigned int p1, p2;    // index of parents
-    unsigned int c;         // index of child
+    chromosome p1, p2;      // parental chromosomes
+    chromosome c;           // child chromosome
     unsigned int threshold;
 
     unsigned int i;
     for (i=_g->selection_size; i<_g->population_size; i++) {
         // ensure fittest member is used at least once as parent
-        p1 = (i==_g->selection_size) ? _g->rank[0] : _g->rank[rand() % _g->selection_size];
-        p2 = _g->rank[rand() % _g->selection_size];
+        p1 = (i==_g->selection_size) ? _g->population[0] : _g->population[rand() % _g->selection_size];
+        p2 = _g->population[rand() % _g->selection_size];
         threshold = rand() % _g->bits_per_chromosome;
 
-        c = _g->rank[i];
+        c = _g->population[i];
 
         //printf("  ga_search_crossover, p1: %d, p2: %d, c: %d\n", p1, p2, c);
-        chromosome_crossover(_g->population[p1],
-                             _g->population[p2],
-                             _g->population[c],
-                             threshold);
+        chromosome_crossover(p1, p2, c, threshold);
     }
 }
 
@@ -275,39 +310,24 @@ void ga_search_mutate(ga_search _g)
 // rank population by fitness
 void ga_search_rank(ga_search _g)
 {
-    // execute sort algorithm
-    ga_search_sort(_g->utility,
-                   _g->rank,
-                   _g->population_size,
-                   !(_g->minimize) );
-}
+    unsigned int i, j;
+    float u_tmp;        // temporary utility placeholder
+    chromosome c_tmp;   // temporary chromosome placeholder (pointer)
 
-// sort values by index
-//  _v          :   input values [size: _len x 1]
-//  _rank       :   output rank array (indices) [size: _len x 1]
-//  _len        :   length of input array
-//  _descending :   descending/ascending
-void ga_search_sort(float *_v,
-                    unsigned int* _rank,
-                    unsigned int _len,
-                    int _descending)
-{
-    unsigned int i, j, tmp_index;
+    for (i=0; i<_g->population_size; i++) {
+        for (j=_g->population_size-1; j>i; j--) {
+            if ( optim_threshold_switch(_g->utility[j], _g->utility[j-1], !(_g->minimize)) ) {
+                // swap chromosome pointers
+                c_tmp = _g->population[j];
+                _g->population[j] = _g->population[j-1];
+                _g->population[j-1] = c_tmp;
 
-    for (i=0; i<_len; i++)
-        _rank[i] = i;
-
-    for (i=0; i<_len; i++) {
-        for (j=_len-1; j>i; j--) {
-            //if (_v[_rank[j]]>_v[_rank[j-1]]) {
-            if ( optim_threshold_switch(_v[_rank[j]], _v[_rank[j-1]], _descending) ) {
-                // swap elements
-                tmp_index = _rank[j];
-                _rank[j] = _rank[j-1];
-                _rank[j-1] = tmp_index;
+                // swap utility values
+                u_tmp = _g->utility[j];
+                _g->utility[j] = _g->utility[j-1];
+                _g->utility[j-1] = u_tmp;
             }
         }
     }
 }
-
 
