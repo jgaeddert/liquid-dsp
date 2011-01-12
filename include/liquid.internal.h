@@ -500,12 +500,7 @@ void fec_rep5_decode(fec _q,
                      unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
 
-// Hamming(8,4)
-unsigned char fec_hamming84_compute_syndrome(unsigned char _r);
-unsigned char fec_hamming84_decode_symbol(unsigned char _r);
-
 // Hamming(7,4)
-unsigned char fec_hamming74_compute_syndrome(unsigned char _r);
 fec fec_hamming74_create(void *_opts);
 void fec_hamming74_destroy(fec _q);
 void fec_hamming74_print(fec _q);
@@ -514,6 +509,19 @@ void fec_hamming74_encode(fec _q,
                           unsigned char * _msg_dec,
                           unsigned char * _msg_enc);
 void fec_hamming74_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
+
+// Hamming(8,4)
+fec fec_hamming84_create(void *_opts);
+void fec_hamming84_destroy(fec _q);
+void fec_hamming84_print(fec _q);
+void fec_hamming84_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_dec,
+                          unsigned char * _msg_enc);
+void fec_hamming84_decode(fec _q,
                           unsigned int _dec_msg_len,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);

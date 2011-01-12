@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
+ *                                Institute & State University
  *
  * This file is part of liquid.
  *
@@ -23,85 +24,120 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "liquid.internal.h"
 
-#define HAMMING84_H0    0xaa
-#define HAMMING84_H1    0x66
-#define HAMMING84_H2    0x1e
+// encoder look-up table
+unsigned char hamming84_enc_gentab[16] = {
+    0x00, 0xd2, 0x55, 0x87, 0x99, 0x4b, 0xcc, 0x1e,
+    0xe1, 0x33, 0xb4, 0x66, 0x78, 0xaa, 0x2d, 0xff};
 
-static unsigned char hamming84_enc[] = {
-    0x00,   0xd3,   0x54,   0x87,
-    0x98,   0x4b,   0xcc,   0x1f,
-    0xe0,   0x33,   0xb4,   0x67,
-    0x78,   0xab,   0x2c,   0xff
-};
+// decoder look-up table
+unsigned char hamming84_dec_gentab[256] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x03,
+    0x00, 0x00, 0x05, 0x05, 0x0e, 0x0e, 0x07, 0x07,
+    0x00, 0x00, 0x09, 0x09, 0x02, 0x02, 0x07, 0x07,
+    0x04, 0x04, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
+    0x00, 0x00, 0x09, 0x09, 0x0e, 0x0e, 0x0b, 0x0b,
+    0x0e, 0x0e, 0x0d, 0x0d, 0x0e, 0x0e, 0x0e, 0x0e,
+    0x09, 0x09, 0x09, 0x09, 0x0a, 0x0a, 0x09, 0x09,
+    0x0c, 0x0c, 0x09, 0x09, 0x0e, 0x0e, 0x07, 0x07,
+    0x00, 0x00, 0x05, 0x05, 0x02, 0x02, 0x0b, 0x0b,
+    0x05, 0x05, 0x05, 0x05, 0x06, 0x06, 0x05, 0x05,
+    0x02, 0x02, 0x01, 0x01, 0x02, 0x02, 0x02, 0x02,
+    0x0c, 0x0c, 0x05, 0x05, 0x02, 0x02, 0x07, 0x07,
+    0x08, 0x08, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+    0x0c, 0x0c, 0x05, 0x05, 0x0e, 0x0e, 0x0b, 0x0b,
+    0x0c, 0x0c, 0x09, 0x09, 0x02, 0x02, 0x0b, 0x0b,
+    0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0f, 0x0f,
+    0x00, 0x00, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+    0x04, 0x04, 0x0d, 0x0d, 0x06, 0x06, 0x03, 0x03,
+    0x04, 0x04, 0x01, 0x01, 0x0a, 0x0a, 0x03, 0x03,
+    0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x07, 0x07,
+    0x08, 0x08, 0x0d, 0x0d, 0x0a, 0x0a, 0x03, 0x03,
+    0x0d, 0x0d, 0x0d, 0x0d, 0x0e, 0x0e, 0x0d, 0x0d,
+    0x0a, 0x0a, 0x09, 0x09, 0x0a, 0x0a, 0x0a, 0x0a,
+    0x04, 0x04, 0x0d, 0x0d, 0x0a, 0x0a, 0x0f, 0x0f,
+    0x08, 0x08, 0x01, 0x01, 0x06, 0x06, 0x03, 0x03,
+    0x06, 0x06, 0x05, 0x05, 0x06, 0x06, 0x06, 0x06,
+    0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x01, 0x01,
+    0x04, 0x04, 0x01, 0x01, 0x06, 0x06, 0x0f, 0x0f,
+    0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x0b, 0x0b,
+    0x08, 0x08, 0x0d, 0x0d, 0x06, 0x06, 0x0f, 0x0f,
+    0x08, 0x08, 0x01, 0x01, 0x0a, 0x0a, 0x0f, 0x0f,
+    0x0c, 0x0c, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f};
 
-static unsigned char hamming84_bflip[] = {
-    0x00,
-    0x80,   0x40,   0x20,   0x10,
-    0x08,   0x04,   0x02,   0x01};
+// create Hamming(8,4) codec object
+fec fec_hamming84_create(void * _opts)
+{
+    fec q = (fec) malloc(sizeof(struct fec_s));
 
-void fec_hamming84_encode(unsigned char *_msg_dec, unsigned int _msg_len, unsigned char *_msg_enc)
+    // set scheme
+    q->scheme = FEC_HAMMING84;
+    q->rate = fec_get_rate(q->scheme);
+
+    // set internal function pointers
+    q->encode_func = &fec_hamming84_encode;
+    q->decode_func = &fec_hamming84_decode;
+
+    return q;
+}
+
+// destroy Hamming(8,4) object
+void fec_hamming84_destroy(fec _q)
+{
+    free(_q);
+}
+
+// encode block of data using Hamming(8,4) encoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+void fec_hamming84_encode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char *_msg_dec,
+                          unsigned char *_msg_enc)
 {
     unsigned int i, j=0;
     unsigned char s0, s1;
-    for (i=0; i<_msg_len; i++) {
+    for (i=0; i<_dec_msg_len; i++) {
         s0 = (_msg_dec[i] >> 4) & 0x0f;
         s1 = (_msg_dec[i] >> 0) & 0x0f;
-        _msg_enc[j+0] = hamming84_enc[s0];
-        _msg_enc[j+1] = hamming84_enc[s1];
+        _msg_enc[j+0] = hamming84_enc_gentab[s0];
+        _msg_enc[j+1] = hamming84_enc_gentab[s1];
         j+=2;
     }
 }
 
+// decode block of data using Hamming(8,4) decoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+//
 //unsigned int
-void fec_hamming84_decode(unsigned char *_msg_enc, unsigned int _msg_len, unsigned char *_msg_dec)
+void fec_hamming84_decode(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char *_msg_enc,
+                          unsigned char *_msg_dec)
 {
-    unsigned int i, j=0, num_errors=0;
-    unsigned char r0, r1, z0, z1, s0, s1;
-    for (i=0; i<_msg_len; i++) {
-        r0 = _msg_enc[2*i+0];
-        r1 = _msg_enc[2*i+1];
+    unsigned int i;
+    unsigned char r0, r1;   // received 8-bit symbols
+    unsigned char s0, s1;   // decoded 4-bit symbols
+    //unsigned char num_errors=0;
+    for (i=0; i<_dec_msg_len; i++) {
+        r0 = _msg_enc[2*i+0] & 0xff;
+        r1 = _msg_enc[2*i+1] & 0xff;
 
-        // compute syndromes
-        z0 = fec_hamming84_compute_syndrome(r0);
-        z1 = fec_hamming84_compute_syndrome(r1);
-
-        //if (z0 || z0)
-        printf("syndrome[%u] : %d, %d\n", i, (int)z0, (int)z1);
-        printf("    input symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
-
-        if (z0) r0 ^= hamming84_bflip[z0];
-        if (z1) r1 ^= hamming84_bflip[z1];
-
-        num_errors += (z0) ? 1 : 0;
-        num_errors += (z1) ? 1 : 0;
-
-        //printf("corrected symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
-
-        s0 = fec_hamming84_decode_symbol(r0);
-        s1 = fec_hamming84_decode_symbol(r1);
+        s0 = hamming84_dec_gentab[r0];
+        s1 = hamming84_dec_gentab[r1];
 
         _msg_dec[i] = (s0 << 4) | s1;
-
-        j += 2;
     }
     //return num_errors;
 }
 
-// internal
-
-unsigned char fec_hamming84_compute_syndrome(unsigned char _r)
-{
-    printf("  r : 0x%.2X\n", (int)_r);
-    return
-        (liquid_bdotprod_uint8(_r,HAMMING84_H0) << 2) |
-        (liquid_bdotprod_uint8(_r,HAMMING84_H1) << 1) |
-         liquid_bdotprod_uint8(_r,HAMMING84_H2);
-}
-
-unsigned char fec_hamming84_decode_symbol(unsigned char _s)
-{
-    return ((0x20 & _s) >> 2) | ((0x0E & _s) >> 1);
-}
