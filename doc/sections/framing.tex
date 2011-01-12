@@ -20,7 +20,7 @@ greatly simplify over-the-air digital communication of raw data.
 \label{module:framing:packetizer}
 The \liquid\ packetizer is a structure for abstracting multi-level forward
 error-correction from the user.
-The packetizer accepts a buffer of uncoded data bytes and adds a 32-bit
+The packetizer accepts a buffer of uncoded data bytes and adds a
 cyclic redundancy check (crc) before applying two levels of forward
 error-correction and bit-level interleaving.
 The user may choose any two supported FEC schemes (including none) and the
@@ -67,17 +67,17 @@ scheme, and other parameters.
 \label{module:framing:frames:frame64}
 The {\tt framegen64} and {\tt framesync64} objects implement a basic framing
 structure for communicating packetized data over the air.
-The {\tt framegen64} object accepts a 24-byte header and 64-byte payload and
-assemble a 2048-sample frame.
+The {\tt framegen64} object accepts a 12-byte header and 64-byte payload and
+assemble a 1280sample frame.
 Internally, the frame generator encodes the header and payload each with a
-Hamming(7,4) block code, 32-bit cyclic redundancy check, and modulates the
+Hamming(12,8) block code, 16-bit cyclic redundancy check, and modulates the
 result with a QPSK modem.
 The header and payload are encapsulated with special phasing sequences, and
 finally the resulting symbols are interpolated using a half-rate root-raised
 cosine filter (see section~\ref{module:filter:firdes:rrcos}).
 
-The true spectral efficiency of the frame is exactly $1/2$; 64 bytes of data
-(512 bits) encoded into 1024 symbols.
+The true spectral efficiency of the frame is exactly $4/5$; 64 bytes of data
+(512 bits) encoded into 640 symbols.
 The {\tt frame64} structure has the advantage of simplicity but lacks the
 ability for true flexibility.
 
@@ -150,7 +150,7 @@ Both frames consist of six basic parts:
     is the meat of the frame, containing the raw data to be transferred across
     the link.
     For the {\tt frame64} structure, the payload is fixed at 64 bytes (hence
-    its moniker), encoded using the Hamming~(7,4) code
+    its moniker), encoded using the Hamming(12,8) code
     (section~\ref{module:fec}), and modulated using QPSK.
     The {\tt flexframe} structure has a variable length payload and can be
     modulated using whatever schemes the user desires, however forward

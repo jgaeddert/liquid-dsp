@@ -34,10 +34,10 @@
 
 #include "liquid.internal.h"
 
-#define FRAME64_RAMP_UP_LEN 64
+#define FRAME64_RAMP_UP_LEN 16
 #define FRAME64_PHASING_LEN 64
 #define FRAME64_PN_LEN      64
-#define FRAME64_RAMP_DN_LEN 64
+#define FRAME64_RAMP_DN_LEN 16
 
 #define FRAMEGEN64_PHASING_0    ( 1.0f) //( 0.70711f + 0.70711f*_Complex_I)
 #define FRAMEGEN64_PHASING_1    (-1.0f) //(-0.70711f - 0.70711f*_Complex_I)
@@ -59,12 +59,12 @@ struct framegen64_s {
     float complex ramp_dn[FRAME64_RAMP_DN_LEN];
 
     // header (QPSK)
-    unsigned char header_enc[56];   // 56 = (24+4)*2
-    unsigned char header_sym[224];  // 224 = 56*4
+    unsigned char header_enc[21];   // 21 = 12 bytes, crc16, h128
+    unsigned char header_sym[84];   // 84 = 21*4
 
     // payload (QPSK)
-    unsigned char payload_enc[136]; // 136 = (64+4)*2
-    unsigned char payload_sym[544]; // 544 = 136*2
+    unsigned char payload_enc[99];  // 99 = 64 bytes, crc16, h128
+    unsigned char payload_sym[396]; // 396 = 99*4
 
     // pulse-shaping filter
     interp_crcf interp;
@@ -113,8 +113,8 @@ framegen64 framegen64_create(unsigned int _m,
     fg->interp = interp_crcf_create(2, h, h_len);
 
     // create header/payload packetizers
-    fg->p_header  = packetizer_create(24, CRC_32, FEC_NONE, FEC_HAMMING74);
-    fg->p_payload = packetizer_create(64, CRC_32, FEC_NONE, FEC_HAMMING74);
+    fg->p_header  = packetizer_create(12, CRC_16, FEC_NONE, FEC_HAMMING128);
+    fg->p_payload = packetizer_create(64, CRC_16, FEC_NONE, FEC_HAMMING128);
 
     // create modulator
     fg->mod = modem_create(MOD_QPSK, 2);
@@ -142,9 +142,9 @@ void framegen64_print(framegen64 _fg)
 
 // execute frame generator (creates a frame)
 //  _fg         :   frame generator object
-//  _header     :   24-byte input header
+//  _header     :   12-byte input header
 //  _payload    :   64-byte input payload
-//  _y          :   2048-sample frame
+//  _y          :   1280-sample frame
 void framegen64_execute(framegen64 _fg,
                         unsigned char * _header,
                         unsigned char * _payload,
@@ -154,18 +154,18 @@ void framegen64_execute(framegen64 _fg,
 
     // encode header and scramble result
     packetizer_encode(_fg->p_header, _header, _fg->header_enc);
-    scramble_data(_fg->header_enc, 56);
+    scramble_data(_fg->header_enc, 21);
 
     // encode payload and scramble result
     packetizer_encode(_fg->p_payload, _payload, _fg->payload_enc);
-    scramble_data(_fg->payload_enc, 136);
+    scramble_data(_fg->payload_enc, 99);
 
     // generate header symbols
-    for (i=0; i<56; i++)
+    for (i=0; i<21; i++)
         framegen64_byte_to_syms(_fg->header_enc[i], &(_fg->header_sym[4*i]));
 
     // generate payload symbols
-    for (i=0; i<136; i++)
+    for (i=0; i<99; i++)
         framegen64_byte_to_syms(_fg->payload_enc[i], &(_fg->payload_sym[4*i]));
 
     unsigned int n=0;
@@ -190,14 +190,14 @@ void framegen64_execute(framegen64 _fg,
 
     float complex x;
     // header
-    for (i=0; i<224; i++) {
+    for (i=0; i<84; i++) {
         modem_modulate(_fg->mod, _fg->header_sym[i], &x);
         interp_crcf_execute(_fg->interp, x, &_y[n]);
         n+=2;
     }
 
     // payload
-    for (i=0; i<544; i++) {
+    for (i=0; i<396; i++) {
         modem_modulate(_fg->mod, _fg->payload_sym[i], &x);
         interp_crcf_execute(_fg->interp, x, &_y[n]);
         n+=2;
@@ -209,7 +209,7 @@ void framegen64_execute(framegen64 _fg,
         n+=2;
     }
 
-    assert(n==2048);
+    assert(n==1280);
 }
 
 // flush frame generator buffer by pushing samples through
