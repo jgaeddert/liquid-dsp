@@ -51,7 +51,6 @@ local_s_files	:=			\
 local_t_files	:=			\
 	crc_autotest.h			\
 	fec_autotest.h			\
-	fec_conv_autotest.h		\
 	fec_hamming74_autotest.h	\
 	fec_hamming84_autotest.h	\
 	fec_hamming128_autotest.h	\
