@@ -127,6 +127,13 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->callback = _callback;
     fs->userdata = _userdata;
 
+    // set fixed properties of the frame statistics
+    fs->framestats.mod_scheme   = MOD_QPSK;
+    fs->framestats.mod_bps      = 2;
+    fs->framestats.check        = CRC_16;
+    fs->framestats.fec0         = FEC_HAMMING128;
+    fs->framestats.fec1         = FEC_NONE;
+
     // set properties (initial memmove to prevent internal warnings)
     memmove(&fs->props, &framesyncprops_default, sizeof(framesyncprops_s));
     if (_props != NULL)

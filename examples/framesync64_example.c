@@ -137,6 +137,11 @@ static int callback(unsigned char * _rx_header,
     printf("*** callback invoked ***\n");
     printf("    SNR                 : %12.8f dB\n", _stats.SNR);
     printf("    rssi                : %12.8f dB\n", _stats.rssi);
+    printf("    mod. scheme         : %s\n", modulation_scheme_str[_stats.mod_scheme][1]);
+    printf("    mod. depth          : %u\n", _stats.mod_bps);
+    printf("    payload CRC         : %s\n", crc_scheme_str[_stats.check][1]);
+    printf("    payload fec (inner) : %s\n", fec_scheme_str[_stats.fec0][1]);
+    printf("    payload fec (outer) : %s\n", fec_scheme_str[_stats.fec1][1]);
 
     printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
     printf("    payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");

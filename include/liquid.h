@@ -2061,6 +2061,13 @@ typedef struct {
     // demodulated frame symbols
     liquid_float_complex * framesyms;   // pointer to array [size: framesyms x 1]
     unsigned int num_framesyms;         // length of framesyms
+
+    // modulation/coding scheme etc.
+    unsigned int mod_scheme;    // modulation scheme
+    unsigned int mod_bps;       // modulation depth (bits/symbol)
+    unsigned int check;         // data validity check (crc, checksum)
+    unsigned int fec0;          // forward error-correction (inner)
+    unsigned int fec1;          // forward error-correction (outer)
 } framesyncstats_s;
 
 
