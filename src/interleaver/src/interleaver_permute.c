@@ -33,6 +33,7 @@ void interleaver_permute_forward(unsigned char * _x,
                                  unsigned int * _p,
                                  unsigned int _n)
 {
+    if (_n==0) return;
     unsigned char tmp[_n];
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -45,6 +46,7 @@ void interleaver_permute_reverse(unsigned char * _x,
                                  unsigned int * _p,
                                  unsigned int _n)
 {
+    if (_n==0) return;
     unsigned char tmp[_n];
     unsigned int i;
     for (i=0; i<_n; i++)
@@ -58,6 +60,7 @@ void interleaver_permute_forward_mask(unsigned char * _x,
                                       unsigned int _n,
                                       unsigned char _mask)
 {
+    if (_n==0) return;
     unsigned char tmp[_n];
     unsigned int i;
     for (i=0; i<_n; i++) {
@@ -71,6 +74,7 @@ void interleaver_permute_reverse_mask(unsigned char * _x,
                                       unsigned int _n,
                                       unsigned char _mask)
 {
+    if (_n==0) return;
     unsigned char tmp[_n];
     unsigned int i;
     for (i=0; i<_n; i++)
@@ -81,6 +85,7 @@ void interleaver_permute_reverse_mask(unsigned char * _x,
 void interleaver_circshift_L4(unsigned char *_x,
                               unsigned int _n)
 {
+    if (_n==0) return;
     unsigned int i;
     unsigned char head, tail, mask_lo=0x0f, mask_hi=0xf0;
 
@@ -101,6 +106,7 @@ void interleaver_circshift_L4(unsigned char *_x,
 void interleaver_circshift_R4(unsigned char *_x,
                               unsigned int _n)
 {
+    if (_n==0) return;
     unsigned int i;
     unsigned char head, tail, mask_lo=0x0f, mask_hi=0xf0;
 
