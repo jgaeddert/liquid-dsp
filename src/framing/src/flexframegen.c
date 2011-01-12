@@ -50,6 +50,11 @@ static flexframegenprops_s flexframegenprops_default = {
     16          // rampdn_len
 };
 
+void flexframegenprops_init_default(flexframegenprops_s * _props)
+{
+    memmove(_props, &flexframegenprops_default, sizeof(flexframegenprops_s));
+}
+
 struct flexframegen_s {
     // buffers: preamble (BPSK)
     float complex * ramp_up;            // ramp up sequence

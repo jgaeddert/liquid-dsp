@@ -2147,6 +2147,7 @@ typedef struct {
     unsigned int mod_bps;       // modulation depth (bits/symbol)
     unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
+void flexframegenprops_init_default(flexframegenprops_s * _props);
 typedef struct flexframegen_s * flexframegen;
 flexframegen flexframegen_create(flexframegenprops_s * _props);
 void flexframegen_destroy(flexframegen _fg);
