@@ -35,3 +35,4 @@ autotest/autotest_example
 # sandbox
 sandbox/*_test
 sandbox/*_example
+sandbox/*_gentab
