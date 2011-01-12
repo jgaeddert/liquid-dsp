@@ -28,35 +28,29 @@
 
 #include "liquid.internal.h"
 
-// generator polynomials
-#define HAMMING74_H0    0x55
-#define HAMMING74_H1    0x33
-#define HAMMING74_H2    0x0f
+// encoder look-up table
+unsigned char hamming74_enc_gentab[16] = {
+    0x00, 0x69, 0x2a, 0x43, 0x4c, 0x25, 0x66, 0x0f,
+    0x70, 0x19, 0x5a, 0x33, 0x3c, 0x55, 0x16, 0x7f};
 
-// decode Hamming(7,4) symbol by simply stripping out
-// original data bits
-#define fec_hamming74_decode_symbol(_s) \
-    (((0x10 & _s) >> 1) | ((0x07 & _s) >> 0))
-
-// Hamming(7,4) encoding matrix
-static unsigned char hamming74_enc[16] = {
-    0x00,   0x69,   0x2a,   0x43,
-    0x4c,   0x25,   0x66,   0x0f,
-    0x70,   0x19,   0x5a,   0x33,
-    0x3c,   0x55,   0x16,   0x7f
-};
-
-// Hamming(7,4) syndrome bit-flip array
-static unsigned char hamming74_bflip[] = {
-    0x00,   // 0 (not used)
-    0x40,   // 1
-    0x20,   // 2
-    0x10,   // 3
-    0x08,   // 4
-    0x04,   // 5
-    0x02,   // 6
-    0x01,   // 7
-};
+// decoder look-up table
+unsigned char hamming74_dec_gentab[128] = {
+    0x00, 0x00, 0x00, 0x03, 0x00, 0x05, 0x0e, 0x07,
+    0x00, 0x09, 0x02, 0x07, 0x04, 0x07, 0x07, 0x07,
+    0x00, 0x09, 0x0e, 0x0b, 0x0e, 0x0d, 0x0e, 0x0e,
+    0x09, 0x09, 0x0a, 0x09, 0x0c, 0x09, 0x0e, 0x07,
+    0x00, 0x05, 0x02, 0x0b, 0x05, 0x05, 0x06, 0x05,
+    0x02, 0x01, 0x02, 0x02, 0x0c, 0x05, 0x02, 0x07,
+    0x08, 0x0b, 0x0b, 0x0b, 0x0c, 0x05, 0x0e, 0x0b,
+    0x0c, 0x09, 0x02, 0x0b, 0x0c, 0x0c, 0x0c, 0x0f,
+    0x00, 0x03, 0x03, 0x03, 0x04, 0x0d, 0x06, 0x03,
+    0x04, 0x01, 0x0a, 0x03, 0x04, 0x04, 0x04, 0x07,
+    0x08, 0x0d, 0x0a, 0x03, 0x0d, 0x0d, 0x0e, 0x0d,
+    0x0a, 0x09, 0x0a, 0x0a, 0x04, 0x0d, 0x0a, 0x0f,
+    0x08, 0x01, 0x06, 0x03, 0x06, 0x05, 0x06, 0x06,
+    0x01, 0x01, 0x02, 0x01, 0x04, 0x01, 0x06, 0x0f,
+    0x08, 0x08, 0x08, 0x0b, 0x08, 0x0d, 0x06, 0x0f,
+    0x08, 0x01, 0x0a, 0x0f, 0x0c, 0x0f, 0x0f, 0x0f};
 
 // create Hamming(7,4) codec object
 fec fec_hamming74_create(void * _opts)
@@ -96,8 +90,8 @@ void fec_hamming74_encode(fec _q,
     for (i=0; i<_dec_msg_len; i++) {
         s0 = (_msg_dec[i] >> 4) & 0x0f;
         s1 = (_msg_dec[i] >> 0) & 0x0f;
-        _msg_enc[j+0] = hamming74_enc[s0];
-        _msg_enc[j+1] = hamming74_enc[s1];
+        _msg_enc[j+0] = hamming74_enc_gentab[s0];
+        _msg_enc[j+1] = hamming74_enc_gentab[s1];
         j+=2;
     }
 }
@@ -115,49 +109,19 @@ void fec_hamming74_decode(fec _q,
                           unsigned char *_msg_enc,
                           unsigned char *_msg_dec)
 {
-    unsigned int i, num_errors=0;
-    unsigned char r0, r1, z0, z1, s0, s1;
+    unsigned int i;
+    unsigned char r0, r1;   // received 7-bit symbols
+    unsigned char s0, s1;   // decoded 4-bit symbols
+    //unsigned char num_errors=0;
     for (i=0; i<_dec_msg_len; i++) {
-        r0 = _msg_enc[2*i+0];
-        r1 = _msg_enc[2*i+1];
+        r0 = _msg_enc[2*i+0] & 0x7f;
+        r1 = _msg_enc[2*i+1] & 0x7f;
 
-        //printf("%u :\n", i);
-
-        // compute syndromes
-        z0 = fec_hamming74_compute_syndrome(r0);
-        z1 = fec_hamming74_compute_syndrome(r1);
-
-        //printf("  syndrome[%u]          : %d, %d\n", i, (int)z0, (int)z1);
-        //printf("  input symbols[%u]     : 0x%.2x, 0x%.2x\n", i, r0, r1);
-
-        if (z0) r0 ^= hamming74_bflip[z0];
-        if (z1) r1 ^= hamming74_bflip[z1];
-
-        num_errors += (z0) ? 1 : 0;
-        num_errors += (z1) ? 1 : 0;
-
-        //printf("  corrected symbols[%u] : 0x%.2x, 0x%.2x\n", i, r0, r1);
-
-        s0 = fec_hamming74_decode_symbol(r0);
-        s1 = fec_hamming74_decode_symbol(r1);
-
-        //printf("  decoded symbols[%u]   : 0x%.1x%.1x\n", i, s0, s1);
+        s0 = hamming74_dec_gentab[r0];
+        s1 = hamming74_dec_gentab[r1];
 
         _msg_dec[i] = (s0 << 4) | s1;
     }
     //return num_errors;
-}
-
-
-// 
-// internal
-//
-
-// compute syndrome on received symbol _r
-unsigned char fec_hamming74_compute_syndrome(unsigned char _r)
-{
-    return (liquid_bdotprod_uint8(_r,HAMMING74_H0) << 0) |
-           (liquid_bdotprod_uint8(_r,HAMMING74_H1) << 1) |
-           (liquid_bdotprod_uint8(_r,HAMMING74_H2) << 2);
 }
 
