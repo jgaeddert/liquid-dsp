@@ -50,12 +50,12 @@ void ofdmframesync_execute_bench(
     unsigned int frame_len = _num_subcarriers + _cp_len;
 
     // create synthesizer/analyzer objects
-    ofdmframegen fg = ofdmframegen_create(_num_subcarriers, _cp_len);
+    ofdmframegen fg = ofdmframegen_create(_num_subcarriers, _cp_len, NULL);
     //ofdmframegen_print(fg);
 
     modem mod = modem_create(ms,bps);
 
-    ofdmframesync fs = ofdmframesync_create(_num_subcarriers,_cp_len,NULL,NULL);
+    ofdmframesync fs = ofdmframesync_create(_num_subcarriers,_cp_len,NULL,NULL,NULL);
 
     unsigned int i;
     float complex X[_num_subcarriers];   // channelized symbols
@@ -68,7 +68,8 @@ void ofdmframesync_execute_bench(
     }
 
     // generate frame
-    ofdmframegen_execute(fg,X,x);
+    ofdmframegen_writesymbol(fg, X, x);
+    // FIXME : length of S0 is [num_subcarriers], length of symbol is [frame_len]
 
     // start trials
     *_num_iterations /= _num_subcarriers;
@@ -89,10 +90,10 @@ void ofdmframesync_execute_bench(
 }
 
 //
-void benchmark_ofdmframesync_execute_n64    OFDMFRAMESYNC_EXECUTE_BENCH_API(64, 8)
-void benchmark_ofdmframesync_execute_n128   OFDMFRAMESYNC_EXECUTE_BENCH_API(128,16)
-void benchmark_ofdmframesync_execute_n256   OFDMFRAMESYNC_EXECUTE_BENCH_API(256,32)
-void benchmark_ofdmframesync_execute_n512   OFDMFRAMESYNC_EXECUTE_BENCH_API(512,64)
+void xbenchmark_ofdmframesync_execute_n64    OFDMFRAMESYNC_EXECUTE_BENCH_API(64, 8)
+void xbenchmark_ofdmframesync_execute_n128   OFDMFRAMESYNC_EXECUTE_BENCH_API(128,16)
+void xbenchmark_ofdmframesync_execute_n256   OFDMFRAMESYNC_EXECUTE_BENCH_API(256,32)
+void xbenchmark_ofdmframesync_execute_n512   OFDMFRAMESYNC_EXECUTE_BENCH_API(512,64)
 
 #endif // __LIQUID_OFDMFRAMESYNC_BENCH_H__
 
