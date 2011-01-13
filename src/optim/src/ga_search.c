@@ -312,12 +312,19 @@ void ga_search_mutate(ga_search _g)
     for (i=0; i<_g->population_size; i++) {
 
         // generate random number and mutate if within mutation_rate range
+        unsigned int num_mutations = 0;
         while ( randf() < _g->mutation_rate ) {
             // generate random mutation index
             index = rand() % _g->bits_per_chromosome;
 
             // mutate chromosome at index
             chromosome_mutate( _g->population[i], index );
+
+            //
+            num_mutations++;
+
+            if (num_mutations == _g->bits_per_chromosome)
+                break;
         }
     }
 }

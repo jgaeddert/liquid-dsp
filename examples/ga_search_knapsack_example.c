@@ -37,7 +37,7 @@ int main() {
     unsigned int num_iterations = 8000; // number of iterations to run
     float capacity = 20.0f;             // total capacity of the knapsack
     unsigned int population_size = 100; // number of chromosomes in the population
-    float mutation_rate = 0.10f;        // mutation rate of the GA
+    float mutation_rate = 0.40f;        // mutation rate of the GA
 
     unsigned int i;
 
