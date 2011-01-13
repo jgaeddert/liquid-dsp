@@ -4,6 +4,7 @@
 
 local_dir	:= sandbox
 local_src	:=				\
+	crc_gentab.c				\
 	ellip_func_test.c			\
 	ellip_test.c				\
 	fec_hamming128_example.c		\
