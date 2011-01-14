@@ -71,18 +71,21 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     ga = (ga_search) malloc( sizeof(struct ga_search_s) );
 
     if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE) {
-        fprintf(stderr,"error: ga_search_create(), population_size exceeds maximum\n");
+        fprintf(stderr,"error: ga_search_create(), population size exceeds maximum\n");
         exit(1);
-    } else;
+    } else if (_mutation_rate < 0.0f || _mutation_rate > 1.0f) {
+        fprintf(stderr,"error: ga_search_create(), mutation rate must be in [0,1]\n");
+        exit(1);
+    }
 
     // initialize public values
     ga->userdata = _userdata;
-    ga->num_parameters = _parent->num_traits;
+    ga->num_parameters  = _parent->num_traits;
     ga->population_size = _population_size;
-    ga->get_utility = _get_utility;
-    ga->minimize = ( _minmax==LIQUID_OPTIM_MINIMIZE ) ? 1 : 0;
+    ga->mutation_rate   = _mutation_rate;
+    ga->get_utility     = _get_utility;
+    ga->minimize        = ( _minmax==LIQUID_OPTIM_MINIMIZE ) ? 1 : 0;
 
-    ga->mutation_rate = (_mutation_rate > 0.2f) ? 0.2f : _mutation_rate;
     ga->bits_per_chromosome = _parent->num_bits;
 
     // initialize selection size be be 25% of population, minimum of 2
@@ -191,6 +194,18 @@ void ga_search_set_population_size(ga_search _g,
     // set internal variables
     _g->population_size = _population_size;
     _g->selection_size  = _selection_size;
+}
+
+// set mutation rate
+void ga_search_set_mutation_rate(ga_search _g,
+                                 float _mutation_rate)
+{
+    if (_mutation_rate < 0.0f || _mutation_rate > 1.0f) {
+        fprintf(stderr,"error: ga_search_set_mutation_rate(), mutation rate must be in [0,1]\n");
+        exit(1);
+    }
+
+    _g->mutation_rate = _mutation_rate;
 }
 
 // Execute the search

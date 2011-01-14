@@ -83,13 +83,13 @@ struct framesync64_s {
     framesyncstats_s framestats;        // frame statistics object
 
     // header
-    unsigned char header_sym[224];      // header symbols (modem output)
-    unsigned char header_enc[56];       // header data (encoded)
-    unsigned char header[24];           // header data (decoded)
+    unsigned char header_sym[84];       // header symbols (modem output)
+    unsigned char header_enc[21];       // header data (encoded)
+    unsigned char header[12];           // header data (decoded)
 
     // payload
-    unsigned char payload_sym[544];     // payload symbols (modem output)
-    unsigned char payload_enc[136];     // payload data (encoded)
+    unsigned char payload_sym[396];     // payload symbols (modem output)
+    unsigned char payload_enc[99];      // payload data (encoded)
     unsigned char payload[64];          // payload data (decoded)
 
     // SINDR estimate (signal to interference, noise, and distortion
@@ -126,6 +126,13 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     framesync64 fs = (framesync64) malloc(sizeof(struct framesync64_s));
     fs->callback = _callback;
     fs->userdata = _userdata;
+
+    // set fixed properties of the frame statistics
+    fs->framestats.mod_scheme   = MOD_QPSK;
+    fs->framestats.mod_bps      = 2;
+    fs->framestats.check        = CRC_16;
+    fs->framestats.fec0         = FEC_HAMMING128;
+    fs->framestats.fec1         = FEC_NONE;
 
     // set properties (initial memmove to prevent internal warnings)
     memmove(&fs->props, &framesyncprops_default, sizeof(framesyncprops_s));
@@ -170,8 +177,8 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->mfdecim =  symsync_crcf_create(2, npfb, H, H_len-1);
 
     // create header/payload packetizers
-    fs->p_header  = packetizer_create(24, CRC_32, FEC_NONE, FEC_HAMMING74);
-    fs->p_payload = packetizer_create(64, CRC_32, FEC_NONE, FEC_HAMMING74);
+    fs->p_header  = packetizer_create(12, CRC_16, FEC_NONE, FEC_HAMMING128);
+    fs->p_payload = packetizer_create(64, CRC_16, FEC_NONE, FEC_HAMMING128);
 
     // create demod
     fs->demod_payload = modem_create(MOD_QPSK, 2);
@@ -475,7 +482,7 @@ void framesync64_execute_rxheader(framesync64 _fs,
     _fs->num_symbols_collected++;
 
     // check to see if full header has been received
-    if (_fs->num_symbols_collected==224) {
+    if (_fs->num_symbols_collected==84) {
         // reset symbol counter
         _fs->num_symbols_collected = 0;
 
@@ -510,7 +517,7 @@ void framesync64_execute_rxpayload(framesync64 _fs,
     _fs->evm_hat += evm;
 
     // check to see if full payload has been received
-    if (_fs->num_symbols_collected==544) {
+    if (_fs->num_symbols_collected==396) {
         // reset symbol counter
         _fs->num_symbols_collected = 0;
 
@@ -518,7 +525,8 @@ void framesync64_execute_rxpayload(framesync64 _fs,
         framesync64_decode_payload(_fs);
 
         // framestats: compute SNR estimate, rssi
-        _fs->framestats.SNR  = -10*log10f( (_fs->evm_hat / 512.0f) );
+        // 477 = 84 + 396 = total number of observed symbols
+        _fs->framestats.SNR  = -10*log10f( (_fs->evm_hat / 477.0f) );
         _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
         _fs->evm_hat = 0.0f;
 
@@ -605,7 +613,7 @@ void framesync64_csma_unlock(framesync64 _fs)
 void framesync64_decode_header(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<56; i++)
+    for (i=0; i<21; i++)
         framesync64_syms_to_byte(_fs->header_sym+(4*i), _fs->header_enc+i);
 
 #if DEBUG_FRAMESYNC64_PRINT
@@ -618,7 +626,7 @@ void framesync64_decode_header(framesync64 _fs)
 #endif
 
     // unscramble header data
-    unscramble_data(_fs->header_enc, 56);
+    unscramble_data(_fs->header_enc, 21);
 
     // decode header and validate crc
     _fs->header_valid = packetizer_decode(_fs->p_header, _fs->header_enc, _fs->header);
@@ -637,11 +645,11 @@ void framesync64_decode_header(framesync64 _fs)
 void framesync64_decode_payload(framesync64 _fs)
 {
     unsigned int i;
-    for (i=0; i<136; i++)
+    for (i=0; i<99; i++)
         framesync64_syms_to_byte(&(_fs->payload_sym[4*i]), &(_fs->payload_enc[i]));
 
     // unscramble payload data
-    unscramble_data(_fs->payload_enc, 136);
+    unscramble_data(_fs->payload_enc, 99);
 
     // decode payload and validate crc
     _fs->payload_valid = packetizer_decode(_fs->p_payload, _fs->payload_enc, _fs->payload);

@@ -56,7 +56,7 @@
 //  _z      :   complex array (size _n)
 //  _n      :   number of elements in _z
 //  _tol    :   tolerance for finding complex pairs
-//  _p      :   resulting pairs, pure real values of _z at end, TODO: force complex pairs
+//  _p      :   resulting pairs, pure real values of _z at end
 void liquid_cplxpair(float complex * _z,
                      unsigned int _n,
                      float _tol,
@@ -116,6 +116,12 @@ void liquid_cplxpair(float complex * _z,
     }
 
     // clean up result
+    //  * force pairs to be perfect conjugates with
+    //    negative imaginary component first
+    //  * complex conjugate pairs are ordered by
+    //    increasing real component
+    //  * pure-real elements are ordered by increasing
+    //    value
     liquid_cplxpair_cleanup(_p, _n, num_pairs);
 }
 

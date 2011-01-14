@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
+ *                                Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,17 +19,38 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FEC_AUTOTEST_H__
-#define __LIQUID_FEC_AUTOTEST_H__
-
 #include <stdlib.h>
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 // Helper function to keep code base small
 void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
 {
+#if HAVE_FEC_H == 0
+    if ( _fs == FEC_CONV_V27    ||
+         _fs == FEC_CONV_V29    ||
+         _fs == FEC_CONV_V39    ||
+         _fs == FEC_CONV_V615   ||
+         _fs == FEC_CONV_V27P23 ||
+         _fs == FEC_CONV_V27P34 ||
+         _fs == FEC_CONV_V27P45 ||
+         _fs == FEC_CONV_V27P56 ||
+         _fs == FEC_CONV_V27P67 ||
+         _fs == FEC_CONV_V27P78 ||
+         _fs == FEC_CONV_V29P23 ||
+         _fs == FEC_CONV_V29P34 ||
+         _fs == FEC_CONV_V29P45 ||
+         _fs == FEC_CONV_V29P56 ||
+         _fs == FEC_CONV_V29P67 ||
+         _fs == FEC_CONV_V29P78 ||
+         _fs == FEC_RS_M8)
+    {
+        AUTOTEST_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)\n");
+        return;
+    }
+#endif
+
     // generate fec object
     fec q = fec_create(_fs,_opts);
 
@@ -48,7 +70,7 @@ void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
     // encode message
     fec_encode(q,_n,msg,msg_enc);
 
-    // channel: add error(s)
+    // channel: add single error
     msg_enc[0] ^= 0x01;
 
     // decode message
@@ -64,8 +86,38 @@ void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
 // 
 // AUTOTESTS: basic encode/decode functionality
 //
-void autotest_rep3_generic()        { fec_test_codec(FEC_REP3,64,NULL);      }
-void autotest_hamming74_generic()   { fec_test_codec(FEC_HAMMING74,64,NULL); }
 
-#endif 
+// repeat codes
+void autotest_fec_r3()      { fec_test_codec(FEC_REP3,          64, NULL); }
+void autotest_fec_r5()      { fec_test_codec(FEC_REP5,          64, NULL); }
+
+// Hamming block codes
+void autotest_fec_h74()     { fec_test_codec(FEC_HAMMING74,     64, NULL); }
+void autotest_fec_h84()     { fec_test_codec(FEC_HAMMING84,     64, NULL); }
+void autotest_fec_h128()    { fec_test_codec(FEC_HAMMING128,    64, NULL); }
+
+// convolutional codes
+void autotest_fec_v27()     { fec_test_codec(FEC_CONV_V27,      64, NULL); }
+void autotest_fec_v29()     { fec_test_codec(FEC_CONV_V29,      64, NULL); }
+void autotest_fec_v39()     { fec_test_codec(FEC_CONV_V39,      64, NULL); }
+void autotest_fec_v615()    { fec_test_codec(FEC_CONV_V615,     64, NULL); }
+
+// convolutional codes (punctured)
+void autotest_fec_v27p23()  { fec_test_codec(FEC_CONV_V27P23,   64, NULL); }
+void autotest_fec_v27p34()  { fec_test_codec(FEC_CONV_V27P34,   64, NULL); }
+void autotest_fec_v27p45()  { fec_test_codec(FEC_CONV_V27P45,   64, NULL); }
+void autotest_fec_v27p56()  { fec_test_codec(FEC_CONV_V27P56,   64, NULL); }
+void autotest_fec_v27p67()  { fec_test_codec(FEC_CONV_V27P67,   64, NULL); }
+void autotest_fec_v27p78()  { fec_test_codec(FEC_CONV_V27P78,   64, NULL); }
+
+void autotest_fec_v29p23()  { fec_test_codec(FEC_CONV_V29P23,   64, NULL); }
+void autotest_fec_v29p34()  { fec_test_codec(FEC_CONV_V29P34,   64, NULL); }
+void autotest_fec_v29p45()  { fec_test_codec(FEC_CONV_V29P45,   64, NULL); }
+void autotest_fec_v29p56()  { fec_test_codec(FEC_CONV_V29P56,   64, NULL); }
+void autotest_fec_v29p67()  { fec_test_codec(FEC_CONV_V29P67,   64, NULL); }
+void autotest_fec_v29p78()  { fec_test_codec(FEC_CONV_V29P78,   64, NULL); }
+
+// Reed-Solomon block codes
+void autotest_fec_rs8()     { fec_test_codec(FEC_RS_M8,         64, NULL); }
+
 

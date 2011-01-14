@@ -3,7 +3,7 @@
 //
 // This example demonstrates the interfaces to the framegen64 and
 // framesync64 objects used to completely encapsulate data for
-// over-the-air transmission.  A 24-byte header and 64-byte payload are
+// over-the-air transmission.  A 12-byte header and 64-byte payload are
 // encoded, modulated, and interpolated using the framegen64 object.
 // The resulting complex baseband samples are corrupted with noise and
 // moderate carrier frequency and phase offsets before the framesync64
@@ -34,7 +34,7 @@ static void callback_csma_lock(void * _userdata);
 static void callback_csma_unlock(void * _userdata);
 
 // global header, payload arrays
-unsigned char header[24];
+unsigned char header[12];
 unsigned char payload[64];
 
 int main() {
@@ -70,27 +70,27 @@ int main() {
     // data payload
     unsigned int i;
     // initialize header, payload
-    for (i=0; i<24; i++)
+    for (i=0; i<12; i++)
         header[i] = i;
     for (i=0; i<64; i++)
         payload[i] = rand() & 0xff;
 
     // allocate memory for the frame samples
-    float complex frame_rx[2048];
+    float complex frame_rx[1280];
     
 #if 0
     // push noise (flush the frame buffers)
-    for (i=0; i<2048; i++) {
+    for (i=0; i<1280; i++) {
         frame_rx[i] = (randnf() + _Complex_I*randnf())*0.01f*gamma;
     }
-    framesync64_execute(fs, frame_rx, 2048);
+    framesync64_execute(fs, frame_rx, 1280);
 #endif
 
     // generate the frame
     framegen64_execute(fg, header, payload, frame_rx);
 
     // add channel impairments
-    for (i=0; i<2048; i++) {
+    for (i=0; i<1280; i++) {
         frame_rx[i] *= cexpf(_Complex_I*phi);
         frame_rx[i] *= gamma;
         frame_rx[i] += (randnf() + _Complex_I*randnf()) * 0.707f * nstd;
@@ -100,7 +100,7 @@ int main() {
     }
 
     // synchronize/receive the frame
-    framesync64_execute(fs, frame_rx, 2048);
+    framesync64_execute(fs, frame_rx, 1280);
 
     // clean up allocated objects
     framegen64_destroy(fg);
@@ -114,7 +114,7 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"\n\n");
-    for (i=0; i<2048; i++)
+    for (i=0; i<1280; i++)
         fprintf(fid, "frame_rx(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(frame_rx[i]), cimagf(frame_rx[i]));
 
     fprintf(fid,"t=0:2047;\n");
@@ -137,6 +137,11 @@ static int callback(unsigned char * _rx_header,
     printf("*** callback invoked ***\n");
     printf("    SNR                 : %12.8f dB\n", _stats.SNR);
     printf("    rssi                : %12.8f dB\n", _stats.rssi);
+    printf("    mod. scheme         : %s\n", modulation_scheme_str[_stats.mod_scheme][1]);
+    printf("    mod. depth          : %u\n", _stats.mod_bps);
+    printf("    payload CRC         : %s\n", crc_scheme_str[_stats.check][1]);
+    printf("    payload fec (inner) : %s\n", fec_scheme_str[_stats.fec0][1]);
+    printf("    payload fec (outer) : %s\n", fec_scheme_str[_stats.fec1][1]);
 
     printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
     printf("    payload crc         : %s\n", _rx_payload_valid ? "pass" : "FAIL");
@@ -144,7 +149,7 @@ static int callback(unsigned char * _rx_header,
     // validate payload
     unsigned int i;
     unsigned int num_header_errors=0;
-    for (i=0; i<24; i++)
+    for (i=0; i<12; i++)
         num_header_errors += (_rx_header[i] == header[i]) ? 0 : 1;
     printf("    num header errors   : %u\n", num_header_errors);
 

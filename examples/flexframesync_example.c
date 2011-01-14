@@ -117,6 +117,7 @@ int main(int argc, char *argv[]) {
 
     // create flexframegen object
     flexframegenprops_s fgprops;
+    flexframegenprops_init_default(&fgprops);
     fgprops.rampup_len  = 64;
     fgprops.phasing_len = 64;
     fgprops.payload_len = packet_len;

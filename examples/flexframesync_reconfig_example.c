@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
 
     // create flexframegen object
     flexframegenprops_s fgprops;
+    flexframegenprops_init_default(&fgprops);
     flexframegen fg = flexframegen_create(NULL);
 
     // frame data

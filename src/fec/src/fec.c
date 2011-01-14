@@ -312,9 +312,7 @@ fec fec_create(fec_scheme _scheme, void *_opts)
     case FEC_HAMMING74:
         return fec_hamming74_create(_opts);
     case FEC_HAMMING84:
-        //return fec_hamming84_create(_opts);
-        printf("error: fec_create(), unsupported scheme: fec_hamming84\n");
-        exit(-1);
+        return fec_hamming84_create(_opts);
     case FEC_HAMMING128:
         return fec_hamming128_create(_opts);
 

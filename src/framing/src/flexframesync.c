@@ -703,9 +703,14 @@ void flexframesync_execute_rxheader(flexframesync _fs,
         } else {
             // invoke callback method
             // cannot decode frame: invoke callback anyway, but ignore rest of payload
-            // payload lengt is 0 : ignore payload
-            _fs->framestats.framesyms = NULL;
-            _fs->framestats.num_framesyms = 0;
+            // payload length is 0 : ignore payload
+            _fs->framestats.framesyms       = NULL;
+            _fs->framestats.num_framesyms   = 0;
+            _fs->framestats.mod_scheme      = MOD_UNKNOWN;
+            _fs->framestats.mod_bps         = 0;
+            _fs->framestats.check           = CRC_UNKNOWN;
+            _fs->framestats.fec0            = FEC_UNKNOWN;
+            _fs->framestats.fec1            = FEC_UNKNOWN;
 
             _fs->callback(_fs->header,  _fs->header_valid,
                           NULL,         0, 0,
@@ -756,8 +761,13 @@ void flexframesync_execute_rxpayload(flexframesync _fs,
         //printf("payload crc : %s\n", _fs->payload_valid ? "pass" : "FAIL");
 
         // set framestats internals
-        _fs->framestats.framesyms = _fs->payload_samples;
-        _fs->framestats.num_framesyms = _fs->num_payload_symbols;
+        _fs->framestats.framesyms       = _fs->payload_samples;
+        _fs->framestats.num_framesyms   = _fs->num_payload_symbols;
+        _fs->framestats.mod_scheme      = _fs->ms_payload;
+        _fs->framestats.mod_bps         = _fs->bps_payload;
+        _fs->framestats.check           = _fs->check;
+        _fs->framestats.fec0            = _fs->fec0;
+        _fs->framestats.fec1            = _fs->fec1;
 
         // invoke callback method
         _fs->callback(_fs->header,

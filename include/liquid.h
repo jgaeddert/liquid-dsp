@@ -2061,6 +2061,13 @@ typedef struct {
     // demodulated frame symbols
     liquid_float_complex * framesyms;   // pointer to array [size: framesyms x 1]
     unsigned int num_framesyms;         // length of framesyms
+
+    // modulation/coding scheme etc.
+    unsigned int mod_scheme;    // modulation scheme
+    unsigned int mod_bps;       // modulation depth (bits/symbol)
+    unsigned int check;         // data validity check (crc, checksum)
+    unsigned int fec0;          // forward error-correction (inner)
+    unsigned int fec1;          // forward error-correction (outer)
 } framesyncstats_s;
 
 
@@ -2140,6 +2147,7 @@ typedef struct {
     unsigned int mod_bps;       // modulation depth (bits/symbol)
     unsigned int rampdn_len;    // number of ramp\down symbols
 } flexframegenprops_s;
+void flexframegenprops_init_default(flexframegenprops_s * _props);
 typedef struct flexframegen_s * flexframegen;
 flexframegen flexframegen_create(flexframegenprops_s * _props);
 void flexframegen_destroy(flexframegen _fg);
@@ -3585,6 +3593,10 @@ void ga_search_destroy(ga_search);
 
 // print search parameter internals
 void ga_search_print(ga_search);
+
+// set mutation rate
+void ga_search_set_mutation_rate(ga_search,
+                                 float _mutation_rate);
 
 // set population/selection size
 void ga_search_set_population_size(ga_search,
