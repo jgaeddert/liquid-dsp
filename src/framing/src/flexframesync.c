@@ -918,6 +918,10 @@ void flexframesync_decode_header(flexframesync _fs)
     _fs->header_valid =
     packetizer_decode(_fs->p_header, _fs->header_enc, _fs->header);
 
+    // return if header is invalid
+    if (!_fs->header_valid)
+        return;
+
     // unscramble header
     unscramble_data(_fs->header, 19);
 
