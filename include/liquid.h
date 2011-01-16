@@ -897,10 +897,11 @@ void imdct(float *_X, float * _x, float * _w, unsigned int _N);
 // MODULE : filter
 //
 
-// esimate required filter length given
-//   _b    : transition bandwidth (0 < _b < 0.5)
-//   _slsl : sidelobe suppression level [dB]
-unsigned int estimate_req_filter_len(float _b, float _slsl);
+// estimate required filter length given
+//  _df     :   transition bandwidth (0 < _b < 0.5)
+//  _As     :   sidelobe suppression level [dB] (As > 0)
+unsigned int estimate_req_filter_len(float _df,
+                                     float _As);
 
 #if 0
 // generic prototypes

@@ -770,6 +770,20 @@ LIQUID_FFT_DEFINE_INTERNAL_API(LIQUID_FFT_MANGLE_FLOAT, float, liquid_float_comp
 // MODULE : filter
 //
 
+// esimate required filter length given transition bandwidth and
+// sidelobe suppression level (algorithm from [Vaidyanathan:1993])
+//  _df     :   transition bandwidth (0 < _df < 0.5)
+//  _As     :   stop-band attenuation [dB] (As > 0)
+float estimate_req_filter_len_Kaiser(float _df,
+                                     float _As);
+
+// esimate required filter length given transition bandwidth and
+// sidelobe suppression level (algorithm from [Herrmann:1973])
+//  _df     :   transition bandwidth (0 < _df < 0.5)
+//  _As     :   stop-band attenuation [dB] (As > 0)
+float estimate_req_filter_len_Herrmann(float _df,
+                                       float _As);
+
 // Direct digital [up/down] synthesizer
 //#define LIQUID_DDS_DEFINE_INTERNAL_API(DDS,T)
 

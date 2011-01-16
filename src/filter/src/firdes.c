@@ -37,9 +37,9 @@
 #include "liquid.internal.h"
 
 // esimate required filter length given transition bandwidth and
-// sidelobe suppression level (algorithm from [Herrmann:1973])
-//   _df   : transition bandwidth (0 < _df < 0.5)
-//   _As   : stopband suppression level [dB] (_As > 0)
+// sidelobe suppression level
+//  _df     :   transition bandwidth (0 < _df < 0.5)
+//  _As     :   stopband suppression level [dB] (_As > 0)
 unsigned int estimate_req_filter_len(float _df,
                                      float _As)
 {
@@ -51,9 +51,55 @@ unsigned int estimate_req_filter_len(float _df,
         exit(1);
     }
 
+    // compute filter length estimate
+#if 0
+    unsigned int h_len = (unsigned int) estimate_req_filter_len_Kaiser(_df,_As);
+#else
+    unsigned int h_len = (unsigned int) estimate_req_filter_len_Herrmann(_df,_As);
+#endif
+    
+    return h_len;
+}
+
+
+// esimate required filter length given transition bandwidth and
+// sidelobe suppression level (algorithm from [Vaidyanathan:1993])
+//  _df     :   transition bandwidth (0 < _df < 0.5)
+//  _As     :   stop-band attenuation [dB] (As > 0)
+float estimate_req_filter_len_Kaiser(float _df,
+                                     float _As)
+{
+    if (_df > 0.5f || _df <= 0.0f) {
+        fprintf(stderr,"error: estimate_req_filter_len_Kaiser(), invalid bandwidth : %f\n", _df);
+        exit(1);
+    } else if (_As <= 0.0f) {
+        fprintf(stderr,"error: estimate_req_filter_len(), invalid stopband level : %f\n", _As);
+        exit(1);
+    }
+
+    // compute filter length estimate
+    return (_As - 7.95f)/(14.36f*_df) + 1.0f;
+}
+
+
+// esimate required filter length given transition bandwidth and
+// sidelobe suppression level (algorithm from [Herrmann:1973])
+//  _df     :   transition bandwidth (0 < _df < 0.5)
+//  _As     :   stop-band attenuation [dB] (As > 0)
+float estimate_req_filter_len_Herrmann(float _df,
+                                       float _As)
+{
+    if (_df > 0.5f || _df <= 0.0f) {
+        fprintf(stderr,"error: estimate_req_filter_len_Herrmann(), invalid bandwidth : %f\n", _df);
+        exit(1);
+    } else if (_As <= 0.0f) {
+        fprintf(stderr,"error: estimate_req_filter_len(), invalid stopband level : %f\n", _As);
+        exit(1);
+    }
+
     // compute delta_1, delta_2
     float d1, d2;
-    d1 = d2 = powf(10.0, - _As / 10.0);
+    d1 = d2 = powf(10.0, -_As/10.0);
 
     // compute log of delta_1, delta_2
     float t1 = log10f(d1);
@@ -67,11 +113,10 @@ unsigned int estimate_req_filter_len(float _df,
     float f = 11.012f + 0.51244f*(t1-t2);
 
     // compute filter length estimate
-    unsigned int h_len = (unsigned int) ( (Dinf - f*_df*_df) / _df + 1 );
+    float h_len = (Dinf - f*_df*_df) / _df + 1.0f;
     
     return h_len;
 }
-
 
 // returns the Kaiser window beta factor : sidelobe suppression level
 float kaiser_beta_slsl(float _slsl)
