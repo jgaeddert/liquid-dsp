@@ -36,6 +36,12 @@
 
 #include "liquid.internal.h"
 
+// method to estimate required filter length
+#define ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER   (0)
+#define ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN (1)
+
+#define ESTIMATE_REQ_FILTER_LEN_METHOD ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
+
 // esimate required filter length given transition bandwidth and
 // sidelobe suppression level
 //  _df     :   transition bandwidth (0 < _df < 0.5)
@@ -52,13 +58,98 @@ unsigned int estimate_req_filter_len(float _df,
     }
 
     // compute filter length estimate
-#if 0
+#if ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
+    // use Kaiser's estimate
     unsigned int h_len = (unsigned int) estimate_req_filter_len_Kaiser(_df,_As);
-#else
+#elif ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN
+    // use Herrmann's estimate
     unsigned int h_len = (unsigned int) estimate_req_filter_len_Herrmann(_df,_As);
+#else
+#   error "invalid required filter length estimation method"
 #endif
     
     return h_len;
+}
+
+// estimate filter stop-band attenuation given
+//  _df     :   transition bandwidth (0 < _b < 0.5)
+//  _N      :   filter length
+float estimate_req_filter_As(float _df,
+                             unsigned int _N)
+{
+    // run search for stop-band attenuation which gives these results
+    float As0   = 0.01f;    // lower bound
+    float As1   = 200.0f;   // upper bound
+
+    float As_hat = 0.0f;    // stop-band attenuation estimate
+    float N_hat = 0.0f;     // filter length estimate
+
+    // perform simple bisection search
+    unsigned int num_iterations = 20;
+    unsigned int i;
+    for (i=0; i<num_iterations; i++) {
+        // bisect limits
+        As_hat = 0.5f*(As1 + As0);
+#if ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
+        N_hat = estimate_req_filter_len_Kaiser(_df, As_hat);
+#elif ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN
+        N_hat = estimate_req_filter_len_Herrmann(_df, As_hat);
+#else
+#       error "invalid required filter length estimation method"
+#endif
+
+        //printf("range[%8.2f, %8.2f] As-hat=%8.2fdB, N=%8.2f (target: %3u taps)\n",
+        //        As0, As1, As_hat, N_hat, _N);
+
+        // update limits
+        if (N_hat < (float)_N) {
+            As0 = As_hat;
+        } else {
+            As1 = As_hat;
+        }
+    }
+    return As_hat;
+}
+
+// estimate filter transition bandwidth given
+//  _As     :   sidelobe suppression level [dB] (As > 0)
+//  _N      :   filter length
+float estimate_req_filter_df(float _As,
+                             unsigned int _N)
+{
+    // run search for stop-band attenuation which gives these results
+    float df0   = 1e-3f;    // lower bound
+    float df1   = 0.499f;   // upper bound
+
+    float df_hat = 0.0f;    // stop-band attenuation estimate
+    float N_hat = 0.0f;     // filter length estimate
+
+    // perform simple bisection search
+    unsigned int num_iterations = 20;
+    unsigned int i;
+    for (i=0; i<num_iterations; i++) {
+        // bisect limits
+        df_hat = 0.5f*(df1 + df0);
+#if ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
+        N_hat = estimate_req_filter_len_Kaiser(df_hat, _As);
+#elif ESTIMATE_REQ_FILTER_LEN_METHOD == ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN
+        N_hat = estimate_req_filter_len_Herrmann(df_hat, _As);
+#else
+#       error "invalid required filter length estimation method"
+#endif
+
+        printf("range[%8.5f, %8.5f] df-hat=%8.5fdB, N=%8.2f (target: %3u taps)\n",
+                df0, df1, df_hat, N_hat, _N);
+
+        // update limits
+        if (N_hat < (float)_N) {
+            df1 = df_hat;
+        } else {
+            df0 = df_hat;
+        }
+    }
+    return df_hat;
+
 }
 
 

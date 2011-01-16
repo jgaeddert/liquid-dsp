@@ -903,6 +903,18 @@ void imdct(float *_X, float * _x, float * _w, unsigned int _N);
 unsigned int estimate_req_filter_len(float _df,
                                      float _As);
 
+// estimate filter stop-band attenuation given
+//  _df     :   transition bandwidth (0 < _b < 0.5)
+//  _N      :   filter length
+float estimate_req_filter_As(float _df,
+                             unsigned int _N);
+
+// estimate filter transition bandwidth given
+//  _As     :   sidelobe suppression level [dB] (As > 0)
+//  _N      :   filter length
+float estimate_req_filter_df(float _As,
+                             unsigned int _N);
+
 #if 0
 // generic prototypes
 #define FIR_TEMPLATE    0   // Remez, e.g.
