@@ -312,11 +312,10 @@ static int callback(unsigned char * _rx_header,
     framedata * fd = (framedata*)_userdata;
 
     if (verbose) {
-        printf("    SNR                 : %12.8f dB\n", _stats.SNR);
-        printf("    rssi                : %12.8f dB\n", _stats.rssi);
         printf("    header crc          : %s\n", _rx_header_valid ?  "pass" : "FAIL");
         printf("    payload length      : %u\n", _rx_payload_len);
         printf("    payload crc         : %s\n", _rx_payload_valid ?  "pass" : "FAIL");
+        framesyncstats_print(&_stats);
     }
     if (!_rx_header_valid)
         return 0;

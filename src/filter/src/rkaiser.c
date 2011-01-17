@@ -103,13 +103,12 @@ void design_arkaiser_filter(unsigned int _k,
     }
 
     // compute bandwidth adjustment estimate
-    float rho_hat = rkaiser_approximate_rho(_m,_beta);
-    float gamma_hat = rho_hat*_beta;                // un-normalized correction factor
+    float rho_hat = rkaiser_approximate_rho(_m,_beta);  // bandwidth correction factor
 
-    unsigned int n=2*_k*_m+1;                       // filter length
-    float del = gamma_hat / (float)_k;              // transition bandwidth
-    float As  = 14.26f*del*n + 7.95f;               // sidelobe attenuation
-    float fc  = (1 + _beta - gamma_hat)/(float)_k;  // filter cutoff
+    unsigned int n=2*_k*_m+1;                           // filter length
+    float del = _beta*rho_hat / (float)_k;              // transition bandwidth
+    float As  = 14.26f*del*n + 7.95f;                   // sidelobe attenuation
+    float fc  = (1 + _beta*(1.0f-rho_hat))/(float)_k;   // filter cutoff
 
     // compute filter coefficients
     fir_kaiser_window(n,fc,As,_dt,_h);
@@ -140,24 +139,36 @@ float rkaiser_approximate_rho(unsigned int _m,
     // compute bandwidth adjustment estimate
     float c0=0.0f, c1=0.0f, c2=0.0f;
     switch (_m) {
-    case 1:  c0=0.78583556; c1=0.05439958; c2=0.37818679; break;
-    case 2:  c0=0.82194722; c1=0.06170731; c2=0.16362774; break;
-    case 3:  c0=0.84686762; c1=0.07475776; c2=0.05263769; break;
-    case 4:  c0=0.86538726; c1=0.07374587; c2=0.03491642; break;
-    case 5:  c0=0.87861007; c1=0.06981039; c2=0.03553645; break;
-    case 6:  c0=0.88901162; c1=0.06708569; c2=0.03459680; break;
+    case 1:     c0=0.75749731;  c1=0.06134303;  c2=-0.08729663;
+    case 2:     c0=0.81151861;  c1=0.07437658;  c2=-0.01427088;
+    case 3:     c0=0.84249538;  c1=0.07684185;  c2=-0.00536879;
+    case 4:     c0=0.86140782;  c1=0.07144126;  c2=-0.00558652;
+    case 5:     c0=0.87457740;  c1=0.06578694;  c2=-0.00650447;
+    case 6:     c0=0.88438797;  c1=0.06074265;  c2=-0.00736405;
+    case 7:     c0=0.89216620;  c1=0.05669236;  c2=-0.00791222;
+    case 8:     c0=0.89874983;  c1=0.05361696;  c2=-0.00815301;
+    case 9:     c0=0.90460032;  c1=0.05167952;  c2=-0.00807893;
+    case 10:    c0=0.91034430;  c1=0.05130753;  c2=-0.00746192;
+    case 11:    c0=0.91587675;  c1=0.05180436;  c2=-0.00670711;
+    case 12:    c0=0.92121875;  c1=0.05273801;  c2=-0.00588351;
+    case 13:    c0=0.92638195;  c1=0.05400764;  c2=-0.00508452;
+    case 14:    c0=0.93123555;  c1=0.05516163;  c2=-0.00437306;
+    case 15:    c0=0.93564993;  c1=0.05596561;  c2=-0.00388152;
+    case 16:    c0=0.93976742;  c1=0.05662274;  c2=-0.00348280;
+    case 17:    c0=0.94351703;  c1=0.05694120;  c2=-0.00318821;
+    case 18:    c0=0.94557273;  c1=0.05227591;  c2=-0.00400676;
+    case 19:    c0=0.95001614;  c1=0.05681641;  c2=-0.00300628;
+    case 20:    c0=0.95281708;  c1=0.05637607;  c2=-0.00304790;
+    case 21:    c0=0.95536256;  c1=0.05575880;  c2=-0.00312988;
+    case 22:    c0=0.95754206;  c1=0.05426060;  c2=-0.00385945;
     default:
-             c0 = 0.057918*logf(_m) + 0.784313;
-             c1 = _m <= 3 ?
-                     0.0099427*_m + 0.0447250 :
-                    -0.0026685*_m + 0.0835030;
-             c2 = 0.03373 + expf((-0.30382*_m*_m -0.19451*_m -0.56171));
+        c0 =  0.056873*logf(_m+1e-3f) + 0.781388;
+        c1 =  0.05426f;
+        c2 = -0.00386f;
     }
-    // ensure no invalid log taken
-    if (c2 >= _beta)
-        c2 = 0.999f*_beta;
 
-    float rho_hat = c0 + c1*logf(_beta - c2);
+    float b = logf(_beta);
+    float rho_hat = c0 + c1*b + c2*b*b;
 
     // ensure estimate is in [0,1]
     if (rho_hat < 0.0f) {
@@ -297,12 +308,11 @@ float design_rkaiser_filter_internal_isi(unsigned int _k,
         fprintf(stderr,"warning: design_rkaiser_filter_internal_isi(), rho > 1\n");
     }
 
-    unsigned int n=2*_k*_m+1;           // filter length
-    float gamma = _rho * _beta;         // un-normalized correction factor
-    float kf = (float)_k;               // samples/symbol (float)
-    float del = gamma / kf;             // transition bandwidth
-    float As = 14.26f*del*n + 7.95f;    // sidelobe attenuation
-    float fc = (1 + _beta - gamma)/kf;  // filter cutoff
+    unsigned int n=2*_k*_m+1;               // filter length
+    float kf = (float)_k;                   // samples/symbol (float)
+    float del = _beta*_rho / kf;            // transition bandwidth
+    float As = 14.26f*del*n + 7.95f;        // sidelobe attenuation
+    float fc = (1 + _beta*(1.0f-_rho))/kf;  // filter cutoff
 
     // evaluate performance (ISI)
     float isi_max;

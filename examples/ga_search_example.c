@@ -21,7 +21,7 @@ float rosenbrock_callback(void * _userdata, chromosome _c);
 
 int main() {
     unsigned int num_parameters = 8;        // dimensionality of search (minimum 1)
-    unsigned int bits_per_parameter = 32;   // parameter resolution
+    unsigned int bits_per_parameter = 16;   // parameter resolution
     unsigned int num_iterations = 1000;     // number of iterations to run
     unsigned int population_size = 20;      // GA population size
     float mutation_rate = 0.10f;            // GA mutation rate

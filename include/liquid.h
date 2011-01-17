@@ -2055,6 +2055,7 @@ void framesyncprops_init_default(framesyncprops_s * _props);
 // framesyncstats : generic frame synchronizer statistic structure
 
 typedef struct {
+    // signal quality
     float SNR;      // signal-to-(interference-and-)noise ratio estimate [dB]
     float rssi;     // received signal strength indicator [dB]
 
@@ -2069,6 +2070,15 @@ typedef struct {
     unsigned int fec0;          // forward error-correction (inner)
     unsigned int fec1;          // forward error-correction (outer)
 } framesyncstats_s;
+
+// external framesyncstats default object
+extern framesyncstats_s framesyncstats_default;
+
+// initialize framesyncstats object on default
+void framesyncstats_init_default(framesyncstats_s * _stats);
+
+// print framesyncstats object
+void framesyncstats_print(framesyncstats_s * _stats);
 
 
 // framesync csma callback functions invoked when signal levels is high or low

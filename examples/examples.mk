@@ -60,6 +60,7 @@ local_src	:=			\
 	gport_ima_example.c		\
 	gport_ima_threaded_example.c	\
 	gport_mma_threaded_example.c	\
+	gradient_search_datafit_example.c	\
 	gradient_search_example.c	\
 	hilbert_decim_example.c		\
 	hilbert_interp_example.c	\
