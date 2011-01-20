@@ -80,7 +80,7 @@ int main(int argc, char*argv[]) {
         fprintf(fid,"h(%4u) = %12.4e;\n", i+1, h[i]);
 
     fprintf(fid,"nfft=1024;\n");
-    fprintf(fid,"H=20*log10(abs(fftshift(fft(h*fc,nfft))));\n");
+    fprintf(fid,"H=20*log10(abs(fftshift(fft(h*2*fc,nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"figure; plot(f,H,'Color',[0 0.5 0.25],'LineWidth',2);\n");
     fprintf(fid,"grid on;\n");
