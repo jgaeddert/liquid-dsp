@@ -255,8 +255,8 @@ void design_rkaiser_filter_internal(unsigned int _k,
         x_hat = 0.5f * t0 / t1;
         
         // ensure x_hat is in (0,1)
-        if (x_hat < 0) x_hat = 0;
-        if (x_hat > 1) x_hat = 1;
+        if (x_hat <= 0.0f) x_hat = 1e-3f;
+        if (x_hat >= 1.0f) x_hat = 1.0f - 1e-3f;
 
         // search index of maximum
         if (x_hat > x1) {
