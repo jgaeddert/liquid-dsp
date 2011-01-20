@@ -40,7 +40,8 @@
 #define ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER   (0)
 #define ESTIMATE_REQ_FILTER_LEN_METHOD_HERRMANN (1)
 
-#define ESTIMATE_REQ_FILTER_LEN_METHOD ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
+// select filter estimate method
+#define ESTIMATE_REQ_FILTER_LEN_METHOD          (0)
 
 // esimate required filter length given transition bandwidth and
 // stop-band attenuation
@@ -138,8 +139,8 @@ float estimate_req_filter_df(float _As,
 #       error "invalid required filter length estimation method"
 #endif
 
-        printf("range[%8.5f, %8.5f] df-hat=%8.5fdB, N=%8.2f (target: %3u taps)\n",
-                df0, df1, df_hat, N_hat, _N);
+        //printf("range[%8.5f, %8.5f] df-hat=%8.5fdB, N=%8.2f (target: %3u taps)\n",
+        //        df0, df1, df_hat, N_hat, _N);
 
         // update limits
         if (N_hat < (float)_N) {
@@ -190,7 +191,7 @@ float estimate_req_filter_len_Herrmann(float _df,
 
     // compute delta_1, delta_2
     float d1, d2;
-    d1 = d2 = powf(10.0, -_As/10.0);
+    d1 = d2 = powf(10.0, -_As/20.0);
 
     // compute log of delta_1, delta_2
     float t1 = log10f(d1);
