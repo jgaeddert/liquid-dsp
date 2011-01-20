@@ -47,7 +47,7 @@ struct ITQMFB(_s) {
     float * h;          // filter prototype
     unsigned int m;     // primitive filter length
     unsigned int h_len; // actual filter length: h_len = 4*m+1
-    float beta;         // filter bandwidth/sidelobe suppression
+    float beta;         // filter bandwidth/stop-band attenuation
     int type;           // analyzer/synthesizer
 
     unsigned int num_layers;
@@ -61,7 +61,7 @@ struct ITQMFB(_s) {
     QMFB() * bank;
 };
 
-ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl, int _type)
+ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _As, int _type)
 {
     ITQMFB() f = (ITQMFB()) malloc(sizeof(struct ITQMFB(_s)));
 
@@ -80,7 +80,7 @@ ITQMFB() ITQMFB(_create)(unsigned int _n, unsigned int _m, float _slsl, int _typ
     // create banks
     unsigned int i;
     for (i=0; i<f->num_banks; i++)
-        f->bank[i] = QMFB(_create)(_m, _slsl, _type);
+        f->bank[i] = QMFB(_create)(_m, _As, _type);
 
     return f;
 }

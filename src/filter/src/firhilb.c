@@ -80,7 +80,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     // compute filter coefficients, alternating sign
     unsigned int i;
     float t, h1, h2, s;
-    float beta = kaiser_beta_slsl(f->As);
+    float beta = kaiser_beta_As(f->As);
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);

@@ -21,12 +21,12 @@
 
 int main() {
     unsigned int m=5;           // filter semi-length
-    float slsl=60.0f;           // filter sidelobe suppression level
+    float As=60.0f;             // stop-band attenuation [dB]
     float fc=0.37f;             // signal center frequency
     unsigned int N=128;         // number of samples
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(m,slsl);
+    firhilb f = firhilb_create(m,As);
     firhilb_print(f);
 
     // open output file

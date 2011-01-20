@@ -37,7 +37,7 @@ int main(int argc, char*argv[]) {
     unsigned int n=5;       // filter order
     float fc = 0.20f;       // cutoff frequency (low-pass prototype)
     float f0 = 0.25f;       // center frequency (band-pass, band-stop)
-    float slsl = 60.0f;     // stopband attenuation [dB]
+    float As = 60.0f;       // stopband attenuation [dB]
     float ripple = 1.0f;    // passband ripple [dB]
 
     // filter type
@@ -90,7 +90,7 @@ int main(int argc, char*argv[]) {
             break;
         case 'n': n = atoi(optarg);         break;
         case 'r': ripple = atof(optarg);    break;
-        case 's': slsl = atof(optarg);      break;
+        case 's': As = atof(optarg);        break;
         case 'f': fc = atof(optarg);        break;
         case 'c': f0 = atof(optarg);        break;
         case 'o':
@@ -124,7 +124,7 @@ int main(int argc, char*argv[]) {
         fprintf(stderr,"error: %s, pass-band ripple out of range\n", argv[0]);
         usage();
         exit(1);
-    } else if (slsl <= 0) {
+    } else if (As <= 0) {
         fprintf(stderr,"error: %s, stop-band ripple out of range\n", argv[0]);
         usage();
         exit(1);
@@ -165,7 +165,7 @@ int main(int argc, char*argv[]) {
     case LIQUID_IIRDES_CHEBY2:
         printf("Cheby-II filter design:\n");
         nza = 2*L;
-        epsilon = powf(10.0f, -slsl/20.0f);
+        epsilon = powf(10.0f, -As/20.0f);
         k0 = 1.0f;
         cheby2_azpkf(n,epsilon,za,pa,&ka);
         break;
@@ -173,7 +173,7 @@ int main(int argc, char*argv[]) {
         printf("elliptic filter design:\n");
         nza = 2*L;
         Gp = powf(10.0f, -ripple  / 20.0f);
-        Gs = powf(10.0f, -slsl    / 20.0f);
+        Gs = powf(10.0f, -As      / 20.0f);
         printf("  Gp = %12.8f\n", Gp);
         printf("  Gs = %12.8f\n", Gs);
 

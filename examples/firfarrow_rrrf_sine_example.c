@@ -17,7 +17,7 @@ int main() {
     unsigned int h_len=19;          // filter length
     unsigned int p=5;               // polynomial order
     float fc=0.9f;                  // filter cutoff
-    float slsl=60.0f;               // sidelobe suppression level
+    float As=60.0f;                 // stop-band attenuation [dB]
     float mu=0.1f;                  // fractional sample delay
     unsigned int num_samples=32;    // number of samples to evaluate
     float f0=0.125f;                // sine wave frequency
@@ -27,7 +27,7 @@ int main() {
     float y[num_samples];           // output data array
 
     // create and initialize Farrow filter object
-    firfarrow_rrrf f = firfarrow_rrrf_create(h_len, p, fc, slsl);
+    firfarrow_rrrf f = firfarrow_rrrf_create(h_len, p, fc, As);
     firfarrow_rrrf_set_delay(f, mu);
 
     unsigned int i;

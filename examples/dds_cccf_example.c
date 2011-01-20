@@ -26,14 +26,14 @@ int main() {
     float fc=-0.0f;                 // input (output) decim (interp) frequency
     unsigned int num_stages=3;      // number of halfband interp/decim stages
     unsigned int num_samples=64;    // number of input samples
-    float slsl=60.0f;               // DDS sidelobe suppression level
+    float As=60.0f;                 // DDS stop-band attenuation [dB]
     float bw=0.25f;                 // signal bandwidth
 
     // derived values
     unsigned int r=1<<num_stages;   // resampling rate (output/input)
 
     // create resampler
-    dds_cccf q = dds_cccf_create(num_stages,fc,bw,slsl);
+    dds_cccf q = dds_cccf_create(num_stages,fc,bw,As);
     dds_cccf_print(q);
 
     // open/initialize output file

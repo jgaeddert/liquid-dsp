@@ -29,7 +29,7 @@ int main(int argc, char*argv[]) {
     // options
     float fc=0.2f;          // filter cutoff frequency
     float ft=0.1f;          // filter transition
-    float As=60.0f;         // sidelobe suppression level
+    float As=60.0f;         // stop-band attenuation [dB]
     float mu=0.0f;          // fractional timing offset
 
     int dopt;
@@ -55,7 +55,7 @@ int main(int argc, char*argv[]) {
     printf("filter design parameters\n");
     printf("    cutoff frequency            :   %8.4f\n", fc);
     printf("    transition bandwidth        :   %8.4f\n", ft);
-    printf("    sidelobe level [dB]         :   %8.4f\n", As);
+    printf("    stop-band attenuation [dB]  :   %8.4f\n", As);
     printf("    fractional sample offset    :   %8.4f\n", mu);
     printf("    filter length               :   %u\n", h_len);
 

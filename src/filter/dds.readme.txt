@@ -5,7 +5,7 @@
 dds_cccf dds_cccf_create(unsigned int _num_stages,
                          float _fc,
                          float _bw,
-                         float _slsl);
+                         float _As);
     Create a DDS object.  The interpolation (decimation) rate is
     equal to 2^_num_stages.
 

@@ -16,14 +16,14 @@ int main() {
     unsigned int h_len=19;  // filter length
     unsigned int p=5;       // polynomial order
     float fc=0.9f;          // filter cutoff
-    float slsl=60.0f;       // sidelobe suppression level
+    float As=60.0f;         // stop-band attenuation [dB]
     unsigned int m=9;       // number of delays to evaluate
 
     // coefficients array
     float h[h_len];
     float tao = ((float)h_len-1)/2.0f;  // nominal filter delay
 
-    firfarrow_rrrf f = firfarrow_rrrf_create(h_len, p, fc, slsl);
+    firfarrow_rrrf f = firfarrow_rrrf_create(h_len, p, fc, As);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n\n", OUTPUT_FILENAME);

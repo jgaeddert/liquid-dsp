@@ -17,7 +17,7 @@ int main() {
     unsigned int h_len = 4*m+1;     // filter length
     float bw=0.25f;                 // input signal bandwidth
     unsigned int num_samples=64;    // number of input samples
-    float slsl=-60.0f;              // filter sidelobe level [dB]
+    float As=60.0f;                 // stop-band attenuation [dB]
 
     unsigned int i;
 
@@ -36,7 +36,7 @@ int main() {
 
     // create/print the half-band resampler, with a specified
     // stopband attenuation level
-    resamp2_crcf q = resamp2_crcf_create(h_len,0,slsl);
+    resamp2_crcf q = resamp2_crcf_create(h_len,0,As);
     resamp2_crcf_print(q);
 
     // run interpolation stage

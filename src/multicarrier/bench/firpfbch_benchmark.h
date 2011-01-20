@@ -40,11 +40,11 @@ void firpfbch_execute_bench(
     int _type)
 {
     // initialize channelizer
-    float slsl  = -60.0f;
-    float dt    =   0.0f;
+    float As    = 60.0f;
+    float dt    = 0.0f;
     firpfbch c = firpfbch_create(_num_channels,
                                  _m,
-                                 slsl,
+                                 As,
                                  dt,
                                  FIRPFBCH_NYQUIST,
                                  0);

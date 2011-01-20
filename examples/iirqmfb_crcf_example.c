@@ -15,7 +15,7 @@
 
 int main() {
     unsigned int order=9;           // filter order
-    float beta = 0.3f;              // sidelobe suppression level (ignored for now)
+    float beta = 0.3f;              // stop-band attenuation (ignored for now)
     int prototype=0;                // filter prototype (ignored for now)
     unsigned int num_samples=64;    // number of samples
 

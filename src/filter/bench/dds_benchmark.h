@@ -36,7 +36,7 @@ void dds_crcf_bench(
     struct rusage *_finish,
     unsigned long int *_num_iterations,
     unsigned int _num_stages,
-    float _slsl,
+    float _As,
     float _bw,
     liquid_dds_benchmark_type _type)
 {
@@ -53,7 +53,7 @@ void dds_crcf_bench(
     dds_cccf q = dds_cccf_create(_num_stages,
                                  fc,
                                  _bw,
-                                 _slsl);
+                                 _As);
 
     // initialize buffers
     unsigned int n = 1<<_num_stages;
@@ -89,11 +89,11 @@ void dds_crcf_bench(
     dds_cccf_destroy(q);
 }
 
-#define LIQUID_DDS_CCCF_BENCHMARK_API(NUM_STAGES,SLSL,BW,TYPE)  \
+#define LIQUID_DDS_CCCF_BENCHMARK_API(NUM_STAGES,AS,BW,TYPE)    \
 (   struct rusage *_start,                                      \
     struct rusage *_finish,                                     \
     unsigned long int *_num_iterations)                         \
-{ dds_crcf_bench(_start, _finish, _num_iterations, NUM_STAGES, SLSL, BW, TYPE); }
+{ dds_crcf_bench(_start, _finish, _num_iterations, NUM_STAGES, AS, BW, TYPE); }
 
 //
 // Decimators

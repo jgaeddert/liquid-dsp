@@ -43,7 +43,7 @@
 #define ESTIMATE_REQ_FILTER_LEN_METHOD ESTIMATE_REQ_FILTER_LEN_METHOD_KAISER
 
 // esimate required filter length given transition bandwidth and
-// sidelobe suppression level
+// stop-band attenuation
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _As     :   stopband suppression level [dB] (_As > 0)
 unsigned int estimate_req_filter_len(float _df,
@@ -112,7 +112,7 @@ float estimate_req_filter_As(float _df,
 }
 
 // estimate filter transition bandwidth given
-//  _As     :   sidelobe suppression level [dB] (As > 0)
+//  _As     :   stop-band attenuation [dB] (As > 0)
 //  _N      :   filter length
 float estimate_req_filter_df(float _As,
                              unsigned int _N)
@@ -154,7 +154,7 @@ float estimate_req_filter_df(float _As,
 
 
 // esimate required filter length given transition bandwidth and
-// sidelobe suppression level (algorithm from [Vaidyanathan:1993])
+// stop-band attenuation (algorithm from [Vaidyanathan:1993])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _As     :   stop-band attenuation [dB] (As > 0)
 float estimate_req_filter_len_Kaiser(float _df,
@@ -174,7 +174,7 @@ float estimate_req_filter_len_Kaiser(float _df,
 
 
 // esimate required filter length given transition bandwidth and
-// sidelobe suppression level (algorithm from [Herrmann:1973])
+// stop-band attenuation (algorithm from [Herrmann:1973])
 //  _df     :   transition bandwidth (0 < _df < 0.5)
 //  _As     :   stop-band attenuation [dB] (As > 0)
 float estimate_req_filter_len_Herrmann(float _df,
@@ -209,16 +209,17 @@ float estimate_req_filter_len_Herrmann(float _df,
     return h_len;
 }
 
-// returns the Kaiser window beta factor : sidelobe suppression level
-float kaiser_beta_slsl(float _slsl)
+// returns the Kaiser window beta factor give the filter's target
+// stop-band attenuation (As) [Vaidyanathan:1993]
+//  _As     :   target filter's stop-band attenuation [dB], _As > 0
+float kaiser_beta_As(float _As)
 {
-    // from [Vaidyanathan:1993]
-    _slsl = fabsf(_slsl);
+    _As = fabsf(_As);
     float beta;
-    if (_slsl > 50.0f)
-        beta = 0.1102f*(_slsl - 8.7f);
-    else if (_slsl > 21.0f)
-        beta = 0.5842*powf(_slsl - 21, 0.4f) + 0.07886f*(_slsl - 21);
+    if (_As > 50.0f)
+        beta = 0.1102f*(_As - 8.7f);
+    else if (_As > 21.0f)
+        beta = 0.5842*powf(_As - 21, 0.4f) + 0.07886f*(_As - 21);
     else
         beta = 0.0f;
 
@@ -233,7 +234,7 @@ float kaiser_beta_slsl(float _slsl)
 //  _h      : output coefficient buffer, [size: _n x 1]
 void fir_kaiser_window(unsigned int _n,
                        float _fc,
-                       float _slsl,
+                       float _As,
                        float _mu,
                        float *_h)
 {
@@ -250,7 +251,7 @@ void fir_kaiser_window(unsigned int _n,
     }
 
     // chooise kaiser beta parameter (approximate)
-    float beta = kaiser_beta_slsl(_slsl);
+    float beta = kaiser_beta_As(_As);
 
     float t, h1, h2; 
     unsigned int i;
@@ -306,25 +307,19 @@ void fir_design_doppler(unsigned int _n,
     }
 }
 
+#if 0
 // Design optimum FIR root-nyquist filter
-//  _n      : filter length
-//  _k      : samples/symbol
-//  _beta   : excess bandwidth factor
-void fir_design_optim_root_nyquist(unsigned int _n,
-                                   unsigned int _k,
-                                   float _slsl,
+//  _k      :   samples/symbol (_k > 1)
+//  _m      :   filter delay (number of symbols)
+//  _beta   :   excess bandwidth factor
+//  _h      :   output filter coefficients, [size: 2*_k*_m+1 x 1]
+void fir_design_optim_root_nyquist(unsigned int _k,
+                                   unsigned int _m,
+                                   float _beta,
                                    float *_h)
 {
-    // validate inputs:
-    //    _k >= 2
-    //    _slsl < 0
-
-    // begin with prototype
-    //float fc = 1/((float)_k);
-    //fir_design_windowed_sinc(_n, fc, _slsl, _h);
-
-    // begin optimization:
 }
+#endif
 
 // filter analysis
 

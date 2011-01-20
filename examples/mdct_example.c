@@ -22,7 +22,7 @@ int main() {
     // filter options
     unsigned int h_len=21;  // filter length
     float fc=0.01f;         // filter cutoff
-    float slsl=60.0f;       // sidelobe suppression level
+    float As=60.0f;         // stop-band attenuation [dB]
     float mu=0.0f;          // timing offset
 
     // derived values
@@ -62,7 +62,7 @@ int main() {
 
     // generate basic filter
     float h[h_len];
-    fir_kaiser_window(h_len,fc,slsl,mu,h);
+    fir_kaiser_window(h_len,fc,As,mu,h);
     firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
 
     // generate random signal (filtered noise)

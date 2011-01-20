@@ -34,11 +34,11 @@ void resamp_crcf_bench(
     unsigned long int i;
     float r = 1.03f;        // resampling rate
     float bw = 0.7f;        // filter bandwidth
-    float slsl = -60.0f;    // sidelobe suppression level
+    float As = 60.0f;       // stop-band attenuation [dB]
     unsigned int npfb = 32; // number of polyphase filters
     unsigned int h_len = _h_len / 2; // filter semi-length
 
-    resamp_crcf q = resamp_crcf_create(r,h_len,bw,slsl,npfb);
+    resamp_crcf q = resamp_crcf_create(r,h_len,bw,As,npfb);
 
     float complex x[] = {1.0f, -1.0f};
     float complex y[] = {1.0f, -1.0f};

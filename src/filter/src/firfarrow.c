@@ -45,7 +45,7 @@ struct FIRFARROW(_s) {
     TC * h;
     unsigned int h_len; // filter length
     float fc;           // filter cutoff
-    float As;           // sidelobe suppression level
+    float As;           // stop-band attenuation [dB]
     unsigned int Q;     // polynomial order
 
     float mu;           // fractional sample delay
@@ -85,7 +85,7 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
     FIRFARROW() f = (FIRFARROW()) malloc(sizeof(struct FIRFARROW(_s)));
     f->h_len = _h_len;  // filter length
     f->Q     = _p;      // polynomial order
-    f->As    = _As;     // filter sidelobe suppression level
+    f->As    = _As;     // filter stop-band attenuation
     f->fc    = _fc;     // filter cutoff frequency
 
     // allocate memory for filter coefficients
@@ -250,7 +250,7 @@ void FIRFARROW(_genpoly)(FIRFARROW() _q)
     float mu_vect[_q->Q+1];
     float hp_vect[_q->Q+1];
     float p[_q->Q];
-    float beta = kaiser_beta_slsl(_q->As);
+    float beta = kaiser_beta_As(_q->As);
     for (i=0; i<_q->h_len; i++) {
 #if FIRFARROW_DEBUG
         printf("i : %3u / %3u\n", i, _n);

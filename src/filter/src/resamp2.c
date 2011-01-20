@@ -44,7 +44,7 @@ struct RESAMP2(_s) {
     unsigned int m;     // primitive filter length
     unsigned int h_len; // actual filter length: h_len = 4*m+1
     float fc;           // center frequency [-1.0 <= fc <= 1.0]
-    float slsl;         // sidelobe suppression level [dB]
+    float As;           // stop-band attenuation [dB]
 
     // lower branch (filter)
     TC * h1;
@@ -62,15 +62,15 @@ struct RESAMP2(_s) {
 // create a resamp2 object
 //  _h_len      :   desired filter length (will force 4*m+1)
 //  _fc         :   center frequency of half-band filter
-//  _slsl       :   side-lobe suppression level (attenuation)
+//  _As         :   stop-band attenuation [dB], _As > 0
 RESAMP2() RESAMP2(_create)(unsigned int _h_len,
                            float _fc,
-                           float _slsl)
+                           float _As)
 {
     RESAMP2() f = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
     f->h_len = _h_len;
     f->fc = _fc;
-    f->slsl = _slsl;
+    f->As = _As;
     if ( f->fc < -0.5f || f->fc > 0.5f ) {
         fprintf(stderr,"error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
         exit(1);
@@ -92,7 +92,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
     unsigned int i;
     float t, h1, h2;
     TC h3;
-    float beta = kaiser_beta_slsl(f->slsl);
+    float beta = kaiser_beta_As(f->As);
     for (i=0; i<f->h_len; i++) {
         t = (float)i - (float)(f->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
@@ -131,11 +131,11 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
 //  _f          :   original resamp2 object
 //  _h_len      :   desired filter length (will force 4*m+1)
 //  _fc         :   center frequency of half-band filter
-//  _slsl       :   side-lobe suppression level (attenuation)
+//  _As         :   stop-band attenuation [dB], _As > 0
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
                              unsigned int _h_len,
                              float _fc,
-                             float _slsl)
+                             float _As)
 {
     unsigned int i;
     // change filter length as necessary
@@ -146,7 +146,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
         m1 = 2;
 
     // TODO: redesign filter anyway
-    if (m1 == m0 && _f->fc == _fc && _f->slsl == _slsl)
+    if (m1 == m0 && _f->fc == _fc && _f->As == _As)
         return _f;
 
     // compute new lengths
@@ -154,9 +154,9 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     _f->h_len = 4*(_f->m) + 1;
     _f->h1_len = 2*(_f->m);
 
-    // set center frequency, sidelobe suppression level
+    // set center frequency, stop-band attenuation
     _f->fc = _fc;
-    _f->slsl = _slsl;
+    _f->As = _As;
 
     // re-allocate memory
     _f->h  = (TC*) realloc(_f->h,  (_f->h_len)*sizeof(TC));

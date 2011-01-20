@@ -17,13 +17,13 @@ int main() {
     unsigned int h_len = 13;    // filter semi-length (filter delay)
     float r=0.9f;               // resampling rate (output/input)
     float bw=0.25f;             // resampling filter bandwidth
-    float slsl=-60.0f;          // resampling filter sidelobe suppression level
+    float As=60.0f;             // resampling filter stop-band attenuation [dB]
     unsigned int npfb=32;       // number of filters in bank (timing resolution)
     unsigned int n=128;         // number of input samples
     float fc=0.079f;            // complex sinusoid frequency
 
     // create resampler
-    resamp_crcf f = resamp_crcf_create(r,h_len,bw,slsl,npfb);
+    resamp_crcf f = resamp_crcf_create(r,h_len,bw,As,npfb);
     resamp_crcf_print(f);
 
     // open/initialize output file

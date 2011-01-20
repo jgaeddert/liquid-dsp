@@ -899,7 +899,7 @@ void imdct(float *_X, float * _x, float * _w, unsigned int _N);
 
 // estimate required filter length given
 //  _df     :   transition bandwidth (0 < _b < 0.5)
-//  _As     :   sidelobe suppression level [dB] (As > 0)
+//  _As     :   stop-band attenuation [dB], _As > 0
 unsigned int estimate_req_filter_len(float _df,
                                      float _As);
 
@@ -910,57 +910,16 @@ float estimate_req_filter_As(float _df,
                              unsigned int _N);
 
 // estimate filter transition bandwidth given
-//  _As     :   sidelobe suppression level [dB] (As > 0)
+//  _As     :   stop-band attenuation [dB], _As > 0
 //  _N      :   filter length
 float estimate_req_filter_df(float _As,
                              unsigned int _N);
 
-#if 0
-// generic prototypes
-#define FIR_TEMPLATE    0   // Remez, e.g.
-#define FIR_LOWPASS     1
-#define FIR_HIGHPASS    2
-#define FIR_BANDPASS    3
-#define FIR_BANDREJECT  4
 
-// specific prototypes
-#define FIR_RCOS        5
-#define FIR_RRCOS       6
-#define FIR_NYQUIST     7
-#define FIR_ROOTNYQUIST 8
-struct fir_prototype_s {
-    int type;               // bandpass, etc.
-    int prototype;          // kaiser, rrcos, etc.
-    float fc;               // cutoff frequency
-
-    float bt;               // transition bandwidth
-    float slsl;             // sidelobe suppression level
-    unsigned int num_taps;  // filter length
-
-    unsigned int k;         // samples/symbol
-    unsigned int m;         // symbol delay
-    float beta;             // excess bandwidth factor
-    float dt;               // phase offset
-};
-
-typedef struct fir_prototype_s * fir_prototype;
-
-void fir_prototype_design_length();
-void fir_prototype_design_bt();
-void fir_prototype_design_slsl();
-
-void fir_prototype_design_rootnyquist(); // rrcos: k, m, ...
-
-// estimates the number of filter taps required to meet
-// the specifications
-//  _slsl   : sidelobe suppression level (_slsl < 0)
-//  _ft     : filter transition bandwidth (0 < _ft < 0.5)
-float num_firfilt_taps(float _slsl,
-                       float _ft);
-#endif
-
-// returns the Kaiser window beta factor : sidelobe suppression level
-float kaiser_beta_slsl(float _slsl);
+// returns the Kaiser window beta factor give the filter's target
+// stop-band attenuation (As) [Vaidyanathan:1993]
+//  _As     :   target filter's stop-band attenuation [dB], _As > 0
+float kaiser_beta_As(float _As);
 
 
 
@@ -1033,7 +992,7 @@ void firdespm_execute(firdespm _q, float * _h);
 //  _h      : output coefficient buffer, [size: _n x 1]
 void fir_kaiser_window(unsigned int _n,
                        float _fc,
-                       float _slsl,
+                       float _As,
                        float _mu,
                        float *_h);
 
@@ -1049,11 +1008,17 @@ void fir_design_doppler(unsigned int _n,
                         float _theta,
                         float *_h);
 
+#if 0
 // Design optimum FIR root-nyquist filter
-//  _n      : filter length
-//  _k      : samples/symbol (_k > 1)
-//  _slsl   : sidelobe suppression level
-//void fir_design_optim_root_nyquist(unsigned int _n, unsigned int _k, float _slsl, float *_h);
+//  _k      :   samples/symbol (_k > 1)
+//  _m      :   filter delay (number of symbols)
+//  _beta   :   excess bandwidth factor
+//  _h      :   output filter coefficients, [size: 2*_k*_m+1 x 1]
+void fir_design_optim_root_nyquist(unsigned int _k,
+                                   unsigned int _m,
+                                   float _beta,
+                                   float *_h);
+#endif
 
 // Design Nyquist raised-cosine filter
 //  _k      : samples/symbol
@@ -1405,7 +1370,7 @@ typedef struct DDS(_s) * DDS();                                 \
 DDS() DDS(_create)(unsigned int _num_stages,                    \
                    float _fc,                                   \
                    float _bw,                                   \
-                   float _slsl);                                \
+                   float _As);                                  \
 void DDS(_destroy)(DDS() _q);                                   \
 void DDS(_print)(DDS() _q);                                     \
 void DDS(_reset)(DDS() _q);                                     \
@@ -1740,7 +1705,7 @@ LIQUID_IIRQMFB_DEFINE_API(IIRQMFB_MANGLE_CRCF,
 typedef struct ITQMFB(_s) * ITQMFB();                           \
 ITQMFB() ITQMFB(_create)(unsigned int _n,                       \
                          unsigned int _m,                       \
-                         float _slsl,                           \
+                         float _As,                             \
                          int _type);                            \
 ITQMFB() ITQMFB(_recreate)(ITQMFB() _q, unsigned int _m);       \
 void ITQMFB(_destroy)(ITQMFB() _q);                             \
@@ -1775,11 +1740,11 @@ LIQUID_ITQMFB_DEFINE_API(ITQMFB_MANGLE_CRCF,
 typedef struct RESAMP2(_s) * RESAMP2();                         \
 RESAMP2() RESAMP2(_create)(unsigned int _h_len,                 \
                            float _fc,                           \
-                           float _slsl);                        \
+                           float _As);                          \
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
                              unsigned int _h_len,               \
                              float _fc,                         \
-                             float _slsl);                      \
+                             float _As);                        \
 void RESAMP2(_destroy)(RESAMP2() _q);                           \
 void RESAMP2(_print)(RESAMP2() _q);                             \
 void RESAMP2(_clear)(RESAMP2() _q);                             \
@@ -1818,7 +1783,7 @@ typedef struct RESAMP(_s) * RESAMP();                           \
 RESAMP() RESAMP(_create)(float _r,                              \
                          unsigned int _h_len,                   \
                          float _fc,                             \
-                         float _slsl,                           \
+                         float _As,                             \
                          unsigned int _npfb);                   \
 void RESAMP(_destroy)(RESAMP() _q);                             \
 void RESAMP(_print)(RESAMP() _q);                               \
@@ -2904,7 +2869,7 @@ typedef struct firpfbch_s * firpfbch;
 // TODO: use filter prototype object
 // _num_channels:   number of channels
 // _m           :   filter delay (filter length = 2*k*m)
-// _beta        :   sidelobe suppression level (nyquist), excess bandwidth (root nyquist)
+// _beta        :   stop-band attenuation (nyquist), excess bandwidth (root nyquist)
 // _nyquist     :   0: nyquist,  1: root nyquist
 // _gradient    :   0: normal,   1: compute gradient of prototype filter
 firpfbch firpfbch_create(unsigned int _num_channels,

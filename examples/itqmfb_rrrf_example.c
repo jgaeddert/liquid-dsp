@@ -12,7 +12,7 @@
 
 int main() {
     unsigned int m=3;                   // filter delay
-    float slsl = -60.0f;                // sidelobe suppression level
+    float As = 60.0f;                   // stop-band attenuation [dB]
     unsigned int n = 4;                 // number of layers
     unsigned int num_channels = 1<<n;
     unsigned int num_frames = 2*m*n;
@@ -30,8 +30,8 @@ int main() {
 
 
     // create filterbank
-    itqmfb_rrrf qa = itqmfb_rrrf_create(n, m, slsl, LIQUID_ITQMFB_ANALYZER);
-    itqmfb_rrrf qs = itqmfb_rrrf_create(n, m, slsl, LIQUID_ITQMFB_SYNTHESIZER);
+    itqmfb_rrrf qa = itqmfb_rrrf_create(n, m, As, LIQUID_ITQMFB_ANALYZER);
+    itqmfb_rrrf qs = itqmfb_rrrf_create(n, m, As, LIQUID_ITQMFB_SYNTHESIZER);
     itqmfb_rrrf_print(qa);
 
     float x[num_samples];

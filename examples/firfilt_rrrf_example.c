@@ -13,13 +13,13 @@ int main() {
     // options
     unsigned int h_len=17;  // filter length
     float fc=0.2f;          // filter cutoff
-    float slsl=30.0f;       // sidelobe suppression level
+    float As=30.0f;         // stop-band attenuation [dB]
     float mu=0.0f;          // timing offset
     unsigned int n=64;      // number of random input samples
 
     unsigned int i;
     float h[h_len];
-    fir_kaiser_window(h_len,fc,slsl,mu,h);
+    fir_kaiser_window(h_len,fc,As,mu,h);
     firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
     firfilt_rrrf_print(f);
 

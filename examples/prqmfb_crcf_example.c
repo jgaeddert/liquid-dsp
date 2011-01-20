@@ -12,7 +12,7 @@
 
 int main() {
     unsigned int h_len=20;              // filter length
-    float beta = 0.3f;                  // sidelobe suppression level
+    float beta = 0.3f;                  // stop-band attenuation
     unsigned int num_samples=64;        // number of samples
 
     // derived values

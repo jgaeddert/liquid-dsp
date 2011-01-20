@@ -11,12 +11,12 @@ int main() {
     // options
     unsigned int num_channels=8;    // number of channels
     unsigned int m=2;               // filter delay
-    float slsl=-60;                 // sidelobe suppression level
+    float As=60;                    // stop-band attenuation [dB]
     unsigned int num_symbols=8;     // number of symbols
 
     // create filterbank objects
-    firpfbch ca0 = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, 0);
-    firpfbch ca1 = firpfbch_create(num_channels, m, slsl, 0, FIRPFBCH_NYQUIST, 0);
+    firpfbch ca0 = firpfbch_create(num_channels, m, As, 0, FIRPFBCH_NYQUIST, 0);
+    firpfbch ca1 = firpfbch_create(num_channels, m, As, 0, FIRPFBCH_NYQUIST, 0);
 
     unsigned int i, j;
     float complex x[num_channels];  // time-domain input

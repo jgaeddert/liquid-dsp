@@ -43,8 +43,8 @@
 struct RESAMP(_s) {
     TC * h;
     unsigned int h_len;
-    float slsl;
-    float fc;
+    float As;       // stop-band attenuation
+    float fc;       // filter cutoff
 
     float r;        // rate
     int b;          // filterbank index
@@ -76,7 +76,7 @@ struct RESAMP(_s) {
 RESAMP() RESAMP(_create)(float _r,
                          unsigned int _h_len,
                          float _fc,
-                         float _slsl,
+                         float _As,
                          unsigned int _npfb)
 {
     // validate input
@@ -93,7 +93,7 @@ RESAMP() RESAMP(_create)(float _r,
 
     RESAMP() q = (RESAMP()) malloc(sizeof(struct RESAMP(_s)));
     q->r     = _r;
-    q->slsl  = _slsl;
+    q->As    = _As;
     q->fc    = _fc;
     q->h_len = _h_len;
 
@@ -118,7 +118,7 @@ RESAMP() RESAMP(_create)(float _r,
     unsigned int n = 2*_h_len*q->npfb+1;
     float hf[n];
     TC h[n];
-    fir_kaiser_window(n,q->fc/((float)(q->npfb)),q->slsl,0.0f,hf);
+    fir_kaiser_window(n,q->fc/((float)(q->npfb)),q->As,0.0f,hf);
 
     // normalize filter coefficients by DC gain
     unsigned int i;
