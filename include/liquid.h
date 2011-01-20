@@ -1026,11 +1026,11 @@ void firdespm_execute(firdespm _q, float * _h);
 
 
 // Design FIR using kaiser window
-//  _n      : filter length
-//  _fc     : cutoff frequency
-//  _slsl   : sidelobe suppression level (dB attenuation)
-//  _mu     : fractional sample delay
-//  _h      : output coefficient buffer
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _mu     : fractional sample offset, -0.5 < _mu < 0.5
+//  _h      : output coefficient buffer, [size: _n x 1]
 void fir_kaiser_window(unsigned int _n,
                        float _fc,
                        float _slsl,

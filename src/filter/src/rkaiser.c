@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -105,10 +105,11 @@ void design_arkaiser_filter(unsigned int _k,
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);  // bandwidth correction factor
 
-    unsigned int n=2*_k*_m+1;                           // filter length
-    float del = _beta*rho_hat / (float)_k;              // transition bandwidth
-    float As  = 14.26f*del*n + 7.95f;                   // sidelobe attenuation
-    float fc  = (1 + _beta*(1.0f-rho_hat))/(float)_k;   // filter cutoff
+    unsigned int n=2*_k*_m+1;                       // filter length
+    float kf = (float)_k;                           // samples/symbol (float)
+    float del = _beta*rho_hat / kf;                 // transition bandwidth
+    float As = estimate_req_filter_As(del, n);      // stop-band suppression
+    float fc  = 0.5f*(1 + _beta*(1.0f-rho_hat))/kf; // filter cutoff
 
     // compute filter coefficients
     fir_kaiser_window(n,fc,As,_dt,_h);
@@ -308,11 +309,11 @@ float design_rkaiser_filter_internal_isi(unsigned int _k,
         fprintf(stderr,"warning: design_rkaiser_filter_internal_isi(), rho > 1\n");
     }
 
-    unsigned int n=2*_k*_m+1;               // filter length
-    float kf = (float)_k;                   // samples/symbol (float)
-    float del = _beta*_rho / kf;            // transition bandwidth
-    float As = 14.26f*del*n + 7.95f;        // sidelobe attenuation
-    float fc = (1 + _beta*(1.0f-_rho))/kf;  // filter cutoff
+    unsigned int n=2*_k*_m+1;                   // filter length
+    float kf = (float)_k;                       // samples/symbol (float)
+    float del = _beta*_rho / kf;                // transition bandwidth
+    float As = estimate_req_filter_As(del, n);  // stop-band suppression
+    float fc = 0.5f*(1 + _beta*(1.0f-_rho))/kf; // filter cutoff
 
     // evaluate performance (ISI)
     float isi_max;

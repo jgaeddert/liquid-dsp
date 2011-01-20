@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -129,7 +129,7 @@ float liquid_Qf(float _z)
     return 0.5f * (1.0f - erff(_z*M_SQRT1_2));
 }
 
-//
+// compute sinc(x) = sin(pi*x) / (pi*x)
 float sincf(float _x) {
     // _x ~ 0 approximation
     //if (fabsf(_x) < 0.01f)

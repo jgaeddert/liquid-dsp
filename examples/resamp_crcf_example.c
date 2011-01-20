@@ -16,7 +16,7 @@ int main() {
     // options
     unsigned int h_len = 13;    // filter semi-length (filter delay)
     float r=0.9f;               // resampling rate (output/input)
-    float bw=0.5f;              // resampling filter bandwidth
+    float bw=0.25f;             // resampling filter bandwidth
     float slsl=-60.0f;          // resampling filter sidelobe suppression level
     unsigned int npfb=32;       // number of filters in bank (timing resolution)
     unsigned int n=128;         // number of input samples

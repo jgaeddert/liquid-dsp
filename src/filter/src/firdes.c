@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -169,7 +169,7 @@ float estimate_req_filter_len_Kaiser(float _df,
     }
 
     // compute filter length estimate
-    return (_As - 7.95f)/(14.36f*_df) + 1.0f;
+    return (_As - 7.95f)/(14.26f*_df);
 }
 
 
@@ -226,11 +226,11 @@ float kaiser_beta_slsl(float _slsl)
 }
 
 // Design FIR using kaiser window
-//  _n      : filter length
-//  _fc     : cutoff frequency
-//  _slsl   : sidelobe suppression level (dB attenuation)
-//  _mu     : fractional sample offset [-0.5,0.5]
-//  _h      : output coefficient buffer
+//  _n      : filter length, _n > 0
+//  _fc     : cutoff frequency, 0 < _fc < 0.5
+//  _As     : stop-band attenuation [dB], _As > 0
+//  _mu     : fractional sample offset, -0.5 < _mu < 0.5
+//  _h      : output coefficient buffer, [size: _n x 1]
 void fir_kaiser_window(unsigned int _n,
                        float _fc,
                        float _slsl,
@@ -241,8 +241,8 @@ void fir_kaiser_window(unsigned int _n,
     if (_mu < -0.5f || _mu > 0.5f) {
         fprintf(stderr,"error: fir_kaiser_window(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
         exit(1);
-    } else if (_fc < 0.0f || _fc > 1.0f) {
-        fprintf(stderr,"error: fir_kaiser_window(), cutoff frequency (%12.4e) out of range [0.0,1.0]\n", _fc);
+    } else if (_fc < 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: fir_kaiser_window(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
         exit(1);
     } else if (_n == 0) {
         fprintf(stderr,"error: fir_kaiser_window(), filter length must be greater than zero\n");
@@ -258,7 +258,7 @@ void fir_kaiser_window(unsigned int _n,
         t = (float)i - (float)(_n-1)/2 + _mu;
      
         // sinc prototype
-        h1 = sincf(_fc*t);
+        h1 = sincf(2.0f*_fc*t);
 
         // kaiser window
         h2 = kaiser(i,_n,beta,_mu);

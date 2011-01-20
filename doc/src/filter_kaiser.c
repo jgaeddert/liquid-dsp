@@ -39,7 +39,7 @@ int main() {
         t = (float)i - (float)(h_len-1)/2 + mu;
      
         // sinc prototype
-        h1[i] = sincf(fc*t);
+        h1[i] = sincf(2.0f*fc*t);
 
         // kaiser window
         h2[i] = kaiser(i,h_len,beta,mu);

@@ -81,7 +81,7 @@ int main(int argc, char*argv[]) {
     // generate 'audio' signal
     unsigned int h_len = 21;
     float h[h_len];
-    fir_kaiser_window(h_len, 0.06f, -40.0f, 0.0f, h);
+    fir_kaiser_window(h_len, 0.03f, -40.0f, 0.0f, h);
     firfilt_rrrf faudio = firfilt_rrrf_create(h,h_len);
     for (i=0; i<num_samples; i++) {
         // push random sample

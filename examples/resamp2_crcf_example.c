@@ -15,7 +15,7 @@
 int main() {
     unsigned int m=5;               // filter semi-length
     unsigned int h_len = 4*m+1;     // filter length
-    float bw=0.5f;                  // input signal bandwidth
+    float bw=0.25f;                 // input signal bandwidth
     unsigned int num_samples=64;    // number of input samples
     float slsl=-60.0f;              // filter sidelobe level [dB]
 

@@ -21,7 +21,7 @@ int main() {
 
     // filter options
     unsigned int h_len=21;  // filter length
-    float fc=0.02f;         // filter cutoff
+    float fc=0.01f;         // filter cutoff
     float slsl=60.0f;       // sidelobe suppression level
     float mu=0.0f;          // timing offset
 

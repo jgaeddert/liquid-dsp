@@ -27,7 +27,7 @@ int main() {
     unsigned int num_stages=3;      // number of halfband interp/decim stages
     unsigned int num_samples=64;    // number of input samples
     float slsl=60.0f;               // DDS sidelobe suppression level
-    float bw=0.5f;                  // signal bandwidth
+    float bw=0.25f;                 // signal bandwidth
 
     // derived values
     unsigned int r=1<<num_stages;   // resampling rate (output/input)

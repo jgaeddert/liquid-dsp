@@ -29,7 +29,7 @@ int main() {
     float z[num_samples];
 
     // generate un-modulated signal (band-limited pulse)
-    fir_kaiser_window(num_samples, 0.1f, -40.0f, 0.0f, x);
+    fir_kaiser_window(num_samples, 0.05f, -40.0f, 0.0f, x);
 
     // modulate signal
     for (i=0; i<num_samples; i++)

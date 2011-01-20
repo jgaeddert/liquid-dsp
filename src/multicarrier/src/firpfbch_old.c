@@ -93,7 +93,7 @@ firpfbch firpfbch_create(unsigned int _num_channels,
     c->h = (float*) malloc((c->h_len+1)*sizeof(float));
 
     if (c->nyquist == FIRPFBCH_NYQUIST) {
-        float fc = 1/(float)(c->num_channels);  // cutoff frequency
+        float fc = 0.5f/(float)(c->num_channels);  // cutoff frequency
         fir_kaiser_window(c->h_len+1, fc, c->beta, 0.0f, c->h);
     } else if (c->nyquist == FIRPFBCH_ROOTNYQUIST) {
         design_rkaiser_filter(c->num_channels, c->m, c->beta, c->dt, c->h);

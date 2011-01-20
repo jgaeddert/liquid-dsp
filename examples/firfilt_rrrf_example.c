@@ -12,7 +12,7 @@
 int main() {
     // options
     unsigned int h_len=17;  // filter length
-    float fc=0.3f;          // filter cutoff
+    float fc=0.2f;          // filter cutoff
     float slsl=30.0f;       // sidelobe suppression level
     float mu=0.0f;          // timing offset
     unsigned int n=64;      // number of random input samples
