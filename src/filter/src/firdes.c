@@ -189,6 +189,12 @@ float estimate_req_filter_len_Herrmann(float _df,
         exit(1);
     }
 
+    // Gaeddert's revisions:
+    if (_As > 105.0f)
+        return estimate_req_filter_len_Kaiser(_df,_As);
+
+    _As += 7.4f;
+
     // compute delta_1, delta_2
     float d1, d2;
     d1 = d2 = powf(10.0, -_As/20.0);
