@@ -1134,6 +1134,17 @@ void liquid_filter_isi(float * _h,
                        float * _rms,
                        float * _max);
 
+// Compute relative out-of-band energy
+//
+//  _h      :   filter coefficients [size: _h_len x 1]
+//  _h_len  :   filter length
+//  _fc     :   analysis cut-off frequency
+//  _nfft   :   fft size
+float liquid_filter_energy(float * _h,
+                           unsigned int _h_len,
+                           float _fc,
+                           unsigned int _nfft);
+
 
 //
 // IIR filter design

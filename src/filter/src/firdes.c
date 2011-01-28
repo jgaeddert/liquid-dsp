@@ -398,5 +398,64 @@ void liquid_filter_isi(float * _h,
     *_max = isi_max;
 }
 
+// Compute relative out-of-band energy
+//
+//  _h      :   filter coefficients [size: _h_len x 1]
+//  _h_len  :   filter length
+//  _fc     :   analysis cut-off frequency
+//  _nfft   :   fft size
+float liquid_filter_energy(float * _h,
+                           unsigned int _h_len,
+                           float _fc,
+                           unsigned int _nfft)
+{
+    // validate input
+    if (_fc < 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: liquid_filter_energy(), cut-off frequency must be in [0,0.5]\n");
+        exit(1);
+    } else if (_h_len == 0) {
+        fprintf(stderr,"error: liquid_filter_energy(), filter length must be greater than zero\n");
+        exit(1);
+    } else if (_nfft == 0) {
+        fprintf(stderr,"error: liquid_filter_energy(), fft size must be greater than zero\n");
+        exit(1);
+    }
+
+    // allocate memory for complex phasor
+    float complex expjwt[_h_len];
+
+    // initialize accumulators
+    float e_total = 0.0f;       // total energy
+    float e_stopband = 0.0f;    // stop-band energy
+
+    // create dotprod object
+    dotprod_crcf dp = dotprod_crcf_create(_h,_h_len);
+
+    unsigned int i;
+    unsigned int k;
+    for (i=0; i<_nfft; i++) {
+        float f = 0.5f * (float)i / (float)(_nfft);
+        
+        // initialize complex phasor
+        for (k=0; k<_h_len; k++)
+            expjwt[k] = cexpf(_Complex_I*2*M_PI*f*k);
+
+        // compute vector dot product
+        float complex v;
+        dotprod_crcf_execute(dp, expjwt, &v);
+
+        // accumulate output
+        float e2 = crealf( v*conjf(v) );
+        e_total += e2;
+        e_stopband += (f >= _fc) ? e2 : 0.0f;
+    }
+
+    // destroy dotprod object
+    dotprod_crcf_destroy(dp);
+
+    // return energy ratio
+    return e_stopband / e_total;
+}
+
 
 
