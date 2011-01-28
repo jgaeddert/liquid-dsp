@@ -33,6 +33,10 @@ int main(int argc, char*argv[]) {
     float des[4]     = {1.0f, 0.0f, 0.1f, 0.0f};
     float weights[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
+    liquid_firdespm_wtype wtype[4] = {LIQUID_FIRDESPM_FLATWEIGHT,
+                                      LIQUID_FIRDESPM_EXPWEIGHT,
+                                      LIQUID_FIRDESPM_EXPWEIGHT,
+                                      LIQUID_FIRDESPM_EXPWEIGHT};
     unsigned int i;
     float h[n];
 #if 0
@@ -41,7 +45,7 @@ int main(int argc, char*argv[]) {
     firdespm_execute(q,h);
     firdespm_destroy(q);
 #else
-    firdespm_run(n,bands,des,weights,num_bands,btype,h);
+    firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
 #endif
 
     // 

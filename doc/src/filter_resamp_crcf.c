@@ -17,8 +17,8 @@ int main() {
     // options
     unsigned int h_len = 7;     // filter semi-length (filter delay)
     float r=1/sqrtf(2);         // resampling rate (output/input)
-    float bw=0.5f;              // resampling filter bandwidth
-    float slsl=-60.0f;          // resampling filter sidelobe suppression level
+    float bw=0.25f;             // resampling filter bandwidth
+    float As=60.0f;             // resampling filter stop-band attenuation [dB]
     unsigned int npfb=32;       // number of filters in bank (timing resolution)
     unsigned int n=180;         // number of input samples
 
@@ -48,7 +48,7 @@ int main() {
     float complex y[y_len];
 
     // create resampler
-    resamp_crcf f = resamp_crcf_create(r,h_len,bw,slsl,npfb);
+    resamp_crcf f = resamp_crcf_create(r,h_len,bw,As,npfb);
     unsigned int num_written;
     unsigned int ny=0;
     for (i=0; i<nx; i++) {

@@ -17,20 +17,20 @@ int main() {
     // options
     float fc=0.15f;         // filter cutoff frequency
     float ft=0.05f;         // filter transition
-    float slsl=60.0f;       // sidelobe suppression level
+    float As=60.0f;         // stop-band attenuation [dB]
     float mu=0.0f;          // fractional timing offset
 
     // estimate required filter length and generate filter
-    unsigned int h_len = estimate_req_filter_len(ft,slsl);
+    unsigned int h_len = estimate_req_filter_len(ft,As);
     float h[h_len];
 
     // Compute filter coefficients.
     // 
     // This is equivalent to
-    //      fir_kaiser_window(h_len,fc,slsl,mu,h);
+    //      fir_kaiser_window(h_len,fc,As,mu,h);
     // but do it manually so we can extract the sinc and window for 
     // plotting
-    float beta = kaiser_beta_slsl(slsl);
+    float beta = kaiser_beta_As(As);
     float t;
     float h1[h_len];
     float h2[h_len];
