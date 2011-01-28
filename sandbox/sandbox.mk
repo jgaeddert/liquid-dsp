@@ -7,6 +7,7 @@ local_src	:=				\
 	crc_gentab.c				\
 	ellip_func_test.c			\
 	ellip_test.c				\
+	eqlms_cccf_test.c			\
 	fec_hamming128_example.c		\
 	fec_hamming74_gentab.c			\
 	fec_hamming84_gentab.c			\
