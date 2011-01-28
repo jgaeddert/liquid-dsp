@@ -13,6 +13,7 @@ local_src	:=				\
 	fec_rep3_test.c				\
 	fec_rep5_test.c				\
 	fft_r2r_test.c				\
+	firdes_length_test.c			\
 	firpfbch_analysis_test.c		\
 	firpfbch_analysis_alignment_test.c	\
 	firpfbch_analysis_equivalence_test.c	\
