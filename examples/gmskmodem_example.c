@@ -72,6 +72,7 @@ int main() {
     fprintf(fid,"close all\n");
     fprintf(fid,"k = %u;\n", k);
     fprintf(fid,"m = %u;\n", m);
+    fprintf(fid,"BT = %f;\n", BT);
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = %u;\n", num_samples);
 
@@ -86,8 +87,10 @@ int main() {
     fprintf(fid,"plot(t,real(y),t,imag(y));\n");
 
     // artificially demodulate
-    fprintf(fid,"h = exp(-([-k*m:k*m].^2)/4);\n");
+    fprintf(fid,"sig = exp(1.453*BT - 6.883) + 1.58; %% approximation\n");
+    fprintf(fid,"h = exp(-([-k*m:k*m].^2)/(2*sig^2));\n");
     fprintf(fid,"h = h/sum(h) * pi / 2;\n");
+    fprintf(fid,"h = 1; %% disable 'matched filter'\n");
     fprintf(fid,"z = filter(h,1,arg( ([y(2:end) 0]).*conj(y) )) / (h*h');\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(t,z,t(k:k:end),z(k:k:end),'x');\n");
