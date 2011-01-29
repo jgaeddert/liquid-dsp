@@ -594,8 +594,11 @@ LIQUID_DOTPROD_DEFINE_API(DOTPROD_MANGLE_CRCF,
 //   T      : data type
 #define LIQUID_EQLMS_DEFINE_API(EQLMS,T)                        \
 typedef struct EQLMS(_s) * EQLMS();                             \
-EQLMS() EQLMS(_create)(unsigned int _p);                        \
-EQLMS() EQLMS(_recreate)(EQLMS() _eq, unsigned int _p);         \
+EQLMS() EQLMS(_create)(T * _h,                                  \
+                       unsigned int _p);                        \
+EQLMS() EQLMS(_recreate)(EQLMS() _eq,                           \
+                         T * _h,                                \
+                         unsigned int _p);                      \
 void EQLMS(_destroy)(EQLMS() _eq);                              \
 void EQLMS(_print)(EQLMS() _eq);                                \
 void EQLMS(_set_bw)(EQLMS() _eq, float _lambda);                \

@@ -34,6 +34,7 @@ struct EQLMS(_s) {
     float mu;           // LMS step size
 
     // internal matrices
+    T * h0;             // initial coefficients
     T * w0, * w1;       // weights [px1]
 
     unsigned int n;     // input counter
@@ -42,8 +43,10 @@ struct EQLMS(_s) {
 };
 
 // create least mean-squares (LMS) equalizer object
+//  _h      :   initial coefficients [size: _p x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
-EQLMS() EQLMS(_create)(unsigned int _p)
+EQLMS() EQLMS(_create)(T * _h,
+                       unsigned int _p)
 {
     EQLMS() eq = (EQLMS()) malloc(sizeof(struct EQLMS(_s)));
 
@@ -51,11 +54,24 @@ EQLMS() EQLMS(_create)(unsigned int _p)
     eq->p = _p;
     eq->mu = 0.5f;
 
+    eq->h0 = (T*) malloc((eq->p)*sizeof(T));
     eq->w0 = (T*) malloc((eq->p)*sizeof(T));
     eq->w1 = (T*) malloc((eq->p)*sizeof(T));
     eq->buffer = WINDOW(_create)(eq->p);
     eq->ex2_buffer = windowf_create(eq->p);
 
+    // copy coefficients (if not NULL)
+    if (_h == NULL) {
+        // initial coefficients with delta at first index
+        unsigned int i;
+        for (i=0; i<eq->p; i++)
+            eq->h0[i] = (i==0) ? 1.0 : 0.0;
+    } else {
+        // copy user-defined initial coefficients
+        memmove(eq->h0, _h, (eq->p)*sizeof(T));
+    }
+
+    // reset equalizer object
     EQLMS(_reset)(eq);
 
     return eq;
@@ -63,12 +79,18 @@ EQLMS() EQLMS(_create)(unsigned int _p)
 
 // re-create least mean-squares (LMS) equalizer object
 //  _eq     :   old equalizer object
+//  _h      :   initial coefficients [size: _p x 1], default if NULL
 //  _p      :   equalizer length (number of taps)
 EQLMS() EQLMS(_recreate)(EQLMS() _eq,
+                         T * _h,
                          unsigned int _p)
 {
     if (_eq->p == _p) {
-        // nothing has changed
+        // length hasn't changed; copy default coefficients
+        // and return object
+        unsigned int i;
+        for (i=0; i<_eq->p; i++)
+            _eq->h0[i] = _h[i];
         return _eq;
     }
 
@@ -76,13 +98,14 @@ EQLMS() EQLMS(_recreate)(EQLMS() _eq,
     EQLMS(_destroy)(_eq);
 
     // create new one and return
-    return EQLMS(_create)(_p);
+    return EQLMS(_create)(_h,_p);
 }
 
 
 // destroy eqlms object
 void EQLMS(_destroy)(EQLMS() _eq)
 {
+    free(_eq->h0);
     free(_eq->w0);
     free(_eq->w1);
 
@@ -105,7 +128,7 @@ void EQLMS(_set_bw)(EQLMS() _eq,
                     float _mu)
 {
     if (_mu < 0.0f) {
-        printf("error: eqlms_xxxt_set_bw(), learning rate must be positive\n");
+        fprintf(stderr,"error: eqlms_xxxt_set_bw(), learning rate cannot be less than zero\n");
         exit(1);
     }
 
@@ -115,9 +138,8 @@ void EQLMS(_set_bw)(EQLMS() _eq,
 // reset equalizer
 void EQLMS(_reset)(EQLMS() _eq)
 {
-    unsigned int i;
-    for (i=0; i<_eq->p; i++)
-        _eq->w0[i] = 0;
+    // copy default coefficients
+    memmove(_eq->w0, _eq->h0, (_eq->p)*sizeof(T));
 
     WINDOW(_clear)(_eq->buffer);
     windowf_clear(_eq->ex2_buffer);

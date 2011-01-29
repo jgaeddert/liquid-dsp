@@ -44,8 +44,8 @@ int main() {
     fprintf(fid,"p=%u;\n",p);
     fprintf(fid,"h_len=%u;\n",h_len);
 
-    // create equalizer
-    eqlms_cccf eq = eqlms_cccf_create(p);
+    // create equalizer (default initial coefficients)
+    eqlms_cccf eq = eqlms_cccf_create(NULL,p);
 
     // create channel filter (random delay taps)
     h[0] = 1.0f;
