@@ -20,10 +20,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <sys/resource.h>
 #include "liquid.h"
 
-// Helper function to keep code base small
+// 
 void benchmark_gmskmodem_modulate(struct rusage *_start,
                                   struct rusage *_finish,
                                   unsigned long int *_num_iterations)
@@ -53,5 +54,40 @@ void benchmark_gmskmodem_modulate(struct rusage *_start,
 
     // destroy modem objects
     gmskmod_destroy(mod);
+}
+
+// 
+void benchmark_gmskmodem_demodulate(struct rusage *_start,
+                                    struct rusage *_finish,
+                                    unsigned long int *_num_iterations)
+{
+    // options
+    unsigned int k=2;   // filter samples/symbol
+    unsigned int m=3;   // filter delay (symbols)
+    float BT=0.3f;      // bandwidth-time product
+
+    // create modem object
+    gmskdem demod = gmskdem_create(k, m, BT);
+
+    float complex x[k];
+    unsigned int symbol_out = 0;
+    
+    unsigned long int i;
+    for (i=0; i<k; i++)
+        x[i] = randnf()*cexpf(_Complex_I*2*M_PI*randf());
+
+    // start trials
+    getrusage(RUSAGE_SELF, _start);
+    for (i=0; i<(*_num_iterations); i++) {
+        gmskdem_demodulate(demod, x, &symbol_out);
+        gmskdem_demodulate(demod, x, &symbol_out);
+        gmskdem_demodulate(demod, x, &symbol_out);
+        gmskdem_demodulate(demod, x, &symbol_out);
+    }
+    getrusage(RUSAGE_SELF, _finish);
+    *_num_iterations *= 4;
+
+    // destroy modem objects
+    gmskdem_destroy(demod);
 }
 
