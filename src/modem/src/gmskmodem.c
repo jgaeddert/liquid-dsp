@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2010 Joseph Gaeddert
- * Copyright (c) 2010 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2010, 2011 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -37,11 +37,17 @@ struct gmskmodem_s {
     float * h;          // pulse shaping filter
 
     // filter object
-    firfilt_rrrf filter;
+    firfilt_rrrf filter;// transmit filter pulse shape
     float g;            // matched-filter scaling factor
 
     float theta;        // phase state
     float complex x_prime;
+
+    // demodulator
+    eqlms_rrrf eq;      // equalizer
+
+    // demodulated symbols counter
+    unsigned int num_symbols_demod;
 };
 
 gmskmodem gmskmodem_create(unsigned int _k,
@@ -95,12 +101,17 @@ gmskmodem gmskmodem_create(unsigned int _k,
         q->h[i] *= M_PI / (2.0f * e);
 
     // compute scaling factor
-    q->g = 0.0f;
-    for (i=0; i<q->h_len; i++)
-        q->g += q->h[i] * q->h[i];
+    q->g = q->h[(q->k)*(q->m)];
 
     // create filter object
     q->filter = firfilt_rrrf_create(q->h, q->h_len);
+
+    // demodulator, create equalizer
+    float htmp[q->h_len];
+    for (i=0; i<q->h_len; i++)
+        htmp[i] = ( i==(q->k)*(q->m) ) ? 1.0 : 0.0;
+    q->eq = eqlms_rrrf_create(htmp, q->h_len);
+    eqlms_rrrf_set_bw(q->eq, 0.05f);
 
     // reset modem state
     gmskmodem_reset(q);
@@ -111,6 +122,16 @@ gmskmodem gmskmodem_create(unsigned int _k,
 
 void gmskmodem_destroy(gmskmodem _q)
 {
+    // destroy filter object
+    firfilt_rrrf_destroy(_q->filter);
+
+    // destroy equalizer object
+    //eqlms_rrrf_print(_q->eq);
+    eqlms_rrrf_destroy(_q->eq);
+
+    // set demod. counter to zero
+    _q->num_symbols_demod = 0;
+
     free(_q->h);
     free(_q);
 }
@@ -133,6 +154,9 @@ void gmskmodem_reset(gmskmodem _q)
 
     // clear filter buffer
     firfilt_rrrf_clear(_q->filter);
+
+    // reset equalizer
+    eqlms_rrrf_reset(_q->eq);
 }
 
 void gmskmodem_modulate(gmskmodem _q,
@@ -171,21 +195,36 @@ void gmskmodem_demodulate(gmskmodem _q,
     // run filter as interpolator
     unsigned int i;
     float phi;
-    float x_hat;
+    float d_hat;
     for (i=0; i<_q->k; i++) {
         // compute phase difference
         phi = cargf( conjf(_q->x_prime)*_x[i] );
         _q->x_prime = _x[i];
 
-        // push phase into filter
-        firfilt_rrrf_push(_q->filter, phi);
+        // run through equalizer
+        eqlms_rrrf_push(_q->eq, phi);
 
-        // compute filter output
-        if (i == _q->k-1)
-            firfilt_rrrf_execute(_q->filter, &x_hat);
+        // compute filter output (decimate)
+        if (i == _q->k-1) {
+            // compute filter output
+            eqlms_rrrf_execute(_q->eq, &d_hat);
+            //printf("d_hat : %12.8f\n", d_hat);
+
+            // train equalizer, but wait until internal
+            // buffer is full
+            if (_q->num_symbols_demod >= _q->m) {
+                // decision
+                float d = d_hat > 0 ? _q->g : -_q->g;
+                
+                // train equalizer
+                eqlms_rrrf_step(_q->eq, d, d_hat);
+            }
+            // increment symbol counter
+            _q->num_symbols_demod++;
+        }
     }
 
     // make decision
-    *_s = x_hat > 0.0f ? 1 : 0;
+    *_s = d_hat > 0.0f ? 1 : 0;
 }
 

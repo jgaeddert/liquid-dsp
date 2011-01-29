@@ -119,6 +119,9 @@ void EQLMS(_print)(EQLMS() _eq)
 {
     printf("equalizer (LMS):\n");
     printf("    order:      %u\n", _eq->p);
+    unsigned int i;
+    for (i=0; i<_eq->p; i++)
+        printf("  h(%3u) = %12.4e + j*%12.4e;\n", i+1, creal(_eq->w0[i]), cimag(_eq->w0[i]));
 }
 
 // set learning rate of equalizer
