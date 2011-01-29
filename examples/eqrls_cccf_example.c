@@ -45,7 +45,7 @@ int main() {
     fprintf(fid,"h_len=%u;\n",h_len);
 
     // create equalizer
-    eqrls_cccf eq = eqrls_cccf_create(p);
+    eqrls_cccf eq = eqrls_cccf_create(NULL,p);
 
     // create channel filter (random delay taps)
     h[0] = 1.0f;

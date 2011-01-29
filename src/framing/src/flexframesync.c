@@ -215,7 +215,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     for (i=0; i<fs->eq_len; i++)
         fs->heq[i] = (i==0) ? 1.0f : 0.0f;
     fs->weq = windowcf_create(fs->pnsequence_len); // equalizer window (size: p/n length)
-    fs->eq = eqrls_cccf_create(fs->eq_len);         // RLS equalizer
+    fs->eq = eqrls_cccf_create(NULL, fs->eq_len);         // RLS equalizer
     fs->fireq = firfilt_cccf_create(fs->heq, fs->eq_len);    // FIR filter (equalizer)
     fs->pnsequence = (float complex*) malloc(fs->pnsequence_len*sizeof(complex float));
     for (i=0; i<fs->pnsequence_len; i++)
@@ -555,7 +555,7 @@ void flexframesync_train_eq(flexframesync _fs)
         //printf("new equalizer : %u taps\n", _fs->eq_len);
 
         // re-create the equalizer
-        _fs->eq = eqrls_cccf_recreate(_fs->eq, _fs->eq_len);
+        _fs->eq = eqrls_cccf_recreate(_fs->eq, NULL, _fs->eq_len);
 
         // re-allocate coefficients array
         _fs->heq = (float complex*) realloc(_fs->heq, _fs->eq_len*sizeof(float complex));

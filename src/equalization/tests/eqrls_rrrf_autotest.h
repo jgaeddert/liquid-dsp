@@ -57,7 +57,7 @@ void autotest_eqrls_rrrf_01()
     unsigned int i;
 
     // create equalizer
-    eqrls_rrrf eq = eqrls_rrrf_create(p);
+    eqrls_rrrf eq = eqrls_rrrf_create(NULL, p);
 
     // create channel filter
     h[0] = 1.0f;

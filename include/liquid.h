@@ -626,16 +626,18 @@ LIQUID_EQLMS_DEFINE_API(EQLMS_MANGLE_CCCF, liquid_float_complex);
 //   T      : data type
 #define LIQUID_EQRLS_DEFINE_API(EQRLS,T)                        \
 typedef struct EQRLS(_s) * EQRLS();                             \
-EQRLS() EQRLS(_create)(unsigned int _p);                        \
-EQRLS() EQRLS(_recreate)(EQRLS() _eq, unsigned int _p);         \
+EQRLS() EQRLS(_create)(T * _h,                                  \
+                       unsigned int _p);                        \
+EQRLS() EQRLS(_recreate)(EQRLS() _eq,                           \
+                         T * _h,                                \
+                         unsigned int _p);                      \
 void EQRLS(_destroy)(EQRLS() _eq);                              \
 void EQRLS(_print)(EQRLS() _eq);                                \
 void EQRLS(_set_bw)(EQRLS() _eq, float _mu);                    \
 void EQRLS(_reset)(EQRLS() _eq);                                \
-void EQRLS(_execute)(EQRLS() _eq,                               \
-                     T _x,                                      \
-                     T _d,                                      \
-                     T * _d_hat);                               \
+void EQRLS(_push)(EQRLS() _eq, T _x);                           \
+void EQRLS(_execute)(EQRLS() _eq, T * _y);                      \
+void EQRLS(_step)(EQRLS() _eq, T _d, T _d_hat);                 \
 void EQRLS(_get_weights)(EQRLS() _eq, T * _w);                  \
 void EQRLS(_train)(EQRLS() _eq,                                 \
                    T * _w,                                      \
