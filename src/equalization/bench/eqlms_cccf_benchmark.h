@@ -21,6 +21,7 @@
 #ifndef __LIQUID_EQLMS_CCCF_BENCHMARK_H__
 #define __LIQUID_EQLMS_CCCF_BENCHMARK_H__
 
+#include <stdlib.h>
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -39,8 +40,9 @@ void eqlms_cccf_train_bench(
 {
     // scale number of iterations appropriately
     *_num_iterations /= _h_len;
+    *_num_iterations *= 4;
 
-    eqlms_cccf eq = eqlms_cccf_create(_h_len);
+    eqlms_cccf eq = eqlms_cccf_create(NULL,_h_len);
     
     unsigned long int i;
 
@@ -51,13 +53,11 @@ void eqlms_cccf_train_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        eqlms_cccf_execute(eq, y, d, &z);
-        eqlms_cccf_execute(eq, y, d, &z);
-        eqlms_cccf_execute(eq, y, d, &z);
-        eqlms_cccf_execute(eq, y, d, &z);
+        eqlms_cccf_push(eq, y);
+        eqlms_cccf_execute(eq, &z);
+        eqlms_cccf_step(eq, d, z);
     }
     getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
 
     eqlms_cccf_destroy(eq);
 }

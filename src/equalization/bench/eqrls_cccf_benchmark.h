@@ -22,6 +22,7 @@
 #define __LIQUID_EQRLS_CCCF_BENCHMARK_H__
 
 #include <sys/resource.h>
+#include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
 
@@ -38,7 +39,7 @@ void eqrls_cccf_train_bench(
     unsigned long int *_num_iterations,
     unsigned int _h_len)
 {
-    eqrls_cccf eq = eqrls_cccf_create(_h_len);
+    eqrls_cccf eq = eqrls_cccf_create(NULL,_h_len);
     
     unsigned long int i;
 
@@ -61,13 +62,11 @@ void eqrls_cccf_train_bench(
         crandnf(&y);
         crandnf(&d);
 
-        eqrls_cccf_execute(eq, y, d, &z);
-        eqrls_cccf_execute(eq, y, d, &z);
-        eqrls_cccf_execute(eq, y, d, &z);
-        eqrls_cccf_execute(eq, y, d, &z);
+        eqrls_cccf_push(eq, y);
+        eqrls_cccf_execute(eq, &z);
+        eqrls_cccf_step(eq, d, z);
     }
     getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
 
     eqrls_cccf_destroy(eq);
 }
