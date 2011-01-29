@@ -17,12 +17,14 @@ int main() {
     // options
     unsigned int k=2;       // samples/symbol
     unsigned int m=3;
-    float beta = 0.2f;
+    float beta = 0.3f;
     float dt = 0.4f;        // timing offset
     unsigned int num_symbols = 256;
-    unsigned int hc_len=4;  // channel impulse response length
-    unsigned int p=15;      // equalizer filter length
-    float mu = 0.005f;
+    unsigned int hc_len=1;  // channel impulse response length
+    unsigned int p=13;      // equalizer filter length
+    float mu = 0.05f;
+
+    // TODO : validate input
 
     // derived values
     unsigned int num_samples = k*num_symbols;
@@ -41,7 +43,24 @@ int main() {
     }
 
     // interpolate 
-    interp_crcf interp = interp_crcf_create_rrc(k,m,beta,dt);
+    unsigned int h_len = 2*k*m+1;
+    float hm[h_len];
+#if 1
+    // design GMSK
+    float c0 = 1.0f / sqrtf(logf(2.0f));
+    for (i=0; i<h_len; i++) {
+        float t = (float)(i) / (float)(k) - (float)(m);
+        //float sig = 0.7f;
+        //hm[i] = expf(-t*t / (2*sig*sig) );
+
+        hm[i] = liquid_Qf(2*M_PI*beta*(t-0.5f)*c0) -
+                liquid_Qf(2*M_PI*beta*(t+0.5f)*c0);
+        printf("h(%3u) = %12.8f\n", i+1, hm[i]);
+    }
+#else
+    design_rrc_filter(k,m,beta,dt,hm);
+#endif
+    interp_crcf interp = interp_crcf_create(k,hm,h_len);
     for (i=0; i<num_symbols; i++)
         interp_crcf_execute(interp, s[i], &x[i*k]);
     interp_crcf_destroy(interp);
@@ -60,14 +79,17 @@ int main() {
     firfilt_cccf_destroy(fchannel);
     
     // initialize equalizer
-#if 0
+#if 1
+    // initialize with delta at center
     float complex h[p]; // coefficients
+    unsigned int p0 = (p-1)/2;  // center index
     for (i=0; i<p; i++)
-        h[i] = (i==0) ? 1.0f : 0.0f;
+        h[i] = (i==p0) ? 1.0f : 0.0f;
 #else
+    // initialize with square-root raised cosine
     p = 2*k*m+1;
-    float complex h[p];
     float h_tmp[p];
+    float complex h[p];
     design_rrc_filter(k,m,beta,0.0f,h_tmp);
     for (i=0; i<p; i++)
         h[i] = h_tmp[i] / k;
@@ -131,6 +153,10 @@ int main() {
     fprintf(fid,"num_symbols = %u;\n", num_symbols);
     fprintf(fid,"num_samples = num_symbols*k;\n");
 
+    // save samples
+    fprintf(fid,"x = zeros(1,num_samples);\n");
+    fprintf(fid,"y = zeros(1,num_samples);\n");
+    fprintf(fid,"z = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
@@ -141,6 +167,37 @@ int main() {
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1), plot(t, real(z), tsym, real(z(tsym)),'x');\n");
     fprintf(fid,"subplot(2,1,2), plot(t, imag(z), tsym, imag(z(tsym)),'x');\n");
+
+    // plot symbols
+    fprintf(fid,"tsym0 = tsym([1:length(tsym)/2]);\n");
+    fprintf(fid,"tsym1 = tsym((length(tsym)/2):end);\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(z(tsym0)),imag(z(tsym0)),'x','Color',[0.7 0.7 0.7],...\n");
+    fprintf(fid,"     real(z(tsym1)),imag(z(tsym1)),'x','Color',[0.0 0.0 0.0]);\n");
+    fprintf(fid,"xlabel('In-phase');\n");
+    fprintf(fid,"ylabel('Quadrature');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on;\n");
+
+    // save filter coefficients
+    for (i=0; i<h_len; i++) fprintf(fid,"hm(%3u) = %12.4e;\n", i+1, hm[i]);
+    for (i=0; i<p; i++)     fprintf(fid,"hp(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(w0[i]), cimagf(w0[i]));
+    for (i=0; i<hc_len; i++)fprintf(fid,"hc(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(hc[i]), cimagf(hc[i]));
+
+    fprintf(fid,"nfft = 1024;\n");
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"Hm = 20*log10(abs(fftshift(fft(hm/k,nfft))));\n");
+    fprintf(fid,"Hc = 20*log10(abs(fftshift(fft(hc,nfft))));\n");
+    fprintf(fid,"Hp = 20*log10(abs(fftshift(fft(hp,nfft))));\n");
+    fprintf(fid,"G = Hm + Hp + Hc;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,Hm, f,Hc, f,Hp, f,G,'-k','LineWidth',2);\n");
+    fprintf(fid,"xlabel('Normalized Frequency');\n");
+    fprintf(fid,"ylabel('Power Spectral Density');\n");
+    fprintf(fid,"legend('transmit','channel','equalizer','total');\n");
+    fprintf(fid,"axis([-0.5 0.5 -10 10]);\n");
+    fprintf(fid,"grid on;\n");
 
     fclose(fid);
 
