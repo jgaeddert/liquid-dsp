@@ -600,10 +600,9 @@ void EQLMS(_destroy)(EQLMS() _eq);                              \
 void EQLMS(_print)(EQLMS() _eq);                                \
 void EQLMS(_set_bw)(EQLMS() _eq, float _lambda);                \
 void EQLMS(_reset)(EQLMS() _eq);                                \
-void EQLMS(_execute)(EQLMS() _eq,                               \
-                     T _x,                                      \
-                     T _d,                                      \
-                     T * _d_hat);                               \
+void EQLMS(_push)(EQLMS() _eq, T _x);                           \
+void EQLMS(_execute)(EQLMS() _eq, T * _y);                      \
+void EQLMS(_step)(EQLMS() _eq, T _d, T _d_hat);                 \
 void EQLMS(_get_weights)(EQLMS() _eq, T * _w);                  \
 void EQLMS(_train)(EQLMS() _eq,                                 \
                    T * _w,                                      \

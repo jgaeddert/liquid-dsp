@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -124,43 +124,53 @@ void EQLMS(_reset)(EQLMS() _eq)
     _eq->n=0;
 }
 
-// execute cycle of equalizer, filtering output
+// push sample into equalizer internal buffer
+//  _eq     :   equalizer object
+//  _x      :   received sample
+void EQLMS(_push)(EQLMS() _eq,
+                  T _x)
+{
+    // push value into buffer
+    WINDOW(_push)(_eq->buffer, _x);
+
+    // push |x|^2
+    windowf_push(_eq->ex2_buffer, crealf(_x*conj(_x)));
+}
+
+// execute internal dot product
+//  _eq     :   equalizer object
+//  _y      :   output sample
+void EQLMS(_execute)(EQLMS() _eq,
+                     T * _y)
+{
+    T y = 0;    // temporary accumulator
+    T * r;      // read buffer
+    WINDOW(_read)(_eq->buffer, &r);
+
+    // compute conjugate vector dot product
+    //DOTPROD(_run)(_eq->w0, r, _eq->p, &y);
+    unsigned int i;
+    for (i=0; i<_eq->p; i++)
+        y += conj(_eq->w0[i])*r[i];
+
+    // set output
+    *_y = y;
+}
+
+// step through one cycle of equalizer
 //  _eq     :   equalizer object
 //  _x      :   received sample
 //  _d      :   desired output
 //  _d_hat  :   filtered output
-void EQLMS(_execute)(EQLMS() _eq,
-                     T _x,
-                     T _d,
-                     T * _d_hat)
+void EQLMS(_step)(EQLMS() _eq,
+                  T _d,
+                  T _d_hat)
 {
     unsigned int i;
     unsigned int p=_eq->p;
 
-    // push value into buffer
-    WINDOW(_push)(_eq->buffer, _x);
-    T * x;
-
-    // push |x|^2
-    windowf_push(_eq->ex2_buffer, crealf(_x*conj(_x)));
-
-    // check to see if buffer is full, return if not
-    _eq->n++;
-    if (_eq->n < _eq->p) {
-        *_d_hat = 0;
-        return;
-    }
-
-    // compute d_hat (dot product, estimated output)
-    T d_hat = 0;
-    WINDOW(_read)(_eq->buffer, &x);
-    //DOTPROD(_run)(_eq->w0, x, p, &d_hat);
-    for (i=0; i<p; i++)
-        d_hat += conj(_eq->w0[i])*x[i];
-    *_d_hat = d_hat;
-
     // compute error (a priori)
-    T alpha = _d - d_hat;
+    T alpha = _d - _d_hat;
 
     // compute signal energy
     float *x2, ex2=0.0f;
@@ -168,10 +178,14 @@ void EQLMS(_execute)(EQLMS() _eq,
     for (i=0; i<p; i++)
         ex2 += x2[i];
 
+    // read buffer
+    T * r;      // read buffer
+    WINDOW(_read)(_eq->buffer, &r);
+
     // update weighting vector
     // w[n+1] = w[n] + mu*conj(d-d_hat)*x[n]/(x[n]' * conj(x[n]))
     for (i=0; i<p; i++)
-        _eq->w1[i] = _eq->w0[i] + (_eq->mu)*conj(alpha)*x[i]/ex2;
+        _eq->w1[i] = _eq->w0[i] + (_eq->mu)*conj(alpha)*r[i]/ex2;
 
 #ifdef DEBUG
     printf("w0: \n");
@@ -211,11 +225,12 @@ void EQLMS(_train)(EQLMS() _eq,
                    T * _d,
                    unsigned int _n)
 {
-    unsigned int i, p=_eq->p;
-    if (_n < p) {
-        printf("warning: eqlms_xxxt_train(), traning sequence less than filter order\n");
-        return;
+    unsigned int p=_eq->p;
+    if (_n < _eq->p) {
+        fprintf(stderr,"warning: eqlms_xxxt_train(), traning sequence less than filter order\n");
     }
+
+    unsigned int i;
 
     // reset equalizer state
     EQLMS(_reset)(_eq);
@@ -225,8 +240,16 @@ void EQLMS(_train)(EQLMS() _eq,
         _eq->w0[i] = _w[p - i - 1];
 
     T d_hat;
-    for (i=0; i<_n; i++)
-        EQLMS(_execute)(_eq, _x[i], _d[i], &d_hat);
+    for (i=0; i<_n; i++) {
+        // push sample into internal buffer
+        EQLMS(_push)(_eq, _x[i]);
+
+        // execute vector dot product
+        EQLMS(_execute)(_eq, &d_hat);
+
+        // step through training cycle
+        EQLMS(_step)(_eq, _d[i], d_hat);
+    }
 
     // copy output weight vector
     EQLMS(_get_weights)(_eq, _w);
