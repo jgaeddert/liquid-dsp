@@ -27,7 +27,8 @@ module_name     := modem
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=		\
-	gmskmodem.c		\
+	gmskmod.c		\
+	gmskdem.c		\
 	modem_arb_const.c	\
 	modem_apsk_const.c	\
 	modem_create.c		\

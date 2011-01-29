@@ -24,9 +24,10 @@ int main() {
     unsigned int num_samples = k*num_symbols;
 
     // create mod/demod objects
-    gmskmodem mod   = gmskmodem_create(k, m, BT);
-    gmskmodem demod = gmskmodem_create(k, m, BT);
-    gmskmodem_print(mod);
+    gmskmod mod   = gmskmod_create(k, m, BT);
+    gmskdem demod = gmskdem_create(k, m, BT);
+    gmskmod_print(mod);
+    gmskdem_print(demod);
 
     unsigned int i;
     unsigned int s[num_symbols];
@@ -40,7 +41,7 @@ int main() {
 
     // modulate signal
     for (i=0; i<num_symbols; i++)
-        gmskmodem_modulate(mod, s[i], &x[k*i]);
+        gmskmod_modulate(mod, s[i], &x[k*i]);
 
     // add channel impairments
     // TODO : compensate for over-sampling rate?
@@ -50,11 +51,11 @@ int main() {
 
     // demodulate signal
     for (i=0; i<num_symbols; i++)
-        gmskmodem_demodulate(demod, &y[k*i], &sym_out[i]);
+        gmskdem_demodulate(demod, &y[k*i], &sym_out[i]);
 
     // destroy modem objects
-    gmskmodem_destroy(mod);
-    gmskmodem_destroy(demod);
+    gmskmod_destroy(mod);
+    gmskdem_destroy(demod);
 
     // print results to screen
     unsigned int delay = 2*m-1;

@@ -34,7 +34,7 @@ void benchmark_gmskmodem_modulate(struct rusage *_start,
     float BT=0.3f;      // bandwidth-time product
 
     // create modem object
-    gmskmodem mod   = gmskmodem_create(k, m, BT);
+    gmskmod mod   = gmskmod_create(k, m, BT);
 
     float complex x[k];
     unsigned int symbol_in = 0;
@@ -43,15 +43,15 @@ void benchmark_gmskmodem_modulate(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        gmskmodem_modulate(mod, symbol_in, x);
-        gmskmodem_modulate(mod, symbol_in, x);
-        gmskmodem_modulate(mod, symbol_in, x);
-        gmskmodem_modulate(mod, symbol_in, x);
+        gmskmod_modulate(mod, symbol_in, x);
+        gmskmod_modulate(mod, symbol_in, x);
+        gmskmod_modulate(mod, symbol_in, x);
+        gmskmod_modulate(mod, symbol_in, x);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
     // destroy modem objects
-    gmskmodem_destroy(mod);
+    gmskmod_destroy(mod);
 }
 

@@ -2808,20 +2808,43 @@ void cpmodem_demodulate(cpmodem _mod,
                         unsigned int * _s);
 
 
-// gmskmodem
-typedef struct gmskmodem_s * gmskmodem;
-gmskmodem gmskmodem_create(unsigned int _k,
+// gmskmod : GMSK modulator
+typedef struct gmskmod_s * gmskmod;
+
+// create gmskmod object
+//  _k      :   samples/symbol
+//  _m      :   filter delay (symbols)
+//  _BT     :   excess bandwidth factor
+gmskmod gmskmod_create(unsigned int _k,
+                       unsigned int _m,
+                       float _BT);
+void gmskmod_destroy(gmskmod _q);
+void gmskmod_print(gmskmod _q);
+void gmskmod_reset(gmskmod _q);
+void gmskmod_modulate(gmskmod _q,
+                      unsigned int _sym,
+                      liquid_float_complex * _y);
+
+
+// gmskdem : GMSK demodulator
+typedef struct gmskdem_s * gmskdem;
+
+// create gmskdem object
+//  _k      :   samples/symbol
+//  _m      :   filter delay (symbols)
+//  _BT     :   excess bandwidth factor
+gmskdem gmskdem_create(unsigned int _k,
                            unsigned int _m,
                            float _BT);
-void gmskmodem_destroy(gmskmodem _q);
-void gmskmodem_print(gmskmodem _q);
-void gmskmodem_reset(gmskmodem _q);
-void gmskmodem_modulate(gmskmodem _q,
-                        unsigned int _sym,
-                        liquid_float_complex * _y);
-void gmskmodem_demodulate(gmskmodem _q,
-                          liquid_float_complex * _y,
-                          unsigned int * _sym);
+void gmskdem_destroy(gmskdem _q);
+void gmskdem_print(gmskdem _q);
+void gmskdem_reset(gmskdem _q);
+void gmskdem_modulate(gmskdem _q,
+                      unsigned int _sym,
+                      liquid_float_complex * _y);
+void gmskdem_demodulate(gmskdem _q,
+                        liquid_float_complex * _y,
+                        unsigned int * _sym);
 
 // 
 // Analog modems
