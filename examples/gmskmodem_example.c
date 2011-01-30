@@ -4,12 +4,26 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <math.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "gmskmodem_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("gmskmodem_example -- Gaussian minimum-shift keying modem example\n");
+    printf("options (default values in <>):\n");
+    printf("  u/h   : print usage/help\n");
+    printf("  k     : samples/symbol <4>\n");
+    printf("  m     : filter delay [symbols], <3>\n");
+    printf("  n     : number of data symbols <32>\n");
+    printf("  b     : bandwidth-time product, 0 <= b <= 1, <0.3>\n");
+    printf("  s     : SNR [dB] <30>\n");
+}
+
+int main(int argc, char*argv[]) {
     // options
     unsigned int k=4;                   // filter samples/symbol
     unsigned int m=3;                   // filter delay (symbols)
@@ -18,6 +32,28 @@ int main() {
     float SNRdB = 30.0f;                // signal-to-noise ratio [dB]
     float phi = 0.0f;                   // carrier phase offset
     float dphi = 0.0f;                  // carrier frequency offset
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhk:m:n:b:s:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();              return 0;
+        case 'k': k = atoi(optarg); break;
+        case 'm': m = atoi(optarg); break;
+        case 'n': num_data_symbols = atoi(optarg); break;
+        case 'b': BT = atof(optarg); break;
+        case 's': SNRdB = atof(optarg); break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            exit(1);
+        }
+    }
+
+    // validate input
+    if (BT <= 0.0f || BT >= 1.0f) {
+        fprintf(stderr,"error: %s, bandwidth-time product must be in (0,1)\n", argv[0]);
+        exit(1);
+    }
 
     // derived values
     unsigned int num_symbols = num_data_symbols + 2*m - 1;
