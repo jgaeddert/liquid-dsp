@@ -29,6 +29,13 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_GMSKDEM           1
+#define DEBUG_GMSKDEM_FILENAME  "gmskdem_internal_debug.m"
+#define DEBUG_BUFFER_LEN        (1000)
+
+void gmskdem_debug_print(gmskdem _q,
+                         const char * _filename);
+
 struct gmskdem_s {
     unsigned int k;     // samples/symbol
     unsigned int m;     // symbol delay
@@ -48,6 +55,10 @@ struct gmskdem_s {
 
     // demodulated symbols counter
     unsigned int num_symbols_demod;
+
+#if DEBUG_GMSKDEM
+    windowf  debug_eqout;
+#endif
 };
 
 // create gmskdem object
@@ -115,10 +126,14 @@ gmskdem gmskdem_create(unsigned int _k,
     for (i=0; i<q->h_len; i++)
         htmp[i] = ( i==(q->k)*(q->m) ) ? 1.0 : 0.0;
     q->eq = eqlms_rrrf_create(htmp, q->h_len);
-    eqlms_rrrf_set_bw(q->eq, 0.05f);
+    eqlms_rrrf_set_bw(q->eq, 0.2f);
 
     // reset modem state
     gmskdem_reset(q);
+
+#if DEBUG_GMSKDEM
+    q->debug_eqout  = windowf_create(DEBUG_BUFFER_LEN);
+#endif
 
     // return modem object
     return q;
@@ -126,6 +141,14 @@ gmskdem gmskdem_create(unsigned int _k,
 
 void gmskdem_destroy(gmskdem _q)
 {
+#if DEBUG_GMSKDEM
+    // print to external file
+    gmskdem_debug_print(_q, DEBUG_GMSKDEM_FILENAME);
+
+    // destroy debugging objects
+    windowf_destroy(_q->debug_eqout);
+#endif
+
     // destroy filter object
     firfilt_rrrf_destroy(_q->filter);
 
@@ -178,6 +201,12 @@ void gmskdem_demodulate(gmskdem _q,
 
         // run through equalizer
         eqlms_rrrf_push(_q->eq, phi);
+#if DEBUG_GMSKDEM
+        // compute output
+        float d_tmp;
+        eqlms_rrrf_execute(_q->eq, &d_tmp);
+        windowf_push(_q->debug_eqout, d_tmp);
+#endif
 
         // compute filter output (decimate)
         if (i == _q->k-1) {
@@ -203,3 +232,41 @@ void gmskdem_demodulate(gmskdem _q,
     *_s = d_hat > 0.0f ? 1 : 0;
 }
 
+//
+// output debugging file
+//
+void gmskdem_debug_print(gmskdem _q,
+                         const char * _filename)
+{
+    // open output filen for writing
+    FILE * fid = fopen(_filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: gmskdem_debug_print(), could not open '%s' for writing\n", _filename);
+        exit(1);
+    }
+    fprintf(fid,"%% %s : auto-generated file\n", _filename);
+    fprintf(fid,"clear all\n");
+    fprintf(fid,"close all\n");
+
+#if DEBUG_GMSKDEM
+    //
+    unsigned int i;
+    float * r;
+    fprintf(fid,"n = %u;\n", DEBUG_BUFFER_LEN);
+    fprintf(fid,"k = %u;\n", _q->k);
+    fprintf(fid,"m = %u;\n", _q->m);
+    fprintf(fid,"t = [0:(n-1)]/k;\n");
+
+    fprintf(fid,"eqout = zeros(1,n);\n");
+    windowf_read(_q->debug_eqout, &r);
+    for (i=0; i<DEBUG_BUFFER_LEN; i++)
+        fprintf(fid,"eqout(%5u) = %12.4e;\n", i+1, r[i]);
+    fprintf(fid,"i0 = mod(k+n,k)+k;\n");
+    fprintf(fid,"isym = i0:k:n;\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(t,eqout,'-', t(isym),eqout(isym),'o','MarkerSize',1);\n");
+#endif
+
+    fclose(fid);
+    printf("gmskdem: internal debugging written to '%s'\n", _filename);
+}
