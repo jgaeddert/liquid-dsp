@@ -2839,9 +2839,14 @@ gmskdem gmskdem_create(unsigned int _k,
 void gmskdem_destroy(gmskdem _q);
 void gmskdem_print(gmskdem _q);
 void gmskdem_reset(gmskdem _q);
-void gmskdem_modulate(gmskdem _q,
-                      unsigned int _sym,
-                      liquid_float_complex * _y);
+
+// set the bandwidth of the equalizer
+void gmskdem_set_bw(gmskdem _q, float _mu);
+
+// enable/disable updating internal equalizer
+void gmskdem_enable_eq(gmskdem _q);
+void gmskdem_disable_eq(gmskdem _q);
+
 void gmskdem_demodulate(gmskdem _q,
                         liquid_float_complex * _y,
                         unsigned int * _sym);
