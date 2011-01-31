@@ -2211,6 +2211,39 @@ void flexframesync_set_csma_callbacks(flexframesync _fs,
                                       void * _csma_userdata);
 
 //
+// bpacket : binary packet suitable for data streaming
+//
+
+// bpacket generator/encoder
+typedef struct bpacketgen_s * bpacketgen;
+bpacketgen bpacketgen_create(unsigned int _m,
+                             unsigned int _dec_msg_len,
+                             int _crc,
+                             int _fec0,
+                             int _fec1);
+void bpacketgen_destroy(bpacketgen _q);
+void bpacketgen_print(bpacketgen _q);
+unsigned int bpacketgen_get_packet_len(bpacketgen _q);
+void bpacketgen_encode(bpacketgen _q,
+                       unsigned char * _msg_dec,
+                       unsigned char * _packet);
+
+// bpacket synchronizer/decoder
+typedef struct bpacketsync_s * bpacketsync;
+typedef int (bpacketsync_callback)(unsigned char * _payload,
+                                   int _payload_valid,
+                                   unsigned int _payload_len,
+                                   void * _userdata);
+bpacketsync bpacketsync_create(unsigned int _m,
+                               bpacketsync_callback _callback,
+                               void * _userdata);
+void bpacketsync_destroy(bpacketsync _q);
+void bpacketsync_print(bpacketsync _q);
+void bpacketsync_execute(bpacketsync _q,
+                         unsigned char _b);
+
+
+//
 // gmskframe
 //
 
