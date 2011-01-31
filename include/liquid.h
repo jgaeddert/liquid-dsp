@@ -2209,6 +2209,46 @@ void flexframesync_set_csma_callbacks(flexframesync _fs,
                                       framesync_csma_callback _csma_lock,
                                       framesync_csma_callback _csma_unlock,
                                       void * _csma_userdata);
+
+//
+// gmskframe
+//
+
+typedef struct gmskframegen_s * gmskframegen;
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float _BT);
+void gmskframegen_destroy(gmskframegen _fg);
+void gmskframegen_print(gmskframegen _fg);
+void gmskframegen_execute(gmskframegen _fg,
+                          unsigned char * _header,
+                          unsigned char * _payload,
+                          liquid_float_complex * _y);
+
+
+// GMSK frame synchronizer callback
+typedef int (*gmskframesync_callback)(unsigned char * _header,
+                                      int _header_valid,
+                                      unsigned char * _payload,
+                                      int _payload_valid,
+                                      framesyncstats_s _stats,
+                                      void * _userdata);
+
+typedef struct gmskframesync_s * gmskframesync;
+gmskframesync gmskframesync_create(unsigned int _k,
+                                   unsigned int _m,
+                                   float _BT,
+                                   gmskframesync_callback _callback,
+                                   void * _userdata);
+void gmskframesync_destroy(gmskframesync _fg);
+void gmskframesync_print(gmskframesync _fg);
+void gmskframesync_reset(gmskframesync _fg);
+void gmskframesync_execute(gmskframesync _fg,
+                           liquid_float_complex * _x,
+                           unsigned int _n);
+
+
+
 //
 // P/N synchronizer
 //

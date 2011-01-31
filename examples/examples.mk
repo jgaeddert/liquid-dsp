@@ -54,6 +54,7 @@ local_src	:=			\
 	freqmodem_example.c		\
 	ga_search_example.c		\
 	ga_search_knapsack_example.c	\
+	gmskframe_example.c		\
 	gmskmodem_example.c		\
 	gport_dma_example.c		\
 	gport_dma_threaded_example.c	\

@@ -36,6 +36,8 @@ local_s_files	:=		\
 	framesync64.c		\
 	flexframegen.c		\
 	flexframesync.c		\
+	gmskframegen.c		\
+	gmskframesync.c		\
 	packetizer.c
 
 # local_t_files
