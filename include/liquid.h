@@ -2209,6 +2209,79 @@ void flexframesync_set_csma_callbacks(flexframesync _fs,
                                       framesync_csma_callback _csma_lock,
                                       framesync_csma_callback _csma_unlock,
                                       void * _csma_userdata);
+
+//
+// bpacket : binary packet suitable for data streaming
+//
+
+// bpacket generator/encoder
+typedef struct bpacketgen_s * bpacketgen;
+bpacketgen bpacketgen_create(unsigned int _m,
+                             unsigned int _dec_msg_len,
+                             int _crc,
+                             int _fec0,
+                             int _fec1);
+void bpacketgen_destroy(bpacketgen _q);
+void bpacketgen_print(bpacketgen _q);
+unsigned int bpacketgen_get_packet_len(bpacketgen _q);
+void bpacketgen_encode(bpacketgen _q,
+                       unsigned char * _msg_dec,
+                       unsigned char * _packet);
+
+// bpacket synchronizer/decoder
+typedef struct bpacketsync_s * bpacketsync;
+typedef int (bpacketsync_callback)(unsigned char * _payload,
+                                   int _payload_valid,
+                                   unsigned int _payload_len,
+                                   void * _userdata);
+bpacketsync bpacketsync_create(unsigned int _m,
+                               bpacketsync_callback _callback,
+                               void * _userdata);
+void bpacketsync_destroy(bpacketsync _q);
+void bpacketsync_print(bpacketsync _q);
+void bpacketsync_execute(bpacketsync _q,
+                         unsigned char _b);
+
+
+//
+// gmskframe
+//
+
+typedef struct gmskframegen_s * gmskframegen;
+gmskframegen gmskframegen_create(unsigned int _k,
+                                 unsigned int _m,
+                                 float _BT);
+void gmskframegen_destroy(gmskframegen _fg);
+void gmskframegen_print(gmskframegen _fg);
+void gmskframegen_execute(gmskframegen _fg,
+                          unsigned char * _header,
+                          unsigned char * _payload,
+                          liquid_float_complex * _y);
+
+
+// GMSK frame synchronizer callback
+typedef int (*gmskframesync_callback)(unsigned char * _header,
+                                      int _header_valid,
+                                      unsigned char * _payload,
+                                      int _payload_valid,
+                                      framesyncstats_s _stats,
+                                      void * _userdata);
+
+typedef struct gmskframesync_s * gmskframesync;
+gmskframesync gmskframesync_create(unsigned int _k,
+                                   unsigned int _m,
+                                   float _BT,
+                                   gmskframesync_callback _callback,
+                                   void * _userdata);
+void gmskframesync_destroy(gmskframesync _fg);
+void gmskframesync_print(gmskframesync _fg);
+void gmskframesync_reset(gmskframesync _fg);
+void gmskframesync_execute(gmskframesync _fg,
+                           liquid_float_complex * _x,
+                           unsigned int _n);
+
+
+
 //
 // P/N synchronizer
 //
@@ -2839,9 +2912,14 @@ gmskdem gmskdem_create(unsigned int _k,
 void gmskdem_destroy(gmskdem _q);
 void gmskdem_print(gmskdem _q);
 void gmskdem_reset(gmskdem _q);
-void gmskdem_modulate(gmskdem _q,
-                      unsigned int _sym,
-                      liquid_float_complex * _y);
+
+// set the bandwidth of the equalizer
+void gmskdem_set_bw(gmskdem _q, float _mu);
+
+// enable/disable updating internal equalizer
+void gmskdem_enable_eq(gmskdem _q);
+void gmskdem_disable_eq(gmskdem _q);
+
 void gmskdem_demodulate(gmskdem _q,
                         liquid_float_complex * _y,
                         unsigned int * _sym);

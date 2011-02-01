@@ -27,6 +27,8 @@ module_name     := framing
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=		\
+	bpacketgen.c		\
+	bpacketsync.c		\
 	pnsync_rrrf.c		\
 	pnsync_crcf.c		\
 	pnsync_cccf.c		\
@@ -36,6 +38,8 @@ local_s_files	:=		\
 	framesync64.c		\
 	flexframegen.c		\
 	flexframesync.c		\
+	gmskframegen.c		\
+	gmskframesync.c		\
 	packetizer.c
 
 # local_t_files

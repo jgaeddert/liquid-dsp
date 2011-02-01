@@ -52,6 +52,8 @@ struct gmskdem_s {
 
     // demodulator
     eqlms_rrrf eq;      // equalizer
+    float mu;           // equalizer update rate
+    int enable_equalizer;   // update equalizer flag
 
     // demodulated symbols counter
     unsigned int num_symbols_demod;
@@ -121,12 +123,13 @@ gmskdem gmskdem_create(unsigned int _k,
     // create filter object
     q->filter = firfilt_rrrf_create(q->h, q->h_len);
 
-    // demodulator, create equalizer
+    // create equalizer
     float htmp[q->h_len];
     for (i=0; i<q->h_len; i++)
         htmp[i] = ( i==(q->k)*(q->m) ) ? 1.0 : 0.0;
     q->eq = eqlms_rrrf_create(htmp, q->h_len);
-    eqlms_rrrf_set_bw(q->eq, 0.2f);
+    gmskdem_set_bw(q, 0.2f);
+    gmskdem_enable_eq(q);
 
     // reset modem state
     gmskdem_reset(q);
@@ -186,6 +189,31 @@ void gmskdem_reset(gmskdem _q)
     eqlms_rrrf_reset(_q->eq);
 }
 
+// set the bandwidth of the equalizer
+void gmskdem_set_bw(gmskdem _q, float _mu)
+{
+    // validate input
+    if (_mu < 0.0f) {
+        fprintf(stderr,"error: gmskdem_set_bw(), equalizer bandwidth must be greater than zero\n");
+        exit(1);
+    }
+
+    _q->mu = _mu;
+    eqlms_rrrf_set_bw(_q->eq, _q->mu);
+}
+
+// enable updating equalizer
+void gmskdem_enable_eq(gmskdem _q)
+{
+    _q->enable_equalizer = 1;
+}
+
+// disable updating equalizer
+void gmskdem_disable_eq(gmskdem _q)
+{
+    _q->enable_equalizer = 0;
+}
+
 void gmskdem_demodulate(gmskdem _q,
                         float complex * _x,
                         unsigned int * _s)
@@ -216,7 +244,9 @@ void gmskdem_demodulate(gmskdem _q,
 
             // train equalizer, but wait until internal
             // buffer is full
-            if (_q->num_symbols_demod >= _q->m) {
+            if (_q->enable_equalizer &&
+                _q->num_symbols_demod >= _q->m)
+            {
                 // decision
                 float d = d_hat > 0 ? _q->g : -_q->g;
                 
