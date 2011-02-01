@@ -125,8 +125,16 @@ gmskdem gmskdem_create(unsigned int _k,
 
     // create equalizer
     float htmp[q->h_len];
+#if 0
     for (i=0; i<q->h_len; i++)
         htmp[i] = ( i==(q->k)*(q->m) ) ? 1.0 : 0.0;
+#else
+    for (i=0; i<q->h_len; i++) {
+        t = (float)i/(float)(q->k)-(float)(q->m);
+        float sig = 0.02f;
+        htmp[i] = expf(-t*t/(2*sig*sig));
+    }
+#endif
     q->eq = eqlms_rrrf_create(htmp, q->h_len);
     gmskdem_set_bw(q, 0.2f);
     gmskdem_enable_eq(q);
