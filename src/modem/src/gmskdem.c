@@ -295,6 +295,27 @@ void gmskdem_debug_print(gmskdem _q,
     fprintf(fid,"m = %u;\n", _q->m);
     fprintf(fid,"t = [0:(n-1)]/k;\n");
 
+    // plot equalizer response
+    fprintf(fid,"h = zeros(1,2*k*m+1);\n");
+    unsigned int h_len =2*_q->k*_q->m+1;
+    for (i=0; i<h_len; i++)
+        fprintf(fid,"h(%4u) = %12.4e;\n", i+1, _q->h[i]);
+    float w[h_len];
+    eqlms_rrrf_get_weights(_q->eq, w);
+    for (i=0; i<h_len; i++)
+        fprintf(fid,"w(%4u) = %12.4e;\n", i+1, w[i]);
+    fprintf(fid,"nfft = 1024;\n");
+    fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
+    fprintf(fid,"H = 20*log10(abs(fftshift(fft(h,nfft))));\n");
+    fprintf(fid,"W = 20*log10(abs(fftshift(fft(w,nfft))));\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(f,H, f,W, f,H+W,'-k','LineWidth',2);\n");
+    fprintf(fid,"axis([-0.5 0.5 -50 10]);\n");
+    fprintf(fid,"xlabel('Normalized Frequency');\n");
+    fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
+    fprintf(fid,"legend('transmit','equalizer','composite',1);\n");
+    fprintf(fid,"grid on;\n");
+
     fprintf(fid,"eqout = zeros(1,n);\n");
     windowf_read(_q->debug_eqout, &r);
     for (i=0; i<DEBUG_BUFFER_LEN; i++)
@@ -302,7 +323,7 @@ void gmskdem_debug_print(gmskdem _q,
     fprintf(fid,"i0 = mod(k+n,k)+k;\n");
     fprintf(fid,"isym = i0:k:n;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,eqout,'-', t(isym),eqout(isym),'o','MarkerSize',1);\n");
+    fprintf(fid,"plot(t,eqout,'-', t(isym),eqout(isym),'o','MarkerSize',4);\n");
 #endif
 
     fclose(fid);
