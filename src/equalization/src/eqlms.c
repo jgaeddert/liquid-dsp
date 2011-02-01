@@ -235,7 +235,7 @@ void EQLMS(_get_weights)(EQLMS() _eq, T * _w)
     // copy output weight vector
     unsigned int i, p=_eq->p;
     for (i=0; i<p; i++)
-        _w[i] = conj(_eq->w1[p-i-1]);
+        _w[i] = conj(_eq->w0[p-i-1]);
 }
 
 // train equalizer object
