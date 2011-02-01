@@ -32,6 +32,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_BPACKETSYNC   0
+
 // bpacketsync object structure
 struct bpacketsync_s {
     // options
@@ -247,7 +249,9 @@ void bpacketsync_execute_seekpn(bpacketsync _q,
 
     // check threshold
     if ( fabsf(r) > 0.8f ) {
+#if DEBUG_BPACKETSYNC
         printf("p/n sequence found!, rxy = %8.4f\n", r);
+#endif
 
         // flip polarity of bits if correlation is negative
         _q->byte_mask = r > 0 ? 0x00 : 0xff;
@@ -273,7 +277,6 @@ void bpacketsync_execute_rxheader(bpacketsync _q,
         _q->num_bytes_received++;
 
         if (_q->num_bytes_received == _q->header_len) {
-            printf("header received\n");
             
             _q->num_bits_received  = 0;
             _q->num_bytes_received = 0;
@@ -288,8 +291,8 @@ void bpacketsync_execute_rxheader(bpacketsync _q,
                 // switch operational mode
                 _q->state = BPACKETSYNC_STATE_RXPAYLOAD;
             } else {
-                // switch operational mode
-                _q->state = BPACKETSYNC_STATE_SEEKPN;
+                // reset synchronizer
+                bpacketsync_reset(_q);
             }
         }
     }
@@ -311,7 +314,6 @@ void bpacketsync_execute_rxpayload(bpacketsync _q,
         _q->num_bytes_received++;
 
         if (_q->num_bytes_received == _q->enc_msg_len) {
-            printf("payload received\n");
             
             _q->num_bits_received  = 0;
             _q->num_bytes_received = 0;
@@ -327,8 +329,8 @@ void bpacketsync_execute_rxpayload(bpacketsync _q,
                              _q->userdata);
             }
 
-            // switch operational mode
-            _q->state = BPACKETSYNC_STATE_SEEKPN;
+            // reset synchronizer
+            bpacketsync_reset(_q);
         }
     }
 }
