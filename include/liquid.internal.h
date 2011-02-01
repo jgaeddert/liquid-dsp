@@ -1185,6 +1185,14 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 
 
 //
+// bpacket
+//
+void bpacketgen_compute_packet_len(bpacketgen _q);
+void bpacketgen_assemble_pnsequence(bpacketgen _q);
+void bpacketgen_assemble_header(bpacketgen _q);
+
+
+//
 // MODULE : interleaver
 //
 
