@@ -2230,10 +2230,10 @@ void bpacketgen_encode(bpacketgen _q,
 
 // bpacket synchronizer/decoder
 typedef struct bpacketsync_s * bpacketsync;
-typedef int (bpacketsync_callback)(unsigned char * _payload,
-                                   int _payload_valid,
-                                   unsigned int _payload_len,
-                                   void * _userdata);
+typedef int (*bpacketsync_callback)(unsigned char * _payload,
+                                    int _payload_valid,
+                                    unsigned int _payload_len,
+                                    void * _userdata);
 bpacketsync bpacketsync_create(unsigned int _m,
                                bpacketsync_callback _callback,
                                void * _userdata);
@@ -2241,7 +2241,7 @@ void bpacketsync_destroy(bpacketsync _q);
 void bpacketsync_print(bpacketsync _q);
 void bpacketsync_reset(bpacketsync _q);
 void bpacketsync_execute(bpacketsync _q,
-                         unsigned char _b);
+                         unsigned char _byte);
 
 
 //

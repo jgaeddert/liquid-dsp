@@ -75,17 +75,17 @@ struct bpacketsync_s {
     } state;
 
     // counters
-    unsigned int num_payload_bytes;
-    unsigned int num_payload_bits;
+    unsigned int num_bytes_received;
+    unsigned int num_bits_received;
     unsigned char byte_rx;
 
     // flags
-    int header_pass;
-    int payload_pass;
+    int header_valid;
+    int payload_valid;
 
     // user-defined parameters
-    // callback
-    // userdata
+    bpacketsync_callback callback;
+    void * userdata;
 };
 
 bpacketsync bpacketsync_create(unsigned int _m,
@@ -94,6 +94,8 @@ bpacketsync bpacketsync_create(unsigned int _m,
 {
     // create bpacketsync object
     bpacketsync q = (bpacketsync) malloc(sizeof(struct bpacketsync_s));
+    q->callback = _callback;
+    q->userdata = _userdata;
 
     // default values
     q->dec_msg_len  = 1;
@@ -113,7 +115,9 @@ bpacketsync bpacketsync_create(unsigned int _m,
     q->header_len = packetizer_compute_enc_msg_len(6, CRC_16, FEC_NONE, FEC_HAMMING128);
 
     // arrays
-    q->pnsequence = (unsigned char*) malloc((q->pnsequence_len)*sizeof(unsigned char*));
+    q->pnsequence  = (unsigned char*) malloc((q->pnsequence_len)*sizeof(unsigned char*));
+    q->payload_enc = (unsigned char*) malloc((q->enc_msg_len)*sizeof(unsigned char*));
+    q->payload_dec = (unsigned char*) malloc((q->dec_msg_len)*sizeof(unsigned char*));
 
     // create m-sequence generator
     // TODO : configure sequence from generator polynomial
@@ -178,8 +182,8 @@ void bpacketsync_reset(bpacketsync _q)
     bsequence_clear(_q->brx);
 
     // reset counters
-    _q->num_payload_bytes = 0;
-    _q->num_payload_bits  = 0;
+    _q->num_bytes_received = 0;
+    _q->num_bits_received  = 0;
     _q->byte_rx           = 0;
 
     // reset state
@@ -187,12 +191,12 @@ void bpacketsync_reset(bpacketsync _q)
 }
 
 void bpacketsync_execute(bpacketsync _q,
-                         unsigned char _b)
+                         unsigned char _byte)
 {
     unsigned int j;
     for (j=0; j<8; j++) {
         // strip bit from byte
-        unsigned char bit = (_b >> (8-j-1)) & 1;
+        unsigned char bit = (_byte >> (8-j-1)) & 1;
 
         // execute state-specific methods
         switch (_q->state) {
@@ -236,15 +240,14 @@ void bpacketsync_execute_seekpn(bpacketsync _q,
 
     // compute p/n sequence correlation
     int rxy = bsequence_correlate(_q->bpn, _q->brx);
-    float r = (float)rxy / (float)(_q->pnsequence_len*8);
-    printf("rxy = %d\n", rxy);
+    float r = 2.0f*(float)rxy / (float)(_q->pnsequence_len*8) - 1.0f;
 
     // check threshold
     if ( r > 0.8f ) {
-        printf("p/n sequence found!\n");
+        printf("p/n sequence found!, rxy = %8.4f\n", r);
 
         // TODO : check polarity or rxy
-        // TODO : switch operational mode
+        _q->state = BPACKETSYNC_STATE_RXHEADER;
     }
 }
 
@@ -254,22 +257,34 @@ void bpacketsync_execute_rxheader(bpacketsync _q,
     // push bit into accumulated byte
     _q->byte_rx <<= 1;
     _q->byte_rx |= (_bit & 1);
-    _q->num_payload_bits++;
+    _q->num_bits_received++;
     
-    if (_q->num_payload_bits == 8) {
-        _q->num_payload_bits=0;
-        _q->num_payload_bytes++;
+    if (_q->num_bits_received == 8) {
+        // append byte to encoded header array
+        _q->header_enc[_q->num_bytes_received] = _q->byte_rx;
 
-        if (_q->num_payload_bytes == _q->header_len) {
+        _q->num_bits_received=0;
+        _q->num_bytes_received++;
+
+        if (_q->num_bytes_received == _q->header_len) {
             printf("header received\n");
             
-            _q->num_payload_bits  = 0;
-            _q->num_payload_bytes = 0;
+            _q->num_bits_received  = 0;
+            _q->num_bytes_received = 0;
 
             // TODO : decode header
+            bpacketsync_decode_header(_q);
 
-            // switch operational mode
-            _q->state = BPACKETSYNC_STATE_RXPAYLOAD;
+            if (_q->header_valid) {
+                // re-allocate memory for arrays
+                bpacketsync_reconfig(_q);
+
+                // switch operational mode
+                _q->state = BPACKETSYNC_STATE_RXPAYLOAD;
+            } else {
+                // switch operational mode
+                _q->state = BPACKETSYNC_STATE_SEEKPN;
+            }
         }
     }
 }
@@ -280,23 +295,91 @@ void bpacketsync_execute_rxpayload(bpacketsync _q,
     // push bit into accumulated byte
     _q->byte_rx <<= 1;
     _q->byte_rx |= (_bit & 1);
-    _q->num_payload_bits++;
+    _q->num_bits_received++;
     
-    if (_q->num_payload_bits == 8) {
-        _q->num_payload_bits=0;
-        _q->num_payload_bytes++;
+    if (_q->num_bits_received == 8) {
+        // append byte to encoded payload array
+        _q->payload_enc[_q->num_bytes_received] = _q->byte_rx;
 
-        if (_q->num_payload_bytes == _q->enc_msg_len) {
+        _q->num_bits_received=0;
+        _q->num_bytes_received++;
+
+        if (_q->num_bytes_received == _q->enc_msg_len) {
             printf("payload received\n");
             
-            _q->num_payload_bits  = 0;
-            _q->num_payload_bytes = 0;
+            _q->num_bits_received  = 0;
+            _q->num_bytes_received = 0;
 
-            // TODO : decode payload
+            // decode payload data
+            bpacketsync_decode_payload(_q);
+
+            // invoke callback
+            if (_q->callback != NULL) {
+                _q->callback(_q->payload_dec,
+                             _q->payload_valid,
+                             _q->dec_msg_len,
+                             _q->userdata);
+            }
 
             // switch operational mode
             _q->state = BPACKETSYNC_STATE_SEEKPN;
         }
     }
+}
+
+void bpacketsync_decode_header(bpacketsync _q)
+{
+    // decode header array
+    _q->header_valid = packetizer_decode(_q->p_header,
+                                         _q->header_enc,
+                                         _q->header_dec);
+
+    if (!_q->header_valid) {
+        printf("HEADER FAILED CRC\n");
+        return;
+    }
+
+    // strip header info
+    int version = _q->header_dec[0];
+    _q->crc  = (crc_scheme) _q->header_dec[1];
+    _q->fec0 = (fec_scheme) _q->header_dec[2];
+    _q->fec1 = (fec_scheme) _q->header_dec[3];
+    _q->dec_msg_len = (_q->header_dec[4] << 8) |
+                      (_q->header_dec[5]     );
+
+    // check version number
+    if (version != BPACKET_VERSION)
+        fprintf(stderr,"warning: bpacketsync, version mismatch!\n");
+
+    // TODO : check crc, fec0, fec1 schemes
+}
+
+void bpacketsync_decode_payload(bpacketsync _q)
+{
+    // decode payload
+    _q->payload_valid = packetizer_decode(_q->p_payload,
+                                          _q->payload_enc,
+                                          _q->payload_dec);
+}
+
+void bpacketsync_reconfig(bpacketsync _q)
+{
+    // reconfigure packetizer
+    _q->p_payload = packetizer_recreate(_q->p_payload,
+                                        _q->dec_msg_len,
+                                        _q->crc,
+                                        _q->fec0,
+                                        _q->fec1);
+
+    // re-compute encoded message (packet) length
+    _q->enc_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
+
+    // re-allocate memory for encoded packet
+    _q->payload_enc = (unsigned char*) realloc(_q->payload_enc,
+                                               _q->enc_msg_len*sizeof(unsigned char));
+
+    // re-allocate memory for decoded packet
+    _q->payload_dec = (unsigned char*) realloc(_q->payload_dec,
+                                               _q->dec_msg_len*sizeof(unsigned char));
 }
 

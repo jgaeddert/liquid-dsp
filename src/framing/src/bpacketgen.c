@@ -206,7 +206,7 @@ void bpacketgen_assemble_pnsequence(bpacketgen _q)
 
 void bpacketgen_assemble_header(bpacketgen _q)
 {
-    _q->header_dec[0] = 0;  // version number
+    _q->header_dec[0] = BPACKET_VERSION;
     _q->header_dec[1] = (unsigned char) _q->crc;
     _q->header_dec[2] = (unsigned char) _q->fec0;
     _q->header_dec[3] = (unsigned char) _q->fec1;

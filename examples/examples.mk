@@ -16,6 +16,7 @@ local_src	:=			\
 	ann_xor_example.c		\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\
+	bpacketsync_example.c		\
 	bsequence_example.c		\
 	bufferf_example.c		\
 	carrier_estimation_example.c	\

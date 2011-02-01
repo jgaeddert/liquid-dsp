@@ -1188,6 +1188,8 @@ void packetizer_realloc_buffers(packetizer _p, unsigned int _len);
 // bpacket
 //
 
+#define BPACKET_VERSION 100
+
 // generator
 void bpacketgen_compute_packet_len(bpacketgen _q);
 void bpacketgen_assemble_pnsequence(bpacketgen _q);
@@ -1198,6 +1200,9 @@ void bpacketsync_assemble_pnsequence(bpacketsync _q);
 void bpacketsync_execute_seekpn(bpacketsync _q, unsigned char _bit);
 void bpacketsync_execute_rxheader(bpacketsync _q, unsigned char _bit);
 void bpacketsync_execute_rxpayload(bpacketsync _q, unsigned char _bit);
+void bpacketsync_decode_header(bpacketsync _q);
+void bpacketsync_decode_payload(bpacketsync _q);
+void bpacketsync_reconfig(bpacketsync _q);
 
 //
 // MODULE : interleaver

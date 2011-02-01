@@ -88,6 +88,8 @@ autocorr_cccf_example.c *
     repetitions, and properties of the auto-correlator, as well as signal-to-
     noise ratio.
 
+bpacketsync_example.c
+
 bsequence_example.c
     This example demonstrates the interface to the bsequence (binary sequence)
     object.  The bsequence object acts like a buffer of bits which are stored
