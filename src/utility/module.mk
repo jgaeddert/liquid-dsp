@@ -29,7 +29,8 @@ module_name     := utility
 local_s_files	:= 	\
 	count_bits.c	\
 	msb_index.c	\
-	pack_bytes.c
+	pack_bytes.c	\
+	shift_array.c
 
 # local_t_files
 #
@@ -40,7 +41,8 @@ local_s_files	:= 	\
 #
 local_t_files	:= 		\
 	count_bits_autotest.h	\
-	pack_bytes_autotest.h
+	pack_bytes_autotest.h	\
+	shift_array_autotest.h
 
 
 # local_b_files

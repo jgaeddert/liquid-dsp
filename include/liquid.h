@@ -3982,6 +3982,26 @@ void liquid_repack_bytes(unsigned char * _sym_in,
                          unsigned int _sym_out_len,
                          unsigned int * _num_written);
  
+// move array to the right, filling in zeros appropriately
+//  _dst        :   destination address [size: _n+1 x 1]
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _num_bits   :   number of bits to shift
+void liquid_rmemmove(unsigned char * _dst,
+                     unsigned char * _src,
+                     unsigned int _n,
+                     unsigned int _num_bits);
+ 
+// move array to the left, filling in zeros appropriately
+//  _dst        :   destination address [size: _n+1 x 1]
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _num_bits   :   number of bits to shift
+void liquid_lmemmove(unsigned char * _dst,
+                     unsigned char * _src,
+                     unsigned int _n,
+                     unsigned int _num_bits);
+ 
 // Count the number of ones in an integer
 unsigned int liquid_count_ones(unsigned int _x); 
 
