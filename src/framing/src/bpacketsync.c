@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <assert.h>
 
 #include "liquid.internal.h"
@@ -78,6 +79,7 @@ struct bpacketsync_s {
     unsigned int num_bytes_received;
     unsigned int num_bits_received;
     unsigned char byte_rx;
+    unsigned char byte_mask;
 
     // flags
     int header_valid;
@@ -182,9 +184,10 @@ void bpacketsync_reset(bpacketsync _q)
     bsequence_clear(_q->brx);
 
     // reset counters
-    _q->num_bytes_received = 0;
-    _q->num_bits_received  = 0;
-    _q->byte_rx           = 0;
+    _q->num_bytes_received  = 0;
+    _q->num_bits_received   = 0;
+    _q->byte_rx             = 0;
+    _q->byte_mask           = 0x00;
 
     // reset state
     _q->state = BPACKETSYNC_STATE_SEEKPN;
@@ -243,10 +246,13 @@ void bpacketsync_execute_seekpn(bpacketsync _q,
     float r = 2.0f*(float)rxy / (float)(_q->pnsequence_len*8) - 1.0f;
 
     // check threshold
-    if ( r > 0.8f ) {
+    if ( fabsf(r) > 0.8f ) {
         printf("p/n sequence found!, rxy = %8.4f\n", r);
 
-        // TODO : check polarity or rxy
+        // flip polarity of bits if correlation is negative
+        _q->byte_mask = r > 0 ? 0x00 : 0xff;
+
+        // switch operational mode
         _q->state = BPACKETSYNC_STATE_RXHEADER;
     }
 }
@@ -261,7 +267,7 @@ void bpacketsync_execute_rxheader(bpacketsync _q,
     
     if (_q->num_bits_received == 8) {
         // append byte to encoded header array
-        _q->header_enc[_q->num_bytes_received] = _q->byte_rx;
+        _q->header_enc[_q->num_bytes_received] = _q->byte_rx ^ _q->byte_mask;
 
         _q->num_bits_received=0;
         _q->num_bytes_received++;
@@ -299,7 +305,7 @@ void bpacketsync_execute_rxpayload(bpacketsync _q,
     
     if (_q->num_bits_received == 8) {
         // append byte to encoded payload array
-        _q->payload_enc[_q->num_bytes_received] = _q->byte_rx;
+        _q->payload_enc[_q->num_bytes_received] = _q->byte_rx ^ _q->byte_mask;
 
         _q->num_bits_received=0;
         _q->num_bytes_received++;
