@@ -2239,6 +2239,7 @@ bpacketsync bpacketsync_create(unsigned int _m,
                                void * _userdata);
 void bpacketsync_destroy(bpacketsync _q);
 void bpacketsync_print(bpacketsync _q);
+void bpacketsync_reset(bpacketsync _q);
 void bpacketsync_execute(bpacketsync _q,
                          unsigned char _b);
 
