@@ -4002,6 +4002,22 @@ void liquid_lmemmove(unsigned char * _dst,
                      unsigned int _n,
                      unsigned int _num_bits);
  
+// circular shift array to the right _n bytes
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_rcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b);
+ 
+// circular shift array to the left _n bytes
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_lcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b);
+ 
 // Count the number of ones in an integer
 unsigned int liquid_count_ones(unsigned int _x); 
 

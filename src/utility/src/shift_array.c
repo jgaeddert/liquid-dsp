@@ -111,3 +111,78 @@ void liquid_lmemmove(unsigned char * _dst,
     }
 }
  
+// circular shift array to the right _n bytes
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_rcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b)
+{
+    // validate input
+    if (_n == 0)
+        return;
+
+    // ensure 0 <= _b < _n
+    _b = _b % _n;
+
+    // check if less memory is used with lcircshift
+    if (_b > (_n>>1)) {
+        liquid_lcircshift(_src, _n, _n-_b);
+        return;
+    }
+
+    // allocate memory for temporary array
+    unsigned char * tmp = (unsigned char*) malloc(_b*sizeof(unsigned char));
+
+    // copy to temporary array
+    memmove(tmp, &_src[_n-_b], _b*sizeof(unsigned char));
+
+    // shift right
+    memmove(&_src[_b], _src, (_n-_b)*sizeof(unsigned char));
+
+    // copy from temporary array
+    memmove(_src, tmp, _b*sizeof(unsigned char));
+
+    // free temporary array
+    free(tmp);
+}
+ 
+// circular shift array to the left _n bytes
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_lcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b)
+{
+    // validate input
+    if (_n == 0)
+        return;
+
+    // ensure 0 <= _b < _n
+    _b = _b % _n;
+
+    // check if less memory is used with rcircshift
+    if (_b > (_n>>1)) {
+        liquid_rcircshift(_src, _n, _n-_b);
+        return;
+    }
+
+    // allocate memory for temporary array
+    unsigned char * tmp = (unsigned char*) malloc(_b*sizeof(unsigned char));
+
+    // copy to temporary array
+    memmove(tmp, _src, _b*sizeof(unsigned char));
+
+    // shift left
+    memmove(_src, &_src[_b], (_n-_b)*sizeof(unsigned char));
+
+    // copy from temporary array
+    memmove(&_src[_n-_b], tmp, _b*sizeof(unsigned char));
+
+    // free temporary array
+    free(tmp);
+}
+
+

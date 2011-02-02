@@ -18,6 +18,7 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -132,4 +133,82 @@ void autotest_lmemmove() {
     CONTEND_SAME_DATA( output, output_test_7, 5 );
 }
 
+
+
+//
+// AUTOTEST : lcircshift
+//
+void autotest_lcircshift() {
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 1110 1111 0101 1111 1010 1010 1000 0001
+    // output [2]   : 0101 1111 1010 1010 1000 0001 1110 1111
+    // output [3]   : 1010 1010 1000 0001 1110 1111 0101 1111
+    // output [4]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    unsigned char input[4] = {0x81, 0xEF, 0x5F, 0xAA};
+    
+    unsigned char output_test_0[4] = {0x81, 0xEF, 0x5F, 0xAA};
+    unsigned char output_test_1[4] = {0xEF, 0x5F, 0xAA, 0x81};
+    unsigned char output_test_2[4] = {0x5F, 0xAA, 0x81, 0xEF};
+    unsigned char output_test_3[4] = {0xAA, 0x81, 0xEF, 0x5F};
+    unsigned char output_test_4[4] = {0x81, 0xEF, 0x5F, 0xAA};
+
+    unsigned char output[4];
+
+    // 
+    // run tests
+    //
+    unsigned int i;
+    for (i=0; i<5; i++) {
+        memmove(output, input, 4);
+        liquid_lcircshift( output, 4, i);
+        switch (i) {
+        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
+        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
+        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
+        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
+        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        default:;
+        }
+    }
+}
+
+
+//
+// AUTOTEST : rcircshift
+//
+void autotest_rcircshift() {
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 1010 1010 1000 0001 1110 1111 0101 1111
+    // output [2]   : 0101 1111 1010 1010 1000 0001 1110 1111
+    // output3[2]   : 1110 1111 0101 1111 1010 1010 1000 0001
+    // output4[2]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    unsigned char input[4] = {0x81, 0xEF, 0x5F, 0xAA};
+    
+    unsigned char output_test_0[4] = {0x81, 0xEF, 0x5F, 0xAA};
+    unsigned char output_test_1[4] = {0xAA, 0x81, 0xEF, 0x5F};
+    unsigned char output_test_2[4] = {0x5F, 0xAA, 0x81, 0xEF};
+    unsigned char output_test_3[4] = {0xEF, 0x5F, 0xAA, 0x81};
+    unsigned char output_test_4[4] = {0x81, 0xEF, 0x5F, 0xAA};
+
+    unsigned char output[4];
+
+    // 
+    // run tests
+    //
+    unsigned int i;
+    for (i=0; i<5; i++) {
+        memmove(output, input, 4);
+        liquid_rcircshift( output, 4, i);
+        switch (i) {
+        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
+        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
+        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
+        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
+        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        default:;
+        }
+    }
+}
 
