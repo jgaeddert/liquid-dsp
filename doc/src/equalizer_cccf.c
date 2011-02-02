@@ -95,11 +95,11 @@ int main(int argc, char*argv[]) {
     unsigned int i;
 
     // create LMS equalizer
-    eqlms_cccf eqlms = eqlms_cccf_create(p);
+    eqlms_cccf eqlms = eqlms_cccf_create(NULL,p);
     eqlms_cccf_set_bw(eqlms, mu);
 
     // create RLS equalizer
-    eqrls_cccf eqrls = eqrls_cccf_create(p);
+    eqrls_cccf eqrls = eqrls_cccf_create(NULL,p);
     eqrls_cccf_set_bw(eqrls, lambda);
 
     // create channel filter (random delay taps)
@@ -141,12 +141,16 @@ int main(int argc, char*argv[]) {
     float zeta=0.1f; // smoothing factor (small zeta -> smooth MSE)
     for (i=0; i<n; i++) {
         // update LMS EQ and compute smoothed mean-squared error
-        eqlms_cccf_execute(eqlms, y[i], d[i], &z_lms);
+        eqlms_cccf_push(eqlms, y[i]);
+        eqlms_cccf_execute(eqlms, &z_lms);
+        eqlms_cccf_step(eqlms, d[i], z_lms);
         mse = cabsf(d[i] - z_lms);
         mse_lms[i] = (i == 0) ? mse : mse_lms[i-1]*(1-zeta) + mse * zeta;
 
         // update RLS EQ and compute smoothed mean-squared error
-        eqrls_cccf_execute(eqrls, y[i], d[i], &z_rls);
+        eqrls_cccf_push(eqrls, y[i]);
+        eqrls_cccf_execute(eqrls, &z_rls);
+        eqrls_cccf_step(eqrls, d[i], z_rls);
         mse = cabsf(d[i] - z_rls);
         mse_rls[i] = (i == 0) ? mse : mse_rls[i-1]*(1-zeta) + mse * zeta;
     }
