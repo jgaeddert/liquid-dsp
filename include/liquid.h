@@ -1949,35 +1949,6 @@ LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_CRCF,
 //                            liquid_float_complex)
 
 
-//
-// 2nd-Order Loop Filter
-//
-
-typedef struct lf2_s * lf2;
-
-lf2 lf2_create(float _bt);
-void lf2_destroy(lf2 _f);
-void lf2_print(lf2 _f);
-
-// reset filter state
-void lf2_reset(lf2 _f);
-
-// set bandwidth-time product
-void lf2_set_damping_factor(lf2 _f, float _xi);
-
-// set bandwidth-time product
-void lf2_set_bandwidth(lf2 _f, float _bt);
-
-// push input value and compute output
-void lf2_advance(lf2 _f, float _v, float *_v_hat);
-
-// 
-// internal
-//
-
-// generate filter coefficients
-void lf2_generate_filter(lf2 _f);
-
 
 
 //
@@ -3278,22 +3249,6 @@ void NCO(_mix_block_down)(NCO() _q,                             \
 
 // Define nco APIs
 LIQUID_NCO_DEFINE_API(NCO_MANGLE_FLOAT, float, liquid_float_complex)
-
-
-//
-// Phase-locked loop
-//
-
-typedef struct pll_s * pll;
-pll pll_create(void);
-void pll_destroy(pll _p);
-void pll_print(pll _p);
-void pll_reset(pll _p);
-
-void pll_set_bandwidth(pll _p, float _bt);
-void pll_set_damping_factor(pll _p, float _xi);
-//void pll_execute(pll _p, liquid_float_complex _x, liquid_float_complex *_y, float _e);
-void pll_step(pll _p, nco_crcf _nco, float _e);
 
 
 // nco utilities

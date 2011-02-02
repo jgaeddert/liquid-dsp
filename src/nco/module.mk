@@ -28,8 +28,7 @@ module_name     := nco
 #
 local_s_files	:=		\
 	nco_crcf.c		\
-	nco.utilities.c		\
-	pll.c
+	nco.utilities.c
 
 # local_t_files
 #

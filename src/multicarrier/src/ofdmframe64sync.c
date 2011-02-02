@@ -59,8 +59,7 @@ struct ofdmframe64sync_s {
     float y_phase[4];       // pilot subcarrier phase
     float p_phase[2];       // polynomial fit
 
-    nco_crcf nco_pilot;          // pilot phase nco
-    pll pll_pilot;          // pilot phase pll
+    nco_crcf nco_pilot;     // pilot phase nco
 
     float phi_prime;        // previous average pilot phase
     float dphi;             // differential pilot phase
@@ -139,9 +138,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
     // carrier offset correction
     q->nco_rx = nco_crcf_create(LIQUID_VCO);
     q->nco_pilot = nco_crcf_create(LIQUID_VCO);
-    q->pll_pilot = pll_create();
-    pll_set_bandwidth(q->pll_pilot,0.01f);
-    pll_set_damping_factor(q->pll_pilot,4.0f);
+    nco_crcf_pll_set_bandwidth(q->nco_pilot,0.01f);
 
     // cyclic prefix correlation windows
     q->delay_correlator = autocorr_cccf_create(OFDMFRAME64SYNC_AUTOCORR_LEN,16);
@@ -208,7 +205,6 @@ void ofdmframe64sync_destroy(ofdmframe64sync _q)
     dotprod_cccf_destroy(_q->cross_correlator);
     nco_crcf_destroy(_q->nco_rx);
     nco_crcf_destroy(_q->nco_pilot);
-    pll_destroy(_q->pll_pilot);
     free(_q);
 }
 
@@ -230,7 +226,6 @@ void ofdmframe64sync_reset(ofdmframe64sync _q)
     nco_crcf_set_frequency(_q->nco_rx, 0.0f);
     nco_crcf_set_phase(_q->nco_rx, 0.0f);
     nco_crcf_reset(_q->nco_pilot);
-    pll_reset(_q->pll_pilot);
 
     // reset symbol timer
     _q->timer = 0;
@@ -802,7 +797,8 @@ void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x)
 
     float theta_hat = nco_crcf_get_phase(_q->nco_pilot);
     float phase_error = _q->p_phase[0] - theta_hat;
-    pll_step(_q->pll_pilot, _q->nco_pilot, phase_error);
+    nco_crcf_pll_step(_q->nco_pilot, phase_error);
+    nco_crcf_step(_q->nco_pilot);
 
 #if DEBUG_OFDMFRAME64SYNC
     windowf_push(_q->debug_pilotphase,      _q->p_phase[0]);

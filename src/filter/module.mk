@@ -44,8 +44,7 @@ local_s_files	:= 			\
 	iirdes.c			\
 	rcos.c				\
 	rkaiser.c			\
-	rrcos.c				\
-	lf2.c
+	rrcos.c
 #	nyquist.c
 
 
