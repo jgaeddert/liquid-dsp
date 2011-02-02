@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -20,7 +20,13 @@
  */
 
 //
-// 
+// interleaver.c
+//
+// basic interleaver methods:
+//  interleaver_print()
+//  interleaver_debug_print()
+//  interleaver_encode()
+//  interleaver_decode()
 //
 
 #include <stdlib.h>
@@ -124,7 +130,10 @@ void interleaver_encode(interleaver _q,
         unsigned int mask_id = i-1;
         mask = interleaver_mask[mask_id];
 
-        interleaver_circshift_L4(_msg_enc, _q->len);
+        // circular bit-wise array shift
+        liquid_lbcircshift(_msg_enc, _q->len, 4);
+
+        // permute forward with mask
         interleaver_permute_forward_mask(_msg_enc, _q->p, _q->len, mask);
     }
 }
@@ -145,8 +154,11 @@ void interleaver_decode(interleaver _q,
         unsigned int mask_id = _q->num_iterations-i-1;
         mask = interleaver_mask[mask_id];
 
+        // permute reverse with mask
         interleaver_permute_reverse_mask(_msg_dec, _q->p, _q->len, mask);
-        interleaver_circshift_R4(_msg_dec, _q->len);
+
+        // circular bit-wise array shift
+        liquid_rbcircshift(_msg_dec, _q->len, 4);
     }
 
     // first iteration operates just on bytes

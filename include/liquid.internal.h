@@ -1229,32 +1229,52 @@ void interleaver_init_block(interleaver _q);
 // initialize m-sequence interleaver
 void interleaver_init_sequence(interleaver _q);
 
-//void interleaver_circshift_left(unsigned char *_x, unsigned int _n, unsigned int _s);
-//void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned int _s);
-void interleaver_compute_bit_permutation(interleaver _q, unsigned int *_p);
+// compute bit permutation for interleaver
+//  _q      :   interleaver object
+//  _p      :   output permutation index array, [size: 8*_n x 1]
+void interleaver_compute_bit_permutation(interleaver _q,
+                                         unsigned int *_p);
 
 
 // 
 // permutation functions
 //
+
+// permute forward one iteration
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
 void interleaver_permute_forward(unsigned char * _x,
                                  unsigned int * _p,
                                  unsigned int _n);
+
+// permute reverse one iteration
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
 void interleaver_permute_reverse(unsigned char * _x,
                                  unsigned int * _p,
                                  unsigned int _n);
 
+// permute forward one iteration with byte mask
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
+//  _mask   :   byte mask
 void interleaver_permute_forward_mask(unsigned char * _x,
                                       unsigned int * _p,
                                       unsigned int _n,
                                       unsigned char _mask);
+
+// permute reverse one iteration with byte mask
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
+//  _mask   :   byte mask
 void interleaver_permute_reverse_mask(unsigned char * _x,
                                       unsigned int * _p,
                                       unsigned int _n,
                                       unsigned char _mask);
-
-void interleaver_circshift_L4(unsigned char *_x, unsigned int _n);
-void interleaver_circshift_R4(unsigned char *_x, unsigned int _n);
 
 
 

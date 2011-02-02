@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011  Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -20,7 +20,9 @@
  */
 
 //
-// Interleaver: permutation functions
+// interleaver_permute.c
+//
+// interleaver permutation functions
 //
 
 #include <stdlib.h>
@@ -29,6 +31,10 @@
 
 #include "liquid.internal.h"
 
+// permute forward one iteration
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
 void interleaver_permute_forward(unsigned char * _x,
                                  unsigned int * _p,
                                  unsigned int _n)
@@ -42,6 +48,10 @@ void interleaver_permute_forward(unsigned char * _x,
     memcpy(_x, tmp, _n);
 }
 
+// permute reverse one iteration
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
 void interleaver_permute_reverse(unsigned char * _x,
                                  unsigned int * _p,
                                  unsigned int _n)
@@ -55,6 +65,11 @@ void interleaver_permute_reverse(unsigned char * _x,
 }
 
 
+// permute forward one iteration with byte mask
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
+//  _mask   :   byte mask
 void interleaver_permute_forward_mask(unsigned char * _x,
                                       unsigned int * _p,
                                       unsigned int _n,
@@ -69,6 +84,11 @@ void interleaver_permute_forward_mask(unsigned char * _x,
     memcpy(_x, tmp, _n);
 }
 
+// permute reverse one iteration with byte mask
+//  _x      :   input/output data array, [size: _n x 1]
+//  _p      :   permutation index array, [size: _n x 1]
+//  _n      :   array size
+//  _mask   :   byte mask
 void interleaver_permute_reverse_mask(unsigned char * _x,
                                       unsigned int * _p,
                                       unsigned int _n,
@@ -82,91 +102,10 @@ void interleaver_permute_reverse_mask(unsigned char * _x,
     memcpy(_x, tmp, _n);
 }
 
-void interleaver_circshift_L4(unsigned char *_x,
-                              unsigned int _n)
-{
-    if (_n==0) return;
-    unsigned int i;
-    unsigned char head, tail, mask_lo=0x0f, mask_hi=0xf0;
 
-    // save head at _x[0]
-    unsigned char tmp = (_x[0] & mask_hi) >> 4;
-
-    for (i=0; i<_n-1; i++) {
-        head = (_x[i] & mask_lo) << 4;
-        tail = (_x[i+1] & mask_hi) >> 4;
-        _x[i] = head | tail;
-    }
-
-    // last byte
-    head = (_x[_n-1] & mask_lo) << 4;
-    _x[_n-1] = head | tmp;
-}
-
-void interleaver_circshift_R4(unsigned char *_x,
-                              unsigned int _n)
-{
-    if (_n==0) return;
-    unsigned int i;
-    unsigned char head, tail, mask_lo=0x0f, mask_hi=0xf0;
-
-    // save tail at last byte -> head at first byte
-    unsigned char tmp = (_x[_n-1] & mask_lo) << 4;
-
-    for (i=_n-1; i>0; i--) {
-        tail = (_x[i] & mask_hi) >> 4;
-        head = (_x[i-1] & mask_lo) << 4;
-        _x[i] = head | tail;
-    }
-
-    // first byte
-    tail = (_x[0] & mask_hi) >> 4;
-    _x[0] = tmp | tail;
-}
-
-#if 0
-#define HEAD_TO_TAIL(x,m,mask) (((x)&(mask))>>m) // mask and shift right (head to tail)
-#define TAIL_TO_HEAD(x,m,mask) (((x)&(mask))<<m) // mask and shift left (tail to head)
-void interleaver_circshift_left(unsigned char *_x, unsigned int _n, unsigned int _s)
-{
-    unsigned int h=_s;  // head bits (number of bits by which to shift)
-    unsigned int t=8-h; // tail bits
-    unsigned char tail_mask = (1<<t)-1;
-    unsigned char head_mask = ~tail_mask;
-    unsigned char head, tail, tmp = HEAD_TO_TAIL(_x[0],h,head_mask);
-    unsigned int i;
-    for (i=0; i<_n-1; i++) {
-        //head = (_x[i] & 0x0f) << 4;
-        head = TAIL_TO_HEAD(_x[i],h,tail_mask);
-
-        //tail = (_x[i+1] & 0xf0) >> 4;
-        tail = HEAD_TO_TAIL(_x[i+1],h,head_mask);
-        _x[i] = head | tail;
-    }
-    //head = (_x[_n-1] & 0x0f) << 4;
-    head = TAIL_TO_HEAD(_x[_n-1],h,tail_mask);
-    _x[_n-1] = head | tmp;
-}
-
-void interleaver_circshift_right(unsigned char *_x, unsigned int _n, unsigned int _s)
-{
-    unsigned int h=_s;  // head bits (number of bits by which to shift)
-    //unsigned int t=8-h; // tail bits
-    unsigned char tail_mask = (1<<h)-1;
-    unsigned char head_mask = ~tail_mask;
-    unsigned char head, tail, tmp = TAIL_TO_HEAD(_x[_n-1],h,tail_mask);
-    unsigned int i;
-    for (i=_n-1; i>0; i--) {
-        head = TAIL_TO_HEAD(_x[i-1],h,tail_mask);
-        tail = HEAD_TO_TAIL(_x[i],h,head_mask);
-        _x[i] = head | tail;
-    }
-    tail = HEAD_TO_TAIL(_x[0],h,head_mask);
-    _x[0] = tmp | tail;
-
-}
-#endif
-
+// compute bit permutation for interleaver
+//  _q      :   interleaver object
+//  _p      :   output permutation index array, [size: 8*_n x 1]
 void interleaver_compute_bit_permutation(interleaver _q,
                                          unsigned int * _p)
 {
