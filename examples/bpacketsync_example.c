@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <getopt.h>
 
 #include "liquid.h"
@@ -35,6 +36,7 @@ void usage()
     printf("bpacketsync_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : input data size (number of uncoded bytes): 8 default\n");
+    printf("  e     : bit error rate of channel, default: 0\n");
     printf("  v     : data integrity check: crc32 default\n");
     // print all available CRC schemes
     for (i=0; i<LIQUID_NUM_CRC_SCHEMES; i++)
@@ -48,19 +50,23 @@ void usage()
 
 
 int main(int argc, char*argv[]) {
+    srand(time(NULL));
+
     // options
     unsigned int n=8;                   // original data message length
     crc_scheme check = CRC_32;          // data integrity check
     fec_scheme fec0 = FEC_HAMMING128;   // inner code
     fec_scheme fec1 = FEC_NONE;         // outer code
+    float bit_error_rate = 0.0f;        // bit error rate
 
     // read command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhn:e:v:c:k:")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage(); return 0;
         case 'n': n = atoi(optarg);     break;
+        case 'e': bit_error_rate = atof(optarg);     break;
         case 'v':
             // data integrity check
             check = liquid_getopt_str2crc(optarg);
@@ -92,8 +98,11 @@ int main(int argc, char*argv[]) {
     }
 
     // validate input
-    if (n == 1) {
+    if (n == 0) {
         fprintf(stderr,"error: %s, packet length must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (bit_error_rate < 0.0f || bit_error_rate > 1.0f) {
+        fprintf(stderr,"error: %s, channel bit error rate must be in [0,1]\n", argv[0]);
         exit(1);
     }
 
@@ -119,20 +128,26 @@ int main(int argc, char*argv[]) {
     for (i=0; i<n; i++)
         msg_org[i] = rand() % 256;
 
+    // 
     // encode packet
+    //
     bpacketgen_encode(pg,msg_org,msg_enc);
 
-    // add delay and error(s)
+    // 
+    // channel
+    //
+    // add delay
     msg_rec[0] = rand() & 0xff; // initialize first byte as random
     memmove(&msg_rec[1], msg_enc, k*sizeof(unsigned char));
     liquid_lbshift(msg_rec, (k+1)*sizeof(unsigned char), rand()%8); // random shift
-#if 0
     // add random errors
     for (i=0; i<k+1; i++) {
-        if (randf() < 0.02f)
-            msg_rec[i] ^= 1 << (rand()%8);
+        unsigned int j;
+        for (j=0; j<8; j++) {
+            if (randf() < bit_error_rate)
+                msg_rec[i] ^= 1 << (8-j-1);
+        }
     }
-#endif
 
     // 
     // run packet synchronizer
