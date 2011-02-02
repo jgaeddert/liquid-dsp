@@ -35,7 +35,6 @@ void usage()
     printf("bpacketsync_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : input data size (number of uncoded bytes): 8 default\n");
-    printf("  d     : received sequence delay [bits], default: 13\n");
     printf("  v     : data integrity check: crc32 default\n");
     // print all available CRC schemes
     for (i=0; i<LIQUID_NUM_CRC_SCHEMES; i++)
@@ -54,16 +53,14 @@ int main(int argc, char*argv[]) {
     crc_scheme check = CRC_32;          // data integrity check
     fec_scheme fec0 = FEC_HAMMING128;   // inner code
     fec_scheme fec1 = FEC_NONE;         // outer code
-    unsigned int delay = 13;            // number of bits in delay
 
     // read command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:d:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhn:v:c:k:")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage(); return 0;
         case 'n': n = atoi(optarg);     break;
-        case 'd': delay = atoi(optarg); break;
         case 'v':
             // data integrity check
             check = liquid_getopt_str2crc(optarg);
@@ -109,14 +106,10 @@ int main(int argc, char*argv[]) {
     // compute packet length
     unsigned int k = bpacketgen_get_packet_len(pg);
 
-    unsigned int dbytes = delay / 8;    // number of bytes in delay
-    unsigned int dbits = delay % 8;     // number of additional bits in delay
-    unsigned int w = k + dbytes + (dbits != 0);
-
     // initialize arrays
     unsigned char msg_org[n];   // original message
     unsigned char msg_enc[k];   // encoded message
-    unsigned char msg_rec[w];   // recieved message
+    unsigned char msg_rec[k+1]; // recieved message
     unsigned char msg_dec[n];   // decoded message
 
     // create packet synchronizer
@@ -130,22 +123,32 @@ int main(int argc, char*argv[]) {
     bpacketgen_encode(pg,msg_org,msg_enc);
 
     // add delay and error(s)
-    for (i=0; i<dbytes; i++)
-        msg_rec[i] = rand() & 0xff;
-    liquid_rmemmove(&msg_rec[dbytes], msg_enc, k*sizeof(unsigned char), dbits);
+    msg_rec[0] = rand() & 0xff; // initialize first byte as random
+    memmove(&msg_rec[1], msg_enc, k*sizeof(unsigned char));
+    liquid_lbshift(msg_rec, (k+1)*sizeof(unsigned char), rand()%8); // random shift
 #if 0
     // add random errors
-    for (i=0; i<w; i++) {
+    for (i=0; i<k+1; i++) {
         if (randf() < 0.02f)
             msg_rec[i] ^= 1 << (rand()%8);
     }
 #endif
 
+    // 
     // run packet synchronizer
-    for (i=0; i<w; i++)
+    //
+
+    // push random bits through synchronizer
+    for (i=0; i<100; i++)
+        bpacketsync_execute(ps, rand() & 0xff);
+
+    // push packet through synchronizer
+    for (i=0; i<k+1; i++)
         bpacketsync_execute(ps, msg_rec[i]);
 
+    // 
     // count errors
+    //
     unsigned int num_bit_errors = 0;
     for (i=0; i<n; i++)
         num_bit_errors += count_bit_errors(msg_org[i], msg_dec[i]);
