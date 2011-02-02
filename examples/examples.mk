@@ -91,8 +91,6 @@ local_src	:=			\
 	ofdmframesync_example.c		\
 	ofdmoqam_example.c		\
 	ofdmoqam_firpfbch_example.c	\
-	ofdmoqamframe64gen_example.c	\
-	ofdmoqamframe64sync_example.c	\
 	ofdmoqamframesync_example.c	\
 	packetizer_example.c		\
 	patternset_example.c		\
@@ -125,6 +123,8 @@ local_src	:=			\
 
 #	metadata_example.c
 #	ofdmframegen_example.c
+#	ofdmoqamframe64gen_example.c
+#	ofdmoqamframe64sync_example.c
 #	gmskframe_example.c
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))

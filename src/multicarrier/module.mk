@@ -27,7 +27,6 @@ module_name     := multicarrier
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=			\
-	firpfbch_old.c			\
 	firpfbch_crcf.c			\
 	firpfbch_cccf.c			\
 	ofdmframe64.common.c		\
@@ -37,9 +36,6 @@ local_s_files	:=			\
 	ofdmframegen.c			\
 	ofdmframesync.c			\
 	ofdmoqam.c			\
-	ofdmoqamframe64.common.c	\
-	ofdmoqamframe64gen.c		\
-	ofdmoqamframe64sync.c		\
 	ofdmoqamframe.common.c		\
 	ofdmoqamframegen.c		\
 	ofdmoqamframesync.c
@@ -68,8 +64,7 @@ local_b_files	:=			\
 	firpfbch_benchmark.h		\
 	ofdmframe64sync_benchmark.h	\
 	ofdmframesync_benchmark.h	\
-	ofdmoqam_benchmark.h		\
-	ofdmoqamframe64sync_benchmark.h
+	ofdmoqam_benchmark.h
 
 
 include common.mk

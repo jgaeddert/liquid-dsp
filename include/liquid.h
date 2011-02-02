@@ -2932,47 +2932,11 @@ void ampmodem_demodulate(ampmodem _fm,
 //
 
 
-// FIR polyphase filterbank channelizer
-// NOTES:
-//   - Although firpfbch is a placeholder for both the synthesizer and
-//     analyzer, separate objects should be used for each task.
-//   - THIS OBJECT IS SOON TO BE REMOVED! replace with firpfbch_xxxt family.
-typedef struct firpfbch_s * firpfbch;
-
 #define FIRPFBCH_NYQUIST        0
 #define FIRPFBCH_ROOTNYQUIST    1
 
 #define FIRPFBCH_ANALYZER       0
 #define FIRPFBCH_SYNTHESIZER    1
-// TODO: use filter prototype object
-// _num_channels:   number of channels
-// _m           :   filter delay (filter length = 2*k*m)
-// _beta        :   stop-band attenuation (nyquist), excess bandwidth (root nyquist)
-// _nyquist     :   0: nyquist,  1: root nyquist
-// _gradient    :   0: normal,   1: compute gradient of prototype filter
-firpfbch firpfbch_create(unsigned int _num_channels,
-                         unsigned int _m,
-                         float _beta,
-                         float _dt,
-                         int _nyquist,
-                         int _gradient);
-void firpfbch_destroy(firpfbch _c);
-void firpfbch_clear(firpfbch _c);
-void firpfbch_print(firpfbch _c);
-void firpfbch_get_filter_taps(firpfbch _c, float * _h);
-
-// synthesis
-void firpfbch_synthesizer_execute(firpfbch _c,
-                                  liquid_float_complex * _x,
-                                  liquid_float_complex * _X);
-// analysis
-void firpfbch_analyzer_push(firpfbch _c, liquid_float_complex _x);
-void firpfbch_analyzer_run(firpfbch _c, liquid_float_complex * _X);
-void firpfbch_analyzer_saverunstate(firpfbch _c);
-void firpfbch_analyzer_clearrunstate(firpfbch _c);
-void firpfbch_analyzer_execute(firpfbch _c,
-                               liquid_float_complex * _X,
-                               liquid_float_complex * _x);
 
 
 //
@@ -3050,51 +3014,6 @@ void ofdmoqam_clear(ofdmoqam _c);
 void ofdmoqam_execute(ofdmoqam _c,
                       liquid_float_complex * _x,
                       liquid_float_complex * _y);
-
-// 
-// ofdmoqamframe64gen
-//
-typedef struct ofdmoqamframe64gen_s * ofdmoqamframe64gen;
-ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
-                                             float _beta);
-void ofdmoqamframe64gen_destroy(ofdmoqamframe64gen _q);
-void ofdmoqamframe64gen_print(ofdmoqamframe64gen _q);
-void ofdmoqamframe64gen_reset(ofdmoqamframe64gen _q);
-// short PLCP training sequence
-void ofdmoqamframe64gen_writeshortsequence(ofdmoqamframe64gen _q,
-                                           liquid_float_complex *_y);
-// long PLCP training sequence
-void ofdmoqamframe64gen_writelongsequence(ofdmoqamframe64gen _q,
-                                          liquid_float_complex *_y);
-// gain PLCP training sequence
-void ofdmoqamframe64gen_writetrainingsequence(ofdmoqamframe64gen _q,
-                                              liquid_float_complex *_y);
-void ofdmoqamframe64gen_writeheader(ofdmoqamframe64gen _q,
-                                    liquid_float_complex *_y);
-void ofdmoqamframe64gen_writesymbol(ofdmoqamframe64gen _q,
-                                    liquid_float_complex *_x,
-                                    liquid_float_complex *_y);
-void ofdmoqamframe64gen_flush(ofdmoqamframe64gen _q,
-                              liquid_float_complex *_y);
-
-// 
-// ofdmoqamframe64sync
-//
-typedef int (*ofdmoqamframe64sync_callback)(liquid_float_complex * _y,
-                                            void * _userdata);
-typedef struct ofdmoqamframe64sync_s * ofdmoqamframe64sync;
-ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
-                                               float _beta,
-                                               ofdmoqamframe64sync_callback _callback,
-                                               void * _userdata);
-void ofdmoqamframe64sync_destroy(ofdmoqamframe64sync _q);
-void ofdmoqamframe64sync_print(ofdmoqamframe64sync _q);
-void ofdmoqamframe64sync_reset(ofdmoqamframe64sync _q);
-void ofdmoqamframe64sync_execute(ofdmoqamframe64sync _q,
-                                 liquid_float_complex * _x,
-                                 unsigned int _n);
-
-
 
 
 // 
