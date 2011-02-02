@@ -147,6 +147,7 @@ void benchmark_fec_dec_none_n64         FEC_DECODE_BENCH_API(FEC_NONE,      64, 
 void benchmark_fec_dec_rep3_n64         FEC_DECODE_BENCH_API(FEC_REP3,      64,  NULL)
 void benchmark_fec_dec_rep5_n64         FEC_DECODE_BENCH_API(FEC_REP5,      64,  NULL)
 void benchmark_fec_dec_hamming74_n64    FEC_DECODE_BENCH_API(FEC_HAMMING74, 64,  NULL)
+void benchmark_fec_dec_hamming84_n64    FEC_DECODE_BENCH_API(FEC_HAMMING84, 64,  NULL)
 void benchmark_fec_dec_hamming128_n64   FEC_DECODE_BENCH_API(FEC_HAMMING128,64,  NULL)
 
 void benchmark_fec_dec_conv27_n64       FEC_DECODE_BENCH_API(FEC_CONV_V27,  64,  NULL)
