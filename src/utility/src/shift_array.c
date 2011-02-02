@@ -157,43 +157,54 @@ void liquid_rbcircshift(unsigned char * _src,
         _src[i] = byte;
     }
 }
- 
-// circular shift array to the right _n bytes
+
+
+
+
+
+
+// shift array to the left _b bytes, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bytes to shift
-void liquid_rcircshift(unsigned char * _src,
-                       unsigned int _n,
-                       unsigned int _b)
+void liquid_lshift(unsigned char * _src,
+                   unsigned int _n,
+                   unsigned int _b)
 {
-    // validate input
-    if (_n == 0)
-        return;
-
-    // ensure 0 <= _b < _n
-    _b = _b % _n;
-
-    // check if less memory is used with lcircshift
-    if (_b > (_n>>1)) {
-        liquid_lcircshift(_src, _n, _n-_b);
+    // shift amount exceeds buffer size; fill with zeros
+    if (_b >= _n) {
+        memset(_src, 0x00, _n*sizeof(unsigned char));
         return;
     }
 
-    // allocate memory for temporary array
-    unsigned char * tmp = (unsigned char*) malloc(_b*sizeof(unsigned char));
+    // move memory
+    memmove(_src, &_src[_b], (_n-_b)*sizeof(unsigned char));
 
-    // copy to temporary array
-    memmove(tmp, &_src[_n-_b], _b*sizeof(unsigned char));
+    // fill remaining buffer with zeros
+    memset(&_src[_n-_b], 0x00, _b*sizeof(unsigned char));
+}
+ 
+// shift array to the right _b bytes, filling in zeros
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_rshift(unsigned char * _src,
+                   unsigned int _n,
+                   unsigned int _b)
+{
+    // shift amount exceeds buffer size; fill with zeros
+    if (_b >= _n) {
+        memset(_src, 0x00, _n*sizeof(unsigned char));
+        return;
+    }
 
-    // shift right
+    // move memory
     memmove(&_src[_b], _src, (_n-_b)*sizeof(unsigned char));
 
-    // copy from temporary array
-    memmove(_src, tmp, _b*sizeof(unsigned char));
-
-    // free temporary array
-    free(tmp);
+    // fill remaining buffer with zeros
+    memset(_src, 0x00, _b*sizeof(unsigned char));
 }
+ 
  
 // circular shift array to the left _n bytes
 //  _src        :   source address [size: _n x 1]
@@ -233,3 +244,40 @@ void liquid_lcircshift(unsigned char * _src,
 }
 
 
+// circular shift array to the right _n bytes
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_rcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b)
+{
+    // validate input
+    if (_n == 0)
+        return;
+
+    // ensure 0 <= _b < _n
+    _b = _b % _n;
+
+    // check if less memory is used with lcircshift
+    if (_b > (_n>>1)) {
+        liquid_lcircshift(_src, _n, _n-_b);
+        return;
+    }
+
+    // allocate memory for temporary array
+    unsigned char * tmp = (unsigned char*) malloc(_b*sizeof(unsigned char));
+
+    // copy to temporary array
+    memmove(tmp, &_src[_n-_b], _b*sizeof(unsigned char));
+
+    // shift right
+    memmove(&_src[_b], _src, (_n-_b)*sizeof(unsigned char));
+
+    // copy from temporary array
+    memmove(_src, tmp, _b*sizeof(unsigned char));
+
+    // free temporary array
+    free(tmp);
+}
+ 

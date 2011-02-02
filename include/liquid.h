@@ -4014,19 +4014,38 @@ void liquid_rbcircshift(unsigned char * _src,
                         unsigned int _n,
                         unsigned int _b);
  
-// circular shift array to the right _n bytes
+
+
+
+// shift array to the left _b bytes, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bytes to shift
-void liquid_rcircshift(unsigned char * _src,
-                       unsigned int _n,
-                       unsigned int _b);
+void liquid_lshift(unsigned char * _src,
+                   unsigned int _n,
+                   unsigned int _b);
  
-// circular shift array to the left _n bytes
+// shift array to the right _b bytes, filling in zeros
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_rshift(unsigned char * _src,
+                   unsigned int _n,
+                   unsigned int _b);
+ 
+// circular shift array to the left _b bytes
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
 //  _b          :   number of bytes to shift
 void liquid_lcircshift(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _b);
+ 
+// circular shift array to the right _b bytes
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bytes to shift
+void liquid_rcircshift(unsigned char * _src,
                        unsigned int _n,
                        unsigned int _b);
  
