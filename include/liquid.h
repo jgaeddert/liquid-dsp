@@ -3257,7 +3257,7 @@ LIQUID_NCO_DEFINE_API(NCO_MANGLE_FLOAT, float, liquid_float_complex)
 void liquid_unwrap_phase(float * _theta, unsigned int _n);
 
 // unwrap phase of array (advanced)
-void liquid_unwrap_phase(float * _theta, unsigned int _n);
+void liquid_unwrap_phase2(float * _theta, unsigned int _n);
 
 
 
