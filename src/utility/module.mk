@@ -27,6 +27,7 @@ module_name     := utility
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:= 	\
+	bshift_array.c	\
 	count_bits.c	\
 	msb_index.c	\
 	pack_bytes.c	\
@@ -40,6 +41,7 @@ local_s_files	:= 	\
 # within $(local_dir)
 #
 local_t_files	:= 		\
+	bshift_array_autotest.h	\
 	count_bits_autotest.h	\
 	pack_bytes_autotest.h	\
 	shift_array_autotest.h
