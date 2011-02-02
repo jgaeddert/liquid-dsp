@@ -3988,7 +3988,7 @@ void liquid_repack_bytes(unsigned char * _sym_in,
 //  _b          :   number of bits to shift
 void liquid_lbshift(unsigned char * _src,
                     unsigned int _n,
-                    unsigned int _num_bits);
+                    unsigned int _b);
  
 // shift array to the right _b bits, filling in zeros
 //  _src        :   source address [size: _n x 1]
@@ -3997,6 +3997,22 @@ void liquid_lbshift(unsigned char * _src,
 void liquid_rbshift(unsigned char * _src,
                     unsigned int _n,
                     unsigned int _b);
+ 
+// circularly shift array to the left _b bits
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bits to shift
+void liquid_lbcircshift(unsigned char * _src,
+                        unsigned int _n,
+                        unsigned int _b);
+ 
+// circularly shift array to the right _b bits
+//  _src        :   source address [size: _n x 1]
+//  _n          :   input data array size
+//  _b          :   number of bits to shift
+void liquid_rbcircshift(unsigned char * _src,
+                        unsigned int _n,
+                        unsigned int _b);
  
 // circular shift array to the right _n bytes
 //  _src        :   source address [size: _n x 1]
