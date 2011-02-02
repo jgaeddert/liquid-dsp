@@ -22,8 +22,8 @@ int main() {
     // options
     unsigned int n=512;     // number of symbols to observe
     unsigned int ntrain=256;// number of training symbols
-    unsigned int h_len=4;   // channel filter length
-    unsigned int p=8;       // equalizer order
+    unsigned int h_len=6;   // channel filter length
+    unsigned int p=12;      // equalizer order
 
     // bookkeeping variables
     float complex d[n];     // data sequence
@@ -127,10 +127,11 @@ int main() {
     fprintf(fid,"W=20*log10(abs(fftshift(fft(w,nfft))));\n");
 
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,H,'-r',f,W,'-b');\n");
+    fprintf(fid,"plot(f,H,'-r',f,W,'-b', f,H+W,'-k','LineWidth',2);\n");
     fprintf(fid,"xlabel('Normalied Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
-    fprintf(fid,"legend('channel','equalizer',0);\n");
+    fprintf(fid,"axis([-0.5 0.5 -10 10]);\n");
+    fprintf(fid,"legend('channel','equalizer','composite',0);\n");
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
