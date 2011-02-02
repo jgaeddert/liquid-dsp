@@ -24,115 +24,99 @@
 
 
 //
-// AUTOTEST : rmemmove
+// AUTOTEST : lbshift
 //
-void autotest_rmemmove() {
-    // input        : 1000 0001 1110 1111 0101 1111 1010 1010 .... ....
-    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010 0000 0000
-    // output [1]   : 0100 0000 1111 0111 1010 1111 1101 0101 0000 0000
-    // output [2]   : 0010 0000 0111 1011 1101 0111 1110 1010 1000 0000
-    // output [3]   : 0001 0000 0011 1101 1110 1011 1111 0101 0100 0000
-    // output [4]   : 0000 1000 0001 1110 1111 0101 1111 1010 1010 0000
-    // output [5]   : 0000 0100 0000 1111 0111 1010 1111 1101 0101 0000
-    // output [6]   : 0000 0010 0000 0111 1011 1101 0111 1110 1010 1000
-    // output [7]   : 0000 0001 0000 0011 1101 1110 1011 1111 0101 0100
+void autotest_lbshift() {
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 0000 0011 1101 1110 1011 1111 0101 0100
+    // output [2]   : 0000 0111 1011 1101 0111 1110 1010 1000
+    // output [3]   : 0000 1111 0111 1010 1111 1101 0101 0000
+    // output [4]   : 0001 1110 1111 0101 1111 1010 1010 0000
+    // output [5]   : 0011 1101 1110 1011 1111 0101 0100 0000
+    // output [6]   : 0111 1011 1101 0111 1110 1010 1000 0000
+    // output [7]   : 1111 0111 1010 1111 1101 0101 0000 0000
     unsigned char input[4] = {0x81, 0xEF, 0x5F, 0xAA};
     
-    unsigned char output_test_0[5] = {0x81, 0xEF, 0x5F, 0xAA, 0x00};
-    unsigned char output_test_1[5] = {0x40, 0xF7, 0xAF, 0xD5, 0x00};
-    unsigned char output_test_2[5] = {0x20, 0x7B, 0xD7, 0xEA, 0x80};
-    unsigned char output_test_3[5] = {0x10, 0x3D, 0xEB, 0xF5, 0x40};
-    unsigned char output_test_4[5] = {0x08, 0x1E, 0xF5, 0xFA, 0xA0};
-    unsigned char output_test_5[5] = {0x04, 0x0F, 0x7A, 0xFD, 0x50};
-    unsigned char output_test_6[5] = {0x02, 0x07, 0xBD, 0x7E, 0xA8};
-    unsigned char output_test_7[5] = {0x01, 0x03, 0xDE, 0xBF, 0x54};
+    unsigned char output_test_0[4] = {0x81, 0xEF, 0x5F, 0xAA};
+    unsigned char output_test_1[4] = {0x03, 0xDE, 0xBF, 0x54};
+    unsigned char output_test_2[4] = {0x07, 0xBD, 0x7E, 0xA8};
+    unsigned char output_test_3[4] = {0x0F, 0x7A, 0xFD, 0x50};
+    unsigned char output_test_4[4] = {0x1E, 0xF5, 0xFA, 0xA0};
+    unsigned char output_test_5[4] = {0x3D, 0xEB, 0xF5, 0x40};
+    unsigned char output_test_6[4] = {0x7B, 0xD7, 0xEA, 0x80};
+    unsigned char output_test_7[4] = {0xF7, 0xAF, 0xD5, 0x00};
 
-    unsigned char output[5];
+    unsigned char output[4];
     
     // 
     // run tests
     //
-
-    liquid_rmemmove(output, input, 4, 0);
-    CONTEND_SAME_DATA( output, output_test_0, 5 );
-
-    liquid_rmemmove(output, input, 4, 1);
-    CONTEND_SAME_DATA( output, output_test_1, 5 );
-
-    liquid_rmemmove(output, input, 4, 2);
-    CONTEND_SAME_DATA( output, output_test_2, 5 );
-
-    liquid_rmemmove(output, input, 4, 3);
-    CONTEND_SAME_DATA( output, output_test_3, 5 );
-
-    liquid_rmemmove(output, input, 4, 4);
-    CONTEND_SAME_DATA( output, output_test_4, 5 );
-
-    liquid_rmemmove(output, input, 4, 5);
-    CONTEND_SAME_DATA( output, output_test_5, 5 );
-
-    liquid_rmemmove(output, input, 4, 6);
-    CONTEND_SAME_DATA( output, output_test_6, 5 );
-
-    liquid_rmemmove(output, input, 4, 7);
-    CONTEND_SAME_DATA( output, output_test_7, 5 );
+    unsigned int i;
+    for (i=0; i<8; i++) {
+        memmove(output, input, 4);
+        liquid_lbshift( output, 4, i);
+        switch (i) {
+        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
+        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
+        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
+        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
+        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        case 5: CONTEND_SAME_DATA( output, output_test_5, 4 ); break;
+        case 6: CONTEND_SAME_DATA( output, output_test_6, 4 ); break;
+        case 7: CONTEND_SAME_DATA( output, output_test_7, 4 ); break;
+        default:;
+        }
+    }
 }
 
+
 //
-// AUTOTEST : lmemmove
+// AUTOTEST : rbshift
 //
-void autotest_lmemmove() {
-    // input        : .... .... 1000 0001 1110 1111 0101 1111 1010 1010
-    // output [0]   : 0000 0000 1000 0001 1110 1111 0101 1111 1010 1010
-    // output [1]   : 0000 0001 0000 0011 1101 1110 1011 1111 0101 0100
-    // output [2]   : 0000 0010 0000 0111 1011 1101 0111 1110 1010 1000
-    // output [3]   : 0000 0100 0000 1111 0111 1010 1111 1101 0101 0000
-    // output [4]   : 0000 1000 0001 1110 1111 0101 1111 1010 1010 0000
-    // output [5]   : 0001 0000 0011 1101 1110 1011 1111 0101 0100 0000
-    // output [6]   : 0010 0000 0111 1011 1101 0111 1110 1010 1000 0000
-    // output [7]   : 0100 0000 1111 0111 1010 1111 1101 0101 0000 0000
+void autotest_rbshift() {
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 0100 0000 1111 0111 1010 1111 1101 0101
+    // output [2]   : 0010 0000 0111 1011 1101 0111 1110 1010
+    // output [3]   : 0001 0000 0011 1101 1110 1011 1111 0101
+    // output [4]   : 0000 1000 0001 1110 1111 0101 1111 1010
+    // output [5]   : 0000 0100 0000 1111 0111 1010 1111 1101
+    // output [6]   : 0000 0010 0000 0111 1011 1101 0111 1110
+    // output [7]   : 0000 0001 0000 0011 1101 1110 1011 1111
     unsigned char input[4] = {0x81, 0xEF, 0x5F, 0xAA};
     
-    unsigned char output_test_0[5] = {0x00, 0x81, 0xEF, 0x5F, 0xAA};
-    unsigned char output_test_1[5] = {0x01, 0x03, 0xDE, 0xBF, 0x54};
-    unsigned char output_test_2[5] = {0x02, 0x07, 0xBD, 0x7E, 0xA8};
-    unsigned char output_test_3[5] = {0x04, 0x0F, 0x7A, 0xFD, 0x50};
-    unsigned char output_test_4[5] = {0x08, 0x1E, 0xF5, 0xFA, 0xA0};
-    unsigned char output_test_5[5] = {0x10, 0x3D, 0xEB, 0xF5, 0x40};
-    unsigned char output_test_6[5] = {0x20, 0x7B, 0xD7, 0xEA, 0x80};
-    unsigned char output_test_7[5] = {0x40, 0xF7, 0xAF, 0xD5, 0x00};
+    unsigned char output_test_0[4] = {0x81, 0xEF, 0x5F, 0xAA};
+    unsigned char output_test_1[4] = {0x40, 0xF7, 0xAF, 0xD5};
+    unsigned char output_test_2[4] = {0x20, 0x7B, 0xD7, 0xEA};
+    unsigned char output_test_3[4] = {0x10, 0x3D, 0xEB, 0xF5};
+    unsigned char output_test_4[4] = {0x08, 0x1E, 0xF5, 0xFA};
+    unsigned char output_test_5[4] = {0x04, 0x0F, 0x7A, 0xFD};
+    unsigned char output_test_6[4] = {0x02, 0x07, 0xBD, 0x7E};
+    unsigned char output_test_7[4] = {0x01, 0x03, 0xDE, 0xBF};
 
-    unsigned char output[5];
+    unsigned char output[4];
     
     // 
     // run tests
     //
-
-    liquid_lmemmove(output, input, 4, 0);
-    CONTEND_SAME_DATA( output, output_test_0, 5 );
-
-    liquid_lmemmove(output, input, 4, 1);
-    CONTEND_SAME_DATA( output, output_test_1, 5 );
-
-    liquid_lmemmove(output, input, 4, 2);
-    CONTEND_SAME_DATA( output, output_test_2, 5 );
-
-    liquid_lmemmove(output, input, 4, 3);
-    CONTEND_SAME_DATA( output, output_test_3, 5 );
-
-    liquid_lmemmove(output, input, 4, 4);
-    CONTEND_SAME_DATA( output, output_test_4, 5 );
-
-    liquid_lmemmove(output, input, 4, 5);
-    CONTEND_SAME_DATA( output, output_test_5, 5 );
-
-    liquid_lmemmove(output, input, 4, 6);
-    CONTEND_SAME_DATA( output, output_test_6, 5 );
-
-    liquid_lmemmove(output, input, 4, 7);
-    CONTEND_SAME_DATA( output, output_test_7, 5 );
+    unsigned int i;
+    for (i=0; i<8; i++) {
+        memmove(output, input, 4);
+        liquid_rbshift( output, 4, i);
+        switch (i) {
+        case 0: CONTEND_SAME_DATA( output, output_test_0, 4 ); break;
+        case 1: CONTEND_SAME_DATA( output, output_test_1, 4 ); break;
+        case 2: CONTEND_SAME_DATA( output, output_test_2, 4 ); break;
+        case 3: CONTEND_SAME_DATA( output, output_test_3, 4 ); break;
+        case 4: CONTEND_SAME_DATA( output, output_test_4, 4 ); break;
+        case 5: CONTEND_SAME_DATA( output, output_test_5, 4 ); break;
+        case 6: CONTEND_SAME_DATA( output, output_test_6, 4 ); break;
+        case 7: CONTEND_SAME_DATA( output, output_test_7, 4 ); break;
+        default:;
+        }
+    }
 }
-
 
 
 //

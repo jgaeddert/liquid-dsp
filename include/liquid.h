@@ -3982,25 +3982,21 @@ void liquid_repack_bytes(unsigned char * _sym_in,
                          unsigned int _sym_out_len,
                          unsigned int * _num_written);
  
-// move array to the right, filling in zeros appropriately
-//  _dst        :   destination address [size: _n+1 x 1]
+// shift array to the left _b bits, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
-//  _num_bits   :   number of bits to shift
-void liquid_rmemmove(unsigned char * _dst,
-                     unsigned char * _src,
-                     unsigned int _n,
-                     unsigned int _num_bits);
+//  _b          :   number of bits to shift
+void liquid_lbshift(unsigned char * _src,
+                    unsigned int _n,
+                    unsigned int _num_bits);
  
-// move array to the left, filling in zeros appropriately
-//  _dst        :   destination address [size: _n+1 x 1]
+// shift array to the right _b bits, filling in zeros
 //  _src        :   source address [size: _n x 1]
 //  _n          :   input data array size
-//  _num_bits   :   number of bits to shift
-void liquid_lmemmove(unsigned char * _dst,
-                     unsigned char * _src,
-                     unsigned int _n,
-                     unsigned int _num_bits);
+//  _b          :   number of bits to shift
+void liquid_rbshift(unsigned char * _src,
+                    unsigned int _n,
+                    unsigned int _b);
  
 // circular shift array to the right _n bytes
 //  _src        :   source address [size: _n x 1]
