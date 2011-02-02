@@ -45,32 +45,9 @@ void liquid_lbshift(unsigned char * _src,
         exit(1);
     }
 
-    // 
-    unsigned int shift_0 = _b;              // shift amount: first byte
-    unsigned int shift_1 = 8 - _b;          // shift amount: second byte
-    unsigned char mask_0 = 0xff << shift_0; // bit mask: first byte
-    unsigned char mask_1 = 0xff >> shift_1; // bit mask: second byte
-#if 0
-    printf("num_bits = %1u, shift_0 = %1u, shift_1 = %1u mask_0=%.2x, mask_1=%.2x\n",
-            _b, shift_0, shift_1, mask_0, mask_1);
-#endif
-    // shift then mask
-    unsigned int i;
-    unsigned char byte;
-    unsigned char byte_0;
-    unsigned char byte_1;
-    for (i=0; i<_n; i++) {
-        // strip bytes
-        byte_0 = _src[i];
-        byte_1 = (i==_n-1) ? 0 : _src[i+1];
-
-        // shift then mask
-        byte = ((byte_0 << shift_0) & mask_0) |
-               ((byte_1 >> shift_1) & mask_1);
-
-        // store result
-        _src[i] = byte;
-    }
+    // invoke circular shift left and mask last byte
+    liquid_lbcircshift(_src, _n, _b);
+    _src[_n-1] &= 0xff << _b;
 }
 
  
@@ -88,32 +65,9 @@ void liquid_rbshift(unsigned char * _src,
         exit(1);
     }
 
-    // 
-    unsigned int shift_0 = 8 - _b;              // shift amount: first byte
-    unsigned int shift_1 = _b;          // shift amount: second byte
-    unsigned char mask_0 = 0xff << shift_0; // bit mask: first byte
-    unsigned char mask_1 = 0xff >> shift_1; // bit mask: second byte
-#if 0
-    printf("num_bits = %1u, shift_0 = %1u, shift_1 = %1u mask_0=%.2x, mask_1=%.2x\n",
-            _b, shift_0, shift_1, mask_0, mask_1);
-#endif
-    // shift then mask
-    int i;
-    unsigned char byte;
-    unsigned char byte_0;
-    unsigned char byte_1;
-    for (i=_n-1; i>=0; i--) {
-        // strip bytes
-        byte_0 = (i==0) ? 0 : _src[i-1];
-        byte_1 = _src[i];
-
-        // shift then mask
-        byte = ((byte_0 << shift_0) & mask_0) |
-               ((byte_1 >> shift_1) & mask_1);
-
-        // store result
-        _src[i] = byte;
-    }
+    // invoke circular shift right and mask first byte
+    liquid_rbcircshift(_src, _n, _b);
+    _src[0] &= 0xff >> _b;
 }
 
  
