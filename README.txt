@@ -51,7 +51,6 @@ Modules: description
     channel: communications channel modeling: additive noise, multipath fading...
     dotprod: dot products (real, complex)
     equalization: adaptive equalizers: LMS, RLS, blind...
-    estimation: parametric estimation: frequency offset, timing offset, fading...
     fec: forward error correction (basic), checksum, crc, etc.
     fft: fast Fourier transform (basic), simple implementation
     filter: fir, iir, polyphase, hilbert, interp, decim, design, remez, etc.
@@ -155,7 +154,6 @@ list might not be complete, and should probably be automatically generated.
     channel         [random]
     dotprod         []
     equalization    [buffer,dotprod,matrix]
-    estimation      []
     fec             [utility]
     fft             []
     filter          [buffer,dotprod]

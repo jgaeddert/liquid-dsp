@@ -19,7 +19,6 @@ local_src	:=			\
 	bpacketsync_example.c		\
 	bsequence_example.c		\
 	bufferf_example.c		\
-	carrier_estimation_example.c	\
 	chromosome_example.c		\
 	compand_example.c		\
 	compand_cf_example.c		\

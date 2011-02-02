@@ -84,7 +84,6 @@ modules		:=	\
 	channel		\
 	dotprod		\
 	equalization	\
-	estimation	\
 	fec		\
 	fft		\
 	filter		\

@@ -333,38 +333,6 @@ LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
                                    liquid_float_complex)
 
 
-//
-// MODULE : estimation
-//
-
-// estimate carrier frequency by unwrapping phase using iterative
-// derivative estimation
-//  _t      :   time vector
-//  _g      :   complex input
-//  _n      :   size of inputs _t, _g
-//
-// returns initial frequency estimate
-float liquid_estimate_carrier_frequency(float * _t,
-                                        float complex * _g,
-                                        unsigned int _n);
-
-// iterative derivative estimation step (mean)
-//  _t      :   time vector
-//  _g_hat  :   complex input
-//  _n      :   size of inputs _t, _g
-float liquid_unwrapcf_iterative_step(float * _t,
-                                     float complex * _g_hat,
-                                     unsigned int _n);
-
-// iterative derivative estimation step (median)
-//  _t      :   time vector
-//  _g_hat  :   complex input
-//  _n      :   size of inputs _t, _g
-float liquid_unwrapcf_iterative_median_step(float * _t,
-                                            float complex * _g_hat,
-                                            unsigned int _n);
-
-
 
 //
 // MODULE : fec (forward error-correction)
