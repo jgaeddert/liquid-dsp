@@ -42,6 +42,62 @@ void liquid_pack_array(unsigned char * _src,
                        unsigned int _b,
                        unsigned char _sym_in)
 {
+    // validate input
+    if (_k >= 8*_n) {
+        fprintf(stderr,"error: liquid_pack_array(), bit index exceeds array length\n");
+        exit(1);
+    } else if (_b > 8) {
+        fprintf(stderr,"error: liquid_pack_array(), symbol size cannot exceed 8 bits\n");
+        exit(1);
+    }
+
+    // find base index
+    unsigned int i0 = _k / 8;       // byte index
+    unsigned int b0 = _k - 8*i0;    // bit index
+    //printf("base index : %2u, %2u\n", i0, b0);
+
+    // determine if index spans multiple bytes
+    if (b0 + _b > 8) {
+        // compute number of bits in each symbol
+        unsigned int n0 = 8 - b0;
+        unsigned int n1 = _b - n0;
+
+        // generate mask for each symbol
+        unsigned char mask_0 =  0xff >> (8-n0);
+        unsigned char mask_1 = (0xff >> (8-n1)) << (8-n1);
+
+        // shift then mask
+        unsigned char sym_0 = (_sym_in >>    n1 ) & mask_0;
+        unsigned char sym_1 = (_sym_in << (8-n1)) & mask_1;
+
+        // pack first byte
+        _src[i0] |= sym_0;
+
+        // pack second byte (if not exceeding array size)
+        if (i0 < _n-1) _src[i0+1] |= sym_1;
+
+#if 0
+        printf("  output symbol spans multiple bytes\n");
+        printf("  n0    : %u\n", n0);
+        printf("  n1    : %u\n", n1);
+        printf("  mask0 : 0x%.2x\n", mask_0);
+        printf("  mask1 : 0x%.2x\n", mask_1);
+        printf("  sym 0 : 0x%.2x\n", sym_0);
+        printf("  sym 1 : 0x%.2x\n", sym_1);
+#endif
+    } else {
+        // compute mask
+        unsigned char mask_0 = (0xff >> (8-_b)) << (8-_b-b0);
+
+        // shift then mask
+        _src[i0] |= (_sym_in << (8-_b-b0)) & mask_0;
+
+#if 0
+        printf("  _b   : %u\n", _b);
+        printf("  b0   : %u\n", b0);
+        printf("  mask : 0x%.2x\n", mask_0);
+#endif
+    }
 }
 
 // unpack symbols from binary array
