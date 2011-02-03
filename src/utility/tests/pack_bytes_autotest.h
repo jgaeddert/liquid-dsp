@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
+ *                                Institute & State University
  *
  * This file is part of liquid.
  *
@@ -18,11 +19,42 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PACK_BYTES_AUTOTEST_H__
-#define __PACK_BYTES_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
+
+//
+// AUTOTEST : unpack_array
+//
+void autotest_unpack_array() {
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788
+    unsigned char input[4] = {0x81, 0xEF, 0x5F, 0xAA};
+    unsigned int sym_size[9] = {8, 2, 3, 6, 1, 3, 3, 4, 3};
+
+    // output syms
+    unsigned char output_test[9] = {
+        0x81,   // 1000 0001
+        0x03,   //        11
+        0x05,   //       101
+        0x3a,   //   11 1010
+        0x01,   //         1
+        0x07,   //       111
+        0x06,   //       110
+        0x0a,   //      1010
+        0x04    //     10[0] <- last bit is implied
+    };
+
+    unsigned char output[9];
+
+    unsigned int k=0;
+    unsigned int i;
+    for (i=0; i<9; i++) {
+        liquid_unpack_array(input, 4, k, sym_size[i], &output[i]);
+        k += sym_size[i];
+    }
+    
+    CONTEND_SAME_DATA( output, output_test, 9 );
+}
 
 void autotest_pack_bytes_01() {
     unsigned char output[8];
@@ -189,6 +221,4 @@ void autotest_repack_bytes_04_uneven() {
 }
 
 
-
-#endif // __PACK_BYTES_AUTOTEST_H__
 

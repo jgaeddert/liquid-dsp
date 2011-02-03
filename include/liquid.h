@@ -3777,6 +3777,30 @@ unsigned int msequence_get_state(msequence _ms);
 // MODULE : utility
 //
 
+// pack binary array with symbol(s)
+//  _src        :   source array [size: _n x 1]
+//  _n          :   input source array length
+//  _k          :   bit index to write in _src
+//  _sym_in     :   input symbol
+//  _b          :   number of bits in input symbol
+void liquid_pack_array(unsigned char * _src,
+                       unsigned int _n,
+                       unsigned int _k,
+                       unsigned int _b,
+                       unsigned char _sym_in);
+
+// unpack symbols from binary array
+//  _src        :   source array [size: _n x 1]
+//  _n          :   input source array length
+//  _k          :   bit index to write in _src
+//  _b          :   number of bits in output symbol
+//  _sym_out    :   output symbol
+void liquid_unpack_array(unsigned char * _src,
+                         unsigned int _n,
+                         unsigned int _k,
+                         unsigned int _b,
+                         unsigned char * _sym_out);
+
 // pack one-bit symbols into bytes (8-bit symbols)
 //  _sym_in             :   input symbols array [size: _sym_in_len x 1]
 //  _sym_in_len         :   number of input symbols
