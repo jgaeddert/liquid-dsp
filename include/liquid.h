@@ -2174,6 +2174,9 @@ void bpacketsync_print(bpacketsync _q);
 void bpacketsync_reset(bpacketsync _q);
 void bpacketsync_execute(bpacketsync _q,
                          unsigned char _byte);
+void bpacketsync_execute_sym(bpacketsync _q,
+                             unsigned char _sym,
+                             unsigned int _bps);
 
 
 //

@@ -195,6 +195,9 @@ void bpacketsync_reset(bpacketsync _q)
     _q->state = BPACKETSYNC_STATE_SEEKPN;
 }
 
+// run synchronizer on input byte
+//  _q      :   bpacketsync object
+//  _byte   :   input byte
 void bpacketsync_execute(bpacketsync _q,
                          unsigned char _byte)
 {
@@ -203,24 +206,34 @@ void bpacketsync_execute(bpacketsync _q,
         // strip bit from byte
         unsigned char bit = (_byte >> (8-j-1)) & 1;
 
-        // execute state-specific methods
-        switch (_q->state) {
-        case BPACKETSYNC_STATE_SEEKPN:
-            bpacketsync_execute_seekpn(_q, bit);
-            break;
-        case BPACKETSYNC_STATE_RXHEADER:
-            bpacketsync_execute_rxheader(_q, bit);
-            break;
-        case BPACKETSYNC_STATE_RXPAYLOAD:
-            bpacketsync_execute_rxpayload(_q, bit);
-            break;
-        default:
-            fprintf(stderr,"error: bpacketsync_execute(), invalid state\n");
-            exit(1);
-        }
+        // run synchronizer on bit
+        bpacketsync_execute_bit(_q, bit);
     }
 }
 
+// run synchronizer on input symbol
+//  _q      :   bpacketsync object
+//  _sym    :   input symbol
+//  _bps    :   number of bits in input symbol
+void bpacketsync_execute_sym(bpacketsync _q,
+                             unsigned char _sym,
+                             unsigned int _bps)
+{
+    // validate input
+    if (_bps > 8) {
+        fprintf(stderr,"error: bpacketsync_execute_sym(), bits per symbol must be in [0,8]\n");
+        exit(1);
+    }
+
+    unsigned int j;
+    for (j=0; j<_bps; j++) {
+        // strip bit from byte
+        unsigned char bit = (_sym >> (_bps-j-1)) & 1;
+
+        // run synchronizer on bit
+        bpacketsync_execute_bit(_q, bit);
+    }
+}
 
 // 
 // internal methods
@@ -236,6 +249,30 @@ void bpacketsync_assemble_pnsequence(bpacketsync _q)
         bsequence_push(_q->bpn, msequence_advance(_q->ms));
 }
 
+
+// execute one bit at a time
+void bpacketsync_execute_bit(bpacketsync _q,
+                             unsigned char _bit)
+{
+    // mask input to ensure one bit of resolution
+    _bit = _bit & 0x01;
+
+    // execute state-specific methods
+    switch (_q->state) {
+    case BPACKETSYNC_STATE_SEEKPN:
+        bpacketsync_execute_seekpn(_q, _bit);
+        break;
+    case BPACKETSYNC_STATE_RXHEADER:
+        bpacketsync_execute_rxheader(_q, _bit);
+        break;
+    case BPACKETSYNC_STATE_RXPAYLOAD:
+        bpacketsync_execute_rxpayload(_q, _bit);
+        break;
+    default:
+        fprintf(stderr,"error: bpacketsync_execute(), invalid state\n");
+        exit(1);
+    }
+}
 
 void bpacketsync_execute_seekpn(bpacketsync _q,
                                 unsigned char _bit)
