@@ -90,6 +90,41 @@ void autotest_unpack_array() {
     CONTEND_SAME_DATA( output, output_test, 9 );
 }
 
+//
+// AUTOTEST : unpack/pack_array
+//
+void autotest_repack_array() {
+    unsigned int n=512;     // input/output array size
+    unsigned char src[n];   // original data array
+    unsigned char dst[n];   // repacked data array
+
+    unsigned int i;
+    // initialize input/output arrays
+    for (i=0; i<n; i++) {
+        src[i] = rand() & 0xff;
+        dst[i] = 0x00;
+    }
+
+    unsigned int k=0;
+    unsigned char sym=0;
+    unsigned int sym_size=0;
+    while (k < 8*n) {
+        // random symbol size
+        sym_size = (rand()%8) + 1;
+
+        // unpack symbol from input array
+        liquid_unpack_array(src, n, k, sym_size, &sym);
+
+        // pack symbol into output array
+        liquid_pack_array(dst, n, k, sym_size, sym);
+
+        // update bit index counter
+        k += sym_size;
+    }
+    
+    CONTEND_SAME_DATA( src, dst, n );
+}
+
 void autotest_pack_bytes_01() {
     unsigned char output[8];
     unsigned int N;
