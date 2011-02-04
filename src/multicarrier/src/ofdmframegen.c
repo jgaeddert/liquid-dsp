@@ -162,6 +162,7 @@ void ofdmframegen_print(ofdmframegen _q)
 
 void ofdmframegen_reset(ofdmframegen _q)
 {
+    msequence_reset(_q->ms_pilot);
 }
 
 void ofdmframegen_write_S0(ofdmframegen _q,
