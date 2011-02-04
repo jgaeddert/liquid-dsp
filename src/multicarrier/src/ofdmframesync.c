@@ -57,7 +57,6 @@ struct ofdmframesync_s {
     float g_data;           // data symbols gain
     float g_S0;             // S0 training symbols gain
     float g_S1;             // S1 training symbols gain
-    float e2;               // input signal level, E{x^2}
 
     // transform object
     FFT_PLAN fft;           // ifft object
@@ -94,6 +93,10 @@ struct ofdmframesync_s {
 
     //
     float complex rxx_max;  // maximum auto-correlator output
+
+    // timing
+    unsigned int timer;         // input sample timer
+    unsigned int num_symbols;   // symbol counter
 
     // callback
     ofdmframesync_callback callback;
@@ -280,6 +283,10 @@ void ofdmframesync_reset(ofdmframesync _q)
     // reset internal state variables
     _q->rxx_max = 0.0f;
 
+    // reset timers
+    _q->timer = 0;
+    _q->num_symbols = 0;
+
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT;
 }
@@ -390,6 +397,8 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
 void ofdmframesync_execute_plcplong0(ofdmframesync _q,
                                      float complex _x)
 {
+    _q->timer++;
+
     // run cross-correlator
     float complex rxy, *rc;
     windowcf_read(_q->input_buffer, &rc);
@@ -404,13 +413,61 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
 #endif
 
     if (cabsf(rxy) > 0.7f) {
-        printf("  rxy = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
+        printf("  rxy[0] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
+
+        // reset timer
+        _q->timer = 0;
+
+        // TODO : compute complex gain on sequence
+
+        // 
+        _q->state = OFDMFRAMESYNC_STATE_PLCPLONG1;
+    }
+
+    // reset (false alarm) if timer is too large
+    if (_q->timer > 2*_q->M) {
+        printf("ofdmframesync_execute_plcplong0(), could not find S1 symbol, resetting\n");
+        ofdmframesync_reset(_q);
     }
 }
 
 void ofdmframesync_execute_plcplong1(ofdmframesync _q,
                                      float complex _x)
 {
+    _q->timer++;
+    // TODO : return if timer is less than M
+
+    // run cross-correlator
+    float complex rxy, *rc;
+    windowcf_read(_q->input_buffer, &rc);
+    dotprod_cccf_execute(_q->crosscorr, rc, &rxy);
+
+    // scale
+    rxy *= _q->g0 / sqrtf(_q->M);
+
+#if DEBUG_OFDMFRAMESYNC
+    windowcf_push(_q->debug_rxy,rxy);
+    //printf("  rxy = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
+#endif
+
+    if (cabsf(rxy) > 0.7f) {
+        printf("  rxy[1] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
+        printf("  timer  = %u (expected %u)\n", _q->timer, _q->M);
+
+        // reset timer
+        _q->timer = 0;
+
+        // TODO : compute complex gain on sequence
+        
+        // 
+        _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
+    }
+
+    // reset (false alarm) if timer is too large
+    if (_q->timer > 2*_q->M) {
+        printf("ofdmframesync_execute_plcplong1(), could not find S1 symbol, resetting\n");
+        ofdmframesync_reset(_q);
+    }
 }
 
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
