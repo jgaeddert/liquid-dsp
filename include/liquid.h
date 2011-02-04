@@ -3142,7 +3142,8 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
 // OFDM frame (symbol) synchronizer
 //
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
-                                      unsigned int _n,
+                                      unsigned int * _p,
+                                      unsigned int _M,
                                       void * _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
 ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,

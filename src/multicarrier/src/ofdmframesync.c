@@ -465,9 +465,6 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         printf("  nu_hat : %12.8f\n", nu_hat);
         nco_crcf_adjust_frequency(_q->nco_rx, nu_hat);
 
-        // estimate complex gain
-
-        
         // 
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
     }
@@ -482,6 +479,43 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
                                      float complex _x)
 {
+    // wait for timeout
+    _q->timer++;
+
+    // TODO : add timing backoff
+
+    if (_q->timer == _q->M + _q->cp_len) {
+        // run fft
+        float complex * rc;
+        windowcf_read(_q->input_buffer, &rc);
+        memmove(_q->x, rc, (_q->M)*sizeof(float complex));
+        FFT_EXECUTE(_q->fft);
+
+        // apply gain
+        unsigned int i;
+        for (i=0; i<_q->M; i++)
+            _q->X[i] *= _q->G[i];
+
+#if DEBUG_OFDMFRAMESYNC
+        for (i=0; i<_q->M; i++) {
+            if (_q->p[i] == OFDMFRAME_SCTYPE_DATA)
+                windowcf_push(_q->debug_framesyms, _q->X[i]);
+        }
+#endif
+
+        // invoke callback
+        if (_q->callback != NULL) {
+            int retval = _q->callback(_q->X, _q->p, _q->M, _q->userdata);
+
+            if (retval != 0)
+                ofdmframesync_reset(_q);
+        }
+
+        // reset timer
+        _q->timer = 0;
+
+    }
+
 }
 
 
@@ -559,6 +593,12 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
 
     // smooth complex equalizer gains
     for (i=0; i<_q->M; i++) {
+        // set gain to zero for null subcarriers
+        if (_q->p[i] == OFDMFRAME_SCTYPE_NULL) {
+            _q->G[i] = 0.0f;
+            continue;
+        }
+
         float complex w;
         float complex w0 = 0.0f;
         float complex G_hat = 0.0f;
@@ -580,7 +620,7 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
             fprintf(stderr,"error: ofdmframesync_estimate_eqgain(), weighting factor is zero\n");
             w0 = 1.0f;
         }
-        _q->G[i] = G_hat / w0;
+        _q->G[i] = w0 / G_hat;
     }
 }
 
@@ -702,7 +742,7 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"plot(real(framesyms), imag(framesyms), 'x');\n");
     fprintf(fid,"xlabel('I');\n");
     fprintf(fid,"ylabel('Q');\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.3);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
 

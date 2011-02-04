@@ -13,7 +13,8 @@
 #define OUTPUT_FILENAME "ofdmframesync_example.m"
 
 static int callback(float complex * _X,
-                    unsigned int _n,
+                    unsigned int * _p,
+                    unsigned int _M,
                     void * _userdata);
 
 int main(int argc, char*argv[]) {
@@ -52,12 +53,15 @@ int main(int argc, char*argv[]) {
     unsigned int p[M];
     ofdmframe_init_default_sctype(M, p);
 
+    // received symbol buffer
+    windowcf wsyms = windowcf_create(10*M);
+
     // create frame generator
     ofdmframegen fg = ofdmframegen_create(M, cp_len, p);
     ofdmframegen_print(fg);
 
     // create frame synchronizer
-    ofdmframesync fs = ofdmframesync_create(M, cp_len, p, callback, NULL);
+    ofdmframesync fs = ofdmframesync_create(M, cp_len, p, callback, (void*)wsyms);
     ofdmframesync_print(fs);
 
     modem mod = modem_create(ms,bps);
@@ -181,7 +185,6 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"title('Multipath channel response');\n");
 
-
     // print results
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
@@ -190,18 +193,42 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('received signal');\n");
 
+    // save received symbols
+    float complex * rc;
+    windowcf_read(wsyms, &rc);
+    fprintf(fid,"syms = [];\n");
+    for (i=0; i<10*M; i++)
+        fprintf(fid,"syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(syms),imag(syms),'o');\n");
+    fprintf(fid,"xlabel('real');\n");
+    fprintf(fid,"ylabel('imag');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"axis square;\n");
+
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
+
+    windowcf_destroy(wsyms);
 
     printf("done.\n");
     return 0;
 }
 
 static int callback(float complex * _X,
-                    unsigned int _n,
+                    unsigned int * _p,
+                    unsigned int _M,
                     void * _userdata)
 {
     printf("**** callback invoked\n");
+
+    windowcf wsyms = (windowcf)_userdata;
+    unsigned int i;
+    for (i=0; i<_M; i++) {
+        if (_p[i] == OFDMFRAME_SCTYPE_DATA)
+            windowcf_push(wsyms, _X[i]);
+    }
+
     return 0;
 }
 
