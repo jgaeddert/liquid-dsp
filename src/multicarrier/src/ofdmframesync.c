@@ -459,9 +459,13 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
 
         // estimate residual carrier frequency offset and adjust nco
-        float nu_hat = ofdmframesync_estimate_nu_S1(_q);
+        unsigned int ntaps = 4;
+        float nu_hat;
+        ofdmframesync_estimate_eqgain(_q, ntaps, &nu_hat);
         printf("  nu_hat : %12.8f\n", nu_hat);
         nco_crcf_adjust_frequency(_q->nco_rx, nu_hat);
+
+        // estimate complex gain
 
         
         // 
@@ -523,6 +527,61 @@ float ofdmframesync_estimate_nu_S1(ofdmframesync _q)
     float nu_hat = cargf(s) / (float)(_q->M);
 
     return nu_hat;
+}
+
+// estimate complex equalizer gain from G0 and G1
+//  _q      :   ofdmframesync object
+//  _ntaps  :   number of time-domain taps for smoothing
+//  _nu_hat :   residual phase difference between G0 and G1
+void ofdmframesync_estimate_eqgain(ofdmframesync _q,
+                                   unsigned int _ntaps,
+                                   float * _nu_hat)
+{
+    // validate input
+    if (_ntaps == 0 || _ntaps > _q->M) {
+        fprintf(stderr, "error: ofdmframesync_estimate_eqgain(), ntaps must be in [1,M]\n");
+        exit(1);
+    }
+    // estimate residual carrier frequency offset between
+    // gain estimates G0 and G1
+    float nu_hat = ofdmframesync_estimate_nu_S1(_q);
+    *_nu_hat = nu_hat;
+
+    // correct for phase difference in G1
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->G1[i] *= cexpf(-_Complex_I*nu_hat*_q->M);
+
+    // generate smoothing window (fft of temporal window)
+    for (i=0; i<_q->M; i++)
+        _q->x[i] = (i < _ntaps) ? 1.0f : 0.0f;
+    FFT_EXECUTE(_q->fft);
+
+    // smooth complex equalizer gains
+    for (i=0; i<_q->M; i++) {
+        float complex w;
+        float complex w0 = 0.0f;
+        float complex G_hat = 0.0f;
+
+        unsigned int j;
+        for (j=0; j<_q->M; j++) {
+            if (_q->p[j] == OFDMFRAME_SCTYPE_NULL) continue;
+
+            // select window sample from array
+            w = _q->X[(i + _q->M - j) % _q->M];
+
+            // accumulate gain
+            G_hat += w * 0.5f * (_q->G0[i] + _q->G1[i]);
+            w0 += w;
+        }
+
+        // eliminate divide-by-zero issues
+        if (cabsf(w0) < 1e-4f) {
+            fprintf(stderr,"error: ofdmframesync_estimate_eqgain(), weighting factor is zero\n");
+            w0 = 1.0f;
+        }
+        _q->G[i] = G_hat / w0;
+    }
 }
 
 

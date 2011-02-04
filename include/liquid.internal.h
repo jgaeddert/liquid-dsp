@@ -1614,6 +1614,14 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
 // estimate residual carrier frequency offset from gain estimates
 float ofdmframesync_estimate_nu_S1(ofdmframesync _q);
 
+// estimate complex equalizer gain from G0 and G1
+//  _q      :   ofdmframesync object
+//  _ntaps  :   number of time-domain taps for smoothing
+//  _nu_hat :   residual phase difference between G0 and G1
+void ofdmframesync_estimate_eqgain(ofdmframesync _q,
+                                   unsigned int _ntaps,
+                                   float * _nu_hat);
+
 #define OFDMFRAME64_SCTYPE_NULL     0
 #define OFDMFRAME64_SCTYPE_PILOT    1
 #define OFDMFRAME64_SCTYPE_DATA     2
