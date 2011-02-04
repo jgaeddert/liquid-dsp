@@ -366,7 +366,7 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
 
     // check to see if signal exceeds threshold
     if ( cabsf(rxx) > 0.7f ) {
-        printf("  rxx = |%12.8f| {%12.8f}\n", cabsf(rxx), cargf(rxx));
+        //printf("  rxx = |%12.8f| {%12.8f}\n", cabsf(rxx), cargf(rxx));
 
         // auto-correlator output is high; wait for peak
         if ( cabsf(rxx) > cabsf(_q->rxx_max) ) {
@@ -375,14 +375,15 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
         } else {
             // peak auto-correlator found
             float nu_hat = 2.0f * cargf(_q->rxx_max) / (float)(_q->M);
+#if DEBUG_OFDMFRAMESYNC_PRINT
             printf("  maximum rxx found, nu-hat: %12.8f\n", nu_hat);
+#endif
 
             // adjust nco frequency on offset estimate
             nco_crcf_adjust_frequency(_q->nco_rx, nu_hat);
 
             // set nominal gain
             _q->g0 = 1.0 / sqrtf(g0);
-            printf("g0 = %12.8f\n", g0);
 
             // set internal mode
             _q->state = OFDMFRAMESYNC_STATE_PLCPLONG0;
@@ -410,7 +411,9 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
 #endif
 
     if (cabsf(rxy) > 0.7f) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  rxy[0] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
+#endif
 
         // reset timer
         _q->timer = 0;
@@ -449,8 +452,10 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
 #endif
 
     if (cabsf(rxy) > 0.7f) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  rxy[1] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
         printf("  timer  = %u (expected %u)\n", _q->timer, _q->M);
+#endif
 
         // reset timer
         _q->timer = 0;
@@ -462,7 +467,9 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         unsigned int ntaps = 4;
         float nu_hat;
         ofdmframesync_estimate_eqgain(_q, ntaps, &nu_hat);
+#if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  nu_hat : %12.8f\n", nu_hat);
+#endif
         nco_crcf_adjust_frequency(_q->nco_rx, nu_hat);
 
         // 
