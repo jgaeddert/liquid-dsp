@@ -1603,6 +1603,14 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q, float complex _x);
 void ofdmframesync_execute_plcplong1(ofdmframesync _q, float complex _x);
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q, float complex _x);
 
+// estimate long sequence gain
+//  _q      :   ofdmframesync object
+//  _x      :   input array (time)
+//  _G      :   output gain (freq)
+void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                    float complex * _x,
+                                    float complex * _G);
+
 #define OFDMFRAME64_SCTYPE_NULL     0
 #define OFDMFRAME64_SCTYPE_PILOT    1
 #define OFDMFRAME64_SCTYPE_DATA     2

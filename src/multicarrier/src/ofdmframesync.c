@@ -147,7 +147,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // create transform object
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
     q->x = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->fft = FFT_CREATE_PLAN(q->M, q->X, q->x, FFT_DIR_FORWARD, FFT_METHOD);
+    q->fft = FFT_CREATE_PLAN(q->M, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
  
     // create input buffer the length of the transform
     q->input_buffer = windowcf_create(q->M);
@@ -415,7 +415,8 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
         // reset timer
         _q->timer = 0;
 
-        // TODO : compute complex gain on sequence
+        // compute complex gain on sequence
+        ofdmframesync_estimate_gain_S1(_q, rc, _q->G0);
 
         // 
         _q->state = OFDMFRAMESYNC_STATE_PLCPLONG1;
@@ -454,7 +455,9 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         // reset timer
         _q->timer = 0;
 
-        // TODO : compute complex gain on sequence
+        // compute complex gain on sequence
+        ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
+
         
         // 
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
@@ -472,6 +475,30 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
 {
 }
 
+
+// estimate long sequence gain
+//  _q      :   ofdmframesync object
+//  _x      :   input array (time)
+//  _G      :   output gain (freq)
+void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                    float complex * _x,
+                                    float complex * _G)
+{
+    // move _x into fft input buffer
+    memmove(_q->x, _x, (_q->M)*sizeof(float complex));
+
+    // compute fft, storing result into _q->X
+    FFT_EXECUTE(_q->fft);
+    
+    // compute gain, ignoring NULL subcarriers
+    unsigned int i;
+    for (i=0; i<_q->M; i++) {
+        if (_q->p[i] == OFDMFRAME_SCTYPE_NULL)
+            _G[i] = 0.0f;
+        else
+            _G[i] = _q->X[i] / _q->S1[i];
+    }
+}
 
 #if DEBUG_OFDMFRAMESYNC
 void ofdmframesync_debug_print(ofdmframesync _q)
