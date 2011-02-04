@@ -76,6 +76,7 @@ void AUTOCORR(_clear)(AUTOCORR() _q)
 {
     WINDOW(_clear)(_q->w);
     WINDOW(_clear)(_q->wdelay);
+    windowf_clear(_q->we2);
 }
 
 void AUTOCORR(_print)(AUTOCORR() _q)
