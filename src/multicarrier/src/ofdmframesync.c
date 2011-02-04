@@ -374,11 +374,11 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
             return;
         } else {
             // peak auto-correlator found
-            float dphi_hat = 2.0f * cargf(_q->rxx_max) / (float)(_q->M);
-            printf("  maximum rxx found, dphi-hat: %12.8f\n", dphi_hat);
+            float nu_hat = 2.0f * cargf(_q->rxx_max) / (float)(_q->M);
+            printf("  maximum rxx found, nu-hat: %12.8f\n", nu_hat);
 
             // adjust nco frequency on offset estimate
-            nco_crcf_adjust_frequency(_q->nco_rx, dphi_hat);
+            nco_crcf_adjust_frequency(_q->nco_rx, nu_hat);
 
             // set nominal gain
             _q->g0 = 1.0 / sqrtf(g0);
@@ -458,6 +458,11 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         // compute complex gain on sequence
         ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
 
+        // estimate residual carrier frequency offset and adjust nco
+        float nu_hat = ofdmframesync_estimate_nu_S1(_q);
+        printf("  nu_hat : %12.8f\n", nu_hat);
+        nco_crcf_adjust_frequency(_q->nco_rx, nu_hat);
+
         
         // 
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
@@ -499,6 +504,27 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
             _G[i] = _q->X[i] / _q->S1[i];
     }
 }
+
+// estimate residual carrier frequency offset from gain estimates
+float ofdmframesync_estimate_nu_S1(ofdmframesync _q)
+{
+    float complex s = 0;
+
+    // accumulate phase difference over subcarriers
+    unsigned int i;
+    for (i=0; i<_q->M; i++) {
+        if (_q->p[i] != OFDMFRAME_SCTYPE_NULL)
+            s += _q->G1[i] * conjf(_q->G0[i]);
+    }
+
+    // carrier frequency offset is argument of phase accumulation
+    // over enabled subcarriers, relative to M samples of delay
+    // between the gain estimates
+    float nu_hat = cargf(s) / (float)(_q->M);
+
+    return nu_hat;
+}
+
 
 #if DEBUG_OFDMFRAMESYNC
 void ofdmframesync_debug_print(ofdmframesync _q)

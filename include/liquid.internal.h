@@ -1611,6 +1611,9 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
                                     float complex * _x,
                                     float complex * _G);
 
+// estimate residual carrier frequency offset from gain estimates
+float ofdmframesync_estimate_nu_S1(ofdmframesync _q);
+
 #define OFDMFRAME64_SCTYPE_NULL     0
 #define OFDMFRAME64_SCTYPE_PILOT    1
 #define OFDMFRAME64_SCTYPE_DATA     2
