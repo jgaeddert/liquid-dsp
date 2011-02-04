@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -20,12 +20,34 @@
  */
 
 //
-// fft_shift.c
+// fft.common.c
 //
 
-//#include <math.h>
 #include "liquid.internal.h"
 
+// perform n-point FFT allocating plan internally
+//  _n      :   fft size
+//  _x      :   input array [size: _n x 1]
+//  _y      :   output array [size: _n x 1]
+//  _dir    :   fft direction: {FFT_FORWARD, FFT_REVERSE}
+//  _method :   fft method
+void FFT(_run)(unsigned int _n,
+               TC * _x,
+               TC * _y,
+               int _dir,
+               int _method)
+{
+    // create plan
+    FFT(plan) plan = FFT(_create_plan)(_n, _x, _y, _dir, _method);
+
+    // execute fft
+    FFT(_execute)(plan);
+
+    // destroy plan
+    FFT(_destroy_plan)(plan);
+}
+
+// perform _n-point fft shift
 void FFT(_shift)(TC *_x, unsigned int _n)
 {
     unsigned int i, n2;
@@ -41,3 +63,4 @@ void FFT(_shift)(TC *_x, unsigned int _n)
         _x[i+n2] = tmp;
     }
 }
+

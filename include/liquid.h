@@ -834,6 +834,12 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
+/* object-independent methods */                                \
+void FFT(_run)(unsigned int _n,                                 \
+               TC * _x,                                         \
+               TC * _y,                                         \
+               int _dir,                                        \
+               int _method);                                    \
 void FFT(_shift)(TC*_x, unsigned int _n);
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)

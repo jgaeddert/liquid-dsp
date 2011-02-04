@@ -40,4 +40,4 @@
 #include "dct_execute.c"
 #include "dst_execute.c"
 #include "fft_execute.c"
-#include "fft_shift.c"
+#include "fft.common.c"
