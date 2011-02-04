@@ -64,9 +64,11 @@ struct ofdmframesync_s {
     float complex * x;      // time-domain buffer
     windowcf input_buffer;  // input sequence buffer
 
-    // 
-    float complex * S0;     // short sequence
-    float complex * S1;     // long sequence
+    // PLCP sequences
+    float complex * S0;     // short sequence (freq)
+    float complex * s0;     // short sequence (time)
+    float complex * S1;     // long sequence (freq)
+    float complex * s1;     // long sequence (time)
 
     // gain
     float g;                // coarse gain estimate
@@ -146,9 +148,11 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->s0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
-    ofdmframe_init_S0(q->p, q->M, q->S0, &q->M_S0);
-    ofdmframe_init_S1(q->p, q->M, q->S1, &q->M_S1);
+    q->s1 = (float complex*) malloc((q->M)*sizeof(float complex));
+    ofdmframe_init_S0(q->p, q->M, q->S0, q->s0, &q->M_S0);
+    ofdmframe_init_S1(q->p, q->M, q->S1, q->s1, &q->M_S1);
 
     // compute scaling factor
     q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
@@ -223,7 +227,9 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     // clean up PLCP arrays
     free(_q->S0);
+    free(_q->s0);
     free(_q->S1);
+    free(_q->s1);
 
     // free gain arrays
     free(_q->G0);

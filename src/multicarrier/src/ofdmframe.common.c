@@ -33,11 +33,13 @@
 // generate short sequence symbols
 //  _p                  :   subcarrier allocation array
 //  _num_subcarriers    :   total number of subcarriers
-//  _S0                 :   output symbol
+//  _S0                 :   output symbol (freq)
+//  _s0                 :   output symbol (time)
 //  _M_S0               :   total number of enabled subcarriers in S0
 void ofdmframe_init_S0(unsigned int * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S0,
+                       float complex * _s0,
                        unsigned int * _M_S0)
 {
     unsigned int i;
@@ -85,18 +87,28 @@ void ofdmframe_init_S0(unsigned int * _p,
 
     // set return value(s)
     *_M_S0 = M_S0;
+
+    // run inverse fft to get time-domain sequence
+    fft_run(_num_subcarriers, _S0, _s0, FFT_REVERSE, 0);
+
+    // normalize time-domain sequence level
+    float g = 1.0f / sqrtf(M_S0);
+    for (i=0; i<_num_subcarriers; i++)
+        _s0[i] *= g;
 }
 
 
 // generate long sequence symbols
 //  _p                  :   subcarrier allocation array
 //  _num_subcarriers    :   total number of subcarriers
-//  _S1                 :   output symbol
+//  _S1                 :   output symbol (freq)
+//  _s1                 :   output symbol (time)
 //  _M_S1               :   total number of enabled subcarriers in S1
 void ofdmframe_init_S1(unsigned int * _p,
-                           unsigned int _num_subcarriers,
-                           float complex * _S1,
-                           unsigned int * _M_S1)
+                       unsigned int _num_subcarriers,
+                       float complex * _S1,
+                       float complex * _s1,
+                       unsigned int * _M_S1)
 {
     unsigned int i;
 
@@ -142,6 +154,14 @@ void ofdmframe_init_S1(unsigned int * _p,
 
     // set return value(s)
     *_M_S1 = M_S1;
+
+    // run inverse fft to get time-domain sequence
+    fft_run(_num_subcarriers, _S1, _s1, FFT_REVERSE, 0);
+
+    // normalize time-domain sequence level
+    float g = 1.0f / sqrtf(M_S1);
+    for (i=0; i<_num_subcarriers; i++)
+        _s1[i] *= g;
 }
 
 // initialize default subcarrier allocation

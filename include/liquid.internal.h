@@ -1572,21 +1572,25 @@ struct freqmodem_s {
 // generate short sequence symbols
 //  _p                  :   subcarrier allocation array
 //  _num_subcarriers    :   total number of subcarriers
-//  _S0                 :   output symbol
+//  _S0                 :   output symbol (freq)
+//  _s0                 :   output symbol (time)
 //  _M_S0               :   total number of enabled subcarriers in S0
 void ofdmframe_init_S0(unsigned int * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S0,
+                       float complex * _s0,
                        unsigned int * _M_S0);
 
 // generate long sequence symbols
 //  _p                  :   subcarrier allocation array
 //  _num_subcarriers    :   total number of subcarriers
-//  _S1                 :   output symbol
+//  _S1                 :   output symbol (freq)
+//  _s1                 :   output symbol (time)
 //  _M_S1               :   total number of enabled subcarriers in S1
 void ofdmframe_init_S1(unsigned int * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S1,
+                       float complex * _s1,
                        unsigned int * _M_S1);
 
 

@@ -60,9 +60,13 @@ struct ofdmframegen_s {
     float complex * X;      // frequency-domain buffer
     float complex * x;      // time-domain buffer
 
-    // PLCP
-    float complex * S0;     // short sequence
-    float complex * S1;     // long sequence
+    // PLCP short
+    float complex * S0;     // short sequence (frequency)
+    float complex * s0;     // short sequence (time)
+
+    // PLCP long
+    float complex * S1;     // long sequence (frequency)
+    float complex * s1;     // long sequence (time)
 
     // pilot sequence
     msequence ms_pilot;
@@ -106,9 +110,11 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->s0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
-    ofdmframe_init_S0(q->p, q->M, q->S0, &q->M_S0);
-    ofdmframe_init_S1(q->p, q->M, q->S1, &q->M_S1);
+    q->s1 = (float complex*) malloc((q->M)*sizeof(float complex));
+    ofdmframe_init_S0(q->p, q->M, q->S0, q->s0, &q->M_S0);
+    ofdmframe_init_S1(q->p, q->M, q->S1, q->s1, &q->M_S1);
 
     // compute scaling factors
     q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
@@ -141,7 +147,9 @@ void ofdmframegen_destroy(ofdmframegen _q)
 
     // free PLCP memory arrays
     free(_q->S0);
+    free(_q->s0);
     free(_q->S1);
+    free(_q->s1);
 
     // free pilot msequence object memory
     msequence_destroy(_q->ms_pilot);
