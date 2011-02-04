@@ -52,8 +52,6 @@ struct ofdmframegen_s {
 
     // scaling factors
     float g_data;           //
-    float g_S0;             //
-    float g_S1;             //
 
     // transform object
     FFT_PLAN ifft;          // ifft object
@@ -116,15 +114,8 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
     ofdmframe_init_S0(q->p, q->M, q->S0, q->s0, &q->M_S0);
     ofdmframe_init_S1(q->p, q->M, q->S1, q->s1, &q->M_S1);
 
-    // compute scaling factors
-    q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
-    q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
-    q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
-#if 1
-    q->g_data /= sqrtf(q->M);
-    q->g_S0   /= sqrtf(q->M);
-    q->g_S1   /= sqrtf(q->M);
-#endif
+    // compute scaling factor
+    q->g_data = 1.0f / sqrtf(q->M_pilot + q->M_data);
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
@@ -175,43 +166,14 @@ void ofdmframegen_reset(ofdmframegen _q)
 void ofdmframegen_write_S0(ofdmframegen _q,
                            float complex * _y)
 {
-    // move short sequence to freq-domain buffer
-    memmove(_q->X, _q->S0, (_q->M)*sizeof(float complex));
-
-    // apply gain
-    unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->X[i] *= _q->g_S0;
-
-    // execute transform
-    FFT_EXECUTE(_q->ifft);
-
-    // copy result to output
-    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
+    memmove(_y, _q->s0, (_q->M)*sizeof(float complex));
 }
 
 
 void ofdmframegen_write_S1(ofdmframegen _q,
                            float complex * _y)
 {
-    // move long sequence to freq-domain buffer
-    memmove(_q->X, _q->S1, (_q->M)*sizeof(float complex));
-
-    // apply gain
-    unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->X[i] *= _q->g_S1;
-
-    // execute transform
-    FFT_EXECUTE(_q->ifft);
-
-    // copy result to output
-#if 0
-    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
-    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
-#else
-    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
-#endif
+    memmove(_y, _q->s1, (_q->M)*sizeof(float complex));
 }
 
 
