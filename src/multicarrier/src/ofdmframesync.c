@@ -178,7 +178,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     //
 
     // numerically-controlled oscillator
-    q->nco_rx = nco_crcf_create(LIQUID_NCO);
+    q->nco_rx = nco_crcf_create(LIQUID_VCO);
 
     // agc, rssi, squelch
     q->agc_rx = agc_crcf_create();
@@ -275,6 +275,7 @@ void ofdmframesync_reset(ofdmframesync _q)
 
     // reset synchronizer objects
     agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
+    nco_crcf_reset(_q->nco_rx);
 
     // reset internal state variables
     _q->rxx_max = 0.0f;
@@ -293,6 +294,10 @@ void ofdmframesync_execute(ofdmframesync _q,
     int squelch_status;
     for (i=0; i<_n; i++) {
         x = _x[i];
+
+        // correct for carrier frequency offset
+        nco_crcf_mix_down(_q->nco_rx, x, &x);
+        nco_crcf_step(_q->nco_rx);
 
         // save input sample to buffer
         windowcf_push(_q->input_buffer,x);
@@ -367,6 +372,9 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
             float dphi_hat = 2.0f * cargf(_q->rxx_max) / (float)(_q->M);
             printf("  maximum rxx found, dphi-hat: %12.8f\n", dphi_hat);
 
+            // adjust nco frequency on offset estimate
+            nco_crcf_adjust_frequency(_q->nco_rx, dphi_hat);
+
             // set nominal gain, lock agc
             // TODO : use better nominal gain estiamte
             _q->g0 = g0;
@@ -392,11 +400,11 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
 
 #if DEBUG_OFDMFRAMESYNC
     windowcf_push(_q->debug_rxy,rxy);
-    //printf("rxy : %12.8f <%12.8f>\n", cabsf(rxy), cargf(rxy));
+    //printf("  rxy = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
 #endif
 
     if (cabsf(rxy) > 0.7f) {
-        printf("rxy : %12.8f <%12.8f>\n", cabsf(rxy), cargf(rxy));
+        printf("  rxy = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
     }
 }
 
