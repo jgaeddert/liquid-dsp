@@ -58,7 +58,6 @@ struct ofdmframesync_s {
     float g_S0;             // S0 training symbols gain
     float g_S1;             // S1 training symbols gain
     float e2;               // input signal level, E{x^2}
-    float g0;               // nominal gain
 
     // transform object
     FFT_PLAN fft;           // ifft object
@@ -73,9 +72,9 @@ struct ofdmframesync_s {
     float complex * s1;     // long sequence (time)
 
     // gain
-    float g;                // coarse gain estimate
-    float complex * G0;     // complex subcarrier gain estimate, S2[0]
-    float complex * G1;     // complex subcarrier gain estimate, S2[1]
+    float g0;               // nominal gain (coarse initial estimate)
+    float complex * G0;     // complex subcarrier gain estimate, S1[0]
+    float complex * G1;     // complex subcarrier gain estimate, S1[1]
     float complex * G;      // complex subcarrier gain estimate
     float complex * Y;      // output symbols
 
@@ -164,7 +163,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
 
     // gain
-    q->g = 1.0f;
+    q->g0 = 1.0f;
     q->G0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G  = (float complex*) malloc((q->M)*sizeof(float complex));
