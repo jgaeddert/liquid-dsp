@@ -1622,6 +1622,9 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
                                    unsigned int _ntaps,
                                    float * _nu_hat);
 
+// recover symbol, correcting for gain, pilot phase, etc.
+void ofdmframesync_rxsymbol(ofdmframesync _q);
+
 #define OFDMFRAME64_SCTYPE_NULL     0
 #define OFDMFRAME64_SCTYPE_PILOT    1
 #define OFDMFRAME64_SCTYPE_DATA     2

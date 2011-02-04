@@ -91,6 +91,7 @@ struct ofdmframesync_s {
     agc_crcf agc_rx;        // automatic gain control
     autocorr_cccf autocorr; // auto-correlator
     dotprod_cccf crosscorr; // long sequence cross-correlator
+    msequence ms_pilot;     // pilot sequence generator
 
     //
     float complex rxx_max;  // maximum auto-correlator output
@@ -205,6 +206,9 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
         q->s1[i] = conjf(q->s1[i]);
     q->crosscorr = dotprod_cccf_create(q->s1, q->M);
 
+    // set pilot sequence
+    q->ms_pilot = msequence_create(8);
+
     // reset object
     ofdmframesync_reset(q);
 
@@ -255,6 +259,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     agc_crcf_destroy(_q->agc_rx);           // automatic gain control
     autocorr_cccf_destroy(_q->autocorr);    // auto-correlator
     dotprod_cccf_destroy(_q->crosscorr);    // cross-correlator
+    msequence_destroy(_q->ms_pilot);
 
     // free main object memory
     free(_q);
@@ -280,6 +285,7 @@ void ofdmframesync_reset(ofdmframesync _q)
     agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
     nco_crcf_reset(_q->nco_rx);
     autocorr_cccf_clear(_q->autocorr);
+    msequence_reset(_q->ms_pilot);
 
     // reset internal state variables
     _q->rxx_max = 0.0f;
@@ -501,18 +507,16 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
         memmove(_q->x, rc, (_q->M)*sizeof(float complex));
         FFT_EXECUTE(_q->fft);
 
-        // apply gain
-        unsigned int i;
-        for (i=0; i<_q->M; i++)
-            _q->X[i] *= _q->G[i];
+        // recover symbol in internal _q->X buffer
+        ofdmframesync_rxsymbol(_q);
 
 #if DEBUG_OFDMFRAMESYNC
+        unsigned int i;
         for (i=0; i<_q->M; i++) {
             if (_q->p[i] == OFDMFRAME_SCTYPE_DATA)
                 windowcf_push(_q->debug_framesyms, _q->X[i]);
         }
 #endif
-
         // invoke callback
         if (_q->callback != NULL) {
             int retval = _q->callback(_q->X, _q->p, _q->M, _q->userdata);
@@ -631,6 +635,74 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
             w0 = 1.0f;
         }
         _q->G[i] = w0 / G_hat;
+    }
+}
+
+// recover symbol, correcting for gain, pilot phase, etc.
+void ofdmframesync_rxsymbol(ofdmframesync _q)
+{
+    // apply gain
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->G[i];
+
+    // polynomial curve-fit
+    float x_phase[_q->M_pilot];
+    float y_phase[_q->M_pilot];
+    float p_phase[2];
+
+    // 
+    unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
+    unsigned int n=0;
+    float complex pilot = 1.0f;
+    for (i=0; i<_q->M; i++) {
+        if (_q->p[i]==OFDMFRAME_SCTYPE_PILOT) {
+            if (n == _q->M_pilot) {
+                fprintf(stderr,"warning: ofdmframesync_rxsymbol(), pilot subcarrier mismatch\n");
+                return;
+            }
+            pilot = (pilot_phase ? 1.0f : -1.0f);
+#if 0
+            printf("pilot[%3u] = %12.4e + j*%12.4e (expected %12.4e + j*%12.4e)\n",
+                    i,
+                    crealf(_q->X[i]), cimagf(_q->X[i]),
+                    pilot_phase ? 1.0f : -1.0f, 0.0f);
+#endif
+            // store resulting...
+            x_phase[n] = (float)i - 0.5f*(float)(_q->M);
+            y_phase[n] = cargf(_q->X[i]*conjf(pilot));
+
+            // update counter
+            n++;
+
+        }
+    }
+
+    if (n != _q->M_pilot) {
+        fprintf(stderr,"warning: ofdmframesync_rxsymbol(), pilot subcarrier mismatch\n");
+        return;
+    }
+
+    // try to unwrap phase
+    for (i=1; i<_q->M_pilot; i++) {
+        while ((y_phase[i] - y_phase[i-1]) >  M_PI)
+            y_phase[i] -= 2*M_PI;
+        while ((y_phase[i] - y_phase[i-1]) < -M_PI)
+            y_phase[i] += 2*M_PI;
+    }
+
+    // fit phase to 1st-order polynomial (2 coefficients)
+    polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
+
+#if DEBUG_OFDMFRAMESYNC_PRINT
+    printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
+#endif
+
+    // compensate for phase offset
+    float theta;
+    for (i=0; i<_q->M; i++) {
+        theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
+        _q->X[i] *= liquid_cexpjf(-theta);
     }
 }
 
