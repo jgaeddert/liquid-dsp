@@ -57,6 +57,7 @@ struct ofdmframesync_s {
     float g_data;           // data symbols gain
     float g_S0;             // S0 training symbols gain
     float g_S1;             // S1 training symbols gain
+    float g0;               // nominal gain
 
     // transform object
     FFT_PLAN fft;           // ifft object
@@ -89,6 +90,7 @@ struct ofdmframesync_s {
     nco_crcf nco_rx;        // numerically-controlled oscillator
     agc_crcf agc_rx;        // automatic gain control
     autocorr_cccf autocorr; // auto-correlator
+    dotprod_cccf crosscorr; // long sequence cross-correlator
 
     //
     float complex rxx_max;  // maximum auto-correlator output
@@ -101,6 +103,7 @@ struct ofdmframesync_s {
     windowcf debug_x;
     windowcf debug_agc_out;
     windowcf debug_rxx;
+    windowcf debug_rxy;
     windowf  debug_rssi;
     windowcf debug_framesyms;
 #endif
@@ -192,6 +195,13 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // auto-correlator
     q->autocorr = autocorr_cccf_create(q->M, q->M / 2);
 
+    // long sequence cross-correlator
+    unsigned int i;
+    // compute conjugate s1 sequence, put into dotprod object
+    for (i=0; i<q->M; i++)
+        q->s1[i] = conjf(q->s1[i]);
+    q->crosscorr = dotprod_cccf_create(q->s1, q->M);
+
     // reset object
     ofdmframesync_reset(q);
 
@@ -199,6 +209,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_agc_out =  windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rxx =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    q->debug_rxy =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rssi =     windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_framesyms =windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
 #endif
@@ -215,6 +226,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     windowcf_destroy(_q->debug_x);
     windowcf_destroy(_q->debug_agc_out);
     windowcf_destroy(_q->debug_rxx);
+    windowcf_destroy(_q->debug_rxy);
     windowf_destroy(_q->debug_rssi);
     windowcf_destroy(_q->debug_framesyms);
 #endif
@@ -241,6 +253,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
     agc_crcf_destroy(_q->agc_rx);           // automatic gain control
     autocorr_cccf_destroy(_q->autocorr);    // auto-correlator
+    dotprod_cccf_destroy(_q->crosscorr);    // cross-correlator
 
     // free main object memory
     free(_q);
@@ -353,6 +366,13 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
             // peak auto-correlator found
             float dphi_hat = 2.0f * cargf(_q->rxx_max) / (float)(_q->M);
             printf("  maximum rxx found, dphi-hat: %12.8f\n", dphi_hat);
+
+            // set nominal gain, lock agc
+            // TODO : use better nominal gain estiamte
+            _q->g0 = g0;
+            //agc_cccf_lock(...)
+
+            // set internal mode
             _q->state = OFDMFRAMESYNC_STATE_PLCPLONG0;
         }
 
@@ -362,6 +382,22 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
 void ofdmframesync_execute_plcplong0(ofdmframesync _q,
                                      float complex _x)
 {
+    // run cross-correlator
+    float complex rxy, *rc;
+    windowcf_read(_q->input_buffer, &rc);
+    dotprod_cccf_execute(_q->crosscorr, rc, &rxy);
+
+    // scale
+    rxy *= _q->g0 / (float)(_q->M);
+
+#if DEBUG_OFDMFRAMESYNC
+    windowcf_push(_q->debug_rxy,rxy);
+    //printf("rxy : %12.8f <%12.8f>\n", cabsf(rxy), cargf(rxy));
+#endif
+
+    if (cabsf(rxy) > 0.7f) {
+        printf("rxy : %12.8f <%12.8f>\n", cabsf(rxy), cargf(rxy));
+    }
 }
 
 void ofdmframesync_execute_plcplong1(ofdmframesync _q,
@@ -423,7 +459,25 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"   plot(0:(n-1),arg(rxx));\n");
     fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('auto-correlation, arg{rxx}');\n");
+    fprintf(fid,"   ylabel('auto-correlation, arg[rxx]');\n");
+
+    fprintf(fid,"rxy = zeros(1,n);\n");
+    windowcf_read(_q->debug_rxy, &rc);
+    for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
+        fprintf(fid,"rxy(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"subplot(2,1,1);\n");
+    fprintf(fid,"   plot(0:(n-1),abs(rxy));\n");
+    fprintf(fid,"   xlabel('sample index');\n");
+    fprintf(fid,"   ylabel('auto-correlation, |rxy|');\n");
+    fprintf(fid,"subplot(2,1,2);\n");
+    fprintf(fid,"   plot(0:(n-1),arg(rxy));\n");
+    fprintf(fid,"   xlabel('sample index');\n");
+    fprintf(fid,"   ylabel('auto-correlation, arg[rxy]');\n");
+
+    fprintf(fid,"s1 = [];\n");
+    for (i=0; i<_q->M; i++)
+        fprintf(fid,"s1(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->s1[i]), cimagf(_q->s1[i]));
 
 
     fprintf(fid,"y = zeros(1,n);\n");
