@@ -1332,7 +1332,8 @@ void AUTOCORR(_destroy)(AUTOCORR() _f);                         \
 void AUTOCORR(_clear)(AUTOCORR() _f);                           \
 void AUTOCORR(_print)(AUTOCORR() _f);                           \
 void AUTOCORR(_push)(AUTOCORR() _f, TI _x);                     \
-void AUTOCORR(_execute)(AUTOCORR() _f, TO *_rxx);
+void AUTOCORR(_execute)(AUTOCORR() _f, TO *_rxx);               \
+float AUTOCORR(_get_energy)(AUTOCORR() _f);
 
 LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
