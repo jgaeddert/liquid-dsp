@@ -104,7 +104,6 @@ struct ofdmframesync_s {
 
 #if DEBUG_OFDMFRAMESYNC
     windowcf debug_x;
-    windowcf debug_agc_out;
     windowcf debug_rxx;
     windowcf debug_rxy;
     windowf  debug_rssi;
@@ -210,7 +209,6 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
 
 #if DEBUG_OFDMFRAMESYNC
     q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
-    q->debug_agc_out =  windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rxx =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rxy =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rssi =     windowf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -227,7 +225,6 @@ void ofdmframesync_destroy(ofdmframesync _q)
     ofdmframesync_debug_print(_q);
 
     windowcf_destroy(_q->debug_x);
-    windowcf_destroy(_q->debug_agc_out);
     windowcf_destroy(_q->debug_rxx);
     windowcf_destroy(_q->debug_rxy);
     windowf_destroy(_q->debug_rssi);
@@ -314,7 +311,6 @@ void ofdmframesync_execute(ofdmframesync _q,
 
 #if DEBUG_OFDMFRAMESYNC
         windowcf_push(_q->debug_x, x);
-        windowcf_push(_q->debug_agc_out, y);
         windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
 #endif
 
@@ -541,15 +537,6 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     for (i=0; i<_q->M; i++)
         fprintf(fid,"s1(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(_q->s1[i]), cimagf(_q->s1[i]));
 
-
-    fprintf(fid,"y = zeros(1,n);\n");
-    windowcf_read(_q->debug_agc_out, &rc);
-    for (i=0; i<DEBUG_OFDMFRAMESYNC_BUFFER_LEN; i++)
-        fprintf(fid,"y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
-    fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(0:(n-1),real(y),0:(n-1),imag(y));\n");
-    fprintf(fid,"xlabel('sample index');\n");
-    fprintf(fid,"ylabel('received signal, x');\n");
 
     // write agc_rssi
     fprintf(fid,"\n\n");
