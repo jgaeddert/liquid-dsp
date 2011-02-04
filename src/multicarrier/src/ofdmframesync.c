@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2010 Joseph Gaeddert
- * Copyright (c) 2010 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2010, 2011 Virginia Polytechnic
+ *                          Institute & State University
  *
  * This file is part of liquid.
  *
