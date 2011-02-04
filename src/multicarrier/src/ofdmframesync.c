@@ -269,14 +269,17 @@ void ofdmframesync_print(ofdmframesync _q)
 
 void ofdmframesync_reset(ofdmframesync _q)
 {
+#if 0
     // reset gain parameters
     unsigned int i;
     for (i=0; i<_q->M; i++)
         _q->G[i] = 1.0f;
+#endif
 
     // reset synchronizer objects
     agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
     nco_crcf_reset(_q->nco_rx);
+    autocorr_cccf_clear(_q->autocorr);
 
     // reset internal state variables
     _q->rxx_max = 0.0f;
@@ -376,7 +379,7 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
             // peak auto-correlator found
             float nu_hat = 2.0f * cargf(_q->rxx_max) / (float)(_q->M);
 #if DEBUG_OFDMFRAMESYNC_PRINT
-            printf("  maximum rxx found, nu-hat: %12.8f\n", nu_hat);
+            printf("  rxx[max] = |%12.8f| {%12.8f} found, nu-hat: %12.8f\n", cabsf(rxx), cargf(rxx), nu_hat);
 #endif
 
             // adjust nco frequency on offset estimate
