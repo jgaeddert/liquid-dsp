@@ -57,6 +57,7 @@ struct ofdmframesync_s {
     float g_data;           // data symbols gain
     float g_S0;             // S0 training symbols gain
     float g_S1;             // S1 training symbols gain
+    float e2;               // input signal level, E{x^2}
     float g0;               // nominal gain
 
     // transform object
@@ -338,8 +339,10 @@ void ofdmframesync_execute(ofdmframesync _q,
     } // for (i=0; i<_n; i++)
 } // ofdmframesync_execute()
 
+
+
 //
-// internal
+// internal methods
 //
 
 // frame detection
@@ -351,9 +354,8 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
     autocorr_cccf_execute(_q->autocorr, &rxx);
     //printf("  rxx : %12.8f {%12.8f}\n", cabsf(rxx), cargf(rxx));
 
-    float g0 = agc_crcf_get_gain(_q->agc_rx);
-    float g1 = 1.0f / sqrtf(_q->M); // NOTE : this gain will change based on auto-correlator length
-    rxx *= g0*g1;
+    float g0 = autocorr_cccf_get_energy(_q->autocorr);
+    rxx /= g0;
 
 #if DEBUG_OFDMFRAMESYNC
     windowcf_push(_q->debug_rxx, rxx);
@@ -375,10 +377,9 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
             // adjust nco frequency on offset estimate
             nco_crcf_adjust_frequency(_q->nco_rx, dphi_hat);
 
-            // set nominal gain, lock agc
-            // TODO : use better nominal gain estiamte
-            _q->g0 = g0;
-            //agc_cccf_lock(...)
+            // set nominal gain
+            _q->g0 = 1.0 / sqrtf(g0);
+            printf("g0 = %12.8f\n", g0);
 
             // set internal mode
             _q->state = OFDMFRAMESYNC_STATE_PLCPLONG0;
@@ -396,7 +397,7 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
     dotprod_cccf_execute(_q->crosscorr, rc, &rxy);
 
     // scale
-    rxy *= _q->g0 / (float)(_q->M);
+    rxy *= _q->g0 / sqrtf(_q->M);
 
 #if DEBUG_OFDMFRAMESYNC
     windowcf_push(_q->debug_rxy,rxy);
@@ -418,9 +419,6 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
 {
 }
 
-void ofdmframesync_rxpayload(ofdmframesync _q)
-{
-}
 
 #if DEBUG_OFDMFRAMESYNC
 void ofdmframesync_debug_print(ofdmframesync _q)
