@@ -76,7 +76,7 @@ struct ofdmframesync_s {
     float complex * G0;     // complex subcarrier gain estimate, S1[0]
     float complex * G1;     // complex subcarrier gain estimate, S1[1]
     float complex * G;      // complex subcarrier gain estimate
-    float complex * Y;      // output symbols
+    float complex * B;      // subcarrier phase rotation due to backoff
 
     // receiver state
     enum {
@@ -99,6 +99,7 @@ struct ofdmframesync_s {
     // timing
     unsigned int timer;         // input sample timer
     unsigned int num_symbols;   // symbol counter
+    unsigned int backoff;       // sample timing backoff
 
     // callback
     ofdmframesync_callback callback;
@@ -171,7 +172,14 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->G0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G  = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->Y  = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->B  = (float complex*) malloc((q->M)*sizeof(float complex));
+
+    // timing backoff
+    q->backoff = 2;
+    float phi = (float)(q->backoff)*2.0f*M_PI/(float)(q->M);
+    unsigned int i;
+    for (i=0; i<q->M; i++)
+        q->B[i] = liquid_cexpjf(i*phi);
 
     // set callback data
     q->callback = _callback;
@@ -200,7 +208,6 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->autocorr = autocorr_cccf_create(q->M, q->M / 2);
 
     // long sequence cross-correlator
-    unsigned int i;
     // compute conjugate s1 sequence, put into dotprod object
     for (i=0; i<q->M; i++)
         q->s1[i] = conjf(q->s1[i]);
@@ -252,7 +259,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->G0);
     free(_q->G1);
     free(_q->G);
-    free(_q->Y);
+    free(_q->B);
 
     // destroy synchronizer objects
     nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
@@ -467,7 +474,7 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
 #endif
 
         // reset timer
-        _q->timer = 0;
+        _q->timer = _q->backoff;
 
         // compute complex gain on sequence
         ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
@@ -476,6 +483,7 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         unsigned int ntaps = 4;
         float nu_hat;
         ofdmframesync_estimate_eqgain(_q, ntaps, &nu_hat);
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  nu_hat : %12.8f\n", nu_hat);
 #endif
@@ -497,8 +505,6 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
 {
     // wait for timeout
     _q->timer++;
-
-    // TODO : add timing backoff
 
     if (_q->timer == _q->M + _q->cp_len) {
         // run fft
@@ -644,7 +650,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     // apply gain
     unsigned int i;
     for (i=0; i<_q->M; i++)
-        _q->X[i] *= _q->G[i];
+        _q->X[i] *= _q->G[i] * _q->B[i];
 
     // polynomial curve-fit
     float x_phase[_q->M_pilot];
@@ -669,7 +675,8 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
                     pilot_phase ? 1.0f : -1.0f, 0.0f);
 #endif
             // store resulting...
-            x_phase[n] = (float)i - 0.5f*(float)(_q->M);
+            x_phase[n] = (i > _q->M/2) ? (float)i - (float)(_q->M) : (float)i;
+            //x_phase[n] = (float)i - 0.5f*(float)(_q->M);
             y_phase[n] = cargf(_q->X[i]*conjf(pilot));
 
             // update counter
@@ -690,6 +697,9 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         while ((y_phase[i] - y_phase[i-1]) < -M_PI)
             y_phase[i] += 2*M_PI;
     }
+
+    for (i=0; i<_q->M_pilot; i++)
+        printf("x_phase(%3u) = %12.8f; y_phase(%3u) = %12.8f;\n", i+1, x_phase[i], i+1, y_phase[i]);
 
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
