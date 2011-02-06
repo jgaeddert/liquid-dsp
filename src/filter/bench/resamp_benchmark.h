@@ -33,7 +33,7 @@ void resamp_crcf_bench(
 {
     unsigned long int i;
     float r = 1.03f;        // resampling rate
-    float bw = 0.7f;        // filter bandwidth
+    float bw = 0.35f;       // filter bandwidth
     float As = 60.0f;       // stop-band attenuation [dB]
     unsigned int npfb = 32; // number of polyphase filters
     unsigned int h_len = _h_len / 2; // filter semi-length
