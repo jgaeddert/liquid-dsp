@@ -198,7 +198,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->nco_rx = nco_crcf_create(LIQUID_VCO);
 
     // auto-correlator
-    q->autocorr = autocorr_cccf_create(q->M, q->M / 2);
+    q->autocorr = autocorr_cccf_create(1.3*q->M, q->M / 2);
 
     // long sequence cross-correlator
     // compute conjugate s1 sequence, put into dotprod object
