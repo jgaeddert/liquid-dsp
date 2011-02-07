@@ -88,7 +88,6 @@ struct ofdmframesync_s {
 
     // synchronizer objects
     nco_crcf nco_rx;        // numerically-controlled oscillator
-    agc_crcf agc_rx;        // automatic gain control
     autocorr_cccf autocorr; // auto-correlator
     dotprod_cccf crosscorr; // long sequence cross-correlator
     msequence ms_pilot;     // pilot sequence generator
@@ -106,6 +105,7 @@ struct ofdmframesync_s {
     void * userdata;
 
 #if DEBUG_OFDMFRAMESYNC
+    agc_crcf agc_rx;        // automatic gain control (rssi)
     windowcf debug_x;
     windowcf debug_rxx;
     windowcf debug_rxy;
@@ -197,18 +197,6 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // numerically-controlled oscillator
     q->nco_rx = nco_crcf_create(LIQUID_VCO);
 
-    // agc, rssi, squelch
-    q->agc_rx = agc_crcf_create();
-    agc_crcf_set_target(q->agc_rx, 1.0f);
-    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
-    agc_crcf_set_gain_limits(q->agc_rx, 1e-3f, 1e4f);
-
-    agc_crcf_squelch_activate(q->agc_rx);
-    agc_crcf_squelch_set_threshold(q->agc_rx, -35.0f);
-    agc_crcf_squelch_set_timeout(q->agc_rx, 32);
-
-    agc_crcf_squelch_enable_auto(q->agc_rx);
-
     // auto-correlator
     q->autocorr = autocorr_cccf_create(q->M, q->M / 2);
 
@@ -225,6 +213,12 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     ofdmframesync_reset(q);
 
 #if DEBUG_OFDMFRAMESYNC
+    // agc, rssi, squelch
+    q->agc_rx = agc_crcf_create();
+    agc_crcf_set_target(q->agc_rx, 1.0f);
+    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
+    agc_crcf_set_gain_limits(q->agc_rx, 1e-5f, 1e5f);
+
     q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rxx =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rxy =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -240,6 +234,8 @@ void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
     ofdmframesync_debug_print(_q);
+
+    agc_crcf_destroy(_q->agc_rx);
 
     windowcf_destroy(_q->debug_x);
     windowcf_destroy(_q->debug_rxx);
@@ -268,7 +264,6 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     // destroy synchronizer objects
     nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
-    agc_crcf_destroy(_q->agc_rx);           // automatic gain control
     autocorr_cccf_destroy(_q->autocorr);    // auto-correlator
     dotprod_cccf_destroy(_q->crosscorr);    // cross-correlator
     msequence_destroy(_q->ms_pilot);
@@ -294,7 +289,6 @@ void ofdmframesync_reset(ofdmframesync _q)
 #endif
 
     // reset synchronizer objects
-    agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
     nco_crcf_reset(_q->nco_rx);
     autocorr_cccf_clear(_q->autocorr);
     msequence_reset(_q->ms_pilot);
@@ -316,8 +310,6 @@ void ofdmframesync_execute(ofdmframesync _q,
 {
     unsigned int i;
     float complex x;
-    float complex y;
-    int squelch_status;
     for (i=0; i<_n; i++) {
         x = _x[i];
 
@@ -328,22 +320,15 @@ void ofdmframesync_execute(ofdmframesync _q,
         // save input sample to buffer
         windowcf_push(_q->input_buffer,x);
 
+#if DEBUG_OFDMFRAMESYNC
         // apply agc (estimate initial signal gain)
+        float complex y;
         agc_crcf_execute(_q->agc_rx, x, &y);
 
-#if DEBUG_OFDMFRAMESYNC
         windowcf_push(_q->debug_x, x);
         windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
 #endif
 
-        // squelch: block agc output from synchronizer only if
-        // 1. received signal strength indicator has not exceeded squelch
-        //    threshold at any time within the past <squelch_timeout> samples
-        // 2. mode is to seek preamble
-        squelch_status = agc_crcf_squelch_get_status(_q->agc_rx);
-        if (squelch_status == LIQUID_AGC_SQUELCH_ENABLED)
-            continue;
-        
         switch (_q->state) {
         case OFDMFRAMESYNC_STATE_PLCPSHORT:
             ofdmframesync_execute_plcpshort(_q,x);
