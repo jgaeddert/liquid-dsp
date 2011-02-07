@@ -152,7 +152,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->fft = FFT_CREATE_PLAN(q->M, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
  
     // create input buffer the length of the transform
-    q->input_buffer = windowcf_create(q->M);
+    q->input_buffer = windowcf_create(q->M + q->cp_len);
 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -416,7 +416,7 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
     // run cross-correlator
     float complex rxy, *rc;
     windowcf_read(_q->input_buffer, &rc);
-    dotprod_cccf_execute(_q->crosscorr, rc, &rxy);
+    dotprod_cccf_execute(_q->crosscorr, &rc[_q->cp_len], &rxy);
 
     // scale
     rxy *= _q->g0 / sqrtf(_q->M);
@@ -452,13 +452,13 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
                                      float complex _x)
 {
     _q->timer++;
-    if (_q->timer < _q->M / 2)
+    if (_q->timer != _q->M)
         return;
 
     // run cross-correlator
     float complex rxy, *rc;
     windowcf_read(_q->input_buffer, &rc);
-    dotprod_cccf_execute(_q->crosscorr, rc, &rxy);
+    dotprod_cccf_execute(_q->crosscorr, &rc[_q->cp_len], &rxy);
 
     // scale
     rxy *= _q->g0 / sqrtf(_q->M);
@@ -468,14 +468,13 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
     //printf("  rxy = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
 #endif
 
-    if (cabsf(rxy) > 0.7f) {
+    if (cabsf(rxy) > 0.6f) {
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  rxy[1] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
-        printf("  timer  = %u (expected %u)\n", _q->timer, _q->M);
 #endif
 
         // reset timer
-        _q->timer = _q->backoff;
+        _q->timer = 0;
 
         // compute complex gain on sequence
         ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
@@ -492,10 +491,8 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
 
         // 
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
-    }
-
-    // reset (false alarm) if timer is too large
-    if (_q->timer > 2*_q->M) {
+    } else {
+        // reset (false alarm)
         printf("ofdmframesync_execute_plcplong1(), could not find S1 symbol, resetting\n");
         ofdmframesync_reset(_q);
     }
@@ -511,7 +508,7 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
         // run fft
         float complex * rc;
         windowcf_read(_q->input_buffer, &rc);
-        memmove(_q->x, rc, (_q->M)*sizeof(float complex));
+        memmove(_q->x, &rc[_q->cp_len-_q->backoff], (_q->M)*sizeof(float complex));
         FFT_EXECUTE(_q->fft);
 
         // recover symbol in internal _q->X buffer
@@ -542,14 +539,14 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
 
 // estimate long sequence gain
 //  _q      :   ofdmframesync object
-//  _x      :   input array (time)
+//  _x      :   input array (time), [size: M+cp_len x 1]
 //  _G      :   output gain (freq)
 void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
                                     float complex * _x,
                                     float complex * _G)
 {
     // move _x into fft input buffer
-    memmove(_q->x, _x, (_q->M)*sizeof(float complex));
+    memmove(_q->x, &_x[_q->cp_len-_q->backoff], (_q->M)*sizeof(float complex));
 
     // compute fft, storing result into _q->X
     FFT_EXECUTE(_q->fft);
@@ -561,6 +558,9 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
             _G[i] = 0.0f;
         else
             _G[i] = _q->X[i] / _q->S1[i];
+
+        // compensate for backoff
+        _G[i] *= _q->B[i];
     }
 }
 
