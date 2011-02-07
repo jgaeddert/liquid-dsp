@@ -485,9 +485,16 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
 
         // estimate residual carrier frequency offset and adjust nco
-        unsigned int ntaps = _q->M / 2;
         float nu_hat;
+#if 0
+        unsigned int ntaps = _q->M / 2;
         ofdmframesync_estimate_eqgain(_q, ntaps, &nu_hat);
+#else
+        unsigned int poly_order = 8;
+        if (poly_order >= _q->M_pilot + _q->M_data)
+            poly_order = _q->M_pilot + _q->M_data - 1;
+        ofdmframesync_estimate_eqgain_poly(_q, poly_order, &nu_hat);
+#endif
 
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  nu_hat : %12.8f\n", nu_hat);
@@ -653,6 +660,101 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
         }
         _q->G[i] = G_hat / w0;
     }
+#endif
+}
+
+// estimate complex equalizer gain from G0 and G1 using polynomial fit
+//  _q      :   ofdmframesync object
+//  _order  :   polynomial order
+//  _nu_hat :   residual phase difference between G0 and G1
+void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                        unsigned int _order,
+                                        float * _nu_hat)
+{
+    // estimate residual carrier frequency offset between
+    // gain estimates G0 and G1
+    float nu_hat = ofdmframesync_estimate_nu_S1(_q);
+    *_nu_hat = nu_hat;
+
+    // correct for phase difference in G1
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->G1[i] *= cexpf(-_Complex_I*nu_hat*_q->M);
+
+    // average equalizer gain
+    for (i=0; i<_q->M; i++)
+        _q->G[i] = 0.5f * (_q->G0[i] + _q->G1[i]);
+
+    // polynomial interpolation
+    unsigned int N = _q->M_pilot + _q->M_data;
+    if (_order > N-1) _order = N-1;
+    if (_order > 10)  _order = 10;
+    float x_freq[N];
+    float y_abs[N];
+    float y_arg[N];
+    float p_abs[_order+1];
+    float p_arg[_order+1];
+
+    unsigned int n=0;
+    unsigned int k;
+    for (i=0; i<_q->M; i++) {
+
+        // start at mid-point (effective fftshift)
+        k = (i + _q->M/2) % _q->M;
+
+        if (_q->p[k] != OFDMFRAME_SCTYPE_NULL) {
+            if (n == N) {
+                fprintf(stderr, "error: ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch\n");
+                exit(1);
+            }
+            // store resulting...
+            x_freq[n] = (k > _q->M/2) ? (float)k - (float)(_q->M) : (float)k;
+            x_freq[n] = x_freq[n] / (float)(_q->M);
+            y_abs[n] = cabsf(_q->G[k]);
+            y_arg[n] = cargf(_q->G[k]);
+
+            // update counter
+            n++;
+        }
+    }
+
+    if (n != N) {
+        fprintf(stderr, "error: ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch\n");
+        exit(1);
+    }
+
+    // try to unwrap phase
+    for (i=1; i<N; i++) {
+        while ((y_arg[i] - y_arg[i-1]) >  M_PI)
+            y_arg[i] -= 2*M_PI;
+        while ((y_arg[i] - y_arg[i-1]) < -M_PI)
+            y_arg[i] += 2*M_PI;
+    }
+
+    // fit to polynomial
+    polyf_fit(x_freq, y_abs, N, p_abs, _order+1);
+    polyf_fit(x_freq, y_arg, N, p_arg, _order+1);
+
+    // compute subcarrier gain
+    for (i=0; i<_q->M; i++) {
+        float freq = (i > _q->M/2) ? (float)i - (float)(_q->M) : (float)i;
+        freq = freq / (float)(_q->M);
+        float A     = polyf_val(p_abs, _order+1, freq);
+        float theta = polyf_val(p_arg, _order+1, freq);
+        _q->G[i] = (_q->p[i] == OFDMFRAME_SCTYPE_NULL) ? 0.0f : A * liquid_cexpjf(theta);
+    }
+
+#if 0
+    for (i=0; i<N; i++)
+        printf("x(%3u) = %12.8f; y_abs(%3u) = %12.8f; y_arg(%3u) = %12.8f;\n",
+                i+1, x_freq[i],
+                i+1, y_abs[i],
+                i+1, y_arg[i]);
+
+    for (i=0; i<=_order; i++)
+        printf("p_abs(%3u) = %12.8f;\n", i+1, p_abs[i]);
+    for (i=0; i<=_order; i++)
+        printf("p_arg(%3u) = %12.8f;\n", i+1, p_arg[i]);
 #endif
 }
 
