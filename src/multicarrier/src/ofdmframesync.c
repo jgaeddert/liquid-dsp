@@ -126,6 +126,8 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // validate input
     if (_M < 8) {
         fprintf(stderr,"warning: ofdmframesync_create(), less than 8 subcarriers\n");
+    } else if (_cp_len > _M) {
+        fprintf(stderr,"error: ofdmframesync_create(), cyclic prefix length cannot exceed number of subcarriers\n");
         exit(1);
     }
     q->M = _M;
