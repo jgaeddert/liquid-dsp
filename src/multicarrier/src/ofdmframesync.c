@@ -631,7 +631,7 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
             w = _q->X[(i + _q->M - j) % _q->M];
 
             // accumulate gain
-            G_hat += w * 0.5f * (_q->G0[i] + _q->G1[i]);
+            G_hat += w * 0.5f * (_q->G0[j] + _q->G1[j]);
             w0 += w;
         }
 
