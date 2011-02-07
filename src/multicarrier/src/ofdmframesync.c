@@ -442,7 +442,7 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
     }
 
     // reset (false alarm) if timer is too large
-    if (_q->timer > 2*_q->M) {
+    if (_q->timer > 4*_q->M) {
         printf("ofdmframesync_execute_plcplong0(), could not find S1 symbol, resetting\n");
         ofdmframesync_reset(_q);
     }
@@ -452,7 +452,8 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
                                      float complex _x)
 {
     _q->timer++;
-    // TODO : return if timer is less than M
+    if (_q->timer < _q->M / 2)
+        return;
 
     // run cross-correlator
     float complex rxy, *rc;
@@ -480,7 +481,7 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
 
         // estimate residual carrier frequency offset and adjust nco
-        unsigned int ntaps = 4;
+        unsigned int ntaps = _q->M / 2;
         float nu_hat;
         ofdmframesync_estimate_eqgain(_q, ntaps, &nu_hat);
 
@@ -606,6 +607,11 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
     for (i=0; i<_q->M; i++)
         _q->G1[i] *= cexpf(-_Complex_I*nu_hat*_q->M);
 
+    // average equalizer gain
+    for (i=0; i<_q->M; i++)
+        _q->G[i] = 0.5f * (_q->G0[i] + _q->G1[i]);
+
+#if 0
     // generate smoothing window (fft of temporal window)
     for (i=0; i<_q->M; i++)
         _q->x[i] = (i < _ntaps) ? 1.0f : 0.0f;
@@ -640,8 +646,9 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
             fprintf(stderr,"error: ofdmframesync_estimate_eqgain(), weighting factor is zero\n");
             w0 = 1.0f;
         }
-        _q->G[i] = w0 / G_hat;
+        _q->G[i] = G_hat / w0;
     }
+#endif
 }
 
 // recover symbol, correcting for gain, pilot phase, etc.
@@ -649,8 +656,10 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 {
     // apply gain
     unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->X[i] *= _q->G[i] * _q->B[i];
+    for (i=0; i<_q->M; i++) {
+        //_q->X[i] *= _q->G[i] * _q->B[i];
+        _q->X[i] *= _q->B[i] / _q->G[i];
+    }
 
     // polynomial curve-fit
     float x_phase[_q->M_pilot];
@@ -681,7 +690,6 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 #endif
             // store resulting...
             x_phase[n] = (k > _q->M/2) ? (float)k - (float)(_q->M) : (float)k;
-            //x_phase[n] = (float)k - 0.5f*(float)(_q->M);
             y_phase[n] = cargf(_q->X[k]*conjf(pilot));
 
             // update counter
@@ -703,22 +711,20 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
             y_phase[i] += 2*M_PI;
     }
 
-    for (i=0; i<_q->M_pilot; i++)
-        printf("x_phase(%3u) = %12.8f; y_phase(%3u) = %12.8f;\n", i+1, x_phase[i], i+1, y_phase[i]);
-
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
 
-#if DEBUG_OFDMFRAMESYNC_PRINT
-    printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
-#endif
-
     // compensate for phase offset
-    float theta;
     for (i=0; i<_q->M; i++) {
-        theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
+        float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
         _q->X[i] *= liquid_cexpjf(-theta);
     }
+
+#if DEBUG_OFDMFRAMESYNC_PRINT
+    for (i=0; i<_q->M_pilot; i++)
+        printf("x_phase(%3u) = %12.8f; y_phase(%3u) = %12.8f;\n", i+1, x_phase[i], i+1, y_phase[i]);
+    printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
+#endif
 }
 
 
@@ -830,7 +836,7 @@ void ofdmframesync_debug_print(ofdmframesync _q)
         fprintf(fid,"G(%3u)  = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G[i]),  cimagf(_q->G[i]));
     }
     fprintf(fid,"f = [0:(M-1)] - (M/2);\n");
-    fprintf(fid,"G([i_data i_pilot]) = 1./G([i_data i_pilot]); %% invert gain\n");
+    //fprintf(fid,"G([i_data i_pilot]) = 1./G([i_data i_pilot]); %% invert gain\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"  plot(f, fftshift(abs(G0)),'-','Color',[1 1 1]*0.7,...\n");
