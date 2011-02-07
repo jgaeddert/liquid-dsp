@@ -77,7 +77,10 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: ofdmframesync_create(), number of subcarriers must be at least 2\n");
+        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be at least 2\n");
+        exit(1);
+    } else if (_M % 2) {
+        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be even\n");
         exit(1);
     }
 
