@@ -734,10 +734,21 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    fprintf(fid,"M = %u;\n", _q->M);
+    fprintf(fid,"M_null  = %u;\n", _q->M_null);
+    fprintf(fid,"M_pilot = %u;\n", _q->M_pilot);
+    fprintf(fid,"M_data  = %u;\n", _q->M_data);
     unsigned int i;
     float complex * rc;
     float * r;
 
+    // save subcarrier allocation
+    fprintf(fid,"p = zeros(1,M);\n");
+    for (i=0; i<_q->M; i++)
+        fprintf(fid,"p(%4u) = %d;\n", i+1, _q->p[i]);
+    fprintf(fid,"i_null  = find(p==%d);\n", OFDMFRAME_SCTYPE_NULL);
+    fprintf(fid,"i_pilot = find(p==%d);\n", OFDMFRAME_SCTYPE_PILOT);
+    fprintf(fid,"i_data  = find(p==%d);\n", OFDMFRAME_SCTYPE_DATA);
 
     // short, long, training sequences
     for (i=0; i<_q->M; i++) {
@@ -800,8 +811,8 @@ void ofdmframesync_debug_print(ofdmframesync _q)
 
     // write short, long symbols
     fprintf(fid,"\n\n");
-    fprintf(fid,"S0 = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"S1 = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"S0 = zeros(1,M);\n");
+    fprintf(fid,"S1 = zeros(1,M);\n");
     for (i=0; i<_q->M; i++) {
         fprintf(fid,"S0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->S0[i]), cimagf(_q->S0[i]));
         fprintf(fid,"S1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->S1[i]), cimagf(_q->S1[i]));
@@ -810,22 +821,28 @@ void ofdmframesync_debug_print(ofdmframesync _q)
 
     // write gain arrays
     fprintf(fid,"\n\n");
-    fprintf(fid,"G0 = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"G1 = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"G  = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"G0 = zeros(1,M);\n");
+    fprintf(fid,"G1 = zeros(1,M);\n");
+    fprintf(fid,"G  = zeros(1,M);\n");
     for (i=0; i<_q->M; i++) {
         fprintf(fid,"G0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
         fprintf(fid,"G1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
         fprintf(fid,"G(%3u)  = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G[i]),  cimagf(_q->G[i]));
     }
+    fprintf(fid,"f = [0:(M-1)] - (M/2);\n");
+    fprintf(fid,"G([i_data i_pilot]) = 1./G([i_data i_pilot]); %% invert gain\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(0:(length(G)-1), fftshift(abs(G)));\n");
+    fprintf(fid,"  plot(f, fftshift(abs(G0)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(abs(G1)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(abs(G)),'-','Color',[1 1 1]*0,'LineWidth',2);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('subcarrier index');\n");
     fprintf(fid,"  ylabel('gain estimate (mag)');\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(0:(length(G)-1), fftshift(arg(G)));\n");
+    fprintf(fid,"  plot(f, fftshift(arg(G0)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(arg(G1)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(arg(G)),'-','Color',[1 1 1]*0,'LineWidth',2);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('subcarrier index');\n");
     fprintf(fid,"  ylabel('gain estimate (phase)');\n");
