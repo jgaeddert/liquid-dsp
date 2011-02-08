@@ -26,6 +26,9 @@
 AC_INIT([liquid-dsp],[0.1.0],[liquid@vt.edu])
 AC_CONFIG_SRCDIR([libliquid.c])
 
+# Specify 'C' language
+AC_LANG(C)
+
 # Autoheader
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
@@ -64,8 +67,8 @@ AC_FUNC_REALLOC
 AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove], [],
              [AC_MSG_ERROR(Need standard c library!)],
              [])
-AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
-             [AC_MSG_ERROR(Need standard math library!)],
+AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf, csqrtf, cacosf], [],
+             [AC_MSG_ERROR(Need standard (complex) math library!)],
              [])
 
 # Check for necessary header files
