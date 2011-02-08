@@ -1825,6 +1825,17 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
                            unsigned int _num_filters,           \
                            TC * _h,                             \
                            unsigned int _h_len);                \
+/* create square-root Nyquist symbol synchronizer           */  \
+/*  _type        : filter type (e.g. LIQUID_RNYQUIST_RRC)   */  \
+/*  _k           : samples/symbol                           */  \
+/*  _m           : symbol delay                             */  \
+/*  _beta        : rolloff factor (0 < beta <= 1)           */  \
+/*  _num_filters : number of filters in the bank            */  \
+SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,                  \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float _beta,                \
+                                    unsigned int _num_filters); \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
 void SYMSYNC(_print)(SYMSYNC() _q);                             \
 void SYMSYNC(_execute)(SYMSYNC() _q,                            \
