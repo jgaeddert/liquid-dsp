@@ -1009,6 +1009,20 @@ void design_rcos_filter(unsigned int _k,
 #define LIQUID_RNYQUIST_RRC         (2) // root raised-cosine
 #define LIQUID_RNYQUIST_hM3         (3) // harris-Moerder-3 filter
 
+// Design root-Nyquist filter
+//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_rnyquist_filter(int _type,
+                            unsigned int _k,
+                            unsigned int _m,
+                            float _beta,
+                            float _dt,
+                            float * _h);
+
 // Design root-Nyquist raised-cosine filter
 //  _k      : samples/symbol
 //  _m      : symbol delay
