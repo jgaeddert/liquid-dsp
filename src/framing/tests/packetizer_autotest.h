@@ -21,25 +21,6 @@
 #include "autotest/autotest.h"
 #include "liquid.h"
 
-// AUTOTEST : test packet length computation
-void autotest_packetizer_length()
-{
-    // coding schemes
-    fec_scheme fec0 = FEC_CONV_V27;
-    fec_scheme fec1 = FEC_REP3;
-    crc_scheme check = CRC_32;
-    unsigned int n = 10;  // decoded message length
-
-    // compute encoded message length
-    unsigned int k = packetizer_compute_enc_msg_len(n, check, fec0, fec1);
-
-    // estimate decoded message length
-    unsigned int m = packetizer_compute_dec_msg_len(k, check, fec0, fec1);
-
-    // ensure n==m
-    CONTEND_EQUALITY(n, m);
-}
-
 // Help function to keep code base small
 void packetizer_test_codec(unsigned int _n,
                            crc_scheme _crc,
