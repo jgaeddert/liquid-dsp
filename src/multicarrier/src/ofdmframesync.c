@@ -433,7 +433,9 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
 
     // reset (false alarm) if timer is too large
     if (_q->timer > 4*_q->M) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
         printf("ofdmframesync_execute_plcplong0(), could not find S1 symbol, resetting\n");
+#endif
         ofdmframesync_reset(_q);
     }
 }
@@ -490,7 +492,9 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
     } else {
         // reset (false alarm)
+#if DEBUG_OFDMFRAMESYNC_PRINT
         printf("ofdmframesync_execute_plcplong1(), could not find S1 symbol, resetting\n");
+#endif
         ofdmframesync_reset(_q);
     }
 }
