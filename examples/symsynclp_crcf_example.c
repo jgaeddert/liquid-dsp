@@ -139,7 +139,7 @@ int main(int argc, char*argv[]) {
     // run resampler
     //
     unsigned int resamp_len = 10*k; // resampling filter semi-length (filter delay)
-    float resamp_bw = 0.9f;         // resampling filter bandwidth
+    float resamp_bw = 0.45f;        // resampling filter bandwidth
     float resamp_As = 60.0f;        // resampling filter stop-band attenuation
     unsigned int resamp_npfb = 64;  // number of filters in bank
     resamp_crcf f = resamp_crcf_create(r, resamp_len, resamp_bw, resamp_As, resamp_npfb);
