@@ -886,11 +886,11 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"   plot(0:(n-1),abs(rxy));\n");
     fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('auto-correlation, |rxy|');\n");
+    fprintf(fid,"   ylabel('cross-correlation, |rxy|');\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"   plot(0:(n-1),arg(rxy));\n");
     fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('auto-correlation, arg[rxy]');\n");
+    fprintf(fid,"   ylabel('cross-correlation, arg[rxy]');\n");
 
     fprintf(fid,"s1 = [];\n");
     for (i=0; i<_q->M; i++)
