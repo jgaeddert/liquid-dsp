@@ -74,22 +74,23 @@ INTERP() INTERP(_create)(unsigned int _M,
     return q;
 }
 
-// interp_xxxt_create_rrc()
+// interp_xxxt_create_rnyquist()
 //
 // create root raised-cosine interpolator
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
 //  _dt     :   fractional sample delay, 0 <= _dt < 1
-INTERP() INTERP(_create_rrc)(unsigned int _k,
-                             unsigned int _m,
-                             float _beta,
-                             float _dt)
+INTERP() INTERP(_create_rnyquist)(int _type,
+                                  unsigned int _k,
+                                  unsigned int _m,
+                                  float _beta,
+                                  float _dt)
 {
     // generate rrc filter
     unsigned int h_len = 2*_k*_m + 1;
     float h[h_len];
-    design_rrc_filter(_k,_m,_beta,_dt,h);
+    design_rnyquist_filter(_type,_k,_m,_beta,_dt,h);
 
     // copy coefficients to type-specific array (e.g. float complex)
     unsigned int i;
@@ -99,35 +100,6 @@ INTERP() INTERP(_create_rrc)(unsigned int _k,
 
     return INTERP(_create)(_k, ht, h_len);
 }
-
-#if 0
-INTERP() INTERP(_create_prototype)(fir_prototype _p, void *_opt)
-{
-    struct fir_prototype_s * s = (struct fir_prototype_s*) _opt;
-    unsigned int h_len = 2*(s->k)*(s->m) + 1;
-    float h[h_len];
-
-    switch (_p) {
-    case FIR_RRCOS:
-        design_rrc_filter(s->k, s->m, s->beta, s->dt, h);
-        break;
-    default:
-        fprintf(stderr,"error: interp_create_prototype(), unknown/unsupported prototype\n");
-        exit(1);
-    }
-
-    // copy filter into type-specific array
-    TC ht[h_len];
-    unsigned int i;
-    for (i=0; i<h_len; i++)
-        ht[i] = h[i];
-
-    unsigned int M = s->k;
-    INTERP() q = INTERP(_create)(M, ht, h_len);
-
-    return q;
-}
-#endif
 
 // destroy interpolator object
 void INTERP(_destroy)(INTERP() _q)

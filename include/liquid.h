@@ -1561,11 +1561,17 @@ typedef struct INTERP(_s) * INTERP();                           \
 INTERP() INTERP(_create)(unsigned int _M,                       \
                          TC *_h,                                \
                          unsigned int _h_len);                  \
-/* create root raised-cosine interpolator */                    \
-INTERP() INTERP(_create_rrc)(unsigned int _k,                   \
-                             unsigned int _m,                   \
-                             float _beta,                       \
-                             float _dt);                        \
+/* create square-root Nyquist interpolator              */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : samples/symbol                            */      \
+/*  _m      : symbol delay                              */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+/*  _dt     : fractional sample delay                   */      \
+INTERP() INTERP(_create_rnyquist)(int _type,                    \
+                                  unsigned int _k,              \
+                                  unsigned int _m,              \
+                                  float _beta,                  \
+                                  float _dt);                   \
 void INTERP(_destroy)(INTERP() _q);                             \
 void INTERP(_print)(INTERP() _q);                               \
 void INTERP(_clear)(INTERP() _q);                               \
