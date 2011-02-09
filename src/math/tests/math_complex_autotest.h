@@ -22,6 +22,60 @@
 #include "liquid.h"
 
 // 
+// AUTOTEST: cexpf
+//
+void autotest_cexpf()
+{
+    float tol = 1e-3f;
+
+    unsigned int n = 32;
+    float complex z[32] = {
+        2.721502e+00+_Complex_I* -8.449366e-01,   2.264794e+00+_Complex_I*  2.387520e+00,
+        3.293179e+00+_Complex_I* -2.419589e+00,  -1.318218e+00+_Complex_I*  2.145837e+00,
+       -1.777802e+00+_Complex_I*  4.317598e-01,  -1.808236e-01+_Complex_I*  1.030967e+00,
+       -1.081724e+00+_Complex_I*  1.072073e-01,   3.617838e+00+_Complex_I*  3.329561e+00,
+        1.085694e+00+_Complex_I*  1.738376e+00,  -2.867179e+00+_Complex_I*  8.557510e-01,
+       -3.869596e+00+_Complex_I* -2.056906e+00,  -2.902147e+00+_Complex_I*  2.433414e+00,
+       -2.746567e+00+_Complex_I* -7.924449e-01,  -2.961677e+00+_Complex_I* -3.129529e+00,
+        3.991396e+00+_Complex_I* -2.253945e+00,   1.034594e-01+_Complex_I*  2.712898e+00,
+        9.011188e-01+_Complex_I* -1.631747e+00,   1.100418e+00+_Complex_I*  1.942973e-01,
+       -5.133605e-02+_Complex_I*  3.782200e+00,  -1.659866e+00+_Complex_I*  2.170862e+00,
+        2.139597e-01+_Complex_I*  2.159311e+00,  -7.981710e-01+_Complex_I*  3.132236e+00,
+       -1.733482e+00+_Complex_I* -1.180333e+00,   2.461796e+00+_Complex_I*  3.352212e+00,
+       -3.441958e+00+_Complex_I*  3.594616e+00,   2.079630e-01+_Complex_I* -3.311553e+00,
+       -2.462289e+00+_Complex_I*  1.305815e+00,   3.121861e+00+_Complex_I* -1.208857e+00,
+       -3.486629e+00+_Complex_I* -3.839816e+00,  -3.383861e-01+_Complex_I* -3.495233e+00,
+       -2.093760e+00+_Complex_I*  3.765073e+00,   3.217665e+00+_Complex_I*  2.807358e+00 };
+
+    float complex test[32] = {
+        1.009152e+01+_Complex_I* -1.137087e+01,  -7.018747e+00+_Complex_I*  6.592232e+00,
+       -2.020926e+01+_Complex_I* -1.779666e+01,  -1.455457e-01+_Complex_I*  2.245718e-01,
+        1.534993e-01+_Complex_I*  7.072523e-02,   4.289666e-01+_Complex_I*  7.159020e-01,
+        3.370642e-01+_Complex_I*  3.627482e-02,  -3.660068e+01+_Complex_I* -6.961947e+00,
+       -4.939656e-01+_Complex_I*  2.920008e+00,   3.727975e-02+_Complex_I*  4.293222e-02,
+       -9.748754e-03+_Complex_I* -1.844954e-02,  -4.170312e-02+_Complex_I*  3.571317e-02,
+        4.503850e-02+_Complex_I* -4.567777e-02,  -5.172835e-02+_Complex_I* -6.240385e-04,
+       -3.416917e+01+_Complex_I* -4.198295e+01,  -1.008646e+00+_Complex_I*  4.609940e-01,
+       -1.499894e-01+_Complex_I* -2.457784e+00,   2.948871e+00+_Complex_I*  5.802783e-01,
+       -7.616135e-01+_Complex_I* -5.677744e-01,  -1.073852e-01+_Complex_I*  1.569425e-01,
+       -6.875640e-01+_Complex_I*  1.030203e+00,  -4.501318e-01+_Complex_I*  4.212064e-03,
+        6.724286e-02+_Complex_I* -1.633708e-01,  -1.146673e+01+_Complex_I* -2.451473e+00,
+       -2.877386e-02+_Complex_I* -1.400682e-02,  -1.213428e+00+_Complex_I*  2.082440e-01,
+        2.232348e-02+_Complex_I*  8.226451e-02,   8.033771e+00+_Complex_I* -2.121861e+01,
+       -2.344211e-02+_Complex_I*  1.967391e-02,  -6.688032e-01+_Complex_I*  2.468952e-01,
+       -1.000387e-01+_Complex_I* -7.194542e-02,  -2.358796e+01+_Complex_I*  8.191224e+00 };
+
+    unsigned int i;
+    for (i=0; i<n; i++) {
+        float complex t = liquid_cexpf(z[i]);
+
+        CONTEND_DELTA(crealf(t), crealf(test[i]), tol);
+        CONTEND_DELTA(cimagf(t), cimagf(test[i]), tol);
+    }
+}
+
+
+// 
 // AUTOTEST: clogf
 //
 void autotest_clogf()

@@ -42,6 +42,16 @@ float complex liquid_csqrtf(float complex _z)
                             re - _Complex_I*im;
 }
 
+// complex exponent
+float complex liquid_cexpf(float complex _z)
+{
+    float r = expf( crealf(_z) );
+    float re = cosf( cimagf(_z) );
+    float im = sinf( cimagf(_z) );
+
+    return r * ( re + _Complex_I*im );
+}
+
 // complex logarithm
 float complex liquid_clogf(float complex _z)
 {

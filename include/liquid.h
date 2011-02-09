@@ -2489,7 +2489,8 @@ float liquid_logf(float _x);
 // complex square root
 liquid_float_complex liquid_csqrtf(liquid_float_complex _z);
 
-// complex logarithm
+// complex exponent, logarithm
+liquid_float_complex liquid_cexpf(liquid_float_complex _z);
 liquid_float_complex liquid_clogf(liquid_float_complex _z);
 
 // complex arcsin, arccos, arctan
