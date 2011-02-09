@@ -25,6 +25,7 @@ local_src	:=				\
 	matched_filter_cfo_test.c		\
 	math_cacosf_test.c			\
 	math_clogf_test.c			\
+	math_csqrtf_test.c			\
 	ofdmoqam_firpfbch_test.c		\
 	ofdmoqam_firpfbch_cfo_test.c
 
