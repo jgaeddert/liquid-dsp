@@ -68,20 +68,16 @@ void agc_crcf_unlocked_bench(struct rusage *_start,
     unsigned long int *_num_iterations)         \
 { agc_crcf_unlocked_bench(_start, _finish, _num_iterations, TYPE, D, SQUELCH); }
 
-// default agc type
+// undecimated benchmarks (D=1)
 void benchmark_agc_crcf_default         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  1, 0)
-void benchmark_agc_crcf_default_D4      AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  4, 0)
-
-// logarithmic agc type
 void benchmark_agc_crcf_log             AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      1, 0)
-void benchmark_agc_crcf_log_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      4, 0)
-
-// exponential agc type
 void benchmark_agc_crcf_exp             AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      1, 0)
-void benchmark_agc_crcf_exp_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      4, 0)
-
-// true agc type
 void benchmark_agc_crcf_true            AGC_CRCF_BENCHMARK_API(LIQUID_AGC_TRUE,     1, 0)
+
+// decimated benchmarks (D=4)
+void benchmark_agc_crcf_default_D4      AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  4, 0)
+void benchmark_agc_crcf_log_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      4, 0)
+void benchmark_agc_crcf_exp_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      4, 0)
 void benchmark_agc_crcf_true_D4         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_TRUE,     4, 0)
 
 // default agc type with squelch enabled
