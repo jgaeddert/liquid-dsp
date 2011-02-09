@@ -67,7 +67,7 @@ AC_FUNC_REALLOC
 AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove], [],
              [AC_MSG_ERROR(Need standard c library!)],
              [])
-AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf, csqrtf, cacosf], [],
+AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
              [AC_MSG_ERROR(Need standard (complex) math library!)],
              [])
 
