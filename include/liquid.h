@@ -2480,6 +2480,14 @@ void  liquid_sincosf(float _x,
 float liquid_expf(float _x);
 float liquid_logf(float _x);
 
+// complex math operations
+
+// complex square root
+liquid_float_complex liquid_csqrtf(liquid_float_complex _x);
+
+// complex arc-cosine
+liquid_float_complex liquid_cacosf(liquid_float_complex _x);
+
 // ln( gamma(z) )
 float liquid_lngammaf(float _z);
 
