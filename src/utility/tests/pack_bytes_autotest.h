@@ -19,6 +19,7 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
