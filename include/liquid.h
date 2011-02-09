@@ -2470,7 +2470,9 @@ void interleaver_debug_print(interleaver _q);
 // MODULE : math
 //
 
-// trig
+// 
+// basic trigonometric functions
+//
 float liquid_sinf(float _x);
 float liquid_cosf(float _x);
 float liquid_tanf(float _x);
@@ -2480,13 +2482,20 @@ void  liquid_sincosf(float _x,
 float liquid_expf(float _x);
 float liquid_logf(float _x);
 
+// 
 // complex math operations
+//
 
 // complex square root
-liquid_float_complex liquid_csqrtf(liquid_float_complex _x);
+liquid_float_complex liquid_csqrtf(liquid_float_complex _z);
 
-// complex arc-cosine
-liquid_float_complex liquid_cacosf(liquid_float_complex _x);
+// complex logarithm
+liquid_float_complex liquid_clogf(liquid_float_complex _z);
+
+// complex arcsin, arccos
+liquid_float_complex liquid_casinf(liquid_float_complex _z);
+liquid_float_complex liquid_cacosf(liquid_float_complex _z);
+
 
 // ln( gamma(z) )
 float liquid_lngammaf(float _z);

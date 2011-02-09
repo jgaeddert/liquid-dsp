@@ -32,6 +32,7 @@ local_s_files	:= 		\
 	polyf.c			\
 	polycf.c		\
 	math.c			\
+	math.complex.c		\
 	math.trig.c
 
 # local_t_files
