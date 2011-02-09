@@ -2492,9 +2492,10 @@ liquid_float_complex liquid_csqrtf(liquid_float_complex _z);
 // complex logarithm
 liquid_float_complex liquid_clogf(liquid_float_complex _z);
 
-// complex arcsin, arccos
+// complex arcsin, arccos, arctan
 liquid_float_complex liquid_casinf(liquid_float_complex _z);
 liquid_float_complex liquid_cacosf(liquid_float_complex _z);
+liquid_float_complex liquid_catanf(liquid_float_complex _z);
 
 
 // ln( gamma(z) )

@@ -71,4 +71,13 @@ float complex liquid_cacosf(float complex _z)
     return 0.0f;
 }
 
+// complex arctan
+float complex liquid_catanf(float complex _z)
+{
+    float complex t0 = 1.0f - _Complex_I*_z;
+    float complex t1 = 1.0f + _Complex_I*_z;
+
+    return 0.5f*_Complex_I*liquid_clogf( t0 / t1 );
+}
+
 
