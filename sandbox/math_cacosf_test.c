@@ -33,13 +33,24 @@
 
 float complex sandbox_cacosf(float complex _z)
 {
-    return _Complex_I*clogf(_z + csqrtf(_z*_z - 1.0f));
-    //return 0.5f*M_PI - _Complex_I*clogf(_Complex_I*_z + csqrtf(1.0f - _z*_z));
+    // return based on quadrant
+    int sign_i = crealf(_z) > 0;
+    int sign_q = cimagf(_z) > 0;
+
+    if (sign_i == sign_q) {
+        return - _Complex_I*clogf(_z + csqrtf(_z*_z - 1.0f));
+    } else {
+        return - _Complex_I*clogf(_z - csqrtf(_z*_z - 1.0f));
+    }
+
+    // should never get to this state
+    return 0.0f;
 }
 
 int main() {
-    unsigned int n=10;
+    unsigned int n=40;
 
+    float complex err_max = 0.0f;
     unsigned int i;
     for (i=0; i<n; i++) {
         // generate random complex number
@@ -57,7 +68,12 @@ int main() {
                 crealf(cosz),       cimagf(cosz),
                 crealf(cosz_hat),   cimagf(cosz_hat),
                 cabsf(err));
+
+        if ( cabsf(err) > cabsf(err_max) )
+            err_max = err;
     }
+
+    printf("maximum error: %12.4e;\n", cabsf(err_max));
 
     printf("done.\n");
     return 0;
