@@ -37,7 +37,7 @@ float complex sandbox_clogf(float complex _z)
 }
 
 int main() {
-    unsigned int n=32;
+    unsigned int n=32;  // number of tests
     unsigned int d=2;   // number items per line
 
     // data arrays
@@ -79,7 +79,7 @@ int main() {
         printf("%12.4e+_Complex_I*%12.4e", crealf(z[i]), cimagf(z[i]));
 
         if ( i == n-1)
-            printf("");
+            printf(" ");
         else if ( ((i+1)%d)==0 )
             printf(",\n      ");
         else
@@ -93,7 +93,7 @@ int main() {
         printf("%12.4e+_Complex_I*%12.4e", crealf(test[i]), cimagf(test[i]));
 
         if ( i == n-1)
-            printf("");
+            printf(" ");
         else if ( ((i+1)%d)==0 )
             printf(",\n      ");
         else

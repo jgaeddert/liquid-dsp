@@ -88,7 +88,7 @@ int main() {
         printf("%12.4e+_Complex_I*%12.4e", crealf(z[i]), cimagf(z[i]));
 
         if ( i == n-1)
-            printf("");
+            printf(" ");
         else if ( ((i+1)%d)==0 )
             printf(",\n      ");
         else
@@ -102,7 +102,7 @@ int main() {
         printf("%12.4e+_Complex_I*%12.4e", crealf(test[i]), cimagf(test[i]));
 
         if ( i == n-1)
-            printf("");
+            printf(" ");
         else if ( ((i+1)%d)==0 )
             printf(",\n      ");
         else

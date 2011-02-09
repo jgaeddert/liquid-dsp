@@ -48,24 +48,29 @@ float complex sandbox_cacosf(float complex _z)
 }
 
 int main() {
-    unsigned int n=40;
+    unsigned int n=32;  // number of tests
+    unsigned int d=2;   // number items per line
+
+    // data arrays
+    float complex z[n];
+    float complex test[n];
 
     float complex err_max = 0.0f;
     unsigned int i;
     for (i=0; i<n; i++) {
         // generate random complex number
-        float complex z = 2.0f*(2.0f*sandbox_randf() - 1.0f) +
-                          2.0f*(2.0f*sandbox_randf() - 1.0f) * _Complex_I;
+        z[i] = 2.0f*(2.0f*sandbox_randf() - 1.0f) +
+               2.0f*(2.0f*sandbox_randf() - 1.0f) * _Complex_I;
 
-        float complex acosz     = cacosf(z);
-        float complex acosz_hat = sandbox_cacosf(z);
+        test[i] = cacosf(z[i]);
+        float complex acosz_hat = sandbox_cacosf(z[i]);
 
-        float complex err = acosz - acosz_hat;
+        float complex err = test[i] - acosz_hat;
 
         printf("%3u: z=%6.2f+j%6.2f, acos(z)=%6.2f+j%6.2f (%6.2f+j%6.2f) e=%12.4e\n",
                 i,
-                crealf(z),          cimagf(z),
-                crealf(acosz),      cimagf(acosz),
+                crealf(z[i]),       cimagf(z[i]),
+                crealf(test[i]),    cimagf(test[i]),
                 crealf(acosz_hat),  cimagf(acosz_hat),
                 cabsf(err));
 
@@ -74,6 +79,38 @@ int main() {
     }
 
     printf("maximum error: %12.4e;\n", cabsf(err_max));
+
+    // 
+    // print autotest lines
+    //
+
+    printf("\n");
+    printf("    float complex z[%u] = {\n      ", n);
+    for (i=0; i<n; i++) {
+        printf("%12.4e+_Complex_I*%12.4e", crealf(z[i]), cimagf(z[i]));
+
+        if ( i == n-1)
+            printf(" ");
+        else if ( ((i+1)%d)==0 )
+            printf(",\n      ");
+        else
+            printf(", ");
+    }
+    printf("};\n");
+
+    printf("\n");
+    printf("    float complex test[%u] = {\n      ", n);
+    for (i=0; i<n; i++) {
+        printf("%12.4e+_Complex_I*%12.4e", crealf(test[i]), cimagf(test[i]));
+
+        if ( i == n-1)
+            printf(" ");
+        else if ( ((i+1)%d)==0 )
+            printf(",\n      ");
+        else
+            printf(", ");
+    }
+    printf("};\n");
 
     printf("done.\n");
     return 0;

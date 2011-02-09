@@ -126,3 +126,58 @@ void autotest_csqrtf()
         CONTEND_DELTA(cimagf(t), cimagf(test[i]), tol);
     }
 }
+
+// 
+// AUTOTEST: cacosf
+//
+void autotest_cacosf()
+{
+    float tol = 1e-3f;
+
+    unsigned int n = 32;
+
+    float complex z[32] = {
+        1.3608e+00+_Complex_I* -4.2247e-01,   1.1324e+00+_Complex_I*  1.1938e+00,
+        1.6466e+00+_Complex_I* -1.2098e+00,  -6.5911e-01+_Complex_I*  1.0729e+00,
+       -8.8890e-01+_Complex_I*  2.1588e-01,  -9.0412e-02+_Complex_I*  5.1548e-01,
+       -5.4086e-01+_Complex_I*  5.3604e-02,   1.8089e+00+_Complex_I*  1.6648e+00,
+        5.4285e-01+_Complex_I*  8.6919e-01,  -1.4336e+00+_Complex_I*  4.2788e-01,
+       -1.9348e+00+_Complex_I* -1.0285e+00,  -1.4511e+00+_Complex_I*  1.2167e+00,
+       -1.3733e+00+_Complex_I* -3.9622e-01,  -1.4808e+00+_Complex_I* -1.5648e+00,
+        1.9957e+00+_Complex_I* -1.1270e+00,   5.1730e-02+_Complex_I*  1.3564e+00,
+        4.5056e-01+_Complex_I* -8.1587e-01,   5.5021e-01+_Complex_I*  9.7149e-02,
+       -2.5668e-02+_Complex_I*  1.8911e+00,  -8.2993e-01+_Complex_I*  1.0854e+00,
+        1.0698e-01+_Complex_I*  1.0797e+00,  -3.9909e-01+_Complex_I*  1.5661e+00,
+       -8.6674e-01+_Complex_I* -5.9017e-01,   1.2309e+00+_Complex_I*  1.6761e+00,
+       -1.7210e+00+_Complex_I*  1.7973e+00,   1.0398e-01+_Complex_I* -1.6558e+00,
+       -1.2311e+00+_Complex_I*  6.5291e-01,   1.5609e+00+_Complex_I* -6.0443e-01,
+       -1.7433e+00+_Complex_I* -1.9199e+00,  -1.6919e-01+_Complex_I* -1.7476e+00,
+       -1.0469e+00+_Complex_I*  1.8825e+00,   1.6088e+00+_Complex_I*  1.4037e+00,
+      };
+
+    float complex test[32] = {
+        3.9923e-01+_Complex_I*  9.4147e-01,   9.0032e-01+_Complex_I* -1.2078e+00,
+        6.9333e-01+_Complex_I*  1.3947e+00,   2.0098e+00+_Complex_I* -1.0065e+00,
+        2.5485e+00+_Complex_I* -3.7722e-01,   1.6512e+00+_Complex_I* -4.9650e-01,
+        2.1410e+00+_Complex_I* -6.3633e-02,   7.8534e-01+_Complex_I* -1.5918e+00,
+        1.1654e+00+_Complex_I* -8.4256e-01,   2.7676e+00+_Complex_I* -9.9741e-01,
+        2.6060e+00+_Complex_I*  1.4505e+00,   2.3737e+00+_Complex_I* -1.3267e+00,
+        2.7676e+00+_Complex_I*  9.3995e-01,   2.2758e+00+_Complex_I*  1.4678e+00,
+        5.5780e-01+_Complex_I*  1.4999e+00,   1.5401e+00+_Complex_I* -1.1128e+00,
+        1.2235e+00+_Complex_I*  7.8464e-01,   9.9257e-01+_Complex_I* -1.1575e-01,
+        1.5828e+00+_Complex_I* -1.3939e+00,   2.1112e+00+_Complex_I* -1.0574e+00,
+        1.4981e+00+_Complex_I* -9.3853e-01,   1.7837e+00+_Complex_I* -1.2502e+00,
+        2.3137e+00+_Complex_I*  7.3366e-01,   9.8936e-01+_Complex_I* -1.4462e+00,
+        2.2946e+00+_Complex_I* -1.6089e+00,   1.5171e+00+_Complex_I*  1.2794e+00,
+        2.5253e+00+_Complex_I* -9.7013e-01,   4.4330e-01+_Complex_I*  1.1433e+00,
+        2.2716e+00+_Complex_I*  1.6516e+00,   1.6547e+00+_Complex_I*  1.3278e+00,
+        2.0363e+00+_Complex_I* -1.4904e+00,   7.7241e-01+_Complex_I* -1.4487e+00};
+
+    unsigned int i;
+    for (i=0; i<n; i++) {
+        float complex t = liquid_cacosf(z[i]);
+
+        CONTEND_DELTA(crealf(t), crealf(test[i]), tol);
+        CONTEND_DELTA(cimagf(t), cimagf(test[i]), tol);
+    }
+}
