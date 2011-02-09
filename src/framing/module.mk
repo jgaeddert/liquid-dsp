@@ -50,6 +50,7 @@ local_s_files	:=		\
 # within $(local_dir)
 #
 local_t_files	:=		\
+	bpacketsync_autotest.h	\
 	bsync_autotest.h	\
 	flexframe_autotest.h	\
 	packetizer_autotest.h	\
