@@ -59,6 +59,7 @@ void AGC(_estimate_input_energy)(AGC() _q, TC _x);              \
 void AGC(_estimate_gain_default)(AGC() _q, TC _x);              \
 void AGC(_estimate_gain_log)(AGC() _q, TC _x);                  \
 void AGC(_estimate_gain_exp)(AGC() _q, TC _x);                  \
+void AGC(_estimate_gain_true)(AGC() _q, TC _x);                 \
 void AGC(_limit_gain)(AGC() _q);                                \
                                                                 \
 /* squelch */                                                   \

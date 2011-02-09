@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011  Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __AGC_BENCHMARK_H__
-#define __AGC_BENCHMARK_H__
-
 #include <sys/resource.h>
 
 #include "liquid.h"
@@ -34,6 +31,8 @@ void agc_crcf_unlocked_bench(struct rusage *_start,
                              unsigned int _D,
                              int _squelch)
 {
+    *_num_iterations *= _D;
+
     unsigned int i;
 
     // initialize AGC object
@@ -73,10 +72,6 @@ void agc_crcf_unlocked_bench(struct rusage *_start,
 void benchmark_agc_crcf_default         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  1, 0)
 void benchmark_agc_crcf_default_D4      AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  4, 0)
 
-// default agc type with squelch enabled
-void benchmark_agc_crcf_default_sq      AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  1, 1)
-void benchmark_agc_crcf_default_sq_D4   AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  4, 1)
-
 // logarithmic agc type
 void benchmark_agc_crcf_log             AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      1, 0)
 void benchmark_agc_crcf_log_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      4, 0)
@@ -84,6 +79,14 @@ void benchmark_agc_crcf_log_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,  
 // exponential agc type
 void benchmark_agc_crcf_exp             AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      1, 0)
 void benchmark_agc_crcf_exp_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      4, 0)
+
+// true agc type
+void benchmark_agc_crcf_true            AGC_CRCF_BENCHMARK_API(LIQUID_AGC_TRUE,     1, 0)
+void benchmark_agc_crcf_true_D4         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_TRUE,     4, 0)
+
+// default agc type with squelch enabled
+void benchmark_agc_crcf_default_sq      AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  1, 1)
+void benchmark_agc_crcf_default_sq_D4   AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  4, 1)
 
 // locked AGC
 void benchmark_agc_crcf_locked(
@@ -115,6 +118,4 @@ void benchmark_agc_crcf_locked(
 
     agc_crcf_destroy(g);
 }
-
-#endif // __AGC_BENCHMARK_H__
 

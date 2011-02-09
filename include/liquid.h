@@ -85,7 +85,8 @@ LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 typedef enum {
     LIQUID_AGC_DEFAULT=0,   // default gain attack/release
     LIQUID_AGC_LOG,         // logarithmic gain attack/release
-    LIQUID_AGC_EXP          // exponential gain attack/release
+    LIQUID_AGC_EXP,         // exponential gain attack/release
+    LIQUID_AGC_TRUE         // buffered x^2 values
 } liquid_agc_type;
 
 // agc squelch status codes

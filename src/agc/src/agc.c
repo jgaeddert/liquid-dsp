@@ -59,6 +59,13 @@ struct AGC(_s) {
     unsigned int decim_timer;
     unsigned int decim_timeout;
 
+    // 'true' agc method
+    float * x2;         // buffered x^2 values (LIQUID_AGC_TRUE)
+    float x2_sum;       // accumulated sum of buffer
+    unsigned int nx2;   // size of x^2 buffer
+    unsigned int ix2;   // write index of x^2 buffer
+    float sqrt_nx2;     // sqrt(nx2)
+
     // squelch
     int squelch_activated;          // squelch activated/deactivated?
     int squelch_auto;               // automatic squelch?
@@ -93,6 +100,16 @@ AGC() AGC(_create)(void)
     _q->decim_timer = 0;
     AGC(_set_decim)(_q, 1);
 
+    // create x^2 buffer, initialize with zeros
+    _q->nx2 = 16;
+    _q->sqrt_nx2 = sqrtf(_q->nx2);
+    _q->x2 = (float*) malloc((_q->nx2)*sizeof(float));
+    _q->ix2 = 0;
+    _q->x2_sum = 0.0;
+    unsigned int i;
+    for (i=0; i<_q->nx2; i++)
+        _q->x2[i] = 0.0f;
+
     // squelch
     _q->squelch_headroom = 0.39811f;    // roughly 4dB
     AGC(_squelch_disable_auto)(_q);
@@ -107,6 +124,7 @@ AGC() AGC(_create)(void)
 // destroy agc object, freeing all internally-allocated memory
 void AGC(_destroy)(AGC() _q)
 {
+    free(_q->x2);
     free(_q);
 }
 
@@ -122,6 +140,12 @@ void AGC(_reset)(AGC() _q)
     _q->e_prime = 1.0f;
     _q->e_hat   = 1.0f;
     _q->g       = 1.0f;
+
+    _q->ix2 = 0;
+    _q->x2_sum = 0.0;
+    unsigned int i;
+    for (i=0; i<_q->nx2; i++)
+        _q->x2[i] = 0.0f;
 
     AGC(_unlock)(_q);
 }
@@ -262,6 +286,9 @@ void AGC(_execute)(AGC() _q,
         break;
     case LIQUID_AGC_EXP:
         AGC(_estimate_gain_exp)(_q,_x);
+        break;
+    case LIQUID_AGC_TRUE:
+        AGC(_estimate_gain_true)(_q,_x);
         break;
     default:
         // should never get to this condition
@@ -423,6 +450,31 @@ void AGC(_estimate_gain_exp)(AGC() _q,
         // increase gain proportional to energy difference
         _q->g *= 1.0f - _q->alpha * (e_out - _q->e_target) / _q->e_target;
     }
+}
+
+// estimate necessary agc gain ('true' method)
+//  _q      :   agc object
+//  _x      :   input sample
+void AGC(_estimate_gain_true)(AGC() _q,
+                              TC _x)
+{
+    // compute |_x|^2
+    float x2 = creal(_x*conj(_x));
+
+    // increment sum by _x^2
+    _q->x2_sum += x2;
+
+    // decrement sum by buffer value
+    _q->x2_sum -= _q->x2[ _q->ix2 ];
+
+    // push sample into buffer
+    _q->x2[_q->ix2] = creal(_x*conj(_x));
+
+    // increment index
+    _q->ix2 = (_q->ix2 + 1) % _q->nx2;
+
+    // set gain accordingly
+    _q->g = _q->sqrt_nx2 / sqrtf(_q->x2_sum + 1e-12f);
 }
 
 // limit gain
