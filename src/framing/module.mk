@@ -64,7 +64,8 @@ local_t_files	:=		\
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:=		\
+local_b_files	:=			\
+	bpacketsync_benchmark.h		\
 	flexframesync_benchmark.h	\
 	pnsync_rrrf_benchmark.h
 
