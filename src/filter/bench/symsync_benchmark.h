@@ -17,13 +17,9 @@ void symsync_crcf_bench(
     unsigned int m=3;
     float beta=0.3f;
 
-    // design polyphase filter
-    unsigned int H_len = 2*num_filters*k*m + 1;
-    float H[H_len];
-    design_rrc_filter(k*num_filters,m,beta,0,H);
-
     // create symbol synchronizer
-    symsync_crcf q = symsync_crcf_create(k, num_filters, H, H_len);
+    symsync_crcf q = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,
+                                                  k, m, beta, num_filters);
 
     unsigned int num_samples=k;
     unsigned int num_written;

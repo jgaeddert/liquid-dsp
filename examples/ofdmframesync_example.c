@@ -43,8 +43,9 @@ int main(int argc, char*argv[]) {
 
     // derived values
     unsigned int frame_len = M + cp_len;
-    unsigned int num_samples = (num_symbols_S0 + num_symbols_S1)*M +
-                                num_symbols_data * frame_len;
+    unsigned int num_samples = num_symbols_S0*M +           // short PLCP sequence
+                               num_symbols_S1*M + cp_len +  // long PLCP sequence
+                               num_symbols_data*frame_len;  // data symbols
     float nstd = powf(10.0f, noise_floor/10.0f);
     float gamma = powf(10.0f, (SNRdB + noise_floor)/10.0f);
     printf("gamma : %f\n", gamma);
@@ -69,18 +70,28 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     float complex X[M];             // channelized symbols
     float complex y[num_samples];   // output time series
+    float complex S0[M];            // short PLCP sequence
+    float complex S1[M];            // long PCLP sequence
 
     unsigned int n=0;
 
+    // generate sequences
+    ofdmframegen_write_S0(fg, S0);
+    ofdmframegen_write_S1(fg, S1);
+
     // write short sequence(s)
     for (i=0; i<num_symbols_S0; i++) {
-        ofdmframegen_write_S0(fg, &y[n]);
+        memmove(&y[n], S0, M*sizeof(float complex));
         n += M;
     }
 
+    // write long sequence cyclic prefix
+    memmove(&y[n], &S1[M-cp_len], cp_len*sizeof(float complex));
+    n += cp_len;
+
     // write long sequence(s)
     for (i=0; i<num_symbols_S1; i++) {
-        ofdmframegen_write_S1(fg, &y[n]);
+        memmove(&y[n], S1, M*sizeof(float complex));
         n += M;
     }
 

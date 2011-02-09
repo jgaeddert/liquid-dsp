@@ -1009,6 +1009,20 @@ void design_rcos_filter(unsigned int _k,
 #define LIQUID_RNYQUIST_RRC         (2) // root raised-cosine
 #define LIQUID_RNYQUIST_hM3         (3) // harris-Moerder-3 filter
 
+// Design root-Nyquist filter
+//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_rnyquist_filter(int _type,
+                            unsigned int _k,
+                            unsigned int _m,
+                            float _beta,
+                            float _dt,
+                            float * _h);
+
 // Design root-Nyquist raised-cosine filter
 //  _k      : samples/symbol
 //  _m      : symbol delay
@@ -1547,11 +1561,17 @@ typedef struct INTERP(_s) * INTERP();                           \
 INTERP() INTERP(_create)(unsigned int _M,                       \
                          TC *_h,                                \
                          unsigned int _h_len);                  \
-/* create root raised-cosine interpolator */                    \
-INTERP() INTERP(_create_rrc)(unsigned int _k,                   \
-                             unsigned int _m,                   \
-                             float _beta,                       \
-                             float _dt);                        \
+/* create square-root Nyquist interpolator              */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : samples/symbol                            */      \
+/*  _m      : symbol delay                              */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+/*  _dt     : fractional sample delay                   */      \
+INTERP() INTERP(_create_rnyquist)(int _type,                    \
+                                  unsigned int _k,              \
+                                  unsigned int _m,              \
+                                  float _beta,                  \
+                                  float _dt);                   \
 void INTERP(_destroy)(INTERP() _q);                             \
 void INTERP(_print)(INTERP() _q);                               \
 void INTERP(_clear)(INTERP() _q);                               \
@@ -1805,6 +1825,17 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
                            unsigned int _num_filters,           \
                            TC * _h,                             \
                            unsigned int _h_len);                \
+/* create square-root Nyquist symbol synchronizer           */  \
+/*  _type        : filter type (e.g. LIQUID_RNYQUIST_RRC)   */  \
+/*  _k           : samples/symbol                           */  \
+/*  _m           : symbol delay                             */  \
+/*  _beta        : rolloff factor (0 < beta <= 1)           */  \
+/*  _num_filters : number of filters in the bank            */  \
+SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,                  \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float _beta,                \
+                                    unsigned int _num_filters); \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
 void SYMSYNC(_print)(SYMSYNC() _q);                             \
 void SYMSYNC(_execute)(SYMSYNC() _q,                            \
@@ -2439,7 +2470,9 @@ void interleaver_debug_print(interleaver _q);
 // MODULE : math
 //
 
-// trig
+// 
+// basic trigonometric functions
+//
 float liquid_sinf(float _x);
 float liquid_cosf(float _x);
 float liquid_tanf(float _x);
@@ -2448,6 +2481,23 @@ void  liquid_sincosf(float _x,
                      float * _cosf);
 float liquid_expf(float _x);
 float liquid_logf(float _x);
+
+// 
+// complex math operations
+//
+
+// complex square root
+liquid_float_complex liquid_csqrtf(liquid_float_complex _z);
+
+// complex exponent, logarithm
+liquid_float_complex liquid_cexpf(liquid_float_complex _z);
+liquid_float_complex liquid_clogf(liquid_float_complex _z);
+
+// complex arcsin, arccos, arctan
+liquid_float_complex liquid_casinf(liquid_float_complex _z);
+liquid_float_complex liquid_cacosf(liquid_float_complex _z);
+liquid_float_complex liquid_catanf(liquid_float_complex _z);
+
 
 // ln( gamma(z) )
 float liquid_lngammaf(float _z);

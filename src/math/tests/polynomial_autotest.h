@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -18,9 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef __LIQUID_POLYNOMIAL_AUTOTEST_H__
-#define __LIQUID_POLYNOMIAL_AUTOTEST_H__
 
 #include <string.h>
 #include <stdbool.h>
@@ -361,7 +358,7 @@ void autotest_polyf_findroots()
 // 
 // AUTOTEST: polycf_findroots (random roots)
 //
-void autotest_polycf_findroots_rand()
+void xautotest_polycf_findroots_rand()
 {
     unsigned int n=5;
     float tol=1e-4f;
@@ -403,6 +400,4 @@ void autotest_polycf_findroots_rand()
         CONTEND_DELTA(cimagf(p[i]), cimagf(p_hat[i]), tol);
     }
 }
-
-#endif 
 

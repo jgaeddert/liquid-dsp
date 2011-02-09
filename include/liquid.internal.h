@@ -1622,6 +1622,14 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
                                    unsigned int _ntaps,
                                    float * _nu_hat);
 
+// estimate complex equalizer gain from G0 and G1 using polynomial fit
+//  _q      :   ofdmframesync object
+//  _order  :   polynomial order
+//  _nu_hat :   residual phase difference between G0 and G1
+void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                        unsigned int _order,
+                                        float * _nu_hat);
+
 // recover symbol, correcting for gain, pilot phase, etc.
 void ofdmframesync_rxsymbol(ofdmframesync _q);
 

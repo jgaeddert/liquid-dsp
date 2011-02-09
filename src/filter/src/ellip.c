@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011  Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -225,11 +225,11 @@ float complex ellip_acdf(float complex _w,
     unsigned int i;
     for (i=0; i<_n; i++) {
         v1 = (i==0) ? _k : v[i-1];
-        w = w / (1 + csqrtf(1 - w*w*v1*v1)) * 2.0 / (1+v[i]);
+        w = w / (1 + liquid_csqrtf(1 - w*w*v1*v1)) * 2.0 / (1+v[i]);
         //printf("  w[%3u] = %12.8f + j*%12.8f\n", i, crealf(w), cimagf(w));
     }
 
-    float complex u = cacosf(w) * 2.0 / M_PI;
+    float complex u = liquid_cacosf(w) * 2.0 / M_PI;
     //printf("  u = %12.8f + j*%12.8f\n", crealf(u), cimagf(u));
 
 #if 0

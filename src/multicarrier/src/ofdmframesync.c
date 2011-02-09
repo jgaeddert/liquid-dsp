@@ -76,7 +76,7 @@ struct ofdmframesync_s {
     float complex * G0;     // complex subcarrier gain estimate, S1[0]
     float complex * G1;     // complex subcarrier gain estimate, S1[1]
     float complex * G;      // complex subcarrier gain estimate
-    float complex * Y;      // output symbols
+    float complex * B;      // subcarrier phase rotation due to backoff
 
     // receiver state
     enum {
@@ -88,7 +88,6 @@ struct ofdmframesync_s {
 
     // synchronizer objects
     nco_crcf nco_rx;        // numerically-controlled oscillator
-    agc_crcf agc_rx;        // automatic gain control
     autocorr_cccf autocorr; // auto-correlator
     dotprod_cccf crosscorr; // long sequence cross-correlator
     msequence ms_pilot;     // pilot sequence generator
@@ -99,12 +98,14 @@ struct ofdmframesync_s {
     // timing
     unsigned int timer;         // input sample timer
     unsigned int num_symbols;   // symbol counter
+    unsigned int backoff;       // sample timing backoff
 
     // callback
     ofdmframesync_callback callback;
     void * userdata;
 
 #if DEBUG_OFDMFRAMESYNC
+    agc_crcf agc_rx;        // automatic gain control (rssi)
     windowcf debug_x;
     windowcf debug_rxx;
     windowcf debug_rxy;
@@ -125,6 +126,11 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // validate input
     if (_M < 8) {
         fprintf(stderr,"warning: ofdmframesync_create(), less than 8 subcarriers\n");
+    } else if (_M % 2) {
+        fprintf(stderr,"error: ofdmframesync_create(), number of subcarriers must be even\n");
+        exit(1);
+    } else if (_cp_len > _M) {
+        fprintf(stderr,"error: ofdmframesync_create(), cyclic prefix length cannot exceed number of subcarriers\n");
         exit(1);
     }
     q->M = _M;
@@ -151,7 +157,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->fft = FFT_CREATE_PLAN(q->M, q->x, q->X, FFT_DIR_FORWARD, FFT_METHOD);
  
     // create input buffer the length of the transform
-    q->input_buffer = windowcf_create(q->M);
+    q->input_buffer = windowcf_create(q->M + q->cp_len);
 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -171,7 +177,14 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->G0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G  = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->Y  = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->B  = (float complex*) malloc((q->M)*sizeof(float complex));
+
+    // timing backoff
+    q->backoff = q->cp_len < 2 ? q->cp_len : 2;
+    float phi = (float)(q->backoff)*2.0f*M_PI/(float)(q->M);
+    unsigned int i;
+    for (i=0; i<q->M; i++)
+        q->B[i] = liquid_cexpjf(i*phi);
 
     // set callback data
     q->callback = _callback;
@@ -184,23 +197,10 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // numerically-controlled oscillator
     q->nco_rx = nco_crcf_create(LIQUID_VCO);
 
-    // agc, rssi, squelch
-    q->agc_rx = agc_crcf_create();
-    agc_crcf_set_target(q->agc_rx, 1.0f);
-    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
-    agc_crcf_set_gain_limits(q->agc_rx, 1e-3f, 1e4f);
-
-    agc_crcf_squelch_activate(q->agc_rx);
-    agc_crcf_squelch_set_threshold(q->agc_rx, -35.0f);
-    agc_crcf_squelch_set_timeout(q->agc_rx, 32);
-
-    agc_crcf_squelch_enable_auto(q->agc_rx);
-
     // auto-correlator
-    q->autocorr = autocorr_cccf_create(q->M, q->M / 2);
+    q->autocorr = autocorr_cccf_create(1.3*q->M, q->M / 2);
 
     // long sequence cross-correlator
-    unsigned int i;
     // compute conjugate s1 sequence, put into dotprod object
     for (i=0; i<q->M; i++)
         q->s1[i] = conjf(q->s1[i]);
@@ -213,6 +213,12 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     ofdmframesync_reset(q);
 
 #if DEBUG_OFDMFRAMESYNC
+    // agc, rssi, squelch
+    q->agc_rx = agc_crcf_create();
+    agc_crcf_set_target(q->agc_rx, 1.0f);
+    agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
+    agc_crcf_set_gain_limits(q->agc_rx, 1e-5f, 1e5f);
+
     q->debug_x =        windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rxx =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
     q->debug_rxy =      windowcf_create(DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -228,6 +234,8 @@ void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
     ofdmframesync_debug_print(_q);
+
+    agc_crcf_destroy(_q->agc_rx);
 
     windowcf_destroy(_q->debug_x);
     windowcf_destroy(_q->debug_rxx);
@@ -252,11 +260,10 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->G0);
     free(_q->G1);
     free(_q->G);
-    free(_q->Y);
+    free(_q->B);
 
     // destroy synchronizer objects
     nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
-    agc_crcf_destroy(_q->agc_rx);           // automatic gain control
     autocorr_cccf_destroy(_q->autocorr);    // auto-correlator
     dotprod_cccf_destroy(_q->crosscorr);    // cross-correlator
     msequence_destroy(_q->ms_pilot);
@@ -282,7 +289,6 @@ void ofdmframesync_reset(ofdmframesync _q)
 #endif
 
     // reset synchronizer objects
-    agc_crcf_unlock(_q->agc_rx);    // automatic gain control (unlock)
     nco_crcf_reset(_q->nco_rx);
     autocorr_cccf_clear(_q->autocorr);
     msequence_reset(_q->ms_pilot);
@@ -304,8 +310,6 @@ void ofdmframesync_execute(ofdmframesync _q,
 {
     unsigned int i;
     float complex x;
-    float complex y;
-    int squelch_status;
     for (i=0; i<_n; i++) {
         x = _x[i];
 
@@ -316,22 +320,15 @@ void ofdmframesync_execute(ofdmframesync _q,
         // save input sample to buffer
         windowcf_push(_q->input_buffer,x);
 
+#if DEBUG_OFDMFRAMESYNC
         // apply agc (estimate initial signal gain)
+        float complex y;
         agc_crcf_execute(_q->agc_rx, x, &y);
 
-#if DEBUG_OFDMFRAMESYNC
         windowcf_push(_q->debug_x, x);
         windowf_push(_q->debug_rssi, agc_crcf_get_signal_level(_q->agc_rx));
 #endif
 
-        // squelch: block agc output from synchronizer only if
-        // 1. received signal strength indicator has not exceeded squelch
-        //    threshold at any time within the past <squelch_timeout> samples
-        // 2. mode is to seek preamble
-        squelch_status = agc_crcf_squelch_get_status(_q->agc_rx);
-        if (squelch_status == LIQUID_AGC_SQUELCH_ENABLED)
-            continue;
-        
         switch (_q->state) {
         case OFDMFRAMESYNC_STATE_PLCPSHORT:
             ofdmframesync_execute_plcpshort(_q,x);
@@ -409,7 +406,7 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
     // run cross-correlator
     float complex rxy, *rc;
     windowcf_read(_q->input_buffer, &rc);
-    dotprod_cccf_execute(_q->crosscorr, rc, &rxy);
+    dotprod_cccf_execute(_q->crosscorr, &rc[_q->cp_len], &rxy);
 
     // scale
     rxy *= _q->g0 / sqrtf(_q->M);
@@ -435,8 +432,10 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
     }
 
     // reset (false alarm) if timer is too large
-    if (_q->timer > 2*_q->M) {
+    if (_q->timer > 4*_q->M) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
         printf("ofdmframesync_execute_plcplong0(), could not find S1 symbol, resetting\n");
+#endif
         ofdmframesync_reset(_q);
     }
 }
@@ -445,12 +444,13 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
                                      float complex _x)
 {
     _q->timer++;
-    // TODO : return if timer is less than M
+    if (_q->timer != _q->M)
+        return;
 
     // run cross-correlator
     float complex rxy, *rc;
     windowcf_read(_q->input_buffer, &rc);
-    dotprod_cccf_execute(_q->crosscorr, rc, &rxy);
+    dotprod_cccf_execute(_q->crosscorr, &rc[_q->cp_len], &rxy);
 
     // scale
     rxy *= _q->g0 / sqrtf(_q->M);
@@ -460,10 +460,9 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
     //printf("  rxy = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
 #endif
 
-    if (cabsf(rxy) > 0.7f) {
+    if (cabsf(rxy) > 0.6f) {
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  rxy[1] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
-        printf("  timer  = %u (expected %u)\n", _q->timer, _q->M);
 #endif
 
         // reset timer
@@ -473,9 +472,17 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
         ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
 
         // estimate residual carrier frequency offset and adjust nco
-        unsigned int ntaps = 4;
         float nu_hat;
+#if 0
+        unsigned int ntaps = _q->M / 2;
         ofdmframesync_estimate_eqgain(_q, ntaps, &nu_hat);
+#else
+        unsigned int poly_order = 8;
+        if (poly_order >= _q->M_pilot + _q->M_data)
+            poly_order = _q->M_pilot + _q->M_data - 1;
+        ofdmframesync_estimate_eqgain_poly(_q, poly_order, &nu_hat);
+#endif
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("  nu_hat : %12.8f\n", nu_hat);
 #endif
@@ -483,11 +490,11 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
 
         // 
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
-    }
-
-    // reset (false alarm) if timer is too large
-    if (_q->timer > 2*_q->M) {
+    } else {
+        // reset (false alarm)
+#if DEBUG_OFDMFRAMESYNC_PRINT
         printf("ofdmframesync_execute_plcplong1(), could not find S1 symbol, resetting\n");
+#endif
         ofdmframesync_reset(_q);
     }
 }
@@ -498,13 +505,11 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
     // wait for timeout
     _q->timer++;
 
-    // TODO : add timing backoff
-
     if (_q->timer == _q->M + _q->cp_len) {
         // run fft
         float complex * rc;
         windowcf_read(_q->input_buffer, &rc);
-        memmove(_q->x, rc, (_q->M)*sizeof(float complex));
+        memmove(_q->x, &rc[_q->cp_len-_q->backoff], (_q->M)*sizeof(float complex));
         FFT_EXECUTE(_q->fft);
 
         // recover symbol in internal _q->X buffer
@@ -535,14 +540,14 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
 
 // estimate long sequence gain
 //  _q      :   ofdmframesync object
-//  _x      :   input array (time)
+//  _x      :   input array (time), [size: M+cp_len x 1]
 //  _G      :   output gain (freq)
 void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
                                     float complex * _x,
                                     float complex * _G)
 {
     // move _x into fft input buffer
-    memmove(_q->x, _x, (_q->M)*sizeof(float complex));
+    memmove(_q->x, &_x[_q->cp_len-_q->backoff], (_q->M)*sizeof(float complex));
 
     // compute fft, storing result into _q->X
     FFT_EXECUTE(_q->fft);
@@ -554,6 +559,9 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
             _G[i] = 0.0f;
         else
             _G[i] = _q->X[i] / _q->S1[i];
+
+        // compensate for backoff
+        _G[i] *= _q->B[i];
     }
 }
 
@@ -600,6 +608,11 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
     for (i=0; i<_q->M; i++)
         _q->G1[i] *= cexpf(-_Complex_I*nu_hat*_q->M);
 
+    // average equalizer gain
+    for (i=0; i<_q->M; i++)
+        _q->G[i] = 0.5f * (_q->G0[i] + _q->G1[i]);
+
+#if 0
     // generate smoothing window (fft of temporal window)
     for (i=0; i<_q->M; i++)
         _q->x[i] = (i < _ntaps) ? 1.0f : 0.0f;
@@ -625,7 +638,7 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
             w = _q->X[(i + _q->M - j) % _q->M];
 
             // accumulate gain
-            G_hat += w * 0.5f * (_q->G0[i] + _q->G1[i]);
+            G_hat += w * 0.5f * (_q->G0[j] + _q->G1[j]);
             w0 += w;
         }
 
@@ -634,8 +647,104 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
             fprintf(stderr,"error: ofdmframesync_estimate_eqgain(), weighting factor is zero\n");
             w0 = 1.0f;
         }
-        _q->G[i] = w0 / G_hat;
+        _q->G[i] = G_hat / w0;
     }
+#endif
+}
+
+// estimate complex equalizer gain from G0 and G1 using polynomial fit
+//  _q      :   ofdmframesync object
+//  _order  :   polynomial order
+//  _nu_hat :   residual phase difference between G0 and G1
+void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                        unsigned int _order,
+                                        float * _nu_hat)
+{
+    // estimate residual carrier frequency offset between
+    // gain estimates G0 and G1
+    float nu_hat = ofdmframesync_estimate_nu_S1(_q);
+    *_nu_hat = nu_hat;
+
+    // correct for phase difference in G1
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->G1[i] *= cexpf(-_Complex_I*nu_hat*_q->M);
+
+    // average equalizer gain
+    for (i=0; i<_q->M; i++)
+        _q->G[i] = 0.5f * (_q->G0[i] + _q->G1[i]);
+
+    // polynomial interpolation
+    unsigned int N = _q->M_pilot + _q->M_data;
+    if (_order > N-1) _order = N-1;
+    if (_order > 10)  _order = 10;
+    float x_freq[N];
+    float y_abs[N];
+    float y_arg[N];
+    float p_abs[_order+1];
+    float p_arg[_order+1];
+
+    unsigned int n=0;
+    unsigned int k;
+    for (i=0; i<_q->M; i++) {
+
+        // start at mid-point (effective fftshift)
+        k = (i + _q->M/2) % _q->M;
+
+        if (_q->p[k] != OFDMFRAME_SCTYPE_NULL) {
+            if (n == N) {
+                fprintf(stderr, "error: ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch\n");
+                exit(1);
+            }
+            // store resulting...
+            x_freq[n] = (k > _q->M/2) ? (float)k - (float)(_q->M) : (float)k;
+            x_freq[n] = x_freq[n] / (float)(_q->M);
+            y_abs[n] = cabsf(_q->G[k]);
+            y_arg[n] = cargf(_q->G[k]);
+
+            // update counter
+            n++;
+        }
+    }
+
+    if (n != N) {
+        fprintf(stderr, "error: ofdmframesync_estimate_eqgain_poly(), pilot subcarrier mismatch\n");
+        exit(1);
+    }
+
+    // try to unwrap phase
+    for (i=1; i<N; i++) {
+        while ((y_arg[i] - y_arg[i-1]) >  M_PI)
+            y_arg[i] -= 2*M_PI;
+        while ((y_arg[i] - y_arg[i-1]) < -M_PI)
+            y_arg[i] += 2*M_PI;
+    }
+
+    // fit to polynomial
+    polyf_fit(x_freq, y_abs, N, p_abs, _order+1);
+    polyf_fit(x_freq, y_arg, N, p_arg, _order+1);
+
+    // compute subcarrier gain
+    for (i=0; i<_q->M; i++) {
+        float freq = (i > _q->M/2) ? (float)i - (float)(_q->M) : (float)i;
+        freq = freq / (float)(_q->M);
+        float A     = polyf_val(p_abs, _order+1, freq);
+        float theta = polyf_val(p_arg, _order+1, freq);
+        _q->G[i] = (_q->p[i] == OFDMFRAME_SCTYPE_NULL) ? 0.0f : A * liquid_cexpjf(theta);
+    }
+
+#if 0
+    for (i=0; i<N; i++)
+        printf("x(%3u) = %12.8f; y_abs(%3u) = %12.8f; y_arg(%3u) = %12.8f;\n",
+                i+1, x_freq[i],
+                i+1, y_abs[i],
+                i+1, y_arg[i]);
+
+    for (i=0; i<=_order; i++)
+        printf("p_abs(%3u) = %12.8f;\n", i+1, p_abs[i]);
+    for (i=0; i<=_order; i++)
+        printf("p_arg(%3u) = %12.8f;\n", i+1, p_arg[i]);
+#endif
 }
 
 // recover symbol, correcting for gain, pilot phase, etc.
@@ -643,20 +752,27 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 {
     // apply gain
     unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->X[i] *= _q->G[i];
+    for (i=0; i<_q->M; i++) {
+        //_q->X[i] *= _q->G[i] * _q->B[i];
+        _q->X[i] *= _q->B[i] / _q->G[i];
+    }
 
     // polynomial curve-fit
     float x_phase[_q->M_pilot];
     float y_phase[_q->M_pilot];
     float p_phase[2];
 
-    // 
+    // TODO : rotate pilot phase for every pilot, not just every symbol
     unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
     unsigned int n=0;
+    unsigned int k;
     float complex pilot = 1.0f;
     for (i=0; i<_q->M; i++) {
-        if (_q->p[i]==OFDMFRAME_SCTYPE_PILOT) {
+
+        // start at mid-point (effective fftshift)
+        k = (i + _q->M/2) % _q->M;
+
+        if (_q->p[k]==OFDMFRAME_SCTYPE_PILOT) {
             if (n == _q->M_pilot) {
                 fprintf(stderr,"warning: ofdmframesync_rxsymbol(), pilot subcarrier mismatch\n");
                 return;
@@ -669,8 +785,8 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
                     pilot_phase ? 1.0f : -1.0f, 0.0f);
 #endif
             // store resulting...
-            x_phase[n] = (float)i - 0.5f*(float)(_q->M);
-            y_phase[n] = cargf(_q->X[i]*conjf(pilot));
+            x_phase[n] = (k > _q->M/2) ? (float)k - (float)(_q->M) : (float)k;
+            y_phase[n] = cargf(_q->X[k]*conjf(pilot));
 
             // update counter
             n++;
@@ -694,16 +810,17 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     // fit phase to 1st-order polynomial (2 coefficients)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
 
-#if DEBUG_OFDMFRAMESYNC_PRINT
-    printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
-#endif
-
     // compensate for phase offset
-    float theta;
     for (i=0; i<_q->M; i++) {
-        theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
+        float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
         _q->X[i] *= liquid_cexpjf(-theta);
     }
+
+#if DEBUG_OFDMFRAMESYNC_PRINT
+    for (i=0; i<_q->M_pilot; i++)
+        printf("x_phase(%3u) = %12.8f; y_phase(%3u) = %12.8f;\n", i+1, x_phase[i], i+1, y_phase[i]);
+    printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
+#endif
 }
 
 
@@ -719,10 +836,21 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
+    fprintf(fid,"M = %u;\n", _q->M);
+    fprintf(fid,"M_null  = %u;\n", _q->M_null);
+    fprintf(fid,"M_pilot = %u;\n", _q->M_pilot);
+    fprintf(fid,"M_data  = %u;\n", _q->M_data);
     unsigned int i;
     float complex * rc;
     float * r;
 
+    // save subcarrier allocation
+    fprintf(fid,"p = zeros(1,M);\n");
+    for (i=0; i<_q->M; i++)
+        fprintf(fid,"p(%4u) = %d;\n", i+1, _q->p[i]);
+    fprintf(fid,"i_null  = find(p==%d);\n", OFDMFRAME_SCTYPE_NULL);
+    fprintf(fid,"i_pilot = find(p==%d);\n", OFDMFRAME_SCTYPE_PILOT);
+    fprintf(fid,"i_data  = find(p==%d);\n", OFDMFRAME_SCTYPE_DATA);
 
     // short, long, training sequences
     for (i=0; i<_q->M; i++) {
@@ -762,11 +890,11 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"subplot(2,1,1);\n");
     fprintf(fid,"   plot(0:(n-1),abs(rxy));\n");
     fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('auto-correlation, |rxy|');\n");
+    fprintf(fid,"   ylabel('cross-correlation, |rxy|');\n");
     fprintf(fid,"subplot(2,1,2);\n");
     fprintf(fid,"   plot(0:(n-1),arg(rxy));\n");
     fprintf(fid,"   xlabel('sample index');\n");
-    fprintf(fid,"   ylabel('auto-correlation, arg[rxy]');\n");
+    fprintf(fid,"   ylabel('cross-correlation, arg[rxy]');\n");
 
     fprintf(fid,"s1 = [];\n");
     for (i=0; i<_q->M; i++)
@@ -785,8 +913,8 @@ void ofdmframesync_debug_print(ofdmframesync _q)
 
     // write short, long symbols
     fprintf(fid,"\n\n");
-    fprintf(fid,"S0 = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"S1 = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"S0 = zeros(1,M);\n");
+    fprintf(fid,"S1 = zeros(1,M);\n");
     for (i=0; i<_q->M; i++) {
         fprintf(fid,"S0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->S0[i]), cimagf(_q->S0[i]));
         fprintf(fid,"S1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->S1[i]), cimagf(_q->S1[i]));
@@ -795,22 +923,28 @@ void ofdmframesync_debug_print(ofdmframesync _q)
 
     // write gain arrays
     fprintf(fid,"\n\n");
-    fprintf(fid,"G0 = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"G1 = zeros(1,%u);\n", _q->M);
-    fprintf(fid,"G  = zeros(1,%u);\n", _q->M);
+    fprintf(fid,"G0 = zeros(1,M);\n");
+    fprintf(fid,"G1 = zeros(1,M);\n");
+    fprintf(fid,"G  = zeros(1,M);\n");
     for (i=0; i<_q->M; i++) {
         fprintf(fid,"G0(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G0[i]), cimagf(_q->G0[i]));
         fprintf(fid,"G1(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G1[i]), cimagf(_q->G1[i]));
         fprintf(fid,"G(%3u)  = %12.8f + j*%12.8f;\n", i+1, crealf(_q->G[i]),  cimagf(_q->G[i]));
     }
+    fprintf(fid,"f = [0:(M-1)] - (M/2);\n");
+    //fprintf(fid,"G([i_data i_pilot]) = 1./G([i_data i_pilot]); %% invert gain\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(0:(length(G)-1), fftshift(abs(G)));\n");
+    fprintf(fid,"  plot(f, fftshift(abs(G0)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(abs(G1)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(abs(G)),'-','Color',[1 1 1]*0,'LineWidth',2);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('subcarrier index');\n");
     fprintf(fid,"  ylabel('gain estimate (mag)');\n");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(0:(length(G)-1), fftshift(arg(G)));\n");
+    fprintf(fid,"  plot(f, fftshift(arg(G0)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(arg(G1)),'-','Color',[1 1 1]*0.7,...\n");
+    fprintf(fid,"       f, fftshift(arg(G)),'-','Color',[1 1 1]*0,'LineWidth',2);\n");
     fprintf(fid,"  grid on;\n");
     fprintf(fid,"  xlabel('subcarrier index');\n");
     fprintf(fid,"  ylabel('gain estimate (phase)');\n");
