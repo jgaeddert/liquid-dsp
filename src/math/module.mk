@@ -45,6 +45,7 @@ local_s_files	:= 		\
 local_t_files	:= 		\
 	kbd_autotest.h		\
 	math_autotest.h		\
+	math_complex_autotest.h	\
 	polynomial_autotest.h
 
 
