@@ -29,6 +29,14 @@ UNINSTALL:
 TEST: (requires python to generate header file)
     $ make check
 
+EXAMPLES: Nearly all signal processing elements have a corresponding
+          example in the 'examples/' directory.  Most example scripts
+          generate an output .m file for plotting with GNU octave
+          [octave:web].
+    $ make examples
+    -- or --
+    $ make examples/specific_example
+
 BENCHMARK: (requires python to generate header file)
     $ make bench
 
@@ -54,6 +62,7 @@ Modules: description
     fec: forward error correction (basic), checksum, crc, etc.
     fft: fast Fourier transform (basic), simple implementation
     filter: fir, iir, polyphase, hilbert, interp, decim, design, remez, etc.
+    framing: packet framing, encoding, synchronization
     interleaver: bit- and symbol-level
     math: transcendental functions not in the C standard library (gamma, besseli, etc.)
     matrix: basic math, lu_decomp, inv, gauss_elim, 
@@ -93,6 +102,8 @@ liquid/
     doc/
         makefile
         liquid.tex
+        sections/
+        src/
         ...
     include/
         liquid.h                <-- external header, defines
@@ -169,4 +180,9 @@ list might not be complete, and should probably be automatically generated.
     random          [math]
     sequence        []
     utility         []
+
+======================================================================================
+ References
+======================================================================================
+    [octave:web] GNU Octave website, http://www.gnu.org/software/octave/
 
