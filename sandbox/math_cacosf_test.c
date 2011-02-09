@@ -57,16 +57,16 @@ int main() {
         float complex z = 2.0f*(2.0f*sandbox_randf() - 1.0f) +
                           2.0f*(2.0f*sandbox_randf() - 1.0f) * _Complex_I;
 
-        float complex cosz      = cacosf(z);
-        float complex cosz_hat  = sandbox_cacosf(z);
+        float complex acosz     = cacosf(z);
+        float complex acosz_hat = sandbox_cacosf(z);
 
-        float complex err = cosz - cosz_hat;
+        float complex err = acosz - acosz_hat;
 
         printf("%3u: z=%6.2f+j%6.2f, acos(z)=%6.2f+j%6.2f (%6.2f+j%6.2f) e=%12.4e\n",
                 i,
                 crealf(z),          cimagf(z),
-                crealf(cosz),       cimagf(cosz),
-                crealf(cosz_hat),   cimagf(cosz_hat),
+                crealf(acosz),      cimagf(acosz),
+                crealf(acosz_hat),  cimagf(acosz_hat),
                 cabsf(err));
 
         if ( cabsf(err) > cabsf(err_max) )
