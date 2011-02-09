@@ -128,6 +128,59 @@ void autotest_csqrtf()
 }
 
 // 
+// AUTOTEST: casinf
+//
+void autotest_casinf()
+{
+    float tol = 1e-3f;
+
+    unsigned int n = 32;
+
+    float complex z[32] = {
+        1.3608e+00+_Complex_I* -4.2247e-01,   1.1324e+00+_Complex_I*  1.1938e+00,
+        1.6466e+00+_Complex_I* -1.2098e+00,  -6.5911e-01+_Complex_I*  1.0729e+00,
+       -8.8890e-01+_Complex_I*  2.1588e-01,  -9.0412e-02+_Complex_I*  5.1548e-01,
+       -5.4086e-01+_Complex_I*  5.3604e-02,   1.8089e+00+_Complex_I*  1.6648e+00,
+        5.4285e-01+_Complex_I*  8.6919e-01,  -1.4336e+00+_Complex_I*  4.2788e-01,
+       -1.9348e+00+_Complex_I* -1.0285e+00,  -1.4511e+00+_Complex_I*  1.2167e+00,
+       -1.3733e+00+_Complex_I* -3.9622e-01,  -1.4808e+00+_Complex_I* -1.5648e+00,
+        1.9957e+00+_Complex_I* -1.1270e+00,   5.1730e-02+_Complex_I*  1.3564e+00,
+        4.5056e-01+_Complex_I* -8.1587e-01,   5.5021e-01+_Complex_I*  9.7149e-02,
+       -2.5668e-02+_Complex_I*  1.8911e+00,  -8.2993e-01+_Complex_I*  1.0854e+00,
+        1.0698e-01+_Complex_I*  1.0797e+00,  -3.9909e-01+_Complex_I*  1.5661e+00,
+       -8.6674e-01+_Complex_I* -5.9017e-01,   1.2309e+00+_Complex_I*  1.6761e+00,
+       -1.7210e+00+_Complex_I*  1.7973e+00,   1.0398e-01+_Complex_I* -1.6558e+00,
+       -1.2311e+00+_Complex_I*  6.5291e-01,   1.5609e+00+_Complex_I* -6.0443e-01,
+       -1.7433e+00+_Complex_I* -1.9199e+00,  -1.6919e-01+_Complex_I* -1.7476e+00,
+       -1.0469e+00+_Complex_I*  1.8825e+00,   1.6088e+00+_Complex_I*  1.4037e+00 };
+
+    float complex test[32] = {
+        1.1716e+00+_Complex_I* -9.4147e-01,   6.7048e-01+_Complex_I*  1.2078e+00,
+        8.7747e-01+_Complex_I* -1.3947e+00,  -4.3898e-01+_Complex_I*  1.0065e+00,
+       -9.7768e-01+_Complex_I*  3.7722e-01,  -8.0395e-02+_Complex_I*  4.9650e-01,
+       -5.7016e-01+_Complex_I*  6.3633e-02,   7.8546e-01+_Complex_I*  1.5918e+00,
+        4.0539e-01+_Complex_I*  8.4256e-01,  -1.1968e+00+_Complex_I*  9.9741e-01,
+       -1.0352e+00+_Complex_I* -1.4505e+00,  -8.0295e-01+_Complex_I*  1.3267e+00,
+       -1.1968e+00+_Complex_I* -9.3995e-01,  -7.0503e-01+_Complex_I* -1.4678e+00,
+        1.0130e+00+_Complex_I* -1.4999e+00,   3.0692e-02+_Complex_I*  1.1128e+00,
+        3.4725e-01+_Complex_I* -7.8464e-01,   5.7823e-01+_Complex_I*  1.1575e-01,
+       -1.1998e-02+_Complex_I*  1.3939e+00,  -5.4040e-01+_Complex_I*  1.0574e+00,
+        7.2656e-02+_Complex_I*  9.3853e-01,  -2.1290e-01+_Complex_I*  1.2502e+00,
+       -7.4285e-01+_Complex_I* -7.3366e-01,   5.8143e-01+_Complex_I*  1.4462e+00,
+       -7.2379e-01+_Complex_I*  1.6089e+00,   5.3725e-02+_Complex_I* -1.2794e+00,
+       -9.5454e-01+_Complex_I*  9.7013e-01,   1.1275e+00+_Complex_I* -1.1433e+00,
+       -7.0078e-01+_Complex_I* -1.6516e+00,  -8.3905e-02+_Complex_I* -1.3278e+00,
+       -4.6555e-01+_Complex_I*  1.4904e+00,   7.9838e-01+_Complex_I*  1.4487e+00 };
+
+    unsigned int i;
+    for (i=0; i<n; i++) {
+        float complex t = liquid_casinf(z[i]);
+
+        CONTEND_DELTA(crealf(t), crealf(test[i]), tol);
+        CONTEND_DELTA(cimagf(t), cimagf(test[i]), tol);
+    }
+}
+// 
 // AUTOTEST: cacosf
 //
 void autotest_cacosf()
