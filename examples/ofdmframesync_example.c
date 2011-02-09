@@ -13,10 +13,11 @@
 #define OUTPUT_FILENAME "ofdmframesync_example.m"
 
 static int callback(float complex * _X,
-                    unsigned int _n,
+                    unsigned int * _p,
+                    unsigned int _M,
                     void * _userdata);
 
-int main() {
+int main(int argc, char*argv[]) {
     srand(time(NULL));
 
     // options
@@ -25,35 +26,43 @@ int main() {
     unsigned int num_symbols_S0 = 2;    // number of S0 symbols
     unsigned int num_symbols_S1 = 2;    // number of S0 symbols
     unsigned int num_symbols_data = 8;  // number of data symbols
+    unsigned int hc_len = 4;            // channel filter length
+    float hc_std = 0.10f;               // channel filter standard deviation
     modulation_scheme ms = MOD_QAM;
     unsigned int bps = 4;
-    float SNRdB = 30.0f;    // signal-to-noise ratio [dB]
-    float phi   = 0.0f;     // phase offset
-    float dphi  = 0.005f;   // frequency offset
+    float noise_floor = -30.0f;         // noise floor [dB]
+    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
+    float phi   = 0.0f;                 // carrier phase offset
+    float dphi  = 0.005f;               // carrier frequency offset
+
+    // validate input
+    if (hc_len < 1) {
+        fprintf(stderr,"error: %s, channel filter must have at least 1 tap\n", argv[0]);
+        exit(1);
+    }
 
     // derived values
     unsigned int frame_len = M + cp_len;
-#if 0
-    unsigned int num_symbols = num_symbols_S0 +
-                               num_symbols_S1 +
-                               num_symbols_data;
-    unsigned int num_samples = frame_len*num_symbols;
-#else
-    unsigned int num_samples = (num_symbols_S0 + num_symbols_S1)*M +
-                                num_symbols_data * frame_len;
-#endif
-    float nstd = powf(10.0f, -SNRdB/10.0f);
+    unsigned int num_samples = num_symbols_S0*M +           // short PLCP sequence
+                               num_symbols_S1*M + cp_len +  // long PLCP sequence
+                               num_symbols_data*frame_len;  // data symbols
+    float nstd = powf(10.0f, noise_floor/10.0f);
+    float gamma = powf(10.0f, (SNRdB + noise_floor)/10.0f);
+    printf("gamma : %f\n", gamma);
 
     // initialize subcarrier allocation
     unsigned int p[M];
     ofdmframe_init_default_sctype(M, p);
+
+    // received symbol buffer
+    windowcf wsyms = windowcf_create(10*M);
 
     // create frame generator
     ofdmframegen fg = ofdmframegen_create(M, cp_len, p);
     ofdmframegen_print(fg);
 
     // create frame synchronizer
-    ofdmframesync fs = ofdmframesync_create(M, cp_len, p, callback, NULL);
+    ofdmframesync fs = ofdmframesync_create(M, cp_len, p, callback, (void*)wsyms);
     ofdmframesync_print(fs);
 
     modem mod = modem_create(ms,bps);
@@ -61,18 +70,28 @@ int main() {
     unsigned int i;
     float complex X[M];             // channelized symbols
     float complex y[num_samples];   // output time series
+    float complex S0[M];            // short PLCP sequence
+    float complex S1[M];            // long PCLP sequence
 
     unsigned int n=0;
 
+    // generate sequences
+    ofdmframegen_write_S0(fg, S0);
+    ofdmframegen_write_S1(fg, S1);
+
     // write short sequence(s)
     for (i=0; i<num_symbols_S0; i++) {
-        ofdmframegen_write_S0(fg, &y[n]);
+        memmove(&y[n], S0, M*sizeof(float complex));
         n += M;
     }
 
+    // write long sequence cyclic prefix
+    memmove(&y[n], &S1[M-cp_len], cp_len*sizeof(float complex));
+    n += cp_len;
+
     // write long sequence(s)
     for (i=0; i<num_symbols_S1; i++) {
-        ofdmframegen_write_S1(fg, &y[n]);
+        memmove(&y[n], S1, M*sizeof(float complex));
         n += M;
     }
 
@@ -90,17 +109,30 @@ int main() {
         n += frame_len;
     }
 
+    // create channel filter (random delay taps)
+    float complex hc[hc_len];
+    for (i=0; i<hc_len; i++) {
+        hc[i] = (i==0) ? 1.0f : hc_std*randnf()*cexpf(_Complex_I*2*M_PI*randf());
+        hc[i] *= gamma;
+    }
+    firfilt_cccf fc = firfilt_cccf_create(hc,hc_len);
+    // fill with noise
+    for (i=0; i<hc_len; i++)
+        firfilt_cccf_push(fc, nstd*randnf()*cexpf(_Complex_I*2*M_PI*randf()));
+
     // add noise, carrier offset
     for (i=0; i<num_samples; i++) {
+        // push through channel filter
+        firfilt_cccf_push(fc, y[i]);
+        firfilt_cccf_execute(fc, &y[i]);
+
         // add carrier offset
         y[i] *= cexpf(_Complex_I*(phi + dphi*i));
-
-        // add channel gain
-        y[i] *= 0.1f;
 
         // add noise
         y[i] += nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
     }
+    firfilt_cccf_destroy(fc);
 
     // push noise into synchronizer
     unsigned int d=1000;
@@ -129,17 +161,25 @@ int main() {
     fprintf(fid,"M = %u;\n", M);
     fprintf(fid,"cp_len = %u;\n", cp_len);
     fprintf(fid,"num_samples = %u;\n", num_samples);
-    fprintf(fid,"y = zeros(1,num_samples);\n");
+    fprintf(fid,"noise_floor = %f;\n", noise_floor);
+    fprintf(fid,"SNRdB = %f;\n", SNRdB);
 
-    //
+    // 
+    fprintf(fid,"y = zeros(1,num_samples);\n");
     for (i=0; i<num_samples; i++)
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+
+    // save channel response
+    fprintf(fid,"hc_len = %u;\n", hc_len);
+    fprintf(fid,"hc = zeros(1,hc_len);\n");
+    for (i=0; i<hc_len; i++)
+        fprintf(fid,"hc(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(hc[i]), cimagf(hc[i]));
 
     fprintf(fid,"\n\n");
     fprintf(fid,"%% compute spectral periodigram\n");
     fprintf(fid,"nfft=256;\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft - 0.5;\n");
-    //fprintf(fid,"H = 20*log10(abs(fftshift(fft(h,nfft))));\n");
+    fprintf(fid,"Hc = 10*log10(abs(fftshift(fft(hc,nfft))));\n");
     fprintf(fid,"Y = zeros(1,nfft);\n");
     fprintf(fid,"v0=1; v1=v0+round(nfft); k=0;\n");
     fprintf(fid,"while v1 <= num_samples,\n");
@@ -148,15 +188,13 @@ int main() {
     fprintf(fid,"    v1 = v1 + round(nfft/4);\n");
     fprintf(fid,"    k = k+1;\n");
     fprintf(fid,"end;\n");
-    fprintf(fid,"Y = 20*log10(abs(fftshift(Y/k)));\n");
+    fprintf(fid,"Y  = 10*log10(abs(fftshift(Y/k)));\n");
     fprintf(fid,"figure;\n");
-    //fprintf(fid,"plot(f,Y,f,H);\n");
-    fprintf(fid,"plot(f,Y);\n");
-    fprintf(fid,"axis([-0.5 0.5 -40 10]);\n");
+    fprintf(fid,"plot(f,Y,f,Hc);\n");
+    fprintf(fid,"axis([-0.5 0.5 (noise_floor-5) (noise_floor+SNRdB+5)]);\n");
     fprintf(fid,"xlabel('Normalized Frequency');\n");
     fprintf(fid,"ylabel('Power Spectral Density [dB]');\n");
     fprintf(fid,"title('Multipath channel response');\n");
-
 
     // print results
     fprintf(fid,"\n\n");
@@ -166,18 +204,42 @@ int main() {
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('received signal');\n");
 
+    // save received symbols
+    float complex * rc;
+    windowcf_read(wsyms, &rc);
+    fprintf(fid,"syms = [];\n");
+    for (i=0; i<10*M; i++)
+        fprintf(fid,"syms(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(rc[i]), cimagf(rc[i]));
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(syms),imag(syms),'o');\n");
+    fprintf(fid,"xlabel('real');\n");
+    fprintf(fid,"ylabel('imag');\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"axis square;\n");
+
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
+
+    windowcf_destroy(wsyms);
 
     printf("done.\n");
     return 0;
 }
 
 static int callback(float complex * _X,
-                    unsigned int _n,
+                    unsigned int * _p,
+                    unsigned int _M,
                     void * _userdata)
 {
     printf("**** callback invoked\n");
+
+    windowcf wsyms = (windowcf)_userdata;
+    unsigned int i;
+    for (i=0; i<_M; i++) {
+        if (_p[i] == OFDMFRAME_SCTYPE_DATA)
+            windowcf_push(wsyms, _X[i]);
+    }
+
     return 0;
 }
 

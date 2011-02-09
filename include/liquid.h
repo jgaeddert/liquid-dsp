@@ -834,6 +834,12 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
+/* object-independent methods */                                \
+void FFT(_run)(unsigned int _n,                                 \
+               TC * _x,                                         \
+               TC * _y,                                         \
+               int _dir,                                        \
+               int _method);                                    \
 void FFT(_shift)(TC*_x, unsigned int _n);
 
 LIQUID_FFT_DEFINE_API(LIQUID_FFT_MANGLE_FLOAT,float,liquid_float_complex)
@@ -1002,6 +1008,20 @@ void design_rcos_filter(unsigned int _k,
 #define LIQUID_RNYQUIST_RKAISER     (1) // root-Nyquist Kaiser (true optimum)
 #define LIQUID_RNYQUIST_RRC         (2) // root raised-cosine
 #define LIQUID_RNYQUIST_hM3         (3) // harris-Moerder-3 filter
+
+// Design root-Nyquist filter
+//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_rnyquist_filter(int _type,
+                            unsigned int _k,
+                            unsigned int _m,
+                            float _beta,
+                            float _dt,
+                            float * _h);
 
 // Design root-Nyquist raised-cosine filter
 //  _k      : samples/symbol
@@ -1326,7 +1346,8 @@ void AUTOCORR(_destroy)(AUTOCORR() _f);                         \
 void AUTOCORR(_clear)(AUTOCORR() _f);                           \
 void AUTOCORR(_print)(AUTOCORR() _f);                           \
 void AUTOCORR(_push)(AUTOCORR() _f, TI _x);                     \
-void AUTOCORR(_execute)(AUTOCORR() _f, TO *_rxx);
+void AUTOCORR(_execute)(AUTOCORR() _f, TO *_rxx);               \
+float AUTOCORR(_get_energy)(AUTOCORR() _f);
 
 LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
@@ -1540,11 +1561,17 @@ typedef struct INTERP(_s) * INTERP();                           \
 INTERP() INTERP(_create)(unsigned int _M,                       \
                          TC *_h,                                \
                          unsigned int _h_len);                  \
-/* create root raised-cosine interpolator */                    \
-INTERP() INTERP(_create_rrc)(unsigned int _k,                   \
-                             unsigned int _m,                   \
-                             float _beta,                       \
-                             float _dt);                        \
+/* create square-root Nyquist interpolator              */      \
+/*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
+/*  _k      : samples/symbol                            */      \
+/*  _m      : symbol delay                              */      \
+/*  _beta   : rolloff factor (0 < beta <= 1)            */      \
+/*  _dt     : fractional sample delay                   */      \
+INTERP() INTERP(_create_rnyquist)(int _type,                    \
+                                  unsigned int _k,              \
+                                  unsigned int _m,              \
+                                  float _beta,                  \
+                                  float _dt);                   \
 void INTERP(_destroy)(INTERP() _q);                             \
 void INTERP(_print)(INTERP() _q);                               \
 void INTERP(_clear)(INTERP() _q);                               \
@@ -1798,6 +1825,17 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,                     \
                            unsigned int _num_filters,           \
                            TC * _h,                             \
                            unsigned int _h_len);                \
+/* create square-root Nyquist symbol synchronizer           */  \
+/*  _type        : filter type (e.g. LIQUID_RNYQUIST_RRC)   */  \
+/*  _k           : samples/symbol                           */  \
+/*  _m           : symbol delay                             */  \
+/*  _beta        : rolloff factor (0 < beta <= 1)           */  \
+/*  _num_filters : number of filters in the bank            */  \
+SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,                  \
+                                    unsigned int _k,            \
+                                    unsigned int _m,            \
+                                    float _beta,                \
+                                    unsigned int _num_filters); \
 void SYMSYNC(_destroy)(SYMSYNC() _q);                           \
 void SYMSYNC(_print)(SYMSYNC() _q);                             \
 void SYMSYNC(_execute)(SYMSYNC() _q,                            \
@@ -3135,7 +3173,8 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
 // OFDM frame (symbol) synchronizer
 //
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
-                                      unsigned int _n,
+                                      unsigned int * _p,
+                                      unsigned int _M,
                                       void * _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
 ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,

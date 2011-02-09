@@ -40,6 +40,7 @@ int main(int argc, char*argv[]) {
     float beta=0.9f;    // filter excess bandwidth factor
     unsigned int order=2;
     unsigned int num_symbols=1024;
+    int ftype = LIQUID_RNYQUIST_RRC;
     float SNRdB = 30.0f;
 
     float bt=0.02f;     // loop filter bandwidth
@@ -126,7 +127,7 @@ int main(int argc, char*argv[]) {
     //
 
     // design interpolating filter
-    interp_crcf q = interp_crcf_create_rrc(k,m,beta,dt);
+    interp_crcf q = interp_crcf_create_rnyquist(ftype,k,m,beta,dt);
     for (i=0; i<num_symbols; i++) {
         interp_crcf_execute(q, s[i], &x[n]);
         n+=k;
@@ -138,7 +139,7 @@ int main(int argc, char*argv[]) {
     // run resampler
     //
     unsigned int resamp_len = 10*k; // resampling filter semi-length (filter delay)
-    float resamp_bw = 0.9f;         // resampling filter bandwidth
+    float resamp_bw = 0.45f;        // resampling filter bandwidth
     float resamp_As = 60.0f;        // resampling filter stop-band attenuation
     unsigned int resamp_npfb = 64;  // number of filters in bank
     resamp_crcf f = resamp_crcf_create(r, resamp_len, resamp_bw, resamp_As, resamp_npfb);

@@ -1572,21 +1572,25 @@ struct freqmodem_s {
 // generate short sequence symbols
 //  _p                  :   subcarrier allocation array
 //  _num_subcarriers    :   total number of subcarriers
-//  _S0                 :   output symbol
+//  _S0                 :   output symbol (freq)
+//  _s0                 :   output symbol (time)
 //  _M_S0               :   total number of enabled subcarriers in S0
 void ofdmframe_init_S0(unsigned int * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S0,
+                       float complex * _s0,
                        unsigned int * _M_S0);
 
 // generate long sequence symbols
 //  _p                  :   subcarrier allocation array
 //  _num_subcarriers    :   total number of subcarriers
-//  _S1                 :   output symbol
+//  _S1                 :   output symbol (freq)
+//  _s1                 :   output symbol (time)
 //  _M_S1               :   total number of enabled subcarriers in S1
 void ofdmframe_init_S1(unsigned int * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S1,
+                       float complex * _s1,
                        unsigned int * _M_S1);
 
 
@@ -1598,6 +1602,36 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q, float complex _x);
 void ofdmframesync_execute_plcplong0(ofdmframesync _q, float complex _x);
 void ofdmframesync_execute_plcplong1(ofdmframesync _q, float complex _x);
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q, float complex _x);
+
+// estimate long sequence gain
+//  _q      :   ofdmframesync object
+//  _x      :   input array (time)
+//  _G      :   output gain (freq)
+void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                    float complex * _x,
+                                    float complex * _G);
+
+// estimate residual carrier frequency offset from gain estimates
+float ofdmframesync_estimate_nu_S1(ofdmframesync _q);
+
+// estimate complex equalizer gain from G0 and G1
+//  _q      :   ofdmframesync object
+//  _ntaps  :   number of time-domain taps for smoothing
+//  _nu_hat :   residual phase difference between G0 and G1
+void ofdmframesync_estimate_eqgain(ofdmframesync _q,
+                                   unsigned int _ntaps,
+                                   float * _nu_hat);
+
+// estimate complex equalizer gain from G0 and G1 using polynomial fit
+//  _q      :   ofdmframesync object
+//  _order  :   polynomial order
+//  _nu_hat :   residual phase difference between G0 and G1
+void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
+                                        unsigned int _order,
+                                        float * _nu_hat);
+
+// recover symbol, correcting for gain, pilot phase, etc.
+void ofdmframesync_rxsymbol(ofdmframesync _q);
 
 #define OFDMFRAME64_SCTYPE_NULL     0
 #define OFDMFRAME64_SCTYPE_PILOT    1

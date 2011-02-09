@@ -43,6 +43,8 @@ struct AUTOCORR(_s) {
     WINDOW() w;         // input buffer
     WINDOW() wdelay;    // input buffer with delay
 
+    windowf we2;        // energy buffer
+
     TI * rw;            // input buffer read pointer
     TC * rwdelay;       // input buffer read pointer (with delay)
 };
@@ -57,6 +59,8 @@ AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,
     q->w        = WINDOW(_create)(q->window_size);
     q->wdelay   = WINDOW(_create)(q->window_size + q->delay);
 
+    q->we2      = windowf_create(q->window_size);
+
     return q;
 }
 
@@ -64,6 +68,7 @@ void AUTOCORR(_destroy)(AUTOCORR() _q)
 {
     WINDOW(_destroy)(_q->w);
     WINDOW(_destroy)(_q->wdelay);
+    windowf_destroy(_q->we2);
     free(_q);
 }
 
@@ -71,6 +76,7 @@ void AUTOCORR(_clear)(AUTOCORR() _q)
 {
     WINDOW(_clear)(_q->w);
     WINDOW(_clear)(_q->wdelay);
+    windowf_clear(_q->we2);
 }
 
 void AUTOCORR(_print)(AUTOCORR() _q)
@@ -82,6 +88,9 @@ void AUTOCORR(_push)(AUTOCORR() _q, TI _x)
 {
     WINDOW(_push)(_q->w,      _x);
     WINDOW(_push)(_q->wdelay, conj(_x));
+
+    // push |_x|^2 into buffer
+    windowf_push(_q->we2, crealf( _x*conjf(_x) ));
 }
 
 void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
@@ -90,5 +99,19 @@ void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
     WINDOW(_read)(_q->wdelay, &_q->rwdelay);
 
     DOTPROD(_run)(_q->rw,_q->rwdelay,_q->window_size,_rxx);
+}
+
+float AUTOCORR(_get_energy)(AUTOCORR() _q)
+{
+    // normalize by energy (slow method)
+    unsigned int i;
+    float e2 = 0.0f;
+    float * r;
+    windowf_read(_q->we2, &r);
+
+    for (i=0; i<_q->window_size; i++)
+        e2 += r[i];
+
+    return e2;
 }
 

@@ -31,12 +31,7 @@ int main(int argc, char*argv[]) {
     unsigned int m=3;   // symbol delay
     float beta=0.7f;    // excess bandwidth factor
     unsigned int num_symbols=16;
-    enum {
-        FILTER_RRCOS=0,
-        FILTER_RKAISER,
-        FILTER_ARKAISER,
-        FILTER_hM3
-    } ftype = 0;        // filter prototype
+    int ftype = LIQUID_RNYQUIST_RRC;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uht:k:m:b:n:")) != EOF) {
@@ -45,13 +40,13 @@ int main(int argc, char*argv[]) {
         case 'h':   usage();            return 0;
         case 't':
             if (strcmp(optarg,"rrcos")==0) {
-                ftype = FILTER_RRCOS;
+                ftype = LIQUID_RNYQUIST_RRC;
             } else if (strcmp(optarg,"rkaiser")==0) {
-                ftype = FILTER_RKAISER;
+                ftype = LIQUID_RNYQUIST_RKAISER;
             } else if (strcmp(optarg,"arkaiser")==0) {
-                ftype = FILTER_ARKAISER;
+                ftype = LIQUID_RNYQUIST_ARKAISER;
             } else if (strcmp(optarg,"hM3")==0) {
-                ftype = FILTER_hM3;
+                ftype = LIQUID_RNYQUIST_hM3;
             } else {
                 fprintf(stderr,"error: %s, unknown filter type '%s'\n", argv[0], optarg);
                 exit(1);
@@ -83,24 +78,8 @@ int main(int argc, char*argv[]) {
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
 
-    switch (ftype) {
-    case FILTER_RRCOS:
-        design_rrc_filter(k,m,beta,0,h);
-        break;
-    case FILTER_RKAISER:
-        design_rkaiser_filter(k,m,beta,0,h);
-        break;
-    case FILTER_ARKAISER:
-        design_arkaiser_filter(k,m,beta,0,h);
-        break;
-    case FILTER_hM3:
-        design_hM3_filter(k,m,beta,0,h);
-        break;
-    default:
-        // should never get to this point
-        fprintf(stderr,"error: %s, invalid filter type\n", argv[0]);
-        exit(1);
-    }
+    // design the filter
+    design_rnyquist_filter(ftype,k,m,beta,0,h);
 
     // derived values
     unsigned int num_samples = num_symbols*k;

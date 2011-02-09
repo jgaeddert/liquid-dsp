@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2010 Joseph Gaeddert
- * Copyright (c) 2010 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2010, 2011 Virginia Polytechnic
+ *                          Institute & State University
  *
  * This file is part of liquid.
  *
@@ -52,17 +53,19 @@ struct ofdmframegen_s {
 
     // scaling factors
     float g_data;           //
-    float g_S0;             //
-    float g_S1;             //
 
     // transform object
     FFT_PLAN ifft;          // ifft object
     float complex * X;      // frequency-domain buffer
     float complex * x;      // time-domain buffer
 
-    // PLCP
-    float complex * S0;     // short sequence
-    float complex * S1;     // long sequence
+    // PLCP short
+    float complex * S0;     // short sequence (frequency)
+    float complex * s0;     // short sequence (time)
+
+    // PLCP long
+    float complex * S1;     // long sequence (frequency)
+    float complex * s1;     // long sequence (time)
 
     // pilot sequence
     msequence ms_pilot;
@@ -74,7 +77,10 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
 {
     // validate input
     if (_M < 2) {
-        fprintf(stderr,"error: ofdmframesync_create(), number of subcarriers must be at least 2\n");
+        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be at least 2\n");
+        exit(1);
+    } else if (_M % 2) {
+        fprintf(stderr,"error: ofdmframegen_create(), number of subcarriers must be even\n");
         exit(1);
     }
 
@@ -106,19 +112,14 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
 
     // allocate memory for PLCP arrays
     q->S0 = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->s0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->S1 = (float complex*) malloc((q->M)*sizeof(float complex));
-    ofdmframe_init_S0(q->p, q->M, q->S0, &q->M_S0);
-    ofdmframe_init_S1(q->p, q->M, q->S1, &q->M_S1);
+    q->s1 = (float complex*) malloc((q->M)*sizeof(float complex));
+    ofdmframe_init_S0(q->p, q->M, q->S0, q->s0, &q->M_S0);
+    ofdmframe_init_S1(q->p, q->M, q->S1, q->s1, &q->M_S1);
 
-    // compute scaling factors
-    q->g_data = sqrtf(q->M) / sqrtf(q->M_pilot + q->M_data);
-    q->g_S0   = sqrtf(q->M) / sqrtf(q->M_S0);
-    q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
-#if 1
-    q->g_data /= sqrtf(q->M);
-    q->g_S0   /= sqrtf(q->M);
-    q->g_S1   /= sqrtf(q->M);
-#endif
+    // compute scaling factor
+    q->g_data = 1.0f / sqrtf(q->M_pilot + q->M_data);
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
@@ -141,7 +142,9 @@ void ofdmframegen_destroy(ofdmframegen _q)
 
     // free PLCP memory arrays
     free(_q->S0);
+    free(_q->s0);
     free(_q->S1);
+    free(_q->s1);
 
     // free pilot msequence object memory
     msequence_destroy(_q->ms_pilot);
@@ -162,48 +165,20 @@ void ofdmframegen_print(ofdmframegen _q)
 
 void ofdmframegen_reset(ofdmframegen _q)
 {
+    msequence_reset(_q->ms_pilot);
 }
 
 void ofdmframegen_write_S0(ofdmframegen _q,
                            float complex * _y)
 {
-    // move short sequence to freq-domain buffer
-    memmove(_q->X, _q->S0, (_q->M)*sizeof(float complex));
-
-    // apply gain
-    unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->X[i] *= _q->g_S0;
-
-    // execute transform
-    FFT_EXECUTE(_q->ifft);
-
-    // copy result to output
-    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
+    memmove(_y, _q->s0, (_q->M)*sizeof(float complex));
 }
 
 
 void ofdmframegen_write_S1(ofdmframegen _q,
                            float complex * _y)
 {
-    // move long sequence to freq-domain buffer
-    memmove(_q->X, _q->S1, (_q->M)*sizeof(float complex));
-
-    // apply gain
-    unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->X[i] *= _q->g_S1;
-
-    // execute transform
-    FFT_EXECUTE(_q->ifft);
-
-    // copy result to output
-#if 0
-    memmove( _y, &_q->x[_q->M - _q->cp_len], (_q->cp_len)*sizeof(float complex));
-    memmove(&_y[_q->cp_len], _q->x, (_q->M)*sizeof(float complex));
-#else
-    memmove(_y, _q->x, (_q->M)*sizeof(float complex));
-#endif
+    memmove(_y, _q->s1, (_q->M)*sizeof(float complex));
 }
 
 

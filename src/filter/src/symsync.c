@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -170,6 +170,47 @@ SYMSYNC() SYMSYNC(_create)(unsigned int _k,
 #endif
 
     return q;
+}
+
+// create square-root Nyquist symbol synchronizer
+//  _type        : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _k           : samples/symbol
+//  _m           : symbol delay
+//  _beta        : rolloff factor (0 < beta <= 1)
+//  _num_filters : number of filters in the bank
+SYMSYNC() SYMSYNC(_create_rnyquist)(int _type,
+                                    unsigned int _k,
+                                    unsigned int _m,
+                                    float _beta,
+                                    unsigned int _num_filters)
+{
+    // validate input
+    if (_k < 2) {
+        fprintf(stderr,"error: symsync_xxxt_create_rnyquist(), samples/symbol must be at least 2\n");
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: symsync_xxxt_create_rnyquist(), filter delay (m) must be greater than zero\n");
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: symsync_xxxt_create_rnyquist(), filter excess bandwidth must be in [0,1]\n");
+        exit(1);
+    }
+
+    // allocate memory for filter coefficients
+    unsigned int H_len = 2*_num_filters*_k*_m + 1;
+    float Hf[H_len];
+
+    // design square-root Nyquist pulse-shaping filter
+    design_rnyquist_filter(_type, _k*_num_filters, _m, _beta, 0, Hf);
+
+    // copy coefficients to type-specific array
+    TC H[H_len];
+    unsigned int i;
+    for (i=0; i<H_len; i++)
+        H[i] = Hf[i];
+
+    // create object and return
+    return SYMSYNC(_create)(_k, _num_filters, H, H_len);
 }
 
 // destroy synchronizer object

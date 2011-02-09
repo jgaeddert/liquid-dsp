@@ -278,6 +278,39 @@ void fir_kaiser_window(unsigned int _n,
     }   
 }
 
+// Design root-Nyquist filter
+//  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : rolloff factor (0 < beta <= 1)
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_rnyquist_filter(int _type,
+                            unsigned int _k,
+                            unsigned int _m,
+                            float _beta,
+                            float _dt,
+                            float * _h)
+{
+    switch (_type) {
+    case LIQUID_RNYQUIST_ARKAISER:
+        design_arkaiser_filter(_k, _m, _beta, _dt, _h);
+        break;
+    case LIQUID_RNYQUIST_RKAISER:
+        design_rkaiser_filter(_k, _m, _beta, _dt, _h);
+        break;
+    case LIQUID_RNYQUIST_RRC:
+        design_rrc_filter(_k, _m, _beta, _dt, _h);
+        break;
+    case LIQUID_RNYQUIST_hM3:
+        design_hM3_filter(_k, _m, _beta, _dt, _h);
+        break;
+    default:
+        fprintf(stderr,"error: design_rnyquist_filter(), invalid filter type '%d'\n", _type);
+        exit(1);
+    }
+}
+
 
 // Design FIR doppler filter
 //  _n      : filter length

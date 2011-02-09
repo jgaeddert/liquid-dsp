@@ -25,6 +25,11 @@ int main() {
     for (i=0; i<n; i++)
         x[i] = (float)i - _Complex_I*(float)i;
 
+#if 0
+    // run transforms computing plans internally
+    fft_run(n, x, y, FFT_FORWARD, method);
+    fft_run(n, y, z, FFT_REVERSE, method);
+#else
     // create fft plans
     fftplan pf = fft_create_plan(n, x, y, FFT_FORWARD, method);
     fftplan pr = fft_create_plan(n, y, z, FFT_REVERSE, method);
@@ -36,6 +41,7 @@ int main() {
     // destroy fft plans
     fft_destroy_plan(pf);
     fft_destroy_plan(pr);
+#endif
 
     // normalize inverse
     for (i=0; i<n; i++)

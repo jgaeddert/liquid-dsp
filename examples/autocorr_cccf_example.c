@@ -29,6 +29,7 @@ void usage()
     printf("  n     : number of sequences (repetitions), default: 8\n");
     printf("  w     : autocorr window length, default: 64\n");
     printf("  d     : autocorr delay length (multiple of 's'), default: 32\n");
+    printf("  e     : normalize by energy? default: off\n");
     printf("  s     : SNR, signal-to-noise ratio [dB], default: 20\n");
 }
 
@@ -39,10 +40,11 @@ int main(int argc, char*argv[]) {
     unsigned int n = 8;                 // number short sequences (repetition length)
     unsigned int window_size = 64;      // autocorr window size
     unsigned int delay = sequence_len;  // autocorr delay (multiple of 's')
+    int normalize_by_energy = 0;        // normalize output by E{x^2}?
     float SNRdB=20.0f;                  // signal-to-noise ratio (dB)
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhm:n:w:d:s:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhm:n:w:d:es:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
@@ -50,6 +52,7 @@ int main(int argc, char*argv[]) {
         case 'n': n = atof(optarg);             break;
         case 'w': window_size = atof(optarg);   break;
         case 'd': delay = atof(optarg);         break;
+        case 'e': normalize_by_energy = 1;      break;
         case 's': SNRdB = atoi(optarg);         break;
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
@@ -99,6 +102,10 @@ int main(int argc, char*argv[]) {
     for (i=0; i<num_samples; i++) {
         autocorr_cccf_push(q,x[i]);
         autocorr_cccf_execute(q,&rxx[i]);
+
+        // normalize by energy
+        if (normalize_by_energy)
+            rxx[i] /= autocorr_cccf_get_energy(q);
     }
 
     // find peak
