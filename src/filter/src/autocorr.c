@@ -43,7 +43,9 @@ struct AUTOCORR(_s) {
     WINDOW() w;         // input buffer
     WINDOW() wdelay;    // input buffer with delay
 
-    windowf we2;        // energy buffer
+    float * we2;        // energy buffer
+    float e2_sum;       // running sum of energy
+    unsigned int ie2;   // read index
 
     TI * rw;            // input buffer read pointer
     TC * rwdelay;       // input buffer read pointer (with delay)
@@ -59,7 +61,10 @@ AUTOCORR() AUTOCORR(_create)(unsigned int _window_size,
     q->w        = WINDOW(_create)(q->window_size);
     q->wdelay   = WINDOW(_create)(q->window_size + q->delay);
 
-    q->we2      = windowf_create(q->window_size);
+    q->we2      = (float*) malloc( (q->window_size)*sizeof(float) );
+
+    // clear object
+    AUTOCORR(_clear)(q);
 
     return q;
 }
@@ -68,7 +73,7 @@ void AUTOCORR(_destroy)(AUTOCORR() _q)
 {
     WINDOW(_destroy)(_q->w);
     WINDOW(_destroy)(_q->wdelay);
-    windowf_destroy(_q->we2);
+    free(_q->we2);
     free(_q);
 }
 
@@ -76,7 +81,12 @@ void AUTOCORR(_clear)(AUTOCORR() _q)
 {
     WINDOW(_clear)(_q->w);
     WINDOW(_clear)(_q->wdelay);
-    windowf_clear(_q->we2);
+    
+    _q->e2_sum = 0.0;
+    unsigned int i;
+    for (i=0; i<_q->window_size; i++)
+        _q->we2[i] = 0.0;
+    _q->ie2 = 0;
 }
 
 void AUTOCORR(_print)(AUTOCORR() _q)
@@ -90,7 +100,11 @@ void AUTOCORR(_push)(AUTOCORR() _q, TI _x)
     WINDOW(_push)(_q->wdelay, conj(_x));
 
     // push |_x|^2 into buffer
-    windowf_push(_q->we2, crealf( _x*conjf(_x) ));
+    float e2 = creal( _x*conj(_x) );
+    _q->e2_sum -= _q->we2[ _q->ie2 ];
+    _q->e2_sum += e2;
+    _q->we2[ _q->ie2 ] = e2;
+    _q->ie2 = (_q->ie2+1) % _q->window_size;
 }
 
 void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
@@ -98,20 +112,11 @@ void AUTOCORR(_execute)(AUTOCORR() _q, TO *_rxx)
     WINDOW(_read)(_q->w, &_q->rw);
     WINDOW(_read)(_q->wdelay, &_q->rwdelay);
 
-    DOTPROD(_run)(_q->rw,_q->rwdelay,_q->window_size,_rxx);
+    DOTPROD(_run4)(_q->rw,_q->rwdelay,_q->window_size,_rxx);
 }
 
 float AUTOCORR(_get_energy)(AUTOCORR() _q)
 {
-    // normalize by energy (slow method)
-    unsigned int i;
-    float e2 = 0.0f;
-    float * r;
-    windowf_read(_q->we2, &r);
-
-    for (i=0; i<_q->window_size; i++)
-        e2 += r[i];
-
-    return e2;
+    return _q->e2_sum;
 }
 
