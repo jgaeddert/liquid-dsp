@@ -226,6 +226,8 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->check       = CRC_NONE;
     fs->fec0        = FEC_NONE;
     fs->fec1        = FEC_NONE;
+    fs->payload_enc_msg_len = 0;
+    fs->num_payload_symbols = 0;
 
     // set status flags
     fs->state = FLEXFRAMESYNC_STATE_SEEKPN;
