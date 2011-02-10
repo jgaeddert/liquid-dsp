@@ -92,6 +92,10 @@ struct ofdmframesync_s {
     dotprod_cccf crosscorr; // long sequence cross-correlator
     msequence ms_pilot;     // pilot sequence generator
 
+    // coarse signal detection
+    float squelch_threshold;
+    int squelch_enabled;
+
     //
     float complex rxx_max;  // maximum auto-correlator output
 
@@ -208,6 +212,10 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
 
     // set pilot sequence
     q->ms_pilot = msequence_create(8);
+
+    // coarse detection
+    q->squelch_threshold = -30.0f;
+    q->squelch_enabled = 0;
 
     // reset object
     ofdmframesync_reset(q);
@@ -363,14 +371,23 @@ void ofdmframesync_execute_plcpshort(ofdmframesync _q,
 
     // decimate input (not necessary to auto-correlate every sample)
     // TODO : choose decimation rate based on M
-    if (_q->timer >= 4)
+    if (_q->timer >= 6)
         _q->timer = 0;
     else
         return;
 
+    float g0 = autocorr_cccf_get_energy(_q->autocorr);
+
+    if (_q->squelch_enabled) {
+        // compute signal strength
+        float rssi = 10.0f*log10f( sqrtf( g0 / (1.3f*_q->M) ) );
+
+        if (rssi < _q->squelch_threshold)
+            return;
+    }
+
     float complex rxx;
     autocorr_cccf_execute(_q->autocorr, &rxx);
-    float g0 = autocorr_cccf_get_energy(_q->autocorr);
     rxx /= g0;
     //printf("  rxx : %12.8f {%12.8f}\n", cabsf(rxx), cargf(rxx));
 
