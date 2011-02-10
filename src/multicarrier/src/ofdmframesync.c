@@ -358,13 +358,21 @@ void ofdmframesync_execute(ofdmframesync _q,
 void ofdmframesync_execute_plcpshort(ofdmframesync _q,
                                      float complex _x)
 {
-    float complex rxx;
+    _q->timer++;
     autocorr_cccf_push(_q->autocorr, _x);
-    autocorr_cccf_execute(_q->autocorr, &rxx);
-    //printf("  rxx : %12.8f {%12.8f}\n", cabsf(rxx), cargf(rxx));
 
+    // decimate input (not necessary to auto-correlate every sample)
+    // TODO : choose decimation rate based on M
+    if (_q->timer >= 4)
+        _q->timer = 0;
+    else
+        return;
+
+    float complex rxx;
+    autocorr_cccf_execute(_q->autocorr, &rxx);
     float g0 = autocorr_cccf_get_energy(_q->autocorr);
     rxx /= g0;
+    //printf("  rxx : %12.8f {%12.8f}\n", cabsf(rxx), cargf(rxx));
 
 #if DEBUG_OFDMFRAMESYNC
     windowcf_push(_q->debug_rxx, rxx);
