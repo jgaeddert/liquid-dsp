@@ -63,7 +63,8 @@ local_t_files	:=			\
 local_b_files	:=			\
 	firpfbch_benchmark.h		\
 	ofdmframe64sync_benchmark.h	\
-	ofdmframesync_benchmark.h	\
+	ofdmframesync_acquire_benchmark.h	\
+	ofdmframesync_rxsymbol_benchmark.h	\
 	ofdmoqam_benchmark.h
 
 
