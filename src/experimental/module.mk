@@ -35,8 +35,12 @@ local_s_files	:= 			\
 	layer.c				\
 	maxnet.c			\
 	node.c				\
+	fbasc.c				\
+	gport.c				\
 					\
-	fbasc.c
+	filter_rrrf.c			\
+	filter_crcf.c			\
+	filter_cccf.c			\
 
 # local_t_files
 #
@@ -46,7 +50,8 @@ local_s_files	:= 			\
 # within $(local_dir)
 #
 local_t_files	:=			\
-	ann_autotest.h
+	ann_autotest.h			\
+	gport_autotest.h
 
 
 # local_b_files
@@ -57,7 +62,12 @@ local_t_files	:=			\
 # $(local_dir)
 #
 local_b_files	:=			\
-	fbasc_benchmark.h
+	fbasc_benchmark.h		\
+	gport_dma_benchmark.h		\
+	gport_dma_threaded_benchmark.h	\
+	gport_ima_benchmark.h		\
+	gport_ima_threaded_benchmark.h	\
+	qmfb_benchmark.h
 
 include common.mk
 

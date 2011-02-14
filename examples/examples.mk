@@ -49,11 +49,6 @@ local_src	:=			\
 	ga_search_example.c		\
 	ga_search_knapsack_example.c	\
 	gmskmodem_example.c		\
-	gport_dma_example.c		\
-	gport_dma_threaded_example.c	\
-	gport_ima_example.c		\
-	gport_ima_threaded_example.c	\
-	gport_mma_threaded_example.c	\
 	gradient_search_datafit_example.c	\
 	gradient_search_example.c	\
 	hilbert_decim_example.c		\
@@ -64,10 +59,7 @@ local_src	:=			\
 	iirdes_analog_example.c		\
 	iirdes_pll_example.c		\
 	iirfilt_crcf_example.c		\
-	iirqmfb_crcf_example.c		\
 	interp_crcf_example.c		\
-	itqmfb_crcf_example.c		\
-	itqmfb_rrrf_example.c		\
 	kbd_window_example.c		\
 	kmeans_example.c		\
 	matched_filter_example.c	\
@@ -94,9 +86,6 @@ local_src	:=			\
 	poly_findroots_example.c	\
 	pnsync_crcf_example.c		\
 	pnsync_rrrf_example.c		\
-	prqmfb_crcf_example.c		\
-	qmfb_crcf_analysis_example.c	\
-	qmfb_crcf_synthesis_example.c	\
 	quantize_example.c		\
 	quasinewton_search_example.c	\
 	random_example.c		\
@@ -131,6 +120,17 @@ local_src_experimental :=		\
 	ann_node_example.c		\
 	ann_xor_example.c		\
 	fbasc_example.c			\
+	gport_dma_example.c		\
+	gport_dma_threaded_example.c	\
+	gport_ima_example.c		\
+	gport_ima_threaded_example.c	\
+	gport_mma_threaded_example.c	\
+	iirqmfb_crcf_example.c		\
+	itqmfb_crcf_example.c		\
+	itqmfb_rrrf_example.c		\
+	prqmfb_crcf_example.c		\
+	qmfb_crcf_analysis_example.c	\
+	qmfb_crcf_synthesis_example.c
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
 

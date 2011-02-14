@@ -265,11 +265,11 @@ framesync64_example.c
 freqmodem_example.c
 ga_search_example.c
 gmskmodem_example.c
-gport_dma_example.c
-gport_dma_threaded_example.c
-gport_ima_example.c
-gport_ima_threaded_example.c
-gport_mma_threaded_example.c
+gport_dma_example.c [EXPERIMENTAL]
+gport_dma_threaded_example.c [EXPERIMENTAL]
+gport_ima_example.c [EXPERIMENTAL]
+gport_ima_threaded_example.c [EXPERIMENTAL]
+gport_mma_threaded_example.c [EXPERIMENTAL]
 gradient_search_example.c
 
 gradient_search_datafit_example.c
@@ -302,7 +302,7 @@ iirfilt_crcf_example.c
     coefficients are real, but the input and output arrays are complex.  The
     filter order and cutoff frequency are specified at the beginning.
 
-iirqmfb_...
+iirqmfb_... [EXPERIMENTAL]
 
 iirdes_analog_example.c *
     Tests infinite impulse reponse (IIR) analog filter design. While this
@@ -328,7 +328,7 @@ iirdes_pll_example.c *
     SEE ALSO: nco_pll_example.c
               nco_pll_modem_example.c
 
-iirqmfb_crcf_example.c
+iirqmfb_crcf_example.c [EXPERIMENTAL]
 
 interleaver_example.c
     This example demonstrates the functionality of the liquid interleaver
@@ -347,8 +347,8 @@ interp_crcf_example.c *
     interface. Data symbols are generated and then interpolated
     according to a finite impulse response Nyquist filter.
 
-itqmfb_crcf_example.c
-itqmfb_rrrf_example.c
+itqmfb_crcf_example.c [EXPERIMENTAL]
+itqmfb_rrrf_example.c [EXPERIMENTAL]
 kbd_window_example.c
 kmeans_example.c
 matched_filter_example.c
@@ -449,9 +449,9 @@ polyfit_lagrange_example.c
 
     SEE ALSO: polyfit_example.c
 
-prqmfb_crcf_example.c
-qmfb_crcf_analysis_example.c
-qmfb_crcf_synthesis_example.c
+prqmfb_crcf_example.c [EXPERIMENTAL]
+qmfb_crcf_analysis_example.c [EXPERIMENTAL]
+qmfb_crcf_synthesis_example.c [EXPERIMENTAL]
 quantize_example.c
 quasinewton_search_example.c
 

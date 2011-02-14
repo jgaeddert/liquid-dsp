@@ -20,28 +20,26 @@
  */
 
 // 
-// gport_dma_benchmark.h
+// gport_ima_benchmark.h
 //
-// Run gport (generic data port) using direct memory
+// Run gport (generic data port) using indirect memory
 // access benchmark
 //
 
-#ifndef __LIQUID_GPORT_DMA_BENCHMARK_H__
-#define __LIQUID_GPORT_DMA_BENCHMARK_H__
+#ifndef __LIQUID_GPORT_IMA_BENCHMARK_H__
+#define __LIQUID_GPORT_IMA_BENCHMARK_H__
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.experimental.h"
 
-#define GPORT_DMA_BENCH_API(N)          \
+#define GPORT_IMA_BENCH_API(N)          \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ gport_dma_bench(_start, _finish, _num_iterations, N); }
+{ gport_ima_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
-void gport_dma_bench(struct rusage *_start,
+void gport_ima_bench(struct rusage *_start,
                      struct rusage *_finish,
                      unsigned long int *_num_iterations,
                      unsigned int _n)
@@ -49,22 +47,20 @@ void gport_dma_bench(struct rusage *_start,
     // initialize port
     gport p = gport_create(2*_n-1,sizeof(int));
 
-    unsigned long int i;
+    int w[_n];  // external buffer for writing
+    int r[_n];  // external buffer for reading
 
-    // pointer to internal buffer
-    void * buffer = NULL;
+    unsigned long int i;
 
     // start trials:
     //   write to port, read from port
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        // producer (write to port)
-        buffer = gport_producer_lock(p,_n);
-        gport_producer_unlock(p,_n);
+        // producer: write data to port from external buffer
+        gport_produce(p,(void*)w,_n);
 
-        // consumer (read from port)
-        buffer = gport_consumer_lock(p,_n);
-        gport_consumer_unlock(p,_n);
+        // consumer: read data from port to external buffer
+        gport_consume(p,(void*)r,_n);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= _n;
@@ -73,11 +69,11 @@ void gport_dma_bench(struct rusage *_start,
 }
 
 // 
-void benchmark_gport_dma_n1     GPORT_DMA_BENCH_API(1)
-void benchmark_gport_dma_n4     GPORT_DMA_BENCH_API(4)
-void benchmark_gport_dma_n16    GPORT_DMA_BENCH_API(16)
-void benchmark_gport_dma_n64    GPORT_DMA_BENCH_API(64)
-void benchmark_gport_dma_n256   GPORT_DMA_BENCH_API(256)
+void benchmark_gport_ima_n1    GPORT_IMA_BENCH_API(1)
+void benchmark_gport_ima_n4    GPORT_IMA_BENCH_API(4)
+void benchmark_gport_ima_n16   GPORT_IMA_BENCH_API(16)
+void benchmark_gport_ima_n64   GPORT_IMA_BENCH_API(64)
+void benchmark_gport_ima_n256  GPORT_IMA_BENCH_API(256)
 
-#endif // __LIQUID_GPORT_DMA_BENCHMARK_H__
+#endif // __LIQUID_GPORT_IMA_BENCHMARK_H__
 

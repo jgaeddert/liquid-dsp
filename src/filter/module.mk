@@ -85,7 +85,6 @@ local_b_files	:=			\
 	firfilt_rrrf_benchmark.h	\
 	iirfilt_benchmark.h		\
 	interp_benchmark.h		\
-	qmfb_benchmark.h		\
 	resamp_benchmark.h		\
 	resamp2_benchmark.h		\
 	symsync_benchmark.h

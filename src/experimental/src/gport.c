@@ -29,7 +29,7 @@
 #include <pthread.h>
 #include <string.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 // gport internal structure
 struct gport_s {

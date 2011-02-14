@@ -23,7 +23,7 @@
 #define __GPORT_AUTOTEST_H__
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 // 
 // AUTOTEST: basic gport functionality

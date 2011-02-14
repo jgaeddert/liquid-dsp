@@ -622,45 +622,6 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
                                      liquid_float_complex)
 
 
-// qmfb
-#define LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB,TO,TC,TI)          \
-void    QMFB(_analysis_execute)(QMFB() _q,                      \
-                                TI   _x0,                       \
-                                TI   _x1,                       \
-                                TO * _y0,                       \
-                                TO * _y1);                      \
-void    QMFB(_synthesis_execute)(QMFB() _q,                     \
-                                 TI   _y0,                      \
-                                 TI   _y1,                      \
-                                 TO * _x0,                      \
-                                 TO * _x1);
-
-LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_RRRF, float, float, float)
-LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-
-
-// iirqmfb
-#define LIQUID_IIRQMFB_DEFINE_INTERNAL_API(IIRQMFB,TO,TC,TI)    \
-void IIRQMFB(_analysis_execute)(IIRQMFB() _q,                   \
-                                TI   _x0,                       \
-                                TI   _x1,                       \
-                                TO * _y0,                       \
-                                TO * _y1);                      \
-void IIRQMFB(_synthesis_execute)(IIRQMFB() _q,                  \
-                                 TI   _y0,                      \
-                                 TI   _y1,                      \
-                                 TO * _x0,                      \
-                                 TO * _x1);
-
-LIQUID_IIRQMFB_DEFINE_INTERNAL_API(IIRQMFB_MANGLE_RRRF,
-                                   float,
-                                   float,
-                                   float)
-LIQUID_IIRQMFB_DEFINE_INTERNAL_API(IIRQMFB_MANGLE_CRCF,
-                                   liquid_float_complex,
-                                   float,
-                                   liquid_float_complex)
-
 
 // 
 // iirfiltsos : infinite impulse respone filter (second-order sections)
@@ -715,18 +676,6 @@ LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex,
                                       liquid_float_complex)
 
-
-// itqmfb
-#define LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB,TO,TC,TI)      \
-void    ITQMFB(_analysis_execute)(ITQMFB() _q,                  \
-                                  TO * _x,                      \
-                                  TO * _y);                     \
-void    ITQMFB(_synthesis_execute)(ITQMFB() _q,                 \
-                                   TO * _y,                     \
-                                   TO * _x);
-
-LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_RRRF, float, float, float)
-LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
 // symsync
 #define LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC,TO,TC,TI)    \

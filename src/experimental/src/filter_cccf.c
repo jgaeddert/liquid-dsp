@@ -23,50 +23,40 @@
 // Filter API: complex floating-point
 //
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 // 
-#define AUTOCORR(name)      LIQUID_CONCAT(autocorr_crcf,name)
-#define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_crcf,name)
-#define FIRFILT(name)       LIQUID_CONCAT(firfilt_crcf,name)
-#define FIRPFB(name)        LIQUID_CONCAT(firpfb_crcf,name)
-#define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcf,name)
-#define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcf,name)
-#define INTERP(name)        LIQUID_CONCAT(interp_crcf,name)
-#define DECIM(name)         LIQUID_CONCAT(decim_crcf,name)
-#define RESAMP(name)        LIQUID_CONCAT(resamp_crcf,name)
-#define RESAMP2(name)       LIQUID_CONCAT(resamp2_crcf,name)
-#define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
-#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_crcf,name)
-#define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_crcf,name)
+#define AUTOCORR(name)      LIQUID_CONCAT(autocorr_cccf,name)
+#define DDS(name)           LIQUID_CONCAT(dds_cccf,name)
+#define FIRFILT(name)       LIQUID_CONCAT(firfilt_cccf,name)
+#define IIRFILT(name)       LIQUID_CONCAT(iirfilt_cccf,name)
+#define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccf,name)
+#define FIRPFB(name)        LIQUID_CONCAT(firpfb_cccf,name)
+#define INTERP(name)        LIQUID_CONCAT(interp_cccf,name)
+#define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
+#define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
+#define QMFB(name)          LIQUID_CONCAT(qmfb_cccf,name)
+#define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
+#define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
+//#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
+#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_cccf,name)
+//#define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_cccf,name)
 
 #define T                   float complex   // general
 #define TO                  float complex   // output
-#define TC                  float           // coefficients
+#define TC                  float complex   // coefficients
 #define TI                  float complex   // input
 #define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
+#define DOTPROD(name)       LIQUID_CONCAT(dotprod_cccf,name)
 #define POLY(name)          LIQUID_CONCAT(polyf,name)
 
 #define TO_COMPLEX          1
-#define TC_COMPLEX          0
+#define TC_COMPLEX          1
 #define TI_COMPLEX          1
 
 #define PRINTVAL_TO(X,F)    PRINTVAL_CFLOAT(X,F)
-#define PRINTVAL_TC(X,F)    PRINTVAL_FLOAT(X,F)
+#define PRINTVAL_TC(X,F)    PRINTVAL_CFLOAT(X,F)
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // source files
-//#include "autocorr.c"
-#include "firfarrow.c"
-#include "firfilt.c"
-#include "firpfb.c"
-#include "iirfilt.c"
-#include "iirfiltsos.c"
-#include "interp.c"
-#include "decim.c"
-#include "resamp.c"
-#include "resamp2.c"
-#include "symsync.c"
-#include "symsync2.c"
-#include "symsynclp.c"
+//#include "qmfb.c"

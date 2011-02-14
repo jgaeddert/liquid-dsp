@@ -22,7 +22,7 @@
 #define __LIQUID_QMFB_BENCHMARK_H__
 
 #include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 // Helper function to keep code base small
 void qmfb_crcf_bench(

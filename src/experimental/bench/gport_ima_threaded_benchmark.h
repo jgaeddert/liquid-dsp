@@ -20,14 +20,14 @@
  */
 
 // 
-// gport_dma_threaded_benchmark.h
+// gport_ima_threaded_benchmark.h
 //
-// Run gport (generic data port) using direct memory
+// Run gport (generic data port) using indirect memory
 // access benchmark with threads
 //
 
-#ifndef __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
-#define __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
+#ifndef __LIQUID_GPORT_IMA_THREADED_BENCHMARK_H__
+#define __LIQUID_GPORT_IMA_THREADED_BENCHMARK_H__
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -38,11 +38,11 @@
 #include <string.h>
 #include <sys/resource.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 // prototype for thread routines
-void gport_dma_producer_handler ( void *ptr );
-void gport_dma_consumer_handler ( void *ptr );
+void gport_ima_producer_handler ( void *ptr );
+void gport_ima_consumer_handler ( void *ptr );
 
 // internal structure to keep track of total data handled
 // by produer and consumer threads
@@ -51,25 +51,25 @@ typedef struct {
     unsigned int producer_size;
     unsigned int consumer_size;
     unsigned long int num_trials;
-} gport_dma_threaded_bench_data_t;
+} gport_ima_threaded_bench_data_t;
 
-#define GPORT_DMA_THREADED_BENCH_API(N) \
+#define GPORT_IMA_THREADED_BENCH_API(N) \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ gport_dma_threaded_bench(_start, _finish, _num_iterations, N); }
+{ gport_ima_threaded_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
-void gport_dma_threaded_bench(struct rusage *_start,
+void gport_ima_threaded_bench(struct rusage *_start,
                               struct rusage *_finish,
                               unsigned long int *_num_iterations,
                               unsigned int _n)
 {
     // adjust number of iterations
-    *_num_iterations = (*_num_iterations*_n)/4;
+    *_num_iterations = (*_num_iterations *_n)/4;
 
     // initialize port
-    gport_dma_threaded_bench_data_t data;
+    gport_ima_threaded_bench_data_t data;
     data.p = gport_create(8*_n,sizeof(int));
     data.producer_size = _n;
     data.consumer_size = _n;
@@ -86,8 +86,8 @@ void gport_dma_threaded_bench(struct rusage *_start,
     pthread_attr_setdetachstate(&thread_attr,PTHREAD_CREATE_JOINABLE);
 
     // create threads
-    pthread_create(&producer_thread, &thread_attr, (void*) &gport_dma_producer_handler, (void*) &data);
-    pthread_create(&consumer_thread, &thread_attr, (void*) &gport_dma_consumer_handler, (void*) &data);
+    pthread_create(&producer_thread, &thread_attr, (void*) &gport_ima_producer_handler, (void*) &data);
+    pthread_create(&consumer_thread, &thread_attr, (void*) &gport_ima_consumer_handler, (void*) &data);
 
     // destroy attributes object (no longer needed)
     pthread_attr_destroy(&thread_attr);
@@ -106,49 +106,43 @@ void gport_dma_threaded_bench(struct rusage *_start,
     gport_destroy(data.p);
 }
 
-void gport_dma_producer_handler(void * _data)
+void gport_ima_producer_handler(void * _data)
 {
     // type-cast internal structure
-    gport_dma_threaded_bench_data_t * data = 
-        (gport_dma_threaded_bench_data_t*)_data;
+    gport_ima_threaded_bench_data_t * data =
+        (gport_ima_threaded_bench_data_t*)_data;
 
     unsigned long int i;
-    int * w;    // buffer pointer
+    int w[data->producer_size]; // external memory buffer
     for (i=0; i<data->num_trials; i+=data->producer_size) {
-        // producer: lock samples for writing
-        w = gport_producer_lock(data->p, data->producer_size);
-
-        // producer: once samples are ready, unlock semaphore
-        gport_producer_unlock(data->p, data->producer_size);
+        // producer: once samples are ready, write to buffer
+        gport_produce(data->p, (void*)w, data->producer_size);
     }
     pthread_exit(0);
 }
 
 
-void gport_dma_consumer_handler(void * _data)
+void gport_ima_consumer_handler(void * _data)
 {
     // type-cast internal structure
-    gport_dma_threaded_bench_data_t * data =
-        (gport_dma_threaded_bench_data_t*)_data;
+    gport_ima_threaded_bench_data_t * data =
+        (gport_ima_threaded_bench_data_t*)_data;
 
     unsigned long int i;
-    int * r;    // buffer pointer
+    int r[data->consumer_size]; // external memory buffer
     for (i=0; i<data->num_trials; i+=data->consumer_size) {
-        // consumer: lock samples for reading
-        r = gport_consumer_lock(data->p, data->consumer_size);
-
-        // consumer: release samples when finished
-        gport_consumer_unlock(data->p, data->consumer_size);
+        // consumer: read samples directly to external buffer
+        gport_consume(data->p,(void*)r,data->consumer_size);
     }
     pthread_exit(0);
 }
 
 // 
-void benchmark_gport_dma_threaded_n1    GPORT_DMA_THREADED_BENCH_API(1)
-void benchmark_gport_dma_threaded_n4    GPORT_DMA_THREADED_BENCH_API(4)
-void benchmark_gport_dma_threaded_n16   GPORT_DMA_THREADED_BENCH_API(16)
-void benchmark_gport_dma_threaded_n64   GPORT_DMA_THREADED_BENCH_API(64)
-void benchmark_gport_dma_threaded_n256  GPORT_DMA_THREADED_BENCH_API(256)
+void benchmark_gport_ima_threaded_n1    GPORT_IMA_THREADED_BENCH_API(1)
+void benchmark_gport_ima_threaded_n4    GPORT_IMA_THREADED_BENCH_API(4)
+void benchmark_gport_ima_threaded_n16   GPORT_IMA_THREADED_BENCH_API(16)
+void benchmark_gport_ima_threaded_n64   GPORT_IMA_THREADED_BENCH_API(64)
+void benchmark_gport_ima_threaded_n256  GPORT_IMA_THREADED_BENCH_API(256)
 
-#endif // __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
+#endif // __LIQUID_GPORT_IMA_THREADED_BENCHMARK_H__
 
