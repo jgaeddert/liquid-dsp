@@ -59,4 +59,5 @@
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // source files
+#include "dds.c"
 //#include "qmfb.c"

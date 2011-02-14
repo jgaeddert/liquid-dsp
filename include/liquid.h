@@ -1140,31 +1140,6 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex)
 
-// Direct digital [up/down] synthesizer
-
-#define DDS_MANGLE_CCCF(name)  LIQUID_CONCAT(dds_cccf,name)
-
-// Macro:
-//   DDS        : name-mangling macro
-//   T          : output data type
-#define LIQUID_DDS_DEFINE_API(DDS,T)                            \
-                                                                \
-typedef struct DDS(_s) * DDS();                                 \
-DDS() DDS(_create)(unsigned int _num_stages,                    \
-                   float _fc,                                   \
-                   float _bw,                                   \
-                   float _As);                                  \
-void DDS(_destroy)(DDS() _q);                                   \
-void DDS(_print)(DDS() _q);                                     \
-void DDS(_reset)(DDS() _q);                                     \
-void DDS(_decim_execute)(DDS() _q,                              \
-                         T * _x,                                \
-                         T * _y);                               \
-void DDS(_interp_execute)(DDS() _q,                             \
-                          T _x,                                 \
-                          T * _y);
-
-LIQUID_DDS_DEFINE_API(DDS_MANGLE_CCCF, liquid_float_complex)
 
 //
 // Finite impulse response filter

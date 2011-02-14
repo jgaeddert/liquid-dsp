@@ -19,11 +19,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_DDS_BENCHMARK_H__
-#define __LIQUID_DDS_BENCHMARK_H__
-
 #include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 typedef enum {
     LIQUID_DDS_BENCHMARK_DECIM,     // decimator (down-converter)
@@ -111,6 +108,4 @@ void benchmark_dds_cccf_interp_n4   LIQUID_DDS_CCCF_BENCHMARK_API(2,60.0f,0.5f,L
 void benchmark_dds_cccf_interp_n8   LIQUID_DDS_CCCF_BENCHMARK_API(3,60.0f,0.5f,LIQUID_DDS_BENCHMARK_INTERP)
 void benchmark_dds_cccf_interp_n16  LIQUID_DDS_CCCF_BENCHMARK_API(4,60.0f,0.5f,LIQUID_DDS_BENCHMARK_INTERP)
 
-
-#endif // __LIQUID_DDS_BENCHMARK_H__
 

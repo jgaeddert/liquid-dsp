@@ -79,7 +79,6 @@ local_t_files	:= 			\
 # $(local_dir)
 #
 local_b_files	:=			\
-	dds_benchmark.h			\
 	decim_benchmark.h		\
 	firhilb_benchmark.h		\
 	firfilt_rrrf_benchmark.h	\

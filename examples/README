@@ -136,7 +136,7 @@ cvsd_sine_example.c
     sinusoidal input.  The output distortion ratio is computed, and the
     time-domain results are written to a file.
 
-dds_cccf_example.c
+dds_cccf_example.c [EXPERIMENTAL]
     Direct digital synthesizer example.  This example demonstrates the
     interface to the direct digital synthesizer.  A baseband pulse is
     generated and then efficiently up-converted (interpolated and mixed up)

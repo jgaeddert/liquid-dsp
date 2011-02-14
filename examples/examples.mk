@@ -20,7 +20,6 @@ local_src	:=			\
 	complementary_codes_example.c	\
 	crc_example.c			\
 	cvsd_sine_example.c		\
-	dds_cccf_example.c		\
 	decim_crcf_example.c		\
 	decim_rrrf_example.c		\
 	dotprod_rrrf_example.c		\
@@ -119,6 +118,7 @@ local_src_experimental :=		\
 	ann_maxnet_example.c		\
 	ann_node_example.c		\
 	ann_xor_example.c		\
+	dds_cccf_example.c		\
 	fbasc_example.c			\
 	gport_dma_example.c		\
 	gport_dma_threaded_example.c	\

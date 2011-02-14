@@ -601,11 +601,6 @@ float estimate_req_filter_len_Kaiser(float _df,
 float estimate_req_filter_len_Herrmann(float _df,
                                        float _As);
 
-// Direct digital [up/down] synthesizer
-//#define LIQUID_DDS_DEFINE_INTERNAL_API(DDS,T)
-
-//LIQUID_DDS_DEFINE_INTERNAL_API(DDS_MANGLE_CCCF, liquid_float_complex)
-
 
 // fir_farrow
 #define LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW,TO,TC,TI)  \

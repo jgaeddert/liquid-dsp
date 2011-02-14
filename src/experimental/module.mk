@@ -67,6 +67,7 @@ local_b_files	:=			\
 	gport_dma_threaded_benchmark.h	\
 	gport_ima_benchmark.h		\
 	gport_ima_threaded_benchmark.h	\
+	dds_benchmark.h			\
 	qmfb_benchmark.h
 
 include common.mk
