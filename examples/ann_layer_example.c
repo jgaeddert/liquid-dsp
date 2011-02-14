@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "ann_layer_example.m"
 
