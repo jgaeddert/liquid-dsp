@@ -27,7 +27,7 @@ module_name	:= audio
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:= cvsd.c fbasc.c
+local_s_files	:= cvsd.c
 
 
 # local_t_files
@@ -47,8 +47,7 @@ local_t_files	:= cvsd_autotest.h
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:=			\
-	fbasc_benchmark.h
+local_b_files	:=
 
 
 include common.mk

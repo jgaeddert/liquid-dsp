@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "fbasc_example.m"
 

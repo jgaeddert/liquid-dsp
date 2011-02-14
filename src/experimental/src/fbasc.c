@@ -40,7 +40,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 #define FBASC_DEBUG     0
 

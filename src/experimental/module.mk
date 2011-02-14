@@ -34,7 +34,9 @@ local_s_files	:= 			\
 	kmeans.c			\
 	layer.c				\
 	maxnet.c			\
-	node.c
+	node.c				\
+					\
+	fbasc.c
 
 # local_t_files
 #
@@ -54,7 +56,8 @@ local_t_files	:=			\
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:=
+local_b_files	:=			\
+	fbasc_benchmark.h
 
 include common.mk
 

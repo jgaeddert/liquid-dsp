@@ -241,5 +241,77 @@ struct maxnet_s {
 };
 
 
+//
+// SUBMODULE : audio
+// 
+
+
+// FBASC: filterbank audio synthesizer codec
+#define FBASC_ENCODER   0
+#define FBASC_DECODER   1
+typedef struct fbasc_s * fbasc;
+unsigned int fbasc_compute_header_length(unsigned int _num_channels,
+                                         unsigned int _samples_per_frame,
+                                         unsigned int _bytes_per_frame);
+fbasc fbasc_create(int _type,
+                   unsigned int _num_channels,
+                   unsigned int _samples_per_frame,
+                   unsigned int _bytes_per_frame);
+void fbasc_destroy(fbasc _q);
+void fbasc_print(fbasc _q);
+void fbasc_reset(fbasc _q);
+
+void fbasc_encode(fbasc _q,
+                  float * _audio,
+                  unsigned char * _header,
+                  unsigned char * _frame);
+void fbasc_decode(fbasc _q,
+                  unsigned char * _header,
+                  unsigned char * _frame,
+                  float * _audio);
+
+
+//
+// SUBMODULE-INTERNAL : audio
+//
+
+// compute normalized channel variance
+void fbasc_encoder_compute_channel_variance(fbasc _q);
+
+// computes optimal bit allocation based on channel variance
+//
+//  _num_channels   :   number of channels
+//  _var            :   channel variance array [size: _num_channels x 1]
+//  _num_bits       :   total number of bits per symbol
+//  _max_bits       :   maximum number of bits per channel
+//  _k              :   resulting bit allocation per channel [size: _num_channels x 1]
+void fbasc_compute_bit_allocation(unsigned int _n,
+                                  float * _e,
+                                  unsigned int _num_bits,
+                                  unsigned int _max_bits,
+                                  unsigned int * _k);
+
+// compute normalized channel energy, nominal gain, etc.
+void fbasc_encoder_compute_metrics(fbasc _q);
+void fbasc_decoder_compute_metrics(fbasc _q);
+
+// run analyzer/synthesizer
+void fbasc_encoder_run_analyzer(fbasc _q, float * _x, float * _X);
+void fbasc_decoder_run_synthesizer(fbasc _q, float * _X, float * _x);
+
+// quantize/de-quantize channelized data
+void fbasc_encoder_quantize_samples(fbasc _q);
+void fbasc_decoder_dequantize_samples(fbasc _q);
+
+// pack/unpack header
+void fbasc_encoder_pack_header(fbasc _q, unsigned char * _header);
+void fbasc_decoder_unpack_header(fbasc _q, unsigned char * _header);
+
+// pack/unpack frame
+void fbasc_encoder_pack_frame(fbasc _q, unsigned char * _frame);
+void fbasc_decoder_unpack_frame(fbasc _q, unsigned char * _frame);
+
+
+
 #endif // __LIQUID_EXPERIMENTAL_H__
 

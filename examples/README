@@ -172,7 +172,7 @@ eqlms_cccf_example.c
 eqrls_cccf_example.c
 fading_channel_example.c
 fading_generator_example.c
-fbasc_example.c
+fbasc_example.c [EXPERIMENTAL]
 fct_example.c
 
 fec_example.c *

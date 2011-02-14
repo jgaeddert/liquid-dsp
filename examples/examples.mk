@@ -29,7 +29,6 @@ local_src	:=			\
 	eqrls_cccf_example.c		\
 	fading_channel_example.c	\
 	fading_generator_example.c	\
-	fbasc_example.c			\
 	fec_example.c			\
 	fct_example.c			\
 	fft_example.c			\
@@ -131,6 +130,7 @@ local_src_experimental :=		\
 	ann_maxnet_example.c		\
 	ann_node_example.c		\
 	ann_xor_example.c		\
+	fbasc_example.c			\
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
 

@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/resource.h>
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 // Helper function to keep code base small
 void fbasc_bench(
