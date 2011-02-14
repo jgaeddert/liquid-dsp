@@ -58,8 +58,8 @@ AC_ARG_ENABLE(profile,
 # Option to enable/disable experimental modules and objects
 AC_ARG_ENABLE(experimental,
     AS_HELP_STRING([--enable-experimental],[enable experimental modules, objects]),
-    [AC_DEFINE(LIQUID_EXPERIMENTAL)],
-    [],
+    [MLIBS_EXPERIMENTAL="experimental"; AC_DEFINE(LIQUID_EXPERIMENTAL)],
+    [MLIBS_EXPERIMENTAL=""],
 )
 
 # Check for necessary programs
@@ -149,6 +149,7 @@ esac
 #
 AC_SUBST(LIBS)              # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)     # 
+AC_SUBST(MLIBS_EXPERIMENTAL)# build experimental module?
 
 AC_SUBST(SH_LIB)            # output shared library target
 AC_SUBST(REBIND)            # rebinding tool (e.g. ldconfig)

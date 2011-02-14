@@ -98,7 +98,8 @@ modules		:=	\
 	quantization	\
 	random		\
 	sequence	\
-	utility
+	utility		\
+	@MLIBS_EXPERIMENTAL@
 
 # target-specific libraries
 mlibs_dotprod := @MLIBS_DOTPROD@
