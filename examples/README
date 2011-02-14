@@ -7,6 +7,8 @@
 This directory contains all the examples for interfacing the liquid modules.
 Some examples permit command-line options.  These scripts are denoted with an
 asterisk (*).
+Some examples are only available when configured with the option
+'--enable-experimental' are are denoted with [EXPERIMENTAL].
 
 TODO: finish descriptions
 
@@ -32,7 +34,7 @@ ampmodem_example.c
     modulator/demodulator) with noise, carrier phase, and carrier frequency
     offsets.
 
-ann_bitpattern_example.c
+ann_bitpattern_example.c [EXPERIMENTAL]
     Artificial neural network (ann) bit pattern example.  This example
     demonstrates the functionality of the ann module by training a
     simple network to learn prime numbers:
@@ -48,21 +50,21 @@ ann_bitpattern_example.c
         7   :   1   1   1   |   1
 
 
-ann_example.c
+ann_example.c [EXPERIMENTAL]
     Artificial neural network (ann) example. This example demonstrates the
     functionality of the ann module by training a simple network to learn the
     output of a continuous function.
 
-ann_layer_example.c
+ann_layer_example.c [EXPERIMENTAL]
 
-ann_maxnet_example.c *
+ann_maxnet_example.c * [EXPERIMENTAL]
    Artificial neural network (ann) maxnet example. This example demonstrates
    the functionality of the ann maxnet by training a network to recognize and
    separate two input patterns in a 2-dimensional plane.
     
-ann_node_example.c
+ann_node_example.c [EXPERIMENTAL]
 
-ann_xor_example.c
+ann_xor_example.c [EXPERIMENTAL]
     Artificial neural network (ann) eXclusive OR example. This example
     demonstrates the functionality of the ann  module by training a simple
     network to learn the output of an exclusive or (xor) circuit:

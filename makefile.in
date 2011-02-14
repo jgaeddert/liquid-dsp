@@ -78,7 +78,6 @@ ARFLAGS		= r
 #    local_b_files : benchmark script headers
 modules		:=	\
 	agc		\
-	ann		\
 	audio		\
 	buffer		\
 	channel		\

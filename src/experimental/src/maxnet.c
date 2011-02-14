@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 #define MAXNET(name)    LIQUID_CONCAT(maxnet,name)
 #define ANN(name)       LIQUID_CONCAT(ann,name)

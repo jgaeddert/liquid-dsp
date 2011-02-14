@@ -157,95 +157,6 @@ LIQUID_AGC_DEFINE_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
 LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
 
 
-//
-// MODULE : ann (artificial neural network)
-//
-
-typedef struct patternset_s * patternset;
-
-typedef enum {
-    LIQUID_ANN_AF_LINEAR=0,
-    LIQUID_ANN_AF_LOGISTIC,
-    LIQUID_ANN_AF_TANH,
-    LIQUID_ANN_AF_MULAW,
-    LIQUID_ANN_AF_ERF
-} ann_activation_function;
-
-#define ANN_MANGLE_FLOAT(name)  LIQUID_CONCAT(ann, name)
-
-// large macro
-//   ANN    : name-mangling macro
-//   T      : primitive data type
-#define LIQUID_ANN_DEFINE_API(ANN,T)                            \
-                                                                \
-typedef struct ANN(_s) * ANN();                                 \
-ANN() ANN(_create)(unsigned int * _structure,                   \
-                   unsigned int _num_layers,                    \
-                   int _activation_func_hidden,                 \
-                   int _activation_func_output);                \
-void  ANN(_destroy)(ANN() _q);                                  \
-void  ANN(_print)(ANN() _q);                                    \
-ANN() ANN(_load_from_file)(char * _filename);                   \
-void  ANN(_save_to_file)(ANN() _q, char * _filename);           \
-void  ANN(_init_random_weights)(ANN() _q);                      \
-void  ANN(_evaluate)(ANN() _q,                                  \
-                     T * _x,                                    \
-                     T * _y);                                   \
-void  ANN(_train_patternset)(ANN() _q,                          \
-                             patternset _set,                   \
-                             T _emax,                           \
-                             unsigned int _nmax);               \
-void  ANN(_train)(ANN() _q,                                     \
-                  T * _x,                                       \
-                  T * _y,                                       \
-                  unsigned int _num_patterns,                   \
-                  T _emax,                                      \
-                  unsigned int _nmax);                          \
-void  ANN(_train_ga)(ANN() _q,                                  \
-                     T * _x,                                    \
-                     T * _y,                                    \
-                     unsigned int _num_patterns,                \
-                     T _emax,                                   \
-                     unsigned int _nmax);                       \
-float ANN(_compute_rmse)(ANN() _q,                              \
-                         T * _x,                                \
-                         T * _y,                                \
-                         unsigned int _num_patterns);
-// void ANN(_prune)(ANN() _q, ...);
-
-// Define ann APIs
-LIQUID_ANN_DEFINE_API(ANN_MANGLE_FLOAT, float)
-
-
-// maxnet
-typedef struct maxnet_s * maxnet;
-maxnet maxnet_create(unsigned int _num_classes,
-                     unsigned int * _structure,
-                     unsigned int _num_layers);
-void maxnet_destroy(maxnet _q);
-void maxnet_print(maxnet _q);
-void maxnet_evaluate(maxnet _q,
-                     float * _x,
-                     float * _y,
-                     unsigned int * _class);
-void maxnet_train(maxnet _q,
-                  float * _x,
-                  unsigned int _class);
-void maxnet_train_group(maxnet _q,
-                        float * _x,
-                        unsigned int * _class,
-                        unsigned int _num_patterns,
-                        unsigned int _max_num_trials);
-float maxnet_compute_rmse(maxnet _q,
-                          float * _x,
-                          unsigned int * _class,
-                          unsigned int _num_patterns);
-
-// K-means (2-dimensional)
-void kmeans(liquid_float_complex * _x,
-            unsigned int _n,
-            liquid_float_complex * _s,
-            unsigned int _k);
 
 //
 // MODULE : audio
@@ -3334,9 +3245,7 @@ float rosenbrock(void * _userdata, float * _v, unsigned int _n);
 // optimization pattern set
 //
 
-// forward declaration of patternset is in artificial
-// neural network module
-//typedef struct patternset_s * patternset;
+typedef struct patternset_s * patternset;
 
 // create pattern set
 //  _num_inputs     :   number of inputs in the set

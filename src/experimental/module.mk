@@ -1,6 +1,6 @@
-# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
+# 				 Institute & State University
 #
 # This file is part of liquid.
 #
@@ -20,6 +20,7 @@
 # 
 # Makefile for experimental module
 #
+
 module_name     := experimental
 
 # local_s_files
@@ -27,8 +28,13 @@ module_name     := experimental
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:=
-
+local_s_files	:= 			\
+	ann.nodes.c			\
+	activation_functions.c		\
+	kmeans.c			\
+	layer.c				\
+	maxnet.c			\
+	node.c
 
 # local_t_files
 #
@@ -37,7 +43,8 @@ local_s_files	:=
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:=
+local_t_files	:=			\
+	ann_autotest.h
 
 
 # local_b_files
@@ -48,7 +55,6 @@ local_t_files	:=
 # $(local_dir)
 #
 local_b_files	:=
-
 
 include common.mk
 

@@ -3,17 +3,12 @@
 #
 
 local_dir	:= examples
+
 local_src	:=			\
 	agc_example.c			\
 	agc_qpsk_example.c		\
 	agc_squelch_example.c		\
 	ampmodem_example.c		\
-	ann_bitpattern_example.c	\
-	ann_example.c			\
-	ann_layer_example.c		\
-	ann_maxnet_example.c		\
-	ann_node_example.c		\
-	ann_xor_example.c		\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\
 	bpacketsync_example.c		\
@@ -126,6 +121,16 @@ local_src	:=			\
 #	ofdmoqamframe64gen_example.c
 #	ofdmoqamframe64sync_example.c
 #	gmskframe_example.c
+
+# experimental examples
+# TODO : build when configured with '--enable-experimental' option
+local_src_experimental :=		\
+	ann_bitpattern_example.c	\
+	ann_example.c			\
+	ann_layer_example.c		\
+	ann_maxnet_example.c		\
+	ann_node_example.c		\
+	ann_xor_example.c		\
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
 

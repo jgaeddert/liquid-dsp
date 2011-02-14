@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
+ *                                Institute & State University
  *
  * This file is part of liquid.
  *
@@ -28,7 +29,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 #define ANN(name)       LIQUID_CONCAT(ann,name)
 #define ANNLAYER(name)  LIQUID_CONCAT(annlayer,name)
