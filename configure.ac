@@ -30,6 +30,8 @@ AC_CONFIG_SRCDIR([libliquid.c])
 AC_LANG(C)
 
 # Autoheader
+AH_TEMPLATE([LIQUID_EXPERIMENTAL], [Enable building of experimental modules and objects.])
+
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
 #ifndef __LIQUID_CONFIG_H__
@@ -51,6 +53,13 @@ AC_ARG_ENABLE(profile,
     AS_HELP_STRING([--enable-profile],[profile]),
     [PROFILE_OPTION="-pg"; CLIB="-lc_p"],
     [PROFILE_OPTION="";    CLIB="-lc"],
+)
+
+# Option to enable/disable experimental modules and objects
+AC_ARG_ENABLE(experimental,
+    AS_HELP_STRING([--enable-experimental],[enable experimental modules, objects]),
+    [AC_DEFINE(LIQUID_EXPERIMENTAL)],
+    [],
 )
 
 # Check for necessary programs
