@@ -40,6 +40,8 @@ local_s_files	:= 			\
 	filter_rrrf.c			\
 	filter_crcf.c			\
 	filter_cccf.c			\
+	gmskframegen.c			\
+	gmskframesync.c			\
 	patternset.c
 
 # local_t_files

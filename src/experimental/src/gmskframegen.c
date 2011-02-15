@@ -29,7 +29,7 @@
 #include <assert.h>
 #include <complex.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 #define DEBUG_GMSKFRAMEGEN    0
 
