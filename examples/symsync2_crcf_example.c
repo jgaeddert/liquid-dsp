@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "symsync2_crcf_example.m"
 

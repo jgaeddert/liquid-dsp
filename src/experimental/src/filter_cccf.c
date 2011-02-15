@@ -61,3 +61,5 @@
 // source files
 #include "dds.c"
 //#include "qmfb.c"
+#include "symsync2.c"
+//#include "symsynclp.c"

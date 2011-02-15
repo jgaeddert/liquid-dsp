@@ -63,3 +63,5 @@
 #include "iirqmfb.c"
 #include "itqmfb.c"
 #include "qmfb.c"
+#include "symsync2.c"
+#include "symsynclp.c"

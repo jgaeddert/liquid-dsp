@@ -95,10 +95,8 @@ local_src	:=			\
 	resamp2_crcf_interp_recreate_example.c	\
 	ricek_channel_example.c		\
 	scramble_example.c		\
-	symsync2_crcf_example.c		\
 	symsync_crcf_example.c		\
 	symsync_rrrf_example.c		\
-	symsynclp_crcf_example.c	\
 	wdelayf_example.c		\
 	windowf_example.c
 
@@ -130,7 +128,9 @@ local_src_experimental :=		\
 	patternset_example.c		\
 	prqmfb_crcf_example.c		\
 	qmfb_crcf_analysis_example.c	\
-	qmfb_crcf_synthesis_example.c
+	qmfb_crcf_synthesis_example.c	\
+	symsync2_crcf_example.c		\
+	symsynclp_crcf_example.c
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
 

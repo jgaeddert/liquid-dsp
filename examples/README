@@ -500,10 +500,10 @@ scramble_example.c
     'whiten' the data sequence with a bit mask in order to achieve maximum
     entropy.  This example demonstrates the interface.
 
-symsync2_crcf_example.c
+symsync2_crcf_example.c [EXPERIMENTAL]
 symsync_crcf_example.c
 symsync_rrrf_example.c
-symsynclp_crcf_example.c
+symsynclp_crcf_example.c [EXPERIMENTAL]
 wdelayf_example.c
 
 windowf_example.c

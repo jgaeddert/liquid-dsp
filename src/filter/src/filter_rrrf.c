@@ -38,8 +38,6 @@
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrf,name)
-#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_rrrf,name)
-#define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_rrrf,name)
 
 #define T                   float   // general
 #define TO                  float   // output
@@ -70,5 +68,3 @@
 #include "resamp.c"
 #include "resamp2.c"
 #include "symsync.c"
-#include "symsync2.c"
-#include "symsynclp.c"
