@@ -38,6 +38,8 @@
 // SUBMODULE : ann (artificial neural network)
 // 
 
+typedef struct patternset_s * patternset;
+
 typedef enum {
     LIQUID_ANN_AF_LINEAR=0,
     LIQUID_ANN_AF_LOGISTIC,
@@ -624,6 +626,94 @@ void    ITQMFB(_synthesis_execute)(ITQMFB() _q,                 \
 LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_RRRF, float, float, float)
 LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
+//
+// SUBMODULE : optimization
+//
+
+//
+// optimization pattern set
+//
+
+// forward declaration of patternset in artificial neural network module
+//typedef struct patternset_s * patternset;
+
+// create pattern set
+//  _num_inputs     :   number of inputs in the set
+//  _num_outputs    :   number of output in the set
+patternset patternset_create(unsigned int _num_inputs,
+                             unsigned int _num_outputs);
+
+// destroy pattern set object
+void patternset_destroy(patternset _q);
+
+// print pattern set
+void patternset_print(patternset _q);
+
+// get number of patterns currently in the set
+unsigned int patternset_get_num_patterns(patternset _q);
+
+// append single pattern to set
+//  _q      :   pattern set object
+//  _x      :   input [size: _num_inputs x 1]
+//  _y      :   output [size: _num_outputs x 1]
+void patternset_append_pattern(patternset _q,
+                               float *_x,
+                               float *_y);
+
+// append multiple patterns to the set
+//  _q      :   pattern set object
+//  _x      :   inputs [size: _num_inputs x _n]
+//  _y      :   outputs [size: _num_outputs x _n]
+//  _n      :   number of patterns to append
+void patternset_append_patterns(patternset _q,
+                                float * _x,
+                                float * _y,
+                                unsigned int _n);
+
+// remove pattern from set at index _i
+void patternset_delete_pattern(patternset _q,
+                               unsigned int _i);
+
+// remove all patterns from the set
+void patternset_clear(patternset _q);
+
+// access a single pattern in the set
+//  _q      :   pattern set object
+//  _i      :   index of pattern
+//  _x      :   input pointer
+//  _y      :   output pointer
+void patternset_access(patternset _q,
+                       unsigned int _i,
+                       float ** _x,
+                       float ** _y);
+
+// access all patterns in the set
+//  _q      :   pattern set object
+//  _x      :   input pointer
+//  _y      :   output pointer
+void patternset_access_all(patternset _q,
+                           float ** _x,
+                           float ** _y);
+
+typedef void(*optim_target_function)(float *_x, float *_y, void *_p);
+typedef float(*optim_obj_function)(patternset _q, void *_p, optim_target_function _f);
+
+//
+// SUBMODULE-INTERNAL : optimization
+//
+
+
+// optim pattern set (struct)
+struct patternset_s {
+    float * x;      // input
+    float * y;      // output
+    unsigned int num_inputs;
+    unsigned int num_outputs;
+    unsigned int num_patterns;
+    unsigned int num_allocated;
+};
+
+void patternset_increase_mem(patternset _q, unsigned int _n);
 
 
 #endif // __LIQUID_EXPERIMENTAL_H__

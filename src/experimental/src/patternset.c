@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 // create pattern set
 //  _num_inputs     :   number of inputs in the set

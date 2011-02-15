@@ -426,7 +426,7 @@ packetizer_example.c *
     SEE ALSO: fec_example.c
               crc_example.c
 
-patternset_example.c
+patternset_example.c [EXPERIMENTAL]
     This example demonstrates the functionality of the patternset
     structure for easily managing pattern sets for optimization.
 

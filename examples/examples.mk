@@ -78,7 +78,6 @@ local_src	:=			\
 	ofdmoqam_firpfbch_example.c	\
 	ofdmoqamframesync_example.c	\
 	packetizer_example.c		\
-	patternset_example.c		\
 	pll_example.c			\
 	polyfit_example.c		\
 	polyfit_lagrange_example.c	\
@@ -128,6 +127,7 @@ local_src_experimental :=		\
 	iirqmfb_crcf_example.c		\
 	itqmfb_crcf_example.c		\
 	itqmfb_rrrf_example.c		\
+	patternset_example.c		\
 	prqmfb_crcf_example.c		\
 	qmfb_crcf_analysis_example.c	\
 	qmfb_crcf_synthesis_example.c

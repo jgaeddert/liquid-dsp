@@ -37,10 +37,10 @@ local_s_files	:= 			\
 	node.c				\
 	fbasc.c				\
 	gport.c				\
-					\
 	filter_rrrf.c			\
 	filter_crcf.c			\
 	filter_cccf.c			\
+	patternset.c
 
 # local_t_files
 #

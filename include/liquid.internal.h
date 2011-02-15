@@ -1618,18 +1618,6 @@ void quasinewton_search_compute_Hessian(quasinewton_search _q);
 // Goldfarb & Shanno method (BFGS)
 void quasinewton_search_update_hessian_bfgs(quasinewton_search _q);
 
-// optim pattern set (struct)
-struct patternset_s {
-    float * x;      // input
-    float * y;      // output
-    unsigned int num_inputs;
-    unsigned int num_outputs;
-    unsigned int num_patterns;
-    unsigned int num_allocated;
-};
-
-void patternset_increase_mem(patternset _q, unsigned int _n);
-
 
 // Chromosome structure used in genetic algorithm searches
 struct chromosome_s {
