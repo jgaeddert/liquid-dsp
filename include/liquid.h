@@ -1841,43 +1841,6 @@ void gmskframesync_execute(gmskframesync _fg,
 
 
 //
-// P/N synchronizer
-//
-#define PNSYNC_MANGLE_RRRF(name)    LIQUID_CONCAT(pnsync_rrrf,name)
-#define PNSYNC_MANGLE_CRCF(name)    LIQUID_CONCAT(pnsync_crcf,name)
-#define PNSYNC_MANGLE_CCCF(name)    LIQUID_CONCAT(pnsync_cccf,name)
-
-// Macro:
-//   PNSYNC : name-mangling macro
-//   TO     : output data type
-//   TC     : coefficients data type
-//   TI     : input data type
-#define LIQUID_PNSYNC_DEFINE_API(PNSYNC,TO,TC,TI)               \
-typedef struct PNSYNC(_s) * PNSYNC();                           \
-                                                                \
-PNSYNC() PNSYNC(_create)(unsigned int _n, TC * _v);             \
-PNSYNC() PNSYNC(_create_msequence)(unsigned int _g);            \
-void PNSYNC(_destroy)(PNSYNC() _fs);                            \
-void PNSYNC(_print)(PNSYNC() _fs);                              \
-void PNSYNC(_correlate)(PNSYNC() _fs, TI _sym, TO * _y);
-
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_RRRF,
-                         float,
-                         float,
-                         float)
-
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CRCF,
-                         liquid_float_complex,
-                         float,
-                         liquid_float_complex)
-
-LIQUID_PNSYNC_DEFINE_API(PNSYNC_MANGLE_CCCF,
-                         liquid_float_complex,
-                         liquid_float_complex,
-                         liquid_float_complex)
-
-
-//
 // Binary P/N synchronizer
 //
 #define BSYNC_MANGLE_RRRF(name)     LIQUID_CONCAT(bsync_rrrf,name)

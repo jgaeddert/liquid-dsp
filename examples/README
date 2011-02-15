@@ -434,8 +434,6 @@ pll_example.c
     Demonstrates a basic phase-locked loop to track the phase of a
     complex sinusoid.
 
-pnsync_crcf_example.c
-pnsync_rrrf_example.c
 poly_findroots_example.c
 
 polyfit_example.c

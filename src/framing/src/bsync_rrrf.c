@@ -25,23 +25,21 @@
 #include "liquid.internal.h"
 
 // 
-#define PNSYNC(name)        LIQUID_CONCAT(pnsync_crcf,name)
-#define BSYNC(name)         LIQUID_CONCAT(bsync_crcf,name)
+#define BSYNC(name)         LIQUID_CONCAT(bsync_rrrf,name)
 
-#define PRINTVAL(x)         printf("%12.4e + j%12.4e", crealf(x), cimagf(x))
+#define PRINTVAL(x)         printf("%12.4e", x)
 
-#define TO                  float complex
+#define TO                  float
 #define TC                  float
-#define TI                  float complex
-#define ABS(X)              cabsf(X)
-#define WINDOW(name)        LIQUID_CONCAT(windowcf,name)
-#define DOTPROD(name)       LIQUID_CONCAT(dotprod_crcf,name)
+#define TI                  float
+#define ABS(X)              fabsf(X)
+#define WINDOW(name)        LIQUID_CONCAT(windowf,name)
+#define DOTPROD(name)       LIQUID_CONCAT(dotprod_rrrf,name)
 
-#define TO_COMPLEX
+#undef  TO_COMPLEX
 #undef  TC_COMPLEX
-#define TI_COMPLEX
+#undef  TI_COMPLEX
 
 // source files
-#include "pnsync.c"
 #include "bsync.c"
 
