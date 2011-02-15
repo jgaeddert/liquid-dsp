@@ -379,10 +379,9 @@ void bpacketsync_decode_header(bpacketsync _q)
                                          _q->header_enc,
                                          _q->header_dec);
 
-    if (!_q->header_valid) {
-        printf("HEADER FAILED CRC\n");
+    // return unconditionally if header failed
+    if (!_q->header_valid)
         return;
-    }
 
     // strip header info
     int version = _q->header_dec[0];
