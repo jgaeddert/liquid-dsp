@@ -980,17 +980,6 @@ void fir_design_doppler(unsigned int _n,
                         float _theta,
                         float *_h);
 
-#if 0
-// Design optimum FIR root-nyquist filter
-//  _k      :   samples/symbol (_k > 1)
-//  _m      :   filter delay (number of symbols)
-//  _beta   :   excess bandwidth factor
-//  _h      :   output filter coefficients, [size: 2*_k*_m+1 x 1]
-void fir_design_optim_root_nyquist(unsigned int _k,
-                                   unsigned int _m,
-                                   float _beta,
-                                   float *_h);
-#endif
 
 // Design Nyquist raised-cosine filter
 //  _k      : samples/symbol
