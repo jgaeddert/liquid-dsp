@@ -60,7 +60,6 @@ local_src	:=			\
 	iirfilt_crcf_example.c		\
 	interp_crcf_example.c		\
 	kbd_window_example.c		\
-	kmeans_example.c		\
 	matched_filter_example.c	\
 	matrix_example.c		\
 	math_lngamma_example.c		\
@@ -123,6 +122,7 @@ local_src_experimental :=		\
 	iirqmfb_crcf_example.c		\
 	itqmfb_crcf_example.c		\
 	itqmfb_rrrf_example.c		\
+	kmeans_example.c		\
 	patternset_example.c		\
 	prqmfb_crcf_example.c		\
 	qmfb_crcf_analysis_example.c	\
