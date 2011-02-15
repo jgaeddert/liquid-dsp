@@ -285,7 +285,7 @@ void fir_kaiser_window(unsigned int _n,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rnyquist_filter(int _type,
+void design_rnyquist_filter(liquid_rnyquist_type _type,
                             unsigned int _k,
                             unsigned int _m,
                             float _beta,

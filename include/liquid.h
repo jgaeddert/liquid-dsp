@@ -994,10 +994,12 @@ void design_rcos_filter(unsigned int _k,
                         float * _h);
 
 // root-Nyquist filter prototypes
-#define LIQUID_RNYQUIST_ARKAISER    (0) // root-Nyquist Kaiser (approximate optimum)
-#define LIQUID_RNYQUIST_RKAISER     (1) // root-Nyquist Kaiser (true optimum)
-#define LIQUID_RNYQUIST_RRC         (2) // root raised-cosine
-#define LIQUID_RNYQUIST_hM3         (3) // harris-Moerder-3 filter
+typedef enum {
+    LIQUID_RNYQUIST_ARKAISER=0, // root-Nyquist Kaiser (approximate optimum)
+    LIQUID_RNYQUIST_RKAISER,    // root-Nyquist Kaiser (true optimum)
+    LIQUID_RNYQUIST_RRC,        // root raised-cosine
+    LIQUID_RNYQUIST_hM3         // harris-Moerder-3 filter
+} liquid_rnyquist_type;
 
 // Design root-Nyquist filter
 //  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
@@ -1006,7 +1008,7 @@ void design_rcos_filter(unsigned int _k,
 //  _beta   : rolloff factor (0 < beta <= 1)
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
-void design_rnyquist_filter(int _type,
+void design_rnyquist_filter(liquid_rnyquist_type _type,
                             unsigned int _k,
                             unsigned int _m,
                             float _beta,
