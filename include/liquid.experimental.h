@@ -19,6 +19,14 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// 
+// liquid.experimental.h
+//
+// This file contains the experimental module's object declarations.
+// The module is only built and used when configured with the option
+// '--enable-experimental' is invoked.
+//
+
 #ifndef __LIQUID_EXPERIMENTAL_H__
 #define __LIQUID_EXPERIMENTAL_H__
 
