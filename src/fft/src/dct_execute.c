@@ -31,7 +31,22 @@
 // DCT-I
 void FFT(_execute_REDFT00)(FFT(plan) _p)
 {
-    fprintf(stderr,"warning, fft_execute_REDFT00() not yet implemented!\n");
+    // ugly, slow method
+    unsigned int i,k;
+    float n_inv = 1.0f / (float)(_p->n-1);
+    float phi;
+    for (i=0; i<_p->n; i++) {
+        T x0 = _p->xr[0];       // first element
+        T xn = _p->xr[_p->n-1]; // last element
+        _p->yr[i] = 0.5f*( x0 + (i%2 ? -xn : xn));
+        for (k=1; k<_p->n-1; k++) {
+            phi = M_PI*n_inv*((float)k)*((float)i);
+            _p->yr[i] += _p->xr[k]*cosf(phi);
+        }
+
+        // compensate for discrepancy
+        _p->yr[i] *= 2.0f;
+    }
 }
 
 // DCT-II (regular 'dct')
@@ -75,5 +90,18 @@ void FFT(_execute_REDFT01)(FFT(plan) _p)
 // DCT-IV
 void FFT(_execute_REDFT11)(FFT(plan) _p)
 {
-    fprintf(stderr,"warning, fft_execute_REDFT11() not yet implemented!\n");
+    // ugly, slow method
+    unsigned int i,k;
+    float n_inv = 1.0f / (float)(_p->n);
+    float phi;
+    for (i=0; i<_p->n; i++) {
+        _p->yr[i] = 0.0f;
+        for (k=0; k<_p->n; k++) {
+            phi = M_PI*n_inv*((float)k+0.5f)*((float)i+0.5f);
+            _p->yr[i] += _p->xr[k]*cosf(phi);
+        }
+
+        // compensate for discrepancy
+        _p->yr[i] *= 2.0f;
+    }
 }
