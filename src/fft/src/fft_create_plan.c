@@ -93,8 +93,6 @@ void FFT(_destroy_plan)(FFT(plan) _p)
     liquid_safe_free(_p->index_rev);
 
     // real even/odd DFTs
-    liquid_safe_free(_p->xr);
-    liquid_safe_free(_p->yr);
     liquid_safe_free(_p->xc);
     liquid_safe_free(_p->yc);
     liquid_safe_free(_p->w);
@@ -118,8 +116,6 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     // initialize all arrays to NULL
     p->twiddle = NULL;
     p->index_rev = NULL;
-    p->xr = NULL;
-    p->yr = NULL;
     p->xc = NULL;
     p->yc = NULL;
     p->w  = NULL;
