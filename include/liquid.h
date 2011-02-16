@@ -1329,6 +1329,21 @@ int iirdes_isstable(float * _b,
                     unsigned int _n);
 
 //
+// linear prediction
+//
+
+// compute the linear prediction coefficients for an input signal _x
+//  _x      :   input signal [size: _n x 1]
+//  _p      :   prediction filter order
+//  _a      :   prediction filter [size: _p+1 x 1]
+//  _g      :   .
+void liquid_lpc(float * _x,
+                unsigned int _n,
+                unsigned int _p,
+                float * _a,
+                float * _g);
+
+//
 // auto-correlator (delay cross-correlation)
 //
 

@@ -76,6 +76,7 @@ local_src	:=			\
 	itqmfb_rrrf_example.c		\
 	kbd_window_example.c		\
 	kmeans_example.c		\
+	lpc_example.c			\
 	matched_filter_example.c	\
 	matrix_example.c		\
 	math_lngamma_example.c		\
