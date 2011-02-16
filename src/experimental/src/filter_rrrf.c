@@ -23,7 +23,7 @@
 // Filter API: floating-point
 //
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrf,name)
@@ -33,11 +33,16 @@
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
+#define IIRQMFB(name)       LIQUID_CONCAT(iirqmfb_rrrf,name)
+#define ITQMFB(name)        LIQUID_CONCAT(itqmfb_rrrf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_rrrf,name)
+#define QMFB(name)          LIQUID_CONCAT(qmfb_rrrf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_rrrf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_rrrf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_rrrf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_rrrf,name)
+#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_rrrf,name)
+#define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_rrrf,name)
 
 #define T                   float   // general
 #define TO                  float   // output
@@ -56,15 +61,8 @@
 #define PRINTVAL_TI(X,F)    PRINTVAL_FLOAT(X,F)
 
 // source files
-//#include "autocorr.c"
-#include "firfarrow.c"
-#include "firfilt.c"
-#include "firhilb.c"
-#include "firpfb.c"
-#include "iirfilt.c"
-#include "iirfiltsos.c"
-#include "interp.c"
-#include "decim.c"
-#include "resamp.c"
-#include "resamp2.c"
-#include "symsync.c"
+#include "iirqmfb.c"
+#include "itqmfb.c"
+#include "qmfb.c"
+#include "symsync2.c"
+#include "symsynclp.c"

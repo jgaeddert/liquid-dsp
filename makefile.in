@@ -78,7 +78,6 @@ ARFLAGS		= r
 #    local_b_files : benchmark script headers
 modules		:=	\
 	agc		\
-	ann		\
 	audio		\
 	buffer		\
 	channel		\
@@ -98,7 +97,8 @@ modules		:=	\
 	quantization	\
 	random		\
 	sequence	\
-	utility
+	utility		\
+	@MLIBS_EXPERIMENTAL@
 
 # target-specific libraries
 mlibs_dotprod := @MLIBS_DOTPROD@
@@ -262,7 +262,7 @@ clean-check:
 .PHONY: bench
 bench_prog	= benchmark
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
-BENCH_LDFLAGS	= $(LDFLAGS) -pthread
+BENCH_LDFLAGS	= $(LDFLAGS)
 
 # run the benchmark generator script to create benchmark_include.h
 benchmark_include.h: $(benchmark_headers) include/liquid.h include/liquid.internal.h
@@ -303,7 +303,7 @@ include examples/examples.mk
 example_objs	= $(patsubst %.c,%.o,$(example_src))
 example_progs	= $(patsubst %.c,%,  $(example_src))
 examples: $(example_progs)
-EXAMPLES_LDFLAGS = $(LDFLAGS) -pthread
+EXAMPLES_LDFLAGS = $(LDFLAGS)
 
 # NOTE: linked libraries must come _after_ the target program
 $(example_objs): %.o : %.c libliquid.a
@@ -324,7 +324,7 @@ include sandbox/sandbox.mk
 sandbox_objs	= $(patsubst %.c,%.o,$(sandbox_src))
 sandbox_progs	= $(patsubst %.c,%,  $(sandbox_src))
 sandbox: $(sandbox_progs)
-SANDBOX_LDFLAGS = $(LDFLAGS) -pthread -lfftw3f
+SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 
 # NOTE: linked libraries must come _after_ the target program
 $(sandbox_objs): %.o : %.c libliquid.a

@@ -13,7 +13,7 @@
 #include <math.h>
 #include <time.h>
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "ann_maxnet_example.m"
 

@@ -28,8 +28,7 @@ module_name     := buffer
 #
 local_s_files	:= 	\
 	bufferf.c	\
-	buffercf.c	\
-	gport.c
+	buffercf.c
 #	bufferui.c
 
 # local_t_files
@@ -42,7 +41,6 @@ local_s_files	:= 	\
 local_t_files	:= 		\
 	cbuffer_autotest.h	\
 	sbuffer_autotest.h	\
-	gport_autotest.h	\
 	window_autotest.h
 
 
@@ -54,10 +52,6 @@ local_t_files	:= 		\
 # $(local_dir)
 #
 local_b_files	:= 			\
-	gport_dma_benchmark.h		\
-	gport_dma_threaded_benchmark.h	\
-	gport_ima_benchmark.h		\
-	gport_ima_threaded_benchmark.h	\
 	window_benchmark.h
 
 include common.mk

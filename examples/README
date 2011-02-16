@@ -7,6 +7,8 @@
 This directory contains all the examples for interfacing the liquid modules.
 Some examples permit command-line options.  These scripts are denoted with an
 asterisk (*).
+Some examples are only available when configured with the option
+'--enable-experimental' are are denoted with [EXPERIMENTAL].
 
 TODO: finish descriptions
 
@@ -32,7 +34,7 @@ ampmodem_example.c
     modulator/demodulator) with noise, carrier phase, and carrier frequency
     offsets.
 
-ann_bitpattern_example.c
+ann_bitpattern_example.c [EXPERIMENTAL]
     Artificial neural network (ann) bit pattern example.  This example
     demonstrates the functionality of the ann module by training a
     simple network to learn prime numbers:
@@ -48,21 +50,21 @@ ann_bitpattern_example.c
         7   :   1   1   1   |   1
 
 
-ann_example.c
+ann_example.c [EXPERIMENTAL]
     Artificial neural network (ann) example. This example demonstrates the
     functionality of the ann module by training a simple network to learn the
     output of a continuous function.
 
-ann_layer_example.c
+ann_layer_example.c [EXPERIMENTAL]
 
-ann_maxnet_example.c *
+ann_maxnet_example.c * [EXPERIMENTAL]
    Artificial neural network (ann) maxnet example. This example demonstrates
    the functionality of the ann maxnet by training a network to recognize and
    separate two input patterns in a 2-dimensional plane.
     
-ann_node_example.c
+ann_node_example.c [EXPERIMENTAL]
 
-ann_xor_example.c
+ann_xor_example.c [EXPERIMENTAL]
     Artificial neural network (ann) eXclusive OR example. This example
     demonstrates the functionality of the ann  module by training a simple
     network to learn the output of an exclusive or (xor) circuit:
@@ -134,7 +136,7 @@ cvsd_sine_example.c
     sinusoidal input.  The output distortion ratio is computed, and the
     time-domain results are written to a file.
 
-dds_cccf_example.c
+dds_cccf_example.c [EXPERIMENTAL]
     Direct digital synthesizer example.  This example demonstrates the
     interface to the direct digital synthesizer.  A baseband pulse is
     generated and then efficiently up-converted (interpolated and mixed up)
@@ -170,7 +172,7 @@ eqlms_cccf_example.c
 eqrls_cccf_example.c
 fading_channel_example.c
 fading_generator_example.c
-fbasc_example.c
+fbasc_example.c [EXPERIMENTAL]
 fct_example.c
 
 fec_example.c *
@@ -263,11 +265,11 @@ framesync64_example.c
 freqmodem_example.c
 ga_search_example.c
 gmskmodem_example.c
-gport_dma_example.c
-gport_dma_threaded_example.c
-gport_ima_example.c
-gport_ima_threaded_example.c
-gport_mma_threaded_example.c
+gport_dma_example.c [EXPERIMENTAL]
+gport_dma_threaded_example.c [EXPERIMENTAL]
+gport_ima_example.c [EXPERIMENTAL]
+gport_ima_threaded_example.c [EXPERIMENTAL]
+gport_mma_threaded_example.c [EXPERIMENTAL]
 gradient_search_example.c
 
 gradient_search_datafit_example.c
@@ -300,7 +302,7 @@ iirfilt_crcf_example.c
     coefficients are real, but the input and output arrays are complex.  The
     filter order and cutoff frequency are specified at the beginning.
 
-iirqmfb_...
+iirqmfb_... [EXPERIMENTAL]
 
 iirdes_analog_example.c *
     Tests infinite impulse reponse (IIR) analog filter design. While this
@@ -326,7 +328,7 @@ iirdes_pll_example.c *
     SEE ALSO: nco_pll_example.c
               nco_pll_modem_example.c
 
-iirqmfb_crcf_example.c
+iirqmfb_crcf_example.c [EXPERIMENTAL]
 
 interleaver_example.c
     This example demonstrates the functionality of the liquid interleaver
@@ -345,8 +347,8 @@ interp_crcf_example.c *
     interface. Data symbols are generated and then interpolated
     according to a finite impulse response Nyquist filter.
 
-itqmfb_crcf_example.c
-itqmfb_rrrf_example.c
+itqmfb_crcf_example.c [EXPERIMENTAL]
+itqmfb_rrrf_example.c [EXPERIMENTAL]
 kbd_window_example.c
 kmeans_example.c
 matched_filter_example.c
@@ -424,7 +426,7 @@ packetizer_example.c *
     SEE ALSO: fec_example.c
               crc_example.c
 
-patternset_example.c
+patternset_example.c [EXPERIMENTAL]
     This example demonstrates the functionality of the patternset
     structure for easily managing pattern sets for optimization.
 
@@ -432,8 +434,6 @@ pll_example.c
     Demonstrates a basic phase-locked loop to track the phase of a
     complex sinusoid.
 
-pnsync_crcf_example.c
-pnsync_rrrf_example.c
 poly_findroots_example.c
 
 polyfit_example.c
@@ -447,9 +447,9 @@ polyfit_lagrange_example.c
 
     SEE ALSO: polyfit_example.c
 
-prqmfb_crcf_example.c
-qmfb_crcf_analysis_example.c
-qmfb_crcf_synthesis_example.c
+prqmfb_crcf_example.c [EXPERIMENTAL]
+qmfb_crcf_analysis_example.c [EXPERIMENTAL]
+qmfb_crcf_synthesis_example.c [EXPERIMENTAL]
 quantize_example.c
 quasinewton_search_example.c
 
@@ -498,10 +498,10 @@ scramble_example.c
     'whiten' the data sequence with a bit mask in order to achieve maximum
     entropy.  This example demonstrates the interface.
 
-symsync2_crcf_example.c
+symsync2_crcf_example.c [EXPERIMENTAL]
 symsync_crcf_example.c
 symsync_rrrf_example.c
-symsynclp_crcf_example.c
+symsynclp_crcf_example.c [EXPERIMENTAL]
 wdelayf_example.c
 
 windowf_example.c

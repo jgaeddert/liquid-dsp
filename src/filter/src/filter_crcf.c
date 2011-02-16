@@ -33,15 +33,10 @@
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_crcf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_crcf,name)
 #define INTERP(name)        LIQUID_CONCAT(interp_crcf,name)
-#define IIRQMFB(name)       LIQUID_CONCAT(iirqmfb_crcf,name)
-#define ITQMFB(name)        LIQUID_CONCAT(itqmfb_crcf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_crcf,name)
-#define QMFB(name)          LIQUID_CONCAT(qmfb_crcf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_crcf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_crcf,name)
 #define SYMSYNC(name)       LIQUID_CONCAT(symsync_crcf,name)
-#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_crcf,name)
-#define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_crcf,name)
 
 #define T                   float complex   // general
 #define TO                  float complex   // output
@@ -67,12 +62,7 @@
 #include "iirfilt.c"
 #include "iirfiltsos.c"
 #include "interp.c"
-#include "iirqmfb.c"
-#include "itqmfb.c"
 #include "decim.c"
-#include "qmfb.c"
 #include "resamp.c"
 #include "resamp2.c"
 #include "symsync.c"
-#include "symsync2.c"
-#include "symsynclp.c"

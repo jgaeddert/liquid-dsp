@@ -31,7 +31,6 @@ local_s_files	:=		\
 	ga_search.c		\
 	gradient_search.c	\
 	optim.common.c		\
-	patternset.c		\
 	quasinewton_search.c	\
 	rosenbrock.c
 

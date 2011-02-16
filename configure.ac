@@ -30,6 +30,8 @@ AC_CONFIG_SRCDIR([libliquid.c])
 AC_LANG(C)
 
 # Autoheader
+AH_TEMPLATE([LIQUID_EXPERIMENTAL], [Enable building of experimental modules and objects.])
+
 AC_CONFIG_HEADER(config.h)
 AH_TOP([
 #ifndef __LIQUID_CONFIG_H__
@@ -51,6 +53,20 @@ AC_ARG_ENABLE(profile,
     AS_HELP_STRING([--enable-profile],[profile]),
     [PROFILE_OPTION="-pg"; CLIB="-lc_p"],
     [PROFILE_OPTION="";    CLIB="-lc"],
+)
+
+# Option to enable/disable experimental modules and objects
+AC_ARG_ENABLE(experimental,
+    AS_HELP_STRING([--enable-experimental],[enable experimental modules, objects]),
+    [   # experimental option enabled
+        MLIBS_EXPERIMENTAL="experimental"   # add 'experimental' module directory to list
+        AC_DEFINE(LIQUID_EXPERIMENTAL)
+        AC_CHECK_HEADERS(pthread.h)
+        AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
+                     [AC_MSG_ERROR(Need POSIX thread library for experimental build!)],
+                     [])
+    ],
+    [MLIBS_EXPERIMENTAL=""],
 )
 
 # Check for necessary programs
@@ -79,10 +95,7 @@ then
 fi
 
 # Check for optional header files, libraries
-AC_CHECK_HEADERS(pthread.h fec.h fftw3.h)
-AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
-             [AC_MSG_WARN(Need POSIX thread library!)],
-             [])
+AC_CHECK_HEADERS(fec.h fftw3.h)
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
              [AC_MSG_WARN(fftw3 library useful but not required)],
              [])
@@ -140,6 +153,7 @@ esac
 #
 AC_SUBST(LIBS)              # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)     # 
+AC_SUBST(MLIBS_EXPERIMENTAL)# build experimental module?
 
 AC_SUBST(SH_LIB)            # output shared library target
 AC_SUBST(REBIND)            # rebinding tool (e.g. ldconfig)

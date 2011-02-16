@@ -3,17 +3,12 @@
 #
 
 local_dir	:= examples
+
 local_src	:=			\
 	agc_example.c			\
 	agc_qpsk_example.c		\
 	agc_squelch_example.c		\
 	ampmodem_example.c		\
-	ann_bitpattern_example.c	\
-	ann_example.c			\
-	ann_layer_example.c		\
-	ann_maxnet_example.c		\
-	ann_node_example.c		\
-	ann_xor_example.c		\
 	asgram_example.c		\
 	autocorr_cccf_example.c		\
 	bpacketsync_example.c		\
@@ -25,7 +20,6 @@ local_src	:=			\
 	complementary_codes_example.c	\
 	crc_example.c			\
 	cvsd_sine_example.c		\
-	dds_cccf_example.c		\
 	decim_crcf_example.c		\
 	decim_rrrf_example.c		\
 	dotprod_rrrf_example.c		\
@@ -34,7 +28,6 @@ local_src	:=			\
 	eqrls_cccf_example.c		\
 	fading_channel_example.c	\
 	fading_generator_example.c	\
-	fbasc_example.c			\
 	fec_example.c			\
 	fct_example.c			\
 	fft_example.c			\
@@ -55,11 +48,6 @@ local_src	:=			\
 	ga_search_example.c		\
 	ga_search_knapsack_example.c	\
 	gmskmodem_example.c		\
-	gport_dma_example.c		\
-	gport_dma_threaded_example.c	\
-	gport_ima_example.c		\
-	gport_ima_threaded_example.c	\
-	gport_mma_threaded_example.c	\
 	gradient_search_datafit_example.c	\
 	gradient_search_example.c	\
 	hilbert_decim_example.c		\
@@ -70,12 +58,8 @@ local_src	:=			\
 	iirdes_analog_example.c		\
 	iirdes_pll_example.c		\
 	iirfilt_crcf_example.c		\
-	iirqmfb_crcf_example.c		\
 	interp_crcf_example.c		\
-	itqmfb_crcf_example.c		\
-	itqmfb_rrrf_example.c		\
 	kbd_window_example.c		\
-	kmeans_example.c		\
 	lpc_example.c			\
 	matched_filter_example.c	\
 	matrix_example.c		\
@@ -94,16 +78,10 @@ local_src	:=			\
 	ofdmoqam_firpfbch_example.c	\
 	ofdmoqamframesync_example.c	\
 	packetizer_example.c		\
-	patternset_example.c		\
 	pll_example.c			\
 	polyfit_example.c		\
 	polyfit_lagrange_example.c	\
 	poly_findroots_example.c	\
-	pnsync_crcf_example.c		\
-	pnsync_rrrf_example.c		\
-	prqmfb_crcf_example.c		\
-	qmfb_crcf_analysis_example.c	\
-	qmfb_crcf_synthesis_example.c	\
 	quantize_example.c		\
 	quasinewton_search_example.c	\
 	random_example.c		\
@@ -115,10 +93,8 @@ local_src	:=			\
 	resamp2_crcf_interp_recreate_example.c	\
 	ricek_channel_example.c		\
 	scramble_example.c		\
-	symsync2_crcf_example.c		\
 	symsync_crcf_example.c		\
 	symsync_rrrf_example.c		\
-	symsynclp_crcf_example.c	\
 	wdelayf_example.c		\
 	windowf_example.c
 
@@ -127,6 +103,33 @@ local_src	:=			\
 #	ofdmoqamframe64gen_example.c
 #	ofdmoqamframe64sync_example.c
 #	gmskframe_example.c
+
+# experimental examples
+# TODO : build when configured with '--enable-experimental' option
+local_src_experimental :=		\
+	ann_bitpattern_example.c	\
+	ann_example.c			\
+	ann_layer_example.c		\
+	ann_maxnet_example.c		\
+	ann_node_example.c		\
+	ann_xor_example.c		\
+	dds_cccf_example.c		\
+	fbasc_example.c			\
+	gport_dma_example.c		\
+	gport_dma_threaded_example.c	\
+	gport_ima_example.c		\
+	gport_ima_threaded_example.c	\
+	gport_mma_threaded_example.c	\
+	iirqmfb_crcf_example.c		\
+	itqmfb_crcf_example.c		\
+	itqmfb_rrrf_example.c		\
+	kmeans_example.c		\
+	patternset_example.c		\
+	prqmfb_crcf_example.c		\
+	qmfb_crcf_analysis_example.c	\
+	qmfb_crcf_synthesis_example.c	\
+	symsync2_crcf_example.c		\
+	symsynclp_crcf_example.c
 
 local_examples	:= $(addprefix $(local_dir)/, $(local_src))
 

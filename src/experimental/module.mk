@@ -1,6 +1,6 @@
-# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
+# 				 Institute & State University
 #
 # This file is part of liquid.
 #
@@ -18,17 +18,31 @@
 # along with liquid.  If not, see <http://www.gnu.org/licenses/>.
 
 # 
-# Makefile for audio module
+# Makefile for experimental module
 #
-module_name	:= audio
+
+module_name     := experimental
 
 # local_s_files
 #
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:= cvsd.c
-
+local_s_files	:= 			\
+	ann.nodes.c			\
+	activation_functions.c		\
+	kmeans.c			\
+	layer.c				\
+	maxnet.c			\
+	node.c				\
+	fbasc.c				\
+	gport.c				\
+	filter_rrrf.c			\
+	filter_crcf.c			\
+	filter_cccf.c			\
+	gmskframegen.c			\
+	gmskframesync.c			\
+	patternset.c
 
 # local_t_files
 #
@@ -37,7 +51,9 @@ local_s_files	:= cvsd.c
 # target.  These files are located under the tests/ subdirectory
 # within $(local_dir)
 #
-local_t_files	:= cvsd_autotest.h
+local_t_files	:=			\
+	ann_autotest.h			\
+	gport_autotest.h
 
 
 # local_b_files
@@ -47,8 +63,14 @@ local_t_files	:= cvsd_autotest.h
 # These files are located under the bench/ subdirectory within
 # $(local_dir)
 #
-local_b_files	:=
-
+local_b_files	:=			\
+	fbasc_benchmark.h		\
+	gport_dma_benchmark.h		\
+	gport_dma_threaded_benchmark.h	\
+	gport_ima_benchmark.h		\
+	gport_ima_threaded_benchmark.h	\
+	dds_benchmark.h			\
+	qmfb_benchmark.h
 
 include common.mk
 

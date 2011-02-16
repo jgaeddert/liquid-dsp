@@ -10,7 +10,7 @@
 #include <time.h>
 #include <assert.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "symsynclp_crcf_example.m"
 

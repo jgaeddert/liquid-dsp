@@ -29,17 +29,15 @@ module_name     := framing
 local_s_files	:=		\
 	bpacketgen.c		\
 	bpacketsync.c		\
-	pnsync_rrrf.c		\
-	pnsync_crcf.c		\
-	pnsync_cccf.c		\
+	bsync_rrrf.c		\
+	bsync_crcf.c		\
+	bsync_cccf.c		\
 	framesyncprops.c	\
 	framesyncstats.c	\
 	framegen64.c		\
 	framesync64.c		\
 	flexframegen.c		\
 	flexframesync.c		\
-	gmskframegen.c		\
-	gmskframesync.c		\
 	packetizer.c
 
 # local_t_files
@@ -54,7 +52,6 @@ local_t_files	:=		\
 	bsync_autotest.h	\
 	flexframe_autotest.h	\
 	packetizer_autotest.h	\
-	pnsync_autotest.h
 
 
 # local_b_files
@@ -67,7 +64,6 @@ local_t_files	:=		\
 local_b_files	:=			\
 	bpacketsync_benchmark.h		\
 	flexframesync_benchmark.h	\
-	pnsync_rrrf_benchmark.h
 
 include common.mk
 

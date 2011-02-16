@@ -23,10 +23,11 @@
 // Filter API: complex floating-point
 //
 
-#include "liquid.internal.h"
+#include "liquid.experimental.h"
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_cccf,name)
+#define DDS(name)           LIQUID_CONCAT(dds_cccf,name)
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_cccf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_cccf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_cccf,name)
@@ -34,9 +35,12 @@
 #define INTERP(name)        LIQUID_CONCAT(interp_cccf,name)
 #define DECIM(name)         LIQUID_CONCAT(decim_cccf,name)
 #define NCO(name)           LIQUID_CONCAT(nco_crcf,name)
+#define QMFB(name)          LIQUID_CONCAT(qmfb_cccf,name)
 #define RESAMP(name)        LIQUID_CONCAT(resamp_cccf,name)
 #define RESAMP2(name)       LIQUID_CONCAT(resamp2_cccf,name)
 //#define SYMSYNC(name)       LIQUID_CONCAT(symsync_cccf,name)
+#define SYMSYNC2(name)      LIQUID_CONCAT(symsync2_cccf,name)
+//#define SYMSYNCLP(name)     LIQUID_CONCAT(symsynclp_cccf,name)
 
 #define T                   float complex   // general
 #define TO                  float complex   // output
@@ -55,14 +59,7 @@
 #define PRINTVAL_TI(X,F)    PRINTVAL_CFLOAT(X,F)
 
 // source files
-#include "autocorr.c"
-#include "firfilt.c"
-#include "firpfb.c"
-#include "iirfilt.c"
-#include "iirfiltsos.c"
-#include "interp.c"
-#include "decim.c"
+#include "dds.c"
 //#include "qmfb.c"
-#include "resamp.c"
-#include "resamp2.c"
-//#include "symsync.c"
+#include "symsync2.c"
+//#include "symsynclp.c"

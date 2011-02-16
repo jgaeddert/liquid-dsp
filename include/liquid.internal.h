@@ -70,163 +70,11 @@ LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_CRCF, float, liquid_float_complex)
 LIQUID_AGC_DEFINE_INTERNAL_API(AGC_MANGLE_RRRF, float, float)
 
 
-//
-// MODULE : ann
-//
-
-// linear activation function
-float ann_af_linear(float _mu, float _x);
-float ann_df_linear(float _mu, float _x);
-
-// logistic activation function
-float ann_af_logistic(float _mu, float _x);
-float ann_df_logistic(float _mu, float _x);
-
-// logistic activation function
-float ann_af_tanh(float _mu, float _x);
-float ann_df_tanh(float _mu, float _x);
-
-// mu-law activation function
-float ann_af_mulaw(float _mu, float _x);
-float ann_df_mulaw(float _mu, float _x);
-
-// erf (error function) activation function
-float ann_af_erf(float _mu, float _x);
-float ann_df_erf(float _mu, float _x);
-
-// large macro (internal)
-//   ANN    : name-mangling macro
-//   T      : primitive data type
-#define LIQUID_ANN_DEFINE_INTERNAL_API(ANN,T)                   \
-void  ANN(_train_bp)(ANN() _q,                                  \
-                  T * _x,                                       \
-                  T * _y);
-
-// Define ann APIs
-LIQUID_ANN_DEFINE_INTERNAL_API(ANN_MANGLE_FLOAT, float)
-
-
-#define NODE_MANGLE_FLOAT(name)  LIQUID_CONCAT(node, name)
-// large macro (internal)
-//   NODE   : name-mangling macro
-//   T      : primitive data type
-#define LIQUID_NODE_DEFINE_INTERNAL_API(NODE,T)                 \
-                                                                \
-typedef struct NODE(_s) * NODE();                               \
-struct NODE(_s) {                                               \
-    T * w;      /* weights */                                   \
-    T * x;      /* input array */                               \
-    T * y;      /* output array */                              \
-    T v;        /* intermediate output */                       \
-    T e;        /* output error */                              \
-    T g;        /* activation function gradient */              \
-    T delta;    /* local gradient */                            \
-    T * dw;     /* weight correction */                         \
-    unsigned int num_inputs;                                    \
-    T(*activation_func)(float,T);                               \
-    T(*d_activation_func)(float,T);                             \
-    float mu;                                                   \
-};                                                              \
-NODE() NODE(_create)(float * _w,                                \
-                     float * _x,                                \
-                     float * _y,                                \
-                     unsigned int _num_inputs,                  \
-                     int _activation_func,                      \
-                     float _mu);                                \
-void   NODE(_destroy)(NODE() _n);                               \
-void   NODE(_print)(NODE() _n);                                 \
-void   NODE(_evaluate)(NODE() _n);                              \
-void   NODE(_compute_bp_error)(NODE() _n, T _error);            \
-void   NODE(_train)(NODE() _n, float _eta);
-
-// Define ann APIs
-LIQUID_NODE_DEFINE_INTERNAL_API(NODE_MANGLE_FLOAT, float)
-
-
-#define ANNLAYER_MANGLE_FLOAT(name)  LIQUID_CONCAT(annlayer, name)
-// large macro (internal)
-//   ANNLAYER   : name-mangling macro
-//   T          : primitive data type
-#define LIQUID_ANNLAYER_DEFINE_INTERNAL_API(ANNLAYER,T)         \
-                                                                \
-typedef struct ANNLAYER(_s) * ANNLAYER();                       \
-                                                                \
-struct ANNLAYER(_s) {                                           \
-    unsigned int num_inputs;    /* number of inputs         */  \
-    unsigned int num_nodes;     /* number of nodes          */  \
-    node * nodes;               /* nodes in this layer      */  \
-    int is_output_layer;        /* output layer flag        */  \
-    int is_input_layer;         /* input layer flag         */  \
-                                                                \
-    /* back-propagation input error [num_inputs x 1]        */  \
-    float * error;                                              \
-                                                                \
-};                                                              \
-                                                                \
-ANNLAYER() ANNLAYER(_create)(T * _w,                            \
-                             T * _x,                            \
-                             T * _y,                            \
-                             unsigned int _num_inputs,          \
-                             unsigned int _num_outputs,         \
-                             int is_input_layer,                \
-                             int is_output_layer,               \
-                             int _activation_func,              \
-                             T _mu);                            \
-void ANNLAYER(_destroy)(annlayer _q);                           \
-void ANNLAYER(_print)(annlayer _q);                             \
-void ANNLAYER(_evaluate)(annlayer _q);                          \
-void ANNLAYER(_compute_bp_error)(annlayer _q, T * _error);      \
-void ANNLAYER(_train)(annlayer _q, T _eta);
-
-// Define ann APIs
-LIQUID_ANNLAYER_DEFINE_INTERNAL_API(ANNLAYER_MANGLE_FLOAT, float)
-
-// maxnet
-struct maxnet_s {
-    ann * networks;
-    unsigned int num_inputs;
-    unsigned int num_classes;
-};
 
 //
 // MODULE : audio
 //
 
-// compute normalized channel variance
-void fbasc_encoder_compute_channel_variance(fbasc _q);
-
-// computes optimal bit allocation based on channel variance
-//
-//  _num_channels   :   number of channels
-//  _var            :   channel variance array [size: _num_channels x 1]
-//  _num_bits       :   total number of bits per symbol
-//  _max_bits       :   maximum number of bits per channel
-//  _k              :   resulting bit allocation per channel [size: _num_channels x 1]
-void fbasc_compute_bit_allocation(unsigned int _n,
-                                  float * _e,
-                                  unsigned int _num_bits,
-                                  unsigned int _max_bits,
-                                  unsigned int * _k);
-
-// compute normalized channel energy, nominal gain, etc.
-void fbasc_encoder_compute_metrics(fbasc _q);
-void fbasc_decoder_compute_metrics(fbasc _q);
-
-// run analyzer/synthesizer
-void fbasc_encoder_run_analyzer(fbasc _q, float * _x, float * _X);
-void fbasc_decoder_run_synthesizer(fbasc _q, float * _X, float * _x);
-
-// quantize/de-quantize channelized data
-void fbasc_encoder_quantize_samples(fbasc _q);
-void fbasc_decoder_dequantize_samples(fbasc _q);
-
-// pack/unpack header
-void fbasc_encoder_pack_header(fbasc _q, unsigned char * _header);
-void fbasc_decoder_unpack_header(fbasc _q, unsigned char * _header);
-
-// pack/unpack frame
-void fbasc_encoder_pack_frame(fbasc _q, unsigned char * _frame);
-void fbasc_decoder_unpack_frame(fbasc _q, unsigned char * _frame);
 
 //
 // MODULE : buffer
@@ -763,11 +611,6 @@ float estimate_req_filter_len_Kaiser(float _df,
 float estimate_req_filter_len_Herrmann(float _df,
                                        float _As);
 
-// Direct digital [up/down] synthesizer
-//#define LIQUID_DDS_DEFINE_INTERNAL_API(DDS,T)
-
-//LIQUID_DDS_DEFINE_INTERNAL_API(DDS_MANGLE_CCCF, liquid_float_complex)
-
 
 // fir_farrow
 #define LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW,TO,TC,TI)  \
@@ -783,45 +626,6 @@ LIQUID_FIRFARROW_DEFINE_INTERNAL_API(FIRFARROW_MANGLE_CRCF,
                                      float,
                                      liquid_float_complex)
 
-
-// qmfb
-#define LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB,TO,TC,TI)          \
-void    QMFB(_analysis_execute)(QMFB() _q,                      \
-                                TI   _x0,                       \
-                                TI   _x1,                       \
-                                TO * _y0,                       \
-                                TO * _y1);                      \
-void    QMFB(_synthesis_execute)(QMFB() _q,                     \
-                                 TI   _y0,                      \
-                                 TI   _y1,                      \
-                                 TO * _x0,                      \
-                                 TO * _x1);
-
-LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_RRRF, float, float, float)
-LIQUID_QMFB_DEFINE_INTERNAL_API(QMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-
-
-// iirqmfb
-#define LIQUID_IIRQMFB_DEFINE_INTERNAL_API(IIRQMFB,TO,TC,TI)    \
-void IIRQMFB(_analysis_execute)(IIRQMFB() _q,                   \
-                                TI   _x0,                       \
-                                TI   _x1,                       \
-                                TO * _y0,                       \
-                                TO * _y1);                      \
-void IIRQMFB(_synthesis_execute)(IIRQMFB() _q,                  \
-                                 TI   _y0,                      \
-                                 TI   _y1,                      \
-                                 TO * _x0,                      \
-                                 TO * _x1);
-
-LIQUID_IIRQMFB_DEFINE_INTERNAL_API(IIRQMFB_MANGLE_RRRF,
-                                   float,
-                                   float,
-                                   float)
-LIQUID_IIRQMFB_DEFINE_INTERNAL_API(IIRQMFB_MANGLE_CRCF,
-                                   liquid_float_complex,
-                                   float,
-                                   liquid_float_complex)
 
 
 // 
@@ -878,18 +682,6 @@ LIQUID_IIRFILTSOS_DEFINE_INTERNAL_API(IIRFILTSOS_MANGLE_CCCF,
                                       liquid_float_complex)
 
 
-// itqmfb
-#define LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB,TO,TC,TI)      \
-void    ITQMFB(_analysis_execute)(ITQMFB() _q,                  \
-                                  TO * _x,                      \
-                                  TO * _y);                     \
-void    ITQMFB(_synthesis_execute)(ITQMFB() _q,                 \
-                                   TO * _y,                     \
-                                   TO * _x);
-
-LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_RRRF, float, float, float)
-LIQUID_ITQMFB_DEFINE_INTERNAL_API(ITQMFB_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
-
 // symsync
 #define LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC,TO,TC,TI)    \
 void SYMSYNC(_step)(SYMSYNC() _q,                               \
@@ -903,25 +695,6 @@ void SYMSYNC(_advance_internal_loop)(SYMSYNC() _q,              \
 LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_RRRF, float, float, float)
 LIQUID_SYMSYNC_DEFINE_INTERNAL_API(SYMSYNC_MANGLE_CRCF, liquid_float_complex, float, liquid_float_complex)
 
-
-// symsynclp
-#define LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP,TO,TC,TI)\
-void SYMSYNCLP(_step)(SYMSYNCLP() _q,                           \
-                      TI _x,                                    \
-                      TO *_y,                                   \
-                      unsigned int *_ny);                       \
-void SYMSYNCLP(_advance_internal_loop)(SYMSYNCLP() _q,          \
-                                       TO _mf,                  \
-                                       TO _dmf);
-
-LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_RRRF,
-                                     float,
-                                     float,
-                                     float)
-LIQUID_SYMSYNCLP_DEFINE_INTERNAL_API(SYMSYNCLP_MANGLE_CRCF,
-                                     liquid_float_complex,
-                                     float,
-                                     liquid_float_complex)
 
 // firdes : finite impulse response filter design
 
@@ -1835,18 +1608,6 @@ void quasinewton_search_compute_Hessian(quasinewton_search _q);
 // compute the updated inverse hessian matrix using the Broyden, Fletcher,
 // Goldfarb & Shanno method (BFGS)
 void quasinewton_search_update_hessian_bfgs(quasinewton_search _q);
-
-// optim pattern set (struct)
-struct patternset_s {
-    float * x;      // input
-    float * y;      // output
-    unsigned int num_inputs;
-    unsigned int num_outputs;
-    unsigned int num_patterns;
-    unsigned int num_allocated;
-};
-
-void patternset_increase_mem(patternset _q, unsigned int _n);
 
 
 // Chromosome structure used in genetic algorithm searches
