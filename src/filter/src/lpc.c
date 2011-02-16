@@ -61,29 +61,40 @@ void liquid_lpc(float * _x,
     }
 
 #if 0
-    // solve the Toeplitz inversion using Levinson-Durbin recursion
+    // TODO : solve the Toeplitz inversion using Levinson-Durbin recursion
     for (i=0; i<_p+1; i++) {
         
     }
 #else
     // use low inversion method
-    float R[(_p+1)*(_p+1)];
-    for (i=0; i<_p+1; i++) {
+    float R[_p*_p];
+    for (i=0; i<_p; i++) {
         unsigned int j;
-        for (j=0; j<_p+1; j++)
-            matrix_access(R,_p+1,_p+1,i,j) = r[abs(i-j)];
-
-        _g[i] = 0.0f;
+        for (j=0; j<_p; j++)
+            matrix_access(R,_p,_p,i,j) = r[abs(i-j)];
     }
 
     // invert matrix (using Gauss-Jordan elimination)
-    matrixf_inv(R,_p+1,_p+1);
+    matrixf_inv(R,_p,_p);
+
+    float rt[_p];
+    float a_hat[_p];
+
+    for (i=0; i<_p; i++)
+        rt[i] = -r[i+1];
 
     // multiply R_inv with r to get _a vector
-    matrixf_mul(R,  _p+1, _p+1,
-                r,  _p+1, 1,
-                _a, _p+1, 1);
+    matrixf_mul(R,     _p, _p,
+                rt,    _p, 1,
+                a_hat, _p, 1);
 
+    // copy coefficients
+    _a[0] = 1.0f;
+    for (i=0; i<_p; i++)
+        _a[i+1] = a_hat[i];
+
+    for (i=0; i<_p+1; i++)
+        _g[i] = 0.0f;
 #endif
 }
 

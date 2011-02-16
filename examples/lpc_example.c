@@ -13,17 +13,18 @@
 int main() {
     // options
     unsigned int n = 200;   // input sequence length
-    unsigned int p = 4;     // prediction filter order
+    unsigned int p = 3;     // prediction filter order
 
-    // derived values
+    // original filter
 #if 0
-    float b[4] = {1.0f, 0.0f, 0.0f, 0.0f};
-    //float a[4] = {1.0f, 0.5f, 0.4f, 0.3f};
-    float a[4] = {1.0f, 0.0f, 0.0f, 0.9f};
-#else
+    // autoregressive moving average filter
     // ./examples/iirdes_example -t butter -n3 -otf -f0.2
     float b[4] = {0.01809893, 0.05429679, 0.05429679, 0.01809893};
     float a[4] = {1.00000000, -1.76004195, 1.18289328, -0.27805993};
+#else
+    // autoregressive filter
+    float b[4] = {1.0f, 0.0f, 0.0f, 0.0f};
+    float a[4] = {1.0f, 0.5f, 0.4f, -0.3f};
 #endif
 
     // create filter object
@@ -41,7 +42,7 @@ int main() {
     // generate input noise signal
     for (i=0; i<n; i++) {
         x[i] = randnf();
-        //x[i] = ( (i%10) == 0 ) ? 1.0f : 0.0f;
+        //x[i] = ( (i%20) == 0 ) ? 1.0f : 0.0f;
     }
 
     // run filter
@@ -55,7 +56,7 @@ int main() {
     liquid_lpc(y,n,p,a_hat,g_hat);
 
     // print results
-    for (i=0; i<p; i++)
+    for (i=0; i<p+1; i++)
         printf("  a[%3u] = %12.8f, g[%3u] = %12.8f\n", i, a_hat[i], i, g_hat[i]);
 
     // 
@@ -80,12 +81,13 @@ int main() {
     // plot output
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"  plot(t,real(x),'-','Color',[1 1 1]*0.5,'LineWidth',1,...\n");
-    fprintf(fid,"       t,real(y),'-','Color',[0 0.5 0.25],'LineWidth',2);\n");
+    fprintf(fid,"  plot(t,x,'-','Color',[1 1 1]*0.5,'LineWidth',1,...\n");
+    fprintf(fid,"       t,y,'-','Color',[0 0.5 0.25],'LineWidth',2);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
     fprintf(fid,"  legend('input','filtered output',1);\n");
     fprintf(fid,"  grid on;\n");
+
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
