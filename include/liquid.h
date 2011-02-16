@@ -3038,9 +3038,9 @@ mdctch mdctch_create(unsigned int _num_channels,
                      float _beta);
 void mdctch_destroy(mdctch _q);
 void mdctch_clear(mdctch _q);
-void mdctch_execute(float * _x, float * _y);
-void mdctch_execute_synthesizer(float * _x, float * _y);
-void mdctch_execute_analyzer(float * _x, float * _y);
+void mdctch_execute(mdctch _q, float * _x, float * _y);
+void mdctch_execute_synthesizer(mdctch _q, float * _x, float * _y);
+void mdctch_execute_analyzer(mdctch _q, float * _x, float * _y);
 
 
 
