@@ -38,8 +38,8 @@ local_s_files	:=		\
 # within $(local_dir)
 #
 local_t_files	:=		\
-	random_autotest.h	\
 	scramble_autotest.h
+#	random_autotest.h
 
 
 # local_b_files
