@@ -21,6 +21,7 @@ local_src	:=				\
 	firpfbch_analysis_equivalence_test.c	\
 	firpfbch_synthesis_equivalence_test.c	\
 	iirdes_example.c			\
+	levinson_test.c				\
 	matched_filter_test.c			\
 	matched_filter_cfo_test.c		\
 	math_cacosf_test.c			\
