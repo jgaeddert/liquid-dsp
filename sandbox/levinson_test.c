@@ -122,6 +122,13 @@ int main() {
     memmove(a_levinson, a1, (p+1)*sizeof(float));
 #endif
 
+#if 0
+    //
+    // test using liquid_levinson
+    //
+    liquid_levinson(r,p,a_levinson,k);
+#endif
+
     // 
     // print results
     //

@@ -1120,12 +1120,26 @@ int iirdes_isstable(float * _b,
 //  _x      :   input signal [size: _n x 1]
 //  _p      :   prediction filter order
 //  _a      :   prediction filter [size: _p+1 x 1]
-//  _g      :   .
+//  _e      :   prediction error variance [size: _p+1 x 1]
 void liquid_lpc(float * _x,
                 unsigned int _n,
                 unsigned int _p,
                 float * _a,
                 float * _g);
+
+// solve the Yule-Walker equations using Levinson-Durbin recursion
+// for _symmetric_ autocorrelation
+//  _r      :   autocorrelation array [size: _p+1 x 1]
+//  _p      :   filter order
+//  _a      :   output coefficients [size: _p+1 x 1]
+//  _e      :   error variance [size: _p+1 x 1]
+//
+// NOTES:
+//  By definition _a[0] = 1.0
+void liquid_levinson(float * _r,
+                     unsigned int _p,
+                     float * _a,
+                     float * _e);
 
 //
 // auto-correlator (delay cross-correlation)
