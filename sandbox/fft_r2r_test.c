@@ -36,14 +36,15 @@
 #include <fftw3.h>
 
 int main(int argc, char*argv[]) {
-    unsigned int n = 8;
+    unsigned int n = 32;    // transform size
+    unsigned int d = 4;     // number of elements to print each line
 
     // create and initialize data arrays
     float x[n];
     float y[n];
     unsigned int i;
     for (i=0; i<n; i++)
-        x[i] = (float)(i);
+        x[i] = (float)(i) * 0.17f;
 
     // create fftw plans
     fftwf_plan plan[8];
@@ -66,21 +67,39 @@ int main(int argc, char*argv[]) {
                            "RODFT01",
                            "RODFT11"};
 
+    unsigned int j;
     printf("// %u-point real even/odd dft data\n", n);
-    printf("float fftdata_r2r_n%u[] = {\n", n);
-    for (i=0; i<n; i++)
-        printf("  %16.10f%s\n", x[i], i==(n-1) ? "};" : ",");
+    printf("float fftdata_r2r_n%u[] = {\n    ", n);
+    for (j=0; j<n; j++) {
+        //printf("  %16.10f%s\n", y[j], j==(n-1) ? "};" : ",");
+        printf("%16.8e", x[j]);
+        if ( j==n-1 )
+            printf(" ");
+        else if ( ((j+1)%d)==0 )
+            printf(",\n    ");
+        else
+            printf(", ");
+    }
+    printf("};\n\n");
 
     // execute plans and print
     for (i=0; i<8; i++) {
         fftwf_execute(plan[i]);
 
-        unsigned int j;
         printf("\n");
         printf("// %s\n", plan_name[i]);
-        printf("float fftdata_r2r_%s_n%u[] = {\n", plan_name[i], n);
-        for (j=0; j<n; j++)
-            printf("  %16.10f%s\n", y[j], j==(n-1) ? "};" : ",");
+        printf("float fftdata_r2r_%s_n%u[] = {\n    ", plan_name[i], n);
+        for (j=0; j<n; j++) {
+            //printf("  %16.10f%s\n", y[j], j==(n-1) ? "};" : ",");
+            printf("%16.8e", y[j]);
+            if ( j==n-1 )
+                printf(" ");
+            else if ( ((j+1)%d)==0 )
+                printf(",\n    ");
+            else
+                printf(", ");
+        }
+        printf("};\n\n");
     }
 
     // destroy plans

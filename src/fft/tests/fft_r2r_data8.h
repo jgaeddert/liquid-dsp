@@ -23,8 +23,8 @@
 // autotest fft r2r (real-to-real) data
 //
 
-#ifndef __LIQUID_AUTOfftdata_r2r_FFT_R2R_DATA_H__
-#define __LIQUID_AUTOfftdata_r2r_FFT_R2R_DATA_H__
+#ifndef __LIQUID_AUTOTEST_FFTR2RDATA8_H__
+#define __LIQUID_AUTOTEST_FFTR2RDATA8_H__
 
 // 8-point real even/odd dft data
 float fftdata_r2r_n8[] = {
@@ -125,4 +125,4 @@ float fftdata_r2r_RODFT11_n8[] = {
      -0.3640003929,
      -0.5519032668};
 
-#endif // __LIQUID_AUTOfftdata_r2r_FFT_R2R_DATA_H__
+#endif // __LIQUID_AUTOTEST_FFTR2RDATA8_H__

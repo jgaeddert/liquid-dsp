@@ -19,14 +19,12 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FFT_R2R_AUTOTEST_H__
-#define __LIQUID_FFT_R2R_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
 // include data sets
-#include "fft_r2r_data.h"
+#include "fft_r2r_data8.h"
+#include "fft_r2r_data32.h"
 
 // autotest helper function
 void fft_r2r_test(float *_x,
@@ -61,7 +59,7 @@ void fft_r2r_test(float *_x,
 
 
 // 
-// AUTOTESTS: n-point real-to-real ffts
+// AUTOTESTS: 8-point real-to-real ffts
 //
 
 //void xautotest_fft_r2r_REDFT00_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_REDFT00_n8, 8, FFT_REDFT00); }
@@ -76,5 +74,20 @@ void xautotest_fft_r2r_RODFT01_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_
 void xautotest_fft_r2r_RODFT11_n8()  { fft_r2r_test(fftdata_r2r_n8, fftdata_r2r_RODFT11_n8, 8, FFT_RODFT11); }
 #endif
 
-#endif 
+
+// 
+// AUTOTESTS: 32-point real-to-real ffts
+//
+
+//void xautotest_fft_r2r_REDFT00_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT00_n32, 32, FFT_REDFT00); }
+void autotest_fft_r2r_REDFT10_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT10_n32, 32, FFT_REDFT10); }
+void autotest_fft_r2r_REDFT01_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT01_n32, 32, FFT_REDFT01); }
+//void xautotest_fft_r2r_REDFT11_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_REDFT11_n32, 32, FFT_REDFT11); }
+
+#if 0
+void xautotest_fft_r2r_RODFT00_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT00_n32, 32, FFT_RODFT00); }
+void xautotest_fft_r2r_RODFT10_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT10_n32, 32, FFT_RODFT10); }
+void xautotest_fft_r2r_RODFT01_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT01_n32, 32, FFT_RODFT01); }
+void xautotest_fft_r2r_RODFT11_n32()  { fft_r2r_test(fftdata_r2r_n32, fftdata_r2r_RODFT11_n32, 32, FFT_RODFT11); }
+#endif
 
