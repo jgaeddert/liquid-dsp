@@ -42,6 +42,7 @@ local_s_files	:= 			\
 	hM3.c				\
 	iirdes.pll.c			\
 	iirdes.c			\
+	lpc.c				\
 	rcos.c				\
 	rkaiser.c			\
 	rrcos.c
