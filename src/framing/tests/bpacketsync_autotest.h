@@ -18,6 +18,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -89,7 +91,5 @@ void autotest_bpacketsync()
     // clean up allocated objects
     bpacketgen_destroy(pg);
     bpacketsync_destroy(ps);
-
-    return 0;
 }
 
