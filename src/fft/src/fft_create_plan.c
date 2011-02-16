@@ -50,8 +50,14 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
     else
         p->direction = FFT_REVERSE;
 
+    // initialize arrays to NULL
     p->twiddle = NULL;
     p->index_rev = NULL;
+    p->xr = NULL;
+    p->yr = NULL;
+    p->xc = NULL;
+    p->yc = NULL;
+    p->w  = NULL;
 
     p->is_radix2 = 0;   // false
 
@@ -86,6 +92,13 @@ void FFT(_destroy_plan)(FFT(plan) _p)
     liquid_safe_free(_p->twiddle);
     liquid_safe_free(_p->index_rev);
 
+    // real even/odd DFTs
+    liquid_safe_free(_p->xr);
+    liquid_safe_free(_p->yr);
+    liquid_safe_free(_p->xc);
+    liquid_safe_free(_p->yc);
+    liquid_safe_free(_p->w);
+
     free(_p);
 }
 
@@ -102,8 +115,14 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     p->yr = _y;
     p->flags = _flags;
 
+    // initialize all arrays to NULL
     p->twiddle = NULL;
     p->index_rev = NULL;
+    p->xr = NULL;
+    p->yr = NULL;
+    p->xc = NULL;
+    p->yc = NULL;
+    p->w  = NULL;
 
     switch (_kind) {
     case FFT_REDFT00:
@@ -128,6 +147,62 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
         break;
     default:
         fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid kind, %d\n", _kind);
+        exit(1);
+    }
+
+    return p;
+}
+
+// create plan for (inverse) modified discrete cosine transform
+//  _n      :   transform size
+//  _x      :   
+//  _y      :
+//  _kind   :   FFT_MDCT or FFT_IMDCT
+FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
+                                 T * _x,
+                                 T * _y,
+                                 int _kind,
+                                 int _flags)
+{
+    FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
+
+    p->n  = _n;
+    p->xr = _x;
+    p->yr = _y;
+    p->flags = _flags;
+
+    p->kind = _kind;
+
+    // initialize all arrays to NULL
+    p->twiddle = NULL;
+    p->index_rev = NULL;
+    p->xr = NULL;
+    p->yr = NULL;
+    p->xc = NULL;
+    p->yc = NULL;
+    p->w  = (T*)malloc( (2*p->n)*sizeof(T) );
+
+    // create window
+    unsigned int i;
+    for (i=0; i<2*p->n; i++) {
+        // shaped pulse
+        float t0 = sinf(M_PI/(2*p->n)*(i+0.5));
+        p->w[i] = sinf(M_PI*0.5f*t0*t0);
+    }
+
+    switch (_kind) {
+    case FFT_MDCT:
+        // MDCT
+        p->kind = LIQUID_FFT_MDCT;
+        p->execute = &FFT(_execute_MDCT);
+        break;
+    case FFT_IMDCT:
+        // IMDCT
+        p->kind = LIQUID_FFT_IMDCT;
+        p->execute = &FFT(_execute_IMDCT);
+        break;
+    default:
+        fprintf(stderr,"error: fft_create_plan_mdct(), invalid kind, %d\n", _kind);
         exit(1);
     }
 

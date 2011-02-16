@@ -646,6 +646,10 @@ typedef enum {
     LIQUID_FFT_RODFT10,         // real one-dimensional DST-II
     LIQUID_FFT_RODFT01,         // real one-dimensional DST-III
     LIQUID_FFT_RODFT11,         // real one-dimensional DST-IV
+
+    // modified discrete cosine transform
+    LIQUID_FFT_MDCT,            // MDCT
+    LIQUID_FFT_IMDCT            // IMDCT
 } liquid_fft_kind;
 
 // Macro    :   FFT (internal)
@@ -667,6 +671,9 @@ struct FFT(plan_s) {                                            \
     T * yr;                     /* output array (real) */       \
     TC * xc;                    /* allocated input array */     \
     TC * yc;                    /* allocated output array */    \
+                                                                \
+    /* modified discrete cosine transform parameters */         \
+    T * w;                      /* window */                    \
                                                                 \
     /* radix-2 implementation data */                           \
     int is_radix2;              /* radix-2 flag */              \
@@ -699,7 +706,10 @@ void FFT(_execute_REDFT11)(FFT(plan) _p);   /* DCT-IV  */       \
 void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
 void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
 void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
-void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */
+void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
+                                                                \
+void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
+void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */
 
 // miscellaneous functions
 unsigned int reverse_index(unsigned int _i, unsigned int _n);

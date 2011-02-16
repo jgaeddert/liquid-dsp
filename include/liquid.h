@@ -813,6 +813,9 @@ void fec_decode(fec _q,
 #define FFT_RODFT01 9   // DST-III
 #define FFT_RODFT11 10  // DST-IV
 
+#define FFT_MDCT    11  // MDCT
+#define FFT_IMDCT   12  // IMDCT
+
 #define LIQUID_FFT_MANGLE_FLOAT(name)   LIQUID_CONCAT(fft,name)
 
 // Macro    :   FFT
@@ -832,6 +835,11 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,             \
                                    T * _y,                      \
                                    int _kind,                   \
                                    int _flags);                 \
+FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,               \
+                                 T * _x,                        \
+                                 T * _y,                        \
+                                 int _kind,                     \
+                                 int _flags);                   \
 void FFT(_destroy_plan)(FFT(plan) _p);                          \
 void FFT(_execute)(FFT(plan) _p);                               \
                                                                 \
