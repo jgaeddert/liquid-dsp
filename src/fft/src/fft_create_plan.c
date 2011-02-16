@@ -111,6 +111,7 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     p->n  = _n;
     p->xr = _x;
     p->yr = _y;
+    p->kind = _kind;
     p->flags = _flags;
 
     // initialize all arrays to NULL
@@ -120,29 +121,41 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     p->yc = NULL;
     p->w  = NULL;
 
-    switch (_kind) {
+    switch (p->kind) {
     case FFT_REDFT00:
         // DCT-I
-        p->kind = LIQUID_FFT_REDFT00;
         p->execute = &FFT(_execute_REDFT00);
         break;
     case FFT_REDFT10:
         // DCT-II
-        p->kind = LIQUID_FFT_REDFT10;
         p->execute = &FFT(_execute_REDFT10);
         break;
     case FFT_REDFT01:
         // DCT-III
-        p->kind = LIQUID_FFT_REDFT01;
         p->execute = &FFT(_execute_REDFT01);
         break;
     case FFT_REDFT11:
         // DCT-IV
-        p->kind = LIQUID_FFT_REDFT11;
         p->execute = &FFT(_execute_REDFT11);
         break;
+    case FFT_RODFT00:
+        // DST-I
+        p->execute = &FFT(_execute_RODFT00);
+        break;
+    case FFT_RODFT10:
+        // DST-II
+        p->execute = &FFT(_execute_RODFT10);
+        break;
+    case FFT_RODFT01:
+        // DST-III
+        p->execute = &FFT(_execute_RODFT01);
+        break;
+    case FFT_RODFT11:
+        // DST-IV
+        p->execute = &FFT(_execute_RODFT11);
+        break;
     default:
-        fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid kind, %d\n", _kind);
+        fprintf(stderr,"error: fft_create_plan_r2r_1d(), invalid kind, %d\n", p->kind);
         exit(1);
     }
 
@@ -186,19 +199,17 @@ FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
         p->w[i] = sinf(M_PI*0.5f*t0*t0);
     }
 
-    switch (_kind) {
+    switch (p->kind) {
     case FFT_MDCT:
         // MDCT
-        p->kind = LIQUID_FFT_MDCT;
         p->execute = &FFT(_execute_MDCT);
         break;
     case FFT_IMDCT:
         // IMDCT
-        p->kind = LIQUID_FFT_IMDCT;
         p->execute = &FFT(_execute_IMDCT);
         break;
     default:
-        fprintf(stderr,"error: fft_create_plan_mdct(), invalid kind, %d\n", _kind);
+        fprintf(stderr,"error: fft_create_plan_mdct(), invalid kind, %d\n", p->kind);
         exit(1);
     }
 
