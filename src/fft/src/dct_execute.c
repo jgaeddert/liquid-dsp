@@ -70,19 +70,23 @@ void FFT(_execute_REDFT10)(FFT(plan) _p)
 #else
     unsigned int i;
     // precondition fft
-    for (i=0; i<_p->n; i++) {
-        _p->xc[2*i+0]           = 0.0f;
-        _p->xc[2*i+1]           = _p->xr[i];
-        _p->xc[2*i+0 + 2*_p->n] = 0.0f;
-        _p->xc[2*i+1 + 2*_p->n] = _p->xr[_p->n-i-1];
+    unsigned int r = _p->n % 2;
+    unsigned int L = (_p->n - r)/2;
+
+    for (i=0; i<L; i++) {
+        _p->xc[i]         = _p->xr[2*i+0];
+        _p->xc[_p->n-i-1] = _p->xr[2*i+1];
     }
+    // check for odd condition
+    if (r==1)
+        _p->xc[L+1] = _p->xr[2*L];
 
     // execute fft, storing result in _p->yc
     FFT(_execute)(_p->internal_plan);
 
-    // truncate result
+    // post-condition output
     for (i=0; i<_p->n; i++)
-        _p->yr[i] = crealf(_p->yc[i]);
+        _p->yr[i] = 2.0f*crealf(_p->yc[i]*cexpf(-_Complex_I*0.5f*M_PI*i/((float)_p->n)));
 #endif
 }
 
