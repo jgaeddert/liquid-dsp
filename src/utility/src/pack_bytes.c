@@ -70,11 +70,15 @@ void liquid_pack_array(unsigned char * _src,
         unsigned char sym_0 = (_sym_in >>    n1 ) & mask_0;
         unsigned char sym_1 = (_sym_in << (8-n1)) & mask_1;
 
-        // pack first byte
-        _src[i0] |= sym_0;
+        // mask and pack first byte
+        _src[i0] &= ~mask_0;        // clear relevant bits
+        _src[i0] |= sym_0;          // set relevant bits
 
-        // pack second byte (if not exceeding array size)
-        if (i0 < _n-1) _src[i0+1] |= sym_1;
+        // mask and pack second byte (if not exceeding array size)
+        if (i0 < _n-1) {
+            _src[i0+1] &= ~mask_1;  // clear relevant bits
+            _src[i0+1] |= sym_1;    // set relevant bits
+        }
 
 #if 0
         printf("  output symbol spans multiple bytes\n");
@@ -88,9 +92,11 @@ void liquid_pack_array(unsigned char * _src,
     } else {
         // compute mask
         unsigned char mask_0 = (0xff >> (8-_b)) << (8-_b-b0);
+        unsigned char sym_0  = (_sym_in << (8-_b-b0)) & mask_0;
 
         // shift then mask
-        _src[i0] |= (_sym_in << (8-_b-b0)) & mask_0;
+        _src[i0] &= ~mask_0;    // clear relevant bits
+        _src[i0] |= sym_0;      // set relevant bits
 
 #if 0
         printf("  _b   : %u\n", _b);

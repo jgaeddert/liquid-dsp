@@ -44,7 +44,7 @@ void autotest_pack_array() {
     // output       : 1000 0001 1110 1111 0101 1111 1010 1010
     // symbol       : 0000 0000 1122 2333 3334 5556 6677 7788
     unsigned char output_test[4] = {0x81, 0xEF, 0x5F, 0xAA};
-    unsigned char output[4]      = {0x00, 0x00, 0x00, 0x00};
+    unsigned char output[4]      = {0xff, 0xff, 0xff, 0xff};
 
     unsigned int k=0;
     unsigned int i;
