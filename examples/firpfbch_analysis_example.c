@@ -21,7 +21,7 @@ int main() {
     unsigned int num_frames=25;     // number of frames
 
     // create objects
-    firpfbch_crcf c = firpfbch_crcf_create_kaiser(FIRPFBCH_ANALYZER, num_channels, m, As);
+    firpfbch_crcf c = firpfbch_crcf_create_kaiser(LIQUID_ANALYZER, num_channels, m, As);
 
     //firpfbch_crcf_print(c);
 

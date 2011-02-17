@@ -26,8 +26,8 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_SYNTHESIZER,0);
-    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_ANALYZER,0);
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, LIQUID_SYNTHESIZER,0);
+    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, LIQUID_ANALYZER,0);
 
     // modem
     modem mod = modem_create(ms,bps);

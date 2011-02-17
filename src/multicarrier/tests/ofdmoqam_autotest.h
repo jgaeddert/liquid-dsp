@@ -44,8 +44,8 @@ void autotest_ofdmoqam_reconstruction()
     unsigned int num_samples = num_channels * num_frames;   // number of samples
 
     // create synthesizer/analyzer objects
-    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_SYNTHESIZER,0);
-    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_ANALYZER,   0);
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, LIQUID_SYNTHESIZER,0);
+    ofdmoqam ca = ofdmoqam_create(num_channels, m, beta, dt, LIQUID_ANALYZER,   0);
 
     // modem
     modem mod = modem_create(ms,bps);
@@ -135,7 +135,7 @@ void autotest_ofdmoqam_synthesis_level()
     unsigned int num_samples = num_channels * num_frames;   // number of samples
 
     // create synthesizer/analyzer objects
-    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, OFDMOQAM_SYNTHESIZER,0);
+    ofdmoqam cs = ofdmoqam_create(num_channels, m, beta, dt, LIQUID_SYNTHESIZER,0);
 
     // modem
     modem mod = modem_create(ms,bps);

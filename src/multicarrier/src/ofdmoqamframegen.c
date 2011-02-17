@@ -101,7 +101,7 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
                                      q->m,
                                      q->beta,
                                      0.0f,  // dt
-                                     OFDMOQAM_SYNTHESIZER,
+                                     LIQUID_SYNTHESIZER,
                                      0);    // gradient
 
     // allocate memory for subcarrier allocation IDs

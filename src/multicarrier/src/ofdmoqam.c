@@ -95,12 +95,12 @@ ofdmoqam ofdmoqam_create(unsigned int _num_channels,
     c->x1_prime = (float complex*) malloc((c->num_channels)*sizeof(float complex));
 
     // create filterbank channelizers
-    if (c->type == OFDMOQAM_SYNTHESIZER) {
-        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, c->ftype);
-        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, c->num_channels, c->m, c->beta, c->ftype);
+    if (c->type == LIQUID_SYNTHESIZER) {
+        c->c0 = firpfbch_crcf_create_rnyquist(LIQUID_SYNTHESIZER, c->num_channels, c->m, c->beta, c->ftype);
+        c->c1 = firpfbch_crcf_create_rnyquist(LIQUID_SYNTHESIZER, c->num_channels, c->m, c->beta, c->ftype);
     } else {
-        c->c0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, c->ftype);
-        c->c1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, c->num_channels, c->m, c->beta, c->ftype);
+        c->c0 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, c->num_channels, c->m, c->beta, c->ftype);
+        c->c1 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, c->num_channels, c->m, c->beta, c->ftype);
     }
 
     // clear buffers, etc.
@@ -217,7 +217,7 @@ void ofdmoqam_analyzer_execute(ofdmoqam _c, float complex * _x, float complex * 
 
 void ofdmoqam_execute(ofdmoqam _c, float complex * _x, float complex * _y)
 {
-    if (_c->type == OFDMOQAM_ANALYZER)
+    if (_c->type == LIQUID_ANALYZER)
         ofdmoqam_analyzer_execute(_c,_x,_y);
     else
         ofdmoqam_synthesizer_execute(_c,_x,_y);

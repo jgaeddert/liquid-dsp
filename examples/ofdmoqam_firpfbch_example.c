@@ -28,11 +28,11 @@ int main() {
     unsigned int num_samples = num_channels * num_frames;
 
     // create synthesizer/analyzer objects
-    firpfbch_crcf cs0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, ftype);
-    firpfbch_crcf cs1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_SYNTHESIZER, num_channels, m, beta, ftype);
+    firpfbch_crcf cs0 = firpfbch_crcf_create_rnyquist(LIQUID_SYNTHESIZER, num_channels, m, beta, ftype);
+    firpfbch_crcf cs1 = firpfbch_crcf_create_rnyquist(LIQUID_SYNTHESIZER, num_channels, m, beta, ftype);
 
-    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, ftype);
-    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER,    num_channels, m, beta, ftype);
+    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER,    num_channels, m, beta, ftype);
+    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER,    num_channels, m, beta, ftype);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);

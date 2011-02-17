@@ -53,7 +53,7 @@ void autotest_firpfbch_crcf_synthesis()
     firfilt_crcf f = firfilt_crcf_create(h, h_len);
 
     // create filterbank channelizer object
-    firpfbch_crcf q = firpfbch_crcf_create(FIRPFBCH_SYNTHESIZER, num_channels, p, h);
+    firpfbch_crcf q = firpfbch_crcf_create(LIQUID_SYNTHESIZER, num_channels, p, h);
 
     float complex Y[num_symbols][num_channels];     // channelized input
     float complex y0[num_samples];                  // time-domain output

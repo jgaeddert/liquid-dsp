@@ -40,7 +40,7 @@ int main() {
     }
 
     // create synthesizer object
-    firpfbch_crcf c = firpfbch_crcf_create_kaiser(FIRPFBCH_SYNTHESIZER, num_channels, m, As);
+    firpfbch_crcf c = firpfbch_crcf_create_kaiser(LIQUID_SYNTHESIZER, num_channels, m, As);
 
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);

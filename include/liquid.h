@@ -2503,8 +2503,8 @@ void ampmodem_demodulate(ampmodem _fm,
 #define FIRPFBCH_NYQUIST        0
 #define FIRPFBCH_ROOTNYQUIST    1
 
-#define FIRPFBCH_ANALYZER       0
-#define FIRPFBCH_SYNTHESIZER    1
+#define LIQUID_ANALYZER         0
+#define LIQUID_SYNTHESIZER      1
 
 
 //
@@ -2584,8 +2584,6 @@ void mdctch_execute_analyzer(mdctch _q, float * _x, float * _y);
 
 // FIR OFDM/OQAM
 typedef struct ofdmoqam_s * ofdmoqam;
-#define OFDMOQAM_ANALYZER       FIRPFBCH_ANALYZER
-#define OFDMOQAM_SYNTHESIZER    FIRPFBCH_SYNTHESIZER
 ofdmoqam ofdmoqam_create(unsigned int _num_channels,
                          unsigned int _m,
                          float _beta,

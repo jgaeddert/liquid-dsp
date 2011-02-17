@@ -46,7 +46,7 @@ void autotest_firpfbch_crcf_analysis()
     for (i=0; i<h_len; i++) h[i] = randnf();
 
     // create filterbank object
-    firpfbch_crcf q = firpfbch_crcf_create(FIRPFBCH_ANALYZER, num_channels, p, h);
+    firpfbch_crcf q = firpfbch_crcf_create(LIQUID_ANALYZER, num_channels, p, h);
 
     // generate filter object
     firfilt_crcf f = firfilt_crcf_create(h, h_len);

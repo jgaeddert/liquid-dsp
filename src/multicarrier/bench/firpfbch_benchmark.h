@@ -54,7 +54,7 @@ void firpfbch_crcf_execute_bench(
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
-    if (_type == FIRPFBCH_SYNTHESIZER) {
+    if (_type == LIQUID_SYNTHESIZER) {
         for (i=0; i<(*_num_iterations); i++) {
             firpfbch_crcf_synthesizer_execute(c,x,y);
             firpfbch_crcf_synthesizer_execute(c,x,y);
@@ -76,9 +76,9 @@ void firpfbch_crcf_execute_bench(
 }
 
 //
-void benchmark_firpfbch_crcf_n4      FIRPFBCH_EXECUTE_BENCH_API(4,   2,  FIRPFBCH_ANALYZER)
-void benchmark_firpfbch_crcf_n16     FIRPFBCH_EXECUTE_BENCH_API(16,  2,  FIRPFBCH_ANALYZER)
-void benchmark_firpfbch_crcf_n64     FIRPFBCH_EXECUTE_BENCH_API(64,  2,  FIRPFBCH_ANALYZER)
-void benchmark_firpfbch_crcf_n256    FIRPFBCH_EXECUTE_BENCH_API(256, 2,  FIRPFBCH_ANALYZER)
+void benchmark_firpfbch_crcf_n4      FIRPFBCH_EXECUTE_BENCH_API(4,   2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_n16     FIRPFBCH_EXECUTE_BENCH_API(16,  2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_n64     FIRPFBCH_EXECUTE_BENCH_API(64,  2,  LIQUID_ANALYZER)
+void benchmark_firpfbch_crcf_n256    FIRPFBCH_EXECUTE_BENCH_API(256, 2,  LIQUID_ANALYZER)
 
 

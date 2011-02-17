@@ -68,10 +68,10 @@ void ofdmoqam_execute_bench(
 }
 
 //
-void benchmark_ofdmoqam_execute_n4      OFDMOQAM_EXECUTE_BENCH_API(4,   2,  OFDMOQAM_ANALYZER)
-void benchmark_ofdmoqam_execute_n16     OFDMOQAM_EXECUTE_BENCH_API(16,  2,  OFDMOQAM_ANALYZER)
-void benchmark_ofdmoqam_execute_n64     OFDMOQAM_EXECUTE_BENCH_API(64,  2,  OFDMOQAM_ANALYZER)
-void benchmark_ofdmoqam_execute_n256    OFDMOQAM_EXECUTE_BENCH_API(256, 2,  OFDMOQAM_ANALYZER)
+void benchmark_ofdmoqam_execute_n4      OFDMOQAM_EXECUTE_BENCH_API(4,   2,  LIQUID_ANALYZER)
+void benchmark_ofdmoqam_execute_n16     OFDMOQAM_EXECUTE_BENCH_API(16,  2,  LIQUID_ANALYZER)
+void benchmark_ofdmoqam_execute_n64     OFDMOQAM_EXECUTE_BENCH_API(64,  2,  LIQUID_ANALYZER)
+void benchmark_ofdmoqam_execute_n256    OFDMOQAM_EXECUTE_BENCH_API(256, 2,  LIQUID_ANALYZER)
 
 #endif // __LIQUID_OFDMOQAM_BENCH_H__
 

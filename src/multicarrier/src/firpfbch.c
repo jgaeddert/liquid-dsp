@@ -54,7 +54,7 @@ struct FIRPFBCH(_s) {
 };
 
 // create FIR polyphase filterbank channelizer object
-//  _type           :   channelizer type (FIRPFBCH_ANALYZER | FIRPFBCH_SYNTHESIZER)
+//  _type           :   channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
 //  _num_channels   :   number of channels
 //  _p              :   filter length (symbols)
 //  _h              :   filter coefficients, [size: _num_channels*_p x 1]
@@ -64,7 +64,7 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
                              TC * _h)
 {
     // validate input
-    if (_type != FIRPFBCH_ANALYZER && _type != FIRPFBCH_SYNTHESIZER) {
+    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
         fprintf(stderr,"error: firpfbch_xxxt_create(), invalid type %d\n", _type);
         exit(1);
     } else if (_num_channels == 0) {
@@ -115,7 +115,7 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
     q->X = (T*) malloc((q->num_channels)*sizeof(T));
 
     // create fft plan
-    if (q->type == FIRPFBCH_ANALYZER)
+    if (q->type == LIQUID_ANALYZER)
         q->fft = FFT_CREATE_PLAN(q->num_channels, q->X, q->x, FFT_DIR_FORWARD, FFT_METHOD);
     else
         q->fft = FFT_CREATE_PLAN(q->num_channels, q->X, q->x, FFT_DIR_BACKWARD, FFT_METHOD);
@@ -129,7 +129,7 @@ FIRPFBCH() FIRPFBCH(_create)(int _type,
 
 // create FIR polyphase filterbank channelizer object with
 // prototype filter based on windowed Kaiser design
-//  _type           :   channelizer type (FIRPFBCH_ANALYZER | FIRPFBCH_SYNTHESIZER)
+//  _type           :   channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
 //  _num_channels   :   number of channels
 //  _m              :   filter delay (symbols)
 //  _As             :   stop-band attentuation [dB]
@@ -171,7 +171,7 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
 
 // create FIR polyphase filterbank channelizer object with
 // prototype root-Nyquist filter
-//  _type           :   channelizer type (FIRPFBCH_ANALYZER | FIRPFBCH_SYNTHESIZER)
+//  _type           :   channelizer type (LIQUID_ANALYZER | LIQUID_SYNTHESIZER)
 //  _num_channels   :   number of channels
 //  _m              :   filter delay (symbols)
 //  _beta           :   filter excess bandwidth factor, in [0,1]
@@ -183,7 +183,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
                                       int _ftype)
 {
     // validate input
-    if (_type != FIRPFBCH_ANALYZER && _type != FIRPFBCH_SYNTHESIZER) {
+    if (_type != LIQUID_ANALYZER && _type != LIQUID_SYNTHESIZER) {
         fprintf(stderr,"error: firpfbch_xxxt_create_rnyquist(), invalid type %d\n", _type);
         exit(1);
     } else if (_num_channels == 0) {
@@ -225,7 +225,7 @@ FIRPFBCH() FIRPFBCH(_create_rnyquist)(int _type,
     unsigned int g_len = 2*_num_channels*_m;
     TC gc[g_len];
     unsigned int i;
-    if (_type == FIRPFBCH_SYNTHESIZER) {
+    if (_type == LIQUID_SYNTHESIZER) {
         for (i=0; i<g_len; i++)
             gc[i] = h[i];
     } else {
@@ -283,7 +283,7 @@ void FIRPFBCH(_print)(FIRPFBCH() _q)
 {
     unsigned int i;
     printf("firpfbch (%s) [%u channels]:\n",
-            _q->type == FIRPFBCH_ANALYZER ? "analyzer" : "synthesizer",
+            _q->type == LIQUID_ANALYZER ? "analyzer" : "synthesizer",
             _q->num_channels);
     for (i=0; i<_q->h_len; i++)
         printf("  h[%3u] = %12.8f + %12.8f*j\n", i, crealf(_q->h[i]), cimagf(_q->h[i]));

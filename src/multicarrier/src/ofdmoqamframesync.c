@@ -161,8 +161,8 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->M2 = q->M/2;
     
     // create analysis filter banks
-    q->ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, q->M, q->m, q->beta, q->ftype);
-    q->ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, q->M, q->m, q->beta, q->ftype);
+    q->ca0 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, q->M, q->m, q->beta, q->ftype);
+    q->ca1 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, q->M, q->m, q->beta, q->ftype);
     q->X0 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->X1 = (float complex*) malloc((q->M)*sizeof(float complex));
  

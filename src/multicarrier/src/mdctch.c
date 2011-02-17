@@ -79,7 +79,7 @@ mdctch mdctch_create(unsigned int _num_channels,
     }
 
     // create transform
-    q->mdct_type = (q->type == FIRPFBCH_ANALYZER) ? FFT_MDCT : FFT_IMDCT;
+    q->mdct_type = (q->type == LIQUID_ANALYZER) ? FFT_MDCT : FFT_IMDCT;
     q->mdct_flags = 0;
     q->mdct = fft_create_plan_mdct(q->M, q->x, q->y, q->mdct_type, q->mdct_flags);
 
@@ -117,7 +117,7 @@ void mdctch_execute(mdctch _q,
                     float * _x,
                     float * _y)
 {
-    if (_q->type == FIRPFBCH_ANALYZER)
+    if (_q->type == LIQUID_ANALYZER)
         mdctch_execute_analyzer(_q, _x, _y);
     else
         mdctch_execute_synthesizer(_q, _x, _y);

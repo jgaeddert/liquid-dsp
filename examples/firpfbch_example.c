@@ -48,8 +48,8 @@ int main() {
     firfilt_crcf fa = firfilt_crcf_create(g, g_len);
 
     // create synthesis/analysis filterbank channelizer objects
-    firpfbch_crcf qs = firpfbch_crcf_create(FIRPFBCH_SYNTHESIZER, num_channels, p, h);
-    firpfbch_crcf qa = firpfbch_crcf_create(FIRPFBCH_ANALYZER,    num_channels, p, g);
+    firpfbch_crcf qs = firpfbch_crcf_create(LIQUID_SYNTHESIZER, num_channels, p, h);
+    firpfbch_crcf qa = firpfbch_crcf_create(LIQUID_ANALYZER,    num_channels, p, g);
 
     float complex x[num_samples];                   // random input (noise)
     float complex Y0[num_symbols][num_channels];    // channelized output (filterbank)
