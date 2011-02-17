@@ -32,19 +32,48 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <math.h>
+#include <getopt.h>
 #include <complex.h>
 #include <fftw3.h>
+
+// print usage/help message
+void usage()
+{
+    printf("fft_r2r_test -- test real ffts, compare to fftw3\n");
+    printf("options (default values in []):\n");
+    printf("  u/h   : print usage/help\n");
+    printf("  n     : number of points\n");
+}
 
 int main(int argc, char*argv[]) {
     unsigned int n = 32;    // transform size
     unsigned int d = 4;     // number of elements to print each line
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhn:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h':   usage();    return 0;
+        case 'n': n = atoi(optarg); break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            exit(1);
+        }
+    }
+
+    // validate input
+    if ( n < 2 ) {
+        fprintf(stderr,"error: input transform size must be at least 2\n");
+        exit(1);
+    }
 
     // create and initialize data arrays
     float x[n];
     float y[n];
     unsigned int i;
     for (i=0; i<n; i++)
-        x[i] = (float)(i) * 0.17f;
+        x[i] = cosf(2*M_PI*i/((float)n)) * expf(-4.0f*i*i/((float)n*n));
 
     // create fftw plans
     fftwf_plan plan[8];
