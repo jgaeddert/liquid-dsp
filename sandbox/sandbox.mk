@@ -16,7 +16,6 @@ local_src	:=				\
 	fft_r2r_test.c				\
 	firdes_energy_test.c			\
 	firdes_length_test.c			\
-	firpfbch_analysis_test.c		\
 	firpfbch_analysis_alignment_test.c	\
 	firpfbch_analysis_equivalence_test.c	\
 	firpfbch_synthesis_equivalence_test.c	\
@@ -32,6 +31,7 @@ local_src	:=				\
 	math_csqrtf_test.c			\
 	ofdmoqam_firpfbch_test.c		\
 	ofdmoqam_firpfbch_cfo_test.c
+#	firpfbch_analysis_test.c
 
 local_sandbox	:= $(addprefix $(local_dir)/, $(local_src))
 

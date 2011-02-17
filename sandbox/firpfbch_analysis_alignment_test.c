@@ -30,8 +30,8 @@ int main() {
     float complex Y1[num_frames][num_channels];
 
     // create analyzer objects
-    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, num_channels, m, beta, ftype);
-    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(FIRPFBCH_ANALYZER, num_channels, m, beta, ftype);
+    firpfbch_crcf ca0 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, num_channels, m, beta, ftype);
+    firpfbch_crcf ca1 = firpfbch_crcf_create_rnyquist(LIQUID_ANALYZER, num_channels, m, beta, ftype);
 
     unsigned int i;
     unsigned int j;

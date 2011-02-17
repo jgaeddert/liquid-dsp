@@ -52,7 +52,7 @@ int main() {
     float complex Y1[num_frames][num_channels];     // channelized output
 
     // create ofdm/oqam generator object and generate data
-    ofdmoqam qs = ofdmoqam_create(num_channels, m, beta, 0.0f, OFDMOQAM_SYNTHESIZER, 0);
+    ofdmoqam qs = ofdmoqam_create(num_channels, m, beta, 0.0f, LIQUID_SYNTHESIZER, 0);
     for (i=0; i<num_frames; i++) {
         for (j=0; j<num_channels; j++) {
             if (i<num_symbols) {
