@@ -46,8 +46,9 @@ void fft_r2r_test(float *_x,
 
     // print results
     if (liquid_autotest_verbose) {
+        printf("%12s %12s\n", "expected", "actual");
         for (i=0; i<_n; i++)
-            printf("%12.8f %12.8f\n", y[i], _test[i]);
+            printf("%12.8f %12.8f\n", _test[i], y[i]);
     }
 
     // validate results
