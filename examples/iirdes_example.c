@@ -168,12 +168,12 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     if (format == LIQUID_IIRDES_TF) {
         // print coefficients
-        for (i=0; i<=order; i++) printf("a[%3u] = %12.8f;\n", i, a[i]);
-        for (i=0; i<=order; i++) printf("b[%3u] = %12.8f;\n", i, b[i]);
+        for (i=0; i<=N; i++) printf("a[%3u] = %12.8f;\n", i, a[i]);
+        for (i=0; i<=N; i++) printf("b[%3u] = %12.8f;\n", i, b[i]);
 
         fprintf(fid,"a = zeros(1,n+1);\n");
         fprintf(fid,"b = zeros(1,n+1);\n");
-        for (i=0; i<=order; i++) {
+        for (i=0; i<=N; i++) {
             fprintf(fid,"a(%3u) = %12.4e;\n", i+1, a[i]);
             fprintf(fid,"b(%3u) = %12.4e;\n", i+1, b[i]);
         }
