@@ -3324,8 +3324,8 @@ unsigned int msequence_get_state(msequence _ms);
 //  _src        :   source array [size: _n x 1]
 //  _n          :   input source array length
 //  _k          :   bit index to write in _src
-//  _sym_in     :   input symbol
 //  _b          :   number of bits in input symbol
+//  _sym_in     :   input symbol
 void liquid_pack_array(unsigned char * _src,
                        unsigned int _n,
                        unsigned int _k,

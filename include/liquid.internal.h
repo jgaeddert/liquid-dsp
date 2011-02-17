@@ -370,6 +370,14 @@ void fec_hamming128_decode(fec _q,
 //                r1/3 K=9
 //                r1/6 K=15
 
+// compute encoded message length for block codes
+//  _dec_msg_len    :   decoded message length (bytes)
+//  _m              :   input block size (bits)
+//  _k              :   output block size (bits)
+unsigned int fec_block_get_enc_msg_len(unsigned int _dec_msg_len,
+                                       unsigned int _m,
+                                       unsigned int _k);
+
 // compute encoded message length for convolutional codes
 //  _dec_msg_len    :   decoded message length
 //  _K              :   constraint length

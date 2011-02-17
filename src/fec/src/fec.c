@@ -86,9 +86,9 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
     case FEC_NONE:          return _msg_len;
     case FEC_REP3:          return 3*_msg_len;
     case FEC_REP5:          return 5*_msg_len;
-    case FEC_HAMMING74:     return 2*_msg_len;
-    case FEC_HAMMING84:     return 2*_msg_len;
-    case FEC_HAMMING128:    return 3*(_msg_len>>1) + 2*(_msg_len%2);
+    case FEC_HAMMING74:     return fec_block_get_enc_msg_len(_msg_len,4,7);
+    case FEC_HAMMING84:     return fec_block_get_enc_msg_len(_msg_len,4,8);
+    case FEC_HAMMING128:    return fec_block_get_enc_msg_len(_msg_len,8,12);
 
 #if HAVE_FEC_H
     // convolutional codes
@@ -144,6 +144,47 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
     }
 
     return 0;
+}
+
+// compute encoded message length for block codes
+//  _dec_msg_len    :   decoded message length (bytes)
+//  _m              :   input block size (bits)
+//  _k              :   output block size (bits)
+unsigned int fec_block_get_enc_msg_len(unsigned int _dec_msg_len,
+                                       unsigned int _m,
+                                       unsigned int _k)
+{
+    // validate input
+    if (_m == 0) {
+        fprintf(stderr,"fec_block_get_enc_msg_len(), input block size cannot be zero\n");
+        exit(1);
+    } else if (_k < _m) {
+        fprintf(stderr,"fec_block_get_enc_msg_len(), output block size cannot be smaller than input\n");
+        exit(1);
+    }
+
+    // compute total number of bits in decoded message
+    unsigned int num_bits_in = _dec_msg_len*8;
+
+    // compute total number of blocks: ceil(num_bits_in/_m)
+    unsigned int num_blocks = num_bits_in / _m + (num_bits_in%_m ? 1 : 0);
+
+    // compute total number of bits out
+    unsigned int num_bits_out = num_blocks * _k;
+
+    // compute total number of bytes out: ceil(num_bits_out/8)
+    unsigned int num_bytes_out = num_bits_out/8 + (num_bits_out%8 ? 1 : 0);
+#if 0
+    printf("fec_block_get_enc_msg_len(%u,%u,%u)\n", _dec_msg_len, _m, _k);
+    printf("    dec msg len :   %u bytes\n", _dec_msg_len);
+    printf("    m           :   %u bits\n", _m);
+    printf("    k           :   %u bits\n", _k);
+    printf("    num bits in :   %u bits\n", num_bits_in);
+    printf("    num blocks  :   %u\n", num_blocks);
+    printf("    num bits out:   %u bits\n", num_bits_out);
+    printf("    enc msg len :   %u bytes\n", num_bytes_out);
+#endif
+    return num_bytes_out;
 }
 
 // compute encoded message length for convolutional codes
@@ -235,9 +276,9 @@ float fec_get_rate(fec_scheme _scheme)
     case FEC_NONE:          return 1.;
     case FEC_REP3:          return 1./3.;
     case FEC_REP5:          return 1./5.;
-    case FEC_HAMMING74:     return 1./2.;
-    case FEC_HAMMING84:     return 1./2.;
-    case FEC_HAMMING128:    return 2./3.;
+    case FEC_HAMMING74:     return 4./7.;
+    case FEC_HAMMING84:     return 4./8.;
+    case FEC_HAMMING128:    return 8./12.;
 
     // convolutional codes
 #if HAVE_FEC_H

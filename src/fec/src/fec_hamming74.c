@@ -78,21 +78,41 @@ void fec_hamming74_destroy(fec _q)
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
-//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
-//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
+//  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
+//  _msg_enc        :   encoded message [size: ...]
 void fec_hamming74_encode(fec _q,
                           unsigned int _dec_msg_len,
                           unsigned char *_msg_dec,
                           unsigned char *_msg_enc)
 {
-    unsigned int i, j=0;
-    unsigned char s0, s1;
+    unsigned int i;         // input byte counter
+    unsigned int k=0;       // array bit index
+
+    // compute encoded message length
+    unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,4,7);
+
+    unsigned char s0, s1;   // decoded symbols
+    unsigned char m0, m1;   // encoded symbols
+
+    // clear output array
+    memset(_msg_enc, 0x00, enc_msg_len*sizeof(unsigned char));
+
     for (i=0; i<_dec_msg_len; i++) {
+        // strip two 4-bit symbols from input byte
         s0 = (_msg_dec[i] >> 4) & 0x0f;
         s1 = (_msg_dec[i] >> 0) & 0x0f;
-        _msg_enc[j+0] = hamming74_enc_gentab[s0];
-        _msg_enc[j+1] = hamming74_enc_gentab[s1];
-        j+=2;
+
+        // encode two 7-bit symbols
+        m0 = hamming74_enc_gentab[s0];
+        m1 = hamming74_enc_gentab[s1];
+
+        // pack encoded symbols into output array
+        liquid_pack_array(_msg_enc, enc_msg_len, k, 7, m0);
+        k += 7;
+        liquid_pack_array(_msg_enc, enc_msg_len, k, 7, m1);
+        k += 7;
+
+        //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, s0, m0, s1, m1, k);
     }
 }
 
@@ -100,8 +120,8 @@ void fec_hamming74_encode(fec _q,
 //
 //  _q              :   encoder/decoder object
 //  _dec_msg_len    :   decoded message length (number of bytes)
-//  _msg_enc        :   encoded message [size: 1 x 2*_dec_msg_len]
-//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+//  _msg_enc        :   encoded message [size: ...]
+//  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
 //
 //unsigned int
 void fec_hamming74_decode(fec _q,
@@ -110,17 +130,31 @@ void fec_hamming74_decode(fec _q,
                           unsigned char *_msg_dec)
 {
     unsigned int i;
+    unsigned int k=0;       // array bit index
+
+    // compute encoded message length
+    unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,4,7);
+
+    // clear output array
+    memset(_msg_dec, 0x00, _dec_msg_len*sizeof(unsigned char));
+
     unsigned char r0, r1;   // received 7-bit symbols
     unsigned char s0, s1;   // decoded 4-bit symbols
+
     //unsigned char num_errors=0;
     for (i=0; i<_dec_msg_len; i++) {
-        r0 = _msg_enc[2*i+0] & 0x7f;
-        r1 = _msg_enc[2*i+1] & 0x7f;
+        // strip two 7-bit symbols from 
+        liquid_unpack_array(_msg_enc, enc_msg_len, k, 7, &r0);
+        k += 7;
+        liquid_unpack_array(_msg_enc, enc_msg_len, k, 7, &r1);
+        k += 7;
 
         s0 = hamming74_dec_gentab[r0];
         s1 = hamming74_dec_gentab[r1];
 
         _msg_dec[i] = (s0 << 4) | s1;
+
+        //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
     }
     //return num_errors;
 }
