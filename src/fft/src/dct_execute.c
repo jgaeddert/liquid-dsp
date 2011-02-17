@@ -79,7 +79,7 @@ void FFT(_execute_REDFT10)(FFT(plan) _p)
     }
     // check for odd condition
     if (r==1)
-        _p->xc[L+1] = _p->xr[2*L];
+        _p->xc[L] = _p->xr[2*L];
 
     // execute fft, storing result in _p->yc
     FFT(_execute)(_p->internal_plan);
