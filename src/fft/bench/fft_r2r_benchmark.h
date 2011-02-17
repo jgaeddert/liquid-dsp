@@ -25,9 +25,6 @@
 // Real even/odd FFT benchmarks (discrete cosine/sine transforms)
 //
 
-#ifndef __LIQUID_FFT_R2R_BENCHMARK_H__
-#define __LIQUID_FFT_R2R_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -59,6 +56,7 @@ void fft_r2r_bench(struct rusage *_start,
     // relatively linear
     *_num_iterations /= _n * _n;
     *_num_iterations *= 10;
+    *_num_iterations += 1;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
@@ -75,16 +73,14 @@ void fft_r2r_bench(struct rusage *_start,
 }
 
 // Radix-2
-void benchmark_fft_r2r_4        FFT_R2R_BENCH_API(4,        FFT_REDFT10)
-void benchmark_fft_r2r_8        FFT_R2R_BENCH_API(8,        FFT_REDFT10)
-void benchmark_fft_r2r_16       FFT_R2R_BENCH_API(16,       FFT_REDFT10)
-void benchmark_fft_r2r_32       FFT_R2R_BENCH_API(32,       FFT_REDFT10)
-void benchmark_fft_r2r_64       FFT_R2R_BENCH_API(64,       FFT_REDFT10)
-void benchmark_fft_r2r_128      FFT_R2R_BENCH_API(128,      FFT_REDFT10)
 
-// Non radix-2
-void benchmark_fft_r2r_10       FFT_R2R_BENCH_API(10,       FFT_REDFT10)
-//void xbenchmark_fft_r2r_100      FFT_R2R_BENCH_API(100,      FFT_REDFT10)
+void benchmark_fft_REDFT00_64   FFT_R2R_BENCH_API(64,   FFT_REDFT00)
+void benchmark_fft_REDFT01_64   FFT_R2R_BENCH_API(64,   FFT_REDFT01)
+void benchmark_fft_REDFT10_64   FFT_R2R_BENCH_API(64,   FFT_REDFT10)
+void benchmark_fft_REDFT11_64   FFT_R2R_BENCH_API(64,   FFT_REDFT11)
 
-#endif // __LIQUID_FFT_R2R_BENCHMARK_H__
+void benchmark_fft_RODFT00_64   FFT_R2R_BENCH_API(64,   FFT_RODFT00)
+void benchmark_fft_RODFT01_64   FFT_R2R_BENCH_API(64,   FFT_RODFT01)
+void benchmark_fft_RODFT10_64   FFT_R2R_BENCH_API(64,   FFT_RODFT10)
+void benchmark_fft_RODFT11_64   FFT_R2R_BENCH_API(64,   FFT_RODFT11)
 
