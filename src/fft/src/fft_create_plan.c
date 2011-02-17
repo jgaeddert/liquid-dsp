@@ -44,6 +44,7 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
     p->y = _y;
     p->flags = _flags;
     p->kind = LIQUID_FFT_DFT_1D;
+    p->internal_plan = NULL;
 
     if (_dir == FFT_FORWARD)
         p->direction = FFT_FORWARD;
@@ -97,6 +98,10 @@ void FFT(_destroy_plan)(FFT(plan) _p)
     liquid_safe_free(_p->yc);
     liquid_safe_free(_p->w);
 
+    // destroy internal plan (used for real DFTs)
+    if (_p->internal_plan != NULL)
+        FFT(_destroy_plan)(_p->internal_plan);
+
     free(_p);
 }
 
@@ -113,6 +118,7 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     p->yr = _y;
     p->kind = _kind;
     p->flags = _flags;
+    p->internal_plan = NULL;
 
     // initialize all arrays to NULL
     p->twiddle = NULL;
@@ -129,6 +135,10 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     case FFT_REDFT10:
         // DCT-II
         p->execute = &FFT(_execute_REDFT10);
+        p->xc = (TC*) malloc(4*_n*sizeof(TC));
+        p->yc = (TC*) malloc(4*_n*sizeof(TC));
+        // create internal plan
+        p->internal_plan = FFT(_create_plan)(4*_n, p->xc, p->yc, FFT_FORWARD, _flags);
         break;
     case FFT_REDFT01:
         // DCT-III

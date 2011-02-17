@@ -52,6 +52,7 @@ void FFT(_execute_REDFT00)(FFT(plan) _p)
 // DCT-II (regular 'dct')
 void FFT(_execute_REDFT10)(FFT(plan) _p)
 {
+#if 0
     // ugly, slow method
     unsigned int i,k;
     float n_inv = 1.0f / (float)_p->n;
@@ -66,6 +67,23 @@ void FFT(_execute_REDFT10)(FFT(plan) _p)
         // compensate for discrepancy
         _p->yr[i] *= 2.0f;
     }
+#else
+    unsigned int i;
+    // precondition fft
+    for (i=0; i<_p->n; i++) {
+        _p->xc[2*i+0]           = 0.0f;
+        _p->xc[2*i+1]           = _p->xr[i];
+        _p->xc[2*i+0 + 2*_p->n] = 0.0f;
+        _p->xc[2*i+1 + 2*_p->n] = _p->xr[_p->n-i-1];
+    }
+
+    // execute fft, storing result in _p->yc
+    FFT(_execute)(_p->internal_plan);
+
+    // truncate result
+    for (i=0; i<_p->n; i++)
+        _p->yr[i] = crealf(_p->yc[i]);
+#endif
 }
 
 // DCT-III (regular 'idct')

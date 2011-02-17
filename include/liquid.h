@@ -585,8 +585,8 @@ void fec_decode(fec _q,
 // MODULE : fft (fast Fourier transform)
 //
 
-#define FFT_FORWARD 0
-#define FFT_REVERSE 1
+#define FFT_FORWARD 0   // FFT
+#define FFT_REVERSE 1   // IFFT
 
 #define FFT_REDFT00 3   // DCT-I
 #define FFT_REDFT10 4   // DCT-II

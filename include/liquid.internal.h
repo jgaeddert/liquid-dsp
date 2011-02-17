@@ -527,6 +527,12 @@ struct FFT(plan_s) {                                            \
     int flags;                                                  \
     liquid_fft_kind kind;                                       \
                                                                 \
+    /* radix-2 implementation data */                           \
+    int is_radix2;              /* radix-2 flag */              \
+    unsigned int * index_rev;   /* input indices (reversed) */  \
+    unsigned int m;             /* log2(n) */                   \
+    void (*execute)(FFT(plan)); /* function pointer */          \
+                                                                \
     /* real even/odd DFTs parameters */                         \
     T * xr;                     /* input array (real) */        \
     T * yr;                     /* output array (real) */       \
@@ -536,11 +542,8 @@ struct FFT(plan_s) {                                            \
     /* modified discrete cosine transform parameters */         \
     T * w;                      /* window */                    \
                                                                 \
-    /* radix-2 implementation data */                           \
-    int is_radix2;              /* radix-2 flag */              \
-    unsigned int * index_rev;   /* input indices (reversed) */  \
-    unsigned int m;             /* log2(n) */                   \
-    void (*execute)(FFT(plan)); /* function pointer */          \
+    /* internal FFT plan for real DFTs */                       \
+    FFT(plan) internal_plan;                                    \
 };                                                              \
                                                                 \
 /* initialization */                                            \
