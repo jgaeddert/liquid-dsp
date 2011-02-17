@@ -77,7 +77,7 @@ void fec_encode_bench(
     case FEC_NONE:          *_num_iterations *= 500;    break;
     case FEC_REP3:          *_num_iterations *= 200;    break;
     case FEC_REP5:          *_num_iterations *= 100;    break;
-    case FEC_HAMMING74:     *_num_iterations *= 100;    break;
+    case FEC_HAMMING74:     *_num_iterations *=  30;    break;
     case FEC_HAMMING84:     *_num_iterations *= 100;    break;
     case FEC_HAMMING128:    *_num_iterations *= 100;    break;
     case FEC_CONV_V27:

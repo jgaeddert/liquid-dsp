@@ -94,9 +94,6 @@ void fec_hamming74_encode(fec _q,
     unsigned char s0, s1;   // decoded symbols
     unsigned char m0, m1;   // encoded symbols
 
-    // clear output array
-    memset(_msg_enc, 0x00, enc_msg_len*sizeof(unsigned char));
-
     for (i=0; i<_dec_msg_len; i++) {
         // strip two 4-bit symbols from input byte
         s0 = (_msg_dec[i] >> 4) & 0x0f;
@@ -134,9 +131,6 @@ void fec_hamming74_decode(fec _q,
 
     // compute encoded message length
     unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,4,7);
-
-    // clear output array
-    memset(_msg_dec, 0x00, _dec_msg_len*sizeof(unsigned char));
 
     unsigned char r0, r1;   // received 7-bit symbols
     unsigned char s0, s1;   // decoded 4-bit symbols
