@@ -30,11 +30,14 @@
 #ifndef __LIQUID_EXPERIMENTAL_H__
 #define __LIQUID_EXPERIMENTAL_H__
 
-// Configuration file
-#include "config.h"
+#ifdef __cplusplus
+extern "C" {
+#   define LIQUID_USE_COMPLEX_H 0
+#else
+#   define LIQUID_USE_COMPLEX_H 1
+#endif /* __cplusplus */
 
-#include <complex.h>
-#include "liquid.internal.h"
+#include "liquid.h"
 
 
 // 
@@ -865,6 +868,10 @@ struct patternset_s {
 };
 
 void patternset_increase_mem(patternset _q, unsigned int _n);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif /* __cplusplus */
 
 
 #endif // __LIQUID_EXPERIMENTAL_H__

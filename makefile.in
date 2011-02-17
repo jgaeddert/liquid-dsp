@@ -64,6 +64,13 @@ CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
 ARFLAGS		= r
 
+# 
+# Liquid headers
+#
+headers_install	:= liquid.h @HEADER_EXPERIMENTAL@
+headers		:= $(headers_install) liquid.internal.h
+include_headers	:= $(addprefix include/,$(headers))
+
 # Liquid modules
 #
 # Each processing library is held in a module containing
@@ -98,7 +105,7 @@ modules		:=	\
 	random		\
 	sequence	\
 	utility		\
-	@MLIBS_EXPERIMENTAL@
+	@MODULE_EXPERIMENTAL@
 
 # target-specific libraries
 mlibs_dotprod := @MLIBS_DOTPROD@
@@ -178,7 +185,7 @@ install:
 	install -m 644 -p $(SHARED_LIB) libliquid.a $(exec_prefix)/lib
 	mkdir -p $(prefix)/include
 	mkdir -p $(prefix)/include/liquid
-	install -m 644 -p include/liquid.h $(prefix)/include/liquid
+	install -m 644 -p $(addprefix include/,$(headers_install)) $(prefix)/include/liquid
 	@echo ""
 	@echo "---------------------------------------------------------"
 	@echo "  liquid-dsp was successfully installed.     "
@@ -198,11 +205,8 @@ install:
 # Uninstalls the libraries and header files in the host system
 uninstall:
 	@echo "uninstalling..."
-	@echo "removing header \"$(prefix)/include/liquid/liquid.h\" ..."
-	$(RM) $(prefix)/include/liquid/liquid.h
-	@echo "removing library \"$(exec_prefix)/lib/libliquid.a\" ..."
+	$(RM) $(addprefix $(prefix)/include/liquid/, $(headers_install))
 	$(RM) $(exec_prefix)/lib/libliquid.a
-	@echo "removing library \"$(exec_prefix)/lib/$(SHARED_LIB)\" ..."
 	$(RM) $(exec_prefix)/lib/$(SHARED_LIB)
 	@echo "done."
 
@@ -217,7 +221,7 @@ uninstall:
 autotest_prog	= xautotest
 
 # run the autotest generator script to create autotest_include.h
-autotest_include.h: $(autotest_headers) include/liquid.h include/liquid.internal.h autotest/autotest_gen.py
+autotest_include.h: $(autotest_headers) $(include_headers) autotest/autotest_gen.py
 	python autotest/autotest_gen.py $(autotest_headers)
 
 # autotest objects
@@ -225,7 +229,7 @@ autotest_include.h: $(autotest_headers) include/liquid.h include/liquid.internal
 #       header' so we need to explicity tell it to compile as a c source file with
 #       the '-x c' flag
 autotest_obj = $(patsubst %.h,%.o,$(autotest_headers))
-$(autotest_obj) : %.o : %.h include/liquid.h include/liquid.internal.h
+$(autotest_obj) : %.o : %.h $(include_headers)
 	$(CC) $(CFLAGS) -x c $< -c -o $@
 
 # compile the autotest internal library functions without linking
@@ -265,7 +269,7 @@ BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS)
 
 # run the benchmark generator script to create benchmark_include.h
-benchmark_include.h: $(benchmark_headers) include/liquid.h include/liquid.internal.h
+benchmark_include.h: $(benchmark_headers) $(include_headers)
 	python bench/benchmarkgen.py $(benchmark_headers)
 
 # benchmark objects
@@ -273,7 +277,7 @@ benchmark_include.h: $(benchmark_headers) include/liquid.h include/liquid.intern
 #       header' so we need to explicity tell it to compile as a c source file with
 #       the '-x c' flag
 benchmark_obj = $(patsubst %.h,%.o,$(benchmark_headers))
-$(benchmark_obj) : %.o : %.h include/liquid.h include/liquid.internal.h
+$(benchmark_obj) : %.o : %.h $(include_headers)
 	$(CC) $(CFLAGS) -x c $< -c -o $@
 
 # compile the benchmark program without linking
@@ -344,8 +348,7 @@ clean-sandbox:
 todolist_filename = todolist.txt
 
 todolist_sources	= $(sources)			\
-			  include/liquid.h		\
-			  include/liquid.internal.h	\
+			  $(include_headers)		\
 			  $(autotest_headers)		\
 			  $(benchmark_headers)
 

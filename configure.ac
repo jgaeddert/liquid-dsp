@@ -59,14 +59,18 @@ AC_ARG_ENABLE(profile,
 AC_ARG_ENABLE(experimental,
     AS_HELP_STRING([--enable-experimental],[enable experimental modules, objects]),
     [   # experimental option enabled
-        MLIBS_EXPERIMENTAL="experimental"   # add 'experimental' module directory to list
+        MODULE_EXPERIMENTAL="experimental"          # add 'experimental' module directory to list
+        HEADER_EXPERIMENTAL="liquid.experimental.h" # add 'experimental' header to list
         AC_DEFINE(LIQUID_EXPERIMENTAL)
         AC_CHECK_HEADERS(pthread.h)
         AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
                      [AC_MSG_ERROR(Need POSIX thread library for experimental build!)],
                      [])
     ],
-    [MLIBS_EXPERIMENTAL=""],
+    [   # experimental option disabled
+        MODULE_EXPERIMENTAL=""
+        HEADER_EXPERIMENTAL=""
+    ],
 )
 
 # Check for necessary programs
@@ -153,7 +157,8 @@ esac
 #
 AC_SUBST(LIBS)              # shared libraries (-lc, -lm, etc.)
 AC_SUBST(MLIBS_DOTPROD)     # 
-AC_SUBST(MLIBS_EXPERIMENTAL)# build experimental module?
+AC_SUBST(MODULE_EXPERIMENTAL)# build experimental module?
+AC_SUBST(HEADER_EXPERIMENTAL)# experimental header
 
 AC_SUBST(SH_LIB)            # output shared library target
 AC_SUBST(REBIND)            # rebinding tool (e.g. ldconfig)

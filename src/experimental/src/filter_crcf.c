@@ -23,7 +23,7 @@
 // Filter API: complex floating-point
 //
 
-#include "liquid.experimental.h"
+#include "liquid.internal.h"
 
 // 
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_crcf,name)

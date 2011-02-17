@@ -37,6 +37,11 @@
 #include <complex.h>
 #include "liquid.h"
 
+#if LIQUID_EXPERIMENTAL == 1
+#  include "liquid.experimental.h"
+#endif
+
+
 //
 // Debugging macros
 //
