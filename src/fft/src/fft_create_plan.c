@@ -153,6 +153,10 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     case FFT_REDFT11:
         // DCT-IV
         p->execute = &FFT(_execute_REDFT11);
+        // create internal plan
+        p->xc = (TC*) malloc(4*p->n*sizeof(TC));
+        p->yc = (TC*) malloc(4*p->n*sizeof(TC));
+        p->internal_plan = FFT(_create_plan)(4*p->n, p->xc, p->yc, FFT_FORWARD, _flags);
         break;
     case FFT_RODFT00:
         // DST-I

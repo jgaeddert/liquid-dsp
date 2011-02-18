@@ -135,6 +135,7 @@ void FFT(_execute_REDFT01)(FFT(plan) _p)
 // DCT-IV
 void FFT(_execute_REDFT11)(FFT(plan) _p)
 {
+#if 0
     // ugly, slow method
     unsigned int i,k;
     float n_inv = 1.0f / (float)(_p->n);
@@ -149,4 +150,25 @@ void FFT(_execute_REDFT11)(FFT(plan) _p)
         // compensate for discrepancy
         _p->yr[i] *= 2.0f;
     }
+#else
+    // NOTE: this method is only faster if n >= 64 and is radix-2
+
+    unsigned int i;
+    // precondition fft
+    for (i=0; i<_p->n; i++) {
+        _p->xc[0*(_p->n) + i] =  _p->xr[i];
+        _p->xc[1*(_p->n) + i] = -_p->xr[_p->n-i-1];
+        _p->xc[2*(_p->n) + i] = -_p->xr[i];
+        _p->xc[3*(_p->n) + i] =  _p->xr[_p->n-i-1];
+    }
+
+    // execute fft, storing result in _p->yc
+    FFT(_execute)(_p->internal_plan);
+
+    // post-condition output
+    for (i=0; i<_p->n; i++) {
+        float theta = 0.5 * M_PI * ((float)i + 0.5) / ((float)_p->n);
+        _p->yr[i] = 0.5f*crealf(_p->yc[2*i+1]*cexpf(-_Complex_I*theta));
+    }
+#endif
 }
