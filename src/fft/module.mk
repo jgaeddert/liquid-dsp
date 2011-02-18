@@ -30,6 +30,7 @@ local_s_files	:= 		\
 	asgram.c		\
 	dct.c			\
 	fftf.c			\
+	fft_common.c		\
 	mdct.c
 
 # local_t_files

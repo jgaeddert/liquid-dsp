@@ -575,8 +575,11 @@ void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
 void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
 void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */
 
+// is input radix-2?
+int fft_is_radix2(unsigned int _n);
+
 // miscellaneous functions
-unsigned int reverse_index(unsigned int _i, unsigned int _n);
+unsigned int fft_reverse_index(unsigned int _i, unsigned int _n);
 
 //
 // fft_shift

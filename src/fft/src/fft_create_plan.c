@@ -60,24 +60,16 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
     p->yc = NULL;
     p->w  = NULL;
 
-    p->is_radix2 = 0;   // false
-
-    // check to see if _n is radix 2
-    unsigned int i, d=0, m=0, t=p->n;
-    for (i=0; i<8*sizeof(unsigned int); i++) {
-        d += (t & 1);           // count bits, radix-2 if d==1
-        if (!m && (t&1)) m = i; // count lagging zeros, effectively log2(n)
-        t >>= 1;
-    }
+    // check to see if transform size is radix 2
+    p->is_radix2 = fft_is_radix2(p->n);
 
     // initialize twiddle factors, etc.
     if (_n <= FFT_SIZE_LUT ) {
         FFT(_init_lut)(p);
         p->execute = &FFT(_execute_lut);
-    } else if (d==1) {
+    } else if (p->is_radix2) {
         // radix-2
-        p->is_radix2 = 1;   // true
-        p->m = m;
+        p->m = liquid_msb_index(p->n) - 1;  // m = log2(n)
         FFT(_init_radix2)(p);
         p->execute = &FFT(_execute_radix2);
     } else {
@@ -255,23 +247,10 @@ void FFT(_init_radix2)(FFT(plan) _p)
     _p->index_rev = (unsigned int *) malloc((_p->n)*sizeof(unsigned int));
     unsigned int i;
     for (i=0; i<_p->n; i++)
-        _p->index_rev[i] = reverse_index(i,_p->m);
+        _p->index_rev[i] = fft_reverse_index(i,_p->m);
 
     //for (i=0; i<_p->n; i++)
     //    printf("%3d -> %3d\n", i, _p->index_rev[i]);
-}
-
-// reverse _n-bit index _i
-unsigned int reverse_index(unsigned int _i, unsigned int _n)
-{
-    unsigned int j=0, k;
-    for (k=0; k<_n; k++) {
-        j <<= 1;
-        j |= ( _i & 1 );
-        _i >>= 1;
-    }
-
-    return j;
 }
 
 // execute fft : simply calls internal function pointer
