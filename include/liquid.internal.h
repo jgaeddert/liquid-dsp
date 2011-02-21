@@ -513,6 +513,13 @@ typedef enum {
     LIQUID_FFT_IMDCT            // IMDCT
 } liquid_fft_kind;
 
+typedef enum {
+    LIQUID_FFT_METHOD_UNKNOWN=0,// unknown method
+    LIQUID_FFT_METHOD_LUT,      // look-up table
+    LIQUID_FFT_METHOD_RADIX2,   // Radix-2 (decimation in time)
+    LIQUID_FFT_METHOD_DFT       // slow discrete Fourier transform
+} liquid_fft_method;
+
 // Macro    :   FFT (internal)
 //  FFT     :   name-mangling macro
 //  T       :   primitive data type
@@ -526,6 +533,7 @@ struct FFT(plan_s) {                                            \
     int direction;              /* forward/reverse */           \
     int flags;                                                  \
     liquid_fft_kind kind;                                       \
+    liquid_fft_method method;                                   \
                                                                 \
     /* radix-2 implementation data */                           \
     int is_radix2;              /* radix-2 flag */              \
@@ -572,6 +580,11 @@ void FFT(_execute_RODFT00)(FFT(plan) _p);   /* DST-I   */       \
 void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
 void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
 void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
+                                                                \
+/* fast discrete sine/cosine transform (DST/DCT) prototypes */  \
+void FFT(_execute_REDFT10_fftn)(FFT(plan) _p);                  \
+void FFT(_execute_REDFT01_fftn)(FFT(plan) _p);                  \
+void FFT(_execute_REDFT11_fft4n)(FFT(plan) _p);                 \
                                                                 \
 void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
 void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */

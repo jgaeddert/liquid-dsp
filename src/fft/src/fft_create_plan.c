@@ -64,26 +64,43 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
     p->y = _y;
     p->flags = _flags;
     p->kind = LIQUID_FFT_DFT_1D;
-
-    if (_dir == FFT_FORWARD)
-        p->direction = FFT_FORWARD;
-    else
-        p->direction = FFT_REVERSE;
+    p->direction = (_dir == FFT_FORWARD) ? FFT_FORWARD : FFT_REVERSE;
 
     // check to see if transform size is radix 2
     p->is_radix2 = fft_is_radix2(p->n);
 
+    // strip flags (see if method is forced)A
+    p->method = LIQUID_FFT_METHOD_UNKNOWN;
+    if (0) {
+        // method is forced
+    } else {
+        // determine best method
+        if (_n <= FFT_SIZE_LUT)
+            p->method = LIQUID_FFT_METHOD_LUT;
+        else if (p->is_radix2)
+            p->method = LIQUID_FFT_METHOD_RADIX2;
+        else
+            p->method = LIQUID_FFT_METHOD_DFT;
+    }
+
     // initialize twiddle factors, etc.
-    if (_n <= FFT_SIZE_LUT ) {
+    switch ( p->method ) {
+    case LIQUID_FFT_METHOD_LUT:
         FFT(_init_lut)(p);
         p->execute = &FFT(_execute_lut);
-    } else if (p->is_radix2) {
+        break;
+    case LIQUID_FFT_METHOD_RADIX2:
         // radix-2
         p->m = liquid_msb_index(p->n) - 1;  // m = log2(n)
         FFT(_init_radix2)(p);
         p->execute = &FFT(_execute_radix2);
-    } else {
+        break;
+    case LIQUID_FFT_METHOD_DFT:
         p->execute = &FFT(_execute_dft);
+        break;
+    default:
+        fprintf(stderr,"error: fft_create_plan(), unkown/unsupported method %d\n", p->method);
+        exit(1);
     }
 
     return p;
@@ -104,6 +121,12 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
     p->yr = _y;
     p->kind = _kind;
     p->flags = _flags;
+    p->method = LIQUID_FFT_METHOD_DFT;
+
+    // check to see if transform size is radix 2
+    p->is_radix2 = fft_is_radix2(p->n);
+
+    // TODO : break of this switch into manageably-sized pieces
 
     switch (p->kind) {
     case FFT_REDFT00:
@@ -112,11 +135,16 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
         break;
     case FFT_REDFT10:
         // DCT-II
-        p->execute = &FFT(_execute_REDFT10);
-        // create internal plan
-        p->xc = (TC*) malloc(_n*sizeof(TC));
-        p->yc = (TC*) malloc(_n*sizeof(TC));
-        p->internal_plan = FFT(_create_plan)(_n, p->xc, p->yc, FFT_FORWARD, _flags);
+        if (p->is_radix2) {
+            // create internal plan
+            p->xc = (TC*) malloc(_n*sizeof(TC));
+            p->yc = (TC*) malloc(_n*sizeof(TC));
+            p->internal_plan = FFT(_create_plan)(_n, p->xc, p->yc, FFT_FORWARD, _flags);
+            p->execute = &FFT(_execute_REDFT10_fftn);
+        } else {
+            // compute regular DCT
+            p->execute = &FFT(_execute_REDFT10);
+        }
         break;
     case FFT_REDFT01:
         // DCT-III
@@ -130,11 +158,16 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
         break;
     case FFT_REDFT11:
         // DCT-IV
-        p->execute = &FFT(_execute_REDFT11);
-        // create internal plan
-        p->xc = (TC*) malloc(4*p->n*sizeof(TC));
-        p->yc = (TC*) malloc(4*p->n*sizeof(TC));
-        p->internal_plan = FFT(_create_plan)(4*p->n, p->xc, p->yc, FFT_FORWARD, _flags);
+        if (p->is_radix2) {
+            // create internal plan
+            p->xc = (TC*) malloc(4*p->n*sizeof(TC));
+            p->yc = (TC*) malloc(4*p->n*sizeof(TC));
+            p->internal_plan = FFT(_create_plan)(4*p->n, p->xc, p->yc, FFT_FORWARD, _flags);
+            p->execute = &FFT(_execute_REDFT11_fft4n);
+        } else {
+            // compute regular DCT
+            p->execute = &FFT(_execute_REDFT11);
+        }
         break;
     case FFT_RODFT00:
         // DST-I

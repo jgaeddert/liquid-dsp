@@ -37,6 +37,7 @@
 
 // include main files
 #include "fft_create_plan.c"
+#include "fct_execute.c"
 #include "dct_execute.c"
 #include "dst_execute.c"
 #include "mdct_execute.c"
