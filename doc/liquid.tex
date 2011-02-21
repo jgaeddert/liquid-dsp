@@ -9,15 +9,17 @@
 %
 % ------------------------------------------------------------------
  
-\documentclass[11pt,twoside]{report}
+\documentclass[11pt,twoside]{article}
+
 % ------------------- DOCUMENT VARIABLES -------------------
 \setlength{\textwidth}{6.5in}
 \setlength{\textheight}{8.5in}
 \setlength{\evensidemargin}{0in}
 \setlength{\oddsidemargin}{0in}
 \setlength{\topmargin}{0in}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.1in}
+%\setlength{\parindent}{0pt}
+%\setlength{\parskip}{0.1in}
+
 
 % ------------------- BIBLIOGRAPHY STYLE -------------------
 \usepackage{natbib}
@@ -116,6 +118,10 @@ Software-defined radio digital signal processing library
 
 \vfill
 
+User's Manual for Version 1.0.0
+
+\vfill
+
 Joseph D. Gaeddert
 
 \vfill
@@ -163,8 +169,17 @@ dynamic spectrum access
 %             Introduction
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Introduction}
-\label{ch:introduction}
+
+\newpage
+\part{Introduction to \liquid }
+\label{part:intro}
+
+\bigskip
+\noindent
+To get you started with using \liquid\ signal processing library...
+
+% TODO throw up some fancy graphic here
+
 
 \input{sections/introduction}
 
@@ -174,12 +189,20 @@ dynamic spectrum access
 %             Modules
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Modules}
-\label{ch:modules}
+\newpage
+\part{Modules}
+\label{part:modules}
+
+\bigskip
+\noindent
+Source code for \liquid\ is organized into {\em modules} which are, for
+the most part, self-contained elements...
+
+% TODO throw up some fancy graphic here
 
 
 \input{sections/agc}
-\input{sections/ann}
+%\input{sections/ann}
 \input{sections/audio}
 \input{sections/buffer}
 \input{sections/channel}
@@ -207,8 +230,16 @@ dynamic spectrum access
 %             Installation
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Installation}
-\label{ch:installation}
+
+\newpage
+\part{Installation}
+\label{part:installation}
+
+%\bigskip
+%\noindent
+%blah blah blah...
+
+% TODO throw up some fancy graphic here
 
 \input{sections/installation}
 
@@ -218,7 +249,7 @@ dynamic spectrum access
 %             BIBLIOGRAPHY
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\cleardoublepage
+%\cleardoublepage
 \bibliography{liquid}
 
 
