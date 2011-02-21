@@ -48,7 +48,7 @@ void mdct(float * _x,
     for (k=0; k<_N; k++)
         _X[k] = 0.0f;
 
-#if 0
+#if 1
     float nn;
     float inv_N = 1.0f / (float)_N;
     for (k=0; k<_N; k++) {

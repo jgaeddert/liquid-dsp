@@ -41,5 +41,6 @@
 #include "dct_execute.c"
 #include "dst_execute.c"
 #include "mdct_execute.c"
+#include "imdct_execute.c"
 #include "fft_execute.c"
 #include "fft.common.c"
