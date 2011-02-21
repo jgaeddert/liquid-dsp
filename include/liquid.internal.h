@@ -547,6 +547,7 @@ struct FFT(plan_s) {                                            \
 };                                                              \
                                                                 \
 /* initialization */                                            \
+void FFT(_init_null)(FFT(plan) _p);                             \
 void FFT(_init_lut)(FFT(plan) _p);                              \
 void FFT(_init_radix2)(FFT(plan) _p);                           \
                                                                 \

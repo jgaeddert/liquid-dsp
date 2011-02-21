@@ -31,34 +31,44 @@
 
 #define liquid_safe_free(q) { if (q != NULL) free(q); }
 
+// initialize all internal arrays, etc. to null
+void FFT(_init_null)(FFT(plan) _p)
+{
+    // 
+    _p->twiddle = NULL;     // twiddle factors
+    _p->index_rev = NULL;   // reverse indices (radix-2)
+
+    // initialize input/output complex arrays (real FFTs, internal plan)
+    _p->xc  = NULL;
+    _p->yc  = NULL;
+
+    // internal plan (real FFTs)
+    _p->internal_plan = NULL;
+
+    // modified discrete cosine transform (MDCT) window
+    _p->w   = NULL;
+}
+
 FFT(plan) FFT(_create_plan)(unsigned int _n,
                             TC * _x,
                             TC * _y,
                             int _dir,
                             int _flags)
 {
+    // allocate plan and initialize all internal arrays to NULL
     FFT(plan) p = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
+    FFT(_init_null)(p);
 
     p->n = _n;
     p->x = _x;
     p->y = _y;
     p->flags = _flags;
     p->kind = LIQUID_FFT_DFT_1D;
-    p->internal_plan = NULL;
 
     if (_dir == FFT_FORWARD)
         p->direction = FFT_FORWARD;
     else
         p->direction = FFT_REVERSE;
-
-    // initialize arrays to NULL
-    p->twiddle = NULL;
-    p->index_rev = NULL;
-    p->xr = NULL;
-    p->yr = NULL;
-    p->xc = NULL;
-    p->yc = NULL;
-    p->w  = NULL;
 
     // check to see if transform size is radix 2
     p->is_radix2 = fft_is_radix2(p->n);
@@ -79,45 +89,21 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
     return p;
 }
 
-void FFT(_destroy_plan)(FFT(plan) _p)
-{
-    // safely free arrays
-    liquid_safe_free(_p->twiddle);
-    liquid_safe_free(_p->index_rev);
-
-    // real even/odd DFTs
-    liquid_safe_free(_p->xc);
-    liquid_safe_free(_p->yc);
-    liquid_safe_free(_p->w);
-
-    // destroy internal plan (used for real DFTs)
-    if (_p->internal_plan != NULL)
-        FFT(_destroy_plan)(_p->internal_plan);
-
-    free(_p);
-}
-
 FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
                                    T * _x,
                                    T * _y,
                                    int _kind,
                                    int _flags)
 {
+    // allocate plan and initialize all internal arrays to NULL
     FFT(plan) p = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
+    FFT(_init_null)(p);
 
     p->n  = _n;
     p->xr = _x;
     p->yr = _y;
     p->kind = _kind;
     p->flags = _flags;
-    p->internal_plan = NULL;
-
-    // initialize all arrays to NULL
-    p->twiddle = NULL;
-    p->index_rev = NULL;
-    p->xc = NULL;
-    p->yc = NULL;
-    p->w  = NULL;
 
     switch (p->kind) {
     case FFT_REDFT00:
@@ -185,7 +171,9 @@ FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
                                  int _kind,
                                  int _flags)
 {
+    // allocate plan and initialize all internal arrays to NULL
     FFT(plan) p = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
+    FFT(_init_null)(p);
 
     p->n  = _n;
     p->xr = _x;
@@ -194,13 +182,7 @@ FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
 
     p->kind = _kind;
 
-    // initialize all arrays to NULL
-    p->twiddle = NULL;
-    p->index_rev = NULL;
-    p->xr = NULL;
-    p->yr = NULL;
-    p->xc = NULL;
-    p->yc = NULL;
+    // allocate memory for MDCT window
     p->w  = (T*)malloc( (2*p->n)*sizeof(T) );
 
     // create window
@@ -226,6 +208,25 @@ FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
     }
 
     return p;
+}
+
+void FFT(_destroy_plan)(FFT(plan) _p)
+{
+    // safely free arrays
+    liquid_safe_free(_p->twiddle);
+    liquid_safe_free(_p->index_rev);
+
+    // real even/odd DFTs
+    liquid_safe_free(_p->xc);
+    liquid_safe_free(_p->yc);
+    liquid_safe_free(_p->w);
+
+    // destroy internal plan (used for real DFTs)
+    if (_p->internal_plan != NULL)
+        FFT(_destroy_plan)(_p->internal_plan);
+
+    // free main object memory
+    free(_p);
 }
 
 // initialize twiddle factors using plain look-up table
