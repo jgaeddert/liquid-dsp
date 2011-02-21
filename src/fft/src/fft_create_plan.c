@@ -37,7 +37,7 @@ FFT(plan) FFT(_create_plan)(unsigned int _n,
                             int _dir,
                             int _flags)
 {
-    FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
+    FFT(plan) p = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
 
     p->n = _n;
     p->x = _x;
@@ -103,7 +103,7 @@ FFT(plan) FFT(_create_plan_r2r_1d)(unsigned int _n,
                                    int _kind,
                                    int _flags)
 {
-    FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
+    FFT(plan) p = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
 
     p->n  = _n;
     p->xr = _x;
@@ -185,7 +185,7 @@ FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
                                  int _kind,
                                  int _flags)
 {
-    FFT(plan) p = (FFT(plan)) malloc(_n*sizeof(struct FFT(plan_s)));
+    FFT(plan) p = (FFT(plan)) malloc(sizeof(struct FFT(plan_s)));
 
     p->n  = _n;
     p->xr = _x;
