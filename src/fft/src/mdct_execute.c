@@ -31,9 +31,7 @@
 
 #include "liquid.internal.h"
 
-// 
-// MDCT : modified discrete cosine transform
-//
+// regular slow transform
 void FFT(_execute_MDCT)(FFT(plan) _p)
 {
     // ugly, slow method
@@ -49,7 +47,6 @@ void FFT(_execute_MDCT)(FFT(plan) _p)
     for (k=0; k<_p->n; k++)
         _p->yr[k] = 0.0f;
 
-#if 0
     float nn;
     float inv_n = 1.0f / (float)_p->n;
     for (k=0; k<_p->n; k++) {
@@ -58,7 +55,25 @@ void FFT(_execute_MDCT)(FFT(plan) _p)
             _p->yr[k] += xw[n]*cosf(M_PI*inv_n*(nn)*(0.5f+k));
         }
     }
-#else
+}
+
+
+// use internal DCT-IV
+void FFT(_execute_MDCT_REDFT11)(FFT(plan) _p)
+{
+    // ugly, slow method
+
+    // pre-compute windowed input
+    float xw[2*_p->n];
+
+    unsigned int n,k;
+    for (n=0; n<2*_p->n; n++)
+        xw[n] = _p->xr[n] * _p->w[n];
+
+    // initialize output to zero
+    for (k=0; k<_p->n; k++)
+        _p->yr[k] = 0.0f;
+
     if (_p->n % 2) {
         // TODO : use DCT-II
         fprintf(stderr,"error: mdct(), _p->n must be even\n");
@@ -79,8 +94,8 @@ void FFT(_execute_MDCT)(FFT(plan) _p)
     }
 
     // compute regular DCT-IV on result
+    // TODO : use internal plan
     dct_typeIV(x0,_p->yr,_p->n);
-#endif
 }
 
 

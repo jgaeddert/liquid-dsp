@@ -548,6 +548,8 @@ struct FFT(plan_s) {                                            \
     TC * yc;                    /* allocated output array */    \
                                                                 \
     /* modified discrete cosine transform parameters */         \
+    T * xrm;                    /* allocated input array */     \
+    T * yrm;                    /* allocated output array */    \
     T * w;                      /* window */                    \
                                                                 \
     /* internal FFT plan for real DFTs */                       \
@@ -581,13 +583,16 @@ void FFT(_execute_RODFT10)(FFT(plan) _p);   /* DST-II  */       \
 void FFT(_execute_RODFT01)(FFT(plan) _p);   /* DST-III */       \
 void FFT(_execute_RODFT11)(FFT(plan) _p);   /* DST-IV  */       \
                                                                 \
-/* fast discrete sine/cosine transform (DST/DCT) prototypes */  \
+/* modified discrete cosine transforms */                       \
+void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
+void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */       \
+                                                                \
+/* fast real transform (DST/DCT/MDCT) prototypes */             \
 void FFT(_execute_REDFT10_fftn)(FFT(plan) _p);                  \
 void FFT(_execute_REDFT01_fftn)(FFT(plan) _p);                  \
 void FFT(_execute_REDFT11_fft4n)(FFT(plan) _p);                 \
-                                                                \
-void FFT(_execute_MDCT)(FFT(plan) _p);      /* MDCT    */       \
-void FFT(_execute_IMDCT)(FFT(plan) _p);     /* IMDCT   */
+void FFT(_execute_MDCT_REDFT11)(FFT(plan) _p);                  \
+void FFT(_execute_IMDCT_REDFT11)(FFT(plan) _p);                 \
 
 // is input radix-2?
 int fft_is_radix2(unsigned int _n);

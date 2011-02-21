@@ -45,8 +45,10 @@ void FFT(_init_null)(FFT(plan) _p)
     // internal plan (real FFTs)
     _p->internal_plan = NULL;
 
-    // modified discrete cosine transform (MDCT) window
-    _p->w   = NULL;
+    // modified discrete cosine transform (MDCT)
+    _p->xrm = NULL;         // input buffer
+    _p->yrm = NULL;         // output buffer
+    _p->w   = NULL;         // window
 }
 
 FFT(plan) FFT(_create_plan)(unsigned int _n,
@@ -221,19 +223,39 @@ FFT(plan) FFT(_create_plan_mdct)(unsigned int _n,
     // create window
     unsigned int i;
     for (i=0; i<2*p->n; i++) {
+#if 0
         // shaped pulse
         float t0 = sinf(M_PI/(2*p->n)*(i+0.5));
         p->w[i] = sinf(M_PI*0.5f*t0*t0);
+#else
+        p->w[i] = 1.0f;
+#endif
     }
 
     switch (p->kind) {
     case FFT_MDCT:
         // MDCT
-        p->execute = &FFT(_execute_MDCT);
+        if (0) {
+            // create internal plan
+            p->xrm = (T*) malloc(_n*sizeof(T));
+            p->yrm = (T*) malloc(_n*sizeof(T));
+            p->internal_plan = FFT(_create_plan_r2r_1d)(p->n, p->xrm, p->yrm, FFT_REDFT11, 0);
+            p->execute = &FFT(_execute_MDCT_REDFT11);
+        } else {
+            p->execute = &FFT(_execute_MDCT);
+        }
         break;
     case FFT_IMDCT:
         // IMDCT
-        p->execute = &FFT(_execute_IMDCT);
+        if (0) {
+            // create internal plan
+            p->xrm = (T*) malloc(_n*sizeof(T));
+            p->yrm = (T*) malloc(_n*sizeof(T));
+            p->internal_plan = FFT(_create_plan_r2r_1d)(p->n, p->xrm, p->yrm, FFT_REDFT11, 0);
+            p->execute = &FFT(_execute_IMDCT_REDFT11);
+        } else {
+            p->execute = &FFT(_execute_IMDCT);
+        }
         break;
     default:
         fprintf(stderr,"error: fft_create_plan_mdct(), invalid kind, %d\n", p->kind);
@@ -252,7 +274,11 @@ void FFT(_destroy_plan)(FFT(plan) _p)
     // real even/odd DFTs
     liquid_safe_free(_p->xc);
     liquid_safe_free(_p->yc);
+
+    // (I)MDCT
     liquid_safe_free(_p->w);
+    liquid_safe_free(_p->xrm);
+    liquid_safe_free(_p->yrm);
 
     // destroy internal plan (used for real DFTs)
     if (_p->internal_plan != NULL)
