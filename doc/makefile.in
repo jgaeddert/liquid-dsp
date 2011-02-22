@@ -163,18 +163,8 @@ clean-lib:
 figures_generated :=
 figures_extra_clean :=
 
-# module figure makefiles
-include figures.agc.mk
-include figures.audio.mk
-include figures.buffer.mk
-include figures.equalization.mk
-include figures.filter.mk
-include figures.framing.mk
-include figures.interleaver.mk
-include figures.math.mk
-include figures.modem.mk
-include figures.nco.mk
-include figures.sequence.mk
+# included makefile for figures
+include figures.mk
 
 # full figures target
 figures: $(figures_generated)
