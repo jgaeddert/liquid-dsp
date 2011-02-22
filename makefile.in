@@ -413,5 +413,7 @@ clean: clean-check clean-bench clean-examples clean-sandbox clean-modules
 	$(RM) $(libraries)
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
+	$(RM) libliquid.o
+	$(RM) libliquid.d
 	$(RM) $(SHARED_LIB)
 
