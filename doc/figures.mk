@@ -136,7 +136,7 @@ local_progs :=						\
 	src/sequence_ccodes				\
 	src/sequence_msequence
 
-$(local_progs) : % : %.c $(lib_objects)
+$(local_progs) : % : %.c $(lib_objects) libliquid.a
 
 programs : $(local_progs)
 

@@ -98,7 +98,7 @@ then
     AC_MSG_ERROR([Need stdio.h!])
 fi
 
-# Check for optional header files, libraries
+# Check for optional header files, libraries, programs
 AC_CHECK_HEADERS(fec.h fftw3.h)
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
              [AC_MSG_WARN(fftw3 library useful but not required)],
@@ -109,6 +109,29 @@ AC_CHECK_LIB([fec], [create_viterbi27], [],
 AC_CHECK_LIB([liquidfpm], [q32_mul], [],
              [AC_MSG_WARN(fixed-point math library useful but not required)],
              [])
+
+# check for programs (documentation)
+AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
+if test "x$PDFLATEX" == "xno"; then
+    AC_MSG_WARN(pdflatex required to build documentation)
+fi
+AC_CHECK_PROG(BIBTEX, bibtex, bibtex, no)
+if test "x$BIBTEX" == "xno"; then
+    AC_MSG_WARN(bibtex required to build documentation)
+fi
+AC_CHECK_PROG(EPSTOPDF, epstopdf, epstopdf, no)
+if test "x$EPSTOPDF" == "xno"; then
+    AC_MSG_WARN(epstopdf required to build documentation)
+fi
+AC_CHECK_PROG(GNUPLOT, gnuplot, gnuplot, no)
+if test "x$GNUPLOT" == "xno"; then
+    AC_MSG_WARN(gnuplot required to build documentation)
+fi
+AC_CHECK_PROG(PYGMENTIZE, pygmentize, pygmentize, no)
+if test "x$PYGMENTIZE" == "xno"; then
+    AC_MSG_WARN(pygmentize required to build documentation)
+fi
+
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -168,5 +191,12 @@ AC_SUBST(DEBUG_OPTION)      # debug option
 AC_SUBST(PROFILE_OPTION)    # profile symbols
 AC_SUBST(CLIB)              # 
 
-AC_CONFIG_FILES([makefile])
+# documentation programs
+AC_SUBST(PDFLATEX)          # pdflatex
+AC_SUBST(BIBTEX)            # bibtex
+AC_SUBST(EPSTOPDF)          # epstopdf
+AC_SUBST(GNUPLOT)           # gnuplot
+AC_SUBST(PYGMENTIZE)        # pygmentize
+
+AC_CONFIG_FILES([makefile doc/makefile])
 AC_OUTPUT

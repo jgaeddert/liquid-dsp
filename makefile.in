@@ -342,6 +342,19 @@ clean-sandbox:
 	$(RM) $(sandbox_progs)
 
 
+## 
+## TARGET : doc - documentation
+##
+
+doc : doc/liquid.pdf
+
+doc/liquid.pdf : libliquid.a
+	cd doc ; make
+
+clean-doc :
+	cd doc ; make mostlyclean
+
+
 # 
 # todolist (tasks list)
 #
