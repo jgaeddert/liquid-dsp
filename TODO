@@ -1,0 +1,8 @@
+TODO list
+
+  * add 'make doc' target in main directory
+  * add 'make help' target to list makefile targets:
+     parse makefile looking for strings that match:
+     help : egrep "^#   target : " [Mm]akefile
+  * update license
+  * add timing recovery to GMSK modem (Farrow/LPoly)
