@@ -1576,6 +1576,18 @@ LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,
 // MODULE : optim (non-linear optimization)
 //
 
+// optimization threshold switch
+//  _u0         :   first utility
+//  _u1         :   second utility
+//  _minimize   :   minimize flag
+//
+// returns:
+//  (_u0 > _u1) if (_minimize == 1)
+//  (_u0 < _u1) otherwise
+int optim_threshold_switch(float _u0,
+                           float _u1,
+                           int _minimize);
+
 // gradient search algorithm (steepest descent) object
 // \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
 struct gradient_search_s {

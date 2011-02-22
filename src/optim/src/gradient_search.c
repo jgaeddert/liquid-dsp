@@ -176,12 +176,6 @@ float gradient_search_execute(gradient_search _g,
 }
 
 
-// returns _u1 > _u2 if _minimize, _u1 < _u2 otherwise
-int optim_threshold_switch(float _u1, float _u2, int _minimize)
-{
-    return _minimize ? _u1 > _u2 : _u1 < _u2;
-}
-
 // 
 // internal
 //

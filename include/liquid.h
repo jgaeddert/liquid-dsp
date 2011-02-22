@@ -2877,15 +2877,18 @@ void liquid_unwrap_phase2(float * _theta, unsigned int _n);
 // MODULE : optimization
 //
 
-// n-dimensional rosenbrock function (minimum at _v = {1,1,1...}
-float rosenbrock(void * _userdata, float * _v, unsigned int _n);
+// n-dimensional rosenbrock callback function (minimum at _v = {1,1,1...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float rosenbrock(void * _userdata,
+                 float * _v,
+                 unsigned int _n);
 
 
 //
 // Gradient search
 //
-
-int optim_threshold_switch(float _u1, float _u2, int _minimize);
 
 #define LIQUID_OPTIM_MINIMIZE (0)
 #define LIQUID_OPTIM_MAXIMIZE (1)

@@ -28,6 +28,21 @@
 #include "liquid.internal.h"
 
 
+// optimization threshold switch
+//  _u0         :   first utility
+//  _u1         :   second utility
+//  _minimize   :   minimize flag
+//
+// returns:
+//  (_u0 > _u1) if (_minimize == 1)
+//  (_u0 < _u1) otherwise
+int optim_threshold_switch(float _u0,
+                           float _u1,
+                           int _minimize)
+{
+    return _minimize ? _u0 > _u1 : _u0 < _u1;
+}
+
 // sort values by index
 //  _v          :   input values [size: _len x 1]
 //  _rank       :   output rank array (indices) [size: _len x 1]

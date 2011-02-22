@@ -6,3 +6,6 @@ TODO list
      help : egrep "^#   target : " [Mm]akefile
   * update license
   * add timing recovery to GMSK modem (Farrow/LPoly)
+  * gradient_search -> gradsearch
+  * quasinewton_search -> qnsearch
+  * ga_search -> gasearch
