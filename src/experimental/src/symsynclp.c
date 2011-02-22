@@ -23,7 +23,7 @@
 // Symbol synchronizer using interpolating polynomials
 //
 // References:
-//  [Mengali:1997] Umberto Mengali and ALdo N. D'Andrea,
+//  [Mengali:1997] Umberto Mengali and Aldo N. D'Andrea,
 //      "Synchronization Techniques for Digital Receivers,"
 //      Plenum Press, New York & London, 1997.
 //  [Erup:1993] Lars Erup, Floyd M. Gardner, and Robert
@@ -35,9 +35,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
-// use theoretical 2nd-order integrating PLL filter?
-#define SYMSYNCLP_USE_PLL           0
 
 #define DEBUG_SYMSYNCLP             0
 #define DEBUG_SYMSYNCLP_PRINT       0
@@ -53,12 +50,6 @@ void SYMSYNCLP(_output_debug_file)(SYMSYNCLP() _q);
 // TODO : move to internal header
 //
 
-// compute coefficients
-void SYMSYNCLP(_compute_coefficients)(SYMSYNCLP() _q,
-                                      unsigned int _order,
-                                      float _tau,
-                                      float * _c);
-
 // defined:
 //  SYMSYNCLP()   name-mangling macro
 //  FIRFILT()    firpfb macro
@@ -70,18 +61,13 @@ void SYMSYNCLP(_compute_coefficients)(SYMSYNCLP() _q,
 //  PRINTVAL()  print macro
 
 struct SYMSYNCLP(_s) {
-    TC * h;                     // matched filter
-    TC * dh;                    // derivative matched filter
-    unsigned int h_len;         // matched filter length
     unsigned int k;             // samples/symbol
     unsigned int order;         // polynomial order
-
-    FIRFILT() mf;               // matched filter bank
-    FIRFILT() dmf;              // derivative matched filter bank
 
     WINDOW() wmf;               // output matched filter window
     WINDOW() wdmf;              // output matched filter window
     TC * c;                     // interpolator coefficients, TODO : switch to float?
+    TC * cprime;                // interpolator coefficients, TODO : switch to float?
 
     // timing error loop filter
     float bt;                   // loop filter bandwidth
@@ -91,21 +77,12 @@ struct SYMSYNCLP(_s) {
     float q_hat;                // filtered timing error estimate
     float q_prime;              // buffered timing error estimate
 
-    float k_inv;                // 1/k
-
     // flow control
     float del;                  // input stride size (roughly k)
     float tau;                  // output flow control (enabled when tau >= 1)
 
     // lock
     int is_locked;              // synchronizer locked flag
-
-#if SYMSYNCLP_USE_PLL
-    // phase-locked loop
-    float B[3];
-    float A[3];
-    iirfiltsos_rrrf pll;
-#endif
 
 #if 0
     fir_prototype p;    // prototype object
@@ -124,16 +101,11 @@ struct SYMSYNCLP(_s) {
 //
 //  _k              :   samples per symbol
 //  _order          :   polynomial order
-//  _h              :   matched filter coefficients
-//  _h_len          :   length of matched filter
 SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
-                               unsigned int _order,
-                               TC * _h,
-                               unsigned int _h_len)
+                               unsigned int _order)
 {
     SYMSYNCLP() q = (SYMSYNCLP()) malloc(sizeof(struct SYMSYNCLP(_s)));
     q->k = _k;
-    q->k_inv = 1.0f / (float)(q->k);
     q->order = _order;
 
     // TODO : do not restrict order
@@ -144,45 +116,19 @@ SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
     }
 #endif
 
-    // TODO: validate length
-    q->h_len = _h_len;
-
     // allocate memory for post-filter
     q->wmf  = WINDOW(_create)(4);
     q->wdmf = WINDOW(_create)(4);
     q->c    = (TC*) malloc(4*sizeof(TC));
+    q->cprime = (TC*) malloc(4*sizeof(TC));
     q->c[0] = 0.0f;
     q->c[1] = 1.0f;
     q->c[2] = 0.0f;
     q->c[3] = 0.0f;
     float mu = 0.0f;
-    SYMSYNCLP(_compute_coefficients)(q, q->order, mu, q->c);
+    SYMSYNCLP(_compute_coefficients)(q, q->order, mu, q->c, q->cprime);
     
-    // compute derivative filter
-    TC dh[_h_len];
-    unsigned int i;
-    for (i=0; i<_h_len; i++) {
-        if (i==0) {
-            dh[i] = _h[i+1] - _h[_h_len-1];
-        } else if (i==_h_len-1) {
-            dh[i] = _h[0]   - _h[i-1];
-        } else {
-            dh[i] = _h[i+1] - _h[i-1];
-        }
-
-        // apply scaling factor
-        dh[i] *= (float)(q->k);
-    }
-    q->mf  = FIRFILT(_create)(_h, _h_len);
-    q->dmf = FIRFILT(_create)(dh, _h_len);
-
     // reset state and initialize loop filter
-#if SYMSYNCLP_USE_PLL
-    q->A[0] = 1.0f;     q->B[0] = 0.0f;
-    q->A[1] = 0.0f;     q->B[1] = 0.0f;
-    q->A[2] = 0.0f;     q->B[2] = 0.0f;
-    q->pll = iirfiltsos_rrrf_create(q->B, q->A);
-#endif
     SYMSYNCLP(_clear)(q);
     SYMSYNCLP(_set_lf_bw)(q, 0.01f);
 
@@ -193,7 +139,7 @@ SYMSYNCLP() SYMSYNCLP(_create)(unsigned int _k,
     q->debug_del   =  windowf_create(DEBUG_BUFFER_LEN);
     q->debug_tau   =  windowf_create(DEBUG_BUFFER_LEN);
     q->debug_bsoft =  windowf_create(DEBUG_BUFFER_LEN);
-    q->debug_b     = windowf_create(DEBUG_BUFFER_LEN);
+    q->debug_b     =  windowf_create(DEBUG_BUFFER_LEN);
     q->debug_q_hat =  windowf_create(DEBUG_BUFFER_LEN);
 #endif
 
@@ -207,17 +153,12 @@ void SYMSYNCLP(_destroy)(SYMSYNCLP() _q)
     SYMSYNCLP(_output_debug_file)(_q);
 #endif
 
-#if SYMSYNCLP_USE_PLL
-    iirfiltsos_rrrf_destroy(_q->pll);
-#endif
-
     // destroy post-filter
     WINDOW(_destroy)(_q->wmf);
     WINDOW(_destroy)(_q->wdmf);
     free(_q->c);
+    free(_q->cprime);
 
-    FIRFILT(_destroy)(_q->mf);
-    FIRFILT(_destroy)(_q->dmf);
     free(_q);
 }
 
@@ -226,8 +167,6 @@ void SYMSYNCLP(_print)(SYMSYNCLP() _q)
 {
     printf("symbol synchronizer [k: %u, order: %u]\n",
         _q->k, _q->order);
-    FIRFILT(_print)(_q->mf);
-    FIRFILT(_print)(_q->dmf);
 }
 
 // execute synchronizer on input data array
@@ -260,15 +199,8 @@ void SYMSYNCLP(_set_lf_bw)(SYMSYNCLP() _q,
     // set loop filter bandwidth
     _q->bt = _bt;
 
-#if SYMSYNCLP_USE_PLL
-    float zeta = 1.0f / sqrtf(2.0f);
-    float K = 1000.0f;
-    iirdes_pll_active_lag(_q->bt, zeta, K, _q->B, _q->A);
-    iirfiltsos_rrrf_set_coefficients(_q->pll, _q->B, _q->A);
-#else
     _q->alpha = 1.00f - 1.0f*(_q->bt);  // percent of old sample to retain
     _q->beta  = 0.02f * (_q->bt);       // percent of new sample to retain
-#endif
 }
 
 // lock synchronizer object
@@ -287,10 +219,6 @@ void SYMSYNCLP(_unlock)(SYMSYNCLP() _q)
 // clear synchronizer object
 void SYMSYNCLP(_clear)(SYMSYNCLP() _q)
 {
-    // reset internal filterbank states
-    FIRFILT(_clear)(_q->mf);
-    FIRFILT(_clear)(_q->dmf);
-
     // reset loop filter states
     _q->q_hat = 0.0f;
     _q->q_prime = 0.0f;
@@ -299,9 +227,6 @@ void SYMSYNCLP(_clear)(SYMSYNCLP() _q)
     _q->q_hat   = 0.0f;
     _q->q_prime = 0.0f;
     _q->del = (float)(_q->k);
-#if SYMSYNCLP_USE_PLL
-    iirfiltsos_rrrf_clear(_q->pll);
-#endif
 
     // clear post-filter windows
     WINDOW(_clear)(_q->wmf);
@@ -323,8 +248,10 @@ float SYMSYNCLP(_get_tau)(SYMSYNCLP() _q)
 void SYMSYNCLP(_compute_coefficients)(SYMSYNCLP() _q,
                                       unsigned int _order,
                                       float _mu,
-                                      float * _c)
+                                      float * _c,
+                                      float * _cprime)
 {
+    _mu = 1.0f -_mu;
     float alpha = 0.5f;
     float mu2 = 0.0f;   // mu^2
     float mu3 = 0.0f;   // mu^3
@@ -359,6 +286,12 @@ void SYMSYNCLP(_compute_coefficients)(SYMSYNCLP() _q,
         exit(1);
     break;
     }
+
+    // compute derivative
+    _cprime[0] = ( _c[1] - _c[3] ) * 0.5f;
+    _cprime[1] = ( _c[2] - _c[0] ) * 0.5f;
+    _cprime[2] = ( _c[3] - _c[1] ) * 0.5f;
+    _cprime[3] = ( _c[0] - _c[2] ) * 0.5f;
 }
 
 // advance synchronizer's internal loop filter
@@ -376,16 +309,10 @@ void SYMSYNCLP(_advance_internal_loop)(SYMSYNCLP() _q,
 
     //  2.  filter error signal: retain large percent (alpha) of
     //      old estimate and small percent (beta) of new estimate
-#if SYMSYNCLP_USE_PLL
-    iirfiltsos_rrrf_execute(_q->pll, _q->q, &_q->q_hat);
-    _q->del = (float)(_q->k) + _q->q_hat;
-    //_q->del = (float)(_q->k) * (1 + _q->q_hat);
-#else
     _q->q_hat = (_q->q)*(_q->beta) + (_q->q_prime)*(_q->alpha);
     _q->q_prime = _q->q_hat;
     _q->del = (float)(_q->k) + _q->q_hat;
     //_q->del = (float)(_q->k);
-#endif
 
 #if DEBUG_SYMSYNCLP_PRINT
     printf("q : %12.8f, del : %12.8f, q_hat : %12.8f\n", _q->q, _q->del, _q->q_hat);
@@ -399,24 +326,14 @@ void SYMSYNCLP(_advance_internal_loop)(SYMSYNCLP() _q,
 //  _y      :   output sample buffer
 //  _ny     :   number of output samples written to buffer
 void SYMSYNCLP(_step)(SYMSYNCLP() _q,
-                    TI _x,
-                    TO * _y,
-                    unsigned int *_ny)
+                      TI _x,
+                      TO * _y,
+                      unsigned int *_ny)
 {
-    // push sample into MF and dMF filterbanks
-    FIRFILT(_push)(_q->mf,  _x);
-    FIRFILT(_push)(_q->dmf, _x);
-
     TO mf;      // matched-filter output
     TO dmf;     // derivative matched-filter output
 
-    // execute filters
-    FIRFILT(_execute)(_q->mf,  &mf);
-    FIRFILT(_execute)(_q->dmf, &dmf);
-
-    // push outputs into post-filter
-    WINDOW(_push)(_q->wmf,  mf);
-    WINDOW(_push)(_q->wdmf, dmf);
+    WINDOW(_push)(_q->wmf,  _x);
 
     unsigned int n = 0;
 
@@ -433,7 +350,7 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q,
         //
 
         // TODO : compute new coefficients
-        SYMSYNCLP(_compute_coefficients)(_q, _q->order, _q->tau, _q->c);
+        SYMSYNCLP(_compute_coefficients)(_q, _q->order, _q->tau, _q->c, _q->cprime);
 
         TO * r;
 
@@ -443,11 +360,8 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q,
         
         // dMF : read buffer an execute dot product
         if (!_q->is_locked) {
-            WINDOW(_read)(_q->wdmf, &r);
-            DOTPROD(_run4)(_q->c, r, 4, &dmf);
+            DOTPROD(_run4)(_q->cprime, r, 4, &dmf);
         }
-
-        mf *= _q->k_inv;
 
         // store matched-filter output
         _y[n] = mf;
@@ -460,11 +374,7 @@ void SYMSYNCLP(_step)(SYMSYNCLP() _q,
             SYMSYNCLP(_advance_internal_loop)(_q, mf, dmf);
 
         // update flow control variables
-#if SYMSYNCLP_USE_PLL
-        _q->tau     = _q->del;
-#else
         _q->tau     += _q->del;
-#endif
 
         // increment output counter
         n++;

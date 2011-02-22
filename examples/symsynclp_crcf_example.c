@@ -40,7 +40,6 @@ int main(int argc, char*argv[]) {
     float beta=0.9f;    // filter excess bandwidth factor
     unsigned int order=2;
     unsigned int num_symbols=1024;
-    int ftype = LIQUID_RNYQUIST_RRC;
     float SNRdB = 30.0f;
 
     float bt=0.02f;     // loop filter bandwidth
@@ -127,7 +126,10 @@ int main(int argc, char*argv[]) {
     //
 
     // design interpolating filter
-    interp_crcf q = interp_crcf_create_rnyquist(ftype,k,m,beta,dt);
+    unsigned int h_len = 2*k*m + 1;
+    float h[h_len];
+    design_rcos_filter(k,m,beta,dt,h);
+    interp_crcf q = interp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
         interp_crcf_execute(q, s[i], &x[n]);
         n+=k;
@@ -170,12 +172,8 @@ int main(int argc, char*argv[]) {
     // create and run symbol synchronizer
     //
 
-    // design filter
-    unsigned int h_len = 2*k*m + 1;
-    float h[h_len];
-    design_rrc_filter(k,m,beta,0,h);
     // create symbol synchronizer
-    symsynclp_crcf d = symsynclp_crcf_create(k, order, h, h_len);
+    symsynclp_crcf d = symsynclp_crcf_create(k, order);
     symsynclp_crcf_set_lf_bw(d,bt);
 
     unsigned int num_symbols_sync=0;
