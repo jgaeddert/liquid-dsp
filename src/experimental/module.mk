@@ -31,6 +31,7 @@ module_name     := experimental
 local_s_files	:= 			\
 	ann.nodes.c			\
 	activation_functions.c		\
+	cpmodem.c			\
 	kmeans.c			\
 	layer.c				\
 	maxnet.c			\

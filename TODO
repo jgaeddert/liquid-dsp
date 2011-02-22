@@ -9,3 +9,15 @@ TODO list
   * gradient_search -> gradsearch
   * quasinewton_search -> qnsearch
   * ga_search -> gasearch
+  * MOD_BPSK -> LIQUID_MOD_BPSK
+  * FEC_NONE -> LIQUID_FEC_NONE
+  * CRC_NONE -> LIQUID_CRC_NONE
+  * c++: wrap library with namespace::liquid
+  * add more Reed-Solomon FEC schemes?
+  * fft: remove flat dct, idct, dct_typeIV, mdct, imdct methods
+  * remove any trace of Doxygen from code
+  * create generic symbol timing recovery loop
+    * independent of pulse shape
+    * use lagrange polynomial
+    * only needs poly order, approximate samples/symbol
+  * clean up analog modem definitions
