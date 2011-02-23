@@ -31,6 +31,8 @@ xautotest
 # miscellany
 octave-core
 autotest/autotest_example
+*.tar
+*.gz
 
 # sandbox
 sandbox/*_test

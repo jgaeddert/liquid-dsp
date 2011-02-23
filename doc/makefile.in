@@ -39,7 +39,7 @@ BIB = @BIBTEX@
 BIB_FLAGS =
 CC = @CC@
 CFLAGS :=
-LDFLAGS = -lliquid
+LDFLAGS = @LIBS@
 RM = rm -f
 MV = mv
 
@@ -120,6 +120,9 @@ lib_sources	:=				\
 extra_clean :=
 
 all: liquid.pdf
+
+libliquid.a : ../libliquid.a
+	cp $< $@
 
 
 ##
@@ -226,7 +229,7 @@ $(html_figures) : %.png : %.pdf
 	cp $@ html/fig/
 
 # html generator program
-src/doc-html-gen : src/doc-html-gen.c $(lib_objects)
+src/doc-html-gen : src/doc-html-gen.c $(lib_objects) libliquid.a
 
 # html index file, equations makefile
 html/index.html		\

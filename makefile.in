@@ -52,7 +52,8 @@ modulesdir = src
 CC = @CC@
 MV	:= mv -f
 RM	:= rm -f
-SED	:= sed
+SED	:= @SED@
+GREP	:= @GREP@
 AR	:= ar
 RANLIB	:= ranlib
 
@@ -150,6 +151,11 @@ sources += $(extra_sources)
 	$(CC) $(CFLAGS) -MM -MG $< | $(SED) 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@
 -include $(dependencies)
 
+
+##
+## TARGET : all - build shared library (default)
+##
+
 # Shared library
 SHARED_LIB	= @SH_LIB@
 .PHONY: all
@@ -174,11 +180,19 @@ libliquid.dylib: $(objects)
 libliquid.so: $(libraries)
 	$(CC) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
 
-## 
-## TARGET: install
+##
+## TARGET : help - print list of targets (see documentation for more)
 ##
 
-# Installs the libraries and header files in the host system
+# look for all occurences of '## TARGET : ' and print rest of line to screen
+help:
+	@echo "Targets for liquid-dsp makefile:"
+	@$(GREP) -E "^## TARGET : " [Mm]akefile | $(SED) 's/## TARGET : /  /'
+
+## 
+## TARGET : install - installs the libraries and header files in the host system
+##
+
 install:
 	@echo "installing..."
 	mkdir -p $(exec_prefix)/lib
@@ -199,10 +213,9 @@ install:
 	@echo ""
 
 ## 
-## TARGET: uninstall
+## TARGET : uninstall - uninstalls the libraries and header files in the host system
 ##
 
-# Uninstalls the libraries and header files in the host system
 uninstall:
 	@echo "uninstalling..."
 	$(RM) $(addprefix $(prefix)/include/liquid/, $(headers_install))
@@ -211,7 +224,7 @@ uninstall:
 	@echo "done."
 
 ##
-## autotest
+## TARGET : check - build and run autotest scripts
 ##
 
 # Autotests are used to check the validity and accuracy of the
@@ -258,7 +271,7 @@ clean-check:
 
 
 ##
-## benchmark
+## TARGET : bench - build and run all benchmarks
 ##
 
 # Benchmarks measure the relative speed of the DSP algorithms running
@@ -299,9 +312,9 @@ clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
 
-# 
-# Examples
-#
+## 
+## TARGET : examples - build all examples binaries
+##
 .PHONY: examples
 include examples/examples.mk
 example_objs	= $(patsubst %.c,%.o,$(example_src))
@@ -319,9 +332,10 @@ clean-examples:
 	$(RM) examples/*.o
 	$(RM) $(example_progs)
 
-# 
-# sandbox
-#
+## 
+## TARGET : sandbox - build all sandbox binaries
+##
+
 # NOTE: sandbox _requires_ fftw3 to build
 .PHONY: sandbox
 include sandbox/sandbox.mk
@@ -342,9 +356,22 @@ clean-sandbox:
 	$(RM) $(sandbox_progs)
 
 
-# 
-# todolist (tasks list)
-#
+## 
+## TARGET : doc - build documentation (doc/liquid.pdf)
+##
+
+doc : doc/liquid.pdf
+
+doc/liquid.pdf : libliquid.a
+	cd doc ; make
+
+clean-doc :
+	cd doc ; make mostlyclean
+
+
+## 
+## TARGET : todolist - generate tasks list (todolist.txt)
+##
 todolist_filename = todolist.txt
 
 todolist_sources	= $(sources)			\
@@ -368,6 +395,10 @@ clean-todolist:
 # Clean
 .PHONY: clean
 
+##
+## TARGET : clean - clean build (objects, dependencies, libraries, etc.)
+##
+
 # clean modules
 # NOTE: $(patsubst clean-%,%,$@) strips "clean-" from target
 clean-modules: $(addprefix clean-,$(modules))
@@ -382,5 +413,7 @@ clean: clean-check clean-bench clean-examples clean-sandbox clean-modules
 	$(RM) $(libraries)
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
+	$(RM) libliquid.o
+	$(RM) libliquid.d
 	$(RM) $(SHARED_LIB)
 

@@ -130,7 +130,7 @@ crc_example.c
 
     SEE ALSO: fec_example.c
 
-cvsd_sine_example.c
+cvsd_example.c
     Continuously-variable slope delta example, sinusoidal input. This example
     demonstrates the CVSD audio encoder interface, and its response to a
     sinusoidal input.  The output distortion ratio is computed, and the

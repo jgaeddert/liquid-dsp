@@ -151,6 +151,21 @@ Documentation organization
         ...
 
 ======================================================================================
+ Misc
+======================================================================================
+
+RELEASE:
+To build a distribution, move to directory above this one and make a
+compressed archive.  Notice that an exclude file is conveniently
+included within this directory.
+
+  $ cd ..
+  $ tar -czf liquid-dsp-VERSION.tar.gz -X liquid-dsp/.tarignore liquid-dsp/
+
+Replace 'VERSION' with the appropriate version number
+
+
+======================================================================================
  DSP module dependency tree
 ======================================================================================
 Listed below is the dependency tree each module has on each other.  The aim is

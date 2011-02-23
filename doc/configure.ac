@@ -83,7 +83,7 @@ fi
 ##
 
 # AC_CHECK_HEADERS (header-files, [action-if-found], [action-if-not-found], [includes])
-AC_CHECK_HEADERS([stdio.h stdlib.h stdbool.h complex.h string.h getopt.h liquid/liquid.h],
+AC_CHECK_HEADERS([stdio.h stdlib.h stdbool.h complex.h string.h getopt.h],
                  [],
                  [AC_MSG_ERROR(missing header files)],
                  [])
@@ -103,9 +103,7 @@ AC_CHECK_LIB([c], [malloc, realloc, free, memset, memmove, strcspn, strstr], [],
 AC_CHECK_LIB([m], [sinf, cosf, expf, cargf, cexpf, crealf, cimagf, sqrtf], [],
              [AC_MSG_ERROR(Need standard math library!)],
              [])
-AC_CHECK_LIB([liquid], [modem_create], [],
-             [AC_MSG_ERROR(Need liquid-dsp library!)],
-             [])
+
 ##
 ## Check for optional header files, libraries
 ##
