@@ -9,36 +9,108 @@
 designed specifically for software-defined radios on embedded platforms.
 The aim is to provide a lightweight DSP library that does not rely on a myriad
 of external dependencies or proprietary and otherwise cumbersome frameworks.
+%
 All signal processing elements are designed to be flexible, scalable, and
 dynamic, including filters, filter design, oscillators, modems, synchronizers,
 and complex mathematical operations.
+The source for \liquid\ is written entirely in C so that it can be
+compiled quickly with a low memory footprint.
 
-\section{Key points}
-\begin{itemize}
-\item open-source software-defined radio DSP algorithms
-\item minimal dependence on external libraries
-\item portable to embedded platforms
-\item flexible configuration
-\item targets cognitive radios and enabling technologies through
-      flexible algorithmic development
-\end{itemize}
+\liquid\ was created by J. Gaeddert out of necessity to perform complex
+digital signal processing algorithms on embedded devices
+without relying on dealing
+with proprietary and otherwise cumbersome frameworks.
+This was a critical step in his PhD thesis to adapt DSP algorithms in
+cognitive dynamic-spectrum radios to optimally manage finite radio resources.
 
-\subsection{Features}
-\begin{itemize}
-\item automatic test scripts for validation and accuracy
-\item benchmark tool for estimating computational speed on your machine
-\end{itemize}
 
+% Key points
+%   * open-source software-defined radio DSP algorithms
+%   * minimal dependence on external libraries
+%   * portable to embedded platforms
+%   * flexible configuration
+%   * targets cognitive radios and enabling technologies through
+%     flexible algorithmic development
+%
+% Features
+%   * automatic test scripts for validation and accuracy
+%   * benchmark tool for estimating computational speed on your machine
+%
 
 \section{Quick Start Guide}
-To build:
+\label{section:quickstart}
+The library can be easily built from source and is available from
+several places.
+The two most typical means of distribution are a compressed archive
+(a {\em tarball}) and cloning the source repository.
+Tarballs are generated with each stable release and are recommended for
+users not expecting bleeding edge development.
+Users wanting the very latest version (in addition to every other
+version) should clone the \liquid\ {\tt git} repository.
+
+\subsection{Building from an archive}
+\label{section:quickstart:build_from_tarball}
+\label{xxx}
+Download the compressed archive {\tt liquid-dsp-v.v.v.tar.gz} to your
+local machine where {\tt v.v.v} denotes the version of the release.
+% Check the validity of the tarball using MD5...
+%
+% generate:
+%   $ md5sum liquid-dsp-v.v.v.tar.gz > liquid-dsp.md5
+%
+% check:
+%   $ md5sum --check liquid-dsp.md5
+%
+% You should see a message verifying the file:
+%   liquid-dsp-v.v.v.tar.gz: OK
+%
+% If it fails, do no unpack.
+Unpack the tarball
+%
 \begin{verbatim}
-    $ cd /path/to/liquid/
+    $ tar -xvf liquid-dsp-v.v.v.tar.gz
+\end{verbatim}
+%
+Move into the directory and run the configure script and make the
+library.
+%
+\begin{verbatim}
+    $ cd liquid-dsp-v.v.v
+    $ ./configure
+    $ make
+    # make install
+\end{verbatim}
+
+\subsection{Building from the {\tt git} repository}
+\label{section:quickstart:build_from_git}
+\liquid\ uses {\tt git} \cite{git:web} for version control, a free and
+open-source.
+The benefits of {\tt git} over many other version control systems are
+numerous and the list is too long to give here;
+however one of the most important aspects is that each clone holds a
+copy of the entire repository with a complete history and record of each
+revision.
+The main repository for \liquid\ is hosted online by {\em github}
+\cite{github:web} and can be cloned on your local machine via
+%
+\begin{verbatim}
+    $ git clone git://github.com/jgaeddert/liquid-dsp.git
+\end{verbatim}
+%
+Move into the directory and build as before with the archive,
+but with the additional bootstrapping step:
+%
+\begin{verbatim}
+    $ cd liquid-dsp.git
     $ ./reconf
     $ ./configure
     $ make
     # make install
 \end{verbatim}
+
+\subsection{Additional targets}
+\label{section:quickstart:additional_targets}
+%
 You may also want to build and run the optional validation program
 (see Section~\ref{section:installation:targets:autotests}) via
 \begin{verbatim}
@@ -49,8 +121,18 @@ and the benchmarking tool
 \begin{verbatim}
     $ make bench
 \end{verbatim}
+%
+A comprehensive list of signal processing examples are given in the
+{\tt examples} directory and can be built as
+\begin{verbatim}
+    $ make examples
+\end{verbatim}
+%
+Each example can be built individually by directly targeting its binary
+(e.g. {\tt make examples/cvsd\_example}).
 
 \section{Tutorial}
+\label{section:tutorial}
 Most of \liquid's signal processing elements are C structures which
 retain the object's parameters, state, and other useful information.
 The naming convention is
@@ -164,15 +246,4 @@ Although \liquid\ is written in C, it can be seamlessly compiled and linked
 with C++ source files.
 Here is an example:
 \input{listings/nco.c++.tex}
-
-\section{History}
-\liquid\ was created by J. Gaeddert out of necessity to perform complex
-digital signal processing algorithms on embedded devices
-without relying on dealing
-with proprietary and otherwise cumbersome frameworks.
-This was a critical step in his PhD thesis to adapt DSP algorithms in
-cognitive dynamic-spectrum radios to optimally manage finite radio resources.
-Was he successful?
-Put it this way: at the time this document was written he still has not
-graduated.\footnote{Come back in a year and ask again... {\em sigh}}
 
