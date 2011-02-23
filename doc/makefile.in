@@ -81,6 +81,8 @@ LISTINGS = 					\
 	listings/resamp_crcf.example.c.tex	\
 	listings/window.example.c.tex		\
 						\
+	tutorials/pll_init_tutorial.c.tex	\
+	tutorials/pll_basic_tutorial.c.tex	\
 	tutorials/pll_tutorial.c.tex		\
 
 # .tex inputs
@@ -198,6 +200,8 @@ clean-figures: clean-figures-gen clean-figures-pgf clean-figures-progs
 ##
 
 tutorial_progs :=					\
+	tutorials/pll_init_tutorial			\
+	tutorials/pll_basic_tutorial			\
 	tutorials/pll_tutorial				\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a

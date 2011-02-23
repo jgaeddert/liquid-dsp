@@ -30,31 +30,130 @@ The receiver must synchronize its ...
 \subsection{Setting up the Environment}
 \label{tutorial:pll:environment}
 
+For this tutorial and others, I assume that you are using the GNU
+compiler collection (gcc) for compiling source and linking objects
+\cite{gcc:web}.
+Create a new file {\tt pll.c} and open it with your favorite editor.
+Add the included headers, ...
+... so that your program looks like this:
+%
+\input{tutorials/pll_init_tutorial.c.tex}
+%
+Compile the program
+%
+\begin{Verbatim}[fontsize=\small]
+    $ gcc -Wall -o pll -lm -lc -lliquid pll.c
+\end{Verbatim}
+%
+The flag ``{\tt -Wall}'' tells the compiler to print all warnings
+(unused and uninitialized variables, etc.),
+``{\tt -o pll}'' specifies the name of the output program is
+``{\tt pll}'', and
+``{\tt -lm -lc -lliquid}'' tells the linker to link the binary against
+the math, standard C, and \liquid\ DSP libraries, respectively.
+Notice that the above command invokes both the compiler and the linker
+collectively.
+%While it is usually preferred to build an intermediate object...
+%
+If the compiler did not give any errors, the output executable {\tt pll}
+is created which can be run as
+\begin{Verbatim}[fontsize=\small]
+    $ ./pll
+\end{Verbatim}
+%
+and should simply print ``{\tt done.}'' to the screen.
+You are now ready to add functionality to your program.
+
+In this simulation, the received signal is simply a complex sinusoid
+with an unknown initial carrier phase and frequency.
+The signal $x$ at time step $i$ can be described as
+\[
+    x(i) = \exp\bigl\{ j(\theta + i\omega) \bigr\}
+\]
+where $j \triangleq \sqrt{-1}$ and
+$\theta$ and $\omega$ represent the initial carrier phase and
+frequency offsets, respectively.
+The receiver generates a complex sinusoid
+$y(i) = \exp\bigl\{j\phi(i)\bigr\}$
+which tries to minimize the difference between the phase of the ...
+\[
+    \Delta\phi = \arg\bigl\{ x y^* \bigr\}
+\]
+where $(^*)$ denotes complex conjugation.
+The goal of the PLL is to control $\phi(i)$ (the phase of $y$) to lock
+onto the phase of $x$, hence the name ``phase-locked loop.''
+
+Edit {\tt pll.c} to set up the basic simulation:
+%
+\input{tutorials/pll_basic_tutorial.c.tex}
+%
+Compile and run the program as before.
+The program should now output something like this:
+%
+\begin{Verbatim}[fontsize=\small]
+      0 : phase =   0.00000000, error =   0.80000001
+      1 : phase =   0.00000000, error =   0.81000000
+      2 : phase =   0.00000000, error =   0.81999999
+      3 : phase =   0.00000000, error =   0.82999998
+      4 : phase =   0.00000000, error =   0.84000003
+            ...
+     35 : phase =   0.00000000, error =   1.14999998
+     36 : phase =   0.00000000, error =   1.15999997
+     37 : phase =   0.00000000, error =   1.17000008
+     38 : phase =   0.00000000, error =   1.18000007
+     39 : phase =   0.00000000, error =   1.19000006
+    done.
+\end{Verbatim}
+%
+Notice that because we aren't controlling the output phase yet
+the error increases with the input phase.
+In the next section we will design the loop filter to adjust the output
+phase to lock onto the input signal given the phase error.
+
+\subsection{Designing the Phase-locked Loop}
+\label{tutorial:pll:design}
+
 
 \subsection{Final Program}
 \label{tutorial:pll:completed}
 
 The final program is listed below and is located in the
 {\tt doc/tutorials/} subdirectory.
+%
+\input{tutorials/pll_tutorial.c.tex}
+%
+Compile the program as before, creating the executable ``{\tt pll}.''
+Running the program should produce an output similar to this:
+\begin{Verbatim}[fontsize=\small]
+    iir filter [normal]:
+      b :  0.32277358  0.07999840 -0.24277516
+      a :  1.00000000 -1.99995995  0.99996001
+      0 : phase =   0.25821885, error =   0.80000001
+      1 : phase =   0.75852644, error =   0.55178112
+      2 : phase =   1.12857747, error =   0.06147351
+      3 : phase =   1.27319980, error =  -0.29857749
+      4 : phase =   1.23918116, error =  -0.43319979
+            ...
+     35 : phase =   1.15999877, error =   0.00000751
+     36 : phase =   1.17000139, error =   0.00000122
+     37 : phase =   1.18000150, error =  -0.00000131
+     38 : phase =   1.19000030, error =  -0.00000140
+     39 : phase =   1.19999886, error =  -0.00000024
+    done.
+\end{Verbatim}
+%
+Notice that the phase error at the end of the output is very small.
+The initial error (at $t=0$) is 0.8 which is the value of the
+{\tt phase\_offset} parameter ot the beginning of the program.
+Notice also that the difference in phase of the last several samples is
+approximately 0.1, the initial frequency offset that was given in the
+beginning.
 Play around with the input parameters, particularly the frequency offset
 and the phase-locked loop bandwidth.
+Increasing the PLL bandwidth ({\tt wn}) should reduce the resulting
+phase error more quickly.
+The downside of having a PLL with a large bandwidth is that when the
+input signal has been corrupted by noise then the phase error estimate
+is also noisy.
+In this tutorial no noise term was introduced. % TODO : explain more!
 
-\input{tutorials/pll_tutorial.c.tex}
-
-Running the program should produce an output similar to this:
-\begin{verbatim}
-iir filter [normal]:
-  b :  0.32277358  0.07999840 -0.24277516
-  a :  1.00000000 -1.99995995  0.99996001
-  0 : phase =   0.25821885, error =   0.80000001
-  1 : phase =   0.75852644, error =   0.55178112
-  2 : phase =   1.12857747, error =   0.06147351
-  3 : phase =   1.27319980, error =  -0.29857749
-  4 : phase =   1.23918116, error =  -0.43319979
-
-        ...
-
- 37 : phase =   1.18000150, error =  -0.00000131
- 38 : phase =   1.19000030, error =  -0.00000140
- 39 : phase =   1.19999886, error =  -0.00000024
-\end{verbatim}

@@ -8,19 +8,7 @@ int main() {
     // simulation parameters
     float phase_offset      = 0.8f;     // initial phase offset
     float frequency_offset  = 0.01f;    // initial frequency offset
-    float wn                = 0.10f;    // pll bandwidth
-    float zeta              = 0.707f;   // pll damping factor
-    float K                 = 1000;     // pll loop gain
     unsigned int n          = 40;       // number of iterations
-
-    // generate IIR loop filter coefficients
-    float b[3];     // feedforward coefficients
-    float a[3];     // feedback coefficients
-    iirdes_pll_active_lag(wn, zeta, K, b, a);
-
-    // create loop filter object
-    iirfilt_rrrf H = iirfilt_rrrf_create(b,3,a,3);
-    iirfilt_rrrf_print(H);
 
     float complex x=0;      // input sample
     float phase_error=0;    // phase error estimate
@@ -38,15 +26,9 @@ int main() {
         // compute phase error
         phase_error = cargf(x*conjf(y));
 
-        // run error through loop filter
-        iirfilt_rrrf_execute(H, phase_error, &phi_hat);
-
         // print results to screen
         printf("%3u : phase = %12.8f, error = %12.8f\n", i, phi_hat, phase_error);
     }
-
-    // destroy IIR filter object and return
-    iirfilt_rrrf_destroy(H);
 
     printf("done.\n");
     return 0;
