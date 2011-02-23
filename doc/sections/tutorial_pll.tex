@@ -1,0 +1,60 @@
+% 
+% TUTORIAL : pll
+%
+
+\newpage
+\section{Tutorial: Phase-Locked Loop}
+\label{tutorial:pll}
+This tutorial demonstrates the...
+
+You will need on your local machine:
+\begin{itemize}
+\item the \liquid\ DSP libraries built and installed
+\item a text editor such as {\tt vim} \cite{vim:web}
+\item a C compiler such as {\tt gcc} \cite{gcc:web}
+\item a terminal
+\end{itemize}
+
+\subsection{Problem Statement}
+\label{tutorial:pll:problem}
+Wireless communications systems modulate the data signal with
+a high-frequency carrier before transmitting to...
+This is accomplished by mixing the baseband signal $m(t)$
+with a complex sinusoid, viz
+\[
+    s(t) = \Re\Bigl\{ m(t)\exp\{j\omega_ct\} \Bigr\}
+\]
+The receiver must synchronize its ...
+
+
+\subsection{Setting up the Environment}
+\label{tutorial:pll:environment}
+
+
+\subsection{Final Program}
+\label{tutorial:pll:completed}
+
+The final program is listed below and is located in the
+{\tt doc/tutorials/} subdirectory.
+Play around with the input parameters, particularly the frequency offset
+and the phase-locked loop bandwidth.
+
+\input{tutorials/pll_tutorial.c.tex}
+
+Running the program should produce an output similar to this:
+\begin{verbatim}
+iir filter [normal]:
+  b :  0.32277358  0.07999840 -0.24277516
+  a :  1.00000000 -1.99995995  0.99996001
+  0 : phase =   0.25821885, error =   0.80000001
+  1 : phase =   0.75852644, error =   0.55178112
+  2 : phase =   1.12857747, error =   0.06147351
+  3 : phase =   1.27319980, error =  -0.29857749
+  4 : phase =   1.23918116, error =  -0.43319979
+
+        ...
+
+ 37 : phase =   1.18000150, error =  -0.00000131
+ 38 : phase =   1.19000030, error =  -0.00000140
+ 39 : phase =   1.19999886, error =  -0.00000024
+\end{verbatim}

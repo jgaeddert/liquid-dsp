@@ -36,7 +36,7 @@ int main() {
     float b[3];
     float wn = pll_bandwidth;
     float zeta = pll_damping_factor;
-    float K = 1000; // loop gain
+    float K = 10; // loop gain
 
 #if 0
     // loop filter (active lag)
