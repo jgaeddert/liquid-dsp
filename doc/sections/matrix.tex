@@ -77,7 +77,7 @@ Furthermore, {\tt matrix\_access()} can be used for all matrix types
 and {\tt matrix\_pdiv} (point-wise math operations)}
 \label{module:matrix:mathop}
 The {\tt add}, {\tt sub}, {\tt pmul}, and {\tt pdiv} methods perform
-point-wise addition, subtraction, multiplication, and division of the elements
+point-wise (scalar) addition, subtraction, multiplication, and division of the elements
 of two $n \times m$ matrices, $\vec{X}$ and $\vec{Y}$.
 That is, $\vec{Z}_{i,k} = \vec{X}_{i,k} + \vec{Y}_{i,k}$ for all $i$, $k$.
 The same holds true for subtraction, multiplication, and division.
@@ -281,7 +281,7 @@ stability in floating-point arithmetic.
       0.13544561 -0.01930523  0.11944833 -0.14921521
 \end{verbatim}
 
-\subsubsection{{\tt matrix\_inv} (solve linear system of equations)}
+\subsubsection{{\tt matrix\_div} (solve linear system of equations)}
 \label{module:matrix:div}
 The {\tt matrix\_div()} method solves a set of linear equations...
 % TODO flesh out description
