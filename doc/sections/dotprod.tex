@@ -3,18 +3,27 @@
 %
 
 \newpage
-\section{dotprod}
+\section{dotprod (vector dot product)}
 \label{module:dotprod}
-Implements a vector dot product between two equally-sized vectors
+
+This module provides interfaces for computing a vector dot product
+between two equally-sized vectors.
+Dot products are commonly used in digital signal processing for
+communications, particularly in filtering and matrix operations.
+%
+Given two vectors of equal length
 $\vec{x} = \left[x_0,x_1,\ldots,x_{N-1}\right]^T$ and
-$\vec{v} = \left[v_0,v_1,\ldots,v_{N-1}\right]^T$
-\[
+$\vec{v} = \left[v_0,v_1,\ldots,v_{N-1}\right]^T$,
+the vector dot product between them is computed as
+%
+\begin{equation}
     \vec{x} \cdot \vec{v}   =
     \vec{x}^T \vec{v}       =
     \sum_{k=0}^{N-1}{ x(k) v(k) }
-\]
-A number of other modules rely on {\tt dotprod}, such as filtering and
-equalization.
+\end{equation}
+%
+A number of other \liquid\ modules rely on {\tt dotprod},
+such as filtering and equalization.
 
 \subsection{Specific machine architectures}
 \label{module:dotprod:arch}
@@ -103,3 +112,8 @@ same holds true for all other types.
     executes a dot product with an input vector $\vec{v}$ and stores the
     result in $y$.
 \end{description}
+
+%\subsection{Fixed-point (not yet implemented)}
+%\label{module:dotprod:fpm}
+%For fixed-point math, the accumulator typically
+
