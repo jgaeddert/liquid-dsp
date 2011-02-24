@@ -204,6 +204,8 @@ tutorial_progs :=					\
 	tutorials/pll_init_tutorial			\
 	tutorials/pll_basic_tutorial			\
 	tutorials/pll_tutorial				\
+							\
+	tutorials/modem_tutorial			\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 
