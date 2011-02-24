@@ -117,10 +117,9 @@ For more detailed information on loop filter design the interested
 reader is referred to Section~\ref{module:nco:pll}.
 % TODO : reference iirdes_pll_...() as well?
 
-
-$H(z)$ resulting in an
-The estimated phase error $\Delta\phi$ is filtered using a
-output phase estimate $\phi$...
+The estimated phase error $\Delta\phi$ is filtered using $H(z)$
+resulting in an output phase estimate $\phi_{i+1}$
+which is used for the subsequent output sample $y_{i+1}$ as
 %
 \begin{equation}
 \label{eqn:tutoral:pll:y1}
@@ -327,15 +326,45 @@ coefficients each for $\vec{a}$ and $\vec{b}$.
 {\tt iirdes\_pll\_active\_lag()} function
 which accepts $\omega_n$, $\zeta$, and $K$ as inputs and generates the
 coefficients in two output arrays.
+The coefficients can be computed as follows:
+%
+\begin{Verbatim}[fontsize=\small]
+    float wn = 0.1f;        // pll bandwidth
+    float zeta = 0.707f;    // pll damping factor
+    float K = 1000.0f;      // pll loop gain
+    float b[3];             // feedforward coefficients arra
+    float a[3];             // feedback coefficients array
+    iirdes_pll_active_lag(wn, zeta, K, b, a);
+\end{Verbatim}
+%
+The life cycle of the IIR filter can be summarized as follows
+%
+\begin{Verbatim}[fontsize=\small]
+    iirfilt_rrrf loopfilter = iirfilt_rrrf_create(b,3,a,3);
+    float sample_in = 0.0f;
+    float sample_out;
+    {
+        iirfilt_rrrf_execute(loopfilter, sample_in, &sample_out);
+    }
+    iirfilt_rrrf_destroy(loopfilter);
+\end{Verbatim}
+%
+noting that the {\tt execute()} method can be repeated as many times as
+necessary before the object is destroyed.
 
-% TODO : add discussion to create filter, execute, and destroy
-
+Using the code snippets above, modify your program to include the loop
+filter to adjust the output signal's phase.
+The input to the filter will be the {\tt phase\_error} variable, and its
+output will be {\tt phi\_hat}.
+Don't forget to destroy your filter object once the loop has finished
+running.
 
 \subsection{Final Program}
 \label{tutorial:pll:completed}
 
-The final program is listed below and is located in the
-{\tt doc/tutorials/} subdirectory.
+The final program is listed below,
+and a copy of the source is located in the {\tt doc/tutorials/}
+subdirectory.
 %
 \input{tutorials/pll_tutorial.c.tex}
 %
