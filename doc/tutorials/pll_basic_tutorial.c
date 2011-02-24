@@ -9,10 +9,10 @@ int main() {
     float frequency_offset  = 0.01f;    // initial frequency offset
     unsigned int n          = 40;       // number of iterations
 
-    float complex x=0;      // input sample
-    float phase_error=0;    // phase error estimate
-    float phi_hat=0;        // output sample phase
-    float complex y=0;      // output sample
+    float complex x   = 0;  // input sample
+    float phase_error = 0;  // phase error estimate
+    float phi_hat     = 0;  // output sample phase
+    float complex y   = 0;  // output sample
 
     unsigned int i;
     for (i=0; i<n; i++) {

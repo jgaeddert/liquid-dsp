@@ -97,8 +97,8 @@ Without going into a great amount of detail, this control is
 accomplished using a special filter within the loop.
 This filter, known as a ``loop filter,'' is designed to reject
 high-frequency noise and is described with the transfer function $H(z)$.
-Specifically $H(z)$ is a 2$^{nd}$-order integrating low-pass filter
-with
+Specifically $H(z)$ is a 2$^{nd}$-order integrating low-pass recursive
+filter with
 a natural frequency $\omega_n$,
 a damping factor $\zeta$, and
 a loop gain $K$.
@@ -241,8 +241,94 @@ the error increases with the input phase.
 In the next section we will design the loop filter to adjust the output
 phase to lock onto the input signal given the phase error.
 
-\subsection{Designing the Phase-locked Loop}
+\subsection{Designing the Loop Filter}
 \label{tutorial:pll:design}
+
+Our program so far has not used any of the \liquid\ DSP libraries for
+computation and has only relied on the standard C libraries for dealing
+with complex math operations.
+In this section we will introduce \liquid's {\tt iirfilt\_rrrf} object
+to realize a recursive (infinite impulse response) filter with real
+inputs, coefficients, and outputs.
+Additionally we will use the function {\tt iirdes\_pll\_active\_lag()}
+to design the coefficients for the PLL's filter,
+specifically an ``active lag'' design.
+While the explanation in this section is fairly long, relax!
+We will only need to add about 15 lines of code to our program.
+
+Digital representations of infinite impulse response (IIR) filters have
+two sets of coefficients: feedback and feedforward.
+In the digital domain the transfer function is a ratio of the
+polynomials in $z^{-1}$ where the
+feedforward coefficients $\vec{b}$ are in the numerator and the
+feedback coefficients $\vec{a}$ are in the denominator.
+Specifically, the transfer function is
+%
+\begin{equation}
+    H(z) =
+        \frac{
+            b_0 + b_1 z^{-1} + b_2 z^{-2} + \ldots b_{N-1}z^{-(N-1)}
+        }{
+            a_0 + a_1 z^{-1} + a_2 z^{-2} + \ldots a_{M-1}z^{-(M-1)}
+        }
+\end{equation}
+%
+This transfer function means that the output of the filter is the linear
+combination of the $N$ previous filter inputs ($\vec{x}$)
+and $M-1$ previous filter outputs ($\vec{y}$), viz
+%
+\begin{eqnarray}
+%    y_{k} =
+%        \frac{1}{a_0}
+%        \Bigl(
+%            b_0 x_k &+& b_1 x_{k-1} + \cdots + b_{N-1} x_{k-N}\\
+%                    &-& a_1 y_{k-1} - \cdots - a_{M-1} y_{k-M}
+%        \Bigr)
+    y[k] =
+        \frac{1}{a_0}
+        \Bigl(
+            b_0 x[k] &+& b_1 x[k-1] + \cdots + b_{N-1} x[k-N]\\
+                     &-& a_1 y[k-1] - \cdots - a_{M-1} y[k-M]
+        \Bigr)
+\end{eqnarray}
+%
+Typically the number of feedback and feedforward coefficients are equal
+($M=N$), and the coefficients themselves are normalized so that $a_0=1$.
+
+\liquid\ implements IIR filters with the {\tt iirfilt\_xxxt} family of
+objects where ``{\tt xxxt}'' denotes the type definition
+(see Section~\ref{section:tutorial} for details).
+In our example we will be using the {\tt iirfilt\_rrrf} object which
+indicates that this is an IIR filter with real inputs, outputs, and
+coefficients with precision of type {\tt float}.
+The IIR filter objects in \liquid\ maintain their state
+internally, storing the previous inputs and outputs in its internal
+buffers.
+Nearly every object in \liquid\ (filter or otherwise) has at least four
+basic methods:
+{\tt create()},
+{\tt print()},
+{\tt execute()}, and
+{\tt destroy()}.
+For our program we will need to create the filter object by passing to
+it a vector of each the feedback and feedforward coefficients.
+The infinite impulse response (IIR) filter we are designing is of order
+two which means that $\vec{a}$ and $\vec{b}$ have three coefficients
+each.
+
+Generating the loop filter coefficients is fairly straightforward.
+As stated before, the loop filter has parameters for
+natural frequency $\omega_n$,
+damping factor $\zeta$, and
+loop gain $K$.
+Furthermore the filter is 2$^{nd}$-order which means that it has three
+coefficients each for $\vec{a}$ and $\vec{b}$.
+\liquid\ provides a method for computing such a filter with the
+{\tt iirdes\_pll\_active\_lag()} function
+which accepts $\omega_n$, $\zeta$, and $K$ as inputs and generates the
+coefficients in two output arrays.
+
+% TODO : add discussion to create filter, execute, and destroy
 
 
 \subsection{Final Program}

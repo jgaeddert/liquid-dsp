@@ -17,14 +17,14 @@ int main() {
     float a[3];     // feedback coefficients
     iirdes_pll_active_lag(wn, zeta, K, b, a);
 
-    // create loop filter object
+    // create and print the loop filter object
     iirfilt_rrrf loopfilter = iirfilt_rrrf_create(b,3,a,3);
     iirfilt_rrrf_print(loopfilter);
 
-    float complex x=0;      // input sample
-    float phase_error=0;    // phase error estimate
-    float phi_hat=0;        // output sample phase
-    float complex y=0;      // output sample
+    float complex x   = 0;  // input sample
+    float phase_error = 0;  // phase error estimate
+    float phi_hat     = 0;  // output sample phase
+    float complex y   = 0;  // output sample
 
     unsigned int i;
     for (i=0; i<n; i++) {
