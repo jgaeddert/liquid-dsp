@@ -113,6 +113,7 @@ SECTIONS :=					\
 	sections/sequence.tex			\
 	sections/utility.tex			\
 	sections/tutorial_pll.tex		\
+	sections/tutorial_modem.tex		\
 
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
