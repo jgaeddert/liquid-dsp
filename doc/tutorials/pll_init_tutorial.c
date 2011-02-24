@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <complex.h>
 #include <math.h>
 #include <liquid/liquid.h>

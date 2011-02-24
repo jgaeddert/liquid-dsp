@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <complex.h>
 #include <math.h>
 #include <liquid/liquid.h>
@@ -19,8 +18,8 @@ int main() {
     iirdes_pll_active_lag(wn, zeta, K, b, a);
 
     // create loop filter object
-    iirfilt_rrrf H = iirfilt_rrrf_create(b,3,a,3);
-    iirfilt_rrrf_print(H);
+    iirfilt_rrrf loopfilter = iirfilt_rrrf_create(b,3,a,3);
+    iirfilt_rrrf_print(loopfilter);
 
     float complex x=0;      // input sample
     float phase_error=0;    // phase error estimate
@@ -39,14 +38,14 @@ int main() {
         phase_error = cargf(x*conjf(y));
 
         // run error through loop filter
-        iirfilt_rrrf_execute(H, phase_error, &phi_hat);
+        iirfilt_rrrf_execute(loopfilter, phase_error, &phi_hat);
 
         // print results to screen
         printf("%3u : phase = %12.8f, error = %12.8f\n", i, phi_hat, phase_error);
     }
 
-    // destroy IIR filter object and return
-    iirfilt_rrrf_destroy(H);
+    // destroy IIR filter object
+    iirfilt_rrrf_destroy(loopfilter);
 
     printf("done.\n");
     return 0;

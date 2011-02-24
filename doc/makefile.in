@@ -208,6 +208,9 @@ $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 
 tutorials : $(tutorial_progs)
 
+clean-tutorials :
+	$(RM) $(tutorial_progs)
+
 
 ##
 ## PDF DOCUMENT

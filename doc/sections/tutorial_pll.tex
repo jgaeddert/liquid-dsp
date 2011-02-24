@@ -5,8 +5,9 @@
 \newpage
 \section{Tutorial: Phase-Locked Loop}
 \label{tutorial:pll}
-This tutorial demonstrates the...
-
+This tutorial demonstrates the functionality of a carrier phase-locked
+loop and introduces the {\tt iirfilt} object.
+%
 You will need on your local machine:
 \begin{itemize}
 \item the \liquid\ DSP libraries built and installed
@@ -17,29 +18,148 @@ You will need on your local machine:
 
 \subsection{Problem Statement}
 \label{tutorial:pll:problem}
-Wireless communications systems modulate the data signal with
-a high-frequency carrier before transmitting to...
-This is accomplished by mixing the baseband signal $m(t)$
-with a complex sinusoid, viz
-\[
-    s(t) = \Re\Bigl\{ m(t)\exp\{j\omega_ct\} \Bigr\}
-\]
-The receiver must synchronize its ...
+Wireless communications systems up-convert the data signal with
+a high-frequency carrier before transmitting over the air.
+This transmitted signal is orthogonal to other signals so long as
+their bandwidths don't overlap and can be recovered at the receiver by
+mixing it back down to baseband.
+%This is accomplished by mixing the complex baseband signal...
+%with a complex sinusoid, viz
+%\[
+%    s(t) = \Re\Bigl\{ m(t)\exp\{j\omega_ct\} \Bigr\}
+%\]
+Many digital communications systems modulate information in the phase of
+the carrier requiring the receiver to demodulate the signal coherently
+in order to recover the original data message.
+In this regard the receiver must synchronize its carrier oscillator to
+that of the transmitter.
+To put it simply, the receiver must lock on to the phase of
+transmitter's carrier.
+One of the key advantages to performing signal processing in software is
+that the radio can operate at complex baseband.
+% TODO : expand on this
+% (see Section~\ref{section:complex_baseband}).
+
+In this simulation, the received signal is simply a complex sinusoid
+with an unknown initial carrier phase and frequency.
+The carrer holds no information-bearing symbols and is simply a tone
+whose frequency and phase represent the residual mismatch between the
+transmitter and receiver.
+The received signal $x$ at time step $i$ can be described as
+%
+\begin{equation}
+\label{eqn:tutoral:pll:x}
+    x_i = \exp\bigl\{ j(\theta + i\omega) \bigr\}
+\end{equation}
+%
+where $j \triangleq \sqrt{-1}$ and
+$\theta$ and $\omega$ represent the unknown initial carrier phase and
+frequency offsets, respectively.
+The receiver generates a complex sinusoid with a phase $\phi_i$ as the
+phase difference between $x_i$ and $y_i$ and can be computed as
+%
+\begin{equation}
+\label{eqn:tutoral:pll:y}
+    y_i = \exp\bigl\{j\phi_i\bigr\}
+\end{equation}
+%
+%which tries to minimize the difference between the phase of the ...
+The phase error at time step $i$ is expressed as
+%
+\begin{equation}
+\label{eqn:tutoral:pll:dphi}
+    \Delta\phi_i = \arg\bigl\{ x_i y_i^* \bigr\}
+\end{equation}
+%
+where $(^*)$ denotes complex conjugation.%
+\footnote{
+    Those who are savvy with communications techniques will
+    appreciate that we are dealing in complex baseband and can easily
+    compute the phase error estimate simply as the argument of the
+    product of $x_i$ and $y_i$.
+    Conventional PLLs which have operated strictly in the real domain
+    multiply only the real components of $x_i$ and $y_i$ for a phase
+    error estimate, assume that the loop filter rejects the
+    high-frequency component, and make the approximation
+    $\Delta\phi \approx \sin(\Delta\phi) = \sin(\phi-\hat{\phi})$
+    for small phase errors.}
+The goal of the receiver is to control $\phi_i$
+(the phase of the output signal $y$ at time $i$)
+to lock onto the input phase of $x$,
+hence the name ``phase-locked loop.''
+If the phase of the output sample $y_i$ is behind that of the input
+($\Delta\phi > 0$) then $\phi$ needs to be advanced appropriately for
+the next time step.
+Conversely, if the phase of $y_i$ is ahead of the phase of $x_i$
+($\Delta\phi < 0$) then the receiver need to retard $\phi$.
+
+Without going into a great amount of detail, this control is
+accomplished using a special filter within the loop.
+This filter, known as a ``loop filter,'' is designed to reject
+high-frequency noise and is described with the transfer function $H(z)$.
+Specifically $H(z)$ is a 2$^{nd}$-order integrating low-pass filter
+with
+a natural frequency $\omega_n$,
+a damping factor $\zeta$, and
+a loop gain $K$.
+The natural frequency is the resonant frequency of $H(z)$ and for all
+practical purposes is the filter's bandwidth.
+Increasing $\omega_n$ permits the loop to track to the input signal
+faster (reduces lock time), but also increases the amount of noise
+passed through the loop.
+Decreasing $\omega_n$ reduces this noise but also increases the loop's
+acquisition time.
+The damping factor $\zeta$ controls the stability of the filter and is
+typically set to a value near $1/\sqrt{2} \approx 0.707$.
+The loop gain $K$ is typically very large
+(on the order of $1000$ or so).
+For more detailed information on loop filter design the interested
+reader is referred to Section~\ref{module:nco:pll}.
+% TODO : reference iirdes_pll_...() as well?
+
+
+$H(z)$ resulting in an
+The estimated phase error $\Delta\phi$ is filtered using a
+output phase estimate $\phi$...
+%
+\begin{equation}
+\label{eqn:tutoral:pll:y1}
+    y_{i+1} = \exp\bigl\{ j\phi_{i+1} \bigr\}
+\end{equation}
+%
+%A summary of the algorithm is:
+%
+%parameters:
+%    $ x = \bigl\{x_0, x_1, x_2, \ldots \bigr\}$ (input array)
+%
+%initialization:
+%    $ \hat{\phi}_0 = 0 $ (initial output phase)
+%
+%computation: for $i=0, 1, 2, \ldots$
+%       $y_i = \exp\bigl\{ j*\hat{\phi}_i \bigr\}$
+%       $\Delta\phi_i = \arg\bigl\{ x_i y_i^* \bigr\}$ % phase detector
+%       $\hat{\phi}_{i+1} = \text{filter}(\Delta\phi_i)$
+%
+In the next section we will create a simple C program to simulate a
+phase-locked loop with \liquid.
 
 
 \subsection{Setting up the Environment}
 \label{tutorial:pll:environment}
 
 For this tutorial and others, I assume that you are using the GNU
-compiler collection (gcc) for compiling source and linking objects
-\cite{gcc:web}.
+compiler collection ({\tt gcc}) for compiling source and linking objects
+\cite{gcc:web},
+and that you have a familiarity with the C (or C++) programming
+language.
 Create a new file {\tt pll.c} and open it with your favorite editor.
-Add the included headers, ...
-... so that your program looks like this:
+Include the headers {\tt stdio.h}, {\tt complex.h}, {\tt math.h}, and
+{\tt liquid/liquid.h} and add the {\tt int main()} definition
+so that your program looks like this:
 %
 \input{tutorials/pll_init_tutorial.c.tex}
 %
-Compile the program
+Compile and link the program using {\tt gcc}:
 %
 \begin{Verbatim}[fontsize=\small]
     $ gcc -Wall -o pll -lm -lc -lliquid pll.c
@@ -64,28 +184,39 @@ is created which can be run as
 and should simply print ``{\tt done.}'' to the screen.
 You are now ready to add functionality to your program.
 
-In this simulation, the received signal is simply a complex sinusoid
-with an unknown initial carrier phase and frequency.
-The signal $x$ at time step $i$ can be described as
-\[
-    x(i) = \exp\bigl\{ j(\theta + i\omega) \bigr\}
-\]
-where $j \triangleq \sqrt{-1}$ and
-$\theta$ and $\omega$ represent the initial carrier phase and
-frequency offsets, respectively.
-The receiver generates a complex sinusoid
-$y(i) = \exp\bigl\{j\phi(i)\bigr\}$
-which tries to minimize the difference between the phase of the ...
-\[
-    \Delta\phi = \arg\bigl\{ x y^* \bigr\}
-\]
-where $(^*)$ denotes complex conjugation.
-The goal of the PLL is to control $\phi(i)$ (the phase of $y$) to lock
-onto the phase of $x$, hence the name ``phase-locked loop.''
-
+We will now edit the file to set up the basic simulation but without
+controlling the phase of the output sinusoid.
+As such the output won't track to the input resulting in a significant
+amount of phase error.
+This simulation will operate one sample at a time and is organized into
+three sections.
+First, set up the simulation parameters: the initial phase and frequency
+offsets ({\tt float}),
+and number of samples to run ({\tt unsigned int}).
+Next, initialize the complex input and output variables
+({\tt x} and {\tt y}) to zero,
+as well as the state of the phase error ({\tt phase\_error})
+and output phase ({\tt phi\_hat} estimates.
+Finally, set up the computational loop which generates the input and
+output samples, computes the phase error between them, and then prints
+the results to the screen.
+%
 Edit {\tt pll.c} to set up the basic simulation:
 %
 \input{tutorials/pll_basic_tutorial.c.tex}
+%
+% DISCECTION:
+The variables {\tt x} and {\tt y} are of type {\tt float complex} which
+contains both real and imaginary components of type {\tt float}.
+%\footnote{
+%    If, for some reason, you prefer C++ over C you could use the type
+%    {\tt std::complex<float>} instead.
+%    See Section~\ref{xxx} for details.}
+The function {\tt cexpf()} computes the complex exponential of its
+argument which for a purely imaginary input $j\alpha$ is simply
+$e^{j\alpha} = \cos\alpha + j\sin\alpha$.
+% TODO : finish explanation
+
 %
 Compile and run the program as before.
 The program should now output something like this:
@@ -143,7 +274,7 @@ Running the program should produce an output similar to this:
 \end{Verbatim}
 %
 Notice that the phase error at the end of the output is very small.
-The initial error (at $t=0$) is 0.8 which is the value of the
+The initial error (at $i=0$) is 0.8 which is the value of the
 {\tt phase\_offset} parameter ot the beginning of the program.
 Notice also that the difference in phase of the last several samples is
 approximately 0.1, the initial frequency offset that was given in the
