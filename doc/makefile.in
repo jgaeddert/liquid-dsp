@@ -54,7 +54,7 @@ PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
 
-include_dirs	:= . include
+include_dirs	:= . include ../include
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 
@@ -79,7 +79,11 @@ LISTINGS = 					\
 	listings/nco_pll.example.c.tex		\
 	listings/packetizer.example.c.tex	\
 	listings/resamp_crcf.example.c.tex	\
-	listings/window.example.c.tex
+	listings/window.example.c.tex		\
+						\
+	tutorials/pll_init_tutorial.c.tex	\
+	tutorials/pll_basic_tutorial.c.tex	\
+	tutorials/pll_tutorial.c.tex		\
 
 # .tex inputs
 SECTIONS :=					\
@@ -107,7 +111,10 @@ SECTIONS :=					\
 	sections/quantization.tex		\
 	sections/random.tex			\
 	sections/sequence.tex			\
-	sections/utility.tex
+	sections/utility.tex			\
+	sections/tutorial_pll.tex		\
+	sections/tutorial_modem.tex		\
+	sections/tutorial_fec.tex		\
 
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
@@ -191,11 +198,32 @@ clean-figures-progs:
 clean-figures: clean-figures-gen clean-figures-pgf clean-figures-progs
 
 ##
+## TUTORIALS
+##
+
+tutorial_progs :=					\
+	tutorials/pll_init_tutorial			\
+	tutorials/pll_basic_tutorial			\
+	tutorials/pll_tutorial				\
+							\
+	tutorials/modem_tutorial			\
+							\
+	tutorials/fec_tutorial				\
+
+$(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
+
+tutorials : $(tutorial_progs)
+
+clean-tutorials :
+	$(RM) $(tutorial_progs)
+
+
+##
 ## PDF DOCUMENT
 ##
 
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex listings highlight.sty $(SECTIONS) $(figures_generated)
+liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated)
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 
