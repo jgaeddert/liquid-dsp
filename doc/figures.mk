@@ -134,7 +134,9 @@ local_progs :=						\
 	src/modem.gendata				\
 	src/nco_pll					\
 	src/sequence_ccodes				\
-	src/sequence_msequence
+	src/sequence_msequence				\
+							\
+	src/tutorial_pll				\
 
 $(local_progs) : % : %.c $(lib_objects) libliquid.a
 

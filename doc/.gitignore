@@ -40,6 +40,10 @@ src/sequence_msequence
 # ignore all object files
 *.o
 
+# tutorials
+tutorials/*_tutorial
+tutorials/*.tex
+
 # ignore all html files
 html/*
 

@@ -121,7 +121,7 @@ int main() {
 
 
     fprintf(fid,"# imag\n");
-    fprintf(fid,"set ylabel 'complex'\n");
+    fprintf(fid,"set ylabel 'imag'\n");
     fprintf(fid,"set xrange [0:%u]\n", n);
     fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 1 linecolor rgb '%s' title 'input',\\\n", LIQUID_DOC_COLOR_GRAY);
     fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'filtered'\n", LIQUID_DOC_COLOR_GREEN);
