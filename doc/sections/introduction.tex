@@ -18,10 +18,43 @@ compiled quickly with a low memory footprint.
 
 \liquid\ was created by J. Gaeddert out of necessity to perform complex
 digital signal processing algorithms on embedded devices
-without relying on dealing
-with proprietary and otherwise cumbersome frameworks.
+without relying on %dealing with
+proprietary and otherwise cumbersome frameworks.
 This was a critical step in his PhD thesis to adapt DSP algorithms in
 cognitive dynamic-spectrum radios to optimally manage finite radio resources.
+The project was not intended to compete with many other well-known and
+excellent software radio packages freely available
+(such as {\em gnuradio} \cite{gnuradio:web} and {\em OSSIE}
+\cite{ossie:web})
+but was created as a lightweight library which can be used to augment
+these projects' capabilities.
+You will notice that \liquid\ lacks any sort of underlying framework
+%found in these packages
+for connecting signal processing ``blocks'' or ``components.''
+The difference here is that each application requires the signal
+processing block to be redesigned and recompiled for each application
+anyway so the notion of a reconfigurable framework is, for the most
+part, a flawed concept.
+%A large number of researchers want the functionality found in scripted
+%languages such as MATLAB \cite{mathworks:web} or GNU Octave
+%\cite{octave:web} but need to speed of a real-time processing library so
+%that they can test their algorithms in real wireless environments.
+
+In \liquid\ there is
+no model for passing data between structures,
+no generic interface for data abstraction,
+no framework for handling memory management;
+this responsibility is left to the designer,
+and as a consequence the library provides very little computational overhead.
+% TODO : reword [provides] above
+% ...
+This package does {\em not} provide
+graphical user interfaces,
+component models, or
+debugging tools;
+\liquid\ is simply a collection raw signal processing modules
+providing flexibility in algorithm development for wireless
+communications at the physical layer.
 
 
 % Key points
