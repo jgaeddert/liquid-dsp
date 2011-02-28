@@ -74,6 +74,7 @@ LISTINGS = 					\
 	listings/iirfilt.example.c.tex		\
 	listings/interp.example.c.tex		\
 	listings/interleaver.example.c.tex	\
+	listings/lifecycle.example.c.tex	\
 	listings/matrix.example.c.tex		\
 	listings/nco.c++.tex			\
 	listings/nco_pll.example.c.tex		\
