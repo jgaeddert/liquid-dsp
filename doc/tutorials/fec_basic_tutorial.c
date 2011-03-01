@@ -4,36 +4,27 @@
 int main() {
     // simulation parameters
     unsigned int n = 8;             // original data length (bytes)
-    fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
 
     // compute size of encoded message
-    unsigned int k = fec_get_enc_msg_length(fs,n);
+    unsigned int k = n;             // (no encoding yet)
 
     // create arrays
     unsigned char msg_org[n];       // original data message
     unsigned char msg_enc[k];       // encoded/received data message
     unsigned char msg_dec[n];       // decoded data message
 
-    // create object
-    fec q = fec_create(fs,NULL);
-    fec_print(q);
-
     unsigned int i;
     // create message
-    for (i=0; i<n; i++)
-        msg_org[i] = i & 0xff;
+    for (i=0; i<n; i++) msg_org[i] = i & 0xff;
 
-    // encode message
-    fec_encode(q, n, msg_org, msg_enc);
+    // "encode" message (copy to msg_enc)
+    for (i=0; i<n; i++) msg_enc[i] = msg_org[i];
 
     // corrupt encoded message (flip bit)
     msg_enc[0] ^= 0x01;
 
-    // decode message
-    fec_decode(q, n, msg_enc, msg_dec);
-
-    // clean up objects
-    fec_destroy(q);
+    // "decode" message (copy to msg_dec)
+    for (i=0; i<n; i++) msg_dec[i] = msg_enc[i];
 
     printf("original message:  [%3u] ",n);
     for (i=0; i<n; i++)
@@ -49,6 +40,5 @@ int main() {
     unsigned int num_bit_errors = count_bit_errors_array(msg_org, msg_dec, n);
     printf("number of bit errors received:    %3u / %3u\n", num_bit_errors, n*8);
 
-    printf("done.\n");
     return 0;
 }
