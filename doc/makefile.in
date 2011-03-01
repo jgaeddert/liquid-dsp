@@ -74,6 +74,7 @@ LISTINGS = 					\
 	listings/iirfilt.example.c.tex		\
 	listings/interp.example.c.tex		\
 	listings/interleaver.example.c.tex	\
+	listings/lifecycle.example.c.tex	\
 	listings/matrix.example.c.tex		\
 	listings/nco.c++.tex			\
 	listings/nco_pll.example.c.tex		\
@@ -84,6 +85,10 @@ LISTINGS = 					\
 	tutorials/pll_init_tutorial.c.tex	\
 	tutorials/pll_basic_tutorial.c.tex	\
 	tutorials/pll_tutorial.c.tex		\
+						\
+	tutorials/fec_tutorial.c.tex		\
+	tutorials/fec_init_tutorial.c.tex	\
+	tutorials/fec_basic_tutorial.c.tex	\
 
 # .tex inputs
 SECTIONS :=					\
@@ -209,6 +214,8 @@ tutorial_progs :=					\
 	tutorials/modem_tutorial			\
 							\
 	tutorials/fec_tutorial				\
+	tutorials/fec_init_tutorial			\
+	tutorials/fec_basic_tutorial			\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 

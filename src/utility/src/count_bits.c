@@ -147,3 +147,27 @@ unsigned int liquid_bdotprod(unsigned int _x,
 }
 
 
+// counts the number of different bits between two symbols
+unsigned int count_bit_errors(unsigned int _s1,
+                              unsigned int _s2)
+{
+    return liquid_count_ones(_s1^_s2);
+}
+
+// counts the number of different bits between two arrays of symbols
+//  _msg0   :   original message [size: _n x 1]
+//  _msg1   :   copy of original message [size: _n x 1]
+//  _n      :   message size
+unsigned int count_bit_errors_array(unsigned char * _msg0,
+                                    unsigned char * _msg1,
+                                    unsigned int _n)
+{
+    unsigned int num_bit_errors = 0;
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        num_bit_errors += liquid_c_ones[_msg0[i] ^ _msg1[i]];
+
+    return num_bit_errors;
+}
+
+

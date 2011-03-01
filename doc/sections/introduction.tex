@@ -116,8 +116,8 @@ library.
 
 \subsection{Building from the {\tt git} repository}
 \label{section:quickstart:build_from_git}
-\liquid\ uses {\tt git} \cite{git:web} for version control, a free and
-open-source.
+Development of \liquid\ uses {\tt git} \cite{git:web}, a free and
+open-source distributed version control system.
 The benefits of {\tt git} over many other version control systems are
 numerous and the list is too long to give here;
 however one of the most important aspects is that each clone holds a
@@ -144,7 +144,7 @@ but with the additional bootstrapping step:
 \subsection{Additional targets}
 \label{section:quickstart:additional_targets}
 %
-You may also want to build and run the optional validation program
+You might also want to build and run the optional validation program
 (see Section~\ref{section:installation:targets:autotests}) via
 \begin{verbatim}
     $ make check
@@ -156,16 +156,19 @@ and the benchmarking tool
 \end{verbatim}
 %
 A comprehensive list of signal processing examples are given in the
-{\tt examples} directory and can be built as
+{\tt examples} directory.
+All of the example binaries can be built as
 \begin{verbatim}
     $ make examples
 \end{verbatim}
 %
 Each example can be built individually by directly targeting its binary
-(e.g. {\tt make examples/cvsd\_example}).
+(e.g. ``{\tt make examples/cvsd\_example}'').
+The example can be run at the command line
+(e.g. ``{\tt ./examples/cvsd\_example}'').
 
-\section{Tutorial}
-\label{section:tutorial}
+\section{Data Structures in \liquid}
+\label{section:data_structures}
 Most of \liquid's signal processing elements are C structures which
 retain the object's parameters, state, and other useful information.
 The naming convention is
@@ -212,16 +215,33 @@ A few points to note:
       As such, it is strictly up to the user to manage his/her own memory.
       Shared pointers are a great way to cause memory leaks, double-free bugs,
       and severe headaches.
+      The bottom line is to remember that if you created a mess, it is
+      your responsibility to clean it up.
+\item Certain objects will allocate memory internally, and consequently
+      will use more memory than others.
+      This memory will only be freed when the appropriate {\tt delete()}
+      method is invoked.
+      Don't forget to clean up your mess!
 %\item ...
 \end{enumerate}
 
+\subsection{Basic Lifecycle}
+\label{section:data_structures:lifecycle}
+
+Listed below is an example of the basic lifecycle of a
+{\tt iirfilt\_crcf} object (infinite impulse response filter with
+complex float inputs/outputs, and real float coefficients).
+
+\input{listings/lifecycle.example.c.tex}
+
 \section{Learning by example}
+\label{section:learning_by_example}
 While this document contains numerous examples listed in the text, they are
 typically condensed to demonstrate only the interface.
 The {\tt examples/} subdirectory includes more extensive demonstrations and
 numerous examples for all the signal processing components.
 Many of these examples write an output file which can be read by
-octave~\cite{octave:web} to display the results.
+{\em octave}~\cite{octave:web} to display the results.
 For a brief description of each of these examples, see {\tt examples/README}.
 
 \subsection{Why C?}
