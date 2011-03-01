@@ -85,6 +85,8 @@ LISTINGS = 					\
 	tutorials/pll_init_tutorial.c.tex	\
 	tutorials/pll_basic_tutorial.c.tex	\
 	tutorials/pll_tutorial.c.tex		\
+						\
+	tutorials/fec_tutorial.c.tex		\
 
 # .tex inputs
 SECTIONS :=					\

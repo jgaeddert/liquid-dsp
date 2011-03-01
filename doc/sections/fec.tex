@@ -16,7 +16,7 @@ The {\tt fec} object realizes forward error-correction capabilities in
 \liquid\ while the methods {\tt checksum()} and {\tt crc32()} strictly
 implement error detection.
 Certain FEC schemes are only available to \liquid\ by installing the external
-{\tt libfec} library \cite{fec:web}, available as a free download.
+{\tt libfec} library \cite{libfec:web}, available as a free download.
 A few low-rate (and fairly low efficiency) codes are availble internally.
 
 %The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
@@ -121,7 +121,7 @@ where spectral efficiency goals might be secondary to processing contraints.
 \subsection{{\tt libfec} (convolutional and  Reed-Solomon codes)}
 \label{module:fec:libfecv}
 \liquid\ takes advantage of convolutional and Reed-Solomon codes defined in
-{\tt libfec} \cite{fec:web}.
+{\tt libfec} \cite{libfec:web}.
 These codes have much stronger error-correction capabilities than {\tt rep3},
 {\tt rep5}, {\tt h74}, {\tt h84}, and {\tt h128}
 but are also much more computationally intensive to the host processor.
@@ -201,7 +201,7 @@ For a more detailed example demonstrating the full capabilities of the
 Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
 description for each.
 All convolutional and Reed-Solomon codes are available only if {\tt libfec} is
-installed \cite{fec:web}.
+installed \cite{libfec:web}.
 
 % ------------ TABLE: FEC CODING SCHEMES ------------
 \begin{table*}

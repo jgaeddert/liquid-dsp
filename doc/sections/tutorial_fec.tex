@@ -5,3 +5,34 @@
 \newpage
 \section{Tutorial: Forward Error Correction}
 \label{tutorial:fec}
+
+This tutorial will demonstrate computation at the byte level by
+introducing the forward error-correction (FEC) coding module.
+Please note that \liquid\ only provides some very basic FEC
+capabilities including some Hamming block codes and repeat codes.
+While these codes are very fast and enough to get started,
+they are not very efficient and add a lot of redunancy without providing
+a strong level of correcting capabilities.
+\liquid\ will use the convolutional and Reed-Solomon codes described in
+{\em libfec} \cite{libfec:web} if installed on your machine.
+%While not a requirement...
+% maybe in the future these can be imported into liquid-dsp...
+
+\subsection{Problem Statement}
+\label{tutorial:fec:problem}
+Digital communications...
+
+\subsection{Setting up the Environment}
+\label{tutorial:fec:environment}
+
+\subsection{Final Program}
+\label{tutorial:fec:completed}
+
+The final program is listed below,
+and a copy of the source is located in the {\tt doc/tutorials/}
+subdirectory.
+%
+\input{tutorials/fec_tutorial.c.tex}
+%
+
+
