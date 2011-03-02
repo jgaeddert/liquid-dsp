@@ -43,6 +43,7 @@ part, a flawed concept.
 In \liquid\ there is
 no model for passing data between structures,
 no generic interface for data abstraction,
+no customized/proprietary data types,
 no framework for handling memory management;
 this responsibility is left to the designer,
 and as a consequence the library provides very little computational overhead.
@@ -72,7 +73,7 @@ communications at the physical layer.
 
 \section{Quick Start Guide}
 \label{section:quickstart}
-The library can be easily built from source and is available from
+The library can easily be built from source and is available from
 several places.
 The two most typical means of distribution are a compressed archive
 (a {\em tarball}) and cloning the source repository.
@@ -80,12 +81,14 @@ Tarballs are generated with each stable release and are recommended for
 users not expecting bleeding edge development.
 Users wanting the very latest version (in addition to every other
 version) should clone the \liquid\ {\tt git} repository.
+A full description of installation procedures can be found in
+Section~\ref{section:installation}.
 
 \subsection{Building from an archive}
 \label{section:quickstart:build_from_tarball}
-\label{xxx}
 Download the compressed archive {\tt liquid-dsp-v.v.v.tar.gz} to your
-local machine where {\tt v.v.v} denotes the version of the release.
+local machine where {\tt v.v.v} denotes the version of the release
+(e.g. {\tt liquid-dsp-1.0.0.tar.gz});
 % Check the validity of the tarball using MD5...
 %
 % generate:
@@ -167,6 +170,9 @@ Each example can be built individually by directly targeting its binary
 The example can be run at the command line
 (e.g. ``{\tt ./examples/cvsd\_example}'').
 
+%
+% SECTION : Data Structures
+%
 \section{Data Structures in \liquid}
 \label{section:data_structures}
 Most of \liquid's signal processing elements are C structures which
@@ -235,6 +241,7 @@ complex float inputs/outputs, and real float coefficients).
 \input{listings/lifecycle.example.c.tex}
 
 \subsection{Why C?}
+\label{section:data_structures:why_C}
 A commonly asked question is ``why C and not C++?''
 The answer is simple: {\em portability}.
 Our aim is to provide a lightweight DSP library for software-defined radio
@@ -277,18 +284,58 @@ suited to be written in C++ and will beat an implementation in C any day,
 but lie far outside the scope of this project.
 
 \subsection{Data Types}
+\label{section:data_structures:data_types}
 The majority of signal processing for SDR is performed at complex baseband.
 Complex numbers are handled in \liquid\ by defining data type
 {\tt liquid\_float\_complex} which is binary compatible with the standard
 C math type {\tt float complex} and C++ type {\tt std::complex<float>}.
+{\em There are no custom/proprietary data types in \liquid!}%
+\footnote{
+    The only exception to this are the fixed-point data types,
+    defined in the \liquidfpm\ library which hasn't been released yet,
+    and even these data types are actually standard signed integers.}
+Custom data types only promote lack of interoperability between
+libraries requiring conversion procedures which slow down computation.
+For those of you who like to dig through the source code might have
+stumbled upon the {\tt typedef} macros at the beginning of the global 
+header file {\tt include/liquid.h} which creates new complex data types
+based on the compiler, 
+(e.g. {\tt liquid\_complex\_float}).
+While technically this code does define of a new type specification,
+its purpose is for compatability between compilers and programming
+language
+(see Section~\ref{section:data_structures:c++} on C++ portability),
+and is binary compatible with the standard C99 specification.
+In fact, these data types are only used in the header file and should
+not be used when programming.
+For example, the following example program demonstrates the interface in
+C:
+%
+\input{listings/nco.c.tex}
+%
 
-Fixed-point data types are defined in the \liquidfpm\ library (see XXX).
+%Data bytes for digital communication (e.g. the ``message'' signal) are
+%retained in arrays of {\tt unsigned char} for portability.
 
 \subsection{Building/Linking with C++}
+\label{section:data_structures:c++}
 Although \liquid\ is written in C, it can be seamlessly compiled and linked
 with C++ source files.
-Here is an example:
-\input{listings/nco.c++.tex}
+Here is a C++ example comparable to the C program listed in the previous
+section:
+%
+\input{listings/nco.cc.tex}
+%
+It is important, however, to link the code with a C++ linker rather than
+a C linker.
+For example, if the above program ({\tt nco.cc}) is compiled with
+{\tt g++} it must also be linked with {\tt g++}, viz.
+%
+\begin{Verbatim}[fontsize=\small]
+    $ g++ -c -o nco.cc.o nco.cc
+    $ g++ -lm -lc -lliquid nco.cc.o -o nco
+\end{Verbatim}
+%
 
 %\section{Complex Baseband}
 %\label{section:complex_baseband}
