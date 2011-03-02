@@ -103,6 +103,7 @@ LISTINGS = 					\
 SECTIONS :=					\
 	sections/introduction.tex		\
 	sections/installation.tex		\
+	sections/experimental.tex		\
 						\
 	sections/agc.tex			\
 	sections/ann.tex			\
