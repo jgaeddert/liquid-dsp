@@ -98,6 +98,8 @@ LISTINGS = 					\
 	tutorials/fec_tutorial.c.tex		\
 	tutorials/fec_init_tutorial.c.tex	\
 	tutorials/fec_basic_tutorial.c.tex	\
+						\
+	tutorials/framing_tutorial.c.tex	\
 
 # .tex inputs
 SECTIONS :=					\
@@ -128,8 +130,8 @@ SECTIONS :=					\
 	sections/sequence.tex			\
 	sections/utility.tex			\
 	sections/tutorial_pll.tex		\
-	sections/tutorial_modem.tex		\
 	sections/tutorial_fec.tex		\
+	sections/tutorial_framing.tex		\
 
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
@@ -226,6 +228,8 @@ tutorial_progs :=					\
 	tutorials/fec_tutorial				\
 	tutorials/fec_init_tutorial			\
 	tutorials/fec_basic_tutorial			\
+							\
+	tutorials/framing_tutorial			\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 
