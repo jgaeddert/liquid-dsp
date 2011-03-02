@@ -56,13 +56,14 @@ Hamming codes are a specific type of block
 code which use parity bits capable of correcting one bit error in the block.
 With the addition of an extra parity bit, they are able to detect up to two
 errors, but are still only able to correct one.
-\liquid\ implements just the Hamming(7,4) and Hamming(8,4) codes, however at
-this time they are effectively identical because the decoder interface
-doesn't pass detected errors to the user.
-Additionally, the Hamming(7,4) code does not compact the 7-bit output symbols,
-but uses a full 8-bit byte, thus its actual rate is $1/2$, not $4/7$ (see
-Table~\ref{tab:fec:codecs}).
-
+\liquid\ implements the Hamming(7,4), Hamming(8,4), and Hamming(12,8)
+codes.
+The Hamming(8,4) can detect one additional error over the Hamming(7,4)
+code;
+however at the time of writing this document the number of detected
+errors is not passed to the user so the Hamming(8,4) code is effectively
+the same as Hamming(7,4) but with a lower rate.
+%
 Additionally, \liquid\ implements the Hamming(12,8) code which accepts an
 8-bit symbol and adds four parity bits, extending it to a 12-bit symbol.
 This yields a theoretical rate of $2/3$, and actually has a performance very
@@ -131,11 +132,15 @@ codes to punctured codes.
 These punctured codes (also known as ``perforated'' codes) are not as strong
 and cannot correct as many errors, but are more efficient and use less
 overhead than their half-rate counterparts.
-
+%
 The 8-bit Reed-Solomon code is a (255,223) block code, also defined in
 {\tt libfec}.
 Nominally, the scheme accepts 223 bytes (8-bit symbols) and adds 32 parity
 symbols to form a 255-symbol encoded block.
+%
+{\tt libfec} is an external library that \liquid\ will leverage if
+installed, but will still compile otherwise
+(see Section~\ref{section:installation:building} for details).
 
 \subsection{Interface}
 \label{module:fec:interface}
@@ -157,6 +162,8 @@ encodes them into an output block of coded data bytes.
     creates a {\tt fec} object of a specific scheme.
     Notice that the length of the input message does not need to be specified
     until {\tt encode()} or {\tt decode()} is invoked.
+    The second argument should be ignored and set to {\tt NULL}
+    (see example below).
 \item[{\tt fec\_recreate()}]
     recreates an existing {\tt fec} object with a different scheme.
 \item[{\tt fec\_destroy()}]
@@ -212,14 +219,14 @@ installed \cite{libfec:web}.
 \begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}ll}
 \toprule
 {\it scheme} &
-{\it rate} &
+{\it asymptotic rate} &
 {\it description}\\\otoprule
 %
 {\tt FEC\_UNKNOWN}              & -         & unknown/unsupported scheme\\
 {\tt FEC\_NONE}                 & 1         & no error-correction\\
 {\tt FEC\_REP3}                 & 1/3       & simple repeat code\\
 {\tt FEC\_REP5}                 & 1/5       & simple repeat code\\
-{\tt FEC\_HAMMING74}            & 1/2       & Hamming (7,4) block code\\
+{\tt FEC\_HAMMING74}            & 4/7       & Hamming (7,4) block code\\
 {\tt FEC\_HAMMING84}            & 1/2       & Hamming (7,4) with extra parity bit\\
 {\tt FEC\_HAMMING128}           & 2/3       & Hamming (12,8) block code\\\midrule
 %
