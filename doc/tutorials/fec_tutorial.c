@@ -14,12 +14,12 @@ int main() {
     unsigned char msg_enc[k];       // encoded/received data message
     unsigned char msg_dec[n];       // decoded data message
 
-    // create object
+    // CREATE the fec object
     fec q = fec_create(fs,NULL);
     fec_print(q);
 
     unsigned int i;
-    // create message
+    // generate message
     for (i=0; i<n; i++)
         msg_org[i] = i & 0xff;
 
@@ -32,7 +32,7 @@ int main() {
     // decode message
     fec_decode(q, n, msg_enc, msg_dec);
 
-    // clean up objects
+    // DESTROY the fec object
     fec_destroy(q);
 
     printf("original message:  [%3u] ",n);

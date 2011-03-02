@@ -47,8 +47,9 @@ In this tutorial you will create a simple program that will generate a
 message, encode it using a simple Hamming(7,4) code, corrupt the encoded
 message by adding an error, and then try to correct the error with the
 decoder.
-The length of the message, the encoding scheme, and the number of errors
-can be changed... xxx
+%The length of the message, the encoding scheme, and the number of errors
+%can be changed... xxx
+% TODO : complete description
 
 
 \subsection{Setting up the Environment}
@@ -115,7 +116,7 @@ Copy the contents of {\tt msg\_org} to {\tt msg\_enc}.
 This effectively is a placeholder for forward error-correction which
 will be discussed in the next section. % [reword]
 Corrupt one of the bits in {\tt msg\_enc}
-(e.g. {\tt msg\_enc[0] \^= 0x01;} will flip the least-significant bit in
+(e.g. {\tt msg\_enc[0] \verb|^|= 0x01;} will flip the least-significant bit in
 the first byte of the {\tt msg\_enc} array),
 and copy the results to {\tt msg\_dec}.
 Print the encoded and decoded messages to the screen to verify that they
@@ -160,6 +161,91 @@ number of received errors is nonzero.
 %   * Hamming(7,4) is a weak code
 %   * liquid abstracts from gritty details
 %   * 
+So far our program doesn't use any \liquid\ interfaces (except for the
+function used to count bit errors).
+The FEC module in \liquid\ provides a simple interface for adding
+forward error-correction capabilities to your project.
+The {\tt fec} object abstracts from the gritty details behind the bit
+manipulation (packing/unpacking of bytes, appending tail bits, etc.)
+of error-correction structures.
+As an example, convolutional codes observe bits one at a time while
+Reed-Solomon codes operate on entire blocks of bits.
+%If you wanted to switch between codes you would need to...
+The {\tt fec} object in \liquid\ conveniently abstracts from the
+organization of the codec and takes care of this overhead internally.
+This allows seamless integration of different codecs with one simple
+interface.
+%
+As with the {\tt iirfilt\_rrrf} object in the phase-locked loop tutorial
+(Section~\ref{tutorial:pll})
+the {\tt fec} object has methods
+{\tt create()},
+{\tt print()}, and
+{\tt destroy()}.
+Nearly every object in \liquid\ has these methods;
+however the {\tt fec} object replaces {\tt execute()} with
+{\tt encode()} and {\tt decode()} as the
+same object instance can be used for both encoding and decoding.
+The {\tt fec\_create()} method accepts two arguments, although the
+second one is basically ignored.
+The first argument is an enumeration of the type of codec that you wish
+to use.
+
+To begin, create a new {\tt fec} object of type {\tt FEC\_HAMMING74}
+(the second argument can simply be {\tt NULL})
+which creates a Hamming(7,4) code:
+%
+\begin{Verbatim}[fontsize=\small]
+    fec q = fec_create(HAMMING_74, NULL);
+\end{Verbatim}
+%
+Details of the available codes in \liquid\ can be found in
+Section~\ref{module:fec}.
+This codec nominally accepts 4 bits, appends 3 parity bits, and can
+detect and correct up to one of these seven transmitted bits.
+The Hamming(7,4) code is not particularly strong for its rate;
+however it is computationally efficient and has been studied extensively
+in coding theory.
+The interface provided by \liquid\ conveniently abstracts from the
+process of managing 8-bit data symbols (bytes), converting to 4-bit
+input symbols, encoding to 7-bit output symbols, and then re-packing
+into 8-bit output bytes.
+As the user, you simply see data bytes in and data bytes out.
+The length of the output sequence can be computed using the method
+%
+\begin{Verbatim}[fontsize=\small]
+    unsigned int k = fec_get_enc_msg_length(FEC_HAMMING74, n);
+\end{Verbatim}
+%
+where {\tt n} represents the number of uncoded input bytes
+and   {\tt k} represents the number of encoded output bytes.
+This value should be used to appropriately allocate enough memory for
+the encoded message.
+%
+Encoding the data message is as simple as invoking
+%
+\begin{Verbatim}[fontsize=\small]
+    fec_encode(q, n, msg_org, msg_enc);
+\end{Verbatim}
+%
+which uses our newly-created {\tt fec} object {\tt q} to encode {\tt n}
+input bytes in the array {\tt msg\_org} and store the result in the
+output array {\tt msg\_enc}.
+The interface for decoding is nearly identical:
+%
+\begin{Verbatim}[fontsize=\small]
+    fec_decode(q, n, msg_enc, msg_dec);
+\end{Verbatim}
+%
+Notice that the second argument again represents the number of
+{\em uncoded} data bytes.
+Don't forget to destroy the object once you are finished:
+%
+\begin{Verbatim}[fontsize=\small]
+    fec_destroy(q);
+\end{Verbatim}
+%
+
 
 \subsection{Final Program}
 \label{tutorial:fec:completed}
@@ -170,11 +256,23 @@ subdirectory.
 %
 \input{tutorials/fec_tutorial.c.tex}
 %
-The output should look like...
+The output should look like this:
 %
 \begin{Verbatim}[fontsize=\small]
-    ...
+    fec: Hamming(7,4) [rate: 0.571]
+    original message:  [  8]  00 01 02 03 04 05 06 07
+    decoded message:   [  8]  00 01 02 03 04 05 06 07
+    number of bit errors received:      0 /  64
+    done.
 \end{Verbatim}
+%
+Notice that the decoded message matches that of the original message,
+even though an error was introduced at the receiver.
+As discussed above, the Hamming(7,4) code is not particularly strong;
+if too many bits in the encoded message are corrupted then the decoder
+will be unable to correct them.
+Play around with changing the length of the original data message,
+the encoding scheme, and the number of errors introduced.
 
 For a more detailed program, see {\tt examples/fec\_example.c} in the
 main \liquid\ directory.
