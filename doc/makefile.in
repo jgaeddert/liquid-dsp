@@ -58,6 +58,14 @@ include_dirs	:= . include ../include
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 
+# Graphics (nothing to build)
+GRAPHICS = 					\
+	graphics/liquid_splatter_00.png		\
+	graphics/liquid_splatter_01.png		\
+	graphics/liquid_splatter_02.png		\
+	graphics/liquid_splatter_03.png		\
+	graphics/liquid_splatter_04.png		\
+
 # Listings used in this document
 LISTINGS = 					\
 	listings/agc.example.c.tex		\
@@ -230,7 +238,7 @@ clean-tutorials :
 ##
 
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated)
+liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated)
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 
