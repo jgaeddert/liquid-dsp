@@ -215,3 +215,37 @@ the behavior of the frame synchronizers.
 \end{description}
 
 
+\subsection{{\tt framesyncstats\_s}}
+\label{module:framing:framesyncstats_s}
+
+%
+\begin{description}
+\item[{\tt SNR}]
+    an estimate of the received signal-to-noise ratio in dB.
+\item[{\tt rssi}]
+    an estimate of the received signal strength in dB.
+\item[{\tt framesyms}]
+    a pointer to an array of the frame symbols (e.g. QPSK) at complex
+    baseband before demodulation.
+\item[{\tt num\_framesyms}]
+    the number of elements in {\tt framesyms}.
+\item[{\tt mod\_scheme}]
+    the modulation scheme of the frame (see Section~\ref{module:modem}).
+\item[{\tt mod\_bps}]
+    the modulation depth (bits per symbol) of the modulation scheme used
+    in the frame.
+\item[{\tt check}]
+    the error-detection scheme used in the payload of the frame
+    (see Section~\ref{module:fec}).
+\item[{\tt fec0}]
+    the inner forward error-correction code used in the payload
+    (see Section~\ref{module:fec}).
+\item[{\tt fec1}]
+    the outer forward error-correction code used in the payload
+    (see Section~\ref{module:fec}).
+\end{description}
+%
+A simple way to display the information in an instance of
+{\tt framesyncstats\_s} is to use the {\tt framesyncstats\_print()}
+method.
+
