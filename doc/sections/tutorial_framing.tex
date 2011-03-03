@@ -85,12 +85,12 @@ The {\tt framesync64} object has a callback function which has six
 arguments and looks like this:
 %
 \begin{Verbatim}[fontsize=\small]
-    int framesync64_callback(unsigned char * _header,
-                             int _header_valid,
-                             unsigned char * _payload,
-                             int _payload_valid,
+    int framesync64_callback(unsigned char *  _header,
+                             int              _header_valid,
+                             unsigned char *  _payload,
+                             int              _payload_valid,
                              framesyncstats_s _stats,
-                             void * _userdata);
+                             void *           _userdata);
 \end{Verbatim}
 %
 The callback is typically defined to be {\tt static} and is passed to
@@ -98,15 +98,41 @@ the instance of {\tt framesync64} object when it is created.
 %
 \begin{description}
 \item[{\tt \_header}]
-    blah blah blah
+    This is a pointer to the 12 bytes of decoded header data.
+    This pointer is not static and cannot be used after returning from
+    the callback function.
 \item[{\tt \_header\_valid}]
-    blah blah blah
+    This is simply a flag to indicate if the header passed its cyclic
+    redundancy check
+    (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
+    If the check fails then the header data most likely has been
+    corrupted beyond the point that the internal error-correction code
+    can recover.
+    Proceed with caution!
 \item[{\tt \_payload}]
-    blah blah blah
+    This is a pointer to the 64 bytes of decoded payload data.
+    Like the header,
+    this pointer is not static and cannot be used after returning from
+    the callback function.
+    This means that it needs to be copied locally for you to retain the
+    data.
 \item[{\tt \_payload\_valid}]
-    blah blah blah
+    This is simply a flag to indicate if the payload passed its cyclic
+    redundancy check
+    (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
+    As with the header,
+    if this flag is zero then the payload most likely has errors in it.
+    Some applications are error tolerant and so it is possible that the
+    payload data are still useful.
+    Typically, though, the payload should be discarded and a
+    re-transmission request should be issued.
 \item[{\tt \_stats}]
-    blah blah blah
+    The {\tt \_stats} object is a synchronizer statistics construct that
+    indicates some useful PHY information to the user.
+    We will ignore this information in our program, but it can be quite
+    useful for certain applications.
+    For more information on the {\tt framesyncstats\_s} structure, see
+    Section~\ref{module:framing:framesyncstats_s}.
 \item[{\tt \_userdata}]
     Remember that pointer you passed to the {\tt create()} method?
     That points is passed to the callback and can represent just about
