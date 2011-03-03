@@ -99,6 +99,8 @@ LISTINGS = 					\
 	tutorials/fec_init_tutorial.c.tex	\
 	tutorials/fec_basic_tutorial.c.tex	\
 						\
+	tutorials/framing_init_tutorial.c.tex	\
+	tutorials/framing_basic_tutorial.c.tex	\
 	tutorials/framing_tutorial.c.tex	\
 
 # .tex inputs
@@ -229,6 +231,8 @@ tutorial_progs :=					\
 	tutorials/fec_init_tutorial			\
 	tutorials/fec_basic_tutorial			\
 							\
+	tutorials/framing_init_tutorial			\
+	tutorials/framing_basic_tutorial		\
 	tutorials/framing_tutorial			\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a

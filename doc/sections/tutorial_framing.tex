@@ -10,6 +10,8 @@ In the previous tutorials we have created only the basic building blocks
 for wireless communication.
 This tutorial puts them all together by introducing a very simple
 framing structure for sending and receiving data over a wireless link.
+In this context ``framing'' refers to the encapsulation of data into a
+modulated time series to be transmitted over a wireless link.
 
 
 %
@@ -18,27 +20,55 @@ framing structure for sending and receiving data over a wireless link.
 \subsection{Problem Statement}
 \label{tutorial:framing:problem}
 
-...
-
+%To properly convey information over a wireless link...
 For this tutorial we will be using the {\tt framegen64} and
 {\tt framesync64} objects in \liquid.
 As you might have guessed {\tt framegen64} is the frame generator object
-(transmit side)
-and {\tt framesync64} is the frame synchronizer
-(receive side).
-This is a very simple frame which accepts a 12-byte header and 64-byte
-payload and assembles it into a 1280-sample frame at complex baseband.
-The assembled frame is ready to be up-converted and transmitted over the
-air.
-The receiver streams raw samples at complex baseband to an instance of
+on the transmit side of the link
+and {\tt framesync64} is the frame synchronizer on the receive side.
+%
+Together these objects realize a
+a very simple frame which encapsulates a 12-byte header and 64-byte
+payload and into a frame consisting of 640 symbols at complex baseband.
+Conveniently the frame generator interpolates these symbols with a
+matched filter to produce a 1280-sample frame at complex baseband,
+ready to be up-converted and transmitted over the air.
+On the receiving side,
+raw samples at complex baseband are streamed to an instance of
 the frame synchronizer which picks out frames and invokes a user-defined
 callback function.
 The synchronizer corrects for gain, carrier, and sample timing offsets
 (channel impairments) in the complex baseband samples with a minimal
 amount of pre-processing required by the user.
-
+%
+To help with synchronization, the frame includes a special preamble
+which can be seen in the figure below.\\
+%
 % FIGURE: framing:structure
-\includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
+\includegraphics[width=\textwidth]{figures.pgf/framing_structure}\\
+%
+After up-conversion (mixing up to a carrier frequency) the frame is
+radiated over the link where the receiver mixes the signal back down to
+complex baseband.
+The received signal will be attenuated and noisy and typically degrades
+with distance between the two radios.
+Also, because receiver's oscillators run independent of the
+transmitter's,
+this received signal will have other impairments such as carrier
+and timing offsets.
+In our program we will be operating at complex baseband and will add the
+channel impairments artificially.
+
+The frame synchronizer's purpose is to correct for all of these
+impairments (within limitations, of course) and attempt to detect the
+frame and decode its data.
+The framing preamble assists the synchronizer by introducing special
+phasing sequences before the payload which aids in correcting for
+carrier and timing offsets.
+Without going into great detail, these sequences significantly increase
+the probability of frame detection and decoding while adding a minimal
+amount of overhead to the frame;
+a small price to pay for increased data reliability!
 
 
 %
@@ -46,6 +76,46 @@ amount of pre-processing required by the user.
 %
 \subsection{Setting up the Environment}
 \label{tutorial:framing:environment}
+
+As with the other tutorials I assume that you are using {\tt gcc} to
+compile your programs and link to appripriate libraries.
+Create a new file {\tt framing.c} and include the headers
+{\tt stdio.h},
+{\tt stdlib.h},
+{\tt math.h},
+{\tt complex.h}, and
+{\tt liquid/liquid.h}.
+Add the {\tt int main()} definition so that your program looks like
+this:
+%
+\input{tutorials/framing_init_tutorial.c.tex}
+%
+Compile and link the program using {\tt gcc}:
+%
+\begin{Verbatim}[fontsize=\small]
+    $ gcc -Wall -o framing -lm -lc -lliquid framing.c
+\end{Verbatim}
+%
+The flag ``{\tt -Wall}'' tells the compiler to print all warnings
+(unused and uninitialized variables, etc.),
+``{\tt -o framing}'' specifies the name of the output program is
+``{\tt framing}'', and
+``{\tt -lm -lc -lliquid}'' tells the linker to link the binary against
+the math, standard C, and \liquid\ DSP libraries, respectively.
+Notice that the above command invokes both the compiler and the linker
+collectively.
+%While it is usually preferred to build an intermediate object...
+%
+If the compiler did not give any errors, the output executable
+{\tt framing} is created which can be run as
+%
+\begin{Verbatim}[fontsize=\small]
+    $ ./framing
+\end{Verbatim}
+%
+and should simply print ``{\tt done.}'' to the screen.
+You are now ready to add functionality to your program.
+
 
 
 %
@@ -59,6 +129,124 @@ amount of pre-processing required by the user.
 %       * payload
 %       * etc.
 %   * options (m, beta)
+The particular framing structure we will be using accepts a 12-byte
+header and a 64-byte payload and assembles them into a frame
+consisting of 1280 samples.
+These sizes are fixed and cannot be adjusted for this framing
+structure.%
+\footnote{
+    Alternatively, the {\tt flexframegen} and {\tt flexframesync}
+    objects implement a dynamic framing structure which has many more
+    options than the {\tt framegen64} and {\tt framesync64} objects.
+    See Section~\ref{module:framing} for details.}
+The purpose of the header is to conveniently allow the user a separate
+control channel to be packaged with the payload.
+For example, if your application is to send a file using multiple
+frames, the header can include an identification number to indicate
+where in the file it should be written.
+Another application of the header is to include a destination node
+identifier for use in packet routing for ad hoc networks.
+Both the header and payload are assembled with a 16-bit cyclic
+redundancy check (CRC) to validate the integrity of the received data
+and encoded using the Hamming(12,8) code for error correction.
+(see Section~\ref{module:fec} for more information on error detection
+and correction capabilities in \liquid).
+The encoded header and payload are modulated with QPSK and encapsulated
+with a BPSK preamble.
+Finally, the resulting symbols are interpolated using a square-root
+Nyquist matched filter at a rate of 2 samples per symbol.
+This entire process is handled internally so that as a user the only...
+
+The {\tt framegen64} object can be generated with the
+{\tt framegen64\_create()} method which accepts two arguments:
+an {\tt unsigned int} and a {\tt float}
+representing the matched filter's length (in symbols) and
+excess bandwidth factor, respectively.
+To begin, create a frame generator with a delay of 3 and an excess
+bandwidth factor of 0.7 as
+%
+\begin{Verbatim}[fontsize=\small]
+    framegen64 fg = framegen64_create(3, 0.7);
+\end{Verbatim}
+%
+As with all structures in \liquid\ you will need to invoke the
+corresponding {\tt destroy()} method when you are finished with the
+object.
+Now allocate memory for the header and payload data arrays.
+Raw ``message'' data are stored as arrays of type {\tt unsigned char} in
+\liquid.
+%
+\begin{Verbatim}[fontsize=\small]
+    unsigned char header[12];
+    unsigned char payload[64];
+\end{Verbatim}
+%
+Finally you will need to create a buffer for storing the frame samples.
+For this framing structure you will need to allocate 1280 samples of
+type {\tt float complex}, viz.
+%
+\begin{Verbatim}[fontsize=\small]
+    float complex y[1280];
+\end{Verbatim}
+%
+Initialize the header and payload arrays with whatever values you wish.
+All that is needed to generate a frame is to invoke the frame
+generator's {\tt execute()} method:
+%
+\begin{Verbatim}[fontsize=\small]
+    framegen64_execute(fg, header, payload, y);
+\end{Verbatim}
+%
+This completely assembles the frame complete with interpolation and is
+ready for up-conversion and transmission.
+To generate another frame simply write whatever data you wish to the
+header and payload buffers, and invoke the {\tt framegen64\_execute()}
+method again as done above.
+If you wish, print the first few samples of the generated frame to the
+screen (you will need to separate the {\em real} and {\em imaginary}
+components of each sample).
+%
+\begin{Verbatim}[fontsize=\small]
+    for (i=0; i<30; i++)
+        printf("%3u : %12.8f + j*%12.8f\n", i, crealf(y[i]), cimagf(y[i]));
+\end{Verbatim}
+
+Your program should now look similar to this:
+%
+\input{tutorials/framing_basic_tutorial.c.tex}
+%
+Compile the program as before, creating the executable
+``{\tt framing}.''
+Running the program should produce an output similar to this:
+%
+\begin{Verbatim}[fontsize=\small]
+framegen64 [m=3, beta=0.70]:
+    ramp/up symbols     :   16
+    phasing symbols     :   64
+    p/n symbols         :   64
+    header symbols      :   84
+    payload symbols     :   396
+    payload symbols     :   396
+    ramp\down symbols   :   16
+    total symbols       :   640
+  0 :   0.00000000 + j*  0.00000000
+  1 :   0.00000000 + j*  0.00000000
+  2 :  -0.00011255 + j*  0.00000000
+  3 :   0.00014416 + j*  0.00000000
+  4 :   0.00040660 + j*  0.00000000
+        ...
+ 25 :   0.04375378 + j*  0.00000000
+ 26 :   0.97077769 + j*  0.00000000
+ 27 :  -0.04032370 + j*  0.00000000
+ 28 :  -1.09209442 + j*  0.00000000
+ 29 :   0.03534408 + j*  0.00000000
+done.
+\end{Verbatim}
+%
+You might notice that the {\em imaginary} component of the beginning of
+the frame is zero.
+This is because the premble of the frame is BPSK which has no imaginary
+component at complex baseband.
 
 
 %
@@ -75,11 +263,38 @@ amount of pre-processing required by the user.
 %       * matched filtering
 %       * demodulation
 %       * frame decoding
+%   * _coherent_ demodulation (eliminate phase ambiguity)
 %   * what is a callback function?
+
+As stated earlier the frame synchronizer's purpose is to correct for the
+channel impairments, decode the data, and pass it back to the user.
+In our program we will simply pass to the frame synchronizer the samples
+we generated in the previous section with the frame generator.
+In real system, however, the receiver does not know when the beginning
+of the frame is and so...
+Furthermore, the hardware interface might pass the baseband samples to
+the synchronizer in blocks much smaller than the length of a frame
+(512 samples, for instance)
+or even blocks much {\em larger} than the length of a frame
+(4096 samples, for instance).
+How does the synchronizer relay the decoded data back to the program
+without missing any frames?
+The answer is through the use of a callback function.
 
 What is a callback function?
 Put quite simply, a callback function is a function pointer that is
-passed to the object so...
+invoked during a certain event.
+For this example the callback function given to the {\tt framesync64}
+synchronizer object when the object is created
+and is invoked whenever the synchronizer finds a frame.
+This happens irrespective of the size of the blocks passed to the
+synchronizer.
+If you pass it a block of data samples containing four frames|several
+thousand samples|then the callback will be invoked four times
+(assuming that channel impairments haven't corrupted the frame beyond
+the point of recovery).
+You can even pass the synchronizer one sample at a time if you wish.
+
 
 The {\tt framesync64} object has a callback function which has six
 arguments and looks like this:
@@ -192,4 +407,23 @@ add the following line to the beginning of your program:
     srand(time(NULL));
 \end{Verbatim}
 %
+
+% flexframe
+While the framing structure described in this section provides a simple
+interface for transmitting and receiving data over a channel,
+its functionality is limited and isn't particularly spectrally
+efficient.
+\liquid\ provides a more robust framing structure which allows the use
+of any linear modulation scheme, two layers of forward error-correction
+coding, and a variable preamble and payload length.
+These properties can be reconfigured for each frame to allow fast
+adaptation to quickly varying channel conditions.
+Furthermore, the frame synchronizer on the receiver automatically
+reconfigures itself for each frame it detects to allow as simple an
+interface possible.
+The frame generator and synchronizer objects are denoted
+{\tt flexframegen} and
+{\tt flexframesync},
+respectively,
+and are described in Section~\ref{module:framing}.
 

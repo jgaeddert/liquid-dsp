@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <complex.h>
 #include <liquid/liquid.h>
 
 // user-defined static callback function
@@ -35,7 +36,7 @@ int main() {
     // allocate memory for arrays
     unsigned char header[12];       // data header
     unsigned char payload[64];      // data payload
-    float complex frame_rx[1280];   // frame samples
+    float complex y[1280];          // frame samples
 
     // create frame generator
     framegen64 fg = framegen64_create(m,beta);
@@ -55,25 +56,25 @@ int main() {
         payload[i] = rand() & 0xff;
 
     // EXECUTE generator and assemble the frame
-    framegen64_execute(fg, header, payload, frame_rx);
+    framegen64_execute(fg, header, payload, y);
 
     // add channel impairments (attenuation, carrier offset, noise)
     float nstd  = powf(10.0f, noise_floor*0.1f);        // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)*0.1f);// channel gain
     for (i=0; i<1280; i++) {
-        frame_rx[i] *= gamma;
-        frame_rx[i] *= cexpf(_Complex_I*(phi + i*dphi));
-        frame_rx[i] += nstd * randnf()*cexpf(_Complex_I*M_PI*randf());
+        y[i] *= gamma;
+        y[i] *= cexpf(_Complex_I*(phi + i*dphi));
+        y[i] += nstd * randnf()*cexpf(_Complex_I*M_PI*randf());
     }
 
     // EXECUTE synchronizer and receive the frame
 #if 0
     // receive entire frame at once
-    framesync64_execute(fs, frame_rx, 1280);
+    framesync64_execute(fs, y, 1280);
 #else
     // receive the frame one sample at a time
     for (i=0; i<1280; i++)
-        framesync64_execute(fs, &frame_rx[i], 1);
+        framesync64_execute(fs, &y[i], 1);
 #endif
 
     // DESTROY objects
