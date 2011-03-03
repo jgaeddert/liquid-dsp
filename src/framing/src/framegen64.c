@@ -48,6 +48,9 @@
 //void framegen64_encode_header(unsigned char * _header_dec, unsigned char * _header_enc);
 
 struct framegen64_s {
+    unsigned int m;         // filter delay (symbols)
+    float beta;             // filter excess bandwidth factor
+
     modem mod;              // QPSK modulator
     packetizer p_header;    // header packetizer
     packetizer p_payload;   // payload packetizer
@@ -76,7 +79,18 @@ struct framegen64_s {
 framegen64 framegen64_create(unsigned int _m,
                              float _beta)
 {
+    // validate input
+    if (_m == 0) {
+        fprintf(stderr,"error: framegen64_create(), m must be greater than zero\n");
+        exit(1);
+    } else if (_beta < 0.0f || _beta > 1.0f) {
+        fprintf(stderr,"error: framegen64_create(), beta must be in [0,1]\n");
+        exit(1);
+    }
+
     framegen64 fg = (framegen64) malloc(sizeof(struct framegen64_s));
+    fg->m    = _m;
+    fg->beta = _beta;
 
     unsigned int i;
 
@@ -107,9 +121,9 @@ framegen64 framegen64_create(unsigned int _m,
     msequence_destroy(ms);
 
     // create pulse-shaping filter (k=2)
-    unsigned int h_len = 2*2*_m + 1;
+    unsigned int h_len = 2*2*(fg->m) + 1;
     float h[h_len];
-    design_rrc_filter(2,_m,_beta,0,h);
+    design_rrc_filter(2, fg->m, fg->beta, 0, h);
     fg->interp = interp_crcf_create(2, h, h_len);
 
     // create header/payload packetizers
@@ -137,7 +151,15 @@ void framegen64_destroy(framegen64 _fg)
 // print framegen64 object internals
 void framegen64_print(framegen64 _fg)
 {
-    printf("framegen:\n");
+    printf("framegen64 [m=%u, beta=%4.2f]:\n", _fg->m, _fg->beta);
+    printf("    ramp/up symbols     :   16\n");
+    printf("    phasing symbols     :   64\n");
+    printf("    p/n symbols         :   64\n");
+    printf("    header symbols      :   84\n");
+    printf("    payload symbols     :   396\n");
+    printf("    payload symbols     :   396\n");
+    printf("    ramp\\down symbols   :   16\n");
+    printf("    total symbols       :   640\n");
 }
 
 // execute frame generator (creates a frame)
