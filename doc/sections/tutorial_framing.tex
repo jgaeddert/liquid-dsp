@@ -33,6 +33,11 @@ payload and into a frame consisting of 640 symbols at complex baseband.
 Conveniently the frame generator interpolates these symbols with a
 matched filter to produce a 1280-sample frame at complex baseband,
 ready to be up-converted and transmitted over the air.
+This frame has a nominal spectral efficiency of 0.8 bits/second/Hz
+(512 bits from 64 payload bytes assembled in 640 symbols).
+This means that if you transmit with a symbol rate of 10kHz you should
+expect to see a throughput of 8kbps if all the frames are properly
+decoded.
 On the receiving side,
 raw samples at complex baseband are streamed to an instance of
 the frame synchronizer which picks out frames and invokes a user-defined
@@ -210,7 +215,7 @@ components of each sample).
     for (i=0; i<30; i++)
         printf("%3u : %12.8f + j*%12.8f\n", i, crealf(y[i]), cimagf(y[i]));
 \end{Verbatim}
-
+%
 Your program should now look similar to this:
 %
 \input{tutorials/framing_basic_tutorial.c.tex}
@@ -243,11 +248,10 @@ framegen64 [m=3, beta=0.70]:
 done.
 \end{Verbatim}
 %
-You might notice that the {\em imaginary} component of the beginning of
-the frame is zero.
-This is because the premble of the frame is BPSK which has no imaginary
+You might notice that the {\em imaginary} component of the samples in
+the beginning of the frame are zero.
+This is because the preamble of the frame is BPSK which has no imaginary
 component at complex baseband.
-
 
 %
 % SUBSECTION : frame synchronizer
@@ -295,7 +299,36 @@ thousand samples|then the callback will be invoked four times
 the point of recovery).
 You can even pass the synchronizer one sample at a time if you wish.
 
-
+The {\tt framesync64} object can be generated with the
+{\tt framesync64\_create()} method which accepts three pointers as
+arguments:
+%
+\begin{Verbatim}[fontsize=\small]
+    framesync64 framesync64_create(framesyncprops_s *   _props,
+                                   framesync64_callback _callback,
+                                   void *               _userdata);
+\end{Verbatim}
+%
+%Here is a description of...
+%
+\begin{description}
+\item[{\tt \_props}]
+    is a construct that defines the specific properties of the frame
+    synchronizer.
+    This includes loop bandwidths for carrier, timing, and gain
+    recovery, as well as squelch and equalizer control.
+    You may pass the value {\tt NULL} to use the default parameters
+    (recommended for now).
+\item[{\tt \_callback}]
+    is a pointer to your callback function which will be invoked each
+    time a frame is found and decoded.
+\item[{\tt \_userdata}]
+    is a {\tt void} pointer that is passed to the callback function each
+    time it is invoked.
+    This allows you to easily pass data from the callback function.
+    Set to {\tt NULL} if you don't wish to use this.
+\end{description}
+%
 The {\tt framesync64} object has a callback function which has six
 arguments and looks like this:
 %
@@ -313,11 +346,11 @@ the instance of {\tt framesync64} object when it is created.
 %
 \begin{description}
 \item[{\tt \_header}]
-    This is a pointer to the 12 bytes of decoded header data.
+    is a pointer to the 12 bytes of decoded header data.
     This pointer is not static and cannot be used after returning from
     the callback function.
 \item[{\tt \_header\_valid}]
-    This is simply a flag to indicate if the header passed its cyclic
+    is simply a flag to indicate if the header passed its cyclic
     redundancy check
     (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
     If the check fails then the header data most likely has been
@@ -325,14 +358,14 @@ the instance of {\tt framesync64} object when it is created.
     can recover.
     Proceed with caution!
 \item[{\tt \_payload}]
-    This is a pointer to the 64 bytes of decoded payload data.
+    is a pointer to the 64 bytes of decoded payload data.
     Like the header,
     this pointer is not static and cannot be used after returning from
     the callback function.
     This means that it needs to be copied locally for you to retain the
     data.
 \item[{\tt \_payload\_valid}]
-    This is simply a flag to indicate if the payload passed its cyclic
+    is simply a flag to indicate if the payload passed its cyclic
     redundancy check
     (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
     As with the header,
@@ -342,23 +375,28 @@ the instance of {\tt framesync64} object when it is created.
     Typically, though, the payload should be discarded and a
     re-transmission request should be issued.
 \item[{\tt \_stats}]
-    The {\tt \_stats} object is a synchronizer statistics construct that
-    indicates some useful PHY information to the user.
+    is a synchronizer statistics construct that indicates some useful
+    PHY information to the user.
     We will ignore this information in our program, but it can be quite
     useful for certain applications.
     For more information on the {\tt framesyncstats\_s} structure, see
     Section~\ref{module:framing:framesyncstats_s}.
 \item[{\tt \_userdata}]
-    Remember that pointer you passed to the {\tt create()} method?
-    That points is passed to the callback and can represent just about
+    Remember that {\tt void} pointer you passed to the {\tt create()}
+    method?
+    That pointer is passed to the callback and can represent just about
     anything.
-    Typically this is a pointer to another structure and is the method
+    Typically it points to another structure and is the method
     by which the decoded header and payload data are returned to the
     program outside of the callback.
 \end{description}
 
-Ok, so let's break down the frame synchronizer's operation.
-When you receive samples at complex baseband...
+This can seem a bit overwhelming at first, but relax!
+... xxx
+%Our program will hardly be longer than...
+
+%Ok, so let's break down the frame synchronizer's operation.
+%When you receive samples at complex baseband...
 
 
 %
@@ -368,6 +406,86 @@ When you receive samples at complex baseband...
 \label{tutorial:framing:xxx}
 % talking points
 
+First create your callback function at the beginning of the file, just
+before the {\tt int main()} definition;
+you may give it whatever name you like (e.g. {\tt mycallback()}).
+For now ignore all the function inputs and just print a message to the
+screen that indicates that the callback has been invoked,
+and return the integer zero ({\tt 0}).
+Within your {\tt main()} definition, create an instance of
+{\tt framesync64} using the {\tt framesync64\_create()} method,
+passing it a {\tt NULL} for the first and third arguments
+(the properties and userdata constructs).
+Print the newly created synchronizer object to the screen if you like:
+%
+\begin{Verbatim}[fontsize=\small]
+    framesync64 fs = framesync64_create(NULL,
+                                        mycallback,
+                                        NULL);
+    framesync64_print(fs);
+\end{Verbatim}
+%
+After your line that generates the frame
+(``{\tt framegen64\_execute(fg, header, payload, y);}'')
+invoke the synchronizer's {\tt execute()} method,
+passing to it the frame synchronizer object you just created ({\tt fs}),
+the pointer to the array of frame symbols ({\tt y}),
+and the length of the array (1280):
+%
+\begin{Verbatim}[fontsize=\small]
+    framesync64_execute(fs, y, 1280);
+\end{Verbatim}
+%
+Finally, destroy the frame synchronizer object along with the frame
+generator at the end of the file.
+That's it!
+Your program should look something like this.
+%
+\input{tutorials/framing_intermediate_tutorial.c.tex}
+%
+Compile and run your program as before and verify that your callback
+function was indeed invoked.
+Your output should look something like this:
+%
+\begin{Verbatim}[fontsize=\small]
+    framegen64 [m=3, beta=0.70]:
+        ramp/up symbols     :   16
+        phasing symbols     :   64
+        ...
+    framesync64:
+        agc signal min/max  :   -40.0 dB /  30.0dB
+        agc b/w open/closed :   1.00e-03 / 1.00e-05
+        sym b/w open/closed :   8.00e-02 / 5.00e-02
+        pll b/w open/closed :   2.00e-02 / 5.00e-03
+        samples/symbol      :   2
+        filter length       :   3
+        num filters (ppfb)  :   32
+        filter excess b/w   :   0.7000
+        squelch             :   enabled
+        auto-squelch        :   disabled
+        squelch threshold   :   -35.00 dB
+        ----
+        p/n sequence len    :   64
+        payload len         :   64 bytes
+    ***** callback invoked!
+    done.
+\end{Verbatim}
+%
+% ignore any lines pertaining to
+%   framesync64/debug: results written to framesync64_internal_debug.m
+As you can see, the {\tt framesync64} object has a long list of
+modifiable properties pertaining to synchronization;
+the default values provide a good initial set for a wide range of
+channel conditions.
+Duplicate the line of your code that executes the frame synchronizer.
+Recompile and run your code again.
+You should see the ``{\tt ***** callback invoked}'' printed twice.
+
+Your program has only demonstrated the basic functionality of the frame
+generator and synchronizer under ideal conditions:
+no noise, carrier offsets, etc.
+The next section will add some channel impairments to stress the
+synchronizer's ability to decode the frame.
 
 
 %
@@ -376,19 +494,124 @@ When you receive samples at complex baseband...
 \subsection{Final Program}
 \label{tutorial:framing:completed}
 
+In this last section we will add some channel impairments to the frame
+after it is generated and before it is received.
+This will simulate non-ideal channel conditions.
+Specifically we will introduce carrier frequency and phase offsets,
+channel attenuation, and noise.
+We will also add a frame counter and pass it through the userdata
+construct in the frame synchronizer's {\tt create()} method to be passed
+to the callback function when a frame is found.
+Finally, the program will split the frame into pieces to emulate
+non-contiguous data partitioning at the receiver.
+
+To begin, add the following parameters to the beginning of your
+{\tt main()} definition with the other options:
+%
+\begin{Verbatim}[fontsize=\small]
+    unsigned int frame_counter = 0; // userdata passed to callback
+    float phase_offset=0.3f;        // carrier phase offset
+    float frequency_offset=0.02f;   // carrier frequency offset
+    float SNRdB = 10.0f;            // signal-to-noise ratio [dB]
+    float noise_floor = -40.0f;     // noise floor [dB]
+\end{Verbatim}
+%
+The {\tt frame\_counter} variable is simply a number we will pass to the
+callback function to demonstrated the functionality of the userdata
+construct.
+Make sure to initialize {\tt frame\_counter} to zero.
+%
+If you completed the tutorial on phase-locked loop design you might
+recognize the {\tt phase\_offset} and {\tt frequency\_offset} variables.
+%
+The channel gain and noise parameters are a bit trickier and are set up
+by the next two lines.
+Typically the noise power is a fixed value in a receiver;
+what changes is the received power based on the transmitter's power and
+the gain of the channel;
+however because theory dictates that the performance of a link is
+governed by the ratio of signal power to noise power,
+SNR is a more useful than defining signal amplitude and noise variance
+independently.
+The {\tt SNRdB} and {\tt noise\_floor} parameters fully describe the
+channel in this regard.
+The noise standard deviation and channel gain may be derived from these
+values as follows:
+%
+\begin{Verbatim}[fontsize=\small]
+    float nstd  = powf(10.0f, noise_floor*0.1f);
+    float gamma = powf(10.0f, (SNRdB+noise_floor)*0.1f);
+\end{Verbatim}
+%
+Add to your program
+(after the {\tt framegen64\_execute()} line)
+a loop that modifies each sample of the generated frame by introducing
+the channel impairments.
+%
+\[
+    y_i \leftarrow \gamma y_i e^{j(\theta + i\omega)} + \sigma n e^{j \pi u}
+\]
+%
+where
+$y_i$ is the frame sample at index $i$ ({\tt y[i]}),
+$\gamma$ is the channel gain defined above ({\tt gamma}),
+$\theta$ is the carrier phase offset ({\tt phase\_offset}),
+$\omega$ is the carrier frequency offset ({\tt frequency\_offset}),
+$\sigma$ is the noise standard deviation defined above ({\tt nstd}), and
+$n$ and $u$ are random variables to represent noise with
+normal and uniform distributions, repectively.
+\liquid\ provides the {\tt randnf()} and {\tt randf()} methods to
+generate real random numbers with Gauss and uniform distributions
+respectively.
+Check the program listed below if you need help.
+
+Now modify the program to incorporate the frame counter.
+First modify the piece of code where the frame synchronizer is created:
+replace the last argument (initially set to {\tt NULL}) with the address
+of our {\tt frame\_counter} variable.
+For posterity's sake, this address will need to be type-cast to
+{\tt void*} (a void pointer) to prevent the compiler from complaining.
+In your callback function you will reverse this process:
+create a new variable of type {\tt unsigned int*}
+(a pointer to an unsigned integer)
+and assign it {\tt \_userdata} argument, type cast to
+{\tt unsigned int}.
+... xxx
+
+
+% tasks:
+%   * modify the framesync64_create() to include frame counter
+%   * update callback function to print more info
+%   * run framesyng64_execute() one sample at a time
+
 The final program is listed below,
 and a copy of the source is located in the {\tt doc/tutorials/}
 subdirectory.
 %
 \input{tutorials/framing_tutorial.c.tex}
 %
-
-% talking points:
-%   * flexframe: advanced framing
-%   * csma callbacks
-%   * framesync properties
-
+The output of your program should look something like this:
+%
+\begin{Verbatim}[fontsize=\small]
+    framegen64 [m=3, beta=0.70]:
+        ramp/up symbols     :   16
+        phasing symbols     :   64
+        ...
+    framesync64:
+        agc signal min/max  :   -40.0 dB /  30.0dB
+        agc b/w open/closed :   1.00e-03 / 1.00e-05
+        ...
+    ***** callback invoked!
+      header (valid)
+      payload (valid)
+    framesync64/debug: results written to framesync64_internal_debug.m
+    received 1 frames
+    done.
+\end{Verbatim}
+%
 % extra credit
+Play around with the initial options, particularly those pertaining to
+the channel impairments.
 Under what circumstances does the synchronizer miss the frame?
 For example, what is the minimum SNR level that is required to reliably
 receive a frame?
@@ -408,6 +631,12 @@ add the following line to the beginning of your program:
 \end{Verbatim}
 %
 
+For a more detailed program, see {\tt examples/framesync64\_example.c}
+in the main \liquid\ directory.
+Section~\ref{module:framing} describes \liquid's framing module in
+detail.
+
+
 % flexframe
 While the framing structure described in this section provides a simple
 interface for transmitting and receiving data over a channel,
@@ -426,4 +655,6 @@ The frame generator and synchronizer objects are denoted
 {\tt flexframesync},
 respectively,
 and are described in Section~\ref{module:framing}.
+A detailed example program {\tt examples/flexframesync\_example.c}
+is available in the main \liquid\ directory.
 
