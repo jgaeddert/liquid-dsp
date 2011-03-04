@@ -729,7 +729,7 @@ The sum (\ref{eqn:besseli_infinite_sum}) converges quickly due to the
 denominator increasing rapidly, thus only a few terms are necessary for
 sufficient approximation.
 An approximation for the value of $\beta$ to give a particular sidelobe level
-for the window is given by {\tt kaiser\_beta\_slsl()}, and
+for the window is given by {\tt kaiser\_beta\_As()}, and
 the length of the filter can be approximated with
 {\tt estimate\_req\_filter\_len()} (see section~\ref{module:filter:misc} for
 more detail on these methods).
@@ -834,11 +834,64 @@ useful to filtering and filter design.
     \]
     with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
 
+\item[{\tt estimate\_req\_filter\_As()}]
+    returns an estimate of the filter's stop-band attenuation $A_s$
+    given the filter's length $N$ and transition bandwidth $\Delta f$.
+    The estimate uses an iterative binary search to find $A_s$ from
+    {\tt extimate\_req\_filter\_As()}.
+
+\item[{\tt estimate\_req\_filter\_df()}]
+    returns an estimate of the filter's transition bandwidth $\Delta f$
+    given the filter's length $N$ and stop-band attenuation $A_s$.
+    The estimate uses an iterative binary search to find $\Delta f$ from
+    {\tt extimate\_req\_filter\_As()}.
+
+\item[{\tt kaiser\_beta\_As()}]
+    returns an estimate of the Kaiser $\beta$ factor for a particular
+    stop-band attenuation $A_s$.
+    The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz.
+    \[
+    \beta =
+    \begin{cases}
+        0.1102 (A_s - 8.7)      &   A_s > 50 \\
+        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+        0                       &   \text{else}
+    \end{cases}
+    \]
+
 \item[{\tt fir\_group\_delay()}]
     computes the group delay for a finite impulse-response filter.
+    The group delay $\tau_g$ at frequency $f$
+    for a finite impulse response filter of length $N$
+    is computed as
+    \[
+        \tau_g = \Re\Biggl\{ \,\,
+            \frac{
+                \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k} \cdot k}
+            } {
+                \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k}}
+            }\,\,
+            \Biggr\}
+    \]
 
 \item[{\tt iir\_group\_delay()}]
     computes the group delay for an infinite impulse-response filter.
+    The group delay $\tau_g$ at frequency $f$ for an infinite impulse
+    response filter of order $N$ is computed as
+    \[
+        \tau_g = \Re\Biggl\{ \,\,
+            \frac{
+                \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k} \cdot k}
+            } {
+                \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k}}
+            }\,\,
+            \Biggr\}
+            - N
+    \]
+    where $c(n) = \sum_{m=0}^{N-1}{a(m)^*b(m-n)}$
+    for $n \in \{0,1,\ldots,2(N+1)\}$
+    which can be described as the flipped convolution of $\vec{a}$ and
+    $\vec{b}$.
 
 \item[{\tt iirdes\_isstable()}]
     checks the stability of an infinite impulse-response filter by computing
@@ -857,19 +910,6 @@ useful to filtering and filter design.
     all have their poles within the unit circle and are therefore stable (as
     expected).
 
-\item[{\tt kaiser\_beta\_slsl()}]
-    returns an estimate of the Kaiser $\beta$ factor for a particular
-    stop-band attenuation $A_s$.
-    The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz.
-    \[
-    \beta =
-    \begin{cases}
-        0.1102 (A_s - 8.7)      &   A_s > 50 \\
-        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
-        0                       &   \text{else}
-    \end{cases}
-    \]
-
 \item[{\tt liquid\_filter\_autocorr()}]
     computes the auto-correlation of a filter with an array of coefficients
     $\vec{h}$ of length $N$ at a specific lag $n$ as
@@ -885,6 +925,18 @@ useful to filtering and filter design.
     %The inter-symbol interference of a filter is simply its auto-correlation
     %at a lag equal to its...
     %The total interference is the ...
+
+\item[{\tt liquid\_filter\_energy()}]
+    computes a finite impulse response filter's relative out-of-band
+    energy for a cutoff frequency $f_c$, viz
+    \[
+        e =
+            \frac{
+                \int_{2 \pi f_c}^{\infty}{H(\omega)d\omega}
+            } {
+                \int_{0}^{\infty}{H(\omega)d\omega}
+            }
+    \]
 
 \end{description}
 
