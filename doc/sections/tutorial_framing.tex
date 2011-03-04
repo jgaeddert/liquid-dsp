@@ -392,13 +392,9 @@ the instance of {\tt framesync64} object when it is created.
     by which the decoded header and payload data are returned to the
     program outside of the callback.
 \end{description}
-
+%
 This can seem a bit overwhelming at first, but relax!
-... xxx
-%Our program will hardly be longer than...
-
-%Ok, so let's break down the frame synchronizer's operation.
-%When you receive samples at complex baseband...
+The next version of our program will only add about 20 lines of code.
 
 
 %
@@ -414,10 +410,13 @@ you may give it whatever name you like (e.g. {\tt mycallback()}).
 For now ignore all the function inputs and just print a message to the
 screen that indicates that the callback has been invoked,
 and return the integer zero ({\tt 0}).
+This return value for the callback function should always be zero
+and is reserved for future development.
 Within your {\tt main()} definition, create an instance of
 {\tt framesync64} using the {\tt framesync64\_create()} method,
 passing it a {\tt NULL} for the first and third arguments
-(the properties and userdata constructs).
+(the properties and userdata constructs)
+and the name of your callback function as the second argument.
 Print the newly created synchronizer object to the screen if you like:
 %
 \begin{Verbatim}[fontsize=\small]
@@ -427,7 +426,7 @@ Print the newly created synchronizer object to the screen if you like:
     framesync64_print(fs);
 \end{Verbatim}
 %
-After your line that generates the frame
+After your line that generates the frame samples
 (``{\tt framegen64\_execute(fg, header, payload, y);}'')
 invoke the synchronizer's {\tt execute()} method,
 passing to it the frame synchronizer object you just created ({\tt fs}),
@@ -519,12 +518,14 @@ To begin, add the following parameters to the beginning of your
 \end{Verbatim}
 %
 The {\tt frame\_counter} variable is simply a number we will pass to the
-callback function to demonstrated the functionality of the userdata
+callback function to demonstrate the functionality of the userdata
 construct.
 Make sure to initialize {\tt frame\_counter} to zero.
 %
 If you completed the tutorial on phase-locked loop design you might
-recognize the {\tt phase\_offset} and {\tt frequency\_offset} variables.
+recognize the {\tt phase\_offset} and {\tt frequency\_offset} variables;
+these will be used in the same way to represent a carrier mismatch
+between the transmitter and receiver.
 %
 The channel gain and noise parameters are a bit trickier and are set up
 by the next two lines.
@@ -571,12 +572,12 @@ Now modify the program to incorporate the frame counter.
 First modify the piece of code where the frame synchronizer is created:
 replace the last argument (initially set to {\tt NULL}) with the address
 of our {\tt frame\_counter} variable.
-For posterity's sake, this address will need to be type-cast to
+For posterity's sake, this address will need to be type cast to
 {\tt void*} (a void pointer) to prevent the compiler from complaining.
 In your callback function you will reverse this process:
 create a new variable of type {\tt unsigned int*}
 (a pointer to an unsigned integer)
-and assign it {\tt \_userdata} argument, type cast to
+and assign it the {\tt \_userdata} argument type cast to
 {\tt unsigned int*}.
 Now dereference this variable and increment its value.
 Finally print its value near the end of the {\tt main()} definition to
@@ -584,7 +585,8 @@ ensure it is being properly incremented.
 Again, check the program below for assistance.
 
 The last task we will do is push one sample at a time to the frame
-synchronizer rather than the entire frame block.
+synchronizer rather than the entire frame block to emulate
+non-contiguous sample streaming.
 To do this, simply remove the line that calls
 {\tt framesync64\_execute()} on the entire frame
 and replace it with a loop that calls the same function but with one
@@ -611,7 +613,6 @@ The output of your program should look something like this:
     ***** callback invoked!
       header (valid)
       payload (valid)
-    framesync64/debug: results written to framesync64_internal_debug.m
     received 1 frames
     done.
 \end{Verbatim}
