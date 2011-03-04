@@ -1,0 +1,9 @@
+liquid manual TODO list
+
+To do:
+  * move mdct-related objects to experimental
+  * move 'ofdmoqam' objects to experimental
+  * move 'ofdmframe64' objects to experimental
+
+Finished:
+
