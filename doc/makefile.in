@@ -75,6 +75,7 @@ LISTINGS = 					\
 	listings/eqlms_cccf.example.c.tex	\
 	listings/fec.example.c.tex		\
 	listings/fft.example.c.tex		\
+	listings/firdespm.example.c.tex		\
 	listings/firhilb.example.c.tex		\
 	listings/gradient_search.example.c.tex	\
 	listings/gport.direct.example.c.tex	\
