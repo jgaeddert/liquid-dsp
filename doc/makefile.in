@@ -68,42 +68,42 @@ GRAPHICS = 					\
 
 # Listings used in this document
 LISTINGS = 					\
-	listings/agc.example.c.tex		\
-	listings/checksum.example.c.tex		\
-	listings/crc32.example.c.tex		\
-	listings/dotprod_rrrf.example.c.tex	\
-	listings/eqlms_cccf.example.c.tex	\
-	listings/fec.example.c.tex		\
-	listings/fft.example.c.tex		\
-	listings/firdespm.example.c.tex		\
-	listings/firhilb.example.c.tex		\
-	listings/gradient_search.example.c.tex	\
-	listings/gport.direct.example.c.tex	\
-	listings/gport.indirect.example.c.tex	\
-	listings/iirfilt.example.c.tex		\
-	listings/interp.example.c.tex		\
-	listings/interleaver.example.c.tex	\
-	listings/lifecycle.example.c.tex	\
-	listings/matrix.example.c.tex		\
-	listings/nco.c.tex			\
-	listings/nco.cc.tex			\
-	listings/nco_pll.example.c.tex		\
-	listings/packetizer.example.c.tex	\
-	listings/resamp_crcf.example.c.tex	\
-	listings/window.example.c.tex		\
+	listings/agc.example.c			\
+	listings/checksum.example.c		\
+	listings/crc32.example.c		\
+	listings/dotprod_rrrf.example.c		\
+	listings/eqlms_cccf.example.c		\
+	listings/fec.example.c			\
+	listings/fft.example.c			\
+	listings/firdespm.example.c		\
+	listings/firhilb.example.c		\
+	listings/gradient_search.example.c	\
+	listings/gport.direct.example.c		\
+	listings/gport.indirect.example.c	\
+	listings/iirfilt.example.c		\
+	listings/interp.example.c		\
+	listings/interleaver.example.c		\
+	listings/lifecycle.example.c		\
+	listings/matrix.example.c		\
+	listings/nco.c				\
+	listings/nco.cc				\
+	listings/nco_pll.example.c		\
+	listings/packetizer.example.c		\
+	listings/resamp_crcf.example.c		\
+	listings/window.example.c		\
 						\
-	tutorials/pll_init_tutorial.c.tex	\
-	tutorials/pll_basic_tutorial.c.tex	\
-	tutorials/pll_tutorial.c.tex		\
+	tutorials/pll_init_tutorial.c		\
+	tutorials/pll_basic_tutorial.c		\
+	tutorials/pll_tutorial.c		\
 						\
-	tutorials/fec_tutorial.c.tex		\
-	tutorials/fec_init_tutorial.c.tex	\
-	tutorials/fec_basic_tutorial.c.tex	\
+	tutorials/fec_tutorial.c		\
+	tutorials/fec_init_tutorial.c		\
+	tutorials/fec_basic_tutorial.c		\
 						\
-	tutorials/framing_init_tutorial.c.tex	\
-	tutorials/framing_basic_tutorial.c.tex	\
-	tutorials/framing_intermediate_tutorial.c.tex	\
-	tutorials/framing_tutorial.c.tex	\
+	tutorials/framing_init_tutorial.c	\
+	tutorials/framing_basic_tutorial.c	\
+	tutorials/framing_intermediate_tutorial.c	\
+	tutorials/framing_tutorial.c		\
 
 # .tex inputs
 SECTIONS :=					\
@@ -157,20 +157,24 @@ libliquid.a : ../libliquid.a
 ## LISTINGS
 ##
 
+# create listings targets (append '.tex' to each input)
+listings_texfiles = $(patsubst %,%.tex,$(LISTINGS))
+
 # generate listings style
 highlight.sty:
 	$(PYGMENTIZE) -f latex -S $(PYGMENTS_STYLE) > highlight.sty
 
 # use pygments (http://pygments.org) to generate fancy syntax-highlighted source
-$(LISTINGS) : %.tex : %
+
+$(listings_texfiles) : %.tex : %
 	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ $<
 
 # full listings target
-listings: highlight.sty $(LISTINGS)
+listings: highlight.sty $(listings_texfiles)
 
 clean-listings:
 	$(RM) highlight.sty
-	$(RM) $(LISTINGS)
+	$(RM) $(listings_texfiles)
 
 ##
 ## LIB
@@ -251,7 +255,7 @@ clean-tutorials :
 ##
 
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated)
+liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(listings_texfiles) highlight.sty $(figures_generated)
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 
