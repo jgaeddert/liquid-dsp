@@ -42,9 +42,6 @@ An example of the decimator can be seen in figure~\ref{fig:module:filter:decim_c
 
 
 
-% dds
-\subsection{{\tt dds} (direct digital synthesizer)}
-
 % firfilt
 \subsection{{\tt firfilt} (finite impulse response filter)}
 \label{module:filter:firfilt}
@@ -113,9 +110,6 @@ output-to-input resampling ratio.
 \label{fig:module:filter:interp_crcf}
 \end{figure}
 
-
-% qmfb
-\subsection{{\tt qmfb} (quadrature mirror filter bank)}
 
 % iirfilt
 \subsection{{\tt iirfilt} (infinite impulse response filter)}
@@ -307,7 +301,7 @@ The internal IIR filter design process is described here:
         This is the preferred method.
     \end{itemize}
 
-\item Create the filter object (e.g. iirfilt, iirqmfb) from the resulting
+\item Create the filter object (e.g. iirfilt) from the resulting
       structure using either {\tt iirfilt\_crcf\_create()} or
       {\tt iirfilt\_crcf\_create\_sosf()}
 
