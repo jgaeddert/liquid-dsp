@@ -160,7 +160,8 @@ The encoded header and payload are modulated with QPSK and encapsulated
 with a BPSK preamble.
 Finally, the resulting symbols are interpolated using a square-root
 Nyquist matched filter at a rate of 2 samples per symbol.
-This entire process is handled internally so that as a user the only...
+This entire process is handled internally so that as a user the only
+thing you will need to do is call one function.
 
 The {\tt framegen64} object can be generated with the
 {\tt framegen64\_create()} method which accepts two arguments:
@@ -270,12 +271,13 @@ component at complex baseband.
 %   * _coherent_ demodulation (eliminate phase ambiguity)
 %   * what is a callback function?
 
-As stated earlier the frame synchronizer's purpose is to correct for the
-channel impairments, decode the data, and pass it back to the user.
+As stated earlier the frame synchronizer's purpose is to detect the
+presence of a frame, correct for the channel impairments, decode the
+data, and pass it back to the user.
 In our program we will simply pass to the frame synchronizer the samples
 we generated in the previous section with the frame generator.
-In real system, however, the receiver does not know when the beginning
-of the frame is and so...
+%In real system, however, the receiver does not know when the beginning
+%of the frame is and so...
 Furthermore, the hardware interface might pass the baseband samples to
 the synchronizer in blocks much smaller than the length of a frame
 (512 samples, for instance)
@@ -575,14 +577,18 @@ In your callback function you will reverse this process:
 create a new variable of type {\tt unsigned int*}
 (a pointer to an unsigned integer)
 and assign it {\tt \_userdata} argument, type cast to
-{\tt unsigned int}.
-... xxx
+{\tt unsigned int*}.
+Now dereference this variable and increment its value.
+Finally print its value near the end of the {\tt main()} definition to
+ensure it is being properly incremented.
+Again, check the program below for assistance.
 
-
-% tasks:
-%   * modify the framesync64_create() to include frame counter
-%   * update callback function to print more info
-%   * run framesyng64_execute() one sample at a time
+The last task we will do is push one sample at a time to the frame
+synchronizer rather than the entire frame block.
+To do this, simply remove the line that calls
+{\tt framesync64\_execute()} on the entire frame
+and replace it with a loop that calls the same function but with one
+sample at a time.
 
 The final program is listed below,
 and a copy of the source is located in the {\tt doc/tutorials/}
@@ -590,6 +596,7 @@ subdirectory.
 %
 \input{tutorials/framing_tutorial.c.tex}
 %
+Compile and run the program as before.
 The output of your program should look something like this:
 %
 \begin{Verbatim}[fontsize=\small]
@@ -624,13 +631,15 @@ A new seed can be initialized on the system's time (e.g. time of day) to
 help generate new instances of random numbers each time the program is
 run.
 To do so, include the {\tt <time.h>} header to the top of your file and
-add the following line to the beginning of your program:
+add the following line to the beginning of your program's {\tt main()}
+definition:
 %
 \begin{Verbatim}[fontsize=\small]
     srand(time(NULL));
 \end{Verbatim}
 %
-
+This will ensure a unique simulation is run each time the program is
+executed.
 For a more detailed program, see {\tt examples/framesync64\_example.c}
 in the main \liquid\ directory.
 Section~\ref{module:framing} describes \liquid's framing module in
