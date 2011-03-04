@@ -1,13 +1,14 @@
 #include <liquid/liquid.h>
-...
+//...
 {
     // set up the options
     unsigned int n=16;                  // uncoded data length
+    crc_scheme crc  = CRC_32;           // validity check
     fec_scheme fec0 = FEC_HAMMING74;    // inner code
     fec_scheme fec1 = FEC_REP3;         // outer code
 
     // compute resulting packet length
-    unsigned int k = packetizer_compute_enc_msg_len(n,fec0,fec1);
+    unsigned int k = packetizer_compute_enc_msg_len(n,crc,fec0,fec1);
 
     // set up the arrays
     unsigned char msg[n];               // original message
@@ -16,7 +17,7 @@
     int crc_pass;                       // decoder validity check
 
     // create the packetizer object
-    packetizer p = packetizer_create(n,fec0,fec1);
+    packetizer p = packetizer_create(n,crc,fec0,fec1);
 
     // initialize msg here
     unsigned int i;

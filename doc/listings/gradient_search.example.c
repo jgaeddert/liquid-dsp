@@ -20,6 +20,7 @@
     gradient_search_execute(gs, num_iterations, target_utility);
 
     // execute search one iteration at a time
+    unsigned int i;
     for (i=0; i<num_iterations; i++)
         gradient_search_step(gs);
 

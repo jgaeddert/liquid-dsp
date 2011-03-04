@@ -16,7 +16,7 @@
 
     // interleave/de-interleave the data
     interleaver_encode(q, msg_org, msg_int);
-    interleaver_decode(q, msg_int, msg_rec)
+    interleaver_decode(q, msg_int, msg_rec);
 
     // destroy the interleaver object
     interleaver_destroy(q);

@@ -11,8 +11,9 @@
     // create resampler
     resamp_crcf q = resamp_crcf_create(r,h_len,bw,slsl,npfb);
 
+    unsigned int n = (unsigned int)ceilf(r);
     float complex x;            // complex input
-    float complex y[ceilf(r)];  // output buffer
+    float complex y[n];         // output buffer
     unsigned int num_written;   // number of values written to buffer
 
     // ... initialize input ...
