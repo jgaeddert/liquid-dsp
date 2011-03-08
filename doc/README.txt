@@ -10,8 +10,11 @@ All documentation is in LaTeX [ctan:web].  Figures are auto-generated using
 gnuplot [gnuplot:web] and pgf [pgf:web].  Code snippets are made pretty using
 pygments [pygments:web].
 
-To build the documentation, one must move to the root source directory, and
-build/install liquid.  Then move to this directory and simply run 'make.'
+To build the documentation, one must first move to the root source
+directory and build the liquid DSP library.  Then move to this directory
+and simply run 'make.'  The documentation is built daily for your
+convenience at http://ganymede.ece.vt.edu/.
+
 
 Documentation dependencies:
     pdflatex    : texlive-base, texlive-latex-extra, (texlive-full)
