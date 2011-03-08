@@ -7,7 +7,7 @@ To do:
   * add troubleshooting in "installation" section
   * add description for 'channel' module
   * add description for 'multicarrier' module
-  * add description for 'quantizatin' module
+  * add description for 'quantization' module
   * add index
   * add script to compile listings to test validity
 

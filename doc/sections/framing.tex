@@ -48,6 +48,15 @@ functionality:
 
 See also: fec module, {\tt examples/packetizer\_example.c}
 
+
+\subsection{{\tt bpacket} (binary packet generator/synchronizer)}
+\label{module:framing:bpacket}
+The {\tt bpacketgen} and {\tt bpacketsync} objects realize a pair of
+binary packet generator and synchronizer objects useful for streaming
+data applications.
+
+...
+
 \subsection{{\tt frame64}, {\tt flexframe} (basic framing structures)}
 \label{module:framing:frames}
 \liquid\ comes packaged with two basic framing structures: {\tt frame64} and
@@ -111,7 +120,9 @@ Both frames consist of six basic parts:
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
-\caption{framing structure}
+\caption{
+    Framing structure used for the {\tt frame64} and {\tt flexframe}
+    structures.}
 \label{fig:module:framing:structure}
 \end{figure}
 
