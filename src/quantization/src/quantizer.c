@@ -19,99 +19,78 @@
  */
 
 //
-//
+// structured quantizer
 //
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
-#include <math.h>
+#include <stdlib.h>
 
-#include "liquid.internal.h"
-
-#define LIQUID_VALIDATE_INPUT
-#define QUANTIZER_MAX_BITS      32
-
-// inline quantizer: 'analog' signal in [-1, 1]
-
-unsigned int quantize_adc(float _x, unsigned int _num_bits)
-{
-#ifdef LIQUID_VALIDATE_INPUT
-    if (_num_bits > QUANTIZER_MAX_BITS) {
-        printf("error: quantize_adc(), maximum bits exceeded\n");
-        exit(1);
-    }
-#endif
-
-    if (_num_bits == 0)
-        return 0;
-
-    unsigned int n = _num_bits-1;   // 
-    unsigned int N = 1<<n;          // 2^n
-
-    // scale
-    bool neg = (_x < 0);
-    unsigned int r = floorf(fabsf(_x)*N);
-
-    // clip
-    if (r >= N)
-        r = N-1;
-
-    // if negative set MSB to 1
-    if (neg)
-        r |= N;
-
-    return r;
-}
-
-float quantize_dac(unsigned int _s, unsigned int _num_bits)
-{
-#ifdef LIQUID_VALIDATE_INPUT
-    if (_num_bits > QUANTIZER_MAX_BITS) {
-        printf("error: quantize_dac(), maximum bits exceeded\n");
-        exit(1);
-    }
-#endif
-    if (_num_bits == 0)
-        return 0.0f;
-
-    unsigned int n = _num_bits-1;   //
-    unsigned int N = 1<<n;          // 2^n
-    float r = ((float)(_s & (N-1))+0.5f) / (float) (N);
-
-    // check MSB, return negative if 1
-    return (_s & N) ? -r : r;
-}
-
-
-struct quantizer_rf_s {
-    unsigned int n;
+struct QUANTIZER(_s) {
+    int ctype;          // compander type
+    unsigned int n;     // number of bits
+                        // table?
 };
 
-quantizer_rf quantizer_rf_create(int _compander_type, float _range, unsigned int _num_bits)
+// create quantizer object
+//  _ctype      :   compander type (e.g. LIQUID_COMPANDER_LINEAR)
+//  _range      :   maximum absolute input
+//  _num_bits   :   number of bits per sample
+QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,
+                               float _range,
+                               unsigned int _num_bits)
 {
-    quantizer_rf q = (quantizer_rf) malloc(sizeof(struct quantizer_rf_s));
+    // validate input
+    if (_num_bits == 0) {
+        fprintf(stderr,"error: quantizer_create(), must have at least one bit/sample\n");
+        exit(1);
+    }
+
+    // create quantizer object
+    QUANTIZER() q = (QUANTIZER()) malloc(sizeof(struct QUANTIZER(_s)));
+
+    // initialize values
+    q->ctype = _ctype;
+    q->n     = _num_bits;
+
+    // return object
     return q;
 }
 
-void quantizer_rf_destroy(quantizer_rf _q)
+void QUANTIZER(_destroy)(QUANTIZER() _q)
 {
-
+    // free main object memory
+    free(_q);
 }
 
-void quantizer_rf_print(quantizer_rf _q)
+void QUANTIZER(_print)(QUANTIZER() _q)
 {
-
+    printf("quantizer:\n");
+    printf("  compander :   ");
+    if (_q->ctype == LIQUID_COMPANDER_LINEAR) printf("linear\n");
+    else if (_q->ctype == LIQUID_COMPANDER_MULAW) printf("mu-law\n");
+    else if (_q->ctype == LIQUID_COMPANDER_ALAW) printf("A-law\n");
+    else printf("unknown\n");
+    printf("  num bits  :   %u\n", _q->n);
 }
 
-void quantizer_rf_adc(quantizer_rf _q, float _x, unsigned int * _sample)
+void QUANTIZER(_execute_adc)(QUANTIZER() _q,
+                             T _x,
+                             unsigned int * _sample)
 {
-
+#if T_COMPLEX
+#else
+#endif
+    *_sample = 0;
 }
 
-void quantizer_rf_dac(quantizer_rf _q, unsigned int _sample, float * _x)
+void QUANTIZER(_execute_dac)(QUANTIZER() _q,
+                             unsigned int _sample,
+                             T * _x)
 {
-
+#if T_COMPLEX
+#else
+#endif
+    *_x = 0.0;
 }
 
 

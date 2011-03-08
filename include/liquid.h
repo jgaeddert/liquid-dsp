@@ -3130,18 +3130,36 @@ void expand_cf_mulaw(liquid_float_complex _y, float _mu, liquid_float_complex * 
 unsigned int quantize_adc(float _x, unsigned int _num_bits);
 float quantize_dac(unsigned int _s, unsigned int _num_bits);
 
-#define COMPANDER_LINEAR    0
-#define COMPANDER_MULAW     1
-#define COMPANDER_ALAW      2
+// structured quantizer
 
-typedef struct quantizer_rf_s * quantizer_rf;
-quantizer_rf quantizer_rf_create(int _compander_type, float _range, unsigned int _num_bits);
-void quantizer_rf_destroy(quantizer_rf _q);
-void quantizer_rf_print(quantizer_rf _q);
+typedef enum {
+    LIQUID_COMPANDER_LINEAR=0,
+    LIQUID_COMPANDER_MULAW,
+    LIQUID_COMPANDER_ALAW
+} liquid_compander_type;
 
-void quantizer_rf_adc(quantizer_rf _q, float _x, unsigned int * _sample);
-void quantizer_rf_dac(quantizer_rf _q, unsigned int _sample, float * _x);
+#define QUANTIZER_MANGLE_FLOAT(name)    LIQUID_CONCAT(quantizerf,  name)
+#define QUANTIZER_MANGLE_CFLOAT(name)   LIQUID_CONCAT(quantizercf, name)
 
+// large macro
+//   QUANTIZER  : name-mangling macro
+//   T          : data type
+#define LIQUID_QUANTIZER_DEFINE_API(QUANTIZER,T)                \
+typedef struct QUANTIZER(_s) * QUANTIZER();                     \
+QUANTIZER() QUANTIZER(_create)(liquid_compander_type _ctype,    \
+                               float _range,                    \
+                               unsigned int _num_bits);         \
+void QUANTIZER(_destroy)(QUANTIZER() _q);                       \
+void QUANTIZER(_print)(QUANTIZER() _q);                         \
+void QUANTIZER(_execute_adc)(QUANTIZER() _q,                    \
+                             T _x,                              \
+                             unsigned int * _sample);           \
+void QUANTIZER(_execute_dac)(QUANTIZER() _q,                    \
+                             unsigned int _sample,              \
+                             T * _x);
+
+LIQUID_QUANTIZER_DEFINE_API(QUANTIZER_MANGLE_FLOAT,  float)
+LIQUID_QUANTIZER_DEFINE_API(QUANTIZER_MANGLE_CFLOAT, liquid_float_complex)
 
 
 //

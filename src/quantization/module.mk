@@ -26,7 +26,11 @@ module_name     := quantization
 # This is a list of local source files to compile into objects,
 # referenced from the src/ subdirectory under $(local_dir)
 #
-local_s_files	:= quantizer.c compand.c
+local_s_files	:=		\
+	compand.c		\
+	quantizercf.c		\
+	quantizerf.c		\
+	quantizer.inline.c	\
 
 # local_t_files
 #
