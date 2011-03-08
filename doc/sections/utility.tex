@@ -10,6 +10,12 @@ manipulation.
 This includes packing/unpacking byte arrays, counting ones in an integer,
 computing a binary dot-product, and others.
 
+\subsection{{\tt liquid\_pack\_array()},
+            {\tt liquid\_unpack\_array()}}
+\label{module:utility:pack_array}
+Pack array with symbols.
+
+
 \subsection{{\tt liquid\_pack\_bytes()},
             {\tt liquid\_unpack\_bytes()}, and
             {\tt liquid\_repack\_bytes()}}
@@ -28,6 +34,122 @@ For example repacking two 8-bit symbols {\tt 00000000},{\tt 11111111} into six
 {\tt 000},{\tt 000},{\tt 001},{\tt 111},{\tt 111},{\tt 100}.
 Because 16 bits cannot be divided evenly among 3-bit symbols, the last symbol
 is padded with zeros.
+
+
+\subsection{{\tt liquid\_lbshift()},
+            {\tt liquid\_rbshift()}}
+\label{module:utility:bshift}
+Binary shifting.
+
+{\tt liquid\_lbshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 0000 0011 1101 1110 1011 1111 0101 0100
+    // output [2]   : 0000 0111 1011 1101 0111 1110 1010 1000
+    // output [3]   : 0000 1111 0111 1010 1111 1101 0101 0000
+    // output [4]   : 0001 1110 1111 0101 1111 1010 1010 0000
+    // output [5]   : 0011 1101 1110 1011 1111 0101 0100 0000
+    // output [6]   : 0111 1011 1101 0111 1110 1010 1000 0000
+    // output [7]   : 1111 0111 1010 1111 1101 0101 0000 0000
+\end{Verbatim}
+
+{\tt liquid\_rbshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 0100 0000 1111 0111 1010 1111 1101 0101
+    // output [2]   : 0010 0000 0111 1011 1101 0111 1110 1010
+    // output [3]   : 0001 0000 0011 1101 1110 1011 1111 0101
+    // output [4]   : 0000 1000 0001 1110 1111 0101 1111 1010
+    // output [5]   : 0000 0100 0000 1111 0111 1010 1111 1101
+    // output [6]   : 0000 0010 0000 0111 1011 1101 0111 1110
+    // output [7]   : 0000 0001 0000 0011 1101 1110 1011 1111
+\end{Verbatim}
+
+
+\subsection{{\tt liquid\_lbcircshift()},
+            {\tt liquid\_rbcircshift()}}
+\label{module:utility:bcircshift}
+Binary circular shifting.
+
+{\tt liquid\_lbcircshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1001 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1001 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 0010 0011 1101 1110 1011 1111 0101 0101
+    // output [2]   : 0100 0111 1011 1101 0111 1110 1010 1010
+    // output [3]   : 1000 1111 0111 1010 1111 1101 0101 0100
+    // output [4]   : 0001 1110 1111 0101 1111 1010 1010 1001
+    // output [5]   : 0011 1101 1110 1011 1111 0101 0101 0010
+    // output [6]   : 0111 1011 1101 0111 1110 1010 1010 0100
+    // output [7]   : 1111 0111 1010 1111 1101 0101 0100 1000
+\end{Verbatim}
+
+
+{\tt liquid\_rbcircshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1001 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1001 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 0100 1000 1111 0111 1010 1111 1101 0101
+    // output [2]   : 1010 0100 0111 1011 1101 0111 1110 1010
+    // output [3]   : 0101 0010 0011 1101 1110 1011 1111 0101
+    // output [4]   : 1010 1001 0001 1110 1111 0101 1111 1010
+    // output [5]   : 0101 0100 1000 1111 0111 1010 1111 1101
+    // output [6]   : 1010 1010 0100 0111 1011 1101 0111 1110
+    // output [7]   : 0101 0101 0010 0011 1101 1110 1011 1111
+\end{Verbatim}
+
+\subsection{{\tt liquid\_lshift()},
+            {\tt liquid\_rshift()}}
+\label{module:utility:shift}
+Byte-wise shifting.
+
+{\tt liquid\_lshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 1110 1111 0101 1111 1010 1010 0000 0000
+    // output [2]   : 0101 1111 1010 1010 0000 0000 0000 0000
+    // output [3]   : 1010 1010 0000 0000 0000 0000 0000 0000
+    // output [4]   : 0000 0000 0000 0000 0000 0000 0000 0000
+\end{Verbatim}
+
+
+{\tt liquid\_rshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 0000 0000 1000 0001 1110 1111 0101 1111
+    // output [2]   : 0000 0000 0000 0000 1000 0001 1110 1111
+    // output [3]   : 0000 0000 0000 0000 0000 0000 1000 0001
+    // output [4]   : 0000 0000 0000 0000 0000 0000 0000 0000
+\end{Verbatim}
+
+\subsection{{\tt liquid\_lcircshift()},
+            {\tt liquid\_rcircshift()}}
+\label{module:utility:circshift}
+Byte-wise circular shifting.
+
+{\tt liquid\_lcircshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 1110 1111 0101 1111 1010 1010 1000 0001
+    // output [2]   : 0101 1111 1010 1010 1000 0001 1110 1111
+    // output [3]   : 1010 1010 1000 0001 1110 1111 0101 1111
+    // output [4]   : 1000 0001 1110 1111 0101 1111 1010 1010
+\end{Verbatim}
+
+{\tt liquid\_rcircshift()}
+\begin{Verbatim}[fontsize=\small]
+    // input        : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [0]   : 1000 0001 1110 1111 0101 1111 1010 1010
+    // output [1]   : 1010 1010 1000 0001 1110 1111 0101 1111
+    // output [2]   : 0101 1111 1010 1010 1000 0001 1110 1111
+    // output [3]   : 1110 1111 0101 1111 1010 1010 1000 0001
+    // output [4]   : 1000 0001 1110 1111 0101 1111 1010 1010
+\end{Verbatim}
 
 \subsection{miscellany}
 \label{module:utility:misc}
