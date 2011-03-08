@@ -7,6 +7,8 @@
 
     // ... initialize objects ...
 
+    float * x;
+    unsigned int i;
     // loop as necessary
     {
         // tx : generate complex sinusoid

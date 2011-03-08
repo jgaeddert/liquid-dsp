@@ -5,3 +5,283 @@
 \newpage
 \section{Tutorial: Forward Error Correction}
 \label{tutorial:fec}
+
+This tutorial will demonstrate computation at the byte level by
+introducing the forward error-correction (FEC) coding module.
+Please note that \liquid\ only provides some very basic FEC
+capabilities including some Hamming block codes and repeat codes.
+While these codes are very fast and enough to get started,
+they are not very efficient and add a lot of redunancy without providing
+a strong level of correcting capabilities.
+\liquid\ will use the convolutional and Reed-Solomon codes described in
+{\em libfec} \cite{libfec:web} if installed on your machine.
+%While not a requirement...
+% maybe in the future these can be imported into liquid-dsp...
+
+\subsection{Problem Statement}
+\label{tutorial:fec:problem}
+Digital communications over a noisy channel can be unreliable,
+resulting in errors at the receiver.
+Forward error-correction (FEC) coding adds redundancy to the original
+data message that allows for some errors to be corrected at the
+receiver.
+The error-correction capability of the code is dependent upon many
+factors, but is usually improved by increasing the amount of redundancy
+added to the message.
+The drawback to adding a lot of redundancy is that the communications
+rate is decreased as the link must be shared among the important data
+information as well as the redundant bits.
+The benefit, however, is that the receiver has a better chance of
+correcting the errors without having to request a retransmission of the
+message.
+Volumes of research papers and books have been written about the
+error-correction capabilities of certain FEC encoder/decoder pairs
+(codecs) and their performance in a variety of environments.
+While there is far too much information on the subject to discuss here,
+it is important to note that \liquid\ implements a very small subset of
+simple FEC codecs, including several Hamming and repeat codes.
+If the {\em libfec} \cite{libfec:web} library is installed when \liquid\
+is configured this list extends to convolutional and Reed-Solomon codes.
+
+In this tutorial you will create a simple program that will generate a
+message, encode it using a simple Hamming(7,4) code, corrupt the encoded
+message by adding an error, and then try to correct the error with the
+decoder.
+%The length of the message, the encoding scheme, and the number of errors
+%can be changed... xxx
+% TODO : complete description
+
+
+\subsection{Setting up the Environment}
+\label{tutorial:fec:environment}
+
+Create a new file {\tt fec.c} and open it with your favorite editor.
+Include the headers {\tt stdio.h} and {\tt liquid/liquid.h}
+and add the {\tt int main()} definition
+so that your program looks like this:
+%
+\input{tutorials/fec_init_tutorial.c.tex}
+%
+Compile and link the program using {\tt gcc}:
+%
+\begin{Verbatim}[fontsize=\small]
+    $ gcc -Wall -o fec -lm -lc -lliquid fec.c
+\end{Verbatim}
+%
+The flag ``{\tt -Wall}'' tells the compiler to print all warnings
+(unused and uninitialized variables, etc.),
+``{\tt -o fec}'' specifies the name of the output program is
+``{\tt fec}'', and
+``{\tt -lm -lc -lliquid}'' tells the linker to link the binary against
+the math, standard C, and \liquid\ DSP libraries, respectively.
+Notice that the above command invokes both the compiler and the linker
+collectively.
+%While it is usually preferred to build an intermediate object...
+%
+If the compiler did not give any errors, the output executable {\tt fec}
+is created which can be run as
+%
+\begin{Verbatim}[fontsize=\small]
+    $ ./fec
+\end{Verbatim}
+%
+and should simply print ``{\tt done.}'' to the screen.
+You are now ready to add functionality to your program.
+
+We will now edit the file to set up the basic simulation by generating a
+message signal and counting errors as a result of channel effects.
+The error-correction capabilities will be added in the next section.
+First set up the simulation parameters: for now the only parameter will
+be the length of the input message, denoted by the variable {\tt n}
+({\tt unsigned int}) representing the number of bytes.
+Initialize {\tt n} to 8 to reflect an original message of 8 bytes.
+Create another {\tt unsigned int} variable {\tt k} which will represent
+the length of the encoded message.
+This length is equal to the original ({\tt n}) with the additional
+redundancy.
+For now set {\tt k} equal to {\tt n} as we are not adding FEC coding
+until the next section.
+This implies that without any redundancy, the receiver cannot correct
+for any errors.
+
+Message data in \liquid\ are represented as arrays of type
+{\tt unsigned char}.
+Allocate space for the original, encoded, and decoded messages as
+{\tt msg\_org[n]},
+{\tt msg\_enc[k]}, and
+{\tt msg\_dec[n]}, respectively.
+Initialize the original data message as desired.
+For example, the elements in {\tt msg\_org} can contain
+{\tt 0,1,2,...,n-1}.
+Copy the contents of {\tt msg\_org} to {\tt msg\_enc}.
+This effectively is a placeholder for forward error-correction which
+will be discussed in the next section. % [reword]
+Corrupt one of the bits in {\tt msg\_enc}
+(e.g. {\tt msg\_enc[0] \verb|^|= 0x01;} will flip the least-significant bit in
+the first byte of the {\tt msg\_enc} array),
+and copy the results to {\tt msg\_dec}.
+Print the encoded and decoded messages to the screen to verify that they
+are not equal.
+Without any error-correction capabilities, the receiver should see a
+message different than the original because of the corrupted bit.
+Count the number of bit differences between the original and decoded
+messages.
+\liquid\ provides a convenient interface for doing this and can be
+invoked as
+%
+\begin{Verbatim}[fontsize=\small]
+    unsigned int num_bit_errors = count_bit_errors_array(msg_org,
+                                                         msg_dec,
+                                                         n);
+\end{Verbatim}
+%
+Print this number to the screen.
+Your program should look similar to this:
+%
+\input{tutorials/fec_basic_tutorial.c.tex}
+%
+Compile the program as before, creating the executable ``{\tt fec}.''
+Running the program should produce an output similar to this:
+%
+\begin{Verbatim}[fontsize=\small]
+    original message:  [  8]  00 01 02 03 04 05 06 07
+    decoded message:   [  8]  01 01 02 03 04 05 06 07
+    number of bit errors received:      1 /  64
+\end{Verbatim}
+%
+Notice that the decoded message differs from the original and that the
+number of received errors is nonzero.
+
+
+%
+% SUBSECTION : creating the encoder
+%
+\subsection{Creating the Encoder/Decoder}
+\label{tutorial:fec:codec}
+% talking points
+%   * Hamming(7,4) is a weak code
+%   * liquid abstracts from gritty details
+%   * 
+So far our program doesn't use any \liquid\ interfaces (except for the
+function used to count bit errors).
+The FEC module in \liquid\ provides a simple interface for adding
+forward error-correction capabilities to your project.
+The {\tt fec} object abstracts from the gritty details behind the bit
+manipulation (packing/unpacking of bytes, appending tail bits, etc.)
+of error-correction structures.
+As an example, convolutional codes observe bits one at a time while
+Reed-Solomon codes operate on entire blocks of bits.
+%If you wanted to switch between codes you would need to...
+The {\tt fec} object in \liquid\ conveniently abstracts from the
+organization of the codec and takes care of this overhead internally.
+This allows seamless integration of different codecs with one simple
+interface.
+%
+As with the {\tt iirfilt\_rrrf} object in the phase-locked loop tutorial
+(Section~\ref{tutorial:pll})
+the {\tt fec} object has methods
+{\tt create()},
+{\tt print()}, and
+{\tt destroy()}.
+Nearly every object in \liquid\ has these methods;
+however the {\tt fec} object replaces {\tt execute()} with
+{\tt encode()} and {\tt decode()} as the
+same object instance can be used for both encoding and decoding.
+The {\tt fec\_create()} method accepts two arguments, although the
+second one is basically ignored.
+The first argument is an enumeration of the type of codec that you wish
+to use.
+
+To begin, create a new {\tt fec} object of type {\tt FEC\_HAMMING74}
+(the second argument can simply be {\tt NULL})
+which creates a Hamming(7,4) code:
+%
+\begin{Verbatim}[fontsize=\small]
+    fec q = fec_create(HAMMING_74, NULL);
+\end{Verbatim}
+%
+Details of the available codes in \liquid\ can be found in
+Section~\ref{module:fec}.
+This codec nominally accepts 4 bits, appends 3 parity bits, and can
+detect and correct up to one of these seven transmitted bits.
+The Hamming(7,4) code is not particularly strong for its rate;
+however it is computationally efficient and has been studied extensively
+in coding theory.
+The interface provided by \liquid\ conveniently abstracts from the
+process of managing 8-bit data symbols (bytes), converting to 4-bit
+input symbols, encoding to 7-bit output symbols, and then re-packing
+into 8-bit output bytes.
+As the user, you simply see data bytes in and data bytes out.
+The length of the output sequence can be computed using the method
+%
+\begin{Verbatim}[fontsize=\small]
+    unsigned int k = fec_get_enc_msg_length(FEC_HAMMING74, n);
+\end{Verbatim}
+%
+where {\tt n} represents the number of uncoded input bytes
+and   {\tt k} represents the number of encoded output bytes.
+This value should be used to appropriately allocate enough memory for
+the encoded message.
+%
+Encoding the data message is as simple as invoking
+%
+\begin{Verbatim}[fontsize=\small]
+    fec_encode(q, n, msg_org, msg_enc);
+\end{Verbatim}
+%
+which uses our newly-created {\tt fec} object {\tt q} to encode {\tt n}
+input bytes in the array {\tt msg\_org} and store the result in the
+output array {\tt msg\_enc}.
+The interface for decoding is nearly identical:
+%
+\begin{Verbatim}[fontsize=\small]
+    fec_decode(q, n, msg_enc, msg_dec);
+\end{Verbatim}
+%
+Notice that the second argument again represents the number of
+{\em uncoded} data bytes.
+Don't forget to destroy the object once you are finished:
+%
+\begin{Verbatim}[fontsize=\small]
+    fec_destroy(q);
+\end{Verbatim}
+%
+
+
+\subsection{Final Program}
+\label{tutorial:fec:completed}
+
+The final program is listed below,
+and a copy of the source is located in the {\tt doc/tutorials/}
+subdirectory.
+%
+\input{tutorials/fec_tutorial.c.tex}
+%
+The output should look like this:
+%
+\begin{Verbatim}[fontsize=\small]
+    fec: Hamming(7,4) [rate: 0.571]
+    original message:  [  8]  00 01 02 03 04 05 06 07
+    decoded message:   [  8]  00 01 02 03 04 05 06 07
+    number of bit errors received:      0 /  64
+    done.
+\end{Verbatim}
+%
+Notice that the decoded message matches that of the original message,
+even though an error was introduced at the receiver.
+As discussed above, the Hamming(7,4) code is not particularly strong;
+if too many bits in the encoded message are corrupted then the decoder
+will be unable to correct them.
+Play around with changing the length of the original data message,
+the encoding scheme, and the number of errors introduced.
+
+For a more detailed program, see {\tt examples/fec\_example.c} in the
+main \liquid\ directory.
+Section~\ref{module:fec} describes \liquid's FEC module in detail.
+Additionally, the {\tt packetizer} object extends the simplicity of the
+{\tt fec} object by adding a cyclic redundancy check and two layers of
+forward error-correction and interleaving, all of which can be
+reconfigured as desired.
+See {\tt examples/packetizer\_example.c} for a detailed example program
+on how to use the {\tt packetizer} object.
+

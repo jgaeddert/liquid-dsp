@@ -1,5 +1,6 @@
-// file:    listings/nco.c++
-// build:   g++ -Wall nco.c++ -lliquid -o nco_test
+// file:    listings/nco.cc
+// build:   g++ -c -o nco.cc.o nco.cc
+// link:    g++ -lm -lc -lliquid nco.cc.o -o nco
 
 #include <iostream>
 #include <math.h>
@@ -16,13 +17,12 @@ int main() {
     // create nco object and initialize
     nco_crcf n = nco_crcf_create(LIQUID_NCO);
     nco_crcf_set_phase(n,0.3f);
-    nco_crcf_set_frequency(n,0.0f);
 
     // Test liquid complex data type
     liquid_float_complex x;
     nco_crcf_cexpf(n, &x);
     std::cout << "liquid complex:     "
-              << x[0] << " + j" << x[1] << std::endl;
+              << x.real << " + j" << x.imag << std::endl;
 
     // Test native c++ complex data type
     std::complex<float> y;

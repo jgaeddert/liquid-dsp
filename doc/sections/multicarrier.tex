@@ -4,13 +4,28 @@
 
 \newpage
 \section{multicarrier}
+\label{module:multicarrier}
 
-\subsection{firpfbch}
+\subsection{{\tt firpfbch}}
+\label{module:multicarrier:firpfbch}
 finite impulse response polyphase filterbank channelizer (firpfbch)
 \begin{itemize}
 \item uses FFTW library (www.fftw.org) if available, internal FFT library
       otherwise
 \item basis behind OFDM/OQAM
 \end{itemize}
+
+
+\subsection{{\tt ofdmframe}}
+\label{module:multicarrier:ofdmframe}
+orthogonal frequency-divisional multiplexing (OFDM) framing structure.
+\begin{itemize}
+\item uses FFTW library (www.fftw.org) if available, internal FFT library
+      otherwise
+\item useful for OFDM communications
+\item allows spectrum notching
+\item not anticipated to be used with specific standards
+\end{itemize}
+
 
 

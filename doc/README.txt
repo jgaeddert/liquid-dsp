@@ -64,3 +64,13 @@ Installing on Mac OS X
 Installing on Ubuntu Linux
     $ sudo apt-get install texlive-full
 
+Additional notes:
+    Splatter graphics were created using GIMP with two splatter brush
+    plug-ins.
+      * http://www.gimp.org/
+      * http://corelila.deviantart.com/art/Splatter-Brushes-60718934
+      * http://hawksmont.com/blog/gimp-brushes-splatters/
+
+
+
+

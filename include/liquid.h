@@ -2349,6 +2349,14 @@ extern const liquid_float_complex modem_arb_opt16[16];  // optimal 16-QAM
 // counts the number of different bits between two symbols
 unsigned int count_bit_errors(unsigned int _s1, unsigned int _s2);
 
+// counts the number of different bits between two arrays of symbols
+//  _msg0   :   original message [size: _n x 1]
+//  _msg1   :   copy of original message [size: _n x 1]
+//  _n      :   message size
+unsigned int count_bit_errors_array(unsigned char * _msg0,
+                                    unsigned char * _msg1,
+                                    unsigned int _n);
+
 // converts binary-coded decimal (BCD) to gray, ensuring successive values
 // differ by exactly one bit
 unsigned int gray_encode(unsigned int symbol_in);

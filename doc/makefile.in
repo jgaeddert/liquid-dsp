@@ -58,37 +58,58 @@ include_dirs	:= . include ../include
 INCLUDE_CFLAGS	= $(addprefix -I ,$(include_dirs))
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall
 
+# Graphics (nothing to build)
+GRAPHICS = 					\
+	graphics/liquid_splatter_00.png		\
+	graphics/liquid_splatter_01.png		\
+	graphics/liquid_splatter_02.png		\
+	graphics/liquid_splatter_03.png		\
+	graphics/liquid_splatter_04.png		\
+
 # Listings used in this document
 LISTINGS = 					\
-	listings/agc.example.c.tex		\
-	listings/checksum.example.c.tex		\
-	listings/crc32.example.c.tex		\
-	listings/dotprod_rrrf.example.c.tex	\
-	listings/eqlms_cccf.example.c.tex	\
-	listings/fec.example.c.tex		\
-	listings/fft.example.c.tex		\
-	listings/firhilb.example.c.tex		\
-	listings/gradient_search.example.c.tex	\
-	listings/gport.direct.example.c.tex	\
-	listings/gport.indirect.example.c.tex	\
-	listings/iirfilt.example.c.tex		\
-	listings/interp.example.c.tex		\
-	listings/interleaver.example.c.tex	\
-	listings/matrix.example.c.tex		\
-	listings/nco.c++.tex			\
-	listings/nco_pll.example.c.tex		\
-	listings/packetizer.example.c.tex	\
-	listings/resamp_crcf.example.c.tex	\
-	listings/window.example.c.tex		\
+	listings/agc.example.c			\
+	listings/checksum.example.c		\
+	listings/crc32.example.c		\
+	listings/dotprod_rrrf.example.c		\
+	listings/eqlms_cccf.example.c		\
+	listings/fec.example.c			\
+	listings/fft.example.c			\
+	listings/firdespm.example.c		\
+	listings/firhilb.example.c		\
+	listings/gradient_search.example.c	\
+	listings/gport.direct.example.c		\
+	listings/gport.indirect.example.c	\
+	listings/iirfilt.example.c		\
+	listings/interp.example.c		\
+	listings/interleaver.example.c		\
+	listings/lifecycle.example.c		\
+	listings/matrix.example.c		\
+	listings/nco.c				\
+	listings/nco.cc				\
+	listings/nco_pll.example.c		\
+	listings/packetizer.example.c		\
+	listings/resamp_crcf.example.c		\
+	listings/window.example.c		\
 						\
-	tutorials/pll_init_tutorial.c.tex	\
-	tutorials/pll_basic_tutorial.c.tex	\
-	tutorials/pll_tutorial.c.tex		\
+	tutorials/pll_init_tutorial.c		\
+	tutorials/pll_basic_tutorial.c		\
+	tutorials/pll_tutorial.c		\
+						\
+	tutorials/fec_tutorial.c		\
+	tutorials/fec_init_tutorial.c		\
+	tutorials/fec_basic_tutorial.c		\
+						\
+	tutorials/framing_init_tutorial.c	\
+	tutorials/framing_basic_tutorial.c	\
+	tutorials/framing_intermediate_tutorial.c	\
+	tutorials/framing_tutorial.c		\
 
 # .tex inputs
 SECTIONS :=					\
 	sections/introduction.tex		\
 	sections/installation.tex		\
+	sections/experimental.tex		\
 						\
 	sections/agc.tex			\
 	sections/ann.tex			\
@@ -113,8 +134,8 @@ SECTIONS :=					\
 	sections/sequence.tex			\
 	sections/utility.tex			\
 	sections/tutorial_pll.tex		\
-	sections/tutorial_modem.tex		\
 	sections/tutorial_fec.tex		\
+	sections/tutorial_framing.tex		\
 
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
@@ -136,20 +157,24 @@ libliquid.a : ../libliquid.a
 ## LISTINGS
 ##
 
+# create listings targets (append '.tex' to each input)
+listings_texfiles = $(patsubst %,%.tex,$(LISTINGS))
+
 # generate listings style
 highlight.sty:
 	$(PYGMENTIZE) -f latex -S $(PYGMENTS_STYLE) $(PYGMENTS_VERB_OPTS) > highlight.sty
 
 # use pygments (http://pygments.org) to generate fancy syntax-highlighted source
-$(LISTINGS) : %.tex : %
+
+$(listings_texfiles) : %.tex : %
 	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ $<
 
 # full listings target
-listings: highlight.sty $(LISTINGS)
+listings: highlight.sty $(listings_texfiles)
 
 clean-listings:
 	$(RM) highlight.sty
-	$(RM) $(LISTINGS)
+	$(RM) $(listings_texfiles)
 
 ##
 ## LIB
@@ -209,6 +234,13 @@ tutorial_progs :=					\
 	tutorials/modem_tutorial			\
 							\
 	tutorials/fec_tutorial				\
+	tutorials/fec_init_tutorial			\
+	tutorials/fec_basic_tutorial			\
+							\
+	tutorials/framing_init_tutorial			\
+	tutorials/framing_basic_tutorial		\
+	tutorials/framing_intermediate_tutorial		\
+	tutorials/framing_tutorial			\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 
@@ -223,7 +255,7 @@ clean-tutorials :
 ##
 
 # auxillary
-liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(SECTIONS) $(LISTINGS) highlight.sty $(figures_generated)
+liquid.aux liquid.bib.aux : liquid.tex highlight.sty $(GRAPHICS) $(SECTIONS) $(listings_texfiles) highlight.sty $(figures_generated)
 	$(TEX) $(TEX_FLAGS) liquid
 	touch liquid.bib.aux
 

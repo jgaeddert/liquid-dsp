@@ -52,7 +52,7 @@ framesyncprops_s framesyncprops_default = {
     3,          // m
     0.7f,       // beta
     // squelch
-    1,          // squelch_enabled
+    0,          // squelch_enabled
     0,          // autosquelch_enabled
     -35.0f,     // squelch_threshold
     // equalizer

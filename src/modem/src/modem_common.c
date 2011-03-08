@@ -99,11 +99,3 @@ unsigned int gray_decode(unsigned int symbol_in)
     return symbol_out;
 }
 
-unsigned int count_bit_errors(
-    unsigned int _s1,
-    unsigned int _s2)
-{
-    return liquid_count_ones(_s1^_s2);
-}
-
-
