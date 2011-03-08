@@ -1118,6 +1118,7 @@ int iirdes_isstable(float * _b,
 
 // compute the linear prediction coefficients for an input signal _x
 //  _x      :   input signal [size: _n x 1]
+//  _n      :   input signal length
 //  _p      :   prediction filter order
 //  _a      :   prediction filter [size: _p+1 x 1]
 //  _e      :   prediction error variance [size: _p+1 x 1]
@@ -1548,12 +1549,6 @@ LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CRCF,
                           float,
                           liquid_float_complex)
 
-//LIQUID_SYMSYNC_DEFINE_API(SYMSYNC_MANGLE_CCCF,
-//                          liquid_float_complex,
-//                          liquid_float_complex,
-//                          liquid_float_complex)
-
-// 
 
 //
 // Finite impulse response Farrow filter
@@ -1592,12 +1587,6 @@ LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_CRCF,
                             liquid_float_complex,
                             float,
                             liquid_float_complex)
-
-//LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_CCCF,
-//                            liquid_float_complex,
-//                            liquid_float_complex,
-//                            liquid_float_complex)
-
 
 
 
@@ -2080,15 +2069,28 @@ float liquid_kbd(unsigned int _n, unsigned int _N, float _beta);
 void liquid_kbd_window(unsigned int _n, float _beta, float * _w);
 
 // Kaiser window
-float kaiser(unsigned int _n, unsigned int _N, float _beta, float _dt);
+//  _n      :   window index
+//  _N      :   full window length
+//  _beta   :   Kaiser-Bessel window shape parameter
+//  _dt     :   fractional sample offset
+float kaiser(unsigned int _n,
+             unsigned int _N,
+             float _beta,
+             float _dt);
 
 // Hamming window
+//  _n      :   window index
+//  _N      :   full window length
 float hamming(unsigned int _n, unsigned int _N);
 
 // Hann window
+//  _n      :   window index
+//  _N      :   full window length
 float hann(unsigned int _n, unsigned int _N);
 
 // Blackman-harris window
+//  _n      :   window index
+//  _N      :   full window length
 float blackmanharris(unsigned int _n, unsigned int _N);
 
 
@@ -2396,27 +2398,6 @@ void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
 void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
 void get_demodulator_phase_error(modem _demod, float* _phi);
 void get_demodulator_evm(modem _demod, float* _evm);
-
-//
-// Continuous phase modems
-//
-typedef enum {
-    CPMOD_FSK,
-    CPMOD_MSK
-} cpmodem_scheme;
-
-typedef struct cpmodem_s * cpmodem;
-cpmodem cpmodem_create(cpmodem_scheme _ms,
-                       unsigned int _bps,
-                       unsigned int _k);
-void cpmodem_destroy(cpmodem _mod);
-void cpmodem_print(cpmodem _mod);
-void cpmodem_modulate(cpmodem _mod,
-                      unsigned int _s,
-                      liquid_float_complex *_y);
-void cpmodem_demodulate(cpmodem _mod,
-                        liquid_float_complex *_x,
-                        unsigned int * _s);
 
 
 // gmskmod : GMSK modulator
@@ -2885,15 +2866,18 @@ void liquid_unwrap_phase2(float * _theta, unsigned int _n);
 // MODULE : optimization
 //
 
-// n-dimensional rosenbrock function (minimum at _v = {1,1,1...}
-float rosenbrock(void * _userdata, float * _v, unsigned int _n);
+// n-dimensional rosenbrock callback function (minimum at _v = {1,1,1...}
+//  _userdata   :   user-defined data structure (convenience)
+//  _v          :   input vector [size: _n x 1]
+//  _n          :   input vector size
+float rosenbrock(void * _userdata,
+                 float * _v,
+                 unsigned int _n);
 
 
 //
 // Gradient search
 //
-
-int optim_threshold_switch(float _u1, float _u2, int _minimize);
 
 #define LIQUID_OPTIM_MINIMIZE (0)
 #define LIQUID_OPTIM_MAXIMIZE (1)

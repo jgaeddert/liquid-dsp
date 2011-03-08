@@ -50,7 +50,7 @@ GNUPLOT = @GNUPLOT@
 GNUPLOT_VERSION = 4.2
 
 PYGMENTIZE = @PYGMENTIZE@
-PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small'
+PYGMENTS_VERB_OPTS = -P verboptions='fontsize=\small' -P commandprefix='PY'
 PYGMENTS_OPTS = -O linenos=True $(PYGMENTS_VERB_OPTS)
 PYGMENTS_STYLE = default
 
@@ -161,7 +161,7 @@ listings_texfiles = $(patsubst %,%.tex,$(LISTINGS))
 
 # generate listings style
 highlight.sty:
-	$(PYGMENTIZE) -f latex -S $(PYGMENTS_STYLE) > highlight.sty
+	$(PYGMENTIZE) -f latex -S $(PYGMENTS_STYLE) $(PYGMENTS_VERB_OPTS) > highlight.sty
 
 # use pygments (http://pygments.org) to generate fancy syntax-highlighted source
 

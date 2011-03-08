@@ -5,12 +5,15 @@
 \newpage
 \section{experimental}
 \label{module:experimental}
-This section describes the experimental module.
-This is a special module which is a placeholder for experimental objects
-and interfaces which are not ready for release, have not been fully
-tested, but might still be useful to certain developers.
-By default its objects are not built unless the
-{\tt --enable-experimental} flag is given to the {\tt configure} script.
+
+The experimental module is a placeholder for modules which haven't yet
+been approved for release, but might eventually be incorporated into the
+library.
+By default the {\tt experimental} module is disabled and none of its
+modules are compiled or installed.
+It is enabled using the {\tt configure} flag {\tt --enable-experimental}
+and includes the internal header file
+{\tt include/liquid.experimental.h}.
 
 \subsection{{\tt fbasc} (filterbank audio synthesizer codec)}
 \label{module:experimental:fbasc}

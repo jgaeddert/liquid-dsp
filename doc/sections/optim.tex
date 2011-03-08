@@ -4,9 +4,11 @@
 
 \newpage
 \section{optim (optimization)}
+\label{module:optim}
 Newton-raphson, gradient, evolutionary algorithms, etc.
 
 \subsection{Gradient search}
+\label{module:optim:gradient_search}
 This module implements a gradient or ``steepest-descent'' search.
 Given a function $f$ which operates on a vector
 $\vec{x} = [x_0,x_1,\ldots,x_{N-1}]^T$ of $N$ parameters,
@@ -100,5 +102,23 @@ their default values:
 Here is an example of how the {\tt gradient\_search} is used:
 % gradient_search example
 \input{listings/gradient_search.example.c.tex}
+
+\subsection{{\tt quasinewton\_search} }
+\label{module:optim:quasinewton_search}
+% talking points
+%   * second-order gradient search
+%   * improved speed
+%   * higher complexity
+
+\subsection{{\tt ga\_search} genetic algorithm search}
+\label{module:optim:ga_search}
+% talking points
+%   * chromosome
+%   * evolutionary algorithms (briefly)
+%   * interface
+
+\subsubsection{{\tt chromosome}}
+\label{module:optim:ga_search:chromosome}
+
 
 
