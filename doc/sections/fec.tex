@@ -22,25 +22,9 @@ A few low-rate (and fairly low efficiency) codes are availble internally.
 %The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
 %relies on the {\tt fec} objects and {\tt crc32} functions.
 
-\subsection{{\tt checksum}}
-\label{module:fec:checksum}
-A checksum is a simple way to validate data received through un-reliable means
-(e.g. a noisy channel).
-A checksum is, in essence, a weak error detection code that simply counts the
-number of ones in a block of data (modulo 256).
-The limitation, however, is that multiple bit errors might result in a false
-positive validation of the corrupted data.
-Here is a simple example:
-%
-\input{listings/checksum.example.c.tex}
-%
-It is important to realize that a checksum does not correct any errors, but
-can only detect their presence.
-For a much much stronger error detection algorithm, use the cyclic redundancy
-check, below.
+\subsection{Cyclic Redundancy Check (Error Detection)}
+\label{module:fec:crc}
 
-\subsection{{\tt crc32} (32-bit cyclic redundancy check)}
-\label{module:fec:crc32}
 A cyclic redundancy check (CRC) is, in essence, a strong algebraic error
 detection code that computes a key on a block of data using base-2
 polynomials.
@@ -48,7 +32,49 @@ While it is a strong error-detection method, a CRC is not an error-correction
 code.
 Here is a simple example:
 %
-\input{listings/crc32.example.c.tex}
+\input{listings/crc.example.c.tex}
+%
+Also available for error detection in \liquid\ is a checkssum.
+A checksum is a simple way to validate data received through un-reliable means
+(e.g. a noisy channel).
+A checksum is, in essence, a weak error detection code that simply counts the
+number of ones in a block of data (modulo 256).
+The limitation, however, is that multiple bit errors might result in a false
+positive validation of the corrupted data.
+The checksum is not a strong an error detection scheme as the cyclic
+redundany check.
+%
+Table~\ref{tab:crc:codecs} lists the available codecs and gives a brief
+description for each.
+%
+% ------------ TABLE: CRC CODING SCHEMES ------------
+\begin{table*}
+\caption{Error-detection codecs available in \liquid}
+\label{tab:crc:codecs}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}ll}
+\toprule
+{\it scheme} &
+{\it size (bits)} &
+{\it description}\\\otoprule
+%
+{\tt CRC\_UNKNOWN}      & -     & unknown/unsupported scheme\\
+{\tt CRC\_NONE}         & 0     & no error-detection\\
+{\tt CRC\_CHECKSUM}     & 8     & basic checksum\\
+{\tt CRC\_8}            & 8     &  8-bit CRC, poly={\tt 0x07}\\
+{\tt CRC\_16}           & 16    & 16-bit CRC, poly={\tt 0x8005}\\
+{\tt CRC\_24}           & 24    & 24-bit CRC, poly={\tt 0x5D6DCB}\\
+{\tt CRC\_32}           & 32    & 32-bit CRC, poly={\tt 0x04C11DB7}\\\bottomrule
+
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+%
+For a detailed example program, see {\tt examples/crc\_example.c} in the
+main \liquid\ directory.
+
 
 \subsection{{\tt h74}, {\tt h84}, {\tt h128} (Hamming codes)}
 \label{module:fec:hamming}
@@ -188,8 +214,8 @@ encodes them into an output block of coded data bytes.
     Depending upon the error-correction capabilities of the scheme, the
     resulting data might have been corrupted, and therefore it is recommended
     to use either a
-    checksum (section~\ref{module:fec:checksum} or a
-    cyclic redundancy check (section~\ref{module:fec:crc32})
+    checksum or a
+    cyclic redundancy check (section~\ref{module:fec:crc})
     to validate data integrity.
 \item[{\tt fec\_get\_enc\_msg\_length()}]
     returns the length of the encoded message in bytes.

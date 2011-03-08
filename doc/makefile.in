@@ -69,8 +69,7 @@ GRAPHICS = 					\
 # Listings used in this document
 LISTINGS = 					\
 	listings/agc.example.c			\
-	listings/checksum.example.c		\
-	listings/crc32.example.c		\
+	listings/crc.example.c			\
 	listings/dotprod_rrrf.example.c		\
 	listings/eqlms_cccf.example.c		\
 	listings/fec.example.c			\

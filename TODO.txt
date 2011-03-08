@@ -4,6 +4,8 @@ To do:
   * move mdct-related objects to experimental
   * move 'ofdmoqam' objects to experimental
   * move 'ofdmframe64' objects to experimental
+  * complete and clean up quantizer implementation
+  * complete and clean up channel implementation
 
 Finished:
 

@@ -202,11 +202,11 @@ LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
 #define CRC8_POLY 0x07
 unsigned char reverse_byte(unsigned char _x);
 
-#define CRC24_POLY 0x5D6DCB
-unsigned int reverse_uint24(unsigned int _x);
-
 #define CRC16_POLY 0x8005
 unsigned int reverse_uint16(unsigned int _x);
+
+#define CRC24_POLY 0x5D6DCB
+unsigned int reverse_uint24(unsigned int _x);
 
 #define CRC32_POLY 0x04C11DB7
 unsigned int reverse_uint32(unsigned int _x);

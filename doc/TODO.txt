@@ -3,7 +3,6 @@ documentation TODO list
 To do:
   * add glossary of terms (e.g. SNR, PHY, RF)
   * complete 'experimental' migration
-  * add description of CRC other than CRC_32
   * add description of bpacketgen and bpacketsync objects
   * add troubleshooting in "installation" section
   * add description for 'channel' module
@@ -16,4 +15,5 @@ Finished:
   * add section to describe framesyncstats_s
   * add section headings to top of page
   * disable squelch by default
+  * add description of CRC other than CRC_32
 
