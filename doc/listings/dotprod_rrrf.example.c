@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // create input arrays
     float x[] = {1, 2, 3, 4, 5};
     float v[] = {1, 1, 1, 1, 1};

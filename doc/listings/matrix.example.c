@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // designate X as a 4 x 4 matrix
     float X[16] = {
        0.84382,  -2.38304,   1.43061,  -1.66604,

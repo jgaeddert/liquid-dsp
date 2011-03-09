@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     unsigned int M=4;       // interpolation factor
     unsigned int h_len;     // interpolation filter length
 

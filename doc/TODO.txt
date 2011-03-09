@@ -9,11 +9,11 @@ To do:
   * add description for 'multicarrier' module
   * add description for 'quantization' module
   * add index
-  * add script to compile listings to test validity
 
 Finished:
   * add section to describe framesyncstats_s
   * add section headings to top of page
   * disable squelch by default
   * add description of CRC other than CRC_32
+  * add script to compile listings to test validity
 

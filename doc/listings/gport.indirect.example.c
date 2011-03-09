@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // create the port
     //     size :   1024
     //     type :   int

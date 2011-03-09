@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-//...
-{
+
+int main() {
     // set up the options
     unsigned int n=16;                  // uncoded data length
     crc_scheme crc  = CRC_32;           // validity check

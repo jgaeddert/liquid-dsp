@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // options
     unsigned int h_len = 13;    // filter semi-length (filter delay)
     float r=0.9f;               // resampling rate (output/input)

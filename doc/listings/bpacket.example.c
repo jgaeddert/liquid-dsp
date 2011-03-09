@@ -29,6 +29,7 @@ int main() {
     bpacketsync ps = bpacketsync_create(0, callback, NULL);
 
     // initialize original data message
+    unsigned int i;
     for (i=0; i<n; i++) msg_org[i] = rand() % 256;
 
     // encode packet

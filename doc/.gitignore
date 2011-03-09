@@ -37,6 +37,8 @@ src/nco_pll
 src/sequence_ccodes
 src/sequence_msequence
 
+scripts/listings_check
+
 # ignore all object files
 *.o
 

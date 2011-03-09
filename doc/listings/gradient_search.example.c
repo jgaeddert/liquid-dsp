@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     unsigned int num_parameters = 8;    // search dimensionality
     unsigned int num_iterations = 100;  // number of iterations to run
     float target_utility = 0.01f;       // target utility

@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // initialize array for writing
     float v[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 

@@ -1,7 +1,6 @@
-#include <complex.h>
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // options
     unsigned int order=4;   // filter order
     float fc=0.1f;          // cutoff frequency
@@ -14,7 +13,7 @@
 
     // CREATE filter object (and print to stdout)
     iirfilt_crcf myfilter;
-    myfilter = iirfilt_crcf_create_prorotype(ftype,
+    myfilter = iirfilt_crcf_create_prototype(ftype,
                                              btype,
                                              format,
                                              order,

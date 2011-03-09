@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // options
     unsigned int n=32;          // number of training symbols
     unsigned int p=10;          // equalizer order

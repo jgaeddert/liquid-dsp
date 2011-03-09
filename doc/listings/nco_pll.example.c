@@ -1,13 +1,13 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // create nco objects
     nco_crcf nco_tx = nco_crcf_create(LIQUID_VCO);    // transmit NCO
     nco_crcf nco_rx = nco_crcf_create(LIQUID_VCO);    // receive NCO
 
     // ... initialize objects ...
 
-    float * x;
+    float complex * x;
     unsigned int i;
     // loop as necessary
     {

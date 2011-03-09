@@ -1,5 +1,6 @@
-// ...
-{
+#include <liquid/liquid.h>
+
+int main() {
     unsigned int n=55;  // filter length
     liquid_firdespm_btype btype = LIQUID_FIRDESPM_BANDPASS;
     unsigned int num_bands = 4;

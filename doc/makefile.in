@@ -26,7 +26,8 @@
 #    all                 :   liquid.pdf document
 #    clean               :   clean .tex files (.aux, .log, etc.)
 #    figures             :   create all auto-generated figures
-#    listings            :   create all auto-generated listings
+#    listings            :   create all auto-generated listings (.tex)
+#    listings-check      :   compile all the listings to ensure code is correct
 #
 #    mostlyclean         :   full clean of all documentation (figures, listings, libs, etc.)
 #    clean-figures       :   clean all figures and generating files
@@ -67,7 +68,7 @@ GRAPHICS = 					\
 	graphics/liquid_splatter_04.png		\
 
 # Listings used in this document
-LISTINGS = 					\
+LISTINGS_C = 					\
 	listings/agc.example.c			\
 	listings/bpacket.example.c		\
 	listings/crc.example.c			\
@@ -86,7 +87,6 @@ LISTINGS = 					\
 	listings/lifecycle.example.c		\
 	listings/matrix.example.c		\
 	listings/nco.c				\
-	listings/nco.cc				\
 	listings/nco_pll.example.c		\
 	listings/packetizer.example.c		\
 	listings/resamp_crcf.example.c		\
@@ -104,6 +104,10 @@ LISTINGS = 					\
 	tutorials/framing_basic_tutorial.c	\
 	tutorials/framing_intermediate_tutorial.c	\
 	tutorials/framing_tutorial.c		\
+
+# Listings used in this document
+LISTINGS_CC = 					\
+	listings/nco.cc				\
 
 # .tex inputs
 SECTIONS :=					\
@@ -156,6 +160,39 @@ libliquid.a : ../libliquid.a
 ##
 ## LISTINGS
 ##
+
+LISTINGS := $(LISTINGS_C) $(LISTINGS_CC)
+
+# 
+# listings-check
+#
+
+# c test program objects
+listings_ctests := $(patsubst %.c,%.c.o, $(LISTINGS_C))
+
+# simple script to generate temporary output c program file
+scripts/listings_check : % : %.c
+	$(CC) -o $@ $<
+
+# temporary c program
+listings_check_cprog := listings_check_cprog.c
+
+# compile the objects but don't link/run them
+$(listings_ctests) : %.c.o : %.c scripts/listings_check
+	./scripts/listings_check $< $(listings_check_cprog)
+	$(CC) -c -o $@ $(listings_check_cprog)
+	$(RM) $(listings_check_cprog)
+
+# main test: try to build the objects. If the code is incorrect
+# then then tests won't build and the 'check' will fail.
+listings-check : $(listings_ctests)
+
+# clean up listings-check files
+clean-listings-check :
+	$(RM) $(listings_check_cprog)
+	$(RM) $(listings_check_cprog).o
+	$(RM) listings/*.o
+	$(RM) scripts/listings_check
 
 # create listings targets (append '.tex' to each input)
 listings_texfiles = $(patsubst %,%.tex,$(LISTINGS))

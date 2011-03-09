@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // initialize data array
     unsigned char data[4] = {0x25, 0x62, 0x3F, 0x52};
     crc_scheme scheme = CRC_32;

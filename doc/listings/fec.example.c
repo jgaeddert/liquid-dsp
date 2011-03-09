@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     unsigned int n = 64;            // decoded message length (bytes)
     fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
 

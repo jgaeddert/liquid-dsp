@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     agc_rrrf q = agc_rrrf_create();     // create object
     agc_rrrf_set_target(q,1.0f);        // set target energy level
     agc_rrrf_set_bandwidth(q,1e-3f);    // set loop filter bandwidth

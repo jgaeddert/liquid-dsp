@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     unsigned int m=5;           // filter semi-length
     float slsl=60.0f;           // filter sidelobe suppression level
 

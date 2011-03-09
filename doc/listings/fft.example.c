@@ -1,6 +1,6 @@
 #include <liquid/liquid.h>
-// ...
-{
+
+int main() {
     // options
     unsigned int n=16;  // input data size
     int flags=0;        // fft flags (typically ignored)
