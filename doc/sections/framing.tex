@@ -54,8 +54,50 @@ See also: fec module, {\tt examples/packetizer\_example.c}
 The {\tt bpacketgen} and {\tt bpacketsync} objects realize a pair of
 binary packet generator and synchronizer objects useful for streaming
 data applications.
+The {\tt bpacketgen} object generates packets by encapsulating data
+using a {\tt packetizer} object but adds a special bit sequence and
+header to the beginning of the packet.
+The bit sequence at the beginning of the packet allows the synchronizer
+to find it using a binary cross-correlator;
+the header includes information about how the packet is encoded,
+including the two levels of forward error-correction coding used, the
+validity check (e.g. cyclic redundancy check), and the length of the
+payload.
+The full packet is assembled according to
+Figure~\ref{fig:module:framing:bpacket_structure}.
 
-...
+At the receiver
+the {\tt bpacketsync} object correlates against the bit sequence looking
+for the beginning of the packet.
+Once a packet has been found the packet synchronizer decodes the header
+to determine how the payload is to be decoded.
+The payload is decoded and the resulting data is passed to a callback
+function.
+The synchronizer compensates for the situation where all the bits are
+flipped (e.g. coherent BPSK with a phase offset of $\pi$ radians).
+% talking points:
+%  * receiver does not need to be byte aligned
+%  * receiver automatically reconfigures itself to the packet
+%    parameters
+%  * packet length is adjustable
+%
+
+% 
+% FIGURE: bpacket structure
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/bpacket_structure}
+\caption{
+    Structure used for the {\tt bpacketgen} and
+    {\tt bpacketsync} objects.}
+\label{fig:module:framing:bpacket_structure}
+\end{figure}
+
+For a detailed example program, see
+{\tt examples/bpacketsync\_example.c} under the main \liquid\ project
+directory.
+
 
 \subsection{{\tt frame64}, {\tt flexframe} (basic framing structures)}
 \label{module:framing:frames}
@@ -122,7 +164,7 @@ Both frames consist of six basic parts:
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
 \caption{
     Framing structure used for the {\tt frame64} and {\tt flexframe}
-    structures.}
+    objects.}
 \label{fig:module:framing:structure}
 \end{figure}
 

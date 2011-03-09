@@ -1,0 +1,76 @@
+% 
+% figures.pgf/bpacket_structure.tex
+%
+% Author: Joseph D. Gaeddert
+%
+%   |    ___________________________
+%   |    |    |    |               |
+%   |    |    |    |               |
+%   |    | pn |head|    payload    |
+%   |    |    |    |               |
+%   |____|____|____|_______________|
+%        |    |    |               |
+%        ta   tb   tc              td
+%        
+
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc,arrows,positioning}
+\usetikzlibrary{decorations.pathmorphing} % random steps (noise floor)
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{tikzpicture}[scale=6];
+    \def\dt{0.6}        % default time step between sections
+    \def\ds{0.05}       % default signal level vertical line extensions
+    \def\height{0.3}    % peak height of signal
+
+    \def\ta{0.1}        % beginning of packet
+    \def\tb{\ta+\dt}
+    \def\tc{\tb+\dt}
+    \def\td{\tc+1.5}
+
+    %\draw[step=2.5mm,help lines] (0,0) grid (3,1);
+
+    % draw x-axis 
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (3,0);
+
+    % draw y-axis
+    %\draw[very thick, black,->] ( 0.0, -0.02) -- (0,1.2*\height)
+    %    node[left=7pt,rotate=90] {{\it signal level}};
+
+    % draw curve
+    \draw[very thick, black]
+        (0,         0) --
+        (\ta,       0) --
+        (\ta,       \height) --
+        (\td,       \height) --
+        (\td,       0);
+
+    % intersection lines
+    \draw[thin,gray] (\tb,  -\ds)   --  (\tb,   \height+\ds);
+    \draw[thin,gray] (\tc,  -\ds)   --  (\tc,   \height+\ds);
+
+    % add text labels
+    \draw (\ta, 0.8*\height) node[anchor=west] {\footnotesize\sf p/n sequence};
+    \draw (\tb, 0.8*\height) node[anchor=west] {\footnotesize\sf header};
+    \draw (\tc, 0.8*\height) node[anchor=west] {\footnotesize\sf payload};
+
+    \draw (\ta, 0.2*\height) node[anchor=west] {\tt\small 1010110110101100101...};
+    \draw (\tb, 0.2*\height) node[anchor=west] {\tt\small 0110001111010011001...};
+    \draw (\tc, 0.2*\height) node[anchor=west] {\tt\small 0110010110001100011100011001000110...};
+
+\end{tikzpicture}
+
+\end{document}
+

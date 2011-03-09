@@ -12,6 +12,7 @@
 local_pgffiles :=					\
 	figures.pgf/agc_squelch.pdf			\
 	figures.pgf/agc_transfer_function.pdf		\
+	figures.pgf/bpacket_structure.pdf		\
 	figures.pgf/window.pdf				\
 	figures.pgf/framing_structure.pdf		\
 	figures.pgf/nco_pll_diagram.pdf
