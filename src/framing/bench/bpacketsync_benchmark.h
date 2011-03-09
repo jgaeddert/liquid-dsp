@@ -80,10 +80,10 @@ void benchmark_bpacketsync(struct rusage *_start,
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         // push packet through synchronizer
-        bpacketsync_execute(ps, msg_enc[(4*i+0)%enc_msg_len]);
-        bpacketsync_execute(ps, msg_enc[(4*i+1)%enc_msg_len]);
-        bpacketsync_execute(ps, msg_enc[(4*i+2)%enc_msg_len]);
-        bpacketsync_execute(ps, msg_enc[(4*i+3)%enc_msg_len]);
+        bpacketsync_execute_byte(ps, msg_enc[(4*i+0)%enc_msg_len]);
+        bpacketsync_execute_byte(ps, msg_enc[(4*i+1)%enc_msg_len]);
+        bpacketsync_execute_byte(ps, msg_enc[(4*i+2)%enc_msg_len]);
+        bpacketsync_execute_byte(ps, msg_enc[(4*i+3)%enc_msg_len]);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;

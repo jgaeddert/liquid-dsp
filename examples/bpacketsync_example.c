@@ -155,11 +155,11 @@ int main(int argc, char*argv[]) {
 
     // push random bits through synchronizer
     for (i=0; i<100; i++)
-        bpacketsync_execute(ps, rand() & 0xff);
+        bpacketsync_execute_byte(ps, rand() & 0xff);
 
     // push packet through synchronizer
     for (i=0; i<k+1; i++)
-        bpacketsync_execute(ps, msg_rec[i]);
+        bpacketsync_execute_byte(ps, msg_rec[i]);
 
     // 
     // count errors

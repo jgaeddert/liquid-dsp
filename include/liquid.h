@@ -1844,11 +1844,32 @@ bpacketsync bpacketsync_create(unsigned int _m,
 void bpacketsync_destroy(bpacketsync _q);
 void bpacketsync_print(bpacketsync _q);
 void bpacketsync_reset(bpacketsync _q);
+
+// run synchronizer on array of input bytes
+//  _q      :   bpacketsync object
+//  _bytes  :   input data array [size: _n x 1]
+//  _n      :   input array size
 void bpacketsync_execute(bpacketsync _q,
-                         unsigned char _byte);
+                         unsigned char * _bytes,
+                         unsigned int _n);
+
+// run synchronizer on input byte
+//  _q      :   bpacketsync object
+//  _byte   :   input byte
+void bpacketsync_execute_byte(bpacketsync _q,
+                              unsigned char _byte);
+
+// run synchronizer on input symbol
+//  _q      :   bpacketsync object
+//  _sym    :   input symbol with _bps significant bits
+//  _bps    :   number of bits in input symbol
 void bpacketsync_execute_sym(bpacketsync _q,
                              unsigned char _sym,
                              unsigned int _bps);
+
+// execute one bit at a time
+void bpacketsync_execute_bit(bpacketsync _q,
+                             unsigned char _bit);
 
 
 

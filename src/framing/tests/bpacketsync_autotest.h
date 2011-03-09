@@ -78,8 +78,7 @@ void autotest_bpacketsync()
         bpacketgen_encode(pg,msg_org,msg_enc);
 
         // push packet through synchronizer
-        for (i=0; i<enc_msg_len; i++)
-            bpacketsync_execute(ps, msg_enc[i]);
+        bpacketsync_execute(ps, msg_enc, enc_msg_len);
     }
 
     // count number of packets

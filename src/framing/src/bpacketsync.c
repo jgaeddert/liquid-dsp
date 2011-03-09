@@ -195,11 +195,24 @@ void bpacketsync_reset(bpacketsync _q)
     _q->state = BPACKETSYNC_STATE_SEEKPN;
 }
 
+// run synchronizer on array of input bytes
+//  _q      :   bpacketsync object
+//  _bytes  :   input data array [size: _n x 1]
+//  _n      :   input array size
+void bpacketsync_execute(bpacketsync _q,
+                         unsigned char * _bytes,
+                         unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        bpacketsync_execute_byte(_q, _bytes[i]);
+}
+
 // run synchronizer on input byte
 //  _q      :   bpacketsync object
 //  _byte   :   input byte
-void bpacketsync_execute(bpacketsync _q,
-                         unsigned char _byte)
+void bpacketsync_execute_byte(bpacketsync _q,
+                              unsigned char _byte)
 {
     unsigned int j;
     for (j=0; j<8; j++) {
@@ -213,7 +226,7 @@ void bpacketsync_execute(bpacketsync _q,
 
 // run synchronizer on input symbol
 //  _q      :   bpacketsync object
-//  _sym    :   input symbol
+//  _sym    :   input symbol with _bps significant bits
 //  _bps    :   number of bits in input symbol
 void bpacketsync_execute_sym(bpacketsync _q,
                              unsigned char _sym,
@@ -233,20 +246,6 @@ void bpacketsync_execute_sym(bpacketsync _q,
         // run synchronizer on bit
         bpacketsync_execute_bit(_q, bit);
     }
-}
-
-// 
-// internal methods
-//
-
-void bpacketsync_assemble_pnsequence(bpacketsync _q)
-{
-    // reset m-sequence generator
-    msequence_reset(_q->ms);
-
-    unsigned int i;
-    for (i=0; i<8*_q->pnsequence_len; i++)
-        bsequence_push(_q->bpn, msequence_advance(_q->ms));
 }
 
 
@@ -272,6 +271,20 @@ void bpacketsync_execute_bit(bpacketsync _q,
         fprintf(stderr,"error: bpacketsync_execute(), invalid state\n");
         exit(1);
     }
+}
+
+// 
+// internal methods
+//
+
+void bpacketsync_assemble_pnsequence(bpacketsync _q)
+{
+    // reset m-sequence generator
+    msequence_reset(_q->ms);
+
+    unsigned int i;
+    for (i=0; i<8*_q->pnsequence_len; i++)
+        bsequence_push(_q->bpn, msequence_advance(_q->ms));
 }
 
 void bpacketsync_execute_seekpn(bpacketsync _q,
