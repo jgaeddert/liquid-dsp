@@ -65,7 +65,12 @@ struct bpacketgen_s {
 };
 
 
-//
+// create bpacketgen object
+//  _m              :   p/n sequence length (ignored)
+//  _dec_msg_len    :   decoded message length (original uncoded data)
+//  _crc            :   data validity check (e.g. cyclic redundancy check)
+//  _fec0           :   inner forward error-correction code scheme
+//  _fec1           :   outer forward error-correction code scheme
 bpacketgen bpacketgen_create(unsigned int _m,
                              unsigned int _dec_msg_len,
                              int _crc,
@@ -117,6 +122,61 @@ bpacketgen bpacketgen_create(unsigned int _m,
     return q;
 }
 
+// re-create bpacketgen object from old object
+//  _q              :   old bpacketgen object
+//  _m              :   p/n sequence length (ignored)
+//  _dec_msg_len    :   decoded message length (original uncoded data)
+//  _crc            :   data validity check (e.g. cyclic redundancy check)
+//  _fec0           :   inner forward error-correction code scheme
+//  _fec1           :   outer forward error-correction code scheme
+bpacketgen bpacketgen_recreate(bpacketgen _q,
+                               unsigned int _m,
+                               unsigned int _dec_msg_len,
+                               int _crc,
+                               int _fec0,
+                               int _fec1)
+{
+    // validate input
+
+    // re-create internal packetizer object
+    _q->dec_msg_len = _dec_msg_len;
+    _q->crc         = _crc;
+    _q->fec0        = _fec0;
+    _q->fec1        = _fec1;
+
+    // derived values
+    _q->enc_msg_len = packetizer_compute_enc_msg_len(_q->dec_msg_len,
+                                                     _q->crc,
+                                                     _q->fec0,
+                                                     _q->fec1);
+    _q->header_len = packetizer_compute_enc_msg_len(6, CRC_16, FEC_NONE, FEC_HAMMING128);
+    bpacketgen_compute_packet_len(_q);
+
+    // arrays
+    _q->g = 0;
+    _q->pnsequence_len = 8;
+    _q->pnsequence = (unsigned char*) realloc(_q->pnsequence, (_q->pnsequence_len)*sizeof(unsigned char*));
+
+    // re-create m-sequence generator
+    // TODO : configure sequence from generator polynomial
+    msequence_destroy(_q->ms);
+    _q->ms = msequence_create(6);
+
+    // re-create payload packet encoder
+    _q->p_payload = packetizer_recreate(_q->p_payload,
+                                        _q->dec_msg_len,
+                                        _q->crc,
+                                        _q->fec0,
+                                        _q->fec1);
+
+    // assemble semi-static framing structures
+    bpacketgen_assemble_header(_q);
+    bpacketgen_assemble_pnsequence(_q);
+
+    return _q;
+}
+
+// destroy bpacketgen object, freeing all internally-allocated memory
 void bpacketgen_destroy(bpacketgen _q)
 {
     // free arrays
@@ -131,6 +191,7 @@ void bpacketgen_destroy(bpacketgen _q)
     free(_q);
 }
 
+// print bpacketgen internals
 void bpacketgen_print(bpacketgen _q)
 {
     printf("bpacketgen:\n");
@@ -145,11 +206,13 @@ void bpacketgen_print(bpacketgen _q)
     printf("    efficiency  :   %8.2f %%\n", 100.0f*(float)_q->dec_msg_len/(float)_q->packet_len);
 }
 
+// return length of full packet
 unsigned int bpacketgen_get_packet_len(bpacketgen _q)
 {
     return _q->packet_len;
 }
 
+// encode packet
 void bpacketgen_encode(bpacketgen _q,
                        unsigned char * _msg_dec,
                        unsigned char * _packet)
@@ -180,6 +243,7 @@ void bpacketgen_encode(bpacketgen _q,
 // internal methods
 //
 
+// compute packet length
 void bpacketgen_compute_packet_len(bpacketgen _q)
 {
     _q->packet_len = _q->pnsequence_len +
@@ -187,6 +251,7 @@ void bpacketgen_compute_packet_len(bpacketgen _q)
                      _q->enc_msg_len;
 }
 
+// generate p/n sequence
 void bpacketgen_assemble_pnsequence(bpacketgen _q)
 {
     // reset m-sequence generator
@@ -204,6 +269,7 @@ void bpacketgen_assemble_pnsequence(bpacketgen _q)
     }
 }
 
+// assemble packet header
 void bpacketgen_assemble_header(bpacketgen _q)
 {
     _q->header_dec[0] = BPACKET_VERSION;

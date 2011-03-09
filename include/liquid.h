@@ -1785,21 +1785,54 @@ void flexframesync_set_csma_callbacks(flexframesync _fs,
 // bpacket : binary packet suitable for data streaming
 //
 
+// 
 // bpacket generator/encoder
+//
 typedef struct bpacketgen_s * bpacketgen;
+
+// create bpacketgen object
+//  _m              :   p/n sequence length (ignored)
+//  _dec_msg_len    :   decoded message length (original uncoded data)
+//  _crc            :   data validity check (e.g. cyclic redundancy check)
+//  _fec0           :   inner forward error-correction code scheme
+//  _fec1           :   outer forward error-correction code scheme
 bpacketgen bpacketgen_create(unsigned int _m,
                              unsigned int _dec_msg_len,
                              int _crc,
                              int _fec0,
                              int _fec1);
+
+// re-create bpacketgen object from old object
+//  _q              :   old bpacketgen object
+//  _m              :   p/n sequence length (ignored)
+//  _dec_msg_len    :   decoded message length (original uncoded data)
+//  _crc            :   data validity check (e.g. cyclic redundancy check)
+//  _fec0           :   inner forward error-correction code scheme
+//  _fec1           :   outer forward error-correction code scheme
+bpacketgen bpacketgen_recreate(bpacketgen _q,
+                               unsigned int _m,
+                               unsigned int _dec_msg_len,
+                               int _crc,
+                               int _fec0,
+                               int _fec1);
+
+// destroy bpacketgen object, freeing all internally-allocated memory
 void bpacketgen_destroy(bpacketgen _q);
+
+// print bpacketgen internals
 void bpacketgen_print(bpacketgen _q);
+
+// return length of full packet
 unsigned int bpacketgen_get_packet_len(bpacketgen _q);
+
+// encode packet
 void bpacketgen_encode(bpacketgen _q,
                        unsigned char * _msg_dec,
                        unsigned char * _packet);
 
+// 
 // bpacket synchronizer/decoder
+//
 typedef struct bpacketsync_s * bpacketsync;
 typedef int (*bpacketsync_callback)(unsigned char * _payload,
                                     int _payload_valid,
