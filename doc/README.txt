@@ -32,6 +32,7 @@ Documentation targets:
     liquid.pdf      :   main documentation file
     figures         :   automatically-generated figures
     listings        :   fancy code listings
+    listings-check  :   validate that code listings compile properly
     clean-figures   :   clean all auto-generated figures
     clean-listings  :   clean all auto-generated listings
     html            :   html documentation (under construction)

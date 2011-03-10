@@ -167,14 +167,15 @@ LISTINGS := $(LISTINGS_C) $(LISTINGS_CC)
 # listings-check
 #
 
-# c test program objects
-listings_ctests := $(patsubst %.c,%.c.o, $(LISTINGS_C))
+# C, C++ test program objects
+listings_ctests  := $(patsubst %.c, %.c.o,  $(LISTINGS_C))
+listings_cctests := $(patsubst %.cc,%.cc.o, $(LISTINGS_CC))
 
 # simple script to generate temporary output c program file
 scripts/listings_check : % : %.c
 	$(CC) -o $@ $<
 
-# temporary c program
+# temporary C program
 listings_check_cprog := listings_check_cprog.c
 
 # compile the objects but don't link/run them
@@ -183,9 +184,13 @@ $(listings_ctests) : %.c.o : %.c scripts/listings_check
 	$(CC) -c -o $@ $(listings_check_cprog)
 	$(RM) $(listings_check_cprog)
 
+# specific C++ programs
+$(listings_cctests) : %.cc.o : %.cc
+	$(CXX) -c -o $@ $<
+
 # main test: try to build the objects. If the code is incorrect
 # then then tests won't build and the 'check' will fail.
-listings-check : $(listings_ctests)
+listings-check : $(listings_ctests) $(listings_cctests)
 
 # clean up listings-check files
 clean-listings-check :
@@ -209,9 +214,11 @@ $(listings_texfiles) : %.tex : %
 # full listings target
 listings: highlight.sty $(listings_texfiles)
 
-clean-listings:
+# clean listings
+#$(RM) $(listings_texfiles)
+clean-listings: clean-listings-check
 	$(RM) highlight.sty
-	$(RM) $(listings_texfiles)
+	$(RM) listings/*.tex
 
 ##
 ## LIB
