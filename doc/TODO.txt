@@ -8,6 +8,7 @@ To do:
   * add description for 'channel' module
   * add description for 'multicarrier' module
   * add description for 'quantization' module
+  * finish description of 'optim' module (GA search, etc.)
   * add index
 
 Finished:
