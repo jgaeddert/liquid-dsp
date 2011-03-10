@@ -109,6 +109,42 @@ Here is an example of how the {\tt gradient\_search} is used:
 %   * second-order gradient search
 %   * improved speed
 %   * higher complexity
+The {\tt quasinewton\_search} object in \liquid\ implements the
+Quasi-Newton search algorithm which uses a second-order gradient
+estimation in its update equation.
+The Quasi-Newton method is usually faster than the gradient search due
+in part to its second-order (rather than a first-order) Taylor series
+expansion about the function of interest.
+%The process iterates over...
+The Hessian of a function $f(x_0,x_1,\ldots,x_{n-1})$ is defined as the
+square $n \times n$ matrix
+%
+\begin{equation}
+\label{eq:optim:hessian}
+    H(f) =
+    \begin{bmatrix}
+        \frac{\partial^2 f}{x_0^2}  &
+        \frac{\partial^2 f}{x_0x_1} &
+        \cdots &
+        \frac{\partial^2 f}{x_0x_{n-1}} \\
+        %
+        \frac{\partial^2 f}{x_1x_0} &
+        \frac{\partial^2 f}{x_1^2}  &
+        \cdots &
+        \frac{\partial^2 f}{x_1x_{n-1}} \\
+        %
+        \vdots &
+        \vdots &
+        \vdots &
+        \vdots \\
+        %
+        \frac{\partial^2 f}{x_{n-1}x_0} &
+        \frac{\partial^2 f}{x_{n-1}x_1}  &
+        \cdots &
+        \frac{\partial^2 f}{x_{n-1}^2}
+    \end{bmatrix}
+\end{equation}
+%
 
 \subsection{{\tt ga\_search} genetic algorithm search}
 \label{module:optim:ga_search}
