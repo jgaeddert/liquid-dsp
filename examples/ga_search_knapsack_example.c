@@ -5,10 +5,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <getopt.h>
 
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "ga_search_knapsack_example.m"
+
+// print usage/help message
+void usage()
+{
+    printf("Usage: ga_search_knapsack_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  n     : number of items available, default: 1000\n");
+    printf("  i     : number of iterations (generations) to run, default: 8000\n");
+    printf("  c     : knapsack capacity (maximum weight), default: 20\n");
+    printf("  p     : ga population size, default: 100\n");
+    printf("  m     : ga mutation rate, default: 0.4\n");
+}
 
 // knapsack object structure definition
 struct knapsack_s {
@@ -30,12 +43,44 @@ void  knapsack_print(struct knapsack_s * _bag,
 float knapsack_utility(void * _userdata,
                        chromosome _c);
 
-int main() {
+int main(int argc, char*argv[])
+{
     unsigned int num_items = 1000;      // number of items available
     unsigned int num_iterations = 8000; // number of iterations to run
     float capacity = 20.0f;             // total capacity of the knapsack
     unsigned int population_size = 100; // number of chromosomes in the population
     float mutation_rate = 0.40f;        // mutation rate of the GA
+
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhn:i:c:p:m:")) != EOF){
+        switch (dopt) {
+        case 'h':
+        case 'u': usage(); return 0;
+        case 'n': num_items = atoi(optarg);         break;
+        case 'i': num_iterations = atoi(optarg);    break;
+        case 'c': capacity = atof(optarg);          break;
+        case 'p': population_size = atoi(optarg);   break;
+        case 'm': mutation_rate = atof(optarg);     break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            exit(1);
+        }
+    }
+
+    // validate input
+    if (num_items == 0) {
+        fprintf(stderr,"error: %s, knapsack must have at least 1 item\n", argv[0]);
+        exit(1);
+    } else if (capacity <= 0.0f) {
+        fprintf(stderr,"error: %s, knapsack capacity must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (population_size <= 0) {
+        fprintf(stderr,"error: %s, ga population size must be greater than zero\n", argv[0]);
+        exit(1);
+    } else if (mutation_rate < 0.0f || mutation_rate > 1.0f) {
+        fprintf(stderr,"error: %s, ga mutation rate must be in [0,1]\n", argv[0]);
+        exit(1);
+    }
 
     unsigned int i;
 
@@ -52,7 +97,7 @@ int main() {
 
     // create prototype chromosome (1 bit/item)
     chromosome prototype = chromosome_create_basic(num_items, 1);
-    //chromosome_init_random(prototype);
+    //chromosome_init_random(prototype); // initialize to random
     chromosome_print(prototype);
 
     // print knapsack
@@ -149,10 +194,11 @@ float knapsack_utility(void * _userdata, chromosome _c)
         }
     }
 
-    // check for invalid solution
+    // check for invalid solution, returning distance metric
     if (total_weight > _bag->capacity)
         return _bag->capacity - total_weight;
 
+    // return total value of knapsack
     return total_value;
 }
 
