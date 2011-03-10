@@ -2996,13 +2996,13 @@ float gradient_search_execute(gradient_search _g,
 typedef struct quasinewton_search_s * quasinewton_search;
 
 // Create a simple quasinewton_search object; parameters are specified internally
-//   _obj               :   userdata
+//   _userdata          :   userdata
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length
 //   _get_utility       :   utility function pointer
 //   _minmax            :   direction (0:minimize, 1:maximize)
-quasinewton_search quasinewton_search_create(void* _obj,  // userdata
-                                             float* _v,
+quasinewton_search quasinewton_search_create(void * _userdata,
+                                             float * _v,
                                              unsigned int _num_parameters,
                                              utility_function _u,
                                              int _minmax);

@@ -1641,7 +1641,7 @@ struct quasinewton_search_s {
     // External utility function.
     utility_function get_utility;
     float utility;      // current utility
-    void* obj;          // object to optimize (user data)
+    void * userdata;    // userdata pointer passed to utility callback
     int minimize;       // minimize/maximimze utility (search direction)
 };
 
@@ -1651,7 +1651,7 @@ void quasinewton_search_compute_gradient(quasinewton_search _q);
 // compute the norm of the gradient(x_k)
 void quasinewton_search_normalize_gradient(quasinewton_search _q);
 
-// compute gradient(x_k)
+// compute Hessian (estimate)
 void quasinewton_search_compute_Hessian(quasinewton_search _q);
 
 // compute the updated inverse hessian matrix using the Broyden, Fletcher,

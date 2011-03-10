@@ -26,22 +26,21 @@
 
 #define LIQUID_QUASINEWTON_SEARCH_GAMMA_MIN 0.000001
 
-quasinewton_search quasinewton_search_create(
-    void* _obj,
-    float* _v,
-    unsigned int _num_parameters,
-    utility_function _u,
-    int _minmax)
+quasinewton_search quasinewton_search_create(void * _userdata,
+                                             float * _v,
+                                             unsigned int _num_parameters,
+                                             utility_function _u,
+                                             int _minmax)
 {
     quasinewton_search q = (quasinewton_search) malloc( sizeof(struct quasinewton_search_s) );
 
     // initialize public values
-    q->delta = 1e-6f;//_delta;
-    q->gamma = 1e-3f;//_gamma;
+    q->delta = 1e-6f;   //_delta;
+    q->gamma = 1e-3f;   //_gamma;
     q->dgamma = 0.99f;
     q->gamma_hat = q->gamma;
 
-    q->obj = _obj;
+    q->userdata = _userdata;
     q->v = _v;
     q->num_parameters = _num_parameters;
     q->get_utility = _u;
@@ -55,7 +54,7 @@ quasinewton_search quasinewton_search_create(
     q->gradient0= (float*) calloc( q->num_parameters, sizeof(float) );
     q->v_prime  = (float*) calloc( q->num_parameters, sizeof(float) );
     q->dv       = (float*) calloc( q->num_parameters, sizeof(float) );
-    q->utility = q->get_utility(q->obj, q->v, q->num_parameters);
+    q->utility = q->get_utility(q->userdata, q->v, q->num_parameters);
 
     quasinewton_search_reset(q);
 
@@ -96,7 +95,7 @@ void quasinewton_search_reset(quasinewton_search _q)
         }
     }
 
-    _q->utility = _q->get_utility(_q->obj, _q->v, _q->num_parameters);
+    _q->utility = _q->get_utility(_q->userdata, _q->v, _q->num_parameters);
 }
 
 void quasinewton_search_step(quasinewton_search _q)
@@ -140,7 +139,7 @@ void quasinewton_search_step(quasinewton_search _q)
     memmove(_q->gradient0, _q->gradient, (_q->num_parameters)*sizeof(float));
 
     // update utility
-    float u_prime = _q->get_utility(_q->obj, _q->v, _q->num_parameters);
+    float u_prime = _q->get_utility(_q->userdata, _q->v, _q->num_parameters);
 
     if (u_prime > _q->utility) {
         _q->gamma_hat *= 0.99f;
@@ -159,7 +158,7 @@ float quasinewton_search_run(quasinewton_search _q,
     do {
         i++;
         quasinewton_search_step(_q);
-        _q->utility = _q->get_utility(_q->obj, _q->v, _q->num_parameters);
+        _q->utility = _q->get_utility(_q->userdata, _q->v, _q->num_parameters);
 
     } while (
         optim_threshold_switch(_q->utility, _target_utility, _q->minimize) &&
@@ -183,7 +182,7 @@ void quasinewton_search_compute_gradient(quasinewton_search _q)
 
     for (i=0; i<_q->num_parameters; i++) {
         _q->v_prime[i] += _q->delta;
-        f_prime = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+        f_prime = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
         _q->v_prime[i] -= _q->delta;
         _q->gradient[i] = (f_prime - _q->utility) / _q->delta;
     }
@@ -224,13 +223,13 @@ void quasinewton_search_compute_Hessian(quasinewton_search _q)
             if (i==j) {
 
                 _q->v_prime[i] = _q->v[i] - delta;
-                f0 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                f0 = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
 
                 _q->v_prime[i] = _q->v[i];
-                f1 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                f1 = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
 
                 _q->v_prime[i] = _q->v[i] + delta;
-                f2 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                f2 = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
                 
                 m0 = (f1 - f0) / delta;
                 m1 = (f2 - f1) / delta;
@@ -241,22 +240,22 @@ void quasinewton_search_compute_Hessian(quasinewton_search _q)
                 // 0 0
                 _q->v_prime[i] = _q->v[i] - delta;
                 _q->v_prime[j] = _q->v[j] - delta;
-                f00 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                f00 = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
 
                 // 0 1
                 _q->v_prime[i] = _q->v[i] - delta;
                 _q->v_prime[j] = _q->v[j] + delta;
-                f01 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                f01 = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
 
                 // 1 0
                 _q->v_prime[i] = _q->v[i] + delta;
                 _q->v_prime[j] = _q->v[j] - delta;
-                f10 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                f10 = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
 
                 // 1 1
                 _q->v_prime[i] = _q->v[i] + delta;
                 _q->v_prime[j] = _q->v[j] + delta;
-                f11 = _q->get_utility(_q->obj, _q->v_prime, _q->num_parameters);
+                f11 = _q->get_utility(_q->userdata, _q->v_prime, _q->num_parameters);
 
                 // compute second partial derivative
                 m0 = (f01 - f00) / (2.0f*delta);
