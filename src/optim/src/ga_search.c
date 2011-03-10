@@ -144,6 +144,7 @@ void ga_search_print(ga_search _g)
 {
     printf("ga search :\n");
     printf("    num traits      :   %u\n", _g->num_parameters);
+    printf("    bits/chromosome :   %u\n", _g->bits_per_chromosome);
     printf("    population size :   %u\n", _g->population_size);
     printf("    selection size  :   %u\n", _g->selection_size);
     printf("    mutation rate   :   %12.8f\n", _g->mutation_rate);
@@ -309,11 +310,14 @@ void ga_search_mutate(ga_search _g)
 {
     unsigned int i;
     unsigned int index;
-    for (i=0; i<_g->population_size; i++) {
 
+    // mutate all but first (best) chromosome
+    //for (i=_g->selection_size; i<_g->population_size; i++) {
+    for (i=1; i<_g->population_size; i++) {
         // generate random number and mutate if within mutation_rate range
         unsigned int num_mutations = 0;
-        while ( randf() < _g->mutation_rate ) {
+        // force at least one mutation (otherwise nothing has changed)
+        while ( randf() < _g->mutation_rate || num_mutations == 0) {
             // generate random mutation index
             index = rand() % _g->bits_per_chromosome;
 

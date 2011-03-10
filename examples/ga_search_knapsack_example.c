@@ -17,7 +17,7 @@ void usage()
     printf("Usage: ga_search_knapsack_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : number of items available, default: 1000\n");
-    printf("  i     : number of iterations (generations) to run, default: 8000\n");
+    printf("  i     : number of iterations (generations) to run, default: 2000\n");
     printf("  c     : knapsack capacity (maximum weight), default: 20\n");
     printf("  p     : ga population size, default: 100\n");
     printf("  m     : ga mutation rate, default: 0.4\n");
@@ -46,7 +46,7 @@ float knapsack_utility(void * _userdata,
 int main(int argc, char*argv[])
 {
     unsigned int num_items = 1000;      // number of items available
-    unsigned int num_iterations = 8000; // number of iterations to run
+    unsigned int num_iterations = 2000; // number of iterations to run
     float capacity = 20.0f;             // total capacity of the knapsack
     unsigned int population_size = 100; // number of chromosomes in the population
     float mutation_rate = 0.40f;        // mutation rate of the GA
