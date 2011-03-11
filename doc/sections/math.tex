@@ -248,11 +248,14 @@ Expands the a polynomial based on its roots
 \]
 where $r_k=-a_k$ are the roots of $P_n(x)$.
 
-\subsubsection{{\tt poly\_expandroots2()} {\it not implemented}}
+\subsubsection{{\tt poly\_expandroots2()}}
 Expands the a polynomial as
 \[
     P_n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
 \]
+by first factoring out the $b_k$ terms,
+invoking {\tt poly\_expandroots()}, and
+multiplying the result by $\prod_k{b_k}$.
 
 \subsubsection{{\tt poly\_binomial\_expand()}}
 Expands the a polynomial as a binomial series
@@ -272,12 +275,12 @@ Expands the a polynomial as an alternating binomial series
 \subsubsection{{\tt poly\_mul()}}
 Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
 
-\subsubsection{{\tt poly\_diff()} {\it not yet implemented}}
-Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
-$P_n(x)$
-\[
-    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
-\]
+%\subsubsection{{\tt poly\_diff()} {\it not yet implemented}}
+%Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
+%$P_n(x)$
+%\[
+%    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
+%\]
 
 \subsubsection{{\tt poly\_findroots()}}
 Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method
