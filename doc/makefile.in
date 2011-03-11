@@ -177,14 +177,12 @@ listings_cctests := $(patsubst %.cc,%.cc.o, $(LISTINGS_CC))
 scripts/listings_check : % : %.c
 	$(CC) -o $@ $<
 
-# temporary C program
-listings_check_cprog := listings_check_cprog.c
-
 # compile the objects but don't link/run them
+#   temporary program file: listings/filename.prog.c
 $(listings_ctests) : %.c.o : %.c scripts/listings_check
-	./scripts/listings_check $< $(listings_check_cprog)
-	$(CC) -c -o $@ $(listings_check_cprog)
-	$(RM) $(listings_check_cprog)
+	./scripts/listings_check $< $*.prog.c
+	$(CC) -c -o $@ $*.prog.c
+	$(RM) $*.prog.c
 
 # specific C++ programs
 $(listings_cctests) : %.cc.o : %.cc
@@ -196,8 +194,7 @@ listings-check : $(listings_ctests) $(listings_cctests)
 
 # clean up listings-check files
 clean-listings-check :
-	$(RM) $(listings_check_cprog)
-	$(RM) $(listings_check_cprog).o
+	$(RM) listings/*.prog.c
 	$(RM) listings/*.o
 	$(RM) scripts/listings_check
 
