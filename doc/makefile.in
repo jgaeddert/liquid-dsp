@@ -89,6 +89,7 @@ LISTINGS_C = 					\
 	listings/nco.c				\
 	listings/nco_pll.example.c		\
 	listings/packetizer.example.c		\
+	listings/quasinewton_search.example.c	\
 	listings/resamp_crcf.example.c		\
 	listings/window.example.c		\
 						\
