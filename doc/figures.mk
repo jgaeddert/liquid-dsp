@@ -130,6 +130,7 @@ local_progs :=						\
 	src/filter_resamp_crcf				\
 	src/filter_kaiser				\
 	src/interleaver_scatterplot			\
+	src/math_poly_examples				\
 	src/math_window					\
 	src/modem.genplot				\
 	src/modem.gendata				\

@@ -161,7 +161,15 @@ array {\tt float c[]} has
 {\tt c[2]=1.3}.
 
 \subsubsection{{\tt poly\_val()}}
+\label{module:math:poly:polyf_val}
 Evaluates the polynomial $P_n(x)$ at $x_0$.
+For example:
+\begin{Verbatim}[fontsize=\small]
+    float p[3] = {0.2f, 1.0f, 0.4f};
+    float x = 1.3f;
+    float y = polyf_val(p,3,x);
+    >>> y = 2.17599988
+\end{Verbatim}
 
 \subsubsection{{\tt poly\_fit()}}
 Fits data to a polynomial of order $k-1$ from $n$ samples using the
@@ -183,6 +191,17 @@ where
         1   & x_{n-1}   & x_{n-1}^2 & \cdots    & x_{n-1}^{k}
     \end{bmatrix}
 \]
+%
+For example this script fits the 4 data samples to a linear
+(first-order, two coefficients) polynomial:
+%
+\begin{Verbatim}[fontsize=\small]
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
+    float p[2];
+    polyf_fit(x,y,4,p,2);
+    >>> p = {  0.89800072,   2.09299946}
+\end{Verbatim}
 
 
 \subsubsection{{\tt poly\_fit\_lagrange()}}
@@ -202,6 +221,22 @@ $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$, the interpolating polynomial is
             \right]
         }
 \]
+%
+For example this script fits the 4 data samples to a cubic
+(third-order, four coefficients) polynomial:
+%
+\begin{Verbatim}[fontsize=\small]
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
+    float p[4];
+    polyf_fit_lagrange(x,y,4,p);
+    >>> p = {  0.85000002,   2.43333268,  -0.26499939,   0.05166650}
+\end{Verbatim}
+%
+Notice that {\tt polyf\_fit\_lagrange(x,y,n,p)}
+is mathematically equivalent to {\tt polyf\_fit(x,y,n,p,n)},
+but is computed in fewer steps.
+%
 See also {\tt poly\_expandroots}.
 
 \subsubsection{{\tt poly\_interp\_lagrange()}}
