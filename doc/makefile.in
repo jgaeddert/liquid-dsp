@@ -209,7 +209,7 @@ highlight.sty:
 
 # use pygments (http://pygments.org) to generate fancy syntax-highlighted source
 
-$(listings_texfiles) : %.tex : %
+$(listings_texfiles) : %.tex : % %.o
 	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ $<
 
 # full listings target
