@@ -30,6 +30,7 @@ src/filter_interp_crcf
 src/filter_kaiser
 src/filter_resamp_crcf
 src/interleaver_scatterplot
+src/math_poly_examples
 src/math_window
 src/modem.gendata
 src/modem.genplot
