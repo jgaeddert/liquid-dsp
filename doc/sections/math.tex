@@ -139,6 +139,7 @@ main lobes, but have less stop-band attenuation.
 \end{figure}
 
 \subsection{Polynomials}
+\label{module:math:poly}
 A number of \liquid\ modules require polynomial manipulations, particularly
 those involving filter design where transfer functions are represented as the
 explicit ratio of polynomials in $z^{-1}$.
@@ -172,6 +173,7 @@ For example:
 \end{Verbatim}
 
 \subsubsection{{\tt poly\_fit()}}
+\label{module:math:poly:polyf_fit}
 Fits data to a polynomial of order $k-1$ from $n$ samples using the
 least-squares method.
 Data vectors
@@ -205,6 +207,7 @@ For example this script fits the 4 data samples to a linear
 
 
 \subsubsection{{\tt poly\_fit\_lagrange()}}
+\label{module:math:poly:polyf_fit_lagrange}
 Fits dataset of $n$ sample points to exact polynomial of order $n-1$ using
 Lagrange interpolation.
 Given input vectors
@@ -240,6 +243,7 @@ but is computed in fewer steps.
 See also {\tt poly\_expandroots}.
 
 \subsubsection{{\tt poly\_interp\_lagrange()}}
+\label{module:math:poly:polyf_interp_lagrange}
 Uses Lagrange polynomials to find the interpolant
 $(\dot{x},\dot{y})$ from a set of $n$ pairs
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
@@ -269,6 +273,7 @@ For example this script interpolates between the 4 data points
 See also {\tt poly\_fit\_lagrange()}.
 
 \subsubsection{{\tt poly\_fit\_lagrange\_barycentric()}}
+\label{module:math:poly:polyf_fit_lagrange_barycentric}
 Computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
 \[
     w_j =   \frac{1}{
@@ -287,6 +292,7 @@ with fewer computations.
 %
 
 \subsubsection{{\tt poly\_val\_lagrange\_barycentric()}}
+\label{module:math:poly:polyf_val_lagrange_barycentric}
 Computes the interpolant $(\dot{x},\dot{y})$ given the barycentric
 weights $\vec{w}$ (defined above) as
 \[
@@ -310,8 +316,13 @@ The function returns $\dot{y}$ if $\dot{x}$ is equal to any $x_j$.
     >>> y0 =   2.00687504
 \end{Verbatim}
 %
+Lagrange polynomials of the barycentric form are used heavily in
+\liquid's implementation of the Parks-McClellan algorithm
+({\tt firdespm}) for filter design
+(see Section~\ref{module:filter:firdespm}).
 
 \subsubsection{{\tt poly\_expandroots()}}
+\label{module:math:poly:polyf_expandroots}
 Expands the a polynomial based on its roots
 \[
     P_n(x) = \prod_{k=0}^{n-1}{(x+a_k)}
@@ -319,6 +330,7 @@ Expands the a polynomial based on its roots
 where $r_k=-a_k$ are the roots of $P_n(x)$.
 
 \subsubsection{{\tt poly\_expandroots2()}}
+\label{module:math:poly:polyf_expandroots2}
 Expands the a polynomial as
 \[
     P_n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
@@ -328,12 +340,14 @@ invoking {\tt poly\_expandroots()}, and
 multiplying the result by $\prod_k{b_k}$.
 
 \subsubsection{{\tt poly\_binomial\_expand()}}
+\label{module:math:poly:polyf_binomial_expand}
 Expands the a polynomial as a binomial series
 \[
     P_n(x) = (x+1)^n = \sum_{k=0}^{n}{ {n \choose k} x^k}
 \]
 
 \subsubsection{{\tt poly\_binomial\_expand\_pm()}}
+\label{module:math:poly:polyf_binomial_expand_pm}
 Expands the a polynomial as an alternating binomial series
 [NOTE: change terminology?]
 \[
@@ -343,6 +357,7 @@ Expands the a polynomial as an alternating binomial series
 \]
 
 \subsubsection{{\tt poly\_mul()}}
+\label{module:math:poly:polyf_mul}
 Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
 
 %\subsubsection{{\tt poly\_diff()} {\it not yet implemented}}
@@ -353,6 +368,7 @@ Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
 %\]
 
 \subsubsection{{\tt poly\_findroots()}}
+\label{module:math:poly:polyf_findroots}
 Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method
 [TODO : add reference].
 For an $n^{th}$-order polynomial $P_n(x)$ given by
