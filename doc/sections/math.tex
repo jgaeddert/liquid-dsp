@@ -259,7 +259,6 @@ $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
 For example this script interpolates between the 4 data points
 %
 \begin{Verbatim}[fontsize=\small]
-    printf("polyf_interp_lagrange_example:\n");
     float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
     float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
     float x0 = 0.5f;
@@ -276,7 +275,20 @@ Computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
                 \prod_{k \ne j}{\left(x_j - x_k\right)}
             }
 \]
-which can be used to compute the interpolant $(\dot{x},\dot{y})$ as
+which can be used to compute the interpolant $(\dot{x},\dot{y})$
+with fewer computations.
+%
+\begin{Verbatim}[fontsize=\small]
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float w[4];
+    polyf_fit_lagrange_barycentric(x,4,w);
+    >>> w = {  1.00000000,  -3.00000000,   3.00000000,  -1.00000000}
+\end{Verbatim}
+%
+
+\subsubsection{{\tt poly\_val\_lagrange\_barycentric()}}
+Computes the interpolant $(\dot{x},\dot{y})$ given the barycentric
+weights $\vec{w}$ (defined above) as
 \[
     \dot{y} =   \frac{
                     \sum\limits_{j=0}^{k-1}{ w_j y_j /(\dot{x}-x_j) }
@@ -287,6 +299,17 @@ which can be used to compute the interpolant $(\dot{x},\dot{y})$ as
 This is the preferred method for computing Lagrange interpolating polynomials,
 particularly if $\vec{x}$ is unchanging.
 The function returns $\dot{y}$ if $\dot{x}$ is equal to any $x_j$.
+%
+\begin{Verbatim}[fontsize=\small]
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
+    float w[4]; 
+    polyf_fit_lagrange_barycentric(x,4,w);
+    float x0 = 0.5f;
+    float y0 = polyf_val_lagrange_barycentric(x,y,w,x0,4);
+    >>> y0 =   2.00687504
+\end{Verbatim}
+%
 
 \subsubsection{{\tt poly\_expandroots()}}
 Expands the a polynomial based on its roots

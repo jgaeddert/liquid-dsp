@@ -10,6 +10,8 @@ void polyf_val_example();
 void polyf_fit_example();
 void polyf_fit_lagrange_example();
 void polyf_interp_lagrange_example();
+void polyf_fit_lagrange_barycentric_example();
+void polyf_val_lagrange_barycentric_example();
 
 int main() {
     // run examples
@@ -17,6 +19,8 @@ int main() {
     polyf_fit_example();
     polyf_fit_lagrange_example();
     polyf_interp_lagrange_example();
+    polyf_fit_lagrange_barycentric_example();
+    polyf_val_lagrange_barycentric_example();
 
     printf("done.\n");
     return 0;
@@ -57,5 +61,25 @@ void polyf_interp_lagrange_example()
     float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
     float x0 = 0.5f;
     float y0 = polyf_interp_lagrange(x,y,4,x0);
+    printf("    >>> y0 = %12.8f\n", y0);
+}
+
+void polyf_fit_lagrange_barycentric_example()
+{
+    printf("polyf_fit_lagrange_barycentric_example:\n");
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float w[4];
+    polyf_fit_lagrange_barycentric(x,4,w);
+    printf("    >>> w = {%12.8f, %12.8f, %12.8f, %12.8f}\n", w[0], w[1], w[2], w[3]);
+}
+void polyf_val_lagrange_barycentric_example()
+{
+    printf("polyf_val_lagrange_barycentric_example:\n");
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
+    float w[4];
+    polyf_fit_lagrange_barycentric(x,4,w);
+    float x0 = 0.5f;
+    float y0 = polyf_val_lagrange_barycentric(x,y,w,x0,4);
     printf("    >>> y0 = %12.8f\n", y0);
 }
