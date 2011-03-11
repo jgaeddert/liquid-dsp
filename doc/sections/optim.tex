@@ -184,8 +184,108 @@ Notice that its interface is virtually identical to that of
 %   * evolutionary algorithms (briefly)
 %   * interface
 
-\subsubsection{{\tt chromosome}}
+The {\tt ga\_search} object implements an evolutionary (genetic)
+algorithm search in \liquid.
+The search uses a binary string of traits called a {\em chromosome}
+(see Section~\ref{module:optim:ga_search:chromosome}, below)
+to represent a potential solution.
+A {\em population} of chromosomes is generated and their appropriate
+fitnesses are calculated.
+With each evolution of the population the best chromosomes are retained
+and the worst are discarded; this process is known as {\em selection}.
+The population is restored by computing new potential solutions by
+splitting traits of the better chromosomes into a new member
+({\em crossover}) as well as randomly flipping some of the bits in each
+chromosome ({\em mutation}).
+
+\subsubsection{{\tt chromosome}, solution representation}
 \label{module:optim:ga_search:chromosome}
+The {\tt chromosome} object in \liquid\ realizes a binary string of
+traits used in the {\tt ga\_search} object.
+A chromosome has a fixed number of traits as well as a fixed number of
+bits to represent each trait;
+however the number of bits representing each trait does not necessarily
+need to be the same for the chromosome.
+That is to say a chromosome may have a number of traits, each with a
+different number of bits representing them;
+however once a {\tt chromosome} object is created, the number of bits
+representing each trait is not allowed to be changed.
 
+Because of the many ways a chromosome can represent information \liquid\
+provides a number of methods for creating and initializing chromosomes.
+%
+\begin{description}
+\item[{\tt chromosome\_create()}]
+    creates a chromosome where the number of bits per each trait are
+    specified.
+\item[{\tt chromosome\_create\_basic()}]
+    creates a chromosome where the number of bits per trait is the same
+    for all traits.
+\item[{\tt chromosome\_create\_clone()}]
+    clones a chromosome from another one, including its representation
+    of traits, the number of bits per trait, as well as the values of
+    the traits themselves.
+\end{description}
+%
+Furthermore, the value of all the chromosome's traits may be set with
+the appropriate {\tt init()} method:
+%
+\begin{description}
+\item[{\tt chromosome\_init()}]
+    initializes a chromosome's discrete trait values to the input array.
+    The trait values are in the range $[0,2^{n_k}-1]$ where $n$
+    represents the number of bits in the $k^{th}$ trait.
+\item[{\tt chromosome\_initf()}]
+    initializes a chromosome's continuous trait values to the input
+    array.
+    The trait values are in the range $[0,1]$ and are represented by
+    floating-point values.
+    Because each trait has a discrete number of values (limited bit
+    resolution), the value of the trait is quantized to its nearest
+    representation.
+\item[{\tt chromosome\_init\_random()}]
+    initializes a chromosome's trait values to a random number.
+\end{description}
+%
+The values of specific traits can be retrieved using the {\tt value()}
+methods.
+They are useful for evaluating the fitness of the chromosome in the
+search algorithm's callback function.
+%
+\begin{description}
+\item[{\tt chromosome\_value()}]
+    returns the value of the $k^{th}$ trait (integer representation).
+\item[{\tt chromosome\_valuef()}]
+    returns the value of the $k^{th}$ trait (floating-point representation).
+\end{description}
+%
+Finally the methods for use in the {\tt ga\_search} algorithm are
+described:
+%
+\begin{description}
+\item[{\tt chromosome\_mutate()}]
+    flips the $k^{th}$ bit of the chromosome.
+\item[{\tt chromosome\_crossover()}]
+    copies the first $k$ bits of the first parent and the remaining bits
+    of the second parent to the child chromosome.
+\end{description}
+%
 
+\subsubsection{Example Code}
+\label{module:optim:ga_search:example}
+An example of the {\tt ga\_search} interface is given below:
+%
+\input{listings/ga_search.example.c.tex}
+%
+Evolutionary algorithms are well-suited for discrete optimization
+problems, particularly where a large number of parameters only hold a
+few values.
+The classic example is the knapsack problem (constrained, non-linear)
+in which the selection of items with different weights and values must
+be chosen to maximize the total value without exceeding a prescribed
+weight capacity.
+An example of using the {\tt ga\_search} object in \liquid\ to search
+over the solution space of the knapsack problem can be found in the
+{\tt examples} directory as
+{\tt examples/ga\_search\_knapsack\_example.c}.
 

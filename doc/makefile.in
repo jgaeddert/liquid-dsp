@@ -78,6 +78,7 @@ LISTINGS_C = 					\
 	listings/fft.example.c			\
 	listings/firdespm.example.c		\
 	listings/firhilb.example.c		\
+	listings/ga_search.example.c		\
 	listings/gradient_search.example.c	\
 	listings/gport.direct.example.c		\
 	listings/gport.indirect.example.c	\
