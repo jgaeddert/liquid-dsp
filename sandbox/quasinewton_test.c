@@ -41,6 +41,30 @@ void bfgs_update(unsigned int _n,
                  float * _H0,
                  float * _H1);
 
+// check the strong Wolfe conditions (c1=0.0001, c2=0.9)
+//  _alpha  :   step length
+//  _u0     :   f(x)
+//  _u1     :   f(x + alpha*p)
+//  _gamma0 :   p'*grad(x) (NOTE: should be less than zero)
+//  _gamma1 :   p'*grad(x + alpha*p)
+int check_wolfe_conditions(float _alpha,
+                           float _u0,
+                           float _u1,
+                           float _gamma0,
+                           float _gamma1);
+
+// check Wolfe conditions
+//  _x      :   input vector [size: _n x 1]
+//  _p      :   step direction vector [size: _n x 1]
+//  _n      :   dimension
+//  _alpha  :   test step length
+//  _u      :   utility function pointer
+int check_wolfe_conditions2(float * _x,
+                            float * _p,
+                            unsigned int _n,
+                            float _alpha,
+                            utility _u);
+
 int main() {
     // options
     unsigned int n = 4;                 // search dimension
@@ -112,6 +136,10 @@ int main() {
         }
         alpha = alpha_min;
         //printf("  alpha = %12.8f\n", alpha);
+        // test Wolfe conditions
+        if (check_wolfe_conditions2(x,p,n,alpha,myutility)==0)
+            printf("warning: Wolfe conditions failed\n");
+
 
         // compute step size
         for (i=0; i<n; i++) dx[i] = alpha*p[i];
@@ -311,5 +339,89 @@ void bfgs_update(unsigned int _n,
     matrixf_print(_H1,_n,_n);
 #endif
 
+}
+
+// check the strong Wolfe conditions (c1=0.0001, c2=0.9)
+//  _alpha  :   step length
+//  _u0     :   f(x)
+//  _u1     :   f(x + alpha*p)
+//  _gamma0 :   p'*grad(x) (NOTE: should be less than zero)
+//  _gamma1 :   p'*grad(x + alpha*p)
+int check_wolfe_conditions(float _alpha,
+                           float _u0,
+                           float _u1,
+                           float _gamma0,
+                           float _gamma1)
+{
+    // TODO : validate input
+    // _alpha > 0
+    // _gamma < 0
+
+    //
+    float c1 = 1e-4f;
+    float c2 = 0.9f;
+
+    // check first condition
+    int cond1 = (_u1 <= _u0 + c1*_alpha*_gamma0) ? 1 : 0;
+
+    // check second condition
+    int cond2 = ( fabsf(_gamma1) <= c2*fabsf(_gamma0) ) ? 1 : 0;
+
+#if 0
+    printf("(g0: %12.8f g1: %12.8f) [%c %c]",
+            _gamma0,
+            _gamma1,
+            cond1 ? '1' : '0',
+            cond2 ? '1' : '0');
+#endif
+
+    //
+    return cond1 && cond2;
+}
+
+// check Wolfe conditions
+//  _x      :   input vector [size: _n x 1]
+//  _p      :   step direction vector [size: _n x 1]
+//  _n      :   dimension
+//  _alpha  :   test step length
+//  _u      :   utility function pointer
+int check_wolfe_conditions2(float * _x,
+                            float * _p,
+                            unsigned int _n,
+                            float _alpha,
+                            utility _u)
+{
+    // allocate temporary arrays
+    float grad0[_n];
+    float grad1[_n];
+    float x_prime[_n];
+
+    // compute f(x)
+    float u0 = _u(_x,_n);
+
+    // compute gradient(f(x))
+    estimate_gradient(_x,_n,_u,grad0);
+
+    // compute f(x + alpha*p)
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        x_prime[i] = _x[i] + _alpha*_p[i];
+    float u1 = _u(x_prime, _n);
+
+    // compute gradient(f(x + alpha*p))
+    estimate_gradient(x_prime, _n, _u, grad1);
+
+    // compute p'*grad0
+    float gamma0 = 0.0f;
+    for (i=0; i<_n; i++)
+        gamma0 += _p[i] * grad0[i];
+
+    // compute p'*grad1
+    float gamma1 = 0.0f;
+    for (i=0; i<_n; i++)
+        gamma1 += _p[i] * grad1[i];
+
+    // test Wolfe conditions
+    return check_wolfe_conditions(_alpha, u0, u1, gamma0, gamma1);
 }
 
