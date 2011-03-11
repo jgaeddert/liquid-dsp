@@ -255,6 +255,18 @@ $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
             \right]
         }
 \]
+%
+For example this script interpolates between the 4 data points
+%
+\begin{Verbatim}[fontsize=\small]
+    printf("polyf_interp_lagrange_example:\n");
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
+    float x0 = 0.5f;
+    float y0 = polyf_interp_lagrange(x,y,4,x0);
+    >>> y0 =   2.00687504
+\end{Verbatim}
+%
 See also {\tt poly\_fit\_lagrange()}.
 
 \subsubsection{{\tt poly\_fit\_lagrange\_barycentric()}}

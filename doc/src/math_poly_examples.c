@@ -9,12 +9,14 @@
 void polyf_val_example();
 void polyf_fit_example();
 void polyf_fit_lagrange_example();
+void polyf_interp_lagrange_example();
 
 int main() {
     // run examples
     polyf_val_example();
     polyf_fit_example();
     polyf_fit_lagrange_example();
+    polyf_interp_lagrange_example();
 
     printf("done.\n");
     return 0;
@@ -40,10 +42,20 @@ void polyf_fit_example()
 }
 void polyf_fit_lagrange_example()
 {
-    printf("polyf_fit_example:\n");
+    printf("polyf_fit_lagrange_example:\n");
     float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
     float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
     float p[4];
     polyf_fit_lagrange(x,y,4,p);
     printf("    >>> p = {%12.8f, %12.8f, %12.8f, %12.8f}\n", p[0], p[1], p[2], p[3]);
+}
+
+void polyf_interp_lagrange_example()
+{
+    printf("polyf_interp_lagrange_example:\n");
+    float x[4] = {0.0f,  1.0f,  2.0f,  3.0f};
+    float y[4] = {0.85f, 3.07f, 5.07f, 7.16f};
+    float x0 = 0.5f;
+    float y0 = polyf_interp_lagrange(x,y,4,x0);
+    printf("    >>> y0 = %12.8f\n", y0);
 }
