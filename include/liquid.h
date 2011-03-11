@@ -2179,11 +2179,10 @@ void POLY(_fit_lagrange)(T * _x,                                \
                          T * _p);                               \
                                                                 \
 /* Lagrange polynomial interpolation */                         \
-void POLY(_interp_lagrange)(T * _x,                             \
+T POLY(_interp_lagrange)(T * _x,                                \
                             T * _y,                             \
                             unsigned int _n,                    \
-                            T   _x0,                            \
-                            T * _y0);                           \
+                            T   _x0);                           \
                                                                 \
 /* Lagrange polynomial fit (barycentric form) */                \
 void POLY(_fit_lagrange_barycentric)(T * _x,                    \

@@ -79,13 +79,12 @@ void POLY(_fit_lagrange)(T * _x,
 }
 
 // Lagrange polynomial interpolation
-void POLY(_interp_lagrange)(T * _x,
-                            T * _y,
-                            unsigned int _n,
-                            T   _x0,
-                            T * _y0)
+T POLY(_interp_lagrange)(T * _x,
+                         T * _y,
+                         unsigned int _n,
+                         T   _x0)
 {
-    *_y0 = 0.0;     // set output to zero
+    T y0 = 0.0;     // set output to zero
     T g;            // accumulator
     unsigned int i, j;
     for (i=0; i<_n; i++) {
@@ -95,8 +94,10 @@ void POLY(_interp_lagrange)(T * _x,
                 g *= (_x0 - _x[j])/(_x[i] - _x[j]);
             }
         }
-        *_y0 += _y[i] * g;
+        y0 += _y[i] * g;
     }
+
+    return y0;
 }
 // Lagrange polynomial fit (barycentric form)
 void POLY(_fit_lagrange_barycentric)(T * _x,
