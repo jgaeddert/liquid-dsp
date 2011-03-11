@@ -36,7 +36,7 @@ void POLY(_fit_lagrange)(T * _x,
 
     // clear polynomial coefficients array
     unsigned int i;
-    for (i=0; i<k; i++)
+    for (i=0; i<_n; i++)
         _p[i] = 0.;
 
     // compute roots, gain
@@ -66,7 +66,7 @@ void POLY(_fit_lagrange)(T * _x,
 #if 0
         // debug/print
         printf("****** %3u : **********************\n", i);
-        printf("  g : %12.8f\n", g);
+        printf("  g : %12.8f\n", crealf(g));
         printf("  roots:\n");
         for (j=0; j<k; j++)
             printf("  r[%3u] = %12.8f\n", j, crealf(roots[j]));
