@@ -361,22 +361,40 @@ $P_3(x) = (2x-1)(-3x+2)(-x-3)$:
 \end{Verbatim}
 %
 
-\subsubsection{{\tt poly\_binomial\_expand()}}
-\label{module:math:poly:polyf_binomial_expand}
+\subsubsection{{\tt poly\_expandbinomial()}}
+\label{module:math:poly:polyf_expandbinomial}
 Expands the a polynomial as a binomial series
 \[
     P_n(x) = (x+1)^n = \sum_{k=0}^{n}{ {n \choose k} x^k}
 \]
+For example the following script will compute
+$P_3(x) = (1+x)^3$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float p[4];
+    polyf_expandbinomial(3,p);
+    >>> p = {  1.00000000,   3.00000000,   3.00000000,   1.00000000}
+\end{Verbatim}
+%
 
-\subsubsection{{\tt poly\_binomial\_expand\_pm()}}
-\label{module:math:poly:polyf_binomial_expand_pm}
+\subsubsection{{\tt poly\_expandbinomial\_pm()}}
+\label{module:math:poly:polyf_expandbinomial_pm}
 Expands the a polynomial as an alternating binomial series
-[NOTE: change terminology?]
 \[
-    P_n(x) = (x+1)^j (x-1)^{n-j}
-           = \left( \sum_{k=0}^{j}  { {n \choose k}    x^k} \right)
-             \left( \sum_{k=0}^{n-j}{ {n \choose k} (-x)^k} \right)
+    P_n(x) = (x+1)^m (x-1)^{n-m}
+           = \left\{ \sum_{k=0}^{m}  { {n \choose k}    x^k} \right\}
+             \left\{ \sum_{k=0}^{n-m}{ {n \choose k} (-x)^k} \right\}
 \]
+For example the following script will compute
+$P_3(x) = (1+x)^2(1-x)$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float p[4];
+    polyf_expandbinomial_pm(2,1,p);
+    >>> p = {  1.00000000,   1.00000000,  -1.00000000,  -1.00000000}
+\end{Verbatim}
+%
+
 
 \subsubsection{{\tt poly\_mul()}}
 \label{module:math:poly:polyf_mul}
