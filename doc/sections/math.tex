@@ -16,7 +16,7 @@ and polynomial manipulation methods.
 transcendental functions not in the C standard library (gamma, besseli, etc.)
 
 
-\subsubsection{{\tt liquid\_lngammaf}}
+\subsubsection{{\tt liquid\_lngammaf()}}
 \label{module:math:transcendentals:lngamma}
     computes the natural log of the complete gamma function by splitting into
     discrete piecewise sections:
@@ -41,7 +41,7 @@ transcendental functions not in the C standard library (gamma, besseli, etc.)
 \]
 where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
 
-\subsubsection{{\tt liquid\_sincf}}
+\subsubsection{{\tt liquid\_sincf()}}
 \label{module:math:transcendentals:sinc}
     computes the $\sinc$ function,
 \[
@@ -54,7 +54,7 @@ terms of the series
     \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
 \]
 
-\subsubsection{{\tt liquid\_besseli0}}
+\subsubsection{{\tt liquid\_besseli0()}}
 \label{module:math:transcendentals:besseli0}
     approximates the modified Bessel function of the first kind (order 0)
     using piecewise polynomials,
@@ -80,13 +80,106 @@ An iterative method comes from Gross(1995),
     I_\nu(z) = \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
 \]
 
-\subsubsection{{\tt liquid\_nchoosek}}
+\subsubsection{{\tt liquid\_nchoosek()}}
 \label{module:math:transcendentals:nchoosek}
     computes the binomial coefficient ${n \choose k} = \frac{n!}{(n-k)!k!}$
 
-\subsubsection{{\tt liquid\_nextpow2}}
+\subsubsection{{\tt liquid\_nextpow2()}}
 \label{module:math:transcendentals:nextpow2}
     computes $\lceil \log_2(x) \rceil$
+
+
+
+\subsection{Complex Trigonometry}
+\label{module:math:complex}
+Complex math operations not necessarily defined in the standard C
+library.
+
+\subsubsection{{\tt liquid\_csqrtf()}}
+\label{module:math:complex:csqrtf}
+The function {\tt liquid\_csqrtf()}
+computes the complex square root of a number
+%
+\begin{equation}
+\label{eqn:math:csqrtf}
+    \sqrt{z} = \sqrt{\frac{r+a}{2}} +
+               j\text{sgn}\bigl(\Im\{z\}\bigr)
+               \sqrt{\frac{r-a}{2}}
+\end{equation}
+%
+where $r=|z|$, $a=\Re\{z\}$, and $\text{sgn}(t)=t/|t|$.
+
+\subsubsection{{\tt liquid\_cexpf()}}
+\label{module:math:complex:cexpf}
+The function {\tt liquid\_cexpf()}
+computes the complex exponential of a number
+%
+\begin{equation}
+\label{eqn:math:cexpf}
+    e^{z} = \exp\bigl\{a\bigr\}
+            \bigl(
+                \cos(b) + j\sin(b)
+            \bigr)
+\end{equation}
+%
+where $a=\Re\{z\}$ and $b=\Im\{z\}$.
+
+
+\subsubsection{{\tt liquid\_clogf()}}
+\label{module:math:complex:clogf}
+The function {\tt liquid\_clogf()}
+computes the complex natural logarithm of a number.
+%
+\begin{equation}
+\label{eqn:math:clogf}
+    \log(z) =   \log(|z|) + j\arg(z)
+\end{equation}
+%
+
+
+\subsubsection{{\tt liquid\_cacosf()}}
+\label{module:math:complex:cacosf}
+The function {\tt liquid\_cacosf()}
+computes the complex $\arccos$ of a number
+%
+\begin{equation}
+\label{eqn:math:cacosf}
+    \arccos(z) =
+        \begin{cases}
+        -j \log\bigl( z + \sqrt{z^2 - 1} \bigr) &
+            \text{sgn}\bigl(\Re\{z\}\bigr) =
+            \text{sgn}\bigl(\Im\{z\}\bigr) \\
+        -j \log\bigl( z - \sqrt{z^2 - 1} \bigr) & \text{otherwise}
+        \end{cases}
+\end{equation}
+%
+
+
+\subsubsection{{\tt liquid\_casinf()}}
+\label{module:math:complex:casinf}
+The function {\tt liquid\_casinf()}
+computes the complex $\arcsin$ of a number
+%
+\begin{equation}
+\label{eqn:math:casinf}
+    \arcsin(z) = \frac{\pi}{2} - \arccos(z)
+\end{equation}
+%
+
+
+
+\subsubsection{{\tt liquid\_catanf()}}
+\label{module:math:complex:catanf}
+The function {\tt liquid\_catanf()}
+computes the complex $\arctan$ of a number
+%
+\begin{equation}
+\label{eqn:math:catanf}
+    \arctan(z) =
+        \frac{j}{2}
+        \log\left( \frac{1-jz}{1+jz} \right)
+\end{equation}
+%
 
 
 \subsection{Windowing functions}
