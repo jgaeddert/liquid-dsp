@@ -101,6 +101,7 @@ LISTINGS_C = 					\
 	tutorials/fec_tutorial.c		\
 	tutorials/fec_init_tutorial.c		\
 	tutorials/fec_basic_tutorial.c		\
+	tutorials/fec_extra_tutorial.c		\
 						\
 	tutorials/framing_init_tutorial.c	\
 	tutorials/framing_basic_tutorial.c	\
@@ -282,6 +283,7 @@ tutorial_progs :=					\
 	tutorials/fec_tutorial				\
 	tutorials/fec_init_tutorial			\
 	tutorials/fec_basic_tutorial			\
+	tutorials/fec_extra_tutorial			\
 							\
 	tutorials/framing_init_tutorial			\
 	tutorials/framing_basic_tutorial		\
