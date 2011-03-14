@@ -71,9 +71,12 @@ void POLY(_expandbinomial)(T * _a,
 
 
 // expands the polynomial:
-//  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
+//  P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])
 // as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
+//  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n
+// where r[0],r[1],...,r[n-1] are the roots of P_n(x)
+//
+// c has order _n (array is length _n+1)
 void POLY(_expandroots)(T * _a,
                         unsigned int _n,
                         T * _c)
@@ -92,18 +95,19 @@ void POLY(_expandroots)(T * _a,
     // iterative polynomial multiplication
     for (i=0; i<_n; i++) {
         for (j=i+1; j>0; j--)
-            _c[j] = _a[i]*_c[j] + _c[j-1];
+            _c[j] = -_a[i]*_c[j] + _c[j-1];
 
-        _c[j] *= _a[i];
+        _c[j] *= -_a[i];
     }
 
     // assert(c[_n]==1.0f)
 }
 
 // expands the polynomial:
-//  (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])
+//  P_n(x) =
+//    (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])
 // as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
+//  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n
 //
 // c has order _n (array is length _n+1)
 void POLY(_expandroots2)(T * _a,
@@ -117,7 +121,7 @@ void POLY(_expandroots2)(T * _a,
     T g = 1.0;
     T r[_n];
     for (i=0; i<_n; i++) {
-        g *= _b[i];
+        g *= -_b[i];
         r[i] = _a[i] / _b[i];
     }
 

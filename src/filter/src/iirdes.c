@@ -292,23 +292,13 @@ void iirdes_dzpk2tff(float complex * _zd,
     unsigned int i;
     float complex q[_n+1];
 
-    // negate poles
-    float complex pdm[_n];
-    for (i=0; i<_n; i++)
-        pdm[i] = -_pd[i];
-
     // expand poles
-    polycf_expandroots(pdm,_n,q);
+    polycf_expandroots(_pd,_n,q);
     for (i=0; i<=_n; i++)
         _a[i] = crealf(q[_n-i]);
 
-    // negate zeros
-    float complex zdm[_n];
-    for (i=0; i<_n; i++)
-        zdm[i] = -_zd[i];
-
     // expand zeros
-    polycf_expandroots(zdm,_n,q);
+    polycf_expandroots(_zd, _n, q);
     for (i=0; i<=_n; i++)
         _b[i] = crealf(q[_n-i]*_k);
 }

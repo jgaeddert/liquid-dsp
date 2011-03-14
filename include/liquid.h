@@ -2203,15 +2203,23 @@ void POLY(_expandbinomial)(T * _a,                              \
                            unsigned int _n,                     \
                            T * _c);                             \
                                                                 \
-/* expands the polynomial: TODO: switch to (x-a[0])*...         \
- *  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])                      \
+/* expands the polynomial:                                      \
+ *  P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])             \
+ * as                                                           \
+ *  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n                     \
+ * where r[0],r[1],...,r[n-1] are the roots of P_n(x)           \
+ * NOTE: _c has order _n (array is length _n+1)                 \
  */                                                             \
 void POLY(_expandroots)(T * _a,                                 \
                         unsigned int _n,                        \
                         T * _c);                                \
                                                                 \
 /* expands the polynomial:                                      \
- *  (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])     \
+ *  P_n(x) =                                                    \
+ *    (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])   \
+ * as                                                           \
+ *  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n                     \
+ * NOTE: _c has order _n (array is length _n+1)                 \
  */                                                             \
 void POLY(_expandroots2)(T * _a,                                \
                          T * _b,                                \
