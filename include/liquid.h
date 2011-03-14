@@ -2197,11 +2197,23 @@ T POLY(_val_lagrange_barycentric)(T * _x,                       \
                                   unsigned int _n);             \
                                                                 \
 /* expands the polynomial:                                      \
- *  (1+x*a[0])*(1+x*a[1]) * ... * (1+x*a[n-1])                  \
+ *  P_n(x) = (1+x)^n                                            \
+ * as                                                           \
+ *  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n           \
+ * NOTE: _p has order n=m+k (array is length n+1)               \
  */                                                             \
-void POLY(_expandbinomial)(T * _a,                              \
-                           unsigned int _n,                     \
-                           T * _c);                             \
+void POLY(_expandbinomial)(unsigned int _n,                     \
+                           T * _p);                             \
+                                                                \
+/* expands the polynomial:                                      \
+ *  P_n(x) = (1+x)^m * (1-x)^k                                  \
+ * as                                                           \
+ *  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n           \
+ * NOTE: _p has order n=m+k (array is length n+1)               \
+ */                                                             \
+void POLY(_expandbinomial_pm)(unsigned int _m,                  \
+                              unsigned int _k,                  \
+                              T * _p);                          \
                                                                 \
 /* expands the polynomial:                                      \
  *  P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])             \
@@ -2254,7 +2266,7 @@ LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT,
                        liquid_float_complex,
                        liquid_float_complex)
 
-
+#if 0
 // expands the polynomial: (1+x)^n
 void poly_binomial_expand(unsigned int _n, int * _c);
 
@@ -2262,6 +2274,7 @@ void poly_binomial_expand(unsigned int _n, int * _c);
 void poly_binomial_expand_pm(unsigned int _n,
                              unsigned int _k,
                              int * _c);
+#endif
 
 
 //
