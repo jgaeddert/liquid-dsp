@@ -5,16 +5,41 @@ To do:
   * complete 'experimental' migration
   * add description of bpacketgen and bpacketsync objects
   * add troubleshooting in "installation" section
-  * add description for 'channel' module
-  * add description for 'multicarrier' module
-  * add description for 'quantization' module
-  * finish description of 'optim' module (GA search, etc.)
   * add index
 
-Finished:
-  * add section to describe framesyncstats_s
-  * add section headings to top of page
-  * disable squelch by default
-  * add description of CRC other than CRC_32
-  * add script to compile listings to test validity
+Sections to finish:
+  * background and history
+  * quick start guide
+  * data structures
+
+  * tutorial: PLL
+  * tutorial: FEC
+  * tutorial: framing
+  * tutorial: modem
+
+  * agc
+  * audio
+  * buffer
+  * channel
+  * equalization
+  * fec
+  * fft
+  * filter
+  * framing
+  * interleaver
+  * math
+  * matrix
+  * modem
+  * multicarrier
+  * nco
+  * optim
+  * quantization
+  * random
+  * sequence
+  * utility
+  * experimental
+
+  * installation guide
+  * building and depdendencies
+  * targets
 
