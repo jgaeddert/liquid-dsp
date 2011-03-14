@@ -71,6 +71,22 @@
 % from: http://www.faqs.org/faqs/tex-faq/ (see #44)
 \setlength{\doublerulesep}{\arrayrulewidth}
 
+%--------- CAPTION OPTIONS -------------------
+\usepackage[small,bf]{caption}
+\setcaptionwidth{15cm}
+\setlength{\belowcaptionskip}{0.5cm}
+
+
+% algorithms
+%   http://tug.ctan.org/tex-archive/macros/latex/contrib/algorithms/
+\usepackage{algorithm}
+\usepackage{algorithmic}
+% customized algorithm comments
+%\renewcommand{\algorithmiccomment}[1]{// #1}
+\definecolor{algorithm-comment-color}{rgb}{0.7,0.7,0.7}
+\renewcommand{\algorithmiccomment}[1]{\textcolor{algorithm-comment-color}{\sf \,\, (#1)}}
+
+
 %--------- NEW COMMANDS -------------------
 \newcommand{\NA}{\scriptsize{NA}}
 \newcommand{\E}{\scriptsize{E}}
@@ -88,10 +104,6 @@
 \newcommand{\liquid}{{\it liquid}}
 \newcommand{\liquidfpm}{{\it liquid-fpm}}
 
-%--------- CAPTION OPTIONS -------------------
-\usepackage[small,bf]{caption}
-\setcaptionwidth{15cm}
-\setlength{\belowcaptionskip}{0.5cm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

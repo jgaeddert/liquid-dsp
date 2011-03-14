@@ -10,11 +10,16 @@ loop and introduces the {\tt iirfilt} object.
 %
 You will need on your local machine:
 \begin{itemize}
-\item the \liquid\ DSP libraries built and installed
+\item the \liquid\ DSP libraries built and installed (see
+      Section~\ref{section:installation})
 \item a text editor such as {\tt vim} \cite{vim:web}
 \item a C compiler such as {\tt gcc} \cite{gcc:web}
 \item a terminal
 \end{itemize}
+%
+The problem statement and a brief theoretical description of
+phase-locked loops is given in the next section.
+A walk-through of the source code follows.
 
 \subsection{Problem Statement}
 \label{tutorial:pll:problem}
@@ -45,30 +50,30 @@ with an unknown initial carrier phase and frequency.
 The carrer holds no information-bearing symbols and is simply a tone
 whose frequency and phase represent the residual mismatch between the
 transmitter and receiver.
-The received signal $x$ at time step $i$ can be described as
+The received signal $x$ at time step $k$ can be described as
 %
 \begin{equation}
 \label{eqn:tutoral:pll:x}
-    x_i = \exp\bigl\{ j(\theta + i\omega) \bigr\}
+    x_k = \exp\bigl\{ j(\theta + k\omega) \bigr\}
 \end{equation}
 %
 where $j \triangleq \sqrt{-1}$ and
 $\theta$ and $\omega$ represent the unknown initial carrier phase and
 frequency offsets, respectively.
-The receiver generates a complex sinusoid with a phase $\phi_i$ as the
-phase difference between $x_i$ and $y_i$ and can be computed as
+The receiver generates a complex sinusoid with a phase $\phi_k$ as the
+phase difference between $x_k$ and $y_k$ and can be computed as
 %
 \begin{equation}
 \label{eqn:tutoral:pll:y}
-    y_i = \exp\bigl\{j\phi_i\bigr\}
+    y_k = \exp\bigl\{j\phi_k\bigr\}
 \end{equation}
 %
 %which tries to minimize the difference between the phase of the ...
-The phase error at time step $i$ is expressed as
+The phase error at time step $k$ is expressed as
 %
 \begin{equation}
 \label{eqn:tutoral:pll:dphi}
-    \Delta\phi_i = \arg\bigl\{ x_i y_i^* \bigr\}
+    \Delta\phi_k = \arg\bigl\{ x_k y_k^* \bigr\}
 \end{equation}
 %
 where $(^*)$ denotes complex conjugation.%
@@ -76,21 +81,21 @@ where $(^*)$ denotes complex conjugation.%
     Those who are savvy with communications techniques will
     appreciate that we are dealing in complex baseband and can easily
     compute the phase error estimate simply as the argument of the
-    product of $x_i$ and $y_i$.
+    product of $x_k$ and $y_k$.
     Conventional PLLs which have operated strictly in the real domain
-    multiply only the real components of $x_i$ and $y_i$ for a phase
+    multiply only the real components of $x_k$ and $y_k$ for a phase
     error estimate, assume that the loop filter rejects the
     high-frequency component, and make the approximation
     $\Delta\phi \approx \sin(\Delta\phi) = \sin(\phi-\hat{\phi})$
     for small phase errors.}
-The goal of the receiver is to control $\phi_i$
-(the phase of the output signal $y$ at time $i$)
+The goal of the receiver is to control $\phi_k$
+(the phase of the output signal $y$ at time $k$)
 to lock onto the input phase of $x$,
 hence the name ``phase-locked loop.''
-If the phase of the output sample $y_i$ is behind that of the input
+If the phase of the output sample $y_k$ is behind that of the input
 ($\Delta\phi > 0$) then $\phi$ needs to be advanced appropriately for
 the next time step.
-Conversely, if the phase of $y_i$ is ahead of the phase of $x_i$
+Conversely, if the phase of $y_k$ is ahead of the phase of $x_k$
 ($\Delta\phi < 0$) then the receiver need to retard $\phi$.
 
 Without going into a great amount of detail, this control is
@@ -117,28 +122,35 @@ For more detailed information on loop filter design the interested
 reader is referred to Section~\ref{module:nco:pll}.
 % TODO : reference iirdes_pll_...() as well?
 
-The estimated phase error $\Delta\phi$ is filtered using $H(z)$
-resulting in an output phase estimate $\phi_{i+1}$
-which is used for the subsequent output sample $y_{i+1}$ as
+The estimated phase error $\Delta\phi_k$ is filtered using $H(z)$
+resulting in an output phase estimate $\phi_{k+1}$
+which is used for the subsequent output sample $y_{k+1}$ as
 %
 \begin{equation}
 \label{eqn:tutoral:pll:y1}
-    y_{i+1} = \exp\bigl\{ j\phi_{i+1} \bigr\}
+    y_{k+1} = \exp\bigl\{ j\phi_{k+1} \bigr\}
 \end{equation}
 %
-%A summary of the algorithm is:
+% ALGORITHM : phase-locked loop
+\begin{algorithm}[H]
+\caption{Phase-locked Loop Control}
+\label{alg:tutorial:pll}
+%\algsetup{linenosize=\footnotesize}
+%\algsetup{linenodelimiter=:}
+\algsetup{indent=2em}
+\begin{algorithmic}[1]
+\STATE $x \leftarrow \{x_0,x_1,x_2,\ldots\}$    \COMMENT{input array}
+\STATE $\hat{\phi}_0 \leftarrow 0$          \COMMENT{initial output phase}
+
+\FOR{$k=0,\,1,\,2,\,\ldots$}
+    \STATE $y_k \leftarrow \exp\bigl\{ j\hat{\phi}_k \bigr\}$ \COMMENT{compute output sample}
+    \STATE $\Delta\phi_k \leftarrow \arg\bigl\{ x_k y_k^* \bigr\}$ \COMMENT{phase detector}
+    \STATE $\hat{\phi}_{k+1} \leftarrow \text{filter}(\Delta\phi_k)$ \COMMENT{update output phase estimate}
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
 %
-%parameters:
-%    $ x = \bigl\{x_0, x_1, x_2, \ldots \bigr\}$ (input array)
-%
-%initialization:
-%    $ \hat{\phi}_0 = 0 $ (initial output phase)
-%
-%computation: for $i=0, 1, 2, \ldots$
-%       $y_i = \exp\bigl\{ j*\hat{\phi}_i \bigr\}$
-%       $\Delta\phi_i = \arg\bigl\{ x_i y_i^* \bigr\}$ % phase detector
-%       $\hat{\phi}_{i+1} = \text{filter}(\Delta\phi_i)$
-%
+A summary of the algorithm is given in Algorithm~\ref{alg:tutorial:pll}.
 In the next section we will create a simple C program to simulate a
 phase-locked loop with \liquid.
 
@@ -195,7 +207,7 @@ and number of samples to run ({\tt unsigned int}).
 Next, initialize the complex input and output variables
 ({\tt x} and {\tt y}) to zero,
 as well as the state of the phase error ({\tt phase\_error})
-and output phase ({\tt phi\_hat} estimates.
+and output phase ({\tt phi\_hat}) estimates.
 Finally, set up the computational loop which generates the input and
 output samples, computes the phase error between them, and then prints
 the results to the screen.
@@ -254,27 +266,36 @@ to design the coefficients for the PLL's filter,
 specifically an ``active lag'' design.
 While the explanation in this section is fairly long, relax!
 We will only need to add about 15 lines of code to our program.
+If you are eager to edit your program you may skip to
+Section~\ref{tutorial:pll:completed}.
 
 Digital representations of infinite impulse response (IIR) filters have
 two sets of coefficients: feedback and feedforward.
 In the digital domain the transfer function is a ratio of the
-polynomials in $z^{-1}$ where the
-feedforward coefficients $\vec{b}$ are in the numerator and the
-feedback coefficients $\vec{a}$ are in the denominator.
+polynomials in $z^{-1}$ where the feedforward coefficients
+$\vec{b} = \{b_0, b_1, b_2, \ldots, b_{N-1}\}$
+are in the numerator and the feedback coefficients
+$\vec{a} = \{a_0, a_1, a_2, \ldots, a_{M-1}\}$
+are in the denominator.
 Specifically, the transfer function is
 %
 \begin{equation}
     H(z) =
         \frac{
-            b_0 + b_1 z^{-1} + b_2 z^{-2} + \ldots b_{N-1}z^{-(N-1)}
+            b_0 + b_1 z^{-1} + b_2 z^{-2} + \ldots + b_{N-1}z^{-(N-1)}
         }{
-            a_0 + a_1 z^{-1} + a_2 z^{-2} + \ldots a_{M-1}z^{-(M-1)}
+            a_0 + a_1 z^{-1} + a_2 z^{-2} + \ldots + a_{M-1}z^{-(M-1)}
         }
 \end{equation}
 %
 This transfer function means that the output of the filter is the linear
-combination of the $N$ previous filter inputs ($\vec{x}$)
-and $M-1$ previous filter outputs ($\vec{y}$), viz
+combination of the $N$ previous filter inputs
+%($\vec{x} = \{x_0, x_1, x_2, \ldots, x_{N-1}\}$)
+($\vec{x}$)
+and $M-1$ previous filter outputs
+%($\vec{y} = \{y_0, y_1, y_2, \ldots, y_{M-1}\}$),
+($\vec{y}$),
+viz
 %
 \begin{eqnarray}
 %    y_{k} =
@@ -332,7 +353,7 @@ The coefficients can be computed as follows:
     float wn = 0.1f;        // pll bandwidth
     float zeta = 0.707f;    // pll damping factor
     float K = 1000.0f;      // pll loop gain
-    float b[3];             // feedforward coefficients arra
+    float b[3];             // feedforward coefficients array
     float a[3];             // feedback coefficients array
     iirdes_pll_active_lag(wn, zeta, K, b, a);
 \end{Verbatim}
@@ -344,6 +365,7 @@ The life cycle of the IIR filter can be summarized as follows
     float sample_in = 0.0f;
     float sample_out;
     {
+        // repeat as necessary
         iirfilt_rrrf_execute(loopfilter, sample_in, &sample_out);
     }
     iirfilt_rrrf_destroy(loopfilter);
@@ -389,11 +411,12 @@ Running the program should produce an output similar to this:
 \end{Verbatim}
 %
 Notice that the phase error at the end of the output is very small.
-The initial error (at $i=0$) is 0.8 which is the value of the
+The initial error (at $k=0$) is 0.8 which is the value of the
 {\tt phase\_offset} parameter ot the beginning of the program.
-Notice also that the difference in phase of the last several samples is
-approximately 0.1, the initial frequency offset that was given in the
-beginning.
+Notice also that the difference in phase of the last several samples
+(i.e. the difference between the phase at steps {\tt 38} and {\tt 39})
+is approximately 0.1 which is the initial frequency offset that was
+given in the beginning.
 Play around with the input parameters, particularly the frequency offset
 and the phase-locked loop bandwidth.
 Increasing the PLL bandwidth ({\tt wn}) should reduce the resulting
