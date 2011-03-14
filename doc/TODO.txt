@@ -6,12 +6,9 @@ To do:
   * add description of bpacketgen and bpacketsync objects
   * add troubleshooting in "installation" section
   * add index
+  * spell-check entire document
 
 Sections to finish:
-  * background and history
-  * quick start guide
-  * data structures
-
   * tutorial: PLL
   * tutorial: FEC
   * tutorial: framing

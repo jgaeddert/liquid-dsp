@@ -14,7 +14,8 @@ All signal processing elements are designed to be flexible, scalable, and
 dynamic, including filters, filter design, oscillators, modems, synchronizers,
 and complex mathematical operations.
 The source for \liquid\ is written entirely in C so that it can be
-compiled quickly with a low memory footprint.
+compiled quickly with a low memory footprint
+and easily deployed on embedded platforms.
 
 \liquid\ was created by J. Gaeddert out of necessity to perform complex
 digital signal processing algorithms on embedded devices
@@ -22,16 +23,17 @@ without relying on %dealing with
 proprietary and otherwise cumbersome frameworks.
 This was a critical step in his PhD thesis to adapt DSP algorithms in
 cognitive dynamic-spectrum radios to optimally manage finite radio resources.
-The project was not intended to compete with many other well-known and
+The project is not intended to compete with many other well-known and
 excellent software radio packages freely available
 (such as {\em gnuradio} \cite{gnuradio:web} and {\em OSSIE}
 \cite{ossie:web})
 but was created as a lightweight library which can be used to augment
-these projects' capabilities.
+these projects' capabilities
+or be used in embedded platforms were minimizing overhead is critical.
 You will notice that \liquid\ lacks any sort of underlying framework
 %found in these packages
 for connecting signal processing ``blocks'' or ``components.''
-The difference here is that each application requires the signal
+The design was chosen because each application requires the signal
 processing block to be redesigned and recompiled for each application
 anyway so the notion of a reconfigurable framework is, for the most
 part, a flawed concept.
@@ -78,9 +80,9 @@ several places.
 The two most typical means of distribution are a compressed archive
 (a {\em tarball}) and cloning the source repository.
 Tarballs are generated with each stable release and are recommended for
-users not expecting bleeding edge development.
+users not requiring bleeding edge development.
 Users wanting the very latest version (in addition to every other
-version) should clone the \liquid\ {\tt git} repository.
+version) should clone the \liquid\ Git repository.
 A full description of installation procedures can be found in
 Section~\ref{section:installation}.
 
@@ -117,11 +119,11 @@ library.
     # make install
 \end{verbatim}
 
-\subsection{Building from the {\tt git} repository}
+\subsection{Building from the Git repository}
 \label{section:quickstart:build_from_git}
-Development of \liquid\ uses {\tt git} \cite{git:web}, a free and
+Development of \liquid\ uses Git \cite{git:web}, a free and
 open-source distributed version control system.
-The benefits of {\tt git} over many other version control systems are
+The benefits of Git over many other version control systems are
 numerous and the list is too long to give here;
 however one of the most important aspects is that each clone holds a
 copy of the entire repository with a complete history and record of each
@@ -158,7 +160,9 @@ and the benchmarking tool
     $ make bench
 \end{verbatim}
 %
-A comprehensive list of signal processing examples are given in the
+At the moment these tools require Python \cite{python:web} to generate a
+C header file and run.
+A comprehensive list of signal processing examples is given in the
 {\tt examples} directory.
 All of the example binaries can be built as
 \begin{verbatim}
@@ -214,13 +218,15 @@ A few points to note:
       memoryless) do not use objects.
       For example, {\tt design\_rrc\_filter()}
       (Section~\ref{module:filter:firdes:rrcos})
-      calculates the coefficients of a root raised-cosine filter, a processing
-      algorithm which does not need to maintain a state after its completion.
+      calculates the coefficients of a square-root raised-cosine filter,
+      a processing algorithm which does not need to maintain a state
+      after its completion.
 \item While the objects do retain internal memory, they typically operate on
       external user-defined arrays.
-      As such, it is strictly up to the user to manage his/her own memory.
-      Shared pointers are a great way to cause memory leaks, double-free bugs,
-      and severe headaches.
+      As such, it is strictly up to the user to manage his/her own
+      memory.
+      Shared pointers are a great way to cause memory leaks, double-free
+      bugs, and severe headaches.
       The bottom line is to remember that if you created a mess, it is
       your responsibility to clean it up.
 \item Certain objects will allocate memory internally, and consequently
@@ -231,63 +237,85 @@ A few points to note:
 %\item ...
 \end{enumerate}
 
+
 \subsection{Basic Lifecycle}
 \label{section:data_structures:lifecycle}
 
 Listed below is an example of the basic lifecycle of a
 {\tt iirfilt\_crcf} object (infinite impulse response filter with
 complex float inputs/outputs, and real float coefficients).
-
+The design parameters of the filter are specified in the {\em options}
+section near the top of the file.
+The {\tt iirfilt\_crcf} filter object is then created from the design
+using the {\tt iirfilt\_crcf\_create()} method.
+Input and output data arrays of type {\tt float complex} are allocated
+and a loop is run which initializes each input sample and computes a
+filter output using the {\tt iirfilt\_crcf\_execute()} method.
+Finally the filter object is destroyed using the
+{\tt iirfilt\_crcf\_destroy()} method,
+freeing all of the object's internally allocated memory.
+%
 \input{listings/lifecycle.example.c.tex}
+%
+A more comprehensive example is given in the example file
+{\tt examples/iirfilt\_crcf\_example.c},
+located under the main \liquid\ project directory.
 
 \subsection{Why C?}
 \label{section:data_structures:why_C}
 A commonly asked question is ``why C and not C++?''
 The answer is simple: {\em portability}.
-Our aim is to provide a lightweight DSP library for software-defined radio
-that does not rely on a myriad of dependencies.
-While C++ is a fine language for many purposes (and theoretically runs just as
-fast as C), it is not as portable to embedded platforms as C.
+The project's aim is to provide a lightweight DSP library for
+software-defined radio that does not rely on a myriad of dependencies.
+While C++ is a fine language for many projects
+(and theoretically runs just as fast as C),
+it is not as portable to embedded platforms as C and typically has a
+larger memory footprint.
 Furthermore, the majority of functions simply perform complex operations on a
 data sequence and do not require a high-level object-oriented programming
 interface.
-The importance in object-oriented programming is the techniques used, not the
-languages describing it.
+The significance of object-oriented programming is the techniques used,
+not the languages describing it.
 
 While a number of signal processing elements in \liquid\ use structures, these
 are simply to save the internal state of the object.
 For instance, a {\tt firfilt\_crcf} (finite impulse response filter) object
-is just a structure which contains--among other things--the filter taps
+is just a structure which contains|among other things|the filter taps
 (coefficients) and an input buffer.
 This simplifies the interface to the user; one only needs to ``push'' elements
 into the filter's internal buffer and ``execute'' the dot product when
 desired.
 This could also be accomplished with classes, a construct specific to C++ and
-other high-level object-oriented programming languages, however,
+other high-level object-oriented programming languages;
+however,
 for the most part, C++ polymorphic data types and abstract base classes are
 unnecessary for basic signal processing, and primarily just serve to reduce
-the code base of a project.
-Furthermore, while C++ templates can certainly be useful for library development,
+the code base of a project at the expense of increased compile time and
+memory overhead.
+Furthermore, while C++ templates can certainly be useful for library
+development
 their benefits are of limited use to signal processing and can be circumvented
-through the use of pre-processor macros at the gain of targeting more embedded
-processors.
+through the use of pre-processor macros at the gain of increasing the
+portability of the code.
 Under the hood, the C++ compiler's pre-processor expands templates and classes
 before actually compiling the source anyway, so in this sense they are
 equivalent to the second-order macros used in \liquid.
 
-The C programming language has a rich history in system programming--
-specifically targeting embedded applications--and is the basis behind many
-well-known projects including the linux kernel and the python programming
-language.
-Having said this, high-level frameworks and graphical interfaces are much more
-suited to be written in C++ and will beat an implementation in C any day,
-but lie far outside the scope of this project.
+The C programming language has a rich history in system
+programming|specifically targeting embedded applications|and is the
+basis behind many well-known projects including the linux
+kernel~\cite{linux-kernel:web}
+and the python programming language \cite{python:web}.
+Having said this, high-level frameworks and graphical interfaces are
+much more suited to be written in C++ and will beat an implementation in
+C any day but lie far outside the scope of this project.
 
 \subsection{Data Types}
 \label{section:data_structures:data_types}
 The majority of signal processing for SDR is performed at complex baseband.
 Complex numbers are handled in \liquid\ by defining data type
-{\tt liquid\_float\_complex} which is binary compatible with the standard
+{\tt liquid\_float\_complex} which is simply a place-holder for the
+standard
 C math type {\tt float complex} and C++ type {\tt std::complex<float>}.
 {\em There are no custom/proprietary data types in \liquid!}%
 \footnote{
@@ -347,6 +375,6 @@ typically condensed to demonstrate only the interface.
 The {\tt examples/} subdirectory includes more extensive demonstrations and
 numerous examples for all the signal processing components.
 Many of these examples write an output file which can be read by
-{\em octave}~\cite{octave:web} to display the results.
+{\em octave}~\cite{octave:web} to display the results graphically.
 For a brief description of each of these examples, see {\tt examples/README}.
 
