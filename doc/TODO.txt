@@ -9,9 +9,6 @@ To do:
   * spell-check entire document
 
 Sections to finish:
-  * tutorial: PLL
-  * tutorial: FEC
-  * tutorial: framing
   * tutorial: modem
 
   * agc
