@@ -325,19 +325,41 @@ Lagrange polynomials of the barycentric form are used heavily in
 \label{module:math:poly:polyf_expandroots}
 Expands the a polynomial based on its roots
 \[
-    P_n(x) = \prod_{k=0}^{n-1}{(x+a_k)}
+    P_n(x) = \prod_{k=0}^{n-1}{(x - r_k)}
 \]
-where $r_k=-a_k$ are the roots of $P_n(x)$.
+where $r_k$ are the roots of $P_n(x)$.
+For example, this script will expand the polynomial
+$P_3(x) = (x-1)(x+2)(x-3)$ which has roots
+$\{1,-2,3\}$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float roots[3] = {1.0f, -2.0f, 3.0f};
+    float p[4];
+    polyf_expandroots(roots,3,p);
+    >>> p = {  6.00000000,  -5.00000000,  -2.00000000,   1.00000000}
+\end{Verbatim}
+%
 
 \subsubsection{{\tt poly\_expandroots2()}}
 \label{module:math:poly:polyf_expandroots2}
 Expands the a polynomial as
 \[
-    P_n(x) = \prod_{k=0}^{n-1}{(b_kx+a_k)}
+    P_n(x) = \prod_{k=0}^{n-1}{(b_kx-a_k)}
 \]
 by first factoring out the $b_k$ terms,
 invoking {\tt poly\_expandroots()}, and
 multiplying the result by $\prod_k{b_k}$.
+For example, this script will expand the polynomial
+$P_3(x) = (2x-1)(-3x+2)(-x-3)$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float b[3] = { 2.0f, -3.0f, -1.0f};
+    float a[3] = { 1.0f, -2.0f,  3.0f};
+    float p[4];
+    polyf_expandroots2(b,a,3,p);
+    >>> p = {  6.00000000,  11.00000000, -19.00000000,   6.00000000}
+\end{Verbatim}
+%
 
 \subsubsection{{\tt poly\_binomial\_expand()}}
 \label{module:math:poly:polyf_binomial_expand}
