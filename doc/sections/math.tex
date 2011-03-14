@@ -5,14 +5,19 @@
 \newpage
 \section{math}
 \label{module:math}
-transcendental functions not in the C standard library (gamma, besseli, etc.)
-and polynomial operations
+The {\tt math} module implements several useful functions for digital
+signal processing including trascendental function not necessarily in
+the standard C library,
+windowing functions,
+and polynomial manipulation methods.
 
 \subsection{transcendental functions}
 \label{module:math:transcendentals}
+transcendental functions not in the C standard library (gamma, besseli, etc.)
 
-\begin{description}
-\item[{\tt liquid\_lngammaf}]
+
+\subsubsection{{\tt liquid\_lngammaf}}
+\label{module:math:transcendentals:lngamma}
     computes the natural log of the complete gamma function by splitting into
     discrete piecewise sections:
 \[
@@ -36,7 +41,8 @@ and polynomial operations
 \]
 where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
 
-\item[{\tt liquid\_sincf}]
+\subsubsection{{\tt liquid\_sincf}}
+\label{module:math:transcendentals:sinc}
     computes the $\sinc$ function,
 \[
     \sinc(z) = \frac{\sin(\pi z)}{\pi z}
@@ -48,7 +54,8 @@ terms of the series
     \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
 \]
 
-\item[{\tt liquid\_besseli0}]
+\subsubsection{{\tt liquid\_besseli0}}
+\label{module:math:transcendentals:besseli0}
     approximates the modified Bessel function of the first kind (order 0)
     using piecewise polynomials,
 \[
@@ -73,56 +80,85 @@ An iterative method comes from Gross(1995),
     I_\nu(z) = \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
 \]
 
-\item[{\tt liquid\_nchoosek()}]
+\subsubsection{{\tt liquid\_nchoosek}}
+\label{module:math:transcendentals:nchoosek}
     computes the binomial coefficient ${n \choose k} = \frac{n!}{(n-k)!k!}$
 
-\item[{\tt liquid\_nextpow2()}]
+\subsubsection{{\tt liquid\_nextpow2}}
+\label{module:math:transcendentals:nextpow2}
     computes $\lceil \log_2(x) \rceil$
 
-\end{description}
 
 \subsection{Windowing functions}
-Kaiser, Hamming, Hann, Blackman-harris.
+\label{module:math:window}
+This section describes the various windowing functions in the {\tt math}
+module.
+These windowing functions are useful for spectral approximation as they
+are compact in both the time and frequency domains.
 
-\begin{description}
-\item[{\tt hamming()}]
-    computes the Hamming window
-    \[
-        w(n) = 0.53836 - 0.46164 \cos\left( 2 \pi n / (N-1) \right)
-    \]
-\item[{\tt hann()}]
-    computes the Hann window
-    \[
-        w(n) = 0.5 - 0.5 \cos\left( 2 \pi n / (N-1) \right)
-    \]
-\item[{\tt blackmanharris()}]
+\subsubsection{Hamming}
+\label{module:math:window:hamming}
+The function {\tt hamming()} computes the Hamming window
+%
+\begin{equation}
+\label{eqn:math:window:hamming}
+    w(n) = 0.53836 - 0.46164 \cos\left( 2 \pi n / (N-1) \right)
+\end{equation}
+%
+
+\subsubsection{Hann}
+\label{module:math:window:hann}
+The function {\tt hann()} computes the Hann window
+%
+\begin{equation}
+\label{eqn:math:window:hann}
+    w(n) = 0.5 - 0.5 \cos\left( 2 \pi n / (N-1) \right)
+\end{equation}
+%
+
+\subsubsection{Blackman-harris}
+\label{module:math:window:blackmanharris}
+The function {\tt blackmanharris()}
     computes the Blackman-harris window
-    \[
-        w(n) = \sum_{k=0}^{3} { a_k \cos\left( 2 \pi k n / (N-1)\right) }
-    \]
-    where
-    $a_0 =  0.35875$,
-    $a_1 = -0.48829$,
-    $a_2 =  0.14128$, and
-    $a_3 = -0.01168$.
-\item[{\tt kaiser()}]
-    computes the Kaiser-$\beta$ window
-    \[
-        w(n,\beta) = \frac{
-            I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right)
-        }{
-            I_0\left(\pi\beta\right)
-        }
-    \]
-    where $I_\nu(z)$ is the modified Bessel function of the first kind of
-    order $\nu$, and $\beta$ is a parameter controlling the width of the
-    window and its stop-band attenuation.
-    In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0()} (see
-    section~\ref{module:math:transcendentals}).
-\item[{\tt liquid\_kbd()}]
-    computes the Kaiser-Bessel derived window.
-    The length of the window {\em must} be even.
-\end{description}
+%
+\begin{equation}
+\label{eqn:math:window:blackmanharris}
+    w(n) = \sum_{k=0}^{3} { a_k \cos\left( 2 \pi k n / (N-1)\right) }
+\end{equation}
+%
+where
+$a_0 =  0.35875$,
+$a_1 = -0.48829$,
+$a_2 =  0.14128$, and
+$a_3 = -0.01168$.
+
+\subsubsection{Kaiser}
+\label{module:math:window:kaiser}
+The function {\tt kaiser()} computes the Kaiser-$\beta$ window
+%
+\begin{equation}
+\label{eqn:math:window:kaiser}
+    w(n,\beta) = \frac{
+        I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right)
+    }{
+        I_0\left(\pi\beta\right)
+    }
+\end{equation}
+%
+where $I_\nu(z)$ is the modified Bessel function of the first kind of
+order $\nu$, and $\beta$ is a parameter controlling the width of the
+window and its stop-band attenuation.
+In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0()} (see
+section~\ref{module:math:transcendentals}).
+
+\subsubsection{Kaiser-Bessel derived}
+\label{module:math:window:kbd}
+The function {\tt liquid\_kbd\_window()}
+computes the Kaiser-Bessel derived window.
+The length of the window {\em must} be even.
+
+\subsubsection{Examples}
+\label{module:math:window:examples}
 
 Temporal and spectral examples of all these windows can be seen in
 figure~\ref{fig:module:math:window}.
@@ -147,10 +183,13 @@ This sub-module is not intended to be complete, but rather is required for
 the proper functionality of other modules.
 Like matrices, polynomials in \liquid\ do not use a particular data type, but
 are stored as memory arrays.
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:representation}
     P_n(x) = \sum_{k=0}^{n}{c_k x^k}
            = c_0 + c_1 x + c_2 x^2 + \cdots + c_n x^n
-\]
+\end{equation}
+%
 An $n^{th}$-order polynomial has $n+1$ coefficients ordered in memory in
 increasing degree.%
 \footnote{Note that this convention is reversed from that used in octave
@@ -180,11 +219,16 @@ Data vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$...
 Uses matrix algebra to solve system of equations...
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:syseq}
     \vec{p} = \left(\vec{X}^T\vec{X}\right)^{-1}\vec{X}^T\vec{y}
-\]
+\end{equation}
+%
 where
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:polyfit}
     \vec{X} = 
     \begin{bmatrix}
         1   & x_0       & x_0^2     & \cdots    & x_0^{k}     \\
@@ -192,7 +236,7 @@ where
         \\
         1   & x_{n-1}   & x_{n-1}^2 & \cdots    & x_{n-1}^{k}
     \end{bmatrix}
-\]
+\end{equation}
 %
 For example this script fits the 4 data samples to a linear
 (first-order, two coefficients) polynomial:
@@ -213,7 +257,9 @@ Lagrange interpolation.
 Given input vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$, the interpolating polynomial is
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:polyfit_lagrange}
     P_{n-1}(x) =
         \sum_{j=0}^{n-1} {
             \left[
@@ -223,7 +269,7 @@ $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$, the interpolating polynomial is
             }
             \right]
         }
-\]
+\end{equation}
 %
 For example this script fits the 4 data samples to a cubic
 (third-order, four coefficients) polynomial:
@@ -248,7 +294,9 @@ Uses Lagrange polynomials to find the interpolant
 $(\dot{x},\dot{y})$ from a set of $n$ pairs
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:polyinterp_lagrange}
     \dot{y} =
         \sum_{j=0}^{n-1} {
             \left[
@@ -258,7 +306,7 @@ $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
             }
             \right]
         }
-\]
+\end{equation}
 %
 For example this script interpolates between the 4 data points
 %
@@ -275,11 +323,14 @@ See also {\tt poly\_fit\_lagrange()}.
 \subsubsection{{\tt poly\_fit\_lagrange\_barycentric()}}
 \label{module:math:poly:polyf_fit_lagrange_barycentric}
 Computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:polyfit_lagrange_barycentric}
     w_j =   \frac{1}{
                 \prod_{k \ne j}{\left(x_j - x_k\right)}
             }
-\]
+\end{equation}
+%
 which can be used to compute the interpolant $(\dot{x},\dot{y})$
 with fewer computations.
 %
@@ -295,13 +346,16 @@ with fewer computations.
 \label{module:math:poly:polyf_val_lagrange_barycentric}
 Computes the interpolant $(\dot{x},\dot{y})$ given the barycentric
 weights $\vec{w}$ (defined above) as
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:polyval_lagrange_barycentric}
     \dot{y} =   \frac{
                     \sum\limits_{j=0}^{k-1}{ w_j y_j /(\dot{x}-x_j) }
                 } {
                     \sum\limits_{j=0}^{k-1}{     w_j /(\dot{x}-x_j) }
                 }
-\]
+\end{equation}
+%
 This is the preferred method for computing Lagrange interpolating polynomials,
 particularly if $\vec{x}$ is unchanging.
 The function returns $\dot{y}$ if $\dot{x}$ is equal to any $x_j$.
@@ -324,9 +378,12 @@ Lagrange polynomials of the barycentric form are used heavily in
 \subsubsection{{\tt poly\_expandroots()}}
 \label{module:math:poly:polyf_expandroots}
 Expands the a polynomial based on its roots
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:expandroots}
     P_n(x) = \prod_{k=0}^{n-1}{(x - r_k)}
-\]
+\end{equation}
+%
 where $r_k$ are the roots of $P_n(x)$.
 For example, this script will expand the polynomial
 $P_3(x) = (x-1)(x+2)(x-3)$ which has roots
@@ -343,9 +400,12 @@ $\{1,-2,3\}$:
 \subsubsection{{\tt poly\_expandroots2()}}
 \label{module:math:poly:polyf_expandroots2}
 Expands the a polynomial as
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:expandroots2}
     P_n(x) = \prod_{k=0}^{n-1}{(b_kx-a_k)}
-\]
+\end{equation}
+%
 by first factoring out the $b_k$ terms,
 invoking {\tt poly\_expandroots()}, and
 multiplying the result by $\prod_k{b_k}$.
@@ -364,9 +424,12 @@ $P_3(x) = (2x-1)(-3x+2)(-x-3)$:
 \subsubsection{{\tt poly\_expandbinomial()}}
 \label{module:math:poly:polyf_expandbinomial}
 Expands the a polynomial as a binomial series
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:expandbinomial}
     P_n(x) = (x+1)^n = \sum_{k=0}^{n}{ {n \choose k} x^k}
-\]
+\end{equation}
+%
 For example the following script will compute
 $P_3(x) = (1+x)^3$:
 %
@@ -380,11 +443,14 @@ $P_3(x) = (1+x)^3$:
 \subsubsection{{\tt poly\_expandbinomial\_pm()}}
 \label{module:math:poly:polyf_expandbinomial_pm}
 Expands the a polynomial as an alternating binomial series
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:expandbinomial_pm}
     P_n(x) = (x+1)^m (x-1)^{n-m}
            = \left\{ \sum_{k=0}^{m}  { {n \choose k}    x^k} \right\}
              \left\{ \sum_{k=0}^{n-m}{ {n \choose k} (-x)^k} \right\}
-\]
+\end{equation}
+%
 For example the following script will compute
 $P_3(x) = (1+x)^2(1-x)$:
 %
@@ -412,15 +478,21 @@ Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
 Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method
 [TODO : add reference].
 For an $n^{th}$-order polynomial $P_n(x)$ given by
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:roots}
     P_n(x) = \prod_{k=0}^{n-1}{(x-r_k)}
-\]
+\end{equation}
+%
 there exists at least one quadratic polynomial $p_{2}(x)=u + vx + x^2$ which
 exactly divides $P_{n}(x)$ and has two roots (possibly complex)
-\[
+%
+\begin{equation}
+\label{eqn:math:poly:complex_roots}
     r_0 = \frac{1}{2}\left(-v-\sqrt{v^2-4u}\right), \; \\
     r_1 = \frac{1}{2}\left(-v+\sqrt{v^2-4u}\right)
-\]
+\end{equation}
+%
 If indeed the roots $r_0$ and $r_1$ are complex, they are also complex
 conjugates.
 Bairstow's method uses Newtonian iterations to find a pair $u$ and $v$ which
