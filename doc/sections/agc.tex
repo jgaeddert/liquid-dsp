@@ -5,15 +5,18 @@
 \newpage
 \section{agc (automatic gain control)}
 \label{module:agc}
-Normalizing an incoming signal level before further processing is a critical
-step for many wireless communications protocols, particularly in digital
-modulation schemes which encode information in the signal amplitude (e.g. see
-{\tt MOD\_QAM}, section~\ref{module:modem:digital}).
+Normalizing the level of an incoming signal is a critical step in
+many wireless communications systems
+and is necessary before further processing can happen in the receiver.
+This is particularly necessary in digital
+modulation schemes which encode information in the signal amplitude
+(e.g. see {\tt MOD\_QAM} in Section~\ref{module:modem:digital}).
 Furthermore, loop filters for tracking carrier and symbol timing are highly
-sensitive to signal levels.
-For these reasons and more does gain control play a crucial role in SDR.
+sensitive to signal levels and require some degree of amplitude
+normalization.
+As such automatic gain control plays a crucial role in SDR.
 The ideal AGC has a transfer function as in
-figure~\ref{fig:module:agc:transfer_function}.
+Figure~\ref{fig:module:agc:transfer_function}.
 When the input signal level is low, the AGC is disabled and the output is a
 linear function of the input.
 When the input level reaches a lower threshold, $e_0$, the AGC becomes active
@@ -25,7 +28,7 @@ function of the input.
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=10cm]{figures.pgf/agc_transfer_function}
-\caption{Ideal AGC transfer function}
+\caption{Ideal AGC transfer function of input to output signal energy.}
 \label{fig:module:agc:transfer_function}
 \end{figure}
 
@@ -42,14 +45,16 @@ determines the update rate of the AGC.
 \subsection{Theory}
 \label{module:agc:theory}
 Given an input signal
-$\vec{x} = [\vec{x}_0, \vec{x}_1, \ldots, \vec{x}_{N-1}]$,
-its energy is computed as its $L_2$ norm over the entire sequence, viz.
-\[
+%$\vec{x} = [\vec{x}_0, \vec{x}_1, \ldots, \vec{x}_{N-1}]$,
+$\vec{x} = \{ x_0, x_1, x_2, \ldots, x_{N-1} \}$,
+its energy is computed as its $L_2$ norm over the entire sequence, viz
+\begin{equation}
+\label{eqn:agc:energy}
     E\{ \|\vec{x}\| \} = 
-        \sqrt{
-            \sum\limits_{k=0}^{N-1} {\|\vec{x}_k^2\|}
-        }
-\]
+        \left[
+            \sum\limits_{k=0}^{N-1} {\|x_k^2\|}
+        \right]^{1/2}
+\end{equation}
 %For a continuous signal, this is
 %\[
 %    E\{\| x(t) \|\} =
@@ -70,28 +75,34 @@ feedback sum of the previous estimate
 \label{eq:module:agc:ehat}
     \hat{e}_k =
         \Bigl[
-            \zeta\|\vec{x}_k\|^2 + (1-\zeta)\hat{e}_{k-1}^2
+            \zeta\|x_k\|^2 + (1-\zeta)\hat{e}_{k-1}^2
         \Bigr]^{1/2}
 \end{equation}
-where $\| \vec{x}_k \|^2$ is the instantaneous signal energy estimate at time
+where $\| x_k \|^2$ is the instantaneous signal energy estimate at time
 $k$ and $\zeta$ is the smoothing factor, commensurate of the filter bandwidth.%
-\footnote{This smoothing factor is necessary to help prevent wild fluctuations
-in $\hat{e}_k$ which can occur if the input signal's instantaneous amplitude
-has significant variation, such as in digitally-modulated signals.}
+\footnote{
+    This smoothing factor is necessary to help prevent wild fluctuations
+    in $\hat{e}_k$ which can occur if the input signal's instantaneous
+    amplitude has significant variation, such as in digitally-modulated
+    signals.}
 The choice of $\zeta$ affects the both the amount of noise allowed in the
 signal energy estimate, and its speed of adjustment to the dynamics of
 $\vec{x}$.
 %A smaller value of $\zeta$ decreases the...
 \liquid\ uses an internal fixed value of $\zeta=0.1$.
 
-Now that the signal energy has been estimated, all that remains is to adjust
-the gain of the receiver accordingly.
-\liquid\ implements three types of open-loop gain controls--default, agc, and
-log--described in the next three sections.
-Each uses a common loop filter parameter for a given bandwidth, $w$, as
-\[
-    \alpha = \sqrt{w}
-\]
+Now that the signal energy has been estimated, all that remains is to
+adjust the gain of the receiver accordingly.
+\liquid\ implements three types of open-loop gain controls|default, agc,
+and log|described in the next three sections.
+Each uses a common loop filter parameter for a given bandwidth,
+$\omega$, as
+%
+\begin{equation}
+\label{eqn:agc:alpha}
+    \alpha \triangleq \sqrt{\omega}
+\end{equation}
+%
 %Notice the similarity of $\alpha$ in estimating the gain to $\zeta$ in
 %(\ref{eq:module:agc:ehat}) to estimating the signal energy.
 If you are unsure which type of AGC to use, we recommend
@@ -111,21 +122,28 @@ The receiver makes an estimate of the instantaneous input signal energy, given
 by (\ref{eq:module:agc:ehat}).
 In order to achieve a target energy $\bar{e}$, the instantaneous ideal gain is
 therefore the ratio of the target to the estimated energy vectors,
-\[
-    \hat{g}_k = \bar{e} / \hat{e}_k
-\]
+%
+\begin{equation}
+\label{eqn:agc:default:ghat}
+    \hat{g}_{k} = \bar{e} / \hat{e}_k
+\end{equation}
+%
 Rather than applying the gain directly to the input signal it is first
 filtered as
-\[
-    g_k = \alpha \hat{g}_k + (1-\alpha) g_{k-1}
-\]
-where again $\alpha = \sqrt{w}$ is the smoothing factor of the gain estimate
-and controls the attack and release time the {\tt agc} object has on an input
-signal.
-Notice the similarity the above equation has to (\ref{eq:module:agc:ehat}).
-Because $\alpha$ is typically small, the internal gain $g$ at time $k$ retains
-most of its previous estimate at time $k-1$ but adds a small portion of its
-new estimate $\hat{g}_k$.
+%
+\begin{equation}
+\label{eqn:agc:default:g}
+    g_{k} = \alpha \hat{g}_{k} + (1-\alpha) g_{k-1}
+\end{equation}
+%
+where again $\alpha \triangleq \sqrt{\omega}$ is the smoothing factor of
+the gain estimate and controls the attack and release time the {\tt agc}
+object has on an input signal.
+Notice the similarity the above equation has to
+(\ref{eq:module:agc:ehat});
+because $\alpha$ is typically small, the updated internal gain $g_{k}$
+retains most of its previous gain value $g_{k-1}$ but adds a small
+portion of its new estimate $\hat{g}_{k}$.
 
 \subsection{{\tt LIQUID\_AGC\_LOG}}
 \label{module:agc:log}
@@ -133,15 +151,22 @@ As in the default case, the log {\tt agc} type makes an estimate of the
 instantaneous signal energy estimate as given by (\ref{eq:module:agc:ehat})
 and an estimate of the instantaneous gain as
 $\hat{g}_k = \bar{e} / \hat{e}_k$.
-The loop control, however, operates on the log of the gain difference rather
-than its linear component, and updates its gain estimate accordingly.
-Therefore the gain error at time $k$ can be represented as the log of the
-ratio of the new instantaneous estimate to the previous gain value, viz.
-\[
-    \Delta_k = \ln\bigl( \hat{g}_k / g_{k-1} \bigr)
-\]
-The {\tt agc} then updates its gain estimate according to the magnitude of the
-error as
+The loop control, however, operates on the logarithm of the gain
+difference rather than its linear component, and updates its gain
+estimate accordingly.
+Therefore the gain error at time $k+1$ can be represented as the log of
+the ratio of the new instantaneous estimate to the previous gain value,
+viz
+%
+\begin{equation}
+\label{eqn:agc:log:delta}
+    \Delta_{k} = \log\bigl( \hat{g}_{k} / g_{k-1} \bigr)
+               = \log\bigl( \hat{g}_k \bigr) -
+                 \log\bigl( g_{k-1}   \bigr)
+\end{equation}
+%
+The {\tt agc} then updates its gain estimate according to the magnitude
+of the error as
 %
 \begin{equation}
 \label{eq:module:agc:log:g_update}
@@ -149,14 +174,13 @@ error as
     g_k = g_{k-1} \exp\bigl\{ \alpha \Delta_k \bigr\}
 \end{equation}
 %
-As before, $\alpha$ is used to control the sensitivity of the gain update
-equation, but in this case it is located in the exponent.
-This gain update gives the AGC an aggressive attack and can suppress large
-signals very quickly.
-Notice that when $\alpha=0$ the exponent in (\ref{eq:module:agc:log:g_update})
-becomes $0$ and therefore $g_k = g_{k-1}$.
-Notice also that when there is no error ($\Delta_k=0$), the gain is not updated
-(i.e. $\hat{g}_k = \hat{g}_{k-1}$) which demonstrates stability of the system.
+As before, $\alpha$ is used to control the sensitivity of the gain
+update equation, but in this case it is located in the exponent.
+This gain update gives the AGC an aggressive attack and can suppress
+large signals very quickly.
+Notice that when either $\alpha=0$ or $\Delta_k=0$
+the exponent in (\ref{eq:module:agc:log:g_update})
+becomes $0$ and $g_k = g_{k-1}$; therefore the gain is not updated.
 
 \subsection{{\tt LIQUID\_AGC\_EXP}}
 \label{module:agc:exp}
@@ -164,64 +188,77 @@ As in the default and log cases, the exponential {\tt agc} type makes an
 estimate of the instantaneous signal energy as given by
 (\ref{eq:module:agc:ehat}).
 The instantaneous output energy is computed as
-\[
-    \hat{e}_{out} = g_{k-1} \hat{e}
-\]
+%
+\begin{equation}
+\label{eqn:agc:exp:eout}
+    \hat{e}_{k} = g_{k-1} \hat{e}
+\end{equation}
+%
 and the gain error at time $k$ is therefore
-\[
-    \Delta_k = \hat{e}_{out} - \bar{e}
-\]
+%
+\begin{equation}
+\label{eqn:agc:exp:delta}
+    \Delta_k = \hat{e}_{k} - \bar{e}
+\end{equation}
+%
 The gain estimate is updated proportional to the gain error, viz
-\[
+%
+\begin{equation}
+\label{eqn:agc:exp:g}
     g_k =
         g_{k-1} \left(1 -
          \frac{
             \alpha \Delta_k
         }{
-            \text{argmax}\bigl\{\bar{e}, \hat{e}_{out} \bigr\}
+            \text{argmax}\bigl\{\bar{e}, \hat{e}_{k} \bigr\}
         }
     \right)
-\]
+\end{equation}
+%
 The multiplier in the above equation on the right is always positive and
 proportional to the gain error.
-Notice that when the error is zero ($\hat{e}_{out} = \bar{e}$) the gain is not
-updated ($g_k = g_{k-1}$).
+Notice that when the error is zero ($\hat{e}_{k} = \bar{e}$) the gain is
+not updated ($g_k = g_{k-1}$).
 
 
 \subsection{Locking}
-The {\tt agc} module permits the gain to be locked when, for example, the
-header of a packet is received.
+\label{module:agc:locking}
+The {\tt agc} object permits the gain to be locked when, for example,
+the header of a frame has been received.
 This is useful for effectively switching the AGC on and off during short,
-burt-mode packet transmissions, particularly when the signal has a high-order
-digital amplitude-modulation (e.g. 64-QAM) and the AGC could potentially
-corrupt the data.
-When the {\tt agc} object is locked, the internal gain control is not updated,
-and the internal gain at the time of locking is applied directly to the output
-signal.
+burt-mode frame transmissions, particularly when the signal has a high-order
+digital amplitude-modulation (e.g. 64-QAM) and fluctuations in the AGC
+could potentiallty result in symbol errors.
+%
+When the {\tt agc} object is locked, the internal gain control is not
+updated,
+and the internal gain at the time of locking is applied directly to the
+output signal, forcing $g_k = g_{k-1}$.
 %
 Locking and unlocking is accomplished with the
 {\tt agc\_crcf\_lock()} and
 {\tt agc\_crcf\_unlock()} methods, respectively.
 
 \subsection{Squelch}
-The {\tt agc} module contains internal squelch control to allow the
-controlling unit the ability to disable signal processing when the signal
+\label{module:agc:squelch}
+The {\tt agc} object contains internal squelch control to allow the
+receiver the ability to disable signal processing when the signal
 level is too low.
-In traditional radio design, the squelch circuit suppressed the
-output of a receiver when the signal strength would fall below a certain level,
-primarily used to disable annoying static due to noise when no other operators
-were transmitting.
-Having said that, the squelch control in \liquid\ is actually somewhat of a
-misnomer as it doesn't actually control the AGC, but rather just monitors the
-dynamics of the signal level and returns its status to the controlling unit.
-The squelch control follows six states
-(enabled, rising edge trigger, signal high, falling edge trigger,
-signal low, and timeout)
-as depicted in
-Figure~\ref{fig:module:agc:squelch} and
+In traditional radio design, the squelch circuit suppressed the output
+of a receiver when the signal strength would fall below a certain level,
+primarily used to prevent audio static due to noise when no other
+operators were transmitting.
+Having said that, the squelch control in \liquid\ is actually somewhat
+of a misnomer as it doesn't actually control the AGC, but rather just
+monitors the dynamics of the signal level and returns its status to the
+controlling unit.
+The squelch control follows six states|enabled, rising edge trigger,
+signal high, falling edge trigger, signal low, and timeout|as depicted
+in Figure~\ref{fig:module:agc:squelch} and
 Table~\ref{tab:module:agc:squelch_codes}.
-These states give the user flexibility in programming networks where packets
-are transmitted in short bursts and the receiver needs to synchronize quickly.
+These states give the user flexibility in programming networks where
+frames are transmitted in short bursts and the receiver needs to
+synchronize quickly.
 The status of the squelch control is retrieved via the
 {\tt agc\_crcf\_squelch\_get\_status()} method.
 
@@ -229,7 +266,7 @@ The typical control cycle for the AGC squelch is depicted in
 Figure~\ref{fig:module:agc:squelch}.
 Initially, squelch is enabled (code {\tt 0}) as the signal has been low for
 quite some time.
-When the beginning of a packet is received, the RSSI increases beyond the
+When the beginning of a frame is received, the RSSI increases beyond the
 squelch threshold (code {\tt 1}).
 All subsequent samples above this threshold return a ``signal high'' status
 (code {\tt 2}).
@@ -273,7 +310,8 @@ status.
 % ------------------------
 
 
-\subsubsection{methodology}
+\subsubsection{Methodology}
+\label{module:agc:squelch:methodology}
 The reason for all six states (as opposed to just ``squelch on'' and ``squelch
 off'') are to allow for the AGC to adjust to complex signal dynamics.
 The default operation for the AGC is to {\it disable} the squelch.
@@ -282,9 +320,10 @@ For example if the AGC squelch control is in ``signal low'' mode
 the AGC will move back to the ``signal high'' mode (state {\tt 2}).
 This is particularly useful for weak signals whose received signal strength is
 hovering around the squelch threshold; it would be undesireable for the AGC to
-enable the squelch in the middle of receiving a packet!
+enable the squelch in the middle of receiving a frame!
 
 \subsubsection{auto-squelch}
+\label{module:agc:squelch:auto}
 The AGC module also allows for an auto-squelch mechanism which attempts to
 track the signal threshold to the noise floor of the receiver.
 This is accomplished by monitoring the signal level when squelch is enabled.
@@ -298,6 +337,7 @@ Auto-squelch is enabled/disabled using the
 {\tt agc\_crcf\_squelch\_disable\_auto()} methods respectively.
 
 \subsection{Interface}
+\label{module:agc:squelch:interface}
 Listed below is the full interface to the {\tt agc} family of objects.
 While each method is listed for the {\tt agc\_crcf} object, the same
 functionality applies to the {\tt agc\_rrrf} object.
@@ -329,17 +369,18 @@ functionality applies to the {\tt agc\_rrrf} object.
     subsequence occurrances of {\tt \_execute()}.
     This is primarily used when the beginning of a frame has been detected,
     and perhaps the payload contains amplitude-modulated data which can be
-    corrupted with an AGC with an aggressive attack.
-    Also, locking the AGC conserves clock cycles as the gain update is not
-    computed.
-    Typically, the locked AGC consumes about $5\times$ fewer clock cycles than
-    its unlocked state.
+    corrupted with the AGC agressivly attacking the signal's high
+    dynamics.
+    Also, locking the AGC conserves clock cycles as the gain update is
+    not computed.
+    Typically, the locked AGC consumes about $5\times$ fewer clock
+    cycles than its unlocked state.
 \item[{\tt agc\_crcf\_unlock(q)}]
     unlocks the AGC from a locked state and resumes estimating the input
     signal level and internal gain.
 \item[{\tt agc\_crcf\_execute(q,x,y)}]
-    applies the gain to the input $x$, storing in the output sample $y$ and
-    updates the AGC's internal tracking loops.
+    applies the gain to the input $x$, storing in the output sample $y$
+    and updates the AGC's internal tracking loops (of not locked).
 \item[{\tt agc\_crcf\_get\_signal\_level(q)}]
     returns a linear estimate of the input signal's energy level.
 \item[{\tt agc\_crcf\_get\_gain(q)}]
@@ -358,21 +399,25 @@ functionality applies to the {\tt agc\_rrrf} object.
     sets the timeout (number of samples) after the signal level has dropped
     before enabling the squelch again.
 \item[{\tt agc\_crcf\_squelch\_get\_status(q)}]
-    returns the squelch status.
+    returns the squelch status code
+    (see Table~\ref{tab:module:agc:squelch_codes}).
 \end{description}
-
+%
 Here is a basic example of the {\tt agc} object in \liquid:
+%
 \input{listings/agc.example.c.tex}
-
+%
 A demonstration of the transient response of the {\tt agc\_crcf} type can be
 found in Figure~\ref{fig:module:agc:transient} in which an input complex
 sinusoidal pulse is fed into the AGC.
 Notice the initial overshoot at the output signal.%due to...
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.gen/agc_transient}
 \caption{{\tt agc\_crcf} transient response}
 \label{fig:module:agc:transient}
 \end{figure}
-
-
+%
+A few more detailed examples can be found in the {\tt examples}
+subdirectory.
