@@ -41,7 +41,8 @@ local_s_files	:= 	\
 local_t_files	:= 		\
 	cbuffer_autotest.h	\
 	sbuffer_autotest.h	\
-	window_autotest.h
+	wdelay_autotest.h	\
+	window_autotest.h	\
 
 
 # local_b_files

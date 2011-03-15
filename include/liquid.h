@@ -271,7 +271,6 @@ WDELAY() WDELAY(_create)(unsigned int _k);                      \
 WDELAY() WDELAY(_recreate)(WDELAY() _w, unsigned int _k);       \
 void WDELAY(_destroy)(WDELAY() _w);                             \
 void WDELAY(_print)(WDELAY() _w);                               \
-void WDELAY(_debug_print)(WDELAY() _w);                         \
 void WDELAY(_clear)(WDELAY() _w);                               \
 void WDELAY(_read)(WDELAY() _w, T * _v);                        \
 void WDELAY(_push)(WDELAY() _b, T _v);
