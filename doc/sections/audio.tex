@@ -6,6 +6,10 @@
 \newpage
 \section{audio}
 \label{module:audio}
+The audio module in \liquid\ provides several objects and functions for
+compressing, digitizing, and manipulating audio signals.
+This is particularly useful for encoding audio data for wireless
+communications.
 
 \subsection{{\tt cvsd} (continuously variable slope delta)}
 \label{module:audio:cvsd}
@@ -18,6 +22,8 @@ continuously to minimize slope-overload distortion \cite[p. 131]{Proakis:2001}.
 The output bit stream has a rate equal to that of the sampling frequency.
 It is considered to be a moderate compromise between quality and complexity.
 
+\subsubsection{Theory}
+\label{module:audio:cvsd:theory}
 The algorithm attempts to dynamically adjust $\Delta$ value to track
 to the input signal.
 As with regular delta modulation algorithms,
@@ -29,22 +35,109 @@ $\Delta$ is increased by $\zeta$ if they are equal, and decreased otherwise.
 This improves the dynamic range of the encoder over fixed-delta modulation
 encoders.
 
-The {\tt cvsd} module in \liquid\ allows the user to select both $\zeta$
+
+\subsubsection{Pre-/Post-Filtering}
+\label{module:audio:cvsd:filtering}
+To preserve the signal's integrity the encoder applies a pre-filter
+to emphasize the high-frequency information of the signal before the
+encoding process.
+The pre-filter is a simple 2-tap FIR filter defined as
+%
+\begin{equation}
+    H_{pre}(z) = 1 - \alpha z^{-1}
+\end{equation}
+%
+where $\alpha$ controls the amount of emphasis applied.
+Typical values fore pre-emphasis are $0.92 < \alpha < 0.98$;
+setting $\alpha=0$ completely disables this emphasis.
+%
+This process is reversed on the decoder by applying the inverse of
+$H_{pre}(z)$ as a low-pass de-emphasis filter:
+%
+\begin{equation}
+    H_{pre}^{-1}(z) = 
+        \frac{ 1 }{ 1 - \alpha z^{-1} }
+\end{equation}
+%
+Additionally, the decoder adds a DC-blocking filter to reject any
+residual offset caused by the decoding process.
+By itself the DC-blocking filter has a transfer function
+%
+\begin{equation}
+    H_{0}(z) = 
+        \frac{ 1 - z^{-1} }{ 1 - \beta z^{-1} }
+\end{equation}
+%
+where $\beta$ controls the cut-off frequency of the filter and is
+typically set very close to 1.
+The default value for $\beta$ in \liquid\ is 0.99.
+The full post-emphasis filter is therefore
+%
+\begin{equation}
+    H_{post}(z) = 
+    H_{pre}^{-1}(z) H_0(z) =
+        \frac{
+            1 - z^{-1}
+        }{
+            1 - (\alpha + \beta) z^{-1} + \alpha\beta z^{-2}
+        }
+\end{equation}
+%
+
+\subsubsection{Interface}
+\label{module:audio:cvsd:interface}
+
+
+The {\tt cvsd} object in \liquid\ allows the user to select both $\zeta$
 as well as $N$, the number of repeated bits observed before $\Delta$ is
 updated.
 The combination of these values with the sampling rate yields a speech
 compression algorithm with moderate quality.
+Listed below is the full interface to the {\tt cvsd} object:
+%
+\begin{description}
+\item[{\tt cvsd\_create(N,zeta,alpha)}]
+    creates an {\tt agc} object with parameters $N$, $\zeta$, and
+    $\alpha$.
+\item[{\tt cvsd\_destroy(q)}]
+    destroys a {\tt cvsd} object, freeing all internally-allocated
+    memory and objects.
+\item[{\tt cvsd\_print(q)}]
+    prints the {\tt cvsd} object's internal parameters to the standard
+    output.
+\item[{\tt cvsd\_encode(q,sample)}]
+    encodes a single audio sample, returning the encoded bit.
+\item[{\tt cvsd\_decode(q,bit)}]
+    decodes and returns a single audio sample from an input bit.
+\item[{\tt cvsd\_encode8(q,samples,byte)}]
+    encodes a block of 8 samples returning the result in a single byte.
+\item[{\tt cvsd\_decode8(q,byte,samples)}]
+    decodes a block of 8 samples from an encoded byte.
+\end{description}
+
+\subsubsection{Example}
+\label{module:audio:cvsd:example}
+
+Here is a basic example of the {\tt cvsd} object in \liquid:
+%
+\input{listings/cvsd.example.c.tex}
+%
 A demonstration of the algorithm can be seen in
 Figure~\ref{fig:module:audio:cvsd} where the encoder attempts to track to an
 input sinusoid.
 Notice that the encoder sometimes overshoots the reference signal.
 This distortion results in degradations, particularly in the upper frequency
 bands.
-
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/audio_cvsd}
-\caption{{\tt cvsd} demonstration}
+\caption{
+    {\tt cvsd} example encoding a windowed sine function
+    with $\zeta=1.5$, $N=3$, and $\alpha=0.95$.}
 \label{fig:module:audio:cvsd}
 \end{figure}
-
+%
+A more detailed example is given in
+{\tt examples/cvsd\_example.c}
+under the main \liquid\ project directory.
