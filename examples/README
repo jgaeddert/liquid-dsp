@@ -170,8 +170,7 @@ dotprod_rrrf_example.c
 
 eqlms_cccf_example.c
 eqrls_cccf_example.c
-fading_channel_example.c
-fading_generator_example.c
+fading_generator_example.c [EXPERIMENTAL]
 fbasc_example.c [EXPERIMENTAL]
 fct_example.c
 
@@ -486,7 +485,7 @@ resamp2_crcf_interp_example.c
 
 resamp2_crcf_interp_recreate_example.c
 resamp_crcf_example.c
-ricek_channel_example.c
+ricek_channel_example.c [EXPERIMENTAL]
 
 scramble_example.c
     Data-scrambling example.  Physical layer synchronization of received

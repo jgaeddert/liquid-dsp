@@ -437,6 +437,102 @@ void gport_signal(gport _p, int _message);
 // SUBMODULE-INTERNAL : buffer
 //
 
+//
+// SUBMODULE : channel
+//
+
+// AWGN channel
+typedef struct awgn_channel_s * awgn_channel;
+awgn_channel awgn_channel_create(float _nvar);
+void awgn_channel_destroy(awgn_channel _q);
+void awgn_channel_print(awgn_channel _q);
+void awgn_channel_execute(awgn_channel _q,
+                          liquid_float_complex _x,
+                          liquid_float_complex *_y);
+void awgn_channel_set_noise_variance(awgn_channel _q, float _nvar);
+
+// Rice-K channel
+typedef struct ricek_channel_s * ricek_channel;
+ricek_channel ricek_channel_create(unsigned int _h_len,
+                                   float _K,
+                                   float _fd,
+                                   float _theta);
+void ricek_channel_destroy(ricek_channel _q);
+void ricek_channel_print(ricek_channel _q);
+void ricek_channel_execute(ricek_channel _q,
+                           liquid_float_complex _x,
+                           liquid_float_complex *_y);
+
+// Log-normal channel
+typedef struct lognorm_channel_s * lognorm_channel;
+lognorm_channel lognorm_channel_create(unsigned int _h_len,
+                                       float _sig_dB,
+                                       float _fd);
+void lognorm_channel_destroy(lognorm_channel _q);
+void lognorm_channel_execute(lognorm_channel _q,
+                             liquid_float_complex _x,
+                             liquid_float_complex * _y);
+
+// Composite channel
+typedef struct channel_s * channel;
+channel channel_create();
+void channel_destroy(channel _c);
+void channel_print(channel _c);
+void channel_execute(channel _c,
+                     liquid_float_complex _x,
+                     liquid_float_complex *_y);
+
+// power amplifier model
+typedef struct pamodel_s * pamodel;
+pamodel pamodel_create(float _alpha);
+void pamodel_destroy(pamodel _q);
+void pamodel_print(pamodel _q);
+void pamodel_execute(pamodel _q,
+                     liquid_float_complex _x,
+                     liquid_float_complex * _y);
+
+//
+// SUBMODULE-INTERNAL : channel
+//
+
+struct awgn_channel_s {
+    float nvar;
+    float nstd;
+};
+
+struct ricek_channel_s {
+    unsigned int h_len;
+    float K;
+    float omega;
+    float sig;
+    float s;
+    float fd;
+    float theta;
+    firfilt_cccf f;
+};
+
+struct lognorm_channel_s {
+    unsigned int h_len;
+    float sig;
+    float fd;
+    firfilt_rrrf f;
+};
+
+struct channel_s {
+    float K;        // Rice-K fading
+    //float omega;    // Mean power (omega=1)
+    float fd;       // Maximum doppler frequency
+    float theta;    // Line-of-sight angle of arrival
+    float std;      // log-normal shadowing std. dev.
+    float n0;       // AWGN std. dev.
+
+    firfilt_cccf f_ricek;     // doppler filter (Rice-K fading)
+    firfilt_rrrf f_lognorm;   // doppler filter (Log-normal shadowing)
+
+    // internal
+    float s, sig;
+};
+
 
 
 //

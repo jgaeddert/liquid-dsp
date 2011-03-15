@@ -12,7 +12,6 @@ Sections to finish:
   * tutorial: modem
 
   * buffer
-  * channel
   * equalization
   * fec
   * fft
