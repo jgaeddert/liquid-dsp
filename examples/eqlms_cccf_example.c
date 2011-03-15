@@ -1,7 +1,8 @@
 // 
 // eqlms_cccf_example.c
 //
-// Tests least mean-squares (LMS) equalizer (EQ).
+// Tests least mean-squares (LMS) equalizer (EQ) on a QPSK
+// signal at the symbol level.
 //
 
 #include <stdio.h>
@@ -10,13 +11,6 @@
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "eqlms_cccf_example.m"
-
-// print macro for complex numbers
-//  F   :   output file
-//  S   :   variable name (string)
-//  I   :   index
-//  V   :   value
-#define PRINT_COMPLEX(F,S,I,V) fprintf(F,"%s(%4u) = %5.2f+j*%5.2f;",S,I,crealf(V),cimagf(V));
 
 int main() {
     // options
@@ -32,17 +26,6 @@ int main() {
     float complex h[h_len]; // channel filter coefficients
     float complex w[p];     // equalizer filter coefficients
     unsigned int i;
-
-    // open output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
-
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"n=%u;\n",n);
-    fprintf(fid,"ntrain=%u;\n",ntrain);
-    fprintf(fid,"p=%u;\n",p);
-    fprintf(fid,"h_len=%u;\n",h_len);
 
     // create equalizer (default initial coefficients)
     eqlms_cccf eq = eqlms_cccf_create(NULL,p);
@@ -82,41 +65,54 @@ int main() {
     // print results
     //
     printf("channel:\n");
-    for (i=0; i<h_len; i++) {
-        PRINT_COMPLEX(stdout,"h",i+1,h[i]); printf("\n");
-        PRINT_COMPLEX(fid,   "h",i+1,h[i]); fprintf(fid,"\n");
-    }
+    for (i=0; i<h_len; i++)
+        printf("  h(%3u) = %12.8f + j*%12.8f\n", i, crealf(h[i]), cimagf(h[i]));
 
     printf("equalizer:\n");
-    for (i=0; i<p; i++) {
-        PRINT_COMPLEX(stdout,"w",i+1,w[i]); printf("\n");
-        PRINT_COMPLEX(fid,   "w",i+1,w[i]); fprintf(fid,"\n");
-    }
+    for (i=0; i<p; i++)
+        printf("  w(%3u) = %12.8f + j*%12.8f\n", i, crealf(w[i]), cimagf(w[i]));
 
+    // compute MSE
     float complex e;
     float mse=0.0f;
     for (i=0; i<n; i++) {
-        if (i==ntrain)
-            printf("----------\n");
-
-        /*
-        PRINT_COMPLEX(stdout,"d",   i+1,    d[i]);
-        PRINT_COMPLEX(stdout,"y",   i+1,    y[i]);
-        PRINT_COMPLEX(stdout,"dhat",i+1,    d_hat[i]);
-        printf("\n");
-        */
-
-        PRINT_COMPLEX(fid,  "d",    i+1,    d[i]);
-        PRINT_COMPLEX(fid,  "y",    i+1,    y[i]);
-        PRINT_COMPLEX(fid,  "d_hat",i+1,    d_hat[i]);
-        fprintf(fid, "\n");
-
         // compute mse
         e = d[i] - d_hat[i];
         mse += crealf(e*conj(e));
     }
     mse /= n;
     printf("mse: %12.8f\n", mse);
+
+    // clean up objects
+    firfilt_cccf_destroy(f);
+    eqlms_cccf_destroy(eq);
+    firfilt_cccf_destroy(feq);
+
+
+    // 
+    // export data to file
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s: auto-generated file\n\n", OUTPUT_FILENAME);
+
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"n=%u;\n",n);
+    fprintf(fid,"ntrain=%u;\n",ntrain);
+    fprintf(fid,"p=%u;\n",p);
+    fprintf(fid,"h_len=%u;\n",h_len);
+
+    for (i=0; i<h_len; i++)
+        fprintf(fid,"  h(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(h[i]), cimagf(h[i]));
+
+    for (i=0; i<p; i++)
+        fprintf(fid,"  w(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(w[i]), cimagf(w[i]));
+
+    for (i=0; i<n; i++) {
+        fprintf(fid,"  d(%3u)     = %12.4e + j*%12.4e;\n", i+1, crealf(d[i]),     cimagf(d[i]));
+        fprintf(fid,"  y(%3u)     = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]),     cimagf(y[i]));
+        fprintf(fid,"  d_hat(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(d_hat[i]), cimagf(d_hat[i]));
+    }
 
     // plot results
     fprintf(fid,"\n\n");
@@ -162,8 +158,5 @@ int main() {
     fclose(fid);
     printf("results written to %s.\n",OUTPUT_FILENAME);
 
-    firfilt_cccf_destroy(f);
-    eqlms_cccf_destroy(eq);
-    firfilt_cccf_destroy(feq);
     return 0;
 }
