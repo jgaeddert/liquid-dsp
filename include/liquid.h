@@ -164,15 +164,27 @@ LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
 
 // CVSD: continuously variable slope delta
 typedef struct cvsd_s * cvsd;
-cvsd cvsd_create(unsigned int _num_bits, float _zeta);
+
+// create cvsd object
+//  _num_bits   :   number of adjacent bits to observe
+//  _zeta       :   slope adjustment multiplier
+//  _alpha      :   pre-/post-emphasis filter coefficient (0.9 recommended)
+// NOTE: _alpha must be in [0,1]
+cvsd cvsd_create(unsigned int _num_bits,
+                 float _zeta,
+                 float _alpha);
+
+// destroy cvsd object
 void cvsd_destroy(cvsd _q);
+
+// print cvsd object parameters
 void cvsd_print(cvsd _q);
 
 // encode/decode single sample
 unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
 float           cvsd_decode(cvsd _q, unsigned char _bit);
 
-// encode/decode 8 samples
+// encode/decode 8 samples at a time
 void cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
 void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 

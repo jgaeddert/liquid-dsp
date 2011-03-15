@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/audio_cvsd.gnu"
@@ -23,14 +23,15 @@ int main() {
     float fc = 0.03179f;            // input sine frequency
     unsigned int nbits=3;           // 
     float zeta=1.5f;                //
+    float alpha=0.95f;              //
     int subplot_type = 0;           // 0:spectrum, 1:data series
 
     // derived values
     unsigned int i;
 
     // create cvsd codecs
-    cvsd cvsd_encoder = cvsd_create(nbits, zeta);
-    cvsd cvsd_decoder = cvsd_create(nbits, zeta);
+    cvsd cvsd_encoder = cvsd_create(nbits, zeta, alpha);
+    cvsd cvsd_decoder = cvsd_create(nbits, zeta, alpha);
 
     // data arrays
     float x[num_samples];

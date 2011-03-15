@@ -1,5 +1,23 @@
-#ifndef __LIQUID_CVSD_AUTOTEST_H__
-#define __LIQUID_CVSD_AUTOTEST_H__
+/*
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
+ *                                      Institute & State University
+ *
+ * This file is part of liquid.
+ *
+ * liquid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * liquid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
@@ -11,10 +29,11 @@ void autotest_cvsd_rmse_sine() {
     unsigned int n=256;
     unsigned int nbits=3;
     float zeta=1.5f;
+    float alpha=0.90f;
 
     // create cvsd codecs
-    cvsd cvsd_encoder = cvsd_create(nbits,zeta);
-    cvsd cvsd_decoder = cvsd_create(nbits,zeta);
+    cvsd cvsd_encoder = cvsd_create(nbits,zeta,alpha);
+    cvsd cvsd_decoder = cvsd_create(nbits,zeta,alpha);
 
     float phi=0.0f;
     float dphi=0.1f;
@@ -36,7 +55,4 @@ void autotest_cvsd_rmse_sine() {
         printf("cvsd rmse : %8.2f dB\n", rmse);
     CONTEND_LESS_THAN(rmse, -20.0f);
 }
-
-
-#endif // __LIQUID_CVSD_AUTOTEST_H__
 

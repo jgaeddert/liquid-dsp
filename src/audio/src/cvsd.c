@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -38,17 +38,32 @@ struct cvsd_s {
     float delta;            // current step size
     float delta_min;        // minimum delta
     float delta_max;        // maximum delta
+
+    float alpha;            // pre-/de-emphasis filter coefficient
+    iirfilt_rrrf prefilt;   // pre-emphasis filter (encoder)
+    iirfilt_rrrf postfilt;  // e-emphasis filter (decoder)
 };
 
-cvsd cvsd_create(unsigned int _num_bits, float _zeta)
+// create cvsd object
+//  _num_bits   :   number of adjacent bits to observe
+//  _zeta       :   slope adjustment multiplier
+//  _alpha      :   pre-/post-emphasis filter coefficient (0.9 recommended)
+// NOTE: _alpha must be in [0,1]
+cvsd cvsd_create(unsigned int _num_bits,
+                 float _zeta,
+                 float _alpha)
 {
     if (_num_bits == 0) {
-        printf("error: cvsd_create(), _num_bits must be positive\n");
+        fprintf(stderr, "error: cvsd_create(), _num_bits must be positive\n");
         exit(1);
     } else if (_zeta <= 1.0f) {
-        printf("error: cvsd_create(), zeta must be greater than 1\n");
+        fprintf(stderr, "error: cvsd_create(), zeta must be greater than 1\n");
+        exit(1);
+    } else if (_alpha < 0.0f || _alpha > 1.0f) {
+        fprintf(stderr, "error: cvsd_create(), alpha must be in [0,1]\n");
         exit(1);
     }
+
     cvsd q = (cvsd) malloc(sizeof(struct cvsd_s));
     q->num_bits = _num_bits;
     q->bitref = 0;
@@ -60,26 +75,46 @@ cvsd cvsd_create(unsigned int _num_bits, float _zeta)
     q->delta_min = 0.01f;
     q->delta_max = 1.0f;
 
+    // 
+    q->alpha = _alpha;
+    float b[2] = {1.0f, -q->alpha};
+    float a[2] = {1.0f, 0.0f};
+    q->prefilt  = iirfilt_rrrf_create(b,2,a,2);
+    q->postfilt = iirfilt_rrrf_create(a,2,b,2);
+
     return q;
 }
 
+// destroy cvsd object
 void cvsd_destroy(cvsd _q)
 {
+    // destroy filters
+    iirfilt_rrrf_destroy(_q->prefilt);
+    iirfilt_rrrf_destroy(_q->postfilt);
+
+    // free main object memory
     free(_q);
 }
 
+// print cvsd object parameters
 void cvsd_print(cvsd _q)
 {
     printf("cvsd codec:\n");
     printf("    num bits: %u\n", _q->num_bits);
     printf("    zeta    : %8.4f\n", _q->zeta);
+    printf("    alpha   : %8.4f\n", _q->alpha);
 }
 
 // encode single sample
-unsigned char cvsd_encode(cvsd _q, float _audio_sample)
+unsigned char cvsd_encode(cvsd _q,
+                          float _audio_sample)
 {
+    // push audio sample through pre-filter
+    float y;
+    iirfilt_rrrf_execute(_q->prefilt, _audio_sample, &y);
+
     // determine output value
-    unsigned char bit = (_q->ref > _audio_sample) ? 0 : 1;
+    unsigned char bit = (_q->ref > y) ? 0 : 1;
 
     // shift last value into buffer
     _q->bitref <<= 1;
@@ -107,7 +142,8 @@ unsigned char cvsd_encode(cvsd _q, float _audio_sample)
 }
 
 // decode single sample
-float cvsd_decode(cvsd _q, unsigned char _bit)
+float cvsd_decode(cvsd _q,
+                  unsigned char _bit)
 {
     // append bit into register
     _q->bitref <<= 1;
@@ -131,11 +167,17 @@ float cvsd_decode(cvsd _q, unsigned char _bit)
     _q->ref = (_q->ref >  1.0f) ?  1.0f : _q->ref;
     _q->ref = (_q->ref < -1.0f) ? -1.0f : _q->ref;
 
-    return _q->ref;
+    // push reference value through post-filter
+    float y;
+    iirfilt_rrrf_execute(_q->postfilt, _q->ref, &y);
+
+    return y;
 }
 
 // encode 8 samples
-void cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data)
+void cvsd_encode8(cvsd _q,
+                  float * _audio,
+                  unsigned char * _data)
 {
     unsigned char data=0x00;
     unsigned int i;
@@ -149,7 +191,9 @@ void cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data)
 }
 
 // decode 8 samples
-void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio)
+void cvsd_decode8(cvsd _q,
+                  unsigned char _data,
+                  float * _audio)
 {
     unsigned char bit;
     unsigned int i;

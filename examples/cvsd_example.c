@@ -26,6 +26,7 @@ void usage()
     printf("  f     : input signal frequency, default: 0.02\n");
     printf("  b     : cvsd param: num-bits, default: 3\n");
     printf("  z     : cvsd param: zeta, default: 1.5\n");
+    printf("  a     : cvsd param: alpha, default: 0.95\n");
 }
 
 int main(int argc, char*argv[])
@@ -33,11 +34,12 @@ int main(int argc, char*argv[])
     // options
     unsigned int n=512;     // number of samples
     float fc = 0.02;        // input signal frequency
-    unsigned int nbits=3;   // 
-    float zeta=1.5f;        //
+    unsigned int nbits=3;   // number of adjacent bits to observe
+    float zeta=1.5f;        // slope adjustment multiplier
+    float alpha = 0.95;     // pre-/post-filter coefficient
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:f:b:z:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhn:f:b:z:a:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();              return 0;
@@ -45,6 +47,7 @@ int main(int argc, char*argv[])
         case 'f': fc = atof(optarg);    break;
         case 'b': nbits = atoi(optarg); break;
         case 'z': zeta = atof(optarg);  break;
+        case 'a': alpha = atof(optarg); break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             exit(1);
@@ -60,8 +63,9 @@ int main(int argc, char*argv[])
     float y[n];             // reconstructed time series
 
     // create cvsd codecs
-    cvsd cvsd_encoder = cvsd_create(nbits, zeta);
-    cvsd cvsd_decoder = cvsd_create(nbits, zeta);
+    cvsd cvsd_encoder = cvsd_create(nbits, zeta, alpha);
+    cvsd cvsd_decoder = cvsd_create(nbits, zeta, alpha);
+    cvsd_print(cvsd_encoder);
 
     // generate input time series
     for (i=0; i<n; i++)
