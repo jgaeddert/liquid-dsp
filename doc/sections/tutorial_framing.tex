@@ -490,7 +490,7 @@ the default values provide a good initial set for a wide range of
 channel conditions.
 Duplicate the line of your code that executes the frame synchronizer.
 Recompile and run your code again.
-You should see the ``{\tt ***** callback invoked}'' printed twice.
+You should see the ``{\tt ***** callback invoked!}'' printed twice.
 
 Your program has only demonstrated the basic functionality of the frame
 generator and synchronizer under ideal conditions:
@@ -576,6 +576,13 @@ normal and uniform distributions, repectively.
 \liquid\ provides the {\tt randnf()} and {\tt randf()} methods to
 generate real random numbers with Gauss and uniform distributions
 respectively.
+%
+\begin{Verbatim}[fontsize=\small]
+    y[i] *= gamma;
+    y[i] *= cexpf(_Complex_I*(phase_offset + i*frequency_offset));
+    y[i] += nstd * randnf() * cexpf(_Complex_I*M_PI*randf());
+\end{Verbatim}
+%
 Check the program listed below if you need help.
 
 Now modify the program to incorporate the frame counter.
