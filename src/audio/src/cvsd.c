@@ -40,6 +40,7 @@ struct cvsd_s {
     float delta_max;        // maximum delta
 
     float alpha;            // pre-/de-emphasis filter coefficient
+    float beta;             // DC-blocking coefficient (decoder)
     iirfilt_rrrf prefilt;   // pre-emphasis filter (encoder)
     iirfilt_rrrf postfilt;  // e-emphasis filter (decoder)
 };
@@ -75,12 +76,17 @@ cvsd cvsd_create(unsigned int _num_bits,
     q->delta_min = 0.01f;
     q->delta_max = 1.0f;
 
-    // 
+    // design pre-emphasis filter
     q->alpha = _alpha;
-    float b[2] = {1.0f, -q->alpha};
-    float a[2] = {1.0f, 0.0f};
-    q->prefilt  = iirfilt_rrrf_create(b,2,a,2);
-    q->postfilt = iirfilt_rrrf_create(a,2,b,2);
+    float b_pre[2] = {1.0f, -q->alpha};
+    float a_pre[2] = {1.0f, 0.0f};
+    q->prefilt  = iirfilt_rrrf_create(b_pre,2,a_pre,2);
+
+    // design post-emphasis filter
+    q->beta = 0.99f;    // DC-blocking parameter
+    float b_post[3] = {1.0f, -1.0f, 0.0f};
+    float a_post[3] = {1.0f, -(q->alpha + q->beta), q->alpha*q->beta};
+    q->postfilt = iirfilt_rrrf_create(b_post,3,a_post,3);
 
     return q;
 }
@@ -103,6 +109,12 @@ void cvsd_print(cvsd _q)
     printf("    num bits: %u\n", _q->num_bits);
     printf("    zeta    : %8.4f\n", _q->zeta);
     printf("    alpha   : %8.4f\n", _q->alpha);
+#if 0
+    printf("  pre-emphasis filter:\n");
+    iirfilt_rrrf_print(_q->prefilt);
+    printf("  post-emphasis filter:\n");
+    iirfilt_rrrf_print(_q->postfilt);
+#endif
 }
 
 // encode single sample
