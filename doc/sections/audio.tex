@@ -1,4 +1,3 @@
-% Audio documentation / sandbox
 % 
 % MODULE : audio
 %
@@ -24,18 +23,87 @@ It is considered to be a moderate compromise between quality and complexity.
 
 \subsubsection{Theory}
 \label{module:audio:cvsd:theory}
-The algorithm attempts to dynamically adjust $\Delta$ value to track
-to the input signal.
+The algorithm attempts to dynamically adjust the value of $\Delta$
+to track to the input signal.
 As with regular delta modulation algorithms,
 if the decoded reference signal exceeds the input (the error signal is
 negative), a binary {\tt 0} is sent and $\Delta$ is subtracted from the
 reference, otherwise a binary {\tt 1} is sent and $\Delta$ is added.
-However CVSD observes the previous $N$ transmitted bits are stored in memory.
-$\Delta$ is increased by $\zeta$ if they are equal, and decreased otherwise.
-This improves the dynamic range of the encoder over fixed-delta modulation
-encoders.
+However CVSD observes the previous $N$ transmitted bits are stored in a
+buffer $\hat{\vec{b}}$;
+$\Delta$ is increased by $\zeta$ if they are equal and decreased
+otherwise.
+This improves the dynamic range of the encoder over fixed-delta
+modulation encoders.
+%
+A summary of the encoding procedure can be found in
+Algorithm~\ref{alg:module:audio:cvsd:encoder}.
+%
+% ALGORITHM : CVSD encoder
+\begin{algorithm}[H]
+\caption{CVSD encoder algorithm}
+\label{alg:module:audio:cvsd:encoder}
+\algsetup{linenosize=\footnotesize}
+\algsetup{linenodelimiter=:}
+\algsetup{indent=2em}
+\begin{algorithmic}[1]
+\STATE $\vec{x} \leftarrow \{x_0,x_1,x_2,\ldots\}$  \COMMENT{input audio samples}
+\STATE $v_0 \leftarrow 0$                           \COMMENT{initial output reference}
+\STATE $\Delta_0 \leftarrow \Delta_{min}$           \COMMENT{initialize step size}
+\STATE $\hat{\vec{b}}_0 \leftarrow \{0,0,\ldots,0\}$\COMMENT{initialize $N$-bit buffer}
 
+\FOR{$k=0,\,1,\,2,\,\ldots$}
+    \STATE $b_k \leftarrow \begin{cases} 0 & v_k  > x_k \\ 1 & \text{else}\end{cases}$
+        \COMMENT{compute output bit}
+    \STATE $\hat{\vec{b}}_k \leftarrow  \{\hat{b}_1,\hat{b}_2,\ldots,\hat{b}_{N-1},b_k\}$
+        \COMMENT{append output bit to end of buffer}
+    \STATE $m \leftarrow \sum_{i=0}^{N-1}{\hat{\vec{b}}_i}$
+        \COMMENT{compute sum of last $N$ bits}
+    \STATE $\Delta_k \leftarrow \begin{cases}\Delta_{k-1}\zeta & m = 0, m=N \\ \Delta_{k-1}/\zeta & \text{else}\end{cases}$
+        \COMMENT{adjust step size}
+    \STATE $v_{k+1} \leftarrow v_k + (-1)^{1-b_k} \Delta_k$
+        \COMMENT{adjust reference value}
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+%
 
+The decoder reverses this process;
+by retaining the past $N$ bit inputs in a buffer $\hat{\vec{b}}$,
+the value of $\Delta$ can be adjusted appropriately.
+A summary of the decoding procedure can be found in
+Algorithm~\ref{alg:module:audio:cvsd:decoder}.
+%
+% ALGORITHM : CVSD encoder
+\begin{algorithm}[H]
+\caption{CVSD decoder algorithm}
+\label{alg:module:audio:cvsd:decoder}
+\algsetup{linenosize=\footnotesize}
+\algsetup{linenodelimiter=:}
+\algsetup{indent=2em}
+\begin{algorithmic}[1]
+\STATE $\vec{b} \leftarrow \{b_0,b_1,b_2,\ldots\}$  \COMMENT{input bit samples}
+\STATE $v_0 \leftarrow 0$                           \COMMENT{initial output reference}
+\STATE $\Delta_0 \leftarrow \Delta_{min}$           \COMMENT{initialize step size}
+\STATE $\hat{\vec{b}}_0 \leftarrow \{0,0,\ldots,0\}$\COMMENT{initialize $N$-bit buffer}
+
+\FOR{$k=0,\,1,\,2,\,\ldots$}
+    \STATE $\hat{\vec{b}}_k \leftarrow  \{\hat{b}_1,\hat{b}_2,\ldots,\hat{b}_{N-1},b_k\}$
+        \COMMENT{append output bit to end of buffer}
+    \STATE $m \leftarrow \sum_{i=0}^{N-1}{\hat{\vec{b}}_i}$
+        \COMMENT{compute sum of last $N$ bits}
+    \STATE $\Delta_k \leftarrow \begin{cases}\Delta_{k-1}\zeta & m = 0, m=N \\ \Delta_{k-1}/\zeta & \text{else}\end{cases}$
+        \COMMENT{adjust step size}
+    \STATE $v_{k+1} \leftarrow v_k + (-1)^{1-b_k} \Delta_k$
+        \COMMENT{adjust reference value}
+    \STATE $y_k \leftarrow v_k$
+        \COMMENT{set output value}
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+%
+
+%
 \subsubsection{Pre-/Post-Filtering}
 \label{module:audio:cvsd:filtering}
 To preserve the signal's integrity the encoder applies a pre-filter
