@@ -23,6 +23,7 @@ src/doc-html-gen
 src/equalizer_cccf
 src/filter_decim_crcf
 src/filter_firdespm
+src/filter_firfilt_crcf
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
 src/filter_iirfilt_crcf

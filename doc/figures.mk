@@ -56,6 +56,8 @@ local_pdffiles :=					\
 							\
 	figures.gen/filter_firdespm.pdf			\
 							\
+	figures.gen/filter_firfilt_crcf_time.pdf	\
+							\
 	figures.gen/filter_firhilb_decim_crcf_time.pdf	\
 	figures.gen/filter_firhilb_decim_crcf_freq.pdf	\
 							\
@@ -123,6 +125,7 @@ local_progs :=						\
 	src/equalizer_cccf				\
 	src/filter_iirdes				\
 	src/filter_firdespm				\
+	src/filter_firfilt_crcf				\
 	src/filter_firhilb_decim_crcf			\
 	src/filter_iirfilt_crcf				\
 	src/filter_decim_crcf				\
@@ -226,6 +229,12 @@ figures.gen/filter_bessel_zpk.gnu	: src/filter_iirdes
 figures.gen/filter_firdespm.gnu : src/filter_firdespm
 	./$<
 
+
+# 
+# firfilt
+#
+figures.gen/filter_firfilt_crcf_time.gnu : src/filter_firfilt_crcf
+	./$<
 
 #
 # firhilb decimator

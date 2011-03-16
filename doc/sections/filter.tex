@@ -125,13 +125,66 @@ in the main \liquid\ project directory.
 %
 \subsection{{\tt firfilt} (finite impulse response filter)}
 \label{module:filter:firfilt}
-Finite impulse response (FIR) filter.
-The output $y$ is the convolution of the input $x$ with the filter
-coefficients (impulse response) $h$, viz
-\[
+Finite impulse response (FIR) filters are implemented in \liquid\ with
+the {\tt firfilt} family of objects.
+FIR filters (also known as {\em non-recursive filters}) operate on
+discrete-time samples, computing the output $y$ as the convolution of
+the input $\vec{x}$ with the filter coefficients $\vec{h}$ as
+%
+\begin{equation}
+\label{eqn:filter:firfilt}
     y(n) = \sum_{k=0}^{N-1}{ h(k) x(N-k-1) }
-\]
-where $\vec{h} = \{h_0,h_1,\ldots,h_{N-1}\}$ is the filter impulse response.
+\end{equation}
+%
+where $\vec{h} = [h(0),h(1),\ldots,h(N-1)]$
+is the filter impulse response.
+Notice that the output sample in (\ref{eqn:filter:firfilt})
+is simply the vector dot product (see Section~\ref{module:dotprod})
+of the filter coefficients $\vec{h}$ with the time-reversed sequence
+$\vec{x}$.
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firfilt_crcf_time}
+\caption{{\tt firfilt\_crcf} (finite impulse response filter) demonstration}
+\label{fig:module:filter:firfilt_crcf}
+\end{figure}
+%
+An example of the {\tt firfilt} can be seen in
+Figure~\ref{fig:module:filter:firfilt_crcf}
+in which a low-pass filter is applied to a signal to remove a
+high-frequency component.
+%
+An example of the {\tt firfilt} interface is listed below.
+%
+\input{listings/firfilt.example.c.tex}
+%
+Listed below is the full interface to the {\tt firfilt} family of
+objects.
+While each method is listed for {\tt firfilt\_crcf}, the same
+functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
+%
+\begin{description}
+\item[{\tt firfilt\_crcf\_create(*h,N)}]
+    creates a {\tt firfilt} object with $N$ filter coefficients
+    $\vec{h}$.
+\item[{\tt firfilt\_crcf\_destroy(q)}]
+    destroys a {\tt firfilt} object, freeing all internally-allocated
+    memory.
+\item[{\tt firfilt\_crcf\_print(q)}]
+    prints the parameters of a {\tt firfilt} object to the standard
+    output.
+\item[{\tt firfilt\_crcf\_clear(q)}]
+    clears the internal buffer of a {\tt firfilt} object.
+\item[{\tt firfilt\_crcf\_push(q,x)}]
+    pushes an input sample $x$ into the internal buffer of the filter
+    object.
+\item[{\tt firfilt\_crcf\_execute(q,*y)}]
+    generates the output sample $y$ by computing the vector dot product
+    (see Section~\ref{module:dotprod})
+    between the internal filter coefficients and the internall buffer.
+\end{description}
+%
 
 % firhilb
 \subsection{{\tt firhilb} (finite impulse response Hilbert transform)}
@@ -277,13 +330,18 @@ Listed below is a basic example of the interface.
 For more detailed and extensive examples, refer to the {\tt examples/}
 source directory.
 \input{listings/iirfilt.example.c.tex}
-
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_iirfilt_crcf_time}
 \caption{{\tt iirfilt\_crcf} (infinite impulse response filter) demonstration}
 \label{fig:module:filter:iirfilt_crcf}
 \end{figure}
+%
+An example of the {\tt iirfilt} can be seen in
+Figure~\ref{fig:module:filter:iirfilt_crcf}
+in which a low-pass filter is applied to a signal to remove a
+high-frequency component.
 
 
 \subsection{{\tt iirdes} (infinite impulse response filter design)}

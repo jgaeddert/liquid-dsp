@@ -1,9 +1,9 @@
 //
-// filter_iirfilt_crcf.c
+// filter_firfilt_crcf.c
 //
-// Complex infinite impulse response filter example. Demonstrates
-// the functionality of iirfilt by designing a low-order
-// prototype (e.g. Butterworth) and using it to filter a noisy
+// Complex finite impulse response filter example. Demonstrates
+// the functionality of firfilt by designing a low-order
+// prototype and using it to filter a noisy
 // signal.  The filter coefficients are real, but the input and
 // output arrays are complex.  The filter order and cutoff
 // frequency are specified at the beginning.
@@ -16,50 +16,31 @@
 #include <liquid/liquid.h>
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME_TIME "figures.gen/filter_iirfilt_crcf_time.gnu"
+#define OUTPUT_FILENAME_TIME "figures.gen/filter_firfilt_crcf_time.gnu"
 
 int main() {
     // options
-    unsigned int order=4;   // filter order
+    unsigned int h_len=11;  // filter length
     float fc=0.1f;          // cutoff frequency
-    float f0=0.0f;          // center frequency
-    float Ap=1.0f;          // pass-band ripple
     float As=40.0f;         // stop-band attenuation
     unsigned int n=128;     // number of samples
-    liquid_iirdes_filtertype ftype  = LIQUID_IIRDES_ELLIP;
-    liquid_iirdes_bandtype   btype  = LIQUID_IIRDES_LOWPASS;
-    liquid_iirdes_format     format = LIQUID_IIRDES_SOS;
-
-    // derived values : compute filter length
-    unsigned int N = order; // effective order
-    // filter order effectively doubles for band-pass, band-stop
-    // filters due to doubling the number of poles and zeros as
-    // a result of filter transformation
-    if (btype == LIQUID_IIRDES_BANDPASS ||
-        btype == LIQUID_IIRDES_BANDSTOP)
-    {
-        N *= 2;
-    }
-    unsigned int r = N%2;       // odd/even order
-    unsigned int L = (N-r)/2;   // filter semi-length
-
-    // allocate memory for filter coefficients
-    unsigned int h_len = (format == LIQUID_IIRDES_SOS) ? 3*(L+r) : N+1;
-    float b[h_len];
-    float a[h_len];
 
     // design filter
-    iirdes(ftype, btype, format, order, fc, f0, Ap, As, b, a);
+    float h[h_len];
+    fir_kaiser_window(h_len, fc, As, 0.0f, h);
+
+    // normalize filter by DC gain
+    unsigned int i;
+    float h2 = 0.0f;
+    for (i=0; i<h_len; i++)
+        h2 += h[i];
+    for (i=0; i<h_len; i++)
+        h[i] /= h2;
+    printf("h2 : %12.8f\n", h2);
 
     // create filter object
-    iirfilt_crcf f = NULL;
-    if (format == LIQUID_IIRDES_SOS)
-        f = iirfilt_crcf_create_sos(b,a,L+r);
-    else
-        f = iirfilt_crcf_create(b,h_len, a,h_len);
-    iirfilt_crcf_print(f);
-
-    unsigned int i;
+    firfilt_crcf q = firfilt_crcf_create(h,h_len);
+    firfilt_crcf_print(q);
 
     // allocate memory for data arrays
     float complex x[n];
@@ -68,8 +49,8 @@ int main() {
     // generate input signal (noisy sine wave with decaying amplitude)
     for (i=0; i<n; i++) {
 #if 0
-        x[i] = cexpf((2*M_PI*0.057f*_Complex_I - 0.04f)*i);
-        x[i] += 0.1f*(randnf() + _Complex_I*randnf());
+        x[i]  = cexpf((2*M_PI*0.057f*_Complex_I - 0.04f)*i);
+        x[i] += 0.02f*(randnf() + _Complex_I*randnf());
 #else
         x[i] = 1.0f*cexpf(_Complex_I*2*M_PI*0.057f*i) + 
                0.5f*cexpf(_Complex_I*2*M_PI*0.192f*i);
@@ -78,11 +59,13 @@ int main() {
     }
 
     // run filter
-    for (i=0; i<n; i++)
-        iirfilt_crcf_execute(f, x[i], &y[i]);
+    for (i=0; i<n; i++) {
+        firfilt_crcf_push(q, x[i]);
+        firfilt_crcf_execute(q, &y[i]);
+    }
 
     // destroy filter object
-    iirfilt_crcf_destroy(f);
+    firfilt_crcf_destroy(q);
 
 
     // generate plots
