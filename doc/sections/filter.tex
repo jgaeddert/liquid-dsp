@@ -101,8 +101,8 @@ functionality applies to {\tt decim\_rrrf} and {\tt decim\_cccf}.
 %
 \begin{description}
 \item[{\tt decim\_crcf\_create(D,*h,N)}]
-    creates a {\tt decim} object with a decimation factor $D$ using
-    filter coefficients $\vec{h}$ with a length $N$.
+    creates a {\tt decim} object with a decimation factor $D$ using $N$
+    filter coefficients $\vec{h}$.
 \item[{\tt decim\_crcf\_destroy(q)}]
     destroys a {\tt decim} object, freeing all internally-allocated
     memory.
@@ -250,22 +250,66 @@ FIR filter design (Section~\ref{module:filter:firdes}).
 %
 %\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
 
+% 
 % interp
+%
 \subsection{{\tt interp} (interpolator)}
+\label{module:filter:interp}
 The {\tt interp} object implements a basic interpolator with an integer
 output-to-input resampling ratio.
-
+An example of the {\tt interp} interface is listed below.
+%
 \input{listings/interp.example.c.tex}
-
+%
+Listed below is the full interface to the {\tt interp} family of
+objects.
+While each method is listed for {\tt interp\_crcf}, the same
+functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
+%
+\begin{description}
+\item[{\tt interp\_crcf\_create(M,*h,N)}]
+    creates an {\tt interp} object with an interpolation factor $M$
+    using $N$ filter coefficients $\vec{h}$.
+\item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
+    creates an {\tt interp} object
+    from a square-root Nyquist filter prototype with
+    $k$ samples per symbol (interpolation factor),
+    $m$ symbols of delay,
+    $\beta$ excess bandwidth,
+    and a fractional sampling interval $\Delta t$.
+    Section~\ref{module:filter:firdes:rnyquist}
+    provides a detailed description of the available square-root Nyquist
+    filter prototypes available in \liquid.
+\item[{\tt interp\_crcf\_destroy(q)}]
+    destroys the interpolator, freeing all internally-allocated memory.
+\item[{\tt interp\_crcf\_print(q)}]
+    prints the internal properties of the interpolator to the standard
+    output.
+\item[{\tt interp\_crcf\_clear(q)}]
+    clears the internal interpolator buffers.
+\item[{\tt interp\_crcf\_execute(q,x,*y)}]
+    executes the interpolator for an input $x$, storing the result in
+    the output array $y$ (which has a length of $M$ samples).
+\end{description}
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_interp_crcf}
-\caption{{\tt interp\_crcf} (interpolator) demonstration, $k=4$}
+\caption{{\tt interp\_crcf} (interpolator) example with $M=4$,
+         compensating for filter delay.}
 \label{fig:module:filter:interp_crcf}
 \end{figure}
+%
+A graphical example of the interpolator can be seen in
+Figure~\ref{fig:module:filter:interp_crcf}.
+A detailed example program is given in
+{\tt examples/interp\_crcf\_example.c},
+located under the main \liquid\ project directory.
 
 
+% 
 % iirfilt
+%
 \subsection{{\tt iirfilt} (infinite impulse response filter)}
 \label{module:filter:iirfilt}
 The {\tt iirfilt\_crcf} object and family implement the infinite impulse
@@ -911,6 +955,9 @@ $\Delta f=0.05$, $A_s=60$dB}
 
 \subsubsection{{\tt rcos} (raised-cosine filter)}
 \label{module:filter:firdes:rcos}
+
+\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
+\label{module:filter:firdes:rnyquist}
 
 \subsubsection{{\tt rrcos} (square-root raised-cosine filter)}
 \label{module:filter:firdes:rrcos}
