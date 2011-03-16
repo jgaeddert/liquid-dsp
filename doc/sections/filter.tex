@@ -319,24 +319,30 @@ be fed back into the input, thus creating an impulse response which is
 non-zero for an infinite amount of time.
 Formally, the output signal $y[n]$ may be written in terms of the input signal
 $x[n]$ as
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:y}
     y[n] = \frac{1}{a_0} \left(
            \sum_{j=0}^{n_b-1}{ b_j x[n-j] } -
            \sum_{k=1}^{n_a-1}{ a_k y[n-k] }
            \right)
-\]
+\end{equation}
+%
 where $\vec{b} = [b_0,b_1,\ldots,b_{n_b-1}]^T$ are the feed-forward parameters
 and   $\vec{a} = [a_0,a_1,\ldots,a_{n_a-1}]^T$ are the feed-back parameters
 of length $n_b$ and $n_a$, respectively.
 The $z$-transform of the transfer function is therefore
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:Hz}
     H(z) = \frac{Y(z)}{X(z)}
          = \frac{\sum\limits_{j=0}^{n_b-1}{b_j z^{-j}}}
                 {\sum\limits_{k=0}^{n_a-1}{a_k z^{-k}}}
          = \frac{ b_0 + b_1 z^{-1} + \cdots + b_{n_b-1} z^{n_b-1}}
                 { a_0 + a_1 z^{-1} + \cdots + a_{n_a-1} z^{n_a-1}}
-\]
-Typically, $H(z)$ is normalized such that $a_0=1$.
+\end{equation}
+%
+Typically the coefficients in $H(z)$ are normalized such that $a_0=1$.
 
 For larger order filters (even as small as $n\approx 8$) the filter can become
 unstable due to finite machine precision.
@@ -345,7 +351,9 @@ sections.
 For a filter of order $n$, these sections are denoted by the two
 $(L+r)\times 3$ matrices $\vec{B}$ and $\vec{A}$
 where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:Hdz}
     H_d(z) = 
              \left[
                 \frac{B_{r,0} + B_{r,1}z^{-1}}
@@ -355,51 +363,77 @@ where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
                 \frac{B_{k,0} + B_{k,1}z^{-1} + B_{k,2}z^{-2}}
                      {1       + A_{k,1}z^{-1} + A_{k,2}z^{-2}}
              \right]}
-\]
+\end{equation}
+%
 Notice that $H(z)$ is now a series of cascaded second-order IIR filters.
 The `sos' form is practical when filters are designed from analog prototypes
 where the poles and zeros are known.
 \liquid\ implements second-order sections efficiently with the internal
 {\tt iirfiltsos\_xxxt} object.
 For a cascaded second-order section IIR filter, use
-{\tt iirfilt\_xxxt\_create\_sos(B,A,n)}.
+{\tt iirfilt\_crcf\_create\_sos(B,A,n)}.
+%
+{\em See also}: {\tt iirdes} (IIR filter design) in
+Section~\ref{module:filter:iirdes}.
 
-See also: {\tt iirdes} (IIR filter design).
-
-\subsubsection{interface}
-\label{module:filter:iirfilt:interface}
-The interface to the {\tt iirfilt} object follows the convention of other
-\liquid\ signal processing objects in that the ``{\tt xxxt}'' extension in
-this section is only a placeholder for ``{\tt crcf}'' etc.
-
+Listed below is the full interface to the {\tt iirfilt} family of
+objects.
+The interface to the {\tt iirfilt} object follows the convention of
+otherr \liquid\ signal processing objects;
+while each method is listed for {\tt iirfilt\_crcf}, the same
+functionality applies to {\tt iirfilt\_rrrf} and {\tt iirfilt\_cccf}.
+%
 \begin{description}
-\item[{\tt iirfilt\_xxxt\_create()}]
-    creates a new {\tt iirfilt} object
-\item[{\tt iirfilt\_xxxt\_create\_sos()}]
-    creates a new {\tt iirfilt} object using second-order sections.
-\item[{\tt iirfilt\_xxxt\_destroy()}]
+\item[{\tt iirfilt\_crcf\_create(*b,Nb,*a,Nb)}]
+    creates a new {\tt iirfilt} object with
+    $N_b$ feed-forward coefficients $\vec{b}$ and
+    $N_a$ feed-back coefficients $\vec{a}$.
+\item[{\tt iirfilt\_crcf\_create\_sos(*B,*A,Nsos)}]
+    creates a new {\tt iirfilt} object using $N_{sos}$ second-order
+    sections.
+    The $[N_{sos} \times 3]$ feed-forward coefficient matrix is
+    specified by $\vec{B}$ and
+    the $[N_{sos} \times 3]$ feed-back coefficient matrix is
+    specified by $\vec{A}$.
+\item[{\tt iirfilt\_crcf\_create\_prototype(ftype,btype,format,order,fc,f0,Ap,As)}]
+    creates a new IIR filter object using the prototype interface
+    described in Section~\ref{module:filter:iirdes:iirdes}.
+    This is the simplest method for designing an IIR filter with
+    Butterworth, Chebyshev-I, Chebyshev-II, elliptic/Cauer, or Bessel
+    coefficients.
+\item[{\tt iirfilt\_crcf\_destroy(q)}]
     destroys an {\tt iirfilt} object, freeing all internally-allocated memory
     arrays and buffers.
-\item[{\tt iirfilt\_xxxt\_print()}]
+\item[{\tt iirfilt\_crcf\_print(q)}]
     prints the internals of an {\tt iirfilt} object.
-\item[{\tt iirfilt\_xxxt\_clear()}]
+\item[{\tt iirfilt\_crcf\_clear(q)}]
     clears the filter's internal state.
-\item[{\tt iirfilt\_xxxt\_execute()}]
-    accepts one input sample and computes one output sample (i.e. executes one
-    iteration of the filter).
-\item[{\tt iirfilt\_xxxt\_get\_length()}]
+\item[{\tt iirfilt\_crcf\_execute(q,x,*y)}]
+    executes one iteration of the filter with an input $x$, storing the
+    result in $y$, and updating its internal state.
+\item[{\tt iirfilt\_crcf\_get\_length(q)}]
     returns the order of the filter.
+\item[{\tt iirfilt\_crcf\_freqresponse(q,fc,*H)}]
+    computes the complex response $H$ of the filter at the normalized
+    frequency $f_c$.
+\item[{\tt iirfilt\_crcf\_groupdelay(q,fc)}]
+    returns the group delay of the filter at the normalized
+    frequency $f_c$.
 \end{description}
-
+%
 Listed below is a basic example of the interface.
-For more detailed and extensive examples, refer to the {\tt examples/}
-source directory.
+For more detailed and extensive examples, refer to
+{\tt examples/iirfilt\_crcf\_example.c}
+in the main \liquid\ project source directory.
+%
 \input{listings/iirfilt.example.c.tex}
 %
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_iirfilt_crcf_time}
-\caption{{\tt iirfilt\_crcf} (infinite impulse response filter) demonstration}
+\caption{
+    {\tt iirfilt\_crcf} (infinite impulse response filter)
+    example.}
 \label{fig:module:filter:iirfilt_crcf}
 \end{figure}
 %
@@ -408,7 +442,9 @@ Figure~\ref{fig:module:filter:iirfilt_crcf}
 in which a low-pass filter is applied to a signal to remove a
 high-frequency component.
 
-
+% 
+% iirdes
+%
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
 \label{module:filter:iirdes}
 \liquid\ implements infinite impulse respone (IIR) filter design for the four
