@@ -70,6 +70,7 @@ GRAPHICS = 					\
 # Listings used in this document
 LISTINGS_C = 					\
 	listings/agc.example.c			\
+	listings/autocorr.example.c		\
 	listings/bpacket.example.c		\
 	listings/crc.example.c			\
 	listings/cvsd.example.c			\

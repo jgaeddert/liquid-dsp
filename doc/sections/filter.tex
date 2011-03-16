@@ -14,16 +14,35 @@ For linear digital modulation techniques (see section~\ref{module:modem}),
 the matched filter is responsible for limiting the occupied bandwidth of the
 transmitted signal while eliminating inter-symbol interference.
 
-% autocorr
-\subsection{{\tt autocorr} (auto-correlator)}
-Implements an auto-correlator
-% TODO check this equation
-\[
-    r_{xx}(n) = \sum_{k=0}^{N-1} {x(n-k)x^*(n-k-d)}
-\]
-where $N$ is the window length, and $d$ is the overlap delay.
 
+% 
+% autocorr
+%
+\subsection{{\tt autocorr} (auto-correlator)}
+The {\tt autocorr} family of objects implement autocorrelation of
+signals.
+The discrete autocorrelation of a signal $\vec{x}$
+is a delay, conjugate multiply, and accumulate operation defined as
+%
+% TODO check this equation
+\begin{equation}
+\label{eqn:filter:autocorr}
+    r_{xx}(n) = \sum_{k=0}^{N-1} {x(n-k)x^*(n-k-d)}
+\end{equation}
+%
+where $N$ is the window length, and $d$ is the overlap delay.
+An example of the {\tt autocorr} interface is listed below.
+%
+\input{listings/autocorr.example.c.tex}
+%
+A more detailed example is given in
+{\tt examples/autocorr\_cccf\_example.c}
+in the main \liquid\ project directory.
+
+
+% 
 % decim
+%
 \subsection{{\tt decim} (decimator)}
 The {\tt decim} object family implements a basic interpolator with an integer
 output-to-input resampling ratio.
