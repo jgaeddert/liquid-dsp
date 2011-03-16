@@ -19,6 +19,7 @@ transmitted signal while eliminating inter-symbol interference.
 % autocorr
 %
 \subsection{{\tt autocorr} (auto-correlator)}
+\label{module:filter:autocorr}
 The {\tt autocorr} family of objects implement autocorrelation of
 signals.
 The discrete autocorrelation of a signal $\vec{x}$
@@ -38,24 +39,53 @@ An example of the {\tt autocorr} interface is listed below.
 A more detailed example is given in
 {\tt examples/autocorr\_cccf\_example.c}
 in the main \liquid\ project directory.
+%
+Listed below is the full interface to the {\tt autocorr} family of
+objects.
+While each method is listed for {\tt autocorr\_cccf}, the same
+functionality applies to {\tt autocorr\_rrrf}.
+%
+\begin{description}
+\item[{\tt autocorr\_cccf\_create(N,d)}]
+    creates and returns an {\tt autocorr} object with a window size of
+    $N$ samples and a delay of $d$ samples.
+\item[{\tt autocorr\_cccf\_destroy(q)}]
+    destroys an {\tt autocorr} object, freeing all internally-allocated
+    memory.
+\item[{\tt autocorr\_cccf\_clear(q)}]
+    clears the internal {\tt autocorr} buffers.
+\item[{\tt autocorr\_cccf\_print(q)}]
+    prints the internal state of the {\tt autocorr} object.
+\item[{\tt autocorr\_cccf\_push(q,x)}]
+    pushes a sample $x$ into the internal buffer of an {\tt autocorr}
+    object.
+\item[{\tt autocorr\_cccf\_execute(q,*rxx)}]
+    executes the delay, conjugate multiply, and accumulate operation,
+    storing the result in the output variable $r_{xx}$.
+\item[{\tt autocorr\_cccf\_get\_energy(q)}]
+    returns $(1/N)\sum_{k=0}^{N-1}{|x(n-k)x^*(n-k-d)|}$
+\end{description}
+
 
 
 % 
 % decim
 %
 \subsection{{\tt decim} (decimator)}
-The {\tt decim} object family implements a basic interpolator with an integer
-output-to-input resampling ratio.
-It is essentially just a {\tt firfilt} object which operates on a block of
-samples at a time.
-An example of the decimator can be seen in figure~\ref{fig:module:filter:decim_crcf}.
+\label{module:filter:decim}
+The {\tt decim} object family implements a basic interpolator with an
+integer output-to-input resampling ratio $D$.
+It is essentially just a {\tt firfilt} object which operates on a block
+of samples at a time.
+An example of the decimator can be seen in
+Figure~\ref{fig:module:filter:decim_crcf}.
 
 %The same result can be accomplished with a {\tt firfilt} object...
 
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_decim_crcf}
-\caption{{\tt decim\_crcf} (decimator) demonstration, $D=4$}
+\caption{{\tt decim\_crcf} (decimator) example, $D=4$}
 \label{fig:module:filter:decim_crcf}
 \end{figure}
 
