@@ -79,19 +79,50 @@ It is essentially just a {\tt firfilt} object which operates on a block
 of samples at a time.
 An example of the decimator can be seen in
 Figure~\ref{fig:module:filter:decim_crcf}.
-
-%The same result can be accomplished with a {\tt firfilt} object...
-
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_decim_crcf}
-\caption{{\tt decim\_crcf} (decimator) example, $D=4$}
+\caption{{\tt decim\_crcf} (decimator) example with $D=4$,
+         compensating for filter delay.}
 \label{fig:module:filter:decim_crcf}
 \end{figure}
+%
+Listed below is the full interface to the {\tt decim} family of
+objects.
+While each method is listed for {\tt decim\_crcf}, the same
+functionality applies to {\tt decim\_rrrf} and {\tt decim\_cccf}.
+%
+\begin{description}
+\item[{\tt decim\_crcf\_create(D,*h,N)}]
+    creates a {\tt decim} object with a decimation factor $D$ using
+    filter coefficients $\vec{h}$ with a length $N$.
+\item[{\tt decim\_crcf\_destroy(q)}]
+    destroys a {\tt decim} object, freeing all internally-allocated
+    memory.
+\item[{\tt decim\_crcf\_print(q)}]
+    prints the parameters of a {\tt decim} object to the standard
+    output.
+\item[{\tt decim\_crcf\_clear(q)}]
+    clears the internal buffer of a {\tt decim} object.
+\item[{\tt decim\_crcf\_execute(q,*x,*y,k)}]
+    computes the output decimation of the input sequence $\vec{x}$
+    (which is $D$ samples in size) at the index $k$ and stores the
+    result in $y$.
+\end{description}
+%
+An example of the {\tt decim} interface is listed below.
+%
+\input{listings/decim.example.c.tex}
+%
+A more detailed example is given in
+{\tt examples/decim\_crcf\_example.c}
+in the main \liquid\ project directory.
 
 
-
+%
 % firfilt
+%
 \subsection{{\tt firfilt} (finite impulse response filter)}
 \label{module:filter:firfilt}
 Finite impulse response (FIR) filter.
