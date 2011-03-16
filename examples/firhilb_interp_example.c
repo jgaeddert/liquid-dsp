@@ -19,48 +19,57 @@
 #define OUTPUT_FILENAME "firhilb_interp_example.m"
 
 int main() {
-    unsigned int m=5;           // filter semi-length
-    float As=60.0f;             // stop-band attenuation [dB]
-    float fc=0.73f;             // signal center frequency
-    unsigned int N=128;         // number of samples
+    unsigned int m=5;               // Hilbert filter semi-length
+    float As=60.0f;                 // stop-band attenuation [dB]
+    float fc=0.37f;                 // signal center frequency
+    unsigned int num_samples=128;   // number of samples
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(m,As);
-    firhilb_print(f);
+    firhilb q = firhilb_create(m,As);
+    firhilb_print(q);
 
-    // open output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    // data arrays
+    float complex x[num_samples];   // complex input
+    float y[2*num_samples];         // real output
+
+    // initialize input array
+    unsigned int i;
+    for (i=0; i<num_samples; i++)
+        x[i] = cexpf(_Complex_I*2*M_PI*fc*i);
+
+    for (i=0; i<num_samples; i++) {
+        // execute transform (interpolator) to compute real signal
+        firhilb_interp_execute(q, x[i], &y[2*i]);
+
+        printf("y(%3u) = %12.8f;\n", 2*i+1, y[2*i+0]);
+        printf("y(%3u) = %12.8f;\n", 2*i+2, y[2*i+1]);
+    }
+
+    // destroy Hilbert transform object
+    firhilb_destroy(q);
+
+    // 
+    // export results to file
+    //
+    FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
     fprintf(fid,"h_len=%u;\n", 4*m+1);
-    fprintf(fid,"N=%u;\n", N);
+    fprintf(fid,"num_samples=%u;\n", num_samples);
 
-    unsigned int i;
-    float y[2], theta=0.0f, dtheta=2*M_PI*fc;
-    float complex x;
-    for (i=0; i<N; i++) {
-        // compute complex input signal
-        x = cexpf(_Complex_I*theta);
-        theta += dtheta;
-
-        // execute transform (interpolator) to compute real signal
-        firhilb_interp_execute(f, x, y);
-
+    for (i=0; i<num_samples; i++) {
         // print results
-        fprintf(fid,"x(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(x), cimagf(x));
-        fprintf(fid,"y(%3u) = %8.4f;\n", 2*i+1, y[0]);
-        fprintf(fid,"y(%3u) = %8.4f;\n", 2*i+2, y[1]);
-
-        printf("y(%3u) = %8.4f;\n", 2*i+1, y[0]);
-        printf("y(%3u) = %8.4f;\n", 2*i+2, y[1]);
+        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
+        fprintf(fid,"y(%3u) = %12.4e;\n", 2*i+1, y[2*i+0]);
+        fprintf(fid,"y(%3u) = %12.4e;\n", 2*i+2, y[2*i+1]);
     }
 
     // plot results
     fprintf(fid,"nfft=512;\n");
     fprintf(fid,"%% compute normalized windowing functions\n");
-    fprintf(fid,"wx = 1.8534/N*hamming(length(x)).'; %% x window\n");
-    fprintf(fid,"wy = 1.8534/N*hamming(length(y)).'; %% y window\n");
+    fprintf(fid,"wx = 1.8534/num_samples*hamming(length(x)).'; %% x window\n");
+    fprintf(fid,"wy = 1.8534/num_samples*hamming(length(y)).'; %% y window\n");
     fprintf(fid,"X=20*log10(abs(        (fft(x.*wx,nfft))));\n");
     fprintf(fid,"Y=20*log10(abs(fftshift(fft(y.*wy,nfft))));\n");
     fprintf(fid,"f =[0:(nfft-1)]/nfft-0.5;\n");
@@ -75,7 +84,6 @@ int main() {
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 
-    firhilb_destroy(f);
     printf("done.\n");
     return 0;
 }
