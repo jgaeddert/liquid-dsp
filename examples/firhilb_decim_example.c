@@ -1,5 +1,5 @@
 //
-// hilbert_decim_example.c
+// firhilb_decim_example.c
 //
 // Hilbert transform: 2:1 real-to-complex decimator.  This example
 // demonstrates the functionality of firhilb (finite impulse response
@@ -8,7 +8,7 @@
 // is a real-valued sinusoid of N samples. The output is a complex-
 // valued sinusoid of N/2 samples.
 //
-// SEE ALSO: hilbert_interp_example.c
+// SEE ALSO: firhilb_interp_example.c
 //
 
 #include <stdio.h>
@@ -17,7 +17,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "hilbert_decim_example.m"
+#define OUTPUT_FILENAME "firhilb_decim_example.m"
 
 int main() {
     unsigned int m=5;           // filter semi-length

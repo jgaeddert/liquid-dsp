@@ -8,7 +8,7 @@
 // samples.  The input is a complex-valued sinusoid of N samples.
 // The output is a real-valued sinusoid of 2*N samples.
 //
-// SEE ALSO: hilbert_decim_example.c
+// SEE ALSO: firhilb_decim_example.c
 
 #include <stdio.h>
 #include <complex.h>
@@ -16,7 +16,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "hilbert_interp_example.m"
+#define OUTPUT_FILENAME "firhilb_interp_example.m"
 
 int main() {
     unsigned int m=5;           // filter semi-length

@@ -35,6 +35,8 @@ local_src	:=			\
 	firfilt_rrrf_recreate_example.c	\
 	firdes_kaiser_example.c		\
 	firdespm_example.c		\
+	firhilb_decim_example.c		\
+	firhilb_interp_example.c	\
 	firpfb_rrrf_example.c		\
 	firpfbch_example.c		\
 	firpfbch_analysis_example.c	\
@@ -48,8 +50,6 @@ local_src	:=			\
 	gmskmodem_example.c		\
 	gradient_search_datafit_example.c	\
 	gradient_search_example.c	\
-	hilbert_decim_example.c		\
-	hilbert_interp_example.c	\
 	interleaver_example.c		\
 	interleaver_scatterplot_example.c	\
 	iirdes_example.c		\

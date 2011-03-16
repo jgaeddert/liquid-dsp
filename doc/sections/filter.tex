@@ -186,32 +186,32 @@ functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
 \end{description}
 %
 
+
+% 
 % firhilb
+%
 \subsection{{\tt firhilb} (finite impulse response Hilbert transform)}
-The {\tt firhilb} object is a finite impulse response Hilbert transform which
+\label{module:filter:firhilb}
+The {\tt firhilb} object in \liquid\ implements a finite impulse
+response Hilbert transform which
 converts between real and complex time series.
-The interpolator takes a complex time series and produces real-valued samples
-at twice the sample rate.
-The decimator reverses the process by halving the sample rate of a real-valued
-time series to a complex-valued one.
+The interpolator takes a complex time series and produces real-valued
+samples at twice the sample rate.
+The decimator reverses the process by halving the sample rate of a
+real-valued time series to a complex-valued one.
 
 Typical trade-offs between filter length, side-lobe suppression, and
 transition bandwidth apply.
-The {\tt firhilb} object uses a half-band filter to implement the transform as
-efficiently as possible.
-While any filter length can be accepted, the {\tt firhilb} object internally
-forces the length to be of the form $n=4m+1$.
+The {\tt firhilb} object uses a half-band filter to implement the
+transform as efficiently as possible.
+While any filter length can be accepted, the {\tt firhilb} object
+internally forces the length to be of the form $n=4m+1$
+to reduce the computational load.
 A halfband filter of this length has $2m$ zeros and $2m+1$ non-zero
 coefficients.
 Of these non-zero coefficients, the center is exactly $1$ while the other $2m$
-are even symmetric, and therefore only $m$ computations are needed...
-[TODO: flesh out this section]
-
-{\it See also:} {\tt resamp2} (section~\ref{module:filter:resamp2}),
-FIR filter design (section~\ref{module:filter:firdes}).
-
-\input{listings/firhilb.example.c.tex}
-
+are even symmetric, and therefore only $m$ computations are needed.
+%
 \begin{figure}
 \centering
 \subfigure[time] {
@@ -225,9 +225,24 @@ small signal at $f=0.13$ is due to aliasing as a result of imperfect image
 rejection}
 \label{fig:module:filter:firhilb_crcf}
 \end{figure}
+%
+An example code listing is given below.
+%
+\input{listings/firhilb.example.c.tex}
+%
+For more detailed examples, refer to the files
+{\tt examples/firhilb\_decim\_example.c} and
+{\tt examples/firhilb\_interp\_example.c}
+located within the main \liquid\ project directory.
+%
+{\it See also:} {\tt resamp2} (Section~\ref{module:filter:resamp2}),
+FIR filter design (Section~\ref{module:filter:firdes}).
 
+
+% 
 % firpfb
-\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
+%
+%\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
 
 % interp
 \subsection{{\tt interp} (interpolator)}
