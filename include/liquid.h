@@ -1104,6 +1104,7 @@ void liquid_levinson(float * _r,
 //
 
 #define AUTOCORR_MANGLE_CCCF(name)  LIQUID_CONCAT(autocorr_cccf,name)
+#define AUTOCORR_MANGLE_RRRF(name)  LIQUID_CONCAT(autocorr_rrrf,name)
 
 // Macro:
 //   AUTOCORR   : name-mangling macro
@@ -1125,6 +1126,11 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex,
                            liquid_float_complex)
+
+LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
 
 
 //

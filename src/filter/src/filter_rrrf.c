@@ -56,7 +56,7 @@
 #define PRINTVAL_TI(X,F)    PRINTVAL_FLOAT(X,F)
 
 // source files
-//#include "autocorr.c"
+#include "autocorr.c"
 #include "firfarrow.c"
 #include "firfilt.c"
 #include "firhilb.c"
