@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -105,23 +105,24 @@ struct firdespm_s {
 
 // run filter design (full life cycle of object)
 //  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
 //  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
 //  _des        :   desired response [size: _num_bands x 1]
 //  _weights    :   response weighting [size: _num_bands x 1]
-//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
 void firdespm_run(unsigned int _h_len,
+                  unsigned int _num_bands,
                   float * _bands,
                   float * _des,
                   float * _weights,
-                  unsigned int _num_bands,
-                  liquid_firdespm_btype _btype,
                   liquid_firdespm_wtype * _wtype,
+                  liquid_firdespm_btype _btype,
                   float * _h)
 {
     // create object
-    firdespm q = firdespm_create(_h_len,_bands,_des,_weights,_num_bands,_btype,_wtype);
+    firdespm q = firdespm_create(_h_len,_num_bands,_bands,_des,_weights,_wtype,_btype);
 
     // execute
     firdespm_execute(q,_h);
@@ -130,20 +131,21 @@ void firdespm_run(unsigned int _h_len,
     firdespm_destroy(q);
 }
 
-// create filter design object
+// create firdespm object
 //  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
 //  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
 //  _des        :   desired response [size: _num_bands x 1]
 //  _weights    :   response weighting [size: _num_bands x 1]
-//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 firdespm firdespm_create(unsigned int _h_len,
+                         unsigned int _num_bands,
                          float * _bands,
                          float * _des,
                          float * _weights,
-                         unsigned int _num_bands,
-                         liquid_firdespm_btype _btype,
-                         liquid_firdespm_wtype * _wtype)
+                         liquid_firdespm_wtype * _wtype,
+                         liquid_firdespm_btype _btype)
 {
     unsigned int i;
 
