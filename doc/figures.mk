@@ -39,6 +39,7 @@ local_pdffiles :=					\
 	figures.gen/equalizer_example2_mse.pdf		\
 	figures.gen/equalizer_example2_psd.pdf		\
 	figures.gen/equalizer_example2_taps.pdf		\
+	figures.gen/filter_rnyquist.pdf			\
 	figures.gen/filter_butter_psd.pdf		\
 	figures.gen/filter_butter_zpk.pdf		\
 							\
@@ -132,6 +133,7 @@ local_progs :=						\
 	src/filter_interp_crcf				\
 	src/filter_resamp_crcf				\
 	src/filter_kaiser				\
+	src/filter_rnyquist				\
 	src/interleaver_scatterplot			\
 	src/math_poly_examples				\
 	src/math_window					\
@@ -273,6 +275,12 @@ figures.gen/filter_kaiser_freq.gnu : src/filter_kaiser
 #
 figures.gen/filter_resamp_crcf.gnu \
 figures.gen/filter_resamp_crcf_psd.gnu: src/filter_resamp_crcf
+	./$<
+
+# 
+# rnyquist
+#
+figures.gen/filter_rnyquist.gnu : src/filter_rnyquist
 	./$<
 
 

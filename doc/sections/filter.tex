@@ -994,6 +994,73 @@ $\Delta f=0.05$, $A_s=60$dB}
 
 \subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
 \label{module:filter:firdes:rnyquist}
+Nyquist's criteria for designing a band-limited filter without
+inter-symbol interference is for the spectral response of a linear phase
+filter to be symmetric about its symbol rate.
+%
+Square-root Nyquist filters are commonly used in digital communcations
+systems with linear modulation as a pulse shape for matched filtering.
+Applying a pulse shape to the transmitted symbol sequence limits its
+occupied spectral bandwidth by smoothing the transitions between
+symbols.
+If an identical filter is applied at the receiver then the system is
+matched resulting in the maximum signal-to-noise ratio
+and (theoretically) zero inter-symbol interference.
+%The application of two square-root Nyquist filters results in 
+%
+While the design of Nyquist filters is trivial and can be accomplished
+by applying any desired window to a $\sinc$ function,
+designing a square-root Nyquist filter is not as straighforward.
+\liquid\ conveniently provides several square-root Nyquist filter
+prototypes listed in Table~\ref{tab:filter:rnyquist}.
+
+% ------------ TABLE: RNYQUIST PROTOTYPES ------------
+\begin{table*}
+\caption{Square-root Nyquist filter prototypes available in \liquid}
+\label{tab:filter:rnyquist}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}l}
+\toprule
+{\it scheme} &
+{\it description}\\\otoprule
+%
+{\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
+{\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
+{\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
+{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3\cite{harris-Moerder:2005}\\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
+All square-root Nyquist filters in \liquid\ have four basic properties:
+%
+\begin{description}
+\item[$k$] samples per symbol
+\item[$m$] filter delay (symbols)
+\item[$\beta$] excess bandwidth factor
+\item[$\Delta t$] fractional sample delay, usually set to zero for
+    typical filter designs
+\end{description}
+%
+The resulting filter will have $N = 2 k m + 1$ coefficients.
+% ... xxx
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_rnyquist}
+\caption{Contrast of the different square-root Nyquist filters
+         available in \liquid\ for
+         $k=2$, $m=9$, $\beta=0.3$, and $\Delta t = 0$.}
+\label{fig:module:filter:rnyquist}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:rnyquist} contrasts the different
+square-root Nyquist filters available in \liquid.
+The square-root raised-cosine filter is inferior to the
+(approximate) $r$-Kaiser and harris-Moerder-3 filters in both transition
+bandwidth as well as side-lobe suppression.
 
 \subsubsection{{\tt rrcos} (square-root raised-cosine filter)}
 \label{module:filter:firdes:rrcos}
