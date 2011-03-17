@@ -1013,7 +1013,7 @@ by applying any desired window to a $\sinc$ function,
 designing a square-root Nyquist filter is not as straighforward.
 \liquid\ conveniently provides several square-root Nyquist filter
 prototypes listed in Table~\ref{tab:filter:rnyquist}.
-
+%
 % ------------ TABLE: RNYQUIST PROTOTYPES ------------
 \begin{table*}
 \caption{Square-root Nyquist filter prototypes available in \liquid}
@@ -1028,25 +1028,75 @@ prototypes listed in Table~\ref{tab:filter:rnyquist}.
 {\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
 {\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
 {\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
-{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3\cite{harris-Moerder:2005}\\\bottomrule
+{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\\bottomrule
 \end{tabular*}
 }
 \end{table*}%
 % ------------------------
+%
+The interface for designing square-root Nyquist filters is simply
+%
+\begin{Verbatim}[fontsize=\small]
+    design_rnyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+\end{Verbatim}
+%
+where {\tt \_ftype} is one of the filter types in
+Table~\ref{tab:filter:rnyquist},
+$k$ is the number of samples per symbol,
+$m$ is the filter delay in symbols,
+$\beta$ is the excess bandwidth (rolloff) factor,
+$\Delta t$ is the fractional sample delay (usually set to zero for
+  typical filter designs),
+and $h$ is the output coefficients array of length $2km+1$.
+All square-root Nyquist filters in \liquid\ have these four basic
+properties ($k$, $m$, $\beta$, $\Delta t$) and produce a filter with
+$N=2km+1$ coefficients.
+%
 
-All square-root Nyquist filters in \liquid\ have four basic properties:
+The most common square-root Nyquist filter design in digital
+communications is the square-root raised-cosine (RRC) filter,
+likely due to the fact that an expression for its time series can be
+expressed in closed form.
+The filter coefficients themselves are derived from the following
+equation:
 %
-\begin{description}
-\item[$k$] samples per symbol
-\item[$m$] filter delay (symbols)
-\item[$\beta$] excess bandwidth factor
-\item[$\Delta t$] fractional sample delay, usually set to zero for
-    typical filter designs
-\end{description}
+\begin{equation}
+\label{eqn:filter:rrcos}
+    h\left[z\right] =
+      4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
+                    \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
+                  { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
+\end{equation}
 %
-The resulting filter will have $N = 2 k m + 1$ coefficients.
-% ... xxx
+where $z=n/k-m$, and $T=1$ for most cases.
+\liquid\ compensates for the two cases where $h[n]$ might be
+undefined in the above equation, i.e.
 %
+\begin{equation}
+\label{eqn:filter:rrcos:limit1}
+    \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
+\end{equation}
+%
+and
+%
+\begin{equation}
+\label{eqn:filter:rrcos:limit2}
+    \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
+        \frac{\beta}{\sqrt{2}}
+        \left[
+            \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
+            \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
+        \right]
+\end{equation}
+
+The $r$-Kaiser and harris-Moerder-3 (hM3) filters cannot be expressed in
+closed form but rely on iterations over traditional filter design
+techniques to search for the design parameters which minimize the
+resulting filter's inter-symbol interference (ISI).
+Similarly the approximate $r$-Kaiser filter uses an approximation for
+the design parameters to eliminate the need for running the search;
+this comes at the expense of a slight performance degradation.
+
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_rnyquist}
@@ -1061,46 +1111,8 @@ square-root Nyquist filters available in \liquid.
 The square-root raised-cosine filter is inferior to the
 (approximate) $r$-Kaiser and harris-Moerder-3 filters in both transition
 bandwidth as well as side-lobe suppression.
-
-\subsubsection{{\tt rrcos} (square-root raised-cosine filter)}
-\label{module:filter:firdes:rrcos}
-{\tt design\_rrc\_filter} calculates the coefficients for a square-root
-raised-cosine (RRC) finite impulse response (FIR) filter commonly used in
-digital communications.
-The input parameters are as follows
-\begin{itemize}
-    \item[$k$] : samples per symbol
-    \item[$m$] : sample delay
-    \item[$\beta$] : excess bandwidth (rolloff) factor
-\end{itemize}
-The function returns the filter coefficients in the buffer, $h$, which has been
-allocated externally.  The length of the filter is always
-\[
-    h_{len} = 2 k m + 1
-\]
-
-The filter coefficients themselves are derived from the following equation
-\[ 
-    h\left[z\right] =
-      4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
-                    \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
-                  { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
-\]
-where $z=n/k-m$, and $T=1$ for most cases.
-The function compensates for the two cases where $h[n]$ might be
-undefined in the above equation, viz
-\[
-    \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
-\]
-and
-\[
-    \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
-        \frac{\beta}{\sqrt{2}}
-        \left[
-            \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
-            \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
-        \right]
-\]
+In the figure the responses of the $r$-Kaiser and approximate $r$-Kaiser
+filters are indistinguishable.
 
 
 \subsubsection{{\tt firdespm}}

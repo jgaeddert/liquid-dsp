@@ -132,7 +132,7 @@ Hamming(12,8) block code, 16-bit cyclic redundancy check, and modulates the
 result with a QPSK modem.
 The header and payload are encapsulated with special phasing sequences, and
 finally the resulting symbols are interpolated using a half-rate root-raised
-cosine filter (see section~\ref{module:filter:firdes:rrcos}).
+cosine filter (see section~\ref{module:filter:firdes:rnyquist}).
 
 The true spectral efficiency of the frame is exactly $4/5$; 64 bytes of data
 (512 bits) encoded into 640 symbols.
