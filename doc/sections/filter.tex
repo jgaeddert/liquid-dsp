@@ -928,19 +928,32 @@ timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
     returns the internal filter coefficients.
 \end{description}
 
+
+% 
+% firdes (finite impulse response filter design)
+%
 \subsection{{\tt firdes} (finite impulse response filter design)}
 \label{module:filter:firdes}
+This section describes the finite impulse response filter design
+capabilities in \liquid.
+This includes basic low-pass filter design using the windowed-$\sinc$
+method,
+square-root Nyquist filters,
+arbitrary design using the Parks-McClellan algorithm,
+and some useful miscellaneous functions.
 
 \subsubsection{Window prototype}
+\label{module:filter:firdes:window}
 Basic idea: apply windowing function to truncated sinc
-
+%
 \begin{equation}
-h(t) = w_n(t) \sinc(\Delta f t)
+    h(t) = w_n(t) \sinc(\Delta f t)
 \end{equation}
-
+%
 where $w_n(t)$ is chosen from...
-
+%
 The Kaiser window is defined as...
+%
 \begin{equation}
 \label{eqn:kaiser_window}
     w[n] = \frac{
@@ -949,8 +962,10 @@ The Kaiser window is defined as...
         I_0\left(\pi\beta\right)
     }
 \end{equation}
+%
 where $I_\nu(z)$ is the modified Bessel function of the first kind of order
 $\nu$.
+%
 \begin{equation}
 \label{eqn:besseli_infinite_sum}
     I_\nu(z) = \sum_{k=0}^{\infty}{
@@ -961,6 +976,7 @@ $\nu$.
         }
     }
 \end{equation}
+%
 For more approximations to $I_0(z)$, see section~\ref{module:math} on the math
 module.
 
@@ -987,10 +1003,13 @@ TODO : add discussion of interface for {\tt firdes\_kaiser\_window}.
 $\Delta f=0.05$, $A_s=60$dB}
 \label{fig:module:filter:firdes_kaiser}
 \end{figure}
+%
+An example of a low-pass filter design using the Kaiser window can be
+found in Figure~\ref{fig:module:filter:firdes_kaiser}.
 
 
-\subsubsection{{\tt rcos} (raised-cosine filter)}
-\label{module:filter:firdes:rcos}
+%\subsubsection{{\tt rcos} (raised-cosine filter)}
+%\label{module:filter:firdes:rcos}
 
 \subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
 \label{module:filter:firdes:rnyquist}
@@ -1115,10 +1134,50 @@ In the figure the responses of the $r$-Kaiser and approximate $r$-Kaiser
 filters are indistinguishable.
 
 
-\subsubsection{{\tt firdespm}}
+\subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
 \label{module:filter:firdespm}
-FIR filter desing using the Parks-McClellan algorithm.
-
+FIR filter desing using the Parks-McClellan algorithm is implemented in
+\liquid\ with the {\tt firdespm} interface.
+The Parks-McClellan algorithm uses the Remez exchange algorithm to solve
+the minimax problem (minimize the maximum error) for filter design.
+The interface accepts ... with $N_b$ frequency bands... xxx
+%
+\begin{Verbatim}[fontsize=\small]
+    firdespm_run(_h_len,        // filter length
+                 _bands*,       // array of frequency bands
+                 _des*,         // desired response in each band
+                 _weights*,     // relative weighting for each band
+                 _num_bands,    // number of bands
+                 _btype,        // filter type
+                 _wtype*,       // weighting function for each band
+                 _h*)
+\end{Verbatim}
+%
+\begin{description}
+\item[{\tt \_bands}]
+    is a $[N_b \times 2]$ matrix of the band edge descriptions.
+    Each row corresponds to an upper and lower band edge for each region
+    of interest.
+    These regions cannot be overlapping.
+\item[{\tt \_des}]
+    is an array of size $N_b$ with the desired response (linear) for
+    each band.
+\item[{\tt \_weights}]
+    is an array of size $N_b$ with the relative error weighting for each
+    band.
+\item[{\tt \_num\_bands}]
+    represents $N_b$, the number of bands in the design.
+\item[{\tt \_btype}]
+    gives the filter type for the design.
+    This is typically {\tt LIQUID\_FIRDESPM\_BANDPASS} for the majority
+    of filters.
+\item[{\tt \_wtype}]
+    is an array of length $N_b$ which specifies the weighting function
+    for each band (flat, exponential, or linear).
+\end{description}
+%
+Listed below is an example of the {\tt firdespm} interface.
+%
 \input{listings/firdespm.example.c.tex}
 
 
