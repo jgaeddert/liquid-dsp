@@ -213,7 +213,11 @@ firdespm firdespm_create(unsigned int _h_len,
         q->bands[2*i+1] = _bands[2*i+1];
 
         q->des[i]       = _des[i];
-        q->weights[i]   = _weights[i];
+
+        if (_weights == NULL)
+            q->weights[i] = 1.0f;
+        else
+            q->weights[i]   = _weights[i];
     }
 
     // estimate grid size
