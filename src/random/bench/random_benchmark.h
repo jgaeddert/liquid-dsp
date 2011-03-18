@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -18,9 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef __LIQUID_RANDOM_BENCHMARK_H__
-#define __LIQUID_RANDOM_BENCHMARK_H__
 
 #include <sys/resource.h>
 #include "liquid.h"
@@ -116,10 +113,10 @@ void benchmark_random_weibull(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = rand_weibullf(alpha,beta,gamma);
-        x = rand_weibullf(alpha,beta,gamma);
-        x = rand_weibullf(alpha,beta,gamma);
-        x = rand_weibullf(alpha,beta,gamma);
+        x = randweibf(alpha,beta,gamma);
+        x = randweibf(alpha,beta,gamma);
+        x = randweibf(alpha,beta,gamma);
+        x = randweibf(alpha,beta,gamma);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
@@ -141,15 +138,12 @@ void benchmark_random_ricek(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        x = rand_ricekf(K,omega);
-        x = rand_ricekf(K,omega);
-        x = rand_ricekf(K,omega);
-        x = rand_ricekf(K,omega);
+        x = randricekf(K,omega);
+        x = randricekf(K,omega);
+        x = randricekf(K,omega);
+        x = randricekf(K,omega);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 }
-
-
-#endif // __LIQUID_RANDOM_BENCHMARK_H__
 

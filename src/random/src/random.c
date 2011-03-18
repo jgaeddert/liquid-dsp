@@ -86,15 +86,15 @@ void cawgn(float complex *_x, float _nstd)
 }
 
 // Weibull
-float rand_weibullf(float _alpha, float _beta, float _gamma)
+float randweibf(float _alpha, float _beta, float _gamma)
 {
 #ifdef LIQUID_VALIDATE_INPUT
     // validate input
     if (_alpha <= 0) {
-        printf("error: rand_weibullf(), alpha must be greater than zero\n");
+        printf("error: randweibf(), alpha must be greater than zero\n");
         return 0.0f;
     } else if (_beta <= 0) {
-        printf("error: rand_weibullf(), beta must be greater than zero\n");
+        printf("error: randweibf(), beta must be greater than zero\n");
         return 0.0f;
     }
 #endif
@@ -103,7 +103,7 @@ float rand_weibullf(float _alpha, float _beta, float _gamma)
 }
 
 // Rice-K
-float rand_ricekf(float _K, float _omega)
+float randricekf(float _K, float _omega)
 {
     float complex x, y;
     float s = sqrtf((_omega*_K)/(_K+1));

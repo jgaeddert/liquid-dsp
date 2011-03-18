@@ -3217,9 +3217,9 @@ float randn_cdf(float _x, float _eta, float _sig);
 //     b = beta  : shape parameter
 //     g = gamma : location (threshold) parameter
 //
-float rand_weibullf(float _alpha, float _beta, float _gamma);
-float rand_pdf_weibullf(float _x, float _a, float _b, float _g);
-float rand_cdf_weibullf(float _x, float _a, float _b, float _g);
+float randweibf(float _alpha, float _beta, float _gamma);
+float randweibf_pdf(float _x, float _a, float _b, float _g);
+float randweibf_cdf(float _x, float _a, float _b, float _g);
 
 // Gamma
 //void rand_gammaf();
@@ -3230,9 +3230,9 @@ float rand_cdf_weibullf(float _x, float _a, float _b, float _g);
 //float rand_cdf_nakagamimf(float _x, float _m, float _omega);
 
 // Rice-K
-float rand_ricekf(float _K, float _omega);
-float rand_pdf_ricekf(float _x, float _K, float _omega);
-float rand_cdf_ricekf(float _x, float _K, float _omega);
+float randricekf(float _K, float _omega);
+float randricekf_cdf(float _x, float _K, float _omega);
+float randricekf_pdf(float _x, float _K, float _omega);
 
 
 // Data scrambler : whiten data sequence
