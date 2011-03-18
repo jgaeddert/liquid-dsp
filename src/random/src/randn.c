@@ -28,12 +28,6 @@
 
 #include "liquid.internal.h"
 
-#define randf_inline() ((float) rand() / (float) RAND_MAX)
-
-float randf() {
-    return randf_inline();
-}
-
 // Gauss
 float randnf()
 {
@@ -85,33 +79,27 @@ void cawgn(float complex *_x, float _nstd)
     *_x += icrandnf()*_nstd*0.707106781186547f;
 }
 
-// Weibull
-float randweibf(float _alpha, float _beta, float _gamma)
+// Gauss random number probability distribution function
+float randnf_pdf(float _x,
+                 float _eta,
+                 float _sig)
 {
-#ifdef LIQUID_VALIDATE_INPUT
     // validate input
-    if (_alpha <= 0) {
-        printf("error: randweibf(), alpha must be greater than zero\n");
-        return 0.0f;
-    } else if (_beta <= 0) {
-        printf("error: randweibf(), beta must be greater than zero\n");
-        return 0.0f;
+    if (_sig <= 0.0f) {
+        fprintf(stderr,"error: randnf_pdf(), standard deviation must be greater than zero\n");
+        exit(1);
     }
-#endif
 
-    return _gamma + powf(-_beta/_alpha*logf(randf()), 1/_beta);
+    float t  = _x - _eta;
+    float s2 = _sig * _sig;
+    return 1.0f / sqrtf(2.0f*M_PI*s2) * expf(-t*t/(2.0f*s2));
 }
 
-// Rice-K
-float randricekf(float _K, float _omega)
+// Gauss random number cumulative distribution function
+float randnf_cdf(float _x,
+                 float _eta,
+                 float _sig)
 {
-    float complex x, y;
-    float s = sqrtf((_omega*_K)/(_K+1));
-    float sig = sqrtf(0.5f*_omega/(_K+1));
-    crandnf(&x);
-    y = _Complex_I*( crealf(x)*sig + s ) +
-                   ( cimagf(x)*sig     );
-    return cabsf(y);
+    return 0.0f;
 }
-
 

@@ -1687,6 +1687,9 @@ void optim_sort(float *_v,
 //
 // MODULE : random
 //
+
+#define randf_inline() ((float) rand() / (float) RAND_MAX)
+
 float complex icrandnf();
 
 // data scrambler masks
