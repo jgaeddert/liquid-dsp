@@ -204,7 +204,11 @@ clean-listings-check :
 	$(RM) scripts/listings_check
 
 # create listings targets (append '.tex' to each input)
-listings_texfiles = $(patsubst %,%.tex,$(LISTINGS))
+listings_c_texfiles  = $(patsubst %,%.tex,$(LISTINGS_C))
+listings_cc_texfiles = $(patsubst %,%.tex,$(LISTINGS_CC))
+listings_texfiles :=		\
+	$(listings_c_texfiles)	\
+	$(listings_cc_texfiles)	\
 
 # generate listings style
 highlight.sty:
@@ -212,8 +216,13 @@ highlight.sty:
 
 # use pygments (http://pygments.org) to generate fancy syntax-highlighted source
 
-$(listings_texfiles) : %.tex : % %.o
-	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ $<
+# C source files (force using the 'c' lexer)
+$(listings_c_texfiles) : %.tex : % %.o
+	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ -l c $<
+
+# C++ source files (force using the 'c++' lexer)
+$(listings_cc_texfiles) : %.tex : % %.o
+	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ -l c++ $<
 
 # full listings target
 listings: highlight.sty $(listings_texfiles)
