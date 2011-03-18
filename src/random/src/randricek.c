@@ -46,7 +46,17 @@ float randricekf_pdf(float _x,
                      float _K,
                      float _omega)
 {
-    return 0.0f;
+    if (_x < 0.0f)
+        return 0.0f;
+
+    float s = sqrtf((_omega*_K)/(_K+1));
+    float sig = sqrtf(0.5f*_omega/(_K+1));
+
+    float t = _x*_x + s*s;
+
+    float sig2 = sig*sig;
+
+    return (_x / sig2) * expf(-t / (2*sig2)) * besseli_0(_x*s/sig2);
 }
 
 // Rice-K random number cumulative distribution function
