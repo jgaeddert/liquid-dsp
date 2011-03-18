@@ -31,6 +31,10 @@
 //  [harris:1978] frederic j. harris, "On the Use of Windows for Harmonic
 //      Analysis with the Discrete Fourier Transform," Proceedings of the
 //      IEEE, vol. 66, no. 1, January, 1978.
+//  [Helstrom:1960] Helstrom, C. W. Statistical Theory of Signal
+//      Detection. New York: Pergamon, 1960
+//  [Proakis:2001] Proakis, J. Digital Communications. New York:
+//      McGraw-Hill, 2001
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,6 +123,29 @@ float besseli_0(float _z)
     return y;
 }
 
+// Modified bessel function of the first kind
+// TODO : check this computation
+#define NUM_BESSELI_ITERATIONS 16
+float besseli(float _nu,
+              float _z)
+{
+    unsigned int k;
+    float t0 = powf(_z*0.5f, _nu);
+    float t1 = 1.0f;
+    float y=0.0f;
+    for (k=0; k<NUM_BESSELI_ITERATIONS; k++) {
+        // compute: k! * Gamma(nu + k +1)
+        float t2 = liquid_factorialf(k) * liquid_gammaf(_nu + (float)k + 1.0f);
+
+        // accumulate y
+        y += t1 / t2;
+
+        // update t1 = (0.25*z^2)^k
+        t1 *= 0.25f*_z*_z;
+    }
+    return t0 * y;
+}
+
 //                    infty
 // Q(z) = 1/sqrt(2 pi) int { exp(-u^2/2) du }
 //                      z
@@ -127,6 +154,52 @@ float besseli_0(float _z)
 float liquid_Qf(float _z)
 {
     return 0.5f * (1.0f - erff(_z*M_SQRT1_2));
+}
+
+// Marcum Q-function
+// TODO : check this computation
+// [Helstrom:1960], [Proakis:2001]
+#define NUM_MARCUMQ_ITERATIONS 16
+float liquid_MarcumQ(int _M,
+                     float _alpha,
+                     float _beta)
+{
+    // expand as:
+    //                               infty
+    // Q_M(a,b) = exp(-(a^2+b^2)/2) * sum { (a/b)^k I_k(a*b) }
+    //                               k=1-M
+
+    return 0.0f;
+}
+
+// Marcum Q-function (M=1)
+// TODO : check this computation
+// [Helstrom:1960], [Proakis:2001]
+#define NUM_MARCUMQ1_ITERATIONS 16
+float liquid_MarcumQ1(float _alpha,
+                      float _beta)
+{
+    // expand as:                    infty
+    // Q_1(a,b) = exp(-(a^2+b^2)/2) * sum { (a/b)^k I_k(a*b) }
+    //                                k=0
+
+    float t0 = expf( -0.5f*(_alpha*_alpha + _beta*_beta) );
+    float t1 = 1.0f;
+
+    float a_div_b = _alpha / _beta;
+    float a_mul_b = _alpha * _beta;
+
+    float y = 0.0f;
+    unsigned int k;
+    for (k=0; k<NUM_MARCUMQ1_ITERATIONS; k++) {
+        // accumulate y
+        y += t1 * besseli((float)k, a_mul_b);
+
+        // update t1
+        t1 *= a_div_b;
+    }
+
+    return t0 * y;
 }
 
 // compute sinc(x) = sin(pi*x) / (pi*x)

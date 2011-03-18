@@ -60,11 +60,18 @@ float randricekf_pdf(float _x,
 }
 
 // Rice-K random number cumulative distribution function
+// TODO : check this computation
 float randricekf_cdf(float _x,
                      float _K,
                      float _omega)
 {
-    return 0.0f;
+    if (_x < 0.0f)
+        return 0.0f;
+
+    float s = sqrtf((_omega*_K)/(_K+1));
+    float sig = sqrtf(0.5f*_omega/(_K+1));
+
+    return 1.0f - liquid_MarcumQ1(s/sig, _x/sig);
 }
 
 

@@ -2059,8 +2059,21 @@ float besselj_0(float _z);
 // Modified Bessel function of the first kind
 float besseli_0(float _z);
 
+// Modified Bessel function of the first kind
+float besseli(float _nu,
+              float _z);
+
 // Q function
 float liquid_Qf(float _z);
+
+// Marcum Q-function
+float liquid_MarcumQ(int _M,
+                     float _alpha,
+                     float _beta);
+
+// Marcum Q-function (M=1)
+float liquid_MarcumQ1(float _alpha,
+                      float _beta);
 
 // sin(pi x) / (pi x)
 float sincf(float _x);
