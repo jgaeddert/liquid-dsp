@@ -5,8 +5,8 @@
 \newpage
 \section{buffer}
 \label{module:buffer}
-The buffer module includes objects for storing, retrieving, and interfacing
-with buffered data samples.
+The buffer module includes objects for storing, retrieving, and
+interfacing with buffered data samples.
 
 
 \subsection{{\tt window} buffer}
@@ -55,6 +55,8 @@ Effectively, the window looks like:
     If the size of the new window is smaller than the old one, the oldest
     values are truncated.
     % see \ref{listing:buffer:window}~line~27
+\item[{\tt window\_destroy()}]
+    destroys the object, freeing all internally-allocated memory.
 \item[{\tt window\_clear()}]
     clears the contents of the buffer by setting all internal values to zero.
 \item[{\tt window\_index()}]
@@ -85,3 +87,41 @@ The comments show the internal state of the window after each function call as
 if the window were a simple C array.
 \input{listings/window.example.c.tex}
 
+
+\subsection{{\tt wdelay} delay buffer}
+\label{module:buffer:wdelay}
+The {\tt wdelay} object in \liquid\ implements a an efficient digital
+delay line with a minimal amount of memory.
+Specifically, the transfer function is just
+%
+\begin{equation}
+\label{eqn:buffer:wdelay}
+    H_d(z) = z^{-k}
+\end{equation}
+%
+where $k$ is the number of samples of delay.
+%
+The interface for the {\tt wdelay} family of objects is listed below.
+While the interface is given for {\tt wdelayf} for floating-point
+precision, equivalent interfaces exist for
+{\tt float complex} with {\tt wdelaycf}.
+%
+\begin{description}
+\item[{\tt wdelayf\_create(k)}]
+    creates a new {\tt wdelayf} object with a delay of $k$ samples.
+\item[{\tt wdelayf\_recreate(q,k)}]
+    adjusts the delay size, preserving the internal state of the object.
+\item[{\tt wdelayf\_destroy(q)}]
+    destroys the object, freeing all internally-allocated memory.
+\item[{\tt wdelayf\_print(q)}]
+    prints the object's properties internal state to the standard
+    output.
+\item[{\tt wdelayf\_clear(q)}]
+    clears the contents of the internal buffer by setting all values to
+    zero.
+\item[{\tt wdelayf\_read(q,y)}]
+    reads the sample at the head of the buffer and stores it to the
+    output pointer.
+\item[{\tt wdelayf\_push(q,x)}]
+    pushes a sample into the buffer.
+\end{description}

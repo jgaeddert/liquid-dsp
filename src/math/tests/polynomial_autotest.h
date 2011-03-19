@@ -56,10 +56,11 @@ void autotest_polyf_fit_q3n3()
     //CONTEND_DELTA(p[3], p_test[3], tol);
 }
 
+#if 0
 // 
 // AUTOTEST: poly_expandbinomial
 //
-void autotest_polyf_expandbinomial_4()
+void xautotest_polyf_expandbinomial_4()
 {
     float a[4] = { 3, 2, -5, 1 };
     float c[5];
@@ -82,19 +83,19 @@ void autotest_polyf_expandbinomial_4()
     CONTEND_DELTA(c[3], c_test[3], tol);
     CONTEND_DELTA(c[4], c_test[4], tol);
 }
-
+#endif
 
 // 
 // AUTOTEST: poly_expandroots
 //
 void autotest_polyf_expandroots_4()
 {
-    float a[5] = { 2, 1, 4, -5, -3 };
+    float roots[5] = { -2, -1, -4, 5, 3 };
     float c[6];
     float c_test[6] = { 120, 146, 1, -27, -1, 1 };
     float tol = 1e-3f;
 
-    polyf_expandroots(a,5,c);
+    polyf_expandroots(roots,5,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
@@ -118,7 +119,7 @@ void autotest_polyf_expandroots_4()
 //
 void autotest_polyf_expandroots_11()
 {
-    float a[11] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+    float roots[11] = { -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11 };
     float c[12];
     float c_test[12] = {39916800,
                         120543840,
@@ -134,7 +135,7 @@ void autotest_polyf_expandroots_11()
                         1};
     float tol = 1e-6f;
 
-    polyf_expandroots(a,11,c);
+    polyf_expandroots(roots,11,c);
 
     unsigned int i;
     for (i=0; i<12; i++) {
@@ -146,44 +147,13 @@ void autotest_polyf_expandroots_11()
 }
 
 // 
-// AUTOTEST: poly_expandroots2
-//
-// expand (2*x-5)*(3*x+2)*(-1*x+3)
-//
-void autotest_polyf_expandroots2_3()
-{
-    unsigned int n=3;
-    float a[3] = {  2,  3, -1 };
-    float b[3] = { -5,  2,  3 };
-    float c[4];
-    float c_test[4] = { -6, 29, -23, -30 };
-    float tol = 1e-3f;
-
-    polyf_expandroots2(a,b,n,c);
-
-    if (liquid_autotest_verbose) {
-        unsigned int i;
-        printf("c[%u] = ", n+1);
-        for (i=0; i<n+1; i++)
-            printf("%8.2f", c[i]);
-        printf("\n");
-    }
-    
-    CONTEND_DELTA(c[0], c_test[0], tol);
-    CONTEND_DELTA(c[1], c_test[1], tol);
-    CONTEND_DELTA(c[2], c_test[2], tol);
-    CONTEND_DELTA(c[3], c_test[3], tol);
-}
-
-
-// 
 // AUTOTEST: polycf_expandroots
 //
 void autotest_polycf_expandroots_4()
 {
     // expand complex roots on conjugate pair
     float theta = 1.7f;
-    float complex a[2] = { cexpf(_Complex_I*theta), cexpf(-_Complex_I*theta) };
+    float complex a[2] = { -cexpf(_Complex_I*theta), -cexpf(-_Complex_I*theta) };
     float complex c[3];
     float complex c_test[3] = { 1, 2*cosf(theta), 1 };
     float tol = 1e-3f;
@@ -206,6 +176,37 @@ void autotest_polycf_expandroots_4()
     CONTEND_DELTA(cimagf(c[2]), cimagf(c_test[2]), tol);
 
 }
+
+// 
+// AUTOTEST: poly_expandroots2
+//
+// expand (2*x-5)*(3*x+2)*(-1*x+3)
+//
+void autotest_polyf_expandroots2_3()
+{
+    unsigned int n=3;
+    float a[3] = {  2,  3, -1 };
+    float b[3] = {  5, -2, -3 };
+    float c[4];
+    float c_test[4] = { -6, 29, -23, -30 };
+    float tol = 1e-3f;
+
+    polyf_expandroots2(a,b,n,c);
+
+    if (liquid_autotest_verbose) {
+        unsigned int i;
+        printf("c[%u] = ", n+1);
+        for (i=0; i<n+1; i++)
+            printf("%8.2f", c[i]);
+        printf("\n");
+    }
+    
+    CONTEND_DELTA(c[0], c_test[0], tol);
+    CONTEND_DELTA(c[1], c_test[1], tol);
+    CONTEND_DELTA(c[2], c_test[2], tol);
+    CONTEND_DELTA(c[3], c_test[3], tol);
+}
+
 
 // 
 // AUTOTEST: polyf_mul
@@ -236,23 +237,22 @@ void autotest_polyf_mul_2_3()
     CONTEND_DELTA(c[5], c_test[5], tol);
 }
 
-#if 0
 // 
-// AUTOTEST: poly_binomial_expand
+// AUTOTEST: poly_expandbinomial
 //
-void xautotest_poly_binomial_expand_n6()
+void autotest_poly_expandbinomial_n6()
 {
     unsigned int n=6;
-    int c[7];
-    int c_test[7] = {1, 6, 15, 20, 15, 6, 1};
+    float c[7];
+    float c_test[7] = {1, 6, 15, 20, 15, 6, 1};
 
-    poly_binomial_expand(n,c);
+    polyf_expandbinomial(n,c);
 
     if (liquid_autotest_verbose) {
         unsigned int i;
-        printf("c[%u] = ", n+1);
+        printf("c[%2u] = ", n+1);
         for (i=0; i<=n; i++)
-            printf("%5d", c[i]);
+            printf("%6.1f", c[i]);
         printf("\n");
     }
     
@@ -263,50 +263,53 @@ void xautotest_poly_binomial_expand_n6()
 // 
 // AUTOTEST: poly_binomial_expand_pm
 //
-void xautotest_poly_binomial_expand_pm_n6_k1()
+void autotest_poly_binomial_expand_pm_m6_k1()
 {
-    unsigned int n=6;
+    unsigned int m=5;
     unsigned int k=1;
-    int c[7];
-    int c_test[7] = {1,  -4,   5,   0,  -5,   4,  -1};
+    unsigned int n = m+k;
+    float c[7];
+    float c_test[7] = {1,  4,  5,  0, -5, -4, -1};
 
-    poly_binomial_expand_pm(n,k,c);
+    polyf_expandbinomial_pm(m,k,c);
 
+    unsigned int i;
     if (liquid_autotest_verbose) {
-        unsigned int i;
-        printf("c[%u] = ", n+1);
+        printf("c[%u] = ", m+1);
         for (i=0; i<=n; i++)
-            printf("%5d", c[i]);
+            printf("%6.1f", c[i]);
         printf("\n");
     }
-    
-    CONTEND_SAME_DATA(c,c_test,sizeof(c));
-}
 
+    for (i=0; i<=n; i++)
+        CONTEND_DELTA(c[i], c_test[i], 1e-3f);
+}
 
 // 
-// AUTOTEST: poly_binomial_expand_pm
+// AUTOTEST: poly_expandbinomial_pm
 //
-void xautotest_poly_binomial_expand_pm_n5_k2()
+void autotest_poly_expandbinomial_pm_m5_k2()
 {
-    unsigned int n=5;
+    unsigned int m=5;
     unsigned int k=2;
-    int c[6];
-    int c_test[6] = {1,  -1,  -2,   2,   1,  -1};
+    unsigned int n = m+k;
+    float c[8];
+    float c_test[8] = {  1.0f,  3.0f,  1.0f, -5.0f,
+                        -5.0f,  1.0f,  3.0f,  1.0f};
 
-    poly_binomial_expand_pm(n,k,c);
+    polyf_expandbinomial_pm(m,k,c);
 
+    unsigned int i;
     if (liquid_autotest_verbose) {
-        unsigned int i;
         printf("c[%u] = ", n+1);
         for (i=0; i<=n; i++)
-            printf("%5d", c[i]);
+            printf("%6.2f", c[i]);
         printf("\n");
     }
-    
-    CONTEND_SAME_DATA(c,c_test,sizeof(c));
+
+    for (i=0; i<=n; i++)
+        CONTEND_DELTA(c[i], c_test[i], 1e-3f);
 }
-#endif
 
 // 
 // AUTOTEST: polyf_findroots

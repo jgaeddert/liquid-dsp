@@ -164,15 +164,27 @@ LIQUID_AGC_DEFINE_API(AGC_MANGLE_RRRF, float, float)
 
 // CVSD: continuously variable slope delta
 typedef struct cvsd_s * cvsd;
-cvsd cvsd_create(unsigned int _num_bits, float _zeta);
+
+// create cvsd object
+//  _num_bits   :   number of adjacent bits to observe
+//  _zeta       :   slope adjustment multiplier
+//  _alpha      :   pre-/post-emphasis filter coefficient (0.9 recommended)
+// NOTE: _alpha must be in [0,1]
+cvsd cvsd_create(unsigned int _num_bits,
+                 float _zeta,
+                 float _alpha);
+
+// destroy cvsd object
 void cvsd_destroy(cvsd _q);
+
+// print cvsd object parameters
 void cvsd_print(cvsd _q);
 
 // encode/decode single sample
 unsigned char   cvsd_encode(cvsd _q, float _audio_sample);
 float           cvsd_decode(cvsd _q, unsigned char _bit);
 
-// encode/decode 8 samples
+// encode/decode 8 samples at a time
 void cvsd_encode8(cvsd _q, float * _audio, unsigned char * _data);
 void cvsd_decode8(cvsd _q, unsigned char _data, float * _audio);
 
@@ -259,7 +271,6 @@ WDELAY() WDELAY(_create)(unsigned int _k);                      \
 WDELAY() WDELAY(_recreate)(WDELAY() _w, unsigned int _k);       \
 void WDELAY(_destroy)(WDELAY() _w);                             \
 void WDELAY(_print)(WDELAY() _w);                               \
-void WDELAY(_debug_print)(WDELAY() _w);                         \
 void WDELAY(_clear)(WDELAY() _w);                               \
 void WDELAY(_read)(WDELAY() _w, T * _v);                        \
 void WDELAY(_push)(WDELAY() _b, T _v);
@@ -270,60 +281,6 @@ LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_CFLOAT, liquid_float_complex)
 //LIQUID_WDELAY_DEFINE_API(WDELAY_MANGLE_UINT,   unsigned int)
 
 
-
-//
-// MODULE : channel
-//
-
-// AWGN channel
-typedef struct awgn_channel_s * awgn_channel;
-awgn_channel awgn_channel_create(float _nvar);
-void awgn_channel_destroy(awgn_channel _q);
-void awgn_channel_print(awgn_channel _q);
-void awgn_channel_execute(awgn_channel _q,
-                          liquid_float_complex _x,
-                          liquid_float_complex *_y);
-void awgn_channel_set_noise_variance(awgn_channel _q, float _nvar);
-
-// Rice-K channel
-typedef struct ricek_channel_s * ricek_channel;
-ricek_channel ricek_channel_create(unsigned int _h_len,
-                                   float _K,
-                                   float _fd,
-                                   float _theta);
-void ricek_channel_destroy(ricek_channel _q);
-void ricek_channel_print(ricek_channel _q);
-void ricek_channel_execute(ricek_channel _q,
-                           liquid_float_complex _x,
-                           liquid_float_complex *_y);
-
-// Log-normal channel
-typedef struct lognorm_channel_s * lognorm_channel;
-lognorm_channel lognorm_channel_create(unsigned int _h_len,
-                                       float _sig_dB,
-                                       float _fd);
-void lognorm_channel_destroy(lognorm_channel _q);
-void lognorm_channel_execute(lognorm_channel _q,
-                             liquid_float_complex _x,
-                             liquid_float_complex * _y);
-
-// Composite channel
-typedef struct channel_s * channel;
-channel channel_create();
-void channel_destroy(channel _c);
-void channel_print(channel _c);
-void channel_execute(channel _c,
-                     liquid_float_complex _x,
-                     liquid_float_complex *_y);
-
-// power amplifier model
-typedef struct pamodel_s * pamodel;
-pamodel pamodel_create(float _alpha);
-void pamodel_destroy(pamodel _q);
-void pamodel_print(pamodel _q);
-void pamodel_execute(pamodel _q,
-                     liquid_float_complex _x,
-                     liquid_float_complex * _y);
 
 //
 // MODULE : dotprod (vector dot product)
@@ -706,19 +663,20 @@ typedef enum {
 
 // run filter design (full life cycle of object)
 //  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
 //  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
 //  _des        :   desired response [size: _num_bands x 1]
 //  _weights    :   response weighting [size: _num_bands x 1]
-//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
 void firdespm_run(unsigned int _h_len,
+                  unsigned int _num_bands,
                   float * _bands,
                   float * _des,
                   float * _weights,
-                  unsigned int _num_bands,
-                  liquid_firdespm_btype _btype,
                   liquid_firdespm_wtype * _wtype,
+                  liquid_firdespm_btype _btype,
                   float * _h);
 
 // structured object
@@ -726,18 +684,19 @@ typedef struct firdespm_s * firdespm;
 
 // create firdespm object
 //  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
 //  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
 //  _des        :   desired response [size: _num_bands x 1]
 //  _weights    :   response weighting [size: _num_bands x 1]
-//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 firdespm firdespm_create(unsigned int _h_len,
+                         unsigned int _num_bands,
                          float * _bands,
                          float * _des,
                          float * _weights,
-                         unsigned int _num_bands,
-                         liquid_firdespm_btype _btype,
-                         liquid_firdespm_wtype * _wtype);
+                         liquid_firdespm_wtype * _wtype,
+                         liquid_firdespm_btype _btype);
 
 // destroy firdespm object
 void firdespm_destroy(firdespm _q);
@@ -1147,6 +1106,7 @@ void liquid_levinson(float * _r,
 //
 
 #define AUTOCORR_MANGLE_CCCF(name)  LIQUID_CONCAT(autocorr_cccf,name)
+#define AUTOCORR_MANGLE_RRRF(name)  LIQUID_CONCAT(autocorr_rrrf,name)
 
 // Macro:
 //   AUTOCORR   : name-mangling macro
@@ -1168,6 +1128,11 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex,
                            liquid_float_complex)
+
+LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
 
 
 //
@@ -2094,8 +2059,21 @@ float besselj_0(float _z);
 // Modified Bessel function of the first kind
 float besseli_0(float _z);
 
+// Modified Bessel function of the first kind
+float besseli(float _nu,
+              float _z);
+
 // Q function
 float liquid_Qf(float _z);
+
+// Marcum Q-function
+float liquid_MarcumQ(int _M,
+                     float _alpha,
+                     float _beta);
+
+// Marcum Q-function (M=1)
+float liquid_MarcumQ1(float _alpha,
+                      float _beta);
 
 // sin(pi x) / (pi x)
 float sincf(float _x);
@@ -2197,21 +2175,41 @@ T POLY(_val_lagrange_barycentric)(T * _x,                       \
                                   unsigned int _n);             \
                                                                 \
 /* expands the polynomial:                                      \
- *  (1+x*a[0])*(1+x*a[1]) * ... * (1+x*a[n-1])                  \
+ *  P_n(x) = (1+x)^n                                            \
+ * as                                                           \
+ *  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n           \
+ * NOTE: _p has order n=m+k (array is length n+1)               \
  */                                                             \
-void POLY(_expandbinomial)(T * _a,                              \
-                           unsigned int _n,                     \
-                           T * _c);                             \
+void POLY(_expandbinomial)(unsigned int _n,                     \
+                           T * _p);                             \
                                                                 \
-/* expands the polynomial: TODO: switch to (x-a[0])*...         \
- *  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])                      \
+/* expands the polynomial:                                      \
+ *  P_n(x) = (1+x)^m * (1-x)^k                                  \
+ * as                                                           \
+ *  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n           \
+ * NOTE: _p has order n=m+k (array is length n+1)               \
+ */                                                             \
+void POLY(_expandbinomial_pm)(unsigned int _m,                  \
+                              unsigned int _k,                  \
+                              T * _p);                          \
+                                                                \
+/* expands the polynomial:                                      \
+ *  P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])             \
+ * as                                                           \
+ *  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n                     \
+ * where r[0],r[1],...,r[n-1] are the roots of P_n(x)           \
+ * NOTE: _c has order _n (array is length _n+1)                 \
  */                                                             \
 void POLY(_expandroots)(T * _a,                                 \
                         unsigned int _n,                        \
                         T * _c);                                \
                                                                 \
 /* expands the polynomial:                                      \
- *  (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])     \
+ *  P_n(x) =                                                    \
+ *    (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])   \
+ * as                                                           \
+ *  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n                     \
+ * NOTE: _c has order _n (array is length _n+1)                 \
  */                                                             \
 void POLY(_expandroots2)(T * _a,                                \
                          T * _b,                                \
@@ -2246,7 +2244,7 @@ LIQUID_POLY_DEFINE_API(POLY_MANGLE_CFLOAT,
                        liquid_float_complex,
                        liquid_float_complex)
 
-
+#if 0
 // expands the polynomial: (1+x)^n
 void poly_binomial_expand(unsigned int _n, int * _c);
 
@@ -2254,6 +2252,7 @@ void poly_binomial_expand(unsigned int _n, int * _c);
 void poly_binomial_expand_pm(unsigned int _n,
                              unsigned int _k,
                              int * _c);
+#endif
 
 
 //
@@ -3231,9 +3230,9 @@ float randn_cdf(float _x, float _eta, float _sig);
 //     b = beta  : shape parameter
 //     g = gamma : location (threshold) parameter
 //
-float rand_weibullf(float _alpha, float _beta, float _gamma);
-float rand_pdf_weibullf(float _x, float _a, float _b, float _g);
-float rand_cdf_weibullf(float _x, float _a, float _b, float _g);
+float randweibf(float _alpha, float _beta, float _gamma);
+float randweibf_pdf(float _x, float _a, float _b, float _g);
+float randweibf_cdf(float _x, float _a, float _b, float _g);
 
 // Gamma
 //void rand_gammaf();
@@ -3244,9 +3243,9 @@ float rand_cdf_weibullf(float _x, float _a, float _b, float _g);
 //float rand_cdf_nakagamimf(float _x, float _m, float _omega);
 
 // Rice-K
-float rand_ricekf(float _K, float _omega);
-float rand_pdf_ricekf(float _x, float _K, float _omega);
-float rand_cdf_ricekf(float _x, float _K, float _omega);
+float randricekf(float _K, float _omega);
+float randricekf_cdf(float _x, float _K, float _omega);
+float randricekf_pdf(float _x, float _K, float _omega);
 
 
 // Data scrambler : whiten data sequence

@@ -12,8 +12,8 @@ Dot products are commonly used in digital signal processing for
 communications, particularly in filtering and matrix operations.
 %
 Given two vectors of equal length
-$\vec{x} = \left[x_0,x_1,\ldots,x_{N-1}\right]^T$ and
-$\vec{v} = \left[v_0,v_1,\ldots,v_{N-1}\right]^T$,
+$\vec{x} = \left[x(0),x(1),\ldots,x(N-1)\right]^T$ and
+$\vec{v} = \left[v(0),v(1),\ldots,v(N-1)\right]^T$,
 the vector dot product between them is computed as
 %
 \begin{equation}
@@ -37,15 +37,15 @@ demonstrate that a considerable portion of the processor is spent computing
 it.
 Certain machine architectures have specific instructions for computing vector
 dot products, particularly those which use a single instruction for
-multiple data (SIMD) such as mmx, sse, AltiVec, etc.
+multiple data (SIMD) such as MMX, SSE, AltiVec, etc.
 
-\subsection{Usage}
+\subsection{Interface}
 \label{module:dotprod:usage}
 There are effectively two ways to use the {\tt dotprod} module.
 In the first and most general case, a vector dot product is computed on two
 input vectors $\vec{x}$ and $\vec{v}$ whose values are not known
 {\it a priori}.
-
+%
 In the second case, a {\tt dotprod} object is created around vector $\vec{v}$
 which does not change (or rarely changes) throughout its life cycle.
 This is the more convenient method for filtering objects which don't usually
@@ -82,11 +82,13 @@ Table~\ref{tab:dotprod:objects}.
 \end{table*}%
 % ------------------------
 
-Here is a brief description of the {\tt dotprod} object interfaces.
+Listed below is a brief description of the {\tt dotprod} object
+interfaces.
 While the types are described using the {\tt dotprod\_rrrf} object, the
 same holds true for all other types.
+%
 \begin{description}
-\item[{\tt dotprod\_run(h,x,n,y)}]
+\item[{\tt dotprod\_rrrf\_run(h,x,n,y)}]
     executes a vector dot product between two vectors $\vec{h}$ and
     $\vec{x}$, each of length $n$ and stores the result in the output
     $y$.
@@ -108,8 +110,8 @@ same holds true for all other types.
     memory.
 \item[{\tt dotprod\_rrrf\_print(q)}]
     prints the object internals to the screen.
-\item[{\tt dotprod\_rrrf\_execute(q,v,y)}]
-    executes a dot product with an input vector $\vec{v}$ and stores the
+\item[{\tt dotprod\_rrrf\_execute(q,x,y)}]
+    executes a dot product with an input vector $\vec{x}$ and stores the
     result in $y$.
 \end{description}
 

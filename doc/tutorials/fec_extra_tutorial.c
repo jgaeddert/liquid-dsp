@@ -1,14 +1,15 @@
-// file: doc/tutorials/fec_tutorial.c
 #include <stdio.h>
 #include <liquid/liquid.h>
 
 int main() {
     // simulation parameters
-    unsigned int n = 8;             // original data length (bytes)
-    fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
+    unsigned int n = 8;                 // original data length (bytes)
+    crc_scheme check = CRC_16;          // data validity check
+    fec_scheme fec0 = FEC_HAMMING74;    // error-correcting scheme (inner)
+    fec_scheme fec1 = FEC_HAMMING128;   // error-correcting scheme (outer)
 
     // compute size of encoded message
-    unsigned int k = fec_get_enc_msg_length(fs,n);
+    unsigned int k = packetizer_compute_enc_msg_len(n,check,fec0,fec1);
 
     // create arrays
     unsigned char msg_org[n];       // original data message
@@ -16,8 +17,8 @@ int main() {
     unsigned char msg_dec[n];       // decoded data message
 
     // CREATE the fec object
-    fec q = fec_create(fs,NULL);
-    fec_print(q);
+    packetizer q = packetizer_create(n,check,fec0,fec1);
+    packetizer_print(q);
 
     unsigned int i;
     // generate message
@@ -25,16 +26,16 @@ int main() {
         msg_org[i] = i & 0xff;
 
     // encode message
-    fec_encode(q, n, msg_org, msg_enc);
+    packetizer_encode(q, msg_org, msg_enc);
 
-    // corrupt encoded message (flip bit)
-    msg_enc[0] ^= 0x01;
+    // corrupt encoded message (flip several bits)
+    msg_enc[0] ^= 0x03;
 
     // decode message
-    fec_decode(q, n, msg_enc, msg_dec);
+    packetizer_decode(q, msg_enc, msg_dec);
 
     // DESTROY the fec object
-    fec_destroy(q);
+    packetizer_destroy(q);
 
     printf("original message:  [%3u] ",n);
     for (i=0; i<n; i++)

@@ -47,7 +47,7 @@ int main() {
     for (i=0; i<N; i++) {
         // K     = 1.0f
         // omega = 2.0f
-        x = rand_ricekf(1.0f, 2.0f);
+        x = randricekf(1.0f, 2.0f);
         m1 += x;
         m2 += x*x;
     }
@@ -66,7 +66,7 @@ int main() {
         // alpha = 1.0f
         // beta = 2.0f
         // gamma = 0.0f
-        x = rand_weibullf(1.0f, 2.0f, 0.0f);
+        x = randweibf(1.0f, 2.0f, 0.0f);
         m1 += x;
         m2 += x*x;
     }

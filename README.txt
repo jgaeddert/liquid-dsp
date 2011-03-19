@@ -53,10 +53,8 @@ profile liquid
 
 Modules: description
     agc: automatic gain control
-    ann: artificial neural networks
     audio: source audio encoders/decoders: cvsd, filterbanks...
     buffer: internal buffering, circular/static, ports (threaded)
-    channel: communications channel modeling: additive noise, multipath fading...
     dotprod: dot products (real, complex)
     equalization: adaptive equalizers: LMS, RLS, blind...
     fec: forward error correction (basic), checksum, crc, etc.
@@ -75,6 +73,10 @@ Modules: description
     random: random number generators
     sequence: lfsr, complementary_code
     utility: useful miscellany
+    experimental: artificial neural networks, communications channel
+      modeling, threaded ports, filterbank audio synthesizer,
+      continuous-phase modulation, direct digital synthesis, quadrature
+      mirror filterbanks, advanced symbol timing recovery
 
 Additional:
     benchmarking tool

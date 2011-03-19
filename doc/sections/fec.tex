@@ -130,7 +130,7 @@ $s$, $r_0$, $r_1$, and $r_2$ represent a bytes of data rather than bits.
 The {\tt rep5} code operates similarly, except that it transmits five copies
 of the original data sequence, rather than just three.
 The decoder takes the five received bits $r_0,\ldots,r_4$ and adds (modulo
-2) the logical {\it and} of every combination of three bits, viz.
+2) the logical {\it and} of every combination of three bits, viz
 \[
     \hat{s} = \sum_{i\ne j \ne k} {(r_i \land r_j \land r_k)}
 \]

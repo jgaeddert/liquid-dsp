@@ -12,25 +12,26 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/audio_cvsd.gnu"
 
 int main() {
     // options
-    unsigned int num_samples=128;   // number of samples
-    float fc = 0.03179f;            // input sine frequency
-    unsigned int nbits=3;           // 
+    unsigned int num_samples=256;   // number of samples
+    float fc = 0.04179f;            // input sine frequency
+    unsigned int nbits=2;           // 
     float zeta=1.5f;                //
+    float alpha=0.95f;              //
     int subplot_type = 0;           // 0:spectrum, 1:data series
 
     // derived values
     unsigned int i;
 
     // create cvsd codecs
-    cvsd cvsd_encoder = cvsd_create(nbits, zeta);
-    cvsd cvsd_decoder = cvsd_create(nbits, zeta);
+    cvsd cvsd_encoder = cvsd_create(nbits, zeta, alpha);
+    cvsd cvsd_decoder = cvsd_create(nbits, zeta, alpha);
 
     // data arrays
     float x[num_samples];
@@ -38,8 +39,10 @@ int main() {
     unsigned char data_enc[num_samples];
 
     // generate input data: windowed sinusoid
-    for (i=0; i<num_samples; i++)
-        x[i] = sinf(2*M_PI*i*fc) * hamming(i,num_samples);
+    for (i=0; i<num_samples; i++) {
+        x[i] = sinf(2*M_PI*i*fc) + 0.5f*sinf(2*M_PI*i*fc*1.8f);
+        x[i] *= 0.8f*hamming(i,num_samples);
+    }
 
     // run encoder
     for (i=0; i<num_samples; i++)
@@ -77,8 +80,8 @@ int main() {
     fprintf(fid,"set xlabel 'sample index'\n");
     fprintf(fid,"set ylabel 'time series'\n");
     fprintf(fid,"set xrange [0:%u]\n", num_samples);
-    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'input',\\\n", LIQUID_DOC_COLOR_GRAY);
-    fprintf(fid,"     '-' using 1:2 with steps linetype 1 linewidth 2 linecolor rgb '%s' title 'cvsd output'\n", LIQUID_DOC_COLOR_BLUE);
+    fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'audio input',\\\n", LIQUID_DOC_COLOR_GRAY);
+    fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'cvsd output'\n", LIQUID_DOC_COLOR_BLUE);
     // export output
     for (i=0; i<num_samples; i++)
         fprintf(fid,"%6u %12.4e\n", i, x[i]);
@@ -109,7 +112,7 @@ int main() {
         fprintf(fid,"set xtics -0.5,0.1,0.5\n");
         fprintf(fid,"set ytics -200,20,100\n");
         fprintf(fid,"set grid xtics ytics\n");
-        fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'input',\\\n", LIQUID_DOC_COLOR_GRAY);
+        fprintf(fid,"plot '-' using 1:2 with lines linetype 1 linewidth 2 linecolor rgb '%s' title 'audio input',\\\n", LIQUID_DOC_COLOR_GRAY);
         fprintf(fid,"     '-' using 1:2 with lines linetype 1 linewidth 3 linecolor rgb '%s' title 'cvsd output'\n",   LIQUID_DOC_COLOR_PURPLE);
         // export output
         for (i=nfft/2; i<nfft; i++) {

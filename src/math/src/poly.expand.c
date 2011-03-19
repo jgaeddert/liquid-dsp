@@ -30,6 +30,70 @@
 #include "liquid.internal.h"
 
 // expands the polynomial:
+//  P_n(x) = (1+x)^n
+// as
+//  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n
+// NOTE: _p has order n=m+k (array is length n+1)
+void POLY(_expandbinomial)(unsigned int _n,
+                           T * _c)
+{
+    // no roots; return zero
+    if (_n == 0) {
+        _c[0] = 0.;
+        return;
+    }
+
+    int i, j;
+    // initialize coefficients array to [1,0,0,....0]
+    for (i=0; i<=_n; i++)
+        _c[i] = (i==0) ? 1 : 0;
+
+    // iterative polynomial multiplication
+    for (i=0; i<_n; i++) {
+        for (j=i+1; j>0; j--)
+            _c[j] = _c[j] + _c[j-1];
+    }
+    // assert(_c[0]==1.0f);
+}
+
+// expands the polynomial:
+//  P_n(x) = (1+x)^m * (1-x)^k
+// as
+//  P_n(x) = p[0] + p[1]*x + p[2]*x^2 + ... + p[n]x^n
+// NOTE: _p has order n=m+k (array is length n+1)
+void POLY(_expandbinomial_pm)(unsigned int _m,
+                              unsigned int _k,
+                              T * _c)
+{
+    unsigned int n = _m + _k;
+
+    // no roots; return zero
+    if (n == 0) {
+        _c[0] = 0.;
+        return;
+    }
+
+    int i, j;
+    // initialize coefficients array to [1,0,0,....0]
+    for (i=0; i<=n; i++)
+        _c[i] = (i==0) ? 1 : 0;
+
+    // iterative polynomial multiplication (1+x)
+    for (i=0; i<_m; i++) {
+        for (j=i+1; j>0; j--)
+            _c[j] = _c[j] + _c[j-1];
+    }
+
+    // iterative polynomial multiplication (1-x)
+    for (i=_m; i<n; i++) {
+        for (j=i+1; j>0; j--)
+            _c[j] = _c[j] - _c[j-1];
+    }
+    // assert(_c[0]==1.0f);
+}
+
+#if 0
+// expands the polynomial:
 //  (1+x*a[0])*(1+x*a[1]) * ... * (1+x*a[n-1])
 // as
 //  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
@@ -68,12 +132,16 @@ void POLY(_expandbinomial)(T * _a,
 
     // assert(_c[0]==1.0f);
 }
+#endif
 
 
 // expands the polynomial:
-//  (x+a[0]) * (x+a[1]) * ... * (x+a[n-1])
+//  P_n(x) = (x-r[0]) * (x-r[1]) * ... * (x-r[n-1])
 // as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
+//  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n
+// where r[0],r[1],...,r[n-1] are the roots of P_n(x)
+//
+// c has order _n (array is length _n+1)
 void POLY(_expandroots)(T * _a,
                         unsigned int _n,
                         T * _c)
@@ -92,18 +160,19 @@ void POLY(_expandroots)(T * _a,
     // iterative polynomial multiplication
     for (i=0; i<_n; i++) {
         for (j=i+1; j>0; j--)
-            _c[j] = _a[i]*_c[j] + _c[j-1];
+            _c[j] = -_a[i]*_c[j] + _c[j-1];
 
-        _c[j] *= _a[i];
+        _c[j] *= -_a[i];
     }
 
     // assert(c[_n]==1.0f)
 }
 
 // expands the polynomial:
-//  (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])
+//  P_n(x) =
+//    (x*b[0]-a[0]) * (x*b[1]-a[1]) * ... * (x*b[n-1]-a[n-1])
 // as
-//  c[0] + c[1]*x + c[2]*x^2 + ... + c[n]*x^n
+//  P_n(x) = c[0] + c[1]*x + ... + c[n]*x^n
 //
 // c has order _n (array is length _n+1)
 void POLY(_expandroots2)(T * _a,
@@ -117,7 +186,7 @@ void POLY(_expandroots2)(T * _a,
     T g = 1.0;
     T r[_n];
     for (i=0; i<_n; i++) {
-        g *= _b[i];
+        g *= -_b[i];
         r[i] = _a[i] / _b[i];
     }
 

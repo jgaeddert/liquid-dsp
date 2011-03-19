@@ -70,13 +70,17 @@ GRAPHICS = 					\
 # Listings used in this document
 LISTINGS_C = 					\
 	listings/agc.example.c			\
+	listings/autocorr.example.c		\
 	listings/bpacket.example.c		\
 	listings/crc.example.c			\
+	listings/cvsd.example.c			\
+	listings/decim.example.c		\
 	listings/dotprod_rrrf.example.c		\
 	listings/eqlms_cccf.example.c		\
 	listings/fec.example.c			\
 	listings/fft.example.c			\
 	listings/firdespm.example.c		\
+	listings/firfilt.example.c		\
 	listings/firhilb.example.c		\
 	listings/ga_search.example.c		\
 	listings/gradient_search.example.c	\
@@ -101,6 +105,7 @@ LISTINGS_C = 					\
 	tutorials/fec_tutorial.c		\
 	tutorials/fec_init_tutorial.c		\
 	tutorials/fec_basic_tutorial.c		\
+	tutorials/fec_extra_tutorial.c		\
 						\
 	tutorials/framing_init_tutorial.c	\
 	tutorials/framing_basic_tutorial.c	\
@@ -279,6 +284,7 @@ tutorial_progs :=					\
 	tutorials/fec_tutorial				\
 	tutorials/fec_init_tutorial			\
 	tutorials/fec_basic_tutorial			\
+	tutorials/fec_extra_tutorial			\
 							\
 	tutorials/framing_init_tutorial			\
 	tutorials/framing_basic_tutorial		\

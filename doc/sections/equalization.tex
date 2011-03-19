@@ -11,14 +11,18 @@ This section describes the functionality of two digital linear adaptive
 equalizers implemented...
 
 \subsection{System Description}
+\label{module:equalization:system}
 Suppose a known transmitted symbol sequence
-$\vec{d} = \{ d_0, d_1, \ldots ,d_{N-1}\}$
-which passes through an unknown channel filter $\vec{h}_n$ of length $q$.
+$\vec{d} = [ d(0), d(1), \ldots ,d(N-1) ]$
+which passes through an unknown channel filter $\vec{h}_n$ of length
+$q$.
 The received symbol at time $n$ is therefore
-\[
-    y(n) = \sum\limits_{k=0}^{q-1}{h_n(k)d(n-k)} + w(n)
-\]
-where $w(n)$ represents white Gauss noise.
+%
+\begin{equation}
+    y(n) = \sum\limits_{k=0}^{q-1}{h_n(k)d(n-k)} + \varphi(n)
+\end{equation}
+%
+where $\varphi(n)$ represents white Gauss noise.
 The adaptive linear equalizer attempts to use a finite impulse response (FIR)
 filter $\vec{w}$ of length $p$ to estimate the transmitted symbol, using only
 the received signal vector $\vec{y}$ and the known data sequence $\vec{d}$,
@@ -30,12 +34,13 @@ where $\vec{y}_n = [ y(n), y(n-1),\ldots, y(n-p+1) ]^T$.
 Several methods for estimating $\vec{w}$ are known in the literature, and
 typically rely on iteratively adjusting $\vec{w}$ with each input though a
 recursion algorithm.
-In this section we provide a very brief overview of two prevalent adaptation
+This section provides a very brief overview of two prevalent adaptation
 algorithms;
-for a more in-depth discussion we refer the interested reader to
+for a more in-depth discussion the interested reader is referred to
 \cite{Proakis:2001,Haykin:2002}.
 
 \subsection{{\tt eqlms} (least mean-squares equalizer)}
+\label{module:equalization:eqlms}
 The least mean-squares (LMS) algorithm adapts the coefficients of the filter
 estimate using a steepest descent (gradient) of the instantaneous {\it a priori}
 error.
@@ -49,13 +54,15 @@ $\vec{g}_n$ the normalized gradient vector, estimated from the error signal
 and the coefficients vector at time $n$.
 
 \subsection{{\tt eqrls} (recursive least-squares equalizer)}
+\label{module:equalization:eqrls}
 The recursive least-squares (RLS) algorithm attempts to minimize the
 time-average weighted square error of the filter output, viz
 \begin{equation}
 c(\vec{w}_n) = \sum\limits_{i=0}^{n}{ \lambda^{i-n} \left| d(i)-\hat{d}(i)\right|^2 }
 \end{equation}
-where the forgetting factor $0<\lambda\leq 1$ which itroduces exponential
-weighting into past data, appropriate for time-varying channels.
+where the forgetting factor $0<\lambda\leq 1$ which introduces
+exponential weighting into past data, appropriate for time-varying
+channels.
 The solution to minimizing the cost function $c(\vec{w}_n)$ is achieved by
 setting its partial derivatives with respect to $\vec{w}_n$ equal to zero.
 The solution at time $n$ involves inverting the weighted cross correlation
@@ -74,8 +81,8 @@ The RLS algorithm provides a solution which converges much faster than the LMS
 algorithm, however with a significant increase in computational complexity and
 memory requirements.
 
-\subsection{Usage}
-\label{module:equalization:usage}
+\subsection{Interface}
+\label{module:equalization:interface}
 The {\tt eqlms} and {\tt eqrls} have nearly identical interfaces, so we will
 leave the discussion to the {\tt eqlms} object here.
 Like most objects in \liquid, {\tt eqlms} follows the typical

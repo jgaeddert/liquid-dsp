@@ -43,7 +43,12 @@ local_s_files	:= 			\
 	filter_cccf.c			\
 	gmskframegen.c			\
 	gmskframesync.c			\
-	patternset.c
+	patternset.c			\
+	awgn_channel.c			\
+	lognorm_channel.c		\
+	channel.c			\
+	pamodel.c			\
+	ricek_channel.c
 
 # local_t_files
 #
@@ -54,7 +59,8 @@ local_s_files	:= 			\
 #
 local_t_files	:=			\
 	ann_autotest.h			\
-	gport_autotest.h
+	gport_autotest.h		\
+	channel_autotest.h
 
 
 # local_b_files

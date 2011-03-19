@@ -18,11 +18,8 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __AWGN_CHANNEL_AUTOTEST_H__
-#define __AWGN_CHANNEL_AUTOTEST_H__
-
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 // 
 // AUTOTEST: AWGN channel
@@ -58,6 +55,4 @@ void autotest_awgn_channel()
 
     awgn_channel_destroy(q);
 }
-
-#endif // __AWGN_CHANNEL_AUTOTEST_H__
 

@@ -71,6 +71,22 @@
 % from: http://www.faqs.org/faqs/tex-faq/ (see #44)
 \setlength{\doublerulesep}{\arrayrulewidth}
 
+%--------- CAPTION OPTIONS -------------------
+\usepackage[small,bf]{caption}
+\setcaptionwidth{15cm}
+\setlength{\belowcaptionskip}{0.5cm}
+
+
+% algorithms
+%   http://tug.ctan.org/tex-archive/macros/latex/contrib/algorithms/
+\usepackage{algorithm}
+\usepackage{algorithmic}
+% customized algorithm comments
+%\renewcommand{\algorithmiccomment}[1]{// #1}
+\definecolor{algorithm-comment-color}{rgb}{0.7,0.7,0.7}
+\renewcommand{\algorithmiccomment}[1]{\textcolor{algorithm-comment-color}{\sf \,\, (#1)}}
+
+
 %--------- NEW COMMANDS -------------------
 \newcommand{\NA}{\scriptsize{NA}}
 \newcommand{\E}{\scriptsize{E}}
@@ -88,10 +104,6 @@
 \newcommand{\liquid}{{\it liquid}}
 \newcommand{\liquidfpm}{{\it liquid-fpm}}
 
-%--------- CAPTION OPTIONS -------------------
-\usepackage[small,bf]{caption}
-\setcaptionwidth{15cm}
-\setlength{\belowcaptionskip}{0.5cm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -179,7 +191,10 @@ Blacksburg, Virginia
 
 \bigskip
 \noindent
-To get you started with using \liquid\ signal processing library...
+The next few sections are designed to give you an understanding of
+\liquid's intended purpose and where it might fit within your project.
+Included is a quick start guide, example source code, and a brief
+historical outline.
 
 \vfill
 
@@ -230,7 +245,11 @@ each signal processing module.
 \bigskip
 \noindent
 Source code for \liquid\ is organized into {\em modules} which are, for
-the most part, self-contained elements...
+the most part, self-contained elements.
+The following sections describe these modules in detail
+with some basic theory behind their operation,
+functional interface description,
+and example code.
 
 \vfill
 
@@ -244,7 +263,7 @@ the most part, self-contained elements...
 %\input{sections/ann}
 \input{sections/audio}
 \input{sections/buffer}
-\input{sections/channel}
+%\input{sections/channel}
 \input{sections/dotprod}
 \input{sections/equalization}
 \input{sections/fec}

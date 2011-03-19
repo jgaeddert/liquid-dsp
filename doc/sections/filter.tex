@@ -10,75 +10,214 @@ functionality.
 Filter design and implementation is a significant portion of radio
 engineering, and consumes a considerable portion of the baseband receiver's
 energy.
-For linear digital modulation techniques (see section~\ref{module:modem}),
-the matched filter is responsible for limiting the occupied bandwidth of the
-transmitted signal while eliminating inter-symbol interference.
+%For linear digital modulation techniques (see section~\ref{module:modem}),
+%the matched filter is responsible for limiting the occupied bandwidth of the
+%transmitted signal while eliminating inter-symbol interference.
+%
+This section includes interface descriptions for all of the signal
+processing elements in \liquid\ regarding filter design and
+implemenation.
+This includes both infinite and finite (recursive and non-recursive)
+filters, decimators, interpolators, and performance characterization.
 
+
+% 
 % autocorr
+%
 \subsection{{\tt autocorr} (auto-correlator)}
-Implements an auto-correlator
+\label{module:filter:autocorr}
+The {\tt autocorr} family of objects implement autocorrelation of
+signals.
+The discrete autocorrelation of a signal $\vec{x}$
+is a delay, conjugate multiply, and accumulate operation defined as
+%
 % TODO check this equation
-\[
+\begin{equation}
+\label{eqn:filter:autocorr}
     r_{xx}(n) = \sum_{k=0}^{N-1} {x(n-k)x^*(n-k-d)}
-\]
+\end{equation}
+%
 where $N$ is the window length, and $d$ is the overlap delay.
+An example of the {\tt autocorr} interface is listed below.
+%
+\input{listings/autocorr.example.c.tex}
+%
+A more detailed example is given in
+{\tt examples/autocorr\_cccf\_example.c}
+in the main \liquid\ project directory.
+%
+Listed below is the full interface to the {\tt autocorr} family of
+objects.
+While each method is listed for {\tt autocorr\_cccf}, the same
+functionality applies to {\tt autocorr\_rrrf}.
+%
+\begin{description}
+\item[{\tt autocorr\_cccf\_create(N,d)}]
+    creates and returns an {\tt autocorr} object with a window size of
+    $N$ samples and a delay of $d$ samples.
+\item[{\tt autocorr\_cccf\_destroy(q)}]
+    destroys an {\tt autocorr} object, freeing all internally-allocated
+    memory.
+\item[{\tt autocorr\_cccf\_clear(q)}]
+    clears the internal {\tt autocorr} buffers.
+\item[{\tt autocorr\_cccf\_print(q)}]
+    prints the internal state of the {\tt autocorr} object.
+\item[{\tt autocorr\_cccf\_push(q,x)}]
+    pushes a sample $x$ into the internal buffer of an {\tt autocorr}
+    object.
+\item[{\tt autocorr\_cccf\_execute(q,*rxx)}]
+    executes the delay, conjugate multiply, and accumulate operation,
+    storing the result in the output variable $r_{xx}$.
+\item[{\tt autocorr\_cccf\_get\_energy(q)}]
+    returns $(1/N)\sum_{k=0}^{N-1}{|x(n-k)x^*(n-k-d)|}$
+\end{description}
 
+
+
+% 
 % decim
+%
 \subsection{{\tt decim} (decimator)}
-The {\tt decim} object family implements a basic interpolator with an integer
-output-to-input resampling ratio.
-It is essentially just a {\tt firfilt} object which operates on a block of
-samples at a time.
-An example of the decimator can be seen in figure~\ref{fig:module:filter:decim_crcf}.
-
-%The same result can be accomplished with a {\tt firfilt} object...
-
+\label{module:filter:decim}
+The {\tt decim} object family implements a basic interpolator with an
+integer output-to-input resampling ratio $D$.
+It is essentially just a {\tt firfilt} object which operates on a block
+of samples at a time.
+An example of the decimator can be seen in
+Figure~\ref{fig:module:filter:decim_crcf}.
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_decim_crcf}
-\caption{{\tt decim\_crcf} (decimator) demonstration, $D=4$}
+\caption{{\tt decim\_crcf} (decimator) example with $D=4$,
+         compensating for filter delay.}
 \label{fig:module:filter:decim_crcf}
 \end{figure}
+%
+Listed below is the full interface to the {\tt decim} family of
+objects.
+While each method is listed for {\tt decim\_crcf}, the same
+functionality applies to {\tt decim\_rrrf} and {\tt decim\_cccf}.
+%
+\begin{description}
+\item[{\tt decim\_crcf\_create(D,*h,N)}]
+    creates a {\tt decim} object with a decimation factor $D$ using $N$
+    filter coefficients $\vec{h}$.
+\item[{\tt decim\_crcf\_destroy(q)}]
+    destroys a {\tt decim} object, freeing all internally-allocated
+    memory.
+\item[{\tt decim\_crcf\_print(q)}]
+    prints the parameters of a {\tt decim} object to the standard
+    output.
+\item[{\tt decim\_crcf\_clear(q)}]
+    clears the internal buffer of a {\tt decim} object.
+\item[{\tt decim\_crcf\_execute(q,*x,*y,k)}]
+    computes the output decimation of the input sequence $\vec{x}$
+    (which is $D$ samples in size) at the index $k$ and stores the
+    result in $y$.
+\end{description}
+%
+An example of the {\tt decim} interface is listed below.
+%
+\input{listings/decim.example.c.tex}
+%
+A more detailed example is given in
+{\tt examples/decim\_crcf\_example.c}
+in the main \liquid\ project directory.
 
 
-
+%
 % firfilt
+%
 \subsection{{\tt firfilt} (finite impulse response filter)}
 \label{module:filter:firfilt}
-Finite impulse response (FIR) filter.
-The output $y$ is the convolution of the input $x$ with the filter
-coefficients (impulse response) $h$, viz
-\[
+Finite impulse response (FIR) filters are implemented in \liquid\ with
+the {\tt firfilt} family of objects.
+FIR filters (also known as {\em non-recursive filters}) operate on
+discrete-time samples, computing the output $y$ as the convolution of
+the input $\vec{x}$ with the filter coefficients $\vec{h}$ as
+%
+\begin{equation}
+\label{eqn:filter:firfilt}
     y(n) = \sum_{k=0}^{N-1}{ h(k) x(N-k-1) }
-\]
-where $\vec{h} = \{h_0,h_1,\ldots,h_{N-1}\}$ is the filter impulse response.
+\end{equation}
+%
+where $\vec{h} = [h(0),h(1),\ldots,h(N-1)]$
+is the filter impulse response.
+Notice that the output sample in (\ref{eqn:filter:firfilt})
+is simply the vector dot product (see Section~\ref{module:dotprod})
+of the filter coefficients $\vec{h}$ with the time-reversed sequence
+$\vec{x}$.
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firfilt_crcf_time}
+\caption{{\tt firfilt\_crcf} (finite impulse response filter) demonstration}
+\label{fig:module:filter:firfilt_crcf}
+\end{figure}
+%
+An example of the {\tt firfilt} can be seen in
+Figure~\ref{fig:module:filter:firfilt_crcf}
+in which a low-pass filter is applied to a signal to remove a
+high-frequency component.
+%
+An example of the {\tt firfilt} interface is listed below.
+%
+\input{listings/firfilt.example.c.tex}
+%
+Listed below is the full interface to the {\tt firfilt} family of
+objects.
+While each method is listed for {\tt firfilt\_crcf}, the same
+functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
+%
+\begin{description}
+\item[{\tt firfilt\_crcf\_create(*h,N)}]
+    creates a {\tt firfilt} object with $N$ filter coefficients
+    $\vec{h}$.
+\item[{\tt firfilt\_crcf\_destroy(q)}]
+    destroys a {\tt firfilt} object, freeing all internally-allocated
+    memory.
+\item[{\tt firfilt\_crcf\_print(q)}]
+    prints the parameters of a {\tt firfilt} object to the standard
+    output.
+\item[{\tt firfilt\_crcf\_clear(q)}]
+    clears the internal buffer of a {\tt firfilt} object.
+\item[{\tt firfilt\_crcf\_push(q,x)}]
+    pushes an input sample $x$ into the internal buffer of the filter
+    object.
+\item[{\tt firfilt\_crcf\_execute(q,*y)}]
+    generates the output sample $y$ by computing the vector dot product
+    (see Section~\ref{module:dotprod})
+    between the internal filter coefficients and the internall buffer.
+\end{description}
+%
 
+
+% 
 % firhilb
+%
 \subsection{{\tt firhilb} (finite impulse response Hilbert transform)}
-The {\tt firhilb} object is a finite impulse response Hilbert transform which
+\label{module:filter:firhilb}
+The {\tt firhilb} object in \liquid\ implements a finite impulse
+response Hilbert transform which
 converts between real and complex time series.
-The interpolator takes a complex time series and produces real-valued samples
-at twice the sample rate.
-The decimator reverses the process by halving the sample rate of a real-valued
-time series to a complex-valued one.
+The interpolator takes a complex time series and produces real-valued
+samples at twice the sample rate.
+The decimator reverses the process by halving the sample rate of a
+real-valued time series to a complex-valued one.
 
 Typical trade-offs between filter length, side-lobe suppression, and
 transition bandwidth apply.
-The {\tt firhilb} object uses a half-band filter to implement the transform as
-efficiently as possible.
-While any filter length can be accepted, the {\tt firhilb} object internally
-forces the length to be of the form $n=4m+1$.
+The {\tt firhilb} object uses a half-band filter to implement the
+transform as efficiently as possible.
+While any filter length can be accepted, the {\tt firhilb} object
+internally forces the length to be of the form $n=4m+1$
+to reduce the computational load.
 A halfband filter of this length has $2m$ zeros and $2m+1$ non-zero
 coefficients.
 Of these non-zero coefficients, the center is exactly $1$ while the other $2m$
-are even symmetric, and therefore only $m$ computations are needed...
-[TODO: flesh out this section]
-
-{\it See also:} {\tt resamp2} (section~\ref{module:filter:resamp2}),
-FIR filter design (section~\ref{module:filter:firdes}).
-
-\input{listings/firhilb.example.c.tex}
-
+are even symmetric, and therefore only $m$ computations are needed.
+%
 \begin{figure}
 \centering
 \subfigure[time] {
@@ -92,26 +231,85 @@ small signal at $f=0.13$ is due to aliasing as a result of imperfect image
 rejection}
 \label{fig:module:filter:firhilb_crcf}
 \end{figure}
+%
+An example code listing is given below.
+%
+\input{listings/firhilb.example.c.tex}
+%
+For more detailed examples, refer to the files
+{\tt examples/firhilb\_decim\_example.c} and
+{\tt examples/firhilb\_interp\_example.c}
+located within the main \liquid\ project directory.
+%
+{\it See also:} {\tt resamp2} (Section~\ref{module:filter:resamp2}),
+FIR filter design (Section~\ref{module:filter:firdes}).
 
+
+% 
 % firpfb
-\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
+%
+%\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
 
+% 
 % interp
+%
 \subsection{{\tt interp} (interpolator)}
+\label{module:filter:interp}
 The {\tt interp} object implements a basic interpolator with an integer
 output-to-input resampling ratio.
-
+An example of the {\tt interp} interface is listed below.
+%
 \input{listings/interp.example.c.tex}
-
+%
+Listed below is the full interface to the {\tt interp} family of
+objects.
+While each method is listed for {\tt interp\_crcf}, the same
+functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
+%
+\begin{description}
+\item[{\tt interp\_crcf\_create(M,*h,N)}]
+    creates an {\tt interp} object with an interpolation factor $M$
+    using $N$ filter coefficients $\vec{h}$.
+\item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
+    creates an {\tt interp} object
+    from a square-root Nyquist filter prototype with
+    $k$ samples per symbol (interpolation factor),
+    $m$ symbols of delay,
+    $\beta$ excess bandwidth,
+    and a fractional sampling interval $\Delta t$.
+    Section~\ref{module:filter:firdes:rnyquist}
+    provides a detailed description of the available square-root Nyquist
+    filter prototypes available in \liquid.
+\item[{\tt interp\_crcf\_destroy(q)}]
+    destroys the interpolator, freeing all internally-allocated memory.
+\item[{\tt interp\_crcf\_print(q)}]
+    prints the internal properties of the interpolator to the standard
+    output.
+\item[{\tt interp\_crcf\_clear(q)}]
+    clears the internal interpolator buffers.
+\item[{\tt interp\_crcf\_execute(q,x,*y)}]
+    executes the interpolator for an input $x$, storing the result in
+    the output array $y$ (which has a length of $M$ samples).
+\end{description}
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_interp_crcf}
-\caption{{\tt interp\_crcf} (interpolator) demonstration, $k=4$}
+\caption{{\tt interp\_crcf} (interpolator) example with $M=4$,
+         compensating for filter delay.}
 \label{fig:module:filter:interp_crcf}
 \end{figure}
+%
+A graphical example of the interpolator can be seen in
+Figure~\ref{fig:module:filter:interp_crcf}.
+A detailed example program is given in
+{\tt examples/interp\_crcf\_example.c},
+located under the main \liquid\ project directory.
 
 
+% 
 % iirfilt
+%
 \subsection{{\tt iirfilt} (infinite impulse response filter)}
 \label{module:filter:iirfilt}
 The {\tt iirfilt\_crcf} object and family implement the infinite impulse
@@ -121,24 +319,30 @@ be fed back into the input, thus creating an impulse response which is
 non-zero for an infinite amount of time.
 Formally, the output signal $y[n]$ may be written in terms of the input signal
 $x[n]$ as
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:y}
     y[n] = \frac{1}{a_0} \left(
            \sum_{j=0}^{n_b-1}{ b_j x[n-j] } -
            \sum_{k=1}^{n_a-1}{ a_k y[n-k] }
            \right)
-\]
+\end{equation}
+%
 where $\vec{b} = [b_0,b_1,\ldots,b_{n_b-1}]^T$ are the feed-forward parameters
 and   $\vec{a} = [a_0,a_1,\ldots,a_{n_a-1}]^T$ are the feed-back parameters
 of length $n_b$ and $n_a$, respectively.
 The $z$-transform of the transfer function is therefore
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:Hz}
     H(z) = \frac{Y(z)}{X(z)}
          = \frac{\sum\limits_{j=0}^{n_b-1}{b_j z^{-j}}}
                 {\sum\limits_{k=0}^{n_a-1}{a_k z^{-k}}}
          = \frac{ b_0 + b_1 z^{-1} + \cdots + b_{n_b-1} z^{n_b-1}}
                 { a_0 + a_1 z^{-1} + \cdots + a_{n_a-1} z^{n_a-1}}
-\]
-Typically, $H(z)$ is normalized such that $a_0=1$.
+\end{equation}
+%
+Typically the coefficients in $H(z)$ are normalized such that $a_0=1$.
 
 For larger order filters (even as small as $n\approx 8$) the filter can become
 unstable due to finite machine precision.
@@ -147,7 +351,9 @@ sections.
 For a filter of order $n$, these sections are denoted by the two
 $(L+r)\times 3$ matrices $\vec{B}$ and $\vec{A}$
 where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:Hdz}
     H_d(z) = 
              \left[
                 \frac{B_{r,0} + B_{r,1}z^{-1}}
@@ -157,55 +363,88 @@ where $r=n \mod 2$ (0 for odd $n$, 1 for even $n$) and $L=(n-r)/2$.
                 \frac{B_{k,0} + B_{k,1}z^{-1} + B_{k,2}z^{-2}}
                      {1       + A_{k,1}z^{-1} + A_{k,2}z^{-2}}
              \right]}
-\]
+\end{equation}
+%
 Notice that $H(z)$ is now a series of cascaded second-order IIR filters.
 The `sos' form is practical when filters are designed from analog prototypes
 where the poles and zeros are known.
 \liquid\ implements second-order sections efficiently with the internal
 {\tt iirfiltsos\_xxxt} object.
 For a cascaded second-order section IIR filter, use
-{\tt iirfilt\_xxxt\_create\_sos(B,A,n)}.
+{\tt iirfilt\_crcf\_create\_sos(B,A,n)}.
+%
+{\em See also}: {\tt iirdes} (IIR filter design) in
+Section~\ref{module:filter:iirdes}.
 
-See also: {\tt iirdes} (IIR filter design).
-
-\subsubsection{interface}
-\label{module:filter:iirfilt:interface}
-The interface to the {\tt iirfilt} object follows the convention of other
-\liquid\ signal processing objects in that the ``{\tt xxxt}'' extension in
-this section is only a placeholder for ``{\tt crcf}'' etc.
-
+Listed below is the full interface to the {\tt iirfilt} family of
+objects.
+The interface to the {\tt iirfilt} object follows the convention of
+otherr \liquid\ signal processing objects;
+while each method is listed for {\tt iirfilt\_crcf}, the same
+functionality applies to {\tt iirfilt\_rrrf} and {\tt iirfilt\_cccf}.
+%
 \begin{description}
-\item[{\tt iirfilt\_xxxt\_create()}]
-    creates a new {\tt iirfilt} object
-\item[{\tt iirfilt\_xxxt\_create\_sos()}]
-    creates a new {\tt iirfilt} object using second-order sections.
-\item[{\tt iirfilt\_xxxt\_destroy()}]
+\item[{\tt iirfilt\_crcf\_create(*b,Nb,*a,Nb)}]
+    creates a new {\tt iirfilt} object with
+    $N_b$ feed-forward coefficients $\vec{b}$ and
+    $N_a$ feed-back coefficients $\vec{a}$.
+\item[{\tt iirfilt\_crcf\_create\_sos(*B,*A,Nsos)}]
+    creates a new {\tt iirfilt} object using $N_{sos}$ second-order
+    sections.
+    The $[N_{sos} \times 3]$ feed-forward coefficient matrix is
+    specified by $\vec{B}$ and
+    the $[N_{sos} \times 3]$ feed-back coefficient matrix is
+    specified by $\vec{A}$.
+\item[{\tt iirfilt\_crcf\_create\_prototype(ftype,btype,format,order,fc,f0,Ap,As)}]
+    creates a new IIR filter object using the prototype interface
+    described in Section~\ref{module:filter:iirdes:iirdes}.
+    This is the simplest method for designing an IIR filter with
+    Butterworth, Chebyshev-I, Chebyshev-II, elliptic/Cauer, or Bessel
+    coefficients.
+\item[{\tt iirfilt\_crcf\_destroy(q)}]
     destroys an {\tt iirfilt} object, freeing all internally-allocated memory
     arrays and buffers.
-\item[{\tt iirfilt\_xxxt\_print()}]
+\item[{\tt iirfilt\_crcf\_print(q)}]
     prints the internals of an {\tt iirfilt} object.
-\item[{\tt iirfilt\_xxxt\_clear()}]
+\item[{\tt iirfilt\_crcf\_clear(q)}]
     clears the filter's internal state.
-\item[{\tt iirfilt\_xxxt\_execute()}]
-    accepts one input sample and computes one output sample (i.e. executes one
-    iteration of the filter).
-\item[{\tt iirfilt\_xxxt\_get\_length()}]
+\item[{\tt iirfilt\_crcf\_execute(q,x,*y)}]
+    executes one iteration of the filter with an input $x$, storing the
+    result in $y$, and updating its internal state.
+\item[{\tt iirfilt\_crcf\_get\_length(q)}]
     returns the order of the filter.
+\item[{\tt iirfilt\_crcf\_freqresponse(q,fc,*H)}]
+    computes the complex response $H$ of the filter at the normalized
+    frequency $f_c$.
+\item[{\tt iirfilt\_crcf\_groupdelay(q,fc)}]
+    returns the group delay of the filter at the normalized
+    frequency $f_c$.
 \end{description}
-
+%
 Listed below is a basic example of the interface.
-For more detailed and extensive examples, refer to the {\tt examples/}
-source directory.
+For more detailed and extensive examples, refer to
+{\tt examples/iirfilt\_crcf\_example.c}
+in the main \liquid\ project source directory.
+%
 \input{listings/iirfilt.example.c.tex}
-
+%
 \begin{figure}
 \centering
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_iirfilt_crcf_time}
-\caption{{\tt iirfilt\_crcf} (infinite impulse response filter) demonstration}
+\caption{
+    {\tt iirfilt\_crcf} (infinite impulse response filter)
+    example.}
 \label{fig:module:filter:iirfilt_crcf}
 \end{figure}
+%
+An example of the {\tt iirfilt} can be seen in
+Figure~\ref{fig:module:filter:iirfilt_crcf}
+in which a low-pass filter is applied to a signal to remove a
+high-frequency component.
 
-
+% 
+% iirdes
+%
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
 \label{module:filter:iirdes}
 \liquid\ implements infinite impulse respone (IIR) filter design for the four
@@ -689,19 +928,32 @@ timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
     returns the internal filter coefficients.
 \end{description}
 
+
+% 
+% firdes (finite impulse response filter design)
+%
 \subsection{{\tt firdes} (finite impulse response filter design)}
 \label{module:filter:firdes}
+This section describes the finite impulse response filter design
+capabilities in \liquid.
+This includes basic low-pass filter design using the windowed-$\sinc$
+method,
+square-root Nyquist filters,
+arbitrary design using the Parks-McClellan algorithm,
+and some useful miscellaneous functions.
 
 \subsubsection{Window prototype}
+\label{module:filter:firdes:window}
 Basic idea: apply windowing function to truncated sinc
-
+%
 \begin{equation}
-h(t) = w_n(t) \sinc(\Delta f t)
+    h(t) = w_n(t) \sinc(\Delta f t)
 \end{equation}
-
+%
 where $w_n(t)$ is chosen from...
-
+%
 The Kaiser window is defined as...
+%
 \begin{equation}
 \label{eqn:kaiser_window}
     w[n] = \frac{
@@ -710,8 +962,10 @@ The Kaiser window is defined as...
         I_0\left(\pi\beta\right)
     }
 \end{equation}
+%
 where $I_\nu(z)$ is the modified Bessel function of the first kind of order
 $\nu$.
+%
 \begin{equation}
 \label{eqn:besseli_infinite_sum}
     I_\nu(z) = \sum_{k=0}^{\infty}{
@@ -722,6 +976,7 @@ $\nu$.
         }
     }
 \end{equation}
+%
 For more approximations to $I_0(z)$, see section~\ref{module:math} on the math
 module.
 
@@ -748,56 +1003,181 @@ TODO : add discussion of interface for {\tt firdes\_kaiser\_window}.
 $\Delta f=0.05$, $A_s=60$dB}
 \label{fig:module:filter:firdes_kaiser}
 \end{figure}
+%
+An example of a low-pass filter design using the Kaiser window can be
+found in Figure~\ref{fig:module:filter:firdes_kaiser}.
 
 
-\subsubsection{{\tt rcos} (raised-cosine filter)}
-\label{module:filter:firdes:rcos}
+%\subsubsection{{\tt rcos} (raised-cosine filter)}
+%\label{module:filter:firdes:rcos}
 
-\subsubsection{{\tt rrcos} (square-root raised-cosine filter)}
-\label{module:filter:firdes:rrcos}
-{\tt design\_rrc\_filter} calculates the coefficients for a square-root
-raised-cosine (RRC) finite impulse response (FIR) filter commonly used in
-digital communications.
-The input parameters are as follows
-\begin{itemize}
-    \item[$k$] : samples per symbol
-    \item[$m$] : sample delay
-    \item[$\beta$] : excess bandwidth (rolloff) factor
-\end{itemize}
-The function returns the filter coefficients in the buffer, $h$, which has been
-allocated externally.  The length of the filter is always
-\[
-    h_{len} = 2 k m + 1
-\]
+\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
+\label{module:filter:firdes:rnyquist}
+Nyquist's criteria for designing a band-limited filter without
+inter-symbol interference is for the spectral response of a linear phase
+filter to be symmetric about its symbol rate.
+%
+Square-root Nyquist filters are commonly used in digital communcations
+systems with linear modulation as a pulse shape for matched filtering.
+Applying a pulse shape to the transmitted symbol sequence limits its
+occupied spectral bandwidth by smoothing the transitions between
+symbols.
+If an identical filter is applied at the receiver then the system is
+matched resulting in the maximum signal-to-noise ratio
+and (theoretically) zero inter-symbol interference.
+%The application of two square-root Nyquist filters results in 
+%
+While the design of Nyquist filters is trivial and can be accomplished
+by applying any desired window to a $\sinc$ function,
+designing a square-root Nyquist filter is not as straighforward.
+\liquid\ conveniently provides several square-root Nyquist filter
+prototypes listed in Table~\ref{tab:filter:rnyquist}.
+%
+% ------------ TABLE: RNYQUIST PROTOTYPES ------------
+\begin{table*}
+\caption{Square-root Nyquist filter prototypes available in \liquid}
+\label{tab:filter:rnyquist}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}l}
+\toprule
+{\it scheme} &
+{\it description}\\\otoprule
+%
+{\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
+{\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
+{\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
+{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+%
+The interface for designing square-root Nyquist filters is simply
+%
+\begin{Verbatim}[fontsize=\small]
+    design_rnyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+\end{Verbatim}
+%
+where {\tt \_ftype} is one of the filter types in
+Table~\ref{tab:filter:rnyquist},
+$k$ is the number of samples per symbol,
+$m$ is the filter delay in symbols,
+$\beta$ is the excess bandwidth (rolloff) factor,
+$\Delta t$ is the fractional sample delay (usually set to zero for
+  typical filter designs),
+and $h$ is the output coefficients array of length $2km+1$.
+All square-root Nyquist filters in \liquid\ have these four basic
+properties ($k$, $m$, $\beta$, $\Delta t$) and produce a filter with
+$N=2km+1$ coefficients.
+%
 
-The filter coefficients themselves are derived from the following equation
-\[ 
+The most common square-root Nyquist filter design in digital
+communications is the square-root raised-cosine (RRC) filter,
+likely due to the fact that an expression for its time series can be
+expressed in closed form.
+The filter coefficients themselves are derived from the following
+equation:
+%
+\begin{equation}
+\label{eqn:filter:rrcos}
     h\left[z\right] =
       4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
                     \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
                   { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
-\]
+\end{equation}
+%
 where $z=n/k-m$, and $T=1$ for most cases.
-The function compensates for the two cases where $h[n]$ might be
-undefined in the above equation, viz.
-\[
+\liquid\ compensates for the two cases where $h[n]$ might be
+undefined in the above equation, i.e.
+%
+\begin{equation}
+\label{eqn:filter:rrcos:limit1}
     \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
-\]
+\end{equation}
+%
 and
-\[
+%
+\begin{equation}
+\label{eqn:filter:rrcos:limit2}
     \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
         \frac{\beta}{\sqrt{2}}
         \left[
             \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
             \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
         \right]
-\]
+\end{equation}
+
+The $r$-Kaiser and harris-Moerder-3 (hM3) filters cannot be expressed in
+closed form but rely on iterations over traditional filter design
+techniques to search for the design parameters which minimize the
+resulting filter's inter-symbol interference (ISI).
+Similarly the approximate $r$-Kaiser filter uses an approximation for
+the design parameters to eliminate the need for running the search;
+this comes at the expense of a slight performance degradation.
+
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_rnyquist}
+\caption{Contrast of the different square-root Nyquist filters
+         available in \liquid\ for
+         $k=2$, $m=9$, $\beta=0.3$, and $\Delta t = 0$.}
+\label{fig:module:filter:rnyquist}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:rnyquist} contrasts the different
+square-root Nyquist filters available in \liquid.
+The square-root raised-cosine filter is inferior to the
+(approximate) $r$-Kaiser and harris-Moerder-3 filters in both transition
+bandwidth as well as side-lobe suppression.
+In the figure the responses of the $r$-Kaiser and approximate $r$-Kaiser
+filters are indistinguishable.
 
 
-\subsubsection{{\tt firdespm}}
+\subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
 \label{module:filter:firdespm}
-FIR filter desing using the Parks-McClellan algorithm.
-
+FIR filter desing using the Parks-McClellan algorithm is implemented in
+\liquid\ with the {\tt firdespm} interface.
+The Parks-McClellan algorithm uses the Remez exchange algorithm to solve
+the minimax problem (minimize the maximum error) for filter design.
+The interface accepts ... with $N_b$ frequency bands... xxx
+%
+\begin{Verbatim}[fontsize=\small]
+    firdespm_run(_h_len,        // filter length
+                 _bands*,       // array of frequency bands
+                 _des*,         // desired response in each band
+                 _weights*,     // relative weighting for each band
+                 _num_bands,    // number of bands
+                 _btype,        // filter type
+                 _wtype*,       // weighting function for each band
+                 _h*)
+\end{Verbatim}
+%
+\begin{description}
+\item[{\tt \_bands}]
+    is a $[N_b \times 2]$ matrix of the band edge descriptions.
+    Each row corresponds to an upper and lower band edge for each region
+    of interest.
+    These regions cannot be overlapping.
+\item[{\tt \_des}]
+    is an array of size $N_b$ with the desired response (linear) for
+    each band.
+\item[{\tt \_weights}]
+    is an array of size $N_b$ with the relative error weighting for each
+    band.
+\item[{\tt \_num\_bands}]
+    represents $N_b$, the number of bands in the design.
+\item[{\tt \_btype}]
+    gives the filter type for the design.
+    This is typically {\tt LIQUID\_FIRDESPM\_BANDPASS} for the majority
+    of filters.
+\item[{\tt \_wtype}]
+    is an array of length $N_b$ which specifies the weighting function
+    for each band (flat, exponential, or linear).
+\end{description}
+%
+Listed below is an example of the {\tt firdespm} interface.
+%
 \input{listings/firdespm.example.c.tex}
 
 
@@ -853,7 +1233,7 @@ useful to filtering and filter design.
 \item[{\tt kaiser\_beta\_As()}]
     returns an estimate of the Kaiser $\beta$ factor for a particular
     stop-band attenuation $A_s$.
-    The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz.
+    The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz
     \[
     \beta =
     \begin{cases}

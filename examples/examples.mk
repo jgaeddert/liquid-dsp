@@ -26,8 +26,6 @@ local_src	:=			\
 	dotprod_cccf_example.c		\
 	eqlms_cccf_example.c		\
 	eqrls_cccf_example.c		\
-	fading_channel_example.c	\
-	fading_generator_example.c	\
 	fec_example.c			\
 	fct_example.c			\
 	fft_example.c			\
@@ -37,6 +35,8 @@ local_src	:=			\
 	firfilt_rrrf_recreate_example.c	\
 	firdes_kaiser_example.c		\
 	firdespm_example.c		\
+	firhilb_decim_example.c		\
+	firhilb_interp_example.c	\
 	firpfb_rrrf_example.c		\
 	firpfbch_example.c		\
 	firpfbch_analysis_example.c	\
@@ -50,8 +50,6 @@ local_src	:=			\
 	gmskmodem_example.c		\
 	gradient_search_datafit_example.c	\
 	gradient_search_example.c	\
-	hilbert_decim_example.c		\
-	hilbert_interp_example.c	\
 	interleaver_example.c		\
 	interleaver_scatterplot_example.c	\
 	iirdes_example.c		\
@@ -91,7 +89,6 @@ local_src	:=			\
 	resamp2_crcf_decim_example.c	\
 	resamp2_crcf_interp_example.c	\
 	resamp2_crcf_interp_recreate_example.c	\
-	ricek_channel_example.c		\
 	scramble_example.c		\
 	symsync_crcf_example.c		\
 	symsync_rrrf_example.c		\
@@ -103,6 +100,8 @@ local_src	:=			\
 #	ofdmoqamframe64gen_example.c
 #	ofdmoqamframe64sync_example.c
 #	gmskframe_example.c
+#	fading_generator_example.c
+#	ricek_channel_example.c
 
 # experimental examples
 # TODO : build when configured with '--enable-experimental' option

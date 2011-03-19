@@ -170,8 +170,7 @@ dotprod_rrrf_example.c
 
 eqlms_cccf_example.c
 eqrls_cccf_example.c
-fading_channel_example.c
-fading_generator_example.c
+fading_generator_example.c [EXPERIMENTAL]
 fbasc_example.c [EXPERIMENTAL]
 fct_example.c
 
@@ -208,6 +207,25 @@ firdespm_example.c *
     Parks-McClellan algorithm.
 
     SEE ALSO: firdes_kaiser_example.c
+
+firhilb_decim_example.c
+    Hilbert transform: 2:1 real-to-complex decimator.  This example
+    demonstrates the functionality of firhilb (finite impulse response Hilbert
+    transform) decimator which converts a real time series into a complex one
+    with half the number of samples.  The input is a real-valued sinusoid of N
+    samples. The output is a complex-valued sinusoid of N/2 samples.
+
+    SEE ALSO: firhilb_interp_example.c
+
+firhilb_interp_example.c
+    Hilbert transform: 1:2 complex-to-real interpolator.  This example
+    demonstrates the functionality of firhilb (finite impulse response Hilbert
+    transform) interpolator which converts a complex time series into a real
+    one with twice the number of samples.  The input is a complex-valued
+    sinusoid of N samples. The output is a real-valued sinusoid of 2*N
+    samples.
+
+    SEE ALSO: firhilb_decim_example.c
 
 firpfb_rrrf_example.c
 
@@ -275,25 +293,6 @@ gradient_search_example.c
 gradient_search_datafit_example.c
     Fit 3-parameter curve to sampled data set in the minimum
     mean-squared error sense.
-
-hilbert_decim_example.c
-    Hilbert transform: 2:1 real-to-complex decimator.  This example
-    demonstrates the functionality of firhilb (finite impulse response Hilbert
-    transform) decimator which converts a real time series into a complex one
-    with half the number of samples.  The input is a real-valued sinusoid of N
-    samples. The output is a complex-valued sinusoid of N/2 samples.
-
-    SEE ALSO: hilbert_interp_example.c
-
-hilbert_interp_example.c
-    Hilbert transform: 1:2 complex-to-real interpolator.  This example
-    demonstrates the functionality of firhilb (finite impulse response Hilbert
-    transform) interpolator which converts a complex time series into a real
-    one with twice the number of samples.  The input is a complex-valued
-    sinusoid of N samples. The output is a real-valued sinusoid of 2*N
-    samples.
-
-    SEE ALSO: hilbert_decim_example.c
 
 iirfilt_crcf_example.c
     Complex infinite impulse response filter example. Demonstrates the
@@ -486,7 +485,7 @@ resamp2_crcf_interp_example.c
 
 resamp2_crcf_interp_recreate_example.c
 resamp_crcf_example.c
-ricek_channel_example.c
+ricek_channel_example.c [EXPERIMENTAL]
 
 scramble_example.c
     Data-scrambling example.  Physical layer synchronization of received

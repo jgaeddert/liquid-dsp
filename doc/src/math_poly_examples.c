@@ -12,6 +12,10 @@ void polyf_fit_lagrange_example();
 void polyf_interp_lagrange_example();
 void polyf_fit_lagrange_barycentric_example();
 void polyf_val_lagrange_barycentric_example();
+void polyf_expandroots_example();
+void polyf_expandroots2_example();
+void polyf_expandbinomial_example();
+void polyf_expandbinomial_pm_example();
 
 int main() {
     // run examples
@@ -21,6 +25,10 @@ int main() {
     polyf_interp_lagrange_example();
     polyf_fit_lagrange_barycentric_example();
     polyf_val_lagrange_barycentric_example();
+    polyf_expandroots_example();
+    polyf_expandroots2_example();
+    polyf_expandbinomial_example();
+    polyf_expandbinomial_pm_example();
 
     printf("done.\n");
     return 0;
@@ -83,3 +91,39 @@ void polyf_val_lagrange_barycentric_example()
     float y0 = polyf_val_lagrange_barycentric(x,y,w,x0,4);
     printf("    >>> y0 = %12.8f\n", y0);
 }
+
+void polyf_expandroots_example()
+{
+    printf("polyf_expandroots_example:\n");
+    float roots[3] = {1.0f, -2.0f, 3.0f};
+    float p[4];
+    polyf_expandroots(roots,3,p);
+    printf("    >>> p = {%12.8f, %12.8f, %12.8f, %12.8f}\n", p[0], p[1], p[2], p[3]);
+}
+
+void polyf_expandroots2_example()
+{
+    printf("polyf_expandroots2_example:\n");
+    float b[3] = { 2.0f, -3.0f, -1.0f};
+    float a[3] = { 1.0f, -2.0f,  3.0f};
+    float p[4];
+    polyf_expandroots2(b,a,3,p);
+    printf("    >>> p = {%12.8f, %12.8f, %12.8f, %12.8f}\n", p[0], p[1], p[2], p[3]);
+}
+
+void polyf_expandbinomial_example()
+{
+    printf("polyf_expandbinomial_example:\n");
+    float p[4];
+    polyf_expandbinomial(3,p);
+    printf("    >>> p = {%12.8f, %12.8f, %12.8f, %12.8f}\n", p[0], p[1], p[2], p[3]);
+}
+
+void polyf_expandbinomial_pm_example()
+{
+    printf("polyf_expandbinomial_pm_example:\n");
+    float p[4];
+    polyf_expandbinomial_pm(2,1,p);
+    printf("    >>> p = {%12.8f, %12.8f, %12.8f, %12.8f}\n", p[0], p[1], p[2], p[3]);
+}
+

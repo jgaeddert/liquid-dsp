@@ -11,7 +11,10 @@ for wireless communication.
 This tutorial puts them all together by introducing a very simple
 framing structure for sending and receiving data over a wireless link.
 In this context ``framing'' refers to the encapsulation of data into a
-modulated time series to be transmitted over a wireless link.
+modulated time series at complex baseband to be transmitted over a
+wireless link.
+Conversely, ``packets'' refer to packing raw message data bytes with
+forward error-correction and data validity check redundancy.
 
 
 %
@@ -29,12 +32,15 @@ and {\tt framesync64} is the frame synchronizer on the receive side.
 %
 Together these objects realize a
 a very simple frame which encapsulates a 12-byte header and 64-byte
-payload and into a frame consisting of 640 symbols at complex baseband.
+payload within a frame consisting of 640 symbols at complex baseband.
 Conveniently the frame generator interpolates these symbols with a
 matched filter to produce a 1280-sample frame at complex baseband,
 ready to be up-converted and transmitted over the air.
 This frame has a nominal spectral efficiency of 0.8 bits/second/Hz
-(512 bits from 64 payload bytes assembled in 640 symbols).
+(512 bits from 64 payload bytes assembled in 640 symbols).%
+\footnote{
+    For simplicity this computation of spectral efficiency
+    neglects any exceess bandwidth of the pulse-shaping filter.}
 This means that if you transmit with a symbol rate of 10kHz you should
 expect to see a throughput of 8kbps if all the frames are properly
 decoded.
@@ -53,7 +59,7 @@ which can be seen in the figure below.\\
 \includegraphics[width=\textwidth]{figures.pgf/framing_structure}\\
 %
 After up-conversion (mixing up to a carrier frequency) the frame is
-radiated over the link where the receiver mixes the signal back down to
+transmitted over the link where the receiver mixes the signal back down to
 complex baseband.
 The received signal will be attenuated and noisy and typically degrades
 with distance between the two radios.
@@ -68,8 +74,8 @@ The frame synchronizer's purpose is to correct for all of these
 impairments (within limitations, of course) and attempt to detect the
 frame and decode its data.
 The framing preamble assists the synchronizer by introducing special
-phasing sequences before the payload which aids in correcting for
-carrier and timing offsets.
+phasing sequences before any information-bearing symbols which aids in
+correcting for carrier and timing offsets.
 Without going into great detail, these sequences significantly increase
 the probability of frame detection and decoding while adding a minimal
 amount of overhead to the frame;
@@ -168,8 +174,8 @@ The {\tt framegen64} object can be generated with the
 an {\tt unsigned int} and a {\tt float}
 representing the matched filter's length (in symbols) and
 excess bandwidth factor, respectively.
-To begin, create a frame generator with a delay of 3 and an excess
-bandwidth factor of 0.7 as
+To begin, create a frame generator having a square-root Nyquist filter
+with a delay of 3 and an excess bandwidth factor of 0.7 as
 %
 \begin{Verbatim}[fontsize=\small]
     framegen64 fg = framegen64_create(3, 0.7);
@@ -178,7 +184,8 @@ bandwidth factor of 0.7 as
 As with all structures in \liquid\ you will need to invoke the
 corresponding {\tt destroy()} method when you are finished with the
 object.
-Now allocate memory for the header and payload data arrays.
+Now allocate memory for the header and payload data arrays,
+remembering that they have lengths 12 and 64, respectively.
 Raw ``message'' data are stored as arrays of type {\tt unsigned char} in
 \liquid.
 %
@@ -189,7 +196,7 @@ Raw ``message'' data are stored as arrays of type {\tt unsigned char} in
 %
 Finally you will need to create a buffer for storing the frame samples.
 For this framing structure you will need to allocate 1280 samples of
-type {\tt float complex}, viz.
+type {\tt float complex}, viz
 %
 \begin{Verbatim}[fontsize=\small]
     float complex y[1280];
@@ -203,6 +210,7 @@ generator's {\tt execute()} method:
     framegen64_execute(fg, header, payload, y);
 \end{Verbatim}
 %
+That's it!
 This completely assembles the frame complete with interpolation and is
 ready for up-conversion and transmission.
 To generate another frame simply write whatever data you wish to the
@@ -288,8 +296,9 @@ without missing any frames?
 The answer is through the use of a callback function.
 
 What is a callback function?
-Put quite simply, a callback function is a function pointer that is
-invoked during a certain event.
+Put quite simply, a callback function is a function pointer
+(a designated address in memory)
+that is invoked during a certain event.
 For this example the callback function given to the {\tt framesync64}
 synchronizer object when the object is created
 and is invoked whenever the synchronizer finds a frame.
@@ -351,20 +360,21 @@ the instance of {\tt framesync64} object when it is created.
     is a pointer to the 12 bytes of decoded header data.
     This pointer is not static and cannot be used after returning from
     the callback function.
+    This means that it needs to be copied locally for you to retain the
+    data.
 \item[{\tt \_header\_valid}]
     is simply a flag to indicate if the header passed its cyclic
     redundancy check
     (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
     If the check fails then the header data most likely has been
     corrupted beyond the point that the internal error-correction code
-    can recover.
-    Proceed with caution!
+    can recover; proceed with caution!
 \item[{\tt \_payload}]
     is a pointer to the 64 bytes of decoded payload data.
     Like the header,
     this pointer is not static and cannot be used after returning from
     the callback function.
-    This means that it needs to be copied locally for you to retain the
+    Again, this means that it needs to be copied locally for you to retain the
     data.
 \item[{\tt \_payload\_valid}]
     is simply a flag to indicate if the payload passed its cyclic
@@ -440,7 +450,7 @@ and the length of the array (1280):
 Finally, destroy the frame synchronizer object along with the frame
 generator at the end of the file.
 That's it!
-Your program should look something like this.
+Your program should look something like this:
 %
 \input{tutorials/framing_intermediate_tutorial.c.tex}
 %
@@ -480,7 +490,7 @@ the default values provide a good initial set for a wide range of
 channel conditions.
 Duplicate the line of your code that executes the frame synchronizer.
 Recompile and run your code again.
-You should see the ``{\tt ***** callback invoked}'' printed twice.
+You should see the ``{\tt ***** callback invoked!}'' printed twice.
 
 Your program has only demonstrated the basic functionality of the frame
 generator and synchronizer under ideal conditions:
@@ -500,7 +510,7 @@ after it is generated and before it is received.
 This will simulate non-ideal channel conditions.
 Specifically we will introduce carrier frequency and phase offsets,
 channel attenuation, and noise.
-We will also add a frame counter and pass it through the userdata
+We will also add a frame counter and pass it through the {\em userdata}
 construct in the frame synchronizer's {\tt create()} method to be passed
 to the callback function when a frame is found.
 Finally, the program will split the frame into pieces to emulate
@@ -566,6 +576,13 @@ normal and uniform distributions, repectively.
 \liquid\ provides the {\tt randnf()} and {\tt randf()} methods to
 generate real random numbers with Gauss and uniform distributions
 respectively.
+%
+\begin{Verbatim}[fontsize=\small]
+    y[i] *= gamma;
+    y[i] *= cexpf(_Complex_I*(phase_offset + i*frequency_offset));
+    y[i] += nstd * randnf() * cexpf(_Complex_I*M_PI*randf());
+\end{Verbatim}
+%
 Check the program listed below if you need help.
 
 Now modify the program to incorporate the frame counter.

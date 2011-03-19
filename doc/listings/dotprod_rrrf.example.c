@@ -2,8 +2,8 @@
 
 int main() {
     // create input arrays
-    float x[] = {1, 2, 3, 4, 5};
-    float v[] = {1, 1, 1, 1, 1};
+    float x[] = { 1.0f,  2.0f,  3.0f,  4.0f,  5.0f};
+    float v[] = { 0.1f, -0.2f,  1.0f, -0.2f,  0.1f};
     float y;
 
     // run the basic vector dot product, store in 'y'

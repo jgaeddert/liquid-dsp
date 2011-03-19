@@ -6,7 +6,8 @@
 \section{Tutorial: Forward Error Correction}
 \label{tutorial:fec}
 
-This tutorial will demonstrate computation at the byte level by
+This tutorial will demonstrate computation at the byte level
+(raw message data) by
 introducing the forward error-correction (FEC) coding module.
 Please note that \liquid\ only provides some very basic FEC
 capabilities including some Hamming block codes and repeat codes.
@@ -211,7 +212,9 @@ The interface provided by \liquid\ conveniently abstracts from the
 process of managing 8-bit data symbols (bytes), converting to 4-bit
 input symbols, encoding to 7-bit output symbols, and then re-packing
 into 8-bit output bytes.
-As the user, you simply see data bytes in and data bytes out.
+This is consistent with {\em any} forward error-correction code in
+\liquid;
+as the user, you simply see data bytes in and data bytes out.
 The length of the output sequence can be computed using the method
 %
 \begin{Verbatim}[fontsize=\small]
@@ -239,7 +242,7 @@ The interface for decoding is nearly identical:
 \end{Verbatim}
 %
 Notice that the second argument again represents the number of
-{\em uncoded} data bytes.
+{\em uncoded} data bytes ({\tt n}).
 Don't forget to destroy the object once you are finished:
 %
 \begin{Verbatim}[fontsize=\small]

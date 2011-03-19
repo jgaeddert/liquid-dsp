@@ -49,11 +49,29 @@ WDELAY() WDELAY(_create)(unsigned int _k)
     return w;
 }
 
-WDELAY() WDELAY(_recreate)(WDELAY() _w, unsigned int _n)
+WDELAY() WDELAY(_recreate)(WDELAY() _w,
+                           unsigned int _k)
 {
-    // TODO: implement wdelay_recreate()
-    fprintf(stderr,"error: wdelay_recreate(), function not implemented\n");
-    return NULL;
+    // copy internal buffer, re-aligned
+    unsigned int ktmp = _w->k;
+    T * vtmp = (T*) malloc(_w->k * sizeof(T));
+    unsigned int i;
+    for (i=0; i<_w->k; i++)
+        vtmp[i] = _w->v[ (i + _w->read_index) % _w->k ];
+    
+    // destroy object and re-create it
+    WDELAY(_destroy)(_w);
+    _w = WDELAY(_create)(_k);
+
+    // push old values
+    for (i=0; i<ktmp; i++)
+        WDELAY(_push)(_w, vtmp[i]);
+
+    // free temporary array
+    free(vtmp);
+
+    // return object
+    return _w;
 }
 
 void WDELAY(_destroy)(WDELAY() _w)
@@ -72,11 +90,6 @@ void WDELAY(_print)(WDELAY() _w)
         BUFFER_PRINT_VALUE(_w->v[j]);
         printf("\n");
     }
-}
-
-void WDELAY(_debug_print)(WDELAY() _w)
-{
-    printf("window [%u elements] :\n", _w->k);
 }
 
 void WDELAY(_clear)(WDELAY() _w)
