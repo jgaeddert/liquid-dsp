@@ -33,6 +33,9 @@
 //      IEEE, vol. 66, no. 1, January, 1978.
 //  [Helstrom:1960] Helstrom, C. W. Statistical Theory of Signal
 //      Detection. New York: Pergamon, 1960
+//  [Helstrom:1992] Helstrom, C. W. "Computing the Generalized Marcum Q-
+//      Function," IEEE Transactions on Information Theory, vol. 38, no. 4,
+//      July, 1992.
 //  [Proakis:2001] Proakis, J. Digital Communications. New York:
 //      McGraw-Hill, 2001
 
@@ -158,18 +161,34 @@ float liquid_Qf(float _z)
 
 // Marcum Q-function
 // TODO : check this computation
-// [Helstrom:1960], [Proakis:2001]
+// [Helstrom:1960], [Proakis:2001], [Helstrom:1992]
 #define NUM_MARCUMQ_ITERATIONS 16
 float liquid_MarcumQ(int _M,
                      float _alpha,
                      float _beta)
 {
+#if 0
     // expand as:
     //                               infty
     // Q_M(a,b) = exp(-(a^2+b^2)/2) * sum { (a/b)^k I_k(a*b) }
     //                               k=1-M
+    return 0.0f
+#else
 
-    return 0.0f;
+    // use approximation [Helstrom:1992] (Eq. 25)
+    // Q_M(a,b) ~ erfc(x),
+    //   x = (b-a-M)/sigma^2,
+    //   sigma = M + 2a
+
+    // compute sigma
+    float sigma = (float)(_M) + 2.0f*_alpha;
+
+    // compute x
+    float x = (_beta - _alpha - (float)_M) / (sigma*sigma);
+
+    // return erfc(x)
+    return erfcf(x);
+#endif
 }
 
 // Marcum Q-function (M=1)
@@ -179,6 +198,7 @@ float liquid_MarcumQ(int _M,
 float liquid_MarcumQ1(float _alpha,
                       float _beta)
 {
+#if 0
     // expand as:                    infty
     // Q_1(a,b) = exp(-(a^2+b^2)/2) * sum { (a/b)^k I_k(a*b) }
     //                                k=0
@@ -200,6 +220,11 @@ float liquid_MarcumQ1(float _alpha,
     }
 
     return t0 * y;
+#else
+    
+    // call generalized Marcum-Q function with M=1
+    return liquid_MarcumQ(1, _alpha, _beta);
+#endif
 }
 
 // compute sinc(x) = sin(pi*x) / (pi*x)
