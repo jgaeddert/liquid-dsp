@@ -25,7 +25,7 @@ int main(int argc, char*argv[])
         RICEK
     } distribution=0;
 
-    distribution = EXPONENTIAL;
+    distribution = NAKAGAMIM;
 
     float xmin = 0.0f;
     float xmax = 1.0f;
@@ -40,7 +40,7 @@ int main(int argc, char*argv[])
         xmax =  3.0f;
     } else if (distribution == EXPONENTIAL) {
         xmin = 0.0f;
-        xmax = 2.0f;
+        xmax = 3.0f;
     } else if (distribution == WEIBULL) {
         xmin = 0.0f;
         xmax = 4.0f;
@@ -60,7 +60,7 @@ int main(int argc, char*argv[])
 
     //
     //float xspan = xmax - xmin;
-    float bin_width = (xmax - xmin) / (num_bins - 1);
+    float bin_width = (xmax - xmin) / (num_bins);
 
     // initialize histogram
     unsigned int hist[num_bins];
@@ -85,7 +85,7 @@ int main(int argc, char*argv[])
 
         // compute bin index
         unsigned int index;
-        float ihat = (x - xmin + 0.5*bin_width) / (bin_width);
+        float ihat = num_bins * (x - xmin) / (xmax - xmin);
         if (ihat < 0.0f)
             index = 0;
         else
@@ -127,7 +127,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"xspan = xmax - xmin;\n");
 
     for (i=0; i<num_bins; i++) {
-        x = xmin + i*bin_width;
+        x = xmin + ((float)i + 0.5f)*bin_width;
         float h = (float)(hist[i]) / (num_trials * bin_width);
         fprintf(fid,"xh(%3lu) = %12.4e; h(%3lu) = %12.4e;\n", i+1, x, i+1, h);
     }
