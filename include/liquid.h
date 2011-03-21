@@ -3219,8 +3219,8 @@ float randnf();
 void awgn(float *_x, float _nstd);
 void crandnf(liquid_float_complex *_y);
 void cawgn(liquid_float_complex *_x, float _nstd);
-float randn_pdf(float _x, float _eta, float _sig);
-float randn_cdf(float _x, float _eta, float _sig);
+float randnf_pdf(float _x, float _eta, float _sig);
+float randnf_cdf(float _x, float _eta, float _sig);
 
 // Weibull
 //   f(x) = a*(x-g)^(b-1)*exp{-(a/b)*(x-g)^b}  x >= g
