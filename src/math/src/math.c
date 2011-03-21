@@ -86,6 +86,49 @@ float liquid_gammaf(float _z)
     }
 }
 
+// gamma(z,alpha) : lower incomplete gamma function
+#define NUM_LOWERGAMMA_ITERATIONS 32
+float liquid_lowergammaf(float _z, float _alpha)
+{
+    float t0 = powf(_alpha, _z);
+    float t1 = liquid_gammaf(_z);
+    float t2 = expf(-_alpha);
+    float t3 = 0.0f;
+
+    unsigned int k;
+#if 0
+    float alpha_k = 1.0f;
+    for (k=0; k<NUM_LOWERGAMMA_ITERATIONS; k++) {
+        // accumulate
+        t3 += alpha_k / liquid_gammaf(_z + (float)k + 1.0f);
+
+        // update alpha^k
+        alpha_k += _alpha;
+    }
+#else
+    float log_alpha = logf(_alpha);
+    for (k=0; k<NUM_LOWERGAMMA_ITERATIONS; k++) {
+        // compute log( alpha^k / Gamma(_z + k + 1) )
+        //         = k*log(alpha) - lnGamma(_z + k + 1)
+        float t = k*log_alpha - liquid_lngammaf(_z + (float)k + 1.0f);
+
+        // TODO : check value of t and break if below threshold
+
+        // accumulate e^t
+        t3 += expf(t);
+    }
+#endif
+
+    return t0 * t1 * t2 * t3;
+}
+
+// Gamma(z,alpha) : upper incomplete gamma function
+float liquid_uppergammaf(float _z, float _alpha)
+{
+    return liquid_gammaf(_z) - liquid_lowergammaf(_z,_alpha);
+}
+
+
 float liquid_factorialf(unsigned int _n) {
     return fabsf(liquid_gammaf((float)(_n+1)));
 }

@@ -38,6 +38,39 @@ void xautotest_gamma()
 }
 
 // 
+// AUTOTEST: upper incomplete Gamma
+//
+void autotest_uppergamma()
+{
+    float tol = 1e-3f;
+
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.001f), 1.04649f,  tol);
+
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.01f),  1.04646f,  tol);
+
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.1f),   1.04295f,  tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.2f),   1.03231f,  tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.3f),   1.01540f,  tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.4f),   0.993237f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.5f),   0.966782f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.6f),   0.936925f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.7f),   0.904451f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.8f),   0.870053f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 0.9f),   0.834330f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 1.0f),   0.797796f, tol);
+
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 2.0f),   0.455589f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 3.0f),   0.229469f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 4.0f),   0.107786f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 5.0f),   0.0484292f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 6.0f),   0.0211006f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 7.0f),   0.00898852f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 8.0f),   0.00376348f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 9.0f),   0.00155445f, tol);
+    CONTEND_DELTA(liquid_uppergammaf(2.1f, 10.0f),  0.000635002f, tol);
+}
+
+// 
 // AUTOTEST: Factorial
 //
 void autotest_factorial()

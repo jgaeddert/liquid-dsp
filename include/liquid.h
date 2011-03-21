@@ -2044,11 +2044,17 @@ liquid_float_complex liquid_cacosf(liquid_float_complex _z);
 liquid_float_complex liquid_catanf(liquid_float_complex _z);
 
 
-// ln( gamma(z) )
+// ln( Gamma(z) )
 float liquid_lngammaf(float _z);
 
-// gamma(z)
+// Gamma(z)
 float liquid_gammaf(float _z);
+
+// gamma(z,alpha) : lower incomplete gamma function
+float liquid_lowergammaf(float _z, float _alpha);
+
+// Gamma(z,alpha) : upper incomplete gamma function
+float liquid_uppergammaf(float _z, float _alpha);
 
 // n!
 float liquid_factorialf(unsigned int _n);
