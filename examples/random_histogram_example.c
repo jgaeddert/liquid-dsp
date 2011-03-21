@@ -18,13 +18,14 @@ int main(int argc, char*argv[])
     enum {
         UNIFORM=0,
         NORMAL,
+        EXPONENTIAL,
         WEIBULL,
         GAMMA,
         NAKAGAMIM,
         RICEK
     } distribution=0;
 
-    distribution = NAKAGAMIM;
+    distribution = EXPONENTIAL;
 
     float xmin = 0.0f;
     float xmax = 1.0f;
@@ -37,6 +38,9 @@ int main(int argc, char*argv[])
     } else if (distribution == NORMAL) {
         xmin = -3.0f;
         xmax =  3.0f;
+    } else if (distribution == EXPONENTIAL) {
+        xmin = 0.0f;
+        xmax = 2.0f;
     } else if (distribution == WEIBULL) {
         xmin = 0.0f;
         xmax = 4.0f;
@@ -69,6 +73,7 @@ int main(int argc, char*argv[])
         switch (distribution) {
         case UNIFORM:   x = randf(); break;
         case NORMAL:    x = randnf(); break;
+        case EXPONENTIAL: x = randexpf(3.0f); break;
         case WEIBULL:   x = randweibf(1.0f,2.0f,0.0f); break;
         case GAMMA:     x = randgammaf(4.5f,1.0f); break;
         case NAKAGAMIM: x = randnakmf(4.5f,1.0f); break;
@@ -101,6 +106,7 @@ int main(int argc, char*argv[])
         switch (distribution) {
         case UNIFORM:   f[i] = randf_pdf(x); break;
         case NORMAL:    f[i] = randnf_pdf(x,0.0f,1.0f); break;
+        case EXPONENTIAL: f[i] = randexpf_pdf(x,3.0f); break;
         case WEIBULL:   f[i] = randweibf_pdf(x,1.0f,2.0f,0.0f); break;
         case GAMMA:     f[i] = randgammaf_pdf(x,4.5f,1.0f); break;
         case NAKAGAMIM: f[i] = randnakmf_pdf(x,4.5f,1.0f); break;
