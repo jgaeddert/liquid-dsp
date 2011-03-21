@@ -3235,7 +3235,16 @@ float randweibf_pdf(float _x, float _a, float _b, float _g);
 float randweibf_cdf(float _x, float _a, float _b, float _g);
 
 // Gamma
-//void rand_gammaf();
+//          x^(a-1) exp{-x/b)
+//  f(x) = -------------------
+//            Gamma(a) b^a
+//  where
+//      a = alpha, a > 0
+//      b = beta,  b > 0
+//      x >= 0
+float randgammaf(float _alpha, float _beta);
+float randgammaf_pdf(float _x, float _alpha, float _beta);
+float randgammaf_cdf(float _x, float _alpha, float _beta);
 
 // Nakagami-m
 //void rand_nakagamimf(float _m, float _omega);

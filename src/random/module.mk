@@ -30,6 +30,7 @@ local_s_files	:=		\
 	rand.c			\
 	randn.c			\
 	randweib.c		\
+	randgamma.c		\
 	randricek.c		\
 	scramble.c		\
 
