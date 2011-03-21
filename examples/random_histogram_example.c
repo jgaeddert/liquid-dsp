@@ -20,7 +20,8 @@ void usage()
 {
     printf("random_histogram_example [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  n     : number of trials\n");
+    printf("  N     : number of trials\n");
+    printf("  n     : number of histogram bins\n");
     printf("  d     : distribution: {uniform, normal, exp, weib, gamma, nak, rice}\n");
     printf("  e     : eta    NORMAL: mean\n");
     printf("  s     : sigma  NORMAL: standard deviation\n");
@@ -52,7 +53,7 @@ int main(int argc, char*argv[])
 
     // distribution parameters
     float eta = 0.0f;       // NORMAL: mean
-    float sigma = 0.0f;     // NORMAL: standard deviation
+    float sigma = 1.0f;     // NORMAL: standard deviation
     float lambda = 3.0f;    // EXPONENTIAL: decay factor
     float alphaw = 1.0f;    // WEIBULL: shape
     float betaw = 1.0f;     // WEIBULL: spread
@@ -71,7 +72,8 @@ int main(int argc, char*argv[])
         case 'h':
             usage();
             return 0;
-        case 'n': num_trials = atoi(optarg); break;
+        case 'N': num_trials = atoi(optarg); break;
+        case 'n': num_bins = atoi(optarg); break;
         case 'd':
             if      (strcmp(optarg,"uniform")==0)   distribution = UNIFORM;
             else if (strcmp(optarg,"normal")==0)    distribution = NORMAL;
@@ -111,14 +113,14 @@ int main(int argc, char*argv[])
         xmin =  0.0f;
         xmax =  1.0f;
     } else if (distribution == NORMAL) {
-        xmin = eta - 3.0f*sigma;
-        xmax = eta + 3.0f*sigma;
+        xmin = eta - 4.0f*sigma;
+        xmax = eta + 4.0f*sigma;
     } else if (distribution == EXPONENTIAL) {
         xmin = 0.0f;
-        xmax = 1.5*lambda;
+        xmax = 7.0f / lambda;
     } else if (distribution == WEIBULL) {
         xmin = gammaw;
-        xmax = gammaw + 4.0f;
+        xmax = gammaw + 6.0f;
     } else if (distribution == GAMMA) {
         xmin = 0.0f;
         xmax = 14.0f;
@@ -176,16 +178,38 @@ int main(int argc, char*argv[])
     unsigned int num_steps = 100;
     float xstep = (xmax - xmin) / (num_steps - 1);
     float f[num_steps];
+    float F[num_steps];
     for (i=0; i<num_steps; i++) {
         x = xmin + i*xstep;
         switch (distribution) {
-        case UNIFORM:   f[i] = randf_pdf(x); break;
-        case NORMAL:    f[i] = randnf_pdf(x,eta,sigma); break;
-        case EXPONENTIAL: f[i] = randexpf_pdf(x,lambda); break;
-        case WEIBULL:   f[i] = randweibf_pdf(x,alphaw,betaw,gammaw); break;
-        case GAMMA:     f[i] = randgammaf_pdf(x,alphag,betag); break;
-        case NAKAGAMIM: f[i] = randnakmf_pdf(x,m,omeganak); break;
-        case RICEK:     f[i] = randricekf_pdf(x,K,omegarice); break;
+        case UNIFORM:
+            f[i] = randf_pdf(x);
+            F[i] = randf_cdf(x);
+            break;
+        case NORMAL:
+            f[i] = randnf_pdf(x,eta,sigma);
+            F[i] = randnf_cdf(x,eta,sigma);
+            break;
+        case EXPONENTIAL:
+            f[i] = randexpf_pdf(x,lambda);
+            F[i] = randexpf_cdf(x,lambda);
+            break;
+        case WEIBULL:
+            f[i] = randweibf_pdf(x,alphaw,betaw,gammaw);
+            F[i] = randweibf_cdf(x,alphaw,betaw,gammaw);
+            break;
+        case GAMMA:
+            f[i] = randgammaf_pdf(x,alphag,betag);
+            F[i] = randgammaf_cdf(x,alphag,betag);
+            break;
+        case NAKAGAMIM:
+            f[i] = randnakmf_pdf(x,m,omeganak);
+            F[i] = randnakmf_cdf(x,m,omeganak);
+            break;
+        case RICEK:
+            f[i] = randricekf_pdf(x,K,omegarice);
+            F[i] = randricekf_cdf(x,K,omegarice);
+            break;
         default:
             fprintf(stderr,"error: %s, unknown/unsupported distribution\n", argv[0]);
             exit(1);
@@ -199,17 +223,24 @@ int main(int argc, char*argv[])
     fprintf(fid,"close all;\n");
     fprintf(fid,"xmin = %12.4e;\n", xmin);
     fprintf(fid,"xmax = %12.4e;\n", xmax);
+    fprintf(fid,"num_bins = %u;\n", num_bins);
     fprintf(fid,"xspan = xmax - xmin;\n");
 
+    float F_hat = 0.0f;
     for (i=0; i<num_bins; i++) {
         x = xmin + ((float)i + 0.5f)*bin_width;
         float h = (float)(hist[i]) / (num_trials * bin_width);
         fprintf(fid,"xh(%3lu) = %12.4e; h(%3lu) = %12.4e;\n", i+1, x, i+1, h);
+
+        x = xmin + ((float)i + 1.0f)*bin_width;
+        F_hat += h;
+        fprintf(fid,"xH(%3lu) = %12.4e; H(%3lu) = %12.4e;\n", i+1, x, i+1, F_hat);
     }
+    fprintf(fid,"H = H/H(end);\n");
 
     for (i=0; i<num_steps; i++) {
         x = xmin + i*xstep;
-        fprintf(fid,"xf(%3lu) = %12.4e; f(%3lu) = %12.4e;\n", i+1, x, i+1, f[i]);
+        fprintf(fid,"xf(%3lu) = %12.4e; f(%3lu) = %12.4e; F(%3lu) = %12.4e;\n", i+1, x, i+1, f[i], i+1, F[i]);
     }
 
     // plot results
@@ -219,6 +250,14 @@ int main(int argc, char*argv[])
     fprintf(fid,"ylabel('f_x(x)');\n");
     fprintf(fid,"axis([(xmin-0.1*xspan) (xmax+0.1*xspan) 0 1.1*max([h f])]);\n");
     fprintf(fid,"legend('histogram','true PDF',1);\n");
+
+    // plot results
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(xH,H,'x', xf,F,'-');\n");
+    fprintf(fid,"xlabel('x');\n");
+    fprintf(fid,"ylabel('f_x(x)');\n");
+    //fprintf(fid,"axis([(xmin-0.1*xspan) (xmax+0.1*xspan) 0 1]);\n");
+    fprintf(fid,"legend('histogram','true CDF',0);\n");
 
     fclose(fid);
     printf("results written to %s.\n",OUTPUT_FILENAME);

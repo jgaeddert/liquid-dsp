@@ -19,7 +19,7 @@
  */
 
 //
-//
+// Weibull distribution
 //
 
 #include <math.h>
@@ -33,7 +33,6 @@ float randweibf(float _alpha,
                 float _beta,
                 float _gamma)
 {
-#ifdef LIQUID_VALIDATE_INPUT
     // validate input
     if (_alpha <= 0) {
         fprintf(stderr,"error: randweibf(), alpha must be greater than zero\n");
@@ -42,7 +41,6 @@ float randweibf(float _alpha,
         fprintf(stderr,"error: randweibf(), beta must be greater than zero\n");
         return 0.0f;
     }
-#endif
 
     return _gamma + powf(-_beta/_alpha*logf(randf()), 1/_beta);
 }
@@ -56,10 +54,10 @@ float randweibf_pdf(float _x,
 #ifdef LIQUID_VALIDATE_INPUT
     // validate input
     if (_alpha <= 0) {
-        fprintf(stderr,"error: randweibf(), alpha must be greater than zero\n");
+        fprintf(stderr,"error: randweibf_pdf(), alpha must be greater than zero\n");
         return 0.0f;
     } else if (_beta <= 0) {
-        fprintf(stderr,"error: randweibf(), beta must be greater than zero\n");
+        fprintf(stderr,"error: randweibf_pdf(), beta must be greater than zero\n");
         return 0.0f;
     }
 #endif
@@ -80,14 +78,17 @@ float randweibf_cdf(float _x,
 #ifdef LIQUID_VALIDATE_INPUT
     // validate input
     if (_alpha <= 0) {
-        fprintf(stderr,"error: randweibf(), alpha must be greater than zero\n");
+        fprintf(stderr,"error: randweibf_cdf(), alpha must be greater than zero\n");
         return 0.0f;
     } else if (_beta <= 0) {
-        fprintf(stderr,"error: randweibf(), beta must be greater than zero\n");
+        fprintf(stderr,"error: randweibf_cdf(), beta must be greater than zero\n");
         return 0.0f;
     }
 #endif
 
-    return 0.0f;
+    if (_x <= _gamma)
+        return 0.0f;
+
+    return 1.0f - expf( -powf((_x-_gamma)/_alpha, _beta) );
 }
 
