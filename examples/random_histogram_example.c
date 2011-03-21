@@ -120,7 +120,7 @@ int main(int argc, char*argv[])
         xmax = 7.0f / lambda;
     } else if (distribution == WEIBULL) {
         xmin = gammaw;
-        xmax = gammaw + 6.0f;
+        xmax = gammaw + betaw*powf( -logf(1e-3f), 1.0f/alphaw );
     } else if (distribution == GAMMA) {
         xmin = 0.0f;
         xmax = 14.0f;

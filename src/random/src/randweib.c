@@ -42,7 +42,12 @@ float randweibf(float _alpha,
         return 0.0f;
     }
 
-    return _gamma + powf(-_beta/_alpha*logf(randf()), 1/_beta);
+    float u;
+    do {
+        u = randf();
+    } while (u==0.0f);
+
+    return _gamma + _beta*powf( -logf(u), 1.0f/_alpha );
 }
 
 // Weibull random number probability distribution function
@@ -66,7 +71,7 @@ float randweibf_pdf(float _x,
         return 0.0f;
 
     float t = _x - _gamma;
-    return _alpha * powf(t,_beta-1.0f) * expf( -_alpha/_beta * powf(t,_beta) );
+    return (_alpha/_beta) * powf(t/_beta, _alpha-1.0f) * expf( -powf(t/_beta, _alpha) );
 }
 
 // Weibull random number cumulative distribution function
@@ -89,6 +94,6 @@ float randweibf_cdf(float _x,
     if (_x <= _gamma)
         return 0.0f;
 
-    return 1.0f - expf( -powf((_x-_gamma)/_alpha, _beta) );
+    return 1.0f - expf( -powf((_x-_gamma)/_beta, _alpha) );
 }
 

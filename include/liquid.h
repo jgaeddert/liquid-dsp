@@ -3238,11 +3238,10 @@ float randexpf_pdf(float _x, float _lambda);
 float randexpf_cdf(float _x, float _lambda);
 
 // Weibull
-//   f(x) = a*(x-g)^(b-1)*exp{-(a/b)*(x-g)^b}  x >= g
-//          0                                  else
+//   f(x) = (a/b) (x/b)^(a-1) exp{ -(x/b)^a }
 //   where
-//     a = alpha : scaling parameter
-//     b = beta  : shape parameter
+//     a = alpha : shape parameter
+//     b = beta  : scaling parameter
 //     g = gamma : location (threshold) parameter
 //
 float randweibf(float _alpha, float _beta, float _gamma);

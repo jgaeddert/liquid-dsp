@@ -74,7 +74,7 @@ int main() {
     m1 /= (float) N;
     // m2 = (b/a)^(2/b)*(gamma(1+2/b)-(gamma(1+1/b))^2)
     m2 = (m2 / (float)N) - m1*m1;
-    printf("Weibull: %8.4f (%8.4f) %8.4f (%8.4f)\n", m1, 1.2533f, m2, 0.42920f);
+    printf("Weibull: %8.4f (%8.4f) %8.4f (%8.4f)\n", m1, 2.0f, m2, 4.0f);
 
     printf("done.\n");
     return 0;
