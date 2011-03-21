@@ -29,6 +29,7 @@ module_name     := random
 local_s_files	:=		\
 	rand.c			\
 	randn.c			\
+	randexp.c		\
 	randweib.c		\
 	randgamma.c		\
 	randnakm.c		\

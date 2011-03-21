@@ -3228,6 +3228,15 @@ void cawgn(liquid_float_complex *_x, float _nstd);
 float randnf_pdf(float _x, float _eta, float _sig);
 float randnf_cdf(float _x, float _eta, float _sig);
 
+// Exponential
+//  f(x) = lambda exp{ -lambda x }
+// where
+//  lambda = spread parameter, lambda > 0
+//  x >= 0
+float randexpf(float _lambda);
+float randexpf_pdf(float _x, float _lambda);
+float randexpf_cdf(float _x, float _lambda);
+
 // Weibull
 //   f(x) = a*(x-g)^(b-1)*exp{-(a/b)*(x-g)^b}  x >= g
 //          0                                  else
