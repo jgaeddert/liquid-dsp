@@ -3247,9 +3247,9 @@ float randgammaf_pdf(float _x, float _alpha, float _beta);
 float randgammaf_cdf(float _x, float _alpha, float _beta);
 
 // Nakagami-m
-//void rand_nakagamimf(float _m, float _omega);
-//float rand_pdf_nakagamimf(float _x, float _m, float _omega);
-//float rand_cdf_nakagamimf(float _x, float _m, float _omega);
+float randnakmf(float _m, float _omega);
+float randnakmf_pdf(float _x, float _m, float _omega);
+float randnakmf_cdf(float _x, float _m, float _omega);
 
 // Rice-K
 float randricekf(float _K, float _omega);

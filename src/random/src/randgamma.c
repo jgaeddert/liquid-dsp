@@ -31,7 +31,7 @@
 float randgammaf(float _alpha,
                  float _beta)
 {
-    // TODO : validate input
+    // validate input
     if (_alpha <= 0.0f) {
         fprintf(stderr,"error: randgammaf(), alpha must be greater than zero\n");
         exit(1);
@@ -64,6 +64,18 @@ float randgammaf_pdf(float _x,
                      float _alpha,
                      float _beta)
 {
+    // validate input
+    if (_alpha <= 0.0f) {
+        fprintf(stderr,"error: randgammaf_pdf(), alpha must be greater than zero\n");
+        exit(1);
+    } else if (_beta <= 0.0f) {
+        fprintf(stderr,"error: randgammaf_pdf(), beta must be greater than zero\n");
+        exit(1);
+    }
+
+    if (_x <= 0.0f)
+        return 0.0f;
+
     float t0 = powf(_x, _alpha-1.0f);
     float t1 = expf(-_x / _beta);
     float t2 = liquid_gammaf(_alpha);

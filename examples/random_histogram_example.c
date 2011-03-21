@@ -20,10 +20,11 @@ int main(int argc, char*argv[])
         NORMAL,
         WEIBULL,
         GAMMA,
+        NAKAGAMIM,
         RICEK
     } distribution=0;
 
-    distribution = GAMMA;
+    distribution = NAKAGAMIM;
 
     float xmin = 0.0f;
     float xmax = 1.0f;
@@ -42,6 +43,9 @@ int main(int argc, char*argv[])
     } else if (distribution == GAMMA) {
         xmin = 0.0f;
         xmax = 14.0f;
+    } else if (distribution == NAKAGAMIM) {
+        xmin = 0.0f;
+        xmax = 2.0f;
     } else if (distribution == RICEK) {
         xmin = 0.0f;
         xmax = 2.2f;
@@ -67,6 +71,7 @@ int main(int argc, char*argv[])
         case NORMAL:    x = randnf(); break;
         case WEIBULL:   x = randweibf(1.0f,2.0f,0.0f); break;
         case GAMMA:     x = randgammaf(4.5f,1.0f); break;
+        case NAKAGAMIM: x = randnakmf(4.5f,1.0f); break;
         case RICEK:     x = randricekf(4.0f,1.0f); break;
         default:
             fprintf(stderr,"error: %s, unknown/unsupported distribution\n", argv[0]);
@@ -98,6 +103,7 @@ int main(int argc, char*argv[])
         case NORMAL:    f[i] = randnf_pdf(x,0.0f,1.0f); break;
         case WEIBULL:   f[i] = randweibf_pdf(x,1.0f,2.0f,0.0f); break;
         case GAMMA:     f[i] = randgammaf_pdf(x,4.5f,1.0f); break;
+        case NAKAGAMIM: f[i] = randnakmf_pdf(x,4.5f,1.0f); break;
         case RICEK:     f[i] = randricekf_pdf(x,4.0f,1.0f); break;
         default:
             fprintf(stderr,"error: %s, unknown/unsupported distribution\n", argv[0]);
