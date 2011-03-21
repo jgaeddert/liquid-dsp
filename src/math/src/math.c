@@ -50,7 +50,9 @@ float liquid_lngammaf(float _z)
     if (_z < 0) {
         fprintf(stderr,"error: liquid_lngammaf(), undefined for z <= 0\n");
         exit(1);
-    } else if (_z < 0.60) {
+    } else if (_z < 1.0f) {
+#if 0
+    } else if (_z < 1.0f) {
         // low value approximation
         g = -logf(_z) - EULER_GAMMA*_z;
         unsigned int n;
@@ -59,6 +61,12 @@ float liquid_lngammaf(float _z)
             z_by_n = _z / (float)n;
             g += -logf(1.0f + z_by_n) + z_by_n;
         }
+#else
+        g = liquid_lngammaf(1.0f + _z) - logf(_z);
+
+        // apply correction factor
+        //g += 0.0405f*(1.0f - tanhf(0.5f*logf(_z)));
+#endif
     } else {
         // high value approximation
         g = 0.5*( logf(2*M_PI)-log(_z) );
