@@ -162,14 +162,19 @@ float besselj_0(float _z)
 }
 
 // Modified bessel function of the first kind
-#define NUM_BESSELI0_ITERATIONS 16
+#define NUM_BESSELI0_ITERATIONS 32
 float besseli_0(float _z)
 {
     unsigned int k;
     float t, y=0.0f;
     for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
+#if 0
         t = powf(_z/2, (float)k) / tgamma((float)k+1);
         y += t*t;
+#else
+        t = k * logf(0.5f*_z) - liquid_lngammaf((float)k + 1.0f);
+        y += expf(2*t);
+#endif
     }
     return y;
 }
