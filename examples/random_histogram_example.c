@@ -7,9 +7,34 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <getopt.h>
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "random_histogram_example.m"
+
+
+// print usage/help message
+void usage()
+{
+    printf("random_histogram_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  n     : number of trials\n");
+    printf("  d     : distribution: {uniform, normal, exp, weib, gamma, nak, rice}\n");
+    printf("  e     : eta    NORMAL: mean\n");
+    printf("  s     : sigma  NORMAL: standard deviation\n");
+    printf("  l     : lambda EXPONENTIAL: decay factor\n");
+    printf("  a     : alpha  WEIBULL: shape\n");
+    printf("  b     : beta   WEIBULL: spread\n");
+    printf("  g     : gamma  WEIBULL: threshold\n");
+    printf("  A     : alpha  GAMMA: shape\n");
+    printf("  B     : beta   GAMMA: spread\n");
+    printf("  m     : m      NAKAGAMI: shape\n");
+    printf("  o     : omega  NAKAGAMI: spread\n");
+    printf("  K     : K      RICE-K: spread\n");
+    printf("  O     : omega  RICE-K: spread\n");
+}
 
 int main(int argc, char*argv[])
 {
@@ -25,7 +50,57 @@ int main(int argc, char*argv[])
         RICEK
     } distribution=0;
 
-    distribution = NAKAGAMIM;
+    // distribution parameters
+    float eta = 0.0f;       // NORMAL: mean
+    float sigma = 0.0f;     // NORMAL: standard deviation
+    float lambda = 3.0f;    // EXPONENTIAL: decay factor
+    float alphaw = 1.0f;    // WEIBULL: shape
+    float betaw = 1.0f;     // WEIBULL: spread
+    float gammaw = 1.0f;    // WEIBULL: threshold
+    float alphag = 4.5f;    // GAMMA: shape
+    float betag = 1.0f;     // GAMMA: spread
+    float m = 4.5f;         // NAKAGAMI: shape factor
+    float omeganak = 1.0f;  // NAKAGMAI: spread factor
+    float K = 4.0f;         // RICE-K: K-factor (shape)
+    float omegarice = 1.0f; // RICE-K: spread factor
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhn:d:e:s:l:a:b:g:A:B:m:o:K:O:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h':
+            usage();
+            return 0;
+        case 'n': num_trials = atoi(optarg); break;
+        case 'd':
+            if      (strcmp(optarg,"uniform")==0)   distribution = UNIFORM;
+            else if (strcmp(optarg,"normal")==0)    distribution = NORMAL;
+            else if (strcmp(optarg,"exp")==0)       distribution = EXPONENTIAL;
+            else if (strcmp(optarg,"weib")==0)      distribution = WEIBULL;
+            else if (strcmp(optarg,"gamma")==0)     distribution = GAMMA;
+            else if (strcmp(optarg,"nak")==0)       distribution = NAKAGAMIM;
+            else if (strcmp(optarg,"rice")==0)      distribution = RICEK;
+            else {
+                fprintf(stderr,"error: %s, unknown/unsupported distribution '%s'\n", argv[0], optarg);
+                exit(1);
+            }
+        case 'e': eta       = atof(optarg); break;
+        case 's': sigma     = atof(optarg); break;
+        case 'l': lambda    = atof(optarg); break;
+        case 'a': alphaw    = atof(optarg); break;
+        case 'b': betaw     = atof(optarg); break;
+        case 'g': gammaw    = atof(optarg); break;
+        case 'A': alphag    = atof(optarg); break;
+        case 'B': betag     = atof(optarg); break;
+        case 'm': m         = atof(optarg); break;
+        case 'o': omeganak  = atof(optarg); break;
+        case 'K': K         = atof(optarg); break;
+        case 'O': omegarice = atof(optarg); break;
+        default:
+            fprintf(stderr,"error: %s, unknown/unsupported option\n", argv[0]);
+            exit(1);
+        }
+    }
 
     float xmin = 0.0f;
     float xmax = 1.0f;
@@ -36,23 +111,23 @@ int main(int argc, char*argv[])
         xmin =  0.0f;
         xmax =  1.0f;
     } else if (distribution == NORMAL) {
-        xmin = -3.0f;
-        xmax =  3.0f;
+        xmin = eta - 3.0f*sigma;
+        xmax = eta + 3.0f*sigma;
     } else if (distribution == EXPONENTIAL) {
         xmin = 0.0f;
-        xmax = 3.0f;
+        xmax = 1.5*lambda;
     } else if (distribution == WEIBULL) {
-        xmin = 0.0f;
-        xmax = 4.0f;
+        xmin = gammaw;
+        xmax = gammaw + 4.0f;
     } else if (distribution == GAMMA) {
         xmin = 0.0f;
         xmax = 14.0f;
     } else if (distribution == NAKAGAMIM) {
         xmin = 0.0f;
-        xmax = 2.0f;
+        xmax = 2.0f * sqrtf(omeganak);
     } else if (distribution == RICEK) {
         xmin = 0.0f;
-        xmax = 2.2f;
+        xmax = 2.3f * sqrtf(omegarice);
     } else {
         fprintf(stderr, "error: %s, unknown/unsupported distribution\n", argv[0]);
         exit(1);
@@ -71,13 +146,13 @@ int main(int argc, char*argv[])
     float x = 0.0f;
     for (i=0; i<num_trials; i++) {
         switch (distribution) {
-        case UNIFORM:   x = randf(); break;
-        case NORMAL:    x = randnf(); break;
-        case EXPONENTIAL: x = randexpf(3.0f); break;
-        case WEIBULL:   x = randweibf(1.0f,2.0f,0.0f); break;
-        case GAMMA:     x = randgammaf(4.5f,1.0f); break;
-        case NAKAGAMIM: x = randnakmf(4.5f,1.0f); break;
-        case RICEK:     x = randricekf(4.0f,1.0f); break;
+        case UNIFORM:     x = randf(); break;
+        case NORMAL:      x = sigma*randnf() + eta; break;
+        case EXPONENTIAL: x = randexpf(lambda); break;
+        case WEIBULL:     x = randweibf(alphaw,betaw,gammaw); break;
+        case GAMMA:       x = randgammaf(alphag,betag); break;
+        case NAKAGAMIM:   x = randnakmf(m,omeganak); break;
+        case RICEK:       x = randricekf(K,omegarice); break;
         default:
             fprintf(stderr,"error: %s, unknown/unsupported distribution\n", argv[0]);
             exit(1);
@@ -105,12 +180,12 @@ int main(int argc, char*argv[])
         x = xmin + i*xstep;
         switch (distribution) {
         case UNIFORM:   f[i] = randf_pdf(x); break;
-        case NORMAL:    f[i] = randnf_pdf(x,0.0f,1.0f); break;
-        case EXPONENTIAL: f[i] = randexpf_pdf(x,3.0f); break;
-        case WEIBULL:   f[i] = randweibf_pdf(x,1.0f,2.0f,0.0f); break;
-        case GAMMA:     f[i] = randgammaf_pdf(x,4.5f,1.0f); break;
-        case NAKAGAMIM: f[i] = randnakmf_pdf(x,4.5f,1.0f); break;
-        case RICEK:     f[i] = randricekf_pdf(x,4.0f,1.0f); break;
+        case NORMAL:    f[i] = randnf_pdf(x,eta,sigma); break;
+        case EXPONENTIAL: f[i] = randexpf_pdf(x,lambda); break;
+        case WEIBULL:   f[i] = randweibf_pdf(x,alphaw,betaw,gammaw); break;
+        case GAMMA:     f[i] = randgammaf_pdf(x,alphag,betag); break;
+        case NAKAGAMIM: f[i] = randnakmf_pdf(x,m,omeganak); break;
+        case RICEK:     f[i] = randricekf_pdf(x,K,omegarice); break;
         default:
             fprintf(stderr,"error: %s, unknown/unsupported distribution\n", argv[0]);
             exit(1);
