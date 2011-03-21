@@ -60,6 +60,15 @@ float randgammaf(float _alpha,
     return _beta * (x_delta + x_n);
 }
 
+// Gamma distribution cumulative distribution function
+//          x^(a-1) exp{-x/b)
+//  f(x) = -------------------
+//            Gamma(a) b^a
+//  where
+//      a = alpha, a > 0
+//      b = beta,  b > 0
+//      Gamma(z) = regular gamma function
+//      x >= 0
 float randgammaf_pdf(float _x,
                      float _alpha,
                      float _beta)
@@ -89,14 +98,26 @@ float randgammaf_pdf(float _x,
 //  where
 //      a = alpha,  alpha > 0
 //      b = beta,   beta > 0
-//      gamma() = lower incomplete gamma function
-//      Gamma() = regular gamma function
+//      gamma(a,z) = lower incomplete gamma function
+//      Gamma(z)   = regular gamma function
 //
 float randgammaf_cdf(float _x,
                      float _alpha,
                      float _beta)
 {
-    return 0.0f;
+    // validate input
+    if (_alpha <= 0.0f) {
+        fprintf(stderr,"error: randgammaf_cdf(), alpha must be greater than zero\n");
+        exit(1);
+    } else if (_beta <= 0.0f) {
+        fprintf(stderr,"error: randgammaf_cdf(), beta must be greater than zero\n");
+        exit(1);
+    }
+
+    if (_x <= 0.0f)
+        return 0.0f;
+
+    return liquid_lowergammaf(_alpha, _x/_beta) / liquid_gammaf(_alpha);
 }
 
 

@@ -3247,17 +3247,33 @@ float randweibf_cdf(float _x, float _a, float _b, float _g);
 //  where
 //      a = alpha, a > 0
 //      b = beta,  b > 0
+//      Gamma(z) = regular gamma function
 //      x >= 0
 float randgammaf(float _alpha, float _beta);
 float randgammaf_pdf(float _x, float _alpha, float _beta);
 float randgammaf_cdf(float _x, float _alpha, float _beta);
 
 // Nakagami-m
+//  f(x) = (2/Gamma(m)) (m/omega)^m x^(2m-1) exp{-(m/omega)x^2}
+// where
+//      m       : shape parameter, m >= 0.5
+//      omega   : spread parameter, omega > 0
+//      Gamma(z): regular complete gamma function
+//      x >= 0
 float randnakmf(float _m, float _omega);
 float randnakmf_pdf(float _x, float _m, float _omega);
 float randnakmf_cdf(float _x, float _m, float _omega);
 
 // Rice-K
+//  f(x) = (x/sigma^2) exp{ -(x^2+s^2)/(2sigma^2) } I0( x s / sigma^2 )
+// where
+//  s     = sqrt( omega*K/(K+1) )
+//  sigma = sqrt(0.5 omega/(K+1))
+// and
+//  K     = shape parameter
+//  omega = spread parameter
+//  I0    = modified Bessel function of the first kind
+//  x >= 0
 float randricekf(float _K, float _omega);
 float randricekf_cdf(float _x, float _K, float _omega);
 float randricekf_pdf(float _x, float _K, float _omega);

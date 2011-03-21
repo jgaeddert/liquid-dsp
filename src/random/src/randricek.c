@@ -19,7 +19,7 @@
  */
 
 //
-//
+// Rice-K distribution
 //
 
 #include <math.h>
@@ -42,6 +42,15 @@ float randricekf(float _K, float _omega)
 
 
 // Rice-K random number probability distribution function
+//  f(x) = (x/sigma^2) exp{ -(x^2+s^2)/(2sigma^2) } I0( x s / sigma^2 )
+// where
+//  s     = sqrt( omega*K/(K+1) )
+//  sigma = sqrt(0.5 omega/(K+1))
+// and
+//  K     = shape parameter
+//  omega = spread parameter
+//  I0    = modified Bessel function of the first kind
+//  x >= 0
 float randricekf_pdf(float _x,
                      float _K,
                      float _omega)

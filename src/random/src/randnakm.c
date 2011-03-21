@@ -49,6 +49,14 @@ float randnakmf(float _m,
     return sqrtf(x);
 }
 
+// Nakagami-m distribution probability distribution function
+// Nakagami-m
+//  f(x) = (2/Gamma(m)) (m/omega)^m x^(2m-1) exp{-(m/omega)x^2}
+// where
+//      m       : shape parameter, m >= 0.5
+//      omega   : spread parameter, omega > 0
+//      Gamma(z): regular complete gamma function
+//      x >= 0
 float randnakmf_pdf(float _x,
                     float _m,
                     float _omega)
@@ -74,11 +82,28 @@ float randnakmf_pdf(float _x,
 }
 
 // Nakagami-m distribution cumulative distribution function
+//  F(x) = Gamma(m, x^2 m / omega) / Gamma(m)
+//  where
+//      Gamma(z,a) = upper incomplete gamma function
+//      Gamma(z)   = regular gamma function
+//
 float randnakmf_cdf(float _x,
                     float _m,
                     float _omega)
 {
-    return 0.0f;
+    // validate input
+    if (_m < 0.5f) {
+        fprintf(stderr,"error: randnakmf_pdf(), m cannot be less than 0.5\n");
+        exit(1);
+    } else if (_omega <= 0.0f) {
+        fprintf(stderr,"error: randnakmf_pdf(), omega must be greater than zero\n");
+        exit(1);
+    }
+
+    if (_x <= 0.0f)
+        return 0.0f;
+
+    return liquid_uppergammaf(_m, _x*_x*_m/_omega) / liquid_gammaf(_m);
 }
 
 
