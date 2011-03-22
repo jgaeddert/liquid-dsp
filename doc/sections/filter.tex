@@ -454,15 +454,29 @@ $z$-transform to convert to the digital domain, then transforming to the
 appropriate band type (e.g. high pass) if necessary.
 Externally, the user may abstract the entire process by using the
 {\tt iirdes()} method.
+Furthermore, if the end result is to create a filter {\em object} as
+opposed to computing the coefficients themselves, the
+{\tt iirfilt\_crcf\_create\_prototype()} method can be used to generate
+the object directly
+(see Section~\ref{module:filter:iirfilt}).
 
 \subsubsection{{\tt iirdes()}, the simplified method}
 \label{module:filter:iirdes:iirdes}
-The {\tt iirdes()} method implements...
-
-\begin{verbatim}
-iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, _B, _A);
-\end{verbatim}
-
+The {\tt iirdes()} method designs an IIR filter's coefficients
+from one of the four major types
+(Butterworth, Chebyshev, elliptic/Cauer, and Bessel)
+with as minimal an interface as possible.
+The user specifies the filter prototype, order, cutoff frequency, and
+other parameters as well as the resulting filter structure
+(regular or second-order sections),
+and the function returns the appropriate filter coefficients that meet
+that design.
+Specifically, the interface is
+%
+\begin{Verbatim}[fontsize=\small]
+    iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, *_B, *_A);
+\end{Verbatim}
+%
 \begin{itemize}
 \item[{\tt \_ftype}]
     is the analog filter prototype, e.g. {\tt LIQUID\_IIRDES\_BUTTER}
@@ -495,11 +509,16 @@ iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, _B, _A);
 
 \subsubsection{internal description}
 \label{module:filter:iirdes:internal}
-The internal IIR filter design process is described here:
+While the user only needs to specify the filter parameters,
+the internal procedure for computing the coefficients is somewhat
+complicated.
+Listed below is the step-by-step process for \liquid's IIR filter design
+procedure.
+%
 \begin{enumerate}
 \item Use {\tt butterf()}, {\tt cheby1f()}, {\tt cheby2f()}, {\tt ellipf()},
-      {\tt besself()} to design a low-pass analog prototype in terms of
-      complex zeros, poles, and gain.
+      {\tt besself()} to design a low-pass analog prototype $H_a(s)$
+      in terms of complex zeros, poles, and gain.
       The {\tt azpkf} extension stands for ``analog zeros, poles, gain
       (floating-point).''
 
@@ -516,9 +535,12 @@ The internal IIR filter design process is described here:
       center frequency if designing a band-pass or band-stop filter) using the
       {\tt iirdes\_freqprewarp()} method.
 
-\item Convert the low-pass analog prototype to its digital equivalent (also in
-      terms of zeros, poles, and gain) using the bilinear $z$-transform using
-      the {\tt bilinear\_zpkf()} method.
+\item Convert the low-pass analog prototype $H_a(s)$ to its digital
+      equivalent $H_d(z)$ (also in terms of zeros, poles, and gain)
+      using the bilinear $z$-transform using the {\tt bilinear\_zpkf()}
+      method.
+      This maps the analog zeros/poles/gain into digital
+      zeros/poles/gain.
 
 \item Transform the low-pass digital prototype to high-pass, band-pass, or
       band-stop using the {\tt iirdes\_dzpk\_lp2bp()} method.
@@ -532,28 +554,30 @@ The internal IIR filter design process is described here:
     \end{description}
 
 \item Transform the digital $z/p/k$ form of the filter to one of the two forms:
-    \begin{itemize}
-    \item[tf]  typical transfer function for digital iir filters of the form
+    \begin{description}
+    \item[TF]  typical transfer function for digital iir filters of the form
         $B(z)/A(z)$, {\tt iirdes\_dzpk2tff()}
-    \item[sos] second-order sections form : $\prod_k{ B_k(z)/A_k(z) }$, 
+    \item[SOS] second-order sections form : $\prod_k{ B_k(z)/A_k(z) }$, 
         {\tt iirdes\_dzpk2sosf()}.
         This is the preferred method.
-    \end{itemize}
+    \end{description}
 
-\item Create the filter object (e.g. iirfilt) from the resulting
-      structure using either {\tt iirfilt\_crcf\_create()} or
-      {\tt iirfilt\_crcf\_create\_sosf()}
+%\item Create the filter object (e.g. iirfilt) from the resulting
+%      structure using either {\tt iirfilt\_crcf\_create()} or
+%      {\tt iirfilt\_crcf\_create\_sosf()}
 
 \end{enumerate}
-
+%
 %An extensive example is given in {\tt sandbox/iirdes\_example.c} while
 %{\tt examples/iirdes\_example.c} gives the simplified interface.
-A simplified example is given in {\tt examples/iirdes\_example.c}.
+A simplified example for this procedure is given in
+{\tt examples/iirdes\_example.c}.
 
 \subsubsection{{\tt iirdes} filter types}
 \label{module:filter:iirdes:types}
 There are currently five low-pass prototypes available for inifinite impulse
-response filter design in \liquid,
+response filter design in \liquid, as described below:
+%
 \begin{description}
 \item[{\tt LIQUID\_IIRDES\_BUTTER}]
     is a Butterworth filter.
@@ -571,7 +595,7 @@ response filter design in \liquid,
     Note that this results in a set of complex conjugate pairs such that
     $(-1)^n s_0 s_1 \cdots s_{n-1} = 1$.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:butter}
+    Figure~\ref{fig:module:filter:butter}
 \item[{\tt LIQUID\_IIRDES\_CHEBY1}]
     is a Chebyshev Type-I filter.
     This design uses Chebyshev polynomials to create a filter with a sharper
@@ -579,7 +603,7 @@ response filter design in \liquid,
     passband.
     The analog prototype interface is {\tt cheby1\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:cheby1}
+    Figure~\ref{fig:module:filter:cheby1}
 \item[{\tt LIQUID\_IIRDES\_CHEBY2}]
     is a Chebyshev Type-II filter.
     This design is similar to that of Chebyshev Type-I, except that the
@@ -588,7 +612,7 @@ response filter design in \liquid,
     equiripple behavior in the stopband, rather than the passband.
     The analog prototype interface is {\tt cheby2\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:cheby2}
+    Figure~\ref{fig:module:filter:cheby2}
 \item[{\tt LIQUID\_IIRDES\_ELLIP}]
     is an elliptic (Cauer) filter.
     This design allows ripples in both the passband and stopbands to create a
@@ -600,7 +624,7 @@ response filter design in \liquid,
     \cite{Orfanidis:2006}.
     The analog prototype interface is {\tt ellip\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:ellip}
+    Figure~\ref{fig:module:filter:ellip}
 \item[{\tt LIQUID\_IIRDES\_BESSEL}]
     is a Bessel filter.
     This is an all-pole analog design that has a maximally flat group delay
@@ -612,7 +636,7 @@ response filter design in \liquid,
     \cite{Orchard:1965}.
     The analog prototype interface is {\tt bessel\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:bessel}
+    Figure~\ref{fig:module:filter:bessel}
 \end{description}
 
 % 
@@ -622,8 +646,8 @@ response filter design in \liquid,
 \label{module:filter:iirdes:bilinear}
 The bilinear $z$-transform converts an analog prototype to its digital
 counterpart.
-Given a continuous time analog transfer function in zeros/poles/gain form
-(``zpk''),
+Given a continuous time analog transfer function in zeros/poles/gain
+form (``zpk'') with $n_z$ zeros and $n_p$ poles
 %\[
 %    H(s) =  \frac{
 %                r_0 + r_1 s + r_2 s^2 + \cdots + r_n s^n
@@ -631,88 +655,174 @@ Given a continuous time analog transfer function in zeros/poles/gain form
 %                q_0 + q_1 s + q_2 s^2 + \cdots + q_m s^m
 %            }
 %\]
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirdes:Ha}
     H_a(s) = k_a
             \frac{
-                (s-z_{a0})(s-z_{a1})\cdots(s-z_{an-1})
+                (s-z_{a0})(s-z_{a1})\cdots(s-z_{an_z-1})
             }{
-                (s-p_{a0})(s-p_{a1})\cdots(s-p_{am-1})
+                (s-p_{a0})(s-p_{a1})\cdots(s-p_{an_p-1})
             }
-\]
+\end{equation}
+%
 the bilinear $z$-transform converts $H_a(s)$ into the discretized transfer
 function $H_d(z)$ by mapping the $s$-plane onto the $z$-plane with the
 approximation
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear}
     s \approx \frac{2}{T}
               \frac{1-z^{-1}}{1 + z^{-1}}
-\]
+\end{equation}
+%
 This maps $H_a(0) \rightarrow H_d(0)$ and
-$H_a(\infty) \rightarrow H_d(\omega_s/2)$, however we are free to choose the
-pre-warping factor which maps the cutoff frequency $\omega_c$.
-\[
+$H_a(\infty) \rightarrow H_d(\omega_s/2)$, however we are free to choose
+the pre-warping factor which maps the cutoff frequency $\omega_c$.
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_prewarp}
     s \rightarrow \omega_c
                   \cot\left(\frac{\pi \omega_c}{\omega_s}\right)
                   \frac{1-z^{-1}}{1+z^{-1}}
-\]
-Substituting this into $H_a(s)$ gives the discrete-time transfer function
-\[
+\end{equation}
+%
+Substituting this into $H_a(s)$ gives the discrete-time transfer
+function
+%
+\begin{equation}
+\label{eqn:filter:iirdes:H}
     H(z) = k_a \frac{
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{a0}\right)
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{a1}\right)
             \cdots
-            \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{an-1}\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{an_z-1}\right)
            }{
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{a0}\right)
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{a1}\right)
             \cdots
-            \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{am-1}\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{an_p-1}\right)
            }
-\]
+\end{equation}
+%
 where $m=\omega_c \cot\left(\pi \omega_c / \omega_s\right)$ is the
 frequency pre-warping factor, computed in \liquid\ via the method
 {\tt iirdes\_freqprewarp()}.
-Multiplying both the numerator an denominator by $(1+z^{-1})^{m-1}$...
-...transforming the the analog zeros ($z_k$), poles ($p_k$), and gain ($k$) into
-their digital equivalents. [reword]
-...maps the analog zeros and poles $\{z_{ai},p_{ai}\}$
-to digital $\{z_{i},p_{i}\}$...
-\[
+Multiplying both the numerator an denominator by $(1+z^{-1})^{n_p}$ and
+applying some algebraic manipulation results in the digital filter
+%
+\begin{equation}
+\label{eqn:filter:iirdes:Hd}
     H_d(s) = k_d
             \frac{
-                (1-z_{0}z^{-1})(1-z_{1}z^{-1})\cdots(1-z_{n-1}z^{-1})
+                (1-z_{d0}z^{-1})(1-z_{d1}z^{-1})\cdots(1-z_{dn-1}z^{-1})
             }{
-                (1-p_{0}z^{-1})(1-p_{1}z^{-1})\cdots(1-p_{n-1}z^{-1})
+                (1-p_{d0}z^{-1})(1-p_{d1}z^{-1})\cdots(1-p_{dn-1}z^{-1})
             }
-\]
+\end{equation}
 %
-\liquid\ computes all of this with the {\tt bilinear\_zpk()} method.
+The {\tt bilinear\_zpk()} method in \liquid\ transforms
+the the analog zeros ($z_{ak}$),
+poles ($p_{ak}$), and gain ($H_0$) into
+their digital equivalents
+($z_{dk}$, $p_{dk}$, $G_0$).
+For a filter with $n_z$ analog zeros $z_{ak}$
+the digital zeros $z_{dk}$ are computed as
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_zeros}
+    z_{dk} =
+        \begin{cases}
+        \frac{1 + m z_{ak}}{1 - m z_{ak}}   & k < n_z \\
+        -1                                  & \text{otherwise}
+        \end{cases}
+\end{equation}
+%
+where $m$ is the pre-warping factor.
+For a filter with $n_p$ analog poles $p_{ak}$
+the digital poles $p_{dk}$ are computed as
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_poles}
+    p_{dk} = \frac{1 + m p_{ak}}{1 - m p_{ak}}
+\end{equation}
+%
+Keeping in mind that an analog filter's order is defined by its number
+of poles,
+the digital gain can be computed as
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_gain}
+    G_0 = H_0 \prod_{k=0}^{n_p-1}{ \frac{1 - p_{dk}}{1 - z_{dk}} }
+\end{equation}
+%
 
 % 
 % filter transformations
 %
 \subsubsection{Filter transformations}
 \label{module:filter:iirdes:transformations}
+%
+The prototype low-pass digital filter can be converted into a
+high-pass, band-pass, or band-stop filter using a combinatio of the
+following filter transformations in \liquid:
+%
 \begin{description}
-\item[{\tt iirdes\_dzpk\_lp2hp()}]
-    Converts a low-pass prototype to a high-pass prototype.
-\item[{\tt iirdes\_dzpk\_lp2bp()}]
-    Converts a low-pass prototype to a band-pass prototype.
+\item[{\tt iirdes\_dzpk\_lp2hp(*\_zd,*\_pd,\_n,*\_zdt,*\_pdt)}]
+    Converts a low-pass digital prototype $H_d(z)$ to a high-pass
+    prototype.
+    This is accomplished by transforming the $n$
+    zeros and poles
+    (represented by the input arrays {\tt \_zd} and {\tt \_pd})
+    into $n$ transformed zeros and poles
+    (represented by the output arrays {\tt \_zdt} and {\tt \_pdt}).
+\item[{\tt iirdes\_dzpk\_lp2bp(*\_zd,*\_pd,\_n,*\_zdt,*\_pdt)}]
+    Converts a low-pass digital prototype $H_d(z)$ to a band-pass
+    prototype.
+    This is accomplished by transforming the $n$
+    zeros and poles
+    (represented by the input arrays {\tt \_zd} and {\tt \_pd})
+    into $2n$ transformed zeros and poles
+    (represented by the output arrays {\tt \_zdt} and {\tt \_pdt}).
 \end{description}
+%
+%   LP: LP  ->  LP
+%   HP: LP  ->  HP
+%   BP: LP  ->  BP
+%   BS: LP  ->  HP  ->  BP
 
-...second-order sections form:
-\[
-    H_d(z) = H_0
+% 
+% filter coefficient computation
+%
+\subsubsection{Filter Coefficient Computation}
+\label{module:filter:iirdes:coefficients}
+%
+The digital filter defined by (\ref{eqn:filter:iirdes:Hd}) can be
+expanded to fit the familiar IIR transfer function as in
+(\ref{eqn:filter:iirfilt:Hz}).
+This can be accomplished using the {\tt iirdes\_dzpk2tff()} method.
+%
+Alternatively, the filter can be written as a set of cascaded
+second-order IIR filters:
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:Hd:sos}
+    H_d(z) = G_0
              \left[
-                G_0 \frac{1 + z^{-1}}
-                         {1 - p_0 z^{-1}}
+                \frac{1 + z^{-1}}
+                     {1 - p_0 z^{-1}}
              \right]^r
              \prod_{k=1}^{L} {\left[
                 G_i \frac{(1-z_iz^{-1})(1-z_i^*z^{-1})}
                          {(1-p_iz^{-1})(1-p_i^*z^{-1})}
              \right]}
-\]
-where $r=0$ when the filter order is odd, $r=1$ when the filter order is even,
-and $L=(n-r)/2$.
+\end{equation}
+%
+where $r=0$ when the filter order is odd, $r=1$ when the filter order is
+even, and $L=(n-r)/2$.
+This can be accomplished using the {\tt iirdes\_dzpk2sosf()} method and
+is preferred over the traditional transfer function design for stability
+reasons.
 
 % Butterworth IIR filter design
 \begin{figure}
