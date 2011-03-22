@@ -16,6 +16,6 @@ int main() {
                                       LIQUID_FIRDESPM_EXPWEIGHT,
                                       LIQUID_FIRDESPM_EXPWEIGHT};
     float h[n];
-    firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
+    firdespm_run(n,num_bands,bands,des,weights,wtype,btype,h);
 }
 

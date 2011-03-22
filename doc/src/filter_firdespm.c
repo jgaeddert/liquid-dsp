@@ -45,7 +45,7 @@ int main(int argc, char*argv[]) {
     firdespm_execute(q,h);
     firdespm_destroy(q);
 #else
-    firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
+    firdespm_run(n,num_bands,bands,des,weights,wtype,btype,h);
 #endif
 
     // 
