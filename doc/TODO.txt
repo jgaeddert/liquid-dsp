@@ -14,7 +14,6 @@ Sections to finish:
   * buffer
   * equalization
   * fec
-  * fft
   * filter
   * framing
   * interleaver
