@@ -20,21 +20,12 @@
  */
 
 //
-// Useful mathematical formulae
+// Bessel Functions
 //
-// References:
-//  [Kaiser:1980] James F. Kaiser and Ronald W. Schafer, "On
-//      the Use of I0-Sinh Window for Spectrum Analysis,"
-//      IEEE Transactions on Acoustics, Speech, and Signal
-//      Processing, vol. ASSP-28, no. 1, pp. 105--107,
-//      February, 1980.
-//  [harris:1978] frederic j. harris, "On the Use of Windows for Harmonic
-//      Analysis with the Discrete Fourier Transform," Proceedings of the
-//      IEEE, vol. 66, no. 1, January, 1978.
-//  [Helstrom:1960] Helstrom, C. W. Statistical Theory of Signal
-//      Detection. New York: Pergamon, 1960
-//  [Proakis:2001] Proakis, J. Digital Communications. New York:
-//      McGraw-Hill, 2001
+// liquid_besseli       :   modified Bessel function of the first kind
+// liquid_besselj_0     :   Bessel function of the first kind (order 0)
+// liquid_besseli_0     :   modified Bessel function of the first kind (order 0)
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +33,43 @@
 
 #include "liquid.internal.h"
 
-// Bessel function of the first kind
+// log(I_v(z)) : log Modified Bessel function of the first kind
+#define NUM_BESSELI_ITERATIONS 64
+float liquid_lnbesseli(float _nu,
+                       float _z)
+{
+    // TODO : validate input
+
+    float t0 = _nu*logf(0.5f*_z);
+    float t1 = 0.0f;
+    float t2 = 0.0f;
+    float t3 = 0.0f;
+    float y = 0.0f;
+
+    unsigned int k;
+    for (k=0; k<NUM_BESSELI_ITERATIONS; k++) {
+        // compute log( (z^2/4)^k )
+        t1 = 2.0f * k * logf(0.5f*_z);
+
+        // compute: log( k! * Gamma(nu + k +1) )
+        t2 = liquid_lngammaf((float)k + 1.0f);
+        t3 = liquid_lngammaf(_nu + (float)k + 1.0f);
+
+        // accumulate y
+        y += expf( t1 - t2 - t3 );
+    }
+
+    return t0 + logf(y);
+}
+
+// I_v(z) : Modified Bessel function of the first kind
+float liquid_besseli(float _nu,
+                     float _z)
+{
+    return expf( liquid_lnbesseli(_nu, _z) );
+}
+
+// J_0(z) : Bessel function of the first kind (order zero)
 #define NUM_BESSELJ0_ITERATIONS 16
 float liquid_besselj_0(float _z)
 {
@@ -62,7 +89,7 @@ float liquid_besselj_0(float _z)
     return y;
 }
 
-// Modified bessel function of the first kind
+// I_0(z) : Modified bessel function of the first kind (order zero)
 #define NUM_BESSELI0_ITERATIONS 32
 float liquid_besseli_0(float _z)
 {
@@ -78,28 +105,5 @@ float liquid_besseli_0(float _z)
 #endif
     }
     return y;
-}
-
-// Modified bessel function of the first kind
-// TODO : check this computation
-#define NUM_BESSELI_ITERATIONS 16
-float liquid_besseli(float _nu,
-                     float _z)
-{
-    unsigned int k;
-    float t0 = powf(_z*0.5f, _nu);
-    float t1 = 1.0f;
-    float y=0.0f;
-    for (k=0; k<NUM_BESSELI_ITERATIONS; k++) {
-        // compute: k! * Gamma(nu + k +1)
-        float t2 = liquid_factorialf(k) * liquid_gammaf(_nu + (float)k + 1.0f);
-
-        // accumulate y
-        y += t1 / t2;
-
-        // update t1 = (0.25*z^2)^k
-        t1 *= 0.25f*_z*_z;
-    }
-    return t0 * y;
 }
 

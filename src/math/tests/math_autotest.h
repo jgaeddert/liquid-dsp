@@ -140,6 +140,41 @@ void autotest_besselj_0()
 // 
 // AUTOTEST: Modified Bessel function of the first kind
 //
+void autotest_besseli()
+{
+    float tol = 1e-3f;
+
+    // check case when nu=0
+    CONTEND_DELTA(liquid_besseli(0.0f,0.0f), 1.0f, tol);
+    CONTEND_DELTA(liquid_besseli(0.0f,0.1f), 1.00250156293410f, tol);
+    CONTEND_DELTA(liquid_besseli(0.0f,0.2f), 1.01002502779515f, tol);
+    CONTEND_DELTA(liquid_besseli(0.0f,0.5f), 1.06348337074132f, tol);
+    CONTEND_DELTA(liquid_besseli(0.0f,1.0f), 1.26606587775201f, tol);
+    CONTEND_DELTA(liquid_besseli(0.0f,2.0f), 2.27958530233607f, tol);
+    CONTEND_DELTA(liquid_besseli(0.0f,3.0f), 4.88079258586503f, tol);
+
+    // check case when nu=0.5
+    CONTEND_DELTA(liquid_besseli(0.5f,0.0f), 0.000000000000000, tol);
+    CONTEND_DELTA(liquid_besseli(0.5f,0.1f), 0.252733984600132, tol);
+    CONTEND_DELTA(liquid_besseli(0.5f,0.2f), 0.359208417583362, tol);
+    CONTEND_DELTA(liquid_besseli(0.5f,0.5f), 0.587993086790417, tol);
+    CONTEND_DELTA(liquid_besseli(0.5f,1.0f), 0.937674888245489, tol);
+    CONTEND_DELTA(liquid_besseli(0.5f,2.0f), 2.046236863089057, tol);
+    CONTEND_DELTA(liquid_besseli(0.5f,3.0f), 4.614822903407577, tol);
+
+    // check case when nu=1.3
+    CONTEND_DELTA(liquid_besseli(1.3f,0.0f), 0.000000000000000, tol);
+    CONTEND_DELTA(liquid_besseli(1.3f,0.1f), 0.017465030873157, tol);
+    CONTEND_DELTA(liquid_besseli(1.3f,0.2f), 0.043144293848607, tol);
+    CONTEND_DELTA(liquid_besseli(1.3f,0.5f), 0.145248507279042, tol);
+    CONTEND_DELTA(liquid_besseli(1.3f,1.0f), 0.387392350983796, tol);
+    CONTEND_DELTA(liquid_besseli(1.3f,2.0f), 1.290819215135879, tol);
+    CONTEND_DELTA(liquid_besseli(1.3f,3.0f), 3.450680420553085, tol);
+}
+
+// 
+// AUTOTEST: Modified Bessel function of the first kind
+//
 void autotest_besseli_0()
 {
     float tol = 1e-3f;
