@@ -74,13 +74,19 @@ float randricekf_cdf(float _x,
                      float _K,
                      float _omega)
 {
-    if (_x < 0.0f)
+    if (_x <= 0.0f)
         return 0.0f;
 
     float s = sqrtf((_omega*_K)/(_K+1));
     float sig = sqrtf(0.5f*_omega/(_K+1));
 
-    return 1.0f - liquid_MarcumQ1(s/sig, _x/sig);
+    float F = 1.0f - liquid_MarcumQ1(s/sig, _x/sig);
+
+    // check for precision error
+    if (F < 0.0f) return 0.0f;
+    if (F > 1.0f) return 1.0f;
+
+    return F;
 }
 
 

@@ -3253,8 +3253,8 @@ float randweibf_cdf(float _x, float _a, float _b, float _g);
 //  f(x) = -------------------
 //            Gamma(a) b^a
 //  where
-//      a = alpha, a > 0
-//      b = beta,  b > 0
+//      a = alpha : shape parameter, a > 0
+//      b = beta  : scale parameter, b > 0
 //      Gamma(z) = regular gamma function
 //      x >= 0
 float randgammaf(float _alpha, float _beta);

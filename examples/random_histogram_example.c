@@ -109,6 +109,8 @@ int main(int argc, char*argv[])
 
     unsigned long int i;
 
+    // make a guess at the histogram range so we don't need to
+    // store all the generated random variables in a giant array.
     if (distribution == UNIFORM) {
         xmin =  0.0f;
         xmax =  1.0f;
@@ -123,7 +125,7 @@ int main(int argc, char*argv[])
         xmax = gammaw + betaw*powf( -logf(1e-3f), 1.0f/alphaw );
     } else if (distribution == GAMMA) {
         xmin = 0.0f;
-        xmax = 14.0f;
+        xmax = 6.5 * betag + 2.0*alphag;
     } else if (distribution == NAKAGAMIM) {
         xmin = 0.0f;
         xmax = 2.0f * sqrtf(omeganak);

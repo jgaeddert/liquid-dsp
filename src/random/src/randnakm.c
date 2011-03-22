@@ -82,9 +82,9 @@ float randnakmf_pdf(float _x,
 }
 
 // Nakagami-m distribution cumulative distribution function
-//  F(x) = Gamma(m, x^2 m / omega) / Gamma(m)
+//  F(x) = gamma(m, x^2 m / omega) / Gamma(m)
 //  where
-//      Gamma(z,a) = upper incomplete gamma function
+//      gamma(z,a) = lower incomplete gamma function
 //      Gamma(z)   = regular gamma function
 //
 float randnakmf_cdf(float _x,
@@ -103,7 +103,7 @@ float randnakmf_cdf(float _x,
     if (_x <= 0.0f)
         return 0.0f;
 
-    return liquid_uppergammaf(_m, _x*_x*_m/_omega) / liquid_gammaf(_m);
+    return liquid_lowergammaf(_m, _x*_x*_m/_omega) / liquid_gammaf(_m);
 }
 
 
