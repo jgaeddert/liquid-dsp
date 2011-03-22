@@ -90,7 +90,8 @@ float liquid_gammaf(float _z)
 }
 
 // ln( gamma(z,alpha) ) : lower incomplete gamma function
-#define NUM_LOWERGAMMA_ITERATIONS 32
+#define LOWERGAMMA_MIN_ITERATIONS 50    // minimum number of iterations
+#define LOWERGAMMA_MAX_ITERATIONS 1000  // maximum number of iterations
 float liquid_lnlowergammaf(float _z, float _alpha)
 {
     float t0 = _z * logf(_alpha);
@@ -98,29 +99,34 @@ float liquid_lnlowergammaf(float _z, float _alpha)
     float t2 = -_alpha;
     float t3 = 0.0f;
 
-    unsigned int k;
-#if 0
-    float alpha_k = 1.0f;
-    for (k=0; k<NUM_LOWERGAMMA_ITERATIONS; k++) {
-        // accumulate
-        t3 += alpha_k / liquid_gammaf(_z + (float)k + 1.0f);
-
-        // update alpha^k
-        alpha_k += _alpha;
-    }
-#else
+    unsigned int k = 0;
     float log_alpha = logf(_alpha);
-    for (k=0; k<NUM_LOWERGAMMA_ITERATIONS; k++) {
+    float tprime = 0.0f;
+    float tmax = 0.0f;
+    float t = 0.0f;
+    for (k=0; k<LOWERGAMMA_MAX_ITERATIONS; k++) {
+        // retain previous value for t
+        tprime = t;
+
         // compute log( alpha^k / Gamma(_z + k + 1) )
         //         = k*log(alpha) - lnGamma(_z + k + 1)
-        float t = k*log_alpha - liquid_lngammaf(_z + (float)k + 1.0f);
-
-        // TODO : check value of t and break if below threshold
+        t = k*log_alpha - liquid_lngammaf(_z + (float)k + 1.0f);
 
         // accumulate e^t
         t3 += expf(t);
+
+        // check premature exit criteria
+        if (k==0 || t > tmax)
+            tmax = t;
+
+        // conditions:
+        //  1. minimum number of iterations met
+        //  2. surpassed inflection point: k*log(alpha) - log(Gamma(z+k+1))
+        //     has an inverted parabolic shape
+        //  3. sufficiently beyond peak
+        if ( k > LOWERGAMMA_MIN_ITERATIONS && tprime > t && (tmax-t) > 20.0f)
+            break;
     }
-#endif
 
     return t0 + t1 + t2 + logf(t3);
 }
