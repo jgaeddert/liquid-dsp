@@ -94,9 +94,9 @@ float liquid_gammaf(float _z)
     }
 }
 
-// gamma(z,alpha) : lower incomplete gamma function
+// ln( gamma(z,alpha) ) : lower incomplete gamma function
 #define NUM_LOWERGAMMA_ITERATIONS 32
-float liquid_lowergammaf(float _z, float _alpha)
+float liquid_lnlowergammaf(float _z, float _alpha)
 {
     float t0 = powf(_alpha, _z);
     float t1 = liquid_gammaf(_z);
@@ -127,13 +127,26 @@ float liquid_lowergammaf(float _z, float _alpha)
     }
 #endif
 
-    return t0 * t1 * t2 * t3;
+    return logf( t0 * t1 * t2 * t3 );
+}
+
+// ln( Gamma(z,alpha) ) : upper incomplete gamma function
+float liquid_lnuppergammaf(float _z, float _alpha)
+{
+    return logf( liquid_gammaf(_z) - liquid_lowergammaf(_z,_alpha) );
+}
+
+
+// gamma(z,alpha) : lower incomplete gamma function
+float liquid_lowergammaf(float _z, float _alpha)
+{
+    return expf( liquid_lnlowergammaf(_z,_alpha) );
 }
 
 // Gamma(z,alpha) : upper incomplete gamma function
 float liquid_uppergammaf(float _z, float _alpha)
 {
-    return liquid_gammaf(_z) - liquid_lowergammaf(_z,_alpha);
+    return expf( liquid_lnuppergammaf(_z,_alpha) );
 }
 
 

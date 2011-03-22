@@ -2050,6 +2050,12 @@ float liquid_lngammaf(float _z);
 // Gamma(z)
 float liquid_gammaf(float _z);
 
+// ln( gamma(z,alpha) ) : lower incomplete gamma function
+float liquid_lnlowergammaf(float _z, float _alpha);
+
+// ln( Gamma(z,alpha) ) : upper incomplete gamma function
+float liquid_lnuppergammaf(float _z, float _alpha);
+
 // gamma(z,alpha) : lower incomplete gamma function
 float liquid_lowergammaf(float _z, float _alpha);
 
