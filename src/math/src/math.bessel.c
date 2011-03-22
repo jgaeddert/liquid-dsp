@@ -69,6 +69,65 @@ float liquid_besseli(float _nu,
     return expf( liquid_lnbesseli(_nu, _z) );
 }
 
+// I_0(z) : Modified bessel function of the first kind (order zero)
+#define NUM_BESSELI0_ITERATIONS 32
+float liquid_besseli_0(float _z)
+{
+    unsigned int k;
+    float t, y=0.0f;
+    for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
+#if 0
+        t = powf(_z/2, (float)k) / tgamma((float)k+1);
+        y += t*t;
+#else
+        t = k * logf(0.5f*_z) - liquid_lngammaf((float)k + 1.0f);
+        y += expf(2*t);
+#endif
+    }
+    return y;
+}
+
+// J_v(z) : Bessel function of the first kind
+#define NUM_BESSELJ_ITERATIONS 128
+float liquid_besselj(float _nu,
+                     float _z)
+{
+    // TODO : validate input
+
+    float J = 0.0f;
+
+    float abs_nu = fabsf(_nu);
+
+    unsigned int k;
+    for (k=0; k<NUM_BESSELJ_ITERATIONS; k++) {
+        // compute: (2k + |nu|)
+        float t0 = (2.0f*k + abs_nu);
+
+        // compute: (2k + |nu|)*log(z)
+        float t1 = t0 * logf(_z);
+
+        // compute: (2k + |nu|)*log(2)
+        float t2 = t0 * logf(2.0f);
+
+#if 0
+        // compute: log(Gamma(k+1))
+        float t3 = liquid_lngammaf((float)k + 1.0f);
+
+        // compute: log(Gamma(|nu|+k+1))
+        float t4 = liquid_lngammaf(abs_nu + (float)k + 1.0f);
+#else
+        float t3 = lgammaf((float)k + 1.0f);
+        float t4 = lgammaf(abs_nu + (float)k + 1.0f);
+#endif
+
+        // accumulate J
+        if ( (k%2) == 0) J += expf(t1 - t2 - t3 - t4);
+        else             J -= expf(t1 - t2 - t3 - t4);
+    }
+
+    return J;
+}
+
 // J_0(z) : Bessel function of the first kind (order zero)
 #define NUM_BESSELJ0_ITERATIONS 16
 float liquid_besselj_0(float _z)
@@ -85,24 +144,6 @@ float liquid_besselj_0(float _z)
     for (k=0; k<NUM_BESSELJ0_ITERATIONS; k++) {
         t = powf(_z/2, (float)k) / tgamma((float)k+1);
         y += (k%2) ? -t*t : t*t;
-    }
-    return y;
-}
-
-// I_0(z) : Modified bessel function of the first kind (order zero)
-#define NUM_BESSELI0_ITERATIONS 32
-float liquid_besseli_0(float _z)
-{
-    unsigned int k;
-    float t, y=0.0f;
-    for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
-#if 0
-        t = powf(_z/2, (float)k) / tgamma((float)k+1);
-        y += t*t;
-#else
-        t = k * logf(0.5f*_z) - liquid_lngammaf((float)k + 1.0f);
-        y += expf(2*t);
-#endif
     }
     return y;
 }

@@ -2068,18 +2068,19 @@ float liquid_factorialf(unsigned int _n);
 
 
 // ln(I_v(z)) : log Modified Bessel function of the first kind
-float liquid_lnbesseli(float _nu,
-                       float _z);
+float liquid_lnbesseli(float _nu, float _z);
 
-// Modified Bessel function of the first kind
-float liquid_besseli(float _nu,
-                     float _z);
+// I_v(z) : Modified Bessel function of the first kind
+float liquid_besseli(float _nu, float _z);
 
-// Bessel function of the first kind
-float liquid_besselj_0(float _z);
-
-// Modified Bessel function of the first kind
+// I_0(z) : Modified Bessel function of the first kind (order zero)
 float liquid_besseli_0(float _z);
+
+// J_v(z) : Bessel function of the first kind
+float liquid_besselj(float _nu, float _z);
+
+// J_0(z) : Bessel function of the first kind (order zero)
+float liquid_besselj_0(float _z);
 
 
 // Q function
