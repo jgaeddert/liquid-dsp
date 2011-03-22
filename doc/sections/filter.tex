@@ -903,13 +903,16 @@ In fact, any FIR filter design using a windowed $\sinc$ function with
 periodicity $f_c=1/2$ will generate a Nyquist half-band filter (zero
 inter-symbol interference).
 This is because \cite[(4.6.3)]{Vaidyanathan:1993}
-\[
+%
+\begin{equation}
+\label{eqn:filter:resamp:h}
     h(Mn) = 
         \begin{cases}
         c & n=0 \\
         0 & \text{otherwise}
         \end{cases}
-\]
+\end{equation}
+%
 which holds for $h(n) = w(n) \sin(\pi n/M) / (\pi n)$ since
 $\sin(\pi n/M) = 0$ for $n=$ any non-zero multiple of M.
 Additionally, $M=2$ is the special case of half-band filters.
@@ -923,12 +926,13 @@ several reasons, but in particular because it is nearly optimum, and it is
 easy to trade side-lobe attenuation for transition bandwidth.
 
 \subsection{{\tt resamp} (arbitrary resampler)}
-For arbitrary (e.g. irrational) resampling ratios, the {\tt resamp} object is
-the ideal solution.
-It makes no restrictions on the output-to-input resampling ratio (e.g.
-irrational values are fair game).
-The arbitrary resampler uses a polyphase filter bank for interpolation between
-available input sample points.
+\label{module:filter:resamp}
+For arbitrary (e.g. irrational) resampling ratios, the {\tt resamp}
+object is the ideal solution.
+It makes no restrictions on the output-to-input resampling ratio
+(e.g. irrational values are fair game).
+The arbitrary resampler uses a polyphase filter bank for interpolation
+between available input sample points.
 
 Because the number of outputs for each input is not fixed, the interface needs
 some explaining.
@@ -948,16 +952,19 @@ Below is a code example demonstrating the {\tt resamp} interface.
 Notice that the {\tt resamp\_crcf\_execute()} method also returns the number
 of samples written to the buffer.
 This number will never exceed $\lceil r \rceil$.
-
+%
 \input{listings/resamp_crcf.example.c.tex}
-
-Figure~\ref{fig:module:filter:resamp_crcf} gives a graphical depiction of the
-arbitrary resampler, in both the time and frequency domains.
+%
+Figure~\ref{fig:module:filter:resamp_crcf} gives a graphical depiction
+of the arbitrary resampler, in both the time and frequency domains.
 The time series has been aligned (shifted by the filter delay and scaled by
 the resampling rate) to show equivalence.
 Additionally, the signal's power spectrum has been scaled by $r$ to reflect
 the change in sampling rate.
-%Notice how the input and output spectra align, despite its
+In the example the input array size is 187 samples;
+the resampler produced 133 output samples which yields a true resampling
+rate of $\dot{r} = 133/187 \approx 0.71123$ which is close to the target
+rate of $r = 1/\sqrt{2} \approx 0.70711$.
 
 It is important to understand how filter design impacts the performance of the
 resampler.
@@ -967,12 +974,40 @@ This is apparent in the power spectral density plot in
 figure~\ref{fig:module:filter:resamp_crcf} which shows very little aliasing on
 the output signal.
 Aliasing can be reduced by increasing the filter length at the cost of
-additional computational complexity.
+additional computational complexity;
+additionally the number of filters in the bank can be increased to
+improve timing resolution between samples.
 For synchronization of digital receivers, it is always good practice to
 preceed the resampler with an anti-aliasing filter to remove out-of-band
 interference.
 
-See also: {\tt resamp2}, {\tt firpfb}, {\tt symsync},
+Listed below is the full interface to the {\tt resamp} family of
+objects.
+While each method is listed for {\tt resamp\_crcf}, the same
+functionality applies to {\tt resamp\_rrrf} and {\tt resamp\_cccf}.
+\begin{description}
+\item[{\tt resamp\_crcf\_create(r,m,fc,As,N)}]
+    creates a {\tt resamp} object with a resampling rate $r$,
+    a nominal filter delay of $m$ samples, a cutoff frequency of $f_c$,
+    a stop-band suppression of $A_s$~dB, using a polyphase filterbank
+    with $N$ filters.
+\item[{\tt resamp\_crcf\_destroy(q)}]
+    destroys the resampler, freeing all internally-allocated memory.
+\item[{\tt resamp\_crcf\_print(q)}]
+    prints the internal properties of the resampler to the standard
+    output.
+\item[{\tt resamp\_crcf\_reset(q)}]
+    clears the internal resampler buffers.
+\item[{\tt resamp\_crcf\_setrate(q,r)}]
+    sets the resampling rate to $r$.
+\item[{\tt resamp\_crcf\_execute(q,x,*y,*nw)}]
+    executes the resampler for an input sample $x$,
+    storing the resulting samples in the output array $y$
+    specifying the number of samples written as $n_w$.
+    The output buffer $y$ needs to be at least $\lceil r \rceil$.
+\end{description}
+%
+{\em See also}: {\tt resamp2}, {\tt firpfb}, {\tt symsync},
 {\tt examples/resamp\_crcf\_example.c}
 
 \begin{figure}
@@ -983,8 +1018,9 @@ See also: {\tt resamp2}, {\tt firpfb}, {\tt symsync},
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_resamp_crcf_psd}
 }
-\caption{{\tt resamp\_crcf} (arbitrary resampler) demonstration,
-$r=1/\sqrt{2}\approx0.7071$}
+\caption{
+    {\tt resamp\_crcf} (arbitrary resampler) demonstration,
+    $r = 1/\sqrt{2} \approx 0.7071$}
 \label{fig:module:filter:resamp_crcf}
 \end{figure}
 

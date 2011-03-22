@@ -56,6 +56,9 @@ int main() {
         resamp_crcf_execute(f, x[i], &y[ny], &num_written);
         ny += num_written;
     }
+
+    printf(" %u / %u\n", ny, nx);
+
     // clean up allocated objects
     resamp_crcf_destroy(f);
 
