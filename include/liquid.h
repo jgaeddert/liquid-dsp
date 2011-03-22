@@ -2066,14 +2066,14 @@ float liquid_uppergammaf(float _z, float _alpha);
 float liquid_factorialf(unsigned int _n);
 
 // Bessel function of the first kind
-float besselj_0(float _z);
+float liquid_besselj_0(float _z);
 
 // Modified Bessel function of the first kind
-float besseli_0(float _z);
+float liquid_besseli_0(float _z);
 
 // Modified Bessel function of the first kind
-float besseli(float _nu,
-              float _z);
+float liquid_besseli(float _nu,
+                     float _z);
 
 // Q function
 float liquid_Qf(float _z);

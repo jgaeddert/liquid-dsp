@@ -65,7 +65,7 @@ float randricekf_pdf(float _x,
 
     float sig2 = sig*sig;
 
-    return (_x / sig2) * expf(-t / (2*sig2)) * besseli_0(_x*s/sig2);
+    return (_x / sig2) * expf(-t / (2*sig2)) * liquid_besseli_0(_x*s/sig2);
 }
 
 // Rice-K random number cumulative distribution function
