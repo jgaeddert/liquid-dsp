@@ -37,7 +37,7 @@
 
 #include "liquid.internal.h"
 
-#define NUM_LNGAMMA_ITERATIONS (64)
+#define NUM_LNGAMMA_ITERATIONS (256)
 #define EULER_GAMMA            (0.57721566490153286)
 float liquid_lngammaf(float _z)
 {
@@ -45,22 +45,22 @@ float liquid_lngammaf(float _z)
     if (_z < 0) {
         fprintf(stderr,"error: liquid_lngammaf(), undefined for z <= 0\n");
         exit(1);
-    } else if (_z < 1.0f) {
+    } else if (_z < 8.0f) {
 #if 0
-    } else if (_z < 1.0f) {
-        // low value approximation
-        g = -logf(_z) - EULER_GAMMA*_z;
-        unsigned int n;
-        float z_by_n;   // value of z/n
-        for (n=1; n<NUM_LNGAMMA_ITERATIONS; n++) {
-            z_by_n = _z / (float)n;
-            g += -logf(1.0f + z_by_n) + z_by_n;
+        g = -EULER_GAMMA*_z - logf(_z);
+        unsigned int k;
+        for (k=1; k<NUM_LNGAMMA_ITERATIONS; k++) {
+            float t0 = _z / (float)k;
+            float t1 = logf(1.0f + t0);
+
+            g += t0 - t1;
         }
 #else
-        g = liquid_lngammaf(1.0f + _z) - logf(_z);
-
-        // apply correction factor
-        //g += 0.0405f*(1.0f - tanhf(0.5f*logf(_z)));
+        // Use recursive formula:
+        //    gamma(z+1) = z * gamma(z)
+        // therefore:
+        //    log(Gamma(z)) = log(gamma(z+1)) - ln(z)
+        return liquid_lngammaf(_z + 1.0f) - logf(_z);
 #endif
     } else {
         // high value approximation

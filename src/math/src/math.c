@@ -147,9 +147,9 @@ float liquid_nchoosek(unsigned int _n, unsigned int _k)
 
     // use lngamma() function when _n is large
     if (_n > 12) {
-        float t0 = liquid_lngammaf(_n + 1.0f);
-        float t1 = liquid_lngammaf(_n - _k + 1.0f);
-        float t2 = liquid_lngammaf(_k + 1.0f);
+        float t0 = liquid_lngammaf((float)_n + 1.0f);
+        float t1 = liquid_lngammaf((float)_n - (float)_k + 1.0f);
+        float t2 = liquid_lngammaf((float)_k + 1.0f);
 
         return roundf(expf( t0 - t1 - t2 ));
     }

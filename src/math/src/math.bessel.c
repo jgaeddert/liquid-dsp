@@ -109,16 +109,11 @@ float liquid_besselj(float _nu,
         // compute: (2k + |nu|)*log(2)
         float t2 = t0 * logf(2.0f);
 
-#if 0
         // compute: log(Gamma(k+1))
         float t3 = liquid_lngammaf((float)k + 1.0f);
 
         // compute: log(Gamma(|nu|+k+1))
         float t4 = liquid_lngammaf(abs_nu + (float)k + 1.0f);
-#else
-        float t3 = lgammaf((float)k + 1.0f);
-        float t4 = lgammaf(abs_nu + (float)k + 1.0f);
-#endif
 
         // accumulate J
         if ( (k%2) == 0) J += expf(t1 - t2 - t3 - t4);
