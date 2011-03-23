@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME "figures.gen/filter_firdespm.gnu"

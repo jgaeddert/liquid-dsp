@@ -9,6 +9,7 @@
 #include <getopt.h>
 #include <math.h>
 
+#include "liquid.h"
 #include "liquid.doc.h"
 
 // print usage/help message

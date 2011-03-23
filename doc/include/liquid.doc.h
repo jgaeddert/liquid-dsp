@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <complex.h>
 #include <stdbool.h>
-#include <liquid/liquid.h>
+#include "liquid.h"
 
 // default gnuplot colors
 #define LIQUID_DOC_COLOR_GRID   "#cccccc"   // very light gray

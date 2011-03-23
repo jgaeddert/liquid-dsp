@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/filter_firhilb_decim_crcf_time.gnu"

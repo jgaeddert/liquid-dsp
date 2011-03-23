@@ -13,7 +13,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/filter_firfilt_crcf_time.gnu"
