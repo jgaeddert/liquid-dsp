@@ -103,6 +103,10 @@ int main(int argc, char*argv[]) {
     float g = k*tau;                // number of samples offset
     int ds=floorf(g);               // additional symbol delay
     float dt = (g - (float)ds);     // fractional sample offset
+    if (dt > 0.5f) {                // force dt to be in [0.5,0.5]
+        dt -= 1.0f;
+        ds++;
+    }
 
     unsigned int i, n=0;
 

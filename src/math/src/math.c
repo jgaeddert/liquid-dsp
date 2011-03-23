@@ -272,8 +272,8 @@ float kaiser(unsigned int _n,
     } else if (_beta < 0) {
         fprintf(stderr,"error: kaiser(), beta must be greater than or equal to zero\n");
         exit(1);
-    } else if (_mu < -1 || _mu > 1) {
-        fprintf(stderr,"error: kaiser(), fractional sample offset must be in [-1,1]\n");
+    } else if (_mu < -0.5 || _mu > 0.5) {
+        fprintf(stderr,"error: kaiser(), fractional sample offset must be in [-0.5,0.5]\n");
         exit(1);
     }
 

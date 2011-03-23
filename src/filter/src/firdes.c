@@ -275,7 +275,7 @@ void firdes_kaiser_window(unsigned int _n,
 
         // composite
         _h[i] = h1*h2;
-    }   
+    }
 }
 
 // Design root-Nyquist filter
