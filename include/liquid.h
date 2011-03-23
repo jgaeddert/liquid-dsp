@@ -840,7 +840,7 @@ float iir_group_delay(float * _b,
 //
 // Compute auto-correlation of filter at a specific lag.
 //
-//  _h      :   filter coefficients [size: _h_len]
+//  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
 float liquid_filter_autocorr(float * _h,
@@ -852,7 +852,7 @@ float liquid_filter_autocorr(float * _h,
 // Compute inter-symbol interference (ISI)--both RMS and
 // maximum--for the filter _h.
 //
-//  _h      :   filter coefficients [size: 2*_k*_m+1]
+//  _h      :   filter coefficients [size: 2*_k*_m+1 x 1]
 //  _k      :   filter over-sampling rate (samples/symbol)
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI

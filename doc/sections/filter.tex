@@ -1503,17 +1503,20 @@ Here are several miscellaneous functions used in \liquid's filter module,
 useful to filtering and filter design.
 
 \begin{description}
-\item[{\tt estimate\_req\_filter\_len()}]
+\item[{\tt estimate\_req\_filter\_len(df,As)}]
     returns an estimate of the required filter length, given a transition
     bandwidth $\Delta f$ and stopband attenuation $A_s$.
     The estimate uses Hermann's formula \cite{Herrmann:1973}
-    \[
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:estimate_N}
         N \approx \frac{
                 D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
             }{
                 \Delta f
             }
-    \]
+    \end{equation}
+    %
     where
     \[
         D_{\infty} (\delta_1,\delta_2) =
@@ -1526,37 +1529,43 @@ useful to filtering and filter design.
     \]
     with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
 
-\item[{\tt estimate\_req\_filter\_As()}]
+\item[{\tt estimate\_req\_filter\_As(df,N)}]
     returns an estimate of the filter's stop-band attenuation $A_s$
     given the filter's length $N$ and transition bandwidth $\Delta f$.
     The estimate uses an iterative binary search to find $A_s$ from
     {\tt extimate\_req\_filter\_As()}.
 
-\item[{\tt estimate\_req\_filter\_df()}]
+\item[{\tt estimate\_req\_filter\_df(As,N)}]
     returns an estimate of the filter's transition bandwidth $\Delta f$
     given the filter's length $N$ and stop-band attenuation $A_s$.
     The estimate uses an iterative binary search to find $\Delta f$ from
     {\tt extimate\_req\_filter\_As()}.
 
-\item[{\tt kaiser\_beta\_As()}]
+\item[{\tt kaiser\_beta\_As(As)}]
+    % TODO : Kaiser window parameter previously defined as alpha!
     returns an estimate of the Kaiser $\beta$ factor for a particular
     stop-band attenuation $A_s$.
     The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz
-    \[
-    \beta =
-    \begin{cases}
-        0.1102 (A_s - 8.7)      &   A_s > 50 \\
-        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
-        0                       &   \text{else}
-    \end{cases}
-    \]
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:kaiser_beta}
+        \beta =
+        \begin{cases}
+            0.1102 (A_s - 8.7)      &   A_s > 50 \\
+            0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+            0                       &   \text{else}
+        \end{cases}
+    \end{equation}
 
-\item[{\tt fir\_group\_delay()}]
-    computes the group delay for a finite impulse-response filter.
+\item[{\tt fir\_group\_delay(*h,n,f)}]
+    computes the group delay for a finite impulse-response filter with
+    $n$ coefficients $\vec{h}$ at a frequency $f$.
     The group delay $\tau_g$ at frequency $f$
     for a finite impulse response filter of length $N$
     is computed as
-    \[
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:fir_group_delay}
         \tau_g = \Re\Biggl\{ \,\,
             \frac{
                 \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k} \cdot k}
@@ -1564,13 +1573,18 @@ useful to filtering and filter design.
                 \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k}}
             }\,\,
             \Biggr\}
-    \]
+    \end{equation}
 
-\item[{\tt iir\_group\_delay()}]
-    computes the group delay for an infinite impulse-response filter.
+\item[{\tt iir\_group\_delay(*b,nb,*a,na,f)}]
+    computes the group delay for an infinite impulse-response filter
+    with $n_a$ feed-back coefficients $\vec{a}$,
+    and $n_a$ feed-forward coefficients $\vec{b}$
+    at a frequency $f$.
     The group delay $\tau_g$ at frequency $f$ for an infinite impulse
     response filter of order $N$ is computed as
-    \[
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:iir_group_delay}
         \tau_g = \Re\Biggl\{ \,\,
             \frac{
                 \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k} \cdot k}
@@ -1579,16 +1593,19 @@ useful to filtering and filter design.
             }\,\,
             \Biggr\}
             - N
-    \]
+    \end{equation}
+    %
     where $c(n) = \sum_{m=0}^{N-1}{a(m)^*b(m-n)}$
     for $n \in \{0,1,\ldots,2(N+1)\}$
     which can be described as the flipped convolution of $\vec{a}$ and
     $\vec{b}$.
 
-\item[{\tt iirdes\_isstable()}]
-    checks the stability of an infinite impulse-response filter by computing
-    the roots of the denominator (poles) and ensuring that they lie within the
-    unit circle.
+\item[{\tt iirdes\_isstable(*b,*a,n)}]
+    checks the stability of an infinite impulse-response filter with $n$
+    feed-back and feed-forward coefficients $\vec{a}$ and $\vec{b}$
+    respectively.
+    Stability is tested by computing the roots of the denominator
+    (poles) and ensuring that they lie within the unit circle.
     Notice that the poles in
     % using the cleveref package
 %    \cref{fig:module:filter:butter,%
@@ -1597,38 +1614,48 @@ useful to filtering and filter design.
 %          fig:module:filter:ellip,%
 %          fig:module:filter:bessel}
     % using regular references
-    Figure~\ref{fig:module:filter:butter}--%
+    Figures~\ref{fig:module:filter:butter}--%
            \ref{fig:module:filter:bessel}
-    all have their poles within the unit circle and are therefore stable (as
-    expected).
+    all have their poles within the unit circle and are therefore stable
+    (as expected).
 
-\item[{\tt liquid\_filter\_autocorr()}]
-    computes the auto-correlation of a filter with an array of coefficients
-    $\vec{h}$ of length $N$ at a specific lag $n$ as
+\item[{\tt liquid\_filter\_autocorr(*h,N,n)}]
+    computes the auto-correlation of a filter with an array of
+    coefficients $\vec{h}$ of length $N$ at a specific lag $n$ as
     \[
         r_{hh}(n) = \sum_{k=n}^{N-1} {h(k)h^*(k-n)}
     \]
 
-\item[{\tt liquid\_filter\_isi()}]
-    computes a filter's inter-symbol interference (both mean-squared error and
-    maximum error).
-    This is useful in comparing the performance of root-Nyquist matched filter
-    designs (e.g. root raised-cosine).
+\item[{\tt liquid\_filter\_isi(*h,k,m,*rms,*max)}]
+    computes the inter-symbol interference 
+    (both mean-squared error and maximum error)
+    for a filter $\vec{h}$ with $k$ samples per symbol and delay of $m$
+    samples.
+    The filter has $2km+1$ coefficients and the resulting
+    RMS and maximum ISI are stored in {\tt rms} and {\tt max},
+    respectively.
+    This is useful in comparing the performance of root-Nyquist matched
+    filter designs (e.g. root raised-cosine).
     %The inter-symbol interference of a filter is simply its auto-correlation
     %at a lag equal to its...
     %The total interference is the ...
 
-\item[{\tt liquid\_filter\_energy()}]
-    computes a finite impulse response filter's relative out-of-band
-    energy for a cutoff frequency $f_c$, viz
-    \[
-        e =
+\item[{\tt liquid\_filter\_energy(*h,N,fc,nfft)}]
+    computes the relative out-of-band energy $E_0$ at a cutoff frequency
+    $f_c$ for a finite impulse response filter $\vec{h}$ with $N$
+    coefficients.
+    The parameter {\tt nfft} specifies the precision of the computation.
+    The relative out-of-band energy is computed as
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:filter_energy}
+        E_0 =
             \frac{
                 \int_{2 \pi f_c}^{\infty}{H(\omega)d\omega}
             } {
                 \int_{0}^{\infty}{H(\omega)d\omega}
             }
-    \]
+    \end{equation}
 
 \end{description}
 
