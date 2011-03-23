@@ -925,6 +925,10 @@ The {\tt resamp2} object in \liquid\ uses a Kaser window for $w(n)$ for
 several reasons, but in particular because it is nearly optimum, and it is
 easy to trade side-lobe attenuation for transition bandwidth.
 
+
+% 
+% resamp
+%
 \subsection{{\tt resamp} (arbitrary resampler)}
 \label{module:filter:resamp}
 For arbitrary (e.g. irrational) resampling ratios, the {\tt resamp}
@@ -985,6 +989,7 @@ Listed below is the full interface to the {\tt resamp} family of
 objects.
 While each method is listed for {\tt resamp\_crcf}, the same
 functionality applies to {\tt resamp\_rrrf} and {\tt resamp\_cccf}.
+%
 \begin{description}
 \item[{\tt resamp\_crcf\_create(r,m,fc,As,N)}]
     creates a {\tt resamp} object with a resampling rate $r$,
@@ -1024,33 +1029,115 @@ functionality applies to {\tt resamp\_rrrf} and {\tt resamp\_cccf}.
 \label{fig:module:filter:resamp_crcf}
 \end{figure}
 
+
+% 
+% symsync
+%
 \subsection{{\tt symsync} (symbol synchronizer)}
-The {\tt symsync} object is a multi-rate symbol timing synchronizer useful for
-locking a received digital signal to the receiver's clock.
+\label{module:filter:symsync}
+The {\tt symsync} object is a multi-rate symbol timing synchronizer
+useful for locking a received digital signal to the receiver's clock.
 It is effectively the same as the {\tt resamp} object, but includes an
-internal control mechanism for tracking to timing phase and frequency offsets.
+internal control mechanism for tracking to timing phase and frequency
+offsets.
 The filter structure is a polyphase representation of a Nyquist matched
 filter.
+%
+The instantaneous timing error is computed from the maximum likelihood
+timing error detector \cite{Mengali:1997} which relies on the derivative
+to the matched filter impulse response.
+\liquid\ internally computes polyphase filter banks for both the
+matched and derivative-matched filters.
+If the output of the matched filter at sample $k$ is $y(k)$
+and the output of the derivative matched filter is $\dot{y}(k)$
+then the instantaneous timing estimate is
+%
+\begin{equation}
+\label{eqn:filter:symsync:timing_error}
+    e_\tau(k) = \tanh\Bigl( y(k)\dot{y}(k) \Bigr)
+\end{equation}
+%
+This timing error estimate has significant improvements over
+heuristic-based estimates such as the popular Mueller and M\"{u}ller
+timing recovery scheme \cite{Mueller:1976}. % relies on sample spacing
+Applying a simple first-order recursive loop filter yields the averaged
+timing estimate
+%
+\begin{equation}
+\label{eqn:filter:symsync:timing_error_filtered}
+    \Delta\tau(k) = \beta e_\tau(k) + \alpha\Delta\tau(k-1)
+\end{equation}
+%
+where
+$\alpha = 1-\omega_\tau$ and $\beta = 0.22\omega_\tau$
+are the loop filter coefficients for a given filter bandwidth
+$\omega_\tau$.
+While these coefficients are certainly not optimized,
+it is important to understand the difficulty in computing loop filter
+coefficients when a delay is introduced into a control loop.
+This delay is the result of the matched filter itself and can cause
+instability with traditional phase-locked loop filter designs.
+%
+Internally the {\tt symsync} object uses the principles of the
+{\tt resamp} object
+(arbitrary resampler, see Section~\ref{module:filter:resamp})
+for resampling the signal|actually decimating to one sample per symbol.
+Its internal control loop dynamically adjusts the rate $r$ such that
+the timing phase of the receiver is aligned with the incoming signal's
+symbol timing.
 
-\subsubsection{Theory}
+Listed below is the full interface to the {\tt symsync} family of
+objects.
+While each method is listed for {\tt symsync\_crcf}, the same
+functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
+%
+\begin{description}
+\item[{\tt symsync\_crcf\_create(k,N,*h,h\_len)}]
+    creates a {\tt symsync} object from a prototype filter $h$ of length
+    $h_{len}$ and having $k$ samples per symbol.
+    The internal object restructures the input filter into a polyphase
+    prototype having $N$ filters.
+\item[{\tt symsync\_crcf\_create\_rnyquist(ftype,k,m,beta,N)}]
+    creates a {\tt symsync} object from a square-root Nyquist protoype
+    of type {\tt ftype} (see Section~\ref{module:filter:firdes:rnyquist}
+    for a description of available square-root Nyquist filters in
+    \liquid).
+    The generated filter has $k$ samples per symbol,
+    a nominal delay of $m$ symbols, and an excess bandwidth factor of
+    $\beta$.
+    The internal polyphase filter bank has $N$ filters.
+\item[{\tt symsync\_crcf\_destroy(q)}]
+    destroys the symbol synchronizer, freeing all internally-allocated
+    memory.
+\item[{\tt symsync\_crcf\_print(q)}]
+    prints the internal properties of the symbol syncrhonizer object to
+    the standard output.
+\item[{\tt symsync\_crcf\_clear(q)}]
+    resets the symbol synchronizer, clearing the internal buffers and
+    filter state.
+\item[{\tt symsync\_crcf\_set\_lf\_bw(q,w)}]
+    sets the internal bandwidth of the loop filter to $\omega$.
+\item[{\tt symsync\_crcf\_lock(q)}]
+    locks the symbol synchronizer such that it will still decimate the
+    incoming signal but will not update its internal state.
+\item[{\tt symsync\_crcf\_unlock(q)}]
+    unlocks the symbol synchronizer, resuming its ability to track to
+    the input signal.
+\item[{\tt symsync\_crcf\_execute(q,*x,nx,*y,*ny)}]
+    executes the resampler for an input array $\vec{x}$ with $n_x$
+    samples,
+    storing the resulting samples in the output array $y$
+    specifying the number of samples written as $n_y$.
+    %The output buffer $y$ needs to be at least $\lceil r \rceil$.
+\item[{\tt symsync\_crcf\_get\_tau(q)}]
+    returns the current timing estimate (fractional sampling interval)
+    of the object.
+\end{description}
+%
 
-\subsubsection{Loop Architecture}
-Timing error:
-\[
-    e_\tau(nT_s) = \tanh\left( y(nT_s)\dot{y}(nT_s) \right)
-\]
-Filtered timing error:
-\[
-    \hat{e}_\tau(n) = \beta e_\tau(n) + \alpha \hat{e}_\tau(n-1)
-\]
-For a given bandwidth $b$, the loop filter coefficients are computed as
-$\alpha = 1-b$ and $\beta = 0.22b$.
-While certainly not optimized, it is important to understand the difficulty in
-computing loop filter coefficients when a delay is introduced into the control
-loop.
-This delay is a by-product of the matched filter itself, in the sense that the
-timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
-
+% 
+% firfarrow
+%
 \subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
 \begin{description}
 \item[{\tt firfarrow\_crcf\_create()}]
