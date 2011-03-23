@@ -1183,53 +1183,122 @@ and some useful miscellaneous functions.
 
 \subsubsection{Window prototype}
 \label{module:filter:firdes:window}
-Basic idea: apply windowing function to truncated sinc
-%
+The ideal low-pass filter has a rectangular response in the frequency
+domain and an infinite $\sin(t)/t$ response in the time domain.
+Because all time-dependent filters must be causal, this type of filter
+is unrealizable;
+furthermore, truncating its response results in poor pass-band ripple
+stop-band rejection.
+An improvement over truncation is offered by use of a band-limiting
+window.
+Let the finite impulse response of a filter be defined as
+% 
 \begin{equation}
-    h(t) = w_n(t) \sinc(\Delta f t)
+\label{eqn:filter:firdes:windowed_sinc}
+    h(n) = h_i(n) w(n)
 \end{equation}
 %
-where $w_n(t)$ is chosen from...
-%
-The Kaiser window is defined as...
-%
-\begin{equation}
-\label{eqn:kaiser_window}
-    w[n] = \frac{
-        I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right)
-    }{
-        I_0\left(\pi\beta\right)
-    }
-\end{equation}
-%
-where $I_\nu(z)$ is the modified Bessel function of the first kind of order
-$\nu$.
+where $w(n)$ is a time-limited symmetric window and
+$h_i(n)$ is the impulse response of the ideal filter with a cutoff
+frequency $\omega_c$, viz.
 %
 \begin{equation}
-\label{eqn:besseli_infinite_sum}
-    I_\nu(z) = \sum_{k=0}^{\infty}{
-        \frac{
-            \left(\frac{1}{4}z^2\right)^k
-        }{
-            k!\Gamma(k+\nu+1)
-        }
-    }
+\label{eqn:filter:firdes:sinc}
+    h_i(n) =    \frac{\omega_c}{\pi}
+                \left(
+                    \frac{\sin\omega_c n}{\omega_c n}
+                \right),
+                \,\,\,\,
+                \forall n
 \end{equation}
 %
-For more approximations to $I_0(z)$, see section~\ref{module:math} on the math
-module.
+A number of possible windows could be used;
+the Kaiser window is particularly common due to its systematic ability
+to trade transition bandwidth for stop-band rejection.
+The Kaiser window is defined as
+%
+\begin{equation}
+\label{eqn:filter:firdes:kaiser_window}
+    w(n) =  \frac{
+                I_0\left[\pi\alpha\sqrt{1-\left(\frac{n}{N/2}\right)^2}\right]
+            }{
+                I_0\left(\pi\alpha\right)
+            }
+            \,\,\,\,
+            -N/2 \leq n \leq N/2,
+            \,\,
+            \alpha \geq 0
+\end{equation}
+%
+where $I_\nu(z)$ is the modified Bessel function of the first kind of
+order $\nu$ and $\alpha$ is a shape parameter controlling the window
+decay.
+%
+$I_\nu(z)$ can be expanded as
+%
+\begin{equation}
+\label{eqn:filter:firdes:besseli_infinite_sum}
+    I_\nu(z) =  \left( \frac{z}{2} \right)^\nu
+                \sum_{k=0}^{\infty}{
+                    \frac{
+                        \left(\frac{1}{4}z^2\right)^k
+                    }{
+                        k!\Gamma(k+\nu+1)
+                    }
+                }
+\end{equation}
+%
+The sum in (\ref{eqn:filter:firdes:besseli_infinite_sum})
+converges quickly due to the denominator increasing rapidly, 
+(and in particular for $\nu=0$ the denominator reduces to $(k!)^2$)
+and thus only a few terms are necessary for sufficient approximation.
+%
+The sum (\ref{eqn:filter:firdes:besseli_infinite_sum}) converges quickly
+due to the denominator increasing rapidly, thus only a few terms are
+necessary for sufficient approximation.
+For more approximations to $I_0(z)$ and $I_\nu(z)$,
+see Section~\ref{module:math} in the math module.
+%
+Kaiser gives an approximation for the value of $\alpha$ to give a
+particular sidelobe level for the window as
+\cite[(3.2.7)]{Vaidyanathan:1993}
+\begin{equation}
+\label{eq:kaiser_alpha}
+    \alpha =
+    \begin{cases}
+        0.1102 (A_s - 8.7)      &   A_s > 50 \\
+        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+        0                       &   \text{else}
+    \end{cases}
+\end{equation}
+%
+where $A_s > 0$ is the stop-band attenuation in decibels.
+%
+This approximation is provided in \liquid\ by the
+{\tt kaiser\_beta\_As()} method,
+and the length of the filter can be approximated with
+{\tt estimate\_req\_filter\_len()}
+(see section~\ref{module:filter:misc} for more detail on these methods).
 
-The sum (\ref{eqn:besseli_infinite_sum}) converges quickly due to the
-denominator increasing rapidly, thus only a few terms are necessary for
-sufficient approximation.
-An approximation for the value of $\beta$ to give a particular sidelobe level
-for the window is given by {\tt kaiser\_beta\_As()}, and
-the length of the filter can be approximated with
-{\tt estimate\_req\_filter\_len()} (see section~\ref{module:filter:misc} for
-more detail on these methods).
-
-TODO : add discussion of interface for {\tt firdes\_kaiser\_window}.
-
+The entire design process is provided in \liquid\ with the
+{\tt firdes\_kaiser\_window()} method which can be invoked as follows:
+%
+\begin{Verbatim}[fontsize=\small]
+    firdes_kaiser_window(_n, _fc, _As, _mu, *_h)
+\end{Verbatim}
+%
+where
+{\tt \_n} is the length of the filter (number of samples),
+{\tt \_fc} is the normalized cutoff frequency ($0 \leq f_c \leq 0.5$),
+{\tt \_As} is the stop-band attenuation in dB ($A_s > 0$),
+{\tt \_mu} is the fractional sample offset ($-0.5 \leq \mu \leq 0.5$),
+and {\tt *\_h} is the $n$-sample output coefficient array.
+%
+Listed below is an example of the {\tt firdes\_kaiser\_window}
+interface.
+%
+\input{listings/firdes_kaiser.example.c.tex}
+%
 \begin{figure}
 \centering
 \subfigure[time] {
@@ -1238,8 +1307,8 @@ TODO : add discussion of interface for {\tt firdes\_kaiser\_window}.
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_freq}
 }
-\caption{{\tt fir\_kaiser\_window()} demonstration, $f_c=0.15$,
-$\Delta f=0.05$, $A_s=60$dB}
+\caption{{\tt firdes\_kaiser\_window()} demonstration, $f_c=0.15$,
+         $\Delta f=0.05$, $A_s=60$dB}
 \label{fig:module:filter:firdes_kaiser}
 \end{figure}
 %
