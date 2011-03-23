@@ -1086,6 +1086,12 @@ Its internal control loop dynamically adjusts the rate $r$ such that
 the timing phase of the receiver is aligned with the incoming signal's
 symbol timing.
 
+Below is a code example demonstrating the {\tt symsync} interface.
+Notice that the {\tt symsync\_crcf\_execute()} method also returns the
+number of symbols written to the output buffer.
+%
+\input{listings/symsync_crcf.example.c.tex}
+%
 Listed below is the full interface to the {\tt symsync} family of
 objects.
 While each method is listed for {\tt symsync\_crcf}, the same
