@@ -1506,28 +1506,39 @@ useful to filtering and filter design.
 \item[{\tt estimate\_req\_filter\_len(df,As)}]
     returns an estimate of the required filter length, given a transition
     bandwidth $\Delta f$ and stopband attenuation $A_s$.
-    The estimate uses Hermann's formula \cite{Herrmann:1973}
+%    The estimate uses Hermann's formula \cite{Herrmann:1973}
+%    %
+%    \begin{equation}
+%    \label{eqn:filter:firdes:misc:estimate_N}
+%        N \approx \frac{
+%                D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
+%            }{
+%                \Delta f
+%            }
+%    \end{equation}
+%    %
+%    where
+%    \[
+%        D_{\infty} (\delta_1,\delta_2) =
+%            \Bigl(0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \Bigr) t_2
+%           -\Bigl(0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \Bigr)
+%    \]
+%    and
+%    \[
+%        f(\delta_1,\delta_2) = 11.012 + 0.51244\left(t_1 - t_2\right)
+%    \]
+%    with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
+    The estimate uses Kaiser's formula \cite{Vaidyanathan:1993}
     %
     \begin{equation}
     \label{eqn:filter:firdes:misc:estimate_N}
         N \approx \frac{
-                D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
+                A_s - 7.95
             }{
-                \Delta f
+                14.26 \Delta f
             }
     \end{equation}
     %
-    where
-    \[
-        D_{\infty} (\delta_1,\delta_2) =
-            \Bigl(0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \Bigr) t_2
-           -\Bigl(0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \Bigr)
-    \]
-    and
-    \[
-        f(\delta_1,\delta_2) = 11.012 + 0.51244\left(t_1 - t_2\right)
-    \]
-    with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
 
 \item[{\tt estimate\_req\_filter\_As(df,N)}]
     returns an estimate of the filter's stop-band attenuation $A_s$
