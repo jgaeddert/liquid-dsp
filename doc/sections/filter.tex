@@ -369,7 +369,7 @@ Notice that $H(z)$ is now a series of cascaded second-order IIR filters.
 The `sos' form is practical when filters are designed from analog prototypes
 where the poles and zeros are known.
 \liquid\ implements second-order sections efficiently with the internal
-{\tt iirfiltsos\_xxxt} object.
+{\tt iirfiltsos\_crcf} family of objects.
 For a cascaded second-order section IIR filter, use
 {\tt iirfilt\_crcf\_create\_sos(B,A,n)}.
 %
@@ -1448,7 +1448,10 @@ FIR filter desing using the Parks-McClellan algorithm is implemented in
 \liquid\ with the {\tt firdespm} interface.
 The Parks-McClellan algorithm uses the Remez exchange algorithm to solve
 the minimax problem (minimize the maximum error) for filter design.
-The interface accepts ... with $N_b$ frequency bands... xxx
+The interface accepts a description of $N_b$ disjoint and
+non-overlapping frequency bands with a desired response and relative
+error weighting for each, and computes the resulting filter
+coefficients.
 %
 \begin{Verbatim}[fontsize=\small]
     firdespm_run(_h_len,        // filter length
