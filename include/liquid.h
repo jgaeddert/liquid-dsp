@@ -1541,7 +1541,11 @@ void FIRFARROW(_push)(FIRFARROW() _f, TI _x);                   \
 void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu);          \
 void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y);               \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _f);            \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);
+void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);  \
+void FIRFARROW(_freqresponse)(FIRFARROW() _f,                   \
+                            float _fc,                          \
+                            liquid_float_complex * _H);         \
+float FIRFARROW(_groupdelay)(FIRFARROW() _f, float _fc);
 
 LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_RRRF,
                             float,

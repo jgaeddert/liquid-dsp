@@ -16,7 +16,7 @@ int main() {
     // options
     unsigned int h_len=19;          // filter length
     unsigned int p=5;               // polynomial order
-    float fc=0.9f;                  // filter cutoff
+    float fc=0.45f;                 // filter cutoff
     float As=60.0f;                 // stop-band attenuation [dB]
     float mu=0.1f;                  // fractional sample delay
     unsigned int num_samples=32;    // number of samples to evaluate
