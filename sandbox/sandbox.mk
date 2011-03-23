@@ -33,6 +33,7 @@ local_src	:=				\
 	ofdmoqam_firpfbch_test.c		\
 	ofdmoqam_firpfbch_cfo_test.c		\
 	quasinewton_test.c			\
+	thiran_allpass_iir_test.c		\
 #	firpfbch_analysis_test.c
 
 local_sandbox	:= $(addprefix $(local_dir)/, $(local_src))
