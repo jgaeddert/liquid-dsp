@@ -1141,31 +1141,73 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
 \end{description}
 %
 
+
 % 
 % firfarrow
 %
 \subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
+\label{module:filter:firfarrow}
+\liquid\ implements non-recursive Farrow filters using the
+{\tt firfarrow} family of objects.
+The Farrow structure is convenient for varying the group delay of a
+filter.
+The filter coefficients themselves are not stored explicitly, but are
+represented as a set of polynomials each with an order $Q$.
+The coefficients can be computed dynamically from the polynomial by
+arbitrarily specifying the fractional sample delay $\mu$.
+%
+Listed below is the full interface to the {\tt firfarrow} family of
+objects.
+While each method is listed for {\tt firfarrow\_crcf}, the same
+functionality applies to {\tt firfarrow\_rrrf}.
+%
 \begin{description}
-\item[{\tt firfarrow\_crcf\_create()}]
-    creates a {\tt firfarrow} object.
-\item[{\tt firfarrow\_crcf\_destroy()}]
+\item[{\tt firfarrow\_crcf\_create(N,Q,fc,As)}]
+    creates a {\tt firfarrow} object with $N$ coefficients using a
+    polynomial of order $Q$ with a cutoff frequency $f_c$ and as
+    stop-band attenuation of $A_s$~dB.
+\item[{\tt firfarrow\_crcf\_destroy(q)}]
     destroy object, freeing all internally-allocated memory.
-\item[{\tt firfarrow\_crcf\_clear()}]
+\item[{\tt firfarrow\_crcf\_clear(q)}]
     clear filter internal memory buffer.
     This does not reset the delay.
-\item[{\tt firfarrow\_crcf\_print()}]
+\item[{\tt firfarrow\_crcf\_print(q)}]
     prints the filter's internal state to {\tt stdout}.
-\item[{\tt firfarrow\_crcf\_push()}]
-    push a single sample into the filter's internal buffer.
-\item[{\tt firfarrow\_crcf\_set\_delay()}]
-    set fractional delay of filter.
-\item[{\tt firfarrow\_crcf\_execute()}]
-    computes sample output.
-\item[{\tt firfarrow\_crcf\_get\_length()}]
+\item[{\tt firfarrow\_crcf\_push(q,x)}]
+    push a single sample $x$ into the filter's internal buffer.
+\item[{\tt firfarrow\_crcf\_set\_delay(q,mu)}]
+    set fractional delay $\mu$ of filter.
+\item[{\tt firfarrow\_crcf\_execute(q,*y)}]
+    computes the output sample, storing the result in $y$.
+\item[{\tt firfarrow\_crcf\_get\_length(q)}]
     returns length of the filter (number of taps)
-\item[{\tt firfarrow\_crcf\_get\_coefficients()}]
-    returns the internal filter coefficients.
+\item[{\tt firfarrow\_crcf\_get\_coefficients(q,*h)}]
+    returns the internal filter coefficients, storing the result in the
+    output vector $\vec{h}$.
+\item[{\tt firfarrow\_crcf\_freqresponse(q,fc,*H)}]
+    computes the complex response $H$ of the filter at the normalized
+    frequency $f_c$.
+\item[{\tt firfarrow\_crcf\_groupdelay(q,fc)}]
+    returns the group delay of the filter at the normalized
+    frequency $f_c$.
 \end{description}
+%
+Listed below is an example of the {\tt firfarrow} object's
+interface.
+%
+\input{listings/firfarrow_crcf.example.c.tex}
+%
+An example of the Farrow filter's group delay can be found in
+Figure~\ref{fig:module:filter:firfarrow_groupdelay}.
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firfarrow_groupdelay}
+\caption{{\tt firfarrow\_crcf} (Farrow filter) group delay example
+    with $N=19$, $Q=5$, $f_c=0.45$, and $A_s=60$~dB.}
+\label{fig:module:filter:firfarrow_groupdelay}
+\end{figure}
+%
 
 
 % 

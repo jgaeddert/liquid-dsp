@@ -20,7 +20,7 @@ int main(int argc, char*argv[])
     // options
     unsigned int h_len=19;  // filter length
     unsigned int p=5;       // polynomial order
-    float fc=0.9f;          // filter cutoff
+    float fc=0.45f;         // filter cutoff
     float As=60.0f;         // stop-band attenuation [dB]
     unsigned int m=9;       // number of delays to evaluate
     unsigned int nfft=256;  // number of frequency points
