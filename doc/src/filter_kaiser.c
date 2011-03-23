@@ -27,7 +27,7 @@ int main() {
     // Compute filter coefficients.
     // 
     // This is equivalent to
-    //      fir_kaiser_window(h_len,fc,As,mu,h);
+    //      firdes_kaiser_window(h_len,fc,As,mu,h);
     // but do it manually so we can extract the sinc and window for 
     // plotting
     float beta = kaiser_beta_As(As);

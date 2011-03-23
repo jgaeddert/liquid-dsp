@@ -45,7 +45,7 @@ int main() {
     // compute filter
     unsigned int h_len = 4*m+1;     // filter length
     float h[h_len];
-    fir_kaiser_window(h_len, 0.25f, slsl, 0.0f, h);
+    firdes_kaiser_window(h_len, 0.25f, slsl, 0.0f, h);
 
 
     // generate plots

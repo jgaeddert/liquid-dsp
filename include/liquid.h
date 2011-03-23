@@ -714,11 +714,11 @@ void firdespm_execute(firdespm _q, float * _h);
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void fir_kaiser_window(unsigned int _n,
-                       float _fc,
-                       float _As,
-                       float _mu,
-                       float *_h);
+void firdes_kaiser_window(unsigned int _n,
+                          float _fc,
+                          float _As,
+                          float _mu,
+                          float *_h);
 
 // Design FIR doppler filter
 //  _n      : filter length

@@ -62,7 +62,7 @@ int main(int argc, char*argv[]) {
     // generate the filter
     unsigned int i;
     float h[h_len];
-    fir_kaiser_window(h_len,fc,As,mu,h);
+    firdes_kaiser_window(h_len,fc,As,mu,h);
 
     // print coefficients
     for (i=0; i<h_len; i++)
