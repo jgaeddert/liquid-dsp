@@ -39,6 +39,7 @@ float liquid_lnbesseli(float _nu,
                        float _z)
 {
     // TODO : validate input
+    // TODO : compute low-signal approximation to avoid log(0)
 
     float t0 = _nu*logf(0.5f*_z);
     float t1 = 0.0f;
@@ -73,6 +74,10 @@ float liquid_besseli(float _nu,
 #define NUM_BESSELI0_ITERATIONS 32
 float liquid_besseli_0(float _z)
 {
+    // TODO : use better low-signal approximation
+    if (_z == 0.0f)
+        return 1.0f;
+
     unsigned int k;
     float t, y=0.0f;
     for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
