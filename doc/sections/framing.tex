@@ -177,7 +177,7 @@ with increasing number of iterations (interleaving depth)}
 \end{figure}
 
 A visualization of the interleaver can be seen in
-figure~\ref{fig:module:framing:interleaver:scatterplot}
+Figure~\ref{fig:module:framing:interleaver:scatterplot}
 where the input index is plotted against the output index for varying number
 of interations.
 Notice that with zero iterations, the output and input are identical (no
@@ -567,69 +567,160 @@ intended to be used in conjunction with one another, the output of
 {\tt flexframesync} object can recover the data.
 
 
-\subsubsection{the decoding process}
+\subsubsection{The Decoding Process}
 \label{module:framing:frames:decoding}
-Both the {\tt frame64} and {\tt flexframe} objects operate very similarly in
-their decoding process.
-On the receiver, frames are pulled from a stream of input samples which can
-exhibit channel impairments such as noise, sample timing offset, and carrier
-frequency and phase offsets.
-The receiver corrects for these impairments as best it can using various other
-signal processing elements in \liquid\ and attempts to decode the frame.
+Both the {\tt frame64} and {\tt flexframe} objects operate very
+similarly in their decoding processes.
+On the receiver, frames are pulled from a stream of input samples which
+can exhibit channel impairments such as noise, sample timing offset, and
+carrier frequency and phase offsets.
+The receiver corrects for these impairments as best it can using various
+other signal processing elements in \liquid\ and attempts to decode the
+frame.
 If at any time a frame is decoded (even if improperly), its appropriate
 user-defined callback function is invoked.
-
-Internally, the frame synchronizers...
+%
+%Internally, the frame synchronizers...
 When seeking a frame the synchronizer initially sets its internal loop
 bandwidths high for acquisition, including those for the automatic gain
 control, symbol timing recovery, and carrier frequency/phase recovery.
 This is known as {\em acquisition} mode, and is typical for packet-based
 communications systems.
 % ...
-Once the p/n sequence has been found, the receiver assumes it has a sufficient
-lock on the channel impairments and reduces its control loop bandwidths
-significantly, moving to {\em tracking} mode.
+Once the p/n sequence has been found, the receiver assumes it has a
+sufficient lock on the channel impairments and reduces its control loop
+bandwidths significantly, moving to {\em tracking} mode.
 
-At the heart of the decoder is the {\tt framesync\_props} object which governs
-the behavior of the frame synchronizers.
+\subsection{{\tt framesyncprops\_s} (frame synchronizer properties)}
+\label{module:framing:framesyncprops_s}
+Governing the behavior any frame synchronizer in \liquid\ is the
+{\tt framesyncprops\_s} object.
+In general the frame synchronizer open the bandwidths of their control
+loops until a certain sequence has been detected;
+this helps reduce acquisition time of the received signal.
+After the frame has been detected the control loop bandwidths are
+reduced to improve stability and reduce the possiblity of losing a lock
+on the signal.
+Listed below is a description of the {\tt framesyncprops\_} object
+members.
+%
 \begin{description}
 \item[{\tt agc\_bw0/agc\_bw1}]
     are the respective open/closed automatic gain control bandwidths.
+    The default values are $10^{-3}$ and $10^{-5}$, respectively.
 \item[{\tt agc\_gmin/agc\_gmax}]
     are the respective maximum/minimum automatic gain control gain values.
+    The default values are $10^{-3}$ and $10^{4}$, respectively.
 \item[{\tt sym\_bw0/sym\_bw1}]
     are the respective open/closed symbol synchronizer bandwidths.
+    The default values are $0.08$ and $0.05$, respectively.
 \item[{\tt pll\_bw0/pll\_bw1}]
     are the respective open/closed carrier phase-locked loop bandwidths.
-\item[...]
+    The default values are $0.02$ and $0.005$, respectively.
+\item[{\tt k}]
+    represents the matched filter's samples per symbol;
+    however this parameter is reserved for future development.
+    At present this number should be equal to 2 and should not be
+    changed.
+\item[{\tt npfb}]
+    represents the number of filters in the internal symbol timing
+    recovery object's polyphase filter bank
+    (see Section~\ref{module:filter:symsync});
+    however this parameter is reserved for future development and should
+    not be changed.
+    The default value is 32.
+\item[{\tt m}]
+    represents the matched filter's symbol delay;
+    however this parameter is reserved for future development and should
+    not be changed.
+    the default value is 3.
+\item[{\tt beta}]
+    represents the matched filter's excess bandwidth factor;
+    however this parameter is reserved for future development and should
+    not be changed.
+    the default value is 0.7.
 \item[{\tt squelch\_enabled}]
+    is a flag that specifies if the automatic gain control's squelch is
+    enabled (see Section~\ref{module:agc:squelch}).
+    Enabling the squelch
+    (setting {\tt squelch\_enabled} equal to {\tt 1})
+    will ignore received signals below the {\tt squelch\_threshold}
+    value (see below) to help prevent the reciever's control loops from
+    drifting.
+    Enabling the squelch is usually desirable;
+    however care must be taken to properly set the threshold|ideally
+    about 4~dB above the noise floor|so as not to miss frames with a
+    weak signal.
+    By default the squelch is {\em disabled}.
 \item[{\tt autosquelch\_enabled}]
+    is a flag that specifies if the automatic gain control's
+    {\em auto-squelch} is enabled (see
+    Section~\ref{module:agc:squelch:auto}).
+    In brief, the auto-squelch attempts to track the signal's power to
+    automatically squelch signals 4~dB above the noise floor.
+    By default the auto-squelch is disabled.
 \item[{\tt squelch\_threshold}]
+    is the squelch threshold value in dB
+    (see Section~\ref{module:agc:squelch}).
+    The default value is -35.0, but the ideal value is about 4~dB above
+    the noise floor.
+\item[{\tt eq\_len}]
+    specifies the length of the internal equalizer
+    (see Section~\ref{module:equalization}).
+    By default the length is set to zero which disables equalization of
+    the receiver.
+\item[{\tt eqrls\_lambda}]
+    is the recursive least-squares equalizer forgetting factor
+    $\lambda$
+    (see Section~\ref{module:equalization:eqrls}).
+    The default value is $\lambda=0.999$.
 \end{description}
 
 
-\subsection{{\tt framesyncstats\_s}}
+\subsection{{\tt framesyncstats\_s} (frame synchronizer statistics)}
 \label{module:framing:framesyncstats_s}
-
+When the synchronizer finds a frame and invokes the user-defined
+callback function, a special structure is passed to the callback that
+includes some useful information about the frame.
+This information is contained within the {\tt framesyncstats\_s}
+structure.
+While useful, the information contained within the structure is not
+necessary for decoding and can be ignored by the user.
+Listed below is a description of the {\tt framesyncstats\_} object
+members.
 %
 \begin{description}
 \item[{\tt SNR}]
-    an estimate of the received signal-to-noise ratio in dB.
+    is an estimate of the received signal-to-noise ratio in dB.
+    This estimate is in fact the error vector magnitude of the
+    demodulated header.
+    Depending upon the amount of distortion in the signal
+    (due to timing mismatch, inter-symbol interference, etc.)
+    this estimate will not be particularly accurate.
+    In fact a more accurate estimate of the frame SNR is by using the
+    {\tt rssi} property (see below) and subtracting the noise floor.
 \item[{\tt rssi}]
-    an estimate of the received signal strength in dB.
+    is an estimate of the received signal strength in dB.
+    This is derived from the synchronizer's internal automatic gain
+    control object (see Section~\ref{module:agc}).
 \item[{\tt framesyms}]
     a pointer to an array of the frame symbols (e.g. QPSK) at complex
     baseband before demodulation.
+    This is useful for plotting purposes.
+    This pointer is not static and cannot be used after returning from
+    the callback function.
+    This means that it needs to be copied locally for you to retain the
+    data.
 \item[{\tt num\_framesyms}]
-    the number of elements in {\tt framesyms}.
+    the length of the {\tt framesyms} pointer array.
 \item[{\tt mod\_scheme}]
     the modulation scheme of the frame (see Section~\ref{module:modem}).
 \item[{\tt mod\_bps}]
     the modulation depth (bits per symbol) of the modulation scheme used
     in the frame.
 \item[{\tt check}]
-    the error-detection scheme used in the payload of the frame
-    (see Section~\ref{module:fec}).
+    the error-detection scheme (e.g. cyclic redundancy check)
+    used in the payload of the frame (see Section~\ref{module:fec}).
 \item[{\tt fec0}]
     the inner forward error-correction code used in the payload
     (see Section~\ref{module:fec}).
