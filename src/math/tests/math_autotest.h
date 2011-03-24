@@ -29,17 +29,43 @@
 //
 void autotest_gamma()
 {
-    float tol = 1e-4f;
-    CONTEND_DELTA(liquid_gammaf(0.01f), 99.4325851191505f,  tol);
-    CONTEND_DELTA(liquid_gammaf(0.1f),   9.51350769866873f, tol);
-    CONTEND_DELTA(liquid_gammaf(0.2f),   4.59084371199880f, tol);
-    CONTEND_DELTA(liquid_gammaf(0.5f),   1.77245385090552f, tol);
-    CONTEND_DELTA(liquid_gammaf(1.5f),   0.886226925452758f,tol);
-    CONTEND_DELTA(liquid_gammaf(2.5f),   1.329340388179140f,tol);
-    CONTEND_DELTA(liquid_gammaf(3.2f),   2.42396547993537f, tol);
-    CONTEND_DELTA(liquid_gammaf(4.1f),   6.81262286301667f, tol);
-    CONTEND_DELTA(liquid_gammaf(5.3f),  38.0779764499523f,  tol);
-    //CONTEND_DELTA(liquid_gammaf(12.0f), 39916800.0000000f,  tol);
+    // error tolerance
+    float tol = 1e-5f;
+
+    // test vectors
+    float v[12][2] = {
+        {0.0001f, 9999.42288323161f     },
+        {0.001f,   999.423772484595f    },
+        {0.01f,     99.4325851191505f   },
+        {0.1f,       9.51350769866873f  },
+        {0.2f,       4.59084371199880f  },
+        {0.5f,       1.77245385090552f  },
+        {1.5f,       0.886226925452758f },
+        {2.5f,       1.329340388179140f },
+        {3.2f,       2.42396547993537f  },
+        {4.1f,       6.81262286301667f  },
+        {5.3f,      38.0779764499523f   },
+        {12.0f, 39916800.0000000f       }};
+
+    unsigned int i;
+    for (i=0; i<12; i++) {
+        // extract test vector
+        float z = v[i][0];
+        float g = v[i][1];
+
+        // compute gamma
+        float gamma = liquid_gammaf(z);
+
+        // compute relative error
+        float error = fabsf(gamma-g) / fabsf(g);
+
+        // print results
+        if (liquid_autotest_verbose)
+            printf("  gamma(%12.4e) = %12.4e (expected %12.4e) %12.4e\n", z, gamma, g, error);
+
+        // run test
+        CONTEND_LESS_THAN(error, tol);
+    }
 }
 
 // 
