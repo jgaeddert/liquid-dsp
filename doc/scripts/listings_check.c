@@ -40,8 +40,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"#include <string.h>\n");
     fprintf(fid,"#include <math.h>\n");
     fprintf(fid,"#include <complex.h>\n");
-    fprintf(fid,"#include \"../include/liquid.h\"\n");
-    fprintf(fid,"#include \"../include/liquid.experimental.h\"\n");
+    fprintf(fid,"#include \"liquid.h\"\n");
+    fprintf(fid,"#include \"liquid.experimental.h\"\n");
     fprintf(fid,"\n");
     fprintf(fid,"#include \"%s\"\n", input_filename);
 

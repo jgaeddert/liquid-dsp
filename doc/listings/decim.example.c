@@ -11,8 +11,8 @@ int main() {
     decim_crcf q = decim_crcf_create(D,h,h_len);
 
     // generate input signal and decimate
-    float x[D];                 // input samples
-    float y;                    // output sample
+    float complex x[D];         // input samples
+    float complex y;            // output sample
 
     // run decimator (repeat as necessary)
     {
