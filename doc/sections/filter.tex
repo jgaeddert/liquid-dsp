@@ -809,11 +809,16 @@ are even symmetric, and therefore only $m$ computations are needed.
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firhilb_decim_crcf_freq}
 }
-\caption{{\tt firhilb\_crcf} (Hilbert transform) decimator demonstration. The
-small signal at $f=0.13$ is due to aliasing as a result of imperfect image
-rejection}
-\label{fig:module:filter:firhilb_crcf}
+\caption{{\tt firhilb} (Hilbert transform) decimator demonstration.
+         The small signal at $f=0.13$ is due to aliasing as a result of
+         imperfect image rejection.}
+\label{fig:module:filter:firhilb}
 \end{figure}
+%
+A graphical example of the Hilbert decimator can be seen in
+Figure~\ref{fig:module:filter:firhilb}
+where a real-valued input sinusoid is converted into a complex sinusoid
+with half the number of samples.
 %
 An example code listing is given below.
 Although {\tt firhilb} is a placeholder for both
