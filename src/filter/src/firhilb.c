@@ -63,7 +63,7 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
 {
     // validate firhilb inputs
     if (_m < 2) {
-        fprintf(stderr,"error(), firhilb_create(), filter semi-length (m) must be at least 2\n");
+        fprintf(stderr,"error: firhilb_create(), filter semi-length (m) must be at least 2\n");
         exit(1);
     }
 
@@ -77,16 +77,14 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     f->hq_len = 2*(f->m);
     f->hq = (T *) malloc((f->hq_len)*sizeof(T));
 
-    // compute filter coefficients, alternating sign
+    // compute filter coefficients for half-band filter
+    firdes_kaiser_window(f->h_len, 0.25f, f->As, 0.0f, f->h);
+
+    // alternate sign of non-zero elements
     unsigned int i;
-    float t, h1, h2, s;
-    float beta = kaiser_beta_As(f->As);
     for (i=0; i<f->h_len; i++) {
-        t = (float)i - (float)(f->h_len-1)/2.0f;
-        h1 = sincf(t/2.0f);
-        h2 = kaiser(i,f->h_len,beta,0);
-        s  = sinf(M_PI*t/2);
-        f->h[i] = s*h1*h2;
+        float t = (float)i - (float)(f->h_len-1)/2.0f;
+        f->h[i] *= sinf(0.5f*M_PI*t);
     }
 
     // resample, reverse direction
