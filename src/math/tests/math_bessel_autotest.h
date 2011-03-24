@@ -22,6 +22,26 @@
 #include "liquid.h"
 
 // 
+// AUTOTEST: log Modified Bessel function of the first kind
+//
+void autotest_lnbesseli()
+{
+    float tol = 1e-5f;
+
+    // test lnbesseli(nu,z) with various values for nu and z
+    CONTEND_DELTA( liquid_lnbesseli( 0.0f, 0.1f),    0.00249843923387607,tol );
+    CONTEND_DELTA( liquid_lnbesseli( 0.1f, 7.1f),    5.21933724549090,   tol );
+    CONTEND_DELTA( liquid_lnbesseli( 0.3f, 2.1f),    0.853008130814754,  tol );
+    CONTEND_DELTA( liquid_lnbesseli( 0.9f, 9.3f),    7.23414120004177,   tol );
+    CONTEND_DELTA( liquid_lnbesseli( 1.0f, 0.1f),   -2.99448253386220,   tol );
+    CONTEND_DELTA( liquid_lnbesseli( 1.7f, 0.01f),  -9.44195081753909,   tol );
+    CONTEND_DELTA( liquid_lnbesseli( 1.8f, 1e-3f), -14.1983271298778,    tol );
+    CONTEND_DELTA( liquid_lnbesseli( 1.9f, 8.7f),    6.49469148684252,   tol );
+    CONTEND_DELTA( liquid_lnbesseli( 4.9f, 0.01f), -30.5795429642925,    tol );
+    CONTEND_DELTA( liquid_lnbesseli( 7.4f, 9.3f),    4.33486237261960,   tol );
+}
+
+// 
 // AUTOTEST: Modified Bessel function of the first kind
 //
 void autotest_besseli()
