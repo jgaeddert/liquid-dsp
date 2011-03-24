@@ -60,8 +60,7 @@ Modules: description
     fec: forward error correction (basic), checksum, crc, etc.
     fft: fast Fourier transform (basic), simple implementation
     filter: fir, iir, polyphase, hilbert, interp, decim, design, remez, etc.
-    framing: packet framing, encoding, synchronization
-    interleaver: bit- and symbol-level
+    framing: packet framing, encoding, synchronization, interleaving
     math: transcendental functions not in the C standard library (gamma, besseli, etc.)
     matrix: basic math, lu_decomp, inv, gauss_elim, 
     modem: modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk

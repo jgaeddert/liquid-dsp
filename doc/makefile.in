@@ -136,7 +136,6 @@ SECTIONS :=					\
 	sections/fft.tex			\
 	sections/filter.tex			\
 	sections/framing.tex			\
-	sections/interleaver.tex		\
 	sections/math.tex			\
 	sections/matrix.tex			\
 	sections/modem.tex			\

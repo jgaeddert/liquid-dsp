@@ -1966,9 +1966,8 @@ int  packetizer_decode(packetizer _p,
 
 
 //
-// MODULE : interleaver
+// interleaver
 //
-
 typedef struct interleaver_s * interleaver;
 
 // interleaver type

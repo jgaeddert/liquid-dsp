@@ -952,8 +952,9 @@ void bpacketsync_decode_header(bpacketsync _q);
 void bpacketsync_decode_payload(bpacketsync _q);
 void bpacketsync_reconfig(bpacketsync _q);
 
+
 //
-// MODULE : interleaver
+// interleaver
 //
 
 // structured interleaver object
