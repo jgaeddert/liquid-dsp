@@ -1909,7 +1909,7 @@ typedef struct packetizer_s * packetizer;
 
 // create packetizer object
 //
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
@@ -1921,7 +1921,7 @@ packetizer packetizer_create(unsigned int _dec_msg_len,
 // re-create packetizer object
 //
 //  _p      :   initialz packetizer object
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code

@@ -17,12 +17,15 @@ Included in this module are the {\tt packetizer},
 {\tt frame64}, and {\tt flexframe} structures which
 greatly simplify over-the-air digital communication of raw data.
 
+%
+% packetizer
+%
 \subsection{{\tt packetizer}}
 \label{module:framing:packetizer}
 The \liquid\ packetizer is a structure for abstracting multi-level forward
 error-correction from the user.
 The packetizer accepts a buffer of uncoded data bytes and adds a
-cyclic redundancy check (crc) before applying two levels of forward
+cyclic redundancy check (CRC) before applying two levels of forward
 error-correction and bit-level interleaving.
 The user may choose any two supported FEC schemes (including none) and the
 packetizer object will handle buffering and data management internally,
@@ -41,14 +44,48 @@ best effort of decoding the message.
 The packetizer also allows for re-structuring if the user wishes to change
 error-correction schemes or data lengths.  This is accomplished with the
 {\tt packetier\_recreate()} method.
-
+Listed below is the full interface to the {\tt packetizer} object.
+%
+\begin{description}
+\item[{\tt packetizer\_create(n,crc,fec0,fec1)}]
+    creates and returns a {\tt packetizer} object which accepts $n$
+    uncoded input bytes and uses the specified CRC and bi-level FEC
+    schemes.
+\item[{\tt packetizer\_recreate(q,n,crc,fec0,fec1)}]
+    re-creates an existing {\tt packetizer} object with new parameters.
+\item[{\tt packetizer\_destroy(q)}]
+    destroys an {\tt packetizer} object, freeing all
+    internally-allocated memory.
+\item[{\tt packetizer\_print(q)}]
+    prints the internal state of the {\tt packetizer} object to the
+    standard output.
+\item[{\tt packetizer\_get\_dec\_msg\_len(q)}]
+    returns the specified decoded message length $n$ in bytes.
+\item[{\tt packetizer\_get\_enc\_msg\_len(q)}]
+    returns the fully-encoded message length $k$ in bytes.
+\item[{\tt packetizer\_encode(q,*msg,*pkt)}]
+    encodes the $n$-byte input message storing the result in the
+    $k$-byte encoded output message.
+\item[{\tt packetizer\_encode(q,*pkt,*msg)}]
+    decodes the $k$-byte encoded input message storing the result in the
+    $k$-byte output.
+    The function returns a {\tt 1} if the internal CRC passed
+    and a {\tt 0} if it failed.
+    If no CRC was specified (e.g. {\tt CRC\_NONE}) then a {\tt 1} is
+    always returned.
+\end{description}
+%
 Here is a minimal example demonstrating the packetizer's most basic
 functionality:
+%
 \input{listings/packetizer.example.c.tex}
-
+%
 See also: fec module, {\tt examples/packetizer\_example.c}
 
 
+%
+% bpacket
+%
 \subsection{{\tt bpacket} (binary packet generator/synchronizer)}
 \label{module:framing:bpacket}
 The {\tt bpacketgen} and {\tt bpacketsync} objects realize a pair of
