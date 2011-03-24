@@ -816,10 +816,45 @@ rejection}
 \end{figure}
 %
 An example code listing is given below.
+Although {\tt firhilb} is a placeholder for both
+decimation (real to complex) and
+interpolation (complex to real),
+separate objects shoudl be used for each task.
 %
 \input{listings/firhilb.example.c.tex}
 %
-For more detailed examples, refer to the files
+Listed below is the full interface to the {\tt firhilb} family of
+objects.
+%
+\begin{description}
+\item[{\tt firhilb\_create(m,As)}]
+    creates a {\tt firhilb} object with a filter semi-length of $m$
+    samples (equal to the delay)
+    and a stop-band attenuation of $A_s$~dB.
+    The internal filter has a length $4m+1$ coefficients and is designed
+    using the {\tt firdes\_kaiser\_window()} method
+    (see Section~\ref{module:filter:firdes:window} on FIR filter design
+    using windowing functions).
+\item[{\tt firhilb\_destroy(q)}]
+    destroys the Hilbert transform object, freeing all
+    internally-allocated memory.
+\item[{\tt firhilb\_print(q)}]
+    prints the internal properties of the object to the standard
+    output.
+\item[{\tt firhilb\_clear(q)}]
+    clears the internal transform buffers.
+\item[{\tt firhilb\_decim\_execute(q,*x,*y)}]
+    executes the transform as a decimator, converting a 2-sample input
+    array $\vec{x}$ of real values into a single complex output value
+    $y$.
+\item[{\tt firhilb\_interp\_execute(q,x,*y)}]
+    executes the transform as a decimator, converting a single complex
+    input sample $x$ into a two real-valued samples stored in the output
+    array $\vec{y}$.
+\end{description}
+%
+For more detailed examples on Hilbert transforms in \liquid,
+refer to the files
 {\tt examples/firhilb\_decim\_example.c} and
 {\tt examples/firhilb\_interp\_example.c}
 located within the main \liquid\ project directory.
