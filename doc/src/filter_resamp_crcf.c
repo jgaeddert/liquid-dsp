@@ -7,7 +7,7 @@
 #include <complex.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME  "figures.gen/filter_resamp_crcf.gnu"
@@ -56,6 +56,9 @@ int main() {
         resamp_crcf_execute(f, x[i], &y[ny], &num_written);
         ny += num_written;
     }
+
+    printf(" %u / %u\n", ny, nx);
+
     // clean up allocated objects
     resamp_crcf_destroy(f);
 

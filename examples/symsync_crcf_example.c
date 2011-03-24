@@ -41,6 +41,7 @@ int main(int argc, char*argv[]) {
     unsigned int num_filters=32;
     unsigned int num_symbols=1024;
     float SNRdB = 30.0f;
+    liquid_rnyquist_type ftype = LIQUID_RNYQUIST_ARKAISER;
 
     float bt=0.02f;     // loop filter bandwidth
     float tau=0.2f;     // fractional symbol offset
@@ -128,7 +129,7 @@ int main(int argc, char*argv[]) {
     // design interpolating filter
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
-    design_rrc_filter(k,m,beta,dt,h);
+    design_rnyquist_filter(ftype,k,m,beta,dt,h);
     interp_crcf q = interp_crcf_create(k,h,h_len);
     for (i=0; i<num_symbols; i++) {
         interp_crcf_execute(q, s[i], &x[n]);
@@ -172,7 +173,7 @@ int main(int argc, char*argv[]) {
     // create and run symbol synchronizer
     //
 
-    symsync_crcf d = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC, k, m, beta, num_filters);
+    symsync_crcf d = symsync_crcf_create_rnyquist(ftype, k, m, beta, num_filters);
     symsync_crcf_set_lf_bw(d,bt);
 
     unsigned int num_symbols_sync=0;

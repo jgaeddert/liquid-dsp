@@ -10,7 +10,7 @@
 #include <getopt.h>
 #include <assert.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 // print usage/help message

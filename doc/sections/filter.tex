@@ -369,7 +369,7 @@ Notice that $H(z)$ is now a series of cascaded second-order IIR filters.
 The `sos' form is practical when filters are designed from analog prototypes
 where the poles and zeros are known.
 \liquid\ implements second-order sections efficiently with the internal
-{\tt iirfiltsos\_xxxt} object.
+{\tt iirfiltsos\_crcf} family of objects.
 For a cascaded second-order section IIR filter, use
 {\tt iirfilt\_crcf\_create\_sos(B,A,n)}.
 %
@@ -454,15 +454,29 @@ $z$-transform to convert to the digital domain, then transforming to the
 appropriate band type (e.g. high pass) if necessary.
 Externally, the user may abstract the entire process by using the
 {\tt iirdes()} method.
+Furthermore, if the end result is to create a filter {\em object} as
+opposed to computing the coefficients themselves, the
+{\tt iirfilt\_crcf\_create\_prototype()} method can be used to generate
+the object directly
+(see Section~\ref{module:filter:iirfilt}).
 
 \subsubsection{{\tt iirdes()}, the simplified method}
 \label{module:filter:iirdes:iirdes}
-The {\tt iirdes()} method implements...
-
-\begin{verbatim}
-iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, _B, _A);
-\end{verbatim}
-
+The {\tt iirdes()} method designs an IIR filter's coefficients
+from one of the four major types
+(Butterworth, Chebyshev, elliptic/Cauer, and Bessel)
+with as minimal an interface as possible.
+The user specifies the filter prototype, order, cutoff frequency, and
+other parameters as well as the resulting filter structure
+(regular or second-order sections),
+and the function returns the appropriate filter coefficients that meet
+that design.
+Specifically, the interface is
+%
+\begin{Verbatim}[fontsize=\small]
+    iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, *_B, *_A);
+\end{Verbatim}
+%
 \begin{itemize}
 \item[{\tt \_ftype}]
     is the analog filter prototype, e.g. {\tt LIQUID\_IIRDES\_BUTTER}
@@ -495,11 +509,16 @@ iirdes(_ftype, _btype, _format, _n, _fc, _f0, _Ap, _As, _B, _A);
 
 \subsubsection{internal description}
 \label{module:filter:iirdes:internal}
-The internal IIR filter design process is described here:
+While the user only needs to specify the filter parameters,
+the internal procedure for computing the coefficients is somewhat
+complicated.
+Listed below is the step-by-step process for \liquid's IIR filter design
+procedure.
+%
 \begin{enumerate}
 \item Use {\tt butterf()}, {\tt cheby1f()}, {\tt cheby2f()}, {\tt ellipf()},
-      {\tt besself()} to design a low-pass analog prototype in terms of
-      complex zeros, poles, and gain.
+      {\tt besself()} to design a low-pass analog prototype $H_a(s)$
+      in terms of complex zeros, poles, and gain.
       The {\tt azpkf} extension stands for ``analog zeros, poles, gain
       (floating-point).''
 
@@ -516,9 +535,12 @@ The internal IIR filter design process is described here:
       center frequency if designing a band-pass or band-stop filter) using the
       {\tt iirdes\_freqprewarp()} method.
 
-\item Convert the low-pass analog prototype to its digital equivalent (also in
-      terms of zeros, poles, and gain) using the bilinear $z$-transform using
-      the {\tt bilinear\_zpkf()} method.
+\item Convert the low-pass analog prototype $H_a(s)$ to its digital
+      equivalent $H_d(z)$ (also in terms of zeros, poles, and gain)
+      using the bilinear $z$-transform using the {\tt bilinear\_zpkf()}
+      method.
+      This maps the analog zeros/poles/gain into digital
+      zeros/poles/gain.
 
 \item Transform the low-pass digital prototype to high-pass, band-pass, or
       band-stop using the {\tt iirdes\_dzpk\_lp2bp()} method.
@@ -532,28 +554,30 @@ The internal IIR filter design process is described here:
     \end{description}
 
 \item Transform the digital $z/p/k$ form of the filter to one of the two forms:
-    \begin{itemize}
-    \item[tf]  typical transfer function for digital iir filters of the form
+    \begin{description}
+    \item[TF]  typical transfer function for digital iir filters of the form
         $B(z)/A(z)$, {\tt iirdes\_dzpk2tff()}
-    \item[sos] second-order sections form : $\prod_k{ B_k(z)/A_k(z) }$, 
+    \item[SOS] second-order sections form : $\prod_k{ B_k(z)/A_k(z) }$, 
         {\tt iirdes\_dzpk2sosf()}.
         This is the preferred method.
-    \end{itemize}
+    \end{description}
 
-\item Create the filter object (e.g. iirfilt) from the resulting
-      structure using either {\tt iirfilt\_crcf\_create()} or
-      {\tt iirfilt\_crcf\_create\_sosf()}
+%\item Create the filter object (e.g. iirfilt) from the resulting
+%      structure using either {\tt iirfilt\_crcf\_create()} or
+%      {\tt iirfilt\_crcf\_create\_sosf()}
 
 \end{enumerate}
-
+%
 %An extensive example is given in {\tt sandbox/iirdes\_example.c} while
 %{\tt examples/iirdes\_example.c} gives the simplified interface.
-A simplified example is given in {\tt examples/iirdes\_example.c}.
+A simplified example for this procedure is given in
+{\tt examples/iirdes\_example.c}.
 
 \subsubsection{{\tt iirdes} filter types}
 \label{module:filter:iirdes:types}
 There are currently five low-pass prototypes available for inifinite impulse
-response filter design in \liquid,
+response filter design in \liquid, as described below:
+%
 \begin{description}
 \item[{\tt LIQUID\_IIRDES\_BUTTER}]
     is a Butterworth filter.
@@ -571,7 +595,7 @@ response filter design in \liquid,
     Note that this results in a set of complex conjugate pairs such that
     $(-1)^n s_0 s_1 \cdots s_{n-1} = 1$.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:butter}
+    Figure~\ref{fig:module:filter:butter}
 \item[{\tt LIQUID\_IIRDES\_CHEBY1}]
     is a Chebyshev Type-I filter.
     This design uses Chebyshev polynomials to create a filter with a sharper
@@ -579,7 +603,7 @@ response filter design in \liquid,
     passband.
     The analog prototype interface is {\tt cheby1\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:cheby1}
+    Figure~\ref{fig:module:filter:cheby1}
 \item[{\tt LIQUID\_IIRDES\_CHEBY2}]
     is a Chebyshev Type-II filter.
     This design is similar to that of Chebyshev Type-I, except that the
@@ -588,7 +612,7 @@ response filter design in \liquid,
     equiripple behavior in the stopband, rather than the passband.
     The analog prototype interface is {\tt cheby2\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:cheby2}
+    Figure~\ref{fig:module:filter:cheby2}
 \item[{\tt LIQUID\_IIRDES\_ELLIP}]
     is an elliptic (Cauer) filter.
     This design allows ripples in both the passband and stopbands to create a
@@ -600,7 +624,7 @@ response filter design in \liquid,
     \cite{Orfanidis:2006}.
     The analog prototype interface is {\tt ellip\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:ellip}
+    Figure~\ref{fig:module:filter:ellip}
 \item[{\tt LIQUID\_IIRDES\_BESSEL}]
     is a Bessel filter.
     This is an all-pole analog design that has a maximally flat group delay
@@ -612,7 +636,7 @@ response filter design in \liquid,
     \cite{Orchard:1965}.
     The analog prototype interface is {\tt bessel\_azpkf()}.
     An example of a digital filter response can be found in
-    figure~\ref{fig:module:filter:bessel}
+    Figure~\ref{fig:module:filter:bessel}
 \end{description}
 
 % 
@@ -622,8 +646,8 @@ response filter design in \liquid,
 \label{module:filter:iirdes:bilinear}
 The bilinear $z$-transform converts an analog prototype to its digital
 counterpart.
-Given a continuous time analog transfer function in zeros/poles/gain form
-(``zpk''),
+Given a continuous time analog transfer function in zeros/poles/gain
+form (``zpk'') with $n_z$ zeros and $n_p$ poles
 %\[
 %    H(s) =  \frac{
 %                r_0 + r_1 s + r_2 s^2 + \cdots + r_n s^n
@@ -631,88 +655,174 @@ Given a continuous time analog transfer function in zeros/poles/gain form
 %                q_0 + q_1 s + q_2 s^2 + \cdots + q_m s^m
 %            }
 %\]
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirdes:Ha}
     H_a(s) = k_a
             \frac{
-                (s-z_{a0})(s-z_{a1})\cdots(s-z_{an-1})
+                (s-z_{a0})(s-z_{a1})\cdots(s-z_{an_z-1})
             }{
-                (s-p_{a0})(s-p_{a1})\cdots(s-p_{am-1})
+                (s-p_{a0})(s-p_{a1})\cdots(s-p_{an_p-1})
             }
-\]
+\end{equation}
+%
 the bilinear $z$-transform converts $H_a(s)$ into the discretized transfer
 function $H_d(z)$ by mapping the $s$-plane onto the $z$-plane with the
 approximation
-\[
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear}
     s \approx \frac{2}{T}
               \frac{1-z^{-1}}{1 + z^{-1}}
-\]
+\end{equation}
+%
 This maps $H_a(0) \rightarrow H_d(0)$ and
-$H_a(\infty) \rightarrow H_d(\omega_s/2)$, however we are free to choose the
-pre-warping factor which maps the cutoff frequency $\omega_c$.
-\[
+$H_a(\infty) \rightarrow H_d(\omega_s/2)$, however we are free to choose
+the pre-warping factor which maps the cutoff frequency $\omega_c$.
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_prewarp}
     s \rightarrow \omega_c
                   \cot\left(\frac{\pi \omega_c}{\omega_s}\right)
                   \frac{1-z^{-1}}{1+z^{-1}}
-\]
-Substituting this into $H_a(s)$ gives the discrete-time transfer function
-\[
+\end{equation}
+%
+Substituting this into $H_a(s)$ gives the discrete-time transfer
+function
+%
+\begin{equation}
+\label{eqn:filter:iirdes:H}
     H(z) = k_a \frac{
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{a0}\right)
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{a1}\right)
             \cdots
-            \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{an-1}\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-z_{an_z-1}\right)
            }{
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{a0}\right)
             \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{a1}\right)
             \cdots
-            \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{am-1}\right)
+            \left(m\frac{1-z^{-1}}{1+z^{-1}}-p_{an_p-1}\right)
            }
-\]
+\end{equation}
+%
 where $m=\omega_c \cot\left(\pi \omega_c / \omega_s\right)$ is the
 frequency pre-warping factor, computed in \liquid\ via the method
 {\tt iirdes\_freqprewarp()}.
-Multiplying both the numerator an denominator by $(1+z^{-1})^{m-1}$...
-...transforming the the analog zeros ($z_k$), poles ($p_k$), and gain ($k$) into
-their digital equivalents. [reword]
-...maps the analog zeros and poles $\{z_{ai},p_{ai}\}$
-to digital $\{z_{i},p_{i}\}$...
-\[
+Multiplying both the numerator an denominator by $(1+z^{-1})^{n_p}$ and
+applying some algebraic manipulation results in the digital filter
+%
+\begin{equation}
+\label{eqn:filter:iirdes:Hd}
     H_d(s) = k_d
             \frac{
-                (1-z_{0}z^{-1})(1-z_{1}z^{-1})\cdots(1-z_{n-1}z^{-1})
+                (1-z_{d0}z^{-1})(1-z_{d1}z^{-1})\cdots(1-z_{dn-1}z^{-1})
             }{
-                (1-p_{0}z^{-1})(1-p_{1}z^{-1})\cdots(1-p_{n-1}z^{-1})
+                (1-p_{d0}z^{-1})(1-p_{d1}z^{-1})\cdots(1-p_{dn-1}z^{-1})
             }
-\]
+\end{equation}
 %
-\liquid\ computes all of this with the {\tt bilinear\_zpk()} method.
+The {\tt bilinear\_zpk()} method in \liquid\ transforms
+the the analog zeros ($z_{ak}$),
+poles ($p_{ak}$), and gain ($H_0$) into
+their digital equivalents
+($z_{dk}$, $p_{dk}$, $G_0$).
+For a filter with $n_z$ analog zeros $z_{ak}$
+the digital zeros $z_{dk}$ are computed as
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_zeros}
+    z_{dk} =
+        \begin{cases}
+        \frac{1 + m z_{ak}}{1 - m z_{ak}}   & k < n_z \\
+        -1                                  & \text{otherwise}
+        \end{cases}
+\end{equation}
+%
+where $m$ is the pre-warping factor.
+For a filter with $n_p$ analog poles $p_{ak}$
+the digital poles $p_{dk}$ are computed as
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_poles}
+    p_{dk} = \frac{1 + m p_{ak}}{1 - m p_{ak}}
+\end{equation}
+%
+Keeping in mind that an analog filter's order is defined by its number
+of poles,
+the digital gain can be computed as
+%
+\begin{equation}
+\label{eqn:filter:iirdes:bilinear_gain}
+    G_0 = H_0 \prod_{k=0}^{n_p-1}{ \frac{1 - p_{dk}}{1 - z_{dk}} }
+\end{equation}
+%
 
 % 
 % filter transformations
 %
 \subsubsection{Filter transformations}
 \label{module:filter:iirdes:transformations}
+%
+The prototype low-pass digital filter can be converted into a
+high-pass, band-pass, or band-stop filter using a combinatio of the
+following filter transformations in \liquid:
+%
 \begin{description}
-\item[{\tt iirdes\_dzpk\_lp2hp()}]
-    Converts a low-pass prototype to a high-pass prototype.
-\item[{\tt iirdes\_dzpk\_lp2bp()}]
-    Converts a low-pass prototype to a band-pass prototype.
+\item[{\tt iirdes\_dzpk\_lp2hp(*\_zd,*\_pd,\_n,*\_zdt,*\_pdt)}]
+    Converts a low-pass digital prototype $H_d(z)$ to a high-pass
+    prototype.
+    This is accomplished by transforming the $n$
+    zeros and poles
+    (represented by the input arrays {\tt \_zd} and {\tt \_pd})
+    into $n$ transformed zeros and poles
+    (represented by the output arrays {\tt \_zdt} and {\tt \_pdt}).
+\item[{\tt iirdes\_dzpk\_lp2bp(*\_zd,*\_pd,\_n,*\_zdt,*\_pdt)}]
+    Converts a low-pass digital prototype $H_d(z)$ to a band-pass
+    prototype.
+    This is accomplished by transforming the $n$
+    zeros and poles
+    (represented by the input arrays {\tt \_zd} and {\tt \_pd})
+    into $2n$ transformed zeros and poles
+    (represented by the output arrays {\tt \_zdt} and {\tt \_pdt}).
 \end{description}
+%
+%   LP: LP  ->  LP
+%   HP: LP  ->  HP
+%   BP: LP  ->  BP
+%   BS: LP  ->  HP  ->  BP
 
-...second-order sections form:
-\[
-    H_d(z) = H_0
+% 
+% filter coefficient computation
+%
+\subsubsection{Filter Coefficient Computation}
+\label{module:filter:iirdes:coefficients}
+%
+The digital filter defined by (\ref{eqn:filter:iirdes:Hd}) can be
+expanded to fit the familiar IIR transfer function as in
+(\ref{eqn:filter:iirfilt:Hz}).
+This can be accomplished using the {\tt iirdes\_dzpk2tff()} method.
+%
+Alternatively, the filter can be written as a set of cascaded
+second-order IIR filters:
+%
+\begin{equation}
+\label{eqn:filter:iirfilt:Hd:sos}
+    H_d(z) = G_0
              \left[
-                G_0 \frac{1 + z^{-1}}
-                         {1 - p_0 z^{-1}}
+                \frac{1 + z^{-1}}
+                     {1 - p_0 z^{-1}}
              \right]^r
              \prod_{k=1}^{L} {\left[
                 G_i \frac{(1-z_iz^{-1})(1-z_i^*z^{-1})}
                          {(1-p_iz^{-1})(1-p_i^*z^{-1})}
              \right]}
-\]
-where $r=0$ when the filter order is odd, $r=1$ when the filter order is even,
-and $L=(n-r)/2$.
+\end{equation}
+%
+where $r=0$ when the filter order is odd, $r=1$ when the filter order is
+even, and $L=(n-r)/2$.
+This can be accomplished using the {\tt iirdes\_dzpk2sosf()} method and
+is preferred over the traditional transfer function design for stability
+reasons.
 
 % Butterworth IIR filter design
 \begin{figure}
@@ -793,13 +903,16 @@ In fact, any FIR filter design using a windowed $\sinc$ function with
 periodicity $f_c=1/2$ will generate a Nyquist half-band filter (zero
 inter-symbol interference).
 This is because \cite[(4.6.3)]{Vaidyanathan:1993}
-\[
+%
+\begin{equation}
+\label{eqn:filter:resamp:h}
     h(Mn) = 
         \begin{cases}
         c & n=0 \\
         0 & \text{otherwise}
         \end{cases}
-\]
+\end{equation}
+%
 which holds for $h(n) = w(n) \sin(\pi n/M) / (\pi n)$ since
 $\sin(\pi n/M) = 0$ for $n=$ any non-zero multiple of M.
 Additionally, $M=2$ is the special case of half-band filters.
@@ -812,13 +925,18 @@ The {\tt resamp2} object in \liquid\ uses a Kaser window for $w(n)$ for
 several reasons, but in particular because it is nearly optimum, and it is
 easy to trade side-lobe attenuation for transition bandwidth.
 
+
+% 
+% resamp
+%
 \subsection{{\tt resamp} (arbitrary resampler)}
-For arbitrary (e.g. irrational) resampling ratios, the {\tt resamp} object is
-the ideal solution.
-It makes no restrictions on the output-to-input resampling ratio (e.g.
-irrational values are fair game).
-The arbitrary resampler uses a polyphase filter bank for interpolation between
-available input sample points.
+\label{module:filter:resamp}
+For arbitrary (e.g. irrational) resampling ratios, the {\tt resamp}
+object is the ideal solution.
+It makes no restrictions on the output-to-input resampling ratio
+(e.g. irrational values are fair game).
+The arbitrary resampler uses a polyphase filter bank for interpolation
+between available input sample points.
 
 Because the number of outputs for each input is not fixed, the interface needs
 some explaining.
@@ -838,16 +956,19 @@ Below is a code example demonstrating the {\tt resamp} interface.
 Notice that the {\tt resamp\_crcf\_execute()} method also returns the number
 of samples written to the buffer.
 This number will never exceed $\lceil r \rceil$.
-
+%
 \input{listings/resamp_crcf.example.c.tex}
-
-Figure~\ref{fig:module:filter:resamp_crcf} gives a graphical depiction of the
-arbitrary resampler, in both the time and frequency domains.
+%
+Figure~\ref{fig:module:filter:resamp_crcf} gives a graphical depiction
+of the arbitrary resampler, in both the time and frequency domains.
 The time series has been aligned (shifted by the filter delay and scaled by
 the resampling rate) to show equivalence.
 Additionally, the signal's power spectrum has been scaled by $r$ to reflect
 the change in sampling rate.
-%Notice how the input and output spectra align, despite its
+In the example the input array size is 187 samples;
+the resampler produced 133 output samples which yields a true resampling
+rate of $\dot{r} = 133/187 \approx 0.71123$ which is close to the target
+rate of $r = 1/\sqrt{2} \approx 0.70711$.
 
 It is important to understand how filter design impacts the performance of the
 resampler.
@@ -857,12 +978,41 @@ This is apparent in the power spectral density plot in
 figure~\ref{fig:module:filter:resamp_crcf} which shows very little aliasing on
 the output signal.
 Aliasing can be reduced by increasing the filter length at the cost of
-additional computational complexity.
+additional computational complexity;
+additionally the number of filters in the bank can be increased to
+improve timing resolution between samples.
 For synchronization of digital receivers, it is always good practice to
 preceed the resampler with an anti-aliasing filter to remove out-of-band
 interference.
 
-See also: {\tt resamp2}, {\tt firpfb}, {\tt symsync},
+Listed below is the full interface to the {\tt resamp} family of
+objects.
+While each method is listed for {\tt resamp\_crcf}, the same
+functionality applies to {\tt resamp\_rrrf} and {\tt resamp\_cccf}.
+%
+\begin{description}
+\item[{\tt resamp\_crcf\_create(r,m,fc,As,N)}]
+    creates a {\tt resamp} object with a resampling rate $r$,
+    a nominal filter delay of $m$ samples, a cutoff frequency of $f_c$,
+    a stop-band suppression of $A_s$~dB, using a polyphase filterbank
+    with $N$ filters.
+\item[{\tt resamp\_crcf\_destroy(q)}]
+    destroys the resampler, freeing all internally-allocated memory.
+\item[{\tt resamp\_crcf\_print(q)}]
+    prints the internal properties of the resampler to the standard
+    output.
+\item[{\tt resamp\_crcf\_reset(q)}]
+    clears the internal resampler buffers.
+\item[{\tt resamp\_crcf\_setrate(q,r)}]
+    sets the resampling rate to $r$.
+\item[{\tt resamp\_crcf\_execute(q,x,*y,*nw)}]
+    executes the resampler for an input sample $x$,
+    storing the resulting samples in the output array $y$
+    specifying the number of samples written as $n_w$.
+    The output buffer $y$ needs to be at least $\lceil r \rceil$.
+\end{description}
+%
+{\em See also}: {\tt resamp2}, {\tt firpfb}, {\tt symsync},
 {\tt examples/resamp\_crcf\_example.c}
 
 \begin{figure}
@@ -873,60 +1023,191 @@ See also: {\tt resamp2}, {\tt firpfb}, {\tt symsync},
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_resamp_crcf_psd}
 }
-\caption{{\tt resamp\_crcf} (arbitrary resampler) demonstration,
-$r=1/\sqrt{2}\approx0.7071$}
+\caption{
+    {\tt resamp\_crcf} (arbitrary resampler) demonstration,
+    $r = 1/\sqrt{2} \approx 0.7071$}
 \label{fig:module:filter:resamp_crcf}
 \end{figure}
 
+
+% 
+% symsync
+%
 \subsection{{\tt symsync} (symbol synchronizer)}
-The {\tt symsync} object is a multi-rate symbol timing synchronizer useful for
-locking a received digital signal to the receiver's clock.
+\label{module:filter:symsync}
+The {\tt symsync} object is a multi-rate symbol timing synchronizer
+useful for locking a received digital signal to the receiver's clock.
 It is effectively the same as the {\tt resamp} object, but includes an
-internal control mechanism for tracking to timing phase and frequency offsets.
+internal control mechanism for tracking to timing phase and frequency
+offsets.
 The filter structure is a polyphase representation of a Nyquist matched
 filter.
+%
+The instantaneous timing error is computed from the maximum likelihood
+timing error detector \cite{Mengali:1997} which relies on the derivative
+to the matched filter impulse response.
+\liquid\ internally computes polyphase filter banks for both the
+matched and derivative-matched filters.
+If the output of the matched filter at sample $k$ is $y(k)$
+and the output of the derivative matched filter is $\dot{y}(k)$
+then the instantaneous timing estimate is
+%
+\begin{equation}
+\label{eqn:filter:symsync:timing_error}
+    e_\tau(k) = \tanh\Bigl( y(k)\dot{y}(k) \Bigr)
+\end{equation}
+%
+This timing error estimate has significant improvements over
+heuristic-based estimates such as the popular Mueller and M\"{u}ller
+timing recovery scheme \cite{Mueller:1976}. % relies on sample spacing
+Applying a simple first-order recursive loop filter yields the averaged
+timing estimate
+%
+\begin{equation}
+\label{eqn:filter:symsync:timing_error_filtered}
+    \Delta\tau(k) = \beta e_\tau(k) + \alpha\Delta\tau(k-1)
+\end{equation}
+%
+where
+$\alpha = 1-\omega_\tau$ and $\beta = 0.22\omega_\tau$
+are the loop filter coefficients for a given filter bandwidth
+$\omega_\tau$.
+While these coefficients are certainly not optimized,
+it is important to understand the difficulty in computing loop filter
+coefficients when a delay is introduced into a control loop.
+This delay is the result of the matched filter itself and can cause
+instability with traditional phase-locked loop filter designs.
+%
+Internally the {\tt symsync} object uses the principles of the
+{\tt resamp} object
+(arbitrary resampler, see Section~\ref{module:filter:resamp})
+for resampling the signal|actually decimating to one sample per symbol.
+Its internal control loop dynamically adjusts the rate $r$ such that
+the timing phase of the receiver is aligned with the incoming signal's
+symbol timing.
 
-\subsubsection{Theory}
-
-\subsubsection{Loop Architecture}
-Timing error:
-\[
-    e_\tau(nT_s) = \tanh\left( y(nT_s)\dot{y}(nT_s) \right)
-\]
-Filtered timing error:
-\[
-    \hat{e}_\tau(n) = \beta e_\tau(n) + \alpha \hat{e}_\tau(n-1)
-\]
-For a given bandwidth $b$, the loop filter coefficients are computed as
-$\alpha = 1-b$ and $\beta = 0.22b$.
-While certainly not optimized, it is important to understand the difficulty in
-computing loop filter coefficients when a delay is introduced into the control
-loop.
-This delay is a by-product of the matched filter itself, in the sense that the
-timing error estimate $e_\tau(n)$ is computed on $k m T_s$...
-
-\subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
+Below is a code example demonstrating the {\tt symsync} interface.
+Notice that the {\tt symsync\_crcf\_execute()} method also returns the
+number of symbols written to the output buffer.
+%
+\input{listings/symsync_crcf.example.c.tex}
+%
+Listed below is the full interface to the {\tt symsync} family of
+objects.
+While each method is listed for {\tt symsync\_crcf}, the same
+functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
+%
 \begin{description}
-\item[{\tt firfarrow\_crcf\_create()}]
-    creates a {\tt firfarrow} object.
-\item[{\tt firfarrow\_crcf\_destroy()}]
+\item[{\tt symsync\_crcf\_create(k,N,*h,h\_len)}]
+    creates a {\tt symsync} object from a prototype filter $h$ of length
+    $h_{len}$ and having $k$ samples per symbol.
+    The internal object restructures the input filter into a polyphase
+    prototype having $N$ filters.
+\item[{\tt symsync\_crcf\_create\_rnyquist(ftype,k,m,beta,N)}]
+    creates a {\tt symsync} object from a square-root Nyquist protoype
+    of type {\tt ftype} (see Section~\ref{module:filter:firdes:rnyquist}
+    for a description of available square-root Nyquist filters in
+    \liquid).
+    The generated filter has $k$ samples per symbol,
+    a nominal delay of $m$ symbols, and an excess bandwidth factor of
+    $\beta$.
+    The internal polyphase filter bank has $N$ filters.
+\item[{\tt symsync\_crcf\_destroy(q)}]
+    destroys the symbol synchronizer, freeing all internally-allocated
+    memory.
+\item[{\tt symsync\_crcf\_print(q)}]
+    prints the internal properties of the symbol syncrhonizer object to
+    the standard output.
+\item[{\tt symsync\_crcf\_clear(q)}]
+    resets the symbol synchronizer, clearing the internal buffers and
+    filter state.
+\item[{\tt symsync\_crcf\_set\_lf\_bw(q,w)}]
+    sets the internal bandwidth of the loop filter to $\omega$.
+\item[{\tt symsync\_crcf\_lock(q)}]
+    locks the symbol synchronizer such that it will still decimate the
+    incoming signal but will not update its internal state.
+\item[{\tt symsync\_crcf\_unlock(q)}]
+    unlocks the symbol synchronizer, resuming its ability to track to
+    the input signal.
+\item[{\tt symsync\_crcf\_execute(q,*x,nx,*y,*ny)}]
+    executes the resampler for an input array $\vec{x}$ with $n_x$
+    samples,
+    storing the resulting samples in the output array $y$
+    specifying the number of samples written as $n_y$.
+    %The output buffer $y$ needs to be at least $\lceil r \rceil$.
+\item[{\tt symsync\_crcf\_get\_tau(q)}]
+    returns the current timing estimate (fractional sampling interval)
+    of the object.
+\end{description}
+%
+
+
+% 
+% firfarrow
+%
+\subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
+\label{module:filter:firfarrow}
+\liquid\ implements non-recursive Farrow filters using the
+{\tt firfarrow} family of objects.
+The Farrow structure is convenient for varying the group delay of a
+filter.
+The filter coefficients themselves are not stored explicitly, but are
+represented as a set of polynomials each with an order $Q$.
+The coefficients can be computed dynamically from the polynomial by
+arbitrarily specifying the fractional sample delay $\mu$.
+%
+Listed below is the full interface to the {\tt firfarrow} family of
+objects.
+While each method is listed for {\tt firfarrow\_crcf}, the same
+functionality applies to {\tt firfarrow\_rrrf}.
+%
+\begin{description}
+\item[{\tt firfarrow\_crcf\_create(N,Q,fc,As)}]
+    creates a {\tt firfarrow} object with $N$ coefficients using a
+    polynomial of order $Q$ with a cutoff frequency $f_c$ and as
+    stop-band attenuation of $A_s$~dB.
+\item[{\tt firfarrow\_crcf\_destroy(q)}]
     destroy object, freeing all internally-allocated memory.
-\item[{\tt firfarrow\_crcf\_clear()}]
+\item[{\tt firfarrow\_crcf\_clear(q)}]
     clear filter internal memory buffer.
     This does not reset the delay.
-\item[{\tt firfarrow\_crcf\_print()}]
+\item[{\tt firfarrow\_crcf\_print(q)}]
     prints the filter's internal state to {\tt stdout}.
-\item[{\tt firfarrow\_crcf\_push()}]
-    push a single sample into the filter's internal buffer.
-\item[{\tt firfarrow\_crcf\_set\_delay()}]
-    set fractional delay of filter.
-\item[{\tt firfarrow\_crcf\_execute()}]
-    computes sample output.
-\item[{\tt firfarrow\_crcf\_get\_length()}]
+\item[{\tt firfarrow\_crcf\_push(q,x)}]
+    push a single sample $x$ into the filter's internal buffer.
+\item[{\tt firfarrow\_crcf\_set\_delay(q,mu)}]
+    set fractional delay $\mu$ of filter.
+\item[{\tt firfarrow\_crcf\_execute(q,*y)}]
+    computes the output sample, storing the result in $y$.
+\item[{\tt firfarrow\_crcf\_get\_length(q)}]
     returns length of the filter (number of taps)
-\item[{\tt firfarrow\_crcf\_get\_coefficients()}]
-    returns the internal filter coefficients.
+\item[{\tt firfarrow\_crcf\_get\_coefficients(q,*h)}]
+    returns the internal filter coefficients, storing the result in the
+    output vector $\vec{h}$.
+\item[{\tt firfarrow\_crcf\_freqresponse(q,fc,*H)}]
+    computes the complex response $H$ of the filter at the normalized
+    frequency $f_c$.
+\item[{\tt firfarrow\_crcf\_groupdelay(q,fc)}]
+    returns the group delay of the filter at the normalized
+    frequency $f_c$.
 \end{description}
+%
+Listed below is an example of the {\tt firfarrow} object's
+interface.
+%
+\input{listings/firfarrow_crcf.example.c.tex}
+%
+An example of the Farrow filter's group delay can be found in
+Figure~\ref{fig:module:filter:firfarrow_groupdelay}.
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firfarrow_groupdelay}
+\caption{{\tt firfarrow\_crcf} (Farrow filter) group delay example
+    with $N=19$, $Q=5$, $f_c=0.45$, and $A_s=60$~dB.}
+\label{fig:module:filter:firfarrow_groupdelay}
+\end{figure}
+%
 
 
 % 
@@ -944,53 +1225,122 @@ and some useful miscellaneous functions.
 
 \subsubsection{Window prototype}
 \label{module:filter:firdes:window}
-Basic idea: apply windowing function to truncated sinc
-%
+The ideal low-pass filter has a rectangular response in the frequency
+domain and an infinite $\sin(t)/t$ response in the time domain.
+Because all time-dependent filters must be causal, this type of filter
+is unrealizable;
+furthermore, truncating its response results in poor pass-band ripple
+stop-band rejection.
+An improvement over truncation is offered by use of a band-limiting
+window.
+Let the finite impulse response of a filter be defined as
+% 
 \begin{equation}
-    h(t) = w_n(t) \sinc(\Delta f t)
+\label{eqn:filter:firdes:windowed_sinc}
+    h(n) = h_i(n) w(n)
 \end{equation}
 %
-where $w_n(t)$ is chosen from...
-%
-The Kaiser window is defined as...
-%
-\begin{equation}
-\label{eqn:kaiser_window}
-    w[n] = \frac{
-        I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right)
-    }{
-        I_0\left(\pi\beta\right)
-    }
-\end{equation}
-%
-where $I_\nu(z)$ is the modified Bessel function of the first kind of order
-$\nu$.
+where $w(n)$ is a time-limited symmetric window and
+$h_i(n)$ is the impulse response of the ideal filter with a cutoff
+frequency $\omega_c$, viz.
 %
 \begin{equation}
-\label{eqn:besseli_infinite_sum}
-    I_\nu(z) = \sum_{k=0}^{\infty}{
-        \frac{
-            \left(\frac{1}{4}z^2\right)^k
-        }{
-            k!\Gamma(k+\nu+1)
-        }
-    }
+\label{eqn:filter:firdes:sinc}
+    h_i(n) =    \frac{\omega_c}{\pi}
+                \left(
+                    \frac{\sin\omega_c n}{\omega_c n}
+                \right),
+                \,\,\,\,
+                \forall n
 \end{equation}
 %
-For more approximations to $I_0(z)$, see section~\ref{module:math} on the math
-module.
+A number of possible windows could be used;
+the Kaiser window is particularly common due to its systematic ability
+to trade transition bandwidth for stop-band rejection.
+The Kaiser window is defined as
+%
+\begin{equation}
+\label{eqn:filter:firdes:kaiser_window}
+    w(n) =  \frac{
+                I_0\left[\pi\alpha\sqrt{1-\left(\frac{n}{N/2}\right)^2}\right]
+            }{
+                I_0\left(\pi\alpha\right)
+            }
+            \,\,\,\,
+            -N/2 \leq n \leq N/2,
+            \,\,
+            \alpha \geq 0
+\end{equation}
+%
+where $I_\nu(z)$ is the modified Bessel function of the first kind of
+order $\nu$ and $\alpha$ is a shape parameter controlling the window
+decay.
+%
+$I_\nu(z)$ can be expanded as
+%
+\begin{equation}
+\label{eqn:filter:firdes:besseli_infinite_sum}
+    I_\nu(z) =  \left( \frac{z}{2} \right)^\nu
+                \sum_{k=0}^{\infty}{
+                    \frac{
+                        \left(\frac{1}{4}z^2\right)^k
+                    }{
+                        k!\Gamma(k+\nu+1)
+                    }
+                }
+\end{equation}
+%
+The sum in (\ref{eqn:filter:firdes:besseli_infinite_sum})
+converges quickly due to the denominator increasing rapidly, 
+(and in particular for $\nu=0$ the denominator reduces to $(k!)^2$)
+and thus only a few terms are necessary for sufficient approximation.
+%
+The sum (\ref{eqn:filter:firdes:besseli_infinite_sum}) converges quickly
+due to the denominator increasing rapidly, thus only a few terms are
+necessary for sufficient approximation.
+For more approximations to $I_0(z)$ and $I_\nu(z)$,
+see Section~\ref{module:math} in the math module.
+%
+Kaiser gives an approximation for the value of $\alpha$ to give a
+particular sidelobe level for the window as
+\cite[(3.2.7)]{Vaidyanathan:1993}
+\begin{equation}
+\label{eq:kaiser_alpha}
+    \alpha =
+    \begin{cases}
+        0.1102 (A_s - 8.7)      &   A_s > 50 \\
+        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+        0                       &   \text{else}
+    \end{cases}
+\end{equation}
+%
+where $A_s > 0$ is the stop-band attenuation in decibels.
+%
+This approximation is provided in \liquid\ by the
+{\tt kaiser\_beta\_As()} method,
+and the length of the filter can be approximated with
+{\tt estimate\_req\_filter\_len()}
+(see section~\ref{module:filter:misc} for more detail on these methods).
 
-The sum (\ref{eqn:besseli_infinite_sum}) converges quickly due to the
-denominator increasing rapidly, thus only a few terms are necessary for
-sufficient approximation.
-An approximation for the value of $\beta$ to give a particular sidelobe level
-for the window is given by {\tt kaiser\_beta\_As()}, and
-the length of the filter can be approximated with
-{\tt estimate\_req\_filter\_len()} (see section~\ref{module:filter:misc} for
-more detail on these methods).
-
-TODO : add discussion of interface for {\tt firdes\_kaiser\_window}.
-
+The entire design process is provided in \liquid\ with the
+{\tt firdes\_kaiser\_window()} method which can be invoked as follows:
+%
+\begin{Verbatim}[fontsize=\small]
+    firdes_kaiser_window(_n, _fc, _As, _mu, *_h)
+\end{Verbatim}
+%
+where
+{\tt \_n} is the length of the filter (number of samples),
+{\tt \_fc} is the normalized cutoff frequency ($0 \leq f_c \leq 0.5$),
+{\tt \_As} is the stop-band attenuation in dB ($A_s > 0$),
+{\tt \_mu} is the fractional sample offset ($-0.5 \leq \mu \leq 0.5$),
+and {\tt *\_h} is the $n$-sample output coefficient array.
+%
+Listed below is an example of the {\tt firdes\_kaiser\_window}
+interface.
+%
+\input{listings/firdes_kaiser.example.c.tex}
+%
 \begin{figure}
 \centering
 \subfigure[time] {
@@ -999,8 +1349,8 @@ TODO : add discussion of interface for {\tt firdes\_kaiser\_window}.
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_freq}
 }
-\caption{{\tt fir\_kaiser\_window()} demonstration, $f_c=0.15$,
-$\Delta f=0.05$, $A_s=60$dB}
+\caption{{\tt firdes\_kaiser\_window()} demonstration, $f_c=0.15$,
+         $\Delta f=0.05$, $A_s=60$dB}
 \label{fig:module:filter:firdes_kaiser}
 \end{figure}
 %
@@ -1140,7 +1490,10 @@ FIR filter desing using the Parks-McClellan algorithm is implemented in
 \liquid\ with the {\tt firdespm} interface.
 The Parks-McClellan algorithm uses the Remez exchange algorithm to solve
 the minimax problem (minimize the maximum error) for filter design.
-The interface accepts ... with $N_b$ frequency bands... xxx
+The interface accepts a description of $N_b$ disjoint and
+non-overlapping frequency bands with a desired response and relative
+error weighting for each, and computes the resulting filter
+coefficients.
 %
 \begin{Verbatim}[fontsize=\small]
     firdespm_run(_h_len,        // filter length
@@ -1195,60 +1548,80 @@ Here are several miscellaneous functions used in \liquid's filter module,
 useful to filtering and filter design.
 
 \begin{description}
-\item[{\tt estimate\_req\_filter\_len()}]
+\item[{\tt estimate\_req\_filter\_len(df,As)}]
     returns an estimate of the required filter length, given a transition
     bandwidth $\Delta f$ and stopband attenuation $A_s$.
-    The estimate uses Hermann's formula \cite{Herrmann:1973}
-    \[
+%    The estimate uses Hermann's formula \cite{Herrmann:1973}
+%    %
+%    \begin{equation}
+%    \label{eqn:filter:firdes:misc:estimate_N}
+%        N \approx \frac{
+%                D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
+%            }{
+%                \Delta f
+%            }
+%    \end{equation}
+%    %
+%    where
+%    \[
+%        D_{\infty} (\delta_1,\delta_2) =
+%            \Bigl(0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \Bigr) t_2
+%           -\Bigl(0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \Bigr)
+%    \]
+%    and
+%    \[
+%        f(\delta_1,\delta_2) = 11.012 + 0.51244\left(t_1 - t_2\right)
+%    \]
+%    with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
+    The estimate uses Kaiser's formula \cite{Vaidyanathan:1993}
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:estimate_N}
         N \approx \frac{
-                D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
+                A_s - 7.95
             }{
-                \Delta f
+                14.26 \Delta f
             }
-    \]
-    where
-    \[
-        D_{\infty} (\delta_1,\delta_2) =
-            \Bigl(0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \Bigr) t_2
-           -\Bigl(0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \Bigr)
-    \]
-    and
-    \[
-        f(\delta_1,\delta_2) = 11.012 + 0.51244\left(t_1 - t_2\right)
-    \]
-    with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
+    \end{equation}
+    %
 
-\item[{\tt estimate\_req\_filter\_As()}]
+\item[{\tt estimate\_req\_filter\_As(df,N)}]
     returns an estimate of the filter's stop-band attenuation $A_s$
     given the filter's length $N$ and transition bandwidth $\Delta f$.
     The estimate uses an iterative binary search to find $A_s$ from
     {\tt extimate\_req\_filter\_As()}.
 
-\item[{\tt estimate\_req\_filter\_df()}]
+\item[{\tt estimate\_req\_filter\_df(As,N)}]
     returns an estimate of the filter's transition bandwidth $\Delta f$
     given the filter's length $N$ and stop-band attenuation $A_s$.
     The estimate uses an iterative binary search to find $\Delta f$ from
     {\tt extimate\_req\_filter\_As()}.
 
-\item[{\tt kaiser\_beta\_As()}]
+\item[{\tt kaiser\_beta\_As(As)}]
+    % TODO : Kaiser window parameter previously defined as alpha!
     returns an estimate of the Kaiser $\beta$ factor for a particular
     stop-band attenuation $A_s$.
     The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz
-    \[
-    \beta =
-    \begin{cases}
-        0.1102 (A_s - 8.7)      &   A_s > 50 \\
-        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
-        0                       &   \text{else}
-    \end{cases}
-    \]
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:kaiser_beta}
+        \beta =
+        \begin{cases}
+            0.1102 (A_s - 8.7)      &   A_s > 50 \\
+            0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+            0                       &   \text{else}
+        \end{cases}
+    \end{equation}
 
-\item[{\tt fir\_group\_delay()}]
-    computes the group delay for a finite impulse-response filter.
+\item[{\tt fir\_group\_delay(*h,n,f)}]
+    computes the group delay for a finite impulse-response filter with
+    $n$ coefficients $\vec{h}$ at a frequency $f$.
     The group delay $\tau_g$ at frequency $f$
     for a finite impulse response filter of length $N$
     is computed as
-    \[
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:fir_group_delay}
         \tau_g = \Re\Biggl\{ \,\,
             \frac{
                 \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k} \cdot k}
@@ -1256,13 +1629,18 @@ useful to filtering and filter design.
                 \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k}}
             }\,\,
             \Biggr\}
-    \]
+    \end{equation}
 
-\item[{\tt iir\_group\_delay()}]
-    computes the group delay for an infinite impulse-response filter.
+\item[{\tt iir\_group\_delay(*b,nb,*a,na,f)}]
+    computes the group delay for an infinite impulse-response filter
+    with $n_a$ feed-back coefficients $\vec{a}$,
+    and $n_a$ feed-forward coefficients $\vec{b}$
+    at a frequency $f$.
     The group delay $\tau_g$ at frequency $f$ for an infinite impulse
     response filter of order $N$ is computed as
-    \[
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:iir_group_delay}
         \tau_g = \Re\Biggl\{ \,\,
             \frac{
                 \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k} \cdot k}
@@ -1271,16 +1649,19 @@ useful to filtering and filter design.
             }\,\,
             \Biggr\}
             - N
-    \]
+    \end{equation}
+    %
     where $c(n) = \sum_{m=0}^{N-1}{a(m)^*b(m-n)}$
     for $n \in \{0,1,\ldots,2(N+1)\}$
     which can be described as the flipped convolution of $\vec{a}$ and
     $\vec{b}$.
 
-\item[{\tt iirdes\_isstable()}]
-    checks the stability of an infinite impulse-response filter by computing
-    the roots of the denominator (poles) and ensuring that they lie within the
-    unit circle.
+\item[{\tt iirdes\_isstable(*b,*a,n)}]
+    checks the stability of an infinite impulse-response filter with $n$
+    feed-back and feed-forward coefficients $\vec{a}$ and $\vec{b}$
+    respectively.
+    Stability is tested by computing the roots of the denominator
+    (poles) and ensuring that they lie within the unit circle.
     Notice that the poles in
     % using the cleveref package
 %    \cref{fig:module:filter:butter,%
@@ -1289,38 +1670,48 @@ useful to filtering and filter design.
 %          fig:module:filter:ellip,%
 %          fig:module:filter:bessel}
     % using regular references
-    Figure~\ref{fig:module:filter:butter}--%
+    Figures~\ref{fig:module:filter:butter}--%
            \ref{fig:module:filter:bessel}
-    all have their poles within the unit circle and are therefore stable (as
-    expected).
+    all have their poles within the unit circle and are therefore stable
+    (as expected).
 
-\item[{\tt liquid\_filter\_autocorr()}]
-    computes the auto-correlation of a filter with an array of coefficients
-    $\vec{h}$ of length $N$ at a specific lag $n$ as
+\item[{\tt liquid\_filter\_autocorr(*h,N,n)}]
+    computes the auto-correlation of a filter with an array of
+    coefficients $\vec{h}$ of length $N$ at a specific lag $n$ as
     \[
         r_{hh}(n) = \sum_{k=n}^{N-1} {h(k)h^*(k-n)}
     \]
 
-\item[{\tt liquid\_filter\_isi()}]
-    computes a filter's inter-symbol interference (both mean-squared error and
-    maximum error).
-    This is useful in comparing the performance of root-Nyquist matched filter
-    designs (e.g. root raised-cosine).
+\item[{\tt liquid\_filter\_isi(*h,k,m,*rms,*max)}]
+    computes the inter-symbol interference 
+    (both mean-squared error and maximum error)
+    for a filter $\vec{h}$ with $k$ samples per symbol and delay of $m$
+    samples.
+    The filter has $2km+1$ coefficients and the resulting
+    RMS and maximum ISI are stored in {\tt rms} and {\tt max},
+    respectively.
+    This is useful in comparing the performance of root-Nyquist matched
+    filter designs (e.g. root raised-cosine).
     %The inter-symbol interference of a filter is simply its auto-correlation
     %at a lag equal to its...
     %The total interference is the ...
 
-\item[{\tt liquid\_filter\_energy()}]
-    computes a finite impulse response filter's relative out-of-band
-    energy for a cutoff frequency $f_c$, viz
-    \[
-        e =
+\item[{\tt liquid\_filter\_energy(*h,N,fc,nfft)}]
+    computes the relative out-of-band energy $E_0$ at a cutoff frequency
+    $f_c$ for a finite impulse response filter $\vec{h}$ with $N$
+    coefficients.
+    The parameter {\tt nfft} specifies the precision of the computation.
+    The relative out-of-band energy is computed as
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:filter_energy}
+        E_0 =
             \frac{
                 \int_{2 \pi f_c}^{\infty}{H(\omega)d\omega}
             } {
                 \int_{0}^{\infty}{H(\omega)d\omega}
             }
-    \]
+    \end{equation}
 
 \end{description}
 

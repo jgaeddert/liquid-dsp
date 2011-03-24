@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
-#include <liquid/liquid.h>
+
+#include "liquid.h"
 
 // print usage/help message
 void usage()

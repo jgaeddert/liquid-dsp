@@ -15,7 +15,7 @@ int main() {
     // options
     unsigned int h_len=19;  // filter length
     unsigned int p=5;       // polynomial order
-    float fc=0.9f;          // filter cutoff
+    float fc=0.45f;         // filter cutoff
     float As=60.0f;         // stop-band attenuation [dB]
     unsigned int m=9;       // number of delays to evaluate
 
@@ -47,6 +47,7 @@ int main() {
     printf("%8s %8s  : %8.4f   %8.4f   %8.4f\n", "mu", "delay", 0.0f, 0.2f, 0.4f);
     for (i=0; i<m; i++) {
         firfarrow_rrrf_set_delay(f,mu_vect[i]);
+
         firfarrow_rrrf_get_coefficients(f,h);
         for (j=0; j<h_len; j++)
             fprintf(fid,"  h(%3u,%3u) = %12.4e;\n", i+1, j+1, h[j]);
@@ -54,9 +55,9 @@ int main() {
         //printf("group delay (mu = %12.8f) : %12.8f\n", mu_vect[i], fir_group_delay(h,h_len,0.0f));
         printf("%8.4f ", mu_vect[i]);
         printf("%8.4f  : ", tao + mu_vect[i]);
-        printf("%8.1e   ", tao + mu_vect[i] - fir_group_delay(h,h_len,0.0f));
-        printf("%8.1e   ", tao + mu_vect[i] - fir_group_delay(h,h_len,0.2f));
-        printf("%8.1e   ", tao + mu_vect[i] - fir_group_delay(h,h_len,0.4f));
+        printf("%8.1e   ", tao + mu_vect[i] - firfarrow_rrrf_groupdelay(f,0.0f));
+        printf("%8.1e   ", tao + mu_vect[i] - firfarrow_rrrf_groupdelay(f,0.2f));
+        printf("%8.1e   ", tao + mu_vect[i] - firfarrow_rrrf_groupdelay(f,0.4f));
         printf("\n");
     }
 

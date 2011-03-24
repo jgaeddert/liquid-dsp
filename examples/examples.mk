@@ -83,6 +83,7 @@ local_src	:=			\
 	quantize_example.c		\
 	quasinewton_search_example.c	\
 	random_example.c		\
+	random_histogram_example.c	\
 	repack_bytes_example.c		\
 	resamp_crcf_example.c		\
 	resamp2_crcf_example.c		\

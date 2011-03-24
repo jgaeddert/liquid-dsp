@@ -1692,6 +1692,9 @@ void optim_sort(float *_v,
 
 float complex icrandnf();
 
+// generate x ~ Gamma(delta,1)
+float randgammaf_delta(float _delta);
+
 // data scrambler masks
 #define LIQUID_SCRAMBLE_MASK0   (0xb4)
 #define LIQUID_SCRAMBLE_MASK1   (0x6a)

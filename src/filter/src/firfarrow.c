@@ -42,7 +42,7 @@
 //  PRINTVAL()      print macro
 
 struct FIRFARROW(_s) {
-    TC * h;
+    TC * h;             // filter coefficients
     unsigned int h_len; // filter length
     float fc;           // filter cutoff
     float As;           // stop-band attenuation [dB]
@@ -77,8 +77,8 @@ FIRFARROW() FIRFARROW(_create)(unsigned int _h_len,
     } else if (_p < 1) {
         fprintf(stderr,"error: fir_farrow_xxxt_create(), polynomial order must be at least 1\n");
         exit(1);
-    } else if (_fc < 0.0f || _fc > 1.0f) {
-        fprintf(stderr,"error: fir_farrow_xxxt_create(), filter cutoff must be in [0,1]\n");
+    } else if (_fc < 0.0f || _fc > 0.5f) {
+        fprintf(stderr,"error: fir_farrow_xxxt_create(), filter cutoff must be in [0,0.5]\n");
         exit(1);
     }
 
@@ -237,6 +237,42 @@ void FIRFARROW(_get_coefficients)(FIRFARROW() _f,
     memmove(_h, _f->h, (_f->h_len)*sizeof(TC));
 }
 
+// compute complex frequency response
+//  _q      :   filter object
+//  _fc     :   frequency
+//  _H      :   output frequency response
+void FIRFARROW(_freqresponse)(FIRFARROW() _q,
+                              float _fc,
+                              float complex * _H)
+{
+    unsigned int i;
+    float complex H = 0.0f;
+
+    for (i=0; i<_q->h_len; i++)
+        H += _q->h[i] * cexpf(_Complex_I*2*M_PI*_fc*i);
+
+    // set return value
+    *_H = H;
+}
+
+// compute group delay in samples
+//  _q      :   filter object
+//  _fc     :   frequency
+float FIRFARROW(_groupdelay)(FIRFARROW() _q,
+                             float _fc)
+{
+    // copy coefficients to be in correct order
+    float h[_q->h_len];
+    unsigned int i;
+    unsigned int n = _q->h_len;
+    for (i=0; i<n; i++)
+        h[i] = crealf(_q->h[i]);
+
+    return fir_group_delay(h, n, _fc);
+}
+
+
+
 // 
 // internal
 //
@@ -253,13 +289,13 @@ void FIRFARROW(_genpoly)(FIRFARROW() _q)
     float beta = kaiser_beta_As(_q->As);
     for (i=0; i<_q->h_len; i++) {
 #if FIRFARROW_DEBUG
-        printf("i : %3u / %3u\n", i, _n);
+        printf("i : %3u / %3u\n", i, _q->h_len);
 #endif
         x = (float)(i) - (float)(_q->h_len-1)/2.0f;
         for (j=0; j<=_q->Q; j++) {
             mu = ((float)j - (float)_q->Q)/((float)_q->Q) + 0.5f;
 
-            h0 = sincf((_q->fc)*(x + mu));
+            h0 = sincf(2.0f*(_q->fc)*(x + mu));
             h1 = kaiser(i,_q->h_len,beta,mu);
 #if FIRFARROW_DEBUG
             printf("  %3u : x=%12.8f, mu=%12.8f, h0=%12.8f, h1=%12.8f, hp=%12.8f\n",
@@ -272,7 +308,7 @@ void FIRFARROW(_genpoly)(FIRFARROW() _q)
         POLY(_fit)(mu_vect,hp_vect,_q->Q+1,p,_q->Q+1);
 #if FIRFARROW_DEBUG
         printf("  polynomial : ");
-        for (j=0; j<=_p; j++)
+        for (j=0; j<=_q->Q; j++)
             printf("%8.4f,", p[j]);
         printf("\n");
 #endif

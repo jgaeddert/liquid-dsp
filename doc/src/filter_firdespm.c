@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME "figures.gen/filter_firdespm.gnu"
@@ -45,7 +45,7 @@ int main(int argc, char*argv[]) {
     firdespm_execute(q,h);
     firdespm_destroy(q);
 #else
-    firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
+    firdespm_run(n,num_bands,bands,des,weights,wtype,btype,h);
 #endif
 
     // 

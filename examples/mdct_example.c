@@ -62,7 +62,7 @@ int main() {
 
     // generate basic filter
     float h[h_len];
-    fir_kaiser_window(h_len,fc,As,mu,h);
+    firdes_kaiser_window(h_len,fc,As,mu,h);
     firfilt_rrrf f = firfilt_rrrf_create(h,h_len);
 
     // generate random signal (filtered noise)

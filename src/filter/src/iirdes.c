@@ -248,17 +248,17 @@ void bilinear_zpkf(float complex * _za,
         // compute digital zeros (pad with -1s)
         if (i < _nza) {
             float complex zm = _za[i] * _m;
-            _zd[i] = (1 + zm)/(1 - zm);
+            _zd[i] = (1.0 + zm)/(1.0 - zm);
         } else {
-            _zd[i] = -1;
+            _zd[i] = -1.0;
         }
 
         // compute digital poles
         float complex pm = _pa[i] * _m;
-        _pd[i] = (1 + pm)/(1 - pm);
+        _pd[i] = (1.0 + pm)/(1.0 - pm);
 
         // compute digital gain
-        G *= (1 - _pd[i])/(1 - _zd[i]);
+        G *= (1.0 - _pd[i])/(1.0 - _zd[i]);
     }
     *_kd = G;
 
@@ -613,7 +613,7 @@ void iirdes(liquid_iirdes_filtertype _ftype,
         memmove(zd, zd1, 2*_n*sizeof(float complex));
         memmove(pd, pd1, 2*_n*sizeof(float complex));
 
-        // update paramteres : n -> 2*n
+        // update paramters : n -> 2*n
         r = 0;
         L = _n;
         _n = 2*_n;

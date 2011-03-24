@@ -13,7 +13,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/filter_firfilt_crcf_time.gnu"
@@ -27,7 +27,7 @@ int main() {
 
     // design filter
     float h[h_len];
-    fir_kaiser_window(h_len, fc, As, 0.0f, h);
+    firdes_kaiser_window(h_len, fc, As, 0.0f, h);
 
     // normalize filter by DC gain
     unsigned int i;

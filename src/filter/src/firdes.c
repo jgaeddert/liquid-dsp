@@ -239,25 +239,25 @@ float kaiser_beta_As(float _As)
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void fir_kaiser_window(unsigned int _n,
-                       float _fc,
-                       float _As,
-                       float _mu,
-                       float *_h)
+void firdes_kaiser_window(unsigned int _n,
+                          float _fc,
+                          float _As,
+                          float _mu,
+                          float *_h)
 {
     // validate inputs
     if (_mu < -0.5f || _mu > 0.5f) {
-        fprintf(stderr,"error: fir_kaiser_window(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
+        fprintf(stderr,"error: firdes_kaiser_window(), _mu (%12.4e) out of range [-0.5,0.5]\n", _mu);
         exit(1);
     } else if (_fc < 0.0f || _fc > 0.5f) {
-        fprintf(stderr,"error: fir_kaiser_window(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
+        fprintf(stderr,"error: firdes_kaiser_window(), cutoff frequency (%12.4e) out of range (0, 0.5)\n", _fc);
         exit(1);
     } else if (_n == 0) {
-        fprintf(stderr,"error: fir_kaiser_window(), filter length must be greater than zero\n");
+        fprintf(stderr,"error: firdes_kaiser_window(), filter length must be greater than zero\n");
         exit(1);
     }
 
-    // chooise kaiser beta parameter (approximate)
+    // choose kaiser beta parameter (approximate)
     float beta = kaiser_beta_As(_As);
 
     float t, h1, h2; 
@@ -332,7 +332,7 @@ void fir_design_doppler(unsigned int _n,
         t = (float)i - (float)(_n-1)/2;
 
         // Bessel
-        J = 1.5*besselj_0(fabsf(2*M_PI*_fd*t));
+        J = 1.5*liquid_besselj_0(fabsf(2*M_PI*_fd*t));
 
         // Rice-K component
         r = 1.5*_K/(_K+1)*cosf(2*M_PI*_fd*t*cosf(_theta));

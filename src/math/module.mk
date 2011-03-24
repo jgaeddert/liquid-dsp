@@ -32,6 +32,8 @@ local_s_files	:= 		\
 	polyf.c			\
 	polycf.c		\
 	math.c			\
+	math.bessel.c		\
+	math.gamma.c		\
 	math.complex.c		\
 	math.trig.c
 

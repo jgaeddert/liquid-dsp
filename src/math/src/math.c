@@ -45,110 +45,6 @@
 
 #include "liquid.internal.h"
 
-#define NUM_LNGAMMA_ITERATIONS (64)
-#define EULER_GAMMA            (0.57721566490153286)
-float liquid_lngammaf(float _z)
-{
-    float g;
-    if (_z < 0) {
-        fprintf(stderr,"error: liquid_lngammaf(), undefined for z <= 0\n");
-        exit(1);
-    } else if (_z < 0.60) {
-        // low value approximation
-        g = -logf(_z) - EULER_GAMMA*_z;
-        unsigned int n;
-        float z_by_n;   // value of z/n
-        for (n=1; n<NUM_LNGAMMA_ITERATIONS; n++) {
-            z_by_n = _z / (float)n;
-            g += -logf(1.0f + z_by_n) + z_by_n;
-        }
-    } else {
-        // high value approximation
-        g = 0.5*( logf(2*M_PI)-log(_z) );
-        g += _z*( logf(_z+(1/(12.0f*_z-0.1f/_z)))-1);
-    }
-    return g;
-}
-
-float liquid_gammaf(float _z)
-{
-    if (_z < 0) {
-        // use identities
-        //  (1) gamma(z)*gamma(-z) = -pi / (z*sin(pi*z))
-        //  (2) z*gamma(z) = gamma(1+z)
-        //
-        // therefore:
-        //  gamma(z) = pi / ( gamma(1-z) * sin(pi*z) )
-        float t0 = liquid_gammaf(1.0 - _z);
-        float t1 = sinf(M_PI*_z);
-        if (t0==0 || t1==0)
-            fprintf(stderr,"warning: liquid_gammaf(), divide by zero\n");
-        return M_PI / (t0 * t1);
-    } else {
-        return expf( liquid_lngammaf(_z) );
-    }
-}
-
-float liquid_factorialf(unsigned int _n) {
-    return fabsf(liquid_gammaf((float)(_n+1)));
-}
-
-// Bessel function of the first kind
-#define NUM_BESSELJ0_ITERATIONS 16
-float besselj_0(float _z)
-{
-    // large signal approximation, see
-    // Gross, F. B "New Approximations to J0 and J1 Bessel Functions,"
-    //   IEEE Trans. on Antennas and Propagation, vol. 43, no. 8,
-    //   August, 1995
-    if (fabsf(_z) > 10.0f)
-        return sqrtf(2/(M_PI*fabsf(_z)))*cosf(fabsf(_z)-M_PI/4);
-
-    unsigned int k;
-    float t, y=0.0f;
-    for (k=0; k<NUM_BESSELJ0_ITERATIONS; k++) {
-        t = powf(_z/2, (float)k) / tgamma((float)k+1);
-        y += (k%2) ? -t*t : t*t;
-    }
-    return y;
-}
-
-// Modified bessel function of the first kind
-#define NUM_BESSELI0_ITERATIONS 16
-float besseli_0(float _z)
-{
-    unsigned int k;
-    float t, y=0.0f;
-    for (k=0; k<NUM_BESSELI0_ITERATIONS; k++) {
-        t = powf(_z/2, (float)k) / tgamma((float)k+1);
-        y += t*t;
-    }
-    return y;
-}
-
-// Modified bessel function of the first kind
-// TODO : check this computation
-#define NUM_BESSELI_ITERATIONS 16
-float besseli(float _nu,
-              float _z)
-{
-    unsigned int k;
-    float t0 = powf(_z*0.5f, _nu);
-    float t1 = 1.0f;
-    float y=0.0f;
-    for (k=0; k<NUM_BESSELI_ITERATIONS; k++) {
-        // compute: k! * Gamma(nu + k +1)
-        float t2 = liquid_factorialf(k) * liquid_gammaf(_nu + (float)k + 1.0f);
-
-        // accumulate y
-        y += t1 / t2;
-
-        // update t1 = (0.25*z^2)^k
-        t1 *= 0.25f*_z*_z;
-    }
-    return t0 * y;
-}
-
 //                    infty
 // Q(z) = 1/sqrt(2 pi) int { exp(-u^2/2) du }
 //                      z
@@ -213,7 +109,7 @@ float liquid_MarcumQ1(float _alpha,
     unsigned int k;
     for (k=0; k<NUM_MARCUMQ1_ITERATIONS; k++) {
         // accumulate y
-        y += t1 * besseli((float)k, a_mul_b);
+        y += t1 * liquid_besseli((float)k, a_mul_b);
 
         // update t1
         t1 *= a_div_b;
@@ -276,9 +172,9 @@ float liquid_nchoosek(unsigned int _n, unsigned int _k)
 
     // use lngamma() function when _n is large
     if (_n > 12) {
-        float t0 = liquid_lngammaf(_n + 1.0f);
-        float t1 = liquid_lngammaf(_n - _k + 1.0f);
-        float t2 = liquid_lngammaf(_k + 1.0f);
+        float t0 = liquid_lngammaf((float)_n + 1.0f);
+        float t1 = liquid_lngammaf((float)_n - (float)_k + 1.0f);
+        float t2 = liquid_lngammaf((float)_k + 1.0f);
 
         return roundf(expf( t0 - t1 - t2 ));
     }
@@ -408,8 +304,8 @@ float kaiser(unsigned int _n,
 
     float t = (float)_n - (float)(_N-1)/2 + _mu;
     float r = 2.0f*t/(float)(_N);
-    float a = besseli_0(_beta*sqrtf(1-r*r));
-    float b = besseli_0(_beta);
+    float a = liquid_besseli_0(_beta*sqrtf(1-r*r));
+    float b = liquid_besseli_0(_beta);
     return a / b;
 }
 

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <getopt.h>
 
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME "figures.gen/sequence_msequence.gnu"

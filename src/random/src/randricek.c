@@ -19,7 +19,7 @@
  */
 
 //
-//
+// Rice-K distribution
 //
 
 #include <math.h>
@@ -42,6 +42,15 @@ float randricekf(float _K, float _omega)
 
 
 // Rice-K random number probability distribution function
+//  f(x) = (x/sigma^2) exp{ -(x^2+s^2)/(2sigma^2) } I0( x s / sigma^2 )
+// where
+//  s     = sqrt( omega*K/(K+1) )
+//  sigma = sqrt(0.5 omega/(K+1))
+// and
+//  K     = shape parameter
+//  omega = spread parameter
+//  I0    = modified Bessel function of the first kind
+//  x >= 0
 float randricekf_pdf(float _x,
                      float _K,
                      float _omega)
@@ -56,7 +65,7 @@ float randricekf_pdf(float _x,
 
     float sig2 = sig*sig;
 
-    return (_x / sig2) * expf(-t / (2*sig2)) * besseli_0(_x*s/sig2);
+    return (_x / sig2) * expf(-t / (2*sig2)) * liquid_besseli_0(_x*s/sig2);
 }
 
 // Rice-K random number cumulative distribution function
@@ -65,13 +74,19 @@ float randricekf_cdf(float _x,
                      float _K,
                      float _omega)
 {
-    if (_x < 0.0f)
+    if (_x <= 0.0f)
         return 0.0f;
 
     float s = sqrtf((_omega*_K)/(_K+1));
     float sig = sqrtf(0.5f*_omega/(_K+1));
 
-    return 1.0f - liquid_MarcumQ1(s/sig, _x/sig);
+    float F = 1.0f - liquid_MarcumQ1(s/sig, _x/sig);
+
+    // check for precision error
+    if (F < 0.0f) return 0.0f;
+    if (F > 1.0f) return 1.0f;
+
+    return F;
 }
 
 

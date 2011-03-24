@@ -456,6 +456,8 @@ random_example.c
     This example tests the random number generators for different
     distributions.
 
+random_histogram_example.c
+
 repack_bytes_example.c
     This example demonstrates the repack_bytes() interface by packing a
     sequence of three 3-bit symbols into five 2-bit symbols.  The

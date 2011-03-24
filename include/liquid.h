@@ -714,11 +714,11 @@ void firdespm_execute(firdespm _q, float * _h);
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void fir_kaiser_window(unsigned int _n,
-                       float _fc,
-                       float _As,
-                       float _mu,
-                       float *_h);
+void firdes_kaiser_window(unsigned int _n,
+                          float _fc,
+                          float _As,
+                          float _mu,
+                          float *_h);
 
 // Design FIR doppler filter
 //  _n      : filter length
@@ -840,7 +840,7 @@ float iir_group_delay(float * _b,
 //
 // Compute auto-correlation of filter at a specific lag.
 //
-//  _h      :   filter coefficients [size: _h_len]
+//  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
 float liquid_filter_autocorr(float * _h,
@@ -852,7 +852,7 @@ float liquid_filter_autocorr(float * _h,
 // Compute inter-symbol interference (ISI)--both RMS and
 // maximum--for the filter _h.
 //
-//  _h      :   filter coefficients [size: 2*_k*_m+1]
+//  _h      :   filter coefficients [size: 2*_k*_m+1 x 1]
 //  _k      :   filter over-sampling rate (samples/symbol)
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
@@ -1541,7 +1541,11 @@ void FIRFARROW(_push)(FIRFARROW() _f, TI _x);                   \
 void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu);          \
 void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y);               \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _f);            \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);
+void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);  \
+void FIRFARROW(_freqresponse)(FIRFARROW() _f,                   \
+                            float _fc,                          \
+                            liquid_float_complex * _H);         \
+float FIRFARROW(_groupdelay)(FIRFARROW() _f, float _fc);
 
 LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_RRRF,
                             float,
@@ -2044,24 +2048,44 @@ liquid_float_complex liquid_cacosf(liquid_float_complex _z);
 liquid_float_complex liquid_catanf(liquid_float_complex _z);
 
 
-// ln( gamma(z) )
+// ln( Gamma(z) )
 float liquid_lngammaf(float _z);
 
-// gamma(z)
+// Gamma(z)
 float liquid_gammaf(float _z);
+
+// ln( gamma(z,alpha) ) : lower incomplete gamma function
+float liquid_lnlowergammaf(float _z, float _alpha);
+
+// ln( Gamma(z,alpha) ) : upper incomplete gamma function
+float liquid_lnuppergammaf(float _z, float _alpha);
+
+// gamma(z,alpha) : lower incomplete gamma function
+float liquid_lowergammaf(float _z, float _alpha);
+
+// Gamma(z,alpha) : upper incomplete gamma function
+float liquid_uppergammaf(float _z, float _alpha);
 
 // n!
 float liquid_factorialf(unsigned int _n);
 
-// Bessel function of the first kind
-float besselj_0(float _z);
 
-// Modified Bessel function of the first kind
-float besseli_0(float _z);
 
-// Modified Bessel function of the first kind
-float besseli(float _nu,
-              float _z);
+// ln(I_v(z)) : log Modified Bessel function of the first kind
+float liquid_lnbesseli(float _nu, float _z);
+
+// I_v(z) : Modified Bessel function of the first kind
+float liquid_besseli(float _nu, float _z);
+
+// I_0(z) : Modified Bessel function of the first kind (order zero)
+float liquid_besseli_0(float _z);
+
+// J_v(z) : Bessel function of the first kind
+float liquid_besselj(float _nu, float _z);
+
+// J_0(z) : Bessel function of the first kind (order zero)
+float liquid_besselj_0(float _z);
+
 
 // Q function
 float liquid_Qf(float _z);
@@ -3219,15 +3243,23 @@ float randnf();
 void awgn(float *_x, float _nstd);
 void crandnf(liquid_float_complex *_y);
 void cawgn(liquid_float_complex *_x, float _nstd);
-float randn_pdf(float _x, float _eta, float _sig);
-float randn_cdf(float _x, float _eta, float _sig);
+float randnf_pdf(float _x, float _eta, float _sig);
+float randnf_cdf(float _x, float _eta, float _sig);
+
+// Exponential
+//  f(x) = lambda exp{ -lambda x }
+// where
+//  lambda = spread parameter, lambda > 0
+//  x >= 0
+float randexpf(float _lambda);
+float randexpf_pdf(float _x, float _lambda);
+float randexpf_cdf(float _x, float _lambda);
 
 // Weibull
-//   f(x) = a*(x-g)^(b-1)*exp{-(a/b)*(x-g)^b}  x >= g
-//          0                                  else
+//   f(x) = (a/b) (x/b)^(a-1) exp{ -(x/b)^a }
 //   where
-//     a = alpha : scaling parameter
-//     b = beta  : shape parameter
+//     a = alpha : shape parameter
+//     b = beta  : scaling parameter
 //     g = gamma : location (threshold) parameter
 //
 float randweibf(float _alpha, float _beta, float _gamma);
@@ -3235,14 +3267,39 @@ float randweibf_pdf(float _x, float _a, float _b, float _g);
 float randweibf_cdf(float _x, float _a, float _b, float _g);
 
 // Gamma
-//void rand_gammaf();
+//          x^(a-1) exp{-x/b)
+//  f(x) = -------------------
+//            Gamma(a) b^a
+//  where
+//      a = alpha : shape parameter, a > 0
+//      b = beta  : scale parameter, b > 0
+//      Gamma(z) = regular gamma function
+//      x >= 0
+float randgammaf(float _alpha, float _beta);
+float randgammaf_pdf(float _x, float _alpha, float _beta);
+float randgammaf_cdf(float _x, float _alpha, float _beta);
 
 // Nakagami-m
-//void rand_nakagamimf(float _m, float _omega);
-//float rand_pdf_nakagamimf(float _x, float _m, float _omega);
-//float rand_cdf_nakagamimf(float _x, float _m, float _omega);
+//  f(x) = (2/Gamma(m)) (m/omega)^m x^(2m-1) exp{-(m/omega)x^2}
+// where
+//      m       : shape parameter, m >= 0.5
+//      omega   : spread parameter, omega > 0
+//      Gamma(z): regular complete gamma function
+//      x >= 0
+float randnakmf(float _m, float _omega);
+float randnakmf_pdf(float _x, float _m, float _omega);
+float randnakmf_cdf(float _x, float _m, float _omega);
 
 // Rice-K
+//  f(x) = (x/sigma^2) exp{ -(x^2+s^2)/(2sigma^2) } I0( x s / sigma^2 )
+// where
+//  s     = sqrt( omega*K/(K+1) )
+//  sigma = sqrt(0.5 omega/(K+1))
+// and
+//  K     = shape parameter
+//  omega = spread parameter
+//  I0    = modified Bessel function of the first kind
+//  x >= 0
 float randricekf(float _K, float _omega);
 float randricekf_cdf(float _x, float _K, float _omega);
 float randricekf_pdf(float _x, float _K, float _omega);

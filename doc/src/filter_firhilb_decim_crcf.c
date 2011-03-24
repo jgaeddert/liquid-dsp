@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/filter_firhilb_decim_crcf_time.gnu"
@@ -45,7 +45,7 @@ int main() {
     // compute filter
     unsigned int h_len = 4*m+1;     // filter length
     float h[h_len];
-    fir_kaiser_window(h_len, 0.25f, slsl, 0.0f, h);
+    firdes_kaiser_window(h_len, 0.25f, slsl, 0.0f, h);
 
 
     // generate plots

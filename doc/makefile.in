@@ -79,7 +79,9 @@ LISTINGS_C = 					\
 	listings/eqlms_cccf.example.c		\
 	listings/fec.example.c			\
 	listings/fft.example.c			\
+	listings/firdes_kaiser.example.c	\
 	listings/firdespm.example.c		\
+	listings/firfarrow_crcf.example.c	\
 	listings/firfilt.example.c		\
 	listings/firhilb.example.c		\
 	listings/ga_search.example.c		\
@@ -96,6 +98,7 @@ LISTINGS_C = 					\
 	listings/packetizer.example.c		\
 	listings/quasinewton_search.example.c	\
 	listings/resamp_crcf.example.c		\
+	listings/symsync_crcf.example.c		\
 	listings/window.example.c		\
 						\
 	tutorials/pll_init_tutorial.c		\

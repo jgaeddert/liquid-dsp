@@ -14,7 +14,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 // print usage/help message

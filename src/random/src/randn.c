@@ -92,7 +92,7 @@ float randnf_pdf(float _x,
 
     float t  = _x - _eta;
     float s2 = _sig * _sig;
-    return 1.0f / sqrtf(2.0f*M_PI*s2) * expf(-t*t/(2.0f*s2));
+    return expf(-t*t/(2.0f*s2)) / sqrtf(2.0f*M_PI*s2);
 }
 
 // Gauss random number cumulative distribution function
@@ -100,6 +100,6 @@ float randnf_cdf(float _x,
                  float _eta,
                  float _sig)
 {
-    return 0.0f;
+    return 0.5 + 0.5*erff( M_SQRT1_2*(_x-_eta)/_sig );
 }
 
