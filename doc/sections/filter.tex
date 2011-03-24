@@ -126,6 +126,75 @@ A more detailed example is given in
 in the main \liquid\ project directory.
 
 
+% 
+% firfarrow
+%
+\subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
+\label{module:filter:firfarrow}
+\liquid\ implements non-recursive Farrow filters using the
+{\tt firfarrow} family of objects.
+The Farrow structure is convenient for varying the group delay of a
+filter.
+The filter coefficients themselves are not stored explicitly, but are
+represented as a set of polynomials each with an order $Q$.
+The coefficients can be computed dynamically from the polynomial by
+arbitrarily specifying the fractional sample delay $\mu$.
+%
+Listed below is the full interface to the {\tt firfarrow} family of
+objects.
+While each method is listed for {\tt firfarrow\_crcf}, the same
+functionality applies to {\tt firfarrow\_rrrf}.
+%
+\begin{description}
+\item[{\tt firfarrow\_crcf\_create(N,Q,fc,As)}]
+    creates a {\tt firfarrow} object with $N$ coefficients using a
+    polynomial of order $Q$ with a cutoff frequency $f_c$ and as
+    stop-band attenuation of $A_s$~dB.
+\item[{\tt firfarrow\_crcf\_destroy(q)}]
+    destroy object, freeing all internally-allocated memory.
+\item[{\tt firfarrow\_crcf\_clear(q)}]
+    clear filter internal memory buffer.
+    This does not reset the delay.
+\item[{\tt firfarrow\_crcf\_print(q)}]
+    prints the filter's internal state to {\tt stdout}.
+\item[{\tt firfarrow\_crcf\_push(q,x)}]
+    push a single sample $x$ into the filter's internal buffer.
+\item[{\tt firfarrow\_crcf\_set\_delay(q,mu)}]
+    set fractional delay $\mu$ of filter.
+\item[{\tt firfarrow\_crcf\_execute(q,*y)}]
+    computes the output sample, storing the result in $y$.
+\item[{\tt firfarrow\_crcf\_get\_length(q)}]
+    returns length of the filter (number of taps)
+\item[{\tt firfarrow\_crcf\_get\_coefficients(q,*h)}]
+    returns the internal filter coefficients, storing the result in the
+    output vector $\vec{h}$.
+\item[{\tt firfarrow\_crcf\_freqresponse(q,fc,*H)}]
+    computes the complex response $H$ of the filter at the normalized
+    frequency $f_c$.
+\item[{\tt firfarrow\_crcf\_groupdelay(q,fc)}]
+    returns the group delay of the filter at the normalized
+    frequency $f_c$.
+\end{description}
+%
+Listed below is an example of the {\tt firfarrow} object's
+interface.
+%
+\input{listings/firfarrow_crcf.example.c.tex}
+%
+An example of the Farrow filter's group delay can be found in
+Figure~\ref{fig:module:filter:firfarrow_groupdelay}.
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firfarrow_groupdelay}
+\caption{{\tt firfarrow\_crcf} (Farrow filter) group delay example
+    with $N=19$, $Q=5$, $f_c=0.45$, and $A_s=60$~dB.}
+\label{fig:module:filter:firfarrow_groupdelay}
+\end{figure}
+%
+
+
+
 %
 % firfilt
 %
@@ -193,6 +262,518 @@ functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
 %
 
 
+
+% 
+% firpfb
+%
+%\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
+
+% 
+% firdes (finite impulse response filter design)
+%
+\subsection{{\tt firdes} (finite impulse response filter design)}
+\label{module:filter:firdes}
+This section describes the finite impulse response filter design
+capabilities in \liquid.
+This includes basic low-pass filter design using the windowed-$\sinc$
+method,
+square-root Nyquist filters,
+arbitrary design using the Parks-McClellan algorithm,
+and some useful miscellaneous functions.
+
+\subsubsection{Window prototype}
+\label{module:filter:firdes:window}
+The ideal low-pass filter has a rectangular response in the frequency
+domain and an infinite $\sin(t)/t$ response in the time domain.
+Because all time-dependent filters must be causal, this type of filter
+is unrealizable;
+furthermore, truncating its response results in poor pass-band ripple
+stop-band rejection.
+An improvement over truncation is offered by use of a band-limiting
+window.
+Let the finite impulse response of a filter be defined as
+% 
+\begin{equation}
+\label{eqn:filter:firdes:windowed_sinc}
+    h(n) = h_i(n) w(n)
+\end{equation}
+%
+where $w(n)$ is a time-limited symmetric window and
+$h_i(n)$ is the impulse response of the ideal filter with a cutoff
+frequency $\omega_c$, viz.
+%
+\begin{equation}
+\label{eqn:filter:firdes:sinc}
+    h_i(n) =    \frac{\omega_c}{\pi}
+                \left(
+                    \frac{\sin\omega_c n}{\omega_c n}
+                \right),
+                \,\,\,\,
+                \forall n
+\end{equation}
+%
+A number of possible windows could be used;
+the Kaiser window is particularly common due to its systematic ability
+to trade transition bandwidth for stop-band rejection.
+The Kaiser window is defined as
+%
+\begin{equation}
+\label{eqn:filter:firdes:kaiser_window}
+    w(n) =  \frac{
+                I_0\left[\pi\alpha\sqrt{1-\left(\frac{n}{N/2}\right)^2}\right]
+            }{
+                I_0\left(\pi\alpha\right)
+            }
+            \,\,\,\,
+            -N/2 \leq n \leq N/2,
+            \,\,
+            \alpha \geq 0
+\end{equation}
+%
+where $I_\nu(z)$ is the modified Bessel function of the first kind of
+order $\nu$ and $\alpha$ is a shape parameter controlling the window
+decay.
+%
+$I_\nu(z)$ can be expanded as
+%
+\begin{equation}
+\label{eqn:filter:firdes:besseli_infinite_sum}
+    I_\nu(z) =  \left( \frac{z}{2} \right)^\nu
+                \sum_{k=0}^{\infty}{
+                    \frac{
+                        \left(\frac{1}{4}z^2\right)^k
+                    }{
+                        k!\Gamma(k+\nu+1)
+                    }
+                }
+\end{equation}
+%
+The sum in (\ref{eqn:filter:firdes:besseli_infinite_sum})
+converges quickly due to the denominator increasing rapidly, 
+(and in particular for $\nu=0$ the denominator reduces to $(k!)^2$)
+and thus only a few terms are necessary for sufficient approximation.
+%
+The sum (\ref{eqn:filter:firdes:besseli_infinite_sum}) converges quickly
+due to the denominator increasing rapidly, thus only a few terms are
+necessary for sufficient approximation.
+For more approximations to $I_0(z)$ and $I_\nu(z)$,
+see Section~\ref{module:math} in the math module.
+%
+Kaiser gives an approximation for the value of $\alpha$ to give a
+particular sidelobe level for the window as
+\cite[(3.2.7)]{Vaidyanathan:1993}
+\begin{equation}
+\label{eq:kaiser_alpha}
+    \alpha =
+    \begin{cases}
+        0.1102 (A_s - 8.7)      &   A_s > 50 \\
+        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+        0                       &   \text{else}
+    \end{cases}
+\end{equation}
+%
+where $A_s > 0$ is the stop-band attenuation in decibels.
+%
+This approximation is provided in \liquid\ by the
+{\tt kaiser\_beta\_As()} method,
+and the length of the filter can be approximated with
+{\tt estimate\_req\_filter\_len()}
+(see section~\ref{module:filter:misc} for more detail on these methods).
+
+The entire design process is provided in \liquid\ with the
+{\tt firdes\_kaiser\_window()} method which can be invoked as follows:
+%
+\begin{Verbatim}[fontsize=\small]
+    firdes_kaiser_window(_n, _fc, _As, _mu, *_h)
+\end{Verbatim}
+%
+where
+{\tt \_n} is the length of the filter (number of samples),
+{\tt \_fc} is the normalized cutoff frequency ($0 \leq f_c \leq 0.5$),
+{\tt \_As} is the stop-band attenuation in dB ($A_s > 0$),
+{\tt \_mu} is the fractional sample offset ($-0.5 \leq \mu \leq 0.5$),
+and {\tt *\_h} is the $n$-sample output coefficient array.
+%
+Listed below is an example of the {\tt firdes\_kaiser\_window}
+interface.
+%
+\input{listings/firdes_kaiser.example.c.tex}
+%
+\begin{figure}
+\centering
+\subfigure[time] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_time}
+}
+\subfigure[PSD] {
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_freq}
+}
+\caption{{\tt firdes\_kaiser\_window()} demonstration, $f_c=0.15$,
+         $\Delta f=0.05$, $A_s=60$dB}
+\label{fig:module:filter:firdes_kaiser}
+\end{figure}
+%
+An example of a low-pass filter design using the Kaiser window can be
+found in Figure~\ref{fig:module:filter:firdes_kaiser}.
+
+
+%\subsubsection{{\tt rcos} (raised-cosine filter)}
+%\label{module:filter:firdes:rcos}
+
+\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
+\label{module:filter:firdes:rnyquist}
+Nyquist's criteria for designing a band-limited filter without
+inter-symbol interference is for the spectral response of a linear phase
+filter to be symmetric about its symbol rate.
+%
+Square-root Nyquist filters are commonly used in digital communcations
+systems with linear modulation as a pulse shape for matched filtering.
+Applying a pulse shape to the transmitted symbol sequence limits its
+occupied spectral bandwidth by smoothing the transitions between
+symbols.
+If an identical filter is applied at the receiver then the system is
+matched resulting in the maximum signal-to-noise ratio
+and (theoretically) zero inter-symbol interference.
+%The application of two square-root Nyquist filters results in 
+%
+While the design of Nyquist filters is trivial and can be accomplished
+by applying any desired window to a $\sinc$ function,
+designing a square-root Nyquist filter is not as straighforward.
+\liquid\ conveniently provides several square-root Nyquist filter
+prototypes listed in Table~\ref{tab:filter:rnyquist}.
+%
+% ------------ TABLE: RNYQUIST PROTOTYPES ------------
+\begin{table*}
+\caption{Square-root Nyquist filter prototypes available in \liquid}
+\label{tab:filter:rnyquist}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}l}
+\toprule
+{\it scheme} &
+{\it description}\\\otoprule
+%
+{\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
+{\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
+{\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
+{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+%
+The interface for designing square-root Nyquist filters is simply
+%
+\begin{Verbatim}[fontsize=\small]
+    design_rnyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+\end{Verbatim}
+%
+where {\tt \_ftype} is one of the filter types in
+Table~\ref{tab:filter:rnyquist},
+$k$ is the number of samples per symbol,
+$m$ is the filter delay in symbols,
+$\beta$ is the excess bandwidth (rolloff) factor,
+$\Delta t$ is the fractional sample delay (usually set to zero for
+  typical filter designs),
+and $h$ is the output coefficients array of length $2km+1$.
+All square-root Nyquist filters in \liquid\ have these four basic
+properties ($k$, $m$, $\beta$, $\Delta t$) and produce a filter with
+$N=2km+1$ coefficients.
+%
+
+The most common square-root Nyquist filter design in digital
+communications is the square-root raised-cosine (RRC) filter,
+likely due to the fact that an expression for its time series can be
+expressed in closed form.
+The filter coefficients themselves are derived from the following
+equation:
+%
+\begin{equation}
+\label{eqn:filter:rrcos}
+    h\left[z\right] =
+      4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
+                    \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
+                  { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
+\end{equation}
+%
+where $z=n/k-m$, and $T=1$ for most cases.
+\liquid\ compensates for the two cases where $h[n]$ might be
+undefined in the above equation, i.e.
+%
+\begin{equation}
+\label{eqn:filter:rrcos:limit1}
+    \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
+\end{equation}
+%
+and
+%
+\begin{equation}
+\label{eqn:filter:rrcos:limit2}
+    \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
+        \frac{\beta}{\sqrt{2}}
+        \left[
+            \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
+            \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
+        \right]
+\end{equation}
+
+The $r$-Kaiser and harris-Moerder-3 (hM3) filters cannot be expressed in
+closed form but rely on iterations over traditional filter design
+techniques to search for the design parameters which minimize the
+resulting filter's inter-symbol interference (ISI).
+Similarly the approximate $r$-Kaiser filter uses an approximation for
+the design parameters to eliminate the need for running the search;
+this comes at the expense of a slight performance degradation.
+
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_rnyquist}
+\caption{Contrast of the different square-root Nyquist filters
+         available in \liquid\ for
+         $k=2$, $m=9$, $\beta=0.3$, and $\Delta t = 0$.}
+\label{fig:module:filter:rnyquist}
+\end{figure}
+%
+Figure~\ref{fig:module:filter:rnyquist} contrasts the different
+square-root Nyquist filters available in \liquid.
+The square-root raised-cosine filter is inferior to the
+(approximate) $r$-Kaiser and harris-Moerder-3 filters in both transition
+bandwidth as well as side-lobe suppression.
+In the figure the responses of the $r$-Kaiser and approximate $r$-Kaiser
+filters are indistinguishable.
+
+
+\subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
+\label{module:filter:firdespm}
+FIR filter desing using the Parks-McClellan algorithm is implemented in
+\liquid\ with the {\tt firdespm} interface.
+The Parks-McClellan algorithm uses the Remez exchange algorithm to solve
+the minimax problem (minimize the maximum error) for filter design.
+The interface accepts a description of $N_b$ disjoint and
+non-overlapping frequency bands with a desired response and relative
+error weighting for each, and computes the resulting filter
+coefficients.
+%
+\begin{Verbatim}[fontsize=\small]
+    firdespm_run(_h_len,        // filter length
+                 _bands*,       // array of frequency bands
+                 _des*,         // desired response in each band
+                 _weights*,     // relative weighting for each band
+                 _num_bands,    // number of bands
+                 _btype,        // filter type
+                 _wtype*,       // weighting function for each band
+                 _h*)
+\end{Verbatim}
+%
+\begin{description}
+\item[{\tt \_bands}]
+    is a $[N_b \times 2]$ matrix of the band edge descriptions.
+    Each row corresponds to an upper and lower band edge for each region
+    of interest.
+    These regions cannot be overlapping.
+\item[{\tt \_des}]
+    is an array of size $N_b$ with the desired response (linear) for
+    each band.
+\item[{\tt \_weights}]
+    is an array of size $N_b$ with the relative error weighting for each
+    band.
+\item[{\tt \_num\_bands}]
+    represents $N_b$, the number of bands in the design.
+\item[{\tt \_btype}]
+    gives the filter type for the design.
+    This is typically {\tt LIQUID\_FIRDESPM\_BANDPASS} for the majority
+    of filters.
+\item[{\tt \_wtype}]
+    is an array of length $N_b$ which specifies the weighting function
+    for each band (flat, exponential, or linear).
+\end{description}
+%
+Listed below is an example of the {\tt firdespm} interface.
+%
+\input{listings/firdespm.example.c.tex}
+
+
+% firdespm
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdespm}
+\caption{{\tt firdespm} multi-passband filter design demonstration}
+\label{fig:module:filter:firdespm}
+\end{figure}
+
+\subsubsection{Miscellaneous functions}
+\label{module:filter:misc}
+Here are several miscellaneous functions used in \liquid's filter module,
+useful to filtering and filter design.
+
+\begin{description}
+\item[{\tt estimate\_req\_filter\_len(df,As)}]
+    returns an estimate of the required filter length, given a transition
+    bandwidth $\Delta f$ and stopband attenuation $A_s$.
+%    The estimate uses Hermann's formula \cite{Herrmann:1973}
+%    %
+%    \begin{equation}
+%    \label{eqn:filter:firdes:misc:estimate_N}
+%        N \approx \frac{
+%                D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
+%            }{
+%                \Delta f
+%            }
+%    \end{equation}
+%    %
+%    where
+%    \[
+%        D_{\infty} (\delta_1,\delta_2) =
+%            \Bigl(0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \Bigr) t_2
+%           -\Bigl(0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \Bigr)
+%    \]
+%    and
+%    \[
+%        f(\delta_1,\delta_2) = 11.012 + 0.51244\left(t_1 - t_2\right)
+%    \]
+%    with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
+    The estimate uses Kaiser's formula \cite{Vaidyanathan:1993}
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:estimate_N}
+        N \approx \frac{
+                A_s - 7.95
+            }{
+                14.26 \Delta f
+            }
+    \end{equation}
+    %
+
+\item[{\tt estimate\_req\_filter\_As(df,N)}]
+    returns an estimate of the filter's stop-band attenuation $A_s$
+    given the filter's length $N$ and transition bandwidth $\Delta f$.
+    The estimate uses an iterative binary search to find $A_s$ from
+    {\tt extimate\_req\_filter\_As()}.
+
+\item[{\tt estimate\_req\_filter\_df(As,N)}]
+    returns an estimate of the filter's transition bandwidth $\Delta f$
+    given the filter's length $N$ and stop-band attenuation $A_s$.
+    The estimate uses an iterative binary search to find $\Delta f$ from
+    {\tt extimate\_req\_filter\_As()}.
+
+\item[{\tt kaiser\_beta\_As(As)}]
+    % TODO : Kaiser window parameter previously defined as alpha!
+    returns an estimate of the Kaiser $\beta$ factor for a particular
+    stop-band attenuation $A_s$.
+    The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:kaiser_beta}
+        \beta =
+        \begin{cases}
+            0.1102 (A_s - 8.7)      &   A_s > 50 \\
+            0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
+            0                       &   \text{else}
+        \end{cases}
+    \end{equation}
+
+\item[{\tt fir\_group\_delay(*h,n,f)}]
+    computes the group delay for a finite impulse-response filter with
+    $n$ coefficients $\vec{h}$ at a frequency $f$.
+    The group delay $\tau_g$ at frequency $f$
+    for a finite impulse response filter of length $N$
+    is computed as
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:fir_group_delay}
+        \tau_g = \Re\Biggl\{ \,\,
+            \frac{
+                \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k} \cdot k}
+            } {
+                \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k}}
+            }\,\,
+            \Biggr\}
+    \end{equation}
+
+\item[{\tt iir\_group\_delay(*b,nb,*a,na,f)}]
+    computes the group delay for an infinite impulse-response filter
+    with $n_a$ feed-back coefficients $\vec{a}$,
+    and $n_a$ feed-forward coefficients $\vec{b}$
+    at a frequency $f$.
+    The group delay $\tau_g$ at frequency $f$ for an infinite impulse
+    response filter of order $N$ is computed as
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:iir_group_delay}
+        \tau_g = \Re\Biggl\{ \,\,
+            \frac{
+                \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k} \cdot k}
+            } {
+                \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k}}
+            }\,\,
+            \Biggr\}
+            - N
+    \end{equation}
+    %
+    where $c(n) = \sum_{m=0}^{N-1}{a(m)^*b(m-n)}$
+    for $n \in \{0,1,\ldots,2(N+1)\}$
+    which can be described as the flipped convolution of $\vec{a}$ and
+    $\vec{b}$.
+
+\item[{\tt iirdes\_isstable(*b,*a,n)}]
+    checks the stability of an infinite impulse-response filter with $n$
+    feed-back and feed-forward coefficients $\vec{a}$ and $\vec{b}$
+    respectively.
+    Stability is tested by computing the roots of the denominator
+    (poles) and ensuring that they lie within the unit circle.
+    Notice that the poles in
+    % using the cleveref package
+%    \cref{fig:module:filter:butter,%
+%          fig:module:filter:cheby1,%
+%          fig:module:filter:cheby2,%
+%          fig:module:filter:ellip,%
+%          fig:module:filter:bessel}
+    % using regular references
+    Figures~\ref{fig:module:filter:butter}--%
+           \ref{fig:module:filter:bessel}
+    all have their poles within the unit circle and are therefore stable
+    (as expected).
+
+\item[{\tt liquid\_filter\_autocorr(*h,N,n)}]
+    computes the auto-correlation of a filter with an array of
+    coefficients $\vec{h}$ of length $N$ at a specific lag $n$ as
+    \[
+        r_{hh}(n) = \sum_{k=n}^{N-1} {h(k)h^*(k-n)}
+    \]
+
+\item[{\tt liquid\_filter\_isi(*h,k,m,*rms,*max)}]
+    computes the inter-symbol interference 
+    (both mean-squared error and maximum error)
+    for a filter $\vec{h}$ with $k$ samples per symbol and delay of $m$
+    samples.
+    The filter has $2km+1$ coefficients and the resulting
+    RMS and maximum ISI are stored in {\tt rms} and {\tt max},
+    respectively.
+    This is useful in comparing the performance of root-Nyquist matched
+    filter designs (e.g. root raised-cosine).
+    %The inter-symbol interference of a filter is simply its auto-correlation
+    %at a lag equal to its...
+    %The total interference is the ...
+
+\item[{\tt liquid\_filter\_energy(*h,N,fc,nfft)}]
+    computes the relative out-of-band energy $E_0$ at a cutoff frequency
+    $f_c$ for a finite impulse response filter $\vec{h}$ with $N$
+    coefficients.
+    The parameter {\tt nfft} specifies the precision of the computation.
+    The relative out-of-band energy is computed as
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:filter_energy}
+        E_0 =
+            \frac{
+                \int_{2 \pi f_c}^{\infty}{H(\omega)d\omega}
+            } {
+                \int_{0}^{\infty}{H(\omega)d\omega}
+            }
+    \end{equation}
+
+\end{description}
+
+
 % 
 % firhilb
 %
@@ -244,11 +825,6 @@ located within the main \liquid\ project directory.
 {\it See also:} {\tt resamp2} (Section~\ref{module:filter:resamp2}),
 FIR filter design (Section~\ref{module:filter:firdes}).
 
-
-% 
-% firpfb
-%
-%\subsection{{\tt firpfb} (finite impulse response polyphase filter bank)}
 
 % 
 % interp
@@ -1141,577 +1717,4 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
 \end{description}
 %
 
-
-% 
-% firfarrow
-%
-\subsection{{\tt firfarrow} (finite impulse response Farrow filter)}
-\label{module:filter:firfarrow}
-\liquid\ implements non-recursive Farrow filters using the
-{\tt firfarrow} family of objects.
-The Farrow structure is convenient for varying the group delay of a
-filter.
-The filter coefficients themselves are not stored explicitly, but are
-represented as a set of polynomials each with an order $Q$.
-The coefficients can be computed dynamically from the polynomial by
-arbitrarily specifying the fractional sample delay $\mu$.
-%
-Listed below is the full interface to the {\tt firfarrow} family of
-objects.
-While each method is listed for {\tt firfarrow\_crcf}, the same
-functionality applies to {\tt firfarrow\_rrrf}.
-%
-\begin{description}
-\item[{\tt firfarrow\_crcf\_create(N,Q,fc,As)}]
-    creates a {\tt firfarrow} object with $N$ coefficients using a
-    polynomial of order $Q$ with a cutoff frequency $f_c$ and as
-    stop-band attenuation of $A_s$~dB.
-\item[{\tt firfarrow\_crcf\_destroy(q)}]
-    destroy object, freeing all internally-allocated memory.
-\item[{\tt firfarrow\_crcf\_clear(q)}]
-    clear filter internal memory buffer.
-    This does not reset the delay.
-\item[{\tt firfarrow\_crcf\_print(q)}]
-    prints the filter's internal state to {\tt stdout}.
-\item[{\tt firfarrow\_crcf\_push(q,x)}]
-    push a single sample $x$ into the filter's internal buffer.
-\item[{\tt firfarrow\_crcf\_set\_delay(q,mu)}]
-    set fractional delay $\mu$ of filter.
-\item[{\tt firfarrow\_crcf\_execute(q,*y)}]
-    computes the output sample, storing the result in $y$.
-\item[{\tt firfarrow\_crcf\_get\_length(q)}]
-    returns length of the filter (number of taps)
-\item[{\tt firfarrow\_crcf\_get\_coefficients(q,*h)}]
-    returns the internal filter coefficients, storing the result in the
-    output vector $\vec{h}$.
-\item[{\tt firfarrow\_crcf\_freqresponse(q,fc,*H)}]
-    computes the complex response $H$ of the filter at the normalized
-    frequency $f_c$.
-\item[{\tt firfarrow\_crcf\_groupdelay(q,fc)}]
-    returns the group delay of the filter at the normalized
-    frequency $f_c$.
-\end{description}
-%
-Listed below is an example of the {\tt firfarrow} object's
-interface.
-%
-\input{listings/firfarrow_crcf.example.c.tex}
-%
-An example of the Farrow filter's group delay can be found in
-Figure~\ref{fig:module:filter:firfarrow_groupdelay}.
-%
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firfarrow_groupdelay}
-\caption{{\tt firfarrow\_crcf} (Farrow filter) group delay example
-    with $N=19$, $Q=5$, $f_c=0.45$, and $A_s=60$~dB.}
-\label{fig:module:filter:firfarrow_groupdelay}
-\end{figure}
-%
-
-
-% 
-% firdes (finite impulse response filter design)
-%
-\subsection{{\tt firdes} (finite impulse response filter design)}
-\label{module:filter:firdes}
-This section describes the finite impulse response filter design
-capabilities in \liquid.
-This includes basic low-pass filter design using the windowed-$\sinc$
-method,
-square-root Nyquist filters,
-arbitrary design using the Parks-McClellan algorithm,
-and some useful miscellaneous functions.
-
-\subsubsection{Window prototype}
-\label{module:filter:firdes:window}
-The ideal low-pass filter has a rectangular response in the frequency
-domain and an infinite $\sin(t)/t$ response in the time domain.
-Because all time-dependent filters must be causal, this type of filter
-is unrealizable;
-furthermore, truncating its response results in poor pass-band ripple
-stop-band rejection.
-An improvement over truncation is offered by use of a band-limiting
-window.
-Let the finite impulse response of a filter be defined as
-% 
-\begin{equation}
-\label{eqn:filter:firdes:windowed_sinc}
-    h(n) = h_i(n) w(n)
-\end{equation}
-%
-where $w(n)$ is a time-limited symmetric window and
-$h_i(n)$ is the impulse response of the ideal filter with a cutoff
-frequency $\omega_c$, viz.
-%
-\begin{equation}
-\label{eqn:filter:firdes:sinc}
-    h_i(n) =    \frac{\omega_c}{\pi}
-                \left(
-                    \frac{\sin\omega_c n}{\omega_c n}
-                \right),
-                \,\,\,\,
-                \forall n
-\end{equation}
-%
-A number of possible windows could be used;
-the Kaiser window is particularly common due to its systematic ability
-to trade transition bandwidth for stop-band rejection.
-The Kaiser window is defined as
-%
-\begin{equation}
-\label{eqn:filter:firdes:kaiser_window}
-    w(n) =  \frac{
-                I_0\left[\pi\alpha\sqrt{1-\left(\frac{n}{N/2}\right)^2}\right]
-            }{
-                I_0\left(\pi\alpha\right)
-            }
-            \,\,\,\,
-            -N/2 \leq n \leq N/2,
-            \,\,
-            \alpha \geq 0
-\end{equation}
-%
-where $I_\nu(z)$ is the modified Bessel function of the first kind of
-order $\nu$ and $\alpha$ is a shape parameter controlling the window
-decay.
-%
-$I_\nu(z)$ can be expanded as
-%
-\begin{equation}
-\label{eqn:filter:firdes:besseli_infinite_sum}
-    I_\nu(z) =  \left( \frac{z}{2} \right)^\nu
-                \sum_{k=0}^{\infty}{
-                    \frac{
-                        \left(\frac{1}{4}z^2\right)^k
-                    }{
-                        k!\Gamma(k+\nu+1)
-                    }
-                }
-\end{equation}
-%
-The sum in (\ref{eqn:filter:firdes:besseli_infinite_sum})
-converges quickly due to the denominator increasing rapidly, 
-(and in particular for $\nu=0$ the denominator reduces to $(k!)^2$)
-and thus only a few terms are necessary for sufficient approximation.
-%
-The sum (\ref{eqn:filter:firdes:besseli_infinite_sum}) converges quickly
-due to the denominator increasing rapidly, thus only a few terms are
-necessary for sufficient approximation.
-For more approximations to $I_0(z)$ and $I_\nu(z)$,
-see Section~\ref{module:math} in the math module.
-%
-Kaiser gives an approximation for the value of $\alpha$ to give a
-particular sidelobe level for the window as
-\cite[(3.2.7)]{Vaidyanathan:1993}
-\begin{equation}
-\label{eq:kaiser_alpha}
-    \alpha =
-    \begin{cases}
-        0.1102 (A_s - 8.7)      &   A_s > 50 \\
-        0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
-        0                       &   \text{else}
-    \end{cases}
-\end{equation}
-%
-where $A_s > 0$ is the stop-band attenuation in decibels.
-%
-This approximation is provided in \liquid\ by the
-{\tt kaiser\_beta\_As()} method,
-and the length of the filter can be approximated with
-{\tt estimate\_req\_filter\_len()}
-(see section~\ref{module:filter:misc} for more detail on these methods).
-
-The entire design process is provided in \liquid\ with the
-{\tt firdes\_kaiser\_window()} method which can be invoked as follows:
-%
-\begin{Verbatim}[fontsize=\small]
-    firdes_kaiser_window(_n, _fc, _As, _mu, *_h)
-\end{Verbatim}
-%
-where
-{\tt \_n} is the length of the filter (number of samples),
-{\tt \_fc} is the normalized cutoff frequency ($0 \leq f_c \leq 0.5$),
-{\tt \_As} is the stop-band attenuation in dB ($A_s > 0$),
-{\tt \_mu} is the fractional sample offset ($-0.5 \leq \mu \leq 0.5$),
-and {\tt *\_h} is the $n$-sample output coefficient array.
-%
-Listed below is an example of the {\tt firdes\_kaiser\_window}
-interface.
-%
-\input{listings/firdes_kaiser.example.c.tex}
-%
-\begin{figure}
-\centering
-\subfigure[time] {
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_time}
-}
-\subfigure[PSD] {
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_kaiser_freq}
-}
-\caption{{\tt firdes\_kaiser\_window()} demonstration, $f_c=0.15$,
-         $\Delta f=0.05$, $A_s=60$dB}
-\label{fig:module:filter:firdes_kaiser}
-\end{figure}
-%
-An example of a low-pass filter design using the Kaiser window can be
-found in Figure~\ref{fig:module:filter:firdes_kaiser}.
-
-
-%\subsubsection{{\tt rcos} (raised-cosine filter)}
-%\label{module:filter:firdes:rcos}
-
-\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
-\label{module:filter:firdes:rnyquist}
-Nyquist's criteria for designing a band-limited filter without
-inter-symbol interference is for the spectral response of a linear phase
-filter to be symmetric about its symbol rate.
-%
-Square-root Nyquist filters are commonly used in digital communcations
-systems with linear modulation as a pulse shape for matched filtering.
-Applying a pulse shape to the transmitted symbol sequence limits its
-occupied spectral bandwidth by smoothing the transitions between
-symbols.
-If an identical filter is applied at the receiver then the system is
-matched resulting in the maximum signal-to-noise ratio
-and (theoretically) zero inter-symbol interference.
-%The application of two square-root Nyquist filters results in 
-%
-While the design of Nyquist filters is trivial and can be accomplished
-by applying any desired window to a $\sinc$ function,
-designing a square-root Nyquist filter is not as straighforward.
-\liquid\ conveniently provides several square-root Nyquist filter
-prototypes listed in Table~\ref{tab:filter:rnyquist}.
-%
-% ------------ TABLE: RNYQUIST PROTOTYPES ------------
-\begin{table*}
-\caption{Square-root Nyquist filter prototypes available in \liquid}
-\label{tab:filter:rnyquist}
-\centering
-{\small
-\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}l}
-\toprule
-{\it scheme} &
-{\it description}\\\otoprule
-%
-{\tt LIQUID\_RNYQUIST\_ARKAISER}    & approximate r-Kaiser\\
-{\tt LIQUID\_RNYQUIST\_RKAISER}     & r-Kaiser\\
-{\tt LIQUID\_RNYQUIST\_RRC}         & square-root raised cosine\\
-{\tt LIQUID\_RNYQUIST\_hM3}         & harris-Moerder type 3 \cite{harris-Moerder:2005}\\\bottomrule
-\end{tabular*}
-}
-\end{table*}%
-% ------------------------
-%
-The interface for designing square-root Nyquist filters is simply
-%
-\begin{Verbatim}[fontsize=\small]
-    design_rnyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
-\end{Verbatim}
-%
-where {\tt \_ftype} is one of the filter types in
-Table~\ref{tab:filter:rnyquist},
-$k$ is the number of samples per symbol,
-$m$ is the filter delay in symbols,
-$\beta$ is the excess bandwidth (rolloff) factor,
-$\Delta t$ is the fractional sample delay (usually set to zero for
-  typical filter designs),
-and $h$ is the output coefficients array of length $2km+1$.
-All square-root Nyquist filters in \liquid\ have these four basic
-properties ($k$, $m$, $\beta$, $\Delta t$) and produce a filter with
-$N=2km+1$ coefficients.
-%
-
-The most common square-root Nyquist filter design in digital
-communications is the square-root raised-cosine (RRC) filter,
-likely due to the fact that an expression for its time series can be
-expressed in closed form.
-The filter coefficients themselves are derived from the following
-equation:
-%
-\begin{equation}
-\label{eqn:filter:rrcos}
-    h\left[z\right] =
-      4\beta \frac{ \cos\left[(1+\beta)\pi z\right] +
-                    \sin\left[(1-\beta)\pi z\right] / (4\beta z) }
-                  { \pi \sqrt{T}\left[ 1-16\beta^2z^2\right] }
-\end{equation}
-%
-where $z=n/k-m$, and $T=1$ for most cases.
-\liquid\ compensates for the two cases where $h[n]$ might be
-undefined in the above equation, i.e.
-%
-\begin{equation}
-\label{eqn:filter:rrcos:limit1}
-    \mathop {\lim }\limits_{z \to 0 } h(z) = 1 - \beta + 4\beta/\pi
-\end{equation}
-%
-and
-%
-\begin{equation}
-\label{eqn:filter:rrcos:limit2}
-    \mathop {\lim }\limits_{z \to \pm \frac{1}{4\beta} } h(z) =
-        \frac{\beta}{\sqrt{2}}
-        \left[
-            \left(1 + \frac{2}{\pi}\right)\sin\left(\frac{\pi}{4\beta}\right) +
-            \left(1 - \frac{2}{\pi}\right)\cos\left(\frac{\pi}{4\beta}\right)
-        \right]
-\end{equation}
-
-The $r$-Kaiser and harris-Moerder-3 (hM3) filters cannot be expressed in
-closed form but rely on iterations over traditional filter design
-techniques to search for the design parameters which minimize the
-resulting filter's inter-symbol interference (ISI).
-Similarly the approximate $r$-Kaiser filter uses an approximation for
-the design parameters to eliminate the need for running the search;
-this comes at the expense of a slight performance degradation.
-
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_rnyquist}
-\caption{Contrast of the different square-root Nyquist filters
-         available in \liquid\ for
-         $k=2$, $m=9$, $\beta=0.3$, and $\Delta t = 0$.}
-\label{fig:module:filter:rnyquist}
-\end{figure}
-%
-Figure~\ref{fig:module:filter:rnyquist} contrasts the different
-square-root Nyquist filters available in \liquid.
-The square-root raised-cosine filter is inferior to the
-(approximate) $r$-Kaiser and harris-Moerder-3 filters in both transition
-bandwidth as well as side-lobe suppression.
-In the figure the responses of the $r$-Kaiser and approximate $r$-Kaiser
-filters are indistinguishable.
-
-
-\subsubsection{{\tt firdespm} (Parks-McClellan algorithm)}
-\label{module:filter:firdespm}
-FIR filter desing using the Parks-McClellan algorithm is implemented in
-\liquid\ with the {\tt firdespm} interface.
-The Parks-McClellan algorithm uses the Remez exchange algorithm to solve
-the minimax problem (minimize the maximum error) for filter design.
-The interface accepts a description of $N_b$ disjoint and
-non-overlapping frequency bands with a desired response and relative
-error weighting for each, and computes the resulting filter
-coefficients.
-%
-\begin{Verbatim}[fontsize=\small]
-    firdespm_run(_h_len,        // filter length
-                 _bands*,       // array of frequency bands
-                 _des*,         // desired response in each band
-                 _weights*,     // relative weighting for each band
-                 _num_bands,    // number of bands
-                 _btype,        // filter type
-                 _wtype*,       // weighting function for each band
-                 _h*)
-\end{Verbatim}
-%
-\begin{description}
-\item[{\tt \_bands}]
-    is a $[N_b \times 2]$ matrix of the band edge descriptions.
-    Each row corresponds to an upper and lower band edge for each region
-    of interest.
-    These regions cannot be overlapping.
-\item[{\tt \_des}]
-    is an array of size $N_b$ with the desired response (linear) for
-    each band.
-\item[{\tt \_weights}]
-    is an array of size $N_b$ with the relative error weighting for each
-    band.
-\item[{\tt \_num\_bands}]
-    represents $N_b$, the number of bands in the design.
-\item[{\tt \_btype}]
-    gives the filter type for the design.
-    This is typically {\tt LIQUID\_FIRDESPM\_BANDPASS} for the majority
-    of filters.
-\item[{\tt \_wtype}]
-    is an array of length $N_b$ which specifies the weighting function
-    for each band (flat, exponential, or linear).
-\end{description}
-%
-Listed below is an example of the {\tt firdespm} interface.
-%
-\input{listings/firdespm.example.c.tex}
-
-
-% firdespm
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firdespm}
-\caption{{\tt firdespm} multi-passband filter design demonstration}
-\label{fig:module:filter:firdespm}
-\end{figure}
-
-\subsubsection{Miscellaneous functions}
-\label{module:filter:misc}
-Here are several miscellaneous functions used in \liquid's filter module,
-useful to filtering and filter design.
-
-\begin{description}
-\item[{\tt estimate\_req\_filter\_len(df,As)}]
-    returns an estimate of the required filter length, given a transition
-    bandwidth $\Delta f$ and stopband attenuation $A_s$.
-%    The estimate uses Hermann's formula \cite{Herrmann:1973}
-%    %
-%    \begin{equation}
-%    \label{eqn:filter:firdes:misc:estimate_N}
-%        N \approx \frac{
-%                D_{\infty}(\delta_1,\delta_2) - f(\delta_1,\delta_2)(\Delta f)^2
-%            }{
-%                \Delta f
-%            }
-%    \end{equation}
-%    %
-%    where
-%    \[
-%        D_{\infty} (\delta_1,\delta_2) =
-%            \Bigl(0.005309 t_1^2 + 0.07114 t_1 - 0.4761 \Bigr) t_2
-%           -\Bigl(0.00266  t_1^2 + 0.5941  t_1 + 0.4278 \Bigr)
-%    \]
-%    and
-%    \[
-%        f(\delta_1,\delta_2) = 11.012 + 0.51244\left(t_1 - t_2\right)
-%    \]
-%    with $t_1 = \log_{10}\delta_1$ and $t_2 = \log_{10}\delta_2$.
-    The estimate uses Kaiser's formula \cite{Vaidyanathan:1993}
-    %
-    \begin{equation}
-    \label{eqn:filter:firdes:misc:estimate_N}
-        N \approx \frac{
-                A_s - 7.95
-            }{
-                14.26 \Delta f
-            }
-    \end{equation}
-    %
-
-\item[{\tt estimate\_req\_filter\_As(df,N)}]
-    returns an estimate of the filter's stop-band attenuation $A_s$
-    given the filter's length $N$ and transition bandwidth $\Delta f$.
-    The estimate uses an iterative binary search to find $A_s$ from
-    {\tt extimate\_req\_filter\_As()}.
-
-\item[{\tt estimate\_req\_filter\_df(As,N)}]
-    returns an estimate of the filter's transition bandwidth $\Delta f$
-    given the filter's length $N$ and stop-band attenuation $A_s$.
-    The estimate uses an iterative binary search to find $\Delta f$ from
-    {\tt extimate\_req\_filter\_As()}.
-
-\item[{\tt kaiser\_beta\_As(As)}]
-    % TODO : Kaiser window parameter previously defined as alpha!
-    returns an estimate of the Kaiser $\beta$ factor for a particular
-    stop-band attenuation $A_s$.
-    The estimate uses Kaiser's original formula \cite{Vaidyanathan:1993}, viz
-    %
-    \begin{equation}
-    \label{eqn:filter:firdes:misc:kaiser_beta}
-        \beta =
-        \begin{cases}
-            0.1102 (A_s - 8.7)      &   A_s > 50 \\
-            0.5842 (A_s - 21)^{0.4} &   21 < A_s \le 50 \\
-            0                       &   \text{else}
-        \end{cases}
-    \end{equation}
-
-\item[{\tt fir\_group\_delay(*h,n,f)}]
-    computes the group delay for a finite impulse-response filter with
-    $n$ coefficients $\vec{h}$ at a frequency $f$.
-    The group delay $\tau_g$ at frequency $f$
-    for a finite impulse response filter of length $N$
-    is computed as
-    %
-    \begin{equation}
-    \label{eqn:filter:firdes:misc:fir_group_delay}
-        \tau_g = \Re\Biggl\{ \,\,
-            \frac{
-                \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k} \cdot k}
-            } {
-                \sum_{k=0}^{N-1}{h(k)e^{j 2 \pi f k}}
-            }\,\,
-            \Biggr\}
-    \end{equation}
-
-\item[{\tt iir\_group\_delay(*b,nb,*a,na,f)}]
-    computes the group delay for an infinite impulse-response filter
-    with $n_a$ feed-back coefficients $\vec{a}$,
-    and $n_a$ feed-forward coefficients $\vec{b}$
-    at a frequency $f$.
-    The group delay $\tau_g$ at frequency $f$ for an infinite impulse
-    response filter of order $N$ is computed as
-    %
-    \begin{equation}
-    \label{eqn:filter:firdes:misc:iir_group_delay}
-        \tau_g = \Re\Biggl\{ \,\,
-            \frac{
-                \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k} \cdot k}
-            } {
-                \sum_{k=0}^{2(N+1)}{c(k)e^{j 2 \pi f k}}
-            }\,\,
-            \Biggr\}
-            - N
-    \end{equation}
-    %
-    where $c(n) = \sum_{m=0}^{N-1}{a(m)^*b(m-n)}$
-    for $n \in \{0,1,\ldots,2(N+1)\}$
-    which can be described as the flipped convolution of $\vec{a}$ and
-    $\vec{b}$.
-
-\item[{\tt iirdes\_isstable(*b,*a,n)}]
-    checks the stability of an infinite impulse-response filter with $n$
-    feed-back and feed-forward coefficients $\vec{a}$ and $\vec{b}$
-    respectively.
-    Stability is tested by computing the roots of the denominator
-    (poles) and ensuring that they lie within the unit circle.
-    Notice that the poles in
-    % using the cleveref package
-%    \cref{fig:module:filter:butter,%
-%          fig:module:filter:cheby1,%
-%          fig:module:filter:cheby2,%
-%          fig:module:filter:ellip,%
-%          fig:module:filter:bessel}
-    % using regular references
-    Figures~\ref{fig:module:filter:butter}--%
-           \ref{fig:module:filter:bessel}
-    all have their poles within the unit circle and are therefore stable
-    (as expected).
-
-\item[{\tt liquid\_filter\_autocorr(*h,N,n)}]
-    computes the auto-correlation of a filter with an array of
-    coefficients $\vec{h}$ of length $N$ at a specific lag $n$ as
-    \[
-        r_{hh}(n) = \sum_{k=n}^{N-1} {h(k)h^*(k-n)}
-    \]
-
-\item[{\tt liquid\_filter\_isi(*h,k,m,*rms,*max)}]
-    computes the inter-symbol interference 
-    (both mean-squared error and maximum error)
-    for a filter $\vec{h}$ with $k$ samples per symbol and delay of $m$
-    samples.
-    The filter has $2km+1$ coefficients and the resulting
-    RMS and maximum ISI are stored in {\tt rms} and {\tt max},
-    respectively.
-    This is useful in comparing the performance of root-Nyquist matched
-    filter designs (e.g. root raised-cosine).
-    %The inter-symbol interference of a filter is simply its auto-correlation
-    %at a lag equal to its...
-    %The total interference is the ...
-
-\item[{\tt liquid\_filter\_energy(*h,N,fc,nfft)}]
-    computes the relative out-of-band energy $E_0$ at a cutoff frequency
-    $f_c$ for a finite impulse response filter $\vec{h}$ with $N$
-    coefficients.
-    The parameter {\tt nfft} specifies the precision of the computation.
-    The relative out-of-band energy is computed as
-    %
-    \begin{equation}
-    \label{eqn:filter:firdes:misc:filter_energy}
-        E_0 =
-            \frac{
-                \int_{2 \pi f_c}^{\infty}{H(\omega)d\omega}
-            } {
-                \int_{0}^{\infty}{H(\omega)d\omega}
-            }
-    \end{equation}
-
-\end{description}
 
