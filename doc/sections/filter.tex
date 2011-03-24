@@ -736,9 +736,11 @@ useful to filtering and filter design.
 \item[{\tt liquid\_filter\_autocorr(*h,N,n)}]
     computes the auto-correlation of a filter with an array of
     coefficients $\vec{h}$ of length $N$ at a specific lag $n$ as
-    \[
+    %
+    \begin{equation}
+    \label{eqn:filter:firdes:misc:autocorr}
         r_{hh}(n) = \sum_{k=n}^{N-1} {h(k)h^*(k-n)}
-    \]
+    \end{equation}
 
 \item[{\tt liquid\_filter\_isi(*h,k,m,*rms,*max)}]
     computes the inter-symbol interference 
@@ -1149,7 +1151,7 @@ procedure.
 A simplified example for this procedure is given in
 {\tt examples/iirdes\_example.c}.
 
-\subsubsection{{\tt iirdes} filter types}
+\subsubsection{Available Filter Types}
 \label{module:filter:iirdes:types}
 There are currently five low-pass prototypes available for inifinite impulse
 response filter design in \liquid, as described below:
@@ -1159,27 +1161,33 @@ response filter design in \liquid, as described below:
     is a Butterworth filter.
     This is an all-pole analog design that has a maximally flat magnitude
     response in the passband.
-    The analog prototype interface is {\tt butter\_azpkf()} which computes the
-    roots $s_0,s_1,\ldots,s_{n-1}$ of the $n^{th}$-order Butterworth
-    polynomial,
-    \[
-        s_k = \omega_c \exp\left\{
-                    j \frac{\left(2k+n+1\right)\pi}{2n}
-              \right\}
-    \]
+    The analog prototype interface is {\tt butter\_azpkf()} which
+    computes the $n$ complex roots $p_{a0},p_{a1},\ldots,p_{an-1}$
+    of the $n^{th}$-order Butterworth polynomial,
+    %
+    \begin{equation}
+    \label{eqn:filter:iirdes:butter}
+        p_{ak} =
+            \omega_c \exp\left\{
+                j \frac{\left(2k+n+1\right)\pi}{2n}
+            \right\}
+    \end{equation}
+    %
     for $k=0,1,\ldots,n-1$.
     Note that this results in a set of complex conjugate pairs such that
     $(-1)^n s_0 s_1 \cdots s_{n-1} = 1$.
     An example of a digital filter response can be found in
-    Figure~\ref{fig:module:filter:butter}
+    Figure~\ref{fig:module:filter:butter};
 \item[{\tt LIQUID\_IIRDES\_CHEBY1}]
     is a Chebyshev Type-I filter.
     This design uses Chebyshev polynomials to create a filter with a sharper
     transition band than the Butterworth design by allowing ripples in the
     passband.
-    The analog prototype interface is {\tt cheby1\_azpkf()}.
+    The analog prototype interface is {\tt cheby1\_azpkf()} which
+    computes the $n$ complex roots $p_{ak}$ of the $n^{th}$-order
+    Chebyshev polynomial.
     An example of a digital filter response can be found in
-    Figure~\ref{fig:module:filter:cheby1}
+    Figure~\ref{fig:module:filter:cheby1};
 \item[{\tt LIQUID\_IIRDES\_CHEBY2}]
     is a Chebyshev Type-II filter.
     This design is similar to that of Chebyshev Type-I, except that the
@@ -1200,7 +1208,7 @@ response filter design in \liquid, as described below:
     \cite{Orfanidis:2006}.
     The analog prototype interface is {\tt ellip\_azpkf()}.
     An example of a digital filter response can be found in
-    Figure~\ref{fig:module:filter:ellip}
+    Figure~\ref{fig:module:filter:ellip};
 \item[{\tt LIQUID\_IIRDES\_BESSEL}]
     is a Bessel filter.
     This is an all-pole analog design that has a maximally flat group delay
@@ -1212,7 +1220,7 @@ response filter design in \liquid, as described below:
     \cite{Orchard:1965}.
     The analog prototype interface is {\tt bessel\_azpkf()}.
     An example of a digital filter response can be found in
-    Figure~\ref{fig:module:filter:bessel}
+    Figure~\ref{fig:module:filter:bessel}.
 \end{description}
 
 % 
