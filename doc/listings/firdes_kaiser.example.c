@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/firdes_kaiser.example.c
 
 int main() {
     // options

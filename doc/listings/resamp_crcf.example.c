@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/resamp_crcf.example.c
 
 int main() {
     // options

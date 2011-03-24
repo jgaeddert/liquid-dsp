@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/eqlms_cccf.example.c
 
 int main() {
     // options

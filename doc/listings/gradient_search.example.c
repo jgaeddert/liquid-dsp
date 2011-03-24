@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/gradient_search.example.c
 
 int main() {
     unsigned int num_parameters = 8;    // search dimensionality

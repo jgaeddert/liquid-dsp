@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/bpacket.example.c
 
 int callback(unsigned char * _payload,
              int _payload_valid,
