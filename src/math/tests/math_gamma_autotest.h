@@ -118,6 +118,11 @@ void autotest_lngamma()
     CONTEND_DELTA( liquid_lngammaf(9.33254300796992e+01), 3.28659150940827e+02, tol );
     CONTEND_DELTA( liquid_lngammaf(1.38038426460289e+02), 5.40606126998515e+02, tol );
 
+    // test very large numbers
+    CONTEND_DELTA( liquid_lngammaf(140), 550.278651724286, tol);
+    CONTEND_DELTA( liquid_lngammaf(150), 600.009470555327, tol);
+    CONTEND_DELTA( liquid_lngammaf(160), 650.409682895655, tol);
+    CONTEND_DELTA( liquid_lngammaf(170), 701.437263808737, tol);
 }
 
 // 
@@ -195,6 +200,6 @@ void autotest_nchoosek()
     CONTEND_DELTA(liquid_nchoosek(7,    7),      1,     tol);
 
     // test very large numbers
-    //CONTEND_DELTA(liquid_nchoosek(124,  5),     225150024,  5000);
+    CONTEND_DELTA(liquid_nchoosek(124,  5),     225150024,  5000);
 }
 

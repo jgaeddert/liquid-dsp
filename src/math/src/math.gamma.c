@@ -45,7 +45,7 @@ float liquid_lngammaf(float _z)
     if (_z < 0) {
         fprintf(stderr,"error: liquid_lngammaf(), undefined for z <= 0\n");
         exit(1);
-    } else if (_z < 8.0f) {
+    } else if (_z < 10.0f) {
 #if 0
         g = -EULER_GAMMA*_z - logf(_z);
         unsigned int k;
