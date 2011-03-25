@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_MATRIXF_AUTOTEST_H__
-#define __LIQUID_MATRIXF_AUTOTEST_H__
-
 #include <string.h>
 
 #include "autotest/autotest.h"
@@ -309,17 +306,17 @@ void autotest_matrixf_inv()
 }
 
 // 
-// AUTOTEST: L/U decomp (Crout)
+// AUTOTEST: Q/R decomp (Gram-Schmidt)
 //
 void autotest_matrixf_qrdecomp()
 {
-    float tol = 1e-6f;  // error tolerance
+    float tol = 1e-4f;  // error tolerance
 
     float A[16]= {
-        1,2,3,4,
-        5,5,7,8,
-        6,4,8,7,
-        1,0,3,1};
+        1.0f, 2.0f, 3.0f, 4.0f,
+        5.0f, 5.0f, 7.0f, 8.0f,
+        6.0f, 4.0f, 8.0f, 7.0f,
+        1.0f, 0.0f, 3.0f, 1.0f};
 
     float Q[16];
     float R[16];
@@ -342,9 +339,9 @@ void autotest_matrixf_qrdecomp()
 
     if (liquid_autotest_verbose) {
         printf("Q :\n");
-        matrixf_print(R,4,4);
-        printf("R :\n");
         matrixf_print(Q,4,4);
+        printf("R :\n");
+        matrixf_print(R,4,4);
     }
 
     unsigned int i;
@@ -357,4 +354,3 @@ void autotest_matrixf_qrdecomp()
     // TODO : test Q*Q' == eye(4)
 }
 
-#endif // __LIQUID_MATRIXF_AUTOTEST_H__

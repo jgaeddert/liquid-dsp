@@ -25,7 +25,9 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-// L/U/P decomposition, Crout's method
+#define DEBUG_MATRIX_QRDECOMP 1
+
+// Q/R decomposition using the Gram-Schmidt algorithm
 void MATRIX(_qrdecomp_gramschmidt)(T * _x,
                                    unsigned int _rx,
                                    unsigned int _cx,
@@ -39,40 +41,63 @@ void MATRIX(_qrdecomp_gramschmidt)(T * _x,
     }
     unsigned int n = _rx;
 
-    T u[n*n];   // normal...
-    T e[n*n];   // normalized...
-
     unsigned int i;
     unsigned int j;
     unsigned int k;
+
+    // generate and initialize matrices
+    T e[n*n];   // normalized...
+    for (i=0; i<n*n; i++)
+        e[i] = 0.0f;
+
     for (k=0; k<n; k++) {
+        // e(i,k) <- _x(i,k)
         for (i=0; i<n; i++)
-            matrix_access(u,n,n,i,k) = matrix_access(_x,n,n,i,k);
+            matrix_access(e,n,n,i,k) = matrix_access(_x,n,n,i,k);
 
         // subtract...
         for (i=0; i<k; i++) {
+            // compute dot product _x(:,k) * e(:,i)
             T g = 0.0f;
             for (j=0; j<n; j++)
                 g += matrix_access(_x,n,n,j,k) * matrix_access(e,n,n,j,i);
-            matrix_access(u,n,n,i,k) -= matrix_access(e,n,n,i,k) * g;
+            //printf("  i=%2u, g = %12.4e\n", i, crealf(g));
+            for (j=0; j<n; j++)
+                matrix_access(e,n,n,j,k) -= matrix_access(e,n,n,j,i) * g;
         }
 
         // compute e_k = e_k / |e_k|
         float ek = 0.0f;
         T ak;
         for (i=0; i<n; i++) {
-            ak = matrix_access(u,n,n,i,k);
+            ak = matrix_access(e,n,n,i,k);
             ek += fabsf( ak*conjf(ak) );
         }
         ek = sqrtf(ek);
 
-        // compute normalized...
+        // normalize e
         for (i=0; i<n; i++)
-            matrix_access(e,n,n,i,k) = matrix_access(u,n,n,i,k) / ek;
-
+            matrix_access(e,n,n,i,k) /= ek;
     }
 
+    // move Q
     memmove(_Q, e, n*n*sizeof(T));
 
+    // compute R
+    // j : row
+    // k : column
+    for (j=0; j<n; j++) {
+        for (k=0; k<n; k++) {
+            if (k < j) {
+                matrix_access(_R,n,n,j,k) = 0.0f;
+            } else {
+                // compute dot product between and Q(:,j) and _x(:,k)
+                T g = 0.0f;
+                for (i=0; i<n; i++)
+                    g += matrix_access(_Q,n,n,i,j) * matrix_access(_x,n,n,i,k);
+                matrix_access(_R,n,n,j,k) = g;
+            }
+        }
+    }
 }
 

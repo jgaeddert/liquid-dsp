@@ -106,7 +106,6 @@ int main() {
     matrixf_qrdecomp_gramschmidt(s,4,4,Q,R);
     matrixf_print(Q,4,4);
     matrixf_print(R,4,4);
-    return 0;
 
     printf("\n\n");
     float X[16] = {
