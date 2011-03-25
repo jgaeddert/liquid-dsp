@@ -65,7 +65,16 @@ float randricekf_pdf(float _x,
 
     float sig2 = sig*sig;
 
-    return (_x / sig2) * expf(-t / (2*sig2)) * liquid_besseli_0(_x*s/sig2);
+    // check high tail condition
+    if ( (_x*s/sig2) > 80.0f )
+        return 0.0f;
+
+    float t0 = logf(_x) - logf(sig2);
+    float t1 = -t / (2*sig2);
+    float t2 = liquid_lnbesseli(0.0f, _x*s/sig2);
+    return expf(t0 + t1 + t2);
+
+    //return (_x / sig2) * expf(-t / (2*sig2)) * liquid_besseli_0(_x*s/sig2);
 }
 
 // Rice-K random number cumulative distribution function
@@ -80,7 +89,18 @@ float randricekf_cdf(float _x,
     float s = sqrtf((_omega*_K)/(_K+1));
     float sig = sqrtf(0.5f*_omega/(_K+1));
 
-    float F = 1.0f - liquid_MarcumQ1(s/sig, _x/sig);
+    // test arguments of Q1 function
+    float alpha = s/sig;
+    float beta  = _x/sig;
+    //float Q1 = liquid_MarcumQ1(alpha, beta);
+    //printf("  Q1(%12.4e, %12.4e) = %12.4e\n", alpha, beta, Q1);
+
+    if ( (alpha / beta) > 3.0f )
+        return 0.0f;
+    if ( (beta / alpha) > 3.0f )
+        return 1.0f;
+
+    float F = 1.0f - liquid_MarcumQ1(alpha, beta);
 
     // check for precision error
     if (F < 0.0f) return 0.0f;

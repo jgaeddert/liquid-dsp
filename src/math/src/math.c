@@ -90,11 +90,11 @@ float liquid_MarcumQ(int _M,
 // Marcum Q-function (M=1)
 // TODO : check this computation
 // [Helstrom:1960], [Proakis:2001]
-#define NUM_MARCUMQ1_ITERATIONS 16
+#define NUM_MARCUMQ1_ITERATIONS 64
 float liquid_MarcumQ1(float _alpha,
                       float _beta)
 {
-#if 0
+#if 1
     // expand as:                    infty
     // Q_1(a,b) = exp(-(a^2+b^2)/2) * sum { (a/b)^k I_k(a*b) }
     //                                k=0
