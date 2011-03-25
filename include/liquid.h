@@ -2321,6 +2321,31 @@ void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
 void MATRIX(_div)(T * _x, T * _y, T * _z, unsigned int _n);     \
 T    MATRIX(_det)(T * _x, unsigned int _r, unsigned int _c);    \
 void MATRIX(_trans)(T * _x, unsigned int _rx, unsigned int _cx);\
+void MATRIX(_hermitian)(T * _x,                                 \
+                        unsigned int _rx,                       \
+                        unsigned int _cx);                      \
+                                                                \
+/* compute x*x'     */                                          \
+void MATRIX(_mul_transpose)(T * _x,                             \
+                            unsigned int _r,                    \
+                            unsigned int _c,                    \
+                            T * _xxT);                          \
+/* compute x'*x     */                                          \
+void MATRIX(_transpose_mul)(T * _x,                             \
+                            unsigned int _r,                    \
+                            unsigned int _c,                    \
+                            T * _xTx);                          \
+/* compute x*x.'    */                                          \
+void MATRIX(_mul_hermitian)(T * _x,                             \
+                            unsigned int _r,                    \
+                            unsigned int _c,                    \
+                            T * _xxH);                          \
+/* compute x.'*x    */                                          \
+void MATRIX(_hermitian_mul)(T * _x,                             \
+                            unsigned int _r,                    \
+                            unsigned int _c,                    \
+                            T * _xHx);                          \
+                                                                \
 void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
