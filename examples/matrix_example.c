@@ -100,6 +100,14 @@ int main() {
     matrixf_print(L,4,4);
     matrixf_print(U,4,4);
 
+    printf("\n");
+    printf("testing Q/R decomposition [Gram-Schmidt]\n");
+    float Q[16], R[16];
+    matrixf_qrdecomp_gramschmidt(s,4,4,Q,R);
+    matrixf_print(Q,4,4);
+    matrixf_print(R,4,4);
+    return 0;
+
     printf("\n\n");
     float X[16] = {
        0.84382,  -2.38304,   1.43061,  -1.66604,

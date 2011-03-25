@@ -2364,7 +2364,12 @@ void MATRIX(_ludecomp_doolittle)(T * _x,                        \
                                  unsigned int _cx,              \
                                  T * _L,                        \
                                  T * _U,                        \
-                                 T * _P);
+                                 T * _P);                       \
+void MATRIX(_qrdecomp_gramschmidt)(T * _x,                      \
+                                   unsigned int _rx,            \
+                                   unsigned int _cx,            \
+                                   T * _Q,                      \
+                                   T * _R);                     \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
