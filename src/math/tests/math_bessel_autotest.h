@@ -39,6 +39,18 @@ void autotest_lnbesseli()
     CONTEND_DELTA( liquid_lnbesseli( 1.9f, 8.7f),    6.49469148684252,   tol );
     CONTEND_DELTA( liquid_lnbesseli( 4.9f, 0.01f), -30.5795429642925,    tol );
     CONTEND_DELTA( liquid_lnbesseli( 7.4f, 9.3f),    4.33486237261960,   tol );
+
+    // test large values of nu
+    CONTEND_DELTA( liquid_lnbesseli( 20.0f,  3.0f),  -34.1194307343208, tol);
+    CONTEND_DELTA( liquid_lnbesseli( 30.0f,  3.0f),  -62.4217845317278, tol);
+#if 0
+    CONTEND_DELTA( liquid_lnbesseli( 35.0f,  3.0f),  -77.8824494916507, tol);
+    CONTEND_DELTA( liquid_lnbesseli( 38.0f,  3.0f),  -87.5028737258841, tol);
+    CONTEND_DELTA( liquid_lnbesseli( 39.0f,  3.0f),  -90.7624095618186, tol);
+    CONTEND_DELTA( liquid_lnbesseli( 40.0f,  3.0f),  -94.0471931331690, tol);
+    CONTEND_DELTA( liquid_lnbesseli( 80.0f,  3.0f), -241.208142562073,  tol);
+    CONTEND_DELTA( liquid_lnbesseli( 140.0f, 3.0f), -498.439222461430,  tol);
+#endif
 }
 
 // 
