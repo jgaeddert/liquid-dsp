@@ -44,12 +44,12 @@ returned.
 matrix $\vec{X}$ at row $r$ and column $c$.
 This method is really just a pre-processor macro which performs a literal
 string replacement
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
   #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
-\end{verbatim}
+\end{Verbatim}
 and can be used for both setting and retrieving values of a matrix.
 For example,
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     X = 
       0.406911   0.118444   0.923281   0.827254   0.463265
       0.038897   0.132381   0.061137   0.880045   0.570341
@@ -66,7 +66,7 @@ For example,
       0.038897   0.132381   0.061137   0.880045   0.570341
       0.151206   0.439508   0.695207   0.0        0.999683
       0.808384   0.601597   0.149171   0.975722   0.205819
-\end{verbatim}
+\end{Verbatim}
 Because this method is really just a macro, there is no error-checking to
 ensure that one is accessing the matrix within its memory bounds.
 Therefore, special care must be taken when programming.
@@ -89,7 +89,7 @@ matrix\_mul()} and {\tt matrix\_div()}
 (see Sections~\ref{module:matrix:mul} and \ref{module:matrix:div},
 respectively).
 %
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     X =                         Y =
       0.59027   0.83429           0.764108   0.741641
       0.67779   0.19793           0.660932   0.041723
@@ -100,7 +100,7 @@ respectively).
       0.4510300   0.6187437
       0.4479731   0.0082582
       0.9243971   0.1179412
-\end{verbatim}
+\end{Verbatim}
 
 \subsubsection{{\tt matrix\_trans} (transpose matrix)}
 \label{module:matrix:trans}
@@ -152,7 +152,7 @@ equations.
 \label{module:matrix:swaprows}
 Matrix row-swapping is often necessary to express a matrix in its row-reduced
 echelon form.
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     x = 
       0.84381998 -2.38303995  1.43060994 -1.66603994
       3.99475002  0.88066000  4.69372988  0.44563001
@@ -164,7 +164,7 @@ echelon form.
       3.99475002  0.88066000  4.69372988  0.44563001
       0.84381998 -2.38303995  1.43060994 -1.66603994
       6.07741022 -3.93098998  1.22826004 -0.42142001
-\end{verbatim}
+\end{Verbatim}
 
 \subsubsection{{\tt matrix\_pivot} (pivoting)}
 \label{module:matrix:pivot}
@@ -192,13 +192,13 @@ Row $a$ is left unchanged in $\vec{B}$.
 All elements of $\vec{B}$ in column $b$ are zero except for row $a$.
 For our example $4 \times 4$ matrix $\vec{x}$, pivoting around
 $\vec{x}_{1,2}$ gives:
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     matrixf_pivot(x,4,4,1,2);
       0.37374675  2.65145779  0.00000000  1.80186427
       3.99475002  0.88066000  4.69372988  0.44563001
      -6.70986557  2.19192743  0.00000000 -9.74288940
      -5.03205967  4.16144180  0.00000000  0.53803295
-\end{verbatim}
+\end{Verbatim}
 
 % matrix_mul()
 \subsubsection{{\tt matrix\_mul} (multiplication)}
@@ -217,7 +217,7 @@ rows of $\vec{B}$, and that the resulting matrix is of size $m \times p$
 (the number of rows in $\vec{A}$ and columns in $\vec{B}$).
 
 % TODO : come up with better example
-%\begin{verbatim}
+%\begin{Verbatim}[fontsize=\small]
 %    A =                 B =
 %        1   2   3           1   2   3
 %        4   5   6           4   5   6
@@ -227,7 +227,7 @@ rows of $\vec{B}$, and that the resulting matrix is of size $m \times p$
 %    Z =
 %        30  36  42
 %        66  81  96
-%\end{verbatim}
+%\end{Verbatim}
 
 % 
 % complex math operations 
@@ -273,13 +273,13 @@ The {\tt matrix\_inv} method uses Gauss-Jordan elmination (see
 {\tt matrix\_gjelim}) for row reduction and back-substitution.
 Pivot elements in $\vec{A}$ with the largest magnitude are chosen to help
 stability in floating-point arithmetic.
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     matrixf_inv(x,4,4);
      -0.33453920  0.04643385 -0.04868321  0.23879384
      -0.42204019  0.12152659 -0.07431178  0.06774280
       0.35104612  0.15256262  0.04403552 -0.20177667
       0.13544561 -0.01930523  0.11944833 -0.14921521
-\end{verbatim}
+\end{Verbatim}
 
 \subsubsection{{\tt matrix\_div} (solve linear system of equations)}
 \label{module:matrix:div}
@@ -299,9 +299,9 @@ computing the product of the diagonal elements of $\vec{U}$, viz
 \]
 This is equivalent to performing L/U decomposition using Crout's method and
 then computing the product of the diagonal elements of $\vec{L}$.
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     matrixf_det(X,4,4) = 585.40289307
-\end{verbatim}
+\end{Verbatim}
 
 \subsubsection{{\tt matrix\_ludecomp\_crout} (LU Decomposition, Crout's Method)}
 \label{module:matrix:ludecomp_crout}
@@ -325,7 +325,7 @@ diagonal are 1).
                     \ \forall k \in \{0,n-1\}, j \in \{k+1,n-1\}
 \]
 %
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     matrixf_ludecomp_crout(X,4,4,L,U,P)
     L =
       0.84381998  0.00000000  0.00000000  0.00000000
@@ -337,7 +337,7 @@ diagonal are 1).
       0.00000000  1.00000000 -0.17093502  0.68514121
       0.00000000  0.00000000  1.00000000 -1.35225296
       0.00000000  0.00000000  0.00000000  1.00000000
-\end{verbatim}
+\end{Verbatim}
 
 \subsubsection{{\tt matrix\_ludecomp\_doolittle} (LU Decomposition, Doolittle's Method)}
 \label{module:matrix:ludecomp_doolittle}
@@ -361,7 +361,7 @@ upper triangular matrix is computed first.
 \]
 %
 Here is a simple example:
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     matrixf_ludecomp_doolittle(X,4,4,L,U,P)
     L =
       1.00000000  0.00000000  0.00000000  0.00000000
@@ -373,7 +373,7 @@ Here is a simple example:
       0.00000000 12.16227150 -2.07895803  8.33287334
       0.00000000  0.00000000 -8.51144791 11.50963116
       0.00000000  0.00000000  0.00000000 -6.70172977
-\end{verbatim}
+\end{Verbatim}
 
 \subsubsection{{\tt matrix\_qrdecomp\_gramschmidt}
                (QR Decomposition, Gram-Schmidt algorithm)}
@@ -390,7 +390,7 @@ $\vec{R}_{i,j} = 0\,\, \forall_{i > j}$.
 Building on the previous example for our test $4 \times 4$ matrix
 $\vec{X}$, the Q/R factorization is
 %
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     matrixf_qrdecomp_gramschmidt(X,4,4,Q,R)
     Q =
       0.08172275 -0.57793844  0.57207584  0.57622749
@@ -402,7 +402,7 @@ $\vec{X}$, the Q/R factorization is
       0.00000000  3.61081028  1.62036073  2.78449297
       0.00000000  0.00000000  3.69074893 -5.34197950
       0.00000000  0.00000000  0.00000000  4.25430155
-\end{verbatim}
+\end{Verbatim}
 
 \subsubsection{{\tt matrix\_gjelim} (Gauss-Jordan Elimination)}
 \label{module:matrix:gjelim}
@@ -442,7 +442,7 @@ If $\vec{A}$ is non-singular the resulting $n \times n+1$ matrix will hold
 $\vec{x}$ in its last column.
 The row-reduced echelon form of a matrix is computed in {\it liquid} using the
 Gauss-Jordan elimination algorithm, and can be invoked as such:
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
     Ab =
       0.84381998 -2.38303995  1.43060994 -1.66603994  0.91488999
       3.99475002  0.88066000  4.69372988  0.44563001  0.71789002
@@ -453,7 +453,7 @@ Gauss-Jordan elimination algorithm, and can be invoked as such:
      -0.00000000  1.00000000  0.00000000  0.00000000 -0.43340963
      -0.00000000 -0.00000000  1.00000000 -0.00000000  0.64247853
       0.00000000 -0.00000000 -0.00000000  0.99999994  0.35925382
-\end{verbatim}
+\end{Verbatim}
 Notice that the result contains $\vec{I}_n$ in its first $n$ rows and $n$
 columns (to within machine precision).
 [NOTE: row permutations (swapping) might have occurred...]
