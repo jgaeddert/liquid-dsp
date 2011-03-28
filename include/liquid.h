@@ -2071,32 +2071,32 @@ float liquid_factorialf(unsigned int _n);
 
 
 // ln(I_v(z)) : log Modified Bessel function of the first kind
-float liquid_lnbesseli(float _nu, float _z);
+float liquid_lnbesselif(float _nu, float _z);
 
 // I_v(z) : Modified Bessel function of the first kind
-float liquid_besseli(float _nu, float _z);
+float liquid_besselif(float _nu, float _z);
 
 // I_0(z) : Modified Bessel function of the first kind (order zero)
-float liquid_besseli_0(float _z);
+float liquid_besseli0f(float _z);
 
 // J_v(z) : Bessel function of the first kind
-float liquid_besselj(float _nu, float _z);
+float liquid_besseljf(float _nu, float _z);
 
 // J_0(z) : Bessel function of the first kind (order zero)
-float liquid_besselj_0(float _z);
+float liquid_besselj0f(float _z);
 
 
 // Q function
 float liquid_Qf(float _z);
 
 // Marcum Q-function
-float liquid_MarcumQ(int _M,
-                     float _alpha,
-                     float _beta);
+float liquid_MarcumQf(int _M,
+                      float _alpha,
+                      float _beta);
 
 // Marcum Q-function (M=1)
-float liquid_MarcumQ1(float _alpha,
-                      float _beta);
+float liquid_MarcumQ1f(float _alpha,
+                       float _beta);
 
 // sin(pi x) / (pi x)
 float sincf(float _x);

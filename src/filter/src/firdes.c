@@ -332,7 +332,7 @@ void fir_design_doppler(unsigned int _n,
         t = (float)i - (float)(_n-1)/2;
 
         // Bessel
-        J = 1.5*liquid_besselj_0(fabsf(2*M_PI*_fd*t));
+        J = 1.5*liquid_besselj0f(fabsf(2*M_PI*_fd*t));
 
         // Rice-K component
         r = 1.5*_K/(_K+1)*cosf(2*M_PI*_fd*t*cosf(_theta));

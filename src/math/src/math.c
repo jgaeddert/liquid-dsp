@@ -59,9 +59,9 @@ float liquid_Qf(float _z)
 // TODO : check this computation
 // [Helstrom:1960], [Proakis:2001], [Helstrom:1992]
 #define NUM_MARCUMQ_ITERATIONS 16
-float liquid_MarcumQ(int _M,
-                     float _alpha,
-                     float _beta)
+float liquid_MarcumQf(int _M,
+                      float _alpha,
+                      float _beta)
 {
 #if 0
     // expand as:
@@ -91,8 +91,8 @@ float liquid_MarcumQ(int _M,
 // TODO : check this computation
 // [Helstrom:1960], [Proakis:2001]
 #define NUM_MARCUMQ1_ITERATIONS 64
-float liquid_MarcumQ1(float _alpha,
-                      float _beta)
+float liquid_MarcumQ1f(float _alpha,
+                       float _beta)
 {
 #if 1
     // expand as:                    infty
@@ -109,7 +109,7 @@ float liquid_MarcumQ1(float _alpha,
     unsigned int k;
     for (k=0; k<NUM_MARCUMQ1_ITERATIONS; k++) {
         // accumulate y
-        y += t1 * liquid_besseli((float)k, a_mul_b);
+        y += t1 * liquid_besselif((float)k, a_mul_b);
 
         // update t1
         t1 *= a_div_b;
@@ -119,7 +119,7 @@ float liquid_MarcumQ1(float _alpha,
 #else
     
     // call generalized Marcum-Q function with M=1
-    return liquid_MarcumQ(1, _alpha, _beta);
+    return liquid_MarcumQf(1, _alpha, _beta);
 #endif
 }
 
@@ -304,8 +304,8 @@ float kaiser(unsigned int _n,
 
     float t = (float)_n - (float)(_N-1)/2 + _mu;
     float r = 2.0f*t/(float)(_N);
-    float a = liquid_besseli_0(_beta*sqrtf(1-r*r));
-    float b = liquid_besseli_0(_beta);
+    float a = liquid_besseli0f(_beta*sqrtf(1-r*r));
+    float b = liquid_besseli0f(_beta);
     return a / b;
 }
 

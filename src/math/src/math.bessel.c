@@ -22,9 +22,11 @@
 //
 // Bessel Functions
 //
-// liquid_besseli       :   modified Bessel function of the first kind
-// liquid_besselj_0     :   Bessel function of the first kind (order 0)
-// liquid_besseli_0     :   modified Bessel function of the first kind (order 0)
+// liquid_lnbesselif    :   log modified Bessel function of the first kind
+// liquid_besselif      :   modified Bessel function of the first kind
+// liquid_besseli0f     :   modified Bessel function of the first kind (order 0)
+// liquid_besseljf      :   Bessel function of the first kind
+// liquid_besselj0f     :   Bessel function of the first kind (order 0)
 //
 
 #include <stdio.h>
@@ -35,8 +37,8 @@
 
 // log(I_v(z)) : log Modified Bessel function of the first kind
 #define NUM_BESSELI_ITERATIONS 64
-float liquid_lnbesseli(float _nu,
-                       float _z)
+float liquid_lnbesselif(float _nu,
+                        float _z)
 {
     // TODO : validate input
     // TODO : compute low-signal approximation to avoid log(0)
@@ -64,15 +66,15 @@ float liquid_lnbesseli(float _nu,
 }
 
 // I_v(z) : Modified Bessel function of the first kind
-float liquid_besseli(float _nu,
-                     float _z)
+float liquid_besselif(float _nu,
+                      float _z)
 {
-    return expf( liquid_lnbesseli(_nu, _z) );
+    return expf( liquid_lnbesselif(_nu, _z) );
 }
 
 // I_0(z) : Modified bessel function of the first kind (order zero)
 #define NUM_BESSELI0_ITERATIONS 32
-float liquid_besseli_0(float _z)
+float liquid_besseli0f(float _z)
 {
     // TODO : use better low-signal approximation
     if (_z == 0.0f)
@@ -94,8 +96,8 @@ float liquid_besseli_0(float _z)
 
 // J_v(z) : Bessel function of the first kind
 #define NUM_BESSELJ_ITERATIONS 128
-float liquid_besselj(float _nu,
-                     float _z)
+float liquid_besseljf(float _nu,
+                      float _z)
 {
     // TODO : validate input
 
@@ -130,7 +132,7 @@ float liquid_besselj(float _nu,
 
 // J_0(z) : Bessel function of the first kind (order zero)
 #define NUM_BESSELJ0_ITERATIONS 16
-float liquid_besselj_0(float _z)
+float liquid_besselj0f(float _z)
 {
     // large signal approximation, see
     // Gross, F. B "New Approximations to J0 and J1 Bessel Functions,"
