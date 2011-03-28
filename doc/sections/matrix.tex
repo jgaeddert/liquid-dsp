@@ -378,7 +378,31 @@ Here is a simple example:
 \subsubsection{{\tt matrix\_qrdecomp\_gramschmidt}
                (QR Decomposition, Gram-Schmidt algorithm)}
 \label{module:matrix:qrdecomp_gramschmidt}
-
+\liquid\ implements Q/R decomposition with the
+{\tt matrix\_qrdecomp\_gramschmidt()} method which factors
+a non-singular $n \times n$ matrix $\vec{A}$ into
+product of an orthogonal matrix $\vec{Q}$ and an upper triangular matrix
+$\vec{R}$, each $n \times n$.
+That is, $\vec{A} = \vec{Q}\vec{R}$ where
+$\vec{Q}^T\vec{Q} = \vec{I}_n$ and
+$\vec{R}_{i,j} = 0\,\, \forall_{i > j}$.
+%
+Building on the previous example for our test $4 \times 4$ matrix
+$\vec{X}$, the Q/R factorization is
+%
+\begin{verbatim}
+    matrixf_qrdecomp_gramschmidt(X,4,4,Q,R)
+    Q =
+      0.08172275 -0.57793844  0.57207584  0.57622749
+      0.38688579  0.63226062  0.66619849 -0.08213031
+      0.70512730  0.13563085 -0.47556636  0.50816941
+      0.58858842 -0.49783322  0.05239720 -0.63480729
+    R =
+     10.32539940 -3.62461853  3.12874746  6.70309162
+      0.00000000  3.61081028  1.62036073  2.78449297
+      0.00000000  0.00000000  3.69074893 -5.34197950
+      0.00000000  0.00000000  0.00000000  4.25430155
+\end{verbatim}
 
 \subsubsection{{\tt matrix\_gjelim} (Gauss-Jordan Elimination)}
 \label{module:matrix:gjelim}
