@@ -11,26 +11,85 @@ the standard C library,
 windowing functions,
 and polynomial manipulation methods.
 
-\subsection{transcendental functions}
+\subsection{Transcendental Functions}
 \label{module:math:transcendentals}
-transcendental functions not in the C standard library (gamma, besseli, etc.)
+This section describes the implementation and interface to
+transcendental functions not in the C standard library
+including a full arrangement of Gamma and Bessel functions.
+Table~\ref{tab:math:transcendentals} summarizes the interfaces provided
+in \liquid.
+
+% ------------ TABLE: MATH TRANSCENDENTALS  ------------
+\begin{table*}
+\caption{Summary of Transcendental Math Interfaces}
+\label{tab:math:transcendentals}
+\centering
+{\small
+    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}l}
+    \toprule
+    {\it function} &
+    {\it interface}\\\otoprule
+    %
+    $\ln\Gamma(z)$          & {\tt liquid\_lngammaf(z)} \\
+    $   \Gamma(z)$          & {\tt liquid\_gammaf(z)} \\
+    $\ln\gamma(z,\alpha)$   & {\tt liquid\_lnlowergammaf(z,alpha)} \\
+    $   \gamma(z,\alpha)$   & {\tt liquid\_lowergammaf(z,alpha)} \\
+    $\ln\Gamma(z,\alpha)$   & {\tt liquid\_lnuppergammaf(z,alpha)} \\
+    $   \Gamma(z,\alpha)$   & {\tt liquid\_uppergammaf(z,alpha)} \\
+    $n!$                    & {\tt liquid\_factorialf(n)} \\\midrule
+    %
+    $\ln I_\nu(z)$          & {\tt liquid\_lnbesselif(nu,z)} \\
+    $    I_\nu(z)$          & {\tt liquid\_besselif(nu,z)} \\
+    $    I_0  (z)$          & {\tt liquid\_besseli0f(z)} \\
+    $    J_\nu(z)$          & {\tt liquid\_besseljf(nu,z)} \\
+    $    J_0  (z)$          & {\tt liquid\_besselj0f(z)} \\\midrule
+    %
+    $Q(z)$                  & {\tt liquid\_Qf(z)} \\
+    $Q_M(\alpha,\beta)$     & {\tt liquid\_MarcumQf(M,alpha,beta)} \\
+    $Q_1(\alpha,\beta)$     & {\tt liquid\_MarcumQ1f(alpha,beta)} \\\midrule
+    %
+    $\sinc(z)$              & {\tt liquid\_sincf(z)} \\
+    $\lceil\log_2(n)\rceil$ & {\tt liquid\_nextpow2(n)} \\
+    ${n \choose k}$         & {\tt liquid\_nchoosek(n,k)} \\
+    $\vec{X}^H\vec{X}  $  & {\tt matrixcf\_transpose\_mul(x,m,n,xHx)} \\\bottomrule
+    \end{tabular*}
+}
+\end{table*}%
+% ------------------------
 
 
-\subsubsection{{\tt liquid\_lngammaf()}}
-\label{module:math:transcendentals:lngamma}
-    computes the natural log of the complete gamma function by splitting into
-    discrete piecewise sections:
-\[
+% 
+% Gamma
+%
+\subsubsection{{\tt liquid\_gammaf(z)}, {\tt liquid\_lngammaf(z)}}
+\label{module:math:transcendentals:gamma}
+\liquid\ computes $\Gamma(z)$ from $\ln\Gamma(z)$
+(see below) due to its steep, exponential response to $z$.
+The complete Gamma function is defined as
+%
+\begin{equation}
+\label{eqn:math:gamma}
+    \Gamma(z) \triangleq \int_0^\infty{t^{z-1}e^{-t}dt}
+\end{equation}
+%
+The upper an lower incomplete Gamma functions are described in
+Sections~\ref{module:math:transcendentals:uppergamma} and
+         \ref{module:math:transcendentals:lowergamma},
+respectively.
+%
+The natural log of the complete Gamma function is computed by splitting
+into discrete piecewise sections:
+%
+\begin{equation}
+\label{eqn:math:lngamma}
     \ln\left[ \Gamma(z) \right] \approx
     \begin{cases}
     % undefined for z < 0
         \text{undefined}
         & z < 0 \\
-    % low signal approximation
-        -\ln(z) - \gamma z - \sum_{n=1}^{\infty} {
-            \left[ \ln(1 + z/n) -z/n\right]
-        }
-        & 0 \le z < 0.6 \\
+    % low signal approximation (recursion)
+        \ln\Gamma(z+1) - \ln(z)
+        & 0 \le z < 10 \\
     % high signal approximation
         \frac{z}{2} \ln\left( \frac{2\pi}{z} \right)
         \left(
@@ -38,31 +97,113 @@ transcendental functions not in the C standard library (gamma, besseli, etc.)
         \right)
         & z \ge 0.6
     \end{cases}
-\]
-where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
+\end{equation}
+%
+%where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
 
-\subsubsection{{\tt liquid\_sincf()}}
+
+% 
+% lower gamma
+%
+\subsubsection{{\tt liquid\_lowergammaf(z,a)},
+               {\tt liquid\_lnlowergammaf(z,a)}
+               (lower incomplete Gamma)}
+\label{module:math:transcendentals:lowergamma}
+Like $\Gamma(z)$,
+\liquid\ computes the lower incomplete gamma function
+$\gamma(z,\alpha)$ from its logarithm $\ln\gamma(z,\alpha)$
+due to its steep, exponential response to $z$.
+The lower incomplete Gamma function is defined as
+%
+\begin{equation}
+\label{eqn:math:lowergamma}
+    \gamma(z,\alpha) \triangleq \int_0^\alpha{ t^{z-1}e^{-t}dt }
+\end{equation}
+%
+\liquid\ computes the log of lower incomplete Gamma function as
+%
+\begin{equation}
+\label{eqn:math:lnlowergamma}
+    \ln\gamma(z,\alpha) =
+        z \ln(\alpha) +
+        \ln\Gamma(z) -
+        \alpha +
+        \ln\left[
+            \sum_{k=0}^\infty{
+                \frac{\alpha^k}{\Gamma(z + k + 1)}
+            }
+        \right]
+\end{equation}
+%
+
+
+
+% 
+% upper gamma
+%
+\subsubsection{{\tt liquid\_uppergammaf(z,a)},
+               {\tt liquid\_lnuppergammaf(z,a)}
+               (upper incomplete Gamma)}
+\label{module:math:transcendentals:uppergamma}
+Like $\Gamma(z)$,
+\liquid\ computes the upper incomplete gamma function
+$\Gamma(z,\alpha)$ from $\ln\Gamma(z,\alpha)$
+due to its steep, exponential response to $z$.
+The complete Gamma function is defined as
+%
+\begin{equation}
+\label{eqn:math:uppergamma}
+    \Gamma(z,\alpha) \triangleq \int_\alpha^\infty{t^{z-1}e^{-t}dt}
+\end{equation}
+%
+By definition the sum of the lower and upper incomplete gamma functions
+is the complete Gamma function:
+$\Gamma(z) = \gamma(z,\alpha) + \Gamma(z,\alpha)$.
+As such,
+\liquid\ computes the upper incomplete Gamma function as
+%
+\begin{equation}
+\label{eqn:math:lnuppergamma}
+    \Gamma(z,\alpha) = \Gamma(z) - \gamma(z,\alpha)
+\end{equation}
+%
+
+
+% 
+% sinc
+%
+\subsubsection{{\tt liquid\_sinc(z)}}
 \label{module:math:transcendentals:sinc}
-    computes the $\sinc$ function,
-\[
+The $\sinc$ function is defined as
+%
+\begin{equation}
+\label{eqn:math:sinc}
     \sinc(z) = \frac{\sin(\pi z)}{\pi z}
-\]
+\end{equation}
+%
 Simply evaluating the above equation with finite precision for $z$ results in
 a discontinuity for small $z$, and is approximated by expanding the first few
 terms of the series
-\[
+%
+\begin{equation}
+\label{eqn:math:sinc_expanded}
     \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
-\]
+\end{equation}
+
 
 \subsubsection{{\tt liquid\_besseli0()}}
 \label{module:math:transcendentals:besseli0}
-    approximates the modified Bessel function of the first kind (order 0)
-    using piecewise polynomials,
-\[
+approximates the modified Bessel function of the first kind (order 0)
+using piecewise polynomials,
+%
+\begin{equation}
+\label{eqn:math:besseli0}
     \ln\Bigl[\ln\left(I_0(z)\right)\Bigr] \approx
     c_0 + c_1 t + c_2 t ^2 + c_3 t^3
-\]
+\end{equation}
+%
 where $t=\ln(z)$ and
+%
 \[
     \left\{c_0,c_1,c_2,c_3\right\} =
     \begin{cases}
@@ -82,7 +223,12 @@ An iterative method comes from Gross(1995),
 
 \subsubsection{{\tt liquid\_nchoosek()}}
 \label{module:math:transcendentals:nchoosek}
-    computes the binomial coefficient ${n \choose k} = \frac{n!}{(n-k)!k!}$
+computes the binomial coefficient
+%
+\begin{equation}
+\label{eqn:math:nchoosek}
+    {n \choose k} = \frac{n!}{(n-k)!k!}
+\end{equation}
 
 \subsubsection{{\tt liquid\_nextpow2()}}
 \label{module:math:transcendentals:nextpow2}
