@@ -51,9 +51,6 @@ void complementary_codes_test(unsigned int _n)
         raa = 2*bsequence_correlate(a,ax) - _n;
         rbb = 2*bsequence_correlate(b,bx) - _n;
 
-        if (liquid_autotest_verbose)
-            printf("    %3u : raa + rbb = %d\n", i, raa+rbb);
-
         if (i==0) { CONTEND_EQUALITY(raa+rbb,2*_n); }
         else      { CONTEND_EQUALITY(raa+rbb,0);    }
 
