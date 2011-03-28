@@ -102,11 +102,14 @@ respectively).
       0.9243971   0.1179412
 \end{Verbatim}
 
-\subsubsection{{\tt matrix\_trans} (transpose matrix)}
+\subsubsection{{\tt matrix\_trans}, {\tt matrix\_hermitian()} (transpose matrix)}
 \label{module:matrix:trans}
-The {\tt matrix\_trans} performs the non-conjugate matrix transpose.
-That is, the matrix is flipped on its main diagonal.
-Formally, $[\vec{A}^T]_{j,k} = \vec{A}_{k,j}$.
+The {\tt matrix\_trans(X,m,n,XT)} method
+performs the conjugate matrix transpose operation on an
+$m \times n$ matrix $\vec{X}$.
+That is, the matrix is flipped on its main diagonal and the conjugate of
+each element is taken.
+Formally, $\vec{A}^T_{i,j} = \vec{A}_{j,i}^*$.
 Here's a simple example:
 \[
     \left[
@@ -124,7 +127,11 @@ Here's a simple example:
     \end{array}
     \right]
 \]
-
+%
+Similarly, the {\tt matrix\_hermitian(X,m,n,XH)} computes the Hermitian
+transpose which is identical to the regular transpose but without the
+conjugation operation, viz
+$\vec{A}^H_{i,j} = \vec{A}_{j,i}$.
 
 \subsubsection{{\tt matrix\_eye} (identity matrix)}
 \label{module:matrix:eye}
@@ -228,6 +235,36 @@ rows of $\vec{B}$, and that the resulting matrix is of size $m \times p$
 %        30  36  42
 %        66  81  96
 %\end{Verbatim}
+
+
+% 
+% transpose multiplication
+%
+\subsubsection{Transpose multiplication}
+\label{module:matrix:transmul}
+\liquid\ also implements transpose-multiplication operations on an
+$m \times n$ matrix $\vec{X}$, commonly used in signal processing.
+Section~\ref{module:matrix:trans} describes the difference between the
+$\left(\cdot\right)^T$ and 
+$\left(\cdot\right)^H$ operations.
+The interface for transpose-multiplications in \liquid\ is tabulated
+below for an input $m \times n$ matrix $\vec{X}$.
+\\
+
+% ------------ TABLE: DOTPROD OBJECT TYPES ------------
+{\small
+    \begin{tabular*}{0.85\textwidth}{l@{\extracolsep{\fill}}ll}
+    \toprule
+    {\it operation} &
+    {\it output dimensions} &
+    {\it interface}\\\otoprule
+    %
+    $\vec{X}  \vec{X}^T$  & $m \times m$  & {\tt matrixcf\_mul\_transpose(x,m,n,xxT)} \\
+    $\vec{X}  \vec{X}^H$  & $m \times m$  & {\tt matrixcf\_mul\_hermitian(x,m,n,xxH)} \\
+    $\vec{X}^T\vec{X}  $  & $n \times n$  & {\tt matrixcf\_transpose\_mul(x,m,n,xTx)} \\
+    $\vec{X}^H\vec{X}  $  & $n \times n$  & {\tt matrixcf\_transpose\_mul(x,m,n,xHx)} \\\bottomrule
+    \end{tabular*}
+}
 
 % 
 % complex math operations 
