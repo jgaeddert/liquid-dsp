@@ -238,36 +238,128 @@ void MATRIX(_hermitian)(T * _X,
 
 // compute x*x' on m x n matrix, result: m x m
 void MATRIX(_mul_transpose)(T * _x,
-                            unsigned int _rx,
-                            unsigned int _cx,
+                            unsigned int _m,
+                            unsigned int _n,
                             T * _xxT)
 {
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xxT
+    for (i=0; i<_m*_m; i++)
+        _xxT[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_m; r++) {
+
+        for (c=0; c<_m; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_n; i++) {
+                sum +=        matrix_access(_x,_m,_n,r,i) *
+                       conjf( matrix_access(_x,_m,_n,c,i) );
+            }
+
+            matrix_access(_xxT,_m,_m,r,c) = sum;
+        }
+    }
 }
 
 
 // compute x'*x on m x n matrix, result: n x n
 void MATRIX(_transpose_mul)(T * _x,
-                            unsigned int _rx,
-                            unsigned int _cx,
-                            T * _xxT)
+                            unsigned int _m,
+                            unsigned int _n,
+                            T * _xTx)
 {
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xTx
+    for (i=0; i<_n*_n; i++)
+        _xTx[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_n; r++) {
+
+        for (c=0; c<_n; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_m; i++) {
+                sum += conjf( matrix_access(_x,_m,_n,i,r) ) *
+                              matrix_access(_x,_m,_n,i,c);
+            }
+
+            matrix_access(_xTx,_n,_n,r,c) = sum;
+        }
+    }
 }
 
 
 // compute x*x.' on m x n matrix, result: m x m
 void MATRIX(_mul_hermitian)(T * _x,
-                            unsigned int _rx,
-                            unsigned int _cx,
-                            T * _xxT)
+                            unsigned int _m,
+                            unsigned int _n,
+                            T * _xxH)
 {
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xxH
+    for (i=0; i<_m*_m; i++)
+        _xxH[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_m; r++) {
+
+        for (c=0; c<_m; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_n; i++) {
+                sum += matrix_access(_x,_m,_n,r,i) *
+                       matrix_access(_x,_m,_n,c,i);
+            }
+
+            matrix_access(_xxH,_m,_m,r,c) = sum;
+        }
+    }
 }
 
 
 // compute x.'*x on m x n matrix, result: n x n
 void MATRIX(_hermitian_mul)(T * _x,
-                            unsigned int _rx,
-                            unsigned int _cx,
-                            T * _xxT)
+                            unsigned int _m,
+                            unsigned int _n,
+                            T * _xHx)
 {
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xHx
+    for (i=0; i<_n*_n; i++)
+        _xHx[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_n; r++) {
+
+        for (c=0; c<_n; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_m; i++) {
+                sum += matrix_access(_x,_m,_n,i,r) *
+                       matrix_access(_x,_m,_n,i,c);
+            }
+
+            matrix_access(_xHx,_n,_n,r,c) = sum;
+        }
+    }
 }
 

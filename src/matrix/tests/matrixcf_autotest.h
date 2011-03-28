@@ -149,7 +149,7 @@ void autotest_matrixcf_inv()
 // 
 // AUTOTEST: Test matrixcf multiply/transpose
 //
-void xautotest_matrixcf_transmul()
+void autotest_matrixcf_transmul()
 {
     // error tolerance
     float tol = 1e-4f;

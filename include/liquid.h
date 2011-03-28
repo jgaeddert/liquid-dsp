@@ -2325,25 +2325,25 @@ void MATRIX(_hermitian)(T * _x,                                 \
                         unsigned int _rx,                       \
                         unsigned int _cx);                      \
                                                                 \
-/* compute x*x'     */                                          \
+/* compute x*x' on [m x n] matrix, result: [m x m]          */  \
 void MATRIX(_mul_transpose)(T * _x,                             \
-                            unsigned int _r,                    \
-                            unsigned int _c,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
                             T * _xxT);                          \
-/* compute x'*x     */                                          \
+/* compute x'*x on [m x n] matrix, result: [n x n]          */  \
 void MATRIX(_transpose_mul)(T * _x,                             \
-                            unsigned int _r,                    \
-                            unsigned int _c,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
                             T * _xTx);                          \
-/* compute x*x.'    */                                          \
+/* compute x*x.' on [m x n] matrix, result: [m x m]          */ \
 void MATRIX(_mul_hermitian)(T * _x,                             \
-                            unsigned int _r,                    \
-                            unsigned int _c,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
                             T * _xxH);                          \
-/* compute x.'*x    */                                          \
+/* compute x.'*x on [m x n] matrix, result: [n x n]          */ \
 void MATRIX(_hermitian_mul)(T * _x,                             \
-                            unsigned int _r,                    \
-                            unsigned int _c,                    \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
                             T * _xHx);                          \
                                                                 \
 void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,   \

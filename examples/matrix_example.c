@@ -175,6 +175,28 @@ int main() {
     printf("\nmatrixf_gjelim(Xb,4,5)\n");
     matrixf_print(Xb,4,5);
 
+    // compute a*a'
+    float a[20] = {
+      -0.24655,  -1.78843,   0.39477,   0.43735,  -1.08998,
+      -0.42751,   0.62496,   1.43802,   0.19814,   0.78155,
+      -0.35658,  -0.81875,  -1.09984,   1.87006,  -0.94191,
+       0.39553,  -2.02036,   1.17393,   1.54591,   1.29663};
+
+    printf("\na =\n");
+    matrixf_print(a,4,5);
+
+    printf("\n\n");
+    printf("computing a*a'\n");
+    float aaT[16];
+    matrixf_mul_transpose(a,4,5,aaT);
+    matrixf_print(aaT,4,4);
+
+    printf("\n\n");
+    printf("computing a'*a\n");
+    float aTa[25];
+    matrixf_transpose_mul(a,4,5,aTa);
+    matrixf_print(aTa,5,5);
+
 
     printf("done.\n");
     return 0;
