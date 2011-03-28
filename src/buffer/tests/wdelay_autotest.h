@@ -77,7 +77,7 @@ void autotest_wdelayf()
         //printf("%3u : %6.2f (%6.2f)\n", i, y1[i], y1_test[i]);
     }
     // wdelay: 1 1 2 3 4
-    CONTEND_SAME_DATA(y1, y1_test, 10*sizeof(float));
+    CONTEND_SAME_DATA(y2, y2_test, 10*sizeof(float));
 
     // destroy object
     wdelayf_destroy(w);
