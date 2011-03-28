@@ -74,19 +74,22 @@ Therefore, special care must be taken when programming.
 Furthermore, {\tt matrix\_access()} can be used for all matrix types
 ({\tt matrixf}, {\tt matrixcf}, etc.).
 
-\subsubsection{{\tt matrix\_add}, {\tt matrix\_sub}, {\tt matrix\_pmul},
-and {\tt matrix\_pdiv} (point-wise math operations)}
+\subsubsection{{\tt matrixf\_add}, {\tt matrixf\_sub}, {\tt matrixf\_pmul},
+and {\tt matrixf\_pdiv} (scalar math operations)}
 \label{module:matrix:mathop}
-The {\tt add}, {\tt sub}, {\tt pmul}, and {\tt pdiv} methods perform
-point-wise (scalar) addition, subtraction, multiplication, and division of the elements
-of two $n \times m$ matrices, $\vec{X}$ and $\vec{Y}$.
+The {\tt matrixf\_add(*x,*y,*z,m,n)},
+    {\tt matrixf\_sub(*x,*y,*z,m,n)},
+    {\tt matrixf\_pmul(*x,*y,*z,m,n)}, and
+    {\tt matrixf\_pdiv(*x,*y,*z,m,n)} methods perform
+point-wise (scalar) addition, subtraction, multiplication, and division
+of the elements of two $n \times m$ matrices, $\vec{X}$ and $\vec{Y}$.
 That is, $\vec{Z}_{i,k} = \vec{X}_{i,k} + \vec{Y}_{i,k}$ for all $i$, $k$.
 The same holds true for subtraction, multiplication, and division.
 It is very important to understand the difference between the methods
-{\tt matrix\_pmul()} and {\tt matrix\_mul()}, as well as
-{\tt matrix\_pdiv()} and {\tt matrix\_div()}.
+{\tt matrixf\_pmul()} and {\tt matrixf\_mul()}, as well as
+{\tt matrixf\_pdiv()} and {\tt matrixf\_div()}.
 In each case the latter performs a vastly different operation from {\tt
-matrix\_mul()} and {\tt matrix\_div()}
+matrixf\_mul()} and {\tt matrixf\_div()}
 (see Sections~\ref{module:matrix:mul} and \ref{module:matrix:div},
 respectively).
 %
@@ -96,16 +99,17 @@ respectively).
       0.67779   0.19793           0.660932   0.041723
       0.95075   0.33980           0.972282   0.347090
 
-    matrix_pmul(X,Y,Z,2,3);
+    matrixf_pmul(X,Y,Z,2,3);
     Z =
       0.4510300   0.6187437
       0.4479731   0.0082582
       0.9243971   0.1179412
 \end{Verbatim}
+%
 
-\subsubsection{{\tt matrix\_trans}, {\tt matrix\_hermitian()} (transpose matrix)}
+\subsubsection{{\tt matrixf\_trans()}, {\tt matrixf\_hermitian()} (transpose matrix)}
 \label{module:matrix:trans}
-The {\tt matrix\_trans(X,m,n,XT)} method
+The {\tt matrixf\_trans(X,m,n,XT)} method
 performs the conjugate matrix transpose operation on an
 $m \times n$ matrix $\vec{X}$.
 That is, the matrix is flipped on its main diagonal and the conjugate of
@@ -129,15 +133,18 @@ Here's a simple example:
     \right]
 \]
 %
-Similarly, the {\tt matrix\_hermitian(X,m,n,XH)} computes the Hermitian
+Similarly, the {\tt matrixf\_hermitian(X,m,n,XH)} computes the Hermitian
 transpose which is identical to the regular transpose but without the
 conjugation operation, viz
 $\vec{A}^H_{i,j} = \vec{A}_{j,i}$.
 
-\subsubsection{{\tt matrix\_eye} (identity matrix)}
+\subsubsection{{\tt matrixf\_eye()} (identity matrix)}
 \label{module:matrix:eye}
-The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
-\[
+The {\tt matrixf\_eye(*x,n)} method generates the $n \times n$ identity
+matrix $\vec{I}_n$:
+%
+\begin{equation}
+\label{eqn:matrix:eye}
     \vec{I}_n = 
     \begin{bmatrix}
         1 & 0 & \cdots & 0 \\
@@ -146,7 +153,7 @@ The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
         \\
         0 & 0 & \cdots & 1 \\
     \end{bmatrix}
-\]
+\end{equation}
 
 % 
 % elementary math operations 
@@ -156,10 +163,13 @@ The {\tt matrix\_eye} method generates the $n \times n$ identity matrix.
 This section describes elementary math operations for linear systems of
 equations.
 
-\subsubsection{{\tt matrix\_swaprows} (swap rows)}
+\subsubsection{{\tt matrixf\_swaprows()} (swap rows)}
 \label{module:matrix:swaprows}
-Matrix row-swapping is often necessary to express a matrix in its row-reduced
-echelon form.
+Matrix row-swapping is often necessary to express a matrix in its
+row-reduced echelon form.
+The {\tt matrixf\_swaprows(*X,m,n,i,j)} method simply swaps rows $i$ and
+$j$ of an $m \times n$ matrix $\vec{X}$, viz
+%
 \begin{Verbatim}[fontsize=\small]
     x = 
       0.84381998 -2.38303995  1.43060994 -1.66603994
@@ -174,10 +184,10 @@ echelon form.
       6.07741022 -3.93098998  1.22826004 -0.42142001
 \end{Verbatim}
 
-\subsubsection{{\tt matrix\_pivot} (pivoting)}
+\subsubsection{{\tt matrixf\_pivot()} (pivoting)}
 \label{module:matrix:pivot}
 [NOTE: terminology for ``pivot'' is different from literature.]
-Given an $n \times m$ matrix $\vec{A}$...
+Given an $n \times m$ matrix $\vec{A}$,
 \[
     \vec{A} = 
     \begin{bmatrix}
@@ -187,8 +197,7 @@ Given an $n \times m$ matrix $\vec{A}$...
         A_{n-1,0}   & A_{n-1,1} & \cdots  & A_{n-1,m-1}
     \end{bmatrix}
 \]
-The pivot element must not be zero.
-Pivoting $\vec{A}$ around $\vec{A}_{a,b}$ gives
+pivoting $\vec{A}$ around $\vec{A}_{a,b}$ gives
 \[
     \vec{B}_{i,j} = \left(
                     \frac{\vec{A}_{i,b}}{\vec{A}_{a,b}}
@@ -196,10 +205,14 @@ Pivoting $\vec{A}$ around $\vec{A}_{a,b}$ gives
                     \vec{A}_{a,j} - \vec{A}_{i,j}
                     \forall i \ne a
 \]
+The pivot element must not be zero.
 Row $a$ is left unchanged in $\vec{B}$.
 All elements of $\vec{B}$ in column $b$ are zero except for row $a$.
+This is accomplished in \liquid\ with the
+{\tt matrixf\_pivot(*A,m,n,i,j)} method.
 For our example $4 \times 4$ matrix $\vec{x}$, pivoting around
 $\vec{x}_{1,2}$ gives:
+%
 \begin{Verbatim}[fontsize=\small]
     matrixf_pivot(x,4,4,1,2);
       0.37374675  2.65145779  0.00000000  1.80186427
@@ -208,34 +221,38 @@ $\vec{x}_{1,2}$ gives:
      -5.03205967  4.16144180  0.00000000  0.53803295
 \end{Verbatim}
 
-% matrix_mul()
-\subsubsection{{\tt matrix\_mul} (multiplication)}
+% matrixf_mul()
+\subsubsection{{\tt matrixf\_mul()} (multiplication)}
 \label{module:matrix:mul}
 Multiplication of two input matrices $\vec{A}$ and $\vec{B}$ is accomplished
-with the {\tt matrix\_mul()} method, and is not to be confused with {\tt
-matrix\_pmul()} in Section~\ref{module:matrix:mathop}.
+with the {\tt matrixf\_mul(*A,ma,na,*B,mb,nb,*C,mc,nc)} method,
+and is not to be confused with {\tt matrixf\_pmul()}
+in Section~\ref{module:matrix:mathop}.
 If $\vec{A}$ is $m \times n$ and $\vec{B}$ is $n \times p$, then their product
 is computed as
-\[
+%
+\begin{equation}
+\label{eqn:matrix:mul}
     \bigl( \vec{A} \vec{B} \bigr)_{i,j}
         = \sum_{r=0}^{n-1} { \vec{A}_{i,r} \vec{B}_{r,j} }
-\]
+\end{equation}
+%
 Note that the number of columns of $\vec{A}$ must be equal to the number of
 rows of $\vec{B}$, and that the resulting matrix is of size $m \times p$
 (the number of rows in $\vec{A}$ and columns in $\vec{B}$).
-
+%
 % TODO : come up with better example
-%\begin{Verbatim}[fontsize=\small]
-%    A =                 B =
-%        1   2   3           1   2   3
-%        4   5   6           4   5   6
-%                            7   8   9
-%    matrix_mul(A,2,3, B,3,3, Z,2,3);
-%    
-%    Z =
-%        30  36  42
-%        66  81  96
-%\end{Verbatim}
+\begin{Verbatim}[fontsize=\small]
+    A =                 B =
+        1   2   3           1   2   3
+        4   5   6           4   5   6
+                            7   8   9
+    matrixf_mul(A,2,3, B,3,3, C,2,3);
+    
+    C =
+        30  36  42
+        66  81  96
+\end{Verbatim}
 
 
 % 
@@ -279,9 +296,15 @@ Crout's and Doolittle's methods.
 % singular value decomposition
 % eigenvalue decomposition
 
-\subsubsection{{\tt matrix\_inv} (inverse)}
+\subsubsection{{\tt matrixf\_inv} (inverse)}
 \label{module:matrix:inv}
-Given an $n \times n$ matrix $\vec{A}$, augment with $\vec{I}_n$:
+Matrix inversion is accomplished with the {\tt matrixf\_inv(*X,m,n)}
+method.%
+\footnote{While matrix inversion requires a square matrix, \liquid\
+          internally checks to ensure $m=n$ on the input size for
+          $\vec{X}$.}
+Given an $n \times n$ matrix $\vec{A}$, \liquid\ augments with
+$\vec{I}_n$:
 \[
     \left[\vec{A}|\vec{I}_n\right] = 
     \left[
@@ -293,9 +316,10 @@ Given an $n \times n$ matrix $\vec{A}$, augment with $\vec{I}_n$:
     \end{array}
     \right]
 \]
-Perform elementary operations to convert to its row-reduced echelon form.
-The resulting matrix has the identity matrix on the left and $\vec{A}^{-1}$ on
-its right, viz
+Next \liquid\ performs elementary operations to convert to its
+row-reduced echelon form.
+The resulting matrix has the identity matrix on the left and
+$\vec{A}^{-1}$ on its right, viz
 \[
     \left[\vec{I}_n|\vec{A}^{-1}\right] = 
     \left[
@@ -307,10 +331,11 @@ its right, viz
     \end{array}
     \right]
 \]
-The {\tt matrix\_inv} method uses Gauss-Jordan elmination (see 
-{\tt matrix\_gjelim}) for row reduction and back-substitution.
-Pivot elements in $\vec{A}$ with the largest magnitude are chosen to help
-stability in floating-point arithmetic.
+The {\tt matrixf\_inv()} method uses Gauss-Jordan elmination
+(see {\tt matrixf\_gjelim()}) for row reduction and back-substitution.
+Pivot elements in $\vec{A}$ with the largest magnitude are chosen to
+help stability in floating-point arithmetic.
+%
 \begin{Verbatim}[fontsize=\small]
     matrixf_inv(x,4,4);
      -0.33453920  0.04643385 -0.04868321  0.23879384
@@ -319,17 +344,33 @@ stability in floating-point arithmetic.
       0.13544561 -0.01930523  0.11944833 -0.14921521
 \end{Verbatim}
 
-\subsubsection{{\tt matrix\_div} (solve linear system of equations)}
-\label{module:matrix:div}
-The {\tt matrix\_div()} method solves a set of linear equations...
-% TODO flesh out description
 
-\subsubsection{{\tt matrix\_det} (determinant)}
+\subsubsection{{\tt matrixf\_div()}}
+\label{module:matrix:div}
+The {\tt matrixf\_div(*X,*Y,*Z,*n)} method simply computes
+$\vec{Z} = \vec{Y}^{-1}\vec{X}$
+where $\vec{X}$, $\vec{Y}$, and $\vec{Z}$ are all $n \times n$ matrices.
+
+
+\subsubsection{{\tt matrixf\_linsolve()} (solve linear system of equations)}
+\label{module:matrix:linsolve}
+The {\tt matrixf\_linsolve(*A,n,*b,*x,opts)} method solves a set of $n$ linear
+equations $A\vec{x} = \vec{b}$
+where
+$A$ is an $n \times n$ matrix, and
+$\vec{x}$ and $\vec{b}$ are $n \times 1$ vectors.
+The {\tt opts} argument is reserved for future development and can be
+ignored by setting to {\tt NULL}.
+
+
+\subsubsection{{\tt matrixf\_det()} (determinant)}
 \label{module:matrix:det}
-The determinant of an $n \times n$ matrix $\vec{A}$...
-In {\it liquid}, the determinant is computed by L/U decomposition of $\vec{A}$
-using Doolittle's method (see {\tt matrix\_ludecomp\_doolittle}) and then
-computing the product of the diagonal elements of $\vec{U}$, viz
+The {\tt matrixf\_det(*X,m,n)} method computes the determinant
+of an $n \times n$ matrix $\vec{X}$.
+In {\it liquid}, the determinant is computed by L/U decomposition of
+$\vec{A}$ using Doolittle's method (see {\tt
+matrixf\_ludecomp\_doolittle}) and then computing the product of the
+diagonal elements of $\vec{U}$, viz
 \[
     \det\left(\vec{A}\right) =
     \left|\vec{A}\right| =
@@ -337,17 +378,20 @@ computing the product of the diagonal elements of $\vec{U}$, viz
 \]
 This is equivalent to performing L/U decomposition using Crout's method and
 then computing the product of the diagonal elements of $\vec{L}$.
+%
 \begin{Verbatim}[fontsize=\small]
     matrixf_det(X,4,4) = 585.40289307
 \end{Verbatim}
 
-\subsubsection{{\tt matrix\_ludecomp\_crout} (LU Decomposition, Crout's Method)}
+\subsubsection{{\tt matrixf\_ludecomp\_crout()} (LU Decomposition, Crout's Method)}
 \label{module:matrix:ludecomp_crout}
-Crout's method decomposes a non-singular $n\times n$ matrix $\vec{A}$ into a
-product of a lower triangular $n \times n$ matrix $\vec{L}$ and an upper
-triangular $n \times n$ matrix $\vec{U}$. %NOTE : discuss permutation matrix P
-In fact, $\vec{U}$ is a unit upper triangular matrix (its values along the
-diagonal are 1).
+Crout's method decomposes a non-singular $n\times n$ matrix $\vec{A}$
+into a product of a lower triangular $n \times n$ matrix $\vec{L}$ and
+an upper triangular $n \times n$ matrix $\vec{U}$. %NOTE : discuss permutation matrix P
+In fact, $\vec{U}$ is a unit upper triangular matrix (its values along
+the diagonal are 1).
+The {\tt matrixf\_ludecomp\_crout(*A,m,n,*L,*U,*P)} implements Crout's
+method.
 %
 \[
     \vec{L}_{i,k} = \vec{A}_{i,k} -
@@ -377,12 +421,14 @@ diagonal are 1).
       0.00000000  0.00000000  0.00000000  1.00000000
 \end{Verbatim}
 
-\subsubsection{{\tt matrix\_ludecomp\_doolittle} (LU Decomposition, Doolittle's Method)}
+\subsubsection{{\tt matrixf\_ludecomp\_doolittle()} (LU Decomposition, Doolittle's Method)}
 \label{module:matrix:ludecomp_doolittle}
 Doolittle's method is similar to Crout's except it is the lower triangular
 matrix that is left with ones on the diagonal.
 The update algorithm is similar to Crout's but with a slight variation: the
 upper triangular matrix is computed first.
+The {\tt matrixf\_ludecomp\_doolittle(*A,m,n,*L,*U,*P)} implements
+Doolittle's method.
 %
 \[
     \vec{U}_{k,j} = \vec{A}_{k,j} -
@@ -413,11 +459,11 @@ Here is a simple example:
       0.00000000  0.00000000  0.00000000 -6.70172977
 \end{Verbatim}
 
-\subsubsection{{\tt matrix\_qrdecomp\_gramschmidt}
+\subsubsection{{\tt matrixf\_qrdecomp\_gramschmidt()}
                (QR Decomposition, Gram-Schmidt algorithm)}
 \label{module:matrix:qrdecomp_gramschmidt}
 \liquid\ implements Q/R decomposition with the
-{\tt matrix\_qrdecomp\_gramschmidt()} method which factors
+{\tt matrixf\_qrdecomp\_gramschmidt(*A,m,n,*Q,*R)} method which factors
 a non-singular $n \times n$ matrix $\vec{A}$ into
 product of an orthogonal matrix $\vec{Q}$ and an upper triangular matrix
 $\vec{R}$, each $n \times n$.
@@ -442,10 +488,13 @@ $\vec{X}$, the Q/R factorization is
       0.00000000  0.00000000  0.00000000  4.25430155
 \end{Verbatim}
 
-\subsubsection{{\tt matrix\_gjelim} (Gauss-Jordan Elimination)}
+\subsubsection{{\tt matrixf\_gjelim()} (Gauss-Jordan Elimination)}
 \label{module:matrix:gjelim}
-Gauss-Jordan elimination converts a $n \times m$ matrix into its row-reduced
-echelon form using elementary matrix operations (e.g. pivoting).
+The {\tt matrixf\_gjelim(*X,m,n)} method in \liquid\
+performs the Gauss-Jordan elimination on a matrix $\vec{X}$.
+Gauss-Jordan elimination converts a $m \times n$ matrix into its
+row-reduced echelon form using elementary matrix operations
+(e.g. pivoting).
 This can be used to solve a linear system of $n$ equations
 $\vec{A}\vec{x} = \vec{b}$ for the unknown vector $\vec{x}$
 \[
@@ -493,6 +542,6 @@ Gauss-Jordan elimination algorithm, and can be invoked as such:
       0.00000000 -0.00000000 -0.00000000  0.99999994  0.35925382
 \end{Verbatim}
 Notice that the result contains $\vec{I}_n$ in its first $n$ rows and $n$
-columns (to within machine precision).
-[NOTE: row permutations (swapping) might have occurred...]
+columns (to within machine precision).%
+\footnote{row permutations (swapping) might have occurred.}
 
