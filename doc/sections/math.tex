@@ -547,16 +547,20 @@ An $n^{th}$-order polynomial has $n+1$ coefficients ordered in memory in
 increasing degree.%
 \footnote{Note that this convention is reversed from that used in octave
 \cite{octave:web}.}
-For example, a $2^{nd}$-order polynomial $0.1 -2.4x + 1.3x^2$ stored in an
-array {\tt float c[]} has
+For example, a $2^{nd}$-order polynomial $0.1 -2.4x + 1.3x^2$ stored in
+an array {\tt float c[]} has
 {\tt c[0]=0.1},
 {\tt c[1]=-2.4}, and
 {\tt c[2]=1.3}.
 
-\subsubsection{{\tt poly\_val()}}
+\subsubsection{{\tt polyf\_val()}}
 \label{module:math:poly:polyf_val}
-Evaluates the polynomial $P_n(x)$ at $x_0$.
-For example:
+The {\tt polyf\_val(*p,k,x)} method evaluates the polynomial $P_n(x)$ at
+$x_0$ where the {\tt k} coefficients are stored in the input array
+{\tt p}.
+Here is a brief example which evaluates $P_2(x) = 0.2 + 1.0x + 0.4x^2$
+at $x=1.3$:
+%
 \begin{Verbatim}[fontsize=\small]
     float p[3] = {0.2f, 1.0f, 0.4f};
     float x = 1.3f;
@@ -564,14 +568,15 @@ For example:
     >>> y = 2.17599988
 \end{Verbatim}
 
-\subsubsection{{\tt poly\_fit()}}
+\subsubsection{{\tt polyf\_fit()}}
 \label{module:math:poly:polyf_fit}
-Fits data to a polynomial of order $k-1$ from $n$ samples using the
-least-squares method.
-Data vectors
+The {\tt polyf\_fit(*x,*y,n,*p,k)} method
+fits data to a polynomial of order $k-1$ from $n$ samples using the
+least-squares method on the input data vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
-$\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$...
-Uses matrix algebra to solve system of equations...
+$\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
+Internally \liquid\
+uses matrix algebra to solve the system of equations
 %
 \begin{equation}
 \label{eqn:math:poly:syseq}
@@ -603,9 +608,10 @@ For example this script fits the 4 data samples to a linear
 \end{Verbatim}
 
 
-\subsubsection{{\tt poly\_fit\_lagrange()}}
+\subsubsection{{\tt polyf\_fit\_lagrange()}}
 \label{module:math:poly:polyf_fit_lagrange}
-Fits dataset of $n$ sample points to exact polynomial of order $n-1$ using
+The {\tt polyf\_fit\_lagrange(*x,*y,n,*p)} method fit a dataset
+of $n$ sample points to exact polynomial of order $n-1$ using
 Lagrange interpolation.
 Given input vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
@@ -639,11 +645,12 @@ Notice that {\tt polyf\_fit\_lagrange(x,y,n,p)}
 is mathematically equivalent to {\tt polyf\_fit(x,y,n,p,n)},
 but is computed in fewer steps.
 %
-See also {\tt poly\_expandroots}.
+See also {\tt polyf\_expandroots}.
 
-\subsubsection{{\tt poly\_interp\_lagrange()}}
+\subsubsection{{\tt polyf\_interp\_lagrange()}}
 \label{module:math:poly:polyf_interp_lagrange}
-Uses Lagrange polynomials to find the interpolant
+The {\tt polyf\_interp\_lagrange(*x,*y,n,x0)} method
+uses Lagrange polynomials to find the interpolant
 $(\dot{x},\dot{y})$ from a set of $n$ pairs
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
@@ -671,11 +678,12 @@ For example this script interpolates between the 4 data points
     >>> y0 =   2.00687504
 \end{Verbatim}
 %
-See also {\tt poly\_fit\_lagrange()}.
+See also {\tt polyf\_fit\_lagrange()}.
 
-\subsubsection{{\tt poly\_fit\_lagrange\_barycentric()}}
+\subsubsection{{\tt polyf\_fit\_lagrange\_barycentric()}}
 \label{module:math:poly:polyf_fit_lagrange_barycentric}
-Computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
+The {\tt polyf\_fit\_lagrange\_barycentric(*x,n,*w)} method
+computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
 %
 \begin{equation}
 \label{eqn:math:poly:polyfit_lagrange_barycentric}
@@ -695,9 +703,10 @@ with fewer computations.
 \end{Verbatim}
 %
 
-\subsubsection{{\tt poly\_val\_lagrange\_barycentric()}}
+\subsubsection{{\tt polyf\_val\_lagrange\_barycentric()}}
 \label{module:math:poly:polyf_val_lagrange_barycentric}
-Computes the interpolant $(\dot{x},\dot{y})$ given the barycentric
+The {\tt polyf\_val\_lagrange\_barycentric(*x,*y,*w,x0,n)} method
+computes the interpolant $(\dot{x},\dot{y})$ given the barycentric
 weights $\vec{w}$ (defined above) as
 %
 \begin{equation}
@@ -728,55 +737,10 @@ Lagrange polynomials of the barycentric form are used heavily in
 ({\tt firdespm}) for filter design
 (see Section~\ref{module:filter:firdespm}).
 
-\subsubsection{{\tt poly\_expandroots()}}
-\label{module:math:poly:polyf_expandroots}
-Expands the a polynomial based on its roots
-%
-\begin{equation}
-\label{eqn:math:poly:expandroots}
-    P_n(x) = \prod_{k=0}^{n-1}{(x - r_k)}
-\end{equation}
-%
-where $r_k$ are the roots of $P_n(x)$.
-For example, this script will expand the polynomial
-$P_3(x) = (x-1)(x+2)(x-3)$ which has roots
-$\{1,-2,3\}$:
-%
-\begin{Verbatim}[fontsize=\small]
-    float roots[3] = {1.0f, -2.0f, 3.0f};
-    float p[4];
-    polyf_expandroots(roots,3,p);
-    >>> p = {  6.00000000,  -5.00000000,  -2.00000000,   1.00000000}
-\end{Verbatim}
-%
-
-\subsubsection{{\tt poly\_expandroots2()}}
-\label{module:math:poly:polyf_expandroots2}
-Expands the a polynomial as
-%
-\begin{equation}
-\label{eqn:math:poly:expandroots2}
-    P_n(x) = \prod_{k=0}^{n-1}{(b_kx-a_k)}
-\end{equation}
-%
-by first factoring out the $b_k$ terms,
-invoking {\tt poly\_expandroots()}, and
-multiplying the result by $\prod_k{b_k}$.
-For example, this script will expand the polynomial
-$P_3(x) = (2x-1)(-3x+2)(-x-3)$:
-%
-\begin{Verbatim}[fontsize=\small]
-    float b[3] = { 2.0f, -3.0f, -1.0f};
-    float a[3] = { 1.0f, -2.0f,  3.0f};
-    float p[4];
-    polyf_expandroots2(b,a,3,p);
-    >>> p = {  6.00000000,  11.00000000, -19.00000000,   6.00000000}
-\end{Verbatim}
-%
-
-\subsubsection{{\tt poly\_expandbinomial()}}
+\subsubsection{{\tt polyf\_expandbinomial()}}
 \label{module:math:poly:polyf_expandbinomial}
-Expands the a polynomial as a binomial series
+The {\tt polyf\_expandbinomial(n,*p)} method
+expands the a polynomial as a binomial series
 %
 \begin{equation}
 \label{eqn:math:poly:expandbinomial}
@@ -793,7 +757,7 @@ $P_3(x) = (1+x)^3$:
 \end{Verbatim}
 %
 
-\subsubsection{{\tt poly\_expandbinomial\_pm()}}
+\subsubsection{{\tt polyf\_expandbinomial\_pm()}}
 \label{module:math:poly:polyf_expandbinomial_pm}
 Expands the a polynomial as an alternating binomial series
 %
@@ -814,22 +778,61 @@ $P_3(x) = (1+x)^2(1-x)$:
 \end{Verbatim}
 %
 
+\subsubsection{{\tt polyf\_expandroots()}}
+\label{module:math:poly:polyf_expandroots}
+The {\tt polyf\_expandroots(*r,n,*p)} method
+expands the a polynomial based on its roots
+%
+\begin{equation}
+\label{eqn:math:poly:expandroots}
+    P_n(x) = \prod_{k=0}^{n-1}{(x - r_k)}
+\end{equation}
+%
+where $r_k$ are the roots of $P_n(x)$.
+For example, this script will expand the polynomial
+$P_3(x) = (x-1)(x+2)(x-3)$ which has roots
+$\{1,-2,3\}$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float roots[3] = {1.0f, -2.0f, 3.0f};
+    float p[4];
+    polyf_expandroots(roots,3,p);
+    >>> p = {  6.00000000,  -5.00000000,  -2.00000000,   1.00000000}
+\end{Verbatim}
+%
 
-\subsubsection{{\tt poly\_mul()}}
-\label{module:math:poly:polyf_mul}
-Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
+\subsubsection{{\tt polyf\_expandroots2()}}
+\label{module:math:poly:polyf_expandroots2}
+The {\tt polyf\_expandroots2(*a,*b,n,*p)} method
+expands the a polynomial as
+%
+\begin{equation}
+\label{eqn:math:poly:expandroots2}
+    P_n(x) = \prod_{k=0}^{n-1}{(b_kx-a_k)}
+\end{equation}
+%
+by first factoring out the $b_k$ terms,
+invoking {\tt polyf\_expandroots()}, and
+multiplying the result by $\prod_k{b_k}$.
+For example, this script will expand the polynomial
+$P_3(x) = (2x-1)(-3x+2)(-x-3)$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float b[3] = { 2.0f, -3.0f, -1.0f};
+    float a[3] = { 1.0f, -2.0f,  3.0f};
+    float p[4];
+    polyf_expandroots2(b,a,3,p);
+    >>> p = {  6.00000000,  11.00000000, -19.00000000,   6.00000000}
+\end{Verbatim}
+%
 
-%\subsubsection{{\tt poly\_diff()} {\it not yet implemented}}
-%Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
-%$P_n(x)$
-%\[
-%    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
-%\]
 
-\subsubsection{{\tt poly\_findroots()}}
+\subsubsection{{\tt polyf\_findroots()}}
 \label{module:math:poly:polyf_findroots}
-Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method
-[TODO : add reference].
+The {\tt polyf\_findroots(*p,n,*r)} method
+finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's
+method.
+% [TODO : add reference]
 For an $n^{th}$-order polynomial $P_n(x)$ given by
 %
 \begin{equation}
@@ -863,7 +866,7 @@ by two, eventually collapsing the polynomial.
 The initial choice of $u$ and $v$ determine both algorithm convergence and
 speed.
 
-\liquid\ implements Bairstow's method with the {\tt poly\_findroots()}
+\liquid\ implements Bairstow's method with the {\tt polyf\_findroots()}
 function which accepts an $n^{th}$-order polynomial in standard expanded form
 and computes its $n$ roots.
 The last term of the polynomial (highest order) cannot be zero, otherwise the
@@ -871,4 +874,17 @@ algorithm will not converge.
 %The roots are sorted by complex pairs according to
 %{\tt liquid\_cplxpair()} (see section...)
 
+
+\subsubsection{{\tt polyf\_mul()}}
+\label{module:math:poly:polyf_mul}
+The {\tt polyf\_mul(*P,n,*Q,m,*S)} method
+multiplies two polynomials $P_n(x)$ and $Q_m(x)$ to produce the
+resulting polynomial $S_{n+m-1}(x)$
+
+%\subsubsection{{\tt polyf\_diff()} {\it not yet implemented}}
+%Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
+%$P_n(x)$
+%\[
+%    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
+%\]
 

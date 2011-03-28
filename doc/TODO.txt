@@ -15,8 +15,6 @@ Sections to finish:
   * equalization
   * fec
   * framing
-  * interleaver
-  * math
   * matrix
   * modem
   * multicarrier
