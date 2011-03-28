@@ -553,6 +553,17 @@ an array {\tt float c[]} has
 {\tt c[1]=-2.4}, and
 {\tt c[2]=1.3}.
 
+Notice that all routines for the type {\it float} are prefaced with
+{\tt polyf}.
+This follows the naming convention of the standard C library routines
+which append an {\tt f} to the end of methods operating on
+floating-point precision types.
+Similar matrix interfaces exist in \liquid\ for
+{\it double} ({\tt poly}),
+{\it double complex} ({\tt polyc}), and
+{\it float complex} ({\tt polycf}).
+
+
 \subsubsection{{\tt polyf\_val()}}
 \label{module:math:poly:polyf_val}
 The {\tt polyf\_val(*p,k,x)} method evaluates the polynomial $P_n(x)$ at
