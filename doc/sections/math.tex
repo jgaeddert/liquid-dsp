@@ -475,7 +475,7 @@ $a_1 = -0.48829$,
 $a_2 =  0.14128$, and
 $a_3 = -0.01168$.
 
-\subsubsection{Kaiser}
+\subsubsection{{\tt kaiser()}, (Kaiser-Bessel window)}
 \label{module:math:window:kaiser}
 The function {\tt kaiser(n,N,dt,beta)} computes the $n^{th}$ of $N$
 indices of the Kaiser-$\beta$ window with a shape parameter $\beta$:
@@ -498,7 +498,7 @@ A fractional sample offset $\Delta t$ can be introduced by substituting
 $\frac{n}{N/2}$ with
 $\frac{n}{N/2} + \Delta t$ in (\ref{eqn:math:window:kaiser}).
 
-\subsubsection{Kaiser-Bessel derived}
+\subsubsection{{\tt liquid\_kbd\_window()}, (Kaiser-Bessel derived window)}
 \label{module:math:window:kbd}
 The function {\tt liquid\_kbd\_window(n,beta,*w)}
 computes the $n$-point Kaiser-Bessel derived window with a shape
