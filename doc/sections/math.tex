@@ -50,8 +50,7 @@ in \liquid.
     %
     $\sinc(z)$              & {\tt liquid\_sincf(z)} \\
     $\lceil\log_2(n)\rceil$ & {\tt liquid\_nextpow2(n)} \\
-    ${n \choose k}$         & {\tt liquid\_nchoosek(n,k)} \\
-    $\vec{X}^H\vec{X}  $  & {\tt matrixcf\_transpose\_mul(x,m,n,xHx)} \\\bottomrule
+    ${n \choose k}$         & {\tt liquid\_nchoosek(n,k)} \\\bottomrule
     \end{tabular*}
 }
 \end{table*}%
@@ -282,15 +281,43 @@ This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
 
 
-
+%
+% Complex Trig
+%
 \subsection{Complex Trigonometry}
 \label{module:math:complex}
-Complex math operations not necessarily defined in the standard C
-library.
+This section describes the implementation and interface to
+complex trigonometric functions not in the C standard library.
+Table~\ref{tab:math:transcendentals} summarizes the interfaces provided
+in \liquid.
+
+% ------------ TABLE: MATH COMPLEX TRIG  ------------
+\begin{table*}
+\caption{Summary of Complex Trigonometric Math Interfaces}
+\label{tab:math:complex}
+\centering
+{\small
+    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}l}
+    \toprule
+    {\it function} &
+    {\it interface}\\\otoprule
+    %
+    $\sqrt{z}$              & {\tt liquid\_csqrtf(z)} \\
+    $e^{z}$                 & {\tt liquid\_cexpf(z)} \\
+    $\ln(z)$                & {\tt liquid\_clogf(z)} \\\midrule
+    $\sin^{-1}(z)$          & {\tt liquid\_casinf(z)} \\
+    $\cos^{-1}(z)$          & {\tt liquid\_cacosf(z)} \\
+    $\tan^{-1}(z)$          & {\tt liquid\_catanf(z)} \\\bottomrule
+    \end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
+
 
 \subsubsection{{\tt liquid\_csqrtf()}}
 \label{module:math:complex:csqrtf}
-The function {\tt liquid\_csqrtf()}
+The function {\tt liquid\_csqrtf(z)}
 computes the complex square root of a number
 %
 \begin{equation}
@@ -304,7 +331,7 @@ where $r=|z|$, $a=\Re\{z\}$, and $\text{sgn}(t)=t/|t|$.
 
 \subsubsection{{\tt liquid\_cexpf()}}
 \label{module:math:complex:cexpf}
-The function {\tt liquid\_cexpf()}
+The function {\tt liquid\_cexpf(z)}
 computes the complex exponential of a number
 %
 \begin{equation}
@@ -320,7 +347,7 @@ where $a=\Re\{z\}$ and $b=\Im\{z\}$.
 
 \subsubsection{{\tt liquid\_clogf()}}
 \label{module:math:complex:clogf}
-The function {\tt liquid\_clogf()}
+The function {\tt liquid\_clogf(z)}
 computes the complex natural logarithm of a number.
 %
 \begin{equation}
@@ -332,7 +359,7 @@ computes the complex natural logarithm of a number.
 
 \subsubsection{{\tt liquid\_cacosf()}}
 \label{module:math:complex:cacosf}
-The function {\tt liquid\_cacosf()}
+The function {\tt liquid\_cacosf(z)}
 computes the complex $\arccos$ of a number
 %
 \begin{equation}
@@ -350,7 +377,7 @@ computes the complex $\arccos$ of a number
 
 \subsubsection{{\tt liquid\_casinf()}}
 \label{module:math:complex:casinf}
-The function {\tt liquid\_casinf()}
+The function {\tt liquid\_casinf(z)}
 computes the complex $\arcsin$ of a number
 %
 \begin{equation}
@@ -363,7 +390,7 @@ computes the complex $\arcsin$ of a number
 
 \subsubsection{{\tt liquid\_catanf()}}
 \label{module:math:complex:catanf}
-The function {\tt liquid\_catanf()}
+The function {\tt liquid\_catanf(z)}
 computes the complex $\arctan$ of a number
 %
 \begin{equation}
@@ -375,6 +402,9 @@ computes the complex $\arctan$ of a number
 %
 
 
+% 
+% windowing
+%
 \subsection{Windowing functions}
 \label{module:math:window}
 This section describes the various windowing functions in the {\tt math}
