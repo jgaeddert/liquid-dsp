@@ -169,6 +169,34 @@ As such,
 %
 
 
+
+% 
+% factorial
+%
+\subsubsection{{\tt liquid\_factorialf(n)}}
+\label{module:math:transcendentals:factorial}
+\liquid\ computes $n!=n\cdot(n-1)\cdot(n-2)\cdots3\cdot2\cdot1$
+iteratively for small values of $n$, and with the Gamma function for
+larger values.
+Specifically, $n! = \Gamma(n+1)$.
+
+%
+\subsubsection{{\tt liquid\_nchoosek()}}
+\label{module:math:transcendentals:nchoosek}
+computes the binomial coefficient
+%
+\begin{equation}
+\label{eqn:math:nchoosek}
+    {n \choose k} = \frac{n!}{(n-k)!k!}
+\end{equation}
+
+\subsubsection{{\tt liquid\_nextpow2()}}
+\label{module:math:transcendentals:nextpow2}
+    computes $\lceil \log_2(x) \rceil$
+
+
+
+
 % 
 % sinc
 %
@@ -190,10 +218,48 @@ terms of the series
     \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
 \end{equation}
 
-
-\subsubsection{{\tt liquid\_besseli0()}}
-\label{module:math:transcendentals:besseli0}
-approximates the modified Bessel function of the first kind (order 0)
+%
+% Bessel-I
+%
+\subsubsection{{\tt liquid\_lnbesselif()},
+               {\tt liquid\_besselif()},
+               {\tt liquid\_besseli0f()}}
+\label{module:math:transcendentals:besseli}
+$I_\nu(z)$ is the modified Bessel function of the first kind and are
+particularly useful for filter design.
+An iterative method for computing $I_\nu$ comes from Gross(1995),
+%\cite{Gross:1995}
+\begin{equation}
+\label{eqn:math:besseli}
+    I_\nu(z) =
+        \left(\frac{z}{2}\right)^\nu
+        \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
+\end{equation}
+%
+Due to its steep response to $z$ it is often useful to compute
+$I_\nu(z)$ by first computing $\ln I_nu(z)$ as
+%
+\begin{eqnarray*}
+\label{eqn:math:lnbesseli}
+    \ln I_\nu(z) & = &
+        \nu\ln(z/2) + \ln\left[
+            \sum_{k=0}^\infty{
+                \frac{
+                    \left(\frac{1}{4}z^2\right)^k
+                }{
+                    k! \Gamma(\nu + k + 1)
+                }
+            }
+        \right] \\
+        & = &
+        \nu\ln(z/2) + \ln\left[
+            \sum_{k=0}^\infty{ \exp\Bigl\{
+                2 k \ln(z/2) - \ln\Gamma(k+1) - \ln\Gamma(\nu+k+1)
+            \Bigr\} }
+        \right] \\
+\end{eqnarray*}
+%
+For $\nu=0$ a good approximation can be derived by
 using piecewise polynomials,
 %
 \begin{equation}
@@ -214,25 +280,6 @@ where $t=\ln(z)$ and
 \]
 This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
-%
-An iterative method comes from Gross(1995),
-%\cite{Gross:1995}
-\[
-    I_\nu(z) = \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
-\]
-
-\subsubsection{{\tt liquid\_nchoosek()}}
-\label{module:math:transcendentals:nchoosek}
-computes the binomial coefficient
-%
-\begin{equation}
-\label{eqn:math:nchoosek}
-    {n \choose k} = \frac{n!}{(n-k)!k!}
-\end{equation}
-
-\subsubsection{{\tt liquid\_nextpow2()}}
-\label{module:math:transcendentals:nextpow2}
-    computes $\lceil \log_2(x) \rceil$
 
 
 
