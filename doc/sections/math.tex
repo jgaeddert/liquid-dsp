@@ -224,7 +224,7 @@ terms of the series
                {\tt liquid\_besselif()},
                {\tt liquid\_besseli0f()}}
 \label{module:math:transcendentals:besseli}
-$I_\nu(z)$ is the modified Bessel function of the first kind and are
+$I_\nu(z)$ is the modified Bessel function of the first kind and is
 particularly useful for filter design.
 An iterative method for computing $I_\nu$ comes from Gross(1995),
 %\cite{Gross:1995}
@@ -262,7 +262,7 @@ For $\nu=0$ a good approximation can be derived by
 using piecewise polynomials,
 %
 \begin{equation}
-\label{eqn:math:besseli0}
+\label{eqn:math:besseli0_approx}
     \ln\Bigl[\ln\left(I_0(z)\right)\Bigr] \approx
     c_0 + c_1 t + c_2 t ^2 + c_3 t^3
 \end{equation}
@@ -279,6 +279,31 @@ where $t=\ln(z)$ and
 \]
 This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
+
+
+
+%
+% Bessel-J
+%
+\subsubsection{{\tt liquid\_lnbesseljf()},
+               {\tt liquid\_besselj0f()}}
+\label{module:math:transcendentals:besselj}
+$J_\nu(z)$ is the Bessel function of the first kind and is found in
+Doppler filter design.
+\liquid\ computes $J_\nu(z)$ using the series expansion
+%
+\begin{equation}
+\label{eqn:math:besselj}
+    J_\nu(z) =
+        \sum_{k=0}^\infty{
+            \frac{
+                (-1)^k
+            }{
+                2^{2k+|v|} k! \left(|v|+k\right)!
+            }
+            z^{2k+|v|}
+        }
+\end{equation}
 
 
 %
