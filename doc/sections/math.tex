@@ -437,9 +437,10 @@ module.
 These windowing functions are useful for spectral approximation as they
 are compact in both the time and frequency domains.
 
-\subsubsection{Hamming}
+\subsubsection{{\tt hamming()}, (Hamming window)}
 \label{module:math:window:hamming}
-The function {\tt hamming()} computes the Hamming window
+The function {\tt hamming(n,N)} computes the $n^{th}$ of $N$ indices of
+the Hamming window:
 %
 \begin{equation}
 \label{eqn:math:window:hamming}
@@ -447,9 +448,10 @@ The function {\tt hamming()} computes the Hamming window
 \end{equation}
 %
 
-\subsubsection{Hann}
+\subsubsection{{\tt hann()}, (Hann window)}
 \label{module:math:window:hann}
-The function {\tt hann()} computes the Hann window
+The function {\tt hann(n,N)} computes the $n^{th}$ of $N$ indices of
+the Hann window:
 %
 \begin{equation}
 \label{eqn:math:window:hann}
@@ -457,10 +459,10 @@ The function {\tt hann()} computes the Hann window
 \end{equation}
 %
 
-\subsubsection{Blackman-harris}
+\subsubsection{{\tt blackmanharris()}, (Blackman-harris window)}
 \label{module:math:window:blackmanharris}
-The function {\tt blackmanharris()}
-    computes the Blackman-harris window
+The function {\tt blackmanharris(n,N)} computes the $n^{th}$ of $N$
+indices of the Blackman-harris window:
 %
 \begin{equation}
 \label{eqn:math:window:blackmanharris}
@@ -475,12 +477,13 @@ $a_3 = -0.01168$.
 
 \subsubsection{Kaiser}
 \label{module:math:window:kaiser}
-The function {\tt kaiser()} computes the Kaiser-$\beta$ window
+The function {\tt kaiser(n,N,dt,beta)} computes the $n^{th}$ of $N$
+indices of the Kaiser-$\beta$ window with a shape parameter $\beta$:
 %
 \begin{equation}
 \label{eqn:math:window:kaiser}
     w(n,\beta) = \frac{
-        I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right)
+        I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}\right)^2}\right)
     }{
         I_0\left(\pi\beta\right)
     }
@@ -489,20 +492,24 @@ The function {\tt kaiser()} computes the Kaiser-$\beta$ window
 where $I_\nu(z)$ is the modified Bessel function of the first kind of
 order $\nu$, and $\beta$ is a parameter controlling the width of the
 window and its stop-band attenuation.
-In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0()} (see
-section~\ref{module:math:transcendentals}).
+In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0f()}
+(see Section~\ref{module:math:transcendentals}).
+A fractional sample offset $\Delta t$ can be introduced by substituting
+$\frac{n}{N/2}$ with
+$\frac{n}{N/2} + \Delta t$ in (\ref{eqn:math:window:kaiser}).
 
 \subsubsection{Kaiser-Bessel derived}
 \label{module:math:window:kbd}
-The function {\tt liquid\_kbd\_window()}
-computes the Kaiser-Bessel derived window.
+The function {\tt liquid\_kbd\_window(n,beta,*w)}
+computes the $n$-point Kaiser-Bessel derived window with a shape
+parameter $\beta$ storing the result in the $n$-point array {\tt w}.
 The length of the window {\em must} be even.
+
 
 \subsubsection{Examples}
 \label{module:math:window:examples}
-
 Temporal and spectral examples of all these windows can be seen in
-figure~\ref{fig:module:math:window}.
+Figure~\ref{fig:module:math:window}.
 Notice that as the power spectral density main lobe increases in width, its
 stop-band attenuation decreases.
 Furthermore, windows with wider temporal widths exhibit more narrow spectral
@@ -515,6 +522,11 @@ main lobes, but have less stop-band attenuation.
 \label{fig:module:math:window}
 \end{figure}
 
+
+
+% 
+% POLYNOMIALS
+%
 \subsection{Polynomials}
 \label{module:math:poly}
 A number of \liquid\ modules require polynomial manipulations, particularly
