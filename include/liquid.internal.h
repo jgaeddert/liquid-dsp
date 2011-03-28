@@ -1289,12 +1289,6 @@ extern const float apsk128_phi[5];
 extern const float apsk128_r_slicer[4];
 extern const unsigned int apsk128_symbol_map[128];
 
-// get demodulator phase error
-//void get_demodulator_phase_error(modem _demod, float* _phi);
-
-// get error vector magnitude
-//void get_demodulator_evm(modem _demod, float* _evm);
-
 // demodulator helper functions
 
 /** \brief Demodulates a linear symbol constellation using dynamic threshold calculation

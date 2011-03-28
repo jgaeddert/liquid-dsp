@@ -361,11 +361,11 @@ void framesync64_execute(framesync64 _fs,
             if (_fs->state == FRAMESYNC64_STATE_SEEKPN) {
                 // use preamble/header demodulator
                 modem_demodulate(_fs->demod_header, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->demod_header, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->demod_header);
             } else {
                 // use payload demodulator
                 modem_demodulate(_fs->demod_payload, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->demod_payload, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->demod_payload);
             }
 
             // step pll, nco objects
@@ -510,7 +510,7 @@ void framesync64_execute_rxpayload(framesync64 _fs,
 
     // SNR estimate
     float evm;
-    get_demodulator_evm(_fs->demod_header, &evm);
+    evm = modem_get_demodulator_evm(_fs->demod_header);
     _fs->evm_hat += evm;
 
     // check to see if full payload has been received

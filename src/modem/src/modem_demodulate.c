@@ -272,13 +272,13 @@ void modem_demodulate_apsk(modem _mod,
 }
 
 // get demodulator phase error
-void get_demodulator_phase_error(modem _demod, float* _phi)
+float modem_get_demodulator_phase_error(modem _demod)
 {
-    *_phi = _demod->phase_error;
+    return _demod->phase_error;
 }
 
 // get error vector magnitude
-void get_demodulator_evm(modem _demod, float* _evm)
+float modem_get_demodulator_evm(modem _demod)
 {
     float r;
     switch (_demod->scheme) {
@@ -304,10 +304,10 @@ void get_demodulator_evm(modem _demod, float* _evm)
         _demod->evm = cabsf(_demod->res);
         break;
     default:
-        printf("WARNING: get_demodulator_evm(), unknown scheme\n");
+        printf("WARNING: modem_get_demodulator_evm(), unknown scheme\n");
         break;
     }
-    *_evm = _demod->evm;
+    return _demod->evm;
 }
 
 

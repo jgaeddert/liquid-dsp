@@ -154,10 +154,10 @@ void demodulate_bpsk_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int
 void demodulate_qpsk_q32(modem_q32* _demod, q32_t I_in, q32_t Q_in, unsigned int *symbol_out);
 
 /// get demodulator phase error
-void get_demodulator_phase_error_q32(modem_q32* _demod, q32_t* _phi);
+q32_t modem_get_demodulator_phase_error_q32(modem_q32* _demod);
 
 /// get error vector magnitude
-void get_demodulator_evm_q32(modem_q32* _demod, q32_t* _evm);
+q32_t modem_get_demodulator_evm_q32(modem_q32* _demod);
 
 // demodulator helper functions
 

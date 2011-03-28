@@ -2501,8 +2501,8 @@ unsigned int modem_get_bps(modem _mod);
 void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
 
 void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
-void get_demodulator_phase_error(modem _demod, float* _phi);
-void get_demodulator_evm(modem _demod, float* _evm);
+float modem_get_demodulator_phase_error(modem _demod);
+float modem_get_demodulator_evm(modem _demod);
 
 
 // gmskmod : GMSK modulator

@@ -61,7 +61,7 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
         if (s != i)
             AUTOTEST_WARN("modem_test_phase_error(), output symbol does not match");
 
-        get_demodulator_phase_error(demod,&phase_error);
+        phase_error = modem_get_demodulator_phase_error(demod);
         CONTEND_EXPRESSION(phase_error > 0.0f);
     }
 
@@ -87,7 +87,7 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
         if (s != i)
             AUTOTEST_WARN("modem_test_phase_error(), output symbol does not match");
 
-        get_demodulator_phase_error(demod,&phase_error);
+        phase_error = modem_get_demodulator_phase_error(demod);
         CONTEND_EXPRESSION(phase_error < 0.0f);
     }
 

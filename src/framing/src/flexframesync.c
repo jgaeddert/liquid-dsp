@@ -470,13 +470,13 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             if (_fs->state == FLEXFRAMESYNC_STATE_SEEKPN) {
             //if (false) {
                 modem_demodulate(_fs->mod_preamble, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->mod_preamble, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->mod_preamble);
             } else if (_fs->state == FLEXFRAMESYNC_STATE_RXHEADER) {
                 modem_demodulate(_fs->mod_header, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->mod_header, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->mod_header);
             } else {
                 modem_demodulate(_fs->mod_payload, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->mod_payload, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->mod_payload);
                 phase_error *= cabsf(nco_rx_out);
             }
 
@@ -671,7 +671,7 @@ void flexframesync_execute_rxheader(flexframesync _fs,
 
     // SINDR estimation
     float evm;
-    get_demodulator_evm(_fs->mod_header, &evm);
+    evm = modem_get_demodulator_evm(_fs->mod_header);
     _fs->evm_hat += evm;
 
     if (_fs->num_symbols_collected==256) {

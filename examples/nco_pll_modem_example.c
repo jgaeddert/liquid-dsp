@@ -130,7 +130,7 @@ int main(int argc, char*argv[]) {
 
         // error estimation
         //phase_error = cargf(r*conjf(v));
-        get_demodulator_phase_error(demod, &phase_error);
+        phase_error = modem_get_demodulator_phase_error(demod);
 
         // perfect error estimation
         //phase_error = nco_tx->theta - nco_rx->theta;
