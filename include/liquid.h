@@ -1589,7 +1589,7 @@ void framesyncprops_init_default(framesyncprops_s * _props);
 
 typedef struct {
     // signal quality
-    float SNR;      // signal-to-(interference-and-)noise ratio estimate [dB]
+    float evm;      // error vector magnitude [dB]
     float rssi;     // received signal strength indicator [dB]
 
     // demodulated frame symbols

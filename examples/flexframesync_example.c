@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
     float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
     float mu    = 0.3f; // fractional sample delay
-    firfarrow_crcf delay_filter = firfarrow_crcf_create(27,5,0.9f,60.0f);
+    firfarrow_crcf delay_filter = firfarrow_crcf_create(27,5,0.45f,60.0f);
     firfarrow_crcf_set_delay(delay_filter,mu);
 
     // multi-path channel

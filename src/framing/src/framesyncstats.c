@@ -35,7 +35,7 @@
 
 framesyncstats_s framesyncstats_default = {
     // signal quality
-    0.0f,           // SNR
+    0.0f,           // error vector magnitude
     0.0f,           // rssi
 
     // demodulated frame symbols
@@ -73,7 +73,7 @@ void framesyncstats_print(framesyncstats_s * _stats)
         exit(1);
     }
 
-    printf("    SNR                 :   %12.8f dB\n", _stats->SNR);
+    printf("    EVM                 :   %12.8f dB\n", _stats->evm);
     printf("    rssi                :   %12.8f dB\n", _stats->rssi);
     printf("    num symbols         :   %u\n", _stats->num_framesyms);
     printf("    mod scheme          :   %s (%u bits/symbol)\n",

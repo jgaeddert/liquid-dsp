@@ -521,9 +521,9 @@ void framesync64_execute_rxpayload(framesync64 _fs,
         // decode frame payload
         framesync64_decode_payload(_fs);
 
-        // framestats: compute SNR estimate, rssi
+        // framestats: compute EVM estimate, rssi
         // 477 = 84 + 396 = total number of observed symbols
-        _fs->framestats.SNR  = -10*log10f( (_fs->evm_hat / 477.0f) );
+        _fs->framestats.evm  =  10*log10f( (_fs->evm_hat / 477.0f) );
         _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
         _fs->evm_hat = 0.0f;
 
