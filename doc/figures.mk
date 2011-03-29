@@ -190,7 +190,7 @@ figures.gen/equalizer_example2_const.gnu	\
 figures.gen/equalizer_example2_mse.gnu		\
 figures.gen/equalizer_example2_psd.gnu		\
 figures.gen/equalizer_example2_taps.gnu	: src/equalizer_cccf
-	./$< -f figures.gen/equalizer_example2 -n512 -c12 -p28 -s10
+	./$< -f figures.gen/equalizer_example2 -n512 -c8 -p18 -s14
 
 ##
 ## MODULE : filter

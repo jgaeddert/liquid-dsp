@@ -34,7 +34,8 @@ void usage()
 }
 
 
-int main(int argc, char*argv[]) {
+int main(int argc, char*argv[])
+{
     // options
     unsigned int n=512;         // number of symbols to observe
     unsigned int h_len=6;       // channel filter length
@@ -70,6 +71,9 @@ int main(int argc, char*argv[]) {
             return 1;
         }
     }
+
+    // set 'random' seed on options
+    srand( h_len + p + nfft );
 
     if (strcmp(filename_base,"")==0) {
         fprintf(stderr,"error: %s, invalid or unspecified file base name\n", argv[0]);
