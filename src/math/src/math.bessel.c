@@ -43,6 +43,14 @@ float liquid_lnbesselif(float _nu,
     // TODO : validate input
     // TODO : compute low-signal approximation to avoid log(0)
 
+#if 0
+    // high-signal approximation: _z >> _nu
+    //     I_v(z) ~ exp(z) / sqrt(2*pi*z)
+    //  ln I_v(z) ~ z - 0.5*ln(2*pi*z)
+    if ( _nu > 0.0f && logf(_z/_nu) > 8.0f )
+        return _z - 0.5f*logf(2*M_PI*_z);
+#endif
+
     float t0 = _nu*logf(0.5f*_z);
     float t1 = 0.0f;
     float t2 = 0.0f;
