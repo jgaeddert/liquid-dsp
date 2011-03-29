@@ -146,7 +146,7 @@ local_progs :=						\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
-	src/tutorial_pll				\
+	src/simulate_per_test				\
 
 $(local_progs) : % : %.c $(lib_objects) libliquid.a
 
