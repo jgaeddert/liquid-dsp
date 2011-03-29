@@ -1,0 +1,185 @@
+//
+// simulate BER, PER data
+//
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <complex.h>
+#include <math.h>
+#include <getopt.h>
+#include <time.h>
+
+#include "liquid.h"
+#include "liquid.doc.h"
+
+// default output filename
+#define OUTPUT_FILENAME "ber_results.dat"
+
+// print usage/help message
+void usage()
+{
+    printf("simulate_ber options:\n");
+    printf("  u/h   :   print usage\n");
+    printf("  v/q   :   verbose/quiet\n");
+    printf("  o     :   output filename, default: %s\n", OUTPUT_FILENAME);
+    printf("  s     :   SNR start [dB], -5\n");
+    printf("  d     :   SNR step [dB], 0.2\n");
+    printf("  x     :   SNR max [dB], 25\n");
+    printf("  b     :   BER min, 1e-4\n");
+    printf("  t     :   max trials, 4000000\n");
+    printf("  n     :   min trials, 20000\n");
+    printf("  e     :   min errors, 200\n");
+    printf("  f     :   frame bytes, 256\n");
+    printf("  m     :   mod scheme, [psk], dpsk, pam, qam\n");
+    printf("  p     :   bits per symbol, 1\n");
+    printf("  c     :   fec coding scheme (inner)\n");
+    printf("  k     :   fec coding scheme (outer)\n");
+    // print all available FEC schemes
+    unsigned int i;
+    for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++)
+        printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
+
+}
+
+int main(int argc, char *argv[]) {
+    srand( time(NULL) );
+
+    // define parameters
+    float SNRdB_min     = -5.0f;    // starting SNR
+    float SNRdB_step    =  0.2f;    // SNR step size
+    float SNRdB_max     = 40.0f;    // maximum SNR
+    float BER_min       =  1e-4f;    // minimum BER
+    unsigned long int min_errors = 1000;
+    unsigned long int min_trials = 100000;
+    unsigned long int max_trials = 20000000;
+    unsigned int frame_len = 128;
+    modulation_scheme ms = MOD_PSK;
+    unsigned int bps = 1;
+    fec_scheme fec0 = FEC_NONE;
+    fec_scheme fec1 = FEC_NONE;
+    const char * filename = OUTPUT_FILENAME;
+    int verbose = 1;
+
+    // get command-line options
+    int dopt;
+    while((dopt = getopt(argc,argv,"uhvqo:s:d:x:b:t:n:e:f:m:p:c:k:")) != EOF){
+        switch (dopt) {
+        case 'u':
+        case 'h': usage();      return 0;
+        case 'v': verbose = 1;  break;
+        case 'q': verbose = 0;  break;
+        case 'o':
+            filename = optarg;
+            break;
+        case 's': SNRdB_min = atof(optarg); break;
+        case 'd': SNRdB_step = atof(optarg); break;
+        case 'x': SNRdB_max = atof(optarg); break;
+        case 'b': BER_min = atof(optarg); break;
+        case 't': max_trials = atoi(optarg); break;
+        case 'n': min_trials = atol(optarg); break;
+        case 'e': min_errors = atol(optarg); break;
+        case 'f': frame_len = atol(optarg); break;
+        case 'm':
+            ms = liquid_getopt_str2mod(optarg);
+            if (ms == MOD_UNKNOWN) {
+                printf("error: unknown mod. scheme: %s\n", optarg);
+                exit(-1);
+            }
+            break;
+        case 'p': bps = atoi(optarg); break;
+        case 'c': fec0 = liquid_getopt_str2fec(optarg);   break;
+        case 'k': fec1 = liquid_getopt_str2fec(optarg);   break;
+        default:
+            printf("error: unknown option\n");
+            exit(-1);
+        }
+    }
+
+    // validate options
+    if (SNRdB_step <= 0.0f) {
+        printf("error: SNRdB_step must be greater than zero\n");
+        exit(-1);
+    } else if (SNRdB_max < SNRdB_min) {
+        printf("error: SNRdB_max must be greater than SNRdB_min\n");
+        exit(-1);
+    } else if (max_trials < min_trials) {
+        printf("error: max_trials must be greater than min_trials\n");
+        exit(-1);
+    } else if (max_trials < min_errors) {
+        printf("error: max_trials must be greater than min_errors\n");
+        exit(-1);
+    }
+
+    unsigned int i;
+    simulate_per_opts opts;
+    opts.ms = ms;
+    opts.bps = bps;
+    opts.fec0 = fec0;
+    opts.fec1 = fec1;
+    opts.dec_msg_len = frame_len;
+
+    // minimum number of errors to simulate
+    opts.min_packet_errors  = 0;
+    opts.min_bit_errors     = min_errors;
+
+    // minimum number of trials to simulate
+    opts.min_packet_trials  = 0;
+    opts.min_bit_trials     = min_trials;
+
+    // maximum number of trials to simulate (before bailing and
+    // deeming simulation unsuccessful)
+    opts.max_packet_trials  = -1; 
+    opts.max_bit_trials     =  max_trials;
+
+    // open output file
+    FILE * fid = fopen(filename,"w");
+    if (!fid) {
+        fprintf(stderr,"error: could not open '%s' for writing\n", filename);
+        exit(1);
+    }
+    fprintf(fid,"# %s : auto-generated file\n", filename);
+    fprintf(fid,"# invoked as: ");
+    for (i=0; i<argc; i++) fprintf(fid,"%s ", argv[i]);
+    fprintf(fid,"\n");
+    fprintf(fid,"#\n");
+    fprintf(fid,"# %12s %12s %12s\n", "SNR [dB]", "BER", "PER");
+
+    // run simulation for increasing SNR levels
+    simulate_per_results results;
+    float SNRdB = SNRdB_min;
+    while (SNRdB < SNRdB_max) {
+        // 
+        simulate_per(opts, SNRdB, &results);
+
+        // break if unsuccessful
+        if (!results.success) break;
+
+        if (verbose) {
+            //printf("  %12.8f : %12.4e\n", SNRdB, PER);
+            printf(" %c SNR: %6.2f, bits: %8lu / %8lu (%12.4e), packets: %6lu / %6lu (%6.2f%%)\n",
+                    results.success ? '*' : ' ',
+                    SNRdB,
+                    results.num_bit_errors,     results.num_bit_trials,     results.BER,
+                    results.num_packet_errors,  results.num_packet_trials,  results.PER*100.0f);
+        }
+
+        // save data to file
+        fprintf(fid,"  %12.8f %12.4e %12.4e\n", SNRdB, results.BER, results.PER);
+
+        // break if BER exceeds minimum
+        if (results.BER < BER_min) break;
+
+        // increase SNR
+        SNRdB += SNRdB_step;
+    }
+
+    // close output file
+    fclose(fid);
+
+    printf("results written to '%s'\n", filename);
+
+    return 0;
+}
+
+
