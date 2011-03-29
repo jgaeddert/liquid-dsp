@@ -68,20 +68,18 @@ int main(int argc, char*argv[])
     // objects MUST be initialized before use)
     if ( strncmp(filename,"",256)==0 ) {
         float complex constellation[M];
-
 #if 0
-        // initialize constellation (spiral)
-        for (i=0; i<M; i++) {
-            float r   = (float)i / logf((float)M);
-            float phi = (float)i / logf((float)M);
-            constellation[i] = r * cexpf(_Complex_I*phi);
-        }
-#else
         // initialize constellation (random)
         for (i=0; i<M; i++)
             constellation[i] = randnf() * cexpf(_Complex_I*M_PI*randf());
+#else
+        // initialize constellation (spiral)
+        for (i=0; i<M; i++) {
+            float r   = (float)i / logf((float)M) + 4.0f;
+            float phi = (float)i / logf((float)M);
+            constellation[i] = r * cexpf(_Complex_I*phi);
+        }
 #endif
-
         modem_arb_init(mod,  constellation,M);
         modem_arb_init(demod,constellation,M);
     } else {
