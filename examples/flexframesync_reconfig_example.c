@@ -15,7 +15,6 @@
 #include "liquid.h"
 
 #define OUTPUT_FILENAME  "flexframesync_reconfig_example.m"
-#define OUTPUT_SYMBOLS_FILE 0
 
 void usage()
 {
@@ -112,7 +111,7 @@ int main(int argc, char *argv[]) {
     float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
     float mu    = 0.3f; // fractional sample delay
-    firfarrow_crcf delay_filter = firfarrow_crcf_create(27,5,0.9f,60.0f);
+    firfarrow_crcf delay_filter = firfarrow_crcf_create(27,5,0.45f,60.0f);
     firfarrow_crcf_set_delay(delay_filter,mu);
 
     unsigned int i;
@@ -274,22 +273,6 @@ static int callback(unsigned char * _rx_header,
 
     if (num_payload_errors == 0)
         fd->num_payloads_decoded++;
-
-    // print frame_samples to output file
-#if OUTPUT_SYMBOLS_FILE == 1
-    FILE * fid = fopen("frame_samples.m","w");
-    fprintf(fid,"clear all; close all;\n");
-    for (i=0; i<_stats.num_framesyms; i++)
-        fprintf(fid,"s(%6u) = %16.8e + j*%16.8e;\n", i+1,
-                                                     crealf(_stats.framesyms[i]),
-                                                     cimagf(_stats.framesyms[i]));
-    fprintf(fid,"plot(real(s),imag(s),'x');\n");
-    fprintf(fid,"axis([-1 1 -1 1]*1.5);\n");
-    fprintf(fid,"axis square;\n");
-    fclose(fid);
-    if (verbose)
-        printf("frame syms written to frame_samples.m\n");
-#endif
 
     return 0;
 }
