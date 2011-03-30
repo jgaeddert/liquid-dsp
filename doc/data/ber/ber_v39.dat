@@ -1,0 +1,29 @@
+# data/ber/ber_v39.dat : auto-generated file
+# invoked as: ./src/simulate_ber -c v39 -b1e-4 -e 100 -n50000 -t20000000 -d0.5 -o data/ber/ber_v39.dat 
+#
+#  modulation scheme   :   bpsk
+#  modulation depth    :   1 bits/symbol
+#  fec (inner)         :   convolutional r1/3 K=9
+#  fec (outer)         :   none
+#  frame length        :   128 bytes
+#  asymptotic rate     :   0.33333334   bits/second/Hz
+#  min packet errors   :   0
+#  min bit errors      :   100
+#  min packet trials   :   0
+#  min bit trials      :   50000
+#  max packet trials   :   18446744073709551615
+#  max bit trials      :   20000000
+#
+#     SNR [dB]   Eb/N0 [dB]          BER          PER     bit errs         bits  packet errs      packets
+   -5.00000000  -2.2879e-01   3.6864e-01   1.0000e+00        18497        50176           49           49
+   -4.50000000   2.7121e-01   3.1981e-01   1.0000e+00        16047        50176           49           49
+   -4.00000000   7.7121e-01   2.2766e-01   1.0000e+00        11423        50176           49           49
+   -3.50000000   1.2712e+00   1.5252e-01   1.0000e+00         7653        50176           49           49
+   -3.00000000   1.7712e+00   8.2151e-02   1.0000e+00         4122        50176           49           49
+   -2.50000000   2.2712e+00   3.8684e-02   9.5918e-01         1941        50176           47           49
+   -2.00000000   2.7712e+00   1.5446e-02   8.1633e-01          775        50176           40           49
+   -1.50000000   3.2712e+00   4.4045e-03   5.1020e-01          221        50176           25           49
+   -1.00000000   3.7712e+00   9.8633e-04   1.7000e-01          101       102400           17          100
+   -0.50000000   4.2712e+00   3.8459e-04   6.5637e-02          102       265216           17          259
+    0.00000000   4.7712e+00   1.0222e-04   2.7439e-02          103      1007616           27          984
+    0.50000000   5.2712e+00   1.5751e-05   4.2694e-03          102      6475776           27         6324

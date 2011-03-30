@@ -1,0 +1,26 @@
+# data/ber/ber_v615.dat : auto-generated file
+# invoked as: ./src/simulate_ber -c v615 -s-9 -e10 -n50 -t200000 -d0.5 -o data/ber/ber_v615.dat 
+#
+#  modulation scheme   :   bpsk
+#  modulation depth    :   1 bits/symbol
+#  fec (inner)         :   convolutional r1/6 K=15
+#  fec (outer)         :   none
+#  frame length        :   128 bytes
+#  asymptotic rate     :   0.16666667   bits/second/Hz
+#  min packet errors   :   0
+#  min bit errors      :   10
+#  min packet trials   :   0
+#  min bit trials      :   50
+#  max packet trials   :   18446744073709551615
+#  max bit trials      :   200000
+#
+#     SNR [dB]   Eb/N0 [dB]          BER          PER     bit errs         bits  packet errs      packets
+   -9.00000000  -1.2185e+00   4.5996e-01   1.0000e+00          471         1024            1            1
+   -8.50000000  -7.1849e-01   4.6777e-01   1.0000e+00          479         1024            1            1
+   -8.00000000  -2.1849e-01   3.5156e-01   1.0000e+00          360         1024            1            1
+   -7.50000000   2.8151e-01   3.5059e-01   1.0000e+00          359         1024            1            1
+   -7.00000000   7.8151e-01   2.3535e-01   1.0000e+00          241         1024            1            1
+   -6.50000000   1.2815e+00   7.3242e-02   1.0000e+00           75         1024            1            1
+   -6.00000000   1.7815e+00   7.7148e-02   1.0000e+00           79         1024            1            1
+   -5.50000000   2.2815e+00   3.4180e-03   2.5000e-01           14         4096            1            4
+   -5.00000000   2.7815e+00   3.9063e-04   8.5714e-02           14        35840            3           35

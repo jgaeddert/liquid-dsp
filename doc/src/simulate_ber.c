@@ -54,8 +54,8 @@ int main(int argc, char *argv[]) {
     unsigned long int min_trials = 100000;
     unsigned long int max_trials = 20000000;
     unsigned int frame_len = 128;
-    modulation_scheme ms = MOD_QPSK;
-    unsigned int bps = 2;
+    modulation_scheme ms = MOD_BPSK;
+    unsigned int bps = 1;
     fec_scheme fec0 = FEC_NONE;
     fec_scheme fec1 = FEC_NONE;
     const char * filename = OUTPUT_FILENAME;
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 
         if (verbose) {
             //printf("  %12.8f : %12.4e\n", SNRdB, PER);
-            printf(" %c SNR: %6.3f, EbN0: %6.3f, bits: %8lu/%8lu (%10.4e), packets: %5lu/%5lu (%6.2f%%)\n",
+            printf(" %c SNR: %6.3f, EbN0: %6.3f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\n",
                     results.success ? '*' : ' ',
                     SNRdB,
                     EbN0dB,

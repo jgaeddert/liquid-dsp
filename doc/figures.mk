@@ -39,6 +39,11 @@ local_pdffiles :=					\
 	figures.gen/equalizer_example2_mse.pdf		\
 	figures.gen/equalizer_example2_psd.pdf		\
 	figures.gen/equalizer_example2_taps.pdf		\
+							\
+	figures.gen/fec_ber_hamming.pdf			\
+	figures.gen/fec_ber_conv.pdf			\
+	figures.gen/fec_ber_convpunc.pdf		\
+							\
 	figures.gen/filter_rnyquist.pdf			\
 	figures.gen/filter_butter_psd.pdf		\
 	figures.gen/filter_butter_zpk.pdf		\
@@ -192,6 +197,62 @@ figures.gen/equalizer_example2_mse.gnu		\
 figures.gen/equalizer_example2_psd.gnu		\
 figures.gen/equalizer_example2_taps.gnu	: src/equalizer_cccf
 	./$< -f figures.gen/equalizer_example2 -n512 -c8 -p18 -s14
+
+##
+## MODULE : fec
+##
+
+fec_ber_data :=				\
+	data/ber/ber_none.dat		\
+	data/ber/ber_r3.dat		\
+	data/ber/ber_r5.dat		\
+	data/ber/ber_h128.dat		\
+	data/ber/ber_h74.dat		\
+	data/ber/ber_h84.dat		\
+	data/ber/ber_v27.dat		\
+	data/ber/ber_v29.dat		\
+	data/ber/ber_v39.dat		\
+	data/ber/ber_v615.dat		\
+	data/ber/ber_v27p23.dat		\
+	data/ber/ber_v27p34.dat		\
+	data/ber/ber_v27p45.dat		\
+	data/ber/ber_v27p56.dat		\
+	data/ber/ber_v27p67.dat		\
+	data/ber/ber_v27p78.dat		\
+
+# re-simulate BER data
+fecber_opts      := -b1e-5 -e 1000 -n50000 -t200000000 -s-9 -d0.5 -x40
+resimulate-ber : src/simulate_ber
+	@echo "re-simulating ber data..."
+	./src/simulate_ber -c none   $(fecber_opts) -o data/ber/ber_none.dat
+	./src/simulate_ber -c r3     $(fecber_opts) -o data/ber/ber_r3.dat
+	./src/simulate_ber -c r5     $(fecber_opts) -o data/ber/ber_r5.dat
+	./src/simulate_ber -c h128   $(fecber_opts) -o data/ber/ber_h128.dat
+	./src/simulate_ber -c h84    $(fecber_opts) -o data/ber/ber_h84.dat
+	./src/simulate_ber -c h74    $(fecber_opts) -o data/ber/ber_h74.dat
+	./src/simulate_ber -c v27    $(fecber_opts) -o data/ber/ber_v27.dat
+	./src/simulate_ber -c v29    $(fecber_opts) -o data/ber/ber_v29.dat
+	./src/simulate_ber -c v39    $(fecber_opts) -o data/ber/ber_v39.dat
+	./src/simulate_ber -c v27p23 $(fecber_opts) -o data/ber/ber_v27p23.dat
+	./src/simulate_ber -c v27p34 $(fecber_opts) -o data/ber/ber_v27p34.dat
+	./src/simulate_ber -c v27p45 $(fecber_opts) -o data/ber/ber_v27p45.dat
+	./src/simulate_ber -c v27p56 $(fecber_opts) -o data/ber/ber_v27p56.dat
+	./src/simulate_ber -c v27p67 $(fecber_opts) -o data/ber/ber_v27p67.dat
+	./src/simulate_ber -c v27p78 $(fecber_opts) -o data/ber/ber_v27p78.dat
+	./src/simulate_ber -c v615 -e50 -n500 -t200000 -d0.5 -o data/ber/ber_v615.dat
+
+# copy gnuplot file
+figures.gen/fec_ber_hamming.gnu \
+figures.gen/fec_ber_conv.gnu \
+figures.gen/fec_ber_convpunc.gnu : figures.gen/%.gnu : data/%.gnu
+	cp $< $@
+
+# add ber simulation data files as dependencies
+figures.gen/fec_ber_hamming.eps \
+figures.gen/fec_ber_conv.eps \
+figures.gen/fec_ber_convpunc.eps : %.eps : %.gnu $(fec_ber_data)
+
+
 
 ##
 ## MODULE : filter
