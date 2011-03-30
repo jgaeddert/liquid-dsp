@@ -289,3 +289,75 @@ installed \cite{libfec:web}.
 % ------------------------
 
 
+%-------------------- FIGURE: FEC BER (BUILT-IN) --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[BER vs. $E_s/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_hamming}
+    \label{fig:fec:hamming_ber:esn0}
+  }
+} \quad
+\mbox{
+  \subfigure[BER vs. $E_b/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_hamming}
+    \label{fig:fec:hamming_ber:ebn0}
+  } \quad
+}
+% trim = left bottom right top
+\caption{{\tt fec} bit error rates for built-in \liquid\ codecs}
+\label{fig:fec:hamming_ber}
+\end{figure}
+
+
+
+%-------------------- FIGURE: FEC BER (CONVOLUTIONAL) --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[BER vs. $E_s/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_conv}
+    \label{fig:fec:conv_ber:esn0}
+  }
+} \quad
+\mbox{
+  \subfigure[BER vs. $E_b/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_conv}
+    \label{fig:fec:conv_ber:ebn0}
+  } \quad
+}
+% trim = left bottom right top
+\caption{{\tt fec} bit error rates for convolutional codes}
+\label{fig:fec:conv_ber}
+\end{figure}
+
+
+
+%-------------------- FIGURE: FEC BER (CONVOLUTIONAL, PUNCTURED) --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[BER vs. $E_s/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_convpunc}
+    \label{fig:fec:convpunc_ber:esn0}
+  }
+} \quad
+\mbox{
+  \subfigure[BER vs. $E_b/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_convpunc}
+    \label{fig:fec:convpunc_ber:ebn0}
+  } \quad
+}
+% trim = left bottom right top
+\caption{{\tt fec} bit error rates for punctured convolutional codes}
+\label{fig:fec:convpunc_ber}
+\end{figure}
+
+
+

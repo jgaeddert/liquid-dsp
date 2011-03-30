@@ -1,13 +1,14 @@
 #
-# fec_ber_conv.gnu
+# fec_ber_esn0_conv.gnu
 #
 reset
 set terminal postscript eps enhanced color solid rounded
-set xrange [-10:10]
+set xrange [-8:10]
 set yrange [1e-5:1]
 set logscale y
 set format y '10^{%L}'
-set size ratio 0.6
+set size ratio 0.65
+set size 1.0
 set xlabel 'SNR [dB]'
 set ylabel 'BER'
 set key bottom right nobox

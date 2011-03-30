@@ -40,9 +40,12 @@ local_pdffiles :=					\
 	figures.gen/equalizer_example2_psd.pdf		\
 	figures.gen/equalizer_example2_taps.pdf		\
 							\
-	figures.gen/fec_ber_hamming.pdf			\
-	figures.gen/fec_ber_conv.pdf			\
-	figures.gen/fec_ber_convpunc.pdf		\
+	figures.gen/fec_ber_esn0_hamming.pdf		\
+	figures.gen/fec_ber_ebn0_hamming.pdf		\
+	figures.gen/fec_ber_esn0_conv.pdf		\
+	figures.gen/fec_ber_ebn0_conv.pdf		\
+	figures.gen/fec_ber_esn0_convpunc.pdf		\
+	figures.gen/fec_ber_ebn0_convpunc.pdf		\
 							\
 	figures.gen/filter_rnyquist.pdf			\
 	figures.gen/filter_butter_psd.pdf		\
@@ -242,15 +245,21 @@ resimulate-ber : src/simulate_ber
 	./src/simulate_ber -c v615 -e50 -n500 -t200000 -d0.5 -o data/ber/ber_v615.dat
 
 # copy gnuplot file
-figures.gen/fec_ber_hamming.gnu \
-figures.gen/fec_ber_conv.gnu \
-figures.gen/fec_ber_convpunc.gnu : figures.gen/%.gnu : data/%.gnu
+figures.gen/fec_ber_esn0_hamming.gnu \
+figures.gen/fec_ber_ebn0_hamming.gnu \
+figures.gen/fec_ber_esn0_conv.gnu \
+figures.gen/fec_ber_ebn0_conv.gnu \
+figures.gen/fec_ber_esn0_convpunc.gnu \
+figures.gen/fec_ber_ebn0_convpunc.gnu : figures.gen/%.gnu : data/%.gnu
 	cp $< $@
 
 # add ber simulation data files as dependencies
-figures.gen/fec_ber_hamming.eps \
-figures.gen/fec_ber_conv.eps \
-figures.gen/fec_ber_convpunc.eps : %.eps : %.gnu $(fec_ber_data)
+figures.gen/fec_ber_esn0_hamming.eps \
+figures.gen/fec_ber_ebn0_hamming.eps \
+figures.gen/fec_ber_esn0_conv.eps \
+figures.gen/fec_ber_ebn0_conv.eps \
+figures.gen/fec_ber_esn0_convpunc.eps \
+figures.gen/fec_ber_ebn0_convpunc.eps : %.eps : %.gnu $(fec_ber_data)
 
 
 
