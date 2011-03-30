@@ -184,51 +184,53 @@ encodes them into an output block of coded data bytes.
 %TODO finish interface description
 
 \begin{description}
-\item[{\tt fec\_create()}]
-    creates a {\tt fec} object of a specific scheme.
-    Notice that the length of the input message does not need to be specified
-    until {\tt encode()} or {\tt decode()} is invoked.
-    The second argument should be ignored and set to {\tt NULL}
+\item[{\tt fec\_create(scheme,*opts)}]
+    creates a {\tt fec} object of a specific scheme
+    (see Table~\ref{tab:fec:codecs} for available codecs).
+    Notice that the length of the input message does not need to be
+    specified until {\tt encode()} or {\tt decode()} is invoked.
+    The second argument is intended for future development and should be
+    ignored by passing the {\tt NULL} pointer
     (see example below).
-\item[{\tt fec\_recreate()}]
+\item[{\tt fec\_recreate(q,scheme,opts)}]
     recreates an existing {\tt fec} object with a different scheme.
-\item[{\tt fec\_destroy()}]
+\item[{\tt fec\_destroy(q)}]
     destroys a {\tt fec} object, freeing all internally-allocated memory
     arrays.
-\item[{\tt fec\_encode()}]
-    runs the error-correction encoder scheme on an input data array.
-    The resulting encoded message is written to the output array, allocated by
-    the user.
-    The first argument is the {\tt fec} object pointer, instantiated with the
-    {\tt create()} method.
-    The second argument is an integer representing the size of the decoded
-    message in bytes.
-    The third and fourth arguments are the externally allocated input message
-    and the resulting output message, respectively.
+\item[{\tt fec\_encode(q,n,*msg\_dec,*msg\_enc)}]
+    runs the error-correction encoder scheme on an $n$-byte input data
+    array {\tt msg\_dec}, storing the result in the output array
+    {\tt msg\_enc}.
     To obtain the length of the output array necessary, use the
     {\tt fec\_get\_enc\_msg\_length()} method.
-\item[{\tt fec\_decode()}]
-    runs the error-correction decoder on an input data array.
-    The resulting best-effort decoded message is written to the output array,
-    allocated by the user.
+\item[{\tt fec\_decode(q,n,*msg\_enc,*msg\_dec)}]
+    runs the error-correction decoder on an input array
+    {\tt msg\_enc} of $k$ encoded bytes.
+    The resulting best-effort decoded message is written to the $n$-byte
+    output array {\tt msg\_dec}, allocated by the user.
+    Notice that like the {\tt fec\_encode()} method, the input length
+    $n$ refers to the {\em decoded} message length.
     Depending upon the error-correction capabilities of the scheme, the
-    resulting data might have been corrupted, and therefore it is recommended
-    to use either a
-    checksum or a
+    resulting data might have been corrupted,
+    and therefore it is recommended to use either a checksum or a
     cyclic redundancy check (section~\ref{module:fec:crc})
     to validate data integrity.
-\item[{\tt fec\_get\_enc\_msg\_length()}]
-    returns the length of the encoded message in bytes.
-    This method can be called before the {\tt fec} object is created and is
-    useful for allocating initial memory arrays.
+\item[{\tt fec\_get\_enc\_msg\_length(scheme,n)}]
+    returns the length $k$ of the encoded message in bytes
+    for an uncoded input of $n$ bytes using the specified encoding
+    scheme.
+    This method can be called before the {\tt fec} object is created and
+    is useful for allocating initial memory arrays.
 \end{description}
-
-Here is a simple example demonstrating the basic interface to the {\tt fec}
-encoder/decoder object:
+%
+Listed below is a simple example demonstrating the basic interface to
+the {\tt fec} encoder/decoder object:
+%
 \input{listings/fec.example.c.tex}
+%
 For a more detailed example demonstrating the full capabilities of the
 {\tt fec} object, see {\tt examples/fec\_example.c}.
-
+%
 %\subsection{encoder/decoder options}
 %\label{module:fec:codecs}
 Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
