@@ -27,9 +27,9 @@ void usage()
     printf("  d     :   SNR step [dB], 0.2\n");
     printf("  x     :   SNR max [dB], 25\n");
     printf("  b     :   BER min, 1e-4\n");
-    printf("  t     :   max trials, 4000000\n");
-    printf("  n     :   min trials, 20000\n");
-    printf("  e     :   min errors, 200\n");
+    printf("  t     :   max trials, 20000000\n");
+    printf("  n     :   min trials, 100000\n");
+    printf("  e     :   min errors, 1000\n");
     printf("  f     :   frame bytes, 256\n");
     printf("  m     :   mod scheme, [psk], dpsk, pam, qam\n");
     printf("  p     :   bits per symbol, 1\n");
@@ -49,13 +49,13 @@ int main(int argc, char *argv[]) {
     float SNRdB_min     = -5.0f;    // starting SNR
     float SNRdB_step    =  0.2f;    // SNR step size
     float SNRdB_max     = 40.0f;    // maximum SNR
-    float BER_min       =  1e-4f;    // minimum BER
+    float BER_min       =  1e-4f;   // minimum BER
     unsigned long int min_errors = 1000;
     unsigned long int min_trials = 100000;
     unsigned long int max_trials = 20000000;
     unsigned int frame_len = 128;
-    modulation_scheme ms = MOD_PSK;
-    unsigned int bps = 1;
+    modulation_scheme ms = MOD_QPSK;
+    unsigned int bps = 2;
     fec_scheme fec0 = FEC_NONE;
     fec_scheme fec1 = FEC_NONE;
     const char * filename = OUTPUT_FILENAME;
@@ -132,6 +132,9 @@ int main(int argc, char *argv[]) {
     opts.max_packet_trials  = -1; 
     opts.max_bit_trials     =  max_trials;
 
+    // derived values
+    float rate = opts.bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
+
     // open output file
     FILE * fid = fopen(filename,"w");
     if (!fid) {
@@ -143,29 +146,63 @@ int main(int argc, char *argv[]) {
     for (i=0; i<argc; i++) fprintf(fid,"%s ", argv[i]);
     fprintf(fid,"\n");
     fprintf(fid,"#\n");
-    fprintf(fid,"# %12s %12s %12s\n", "SNR [dB]", "BER", "PER");
+    fprintf(fid,"#  modulation scheme   :   %s\n", modulation_scheme_str[opts.ms][1]);
+    fprintf(fid,"#  modulation depth    :   %u bits/symbol\n", opts.bps);
+    fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][1]);
+    fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][1]);
+    fprintf(fid,"#  frame length        :   %u bytes\n", opts.dec_msg_len);
+    fprintf(fid,"#  asymptotic rate     :   %-12.8f bits/second/Hz\n", rate);
+    fprintf(fid,"#  min packet errors   :   %lu\n", opts.min_packet_errors);
+    fprintf(fid,"#  min bit errors      :   %lu\n", opts.min_bit_errors);
+    fprintf(fid,"#  min packet trials   :   %lu\n", opts.min_packet_trials);
+    fprintf(fid,"#  min bit trials      :   %lu\n", opts.min_bit_trials);
+    fprintf(fid,"#  max packet trials   :   %lu\n", opts.max_packet_trials);
+    fprintf(fid,"#  max bit trials      :   %lu\n", opts.max_bit_trials);
+    fprintf(fid,"#\n");
+    fprintf(fid,"# %12s %12s %12s %12s %12s %12s %12s %12s\n",
+            "SNR [dB]",
+            "Eb/N0 [dB]",
+            "BER",
+            "PER",
+            "bit errs",
+            "bits",
+            "packet errs",
+            "packets");
 
     // run simulation for increasing SNR levels
     simulate_per_results results;
     float SNRdB = SNRdB_min;
+    float EbN0dB;
     while (SNRdB < SNRdB_max) {
         // 
         simulate_per(opts, SNRdB, &results);
+
+        // compute Eb/N0
+        EbN0dB = SNRdB - 10.0f*log10f(rate);
 
         // break if unsuccessful
         if (!results.success) break;
 
         if (verbose) {
             //printf("  %12.8f : %12.4e\n", SNRdB, PER);
-            printf(" %c SNR: %6.2f, bits: %8lu / %8lu (%12.4e), packets: %6lu / %6lu (%6.2f%%)\n",
+            printf(" %c SNR: %6.3f, EbN0: %6.3f, bits: %8lu/%8lu (%10.4e), packets: %5lu/%5lu (%6.2f%%)\n",
                     results.success ? '*' : ' ',
                     SNRdB,
+                    EbN0dB,
                     results.num_bit_errors,     results.num_bit_trials,     results.BER,
                     results.num_packet_errors,  results.num_packet_trials,  results.PER*100.0f);
         }
 
         // save data to file
-        fprintf(fid,"  %12.8f %12.4e %12.4e\n", SNRdB, results.BER, results.PER);
+        fprintf(fid,"  %12.8f %12.4e %12.4e %12.4e %12lu %12lu %12lu %12lu\n",
+                SNRdB,
+                EbN0dB,
+                results.BER,
+                results.PER,
+                results.num_bit_errors,
+                results.num_bit_trials,
+                results.num_packet_errors,
+                results.num_packet_trials);
 
         // break if BER exceeds minimum
         if (results.BER < BER_min) break;
