@@ -348,7 +348,32 @@ The raw data can be found in the {\tt doc/data/ber/} subdirectory.
 \caption{{\tt fec} bit error rates for built-in \liquid\ codecs}
 \label{fig:fec:hamming_ber}
 \end{figure}
-
+%
+Figure~\ref{fig:fec:hamming_ber} depicts the performance of the
+available built-in \liquid\ FEC codecs, including
+{\tt FEC\_HAMMING74},
+{\tt FEC\_HAMMING128},
+{\tt FEC\_REP3}, and
+{\tt FEC\_REP5}.
+As stated previously, the repeat codes are typically inferior to any
+other encoding scheme.
+Notice that in terms of $E_b/N_0$ none of these schemes performs very
+well;
+only the Hamming codes give a slight advantage over uncoded BPSK for
+high values of $E_b/N_0$,
+and the repeat codes actually perform worse.%
+\footnote{This is a known phenomenon as simply transmitting repetitions
+          of the uncoded message will always perform worse than uncoded
+          in terms of $E_b/N_0$.
+          This is effectively equivalent to reducing the original
+          transmit power by a factor of $r$ and then transmitting the
+          same message $r$ times.
+          With reference to conserving the amount of energy per uncoded
+          bit, this type of ``encoding'' is always best when $r=1$
+          (no retransmissions).}
+Still, if the goal is not to conserve the energy per bit but improve
+data reliability through a noisy channel then these simple codecs prove
+useful.
 
 
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL) --------------------
@@ -372,7 +397,20 @@ The raw data can be found in the {\tt doc/data/ber/} subdirectory.
 \caption{{\tt fec} bit error rates for convolutional codes}
 \label{fig:fec:conv_ber}
 \end{figure}
-
+%
+Figure~\ref{fig:fec:conv_ber} depicts the performance of the
+convolutional codecs available in \liquid\ when the {\tt libfec} library
+is installed.
+These include
+{\tt FEC\_CONV\_V27},
+{\tt FEC\_CONV\_V29},
+{\tt FEC\_CONV\_V39}, and
+{\tt FEC\_CONV\_V615}.
+Notice that these codecs provide significant error-correction
+capabilities over the Hamming codes;
+this is a result of the fact that convolutional encoding effectively
+spreads the redundancy over a broader range of the original message,
+correlating the output samples more than the short-length Hamming codes.
 
 
 %-------------------- FIGURE: FEC BER (CONVOLUTIONAL, PUNCTURED) --------------------
@@ -396,6 +434,22 @@ The raw data can be found in the {\tt doc/data/ber/} subdirectory.
 \caption{{\tt fec} bit error rates for punctured convolutional codes}
 \label{fig:fec:convpunc_ber}
 \end{figure}
-
+%
+Figure~\ref{fig:fec:convpunc_ber} depicts the performance of the
+punctured convolutional codecs ($K=7$) available in \liquid,
+also available when the {\tt libfec} library is installed.
+These include
+{\tt FEC\_CONV\_V27P23},
+{\tt FEC\_CONV\_V27P34},
+{\tt FEC\_CONV\_V27P45},
+{\tt FEC\_CONV\_V27P56},
+{\tt FEC\_CONV\_V27P67}, and
+{\tt FEC\_CONV\_V27P78}.
+Also included is the unpunctured {\tt FEC\_CONV\_V27} codec,
+plotted as a reference point.
+\liquid\ also includes punctured convolutional codes for the $K=9$
+encoder;
+however because the performance is similar to the $K=7$ codec
+its performance is omitted for the sake of brevity.
 
 
