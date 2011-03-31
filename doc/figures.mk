@@ -222,6 +222,7 @@ fec_ber_data :=				\
 	data/ber/ber_v27p56.dat		\
 	data/ber/ber_v27p67.dat		\
 	data/ber/ber_v27p78.dat		\
+#	data/ber/ber_rs8.dat
 
 # re-simulate BER data
 fecber_opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
@@ -243,6 +244,8 @@ resimulate-ber-data : src/simulate_ber
 	./src/simulate_ber -c v27p67 $(fecber_opts) -o data/ber/ber_v27p67.dat
 	./src/simulate_ber -c v27p78 $(fecber_opts) -o data/ber/ber_v27p78.dat
 	./src/simulate_ber -c v615 -s-9.75 -d0.25 -e50 -n50000 -t3000000 -o data/ber/ber_v615.dat
+
+#	./src/simulate_ber -c rs8    $(fecber_opts) -o data/ber/ber_rs8.dat
 
 # copy gnuplot file
 figures.gen/fec_ber_esn0_hamming.gnu \
