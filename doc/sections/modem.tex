@@ -12,7 +12,10 @@ For the digital modems, data bits are encoded into symbols representing
 carrier frequency, phase, amplitude, etc.
 
 \subsection{Analog modulation schemes}
+\label{module:modem:analog}
+
 \subsubsection{{\tt freqmodem} (analog FM)}
+\label{module:modem:analog:freqmodem}
 The {\tt freqmodem} object implements an analog frequency modulation (FM)
 modulator and demodulator.
 Two options for demodulation are possible...
@@ -40,6 +43,7 @@ Its digital equivalent is
 \]
 
 \subsubsection{{\tt ampmodem} (analog AM)}
+\label{module:modem:analog:ampmodem}
 The {\tt ampmodem} object implements an analog amplitude modulation (AM)
 modulator/demodulator pair.
 Two transmission schemes are available: single side-band (SSB), and
@@ -130,6 +134,7 @@ take advantage of symmetries in certain constellations to reduce this.
 
 
 \subsubsection{Interface}
+\label{module:modem:digital:interface}
 \begin{description}
 \item[{\tt modem\_create(scheme,bps)}]
     creates a linear modulator/demodulator {\tt modem} object with one
@@ -203,6 +208,7 @@ demodulators.
 This holds true for most any encoder/decoder pair in \liquid.
 
 \subsubsection{Gray coding}
+\label{module:modem:digital:gray_coding}
 In order to reduce the number of bit errors in a digital modem,
 all symbols are automatically Gray encoded;
 adjacent symbols in a constellation differ by only one bit.
@@ -256,6 +262,7 @@ In \liquid, Gray encoding and decoding are computed with the
 {\tt gray\_encode()} {\tt gray\_decode()} methods, respectively.
 
 \subsubsection{{\tt MOD\_PSK} (phase-shift keying)}
+\label{module:modem:digital:PSK}
 Demodulation is performed independent of the signal amplitude.
 For an $M$-symbol constellation, the $k^{th}$ symbol is
 \[
@@ -308,6 +315,7 @@ and QPSK ($M=4$)
 \end{figure}
 
 \subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
+\label{module:modem:digital:DPSK}
 Demodulation is performed independent of the signal amplitude.
 The data are encoded using phase transitions, rather than absolute phase.
 This allows the receiver to demodulate incoherently, but at a quality
@@ -323,6 +331,7 @@ degradation of 3dB.
 \]
 
 \subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
+\label{module:modem:digital:APSK}
 Amplitude/phase-shift keying is a specific form of quadrature amplitude
 modulation where constellation points lie on concentric circles.
 \begin{itemize}
@@ -384,6 +393,7 @@ demodulators.
 \end{figure}
 
 \subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
+\label{module:modem:digital:ASK}
 
 \[
     s_k = \alpha ( 2 k - M - 1 )
@@ -434,6 +444,7 @@ where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \end{figure}
 
 \subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
+\label{module:modem:digital:QAM}
 Also known as quadrature amplitude-shift keying, QAM modems encode data using
 both the in-phase and quadrature components of a signal amplitude.
 In fact, the symbol is split into independent in-phase and quadrature symbols
@@ -521,6 +532,7 @@ $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \end{figure}
 
 \subsubsection{{\tt MOD\_ARB} (arbitrary modem)}
+\label{module:modem:digital:ARB}
 \liquid\ also allows the user to create their own modulation schemes by
 designating the number of bits per symbol, and the full signal constellation.
 Several pre-loaded arbitrary signal constellations are available.
