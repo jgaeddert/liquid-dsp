@@ -20,11 +20,11 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber/ber_none.dat'     using 1:3 with linespoints pointtype 6 linecolor rgb '#666666' title 'Uncoded',\
-    'data/ber/ber_v27.dat'      using 1:3 with linespoints pointtype 6 linecolor rgb '#004080' title 'conv. r1/2, K=7',\
-    'data/ber/ber_v27p23.dat'   using 1:3 with linespoints pointtype 6 linecolor rgb '#004070' title 'conv. r2/3, K=7',\
-    'data/ber/ber_v27p34.dat'   using 1:3 with linespoints pointtype 6 linecolor rgb '#004060' title 'conv. r3/4, K=7',\
-    'data/ber/ber_v27p45.dat'   using 1:3 with linespoints pointtype 6 linecolor rgb '#004050' title 'conv. r4/5, K=7',\
-    'data/ber/ber_v27p56.dat'   using 1:3 with linespoints pointtype 6 linecolor rgb '#004040' title 'conv. r5/6, K=7',\
-    'data/ber/ber_v27p67.dat'   using 1:3 with linespoints pointtype 6 linecolor rgb '#004030' title 'conv. r6/7, K=7',\
-    'data/ber/ber_v27p78.dat'   using 1:3 with linespoints pointtype 6 linecolor rgb '#004020' title 'conv. r7/8, K=7'
+    'data/ber/ber_none.dat'     using 1:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'Uncoded',\
+    'data/ber/ber_v27.dat'      using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#871288' title 'conv. r1/2, K=7',\
+    'data/ber/ber_v27p23.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#774298' title 'conv. r2/3, K=7',\
+    'data/ber/ber_v27p34.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#6752a8' title 'conv. r3/4, K=7',\
+    'data/ber/ber_v27p45.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#5762b8' title 'conv. r4/5, K=7',\
+    'data/ber/ber_v27p56.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#4772c8' title 'conv. r5/6, K=7',\
+    'data/ber/ber_v27p67.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#3782d8' title 'conv. r6/7, K=7',\
+    'data/ber/ber_v27p78.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#2792e8' title 'conv. r7/8, K=7'

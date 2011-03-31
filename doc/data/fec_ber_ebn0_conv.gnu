@@ -20,8 +20,8 @@ set pointsize 0.5
 
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber/ber_none.dat'     using 2:3 with linespoints pointtype 6 linecolor rgb '#666666' title 'Uncoded',\
-    'data/ber/ber_v27.dat'      using 2:3 with linespoints pointtype 6 linecolor rgb '#008040' title 'conv. r1/2, K=7',\
-    'data/ber/ber_v29.dat'      using 2:3 with linespoints pointtype 6 linecolor rgb '#007040' title 'conv. r1/2, K=9',\
-    'data/ber/ber_v39.dat'      using 2:3 with linespoints pointtype 6 linecolor rgb '#006040' title 'conv. r1/3, K=9',\
-    'data/ber/ber_v615.dat'     using 2:3 with linespoints pointtype 6 linecolor rgb '#005040' title 'conv. r1/6, K=15'
+    'data/ber/ber_none.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'Uncoded',\
+    'data/ber/ber_v27.dat'      using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#871288' title 'conv. r1/2, K=7',\
+    'data/ber/ber_v29.dat'      using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#0d90b5' title 'conv. r1/2, K=9',\
+    'data/ber/ber_v39.dat'      using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#ff007e' title 'conv. r1/3, K=9',\
+    'data/ber/ber_v615.dat'     using 2:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#e59710' title 'conv. r1/6, K=15'
