@@ -115,33 +115,34 @@ The {\tt interleaver} object operates like most objects in \liquid\ with
 typical {\tt create()}, {\tt destroy()}, and {\tt execute()} methods.
 
 \begin{description}
-\item[{\tt interleaver\_create()}]
-    creates an interleaver object, defaulting to 2 iterations.
-    The first argument governs the size of the data block in bytes to be
-    interleaved, and the second argument determines the type of interleaver
-    (block or sequence).
-\item[{\tt interleaver\_destroy()}]
-    destroys the interleaver object, freeing all internally-allocated memory
-    arrays.
-\item[{\tt interleaver\_set\_num\_iterations()}]
+\item[{\tt interleaver\_create(n,type)}]
+    creates an interleaver object accepting $n$ bytes,
+    with either a {\tt LIQUID\_INTERLEAVER\_BLOCK} or
+    {\tt LIQUID\_INTERLEAVER\_SEQUENCE} type, and 
+    defaulting to 2 iterations.
+\item[{\tt interleaver\_destroy(q)}]
+    destroys the interleaver object, freeing all internally-allocated
+    memory arrays.
+\item[{\tt interleaver\_set\_num\_iterations(q,k)}]
     sets the number of iterations of the interleaver.
     Increasing the number of iterations helps improve bit dispersion, but can
     also increase execution time.
     The default number of iterations at the time of creation is 2 (see
     Figure~\ref{fig:module:framing:interleaver:scatterplot}).
-\item[{\tt interleaver\_encode()}]
+\item[{\tt interleaver\_encode(q,*msg\_dec,*msg\_enc)}]
     runs the forward interleaver, reading data from the first array argument
     and writing the result to the second array argument.
     The array pointers can reference the same block of memory, if necessary.
-\item[{\tt interleaver\_decode()}]
+\item[{\tt interleaver\_decode(q,*msg\_enc,*msg\_dec)}]
     runs the reverse interleaver, reading data from the first array argument
     and writing the result to the second array argument.
     Like the {\tt encode()} method, the array pointers can reference the same
     block of memory.
 \end{description}
-
+%
 This listing gives a basic demonstration to the interface to the
 {\tt interleaver} object:
+%
 \input{listings/interleaver.example.c.tex}
 
 %-------------------- FIGURE: interleaver scatterplot --------------------
@@ -175,7 +176,7 @@ This listing gives a basic demonstration to the interface to the
 with increasing number of iterations (interleaving depth)}
 \label{fig:module:framing:interleaver:scatterplot}
 \end{figure}
-
+%
 A visualization of the interleaver can be seen in
 Figure~\ref{fig:module:framing:interleaver:scatterplot}
 where the input index is plotted against the output index for varying number
@@ -186,7 +187,7 @@ With one iteration only the bytes are interleaved, and so the output is
 grouped into 8-bit blocks.
 Further iterations, however, result in sufficiently dispersed bits, and
 patterns between input and output indices become less evident.
-
+%
 The {\tt packetizer} object (Section~\ref{module:framing:packetizer}) uses the
 {\tt interleaver} object in conjunction to forward error-correction coding
 (Section~\ref{module:fec}) to provide a simple interface for generating
@@ -479,10 +480,12 @@ The {\tt flexframegen} and {\tt flexframesync} objects are similar to their
 {\tt frame[gen|sync]64} counterparts, however extend functionality to include
 a number of options in structuring the frame.
 
-\subsubsection{framing structures}
+\subsubsection{Framing Structures}
 \label{module:framing:frames:structures}
-Both frames consist of six basic parts:
-
+While the specifics of the {\tt frame64} and {\tt flexframe} structures
+are different,
+both frames consist of six basic parts:
+%
 %\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}lll}
 %\toprule
 %{\it name}      & {\it \# symbols}  & {\it \# bytes}& {\it description}  \\
@@ -495,20 +498,7 @@ Both frames consist of six basic parts:
 %ramp down.      & 64                & -             & ramp down sequence \\
 %\bottomrule
 %\end{tabular*}
-
-% 
-% FIGURE: framing:structure
 %
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
-\caption{
-    Framing structure used for the {\tt frame64} and {\tt flexframe}
-    objects.}
-\label{fig:module:framing:structure}
-\end{figure}
-
-
 \begin{description}
 \item[{\sf ramp/up}]
     gracefully increases the output signal level to avoid ``key clicking'' and
@@ -555,12 +545,25 @@ Both frames consist of six basic parts:
     gracefully decreases the output signal level as per ramp/up.
 \end{description}
 
+
+% 
+% FIGURE: framing:structure
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
+\caption{
+    Framing structure used for the {\tt frame64} and {\tt flexframe}
+    objects.}
+\label{fig:module:framing:structure}
+\end{figure}
+%
 A graphical depiction of the framing signal level can be seen in
 figure~\ref{fig:module:framing:structure}.
 The relative lengths of each section are not necessarily to scale,
 particularly as the {\tt flexframe} structure allows many of these sections to
 be variable in length.
-
+%
 NOTE: while the {\tt flexframegen} and {\tt flexframesync} objects are
 intended to be used in conjunction with one another, the output of
 {\tt flexframegen} requires matched-filtering interpolation before the

@@ -3,7 +3,6 @@ documentation TODO list
 To do:
   * add glossary of terms (e.g. SNR, PHY, RF)
   * complete 'experimental' migration
-  * add description of bpacketgen and bpacketsync objects
   * add troubleshooting in "installation" section
   * add index
   * spell-check entire document
@@ -11,7 +10,6 @@ To do:
 Sections to finish:
   * tutorial: modem
 
-  * framing
   * modem
   * multicarrier
   * nco
