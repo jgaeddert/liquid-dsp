@@ -14,7 +14,6 @@ Sections to finish:
   * multicarrier
   * nco
   * optim
-  * quantization
   * random
   * sequence
   * utility
