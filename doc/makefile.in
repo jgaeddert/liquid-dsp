@@ -98,6 +98,7 @@ LISTINGS_C = 					\
 	listings/packetizer.example.c		\
 	listings/quasinewton_search.example.c	\
 	listings/resamp_crcf.example.c		\
+	listings/resamp2_crcf.example.c		\
 	listings/symsync_crcf.example.c		\
 	listings/window.example.c		\
 						\
