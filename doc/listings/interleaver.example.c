@@ -2,7 +2,7 @@
 
 int main() {
     // options
-    unsigned int n=9; // message length
+    unsigned int n=9; // message length (bytes)
 
     // create the interleaver
     interleaver q = interleaver_create(n, LIQUID_INTERLEAVER_SEQUENCE);

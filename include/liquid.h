@@ -1392,7 +1392,7 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
 
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef struct RESAMP2(_s) * RESAMP2();                         \
-RESAMP2() RESAMP2(_create)(unsigned int _h_len,                 \
+RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
                            float _fc,                           \
                            float _As);                          \
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
@@ -1589,7 +1589,7 @@ void framesyncprops_init_default(framesyncprops_s * _props);
 
 typedef struct {
     // signal quality
-    float SNR;      // signal-to-(interference-and-)noise ratio estimate [dB]
+    float evm;      // error vector magnitude [dB]
     float rssi;     // received signal strength indicator [dB]
 
     // demodulated frame symbols

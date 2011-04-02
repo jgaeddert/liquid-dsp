@@ -210,6 +210,15 @@ void design_rkaiser_filter_internal(unsigned int _k,
         exit(1);
     } else;
 
+    // algorithm:
+    //  1. choose three initial points [x0, x1, x2] where x0 < x1 < x2
+    //  2. choose xa = 0.5*(x0 + x1), bisection of [x0 x1]
+    //  3. choose xb = 0.5*(x1 + x2), bisection of [x1 x2]
+    //  4. x0 < xa < x1 < xb < x2
+    //  5. evaluate points to obtain [y0, ya, y1, yb, y2]
+    //  6. find minimum of three midpoints [ya, y1, yb]
+    //  7. update initial points [x0, x1, x2] and go to step 2
+
     unsigned int i;
 
     unsigned int n=2*_k*_m+1;   // filter length
@@ -217,63 +226,68 @@ void design_rkaiser_filter_internal(unsigned int _k,
     // compute bandwidth adjustment estimate
     float rho_hat = rkaiser_approximate_rho(_m,_beta);
 
-    // bandwidth adjustment array (3 points makes a parabola)
-    float x0 = rho_hat*0.9f;
-    float x1;
-    float x2 = 1.0f - 0.9f*(1-rho_hat);
+    // bandwidth adjustment
+    float x0 = 0.5f * rho_hat;  // lower bound, old: rho_hat*0.9f;
+    float x1 = rho_hat;         // midpoint: use initial estimate
+    float x2 = 1.0f;            // upper bound, old: 1.0f - 0.9f*(1.0f-rho_hat);
+    //x1 = 0.5f*(x0 + x2);      // bisect [x0,x1]
 
     // evaluate performance (ISI) of each bandwidth adjustment
     float y0 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x0,_h);
-    float y1;
+    float y1 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x1,_h);
     float y2 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x2,_h);
 
     // run parabolic search to find bandwidth adjustment x_hat which
     // minimizes the inter-symbol interference of the filter
-    unsigned int p, pmax=10;
-    float t0, t1;
+    unsigned int p, pmax=14;
     float x_hat = rho_hat;
     float y_hat;
+    float xa, xb;
+    float ya, yb;
+#if DEBUG_RKAISER
+    FILE * fid = fopen("rkaiser_debug.m", "w");
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"x = [%12.4e %12.4e %12.4e];\n", x0, x1, x2);
+    fprintf(fid,"y = [%12.4e %12.4e %12.4e];\n", y0, y1, y2);
+#endif
     for (p=0; p<pmax; p++) {
-        // choose center point of [x0,x2]
-        x1 = 0.5f*(x0 + x2);
-        y1 = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x1,_h);
+        // choose midway points xa, xb and compute ISI
+        xa = 0.5f*(x0 + x1);    // bisect [x0,x1]
+        xb = 0.5f*(x1 + x2);    // bisect [x1,x2]
+        ya = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,xa,_h);
+        yb = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,xb,_h);
 
-        // numerator
-        t0 = y0 * (x1*x1 - x2*x2) +
-             y1 * (x2*x2 - x0*x0) +
-             y2 * (x0*x0 - x1*x1);
+#if DEBUG_RKAISER
+        fprintf(fid,"x = [x %12.4e %12.4e];\n", xa, xb);
+        fprintf(fid,"y = [y %12.4e %12.4e];\n", ya, yb);
+#endif
 
-        // denominator
-        t1 = y0 * (x1 - x2) +
-             y1 * (x2 - x0) +
-             y2 * (x0 - x1);
-
-        // break if denominator is sufficiently small
-        if (fabsf(t1) < 1e-9f) break;
-
-        // compute new estimate
-        x_hat = 0.5f * t0 / t1;
-        
-        // ensure x_hat is in (0,1)
-        if (x_hat <= 0.0f) x_hat = 1e-3f;
-        if (x_hat >= 1.0f) x_hat = 1.0f - 1e-3f;
-
-        // search index of maximum
-        if (x_hat > x1) {
-            // new minimum
-            x0 = x1;
-            y0 = y1;
+        // find the minimum of [ya,y1,yb], update bounds
+        if (y1 < ya && y1 < yb) {
+            x0 = xa;    y0 = ya;
+            x2 = xb;    y2 = yb;
+        } else if (ya < yb) {
+            x2 = x1;    y2 = y1;
+            x1 = xa;    y1 = ya;
         } else {
-            // new maximum
-            x2 = x1;
-            y2 = y1;
+            x0 = x1;    y0 = y1;
+            x1 = xb;    y1 = yb;
         }
 
+        x_hat = x1;
+        y_hat = y1;
 #if DEBUG_RKAISER
         y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);
         printf("  %4u : rho=%12.8f, isi=%12.6f dB\n", p+1, x_hat, 20*log10f(y_hat));
 #endif
     };
+#if DEBUG_RKAISER
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(x,20*log10(y),'x');\n");
+    fclose(fid);
+    printf("results written to rkaiser_debug.m\n");
+#endif
 
     // re-design filter with optimal value for rho
     y_hat = design_rkaiser_filter_internal_isi(_k,_m,_beta,_dt,x_hat,_h);

@@ -67,5 +67,45 @@ void liquid_doc_freqz(float * _b,
                       unsigned int _nfft,
                       float complex * _H);
 
+// simulate packet error rate options
+typedef struct {
+    modulation_scheme ms;           // modulation scheme
+    unsigned int bps;               // modulation depth (bits/symbol)
+    fec_scheme fec0;                // FEC codec (inner)
+    fec_scheme fec1;                // FEC codec (outer)
+    unsigned int dec_msg_len;       // (decoded) message length (bytes)
+
+    unsigned long int min_packet_errors;    // minimum number of packet errors
+    unsigned long int min_bit_errors;       // minimum number of bit errors
+    unsigned long int min_packet_trials;    // minimum number of packet trials
+    unsigned long int min_bit_trials;       // minimum number of bit trials
+    unsigned long int max_packet_trials;    // maximum number of packet trials
+    unsigned long int max_bit_trials;       // maximum number of bit trials
+} simulate_per_opts;
+
+// simulate packet error rate results
+typedef struct {
+    int success;                            // success?
+
+    unsigned long int num_bit_errors;       // number of bit errors
+    unsigned long int num_bit_trials;       // number of bit trials
+
+    unsigned long int num_packet_errors;    // number of packet errors
+    unsigned long int num_packet_trials;    // number of packet trials
+
+    // derived values
+    float BER;  // apparent BER
+    float PER;  // apparent PER
+} simulate_per_results;
+
+
+// simulate packet error rate
+//  _opts       :   simulation options
+//  _SNRdB      :   signal-to-noise ratio [dB]
+//  _results    :   simulation results
+void simulate_per(simulate_per_opts _opts,
+                  float _SNRdB,
+                  simulate_per_results * _results);
+
 #endif // __LIQUID_DOC_H__
 

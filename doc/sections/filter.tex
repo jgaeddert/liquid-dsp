@@ -257,7 +257,7 @@ functionality applies to {\tt firfilt\_rrrf} and {\tt firfilt\_cccf}.
 \item[{\tt firfilt\_crcf\_execute(q,*y)}]
     generates the output sample $y$ by computing the vector dot product
     (see Section~\ref{module:dotprod})
-    between the internal filter coefficients and the internall buffer.
+    between the internal filter coefficients and the internal buffer.
 \end{description}
 %
 
@@ -1533,7 +1533,7 @@ This is because \cite[(4.6.3)]{Vaidyanathan:1993}
 \label{eqn:filter:resamp:h}
     h(Mn) = 
         \begin{cases}
-        c & n=0 \\
+        1 & n=0 \\
         0 & \text{otherwise}
         \end{cases}
 \end{equation}
@@ -1549,6 +1549,46 @@ computations are necessary \cite{harris:2004}.
 The {\tt resamp2} object in \liquid\ uses a Kaser window for $w(n)$ for
 several reasons, but in particular because it is nearly optimum, and it is
 easy to trade side-lobe attenuation for transition bandwidth.
+%
+Listed below is the full interface to the {\tt resamp2} family of
+objects.
+While each method is listed for {\tt resamp2\_crcf}, the same
+functionality applies to {\tt resamp2\_rrrf} and {\tt resamp2\_cccf}.
+%
+\begin{description}
+\item[{\tt resamp2\_crcf\_create(m,f0,As)}]
+    creates a {\tt resamp2} object with a resampling rate 2,
+    a filter semi-length of $m$ samples
+    (equivalent filter length $4m+1$),
+    centered at frequency $f_0$, and
+    a stop-band suppression of $A_s$~dB.
+\item[{\tt resamp2\_crcf\_recreate(q,m,f0,As)}]
+    recreates a {\tt resamp2} object with revised parameters.
+\item[{\tt resamp2\_crcf\_destroy(q)}]
+    destroys the resampler, freeing all internally-allocated memory.
+\item[{\tt resamp2\_crcf\_print(q)}]
+    prints the internal properties of the resampler to the standard
+    output.
+\item[{\tt resamp2\_crcf\_clear(q)}]
+    clears the internal resampler buffers.
+\item[{\tt resamp2\_crcf\_decim\_execute(q,*x,*y)}]
+    executes the half-band resampler as a decimator
+    for an input array $\vec{x}$ with two samples,
+    storing the resulting samples in the array $y$.
+\item[{\tt resamp2\_crcf\_interp\_execute(q,x,*y)}]
+    executes the half-band resampler as an interpolator
+    for an input sample $x$,
+    storing the resulting two output samples in the array $\vec{y}$.
+\end{description}
+%
+Below is a code example demonstrating the {\tt resamp2} interface.
+%
+\input{listings/resamp2_crcf.example.c.tex}
+%
+For more detailed and extensive examples, refer to
+{\tt examples/resamp2\_crcf\_decim\_example.c} and
+{\tt examples/resamp2\_crcf\_interp\_example.c}
+located in the main \liquid\ project source directory.
 
 
 % 
@@ -1765,5 +1805,7 @@ functionality applies to {\tt symsync\_rrrf} and {\tt symsync\_cccf}.
     of the object.
 \end{description}
 %
-
+For a more detailed example, refer to
+{\tt examples/symsync\_crcf\_example.c}
+located under the main \liquid\ project source directory.
 

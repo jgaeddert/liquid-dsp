@@ -43,48 +43,51 @@ Effectively, the window looks like:
 \label{module:buffer:window:interface}
 
 \begin{description}
-\item[{\tt window\_create()}]
-    creates a new window of a certain length.
-\item[{\tt window\_recreate()}]
+\item[{\tt window\_create(n)}]
+    creates a new window with an internal length of $n$ samples.
+\item[{\tt window\_recreate(q,n)}]
     extends an existing window's size, similar to the standard C library's
-    {\tt realloc()}.
+    {\tt realloc()} to $n$ samples.
     If the size of the new window is larger than the old one, the newest
-    values are retained at the beginning of the buffer and the oldest values
-    are truncated.
-    % see \ref{listing:buffer:window}~line~23
-    If the size of the new window is smaller than the old one, the oldest
+    values are retained at the beginning of the buffer and the oldest
     values are truncated.
+    % see \ref{listing:buffer:window}~line~23
+    If the size of the new window is smaller than the old one, the
+    oldest values are truncated.
     % see \ref{listing:buffer:window}~line~27
-\item[{\tt window\_destroy()}]
+\item[{\tt window\_destroy(q)}]
     destroys the object, freeing all internally-allocated memory.
-\item[{\tt window\_clear()}]
+\item[{\tt window\_clear(q)}]
     clears the contents of the buffer by setting all internal values to zero.
-\item[{\tt window\_index()}]
-    retrieves the $n^{th}$ sample in the window.
-    This is equivalent to first invoking {\tt read()} and then indexing on the
-    resulting pointer, however the result is obtained much faster.
-    Therefore invoking {\tt window\_index(w,0)} returns the {\em oldest} value
-    in the window.
-\item[{\tt window\_read()}]
-    reads the contents of the window by returning a pointer to the aligned
-    internal memory array.
+\item[{\tt window\_index(q,i,*v)}]
+    retrieves the $i^{th}$ sample in the window, storing the output
+    value in $v$.
+    This is equivalent to first invoking {\tt read()} and then indexing
+    on the resulting pointer;
+    however the result is obtained much faster.
+    Therefore invoking {\tt window\_index(q,0,*v)} returns the
+    {\em oldest} value in the window.
+\item[{\tt window\_read(q,**r)}]
+    reads the contents of the window by returning a pointer to the
+    aligned internal memory array.
     This method guarantees that the elements are linearized.
-    This method should {\em only} be used for reading; writing values to the
-    buffer has unknown results.
-\item[{\tt window\_push()}]
-    shifts a single sample into the right side of the window, pushing the
-    oldest (left-most) sample out of the end.
-    Unlike stacks, the {\tt window} object has no equivalent ``pop'' method,
-    as values are retained in memory until they are overwritten.
-\item[{\tt window\_write()}]
-    writes a block of data to the window.
-    Effectively, it is equivalent to pushing each sample one at a time, but
-    executes much faster.
+    This method should {\em only} be used for reading; writing values to
+    the buffer has unspecified results.
+\item[{\tt window\_push(q,v)}]
+    shifts a single sample $v$ into the right side of the window,
+    pushing the oldest (left-most) sample out of the end.
+    Unlike stacks, the {\tt window} object has no equivalent ``pop''
+    method, as values are retained in memory until they are overwritten.
+\item[{\tt window\_write(q,*v,n)}]
+    writes a block of $n$ samples in the array $\vec{v}$ to the window.
+    Effectively, it is equivalent to pushing each sample one at a time,
+    but executes much faster.
 \end{description}
 
 Here is an example demonstrating the basic functionality of the window object.
 The comments show the internal state of the window after each function call as
 if the window were a simple C array.
+%
 \input{listings/window.example.c.tex}
 
 

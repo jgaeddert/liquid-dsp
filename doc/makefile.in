@@ -98,6 +98,7 @@ LISTINGS_C = 					\
 	listings/packetizer.example.c		\
 	listings/quasinewton_search.example.c	\
 	listings/resamp_crcf.example.c		\
+	listings/resamp2_crcf.example.c		\
 	listings/symsync_crcf.example.c		\
 	listings/window.example.c		\
 						\
@@ -153,6 +154,7 @@ SECTIONS :=					\
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
 	lib/liquid_doc_freqz.c			\
+	lib/liquid_doc_simulate_per.c		\
 # HTML documentation
 #	lib/htmlgen.envparser.c
 #	lib/htmlgen.tokenparser.c

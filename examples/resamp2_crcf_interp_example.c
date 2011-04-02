@@ -22,21 +22,20 @@
 
 int main() {
     unsigned int m=5;           // filter semi-length
-    unsigned int h_len = 4*m+1; // filter length
     float fc=0.2f;              // input tone frequency
     unsigned int N=128;         // number of input samples
     float As=60.0f;             // stop-band attenuation [dB]
 
     // create/print the half-band resampler, centered on
     // tone frequency with a specified stop-band attenuation
-    resamp2_cccf f = resamp2_cccf_create(h_len,fc,As);
+    resamp2_cccf f = resamp2_cccf_create(m,fc,As);
     resamp2_cccf_print(f);
 
     // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n",OUTPUT_FILENAME);
     fprintf(fid,"clear all;\nclose all;\n\n");
-    fprintf(fid,"h_len=%u;\n", h_len);
+    fprintf(fid,"h_len=%u;\n", 4*m+1);
     fprintf(fid,"N=%u;\n", N);
 
     unsigned int i;
