@@ -35,6 +35,7 @@ local_src	:=			\
 	firfilt_rrrf_recreate_example.c	\
 	firdes_kaiser_example.c		\
 	firdespm_example.c		\
+	firhilb_example.c		\
 	firhilb_decim_example.c		\
 	firhilb_interp_example.c	\
 	firpfb_rrrf_example.c		\

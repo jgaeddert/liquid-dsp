@@ -1196,11 +1196,13 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 typedef struct FIRHILB(_s) * FIRHILB();                         \
 FIRHILB() FIRHILB(_create)(unsigned int _m,                     \
                            float _As);                          \
-void FIRHILB(_destroy)(FIRHILB() _f);                           \
-void FIRHILB(_print)(FIRHILB() _f);                             \
-void FIRHILB(_clear)(FIRHILB() _f);                             \
-void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, TC * _y);    \
-void FIRHILB(_interp_execute)(FIRHILB() _f, TC _x, T * _y);
+void FIRHILB(_destroy)(FIRHILB() _q);                           \
+void FIRHILB(_print)(FIRHILB() _q);                             \
+void FIRHILB(_clear)(FIRHILB() _q);                             \
+void FIRHILB(_r2c_execute)(FIRHILB() _q, T _x, TC * _y);        \
+void FIRHILB(_c2r_execute)(FIRHILB() _q, TC _x, T * _y);        \
+void FIRHILB(_decim_execute)(FIRHILB() _q, T * _x, TC * _y);    \
+void FIRHILB(_interp_execute)(FIRHILB() _q, TC _x, T * _y);     \
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
 //LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
