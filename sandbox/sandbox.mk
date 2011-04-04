@@ -29,6 +29,8 @@ local_src	:=				\
 	math_cexpf_test.c			\
 	math_clogf_test.c			\
 	math_csqrtf_test.c			\
+	minsearch_test.c			\
+	minsearch2_test.c			\
 	ofdmoqam_firpfbch_test.c		\
 	ofdmoqam_firpfbch_cfo_test.c		\
 	quasinewton_test.c			\
