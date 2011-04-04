@@ -10,26 +10,55 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <getopt.h>
+
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "modem_arb_example.m"
 
-int main() {
+// print usage/help message
+void usage()
+{
+    printf("modem_arb_example [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  p     : modulation depth (default 4 bits/symbol)\n");
+    printf("  f     : input constellation file name\n");
+}
+
+int main(int argc, char*argv[])
+{
     // options
     unsigned int bps=6;         // bits per symbol
-    float complex * constellation = (float complex*)modem_arb_vt64;
     unsigned int n=1024;        // number of data points to evaluate
+    char filename[256] = "";
+    filename[255] = '\0';
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhp:f:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h': usage(); return 0;
+        case 'p': bps = atoi(optarg); break;
+        case 'f': strncpy(filename,optarg,255); break;
+        default:
+            fprintf(stderr,"error: modem_example, unknown option\n");
+            usage();
+            return 1;
+        }
+    }
+
+    // validate input
+    if (bps == 0) {
+        fprintf(stderr,"error: %s, bits/symbol must be greater than zero\n", argv[0]);
+        exit(1);
+    }
 
     // derived values
+    unsigned int i;
     unsigned int M = 1<<bps;    // constellation size
-
-    // open output file
-    FILE * fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
-    fprintf(fid,"clear all;\n");
-    fprintf(fid,"close all;\n");
-    fprintf(fid,"bps = %u;\n", bps);
-    fprintf(fid,"M = %u;\n", M);
 
     // create mod/demod objects
     modem mod   = modem_create(MOD_ARB, bps);
@@ -37,13 +66,33 @@ int main() {
 
     // initialize mod/demod objects (NOTE: arbitrary modem
     // objects MUST be initialized before use)
-    modem_arb_init(mod,constellation,M);
-    modem_arb_init(demod,constellation,M);
+    if ( strncmp(filename,"",256)==0 ) {
+        float complex constellation[M];
+#if 0
+        // initialize constellation (random)
+        for (i=0; i<M; i++)
+            constellation[i] = randnf() * cexpf(_Complex_I*M_PI*randf());
+#else
+        // initialize constellation (spiral)
+        for (i=0; i<M; i++) {
+            float r   = (float)i / logf((float)M) + 4.0f;
+            float phi = (float)i / logf((float)M);
+            constellation[i] = r * cexpf(_Complex_I*phi);
+        }
+#endif
+        modem_arb_init(mod,  constellation,M);
+        modem_arb_init(demod,constellation,M);
+    } else {
+        printf("%s, initializing modem on input file '%s'\n", argv[0], filename);
+        // initialize on file
+        modem_arb_init_file(mod,   filename);
+        modem_arb_init_file(demod, filename);
+    }
 
     modem_print(mod);
 
-    unsigned int i;
-    float complex x;
+    // run simulation
+    float complex x[n];
     unsigned int num_errors = 0;
 
     // run simple BER simulation
@@ -53,21 +102,38 @@ int main() {
     for (i=0; i<n; i++) {
         // generate and modulate random symbol
         sym_in = modem_gen_rand_sym(mod);
-        modem_modulate(mod, sym_in, &x);
+        modem_modulate(mod, sym_in, &x[i]);
 
         // add noise
-        cawgn(&x,0.05);
+        x[i] += 0.05 * randnf() * cexpf(_Complex_I*M_PI*randf());
 
         // demodulate
-        modem_demodulate(demod, x, &sym_out);
+        modem_demodulate(demod, x[i], &sym_out);
 
         // accumulate errors
         num_errors += count_bit_errors(sym_in,sym_out);
-        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1,
-                                                     crealf(x),
-                                                     cimagf(x));
     }
     printf("num bit errors: %4u / %4u\n", num_errors, bps*n);
+
+    // destroy modem objects
+    modem_destroy(mod);
+    modem_destroy(demod);
+
+    // 
+    // export output file
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"bps = %u;\n", bps);
+    fprintf(fid,"M = %u;\n", M);
+
+    for (i=0; i<n; i++) {
+        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1,
+                                                     crealf(x[i]),
+                                                     cimagf(x[i]));
+    }
 
     // plot results
     fprintf(fid,"figure;\n");
@@ -80,7 +146,5 @@ int main() {
     fprintf(fid,"grid on;\n");
     fclose(fid);
 
-    modem_destroy(mod);
-    modem_destroy(demod);
     return 0;
 }

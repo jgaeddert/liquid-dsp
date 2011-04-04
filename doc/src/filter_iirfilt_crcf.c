@@ -13,7 +13,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/filter_iirfilt_crcf_time.gnu"
@@ -67,8 +67,14 @@ int main() {
 
     // generate input signal (noisy sine wave with decaying amplitude)
     for (i=0; i<n; i++) {
+#if 0
         x[i] = cexpf((2*M_PI*0.057f*_Complex_I - 0.04f)*i);
         x[i] += 0.1f*(randnf() + _Complex_I*randnf());
+#else
+        x[i] = 1.0f*cexpf(_Complex_I*2*M_PI*0.057f*i) + 
+               0.5f*cexpf(_Complex_I*2*M_PI*0.192f*i);
+        x[i] *= expf(-(float)i*0.014f);
+#endif
     }
 
     // run filter

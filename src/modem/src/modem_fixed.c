@@ -918,7 +918,7 @@ void demodulate_arb_rotated_q32(modem_q32* _mod, q32_t I_in, q32_t Q_in, unsigne
 
 
 // get demodulator phase error
-void get_demodulator_phase_error_q32(modem_q32* _demod, q32_t* _phi)
+q32_t modem_get_demodulator_phase_error_q32(modem_q32* _demod);
 {
     switch (_demod->scheme) {
     case MOD_PSK:
@@ -957,12 +957,12 @@ void get_demodulator_phase_error_q32(modem_q32* _demod, q32_t* _phi)
     default:;
     }
 
-    *_phi = _demod->phase_error;
+    return _demod->phase_error;
 }
 
 
 // get error vector magnitude
-void get_demodulator_evm_q32(modem_q32* _demod, q32_t* _evm)
+q32_t modem_get_demodulator_evm_q32(modem_q32* _demod)
 {
     switch (_demod->scheme) {
     case MOD_PSK:
@@ -979,7 +979,7 @@ void get_demodulator_evm_q32(modem_q32* _demod, q32_t* _evm)
     default:;
     }
 
-    *_evm = _demod->evm;
+    return _demod->evm;
 }
 
 void demodulate_linear_array_ref_q32(

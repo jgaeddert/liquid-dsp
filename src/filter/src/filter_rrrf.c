@@ -29,7 +29,7 @@
 #define AUTOCORR(name)      LIQUID_CONCAT(autocorr_rrrf,name)
 #define FIRFARROW(name)     LIQUID_CONCAT(firfarrow_rrrf,name)
 #define FIRFILT(name)       LIQUID_CONCAT(firfilt_rrrf,name)
-#define FIRHILB(name)       LIQUID_CONCAT(firhilb,name)
+#define FIRHILB(name)       LIQUID_CONCAT(firhilbf,name)
 #define FIRPFB(name)        LIQUID_CONCAT(firpfb_rrrf,name)
 #define IIRFILT(name)       LIQUID_CONCAT(iirfilt_rrrf,name)
 #define IIRFILTSOS(name)    LIQUID_CONCAT(iirfiltsos_rrrf,name)
@@ -56,7 +56,7 @@
 #define PRINTVAL_TI(X,F)    PRINTVAL_FLOAT(X,F)
 
 // source files
-//#include "autocorr.c"
+#include "autocorr.c"
 #include "firfarrow.c"
 #include "firfilt.c"
 #include "firhilb.c"

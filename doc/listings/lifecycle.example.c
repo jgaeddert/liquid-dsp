@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/lifecycle.example.c
 
 int main() {
     // options

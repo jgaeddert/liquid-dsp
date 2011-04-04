@@ -184,57 +184,59 @@ encodes them into an output block of coded data bytes.
 %TODO finish interface description
 
 \begin{description}
-\item[{\tt fec\_create()}]
-    creates a {\tt fec} object of a specific scheme.
-    Notice that the length of the input message does not need to be specified
-    until {\tt encode()} or {\tt decode()} is invoked.
-    The second argument should be ignored and set to {\tt NULL}
+\item[{\tt fec\_create(scheme,*opts)}]
+    creates a {\tt fec} object of a specific scheme
+    (see Table~\ref{tab:fec:codecs} for available codecs).
+    Notice that the length of the input message does not need to be
+    specified until {\tt encode()} or {\tt decode()} is invoked.
+    The second argument is intended for future development and should be
+    ignored by passing the {\tt NULL} pointer
     (see example below).
-\item[{\tt fec\_recreate()}]
+\item[{\tt fec\_recreate(q,scheme,opts)}]
     recreates an existing {\tt fec} object with a different scheme.
-\item[{\tt fec\_destroy()}]
+\item[{\tt fec\_destroy(q)}]
     destroys a {\tt fec} object, freeing all internally-allocated memory
     arrays.
-\item[{\tt fec\_encode()}]
-    runs the error-correction encoder scheme on an input data array.
-    The resulting encoded message is written to the output array, allocated by
-    the user.
-    The first argument is the {\tt fec} object pointer, instantiated with the
-    {\tt create()} method.
-    The second argument is an integer representing the size of the decoded
-    message in bytes.
-    The third and fourth arguments are the externally allocated input message
-    and the resulting output message, respectively.
+\item[{\tt fec\_encode(q,n,*msg\_dec,*msg\_enc)}]
+    runs the error-correction encoder scheme on an $n$-byte input data
+    array {\tt msg\_dec}, storing the result in the output array
+    {\tt msg\_enc}.
     To obtain the length of the output array necessary, use the
     {\tt fec\_get\_enc\_msg\_length()} method.
-\item[{\tt fec\_decode()}]
-    runs the error-correction decoder on an input data array.
-    The resulting best-effort decoded message is written to the output array,
-    allocated by the user.
+\item[{\tt fec\_decode(q,n,*msg\_enc,*msg\_dec)}]
+    runs the error-correction decoder on an input array
+    {\tt msg\_enc} of $k$ encoded bytes.
+    The resulting best-effort decoded message is written to the $n$-byte
+    output array {\tt msg\_dec}, allocated by the user.
+    Notice that like the {\tt fec\_encode()} method, the input length
+    $n$ refers to the {\em decoded} message length.
     Depending upon the error-correction capabilities of the scheme, the
-    resulting data might have been corrupted, and therefore it is recommended
-    to use either a
-    checksum or a
+    resulting data might have been corrupted,
+    and therefore it is recommended to use either a checksum or a
     cyclic redundancy check (section~\ref{module:fec:crc})
     to validate data integrity.
-\item[{\tt fec\_get\_enc\_msg\_length()}]
-    returns the length of the encoded message in bytes.
-    This method can be called before the {\tt fec} object is created and is
-    useful for allocating initial memory arrays.
+\item[{\tt fec\_get\_enc\_msg\_length(scheme,n)}]
+    returns the length $k$ of the encoded message in bytes
+    for an uncoded input of $n$ bytes using the specified encoding
+    scheme.
+    This method can be called before the {\tt fec} object is created and
+    is useful for allocating initial memory arrays.
 \end{description}
-
-Here is a simple example demonstrating the basic interface to the {\tt fec}
-encoder/decoder object:
+%
+Listed below is a simple example demonstrating the basic interface to
+the {\tt fec} encoder/decoder object:
+%
 \input{listings/fec.example.c.tex}
+%
 For a more detailed example demonstrating the full capabilities of the
 {\tt fec} object, see {\tt examples/fec\_example.c}.
-
+%
 %\subsection{encoder/decoder options}
 %\label{module:fec:codecs}
 Table~\ref{tab:fec:codecs} lists the available codecs and gives a brief
 description for each.
-All convolutional and Reed-Solomon codes are available only if {\tt libfec} is
-installed \cite{libfec:web}.
+All convolutional and Reed-Solomon codes are available only if {\tt
+libfec} is installed \cite{libfec:web}.
 
 % ------------ TABLE: FEC CODING SCHEMES ------------
 \begin{table*}
@@ -285,5 +287,169 @@ installed \cite{libfec:web}.
 }
 \end{table*}%
 % ------------------------
+
+
+\subsection{Performance}
+\label{module:fec:performance}
+The performance of an error-correction scheme is typically measured in
+the bit error rate for a anipotally modulated siganl in the presence of
+additive white Gauss noise (AWGN).
+Certain applications prefer measuring performance in terms of the
+{\em signal} energy while others require {\em bit} energy,
+all relative to the noise variance.
+The two are related by
+%
+\begin{equation}
+\label{eqn:fec:esn0_ebn0}
+    \frac{E_b}{N_0} = \frac{E_s}{r N_0}
+\end{equation}
+%
+where
+$E_s$ is the signal enery,
+$E_b$ is the bit energy,
+$N_0$ is the noise energy,
+and
+$r$ is the rate of the modulation and coding scheme pair,
+measured in bits/s/Hz.
+Figures~\ref{fig:fec:hamming_ber}, \ref{fig:fec:conv_ber}, and
+\ref{fig:fec:convpunc_ber}
+demonstrate plot the bit error-rate performance of the forward
+error-correction schemes available in \liquid\ for a BPSK signal
+in an AWGN channel.
+Each figure depicts the BER versus both $E_s/N_0$ (SNR) and $E_b/N_0$,
+the latter compensating for the coding rate.
+The error rates were computed by generating packets of 1024 bits,
+encoding using the appropriate FEC scheme,
+modulating the resulting bits with BPSK
+(see Section~\ref{module:modem:digital:PSK}),
+adding noise, demodulating, and decoding.
+Each point was simulated with a minimum of 80,000 trials and a minimum
+of 500 bit errors.
+The raw data can be found in the {\tt doc/data/ber/} subdirectory.
+
+%-------------------- FIGURE: FEC BER (BUILT-IN) --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[BER vs. $E_s/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_hamming}
+    \label{fig:fec:hamming_ber:esn0}
+  }
+} \quad
+\mbox{
+  \subfigure[BER vs. $E_b/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_hamming}
+    \label{fig:fec:hamming_ber:ebn0}
+  } \quad
+}
+% trim = left bottom right top
+\caption{{\tt fec} bit error rates for built-in \liquid\ codecs}
+\label{fig:fec:hamming_ber}
+\end{figure}
+%
+Figure~\ref{fig:fec:hamming_ber} depicts the performance of the
+available built-in \liquid\ FEC codecs, including
+{\tt FEC\_HAMMING74},
+{\tt FEC\_HAMMING128},
+{\tt FEC\_REP3}, and
+{\tt FEC\_REP5}.
+As stated previously, the repeat codes are typically inferior to any
+other encoding scheme.
+Notice that in terms of $E_b/N_0$ none of these schemes performs very
+well;
+only the Hamming codes give a slight advantage over uncoded BPSK for
+high values of $E_b/N_0$,
+and the repeat codes actually perform worse.%
+\footnote{This is a known phenomenon as simply transmitting repetitions
+          of the uncoded message will always perform worse than uncoded
+          in terms of $E_b/N_0$.
+          This is effectively equivalent to reducing the original
+          transmit power by a factor of $r$ and then transmitting the
+          same message $r$ times.
+          With reference to conserving the amount of energy per uncoded
+          bit, this type of ``encoding'' is always best when $r=1$
+          (no retransmissions).}
+Still, if the goal is not to conserve the energy per bit but improve
+data reliability through a noisy channel then these simple codecs prove
+useful.
+
+
+%-------------------- FIGURE: FEC BER (CONVOLUTIONAL) --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[BER vs. $E_s/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_conv}
+    \label{fig:fec:conv_ber:esn0}
+  }
+} \quad
+\mbox{
+  \subfigure[BER vs. $E_b/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_conv}
+    \label{fig:fec:conv_ber:ebn0}
+  } \quad
+}
+% trim = left bottom right top
+\caption{{\tt fec} bit error rates for convolutional codes}
+\label{fig:fec:conv_ber}
+\end{figure}
+%
+Figure~\ref{fig:fec:conv_ber} depicts the performance of the
+convolutional codecs available in \liquid\ when the {\tt libfec} library
+is installed.
+These include
+{\tt FEC\_CONV\_V27},
+{\tt FEC\_CONV\_V29},
+{\tt FEC\_CONV\_V39}, and
+{\tt FEC\_CONV\_V615}.
+Notice that these codecs provide significant error-correction
+capabilities over the Hamming codes;
+this is a result of the fact that convolutional encoding effectively
+spreads the redundancy over a broader range of the original message,
+correlating the output samples more than the short-length Hamming codes.
+
+
+%-------------------- FIGURE: FEC BER (CONVOLUTIONAL, PUNCTURED) --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[BER vs. $E_s/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_esn0_convpunc}
+    \label{fig:fec:convpunc_ber:esn0}
+  }
+} \quad
+\mbox{
+  \subfigure[BER vs. $E_b/N_0$]
+  {
+    \includegraphics[trim = 3mm 2mm 0mm 2mm, clip, width=14cm]{figures.gen/fec_ber_ebn0_convpunc}
+    \label{fig:fec:convpunc_ber:ebn0}
+  } \quad
+}
+% trim = left bottom right top
+\caption{{\tt fec} bit error rates for punctured convolutional codes}
+\label{fig:fec:convpunc_ber}
+\end{figure}
+%
+Figure~\ref{fig:fec:convpunc_ber} depicts the performance of the
+punctured convolutional codecs ($K=7$) available in \liquid,
+also available when the {\tt libfec} library is installed.
+These include
+{\tt FEC\_CONV\_V27P23},
+{\tt FEC\_CONV\_V27P34},
+{\tt FEC\_CONV\_V27P45},
+{\tt FEC\_CONV\_V27P56},
+{\tt FEC\_CONV\_V27P67}, and
+{\tt FEC\_CONV\_V27P78}.
+Also included is the unpunctured {\tt FEC\_CONV\_V27} codec,
+plotted as a reference point.
+\liquid\ also includes punctured convolutional codes for the $K=9$
+encoder;
+however because the performance is similar to the $K=7$ codec
+its performance is omitted for the sake of brevity.
 
 

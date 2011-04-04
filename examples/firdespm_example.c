@@ -68,12 +68,12 @@ int main(int argc, char*argv[]) {
     unsigned int i;
     float h[h_len];
 #if 0
-    firdespm q = firdespm_create(n,bands,des,weights,num_bands,btype,wtype);
+    firdespm q = firdespm_create(n,num_bands,bands,des,weights,wtype,btype);
     firdespm_print(q);
     firdespm_execute(q,h);
     firdespm_destroy(q);
 #else
-    firdespm_run(h_len,bands,des,weights,num_bands,btype,wtype,h);
+    firdespm_run(h_len,num_bands,bands,des,weights,wtype,btype,h);
 #endif
 
     // print coefficients

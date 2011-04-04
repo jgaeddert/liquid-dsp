@@ -663,19 +663,20 @@ typedef enum {
 
 // run filter design (full life cycle of object)
 //  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
 //  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
 //  _des        :   desired response [size: _num_bands x 1]
 //  _weights    :   response weighting [size: _num_bands x 1]
-//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _h          :   output coefficients array [size: _h_len x 1]
 void firdespm_run(unsigned int _h_len,
+                  unsigned int _num_bands,
                   float * _bands,
                   float * _des,
                   float * _weights,
-                  unsigned int _num_bands,
-                  liquid_firdespm_btype _btype,
                   liquid_firdespm_wtype * _wtype,
+                  liquid_firdespm_btype _btype,
                   float * _h);
 
 // structured object
@@ -683,18 +684,19 @@ typedef struct firdespm_s * firdespm;
 
 // create firdespm object
 //  _h_len      :   length of filter (number of taps)
+//  _num_bands  :   number of frequency bands
 //  _bands      :   band edges, f in [0,0.5], [size: _num_bands x 2]
 //  _des        :   desired response [size: _num_bands x 1]
 //  _weights    :   response weighting [size: _num_bands x 1]
-//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 //  _wtype      :   weight types (e.g. LIQUID_FIRDESPM_FLATWEIGHT) [size: _num_bands x 1]
+//  _btype      :   band type (e.g. LIQUID_FIRDESPM_BANDPASS)
 firdespm firdespm_create(unsigned int _h_len,
+                         unsigned int _num_bands,
                          float * _bands,
                          float * _des,
                          float * _weights,
-                         unsigned int _num_bands,
-                         liquid_firdespm_btype _btype,
-                         liquid_firdespm_wtype * _wtype);
+                         liquid_firdespm_wtype * _wtype,
+                         liquid_firdespm_btype _btype);
 
 // destroy firdespm object
 void firdespm_destroy(firdespm _q);
@@ -712,11 +714,11 @@ void firdespm_execute(firdespm _q, float * _h);
 //  _As     : stop-band attenuation [dB], _As > 0
 //  _mu     : fractional sample offset, -0.5 < _mu < 0.5
 //  _h      : output coefficient buffer, [size: _n x 1]
-void fir_kaiser_window(unsigned int _n,
-                       float _fc,
-                       float _As,
-                       float _mu,
-                       float *_h);
+void firdes_kaiser_window(unsigned int _n,
+                          float _fc,
+                          float _As,
+                          float _mu,
+                          float *_h);
 
 // Design FIR doppler filter
 //  _n      : filter length
@@ -838,7 +840,7 @@ float iir_group_delay(float * _b,
 //
 // Compute auto-correlation of filter at a specific lag.
 //
-//  _h      :   filter coefficients [size: _h_len]
+//  _h      :   filter coefficients [size: _h_len x 1]
 //  _h_len  :   filter length
 //  _lag    :   auto-correlation lag (samples)
 float liquid_filter_autocorr(float * _h,
@@ -850,7 +852,7 @@ float liquid_filter_autocorr(float * _h,
 // Compute inter-symbol interference (ISI)--both RMS and
 // maximum--for the filter _h.
 //
-//  _h      :   filter coefficients [size: 2*_k*_m+1]
+//  _h      :   filter coefficients [size: 2*_k*_m+1 x 1]
 //  _k      :   filter over-sampling rate (samples/symbol)
 //  _m      :   filter delay (symbols)
 //  _rms    :   output root mean-squared ISI
@@ -1104,6 +1106,7 @@ void liquid_levinson(float * _r,
 //
 
 #define AUTOCORR_MANGLE_CCCF(name)  LIQUID_CONCAT(autocorr_cccf,name)
+#define AUTOCORR_MANGLE_RRRF(name)  LIQUID_CONCAT(autocorr_rrrf,name)
 
 // Macro:
 //   AUTOCORR   : name-mangling macro
@@ -1125,6 +1128,11 @@ LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_CCCF,
                            liquid_float_complex,
                            liquid_float_complex,
                            liquid_float_complex)
+
+LIQUID_AUTOCORR_DEFINE_API(AUTOCORR_MANGLE_RRRF,
+                           float,
+                           float,
+                           float)
 
 
 //
@@ -1178,8 +1186,8 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 //  1:2 complex-to-real interpolator
 //
 
-#define FIRHILB_MANGLE_FLOAT(name)  LIQUID_CONCAT(firhilb, name)
-//#define FIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(dfirhilb, name)
+#define FIRHILB_MANGLE_FLOAT(name)  LIQUID_CONCAT(firhilbf, name)
+//#define FIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(firhilb, name)
 
 // NOTES:
 //   Although firhilb is a placeholder for both decimation and
@@ -1188,14 +1196,16 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 typedef struct FIRHILB(_s) * FIRHILB();                         \
 FIRHILB() FIRHILB(_create)(unsigned int _m,                     \
                            float _As);                          \
-void FIRHILB(_destroy)(FIRHILB() _f);                           \
-void FIRHILB(_print)(FIRHILB() _f);                             \
-void FIRHILB(_clear)(FIRHILB() _f);                             \
-void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, TC * _y);    \
-void FIRHILB(_interp_execute)(FIRHILB() _f, TC _x, T * _y);
+void FIRHILB(_destroy)(FIRHILB() _q);                           \
+void FIRHILB(_print)(FIRHILB() _q);                             \
+void FIRHILB(_clear)(FIRHILB() _q);                             \
+void FIRHILB(_r2c_execute)(FIRHILB() _q, T _x, TC * _y);        \
+void FIRHILB(_c2r_execute)(FIRHILB() _q, TC _x, T * _y);        \
+void FIRHILB(_decim_execute)(FIRHILB() _q, T * _x, TC * _y);    \
+void FIRHILB(_interp_execute)(FIRHILB() _q, TC _x, T * _y);     \
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
-//LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double)
+//LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
 
 //
 // Infinite impulse response filter
@@ -1384,7 +1394,7 @@ LIQUID_DECIM_DEFINE_API(DECIM_MANGLE_CCCF,
 
 #define LIQUID_RESAMP2_DEFINE_API(RESAMP2,TO,TC,TI)             \
 typedef struct RESAMP2(_s) * RESAMP2();                         \
-RESAMP2() RESAMP2(_create)(unsigned int _h_len,                 \
+RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
                            float _fc,                           \
                            float _As);                          \
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
@@ -1533,7 +1543,11 @@ void FIRFARROW(_push)(FIRFARROW() _f, TI _x);                   \
 void FIRFARROW(_set_delay)(FIRFARROW() _f, float _mu);          \
 void FIRFARROW(_execute)(FIRFARROW() _f, TO *_y);               \
 unsigned int FIRFARROW(_get_length)(FIRFARROW() _f);            \
-void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);
+void FIRFARROW(_get_coefficients)(FIRFARROW() _f, float * _h);  \
+void FIRFARROW(_freqresponse)(FIRFARROW() _f,                   \
+                            float _fc,                          \
+                            liquid_float_complex * _H);         \
+float FIRFARROW(_groupdelay)(FIRFARROW() _f, float _fc);
 
 LIQUID_FIRFARROW_DEFINE_API(FIRFARROW_MANGLE_RRRF,
                             float,
@@ -1577,7 +1591,7 @@ void framesyncprops_init_default(framesyncprops_s * _props);
 
 typedef struct {
     // signal quality
-    float SNR;      // signal-to-(interference-and-)noise ratio estimate [dB]
+    float evm;      // error vector magnitude [dB]
     float rssi;     // received signal strength indicator [dB]
 
     // demodulated frame symbols
@@ -1897,7 +1911,7 @@ typedef struct packetizer_s * packetizer;
 
 // create packetizer object
 //
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
@@ -1909,7 +1923,7 @@ packetizer packetizer_create(unsigned int _dec_msg_len,
 // re-create packetizer object
 //
 //  _p      :   initialz packetizer object
-//  _n      :   number of uncoded intput bytes
+//  _n      :   number of uncoded input bytes
 //  _crc    :   error-detecting scheme
 //  _fec0   :   inner forward error-correction code
 //  _fec1   :   outer forward error-correction code
@@ -1954,9 +1968,8 @@ int  packetizer_decode(packetizer _p,
 
 
 //
-// MODULE : interleaver
+// interleaver
 //
-
 typedef struct interleaver_s * interleaver;
 
 // interleaver type
@@ -2036,23 +2049,56 @@ liquid_float_complex liquid_cacosf(liquid_float_complex _z);
 liquid_float_complex liquid_catanf(liquid_float_complex _z);
 
 
-// ln( gamma(z) )
+// ln( Gamma(z) )
 float liquid_lngammaf(float _z);
 
-// gamma(z)
+// Gamma(z)
 float liquid_gammaf(float _z);
+
+// ln( gamma(z,alpha) ) : lower incomplete gamma function
+float liquid_lnlowergammaf(float _z, float _alpha);
+
+// ln( Gamma(z,alpha) ) : upper incomplete gamma function
+float liquid_lnuppergammaf(float _z, float _alpha);
+
+// gamma(z,alpha) : lower incomplete gamma function
+float liquid_lowergammaf(float _z, float _alpha);
+
+// Gamma(z,alpha) : upper incomplete gamma function
+float liquid_uppergammaf(float _z, float _alpha);
 
 // n!
 float liquid_factorialf(unsigned int _n);
 
-// Bessel function of the first kind
-float besselj_0(float _z);
 
-// Modified Bessel function of the first kind
-float besseli_0(float _z);
+
+// ln(I_v(z)) : log Modified Bessel function of the first kind
+float liquid_lnbesselif(float _nu, float _z);
+
+// I_v(z) : Modified Bessel function of the first kind
+float liquid_besselif(float _nu, float _z);
+
+// I_0(z) : Modified Bessel function of the first kind (order zero)
+float liquid_besseli0f(float _z);
+
+// J_v(z) : Bessel function of the first kind
+float liquid_besseljf(float _nu, float _z);
+
+// J_0(z) : Bessel function of the first kind (order zero)
+float liquid_besselj0f(float _z);
+
 
 // Q function
 float liquid_Qf(float _z);
+
+// Marcum Q-function
+float liquid_MarcumQf(int _M,
+                      float _alpha,
+                      float _beta);
+
+// Marcum Q-function (M=1)
+float liquid_MarcumQ1f(float _alpha,
+                       float _beta);
 
 // sin(pi x) / (pi x)
 float sincf(float _x);
@@ -2137,9 +2183,9 @@ void POLY(_fit_lagrange)(T * _x,                                \
                                                                 \
 /* Lagrange polynomial interpolation */                         \
 T POLY(_interp_lagrange)(T * _x,                                \
-                            T * _y,                             \
-                            unsigned int _n,                    \
-                            T   _x0);                           \
+                         T * _y,                                \
+                         unsigned int _n,                       \
+                         T   _x0);                              \
                                                                 \
 /* Lagrange polynomial fit (barycentric form) */                \
 void POLY(_fit_lagrange_barycentric)(T * _x,                    \
@@ -2277,6 +2323,31 @@ void MATRIX(_mul)(T * _x, unsigned int _rx, unsigned int _cx,   \
 void MATRIX(_div)(T * _x, T * _y, T * _z, unsigned int _n);     \
 T    MATRIX(_det)(T * _x, unsigned int _r, unsigned int _c);    \
 void MATRIX(_trans)(T * _x, unsigned int _rx, unsigned int _cx);\
+void MATRIX(_hermitian)(T * _x,                                 \
+                        unsigned int _rx,                       \
+                        unsigned int _cx);                      \
+                                                                \
+/* compute x*x' on [m x n] matrix, result: [m x m]          */  \
+void MATRIX(_mul_transpose)(T * _x,                             \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T * _xxT);                          \
+/* compute x'*x on [m x n] matrix, result: [n x n]          */  \
+void MATRIX(_transpose_mul)(T * _x,                             \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T * _xTx);                          \
+/* compute x*x.' on [m x n] matrix, result: [m x m]          */ \
+void MATRIX(_mul_hermitian)(T * _x,                             \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T * _xxH);                          \
+/* compute x.'*x on [m x n] matrix, result: [n x n]          */ \
+void MATRIX(_hermitian_mul)(T * _x,                             \
+                            unsigned int _m,                    \
+                            unsigned int _n,                    \
+                            T * _xHx);                          \
+                                                                \
 void MATRIX(_aug)(T * _x, unsigned int _rx, unsigned int _cx,   \
                   T * _y, unsigned int _ry, unsigned int _cy,   \
                   T * _z, unsigned int _rz, unsigned int _cz);  \
@@ -2320,7 +2391,12 @@ void MATRIX(_ludecomp_doolittle)(T * _x,                        \
                                  unsigned int _cx,              \
                                  T * _L,                        \
                                  T * _U,                        \
-                                 T * _P);
+                                 T * _P);                       \
+void MATRIX(_qrdecomp_gramschmidt)(T * _x,                      \
+                                   unsigned int _rx,            \
+                                   unsigned int _cx,            \
+                                   T * _Q,                      \
+                                   T * _R);                     \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
@@ -2427,8 +2503,8 @@ unsigned int modem_get_bps(modem _mod);
 void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
 
 void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
-void get_demodulator_phase_error(modem _demod, float* _phi);
-void get_demodulator_evm(modem _demod, float* _evm);
+float modem_get_demodulator_phase_error(modem _demod);
+float modem_get_demodulator_evm(modem _demod);
 
 
 // gmskmod : GMSK modulator
@@ -2497,13 +2573,17 @@ void freqmodem_demodulate(freqmodem _fm,
                           liquid_float_complex _y,
                           float *_x);
 
+// amplitude modulation types
 typedef enum {
-    LIQUID_MODEM_AM_DSB=0,  // FIXME : AM/DSB is actually suppressed carrier
-    LIQUID_MODEM_AM_SSB     // FIXME : AM/SSB is actually un-suppressed carrier
+    LIQUID_MODEM_AM_DSB=0,  // double side-band
+    LIQUID_MODEM_AM_USB,    // single side-band (upper)
+    LIQUID_MODEM_AM_LSB     // single side-band (lower)
 } liquid_modem_amtype;
+
 typedef struct ampmodem_s * ampmodem;
 ampmodem ampmodem_create(float _m,
-                         liquid_modem_amtype _type);
+                         liquid_modem_amtype _type,
+                         int _suppressed_carrier);
 void ampmodem_destroy(ampmodem _fm);
 void ampmodem_print(ampmodem _fm);
 void ampmodem_reset(ampmodem _fm);
@@ -3198,33 +3278,66 @@ float randnf();
 void awgn(float *_x, float _nstd);
 void crandnf(liquid_float_complex *_y);
 void cawgn(liquid_float_complex *_x, float _nstd);
-float randn_pdf(float _x, float _eta, float _sig);
-float randn_cdf(float _x, float _eta, float _sig);
+float randnf_pdf(float _x, float _eta, float _sig);
+float randnf_cdf(float _x, float _eta, float _sig);
+
+// Exponential
+//  f(x) = lambda exp{ -lambda x }
+// where
+//  lambda = spread parameter, lambda > 0
+//  x >= 0
+float randexpf(float _lambda);
+float randexpf_pdf(float _x, float _lambda);
+float randexpf_cdf(float _x, float _lambda);
 
 // Weibull
-//   f(x) = a*(x-g)^(b-1)*exp{-(a/b)*(x-g)^b}  x >= g
-//          0                                  else
+//   f(x) = (a/b) (x/b)^(a-1) exp{ -(x/b)^a }
 //   where
-//     a = alpha : scaling parameter
-//     b = beta  : shape parameter
+//     a = alpha : shape parameter
+//     b = beta  : scaling parameter
 //     g = gamma : location (threshold) parameter
 //
-float rand_weibullf(float _alpha, float _beta, float _gamma);
-float rand_pdf_weibullf(float _x, float _a, float _b, float _g);
-float rand_cdf_weibullf(float _x, float _a, float _b, float _g);
+float randweibf(float _alpha, float _beta, float _gamma);
+float randweibf_pdf(float _x, float _a, float _b, float _g);
+float randweibf_cdf(float _x, float _a, float _b, float _g);
 
 // Gamma
-//void rand_gammaf();
+//          x^(a-1) exp{-x/b)
+//  f(x) = -------------------
+//            Gamma(a) b^a
+//  where
+//      a = alpha : shape parameter, a > 0
+//      b = beta  : scale parameter, b > 0
+//      Gamma(z) = regular gamma function
+//      x >= 0
+float randgammaf(float _alpha, float _beta);
+float randgammaf_pdf(float _x, float _alpha, float _beta);
+float randgammaf_cdf(float _x, float _alpha, float _beta);
 
 // Nakagami-m
-//void rand_nakagamimf(float _m, float _omega);
-//float rand_pdf_nakagamimf(float _x, float _m, float _omega);
-//float rand_cdf_nakagamimf(float _x, float _m, float _omega);
+//  f(x) = (2/Gamma(m)) (m/omega)^m x^(2m-1) exp{-(m/omega)x^2}
+// where
+//      m       : shape parameter, m >= 0.5
+//      omega   : spread parameter, omega > 0
+//      Gamma(z): regular complete gamma function
+//      x >= 0
+float randnakmf(float _m, float _omega);
+float randnakmf_pdf(float _x, float _m, float _omega);
+float randnakmf_cdf(float _x, float _m, float _omega);
 
 // Rice-K
-float rand_ricekf(float _K, float _omega);
-float rand_pdf_ricekf(float _x, float _K, float _omega);
-float rand_cdf_ricekf(float _x, float _K, float _omega);
+//  f(x) = (x/sigma^2) exp{ -(x^2+s^2)/(2sigma^2) } I0( x s / sigma^2 )
+// where
+//  s     = sqrt( omega*K/(K+1) )
+//  sigma = sqrt(0.5 omega/(K+1))
+// and
+//  K     = shape parameter
+//  omega = spread parameter
+//  I0    = modified Bessel function of the first kind
+//  x >= 0
+float randricekf(float _K, float _omega);
+float randricekf_cdf(float _x, float _K, float _omega);
+float randricekf_pdf(float _x, float _K, float _omega);
 
 
 // Data scrambler : whiten data sequence

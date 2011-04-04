@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/eqlms_cccf.example.c
 
 int main() {
     // options
@@ -7,25 +7,29 @@ int main() {
     float mu=0.500f;            // LMS learning rate
 
     // allocate memory for arrays
-    float complex y[n];         // received symbols
+    float complex x[n];         // received samples
+    float complex d_hat[n];     // output symbols
     float complex d[n];         // traning symbols
-    float complex w[p];         // weights
 
-    // initialize y, d, w...
+    // ...initialize y, d, w...
 
     // create LMS equalizer and set learning rate
-    eqlms_cccf eq = eqlms_cccf_create(NULL,p);
-    eqlms_cccf_set_bw(eq, mu);
+    eqlms_cccf q = eqlms_cccf_create(NULL,p);
+    eqlms_cccf_set_bw(q, mu);
 
-    // run batch training on initialized weights
-    eqlms_cccf_train(eq, w, y, d, n);
+    // iterate through equalizer learning
+    unsigned int i;
+    {
+        // push input sample
+        eqlms_cccf_push(q, x[i]);
 
-    // create filter from equalizer output and apply to signal
-    firfilt_cccf f = firfilt_cccf_create(w,p);
+         // compute output sample
+        eqlms_cccf_execute(q, &d_hat[i]);
 
-    // ...
+        // update internal weights
+        eqlms_cccf_step(q, d[i], d_hat[i]);
+    }
 
     // clean up allocated memory
-    eqlms_cccf_destroy(eq);
-    firfilt_cccf_destroy(f);
+    eqlms_cccf_destroy(q);
 }

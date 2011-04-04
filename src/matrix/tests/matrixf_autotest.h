@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_MATRIXF_AUTOTEST_H__
-#define __LIQUID_MATRIXF_AUTOTEST_H__
-
 #include <string.h>
 
 #include "autotest/autotest.h"
@@ -308,4 +305,52 @@ void autotest_matrixf_inv()
         CONTEND_DELTA(x_inv[i], x_inv_test[i], tol);
 }
 
-#endif // __LIQUID_MATRIXF_AUTOTEST_H__
+// 
+// AUTOTEST: Q/R decomp (Gram-Schmidt)
+//
+void autotest_matrixf_qrdecomp()
+{
+    float tol = 1e-4f;  // error tolerance
+
+    float A[16]= {
+        1.0f, 2.0f, 3.0f, 4.0f,
+        5.0f, 5.0f, 7.0f, 8.0f,
+        6.0f, 4.0f, 8.0f, 7.0f,
+        1.0f, 0.0f, 3.0f, 1.0f};
+
+    float Q[16];
+    float R[16];
+
+    float Q_test[16] = {
+        0.125988157669742,   0.617707763884251,   0.571886263589597,   0.524890659167824,
+        0.629940788348712,   0.494166211107401,  -0.137252703261503,  -0.583211843519804,
+        0.755928946018454,  -0.444749589996661,  -0.114377252717920,   0.466569474815843,
+        0.125988157669742,  -0.420041279441291,   0.800640769025436,  -0.408248290463863};
+
+    float R_test[16] = {
+        7.937253933193772,    6.425396041156863,   11.212946032607075,   10.960969717267590,
+        0.000000000000000,    1.927248223318863,    0.494166211107400,    2.890872334978294,
+        0.000000000000000,    0.000000000000000,    2.241794153271220,    1.189523428266362,
+        0.000000000000000,    0.000000000000000,    0.000000000000000,    0.291605921759903};
+
+
+    // run decomposition
+    matrixf_qrdecomp_gramschmidt(A,4,4,Q,R);
+
+    if (liquid_autotest_verbose) {
+        printf("Q :\n");
+        matrixf_print(Q,4,4);
+        printf("R :\n");
+        matrixf_print(R,4,4);
+    }
+
+    unsigned int i;
+    for (i=0; i<16; i++) {
+        CONTEND_DELTA( Q[i], Q_test[i], tol );
+        CONTEND_DELTA( R[i], R_test[i], tol );
+    }
+
+    // TODO : test Q*R  == A
+    // TODO : test Q*Q' == eye(4)
+}
+

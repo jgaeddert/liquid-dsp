@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/window.example.c
 
 int main() {
     // initialize array for writing

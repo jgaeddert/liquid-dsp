@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_TIME "figures.gen/filter_firhilb_decim_crcf_time.gnu"
@@ -24,7 +24,7 @@ int main() {
     float complex y[num_samples];   // complex output
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(m,slsl);
+    firhilbf q = firhilbf_create(m,slsl);
 
     // generate input sequence
     unsigned int i;
@@ -38,14 +38,14 @@ int main() {
     // run Hilbert transform
     for (i=0; i<num_samples; i++) {
         // execute transform (decimator) to compute complex signal
-        firhilb_decim_execute(f, &x[2*i], &y[i]);
+        firhilbf_decim_execute(q, &x[2*i], &y[i]);
     }
-    firhilb_destroy(f);
+    firhilbf_destroy(q);
 
     // compute filter
     unsigned int h_len = 4*m+1;     // filter length
     float h[h_len];
-    fir_kaiser_window(h_len, 0.25f, slsl, 0.0f, h);
+    firdes_kaiser_window(h_len, 0.25f, slsl, 0.0f, h);
 
 
     // generate plots

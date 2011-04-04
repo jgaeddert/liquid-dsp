@@ -11,26 +11,84 @@ the standard C library,
 windowing functions,
 and polynomial manipulation methods.
 
-\subsection{transcendental functions}
+\subsection{Transcendental Functions}
 \label{module:math:transcendentals}
-transcendental functions not in the C standard library (gamma, besseli, etc.)
+This section describes the implementation and interface to
+transcendental functions not in the C standard library
+including a full arrangement of Gamma and Bessel functions.
+Table~\ref{tab:math:transcendentals} summarizes the interfaces provided
+in \liquid.
+
+% ------------ TABLE: MATH TRANSCENDENTALS  ------------
+\begin{table*}
+\caption{Summary of Transcendental Math Interfaces}
+\label{tab:math:transcendentals}
+\centering
+{\small
+    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}l}
+    \toprule
+    {\it function} &
+    {\it interface}\\\otoprule
+    %
+    $\ln\Gamma(z)$          & {\tt liquid\_lngammaf(z)} \\
+    $   \Gamma(z)$          & {\tt liquid\_gammaf(z)} \\
+    $\ln\gamma(z,\alpha)$   & {\tt liquid\_lnlowergammaf(z,alpha)} \\
+    $   \gamma(z,\alpha)$   & {\tt liquid\_lowergammaf(z,alpha)} \\
+    $\ln\Gamma(z,\alpha)$   & {\tt liquid\_lnuppergammaf(z,alpha)} \\
+    $   \Gamma(z,\alpha)$   & {\tt liquid\_uppergammaf(z,alpha)} \\
+    $n!$                    & {\tt liquid\_factorialf(n)} \\\midrule
+    %
+    $\ln I_\nu(z)$          & {\tt liquid\_lnbesselif(nu,z)} \\
+    $    I_\nu(z)$          & {\tt liquid\_besselif(nu,z)} \\
+    $    I_0  (z)$          & {\tt liquid\_besseli0f(z)} \\
+    $    J_\nu(z)$          & {\tt liquid\_besseljf(nu,z)} \\
+    $    J_0  (z)$          & {\tt liquid\_besselj0f(z)} \\\midrule
+    %
+    $Q(z)$                  & {\tt liquid\_Qf(z)} \\
+    $Q_M(\alpha,\beta)$     & {\tt liquid\_MarcumQf(M,alpha,beta)} \\
+    $Q_1(\alpha,\beta)$     & {\tt liquid\_MarcumQ1f(alpha,beta)} \\\midrule
+    %
+    $\sinc(z)$              & {\tt liquid\_sincf(z)} \\
+    $\lceil\log_2(n)\rceil$ & {\tt liquid\_nextpow2(n)} \\
+    ${n \choose k}$         & {\tt liquid\_nchoosek(n,k)} \\\bottomrule
+    \end{tabular*}
+}
+\end{table*}%
+% ------------------------
 
 
-\subsubsection{{\tt liquid\_lngammaf()}}
-\label{module:math:transcendentals:lngamma}
-    computes the natural log of the complete gamma function by splitting into
-    discrete piecewise sections:
-\[
+% 
+% Gamma
+%
+\subsubsection{{\tt liquid\_gammaf(z)}, {\tt liquid\_lngammaf(z)}}
+\label{module:math:transcendentals:gamma}
+\liquid\ computes $\Gamma(z)$ from $\ln\Gamma(z)$
+(see below) due to its steep, exponential response to $z$.
+The complete Gamma function is defined as
+%
+\begin{equation}
+\label{eqn:math:gamma}
+    \Gamma(z) \triangleq \int_0^\infty{t^{z-1}e^{-t}dt}
+\end{equation}
+%
+The upper an lower incomplete Gamma functions are described in
+Sections~\ref{module:math:transcendentals:uppergamma} and
+         \ref{module:math:transcendentals:lowergamma},
+respectively.
+%
+The natural log of the complete Gamma function is computed by splitting
+into discrete piecewise sections:
+%
+\begin{equation}
+\label{eqn:math:lngamma}
     \ln\left[ \Gamma(z) \right] \approx
     \begin{cases}
     % undefined for z < 0
         \text{undefined}
         & z < 0 \\
-    % low signal approximation
-        -\ln(z) - \gamma z - \sum_{n=1}^{\infty} {
-            \left[ \ln(1 + z/n) -z/n\right]
-        }
-        & 0 \le z < 0.6 \\
+    % low signal approximation (recursion)
+        \ln\Gamma(z+1) - \ln(z)
+        & 0 \le z < 10 \\
     % high signal approximation
         \frac{z}{2} \ln\left( \frac{2\pi}{z} \right)
         \left(
@@ -38,31 +96,179 @@ transcendental functions not in the C standard library (gamma, besseli, etc.)
         \right)
         & z \ge 0.6
     \end{cases}
-\]
-where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
+\end{equation}
+%
+%where $\gamma=0.57721566490153286\ldots$ is the Euler-Mascheroni constant.
 
-\subsubsection{{\tt liquid\_sincf()}}
+
+% 
+% lower gamma
+%
+\subsubsection{{\tt liquid\_lowergammaf(z,a)},
+               {\tt liquid\_lnlowergammaf(z,a)}
+               (lower incomplete Gamma)}
+\label{module:math:transcendentals:lowergamma}
+Like $\Gamma(z)$,
+\liquid\ computes the lower incomplete gamma function
+$\gamma(z,\alpha)$ from its logarithm $\ln\gamma(z,\alpha)$
+due to its steep, exponential response to $z$.
+The lower incomplete Gamma function is defined as
+%
+\begin{equation}
+\label{eqn:math:lowergamma}
+    \gamma(z,\alpha) \triangleq \int_0^\alpha{ t^{z-1}e^{-t}dt }
+\end{equation}
+%
+\liquid\ computes the log of lower incomplete Gamma function as
+%
+\begin{equation}
+\label{eqn:math:lnlowergamma}
+    \ln\gamma(z,\alpha) =
+        z \ln(\alpha) +
+        \ln\Gamma(z) -
+        \alpha +
+        \ln\left[
+            \sum_{k=0}^\infty{
+                \frac{\alpha^k}{\Gamma(z + k + 1)}
+            }
+        \right]
+\end{equation}
+%
+
+
+
+% 
+% upper gamma
+%
+\subsubsection{{\tt liquid\_uppergammaf(z,a)},
+               {\tt liquid\_lnuppergammaf(z,a)}
+               (upper incomplete Gamma)}
+\label{module:math:transcendentals:uppergamma}
+Like $\Gamma(z)$,
+\liquid\ computes the upper incomplete gamma function
+$\Gamma(z,\alpha)$ from $\ln\Gamma(z,\alpha)$
+due to its steep, exponential response to $z$.
+The complete Gamma function is defined as
+%
+\begin{equation}
+\label{eqn:math:uppergamma}
+    \Gamma(z,\alpha) \triangleq \int_\alpha^\infty{t^{z-1}e^{-t}dt}
+\end{equation}
+%
+By definition the sum of the lower and upper incomplete gamma functions
+is the complete Gamma function:
+$\Gamma(z) = \gamma(z,\alpha) + \Gamma(z,\alpha)$.
+As such,
+\liquid\ computes the upper incomplete Gamma function as
+%
+\begin{equation}
+\label{eqn:math:lnuppergamma}
+    \Gamma(z,\alpha) = \Gamma(z) - \gamma(z,\alpha)
+\end{equation}
+%
+
+
+
+% 
+% factorial
+%
+\subsubsection{{\tt liquid\_factorialf(n)}}
+\label{module:math:transcendentals:factorial}
+\liquid\ computes $n!=n\cdot(n-1)\cdot(n-2)\cdots3\cdot2\cdot1$
+iteratively for small values of $n$, and with the Gamma function for
+larger values.
+Specifically, $n! = \Gamma(n+1)$.
+
+%
+\subsubsection{{\tt liquid\_nchoosek()}}
+\label{module:math:transcendentals:nchoosek}
+computes the binomial coefficient
+%
+\begin{equation}
+\label{eqn:math:nchoosek}
+    {n \choose k} = \frac{n!}{(n-k)!k!}
+\end{equation}
+
+\subsubsection{{\tt liquid\_nextpow2()}}
+\label{module:math:transcendentals:nextpow2}
+    computes $\lceil \log_2(x) \rceil$
+
+
+
+
+% 
+% sinc
+%
+\subsubsection{{\tt liquid\_sinc(z)}}
 \label{module:math:transcendentals:sinc}
-    computes the $\sinc$ function,
-\[
+The $\sinc$ function is defined as
+%
+\begin{equation}
+\label{eqn:math:sinc}
     \sinc(z) = \frac{\sin(\pi z)}{\pi z}
-\]
+\end{equation}
+%
 Simply evaluating the above equation with finite precision for $z$ results in
 a discontinuity for small $z$, and is approximated by expanding the first few
 terms of the series
-\[
+%
+\begin{equation}
+\label{eqn:math:sinc_expanded}
     \sinc(z) = \prod_{k=1}^{\infty}{ \cos\left( 2^{-k} \pi z \right) }
-\]
+\end{equation}
 
-\subsubsection{{\tt liquid\_besseli0()}}
-\label{module:math:transcendentals:besseli0}
-    approximates the modified Bessel function of the first kind (order 0)
-    using piecewise polynomials,
-\[
+%
+% Bessel-I
+%
+\subsubsection{{\tt liquid\_lnbesselif()},
+               {\tt liquid\_besselif()},
+               {\tt liquid\_besseli0f()}}
+\label{module:math:transcendentals:besseli}
+$I_\nu(z)$ is the modified Bessel function of the first kind and is
+particularly useful for filter design.
+An iterative method for computing $I_\nu$ comes from Gross(1995),
+%\cite{Gross:1995}
+\begin{equation}
+\label{eqn:math:besseli}
+    I_\nu(z) =
+        \left(\frac{z}{2}\right)^\nu
+        \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
+\end{equation}
+%
+Due to its steep response to $z$ it is often useful to compute
+$I_\nu(z)$ by first computing $\ln I_nu(z)$ as
+%
+\begin{eqnarray*}
+\label{eqn:math:lnbesseli}
+    \ln I_\nu(z) & = &
+        \nu\ln(z/2) + \ln\left[
+            \sum_{k=0}^\infty{
+                \frac{
+                    \left(\frac{1}{4}z^2\right)^k
+                }{
+                    k! \Gamma(\nu + k + 1)
+                }
+            }
+        \right] \\
+        & = &
+        \nu\ln(z/2) + \ln\left[
+            \sum_{k=0}^\infty{ \exp\Bigl\{
+                2 k \ln(z/2) - \ln\Gamma(k+1) - \ln\Gamma(\nu+k+1)
+            \Bigr\} }
+        \right] \\
+\end{eqnarray*}
+%
+For $\nu=0$ a good approximation can be derived by
+using piecewise polynomials,
+%
+\begin{equation}
+\label{eqn:math:besseli0_approx}
     \ln\Bigl[\ln\left(I_0(z)\right)\Bigr] \approx
     c_0 + c_1 t + c_2 t ^2 + c_3 t^3
-\]
+\end{equation}
+%
 where $t=\ln(z)$ and
+%
 \[
     \left\{c_0,c_1,c_2,c_3\right\} =
     \begin{cases}
@@ -73,31 +279,70 @@ where $t=\ln(z)$ and
 \]
 This is a particularly useful approximation for the Kaiser window in
 fixed-point math where $w[n]$ is computed as the ratio of two large numbers.
+
+
+
 %
-An iterative method comes from Gross(1995),
-%\cite{Gross:1995}
-\[
-    I_\nu(z) = \sum_{k=0}^{\infty}{\frac{\left(\frac{1}{4}z^2\right)^k}{k!\Gamma(k+\nu+1)}}
-\]
+% Bessel-J
+%
+\subsubsection{{\tt liquid\_lnbesseljf()},
+               {\tt liquid\_besselj0f()}}
+\label{module:math:transcendentals:besselj}
+$J_\nu(z)$ is the Bessel function of the first kind and is found in
+Doppler filter design.
+\liquid\ computes $J_\nu(z)$ using the series expansion
+%
+\begin{equation}
+\label{eqn:math:besselj}
+    J_\nu(z) =
+        \sum_{k=0}^\infty{
+            \frac{
+                (-1)^k
+            }{
+                2^{2k+|v|} k! \left(|v|+k\right)!
+            }
+            z^{2k+|v|}
+        }
+\end{equation}
 
-\subsubsection{{\tt liquid\_nchoosek()}}
-\label{module:math:transcendentals:nchoosek}
-    computes the binomial coefficient ${n \choose k} = \frac{n!}{(n-k)!k!}$
 
-\subsubsection{{\tt liquid\_nextpow2()}}
-\label{module:math:transcendentals:nextpow2}
-    computes $\lceil \log_2(x) \rceil$
-
-
-
+%
+% Complex Trig
+%
 \subsection{Complex Trigonometry}
 \label{module:math:complex}
-Complex math operations not necessarily defined in the standard C
-library.
+This section describes the implementation and interface to
+complex trigonometric functions not in the C standard library.
+Table~\ref{tab:math:transcendentals} summarizes the interfaces provided
+in \liquid.
+
+% ------------ TABLE: MATH COMPLEX TRIG  ------------
+\begin{table*}
+\caption{Summary of Complex Trigonometric Math Interfaces}
+\label{tab:math:complex}
+\centering
+{\small
+    \begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}l}
+    \toprule
+    {\it function} &
+    {\it interface}\\\otoprule
+    %
+    $\sqrt{z}$              & {\tt liquid\_csqrtf(z)} \\
+    $e^{z}$                 & {\tt liquid\_cexpf(z)} \\
+    $\ln(z)$                & {\tt liquid\_clogf(z)} \\\midrule
+    $\sin^{-1}(z)$          & {\tt liquid\_casinf(z)} \\
+    $\cos^{-1}(z)$          & {\tt liquid\_cacosf(z)} \\
+    $\tan^{-1}(z)$          & {\tt liquid\_catanf(z)} \\\bottomrule
+    \end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
+
 
 \subsubsection{{\tt liquid\_csqrtf()}}
 \label{module:math:complex:csqrtf}
-The function {\tt liquid\_csqrtf()}
+The function {\tt liquid\_csqrtf(z)}
 computes the complex square root of a number
 %
 \begin{equation}
@@ -111,7 +356,7 @@ where $r=|z|$, $a=\Re\{z\}$, and $\text{sgn}(t)=t/|t|$.
 
 \subsubsection{{\tt liquid\_cexpf()}}
 \label{module:math:complex:cexpf}
-The function {\tt liquid\_cexpf()}
+The function {\tt liquid\_cexpf(z)}
 computes the complex exponential of a number
 %
 \begin{equation}
@@ -127,7 +372,7 @@ where $a=\Re\{z\}$ and $b=\Im\{z\}$.
 
 \subsubsection{{\tt liquid\_clogf()}}
 \label{module:math:complex:clogf}
-The function {\tt liquid\_clogf()}
+The function {\tt liquid\_clogf(z)}
 computes the complex natural logarithm of a number.
 %
 \begin{equation}
@@ -139,7 +384,7 @@ computes the complex natural logarithm of a number.
 
 \subsubsection{{\tt liquid\_cacosf()}}
 \label{module:math:complex:cacosf}
-The function {\tt liquid\_cacosf()}
+The function {\tt liquid\_cacosf(z)}
 computes the complex $\arccos$ of a number
 %
 \begin{equation}
@@ -157,7 +402,7 @@ computes the complex $\arccos$ of a number
 
 \subsubsection{{\tt liquid\_casinf()}}
 \label{module:math:complex:casinf}
-The function {\tt liquid\_casinf()}
+The function {\tt liquid\_casinf(z)}
 computes the complex $\arcsin$ of a number
 %
 \begin{equation}
@@ -170,7 +415,7 @@ computes the complex $\arcsin$ of a number
 
 \subsubsection{{\tt liquid\_catanf()}}
 \label{module:math:complex:catanf}
-The function {\tt liquid\_catanf()}
+The function {\tt liquid\_catanf(z)}
 computes the complex $\arctan$ of a number
 %
 \begin{equation}
@@ -182,6 +427,9 @@ computes the complex $\arctan$ of a number
 %
 
 
+% 
+% windowing
+%
 \subsection{Windowing functions}
 \label{module:math:window}
 This section describes the various windowing functions in the {\tt math}
@@ -189,9 +437,10 @@ module.
 These windowing functions are useful for spectral approximation as they
 are compact in both the time and frequency domains.
 
-\subsubsection{Hamming}
+\subsubsection{{\tt hamming()}, (Hamming window)}
 \label{module:math:window:hamming}
-The function {\tt hamming()} computes the Hamming window
+The function {\tt hamming(n,N)} computes the $n^{th}$ of $N$ indices of
+the Hamming window:
 %
 \begin{equation}
 \label{eqn:math:window:hamming}
@@ -199,9 +448,10 @@ The function {\tt hamming()} computes the Hamming window
 \end{equation}
 %
 
-\subsubsection{Hann}
+\subsubsection{{\tt hann()}, (Hann window)}
 \label{module:math:window:hann}
-The function {\tt hann()} computes the Hann window
+The function {\tt hann(n,N)} computes the $n^{th}$ of $N$ indices of
+the Hann window:
 %
 \begin{equation}
 \label{eqn:math:window:hann}
@@ -209,10 +459,10 @@ The function {\tt hann()} computes the Hann window
 \end{equation}
 %
 
-\subsubsection{Blackman-harris}
+\subsubsection{{\tt blackmanharris()}, (Blackman-harris window)}
 \label{module:math:window:blackmanharris}
-The function {\tt blackmanharris()}
-    computes the Blackman-harris window
+The function {\tt blackmanharris(n,N)} computes the $n^{th}$ of $N$
+indices of the Blackman-harris window:
 %
 \begin{equation}
 \label{eqn:math:window:blackmanharris}
@@ -225,14 +475,15 @@ $a_1 = -0.48829$,
 $a_2 =  0.14128$, and
 $a_3 = -0.01168$.
 
-\subsubsection{Kaiser}
+\subsubsection{{\tt kaiser()}, (Kaiser-Bessel window)}
 \label{module:math:window:kaiser}
-The function {\tt kaiser()} computes the Kaiser-$\beta$ window
+The function {\tt kaiser(n,N,dt,beta)} computes the $n^{th}$ of $N$
+indices of the Kaiser-$\beta$ window with a shape parameter $\beta$:
 %
 \begin{equation}
 \label{eqn:math:window:kaiser}
     w(n,\beta) = \frac{
-        I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}^2\right)}\right)
+        I_0\left(\pi\beta\sqrt{1-\left(\frac{n}{N/2}\right)^2}\right)
     }{
         I_0\left(\pi\beta\right)
     }
@@ -241,20 +492,24 @@ The function {\tt kaiser()} computes the Kaiser-$\beta$ window
 where $I_\nu(z)$ is the modified Bessel function of the first kind of
 order $\nu$, and $\beta$ is a parameter controlling the width of the
 window and its stop-band attenuation.
-In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0()} (see
-section~\ref{module:math:transcendentals}).
+In \liquid, $I_0(z)$ is computed using {\tt liquid\_besseli0f()}
+(see Section~\ref{module:math:transcendentals}).
+A fractional sample offset $\Delta t$ can be introduced by substituting
+$\frac{n}{N/2}$ with
+$\frac{n}{N/2} + \Delta t$ in (\ref{eqn:math:window:kaiser}).
 
-\subsubsection{Kaiser-Bessel derived}
+\subsubsection{{\tt liquid\_kbd\_window()}, (Kaiser-Bessel derived window)}
 \label{module:math:window:kbd}
-The function {\tt liquid\_kbd\_window()}
-computes the Kaiser-Bessel derived window.
+The function {\tt liquid\_kbd\_window(n,beta,*w)}
+computes the $n$-point Kaiser-Bessel derived window with a shape
+parameter $\beta$ storing the result in the $n$-point array {\tt w}.
 The length of the window {\em must} be even.
+
 
 \subsubsection{Examples}
 \label{module:math:window:examples}
-
 Temporal and spectral examples of all these windows can be seen in
-figure~\ref{fig:module:math:window}.
+Figure~\ref{fig:module:math:window}.
 Notice that as the power spectral density main lobe increases in width, its
 stop-band attenuation decreases.
 Furthermore, windows with wider temporal widths exhibit more narrow spectral
@@ -267,6 +522,11 @@ main lobes, but have less stop-band attenuation.
 \label{fig:module:math:window}
 \end{figure}
 
+
+
+% 
+% POLYNOMIALS
+%
 \subsection{Polynomials}
 \label{module:math:poly}
 A number of \liquid\ modules require polynomial manipulations, particularly
@@ -287,16 +547,31 @@ An $n^{th}$-order polynomial has $n+1$ coefficients ordered in memory in
 increasing degree.%
 \footnote{Note that this convention is reversed from that used in octave
 \cite{octave:web}.}
-For example, a $2^{nd}$-order polynomial $0.1 -2.4x + 1.3x^2$ stored in an
-array {\tt float c[]} has
+For example, a $2^{nd}$-order polynomial $0.1 -2.4x + 1.3x^2$ stored in
+an array {\tt float c[]} has
 {\tt c[0]=0.1},
 {\tt c[1]=-2.4}, and
 {\tt c[2]=1.3}.
 
-\subsubsection{{\tt poly\_val()}}
+Notice that all routines for the type {\it float} are prefaced with
+{\tt polyf}.
+This follows the naming convention of the standard C library routines
+which append an {\tt f} to the end of methods operating on
+floating-point precision types.
+Similar matrix interfaces exist in \liquid\ for
+{\it double} ({\tt poly}),
+{\it double complex} ({\tt polyc}), and
+{\it float complex} ({\tt polycf}).
+
+
+\subsubsection{{\tt polyf\_val()}}
 \label{module:math:poly:polyf_val}
-Evaluates the polynomial $P_n(x)$ at $x_0$.
-For example:
+The {\tt polyf\_val(*p,k,x)} method evaluates the polynomial $P_n(x)$ at
+$x_0$ where the {\tt k} coefficients are stored in the input array
+{\tt p}.
+Here is a brief example which evaluates $P_2(x) = 0.2 + 1.0x + 0.4x^2$
+at $x=1.3$:
+%
 \begin{Verbatim}[fontsize=\small]
     float p[3] = {0.2f, 1.0f, 0.4f};
     float x = 1.3f;
@@ -304,14 +579,15 @@ For example:
     >>> y = 2.17599988
 \end{Verbatim}
 
-\subsubsection{{\tt poly\_fit()}}
+\subsubsection{{\tt polyf\_fit()}}
 \label{module:math:poly:polyf_fit}
-Fits data to a polynomial of order $k-1$ from $n$ samples using the
-least-squares method.
-Data vectors
+The {\tt polyf\_fit(*x,*y,n,*p,k)} method
+fits data to a polynomial of order $k-1$ from $n$ samples using the
+least-squares method on the input data vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
-$\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$...
-Uses matrix algebra to solve system of equations...
+$\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
+Internally \liquid\
+uses matrix algebra to solve the system of equations
 %
 \begin{equation}
 \label{eqn:math:poly:syseq}
@@ -343,9 +619,10 @@ For example this script fits the 4 data samples to a linear
 \end{Verbatim}
 
 
-\subsubsection{{\tt poly\_fit\_lagrange()}}
+\subsubsection{{\tt polyf\_fit\_lagrange()}}
 \label{module:math:poly:polyf_fit_lagrange}
-Fits dataset of $n$ sample points to exact polynomial of order $n-1$ using
+The {\tt polyf\_fit\_lagrange(*x,*y,n,*p)} method fit a dataset
+of $n$ sample points to exact polynomial of order $n-1$ using
 Lagrange interpolation.
 Given input vectors
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
@@ -379,11 +656,12 @@ Notice that {\tt polyf\_fit\_lagrange(x,y,n,p)}
 is mathematically equivalent to {\tt polyf\_fit(x,y,n,p,n)},
 but is computed in fewer steps.
 %
-See also {\tt poly\_expandroots}.
+See also {\tt polyf\_expandroots}.
 
-\subsubsection{{\tt poly\_interp\_lagrange()}}
+\subsubsection{{\tt polyf\_interp\_lagrange()}}
 \label{module:math:poly:polyf_interp_lagrange}
-Uses Lagrange polynomials to find the interpolant
+The {\tt polyf\_interp\_lagrange(*x,*y,n,x0)} method
+uses Lagrange polynomials to find the interpolant
 $(\dot{x},\dot{y})$ from a set of $n$ pairs
 $\vec{x}=[x_0,x_1,\cdots,x_{n-1}]^T$ and 
 $\vec{y}=[y_0,y_1,\cdots,y_{n-1}]^T$.
@@ -411,11 +689,12 @@ For example this script interpolates between the 4 data points
     >>> y0 =   2.00687504
 \end{Verbatim}
 %
-See also {\tt poly\_fit\_lagrange()}.
+See also {\tt polyf\_fit\_lagrange()}.
 
-\subsubsection{{\tt poly\_fit\_lagrange\_barycentric()}}
+\subsubsection{{\tt polyf\_fit\_lagrange\_barycentric()}}
 \label{module:math:poly:polyf_fit_lagrange_barycentric}
-Computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
+The {\tt polyf\_fit\_lagrange\_barycentric(*x,n,*w)} method
+computes the barycentric weights $\vec{w}$ of $\vec{x}$ via
 %
 \begin{equation}
 \label{eqn:math:poly:polyfit_lagrange_barycentric}
@@ -435,9 +714,10 @@ with fewer computations.
 \end{Verbatim}
 %
 
-\subsubsection{{\tt poly\_val\_lagrange\_barycentric()}}
+\subsubsection{{\tt polyf\_val\_lagrange\_barycentric()}}
 \label{module:math:poly:polyf_val_lagrange_barycentric}
-Computes the interpolant $(\dot{x},\dot{y})$ given the barycentric
+The {\tt polyf\_val\_lagrange\_barycentric(*x,*y,*w,x0,n)} method
+computes the interpolant $(\dot{x},\dot{y})$ given the barycentric
 weights $\vec{w}$ (defined above) as
 %
 \begin{equation}
@@ -468,55 +748,10 @@ Lagrange polynomials of the barycentric form are used heavily in
 ({\tt firdespm}) for filter design
 (see Section~\ref{module:filter:firdespm}).
 
-\subsubsection{{\tt poly\_expandroots()}}
-\label{module:math:poly:polyf_expandroots}
-Expands the a polynomial based on its roots
-%
-\begin{equation}
-\label{eqn:math:poly:expandroots}
-    P_n(x) = \prod_{k=0}^{n-1}{(x - r_k)}
-\end{equation}
-%
-where $r_k$ are the roots of $P_n(x)$.
-For example, this script will expand the polynomial
-$P_3(x) = (x-1)(x+2)(x-3)$ which has roots
-$\{1,-2,3\}$:
-%
-\begin{Verbatim}[fontsize=\small]
-    float roots[3] = {1.0f, -2.0f, 3.0f};
-    float p[4];
-    polyf_expandroots(roots,3,p);
-    >>> p = {  6.00000000,  -5.00000000,  -2.00000000,   1.00000000}
-\end{Verbatim}
-%
-
-\subsubsection{{\tt poly\_expandroots2()}}
-\label{module:math:poly:polyf_expandroots2}
-Expands the a polynomial as
-%
-\begin{equation}
-\label{eqn:math:poly:expandroots2}
-    P_n(x) = \prod_{k=0}^{n-1}{(b_kx-a_k)}
-\end{equation}
-%
-by first factoring out the $b_k$ terms,
-invoking {\tt poly\_expandroots()}, and
-multiplying the result by $\prod_k{b_k}$.
-For example, this script will expand the polynomial
-$P_3(x) = (2x-1)(-3x+2)(-x-3)$:
-%
-\begin{Verbatim}[fontsize=\small]
-    float b[3] = { 2.0f, -3.0f, -1.0f};
-    float a[3] = { 1.0f, -2.0f,  3.0f};
-    float p[4];
-    polyf_expandroots2(b,a,3,p);
-    >>> p = {  6.00000000,  11.00000000, -19.00000000,   6.00000000}
-\end{Verbatim}
-%
-
-\subsubsection{{\tt poly\_expandbinomial()}}
+\subsubsection{{\tt polyf\_expandbinomial()}}
 \label{module:math:poly:polyf_expandbinomial}
-Expands the a polynomial as a binomial series
+The {\tt polyf\_expandbinomial(n,*p)} method
+expands the a polynomial as a binomial series
 %
 \begin{equation}
 \label{eqn:math:poly:expandbinomial}
@@ -533,7 +768,7 @@ $P_3(x) = (1+x)^3$:
 \end{Verbatim}
 %
 
-\subsubsection{{\tt poly\_expandbinomial\_pm()}}
+\subsubsection{{\tt polyf\_expandbinomial\_pm()}}
 \label{module:math:poly:polyf_expandbinomial_pm}
 Expands the a polynomial as an alternating binomial series
 %
@@ -554,22 +789,61 @@ $P_3(x) = (1+x)^2(1-x)$:
 \end{Verbatim}
 %
 
+\subsubsection{{\tt polyf\_expandroots()}}
+\label{module:math:poly:polyf_expandroots}
+The {\tt polyf\_expandroots(*r,n,*p)} method
+expands the a polynomial based on its roots
+%
+\begin{equation}
+\label{eqn:math:poly:expandroots}
+    P_n(x) = \prod_{k=0}^{n-1}{(x - r_k)}
+\end{equation}
+%
+where $r_k$ are the roots of $P_n(x)$.
+For example, this script will expand the polynomial
+$P_3(x) = (x-1)(x+2)(x-3)$ which has roots
+$\{1,-2,3\}$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float roots[3] = {1.0f, -2.0f, 3.0f};
+    float p[4];
+    polyf_expandroots(roots,3,p);
+    >>> p = {  6.00000000,  -5.00000000,  -2.00000000,   1.00000000}
+\end{Verbatim}
+%
 
-\subsubsection{{\tt poly\_mul()}}
-\label{module:math:poly:polyf_mul}
-Multiplies two polynomials $P_n(x)$ and $Q_m(x)$.
+\subsubsection{{\tt polyf\_expandroots2()}}
+\label{module:math:poly:polyf_expandroots2}
+The {\tt polyf\_expandroots2(*a,*b,n,*p)} method
+expands the a polynomial as
+%
+\begin{equation}
+\label{eqn:math:poly:expandroots2}
+    P_n(x) = \prod_{k=0}^{n-1}{(b_kx-a_k)}
+\end{equation}
+%
+by first factoring out the $b_k$ terms,
+invoking {\tt polyf\_expandroots()}, and
+multiplying the result by $\prod_k{b_k}$.
+For example, this script will expand the polynomial
+$P_3(x) = (2x-1)(-3x+2)(-x-3)$:
+%
+\begin{Verbatim}[fontsize=\small]
+    float b[3] = { 2.0f, -3.0f, -1.0f};
+    float a[3] = { 1.0f, -2.0f,  3.0f};
+    float p[4];
+    polyf_expandroots2(b,a,3,p);
+    >>> p = {  6.00000000,  11.00000000, -19.00000000,   6.00000000}
+\end{Verbatim}
+%
 
-%\subsubsection{{\tt poly\_diff()} {\it not yet implemented}}
-%Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
-%$P_n(x)$
-%\[
-%    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
-%\]
 
-\subsubsection{{\tt poly\_findroots()}}
+\subsubsection{{\tt polyf\_findroots()}}
 \label{module:math:poly:polyf_findroots}
-Finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's method
-[TODO : add reference].
+The {\tt polyf\_findroots(*p,n,*r)} method
+finds the $n$ roots of the $n^{th}$-order polynomial using Bairstow's
+method.
+% [TODO : add reference]
 For an $n^{th}$-order polynomial $P_n(x)$ given by
 %
 \begin{equation}
@@ -603,7 +877,7 @@ by two, eventually collapsing the polynomial.
 The initial choice of $u$ and $v$ determine both algorithm convergence and
 speed.
 
-\liquid\ implements Bairstow's method with the {\tt poly\_findroots()}
+\liquid\ implements Bairstow's method with the {\tt polyf\_findroots()}
 function which accepts an $n^{th}$-order polynomial in standard expanded form
 and computes its $n$ roots.
 The last term of the polynomial (highest order) cannot be zero, otherwise the
@@ -611,4 +885,17 @@ algorithm will not converge.
 %The roots are sorted by complex pairs according to
 %{\tt liquid\_cplxpair()} (see section...)
 
+
+\subsubsection{{\tt polyf\_mul()}}
+\label{module:math:poly:polyf_mul}
+The {\tt polyf\_mul(*P,n,*Q,m,*S)} method
+multiplies two polynomials $P_n(x)$ and $Q_m(x)$ to produce the
+resulting polynomial $S_{n+m-1}(x)$
+
+%\subsubsection{{\tt polyf\_diff()} {\it not yet implemented}}
+%Computes the derivative $\frac{\partial}{\partial x}P_n(x)$ of polynomial
+%$P_n(x)$
+%\[
+%    \frac{\partial}{\partial x}P_n(x) = \sum_{k=1}^{n}{c_{k}x^{k-1}}
+%\]
 

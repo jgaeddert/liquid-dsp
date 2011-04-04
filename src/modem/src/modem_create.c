@@ -532,29 +532,34 @@ void modem_arb_init(modem _mod,
 //  _mod        :   modem object
 //  _filename   :   name of the data file
 void modem_arb_init_file(modem _mod,
-                         char* filename)
+                         char * _filename)
 {
     // try to open file
-    FILE * f = fopen(filename, "r");
-    if (f == NULL) {
-        fprintf(stderr,"modem_arb_init_file(), could not open file\n");
+    FILE * fid = fopen(_filename, "r");
+    if (fid == NULL) {
+        fprintf(stderr,"error: modem_arb_init_file(), could not open file\n");
         exit(1);
     }
 
     unsigned int i, results;
     float sym_i, sym_q;
     for (i=0; i<_mod->M; i++) {
-        results = fscanf(f, "%f %f\n", &sym_i, &sym_q);
+        if ( feof(fid) ) {
+            fprintf(stderr,"error: modem_arb_init_file(), premature EOF for '%s'\n", _filename);
+            exit(1);
+        }
+
+        results = fscanf(fid, "%f %f\n", &sym_i, &sym_q);
         _mod->symbol_map[i] = sym_i + _Complex_I*sym_q;
 
         // ensure proper number of symbols were read
         if (results < 2) {
-            fprintf(stderr,"modem_arb_init_file() unable to parse line\n");
-            exit(-1);
+            fprintf(stderr,"error: modem_arb_init_file(), unable to parse line\n");
+            exit(1);
         }
     }
 
-    fclose(f);
+    fclose(fid);
 
     // balance I/Q channels
     if (_mod->scheme == MOD_ARB)

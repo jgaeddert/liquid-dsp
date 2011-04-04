@@ -952,8 +952,9 @@ void bpacketsync_decode_header(bpacketsync _q);
 void bpacketsync_decode_payload(bpacketsync _q);
 void bpacketsync_reconfig(bpacketsync _q);
 
+
 //
-// MODULE : interleaver
+// interleaver
 //
 
 // structured interleaver object
@@ -1287,12 +1288,6 @@ extern const float apsk128_r[5];
 extern const float apsk128_phi[5];
 extern const float apsk128_r_slicer[4];
 extern const unsigned int apsk128_symbol_map[128];
-
-// get demodulator phase error
-//void get_demodulator_phase_error(modem _demod, float* _phi);
-
-// get error vector magnitude
-//void get_demodulator_evm(modem _demod, float* _evm);
 
 // demodulator helper functions
 
@@ -1687,7 +1682,13 @@ void optim_sort(float *_v,
 //
 // MODULE : random
 //
+
+#define randf_inline() ((float) rand() / (float) RAND_MAX)
+
 float complex icrandnf();
+
+// generate x ~ Gamma(delta,1)
+float randgammaf_delta(float _delta);
 
 // data scrambler masks
 #define LIQUID_SCRAMBLE_MASK0   (0xb4)

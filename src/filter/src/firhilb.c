@@ -39,6 +39,7 @@
 
 struct FIRHILB(_s) {
     T * h;                  // filter coefficients
+    T complex * hc;         // filter coefficients (complex)
     unsigned int h_len;     // length of filter
     float As;               // filter stop-band attenuation [dB]
 
@@ -51,8 +52,15 @@ struct FIRHILB(_s) {
     WINDOW() wq;            // quadrature filter window
 
     // in-phase 'filter' (delay line)
+#if 0
     T * wi;                 // window (buffer)
+#else
+    WINDOW() wi;            // window (buffer)
+#endif
     unsigned int wi_index;  // index
+
+    // regular r2c|c2r operation
+    unsigned int toggle;
 };
 
 // create firhilb object
@@ -63,87 +71,161 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
 {
     // validate firhilb inputs
     if (_m < 2) {
-        fprintf(stderr,"error(), firhilb_create(), filter semi-length (m) must be at least 2\n");
+        fprintf(stderr,"error: firhilb_create(), filter semi-length (m) must be at least 2\n");
         exit(1);
     }
 
-    FIRHILB() f = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
-    f->m  = _m;
-    f->As = fabsf(_As);
+    FIRHILB() q = (FIRHILB()) malloc(sizeof(struct FIRHILB(_s)));
+    q->m  = _m;
+    q->As = fabsf(_As);
 
-    f->h_len = 4*(f->m) + 1;
-    f->h = (T *) malloc((f->h_len)*sizeof(T));
+    q->h_len = 4*(q->m) + 1;
+    q->h  = (T *)         malloc((q->h_len)*sizeof(T));
+    q->hc = (T complex *) malloc((q->h_len)*sizeof(T complex));
 
-    f->hq_len = 2*(f->m);
-    f->hq = (T *) malloc((f->hq_len)*sizeof(T));
+    q->hq_len = 2*(q->m);
+    q->hq = (T *) malloc((q->hq_len)*sizeof(T));
 
-    // compute filter coefficients, alternating sign
+    // compute filter coefficients for half-band filter
+    firdes_kaiser_window(q->h_len, 0.25f, q->As, 0.0f, q->h);
+
+    // alternate sign of non-zero elements
     unsigned int i;
-    float t, h1, h2, s;
-    float beta = kaiser_beta_As(f->As);
-    for (i=0; i<f->h_len; i++) {
-        t = (float)i - (float)(f->h_len-1)/2.0f;
-        h1 = sincf(t/2.0f);
-        h2 = kaiser(i,f->h_len,beta,0);
-        s  = sinf(M_PI*t/2);
-        f->h[i] = s*h1*h2;
+    for (i=0; i<q->h_len; i++) {
+        float t = (float)i - (float)(q->h_len-1)/2.0f;
+        //q->h[i]  *= sinf(0.5f*M_PI*t);
+        q->hc[i] = q->h[i] * cexpf(_Complex_I*0.5f*M_PI*t);
+        q->h[i]  = cimagf(q->hc[i]);
     }
 
     // resample, reverse direction
     unsigned int j=0;
-    for (i=1; i<f->h_len; i+=2)
-        f->hq[j++] = f->h[f->h_len - i - 1];
+    for (i=1; i<q->h_len; i+=2)
+        q->hq[j++] = q->h[q->h_len - i - 1];
 
-    f->wq = WINDOW(_create)(2*(f->m));
-    WINDOW(_clear)(f->wq);
+    q->wq = WINDOW(_create)(2*(q->m));
+    WINDOW(_clear)(q->wq);
 
-    f->wi = (float*)malloc((f->m)*sizeof(float));
-    for (i=0; i<f->m; i++)
-        f->wi[i] = 0;
-    f->wi_index = 0;
+#if 0
+    q->wi = (float*)malloc((q->m)*sizeof(float));
+    for (i=0; i<q->m; i++)
+        q->wi[i] = 0;
+    q->wi_index = 0;
+#else
+    q->wi = WINDOW(_create)(2*(q->m));
+    WINDOW(_clear)(q->wi);
+#endif
 
-    return f;
+    return q;
 }
 
 // destroy firhilb object
-void FIRHILB(_destroy)(FIRHILB() _f)
+void FIRHILB(_destroy)(FIRHILB() _q)
 {
-    WINDOW(_destroy)(_f->wq);
-    free(_f->wi);
-    free(_f->h);
-    free(_f->hq);
-    free(_f);
+    WINDOW(_destroy)(_q->wq);
+#if 0
+    free(_q->wi);
+#else
+    WINDOW(_destroy)(_q->wi);
+#endif
+    free(_q->h);
+    free(_q->hc);
+    free(_q->hq);
+    free(_q);
 }
 
 // print firhilb object internals
-void FIRHILB(_print)(FIRHILB() _f)
+void FIRHILB(_print)(FIRHILB() _q)
 {
-    printf("fir hilbert transform: [%u]\n", _f->h_len);
+    printf("fir hilbert transform: [%u]\n", _q->h_len);
     unsigned int i;
-    for (i=0; i<_f->h_len; i++) {
-        printf("  h(%4u) = %8.4f;\n", i+1, _f->h[i]);
+    for (i=0; i<_q->h_len; i++) {
+        //printf("  h(%4u) = %8.4f;\n", i+1, _q->h[i]);
+        printf("  hc(%4u) = %8.4f + j*%8.4f;\n", i+1, crealf(_q->hc[i]), cimagf(_q->hc[i]));
     }
     printf("---\n");
-    for (i=0; i<_f->hq_len; i++) {
-        printf("  hq(%4u) = %8.4f;\n", i+1, _f->hq[i]);
+    for (i=0; i<_q->h_len; i++) {
+        printf("  h(%4u) = %8.4f;\n", i+1, _q->h[i]);
+    }
+    printf("---\n");
+    for (i=0; i<_q->hq_len; i++) {
+        printf("  hq(%4u) = %8.4f;\n", i+1, _q->hq[i]);
     }
 }
 
 // clear firhilb object buffers
-void FIRHILB(_clear)(FIRHILB() _f)
+void FIRHILB(_clear)(FIRHILB() _q)
 {
-    WINDOW(_clear)(_f->wq);
+    WINDOW(_clear)(_q->wq);
+#if 0
     unsigned int i;
-    for (i=0; i<_f->m; i++)
-        _f->wi[i] = 0;
-    _f->wi_index = 0;
+    for (i=0; i<_q->m; i++)
+        _q->wi[i] = 0;
+    _q->wi_index = 0;
+#else
+    WINDOW(_clear)(_q->wi);
+#endif
+
+    //
+    _q->toggle = 0;
+}
+
+// execute Hilbert transform (real to complex)
+//  _q      :   firhilb object
+//  _x      :   real-valued input sample
+//  _y      :   complex-valued output sample
+void FIRHILB(_r2c_execute)(FIRHILB() _q,
+                           T _x,
+                           T complex * _y)
+{
+    //
+    T * r;
+    T yi, yq;
+
+    if ( _q->toggle == 0 ) {
+        // push sample into upper branch
+        WINDOW(_push)(_q->wi, _x);
+
+        // upper branch (delay)
+        WINDOW(_index)(_q->wi, _q->m-1, &yi);
+
+        // lower branch (filter)
+        WINDOW(_read)(_q->wq, &r);
+        DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
+    } else {
+        // push sample into lower branch
+        WINDOW(_push)(_q->wq, _x);
+
+        // upper branch (delay)
+        WINDOW(_index)(_q->wq, _q->m-1, &yi);
+
+        // lower branch (filter)
+        WINDOW(_read)(_q->wi, &r);
+        DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
+    }
+
+    _q->toggle = 1 - _q->toggle;
+
+    // set return value
+    *_y = yi + _Complex_I * yq;
+}
+
+// execute Hilbert transform (complex to real)
+//  _q      :   firhilb object
+//  _y      :   complex-valued input sample
+//  _x      :   real-valued output sample
+void FIRHILB(_c2r_execute)(FIRHILB() _q,
+                           T complex _x,
+                           T * _y)
+{
+    *_y = crealf(_x);
 }
 
 // execute Hilbert transform decimator (real to complex)
-//  _f      :   firhilb object
+//  _q      :   firhilb object
 //  _x      :   real-valued input array [size: 2 x 1]
 //  _y      :   complex-valued output sample
-void FIRHILB(_decim_execute)(FIRHILB() _f,
+void FIRHILB(_decim_execute)(FIRHILB() _q,
                              T * _x,
                              T complex *_y)
 {
@@ -151,25 +233,30 @@ void FIRHILB(_decim_execute)(FIRHILB() _f,
     T yi, yq;
 
     // compute quadrature component (filter branch)
-    WINDOW(_push)(_f->wq, _x[0]);
-    WINDOW(_read)(_f->wq, &r);
-    // TODO yq = DOTPROD(_execute)(_f->dpq, r);
-    DOTPROD(_run)(_f->hq, r, _f->hq_len, &yq);
+    WINDOW(_push)(_q->wq, _x[0]);
+    WINDOW(_read)(_q->wq, &r);
+    // TODO yq = DOTPROD(_execute)(_q->dpq, r);
+    DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
 
+#if 0
     // compute in-phase component (delay branch)
-    yi = _f->wi[_f->wi_index];
-    _f->wi[_f->wi_index] = _x[1];
-    _f->wi_index = (_f->wi_index+1) % (_f->m);
+    yi = _q->wi[_q->wi_index];
+    _q->wi[_q->wi_index] = _x[1];
+    _q->wi_index = (_q->wi_index+1) % (_q->m);
+#else
+    WINDOW(_push)(_q->wi, _x[1]);
+    WINDOW(_index)(_q->wi, _q->m-1, &yi);
+#endif
 
     // set return value
     *_y = yi + _Complex_I * yq;
 }
 
 // execute Hilbert transform interpolator (complex to real)
-//  _f      :   firhilb object
+//  _q      :   firhilb object
 //  _y      :   complex-valued input sample
 //  _x      :   real-valued output array [size: 2 x 1]
-void FIRHILB(_interp_execute)(FIRHILB() _f,
+void FIRHILB(_interp_execute)(FIRHILB() _q,
                               T complex _x,
                               T *_y)
 {
@@ -177,16 +264,21 @@ void FIRHILB(_interp_execute)(FIRHILB() _f,
 
     // TODO macro for crealf, cimagf?
     
+#if 0
     // compute first branch (delay)
-    _y[0] = _f->wi[_f->wi_index];
-    _f->wi[_f->wi_index] = cimagf(_x);
-    _f->wi_index = (_f->wi_index+1) % (_f->m);
+    _y[0] = _q->wi[_q->wi_index];
+    _q->wi[_q->wi_index] = cimagf(_x);
+    _q->wi_index = (_q->wi_index+1) % (_q->m);
+#else
+    WINDOW(_push)(_q->wi, cimagf(_x));
+    WINDOW(_index)(_q->wi, _q->m-1, &_y[0]);
+#endif
 
     // compute second branch (filter)
-    WINDOW(_push)(_f->wq, crealf(_x));
-    WINDOW(_read)(_f->wq, &r);
-    //yq = DOTPROD(_execute)(_f->dpq, r);
-    DOTPROD(_run)(_f->hq, r, _f->hq_len, &_y[1]);
+    WINDOW(_push)(_q->wq, crealf(_x));
+    WINDOW(_read)(_q->wq, &r);
+    //yq = DOTPROD(_execute)(_q->dpq, r);
+    DOTPROD(_run)(_q->hq, r, _q->hq_len, &_y[1]);
 
 }
 

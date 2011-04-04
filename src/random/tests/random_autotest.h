@@ -93,7 +93,7 @@ void autotest_crandnf()
 }
 
 // Weibull
-void autotest_rand_weibullf()
+void autotest_randweibf()
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -103,7 +103,7 @@ void autotest_rand_weibullf()
 
     // uniform
     for (i=0; i<N; i++) {
-        x = rand_weibullf(alpha, beta, gamma);
+        x = randweibf(alpha, beta, gamma);
         m1 += x;
         m2 += x*x;
     }
@@ -115,7 +115,7 @@ void autotest_rand_weibullf()
 }
 
 // Rice-K
-void autotest_rand_ricekf()
+void autotest_randricekf()
 {
     unsigned long int N = LIQUID_RANDOM_AUTOTEST_NUM_TRIALS;
     unsigned long int i;
@@ -125,7 +125,7 @@ void autotest_rand_ricekf()
 
     // uniform
     for (i=0; i<N; i++) {
-        x = rand_ricekf(K, omega);
+        x = randricekf(K, omega);
         m1 += x;
         m2 += x*x;
     }

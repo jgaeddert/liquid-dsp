@@ -30,7 +30,7 @@ int main() {
     unsigned int t = num_samples - h_len;
     t += t % 2 ? 0 : 1; // ensure 't' is odd
     float h[t];
-    fir_kaiser_window(t,bw,60.0f,0.0f,h);
+    firdes_kaiser_window(t,bw,60.0f,0.0f,h);
     for (i=0; i<num_samples; i++)
         x[i] = i < t ? h[i]*bw : 0.0f;
 

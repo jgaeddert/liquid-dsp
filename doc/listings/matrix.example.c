@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/matrix.example.c
 
 int main() {
     // designate X as a 4 x 4 matrix

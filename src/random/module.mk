@@ -27,8 +27,14 @@ module_name     := random
 # referenced from the src/ subdirectory under $(local_dir)
 #
 local_s_files	:=		\
-	random.c		\
-	scramble.c
+	rand.c			\
+	randn.c			\
+	randexp.c		\
+	randweib.c		\
+	randgamma.c		\
+	randnakm.c		\
+	randricek.c		\
+	scramble.c		\
 
 # local_t_files
 #

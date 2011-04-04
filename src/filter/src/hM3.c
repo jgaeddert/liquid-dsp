@@ -81,7 +81,7 @@ void design_hM3_filter(unsigned int _k,
 
     //unsigned int i;
     float h[n];
-    firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
+    firdespm_run(n,num_bands,bands,des,weights,wtype,btype,h);
     // copy results
     memmove(_h, h, n*sizeof(float));
 
@@ -98,7 +98,7 @@ void design_hM3_filter(unsigned int _k,
         bands[1] = fp;
 
         // execute filter design
-        firdespm_run(n,bands,des,weights,num_bands,btype,wtype,h);
+        firdespm_run(n,num_bands,bands,des,weights,wtype,btype,h);
 
         // compute inter-symbol interference (MSE, max)
         liquid_filter_isi(h,_k,_m,&isi_rms,&isi_max);

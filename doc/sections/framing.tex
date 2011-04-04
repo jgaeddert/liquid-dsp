@@ -17,12 +17,193 @@ Included in this module are the {\tt packetizer},
 {\tt frame64}, and {\tt flexframe} structures which
 greatly simplify over-the-air digital communication of raw data.
 
-\subsection{{\tt packetizer}}
+
+% 
+% interleaver
+%
+\subsection{{\tt interleaver}}
+\label{module:framing:interleaver}
+This section describes the functionality of the \liquid\ {\tt interleaver}
+object.
+In wireless communications systems, bit errors are often grouped together as a
+result of multi-path fading, demodulator symbol errors, and synchronizer
+instability.
+Interleavers serve to distribute grouped bit errors evenly throughout a block
+of data which aids certain forward error-correction (FEC) codes in their
+decoding process (see section~\ref{module:fec} on error-correcting codes).
+On the transmit side of the wireless link, the interleaver re-orders the bits
+after FEC encoding and before modulation.
+On the receiving side, the de-interleaver re-shuffles the bits to their
+original position before attempting to run the FEC decoder.
+The bit-shuffling order must be known at both the transmitter and receiver.
+
+The {\tt interleaver} object operates by permuting indices on the input data
+sequence.
+The indices are computed during the {\tt interleaver\_create()} method and
+stored internally.
+At each iteration data bytes are re-shuffled using the permutation array.
+Depending upon the properties of the array, multiple iterations should not
+result in observing the original data sequence.
+Shown below is a simple example where 8 symbols ($0,\ldots,7$) are re-ordered
+using a random permutation.
+The data at iteration 0 are the original data which are permuted twice.
+% TODO : use graphic for this...
+\begin{verbatim}
+    forward
+    permutation     iter[0]     iter[1]     iter[2]
+    0 -> 6          0           6           1
+    1 -> 4          1           4           3
+    2 -> 7          2           7           5
+    3 -> 0          3           0           6
+    4 -> 3          4           3           0
+    5 -> 2          5           2           7
+    6 -> 1          6           1           4
+    7 -> 5          7           5           2
+\end{verbatim}
+%
+Reversing the process is as simple as computing the reverse permutation from
+the input; this is equivalent to reversing the arrows in the forward
+permutation
+(e.g. the $2 \rightarrow 7$ forward permutation becomes the $7 \rightarrow 2$
+reverse permutation).
+\begin{verbatim}
+    reverse
+    permutation     iter[2]     iter[1]     iter[0]
+    0 -> 3          1           6           0
+    1 -> 6          3           4           1
+    2 -> 5          5           7           2
+    3 -> 4          6           0           3
+    4 -> 1          0           3           4
+    5 -> 7          7           2           5
+    6 -> 0          4           1           6
+    7 -> 2          2           5           7
+\end{verbatim}
+%
+Notice that permuting indices only re-orders the bytes of data and does
+nothing to shuffle the bits within the byte.
+It is beneficial to FEC decoders to separate the bit errors as much as
+possible.
+Therefore, in addition to index permutation, \liquid\ also applies masks to
+the data while permuting.
+% TODO : explain more
+
+Two options are available in \liquid\ for shuffling bits:
+{\tt LIQUID\_INTERLEAVER\_BLOCK} and {\tt LIQUID\_INTERLEAVER\_SEQUENCE}.
+These two methods are described here.
+
+\subsubsection{{\tt LIQUID\_INTERLEAVER\_BLOCK} (block interleaving)}
+\label{module:framing:interleaver:block}
+The block interleaver observes the block data as a matrix:
+samples are read in by rows and out by columns.
+
+% TODO : explain more...
+
+\subsubsection{{\tt LIQUID\_INTERLEAVER\_SEQUENCE} ($m$-sequence interleaving)}
+\label{module:framing:interleaver:sequence}
+This type of interleaving uses a special linear feedback shift register called
+an $m$-sequence in order to compute its permutations.
+The $m$-sequence has the special property that each symbol in the register is
+both unique and pseudo-random.
+
+% TODO : explain more...
+
+See also {\tt msequence} (section~\ref{module:sequence}).
+
+\subsubsection{Interface}
+\label{module:framing:interleaver:interface}
+The {\tt interleaver} object operates like most objects in \liquid\ with
+typical {\tt create()}, {\tt destroy()}, and {\tt execute()} methods.
+
+\begin{description}
+\item[{\tt interleaver\_create(n,type)}]
+    creates an interleaver object accepting $n$ bytes,
+    with either a {\tt LIQUID\_INTERLEAVER\_BLOCK} or
+    {\tt LIQUID\_INTERLEAVER\_SEQUENCE} type, and 
+    defaulting to 2 iterations.
+\item[{\tt interleaver\_destroy(q)}]
+    destroys the interleaver object, freeing all internally-allocated
+    memory arrays.
+\item[{\tt interleaver\_set\_num\_iterations(q,k)}]
+    sets the number of iterations of the interleaver.
+    Increasing the number of iterations helps improve bit dispersion, but can
+    also increase execution time.
+    The default number of iterations at the time of creation is 2 (see
+    Figure~\ref{fig:module:framing:interleaver:scatterplot}).
+\item[{\tt interleaver\_encode(q,*msg\_dec,*msg\_enc)}]
+    runs the forward interleaver, reading data from the first array argument
+    and writing the result to the second array argument.
+    The array pointers can reference the same block of memory, if necessary.
+\item[{\tt interleaver\_decode(q,*msg\_enc,*msg\_dec)}]
+    runs the reverse interleaver, reading data from the first array argument
+    and writing the result to the second array argument.
+    Like the {\tt encode()} method, the array pointers can reference the same
+    block of memory.
+\end{description}
+%
+This listing gives a basic demonstration to the interface to the
+{\tt interleaver} object:
+%
+\input{listings/interleaver.example.c.tex}
+
+%-------------------- FIGURE: interleaver scatterplot --------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[$i=0$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i0}
+      \label{fig:interleaver:scatterplot:0}
+    } \quad
+  \subfigure[$i=1$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i1}
+      \label{fig:interleaver:scatterplot:1}
+    } \quad
+}
+\mbox{
+  \subfigure[$i=2$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i2}
+      \label{fig:interleaver:scatterplot:2}
+    } \quad
+  \subfigure[$i=3$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i3}
+      \label{fig:interleaver:scatterplot:3}
+    } \quad
+}
+\caption{{\tt interleaver} (block) demonstration of a 64-byte (512-bit) array
+with increasing number of iterations (interleaving depth)}
+\label{fig:module:framing:interleaver:scatterplot}
+\end{figure}
+%
+A visualization of the interleaver can be seen in
+Figure~\ref{fig:module:framing:interleaver:scatterplot}
+where the input index is plotted against the output index for varying number
+of interations.
+Notice that with zero iterations, the output and input are identical (no
+interleaving).
+With one iteration only the bytes are interleaved, and so the output is
+grouped into 8-bit blocks.
+Further iterations, however, result in sufficiently dispersed bits, and
+patterns between input and output indices become less evident.
+%
+The {\tt packetizer} object (Section~\ref{module:framing:packetizer}) uses the
+{\tt interleaver} object in conjunction to forward error-correction coding
+(Section~\ref{module:fec}) to provide a simple interface for generating
+protected data packets.
+A full example can be found in {\tt examples/interleaver\_example.c}.
+
+
+%
+% packetizer
+%
+\subsection{{\tt packetizer} (multi-level error-correction)}
 \label{module:framing:packetizer}
 The \liquid\ packetizer is a structure for abstracting multi-level forward
 error-correction from the user.
 The packetizer accepts a buffer of uncoded data bytes and adds a
-cyclic redundancy check (crc) before applying two levels of forward
+cyclic redundancy check (CRC) before applying two levels of forward
 error-correction and bit-level interleaving.
 The user may choose any two supported FEC schemes (including none) and the
 packetizer object will handle buffering and data management internally,
@@ -35,20 +216,54 @@ best effort of decoding the message.
 
 %The {\tt packetizer} object (Section~\ref{module:framing:packetizer})
 %uses two {\tt fec} objects (an inner and outer code) in conjunction with an
-%{\tt interleaver} object (Section~\ref{module:interleaver})
+%{\tt interleaver} object (Section~\ref{module:framing:interleaver})
 %and a 32-bit cyclic redundancy check.
 
 The packetizer also allows for re-structuring if the user wishes to change
 error-correction schemes or data lengths.  This is accomplished with the
 {\tt packetier\_recreate()} method.
-
+Listed below is the full interface to the {\tt packetizer} object.
+%
+\begin{description}
+\item[{\tt packetizer\_create(n,crc,fec0,fec1)}]
+    creates and returns a {\tt packetizer} object which accepts $n$
+    uncoded input bytes and uses the specified CRC and bi-level FEC
+    schemes.
+\item[{\tt packetizer\_recreate(q,n,crc,fec0,fec1)}]
+    re-creates an existing {\tt packetizer} object with new parameters.
+\item[{\tt packetizer\_destroy(q)}]
+    destroys an {\tt packetizer} object, freeing all
+    internally-allocated memory.
+\item[{\tt packetizer\_print(q)}]
+    prints the internal state of the {\tt packetizer} object to the
+    standard output.
+\item[{\tt packetizer\_get\_dec\_msg\_len(q)}]
+    returns the specified decoded message length $n$ in bytes.
+\item[{\tt packetizer\_get\_enc\_msg\_len(q)}]
+    returns the fully-encoded message length $k$ in bytes.
+\item[{\tt packetizer\_encode(q,*msg,*pkt)}]
+    encodes the $n$-byte input message storing the result in the
+    $k$-byte encoded output message.
+\item[{\tt packetizer\_encode(q,*pkt,*msg)}]
+    decodes the $k$-byte encoded input message storing the result in the
+    $k$-byte output.
+    The function returns a {\tt 1} if the internal CRC passed
+    and a {\tt 0} if it failed.
+    If no CRC was specified (e.g. {\tt CRC\_NONE}) then a {\tt 1} is
+    always returned.
+\end{description}
+%
 Here is a minimal example demonstrating the packetizer's most basic
 functionality:
+%
 \input{listings/packetizer.example.c.tex}
-
+%
 See also: fec module, {\tt examples/packetizer\_example.c}
 
 
+%
+% bpacket
+%
 \subsection{{\tt bpacket} (binary packet generator/synchronizer)}
 \label{module:framing:bpacket}
 The {\tt bpacketgen} and {\tt bpacketsync} objects realize a pair of
@@ -65,23 +280,6 @@ validity check (e.g. cyclic redundancy check), and the length of the
 payload.
 The full packet is assembled according to
 Figure~\ref{fig:module:framing:bpacket_structure}.
-
-At the receiver
-the {\tt bpacketsync} object correlates against the bit sequence looking
-for the beginning of the packet.
-Once a packet has been found the packet synchronizer decodes the header
-to determine how the payload is to be decoded.
-The payload is decoded and the resulting data is passed to a callback
-function.
-The synchronizer compensates for the situation where all the bits are
-flipped (e.g. coherent BPSK with a phase offset of $\pi$ radians).
-% talking points:
-%  * receiver does not need to be byte aligned
-%  * receiver automatically reconfigures itself to the packet
-%    parameters
-%  * packet length is adjustable
-%
-
 % 
 % FIGURE: bpacket structure
 %
@@ -94,17 +292,154 @@ flipped (e.g. coherent BPSK with a phase offset of $\pi$ radians).
 \label{fig:module:framing:bpacket_structure}
 \end{figure}
 
+
+At the receiver
+the {\tt bpacketsync} object correlates against the bit sequence looking
+for the beginning of the packet.
+It is important to realize that the receiver does not need to be
+byte-aligned as the packet synchronizer takes care of this internally.
+Once a packet has been found the packet synchronizer decodes the header
+to determine how the payload is to be decoded.
+The payload is decoded and the resulting data is passed to a callback
+function.
+The synchronizer compensates for the situation where all the bits are
+flipped (e.g. coherent BPSK with a phase offset of $\pi$ radians).
+Because the packet's header includes information about how to decode the
+payload the synchronizer automatically reconfigures itself to the packet
+parameters without any additional specification by the user.
+This allows great flexibility adapting encoding parameters to dynamic
+channel environments.
+
+
+% bpacketgen
+\subsubsection{{\tt bpacketgen} interface}
+\label{module:framing:bpacket:bpacketgen}
+The functionality of the {\tt bpacket} structure is split into two
+objects:
+the {\tt bpacketgen} object generates the packets and runs on the
+transmit side of the link while
+the {\tt bpacketsync} object synchronizes and decodes the packets and
+runs on the receive side of the link.
+Listed below is the full interface to the {\tt bpacketgen} object.
+%
+\begin{description}
+\item[{\tt bpacketgen\_create(m,n,crc,fec0,fec1)}]
+    creates and returns a {\tt bpacketgen} object which accepts $n$
+    uncoded input bytes and uses the specified CRC and bi-level FEC
+    schemes.
+    The first parameter ($m$) is reserved for future development and is
+    currently ignored.
+    %The length of the p/n sequence is specified by $m$ (ignored).
+\item[{\tt bpacketgen\_recreate(q,m,n,crc,fec0,fec1)}]
+    re-creates an existing {\tt bpacketgen} object with new parameters.
+\item[{\tt bpacketgen\_destroy(q)}]
+    destroys an {\tt bpacketgen} object, freeing all
+    internally-allocated memory.
+\item[{\tt bpacketgen\_print(q)}]
+    prints the internal state of the {\tt bpacketgen} object to the
+    standard output.
+\item[{\tt bpacketgen\_get\_packet\_len(q)}]
+    returns the length in bytes of the fully-encoded packet.
+\item[{\tt bpacketgen\_encode(q,*msg,*pkt)}]
+    encodes the $n$-byte input message {\tt msg},
+    storing the result in the encoded output packet {\tt pkt}.
+\end{description}
+%
+
+
+% bpacketsync
+\subsubsection{{\tt bpacketsync} interface}
+\label{module:framing:bpacket:bpacketsync}
+As stated before, the {\tt bpacketsync} runs on the receiver to
+synchronize to and decode the incoming packets.
+Listed below is the full interface to the {\tt bpacketsync} object.
+%
+\begin{description}
+\item[{\tt bpacketsync\_create(m,callback,*userdata)}]
+    creates and returns a {\tt bpacketsync} object which invokes a
+    user-defined callback function, passing to it a user-defined object
+    pointer.
+    The first parameter ($m$) is reserved for future development and is
+    currently ignored.
+    %The length of the transmitted p/n sequence is specified by $m$
+    %(ignored).
+\item[{\tt bpacketsync\_destroy(q)}]
+    destroys an {\tt bpacketsync} object, freeing all
+    internally-allocated memory.
+\item[{\tt bpacketsync\_print(q)}]
+    prints the internal state of the {\tt bpacketsync} object to the
+    standard output.
+\item[{\tt bpacketsync\_reset(q)}]
+    resets the internal state of the object.
+\item[{\tt bpacketsync\_execute(q,*bytes,n)}]
+    runs the synchronizer on $n$ bytes of received data.
+\item[{\tt bpacketsync\_execute\_byte(q,byte)}]
+    runs the synchronizer on a single byte of received data.
+\item[{\tt bpacketsync\_execute\_sym(q,sym,bps)}]
+    runs the synchronizer on a symbol with {\tt bps} bits of
+    information.
+\item[{\tt bpacketsync\_execute\_bit(q,bit)}]
+    runs the synchronizer on a single bit.
+\end{description}
+%
+The {\tt bpacketsync} object has a callback function which has four
+arguments and looks like this:
+%
+\begin{Verbatim}[fontsize=\small]
+    int bpacketsync_callback(unsigned char *  _payload,
+                             int              _payload_valid,
+                             unsigned int     _payload_len,
+                             void *           _userdata);
+\end{Verbatim}
+%
+The callback is typically defined to be {\tt static} and is passed to
+the instance of {\tt bpacketsync} object when it is created.
+%
+\begin{description}
+\item[{\tt \_payload}]
+    is a pointer to the decoded bytes of payload data.
+    This pointer is not static and cannot be used after returning from
+    the callback function.
+    This means that it needs to be copied locally for you to retain the
+    data.
+\item[{\tt \_payload\_valid}]
+    is simply a flag to indicate if the payload passed its cyclic
+    redundancy check
+    (``{\tt 0}'' means invalid, ``{\tt 1}'' means valid).
+    If this flag is zero then the payload most likely has errors in it.
+    Some applications are error tolerant and so it is possible that the
+    payload data are still useful.
+    Typically, though, the payload should be discarded and a
+    re-transmission request should be issued.
+\item[{\tt \_payload\_len}]
+    indicates the number of bytes in the {\tt \_payload} argument.
+\item[{\tt \_userdata}]
+    is a pointer that given to the {\tt bpacketsync} object when it was
+    created.
+    This pointer is passed to the callback and can represent just about
+    anything.
+    Typically it points to another structure and is the method
+    by which the decoded header and payload data are returned to the
+    program outside of the callback.
+\end{description}
+
+
+% 
+\subsubsection{Code example}
+\label{module:framing:bpacket:code_example}
+%
 Listed below is a basic example of of the interface to the
 {\tt bpacketgen} and
-{\tt bpacketsync} objects:
-%
-\input{listings/bpacket.example.c.tex}
-%
+{\tt bpacketsync} objects.
 For a detailed example program, see
 {\tt examples/bpacketsync\_example.c} under the main \liquid\ project
 directory.
+%
+\input{listings/bpacket.example.c.tex}
 
-
+% 
+% frame64, flexframe
+%
 \subsection{{\tt frame64}, {\tt flexframe} (basic framing structures)}
 \label{module:framing:frames}
 \liquid\ comes packaged with two basic framing structures: {\tt frame64} and
@@ -132,7 +467,7 @@ Hamming(12,8) block code, 16-bit cyclic redundancy check, and modulates the
 result with a QPSK modem.
 The header and payload are encapsulated with special phasing sequences, and
 finally the resulting symbols are interpolated using a half-rate root-raised
-cosine filter (see section~\ref{module:filter:firdes:rrcos}).
+cosine filter (see section~\ref{module:filter:firdes:rnyquist}).
 
 The true spectral efficiency of the frame is exactly $4/5$; 64 bytes of data
 (512 bits) encoded into 640 symbols.
@@ -145,10 +480,12 @@ The {\tt flexframegen} and {\tt flexframesync} objects are similar to their
 {\tt frame[gen|sync]64} counterparts, however extend functionality to include
 a number of options in structuring the frame.
 
-\subsubsection{framing structures}
+\subsubsection{Framing Structures}
 \label{module:framing:frames:structures}
-Both frames consist of six basic parts:
-
+While the specifics of the {\tt frame64} and {\tt flexframe} structures
+are different,
+both frames consist of six basic parts:
+%
 %\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}lll}
 %\toprule
 %{\it name}      & {\it \# symbols}  & {\it \# bytes}& {\it description}  \\
@@ -161,20 +498,7 @@ Both frames consist of six basic parts:
 %ramp down.      & 64                & -             & ramp down sequence \\
 %\bottomrule
 %\end{tabular*}
-
-% 
-% FIGURE: framing:structure
 %
-\begin{figure}
-\centering
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
-\caption{
-    Framing structure used for the {\tt frame64} and {\tt flexframe}
-    objects.}
-\label{fig:module:framing:structure}
-\end{figure}
-
-
 \begin{description}
 \item[{\sf ramp/up}]
     gracefully increases the output signal level to avoid ``key clicking'' and
@@ -221,81 +545,185 @@ Both frames consist of six basic parts:
     gracefully decreases the output signal level as per ramp/up.
 \end{description}
 
+
+% 
+% FIGURE: framing:structure
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=16cm]{figures.pgf/framing_structure}
+\caption{
+    Framing structure used for the {\tt frame64} and {\tt flexframe}
+    objects.}
+\label{fig:module:framing:structure}
+\end{figure}
+%
 A graphical depiction of the framing signal level can be seen in
 figure~\ref{fig:module:framing:structure}.
 The relative lengths of each section are not necessarily to scale,
 particularly as the {\tt flexframe} structure allows many of these sections to
 be variable in length.
-
+%
 NOTE: while the {\tt flexframegen} and {\tt flexframesync} objects are
 intended to be used in conjunction with one another, the output of
 {\tt flexframegen} requires matched-filtering interpolation before the
 {\tt flexframesync} object can recover the data.
 
 
-\subsubsection{the decoding process}
+\subsubsection{The Decoding Process}
 \label{module:framing:frames:decoding}
-Both the {\tt frame64} and {\tt flexframe} objects operate very similarly in
-their decoding process.
-On the receiver, frames are pulled from a stream of input samples which can
-exhibit channel impairments such as noise, sample timing offset, and carrier
-frequency and phase offsets.
-The receiver corrects for these impairments as best it can using various other
-signal processing elements in \liquid\ and attempts to decode the frame.
+Both the {\tt frame64} and {\tt flexframe} objects operate very
+similarly in their decoding processes.
+On the receiver, frames are pulled from a stream of input samples which
+can exhibit channel impairments such as noise, sample timing offset, and
+carrier frequency and phase offsets.
+The receiver corrects for these impairments as best it can using various
+other signal processing elements in \liquid\ and attempts to decode the
+frame.
 If at any time a frame is decoded (even if improperly), its appropriate
 user-defined callback function is invoked.
-
-Internally, the frame synchronizers...
+%
+%Internally, the frame synchronizers...
 When seeking a frame the synchronizer initially sets its internal loop
 bandwidths high for acquisition, including those for the automatic gain
 control, symbol timing recovery, and carrier frequency/phase recovery.
 This is known as {\em acquisition} mode, and is typical for packet-based
 communications systems.
 % ...
-Once the p/n sequence has been found, the receiver assumes it has a sufficient
-lock on the channel impairments and reduces its control loop bandwidths
-significantly, moving to {\em tracking} mode.
+Once the p/n sequence has been found, the receiver assumes it has a
+sufficient lock on the channel impairments and reduces its control loop
+bandwidths significantly, moving to {\em tracking} mode.
 
-At the heart of the decoder is the {\tt framesync\_props} object which governs
-the behavior of the frame synchronizers.
+\subsection{{\tt framesyncprops\_s} (frame synchronizer properties)}
+\label{module:framing:framesyncprops_s}
+Governing the behavior any frame synchronizer in \liquid\ is the
+{\tt framesyncprops\_s} object.
+In general the frame synchronizer open the bandwidths of their control
+loops until a certain sequence has been detected;
+this helps reduce acquisition time of the received signal.
+After the frame has been detected the control loop bandwidths are
+reduced to improve stability and reduce the possiblity of losing a lock
+on the signal.
+Listed below is a description of the {\tt framesyncprops\_} object
+members.
+%
 \begin{description}
 \item[{\tt agc\_bw0/agc\_bw1}]
     are the respective open/closed automatic gain control bandwidths.
+    The default values are $10^{-3}$ and $10^{-5}$, respectively.
 \item[{\tt agc\_gmin/agc\_gmax}]
     are the respective maximum/minimum automatic gain control gain values.
+    The default values are $10^{-3}$ and $10^{4}$, respectively.
 \item[{\tt sym\_bw0/sym\_bw1}]
     are the respective open/closed symbol synchronizer bandwidths.
+    The default values are $0.08$ and $0.05$, respectively.
 \item[{\tt pll\_bw0/pll\_bw1}]
     are the respective open/closed carrier phase-locked loop bandwidths.
-\item[...]
+    The default values are $0.02$ and $0.005$, respectively.
+\item[{\tt k}]
+    represents the matched filter's samples per symbol;
+    however this parameter is reserved for future development.
+    At present this number should be equal to 2 and should not be
+    changed.
+\item[{\tt npfb}]
+    represents the number of filters in the internal symbol timing
+    recovery object's polyphase filter bank
+    (see Section~\ref{module:filter:symsync});
+    however this parameter is reserved for future development and should
+    not be changed.
+    The default value is 32.
+\item[{\tt m}]
+    represents the matched filter's symbol delay;
+    however this parameter is reserved for future development and should
+    not be changed.
+    the default value is 3.
+\item[{\tt beta}]
+    represents the matched filter's excess bandwidth factor;
+    however this parameter is reserved for future development and should
+    not be changed.
+    the default value is 0.7.
 \item[{\tt squelch\_enabled}]
+    is a flag that specifies if the automatic gain control's squelch is
+    enabled (see Section~\ref{module:agc:squelch}).
+    Enabling the squelch
+    (setting {\tt squelch\_enabled} equal to {\tt 1})
+    will ignore received signals below the {\tt squelch\_threshold}
+    value (see below) to help prevent the reciever's control loops from
+    drifting.
+    Enabling the squelch is usually desirable;
+    however care must be taken to properly set the threshold|ideally
+    about 4~dB above the noise floor|so as not to miss frames with a
+    weak signal.
+    By default the squelch is {\em disabled}.
 \item[{\tt autosquelch\_enabled}]
+    is a flag that specifies if the automatic gain control's
+    {\em auto-squelch} is enabled (see
+    Section~\ref{module:agc:squelch:auto}).
+    In brief, the auto-squelch attempts to track the signal's power to
+    automatically squelch signals 4~dB above the noise floor.
+    By default the auto-squelch is disabled.
 \item[{\tt squelch\_threshold}]
+    is the squelch threshold value in dB
+    (see Section~\ref{module:agc:squelch}).
+    The default value is -35.0, but the ideal value is about 4~dB above
+    the noise floor.
+\item[{\tt eq\_len}]
+    specifies the length of the internal equalizer
+    (see Section~\ref{module:equalization}).
+    By default the length is set to zero which disables equalization of
+    the receiver.
+\item[{\tt eqrls\_lambda}]
+    is the recursive least-squares equalizer forgetting factor
+    $\lambda$
+    (see Section~\ref{module:equalization:eqrls}).
+    The default value is $\lambda=0.999$.
 \end{description}
 
 
-\subsection{{\tt framesyncstats\_s}}
+\subsection{{\tt framesyncstats\_s} (frame synchronizer statistics)}
 \label{module:framing:framesyncstats_s}
-
+When the synchronizer finds a frame and invokes the user-defined
+callback function, a special structure is passed to the callback that
+includes some useful information about the frame.
+This information is contained within the {\tt framesyncstats\_s}
+structure.
+While useful, the information contained within the structure is not
+necessary for decoding and can be ignored by the user.
+Listed below is a description of the {\tt framesyncstats\_} object
+members.
 %
 \begin{description}
 \item[{\tt SNR}]
-    an estimate of the received signal-to-noise ratio in dB.
+    is an estimate of the received signal-to-noise ratio in dB.
+    This estimate is in fact the error vector magnitude of the
+    demodulated header.
+    Depending upon the amount of distortion in the signal
+    (due to timing mismatch, inter-symbol interference, etc.)
+    this estimate will not be particularly accurate.
+    In fact a more accurate estimate of the frame SNR is by using the
+    {\tt rssi} property (see below) and subtracting the noise floor.
 \item[{\tt rssi}]
-    an estimate of the received signal strength in dB.
+    is an estimate of the received signal strength in dB.
+    This is derived from the synchronizer's internal automatic gain
+    control object (see Section~\ref{module:agc}).
 \item[{\tt framesyms}]
     a pointer to an array of the frame symbols (e.g. QPSK) at complex
     baseband before demodulation.
+    This is useful for plotting purposes.
+    This pointer is not static and cannot be used after returning from
+    the callback function.
+    This means that it needs to be copied locally for you to retain the
+    data.
 \item[{\tt num\_framesyms}]
-    the number of elements in {\tt framesyms}.
+    the length of the {\tt framesyms} pointer array.
 \item[{\tt mod\_scheme}]
     the modulation scheme of the frame (see Section~\ref{module:modem}).
 \item[{\tt mod\_bps}]
     the modulation depth (bits per symbol) of the modulation scheme used
     in the frame.
 \item[{\tt check}]
-    the error-detection scheme used in the payload of the frame
-    (see Section~\ref{module:fec}).
+    the error-detection scheme (e.g. cyclic redundancy check)
+    used in the payload of the frame (see Section~\ref{module:fec}).
 \item[{\tt fec0}]
     the inner forward error-correction code used in the payload
     (see Section~\ref{module:fec}).

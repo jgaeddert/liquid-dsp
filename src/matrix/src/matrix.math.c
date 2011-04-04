@@ -211,6 +211,20 @@ void MATRIX(_trans)(T * _X,
                     unsigned int _XR,
                     unsigned int _XC)
 {
+    // compute Hermitian transpose
+    MATRIX(_hermitian)(_X,_XR,_XC);
+    
+    // conjugate elements
+    unsigned int i;
+    for (i=0; i<_XR*_XC; i++)
+        _X[i] = conj(_X[i]);
+}
+
+// compute matrix Hermitian transpose
+void MATRIX(_hermitian)(T * _X,
+                        unsigned int _XR,
+                        unsigned int _XC)
+{
     T y[_XR*_XC];
     memmove(y,_X,_XR*_XC*sizeof(T));
 
@@ -218,6 +232,133 @@ void MATRIX(_trans)(T * _X,
     for (r=0; r<_XR; r++) {
         for (c=0; c<_XC; c++) {
             matrix_access(_X,_XC,_XR,c,r) = matrix_access(y,_XR,_XC,r,c);
+        }
+    }
+}
+
+// compute x*x' on m x n matrix, result: m x m
+void MATRIX(_mul_transpose)(T * _x,
+                            unsigned int _m,
+                            unsigned int _n,
+                            T * _xxT)
+{
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xxT
+    for (i=0; i<_m*_m; i++)
+        _xxT[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_m; r++) {
+
+        for (c=0; c<_m; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_n; i++) {
+                sum +=        matrix_access(_x,_m,_n,r,i) *
+                       conjf( matrix_access(_x,_m,_n,c,i) );
+            }
+
+            matrix_access(_xxT,_m,_m,r,c) = sum;
+        }
+    }
+}
+
+
+// compute x'*x on m x n matrix, result: n x n
+void MATRIX(_transpose_mul)(T * _x,
+                            unsigned int _m,
+                            unsigned int _n,
+                            T * _xTx)
+{
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xTx
+    for (i=0; i<_n*_n; i++)
+        _xTx[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_n; r++) {
+
+        for (c=0; c<_n; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_m; i++) {
+                sum += conjf( matrix_access(_x,_m,_n,i,r) ) *
+                              matrix_access(_x,_m,_n,i,c);
+            }
+
+            matrix_access(_xTx,_n,_n,r,c) = sum;
+        }
+    }
+}
+
+
+// compute x*x.' on m x n matrix, result: m x m
+void MATRIX(_mul_hermitian)(T * _x,
+                            unsigned int _m,
+                            unsigned int _n,
+                            T * _xxH)
+{
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xxH
+    for (i=0; i<_m*_m; i++)
+        _xxH[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_m; r++) {
+
+        for (c=0; c<_m; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_n; i++) {
+                sum += matrix_access(_x,_m,_n,r,i) *
+                       matrix_access(_x,_m,_n,c,i);
+            }
+
+            matrix_access(_xxH,_m,_m,r,c) = sum;
+        }
+    }
+}
+
+
+// compute x.'*x on m x n matrix, result: n x n
+void MATRIX(_hermitian_mul)(T * _x,
+                            unsigned int _m,
+                            unsigned int _n,
+                            T * _xHx)
+{
+    unsigned int r;
+    unsigned int c;
+    unsigned int i;
+
+    // clear _xHx
+    for (i=0; i<_n*_n; i++)
+        _xHx[i] = 0.0f;
+
+    // 
+    T sum = 0;
+    for (r=0; r<_n; r++) {
+
+        for (c=0; c<_n; c++) {
+            sum = 0.0f;
+
+            for (i=0; i<_m; i++) {
+                sum += matrix_access(_x,_m,_n,i,r) *
+                       matrix_access(_x,_m,_n,i,c);
+            }
+
+            matrix_access(_xHx,_n,_n,r,c) = sum;
         }
     }
 }

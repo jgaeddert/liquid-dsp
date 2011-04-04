@@ -10,9 +10,14 @@ for encoding information into signals.
 %For the analog modems, samples are modulated according to...
 For the digital modems, data bits are encoded into symbols representing
 carrier frequency, phase, amplitude, etc.
+This section gives a brief overview of modulation schemes available in
+\liquid, and provides a brief description of the interfaces.
 
 \subsection{Analog modulation schemes}
+\label{module:modem:analog}
+
 \subsubsection{{\tt freqmodem} (analog FM)}
+\label{module:modem:analog:freqmodem}
 The {\tt freqmodem} object implements an analog frequency modulation (FM)
 modulator and demodulator.
 Two options for demodulation are possible...
@@ -40,6 +45,7 @@ Its digital equivalent is
 \]
 
 \subsubsection{{\tt ampmodem} (analog AM)}
+\label{module:modem:analog:ampmodem}
 The {\tt ampmodem} object implements an analog amplitude modulation (AM)
 modulator/demodulator pair.
 Two transmission schemes are available: single side-band (SSB), and
@@ -61,8 +67,8 @@ Double side-band:
     s_2(t) = m(t)e^{j 2 \pi f_c t}
 \]
 
-\subsection{Continuous phase digital modulation schemes}
-fsk, msk, etc. [NOTE: not yet implemented]
+%\subsection{Continuous phase digital modulation schemes}
+%fsk, msk, etc. [NOTE: not yet implemented]
 
 \subsection{Linear digital modulation schemes}
 \label{module:modem:digital}
@@ -78,32 +84,119 @@ strictly one-to-one and is independent of any pulse shaping, or interpolation.
 %This differs from {\tt cpmodem} in which the pulse shaping filter is
 %integrated into the modem itself.
 
-In general, linear modems demodulate by finding the closest of $M$ symbols in
-the set $\mathcal{S}$ to the received symbol $\vec{r}$, viz
-\[
-    \underset{k \in \mathcal{S}}{\arg\min}
+In general, linear modems demodulate by finding the closest of $M$
+symbols in the set $\mathcal{S}_M$ to the received symbol $r$, viz
+%
+\begin{equation}
+\label{eqn:modem:demod}
+    \underset{k \in \mathcal{S}_M}{\arg\min}
     \bigl\{
-        \| \vec{r} - \vec{s}_k \|
+        \| r - s_k \|
     \bigr\}
-\]
+\end{equation}
+%
 For arbitrary modulation schemes a linear search over all symbols in
 $\mathcal{S}$ is required which has a complexity of $\ord(M^2)$, however one may
 take advantage of symmetries in certain constellations to reduce this.
 %For example, $M$-ary PSK distributes its symbols evenly throughout the phase
 %of the transmitted signal...
 
-\subsubsection{Usage}
+% ------------ TABLE: LINEAR MODULATION SCHEMES ------------
+\begin{table*}
+\caption{Linear Modulation Schemes Available in \liquid}
+\label{tab:modem:schemes}
+\centering
+{\small
+\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}ll}
+\toprule
+{\it scheme} &
+{\it range of depth} &
+{\it description}\\\otoprule
+%
+{\tt MOD\_UNKNOWN}      & -     & unknown/unsupported scheme\\
+{\tt MOD\_PSK}          & 1|8   & phase-shift keying\\
+{\tt MOD\_DPSK}         & 1|8   & differential phase-shift keying\\
+{\tt MOD\_ASK}          & 1|8   & amplitude-shift keying\\
+{\tt MOD\_QAM}          & 2|8   & quadrature amplitude-shift keying\\
+{\tt MOD\_APSK}         & 2|7   & amplitude/phase-shift keying\\
+{\tt MOD\_ARB}          & 1|8   & arbitrary signal constellation\\\midrule
+%
+{\tt MOD\_BPSK}         & 1     & binary phase-shift keying\\
+{\tt MOD\_QPSK}         & 2     & quaternary phase-shift keying\\
+{\tt MOD\_APSK4}        & 2     & amplitude/phase-shift keying, $M=4$, (1,3)\\
+{\tt MOD\_APSK8}        & 3     & amplitude/phase-shift keying, $M=8$, (1,7)\\
+{\tt MOD\_APSK16}       & 4     & amplitude/phase-shift keying, $M=16$, (4,12)\\
+{\tt MOD\_APSK32}       & 5     & amplitude/phase-shift keying, $M=32$, (4,12,16)\\
+{\tt MOD\_APSK64}       & 6     & amplitude/phase-shift keying, $M=64$, (4,14,20,26)\\
+{\tt MOD\_APSK128}      & 7     & amplitude/phase-shift keying, $M=128$, (8,18,24,36,42)\\
+{\tt MOD\_ARB16OPT}     & 4     & optimal 16-QAM\\
+{\tt MOD\_ARB64VT}      & 6     & Virginia Tech logo\\\bottomrule
+% 
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
+
+\subsubsection{Interface}
+\label{module:modem:digital:interface}
 \begin{description}
-\item[{\tt modem\_modulate()}]
-    converts an input symbol into an output sample
-\item[{\tt modem\_demodulate()}]
-    finds the closest symbol which matches the input sample
-\item {\tt modem\_get\_demodulator\_phase\_error()}]
+\item[{\tt modem\_create(scheme,bps)}]
+    creates a linear modulator/demodulator {\tt modem} object with one
+    of the schemes defined in Table~\ref{tab:modem:schemes}
+    with {\tt bps} bits per symbol.
+\item[{\tt modem\_destroy(q)}]
+    destroys a {\tt modem} object, freeing all internally-allocated
+    memory.
+\item[{\tt modem\_print(q)}]
+    prints the internal state of the object.
+\item[{\tt modem\_reset(q)}]
+    resets the internal state of the object.
+    This method is really only relevant to {\tt MOD\_DPSK}
+    (differential phase-shift keying) which retains the phase of the
+    previous symbol in memory.
+    All other modulation schemes are memoryless.
+\item[{\tt modem\_arb\_init(q,*map,n)}]
+    initializes an arbitrary modem ({\tt MOD\_ARB}) with the $n$-point
+    constellation map.
+    The resulting constellation is normalized such that it is centered
+    at zero and has unity energy.
+\item[{\tt modem\_arb\_init\_file(q,*filename)}]
+    initializes an arbitrary modem ({\tt MOD\_ARB}) with a constellation
+    map defined in an external file.
+    The file includes one line per symbol with the in-phase and
+    quadrature components separated by white space, e.g.
+    %
+    \begin{Verbatim}[fontsize=\small]
+       1.46968   0.13529
+       1.69067   0.71802
+      -0.85603   0.43542
+      -0.56563   1.50369
+       0.45232   0.42128
+          ...
+    \end{Verbatim}
+    %
+    The resulting constellation is normalized such that it is centered
+    at zero and has unity energy.
+\item[{\tt modem\_modulate(q,symbol,*x)}]
+    modulates the integer symbol storing the result in the output value
+    of $x$.
+    The input symbol value must be less than the constellation size $M$.
+\item[{\tt modem\_demodulate(q,x,*symbol)}]
+    finds the closest integer symbol which matches the input sample $x$.
+    The exact method by which \liquid\ performs this computation is
+    dependent upon the modulation scheme.
+    For example, while
+    {\tt MOD\_QAM} ($M=4$), and
+    {\tt MOD\_PSK} ($M=4$)
+    are effectively equivalent (four points on the unit circle)
+    they are demodulated differently.
+\item[{\tt modem\_get\_demodulator\_phase\_error(q)}]
     returns an angle proportional to the phase error after demodulation.
     This value can be used in a phase-locked loop
     (see Section~\ref{module:nco:pll})
     to correct for carrier phase recovery.
-\item[{\tt modem\_get\_demodulator\_evm()}]
+\item[{\tt modem\_get\_demodulator\_evm(q)}]
     returns a value equal to the error vector magnitude after demodulation.
     The error vector is the difference between the received symbol and the
     estimated transmitted symbol, $e = r - \hat{s}$.
@@ -120,6 +213,7 @@ demodulators.
 This holds true for most any encoder/decoder pair in \liquid.
 
 \subsubsection{Gray coding}
+\label{module:modem:digital:gray_coding}
 In order to reduce the number of bit errors in a digital modem,
 all symbols are automatically Gray encoded;
 adjacent symbols in a constellation differ by only one bit.
@@ -173,6 +267,7 @@ In \liquid, Gray encoding and decoding are computed with the
 {\tt gray\_encode()} {\tt gray\_decode()} methods, respectively.
 
 \subsubsection{{\tt MOD\_PSK} (phase-shift keying)}
+\label{module:modem:digital:PSK}
 Demodulation is performed independent of the signal amplitude.
 For an $M$-symbol constellation, the $k^{th}$ symbol is
 \[
@@ -225,6 +320,7 @@ and QPSK ($M=4$)
 \end{figure}
 
 \subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
+\label{module:modem:digital:DPSK}
 Demodulation is performed independent of the signal amplitude.
 The data are encoded using phase transitions, rather than absolute phase.
 This allows the receiver to demodulate incoherently, but at a quality
@@ -240,6 +336,7 @@ degradation of 3dB.
 \]
 
 \subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
+\label{module:modem:digital:APSK}
 Amplitude/phase-shift keying is a specific form of quadrature amplitude
 modulation where constellation points lie on concentric circles.
 \begin{itemize}
@@ -301,6 +398,7 @@ demodulators.
 \end{figure}
 
 \subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
+\label{module:modem:digital:ASK}
 
 \[
     s_k = \alpha ( 2 k - M - 1 )
@@ -351,6 +449,7 @@ where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \end{figure}
 
 \subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
+\label{module:modem:digital:QAM}
 Also known as quadrature amplitude-shift keying, QAM modems encode data using
 both the in-phase and quadrature components of a signal amplitude.
 In fact, the symbol is split into independent in-phase and quadrature symbols
@@ -438,6 +537,7 @@ $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \end{figure}
 
 \subsubsection{{\tt MOD\_ARB} (arbitrary modem)}
+\label{module:modem:digital:ARB}
 \liquid\ also allows the user to create their own modulation schemes by
 designating the number of bits per symbol, and the full signal constellation.
 Several pre-loaded arbitrary signal constellations are available.

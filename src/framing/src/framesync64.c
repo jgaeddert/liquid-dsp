@@ -361,11 +361,11 @@ void framesync64_execute(framesync64 _fs,
             if (_fs->state == FRAMESYNC64_STATE_SEEKPN) {
                 // use preamble/header demodulator
                 modem_demodulate(_fs->demod_header, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->demod_header, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->demod_header);
             } else {
                 // use payload demodulator
                 modem_demodulate(_fs->demod_payload, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->demod_payload, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->demod_payload);
             }
 
             // step pll, nco objects
@@ -510,7 +510,7 @@ void framesync64_execute_rxpayload(framesync64 _fs,
 
     // SNR estimate
     float evm;
-    get_demodulator_evm(_fs->demod_header, &evm);
+    evm = modem_get_demodulator_evm(_fs->demod_header);
     _fs->evm_hat += evm;
 
     // check to see if full payload has been received
@@ -521,9 +521,9 @@ void framesync64_execute_rxpayload(framesync64 _fs,
         // decode frame payload
         framesync64_decode_payload(_fs);
 
-        // framestats: compute SNR estimate, rssi
+        // framestats: compute EVM estimate, rssi
         // 477 = 84 + 396 = total number of observed symbols
-        _fs->framestats.SNR  = -10*log10f( (_fs->evm_hat / 477.0f) );
+        _fs->framestats.evm  =  10*log10f( (_fs->evm_hat / 477.0f) );
         _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
         _fs->evm_hat = 0.0f;
 

@@ -23,12 +23,15 @@ src/doc-html-gen
 src/equalizer_cccf
 src/filter_decim_crcf
 src/filter_firdespm
+src/filter_firfarrow_crcf
+src/filter_firfilt_crcf
 src/filter_firhilb_decim_crcf
 src/filter_iirdes
 src/filter_iirfilt_crcf
 src/filter_interp_crcf
 src/filter_kaiser
 src/filter_resamp_crcf
+src/filter_rnyquist
 src/interleaver_scatterplot
 src/math_poly_examples
 src/math_window
@@ -37,6 +40,8 @@ src/modem.genplot
 src/nco_pll
 src/sequence_ccodes
 src/sequence_msequence
+src/simulate_ber
+src/simulate_per_test
 
 scripts/listings_check
 

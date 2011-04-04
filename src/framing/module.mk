@@ -38,7 +38,10 @@ local_s_files	:=		\
 	framesync64.c		\
 	flexframegen.c		\
 	flexframesync.c		\
-	packetizer.c
+	packetizer.c		\
+	interleaver.c		\
+	interleaver_create.c	\
+	interleaver_permute.c	\
 
 # local_t_files
 #
@@ -52,6 +55,7 @@ local_t_files	:=		\
 	bsync_autotest.h	\
 	flexframe_autotest.h	\
 	packetizer_autotest.h	\
+	interleaver_autotest.h	\
 
 
 # local_b_files
@@ -64,6 +68,7 @@ local_t_files	:=		\
 local_b_files	:=			\
 	bpacketsync_benchmark.h		\
 	flexframesync_benchmark.h	\
+	interleaver_benchmark.h		\
 
 include common.mk
 

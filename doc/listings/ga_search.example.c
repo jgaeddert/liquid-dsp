@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/ga_search.example.c
 
 // utility callback function
 float utility_callback(void * _userdata, chromosome _c)

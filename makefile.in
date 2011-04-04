@@ -66,13 +66,13 @@ LDFLAGS		+= @LIBS@
 ARFLAGS		= r
 
 # 
-# Liquid headers
+# liquid headers
 #
 headers_install	:= liquid.h @HEADER_EXPERIMENTAL@
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
-# Liquid modules
+# liquid modules
 #
 # Each processing library is held in a module containing
 # its own makefile 'module.mk' included by this top-level
@@ -93,7 +93,6 @@ modules		:=	\
 	fec		\
 	fft		\
 	filter		\
-	interleaver	\
 	framing		\
 	math		\
 	matrix		\
@@ -163,7 +162,7 @@ all: libliquid.a $(SHARED_LIB)
 .PHONY: libraries
 libraries: $(libraries)
 
-# Liquid library definition
+# liquid library definition
 # TODO: link from module libraries, not object files (for compactness)
 libliquid.a: $(objects)
 	$(AR) $(ARFLAGS) $@ $^

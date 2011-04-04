@@ -148,6 +148,13 @@ int main() {
     printf("U:\n");
     matrixf_print(U,4,4);
 
+    printf("\n");
+    printf("testing Q/R decomposition [Gram-Schmidt]\n");
+    float Q[16], R[16];
+    matrixf_qrdecomp_gramschmidt(X,4,4,Q,R);
+    matrixf_print(Q,4,4);
+    matrixf_print(R,4,4);
+
     /*
     float b[4] = {
        0.91489,
@@ -167,6 +174,28 @@ int main() {
     matrixf_gjelim(Xb,4,5);
     printf("\nmatrixf_gjelim(Xb,4,5)\n");
     matrixf_print(Xb,4,5);
+
+    // compute a*a'
+    float a[20] = {
+      -0.24655,  -1.78843,   0.39477,   0.43735,  -1.08998,
+      -0.42751,   0.62496,   1.43802,   0.19814,   0.78155,
+      -0.35658,  -0.81875,  -1.09984,   1.87006,  -0.94191,
+       0.39553,  -2.02036,   1.17393,   1.54591,   1.29663};
+
+    printf("\na =\n");
+    matrixf_print(a,4,5);
+
+    printf("\n\n");
+    printf("computing a*a'\n");
+    float aaT[16];
+    matrixf_mul_transpose(a,4,5,aaT);
+    matrixf_print(aaT,4,4);
+
+    printf("\n\n");
+    printf("computing a'*a\n");
+    float aTa[25];
+    matrixf_transpose_mul(a,4,5,aTa);
+    matrixf_print(aTa,5,5);
 
 
     printf("done.\n");

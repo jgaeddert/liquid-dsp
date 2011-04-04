@@ -70,14 +70,19 @@ GRAPHICS = 					\
 # Listings used in this document
 LISTINGS_C = 					\
 	listings/agc.example.c			\
+	listings/autocorr.example.c		\
 	listings/bpacket.example.c		\
 	listings/crc.example.c			\
 	listings/cvsd.example.c			\
+	listings/decim.example.c		\
 	listings/dotprod_rrrf.example.c		\
 	listings/eqlms_cccf.example.c		\
 	listings/fec.example.c			\
 	listings/fft.example.c			\
+	listings/firdes_kaiser.example.c	\
 	listings/firdespm.example.c		\
+	listings/firfarrow_crcf.example.c	\
+	listings/firfilt.example.c		\
 	listings/firhilb.example.c		\
 	listings/ga_search.example.c		\
 	listings/gradient_search.example.c	\
@@ -93,6 +98,8 @@ LISTINGS_C = 					\
 	listings/packetizer.example.c		\
 	listings/quasinewton_search.example.c	\
 	listings/resamp_crcf.example.c		\
+	listings/resamp2_crcf.example.c		\
+	listings/symsync_crcf.example.c		\
 	listings/window.example.c		\
 						\
 	tutorials/pll_init_tutorial.c		\
@@ -130,7 +137,6 @@ SECTIONS :=					\
 	sections/fft.tex			\
 	sections/filter.tex			\
 	sections/framing.tex			\
-	sections/interleaver.tex		\
 	sections/math.tex			\
 	sections/matrix.tex			\
 	sections/modem.tex			\
@@ -148,9 +154,11 @@ SECTIONS :=					\
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
 	lib/liquid_doc_freqz.c			\
-	lib/htmlgen.envparser.c			\
-	lib/htmlgen.tokenparser.c		\
-	lib/htmlgen.c
+	lib/liquid_doc_simulate_per.c		\
+# HTML documentation
+#	lib/htmlgen.envparser.c
+#	lib/htmlgen.tokenparser.c
+#	lib/htmlgen.c
 
 # additional targets to clean
 extra_clean :=
@@ -179,14 +187,12 @@ listings_cctests := $(patsubst %.cc,%.cc.o, $(LISTINGS_CC))
 scripts/listings_check : % : %.c
 	$(CC) -o $@ $<
 
-# temporary C program
-listings_check_cprog := listings_check_cprog.c
-
 # compile the objects but don't link/run them
+#   temporary program file: listings/filename.prog.c
 $(listings_ctests) : %.c.o : %.c scripts/listings_check
-	./scripts/listings_check $< $(listings_check_cprog)
-	$(CC) -c -o $@ $(listings_check_cprog)
-	$(RM) $(listings_check_cprog)
+	./scripts/listings_check $< $*.prog.c
+	$(CC) -I . -I../include/ -c -o $@ $*.prog.c
+	$(RM) $*.prog.c
 
 # specific C++ programs
 $(listings_cctests) : %.cc.o : %.cc
@@ -198,8 +204,7 @@ listings-check : $(listings_ctests) $(listings_cctests)
 
 # clean up listings-check files
 clean-listings-check :
-	$(RM) $(listings_check_cprog)
-	$(RM) $(listings_check_cprog).o
+	$(RM) listings/*.prog.c
 	$(RM) listings/*.o
 	$(RM) scripts/listings_check
 

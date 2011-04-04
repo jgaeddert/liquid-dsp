@@ -1,4 +1,4 @@
-// file:    listings/nco.cc
+// file:    doc/listings/nco.cc
 // build:   g++ -c -o nco.cc.o nco.cc
 // link:    g++ -lm -lc -lliquid nco.cc.o -o nco
 

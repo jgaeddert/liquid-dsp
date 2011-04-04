@@ -60,15 +60,21 @@ struct RESAMP2(_s) {
 };
 
 // create a resamp2 object
-//  _h_len      :   desired filter length (will force 4*m+1)
-//  _fc         :   center frequency of half-band filter
-//  _As         :   stop-band attenuation [dB], _As > 0
-RESAMP2() RESAMP2(_create)(unsigned int _h_len,
+//  _m      :   filter semi-length (effective length: 4*_m+1)
+//  _fc     :   center frequency of half-band filter
+//  _As     :   stop-band attenuation [dB], _As > 0
+RESAMP2() RESAMP2(_create)(unsigned int _m,
                            float _fc,
                            float _As)
 {
+    // validate input
+    if (_m < 2) {
+        fprintf(stderr,"error: resamp2_xxxt_create(), filter semi-length must be at least 2\n");
+        exit(1);
+    }
+
     RESAMP2() f = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
-    f->h_len = _h_len;
+    f->m  = _m;
     f->fc = _fc;
     f->As = _As;
     if ( f->fc < -0.5f || f->fc > 0.5f ) {
@@ -77,11 +83,6 @@ RESAMP2() RESAMP2(_create)(unsigned int _h_len,
     }
 
     // change filter length as necessary
-    // h_len = 2*(2*m) + 1
-    f->m = (_h_len-1)/4;
-    if (f->m < 2)
-        f->m = 2;
-
     f->h_len = 4*(f->m) + 1;
     f->h = (TC *) malloc((f->h_len)*sizeof(TC));
 

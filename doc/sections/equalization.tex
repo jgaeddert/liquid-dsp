@@ -5,10 +5,12 @@
 \newpage
 \section{equalization}
 \label{module:equalization}
-adaptive equalizers: LMS, RLS, blind...
-
-This section describes the functionality of two digital linear adaptive
-equalizers implemented...
+This section describes the equalizer module and the functionality of two
+digital linear adaptive equalizers implemented in \liquid, LMS and RLS.
+Their interfaces are nearly identical;
+however their internal functionality is quite different.
+Specifically the LMS algorithm is less computationally complex but is
+slower to converge than the RLS algorithm.
 
 \subsection{System Description}
 \label{module:equalization:system}
@@ -27,9 +29,12 @@ The adaptive linear equalizer attempts to use a finite impulse response (FIR)
 filter $\vec{w}$ of length $p$ to estimate the transmitted symbol, using only
 the received signal vector $\vec{y}$ and the known data sequence $\vec{d}$,
 viz
-\[
-    \hat{d}(n) = \vec{w}_n^T \vec{y}(n)
-\]
+%
+\begin{equation}
+\label{eqn:equalization:dhat}
+    \hat{d}(n) = \vec{w}_n^T \vec{y}_n
+\end{equation}
+%
 where $\vec{y}_n = [ y(n), y(n-1),\ldots, y(n-p+1) ]^T$.
 Several methods for estimating $\vec{w}$ are known in the literature, and
 typically rely on iteratively adjusting $\vec{w}$ with each input though a
@@ -45,10 +50,12 @@ The least mean-squares (LMS) algorithm adapts the coefficients of the filter
 estimate using a steepest descent (gradient) of the instantaneous {\it a priori}
 error.
 The filter estimate at time $n+1$ follows the following recursion
+%
 \begin{equation}
-\label{eq:lms:weight_update}
-\vec{w}_{n+1} = \vec{w}_{n} - \mu \vec{g}_n
+\label{eqn:equalization:lms_update}
+    \vec{w}_{n+1} = \vec{w}_{n} - \mu \vec{g}_n
 \end{equation}
+%
 where $\mu$ is the iterative step size, and
 $\vec{g}_n$ the normalized gradient vector, estimated from the error signal
 and the coefficients vector at time $n$.
@@ -58,7 +65,7 @@ and the coefficients vector at time $n$.
 The recursive least-squares (RLS) algorithm attempts to minimize the
 time-average weighted square error of the filter output, viz
 \begin{equation}
-c(\vec{w}_n) = \sum\limits_{i=0}^{n}{ \lambda^{i-n} \left| d(i)-\hat{d}(i)\right|^2 }
+    c(\vec{w}_n) = \sum\limits_{i=0}^{n}{ \lambda^{i-n} \left| d(i)-\hat{d}(i)\right|^2 }
 \end{equation}
 where the forgetting factor $0<\lambda\leq 1$ which introduces
 exponential weighting into past data, appropriate for time-varying
@@ -71,10 +78,12 @@ This step can be circumvented through the use of a recursive algorithm which
 attempts to estimate the inverse using the {\it a priori} error from the
 output of the filter.
 The update equation is
+%
 \begin{equation}
-\label{eq:rls:weight_update}
-\vec{w}_{n+1} = \vec{w}_n + \Delta_{n}
+\label{eqn:equalization:rls_update}
+    \vec{w}_{n+1} = \vec{w}_n + \Delta_{n}
 \end{equation}
+%
 where the correction factor $\Delta_{n}$ depends on $\vec{y}_n$ and $\vec{w}_n$,
 and involves several $p \times p$ matrix multiplications.
 The RLS algorithm provides a solution which converges much faster than the LMS
@@ -83,13 +92,65 @@ memory requirements.
 
 \subsection{Interface}
 \label{module:equalization:interface}
-The {\tt eqlms} and {\tt eqrls} have nearly identical interfaces, so we will
+The {\tt eqlms} and {\tt eqrls} have nearly identical interfaces so we will
 leave the discussion to the {\tt eqlms} object here.
 Like most objects in \liquid, {\tt eqlms} follows the typical
 {\tt create()}, {\tt execute()}, {\tt destroy()} lifecycle.
 Training is accomplished either one sample at a time, or in a batch cycle.
 If trained one sample at a time, the symbols must be trained in the proper
 order, otherwise the algorithm won't converge.
+One can think of the equalizer object in \liquid\ as simply a
+{\tt firfilt} object (finite impulse response filter)
+which has the additional ability to modify its own internal coefficients
+based on some error criteria.
+%
+Listed below is the full interface to the {\tt eqlms} family of
+objects.
+While each method is listed for {\tt eqlms\_cccf}, the same
+functionality applies to {\tt eqlms\_rrrf}
+as well as the RLS equalizer objects
+({\tt eqrls\_cccf} and {\tt eqrls\_rrrf}).
+%
+\begin{description}
+\item[{\tt eqlms\_cccf\_create(*h,n)}]
+    creates and returns an equalizer object with $n$ taps,
+    initialized with the input array $\vec{h}$.
+    If the array value is set to the {\tt NULL} pointer then the
+    internal coefficients are initialized to
+    $\{1,0,0,\ldots,0\}$.
+\item[{\tt eqlms\_cccf\_destroy(q)}]
+    destroys the equalizer object, freeing all internally-allocated
+    memory.
+\item[{\tt eqlms\_cccf\_print(q)}]
+    prints the internal state of the {\tt eqlms} object.
+\item[{\tt eqlms\_cccf\_set\_bw(q,w)}]
+    sets the bandwidth of the equalizer to $w$.
+    For the LMS equalizer this is the learning parameter $\mu$ which has
+    a default value of 0.5.
+    For the RLS equalizer the ``bandwidth'' is the forgetting factor
+    $\lambda$ which defaults to 0.99.
+\item[{\tt eqlms\_cccf\_reset(q)}]
+    clears the internal equalizer buffers and sets the internal
+    coefficients to the default
+    (those specified when {\tt create()} was invoked).
+\item[{\tt eqlms\_cccf\_push(q,x)}]
+    pushes a sample $x$ into the internal buffer of the equalizer
+    object.
+\item[{\tt eqlms\_cccf\_execute(q,*y)}]
+    generates the output sample $y$ by computing the vector dot product
+    (see Section~\ref{module:dotprod})
+    between the internal filter coefficients and the internal buffer.
+\item[{\tt eqlms\_cccf\_step(q,d,d\_hat)}]
+    performs a single iteration of equalization with an estimated output
+    $\hat{d}$ for an expected output $d$.
+    The weights are updated internally defined by
+    (\ref{eqn:equalization:lms_update}) for the LMS equalizer and
+    (\ref{eqn:equalization:rls_update}) for the RLS equalizer.
+\item[{\tt eqlms\_cccf\_get\_weights(q,*w)}]
+    returns the internal filter coefficients (weights) at the current
+    state of the equalizer.
+\end{description}
+%
 Here is a simple example:
 %
 \input{listings/eqlms_cccf.example.c.tex}
@@ -112,8 +173,8 @@ The results of two simulations are shown in
 figures~\ref{fig:module:equalization:example1} and
 \ref{fig:module:equalization:example2};
 the first demonstrating a 10-tap equalizer applied to the response of a 6-tap
-channel with an SNR of 40dB, while the second demonstrates a 28-tap equalizer
-for a 12-tap channel with an SNR of just 10dB.
+channel with an SNR of 40~dB, while the second demonstrates a 18-tap equalizer
+for a 8-tap channel with an SNR of just 14~dB.
 
 The passband power spectral densities (PSD) of the channel and the equalizer
 outputs are depicted in figures~\ref{fig:module:equalization:example1:psd} and
@@ -169,7 +230,7 @@ The RLS equalizer, however, has a much higher computational complexity.
     } \quad
 }
 % trim = left bottom right top
-\caption{Scenario 1: 10-tap equalizer for a 6-tap channel with 40dB SNR}
+\caption{Scenario 1: 10-tap equalizer for a 6-tap channel with 40~dB SNR}
 \label{fig:module:equalization:example1}
 \end{figure}
 
@@ -199,7 +260,7 @@ The RLS equalizer, however, has a much higher computational complexity.
     } \quad
 }
 % trim = left bottom right top
-\caption{Scenario 2: 28-tap equalizer for a 12-tap channel with 10dB SNR}
+\caption{Scenario 2: 18-tap equalizer for a 8-tap channel with 14~dB SNR}
 \label{fig:module:equalization:example2}
 \end{figure}
 

@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/dotprod_rrrf.example.c
 
 int main() {
     // create input arrays

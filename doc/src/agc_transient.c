@@ -9,7 +9,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include <liquid/liquid.h>
+#include "liquid.h"
 #include "liquid.doc.h"
 
 #define OUTPUT_FILENAME "figures.gen/agc_transient.gnu"

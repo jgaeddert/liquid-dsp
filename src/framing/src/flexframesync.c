@@ -250,7 +250,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     flexframesync_open_bandwidth(fs);
 
     // clear stats object
-    fs->framestats.SNR = 0;
+    fs->framestats.evm = 0;
     fs->framestats.rssi = 0;
     fs->framestats.framesyms = NULL;
     fs->framestats.num_framesyms = 0;
@@ -470,13 +470,13 @@ void flexframesync_execute(flexframesync _fs, float complex *_x, unsigned int _n
             if (_fs->state == FLEXFRAMESYNC_STATE_SEEKPN) {
             //if (false) {
                 modem_demodulate(_fs->mod_preamble, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->mod_preamble, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->mod_preamble);
             } else if (_fs->state == FLEXFRAMESYNC_STATE_RXHEADER) {
                 modem_demodulate(_fs->mod_header, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->mod_header, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->mod_header);
             } else {
                 modem_demodulate(_fs->mod_payload, nco_rx_out, &demod_sym);
-                get_demodulator_phase_error(_fs->mod_payload, &phase_error);
+                phase_error = modem_get_demodulator_phase_error(_fs->mod_payload);
                 phase_error *= cabsf(nco_rx_out);
             }
 
@@ -671,17 +671,17 @@ void flexframesync_execute_rxheader(flexframesync _fs,
 
     // SINDR estimation
     float evm;
-    get_demodulator_evm(_fs->mod_header, &evm);
+    evm = modem_get_demodulator_evm(_fs->mod_header);
     _fs->evm_hat += evm;
 
     if (_fs->num_symbols_collected==256) {
 
         // estimate signal-to-noise ratio, rssi
-        _fs->framestats.SNR  = -10*log10f(_fs->evm_hat / 256.0f);
+        _fs->framestats.evm  =  10*log10f(_fs->evm_hat / 256.0f);
         _fs->framestats.rssi =  10*log10(agc_crcf_get_signal_level(_fs->agc_rx));
         _fs->evm_hat = 0.0f;
 #if DEBUG_FLEXFRAMESYNC_PRINT
-        printf("SINDR   :   %12.8f dB\n", _fs->framestats.SNR);
+        printf("  evm   :   %12.8f dB\n", _fs->framestats.evm);
 #endif
 
         // reset symbol counter
@@ -963,7 +963,7 @@ void flexframesync_decode_header(flexframesync _fs)
 #if DEBUG_FLEXFRAMESYNC_PRINT
             printf("flexframesync : configuring payload modem : %u-%s\n",
                     1<<mod_depth,
-                    modulation_scheme_str[mod_scheme]);
+                    modulation_scheme_str[mod_scheme][0]);
 #endif
             // set new modem properties
             _fs->ms_payload = mod_scheme;
@@ -976,9 +976,9 @@ void flexframesync_decode_header(flexframesync _fs)
 
 #if DEBUG_FLEXFRAMESYNC_PRINT
         printf("flexframesync : configuring payload packetizer : %s/%s/%s\n",
-                crc_scheme_str[check],
-                fec_scheme_str[fec0],
-                fec_scheme_str[fec1]);
+                crc_scheme_str[check][0],
+                fec_scheme_str[fec0][0],
+                fec_scheme_str[fec1][0]);
 #endif
         // set new packetizer properties
         _fs->check  = check;

@@ -153,7 +153,7 @@ FIRPFBCH() FIRPFBCH(_create_kaiser)(int _type,
     unsigned int h_len = 2*_num_channels*_m + 1;
     float h[h_len];
     float fc = 0.5f / (float)_num_channels; // TODO : check this value
-    fir_kaiser_window(h_len, fc, _As, 0.0f, h);
+    firdes_kaiser_window(h_len, fc, _As, 0.0f, h);
 
     // copy coefficients to type-specfic array
     TC hc[h_len];

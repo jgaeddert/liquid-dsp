@@ -1,4 +1,4 @@
-#include <liquid/liquid.h>
+// file: doc/listings/iirfilt.example.c
 
 int main() {
     // options
