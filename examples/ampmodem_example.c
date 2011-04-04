@@ -25,8 +25,9 @@ void usage()
     printf("  f     : frequency offset [default: 0.02]\n");
     printf("  p     : phase offset [default: pi/4]\n");
     printf("  n     : number of samples [default: 256]\n");
-    printf("  s     : SNR (dB) [default: 20]\n");
+    printf("  S     : SNR (dB) [default: 20]\n");
     printf("  t     : AM type (ssb/dsb) [default: ssb]\n");
+    printf("  s     : suppress the carrier\n");
 }
 
 int main(int argc, char*argv[]) {
@@ -37,10 +38,11 @@ int main(int argc, char*argv[]) {
     float cpo = M_PI / 4.0f;        // carrier phase offset
     unsigned int num_samples = 256; // number of samples
     float SNRdB = 20.0f;            // signal-to-noise ratio [dB]
-    liquid_modem_amtype type = LIQUID_MODEM_AM_SSB;
+    liquid_modem_amtype type = LIQUID_MODEM_AM_USB;
+    int suppressed_carrier = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhf:p:n:s:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhf:p:n:S:t:s")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -49,10 +51,10 @@ int main(int argc, char*argv[]) {
         case 'f':   cfo = atof(optarg); break;
         case 'p':   cpo = atof(optarg); break;
         case 'n':   num_samples = atoi(optarg); break;
-        case 's':   SNRdB = atof(optarg);       break;
+        case 'S':   SNRdB = atof(optarg);       break;
         case 't':
             if (strcmp(optarg,"ssb")==0) {
-                type = LIQUID_MODEM_AM_SSB;
+                type = LIQUID_MODEM_AM_USB;
             } else if (strcmp(optarg,"dsb")==0) {
                 type = LIQUID_MODEM_AM_DSB;
             } else {
@@ -61,6 +63,7 @@ int main(int argc, char*argv[]) {
                 return 1;
             }
             break;
+        case 's':   suppressed_carrier = 1; break;
         default:
             fprintf(stderr,"error: ampmodem_example, unknown option\n");
             usage();
@@ -69,8 +72,8 @@ int main(int argc, char*argv[]) {
     }
 
     // create mod/demod objects
-    ampmodem mod   = ampmodem_create(mod_index,type);
-    ampmodem demod = ampmodem_create(mod_index,type);
+    ampmodem mod   = ampmodem_create(mod_index, type, suppressed_carrier);
+    ampmodem demod = ampmodem_create(mod_index, type, suppressed_carrier);
     ampmodem_print(mod);
 
     unsigned int i;

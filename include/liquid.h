@@ -2571,13 +2571,17 @@ void freqmodem_demodulate(freqmodem _fm,
                           liquid_float_complex _y,
                           float *_x);
 
+// amplitude modulation types
 typedef enum {
-    LIQUID_MODEM_AM_DSB=0,  // FIXME : AM/DSB is actually suppressed carrier
-    LIQUID_MODEM_AM_SSB     // FIXME : AM/SSB is actually un-suppressed carrier
+    LIQUID_MODEM_AM_DSB=0,  // double side-band
+    LIQUID_MODEM_AM_USB,    // single side-band (upper)
+    LIQUID_MODEM_AM_LSB     // single side-band (lower)
 } liquid_modem_amtype;
+
 typedef struct ampmodem_s * ampmodem;
 ampmodem ampmodem_create(float _m,
-                         liquid_modem_amtype _type);
+                         liquid_modem_amtype _type,
+                         int _suppressed_carrier);
 void ampmodem_destroy(ampmodem _fm);
 void ampmodem_print(ampmodem _fm);
 void ampmodem_reset(ampmodem _fm);
