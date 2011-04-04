@@ -43,7 +43,7 @@ struct ampmodem_s {
     float ssb_q_hat;
 
     // single side-band
-    firhilb hilbert;    // hilbert transform
+    firhilbf hilbert;    // hilbert transform
 
     // double side-band
 };
@@ -68,7 +68,7 @@ ampmodem ampmodem_create(float _m,
     q->ssb_q_hat = 0.0f;
 
     // single side-band
-    q->hilbert = firhilb_create(5, 60.0f);
+    q->hilbert = firhilbf_create(5, 60.0f);
 
     // double side-band
 
@@ -81,7 +81,7 @@ void ampmodem_destroy(ampmodem _q)
 {
     nco_crcf_destroy(_q->oscillator);
 
-    firhilb_destroy(_q->hilbert);
+    firhilbf_destroy(_q->hilbert);
 
     free(_q);
 }

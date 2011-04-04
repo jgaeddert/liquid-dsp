@@ -26,8 +26,8 @@ int main() {
     unsigned int num_samples=128;   // number of samples
 
     // create Hilbert transform object
-    firhilb q = firhilb_create(m,As);
-    firhilb_print(q);
+    firhilbf q = firhilbf_create(m,As);
+    firhilbf_print(q);
 
     // data arrays
     float x[2*num_samples];         // real input
@@ -40,13 +40,13 @@ int main() {
 
     for (i=0; i<num_samples; i++) {
         // execute transform (decimator) to compute complex signal
-        firhilb_decim_execute(q, &x[2*i], &y[i]);
+        firhilbf_decim_execute(q, &x[2*i], &y[i]);
 
         printf("y(%3u) = %12.8f + j*%12.8f;\n", i+1, crealf(y[i]), cimagf(y[i]));
     }
 
     // destroy Hilbert transform object
-    firhilb_destroy(q);
+    firhilbf_destroy(q);
 
     // 
     // export results to file

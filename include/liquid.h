@@ -1186,8 +1186,8 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 //  1:2 complex-to-real interpolator
 //
 
-#define FIRHILB_MANGLE_FLOAT(name)  LIQUID_CONCAT(firhilb, name)
-//#define FIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(dfirhilb, name)
+#define FIRHILB_MANGLE_FLOAT(name)  LIQUID_CONCAT(firhilbf, name)
+//#define FIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(firhilb, name)
 
 // NOTES:
 //   Although firhilb is a placeholder for both decimation and
@@ -1203,7 +1203,7 @@ void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, TC * _y);    \
 void FIRHILB(_interp_execute)(FIRHILB() _f, TC _x, T * _y);
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
-//LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double)
+//LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
 
 //
 // Infinite impulse response filter
