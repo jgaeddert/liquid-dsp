@@ -130,6 +130,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"n=%u;\n",num_samples);
+    fprintf(fid,"delay=%u;\n", type == LIQUID_MODEM_AM_DSB ? 0 : 18);
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%3u) = %12.4e;\n", i+1, x[i]);
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
@@ -138,8 +139,8 @@ int main(int argc, char*argv[]) {
     // plot results
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,x,t,z);\n");
-    fprintf(fid,"axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"plot(t,x,t-delay,z);\n");
+    fprintf(fid,"axis([-delay n -1.2 1.2]);\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('signal');\n");
     fprintf(fid,"legend('original','demodulated',1);\n");
