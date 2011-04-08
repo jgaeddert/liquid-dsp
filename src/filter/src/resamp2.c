@@ -176,10 +176,12 @@ void RESAMP2(_clear)(RESAMP2() _q)
 // execute half-band filter
 //  _q      :   resamp2 object
 //  _x      :   input sample
-//  _y      :   output sample pointer
+//  _y0     :   output sample pointer (low frequency)
+//  _y1     :   output sample pointer (high frequency)
 void RESAMP2(_filter_execute)(RESAMP2() _q,
                               TI _x,
-                              TO *_y)
+                              TO * _y0,
+                              TO * _y1)
 {
     TI * r;     // buffer read pointer
     TO yi;      // delay branch
@@ -210,8 +212,9 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,
     // toggle flag
     _q->toggle = 1 - _q->toggle;
 
-    // set return value, normalizing gain
-    *_y = 0.5f*(yi + yq);
+    // set return values, normalizing gain
+    *_y0 = 0.5f*(yi + yq);  // lower band
+    *_y1 = 0.5f*(yi - yq);  // upper band
 }
 
 // execute half-band decimation

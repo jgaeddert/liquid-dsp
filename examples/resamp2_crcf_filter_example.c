@@ -26,7 +26,8 @@ int main() {
 
     // arrays
     float complex x[N];             // input time series
-    float complex y[N];             // output time series
+    float complex y0[N];            // output time series (lower band)
+    float complex y1[N];            // output time series (upper band)
 
     // generate input sequence
     unsigned int i;
@@ -43,7 +44,7 @@ int main() {
 
     for (i=0; i<N; i++) {
         // run the filter
-        resamp2_crcf_filter_execute(q, x[i], &y[i]);
+        resamp2_crcf_filter_execute(q, x[i], &y0[i], &y1[i]);
 
         //printf("y(%3u) = %8.4f + j*%8.4f;\n", i+1, crealf(y), cimagf(y));
     }
@@ -64,33 +65,41 @@ int main() {
 
     // save results to output file
     for (i=0; i<N; i++) {
-        fprintf(fid,"x(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-        fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
+        fprintf(fid,"x(%3u)  = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]),  cimagf(x[i]));
+        fprintf(fid,"y0(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y0[i]), cimagf(y0[i]));
+        fprintf(fid,"y1(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y1[i]), cimagf(y1[i]));
     }
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"subplot(2,1,1);\n");
-    fprintf(fid,"  plot(t,real(x),'Color',[0.5 0.5 0.5],t-2*m,real(y),'Color',[0.0 0.5 0.25]);\n");
+    fprintf(fid,"  plot(t,    real(x), 'LineWidth',2,'Color',[0.50 0.50 0.50],...\n");
+    fprintf(fid,"       t-2*m,real(y0),'LineWidth',1,'Color',[0.00 0.25 0.50],...\n");
+    fprintf(fid,"       t-2*m,real(y1),'LineWidth',1,'Color',[0.00 0.50 0.25]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('real');\n");
-    fprintf(fid,"  legend('original','filtered',1);");
+    fprintf(fid,"  legend('original','lower band','upper band',1);");
     fprintf(fid,"subplot(2,1,2);\n");
-    fprintf(fid,"  plot(t,imag(x),'Color',[0.5 0.5 0.5],t-2*m,imag(y),'Color',[0.0 0.25 0.5]);\n");
+    fprintf(fid,"  plot(t,    imag(x), 'LineWidth',2,'Color',[0.50 0.50 0.50],...\n");
+    fprintf(fid,"       t-2*m,imag(y0),'LineWidth',1,'Color',[0.00 0.25 0.50],...\n");
+    fprintf(fid,"       t-2*m,imag(y1),'LineWidth',1,'Color',[0.00 0.50 0.25]);\n");
     fprintf(fid,"  xlabel('time');\n");
     fprintf(fid,"  ylabel('imag');\n");
-    fprintf(fid,"  legend('original','filtered',1);");
+    fprintf(fid,"  legend('original','lower band','upper band',1);");
 
     fprintf(fid,"nfft=512;\n");
     fprintf(fid,"g = 1 / sqrt( real(x*x') );\n");
-    fprintf(fid,"X=20*log10(abs(fftshift(fft(x*g,nfft))));\n");
-    fprintf(fid,"Y=20*log10(abs(fftshift(fft(y*g,nfft))));\n");
+    fprintf(fid,"X =20*log10(abs(fftshift(fft(x*g, nfft))));\n");
+    fprintf(fid,"Y0=20*log10(abs(fftshift(fft(y0*g,nfft))));\n");
+    fprintf(fid,"Y1=20*log10(abs(fftshift(fft(y1*g,nfft))));\n");
     fprintf(fid,"f=[0:(nfft-1)]/nfft-0.5;\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(f,X,'Color',[0.5 0.5 0.5],f,Y,'LineWidth',2);\n");
+    fprintf(fid,"plot(f,X, 'LineWidth',2,'Color',[0.50 0.50 0.50],...\n");
+    fprintf(fid,"     f,Y0,'LineWidth',1,'Color',[0.00 0.25 0.50],...\n");
+    fprintf(fid,"     f,Y1,'LineWidth',1,'Color',[0.00 0.50 0.25]);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('normalized frequency');\n");
     fprintf(fid,"ylabel('PSD [dB]');\n");
-    fprintf(fid,"legend('original','filtered',1);");
+    fprintf(fid,"legend('original','lower band','upper band',2);");
     fprintf(fid,"axis([-0.5 0.5 -80 20]);\n");
 
     fclose(fid);

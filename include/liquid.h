@@ -1404,7 +1404,10 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
 void RESAMP2(_destroy)(RESAMP2() _q);                           \
 void RESAMP2(_print)(RESAMP2() _q);                             \
 void RESAMP2(_clear)(RESAMP2() _q);                             \
-void RESAMP2(_filter_execute)(RESAMP2() _q, TI _x, TO * _y);    \
+void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
+                              TI _x,                            \
+                              TO * _y0,                         \
+                              TO * _y1);                        \
 void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
                              TI * _x,                           \
                              TO * _y);                          \
