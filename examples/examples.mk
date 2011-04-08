@@ -89,6 +89,7 @@ local_src	:=			\
 	resamp_crcf_example.c		\
 	resamp2_crcf_example.c		\
 	resamp2_crcf_decim_example.c	\
+	resamp2_crcf_filter_example.c	\
 	resamp2_crcf_interp_example.c	\
 	resamp2_crcf_interp_recreate_example.c	\
 	scramble_example.c		\

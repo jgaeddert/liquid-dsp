@@ -51,6 +51,9 @@ struct RESAMP2(_s) {
     // input buffers
     WINDOW() w0;            // input buffer (even samples)
     WINDOW() w1;            // input buffer (odd samples)
+
+    // halfband filter operation
+    unsigned int toggle;
 };
 
 // create a resamp2 object
@@ -67,59 +70,58 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
         exit(1);
     }
 
-    RESAMP2() f = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
-    f->m  = _m;
-    f->fc = _fc;
-    f->As = _As;
-    if ( f->fc < -0.5f || f->fc > 0.5f ) {
-        fprintf(stderr,"error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", f->fc);
+    RESAMP2() q = (RESAMP2()) malloc(sizeof(struct RESAMP2(_s)));
+    q->m  = _m;
+    q->fc = _fc;
+    q->As = _As;
+    if ( q->fc < -0.5f || q->fc > 0.5f ) {
+        fprintf(stderr,"error: resamp2_xxxt_create(), fc (%12.4e) must be in (-1,1)\n", q->fc);
         exit(1);
     }
 
     // change filter length as necessary
-    f->h_len = 4*(f->m) + 1;
-    f->h = (TC *) malloc((f->h_len)*sizeof(TC));
+    q->h_len = 4*(q->m) + 1;
+    q->h = (TC *) malloc((q->h_len)*sizeof(TC));
 
-    f->h1_len = 2*(f->m);
-    f->h1 = (TC *) malloc((f->h1_len)*sizeof(TC));
+    q->h1_len = 2*(q->m);
+    q->h1 = (TC *) malloc((q->h1_len)*sizeof(TC));
 
     // design filter prototype
     unsigned int i;
     float t, h1, h2;
     TC h3;
-    float beta = kaiser_beta_As(f->As);
-    for (i=0; i<f->h_len; i++) {
-        t = (float)i - (float)(f->h_len-1)/2.0f;
+    float beta = kaiser_beta_As(q->As);
+    for (i=0; i<q->h_len; i++) {
+        t = (float)i - (float)(q->h_len-1)/2.0f;
         h1 = sincf(t/2.0f);
-        h2 = kaiser(i,f->h_len,beta,0);
+        h2 = kaiser(i,q->h_len,beta,0);
 #if TC_COMPLEX == 1
-        h3 = cosf(2.0f*M_PI*t*f->fc) + _Complex_I*sinf(2.0f*M_PI*t*f->fc);
+        h3 = cosf(2.0f*M_PI*t*q->fc) + _Complex_I*sinf(2.0f*M_PI*t*q->fc);
 #else
-        h3 = cosf(2.0f*M_PI*t*f->fc);
+        h3 = cosf(2.0f*M_PI*t*q->fc);
 #endif
-        f->h[i] = h1*h2*h3;
+        q->h[i] = h1*h2*h3;
     }
 
     // resample, alternate sign, [reverse direction]
     unsigned int j=0;
-    for (i=1; i<f->h_len; i+=2)
-        f->h1[j++] = f->h[f->h_len - i - 1];
+    for (i=1; i<q->h_len; i+=2)
+        q->h1[j++] = q->h[q->h_len - i - 1];
 
-    f->w0 = WINDOW(_create)(2*(f->m));
-    WINDOW(_clear)(f->w0);
+    q->w0 = WINDOW(_create)(2*(q->m));
+    q->w1 = WINDOW(_create)(2*(q->m));
 
-    f->w1 = WINDOW(_create)(2*(f->m));
-    WINDOW(_clear)(f->w1);
+    RESAMP2(_clear)(q);
 
-    return f;
+    return q;
 }
 
 // re-create a resamp2 object
-//  _f          :   original resamp2 object
+//  _q          :   original resamp2 object
 //  _m          :   filter semi-length (effective length: 4*_m+1)
 //  _fc         :   center frequency of half-band filter
 //  _As         :   stop-band attenuation [dB], _As > 0
-RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
+RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,
                              unsigned int _m,
                              float _fc,
                              float _As)
@@ -127,53 +129,96 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
     // TODO : only re-design filter if necessary
 
     // destroy resampler and re-create
-    RESAMP2(_destroy)(_f);
+    RESAMP2(_destroy)(_q);
     return RESAMP2(_create)(_m, _fc, _As);
 }
 
 // destroy a resamp2 object, clearing up all allocated memory
-void RESAMP2(_destroy)(RESAMP2() _f)
+void RESAMP2(_destroy)(RESAMP2() _q)
 {
-    WINDOW(_destroy)(_f->w0);
-    WINDOW(_destroy)(_f->w1);
+    WINDOW(_destroy)(_q->w0);
+    WINDOW(_destroy)(_q->w1);
 
-    free(_f->h);
-    free(_f->h1);
-    free(_f);
+    free(_q->h);
+    free(_q->h1);
+    free(_q);
 }
 
 // print a resamp2 object's internals
-void RESAMP2(_print)(RESAMP2() _f)
+void RESAMP2(_print)(RESAMP2() _q)
 {
     printf("fir half-band resampler: [%u taps, fc=%12.8f]\n",
-            _f->h_len,
-            _f->fc);
+            _q->h_len,
+            _q->fc);
     unsigned int i;
-    for (i=0; i<_f->h_len; i++) {
+    for (i=0; i<_q->h_len; i++) {
         printf("  h(%4u) = ", i+1);
-        PRINTVAL_TC(_f->h[i],%12.8f);
+        PRINTVAL_TC(_q->h[i],%12.8f);
         printf(";\n");
     }
     printf("---\n");
-    for (i=0; i<_f->h1_len; i++) {
+    for (i=0; i<_q->h1_len; i++) {
         printf("  h1(%4u) = ", i+1);
-        PRINTVAL_TC(_f->h1[i],%12.8f);
+        PRINTVAL_TC(_q->h1[i],%12.8f);
         printf(";\n");
     }
 }
 
 // clear internal buffer
-void RESAMP2(_clear)(RESAMP2() _f)
+void RESAMP2(_clear)(RESAMP2() _q)
 {
-    WINDOW(_clear)(_f->w0);
-    WINDOW(_clear)(_f->w1);
+    WINDOW(_clear)(_q->w0);
+    WINDOW(_clear)(_q->w1);
+
+    _q->toggle = 0;
+}
+
+// execute half-band filter
+//  _q      :   resamp2 object
+//  _x      :   input sample
+//  _y      :   output sample pointer
+void RESAMP2(_filter_execute)(RESAMP2() _q,
+                              TI _x,
+                              TO *_y)
+{
+    TI * r;     // buffer read pointer
+    TO yi;      // delay branch
+    TO yq;      // filter branch
+
+    if ( _q->toggle == 0 ) {
+        // push sample into upper branch
+        WINDOW(_push)(_q->w0, _x);
+
+        // upper branch (delay)
+        WINDOW(_index)(_q->w0, _q->m-1, &yi);
+
+        // lower branch (filter)
+        WINDOW(_read)(_q->w1, &r);
+        DOTPROD(_run)(_q->h1, r, _q->h1_len, &yq);
+    } else {
+        // push sample into lower branch
+        WINDOW(_push)(_q->w1, _x);
+
+        // upper branch (delay)
+        WINDOW(_index)(_q->w1, _q->m-1, &yi);
+
+        // lower branch (filter)
+        WINDOW(_read)(_q->w0, &r);
+        DOTPROD(_run)(_q->h1, r, _q->h1_len, &yq);
+    }
+
+    // toggle flag
+    _q->toggle = 1 - _q->toggle;
+
+    // set return value, normalizing gain
+    *_y = 0.5f*(yi + yq);
 }
 
 // execute half-band decimation
-//  _f      :   resamp2 object
+//  _q      :   resamp2 object
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output sample pointer
-void RESAMP2(_decim_execute)(RESAMP2() _f,
+void RESAMP2(_decim_execute)(RESAMP2() _q,
                              TI * _x,
                              TO *_y)
 {
@@ -182,35 +227,35 @@ void RESAMP2(_decim_execute)(RESAMP2() _f,
     TO y1;      // filter branch
 
     // compute filter branch
-    WINDOW(_push)(_f->w1, _x[0]);
-    WINDOW(_read)(_f->w1, &r);
-    // TODO yq = DOTPROD(_execute)(_f->dpq, r);
-    DOTPROD(_run4)(_f->h1, r, _f->h1_len, &y1);
+    WINDOW(_push)(_q->w1, _x[0]);
+    WINDOW(_read)(_q->w1, &r);
+    // TODO yq = DOTPROD(_execute)(_q->dpq, r);
+    DOTPROD(_run4)(_q->h1, r, _q->h1_len, &y1);
 
     // compute delay branch
-    WINDOW(_push)(_f->w0, _x[1]);
-    WINDOW(_index)(_f->w0, _f->m-1, &y0);
+    WINDOW(_push)(_q->w0, _x[1]);
+    WINDOW(_index)(_q->w0, _q->m-1, &y0);
 
     // set return value
     *_y = y0 + y1;
 }
 
 // execute half-band interpolation
-//  _f      :   resamp2 object
+//  _q      :   resamp2 object
 //  _x      :   input sample
 //  _y      :   output array [size: 2 x 1]
-void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
+void RESAMP2(_interp_execute)(RESAMP2() _q, TI _x, TO *_y)
 {
     TI * r;  // buffer read pointer
 
     // compute delay branch
-    WINDOW(_push)(_f->w0, _x);
-    WINDOW(_index)(_f->w0, _f->m-1, &_y[0]);
+    WINDOW(_push)(_q->w0, _x);
+    WINDOW(_index)(_q->w0, _q->m-1, &_y[0]);
 
     // compute second branch (filter)
-    WINDOW(_push)(_f->w1, _x);
-    WINDOW(_read)(_f->w1, &r);
-    //yq = DOTPROD(_execute)(_f->dpq, r);
-    DOTPROD(_run4)(_f->h1, r, _f->h1_len, &_y[1]);
+    WINDOW(_push)(_q->w1, _x);
+    WINDOW(_read)(_q->w1, &r);
+    //yq = DOTPROD(_execute)(_q->dpq, r);
+    DOTPROD(_run4)(_q->h1, r, _q->h1_len, &_y[1]);
 }
 
