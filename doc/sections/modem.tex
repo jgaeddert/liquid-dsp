@@ -13,6 +13,11 @@ carrier frequency, phase, amplitude, etc.
 This section gives a brief overview of modulation schemes available in
 \liquid, and provides a brief description of the interfaces.
 
+
+%
+% ANALOG MODEMS
+%
+
 \subsection{Analog modulation schemes}
 \label{module:modem:analog}
 
@@ -61,9 +66,9 @@ Listed below is the full interface to the {\tt freqmodem} object for
 analog frequency modulation/demodulation.
 %
 \begin{description}
-\item[{\tt freqmodem\_create(m,fc,type)}]
+\item[{\tt freqmodem\_create(k,fc,type)}]
     creates and returns an {\tt freqmodem} object with a modulation
-    indec $m$, a carrier frequency $-0.5 < f_c < 0.5$, and a
+    index $k$, a carrier frequency $-0.5 < f_c < 0.5$, and a
     demodulation type defined by {\tt type}.
     The demodulation type can either be
     {\tt LIQUID\_MODEM\_FM\_PLL} which uses a phased-locked loop or
@@ -82,17 +87,33 @@ analog frequency modulation/demodulation.
     demodulates the input sample $y$ storing the output to $x$.
 \end{description}
 
-
+% TODO : clean up this section!
 \subsubsection{{\tt ampmodem} (analog AM)}
 \label{module:modem:analog:ampmodem}
 The {\tt ampmodem} object implements an analog amplitude modulation (AM)
 modulator/demodulator pair.
-Two transmission schemes are available: single side-band (SSB), and
+Two basic transmission schemes are available:
+single side-band (SSB), and
 double side-band (DSB).
+
+For an input message signal $-1 \le m(t) \le 1$, the double side-band
+transmitted signal is
+%
+\begin{equation}
+\label{eqn:modem:ampmodem:dsb_tx}
+    s_{DSB}(t) = 
+    \begin{cases}
+        km(t)e^{j 2 \pi f_c t}   &   \text{suppressed carrier} \\
+        \frac{1}{2}\Bigl(1+m(t)\Bigr)e^{j 2 \pi f_c t}   &   \text{unsuppressed carrier}
+    \end{cases}
+\end{equation}
+%
+where $f_c$ is the carrier frequency, and $k$ is the modulation index.
+
+For DSB, the receiver uses a phase-locked loop for carrier frequency and
+phase tracking.
 For SSB, the receiver can either use a peak detector, or phase-locked loop
 ({\it not yet implemented}).
-For DSB, the receiver uses a Costas loop for carrier frequency and phase
-tracking.
 
 Single side-band:
 \[
@@ -101,13 +122,50 @@ Single side-band:
 where $-1 \le m(t) \le 1$ is the message signal, $f_c$ is the carrier frequency,
 and $k$ is the modulation index.
 
-Double side-band:
-\[
-    s_2(t) = m(t)e^{j 2 \pi f_c t}
-\]
+An example of the {\tt freqmodem} interface is listed below.
+%
+\input{listings/ampmodem.example.c.tex}
+%
+A more detailed example can be found in
+{\tt examples/ampmodem\_example.c}
+located under the main \liquid\ project source directory.
+Listed below is the full interface to the {\tt ampmodem} object for
+analog frequency modulation/demodulation.
+%
+\begin{description}
+\item[{\tt ampmodem\_create(k,type,suppressed\_carrier)}]
+    creates and returns an {\tt ampmodem} object with a modulation
+    index $k$,
+    a modulation scheme defined by {\tt type},
+    and a binary flag specifying whether the carrier should be
+    suppressed.
+    The modulation type can either be
+    {\tt LIQUID\_MODEM\_AM\_DSB} (double side-band),
+    {\tt LIQUID\_MODEM\_FM\_USB} (single upper side-band), or
+    {\tt LIQUID\_MODEM\_FM\_LSB} (single lower side-band).
+    method.
+\item[{\tt ampmodem\_destroy(q)}]
+    destroys an {\tt ampmodem} object, freeing all internally-allocated
+    memory.
+\item[{\tt ampmodem\_reset(q)}]
+    resets the state of the {\tt ampmodem} object.
+\item[{\tt ampmodem\_print(q)}]
+    prints the internal state of the {\tt ampmodem} object.
+\item[{\tt ampmodem\_modulate(q,x,*y)}]
+    modulates the input sample $x$ storing the output to $y$.
+\item[{\tt ampmodem\_demodulate(q,y,*x)}]
+    demodulates the input sample $y$ storing the output to $x$.
+\end{description}
+
 
 %\subsection{Continuous phase digital modulation schemes}
 %fsk, msk, etc. [NOTE: not yet implemented]
+
+
+
+%
+% DIGITAL MODEMS
+%
 
 \subsection{Linear digital modulation schemes}
 \label{module:modem:digital}
