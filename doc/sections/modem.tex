@@ -18,31 +18,70 @@ This section gives a brief overview of modulation schemes available in
 
 \subsubsection{{\tt freqmodem} (analog FM)}
 \label{module:modem:analog:freqmodem}
-The {\tt freqmodem} object implements an analog frequency modulation (FM)
-modulator and demodulator.
-Two options for demodulation are possible...
-[TODO: check this equation]
-\[
+The {\tt freqmodem} object implements an analog frequency modulation
+(FM) modulator and demodulator.
+Given an input message signal $-1 \le m(t) \le 1$, the transmitted
+signal is
+%
+\begin{equation}
+\label{eqn:modem:freqmodem_tx}
     s(t) =  \exp\left\{
                 j 2 \pi k f_c
                 \int_{0}^{t}{
                     m(\tau)d\tau
                 }
             \right\}
-\]
-where $-1 \le m(t) \le 1$ is the message signal, $f_c$ is the carrier
-frequency, and $k$ is the modulation index.
-The modulation index governs the relative bandwidth of the signal
-[TODO: explain in more detail].
-Its digital equivalent is
-\[
-    s(nT_s) =   \exp\left\{
-                    j 2 \pi k f_c
-                    \sum_{k=0}^{n}{
-                        m(kT_s)
-                    }
-                \right\}
-\]
+\end{equation}
+%
+where $f_c$ is the carrier frequency, and $k$ is the modulation index.
+The modulation index governs the relative bandwidth of the signal.
+Two options for demodulation are possible:
+observing the instantaneous frequency on the output of a phase-locked
+loop,
+or computing the instantaneous frequency using the delay-conjugate
+method.
+%Its digital equivalent is
+%\[
+%    s(nT_s) =   \exp\left\{
+%                    j 2 \pi k f_c
+%                    \sum_{k=0}^{n}{
+%                        m(kT_s)
+%                    }
+%                \right\}
+%\]
+%
+An example of the {\tt freqmodem} interface is listed below.
+%
+\input{listings/freqmodem.example.c.tex}
+%
+A more detailed example can be found in
+{\tt examples/freqmodem\_example.c}
+located under the main \liquid\ project source directory.
+Listed below is the full interface to the {\tt freqmodem} object for
+analog frequency modulation/demodulation.
+%
+\begin{description}
+\item[{\tt freqmodem\_create(m,fc,type)}]
+    creates and returns an {\tt freqmodem} object with a modulation
+    indec $m$, a carrier frequency $-0.5 < f_c < 0.5$, and a
+    demodulation type defined by {\tt type}.
+    The demodulation type can either be
+    {\tt LIQUID\_MODEM\_FM\_PLL} which uses a phased-locked loop or
+    {\tt LIQUID\_MODEM\_FM\_DELAY\_CONJ} which uses the delay conjugate
+    method.
+\item[{\tt freqmodem\_destroy(q)}]
+    destroys an {\tt freqmodem} object, freeing all internally-allocated
+    memory.
+\item[{\tt freqmodem\_reset(q)}]
+    resets the state of the {\tt freqmodem} object.
+\item[{\tt freqmodem\_print(q)}]
+    prints the internal state of the {\tt freqmodem} object.
+\item[{\tt freqmodem\_modulate(q,x,*y)}]
+    modulates the input sample $x$ storing the output to $y$.
+\item[{\tt freqmodem\_demodulate(q,y,*x)}]
+    demodulates the input sample $y$ storing the output to $x$.
+\end{description}
+
 
 \subsubsection{{\tt ampmodem} (analog AM)}
 \label{module:modem:analog:ampmodem}

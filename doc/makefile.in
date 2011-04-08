@@ -84,6 +84,7 @@ LISTINGS_C = 					\
 	listings/firfarrow_crcf.example.c	\
 	listings/firfilt.example.c		\
 	listings/firhilb.example.c		\
+	listings/freqmodem.example.c		\
 	listings/ga_search.example.c		\
 	listings/gradient_search.example.c	\
 	listings/gport.direct.example.c		\
