@@ -849,6 +849,13 @@ objects.
     output.
 \item[{\tt firhilbf\_clear(q)}]
     clears the internal transform buffers.
+\item[{\tt firhilbf\_r2c\_execute(q,x,*y)}]
+    executes the real-to-complex transform as a half-band filter,
+    rejecting the negative frequency band.
+    The input $x$ is a real sample;
+    the output $y$ is complex.
+\item[{\tt firhilbf\_c2r\_execute(q,x,*y)}]
+    executes the complex-to-real conversion as $y = \Re\{x\}$.
 \item[{\tt firhilbf\_decim\_execute(q,*x,*y)}]
     executes the transform as a decimator, converting a 2-sample input
     array $\vec{x}$ of real values into a single complex output value
