@@ -26,7 +26,7 @@ void usage()
     printf("  p     : phase offset [default: pi/4]\n");
     printf("  n     : number of samples [default: 256]\n");
     printf("  S     : SNR (dB) [default: 20]\n");
-    printf("  t     : AM type (ssb/dsb) [default: ssb]\n");
+    printf("  t     : AM type (dsb/usb/lsb) [default: dsb]\n");
     printf("  s     : suppress the carrier\n");
 }
 
@@ -53,10 +53,12 @@ int main(int argc, char*argv[]) {
         case 'n':   num_samples = atoi(optarg); break;
         case 'S':   SNRdB = atof(optarg);       break;
         case 't':
-            if (strcmp(optarg,"ssb")==0) {
-                type = LIQUID_MODEM_AM_USB;
-            } else if (strcmp(optarg,"dsb")==0) {
+            if (strcmp(optarg,"dsb")==0) {
                 type = LIQUID_MODEM_AM_DSB;
+            } else if (strcmp(optarg,"usb")==0) {
+                type = LIQUID_MODEM_AM_USB;
+            } else if (strcmp(optarg,"lsb")==0) {
+                type = LIQUID_MODEM_AM_LSB;
             } else {
                 fprintf(stderr,"error: ampmodem_example, invalid AM type: %s\n", optarg);
                 usage();

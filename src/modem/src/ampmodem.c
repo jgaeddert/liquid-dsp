@@ -43,7 +43,7 @@ struct ampmodem_s {
     float ssb_q_hat;
 
     // single side-band
-    firhilbf hilbert;    // hilbert transform
+    firhilbf hilbert;   // hilbert transform
 
     // double side-band
 };
@@ -68,7 +68,7 @@ ampmodem ampmodem_create(float _m,
     q->ssb_q_hat = 0.0f;
 
     // single side-band
-    q->hilbert = firhilbf_create(5, 60.0f);
+    q->hilbert = firhilbf_create(9, 60.0f);
 
     // double side-band
 
@@ -110,20 +110,24 @@ void ampmodem_modulate(ampmodem _q,
                        float _x,
                        float complex *_y)
 {
-#if 0
-    switch (_q->type) {
-    case LIQUID_MODEM_AM_DSB:
-    case LIQUID_MODEM_AM_USB:
-    case LIQUID_MODEM_AM_LSB:
-    default:
-        fprintf(stderr,"error: ampmodem_modulate(), invalid type\n");
-        exit(1);
+    float complex x_hat = 0.0f;
+
+    if (_q->type == LIQUID_MODEM_AM_DSB) {
+        x_hat = _x;
+    } else {
+        // push through Hilbert transform
+        // LIQUID_MODEM_AM_USB:
+        // LIQUID_MODEM_AM_LSB: conjugate Hilbert transform output
+        firhilbf_r2c_execute(_q->hilbert, _x, &x_hat);
+
+        if (_q->type == LIQUID_MODEM_AM_LSB)
+            x_hat = conjf(x_hat);
     }
-#endif
+
     if (_q->suppressed_carrier)
-        *_y = _x;
+        *_y = x_hat;
     else
-        *_y = 0.5f*(_x + 1.0f);
+        *_y = 0.5f*(x_hat + 1.0f);
 }
 
 void ampmodem_demodulate(ampmodem _q,
