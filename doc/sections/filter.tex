@@ -1522,10 +1522,10 @@ reasons.
 \end{figure}
 
 
-\subsection{{\tt resamp2} (halfband resampler)}
+\subsection{{\tt resamp2} (halfband filter/resampler)}
 \label{module:filter:resamp2}
-{\tt resamp2} is a half-band resampler used for efficient interpolation and
-decimation.
+{\tt resamp2} is a half-band resampler used for efficient interpolation
+and decimation.
 The internal filter of the {\tt resamp2} object is a Kaiser-windowed $\sinc$
 (see {\tt firdes\_kaiser\_window}, section~\ref{module:filter:firdes}) with
 $f_c = 1/2$.
@@ -1578,6 +1578,10 @@ functionality applies to {\tt resamp2\_rrrf} and {\tt resamp2\_cccf}.
     output.
 \item[{\tt resamp2\_crcf\_clear(q)}]
     clears the internal resampler buffers.
+\item[{\tt resamp2\_crcf\_filter\_execute(q,x,*y0,*y1)}]
+    executes the {\tt resamp2} object as a half-band filter on an input
+    sample $x$, storing the low-pass filter output in $y_0$ and the
+    high-pass filter output in $y_1$.
 \item[{\tt resamp2\_crcf\_decim\_execute(q,*x,*y)}]
     executes the half-band resampler as a decimator
     for an input array $\vec{x}$ with two samples,
