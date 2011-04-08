@@ -116,115 +116,19 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 
 // re-create a resamp2 object
 //  _f          :   original resamp2 object
-//  _h_len      :   desired filter length (will force 4*m+1)
+//  _m          :   filter semi-length (effective length: 4*_m+1)
 //  _fc         :   center frequency of half-band filter
 //  _As         :   stop-band attenuation [dB], _As > 0
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
-                             unsigned int _h_len,
+                             unsigned int _m,
                              float _fc,
                              float _As)
 {
-#if 0
-    unsigned int i;
-    // change filter length as necessary
-    // h_len = 2*(2*m) + 1
-    unsigned int m0 = _f->m;        // old m value
-    unsigned int m1 = (_h_len-1)/4;
-    if (m1 < 2)
-        m1 = 2;
+    // TODO : only re-design filter if necessary
 
-    // TODO: redesign filter anyway
-    if (m1 == m0 && _f->fc == _fc && _f->As == _As)
-        return _f;
-
-    // compute new lengths
-    _f->m = m1;
-    _f->h_len = 4*(_f->m) + 1;
-    _f->h1_len = 2*(_f->m);
-
-    // set center frequency, stop-band attenuation
-    _f->fc = _fc;
-    _f->As = _As;
-
-    // re-allocate memory
-    _f->h  = (TC*) realloc(_f->h,  (_f->h_len)*sizeof(TC));
-    _f->h1 = (TC*) realloc(_f->h1, (_f->h1_len)*sizeof(TC));
-    printf("old window:\n");
-    WINDOW(_print)(_f->w1);
-    _f->w1 = WINDOW(_recreate)(_f->w1, 2*(_f->m));
-    printf("new window:\n");
-    WINDOW(_print)(_f->w1);
-
-    // inefficient but effective
-    TI* w0_tmp = (TI*) malloc(m0*sizeof(TI));       // create temporary array
-    //memmove(w0_tmp, _f->w0, m0*sizeof(TI));         // copy old values
-    for (i=0; i<m0; i++)
-        w0_tmp[i] = _f->w0[(i+_f->w0_index)%(m0)];  // copy old values (reorder)
-    printf("  old values:\n");
-    for (i=0; i<m0; i++) {
-        printf("  %4u : ", i);
-        PRINTVAL_TC(w0_tmp[i],%12.8f);
-        printf("\n");
-    }
-    _f->w0 = realloc(_f->w0, (_f->m)*sizeof(TI));   // reallocate memory
-    if (_f->w0 == NULL) {
-        fprintf(stderr,"error: could not reallocate delay line memory array\n");
-        exit(1);
-    }
-    if (m1 > m0) {
-        printf("  resamp2_xxxf_recreate(): extending filter\n");
-        unsigned int t = m1-m0;
-        // pad beginning with zeros
-        for (i=0; i<t; i++)
-            _f->w0[i] = 0;
-        // push all old values
-        for (i=0; i<m0; i++)
-            _f->w0[i+t] = w0_tmp[i];
-        _f->w0_index = 0;
-    } else {
-        printf("  resamp2_xxxf_recreate(): reducing filter\n");
-        unsigned int t = m0-m1;
-        // push most recent old values
-        for (i=0; i<m1; i++)
-            _f->w0[i] = w0_tmp[i+t];
-        _f->w0_index = 0;
-    }
-
-    printf("  new values:\n");
-    for (i=0; i<m1; i++) {
-        printf("  %4u : ", i);
-        PRINTVAL_TC(_f->w0[(i+_f->w0_index)%(m1)],%12.8f);
-        printf("\n");
-    }
-    free(w0_tmp);       // free temporary memory block
-
-    // design filter prototype
-    float t, h1, h2;
-    TC h3;
-    float beta = 6.0f;
-    for (i=0; i<_f->h_len; i++) {
-        t = (float)i - (float)(_f->h_len-1)/2.0f;
-        h1 = sincf(t/2.0f);
-        h2 = kaiser(i,_f->h_len,beta,0);
-#if TC_COMPLEX == 1
-        //h3 = cosf(M_PI*t*_f->fc) + _Complex_I*sinf(M_PI*t*_f->fc);
-        h3 = liquid_cexpjf(M_PI*t*_f->fc);
-#else
-        h3 = cosf(M_PI*t*_f->fc);
-#endif
-        _f->h[i] = h1*h2*h3;
-    }
-
-    // resample, alternate sign, reverse direction
-    unsigned int j=0;
-    for (i=1; i<_f->h_len; i+=2)
-        _f->h1[j++] = _f->h[_f->h_len - i - 1];
-
-    return _f;
-#else
+    // destroy resampler and re-create
     RESAMP2(_destroy)(_f);
-    return RESAMP2(_create)(_h_len, _fc, _As);
-#endif
+    return RESAMP2(_create)(_m, _fc, _As);
 }
 
 // destroy a resamp2 object, clearing up all allocated memory

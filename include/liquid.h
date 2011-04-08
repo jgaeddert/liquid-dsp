@@ -1398,7 +1398,7 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
                            float _fc,                           \
                            float _As);                          \
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
-                             unsigned int _h_len,               \
+                             unsigned int _m,                   \
                              float _fc,                         \
                              float _As);                        \
 void RESAMP2(_destroy)(RESAMP2() _q);                           \
