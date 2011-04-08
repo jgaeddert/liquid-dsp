@@ -37,26 +37,20 @@
 //  DOTPROD()       dotprod macro
 //  PRINTVAL()      print macro
 
-#define RESAMP2_USE_FIRFILT 0
-
 struct RESAMP2(_s) {
-    TC * h;             // filter prototype
-    unsigned int m;     // primitive filter length
-    unsigned int h_len; // actual filter length: h_len = 4*m+1
-    float fc;           // center frequency [-1.0 <= fc <= 1.0]
-    float As;           // stop-band attenuation [dB]
+    TC * h;                 // filter prototype
+    unsigned int m;         // primitive filter length
+    unsigned int h_len;     // actual filter length: h_len = 4*m+1
+    float fc;               // center frequency [-1.0 <= fc <= 1.0]
+    float As;               // stop-band attenuation [dB]
 
-    // lower branch (filter)
-    TC * h1;
-    WINDOW() w1;
-    unsigned int h1_len;
-#if RESAMP2_USE_FIRFILT
-    FIRFILT() f1;
-#endif
+    // filter component
+    TC * h1;                // filter branch coefficients
+    unsigned int h1_len;    // filter length (2*m)
 
-    // upper branch (delay line)
-    TI * w0;
-    unsigned int w0_index;
+    // input buffers
+    WINDOW() w0;            // input buffer (even samples)
+    WINDOW() w1;            // input buffer (odd samples)
 };
 
 // create a resamp2 object
@@ -108,22 +102,14 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,
 
     // resample, alternate sign, [reverse direction]
     unsigned int j=0;
-#if RESAMP2_USE_FIRFILT
-    for (i=1; i<f->h_len; i+=2)
-        f->h1[j++] = f->h[i];
-    f->f1 = FIRFILT(_create)(f->h1, f->h1_len);
-#else
     for (i=1; i<f->h_len; i+=2)
         f->h1[j++] = f->h[f->h_len - i - 1];
-#endif
+
+    f->w0 = WINDOW(_create)(2*(f->m));
+    WINDOW(_clear)(f->w0);
 
     f->w1 = WINDOW(_create)(2*(f->m));
     WINDOW(_clear)(f->w1);
-
-    f->w0 = (TI*)malloc((f->m)*sizeof(TI));
-    for (i=0; i<f->m; i++)
-        f->w0[i] = 0;
-    f->w0_index = 0;
 
     return f;
 }
@@ -138,6 +124,7 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
                              float _fc,
                              float _As)
 {
+#if 0
     unsigned int i;
     // change filter length as necessary
     // h_len = 2*(2*m) + 1
@@ -234,18 +221,20 @@ RESAMP2() RESAMP2(_recreate)(RESAMP2() _f,
         _f->h1[j++] = _f->h[_f->h_len - i - 1];
 
     return _f;
+#else
+    RESAMP2(_destroy)(_f);
+    return RESAMP2(_create)(_h_len, _fc, _As);
+#endif
 }
 
 // destroy a resamp2 object, clearing up all allocated memory
 void RESAMP2(_destroy)(RESAMP2() _f)
 {
+    WINDOW(_destroy)(_f->w0);
     WINDOW(_destroy)(_f->w1);
-    free(_f->w0);
+
     free(_f->h);
     free(_f->h1);
-#if RESAMP2_USE_FIRFILT
-    FIRFILT(_destroy)(_f->f1);
-#endif
     free(_f);
 }
 
@@ -272,11 +261,8 @@ void RESAMP2(_print)(RESAMP2() _f)
 // clear internal buffer
 void RESAMP2(_clear)(RESAMP2() _f)
 {
+    WINDOW(_clear)(_f->w0);
     WINDOW(_clear)(_f->w1);
-    unsigned int i;
-    for (i=0; i<_f->m; i++)
-        _f->w0[i] = 0;
-    _f->w0_index = 0;
 }
 
 // execute half-band decimation
@@ -287,24 +273,19 @@ void RESAMP2(_decim_execute)(RESAMP2() _f,
                              TI * _x,
                              TO *_y)
 {
-    TO y0, y1;
+    TI * r;     // buffer read pointer
+    TO y0;      // delay branch
+    TO y1;      // filter branch
 
     // compute filter branch
-#if RESAMP2_USE_FIRFILT
-    FIRFILT(_push)(_f->f1, _x[0]);
-    FIRFILT(_execute)(_f->f1, &y1);
-#else
-    TI * r;
     WINDOW(_push)(_f->w1, _x[0]);
     WINDOW(_read)(_f->w1, &r);
     // TODO yq = DOTPROD(_execute)(_f->dpq, r);
     DOTPROD(_run4)(_f->h1, r, _f->h1_len, &y1);
-#endif
 
     // compute delay branch
-    y0 = _f->w0[_f->w0_index];
-    _f->w0[_f->w0_index] = _x[1];
-    _f->w0_index = (_f->w0_index+1) % (_f->m);
+    WINDOW(_push)(_f->w0, _x[1]);
+    WINDOW(_index)(_f->w0, _f->m-1, &y0);
 
     // set return value
     *_y = y0 + y1;
@@ -316,21 +297,16 @@ void RESAMP2(_decim_execute)(RESAMP2() _f,
 //  _y      :   output array [size: 2 x 1]
 void RESAMP2(_interp_execute)(RESAMP2() _f, TI _x, TO *_y)
 {
-    // compute first branch (delay)
-    _y[0] = _f->w0[_f->w0_index];
-    _f->w0[_f->w0_index] = _x;
-    _f->w0_index = (_f->w0_index+1) % (_f->m);
+    TI * r;  // buffer read pointer
+
+    // compute delay branch
+    WINDOW(_push)(_f->w0, _x);
+    WINDOW(_index)(_f->w0, _f->m-1, &_y[0]);
 
     // compute second branch (filter)
-#if RESAMP2_USE_FIRFILT
-    FIRFILT(_push)(_f->f1, _x);
-    FIRFILT(_execute)(_f->f1, &_y[1]);
-#else
-    TI * r;  // read pointer
     WINDOW(_push)(_f->w1, _x);
     WINDOW(_read)(_f->w1, &r);
     //yq = DOTPROD(_execute)(_f->dpq, r);
     DOTPROD(_run4)(_f->h1, r, _f->h1_len, &_y[1]);
-#endif
 }
 
