@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2009, 2010 Virginia Polytechnic Institute &
+ * Copyright (c) 2007, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2009, 2010, 2011 Virginia Polytechnic Institute &
  *                                State University
  *
  * This file is part of liquid.
@@ -46,18 +46,13 @@ struct FIRHILB(_s) {
     unsigned int m;         // primitive filter length (filter semi-
                             // length), h_len = 4*m+1
 
-    // quadrature filter components
+    // quadrature filter component
     T * hq;                 // quadrature filter coefficients
-    unsigned int hq_len;    // quadrature filter length
-    WINDOW() wq;            // quadrature filter window
+    unsigned int hq_len;    // quadrature filter length (2*m)
 
-    // in-phase 'filter' (delay line)
-#if 0
-    T * wi;                 // window (buffer)
-#else
-    WINDOW() wi;            // window (buffer)
-#endif
-    unsigned int wi_index;  // index
+    // input buffers
+    WINDOW() w0;            // input buffer (even samples)
+    WINDOW() w1;            // input buffer (odd samples)
 
     // regular r2c|c2r operation
     unsigned int toggle;
@@ -103,18 +98,11 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
     for (i=1; i<q->h_len; i+=2)
         q->hq[j++] = q->h[q->h_len - i - 1];
 
-    q->wq = WINDOW(_create)(2*(q->m));
-    WINDOW(_clear)(q->wq);
+    q->w1 = WINDOW(_create)(2*(q->m));
+    WINDOW(_clear)(q->w1);
 
-#if 0
-    q->wi = (float*)malloc((q->m)*sizeof(float));
-    for (i=0; i<q->m; i++)
-        q->wi[i] = 0;
-    q->wi_index = 0;
-#else
-    q->wi = WINDOW(_create)(2*(q->m));
-    WINDOW(_clear)(q->wi);
-#endif
+    q->w0 = WINDOW(_create)(2*(q->m));
+    WINDOW(_clear)(q->w0);
 
     return q;
 }
@@ -122,12 +110,10 @@ FIRHILB() FIRHILB(_create)(unsigned int _m,
 // destroy firhilb object
 void FIRHILB(_destroy)(FIRHILB() _q)
 {
-    WINDOW(_destroy)(_q->wq);
-#if 0
-    free(_q->wi);
-#else
-    WINDOW(_destroy)(_q->wi);
-#endif
+    // destroy window buffers
+    WINDOW(_destroy)(_q->w0);
+    WINDOW(_destroy)(_q->w1);
+
     free(_q->h);
     free(_q->hc);
     free(_q->hq);
@@ -140,7 +126,6 @@ void FIRHILB(_print)(FIRHILB() _q)
     printf("fir hilbert transform: [%u]\n", _q->h_len);
     unsigned int i;
     for (i=0; i<_q->h_len; i++) {
-        //printf("  h(%4u) = %8.4f;\n", i+1, _q->h[i]);
         printf("  hc(%4u) = %8.4f + j*%8.4f;\n", i+1, crealf(_q->hc[i]), cimagf(_q->hc[i]));
     }
     printf("---\n");
@@ -156,17 +141,11 @@ void FIRHILB(_print)(FIRHILB() _q)
 // clear firhilb object buffers
 void FIRHILB(_clear)(FIRHILB() _q)
 {
-    WINDOW(_clear)(_q->wq);
-#if 0
-    unsigned int i;
-    for (i=0; i<_q->m; i++)
-        _q->wi[i] = 0;
-    _q->wi_index = 0;
-#else
-    WINDOW(_clear)(_q->wi);
-#endif
+    // clear window buffers
+    WINDOW(_clear)(_q->w0);
+    WINDOW(_clear)(_q->w1);
 
-    //
+    // reset toggle flag
     _q->toggle = 0;
 }
 
@@ -178,32 +157,33 @@ void FIRHILB(_r2c_execute)(FIRHILB() _q,
                            T _x,
                            T complex * _y)
 {
-    //
-    T * r;
-    T yi, yq;
+    T * r;  // buffer read pointer
+    T yi;   // in-phase component
+    T yq;   // quadrature component
 
     if ( _q->toggle == 0 ) {
         // push sample into upper branch
-        WINDOW(_push)(_q->wi, _x);
+        WINDOW(_push)(_q->w0, _x);
 
         // upper branch (delay)
-        WINDOW(_index)(_q->wi, _q->m-1, &yi);
+        WINDOW(_index)(_q->w0, _q->m-1, &yi);
 
         // lower branch (filter)
-        WINDOW(_read)(_q->wq, &r);
+        WINDOW(_read)(_q->w1, &r);
         DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
     } else {
         // push sample into lower branch
-        WINDOW(_push)(_q->wq, _x);
+        WINDOW(_push)(_q->w1, _x);
 
         // upper branch (delay)
-        WINDOW(_index)(_q->wq, _q->m-1, &yi);
+        WINDOW(_index)(_q->w1, _q->m-1, &yi);
 
         // lower branch (filter)
-        WINDOW(_read)(_q->wi, &r);
+        WINDOW(_read)(_q->w0, &r);
         DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
     }
 
+    // toggle flag
     _q->toggle = 1 - _q->toggle;
 
     // set return value
@@ -229,24 +209,18 @@ void FIRHILB(_decim_execute)(FIRHILB() _q,
                              T * _x,
                              T complex *_y)
 {
-    T * r;
-    T yi, yq;
+    T * r;  // buffer read pointer
+    T yi;   // in-phase component
+    T yq;   // quadrature component
 
     // compute quadrature component (filter branch)
-    WINDOW(_push)(_q->wq, _x[0]);
-    WINDOW(_read)(_q->wq, &r);
+    WINDOW(_push)(_q->w1, _x[0]);
+    WINDOW(_read)(_q->w1, &r);
     // TODO yq = DOTPROD(_execute)(_q->dpq, r);
     DOTPROD(_run)(_q->hq, r, _q->hq_len, &yq);
 
-#if 0
-    // compute in-phase component (delay branch)
-    yi = _q->wi[_q->wi_index];
-    _q->wi[_q->wi_index] = _x[1];
-    _q->wi_index = (_q->wi_index+1) % (_q->m);
-#else
-    WINDOW(_push)(_q->wi, _x[1]);
-    WINDOW(_index)(_q->wi, _q->m-1, &yi);
-#endif
+    WINDOW(_push)(_q->w0, _x[1]);
+    WINDOW(_index)(_q->w0, _q->m-1, &yi);
 
     // set return value
     *_y = yi + _Complex_I * yq;
@@ -260,25 +234,17 @@ void FIRHILB(_interp_execute)(FIRHILB() _q,
                               T complex _x,
                               T *_y)
 {
-    T * r;  // read pointer
+    T * r;  // buffer read pointer
 
     // TODO macro for crealf, cimagf?
     
-#if 0
-    // compute first branch (delay)
-    _y[0] = _q->wi[_q->wi_index];
-    _q->wi[_q->wi_index] = cimagf(_x);
-    _q->wi_index = (_q->wi_index+1) % (_q->m);
-#else
-    WINDOW(_push)(_q->wi, cimagf(_x));
-    WINDOW(_index)(_q->wi, _q->m-1, &_y[0]);
-#endif
+    WINDOW(_push)(_q->w0, cimagf(_x));
+    WINDOW(_index)(_q->w0, _q->m-1, &_y[0]);
 
     // compute second branch (filter)
-    WINDOW(_push)(_q->wq, crealf(_x));
-    WINDOW(_read)(_q->wq, &r);
+    WINDOW(_push)(_q->w1, crealf(_x));
+    WINDOW(_read)(_q->w1, &r);
     //yq = DOTPROD(_execute)(_q->dpq, r);
     DOTPROD(_run)(_q->hq, r, _q->hq_len, &_y[1]);
-
 }
 
