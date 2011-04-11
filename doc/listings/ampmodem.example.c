@@ -9,17 +9,17 @@ int main() {
     ampmodem mod   = ampmodem_create(mod_index, type, suppressed_carrier);
     ampmodem demod = ampmodem_create(mod_index, type, suppressed_carrier);
 
-    float x;                // input
-    float complex y;        // modulated
-    float z;                // output
+    float s;                // input message
+    float complex x;        // modulated
+    float y;                // output/demodulated message
 
     // repeat as necessary
     {
         // modulate signal
-        ampmodem_modulate(mod, x, &y);
+        ampmodem_modulate(mod, s, &x);
 
         // demodulate signal
-        ampmodem_demodulate(demod, y, &z);
+        ampmodem_demodulate(demod, x, &y);
     }
 
     // clean up objects

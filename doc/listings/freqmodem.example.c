@@ -9,17 +9,17 @@ int main() {
     freqmodem mod   = freqmodem_create(mod_index,fc,type);
     freqmodem demod = freqmodem_create(mod_index,fc,type);
 
-    float x;                // input
-    float complex y;        // modulated
-    float z;                // output
+    float s;                // input message
+    float complex x;        // modulated
+    float y;                // output/demodulated message
 
     // repeat as necessary
     {
         // modulate signal
-        freqmodem_modulate(mod, x, &y);
+        freqmodem_modulate(mod, s, &x);
 
         // demodulate signal
-        freqmodem_demodulate(demod, y, &z);
+        freqmodem_demodulate(demod, x, &y);
     }
 
     // clean up objects

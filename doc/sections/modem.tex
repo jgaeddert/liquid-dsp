@@ -7,7 +7,8 @@
 \label{module:modem}
 The modem module implements a set of (mod)ulation/(dem)odulation schemes
 for encoding information into signals.
-%For the analog modems, samples are modulated according to...
+For the analog modems, samples are encoded according to frequency or
+analog modulation.
 For the digital modems, data bits are encoded into symbols representing
 carrier frequency, phase, amplitude, etc.
 This section gives a brief overview of modulation schemes available in
@@ -20,6 +21,11 @@ This section gives a brief overview of modulation schemes available in
 
 \subsection{Analog modulation schemes}
 \label{module:modem:analog}
+This section describes the two basic analog modulation schemes available
+in \liquid:
+frequency modulation and amplitude modulation
+implemented with the respective {\tt freqmodem} and {\tt ampmodem}
+objects.
 
 \subsubsection{{\tt freqmodem} (analog FM)}
 \label{module:modem:analog:freqmodem}
@@ -33,7 +39,7 @@ signal is
     s(t) =  \exp\left\{
                 j 2 \pi k f_c
                 \int_{0}^{t}{
-                    m(\tau)d\tau
+                    s(\tau)d\tau
                 }
             \right\}
 \end{equation}
