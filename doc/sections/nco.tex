@@ -8,7 +8,7 @@
 This section describes the numerically-controlled oscillator (NCO) for carrier
 synchronization.
 
-\subsection{{nco}}
+\subsection{{\tt nco} object}
 \label{module:nco:nco}
 The {\tt nco} object implements an oscillator with two options for internal
 phase precision: {\tt LIQUID\_NCO} and {\tt LIQUID\_VCO}.
@@ -27,27 +27,67 @@ The phase $\theta$ of the {\tt nco} object is updated using the
 frequency.
 Both the phase and frequency of the {\tt nco} object can be manipulated using
 the appropriate {\tt nco\_crcf\_set} and {\tt nco\_crcf\_adjust} methods.
+%
+Here is a minimal example demonstrating the interface to the {\tt nco}
+object:
+%
+\input{listings/nco_pll.example.c.tex}
+%
 
 \subsubsection{Interface}
+\label{module:nco:nco:interface}
+%
+Listed below is the full interface to the {\tt nco} family of objects.
+%
 \begin{description}
-\item[{\tt nco\_crcf\_create()}] creates an {\tt nco} object
-\item[{\tt nco\_crcf\_destroy()}] destroys an {\tt nco} object
-\item[{\tt nco\_crcf\_reset()}] clears in internal state of an {\tt nco} object
-\item[{\tt nco\_crcf\_set\_frequency()}] sets the frequency, $\Delta\theta$
-\item[{\tt nco\_crcf\_adjust\_frequency()}] increments the frequency
-\item[{\tt nco\_crcf\_set\_phase()}] sets the internal {\tt nco} phase, $\theta$
-\item[{\tt nco\_crcf\_adjust\_phase()}] increments the internal {\tt nco} phase
-\item[{\tt nco\_crcf\_step()}] increments the internal {\tt nco} phase by its
+\item[{\tt nco\_crcf\_create(type)}]
+    creates an {\tt nco} object of type
+    {\tt LIQUID\_NCO} or 
+    {\tt LIQUID\_VCO}.
+\item[{\tt nco\_crcf\_destroy(q)}]
+    destroys an {\tt nco} object, freeing all internally-allocated
+    memory.
+\item[{\tt nco\_crcf\_print(q)}]
+    prints the internal state of the {\tt nco} object to the standard
+    output.
+\item[{\tt nco\_crcf\_reset(q)}]
+    clears in internal state of an {\tt nco} object.
+\item[{\tt nco\_crcf\_set\_frequency(q,f)}]
+    sets the frequency $f$ (equal to the phase step size
+    $\Delta\theta$).
+\item[{\tt nco\_crcf\_adjust\_frequency(q,df)}]
+    increments the frequency by $\Delta f$.
+\item[{\tt nco\_crcf\_set\_phase(q,theta)}]
+    sets the internal {\tt nco} phase to $\theta$.
+\item[{\tt nco\_crcf\_adjust\_phase(q,dtheta)}]
+    increments the internal {\tt nco} phase by $\Delta\theta$.
+\item[{\tt nco\_crcf\_step(q)}]
+    increments the internal {\tt nco} phase by its
     internal frequency, $\theta \leftarrow \theta + \Delta\theta$
-\item[{\tt nco\_crcf\_get\_phase()}] returns the internal phase
-\item[{\tt nco\_crcf\_get\_frequency()}] returns the internal frequency (phase step
-    size)
-\item[{\tt nco\_crcf\_sin()}] returns $\sin(\theta)$
-\item[{\tt nco\_crcf\_cos()}] returns $\cos(\theta)$
-\item[{\tt nco\_crcf\_sincos()}] returns $\sin(\theta)$, $\cos(\theta)$
-\item[{\tt nco\_crcf\_cexpf()}] returns $e^{j\theta}$
-\item[{\tt nco\_crcf\_mix\_up()}] rotates an input vector by $e^{j\theta}$
-\item[{\tt nco\_crcf\_mix\_down()}] rotates an input vector by $e^{-j\theta}$
+\item[{\tt nco\_crcf\_get\_phase(q)}]
+    returns the internal phase of the {\tt nco} object,
+    $-\pi \leq \theta < \pi$.
+\item[{\tt nco\_crcf\_get\_frequency(q)}]
+    returns the internal frequency (phase step size)
+\item[{\tt nco\_crcf\_sin(q)}] returns $\sin(\theta)$
+\item[{\tt nco\_crcf\_cos(q)}] returns $\cos(\theta)$
+\item[{\tt nco\_crcf\_sincos(q,*sine,*cosine)}]
+    computes $\sin(\theta)$ and $\cos(\theta)$
+\item[{\tt nco\_crcf\_cexpf(q,*y)}] computes $y=e^{j\theta}$
+\item[{\tt nco\_crcf\_mix\_up(q,x,*y)}]
+    rotates an input sample $x$ by $e^{j\theta}$, storing the result in
+    the output sample $y$.
+\item[{\tt nco\_crcf\_mix\_down(q,x,*y)}]
+    rotates an input sample $x$ by $e^{-j\theta}$, storing the result in
+    the output sample $y$.
+\item[{\tt nco\_crcf\_mix\_block\_up(q,*x,*y,n)}]
+    rotates an $n$-element input array $\vec{x}$ by $e^{j\theta k}$
+    for $k \in \{0,1,\ldots,n-1\}$, storing the result in
+    the output vector $\vec{y}$.
+\item[{\tt nco\_crcf\_mix\_block\_down(q,*x,*y,n)}]
+    rotates an $n$-element input array $\vec{x}$ by $e^{-j\theta k}$
+    for $k \in \{0,1,\ldots,n-1\}$, storing the result in
+    the output vector $\vec{y}$.
 \end{description}
 
 \subsection{PLL (phase-locked loop)}
@@ -208,6 +248,7 @@ An example of the PLL can be seen in figure~\ref{fig:module:nco:pll}.
 
 Here is a minimal example demonstrating the interface to the {\tt nco} object
 and the internal phase-locked loop:
+%
 \input{listings/nco_pll.example.c.tex}
 
 See also
