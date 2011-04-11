@@ -153,7 +153,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set xrange [0:%u];\n",n);
     fprintf(fid,"set yrange [-3.2:3.2]\n");
     fprintf(fid,"set size ratio 0.6\n");
-    fprintf(fid,"set xlabel 'time'\n");
+    fprintf(fid,"set xlabel 'Sample Index'\n");
     fprintf(fid,"set ylabel 'phase error [radians]'\n");
     fprintf(fid,"set key top right nobox\n");
     fprintf(fid,"set grid xtics ytics\n");

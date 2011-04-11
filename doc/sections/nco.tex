@@ -105,7 +105,7 @@ The reference signal can be another {\tt nco} object, or a signal whose
 carrier is modulated with data.
 %Frequency modulation (FM), for example, changes its carrier frequency relative
 %to an analog audio signal.
-
+%
 % FIGURE : nco_pll_block diagram
 \begin{figure}
 \centering
@@ -113,7 +113,7 @@ carrier is modulated with data.
 \caption{PLL block diagram}
 \label{fig:module:nco:pll_diagram}
 \end{figure}
-
+%
 The PLL consists of three components: the phase detector, the loop filter, and
 the integrator.
 A block diagram of the PLL can be seen in
@@ -121,12 +121,14 @@ Figure~\ref{fig:module:nco:pll_diagram} in which the phase detector is
 represented by the summing node, the loop filter is $F(s)$, and the integrator
 has a transfer function $G(s) = K/s$.
 For a given loop filter $F(s)$, the closed-loop transfer function becomes
-\[
+%
+\begin{equation}
     H(s) = \frac{ G(s)F(s) }{ 1 + G(s)F(s) }
          = \frac{ KF(s)    }{ s + KF(s)    }
-\]
+\end{equation}
+%
 where the loop gain $K$ absorbs all the gains in the loop.
-
+%
 There are several well-known options for designing the loop filter $F(s)$,
 which is, in general, a first-order low-pass filter.
 In particular we are interested in getting the denominator of $H(s)$ to the
@@ -135,21 +137,31 @@ natural frequency of the filter and $\zeta$ is the damping factor.
 This simplifies analysis of the overall transfer function and allows the
 parameters of $F(s)$ to ensure stability.
 
+
 \subsubsection{Active lag design}
-From \cite{Best:1997}.
-\[
-    F(s) = \frac{1 + \tau_2 s}{1 + \tau_1 s}
-\]
+\label{module:nco:pll:active_lag}
+The active lag PLL \cite{Best:1997} has a loop filter with a transfer
+function
+%$F(s) = \frac{1 + \tau_2 s}{1 + \tau_1 s}$
+$F(s) = (1 + \tau_2 s)/(1 + \tau_1 s)$
+where $\tau_1$ and $\tau_2$ are parameters relating to the damping
+factor and natural frequency.
+%
 This gives a closed-loop transfer function
-\[
+%
+\begin{equation}
+\label{eqn:nco:pll:H_active_lag}
     H(s) = \frac{
                 \frac{K}{\tau_1} (1 + s\tau_2)
            } {
                 s^2 + s\frac{1 + K\tau_2}{\tau_1} + \frac{K}{\tau_1}
            }
-\]
-{\bf TODO : check these calculations}
-\[
+\end{equation}
+%
+Converting the denominator of (\ref{eqn:nco:pll:H_active_lag}) into
+standard form yeilds the following equations for $\tau_1$ and $\tau_2$:
+%
+\begin{equation}
     \omega_n = \sqrt{\frac{K}{\tau_1}}
     \,\,\,\,\,\,
     \zeta = \frac{\omega_n}{2}\left(\tau_2 + \frac{1}{K}\right)
@@ -157,39 +169,63 @@ This gives a closed-loop transfer function
     \tau_1 = \frac{K}{\omega_n^2}
     \,\,\,\,\,\,
     \tau_2 = \frac{2\zeta}{\omega_n} - \frac{1}{K}
-\]
-
-The open-loop transfer function is
-\[
+\end{equation}
+%
+The open-loop transfer function is therefore
+\begin{equation}
     H'(s) = F(s)G(s) = K \frac{1 + \tau_2 s}{s + \tau_1 s^2}
-\]
-Taking the bilinear $z$-transform gives the digital filter:
-\[
+\end{equation}
+%
+Taking the bilinear $z$-transform of $H'(s)$ gives the digital filter:
+%
+\begin{equation}
     H'(z) = H'(s)\Bigl.\Bigr|_{s = \frac{1}{2}\frac{1-z^{-1}}{1+z^{-1}}}
           = 2 K \frac{
                 (1+\tau_2/2) + 2 z^{-1}     + ( 1 - \tau_2/2)z^{-2}
           } {
                 (1+\tau_1/2) -\tau_1 z^{-1} + (-1 + \tau_1/2)z^{-2}
           }
-\]
+\end{equation}
+%
+A simple 2$^{nd}$-order active lag IIR filter can be designed using the
+following method:
+%
+\begin{Verbatim}[fontsize=\small]
+  void iirdes_pll_active_lag(float _w,    // filter bandwidth
+                             float _zeta, // damping factor
+                             float _K,    // loop gain (1,000 suggested)
+                             float * _b,  // output feed-forward coefficients [size: 3 x 1]
+                             float * _a); // output feed-back coefficients [size: 3 x 1]
+\end{Verbatim}
+%
 
 
 
 \subsubsection{Active PI design}
-Active ``proportional plus integration''
-\[
-    F(s) = \frac{1 + \tau_2 s}{\tau_1 s}
-\]
-This gives a closed-loop transfer function
-\[
+\label{module:nco:pll:active_PI}
+Similar to the active lag PLL design is the
+active ``proportional plus integration'' (PI)
+which has a loop filter
+%$F(s) = \frac{1 + \tau_2 s}{\tau_1 s}$
+$F(s) = (1 + \tau_2 s)/(\tau_1 s)$
+where $\tau_1$ and $\tau_2$ are also parameters relating to the damping
+factor and natural frequency,
+but are different from those in the active lag design.
+The above loop fitler yields a closed-loop transfer function
+%
+\begin{equation}
+\label{eqn:nco:pll:H_active_PI}
     H(s) = \frac{
                 \frac{K}{\tau_1} (1 + s\tau_2)
            } {
                 s^2 + s\frac{K\tau_2}{\tau_1} + \frac{K}{\tau_1 + \tau_2}
            }
-\]
-
-\[
+\end{equation}
+%
+Converting the denominator of (\ref{eqn:nco:pll:H_active_PI}) into
+standard form yeilds the following equations for $\tau_1$ and $\tau_2$:
+%
+\begin{equation}
     \omega_n = \sqrt{\frac{K}{\tau_1}}
     \,\,\,\,\,\,
     \zeta = \frac{\omega_n \tau_2}{2}
@@ -197,61 +233,90 @@ This gives a closed-loop transfer function
     \tau_1 = \frac{K}{\omega_n^2}
     \,\,\,\,\,\,
     \tau_2 = \frac{2\zeta}{\omega_n}
-\]
-
-The open-loop transfer function is
-\[
+\end{equation}
+%
+The open-loop transfer function is therefore
+%
+\begin{equation}
     H'(s) = F(s)G(s) = K \frac{1 + \tau_2 s}{\tau_1 s^2}
-\]
-Taking the bilinear $z$-transform gives the digital filter:
-\[
+\end{equation}
+%
+Taking the bilinear $z$-transform of $H'(s)$ gives the digital filter
+%
+\begin{equation}
     H'(z) = H'(s)\Bigl.\Bigr|_{s = \frac{1}{2}\frac{1-z^{-1}}{1+z^{-1}}}
           = 2 K \frac{
                 (1+\tau_2/2) + 2 z^{-1}     + ( 1 - \tau_2/2)z^{-2}
           } {
                 \tau_1/2 -\tau_1 z^{-1} + (\tau_1/2)z^{-2}
           }
-\]
+\end{equation}
+%
+A simple 2$^{nd}$-order active PI IIR filter can be designed using the
+following method:
+%
+\begin{Verbatim}[fontsize=\small]
+  void iirdes_pll_active_PI(float _w,    // filter bandwidth
+                            float _zeta, // damping factor
+                            float _K,    // loop gain (1,000 suggested)
+                            float * _b,  // output feed-forward coefficients [size: 3 x 1]
+                            float * _a); // output feed-back coefficients [size: 3 x 1]
+\end{Verbatim}
+%
 
+
+
+\subsubsection{PLL Interface}
+\label{module:nco:pll:interface}
+The {\tt nco} object has an internal PLL interface which only needs to
+be invoked before the {\tt nco\_crcf\_step()} method
+(see Section~\ref{module:nco:nco:interface}) with the appropriate phase
+error estimate.
+This will permit the {\tt nco} object to automatically track to a
+carrier offset for an incoming signal.
+%
+The {\tt nco} object has the following PLL method extensions to enable a
+simplified phase-locked loop interface.
+%
+\begin{description}
+\item[{\tt nco\_crcf\_pll\_set\_bandwidth(q,w)}]
+    sets the bandwidth of the loop filter of the {\tt nco} object's
+    internal PLL to $\omega$.
+\item[{\tt nco\_crcf\_pll\_step(q,dphi)}]
+    advances the {\tt nco} object's internal phase with a phase error
+    $\Delta\phi$ to the loop filter.
+    This method only changes the frequency of the {\tt nco} object and does
+    not update the phase until {\tt nco\_crcf\_step()} is invoked.
+    This is useful if one wants to only run the PLL periodically and ignore
+    several samples.
+    See the example code below for help.
+\end{description}
+%
+Here is a minimal example demonstrating the interface to the {\tt nco}
+object and the internal phase-locked loop:
+%
+\input{listings/nco_pll.example.c.tex}
+%
+See also
+{\tt examples/nco\_pll\_example.c} and
+{\tt examples/nco\_pll\_modem\_example.c}
+located in the main \liquid\ project directory.
+%
 \begin{figure}
 \centering
 \subfigure[nco output] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/nco_pll_sincos}
 }
 \subfigure[phase error] {
-  \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/nco_pll_error}
+  \includegraphics[trim = 0mm 6mm 0mm 6mm, clip, width=13cm]{figures.gen/nco_pll_error}
 }
 \caption{{\tt nco} phase-locked loop demonstration}
 \label{fig:module:nco:pll}
 \end{figure}
-
-\subsubsection{PLL Interface}
-
-% TODO : explain!
-Internally, the {\tt nco\_crcf\_step()} method acts as the integrator, so the
-implementation of the PLL in \liquid\ is a little skewed...
-
-An example of the PLL can be seen in figure~\ref{fig:module:nco:pll}.
-
-\begin{description}
-\item[{\tt nco\_crcf\_pll\_set\_bandwidth()}]
-    sets the bandwidth of the loop filter of the {\tt pll} internal to the
-    {\tt nco} object.
-\item[{\tt nco\_crcf\_pll\_step()}]
-    advance the {\tt pll} phase with a phase error argument to the loop
-    filter.
-    This method only changes the frequency of the {\tt nco} object and does
-    not update the phase until {\tt nco\_crcf\_step()} is invoked.
-    This is useful if one wants to only run the PLL periodically and ignore
-    several samples.
-\end{description}
-
-Here is a minimal example demonstrating the interface to the {\tt nco} object
-and the internal phase-locked loop:
 %
-\input{listings/nco_pll.example.c.tex}
-
-See also
-{\tt examples/nco\_pll\_example.c},
-{\tt examples/nco\_pll\_modem\_example.c}
+An example of the PLL can be seen in Figure~\ref{fig:module:nco:pll}.
+Notice that during the first 150 samples the NCO's output signal is
+misaligned to the input;
+eventually, however, the PLL acquires the phase of the input sinusoid
+and the phase error of the NCO's output approaches zero.
 
