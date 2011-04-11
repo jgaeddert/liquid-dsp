@@ -25,7 +25,7 @@ This section gives a brief overview of modulation schemes available in
 \label{module:modem:analog:freqmodem}
 The {\tt freqmodem} object implements an analog frequency modulation
 (FM) modulator and demodulator.
-Given an input message signal $-1 \le m(t) \le 1$, the transmitted
+Given an input message signal $-1 \le s(t) \le 1$, the transmitted
 signal is
 %
 \begin{equation}
@@ -95,33 +95,56 @@ modulator/demodulator pair.
 Two basic transmission schemes are available:
 single side-band (SSB), and
 double side-band (DSB).
-
-For an input message signal $-1 \le m(t) \le 1$, the double side-band
+%
+For an input message signal $-1 \le s(t) \le 1$, the double side-band
 transmitted signal is
 %
 \begin{equation}
 \label{eqn:modem:ampmodem:dsb_tx}
-    s_{DSB}(t) = 
+    x_{DSB}(t) = 
     \begin{cases}
-        km(t)e^{j 2 \pi f_c t}   &   \text{suppressed carrier} \\
-        \frac{1}{2}\Bigl(1+m(t)\Bigr)e^{j 2 \pi f_c t}   &   \text{unsuppressed carrier}
+        s(t)e^{j 2 \pi f_c t}   &   \text{suppressed carrier} \\
+        \frac{1}{2}\bigl(1+ks(t)\bigr)e^{j 2 \pi f_c t}   &   \text{unsuppressed carrier}
     \end{cases}
 \end{equation}
 %
 where $f_c$ is the carrier frequency, and $k$ is the modulation index.
-
-For DSB, the receiver uses a phase-locked loop for carrier frequency and
-phase tracking.
-For SSB, the receiver can either use a peak detector, or phase-locked loop
-({\it not yet implemented}).
-
-Single side-band:
-\[
-    s_1(t) = \frac{1}{2}\Bigl(1+k m(t)\Bigr)e^{j 2 \pi f_c t}
-\]
-where $-1 \le m(t) \le 1$ is the message signal, $f_c$ is the carrier frequency,
-and $k$ is the modulation index.
-
+%
+For single side-band, only the upper (USB) or lower half (LSB)
+of the spectrum is transmitted.
+The opposing half of the spectrum is rejected using a Hilbert transform
+(see Section~\ref{module:filter:firhilb}).
+Let $\dot{s}(t)$ represent the Hilbert transform of the message signal
+$s(t)$ such that its Fourier transform is non-zero only for positive
+frequency components, viz
+%
+\begin{equation}
+\label{eqn:modem:ampmodem:ssb_hilbert}
+    \dot{S}(\omega) = \F\left\{ \dot{s}(t) \right\} =
+    \begin{cases}
+        S(\omega) = \F\left\{ s(t) \right\} & \omega > 0 \\
+        0                                   & \omega \leq 0
+    \end{cases}
+\end{equation}
+%
+Consequently the transmitted upper side-band signal is
+%
+\begin{equation}
+\label{eqn:modem:ampmodem:ssb_tx}
+    x_{USB}(t) = 
+    \begin{cases}
+        \dot{s}(t)e^{j 2 \pi f_c t}   &   \text{suppressed carrier} \\
+        \frac{1}{2}\bigl(1+k\dot{s}(t)\bigr)e^{j 2 \pi f_c t}   &   \text{unsuppressed carrier}
+    \end{cases}
+\end{equation}
+%
+For lower single side-band, $\dot{s}(t)$ is simply conjugated.
+%
+For suppressed carrier modulation the receiver uses a phase-locked loop for
+carrier frequency and phase tracking.
+When the carrier is not suppressed the receiver demodulates using a
+simple peak detector and IIR bias removal filter.
+%
 An example of the {\tt freqmodem} interface is listed below.
 %
 \input{listings/ampmodem.example.c.tex}
