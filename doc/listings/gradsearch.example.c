@@ -1,0 +1,29 @@
+// file: doc/listings/gradsearch.example.c
+
+int main() {
+    unsigned int num_parameters = 8;    // search dimensionality
+    unsigned int num_iterations = 100;  // number of iterations to run
+    float target_utility = 0.01f;       // target utility
+
+    float optimum_vect[num_parameters];
+
+    // ...
+
+    // create gradsearch object
+    gradsearch gs = gradsearch_create(NULL,
+                                      optimum_vect,
+                                      num_parameters,
+                                      &rosenbrock,
+                                      LIQUID_OPTIM_MINIMIZE);
+
+    // execute batch search
+    gradsearch_execute(gs, num_iterations, target_utility);
+
+    // execute search one iteration at a time
+    unsigned int i;
+    for (i=0; i<num_iterations; i++)
+        gradsearch_step(gs);
+
+    // clean it up
+    gradsearch_destroy(gs);
+}

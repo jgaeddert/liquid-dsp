@@ -25,44 +25,42 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-#define LIQUID_GRADIENT_SEARCH_GAMMA_MIN 0.000001
+#define LIQUID_gradsearch_GAMMA_MIN 0.000001
 
 // default parameters
-#define LIQUID_GRADIENT_SEARCH_DEFAULT_DELTA    (1e-6f)
-#define LIQUID_GRADIENT_SEARCH_DEFAULT_GAMMA    (0.002f)
-#define LIQUID_GRADIENT_SEARCH_DEFAULT_ALPHA    (0.1f)
-#define LIQUID_GRADIENT_SEARCH_DEFAULT_MU       (0.99f)
+#define LIQUID_gradsearch_DEFAULT_DELTA    (1e-6f)
+#define LIQUID_gradsearch_DEFAULT_GAMMA    (0.002f)
+#define LIQUID_gradsearch_DEFAULT_ALPHA    (0.1f)
+#define LIQUID_gradsearch_DEFAULT_MU       (0.99f)
 
-gradient_search gradient_search_create(
-    void * _userdata,
-    float * _v,
-    unsigned int _num_parameters,
-    utility_function _u,
-    int _minmax)
+gradsearch gradsearch_create(void * _userdata,
+                             float * _v,
+                             unsigned int _num_parameters,
+                             utility_function _u,
+                             int _minmax)
 {
-    return gradient_search_create_advanced(_userdata,
-                                           _v,
-                                           _num_parameters,
-                                           LIQUID_GRADIENT_SEARCH_DEFAULT_DELTA,
-                                           LIQUID_GRADIENT_SEARCH_DEFAULT_GAMMA,
-                                           LIQUID_GRADIENT_SEARCH_DEFAULT_ALPHA,
-                                           LIQUID_GRADIENT_SEARCH_DEFAULT_MU,
-                                           _u,
-                                           _minmax);
+    return gradsearch_create_advanced(_userdata,
+                                      _v,
+                                      _num_parameters,
+                                      LIQUID_gradsearch_DEFAULT_DELTA,
+                                      LIQUID_gradsearch_DEFAULT_GAMMA,
+                                      LIQUID_gradsearch_DEFAULT_ALPHA,
+                                      LIQUID_gradsearch_DEFAULT_MU,
+                                      _u,
+                                      _minmax);
 }
 
-gradient_search gradient_search_create_advanced(
-    void * _userdata,
-    float * _v,
-    unsigned int _num_parameters,
-    float _delta,
-    float _gamma,
-    float _alpha,
-    float _mu,
-    utility_function _u,
-    int _minmax)
+gradsearch gradsearch_create_advanced(void * _userdata,
+                                      float * _v,
+                                      unsigned int _num_parameters,
+                                      float _delta,
+                                      float _gamma,
+                                      float _alpha,
+                                      float _mu,
+                                      utility_function _u,
+                                      int _minmax)
 {
-    gradient_search gs = (gradient_search) malloc( sizeof(struct gradient_search_s) );
+    gradsearch gs = (gradsearch) malloc( sizeof(struct gradsearch_s) );
 
     // initialize public values
     gs->delta = _delta;
@@ -87,7 +85,7 @@ gradient_search gradient_search_create_advanced(
     return gs;
 }
 
-void gradient_search_destroy(gradient_search _g)
+void gradsearch_destroy(gradsearch _g)
 {
     free(_g->gradient);
     free(_g->v_prime);
@@ -96,7 +94,7 @@ void gradient_search_destroy(gradient_search _g)
     free(_g);
 }
 
-void gradient_search_print(gradient_search _g)
+void gradsearch_print(gradsearch _g)
 {
     printf("[%.3f] ", _g->utility);
     unsigned int i;
@@ -105,18 +103,18 @@ void gradient_search_print(gradient_search _g)
     printf("\n");
 }
 
-void gradient_search_reset(gradient_search _g)
+void gradsearch_reset(gradsearch _g)
 {
     _g->gamma_hat = _g->gamma;
 }
 
-void gradient_search_step(gradient_search _g)
+void gradsearch_step(gradsearch _g)
 {
     // compute gradient vector (un-normalized)
-    gradient_search_compute_gradient(_g);
+    gradsearch_compute_gradient(_g);
 
     // normalize gradient vector
-    gradient_search_normalize_gradient(_g);
+    gradsearch_normalize_gradient(_g);
 
     // compute vector step : retain [alpha]% of old gradient
     unsigned int i;
@@ -147,7 +145,7 @@ void gradient_search_step(gradient_search _g)
     // decrease gamma if utility did not improve from last iteration
     //if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
     if ( optim_threshold_switch(utility_tmp, _g->utility, _g->minimize) &&
-         _g->gamma_hat > LIQUID_GRADIENT_SEARCH_GAMMA_MIN )
+         _g->gamma_hat > LIQUID_gradsearch_GAMMA_MIN )
     {
         _g->gamma_hat *= _g->mu;
     }
@@ -158,14 +156,14 @@ void gradient_search_step(gradient_search _g)
 
 // batch execution of gradient search : run many steps and stop
 // when criteria are met
-float gradient_search_execute(gradient_search _g,
-                              unsigned int _max_iterations,
-                              float _target_utility)
+float gradsearch_execute(gradsearch _g,
+                         unsigned int _max_iterations,
+                         float _target_utility)
 {
     unsigned int i=0;
     do {
         i++;
-        gradient_search_step(_g);
+        gradsearch_step(_g);
         //_g->utility = _g->get_utility(_g->userdata, _g->v, _g->num_parameters);
 
     } while (
@@ -181,7 +179,7 @@ float gradient_search_execute(gradient_search _g,
 //
 
 // compute the gradient vector (estimate)
-void gradient_search_compute_gradient(gradient_search _g)
+void gradsearch_compute_gradient(gradsearch _g)
 {
     // compute initial utility
     float u, u_prime;
@@ -213,7 +211,7 @@ void gradient_search_compute_gradient(gradient_search _g)
 }
 
 // normalize gradient vector to unity
-void gradient_search_normalize_gradient(gradient_search _g)
+void gradsearch_normalize_gradient(gradsearch _g)
 {
     // normalize gradient
     float sig = 0.0f;

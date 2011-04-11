@@ -1542,7 +1542,7 @@ int optim_threshold_switch(float _u0,
 
 // gradient search algorithm (steepest descent) object
 // \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
-struct gradient_search_s {
+struct gradsearch_s {
     float* v;           // vector to optimize (externally allocated)
     unsigned int num_parameters;
 
@@ -1566,10 +1566,10 @@ struct gradient_search_s {
 };
 
 // compute the gradient vector (estimate)
-void gradient_search_compute_gradient(gradient_search _g);
+void gradsearch_compute_gradient(gradsearch _g);
 
 // normalize the gradient vector
-void gradient_search_normalize_gradient(gradient_search _g);
+void gradsearch_normalize_gradient(gradsearch _g);
 
 
 // quasi-Newton search object

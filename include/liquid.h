@@ -3001,21 +3001,21 @@ typedef float (*utility_function)(void * _userdata,
                                   float * _v,
                                   unsigned int _n);
 
-typedef struct gradient_search_s * gradient_search;
+typedef struct gradsearch_s * gradsearch;
 
-// Create a simple gradient_search object; parameters are specified internally
+// Create a simple gradsearch object; parameters are specified internally
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
-gradient_search gradient_search_create(void * _userdata,
-                                       float * _v,
-                                       unsigned int _num_parameters,
-                                       utility_function _u,
-                                       int _minmax);
+gradsearch gradsearch_create(void * _userdata,
+                             float * _v,
+                             unsigned int _num_parameters,
+                             utility_function _u,
+                             int _minmax);
 
-// Create a gradient_search object, specifying search parameters
+// Create a gradsearch object, specifying search parameters
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
@@ -3025,32 +3025,32 @@ gradient_search gradient_search_create(void * _userdata,
 //   _mu                :   decremental gamma parameter (default: 0.99f)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
-gradient_search gradient_search_create_advanced(void * _userdata,
-                                                float * _v,
-                                                unsigned int _num_parameters,
-                                                float _delta,
-                                                float _gamma,
-                                                float _alpha,
-                                                float _mu,
-                                                utility_function _u,
-                                                int _minmax);
+gradsearch gradsearch_create_advanced(void * _userdata,
+                                      float * _v,
+                                      unsigned int _num_parameters,
+                                      float _delta,
+                                      float _gamma,
+                                      float _alpha,
+                                      float _mu,
+                                      utility_function _u,
+                                      int _minmax);
 
-// Destroy a gradient_search object
-void gradient_search_destroy(gradient_search _g);
+// Destroy a gradsearch object
+void gradsearch_destroy(gradsearch _g);
 
 // Prints current status of search
-void gradient_search_print(gradient_search _g);
+void gradsearch_print(gradsearch _g);
 
 // Resets internal state
-void gradient_search_reset(gradient_search _g);
+void gradsearch_reset(gradsearch _g);
 
 // Iterate once
-void gradient_search_step(gradient_search _g);
+void gradsearch_step(gradsearch _g);
 
 // Execute the search
-float gradient_search_execute(gradient_search _g,
-                              unsigned int _max_iterations,
-                              float _target_utility);
+float gradsearch_execute(gradsearch _g,
+                         unsigned int _max_iterations,
+                         float _target_utility);
 
 
 // quasi-Newton search

@@ -288,9 +288,9 @@ gport_dma_threaded_example.c [EXPERIMENTAL]
 gport_ima_example.c [EXPERIMENTAL]
 gport_ima_threaded_example.c [EXPERIMENTAL]
 gport_mma_threaded_example.c [EXPERIMENTAL]
-gradient_search_example.c
+gradsearch_example.c
 
-gradient_search_datafit_example.c
+gradsearch_datafit_example.c
     Fit 3-parameter curve to sampled data set in the minimum
     mean-squared error sense.
 

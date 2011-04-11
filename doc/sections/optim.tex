@@ -5,9 +5,13 @@
 \newpage
 \section{optim (optimization)}
 \label{module:optim}
-Newton-raphson, gradient, evolutionary algorithms, etc.
+The {\em optim} module in \liquid\ implements several non-linear
+optimization algorithms including
+a gradient descent search,
+a quasi-Newton search,
+and an evolutionary algorithm.
 
-\subsection{Gradient search}
+\subsection{{\tt gradsearch} (gradient search)}
 \label{module:optim:gradient_search}
 This module implements a gradient or ``steepest-descent'' search.
 Given a function $f$ which operates on a vector

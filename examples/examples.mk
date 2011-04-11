@@ -49,8 +49,8 @@ local_src	:=			\
 	ga_search_example.c		\
 	ga_search_knapsack_example.c	\
 	gmskmodem_example.c		\
-	gradient_search_datafit_example.c	\
-	gradient_search_example.c	\
+	gradsearch_datafit_example.c	\
+	gradsearch_example.c		\
 	interleaver_example.c		\
 	interleaver_scatterplot_example.c	\
 	iirdes_example.c		\

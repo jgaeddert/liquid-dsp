@@ -1,5 +1,5 @@
 //
-// gradient_search_example.c
+// gradsearch_example.c
 //
 
 #include <stdio.h>
@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "gradient_search_example.m"
+#define OUTPUT_FILENAME "gradsearch_example.m"
 
 int main() {
     unsigned int num_parameters = 8;    // dimensionality of search (minimum 2)
@@ -27,12 +27,12 @@ int main() {
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
-    // create gradient_search object
-    gradient_search gs = gradient_search_create(
+    // create gradsearch object
+    gradsearch gs = gradsearch_create(
         NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
 
     // execute search
-    //optimum_utility = gradient_search_run(gs, num_iterations, -1e-6f);
+    //optimum_utility = gradsearch_run(gs, num_iterations, -1e-6f);
 
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
@@ -40,15 +40,15 @@ int main() {
         optimum_utility = rosenbrock(NULL,optimum_vect,num_parameters);
         fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
 
-        gradient_search_step(gs);
+        gradsearch_step(gs);
 
         if (((i+1)%100)==0)
-            gradient_search_print(gs);
+            gradsearch_print(gs);
     }
 
     // print results
     printf("\n");
-    gradient_search_print(gs);
+    gradsearch_print(gs);
 
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(u);\n");
@@ -61,7 +61,7 @@ int main() {
 
     // test results, optimum at [1, 1, 1, ... 1];
 
-    gradient_search_destroy(gs);
+    gradsearch_destroy(gs);
 
     return 0;
 }

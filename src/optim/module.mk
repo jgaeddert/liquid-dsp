@@ -29,7 +29,7 @@ module_name     := optim
 local_s_files	:=		\
 	chromosome.c		\
 	ga_search.c		\
-	gradient_search.c	\
+	gradsearch.c		\
 	optim.common.c		\
 	quasinewton_search.c	\
 	rosenbrock.c
