@@ -309,6 +309,32 @@ described:
 \end{description}
 %
 
+\subsubsection{Interface}
+\label{module:optim:ga_search:interface}
+%
+Listed below is a description for the {\tt ga\_search} object in
+\liquid.
+%
+\begin{description}
+\item[{\tt ga\_search\_create(*utility,*userdata,parent,min/max)}]
+    creates a {\tt ga\_search} object, initialized on the specified
+    parent chromosome.
+    The user-defined utility function and userdata structures define the
+    search, as well as the {\tt min/max} flag which can be either
+    {\tt LIQUID\_OPTIM\_MINIMIZE} or
+    {\tt LIQUID\_OPTIM\_MAXIMIZE}.
+    %When run the {\tt ga\_search} object will update the ``optimal''
+    %value in the input vector $\vec{v}$ specified during
+    %{\tt create()}.
+%\item[{\tt ga\_search\_create\_advanced()}]
+\item[{\tt ga\_search\_destroy(q)}]
+    destroys a {\tt ga\_search} object, freeing all internally-allocated
+    memory.
+\item[{\tt ga\_search\_print(q)}]
+    prints the internal state of the {\tt ga\_search} object
+\end{description}
+%
+
 \subsubsection{Example Code}
 \label{module:optim:ga_search:example}
 An example of the {\tt ga\_search} interface is given below:
