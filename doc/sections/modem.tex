@@ -344,21 +344,23 @@ In order to reduce the number of bit errors in a digital modem,
 all symbols are automatically Gray encoded;
 adjacent symbols in a constellation differ by only one bit.
 %
-For example, the binary-coded decimal (bcd) value of 183 is {\tt 10110111}.
+For example, the binary-coded decimal (BCD) value of 183 is {\tt 10110111}.
 It has adjacent symbol 184 ({\tt 10111000}) which differs by 4 bits.
 Assume the transmitter sends 183 without encoding.
-If noise at the receiver were to cause it to demodulate the nearby symbol 184,
-the result would be 4 bit errors.
+If noise at the receiver were to cause it to demodulate the nearby
+symbol 184, the result would be 4 bit errors.
 %
 Gray encoding is computed to the binary-coded decimal symbol
 by applying an exclusive OR bitmask of itself shifted to the right by a
 single bit.
-\begin{verbatim}
-        10110111    bcd_in (183)        10111000    bcd_in (184)
-        .1011011    bcd_in >> 1         .1011100    bcd_in >> 1
-xor :   --------                        --------
-        11101100    gray_out (236)      11100100    gray_out (228)
-\end{verbatim}
+%
+\begin{Verbatim}[fontsize=\small]
+            10110111    bcd_in (183)        10111000    bcd_in (184)
+            .1011011    bcd_in >> 1         .1011100    bcd_in >> 1
+    xor :   --------                        --------
+            11101100    gray_out (236)      11100100    gray_out (228)
+\end{Verbatim}
+%
 Notice that the two output symbols
 236 ({\tt 11101100}) and
 228 ({\tt 11100100}) differ by only one bit.
@@ -368,18 +370,20 @@ result in only a single bit error instead of 4 without Gray coding.
 The decoding process is similar to encoding but slightly more involved.
 Gray decoding is computed on an encoded input symbol
 by adding to it (modulo 2) as many shifted versions of itself as it has bits.
-\begin{verbatim}
-        11101100    gray_in (236)       11100100    gray_in (228)
-        .1110110    gray_in >> 1        .1110010    gray_in >> 1
-        ..111011    gray_in >> 2        ..111001    gray_in >> 2
-        ...11101    gray_in >> 3        ...11100    gray_in >> 3
-        ....1110    gray_in >> 4        ....1110    gray_in >> 4
-        .....111    gray_in >> 5        .....111    gray_in >> 5
-        ......11    gray_in >> 6        ......11    gray_in >> 6
-        .......1    gray_in >> 7        .......1    gray_in >> 7
-xor :   --------                        --------
-        10110111    gray_out (183)      10111000    gray_out (184)
-\end{verbatim}
+%
+\begin{Verbatim}[fontsize=\small]
+            11101100    gray_in (236)       11100100    gray_in (228)
+            .1110110    gray_in >> 1        .1110010    gray_in >> 1
+            ..111011    gray_in >> 2        ..111001    gray_in >> 2
+            ...11101    gray_in >> 3        ...11100    gray_in >> 3
+            ....1110    gray_in >> 4        ....1110    gray_in >> 4
+            .....111    gray_in >> 5        .....111    gray_in >> 5
+            ......11    gray_in >> 6        ......11    gray_in >> 6
+            .......1    gray_in >> 7        .......1    gray_in >> 7
+    xor :   --------                        --------
+            10110111    gray_out (183)      10111000    gray_out (184)
+\end{Verbatim}
+%
 There are a few interesting characteristics of Gray encoding:
 \begin{itemize}
 \item the first bit never changes in encoding/decoding
@@ -394,25 +398,11 @@ In \liquid, Gray encoding and decoding are computed with the
 
 \subsubsection{{\tt MOD\_PSK} (phase-shift keying)}
 \label{module:modem:digital:PSK}
-Demodulation is performed independent of the signal amplitude.
-For an $M$-symbol constellation, the $k^{th}$ symbol is
-\[
-    s_k = e^{j 2 \pi k/M}
-\]
-where $k \in \{0,1,\ldots,M-1\}$.
-Specific schemes include BPSK ($M=2$),
-\[
-    s_k = e^{j \pi k} =
-    \begin{cases}
-        +1 & k=0 \\
-        -1 & k=1
-    \end{cases}
-\]
-and QPSK ($M=4$)
-\[
-    s_k = e^{j\left(\pi k/4 + \frac{\pi}{4}\right)}
-\]
-
+With phase-shift keying the information is stored in the absolute phase
+of the modulated signal.
+This means that each of $M=2^m$ symbols in the constellation are equally
+spaced around the unit circle.
+%
 %-------------------- FIGURE: PSK MODEM --------------------
 \begin{figure}
 \centering
@@ -420,11 +410,23 @@ and QPSK ($M=4$)
   \subfigure[BPSK]
     {
       \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_bpsk}
+      \label{fig:modem:psk:bpsk}
+    } \quad
+  \subfigure[2-PSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_2psk}
       \label{fig:modem:psk:2}
     } \quad
+}
+\mbox{
   \subfigure[QPSK]
     {
       \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_qpsk}
+      \label{fig:modem:psk:qpsk}
+    } \quad
+  \subfigure[4-PSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_4psk}
       \label{fig:modem:psk:4}
     } \quad
 }
@@ -441,17 +443,63 @@ and QPSK ($M=4$)
     } \quad
 }
 % trim = left bottom right top
-\caption{Phase-shift keying (PSK) modem}
+\caption{
+    Phase-shift keying (PSK) modem constellation map.
+    Note that BPSK and QPSK are customized implementations of 2-PSK and
+    4-PSK.
+}
 \label{fig:modem:psk}
 \end{figure}
+%
+Figure~\ref{fig:modem:psk} depicts the constellation of PSK up to $M=16$
+with the bits gray encoded.
+While \liquid\ supports up to $M=256$, values greater than $M=32$
+are typically avoided due to error rates for practical signal-to-noise
+ratios.
+%
+For an $M$-symbol constellation, the $k^{th}$ symbol is
+%
+\begin{equation}
+    s_k = e^{j 2 \pi k/M}
+\end{equation}
+%
+where $k \in \{0,1,\ldots,M-1\}$.
+Specific schemes include BPSK ($M=2$),
+%
+\begin{equation}
+    s_k = e^{j \pi k} =
+    \begin{cases}
+        +1 & k=0 \\
+        -1 & k=1
+    \end{cases}
+\end{equation}
+%
+and QPSK ($M=4$)
+%
+\begin{equation}
+    s_k = e^{j\left(\pi k/4 + \frac{\pi}{4}\right)}
+\end{equation}
+%
+Demodulation is performed independent of the signal amplitude for
+coherent PSK.
+
 
 \subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
 \label{module:modem:digital:DPSK}
-Demodulation is performed independent of the signal amplitude.
-The data are encoded using phase transitions, rather than absolute phase.
+Differential PSK (DPSK) encodes information in the phase change of the
+carrier.
+Like regular PSK
+demodulation is performed independent of the signal amplitude;
+however because the data are encoded using phase transitions rather than
+absolute phase, the receiver does not have to know the absolute phase of
+the transmitter.
 This allows the receiver to demodulate incoherently, but at a quality
 degradation of 3dB.
-\[
+%
+As such the $n^{th}$ transmitted symbol $k(n)$ depends on the previous
+symbol, viz
+%
+\begin{equation}
     s_k(n) = \exp\left\{
                 \frac{
                     j 2 \pi \Bigl(k(n) - k(n-1)\Bigr)
@@ -459,26 +507,28 @@ degradation of 3dB.
                     M
                 }
             \right\}
-\]
+\end{equation}
 
 \subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
 \label{module:modem:digital:APSK}
-Amplitude/phase-shift keying is a specific form of quadrature amplitude
-modulation where constellation points lie on concentric circles.
-\begin{itemize}
-\item constellation points are further apart than those of PSK/DPSK, resulting
-      in an improved error performance,
-\item phase recovery is improved over regular QAM as the constellation points
-      are less sensitive to phase noise
-\end{itemize}
+Amplitude/phase-shift keying (APSK) is a specific form of quadrature
+amplitude modulation where constellation points lie on concentric
+circles.
+The constellation points are further apart than those of PSK/DPSK,
+resulting in an improved error performance.
+Furthermore the phase recovery for APSK is improved over regular QAM as
+the constellation points are less sensitive to phase noise.
+This improvement comes at the cost of an increased computational
+complexity at the receiver.
+%
 Demodulation follows as a two-step process: first, the amplitude of the
 received signal is evaluated to determine in which level (``ring'') the
 transmitted symbol lies.
-Once the level is determined, the appropriate symbol is chosen based on its
-phase, similar to PSK demodulation.
-Demodulation of APSK consumes slightly more clock cycles than the PSK and QAM
-demodulators.
-
+Once the level is determined, the appropriate symbol is chosen based on
+its phase, similar to PSK demodulation.
+Demodulation of APSK consumes slightly more clock cycles than the PSK
+and QAM demodulators.
+%
 %-------------------- FIGURE: APSK MODEM --------------------
 \begin{figure}
 \centering
@@ -522,15 +572,27 @@ demodulators.
 \caption{Amplitude/phase-shift keying (APSK) modem}
 \label{fig:modem:apsk}
 \end{figure}
+%
+Figure~\ref{fig:modem:apsk} depicts the available APSK signal
+constellations for $M$ up to 128.
+The constellation points and bit mappings have been optimized to
+minimize the bit error rate in 10~dB SNR.
+
 
 \subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
 \label{module:modem:digital:ASK}
-
-\[
-    s_k = \alpha ( 2 k - M - 1 )
-\]
+Amplitude-shift keying (ASK) is a simple form of amplitude modulation by
+which the information is encoded entirely in the in-phase component of
+the baseband signal.
+The encoded symbol is simply
+%
+\begin{equation}
+    s_k = \alpha \bigl( 2 k - M - 1 \bigr)
+\end{equation}
+%
 where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
-\[
+%
+\begin{equation}
     \alpha = 
     \begin{cases}
     1               &   M=2     \\
@@ -540,8 +602,8 @@ where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
     1/\sqrt{341}    &   M=32    \\
     \sqrt{3}/M      &   M > 32
     \end{cases}
-\]
-
+\end{equation}
+%
 %-------------------- FIGURE: ASK MODEM --------------------
 \begin{figure}
 \centering
@@ -573,6 +635,12 @@ where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \caption{Pulse-amplitude modulation (ASK) modem}
 \label{fig:modem:ask}
 \end{figure}
+%
+Figure~\ref{fig:modem:ask} depicts the ASK constellation map for $M$ up
+to 16.
+Due to the poor error rate performance of ASK values of $M$ greater than
+16 are not recommended.
+
 
 \subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
 \label{module:modem:digital:QAM}
@@ -588,9 +656,11 @@ the first three bits of the symbol encode the in-phase component of the
 sample, and the last thre bits encode the quadrature component of the sample.
 %
 We may formally describe the encoded sample is
-\[
-    s_k = \alpha \{ ( 2 k_i - M_i - 1 ) + j(2 k_q - M_q - 1) \}
-\]
+%
+\begin{equation}
+    s_k = \alpha \Bigl\{ ( 2 k_i - M_i - 1 ) + j(2 k_q - M_q - 1) \Bigr\}
+\end{equation}
+%
 where
 $k_i$ is the in-phase symbol,
 $k_q$ is the quadrature symbol,
@@ -599,7 +669,8 @@ quadrature symbols,
 $m_i=\lceil \log_2(M) \rceil$ and $m_q=\lfloor \log_2(M) \rfloor$ are the
 number of respective in-phase and quadrature bits, and
 $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
-\[
+%
+\begin{equation}
     \alpha = 
     \begin{cases}
     1/\sqrt{2}      &   M=4     \\
@@ -615,9 +686,8 @@ $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
     1/\sqrt{2730}   &   M=4096  \\
     \sqrt{2/M}      &   \text{else}
     \end{cases}
-\]
-
-
+\end{equation}
+%
 %-------------------- FIGURE: QAM MODEM --------------------
 \begin{figure}
 \centering
@@ -661,13 +731,19 @@ $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \caption{Rectangular quaternary-amplitude modulation (QAM) modem}
 \label{fig:modem:qam}
 \end{figure}
+%
+Figure~\ref{fig:modem:qam} depicts the arbitrary rectangular QAM modem
+constellation maps for $M$ up to 256.
+Notice that all the symbol points are gray encoded to minimize bit
+errors between adjacent symbols.
+
 
 \subsubsection{{\tt MOD\_ARB} (arbitrary modem)}
 \label{module:modem:digital:ARB}
 \liquid\ also allows the user to create their own modulation schemes by
 designating the number of bits per symbol, and the full signal constellation.
 Several pre-loaded arbitrary signal constellations are available.
-
+%
 %-------------------- FIGURE: ARB MODEM --------------------
 \begin{figure}
 \centering
@@ -687,5 +763,11 @@ Several pre-loaded arbitrary signal constellations are available.
 \caption{Arbitrary constellation (ARB) modem}
 \label{fig:modem:arb}
 \end{figure}
-
+%
+Figure~\ref{fig:modem:arb} depicts several available arbitrary
+constellation maps;
+however the user can create any arbitrary constellation map so long as
+no two points overlap
+(see {\tt modem\_arb\_init()} and {\tt modem\_arb\_init\_file()} in
+Section~\ref{module:modem:digital:interface}).
 
