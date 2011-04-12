@@ -11,7 +11,6 @@ To do:
 Sections to finish:
   * tutorial: modem
 
-  * random
   * sequence
   * utility
   * experimental

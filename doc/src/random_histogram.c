@@ -53,7 +53,7 @@ int main(int argc, char*argv[])
     float eta = 0.0f;       // NORMAL: mean
     float sigma = 1.0f;     // NORMAL: standard deviation
     float lambda = 3.0f;    // EXPONENTIAL: decay factor
-    float alphaw = 1.0f;    // WEIBULL: shape
+    float alphaw = 1.5f;    // WEIBULL: shape
     float betaw = 1.0f;     // WEIBULL: spread
     float gammaw = 1.0f;    // WEIBULL: threshold
     float alphag = 4.5f;    // GAMMA: shape
@@ -247,17 +247,18 @@ int main(int argc, char*argv[])
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set xrange [%f:%f];\n", xmin-0.1f*xspan, xmax+0.1f*xspan);
     fprintf(fid,"set yrange [0:%f]\n", 1.2*fmax);
-    fprintf(fid,"set size ratio 0.6\n");
+    fprintf(fid,"set size 0.8\n");
+    fprintf(fid,"set size ratio 0.8\n");
     fprintf(fid,"set xlabel 'x'\n");
-    fprintf(fid,"set ylabel 'f_X(x)'\n");
+    fprintf(fid,"set ylabel 'Probability Density'\n");
     fprintf(fid,"set key top right nobox\n");
     //fprintf(fid,"set ytics -5,1,5\n");
-    fprintf(fid,"set grid xtics ytics\n");
+    //fprintf(fid,"set grid xtics ytics\n");
+    //fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set pointsize 0.6\n");
     fprintf(fid,"set boxwidth %f\n", 0.9f*bin_width);
-    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
-    fprintf(fid,"plot '-' using 1:2 with boxes fs solid linecolor rgb '#cccccc' title 'histogram',\\\n");
-    fprintf(fid,"     '-' using 1:2 with lines linewidth 2 linecolor rgb '%s' title 'true PDF'\n", LIQUID_DOC_COLOR_BLUE);
+    fprintf(fid,"plot '-' using 1:2 with boxes fs solid linecolor rgb '#ccddee' title 'histogram',\\\n");
+    fprintf(fid,"     '-' using 1:2 with lines linewidth 5 linecolor rgb '#004080' title 'true PDF'\n");
 
     // print emperical (histogram)
     for (i=0; i<num_bins; i++)

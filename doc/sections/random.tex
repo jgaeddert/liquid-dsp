@@ -41,6 +41,19 @@ The probability density function is defined as
 The uniform random number generator is the basis for generating most
 other distributions in \liquid.
 
+\begin{minipage}{0.5\textwidth}
+  \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=8cm]{figures.gen/random_histogram_uniform}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+  Uniform random number generator interface:
+  \begin{Verbatim}[fontsize=\small]
+  float randf();
+  float randf_pdf(float _x);
+  float randf_cdf(float _x);
+  \end{Verbatim}
+\end{minipage}
+
+
 \subsection{Normal (Gaussian)}
 \label{module:random:normal}
 The normal (or Gauss) distribution has a probability density function
@@ -60,6 +73,62 @@ $X_1 = \sqrt{-2\ln(U_1)} \sin\left(2 \pi U_2\right)$ and
 $X_2 = \sqrt{-2\ln(U_1)} \cos\left(2 \pi U_2\right)$
 are independent normal random variables with a mean of zero and a unity
 standard deviation ($X_1, X_2 \sim N(0,1)$).
+
+\begin{minipage}{0.5\textwidth}
+  \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=8cm]{figures.gen/random_histogram_normal}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+  Normal (Gauss) random number generator interface:
+  \begin{Verbatim}[fontsize=\small]
+  float randnf();
+  float randnf_pdf(float _x,
+                   float _eta,
+                   float _sigma);
+  float randnf_cdf(float _x,
+                   float _eta,
+                   float _sigma);
+  \end{Verbatim}
+\end{minipage}
+
+
+\subsection{Exponential}
+\label{module:random:exponential}
+The exponential distribution has a probability density function
+defined as
+%
+\begin{equation}
+\label{eqn:random:exponential:pdf}
+    f_X(x;\lambda) = \lambda e^{-\lambda x}
+\end{equation}
+%
+\liquid\ generates exponential random variables by inverting the
+cumulative distribution function, viz
+%
+\begin{equation}
+\label{eqn:random:exponential:cdf}
+    F_X(x;\lambda) = 1 - e^{-\lambda x}
+\end{equation}
+%
+Specifically if $U$ is uniform random variable with a distribution
+defined by (\ref{eqn:random:uniform:pdf}) then
+$X = -\ln U / \lambda$
+%
+has an exponential distribution defined by
+(\ref{eqn:random:exponential:cdf}).
+
+\begin{minipage}{0.5\textwidth}
+  \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=8cm]{figures.gen/random_histogram_exp}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+  Exponential random number generator interface:
+  \begin{Verbatim}[fontsize=\small]
+  float randexpf(float _lambda);
+  float randexpf_pdf(float _x, float _lambda);
+  float randexpf_cdf(float _x, float _lambda);
+  \end{Verbatim}
+\end{minipage}
+
+
 
 % 
 % Weibull
@@ -109,12 +178,33 @@ $X = \gamma + \beta\left[ \ln\left(1 - U\right) \right]^{1/\alpha}$
 %
 has a Weibull distribution defined by (\ref{eqn:random:weibull:cdf}).
 
+\begin{minipage}{0.5\textwidth}
+  \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=8cm]{figures.gen/random_histogram_weib}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+  Weibull random number generator interface:
+  \begin{Verbatim}[fontsize=\small]
+  float randweibf(float _alpha,
+                  float _beta,
+                  float _gamma);
+  float randweibf_pdf(float _x,
+                      float _alpha,
+                      float _beta,
+                      float _gamma);
+  float randweibf_cdf(float _x,
+                      float _alpha,
+                      float _beta,
+                      float _gamma);
+  \end{Verbatim}
+\end{minipage}
+
 
 % 
 % Gamma
 %
 \subsection{Gamma}
 \label{module:random:gamma}
+The gamma distribution has a probability density function defined by
 %
 \begin{equation}
 \label{eqn:random:gamma:pdf}
@@ -130,6 +220,24 @@ has a Weibull distribution defined by (\ref{eqn:random:weibull:cdf}).
     \end{cases}
 \end{equation}
 %
+
+
+\begin{minipage}{0.5\textwidth}
+  \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=8cm]{figures.gen/random_histogram_gamma}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+  Gamma random number generator interface:
+  \begin{Verbatim}[fontsize=\small]
+  float randgammaf(float _alpha,
+                   float _beta);
+  float randgammaf_pdf(float _x,
+                       float _alpha,
+                       float _beta);
+  float randgammaf_cdf(float _x,
+                       float _alpha,
+                       float _beta);
+  \end{Verbatim}
+\end{minipage}
 
 
 % 
@@ -166,6 +274,30 @@ The Nakagami-$m$ probability density function is given by
 where
 $m \ge 1/2$ is the shape parameter and
 $\Omega > 0$ is the spread parameter.
+%
+Nakagami-$m$ random numbers are generated from the gamma distribution.
+Specifically if $R$ follows a gamma distribution defined by
+(\ref{eqn:random:gamma:pdf}) with parameters $\alpha$ and $\beta$,
+then $X=\sqrt{R}$ has a Nakagami-$m$ distribution with
+$m=\alpha$ and $\Omega=\beta/\alpha$.
+
+
+\begin{minipage}{0.5\textwidth}
+  \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=8cm]{figures.gen/random_histogram_nak}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+  Nakagami random number generator interface:
+  \begin{Verbatim}[fontsize=\small]
+  float randnakmf(float _m,
+                  float _omega);
+  float randnakmf_pdf(float _x,
+                      float _m,
+                      float _omega);
+  float randnakmf_cdf(float _x,
+                      float _m,
+                      float _omega);
+  \end{Verbatim}
+\end{minipage}
 
 
 %
@@ -173,6 +305,18 @@ $\Omega > 0$ is the spread parameter.
 %
 \subsection{Rice-$K$}
 \label{module:random:ricek}
+The Rice-$K$ multipath
+channel models a fading envelope by assuming a line of sight (LoS)
+component to the multipath elements summed at the receiver.
+The complex path gain at a particular frequency consists of a fixed
+(LoS) and fluctuating (diffuse) components.
+When assuming a narrowband complex Gaussian stochasitc process, the
+time-varying envelope will exhibit a Rice distribution where the $K$
+factor is the power ratio of the LoS and diffuse components (often
+referred to in dB) and thus is commonly used to describe fading
+environments.
+%
+The Rice-$K$ distribution has a probability density function defined as
 %
 \begin{equation}
 \label{eqn:random:ricek:pdf}
@@ -186,25 +330,36 @@ where $\Omega=E\left\{R^2\right\}$ is the average signal power and $K$
 is the fading factor (shape parameter).
 \liquid\ generates Rice-$K$ random variables using two independent
 normal random variables.
-%
-\begin{eqnarray*}
-    s       &=&     \sqrt{\frac{\Omega K}{K+1}}     \\
-    \sigma  &=&     \sqrt{\frac{\Omega}{2(K+1)}}    \\
-    X_0     &\sim&  N(0,\sigma)                     \\
-    X_1     &\sim&  N(s,\sigma)                     \\
-    R       &=&      \sqrt{X_0^2 + X_1^2}
-\end{eqnarray*}
+Specifically if
+$X_0 \sim N(0,\sigma)$
+and
+$X_1 \sim N(s,\sigma)$
+then
+$R = \sqrt{X_0^2 + X_1^2}$
+has follows a Rice-$K$ distribution defined by
+(\ref{eqn:random:ricek:pdf})
+where
+$s      = \sqrt{\frac{\Omega K}{K+1}}$
+and
+$\sigma = \sqrt{\frac{\Omega}{2(K+1)}}$.
 
 
-%
-% Interface
-%
-\subsection{Interface}
-\label{module:random:interface}
-%
-%\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}l}
-
-%\end{tabular*}
+\begin{minipage}{0.5\textwidth}
+  \includegraphics[trim = 5mm 0mm 5mm 0mm, clip, width=8cm]{figures.gen/random_histogram_rice}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+  Nakagami random number generator interface:
+  \begin{Verbatim}[fontsize=\small]
+  float randricekf(float _m,
+                   float _omega);
+  float randricekf_pdf(float _x,
+                       float _K,
+                       float _omega);
+  float randricekf_cdf(float _x,
+                       float _K,
+                       float _omega);
+  \end{Verbatim}
+\end{minipage}
 
 
 % 
