@@ -22,6 +22,12 @@ Weibull distributions.
 %
 \subsection{Uniform}
 \label{module:random:uniform}
+The uniform random variable generator in \liquid\ simply generates a
+number evenly distributed in $[0,1)$.
+Internally \liquid\ uses the standard {\tt rand()} method for generating
+random integers and then divides by {\tt RAND\_MAX}, the maximum number
+that can be generated.
+The probability density function is defined as
 %
 \begin{equation}
 \label{eqn:random:uniform:pdf}
@@ -31,9 +37,14 @@ Weibull distributions.
         0 & \text{else}.
     \end{cases}
 \end{equation}
+%
+The uniform random number generator is the basis for generating most
+other distributions in \liquid.
 
 \subsection{Normal (Gaussian)}
 \label{module:random:normal}
+The normal (or Gauss) distribution has a probability density function
+defined as
 %
 \begin{equation}
 \label{eqn:random:normal:pdf}
@@ -183,6 +194,17 @@ normal random variables.
     X_1     &\sim&  N(s,\sigma)                     \\
     R       &=&      \sqrt{X_0^2 + X_1^2}
 \end{eqnarray*}
+
+
+%
+% Interface
+%
+\subsection{Interface}
+\label{module:random:interface}
+%
+%\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}l}
+
+%\end{tabular*}
 
 
 % 

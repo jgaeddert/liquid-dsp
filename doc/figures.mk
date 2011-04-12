@@ -120,6 +120,14 @@ local_pdffiles :=					\
 	figures.gen/optim_gradsearch.pdf		\
 	figures.gen/optim_gradsearch_utility.pdf	\
 							\
+	figures.gen/random_histogram_uniform.pdf	\
+	figures.gen/random_histogram_normal.pdf		\
+	figures.gen/random_histogram_exp.pdf		\
+	figures.gen/random_histogram_weib.pdf		\
+	figures.gen/random_histogram_gamma.pdf		\
+	figures.gen/random_histogram_nak.pdf		\
+	figures.gen/random_histogram_rice.pdf		\
+							\
 	figures.gen/sequence_ccodes.pdf			\
 	figures.gen/sequence_msequence.pdf
 
@@ -158,6 +166,7 @@ local_progs :=						\
 	src/modem.gendata				\
 	src/nco_pll					\
 	src/optim_gradsearch				\
+	src/random_histogram				\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
@@ -541,6 +550,28 @@ figures.gen/optim_gradsearch.dat \
 figures.gen/optim_gradsearch.gnu \
 figures.gen/optim_gradsearch_utility.gnu : src/optim_gradsearch
 	./$<
+
+
+
+##
+## MODULE : random
+##
+
+# 
+# random_histogram
+#
+
+random_histogram_gnufiles =				\
+	figures.gen/random_histogram_uniform.gnu	\
+	figures.gen/random_histogram_normal.gnu		\
+	figures.gen/random_histogram_exp.gnu		\
+	figures.gen/random_histogram_weib.gnu		\
+	figures.gen/random_histogram_gamma.gnu		\
+	figures.gen/random_histogram_nak.gnu		\
+	figures.gen/random_histogram_rice.gnu		\
+
+$(random_histogram_gnufiles) : figures.gen/random_histogram_%.gnu : src/random_histogram
+	./$< -d $* -f $@
 
 ##
 ## MODULE : sequence
