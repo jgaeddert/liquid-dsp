@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -30,26 +30,32 @@
 #include "liquid.internal.h"
 
 struct ampmodem_s {
-    float m;
-    liquid_modem_amtype type;
+    float m;                    // modulation index
+    liquid_modem_amtype type;   // modulation type
+    int suppressed_carrier;     // suppressed carrier flag
 
     // demod objects
     nco_crcf oscillator;
 
-    // ssb
+    // suppressed carrier
     // TODO : replace DC bias removal with iir filter object
     float ssb_alpha;    // dc bias removal
     float ssb_q_hat;
 
-    // dsb
+    // single side-band
+    firhilbf hilbert;   // hilbert transform
+
+    // double side-band
 };
 
 ampmodem ampmodem_create(float _m,
-                         liquid_modem_amtype _type)
+                         liquid_modem_amtype _type,
+                         int _suppressed_carrier)
 {
     ampmodem q = (ampmodem) malloc(sizeof(struct ampmodem_s));
     q->type = _type;
     q->m    = _m;
+    q->suppressed_carrier = (_suppressed_carrier == 0) ? 0 : 1;
 
     // create nco, pll objects
     q->oscillator = nco_crcf_create(LIQUID_NCO);
@@ -57,9 +63,12 @@ ampmodem ampmodem_create(float _m,
     
     nco_crcf_pll_set_bandwidth(q->oscillator,1e-1f);
 
-    // single side-band
+    // suppressed carrier
     q->ssb_alpha = 0.01f;
     q->ssb_q_hat = 0.0f;
+
+    // single side-band
+    q->hilbert = firhilbf_create(9, 60.0f);
 
     // double side-band
 
@@ -71,13 +80,24 @@ ampmodem ampmodem_create(float _m,
 void ampmodem_destroy(ampmodem _q)
 {
     nco_crcf_destroy(_q->oscillator);
+
+    firhilbf_destroy(_q->hilbert);
+
     free(_q);
 }
 
 void ampmodem_print(ampmodem _q)
 {
-    printf("ampmodem [%s]:\n", _q->type == LIQUID_MODEM_AM_SSB ? "ssb" : "dsb");
-    printf("    mod. index  :   %8.4f\n", _q->m);
+    printf("ampmodem:\n");
+    printf("    type            :   ");
+    switch (_q->type) {
+    case LIQUID_MODEM_AM_DSB: printf("double side-band\n");         break;
+    case LIQUID_MODEM_AM_USB: printf("single side-band (upper)\n"); break;
+    case LIQUID_MODEM_AM_LSB: printf("single side-band (lower)\n"); break;
+    default:                  printf("unknown\n");
+    }
+    printf("    supp. carrier   :   %s\n", _q->suppressed_carrier ? "yes" : "no");
+    printf("    mod. index      :   %-8.4f\n", _q->m);
 }
 
 void ampmodem_reset(ampmodem _q)
@@ -90,17 +110,24 @@ void ampmodem_modulate(ampmodem _q,
                        float _x,
                        float complex *_y)
 {
-    switch (_q->type) {
-    case LIQUID_MODEM_AM_SSB:
-        *_y = 0.5f*(_x + 1.0f);
-        break;
-    case LIQUID_MODEM_AM_DSB:
-        *_y = _x;
-        break;
-    default:
-        fprintf(stderr,"error: ampmodem_modulate(), invalid type\n");
-        exit(1);
+    float complex x_hat = 0.0f;
+
+    if (_q->type == LIQUID_MODEM_AM_DSB) {
+        x_hat = _x;
+    } else {
+        // push through Hilbert transform
+        // LIQUID_MODEM_AM_USB:
+        // LIQUID_MODEM_AM_LSB: conjugate Hilbert transform output
+        firhilbf_r2c_execute(_q->hilbert, _x, &x_hat);
+
+        if (_q->type == LIQUID_MODEM_AM_LSB)
+            x_hat = conjf(x_hat);
     }
+
+    if (_q->suppressed_carrier)
+        *_y = x_hat;
+    else
+        *_y = 0.5f*(x_hat + 1.0f);
 }
 
 void ampmodem_demodulate(ampmodem _q,
@@ -109,17 +136,19 @@ void ampmodem_demodulate(ampmodem _q,
 {
     float t;
     float complex s;
-    switch (_q->type) {
-    case LIQUID_MODEM_AM_SSB:
-        // non-coherent demodulation (peak detector)
-        t = cabsf(_y);
 
-        // remove DC bias
-        _q->ssb_q_hat = (    _q->ssb_alpha)*t +
-                        (1 - _q->ssb_alpha)*_q->ssb_q_hat;
-        *_x = 2.0f*(t - _q->ssb_q_hat);
-        break;
+#if 0
+    switch (_q->type) {
     case LIQUID_MODEM_AM_DSB:
+    case LIQUID_MODEM_AM_USB:
+    case LIQUID_MODEM_AM_LSB:
+    default:
+        fprintf(stderr,"error: ampmodem_demodulate(), invalid type\n");
+        exit(1);
+    }
+#endif
+
+    if (_q->suppressed_carrier) {
         // coherent demodulation
 
         // mix signal down
@@ -136,10 +165,14 @@ void ampmodem_demodulate(ampmodem _q,
         nco_crcf_pll_step(_q->oscillator, t);
         nco_crcf_step(_q->oscillator);
         *_x = crealf(_y);
-        break;
-    default:
-        fprintf(stderr,"error: ampmodem_demodulate(), invalid type\n");
-        exit(1);
+    } else {
+        // non-coherent demodulation (peak detector)
+        t = cabsf(_y);
+
+        // remove DC bias
+        _q->ssb_q_hat = (    _q->ssb_alpha)*t +
+                        (1 - _q->ssb_alpha)*_q->ssb_q_hat;
+        *_x = 2.0f*(t - _q->ssb_q_hat);
     }
 }
 

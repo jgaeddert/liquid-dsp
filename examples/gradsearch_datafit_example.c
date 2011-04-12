@@ -1,5 +1,5 @@
 //
-// gradient_search_datafit_example.c
+// gradsearch_datafit_example.c
 //
 // Fit 3-parameter curve to sampled data set in the minimum
 // mean-squared error sense.
@@ -11,7 +11,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "gradient_search_datafit_example.m"
+#define OUTPUT_FILENAME "gradsearch_datafit_example.m"
 
 // gradient search data set
 struct gsdataset {
@@ -59,7 +59,7 @@ int main() {
     }
     struct gsdataset q = {x, y, num_samples};
 
-    gradient_search gs = gradient_search_create_advanced(
+    gradsearch gs = gradsearch_create_advanced(
             (void*)&q,
             v,
             3,
@@ -73,7 +73,7 @@ int main() {
     float rmse;
 
     // execute search
-    //rmse = gradient_search_run(gs, num_iterations, -1e-6f);
+    //rmse = gradsearch_run(gs, num_iterations, -1e-6f);
 
      // open output file
     FILE*fid = fopen(OUTPUT_FILENAME,"w");
@@ -87,15 +87,15 @@ int main() {
         rmse = gserror((void*)&q,v,3);
         fprintf(fid,"u(%3u) = %12.4e;\n", i+1, rmse);
 
-        gradient_search_step(gs);
+        gradsearch_step(gs);
 
         if (((i+1)%100)==0)
-            gradient_search_print(gs);
+            gradsearch_print(gs);
     }
 
     // print results
     printf("\n");
-    gradient_search_print(gs);
+    gradsearch_print(gs);
     printf("  c0 = %12.8f, opt = 1\n", v[0]);
     printf("  c1 = %12.8f, opt = 0\n", v[1]);
     printf("  c2 = %12.8f, opt = 1\n", v[2]);
@@ -125,7 +125,7 @@ int main() {
     fclose(fid);
     printf("results written to %s.\n", OUTPUT_FILENAME);
 
-    gradient_search_destroy(gs);
+    gradsearch_destroy(gs);
 
     return 0;
 }

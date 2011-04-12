@@ -70,6 +70,7 @@ GRAPHICS = 					\
 # Listings used in this document
 LISTINGS_C = 					\
 	listings/agc.example.c			\
+	listings/ampmodem.example.c		\
 	listings/autocorr.example.c		\
 	listings/bpacket.example.c		\
 	listings/crc.example.c			\
@@ -84,8 +85,9 @@ LISTINGS_C = 					\
 	listings/firfarrow_crcf.example.c	\
 	listings/firfilt.example.c		\
 	listings/firhilb.example.c		\
+	listings/freqmodem.example.c		\
 	listings/ga_search.example.c		\
-	listings/gradient_search.example.c	\
+	listings/gradsearch.example.c		\
 	listings/gport.direct.example.c		\
 	listings/gport.indirect.example.c	\
 	listings/iirfilt.example.c		\
@@ -94,6 +96,7 @@ LISTINGS_C = 					\
 	listings/lifecycle.example.c		\
 	listings/matrix.example.c		\
 	listings/nco.c				\
+	listings/nco.example.c			\
 	listings/nco_pll.example.c		\
 	listings/packetizer.example.c		\
 	listings/quasinewton_search.example.c	\
@@ -209,7 +212,11 @@ clean-listings-check :
 	$(RM) scripts/listings_check
 
 # create listings targets (append '.tex' to each input)
-listings_texfiles = $(patsubst %,%.tex,$(LISTINGS))
+listings_c_texfiles  = $(patsubst %,%.tex,$(LISTINGS_C))
+listings_cc_texfiles = $(patsubst %,%.tex,$(LISTINGS_CC))
+listings_texfiles :=		\
+	$(listings_c_texfiles)	\
+	$(listings_cc_texfiles)	\
 
 # generate listings style
 highlight.sty:
@@ -217,8 +224,13 @@ highlight.sty:
 
 # use pygments (http://pygments.org) to generate fancy syntax-highlighted source
 
-$(listings_texfiles) : %.tex : % %.o
-	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ $<
+# C source files (force using the 'c' lexer)
+$(listings_c_texfiles) : %.tex : % %.o
+	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ -l c $<
+
+# C++ source files (force using the 'c++' lexer)
+$(listings_cc_texfiles) : %.tex : % %.o
+	$(PYGMENTIZE) -f latex $(PYGMENTS_OPTS) -o $@ -l c++ $<
 
 # full listings target
 listings: highlight.sty $(listings_texfiles)

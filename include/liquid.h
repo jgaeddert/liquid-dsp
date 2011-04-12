@@ -1186,8 +1186,8 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 //  1:2 complex-to-real interpolator
 //
 
-#define FIRHILB_MANGLE_FLOAT(name)  LIQUID_CONCAT(firhilb, name)
-//#define FIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(dfirhilb, name)
+#define FIRHILB_MANGLE_FLOAT(name)  LIQUID_CONCAT(firhilbf, name)
+//#define FIRHILB_MANGLE_DOUBLE(name) LIQUID_CONCAT(firhilb, name)
 
 // NOTES:
 //   Although firhilb is a placeholder for both decimation and
@@ -1196,14 +1196,16 @@ LIQUID_FIRFILT_DEFINE_API(FIRFILT_MANGLE_CCCF,
 typedef struct FIRHILB(_s) * FIRHILB();                         \
 FIRHILB() FIRHILB(_create)(unsigned int _m,                     \
                            float _As);                          \
-void FIRHILB(_destroy)(FIRHILB() _f);                           \
-void FIRHILB(_print)(FIRHILB() _f);                             \
-void FIRHILB(_clear)(FIRHILB() _f);                             \
-void FIRHILB(_decim_execute)(FIRHILB() _f, T * _x, TC * _y);    \
-void FIRHILB(_interp_execute)(FIRHILB() _f, TC _x, T * _y);
+void FIRHILB(_destroy)(FIRHILB() _q);                           \
+void FIRHILB(_print)(FIRHILB() _q);                             \
+void FIRHILB(_clear)(FIRHILB() _q);                             \
+void FIRHILB(_r2c_execute)(FIRHILB() _q, T _x, TC * _y);        \
+void FIRHILB(_c2r_execute)(FIRHILB() _q, TC _x, T * _y);        \
+void FIRHILB(_decim_execute)(FIRHILB() _q, T * _x, TC * _y);    \
+void FIRHILB(_interp_execute)(FIRHILB() _q, TC _x, T * _y);     \
 
 LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_FLOAT, float, liquid_float_complex)
-//LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double)
+//LIQUID_FIRHILB_DEFINE_API(FIRHILB_MANGLE_DOUBLE, double, liquid_double_complex)
 
 //
 // Infinite impulse response filter
@@ -1396,16 +1398,20 @@ RESAMP2() RESAMP2(_create)(unsigned int _m,                     \
                            float _fc,                           \
                            float _As);                          \
 RESAMP2() RESAMP2(_recreate)(RESAMP2() _q,                      \
-                             unsigned int _h_len,               \
+                             unsigned int _m,                   \
                              float _fc,                         \
                              float _As);                        \
 void RESAMP2(_destroy)(RESAMP2() _q);                           \
 void RESAMP2(_print)(RESAMP2() _q);                             \
 void RESAMP2(_clear)(RESAMP2() _q);                             \
-void RESAMP2(_decim_execute)(RESAMP2() _f,                      \
+void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
+                              TI _x,                            \
+                              TO * _y0,                         \
+                              TO * _y1);                        \
+void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
                              TI * _x,                           \
                              TO * _y);                          \
-void RESAMP2(_interp_execute)(RESAMP2() _f,                     \
+void RESAMP2(_interp_execute)(RESAMP2() _q,                     \
                               TI _x,                            \
                               TO * _y);
 
@@ -2571,13 +2577,17 @@ void freqmodem_demodulate(freqmodem _fm,
                           liquid_float_complex _y,
                           float *_x);
 
+// amplitude modulation types
 typedef enum {
-    LIQUID_MODEM_AM_DSB=0,  // FIXME : AM/DSB is actually suppressed carrier
-    LIQUID_MODEM_AM_SSB     // FIXME : AM/SSB is actually un-suppressed carrier
+    LIQUID_MODEM_AM_DSB=0,  // double side-band
+    LIQUID_MODEM_AM_USB,    // single side-band (upper)
+    LIQUID_MODEM_AM_LSB     // single side-band (lower)
 } liquid_modem_amtype;
+
 typedef struct ampmodem_s * ampmodem;
 ampmodem ampmodem_create(float _m,
-                         liquid_modem_amtype _type);
+                         liquid_modem_amtype _type,
+                         int _suppressed_carrier);
 void ampmodem_destroy(ampmodem _fm);
 void ampmodem_print(ampmodem _fm);
 void ampmodem_reset(ampmodem _fm);
@@ -2991,21 +3001,21 @@ typedef float (*utility_function)(void * _userdata,
                                   float * _v,
                                   unsigned int _n);
 
-typedef struct gradient_search_s * gradient_search;
+typedef struct gradsearch_s * gradsearch;
 
-// Create a simple gradient_search object; parameters are specified internally
+// Create a simple gradsearch object; parameters are specified internally
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
-gradient_search gradient_search_create(void * _userdata,
-                                       float * _v,
-                                       unsigned int _num_parameters,
-                                       utility_function _u,
-                                       int _minmax);
+gradsearch gradsearch_create(void * _userdata,
+                             float * _v,
+                             unsigned int _num_parameters,
+                             utility_function _u,
+                             int _minmax);
 
-// Create a gradient_search object, specifying search parameters
+// Create a gradsearch object, specifying search parameters
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
@@ -3015,32 +3025,32 @@ gradient_search gradient_search_create(void * _userdata,
 //   _mu                :   decremental gamma parameter (default: 0.99f)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
-gradient_search gradient_search_create_advanced(void * _userdata,
-                                                float * _v,
-                                                unsigned int _num_parameters,
-                                                float _delta,
-                                                float _gamma,
-                                                float _alpha,
-                                                float _mu,
-                                                utility_function _u,
-                                                int _minmax);
+gradsearch gradsearch_create_advanced(void * _userdata,
+                                      float * _v,
+                                      unsigned int _num_parameters,
+                                      float _delta,
+                                      float _gamma,
+                                      float _alpha,
+                                      float _mu,
+                                      utility_function _u,
+                                      int _minmax);
 
-// Destroy a gradient_search object
-void gradient_search_destroy(gradient_search _g);
+// Destroy a gradsearch object
+void gradsearch_destroy(gradsearch _g);
 
 // Prints current status of search
-void gradient_search_print(gradient_search _g);
+void gradsearch_print(gradsearch _g);
 
 // Resets internal state
-void gradient_search_reset(gradient_search _g);
+void gradsearch_reset(gradsearch _g);
 
 // Iterate once
-void gradient_search_step(gradient_search _g);
+void gradsearch_step(gradsearch _g);
 
 // Execute the search
-float gradient_search_execute(gradient_search _g,
-                              unsigned int _max_iterations,
-                              float _target_utility);
+float gradsearch_execute(gradsearch _g,
+                         unsigned int _max_iterations,
+                         float _target_utility);
 
 
 // quasi-Newton search

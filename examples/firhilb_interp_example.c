@@ -25,8 +25,8 @@ int main() {
     unsigned int num_samples=128;   // number of samples
 
     // create Hilbert transform object
-    firhilb q = firhilb_create(m,As);
-    firhilb_print(q);
+    firhilbf q = firhilbf_create(m,As);
+    firhilbf_print(q);
 
     // data arrays
     float complex x[num_samples];   // complex input
@@ -39,14 +39,14 @@ int main() {
 
     for (i=0; i<num_samples; i++) {
         // execute transform (interpolator) to compute real signal
-        firhilb_interp_execute(q, x[i], &y[2*i]);
+        firhilbf_interp_execute(q, x[i], &y[2*i]);
 
         printf("y(%3u) = %12.8f;\n", 2*i+1, y[2*i+0]);
         printf("y(%3u) = %12.8f;\n", 2*i+2, y[2*i+1]);
     }
 
     // destroy Hilbert transform object
-    firhilb_destroy(q);
+    firhilbf_destroy(q);
 
     // 
     // export results to file

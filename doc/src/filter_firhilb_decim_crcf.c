@@ -24,7 +24,7 @@ int main() {
     float complex y[num_samples];   // complex output
 
     // create Hilbert transform object
-    firhilb f = firhilb_create(m,slsl);
+    firhilbf q = firhilbf_create(m,slsl);
 
     // generate input sequence
     unsigned int i;
@@ -38,9 +38,9 @@ int main() {
     // run Hilbert transform
     for (i=0; i<num_samples; i++) {
         // execute transform (decimator) to compute complex signal
-        firhilb_decim_execute(f, &x[2*i], &y[i]);
+        firhilbf_decim_execute(q, &x[2*i], &y[i]);
     }
-    firhilb_destroy(f);
+    firhilbf_destroy(q);
 
     // compute filter
     unsigned int h_len = 4*m+1;     // filter length

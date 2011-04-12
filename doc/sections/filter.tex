@@ -779,9 +779,9 @@ useful to filtering and filter design.
 % 
 % firhilb
 %
-\subsection{{\tt firhilb} (finite impulse response Hilbert transform)}
+\subsection{{\tt firhilbf} (finite impulse response Hilbert transform)}
 \label{module:filter:firhilb}
-The {\tt firhilb} object in \liquid\ implements a finite impulse
+The {\tt firhilbf} object in \liquid\ implements a finite impulse
 response Hilbert transform which
 converts between real and complex time series.
 The interpolator takes a complex time series and produces real-valued
@@ -791,9 +791,9 @@ real-valued time series to a complex-valued one.
 
 Typical trade-offs between filter length, side-lobe suppression, and
 transition bandwidth apply.
-The {\tt firhilb} object uses a half-band filter to implement the
+The {\tt firhilbf} object uses a half-band filter to implement the
 transform as efficiently as possible.
-While any filter length can be accepted, the {\tt firhilb} object
+While any filter length can be accepted, the {\tt firhilbf} object
 internally forces the length to be of the form $n=4m+1$
 to reduce the computational load.
 A halfband filter of this length has $2m$ zeros and $2m+1$ non-zero
@@ -809,7 +809,7 @@ are even symmetric, and therefore only $m$ computations are needed.
 \subfigure[PSD] {
   \includegraphics[trim = 0mm 0mm 0mm 0mm, clip, width=13cm]{figures.gen/filter_firhilb_decim_crcf_freq}
 }
-\caption{{\tt firhilb} (Hilbert transform) decimator demonstration.
+\caption{{\tt firhilbf} (Hilbert transform) decimator demonstration.
          The small signal at $f=0.13$ is due to aliasing as a result of
          imperfect image rejection.}
 \label{fig:module:filter:firhilb}
@@ -821,19 +821,19 @@ where a real-valued input sinusoid is converted into a complex sinusoid
 with half the number of samples.
 %
 An example code listing is given below.
-Although {\tt firhilb} is a placeholder for both
+Although {\tt firhilbf} is a placeholder for both
 decimation (real to complex) and
 interpolation (complex to real),
 separate objects shoudl be used for each task.
 %
 \input{listings/firhilb.example.c.tex}
 %
-Listed below is the full interface to the {\tt firhilb} family of
+Listed below is the full interface to the {\tt firhilbf} family of
 objects.
 %
 \begin{description}
-\item[{\tt firhilb\_create(m,As)}]
-    creates a {\tt firhilb} object with a filter semi-length of $m$
+\item[{\tt firhilbf\_create(m,As)}]
+    creates a {\tt firhilbf} object with a filter semi-length of $m$
     samples (equal to the delay)
     and a stop-band attenuation of $A_s$~dB.
     The value of $m$ must be at least 2.
@@ -841,19 +841,26 @@ objects.
     using the {\tt firdes\_kaiser\_window()} method
     (see Section~\ref{module:filter:firdes:window} on FIR filter design
     using windowing functions).
-\item[{\tt firhilb\_destroy(q)}]
+\item[{\tt firhilbf\_destroy(q)}]
     destroys the Hilbert transform object, freeing all
     internally-allocated memory.
-\item[{\tt firhilb\_print(q)}]
+\item[{\tt firhilbf\_print(q)}]
     prints the internal properties of the object to the standard
     output.
-\item[{\tt firhilb\_clear(q)}]
+\item[{\tt firhilbf\_clear(q)}]
     clears the internal transform buffers.
-\item[{\tt firhilb\_decim\_execute(q,*x,*y)}]
+\item[{\tt firhilbf\_r2c\_execute(q,x,*y)}]
+    executes the real-to-complex transform as a half-band filter,
+    rejecting the negative frequency band.
+    The input $x$ is a real sample;
+    the output $y$ is complex.
+\item[{\tt firhilbf\_c2r\_execute(q,x,*y)}]
+    executes the complex-to-real conversion as $y = \Re\{x\}$.
+\item[{\tt firhilbf\_decim\_execute(q,*x,*y)}]
     executes the transform as a decimator, converting a 2-sample input
     array $\vec{x}$ of real values into a single complex output value
     $y$.
-\item[{\tt firhilb\_interp\_execute(q,x,*y)}]
+\item[{\tt firhilbf\_interp\_execute(q,x,*y)}]
     executes the transform as a decimator, converting a single complex
     input sample $x$ into a two real-valued samples stored in the output
     array $\vec{y}$.
@@ -1515,10 +1522,10 @@ reasons.
 \end{figure}
 
 
-\subsection{{\tt resamp2} (halfband resampler)}
+\subsection{{\tt resamp2} (halfband filter/resampler)}
 \label{module:filter:resamp2}
-{\tt resamp2} is a half-band resampler used for efficient interpolation and
-decimation.
+{\tt resamp2} is a half-band resampler used for efficient interpolation
+and decimation.
 The internal filter of the {\tt resamp2} object is a Kaiser-windowed $\sinc$
 (see {\tt firdes\_kaiser\_window}, section~\ref{module:filter:firdes}) with
 $f_c = 1/2$.
@@ -1571,6 +1578,10 @@ functionality applies to {\tt resamp2\_rrrf} and {\tt resamp2\_cccf}.
     output.
 \item[{\tt resamp2\_crcf\_clear(q)}]
     clears the internal resampler buffers.
+\item[{\tt resamp2\_crcf\_filter\_execute(q,x,*y0,*y1)}]
+    executes the {\tt resamp2} object as a half-band filter on an input
+    sample $x$, storing the low-pass filter output in $y_0$ and the
+    high-pass filter output in $y_1$.
 \item[{\tt resamp2\_crcf\_decim\_execute(q,*x,*y)}]
     executes the half-band resampler as a decimator
     for an input array $\vec{x}$ with two samples,

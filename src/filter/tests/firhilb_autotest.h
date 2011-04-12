@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FIRHILB_AUTOTEST_H__
-#define __LIQUID_FIRHILB_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -29,7 +26,7 @@
 //
 // AUTOTEST: Hilbert transform, 2:1 decimator
 //
-void autotest_firhilb_decim()
+void autotest_firhilbf_decim()
 {
     float x[32] = {
          1.0000,  0.7071,  0.0000, -0.7071, -1.0000, -0.7071, -0.0000,  0.7071,
@@ -47,13 +44,13 @@ void autotest_firhilb_decim()
 
     float complex y[16];
     unsigned int m=5;   // h_len = 4*m+1 = 21
-    firhilb ht = firhilb_create(m,60.0f);
+    firhilbf ht = firhilbf_create(m,60.0f);
     float tol=0.005f;
 
     // run decimator
     unsigned int i;
     for (i=0; i<16; i++)
-        firhilb_decim_execute(ht, &x[2*i], &y[i]);
+        firhilbf_decim_execute(ht, &x[2*i], &y[i]);
 
     if (liquid_autotest_verbose) {
         printf("hilbert transform decimator output:\n");
@@ -68,13 +65,13 @@ void autotest_firhilb_decim()
     }
 
     // clean up filter object
-    firhilb_destroy(ht);
+    firhilbf_destroy(ht);
 }
 
 //
 // AUTOTEST: Hilbert transform, 1:2 interpolator
 //
-void autotest_firhilb_interp()
+void autotest_firhilbf_interp()
 {
     float complex x[16] = {
          1.0000+J* 0.0000,  0.0000+J* 1.0000, -1.0000+J* 0.0000, -0.0000+J*-1.0000,
@@ -93,13 +90,13 @@ void autotest_firhilb_interp()
 
     float y[32];
     unsigned int m=5;   // h_len = 4*m+1 = 21
-    firhilb ht = firhilb_create(m,60.0f);
+    firhilbf ht = firhilbf_create(m,60.0f);
     float tol=0.005f;
 
     // run interpolator
     unsigned int i;
     for (i=0; i<16; i++)
-        firhilb_interp_execute(ht, x[i], &y[2*i]);
+        firhilbf_interp_execute(ht, x[i], &y[2*i]);
 
     if (liquid_autotest_verbose) {
         printf("hilbert transform interpolator output:\n");
@@ -113,8 +110,6 @@ void autotest_firhilb_interp()
     }
 
     // clean up filter object
-    firhilb_destroy(ht);
+    firhilbf_destroy(ht);
 }
-
-#endif // __LIQUID_FIRHILB_AUTOTEST_H__
 

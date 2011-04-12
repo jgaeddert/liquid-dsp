@@ -18,14 +18,11 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FIRHILB_BENCHMARK_H__
-#define __LIQUID_FIRHILB_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
 // Helper function to keep code base small
-void firhilb_decim_bench(
+void firhilbf_decim_bench(
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations,
@@ -36,7 +33,7 @@ void firhilb_decim_bench(
     *_num_iterations /= liquid_nextpow2(_m+1);
 
     // create hilber transform object
-    firhilb q = firhilb_create(_m,60.0f);
+    firhilbf q = firhilbf_create(_m,60.0f);
 
     float x[] = {1.0f, -1.0f};
     float complex y;
@@ -45,27 +42,25 @@ void firhilb_decim_bench(
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        firhilb_decim_execute(q,x,&y);
-        firhilb_decim_execute(q,x,&y);
-        firhilb_decim_execute(q,x,&y);
-        firhilb_decim_execute(q,x,&y);
+        firhilbf_decim_execute(q,x,&y);
+        firhilbf_decim_execute(q,x,&y);
+        firhilbf_decim_execute(q,x,&y);
+        firhilbf_decim_execute(q,x,&y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
-    firhilb_destroy(q);
+    firhilbf_destroy(q);
 }
 
 #define FIRHILB_DECIM_BENCHMARK_API(M)  \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ firhilb_decim_bench(_start, _finish, _num_iterations, M); }
+{ firhilbf_decim_bench(_start, _finish, _num_iterations, M); }
 
-void benchmark_firhilb_decim_m3     FIRHILB_DECIM_BENCHMARK_API(3)  // m=3
-void benchmark_firhilb_decim_m5     FIRHILB_DECIM_BENCHMARK_API(5)  // m=5
-void benchmark_firhilb_decim_m9     FIRHILB_DECIM_BENCHMARK_API(9)  // m=9
-void benchmark_firhilb_decim_m13    FIRHILB_DECIM_BENCHMARK_API(13) // m=13
-
-#endif // __LIQUID_FIRHILB_BENCHMARK_H__
+void benchmark_firhilbf_decim_m3    FIRHILB_DECIM_BENCHMARK_API(3)  // m=3
+void benchmark_firhilbf_decim_m5    FIRHILB_DECIM_BENCHMARK_API(5)  // m=5
+void benchmark_firhilbf_decim_m9    FIRHILB_DECIM_BENCHMARK_API(9)  // m=9
+void benchmark_firhilbf_decim_m13   FIRHILB_DECIM_BENCHMARK_API(13) // m=13
 

@@ -25,8 +25,9 @@ void usage()
     printf("  f     : frequency offset [default: 0.02]\n");
     printf("  p     : phase offset [default: pi/4]\n");
     printf("  n     : number of samples [default: 256]\n");
-    printf("  s     : SNR (dB) [default: 20]\n");
-    printf("  t     : AM type (ssb/dsb) [default: ssb]\n");
+    printf("  S     : SNR (dB) [default: 20]\n");
+    printf("  t     : AM type (dsb/usb/lsb) [default: dsb]\n");
+    printf("  s     : suppress the carrier\n");
 }
 
 int main(int argc, char*argv[]) {
@@ -37,10 +38,11 @@ int main(int argc, char*argv[]) {
     float cpo = M_PI / 4.0f;        // carrier phase offset
     unsigned int num_samples = 256; // number of samples
     float SNRdB = 20.0f;            // signal-to-noise ratio [dB]
-    liquid_modem_amtype type = LIQUID_MODEM_AM_SSB;
+    liquid_modem_amtype type = LIQUID_MODEM_AM_USB;
+    int suppressed_carrier = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhf:p:n:s:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhf:p:n:S:t:s")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':
@@ -49,18 +51,21 @@ int main(int argc, char*argv[]) {
         case 'f':   cfo = atof(optarg); break;
         case 'p':   cpo = atof(optarg); break;
         case 'n':   num_samples = atoi(optarg); break;
-        case 's':   SNRdB = atof(optarg);       break;
+        case 'S':   SNRdB = atof(optarg);       break;
         case 't':
-            if (strcmp(optarg,"ssb")==0) {
-                type = LIQUID_MODEM_AM_SSB;
-            } else if (strcmp(optarg,"dsb")==0) {
+            if (strcmp(optarg,"dsb")==0) {
                 type = LIQUID_MODEM_AM_DSB;
+            } else if (strcmp(optarg,"usb")==0) {
+                type = LIQUID_MODEM_AM_USB;
+            } else if (strcmp(optarg,"lsb")==0) {
+                type = LIQUID_MODEM_AM_LSB;
             } else {
                 fprintf(stderr,"error: ampmodem_example, invalid AM type: %s\n", optarg);
                 usage();
                 return 1;
             }
             break;
+        case 's':   suppressed_carrier = 1; break;
         default:
             fprintf(stderr,"error: ampmodem_example, unknown option\n");
             usage();
@@ -69,8 +74,8 @@ int main(int argc, char*argv[]) {
     }
 
     // create mod/demod objects
-    ampmodem mod   = ampmodem_create(mod_index,type);
-    ampmodem demod = ampmodem_create(mod_index,type);
+    ampmodem mod   = ampmodem_create(mod_index, type, suppressed_carrier);
+    ampmodem demod = ampmodem_create(mod_index, type, suppressed_carrier);
     ampmodem_print(mod);
 
     unsigned int i;
@@ -125,6 +130,7 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"n=%u;\n",num_samples);
+    fprintf(fid,"delay=%u;\n", type == LIQUID_MODEM_AM_DSB ? 0 : 18);
     for (i=0; i<num_samples; i++) {
         fprintf(fid,"x(%3u) = %12.4e;\n", i+1, x[i]);
         fprintf(fid,"y(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));
@@ -133,8 +139,8 @@ int main(int argc, char*argv[]) {
     // plot results
     fprintf(fid,"t=0:(n-1);\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"plot(t,x,t,z);\n");
-    fprintf(fid,"axis([0 n -1.2 1.2]);\n");
+    fprintf(fid,"plot(t,x,t-delay,z);\n");
+    fprintf(fid,"axis([-delay n -1.2 1.2]);\n");
     fprintf(fid,"xlabel('time');\n");
     fprintf(fid,"ylabel('signal');\n");
     fprintf(fid,"legend('original','demodulated',1);\n");

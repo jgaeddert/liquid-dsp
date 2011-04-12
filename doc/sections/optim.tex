@@ -5,10 +5,14 @@
 \newpage
 \section{optim (optimization)}
 \label{module:optim}
-Newton-raphson, gradient, evolutionary algorithms, etc.
+The {\em optim} module in \liquid\ implements several non-linear
+optimization algorithms including
+a gradient descent search,
+a quasi-Newton search,
+and an evolutionary algorithm.
 
-\subsection{Gradient search}
-\label{module:optim:gradient_search}
+\subsection{{\tt gradsearch} (gradient search)}
+\label{module:optim:gradsearch}
 This module implements a gradient or ``steepest-descent'' search.
 Given a function $f$ which operates on a vector
 $\vec{x} = [x_0,x_1,\ldots,x_{N-1}]^T$ of $N$ parameters,
@@ -16,7 +20,7 @@ the gradient search method seeks to find the optimum $\vec{x}$ which
 minimizes $f(\vec{x})$.
 
 \subsubsection{Theory}
-The gradient search is an iterative method, and adjusts $\vec{x}$ proportional
+The gradient search is an iterative method and adjusts $\vec{x}$ proportional
 to the negative of the gradient of $f$ evaluated at the current location.
 The vector $\vec{x}$ is adjusted by
 \[
@@ -64,7 +68,7 @@ The updated vector at time $n+1$ is
     \vec{x}[n+1] = \vec{x}[n] + \Delta\vec{x}[n+1] + \alpha\Delta\vec{x}[n]
 \]
 where $\Delta\vec{x}[0] = \vec{0}$.
-The update...
+The effective update at time $n+1$ is
 \[
     \vec{x}[n+1] = 
         %\Delta\vec{x}[n+1] +
@@ -89,7 +93,7 @@ This helps improve stability and convergence over regions where the algorithm
 might oscillate due to steep values of $f$.
 %The default value for $\mu$ is 0.99.
 
-\subsubsection{Usage}
+\subsubsection{Interface}
 Here is a summary of the parameters used in the gradient search algorithm and
 their default values:
 \begin{itemize}
@@ -98,10 +102,44 @@ their default values:
 \item[$\alpha$] : momentum constant (default 0.1)
 \item[$\mu$]    : iterative $\gamma$ adjustment factor (default 0.99)
 \end{itemize}
-
+%
+\begin{description}
+\item[{\tt gradsearch\_create(*userdata,*v,n,utility,min/max)}]
+    creates a gradient search object designed to optimize an $n$-point
+    vector $\vec{v}$.
+    The user-defined utility function and userdata structures define the
+    search, as well as the {\tt min/max} flag which can be either
+    {\tt LIQUID\_OPTIM\_MINIMIZE} or
+    {\tt LIQUID\_OPTIM\_MAXIMIZE}.
+    When run the {\tt gradsearch} object will update the ``optimal''
+    value in the input vector $\vec{v}$ specified during
+    {\tt create()}.
+%\item[{\tt gradsearch\_create\_advanced(*userdata,*v,n,delta,gamma,alpha,mu,utility,min/max)}]
+\item[{\tt gradsearch\_destroy(q)}]
+    destroys a {\tt gradsearch} object, freeing all internally-allocated
+    memory.
+\item[{\tt gradsearch\_print(q)}]
+    prints the internal state of the gradient search object.
+\item[{\tt gradsearch\_reset(q)}]
+    resets the internal state of the gradient search object.
+\item[{\tt gradsearch\_step(q)}]
+    steps through a single iteration of the gradient search.
+    The result is stored in the original input vector $\vec{v}$
+    specified during the {\tt create()} method.
+\item[{\tt gradsearch\_execute(q,n,target\_utility)}]
+    runs multiple iterations of the search algorithm,
+    stopping after either $n$ iterations or if the target utility is
+    met.
+\end{description}
+%
 Here is an example of how the {\tt gradient\_search} is used:
-% gradient_search example
-\input{listings/gradient_search.example.c.tex}
+% 
+% gradsearch example
+\input{listings/gradsearch.example.c.tex}
+%
+Notice that the utility function is a callback that is completely
+defined by the user.
+
 
 \subsection{{\tt quasinewton\_search} }
 \label{module:optim:quasinewton_search}
@@ -268,6 +306,32 @@ described:
 \item[{\tt chromosome\_crossover()}]
     copies the first $k$ bits of the first parent and the remaining bits
     of the second parent to the child chromosome.
+\end{description}
+%
+
+\subsubsection{Interface}
+\label{module:optim:ga_search:interface}
+%
+Listed below is a description for the {\tt ga\_search} object in
+\liquid.
+%
+\begin{description}
+\item[{\tt ga\_search\_create(*utility,*userdata,parent,min/max)}]
+    creates a {\tt ga\_search} object, initialized on the specified
+    parent chromosome.
+    The user-defined utility function and userdata structures define the
+    search, as well as the {\tt min/max} flag which can be either
+    {\tt LIQUID\_OPTIM\_MINIMIZE} or
+    {\tt LIQUID\_OPTIM\_MAXIMIZE}.
+    %When run the {\tt ga\_search} object will update the ``optimal''
+    %value in the input vector $\vec{v}$ specified during
+    %{\tt create()}.
+%\item[{\tt ga\_search\_create\_advanced()}]
+\item[{\tt ga\_search\_destroy(q)}]
+    destroys a {\tt ga\_search} object, freeing all internally-allocated
+    memory.
+\item[{\tt ga\_search\_print(q)}]
+    prints the internal state of the {\tt ga\_search} object
 \end{description}
 %
 

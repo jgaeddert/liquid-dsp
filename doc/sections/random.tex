@@ -5,9 +5,16 @@
 \newpage
 \section{random}
 \label{module:random}
-The random module in \liquid\ implements a variety of random number
-generators useful for simulation of communications systems,
+The random module in \liquid\ includes a comprehensive set of
+random number generators useful for simulation of wireless
+communications channels,
 particularly for generating noise as well as fading channels.
+This includes the
+uniform,
+normal,
+circular (complex) Gaussian,
+Rice-$K$, and
+Weibull distributions.
 
 
 % 
@@ -42,7 +49,6 @@ $X_1 = \sqrt{-2\ln(U_1)} \sin\left(2 \pi U_2\right)$ and
 $X_2 = \sqrt{-2\ln(U_1)} \cos\left(2 \pi U_2\right)$
 are independent normal random variables with a mean of zero and a unity
 standard deviation ($X_1, X_2 \sim N(0,1)$).
-
 
 % 
 % Weibull

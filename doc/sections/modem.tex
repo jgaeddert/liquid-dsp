@@ -7,68 +7,194 @@
 \label{module:modem}
 The modem module implements a set of (mod)ulation/(dem)odulation schemes
 for encoding information into signals.
-%For the analog modems, samples are modulated according to...
+For the analog modems, samples are encoded according to frequency or
+analog modulation.
 For the digital modems, data bits are encoded into symbols representing
 carrier frequency, phase, amplitude, etc.
 This section gives a brief overview of modulation schemes available in
 \liquid, and provides a brief description of the interfaces.
 
+
+%
+% ANALOG MODEMS
+%
+
 \subsection{Analog modulation schemes}
 \label{module:modem:analog}
+This section describes the two basic analog modulation schemes available
+in \liquid:
+frequency modulation and amplitude modulation
+implemented with the respective {\tt freqmodem} and {\tt ampmodem}
+objects.
 
 \subsubsection{{\tt freqmodem} (analog FM)}
 \label{module:modem:analog:freqmodem}
-The {\tt freqmodem} object implements an analog frequency modulation (FM)
-modulator and demodulator.
-Two options for demodulation are possible...
-[TODO: check this equation]
-\[
+The {\tt freqmodem} object implements an analog frequency modulation
+(FM) modulator and demodulator.
+Given an input message signal $-1 \le s(t) \le 1$, the transmitted
+signal is
+%
+\begin{equation}
+\label{eqn:modem:freqmodem_tx}
     s(t) =  \exp\left\{
                 j 2 \pi k f_c
                 \int_{0}^{t}{
-                    m(\tau)d\tau
+                    s(\tau)d\tau
                 }
             \right\}
-\]
-where $-1 \le m(t) \le 1$ is the message signal, $f_c$ is the carrier
-frequency, and $k$ is the modulation index.
-The modulation index governs the relative bandwidth of the signal
-[TODO: explain in more detail].
-Its digital equivalent is
-\[
-    s(nT_s) =   \exp\left\{
-                    j 2 \pi k f_c
-                    \sum_{k=0}^{n}{
-                        m(kT_s)
-                    }
-                \right\}
-\]
+\end{equation}
+%
+where $f_c$ is the carrier frequency, and $k$ is the modulation index.
+The modulation index governs the relative bandwidth of the signal.
+Two options for demodulation are possible:
+observing the instantaneous frequency on the output of a phase-locked
+loop,
+or computing the instantaneous frequency using the delay-conjugate
+method.
+%Its digital equivalent is
+%\[
+%    s(nT_s) =   \exp\left\{
+%                    j 2 \pi k f_c
+%                    \sum_{k=0}^{n}{
+%                        m(kT_s)
+%                    }
+%                \right\}
+%\]
+%
+An example of the {\tt freqmodem} interface is listed below.
+%
+\input{listings/freqmodem.example.c.tex}
+%
+A more detailed example can be found in
+{\tt examples/freqmodem\_example.c}
+located under the main \liquid\ project source directory.
+Listed below is the full interface to the {\tt freqmodem} object for
+analog frequency modulation/demodulation.
+%
+\begin{description}
+\item[{\tt freqmodem\_create(k,fc,type)}]
+    creates and returns an {\tt freqmodem} object with a modulation
+    index $k$, a carrier frequency $-0.5 < f_c < 0.5$, and a
+    demodulation type defined by {\tt type}.
+    The demodulation type can either be
+    {\tt LIQUID\_MODEM\_FM\_PLL} which uses a phased-locked loop or
+    {\tt LIQUID\_MODEM\_FM\_DELAY\_CONJ} which uses the delay conjugate
+    method.
+\item[{\tt freqmodem\_destroy(q)}]
+    destroys an {\tt freqmodem} object, freeing all internally-allocated
+    memory.
+\item[{\tt freqmodem\_reset(q)}]
+    resets the state of the {\tt freqmodem} object.
+\item[{\tt freqmodem\_print(q)}]
+    prints the internal state of the {\tt freqmodem} object.
+\item[{\tt freqmodem\_modulate(q,x,*y)}]
+    modulates the input sample $x$ storing the output to $y$.
+\item[{\tt freqmodem\_demodulate(q,y,*x)}]
+    demodulates the input sample $y$ storing the output to $x$.
+\end{description}
 
+% TODO : clean up this section!
 \subsubsection{{\tt ampmodem} (analog AM)}
 \label{module:modem:analog:ampmodem}
 The {\tt ampmodem} object implements an analog amplitude modulation (AM)
 modulator/demodulator pair.
-Two transmission schemes are available: single side-band (SSB), and
+Two basic transmission schemes are available:
+single side-band (SSB), and
 double side-band (DSB).
-For SSB, the receiver can either use a peak detector, or phase-locked loop
-({\it not yet implemented}).
-For DSB, the receiver uses a Costas loop for carrier frequency and phase
-tracking.
+%
+For an input message signal $-1 \le s(t) \le 1$, the double side-band
+transmitted signal is
+%
+\begin{equation}
+\label{eqn:modem:ampmodem:dsb_tx}
+    x_{DSB}(t) = 
+    \begin{cases}
+        s(t)e^{j 2 \pi f_c t}   &   \text{suppressed carrier} \\
+        \frac{1}{2}\bigl(1+ks(t)\bigr)e^{j 2 \pi f_c t}   &   \text{unsuppressed carrier}
+    \end{cases}
+\end{equation}
+%
+where $f_c$ is the carrier frequency, and $k$ is the modulation index.
+%
+For single side-band, only the upper (USB) or lower half (LSB)
+of the spectrum is transmitted.
+The opposing half of the spectrum is rejected using a Hilbert transform
+(see Section~\ref{module:filter:firhilb}).
+Let $\dot{s}(t)$ represent the Hilbert transform of the message signal
+$s(t)$ such that its Fourier transform is non-zero only for positive
+frequency components, viz
+%
+\begin{equation}
+\label{eqn:modem:ampmodem:ssb_hilbert}
+    \dot{S}(\omega) = \F\left\{ \dot{s}(t) \right\} =
+    \begin{cases}
+        S(\omega) = \F\left\{ s(t) \right\} & \omega > 0 \\
+        0                                   & \omega \leq 0
+    \end{cases}
+\end{equation}
+%
+Consequently the transmitted upper side-band signal is
+%
+\begin{equation}
+\label{eqn:modem:ampmodem:ssb_tx}
+    x_{USB}(t) = 
+    \begin{cases}
+        \dot{s}(t)e^{j 2 \pi f_c t}   &   \text{suppressed carrier} \\
+        \frac{1}{2}\bigl(1+k\dot{s}(t)\bigr)e^{j 2 \pi f_c t}   &   \text{unsuppressed carrier}
+    \end{cases}
+\end{equation}
+%
+For lower single side-band, $\dot{s}(t)$ is simply conjugated.
+%
+For suppressed carrier modulation the receiver uses a phase-locked loop for
+carrier frequency and phase tracking.
+When the carrier is not suppressed the receiver demodulates using a
+simple peak detector and IIR bias removal filter.
+%
+An example of the {\tt freqmodem} interface is listed below.
+%
+\input{listings/ampmodem.example.c.tex}
+%
+A more detailed example can be found in
+{\tt examples/ampmodem\_example.c}
+located under the main \liquid\ project source directory.
+Listed below is the full interface to the {\tt ampmodem} object for
+analog frequency modulation/demodulation.
+%
+\begin{description}
+\item[{\tt ampmodem\_create(k,type,suppressed\_carrier)}]
+    creates and returns an {\tt ampmodem} object with a modulation
+    index $k$,
+    a modulation scheme defined by {\tt type},
+    and a binary flag specifying whether the carrier should be
+    suppressed.
+    The modulation type can either be
+    {\tt LIQUID\_MODEM\_AM\_DSB} (double side-band),
+    {\tt LIQUID\_MODEM\_FM\_USB} (single upper side-band), or
+    {\tt LIQUID\_MODEM\_FM\_LSB} (single lower side-band).
+    method.
+\item[{\tt ampmodem\_destroy(q)}]
+    destroys an {\tt ampmodem} object, freeing all internally-allocated
+    memory.
+\item[{\tt ampmodem\_reset(q)}]
+    resets the state of the {\tt ampmodem} object.
+\item[{\tt ampmodem\_print(q)}]
+    prints the internal state of the {\tt ampmodem} object.
+\item[{\tt ampmodem\_modulate(q,x,*y)}]
+    modulates the input sample $x$ storing the output to $y$.
+\item[{\tt ampmodem\_demodulate(q,y,*x)}]
+    demodulates the input sample $y$ storing the output to $x$.
+\end{description}
 
-Single side-band:
-\[
-    s_1(t) = \frac{1}{2}\Bigl(1+k m(t)\Bigr)e^{j 2 \pi f_c t}
-\]
-where $-1 \le m(t) \le 1$ is the message signal, $f_c$ is the carrier frequency,
-and $k$ is the modulation index.
-
-Double side-band:
-\[
-    s_2(t) = m(t)e^{j 2 \pi f_c t}
-\]
 
 %\subsection{Continuous phase digital modulation schemes}
 %fsk, msk, etc. [NOTE: not yet implemented]
+
+
+
+%
+% DIGITAL MODEMS
+%
 
 \subsection{Linear digital modulation schemes}
 \label{module:modem:digital}
@@ -218,21 +344,23 @@ In order to reduce the number of bit errors in a digital modem,
 all symbols are automatically Gray encoded;
 adjacent symbols in a constellation differ by only one bit.
 %
-For example, the binary-coded decimal (bcd) value of 183 is {\tt 10110111}.
+For example, the binary-coded decimal (BCD) value of 183 is {\tt 10110111}.
 It has adjacent symbol 184 ({\tt 10111000}) which differs by 4 bits.
 Assume the transmitter sends 183 without encoding.
-If noise at the receiver were to cause it to demodulate the nearby symbol 184,
-the result would be 4 bit errors.
+If noise at the receiver were to cause it to demodulate the nearby
+symbol 184, the result would be 4 bit errors.
 %
 Gray encoding is computed to the binary-coded decimal symbol
 by applying an exclusive OR bitmask of itself shifted to the right by a
 single bit.
-\begin{verbatim}
-        10110111    bcd_in (183)        10111000    bcd_in (184)
-        .1011011    bcd_in >> 1         .1011100    bcd_in >> 1
-xor :   --------                        --------
-        11101100    gray_out (236)      11100100    gray_out (228)
-\end{verbatim}
+%
+\begin{Verbatim}[fontsize=\small]
+            10110111    bcd_in (183)        10111000    bcd_in (184)
+            .1011011    bcd_in >> 1         .1011100    bcd_in >> 1
+    xor :   --------                        --------
+            11101100    gray_out (236)      11100100    gray_out (228)
+\end{Verbatim}
+%
 Notice that the two output symbols
 236 ({\tt 11101100}) and
 228 ({\tt 11100100}) differ by only one bit.
@@ -242,18 +370,20 @@ result in only a single bit error instead of 4 without Gray coding.
 The decoding process is similar to encoding but slightly more involved.
 Gray decoding is computed on an encoded input symbol
 by adding to it (modulo 2) as many shifted versions of itself as it has bits.
-\begin{verbatim}
-        11101100    gray_in (236)       11100100    gray_in (228)
-        .1110110    gray_in >> 1        .1110010    gray_in >> 1
-        ..111011    gray_in >> 2        ..111001    gray_in >> 2
-        ...11101    gray_in >> 3        ...11100    gray_in >> 3
-        ....1110    gray_in >> 4        ....1110    gray_in >> 4
-        .....111    gray_in >> 5        .....111    gray_in >> 5
-        ......11    gray_in >> 6        ......11    gray_in >> 6
-        .......1    gray_in >> 7        .......1    gray_in >> 7
-xor :   --------                        --------
-        10110111    gray_out (183)      10111000    gray_out (184)
-\end{verbatim}
+%
+\begin{Verbatim}[fontsize=\small]
+            11101100    gray_in (236)       11100100    gray_in (228)
+            .1110110    gray_in >> 1        .1110010    gray_in >> 1
+            ..111011    gray_in >> 2        ..111001    gray_in >> 2
+            ...11101    gray_in >> 3        ...11100    gray_in >> 3
+            ....1110    gray_in >> 4        ....1110    gray_in >> 4
+            .....111    gray_in >> 5        .....111    gray_in >> 5
+            ......11    gray_in >> 6        ......11    gray_in >> 6
+            .......1    gray_in >> 7        .......1    gray_in >> 7
+    xor :   --------                        --------
+            10110111    gray_out (183)      10111000    gray_out (184)
+\end{Verbatim}
+%
 There are a few interesting characteristics of Gray encoding:
 \begin{itemize}
 \item the first bit never changes in encoding/decoding
@@ -268,25 +398,11 @@ In \liquid, Gray encoding and decoding are computed with the
 
 \subsubsection{{\tt MOD\_PSK} (phase-shift keying)}
 \label{module:modem:digital:PSK}
-Demodulation is performed independent of the signal amplitude.
-For an $M$-symbol constellation, the $k^{th}$ symbol is
-\[
-    s_k = e^{j 2 \pi k/M}
-\]
-where $k \in \{0,1,\ldots,M-1\}$.
-Specific schemes include BPSK ($M=2$),
-\[
-    s_k = e^{j \pi k} =
-    \begin{cases}
-        +1 & k=0 \\
-        -1 & k=1
-    \end{cases}
-\]
-and QPSK ($M=4$)
-\[
-    s_k = e^{j\left(\pi k/4 + \frac{\pi}{4}\right)}
-\]
-
+With phase-shift keying the information is stored in the absolute phase
+of the modulated signal.
+This means that each of $M=2^m$ symbols in the constellation are equally
+spaced around the unit circle.
+%
 %-------------------- FIGURE: PSK MODEM --------------------
 \begin{figure}
 \centering
@@ -294,11 +410,23 @@ and QPSK ($M=4$)
   \subfigure[BPSK]
     {
       \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_bpsk}
+      \label{fig:modem:psk:bpsk}
+    } \quad
+  \subfigure[2-PSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_2psk}
       \label{fig:modem:psk:2}
     } \quad
+}
+\mbox{
   \subfigure[QPSK]
     {
       \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_qpsk}
+      \label{fig:modem:psk:qpsk}
+    } \quad
+  \subfigure[4-PSK]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/modem_4psk}
       \label{fig:modem:psk:4}
     } \quad
 }
@@ -315,17 +443,63 @@ and QPSK ($M=4$)
     } \quad
 }
 % trim = left bottom right top
-\caption{Phase-shift keying (PSK) modem}
+\caption{
+    Phase-shift keying (PSK) modem constellation map.
+    Note that BPSK and QPSK are customized implementations of 2-PSK and
+    4-PSK.
+}
 \label{fig:modem:psk}
 \end{figure}
+%
+Figure~\ref{fig:modem:psk} depicts the constellation of PSK up to $M=16$
+with the bits gray encoded.
+While \liquid\ supports up to $M=256$, values greater than $M=32$
+are typically avoided due to error rates for practical signal-to-noise
+ratios.
+%
+For an $M$-symbol constellation, the $k^{th}$ symbol is
+%
+\begin{equation}
+    s_k = e^{j 2 \pi k/M}
+\end{equation}
+%
+where $k \in \{0,1,\ldots,M-1\}$.
+Specific schemes include BPSK ($M=2$),
+%
+\begin{equation}
+    s_k = e^{j \pi k} =
+    \begin{cases}
+        +1 & k=0 \\
+        -1 & k=1
+    \end{cases}
+\end{equation}
+%
+and QPSK ($M=4$)
+%
+\begin{equation}
+    s_k = e^{j\left(\pi k/4 + \frac{\pi}{4}\right)}
+\end{equation}
+%
+Demodulation is performed independent of the signal amplitude for
+coherent PSK.
+
 
 \subsubsection{{\tt MOD\_DPSK} (differential phase-shift keying)}
 \label{module:modem:digital:DPSK}
-Demodulation is performed independent of the signal amplitude.
-The data are encoded using phase transitions, rather than absolute phase.
+Differential PSK (DPSK) encodes information in the phase change of the
+carrier.
+Like regular PSK
+demodulation is performed independent of the signal amplitude;
+however because the data are encoded using phase transitions rather than
+absolute phase, the receiver does not have to know the absolute phase of
+the transmitter.
 This allows the receiver to demodulate incoherently, but at a quality
 degradation of 3dB.
-\[
+%
+As such the $n^{th}$ transmitted symbol $k(n)$ depends on the previous
+symbol, viz
+%
+\begin{equation}
     s_k(n) = \exp\left\{
                 \frac{
                     j 2 \pi \Bigl(k(n) - k(n-1)\Bigr)
@@ -333,26 +507,28 @@ degradation of 3dB.
                     M
                 }
             \right\}
-\]
+\end{equation}
 
 \subsubsection{{\tt MOD\_APSK} (amplitude/phase-shift keying}
 \label{module:modem:digital:APSK}
-Amplitude/phase-shift keying is a specific form of quadrature amplitude
-modulation where constellation points lie on concentric circles.
-\begin{itemize}
-\item constellation points are further apart than those of PSK/DPSK, resulting
-      in an improved error performance,
-\item phase recovery is improved over regular QAM as the constellation points
-      are less sensitive to phase noise
-\end{itemize}
+Amplitude/phase-shift keying (APSK) is a specific form of quadrature
+amplitude modulation where constellation points lie on concentric
+circles.
+The constellation points are further apart than those of PSK/DPSK,
+resulting in an improved error performance.
+Furthermore the phase recovery for APSK is improved over regular QAM as
+the constellation points are less sensitive to phase noise.
+This improvement comes at the cost of an increased computational
+complexity at the receiver.
+%
 Demodulation follows as a two-step process: first, the amplitude of the
 received signal is evaluated to determine in which level (``ring'') the
 transmitted symbol lies.
-Once the level is determined, the appropriate symbol is chosen based on its
-phase, similar to PSK demodulation.
-Demodulation of APSK consumes slightly more clock cycles than the PSK and QAM
-demodulators.
-
+Once the level is determined, the appropriate symbol is chosen based on
+its phase, similar to PSK demodulation.
+Demodulation of APSK consumes slightly more clock cycles than the PSK
+and QAM demodulators.
+%
 %-------------------- FIGURE: APSK MODEM --------------------
 \begin{figure}
 \centering
@@ -396,15 +572,27 @@ demodulators.
 \caption{Amplitude/phase-shift keying (APSK) modem}
 \label{fig:modem:apsk}
 \end{figure}
+%
+Figure~\ref{fig:modem:apsk} depicts the available APSK signal
+constellations for $M$ up to 128.
+The constellation points and bit mappings have been optimized to
+minimize the bit error rate in 10~dB SNR.
+
 
 \subsubsection{{\tt MOD\_ASK} (amplitude-shift keying)}
 \label{module:modem:digital:ASK}
-
-\[
-    s_k = \alpha ( 2 k - M - 1 )
-\]
+Amplitude-shift keying (ASK) is a simple form of amplitude modulation by
+which the information is encoded entirely in the in-phase component of
+the baseband signal.
+The encoded symbol is simply
+%
+\begin{equation}
+    s_k = \alpha \bigl( 2 k - M - 1 \bigr)
+\end{equation}
+%
 where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
-\[
+%
+\begin{equation}
     \alpha = 
     \begin{cases}
     1               &   M=2     \\
@@ -414,8 +602,8 @@ where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
     1/\sqrt{341}    &   M=32    \\
     \sqrt{3}/M      &   M > 32
     \end{cases}
-\]
-
+\end{equation}
+%
 %-------------------- FIGURE: ASK MODEM --------------------
 \begin{figure}
 \centering
@@ -447,6 +635,12 @@ where $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \caption{Pulse-amplitude modulation (ASK) modem}
 \label{fig:modem:ask}
 \end{figure}
+%
+Figure~\ref{fig:modem:ask} depicts the ASK constellation map for $M$ up
+to 16.
+Due to the poor error rate performance of ASK values of $M$ greater than
+16 are not recommended.
+
 
 \subsubsection{{\tt MOD\_QAM} (quadrature amplitude modulation)}
 \label{module:modem:digital:QAM}
@@ -462,9 +656,11 @@ the first three bits of the symbol encode the in-phase component of the
 sample, and the last thre bits encode the quadrature component of the sample.
 %
 We may formally describe the encoded sample is
-\[
-    s_k = \alpha \{ ( 2 k_i - M_i - 1 ) + j(2 k_q - M_q - 1) \}
-\]
+%
+\begin{equation}
+    s_k = \alpha \Bigl\{ ( 2 k_i - M_i - 1 ) + j(2 k_q - M_q - 1) \Bigr\}
+\end{equation}
+%
 where
 $k_i$ is the in-phase symbol,
 $k_q$ is the quadrature symbol,
@@ -473,7 +669,8 @@ quadrature symbols,
 $m_i=\lceil \log_2(M) \rceil$ and $m_q=\lfloor \log_2(M) \rfloor$ are the
 number of respective in-phase and quadrature bits, and
 $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
-\[
+%
+\begin{equation}
     \alpha = 
     \begin{cases}
     1/\sqrt{2}      &   M=4     \\
@@ -489,9 +686,8 @@ $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
     1/\sqrt{2730}   &   M=4096  \\
     \sqrt{2/M}      &   \text{else}
     \end{cases}
-\]
-
-
+\end{equation}
+%
 %-------------------- FIGURE: QAM MODEM --------------------
 \begin{figure}
 \centering
@@ -535,13 +731,19 @@ $\alpha$ is a scaling factor to ensure $E\{s_k^2\}=1$,
 \caption{Rectangular quaternary-amplitude modulation (QAM) modem}
 \label{fig:modem:qam}
 \end{figure}
+%
+Figure~\ref{fig:modem:qam} depicts the arbitrary rectangular QAM modem
+constellation maps for $M$ up to 256.
+Notice that all the symbol points are gray encoded to minimize bit
+errors between adjacent symbols.
+
 
 \subsubsection{{\tt MOD\_ARB} (arbitrary modem)}
 \label{module:modem:digital:ARB}
 \liquid\ also allows the user to create their own modulation schemes by
 designating the number of bits per symbol, and the full signal constellation.
 Several pre-loaded arbitrary signal constellations are available.
-
+%
 %-------------------- FIGURE: ARB MODEM --------------------
 \begin{figure}
 \centering
@@ -561,5 +763,11 @@ Several pre-loaded arbitrary signal constellations are available.
 \caption{Arbitrary constellation (ARB) modem}
 \label{fig:modem:arb}
 \end{figure}
-
+%
+Figure~\ref{fig:modem:arb} depicts several available arbitrary
+constellation maps;
+however the user can create any arbitrary constellation map so long as
+no two points overlap
+(see {\tt modem\_arb\_init()} and {\tt modem\_arb\_init\_file()} in
+Section~\ref{module:modem:digital:interface}).
 
