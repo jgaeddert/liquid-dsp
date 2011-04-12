@@ -11,9 +11,6 @@ To do:
 Sections to finish:
   * tutorial: modem
 
-  * utility
-  * experimental
-
   * installation guide
   * building and depdendencies
   * targets

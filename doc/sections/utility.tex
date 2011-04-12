@@ -10,12 +10,6 @@ manipulation.
 This includes packing/unpacking byte arrays, counting ones in an integer,
 computing a binary dot-product, and others.
 
-\subsection{{\tt liquid\_pack\_array()},
-            {\tt liquid\_unpack\_array()}}
-\label{module:utility:pack_array}
-Pack array with symbols.
-
-
 \subsection{{\tt liquid\_pack\_bytes()},
             {\tt liquid\_unpack\_bytes()}, and
             {\tt liquid\_repack\_bytes()}}
@@ -34,6 +28,44 @@ For example repacking two 8-bit symbols {\tt 00000000},{\tt 11111111} into six
 {\tt 000},{\tt 000},{\tt 001},{\tt 111},{\tt 111},{\tt 100}.
 Because 16 bits cannot be divided evenly among 3-bit symbols, the last symbol
 is padded with zeros.
+
+\subsection{{\tt liquid\_pack\_array()},
+            {\tt liquid\_unpack\_array()}}
+\label{module:utility:pack_array}
+%
+The {\tt liquid\_pack\_array()} and {\tt liquid\_unpack\_array()}
+methods pack an array with symbols of arbitrary length.
+These methods are similar to those in
+Section~\ref{module:utility:pack_bytes}
+but are capable of packing symbols of any arbitrary length.
+These are convenient for digital modulation and demodulation of a block
+of symbols with different modulation schemes.
+For example packing an array with five symbols
+{\tt 1000},{\tt 011},{\tt 11010},{\tt 1},{\tt 000} yields two bytes:
+{\tt 10000111,10101000}.
+%
+Here are the basic interfaces for packing and unpacking arrays:
+\begin{Verbatim}[fontsize=\small]
+  // pack binary array with symbol(s)
+  void liquid_pack_array(unsigned char * _src,        // source array [size: _n x 1]
+                         unsigned int _n,             // input source array length
+                         unsigned int _k,             // bit index to write in _src
+                         unsigned int _b,             // number of bits in input symbol
+                         unsigned char _sym_in);      // input symbol
+
+  // unpack symbols from binary array
+  void liquid_unpack_array(unsigned char * _src,      // source array [size: _n x 1]
+                           unsigned int _n,           // input source array length
+                           unsigned int _k,           // bit index to write in _src
+                           unsigned int _b,           // number of bits in output symbol
+                           unsigned char * _sym_out); // output symbol
+\end{Verbatim}
+%
+Listed below is a simple example of packing symbols of varying lengths
+into a fixed array of bytes;
+%
+\input{listings/pack_array.example.c.tex}
+%
 
 
 \subsection{{\tt liquid\_lbshift()},
