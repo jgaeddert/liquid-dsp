@@ -1,5 +1,5 @@
 //
-// ga_search_knapsack_example.c
+// gasearch_knapsack_example.c
 //
 
 #include <stdio.h>
@@ -9,12 +9,12 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "ga_search_knapsack_example.m"
+#define OUTPUT_FILENAME "gasearch_knapsack_example.m"
 
 // print usage/help message
 void usage()
 {
-    printf("Usage: ga_search_knapsack_example [options]\n");
+    printf("Usage: gasearch_knapsack_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : number of items available, default: 1000\n");
     printf("  i     : number of iterations (generations) to run, default: 2000\n");
@@ -111,8 +111,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"clear all;\n");
     fprintf(fid,"close all;\n");
 
-    // create ga_search object
-    ga_search ga = ga_search_create_advanced(&knapsack_utility,
+    // create gasearch object
+    gasearch ga = gasearch_create_advanced(&knapsack_utility,
                                              (void*)&bag,
                                              prototype,
                                              LIQUID_OPTIM_MAXIMIZE,
@@ -122,9 +122,9 @@ int main(int argc, char*argv[])
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
     for (i=0; i<num_iterations; i++) {
-        ga_search_evolve(ga);
+        gasearch_evolve(ga);
 
-        ga_search_getopt(ga, prototype, &optimum_utility);
+        gasearch_getopt(ga, prototype, &optimum_utility);
         if (((i+1)%100)==0)
             printf("  %4u : %12.8f;\n", i+1, optimum_utility);
 
@@ -132,7 +132,7 @@ int main(int argc, char*argv[])
     }
 
     // print results
-    ga_search_getopt(ga, prototype, &optimum_utility);
+    gasearch_getopt(ga, prototype, &optimum_utility);
     knapsack_print(&bag, prototype);
 
     fprintf(fid,"figure;\n");
@@ -147,7 +147,7 @@ int main(int argc, char*argv[])
 
     // free allocated objects and memory
     chromosome_destroy(prototype);
-    ga_search_destroy(ga);
+    gasearch_destroy(ga);
     free(bag.value);
     free(bag.weight);
 

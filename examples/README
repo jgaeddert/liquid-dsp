@@ -281,7 +281,8 @@ framesync64_example.c
     SEE ALSO: flexframesync_example.c
 
 freqmodem_example.c
-ga_search_example.c
+gasearch_example.c
+gasearch_knapsack_example.c
 gmskmodem_example.c
 gport_dma_example.c [EXPERIMENTAL]
 gport_dma_threaded_example.c [EXPERIMENTAL]

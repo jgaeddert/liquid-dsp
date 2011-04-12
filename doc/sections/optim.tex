@@ -236,17 +236,17 @@ Notice that its interface is virtually identical to that of
 % quasinewton_search example
 \input{listings/quasinewton_search.example.c.tex}
 
-\subsection{{\tt ga\_search} genetic algorithm search}
-\label{module:optim:ga_search}
+\subsection{{\tt gasearch} genetic algorithm search}
+\label{module:optim:gasearch}
 % talking points
 %   * chromosome
 %   * evolutionary algorithms (briefly)
 %   * interface
 
-The {\tt ga\_search} object implements an evolutionary (genetic)
+The {\tt gasearch} object implements an evolutionary (genetic)
 algorithm search in \liquid.
 The search uses a binary string of traits called a {\em chromosome}
-(see Section~\ref{module:optim:ga_search:chromosome}, below)
+(see Section~\ref{module:optim:gasearch:chromosome}, below)
 to represent a potential solution.
 A {\em population} of chromosomes is generated and their appropriate
 fitnesses are calculated.
@@ -258,9 +258,9 @@ splitting traits of the better chromosomes into a new member
 chromosome ({\em mutation}).
 
 \subsubsection{{\tt chromosome}, solution representation}
-\label{module:optim:ga_search:chromosome}
+\label{module:optim:gasearch:chromosome}
 The {\tt chromosome} object in \liquid\ realizes a binary string of
-traits used in the {\tt ga\_search} object.
+traits used in the {\tt gasearch} object.
 A chromosome has a fixed number of traits as well as a fixed number of
 bits to represent each trait;
 however the number of bits representing each trait does not necessarily
@@ -318,7 +318,7 @@ search algorithm's callback function.
     returns the value of the $k^{th}$ trait (floating-point representation).
 \end{description}
 %
-Finally the methods for use in the {\tt ga\_search} algorithm are
+Finally the methods for use in the {\tt gasearch} algorithm are
 described:
 %
 \begin{description}
@@ -331,50 +331,50 @@ described:
 %
 
 \subsubsection{Interface}
-\label{module:optim:ga_search:interface}
+\label{module:optim:gasearch:interface}
 %
-Listed below is a description for the {\tt ga\_search} object in
+Listed below is a description for the {\tt gasearch} object in
 \liquid.
 %
 \begin{description}
-\item[{\tt ga\_search\_create(*utility,*userdata,parent,min/max)}]
-    creates a {\tt ga\_search} object, initialized on the specified
+\item[{\tt gasearch\_create(*utility,*userdata,parent,min/max)}]
+    creates a {\tt gasearch} object, initialized on the specified
     parent chromosome.
     The user-defined utility function and userdata structures define the
     search, as well as the {\tt min/max} flag which can be either
     {\tt LIQUID\_OPTIM\_MINIMIZE} or
     {\tt LIQUID\_OPTIM\_MAXIMIZE}.
-    %When run the {\tt ga\_search} object will update the ``optimal''
+    %When run the {\tt gasearch} object will update the ``optimal''
     %value in the input vector $\vec{v}$ specified during
     %{\tt create()}.
-%\item[{\tt ga\_search\_create\_advanced()}]
-\item[{\tt ga\_search\_destroy(q)}]
-    destroys a {\tt ga\_search} object, freeing all internally-allocated
+%\item[{\tt gasearch\_create\_advanced()}]
+\item[{\tt gasearch\_destroy(q)}]
+    destroys a {\tt gasearch} object, freeing all internally-allocated
     memory.
-\item[{\tt ga\_search\_print(q)}]
-    prints the internal state of the {\tt ga\_search} object
-\item[{\tt ga\_search\_set\_mutation\_rate(q,rate)}]
+\item[{\tt gasearch\_print(q)}]
+    prints the internal state of the {\tt gasearch} object
+\item[{\tt gasearch\_set\_mutation\_rate(q,rate)}]
     sets the mutation rate
-\item[{\tt ga\_search\_set\_population\_size(q,population,selection)}]
+\item[{\tt gasearch\_set\_population\_size(q,population,selection)}]
     sets both the population size as well as the selection size of the
     evolutionary algorithm
-\item[{\tt ga\_search\_run(q,n,target\_utility)}]
+\item[{\tt gasearch\_run(q,n,target\_utility)}]
     runs multiple iterations of the search algorithm,
     stopping after either $n$ iterations or if the target utility is
     met.
-\item[{\tt ga\_search\_evolve(q)}]
+\item[{\tt gasearch\_evolve(q)}]
     steps through a sigle iteration of the search.
-\item[{\tt ga\_search\_getopt(q,*chromosome,*u)}]
+\item[{\tt gasearch\_getopt(q,*chromosome,*u)}]
     produces the best chromosome over the coarse of the search
     evolution, as well as its utility.
 \end{description}
 %
 
 \subsubsection{Example Code}
-\label{module:optim:ga_search:example}
-An example of the {\tt ga\_search} interface is given below:
+\label{module:optim:gasearch:example}
+An example of the {\tt gasearch} interface is given below:
 %
-\input{listings/ga_search.example.c.tex}
+\input{listings/gasearch.example.c.tex}
 %
 Evolutionary algorithms are well-suited for discrete optimization
 problems, particularly where a large number of parameters only hold a
@@ -383,8 +383,8 @@ The classic example is the knapsack problem (constrained, non-linear)
 in which the selection of items with different weights and values must
 be chosen to maximize the total value without exceeding a prescribed
 weight capacity.
-An example of using the {\tt ga\_search} object in \liquid\ to search
+An example of using the {\tt gasearch} object in \liquid\ to search
 over the solution space of the knapsack problem can be found in the
 {\tt examples} directory as
-{\tt examples/ga\_search\_knapsack\_example.c}.
+{\tt examples/gasearch\_knapsack\_example.c}.
 

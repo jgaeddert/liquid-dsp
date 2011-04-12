@@ -28,7 +28,7 @@ module_name     := optim
 #
 local_s_files	:=		\
 	chromosome.c		\
-	ga_search.c		\
+	gasearch.c		\
 	gradsearch.c		\
 	optim.common.c		\
 	quasinewton_search.c	\

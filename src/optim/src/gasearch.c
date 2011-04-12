@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -20,7 +20,7 @@
  */
 
 // 
-// ga_search.c
+// gasearch.c
 //
 
 #include <stdio.h>
@@ -35,55 +35,55 @@
 
 #define LIQUID_DEBUG_GA_SEARCH 0
 
-// Create a simple ga_search object; parameters are specified internally
-//  _get_utility        :   chromosome fitness utility function
-//  _userdata           :   user data, void pointer passed to _get_utility() callback
+// Create a simple gasearch object; parameters are specified internally
+//  _utility            :   chromosome fitness utility function
+//  _userdata           :   user data, void pointer passed to _utility() callback
 //  _parent             :   initial population parent chromosome, governs precision, etc.
 //  _minmax             :   search direction
-ga_search ga_search_create(float (*_get_utility)(void*, chromosome),
-                           void * _userdata,
-                           chromosome _parent,
-                           int _minmax)
+gasearch gasearch_create(gasearch_utility _utility,
+                         void * _userdata,
+                         chromosome _parent,
+                         int _minmax)
 {
-    return ga_search_create_advanced(_get_utility,
-                                     _userdata,
-                                     _parent,
-                                     _minmax,
-                                     16,        // population size
-                                     0.02f);    // mutation rate
+    return gasearch_create_advanced(_utility,
+                                    _userdata,
+                                    _parent,
+                                    _minmax,
+                                    16,        // population size
+                                    0.02f);    // mutation rate
 }
 
-// Create a ga_search object, specifying search parameters
-//  _get_utility        :   chromosome fitness utility function
-//  _userdata           :   user data, void pointer passed to _get_utility() callback
+// Create a gasearch object, specifying search parameters
+//  _utility            :   chromosome fitness utility function
+//  _userdata           :   user data, void pointer passed to _utility() callback
 //  _parent             :   initial population parent chromosome, governs precision, etc.
 //  _minmax             :   search direction
 //  _population_size    :   number of chromosomes in population
 //  _mutation_rate      :   probability of mutating chromosomes
-ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
-                                    void * _userdata,
-                                    chromosome _parent,
-                                    int _minmax,
-                                    unsigned int _population_size,
-                                    float _mutation_rate)
+gasearch gasearch_create_advanced(gasearch_utility _utility,
+                                  void * _userdata,
+                                  chromosome _parent,
+                                  int _minmax,
+                                  unsigned int _population_size,
+                                  float _mutation_rate)
 {
-    ga_search ga;
-    ga = (ga_search) malloc( sizeof(struct ga_search_s) );
+    gasearch ga;
+    ga = (gasearch) malloc( sizeof(struct gasearch_s) );
 
     if (_population_size > LIQUID_GA_SEARCH_MAX_POPULATION_SIZE) {
-        fprintf(stderr,"error: ga_search_create(), population size exceeds maximum\n");
+        fprintf(stderr,"error: gasearch_create(), population size exceeds maximum\n");
         exit(1);
     } else if (_mutation_rate < 0.0f || _mutation_rate > 1.0f) {
-        fprintf(stderr,"error: ga_search_create(), mutation rate must be in [0,1]\n");
+        fprintf(stderr,"error: gasearch_create(), mutation rate must be in [0,1]\n");
         exit(1);
     }
 
     // initialize public values
-    ga->userdata = _userdata;
+    ga->userdata        = _userdata;
     ga->num_parameters  = _parent->num_traits;
     ga->population_size = _population_size;
     ga->mutation_rate   = _mutation_rate;
-    ga->get_utility     = _get_utility;
+    ga->get_utility     = _utility;
     ga->minimize        = ( _minmax==LIQUID_OPTIM_MINIMIZE ) ? 1 : 0;
 
     ga->bits_per_chromosome = _parent->num_bits;
@@ -112,10 +112,10 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
         chromosome_init_random( ga->population[i] );
 
     // evaluate population
-    ga_search_evaluate(ga);
+    gasearch_evaluate(ga);
 
     // rank chromosomes
-    ga_search_rank(ga);
+    gasearch_rank(ga);
 
     // set global utility optimum
     ga->utility_opt = ga->utility[0];
@@ -124,8 +124,8 @@ ga_search ga_search_create_advanced(float (*_get_utility)(void*, chromosome),
     return ga;
 }
 
-// destroy a ga_search object
-void ga_search_destroy(ga_search _g)
+// destroy a gasearch object
+void gasearch_destroy(gasearch _g)
 {
     unsigned int i;
     for (i=0; i<_g->population_size; i++)
@@ -140,7 +140,7 @@ void ga_search_destroy(ga_search _g)
 }
 
 // print search parameter internals
-void ga_search_print(ga_search _g)
+void gasearch_print(gasearch _g)
 {
     printf("ga search :\n");
     printf("    num traits      :   %u\n", _g->num_parameters);
@@ -157,19 +157,22 @@ void ga_search_print(ga_search _g)
 }
 
 // set population/selection size
-void ga_search_set_population_size(ga_search _g,
-                                   unsigned int _population_size,
-                                   unsigned int _selection_size)
+//  _q                  :   ga search object
+//  _population_size    :   new population size (number of chromosomes)
+//  _selection_size     :   selection size (number of parents for new generation)
+void gasearch_set_population_size(gasearch _g,
+                                  unsigned int _population_size,
+                                  unsigned int _selection_size)
 {
     // validate input
     if (_population_size < 2) {
-        fprintf(stderr,"error: ga_search_set_population_size(), population must be at least 2\n");
+        fprintf(stderr,"error: gasearch_set_population_size(), population must be at least 2\n");
         exit(1);
     } else if (_selection_size == 0) {
-        fprintf(stderr,"error: ga_search_set_population_size(), selection size must be greater than zero\n");
+        fprintf(stderr,"error: gasearch_set_population_size(), selection size must be greater than zero\n");
         exit(1);
     } else if (_selection_size >= _population_size) {
-        fprintf(stderr,"error: ga_search_set_population_size(), selection size must be less than population\n");
+        fprintf(stderr,"error: gasearch_set_population_size(), selection size must be less than population\n");
         exit(1);
     }
 
@@ -198,11 +201,11 @@ void ga_search_set_population_size(ga_search _g,
 }
 
 // set mutation rate
-void ga_search_set_mutation_rate(ga_search _g,
-                                 float _mutation_rate)
+void gasearch_set_mutation_rate(gasearch _g,
+                                float _mutation_rate)
 {
     if (_mutation_rate < 0.0f || _mutation_rate > 1.0f) {
-        fprintf(stderr,"error: ga_search_set_mutation_rate(), mutation rate must be in [0,1]\n");
+        fprintf(stderr,"error: gasearch_set_mutation_rate(), mutation rate must be in [0,1]\n");
         exit(1);
     }
 
@@ -212,17 +215,17 @@ void ga_search_set_mutation_rate(ga_search _g,
 // Execute the search
 //  _g              :   ga search object
 //  _max_iterations :   maximum number of iterations to run before bailing
-//  _target_utility :   target utility
-float ga_search_run(ga_search _g,
+//  _tarutility :   target utility
+float gasearch_run(gasearch _g,
                     unsigned int _max_iterations,
-                    float _target_utility)
+                    float _tarutility)
 {
     unsigned int i=0;
     do {
         i++;
-        ga_search_evolve(_g);
+        gasearch_evolve(_g);
     } while (
-        optim_threshold_switch(_g->utility[0], _target_utility, _g->minimize) &&
+        optim_threshold_switch(_g->utility[0], _tarutility, _g->minimize) &&
         i < _max_iterations);
 
     // return optimum utility
@@ -230,19 +233,19 @@ float ga_search_run(ga_search _g,
 }
 
 // iterate over one evolution of the search algorithm
-void ga_search_evolve(ga_search _g)
+void gasearch_evolve(gasearch _g)
 {
     // Crossover
-    ga_search_crossover(_g);
+    gasearch_crossover(_g);
 
     // Mutation
-    ga_search_mutate(_g);
+    gasearch_mutate(_g);
 
     // Evaluation
-    ga_search_evaluate(_g);
+    gasearch_evaluate(_g);
 
     // Rank
-    ga_search_rank(_g);
+    gasearch_rank(_g);
 
     if ( optim_threshold_switch(_g->utility_opt,
                                 _g->utility[0],
@@ -265,7 +268,7 @@ void ga_search_evolve(ga_search _g)
 //  _g              :   ga search object
 //  _c              :   output optimal chromosome
 //  _utility_opt    :   fitness of _c
-void ga_search_getopt(ga_search _g,
+void gasearch_getopt(gasearch _g,
                       chromosome _c,
                       float * _utility_opt)
 {
@@ -277,7 +280,7 @@ void ga_search_getopt(ga_search _g,
 }
 
 // evaluate fitness of entire population
-void ga_search_evaluate(ga_search _g)
+void gasearch_evaluate(gasearch _g)
 {
     unsigned int i;
     for (i=0; i<_g->population_size; i++)
@@ -285,7 +288,7 @@ void ga_search_evaluate(ga_search _g)
 }
 
 // crossover population
-void ga_search_crossover(ga_search _g)
+void gasearch_crossover(gasearch _g)
 {
     chromosome p1, p2;      // parental chromosomes
     chromosome c;           // child chromosome
@@ -300,13 +303,13 @@ void ga_search_crossover(ga_search _g)
 
         c = _g->population[i];
 
-        //printf("  ga_search_crossover, p1: %d, p2: %d, c: %d\n", p1, p2, c);
+        //printf("  gasearch_crossover, p1: %d, p2: %d, c: %d\n", p1, p2, c);
         chromosome_crossover(p1, p2, c, threshold);
     }
 }
 
 // mutate population
-void ga_search_mutate(ga_search _g)
+void gasearch_mutate(gasearch _g)
 {
     unsigned int i;
     unsigned int index;
@@ -334,7 +337,7 @@ void ga_search_mutate(ga_search _g)
 }
 
 // rank population by fitness
-void ga_search_rank(ga_search _g)
+void gasearch_rank(gasearch _g)
 {
     unsigned int i, j;
     float u_tmp;        // temporary utility placeholder

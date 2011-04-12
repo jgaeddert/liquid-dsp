@@ -1,4 +1,4 @@
-// file: doc/listings/ga_search.example.c
+// file: doc/listings/gasearch.example.c
 
 // user-defined utility callback function
 float myutility(void * _userdata, chromosome _c)
@@ -23,24 +23,24 @@ int main() {
     // create prototype chromosome
     chromosome prototype = chromosome_create_basic(num_parameters, bits_per_parameter);
 
-    // create ga_search object
-    ga_search ga = ga_search_create_advanced(
-                                    &myutility,
-                                    NULL,
-                                    prototype,
-                                    LIQUID_OPTIM_MINIMIZE,
-                                    population_size,
-                                    mutation_rate);
+    // create gasearch object
+    gasearch ga = gasearch_create_advanced(
+                                   &myutility,
+                                   NULL,
+                                   prototype,
+                                   LIQUID_OPTIM_MINIMIZE,
+                                   population_size,
+                                   mutation_rate);
 
     // execute batch search
-    ga_search_run(ga, num_iterations, target_utility);
+    gasearch_run(ga, num_iterations, target_utility);
 
     // execute search one iteration at a time
     unsigned int i;
     for (i=0; i<num_iterations; i++)
-        ga_search_evolve(ga);
+        gasearch_evolve(ga);
 
     // clean up objects
     chromosome_destroy(prototype);
-    ga_search_destroy(ga);
+    gasearch_destroy(ga);
 }

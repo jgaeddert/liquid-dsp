@@ -1622,7 +1622,7 @@ struct chromosome_s {
     unsigned int num_bits;              // total number of bits
 };
 
-struct ga_search_s {
+struct gasearch_s {
     chromosome * population;            // population of chromosomes
     unsigned int population_size;       // size of the population
     unsigned int selection_size;        // number of 
@@ -1647,26 +1647,26 @@ struct ga_search_s {
     //   - maps the [0,1] bounded output vector to desired range
     //   - for multiple objectives, utility should be high \em only when
     //         all objectives are met (multiplicative, not additive)
-    float (*get_utility)(void*, chromosome);
+    gasearch_utility get_utility;       // utility function pointer
     void * userdata;                    // object to optimize
     int minimize;                       // minimize/maximize utility (search direction)
 };
 
 //
-// ga_search internal methods
+// gasearch internal methods
 //
 
 // evaluate fitness of entire population
-void ga_search_evaluate(ga_search _g);
+void gasearch_evaluate(gasearch _q);
 
 // crossover population
-void ga_search_crossover(ga_search);
+void gasearch_crossover(gasearch _q);
 
 // mutate population
-void ga_search_mutate(ga_search);
+void gasearch_mutate(gasearch _q);
 
 // rank population by fitness
-void ga_search_rank(ga_search);
+void gasearch_rank(gasearch _q);
 
 // sort values by index
 //  _v          :   input values [size: _len x 1]

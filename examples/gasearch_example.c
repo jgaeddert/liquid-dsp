@@ -1,5 +1,5 @@
 //
-// ga_search_example.c
+// gasearch_example.c
 //
 
 #include <stdio.h>
@@ -8,7 +8,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "ga_search_example.m"
+#define OUTPUT_FILENAME "gasearch_example.m"
 
 // utility callback function
 float utility_callback(void * _userdata, chromosome _c);
@@ -38,8 +38,8 @@ int main() {
     // create prototype chromosome
     chromosome prototype = chromosome_create_basic(num_parameters, bits_per_parameter);
 
-    // create ga_search object
-    ga_search ga = ga_search_create_advanced(
+    // create gasearch object
+    gasearch ga = gasearch_create_advanced(
                                     //&utility_callback,
                                     //&rosenbrock_callback,
                                     &peak_callback,
@@ -48,17 +48,17 @@ int main() {
                                     LIQUID_OPTIM_MAXIMIZE,
                                     population_size,
                                     mutation_rate);
-    ga_search_print(ga);
+    gasearch_print(ga);
 
     // execute search
-    //optimum_utility = ga_search_run(ga, num_iterations, -1e-6f);
+    //optimum_utility = gasearch_run(ga, num_iterations, -1e-6f);
 
     // execute search one iteration at a time
     fprintf(fid,"u = zeros(1,%u);\n", num_iterations);
     for (i=0; i<num_iterations; i++) {
-        ga_search_evolve(ga);
+        gasearch_evolve(ga);
 
-        ga_search_getopt(ga, prototype, &optimum_utility);
+        gasearch_getopt(ga, prototype, &optimum_utility);
         fprintf(fid,"u(%3u) = %12.4e;\n", i+1, optimum_utility);
 
         printf("%4u : %16.8f\n", i, optimum_utility);
@@ -66,7 +66,7 @@ int main() {
 
     // print results
     printf("\n");
-    ga_search_print(ga);
+    gasearch_print(ga);
 
     printf("optimum utility : %12.8f\n", optimum_utility);
     chromosome_printf(prototype);
@@ -83,7 +83,7 @@ int main() {
     // test results, optimum at [1, 1, 1, ... 1];
 
     chromosome_destroy(prototype);
-    ga_search_destroy(ga);
+    gasearch_destroy(ga);
 
     return 0;
 }

@@ -46,8 +46,8 @@ local_src	:=			\
 	flexframesync_reconfig_example.c		\
 	framesync64_example.c		\
 	freqmodem_example.c		\
-	ga_search_example.c		\
-	ga_search_knapsack_example.c	\
+	gasearch_example.c		\
+	gasearch_knapsack_example.c	\
 	gmskmodem_example.c		\
 	gradsearch_datafit_example.c	\
 	gradsearch_example.c		\
