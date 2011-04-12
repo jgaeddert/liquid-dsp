@@ -75,20 +75,14 @@ communications at the physical layer.
 
 \section{Quick Start Guide}
 \label{section:quickstart}
+A full description of installation procedures can be found in
+Section~\ref{section:installation}.
 The library can easily be built from source and is available from
 several places.
 The two most typical means of distribution are a compressed archive
 (a {\em tarball}) and cloning the source repository.
-Tarballs are generated with each stable release and are recommended for
-users not requiring bleeding edge development.
-Users wanting the very latest version (in addition to every other
-version) should clone the \liquid\ Git repository.
-A full description of installation procedures can be found in
-Section~\ref{section:installation}.
-
-\subsection{Building from an archive}
-\label{section:quickstart:build_from_tarball}
-Download the compressed archive {\tt liquid-dsp-v.v.v.tar.gz} to your
+If you are building from a tarball
+download the compressed archive {\tt liquid-dsp-v.v.v.tar.gz} to your
 local machine where {\tt v.v.v} denotes the version of the release
 (e.g. {\tt liquid-dsp-1.0.0.tar.gz});
 % Check the validity of the tarball using MD5...
@@ -118,16 +112,9 @@ library.
     $ make
     # make install
 \end{verbatim}
-
-\subsection{Building from the Git repository}
-\label{section:quickstart:build_from_git}
-Development of \liquid\ uses Git \cite{git:web}, a free and
-open-source distributed version control system.
-The benefits of Git over many other version control systems are
-numerous and the list is too long to give here;
-however one of the most important aspects is that each clone holds a
-copy of the entire repository with a complete history and record of each
-revision.
+%
+You may also build the lastest version of the code by cloning the
+Git repository.
 The main repository for \liquid\ is hosted online by {\em github}
 \cite{github:web} and can be cloned on your local machine via
 %
@@ -145,9 +132,6 @@ but with the additional bootstrapping step:
     $ make
     # make install
 \end{verbatim}
-
-\subsection{Additional targets}
-\label{section:quickstart:additional_targets}
 %
 You might also want to build and run the optional validation program
 (see Section~\ref{section:installation:targets:autotests}) via
@@ -164,14 +148,15 @@ At the moment these tools require Python \cite{python:web} to generate a
 C header file and run.
 A comprehensive list of signal processing examples is given in the
 {\tt examples} directory.
-All of the example binaries can be built as
+You may build all of the example binaries at one time by running
 \begin{verbatim}
     $ make examples
 \end{verbatim}
 %
-Each example can be built individually by directly targeting its binary
+Sometimes, however, it is useful to build one example individually.
+This can be accomplished by directly targeting its binary
 (e.g. ``{\tt make examples/cvsd\_example}'').
-The example can be run at the command line
+The example then can be run at the command line
 (e.g. ``{\tt ./examples/cvsd\_example}'').
 
 %

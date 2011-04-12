@@ -5,64 +5,172 @@
 \newpage
 \section{Installation Guide}
 \label{section:installation}
+The \liquid\ DSP library can be easily built from source and is
+available from several places.
+The two most typical means of distribution are a compressed archive
+(a {\em tarball}) and cloning the source repository.
+Tarballs are generated with each stable release and are recommended for
+users not requiring bleeding edge development.
+Users wanting the very latest version (in addition to every other
+version) should clone the \liquid\ Git repository.
 
-The basic installation is as follows:
-\begin{verbatim}
+\subsection{Building \& Dependencies}
+\label{section:installation:building}
+The \liquid\ signal processing library was intended to be universally
+deployable to a number of platforms by eliminating dependencies on
+external libraries and programs.
+That being said, \liquid\ still does require a bare minimum build
+environment to operate.
+As such the library requires only the following:
+%
+\begin{itemize}
+\item {\tt gcc}, the GNU compiler collection (or equivalent)
+\item {\tt libc}, the standard C library
+\item {\tt libm}, the standard math library (eventually will be phased
+      out to optional)
+\end{itemize}
+%
+While \liquid\ was designed to be portable,
+requiring a minimal amount of dependencies,
+the project will take advantage of other libraries if they are installed
+on the target machine.
+These optional packages are:
+%
+\begin{itemize}
+\item {\tt fftw3} for computationally efficient fast Fourier transforms
+\item {\tt libfec} for an extended number of forward error-correction
+      codecs (including convolutional and Reed-Solomon)
+\item {\tt liquid-fpm} (liquid fixed-point math library)
+\end{itemize}
+%
+The build system checks to see if they are installed during the {\tt
+configure} process and will generate an appropriate {\tt config.h} if
+they are.
+
+\subsection{Building from an archive}
+\label{section:installation:build_from_tarball}
+Download the compressed archive {\tt liquid-dsp-v.v.v.tar.gz} to your
+local machine where {\tt v.v.v} denotes the version of the release
+(e.g. {\tt liquid-dsp-1.0.0.tar.gz}).
+Check the validity of the tarball with the provided MD5 or SHA1 key.
+%
+% generate:
+%   $ md5sum liquid-dsp-v.v.v.tar.gz > liquid-dsp.md5
+%
+% check:
+%   $ md5sum --check liquid-dsp.md5
+%
+% You should see a message verifying the file:
+%   liquid-dsp-v.v.v.tar.gz: OK
+%
+% If it fails, do no unpack.
+Unpack the tarball
+%
+\begin{Verbatim}[fontsize=\small]
+    $ tar -xvf liquid-dsp-v.v.v.tar.gz
+\end{Verbatim}
+%
+Move into the directory and run the configure script and make the
+library.
+%
+\begin{Verbatim}[fontsize=\small]
+    $ cd liquid-dsp-v.v.v
+    $ ./configure
+    $ make
+    # make install
+\end{Verbatim}
+
+\subsection{Building from the Git repository}
+\label{section:installation:build_from_git}
+Development of \liquid\ uses Git \cite{git:web}, a free and
+open-source distributed version control system.
+The benefits of Git over many other version control systems are
+numerous and the list is too long to give here;
+however one of the most important aspects is that each clone holds a
+copy of the entire repository with a complete history and record of each
+revision.
+The main repository for \liquid\ is hosted online by {\em github}
+\cite{github:web} and can be cloned on your local machine via
+%
+\begin{Verbatim}[fontsize=\small]
+    $ git clone git://github.com/jgaeddert/liquid-dsp.git
+\end{Verbatim}
+%
+Move into the directory and build as before with the archive,
+but with the additional bootstrapping step:
+%
+\begin{Verbatim}[fontsize=\small]
+    $ cd liquid-dsp.git
     $ ./reconf
     $ ./configure
     $ make
     # make install
-\end{verbatim}
-The {\tt install} target copies the global header file {\tt liquid.h} and the
-shared object file {\tt libliquid.a} to the system directories.
-You must have root access to run make with the {\tt install} target.
-Additionally, the {\tt uninstall} target removes these files from the system
-directory.
+\end{Verbatim}
 
-The additional makefile targets are listed here.
 
-\section{Building \& Dependencies}
-\label{section:installation:building}
-Requirements:
-\begin{itemize}
-\item {\tt gcc}, the GNU compiler collection
-\item {\tt libc}, the standard C library
-\item {\tt libm}, the standard math library (eventually will be phased out to
-optional)
-\end{itemize}
-
-\liquid\ was designed to be portable, and in doing so requires minimal dependencies to
-build and run.
-%Several well-known DSP packages (such as {\tt fftw} [cite] and {\it libfec} [cite])...
-The project, however, will take advantage of other libraries if they are installed on the
-target machine.
-These optional packages are:
-\begin{itemize}
-\item {\tt fftw3}
-\item {\tt libfec}
-\item {\tt liquid-fpm} (liquid fixed-point math library)
-\end{itemize}
-The build system checks to see if they are installed during the {\tt configure} process
-and will generate an appropriate {\tt config.h} if they are.
-
-\subsection{Source code organization}
-In order to keep the project relatively organized, the source code is broken
-up into separate ``modules'' under the top {\tt src/} directory.
+%\subsection{Source code organization}
+%In order to keep the project relatively organized, the source code is broken
+%up into separate ``modules'' under the top {\tt src/} directory.
 
 \section{Targets}
 \label{section:installation:targets}
+This section lists the specific targets in the main \liquid\ project.
+A basic list can be printed by invoking ``{\tt make help}'' on the
+command line.
+This prints the following to the standard output:
+%
+\begin{Verbatim}[fontsize=\small]
+  all - build shared library (default)
+  help - print list of targets (see documentation for more)
+  install - installs the libraries and header files in the host system
+  uninstall - uninstalls the libraries and header files in the host system
+  check - build and run autotest scripts
+  bench - build and run all benchmarks
+  examples - build all examples binaries
+  sandbox - build all sandbox binaries
+  doc - build documentation (doc/liquid.pdf)
+  todolist - generate tasks list (todolist.txt)
+  clean - clean build (objects, dependencies, libraries, etc.)
+\end{Verbatim}
+%
+The remainder of this section discusses some of the more important and
+relevant targets.
 
-\subsubsection{Modules}
-\label{section:installation:targets:modules}
-Each module consists of a top-level included makefile, a {\tt README}, the
-library source files, a set of test scripts, and a set of benchmarks.
+%\subsection{Modules}
+%\label{section:installation:targets:modules}
+%Each module consists of a top-level included makefile, a {\tt README},
+%the library source files, a set of test scripts, and a set of
+%benchmarks.
 
-\subsubsection{Examples ({\tt make examples})}
+\subsection{Examples ({\tt make examples})}
 \label{section:installation:targets:examples}
 All examples are built as stand-alone programs not build by the target
 {\tt all} by default.
-All examples can be built by invoking {\tt make examples}, or a specific
-example can be build by invoking e.g. {\tt make examples/modem\_example}.
+You may build all of the example binaries at one time by running
+%
+\begin{Verbatim}[fontsize=\small]
+    make examples
+\end{Verbatim}
+%
+Sometimes, however, it is useful to build one example individually.
+This can be accomplished by directly targeting its binary
+(e.g. ``{\tt make examples/modem\_example}'').
+The example then can be run at the command line
+(e.g. ``{\tt ./examples/modem\_example}'').
+
+The examples are probably the best way to understand how each signal
+processing element works.
+Each example targets a specific functionality of \liquid,
+such as FIR filtering, forward error correction, digital demodulation,
+etc.
+A number of the example programs when run will generate an output
+{\tt .m} file which can be run directly in Octave~\cite{octave:web}.
+This is particularly useful for visualizing filtering operations.
+Most of the examples have a brief description at the top of the file;
+these descriptions are also available in the {\tt examples/README} file
+for convenience.
+Some of the examples are experimental and will not be built by default
+(see Section~\ref{module:experimental}).
 
 \subsection{Autotests ({\tt make check})}
 \label{section:installation:targets:autotests}
@@ -120,7 +228,8 @@ The result is an executable file named {\tt xautotest} which has several
 options for running.
 These options may be viewed with either the {\tt -h} or {\tt -u} flags (for
 help/usage information).
-\begin{verbatim}
+%
+\begin{Verbatim}[fontsize=\small]
     $ ./xautotest -h
     autotest options:
       -h,-u : prints this help file
@@ -131,7 +240,8 @@ help/usage information).
       -s    : stop on fail
       -v    : verbose
       -q    : quiet
-\end{verbatim}
+\end{Verbatim}
+%
 Simply running the program without any arguments executes all the tests and
 displays the results to the screen.
 The is the default response of the target {\tt make check}.
@@ -140,9 +250,11 @@ The is the default response of the target {\tt make check}.
 \label{section:installation:targets:benchmarks}
 Packaged with \liquid\ are benchmarks to determine the speed each signal
 processing element can run on your machine.
-You can build the benchmark program with {\tt make benchmark}, and view the
-execution options with a {\tt -u} or {\tt -h} flag for usage/help information:
-\begin{verbatim}
+You can build the benchmark program with {\tt make benchmark}, and view
+the execution options with a {\tt -u} or {\tt -h} flag for usage/help
+information:
+%
+\begin{Verbatim}[fontsize=\small]
     $ ./benchmark -h
     bench options:
       -h : prints this help file
@@ -157,8 +269,89 @@ execution options with a {\tt -u} or {\tt -h} flag for usage/help information:
       -v : verbose
       -q : quiet
       -o<output filename>
-\end{verbatim}
+\end{Verbatim}
+%
+By default, running ``{\tt make bench}'' is equivalent to simply
+executing the {\tt ./benchmark} program which runs all of the benchmarks
+sequentially.
+Initially the tool provides an estimate of the processor's clock
+frequency;
+while not necessarily accurate, this is necessary to gauge the relative
+speed by which the benchmarks will run.
+The tool will then estimate the number of trials so that each benchmark
+will take between 50 and 500~ms to run.
+Listed below is the output of the first several benchmarks:
+%
+\begin{Verbatim}[fontsize=\footnotesize]
+  estimating cpu clock frequency...
+  performed 67108864 trials in 650.0 ms
+  estimated clock speed:   2.468 GHz
+  setting number of trials to 246754
+0: agc_benchmark
+    0  : agc_crcf_default      : 987.02 k trials in 150.00 ms (  6.580 M t/s, 375.00   cycles/t)
+    1  : agc_crcf_log          : 987.02 k trials in 180.00 ms (  5.483 M t/s, 450.00   cycles/t)
+    2  : agc_crcf_exp          : 987.02 k trials in 170.00 ms (  5.806 M t/s, 425.00   cycles/t)
+    3  : agc_crcf_true         : 987.02 k trials in 120.00 ms (  8.225 M t/s, 300.00   cycles/t)
+    4  : agc_crcf_default_D4   :   3.95 M trials in 220.00 ms ( 17.946 M t/s, 137.50   cycles/t)
+    5  : agc_crcf_log_D4       :   3.95 M trials in 260.00 ms ( 15.185 M t/s, 162.50   cycles/t)
+    6  : agc_crcf_exp_D4       :   3.95 M trials in 230.00 ms ( 17.165 M t/s, 143.75   cycles/t)
+    7  : agc_crcf_true_D4      :   3.95 M trials in 190.00 ms ( 20.779 M t/s, 118.75   cycles/t)
+    8  : agc_crcf_default_sq   : 987.02 k trials in 170.00 ms (  5.806 M t/s, 425.00   cycles/t)
+    9  : agc_crcf_default_sq_D4:   3.95 M trials in 230.00 ms ( 17.165 M t/s, 143.75   cycles/t)
+    10 : agc_crcf_locked       :   3.95 M trials in  80.00 ms ( 49.351 M t/s,  50.00   cycles/t)
+1: window_benchmark
+    11 : windowcf_n16          :   7.90 M trials in  90.00 ms ( 87.734 M t/s,  28.13   cycles/t)
+    12 : windowcf_n32          :   7.90 M trials in  90.00 ms ( 87.734 M t/s,  28.13   cycles/t)
+    13 : windowcf_n64          :   7.90 M trials in  80.00 ms ( 98.701 M t/s,  25.00   cycles/t)
+    14 : windowcf_n128         :   7.90 M trials in  80.00 ms ( 98.701 M t/s,  25.00   cycles/t)
+    15 : windowcf_n256         :   7.90 M trials in  70.00 ms (112.801 M t/s,  21.88   cycles/t)
+2: dotprod_cccf_benchmark
+    16 : dotprod_cccf_4        :   1.97 M trials in 340.00 ms (  5.806 M t/s, 425.00   cycles/t)
+    17 : dotprod_cccf_16       : 493.51 k trials in 330.00 ms (  1.495 M t/s,   1.65 k cycles/t)
+    18 : dotprod_cccf_64       : 123.38 k trials in 330.00 ms (373.867 k t/s,   6.60 k cycles/t)
+    19 : dotprod_cccf_256      :  30.84 k trials in 340.00 ms ( 90.718 k t/s,  27.20 k cycles/t)
+3: dotprod_crcf_benchmark
+    20 : dotprod_crcf_4        :   1.97 M trials in  30.00 ms ( 65.801 M t/s,  37.50   cycles/t)
+    21 : dotprod_crcf_16       : 493.51 k trials in  20.00 ms ( 24.675 M t/s, 100.00   cycles/t)
+    22 : dotprod_crcf_64       : 123.38 k trials in  20.00 ms (  6.169 M t/s, 400.00   cycles/t)
+    23 : dotprod_crcf_256      :  30.84 k trials in  20.00 ms (  1.542 M t/s,   1.60 k cycles/t)
+    ...
+\end{Verbatim}
+%
+For this run the clock speed was estimated to be 2.468~GHz.
+Benchmarks are sub-divided into {\em packages} which group similar
+signal processing algorithms together.
+For example, package {\tt 2} above refers to benchmarking the
+{\tt dotprod\_cccf} object which computes the vector dot product
+between two $n$-point arrays of complex floats.
+Specifically, benchmark {\tt 18} refers to the speed of an $n=64$-point
+dot product.
+In this run the benchmarking tool computed approximately 123,380
+64-point complex dot products in 330~ms
+(about 373,867 trials per second).
+For the estimated clock rate this means that the algorithm requires
+approximately 6,600 clock cycles to compute
+a single 64-point complex vector dot product.
 
-\subsection{Targets summary}
-
+\subsection{Documentation ({\tt make doc})}
+\label{section:installation:targets:doc}
+Specifically, ``{\tt make doc}'' builds this {\tt .pdf} file you're
+reading right now.
+The documentation requires a few additional packages to build from
+scratch:
+%
+\begin{itemize}
+\item {\tt pdflatex}, the \LaTeX engine responsible for making this
+      document with all those pretty equtions
+\item {\tt bibtex}, the package for creating the bibliography
+%\item {\tt tikz}, the professional...
+\item {\tt gnuplot}, a program for plotting graphics
+\item {\tt epstopdf}, conversion from {\tt .eps} to {\tt .pdf}, required
+      for the figures created with {\tt gnuplot}
+\item {\tt pygments}, the syntax highlighting engine responsible for
+      generating all the fancy code listings given throughout this
+      document.
+      The command-line equivalent is called {\tt pygmentize}.
+\end{itemize}
+%
 
