@@ -118,6 +118,7 @@ local_pdffiles :=					\
 	figures.gen/nco_pll_error.pdf			\
 							\
 	figures.gen/optim_gradsearch.pdf		\
+	figures.gen/optim_gradsearch_utility.pdf	\
 							\
 	figures.gen/sequence_ccodes.pdf			\
 	figures.gen/sequence_msequence.pdf
@@ -537,7 +538,8 @@ figures.gen/nco_pll_error.gnu : src/nco_pll
 # optim_gradsearch
 #
 figures.gen/optim_gradsearch.dat \
-figures.gen/optim_gradsearch.gnu : src/optim_gradsearch
+figures.gen/optim_gradsearch.gnu \
+figures.gen/optim_gradsearch_utility.gnu : src/optim_gradsearch
 	./$<
 
 ##

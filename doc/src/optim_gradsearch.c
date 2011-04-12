@@ -7,9 +7,11 @@
 #include <math.h>
 
 #include "liquid.h"
+#include "liquid.doc.h"
 
 #define OUTPUT_FILENAME_DAT "figures.gen/optim_gradsearch.dat"
 #define OUTPUT_FILENAME_GNU "figures.gen/optim_gradsearch.gnu"
+#define OUTPUT_FILENAME_UTILITY_GNU "figures.gen/optim_gradsearch_utility.gnu"
 
 int main() {
     unsigned int num_iterations = 2000; // number of iterations to run
@@ -103,6 +105,31 @@ int main() {
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME_GNU);
+
+
+    // 
+    // export utility figure
+    //
+    fid = fopen(OUTPUT_FILENAME_UTILITY_GNU,"w");
+    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_UTILITY_GNU);
+
+    fprintf(fid,"reset\n");
+    // TODO : switch terminal types here
+    fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
+    fprintf(fid,"set logscale y 10\n");
+    fprintf(fid,"set format y '10^{%%L}'\n");
+    fprintf(fid,"set xrange [0:%u]\n", num_iterations);
+    //fprintf(fid,"set yrange [0:1]\n");
+    fprintf(fid,"set size ratio 0.4\n");
+    fprintf(fid,"set xlabel 'Iteration'\n");
+    fprintf(fid,"set ylabel 'Rosenbrock Utility'\n");
+    fprintf(fid,"set nokey\n");
+    fprintf(fid,"set grid xtics ytics\n");
+    fprintf(fid,"set grid linetype 1 linecolor rgb '%s' lw 1\n", LIQUID_DOC_COLOR_GRID);
+    fprintf(fid,"plot '%s' using 1:4 with lines linewidth 2 linecolor rgb '#004080'\n", OUTPUT_FILENAME_DAT);
+
+    fclose(fid);
+    printf("results written to '%s'\n", OUTPUT_FILENAME_UTILITY_GNU);
 
     return 0;
 }
