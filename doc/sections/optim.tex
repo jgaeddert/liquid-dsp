@@ -8,7 +8,8 @@
 The {\em optim} module in \liquid\ implements several non-linear
 optimization algorithms including
 a gradient descent search,
-a quasi-Newton search,
+a quasi-Newton search (experimental:
+  see Section~\ref{module:experimental:quasinewton_search})
 and an evolutionary algorithm.
 
 \subsection{{\tt gradsearch} (gradient search)}
@@ -161,80 +162,6 @@ navigate.
 From the figure it is apparent that finding the valley is trivial,
 but convergence to the minimum is slow.
 
-
-\subsection{{\tt quasinewton\_search} }
-\label{module:optim:quasinewton_search}
-% talking points
-%   * second-order gradient search
-%   * improved speed
-%   * higher complexity
-The {\tt quasinewton\_search} object in \liquid\ implements the
-Quasi-Newton search algorithm which uses the first- and second-order
-derivates (gradient vector and Hessian matrix) in its update equation.
-Newtonian-based search algorithms approximate the function to be nearly
-quadratic near its optimum which requires the second partial derivative
-(Hessian matrix) to be computed or estimated at each iteration.
-Quasi-Newton methods circumvent this by approximating the Hessian with
-successive gradient computations (or estimations) with each step.
-The Quasi-Newton method is usually faster than the gradient search due
-in part to its second-order (rather than a first-order) Taylor series
-expansion about the function of interest,
-however its update criteria is significantly more involved.
-In particular the step size %$\alpha$
-must be sufficiently conditioned
-otherwise the algorithm can result in instability.
-
-% TODO : add longer description
-
-%Like any line search algorithm, the process for updating the estimate
-%$x^*$ is as follows:%
-%\footnote{
-%    For the purposes of discussion, it is assumed that the goals is to
-%    find $x^*$ which minimizes the function $f$.
-%    In order to find its maximum,
-%    the search direction, $\vec{p}$, simply needs to be negated.}
-%%
-%\begin{enumerate}
-%\item choose an initial guess of the estimate, $x_0$
-%\item compute 
-%\end{enumerate}
-%
-%%The process iterates over...
-%The Hessian of a function $f(x_0,x_1,\ldots,x_{n-1})$ is defined as the
-%square $n \times n$ matrix
-%
-%\begin{equation}
-%\label{eq:optim:hessian}
-%    H(f) =
-%    \begin{bmatrix}
-%        \frac{\partial^2 f}{x_0^2}  &
-%        \frac{\partial^2 f}{x_0x_1} &
-%        \cdots &
-%        \frac{\partial^2 f}{x_0x_{n-1}} \\
-%        %
-%        \frac{\partial^2 f}{x_1x_0} &
-%        \frac{\partial^2 f}{x_1^2}  &
-%        \cdots &
-%        \frac{\partial^2 f}{x_1x_{n-1}} \\
-%        %
-%        \vdots &
-%        \vdots &
-%        \vdots &
-%        \vdots \\
-%        %
-%        \frac{\partial^2 f}{x_{n-1}x_0} &
-%        \frac{\partial^2 f}{x_{n-1}x_1}  &
-%        \cdots &
-%        \frac{\partial^2 f}{x_{n-1}^2}
-%    \end{bmatrix}
-%\end{equation}
-%%
-
-An example of the {\tt quasinewton\_search} interface is listed below.
-Notice that its interface is virtually identical to that of
-{\tt gradient\_search}.
-% quasinewton_search example
-\input{listings/quasinewton_search.example.c.tex}
 
 \subsection{{\tt gasearch} genetic algorithm search}
 \label{module:optim:gasearch}
