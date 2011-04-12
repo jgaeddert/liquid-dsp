@@ -1,6 +1,6 @@
 // file: doc/listings/gradsearch.example.c
 
-// user-defined utility function
+// user-defined utility callback function
 float myutility(void * _userdata, float * _v, unsigned int _n)
 {
     float u = 0.0f;

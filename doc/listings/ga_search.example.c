@@ -1,10 +1,13 @@
 // file: doc/listings/ga_search.example.c
 
-// utility callback function
-float utility_callback(void * _userdata, chromosome _c)
+// user-defined utility callback function
+float myutility(void * _userdata, chromosome _c)
 {
-    float u;
     // compute utility from chromosome
+    float u = 0.0f;
+    unsigned int i;
+    for (i=0; i<chromosome_get_num_traits(_c); i++)
+        u += chromosome_valuef(_c,i);
     return u;
 }
 
@@ -22,7 +25,7 @@ int main() {
 
     // create ga_search object
     ga_search ga = ga_search_create_advanced(
-                                    &utility_callback,
+                                    &myutility,
                                     NULL,
                                     prototype,
                                     LIQUID_OPTIM_MINIMIZE,

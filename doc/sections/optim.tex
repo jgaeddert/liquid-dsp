@@ -353,6 +353,20 @@ Listed below is a description for the {\tt ga\_search} object in
     memory.
 \item[{\tt ga\_search\_print(q)}]
     prints the internal state of the {\tt ga\_search} object
+\item[{\tt ga\_search\_set\_mutation\_rate(q,rate)}]
+    sets the mutation rate
+\item[{\tt ga\_search\_set\_population\_size(q,population,selection)}]
+    sets both the population size as well as the selection size of the
+    evolutionary algorithm
+\item[{\tt ga\_search\_run(q,n,target\_utility)}]
+    runs multiple iterations of the search algorithm,
+    stopping after either $n$ iterations or if the target utility is
+    met.
+\item[{\tt ga\_search\_evolve(q)}]
+    steps through a sigle iteration of the search.
+\item[{\tt ga\_search\_getopt(q,*chromosome,*u)}]
+    produces the best chromosome over the coarse of the search
+    evolution, as well as its utility.
 \end{description}
 %
 
