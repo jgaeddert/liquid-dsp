@@ -139,6 +139,25 @@ Here is an example of how the {\tt gradient\_search} is used:
 %
 Notice that the utility function is a callback that is completely
 defined by the user.
+%
+\begin{figure}
+\centering
+  \includegraphics[trim = 12mm 5mm 14mm 8mm, clip, width=13cm]{figures.gen/optim_gradsearch}
+\caption{
+    {\tt gradsearch} performance for Rosenbrock function
+    with a starting point of $(x_0,y_0)=(-0.2,1.4)$.
+    The minimum is located at $(1,1)$.}
+\label{fig:module:optim:gradsearch}
+\end{figure}
+%
+Figure~\ref{fig:module:optim:gradsearch} depicts the performance of the
+gradient search for the Rosenbrock function, defined as
+$f = (1-x)^2 + 100(y-x^2)^2$ for input parameters $x$ and $y$.
+The Rosenbrock function has a minimum at $(x,y)=(1,1)$;
+however the minimum lies in a deep valley which can be difficult to
+navigate.
+From the figure it is apparent that finding the valley is trivial,
+but convergence to the minimum is slow.
 
 
 \subsection{{\tt quasinewton\_search} }

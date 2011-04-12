@@ -116,6 +116,9 @@ local_pdffiles :=					\
 							\
 	figures.gen/nco_pll_sincos.pdf			\
 	figures.gen/nco_pll_error.pdf			\
+							\
+	figures.gen/optim_gradsearch.pdf		\
+							\
 	figures.gen/sequence_ccodes.pdf			\
 	figures.gen/sequence_msequence.pdf
 
@@ -153,6 +156,7 @@ local_progs :=						\
 	src/modem.genplot				\
 	src/modem.gendata				\
 	src/nco_pll					\
+	src/optim_gradsearch				\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
 							\
@@ -523,6 +527,18 @@ figures.gen/nco_pll_error.gnu : src/nco_pll
 
 #figures.gen/nco_pll_error.pdf : figures.gen/nco_pll_error.eps
 #	$(EPSTOPDF) $(EPSTOPDF_FLAGS) $< --outfile=$@
+
+
+##
+## MODULE : optim
+##
+
+# 
+# optim_gradsearch
+#
+figures.gen/optim_gradsearch.dat \
+figures.gen/optim_gradsearch.gnu : src/optim_gradsearch
+	./$<
 
 ##
 ## MODULE : sequence

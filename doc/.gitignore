@@ -38,6 +38,7 @@ src/math_window
 src/modem.gendata
 src/modem.genplot
 src/nco_pll
+src/optim_gradsearch
 src/sequence_ccodes
 src/sequence_msequence
 src/simulate_ber
