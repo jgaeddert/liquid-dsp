@@ -1,19 +1,11 @@
 TODO list
 
-  * add 'make doc' target in main directory
-  * add 'make help' target to list makefile targets:
-     parse makefile looking for strings that match:
-     help : egrep "^#   target : " [Mm]akefile
   * update license
-  * add timing recovery to GMSK modem (Farrow/LPoly)
-  * gradient_search -> gradsearch
   * quasinewton_search -> qnsearch
-  * ga_search -> gasearch
   * MOD_BPSK -> LIQUID_MOD_BPSK
   * FEC_NONE -> LIQUID_FEC_NONE
   * CRC_NONE -> LIQUID_CRC_NONE
   * c++: wrap library with namespace::liquid
-  * add more Reed-Solomon FEC schemes?
   * fft: remove flat dct, idct, dct_typeIV, mdct, imdct methods
   * remove any trace of Doxygen from code
   * create generic symbol timing recovery loop
@@ -21,3 +13,8 @@ TODO list
     * use lagrange polynomial
     * only needs poly order, approximate samples/symbol
   * clean up analog modem definitions
+  * move mdct-related objects to experimental
+  * move 'ofdmoqam' objects to experimental
+  * move 'ofdmframe64' objects to experimental
+  * complete and clean up quantizer implementation
+  * complete and clean up channel implementation
