@@ -400,19 +400,19 @@ LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_CCCF, liquid_float_complex);
 
 
 // available CRC schemes
-#define LIQUID_NUM_CRC_SCHEMES  7
+#define LIQUID_CRC_NUM_SCHEMES  7
 typedef enum {
-    CRC_UNKNOWN=0,
-    CRC_NONE,           // no error-detection
-    CRC_CHECKSUM,       // 8-bit checksum
-    CRC_8,              // 8-bit CRC
-    CRC_16,             // 16-bit CRC
-    CRC_24,             // 24-bit CRC
-    CRC_32              // 32-bit CRC
+    LIQUID_CRC_UNKNOWN=0,   // unknown/unavailable CRC scheme
+    LIQUID_CRC_NONE,        // no error-detection
+    LIQUID_CRC_CHECKSUM,    // 8-bit checksum
+    LIQUID_CRC_8,           // 8-bit CRC
+    LIQUID_CRC_16,          // 16-bit CRC
+    LIQUID_CRC_24,          // 24-bit CRC
+    LIQUID_CRC_32           // 32-bit CRC
 } crc_scheme;
 
 // pretty names for crc schemes
-extern const char * crc_scheme_str[LIQUID_NUM_CRC_SCHEMES][2];
+extern const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2];
 
 // returns crc_scheme based on input string
 crc_scheme liquid_getopt_str2crc(const char * _str);

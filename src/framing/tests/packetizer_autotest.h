@@ -61,7 +61,7 @@ void packetizer_test_codec(unsigned int _n,
 //
 // AUTOTESTS
 //
-void autotest_packetizer_n16_0_0()  { packetizer_test_codec(16, CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE);       }
-void autotest_packetizer_n16_0_1()  { packetizer_test_codec(16, CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_REP3);       }
-void autotest_packetizer_n16_0_2()  { packetizer_test_codec(16, CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING74);  }
+void autotest_packetizer_n16_0_0()  { packetizer_test_codec(16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_NONE);       }
+void autotest_packetizer_n16_0_1()  { packetizer_test_codec(16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_REP3);       }
+void autotest_packetizer_n16_0_2()  { packetizer_test_codec(16, LIQUID_CRC_32, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING74);  }
 

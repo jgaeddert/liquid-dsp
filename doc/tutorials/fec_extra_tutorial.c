@@ -4,7 +4,7 @@
 int main() {
     // simulation parameters
     unsigned int n = 8;                         // original data length (bytes)
-    crc_scheme check = CRC_16;                  // data validity check
+    crc_scheme check = LIQUID_CRC_16;           // data validity check
     fec_scheme fec0 = LIQUID_FEC_HAMMING74;     // error-correcting scheme (inner)
     fec_scheme fec1 = LIQUID_FEC_HAMMING128;    // error-correcting scheme (outer)
 

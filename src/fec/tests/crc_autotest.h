@@ -113,10 +113,10 @@ void validate_crc(crc_scheme _check,
 // 
 // AUTOTESTS : validate error-detection tests
 //
-void autotest_checksum() { validate_crc(CRC_CHECKSUM,   16); }
-void autotest_crc8()     { validate_crc(CRC_8,          16); }
-void autotest_crc16()    { validate_crc(CRC_16,         64); }
-void autotest_crc24()    { validate_crc(CRC_24,         64); }
-void autotest_crc32()    { validate_crc(CRC_32,         64); }
+void autotest_checksum() { validate_crc(LIQUID_CRC_CHECKSUM,    16); }
+void autotest_crc8()     { validate_crc(LIQUID_CRC_8,           16); }
+void autotest_crc16()    { validate_crc(LIQUID_CRC_16,          64); }
+void autotest_crc24()    { validate_crc(LIQUID_CRC_24,          64); }
+void autotest_crc32()    { validate_crc(LIQUID_CRC_32,          64); }
 
 

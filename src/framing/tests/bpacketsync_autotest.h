@@ -46,7 +46,7 @@ void autotest_bpacketsync()
     // options
     unsigned int num_packets = 50;          // number of packets to encode
     unsigned int dec_msg_len = 64;          // original data message length
-    crc_scheme check = CRC_32;              // data integrity check
+    crc_scheme check = LIQUID_CRC_32;       // data integrity check
     fec_scheme fec0 = LIQUID_FEC_HAMMING74; // inner code
     fec_scheme fec1 = LIQUID_FEC_NONE;      // outer code
 

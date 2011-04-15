@@ -49,7 +49,7 @@ void benchmark_bpacketsync(struct rusage *_start,
 
     // options
     unsigned int dec_msg_len = 64;      // original data message length
-    crc_scheme check = CRC_NONE;        // data integrity check
+    crc_scheme check = LIQUID_CRC_NONE; // data integrity check
     fec_scheme fec0 = LIQUID_FEC_NONE;  // inner code
     fec_scheme fec1 = LIQUID_FEC_NONE;  // outer code
 

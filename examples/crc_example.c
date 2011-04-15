@@ -25,7 +25,7 @@ void usage()
     printf("  v     : checking scheme, (crc32 default):\n");
     // print all available CRC schemes
     unsigned int i;
-    for (i=0; i<LIQUID_NUM_CRC_SCHEMES; i++)
+    for (i=0; i<LIQUID_CRC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", crc_scheme_str[i][0], crc_scheme_str[i][1]);
 }
 
@@ -33,8 +33,8 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int n = 32;            // data length (bytes)
-    crc_scheme check = CRC_32;      // error-detection scheme
+    unsigned int n = 32;                // data length (bytes)
+    crc_scheme check = LIQUID_CRC_32;   // error-detection scheme
 
     int dopt;
     while((dopt = getopt(argc,argv,"uhn:v:")) != EOF){
@@ -44,7 +44,7 @@ int main(int argc, char*argv[])
         case 'n': n = atoi(optarg); break;
         case 'v':
             check = liquid_getopt_str2crc(optarg);
-            if (check == CRC_UNKNOWN) {
+            if (check == LIQUID_CRC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported error-detection scheme \"%s\"\n\n",optarg);
                 exit(1);
             }

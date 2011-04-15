@@ -31,7 +31,7 @@
 
 // object-independent methods
 
-const char * crc_scheme_str[LIQUID_NUM_CRC_SCHEMES][2] = {
+const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2] = {
     // short name,  long name
     {"unknown",     "unknown"},
     {"none",        "none"},
@@ -46,27 +46,27 @@ crc_scheme liquid_getopt_str2crc(const char * _str)
 {
     // compare each string to short name
     unsigned int i;
-    for (i=0; i<LIQUID_NUM_CRC_SCHEMES; i++) {
+    for (i=0; i<LIQUID_CRC_NUM_SCHEMES; i++) {
         if (strcmp(_str,crc_scheme_str[i][0])==0) {
             return i;
         }
     }
 
     fprintf(stderr,"warning: liquid_getopt_str2crc(), unknown/unsupported crc scheme : %s\n", _str);
-    return CRC_UNKNOWN;
+    return LIQUID_CRC_UNKNOWN;
 }
 
 // get length of CRC (bytes)
 unsigned int crc_get_length(crc_scheme _scheme)
 {
     switch (_scheme) {
-    case CRC_UNKNOWN:   return 0;
-    case CRC_NONE:      return 0;
-    case CRC_CHECKSUM:  return 1;
-    case CRC_8:         return 1;
-    case CRC_16:        return 2;
-    case CRC_24:        return 3;
-    case CRC_32:        return 4;
+    case LIQUID_CRC_UNKNOWN:   return 0;
+    case LIQUID_CRC_NONE:      return 0;
+    case LIQUID_CRC_CHECKSUM:  return 1;
+    case LIQUID_CRC_8:         return 1;
+    case LIQUID_CRC_16:        return 2;
+    case LIQUID_CRC_24:        return 3;
+    case LIQUID_CRC_32:        return 4;
     default:
         fprintf(stderr,"error: crc_get_length(), unknown/unsupported scheme: %d\n", _scheme);
         exit(1);
@@ -85,15 +85,15 @@ unsigned int crc_generate_key(crc_scheme _scheme,
                               unsigned int _n)
 {
     switch (_scheme) {
-    case CRC_UNKNOWN:
+    case LIQUID_CRC_UNKNOWN:
         fprintf(stderr,"error: crc_generate_key(), cannot generate key with CRC type \"UNKNOWN\"\n");
         exit(-1);
-    case CRC_NONE:      return 0;
-    case CRC_CHECKSUM:  return checksum_generate_key(_msg, _n);
-    case CRC_8:         return crc8_generate_key(_msg, _n);
-    case CRC_16:        return crc16_generate_key(_msg, _n);
-    case CRC_24:        return crc24_generate_key(_msg, _n);
-    case CRC_32:        return crc32_generate_key(_msg, _n);
+    case LIQUID_CRC_NONE:      return 0;
+    case LIQUID_CRC_CHECKSUM:  return checksum_generate_key(_msg, _n);
+    case LIQUID_CRC_8:         return crc8_generate_key(_msg, _n);
+    case LIQUID_CRC_16:        return crc16_generate_key(_msg, _n);
+    case LIQUID_CRC_24:        return crc24_generate_key(_msg, _n);
+    case LIQUID_CRC_32:        return crc32_generate_key(_msg, _n);
     default:
         fprintf(stderr,"error: crc_generate_key(), unknown/unsupported scheme: %d\n", _scheme);
         exit(1);
@@ -113,10 +113,10 @@ int crc_validate_message(crc_scheme _scheme,
                          unsigned int _n,
                          unsigned int _key)
 {
-    if (_scheme == CRC_UNKNOWN) {
+    if (_scheme == LIQUID_CRC_UNKNOWN) {
         fprintf(stderr,"error: crc_validate_message(), cannot validate with CRC type \"UNKNOWN\"\n");
         exit(-1);
-    } else if (_scheme == CRC_NONE) {
+    } else if (_scheme == LIQUID_CRC_NONE) {
         return 1;
     }
 

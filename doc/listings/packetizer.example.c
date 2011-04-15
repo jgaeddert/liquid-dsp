@@ -3,7 +3,7 @@
 int main() {
     // set up the options
     unsigned int n=16;                      // uncoded data length
-    crc_scheme crc  = CRC_32;               // validity check
+    crc_scheme crc  = LIQUID_CRC_32;        // validity check
     fec_scheme fec0 = LIQUID_FEC_HAMMING74; // inner code
     fec_scheme fec1 = LIQUID_FEC_REP3;      // outer code
 

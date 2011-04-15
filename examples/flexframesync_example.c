@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
     fgprops.rampup_len  = 64;
     fgprops.phasing_len = 64;
     fgprops.payload_len = packet_len;
-    fgprops.check       = CRC_NONE;
+    fgprops.check       = LIQUID_CRC_NONE;
     fgprops.fec0        = LIQUID_FEC_NONE;
     fgprops.fec1        = LIQUID_FEC_NONE;
     fgprops.mod_scheme  = mod_scheme;

@@ -95,7 +95,7 @@ bpacketgen bpacketgen_create(unsigned int _m,
                                                     q->crc,
                                                     q->fec0,
                                                     q->fec1);
-    q->header_len = packetizer_compute_enc_msg_len(6, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    q->header_len = packetizer_compute_enc_msg_len(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
     bpacketgen_compute_packet_len(q);
 
     // arrays
@@ -106,7 +106,7 @@ bpacketgen bpacketgen_create(unsigned int _m,
     q->ms = msequence_create(6);
 
     // create header packet encoder
-    q->p_header = packetizer_create(6, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    q->p_header = packetizer_create(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
     assert(q->header_len == packetizer_get_enc_msg_len(q->p_header));
 
     // create payload packet encoder
@@ -149,7 +149,7 @@ bpacketgen bpacketgen_recreate(bpacketgen _q,
                                                      _q->crc,
                                                      _q->fec0,
                                                      _q->fec1);
-    _q->header_len = packetizer_compute_enc_msg_len(6, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    _q->header_len = packetizer_compute_enc_msg_len(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
     bpacketgen_compute_packet_len(_q);
 
     // arrays

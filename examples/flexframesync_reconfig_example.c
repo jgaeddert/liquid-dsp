@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
         fgprops.rampup_len  = 64;
         fgprops.phasing_len = 64;
         fgprops.payload_len = (rand() % 256) + 1;   // random payload length
-        fgprops.check       = CRC_NONE;             // data validity check
+        fgprops.check       = LIQUID_CRC_NONE;      // data validity check
         fgprops.fec0        = LIQUID_FEC_NONE;      // inner FEC scheme
         fgprops.fec1        = LIQUID_FEC_NONE;      // outer FEC scheme
         fgprops.mod_scheme  = LIQUID_MODEM_PSK;     // PSK

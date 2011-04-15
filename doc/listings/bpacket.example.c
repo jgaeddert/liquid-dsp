@@ -11,19 +11,19 @@ int callback(unsigned char * _payload,
 
 int main() {
     // options
-    unsigned int n=64;                  // original data message length
-    crc_scheme check = CRC_32;          // data integrity check
-    fec_scheme fec0 = LIQUID_FEC_HAMMING128;   // inner code
-    fec_scheme fec1 = LIQUID_FEC_NONE;         // outer code
+    unsigned int n=64;                       // original data message length
+    crc_scheme check = LIQUID_CRC_32;        // data integrity check
+    fec_scheme fec0 = LIQUID_FEC_HAMMING128; // inner code
+    fec_scheme fec1 = LIQUID_FEC_NONE;       // outer code
 
     // create packet generator and compute packet length
     bpacketgen pg = bpacketgen_create(0, n, check, fec0, fec1);
     unsigned int k = bpacketgen_get_packet_len(pg);
 
     // initialize arrays
-    unsigned char msg_org[n];           // original message
-    unsigned char msg_enc[k];           // encoded message
-    unsigned char msg_dec[n];           // decoded message
+    unsigned char msg_org[n];   // original message
+    unsigned char msg_enc[k];   // encoded message
+    unsigned char msg_dec[n];   // decoded message
 
     // create packet synchronizer
     bpacketsync ps = bpacketsync_create(0, callback, NULL);

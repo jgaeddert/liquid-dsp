@@ -40,7 +40,7 @@ void simulate_per(simulate_per_opts _opts,
     unsigned long int max_bit_trials     = _opts.max_bit_trials;
 
     // create objects
-    crc_scheme crc = CRC_32;
+    crc_scheme crc = LIQUID_CRC_32;
     packetizer p = packetizer_create(dec_msg_len,crc,fec0,fec1);
 
     // create modem

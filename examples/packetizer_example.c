@@ -25,7 +25,7 @@ void usage()
     printf("  n     : input data size (number of uncoded bytes): 8 default\n");
     printf("  v     : data integrity check: crc32 default\n");
     // print all available CRC schemes
-    for (i=0; i<LIQUID_NUM_CRC_SCHEMES; i++)
+    for (i=0; i<LIQUID_CRC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", crc_scheme_str[i][0], crc_scheme_str[i][1]);
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
@@ -38,7 +38,7 @@ void usage()
 int main(int argc, char*argv[]) {
     // options
     unsigned int n=8;                       // original data message length
-    crc_scheme check = CRC_32;              // data integrity check
+    crc_scheme check = LIQUID_CRC_32;       // data integrity check
     fec_scheme fec0 = LIQUID_FEC_HAMMING74; // inner code
     fec_scheme fec1 = LIQUID_FEC_NONE;      // outer code
 
@@ -59,7 +59,7 @@ int main(int argc, char*argv[]) {
         case 'v':
             // data integrity check
             check = liquid_getopt_str2crc(optarg);
-            if (check == CRC_UNKNOWN) {
+            if (check == LIQUID_CRC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported CRC scheme \"%s\"\n\n",optarg);
                 exit(1);
             }

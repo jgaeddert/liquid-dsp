@@ -45,7 +45,7 @@ framesyncstats_s framesyncstats_default = {
     // modulation/coding scheme, etc.
     LIQUID_MODEM_UNKNOWN,   // mod_scheme
     0,                      // mod_bps
-    CRC_UNKNOWN,            // check
+    LIQUID_CRC_UNKNOWN,     // check
     LIQUID_FEC_UNKNOWN,     // fec0
     LIQUID_FEC_UNKNOWN      // fec1
 };
@@ -62,7 +62,7 @@ void framesyncstats_print(framesyncstats_s * _stats)
     if (_stats->mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
         fprintf(stderr,"error: framesyncstats_print(), invalid modulation scheme\n");
         exit(1);
-     } else if (_stats->check >= LIQUID_NUM_CRC_SCHEMES) {
+     } else if (_stats->check >= LIQUID_CRC_NUM_SCHEMES) {
         fprintf(stderr,"error: framesyncstats_print(), invalid CRC scheme\n");
         exit(1);
      } else if (_stats->fec0 >= LIQUID_FEC_NUM_SCHEMES) {

@@ -165,7 +165,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // header objects
     fs->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
-    fs->p_header = packetizer_create(19, CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
+    fs->p_header = packetizer_create(19, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
     // agc, rssi, squelch
@@ -223,7 +223,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->ms_payload  = LIQUID_MODEM_PSK;
     fs->bps_payload = 1;
     fs->payload_len = 0;
-    fs->check       = CRC_NONE;
+    fs->check       = LIQUID_CRC_NONE;
     fs->fec0        = LIQUID_FEC_NONE;
     fs->fec1        = LIQUID_FEC_NONE;
     fs->payload_enc_msg_len = 0;
@@ -235,7 +235,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // payload buffers, objects
     fs->mod_payload = modem_create(fs->ms_payload, fs->bps_payload);
-    fs->p_payload = packetizer_create(0, CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
+    fs->p_payload = packetizer_create(0, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     fs->payload_samples = NULL;
     fs->payload_sym = NULL;
     fs->payload_enc = NULL;
@@ -707,7 +707,7 @@ void flexframesync_execute_rxheader(flexframesync _fs,
             _fs->framestats.num_framesyms   = 0;
             _fs->framestats.mod_scheme      = LIQUID_MODEM_UNKNOWN;
             _fs->framestats.mod_bps         = 0;
-            _fs->framestats.check           = CRC_UNKNOWN;
+            _fs->framestats.check           = LIQUID_CRC_UNKNOWN;
             _fs->framestats.fec0            = LIQUID_FEC_UNKNOWN;
             _fs->framestats.fec1            = LIQUID_FEC_UNKNOWN;
 
@@ -933,9 +933,9 @@ void flexframesync_decode_header(flexframesync _fs)
     unsigned int fec1  = (_fs->header[18]      ) & 0x1f;
 
     // validate properties
-    if (check >= LIQUID_NUM_CRC_SCHEMES) {
+    if (check >= LIQUID_CRC_NUM_SCHEMES) {
         fprintf(stderr,"warning: flexframesync_decode_header(), decoded CRC exceeds available\n");
-        check = CRC_UNKNOWN;
+        check = LIQUID_CRC_UNKNOWN;
     }
     if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (inner) exceeds available\n");

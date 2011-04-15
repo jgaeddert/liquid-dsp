@@ -130,7 +130,7 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     // set fixed properties of the frame statistics
     fs->framestats.mod_scheme   = LIQUID_MODEM_QPSK;
     fs->framestats.mod_bps      = 2;
-    fs->framestats.check        = CRC_16;
+    fs->framestats.check        = LIQUID_CRC_16;
     fs->framestats.fec0         = LIQUID_FEC_HAMMING128;
     fs->framestats.fec1         = LIQUID_FEC_NONE;
 
@@ -174,8 +174,8 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->mfdecim = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC, 2, m, beta, npfb);
 
     // create header/payload packetizers
-    fs->p_header  = packetizer_create(12, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
-    fs->p_payload = packetizer_create(64, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    fs->p_header  = packetizer_create(12, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    fs->p_payload = packetizer_create(64, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
 
     // create demod
     fs->demod_payload = modem_create(LIQUID_MODEM_QPSK, 2);

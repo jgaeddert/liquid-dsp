@@ -127,8 +127,8 @@ framegen64 framegen64_create(unsigned int _m,
     fg->interp = interp_crcf_create(2, h, h_len);
 
     // create header/payload packetizers
-    fg->p_header  = packetizer_create(12, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
-    fg->p_payload = packetizer_create(64, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    fg->p_header  = packetizer_create(12, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
+    fg->p_payload = packetizer_create(64, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
 
     // create modulator
     fg->mod = modem_create(LIQUID_MODEM_QPSK, 2);
