@@ -2,7 +2,7 @@ TODO list
 
   * update license
   * quasinewton_search -> qnsearch
-  * MOD_BPSK -> LIQUID_MOD_BPSK
+  * doc: modem listing
   * FEC_NONE -> LIQUID_FEC_NONE
   * CRC_NONE -> LIQUID_CRC_NONE
   * c++: wrap library with namespace::liquid
