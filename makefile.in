@@ -370,25 +370,25 @@ clean-doc :
 ## 
 ## TARGET : todolist - generate tasks list (todolist.txt)
 ##
-todolist_filename = todolist.txt
-
-todolist_sources	= $(sources)			\
-			  $(include_headers)		\
-			  $(autotest_headers)		\
-			  $(benchmark_headers)
+todolist_sources = 		\
+	$(sources)		\
+	$(include_headers)	\
+	$(autotest_headers)	\
+	$(benchmark_headers)
 
 # .txt
-$(todolist_filename) : todolistgen.py $(todolist_sources)
-	python todolistgen.py -o $@ $(todolist_sources)
+todolist.txt : scripts/todolistgen.py $(todolist_sources)
+	python scripts/todolistgen.py -o $@ $(todolist_sources)
 
 # .html
-todolist.html : todolistgen.py $(todolist_sources)
-	python todolistgen.py -o $@ $(todolist_sources)
+todolist.html : scripts/todolistgen.py $(todolist_sources)
+	python scripts/todolistgen.py -o $@ $(todolist_sources)
 
-todolist: $(todolist_filename) $(todolist_sources)
+todolist : todolist.txt
 
 clean-todolist:
-	$(RM) $(todolist_filename)
+	$(RM) todolist.txt
+	$(RM) todolist.html
 
 # Clean
 .PHONY: clean
@@ -406,7 +406,7 @@ $(addprefix clean-,$(modules)):
 	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.o
 	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.d
 
-clean: clean-check clean-bench clean-examples clean-sandbox clean-modules
+clean: clean-check clean-bench clean-examples clean-sandbox clean-modules clean-todolist
 	$(RM) $(programs)
 	$(RM) $(libraries)
 	$(RM) $(extra_clean)
