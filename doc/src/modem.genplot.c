@@ -38,7 +38,7 @@ int main(int argc, char*argv[]) {
     } gnuplot_term = 0;
     char input_filename[256] = "datafile.dat";
     char output_filename[256] = "modem.gnu";
-    char figure_title[256] = "constellation";
+    //char figure_title[256] = "constellation";
     unsigned int bps=2;
     modulation_scheme ms = LIQUID_MODEM_PSK;
 
