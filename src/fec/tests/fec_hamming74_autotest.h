@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FEC_HAMMING74_AUTOTEST_H__
-#define __LIQUID_FEC_HAMMING74_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -31,7 +28,7 @@ void autotest_hamming74_codec()
 {
     unsigned int n=4;
     unsigned char msg[] = {0x25, 0x62, 0x3F, 0x52};
-    fec_scheme fs = FEC_HAMMING74;
+    fec_scheme fs = LIQUID_FEC_HAMMING74;
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
@@ -66,6 +63,4 @@ void autotest_hamming74_codec()
     // clean up objects
     fec_destroy(q);
 }
-
-#endif // __LIQUID_FEC_HAMMING74_AUTOTEST_H__
 

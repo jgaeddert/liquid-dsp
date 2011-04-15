@@ -28,7 +28,7 @@ void autotest_hamming84_codec()
 {
     unsigned int n=4;
     unsigned char msg[] = {0x25, 0x62, 0x3F, 0x52};
-    fec_scheme fs = FEC_HAMMING84;
+    fec_scheme fs = LIQUID_FEC_HAMMING84;
 
     // create arrays
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);

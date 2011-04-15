@@ -144,7 +144,7 @@ fec fec_hamming128_create(void * _opts)
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
-    q->scheme = FEC_HAMMING128;
+    q->scheme = LIQUID_FEC_HAMMING128;
     q->rate = fec_get_rate(q->scheme);
 
     // set internal function pointers
@@ -211,7 +211,7 @@ void fec_hamming128_encode(fec _q,
         j += 2;
     }
 
-    assert(j== fec_get_enc_msg_length(FEC_HAMMING128,_dec_msg_len));
+    assert(j== fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len));
 }
 
 // decode block of data using Hamming(12,8) decoder
@@ -265,7 +265,7 @@ void fec_hamming128_decode(fec _q,
         j += 2;
     }
 
-    assert(j== fec_get_enc_msg_length(FEC_HAMMING128,_dec_msg_len));
+    assert(j== fec_get_enc_msg_length(LIQUID_FEC_HAMMING128,_dec_msg_len));
 
     //return num_errors;
 }

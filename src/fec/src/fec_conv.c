@@ -44,10 +44,10 @@ fec fec_conv_create(fec_scheme _fs)
     q->decode_func = &fec_conv_decode;
 
     switch (q->scheme) {
-    case FEC_CONV_V27:  fec_conv_init_v27(q);   break;
-    case FEC_CONV_V29:  fec_conv_init_v29(q);   break;
-    case FEC_CONV_V39:  fec_conv_init_v39(q);   break;
-    case FEC_CONV_V615: fec_conv_init_v615(q);  break;
+    case LIQUID_FEC_CONV_V27:  fec_conv_init_v27(q);   break;
+    case LIQUID_FEC_CONV_V29:  fec_conv_init_v29(q);   break;
+    case LIQUID_FEC_CONV_V39:  fec_conv_init_v39(q);   break;
+    case LIQUID_FEC_CONV_V615: fec_conv_init_v615(q);  break;
     default:
         fprintf(stderr,"error: fec_conv_create(), invalid type\n");
         exit(1);
@@ -156,7 +156,7 @@ void fec_conv_decode(fec _q,
     // invoke hard-decision scaling
     unsigned int k;
     for (k=0; k<8*_q->num_enc_bytes; k++)
-        _q->enc_bits[k] = _q->enc_bits[k] ? FEC_SOFTBIT_1 : FEC_SOFTBIT_0;
+        _q->enc_bits[k] = _q->enc_bits[k] ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
 
     // run decoder
     _q->init_viterbi(_q->vp,0);

@@ -2,19 +2,19 @@
 
 int main() {
     // set up the options
-    unsigned int n=16;                  // uncoded data length
-    crc_scheme crc  = CRC_32;           // validity check
-    fec_scheme fec0 = FEC_HAMMING74;    // inner code
-    fec_scheme fec1 = FEC_REP3;         // outer code
+    unsigned int n=16;                      // uncoded data length
+    crc_scheme crc  = CRC_32;               // validity check
+    fec_scheme fec0 = LIQUID_FEC_HAMMING74; // inner code
+    fec_scheme fec1 = LIQUID_FEC_REP3;      // outer code
 
     // compute resulting packet length
     unsigned int k = packetizer_compute_enc_msg_len(n,crc,fec0,fec1);
 
     // set up the arrays
-    unsigned char msg[n];               // original message
-    unsigned char packet[k];            // encoded message
-    unsigned char msg_dec[n];           // decoded message
-    int crc_pass;                       // decoder validity check
+    unsigned char msg[n];       // original message
+    unsigned char packet[k];    // encoded message
+    unsigned char msg_dec[n];   // decoded message
+    int crc_pass;               // decoder validity check
 
     // create the packetizer object
     packetizer p = packetizer_create(n,crc,fec0,fec1);

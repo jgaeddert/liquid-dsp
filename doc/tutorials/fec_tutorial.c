@@ -4,16 +4,16 @@
 
 int main() {
     // simulation parameters
-    unsigned int n = 8;             // original data length (bytes)
-    fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
+    unsigned int n = 8;                     // original data length (bytes)
+    fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme
 
     // compute size of encoded message
     unsigned int k = fec_get_enc_msg_length(fs,n);
 
     // create arrays
-    unsigned char msg_org[n];       // original data message
-    unsigned char msg_enc[k];       // encoded/received data message
-    unsigned char msg_dec[n];       // decoded data message
+    unsigned char msg_org[n];   // original data message
+    unsigned char msg_enc[k];   // encoded/received data message
+    unsigned char msg_dec[n];   // decoded data message
 
     // CREATE the fec object
     fec q = fec_create(fs,NULL);

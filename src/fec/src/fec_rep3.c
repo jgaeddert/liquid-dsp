@@ -33,7 +33,7 @@ fec fec_rep3_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
-    q->scheme = FEC_REP3;
+    q->scheme = LIQUID_FEC_REP3;
     q->rate = fec_get_rate(q->scheme);
 
     q->encode_func = &fec_rep3_encode;

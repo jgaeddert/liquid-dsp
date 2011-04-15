@@ -442,43 +442,43 @@ int crc_validate_message(crc_scheme _scheme,
 
 
 // available FEC schemes
-#define LIQUID_NUM_FEC_SCHEMES  24
+#define LIQUID_FEC_NUM_SCHEMES  24
 typedef enum {
-    FEC_UNKNOWN=0,
-    FEC_NONE,           // no error-correction
-    FEC_REP3,           // simple repeat code, r1/3
-    FEC_REP5,           // simple repeat code, r1/5
-    FEC_HAMMING74,      // Hamming (7,4) block code, r1/2 (really 4/7)
-    FEC_HAMMING84,      // Hamming (7,4) with extra parity bit, r1/2
-    FEC_HAMMING128,     // Hamming (12,8) block code, r2/3
+    LIQUID_FEC_UNKNOWN=0,       // unknown/unsupported scheme
+    LIQUID_FEC_NONE,            // no error-correction
+    LIQUID_FEC_REP3,            // simple repeat code, r1/3
+    LIQUID_FEC_REP5,            // simple repeat code, r1/5
+    LIQUID_FEC_HAMMING74,       // Hamming (7,4) block code, r1/2 (really 4/7)
+    LIQUID_FEC_HAMMING84,       // Hamming (7,4) with extra parity bit, r1/2
+    LIQUID_FEC_HAMMING128,      // Hamming (12,8) block code, r2/3
 
     // codecs not defined internally (see http://www.ka9q.net/code/fec/)
-    FEC_CONV_V27,       // r1/2, K=7, dfree=10
-    FEC_CONV_V29,       // r1/2, K=9, dfree=12
-    FEC_CONV_V39,       // r1/3, K=9, dfree=18
-    FEC_CONV_V615,      // r1/6, K=15, dfree<=57 (Heller 1968)
+    LIQUID_FEC_CONV_V27,        // r1/2, K=7, dfree=10
+    LIQUID_FEC_CONV_V29,        // r1/2, K=9, dfree=12
+    LIQUID_FEC_CONV_V39,        // r1/3, K=9, dfree=18
+    LIQUID_FEC_CONV_V615,       // r1/6, K=15, dfree<=57 (Heller 1968)
 
     // punctured (perforated) codes
-    FEC_CONV_V27P23,    // r2/3, K=7, dfree=6
-    FEC_CONV_V27P34,    // r3/4, K=7, dfree=5
-    FEC_CONV_V27P45,    // r4/5, K=7, dfree=4
-    FEC_CONV_V27P56,    // r5/6, K=7, dfree=4
-    FEC_CONV_V27P67,    // r6/7, K=7, dfree=3
-    FEC_CONV_V27P78,    // r7/8, K=7, dfree=3
+    LIQUID_FEC_CONV_V27P23,     // r2/3, K=7, dfree=6
+    LIQUID_FEC_CONV_V27P34,     // r3/4, K=7, dfree=5
+    LIQUID_FEC_CONV_V27P45,     // r4/5, K=7, dfree=4
+    LIQUID_FEC_CONV_V27P56,     // r5/6, K=7, dfree=4
+    LIQUID_FEC_CONV_V27P67,     // r6/7, K=7, dfree=3
+    LIQUID_FEC_CONV_V27P78,     // r7/8, K=7, dfree=3
 
-    FEC_CONV_V29P23,    // r2/3, K=9, dfree=7
-    FEC_CONV_V29P34,    // r3/4, K=9, dfree=6
-    FEC_CONV_V29P45,    // r4/5, K=9, dfree=5
-    FEC_CONV_V29P56,    // r5/6, K=9, dfree=5
-    FEC_CONV_V29P67,    // r6/7, K=9, dfree=4
-    FEC_CONV_V29P78,    // r7/8, K=9, dfree=4
+    LIQUID_FEC_CONV_V29P23,     // r2/3, K=9, dfree=7
+    LIQUID_FEC_CONV_V29P34,     // r3/4, K=9, dfree=6
+    LIQUID_FEC_CONV_V29P45,     // r4/5, K=9, dfree=5
+    LIQUID_FEC_CONV_V29P56,     // r5/6, K=9, dfree=5
+    LIQUID_FEC_CONV_V29P67,     // r6/7, K=9, dfree=4
+    LIQUID_FEC_CONV_V29P78,     // r7/8, K=9, dfree=4
 
     // Reed-Solomon codes
-    FEC_RS_M8           // m=8, n=255, k=223
+    LIQUID_FEC_RS_M8            // m=8, n=255, k=223
 } fec_scheme;
 
 // pretty names for fec schemes
-extern const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES][2];
+extern const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2];
 
 // returns fec_scheme based on input string
 fec_scheme liquid_getopt_str2fec(const char * _str);

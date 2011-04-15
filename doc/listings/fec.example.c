@@ -1,8 +1,8 @@
 // file: doc/listings/fec.example.c
 
 int main() {
-    unsigned int n = 64;            // decoded message length (bytes)
-    fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
+    unsigned int n = 64;                    // decoded message length (bytes)
+    fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme
 
     // compute encoded message length
     unsigned int k = fec_get_enc_msg_length(fs, n);

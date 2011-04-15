@@ -104,8 +104,8 @@ bpacketsync bpacketsync_create(unsigned int _m,
     // default values
     q->dec_msg_len  = 1;
     q->crc          = CRC_NONE;
-    q->fec0         = FEC_NONE;
-    q->fec1         = FEC_NONE;
+    q->fec0         = LIQUID_FEC_NONE;
+    q->fec1         = LIQUID_FEC_NONE;
 
     // implied values
     q->g = 0;
@@ -116,7 +116,7 @@ bpacketsync bpacketsync_create(unsigned int _m,
                                                     q->crc,
                                                     q->fec0,
                                                     q->fec1);
-    q->header_len = packetizer_compute_enc_msg_len(6, CRC_16, FEC_NONE, FEC_HAMMING128);
+    q->header_len = packetizer_compute_enc_msg_len(6, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
 
     // arrays
     q->pnsequence  = (unsigned char*) malloc((q->pnsequence_len)*sizeof(unsigned char*));
@@ -128,7 +128,7 @@ bpacketsync bpacketsync_create(unsigned int _m,
     q->ms = msequence_create(6);
 
     // create header packet encoder
-    q->p_header = packetizer_create(6, CRC_16, FEC_NONE, FEC_HAMMING128);
+    q->p_header = packetizer_create(6, CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
     assert(q->header_len == packetizer_get_enc_msg_len(q->p_header));
 
     // create payload packet encoder

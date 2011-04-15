@@ -28,23 +28,23 @@
 void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
 {
 #if HAVE_FEC_H == 0
-    if ( _fs == FEC_CONV_V27    ||
-         _fs == FEC_CONV_V29    ||
-         _fs == FEC_CONV_V39    ||
-         _fs == FEC_CONV_V615   ||
-         _fs == FEC_CONV_V27P23 ||
-         _fs == FEC_CONV_V27P34 ||
-         _fs == FEC_CONV_V27P45 ||
-         _fs == FEC_CONV_V27P56 ||
-         _fs == FEC_CONV_V27P67 ||
-         _fs == FEC_CONV_V27P78 ||
-         _fs == FEC_CONV_V29P23 ||
-         _fs == FEC_CONV_V29P34 ||
-         _fs == FEC_CONV_V29P45 ||
-         _fs == FEC_CONV_V29P56 ||
-         _fs == FEC_CONV_V29P67 ||
-         _fs == FEC_CONV_V29P78 ||
-         _fs == FEC_RS_M8)
+    if ( _fs == LIQUID_FEC_CONV_V27    ||
+         _fs == LIQUID_FEC_CONV_V29    ||
+         _fs == LIQUID_FEC_CONV_V39    ||
+         _fs == LIQUID_FEC_CONV_V615   ||
+         _fs == LIQUID_FEC_CONV_V27P23 ||
+         _fs == LIQUID_FEC_CONV_V27P34 ||
+         _fs == LIQUID_FEC_CONV_V27P45 ||
+         _fs == LIQUID_FEC_CONV_V27P56 ||
+         _fs == LIQUID_FEC_CONV_V27P67 ||
+         _fs == LIQUID_FEC_CONV_V27P78 ||
+         _fs == LIQUID_FEC_CONV_V29P23 ||
+         _fs == LIQUID_FEC_CONV_V29P34 ||
+         _fs == LIQUID_FEC_CONV_V29P45 ||
+         _fs == LIQUID_FEC_CONV_V29P56 ||
+         _fs == LIQUID_FEC_CONV_V29P67 ||
+         _fs == LIQUID_FEC_CONV_V29P78 ||
+         _fs == LIQUID_FEC_RS_M8)
     {
         AUTOTEST_WARN("convolutional, Reed-Solomon codes unavailable (install libfec)\n");
         return;
@@ -88,36 +88,36 @@ void fec_test_codec(fec_scheme _fs, unsigned int _n, void * _opts)
 //
 
 // repeat codes
-void autotest_fec_r3()      { fec_test_codec(FEC_REP3,          64, NULL); }
-void autotest_fec_r5()      { fec_test_codec(FEC_REP5,          64, NULL); }
+void autotest_fec_r3()      { fec_test_codec(LIQUID_FEC_REP3,          64, NULL); }
+void autotest_fec_r5()      { fec_test_codec(LIQUID_FEC_REP5,          64, NULL); }
 
 // Hamming block codes
-void autotest_fec_h74()     { fec_test_codec(FEC_HAMMING74,     64, NULL); }
-void autotest_fec_h84()     { fec_test_codec(FEC_HAMMING84,     64, NULL); }
-void autotest_fec_h128()    { fec_test_codec(FEC_HAMMING128,    64, NULL); }
+void autotest_fec_h74()     { fec_test_codec(LIQUID_FEC_HAMMING74,     64, NULL); }
+void autotest_fec_h84()     { fec_test_codec(LIQUID_FEC_HAMMING84,     64, NULL); }
+void autotest_fec_h128()    { fec_test_codec(LIQUID_FEC_HAMMING128,    64, NULL); }
 
 // convolutional codes
-void autotest_fec_v27()     { fec_test_codec(FEC_CONV_V27,      64, NULL); }
-void autotest_fec_v29()     { fec_test_codec(FEC_CONV_V29,      64, NULL); }
-void autotest_fec_v39()     { fec_test_codec(FEC_CONV_V39,      64, NULL); }
-void autotest_fec_v615()    { fec_test_codec(FEC_CONV_V615,     64, NULL); }
+void autotest_fec_v27()     { fec_test_codec(LIQUID_FEC_CONV_V27,      64, NULL); }
+void autotest_fec_v29()     { fec_test_codec(LIQUID_FEC_CONV_V29,      64, NULL); }
+void autotest_fec_v39()     { fec_test_codec(LIQUID_FEC_CONV_V39,      64, NULL); }
+void autotest_fec_v615()    { fec_test_codec(LIQUID_FEC_CONV_V615,     64, NULL); }
 
 // convolutional codes (punctured)
-void autotest_fec_v27p23()  { fec_test_codec(FEC_CONV_V27P23,   64, NULL); }
-void autotest_fec_v27p34()  { fec_test_codec(FEC_CONV_V27P34,   64, NULL); }
-void autotest_fec_v27p45()  { fec_test_codec(FEC_CONV_V27P45,   64, NULL); }
-void autotest_fec_v27p56()  { fec_test_codec(FEC_CONV_V27P56,   64, NULL); }
-void autotest_fec_v27p67()  { fec_test_codec(FEC_CONV_V27P67,   64, NULL); }
-void autotest_fec_v27p78()  { fec_test_codec(FEC_CONV_V27P78,   64, NULL); }
+void autotest_fec_v27p23()  { fec_test_codec(LIQUID_FEC_CONV_V27P23,   64, NULL); }
+void autotest_fec_v27p34()  { fec_test_codec(LIQUID_FEC_CONV_V27P34,   64, NULL); }
+void autotest_fec_v27p45()  { fec_test_codec(LIQUID_FEC_CONV_V27P45,   64, NULL); }
+void autotest_fec_v27p56()  { fec_test_codec(LIQUID_FEC_CONV_V27P56,   64, NULL); }
+void autotest_fec_v27p67()  { fec_test_codec(LIQUID_FEC_CONV_V27P67,   64, NULL); }
+void autotest_fec_v27p78()  { fec_test_codec(LIQUID_FEC_CONV_V27P78,   64, NULL); }
 
-void autotest_fec_v29p23()  { fec_test_codec(FEC_CONV_V29P23,   64, NULL); }
-void autotest_fec_v29p34()  { fec_test_codec(FEC_CONV_V29P34,   64, NULL); }
-void autotest_fec_v29p45()  { fec_test_codec(FEC_CONV_V29P45,   64, NULL); }
-void autotest_fec_v29p56()  { fec_test_codec(FEC_CONV_V29P56,   64, NULL); }
-void autotest_fec_v29p67()  { fec_test_codec(FEC_CONV_V29P67,   64, NULL); }
-void autotest_fec_v29p78()  { fec_test_codec(FEC_CONV_V29P78,   64, NULL); }
+void autotest_fec_v29p23()  { fec_test_codec(LIQUID_FEC_CONV_V29P23,   64, NULL); }
+void autotest_fec_v29p34()  { fec_test_codec(LIQUID_FEC_CONV_V29P34,   64, NULL); }
+void autotest_fec_v29p45()  { fec_test_codec(LIQUID_FEC_CONV_V29P45,   64, NULL); }
+void autotest_fec_v29p56()  { fec_test_codec(LIQUID_FEC_CONV_V29P56,   64, NULL); }
+void autotest_fec_v29p67()  { fec_test_codec(LIQUID_FEC_CONV_V29P67,   64, NULL); }
+void autotest_fec_v29p78()  { fec_test_codec(LIQUID_FEC_CONV_V29P78,   64, NULL); }
 
 // Reed-Solomon block codes
-void autotest_fec_rs8()     { fec_test_codec(FEC_RS_M8,         64, NULL); }
+void autotest_fec_rs8()     { fec_test_codec(LIQUID_FEC_RS_M8,         64, NULL); }
 
 

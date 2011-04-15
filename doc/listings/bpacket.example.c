@@ -13,8 +13,8 @@ int main() {
     // options
     unsigned int n=64;                  // original data message length
     crc_scheme check = CRC_32;          // data integrity check
-    fec_scheme fec0 = FEC_HAMMING128;   // inner code
-    fec_scheme fec1 = FEC_NONE;         // outer code
+    fec_scheme fec0 = LIQUID_FEC_HAMMING128;   // inner code
+    fec_scheme fec1 = LIQUID_FEC_NONE;         // outer code
 
     // create packet generator and compute packet length
     bpacketgen pg = bpacketgen_create(0, n, check, fec0, fec1);

@@ -44,7 +44,7 @@ void usage()
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
     // print all available FEC schemes
-    for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++)
+    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
 }
 
@@ -53,11 +53,11 @@ int main(int argc, char*argv[]) {
     srand(time(NULL));
 
     // options
-    unsigned int n=8;                   // original data message length
-    crc_scheme check = CRC_32;          // data integrity check
-    fec_scheme fec0 = FEC_HAMMING128;   // inner code
-    fec_scheme fec1 = FEC_NONE;         // outer code
-    float bit_error_rate = 0.0f;        // bit error rate
+    unsigned int n=8;                       // original data message length
+    crc_scheme check = CRC_32;              // data integrity check
+    fec_scheme fec0 = LIQUID_FEC_HAMMING74; // inner code
+    fec_scheme fec1 = LIQUID_FEC_NONE;      // outer code
+    float bit_error_rate = 0.0f;            // bit error rate
 
     // read command-line options
     int dopt;
@@ -78,7 +78,7 @@ int main(int argc, char*argv[]) {
         case 'c':
             // inner FEC scheme
             fec0 = liquid_getopt_str2fec(optarg);
-            if (fec0 == FEC_UNKNOWN) {
+            if (fec0 == LIQUID_FEC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n\n",optarg);
                 exit(1);
             }
@@ -86,7 +86,7 @@ int main(int argc, char*argv[]) {
         case 'k':
             // outer FEC scheme
             fec1 = liquid_getopt_str2fec(optarg);
-            if (fec1 == FEC_UNKNOWN) {
+            if (fec1 == LIQUID_FEC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported outer FEC scheme \"%s\"\n\n",optarg);
                 exit(1);
             }

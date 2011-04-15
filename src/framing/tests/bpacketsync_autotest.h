@@ -44,11 +44,11 @@ static int bpacketsync_autotest_callback(unsigned char * _payload,
 void autotest_bpacketsync()
 {
     // options
-    unsigned int num_packets = 50;      // number of packets to encode
-    unsigned int dec_msg_len = 64;      // original data message length
-    crc_scheme check = CRC_32;          // data integrity check
-    fec_scheme fec0 = FEC_HAMMING128;   // inner code
-    fec_scheme fec1 = FEC_NONE;         // outer code
+    unsigned int num_packets = 50;          // number of packets to encode
+    unsigned int dec_msg_len = 64;          // original data message length
+    crc_scheme check = CRC_32;              // data integrity check
+    fec_scheme fec0 = LIQUID_FEC_HAMMING74; // inner code
+    fec_scheme fec1 = LIQUID_FEC_NONE;      // outer code
 
     // create packet generator
     bpacketgen pg = bpacketgen_create(0, dec_msg_len, check, fec0, fec1);

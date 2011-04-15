@@ -34,8 +34,8 @@ void autotest_flexframe_decode_header()
     fgprops.phasing_len = 50;
     fgprops.payload_len = 64;
     fgprops.check       = CRC_NONE;
-    fgprops.fec0        = FEC_NONE;
-    fgprops.fec1        = FEC_NONE;
+    fgprops.fec0        = LIQUID_FEC_NONE;
+    fgprops.fec1        = LIQUID_FEC_NONE;
     fgprops.mod_scheme  = LIQUID_MODEM_PSK;
     fgprops.mod_bps     = 3;
     fgprops.rampdn_len  = 16;

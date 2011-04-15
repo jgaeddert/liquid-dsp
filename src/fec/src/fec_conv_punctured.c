@@ -44,19 +44,19 @@ fec fec_conv_punctured_create(fec_scheme _fs)
     q->decode_func = &fec_conv_punctured_decode;
 
     switch (q->scheme) {
-    case FEC_CONV_V27P23:   fec_conv_init_v27p23(q);    break;
-    case FEC_CONV_V27P34:   fec_conv_init_v27p34(q);    break;
-    case FEC_CONV_V27P45:   fec_conv_init_v27p45(q);    break;
-    case FEC_CONV_V27P56:   fec_conv_init_v27p56(q);    break;
-    case FEC_CONV_V27P67:   fec_conv_init_v27p67(q);    break;
-    case FEC_CONV_V27P78:   fec_conv_init_v27p78(q);    break;
+    case LIQUID_FEC_CONV_V27P23:   fec_conv_init_v27p23(q);    break;
+    case LIQUID_FEC_CONV_V27P34:   fec_conv_init_v27p34(q);    break;
+    case LIQUID_FEC_CONV_V27P45:   fec_conv_init_v27p45(q);    break;
+    case LIQUID_FEC_CONV_V27P56:   fec_conv_init_v27p56(q);    break;
+    case LIQUID_FEC_CONV_V27P67:   fec_conv_init_v27p67(q);    break;
+    case LIQUID_FEC_CONV_V27P78:   fec_conv_init_v27p78(q);    break;
 
-    case FEC_CONV_V29P23:   fec_conv_init_v29p23(q);    break;
-    case FEC_CONV_V29P34:   fec_conv_init_v29p34(q);    break;
-    case FEC_CONV_V29P45:   fec_conv_init_v29p45(q);    break;
-    case FEC_CONV_V29P56:   fec_conv_init_v29p56(q);    break;
-    case FEC_CONV_V29P67:   fec_conv_init_v29p67(q);    break;
-    case FEC_CONV_V29P78:   fec_conv_init_v29p78(q);    break;
+    case LIQUID_FEC_CONV_V29P23:   fec_conv_init_v29p23(q);    break;
+    case LIQUID_FEC_CONV_V29P34:   fec_conv_init_v29p34(q);    break;
+    case LIQUID_FEC_CONV_V29P45:   fec_conv_init_v29p45(q);    break;
+    case LIQUID_FEC_CONV_V29P56:   fec_conv_init_v29p56(q);    break;
+    case LIQUID_FEC_CONV_V29P67:   fec_conv_init_v29p67(q);    break;
+    case LIQUID_FEC_CONV_V29P78:   fec_conv_init_v29p78(q);    break;
     default:
         fprintf(stderr,"error: fec_conv_punctured_create(), invalid type\n");
         exit(1);
@@ -147,7 +147,7 @@ void fec_conv_punctured_encode(fec _q,
         n++;
     }
 
-    //printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(FEC_CONV(_mode),_dec_msg_len));
+    //printf("n = %u (expected %u)\n", n, 8*fec_get_enc_msg_length(LIQUID_FEC_CONV(_mode),_dec_msg_len));
     assert(n == 8*fec_get_enc_msg_length(_q->scheme,_dec_msg_len));
 }
 
@@ -175,7 +175,7 @@ void fec_conv_punctured_decode(fec _q,
             if (_q->puncturing_matrix[r*(_q->P)+p]) {
                 // push bit from input
                 bit = (byte_in >> (7-k)) & 0x01;
-                _q->enc_bits[i+r] = bit ? FEC_SOFTBIT_1 : FEC_SOFTBIT_0;
+                _q->enc_bits[i+r] = bit ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
                 k++;
                 if (k==8) {
                     k = 0;
@@ -184,7 +184,7 @@ void fec_conv_punctured_decode(fec _q,
                 }
             } else {
                 // push erasure
-                _q->enc_bits[i+r] = FEC_SOFTBIT_ERASURE;
+                _q->enc_bits[i+r] = LIQUID_FEC_SOFTBIT_ERASURE;
             }
         }
         p = (p+1) % _q->P;

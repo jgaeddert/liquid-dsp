@@ -58,7 +58,7 @@ fec fec_hamming74_create(void * _opts)
     fec q = (fec) malloc(sizeof(struct fec_s));
 
     // set scheme
-    q->scheme = FEC_HAMMING74;
+    q->scheme = LIQUID_FEC_HAMMING74;
     q->rate = fec_get_rate(q->scheme);
 
     // set internal function pointers

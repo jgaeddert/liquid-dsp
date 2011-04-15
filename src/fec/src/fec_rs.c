@@ -46,7 +46,7 @@ fec fec_rs_create(fec_scheme _fs)
     q->decode_func = &fec_rs_decode;
 
     switch (q->scheme) {
-    case FEC_RS_M8: fec_rs_init_p8(q);   break;
+    case LIQUID_FEC_RS_M8: fec_rs_init_p8(q);   break;
     default:
         fprintf(stderr,"error: fec_rs_create(), invalid type\n");
         exit(1);

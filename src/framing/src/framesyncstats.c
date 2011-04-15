@@ -46,8 +46,8 @@ framesyncstats_s framesyncstats_default = {
     LIQUID_MODEM_UNKNOWN,   // mod_scheme
     0,                      // mod_bps
     CRC_UNKNOWN,            // check
-    FEC_UNKNOWN,            // fec0
-    FEC_UNKNOWN             // fec1
+    LIQUID_FEC_UNKNOWN,     // fec0
+    LIQUID_FEC_UNKNOWN      // fec1
 };
 
 // initialize framesyncstats object on default
@@ -65,10 +65,10 @@ void framesyncstats_print(framesyncstats_s * _stats)
      } else if (_stats->check >= LIQUID_NUM_CRC_SCHEMES) {
         fprintf(stderr,"error: framesyncstats_print(), invalid CRC scheme\n");
         exit(1);
-     } else if (_stats->fec0 >= LIQUID_NUM_FEC_SCHEMES) {
+     } else if (_stats->fec0 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"error: framesyncstats_print(), invalid FEC scheme (inner)\n");
         exit(1);
-     } else if (_stats->fec1 >= LIQUID_NUM_FEC_SCHEMES) {
+     } else if (_stats->fec1 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"error: framesyncstats_print(), invalid FEC scheme (outer)\n");
         exit(1);
     }

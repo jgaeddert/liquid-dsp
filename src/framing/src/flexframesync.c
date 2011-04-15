@@ -165,7 +165,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // header objects
     fs->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
-    fs->p_header = packetizer_create(19, CRC_16, FEC_HAMMING128, FEC_NONE);
+    fs->p_header = packetizer_create(19, CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
     // agc, rssi, squelch
@@ -224,8 +224,8 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->bps_payload = 1;
     fs->payload_len = 0;
     fs->check       = CRC_NONE;
-    fs->fec0        = FEC_NONE;
-    fs->fec1        = FEC_NONE;
+    fs->fec0        = LIQUID_FEC_NONE;
+    fs->fec1        = LIQUID_FEC_NONE;
     fs->payload_enc_msg_len = 0;
     fs->num_payload_symbols = 0;
 
@@ -235,7 +235,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // payload buffers, objects
     fs->mod_payload = modem_create(fs->ms_payload, fs->bps_payload);
-    fs->p_payload = packetizer_create(0, CRC_NONE, FEC_NONE, FEC_NONE);
+    fs->p_payload = packetizer_create(0, CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     fs->payload_samples = NULL;
     fs->payload_sym = NULL;
     fs->payload_enc = NULL;
@@ -708,8 +708,8 @@ void flexframesync_execute_rxheader(flexframesync _fs,
             _fs->framestats.mod_scheme      = LIQUID_MODEM_UNKNOWN;
             _fs->framestats.mod_bps         = 0;
             _fs->framestats.check           = CRC_UNKNOWN;
-            _fs->framestats.fec0            = FEC_UNKNOWN;
-            _fs->framestats.fec1            = FEC_UNKNOWN;
+            _fs->framestats.fec0            = LIQUID_FEC_UNKNOWN;
+            _fs->framestats.fec1            = LIQUID_FEC_UNKNOWN;
 
             _fs->callback(_fs->header,  _fs->header_valid,
                           NULL,         0, 0,
@@ -937,13 +937,13 @@ void flexframesync_decode_header(flexframesync _fs)
         fprintf(stderr,"warning: flexframesync_decode_header(), decoded CRC exceeds available\n");
         check = CRC_UNKNOWN;
     }
-    if (fec0 >= LIQUID_NUM_FEC_SCHEMES) {
+    if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
-        fec0 = FEC_UNKNOWN;
+        fec0 = LIQUID_FEC_UNKNOWN;
     }
-    if (fec1 >= LIQUID_NUM_FEC_SCHEMES) {
+    if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"warning: flexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
-        fec1 = FEC_UNKNOWN;
+        fec1 = LIQUID_FEC_UNKNOWN;
     }
 
     // strip off modulation scheme/depth

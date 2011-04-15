@@ -37,7 +37,7 @@ void usage()
     printf("  k     :   fec coding scheme (outer)\n");
     // print all available FEC schemes
     unsigned int i;
-    for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++)
+    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
 
 }
@@ -56,8 +56,8 @@ int main(int argc, char *argv[]) {
     unsigned int frame_len = 128;
     modulation_scheme ms = LIQUID_MODEM_BPSK;
     unsigned int bps = 1;
-    fec_scheme fec0 = FEC_NONE;
-    fec_scheme fec1 = FEC_NONE;
+    fec_scheme fec0 = LIQUID_FEC_NONE;
+    fec_scheme fec1 = LIQUID_FEC_NONE;
     const char * filename = OUTPUT_FILENAME;
     int verbose = 1;
 

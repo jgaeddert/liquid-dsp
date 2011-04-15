@@ -3,10 +3,10 @@
 
 int main() {
     // simulation parameters
-    unsigned int n = 8;                 // original data length (bytes)
-    crc_scheme check = CRC_16;          // data validity check
-    fec_scheme fec0 = FEC_HAMMING74;    // error-correcting scheme (inner)
-    fec_scheme fec1 = FEC_HAMMING128;   // error-correcting scheme (outer)
+    unsigned int n = 8;                         // original data length (bytes)
+    crc_scheme check = CRC_16;                  // data validity check
+    fec_scheme fec0 = LIQUID_FEC_HAMMING74;     // error-correcting scheme (inner)
+    fec_scheme fec1 = LIQUID_FEC_HAMMING128;    // error-correcting scheme (outer)
 
     // compute size of encoded message
     unsigned int k = packetizer_compute_enc_msg_len(n,check,fec0,fec1);

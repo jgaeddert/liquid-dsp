@@ -31,7 +31,7 @@
 
 // object-independent methods
 
-const char * fec_scheme_str[LIQUID_NUM_FEC_SCHEMES][2] = {
+const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2] = {
     // short name,  long name
     {"unknown",     "unknown"},
     {"none",        "none"},
@@ -63,14 +63,14 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
 {
     // compare each string to short name
     unsigned int i;
-    for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++) {
+    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++) {
         if (strcmp(_str,fec_scheme_str[i][0])==0) {
             return i;
         }
     }
 
     fprintf(stderr,"warning: liquid_getopt_str2fec(), unknown/unsupported fec scheme : %s\n", _str);
-    return FEC_UNKNOWN;
+    return LIQUID_FEC_UNKNOWN;
 }
 
 
@@ -82,59 +82,59 @@ unsigned int fec_get_enc_msg_length(fec_scheme _scheme,
                                     unsigned int _msg_len)
 {
     switch (_scheme) {
-    case FEC_UNKNOWN:       return 0;
-    case FEC_NONE:          return _msg_len;
-    case FEC_REP3:          return 3*_msg_len;
-    case FEC_REP5:          return 5*_msg_len;
-    case FEC_HAMMING74:     return fec_block_get_enc_msg_len(_msg_len,4,7);
-    case FEC_HAMMING84:     return fec_block_get_enc_msg_len(_msg_len,4,8);
-    case FEC_HAMMING128:    return fec_block_get_enc_msg_len(_msg_len,8,12);
+    case LIQUID_FEC_UNKNOWN:        return 0;
+    case LIQUID_FEC_NONE:           return _msg_len;
+    case LIQUID_FEC_REP3:           return 3*_msg_len;
+    case LIQUID_FEC_REP5:           return 5*_msg_len;
+    case LIQUID_FEC_HAMMING74:      return fec_block_get_enc_msg_len(_msg_len,4,7);
+    case LIQUID_FEC_HAMMING84:      return fec_block_get_enc_msg_len(_msg_len,4,8);
+    case LIQUID_FEC_HAMMING128:     return fec_block_get_enc_msg_len(_msg_len,8,12);
 
 #if HAVE_FEC_H
     // convolutional codes
-    case FEC_CONV_V27:      return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
-    case FEC_CONV_V29:      return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
-    case FEC_CONV_V39:      return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
-    case FEC_CONV_V615:     return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
-    case FEC_CONV_V27P23:   return fec_conv_get_enc_msg_len(_msg_len,7,2);
-    case FEC_CONV_V27P34:   return fec_conv_get_enc_msg_len(_msg_len,7,3);
-    case FEC_CONV_V27P45:   return fec_conv_get_enc_msg_len(_msg_len,7,4);
-    case FEC_CONV_V27P56:   return fec_conv_get_enc_msg_len(_msg_len,7,5);
-    case FEC_CONV_V27P67:   return fec_conv_get_enc_msg_len(_msg_len,7,6);
-    case FEC_CONV_V27P78:   return fec_conv_get_enc_msg_len(_msg_len,7,7);
+    case LIQUID_FEC_CONV_V27:       return 2*_msg_len + 2;  // (K-1)/r=12, round up to 2 bytes
+    case LIQUID_FEC_CONV_V29:       return 2*_msg_len + 2;  // (K-1)/r=16, 2 bytes
+    case LIQUID_FEC_CONV_V39:       return 3*_msg_len + 3;  // (K-1)/r=24, 3 bytes
+    case LIQUID_FEC_CONV_V615:      return 6*_msg_len + 11; // (K-1)/r=84, round up to 11 bytes
+    case LIQUID_FEC_CONV_V27P23:    return fec_conv_get_enc_msg_len(_msg_len,7,2);
+    case LIQUID_FEC_CONV_V27P34:    return fec_conv_get_enc_msg_len(_msg_len,7,3);
+    case LIQUID_FEC_CONV_V27P45:    return fec_conv_get_enc_msg_len(_msg_len,7,4);
+    case LIQUID_FEC_CONV_V27P56:    return fec_conv_get_enc_msg_len(_msg_len,7,5);
+    case LIQUID_FEC_CONV_V27P67:    return fec_conv_get_enc_msg_len(_msg_len,7,6);
+    case LIQUID_FEC_CONV_V27P78:    return fec_conv_get_enc_msg_len(_msg_len,7,7);
 
-    case FEC_CONV_V29P23:   return fec_conv_get_enc_msg_len(_msg_len,9,2);
-    case FEC_CONV_V29P34:   return fec_conv_get_enc_msg_len(_msg_len,9,3);
-    case FEC_CONV_V29P45:   return fec_conv_get_enc_msg_len(_msg_len,9,4);
-    case FEC_CONV_V29P56:   return fec_conv_get_enc_msg_len(_msg_len,9,5);
-    case FEC_CONV_V29P67:   return fec_conv_get_enc_msg_len(_msg_len,9,6);
-    case FEC_CONV_V29P78:   return fec_conv_get_enc_msg_len(_msg_len,9,7);
+    case LIQUID_FEC_CONV_V29P23:    return fec_conv_get_enc_msg_len(_msg_len,9,2);
+    case LIQUID_FEC_CONV_V29P34:    return fec_conv_get_enc_msg_len(_msg_len,9,3);
+    case LIQUID_FEC_CONV_V29P45:    return fec_conv_get_enc_msg_len(_msg_len,9,4);
+    case LIQUID_FEC_CONV_V29P56:    return fec_conv_get_enc_msg_len(_msg_len,9,5);
+    case LIQUID_FEC_CONV_V29P67:    return fec_conv_get_enc_msg_len(_msg_len,9,6);
+    case LIQUID_FEC_CONV_V29P78:    return fec_conv_get_enc_msg_len(_msg_len,9,7);
 
     // Reed-Solomon codes
-    case FEC_RS_M8:         return fec_rs_get_enc_msg_len(_msg_len,32,255,223);
+    case LIQUID_FEC_RS_M8:          return fec_rs_get_enc_msg_len(_msg_len,32,255,223);
 #else
-    case FEC_CONV_V27:
-    case FEC_CONV_V29:
-    case FEC_CONV_V39:
-    case FEC_CONV_V615:
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
 
-    case FEC_CONV_V27P23:
-    case FEC_CONV_V27P34:
-    case FEC_CONV_V27P45:
-    case FEC_CONV_V27P56:
-    case FEC_CONV_V27P67:
-    case FEC_CONV_V27P78:
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
 
-    case FEC_CONV_V29P23:
-    case FEC_CONV_V29P34:
-    case FEC_CONV_V29P45:
-    case FEC_CONV_V29P56:
-    case FEC_CONV_V29P67:
-    case FEC_CONV_V29P78:
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
         fprintf(stderr, "error: fec_get_enc_msg_length(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
 
-    case FEC_RS_M8:
+    case LIQUID_FEC_RS_M8:
         fprintf(stderr, "error: fec_get_enc_msg_length(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
 #endif
@@ -272,58 +272,58 @@ unsigned int fec_rs_get_enc_msg_len(unsigned int _dec_msg_len,
 float fec_get_rate(fec_scheme _scheme)
 {
     switch (_scheme) {
-    case FEC_UNKNOWN:       return 0;
-    case FEC_NONE:          return 1.;
-    case FEC_REP3:          return 1./3.;
-    case FEC_REP5:          return 1./5.;
-    case FEC_HAMMING74:     return 4./7.;
-    case FEC_HAMMING84:     return 4./8.;
-    case FEC_HAMMING128:    return 8./12.;
+    case LIQUID_FEC_UNKNOWN:        return 0;
+    case LIQUID_FEC_NONE:           return 1.;
+    case LIQUID_FEC_REP3:           return 1./3.;
+    case LIQUID_FEC_REP5:           return 1./5.;
+    case LIQUID_FEC_HAMMING74:      return 4./7.;
+    case LIQUID_FEC_HAMMING84:      return 4./8.;
+    case LIQUID_FEC_HAMMING128:     return 8./12.;
 
     // convolutional codes
 #if HAVE_FEC_H
-    case FEC_CONV_V27:      return 1./2.;
-    case FEC_CONV_V29:      return 1./2.;
-    case FEC_CONV_V39:      return 1./3.;
-    case FEC_CONV_V615:     return 1./6.;
-    case FEC_CONV_V27P23:   return 2./3.;
-    case FEC_CONV_V27P34:   return 3./4.;
-    case FEC_CONV_V27P45:   return 4./5.;
-    case FEC_CONV_V27P56:   return 5./6.;
-    case FEC_CONV_V27P67:   return 6./7.;
-    case FEC_CONV_V27P78:   return 7./8.;
-    case FEC_CONV_V29P23:   return 2./3.;
-    case FEC_CONV_V29P34:   return 3./4.;
-    case FEC_CONV_V29P45:   return 4./5.;
-    case FEC_CONV_V29P56:   return 5./6.;
-    case FEC_CONV_V29P67:   return 6./7.;
-    case FEC_CONV_V29P78:   return 7./8.;
+    case LIQUID_FEC_CONV_V27:       return 1./2.;
+    case LIQUID_FEC_CONV_V29:       return 1./2.;
+    case LIQUID_FEC_CONV_V39:       return 1./3.;
+    case LIQUID_FEC_CONV_V615:      return 1./6.;
+    case LIQUID_FEC_CONV_V27P23:    return 2./3.;
+    case LIQUID_FEC_CONV_V27P34:    return 3./4.;
+    case LIQUID_FEC_CONV_V27P45:    return 4./5.;
+    case LIQUID_FEC_CONV_V27P56:    return 5./6.;
+    case LIQUID_FEC_CONV_V27P67:    return 6./7.;
+    case LIQUID_FEC_CONV_V27P78:    return 7./8.;
+    case LIQUID_FEC_CONV_V29P23:    return 2./3.;
+    case LIQUID_FEC_CONV_V29P34:    return 3./4.;
+    case LIQUID_FEC_CONV_V29P45:    return 4./5.;
+    case LIQUID_FEC_CONV_V29P56:    return 5./6.;
+    case LIQUID_FEC_CONV_V29P67:    return 6./7.;
+    case LIQUID_FEC_CONV_V29P78:    return 7./8.;
 
     // Reed-Solomon codes
-    case FEC_RS_M8:          return 223./255.;
+    case LIQUID_FEC_RS_M8:          return 223./255.;
 #else
-    case FEC_CONV_V27:
-    case FEC_CONV_V29:
-    case FEC_CONV_V39:
-    case FEC_CONV_V615:
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
 
-    case FEC_CONV_V27P23:
-    case FEC_CONV_V27P34:
-    case FEC_CONV_V27P45:
-    case FEC_CONV_V27P56:
-    case FEC_CONV_V27P67:
-    case FEC_CONV_V27P78:
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
 
-    case FEC_CONV_V29P23:
-    case FEC_CONV_V29P34:
-    case FEC_CONV_V29P45:
-    case FEC_CONV_V29P56:
-    case FEC_CONV_V29P67:
-    case FEC_CONV_V29P78:
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
         fprintf(stderr,"error: fec_get_rate(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
 
-    case FEC_RS_M8:
+    case LIQUID_FEC_RS_M8:
         fprintf(stderr,"error: fec_get_rate(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
 #endif
@@ -341,72 +341,72 @@ float fec_get_rate(fec_scheme _scheme)
 fec fec_create(fec_scheme _scheme, void *_opts)
 {
     switch (_scheme) {
-    case FEC_UNKNOWN:
+    case LIQUID_FEC_UNKNOWN:
         printf("error: fec_create(), cannot create fec object of type \"UNKNOWN\"\n");
         exit(-1);
-    case FEC_NONE:
+    case LIQUID_FEC_NONE:
         return fec_pass_create(NULL);
-    case FEC_REP3:
+    case LIQUID_FEC_REP3:
         return fec_rep3_create(_opts);
-    case FEC_REP5:
+    case LIQUID_FEC_REP5:
         return fec_rep5_create(_opts);
-    case FEC_HAMMING74:
+    case LIQUID_FEC_HAMMING74:
         return fec_hamming74_create(_opts);
-    case FEC_HAMMING84:
+    case LIQUID_FEC_HAMMING84:
         return fec_hamming84_create(_opts);
-    case FEC_HAMMING128:
+    case LIQUID_FEC_HAMMING128:
         return fec_hamming128_create(_opts);
 
     // convolutional codes
 #if HAVE_FEC_H
-    case FEC_CONV_V27:
-    case FEC_CONV_V29:
-    case FEC_CONV_V39:
-    case FEC_CONV_V615:
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
         return fec_conv_create(_scheme);
 
     // punctured
-    case FEC_CONV_V27P23:
-    case FEC_CONV_V27P34:
-    case FEC_CONV_V27P45:
-    case FEC_CONV_V27P56:
-    case FEC_CONV_V27P67:
-    case FEC_CONV_V27P78:
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
 
-    case FEC_CONV_V29P23:
-    case FEC_CONV_V29P34:
-    case FEC_CONV_V29P45:
-    case FEC_CONV_V29P56:
-    case FEC_CONV_V29P67:
-    case FEC_CONV_V29P78:
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
         return fec_conv_punctured_create(_scheme);
 
     // Reed-Solomon codes
-    case FEC_RS_M8:
+    case LIQUID_FEC_RS_M8:
         return fec_rs_create(_scheme);
 #else
-    case FEC_CONV_V27:
-    case FEC_CONV_V29:
-    case FEC_CONV_V39:
-    case FEC_CONV_V615:
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
 
-    case FEC_CONV_V27P23:
-    case FEC_CONV_V27P34:
-    case FEC_CONV_V27P45:
-    case FEC_CONV_V27P56:
-    case FEC_CONV_V27P67:
-    case FEC_CONV_V27P78:
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
 
-    case FEC_CONV_V29P23:
-    case FEC_CONV_V29P34:
-    case FEC_CONV_V29P45:
-    case FEC_CONV_V29P56:
-    case FEC_CONV_V29P67:
-    case FEC_CONV_V29P78:
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
         fprintf(stderr,"error: fec_create(), convolutional codes unavailable (install libfec)\n");
         exit(-1);
 
-    case FEC_RS_M8:
+    case LIQUID_FEC_RS_M8:
         fprintf(stderr,"error: fec_create(), Reed-Solomon codes unavailable (install libfec)\n");
         exit(-1);
 #endif

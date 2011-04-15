@@ -31,7 +31,7 @@ fec fec_pass_create(void * _opts)
 {
     fec q = (fec) malloc(sizeof(struct fec_s));
 
-    q->scheme = FEC_NONE;
+    q->scheme = LIQUID_FEC_NONE;
     q->rate = fec_get_rate(q->scheme);
 
     q->encode_func = &fec_pass_encode;

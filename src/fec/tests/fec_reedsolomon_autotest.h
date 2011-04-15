@@ -38,7 +38,7 @@ void autotest_reedsolomon_223_255()
     unsigned int dec_msg_len = 223;
 
     // compute and test encoded message length
-    unsigned int enc_msg_len = fec_get_enc_msg_length(FEC_RS_M8,dec_msg_len);
+    unsigned int enc_msg_len = fec_get_enc_msg_length(LIQUID_FEC_RS_M8,dec_msg_len);
     CONTEND_EQUALITY( enc_msg_len, 255 );
 
     // create arrays
@@ -53,7 +53,7 @@ void autotest_reedsolomon_223_255()
         msg_org[i] = i & 0xff;
 
     // create object
-    fec q = fec_create(FEC_RS_M8,NULL);
+    fec q = fec_create(LIQUID_FEC_RS_M8,NULL);
     if (liquid_autotest_verbose)
         fec_print(q);
 

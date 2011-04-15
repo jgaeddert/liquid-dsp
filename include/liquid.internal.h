@@ -151,9 +151,9 @@ LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
 //
 
 // define soft bit values
-#define FEC_SOFTBIT_0       (0)
-#define FEC_SOFTBIT_1       (255)
-#define FEC_SOFTBIT_ERASURE (127)
+#define LIQUID_FEC_SOFTBIT_0        (0)
+#define LIQUID_FEC_SOFTBIT_1        (255)
+#define LIQUID_FEC_SOFTBIT_ERASURE  (127)
 
 // checksum / cyclic redundancy check (crc)
 

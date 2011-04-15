@@ -193,12 +193,12 @@ second one is basically ignored.
 The first argument is an enumeration of the type of codec that you wish
 to use.
 
-To begin, create a new {\tt fec} object of type {\tt FEC\_HAMMING74}
+To begin, create a new {\tt fec} object of type {\tt LIQUID\_FEC\_HAMMING74}
 (the second argument can simply be {\tt NULL})
 which creates a Hamming(7,4) code:
 %
 \begin{Verbatim}[fontsize=\small]
-    fec q = fec_create(HAMMING_74, NULL);
+    fec q = fec_create(LIQUID_FEC_HAMMING74, NULL);
 \end{Verbatim}
 %
 Details of the available codes in \liquid\ can be found in
@@ -218,7 +218,7 @@ as the user, you simply see data bytes in and data bytes out.
 The length of the output sequence can be computed using the method
 %
 \begin{Verbatim}[fontsize=\small]
-    unsigned int k = fec_get_enc_msg_length(FEC_HAMMING74, n);
+    unsigned int k = fec_get_enc_msg_length(LIQUID_FEC_HAMMING74, n);
 \end{Verbatim}
 %
 where {\tt n} represents the number of uncoded input bytes

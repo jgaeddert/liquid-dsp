@@ -43,8 +43,8 @@ static flexframegenprops_s flexframegenprops_default = {
     16,                 // phasing_len
     0,                  // payload_len
     CRC_NONE,           // check
-    FEC_NONE,           // fec0
-    FEC_NONE,           // fec1
+    LIQUID_FEC_NONE,    // fec0
+    LIQUID_FEC_NONE,    // fec1
     LIQUID_MODEM_BPSK,  // mod_scheme
     1,                  // mod_bps
     16                  // rampdn_len
@@ -104,11 +104,11 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // create header objects
     fg->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
-    fg->p_header   = packetizer_create(19, CRC_16, FEC_HAMMING128, FEC_NONE);
+    fg->p_header   = packetizer_create(19, CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
     assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
     // initial memory allocation for payload
-    fg->p_payload = packetizer_create(0, CRC_NONE, FEC_NONE, FEC_NONE);
+    fg->p_payload = packetizer_create(0, CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     fg->payload = (unsigned char*) malloc(1*sizeof(unsigned char));
     fg->payload_numalloc = 1;
     fg->payload_sym = (unsigned char*) malloc(1*sizeof(unsigned char));
@@ -172,7 +172,7 @@ void flexframegen_setprops(flexframegen _fg,
     } else if (_props->check == CRC_UNKNOWN || _props->check >= LIQUID_NUM_CRC_SCHEMES) {
         fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported CRC scheme\n");
         exit(1);
-    } else if (_props->fec0 == FEC_UNKNOWN || _props->fec1 == FEC_UNKNOWN) {
+    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
         fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported FEC scheme\n");
         exit(1);
     } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {

@@ -32,7 +32,7 @@ void usage()
     printf("  c     : coding scheme (inner), default: h74\n");
     printf("  k     : coding scheme (outer), default: none\n");
     // print all available FEC schemes
-    for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++)
+    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
 }
 
@@ -44,8 +44,8 @@ int main(int argc, char*argv[]) {
     simulate_per_opts opts;
     opts.ms = LIQUID_MODEM_BPSK;
     opts.bps = 1;
-    opts.fec0 = FEC_NONE;
-    opts.fec1 = FEC_NONE;
+    opts.fec0 = LIQUID_FEC_NONE;
+    opts.fec1 = LIQUID_FEC_NONE;
     opts.dec_msg_len = 1024;
 
     opts.min_packet_errors  = 5;
@@ -74,7 +74,7 @@ int main(int argc, char*argv[]) {
         case 'c':
             // inner FEC scheme
             opts.fec0 = liquid_getopt_str2fec(optarg);
-            if (opts.fec0 == FEC_UNKNOWN) {
+            if (opts.fec0 == LIQUID_FEC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported modulation scheme \"%s\"\n\n",optarg);
                 exit(-1);
             }
@@ -82,7 +82,7 @@ int main(int argc, char*argv[]) {
         case 'k':
             // outer FEC scheme
             opts.fec1 = liquid_getopt_str2fec(optarg);
-            if (opts.fec1 == FEC_UNKNOWN) {
+            if (opts.fec1 == LIQUID_FEC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported modulation scheme \"%s\"\n\n",optarg);
                 exit(-1);
             }

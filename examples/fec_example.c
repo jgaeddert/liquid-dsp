@@ -27,7 +27,7 @@ void usage()
     printf("  c     : coding scheme, (h74 default):\n");
     // print all available FEC schemes
     unsigned int i;
-    for (i=0; i<LIQUID_NUM_FEC_SCHEMES; i++)
+    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
 }
 
@@ -35,9 +35,9 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    unsigned int n = 4;             // data length (bytes)
-    unsigned int nmax = 2048;       // maximum data length
-    fec_scheme fs = FEC_HAMMING74;  // error-correcting scheme
+    unsigned int n = 4;                     // data length (bytes)
+    unsigned int nmax = 2048;               // maximum data length
+    fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme
 
     int dopt;
     while((dopt = getopt(argc,argv,"uhn:c:")) != EOF){
@@ -47,7 +47,7 @@ int main(int argc, char*argv[])
         case 'n': n = atoi(optarg); break;
         case 'c':
             fs = liquid_getopt_str2fec(optarg);
-            if (fs == FEC_UNKNOWN) {
+            if (fs == LIQUID_FEC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported fec scheme \"%s\"\n\n",optarg);
                 exit(1);
             }
