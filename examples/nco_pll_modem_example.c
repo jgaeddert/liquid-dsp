@@ -34,7 +34,7 @@ void usage()
     printf("  m     : modulation scheme, default: psk\n");
     // print all available MOD schemes
     unsigned int i;
-    for (i=0; i<LIQUID_NUM_MOD_SCHEMES; i++)
+    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++)
         printf("          %s\n", modulation_scheme_str[i][0]);
 }
 

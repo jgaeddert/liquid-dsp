@@ -59,7 +59,7 @@ void framesyncstats_init_default(framesyncstats_s * _stats)
 void framesyncstats_print(framesyncstats_s * _stats)
 {
     // validate statistics object
-    if (_stats->mod_scheme >= LIQUID_NUM_MOD_SCHEMES) {
+    if (_stats->mod_scheme >= LIQUID_MODEM_NUM_SCHEMES) {
         fprintf(stderr,"error: framesyncstats_print(), invalid modulation scheme\n");
         exit(1);
      } else if (_stats->check >= LIQUID_NUM_CRC_SCHEMES) {

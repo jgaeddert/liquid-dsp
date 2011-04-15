@@ -2423,7 +2423,7 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_NUM_MOD_SCHEMES  17
+#define LIQUID_MODEM_NUM_SCHEMES  17
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
     LIQUID_MODEM_PSK,       // Phase-shift keying (PSK)
@@ -2446,7 +2446,7 @@ typedef enum {
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes
-extern const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES][2];
+extern const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2];
 
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);

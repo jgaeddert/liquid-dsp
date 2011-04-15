@@ -29,7 +29,7 @@
 
 #include "liquid.internal.h"
 
-const char* modulation_scheme_str[LIQUID_NUM_MOD_SCHEMES][2] = {
+const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2] = {
     // short name,  long name
     {"unknown",     "unknown"},
     {"psk",         "psk"},
@@ -54,7 +54,7 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
 {
     // compare each string to short name
     unsigned int i;
-    for (i=0; i<LIQUID_NUM_MOD_SCHEMES; i++) {
+    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++) {
         if (strcmp(_str,modulation_scheme_str[i][0])==0)
             return i;
     }
