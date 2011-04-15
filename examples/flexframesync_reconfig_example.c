@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
         fgprops.check       = CRC_NONE;
         fgprops.fec0        = FEC_NONE;
         fgprops.fec1        = FEC_NONE;
-        fgprops.mod_scheme  = MOD_PSK;                // PSK
+        fgprops.mod_scheme  = LIQUID_MODEM_PSK;       // PSK
         fgprops.mod_bps     = (rand() % 4) + 1;       // random bits/symbol
         fgprops.rampdn_len  = 64;
 

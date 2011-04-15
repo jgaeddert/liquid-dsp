@@ -61,8 +61,8 @@ int main(int argc, char*argv[])
     unsigned int M = 1<<bps;    // constellation size
 
     // create mod/demod objects
-    modem mod   = modem_create(MOD_ARB, bps);
-    modem demod = modem_create(MOD_ARB, bps);
+    modem mod   = modem_create(LIQUID_MODEM_ARB, bps);
+    modem demod = modem_create(LIQUID_MODEM_ARB, bps);
 
     // initialize mod/demod objects (NOTE: arbitrary modem
     // objects MUST be initialized before use)

@@ -164,7 +164,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
         flexframesync_setprops(fs, &framesyncprops_default);
 
     // header objects
-    fs->mod_header = modem_create(MOD_BPSK, 1);
+    fs->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
     fs->p_header = packetizer_create(19, CRC_16, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fs->p_header)==32);
 
@@ -204,7 +204,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     fs->mfdecim = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC, 2, m, beta, npfb);
 
     // 
-    fs->mod_preamble = modem_create(MOD_BPSK, 1);
+    fs->mod_preamble = modem_create(LIQUID_MODEM_BPSK, 1);
 
     // equalizer
     fs->eq_len = 1 + fs->props.eq_len;
@@ -220,7 +220,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
 
     // flexible frame properties (default values to be over-written
     // when frame header is received and decoded)
-    fs->ms_payload  = MOD_PSK;
+    fs->ms_payload  = LIQUID_MODEM_PSK;
     fs->bps_payload = 1;
     fs->payload_len = 0;
     fs->check       = CRC_NONE;
@@ -705,7 +705,7 @@ void flexframesync_execute_rxheader(flexframesync _fs,
             // payload length is 0 : ignore payload
             _fs->framestats.framesyms       = NULL;
             _fs->framestats.num_framesyms   = 0;
-            _fs->framestats.mod_scheme      = MOD_UNKNOWN;
+            _fs->framestats.mod_scheme      = LIQUID_MODEM_UNKNOWN;
             _fs->framestats.mod_bps         = 0;
             _fs->framestats.check           = CRC_UNKNOWN;
             _fs->framestats.fec0            = FEC_UNKNOWN;

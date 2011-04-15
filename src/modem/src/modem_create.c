@@ -46,41 +46,41 @@ modem modem_create(modulation_scheme _scheme,
     }
 
     switch (_scheme) {
-    case MOD_PSK:
+    case LIQUID_MODEM_PSK:
         return modem_create_psk(_bits_per_symbol);
-    case MOD_DPSK:
+    case LIQUID_MODEM_DPSK:
         return modem_create_dpsk(_bits_per_symbol);
-    case MOD_ASK:
+    case LIQUID_MODEM_ASK:
         return modem_create_ask(_bits_per_symbol);
-    case MOD_QAM:
+    case LIQUID_MODEM_QAM:
         return modem_create_qam(_bits_per_symbol);
-    case MOD_APSK:
+    case LIQUID_MODEM_APSK:
         return modem_create_apsk(_bits_per_symbol);
 
     // arbitrary modem definitions
-    case MOD_ARB:
+    case LIQUID_MODEM_ARB:
         return modem_create_arb(_bits_per_symbol);
 
     // specific modems
-    case MOD_BPSK:
+    case LIQUID_MODEM_BPSK:
         return modem_create_bpsk();
-    case MOD_QPSK:
+    case LIQUID_MODEM_QPSK:
         return modem_create_qpsk();
-    case MOD_APSK4:
+    case LIQUID_MODEM_APSK4:
         return modem_create_apsk4();
-    case MOD_APSK8:
+    case LIQUID_MODEM_APSK8:
         return modem_create_apsk8();
-    case MOD_APSK16:
+    case LIQUID_MODEM_APSK16:
         return modem_create_apsk16();
-    case MOD_APSK32:
+    case LIQUID_MODEM_APSK32:
         return modem_create_apsk32();
-    case MOD_APSK64:
+    case LIQUID_MODEM_APSK64:
         return modem_create_apsk64();
-    case MOD_APSK128:
+    case LIQUID_MODEM_APSK128:
         return modem_create_apsk128();
-    case MOD_ARB16OPT:
+    case LIQUID_MODEM_ARB16OPT:
         return modem_create_arb16opt();
-    case MOD_ARB64VT:
+    case LIQUID_MODEM_ARB64VT:
         return modem_create_arb64vt();
     default:
         fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u (%u b/s)\n",
@@ -136,7 +136,7 @@ void modem_init(modem _mod,
 
     _mod->alpha = 0.0f;         // scaling factor
 
-    _mod->symbol_map = NULL;    // symbol map (MOD_ARB only)
+    _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
 
     _mod->state = 0.0f;         // symbol state
     _mod->state_theta = 0.0f;   // phase state
@@ -157,7 +157,7 @@ void modem_init(modem _mod,
 modem modem_create_ask(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_ASK;
+    mod->scheme = LIQUID_MODEM_ASK;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -195,7 +195,7 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     }
 
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_QAM;
+    mod->scheme = LIQUID_MODEM_QAM;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -247,7 +247,7 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
 modem modem_create_psk(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_PSK;
+    mod->scheme = LIQUID_MODEM_PSK;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -269,7 +269,7 @@ modem modem_create_psk(unsigned int _bits_per_symbol)
 modem modem_create_bpsk()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_BPSK;
+    mod->scheme = LIQUID_MODEM_BPSK;
 
     modem_init(mod, 1);
 
@@ -283,7 +283,7 @@ modem modem_create_bpsk()
 modem modem_create_qpsk()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_QPSK;
+    mod->scheme = LIQUID_MODEM_QPSK;
 
     modem_init(mod, 2);
 
@@ -297,7 +297,7 @@ modem modem_create_qpsk()
 modem modem_create_dpsk(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_DPSK;
+    mod->scheme = LIQUID_MODEM_DPSK;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -340,7 +340,7 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
 modem modem_create_apsk4()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_APSK4;
+    mod->scheme = LIQUID_MODEM_APSK4;
 
     modem_init(mod, 3);
     
@@ -362,7 +362,7 @@ modem modem_create_apsk4()
 modem modem_create_apsk8()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_APSK8;
+    mod->scheme = LIQUID_MODEM_APSK8;
 
     modem_init(mod, 3);
     
@@ -383,7 +383,7 @@ modem modem_create_apsk8()
 modem modem_create_apsk16()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_APSK16;
+    mod->scheme = LIQUID_MODEM_APSK16;
 
     modem_init(mod, 4);
     
@@ -404,7 +404,7 @@ modem modem_create_apsk16()
 modem modem_create_apsk32()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_APSK32;
+    mod->scheme = LIQUID_MODEM_APSK32;
 
     modem_init(mod, 5);
     
@@ -425,7 +425,7 @@ modem modem_create_apsk32()
 modem modem_create_apsk64()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_APSK64;
+    mod->scheme = LIQUID_MODEM_APSK64;
 
     modem_init(mod, 6);
     
@@ -446,7 +446,7 @@ modem modem_create_apsk64()
 modem modem_create_apsk128()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_APSK128;
+    mod->scheme = LIQUID_MODEM_APSK128;
 
     modem_init(mod, 7);
     
@@ -468,7 +468,7 @@ modem modem_create_apsk128()
 modem modem_create_arb(unsigned int _bits_per_symbol)
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = MOD_ARB;
+    mod->scheme = LIQUID_MODEM_ARB;
 
     modem_init(mod, _bits_per_symbol);
 
@@ -506,7 +506,7 @@ void modem_arb_init(modem _mod,
                     unsigned int _len)
 {
 #ifdef LIQUID_VALIDATE_INPUT
-    if (_mod->scheme != MOD_ARB) {
+    if (_mod->scheme != LIQUID_MODEM_ARB) {
         fprintf(stderr,"error: modem_arb_init(), modem is not of arbitrary type\n");
         exit(1);
     } else if (_len != _mod->M) {
@@ -520,7 +520,7 @@ void modem_arb_init(modem _mod,
         _mod->symbol_map[i] = _symbol_map[i];
 
     // balance I/Q channels
-    if (_mod->scheme == MOD_ARB)
+    if (_mod->scheme == LIQUID_MODEM_ARB)
         modem_arb_balance_iq(_mod);
 
     // scale modem to have unity energy
@@ -562,7 +562,7 @@ void modem_arb_init_file(modem _mod,
     fclose(fid);
 
     // balance I/Q channels
-    if (_mod->scheme == MOD_ARB)
+    if (_mod->scheme == LIQUID_MODEM_ARB)
         modem_arb_balance_iq(_mod);
 
     // scale modem to have unity energy

@@ -25,7 +25,7 @@ int main() {
     float beta=0.3f;
 
     // create objects
-    modem mod = modem_create(MOD_QPSK,2);
+    modem mod = modem_create(LIQUID_MODEM_QPSK,2);
     unsigned int h_len = 2*k*m+1;
     float h[h_len];
     design_rrc_filter(k,m,beta,0,h);

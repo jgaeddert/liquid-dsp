@@ -41,7 +41,7 @@ void ofdmframesync_rxsymbol_bench(struct rusage *_start,
                                  unsigned int _cp_len)
 {
     // options
-    modulation_scheme ms = MOD_QPSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
     unsigned int bps     = 2;
     unsigned int M       = _num_subcarriers;
     unsigned int cp_len  = _cp_len;

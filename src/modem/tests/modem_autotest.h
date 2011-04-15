@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MODEM_AUTOTEST_H__
-#define __MODEM_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.h"
 
@@ -58,58 +55,55 @@ void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
 //
 // AUTOTESTS: Specific PSK
 //
-void autotest_mod_demod_bpsk()  {   modem_test_mod_demod(MOD_BPSK, 1);  }
-void autotest_mod_demod_qpsk()  {   modem_test_mod_demod(MOD_QPSK, 2);  }
+void autotest_mod_demod_bpsk()  {   modem_test_mod_demod(LIQUID_MODEM_BPSK, 1);  }
+void autotest_mod_demod_qpsk()  {   modem_test_mod_demod(LIQUID_MODEM_QPSK, 2);  }
 
 //
 // AUTOTESTS: generic ASK
 //
-void autotest_mod_demod_ask2()  {   modem_test_mod_demod(MOD_ASK, 1);   }
-void autotest_mod_demod_ask4()  {   modem_test_mod_demod(MOD_ASK, 2);   }
-void autotest_mod_demod_ask8()  {   modem_test_mod_demod(MOD_ASK, 3);   }
-void autotest_mod_demod_ask16() {   modem_test_mod_demod(MOD_ASK, 4);   }
+void autotest_mod_demod_ask2()  {   modem_test_mod_demod(LIQUID_MODEM_ASK, 1);   }
+void autotest_mod_demod_ask4()  {   modem_test_mod_demod(LIQUID_MODEM_ASK, 2);   }
+void autotest_mod_demod_ask8()  {   modem_test_mod_demod(LIQUID_MODEM_ASK, 3);   }
+void autotest_mod_demod_ask16() {   modem_test_mod_demod(LIQUID_MODEM_ASK, 4);   }
 
 //
 // AUTOTESTS: generic PSK
 //
-void autotest_mod_demod_psk2()  {   modem_test_mod_demod(MOD_PSK, 1);   }
-void autotest_mod_demod_psk4()  {   modem_test_mod_demod(MOD_PSK, 2);   }
-void autotest_mod_demod_psk8()  {   modem_test_mod_demod(MOD_PSK, 3);   }
-void autotest_mod_demod_psk16() {   modem_test_mod_demod(MOD_PSK, 4);   }
-void autotest_mod_demod_psk32() {   modem_test_mod_demod(MOD_PSK, 5);   }
-void autotest_mod_demod_psk64() {   modem_test_mod_demod(MOD_PSK, 6);   }
+void autotest_mod_demod_psk2()  {   modem_test_mod_demod(LIQUID_MODEM_PSK, 1);   }
+void autotest_mod_demod_psk4()  {   modem_test_mod_demod(LIQUID_MODEM_PSK, 2);   }
+void autotest_mod_demod_psk8()  {   modem_test_mod_demod(LIQUID_MODEM_PSK, 3);   }
+void autotest_mod_demod_psk16() {   modem_test_mod_demod(LIQUID_MODEM_PSK, 4);   }
+void autotest_mod_demod_psk32() {   modem_test_mod_demod(LIQUID_MODEM_PSK, 5);   }
+void autotest_mod_demod_psk64() {   modem_test_mod_demod(LIQUID_MODEM_PSK, 6);   }
 
 //
 // AUTOTESTS: generic differential PSK
 //
-void autotest_mod_demod_dpsk2()  {  modem_test_mod_demod(MOD_DPSK, 1);  }
-void autotest_mod_demod_dpsk4()  {  modem_test_mod_demod(MOD_DPSK, 2);  }
-void autotest_mod_demod_dpsk8()  {  modem_test_mod_demod(MOD_DPSK, 3);  }
-void autotest_mod_demod_dpsk16() {  modem_test_mod_demod(MOD_DPSK, 4);  }
-void autotest_mod_demod_dpsk32() {  modem_test_mod_demod(MOD_DPSK, 5);  }
-void autotest_mod_demod_dpsk64() {  modem_test_mod_demod(MOD_DPSK, 6);  }
+void autotest_mod_demod_dpsk2()  {  modem_test_mod_demod(LIQUID_MODEM_DPSK, 1);  }
+void autotest_mod_demod_dpsk4()  {  modem_test_mod_demod(LIQUID_MODEM_DPSK, 2);  }
+void autotest_mod_demod_dpsk8()  {  modem_test_mod_demod(LIQUID_MODEM_DPSK, 3);  }
+void autotest_mod_demod_dpsk16() {  modem_test_mod_demod(LIQUID_MODEM_DPSK, 4);  }
+void autotest_mod_demod_dpsk32() {  modem_test_mod_demod(LIQUID_MODEM_DPSK, 5);  }
+void autotest_mod_demod_dpsk64() {  modem_test_mod_demod(LIQUID_MODEM_DPSK, 6);  }
 
 //
 // AUTOTESTS: generic QAM
 //
-void autotest_mod_demod_qam4()   {  modem_test_mod_demod(MOD_QAM, 2);   }
-void autotest_mod_demod_qam8()   {  modem_test_mod_demod(MOD_QAM, 3);   }
-void autotest_mod_demod_qam16()  {  modem_test_mod_demod(MOD_QAM, 4);   }
-void autotest_mod_demod_qam32()  {  modem_test_mod_demod(MOD_QAM, 5);   }
-void autotest_mod_demod_qam64()  {  modem_test_mod_demod(MOD_QAM, 6);   }
-void autotest_mod_demod_qam128() {  modem_test_mod_demod(MOD_QAM, 7);   }
-void autotest_mod_demod_qam256() {  modem_test_mod_demod(MOD_QAM, 8);   }
+void autotest_mod_demod_qam4()   {  modem_test_mod_demod(LIQUID_MODEM_QAM, 2);   }
+void autotest_mod_demod_qam8()   {  modem_test_mod_demod(LIQUID_MODEM_QAM, 3);   }
+void autotest_mod_demod_qam16()  {  modem_test_mod_demod(LIQUID_MODEM_QAM, 4);   }
+void autotest_mod_demod_qam32()  {  modem_test_mod_demod(LIQUID_MODEM_QAM, 5);   }
+void autotest_mod_demod_qam64()  {  modem_test_mod_demod(LIQUID_MODEM_QAM, 6);   }
+void autotest_mod_demod_qam128() {  modem_test_mod_demod(LIQUID_MODEM_QAM, 7);   }
+void autotest_mod_demod_qam256() {  modem_test_mod_demod(LIQUID_MODEM_QAM, 8);   }
 
 //
 // AUTOTESTS: generic APSK (maps to specific APSK modems internally)
 //
-void autotest_mod_demod_apsk4()  {  modem_test_mod_demod(MOD_APSK,2);   }
-void autotest_mod_demod_apsk8()  {  modem_test_mod_demod(MOD_APSK,3);   }
-void autotest_mod_demod_apsk16() {  modem_test_mod_demod(MOD_APSK,4);   }
-void autotest_mod_demod_apsk32() {  modem_test_mod_demod(MOD_APSK,5);   }
-void autotest_mod_demod_apsk64() {  modem_test_mod_demod(MOD_APSK,6);   }
-void autotest_mod_demod_apsk128(){  modem_test_mod_demod(MOD_APSK,7);   }
-
-
-#endif 
+void autotest_mod_demod_apsk4()  {  modem_test_mod_demod(LIQUID_MODEM_APSK,2);   }
+void autotest_mod_demod_apsk8()  {  modem_test_mod_demod(LIQUID_MODEM_APSK,3);   }
+void autotest_mod_demod_apsk16() {  modem_test_mod_demod(LIQUID_MODEM_APSK,4);   }
+void autotest_mod_demod_apsk32() {  modem_test_mod_demod(LIQUID_MODEM_APSK,5);   }
+void autotest_mod_demod_apsk64() {  modem_test_mod_demod(LIQUID_MODEM_APSK,6);   }
+void autotest_mod_demod_apsk128(){  modem_test_mod_demod(LIQUID_MODEM_APSK,7);   }
 

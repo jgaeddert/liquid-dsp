@@ -40,7 +40,7 @@ int ofdmoqamframe64_getsctype(unsigned int _id)
 void ofdmoqamframe64_init_S0(float complex * _S0)
 {
     msequence ms = msequence_create(4);
-    modem mod = modem_create(MOD_QPSK,2);
+    modem mod = modem_create(LIQUID_MODEM_QPSK,2);
     unsigned int s;
     float complex sym;
     unsigned int num_subcarriers = 64;
@@ -76,7 +76,7 @@ void ofdmoqamframe64_init_S0(float complex * _S0)
 void ofdmoqamframe64_init_S1(float complex * _S1)
 {
     msequence ms = msequence_create(5);
-    modem mod = modem_create(MOD_QPSK,2);
+    modem mod = modem_create(LIQUID_MODEM_QPSK,2);
     unsigned int s;
     float complex sym;
     unsigned int num_subcarriers = 64;
@@ -109,7 +109,7 @@ void ofdmoqamframe64_init_S1(float complex * _S1)
 void ofdmoqamframe64_init_S2(float complex * _S2)
 {
     msequence ms = msequence_create(4);
-    modem mod = modem_create(MOD_QPSK,2);
+    modem mod = modem_create(LIQUID_MODEM_QPSK,2);
     unsigned int s;
     float complex sym;
     unsigned int num_subcarriers = 64;

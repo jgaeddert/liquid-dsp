@@ -34,7 +34,7 @@ void benchmark_ofdmframe64sync(
     unsigned long int *_num_iterations)
 {
     // options
-    modulation_scheme ms = MOD_QAM;
+    modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 4;
     unsigned int num_symbols = 8;
 

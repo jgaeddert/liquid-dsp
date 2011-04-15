@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FLEXFRAMESYNC_BENCHMARK_H__
-#define __LIQUID_FLEXFRAMESYNC_BENCHMARK_H__
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
@@ -63,7 +60,7 @@ void benchmark_flexframesync(
     fgprops.rampup_len = 16;
     fgprops.phasing_len = 64;
     fgprops.payload_len = 2;
-    fgprops.mod_scheme = MOD_PSK;
+    fgprops.mod_scheme = LIQUID_MODEM_PSK;
     fgprops.mod_bps = 3;
     fgprops.rampdn_len = 16;
     flexframegen fg = flexframegen_create(&fgprops);
@@ -127,4 +124,3 @@ void benchmark_flexframesync(
     interp_crcf_destroy(interp);
 }
 
-#endif // __LIQUID_FLEXFRAMESYNC_BENCHMARK_H__

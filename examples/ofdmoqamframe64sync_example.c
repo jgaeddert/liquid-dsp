@@ -60,7 +60,7 @@ int main() {
     unsigned int num_symbols_data=16;// num data symbols
     unsigned int m=3;
     float beta = 0.7f;
-    modulation_scheme ms = MOD_QAM;
+    modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 2;
     float cfo=0.0f;         // carrier frequency offset (max: pi/(2*64) ~ 0.024544)
     float cpo=0.0f;         // carrier phase offset

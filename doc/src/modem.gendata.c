@@ -28,7 +28,7 @@ void usage()
 int main(int argc, char*argv[]) {
     // create mod/demod objects
     unsigned int bps=2;
-    modulation_scheme ms = MOD_PSK;
+    modulation_scheme ms = LIQUID_MODEM_PSK;
     unsigned int gnuplot_version=0;
     char filename[256];
     strcpy(filename,"");
@@ -48,7 +48,7 @@ int main(int argc, char*argv[]) {
             break;
         case 'm':
             ms = liquid_getopt_str2mod(optarg);
-            if (ms == MOD_UNKNOWN) {
+            if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
             }

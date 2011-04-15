@@ -28,7 +28,7 @@ int main(int argc, char*argv[]) {
     unsigned int num_symbols_data = 8;  // number of data symbols
     unsigned int hc_len = 4;            // channel filter length
     float hc_std = 0.10f;               // channel filter standard deviation
-    modulation_scheme ms = MOD_QAM;
+    modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 4;
     float noise_floor = -30.0f;         // noise floor [dB]
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]

@@ -42,7 +42,7 @@ int main(int argc, char*argv[]) {
 
     // options
     simulate_per_opts opts;
-    opts.ms = MOD_BPSK;
+    opts.ms = LIQUID_MODEM_BPSK;
     opts.bps = 1;
     opts.fec0 = FEC_NONE;
     opts.fec1 = FEC_NONE;
@@ -66,7 +66,7 @@ int main(int argc, char*argv[]) {
         case 'p': opts.bps = atoi(optarg);          break;
         case 'm':
             opts.ms = liquid_getopt_str2mod(optarg);
-            if (opts.ms == MOD_UNKNOWN) {
+            if (opts.ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: modem_example, unknown/unsupported modulation scheme \"%s\"\n", optarg);
                 exit(1);
             }

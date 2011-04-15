@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     unsigned int m = 3;     // filter delay
     float beta = 0.7f;      // filter excess bandwidth
     float noise_floor = -30.0f;
-    modulation_scheme mod_scheme = MOD_PSK;
+    modulation_scheme mod_scheme = LIQUID_MODEM_PSK;
     unsigned int bps = 1;
     unsigned int packet_len = 64;
     unsigned int num_frames = 3;
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
         case 'p': bps = atoi(optarg);           break;
         case 'm':
             mod_scheme = liquid_getopt_str2mod(optarg);
-            if (mod_scheme == MOD_UNKNOWN) {
+            if (mod_scheme == LIQUID_MODEM_UNKNOWN) {
                 printf("error: unknown/unsupported mod. scheme: %s\n", optarg);
                 usage();
                 exit(-1);

@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     unsigned long int min_trials = 100000;
     unsigned long int max_trials = 20000000;
     unsigned int frame_len = 128;
-    modulation_scheme ms = MOD_BPSK;
+    modulation_scheme ms = LIQUID_MODEM_BPSK;
     unsigned int bps = 1;
     fec_scheme fec0 = FEC_NONE;
     fec_scheme fec1 = FEC_NONE;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
         case 'f': frame_len = atol(optarg); break;
         case 'm':
             ms = liquid_getopt_str2mod(optarg);
-            if (ms == MOD_UNKNOWN) {
+            if (ms == LIQUID_MODEM_UNKNOWN) {
                 printf("error: unknown mod. scheme: %s\n", optarg);
                 exit(-1);
             }

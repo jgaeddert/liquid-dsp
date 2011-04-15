@@ -16,7 +16,7 @@ int main() {
     srand(time(NULL));
 
     // options
-    modulation_scheme ms = MOD_QPSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
     unsigned int bps = 2;
 
     unsigned int i;

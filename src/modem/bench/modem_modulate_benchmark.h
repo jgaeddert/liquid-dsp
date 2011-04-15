@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_MODEM_BENCH_H__
-#define __LIQUID_MODEM_BENCH_H__
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
@@ -42,25 +39,25 @@ void modem_modulate_bench(struct rusage *_start,
 {
     // normalize number of iterations
     switch (_ms) {
-    case MOD_UNKNOWN:
+    case LIQUID_MODEM_UNKNOWN:
         fprintf(stderr,"error: modem_modulate_bench(), unknown modem scheme\n");
         exit(1);
-    case MOD_PSK:       *_num_iterations *= 1;      break;
-    case MOD_DPSK:      *_num_iterations *= 1;      break;
-    case MOD_ASK:       *_num_iterations *= 64;     break;
-    case MOD_QAM:       *_num_iterations *= 32;     break;
-    case MOD_APSK:      *_num_iterations *= 1;      break;
-    case MOD_ARB:       *_num_iterations *= 1;      break;
-    case MOD_BPSK:      *_num_iterations *= 64;     break;
-    case MOD_QPSK:      *_num_iterations *= 64;     break;
-    case MOD_APSK4:     *_num_iterations *= 1;      break;
-    case MOD_APSK8:     *_num_iterations *= 1;      break;
-    case MOD_APSK16:    *_num_iterations *= 1;      break;
-    case MOD_APSK32:    *_num_iterations *= 1;      break;
-    case MOD_APSK64:    *_num_iterations *= 1;      break;
-    case MOD_APSK128:   *_num_iterations *= 1;      break;
-    case MOD_ARB16OPT:  *_num_iterations *= 1;      break;
-    case MOD_ARB64VT:   *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_PSK:      *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_DPSK:     *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_ASK:      *_num_iterations *= 64;     break;
+    case LIQUID_MODEM_QAM:      *_num_iterations *= 32;     break;
+    case LIQUID_MODEM_APSK:     *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_ARB:      *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_BPSK:     *_num_iterations *= 64;     break;
+    case LIQUID_MODEM_QPSK:     *_num_iterations *= 64;     break;
+    case LIQUID_MODEM_APSK4:    *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_APSK8:    *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_APSK16:   *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_APSK32:   *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_APSK64:   *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_APSK128:  *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_ARB16OPT: *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_ARB64VT:  *_num_iterations *= 1;      break;
     default:;
     }
     if (*_num_iterations < 1) *_num_iterations = 1;
@@ -89,46 +86,44 @@ void modem_modulate_bench(struct rusage *_start,
 }
 
 // specific modems
-void benchmark_modulate_bpsk    MODEM_MODULATE_BENCH_API(MOD_BPSK, 1)
-void benchmark_modulate_qpsk    MODEM_MODULATE_BENCH_API(MOD_QPSK, 2)
+void benchmark_modulate_bpsk    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_BPSK, 1)
+void benchmark_modulate_qpsk    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QPSK, 2)
 
 // ASK
-void benchmark_modulate_ask2    MODEM_MODULATE_BENCH_API(MOD_ASK, 1)
-void benchmark_modulate_ask4    MODEM_MODULATE_BENCH_API(MOD_ASK, 2)
-void benchmark_modulate_ask8    MODEM_MODULATE_BENCH_API(MOD_ASK, 3)
-void benchmark_modulate_ask16   MODEM_MODULATE_BENCH_API(MOD_ASK, 4)
+void benchmark_modulate_ask2    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK, 1)
+void benchmark_modulate_ask4    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK, 2)
+void benchmark_modulate_ask8    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK, 3)
+void benchmark_modulate_ask16   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK, 4)
 
 // PSK
-void benchmark_modulate_psk2    MODEM_MODULATE_BENCH_API(MOD_PSK, 1)
-void benchmark_modulate_psk4    MODEM_MODULATE_BENCH_API(MOD_PSK, 2)
-void benchmark_modulate_psk8    MODEM_MODULATE_BENCH_API(MOD_PSK, 3)
-void benchmark_modulate_psk16   MODEM_MODULATE_BENCH_API(MOD_PSK, 4)
-void benchmark_modulate_psk32   MODEM_MODULATE_BENCH_API(MOD_PSK, 5)
-void benchmark_modulate_psk64   MODEM_MODULATE_BENCH_API(MOD_PSK, 6)
+void benchmark_modulate_psk2    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK, 1)
+void benchmark_modulate_psk4    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK, 2)
+void benchmark_modulate_psk8    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK, 3)
+void benchmark_modulate_psk16   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK, 4)
+void benchmark_modulate_psk32   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK, 5)
+void benchmark_modulate_psk64   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_PSK, 6)
 
 // Differential PSK
-void benchmark_modulate_dpsk2   MODEM_MODULATE_BENCH_API(MOD_DPSK, 1)
-void benchmark_modulate_dpsk4   MODEM_MODULATE_BENCH_API(MOD_DPSK, 2)
-void benchmark_modulate_dpsk8   MODEM_MODULATE_BENCH_API(MOD_DPSK, 3)
-void benchmark_modulate_dpsk16  MODEM_MODULATE_BENCH_API(MOD_DPSK, 4)
-void benchmark_modulate_dpsk32  MODEM_MODULATE_BENCH_API(MOD_DPSK, 5)
-void benchmark_modulate_dpsk64  MODEM_MODULATE_BENCH_API(MOD_DPSK, 6)
+void benchmark_modulate_dpsk2   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK, 1)
+void benchmark_modulate_dpsk4   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK, 2)
+void benchmark_modulate_dpsk8   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK, 3)
+void benchmark_modulate_dpsk16  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK, 4)
+void benchmark_modulate_dpsk32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK, 5)
+void benchmark_modulate_dpsk64  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_DPSK, 6)
 
 // QAM
-void benchmark_modulate_qam4    MODEM_MODULATE_BENCH_API(MOD_QAM, 2)
-void benchmark_modulate_qam8    MODEM_MODULATE_BENCH_API(MOD_QAM, 3)
-void benchmark_modulate_qam16   MODEM_MODULATE_BENCH_API(MOD_QAM, 4)
-void benchmark_modulate_qam32   MODEM_MODULATE_BENCH_API(MOD_QAM, 5)
-void benchmark_modulate_qam64   MODEM_MODULATE_BENCH_API(MOD_QAM, 6)
-void benchmark_modulate_qam128  MODEM_MODULATE_BENCH_API(MOD_QAM, 7)
-void benchmark_modulate_qam256  MODEM_MODULATE_BENCH_API(MOD_QAM, 8)
+void benchmark_modulate_qam4    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 2)
+void benchmark_modulate_qam8    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 3)
+void benchmark_modulate_qam16   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 4)
+void benchmark_modulate_qam32   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 5)
+void benchmark_modulate_qam64   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 6)
+void benchmark_modulate_qam128  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 7)
+void benchmark_modulate_qam256  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 8)
 
 // APSK
-void benchmark_modulate_apsk8   MODEM_MODULATE_BENCH_API(MOD_APSK,  3)
-void benchmark_modulate_apsk16  MODEM_MODULATE_BENCH_API(MOD_APSK,  4)
-void benchmark_modulate_apsk32  MODEM_MODULATE_BENCH_API(MOD_APSK,  5)
-void benchmark_modulate_apsk64  MODEM_MODULATE_BENCH_API(MOD_APSK,  6)
-void benchmark_modulate_apsk128 MODEM_MODULATE_BENCH_API(MOD_APSK,  7)
-
-#endif // __LIQUID_MODEM_BENCH_H__
+void benchmark_modulate_apsk8   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  3)
+void benchmark_modulate_apsk16  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  4)
+void benchmark_modulate_apsk32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  5)
+void benchmark_modulate_apsk64  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  6)
+void benchmark_modulate_apsk128 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  7)
 

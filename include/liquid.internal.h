@@ -1125,40 +1125,38 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define ASK16_ALPHA     1/sqrt(85)
 #define ASK32_ALPHA     1/sqrt(341)
 
-/** \brief modem structure used for both modulation and demodulation 
- *
- * The modem structure implements a variety of common modulation schemes,
- * including (differential) phase-shift keying, and (quadrature) amplitude
- * modulation.
- *
- * While the same modem structure may be used for both modulation and
- * demodulation for most schemes, it is important to use separate objects
- * for differential-mode modems (e.g. MOD_DPSK) as the internal state
- * will change after each symbol.  It is usually good practice to keep
- * separate instances of modulators and demodulators.
- */
+// modem structure used for both modulation and demodulation 
+//
+// The modem structure implements a variety of common modulation schemes,
+// including (differential) phase-shift keying, and (quadrature) amplitude
+// modulation.
+//
+// While the same modem structure may be used for both modulation and
+// demodulation for most schemes, it is important to use separate objects
+// for differential-mode modems (e.g. LIQUID_MODEM_DPSK) as the internal state
+// will change after each symbol.  It is usually good practice to keep
+// separate instances of modulators and demodulators.
 struct modem_s {
     modulation_scheme scheme;
 
-    unsigned int m;     ///< bits per symbol
-    unsigned int M;     ///< total symbols, \f$M=2^m\f$
+    unsigned int m;     // bits per symbol
+    unsigned int M;     // total symbols, \f$M=2^m\f$
 
-    unsigned int m_i;   ///< bits per symbol, in-phase
-    unsigned int M_i;   ///< total symbols, in-phase, \f$M_i=2^{m_i}\f$
-    unsigned int m_q;   ///< bits per symbol, quadrature
-    unsigned int M_q;   ///< total symbols, quadrature, \f$M_q=2^{m_q}\f$
+    unsigned int m_i;   // bits per symbol, in-phase
+    unsigned int M_i;   // total symbols, in-phase, M_i=2^{m_i}
+    unsigned int m_q;   // bits per symbol, quadrature
+    unsigned int M_q;   // total symbols, quadrature, M_q=2^{m_q}
 
-    float alpha;        ///< scaling factor to ensure \f$E\{|\bar{r}|^2\}=1\f$
+    float alpha;        // scaling factor to ensure E\{|\bar{r}|^2\}=1
 
-    /** \brief Reference vector for demodulating linear arrays
-     *
-     * By storing these values in an array they do not need to be
-     * calculated during run-time.  This speeds up the demodulation by
-     * approximately 8%.
-     */
+    // Reference vector for demodulating linear arrays
+    //
+    // By storing these values in an array they do not need to be
+    // calculated during run-time.  This speeds up the demodulation by
+    // approximately 8%.
     float ref[MAX_MOD_BITS_PER_SYMBOL];
 
-    /// Complete symbol map
+    // Complete symbol map
     float complex * symbol_map;
 
     float complex state;        // received state vector

@@ -59,7 +59,7 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
             return i;
     }
     fprintf(stderr,"warning: liquid_getopt_str2mod(), unknown/unsupported mod scheme : %s\n", _str);
-    return MOD_UNKNOWN;
+    return LIQUID_MODEM_UNKNOWN;
 }
 
 

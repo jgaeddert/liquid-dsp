@@ -7,7 +7,7 @@
 int main() {
     // 
     unsigned int bps = 2;
-    modulation_scheme ms = MOD_PSK;
+    modulation_scheme ms = LIQUID_MODEM_PSK;
     float SNRdB = 3.0f;
     unsigned int num_symbols = 1000;
 

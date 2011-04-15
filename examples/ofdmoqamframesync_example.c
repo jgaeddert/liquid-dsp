@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     unsigned int num_symbols_data=8;// num data symbols
     unsigned int m=3;
     float beta = 0.9f;
-    modulation_scheme ms = MOD_QAM;
+    modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 2;
     float dphi=0.0f;        // carrier frequency offset (max: pi/(2*num_channels) ~ 0.024544)
     float phi=0.0f;         // carrier phase offset

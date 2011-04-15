@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FLEXFRAME_AUTOTEST_H__
-#define __LIQUID_FLEXFRAME_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -39,7 +36,7 @@ void autotest_flexframe_decode_header()
     fgprops.check       = CRC_NONE;
     fgprops.fec0        = FEC_NONE;
     fgprops.fec1        = FEC_NONE;
-    fgprops.mod_scheme  = MOD_PSK;
+    fgprops.mod_scheme  = LIQUID_MODEM_PSK;
     fgprops.mod_bps     = 3;
     fgprops.rampdn_len  = 16;
     flexframegen fg = flexframegen_create(&fgprops);
@@ -69,4 +66,3 @@ void autotest_flexframe_decode_header()
     flexframesync_destroy(fs);
 }
 
-#endif // __LIQUID_FLEXFRAME_AUTOTEST_H__

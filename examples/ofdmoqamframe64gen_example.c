@@ -26,7 +26,7 @@ int main() {
     unsigned int num_symbols_data=16;   // num data symbols
     unsigned int m=2;
     float beta = 0.9f;
-    modulation_scheme ms = MOD_QAM;
+    modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 4;
     //float SNRdB=30.0f;      // signal-to-noise ratio (dB)
 

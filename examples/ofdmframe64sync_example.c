@@ -39,7 +39,7 @@ int main() {
 
     // options
     unsigned int num_symbols=6;
-    modulation_scheme ms = MOD_QPSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
     unsigned int bps = 2;
     float cfo=0.03f;        // carrier frequency offset (max: pi/16 ~ 0.19)
     float cpo=M_PI/7.0f;    // carrier phase offset

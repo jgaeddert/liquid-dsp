@@ -35,19 +35,19 @@
 
 framesyncstats_s framesyncstats_default = {
     // signal quality
-    0.0f,           // error vector magnitude
-    0.0f,           // rssi
+    0.0f,                   // error vector magnitude
+    0.0f,                   // rssi
 
     // demodulated frame symbols
-    NULL,           // framesyms
-    0,              // num_framesyms
+    NULL,                   // framesyms
+    0,                      // num_framesyms
 
     // modulation/coding scheme, etc.
-    MOD_UNKNOWN,    // mod_scheme
-    0,              // mod_bps
-    CRC_UNKNOWN,    // check
-    FEC_UNKNOWN,    // fec0
-    FEC_UNKNOWN     // fec1
+    LIQUID_MODEM_UNKNOWN,   // mod_scheme
+    0,                      // mod_bps
+    CRC_UNKNOWN,            // check
+    FEC_UNKNOWN,            // fec0
+    FEC_UNKNOWN             // fec1
 };
 
 // initialize framesyncstats object on default

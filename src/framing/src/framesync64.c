@@ -128,7 +128,7 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->userdata = _userdata;
 
     // set fixed properties of the frame statistics
-    fs->framestats.mod_scheme   = MOD_QPSK;
+    fs->framestats.mod_scheme   = LIQUID_MODEM_QPSK;
     fs->framestats.mod_bps      = 2;
     fs->framestats.check        = CRC_16;
     fs->framestats.fec0         = FEC_HAMMING128;
@@ -178,8 +178,8 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     fs->p_payload = packetizer_create(64, CRC_16, FEC_NONE, FEC_HAMMING128);
 
     // create demod
-    fs->demod_payload = modem_create(MOD_QPSK, 2);
-    fs->demod_header  = modem_create(MOD_BPSK, 1);
+    fs->demod_payload = modem_create(LIQUID_MODEM_QPSK, 2);
+    fs->demod_header  = modem_create(LIQUID_MODEM_BPSK, 1);
 
     // set status flags
     fs->state = FRAMESYNC64_STATE_SEEKPN;

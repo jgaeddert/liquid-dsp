@@ -35,7 +35,7 @@ void autotest_ofdmoqam_reconstruction()
     unsigned int m=4;               // filter symbol delay
     float beta = 0.80f;             // excess bandwidth factor
     float dt   = 0.0f;              // timing offset (fractional sample) 
-    modulation_scheme ms = MOD_QAM; // modulation scheme
+    modulation_scheme ms = LIQUID_MODEM_QAM; // modulation scheme
     unsigned int bps = 2;           // modulation depth (bits/symbol)
     float tol = 4e-3f;              // error tolerance
 
@@ -126,7 +126,7 @@ void autotest_ofdmoqam_synthesis_level()
     unsigned int m=4;               // filter symbol delay
     float beta = 0.80f;             // excess bandwidth factor
     float dt   = 0.0f;              // timing offset (fractional sample) 
-    modulation_scheme ms = MOD_QAM; // modulation scheme
+    modulation_scheme ms = LIQUID_MODEM_QAM; // modulation scheme
     unsigned int bps = 2;           // modulation depth (bits/symbol)
     float tol = 1e-3f;              // error tolerance
 

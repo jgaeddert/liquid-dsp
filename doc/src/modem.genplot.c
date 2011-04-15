@@ -40,7 +40,7 @@ int main(int argc, char*argv[]) {
     char output_filename[256] = "modem.gnu";
     char figure_title[256] = "constellation";
     unsigned int bps=2;
-    modulation_scheme ms = MOD_PSK;
+    modulation_scheme ms = LIQUID_MODEM_PSK;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhg:t:d:f:p:m:")) != EOF) {
@@ -56,7 +56,7 @@ int main(int argc, char*argv[]) {
         case 'p':   bps = atoi(optarg);                     break;
         case 'm':
             ms = liquid_getopt_str2mod(optarg);
-            if (ms == MOD_UNKNOWN) {
+            if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
             }
@@ -73,19 +73,19 @@ int main(int argc, char*argv[]) {
     bool plot_long_labels;
 
     // determine labeling scheme
-    if ( (ms==MOD_QAM) && (bps%2) && (bps>5) )  plot_long_labels = false;
-    else if ( (ms==MOD_APSK) && (bps>6) )       plot_long_labels = false;
-    else if ( (ms==MOD_ASK)  && (bps>3) )       plot_long_labels = false;
-    else if ( (ms==MOD_PSK)  && (bps>5) )       plot_long_labels = false;
-    else if (  ms==MOD_ARB64VT          )       plot_long_labels = false;
+    if ( (ms==LIQUID_MODEM_QAM) && (bps%2) && (bps>5) )  plot_long_labels = false;
+    else if ( (ms==LIQUID_MODEM_APSK) && (bps>6) )       plot_long_labels = false;
+    else if ( (ms==LIQUID_MODEM_ASK)  && (bps>3) )       plot_long_labels = false;
+    else if ( (ms==LIQUID_MODEM_PSK)  && (bps>5) )       plot_long_labels = false;
+    else if (  ms==LIQUID_MODEM_ARB64VT          )       plot_long_labels = false;
     else                                        plot_long_labels = plot_labels;
 
     float range = 1.5f;
-    if ( (ms == MOD_QAM && bps > 4 && bps%2) ||
-         (ms == MOD_ASK && bps > 3) )
+    if ( (ms == LIQUID_MODEM_QAM && bps > 4 && bps%2) ||
+         (ms == LIQUID_MODEM_ASK && bps > 3) )
     {
         range = 1.75f;
-    } else if (ms == MOD_ARB64VT) {
+    } else if (ms == LIQUID_MODEM_ARB64VT) {
         range = 2.0f;
     }
 
@@ -115,10 +115,16 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set ylabel \"Q\"\n");
     fprintf(fid,"set nokey # disable legned\n");
     // TODO : set grid type (e.g. polar) according to scheme
-    if (ms == MOD_BPSK || ms == MOD_QPSK || ms == MOD_PSK || ms == MOD_DPSK || ms == MOD_APSK)
+    if (ms == LIQUID_MODEM_BPSK ||
+        ms == LIQUID_MODEM_QPSK ||
+        ms == LIQUID_MODEM_PSK  ||
+        ms == LIQUID_MODEM_DPSK ||
+        ms == LIQUID_MODEM_APSK)
+    {
         fprintf(fid,"set grid polar\n");
-    else
+    } else {
         fprintf(fid,"set grid xtics ytics\n");
+    }
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
     fprintf(fid,"set pointsize 1.0\n");
     if (!plot_labels) {

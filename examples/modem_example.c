@@ -34,7 +34,7 @@ int main(int argc, char*argv[])
 {
     // create mod/demod objects
     unsigned int bps=2;
-    modulation_scheme ms = MOD_PSK;
+    modulation_scheme ms = LIQUID_MODEM_PSK;
 
     int dopt;
     while ((dopt = getopt(argc,argv,"uhm:p:")) != EOF) {
@@ -45,7 +45,7 @@ int main(int argc, char*argv[])
             return 0;
         case 'm':
             ms = liquid_getopt_str2mod(optarg);
-            if (ms == MOD_UNKNOWN) {
+            if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: modem_example, unknown/unsupported modulation scheme \"%s\"\n", optarg);
                 return 1;
             }

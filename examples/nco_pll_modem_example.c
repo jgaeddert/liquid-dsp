@@ -45,7 +45,7 @@ int main(int argc, char*argv[]) {
     float frequency_offset = 0.001f;
     float SNRdB = 30.0f;
     float pll_bandwidth = 0.02f;
-    modulation_scheme ms = MOD_PSK;
+    modulation_scheme ms = LIQUID_MODEM_PSK;
     unsigned int bps = 2;
     unsigned int n=256;     // number of iterations
 
@@ -62,7 +62,7 @@ int main(int argc, char*argv[]) {
         case 'p':   bps = atoi(optarg);             break;
         case 'm':
             ms = liquid_getopt_str2mod(optarg);
-            if (ms == MOD_UNKNOWN) {
+            if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;
             }

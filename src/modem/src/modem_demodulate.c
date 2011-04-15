@@ -282,25 +282,25 @@ float modem_get_demodulator_evm(modem _demod)
 {
     float r;
     switch (_demod->scheme) {
-    case MOD_PSK:
-    case MOD_BPSK:
-    case MOD_QPSK:
-    case MOD_DPSK:
+    case LIQUID_MODEM_PSK:
+    case LIQUID_MODEM_BPSK:
+    case LIQUID_MODEM_QPSK:
+    case LIQUID_MODEM_DPSK:
         // TODO : figure out more efficient way of calculating evm
         r = cabsf(_demod->state);
         _demod->evm = 1.0f + r*r - 2.0f*r*cos(_demod->phase_error);
         _demod->evm = sqrtf( fabsf(_demod->evm) );
         break;
-    case MOD_ASK:
-    case MOD_QAM:
-    case MOD_APSK:
-    case MOD_APSK4:
-    case MOD_APSK8:
-    case MOD_APSK16:
-    case MOD_APSK32:
-    case MOD_APSK64:
-    case MOD_APSK128:
-    case MOD_ARB:
+    case LIQUID_MODEM_ASK:
+    case LIQUID_MODEM_QAM:
+    case LIQUID_MODEM_APSK:
+    case LIQUID_MODEM_APSK4:
+    case LIQUID_MODEM_APSK8:
+    case LIQUID_MODEM_APSK16:
+    case LIQUID_MODEM_APSK32:
+    case LIQUID_MODEM_APSK64:
+    case LIQUID_MODEM_APSK128:
+    case LIQUID_MODEM_ARB:
         _demod->evm = cabsf(_demod->res);
         break;
     default:

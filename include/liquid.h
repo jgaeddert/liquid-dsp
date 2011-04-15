@@ -2425,24 +2425,24 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // Modulation schemes available
 #define LIQUID_NUM_MOD_SCHEMES  17
 typedef enum {
-    MOD_UNKNOWN=0,      // Unknown modulation scheme
-    MOD_PSK,            // Phase-shift keying (PSK)
-    MOD_DPSK,           // differential PSK
-    MOD_ASK,            // amplitude-shift keying
-    MOD_QAM,            // quadrature amplitude-shift keying (QAM)
-    MOD_APSK,           // amplitude phase-shift keying (APSK)
-    MOD_ARB,            // arbitrary QAM
+    LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
+    LIQUID_MODEM_PSK,       // Phase-shift keying (PSK)
+    LIQUID_MODEM_DPSK,      // differential PSK
+    LIQUID_MODEM_ASK,       // amplitude-shift keying
+    LIQUID_MODEM_QAM,       // quadrature amplitude-shift keying (QAM)
+    LIQUID_MODEM_APSK,      // amplitude phase-shift keying (APSK)
+    LIQUID_MODEM_ARB,       // arbitrary QAM
 
-    MOD_BPSK,           // Specific: binary PSK
-    MOD_QPSK,           // specific: quaternary PSK
-    MOD_APSK4,          // amplitude phase-shift keying, M=4  (1,3)
-    MOD_APSK8,          // amplitude phase-shift keying, M=8  (1,7)
-    MOD_APSK16,         // amplitude phase-shift keying, M=16 (4,12)
-    MOD_APSK32,         // amplitude phase-shift keying, M=32 (4,12,16)
-    MOD_APSK64,         // amplitude phase-shift keying, M=64 (4,14,20,26)
-    MOD_APSK128,        // amplitude phase-shift keying, M=128(8,18,24,36,42)
-    MOD_ARB16OPT,       // optimal 16-QAM
-    MOD_ARB64VT         // Virginia Tech logo
+    LIQUID_MODEM_BPSK,      // Specific: binary PSK
+    LIQUID_MODEM_QPSK,      // specific: quaternary PSK
+    LIQUID_MODEM_APSK4,     // amplitude phase-shift keying, M=4  (1,3)
+    LIQUID_MODEM_APSK8,     // amplitude phase-shift keying, M=8  (1,7)
+    LIQUID_MODEM_APSK16,    // amplitude phase-shift keying, M=16 (4,12)
+    LIQUID_MODEM_APSK32,    // amplitude phase-shift keying, M=32 (4,12,16)
+    LIQUID_MODEM_APSK64,    // amplitude phase-shift keying, M=64 (4,14,20,26)
+    LIQUID_MODEM_APSK128,   // amplitude phase-shift keying, M=128(8,18,24,36,42)
+    LIQUID_MODEM_ARB16OPT,  // optimal 16-QAM
+    LIQUID_MODEM_ARB64VT    // Virginia Tech logo
 } modulation_scheme;
 
 // Modulation scheme string for printing purposes

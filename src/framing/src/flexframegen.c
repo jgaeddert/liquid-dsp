@@ -39,15 +39,15 @@
 
 // default flexframegen properties
 static flexframegenprops_s flexframegenprops_default = {
-    16,         // rampup_len
-    16,         // phasing_len
-    0,          // payload_len
-    CRC_NONE,   // check
-    FEC_NONE,   // fec0
-    FEC_NONE,   // fec1
-    MOD_BPSK,   // mod_scheme
-    1,          // mod_bps
-    16          // rampdn_len
+    16,                 // rampup_len
+    16,                 // phasing_len
+    0,                  // payload_len
+    CRC_NONE,           // check
+    FEC_NONE,           // fec0
+    FEC_NONE,           // fec1
+    LIQUID_MODEM_BPSK,  // mod_scheme
+    1,                  // mod_bps
+    16                  // rampdn_len
 };
 
 void flexframegenprops_init_default(flexframegenprops_s * _props)
@@ -103,7 +103,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     msequence_destroy(ms);
 
     // create header objects
-    fg->mod_header = modem_create(MOD_BPSK, 1);
+    fg->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
     fg->p_header   = packetizer_create(19, CRC_16, FEC_HAMMING128, FEC_NONE);
     assert(packetizer_get_enc_msg_len(fg->p_header)==32);
 
@@ -117,7 +117,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
     fg->payload_samples_numalloc = 1;
 
     // create payload modem (initially bpsk, overridden by properties)
-    fg->mod_payload = modem_create(MOD_BPSK, 1);
+    fg->mod_payload = modem_create(LIQUID_MODEM_BPSK, 1);
 
     // initialize properties
     if (_props != NULL)
@@ -175,7 +175,7 @@ void flexframegen_setprops(flexframegen _fg,
     } else if (_props->fec0 == FEC_UNKNOWN || _props->fec1 == FEC_UNKNOWN) {
         fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported FEC scheme\n");
         exit(1);
-    } else if (_props->mod_scheme == MOD_UNKNOWN ) {
+    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
         fprintf(stderr, "error: flexframegen_setprops(), invalid/unsupported modulation scheme\n");
         exit(1);
     }
