@@ -64,7 +64,7 @@ struct ANN(_s) {
     T * dw;     // gradient weights vector [num_weights]
 
     // ga-based training
-    ga_search ga;
+    gasearch ga;
 };
 
 // Creates a network
@@ -512,7 +512,7 @@ float ANN(_compute_rmse)(ANN() _q,
 }
 
 // ga search structure
-struct ANN(_ga_search_object) {
+struct ANN(_gasearch_object) {
     ANN() network;
     float * x;
     float * y;
@@ -520,11 +520,11 @@ struct ANN(_ga_search_object) {
 };
 
 // ga search callback
-float ANN(_ga_search_callback)(void * _userdata,
+float ANN(_gasearch_callback)(void * _userdata,
                                float * _v,
                                unsigned int _num_parameters)
 {
-    struct ANN(_ga_search_object) *q = (struct ANN(_ga_search_object)*) _userdata;
+    struct ANN(_gasearch_object) *q = (struct ANN(_gasearch_object)*) _userdata;
 
     float rmse = ANN(_compute_rmse)(q->network,
                                     q->x,
@@ -544,18 +544,18 @@ void ANN(_train_ga)(ANN() _q,
 {
 #if 0
     // create search structure
-    struct ANN(_ga_search_object) obj = {_q, _x, _y, _num_patterns};
+    struct ANN(_gasearch_object) obj = {_q, _x, _y, _num_patterns};
 
     // create search object
-    ga_search ga = ga_search_create((void*)&obj,
+    gasearch ga = gasearch_create((void*)&obj,
                                     _q->w,
                                     _q->num_weights,
-                                    &ANN(_ga_search_callback),
+                                    &ANN(_gasearch_callback),
                                     LIQUID_OPTIM_MINIMIZE);
 
     // run search
 #if 0
-    ga_search_run(ga,_nmax,_emax);
+    gasearch_run(ga,_nmax,_emax);
 #else
     unsigned int i;
 #define OUTPUT_FILENAME "ann_search_ga_internal_debug.m"
@@ -565,7 +565,7 @@ void ANN(_train_ga)(ANN() _q,
     fprintf(fid,"close all;\n\n");
 
     for (i=0; i<_nmax; i++) {
-        ga_search_evolve(ga);
+        gasearch_evolve(ga);
 
         float rmse = ANN(_compute_rmse)(_q,_x,_y,_num_patterns);
 
@@ -584,7 +584,7 @@ void ANN(_train_ga)(ANN() _q,
 #endif
 
     // clean it up
-    ga_search_destroy(ga);
+    gasearch_destroy(ga);
 
 #endif
 }
