@@ -201,7 +201,9 @@ $(listings_ctests) : %.c.o : %.c scripts/listings_check
 
 # specific C++ programs
 $(listings_cctests) : %.cc.o : %.cc
-	$(CXX) -c -o $@ $<
+	./scripts/listings_check $< $*.prog.cc
+	$(CXX) -I . -I../include/ -c -o $@ $*.prog.cc
+	$(RM) $*.prog.cc
 
 # main test: try to build the objects. If the code is incorrect
 # then then tests won't build and the 'check' will fail.
@@ -210,6 +212,7 @@ listings-check : $(listings_ctests) $(listings_cctests)
 # clean up listings-check files
 clean-listings-check :
 	$(RM) listings/*.prog.c
+	$(RM) listings/*.prog.cc
 	$(RM) listings/*.o
 	$(RM) scripts/listings_check
 
