@@ -1,5 +1,5 @@
 //
-// framegen64_example.c
+// framesync64_example.c
 //
 // This example demonstrates the interfaces to the framegen64 and
 // framesync64 objects used to completely encapsulate data for
@@ -10,7 +10,7 @@
 // object attempts to decode the frame.  The resulting data are compared
 // to the original to validate correctness.
 //
-// SEE ALSO: framesync64_example.c
+// SEE ALSO: flexframesync_example.c
 //
 
 #include <stdio.h>
@@ -41,8 +41,10 @@ int main() {
     srand( time(NULL) );
 
     // options
-    float SNRdB = 10.0f;
-    float noise_floor = -40.0f;
+    float SNRdB = 10.0f;        // signal-to-noise ratio
+    float noise_floor = -40.0f; // noise floor
+    float phi = 0.3f;           // carrier phase offset
+    float dphi = 0.05f;         // carrier frequency offset
 
     // create framegen64 object
     unsigned int m=3;
@@ -53,14 +55,12 @@ int main() {
 
     // create frame synchronizer using default properties
     framesync64 fs = framesync64_create(NULL,callback,NULL);
-    framesync64_print(fs);
 
     // set advanced csma callback functions
     framesync64_set_csma_callbacks(fs, callback_csma_lock, callback_csma_unlock, NULL);
+    framesync64_print(fs);
 
     // channel
-    float phi=0.3f;
-    float dphi=0.05f;
     float nstd  = powf(10.0f, noise_floor/10.0f);         // noise std. dev.
     float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f); // channel gain
     nco_crcf nco_channel = nco_crcf_create(LIQUID_VCO);
@@ -93,7 +93,7 @@ int main() {
     for (i=0; i<1280; i++) {
         frame_rx[i] *= cexpf(_Complex_I*phi);
         frame_rx[i] *= gamma;
-        frame_rx[i] += (randnf() + _Complex_I*randnf()) * 0.707f * nstd;
+        frame_rx[i] += randnf() * cexpf(_Complex_I*M_PI*randf()) * nstd;
         nco_crcf_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
 
         nco_crcf_step(nco_channel);

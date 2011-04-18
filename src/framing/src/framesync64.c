@@ -275,6 +275,7 @@ void framesync64_print(framesync64 _fs)
     printf("    squelch             :   %s\n", _fs->props.squelch_enabled     ? "enabled" : "disabled");
     printf("    auto-squelch        :   %s\n", _fs->props.autosquelch_enabled ? "enabled" : "disabled");
     printf("    squelch threshold   :   %6.2f dB\n", _fs->props.squelch_threshold);
+    printf("    csma                :   %s\n", _fs->csma_enabled ? "enabled" : "disabled");
     printf("    ----\n");
     printf("    p/n sequence len    :   %u\n", FRAME64_PN_LEN);
     printf("    payload len         :   %u bytes\n", 64);
@@ -343,9 +344,17 @@ void framesync64_execute(framesync64 _fs,
         // if squelch is enabled, skip remaining of synchronizer
         // NOTE : if squelch is deactivated, the default status
         //        value is LIQUID_AGC_SQUELCH_SIGNALHI
-        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT) {
+        if (_fs->squelch_status == LIQUID_AGC_SQUELCH_RISE) {
+            // invoke csma lock function, if enabled
+            framesync64_csma_lock(_fs);
+
+        } else if (_fs->squelch_status == LIQUID_AGC_SQUELCH_TIMEOUT) {
+            // invoke csma unlock function, if enabled
+            framesync64_csma_unlock(_fs);
+
             // reset on timeout (very important!)
             framesync64_reset(_fs);
+
         } else if (_fs->squelch_status == LIQUID_AGC_SQUELCH_ENABLED) {
             continue;
         }
