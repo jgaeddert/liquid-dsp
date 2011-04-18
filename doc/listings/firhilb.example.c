@@ -1,4 +1,5 @@
 // file: doc/listings/firhilb.example.c
+#include <liquid/liquid.h>
 
 int main() {
     unsigned int m=5;           // filter semi-length

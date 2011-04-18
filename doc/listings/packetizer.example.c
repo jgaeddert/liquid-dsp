@@ -1,4 +1,5 @@
 // file: doc/listings/packetizer.example.c
+#include <liquid/liquid.h>
 
 int main() {
     // set up the options

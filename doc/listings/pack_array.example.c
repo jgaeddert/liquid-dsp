@@ -1,4 +1,5 @@
 // file: doc/listings/pack_array.example.c
+#include <liquid/liquid.h>
 
 int main() {
     unsigned int sym_size[9] = {8, 2, 3, 6, 1, 3, 3, 4, 3};

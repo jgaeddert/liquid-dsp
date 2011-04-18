@@ -1,4 +1,5 @@
 // file: doc/listings/agc.example.c
+#include <liquid/liquid.h>
 
 int main() {
     agc_rrrf q = agc_rrrf_create();     // create object

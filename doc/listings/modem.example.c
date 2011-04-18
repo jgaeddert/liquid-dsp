@@ -1,4 +1,5 @@
 // file: doc/listings/agc.example.c
+#include <liquid/liquid.h>
 
 int main() {
     // create mod/demod objects

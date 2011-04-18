@@ -1,4 +1,5 @@
 // file: doc/listings/nco_pll.example.c
+#include <liquid/liquid.h>
 
 int main() {
     // create nco objects

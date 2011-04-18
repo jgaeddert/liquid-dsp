@@ -1,4 +1,5 @@
 // file: doc/listings/quasinewton_search.example.c
+#include <liquid/liquid.h>
 
 int main() {
     unsigned int num_parameters = 8;    // search dimensionality

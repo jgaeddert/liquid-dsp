@@ -1,4 +1,5 @@
 // file: doc/listings/gradsearch.example.c
+#include <liquid/liquid.h>
 
 // user-defined utility callback function
 float myutility(void * _userdata, float * _v, unsigned int _n)

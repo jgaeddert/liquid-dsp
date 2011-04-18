@@ -1,4 +1,5 @@
 // file: doc/listings/firdespm.example.c
+#include <liquid/liquid.h>
 
 int main() {
     // define filter length, type, number of bands

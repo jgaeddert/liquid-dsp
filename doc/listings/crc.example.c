@@ -1,4 +1,5 @@
 // file: doc/listings/crc.example.c
+#include <liquid/liquid.h>
 
 int main() {
     // initialize data array

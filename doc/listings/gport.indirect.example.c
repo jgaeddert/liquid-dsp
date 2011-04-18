@@ -1,4 +1,5 @@
 // file: doc/listings/gport.indirect.example.c
+#include <liquid/liquid.h>
 
 int main() {
     // create the port

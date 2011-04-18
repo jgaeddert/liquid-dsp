@@ -1,4 +1,5 @@
 // file: doc/listings/firfarrow_crcf.example.c
+#include <liquid/liquid.h>
 
 int main()
 {

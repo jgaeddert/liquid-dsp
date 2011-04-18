@@ -1,4 +1,5 @@
 // file: doc/listings/interp.example.c
+#include <liquid/liquid.h>
 
 int main() {
     unsigned int M=4;       // interpolation factor

@@ -1,4 +1,5 @@
 // file: doc/listings/ampmodem.example.c
+#include <liquid/liquid.h>
 
 int main() {
     float mod_index = 0.1f;         // modulation index (bandwidth)

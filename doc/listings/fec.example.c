@@ -1,4 +1,5 @@
 // file: doc/listings/fec.example.c
+#include <liquid/liquid.h>
 
 int main() {
     unsigned int n = 64;                    // decoded message length (bytes)
