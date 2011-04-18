@@ -1092,38 +1092,38 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 //
 
 // PSK
-#define PSK_ALPHA       1
+#define PSK_ALPHA       (1.)
 
 // 'Square' QAM
-#define QAM4_ALPHA      1/sqrt(2)
-#define QAM8_ALPHA      1/sqrt(6)
-#define QAM16_ALPHA     1/sqrt(10)
-#define QAM32_ALPHA     1/sqrt(20)
-#define QAM64_ALPHA     1/sqrt(42)
-#define QAM128_ALPHA    1/sqrt(82)
-#define QAM256_ALPHA    1/sqrt(170)
-#define QAM1024_ALPHA   1/sqrt(682)
-#define QAM4096_ALPHA   1/sqrt(2730)
+#define QAM4_ALPHA      (1./sqrt(2))
+#define QAM8_ALPHA      (1./sqrt(6))
+#define QAM16_ALPHA     (1./sqrt(10))
+#define QAM32_ALPHA     (1./sqrt(20))
+#define QAM64_ALPHA     (1./sqrt(42))
+#define QAM128_ALPHA    (1./sqrt(82))
+#define QAM256_ALPHA    (1./sqrt(170))
+#define QAM1024_ALPHA   (1./sqrt(682))
+#define QAM4096_ALPHA   (1./sqrt(2730))
 
 // Rectangular QAM
 #define RQAM4_ALPHA     QAM4_ALPHA
 #define RQAM8_ALPHA     QAM8_ALPHA
 #define RQAM16_ALPHA    QAM16_ALPHA
-#define RQAM32_ALPHA    1/sqrt(26)
+#define RQAM32_ALPHA    (1./sqrt(26))
 #define RQAM64_ALPHA    QAM64_ALPHA
-#define RQAM128_ALPHA   1/sqrt(106)
+#define RQAM128_ALPHA   (1./sqrt(106))
 #define RQAM256_ALPHA   QAM256_ALPHA
-#define RQAM512_ALPHA   1/sqrt(426)
+#define RQAM512_ALPHA   (1./sqrt(426))
 #define RQAM1024_ALPHA  QAM1024_ALPHA
-#define RQAM2048_ALPHA  1/sqrt(1706)
+#define RQAM2048_ALPHA  (1./sqrt(1706))
 #define RQAM4096_ALPHA  QAM4096_ALPHA
 
 // ASK
-#define ASK2_ALPHA      1
-#define ASK4_ALPHA      1/sqrt(5)
-#define ASK8_ALPHA      1/sqrt(21)
-#define ASK16_ALPHA     1/sqrt(85)
-#define ASK32_ALPHA     1/sqrt(341)
+#define ASK2_ALPHA      (1.)
+#define ASK4_ALPHA      (1./sqrt(5))
+#define ASK8_ALPHA      (1./sqrt(21))
+#define ASK16_ALPHA     (1./sqrt(85))
+#define ASK32_ALPHA     (1./sqrt(341))
 
 // modem structure used for both modulation and demodulation 
 //
@@ -1140,7 +1140,7 @@ struct modem_s {
     modulation_scheme scheme;
 
     unsigned int m;     // bits per symbol
-    unsigned int M;     // total symbols, \f$M=2^m\f$
+    unsigned int M;     // total symbols, M=2^m
 
     unsigned int m_i;   // bits per symbol, in-phase
     unsigned int M_i;   // total symbols, in-phase, M_i=2^{m_i}
@@ -1207,10 +1207,10 @@ modem modem_create_apsk128(void);
 modem modem_create_arb16opt(void);
 modem modem_create_arb64vt(void);
 
-/// Scale arbitrary modem energy to unity
+// Scale arbitrary modem energy to unity
 void modem_arb_scale(modem _mod);
 
-/// Balance I/Q
+// Balance I/Q
 void modem_arb_balance_iq(modem _mod);
 
 // generic modem modulate routines
@@ -1227,7 +1227,7 @@ void modem_modulate_apsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
 
-// modem demodualte phase error approximation
+// modem demodualte phase error approximation (for faster demodulation)
 float cargf_demod_approx(float complex _x);
 
 // generic modem demodulate routines
@@ -1289,51 +1289,29 @@ extern const unsigned int apsk128_symbol_map[128];
 
 // demodulator helper functions
 
-/** \brief Demodulates a linear symbol constellation using dynamic threshold calculation
- *
- * \param[in]   _v      value
- * \param[in]   _m      bits per symbol
- * \param[in]   _alpha  scaling factor
- * \param[out]  _s      demodulated symbol
- * \param[out]  _res    residual
- */
-void modem_demodulate_linear_array(
-    float _v,
-    unsigned int _m,
-    float _alpha,
-    unsigned int *_s,
-    float *_res);
+// Demodulate a linear symbol constellation using dynamic threshold calculation
+//  _v      :   input value
+//  _m      :   bits per symbol
+//  _alpha  :   scaling factor
+//  _s      :   demodulated symbol
+//  _res    :   residual
+void modem_demodulate_linear_array(float _v,
+                                   unsigned int _m,
+                                   float _alpha,
+                                   unsigned int *_s,
+                                   float *_res);
 
-/** \brief Demodulates a linear symbol constellation using refereneced lookup table
- *
- * \param[in]   _v      value
- * \param[in]   _m      bits per symbol
- * \param[in]   _ref    array of thresholds
- * \param[out]  _s      demodulated symbol
- * \param[out]  _res    residual
- */
-void modem_demodulate_linear_array_ref(
-    float _v,
-    unsigned int _m,
-    float *_ref,
-    unsigned int *_s,
-    float *_res);
-
-// 
-// analog modems
-//
-
-// freqmodem
-struct freqmodem_s {
-    liquid_fmtype type; // demodulator type (PLL, DELAY_CONJ)
-    nco_crcf oscillator;// nco
-    float fc;           // carrier frequency
-    float m;            // modulation index
-    float m_inv;        // 1/m
-
-    // phase difference
-    float complex q;
-};
+// Demodulate a linear symbol constellation using refereneced lookup table
+//  _v      :   input value
+//  _m      :   bits per symbol
+//  _ref    :   array of thresholds
+//  _s      :   demodulated symbol
+//  _res    :   residual
+void modem_demodulate_linear_array_ref(float _v,
+                                       unsigned int _m,
+                                       float *_ref,
+                                       unsigned int *_s,
+                                       float *_res);
 
 //
 // MODULE : multicarrier

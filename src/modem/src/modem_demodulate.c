@@ -311,12 +311,17 @@ float modem_get_demodulator_evm(modem _demod)
 }
 
 
-void modem_demodulate_linear_array(
-    float _v,
-    unsigned int _m,
-    float _alpha,
-    unsigned int *_s,
-    float *_res)
+// Demodulate a linear symbol constellation using dynamic threshold calculation
+//  _v      :   input value
+//  _m      :   bits per symbol
+//  _alpha  :   scaling factor
+//  _s      :   demodulated symbol
+//  _res    :   residual
+void modem_demodulate_linear_array(float _v,
+                                   unsigned int _m,
+                                   float _alpha,
+                                   unsigned int *_s,
+                                   float *_res)
 {
     unsigned int s=0;
     unsigned int i, k = _m;
@@ -332,12 +337,17 @@ void modem_demodulate_linear_array(
     *_res = _v;
 }
 
-void modem_demodulate_linear_array_ref(
-    float _v,
-    unsigned int _m,
-    float *_ref,
-    unsigned int *_s,
-    float *_res)
+// Demodulate a linear symbol constellation using refereneced lookup table
+//  _v      :   input value
+//  _m      :   bits per symbol
+//  _ref    :   array of thresholds
+//  _s      :   demodulated symbol
+//  _res    :   residual
+void modem_demodulate_linear_array_ref(float _v,
+                                       unsigned int _m,
+                                       float *_ref,
+                                       unsigned int *_s,
+                                       float *_res)
 {
     // initialize loop counter
     register unsigned int i;

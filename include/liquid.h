@@ -2562,19 +2562,36 @@ typedef enum {
     LIQUID_MODEM_FM_PLL=0,
     LIQUID_MODEM_FM_DELAY_CONJ
 } liquid_fmtype;
+
 typedef struct freqmodem_s * freqmodem;
+
+// create freqmodem object
+//  _m      :   modulation index
+//  _fc     :   carrier frequency, -0.5 <= _fc < 0.5
+//  _type   :   demodulation type (e.g. LIQUID_MODEM_FM_DELAY_CONJ)
 freqmodem freqmodem_create(float _m,
                            float _fc,
                            liquid_fmtype _type);
+
+// destroy freqmodem object
 void freqmodem_destroy(freqmodem _fm);
+
+// print freqmodem object internals
 void freqmodem_print(freqmodem _fm);
+
+// reset state
 void freqmodem_reset(freqmodem _fm);
+
+// modulate sample
 void freqmodem_modulate(freqmodem _fm,
                         float _x,
                         liquid_float_complex *_y);
+
+// demodulate sample
 void freqmodem_demodulate(freqmodem _fm,
                           liquid_float_complex _y,
                           float *_x);
+
 
 // amplitude modulation types
 typedef enum {
@@ -2584,15 +2601,30 @@ typedef enum {
 } liquid_modem_amtype;
 
 typedef struct ampmodem_s * ampmodem;
+
+// create ampmodem object
+//  _m                  :   modulation index
+//  _type               :   AM type (e.g. LIQUID_MODEM_AM_DSB)
+//  _suppressed_carrier :   carrier suppression flag
 ampmodem ampmodem_create(float _m,
                          liquid_modem_amtype _type,
                          int _suppressed_carrier);
+
+// destroy ampmodem object
 void ampmodem_destroy(ampmodem _fm);
+
+// print ampmodem object internals
 void ampmodem_print(ampmodem _fm);
+
+// reset ampmodem object state
 void ampmodem_reset(ampmodem _fm);
+
+// modulate sample
 void ampmodem_modulate(ampmodem _fm,
                        float _x,
                        liquid_float_complex *_y);
+
+// demodulate sample
 void ampmodem_demodulate(ampmodem _fm,
                          liquid_float_complex _y,
                          float *_x);

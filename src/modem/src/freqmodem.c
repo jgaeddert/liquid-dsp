@@ -29,7 +29,22 @@
 
 #include "liquid.internal.h"
 
-//
+// freqmodem
+struct freqmodem_s {
+    liquid_fmtype type;     // demodulator type (PLL, DELAY_CONJ)
+    nco_crcf oscillator;    // nco
+    float fc;               // carrier frequency
+    float m;                // modulation index
+    float m_inv;            // 1/m
+
+    // phase difference
+    float complex q;
+};
+
+// create freqmodem object
+//  _m      :   modulation index
+//  _fc     :   carrier frequency, -0.5 <= _fc < 0.5
+//  _type   :   demodulation type (e.g. LIQUID_MODEM_FM_DELAY_CONJ)
 freqmodem freqmodem_create(float _m,
                            float _fc,
                            liquid_fmtype _type)

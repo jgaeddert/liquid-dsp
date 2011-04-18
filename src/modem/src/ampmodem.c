@@ -48,6 +48,10 @@ struct ampmodem_s {
     // double side-band
 };
 
+// create ampmodem object
+//  _m                  :   modulation index
+//  _type               :   AM type (e.g. LIQUID_MODEM_AM_DSB)
+//  _suppressed_carrier :   carrier suppression flag
 ampmodem ampmodem_create(float _m,
                          liquid_modem_amtype _type,
                          int _suppressed_carrier)
