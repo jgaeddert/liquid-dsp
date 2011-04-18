@@ -24,6 +24,9 @@ ramp-dn             16 symbols      ramp down
 
 total:              640 symbols
 
+interpolated:       1280 samples    interpolated using half-rate square-
+                                    root Nyquist pulse-shaping filter
+
 Both the header and payload include a mandatory 16-bit crc with the
 2/3-rate Hamming(12,8) forward error-correction code.
 

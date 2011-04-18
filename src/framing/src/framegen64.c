@@ -121,10 +121,7 @@ framegen64 framegen64_create(unsigned int _m,
     msequence_destroy(ms);
 
     // create pulse-shaping filter (k=2)
-    unsigned int h_len = 2*2*(fg->m) + 1;
-    float h[h_len];
-    design_rrc_filter(2, fg->m, fg->beta, 0, h);
-    fg->interp = interp_crcf_create(2, h, h_len);
+    fg->interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER,2,fg->m,fg->beta,0);
 
     // create header/payload packetizers
     fg->p_header  = packetizer_create(12, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);

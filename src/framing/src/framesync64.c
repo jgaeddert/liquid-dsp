@@ -171,7 +171,7 @@ framesync64 framesync64_create(framesyncprops_s * _props,
     unsigned int npfb = 32;
     unsigned int m=3;
     float beta=0.7f;
-    fs->mfdecim = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC, 2, m, beta, npfb);
+    fs->mfdecim = symsync_crcf_create_rnyquist(LIQUID_RNYQUIST_ARKAISER, 2, m, beta, npfb);
 
     // create header/payload packetizers
     fs->p_header  = packetizer_create(12, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
