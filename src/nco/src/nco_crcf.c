@@ -31,6 +31,5 @@
 
 #define SIN         sinf
 #define COS         cosf
-#define PI          (M_PI)
 
 #include "nco.c"

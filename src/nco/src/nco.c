@@ -244,6 +244,9 @@ void NCO(_pll_step)(NCO() _q,
 
     // compute new phase step (frequency)
     NCO(_set_frequency)(_q, _q->pll_phi_hat - _q->pll_phi_prime);
+
+    // constrain frequency
+    //NCO(_constrain_frequency)(_q);
 }
 
 // mixing functions
@@ -336,13 +339,22 @@ void NCO(_mix_block_down)(NCO() _q,
 // internal methods
 //
 
+// constrain frequency of NCO object to be in (-pi,pi)
+void NCO(_constrain_frequency)(NCO() _q)
+{
+    if (_q->d_theta > M_PI)
+        _q->d_theta -= 2*M_PI;
+    else if (_q->d_theta < -M_PI)
+        _q->d_theta += 2*M_PI;
+}
+
 // constrain phase of NCO object to be in (-pi,pi)
 void NCO(_constrain_phase)(NCO() _q)
 {
-    if (_q->theta > PI)
-        _q->theta -= 2*PI;
-    else if (_q->theta < -PI)
-        _q->theta += 2*PI;
+    if (_q->theta > M_PI)
+        _q->theta -= 2*M_PI;
+    else if (_q->theta < -M_PI)
+        _q->theta += 2*M_PI;
 }
 
 // compute sin, cos of internal phase of nco

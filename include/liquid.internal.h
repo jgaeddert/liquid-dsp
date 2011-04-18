@@ -1488,6 +1488,7 @@ struct NCO(_s) {                                                \
 };                                                              \
                                                                 \
 void NCO(_constrain_phase)(NCO() _q);                           \
+void NCO(_constrain_frequency)(NCO() _q);                       \
                                                                 \
 void NCO(_compute_sincos_nco)(NCO() _q);                        \
 void NCO(_compute_sincos_vco)(NCO() _q);                        \
