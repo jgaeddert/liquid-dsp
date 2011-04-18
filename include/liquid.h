@@ -2558,7 +2558,6 @@ void gmskdem_demodulate(gmskdem _q,
 // Analog modems
 //
 
-// TODO : complete analog modems
 typedef enum {
     LIQUID_MODEM_FM_PLL=0,
     LIQUID_MODEM_FM_DELAY_CONJ
