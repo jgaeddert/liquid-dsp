@@ -2,7 +2,6 @@ TODO list
 
   * update license
   * quasinewton_search -> qnsearch
-  * doc: modem listing
   * c++: wrap library with namespace::liquid
   * fft: remove flat dct, idct, dct_typeIV, mdct, imdct methods
   * remove any trace of Doxygen from code
