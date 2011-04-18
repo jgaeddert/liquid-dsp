@@ -43,7 +43,8 @@ local_src	:=			\
 	firpfbch_analysis_example.c	\
 	firpfbch_synthesis_example.c	\
 	flexframesync_example.c		\
-	flexframesync_reconfig_example.c		\
+	flexframesync_advanced_example.c	\
+	flexframesync_reconfig_example.c	\
 	framesync64_example.c		\
 	freqmodem_example.c		\
 	gasearch_example.c		\
