@@ -365,3 +365,42 @@ void autotest_matrixf_qrdecomp()
         CONTEND_DELTA( QQT_test[i], I4[i], tol );
 }
 
+
+// 
+// AUTOTEST: Gram-Schmidt Orthonormalization
+//
+void autotest_matrixf_gramschmidt()
+{
+    float tol = 1e-6f;  // error tolerance
+
+    float X[12] = {
+        1., 2., 1.,
+        0., 2., 0.,
+        2., 3., 1.,
+        1., 1., 0.};
+
+    float V[12];
+
+    float V_test[12] = {
+        sqrtf(6.)/6.,   sqrtf(2.)/6.,   2./3.,
+        0.,             2.*sqrtf(2.)/3.,-1./3.,
+        sqrtf(6.)/3.,   0.,             0.,
+        sqrtf(6.)/6.,   -sqrtf(2.)/6.,  -2./3.};
+
+    unsigned int i;
+    matrixf_gramschmidt(X,4,3,V);
+
+    if (liquid_autotest_verbose) {
+        printf("X:\n");
+        matrixf_print(X,4,3);
+        printf("normalized X:\n");
+        matrixf_print(V,4,3);
+        printf("expected:\n");
+        matrixf_print(V_test,4,3);
+    }
+
+    // run test
+    for (i=0; i<12; i++)
+        CONTEND_DELTA( V[i], V_test[i], tol );
+}
+
