@@ -333,6 +333,7 @@ void autotest_matrixf_qrdecomp()
         0.000000000000000,    0.000000000000000,    2.241794153271220,    1.189523428266362,
         0.000000000000000,    0.000000000000000,    0.000000000000000,    0.291605921759903};
 
+    unsigned int i;
 
     // run decomposition
     matrixf_qrdecomp_gramschmidt(A,4,4,Q,R);
@@ -344,13 +345,23 @@ void autotest_matrixf_qrdecomp()
         matrixf_print(R,4,4);
     }
 
-    unsigned int i;
     for (i=0; i<16; i++) {
         CONTEND_DELTA( Q[i], Q_test[i], tol );
         CONTEND_DELTA( R[i], R_test[i], tol );
     }
 
-    // TODO : test Q*R  == A
-    // TODO : test Q*Q' == eye(4)
+    // test Q*R  == A
+    float QR_test[16];
+    matrixf_mul(Q,4,4, R,4,4, QR_test,4,4);
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( A[i], QR_test[i], tol );
+
+    // test Q*Q' == eye(4)
+    float QQT_test[16];
+    matrixf_mul_hermitian(Q,4,4, QQT_test);
+    float I4[16];
+    matrixf_eye(I4,4);
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( QQT_test[i], I4[i], tol );
 }
 
