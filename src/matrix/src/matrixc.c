@@ -38,5 +38,6 @@
 #include "matrix.inv.c"
 #include "matrix.linsolve.c"
 #include "matrix.ludecomp.c"
+#include "matrix.qrdecomp.c"
 #include "matrix.math.c"
 

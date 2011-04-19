@@ -216,3 +216,73 @@ void autotest_matrixcf_transmul()
     }
 }
 
+// 
+// AUTOTEST: Q/R decomp (Gram-Schmidt)
+//
+void autotest_matrixcf_qrdecomp()
+{
+    float tol = 1e-4f;  // error tolerance
+
+    float complex A[16]= {
+       2.11402 - 0.57604*_I,  0.41750 + 1.00833*_I, -0.96264 - 3.62196*_I, -0.20679 - 1.02668*_I,
+       0.00854 + 1.61626*_I,  0.84695 - 0.32736*_I, -1.01862 - 1.10786*_I, -1.78877 + 1.84456*_I,
+      -2.97901 - 1.30384*_I,  0.52289 + 1.89110*_I,  1.32576 - 0.36737*_I,  0.04717 + 0.20628*_I,
+       0.28970 + 0.64247*_I, -0.55916 + 0.68302*_I,  1.40615 + 0.62398*_I, -0.12767 - 0.53997*_I};
+
+
+    float complex Q[16];
+    float complex R[16];
+
+    float complex Q_test[16] = {
+       0.4917069 - 0.1339829*_I,  0.4296604 + 0.5598343*_I, -0.3093337 - 0.2783187*_I,  0.2152058 - 0.1509579*_I,
+       0.0019872 + 0.3759317*_I,  0.2427682 + 0.0092564*_I, -0.4223052 - 0.0325125*_I, -0.5035680 + 0.6055326*_I,
+      -0.6928955 - 0.3032643*_I,  0.0541098 + 0.4680729*_I, -0.0821501 + 0.0696538*_I,  0.2796678 + 0.3407228*_I,
+       0.0673832 + 0.1494333*_I, -0.2704656 + 0.3844264*_I, -0.2850673 + 0.7447073*_I, -0.1735849 - 0.2936151*_I};
+
+    float complex R_test[16] = {
+       4.29936 + 0.00000*_I, -0.92262 - 0.78948*_I, -1.02577 - 1.04067*_I,  0.54122 - 0.00234*_I,
+       0.00000 + 0.00000*_I,  2.27373 + 0.00000*_I, -2.93951 - 2.62657*_I, -1.15474 + 0.32321*_I,
+       0.00000 + 0.00000*_I,  0.00000 + 0.00000*_I,  1.70137 + 0.00000*_I,  0.68991 - 0.34832*_I,
+       0.00000 + 0.00000*_I,  0.00000 + 0.00000*_I,  0.00000 + 0.00000*_I,  2.39237 + 0.00000*_I};
+
+    unsigned int i;
+
+    // run decomposition
+    matrixcf_qrdecomp_gramschmidt(A,4,4,Q,R);
+
+    if (liquid_autotest_verbose) {
+        printf("Q :\n");
+        matrixcf_print(Q,4,4);
+        printf("expected Q :\n");
+        matrixcf_print(Q_test,4,4);
+
+        printf("\n\n");
+        printf("R :\n");
+        matrixcf_print(R,4,4);
+        printf("expected R :\n");
+        matrixcf_print(R_test,4,4);
+    }
+
+    for (i=0; i<16; i++) {
+        CONTEND_DELTA( crealf(Q[i]), crealf(Q_test[i]), tol );
+        CONTEND_DELTA( cimagf(Q[i]), cimagf(Q_test[i]), tol );
+
+        CONTEND_DELTA( crealf(R[i]), crealf(R_test[i]), tol );
+        CONTEND_DELTA( cimagf(R[i]), cimagf(R_test[i]), tol );
+    }
+
+    // test Q*R  == A
+    float complex QR_test[16];
+    matrixcf_mul(Q,4,4, R,4,4, QR_test,4,4);
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( A[i], QR_test[i], tol );
+
+    // test Q*Q' == eye(4)
+    float complex QQT_test[16];
+    matrixcf_mul_transpose(Q,4,4, QQT_test);
+    float complex I4[16];
+    matrixcf_eye(I4,4);
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( QQT_test[i], I4[i], tol );
+}
+

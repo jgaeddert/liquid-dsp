@@ -60,7 +60,7 @@ void MATRIX(_qrdecomp_gramschmidt)(T * _x,
             // compute dot product _x(:,k) * e(:,i)
             T g = 0.0f;
             for (j=0; j<n; j++)
-                g += matrix_access(_x,n,n,j,k) * matrix_access(e,n,n,j,i);
+                g += matrix_access(_x,n,n,j,k) * conj( matrix_access(e,n,n,j,i) );
             //printf("  i=%2u, g = %12.4e\n", i, crealf(g));
             for (j=0; j<n; j++)
                 matrix_access(e,n,n,j,k) -= matrix_access(e,n,n,j,i) * g;
@@ -94,7 +94,7 @@ void MATRIX(_qrdecomp_gramschmidt)(T * _x,
                 // compute dot product between and Q(:,j) and _x(:,k)
                 T g = 0.0f;
                 for (i=0; i<n; i++)
-                    g += matrix_access(_Q,n,n,i,j) * matrix_access(_x,n,n,i,k);
+                    g += conj( matrix_access(_Q,n,n,i,j) ) * matrix_access(_x,n,n,i,k);
                 matrix_access(_R,n,n,j,k) = g;
             }
         }
