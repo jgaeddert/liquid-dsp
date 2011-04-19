@@ -34,6 +34,7 @@
         cimagf(matrix_access(X,R,C,r,c)));
 
 #include "matrix.base.c"
+#include "matrix.gramschmidt.c"
 #include "matrix.inv.c"
 #include "matrix.linsolve.c"
 #include "matrix.ludecomp.c"

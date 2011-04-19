@@ -2396,6 +2396,10 @@ void MATRIX(_ludecomp_doolittle)(T * _x,                        \
                                  T * _L,                        \
                                  T * _U,                        \
                                  T * _P);                       \
+void MATRIX(_gramschmidt)(T * _A,                               \
+                          unsigned int _rx,                     \
+                          unsigned int _cx,                     \
+                          T * _U);                              \
 void MATRIX(_qrdecomp_gramschmidt)(T * _x,                      \
                                    unsigned int _rx,            \
                                    unsigned int _cx,            \

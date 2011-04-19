@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "liquid.h"
 
 int main() {
@@ -197,6 +198,27 @@ int main() {
     matrixf_transpose_mul(a,4,5,aTa);
     matrixf_print(aTa,5,5);
 
+    printf("\n");
+    printf("testing Gram-Schmidt\n");
+    float Xgs[12] = {
+        1., 2., 1.,
+        0., 2., 0.,
+        2., 3., 1.,
+        1., 1., 0.};
+    float Ugs[12];
+    float Ugs_test[12] = {
+        sqrtf(6.)/6.,   sqrtf(2.)/6.,   2./3.,
+        0.,             2.*sqrtf(2.)/3.,-1./3.,
+        sqrtf(6.)/3.,   0.,             0.,
+        sqrtf(6.)/6.,   -sqrtf(2.)/6.,  -2./3.};
+    matrixf_gramschmidt(Xgs,4,3,Ugs);
+
+    printf("X:\n");
+    matrixf_print(Xgs,4,3);
+    printf("normalized X:\n");
+    matrixf_print(Ugs,4,3);
+    printf("expected:\n");
+    matrixf_print(Ugs_test,4,3);
 
     printf("done.\n");
     return 0;
