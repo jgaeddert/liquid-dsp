@@ -1637,9 +1637,6 @@ void framegen64_execute(framegen64 _fg,
                         unsigned char * _header,
                         unsigned char * _payload,
                         liquid_float_complex * _y);
-void framegen64_flush(framegen64 _fg,
-                      unsigned int _n,
-                      liquid_float_complex * _y);
 
 // Basic frame synchronizer (64 bytes data payload)
 //  _header         :   pointer to decoded header [size: 24 x 1]

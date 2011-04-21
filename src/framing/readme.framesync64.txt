@@ -11,7 +11,7 @@ signal
   +-------------------------------------------------> time
 
 section             length          Description
-ramp-up             16 symbols      ramp/up phasing pattern
+ramp-up             12 symbols      ramp/up phasing pattern
 phasing pattern     64 symbols      BPSK phasing pattern (+1,-1...)
 p/n sequence        64 symbols      BPSK p/n sequence (m-sequence)
 header              84 symbols      12-byte packet header, 16-bit crc,
@@ -20,7 +20,8 @@ header              84 symbols      12-byte packet header, 16-bit crc,
 payload             396 symbols     64-byte packet header, 16-bit crc,
                                     encoded with the Hamming(12,8) FEC,
                                     modulated with QPSK
-ramp-dn             16 symbols      ramp down
+ramp-dn             12 symbols      ramp down
+settling            8  symbols      settling time for interpolator
 
 total:              640 symbols
 

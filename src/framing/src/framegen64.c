@@ -34,10 +34,11 @@
 
 #include "liquid.internal.h"
 
-#define FRAME64_RAMP_UP_LEN 16
+#define FRAME64_RAMP_UP_LEN 12
 #define FRAME64_PHASING_LEN 64
 #define FRAME64_PN_LEN      64
-#define FRAME64_RAMP_DN_LEN 16
+#define FRAME64_RAMP_DN_LEN 12
+#define FRAME64_SETTLE_LEN  8
 
 #define FRAMEGEN64_PHASING_0    ( 1.0f) //( 0.70711f + 0.70711f*_Complex_I)
 #define FRAMEGEN64_PHASING_1    (-1.0f) //(-0.70711f - 0.70711f*_Complex_I)
@@ -149,13 +150,14 @@ void framegen64_destroy(framegen64 _fg)
 void framegen64_print(framegen64 _fg)
 {
     printf("framegen64 [m=%u, beta=%4.2f]:\n", _fg->m, _fg->beta);
-    printf("    ramp/up symbols     :   16\n");
+    printf("    ramp/up symbols     :   %u\n", FRAME64_RAMP_UP_LEN);
     printf("    phasing symbols     :   64\n");
     printf("    p/n symbols         :   64\n");
     printf("    header symbols      :   84\n");
     printf("    payload symbols     :   396\n");
     printf("    payload symbols     :   396\n");
-    printf("    ramp\\down symbols   :   16\n");
+    printf("    ramp\\down symbols   :   %u\n", FRAME64_RAMP_DN_LEN);
+    printf("    settling symbols    :   %u\n", FRAME64_SETTLE_LEN);
     printf("    total symbols       :   640\n");
 }
 
@@ -188,6 +190,9 @@ void framegen64_execute(framegen64 _fg,
         framegen64_byte_to_syms(_fg->payload_enc[i], &(_fg->payload_sym[4*i]));
 
     unsigned int n=0;
+
+    // reset interpolator
+    interp_crcf_clear(_fg->interp);
 
     // ramp up
     for (i=0; i<FRAME64_RAMP_UP_LEN; i++) {
@@ -228,28 +233,15 @@ void framegen64_execute(framegen64 _fg,
         n+=2;
     }
 
+    // settling
+    for (i=0; i<FRAME64_SETTLE_LEN; i++) {
+        interp_crcf_execute(_fg->interp, 0.0f, &_y[n]);
+        n+=2;
+    }
+
     assert(n==1280);
 }
 
-// flush frame generator buffer by pushing samples through
-// internal interpolator
-//  _fg     :   frame generator object
-//  _n      :   number of output samples (must be even)
-//  _y      :   output sample array pointer [size: _n x 1]
-void framegen64_flush(framegen64 _fg,
-                      unsigned int _n,
-                      float complex * _y)
-{
-    // validate input
-    if (_n % 2) {
-        fprintf(stderr,"error: framegen64_flush(), _n must be even\n");
-        exit(1);
-    }
-
-    unsigned int i;
-    for (i=0; i<_n; i+=2)
-        interp_crcf_execute(_fg->interp, 0, &_y[i]);
-}
 
 // 
 // Internal
