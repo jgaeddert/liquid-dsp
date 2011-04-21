@@ -13,7 +13,7 @@ signal
 section             # syms          Description
 ramp up (r/u)       0+              phasing (1010...) with ramp up
 phasing pattern     0+              10101010...
-p/n sequence        64              BPSK P/N sequence
+p/n sequence        64              BPSK P/N sequence (m-sequence, g=0x005b)
 header              256
                     # bytes
     crc             2               cyclic redundancy check

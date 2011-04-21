@@ -116,7 +116,7 @@ framegen64 framegen64_create(unsigned int _m,
         fg->phasing[i] = (i%2) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
 
     // generate pn sequence
-    msequence ms = msequence_create_default(6);
+    msequence ms = msequence_create(6, 0x0043, 1);
     for (i=0; i<64; i++)
         fg->pn_sequence[i] = (msequence_advance(ms)) ? FRAMEGEN64_PHASING_1 : FRAMEGEN64_PHASING_0;
     msequence_destroy(ms);

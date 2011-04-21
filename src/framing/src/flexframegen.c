@@ -97,7 +97,7 @@ flexframegen flexframegen_create(flexframegenprops_s * _props)
 
     // generate pn sequence
     fg->pnsequence_len = 64;
-    msequence ms = msequence_create_default(6);
+    msequence ms = msequence_create(6, 0x005b, 1);
     for (i=0; i<64; i++)
         fg->pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
     msequence_destroy(ms);

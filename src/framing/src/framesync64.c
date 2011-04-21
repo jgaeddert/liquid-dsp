@@ -160,7 +160,7 @@ framesync64 framesync64_create(framesyncprops_s * _props,
 
     // bsync (p/n synchronizer)
     unsigned int i;
-    msequence ms = msequence_create_default(6);
+    msequence ms = msequence_create(6, 0x0043, 1);
     float pn_sequence[FRAME64_PN_LEN];
     for (i=0; i<FRAME64_PN_LEN; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;
