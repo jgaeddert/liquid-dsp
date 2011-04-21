@@ -70,7 +70,7 @@ ofdmframe64gen ofdmframe64gen_create()
     q->Lt = (float complex*) ofdmframe64_plcp_Lt;
 
     // set pilot sequence
-    q->ms_pilot = msequence_create(8);
+    q->ms_pilot = msequence_create_default(8);
 
     return q;
 }

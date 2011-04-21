@@ -51,7 +51,7 @@ void ofdmframe_init_S0(unsigned int * _p,
     else if (m > 8) m = 8;
 
     // generate m-sequence generator object
-    msequence ms = msequence_create(m);
+    msequence ms = msequence_create_default(m);
 
     unsigned int s;
     unsigned int M_S0 = 0;
@@ -124,7 +124,7 @@ void ofdmframe_init_S1(unsigned int * _p,
     m++;
 
     // generate m-sequence generator object
-    msequence ms = msequence_create(m);
+    msequence ms = msequence_create_default(m);
 
     unsigned int s;
     unsigned int M_S1 = 0;

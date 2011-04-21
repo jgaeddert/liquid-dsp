@@ -76,8 +76,7 @@ BSYNC() BSYNC(_create_msequence)(unsigned int _g)
     unsigned int m = liquid_msb_index(_g) - 1;
 
     // create/initialize msequence
-    msequence ms = msequence_create(m);
-    msequence_init(ms, m, _g, 1);
+    msequence ms = msequence_create(m, _g, 1);
 
     BSYNC() fs = (BSYNC()) malloc(sizeof(struct BSYNC(_s)));
     fs->n = msequence_get_length(ms);

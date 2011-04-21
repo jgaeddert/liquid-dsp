@@ -119,7 +119,7 @@ void interleaver_init_sequence(interleaver _q)
     unsigned int m = liquid_msb_index(_q->len);
     if (_q->len == (1<<(m-1)) )
         m--;
-    msequence ms = msequence_create(m);
+    msequence ms = msequence_create_default(m);
     unsigned int n = msequence_get_length(ms);
     unsigned int nby2 = n/2;
 

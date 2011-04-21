@@ -25,7 +25,7 @@
 // test initialization of binary sequence on m-sequence
 void autotest_bsequence_init_msequence() {
     // create and initialize m-sequence
-    msequence ms = msequence_create(4);
+    msequence ms = msequence_create_default(4);
     
     // create and initialize binary sequence on m-sequence
     bsequence bs;
@@ -45,7 +45,7 @@ void autotest_bsequence_init_msequence() {
 void msequence_test_autocorrelation(unsigned int _m)
 {
     // create and initialize m-sequence
-    msequence ms = msequence_create(_m);
+    msequence ms = msequence_create_default(_m);
     unsigned int n = msequence_get_length(ms);
     
     // create and initialize first binary sequence on m-sequence

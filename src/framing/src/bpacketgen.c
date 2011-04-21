@@ -103,7 +103,7 @@ bpacketgen bpacketgen_create(unsigned int _m,
 
     // create m-sequence generator
     // TODO : configure sequence from generator polynomial
-    q->ms = msequence_create(6);
+    q->ms = msequence_create_default(6);
 
     // create header packet encoder
     q->p_header = packetizer_create(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);
@@ -160,7 +160,7 @@ bpacketgen bpacketgen_recreate(bpacketgen _q,
     // re-create m-sequence generator
     // TODO : configure sequence from generator polynomial
     msequence_destroy(_q->ms);
-    _q->ms = msequence_create(6);
+    _q->ms = msequence_create_default(6);
 
     // re-create payload packet encoder
     _q->p_payload = packetizer_recreate(_q->p_payload,

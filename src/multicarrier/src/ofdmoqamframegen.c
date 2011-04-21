@@ -138,7 +138,7 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
     q->g_S1   = sqrtf(q->M) / sqrtf(q->M_S1);
 
     // set pilot sequence
-    q->ms_pilot = msequence_create(8);
+    q->ms_pilot = msequence_create_default(8);
 
     return q;
 }

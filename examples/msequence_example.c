@@ -23,7 +23,7 @@ int main() {
     unsigned int m=5;   // shift register length, n=2^m - 1
 
     // create and initialize m-sequence
-    msequence ms = msequence_create(m);
+    msequence ms = msequence_create_default(m);
     msequence_print(ms);
     unsigned int n = msequence_get_length(ms);
     signed int rxx[n];   // auto-correlation

@@ -211,7 +211,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->crosscorr = dotprod_cccf_create(q->s1, q->M);
 
     // set pilot sequence
-    q->ms_pilot = msequence_create(8);
+    q->ms_pilot = msequence_create_default(8);
 
     // coarse detection
     q->squelch_threshold = -30.0f;

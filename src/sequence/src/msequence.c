@@ -59,10 +59,47 @@ struct msequence_s msequence_default[16] = {
 };
 
 // create a maximal-length sequence (m-sequence) object with
-// an internal shift register length of _m bits.  sequence will
-// be initialized to the default sequence of that length, e.g.
-// LIQUID_MSEQUENCE_N511
-msequence msequence_create(unsigned int _m)
+// an internal shift register length of _m bits.
+//  _m      :   generator polynomial length, sequence length is (2^m)-1
+//  _g      :   generator polynomial, starting with most-significant bit
+//  _a      :   initial shift register state, default: 000...001
+msequence msequence_create(unsigned int _m,
+                           unsigned int _g,
+                           unsigned int _a)
+{
+    // validate input
+    if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M) {
+        fprintf(stderr,"error: msequence_create(), m not in range\n");
+        exit(1);
+    }
+    
+    // allocate memory for msequence object
+    msequence ms = (msequence) malloc(sizeof(struct msequence_s));
+
+    // set internal values
+    ms->m = _m;         // generator polynomial length
+    ms->g = _g >> 1;    // generator polynomial (clip off most significant bit)
+
+    // initialize state register, reversing order
+    // 0001 -> 1000
+    unsigned int i;
+    ms->a = 0;
+    for (i=0; i<ms->m; i++) {
+        ms->a <<= 1;
+        ms->a |= (_a & 0x01);
+        _a >>= 1;
+    }
+
+    ms->n = (1<<_m)-1;  // sequence length, (2^m)-1
+    ms->v = ms->a;      // shift register
+    ms->b = 0;          // return bit
+
+    return ms;
+}
+
+
+// creates a default maximal-length sequence
+msequence msequence_create_default(unsigned int _m)
 {
     // validate input
     if (_m > LIQUID_MAX_MSEQUENCE_M || _m < LIQUID_MIN_MSEQUENCE_M) {
@@ -76,6 +113,7 @@ msequence msequence_create(unsigned int _m)
     // copy default sequence
     memmove(ms, &msequence_default[_m], sizeof(struct msequence_s));
 
+    // return
     return ms;
 }
 
@@ -103,35 +141,6 @@ void msequence_print(msequence _m)
     for (i=0; i<_m->m; i++)
         printf("%c", ((_m->g) >> (_m->m-i-1)) & 0x01 ? '1' : '0');
     printf("\n");
-}
-
-// initialize msequence generator object
-//  _ms     :   m-sequence object
-//  _m      :   generator polynomial length, sequence length is (2^m)-1
-//  _g      :   generator polynomial, starting with most-significant bit
-//  _a      :   initial shift register state, default: 000...001
-void msequence_init(msequence _ms,
-                    unsigned int _m,
-                    unsigned int _g,
-                    unsigned int _a)
-{
-    // set internal values
-    _ms->m = _m;        // generator polynomial length
-    _ms->g = _g >> 1;   // generator polynomial (clip off most significant bit)
-
-    // initialize state register, reversing order
-    // 0001 -> 1000
-    unsigned int i;
-    _ms->a = 0;
-    for (i=0; i<_ms->m; i++) {
-        _ms->a <<= 1;
-        _ms->a |= (_a & 0x01);
-        _a >>= 1;
-    }
-
-    _ms->n = (1<<_m)-1; // sequence length, (2^m)-1
-    _ms->v = _ms->a;    // shift register
-    _ms->b = 0;         // return bit
 }
 
 // advance msequence on shift register, returning output bit

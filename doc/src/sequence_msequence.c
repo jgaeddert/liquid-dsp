@@ -57,7 +57,7 @@ int main(int argc, char*argv[]) {
     }
 
     // create and initialize m-sequence
-    msequence ms = msequence_create(m);
+    msequence ms = msequence_create_default(m);
     msequence_print(ms);
     unsigned int n = msequence_get_length(ms);
     unsigned int sequence[n];   // sequence

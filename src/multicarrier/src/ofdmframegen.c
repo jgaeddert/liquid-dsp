@@ -122,7 +122,7 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
     q->g_data = 1.0f / sqrtf(q->M_pilot + q->M_data);
 
     // set pilot sequence
-    q->ms_pilot = msequence_create(8);
+    q->ms_pilot = msequence_create_default(8);
 
     return q;
 }

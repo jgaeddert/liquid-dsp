@@ -82,7 +82,7 @@ void validate_crc(crc_scheme _check,
 
     // generate pseudo-random data
     unsigned char data[_n];
-    msequence ms = msequence_create(9);
+    msequence ms = msequence_create_default(9);
     for (i=0; i<_n; i++)
         data[i] = msequence_generate_symbol(ms,8);
     msequence_destroy(ms);

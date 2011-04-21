@@ -190,7 +190,7 @@ flexframesync flexframesync_create(framesyncprops_s * _props,
     unsigned int i;
     fs->pnsequence_len = 64;
     // TODO : adjust msequence based on p/n sequence length
-    msequence ms = msequence_create(6);
+    msequence ms = msequence_create_default(6);
     float pn_sequence[fs->pnsequence_len];
     for (i=0; i<fs->pnsequence_len; i++)
         pn_sequence[i] = (msequence_advance(ms)) ? 1.0f : -1.0f;

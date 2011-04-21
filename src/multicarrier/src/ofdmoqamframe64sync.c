@@ -191,7 +191,7 @@ ofdmoqamframe64sync ofdmoqamframe64sync_create(unsigned int _m,
     q->S1b = (float complex*) malloc((q->num_subcarriers)*sizeof(float complex));
 
     // set pilot sequence
-    q->ms_pilot = msequence_create(8);
+    q->ms_pilot = msequence_create_default(8);
     q->x_phase[0] = -21.0f;
     q->x_phase[1] =  -7.0f;
     q->x_phase[2] =   7.0f;

@@ -3465,10 +3465,16 @@ void bsequence_create_ccodes(bsequence _a,
 typedef struct msequence_s * msequence;
 
 // create a maximal-length sequence (m-sequence) object with
-// an internal shift register length of _m bits.  sequence will
-// be initialized to the default sequence of that length, e.g.
-// LIQUID_MSEQUENCE_GENPOLY_M6
-msequence msequence_create(unsigned int _m);
+// an internal shift register length of _m bits.
+//  _m      :   generator polynomial length, sequence length is (2^m)-1
+//  _g      :   generator polynomial, starting with most-significant bit
+//  _a      :   initial shift register state, default: 000...001
+msequence msequence_create(unsigned int _m,
+                           unsigned int _g,
+                           unsigned int _a);
+
+// creates a default maximal-length sequence
+msequence msequence_create_default(unsigned int _m);
 
 // destroy an msequence object, freeing all internal memory
 void msequence_destroy(msequence _m);
@@ -3476,20 +3482,11 @@ void msequence_destroy(msequence _m);
 // prints the sequence's internal state to the screen
 void msequence_print(msequence _m);
 
-// initialize msequence generator object
-//  _ms     :   m-sequence object
-//  _m      :   generator polynomial length, sequence length is (2^m)-1
-//  _g      :   generator polynomial, starting with most-significant bit
-//  _a      :   initial shift register state, default: 000...001
-void msequence_init(msequence _ms,
-                    unsigned int _m,
-                    unsigned int _g,
-                    unsigned int _a);
-
 // advance msequence on shift register, returning output bit
 unsigned int msequence_advance(msequence _ms);
 
-// generate pseudo-random symbol from shift register
+// generate pseudo-random symbol from shift register by
+// advancing _bps bits and returning compacted symbol
 //  _ms     :   m-sequence object
 //  _bps    :   bits per symbol of output
 unsigned int msequence_generate_symbol(msequence _ms,

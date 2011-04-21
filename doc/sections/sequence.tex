@@ -161,20 +161,17 @@ Here is a brief description of the {\tt msequence} object's interface in
 \liquid:
 %
 \begin{description}
-\item[{\tt msequence\_create(m)}]
-    creates an {\tt msequence} object with an internal shift register length
-    of $m$ bits.
-    The sequence is automatically initialized to the default sequence of that
-    length, e.g. {\tt LIQUID\_MSEQUENCE\_GENPOLY\_M6}, and the initial state is set
-    to {\tt 000...001}.
+\item[{\tt msequence\_create(m,g,a)}]
+    creates an {\tt msequence} object with an internal shift register
+    length of $m$ bits using a generator polynomial $g$ and the initial
+    state of the shift register $a$.
+\item[{\tt msequence\_create\_default(m)}]
+    creates an {\tt msequence} object with $m$ bits in the shift
+    register using the default generator polynomial
+    (e.g. {\tt LIQUID\_MSEQUENCE\_GENPOLY\_M6}).
+    The initial state is set to {\tt 000...001}.
 \item[{\tt msequence\_destroy(ms)}]
     destroys the object {\tt ms}, freeing all internal memory.
-\item[{\tt msequence\_init(ms,m,g,a)}]
-    initializes the {\tt msequence} generator object {\tt ms} where
-    $m$ is the generator polynomial length (number of bits),
-    $g$ is the generator polynomial, and
-    $a$ is the initial state of the internal shift register (initially
-    {\tt  1}).
 \item[{\tt msequence\_print(ms)}]
     prints the contents of the sequence to the screen.
 \item[{\tt msequence\_advance(ms)}]

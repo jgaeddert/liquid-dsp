@@ -109,7 +109,7 @@ ofdmoqamframe64gen ofdmoqamframe64gen_create(unsigned int _m,
     }
 
     // set pilot sequence
-    q->ms_pilot = msequence_create(8);
+    q->ms_pilot = msequence_create_default(8);
 
     return q;
 }

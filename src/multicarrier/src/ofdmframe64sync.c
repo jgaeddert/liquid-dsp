@@ -162,7 +162,7 @@ ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
 #endif
 
     // pilot sequence generator
-    q->ms_pilot = msequence_create(8);
+    q->ms_pilot = msequence_create_default(8);
     q->x_phase[0] = -21.0f;
     q->x_phase[1] =  -7.0f;
     q->x_phase[2] =   7.0f;

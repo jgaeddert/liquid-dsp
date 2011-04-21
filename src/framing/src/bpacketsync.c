@@ -125,7 +125,7 @@ bpacketsync bpacketsync_create(unsigned int _m,
 
     // create m-sequence generator
     // TODO : configure sequence from generator polynomial
-    q->ms = msequence_create(6);
+    q->ms = msequence_create_default(6);
 
     // create header packet encoder
     q->p_header = packetizer_create(6, LIQUID_CRC_16, LIQUID_FEC_NONE, LIQUID_FEC_HAMMING128);

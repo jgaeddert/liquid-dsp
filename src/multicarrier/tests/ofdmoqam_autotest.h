@@ -145,7 +145,7 @@ void autotest_ofdmoqam_synthesis_level()
     float complex y[num_samples];               // synthesized time-domain samples
     
     unsigned int s;
-    msequence mseq = msequence_create(6);
+    msequence mseq = msequence_create_default(6);
 
     // generate frame data
     for (i=0; i<num_frames; i++) {
