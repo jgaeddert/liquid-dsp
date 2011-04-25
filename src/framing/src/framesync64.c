@@ -242,6 +242,16 @@ void framesync64_destroy(framesync64 _fs)
 {
 #if DEBUG_FRAMESYNC64
     framesync64_debug_print(_fs);
+
+    // clean up debug windows
+    windowf_destroy( _fs->debug_agc_rssi);
+    windowcf_destroy(_fs->debug_agc_out);
+    windowcf_destroy(_fs->debug_x);
+    windowcf_destroy(_fs->debug_rxy);
+    windowcf_destroy(_fs->debug_nco_rx_out);
+    windowcf_destroy(_fs->debug_framesyms);
+    windowf_destroy( _fs->debug_nco_phase);
+    windowf_destroy( _fs->debug_nco_freq);
 #endif
 
     // destroy synchronization objects
@@ -792,13 +802,5 @@ void framesync64_debug_print(framesync64 _fs)
     fclose(fid);
 
     printf("framesync64/debug: results written to %s\n", DEBUG_FILENAME);
-
-    // clean up debug windows
-    windowf_destroy(_fs->debug_agc_rssi);
-    windowcf_destroy(_fs->debug_agc_out);
-    windowcf_destroy(_fs->debug_rxy);
-    windowcf_destroy(_fs->debug_x);
-    windowcf_destroy(_fs->debug_nco_rx_out);
-    windowcf_destroy(_fs->debug_framesyms);
 #endif
 }
