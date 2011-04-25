@@ -281,6 +281,17 @@ void flexframesync_destroy(flexframesync _fs)
 {
 #if DEBUG_FLEXFRAMESYNC
     flexframesync_output_debug_file(_fs);
+
+    // clean up debug windows
+    windowf_destroy( _fs->debug_agc_rssi);
+    windowcf_destroy(_fs->debug_agc_out);
+    windowcf_destroy(_fs->debug_x);
+    windowcf_destroy(_fs->debug_rxy);
+    windowcf_destroy(_fs->debug_nco_rx_out);
+    windowcf_destroy(_fs->debug_framesyms);
+    windowf_destroy( _fs->debug_nco_phase);
+    windowf_destroy( _fs->debug_nco_freq);
+    windowcf_destroy(_fs->debug_heq);
 #endif
 
     // destroy synchronizer objects
@@ -1159,13 +1170,5 @@ void flexframesync_output_debug_file(flexframesync _fs)
 
     printf("flexframesync/debug: results written to %s\n", DEBUG_FLEXFRAMESYNC_FILENAME);
 
-    // clean up debug windows
-    windowf_destroy(_fs->debug_agc_rssi);
-    windowcf_destroy(_fs->debug_agc_out);
-    windowcf_destroy(_fs->debug_rxy);
-    windowcf_destroy(_fs->debug_x);
-    windowcf_destroy(_fs->debug_nco_rx_out);
-    windowcf_destroy(_fs->debug_framesyms);
-    windowcf_destroy(_fs->debug_heq);
 }
 #endif
