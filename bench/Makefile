@@ -14,8 +14,14 @@ LDFLAGS := -lm -lc
 
 all: benchmark
 
-benchinclude.h: benchmarkgen.py bench_example.h
-	python benchmarkgen.py bench_example.h
+benchmarkgen.o main.o : %.o : %.c benchmarkgen.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+benchmarkgen : benchmarkgen.o main.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+benchinclude.h : benchmarkgen bench_example.h
+	./$< > $@
 
 benchmark.o: bench.c benchinclude.h
 	$(CC) $(CFLAGS) -c bench.c -o $@
@@ -24,6 +30,6 @@ benchmark: benchmark.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
 clean:
-	$(RM) benchinclude.h benchmark.o benchmark
+	$(RM) benchmarkgen.o main.o benchmarkgen benchinclude.h benchmark.o benchmark
 
 
