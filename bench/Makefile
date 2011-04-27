@@ -20,16 +20,16 @@ benchmarkgen.o main.o : %.o : %.c benchmarkgen.h
 benchmarkgen : benchmarkgen.o main.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
-benchinclude.h : benchmarkgen bench_example.h
-	./$< > $@
+benchmark_include.h : benchmarkgen example_benchmark.h
+	./$^ > $@
 
-benchmark.o: bench.c benchinclude.h
+benchmark.o: bench.c benchmark_include.h
 	$(CC) $(CFLAGS) -c bench.c -o $@
 
-benchmark: benchmark.o
+benchmark : benchmark.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
 clean:
-	$(RM) benchmarkgen.o main.o benchmarkgen benchinclude.h benchmark.o benchmark
+	$(RM) benchmarkgen.o main.o benchmarkgen benchmark_include.h benchmark.o benchmark
 
 

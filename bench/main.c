@@ -46,7 +46,6 @@ int main(int argc, char*argv[])
     // destroy benchmarkgen object
     benchmarkgen_destroy(q);
 
-    printf("done.\n");
     return 0;
 }
 

@@ -4,4 +4,4 @@
 benchmarkgen
 
 # ignore output header
-benchinclude.h
+benchmark_include.h

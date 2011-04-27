@@ -26,12 +26,33 @@ typedef struct benchmarkgen_s * benchmarkgen;
 // create benchmark generator object
 benchmarkgen benchmarkgen_create();
 
+// parse file
 void benchmarkgen_parse(benchmarkgen _q,
                         char * _filename);
 
 void benchmarkgen_print(benchmarkgen _q);
 
 void benchmarkgen_destroy(benchmarkgen _q);
+
+
+//
+// internal methods
+//
+
+// parse filename
+void benchmarkgen_parsefilename(benchmarkgen _q,
+                                char * _filename);
+
+// parse file
+void benchmarkgen_parsefile(benchmarkgen _q,
+                            char * _filename);
+
+void benchmarkgen_addpackage(benchmarkgen _q,
+                             char * _package_name);
+
+void benchmarkgen_addbenchmark(benchmarkgen _q,
+                               char * _package_name,
+                               char * _benchmark_name);
 
 #endif // __LIQUID_BENCHMARKGEN_H__
 
