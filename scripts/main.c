@@ -31,6 +31,10 @@
 
 void usage() {
     printf("Usage: autoscript_test DELIM TYPE [LIST OF FILES]\n");
+    printf("    DELIM   :   path separation delimiter (e.g. '/')\n");
+    printf("    TYPE    :   base type for parsing (e.g. \"benchmark\")\n");
+    printf("    [LIST]  :   list of auto-script files, named MYPACKAGE_TYPE.h\n");
+    printf("                with internal scripts \"void TYPE_MYSCRIPT(...)\"\n");
 }
 
 int main(int argc, char*argv[])
@@ -39,6 +43,7 @@ int main(int argc, char*argv[])
     if (argc < 3) {
         // print help
         fprintf(stderr,"error: %s, too few arguments\n", argv[0]);
+        usage();
         exit(1);
     } else {
         //printf("//  delim :   '%c'\n", argv[1][0]);
