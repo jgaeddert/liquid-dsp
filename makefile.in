@@ -279,9 +279,16 @@ bench_prog	= benchmark
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS)
 
+# benchmark generator program
+bench/benchmarkgen.o bench/main.o : %.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+bench/benchmarkgen : bench/benchmarkgen.o bench/main.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+
 # run the benchmark generator script to create benchmark_include.h
-benchmark_include.h: $(benchmark_headers) $(include_headers)
-	python bench/benchmarkgen.py $(benchmark_headers)
+benchmark_include.h : bench/benchmarkgen $(benchmark_headers) $(include_headers)
+	./bench/benchmarkgen $(benchmark_headers) > $@
 
 # benchmark objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
@@ -307,6 +314,7 @@ bench: $(bench_prog)
 # clean up the generated files
 clean-bench:
 	$(RM) $(benchmark_obj)
+	$(RM) bench/benchmarkgen.o bench/main.o bench/benchmarkgen
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
 

@@ -56,7 +56,8 @@ void benchmarkgen_parsefile(benchmarkgen _q,
                             char * _package_name);
 
 void benchmarkgen_addpackage(benchmarkgen _q,
-                             char * _package_name);
+                             char * _package_name,
+                             char * _filename);
 
 void benchmarkgen_addbenchmark(benchmarkgen _q,
                                char * _package_name,

@@ -42,6 +42,7 @@ struct benchmark_s {
 
 struct package_s {
     char name[NAME_LEN];
+    char filename[NAME_LEN];
     struct benchmark_s * benchmarks;
     unsigned int num_benchmarks;
 };
@@ -60,7 +61,7 @@ benchmarkgen benchmarkgen_create()
     q->packages = NULL;
 
     // add defulat null package/benchmark
-    benchmarkgen_addpackage(q, "null");
+    benchmarkgen_addpackage(q, "null", "bench/bench.c");
     benchmarkgen_addbenchmark(q, "null", "nullbench");
 
     return q;
@@ -133,6 +134,7 @@ void benchmarkgen_print(benchmarkgen _q)
     printf("// function declarations\n");
     for (i=0; i<_q->num_packages; i++) {
         struct package_s * p = &_q->packages[i];
+        printf("// %s\n", p->filename);
         for (j=0; j<p->num_benchmarks; j++)
             printf("void benchmark_%s(BENCHMARK_ARGS);\n", p->benchmarks[j].name);
     }
@@ -244,8 +246,8 @@ void benchmarkgen_parsefile(benchmarkgen _q,
         fprintf(stderr,"error: benchmarkgen_parsefile('%s'), could not open file for reading\n", _filename);
         exit(1);
     }
-    //const char tag[] = "void benchmark_";
-    const char tag[] = "benchmark_";
+    const char tag[] = "void benchmark_";
+    //const char tag[] = "benchmark_";
 
     // parse file, looking for key
     char buffer[1024];      // line buffer
@@ -283,7 +285,7 @@ void benchmarkgen_parsefile(benchmarkgen _q,
             // key found: add package if not already done
             if (!package_added) {
                 // TODO : add base name
-                benchmarkgen_addpackage(_q, _package_name);
+                benchmarkgen_addpackage(_q, _package_name, _filename);
                 package_added = 1;
             }
             benchmarkgen_addbenchmark(_q, _package_name, basename);
@@ -295,7 +297,8 @@ void benchmarkgen_parsefile(benchmarkgen _q,
 }
 
 void benchmarkgen_addpackage(benchmarkgen _q,
-                             char * _package_name)
+                             char * _package_name,
+                             char * _filename)
 {
     // increase package size
     _q->num_packages++;
@@ -307,6 +310,11 @@ void benchmarkgen_addpackage(benchmarkgen _q,
     // initialize new package
     strncpy(_q->packages[_q->num_packages-1].name,
             _package_name,
+            NAME_LEN);
+
+    // initialize new package
+    strncpy(_q->packages[_q->num_packages-1].filename,
+            _filename,
             NAME_LEN);
 
     // initialize number of benchmarks
