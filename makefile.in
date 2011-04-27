@@ -64,6 +64,7 @@ CONFIG_CFLAGS	= @ARCH_OPTION@ @PROFILE_OPTION@ @DEBUG_OPTION@
 CFLAGS		+= $(INCLUDE_CFLAGS) -g -O2 -Wall -fPIC $(CONFIG_CFLAGS)
 LDFLAGS		+= @LIBS@
 ARFLAGS		= r
+PATHSEP		= /
 
 # 
 # liquid headers
@@ -267,6 +268,21 @@ clean-check:
 	$(RM) $(autotest_obj)
 
 
+##
+## autoscript
+##
+
+autoscript : scripts/autoscript
+
+scripts/autoscript.o scripts/main.o : %.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+scripts/autoscript : scripts/autoscript.o scripts/main.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+clean-autoscript :
+	$(RM) scripts/autoscript.o scripts/main.o scripts/autoscript
+
 
 ##
 ## TARGET : bench - build and run all benchmarks
@@ -279,16 +295,9 @@ bench_prog	= benchmark
 BENCH_CFLAGS	= -Wall $(INCLUDE_CFLAGS) $(CONFIG_CFLAGS)
 BENCH_LDFLAGS	= $(LDFLAGS)
 
-# benchmark generator program
-bench/benchmarkgen.o bench/main.o : %.o : %.c
-	$(CC) $(CFLAGS) -I ./bench/ -c -o $@ $<
-
-bench/benchmarkgen : bench/benchmarkgen.o bench/main.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
 # run the benchmark generator script to create benchmark_include.h
-benchmark_include.h : bench/benchmarkgen $(benchmark_headers) $(include_headers)
-	./bench/benchmarkgen $(benchmark_headers) > $@
+benchmark_include.h : scripts/autoscript $(benchmark_headers) $(include_headers)
+	./scripts/autoscript $(PATHSEP) benchmark $(benchmark_headers) > $@
 
 # benchmark objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
@@ -414,7 +423,7 @@ $(addprefix clean-,$(modules)):
 	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.o
 	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.d
 
-clean: clean-check clean-bench clean-examples clean-sandbox clean-modules clean-todolist
+clean: clean-check clean-bench clean-examples clean-sandbox clean-modules clean-todolist clean-autoscript
 	$(RM) $(programs)
 	$(RM) $(libraries)
 	$(RM) $(extra_clean)

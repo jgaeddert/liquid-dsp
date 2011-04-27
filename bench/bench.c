@@ -41,7 +41,7 @@ typedef void(benchmark_function_t) (
     struct rusage *_finish,
     unsigned long int *_num_iterations);
 
-// define bench_t
+// define benchmark_t
 typedef struct {
     unsigned int id;
     benchmark_function_t * api;
@@ -51,13 +51,13 @@ typedef struct {
     float extime;
     float rate;
     float cycles_per_trial;
-} bench_t;
+} benchmark_t;
 
 // define package_t
 typedef struct {
     unsigned int id;
     unsigned int benchmark_index;
-    unsigned int num_benchmarks;
+    unsigned int num_scripts;
     const char* name;
 } package_t;
 
@@ -65,8 +65,8 @@ typedef struct {
 //
 // defines the following symbols:
 //   #define BENCHMARK_VERSION
-//   #define NUM_BENCHMARKS
-//   bench_t benchmarks[NUM_BENCHMARKS]
+//   #define NUM_AUTOSCRIPTS
+//   benchmark_t scripts[NUM_AUTOSCRIPTS]
 //   #define NUM_PACKAGES
 //   package_t packages[NUM_PACKAGES]
 #include "benchmark_include.h"
@@ -75,11 +75,11 @@ typedef struct {
 void print_help();
 void estimate_cpu_clock(void);
 void set_num_trials_from_cpu_speed(void);
-void execute_benchmark(bench_t* _benchmark, bool _verbose);
+void execute_benchmark(benchmark_t* _benchmark, bool _verbose);
 void execute_package(package_t* _package, bool _verbose);
 
 char convert_units(float * _s);
-void print_benchmark_results(bench_t* _benchmark);
+void print_benchmark_results(benchmark_t* _benchmark);
 void print_package_results(package_t* _package);
 double calculate_execution_time(struct rusage, struct rusage);
 
@@ -88,7 +88,7 @@ float runtime=50e-3f;
 float cpu_clock = 1.0f; // cpu clock speed (Hz)
 
 FILE * fid; // output file id
-void output_bench_to_file(FILE * _fid, bench_t * _benchmark);
+void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark);
 
 // main function
 int main(int argc, char *argv[])
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
             break;
         case 'b':
             benchmark_id = atoi(optarg);
-            if (benchmark_id >= NUM_BENCHMARKS) {
+            if (benchmark_id >= NUM_AUTOSCRIPTS) {
                 printf("error, cannot run benchmark %u; index exceeded\n", benchmark_id);
                 return -1;
             } else {
@@ -161,11 +161,11 @@ int main(int argc, char *argv[])
                 printf("%u: %s\n", packages[i].id, packages[i].name);
             return 0;
         case 'L':
-            // list packages, benchmarks and exit
+            // list packages, scripts and exit
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
-                for (j=packages[i].benchmark_index; j<packages[i].num_benchmarks+packages[i].benchmark_index; j++)
-                    printf("    %-3u: %-22s\n", benchmarks[j].id, benchmarks[j].name);
+                for (j=packages[i].benchmark_index; j<packages[i].num_scripts+packages[i].benchmark_index; j++)
+                    printf("    %-3u: %-22s\n", scripts[j].id, scripts[j].name);
             }
             return 0;
         case 's':
@@ -213,20 +213,20 @@ int main(int argc, char *argv[])
         //    print_package_results( &packages[i] );
         break;
     case RUN_SINGLE_BENCH:
-        execute_benchmark( &benchmarks[benchmark_id], verbose );
-        //print_benchmark_results( &benchmarks[benchmark_id] );
+        execute_benchmark( &scripts[benchmark_id], verbose );
+        //print_benchmark_results( &scripts[benchmark_id] );
         return 0;
     case RUN_SINGLE_PACKAGE:
         execute_package( &packages[package_id], verbose );
         //print_package_results( &packages[package_id] );
         break;
     case RUN_SEARCH:
-        printf("running all benchmarks matching '%s'...\n", search_string);
-        for (i=0; i<NUM_BENCHMARKS; i++) {
+        printf("running all scripts matching '%s'...\n", search_string);
+        for (i=0; i<NUM_AUTOSCRIPTS; i++) {
             // see if search string matches benchmark name
-            if (strstr(benchmarks[i].name, search_string) != NULL) {
+            if (strstr(scripts[i].name, search_string) != NULL) {
                 // run the benchmark
-                execute_benchmark( &benchmarks[i], verbose );
+                execute_benchmark( &scripts[i], verbose );
             }
         }
         break;
@@ -242,8 +242,8 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        for (i=0; i<NUM_BENCHMARKS; i++)
-            output_bench_to_file(fid, &benchmarks[i]);
+        for (i=0; i<NUM_AUTOSCRIPTS; i++)
+            output_benchmark_to_file(fid, &scripts[i]);
 
         fclose(fid);
         printf("results written to %s\n", filename);
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 void print_help()
 {
     // help
-    printf("liquid benchmark version %s\n\n", BENCHMARK_VERSION);
+    printf("liquid autoscript version %s\n\n", AUTOSCRIPT_VERSION);
     printf("bench options:\n");
     printf("  -h : prints this help file\n");
     printf("  -e : estimate cpu clock frequency and exit\n");
@@ -265,8 +265,8 @@ void print_help()
     printf("  -b<benchmark_index>\n");
     printf("  -t<time> minimum execution time (ms)\n");
     printf("  -l : lists available packages\n");
-    printf("  -L : lists all available benchmarks\n");
-    printf("  -s<string>: run all benchmarks matching search string\n");
+    printf("  -L : lists all available scripts\n");
+    printf("  -s<string>: run all scripts matching search string\n");
     printf("  -v : verbose\n");
     printf("  -q : quiet\n");
     printf("  -o<output filename>\n");
@@ -316,7 +316,7 @@ void set_num_trials_from_cpu_speed(void)
     printf("  setting number of trials to %ld\n", num_trials);
 }
 
-void execute_benchmark(bench_t* _benchmark, bool _verbose)
+void execute_benchmark(benchmark_t* _benchmark, bool _verbose)
 {
     unsigned long int n=num_trials;
     struct rusage start, finish;
@@ -337,8 +337,8 @@ void execute_package(package_t* _package, bool _verbose)
         printf("%u: %s\n", _package->id, _package->name);
     
     unsigned int i;
-    for (i=0; i<_package->num_benchmarks; i++) {
-        execute_benchmark( &benchmarks[ i + _package->benchmark_index ], _verbose );
+    for (i=0; i<_package->num_scripts; i++) {
+        execute_benchmark( &scripts[ i + _package->benchmark_index ], _verbose );
     }
 }
 
@@ -360,7 +360,7 @@ char convert_units(float * _v)
     return unit;
 }
 
-void print_benchmark_results(bench_t* _b)
+void print_benchmark_results(benchmark_t* _b)
 {
     // format trials (iterations)
     float trials_format = (float)(_b->num_trials);
@@ -390,8 +390,8 @@ void print_package_results(package_t* _package)
 {
     unsigned int i;
     printf("%u: %s:\n", _package->id, _package->name);
-    for (i=_package->benchmark_index; i<(_package->benchmark_index+_package->num_benchmarks); i++)
-        print_benchmark_results( &benchmarks[i] );
+    for (i=_package->benchmark_index; i<(_package->benchmark_index+_package->num_scripts); i++)
+        print_benchmark_results( &scripts[i] );
 
     printf("\n");
 }
@@ -404,7 +404,7 @@ double calculate_execution_time(struct rusage _start, struct rusage _finish)
         + 1e-6*(_finish.ru_stime.tv_usec - _start.ru_stime.tv_usec);
 }
 
-void output_bench_to_file(FILE * _fid, bench_t * _benchmark)
+void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark)
 {
     fprintf(_fid,"%-5u %-30s %12u %12.4e %12.4e %12.4e\n",
                  _benchmark->id,
