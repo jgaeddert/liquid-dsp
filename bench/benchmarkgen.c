@@ -68,10 +68,15 @@ benchmarkgen benchmarkgen_create()
 void benchmarkgen_destroy(benchmarkgen _q)
 {
     // free all internal benchmarks
-    //if (_q->benchmarks != NULL) free(_q->benchmarks);
+    unsigned int i;
+    for (i=0; i<_q->num_packages; i++) {
+        if (_q->packages[i].benchmarks != NULL)
+            free(_q->packages[i].benchmarks);
+    }
 
     // free all internal packages
-    if (_q->packages != NULL) free(_q->packages);
+    if (_q->packages != NULL)
+        free(_q->packages);
 
     // free main object memory
     free(_q);
@@ -186,56 +191,32 @@ void benchmarkgen_parsefilename(benchmarkgen _q,
 {
     fprintf(stderr,"benchmarkgen_parsefilename('%s')...\n", _filename);
     char substr[NAME_LEN];
-    char * subptr;
-    int i0, i1;
+    char * sptr;    // pointer to base name
+    char * tptr;    // pointer to terminating tag
     char pathsep = '/';
     const char tag[] = "_benchmark.h";
 
     // try to strip out path: find rightmost occurrence of pathsep
     //printf("%s\n", _filename);
-    subptr = strrchr(_filename, pathsep);   // obtain index of last pathsep
-    if (subptr == NULL) {
-        //printf("path delimiter not found\n");
-        i0 = 0;
+    sptr = strrchr(_filename, pathsep);   // obtain index of last pathsep
+    if (sptr == NULL) {
+        printf("// path delimiter not found\n");
     } else {
-        i0 = subptr - _filename + 1;
+        sptr++;   // increment to remove path separator character
     }
-    //printf("//  i0 : %d\n", i0);
 
     // try to strip out tag: e.g. "_benchmark.h"
-    // FIXME : this isn't working properly (probably because strrchr is for characters)
-    subptr = strrchr( _filename, tag[0] );
-    if (subptr == NULL) {
+    tptr = strstr( sptr, tag );
+    if (tptr == NULL) {
+        // TODO : handle this case differently otherwise
         fprintf(stderr,"error: benchmarkgen_parsefilename('%s'), tag '%s' not found\n", _filename, tag);
         exit(1);
-    } else {
-        i1 = subptr - _filename;
-        //printf("  i1 : %d\n", i1);
     }
 
-    // ensure the last occurrence of tag is not in the path name
-    if (i0 >= i1) {
-        fprintf(stderr,"error: benchmarkgen_parsefilename('%s'), invalid path name\n", _filename);
-        exit(1);
-    }
-    
-    // ensure tag is valid
-    //strncpy(substr,&_filename[i1],NAME_LEN);
-    //printf("  comparing %s with %s\n", tag, substr);
-    if (strncmp(tag,&_filename[i1],strlen(tag)) != 0 ) {
-        fprintf(stderr,"error: benchmarkgen_parsefilename('%s'), invalid tag '%s' (comparison failed)\n", _filename, tag);
-        exit(1);
-    } else {
-        //printf("  comparison passed!\n");
-    }
-
-    // copy base name
-    strncpy( substr, _filename+i0, i1-i0 );
-    // add null character to end
-    substr[i1-i0] = '\0';
-    //printf("base: \"%s\"\n", substr);
-
-    strncpy(_package_name, substr, NAME_LEN);
+    // copy base name to output
+    int n = tptr - sptr;
+    strncpy(_package_name, sptr, n);
+    _package_name[n] = '\0';
 }
 
 
@@ -257,18 +238,51 @@ void benchmarkgen_parsefile(benchmarkgen _q,
         fprintf(stderr,"error: benchmarkgen_parsefile('%s'), could not open file for reading\n", _filename);
         exit(1);
     }
+    //const char tag[] = "void benchmark_";
+    const char tag[] = "benchmark_";
 
     // parse file, looking for key
-    // ...
-    if (0) {
-        // key found
-        if (!package_added) {
-            // TODO : add base name
-            benchmarkgen_addpackage(_q, _package_name);
-            package_added = 1;
+    char buffer[1024];      // line buffer
+    char basename[1024];    // base benchmark name
+    char * cptr = NULL;     // readline return value
+    char * sptr = NULL;     // tag string pointer
+    int cterm;              // terminating character
+    unsigned int n=0;       // line number
+    do {
+        // increment line number
+        n++;
+
+        // read line
+        cptr = fgets(buffer, 1024, fid);
+
+        if (cptr != NULL) {
+            // search for key
+            sptr = strstr(cptr, tag);
+            if (sptr == NULL) {
+                // no value found
+                continue;
+            }
+            // key found: find terminating character and strip out base name
+            sptr += strlen(tag);    // increment string by tag length
+            cterm = strcspn( sptr, " (\t\n\r" );
+            if (cterm == strlen(sptr)) {
+                // no terminating character found
+                continue;
+            }
+            // copy base name
+            strncpy( basename, sptr, cterm );
+            basename[cterm] = '\0';
+            printf("// line %3u : '%s'\n", n, basename);
+                    
+            // key found: add package if not already done
+            if (!package_added) {
+                // TODO : add base name
+                benchmarkgen_addpackage(_q, _package_name);
+                package_added = 1;
+            }
+            benchmarkgen_addbenchmark(_q, _package_name, basename);
         }
-        benchmarkgen_addbenchmark(_q, _package_name, "benchmarkname");
-    }
+    } while (!feof(fid));
 
     // close file
     fclose(fid);
@@ -291,6 +305,9 @@ void benchmarkgen_addpackage(benchmarkgen _q,
 
     // initialize number of benchmarks
     _q->packages[_q->num_packages-1].num_benchmarks = 0;
+
+    // set benchmarks pointer to NULL
+    _q->packages[_q->num_packages-1].benchmarks = NULL;
 }
 
 void benchmarkgen_addbenchmark(benchmarkgen _q,

@@ -6,3 +6,4 @@ TODO list
   * remove any trace of Doxygen from code
   * clean up benchmark subdirectory
   * build: clean up make-included dependencies
+  * move benchmarkgen/autotestgen to common C script

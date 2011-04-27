@@ -22,11 +22,7 @@
 // Example of a benchmark header
 //
 
-// includes:
-//   #include <sys/resource.h>
-//   #include <getopt.h>
-//#include "liquid/benchmark.h"
-
+#include <sys/resource.h>
 #include <math.h>
 
 // strings parsed by benchmarkgen.py
