@@ -41,8 +41,9 @@ struct benchmark_s {
 
 struct package_s {
     char name[NAME_LEN];
-    char filename[NAME_LEN];
+    //char filename[NAME_LEN];
     struct benchmark_s * benchmarks;
+    unsigned int num_benchmarks;
 };
 
 struct benchmarkgen_s {
@@ -63,6 +64,10 @@ benchmarkgen benchmarkgen_create()
 
     q->benchmarks = NULL;
     q->packages = NULL;
+
+    // add defulat null package/benchmark
+    benchmarkgen_addpackage(q, "null");
+    benchmarkgen_addbenchmark(q, "null", "nullbench");
 
     return q;
 }
@@ -123,32 +128,30 @@ void benchmarkgen_print(benchmarkgen _q)
     printf("// array of benchmarks\n");
     printf("bench_t benchmarks[NUM_BENCHMARKS] = {\n");
     for (i=0; i<_q->num_benchmarks; i++) {
-#if 0
-        printf("    {%4u, &precision_%s, &benchmark_%s, \"%s\"}",
+        printf("    {%4u, &benchmark_%s,\"%s\",0,0,0,0,0}",
             i,
-            benchmarks[i].basename,
-            benchmarks[i].basename,
-            benchmarks[i].basename);
+            _q->benchmarks[i].name,
+            _q->benchmarks[i].name);
         if (i<_q->num_benchmarks-1)
             printf(",");
         printf("\n");
-#endif
     }
     printf("};\n\n");
 
+    unsigned int n=0;
     printf("// array of packages\n");
     printf("package_t packages[NUM_PACKAGES] = {\n");
     for (i=0; i<_q->num_packages; i++) {
-#if 0
-        printf("    {%4u, &precision_%s, &benchmark_%s, \"%s\"}",
+        printf("    {%4u, %4u, %4u, \"%s\"}",
             i,
-            benchmarks[i].basename,
-            benchmarks[i].basename,
-            benchmarks[i].basename);
-        if (i<_q->num_benchmarks-1)
+            n,
+            _q->packages[i].num_benchmarks,
+            _q->packages[i].name);
+        if (i<_q->num_packages-1)
             printf(",");
         printf("\n");
-#endif
+
+        n += _q->packages[i].num_benchmarks;
     }
     printf("};\n\n");
 
@@ -253,13 +256,29 @@ void benchmarkgen_addpackage(benchmarkgen _q,
     strncpy(_q->packages[_q->num_packages-1].name,
             _package_name,
             NAME_LEN);
+
+    // initialize number of benchmarks
+    _q->packages[_q->num_packages-1].num_benchmarks = 0;
 }
 
 void benchmarkgen_addbenchmark(benchmarkgen _q,
                                char * _package_name,
                                char * _benchmark_name)
 {
-    // TODO : first validate that package exists...
+    // first validate that package exists
+    unsigned int i;
+    int package_found = 0;
+    for (i=0; i<_q->num_packages; i++) {
+        if ( strcmp(_q->packages[i].name, _package_name)==0 ) {
+            package_found = 1;
+            break;
+        }
+    }
+
+    if (!package_found) {
+        fprintf(stderr,"error: benchmarkgen_addbenchmark(), unknown package '%s'\n", _package_name);
+        exit(1);
+    }
 
     // increase benchmark size
     _q->num_benchmarks++;
@@ -272,5 +291,11 @@ void benchmarkgen_addbenchmark(benchmarkgen _q,
     strncpy(_q->benchmarks[_q->num_benchmarks-1].name,
             _benchmark_name,
             NAME_LEN);
+
+    // update package
+    _q->packages[i].num_benchmarks++;
+
+    // associate benchmark with package
+    _q->benchmarks[_q->num_benchmarks-1].package = &_q->packages[i];
 }
 

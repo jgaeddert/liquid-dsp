@@ -251,6 +251,17 @@ if __name__ == '__main__':
     # parse command-line arguments
     ParseCommandLine()
 
+    # add null package/benchmark
+    #p = Package("bench.c");
+    p = Package("null_benchmark.h");
+    p.benchmark_index = len(benchmark_functions)
+    f = BenchmarkFunction("benchmark_nullbench", "nullbench", "bench.c", 0);
+    f.Print();
+    p.num_benchmarks += 1
+    benchmark_functions.append(f);
+    included_headers.append("bench.c")
+    packages.append(p)
+
     # initialize on single file
     for h in listed_headers:
         print "parsing " + h + "..."

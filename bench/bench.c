@@ -61,6 +61,28 @@ typedef struct {
     const char* name;
 } package_t;
 
+// null benchmark
+void benchmark_nullbench(struct rusage *_start,
+                         struct rusage *_finish,
+                         unsigned long int *_num_iterations)
+{
+    unsigned long int i;
+    *_num_iterations *= 100;
+
+    getrusage(RUSAGE_SELF, _start);
+    unsigned int x = 0;
+    for (i=0; i<*_num_iterations; i++) {
+        // perform mindless task
+        x <<= 1;
+        x |= 1;
+        x &= 0xff;
+        x ^= 0xff;
+    }
+    getrusage(RUSAGE_SELF, _finish);
+}
+
+
+
 // include auto-generated benchmark header
 //
 // defines the following symbols:
