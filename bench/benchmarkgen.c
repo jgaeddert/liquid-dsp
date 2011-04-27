@@ -41,16 +41,12 @@ struct benchmark_s {
 
 struct package_s {
     char name[NAME_LEN];
-    //char filename[NAME_LEN];
     struct benchmark_s * benchmarks;
     unsigned int num_benchmarks;
 };
 
 struct benchmarkgen_s {
     unsigned int num_packages;
-    unsigned int num_benchmarks;
-
-    struct benchmark_s * benchmarks;
     struct package_s * packages;
 };
 
@@ -59,10 +55,7 @@ benchmarkgen benchmarkgen_create()
 {
     benchmarkgen q = (benchmarkgen) malloc(sizeof(struct benchmarkgen_s));
 
-    q->num_packages     = 0;
-    q->num_benchmarks   = 0;
-
-    q->benchmarks = NULL;
+    q->num_packages = 0;
     q->packages = NULL;
 
     // add defulat null package/benchmark
@@ -75,7 +68,7 @@ benchmarkgen benchmarkgen_create()
 void benchmarkgen_destroy(benchmarkgen _q)
 {
     // free all internal benchmarks
-    if (_q->benchmarks != NULL) free(_q->benchmarks);
+    //if (_q->benchmarks != NULL) free(_q->benchmarks);
 
     // free all internal packages
     if (_q->packages != NULL) free(_q->packages);
@@ -99,6 +92,13 @@ void benchmarkgen_parse(benchmarkgen _q,
 void benchmarkgen_print(benchmarkgen _q)
 {
     unsigned int i;
+    unsigned int j;
+    unsigned int n;
+
+    // count total number of benchmarks
+    unsigned int num_benchmarks = 0;
+    for (i=0; i<_q->num_packages; i++)
+        num_benchmarks += _q->packages[i].num_benchmarks;
 
     // print header
     printf("// auto-generated file, do not edit\n\n");
@@ -118,27 +118,36 @@ void benchmarkgen_print(benchmarkgen _q)
     printf("#define NUM_PACKAGES (%u)\n\n", _q->num_packages);
 
     printf("// number of benchmarks\n");
-    printf("#define NUM_BENCHMARKS (%u)\n\n", _q->num_benchmarks);
+    printf("#define NUM_BENCHMARKS (%u)\n\n", num_benchmarks);
 
     printf("// function declarations\n");
-    for (i=0; i<_q->num_benchmarks; i++)
-        printf("void benchmark_%s(BENCHMARK_ARGS);\n", _q->benchmarks[i].name);
+    for (i=0; i<_q->num_packages; i++) {
+        struct package_s * p = &_q->packages[i];
+        for (j=0; j<p->num_benchmarks; j++)
+            printf("void benchmark_%s(BENCHMARK_ARGS);\n", p->benchmarks[j].name);
+    }
     printf("\n");
+
 
     printf("// array of benchmarks\n");
     printf("bench_t benchmarks[NUM_BENCHMARKS] = {\n");
-    for (i=0; i<_q->num_benchmarks; i++) {
-        printf("    {%4u, &benchmark_%s,\"%s\",0,0,0,0,0}",
-            i,
-            _q->benchmarks[i].name,
-            _q->benchmarks[i].name);
-        if (i<_q->num_benchmarks-1)
-            printf(",");
-        printf("\n");
+    n=0;
+    for (i=0; i<_q->num_packages; i++) {
+        struct package_s * p = &_q->packages[i];
+        for (j=0; j<p->num_benchmarks; j++) {
+            printf("    {%4u, &benchmark_%s,\"%s\",0,0,0,0,0}",
+                n,
+                p->benchmarks[j].name,
+                p->benchmarks[j].name);
+            if ( n < num_benchmarks-1 )
+                printf(",");
+            printf("\n");
+            n++;
+        }
     }
     printf("};\n\n");
 
-    unsigned int n=0;
+    n=0;
     printf("// array of packages\n");
     printf("package_t packages[NUM_PACKAGES] = {\n");
     for (i=0; i<_q->num_packages; i++) {
@@ -280,22 +289,21 @@ void benchmarkgen_addbenchmark(benchmarkgen _q,
         exit(1);
     }
 
+    struct package_s * p = &_q->packages[i];
+
     // increase benchmark size
-    _q->num_benchmarks++;
+    p->num_benchmarks++;
 
     // re-allocate memory for benchmarks
-    _q->benchmarks = (struct benchmark_s *) realloc(_q->benchmarks,
-                                                    _q->num_benchmarks*sizeof(struct benchmark_s));
+    p->benchmarks = (struct benchmark_s *) realloc(p->benchmarks,
+                                                   p->num_benchmarks*sizeof(struct benchmark_s));
 
     // initialize new benchmark
-    strncpy(_q->benchmarks[_q->num_benchmarks-1].name,
+    strncpy(p->benchmarks[p->num_benchmarks-1].name,
             _benchmark_name,
             NAME_LEN);
 
-    // update package
-    _q->packages[i].num_benchmarks++;
-
     // associate benchmark with package
-    _q->benchmarks[_q->num_benchmarks-1].package = &_q->packages[i];
+    //_q->benchmarks[_q->num_benchmarks-1].package = &_q->packages[i];
 }
 
