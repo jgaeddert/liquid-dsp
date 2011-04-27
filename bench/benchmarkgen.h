@@ -40,12 +40,20 @@ void benchmarkgen_destroy(benchmarkgen _q);
 //
 
 // parse filename
+//  _q              :   generator object
+//  _filename       :   name of file
+//  _package_name   :   output package name (stripped filename)
 void benchmarkgen_parsefilename(benchmarkgen _q,
-                                char * _filename);
+                                char * _filename,
+                                char * _package_name);
 
 // parse file
+//  _q              :   generator object
+//  _filename       :   name of file
+//  _package_name   :   input package name (stripped filename)
 void benchmarkgen_parsefile(benchmarkgen _q,
-                            char * _filename);
+                            char * _filename,
+                            char * _package_name);
 
 void benchmarkgen_addpackage(benchmarkgen _q,
                              char * _package_name);

@@ -82,11 +82,13 @@ void benchmarkgen_parse(benchmarkgen _q,
 {
     fprintf(stderr,"benchmarkgen_parse('%s')...\n", _filename);
 
+    char package_name[NAME_LEN];
+
     // parse filename...
-    benchmarkgen_parsefilename(_q, _filename);
+    benchmarkgen_parsefilename(_q, _filename, package_name);
 
     // parse actual file...
-    benchmarkgen_parsefile(_q, _filename);
+    benchmarkgen_parsefile(_q, _filename, package_name);
 }
 
 void benchmarkgen_print(benchmarkgen _q)
@@ -174,12 +176,16 @@ void benchmarkgen_print(benchmarkgen _q)
 // internal methods
 //
 
+// parse filename
+//  _q              :   generator object
+//  _filename       :   name of file
+//  _package_name   :   output package name (stripped filename)
 void benchmarkgen_parsefilename(benchmarkgen _q,
-                                char * _filename)
+                                char * _filename,
+                                char * _package_name)
 {
     fprintf(stderr,"benchmarkgen_parsefilename('%s')...\n", _filename);
     char substr[NAME_LEN];
-    char _basename[NAME_LEN];
     char * subptr;
     int i0, i1;
     char pathsep = '/';
@@ -196,10 +202,11 @@ void benchmarkgen_parsefilename(benchmarkgen _q,
     }
     //printf("//  i0 : %d\n", i0);
 
-    // try to strip out tag: "_benchmark.h"
+    // try to strip out tag: e.g. "_benchmark.h"
+    // FIXME : this isn't working properly (probably because strrchr is for characters)
     subptr = strrchr( _filename, tag[0] );
     if (subptr == NULL) {
-        fprintf(stderr,"error: benchmarkgen_parsefilename('%s'), tag not found\n", _filename);
+        fprintf(stderr,"error: benchmarkgen_parsefilename('%s'), tag '%s' not found\n", _filename, tag);
         exit(1);
     } else {
         i1 = subptr - _filename;
@@ -216,7 +223,7 @@ void benchmarkgen_parsefilename(benchmarkgen _q,
     //strncpy(substr,&_filename[i1],NAME_LEN);
     //printf("  comparing %s with %s\n", tag, substr);
     if (strncmp(tag,&_filename[i1],strlen(tag)) != 0 ) {
-        fprintf(stderr,"error: benchmarkgen_parsefilename('%s'), invalid tag (comparison failed)\n", _filename);
+        fprintf(stderr,"error: benchmarkgen_parsefilename('%s'), invalid tag '%s' (comparison failed)\n", _filename, tag);
         exit(1);
     } else {
         //printf("  comparison passed!\n");
@@ -228,15 +235,21 @@ void benchmarkgen_parsefilename(benchmarkgen _q,
     substr[i1-i0] = '\0';
     //printf("base: \"%s\"\n", substr);
 
-    strncpy(_basename, substr, NAME_LEN);
-
-    //printf("// basename : %s\n", _basename);
-
+    strncpy(_package_name, substr, NAME_LEN);
 }
 
+
+// parse file
+//  _q              :   generator object
+//  _filename       :   name of file
+//  _package_name   :   input package name (stripped filename)
 void benchmarkgen_parsefile(benchmarkgen _q,
-                            char * _filename)
+                            char * _filename,
+                            char * _package_name)
 {
+    // flag indicating if package has been added or not
+    int package_added = 0;
+
     fprintf(stderr,"benchmarkgen_parsefile('%s')...\n", _filename);
     // try to open file...
     FILE * fid = fopen(_filename,"r");
@@ -245,7 +258,17 @@ void benchmarkgen_parsefile(benchmarkgen _q,
         exit(1);
     }
 
-    // parse file...
+    // parse file, looking for key
+    // ...
+    if (0) {
+        // key found
+        if (!package_added) {
+            // TODO : add base name
+            benchmarkgen_addpackage(_q, _package_name);
+            package_added = 1;
+        }
+        benchmarkgen_addbenchmark(_q, _package_name, "benchmarkname");
+    }
 
     // close file
     fclose(fid);
