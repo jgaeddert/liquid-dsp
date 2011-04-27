@@ -31,8 +31,8 @@
 
 #include "benchmarkgen.h"
 
-#define NAME_LEN (256)
-#define BENCHMARK_VERSION "0.3.0"
+#define NAME_LEN            (256)
+#define BENCHMARK_VERSION   "0.3.0"
 
 struct benchmark_s {
     char name[NAME_LEN];
@@ -49,6 +49,7 @@ struct benchmarkgen_s {
     unsigned int num_packages;
     unsigned int num_benchmarks;
 
+    struct benchmark_s * benchmarks;
     struct package_s * packages;
 };
 
@@ -60,6 +61,7 @@ benchmarkgen benchmarkgen_create()
     q->num_packages     = 0;
     q->num_benchmarks   = 0;
 
+    q->benchmarks = NULL;
     q->packages = NULL;
 
     return q;
@@ -67,6 +69,9 @@ benchmarkgen benchmarkgen_create()
 
 void benchmarkgen_destroy(benchmarkgen _q)
 {
+    // free all internal benchmarks
+    if (_q->benchmarks != NULL) free(_q->benchmarks);
+
     // free all internal packages
     if (_q->packages != NULL) free(_q->packages);
 
@@ -109,6 +114,11 @@ void benchmarkgen_print(benchmarkgen _q)
 
     printf("// number of benchmarks\n");
     printf("#define NUM_BENCHMARKS (%u)\n\n", _q->num_benchmarks);
+
+    printf("// function declarations\n");
+    for (i=0; i<_q->num_benchmarks; i++)
+        printf("void benchmark_%s(BENCHMARK_ARGS);\n", _q->benchmarks[i].name);
+    printf("\n");
 
     printf("// array of benchmarks\n");
     printf("bench_t benchmarks[NUM_BENCHMARKS] = {\n");
@@ -249,5 +259,18 @@ void benchmarkgen_addbenchmark(benchmarkgen _q,
                                char * _package_name,
                                char * _benchmark_name)
 {
+    // TODO : first validate that package exists...
+
+    // increase benchmark size
+    _q->num_benchmarks++;
+
+    // re-allocate memory for benchmarks
+    _q->benchmarks = (struct benchmark_s *) realloc(_q->benchmarks,
+                                                    _q->num_benchmarks*sizeof(struct benchmark_s));
+
+    // initialize new benchmark
+    strncpy(_q->benchmarks[_q->num_benchmarks-1].name,
+            _benchmark_name,
+            NAME_LEN);
 }
 
