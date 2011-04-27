@@ -1,0 +1,9 @@
+# git ignore for scripts directory
+
+# ignore programs, object
+*.o
+autoscript
+
+# ignore auto-generated (test) files
+autotest_test.h
+benchmark_test.h
