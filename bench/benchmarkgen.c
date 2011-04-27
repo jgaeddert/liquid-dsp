@@ -60,10 +60,6 @@ benchmarkgen benchmarkgen_create()
     q->num_packages = 0;
     q->packages = NULL;
 
-    // add defulat null package/benchmark
-    benchmarkgen_addpackage(q, "null", "bench/bench.c");
-    benchmarkgen_addbenchmark(q, "null", "nullbench");
-
     return q;
 }
 

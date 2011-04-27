@@ -118,7 +118,7 @@ sources			:=
 libraries		:=
 extra_clean		:=
 autotest_headers	:=
-benchmark_headers	:=
+benchmark_headers	:= bench/null_benchmark.h
 
 objects		= $(patsubst %.c,%.o,$(sources))
 dependencies	= $(patsubst %.c,%.d,$(sources))
@@ -281,7 +281,7 @@ BENCH_LDFLAGS	= $(LDFLAGS)
 
 # benchmark generator program
 bench/benchmarkgen.o bench/main.o : %.o : %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -I ./bench/ -c -o $@ $<
 
 bench/benchmarkgen : bench/benchmarkgen.o bench/main.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
@@ -296,7 +296,7 @@ benchmark_include.h : bench/benchmarkgen $(benchmark_headers) $(include_headers)
 #       the '-x c' flag
 benchmark_obj = $(patsubst %.h,%.o,$(benchmark_headers))
 $(benchmark_obj) : %.o : %.h $(include_headers)
-	$(CC) $(CFLAGS) -x c $< -c -o $@
+	$(CC) $(BENCH_CFLAGS) -x c $< -c -o $@
 
 # compile the benchmark program without linking
 $(bench_prog).o: bench/bench.c benchmark_include.h bench/bench.c
