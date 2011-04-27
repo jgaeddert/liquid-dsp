@@ -115,12 +115,6 @@ void benchmarkgen_print(benchmarkgen _q)
 
     printf("#define BENCHMARK_VERSION \"%s\"\n\n", BENCHMARK_VERSION);
 
-    printf("// define arguments pre-processor directive\n");
-    printf("#define BENCHMARK_ARGS                 \\\n");
-    printf("   struct rusage * _start,             \\\n");
-    printf("   struct rusage * _finish,            \\\n");
-    printf("   unsigned long int * _num_iterations\n\n");
-
     printf("// number of packages\n");
     printf("#define NUM_PACKAGES (%u)\n\n", _q->num_packages);
 
@@ -131,8 +125,10 @@ void benchmarkgen_print(benchmarkgen _q)
     for (i=0; i<_q->num_packages; i++) {
         struct package_s * p = &_q->packages[i];
         printf("// %s\n", p->filename);
-        for (j=0; j<p->num_benchmarks; j++)
-            printf("void benchmark_%s(BENCHMARK_ARGS);\n", p->benchmarks[j].name);
+        for (j=0; j<p->num_benchmarks; j++) {
+            //printf("void benchmark_%s(BENCHMARK_ARGS);\n", p->benchmarks[j].name);
+            printf("benchmark_function_t benchmark_%s;\n", p->benchmarks[j].name);
+        }
     }
     printf("\n");
 
@@ -202,7 +198,8 @@ void benchmarkgen_parsefilename(benchmarkgen _q,
     //printf("%s\n", _filename);
     sptr = strrchr(_filename, pathsep);   // obtain index of last pathsep
     if (sptr == NULL) {
-        printf("// path delimiter not found\n");
+        // path delimiter not found; assume local path
+        sptr = _filename;
     } else {
         sptr++;   // increment to remove path separator character
     }

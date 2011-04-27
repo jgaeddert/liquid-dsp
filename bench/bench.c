@@ -36,7 +36,7 @@
 #include <sys/resource.h>
 
 // define benchmark function pointer
-typedef void(*benchmark_function_t) (
+typedef void(benchmark_function_t) (
     struct rusage *_start,
     struct rusage *_finish,
     unsigned long int *_num_iterations);
@@ -44,7 +44,7 @@ typedef void(*benchmark_function_t) (
 // define bench_t
 typedef struct {
     unsigned int id;
-    benchmark_function_t api;
+    benchmark_function_t * api;
     const char* name;
     unsigned int name_len;
     unsigned int num_trials;
