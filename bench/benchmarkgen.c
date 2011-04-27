@@ -33,6 +33,7 @@
 
 #define NAME_LEN            (256)
 #define BENCHMARK_VERSION   "0.3.0"
+#define DEBUG_BENCHMARK     0
 
 struct benchmark_s {
     char name[NAME_LEN];
@@ -85,7 +86,9 @@ void benchmarkgen_destroy(benchmarkgen _q)
 void benchmarkgen_parse(benchmarkgen _q,
                         char * _filename)
 {
+#if DEBUG_BENCHMARK
     fprintf(stderr,"benchmarkgen_parse('%s')...\n", _filename);
+#endif
 
     char package_name[NAME_LEN];
 
@@ -189,12 +192,13 @@ void benchmarkgen_parsefilename(benchmarkgen _q,
                                 char * _filename,
                                 char * _package_name)
 {
+#if DEBUG_BENCHMARK
     fprintf(stderr,"benchmarkgen_parsefilename('%s')...\n", _filename);
-    char substr[NAME_LEN];
-    char * sptr;    // pointer to base name
-    char * tptr;    // pointer to terminating tag
-    char pathsep = '/';
-    const char tag[] = "_benchmark.h";
+#endif
+    char * sptr;                        // pointer to base name
+    char * tptr;                        // pointer to terminating tag
+    char pathsep = '/';                 // path separator character
+    const char tag[] = "_benchmark.h";  // terminating tag
 
     // try to strip out path: find rightmost occurrence of pathsep
     //printf("%s\n", _filename);
@@ -231,7 +235,9 @@ void benchmarkgen_parsefile(benchmarkgen _q,
     // flag indicating if package has been added or not
     int package_added = 0;
 
+#if DEBUG_BENCHMARK
     fprintf(stderr,"benchmarkgen_parsefile('%s')...\n", _filename);
+#endif
     // try to open file...
     FILE * fid = fopen(_filename,"r");
     if (!fid) {
@@ -272,7 +278,7 @@ void benchmarkgen_parsefile(benchmarkgen _q,
             // copy base name
             strncpy( basename, sptr, cterm );
             basename[cterm] = '\0';
-            printf("// line %3u : '%s'\n", n, basename);
+            //printf("// line %3u : '%s'\n", n, basename);
                     
             // key found: add package if not already done
             if (!package_added) {
