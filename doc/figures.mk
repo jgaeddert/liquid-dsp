@@ -113,6 +113,7 @@ local_pdffiles :=					\
 							\
 	figures.gen/modem_V29.pdf			\
 	figures.gen/modem_arb16opt.pdf			\
+	figures.gen/modem_arb32opt.pdf			\
 	figures.gen/modem_arb64vt.pdf			\
 							\
 	figures.gen/nco_pll_sincos.pdf			\
@@ -514,6 +515,9 @@ figures.gen/modem_V29.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m V29 
 
 figures.gen/modem_arb16opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb16opt -p 4
 figures.gen/modem_arb16opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb16opt -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_arb32opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb32opt -p 5
+figures.gen/modem_arb32opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb32opt -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
 figures.gen/modem_arb64vt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb64vt -p 6
 figures.gen/modem_arb64vt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb64vt -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
