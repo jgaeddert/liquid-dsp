@@ -223,6 +223,22 @@ uninstall:
 	@echo "done."
 
 ##
+## autoscript
+##
+
+autoscript : scripts/autoscript
+
+scripts/autoscript.o scripts/main.o : %.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+scripts/autoscript : scripts/autoscript.o scripts/main.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+clean-autoscript :
+	$(RM) scripts/autoscript.o scripts/main.o scripts/autoscript
+
+
+##
 ## TARGET : check - build and run autotest scripts
 ##
 
@@ -233,8 +249,8 @@ uninstall:
 autotest_prog	= xautotest
 
 # run the autotest generator script to create autotest_include.h
-autotest_include.h: $(autotest_headers) $(include_headers) autotest/autotest_gen.py
-	python autotest/autotest_gen.py $(autotest_headers)
+autotest_include.h : scripts/autoscript $(autotest_headers) $(include_headers)
+	./scripts/autoscript $(PATHSEP) autotest $(autotest_headers) > $@
 
 # autotest objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
@@ -266,22 +282,6 @@ clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
 	$(RM) $(autotest_src)
 	$(RM) $(autotest_obj)
-
-
-##
-## autoscript
-##
-
-autoscript : scripts/autoscript
-
-scripts/autoscript.o scripts/main.o : %.o : %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-scripts/autoscript : scripts/autoscript.o scripts/main.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-clean-autoscript :
-	$(RM) scripts/autoscript.o scripts/main.o scripts/autoscript
 
 
 ##

@@ -64,7 +64,7 @@ typedef struct {
 // include auto-generated benchmark header
 //
 // defines the following symbols:
-//   #define BENCHMARK_VERSION
+//   #define AUTOSCRIPT_VERSION
 //   #define NUM_AUTOSCRIPTS
 //   benchmark_t scripts[NUM_AUTOSCRIPTS]
 //   #define NUM_PACKAGES

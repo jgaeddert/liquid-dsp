@@ -35,12 +35,12 @@
 #include "autotest/autotest.h"
 
 // define autotest function pointer
-typedef void(*autotest_function) (void);
+typedef void(autotest_function_t) (void);
 
-// define autotest_s
-struct autotest_s {
+// define autotest_t
+typedef struct {
     unsigned int id;                // test identification
-    autotest_function api;          // test function, e.g. autotest_modem()
+    autotest_function_t * api;      // test function, e.g. autotest_modem()
     const char* name;               // test name
     long unsigned int num_checks;   // number of checks that were run for this test
     long unsigned int num_passed;   // number of checks that passed
@@ -49,28 +49,25 @@ struct autotest_s {
     float percent_passed;           // percent of checks that passed
     bool executed;                  // was the test executed?
     bool pass;                      // did the test pass? (i.e. no failures)
-};
+} autotest_t;
 
-typedef struct autotest_s * autotest;
-
-// define package_s
-struct package_s {
+// define package_t
+typedef struct {
     unsigned int id;                // package identification
     unsigned int autotest_index;    // index of first autotest
-    unsigned int num_autotests;     // number of tests in package
-    bool executed;                  // were any tests executed?
+    unsigned int num_scripts;       // number of tests in package
     const char* name;               // package name
-};
-
-typedef struct package_s * package;
+    bool executed;                  // were any tests executed?
+} package_t;
 
 // include auto-generated autotest header
 //
 // defines the following symbols:
-//   #define NUM_AUTOTESTS
-//   struct autotest_s autotests[NUM_AUTOTESTS]
+//   #define AUTOSCRIPT_VERSION
+//   #define NUM_AUTOSCRIPTS
+//   autotest_t scripts[NUM_AUTOSCRIPTS]
 //   #define NUM_PACKAGES
-//   struct package_s packages[NUM_PACKAGES]
+//   struct package_t packages[NUM_PACKAGES]
 #include "../autotest_include.h"
 
 // 
@@ -81,19 +78,19 @@ typedef struct package_s * package;
 void print_help();
 
 // execute a specific test
-void execute_autotest(autotest _test, bool _verbose);
+void execute_autotest(autotest_t * _test, bool _verbose);
 
 // execute a specific package
-void execute_package(package _p, bool _verbose);
+void execute_package(package_t * _p, bool _verbose);
 
 // execute a specific package if string matches
-void execute_package_search(package _p, char * _str, bool _verbose);
+void execute_package_search(package_t * _p, char * _str, bool _verbose);
 
 // print all autotest results
-void print_autotest_results(autotest _test);
+void print_autotest_results(autotest_t * _test);
 
 // print the results of a particular package
-void print_package_results(package _p);
+void print_package_results(package_t * _p);
 
 // print all unstable tests (those which failed or gave warnings)
 void print_unstable_tests(void);
@@ -126,7 +123,7 @@ int main(int argc, char *argv[])
             return 0;
         case 't':
             autotest_id = atoi(optarg);
-            if (autotest_id >= NUM_AUTOTESTS) {
+            if (autotest_id >= NUM_AUTOSCRIPTS) {
                 printf("error, cannot run autotest %u; index exceeded\n", autotest_id);
                 return -1;
             } else {
@@ -143,11 +140,11 @@ int main(int argc, char *argv[])
             }
             break;
         case 'L':
-            // list packages, autotests and exit
+            // list packages, scripts and exit
             for (i=0; i<NUM_PACKAGES; i++) {
                 printf("%u: %s\n", packages[i].id, packages[i].name);
-                for (j=packages[i].autotest_index; j<packages[i].num_autotests+packages[i].autotest_index; j++)
-                    printf("    %u: %s\n", autotests[j].id, autotests[j].name);
+                for (j=packages[i].autotest_index; j<packages[i].num_scripts+packages[i].autotest_index; j++)
+                    printf("    %u: %s\n", scripts[j].id, scripts[j].name);
             }
             return 0;
         case 'l':
@@ -194,9 +191,9 @@ int main(int argc, char *argv[])
         }
         break;
     case RUN_SINGLE_TEST:
-        execute_autotest( &autotests[autotest_id], verbose );
+        execute_autotest( &scripts[autotest_id], verbose );
         if (verbose)
-            print_autotest_results( &autotests[autotest_id] );
+            print_autotest_results( &scripts[autotest_id] );
         break;
     case RUN_SINGLE_PACKAGE:
         execute_package( &packages[package_id], verbose );
@@ -204,7 +201,7 @@ int main(int argc, char *argv[])
             print_package_results( &packages[package_id] );
         break;
     case RUN_SEARCH:
-        printf("running all autotests matching '%s'...\n", search_string);
+        printf("running all scripts matching '%s'...\n", search_string);
 
         // search all packages
         for (i=0; i<NUM_PACKAGES; i++)
@@ -232,7 +229,7 @@ void print_help()
     printf("  -h,-u : prints this help file\n");
     printf("  -t<n> : run specific test\n");
     printf("  -p<n> : run specific package\n");
-    printf("  -L    : lists all autotests\n");
+    printf("  -L    : lists all scripts\n");
     printf("  -l    : lists all packages\n");
     printf("  -x    : stop on fail\n");
     printf("  -s<string>: run all tests matching search string\n");
@@ -243,7 +240,7 @@ void print_help()
 // execute a specific autotest
 //  _test       :   pointer to autotest object
 //  _verbose    :   verbose output flag
-void execute_autotest(autotest _test,
+void execute_autotest(autotest_t * _test,
                       bool _verbose)
 {
     unsigned long int autotest_num_passed_init = liquid_autotest_num_passed;
@@ -272,22 +269,22 @@ void execute_autotest(autotest _test,
 // execute a specific package
 //  _p          :   pointer to package object
 //  _verbose    :   verbose output flag
-void execute_package(package _p,
+void execute_package(package_t * _p,
                      bool _verbose)
 {
     if (_verbose)
         printf("%u: %s\n", _p->id, _p->name);
     
     unsigned int i;
-    for (i=0; i<_p->num_autotests; i++) {
-        execute_autotest( &autotests[ i + _p->autotest_index ], _verbose );
+    for (i=0; i<_p->num_scripts; i++) {
+        execute_autotest( &scripts[ i + _p->autotest_index ], _verbose );
     }
     
     _p->executed = true;
 }
 
 // execute a specific package if string matches
-void execute_package_search(package _p, char * _str, bool _verbose)
+void execute_package_search(package_t * _p, char * _str, bool _verbose)
 {
     // see if search string matches autotest name
     if (strstr(_p->name, _str) != NULL) {
@@ -297,19 +294,19 @@ void execute_package_search(package _p, char * _str, bool _verbose)
 
         unsigned int i;
         unsigned int i0 = _p->autotest_index;
-        unsigned int i1 = _p->num_autotests + i0;
+        unsigned int i1 = _p->num_scripts + i0;
         for (i=i0; i<i1; i++) {
             // see if search string matches autotest name
-            if (strstr(autotests[i].name, _str) != NULL) {
+            if (strstr(scripts[i].name, _str) != NULL) {
                 // run the autotest
-                execute_autotest( &autotests[i], _verbose );
+                execute_autotest( &scripts[i], _verbose );
             }
         }
     }
 }
 
 // print results of a particular test
-void print_autotest_results(autotest _test)
+void print_autotest_results(autotest_t * _test)
 {
     if (!_test->executed)
         printf("    %3u :   IGNORED ", _test->id);
@@ -326,12 +323,12 @@ void print_autotest_results(autotest _test)
 }
 
 // print results of a particular package
-void print_package_results(package _p)
+void print_package_results(package_t * _p)
 {
     unsigned int i;
     printf("%u: %s:\n", _p->id, _p->name);
-    for (i=_p->autotest_index; i<(_p->autotest_index+_p->num_autotests); i++)
-        print_autotest_results( &autotests[i] );
+    for (i=_p->autotest_index; i<(_p->autotest_index+_p->num_scripts); i++)
+        print_autotest_results( &scripts[i] );
 
     printf("\n");
 }
@@ -348,17 +345,17 @@ void print_unstable_tests(void)
     printf("==================================\n");
     printf(" UNSTABLE TESTS:\n");
     unsigned int t;
-    for (t=0; t<NUM_AUTOTESTS; t++) {
-        if (autotests[t].executed) {
-            if (!autotests[t].pass) {
-                printf("    %3u : <<FAIL>> %s\n", autotests[t].id,
-                                                  autotests[t].name);
+    for (t=0; t<NUM_AUTOSCRIPTS; t++) {
+        if (scripts[t].executed) {
+            if (!scripts[t].pass) {
+                printf("    %3u : <<FAIL>> %s\n", scripts[t].id,
+                                                  scripts[t].name);
             }
             
-            if (autotests[t].num_warnings > 0) {
-                printf("    %3u : %4lu warnings %s\n", autotests[t].id,
-                                                       autotests[t].num_warnings,
-                                                       autotests[t].name);
+            if (scripts[t].num_warnings > 0) {
+                printf("    %3u : %4lu warnings %s\n", scripts[t].id,
+                                                       scripts[t].num_warnings,
+                                                       scripts[t].name);
             }
         }
     }
