@@ -118,7 +118,7 @@ programs		:=
 sources			:=
 libraries		:=
 extra_clean		:=
-autotest_headers	:=
+autotest_headers	:= autotest/null_autotest.h
 benchmark_headers	:= bench/null_benchmark.h
 
 objects		= $(patsubst %.c,%.o,$(sources))
