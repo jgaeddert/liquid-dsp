@@ -182,12 +182,11 @@ correctness of the source code.
 The test scripts are located under each module's {\tt tests} directory and
 take the form of a C header file.
 The testing framework operates similarly to CppUnit \cite{cppunit:web} and
-cxxtest \cite{cxxtest:web}, however it is written in C (except for the
-parser which, at the time of writing this, is in Python).
-The python script {\tt autotest\_gen.py} parses these header files looking for
+cxxtest \cite{cxxtest:web}, however it is written in C.
+The generator script {\tt scripts/autoscript} parses these header files looking for
 the key ``{\tt void autotest\_}'' which corresponds to a specific test.
 %Each test that is found is appended to a list
-The python script generates the header file {\tt autotest\_include.h} which
+The script generates the header file {\tt autotest\_include.h} which
 includes all the modules' test headers as well as several organizing
 structures for keeping track of which tests have passed or failed.
 The result is an executable file, {\tt xautotest}, which can be run to
@@ -287,50 +286,51 @@ Listed below is the output of the first several benchmarks:
   performed 67108864 trials in 650.0 ms
   estimated clock speed:   2.468 GHz
   setting number of trials to 246754
-0: agc_benchmark
-    0  : agc_crcf_default      : 987.02 k trials in 150.00 ms (  6.580 M t/s, 375.00   cycles/t)
-    1  : agc_crcf_log          : 987.02 k trials in 180.00 ms (  5.483 M t/s, 450.00   cycles/t)
-    2  : agc_crcf_exp          : 987.02 k trials in 170.00 ms (  5.806 M t/s, 425.00   cycles/t)
-    3  : agc_crcf_true         : 987.02 k trials in 120.00 ms (  8.225 M t/s, 300.00   cycles/t)
-    4  : agc_crcf_default_D4   :   3.95 M trials in 220.00 ms ( 17.946 M t/s, 137.50   cycles/t)
-    5  : agc_crcf_log_D4       :   3.95 M trials in 260.00 ms ( 15.185 M t/s, 162.50   cycles/t)
-    6  : agc_crcf_exp_D4       :   3.95 M trials in 230.00 ms ( 17.165 M t/s, 143.75   cycles/t)
-    7  : agc_crcf_true_D4      :   3.95 M trials in 190.00 ms ( 20.779 M t/s, 118.75   cycles/t)
-    8  : agc_crcf_default_sq   : 987.02 k trials in 170.00 ms (  5.806 M t/s, 425.00   cycles/t)
-    9  : agc_crcf_default_sq_D4:   3.95 M trials in 230.00 ms ( 17.165 M t/s, 143.75   cycles/t)
-    10 : agc_crcf_locked       :   3.95 M trials in  80.00 ms ( 49.351 M t/s,  50.00   cycles/t)
-1: window_benchmark
-    11 : windowcf_n16          :   7.90 M trials in  90.00 ms ( 87.734 M t/s,  28.13   cycles/t)
-    12 : windowcf_n32          :   7.90 M trials in  90.00 ms ( 87.734 M t/s,  28.13   cycles/t)
-    13 : windowcf_n64          :   7.90 M trials in  80.00 ms ( 98.701 M t/s,  25.00   cycles/t)
-    14 : windowcf_n128         :   7.90 M trials in  80.00 ms ( 98.701 M t/s,  25.00   cycles/t)
-    15 : windowcf_n256         :   7.90 M trials in  70.00 ms (112.801 M t/s,  21.88   cycles/t)
-2: dotprod_cccf_benchmark
-    16 : dotprod_cccf_4        :   1.97 M trials in 340.00 ms (  5.806 M t/s, 425.00   cycles/t)
-    17 : dotprod_cccf_16       : 493.51 k trials in 330.00 ms (  1.495 M t/s,   1.65 k cycles/t)
-    18 : dotprod_cccf_64       : 123.38 k trials in 330.00 ms (373.867 k t/s,   6.60 k cycles/t)
-    19 : dotprod_cccf_256      :  30.84 k trials in 340.00 ms ( 90.718 k t/s,  27.20 k cycles/t)
-3: dotprod_crcf_benchmark
-    20 : dotprod_crcf_4        :   1.97 M trials in  30.00 ms ( 65.801 M t/s,  37.50   cycles/t)
-    21 : dotprod_crcf_16       : 493.51 k trials in  20.00 ms ( 24.675 M t/s, 100.00   cycles/t)
-    22 : dotprod_crcf_64       : 123.38 k trials in  20.00 ms (  6.169 M t/s, 400.00   cycles/t)
-    23 : dotprod_crcf_256      :  30.84 k trials in  20.00 ms (  1.542 M t/s,   1.60 k cycles/t)
-    ...
+0: null
+    0  : null                  :  23.59 M trials in 220.00 ms (107.212 M t/s,  22.00   cycles/t)
+1: agc
+    1  : agc_crcf_default      : 943.47 k trials in 140.00 ms (  6.739 M t/s, 350.00   cycles/t)
+    2  : agc_crcf_log          : 943.47 k trials in 150.00 ms (  6.290 M t/s, 375.00   cycles/t)
+    3  : agc_crcf_exp          : 943.47 k trials in 140.00 ms (  6.739 M t/s, 350.00   cycles/t)
+    4  : agc_crcf_true         : 943.47 k trials in 110.00 ms (  8.577 M t/s, 275.00   cycles/t)
+    5  : agc_crcf_default_D4   :   3.77 M trials in 200.00 ms ( 18.869 M t/s, 125.00   cycles/t)
+    6  : agc_crcf_log_D4       :   3.77 M trials in 220.00 ms ( 17.154 M t/s, 137.50   cycles/t)
+    7  : agc_crcf_exp_D4       :   3.77 M trials in 220.00 ms ( 17.154 M t/s, 137.50   cycles/t)
+    8  : agc_crcf_true_D4      :   3.77 M trials in 170.00 ms ( 22.199 M t/s, 106.25   cycles/t)
+    9  : agc_crcf_default_sq   : 943.47 k trials in 150.00 ms (  6.290 M t/s, 375.00   cycles/t)
+    10 : agc_crcf_default_sq_D4:   3.77 M trials in 240.00 ms ( 15.724 M t/s, 150.00   cycles/t)
+    11 : agc_crcf_locked       :   3.77 M trials in  80.00 ms ( 47.173 M t/s,  50.00   cycles/t)
+2: window
+    12 : windowcf_n16          :   7.55 M trials in 260.00 ms ( 29.029 M t/s,  81.25   cycles/t)
+    13 : windowcf_n32          :   7.55 M trials in 260.00 ms ( 29.029 M t/s,  81.25   cycles/t)
+    14 : windowcf_n64          :   7.55 M trials in 270.00 ms ( 27.954 M t/s,  84.38   cycles/t)
+    15 : windowcf_n128         :   7.55 M trials in 260.00 ms ( 29.029 M t/s,  81.25   cycles/t)
+    16 : windowcf_n256         :   7.55 M trials in 260.00 ms ( 29.029 M t/s,  81.25   cycles/t)
+3: dotprod_cccf
+    17 : dotprod_cccf_4        :   1.89 M trials in 320.00 ms (  5.897 M t/s, 400.00   cycles/t)
+    18 : dotprod_cccf_16       : 471.73 k trials in 320.00 ms (  1.474 M t/s,   1.60 k cycles/t)
+    19 : dotprod_cccf_64       : 117.93 k trials in 300.00 ms (393.107 k t/s,   6.00 k cycles/t)
+    20 : dotprod_cccf_256      :  29.48 k trials in 300.00 ms ( 98.267 k t/s,  24.00 k cycles/t)
+4: dotprod_crcf
+    21 : dotprod_crcf_4        :   1.89 M trials in  20.00 ms ( 94.347 M t/s,  25.00   cycles/t)
+    22 : dotprod_crcf_16       : 471.73 k trials in  10.00 ms ( 47.173 M t/s,  50.00   cycles/t)
+    23 : dotprod_crcf_64       : 117.93 k trials in   0.00 ps (    inf T t/s,   0.00 p cycles/t)
+    24 : dotprod_crcf_256      :  29.48 k trials in  20.00 ms (  1.474 M t/s,   1.60 k cycles/t)
 \end{Verbatim}
 %
 For this run the clock speed was estimated to be 2.468~GHz.
 Benchmarks are sub-divided into {\em packages} which group similar
 signal processing algorithms together.
-For example, package {\tt 2} above refers to benchmarking the
+For example, package {\tt 3} above refers to benchmarking the
 {\tt dotprod\_cccf} object which computes the vector dot product
 between two $n$-point arrays of complex floats.
-Specifically, benchmark {\tt 18} refers to the speed of an $n=64$-point
+Specifically, benchmark {\tt 19} refers to the speed of an $n=64$-point
 dot product.
-In this run the benchmarking tool computed approximately 123,380
-64-point complex dot products in 330~ms
-(about 373,867 trials per second).
+In this run the benchmarking tool computed approximately 117,930
+64-point complex dot products in 300~ms
+(about 393,107 trials per second).
 For the estimated clock rate this means that the algorithm requires
-approximately 6,600 clock cycles to compute
+approximately 6,000 clock cycles to compute
 a single 64-point complex vector dot product.
 
 \subsection{Documentation ({\tt make doc})}

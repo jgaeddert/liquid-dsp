@@ -26,7 +26,7 @@ INSTALL:
 UNINSTALL:
     # make uninstall
 
-TEST: (requires python to generate header file)
+TEST:
     $ make check
 
 EXAMPLES: Nearly all signal processing elements have a corresponding
@@ -37,7 +37,7 @@ EXAMPLES: Nearly all signal processing elements have a corresponding
     -- or --
     $ make examples/specific_example
 
-BENCHMARK: (requires python to generate header file)
+BENCHMARK:
     $ make bench
 
 Using oprofile (http://oprofile.sourceforge.net/) with the benchmark tool to
