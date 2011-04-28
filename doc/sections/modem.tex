@@ -348,7 +348,7 @@ An example of the {\tt qmodem} interface is listed below.
 \subsubsection{Gray coding}
 \label{module:modem:digital:gray_coding}
 In order to reduce the number of bit errors in a digital modem,
-all symbols are automatically Gray encoded;
+all symbols are automatically Gray encoded such that
 adjacent symbols in a constellation differ by only one bit.
 %
 For example, the binary-coded decimal (BCD) value of 183 is {\tt 10110111}.
@@ -368,15 +368,18 @@ single bit.
             11101100    gray_out (236)      11100100    gray_out (228)
 \end{Verbatim}
 %
-Notice that the two output symbols
+Notice that the two encoded symbols
 236 ({\tt 11101100}) and
 228 ({\tt 11100100}) differ by only one bit.
 Now if noise caused the receiver were to demodulate a symbol error, it would
 result in only a single bit error instead of 4 without Gray coding.
 
-The decoding process is similar to encoding but slightly more involved.
-Gray decoding is computed on an encoded input symbol
-by adding to it (modulo 2) as many shifted versions of itself as it has bits.
+Reversing the process (decoding) is similar to encoding but slightly
+more involved.
+Gray decoding is computed on an encoded input symbol by adding to it
+(modulo 2) as many shifted versions of itself as it has bits.
+In our previous example the receiver needs to map the received encoded
+symbol back to the original symbol before encoding:
 %
 \begin{Verbatim}[fontsize=\small]
             11101100    gray_in (236)       11100100    gray_in (228)
@@ -454,6 +457,8 @@ spaced around the unit circle.
     Phase-shift keying (PSK) modem constellation map.
     Note that BPSK and QPSK are customized implementations of 2-PSK and
     4-PSK.
+    While only PSK up to $M=64$ are shown, \liquid\ supports up to
+    256-PSK.
 }
 \label{fig:modem:psk}
 \end{figure}
