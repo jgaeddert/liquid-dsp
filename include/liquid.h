@@ -2424,7 +2424,7 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES  17
+#define LIQUID_MODEM_NUM_SCHEMES  18
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
     LIQUID_MODEM_PSK,       // Phase-shift keying (PSK)
@@ -2442,6 +2442,7 @@ typedef enum {
     LIQUID_MODEM_APSK32,    // amplitude phase-shift keying, M=32 (4,12,16)
     LIQUID_MODEM_APSK64,    // amplitude phase-shift keying, M=64 (4,14,20,26)
     LIQUID_MODEM_APSK128,   // amplitude phase-shift keying, M=128(8,18,24,36,42)
+    LIQUID_MODEM_V29,       // V.29 star constellation
     LIQUID_MODEM_ARB16OPT,  // optimal 16-QAM
     LIQUID_MODEM_ARB64VT    // Virginia Tech logo
 } modulation_scheme;
@@ -2453,6 +2454,7 @@ extern const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2];
 modulation_scheme liquid_getopt_str2mod(const char * _str);
 
 // Constant arbitrary linear modems
+extern const liquid_float_complex modem_arb_V29[16];    // V.29
 extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
 extern const liquid_float_complex modem_arb_opt16[16];  // optimal 16-QAM
 

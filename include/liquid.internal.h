@@ -1204,6 +1204,7 @@ modem modem_create_apsk16(void);
 modem modem_create_apsk32(void);
 modem modem_create_apsk64(void);
 modem modem_create_apsk128(void);
+modem modem_create_V29(void);
 modem modem_create_arb16opt(void);
 modem modem_create_arb64vt(void);
 

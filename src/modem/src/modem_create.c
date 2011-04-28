@@ -78,6 +78,10 @@ modem modem_create(modulation_scheme _scheme,
         return modem_create_apsk64();
     case LIQUID_MODEM_APSK128:
         return modem_create_apsk128();
+
+    // arbitrary modems
+    case LIQUID_MODEM_V29:
+        return modem_create_V29();
     case LIQUID_MODEM_ARB16OPT:
         return modem_create_arb16opt();
     case LIQUID_MODEM_ARB64VT:
@@ -478,6 +482,14 @@ modem modem_create_arb(unsigned int _bits_per_symbol)
     mod->modulate_func = &modem_modulate_arb;
     mod->demodulate_func = &modem_demodulate_arb;
 
+    return mod;
+}
+
+// create a V.29 modem object
+modem modem_create_V29()
+{
+    modem mod = modem_create_arb(4);
+    modem_arb_init(mod,(float complex*)modem_arb_V29,16);
     return mod;
 }
 

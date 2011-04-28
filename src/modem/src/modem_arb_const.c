@@ -27,6 +27,18 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
+// V.29 star constellation
+const float complex modem_arb_V29[16] = {
+      0.06804100+  0.06804100*_Complex_I,   0.20412000+  0.00000000*_Complex_I, 
+      0.00000000+  0.20412000*_Complex_I,  -0.06804100+  0.06804100*_Complex_I, 
+      0.00000000+ -0.20412000*_Complex_I,   0.06804100+ -0.06804100*_Complex_I, 
+     -0.06804100+ -0.06804100*_Complex_I,  -0.20412000+  0.00000000*_Complex_I, 
+      0.20412000+  0.20412000*_Complex_I,   0.34021000+  0.00000000*_Complex_I, 
+      0.00000000+  0.34021000*_Complex_I,  -0.20412000+  0.20412000*_Complex_I, 
+      0.00000000+ -0.34021000*_Complex_I,   0.20412000+ -0.20412000*_Complex_I, 
+     -0.20412000+ -0.20412000*_Complex_I,  -0.34021000+  0.00000000*_Complex_I
+};
+
 // Virginia Tech logo
 const float complex modem_arb_vt64[64] = {
      -1.5633e+00+  5.5460e-01*_Complex_I,  -1.3833e+00+  5.5460e-01*_Complex_I, 
