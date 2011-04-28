@@ -91,6 +91,8 @@ local_pdffiles :=					\
 	figures.gen/modem_4psk.pdf			\
 	figures.gen/modem_8psk.pdf			\
 	figures.gen/modem_16psk.pdf			\
+	figures.gen/modem_32psk.pdf			\
+	figures.gen/modem_64psk.pdf			\
 							\
 	figures.gen/modem_4apsk.pdf			\
 	figures.gen/modem_8apsk.pdf			\
@@ -449,6 +451,12 @@ figures.gen/modem_8psk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m p
 
 figures.gen/modem_16psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 4
 figures.gen/modem_16psk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m psk -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_32psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 5
+figures.gen/modem_32psk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m psk -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_64psk.dat  : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 6
+figures.gen/modem_64psk.gnu  : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m psk -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
 # 
 # apsk

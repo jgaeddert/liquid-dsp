@@ -87,6 +87,8 @@ int main(int argc, char*argv[]) {
         range = 1.75f;
     } else if (ms == LIQUID_MODEM_ARB64VT) {
         range = 2.0f;
+    } else if (ms == LIQUID_MODEM_PSK) {
+        range = 1.2f;
     }
 
     // write output file
