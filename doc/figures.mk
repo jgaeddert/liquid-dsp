@@ -111,6 +111,7 @@ local_pdffiles :=					\
 	figures.gen/modem_128qam.pdf			\
 	figures.gen/modem_256qam.pdf			\
 							\
+	figures.gen/modem_V29.pdf			\
 	figures.gen/modem_arb16opt.pdf			\
 	figures.gen/modem_arb64vt.pdf			\
 							\
@@ -508,6 +509,9 @@ figures.gen/modem_256qam.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m q
 # 
 # arb
 #
+figures.gen/modem_V29.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m V29 -p 4
+figures.gen/modem_V29.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m V29 -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
 figures.gen/modem_arb16opt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb16opt -p 4
 figures.gen/modem_arb16opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb16opt -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
