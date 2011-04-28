@@ -80,12 +80,10 @@ modem modem_create(modulation_scheme _scheme,
         return modem_create_apsk128();
 
     // arbitrary modems
-    case LIQUID_MODEM_V29:
-        return modem_create_V29();
-    case LIQUID_MODEM_ARB16OPT:
-        return modem_create_arb16opt();
-    case LIQUID_MODEM_ARB64VT:
-        return modem_create_arb64vt();
+    case LIQUID_MODEM_V29:      return modem_create_V29();
+    case LIQUID_MODEM_ARB16OPT: return modem_create_arb16opt();
+    case LIQUID_MODEM_ARB32OPT: return modem_create_arb32opt();
+    case LIQUID_MODEM_ARB64VT:  return modem_create_arb64vt();
     default:
         fprintf(stderr,"error: modem_create(), unknown/unsupported modulation scheme : %u (%u b/s)\n",
                 _scheme, _bits_per_symbol);
@@ -498,6 +496,14 @@ modem modem_create_arb16opt()
 {
     modem mod = modem_create_arb(4);
     modem_arb_init(mod,(float complex*)modem_arb_opt16,16);
+    return mod;
+}
+
+// create an arb32opt (optimal 32-qam) modem object
+modem modem_create_arb32opt()
+{
+    modem mod = modem_create_arb(5);
+    modem_arb_init(mod,(float complex*)modem_arb_opt32,32);
     return mod;
 }
 

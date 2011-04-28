@@ -48,6 +48,7 @@ const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2] = {
     {"apsk128",     "apsk128(8,18,24,36,42)"},
     {"V29",         "V.29"},
     {"arb16opt",    "arb16opt (optimal 16-qam)"},
+    {"arb32opt",    "arb32opt (optimal 32-qam)"},
     {"arb64vt",     "arb64vt (64-qam vt logo)"}
 };
 
