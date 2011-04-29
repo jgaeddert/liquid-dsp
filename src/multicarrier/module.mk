@@ -51,7 +51,8 @@ local_s_files	:=			\
 local_t_files	:=			\
 	firpfbch_synthesizer_autotest.h	\
 	firpfbch_analyzer_autotest.h	\
-	ofdmoqam_autotest.h
+
+#	ofdmoqam_autotest.h
 
 
 # local_b_files
