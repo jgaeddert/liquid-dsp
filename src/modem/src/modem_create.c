@@ -66,6 +66,8 @@ modem modem_create(modulation_scheme _scheme,
         return modem_create_bpsk();
     case LIQUID_MODEM_QPSK:
         return modem_create_qpsk();
+    case LIQUID_MODEM_OOK:
+        return modem_create_ook();
     case LIQUID_MODEM_APSK4:
         return modem_create_apsk4();
     case LIQUID_MODEM_APSK8:
@@ -291,6 +293,20 @@ modem modem_create_qpsk()
 
     mod->modulate_func = &modem_modulate_qpsk;
     mod->demodulate_func = &modem_demodulate_qpsk;
+
+    return mod;
+}
+
+// create an ookk (on/off keying) modem object
+modem modem_create_ook()
+{
+    modem mod = (modem) malloc( sizeof(struct modem_s) );
+    mod->scheme = LIQUID_MODEM_OOK;
+
+    modem_init(mod, 1);
+
+    mod->modulate_func = &modem_modulate_ook;
+    mod->demodulate_func = &modem_demodulate_ook;
 
     return mod;
 }

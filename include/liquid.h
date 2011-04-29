@@ -2424,7 +2424,7 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES  19
+#define LIQUID_MODEM_NUM_SCHEMES  20
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
     LIQUID_MODEM_PSK,       // Phase-shift keying (PSK)
@@ -2436,6 +2436,7 @@ typedef enum {
 
     LIQUID_MODEM_BPSK,      // Specific: binary PSK
     LIQUID_MODEM_QPSK,      // specific: quaternary PSK
+    LIQUID_MODEM_OOK,       // Specific: on/off keying
     LIQUID_MODEM_APSK4,     // amplitude phase-shift keying, M=4  (1,3)
     LIQUID_MODEM_APSK8,     // amplitude phase-shift keying, M=8  (1,7)
     LIQUID_MODEM_APSK16,    // amplitude phase-shift keying, M=16 (4,12)

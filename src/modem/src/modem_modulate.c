@@ -89,6 +89,14 @@ void modem_modulate_qpsk(
     *y += _Complex_I*((symbol_in & 0x02) ? -0.707106781f : 0.707106781f);
 }
 
+// modulate symbol using on/off keying
+void modem_modulate_ook(modem _q,
+                        unsigned int symbol_in,
+                        float complex *y)
+{
+    *y = symbol_in ? 0.0f : 1.41421356237310f;
+}
+
 void modem_modulate_dpsk(
     modem _mod,
     unsigned int symbol_in,

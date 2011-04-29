@@ -1198,6 +1198,7 @@ modem modem_create_arb_rotated(unsigned int _bits_per_symbol);
 // specific modem create routines
 modem modem_create_bpsk(void);
 modem modem_create_qpsk(void);
+modem modem_create_ook(void);
 modem modem_create_apsk4(void);
 modem modem_create_apsk8(void);
 modem modem_create_apsk16(void);
@@ -1228,6 +1229,7 @@ void modem_modulate_apsk(modem _mod, unsigned int symbol_in, float complex *y);
 // specific modem modulate routines
 void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_ook(modem _mod, unsigned int symbol_in, float complex *y);
 
 // modem demodualte phase error approximation (for faster demodulation)
 float cargf_demod_approx(float complex _x);
@@ -1245,6 +1247,7 @@ void modem_demodulate_apsk(modem _demod, float complex x, unsigned int *symbol_o
 // specific modem demodulate routines
 void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_ook(modem _demod, float complex x, unsigned int *symbol_out);
 
 // specific modem definitions
 extern const unsigned int apsk4_num_levels;

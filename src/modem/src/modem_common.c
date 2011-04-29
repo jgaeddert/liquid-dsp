@@ -40,6 +40,7 @@ const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2] = {
     {"arb",         "arbitrary modem constellation"},
     {"bpsk",        "binary phase-shift keying"},
     {"qpsk",        "quaternary phase-shift keying"},
+    {"ook",         "ook (on/off keying)"},
     {"apsk4",       "apsk4(1,3)"},
     {"apsk8",       "apsk8(1,7)"},
     {"apsk16",      "apsk16(4,12)"},

@@ -98,6 +98,7 @@ void modem_test_phase_error(modulation_scheme _ms, unsigned int _bps)
 //
 void autotest_phase_error_bpsk()    {   modem_test_phase_error(LIQUID_MODEM_BPSK,1); }
 void autotest_phase_error_qpsk()    {   modem_test_phase_error(LIQUID_MODEM_QPSK,2); }
+void autotest_phase_error_ook()     {   modem_test_phase_error(LIQUID_MODEM_OOK, 1); }
 
 //
 // AUTOTESTS: generic ASK

@@ -153,6 +153,23 @@ void modem_demodulate_qpsk(modem _demod,
     _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
+void modem_demodulate_ook(modem _demod,
+                          float complex _x,
+                          unsigned int * _symbol_out)
+{
+    *_symbol_out = (crealf(_x) > 0.707106781186548 ) ? 0 : 1;
+    _demod->state = _x;
+
+    // compute residuals
+    float complex x_hat;
+    modem_modulate_ook(_demod, *_symbol_out, &x_hat);
+    _demod->res = x_hat - _x;
+    _demod->evm = cabsf(_demod->res);
+    //_demod->phase_error = cargf(_x*conjf(x_hat));
+    //_demod->phase_error = cimagf(_x*conjf(x_hat));
+    _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+}
+
 void modem_demodulate_dpsk(modem _demod,
                            float complex _x,
                            unsigned int * _symbol_out)
