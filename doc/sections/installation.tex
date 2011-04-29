@@ -96,17 +96,21 @@ The main repository for \liquid\ is hosted online by {\em github}
     $ git clone git://github.com/jgaeddert/liquid-dsp.git
 \end{Verbatim}
 %
-Move into the directory and build as before with the archive,
-but with the additional bootstrapping step:
+Move into the directory and check out a particular tag using the
+{\tt git checkout} command.%
+\footnote{To list available tags run {\tt git tag -l}.}
+Build as before with the archive, but with the additional bootstrapping
+step.
 %
 \begin{Verbatim}[fontsize=\small]
-    $ cd liquid-dsp.git
+    $ cd liquid-dsp
+    $ git checkout v1.0.0
     $ ./reconf
     $ ./configure
     $ make
     # make install
 \end{Verbatim}
-
+%
 
 %\subsection{Source code organization}
 %In order to keep the project relatively organized, the source code is broken

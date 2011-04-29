@@ -122,11 +122,12 @@ The main repository for \liquid\ is hosted online by {\em github}
     $ git clone git://github.com/jgaeddert/liquid-dsp.git
 \end{verbatim}
 %
-Move into the directory and build as before with the archive,
-but with the additional bootstrapping step:
+Move into the directory, check out a particular tag, and build as before
+with the archive, but with the additional bootstrapping step:
 %
 \begin{verbatim}
-    $ cd liquid-dsp.git
+    $ cd liquid-dsp
+    $ git checkout v1.0.0
     $ ./reconf
     $ ./configure
     $ make
