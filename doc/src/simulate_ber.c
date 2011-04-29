@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     unsigned long int min_errors = 1000;
     unsigned long int min_trials = 100000;
     unsigned long int max_trials = 20000000;
-    unsigned int frame_len = 128;
+    unsigned int frame_len = 256;
     modulation_scheme ms = LIQUID_MODEM_BPSK;
     unsigned int bps = 1;
     fec_scheme fec0 = LIQUID_FEC_NONE;
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 
         if (verbose) {
             //printf("  %12.8f : %12.4e\n", SNRdB, PER);
-            printf(" %c SNR: %6.3f, EbN0: %6.3f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\n",
+            printf(" %c SNR: %6.2f, EbN0: %6.2f, bits: %7lu/%9lu (%8.4e), packets: %6lu/%6lu (%6.2f%%)\n",
                     results.success ? '*' : ' ',
                     SNRdB,
                     EbN0dB,
