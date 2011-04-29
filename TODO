@@ -4,6 +4,4 @@ TODO list
   * quasinewton_search -> qnsearch
   * c++: wrap library with namespace::liquid
   * remove any trace of Doxygen from code
-  * clean up benchmark subdirectory
   * build: clean up make-included dependencies
-  * move benchmarkgen/autotestgen to common C script
