@@ -23,7 +23,7 @@
 # Process with autoconf to generate configure script
 #
 
-AC_INIT([liquid-dsp],[0.1.0],[liquid@vt.edu])
+AC_INIT([liquid-dsp],[1.0.0],[liquid@vt.edu])
 AC_CONFIG_SRCDIR([libliquid.c])
 
 # Specify 'C' language
@@ -106,9 +106,9 @@ AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_1d], [],
 AC_CHECK_LIB([fec], [create_viterbi27], [],
              [AC_MSG_WARN(fec library useful but not required)],
              [])
-AC_CHECK_LIB([liquidfpm], [q32_mul], [],
-             [AC_MSG_WARN(fixed-point math library useful but not required)],
-             [])
+#AC_CHECK_LIB([liquidfpm], [q32_mul], [],
+#             [AC_MSG_WARN(fixed-point math library useful but not required)],
+#             [])
 
 # check for programs (documentation)
 AC_CHECK_PROG(PDFLATEX, pdflatex, pdflatex, no)
