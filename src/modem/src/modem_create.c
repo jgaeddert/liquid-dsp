@@ -46,40 +46,25 @@ modem modem_create(modulation_scheme _scheme,
     }
 
     switch (_scheme) {
-    case LIQUID_MODEM_PSK:
-        return modem_create_psk(_bits_per_symbol);
-    case LIQUID_MODEM_DPSK:
-        return modem_create_dpsk(_bits_per_symbol);
-    case LIQUID_MODEM_ASK:
-        return modem_create_ask(_bits_per_symbol);
-    case LIQUID_MODEM_QAM:
-        return modem_create_qam(_bits_per_symbol);
-    case LIQUID_MODEM_APSK:
-        return modem_create_apsk(_bits_per_symbol);
+    case LIQUID_MODEM_PSK:      return modem_create_psk(_bits_per_symbol);
+    case LIQUID_MODEM_DPSK:     return modem_create_dpsk(_bits_per_symbol);
+    case LIQUID_MODEM_ASK:      return modem_create_ask(_bits_per_symbol);
+    case LIQUID_MODEM_QAM:      return modem_create_qam(_bits_per_symbol);
+    case LIQUID_MODEM_APSK:     return modem_create_apsk(_bits_per_symbol);
 
     // arbitrary modem definitions
-    case LIQUID_MODEM_ARB:
-        return modem_create_arb(_bits_per_symbol);
+    case LIQUID_MODEM_ARB:      return modem_create_arb(_bits_per_symbol);
 
     // specific modems
-    case LIQUID_MODEM_BPSK:
-        return modem_create_bpsk();
-    case LIQUID_MODEM_QPSK:
-        return modem_create_qpsk();
-    case LIQUID_MODEM_OOK:
-        return modem_create_ook();
-    case LIQUID_MODEM_APSK4:
-        return modem_create_apsk4();
-    case LIQUID_MODEM_APSK8:
-        return modem_create_apsk8();
-    case LIQUID_MODEM_APSK16:
-        return modem_create_apsk16();
-    case LIQUID_MODEM_APSK32:
-        return modem_create_apsk32();
-    case LIQUID_MODEM_APSK64:
-        return modem_create_apsk64();
-    case LIQUID_MODEM_APSK128:
-        return modem_create_apsk128();
+    case LIQUID_MODEM_BPSK:     return modem_create_bpsk();
+    case LIQUID_MODEM_QPSK:     return modem_create_qpsk();
+    case LIQUID_MODEM_OOK:      return modem_create_ook();
+    case LIQUID_MODEM_APSK4:    return modem_create_apsk4();
+    case LIQUID_MODEM_APSK8:    return modem_create_apsk8();
+    case LIQUID_MODEM_APSK16:   return modem_create_apsk16();
+    case LIQUID_MODEM_APSK32:   return modem_create_apsk32();
+    case LIQUID_MODEM_APSK64:   return modem_create_apsk64();
+    case LIQUID_MODEM_APSK128:  return modem_create_apsk128();
 
     // arbitrary modems
     case LIQUID_MODEM_V29:      return modem_create_V29();
