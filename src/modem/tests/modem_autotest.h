@@ -53,11 +53,13 @@ void modem_test_mod_demod(modulation_scheme _ms, unsigned int _bps)
 }
 
 //
-// AUTOTESTS: Specific PSK
+// AUTOTESTS: Specific modems
 //
 void autotest_mod_demod_bpsk()  {   modem_test_mod_demod(LIQUID_MODEM_BPSK, 1);  }
 void autotest_mod_demod_qpsk()  {   modem_test_mod_demod(LIQUID_MODEM_QPSK, 2);  }
 void autotest_mod_demod_ook()   {   modem_test_mod_demod(LIQUID_MODEM_OOK,  1);  }
+void autotest_mod_demod_sqam32(){   modem_test_mod_demod(LIQUID_MODEM_SQAM32,5);  }
+void autotest_mod_demod_sqam128(){  modem_test_mod_demod(LIQUID_MODEM_SQAM128,7);  }
 
 //
 // AUTOTESTS: generic ASK

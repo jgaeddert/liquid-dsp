@@ -41,6 +41,8 @@ const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2] = {
     {"bpsk",        "binary phase-shift keying"},
     {"qpsk",        "quaternary phase-shift keying"},
     {"ook",         "ook (on/off keying)"},
+    {"sqam32",      "'square' 32-QAM"},
+    {"sqam128",     "'square' 128-QAM"},
     {"apsk4",       "apsk4(1,3)"},
     {"apsk8",       "apsk8(1,7)"},
     {"apsk16",      "apsk16(4,12)"},

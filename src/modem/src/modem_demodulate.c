@@ -23,8 +23,10 @@
 //
 //
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 #include "liquid.internal.h"
 
 float cargf_demod_approx(float complex _x)
@@ -168,6 +170,120 @@ void modem_demodulate_ook(modem _demod,
     //_demod->phase_error = cargf(_x*conjf(x_hat));
     //_demod->phase_error = cimagf(_x*conjf(x_hat));
     _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+}
+
+// demodulate 'square' 32-QAM
+void modem_demodulate_sqam32(modem _q,
+                             float complex _x,
+                             unsigned int * _symbol_out)
+{
+    // determine quadrant and de-rotate to first quadrant
+    // 10 | 00
+    // ---+---
+    // 11 | 01
+    unsigned int quad = 2*(crealf(_x) < 0.0f) + (cimagf(_x) < 0.0f);
+    float complex r = 1.0f;
+    switch (quad) {
+    case 0: r =  1.0f;          break;  // rotate by  0
+    case 1: r =  _Complex_I;    break;  // rotate by +pi/2
+    case 2: r = -_Complex_I;    break;  // rotate by -pi/2
+    case 3: r = -1.0f;          break;  // rotate by  pi
+    default:
+        // should never get to this point
+        fprintf(stderr,"error: modem_demodulate_sqam32(), logic error\n");
+        exit(1);
+    }
+    //printf(" x = %12.8f +j*%12.8f, quad = %1u, r = %12.8f + j*%12.8f\n",
+    //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));
+    float complex x_prime = _x * r; // de-rotate symbol to first quadrant
+    assert(crealf(x_prime) >= 0.0f);
+    assert(cimagf(x_prime) >= 0.0f);
+
+    // find symbol in map closest to x_prime
+    float dmin = 0.0f;
+    float d = 0.0f;
+    float complex x_hat = 0.0f;
+    unsigned int i;
+    for (i=0; i<8; i++) {
+        d = cabsf(x_prime - _q->symbol_map[i]);
+        if (i==0 || d < dmin) {
+            dmin = d;
+            *_symbol_out = i;
+            x_hat = _q->symbol_map[i];
+        }
+    }
+
+    // add quadrant bits
+    *_symbol_out |= (quad << 3);
+
+    //*_symbol_out = (crealf(_x) > 0.707106781186548 ) ? 0 : 1;
+
+    _q->state = _x;
+
+    // compute residuals
+    x_hat *= conjf(r);
+    _q->res = x_hat - _x;
+    _q->evm = cabsf(_q->res);
+    //_demod->phase_error = cargf(_x*conjf(x_hat));
+    //_demod->phase_error = cimagf(_x*conjf(x_hat));
+    _q->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+}
+
+// demodulate 'square' 128-QAM
+void modem_demodulate_sqam128(modem _q,
+                              float complex _x,
+                              unsigned int * _symbol_out)
+{
+    // determine quadrant and de-rotate to first quadrant
+    // 10 | 00
+    // ---+---
+    // 11 | 01
+    unsigned int quad = 2*(crealf(_x) < 0.0f) + (cimagf(_x) < 0.0f);
+    float complex r = 1.0f;
+    switch (quad) {
+    case 0: r =  1.0f;          break;  // rotate by  0
+    case 1: r =  _Complex_I;    break;  // rotate by +pi/2
+    case 2: r = -_Complex_I;    break;  // rotate by -pi/2
+    case 3: r = -1.0f;          break;  // rotate by  pi
+    default:
+        // should never get to this point
+        fprintf(stderr,"error: modem_demodulate_sqam128(), logic error\n");
+        exit(1);
+    }
+    //printf(" x = %12.8f +j*%12.8f, quad = %1u, r = %12.8f + j*%12.8f\n",
+    //        crealf(_x), cimagf(_x), quad, crealf(r), cimagf(r));
+    float complex x_prime = _x * r; // de-rotate symbol to first quadrant
+    assert(crealf(x_prime) >= 0.0f);
+    assert(cimagf(x_prime) >= 0.0f);
+
+    // find symbol in map closest to x_prime
+    float dmin = 0.0f;
+    float d = 0.0f;
+    float complex x_hat = 0.0f;
+    unsigned int i;
+    for (i=0; i<32; i++) {
+        d = cabsf(x_prime - _q->symbol_map[i]);
+        if (i==0 || d < dmin) {
+            dmin = d;
+            *_symbol_out = i;
+            x_hat = _q->symbol_map[i];
+        }
+    }
+
+    // add quadrant bits
+    *_symbol_out |= (quad << 5);
+
+    //*_symbol_out = (crealf(_x) > 0.707106781186548 ) ? 0 : 1;
+
+    _q->state = _x;
+
+    // compute residuals
+    x_hat *= conjf(r);
+    _q->res = x_hat - _x;
+    _q->evm = cabsf(_q->res);
+    //_demod->phase_error = cargf(_x*conjf(x_hat));
+    //_demod->phase_error = cimagf(_x*conjf(x_hat));
+    _q->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
 void modem_demodulate_dpsk(modem _demod,

@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "liquid.internal.h"
 
@@ -59,6 +60,8 @@ modem modem_create(modulation_scheme _scheme,
     case LIQUID_MODEM_BPSK:     return modem_create_bpsk();
     case LIQUID_MODEM_QPSK:     return modem_create_qpsk();
     case LIQUID_MODEM_OOK:      return modem_create_ook();
+    case LIQUID_MODEM_SQAM32:   return modem_create_sqam32();
+    case LIQUID_MODEM_SQAM128:  return modem_create_sqam128();
     case LIQUID_MODEM_APSK4:    return modem_create_apsk4();
     case LIQUID_MODEM_APSK8:    return modem_create_apsk8();
     case LIQUID_MODEM_APSK16:   return modem_create_apsk16();
@@ -282,7 +285,7 @@ modem modem_create_qpsk()
     return mod;
 }
 
-// create an ookk (on/off keying) modem object
+// create an ook (on/off keying) modem object
 modem modem_create_ook()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -294,6 +297,44 @@ modem modem_create_ook()
     mod->demodulate_func = &modem_demodulate_ook;
 
     return mod;
+}
+
+// create a 'square' 32-QAM (on/off keying) modem object
+modem modem_create_sqam32()
+{
+    modem q = (modem) malloc( sizeof(struct modem_s) );
+    q->scheme = LIQUID_MODEM_SQAM32;
+
+    modem_init(q, 5);
+
+    // allocate memory for 8-point symbol map
+    q->symbol_map = (float complex*) malloc( 8*sizeof(float complex) );
+    memmove(q->symbol_map, modem_arb_sqam32, 8*sizeof(float complex));
+
+    // set modulation, demodulation functions
+    q->modulate_func = &modem_modulate_sqam32;
+    q->demodulate_func = &modem_demodulate_sqam32;
+
+    return q;
+}
+
+// create a 'square' 128-QAM (on/off keying) modem object
+modem modem_create_sqam128()
+{
+    modem q = (modem) malloc( sizeof(struct modem_s) );
+    q->scheme = LIQUID_MODEM_SQAM128;
+
+    modem_init(q, 7);
+
+    // allocate memory for 32-point symbol map
+    q->symbol_map = (float complex*) malloc( 32*sizeof(float complex) );
+    memmove(q->symbol_map, modem_arb_sqam128, 32*sizeof(float complex));
+
+    // set modulation, demodulation functions
+    q->modulate_func = &modem_modulate_sqam128;
+    q->demodulate_func = &modem_demodulate_sqam128;
+
+    return q;
 }
 
 // create a dpsk (differential phase-shift keying) modem object

@@ -27,6 +27,34 @@
 #include <stdlib.h>
 #include "liquid.internal.h"
 
+// 'square' 32-QAM (first quadrant)
+const float complex modem_arb_sqam32[8] = {
+      0.22361000+  0.22361000*_Complex_I,   0.67082000+  0.22361000*_Complex_I, 
+      0.67082000+  1.11800000*_Complex_I,   1.11800000+  0.22361000*_Complex_I, 
+      0.22361000+  0.67082000*_Complex_I,   0.67082000+  0.67082000*_Complex_I, 
+      0.22361000+  1.11800000*_Complex_I,   1.11800000+  0.67082000*_Complex_I
+};
+
+// 'square' 128-QAM (first quadrant)
+const float complex modem_arb_sqam128[32] = {
+      0.11043000+  0.11043000*_Complex_I,   0.33129000+  0.11043000*_Complex_I, 
+      0.11043000+  0.33129000*_Complex_I,   0.33129000+  0.33129000*_Complex_I, 
+      0.77302000+  0.11043000*_Complex_I,   0.55216000+  0.11043000*_Complex_I, 
+      0.77302000+  0.33129000*_Complex_I,   0.55216000+  0.33129000*_Complex_I, 
+      0.77302000+  0.99388000*_Complex_I,   0.55216000+  0.99388000*_Complex_I, 
+      0.77302000+  1.21470000*_Complex_I,   0.55216000+  1.21470000*_Complex_I, 
+      0.99388000+  0.11043000*_Complex_I,   1.21470000+  0.11043000*_Complex_I, 
+      0.99388000+  0.33129000*_Complex_I,   1.21470000+  0.33129000*_Complex_I, 
+      0.11043000+  0.77302000*_Complex_I,   0.33129000+  0.77302000*_Complex_I, 
+      0.11043000+  0.55216000*_Complex_I,   0.33129000+  0.55216000*_Complex_I, 
+      0.77302000+  0.77302000*_Complex_I,   0.55216000+  0.77302000*_Complex_I, 
+      0.77302000+  0.55216000*_Complex_I,   0.55216000+  0.55216000*_Complex_I, 
+      0.11043000+  0.99388000*_Complex_I,   0.33129000+  0.99388000*_Complex_I, 
+      0.11043000+  1.21470000*_Complex_I,   0.33129000+  1.21470000*_Complex_I, 
+      0.99388000+  0.77302000*_Complex_I,   1.21470000+  0.77302000*_Complex_I, 
+      0.99388000+  0.55216000*_Complex_I,   1.21470000+  0.55216000*_Complex_I
+};
+
 // V.29 star constellation
 const float complex modem_arb_V29[16] = {
       0.06804100+  0.06804100*_Complex_I,   0.20412000+  0.00000000*_Complex_I, 

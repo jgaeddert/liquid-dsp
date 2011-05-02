@@ -2424,19 +2424,26 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES  20
+#define LIQUID_MODEM_NUM_SCHEMES  22
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
+
+    // generic modem types
     LIQUID_MODEM_PSK,       // Phase-shift keying (PSK)
     LIQUID_MODEM_DPSK,      // differential PSK
     LIQUID_MODEM_ASK,       // amplitude-shift keying
     LIQUID_MODEM_QAM,       // quadrature amplitude-shift keying (QAM)
     LIQUID_MODEM_APSK,      // amplitude phase-shift keying (APSK)
+
+    // arbitrary modem types
     LIQUID_MODEM_ARB,       // arbitrary QAM
 
+    // specific modem types
     LIQUID_MODEM_BPSK,      // Specific: binary PSK
     LIQUID_MODEM_QPSK,      // specific: quaternary PSK
     LIQUID_MODEM_OOK,       // Specific: on/off keying
+    LIQUID_MODEM_SQAM32,    // 'square' 32-QAM
+    LIQUID_MODEM_SQAM128,   // 'square' 128-QAM
     LIQUID_MODEM_APSK4,     // amplitude phase-shift keying, M=4  (1,3)
     LIQUID_MODEM_APSK8,     // amplitude phase-shift keying, M=8  (1,7)
     LIQUID_MODEM_APSK16,    // amplitude phase-shift keying, M=16 (4,12)
@@ -2454,12 +2461,6 @@ extern const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2];
 
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
-
-// Constant arbitrary linear modems
-extern const liquid_float_complex modem_arb_V29[16];    // V.29
-extern const liquid_float_complex modem_arb_opt16[16];  // optimal 16-QAM
-extern const liquid_float_complex modem_arb_opt32[32];  // optimal 32-QAM
-extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
 
 // useful functions
 

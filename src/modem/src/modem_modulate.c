@@ -28,12 +28,22 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-void modem_modulate(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// generic modulatio function
+//  _q          :   modem object
+//  _symbol_in  :   input symbol
+//  _y          :   output sample
+void modem_modulate(modem _q,
+                    unsigned int _symbol_in,
+                    float complex * _y)
 {
-    _mod->modulate_func(_mod, symbol_in, y);
+#if 0
+    // validate input
+    if (_symbol_in >= _q->M) {
+        fprintf(stderr,"error: modem_modulate(), input symbol exceeds constellation size\n");
+        exit(1);
+    }
+#endif
+    _q->modulate_func(_q, _symbol_in, _y);
 }
 
 void modem_modulate_ask(
@@ -95,6 +105,62 @@ void modem_modulate_ook(modem _q,
                         float complex *y)
 {
     *y = symbol_in ? 0.0f : 1.41421356237310f;
+}
+
+// modulate symbol with 'square' 32-QAM
+void modem_modulate_sqam32(modem _q,
+                           unsigned int _symbol_in,
+                           float complex * _y)
+{
+    //*y = symbol_in ? 0.0f : 1.41421356237310f;
+
+    // strip off most-significant two bits (quadrant)
+    unsigned int quad = (_symbol_in >> 3) & 0x03;
+    float complex r = 1.0f;
+    switch (quad) {
+    case 0: r =  1.0f;          break;  // rotate by  0
+    case 1: r = -_Complex_I;    break;  // rotate by -pi/2
+    case 2: r =  _Complex_I;    break;  // rotate by +pi/2
+    case 3: r = -1.0f;          break;  // rotate by  pi
+    default:
+        // should never get to this point
+        fprintf(stderr,"error: modem_modulate_sqam32(), logic error\n");
+        exit(1);
+    }
+
+    // strip off least-significant 3 bits
+    unsigned int s = _symbol_in & 0x07;
+    
+    // return symbol...
+    *_y = _q->symbol_map[s] * r;
+}
+
+// modulate symbol with 'square' 128-QAM
+void modem_modulate_sqam128(modem _q,
+                            unsigned int _symbol_in,
+                            float complex * _y)
+{
+    //*y = symbol_in ? 0.0f : 1.41421356237310f;
+
+    // strip off most-significant two bits (quadrant)
+    unsigned int quad = (_symbol_in >> 5) & 0x03;
+    float complex r = 1.0f;
+    switch (quad) {
+    case 0: r =  1.0f;          break;  // rotate by  0
+    case 1: r = -_Complex_I;    break;  // rotate by -pi/2
+    case 2: r =  _Complex_I;    break;  // rotate by +pi/2
+    case 3: r = -1.0f;          break;  // rotate by  pi
+    default:
+        // should never get to this point
+        fprintf(stderr,"error: modem_modulate_sqam128(), logic error\n");
+        exit(1);
+    }
+
+    // strip off least-significant 5 bits
+    unsigned int s = _symbol_in & 0x1f;
+    
+    // return symbol...
+    *_y = _q->symbol_map[s] * r;
 }
 
 void modem_modulate_dpsk(

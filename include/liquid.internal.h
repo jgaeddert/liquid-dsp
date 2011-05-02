@@ -1199,6 +1199,8 @@ modem modem_create_arb_rotated(unsigned int _bits_per_symbol);
 modem modem_create_bpsk(void);
 modem modem_create_qpsk(void);
 modem modem_create_ook(void);
+modem modem_create_sqam32(void);
+modem modem_create_sqam128(void);
 modem modem_create_apsk4(void);
 modem modem_create_apsk8(void);
 modem modem_create_apsk16(void);
@@ -1230,6 +1232,8 @@ void modem_modulate_apsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_bpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_qpsk(modem _mod, unsigned int symbol_in, float complex *y);
 void modem_modulate_ook(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_sqam32(modem _mod, unsigned int symbol_in, float complex *y);
+void modem_modulate_sqam128(modem _mod, unsigned int symbol_in, float complex *y);
 
 // modem demodualte phase error approximation (for faster demodulation)
 float cargf_demod_approx(float complex _x);
@@ -1248,8 +1252,17 @@ void modem_demodulate_apsk(modem _demod, float complex x, unsigned int *symbol_o
 void modem_demodulate_bpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_qpsk(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_ook(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_sqam32(modem _demod, float complex x, unsigned int *symbol_out);
+void modem_demodulate_sqam128(modem _demod, float complex x, unsigned int *symbol_out);
 
 // specific modem definitions
+extern const liquid_float_complex modem_arb_sqam32[8];   // 'square' 32-qam (first quadrant)
+extern const liquid_float_complex modem_arb_sqam128[32]; // 'square' 128-qam (first quadrant)
+extern const liquid_float_complex modem_arb_V29[16];    // V.29
+extern const liquid_float_complex modem_arb_opt16[16];  // optimal 16-QAM
+extern const liquid_float_complex modem_arb_opt32[32];  // optimal 32-QAM
+extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
+
 extern const unsigned int apsk4_num_levels;
 extern const unsigned int apsk4_p[2];
 extern const float apsk4_r[2];
