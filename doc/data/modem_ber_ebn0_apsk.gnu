@@ -25,4 +25,5 @@ plot \
     'data/ber-modem/ber_apsk16.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-APSK',\
     'data/ber-modem/ber_apsk32.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '32-APSK',\
     'data/ber-modem/ber_apsk64.dat'  using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '64-APSK',\
-    'data/ber-modem/ber_apsk128.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-APSK'
+    'data/ber-modem/ber_apsk128.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '128-APSK',\
+    'data/ber-modem/ber_apsk256.dat' using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '256-APSK'

@@ -427,12 +427,6 @@ float modem_get_demodulator_evm(modem _demod)
     case LIQUID_MODEM_ASK:
     case LIQUID_MODEM_QAM:
     case LIQUID_MODEM_APSK:
-    case LIQUID_MODEM_APSK4:
-    case LIQUID_MODEM_APSK8:
-    case LIQUID_MODEM_APSK16:
-    case LIQUID_MODEM_APSK32:
-    case LIQUID_MODEM_APSK64:
-    case LIQUID_MODEM_APSK128:
     case LIQUID_MODEM_ARB:
         _demod->evm = cabsf(_demod->res);
         break;

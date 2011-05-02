@@ -62,13 +62,6 @@ modem modem_create(modulation_scheme _scheme,
     case LIQUID_MODEM_OOK:      return modem_create_ook();
     case LIQUID_MODEM_SQAM32:   return modem_create_sqam32();
     case LIQUID_MODEM_SQAM128:  return modem_create_sqam128();
-    case LIQUID_MODEM_APSK4:    return modem_create_apsk4();
-    case LIQUID_MODEM_APSK8:    return modem_create_apsk8();
-    case LIQUID_MODEM_APSK16:   return modem_create_apsk16();
-    case LIQUID_MODEM_APSK32:   return modem_create_apsk32();
-    case LIQUID_MODEM_APSK64:   return modem_create_apsk64();
-    case LIQUID_MODEM_APSK128:  return modem_create_apsk128();
-    case LIQUID_MODEM_APSK256:  return modem_create_apsk256();
 
     // arbitrary modems
     case LIQUID_MODEM_V29:      return modem_create_V29();
@@ -386,7 +379,7 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
 modem modem_create_apsk4()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK4;
+    mod->scheme = LIQUID_MODEM_APSK;
 
     modem_init(mod, 3);
     
@@ -408,7 +401,7 @@ modem modem_create_apsk4()
 modem modem_create_apsk8()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK8;
+    mod->scheme = LIQUID_MODEM_APSK;
 
     modem_init(mod, 3);
     
@@ -429,7 +422,7 @@ modem modem_create_apsk8()
 modem modem_create_apsk16()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK16;
+    mod->scheme = LIQUID_MODEM_APSK;
 
     modem_init(mod, 4);
     
@@ -450,7 +443,7 @@ modem modem_create_apsk16()
 modem modem_create_apsk32()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK32;
+    mod->scheme = LIQUID_MODEM_APSK;
 
     modem_init(mod, 5);
     
@@ -471,7 +464,7 @@ modem modem_create_apsk32()
 modem modem_create_apsk64()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK64;
+    mod->scheme = LIQUID_MODEM_APSK;
 
     modem_init(mod, 6);
     
@@ -492,7 +485,7 @@ modem modem_create_apsk64()
 modem modem_create_apsk128()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK128;
+    mod->scheme = LIQUID_MODEM_APSK;
 
     modem_init(mod, 7);
     
@@ -513,7 +506,7 @@ modem modem_create_apsk128()
 modem modem_create_apsk256()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
-    mod->scheme = LIQUID_MODEM_APSK256;
+    mod->scheme = LIQUID_MODEM_APSK;
 
     modem_init(mod, 8);
     

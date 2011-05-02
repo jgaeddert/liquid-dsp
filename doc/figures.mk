@@ -100,6 +100,7 @@ local_pdffiles :=					\
 	figures.gen/modem_32apsk.pdf			\
 	figures.gen/modem_64apsk.pdf			\
 	figures.gen/modem_128apsk.pdf			\
+	figures.gen/modem_256apsk.pdf			\
 							\
 	figures.gen/modem_2ask.pdf			\
 	figures.gen/modem_4ask.pdf			\
@@ -485,6 +486,9 @@ figures.gen/modem_64apsk.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m a
 figures.gen/modem_128apsk.dat: %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 7
 figures.gen/modem_128apsk.gnu: %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
+figures.gen/modem_256apsk.dat: %.dat : src/modem.gendata ; ./$< -f $@ -m apsk -p 8
+figures.gen/modem_256apsk.gnu: %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m apsk -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
 # 
 # ask
 #
@@ -562,6 +566,7 @@ modem_ber_data :=			\
 	data/ber-modem/ber_apsk32.dat	\
 	data/ber-modem/ber_apsk64.dat	\
 	data/ber-modem/ber_apsk128.dat	\
+	data/ber-modem/ber_apsk256.dat	\
 	data/ber-modem/ber_ask2.dat	\
 	data/ber-modem/ber_ask4.dat	\
 	data/ber-modem/ber_ask8.dat	\
@@ -579,7 +584,7 @@ modem_ber_data :=			\
 	data/ber-modem/ber_arb64vt.dat	\
 
 # re-simulate modem BER data
-modem_ber_opts      := -cnone -knone -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d1.0 -x60
+modem_ber_opts      := -cnone -knone -b1e-5 -e 500 -n160000 -t200000000 -s-9 -d1.0 -x60
 resimulate-modem-ber-data : src/simulate_ber
 	@echo "re-simulating modem ber data..."
 	./src/simulate_ber -m bpsk -p 1 $(modem_ber_opts) -o data/ber-modem/ber_bpsk.dat
@@ -594,6 +599,7 @@ resimulate-modem-ber-data : src/simulate_ber
 	./src/simulate_ber -m apsk -p 5 $(modem_ber_opts) -o data/ber-modem/ber_apsk32.dat
 	./src/simulate_ber -m apsk -p 6 $(modem_ber_opts) -o data/ber-modem/ber_apsk64.dat
 	./src/simulate_ber -m apsk -p 7 $(modem_ber_opts) -o data/ber-modem/ber_apsk128.dat
+	./src/simulate_ber -m apsk -p 8 $(modem_ber_opts) -o data/ber-modem/ber_apsk256.dat
 	./src/simulate_ber -m ask  -p 1 $(modem_ber_opts) -o data/ber-modem/ber_ask2.dat
 	./src/simulate_ber -m ask  -p 2 $(modem_ber_opts) -o data/ber-modem/ber_ask4.dat
 	./src/simulate_ber -m ask  -p 3 $(modem_ber_opts) -o data/ber-modem/ber_ask8.dat

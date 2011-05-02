@@ -78,6 +78,7 @@ int main(int argc, char*argv[]) {
     else if ( (ms==LIQUID_MODEM_ASK)  && (bps>3) )       plot_long_labels = false;
     else if ( (ms==LIQUID_MODEM_PSK)  && (bps>5) )       plot_long_labels = false;
     else if (  ms==LIQUID_MODEM_ARB64VT          )       plot_long_labels = false;
+    else if (  ms==LIQUID_MODEM_SQAM128          )       plot_long_labels = false;
     else                                        plot_long_labels = plot_labels;
 
     float range = 1.5f;

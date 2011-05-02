@@ -50,12 +50,6 @@ void modem_modulate_bench(struct rusage *_start,
     case LIQUID_MODEM_ARB:      *_num_iterations *= 1;      break;
     case LIQUID_MODEM_BPSK:     *_num_iterations *= 64;     break;
     case LIQUID_MODEM_QPSK:     *_num_iterations *= 64;     break;
-    case LIQUID_MODEM_APSK4:    *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_APSK8:    *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_APSK16:   *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_APSK32:   *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_APSK64:   *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_APSK128:  *_num_iterations *= 1;      break;
     case LIQUID_MODEM_ARB16OPT: *_num_iterations *= 1;      break;
     case LIQUID_MODEM_ARB64VT:  *_num_iterations *= 1;      break;
     default:;
