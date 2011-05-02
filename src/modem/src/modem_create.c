@@ -68,6 +68,7 @@ modem modem_create(modulation_scheme _scheme,
     case LIQUID_MODEM_APSK32:   return modem_create_apsk32();
     case LIQUID_MODEM_APSK64:   return modem_create_apsk64();
     case LIQUID_MODEM_APSK128:  return modem_create_apsk128();
+    case LIQUID_MODEM_APSK256:  return modem_create_apsk256();
 
     // arbitrary modems
     case LIQUID_MODEM_V29:      return modem_create_V29();
@@ -372,6 +373,7 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
     case 5:     return modem_create_apsk32();
     case 6:     return modem_create_apsk64();
     case 7:     return modem_create_apsk128();
+    case 8:     return modem_create_apsk256();
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
@@ -501,6 +503,27 @@ modem modem_create_apsk128()
     mod->apsk_phi = (float *) apsk128_phi;
     mod->apsk_r_slicer = (float *) apsk128_r_slicer;
     mod->apsk_symbol_map = (unsigned int *) apsk128_symbol_map;
+
+    mod->modulate_func = &modem_modulate_apsk;
+    mod->demodulate_func = &modem_demodulate_apsk;
+
+    return mod;
+}
+
+modem modem_create_apsk256()
+{
+    modem mod = (modem) malloc( sizeof(struct modem_s) );
+    mod->scheme = LIQUID_MODEM_APSK256;
+
+    modem_init(mod, 8);
+    
+    // set internals
+    mod->apsk_num_levels = apsk256_num_levels;
+    mod->apsk_p = (unsigned int *) apsk256_p;
+    mod->apsk_r = (float *) apsk256_r;
+    mod->apsk_phi = (float *) apsk256_phi;
+    mod->apsk_r_slicer = (float *) apsk256_r_slicer;
+    mod->apsk_symbol_map = (unsigned int *) apsk256_symbol_map;
 
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;

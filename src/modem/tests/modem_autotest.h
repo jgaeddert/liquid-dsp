@@ -109,6 +109,7 @@ void autotest_mod_demod_apsk16() {  modem_test_mod_demod(LIQUID_MODEM_APSK,4);  
 void autotest_mod_demod_apsk32() {  modem_test_mod_demod(LIQUID_MODEM_APSK,5);   }
 void autotest_mod_demod_apsk64() {  modem_test_mod_demod(LIQUID_MODEM_APSK,6);   }
 void autotest_mod_demod_apsk128(){  modem_test_mod_demod(LIQUID_MODEM_APSK,7);   }
+void autotest_mod_demod_apsk256(){  modem_test_mod_demod(LIQUID_MODEM_APSK,8);   }
 
 //
 // AUTOTESTS: arbitrary modems

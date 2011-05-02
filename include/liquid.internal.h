@@ -1207,6 +1207,7 @@ modem modem_create_apsk16(void);
 modem modem_create_apsk32(void);
 modem modem_create_apsk64(void);
 modem modem_create_apsk128(void);
+modem modem_create_apsk256(void);
 modem modem_create_V29(void);
 modem modem_create_arb16opt(void);
 modem modem_create_arb32opt(void);
@@ -1304,6 +1305,13 @@ extern const float apsk128_r[5];
 extern const float apsk128_phi[5];
 extern const float apsk128_r_slicer[4];
 extern const unsigned int apsk128_symbol_map[128];
+
+extern const unsigned int apsk256_num_levels;
+extern const unsigned int apsk256_p[7];
+extern const float apsk256_r[7];
+extern const float apsk256_phi[7];
+extern const float apsk256_r_slicer[6];
+extern const unsigned int apsk256_symbol_map[256];
 
 // demodulator helper functions
 

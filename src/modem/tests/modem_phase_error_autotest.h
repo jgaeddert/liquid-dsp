@@ -150,4 +150,5 @@ void autotest_phase_error_apsk16()  {   modem_test_phase_error(LIQUID_MODEM_APSK
 void autotest_phase_error_apsk32()  {   modem_test_phase_error(LIQUID_MODEM_APSK,5); }
 void autotest_phase_error_apsk64()  {   modem_test_phase_error(LIQUID_MODEM_APSK,6); }
 void autotest_phase_error_apsk128() {   modem_test_phase_error(LIQUID_MODEM_APSK,7); }
+void autotest_phase_error_apsk256() {   modem_test_phase_error(LIQUID_MODEM_APSK,8); }
 
