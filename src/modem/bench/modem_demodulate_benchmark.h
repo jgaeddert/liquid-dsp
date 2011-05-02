@@ -51,8 +51,8 @@ void modem_demodulate_bench(struct rusage *_start,
     case LIQUID_MODEM_BPSK:     *_num_iterations /= 1;      break;
     case LIQUID_MODEM_QPSK:     *_num_iterations /= 1;      break;
     case LIQUID_MODEM_OOK:      *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_QAM32:    *_num_iterations /= 4;      break;
-    case LIQUID_MODEM_QAM128:   *_num_iterations /= 8;      break;
+    case LIQUID_MODEM_SQAM32:   *_num_iterations /= 4;      break;
+    case LIQUID_MODEM_SQAM128:  *_num_iterations /= 8;      break;
     case LIQUID_MODEM_ARB16OPT: *_num_iterations /= 1;      break;
     case LIQUID_MODEM_ARB64VT:  *_num_iterations /= 1;      break;
     default:;
@@ -86,8 +86,8 @@ void modem_demodulate_bench(struct rusage *_start,
 void benchmark_demodulate_bpsk      MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_BPSK, 1)
 void benchmark_demodulate_qpsk      MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QPSK, 2)
 void benchmark_demodulate_ook       MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_OOK,  1)
-void benchmark_demodulate_sqam32    MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QAM32,5)
-void benchmark_demodulate_sqam128   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QAM128,7)
+void benchmark_demodulate_sqam32    MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_SQAM32,5)
+void benchmark_demodulate_sqam128   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_SQAM128,7)
 
 // ASK
 void benchmark_demodulate_ask2      MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_ASK, 1)
