@@ -50,6 +50,9 @@ void modem_modulate_bench(struct rusage *_start,
     case LIQUID_MODEM_ARB:      *_num_iterations *= 1;      break;
     case LIQUID_MODEM_BPSK:     *_num_iterations *= 64;     break;
     case LIQUID_MODEM_QPSK:     *_num_iterations *= 64;     break;
+    case LIQUID_MODEM_OOK:      *_num_iterations *= 64;     break;
+    case LIQUID_MODEM_QAM32:    *_num_iterations *= 16;     break;
+    case LIQUID_MODEM_QAM128:   *_num_iterations *= 16;     break;
     case LIQUID_MODEM_ARB16OPT: *_num_iterations *= 1;      break;
     case LIQUID_MODEM_ARB64VT:  *_num_iterations *= 1;      break;
     default:;
@@ -82,6 +85,9 @@ void modem_modulate_bench(struct rusage *_start,
 // specific modems
 void benchmark_modulate_bpsk    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_BPSK, 1)
 void benchmark_modulate_qpsk    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QPSK, 2)
+void benchmark_modulate_ook     MODEM_MODULATE_BENCH_API(LIQUID_MODEM_OOK,  1)
+void benchmark_modulate_sqam32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM32,5)
+void benchmark_modulate_sqam128 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM128,7)
 
 // ASK
 void benchmark_modulate_ask2    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ASK, 1)
@@ -115,9 +121,11 @@ void benchmark_modulate_qam128  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 7)
 void benchmark_modulate_qam256  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_QAM, 8)
 
 // APSK
+void benchmark_modulate_apsk4   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  2)
 void benchmark_modulate_apsk8   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  3)
 void benchmark_modulate_apsk16  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  4)
 void benchmark_modulate_apsk32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  5)
 void benchmark_modulate_apsk64  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  6)
 void benchmark_modulate_apsk128 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  7)
+void benchmark_modulate_apsk256 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  8)
 

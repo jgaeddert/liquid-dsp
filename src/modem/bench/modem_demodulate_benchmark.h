@@ -45,11 +45,14 @@ void modem_demodulate_bench(struct rusage *_start,
     case LIQUID_MODEM_PSK:      *_num_iterations *= 10;     break;
     case LIQUID_MODEM_DPSK:     *_num_iterations *= 10;     break;
     case LIQUID_MODEM_ASK:      *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_QAM:      *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_APSK:     *_num_iterations /= 10;     break;
+    case LIQUID_MODEM_QAM:      *_num_iterations *= 2;      break;
+    case LIQUID_MODEM_APSK:     *_num_iterations /= 2;      break;
     case LIQUID_MODEM_ARB:      *_num_iterations /= 1;      break;
     case LIQUID_MODEM_BPSK:     *_num_iterations /= 1;      break;
     case LIQUID_MODEM_QPSK:     *_num_iterations /= 1;      break;
+    case LIQUID_MODEM_OOK:      *_num_iterations /= 1;      break;
+    case LIQUID_MODEM_QAM32:    *_num_iterations /= 4;      break;
+    case LIQUID_MODEM_QAM128:   *_num_iterations /= 8;      break;
     case LIQUID_MODEM_ARB16OPT: *_num_iterations /= 1;      break;
     case LIQUID_MODEM_ARB64VT:  *_num_iterations /= 1;      break;
     default:;
@@ -82,6 +85,9 @@ void modem_demodulate_bench(struct rusage *_start,
 // specific modems
 void benchmark_demodulate_bpsk      MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_BPSK, 1)
 void benchmark_demodulate_qpsk      MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QPSK, 2)
+void benchmark_demodulate_ook       MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_OOK,  1)
+void benchmark_demodulate_sqam32    MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QAM32,5)
+void benchmark_demodulate_sqam128   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QAM128,7)
 
 // ASK
 void benchmark_demodulate_ask2      MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_ASK, 1)
@@ -115,9 +121,11 @@ void benchmark_demodulate_qam128   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QAM, 
 void benchmark_demodulate_qam256   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_QAM, 8)
 
 // A-PSK
+void benchmark_demodulate_apsk4    MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 2)
 void benchmark_demodulate_apsk8    MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 3)
 void benchmark_demodulate_apsk16   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 4)
 void benchmark_demodulate_apsk32   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 5)
 void benchmark_demodulate_apsk64   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 6)
 void benchmark_demodulate_apsk128  MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 7)
+void benchmark_demodulate_apsk256  MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 8)
 
