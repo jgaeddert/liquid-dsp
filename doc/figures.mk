@@ -85,8 +85,12 @@ local_pdffiles :=					\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
 	figures.gen/interleaver_scatterplot_i3.pdf	\
 	figures.gen/math_window.pdf			\
+							\
 	figures.gen/modem_bpsk.pdf			\
 	figures.gen/modem_qpsk.pdf			\
+	figures.gen/modem_ook.pdf			\
+	figures.gen/modem_sqam32.pdf			\
+	figures.gen/modem_sqam128.pdf			\
 	figures.gen/modem_2psk.pdf			\
 	figures.gen/modem_4psk.pdf			\
 	figures.gen/modem_8psk.pdf			\
@@ -441,12 +445,6 @@ figures.gen/math_window.gnu : src/math_window
 # 
 # psk
 #
-figures.gen/modem_bpsk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m bpsk -p 1
-figures.gen/modem_bpsk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m bpsk -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
-figures.gen/modem_qpsk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m qpsk -p 2
-figures.gen/modem_qpsk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m qpsk -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
-
 figures.gen/modem_2psk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m psk -p 1
 figures.gen/modem_2psk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m psk -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
@@ -526,8 +524,23 @@ figures.gen/modem_256qam.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m qam -p 
 figures.gen/modem_256qam.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m qam -p 8 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
 # 
-# arb
+# arb/specific
 #
+figures.gen/modem_bpsk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m bpsk -p 1
+figures.gen/modem_bpsk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m bpsk -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_qpsk.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m qpsk -p 2
+figures.gen/modem_qpsk.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m qpsk -p 2 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_ook.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m ook -p 1
+figures.gen/modem_ook.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m ook -p 1 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_sqam32.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m sqam32 -p 5
+figures.gen/modem_sqam32.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m sqam32 -p 5 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+figures.gen/modem_sqam128.dat   : %.dat : src/modem.gendata ; ./$< -f $@ -m sqam128 -p 7
+figures.gen/modem_sqam128.gnu   : %.gnu : src/modem.genplot %.dat ; ./$< -f $@ -m sqam128 -p 7 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
 figures.gen/modem_V29.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m V29 -p 4
 figures.gen/modem_V29.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m V29 -p 4 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
 
