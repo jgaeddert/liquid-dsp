@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,56 +19,64 @@
 # 
 # Makefile for multicarrier module
 #
-module_name     := multicarrier
+module_name	:= multicarrier
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:=			\
-	firpfbch_crcf.c			\
-	firpfbch_cccf.c			\
-	mdctch.c			\
-	ofdmframe64.common.c		\
-	ofdmframe64gen.c		\
-	ofdmframe64sync.c		\
-	ofdmframe.common.c		\
-	ofdmframegen.c			\
-	ofdmframesync.c			\
-	ofdmoqam.c			\
-	ofdmoqamframe.common.c		\
-	ofdmoqamframegen.c		\
-	ofdmoqamframesync.c
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/firpfbch_crcf.o		\
+	$(base_dir)/src/firpfbch_cccf.o		\
+	$(base_dir)/src/mdctch.o		\
+	$(base_dir)/src/ofdmframe64.common.o	\
+	$(base_dir)/src/ofdmframe64gen.o	\
+	$(base_dir)/src/ofdmframe64sync.o	\
+	$(base_dir)/src/ofdmframe.common.o	\
+	$(base_dir)/src/ofdmframegen.o		\
+	$(base_dir)/src/ofdmframesync.o		\
+	$(base_dir)/src/ofdmoqam.o		\
+	$(base_dir)/src/ofdmoqamframe.common.o	\
+	$(base_dir)/src/ofdmoqamframegen.o	\
+	$(base_dir)/src/ofdmoqamframesync.o	\
 
-# local_t_files
+# list explicit targets and dependencies here
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:=			\
-	firpfbch_synthesizer_autotest.h	\
-	firpfbch_analyzer_autotest.h	\
+local_autotests :=						\
+	$(base_dir)/tests/firpfbch_synthesizer_autotest.h	\
+	$(base_dir)/tests/firpfbch_analyzer_autotest.h		\
 
 #	ofdmoqam_autotest.h
 
-
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=			\
-	firpfbch_benchmark.h		\
-	ofdmframe64sync_benchmark.h	\
-	ofdmframesync_acquire_benchmark.h	\
-	ofdmframesync_rxsymbol_benchmark.h	\
-	ofdmoqam_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=						\
+	$(base_dir)/bench/firpfbch_benchmark.h			\
+	$(base_dir)/bench/ofdmframe64sync_benchmark.h		\
+	$(base_dir)/bench/ofdmframesync_acquire_benchmark.h	\
+	$(base_dir)/bench/ofdmframesync_rxsymbol_benchmark.h	\
+	$(base_dir)/bench/ofdmoqam_benchmark.h			\
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,44 +19,60 @@
 # 
 # Makefile for random module
 #
-module_name     := random
+module_name	:= random
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:=		\
-	rand.c			\
-	randn.c			\
-	randexp.c		\
-	randweib.c		\
-	randgamma.c		\
-	randnakm.c		\
-	randricek.c		\
-	scramble.c		\
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/rand.o			\
+	$(base_dir)/src/randn.o			\
+	$(base_dir)/src/randexp.o		\
+	$(base_dir)/src/randweib.o		\
+	$(base_dir)/src/randgamma.o		\
+	$(base_dir)/src/randnakm.o		\
+	$(base_dir)/src/randricek.o		\
+	$(base_dir)/src/scramble.o		\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+$(local_objects) : %.o : %.c $(headers)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:=		\
-	scramble_autotest.h
-#	random_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/scramble_autotest.h		\
+
+#	$(base_dir)/tests/random_autotest.h
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:= random_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/random_benchmark.h		\
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

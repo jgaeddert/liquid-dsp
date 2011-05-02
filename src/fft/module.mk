@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,45 +19,80 @@
 # 
 # Makefile for fft module
 #
-module_name     := fft
+module_name	:= fft
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:= 		\
-	asgram.c		\
-	dct.c			\
-	fftf.c			\
-	fft_common.c		\
-	mdct.c
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/asgram.o		\
+	$(base_dir)/src/dct.o			\
+	$(base_dir)/src/fftf.o			\
+	$(base_dir)/src/fft_common.o		\
+	$(base_dir)/src/mdct.o			\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+fft_includes :=					\
+	$(base_dir)/src/fft_create_plan.c	\
+	$(base_dir)/src/fct_execute.c		\
+	$(base_dir)/src/dct_execute.c		\
+	$(base_dir)/src/dst_execute.c		\
+	$(base_dir)/src/mdct_execute.c		\
+	$(base_dir)/src/imdct_execute.c		\
+	$(base_dir)/src/fft_execute.c		\
+	$(base_dir)/src/fft.common.c		\
+
+
+$(base_dir)/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
+
+$(base_dir)/src/asgram.o : %.o : %.c $(headers)
+
+$(base_dir)/src/dct.o : %.o : %.c $(headers)
+
+$(base_dir)/src/fftf.o : %.o : %.c $(headers)
+
+$(base_dir)/src/fft_common.o : %.o : %.c $(headers)
+
+$(base_dir)/src/mdct.o : %.o : %.c $(headers)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:= 		\
-	fft_autotest.h		\
-	fft_r2r_autotest.h	\
-	fft_shift_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/fft_autotest.h		\
+	$(base_dir)/tests/fft_r2r_autotest.h		\
+	$(base_dir)/tests/fft_shift_autotest.h		\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=		\
-	mdct_benchmark.h	\
-	fft_benchmark.h		\
-	fft_r2r_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/mdct_benchmark.h		\
+	$(base_dir)/bench/fft_benchmark.h		\
+	$(base_dir)/bench/fft_r2r_benchmark.h		\
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

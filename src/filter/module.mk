@@ -1,6 +1,5 @@
-# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
-#                                      Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -20,75 +19,139 @@
 # 
 # Makefile for filter module
 #
-module_name     := filter
+module_name	:= filter
+base_dir	:= src/$(module_name)
 
-# local_s_files
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=			\
+	$(base_dir)/src/bessel.o	\
+	$(base_dir)/src/butter.o	\
+	$(base_dir)/src/cheby1.o	\
+	$(base_dir)/src/cheby2.o	\
+	$(base_dir)/src/ellip.o		\
+	$(base_dir)/src/filter_rrrf.o	\
+	$(base_dir)/src/filter_crcf.o	\
+	$(base_dir)/src/filter_cccf.o	\
+	$(base_dir)/src/firdes.o	\
+	$(base_dir)/src/firdespm.o	\
+	$(base_dir)/src/group_delay.o	\
+	$(base_dir)/src/hM3.o		\
+	$(base_dir)/src/iirdes.pll.o	\
+	$(base_dir)/src/iirdes.o	\
+	$(base_dir)/src/lpc.o		\
+	$(base_dir)/src/rcos.o		\
+	$(base_dir)/src/rkaiser.o	\
+	$(base_dir)/src/rrcos.o		\
+
+#	$(base_dir)/src/nyquist.o
+
+
+# 
+# list explicit targets and dependencies here
 #
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:= 			\
-	bessel.c			\
-	butter.c			\
-	cheby1.c			\
-	cheby2.c			\
-	ellip.c				\
-	filter_rrrf.c			\
-	filter_crcf.c			\
-	filter_cccf.c			\
-	firdes.c			\
-	firdespm.c			\
-	group_delay.c			\
-	hM3.c				\
-	iirdes.pll.c			\
-	iirdes.c			\
-	lpc.c				\
-	rcos.c				\
-	rkaiser.c			\
-	rrcos.c
-#	nyquist.c
+
+filter_includes :=			\
+	$(base_dir)/src/firfarrow.c	\
+	$(base_dir)/src/firfilt.c	\
+	$(base_dir)/src/firpfb.c	\
+	$(base_dir)/src/iirfilt.c	\
+	$(base_dir)/src/iirfiltsos.c	\
+	$(base_dir)/src/interp.c	\
+	$(base_dir)/src/decim.c		\
+	$(base_dir)/src/resamp.c	\
+	$(base_dir)/src/resamp2.c	\
+	$(base_dir)/src/symsync.c	\
+
+$(base_dir)/src/bessel.o : %.o : %.c $(headers)
+
+$(base_dir)/src/bessel.o : %.o : %.c $(headers)
+
+$(base_dir)/src/butter.o : %.o : %.c $(headers)
+
+$(base_dir)/src/cheby1.o : %.o : %.c $(headers)
+
+$(base_dir)/src/cheby2.o : %.o : %.c $(headers)
+
+$(base_dir)/src/ellip.o : %.o : %.c $(headers)
+
+$(base_dir)/src/filter_rrrf.o : %.o : %.c $(headers) $(filter_includes)
+
+$(base_dir)/src/filter_crcf.o : %.o : %.c $(headers) $(filter_includes)
+
+$(base_dir)/src/filter_cccf.o : %.o : %.c $(headers) $(filter_includes)
+
+$(base_dir)/src/firdes.o : %.o : %.c $(headers)
+
+$(base_dir)/src/firdespm.o : %.o : %.c $(headers)
+
+$(base_dir)/src/group_delay.o : %.o : %.c $(headers)
+
+$(base_dir)/src/hM3.o : %.o : %.c $(headers)
+
+$(base_dir)/src/iirdes.pll.o : %.o : %.c $(headers)
+
+$(base_dir)/src/iirdes.o : %.o : %.c $(headers)
+
+$(base_dir)/src/lpc.o : %.o : %.c $(headers)
+
+$(base_dir)/src/rcos.o : %.o : %.c $(headers)
+
+$(base_dir)/src/rkaiser.o : %.o : %.c $(headers)
+
+$(base_dir)/src/rrcos.o : %.o : %.c $(headers)
+
+$(base_dir)/src/nyquist.o : %.o : %.c $(headers)
 
 
-# local_t_files
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:= 			\
-	decim_autotest.h		\
-	firdes_autotest.h		\
-	firdespm_autotest.h		\
-	firfilt_rrrf_autotest.h		\
-	firfilt_crcf_autotest.h		\
-	firhilb_autotest.h		\
-	firpfb_autotest.h		\
-	groupdelay_autotest.h		\
-	iirdes_autotest.h		\
-	iirfilt_rrrf_autotest.h		\
-	iirfilt_crcf_autotest.h		\
-	iirfiltsos_rrrf_autotest.h	\
-	interp_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/decim_autotest.h		\
+	$(base_dir)/tests/firdes_autotest.h		\
+	$(base_dir)/tests/firdespm_autotest.h		\
+	$(base_dir)/tests/firfilt_rrrf_autotest.h	\
+	$(base_dir)/tests/firfilt_crcf_autotest.h	\
+	$(base_dir)/tests/firhilb_autotest.h		\
+	$(base_dir)/tests/firpfb_autotest.h		\
+	$(base_dir)/tests/groupdelay_autotest.h		\
+	$(base_dir)/tests/iirdes_autotest.h		\
+	$(base_dir)/tests/iirfilt_rrrf_autotest.h	\
+	$(base_dir)/tests/iirfilt_crcf_autotest.h	\
+	$(base_dir)/tests/iirfiltsos_rrrf_autotest.h	\
+	$(base_dir)/tests/interp_autotest.h		\
 
 
-# local_b_files
+
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=			\
-	decim_benchmark.h		\
-	firhilb_benchmark.h		\
-	firfilt_rrrf_benchmark.h	\
-	iirfilt_benchmark.h		\
-	interp_benchmark.h		\
-	resamp_benchmark.h		\
-	resamp2_benchmark.h		\
-	symsync_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/decim_benchmark.h		\
+	$(base_dir)/bench/firhilb_benchmark.h		\
+	$(base_dir)/bench/firfilt_rrrf_benchmark.h	\
+	$(base_dir)/bench/iirfilt_benchmark.h		\
+	$(base_dir)/bench/interp_benchmark.h		\
+	$(base_dir)/bench/resamp_benchmark.h		\
+	$(base_dir)/bench/resamp2_benchmark.h		\
+	$(base_dir)/bench/symsync_benchmark.h		\
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,57 +19,71 @@
 # 
 # Makefile for fec module
 #
-module_name     := fec
+module_name	:= fec
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:=			\
-	crc.c				\
-	fec.c				\
-	fec_conv.c			\
-	fec_conv_poly.c			\
-	fec_conv_pmatrix.c		\
-	fec_conv_punctured.c		\
-	fec_hamming74.c			\
-	fec_hamming84.c			\
-	fec_hamming128.c		\
-	fec_pass.c			\
-	fec_rep3.c			\
-	fec_rep5.c			\
-	fec_rs.c
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/crc.o			\
+	$(base_dir)/src/fec.o			\
+	$(base_dir)/src/fec_conv.o		\
+	$(base_dir)/src/fec_conv_poly.o		\
+	$(base_dir)/src/fec_conv_pmatrix.o	\
+	$(base_dir)/src/fec_conv_punctured.o	\
+	$(base_dir)/src/fec_hamming74.o		\
+	$(base_dir)/src/fec_hamming84.o		\
+	$(base_dir)/src/fec_hamming128.o	\
+	$(base_dir)/src/fec_pass.o		\
+	$(base_dir)/src/fec_rep3.o		\
+	$(base_dir)/src/fec_rep5.o		\
+	$(base_dir)/src/fec_rs.o		\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+$(local_objects) : %.o : %.c $(headers)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:=			\
-	crc_autotest.h			\
-	fec_autotest.h			\
-	fec_hamming74_autotest.h	\
-	fec_hamming84_autotest.h	\
-	fec_hamming128_autotest.h	\
-	fec_reedsolomon_autotest.h	\
-	fec_rep3_autotest.h		\
-	fec_rep5_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/crc_autotest.h		\
+	$(base_dir)/tests/fec_autotest.h		\
+	$(base_dir)/tests/fec_hamming74_autotest.h	\
+	$(base_dir)/tests/fec_hamming84_autotest.h	\
+	$(base_dir)/tests/fec_hamming128_autotest.h	\
+	$(base_dir)/tests/fec_reedsolomon_autotest.h	\
+	$(base_dir)/tests/fec_rep3_autotest.h		\
+	$(base_dir)/tests/fec_rep5_autotest.h
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=			\
-	fec_encode_benchmark.h		\
-	fec_decode_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/fec_encode_benchmark.h	\
+	$(base_dir)/bench/fec_decode_benchmark.h	\
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

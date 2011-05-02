@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,38 +19,61 @@
 # 
 # Makefile for quantization module
 #
-module_name     := quantization
+module_name	:= quantization
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:=		\
-	compand.c		\
-	quantizercf.c		\
-	quantizerf.c		\
-	quantizer.inline.c	\
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/compand.o		\
+	$(base_dir)/src/quantizercf.o		\
+	$(base_dir)/src/quantizerf.o		\
+	$(base_dir)/src/quantizer.inline.o	\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+$(base_dir)/src/compand.o: %.o : %.c $(headers)
+
+$(base_dir)/src/quantizercf.o: %.o : %.c $(headers) $(base_dir)/src/quantizer.c
+
+$(base_dir)/src/quantizerf.o: %.o : %.c $(headers) $(base_dir)/src/quantizer.c
+
+$(base_dir)/src/quantizer.inline.o: %.o : %.c $(headers)
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:= compand_autotest.h quantize_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/compand_autotest.h		\
+	$(base_dir)/tests/quantize_autotest.h		\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:= quantizer_benchmark.h compander_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/quantizer_benchmark.h		\
+	$(base_dir)/bench/compander_benchmark.h		\
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

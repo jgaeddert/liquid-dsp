@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,40 +19,64 @@
 # 
 # Makefile for optim module
 #
-module_name     := optim
+module_name	:= optim
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:=		\
-	chromosome.c		\
-	gasearch.c		\
-	gradsearch.c		\
-	optim.common.c		\
-	quasinewton_search.c	\
-	rosenbrock.c
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/chromosome.o		\
+	$(base_dir)/src/gasearch.o		\
+	$(base_dir)/src/gradsearch.o		\
+	$(base_dir)/src/optim.common.o		\
+	$(base_dir)/src/quasinewton_search.o	\
+	$(base_dir)/src/rosenbrock.o		\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+$(base_dir)/src/chromosome.o : %.o : %.c $(headers)
+
+$(base_dir)/src/gasearch.o : %.o : %.c $(headers)
+
+$(base_dir)/src/gradsearch.o : %.o : %.c $(headers)
+
+$(base_dir)/src/optim.common.o : %.o : %.c $(headers)
+
+$(base_dir)/src/quasinewton_search.o : %.o : %.c $(headers)
+
+$(base_dir)/src/rosenbrock.o : %.o : %.c $(headers)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:= 
+local_autotests :=
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:= 
+# These files are located under the bench/ subdirectory
+local_benchmarks :=
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,40 +19,64 @@
 # 
 # Makefile for dotprod module
 #
-module_name     := dotprod
+module_name	:= dotprod
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:= 			\
-	$(mlibs_dotprod)
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(mlibs_dotprod)			\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+$(base_dir)/src/dotprod_cccf.o : %.o : %.c $(headers) $(base_dir)/src/dotprod.c
+
+$(base_dir)/src/dotprod_crcf.o : %.o : %.c $(headers) $(base_dir)/src/dotprod.c
+
+$(base_dir)/src/dotprod_rrrf.o : %.o : %.c $(headers) $(base_dir)/src/dotprod.c
+
+# specific machine architectures
+
+$(base_dir)/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
+
+$(base_dir)/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:= 			\
-	dotprod_rrrf_autotest.h		\
-	dotprod_crcf_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/dotprod_rrrf_autotest.h	\
+	$(base_dir)/tests/dotprod_crcf_autotest.h	\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=			\
-	dotprod_cccf_benchmark.h	\
-	dotprod_crcf_benchmark.h	\
-	dotprod_rrrf_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/dotprod_cccf_benchmark.h	\
+	$(base_dir)/bench/dotprod_crcf_benchmark.h	\
+	$(base_dir)/bench/dotprod_rrrf_benchmark.h	\
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

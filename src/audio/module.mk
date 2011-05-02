@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
-# Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+# Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
 #                                      Institute & State University
 #
 # This file is part of liquid.
@@ -21,34 +21,47 @@
 # Makefile for audio module
 #
 module_name	:= audio
+base_dir	:= src/$(module_name)
 
-# local_s_files
+
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=			\
+	src/audio/src/cvsd.o		\
+
+# 
+# list explicit targets and dependencies here
 #
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:= cvsd.c
+src/cvsd/src/cvsd.o : %.o : %.c $(headers)
 
 
-# local_t_files
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:= cvsd_autotest.h
+local_autotests :=			\
+	src/audio/tests/cvsd_autotest.h
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=
+# These files are located under the bench/ subdirectory
+local_benchmarks :=
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

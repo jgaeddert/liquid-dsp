@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,56 +19,98 @@
 # 
 # Makefile for framing module
 #
-module_name     := framing
+module_name	:= framing
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:=		\
-	bpacketgen.c		\
-	bpacketsync.c		\
-	bsync_rrrf.c		\
-	bsync_crcf.c		\
-	bsync_cccf.c		\
-	framesyncprops.c	\
-	framesyncstats.c	\
-	framegen64.c		\
-	framesync64.c		\
-	flexframegen.c		\
-	flexframesync.c		\
-	packetizer.c		\
-	interleaver.c		\
-	interleaver_create.c	\
-	interleaver_permute.c	\
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/bpacketgen.o		\
+	$(base_dir)/src/bpacketsync.o		\
+	$(base_dir)/src/bsync_rrrf.o		\
+	$(base_dir)/src/bsync_crcf.o		\
+	$(base_dir)/src/bsync_cccf.o		\
+	$(base_dir)/src/framesyncprops.o	\
+	$(base_dir)/src/framesyncstats.o	\
+	$(base_dir)/src/framegen64.o		\
+	$(base_dir)/src/framesync64.o		\
+	$(base_dir)/src/flexframegen.o		\
+	$(base_dir)/src/flexframesync.o		\
+	$(base_dir)/src/packetizer.o		\
+	$(base_dir)/src/interleaver.o		\
+	$(base_dir)/src/interleaver_create.o	\
+	$(base_dir)/src/interleaver_permute.o	\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+$(base_dir)/src/bpacketgen.o : %.o : %.c $(headers)
+
+$(base_dir)/src/bpacketsync.o : %.o : %.c $(headers)
+
+$(base_dir)/src/bsync_rrrf.o : %.o : %.c $(headers) $(base_dir)/src/bsync.c
+
+$(base_dir)/src/bsync_crcf.o : %.o : %.c $(headers) $(base_dir)/src/bsync.c
+
+$(base_dir)/src/bsync_cccf.o : %.o : %.c $(headers) $(base_dir)/src/bsync.c
+
+$(base_dir)/src/framesyncprops.o : %.o : %.c $(headers)
+
+$(base_dir)/src/framesyncstats.o : %.o : %.c $(headers)
+
+$(base_dir)/src/framegen64.o : %.o : %.c $(headers)
+
+$(base_dir)/src/framesync64.o : %.o : %.c $(headers)
+
+$(base_dir)/src/flexframegen.o : %.o : %.c $(headers)
+
+$(base_dir)/src/flexframesync.o : %.o : %.c $(headers)
+
+$(base_dir)/src/packetizer.o : %.o : %.c $(headers)
+
+$(base_dir)/src/interleaver.o : %.o : %.c $(headers)
+
+$(base_dir)/src/interleaver_create.o : %.o : %.c $(headers)
+
+$(base_dir)/src/interleaver_permute.o : %.o : %.c $(headers)
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:=		\
-	bpacketsync_autotest.h	\
-	bsync_autotest.h	\
-	flexframe_autotest.h	\
-	packetizer_autotest.h	\
-	interleaver_autotest.h	\
+local_autotests :=					\
+	$(base_dir)/tests/bpacketsync_autotest.h	\
+	$(base_dir)/tests/bsync_autotest.h		\
+	$(base_dir)/tests/flexframe_autotest.h		\
+	$(base_dir)/tests/packetizer_autotest.h		\
+	$(base_dir)/tests/interleaver_autotest.h	\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=			\
-	bpacketsync_benchmark.h		\
-	flexframesync_benchmark.h	\
-	interleaver_benchmark.h		\
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/bpacketsync_benchmark.h	\
+	$(base_dir)/bench/flexframesync_benchmark.h	\
+	$(base_dir)/bench/interleaver_benchmark.h	\
 
-include common.mk
+
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

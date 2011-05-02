@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,50 +19,63 @@
 # 
 # Makefile for utility module
 #
-module_name     := utility
+module_name	:= utility
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:= 	\
-	bshift_array.c	\
-	count_bits.c	\
-	msb_index.c	\
-	pack_bytes.c	\
-	shift_array.c
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=			\
+	$(base_dir)/src/bshift_array.o	\
+	$(base_dir)/src/count_bits.o	\
+	$(base_dir)/src/msb_index.o	\
+	$(base_dir)/src/pack_bytes.o	\
+	$(base_dir)/src/shift_array.o	\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+$(base_dir)/src/bshift_array.o : %.o : %.c $(headers)
+
+$(base_dir)/src/count_bits.o : %.o : %.c $(headers)
+
+$(base_dir)/src/msb_index.o : %.o : %.c $(headers)
+
+$(base_dir)/src/pack_bytes.o : %.o : %.c $(headers)
+
+$(base_dir)/src/shift_array.o : %.o : %.c $(headers)
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:= 		\
-	bshift_array_autotest.h	\
-	count_bits_autotest.h	\
-	pack_bytes_autotest.h	\
-	shift_array_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/bshift_array_autotest.h	\
+	$(base_dir)/tests/count_bits_autotest.h		\
+	$(base_dir)/tests/pack_bytes_autotest.h		\
+	$(base_dir)/tests/shift_array_autotest.h	\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:= 
+# These files are located under the bench/ subdirectory
+local_benchmarks :=
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:= 
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
 
-include common.mk
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

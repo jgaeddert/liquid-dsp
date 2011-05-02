@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,47 +19,55 @@
 # 
 # Makefile for sequence module
 #
-module_name     := sequence
+module_name	:= sequence
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:=			\
-	bsequence.c			\
-	msequence.c
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/bsequence.o		\
+	$(base_dir)/src/msequence.o		\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+$(base_dir)/src/bsequence.o : %.o : %.c $(headers)
+
+$(base_dir)/src/msequence.o : %.o : %.c $(headers)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:=			\
-	bsequence_autotest.h		\
-	complementary_codes_autotest.h	\
-	msequence_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/bsequence_autotest.h		\
+	$(base_dir)/tests/complementary_codes_autotest.h	\
+	$(base_dir)/tests/msequence_autotest.h		\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=			\
-	bsequence_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=
 
 
-# local_e_files
-#
-# This is a list of local example files to demonstrate
-# functionality of the module.
-#
-local_e_files	:=
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
 
-include common.mk
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

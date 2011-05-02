@@ -1,5 +1,5 @@
-# Copyright (c) 2007, 2009 Joseph Gaeddert
-# Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+# Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -19,40 +19,69 @@
 # 
 # Makefile for matrix module
 #
-module_name     := matrix
+module_name	:= matrix
+base_dir	:= src/$(module_name)
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:= 		\
-	matrix.c		\
-	matrixf.c		\
-	matrixc.c		\
-	matrixcf.c
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/matrix.o		\
+	$(base_dir)/src/matrixf.o		\
+	$(base_dir)/src/matrixc.o		\
+	$(base_dir)/src/matrixcf.o		\
 
-# local_t_files
+
+# 
+# list explicit targets and dependencies here
+#
+
+matrix_includes :=				\
+	$(base_dir)/src/matrix.base.c		\
+	$(base_dir)/src/matrix.gramschmidt.c	\
+	$(base_dir)/src/matrix.inv.c		\
+	$(base_dir)/src/matrix.linsolve.c	\
+	$(base_dir)/src/matrix.ludecomp.c	\
+	$(base_dir)/src/matrix.qrdecomp.c	\
+	$(base_dir)/src/matrix.math.c		\
+
+$(base_dir)/src/matrix.o : %.o : %.c $(headers) $(matrix_includes)
+
+$(base_dir)/src/matrixc.o : %.o : %.c $(headers) $(matrix_includes)
+
+$(base_dir)/src/matrixf.o : %.o : %.c $(headers) $(matrix_includes)
+
+$(base_dir)/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:=		\
-	matrixcf_autotest.h	\
-	matrixf_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/matrixcf_autotest.h		\
+	$(base_dir)/tests/matrixf_autotest.h		\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=
+# These files are located under the bench/ subdirectory
+local_benchmarks :=
 
 
-include common.mk
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

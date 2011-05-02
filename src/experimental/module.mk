@@ -1,6 +1,5 @@
 # Copyright (c) 2007, 2009, 2011 Joseph Gaeddert
-# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic
-# 				 Institute & State University
+# Copyright (c) 2007, 2009, 2011 Virginia Polytechnic Institute & State University
 #
 # This file is part of liquid.
 #
@@ -20,64 +19,87 @@
 # 
 # Makefile for experimental module
 #
+module_name	:= experimental
+base_dir	:= src/$(module_name)
 
-module_name     := experimental
+# local object files
+# 
+# This is a list of local object files; dependencies are
+# described below
+local_objects :=				\
+	$(base_dir)/src/ann.nodes.o		\
+	$(base_dir)/src/activation_functions.o	\
+	$(base_dir)/src/cpmodem.o		\
+	$(base_dir)/src/kmeans.o		\
+	$(base_dir)/src/layer.o			\
+	$(base_dir)/src/maxnet.o		\
+	$(base_dir)/src/node.o			\
+	$(base_dir)/src/fbasc.o			\
+	$(base_dir)/src/gport.o			\
+	$(base_dir)/src/filter_rrrf.o		\
+	$(base_dir)/src/filter_crcf.o		\
+	$(base_dir)/src/filter_cccf.o		\
+	$(base_dir)/src/gmskframegen.o		\
+	$(base_dir)/src/gmskframesync.o		\
+	$(base_dir)/src/patternset.o		\
+	$(base_dir)/src/awgn_channel.o		\
+	$(base_dir)/src/lognorm_channel.o	\
+	$(base_dir)/src/channel.o		\
+	$(base_dir)/src/pamodel.o		\
+	$(base_dir)/src/ricek_channel.o		\
 
-# local_s_files
-#
-# This is a list of local source files to compile into objects,
-# referenced from the src/ subdirectory under $(local_dir)
-#
-local_s_files	:= 			\
-	ann.nodes.c			\
-	activation_functions.c		\
-	cpmodem.c			\
-	kmeans.c			\
-	layer.c				\
-	maxnet.c			\
-	node.c				\
-	fbasc.c				\
-	gport.c				\
-	filter_rrrf.c			\
-	filter_crcf.c			\
-	filter_cccf.c			\
-	gmskframegen.c			\
-	gmskframesync.c			\
-	patternset.c			\
-	awgn_channel.c			\
-	lognorm_channel.c		\
-	channel.c			\
-	pamodel.c			\
-	ricek_channel.c
 
-# local_t_files
+# list explicit targets and dependencies here
+
+filter_includes :=			\
+	$(base_dir)/src/iirqmfb.c	\
+	$(base_dir)/src/itqmfb.c	\
+	$(base_dir)/src/qmfb.c		\
+	$(base_dir)/src/symsync2.c	\
+	$(base_dir)/src/symsynclp.c	\
+
+$(base_dir)/src/filter_rrrf.o: %.o : %.c $(headers) $(filter_includes)
+
+$(base_dir)/src/filter_crcf.o: %.o : %.c $(headers) $(filter_includes)
+
+$(base_dir)/src/filter_cccf.o: %.o : %.c $(headers) $(filter_includes)
+
+
+
+# local_tests
 #
 # This is a list of local autotest scripts (header files) which
 # are used to generate the autotest program with the 'check'
 # target.  These files are located under the tests/ subdirectory
-# within $(local_dir)
-#
-local_t_files	:=			\
-	ann_autotest.h			\
-	gport_autotest.h		\
-	channel_autotest.h
+local_autotests :=					\
+	$(base_dir)/tests/ann_autotest.h		\
+	$(base_dir)/tests/gport_autotest.h		\
+	$(base_dir)/tests/channel_autotest.h		\
 
 
-# local_b_files
+# local_benchmarks
 #
 # This is a list of local benchmark scripts which are used to
 # generate the benchmark program with the 'bench' target.
-# These files are located under the bench/ subdirectory within
-# $(local_dir)
-#
-local_b_files	:=			\
-	fbasc_benchmark.h		\
-	gport_dma_benchmark.h		\
-	gport_dma_threaded_benchmark.h	\
-	gport_ima_benchmark.h		\
-	gport_ima_threaded_benchmark.h	\
-	dds_benchmark.h			\
-	qmfb_benchmark.h
+# These files are located under the bench/ subdirectory
+local_benchmarks :=					\
+	$(base_dir)/bench/fbasc_benchmark.h		\
+	$(base_dir)/bench/gport_dma_benchmark.h		\
+	$(base_dir)/bench/gport_dma_threaded_benchmark.h	\
+	$(base_dir)/bench/gport_ima_benchmark.h		\
+	$(base_dir)/bench/gport_ima_threaded_benchmark.h	\
+	$(base_dir)/bench/dds_benchmark.h		\
+	$(base_dir)/bench/qmfb_benchmark.h		\
 
-include common.mk
+
+# Build the local library and local object files
+local_library	:= lib$(module_name).a
+$(local_library): $(local_objects)
+	$(AR) $(ARFLAGS) $@ $^
+
+# accumulate targets
+objects			+= $(local_objects)
+libraries		+= $(local_library)
+autotest_headers	+= $(local_autotests)
+benchmark_headers	+= $(local_benchmarks)
 

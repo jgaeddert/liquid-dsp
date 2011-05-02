@@ -107,6 +107,7 @@ modules		:=	\
 	utility		\
 	@MODULE_EXPERIMENTAL@
 
+
 # target-specific libraries
 mlibs_dotprod := @MLIBS_DOTPROD@
 
@@ -116,13 +117,11 @@ mlibs_dotprod := @MLIBS_DOTPROD@
 # in these variables
 programs		:=
 sources			:=
+objects			:=
 libraries		:=
 extra_clean		:=
 autotest_headers	:= autotest/null_autotest.h
 benchmark_headers	:= bench/null_benchmark.h
-
-objects		= $(patsubst %.c,%.o,$(sources))
-dependencies	= $(patsubst %.c,%.d,$(sources))
 
 all:
 
@@ -139,16 +138,6 @@ include $(patsubst %,$(modulesdir)/%/module.mk,$(modules))
 extra_sources := libliquid.c
 
 sources += $(extra_sources)
-
-# Dependencies
-#
-# Use compiler's -M flags (and equivalent) to parse source files
-# and create a list of dependencies.  Each list is stored in a
-# .d file and included, below.
-#
-%.d: %.c
-	$(CC) $(CFLAGS) -MM -MG $< | $(SED) 's,\($(notdir $*)\.o\) *:,$(dir $@)\1 $@: ,' > $@
--include $(dependencies)
 
 
 ##
@@ -421,7 +410,6 @@ clean-modules: $(addprefix clean-,$(modules))
 $(addprefix clean-,$(modules)):
 	@echo cleaning module $(patsubst clean-%,%,$@)
 	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.o
-	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.d
 
 clean: clean-check clean-bench clean-examples clean-sandbox clean-modules clean-todolist clean-autoscript
 	$(RM) $(programs)
@@ -429,6 +417,5 @@ clean: clean-check clean-bench clean-examples clean-sandbox clean-modules clean-
 	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) libliquid.o
-	$(RM) libliquid.d
 	$(RM) $(SHARED_LIB)
 
