@@ -91,7 +91,7 @@ int main() {
     unsigned int num_iterations = 1000; // number of iterations to run
     float v[2] = {0.0405f, 0.5f};       // 
 
-    gradient_search gs = gradient_search_create_advanced(
+    gradsearch gs = gradsearch_create_advanced(
             NULL,
             v,
             2,
@@ -108,13 +108,13 @@ int main() {
     for (i=0; i<num_iterations; i++) {
         rmse = gserror(NULL,v,2);
 
-        gradient_search_step(gs);
+        gradsearch_step(gs);
 
         if (((i+1)%100)==0)
-            gradient_search_print(gs);
+            gradsearch_print(gs);
     }
 
-    gradient_search_destroy(gs);
+    gradsearch_destroy(gs);
 
     // print results
     for (i=0; i<41; i++)

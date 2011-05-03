@@ -119,6 +119,8 @@ int main() {
     }
     printf("\n");
     printf("// number of decoding errors: %u\n", num_errors);
+
+    return 0;
 }
 
 // count number of ones in an integer
