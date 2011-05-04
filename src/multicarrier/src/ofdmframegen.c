@@ -190,6 +190,7 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
                               float complex * _x,
                               float complex * _y)
 {
+    // TODO : rotate pilot phase for each use
     unsigned int pilot_phase = msequence_advance(_q->ms_pilot);
 
     // move frequency data to internal buffer

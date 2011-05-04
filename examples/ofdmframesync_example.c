@@ -23,17 +23,17 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
-    unsigned int num_symbols_S0 = 2;    // number of S0 symbols
+    unsigned int num_symbols_S0 = 6;    // number of S0 symbols
     unsigned int num_symbols_S1 = 2;    // number of S0 symbols
     unsigned int num_symbols_data = 8;  // number of data symbols
-    unsigned int hc_len = 4;            // channel filter length
+    unsigned int hc_len = 1;            // channel filter length
     float hc_std = 0.10f;               // channel filter standard deviation
     modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 4;
     float noise_floor = -30.0f;         // noise floor [dB]
-    float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
+    float SNRdB = 40.0f;                // signal-to-noise ratio [dB]
     float phi   = 0.0f;                 // carrier phase offset
-    float dphi  = 0.005f;               // carrier frequency offset
+    float dphi  = 0.00f;               // carrier frequency offset
 
     // validate input
     if (hc_len < 1) {
@@ -85,9 +85,11 @@ int main(int argc, char*argv[]) {
         n += M;
     }
 
+#if 0
     // write long sequence cyclic prefix
     memmove(&y[n], &S1[M-cp_len], cp_len*sizeof(float complex));
     n += cp_len;
+#endif
 
     // write long sequence(s)
     for (i=0; i<num_symbols_S1; i++) {
@@ -135,7 +137,7 @@ int main(int argc, char*argv[]) {
     firfilt_cccf_destroy(fc);
 
     // push noise into synchronizer
-    unsigned int d=1000;
+    unsigned int d=rand() % 1000;
     for (i=0; i<d; i++) {
         float complex z = nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
 
