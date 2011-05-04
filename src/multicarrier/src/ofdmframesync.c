@@ -348,22 +348,22 @@ void ofdmframesync_execute(ofdmframesync _q,
 
         switch (_q->state) {
         case OFDMFRAMESYNC_STATE_SEEKPLCP:
-            ofdmframesync_execute_seekplcp(_q,x);
+            ofdmframesync_execute_seekplcp(_q);
             break;
         case OFDMFRAMESYNC_STATE_PLCPSHORT0:
-            ofdmframesync_execute_plcpshort0(_q,x);
+            ofdmframesync_execute_plcpshort0(_q);
             break;
         case OFDMFRAMESYNC_STATE_PLCPSHORT1:
-            ofdmframesync_execute_plcpshort1(_q,x);
+            ofdmframesync_execute_plcpshort1(_q);
             break;
         case OFDMFRAMESYNC_STATE_PLCPLONG0:
-            ofdmframesync_execute_plcplong0(_q,x);
+            ofdmframesync_execute_plcplong0(_q);
             break;
         case OFDMFRAMESYNC_STATE_PLCPLONG1:
-            ofdmframesync_execute_plcplong1(_q,x);
+            ofdmframesync_execute_plcplong1(_q);
             break;
         case OFDMFRAMESYNC_STATE_RXSYMBOLS:
-            ofdmframesync_execute_rxsymbols(_q,x);
+            ofdmframesync_execute_rxsymbols(_q);
             break;
         default:;
         }
@@ -378,8 +378,7 @@ void ofdmframesync_execute(ofdmframesync _q,
 //
 
 // frame detection
-void ofdmframesync_execute_seekplcp(ofdmframesync _q,
-                                    float complex _x)
+void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 {
     _q->timer++;
 
@@ -404,22 +403,18 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q,
 
     // TODO : squelch here
 
-    // run fft
-    memmove(_q->x, &rc[_q->cp_len], (_q->M)*sizeof(float complex));
-    FFT_EXECUTE(_q->fft);
+    // estimate S0 gain
+    ofdmframesync_estimate_gain_S0(_q, &rc[_q->cp_len], _q->G0);
 
-    float complex g_hat;
     float complex s_hat;
-    ofdmframesync_S0_metrics(_q, &g_hat, &s_hat);
+    ofdmframesync_S0_metrics(_q, _q->G0, &s_hat);
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= g;
-    g_hat *= g;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("     gain   : %12.8f\n", sqrt(g));
     printf("     rssi   : %12.8f\n", -10*log10(sqrt(g)));
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
-    printf("    g_hat   :   %12.8f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 
     // TODO : allow variable threshold
@@ -431,15 +426,10 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q,
 
         int dt = (int)roundf(tau_hat);
         printf("dt = %5d\n", dt);
-        if (dt == 0) {
-            // continue
-            _q->timer = _q->M/2;
-            _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT0;
-        } else {
             // set timer appropriately...
-            _q->timer = (_q->M + dt) % _q->M;
+            _q->timer = (_q->M + dt) % (_q->M / 2);
             _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT0;
-        }
+        printf("timer = %u\n", _q->timer);
         //printf("exiting prematurely\n");
         //ofdmframesync_destroy(_q);
         //exit(1);
@@ -448,9 +438,9 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q,
 }
 
 // frame detection
-void ofdmframesync_execute_plcpshort0(ofdmframesync _q,
-                                     float complex _x)
+void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
 {
+    //printf("t : %u\n", _q->timer);
     _q->timer++;
 
     if (_q->timer < _q->M/2)
@@ -464,30 +454,25 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q,
     float complex * rc;
     windowcf_read(_q->input_buffer, &rc);
 
-    // run fft
-    memmove(_q->x, &rc[_q->cp_len], (_q->M)*sizeof(float complex));
-    FFT_EXECUTE(_q->fft);
+    // estimate S0 gain
+    ofdmframesync_estimate_gain_S0(_q, &rc[_q->cp_len], _q->G0);
 
-    float complex g_hat;
     float complex s_hat;
-    ofdmframesync_S0_metrics(_q, &g_hat, &s_hat);
+    ofdmframesync_S0_metrics(_q, _q->G0, &s_hat);
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
-    g_hat *= _q->g0;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
-    printf("    g_hat   :   %12.8f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 
-    memmove(_q->G0, _q->G, _q->M*sizeof(float complex));
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT1;
 }
 
 // frame detection
-void ofdmframesync_execute_plcpshort1(ofdmframesync _q,
-                                     float complex _x)
+void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
 {
+    //printf("t = %u\n", _q->timer);
     _q->timer++;
 
     if (_q->timer < _q->M/2)
@@ -495,33 +480,27 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q,
 
     printf("********** S0[1] received ************\n");
     // reset timer
-    _q->timer = 0;
+    _q->timer = _q->M + _q->cp_len;
 
     //
     float complex * rc;
     windowcf_read(_q->input_buffer, &rc);
 
-    // run fft
-    memmove(_q->x, &rc[_q->cp_len], (_q->M)*sizeof(float complex));
-    FFT_EXECUTE(_q->fft);
+    // estimate S0 gain
+    ofdmframesync_estimate_gain_S0(_q, &rc[_q->cp_len], _q->G1);
 
-    float complex g_hat;
     float complex s_hat;
-    ofdmframesync_S0_metrics(_q, &g_hat, &s_hat);
+    ofdmframesync_S0_metrics(_q, _q->G1, &s_hat);
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
-    g_hat *= _q->g0;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
-    printf("    g_hat   :   %12.8f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 
     printf("**********\n");
 
-    memmove(_q->G1, _q->G, _q->M*sizeof(float complex));
-
-    g_hat = 0.0f;
+    float complex g_hat = 0.0f;
     unsigned int i;
     for (i=0; i<_q->M; i++)
         g_hat += _q->G1[i] * conjf(_q->G0[i]);
@@ -530,58 +509,57 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q,
     float nu_hat = 2.0f * cargf(g_hat) / (float)(_q->M);
     printf("   nu_hat   :   %12.8f\n", nu_hat);
 
+    // set NCO frequency
+    nco_crcf_set_frequency(_q->nco_rx, nu_hat);
+
     _q->state = OFDMFRAMESYNC_STATE_PLCPLONG0;
 }
 
-void ofdmframesync_execute_plcplong0(ofdmframesync _q,
-                                     float complex _x)
+void ofdmframesync_execute_plcplong0(ofdmframesync _q)
 {
-    _q->timer++;
+    _q->timer--;
 
-    if (_q->timer < _q->M)
+    if (_q->timer > 0)
         return;
-
-    // reset timer
-    _q->timer = 0;
 
     // run fft
     float complex * rc;
     windowcf_read(_q->input_buffer, &rc);
-    memmove(_q->x, &rc[_q->cp_len], (_q->M)*sizeof(float complex));
-    FFT_EXECUTE(_q->fft);
 
-    // compute complex gains
-    unsigned int i;
-    float gain = sqrtf(_q->M_S1) / (float)(_q->M);
-    for (i=0; i<_q->M; i++) {
-        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL) {
-            // NOTE : if cabsf(_q->S0[i]) == 0 then we can multiply by conjugate
-            //        rather than compute division
-            //_q->G[i] = _q->X[i] / _q->S0[i];
-            _q->G[i] = _q->X[i] * conjf(_q->S1[i]);
-        } else {
-            _q->G[i] = 0.0f;
-        }
-
-        // normalize gain
-        _q->G[i] *= gain;
-    }
+    // estimate S1 gain
+    ofdmframesync_estimate_gain_S1(_q, &rc[_q->cp_len], _q->G);
 
     // compute detector output
     float complex g_hat = 0.0f;
+    unsigned int i;
     for (i=0; i<_q->M; i++) {
         //g_hat += _q->G[(i+1+_q->M)%_q->M]*conjf(_q->G[(i+_q->M)%_q->M]);
         g_hat += _q->G[(i+1)%_q->M]*conjf(_q->G[i]);
     }
-    //g_hat /= _q->M_S1; // normalize output
+    g_hat /= _q->M_S1; // normalize output
+    g_hat *= _q->g0;
 
-    printf("    g_hat   :   %12.8f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
+    printf("    g_hat   :   %12.4f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
 
-    if (cabsf(g_hat) > 4000.0f) {
+    if (cabsf(g_hat) > 0.7f) {
+        _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
+        // reset timer
+        _q->timer = 0;
+
+        // normalize gain by...
+        for (i=0; i<_q->M; i++)
+            _q->G[i] /= sqrtf(_q->M_pilot + _q->M_data) / (float)(_q->M);
+
+        return;
+#if 0
         printf("exiting prematurely\n");
         ofdmframesync_destroy(_q);
         exit(1);
+#endif
     }
+    // 'reset' timer
+    _q->timer = _q->M/2;
+
 #if 0
     if (cabsf(rxy) > 0.7f) {
 #if DEBUG_OFDMFRAMESYNC_PRINT
@@ -608,8 +586,7 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q,
 #endif
 }
 
-void ofdmframesync_execute_plcplong1(ofdmframesync _q,
-                                     float complex _x)
+void ofdmframesync_execute_plcplong1(ofdmframesync _q)
 {
     _q->timer++;
     if (_q->timer != _q->M)
@@ -667,8 +644,7 @@ void ofdmframesync_execute_plcplong1(ofdmframesync _q,
     }
 }
 
-void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
-                                     float complex _x)
+void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
 {
     // wait for timeout
     _q->timer++;
@@ -707,75 +683,88 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q,
 
 // compute S0 metrics
 void ofdmframesync_S0_metrics(ofdmframesync _q,
-                              float complex * _g_hat,
+                              float complex * _G,
                               float complex * _s_hat)
 {
     // timing, carrier offset correction
     unsigned int i;
-    float complex g_hat = 0.0f;
     float complex s_hat = 0.0f;
-
-    // compute complex gains
-    float gain = sqrtf(_q->M_S0) / (float)(_q->M);
-    for (i=0; i<_q->M; i++) {
-        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL && (i%2)==0) {
-            // NOTE : if cabsf(_q->S0[i]) == 0 then we can multiply by conjugate
-            //        rather than compute division
-            //_q->G[i] = _q->X[i] / _q->S0[i];
-            _q->G[i] = _q->X[i] * conjf(_q->S0[i]);
-        } else {
-            _q->G[i] = 0.0f;
-        }
-
-        // normalize gain
-        _q->G[i] *= gain;
-    }   
-
-#if 0
-    // compute carrier frequency offset metric
-    for (i=0; i<_q->M; i++)
-        g_hat += _q->G0[i] * conjf(_q->G1[i]);
-    g_hat /= _q->M_S0; // normalize output
-#endif
 
     // compute timing estimate, accumulate phase difference across
     // gains on subsequent pilot subcarriers
     // FIXME : need to assemble appropriate subcarriers
     for (i=0; i<_q->M; i++) {
-        s_hat += _q->G[(i+2)%_q->M]*conjf(_q->G[i]);
+        s_hat += _G[(i+2)%_q->M]*conjf(_G[i]);
     }
     s_hat /= _q->M_S0; // normalize output
 
     // set output values
-    *_g_hat = g_hat;
     *_s_hat = s_hat;
 }
 
-// estimate long sequence gain
+// estimate short sequence gain
 //  _q      :   ofdmframesync object
-//  _x      :   input array (time), [size: M+cp_len x 1]
+//  _x      :   input array (time), [size: M x 1]
 //  _G      :   output gain (freq)
-void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+void ofdmframesync_estimate_gain_S0(ofdmframesync _q,
                                     float complex * _x,
                                     float complex * _G)
 {
-    // move _x into fft input buffer
-    memmove(_q->x, &_x[_q->cp_len-_q->backoff], (_q->M)*sizeof(float complex));
+    // move input array into fft input buffer
+    memmove(_q->x, _x, (_q->M)*sizeof(float complex));
 
     // compute fft, storing result into _q->X
     FFT_EXECUTE(_q->fft);
     
     // compute gain, ignoring NULL subcarriers
     unsigned int i;
-    for (i=0; i<_q->M; i++) {
-        if (_q->p[i] == OFDMFRAME_SCTYPE_NULL)
-            _G[i] = 0.0f;
-        else
-            _G[i] = _q->X[i] / _q->S1[i];
+    float gain = sqrtf(_q->M_S0) / (float)(_q->M);
 
-        // compensate for backoff
-        _G[i] *= _q->B[i];
+    for (i=0; i<_q->M; i++) {
+        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL && (i%2)==0) {
+            // NOTE : if cabsf(_q->S0[i]) == 0 then we can multiply by conjugate
+            //        rather than compute division
+            //_G[i] = _q->X[i] / _q->S0[i];
+            _G[i] = _q->X[i] * conjf(_q->S0[i]);
+        } else {
+            _G[i] = 0.0f;
+        }
+
+        // normalize gain
+        _G[i] *= gain;
     }
+}
+
+// estimate long sequence gain
+//  _q      :   ofdmframesync object
+//  _x      :   input array (time), [size: M x 1]
+//  _G      :   output gain (freq)
+void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
+                                    float complex * _x,
+                                    float complex * _G)
+{
+    // move input array into fft input buffer
+    memmove(_q->x, _x, (_q->M)*sizeof(float complex));
+
+    // compute fft, storing result into _q->X
+    FFT_EXECUTE(_q->fft);
+    
+    // compute gain, ignoring NULL subcarriers
+    unsigned int i;
+    float gain = sqrtf(_q->M_S1) / (float)(_q->M);
+    for (i=0; i<_q->M; i++) {
+        if (_q->p[i] != OFDMOQAMFRAME_SCTYPE_NULL) {
+            // NOTE : if cabsf(_q->S1[i]) == 0 then we can multiply by conjugate
+            //        rather than compute division
+            //_G[i] = _q->X[i] / _q->S1[i];
+            _G[i] = _q->X[i] * conjf(_q->S1[i]);
+        } else {
+            _G[i] = 0.0f;
+        }
+
+        // normalize gain
+        _G[i] *= gain;
+    }   
 }
 
 // estimate residual carrier frequency offset from gain estimates
