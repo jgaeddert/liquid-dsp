@@ -83,8 +83,7 @@ struct ofdmframesync_s {
         OFDMFRAMESYNC_STATE_SEEKPLCP=0,   // seek initial PLSCP
         OFDMFRAMESYNC_STATE_PLCPSHORT0,   // seek first PLCP short sequence
         OFDMFRAMESYNC_STATE_PLCPSHORT1,   // seek second PLCP short sequence
-        OFDMFRAMESYNC_STATE_PLCPLONG0,    // seek first PLCP long sequence
-        OFDMFRAMESYNC_STATE_PLCPLONG1,    // seek second PLCP long sequence
+        OFDMFRAMESYNC_STATE_PLCPLONG,     // seek PLCP long sequence
         OFDMFRAMESYNC_STATE_RXSYMBOLS     // receive payload symbols
     } state;
 
@@ -356,11 +355,8 @@ void ofdmframesync_execute(ofdmframesync _q,
         case OFDMFRAMESYNC_STATE_PLCPSHORT1:
             ofdmframesync_execute_plcpshort1(_q);
             break;
-        case OFDMFRAMESYNC_STATE_PLCPLONG0:
-            ofdmframesync_execute_plcplong0(_q);
-            break;
-        case OFDMFRAMESYNC_STATE_PLCPLONG1:
-            ofdmframesync_execute_plcplong1(_q);
+        case OFDMFRAMESYNC_STATE_PLCPLONG:
+            ofdmframesync_execute_plcplong(_q);
             break;
         case OFDMFRAMESYNC_STATE_RXSYMBOLS:
             ofdmframesync_execute_rxsymbols(_q);
@@ -519,10 +515,10 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     // set NCO frequency
     nco_crcf_set_frequency(_q->nco_rx, nu_hat);
 
-    _q->state = OFDMFRAMESYNC_STATE_PLCPLONG0;
+    _q->state = OFDMFRAMESYNC_STATE_PLCPLONG;
 }
 
-void ofdmframesync_execute_plcplong0(ofdmframesync _q)
+void ofdmframesync_execute_plcplong(ofdmframesync _q)
 {
     _q->timer--;
 
@@ -534,6 +530,7 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q)
     windowcf_read(_q->input_buffer, &rc);
 
     // estimate S1 gain
+    // TODO : add backoff in gain estimation
     ofdmframesync_estimate_gain_S1(_q, &rc[_q->cp_len], _q->G);
 
     // compute detector output
@@ -548,7 +545,10 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q)
 
     printf("    g_hat   :   %12.4f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
 
-    if (cabsf(g_hat) > 0.7f) {
+    // check conditions for g_hat:
+    //  1. magnitude should be large (near unity) when aligned
+    //  2. phase should be very near zero (time aligned)
+    if (cabsf(g_hat) > 0.5f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer
         _q->timer = 0;
@@ -557,6 +557,15 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q)
         for (i=0; i<_q->M; i++)
             _q->G[i] /= sqrtf(_q->M_pilot + _q->M_data) / (float)(_q->M);
 
+#if 0
+        unsigned int ntaps = _q->M / 2;
+        ofdmframesync_estimate_eqgain(_q, ntaps);
+#else
+        unsigned int poly_order = 8;
+        if (poly_order >= _q->M_pilot + _q->M_data)
+            poly_order = _q->M_pilot + _q->M_data - 1;
+        ofdmframesync_estimate_eqgain_poly(_q, poly_order);
+#endif
         return;
 #if 0
         printf("exiting prematurely\n");
@@ -564,91 +573,9 @@ void ofdmframesync_execute_plcplong0(ofdmframesync _q)
         exit(1);
 #endif
     }
-    // 'reset' timer
+
+    // 'reset' timer (wait another half symbol)
     _q->timer = _q->M/2;
-
-#if 0
-    if (cabsf(rxy) > 0.7f) {
-#if DEBUG_OFDMFRAMESYNC_PRINT
-        printf("  rxy[0] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
-#endif
-
-        // reset timer
-        _q->timer = 0;
-
-        // compute complex gain on sequence
-        ofdmframesync_estimate_gain_S1(_q, rc, _q->G0);
-
-        // 
-        _q->state = OFDMFRAMESYNC_STATE_PLCPLONG1;
-    }
-
-    // reset (false alarm) if timer is too large
-    if (_q->timer > 4*_q->M) {
-#if DEBUG_OFDMFRAMESYNC_PRINT
-        printf("ofdmframesync_execute_plcplong0(), could not find S1 symbol, resetting\n");
-#endif
-        ofdmframesync_reset(_q);
-    }
-#endif
-}
-
-void ofdmframesync_execute_plcplong1(ofdmframesync _q)
-{
-    _q->timer++;
-    if (_q->timer != _q->M)
-        return;
-
-    // run cross-correlator
-    float complex rxy, *rc;
-    windowcf_read(_q->input_buffer, &rc);
-    dotprod_cccf_execute(_q->crosscorr, &rc[_q->cp_len], &rxy);
-
-    // scale
-    rxy *= _q->g0 / sqrtf(_q->M);
-
-#if DEBUG_OFDMFRAMESYNC
-    windowcf_push(_q->debug_rxy,rxy);
-    //printf("  rxy = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
-#endif
-
-    if (cabsf(rxy) > 0.6f) {
-#if DEBUG_OFDMFRAMESYNC_PRINT
-        printf("  rxy[1] = |%12.8f| {%12.8f}\n", cabsf(rxy), cargf(rxy));
-#endif
-
-        // reset timer
-        _q->timer = 0;
-
-        // compute complex gain on sequence
-        ofdmframesync_estimate_gain_S1(_q, rc, _q->G1);
-
-        // estimate residual carrier frequency offset and adjust nco
-        float nu_hat;
-#if 0
-        unsigned int ntaps = _q->M / 2;
-        ofdmframesync_estimate_eqgain(_q, ntaps, &nu_hat);
-#else
-        unsigned int poly_order = 8;
-        if (poly_order >= _q->M_pilot + _q->M_data)
-            poly_order = _q->M_pilot + _q->M_data - 1;
-        ofdmframesync_estimate_eqgain_poly(_q, poly_order, &nu_hat);
-#endif
-
-#if DEBUG_OFDMFRAMESYNC_PRINT
-        printf("  nu_hat : %12.8f\n", nu_hat);
-#endif
-        nco_crcf_adjust_frequency(_q->nco_rx, nu_hat);
-
-        // 
-        _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
-    } else {
-        // reset (false alarm)
-#if DEBUG_OFDMFRAMESYNC_PRINT
-        printf("ofdmframesync_execute_plcplong1(), could not find S1 symbol, resetting\n");
-#endif
-        ofdmframesync_reset(_q);
-    }
 }
 
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
@@ -797,16 +724,15 @@ float ofdmframesync_estimate_nu_S1(ofdmframesync _q)
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
-//  _nu_hat :   residual phase difference between G0 and G1
 void ofdmframesync_estimate_eqgain(ofdmframesync _q,
-                                   unsigned int _ntaps,
-                                   float * _nu_hat)
+                                   unsigned int _ntaps)
 {
     // validate input
     if (_ntaps == 0 || _ntaps > _q->M) {
         fprintf(stderr, "error: ofdmframesync_estimate_eqgain(), ntaps must be in [1,M]\n");
         exit(1);
     }
+#if 0
     // estimate residual carrier frequency offset between
     // gain estimates G0 and G1
     float nu_hat = ofdmframesync_estimate_nu_S1(_q);
@@ -821,7 +747,6 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
     for (i=0; i<_q->M; i++)
         _q->G[i] = 0.5f * (_q->G0[i] + _q->G1[i]);
 
-#if 0
     // generate smoothing window (fft of temporal window)
     for (i=0; i<_q->M; i++)
         _q->x[i] = (i < _ntaps) ? 1.0f : 0.0f;
@@ -864,26 +789,11 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
 //  _q      :   ofdmframesync object
 //  _order  :   polynomial order
-//  _nu_hat :   residual phase difference between G0 and G1
 void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
-                                        unsigned int _order,
-                                        float * _nu_hat)
+                                        unsigned int _order)
 {
-    // estimate residual carrier frequency offset between
-    // gain estimates G0 and G1
-    float nu_hat = ofdmframesync_estimate_nu_S1(_q);
-    *_nu_hat = nu_hat;
-
-    // correct for phase difference in G1
-    unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->G1[i] *= cexpf(-_Complex_I*nu_hat*_q->M);
-
-    // average equalizer gain
-    for (i=0; i<_q->M; i++)
-        _q->G[i] = 0.5f * (_q->G0[i] + _q->G1[i]);
-
     // polynomial interpolation
+    unsigned int i;
     unsigned int N = _q->M_pilot + _q->M_data;
     if (_order > N-1) _order = N-1;
     if (_order > 10)  _order = 10;

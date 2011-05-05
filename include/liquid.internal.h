@@ -1377,8 +1377,7 @@ void ofdmframesync_rxpayload(ofdmframesync _q);
 void ofdmframesync_execute_seekplcp(ofdmframesync _q);
 void ofdmframesync_execute_plcpshort0(ofdmframesync _q);
 void ofdmframesync_execute_plcpshort1(ofdmframesync _q);
-void ofdmframesync_execute_plcplong0(ofdmframesync _q);
-void ofdmframesync_execute_plcplong1(ofdmframesync _q);
+void ofdmframesync_execute_plcplong(ofdmframesync _q);
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q);
 
 void ofdmframesync_S0_metrics(ofdmframesync _q,
@@ -1407,18 +1406,14 @@ float ofdmframesync_estimate_nu_S1(ofdmframesync _q);
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
-//  _nu_hat :   residual phase difference between G0 and G1
 void ofdmframesync_estimate_eqgain(ofdmframesync _q,
-                                   unsigned int _ntaps,
-                                   float * _nu_hat);
+                                   unsigned int _ntaps);
 
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
 //  _q      :   ofdmframesync object
 //  _order  :   polynomial order
-//  _nu_hat :   residual phase difference between G0 and G1
 void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
-                                        unsigned int _order,
-                                        float * _nu_hat);
+                                        unsigned int _order);
 
 // recover symbol, correcting for gain, pilot phase, etc.
 void ofdmframesync_rxsymbol(ofdmframesync _q);
