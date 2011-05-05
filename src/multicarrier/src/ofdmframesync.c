@@ -223,7 +223,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->ms_pilot = msequence_create_default(8);
 
     // coarse detection
-    q->squelch_threshold = -30.0f;
+    q->squelch_threshold = -25.0f;
     q->squelch_enabled = 0;
 
     // reset object
@@ -395,6 +395,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     // estimate gain
     unsigned int i;
+    // TODO : decimate input ?
     float g = 0.0f;
     for (i=_q->cp_len; i<_q->M + _q->cp_len; i++)
         g += crealf( rc[i]*conjf(rc[i]) );
@@ -402,6 +403,12 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
     g = g*g;
 
     // TODO : squelch here
+    if ( -10*log10f( sqrtf(g) ) < _q->squelch_threshold &&
+         _q->squelch_enabled)
+    {
+        printf("squelch\n");
+        return;
+    }
 
     // estimate S0 gain
     ofdmframesync_estimate_gain_S0(_q, &rc[_q->cp_len], _q->G0);
