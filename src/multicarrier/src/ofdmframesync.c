@@ -382,7 +382,6 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
         return;
 
     // reset timer
-    printf("timeout\n");
     _q->timer = 0;
 
     //
@@ -415,24 +414,29 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
     s_hat *= g;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+#if DEBUG_OFDMFRAMESYNC_PRINT
     printf("     gain   : %12.8f\n", sqrt(g));
     printf("     rssi   : %12.8f\n", -10*log10(sqrt(g)));
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
+#endif
 
     // TODO : allow variable threshold
     if (cabsf(s_hat) > 0.65f) {
-        printf("********** frame detected! ************\n");
 
         // save gain
         _q->g0 = g;
 
         int dt = (int)roundf(tau_hat);
+        // set timer appropriately...
+        _q->timer = (_q->M + dt) % (_q->M / 2);
+        _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT0;
+
+#if DEBUG_OFDMFRAMESYNC_PRINT
+        printf("********** frame detected! ************\n");
         printf("dt = %5d\n", dt);
-            // set timer appropriately...
-            _q->timer = (_q->M + dt) % (_q->M / 2);
-            _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT0;
         printf("timer = %u\n", _q->timer);
+#endif
         //printf("exiting prematurely\n");
         //ofdmframesync_destroy(_q);
         //exit(1);
@@ -450,7 +454,6 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
         return;
 
     // reset timer
-    printf("********** S0[0] received ************\n");
     _q->timer = 0;
 
     //
@@ -466,8 +469,11 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     s_hat *= _q->g0;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+#if DEBUG_OFDMFRAMESYNC_PRINT
+    printf("********** S0[0] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
+#endif
 
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT1;
 }
@@ -481,7 +487,6 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     if (_q->timer < _q->M/2)
         return;
 
-    printf("********** S0[1] received ************\n");
     // reset timer
     _q->timer = _q->M + _q->cp_len;
 
@@ -498,10 +503,13 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     s_hat *= _q->g0;
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+#if DEBUG_OFDMFRAMESYNC_PRINT
+    printf("********** S0[1] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 
     printf("**********\n");
+#endif
 
     float complex g_hat = 0.0f;
     unsigned int i;
@@ -510,7 +518,9 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
 
     // carrier frequency offset estimate
     float nu_hat = 2.0f * cargf(g_hat) / (float)(_q->M);
+#if DEBUG_OFDMFRAMESYNC_PRINT
     printf("   nu_hat   :   %12.8f\n", nu_hat);
+#endif
 
     // set NCO frequency
     nco_crcf_set_frequency(_q->nco_rx, nu_hat);
@@ -543,7 +553,9 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     g_hat /= _q->M_S1; // normalize output
     g_hat *= _q->g0;
 
+#if DEBUG_OFDMFRAMESYNC_PRINT
     printf("    g_hat   :   %12.4f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
+#endif
 
     // check conditions for g_hat:
     //  1. magnitude should be large (near unity) when aligned
@@ -557,10 +569,11 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
         for (i=0; i<_q->M; i++)
             _q->G[i] /= sqrtf(_q->M_pilot + _q->M_data) / (float)(_q->M);
 
-#if 1
+#if 0
         // TODO : choose number of taps more appropriately
         //unsigned int ntaps = _q->M / 4;
         unsigned int ntaps = (_q->M < 8) ? 2 : 8;
+        // FIXME : this is by far the most computationally complex part of synchronization
         ofdmframesync_estimate_eqgain(_q, ntaps);
 #else
         unsigned int poly_order = 8;
@@ -906,6 +919,8 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
         float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
         _q->X[i] *= liquid_cexpjf(-theta);
     }
+
+    // TODO : adjust NCO frequency based on differential phase
 
 #if DEBUG_OFDMFRAMESYNC_PRINT
     for (i=0; i<_q->M_pilot; i++)
