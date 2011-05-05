@@ -557,8 +557,10 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
         for (i=0; i<_q->M; i++)
             _q->G[i] /= sqrtf(_q->M_pilot + _q->M_data) / (float)(_q->M);
 
-#if 0
-        unsigned int ntaps = _q->M / 2;
+#if 1
+        // TODO : choose number of taps more appropriately
+        //unsigned int ntaps = _q->M / 4;
+        unsigned int ntaps = (_q->M < 8) ? 2 : 8;
         ofdmframesync_estimate_eqgain(_q, ntaps);
 #else
         unsigned int poly_order = 8;
@@ -732,25 +734,15 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
         fprintf(stderr, "error: ofdmframesync_estimate_eqgain(), ntaps must be in [1,M]\n");
         exit(1);
     }
-#if 0
-    // estimate residual carrier frequency offset between
-    // gain estimates G0 and G1
-    float nu_hat = ofdmframesync_estimate_nu_S1(_q);
-    *_nu_hat = nu_hat;
 
-    // correct for phase difference in G1
     unsigned int i;
-    for (i=0; i<_q->M; i++)
-        _q->G1[i] *= cexpf(-_Complex_I*nu_hat*_q->M);
-
-    // average equalizer gain
-    for (i=0; i<_q->M; i++)
-        _q->G[i] = 0.5f * (_q->G0[i] + _q->G1[i]);
 
     // generate smoothing window (fft of temporal window)
     for (i=0; i<_q->M; i++)
         _q->x[i] = (i < _ntaps) ? 1.0f : 0.0f;
     FFT_EXECUTE(_q->fft);
+
+    memmove(_q->G0, _q->G, _q->M*sizeof(float complex));
 
     // smooth complex equalizer gains
     for (i=0; i<_q->M; i++) {
@@ -772,7 +764,8 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
             w = _q->X[(i + _q->M - j) % _q->M];
 
             // accumulate gain
-            G_hat += w * 0.5f * (_q->G0[j] + _q->G1[j]);
+            //G_hat += w * 0.5f * (_q->G0[j] + _q->G1[j]);
+            G_hat += w * _q->G0[j];
             w0 += w;
         }
 
@@ -783,7 +776,6 @@ void ofdmframesync_estimate_eqgain(ofdmframesync _q,
         }
         _q->G[i] = G_hat / w0;
     }
-#endif
 }
 
 // estimate complex equalizer gain from G0 and G1 using polynomial fit
