@@ -703,26 +703,6 @@ void ofdmframesync_estimate_gain_S1(ofdmframesync _q,
     }   
 }
 
-// estimate residual carrier frequency offset from gain estimates
-float ofdmframesync_estimate_nu_S1(ofdmframesync _q)
-{
-    float complex s = 0;
-
-    // accumulate phase difference over subcarriers
-    unsigned int i;
-    for (i=0; i<_q->M; i++) {
-        if (_q->p[i] != OFDMFRAME_SCTYPE_NULL)
-            s += _q->G1[i] * conjf(_q->G0[i]);
-    }
-
-    // carrier frequency offset is argument of phase accumulation
-    // over enabled subcarriers, relative to M samples of delay
-    // between the gain estimates
-    float nu_hat = cargf(s) / (float)(_q->M);
-
-    return nu_hat;
-}
-
 // estimate complex equalizer gain from G0 and G1
 //  _q      :   ofdmframesync object
 //  _ntaps  :   number of time-domain taps for smoothing
