@@ -488,7 +488,7 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
         return;
 
     // reset timer
-    _q->timer = _q->M + _q->cp_len;
+    _q->timer = _q->M + _q->cp_len - _q->backoff;
 
     //
     float complex * rc;
@@ -553,6 +553,9 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     g_hat /= _q->M_S1; // normalize output
     g_hat *= _q->g0;
 
+    // rotate by complex phasor relative to timing backoff
+    g_hat *= liquid_cexpjf((float)(_q->backoff)*2.0f*M_PI/(float)(_q->M));
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
     printf("    g_hat   :   %12.4f <%12.8f>\n", cabsf(g_hat), cargf(g_hat));
 #endif
@@ -563,11 +566,14 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     if (cabsf(g_hat) > 0.5f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer
-        _q->timer = 0;
+        _q->timer = _q->M + _q->cp_len + _q->backoff;
 
         // normalize gain by...
-        for (i=0; i<_q->M; i++)
+        float phi = (float)(_q->backoff)*2.0f*M_PI/(float)(_q->M);
+        for (i=0; i<_q->M; i++) {
             _q->G[i] /= sqrtf(_q->M_pilot + _q->M_data) / (float)(_q->M);
+            _q->G[i] *= liquid_cexpjf(i*phi);
+        }
 
 #if 0
         // TODO : choose number of taps more appropriately
@@ -576,7 +582,7 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
         // FIXME : this is by far the most computationally complex part of synchronization
         ofdmframesync_estimate_eqgain(_q, ntaps);
 #else
-        unsigned int poly_order = 8;
+        unsigned int poly_order = 4;
         if (poly_order >= _q->M_pilot + _q->M_data)
             poly_order = _q->M_pilot + _q->M_data - 1;
         ofdmframesync_estimate_eqgain_poly(_q, poly_order);
@@ -596,9 +602,10 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
 void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
 {
     // wait for timeout
-    _q->timer++;
+    _q->timer--;
 
-    if (_q->timer == _q->M + _q->cp_len) {
+    if (_q->timer == 0) {
+
         // run fft
         float complex * rc;
         windowcf_read(_q->input_buffer, &rc);
@@ -624,8 +631,7 @@ void ofdmframesync_execute_rxsymbols(ofdmframesync _q)
         }
 
         // reset timer
-        _q->timer = 0;
-
+        _q->timer = _q->M + _q->cp_len;
     }
 
 }
