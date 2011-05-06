@@ -89,8 +89,6 @@ struct ofdmframesync_s {
 
     // synchronizer objects
     nco_crcf nco_rx;        // numerically-controlled oscillator
-    autocorr_cccf autocorr; // auto-correlator
-    dotprod_cccf crosscorr; // long sequence cross-correlator
     msequence ms_pilot;     // pilot sequence generator
 
     // coarse signal detection
@@ -209,15 +207,6 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     // numerically-controlled oscillator
     q->nco_rx = nco_crcf_create(LIQUID_VCO);
 
-    // auto-correlator
-    q->autocorr = autocorr_cccf_create(1.3*q->M, q->M / 2);
-
-    // long sequence cross-correlator
-    // compute conjugate s1 sequence, put into dotprod object
-    for (i=0; i<q->M; i++)
-        q->s1[i] = conjf(q->s1[i]);
-    q->crosscorr = dotprod_cccf_create(q->s1, q->M);
-
     // set pilot sequence
     q->ms_pilot = msequence_create_default(8);
 
@@ -280,8 +269,6 @@ void ofdmframesync_destroy(ofdmframesync _q)
 
     // destroy synchronizer objects
     nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
-    autocorr_cccf_destroy(_q->autocorr);    // auto-correlator
-    dotprod_cccf_destroy(_q->crosscorr);    // cross-correlator
     msequence_destroy(_q->ms_pilot);
 
     // free main object memory
@@ -306,7 +293,6 @@ void ofdmframesync_reset(ofdmframesync _q)
 
     // reset synchronizer objects
     nco_crcf_reset(_q->nco_rx);
-    autocorr_cccf_clear(_q->autocorr);
     msequence_reset(_q->ms_pilot);
 
     // reset internal state variables
