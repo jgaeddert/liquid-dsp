@@ -42,7 +42,7 @@ static flexframegenprops_s flexframegenprops_default = {
     16,                 // rampup_len
     16,                 // phasing_len
     0,                  // payload_len
-    LIQUID_CRC_NONE,    // check
+    LIQUID_CRC_16,      // check
     LIQUID_FEC_NONE,    // fec0
     LIQUID_FEC_NONE,    // fec1
     LIQUID_MODEM_BPSK,  // mod_scheme
