@@ -129,6 +129,12 @@ local_pdffiles :=					\
 	figures.gen/modem_ber_ebn0_qam.pdf		\
 	figures.gen/modem_ber_ebn0_arb.pdf		\
 							\
+	figures.gen/modem_ber_ebn0_M8.pdf		\
+	figures.gen/modem_ber_ebn0_M16.pdf		\
+	figures.gen/modem_ber_ebn0_M32.pdf		\
+	figures.gen/modem_ber_ebn0_M64.pdf		\
+	figures.gen/modem_ber_ebn0_M128.pdf		\
+							\
 	figures.gen/nco_pll_sincos.pdf			\
 	figures.gen/nco_pll_error.pdf			\
 							\
@@ -563,6 +569,11 @@ modem_ber_gnufiles :=				\
 	figures.gen/modem_ber_ebn0_ask.gnu	\
 	figures.gen/modem_ber_ebn0_qam.gnu	\
 	figures.gen/modem_ber_ebn0_arb.gnu	\
+	figures.gen/modem_ber_ebn0_M8.gnu	\
+	figures.gen/modem_ber_ebn0_M16.gnu	\
+	figures.gen/modem_ber_ebn0_M32.gnu	\
+	figures.gen/modem_ber_ebn0_M64.gnu	\
+	figures.gen/modem_ber_ebn0_M128.gnu	\
 
 modem_ber_epsfiles := $(patsubst %.gnu,%.eps,$(modem_ber_gnufiles))
 
