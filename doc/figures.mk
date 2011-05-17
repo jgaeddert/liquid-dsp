@@ -592,6 +592,8 @@ modem_ber_data :=			\
 	data/ber-modem/ber_qam128.dat	\
 	data/ber-modem/ber_qam256.dat	\
 	data/ber-modem/ber_V29.dat	\
+	data/ber-modem/ber_sqam32.dat	\
+	data/ber-modem/ber_sqam128.dat	\
 	data/ber-modem/ber_arb16opt.dat	\
 	data/ber-modem/ber_arb32opt.dat	\
 	data/ber-modem/ber_arb64vt.dat	\
@@ -624,7 +626,9 @@ resimulate-modem-ber-data : src/simulate_ber
 	./src/simulate_ber -m qam  -p 6 $(modem_ber_opts) -o data/ber-modem/ber_qam64.dat
 	./src/simulate_ber -m qam  -p 7 $(modem_ber_opts) -o data/ber-modem/ber_qam128.dat
 	./src/simulate_ber -m qam  -p 8 $(modem_ber_opts) -o data/ber-modem/ber_qam256.dat
-	./src/simulate_ber -m V29  -p 4 $(modem_ber_opts) -o data/ber-modem/ber_V29.dat
+	./src/simulate_ber -m sqam32   -p 5 $(modem_ber_opts) -o data/ber-modem/ber_sqam32.dat
+	./src/simulate_ber -m sqam128  -p 7 $(modem_ber_opts) -o data/ber-modem/ber_sqam128.dat
+	./src/simulate_ber -m V29      -p 4 $(modem_ber_opts) -o data/ber-modem/ber_V29.dat
 	./src/simulate_ber -m arb16opt -p 4 $(modem_ber_opts) -o data/ber-modem/ber_arb16opt.dat
 	./src/simulate_ber -m arb32opt -p 5 $(modem_ber_opts) -o data/ber-modem/ber_arb32opt.dat
 	./src/simulate_ber -m arb64vt  -p 6 $(modem_ber_opts) -o data/ber-modem/ber_arb64vt.dat
