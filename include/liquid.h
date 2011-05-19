@@ -1339,6 +1339,13 @@ typedef struct INTERP(_s) * INTERP();                           \
 INTERP() INTERP(_create)(unsigned int _M,                       \
                          TC *_h,                                \
                          unsigned int _h_len);                  \
+/* create interpolator from prototype                   */      \
+/*  _M      : interpolation factor                      */      \
+/*  _m      : symbol delay                              */      \
+/*  _As     : stop-band attenuation [dB]                */      \
+INTERP() INTERP(_create_prototype)(unsigned int _M,             \
+                                   unsigned int _m,             \
+                                   float As);                   \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
 /*  _k      : samples/symbol                            */      \

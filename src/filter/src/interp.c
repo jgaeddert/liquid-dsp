@@ -74,6 +74,47 @@ INTERP() INTERP(_create)(unsigned int _M,
     return q;
 }
 
+// create interpolator from prototype
+//  _M      :   interpolation factor
+//  _m      :   symbol delay
+//  _As     :   stop-band attenuation [dB]
+INTERP() INTERP(_create_prototype)(unsigned int _M,
+                                   unsigned int _m,
+                                   float _As)
+{
+    // validate input
+    if (_M < 2) {
+        fprintf(stderr,"error: interp_xxxt_create_prototype(), interp factor must be greater than 1\n");
+        exit(1);
+    } else if (_m == 0) {
+        fprintf(stderr,"error: interp_xxxt_create_prototype(), filter delay must be greater than 0\n");
+        exit(1);
+    } else if (_As < 0.0f) {
+        fprintf(stderr,"error: interp_xxxt_create_prototype(), stop-band attenuation must be positive\n");
+        exit(1);
+    }
+
+    INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
+    q->h_len = 2*_M*_m + 1;
+    q->M = _M;
+    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
+
+    // create filter using Kaiser window design
+    float hf[q->h_len];
+    float fc = 0.5f / (float) (q->M);
+    firdes_kaiser_window(q->h_len, fc, _As, 0.0f, hf);
+
+    // load filter in reverse order
+    unsigned int i;
+    for (i=0; i<q->h_len; i++)
+        q->h[i] = hf[q->h_len-i-1];
+
+    q->w = WINDOW(_create)(q->h_len);
+    WINDOW(_clear)(q->w);
+
+    return q;
+}
+
 // interp_xxxt_create_rnyquist()
 //
 // create root raised-cosine interpolator
