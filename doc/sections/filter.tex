@@ -1118,8 +1118,10 @@ high-frequency component.
 %
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
 \label{module:filter:iirdes}
-\liquid\ implements infinite impulse respone (IIR) filter design for the four
-major classes of filters (Butterworth, Chebyshev, elliptic, and Bessel) by
+\liquid\ implements infinite impulse respone (IIR) filter design for the
+five major classes of filters
+(Butterworth, Chebyshev type-I, Chebyshef type-II, elliptic, and Bessel)
+by
 first computing their analog low-pass prototypes, performing a bilinear
 $z$-transform to convert to the digital domain, then transforming to the
 appropriate band type (e.g. high pass) if necessary.
@@ -1176,7 +1178,25 @@ Specifically, the interface is
     coefficients, respectively.
     The format and size of these arrays depends on the value of the
     {\tt \_format} and {\tt \_btype} parameters.
+    To compute the specific lengths of the arrays, first define the
+    effective filter order $N$ which is the same as the specified filter
+    order for low- and high- pass filters, and doubled for band-pass and
+    band-stop filters.
+    If the the format is {\tt LIQUID\_IIRDES\_TF}
+    (the regular transfer function format)
+    then the size of {\tt \_B} and {\tt \_A} is simply $N$.
+    If, on the other hand, the format is {\tt LIQUID\_IIRDES\_SOS}
+    (second-order sections format) then a few extra steps are needed:
+    define $r$ as $0$ when $N$ is even and $1$ when $N$ is odd, and
+    define $L$ as $(N-r)/2$.
+    The sizes of {\tt \_B} and {\tt \_A} for the second-order sections
+    case are each $3(L+r)$.
 \end{itemize}
+%
+As an example, the following example designs a $5^{th}$-order elliptic
+band-pass filter with a bandwidth
+%
+\input{listings/iirdes.example.c.tex}
 
 \subsubsection{internal description}
 \label{module:filter:iirdes:internal}

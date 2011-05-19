@@ -90,6 +90,7 @@ LISTINGS_C = 					\
 	listings/gradsearch.example.c		\
 	listings/gport.direct.example.c		\
 	listings/gport.indirect.example.c	\
+	listings/iirdes.example.c		\
 	listings/iirfilt.example.c		\
 	listings/interp.example.c		\
 	listings/interleaver.example.c		\
