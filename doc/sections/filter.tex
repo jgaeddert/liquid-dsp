@@ -934,6 +934,13 @@ functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
 \item[{\tt interp\_crcf\_create(M,*h,N)}]
     creates an {\tt interp} object with an interpolation factor $M$
     using $N$ filter coefficients $\vec{h}$.
+\item[{\tt interp\_crcf\_create\_prototype(M,m,As)}]
+    create an {\tt interp} object using a filter prototype designed
+    using the {\tt firdes\_kaiser\_window()} method
+    (see Section~\ref{module:filter:firdes})
+    with a normalized cut-off frequency $1/2M$,
+    a filter length of $2Mm$ coefficients,
+    and a stop-band attenuation of $A_s$~dB.
 \item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
     creates an {\tt interp} object
     from a square-root Nyquist filter prototype with
