@@ -416,15 +416,53 @@ An example of a low-pass filter design using the Kaiser window can be
 found in Figure~\ref{fig:module:filter:firdes_kaiser}.
 
 
-%\subsubsection{{\tt rcos} (raised-cosine filter)}
-%\label{module:filter:firdes:rcos}
-
-\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
-\label{module:filter:firdes:rnyquist}
+\subsubsection{{\tt nyquist} (Nyquist filter design)}
+\label{module:filter:firdes:nyquist}
 Nyquist's criteria for designing a band-limited filter without
 inter-symbol interference is for the spectral response of a linear phase
 filter to be symmetric about its symbol rate.
 %
+\liquid\ provides several Nyquist filters as design prototypes and are
+listed in Table~\ref{tab:filter:nyquist}.
+%
+% ------------ TABLE: NYQUIST PROTOTYPES ------------
+\begin{table*}
+\caption{Nyquist filter prototypes available in \liquid}
+\label{tab:filter:nyquist}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}l}
+\toprule
+{\it scheme} &
+{\it description}\\\otoprule
+%
+{\tt LIQUID\_NYQUIST\_KAISER}   & Kaiser filter\\
+{\tt LIQUID\_NYQUIST\_PM}       & Parks-McClellan algorithm\\
+{\tt LIQUID\_NYQUIST\_RCOS}     & raised cosine\\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+%
+The interface for designing Nyquist filters is simply
+%
+\begin{Verbatim}[fontsize=\small]
+    design_nyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+\end{Verbatim}
+%
+where {\tt \_ftype} is one of the filter types in
+Table~\ref{tab:filter:nyquist},
+$k$ is the number of samples per symbol,
+$m$ is the filter delay in symbols,
+$\beta$ is the excess bandwidth (rolloff) factor,
+$\Delta t$ is the fractional sample delay (usually set to zero for
+  typical filter designs
+  and is ignored in the {\tt LIQUID\_NYQUIST\_PM} design),
+and $h$ is the output coefficients array of length $2km+1$.
+%
+
+\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
+\label{module:filter:firdes:rnyquist}
 Square-root Nyquist filters are commonly used in digital communcations
 systems with linear modulation as a pulse shape for matched filtering.
 Applying a pulse shape to the transmitted symbol sequence limits its
