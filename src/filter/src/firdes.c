@@ -278,11 +278,59 @@ void firdes_kaiser_window(unsigned int _n,
     }
 }
 
+// Design Nyquist filter
+//  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : excess bandwidth factor, _beta in [0,1]
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_nyquist_filter(liquid_nyquist_type _type,
+                           unsigned int _k,
+                           unsigned int _m,
+                           float _beta,
+                           float _dt,
+                           float * _h)
+{
+    // compute filter parameters
+    unsigned int h_len = 2*_k*_m + 1;   // length
+    float fc = 0.5f / (float)_k;        // cut-off frequency
+    float df = _beta / (float)_k;       // transition bandwidth
+    float As = estimate_req_filter_As(df,h_len);   // stop-band attenuation
+
+    // Parks-McClellan algorithm parameters
+    float bands[6] = {  0.0f,       fc-0.5f*df,
+                        fc,         fc,
+                        fc+0.5f*df, 0.5f};
+    float des[3] = { (float)_k, 0.5f*_k, 0.0f };
+    float weights[3] = {1.0f, 1.0f, 1.0f};
+    liquid_firdespm_wtype wtype[3] = {  LIQUID_FIRDESPM_FLATWEIGHT,
+                                        LIQUID_FIRDESPM_FLATWEIGHT,
+                                        LIQUID_FIRDESPM_FLATWEIGHT};
+
+    switch (_type) {
+    case LIQUID_NYQUIST_KAISER:
+        firdes_kaiser_window(h_len, fc, As, _dt, _h);
+        break;
+    case LIQUID_NYQUIST_PM:
+        // WARNING: input timing offset is ignored here
+        firdespm_run(h_len, 3, bands, des, weights, wtype, LIQUID_FIRDESPM_BANDPASS, _h);
+        break;
+    case LIQUID_NYQUIST_RCOS:
+        design_rcos_filter(_k, _m, _beta, _dt, _h);
+        break;
+    default:
+        fprintf(stderr,"error: design_nyquist_filter(), invalid filter type '%d'\n", _type);
+        exit(1);
+    }
+}
+
+
 // Design root-Nyquist filter
 //  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
 //  _k      : samples/symbol
 //  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
+//  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
 void design_rnyquist_filter(liquid_rnyquist_type _type,

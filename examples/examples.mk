@@ -71,6 +71,7 @@ local_src	:=			\
 	nco_example.c			\
 	nco_pll_example.c		\
 	nco_pll_modem_example.c		\
+	nyquist_filter_example.c	\
 	ofdmframe64gen_example.c	\
 	ofdmframe64sync_example.c	\
 	ofdmframesync_example.c		\
