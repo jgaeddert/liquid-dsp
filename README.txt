@@ -13,7 +13,21 @@ flexible, scalable, and dynamic, including filters, filter design,
 oscillators, modems, synchronizers, and complex mathematical operations.
 
 For more information, please refer to the full documentation directory
-under doc/.
+'doc/' or download the pre-compiled .pdf documentation file from
+http://ganymede.ece.vt.edu/downloads/liquid.pdf
+
+=========================================================================
+ Installation and Dependencies
+=========================================================================
+
+liquid-dsp only relies on libc (standard C) and libm (math) libraries to
+run, however takes advantage of other packages if they are available.
+
+Mac OS X:
+    $ sudo port install fftw-3-single
+
+Ubuntu
+    $ sudo apt-get install libfftw3-dev
 
 BUILD:
     $ ./reconf
@@ -40,19 +54,8 @@ EXAMPLES: Nearly all signal processing elements have a corresponding
 BENCHMARK:
     $ make bench
 
-Using oprofile (http://oprofile.sourceforge.net/) with the benchmark
-tool to profile liquid
-    # opcontrol --setup --no-vmlinux
-    # opcontrol --reset
-    # opcontrol --start
-    $ ./benchmark -p0 -c2.0e9 -n1000000
-    # opcontrol --shutdown
-    # opannotate --source | vim -
-        or
-    # opreport --callgraph -t 0.01 | vim -
-
 Modules: description
-    agc: automatic gain control
+    agc: automatic gain control, squelch, rssi
     audio: source audio encoders/decoders: cvsd, filterbanks...
     buffer: internal buffering, circular/static, ports (threaded)
     dotprod: dot products (real, complex)
@@ -60,16 +63,15 @@ Modules: description
     fec: forward error correction (basic), checksum, crc, etc.
     fft: fast Fourier transform (basic), simple implementation
     filter: fir, iir, polyphase, hilbert, interp, decim, design,
-            remez,...
+      resampling, symbol timing recovery
     framing: packet framing, encoding, synchronization, interleaving
     math: transcendental functions not in the C standard library (gamma,
-          besseli, etc.)
+      besseli, etc.), polynomial operations (roots, etc.)
     matrix: basic math, lu_decomp, inv, gauss_elim, 
     modem: modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
-    multicarrier: OFDM/OQAM, OFDM...
+    multicarrier: channelizers, OFDM/OQAM, OFDM...
     nco: numerically-controlled oscillator: mix, pll
     optim: newton_raphson, ga, gradient
-    [polynomial]: roots, etc.
     quantization: analog/digital converters, companding...
     random: random number generators
     sequence: lfsr, complementary_code
@@ -83,74 +85,6 @@ Additional:
     benchmarking tool
     automatic test scripts
     full documentation (NOT doxygen)
-
-Dependencies
-    liquid-dsp only relies on libc (standard C) and libm (math)
-    libraries to run, however takes advantage of other packages if they
-    are available.
-
-    Mac OS X:
-        $ sudo port install fftw-3-single
-
-    Ubuntu
-        $ sudo apt-get install libfftw3-dev
-
-Source code organization
-liquid/
-    README.txt                  <-- this file
-    configure.ac                <-- configuration shell script prototype (autoconf)
-    makefile.in                 <-- top-level makefile prototype
-    reconf                      <-- bootstrapping shell script
-    doc/
-        makefile.in             <-- documentation makefile prototype
-        liquid.tex              <-- main documentation LaTeX file
-        sections/               <-- LaTeX sections
-        src/
-        ...
-    include/
-        liquid.h                <-- external header, defines
-                                    all APIsfor external use
-        liquid.internal.h       <-- internal header
-        liquid.experimental.h   <-- experimental header
-    src/
-        module1/
-            module.mk           <-- top-level included makefile for
-                                    building this specific module
-            README
-            src/
-                object_a.c      <-- internal source
-                object_b.c      <-- internal source
-                ...
-            tests/
-                autotest_a.h    <-- autotest script
-                autotest_b.h    <-- autotest script
-                ...
-            bench/
-                benchmark_a.h   <-- benchmark script
-                benchmark_b.h   <-- benchmark script
-                ...
-        module2/
-            ...
-    examples/
-        example.mk              <-- top-level included makefile
-        README                  <-- description of examples
-        example1.c              <-- example program source
-        example2.c              <-- example program source
-
-=========================================================================
- Misc
-=========================================================================
-
-RELEASE:
-To build a distribution, move to directory above this one and make a
-compressed archive.  Notice that an exclude file is conveniently
-included within this directory.
-
-  $ cd ..
-  $ tar -czf liquid-dsp-VERSION.tar.gz -X liquid-dsp/.tarignore liquid-dsp/
-
-Replace 'VERSION' with the appropriate version number
-
 
 =========================================================================
  References

@@ -1,0 +1,16 @@
+Major improvements since 1.0.0
+  * build
+    - simplifying build environment by explicitly defining object
+      dependencies (no longer auto-generated; much faster now)
+  * filter
+    - firdes: adding Nyquist prototyping design method
+    - interp: porting to efficient polyphase filterbank implementation,
+      adding prototype create() method
+  * modem
+    - adding simple on/off keying (OOK) type
+    - adding 256-APSK type
+    - adding 'square' (cross) 32-, 128-QAM types
+  * multicarrier
+    - ofdmframe: improving synchronization and reliability in
+      interference environments, enabling squelch, improving
+      equalization
