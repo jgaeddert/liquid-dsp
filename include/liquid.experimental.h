@@ -40,11 +40,6 @@ extern "C" {
 #include "liquid.h"
 
 
-// 
-// MODULE : experimental
-//
-
-
 //
 // SUBMODULE : ann (artificial neural network)
 // 
@@ -536,32 +531,6 @@ struct channel_s {
 
 
 //
-// SUBMODULE : modem
-//
-
-//
-// Continuous phase modems
-//
-typedef enum {
-    CPMOD_FSK,
-    CPMOD_MSK
-} cpmodem_scheme;
-
-typedef struct cpmodem_s * cpmodem;
-cpmodem cpmodem_create(cpmodem_scheme _ms,
-                       unsigned int _bps,
-                       unsigned int _k);
-void cpmodem_destroy(cpmodem _mod);
-void cpmodem_print(cpmodem _mod);
-void cpmodem_modulate(cpmodem _mod,
-                      unsigned int _s,
-                      liquid_float_complex *_y);
-void cpmodem_demodulate(cpmodem _mod,
-                        liquid_float_complex *_x,
-                        unsigned int * _s);
-
-
-//
 // SUBMODULE : filter
 //
 
@@ -903,6 +872,104 @@ void gmskframesync_execute(gmskframesync _fg,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
+
+
+//
+// SUBMODULE : multicarrier
+//
+
+// data arrays
+const extern liquid_float_complex ofdmframe64_plcp_Sf[64];
+const extern liquid_float_complex ofdmframe64_plcp_St[64];
+const extern liquid_float_complex ofdmframe64_plcp_Lf[64];
+const extern liquid_float_complex ofdmframe64_plcp_Lt[64];
+
+// ofdmframe64gen
+typedef struct ofdmframe64gen_s * ofdmframe64gen;
+ofdmframe64gen ofdmframe64gen_create();
+void ofdmframe64gen_destroy(ofdmframe64gen _q);
+void ofdmframe64gen_print(ofdmframe64gen _q);
+void ofdmframe64gen_reset(ofdmframe64gen _q);
+// short PLCP training sequence (160 samples)
+void ofdmframe64gen_writeshortsequence(ofdmframe64gen _q,
+                                       liquid_float_complex *_y);
+// long PLCP training sequence (160 samples)
+void ofdmframe64gen_writelongsequence(ofdmframe64gen _q,
+                                      liquid_float_complex *_y);
+void ofdmframe64gen_writeheader(ofdmframe64gen _q,
+                                liquid_float_complex *_y);
+void ofdmframe64gen_writesymbol(ofdmframe64gen _q,
+                                liquid_float_complex *_x,
+                                liquid_float_complex *_y);
+
+// ofdmframe64sync
+typedef int (*ofdmframe64sync_callback)(liquid_float_complex * _y,
+                                        void * _userdata);
+typedef struct ofdmframe64sync_s * ofdmframe64sync;
+ofdmframe64sync ofdmframe64sync_create(ofdmframe64sync_callback _callback,
+                                       void * _userdata);
+void ofdmframe64sync_destroy(ofdmframe64sync _q);
+void ofdmframe64sync_print(ofdmframe64sync _q);
+void ofdmframe64sync_reset(ofdmframe64sync _q);
+void ofdmframe64sync_execute(ofdmframe64sync _q,
+                            liquid_float_complex * _x,
+                            unsigned int _n);
+
+//
+// SUBMODULE-INTERNAL : multicarrier
+//
+
+#define OFDMFRAME64_SCTYPE_NULL     0
+#define OFDMFRAME64_SCTYPE_PILOT    1
+#define OFDMFRAME64_SCTYPE_DATA     2
+int ofdmframe64_getsctype(unsigned int _id);
+
+// ofdmframe64sync
+void ofdmframe64sync_debug_print(ofdmframe64sync _q);
+void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q, float complex _x);
+void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q, float complex _x);
+void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q, float complex _x);
+void ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q);
+void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q);
+void ofdmframe64sync_compute_plcplong0(ofdmframe64sync _q);
+void ofdmframe64sync_compute_plcplong1(ofdmframe64sync _q);
+void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q);
+void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q);
+void ofdmframe64sync_smooth_gain(ofdmframe64sync _q,
+                                 float _alpha,
+                                 unsigned int _range);
+void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x);
+extern const float complex ofdmframe64_plcp_Sf[64];
+extern const float complex ofdmframe64_plcp_St[64];
+extern const float complex ofdmframe64_plcp_Lf[64];
+extern const float complex ofdmframe64_plcp_Lt[64];
+
+
+
+//
+// SUBMODULE : modem
+//
+
+//
+// Continuous phase modems
+//
+typedef enum {
+    CPMOD_FSK,
+    CPMOD_MSK
+} cpmodem_scheme;
+
+typedef struct cpmodem_s * cpmodem;
+cpmodem cpmodem_create(cpmodem_scheme _ms,
+                       unsigned int _bps,
+                       unsigned int _k);
+void cpmodem_destroy(cpmodem _mod);
+void cpmodem_print(cpmodem _mod);
+void cpmodem_modulate(cpmodem _mod,
+                      unsigned int _s,
+                      liquid_float_complex *_y);
+void cpmodem_demodulate(cpmodem _mod,
+                        liquid_float_complex *_x,
+                        unsigned int * _s);
 
 
 

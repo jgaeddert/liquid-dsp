@@ -1415,32 +1415,6 @@ void ofdmframesync_estimate_eqgain_poly(ofdmframesync _q,
 // recover symbol, correcting for gain, pilot phase, etc.
 void ofdmframesync_rxsymbol(ofdmframesync _q);
 
-#define OFDMFRAME64_SCTYPE_NULL     0
-#define OFDMFRAME64_SCTYPE_PILOT    1
-#define OFDMFRAME64_SCTYPE_DATA     2
-int ofdmframe64_getsctype(unsigned int _id);
-
-// ofdmframe64sync
-void ofdmframe64sync_debug_print(ofdmframe64sync _q);
-void ofdmframe64sync_execute_plcpshort(ofdmframe64sync _q, float complex _x);
-void ofdmframe64sync_execute_plcplong0(ofdmframe64sync _q, float complex _x);
-void ofdmframe64sync_execute_plcplong1(ofdmframe64sync _q, float complex _x);
-void ofdmframe64sync_estimate_cfo_plcplong(ofdmframe64sync _q);
-void ofdmframe64sync_correct_cfo_plcplong(ofdmframe64sync _q);
-void ofdmframe64sync_compute_plcplong0(ofdmframe64sync _q);
-void ofdmframe64sync_compute_plcplong1(ofdmframe64sync _q);
-void ofdmframe64sync_estimate_gain_plcplong(ofdmframe64sync _q);
-void ofdmframe64sync_estimate_gain_plcplong_flat(ofdmframe64sync _q);
-void ofdmframe64sync_smooth_gain(ofdmframe64sync _q,
-                                 float _alpha,
-                                 unsigned int _range);
-void ofdmframe64sync_execute_rxpayload(ofdmframe64sync _q, float complex _x);
-extern const float complex ofdmframe64_plcp_Sf[64];
-extern const float complex ofdmframe64_plcp_St[64];
-extern const float complex ofdmframe64_plcp_Lf[64];
-extern const float complex ofdmframe64_plcp_Lt[64];
-
-
 // 
 // ofdm/oqam framing
 //
