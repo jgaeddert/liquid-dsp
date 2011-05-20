@@ -2797,7 +2797,6 @@ typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
 //  _m      :   filter delay (symbols), 3 typical
 //  _beta   :   filter excess bandwidth factor, 0.9 typical
 //  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
-//  TODO    :   include placeholder for guard bands, pilots
 //  NOTES
 //    - The number of subcarriers must be even, typically at least 16
 //    - If _p is a NULL pointer, then the frame generator will use
