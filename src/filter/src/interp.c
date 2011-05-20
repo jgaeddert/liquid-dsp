@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define INTERP_USE_PPFB 1
+
 // defined:
 //  INTERP()    name-mangling macro
 //  TO          output data type
@@ -36,15 +38,16 @@
 //  PRINTVAL()  print macro
 
 struct INTERP(_s) {
-    TC * h;
-    unsigned int h_len;
-    unsigned int M;
+    TC * h;                 // prototype filter coefficients
+    unsigned int h_len;     // prototype filter length
+    unsigned int M;         // interpolation factor
 
-    WINDOW() w;
-    DOTPROD() dp;
-
-#if 0
-    fir_prototype p;    // prototype object
+#if INTERP_USE_PPFB
+    unsigned int m;         // sub-filter length
+    FIRPFB() filterbank;    // polyphase filterban object
+#else
+    WINDOW() w;             // window buffer
+    DOTPROD() dp;           // dot product object
 #endif
 };
 
@@ -62,18 +65,39 @@ INTERP() INTERP(_create)(unsigned int _M,
     INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
     q->M = _M;
     q->h_len = _h_len;
-    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
 
-    // load filter in reverse order
+#if INTERP_USE_PPFB
+    // compute effective filter length (pad end with zeros)
+    q->m=0;
+    while (q->M * q->m < _h_len)
+        q->m++;
+
+    q->h_len = q->M * q->m;
+    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
+#else
+    q->h = (TC*) malloc((q->h_len)*sizeof(TC));
+#endif
+
     unsigned int i;
+#if INTERP_USE_PPFB
+    // load filter coefficients in regular order
+    for (i=0; i<q->h_len; i++)
+        q->h[i] = i < _h_len ? _h[i] : 0.0f;
+
+    // create filterbank
+    q->filterbank = FIRPFB(_create)(q->M, q->h, q->h_len);
+#else
+    // load filter in reverse order
     for (i=0; i<q->h_len; i++)
         q->h[i] = _h[_h_len-i-1];
 
     // create dot product object
     q->dp = DOTPROD(_create)(q->h, q->h_len);
 
+    // create window object
     q->w = WINDOW(_create)(q->h_len);
     WINDOW(_clear)(q->w);
+#endif
 
     return q;
 }
@@ -98,6 +122,7 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
         exit(1);
     }
 
+#if 0
     INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
     q->h_len = 2*_M*_m + 1;
     q->M = _M;
@@ -120,6 +145,21 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
     WINDOW(_clear)(q->w);
 
     return q;
+#else
+    unsigned int h_len = 2*_M*_m + 1;
+    float hf[h_len];
+    float fc = 0.5f / (float) (_M);
+    firdes_kaiser_window(h_len, fc, _As, 0.0f, hf);
+
+    // copy to type-specific array
+    TC hc[h_len];
+    unsigned int i;
+    for (i=0; i<h_len; i++)
+        hc[i] = hf[i];
+    
+    //
+    return INTERP(_create)(_M, hc, 2*_M*_m);
+#endif
 }
 
 // interp_xxxt_create_rnyquist()
@@ -152,8 +192,12 @@ INTERP() INTERP(_create_rnyquist)(int _type,
 // destroy interpolator object
 void INTERP(_destroy)(INTERP() _q)
 {
+#if INTERP_USE_PPFB
+    FIRPFB(_destroy)(_q->filterbank);
+#else
     WINDOW(_destroy)(_q->w);
     DOTPROD(_destroy)(_q->dp);
+#endif
     free(_q->h);
     free(_q);
 }
@@ -162,16 +206,24 @@ void INTERP(_destroy)(INTERP() _q)
 void INTERP(_print)(INTERP() _q)
 {
     printf("interp() [%u] :\n", _q->M);
+#if INTERP_USE_PPFB
+    FIRPFB(_print)(_q->filterbank);
+#else
     printf("  window:\n");
     WINDOW(_print)(_q->w);
     printf("  dotprod:\n");
     DOTPROD(_print)(_q->dp);
+#endif
 }
 
 // clear internal state
 void INTERP(_clear)(INTERP() _q)
 {
+#if INTERP_USE_PPFB
+    FIRPFB(_clear)(_q->filterbank);
+#else
     WINDOW(_clear)(_q->w);
+#endif
 }
 
 // interp_xxxt_execute()
@@ -185,6 +237,15 @@ void INTERP(_execute)(INTERP() _q,
                       TI _x,
                       TO *_y)
 {
+#if INTERP_USE_PPFB
+    FIRPFB(_push)(_q->filterbank,  _x);
+
+    // compute outputs
+    unsigned int i;
+    for (i=0; i<_q->M; i++) {
+        FIRPFB(_execute)(_q->filterbank, i, &_y[i]);
+    }
+#else
     TI * r; // read pointer
 
     unsigned int i;
@@ -203,5 +264,6 @@ void INTERP(_execute)(INTERP() _q,
         DOTPROD(_execute)(_q->dp, r, &_y[i]);
 #endif
     }
+#endif
 }
 
