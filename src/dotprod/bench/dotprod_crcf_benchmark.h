@@ -42,17 +42,22 @@ void dotprod_crcf_bench(struct rusage *_start,
         h[i] = 1.0f;
     }
 
+    // create dotprod structure;
+    dotprod_crcf dp = dotprod_crcf_create(h,_n);
+
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        dotprod_crcf_run(h, x, _n, &y);
-        dotprod_crcf_run(h, x, _n, &y);
-        dotprod_crcf_run(h, x, _n, &y);
-        dotprod_crcf_run(h, x, _n, &y);
+        dotprod_crcf_execute(dp, x, &y);
+        dotprod_crcf_execute(dp, x, &y);
+        dotprod_crcf_execute(dp, x, &y);
+        dotprod_crcf_execute(dp, x, &y);
     }
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 
+    // clean up objects
+    dotprod_crcf_destroy(dp);
 }
 
 #define DOTPROD_CRCF_BENCHMARK_API(N)   \
