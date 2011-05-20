@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_INTERP_RRRF_BENCHMARK_H__
-#define __LIQUID_INTERP_RRRF_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -33,9 +30,8 @@ void interp_rrrf_bench(struct rusage *_start,
                        unsigned int _h_len)
 {
     // normalize number of iterations
-    *_num_iterations *= 128;
+    *_num_iterations *= 80;
     *_num_iterations /= _h_len;
-    *_num_iterations /= _M;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     float h[_h_len];
@@ -70,6 +66,5 @@ void benchmark_interp_rrrf_m2_h8    INTERP_RRRF_BENCHMARK_API(2, 8)
 void benchmark_interp_rrrf_m4_h16   INTERP_RRRF_BENCHMARK_API(4, 16)
 void benchmark_interp_rrrf_m8_h32   INTERP_RRRF_BENCHMARK_API(8, 32)
 void benchmark_interp_rrrf_m16_h64  INTERP_RRRF_BENCHMARK_API(16,64)
-
-#endif // __LIQUID_INTERP_RRRF_BENCHMARK_H__
+void benchmark_interp_rrrf_m32_h128 INTERP_RRRF_BENCHMARK_API(32,128)
 
