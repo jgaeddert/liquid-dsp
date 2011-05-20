@@ -41,7 +41,7 @@ struct INTERP(_s) {
     unsigned int M;
 
     WINDOW() w;
-    //DOTPROD() dp;
+    DOTPROD() dp;
 
 #if 0
     fir_prototype p;    // prototype object
@@ -58,15 +58,19 @@ INTERP() INTERP(_create)(unsigned int _M,
                          TC *_h,
                          unsigned int _h_len)
 {
+    // TODO : validate input
     INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
+    q->M = _M;
     q->h_len = _h_len;
     q->h = (TC*) malloc((q->h_len)*sizeof(TC));
+
     // load filter in reverse order
     unsigned int i;
     for (i=0; i<q->h_len; i++)
         q->h[i] = _h[_h_len-i-1];
 
-    q->M = _M;
+    // create dot product object
+    q->dp = DOTPROD(_create)(q->h, q->h_len);
 
     q->w = WINDOW(_create)(q->h_len);
     WINDOW(_clear)(q->w);
@@ -109,6 +113,9 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
     for (i=0; i<q->h_len; i++)
         q->h[i] = hf[q->h_len-i-1];
 
+    // create dot product object
+    q->dp = DOTPROD(_create)(q->h, q->h_len);
+
     q->w = WINDOW(_create)(q->h_len);
     WINDOW(_clear)(q->w);
 
@@ -146,6 +153,7 @@ INTERP() INTERP(_create_rnyquist)(int _type,
 void INTERP(_destroy)(INTERP() _q)
 {
     WINDOW(_destroy)(_q->w);
+    DOTPROD(_destroy)(_q->dp);
     free(_q->h);
     free(_q);
 }
@@ -156,6 +164,8 @@ void INTERP(_print)(INTERP() _q)
     printf("interp() [%u] :\n", _q->M);
     printf("  window:\n");
     WINDOW(_print)(_q->w);
+    printf("  dotprod:\n");
+    DOTPROD(_print)(_q->dp);
 }
 
 // clear internal state
@@ -185,7 +195,13 @@ void INTERP(_execute)(INTERP() _q,
             WINDOW(_push)(_q->w,0);
 
         WINDOW(_read)(_q->w,&r);
+
+        // execute dot product
+#if 0
         DOTPROD(_run4)(_q->h, r, _q->h_len, &_y[i]);
+#else
+        DOTPROD(_execute)(_q->dp, r, &_y[i]);
+#endif
     }
 }
 
