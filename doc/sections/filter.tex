@@ -416,15 +416,53 @@ An example of a low-pass filter design using the Kaiser window can be
 found in Figure~\ref{fig:module:filter:firdes_kaiser}.
 
 
-%\subsubsection{{\tt rcos} (raised-cosine filter)}
-%\label{module:filter:firdes:rcos}
-
-\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
-\label{module:filter:firdes:rnyquist}
+\subsubsection{{\tt nyquist} (Nyquist filter design)}
+\label{module:filter:firdes:nyquist}
 Nyquist's criteria for designing a band-limited filter without
 inter-symbol interference is for the spectral response of a linear phase
 filter to be symmetric about its symbol rate.
 %
+\liquid\ provides several Nyquist filters as design prototypes and are
+listed in Table~\ref{tab:filter:nyquist}.
+%
+% ------------ TABLE: NYQUIST PROTOTYPES ------------
+\begin{table*}
+\caption{Nyquist filter prototypes available in \liquid}
+\label{tab:filter:nyquist}
+\centering
+{\small
+\begin{tabular*}{0.75\textwidth}{l@{\extracolsep{\fill}}l}
+\toprule
+{\it scheme} &
+{\it description}\\\otoprule
+%
+{\tt LIQUID\_NYQUIST\_KAISER}   & Kaiser filter\\
+{\tt LIQUID\_NYQUIST\_PM}       & Parks-McClellan algorithm\\
+{\tt LIQUID\_NYQUIST\_RCOS}     & raised cosine\\\bottomrule
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+%
+The interface for designing Nyquist filters is simply
+%
+\begin{Verbatim}[fontsize=\small]
+    design_nyquist_filter(_ftype, _k, _m, _beta, _dt, *h);
+\end{Verbatim}
+%
+where {\tt \_ftype} is one of the filter types in
+Table~\ref{tab:filter:nyquist},
+$k$ is the number of samples per symbol,
+$m$ is the filter delay in symbols,
+$\beta$ is the excess bandwidth (rolloff) factor,
+$\Delta t$ is the fractional sample delay (usually set to zero for
+  typical filter designs
+  and is ignored in the {\tt LIQUID\_NYQUIST\_PM} design),
+and $h$ is the output coefficients array of length $2km+1$.
+%
+
+\subsubsection{{\tt rnyquist} (square-root Nyquist filter design)}
+\label{module:filter:firdes:rnyquist}
 Square-root Nyquist filters are commonly used in digital communcations
 systems with linear modulation as a pulse shape for matched filtering.
 Applying a pulse shape to the transmitted symbol sequence limits its
@@ -896,6 +934,13 @@ functionality applies to {\tt interp\_rrrf} and {\tt interp\_cccf}.
 \item[{\tt interp\_crcf\_create(M,*h,N)}]
     creates an {\tt interp} object with an interpolation factor $M$
     using $N$ filter coefficients $\vec{h}$.
+\item[{\tt interp\_crcf\_create\_prototype(M,m,As)}]
+    create an {\tt interp} object using a filter prototype designed
+    using the {\tt firdes\_kaiser\_window()} method
+    (see Section~\ref{module:filter:firdes})
+    with a normalized cut-off frequency $1/2M$,
+    a filter length of $2Mm$ coefficients,
+    and a stop-band attenuation of $A_s$~dB.
 \item[{\tt interp\_crcf\_create\_rnyquist(type,k,m,beta,dt)}]
     creates an {\tt interp} object
     from a square-root Nyquist filter prototype with
@@ -1073,8 +1118,10 @@ high-frequency component.
 %
 \subsection{{\tt iirdes} (infinite impulse response filter design)}
 \label{module:filter:iirdes}
-\liquid\ implements infinite impulse respone (IIR) filter design for the four
-major classes of filters (Butterworth, Chebyshev, elliptic, and Bessel) by
+\liquid\ implements infinite impulse respone (IIR) filter design for the
+five major classes of filters
+(Butterworth, Chebyshev type-I, Chebyshef type-II, elliptic, and Bessel)
+by
 first computing their analog low-pass prototypes, performing a bilinear
 $z$-transform to convert to the digital domain, then transforming to the
 appropriate band type (e.g. high pass) if necessary.
@@ -1131,7 +1178,25 @@ Specifically, the interface is
     coefficients, respectively.
     The format and size of these arrays depends on the value of the
     {\tt \_format} and {\tt \_btype} parameters.
+    To compute the specific lengths of the arrays, first define the
+    effective filter order $N$ which is the same as the specified filter
+    order for low- and high- pass filters, and doubled for band-pass and
+    band-stop filters.
+    If the the format is {\tt LIQUID\_IIRDES\_TF}
+    (the regular transfer function format)
+    then the size of {\tt \_B} and {\tt \_A} is simply $N$.
+    If, on the other hand, the format is {\tt LIQUID\_IIRDES\_SOS}
+    (second-order sections format) then a few extra steps are needed:
+    define $r$ as $0$ when $N$ is even and $1$ when $N$ is odd, and
+    define $L$ as $(N-r)/2$.
+    The sizes of {\tt \_B} and {\tt \_A} for the second-order sections
+    case are each $3(L+r)$.
 \end{itemize}
+%
+As an example, the following example designs a $5^{th}$-order elliptic
+band-pass filter with a bandwidth
+%
+\input{listings/iirdes.example.c.tex}
 
 \subsubsection{internal description}
 \label{module:filter:iirdes:internal}

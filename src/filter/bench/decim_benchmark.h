@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_DECIM_RRRF_BENCHMARK_H__
-#define __LIQUID_DECIM_RRRF_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -58,16 +55,15 @@ void decim_rrrf_bench(struct rusage *_start,
     decim_rrrf_destroy(q);
 }
 
-#define DECIM_RRRF_BENCHMARK_API(M,H_LEN)    \
-(   struct rusage *_start,              \
-    struct rusage *_finish,             \
-    unsigned long int *_num_iterations) \
+#define DECIM_RRRF_BENCHMARK_API(M,H_LEN)   \
+(   struct rusage *_start,                  \
+    struct rusage *_finish,                 \
+    unsigned long int *_num_iterations)     \
 { decim_rrrf_bench(_start, _finish, _num_iterations, M, H_LEN); }
 
-void benchmark_decim_m2_h8      DECIM_RRRF_BENCHMARK_API(2, 8)
-void benchmark_decim_m4_h16     DECIM_RRRF_BENCHMARK_API(4, 16)
-void benchmark_decim_m8_h32     DECIM_RRRF_BENCHMARK_API(8, 32)
-void benchmark_decim_m16_h64    DECIM_RRRF_BENCHMARK_API(16,64)
-
-#endif // __LIQUID_BENCH_BENCHMARK_H__
+void benchmark_decim_rrrf_m2_h8     DECIM_RRRF_BENCHMARK_API(2, 8)
+void benchmark_decim_rrrf_m4_h16    DECIM_RRRF_BENCHMARK_API(4, 16)
+void benchmark_decim_rrrf_m8_h32    DECIM_RRRF_BENCHMARK_API(8, 32)
+void benchmark_decim_rrrf_m16_h64   DECIM_RRRF_BENCHMARK_API(16,64)
+void benchmark_decim_rrrf_m32_h128  DECIM_RRRF_BENCHMARK_API(32,128)
 

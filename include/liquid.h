@@ -644,6 +644,27 @@ float estimate_req_filter_df(float _As,
 float kaiser_beta_As(float _As);
 
 
+// Nyquist filter prototypes
+typedef enum {
+    LIQUID_NYQUIST_KAISER=0,    // Nyquist Kaiser filter
+    LIQUID_NYQUIST_PM,          // Parks-McClellan filter
+    LIQUID_NYQUIST_RCOS         // raised-cosine filter
+} liquid_nyquist_type;
+
+// Design Nyquist filter
+//  _type   : filter type (e.g. LIQUID_NYQUIST_RCOS)
+//  _k      : samples/symbol
+//  _m      : symbol delay
+//  _beta   : excess bandwidth factor, _beta in [0,1]
+//  _dt     : fractional sample delay
+//  _h      : output coefficient buffer (length: 2*k*m+1)
+void design_nyquist_filter(liquid_nyquist_type _type,
+                           unsigned int _k,
+                           unsigned int _m,
+                           float _beta,
+                           float _dt,
+                           float * _h);
+
 
 // Design FIR filter using Parks-McClellan algorithm
 
@@ -757,7 +778,7 @@ typedef enum {
 //  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)
 //  _k      : samples/symbol
 //  _m      : symbol delay
-//  _beta   : rolloff factor (0 < beta <= 1)
+//  _beta   : excess bandwidth factor, _beta in [0,1]
 //  _dt     : fractional sample delay
 //  _h      : output coefficient buffer (length: 2*k*m+1)
 void design_rnyquist_filter(liquid_rnyquist_type _type,
@@ -1318,6 +1339,13 @@ typedef struct INTERP(_s) * INTERP();                           \
 INTERP() INTERP(_create)(unsigned int _M,                       \
                          TC *_h,                                \
                          unsigned int _h_len);                  \
+/* create interpolator from prototype                   */      \
+/*  _M      : interpolation factor                      */      \
+/*  _m      : symbol delay                              */      \
+/*  _As     : stop-band attenuation [dB]                */      \
+INTERP() INTERP(_create_prototype)(unsigned int _M,             \
+                                   unsigned int _m,             \
+                                   float As);                   \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
 /*  _k      : samples/symbol                            */      \
