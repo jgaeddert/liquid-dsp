@@ -229,13 +229,62 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,
     *_y1 = 0.5f*(yi - yq);  // upper band
 }
 
+// execute analysis half-band filterbank
+//  _q      :   resamp2 object
+//  _x      :   input array [size: 2 x 1]
+//  _y      :   output array [size: 2 x 1]
+void RESAMP2(_analyzer_execute)(RESAMP2() _q,
+                                TI * _x,
+                                TO * _y)
+{
+    TI * r;     // buffer read pointer
+    TO y0;      // delay branch
+    TO y1;      // filter branch
+
+    // compute filter branch
+    WINDOW(_push)(_q->w1, 0.5*_x[0]);
+    WINDOW(_read)(_q->w1, &r);
+    DOTPROD(_execute)(_q->dp, r, &y1);
+
+    // compute delay branch
+    WINDOW(_push)(_q->w0, 0.5*_x[1]);
+    WINDOW(_index)(_q->w0, _q->m-1, &y0);
+
+    // set return value
+    _y[0] = y0 + y1;
+    _y[1] = y0 - y1;
+}
+
+// execute synthesis half-band filterbank
+//  _q      :   resamp2 object
+//  _x      :   input array [size: 2 x 1]
+//  _y      :   output array [size: 2 x 1]
+void RESAMP2(_synthesizer_execute)(RESAMP2() _q,
+                                   TI * _x,
+                                   TO * _y)
+{
+    TI * r;                 // buffer read pointer
+    TI x0 = _x[0] + _x[1];  // delay branch input
+    TI x1 = _x[0] - _x[1];  // filter branch input
+
+    // compute delay branch
+    WINDOW(_push)(_q->w0, x0);
+    WINDOW(_index)(_q->w0, _q->m-1, &_y[0]);
+
+    // compute second branch (filter)
+    WINDOW(_push)(_q->w1, x1);
+    WINDOW(_read)(_q->w1, &r);
+    DOTPROD(_execute)(_q->dp, r, &_y[1]);
+}
+
+
 // execute half-band decimation
 //  _q      :   resamp2 object
 //  _x      :   input array [size: 2 x 1]
 //  _y      :   output sample pointer
 void RESAMP2(_decim_execute)(RESAMP2() _q,
                              TI * _x,
-                             TO *_y)
+                             TO * _y)
 {
     TI * r;     // buffer read pointer
     TO y0;      // delay branch
@@ -258,7 +307,9 @@ void RESAMP2(_decim_execute)(RESAMP2() _q,
 //  _q      :   resamp2 object
 //  _x      :   input sample
 //  _y      :   output array [size: 2 x 1]
-void RESAMP2(_interp_execute)(RESAMP2() _q, TI _x, TO *_y)
+void RESAMP2(_interp_execute)(RESAMP2() _q,
+                              TI   _x,
+                              TO * _y)
 {
     TI * r;  // buffer read pointer
 

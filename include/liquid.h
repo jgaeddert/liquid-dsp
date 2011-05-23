@@ -1436,6 +1436,12 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
                               TI _x,                            \
                               TO * _y0,                         \
                               TO * _y1);                        \
+void RESAMP2(_analyzer_execute)(RESAMP2() _q,                   \
+                                TI * _x,                        \
+                                TO * _y);                       \
+void RESAMP2(_synthesizer_execute)(RESAMP2() _q,                \
+                                   TI * _x,                     \
+                                   TO * _y);                    \
 void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
                              TI * _x,                           \
                              TO * _y);                          \
