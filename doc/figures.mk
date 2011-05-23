@@ -611,7 +611,7 @@ modem_ber_data :=			\
 	data/ber-modem/ber_arb64vt.dat	\
 
 # re-simulate modem BER data
-modem_ber_opts      := -cnone -knone -b1e-5 -e 500 -n160000 -t200000000 -s-9 -d1.0 -x60
+modem_ber_opts      := -cnone -knone -b1e-5 -e 700 -n320000 -t640000000 -s-9 -d1.0 -x60
 resimulate-modem-ber-data : src/simulate_ber
 	@echo "re-simulating modem ber data..."
 	./src/simulate_ber -m bpsk -p 1 $(modem_ber_opts) -o data/ber-modem/ber_bpsk.dat
