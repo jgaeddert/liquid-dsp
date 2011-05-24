@@ -24,7 +24,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <math.h>
 
 #include "liquid.internal.h"
@@ -50,7 +49,7 @@ unsigned int quantize_adc(float _x, unsigned int _num_bits)
     unsigned int N = 1<<n;          // 2^n
 
     // scale
-    bool neg = (_x < 0);
+    int neg = (_x < 0);
     unsigned int r = floorf(fabsf(_x)*N);
 
     // clip
