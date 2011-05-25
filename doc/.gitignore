@@ -40,6 +40,7 @@ src/modem.genplot
 src/nco_pll
 src/optim_gradsearch
 src/quantization_adc
+src/quantization_compander
 src/random_histogram
 src/sequence_ccodes
 src/sequence_msequence

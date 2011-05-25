@@ -143,6 +143,7 @@ local_pdffiles :=					\
 							\
 	figures.gen/quantization_adc_b4.pdf		\
 	figures.gen/quantization_adc_b5.pdf		\
+	figures.gen/quantization_compander.pdf		\
 							\
 	figures.gen/random_histogram_uniform.pdf	\
 	figures.gen/random_histogram_normal.pdf		\
@@ -191,6 +192,7 @@ local_progs :=						\
 	src/nco_pll					\
 	src/optim_gradsearch				\
 	src/quantization_adc				\
+	src/quantization_compander			\
 	src/random_histogram				\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
@@ -706,6 +708,11 @@ figures.gen/optim_gradsearch_utility.gnu : src/optim_gradsearch
 #
 figures.gen/quantization_adc_b4.gnu : src/quantization_adc ; ./$< -b4 -o$@
 figures.gen/quantization_adc_b5.gnu : src/quantization_adc ; ./$< -b5 -o$@
+
+# 
+# quantization_compander
+#
+figures.gen/quantization_compander.gnu : src/quantization_compander ; ./$< -m255 -o$@
 
 
 
