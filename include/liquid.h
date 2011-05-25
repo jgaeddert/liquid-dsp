@@ -3266,7 +3266,8 @@ float quantize_dac(unsigned int _s, unsigned int _num_bits);
 // structured quantizer
 
 typedef enum {
-    LIQUID_COMPANDER_LINEAR=0,
+    LIQUID_COMPANDER_NONE=0,
+    LIQUID_COMPANDER_LINEAR,
     LIQUID_COMPANDER_MULAW,
     LIQUID_COMPANDER_ALAW
 } liquid_compander_type;
