@@ -39,7 +39,7 @@ src/modem.gendata
 src/modem.genplot
 src/nco_pll
 src/optim_gradsearch
-src/quantizer_adc
+src/quantization_adc
 src/random_histogram
 src/sequence_ccodes
 src/sequence_msequence
