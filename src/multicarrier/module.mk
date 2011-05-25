@@ -30,9 +30,6 @@ local_objects :=				\
 	$(base_dir)/src/firpfbch_crcf.o		\
 	$(base_dir)/src/firpfbch_cccf.o		\
 	$(base_dir)/src/mdctch.o		\
-	$(base_dir)/src/ofdmframe64.common.o	\
-	$(base_dir)/src/ofdmframe64gen.o	\
-	$(base_dir)/src/ofdmframe64sync.o	\
 	$(base_dir)/src/ofdmframe.common.o	\
 	$(base_dir)/src/ofdmframegen.o		\
 	$(base_dir)/src/ofdmframesync.o		\

@@ -41,6 +41,9 @@ local_objects :=				\
 	$(base_dir)/src/filter_cccf.o		\
 	$(base_dir)/src/gmskframegen.o		\
 	$(base_dir)/src/gmskframesync.o		\
+	$(base_dir)/src/ofdmframe64.common.o	\
+	$(base_dir)/src/ofdmframe64gen.o	\
+	$(base_dir)/src/ofdmframe64sync.o	\
 	$(base_dir)/src/patternset.o		\
 	$(base_dir)/src/awgn_channel.o		\
 	$(base_dir)/src/lognorm_channel.o	\

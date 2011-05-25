@@ -22,6 +22,7 @@
 // ofdmframe64 physical layer convergence procedure (PLCP) data
 //
 
+#include "liquid.experimental.h"
 #include "liquid.internal.h"
 
 int ofdmframe64_getsctype(unsigned int _id)

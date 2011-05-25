@@ -28,6 +28,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include "liquid.experimental.h"
 #include "liquid.internal.h"
 
 #define DEBUG_OFDMFRAME64GEN                1
