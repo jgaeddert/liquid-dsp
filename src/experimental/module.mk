@@ -92,6 +92,7 @@ local_benchmarks :=					\
 	$(base_dir)/bench/gport_ima_benchmark.h		\
 	$(base_dir)/bench/gport_ima_threaded_benchmark.h	\
 	$(base_dir)/bench/dds_benchmark.h		\
+	$(base_dir)/bench/ofdmframe64sync_benchmark.h		\
 	$(base_dir)/bench/qmfb_benchmark.h		\
 
 
