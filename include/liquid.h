@@ -1336,20 +1336,24 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
 
 #define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
 typedef struct INTERP(_s) * INTERP();                           \
+/* create interpolator from external coefficients       */      \
+/*  _M      : interpolation factor                      */      \
+/*  _h      : filter coefficients [size: _h_len x 1]    */      \
+/*  _h_len  : filter length                             */      \
 INTERP() INTERP(_create)(unsigned int _M,                       \
                          TC *_h,                                \
                          unsigned int _h_len);                  \
 /* create interpolator from prototype                   */      \
 /*  _M      : interpolation factor                      */      \
-/*  _m      : symbol delay                              */      \
+/*  _m      : filter delay (symbols)                    */      \
 /*  _As     : stop-band attenuation [dB]                */      \
 INTERP() INTERP(_create_prototype)(unsigned int _M,             \
                                    unsigned int _m,             \
                                    float As);                   \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol                            */      \
-/*  _m      : symbol delay                              */      \
+/*  _k      : samples/symbol (interpolation factor)     */      \
+/*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
 /*  _dt     : fractional sample delay                   */      \
 INTERP() INTERP(_create_rnyquist)(int _type,                    \
