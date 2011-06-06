@@ -21,7 +21,13 @@
 //
 // Solve linear system of equations using conjugate gradient method
 //
+// References:
+//  [Schewchuk:1994] Jonathon Richard Shewchuk, "An Introduction to
+//      the Conjugate Gradient Method Without the Agonizing Pain,"
+//      Manuscript, August, 1994.
+//
 
+#include <math.h>
 #include <string.h>
 
 #include "liquid.internal.h"
@@ -46,23 +52,36 @@ void MATRIX(_cgsolve)(T * _A,
     //  3. residual tolerance
 
     // allocate memory for arrays
-    T x0[_n], x1[_n];
-    T d0[_n], d1[_n];
-    T r0[_n], r1[_n];
+    T x0[_n], x1[_n];   // iterative vector x (solution estimate)
+    T d0[_n], d1[_n];   // iterative vector d
+    T r0[_n], r1[_n];   // iterative vector r (step direction)
+    T q[_n];            // A * d0
+
+    // scalars
+    T delta_init;       // b^T * b0
+    T delta0;           // r0^T * r0
+    T delta1;           // r1^T * r1
+    T gamma;            // d0^T * q
     T alpha;
     T beta;
 
-    // initialize arrays
-
-    // 
+    // initialize x0 to {0, 0, ... 0}
     for (j=0; j<_n; j++)
         x0[j] = 0.0;
 
-    // d_0 = b - A*x(0)
-    // assume x(0) = {0, 0, 0, ...0}
-    for (j=0; j<_n; j++) {
+    // d0 = b - A*x0 (assume x0 = {0, 0, 0, ...0})
+    for (j=0; j<_n; j++)
         d0[j] = _b[j];
+
+    // r0 = d0
+    for (j=0; j<_n; j++)
         r0[j] = d0[j];
+
+    delta_init  = 0.0;  //  b^T * b
+    delta0      = 0.0;  // r0^T * t0
+    for (j=0; j<_n; j++) {
+        delta_init += conj(_b[j]) * _b[j];
+        delta0     += conj(r0[j]) * r0[j];
     }
 
     for (i=0; i<_n; i++) {
@@ -70,54 +89,61 @@ void MATRIX(_cgsolve)(T * _A,
         printf("*********** %u **************\n", i);
 #endif
 
-        // step size
-        T t0 = 0.0;
-        for (j=0; j<_n; j++)
-            t0 += r0[j] * conjf(r0[j]);
-        T t1[_n];
+        // q = A*d0
         MATRIX(_mul)(_A, _n, _n,
                      d0, _n,  1,
-                     t1, _n,  1);
-        T t2;
-        MATRIX(_mul)(d0,  1, _n,
-                     t1, _n,  1,
-                     &t2, 1,  1);
-        alpha = t0 / t2;
+                     q,  _n,  1);
+
+        // gamma = d0^T * q
+        gamma = 0.0;
+        for (j=0; j<_n; j++)
+            gamma += conj(d0[j]) * q[j];
+
+        // step size: alpha = (r0^T * r0) / (d0^T * A * d0)
+        //                  = delta0 / gamma
+        alpha = delta0 / gamma;
 #if DEBUG_CGSOLVE
-        printf("  alpha  = %12.8f (t0:%12.8f, t2:%12.8f)\n", crealf(alpha), crealf(t0), crealf(t2));
+        printf("  alpha  = %12.8f\n", crealf(alpha));
+        printf("  delta0 = %12.8f\n", crealf(delta0));
 #endif
 
         // update x
         for (j=0; j<_n; j++)
-            x1[j] = x0[j] - alpha*d0[j];
+            x1[j] = x0[j] + alpha*d0[j];
 
 #if DEBUG_CGSOLVE
         for (j=0; j<_n; j++)
             printf("  x[%3u] = %12.8f\n", j, crealf(x1[j]));
 #endif
 
+        // TODO : peridically re-compute: r = b - A*x
         // update r
-        T t3[_n];
-        MATRIX(_mul)(_A, _n, _n,
-                     d0, _n,  1,
-                     t3, _n,  1);
         for (j=0; j<_n; j++)
-            r1[j] = r0[j] - alpha*t3[j];
+            r1[j] = r0[j] - alpha*q[j];
+
+        // update deltas
+        delta1 = 0.0;
+        for (j=0; j<_n; j++)
+            delta1 += conj(r1[j]) * r1[j];
 
         // update beta
-        T t4 = 0.0;
-        for (j=0; j<_n; j++)
-            t4 += r1[j] * conjf(r1[j]);
-        beta = t4 / t0;
+        beta = delta1 / delta0;
 
-        // update d
+        // d1 = r + beta*d0
         for (j=0; j<_n; j++)
             d1[j] = r1[j] + beta*d0[j];
 
-        // copy old x, d, r
+        // compute residual
+#if DEBUG_CGSOLVE
+        double res = sqrt( cabs(delta1) / cabs(delta_init) );
+        printf("  res    = %12.4e\n", res);
+#endif
+
+        // copy old x, d, r, delta
         memmove(x0, x1, _n*sizeof(T));
         memmove(d0, d1, _n*sizeof(T));
         memmove(r0, r1, _n*sizeof(T));
+        delta0 = delta1;
     }
 
     // copy result to output
