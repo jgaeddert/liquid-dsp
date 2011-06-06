@@ -32,9 +32,14 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_CGSOLVE 0
+#define DEBUG_CGSOLVE 1
 
-// 
+// solve linear system of equations using conjugate gradient method
+//  _A      :   symmetric positive definite matrix [size: _n x _n]
+//  _n      :   system dimension
+//  _b      :   equality [size: _n x 1]
+//  _x      :   solution estimate [size: _n x 1]
+//  _opts   :   options (ignored for now)
 void MATRIX(_cgsolve)(T * _A,
                       unsigned int _n,
                       T * _b,
@@ -74,15 +79,13 @@ void MATRIX(_cgsolve)(T * _A,
         d0[j] = _b[j];
 
     // r0 = d0
-    for (j=0; j<_n; j++)
-        r0[j] = d0[j];
+    memmove(r0, d0, _n*sizeof(T));
 
-    delta_init  = 0.0;  //  b^T * b
-    delta0      = 0.0;  // r0^T * t0
-    for (j=0; j<_n; j++) {
-        delta_init += conj(_b[j]) * _b[j];
-        delta0     += conj(r0[j]) * r0[j];
-    }
+    // delta_init = b^T * b
+    MATRIX(_transpose_mul)(_b, _n, 1, &delta_init);
+
+    // delta0 = r0^T * r0
+    MATRIX(_transpose_mul)(r0, _n, 1, &delta0);
 
     for (i=0; i<_n; i++) {
 #if DEBUG_CGSOLVE
@@ -121,10 +124,8 @@ void MATRIX(_cgsolve)(T * _A,
         for (j=0; j<_n; j++)
             r1[j] = r0[j] - alpha*q[j];
 
-        // update deltas
-        delta1 = 0.0;
-        for (j=0; j<_n; j++)
-            delta1 += conj(r1[j]) * r1[j];
+        // delta1 = r1^T * r1
+        MATRIX(_transpose_mul)(r1, _n, 1, &delta1);
 
         // update beta
         beta = delta1 / delta0;
