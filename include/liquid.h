@@ -2415,6 +2415,11 @@ void MATRIX(_linsolve)(T * _A,                                  \
                        T * _b,                                  \
                        T * _x,                                  \
                        void * _opts);                           \
+void MATRIX(_cgsolve)(T * _A,                                   \
+                      unsigned int _r,                          \
+                      T * _b,                                   \
+                      T * _x,                                   \
+                      void * _opts);                            \
 void MATRIX(_ludecomp_crout)(T * _x,                            \
                              unsigned int _rx,                  \
                              unsigned int _cx,                  \

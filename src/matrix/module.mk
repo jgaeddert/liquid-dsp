@@ -39,6 +39,7 @@ local_objects :=				\
 
 matrix_includes :=				\
 	$(base_dir)/src/matrix.base.c		\
+	$(base_dir)/src/matrix.cgsolve.c	\
 	$(base_dir)/src/matrix.gramschmidt.c	\
 	$(base_dir)/src/matrix.inv.c		\
 	$(base_dir)/src/matrix.linsolve.c	\
