@@ -19,6 +19,7 @@ local_src	:=			\
 	compand_cf_example.c		\
 	complementary_codes_example.c	\
 	crc_example.c			\
+	cgsolve_example.c		\
 	cvsd_example.c			\
 	decim_crcf_example.c		\
 	decim_rrrf_example.c		\
