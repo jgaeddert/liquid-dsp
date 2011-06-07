@@ -66,10 +66,14 @@ void QUANTIZER(_print)(QUANTIZER() _q)
 {
     printf("quantizer:\n");
     printf("  compander :   ");
-    if (_q->ctype == LIQUID_COMPANDER_LINEAR) printf("linear\n");
-    else if (_q->ctype == LIQUID_COMPANDER_MULAW) printf("mu-law\n");
-    else if (_q->ctype == LIQUID_COMPANDER_ALAW) printf("A-law\n");
-    else printf("unknown\n");
+    switch(_q->ctype) {
+    case LIQUID_COMPANDER_NONE:     printf("none\n");   break;
+    case LIQUID_COMPANDER_LINEAR:   printf("linear\n"); break;
+    case LIQUID_COMPANDER_MULAW:    printf("mu-law\n"); break;
+    case LIQUID_COMPANDER_ALAW:     printf("A-law\n");  break;
+    default:
+        printf("unknown\n");
+    }
     printf("  num bits  :   %u\n", _q->n);
 }
 

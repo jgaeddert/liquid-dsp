@@ -404,3 +404,100 @@ void autotest_matrixf_gramschmidt()
         CONTEND_DELTA( V[i], V_test[i], tol );
 }
 
+
+// 
+// AUTOTEST: conjugate gradient solver
+//
+void autotest_matrixf_cgsolve()
+{
+    float tol = 1e-6f;  // error tolerance
+
+    // symmetric positive definite matrx
+    float A[9] = {
+         2.0,   -1.0,    0.0,
+        -1.0,    2.0,   -1.0,
+         0.0,   -1.0,    2.0};
+
+    float x_test[3] = {
+      -0.32889,
+      -0.72798,
+      -1.23532};
+
+    float b[3];
+    float x[3];
+
+    // compute b = A*x_test
+    matrixf_mul(A,      3, 3,
+                x_test, 3, 1,
+                b,      3, 1);
+
+    matrixf_cgsolve(A,3,b,x,NULL);
+
+    if (liquid_autotest_verbose) {
+        printf("A:\n");
+        matrixf_print(A,3,3);
+        printf("b:\n");
+        matrixf_print(b,3,1);
+        printf("x:\n");
+        matrixf_print(x_test,3,1);
+        printf("x (computed):\n");
+        matrixf_print(x,3,1);
+    }
+
+    // run test
+    CONTEND_DELTA( x[0], x_test[0], tol );
+    CONTEND_DELTA( x[1], x_test[1], tol );
+    CONTEND_DELTA( x[2], x_test[2], tol );
+}
+
+// 
+// AUTOTEST: conjugate gradient solver
+//
+void autotest_matrixf_cgsolve2()
+{
+    float tol = 1e-6f;  // error tolerance
+
+    // symmetric positive definite matrx
+    float A[25] = {
+      0.20039785,  0.52039748,  0.12896973, -0.24593210, -0.11671682,
+      0.52039748,  2.83168435, -0.02850759, -1.33722734, -0.86435664,
+      0.12896973, -0.02850759,  0.20677096,  0.03188134,  0.00454172,
+     -0.24593210, -1.33722734,  0.03188134,  0.77570134,  0.42975491,
+     -0.11671682, -0.86435664,  0.00454171,  0.42975491,  0.45030650};
+
+    float x_test[5] = {
+     14.14453125,
+     32.79626465,
+    -32.57263184,
+    -84.38003540,
+     29.31457520};
+
+    float b[5];
+    float x[5];
+
+    // compute b = A*x_test
+    matrixf_mul(A,      5, 5,
+                x_test, 5, 1,
+                b,      5, 1);
+
+    matrixf_cgsolve(A,5,b,x,NULL);
+
+    if (liquid_autotest_verbose) {
+        printf("A:\n");
+        matrixf_print(A,5,5);
+        printf("b:\n");
+        matrixf_print(b,5,1);
+        printf("x:\n");
+        matrixf_print(x_test,5,1);
+        printf("x (computed):\n");
+        matrixf_print(x,3,1);
+    }
+
+    // run test
+    CONTEND_DELTA( x[0], x_test[0], tol );
+    CONTEND_DELTA( x[1], x_test[1], tol );
+    CONTEND_DELTA( x[2], x_test[2], tol );
+    CONTEND_DELTA( x[3], x_test[3], tol );
+    CONTEND_DELTA( x[4], x_test[4], tol );
+}
+

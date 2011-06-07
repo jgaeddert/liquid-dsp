@@ -32,6 +32,7 @@
     printf("%12.8f", matrix_access(X,R,C,r,c));
 
 #include "matrix.base.c"
+#include "matrix.cgsolve.c"
 #include "matrix.gramschmidt.c"
 #include "matrix.inv.c"
 #include "matrix.linsolve.c"

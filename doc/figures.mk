@@ -141,6 +141,10 @@ local_pdffiles :=					\
 	figures.gen/optim_gradsearch.pdf		\
 	figures.gen/optim_gradsearch_utility.pdf	\
 							\
+	figures.gen/quantization_adc_b4.pdf		\
+	figures.gen/quantization_adc_b5.pdf		\
+	figures.gen/quantization_compander.pdf		\
+							\
 	figures.gen/random_histogram_uniform.pdf	\
 	figures.gen/random_histogram_normal.pdf		\
 	figures.gen/random_histogram_exp.pdf		\
@@ -187,6 +191,8 @@ local_progs :=						\
 	src/modem.gendata				\
 	src/nco_pll					\
 	src/optim_gradsearch				\
+	src/quantization_adc				\
+	src/quantization_compander			\
 	src/random_histogram				\
 	src/sequence_ccodes				\
 	src/sequence_msequence				\
@@ -611,7 +617,7 @@ modem_ber_data :=			\
 	data/ber-modem/ber_arb64vt.dat	\
 
 # re-simulate modem BER data
-modem_ber_opts      := -cnone -knone -b1e-5 -e 500 -n160000 -t200000000 -s-9 -d1.0 -x60
+modem_ber_opts      := -cnone -knone -b1e-5 -e 700 -n320000 -t640000000 -s-9 -d1.0 -x60
 resimulate-modem-ber-data : src/simulate_ber
 	@echo "re-simulating modem ber data..."
 	./src/simulate_ber -m bpsk -p 1 $(modem_ber_opts) -o data/ber-modem/ber_bpsk.dat
@@ -691,6 +697,22 @@ figures.gen/optim_gradsearch.dat \
 figures.gen/optim_gradsearch.gnu \
 figures.gen/optim_gradsearch_utility.gnu : src/optim_gradsearch
 	./$<
+
+
+##
+## MODULE : quantizer
+##
+
+# 
+# quantization_adc
+#
+figures.gen/quantization_adc_b4.gnu : src/quantization_adc ; ./$< -b4 -o$@
+figures.gen/quantization_adc_b5.gnu : src/quantization_adc ; ./$< -b5 -o$@
+
+# 
+# quantization_compander
+#
+figures.gen/quantization_compander.gnu : src/quantization_compander ; ./$< -m255 -o$@
 
 
 

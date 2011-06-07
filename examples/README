@@ -491,6 +491,18 @@ resamp2_crcf_decim_example.c
     SEE ALSO: resamp2_crcf_interp_example.c
               decim_rrrf_example.c
 
+resamp2_crcf_filter_example.c
+    Halfband (two-channel) filterbank example. This example demonstrates
+    the analyzer/synthesizer execute() methods for the resamp2_xxxt
+    family of objects.
+
+    NOTE: The filterbank is not a perfect reconstruction filter; a
+          significant amount of distortion occurs in the transition band
+          of the half-band filters. See the 'qmfb' (quadrature mirror
+          filterbank) object in the experimental section.
+
+resamp2_crcf_filterbank_example.c
+
 resamp2_crcf_interp_example.c
     Halfband interpolator.  This example demonstrates the interface to the
     interpolating halfband resampler.  A low-frequency input sinusoid is

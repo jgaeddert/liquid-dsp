@@ -1436,6 +1436,12 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
                               TI _x,                            \
                               TO * _y0,                         \
                               TO * _y1);                        \
+void RESAMP2(_analyzer_execute)(RESAMP2() _q,                   \
+                                TI * _x,                        \
+                                TO * _y);                       \
+void RESAMP2(_synthesizer_execute)(RESAMP2() _q,                \
+                                   TI * _x,                     \
+                                   TO * _y);                    \
 void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
                              TI * _x,                           \
                              TO * _y);                          \
@@ -2409,6 +2415,11 @@ void MATRIX(_linsolve)(T * _A,                                  \
                        T * _b,                                  \
                        T * _x,                                  \
                        void * _opts);                           \
+void MATRIX(_cgsolve)(T * _A,                                   \
+                      unsigned int _r,                          \
+                      T * _b,                                   \
+                      T * _x,                                   \
+                      void * _opts);                            \
 void MATRIX(_ludecomp_crout)(T * _x,                            \
                              unsigned int _rx,                  \
                              unsigned int _cx,                  \
@@ -3260,7 +3271,8 @@ float quantize_dac(unsigned int _s, unsigned int _num_bits);
 // structured quantizer
 
 typedef enum {
-    LIQUID_COMPANDER_LINEAR=0,
+    LIQUID_COMPANDER_NONE=0,
+    LIQUID_COMPANDER_LINEAR,
     LIQUID_COMPANDER_MULAW,
     LIQUID_COMPANDER_ALAW
 } liquid_compander_type;

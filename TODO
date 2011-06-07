@@ -5,3 +5,4 @@ TODO list
   * c++: wrap library with namespace::liquid
   * remove any trace of Doxygen from code
   * build: clean up make-included dependencies
+  * add method to compute r^T * r of [N x 1] vector
