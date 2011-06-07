@@ -60,7 +60,6 @@ local_autotests :=						\
 # These files are located under the bench/ subdirectory
 local_benchmarks :=						\
 	$(base_dir)/bench/firpfbch_benchmark.h			\
-	$(base_dir)/bench/ofdmframe64sync_benchmark.h		\
 	$(base_dir)/bench/ofdmframesync_acquire_benchmark.h	\
 	$(base_dir)/bench/ofdmframesync_rxsymbol_benchmark.h	\
 	$(base_dir)/bench/ofdmoqam_benchmark.h			\

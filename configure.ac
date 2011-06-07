@@ -148,7 +148,9 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_CANONICAL_TARGET
 case $target_cpu in
 i386|i486|i586|i686|x86|x86_64)
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o src/dotprod/src/dotprod_crcf.o src/dotprod/src/dotprod_rrrf.mmx.o"
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                   src/dotprod/src/dotprod_crcf.o \
+                   src/dotprod/src/dotprod_rrrf.mmx.o"
     case $target_os in
     darwin*)
         ARCH_OPTION="-march=core2";;
@@ -156,11 +158,15 @@ i386|i486|i586|i686|x86|x86_64)
         ARCH_OPTION="";;
     esac;;
 powerpc*)
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o src/dotprod/src/dotprod_crcf.o src/dotprod/src/dotprod_rrrf.av.o"
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                   src/dotprod/src/dotprod_rrrf.av.o \
+                   src/dotprod/src/dotprod_crcf.av.o"
     ARCH_OPTION="-fno-common -faltivec";;
 *)
     # unknown architecture : use portable C version
-    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o src/dotprod/src/dotprod_crcf.o src/dotprod/src/dotprod_rrrf.mmx.o"
+    MLIBS_DOTPROD="src/dotprod/src/dotprod_cccf.o \
+                   src/dotprod/src/dotprod_crcf.o \
+                   src/dotprod/src/dotprod_rrrf.mmx.o"
     ARCH_OPTION="";;
 esac
 

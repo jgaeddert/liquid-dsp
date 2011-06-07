@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DOTPROD_CRCF_AUTOTEST_H__
-#define __DOTPROD_CRCF_AUTOTEST_H__
-
 #include "autotest/autotest.h"
 #include "liquid.internal.h"
 
@@ -59,6 +56,13 @@ void autotest_dotprod_crcf_rand01()
     dotprod_crcf_run4(h,x,16,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    // test object
+    dotprod_crcf q = dotprod_crcf_create(h,16);
+    dotprod_crcf_execute(q,x,&y);
+    CONTEND_DELTA( crealf(y), crealf(test), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+    dotprod_crcf_destroy(q);
 }
 
 
@@ -97,8 +101,12 @@ void autotest_dotprod_crcf_rand02()
     dotprod_crcf_run4(h,x,16,&y);
     CONTEND_DELTA( crealf(y), crealf(test), tol);
     CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+
+    // test object
+    dotprod_crcf q = dotprod_crcf_create(h,16);
+    dotprod_crcf_execute(q,x,&y);
+    CONTEND_DELTA( crealf(y), crealf(test), tol);
+    CONTEND_DELTA( cimagf(y), cimagf(test), tol);
+    dotprod_crcf_destroy(q);
 }
-
-
-#endif 
 
