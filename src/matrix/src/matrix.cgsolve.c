@@ -46,10 +46,14 @@ void MATRIX(_cgsolve)(T * _A,
                       T * _x,
                       void * _opts)
 {
+    // validate input
+    if (_n == 0) {
+        fprintf(stderr,"error: matrix_cgsolve(), system dimension cannot be zero\n");
+        exit(1);
+    }
+
     unsigned int i;
     unsigned int j;
-
-    // TODO : validate input
 
     // TODO : check options
     //  1. set initial _x0
