@@ -490,7 +490,7 @@ void autotest_matrixf_cgsolve2()
         printf("x:\n");
         matrixf_print(x_test,5,1);
         printf("x (computed):\n");
-        matrixf_print(x,3,1);
+        matrixf_print(x,5,1);
     }
 
     // run test

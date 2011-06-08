@@ -32,7 +32,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_CGSOLVE 1
+#define DEBUG_CGSOLVE 0
 
 // solve linear system of equations using conjugate gradient method
 //  _A      :   symmetric positive definite matrix [size: _n x _n]
@@ -87,7 +87,7 @@ void MATRIX(_cgsolve)(T * _A,
     // delta0 = r0^T * r0
     MATRIX(_transpose_mul)(r0, _n, 1, &delta0);
 
-    for (i=0; i<_n; i++) {
+    for (i=0; i<_n+1; i++) {
 #if DEBUG_CGSOLVE
         printf("*********** %u **************\n", i);
 #endif
