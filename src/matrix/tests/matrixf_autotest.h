@@ -408,7 +408,7 @@ void autotest_matrixf_gramschmidt()
 // 
 // AUTOTEST: conjugate gradient solver
 //
-void autotest_matrixf_cgsolve()
+void autotest_matrixf_cgsolve_n3()
 {
     float tol = 1e-6f;  // error tolerance
 
@@ -453,7 +453,7 @@ void autotest_matrixf_cgsolve()
 // 
 // AUTOTEST: conjugate gradient solver
 //
-void autotest_matrixf_cgsolve2()
+void autotest_matrixf_cgsolve_n5()
 {
     float tol = 1e-3f;  // error tolerance
 

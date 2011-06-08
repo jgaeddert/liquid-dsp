@@ -6,3 +6,5 @@ TODO list
   * remove any trace of Doxygen from code
   * build: clean up make-included dependencies
   * add method to compute r^T * r of [N x 1] vector
+  * add method to compute Cholesky factor, R, of positive-definite
+    matrix A, where R^T * R = A
