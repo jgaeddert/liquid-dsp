@@ -455,7 +455,7 @@ void autotest_matrixf_cgsolve()
 //
 void autotest_matrixf_cgsolve2()
 {
-    float tol = 1e-6f;  // error tolerance
+    float tol = 1e-3f;  // error tolerance
 
     // symmetric positive definite matrx
     float A[25] = {
