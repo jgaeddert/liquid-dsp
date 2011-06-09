@@ -2441,6 +2441,9 @@ void MATRIX(_qrdecomp_gramschmidt)(T * _x,                      \
                                    unsigned int _cx,            \
                                    T * _Q,                      \
                                    T * _R);                     \
+void MATRIX(_chol)(T * _A,                                      \
+                   unsigned int _n,                             \
+                   T * _L);                                     \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 

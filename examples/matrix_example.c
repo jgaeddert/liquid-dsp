@@ -220,6 +220,24 @@ int main() {
     printf("expected:\n");
     matrixf_print(Ugs_test,4,3);
 
+
+    // 
+    // test Cholesky decomposition
+    //
+
+    // generate 
+    float Lp[9] = { 1.0,  0.0,  0.0,
+                   -3.1,  0.3,  0.0,
+                    1.7, -0.6,  2.9};
+    float Ap[9];
+    matrixf_mul_transpose(Lp, 3, 3, Ap);
+    float Lc[9];
+    matrixf_chol(Ap, 3, Lc);
+
+    printf("Lp:\n"); matrixf_print(Lp, 3, 3);
+    printf("Ap:\n"); matrixf_print(Ap, 3, 3);
+    printf("Lc:\n"); matrixf_print(Lc, 3, 3);
+
     printf("done.\n");
     return 0;
 }

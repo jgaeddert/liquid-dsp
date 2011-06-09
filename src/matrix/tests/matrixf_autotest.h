@@ -404,6 +404,44 @@ void autotest_matrixf_gramschmidt()
         CONTEND_DELTA( V[i], V_test[i], tol );
 }
 
+// 
+// test Cholesky decomposition
+//
+void autotest_matrixf_chol()
+{
+    float tol = 1e-4f;  // error tolerance
+
+    // lower triangular matrix with positive values on diagonal
+    float L[16]= {
+        1.01f,  0,      0,      0,
+       -1.42f,  0.50f,  0.00f,  0,
+        0.32f,  2.01f,  0.30f,  0,
+       -1.02f, -0.32f, -1.65f,  1.07f};
+
+    float A[16];    // A = L * L^T
+    float Lp[16];   // output Cholesky decomposition
+
+    unsigned int i;
+
+    // compute A
+    matrixf_mul_transpose(L,4,4,A);
+
+    // run decomposition
+    matrixf_chol(A,4,Lp);
+
+    if (liquid_autotest_verbose) {
+        printf("L :\n");
+        matrixf_print(L,4,4);
+        printf("A :\n");
+        matrixf_print(A,4,4);
+        printf("Lp:\n");
+        matrixf_print(Lp,4,4);
+    }
+
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( L[i], Lp[i], tol );
+}
+
 
 // 
 // AUTOTEST: conjugate gradient solver

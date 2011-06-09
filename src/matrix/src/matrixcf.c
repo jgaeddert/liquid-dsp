@@ -35,6 +35,7 @@
 
 #include "matrix.base.c"
 #include "matrix.cgsolve.c"
+#include "matrix.chol.c"
 #include "matrix.gramschmidt.c"
 #include "matrix.inv.c"
 #include "matrix.linsolve.c"
