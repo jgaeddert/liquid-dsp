@@ -27,7 +27,11 @@
 
 #define MATRIX(name)    LIQUID_CONCAT(matrix, name)
 #define MATRIX_NAME     "matrix"
-#define T               double
+
+#define T               double          // general type
+#define TP              double          // primitive type
+#define T_COMPLEX       0               // is type complex?
+
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
     printf("%12.8f", matrix_access(X,R,C,r,c));
 

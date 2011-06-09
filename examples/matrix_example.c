@@ -226,17 +226,17 @@ int main() {
     //
 
     // generate 
-    float Lp[9] = { 1.0,  0.0,  0.0,
-                   -3.1,  0.3,  0.0,
-                    1.7, -0.6,  2.9};
-    float Ap[9];
-    matrixf_mul_transpose(Lp, 3, 3, Ap);
-    float Lc[9];
-    matrixf_chol(Ap, 3, Lc);
+    float complex Lp[9] = { 1.0,                   0.0,                   0.0,
+                           -3.1 + 0.2*_Complex_I,  0.3,                   0.0,
+                            1.7 + 0.5*_Complex_I, -0.6 - 0.3*_Complex_I,  2.9};
+    float complex Ap[9];
+    matrixcf_mul_transpose(Lp, 3, 3, Ap);
+    float complex Lc[9];
+    matrixcf_chol(Ap, 3, Lc);
 
-    printf("Lp:\n"); matrixf_print(Lp, 3, 3);
-    printf("Ap:\n"); matrixf_print(Ap, 3, 3);
-    printf("Lc:\n"); matrixf_print(Lc, 3, 3);
+    printf("Lp:\n"); matrixcf_print(Lp, 3, 3);
+    printf("Ap:\n"); matrixcf_print(Ap, 3, 3);
+    printf("Lc:\n"); matrixcf_print(Lc, 3, 3);
 
     printf("done.\n");
     return 0;

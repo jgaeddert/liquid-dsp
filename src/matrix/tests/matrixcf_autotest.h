@@ -286,3 +286,44 @@ void autotest_matrixcf_qrdecomp()
         CONTEND_DELTA( QQT_test[i], I4[i], tol );
 }
 
+// 
+// test Cholesky decomposition
+//
+void autotest_matrixcf_chol()
+{
+    float tol = 1e-4f;  // error tolerance
+
+    // lower triangular matrix with positive values on diagonal
+    float complex L[16]= {
+        1.01,                    0,                       0,                       0,
+       -1.42 + _Complex_I*0.25,  0.50,                    0,                       0,
+        0.32 - _Complex_I*1.23,  2.01 + _Complex_I*0.78,  0.30,                    0,
+       -1.02 + _Complex_I*1.02, -0.32 - _Complex_I*0.03, -1.65 + _Complex_I*2.01,  1.07};
+
+    float complex A[16];    // A = L * L^T
+    float complex Lp[16];   // output Cholesky decomposition
+
+    unsigned int i;
+
+    // compute A
+    matrixcf_mul_transpose(L,4,4,A);
+
+    // run decomposition
+    matrixcf_chol(A,4,Lp);
+
+    if (liquid_autotest_verbose) {
+        printf("L :\n");
+        matrixcf_print(L,4,4);
+        printf("A :\n");
+        matrixcf_print(A,4,4);
+        printf("Lp:\n");
+        matrixcf_print(Lp,4,4);
+    }
+
+    for (i=0; i<16; i++) {
+        CONTEND_DELTA( crealf(L[i]), crealf(Lp[i]), tol );
+        CONTEND_DELTA( cimagf(L[i]), cimagf(Lp[i]), tol );
+    }
+}
+
+

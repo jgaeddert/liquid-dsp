@@ -25,7 +25,7 @@
 #include <math.h>
 #include "liquid.internal.h"
 
-#define DEBUG_MATRIX_CHOL 1
+#define DEBUG_MATRIX_CHOL 0
 
 // Compute Cholesky decomposition of a symmetric/Hermitian positive-
 // definite matrix as A = L * L^T
@@ -43,16 +43,20 @@ void MATRIX(_chol)(T * _A,
 
     unsigned int j;
     unsigned int k;
-    T A_jj;
-    T L_jj;
-    T L_ik;
-    T L_jk;
-    double t0;   // TODO : make primitive type
+    T  A_jj;
+    T  L_jj;
+    T  L_ik;
+    T  L_jk;
+    TP t0;
+    T  t1;
     for (j=0; j<_n; j++) {
         // assert that A_jj is real, positive
-        // TODO : only check imaginary component if type is complex
         A_jj = matrix_access(_A,_n,_n,j,j);
+#if T_COMPLEX
         if ( fabs(cimag(A_jj)) > 0.0 || creal(A_jj) < 0.0 ) {
+#else
+        if ( creal(A_jj) < 0.0 ) {
+#endif
             fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite\n");
             return;
         }
@@ -61,19 +65,33 @@ void MATRIX(_chol)(T * _A,
         t0 = 0.0;
         for (k=0; k<j; k++) {
             L_jk = matrix_access(_L,_n,_n,j,k);
+#if T_COMPLEX
             t0 += creal( L_jk * conj(L_jk) );
+#else
+            t0 += L_jk * L_jk;
+#endif
+        }
+        // TODO : test to ensure A_jj > t0
+        if ( creal(A_jj) < t0 ) {
+            fprintf(stderr,"warning: matrix_chol(), matrix is not positive-definite\n");
+            return;
         }
         L_jj = sqrt( A_jj - t0 );
         matrix_access(_L,_n,_n,j,j) = L_jj;
 
-        for (i=j; i<_n; i++) {
-            t0 = matrix_access(_A,_n,_n,i,j);
+        for (i=j+1; i<_n; i++) {
+            t1 = matrix_access(_A,_n,_n,i,j);
             for (k=0; k<j; k++) {
                 L_ik = matrix_access(_L,_n,_n,i,k);
                 L_jk = matrix_access(_L,_n,_n,j,k);
-                t0 -= creal( L_ik * conj(L_jk) );
+#if T_COMPLEX
+                t1 -= L_ik * conj(L_jk);
+#else
+                t1 -= L_ik * L_jk;
+#endif
             }
-            matrix_access(_L,_n,_n,i,j) = t0 / L_jj;
+            // TODO : store inverse of L_jj to reduce number of divisions
+            matrix_access(_L,_n,_n,i,j) = t1 / L_jj;
         }
     }
 }
