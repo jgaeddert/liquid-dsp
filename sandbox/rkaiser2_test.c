@@ -35,6 +35,16 @@
 #define DEBUG 0
 #define OUTPUT_FILENAME "rkaiser2_test.m"
 
+struct gsuserdata_s {
+    unsigned int k; // samples/symbol
+    unsigned int m; // filter delay (symbols)
+    float beta;     // excess bandwidth factor
+    float dt;       // fractional delay
+
+    float w0;       // weighting for ISI
+    float w1;       // weighting for stop-band attenuation
+};
+
 // Design frequency-shifted root-Nyquist filter based on
 // the Kaiser-windowed sinc.
 //
@@ -57,7 +67,7 @@ float gs_utility(void * _userdata,
 int main() {
     // options
     unsigned int k=2;
-    unsigned int m=3;
+    unsigned int m=5;
     float beta = 0.3;
     float dt = 0.0;
 
@@ -77,7 +87,10 @@ int main() {
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
     fprintf(fid,"\n");
-    fprintf(fid,"n  = %u;\n", h_len);
+    fprintf(fid,"k  = %u;\n", k);
+    fprintf(fid,"m  = %u;\n", m);
+    fprintf(fid,"beta = %12.8f;\n", beta);
+    fprintf(fid,"n = 2*k*m+1;\n");
     fprintf(fid,"h1 = zeros(1,n);\n");
     fprintf(fid,"h2 = zeros(1,n);\n");
 
@@ -89,11 +102,13 @@ int main() {
     fprintf(fid,"\n");
     fprintf(fid,"nfft=1024;\n");
     fprintf(fid,"f = [0:(nfft-1)]/nfft - 0.5;\n");
-    fprintf(fid,"H1 = 20*log10(abs(fftshift(fft(h1,nfft))));\n");
-    fprintf(fid,"H2 = 20*log10(abs(fftshift(fft(h2,nfft))));\n");
+    fprintf(fid,"H1 = 20*log10(abs(fftshift(fft(h1/k,nfft))));\n");
+    fprintf(fid,"H2 = 20*log10(abs(fftshift(fft(h2/k,nfft))));\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(f,H1, f,H2);\n");
     fprintf(fid,"axis([-0.5 0.5 -100 20]);\n");
+    fprintf(fid,"grid on\n");
+    fprintf(fid,"legend('r-Kaiser','r-Kaiser(2)',1);\n");
 
     fclose(fid);
     printf("results written to '%s'\n", OUTPUT_FILENAME);
@@ -133,29 +148,50 @@ void design_rkaiser_filter2(unsigned int _k,
         exit(1);
     }
 
-    // TODO : set options in userdata object
+    unsigned int h_len = 2*_k*_m + 1;
 
     // 
+#if 0
     float fc = 0.5*(1.0 + _beta)/(float)(_k);
     float As = 40.0f;
-    float v[2] = {fc, As};
+#else
+    float rho_hat = rkaiser_approximate_rho(_m,_beta);
+    float fc = 0.5f*(1 + _beta*(1.0f-rho_hat))/(float)_k; // filter cutoff
+    float del = _beta*rho_hat / (float)_k;                // transition bandwidth
+    float As = estimate_req_filter_As(del, h_len);  // stop-band suppression
+
+    // reduce slightly to help ensure solution isn't stuck
+    // (not really necessary)
+    fc *= 0.995f;
+    As -= 1.0f;
+#endif
+    float v[2] = {fc, As/1000};
+
+    struct gsuserdata_s q;
+    q.k     = _k;
+    q.m     = _m;
+    q.beta  = _beta;
+    q.dt    = _dt;
+    q.w0    = 0.5;
+    q.w1    = 0.5;
 
     // create gradsearch object
-    gradsearch gs = gradsearch_create_advanced(NULL,
+    gradsearch gs = gradsearch_create_advanced(
+            (void*)&q,
             v, 2,       // vector optimizer
             1e-6f,      // delta: gradient step size
-            0.002f,     // gamma: vector step size
-            0.1f,       // alpha: momentum parameter
-            0.999f,     // mu:    decremental gamma parameter
+            0.0005f,    // gamma: vector step size
+            0.5f,       // alpha: momentum parameter
+            0.90f,      // mu:    decremental gamma parameter
             gs_utility,
             LIQUID_OPTIM_MINIMIZE);
 
     // run search
     unsigned int i;
-    unsigned int num_iterations = 50;
+    unsigned int num_iterations = 100;
     float utility;
     for (i=0; i<num_iterations; i++) {
-        utility = gs_utility(NULL,v,2);
+        utility = gs_utility((void*)&q,v,2);
 
         gradsearch_step(gs);
 
@@ -166,9 +202,8 @@ void design_rkaiser_filter2(unsigned int _k,
     gradsearch_destroy(gs);
 
     // re-design filter and return
-    unsigned int h_len = 2*_k*_m + 1;
     fc = v[0];
-    As = v[1];
+    As = v[1]*1000;
     firdes_kaiser_window(h_len,fc,As,_dt,_h);
 
     // normalize coefficients
@@ -182,18 +217,19 @@ float gs_utility(void * _userdata,
                  float * _v,
                  unsigned int _n)
 {
-    // TODO : get options from _userdata object
-    float w0 = 0.5;
-    float w1 = 0.5;
-    unsigned int k=2;
-    unsigned int m=3;
-    float beta = 0.3;
-    float dt = 0.0;
+    // get options from _userdata object
+    struct gsuserdata_s * q = (struct gsuserdata_s*)_userdata;
+    float w0        = q->w0;
+    float w1        = q->w1;
+    unsigned int k  = q->k;
+    unsigned int m  = q->m;
+    float beta      = q->beta;
+    float dt        = q->dt;
     unsigned int nfft=512;
 
     // parameters
     float fc = _v[0];
-    float As = _v[1];
+    float As = _v[1]*1000;
 
     // derived values
     unsigned int h_len = 2*k*m+1;
