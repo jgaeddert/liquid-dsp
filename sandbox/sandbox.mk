@@ -36,6 +36,7 @@ local_src	:=				\
 	ofdmoqam_firpfbch_test.c		\
 	ofdmoqam_firpfbch_cfo_test.c		\
 	quasinewton_test.c			\
+	rkaiser2_test.c				\
 	simplex_test.c				\
 	thiran_allpass_iir_test.c		\
 #	firpfbch_analysis_test.c
