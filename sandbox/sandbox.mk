@@ -38,6 +38,7 @@ local_src	:=				\
 	quasinewton_test.c			\
 	rkaiser2_test.c				\
 	simplex_test.c				\
+	svd_test.c				\
 	thiran_allpass_iir_test.c		\
 #	firpfbch_analysis_test.c
 
