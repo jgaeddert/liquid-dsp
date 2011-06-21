@@ -12,6 +12,10 @@
 #define DEBUG 1
 
 int main() {
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+
 #if 0
     // problem definition
     float A[40] = {
@@ -27,14 +31,20 @@ int main() {
     unsigned int m = 8;
     unsigned int n = 5;
 #else
-    unsigned int m=20;
-    unsigned int n=4;
+    unsigned int m=8;
+    unsigned int n=5;
     float A[m*n];
 
     // make random matrix
     unsigned int t;
     for (t=0; t<m*n; t++)
         A[t] = randnf();
+
+    // Hilbert matrix
+    for (i=0; i<m; i++) {
+        for (j=0; j<n; j++)
+            matrix_access(A,m,n,i,j) = 1.0 / ((float)(i + j + 1));
+    }
 #endif
 
     matrixf_print(A,m,n);
@@ -58,10 +68,6 @@ int main() {
     float betak;
     float tk;
 
-    unsigned int i;
-    unsigned int j;
-    unsigned int k=0;
-
     // initialize...
     memmove(A0,A,m*n*sizeof(float));
 
@@ -84,19 +90,23 @@ int main() {
         printf("  alphak    :   %12.8f\n", alphak);
 #endif
 
-        // compute x_i^(k) for i<k
-        for (i=0; i<k; i++)
-            xi[i] = 0.0;
+        if (sk == 0) {
+            for (i=0; i<k; i++) xi[i] = 0.0;
+        } else {
+            // compute x_i^(k) for i<k
+            for (i=0; i<k; i++)
+                xi[i] = 0.0;
 
-        // compute x_i^(k) for i=k
-        float xk = (sk == 0) ? 0.0 : sqrt( 0.5*(1 + fabs(a0_kk)/sk) );
-        xi[k] = xk;
+            // compute x_i^(k) for i=k
+            float xk = sqrt( 0.5*(1 + fabs(a0_kk)/sk) );
+            xi[k] = xk;
 
-        // compute x_i^(k) for i>k
-        float ck = 1.0 / (2*sk*a0_kk/fabs(a0_kk)*xk); // TODO : use copysign
-        for (i=k+1; i<m; i++) {
-            float a0_ik = matrix_access(A0,m,n,i,k);
-            xi[i] = ck*a0_ik;
+            // compute x_i^(k) for i>k
+            float ck = 1.0 / (2*sk*a0_kk/fabs(a0_kk)*xk); // TODO : use copysign
+            for (i=k+1; i<m; i++) {
+                float a0_ik = matrix_access(A0,m,n,i,k);
+                xi[i] = ck*a0_ik;
+            }
         }
 
         // compute A^(k+1/2) = A^(k) - x^(k)*2[ x^(k)^T *A^(k) ]
@@ -110,8 +120,8 @@ int main() {
         for (i=0; i<m*n; i++)
             A1[i] = A0[i] - 2.0*S[i];
 #if DEBUG
-        //printf("xi:\n");    matrixf_print(xi,   n,1);
-        //printf("xi*xi^T:\n");matrixf_print(xixiT,n,n);
+        printf("xi:\n");    matrixf_print(xi,   m,1);
+        //printf("xi*xi^T:\n");matrixf_print(xixiT,m,m);
         //printf("S:\n");     matrixf_print(S,    m,n);
         printf("A(k+1/2):\n");    matrixf_print(A1,   m,n);
 #endif
@@ -132,20 +142,36 @@ int main() {
         printf("  A1[k,k+1] :   %12.8f\n", a1_kk1);
 #endif
 
-        // compute y_j(k) for j <= k
-        for (j=0; j<=k; j++)
-            yj[j] = 0.0;
+        // TODO : check dimension size
+        if ( (k+1)==n ) {
+            fprintf(stderr,"warning: maximum dimension exceeded\n");
 
-        // compute y_j(k) for j = k+1
-        // TODO : check dimension size... [n > m]
-        float yk1 = (tk == 0) ? 0.0 : sqrt( 0.5*(1 + fabs(a1_kk1)/tk) );
-        yj[k+1] = yk1;
+            // copy and exit
+            memmove(A0, A1, m*n*sizeof(float));
+            break;
+        }
 
-        // compute y_j(k) for j > k+1
-        float dk = 1.0 / (2*tk*a1_kk1/fabs(a1_kk1)*yk1);
-        for (j=k+2; j<n; j++) {
-            float a1_kj = matrix_access(A1,m,n,k,j);
-            yj[j] = dk*a1_kj;
+        if (tk == 0) {
+            for (j=0; j<k; j++) yj[j] = 0.0;
+        } else {
+            // compute y_j(k) for j <= k
+            for (j=0; j<=k; j++)
+                yj[j] = 0.0;
+
+            // compute y_j(k) for j = k+1
+            // TODO : check dimension size... [n > m]
+            float yk1 = (tk == 0) ? 0.0 : sqrt( 0.5*(1 + fabs(a1_kk1)/tk) );
+            yj[k+1] = yk1;
+
+            // compute y_j(k) for j > k+1
+            float dk = 1.0 / (2*tk*a1_kk1/fabs(a1_kk1)*yk1);
+#if DEBUG
+            printf("dk : %12.8f\n", dk);
+#endif
+            for (j=k+2; j<n; j++) {
+                float a1_kj = matrix_access(A1,m,n,k,j);
+                yj[j] = dk*a1_kj;
+            }
         }
 
         // compute A(k+1) = A(k+1/2) - 2*[A(k+1/2)*y(k)]*y(k)^T
@@ -170,7 +196,11 @@ int main() {
 
         // exit prematurely
         //break;
+        //exit(1);
     }
+
+    printf("--------------\n\n");
+    matrixf_print(A0, m, n);
 
 
     printf("done.\n");
