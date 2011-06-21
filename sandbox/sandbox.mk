@@ -19,6 +19,7 @@ local_src	:=				\
 	firpfbch_analysis_alignment_test.c	\
 	firpfbch_analysis_equivalence_test.c	\
 	firpfbch_synthesis_equivalence_test.c	\
+	householder_test.c			\
 	iirdes_example.c			\
 	levinson_test.c				\
 	matched_filter_test.c			\
