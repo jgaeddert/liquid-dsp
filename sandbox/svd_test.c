@@ -1,46 +1,21 @@
 // 
 // svd_test.c : test singular value decomposition
-//
+// 
+// References:
+//  [Golub:1970] G. H. Golub and C. Reinsch, "Singular Value
+//      Decomposition and Least Squares Solutions," Handbook Series
+//      Linear Algebra, Numerische Mathematik, vol. 14, pp 403-420,
+//      1970
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
+//#include <complex.h>
+
 #include "liquid.h"
 
-// tri-diagonalization
-void matrixf_householder(float * _A,
-                         unsigned int _m,
-                         unsigned int _n,
-                         float * _P,
-                         float * _Q)
-{
-    // TODO : validate input
-
-    unsigned int i;
-    unsigned int j;
-
-    // arrays
-    float v[_n];
-    float A0[_m*_n];
-    float A1[_m*_n];
-    float alpha;
-    float r;
-
-    // initialize P, Q
-    
-    // compute alpha
-    alpha = -copysignf(1.0, matrix_access(_A,_m,_n,1,0));
-    // ...
-}
-
-void matrixf_svd(float * _A,
-                 unsigned int _m,
-                 unsigned int _n,
-                 float * _U,
-                 float * _V,
-                 float * _sigma)
-{
-    printf("matrixf_svd() not yet implemented\n");
-}
+#define DEBUG 1
 
 int main() {
     // problem definition
@@ -49,7 +24,7 @@ int main() {
     //  sig3    =   sqrt(384)
     //  sig4    =   0
     //  sig5    =   0
-    float A[40] = {
+    float a[40] = {
         22,  10,   2,   3,  7,
         14,   7,  10,   0,  8,
         -1,  13,  -1, -11,  3,
@@ -59,10 +34,246 @@ int main() {
          2,  -6,   6,   5,  1,
          4,   5,   0,  -2,  2};
 
+    // NOTE: m >= n
     unsigned int m = 8;
     unsigned int n = 5;
 
-    matrixf_print(A,m,n);
+    matrixf_print(a,m,n);
+
+    // 
+    float q[n];     // singular values of 'a'
+    float u[m*n];
+    float v[n*n];
+    float eps = 1e-12;
+    float tol = 1e-12;
+
+    // internal variables
+    int i,j,k,l,l1;
+    float c,f,g,h,s,x,y,z;
+    float e[n];
+
+    // initialization
+    memmove(u,a,m*n*sizeof(float));
+
+    // Householder's reduction to bidiagonal form
+    g=0.0;
+    x=0.0;
+    for (i=0; i<n; i++) {
+        e[i] = g;
+        s    = 0;
+        l    = i+1;
+
+        for (j=i; j<m; j++) {
+            float u_ji = matrix_access(u,m,n,j,i);
+            s += creal( u_ji*conj(u_ji) );
+        }
+        if (s < tol) {
+            g = 0.0;
+        } else {
+            f = matrix_access(u,m,n,i,i);
+            g = (f<0) ? sqrt(s) : -sqrt(s);
+            h = f*g - s;
+            matrix_access(u,m,n,i,i) = f-g;
+
+            for (j=l; j<n; j++) {
+                s = 0;
+                for (k=i; k<m; k++)
+                    s += matrix_access(u,m,n,k,i)*matrix_access(u,m,n,k,j);
+                f = s/h;
+                for (k=i; k<m; k++)
+                    matrix_access(u,m,n,k,j) += f*matrix_access(u,m,n,k,i);
+            } // for j
+        } // if (s < tol)
+
+        q[i] = g;
+        s = 0;
+        for (j=l; j<n; j++) {
+            float u_ij = matrix_access(u,m,n,i,j);
+            s += creal( u_ij*conj(u_ij) );
+        }
+        if (s < tol) {
+            g = 0;
+        } else {
+            f = matrix_access(u,m,n,i,i+1);
+            g = (f < 0) ? sqrt(s) : -sqrt(s);
+            h = f*g - s;
+            matrix_access(u,m,n,i,i+1) = f-g;
+            for (j=l; j<n; j++)
+                e[j] = matrix_access(u,m,n,i,j)/h;
+            for (j=l; j<m; j++) {
+                s = 0;
+                for (k=l; k<n; k++)
+                    s += matrix_access(u,m,n,j,k)*matrix_access(u,m,n,i,k);
+                for (k=l; k<n; k++)
+                    matrix_access(u,m,n,j,k) += s*e[k];
+            } // for j
+        } // if (s < tol)
+
+        y = abs(q[i]) + abs(e[i]);
+        if (y > x)
+            x = y;
+    }
+
+    // accumulation of right-hand transformations
+    for (i=n-1; i>=0; i--) {
+        //if (g != 0) {
+        if ( fabs(g) > 1e-3 ) {
+            h = matrix_access(u,m,n,i,i+1)*g;
+            for (j=l; j<n; j++)
+                matrix_access(v,n,n,j,i) = matrix_access(u,m,n,i,j)/h;
+            for (j=l; j<n; j++) {
+                s = 0.0;
+                for (k=l; k<n; k++)
+                    s += matrix_access(u,m,n,i,k)*matrix_access(v,n,n,k,j);
+                for (k=l; k<n; k++)
+                    matrix_access(v,n,n,k,j) += s*matrix_access(v,n,n,k,i);
+            } // for j
+        } // g != 0
+
+        for (j=l; j<n; j++) {
+            matrix_access(v,n,n,i,j) = 0.0;
+            matrix_access(v,n,n,j,i) = 0.0;
+        }
+        matrix_access(v,n,n,i,i) = 1;
+        g = e[i];
+        l = i;
+    }
+#if DEBUG
+    printf("U:\n"); matrixf_print(u,m,n);
+    printf("V:\n"); matrixf_print(v,n,n);
+#endif
+
+    // accumulation of left-hand transformations
+    printf("q:\n"); matrixf_print(q,n,1);
+    for (i=n-1; i>=0; i--) {
+        l = i+1;
+        g = q[i];
+        for (j=l; j<n; j++)
+            matrix_access(u,m,n,i,j) = 0.0;
+        //if (g != 0) {
+        if ( fabs(g) > 1e-3 ) {
+            h = matrix_access(u,m,n,i,i) * g;
+            for (j=l; j<n; j++) {
+                s = 0.0;
+                for (k=l; k<m; k++)
+                    s += matrix_access(u,m,n,k,i)*matrix_access(u,m,n,k,j);
+                f = s/h;
+                for (k=i; k<m; k++)
+                    matrix_access(u,m,n,k,j) += f*matrix_access(u,m,n,k,i);
+            } // for j
+            for (j=i; j<m; j++)
+                matrix_access(u,m,n,j,i) /= g;
+        } else { // g != 0
+            //printf("  treating g as zero\n");
+            for (j=i; j<m; j++)
+                matrix_access(u,m,n,j,i) = 0.0;
+        } // g != 0
+        matrix_access(u,m,n,i,i) += 1.0;
+    }
+#if DEBUG
+    printf("U:\n"); matrixf_print(u,m,n);
+    printf("V:\n"); matrixf_print(v,n,n);
+#endif
+    printf("exiting prematurely\n");
+    return 0;
+
+    // diagonalization of the bidiagonal form
+    eps *= x;
+    for (k=n-1; k>=0; k--) {
+        test_f_splitting:
+        for (l=k-1; l>=0; l--) {
+            if ( fabs(e[l])   <= eps ) goto test_f_convergence;
+            if ( fabs(q[l-1]) <= eps ) goto cancellation;
+        } // for l
+
+        // cancellation of e[l] if l>0
+        cancellation:
+        c = 0;
+        s = 1;
+        l1 = l-1;
+        for (i=l; i<k; i++) {
+            f = s*e[i];
+            e[i] *= c;
+            if ( fabs(f) <= eps ) goto test_f_convergence;
+            g = q[i];
+            q[i] = sqrt(f*f + g*g);
+            h = q[i];
+            c = g/h;
+            s = -f/h;
+            for (j=0; j<m; j++) {
+                y = matrix_access(u,m,n,j,l1);
+                z = matrix_access(u,m,n,j,i);
+                matrix_access(u,m,n,j,l1) =  y*c + z*s;
+                matrix_access(u,m,n,j,i)  = -y*s + z*c;
+            } // for j
+
+        } // for i
+
+        test_f_convergence:
+        z = q[k];
+        if (l==k) goto convergence;
+
+        // shift from bottom 2x2 minor
+        x = q[l];
+        y = q[k-1];
+        g = e[k-1];
+        h = e[k];
+        f = ((y-z)*(y+z) + (g-h)*(g+h)) / (2*h*y);
+        g = sqrt(f*f+1);
+        f = ((x-z)*(x+z) + h*(y/( f<0 ? f-g : f+g )-h))/x;
+
+        // next QR transformation
+        c = 1;
+        s = 1;
+        for (i=l+1; i<k; i++) {
+            g = e[i];
+            y = q[i];
+            h = s*g;
+            g = c*g;
+            z = sqrt(f*f+h*h);
+            e[i-1] = z;
+            c = f/z;
+            s = h/z;
+            f =  x*c + g*s;
+            g = -x*s + g*c;
+            h = y*s;
+            y = y*c;
+
+            for (j=0; j<n; j++) {
+                x = matrix_access(v,n,n,j,i-1);
+                z = matrix_access(v,n,n,j,i);
+                matrix_access(v,n,n,j,i-1) =  x*c + z*s;
+                matrix_access(v,n,n,j,i)   = -x*s + z*c;
+            } // for j
+
+            z = sqrt(f*f + h*h);
+            q[i-1] = z;
+            c = f/z;
+            s = h/z;
+            f =  c*g + s*y;
+            x = -s*g + c*y;
+
+            for (j=0; j<m; j++) {
+                y = matrix_access(u,m,n,j,i-1);
+                z = matrix_access(u,m,n,j,i);
+                matrix_access(u,m,n,j,i-1) =  y*c + z*s;
+                matrix_access(u,m,n,j,i)   = -y*s + z*c;
+            } // for j
+        } // for i
+
+        e[l] = 0;
+        e[k] = f;
+        q[k] = x;
+        goto test_f_splitting;
+
+        convergence:
+        if (z < 0) {
+            // q[k] is made non-negative
+            q[k] = -z;
+            for (j=0; j<n; j++)
+                matrix_access(v,n,n,j,k) = -matrix_access(v,n,n,j,k);
+        } // if (z < 0)
+    } // for k
 
     printf("done.\n");
     return 0;
