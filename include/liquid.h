@@ -1918,11 +1918,9 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
 
 void ofdmflexframegen_print(ofdmflexframegen _q);
 
-void ofdmflexframegen_reset(ofdmflexframegen _q);
-
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
-unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q);
+unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
 
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object

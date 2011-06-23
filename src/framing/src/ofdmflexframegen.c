@@ -84,6 +84,13 @@ struct ofdmflexframegen_s {
     unsigned char header_sym[96];       // header symbols
     float complex header_samples[96];   // header samples
 
+    // payload
+    packetizer p_payload;               // payload packetizer
+    modem mod_payload;                  // payload modulator
+    unsigned char * payload_enc;        // payload data (encoded bytes)
+    unsigned int payload_enc_msg_len;   // length of encoded payload
+    unsigned int payload_modem_symbols; // number of modulated symbols in payload
+
     // properties
     ofdmflexframegenprops_s props;
 };
@@ -107,12 +114,6 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->M = _M;
     q->cp_len = _cp_len;
 
-    // initialize properties
-    if (_props != NULL)
-        ofdmflexframegen_setprops(q, _props);
-    else
-        ofdmflexframegen_setprops(q, &ofdmflexframegenprops_default);
-
     // allocate memory for transform buffers
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
     q->x = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -132,6 +133,19 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     div_t d = div(96, q->M_data);
     q->num_symbols_header = d.quot + (d.rem ? 1 : 0);
 
+    // initial memory allocation for payload
+    q->p_payload = packetizer_create(0, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
+    q->payload_enc = (unsigned char*) malloc(1*sizeof(unsigned char));
+
+    // create payload modem (initially QPSK, overridden by properties)
+    q->mod_payload = modem_create(LIQUID_MODEM_QPSK, 1);
+
+    // initialize properties
+    if (_props != NULL)
+        ofdmflexframegen_setprops(q, _props);
+    else
+        ofdmflexframegen_setprops(q, &ofdmflexframegenprops_default);
+
     return q;
 }
 
@@ -141,6 +155,8 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
     ofdmframegen_destroy(_q->fg);       // OFDM frame generator
     packetizer_destroy(_q->p_header);   // header packetizer
     modem_destroy(_q->mod_header);      // header modulator
+    packetizer_destroy(_q->p_payload);  // payload packetizer
+    modem_destroy(_q->mod_payload);     // payload modulator
 
     // free transform array memory
     free(_q->X);                        // frequency-domain buffer
@@ -181,7 +197,6 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
     // copy properties to internal structure
     memmove(&_q->props, _props, sizeof(ofdmflexframegenprops_s));
 
-#if 0
     // re-create payload packetizer
     _q->p_payload = packetizer_recreate(_q->p_payload,
                                         _q->props.payload_len,
@@ -194,6 +209,19 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
     modem_destroy(_q->mod_payload);
     _q->mod_payload = modem_create(_q->props.mod_scheme, _q->props.mod_bps);
 
+    // 
+    // re-compute payload length
+    //
+
+    // compute number of payload modem symbols
+    div_t d = div(8*_q->payload_enc_msg_len, _q->props.mod_bps);
+    _q->payload_modem_symbols = d.quot + (d.rem ? 1 : 0);
+
+    // compute number of payload OFDM symbols
+    d = div(_q->payload_modem_symbols, _q->M_data);
+    _q->num_symbols_payload = d.quot + (d.rem ? 1 : 0);
+
+#if 0
     // re-compute payload and frame lengths
     ofdmflexframegen_compute_payload_len(_q);
     ofdmflexframegen_compute_frame_len(_q);
@@ -211,31 +239,34 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
     printf("      * pilot           :   %-u\n", _q->M_pilot);
     printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    total symbols       :   %-u\n", 0);
+    printf("    properties:\n");
+    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[_q->props.mod_scheme][1], _q->props.mod_bps);
+    printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
+    printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
+    printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
+    printf("    lengths:\n");
+    printf("      * payload bytes (dec) :   %-u\n", _q->props.payload_len);
+    printf("      * payload bytes (enc) :   %-u\n", _q->payload_enc_msg_len);
+    printf("      * payload modem syms  :   %-u\n", _q->payload_modem_symbols);
+    printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
     printf("      * S0 symbols      :   %-u @ %u\n", _q->props.num_symbols_S0, _q->M);
     printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
-    printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header, _q->M+_q->cp_len);
-    printf("      * payload symbols :   %-u @ %u\n", 0, _q->M+_q->cp_len);
-    printf("    payload bytes       :   %-u\n", _q->props.payload_len);
-    printf("    modulation scheme   :   %s (%u b/s)\n", modulation_scheme_str[_q->props.mod_scheme][1], _q->props.mod_bps);
-    printf("    fec (inner)         :   %s\n", fec_scheme_str[_q->props.fec0][1]);
-    printf("    fec (outer)         :   %s\n", fec_scheme_str[_q->props.fec1][1]);
-    printf("    CRC scheme          :   %s\n", crc_scheme_str[_q->props.check][1]);
-}
-
-void ofdmflexframegen_reset(ofdmflexframegen _q)
-{
+    printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
+    printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
 }
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
-unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q)
+unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
 {
     // number of S0 symbols
     // number of S1 symbols (1)
     // number of header symbols
     // number of payload symbols
-    return 10;
+    return  _q->props.num_symbols_S0 +
+            1 +
+            _q->num_symbols_header +
+            _q->num_symbols_payload;
 }
 
 // assemble a frame from an array of data

@@ -22,7 +22,7 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
-    unsigned int payload_len = 1024;    //
+    unsigned int payload_len = 200;     //
 #if 0
     modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 4;
