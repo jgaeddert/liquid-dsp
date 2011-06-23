@@ -1882,6 +1882,18 @@ void bpacketsync_execute_bit(bpacketsync _q,
 // OFDM flexframe generator
 //
 
+// ofdm frame generator properties
+typedef struct {
+    unsigned int num_symbols_S0;// number of S0 training symbols
+    unsigned int check;         // data validity check
+    unsigned int fec0;          // forward error-correction scheme (inner)
+    unsigned int fec1;          // forward error-correction scheme (outer)
+    unsigned int mod_scheme;    // modulation scheme
+    unsigned int mod_bps;       // modulation depth (bits/symbol)
+    //unsigned int block_size;  // framing block size
+} ofdmflexframegenprops_s;
+void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props);
+
 typedef struct ofdmflexframegen_s * ofdmflexframegen;
 
 // create OFDM flexible framing generator object
@@ -1902,22 +1914,22 @@ void ofdmflexframegen_reset(ofdmflexframegen _q);
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
 //  _payload_len    :   length of payload
-//  _opts           :   options (modulation scheme, etc.)
+//  _fgprops        :   frame properties (modulation scheme, etc.)
 unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
                                             unsigned int _payload_len,
-                                            void * _opts);
+                                            ofdmflexframegenprops_s * _fgprops);
 
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data
 //  _payload_len    :   length of payload
-//  _opts           :   options (modulation scheme, etc.)
+//  _fgprops        :   frame properties (modulation scheme, etc.)
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
                                unsigned char * _payload,
                                unsigned int    _payload_len,
-                               void * _opts);
+                               ofdmflexframegenprops_s * _fgprops);
 
 // write symbols of assembled frame
 //  _q              :   OFDM frame generator object

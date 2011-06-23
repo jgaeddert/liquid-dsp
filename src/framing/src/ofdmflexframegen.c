@@ -34,6 +34,22 @@
 
 #define DEBUG_OFDMFLEXFRAMEGEN            1
 
+// default ofdmflexframegen properties
+static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
+    3,                  // num_symbols_S0
+    LIQUID_CRC_16,      // check
+    LIQUID_FEC_NONE,    // fec0
+    LIQUID_FEC_NONE,    // fec1
+    LIQUID_MODEM_QPSK,  // mod_scheme
+    2                   // mod_bps
+    //64                // block_size
+};
+
+void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
+{
+    memmove(_props, &ofdmflexframegenprops_default, sizeof(ofdmflexframegenprops_s));
+}
+
 struct ofdmflexframegen_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
@@ -149,13 +165,11 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
-//  _header         :   frame header [8 bytes]
-//  _payload        :   payload data
 //  _payload_len    :   length of payload
-//  _opts           :   options (modulation scheme, etc.)
+//  _fgprops        :   frame properties (modulation scheme, etc.)
 unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
                                             unsigned int _payload_len,
-                                            void * _opts)
+                                            ofdmflexframegenprops_s * _fgprops)
 {
     // number of S0 symbols
     // number of S1 symbols (1)
@@ -169,12 +183,12 @@ unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data
 //  _payload_len    :   length of payload
-//  _opts           :   options (modulation scheme, etc.)
+//  _fgprops        :   frame properties (modulation scheme, etc.)
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
                                unsigned char * _payload,
                                unsigned int    _payload_len,
-                               void * _opts)
+                               ofdmflexframegenprops_s * _fgprops)
 {
     // copy header
 
