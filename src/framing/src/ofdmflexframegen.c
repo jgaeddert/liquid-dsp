@@ -153,7 +153,7 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
 //  _payload        :   payload data
 //  _payload_len    :   length of payload
 //  _opts           :   options (modulation scheme, etc.)
-unsigned int ofdmflexframegen_gen_frame_len(ofdmflexframegen _q,
+unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
                                             unsigned char * _header,
                                             unsigned char * _payload,
                                             unsigned int    _payload_len,
