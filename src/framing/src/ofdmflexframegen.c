@@ -149,14 +149,12 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
-//  _header         :   frame header [size?]
+//  _header         :   frame header [8 bytes]
 //  _payload        :   payload data
 //  _payload_len    :   length of payload
 //  _opts           :   options (modulation scheme, etc.)
 unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
-                                            unsigned char * _header,
-                                            unsigned char * _payload,
-                                            unsigned int    _payload_len,
+                                            unsigned int _payload_len,
                                             void * _opts)
 {
     // number of S0 symbols
@@ -168,7 +166,7 @@ unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
 
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object
-//  _header         :   frame header [size?]
+//  _header         :   frame header [8 bytes]
 //  _payload        :   payload data
 //  _payload_len    :   length of payload
 //  _opts           :   options (modulation scheme, etc.)
