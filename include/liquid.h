@@ -1878,6 +1878,69 @@ void bpacketsync_execute_bit(bpacketsync _q,
                              unsigned char _bit);
 
 
+// 
+// OFDM flexframe generator
+//
+
+typedef struct ofdmflexframegen_s * ofdmflexframegen;
+
+// create OFDM flexible framing generator object
+//  _M      :   number of subcarriers, >10 typical
+//  _cp_len :   cyclic prefix length
+//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
+                                         unsigned int  _cp_len,
+                                         unsigned int * _p);
+                                         //unsigned int  _taper_len);
+
+void ofdmflexframegen_destroy(ofdmflexframegen _q);
+
+void ofdmflexframegen_print(ofdmflexframegen _q);
+
+void ofdmflexframegen_reset(ofdmflexframegen _q);
+
+// assemble a frame from an array of data
+//  _q              :   OFDM frame generator object
+//  _header         :   frame header [size?]
+//  _payload        :   payload data
+//  _payload_len    :   length of payload
+//  _opts           :   options (modulation scheme, etc.)
+void ofdmflexframegen_assemble(ofdmflexframegen _q,
+                               unsigned char * _header,
+                               unsigned char * _payload,
+                               unsigned int    _payload_len,
+                               void * _opts);
+
+// write symbols of assembled frame
+//  _q              :   OFDM frame generator object
+//  _buffer         :   output buffer [size: N+cp_len x 1]
+//  _num_written    :   number written (either N or N+cp_len)
+int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
+                                 liquid_float_complex * _buffer,
+                                 unsigned int * _num_written);
+
+// 
+// OFDM flex frame synchronizer
+//
+typedef int (*ofdmflexframesync_callback)(void * _userdata);
+
+typedef struct ofdmflexframesync_s * ofdmflexframesync;
+ofdmflexframesync ofdmflexframesync_create(unsigned int _num_subcarriers,
+                                           unsigned int  _cp_len,
+                                           unsigned int * _p,
+                                           //unsigned int  _taper_len,
+                                           ofdmflexframesync_callback _callback,
+                                           void * _userdata);
+
+void ofdmflexframesync_destroy(ofdmflexframesync _q);
+void ofdmflexframesync_print(ofdmflexframesync _q);
+void ofdmflexframesync_reset(ofdmflexframesync _q);
+void ofdmflexframesync_execute(ofdmflexframesync _q,
+                               liquid_float_complex * _x,
+                               unsigned int _n);
+
+
+
 
 //
 // Binary P/N synchronizer
