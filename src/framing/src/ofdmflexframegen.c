@@ -37,6 +37,7 @@
 // default ofdmflexframegen properties
 static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
     3,                  // num_symbols_S0
+    0,                  // payload_len
     LIQUID_CRC_16,      // check
     LIQUID_FEC_NONE,    // fec0
     LIQUID_FEC_NONE,    // fec1
@@ -82,12 +83,16 @@ struct ofdmflexframegen_s {
     unsigned char header_enc[24];       // header data (encoded)
     unsigned char header_sym[96];       // header symbols
     float complex header_samples[96];   // header samples
+
+    // properties
+    ofdmflexframegenprops_s props;
 };
 
 // TODO : put these options in 'assemble()' method?
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int _cp_len,
-                                         unsigned int * _p)
+                                         unsigned int * _p,
+                                         ofdmflexframegenprops_s * _props)
 {
     // validate input
     if (_M < 2) {
@@ -101,6 +106,12 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     ofdmflexframegen q = (ofdmflexframegen) malloc(sizeof(struct ofdmflexframegen_s));
     q->M = _M;
     q->cp_len = _cp_len;
+
+    // initialize properties
+    if (_props != NULL)
+        ofdmflexframegen_setprops(q, _props);
+    else
+        ofdmflexframegen_setprops(q, &ofdmflexframegenprops_default);
 
     // allocate memory for transform buffers
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
@@ -139,24 +150,77 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
     free(_q);
 }
 
+// get ofdmflexframegen properties
+//  _q      :   frame generator object
+//  _props  :   frame generator properties structure pointer
+void ofdmflexframegen_getprops(ofdmflexframegen _q,
+                               ofdmflexframegenprops_s * _props)
+{
+    // copy properties structure to output pointer
+    memmove(_props, &_q->props, sizeof(ofdmflexframegenprops_s));
+}
+
+void ofdmflexframegen_setprops(ofdmflexframegen _q,
+                               ofdmflexframegenprops_s * _props)
+{
+    // validate input
+    if (_props->mod_bps == 0) {
+        fprintf(stderr, "error: ofdmflexframegen_setprops(), modulation depth must be greater than 0\n");
+        exit(1);
+    } else if (_props->check == LIQUID_CRC_UNKNOWN || _props->check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported CRC scheme\n");
+        exit(1);
+    } else if (_props->fec0 == LIQUID_FEC_UNKNOWN || _props->fec1 == LIQUID_FEC_UNKNOWN) {
+        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported FEC scheme\n");
+        exit(1);
+    } else if (_props->mod_scheme == LIQUID_MODEM_UNKNOWN ) {
+        fprintf(stderr, "error: ofdmflexframegen_setprops(), invalid/unsupported modulation scheme\n");
+        exit(1);
+    }
+
+    // copy properties to internal structure
+    memmove(&_q->props, _props, sizeof(ofdmflexframegenprops_s));
+
+#if 0
+    // re-create payload packetizer
+    _q->p_payload = packetizer_recreate(_q->p_payload,
+                                        _q->props.payload_len,
+                                        _q->props.check,
+                                        _q->props.fec0,
+                                        _q->props.fec1);
+    _q->payload_enc_msg_len = packetizer_get_enc_msg_len(_q->p_payload);
+
+    // re-create modem
+    modem_destroy(_q->mod_payload);
+    _q->mod_payload = modem_create(_q->props.mod_scheme, _q->props.mod_bps);
+
+    // re-compute payload and frame lengths
+    ofdmflexframegen_compute_payload_len(_q);
+    ofdmflexframegen_compute_frame_len(_q);
+
+    // reconfigure payload buffers (reallocate as necessary)
+    ofdmflexframegen_configure_payload_buffers(_q);
+#endif
+}
+
 void ofdmflexframegen_print(ofdmflexframegen _q)
 {
     printf("ofdmflexframegen:\n");
     printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("      - NULL            :   %-u\n", _q->M_null);
-    printf("      - pilot           :   %-u\n", _q->M_pilot);
-    printf("      - data            :   %-u\n", _q->M_data);
+    printf("      * NULL            :   %-u\n", _q->M_null);
+    printf("      * pilot           :   %-u\n", _q->M_pilot);
+    printf("      * data            :   %-u\n", _q->M_data);
     printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    S0 symbols          :   %-u\n", 0);
-    printf("    S1 symbols          :   %-u\n", 0);
-    printf("    header symbols      :   %-u\n", _q->num_symbols_header);
-    printf("    payload symbols     :   %-u\n", 0);
-#if 0
-    printf("    modulation scheme   :   %s (%u b/s)\n", modulation_scheme_str[0][0], 0);
-    printf("    fec (inner)         :   %s\n", fec_scheme_str[0][0]);
-    printf("    fec (outer)         :   %s\n", fec_scheme_str[0][0]);
-    printf("    CRC scheme          :   %s\n", crc_scheme_str[0][0]);
-#endif
+    printf("    total symbols       :   %-u\n", 0);
+    printf("      * S0 symbols      :   %-u @ %u\n", _q->props.num_symbols_S0, _q->M);
+    printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
+    printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header, _q->M+_q->cp_len);
+    printf("      * payload symbols :   %-u @ %u\n", 0, _q->M+_q->cp_len);
+    printf("    payload bytes       :   %-u\n", _q->props.payload_len);
+    printf("    modulation scheme   :   %s (%u b/s)\n", modulation_scheme_str[_q->props.mod_scheme][1], _q->props.mod_bps);
+    printf("    fec (inner)         :   %s\n", fec_scheme_str[_q->props.fec0][1]);
+    printf("    fec (outer)         :   %s\n", fec_scheme_str[_q->props.fec1][1]);
+    printf("    CRC scheme          :   %s\n", crc_scheme_str[_q->props.check][1]);
 }
 
 void ofdmflexframegen_reset(ofdmflexframegen _q)
@@ -165,11 +229,7 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
-//  _payload_len    :   length of payload
-//  _fgprops        :   frame properties (modulation scheme, etc.)
-unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
-                                            unsigned int _payload_len,
-                                            ofdmflexframegenprops_s * _fgprops)
+unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q)
 {
     // number of S0 symbols
     // number of S1 symbols (1)
@@ -182,13 +242,9 @@ unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data
-//  _payload_len    :   length of payload
-//  _fgprops        :   frame properties (modulation scheme, etc.)
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
-                               unsigned char * _payload,
-                               unsigned int    _payload_len,
-                               ofdmflexframegenprops_s * _fgprops)
+                               unsigned char * _payload)
 {
     // copy header
 

@@ -48,7 +48,16 @@ int main(int argc, char*argv[]) {
     ofdmframe_init_default_sctype(M, p);
 
     // create frame generator
-    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p);
+    ofdmflexframegenprops_s fgprops;
+    ofdmflexframegenprops_init_default(&fgprops);
+    fgprops.num_symbols_S0  = 3;
+    fgprops.payload_len     = payload_len;
+    fgprops.check           = LIQUID_CRC_32;
+    fgprops.fec0            = LIQUID_FEC_NONE;
+    fgprops.fec1            = LIQUID_FEC_HAMMING128;
+    fgprops.mod_scheme      = LIQUID_MODEM_QPSK;
+    fgprops.mod_bps         = 2;
+    ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
     ofdmflexframegen_print(fg);
 
     // create frame synchronizer
@@ -58,14 +67,13 @@ int main(int argc, char*argv[]) {
     // initialize header, payload
     unsigned char header[1];
     unsigned char payload[payload_len];
-    void * opts = NULL;
 
     unsigned int i;
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
 
     // assemble frame
-    ofdmflexframegen_assemble(fg, header, payload, payload_len, opts);
+    ofdmflexframegen_assemble(fg, header, payload);
 
 #if 0
     // initialize frame synchronizer with noise

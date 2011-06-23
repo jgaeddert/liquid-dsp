@@ -1885,6 +1885,7 @@ void bpacketsync_execute_bit(bpacketsync _q,
 // ofdm frame generator properties
 typedef struct {
     unsigned int num_symbols_S0;// number of S0 training symbols
+    unsigned int payload_len;   // length of payload
     unsigned int check;         // data validity check
     unsigned int fec0;          // forward error-correction scheme (inner)
     unsigned int fec1;          // forward error-correction scheme (outer)
@@ -1897,15 +1898,23 @@ void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props);
 typedef struct ofdmflexframegen_s * ofdmflexframegen;
 
 // create OFDM flexible framing generator object
-//  _M      :   number of subcarriers, >10 typical
-//  _cp_len :   cyclic prefix length
-//  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _fgprops    :   frame properties (modulation scheme, etc.)
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int  _cp_len,
-                                         unsigned int * _p);
+                                         unsigned int * _p,
+                                         ofdmflexframegenprops_s * _fgprops);
                                          //unsigned int  _taper_len);
 
 void ofdmflexframegen_destroy(ofdmflexframegen _q);
+
+void ofdmflexframegen_getprops(ofdmflexframegen _q,
+                               ofdmflexframegenprops_s * _props);
+
+void ofdmflexframegen_setprops(ofdmflexframegen _q,
+                               ofdmflexframegenprops_s * _props);
 
 void ofdmflexframegen_print(ofdmflexframegen _q);
 
@@ -1913,23 +1922,15 @@ void ofdmflexframegen_reset(ofdmflexframegen _q);
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
-//  _payload_len    :   length of payload
-//  _fgprops        :   frame properties (modulation scheme, etc.)
-unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q,
-                                            unsigned int _payload_len,
-                                            ofdmflexframegenprops_s * _fgprops);
+unsigned int ofdmflexframegen_get_frame_len(ofdmflexframegen _q);
 
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [8 bytes]
 //  _payload        :   payload data
-//  _payload_len    :   length of payload
-//  _fgprops        :   frame properties (modulation scheme, etc.)
 void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
-                               unsigned char * _payload,
-                               unsigned int    _payload_len,
-                               ofdmflexframegenprops_s * _fgprops);
+                               unsigned char * _payload);
 
 // write symbols of assembled frame
 //  _q              :   OFDM frame generator object
