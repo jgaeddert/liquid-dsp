@@ -952,6 +952,22 @@ void bpacketsync_decode_header(bpacketsync _q);
 void bpacketsync_decode_payload(bpacketsync _q);
 void bpacketsync_reconfig(bpacketsync _q);
 
+// 
+// ofdmflexframegen
+//
+
+// compute payload length (number of modulation symbols)
+void ofdmflexframegen_compute_payload_len(ofdmflexframegen _q);
+
+// encode header
+void ofdmflexframegen_encode_header(ofdmflexframegen _q);
+
+// modulate header
+void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
+
+// modulate payload
+void ofdmflexframegen_modulate_payload(ofdmflexframegen _q);
+
 
 //
 // interleaver

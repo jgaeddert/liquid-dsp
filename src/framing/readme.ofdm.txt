@@ -1,5 +1,5 @@
 ======================================
- OFDM framing structure
+ OFDM flexible framing structure
 ======================================
 
 signal
@@ -16,7 +16,7 @@ signal
      *----*----*    *----*----+----*----*----*----*----*
      |         |    |         |                        |
      |         |    |         |      ...               |
-  ___|         |____|         |                        |___
+  ___/         \____/         |                        \___
   +---------------------------+----------------------------+ freq
 -Fs/2                         0                         +Fs/2
 
@@ -53,6 +53,13 @@ section     # samples       Description/purpose
                             and equalization
 
     header  [variable]      Framing descriptor
+                            user-defined: 8 bytes
+                            internal    : 6 bytes
+                            encoded with Hamming(12,8), 16-bit CRC: 24 bytes
+                            modulated with QPSK : 96 modem symbols
+                            ...
+
+    payload [variable]      user-defined length...
 
 TODO:
     * Iteratively improve initial carrier frequency, phase, timing
