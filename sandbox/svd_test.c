@@ -38,14 +38,21 @@ int main() {
     unsigned int m = 8;
     unsigned int n = 5;
 
+#if 0
+    // initialize as random matrix
+    unsigned int ii;
+    for (ii=0; ii<m*n; ii++)
+        a[ii] = randnf();
+#endif
+
     matrixf_print(a,m,n);
 
     // 
     float q[n];     // singular values of 'a'
     float u[m*n];
     float v[n*n];
-    float eps = 1e-12;
-    float tol = 1e-12;
+    float eps = 1e-8;
+    float tol = 1e-8;
 
     // internal variables
     int i,j,k,l,l1;
@@ -173,45 +180,73 @@ int main() {
 #if DEBUG
     printf("U:\n"); matrixf_print(u,m,n);
     printf("V:\n"); matrixf_print(v,n,n);
+    printf("q:\n"); matrixf_print(q,n,1);
+    printf("e:\n"); matrixf_print(e,n,1);
 #endif
-    printf("exiting prematurely\n");
-    return 0;
+
+    exit(1);
 
     // diagonalization of the bidiagonal form
+    unsigned int t=10;
     eps *= x;
     for (k=n-1; k>=0; k--) {
+        if (k==(n-2)) {
+            printf("...\n");
+            break;
+        }
         test_f_splitting:
-        for (l=k-1; l>=0; l--) {
+        printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+        printf("test f splitting\n");
+        printf("  k = %u\n", k);
+        t--;
+        if (t==0) {
+            fprintf(stderr,"***********************************************\n");
+            fprintf(stderr,"    bailing\n");
+            fprintf(stderr,"***********************************************\n");
+            t=10;
+            continue;
+        }
+        for (l=k; l>0; l--) {
+            printf("  e[%3u] = %12.4e, q[%3u] = %12.4e (eps: %12.4e)\n", l, e[l], l-1, q[l-1], eps);
             if ( fabs(e[l])   <= eps ) goto test_f_convergence;
             if ( fabs(q[l-1]) <= eps ) goto cancellation;
         } // for l
+        // FIXME: figure out logic here (need to set l > 0)
+        l = 1;
 
         // cancellation of e[l] if l>0
         cancellation:
+        printf("cancellation\n");
         c = 0;
         s = 1;
         l1 = l-1;
         for (i=l; i<k; i++) {
             f = s*e[i];
             e[i] *= c;
+            printf("  i=%u, f=%f (eps: %e)\n", i, f, eps);
             if ( fabs(f) <= eps ) goto test_f_convergence;
             g = q[i];
-            q[i] = sqrt(f*f + g*g);
-            h = q[i];
+            h = sqrt(f*f + g*g);
+            q[i] = h;
             c = g/h;
             s = -f/h;
+
+            // withu
             for (j=0; j<m; j++) {
                 y = matrix_access(u,m,n,j,l1);
                 z = matrix_access(u,m,n,j,i);
                 matrix_access(u,m,n,j,l1) =  y*c + z*s;
                 matrix_access(u,m,n,j,i)  = -y*s + z*c;
             } // for j
-
         } // for i
+        printf("  y=%f, z=%f\n", y, z);
 
         test_f_convergence:
+        printf("test f convergence\n");
         z = q[k];
-        if (l==k) goto convergence;
+        printf("  z = %f\n", z);
+        if (l==k)
+            goto convergence;
 
         // shift from bottom 2x2 minor
         x = q[l];
@@ -219,8 +254,11 @@ int main() {
         g = e[k-1];
         h = e[k];
         f = ((y-z)*(y+z) + (g-h)*(g+h)) / (2*h*y);
+        printf("  l=%u, k=%u, z=%f, x=%f, y=%f, g=%e, h=%f, f=%e\n",
+                  l,    k,    z,    x,    y,    g,    h,    f);
         g = sqrt(f*f+1);
         f = ((x-z)*(x+z) + h*(y/( f<0 ? f-g : f+g )-h))/x;
+        printf("  g -> %f, f -> %f\n", g, f);
 
         // next QR transformation
         c = 1;
@@ -239,6 +277,7 @@ int main() {
             h = y*s;
             y = y*c;
 
+            // withv
             for (j=0; j<n; j++) {
                 x = matrix_access(v,n,n,j,i-1);
                 z = matrix_access(v,n,n,j,i);
@@ -253,6 +292,7 @@ int main() {
             f =  c*g + s*y;
             x = -s*g + c*y;
 
+            // withu
             for (j=0; j<m; j++) {
                 y = matrix_access(u,m,n,j,i-1);
                 z = matrix_access(u,m,n,j,i);
@@ -267,13 +307,25 @@ int main() {
         goto test_f_splitting;
 
         convergence:
+        printf("convergence\n");
+        printf("  z = %f\n", z);
         if (z < 0) {
             // q[k] is made non-negative
+            printf("  q[%3u] = %f\n", k, q[k]);
             q[k] = -z;
             for (j=0; j<n; j++)
                 matrix_access(v,n,n,j,k) = -matrix_access(v,n,n,j,k);
         } // if (z < 0)
     } // for k
+
+    // print results
+    printf("\n\n");
+    printf("A:\n"); matrixf_print(a,m,n);
+    printf("U:\n"); matrixf_print(u,m,n);
+    printf("V:\n"); matrixf_print(v,n,n);
+    printf("q:\n"); matrixf_print(q,n,1);
+    printf("e:\n"); matrixf_print(e,n,1);
+
 
     printf("done.\n");
     return 0;
