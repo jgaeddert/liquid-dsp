@@ -52,8 +52,15 @@ struct ofdmflexframegen_s {
 
     // internal low-level objects
     ofdmframegen fg;        // frame generator object
+
+    // options
+    unsigned int num_symbols_S0;
+    unsigned int num_symbols_S1;
+    unsigned int num_symbols_header;
+    unsigned int num_symbols_payload;
 };
 
+// TODO : put these options in 'assemble()' method?
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int _cp_len,
                                          unsigned int * _p)
@@ -71,7 +78,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->M = _M;
     q->cp_len = _cp_len;
 
-    // allocate memory for transform objects
+    // allocate memory for transform buffers
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
     q->x = (float complex*) malloc((q->M)*sizeof(float complex));
 
@@ -88,6 +95,39 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
     free(_q);
 }
 
+void ofdmflexframegen_print(ofdmflexframegen _q)
+{
+    printf("ofdmflexframegen:\n");
+    printf("    num subcarriers     :   %-u\n", _q->M);
+    printf("      - NULL            :   %-u\n", _q->M_null);
+    printf("      - pilot           :   %-u\n", _q->M_pilot);
+    printf("      - data            :   %-u\n", _q->M_data);
+    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+}
+
+void ofdmflexframegen_reset(ofdmflexframegen _q)
+{
+}
+
+// get length of frame (symbols)
+//  _q              :   OFDM frame generator object
+//  _header         :   frame header [size?]
+//  _payload        :   payload data
+//  _payload_len    :   length of payload
+//  _opts           :   options (modulation scheme, etc.)
+unsigned int ofdmflexframegen_gen_frame_len(ofdmflexframegen _q,
+                                            unsigned char * _header,
+                                            unsigned char * _payload,
+                                            unsigned int    _payload_len,
+                                            void * _opts)
+{
+    // number of S0 symbols
+    // number of S1 symbols (1)
+    // number of header symbols
+    // number of payload symbols
+    return 10;
+}
+
 // assemble a frame from an array of data
 //  _q              :   OFDM frame generator object
 //  _header         :   frame header [size?]
@@ -100,6 +140,9 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned int    _payload_len,
                                void * _opts)
 {
+    // copy header
+
+    // compute number of data symbols...
 }
 
 // write symbols of assembled frame
@@ -110,6 +153,11 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
                                  liquid_float_complex * _buffer,
                                  unsigned int * _num_written)
 {
-    return 0;
+    // write S0 symbols
+    // write S1 symbols
+    // write header symbols
+    // write payload symbols
+
+    return 1;
 }
 

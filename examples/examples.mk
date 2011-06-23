@@ -75,6 +75,7 @@ local_src	:=			\
 	nyquist_filter_example.c	\
 	ofdmframe64gen_example.c	\
 	ofdmframe64sync_example.c	\
+	ofdmflexframesync_example.c	\
 	ofdmframesync_example.c		\
 	ofdmoqam_example.c		\
 	ofdmoqam_firpfbch_example.c	\
