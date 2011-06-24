@@ -101,6 +101,8 @@ struct ofdmflexframegen_s {
         OFDMFLEXFRAMEGEN_STATE_PAYLOAD  // write payload symbols
     } state;
     int frame_complete;                 // frame completed flag
+    unsigned int header_symbol_index;   //
+    unsigned int payload_symbol_index;  //
 
     // properties
     ofdmflexframegenprops_s props;
@@ -133,8 +135,18 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
     q->x = (float complex*) malloc((q->M)*sizeof(float complex));
 
+    // allocate memory for subcarrier allocation IDs
+    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    if (_p == NULL) {
+        // initialize default subcarrier allocation
+        ofdmframe_init_default_sctype(q->M, q->p);
+    } else {
+        // copy user-defined subcarrier allocation
+        memmove(q->p, _p, q->M*sizeof(unsigned int));
+    }
+
     // create internal OFDM frame generator object
-    q->fg = ofdmframegen_create(_M, _cp_len, _p);
+    q->fg = ofdmframegen_create(q->M, q->cp_len, q->p);
 
     // create header objects
     q->mod_header = modem_create(LIQUID_MODEM_QPSK, 2);
@@ -180,6 +192,7 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
     free(_q->payload_mod);              // modulated payload symbols
     free(_q->X);                        // frequency-domain buffer
     free(_q->x);                        // time-domain buffer
+    free(_q->p);                        // subcarrier allocation
 
     // free main object memory
     free(_q);
@@ -191,6 +204,8 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
     _q->symbol_number = 0;
     _q->state = OFDMFLEXFRAMEGEN_STATE_S0;
     _q->frame_complete = 0;
+    _q->header_symbol_index = 0;
+    _q->payload_symbol_index = 0;
 }
 
 // get ofdmflexframegen properties
@@ -502,11 +517,37 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
 {
     printf("writing header symbol\n");
 
-    // TODO : load data...
+    // load data onto data subcarriers
+    unsigned int i;
+    int sctype;
+    for (i=0; i<_q->M; i++) {
+        //
+        sctype = _q->p[i];
+
+        // 
+        if (sctype == OFDMFRAME_SCTYPE_DATA) {
+            // load...
+            if (_q->header_symbol_index < 96) {
+                // modulate header symbol onto data subcarrier
+                modem_modulate(_q->mod_header, _q->header_sym[_q->header_symbol_index++], &_q->X[i]);
+            } else {
+                //printf("  random header symbol\n");
+                // load random symbol
+                modem_modulate(_q->mod_header, rand()%4, &_q->X[i]);
+            }
+        } else {
+            // ignore subcarrier (ofdmframegen handles nulls and pilots)
+            _q->X[i] = 0.0f;
+        }
+    }
+
+    // write symbol
+    ofdmframegen_writesymbol(_q->fg, _q->X, _buffer);
 
     // set output length
     *_num_written = _q->M + _q->cp_len;
 
+    // check state
     if (_q->symbol_number == _q->num_symbols_header) {
         _q->symbol_number = 0;
         _q->state = OFDMFLEXFRAMEGEN_STATE_PAYLOAD;
