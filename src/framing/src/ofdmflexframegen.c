@@ -81,7 +81,7 @@ struct ofdmflexframegen_s {
     packetizer p_header;                // header packetizer
     unsigned char header[14];           // header data (uncoded)
     unsigned char header_enc[24];       // header data (encoded)
-    unsigned char header_sym[96];       // header symbols
+    unsigned char header_mod[96];       // header symbols
     float complex header_samples[96];   // header samples
 
     // payload
@@ -456,15 +456,15 @@ void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
 
     // unpack header symbols
     for (i=0; i<24; i++) {
-        _q->header_sym[4*i+0] = (_q->header_enc[i] >> 6) & 0x03;
-        _q->header_sym[4*i+1] = (_q->header_enc[i] >> 4) & 0x03;
-        _q->header_sym[4*i+2] = (_q->header_enc[i] >> 2) & 0x03;
-        _q->header_sym[4*i+3] = (_q->header_enc[i]     ) & 0x03;
+        _q->header_mod[4*i+0] = (_q->header_enc[i] >> 6) & 0x03;
+        _q->header_mod[4*i+1] = (_q->header_enc[i] >> 4) & 0x03;
+        _q->header_mod[4*i+2] = (_q->header_enc[i] >> 2) & 0x03;
+        _q->header_mod[4*i+3] = (_q->header_enc[i]     ) & 0x03;
     }
 
     // modulate symbols
     for (i=0; i<96; i++)
-        modem_modulate(_q->mod_header, _q->header_sym[i], &_q->header_samples[i]);
+        modem_modulate(_q->mod_header, _q->header_mod[i], &_q->header_samples[i]);
 }
 
 // write S0 symbol
@@ -529,7 +529,7 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
             // load...
             if (_q->header_symbol_index < 96) {
                 // modulate header symbol onto data subcarrier
-                modem_modulate(_q->mod_header, _q->header_sym[_q->header_symbol_index++], &_q->X[i]);
+                modem_modulate(_q->mod_header, _q->header_mod[_q->header_symbol_index++], &_q->X[i]);
             } else {
                 //printf("  random header symbol\n");
                 // load random symbol
@@ -561,7 +561,33 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
 {
     printf("writing payload symbol\n");
 
-    // TODO : load data...
+    // load data onto data subcarriers
+    unsigned int i;
+    int sctype;
+    for (i=0; i<_q->M; i++) {
+        //
+        sctype = _q->p[i];
+
+        // 
+        if (sctype == OFDMFRAME_SCTYPE_DATA) {
+            // load...
+            if (_q->payload_symbol_index < _q->payload_mod_len) {
+                // modulate payload symbol onto data subcarrier
+                modem_modulate(_q->mod_payload, _q->payload_mod[_q->payload_symbol_index++], &_q->X[i]);
+            } else {
+                //printf("  random payload symbol\n");
+                // load random symbol
+                modem_modulate(_q->mod_payload, rand() % (1<<_q->props.mod_bps), &_q->X[i]);
+            }
+        } else {
+            // ignore subcarrier (ofdmframegen handles nulls and pilots)
+            _q->X[i] = 0.0f;
+        }
+    }
+
+    // write symbol
+    ofdmframegen_writesymbol(_q->fg, _q->X, _buffer);
+
 
     // set output length
     *_num_written = _q->M + _q->cp_len;
