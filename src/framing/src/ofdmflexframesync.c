@@ -53,12 +53,26 @@ struct ofdmflexframesync_s {
     unsigned int M_S0;      // number of enabled subcarriers in S0
     unsigned int M_S1;      // number of enabled subcarriers in S1
 
+    // header (QPSK)
+    modem mod_header;                   // header QPSK modulator
+    packetizer p_header;                // header packetizer
+    unsigned char header[14];           // header data (uncoded)
+    unsigned char header_enc[24];       // header data (encoded)
+    unsigned char header_mod[96];       // header symbols
+
+    // payload
+    // ...
+
     // internal...
     ofdmframesync fs;       // internal OFDM frame synchronizer
 
-    // header
-    // payload
-    // packetizer
+    // counters/states
+    unsigned int symbol_counter;        // received symbol number
+    enum {
+        OFDMFLEXFRAMESYNC_STATE_HEADER, // extract header
+        OFDMFLEXFRAMESYNC_STATE_PAYLOAD // extract payload symbols
+    } state;
+    unsigned int header_symbol_index;   //
 };
 
 ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
@@ -83,12 +97,15 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->M = _M;
     q->cp_len = _cp_len;
 
-    // set callback data
+    // TODO : set callback data
     //q->callback = _callback;
     //q->userdata = _userdata;
 
-    // create ...
+    // create internal framing object
     q->fs = ofdmframesync_create(_M, _cp_len, _p, ofdmflexframesync_internal_callback, (void*)q);
+
+    // reset state
+    ofdmflexframesync_reset(q);
 
     // return object
     return q;
@@ -110,6 +127,12 @@ void ofdmflexframesync_print(ofdmflexframesync _q)
 
 void ofdmflexframesync_reset(ofdmflexframesync _q)
 {
+    _q->symbol_counter=0;
+    _q->state = OFDMFLEXFRAMESYNC_STATE_HEADER;
+    _q->header_symbol_index=0;
+
+    // reset internal OFDM frame synchronizer object
+    ofdmframesync_reset(_q->fs);
 }
 
 void ofdmflexframesync_execute(ofdmflexframesync _q,
@@ -130,7 +153,30 @@ int ofdmflexframesync_internal_callback(float complex *_x,
                                         unsigned int _M,
                                         void * _userdata)
 {
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
     printf("******* ofdmflexframesync callback invoked!\n");
+#endif
+    // type-cast userdata as ofdmflexframesync object
+    ofdmflexframesync _q = (ofdmflexframesync) _userdata;
+
+    _q->symbol_counter++;
+
+    // TODO : extract symbols
+    switch (_q->state) {
+    case OFDMFLEXFRAMESYNC_STATE_HEADER:
+        printf("  ofdmflexframesync extracting header...\n");
+        break;
+    case OFDMFLEXFRAMESYNC_STATE_PAYLOAD:
+        printf("  ofdmflexframesync extracting payload...\n");
+        break;
+    default:
+        fprintf(stderr,"error: ofdmflexframesync_internal_callback(), unknown/unsupported internal state\n");
+        exit(1);
+    }
+
+    // return
     return 0;
 }
+
+
 
