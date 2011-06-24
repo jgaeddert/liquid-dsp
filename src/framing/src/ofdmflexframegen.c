@@ -166,7 +166,7 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
 
     // create payload modem (initially QPSK, overridden by properties)
-    q->mod_payload = modem_create(LIQUID_MODEM_QPSK, 1);
+    q->mod_payload = modem_create(LIQUID_MODEM_QPSK, 2);
 
     // initialize properties
     ofdmflexframegen_setprops(q, _props);
@@ -533,7 +533,8 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
             } else {
                 //printf("  random header symbol\n");
                 // load random symbol
-                modem_modulate(_q->mod_header, rand()%4, &_q->X[i]);
+                unsigned int sym = modem_gen_rand_sym(_q->mod_payload);
+                modem_modulate(_q->mod_payload, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)
@@ -577,7 +578,8 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
             } else {
                 //printf("  random payload symbol\n");
                 // load random symbol
-                modem_modulate(_q->mod_payload, rand() % (1<<_q->props.mod_bps), &_q->X[i]);
+                unsigned int sym = modem_gen_rand_sym(_q->mod_payload);
+                modem_modulate(_q->mod_payload, sym, &_q->X[i]);
             }
         } else {
             // ignore subcarrier (ofdmframegen handles nulls and pilots)
@@ -587,7 +589,6 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
 
     // write symbol
     ofdmframegen_writesymbol(_q->fg, _q->X, _buffer);
-
 
     // set output length
     *_num_written = _q->M + _q->cp_len;

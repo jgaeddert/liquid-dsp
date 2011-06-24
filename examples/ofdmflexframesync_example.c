@@ -23,12 +23,12 @@ int main(int argc, char*argv[]) {
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
     unsigned int payload_len = 120;     //
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
+    unsigned int bps = 2;
+    fec_scheme fec0  = LIQUID_FEC_NONE;
+    fec_scheme fec1  = LIQUID_FEC_HAMMING128;
+    crc_scheme check = LIQUID_CRC_32;
 #if 0
-    modulation_scheme ms = LIQUID_MODEM_QAM;
-    unsigned int bps = 4;
-    fec_scheme fec0 = LIQUID_FEC_NONE;
-    fec_scheme fec1 = LIQUID_FEC_NONE;
-    crc_scheme crc  = LIQUID_CRC_32;
     float noise_floor = -30.0f;         // noise floor [dB]
     float SNRdB = 20.0f;                // signal-to-noise ratio [dB]
 #endif
@@ -52,11 +52,11 @@ int main(int argc, char*argv[]) {
     ofdmflexframegenprops_init_default(&fgprops);
     fgprops.num_symbols_S0  = 3;
     fgprops.payload_len     = payload_len;
-    fgprops.check           = LIQUID_CRC_32;
-    fgprops.fec0            = LIQUID_FEC_NONE;
-    fgprops.fec1            = LIQUID_FEC_HAMMING128;
-    fgprops.mod_scheme      = LIQUID_MODEM_QPSK;
-    fgprops.mod_bps         = 2;
+    fgprops.check           = check;
+    fgprops.fec0            = fec0;
+    fgprops.fec1            = fec1;
+    fgprops.mod_scheme      = ms;
+    fgprops.mod_bps         = bps;
     ofdmflexframegen fg = ofdmflexframegen_create(M, cp_len, p, &fgprops);
     ofdmflexframegen_print(fg);
 
@@ -80,7 +80,7 @@ int main(int argc, char*argv[]) {
 #if 1
     // initialize frame synchronizer with noise
     for (i=0; i<1000; i++) {
-        noise = nstd * randnf() * cexpf(_Complex_I*M_PI*randf());
+        noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
         ofdmflexframesync_execute(fs, &noise, 1);
     }
 #endif
@@ -94,7 +94,7 @@ int main(int argc, char*argv[]) {
 
         // TODO : apply channel
         for (i=0; i<num_written; i++) {
-            noise = nstd * randnf() * cexpf(_Complex_I*M_PI*randf());
+            noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
             buffer[i] += noise;
         }
 
