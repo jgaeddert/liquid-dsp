@@ -41,6 +41,15 @@
 void ofdmflexframesync_debug_print(ofdmflexframesync _q);
 #endif
 
+static int ofdmflexframesync_internal_callback(float complex *_x,
+                                               unsigned int * _p,
+                                               unsigned int _M,
+                                               void * _userdata)
+{
+    printf("******* ofdmflexframesync callback invoked!\n");
+    return 0;
+}
+
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
@@ -87,12 +96,18 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     //q->callback = _callback;
     //q->userdata = _userdata;
 
+    // create ...
+    q->fs = ofdmframesync_create(_M, _cp_len, _p, ofdmflexframesync_internal_callback, (void*)q);
+
     // return object
     return q;
 }
 
 void ofdmflexframesync_destroy(ofdmflexframesync _q)
 {
+    // free internal objects
+    ofdmframesync_destroy(_q->fs);
+
     // free main object memory
     free(_q);
 }
@@ -110,6 +125,8 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
                                float complex * _x,
                                unsigned int _n)
 {
+    // push samples through ofdmframesync object
+    ofdmframesync_execute(_q->fs, _x, _n);
 }
 
 //

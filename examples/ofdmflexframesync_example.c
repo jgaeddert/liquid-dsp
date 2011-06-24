@@ -22,7 +22,7 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
-    unsigned int payload_len = 200;     //
+    unsigned int payload_len = 120;     //
 #if 0
     modulation_scheme ms = LIQUID_MODEM_QAM;
     unsigned int bps = 4;
@@ -75,10 +75,14 @@ int main(int argc, char*argv[]) {
     // assemble frame
     ofdmflexframegen_assemble(fg, header, payload);
 
-#if 0
+    float nstd = 0.01f;
+    float complex noise;
+#if 1
     // initialize frame synchronizer with noise
-    for (i=0; i<1000; i++)
-        ofdmflexframesync_execute(fs, ...);
+    for (i=0; i<1000; i++) {
+        noise = nstd * randnf() * cexpf(_Complex_I*M_PI*randf());
+        ofdmflexframesync_execute(fs, &noise, 1);
+    }
 #endif
 
     // generate frame
@@ -89,6 +93,10 @@ int main(int argc, char*argv[]) {
         last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
 
         // TODO : apply channel
+        for (i=0; i<num_written; i++) {
+            noise = nstd * randnf() * cexpf(_Complex_I*M_PI*randf());
+            buffer[i] += noise;
+        }
 
         // receive symbol
         ofdmflexframesync_execute(fs, buffer, num_written);
