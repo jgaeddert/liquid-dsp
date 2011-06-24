@@ -1910,6 +1910,8 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
 
 void ofdmflexframegen_destroy(ofdmflexframegen _q);
 
+void ofdmflexframegen_reset(ofdmflexframegen _q);
+
 void ofdmflexframegen_getprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props);
 

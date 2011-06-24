@@ -967,8 +967,25 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q);
 // modulate header
 void ofdmflexframegen_modulate_header(ofdmflexframegen _q);
 
-// modulate payload
-void ofdmflexframegen_modulate_payload(ofdmflexframegen _q);
+// write S0 symbol
+void ofdmflexframegen_write_S0(ofdmflexframegen _q,
+                               float complex * _buffer,
+                               unsigned int * _num_written);
+
+// write S1 symbol
+void ofdmflexframegen_write_S1(ofdmflexframegen _q,
+                               float complex * _buffer,
+                               unsigned int * _num_written);
+
+// write header symbol
+void ofdmflexframegen_write_header(ofdmflexframegen _q,
+                                   float complex * _buffer,
+                                   unsigned int * _num_written);
+
+// write payload symbol
+void ofdmflexframegen_write_payload(ofdmflexframegen _q,
+                                    float complex * _buffer,
+                                    unsigned int * _num_written);
 
 
 //

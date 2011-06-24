@@ -92,11 +92,22 @@ struct ofdmflexframegen_s {
     unsigned int payload_enc_len;       // length of encoded payload
     unsigned int payload_mod_len;       // number of modulated symbols in payload
 
+    // counters/states
+    unsigned int symbol_number;         // output symbol number
+    enum {
+        OFDMFLEXFRAMEGEN_STATE_S0=0,    // write S0 symbols
+        OFDMFLEXFRAMEGEN_STATE_S1,      // write S1 symbols
+        OFDMFLEXFRAMEGEN_STATE_HEADER,  // write header symbols
+        OFDMFLEXFRAMEGEN_STATE_PAYLOAD  // write payload symbols
+    } state;
+    int frame_complete;                 // frame completed flag
+
     // properties
     ofdmflexframegenprops_s props;
 };
 
 // TODO : put these options in 'assemble()' method?
+// TODO : allow _p to be NULL pointer (and initialize with defaults)
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int _cp_len,
                                          unsigned int * _p,
@@ -146,11 +157,12 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->mod_payload = modem_create(LIQUID_MODEM_QPSK, 1);
 
     // initialize properties
-    if (_props != NULL)
-        ofdmflexframegen_setprops(q, _props);
-    else
-        ofdmflexframegen_setprops(q, &ofdmflexframegenprops_default);
+    ofdmflexframegen_setprops(q, _props);
 
+    // reset
+    ofdmflexframegen_reset(q);
+
+    // return pointer to main object
     return q;
 }
 
@@ -173,6 +185,14 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
     free(_q);
 }
 
+void ofdmflexframegen_reset(ofdmflexframegen _q)
+{
+    // reset symbol counter and state
+    _q->symbol_number = 0;
+    _q->state = OFDMFLEXFRAMEGEN_STATE_S0;
+    _q->frame_complete = 0;
+}
+
 // get ofdmflexframegen properties
 //  _q      :   frame generator object
 //  _props  :   frame generator properties structure pointer
@@ -186,6 +206,12 @@ void ofdmflexframegen_getprops(ofdmflexframegen _q,
 void ofdmflexframegen_setprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props)
 {
+    // if properties object is NULL, initialize with defaults
+    if (_props == NULL) {
+        ofdmflexframegen_setprops(_q, &ofdmflexframegenprops_default);
+        return;
+    }
+
     // validate input
     if (_props->mod_bps == 0) {
         fprintf(stderr, "error: ofdmflexframegen_setprops(), modulation depth must be greater than 0\n");
@@ -318,12 +344,43 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
                                  liquid_float_complex * _buffer,
                                  unsigned int * _num_written)
 {
-    // write S0 symbols
-    // write S1 symbols
-    // write header symbols
-    // write payload symbols
+    // increment symbol counter
+    _q->symbol_number++;
 
-    return 1;
+    switch (_q->state) {
+    case OFDMFLEXFRAMEGEN_STATE_S0:
+        // write S0 symbols
+        ofdmflexframegen_write_S0(_q, _buffer, _num_written);
+        break;
+
+    case OFDMFLEXFRAMEGEN_STATE_S1:
+        // write S1 symbols
+        ofdmflexframegen_write_S1(_q, _buffer, _num_written);
+        break;
+
+    case OFDMFLEXFRAMEGEN_STATE_HEADER:
+        // write header symbols
+        ofdmflexframegen_write_header(_q, _buffer, _num_written);
+        break;
+
+    case OFDMFLEXFRAMEGEN_STATE_PAYLOAD:
+        // write payload symbols
+        ofdmflexframegen_write_payload(_q, _buffer, _num_written);
+        break;
+
+    default:
+        fprintf(stderr,"error: ofdmflexframegen_writesymbol(), unknown/unsupported internal state\n");
+        exit(1);
+    }
+
+    if (_q->frame_complete) {
+        // reset framing object
+        printf(" ...resetting...\n");
+        ofdmflexframegen_reset(_q);
+        return 1;
+    }
+
+    return 0;
 }
 
 
@@ -395,9 +452,81 @@ void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
         modem_modulate(_q->mod_header, _q->header_sym[i], &_q->header_samples[i]);
 }
 
-// modulate payload
-void ofdmflexframegen_modulate_payload(ofdmflexframegen _q)
+// write S0 symbol
+void ofdmflexframegen_write_S0(ofdmflexframegen _q,
+                               float complex * _buffer,
+                               unsigned int * _num_written)
 {
+    printf("writing S0 symbol\n");
+
+    // write S0 symbol into front of buffer
+    ofdmframegen_write_S0(_q->fg, _buffer);
+
+    // set output length (no cyclic extension)
+    *_num_written = _q->M;
+
+    // check state
+    if (_q->symbol_number == _q->props.num_symbols_S0) {
+        _q->symbol_number = 0;
+        _q->state = OFDMFLEXFRAMEGEN_STATE_S1;
+    }
 }
 
+// write S1 symbol
+void ofdmflexframegen_write_S1(ofdmflexframegen _q,
+                               float complex * _buffer,
+                               unsigned int * _num_written)
+{
+    printf("writing S1 symbol\n");
+
+    // write S1 symbol into end of buffer
+    ofdmframegen_write_S1(_q->fg, &_buffer[_q->cp_len]);
+
+    // add cyclic prefix
+    memmove(_buffer, &_buffer[_q->M], _q->cp_len*sizeof(float complex));
+
+    // set output length
+    *_num_written = _q->M + _q->cp_len;
+
+    // check state
+    if (_q->symbol_number == 1) {
+        _q->symbol_number = 0;
+        _q->state = OFDMFLEXFRAMEGEN_STATE_HEADER;
+    }
+}
+
+// write header symbol
+void ofdmflexframegen_write_header(ofdmflexframegen _q,
+                                   float complex * _buffer,
+                                   unsigned int * _num_written)
+{
+    printf("writing header symbol\n");
+
+    // TODO : load data...
+
+    // set output length
+    *_num_written = _q->M + _q->cp_len;
+
+    if (_q->symbol_number == _q->num_symbols_header) {
+        _q->symbol_number = 0;
+        _q->state = OFDMFLEXFRAMEGEN_STATE_PAYLOAD;
+    }
+}
+
+// write payload symbol
+void ofdmflexframegen_write_payload(ofdmflexframegen _q,
+                                    float complex * _buffer,
+                                    unsigned int * _num_written)
+{
+    printf("writing payload symbol\n");
+
+    // TODO : load data...
+
+    // set output length
+    *_num_written = _q->M + _q->cp_len;
+
+    // check to see if this is the last symbol in the payload
+    if (_q->symbol_number == _q->num_symbols_payload)
+        _q->frame_complete = 1;
+}
 
