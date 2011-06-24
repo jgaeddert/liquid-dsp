@@ -65,7 +65,6 @@ struct ofdmflexframegen_s {
 
     // buffers
     float complex * X;      // frequency-domain buffer
-    float complex * x;      // time-domain buffer
 
     // internal low-level objects
     ofdmframegen fg;        // frame generator object
@@ -82,7 +81,6 @@ struct ofdmflexframegen_s {
     unsigned char header[14];           // header data (uncoded)
     unsigned char header_enc[24];       // header data (encoded)
     unsigned char header_mod[96];       // header symbols
-    float complex header_samples[96];   // header samples
 
     // payload
     packetizer p_payload;               // payload packetizer
@@ -133,7 +131,6 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
 
     // allocate memory for transform buffers
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
-    q->x = (float complex*) malloc((q->M)*sizeof(float complex));
 
     // allocate memory for subcarrier allocation IDs
     q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
@@ -191,7 +188,6 @@ void ofdmflexframegen_destroy(ofdmflexframegen _q)
     free(_q->payload_enc);              // encoded payload bytes
     free(_q->payload_mod);              // modulated payload symbols
     free(_q->X);                        // frequency-domain buffer
-    free(_q->x);                        // time-domain buffer
     free(_q->p);                        // subcarrier allocation
 
     // free main object memory
@@ -461,10 +457,6 @@ void ofdmflexframegen_modulate_header(ofdmflexframegen _q)
         _q->header_mod[4*i+2] = (_q->header_enc[i] >> 2) & 0x03;
         _q->header_mod[4*i+3] = (_q->header_enc[i]     ) & 0x03;
     }
-
-    // modulate symbols
-    for (i=0; i<96; i++)
-        modem_modulate(_q->mod_header, _q->header_mod[i], &_q->header_samples[i]);
 }
 
 // write S0 symbol
