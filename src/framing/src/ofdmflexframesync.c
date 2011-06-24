@@ -41,15 +41,6 @@
 void ofdmflexframesync_debug_print(ofdmflexframesync _q);
 #endif
 
-static int ofdmflexframesync_internal_callback(float complex *_x,
-                                               unsigned int * _p,
-                                               unsigned int _M,
-                                               void * _userdata)
-{
-    printf("******* ofdmflexframesync callback invoked!\n");
-    return 0;
-}
-
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
@@ -132,4 +123,14 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
 //
 // internal methods
 //
+
+// internal callback
+int ofdmflexframesync_internal_callback(float complex *_x,
+                                        unsigned int * _p,
+                                        unsigned int _M,
+                                        void * _userdata)
+{
+    printf("******* ofdmflexframesync callback invoked!\n");
+    return 0;
+}
 
