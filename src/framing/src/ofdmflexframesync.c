@@ -74,6 +74,7 @@ struct ofdmflexframesync_s {
     unsigned char * payload_enc;        // payload data (encoded bytes)
     unsigned char * payload_dec;        // payload data (decoded bytes)
     unsigned int payload_enc_len;       // length of encoded payload
+    unsigned int payload_mod_len;       // number of payload modem symbols
 
     // internal...
     ofdmframesync fs;       // internal OFDM frame synchronizer
@@ -85,6 +86,8 @@ struct ofdmflexframesync_s {
         OFDMFLEXFRAMESYNC_STATE_PAYLOAD // extract payload symbols
     } state;
     unsigned int header_symbol_index;   //
+    unsigned int payload_symbol_index;  //
+    unsigned int payload_buffer_index;  // bit-level index of payload
 };
 
 ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
@@ -149,6 +152,7 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
     q->payload_dec = (unsigned char*) malloc(q->payload_len*sizeof(unsigned char));
+    q->payload_mod_len = 0;
 
     // reset state
     ofdmflexframesync_reset(q);
@@ -185,6 +189,8 @@ void ofdmflexframesync_reset(ofdmflexframesync _q)
     _q->symbol_counter=0;
     _q->state = OFDMFLEXFRAMESYNC_STATE_HEADER;
     _q->header_symbol_index=0;
+    _q->payload_symbol_index=0;
+    _q->payload_buffer_index=0;
 
     // reset internal OFDM frame synchronizer object
     ofdmframesync_reset(_q->fs);
@@ -265,7 +271,7 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
         if (sctype == OFDMFRAME_SCTYPE_DATA) {
             // unload header symbols
             //printf("  extracting symbol %u / %u\n", _q->header_symbol_index, 96);
-            // modulate header symbol onto data subcarrier
+            // demodulate header symbol
             unsigned int sym;
             modem_demodulate(_q->mod_header, _X[i], &sym);
             _q->header_mod[_q->header_symbol_index++] = sym;
@@ -279,7 +285,6 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             }
         }
     }
-    printf("returning from header decoding\n");
 }
 
 // decode header
@@ -399,10 +404,17 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 
         // re-compute payload encoded message length
         _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
+        printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
 
         // re-allocate buffers accordingly
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
         _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_len*sizeof(unsigned char));
+
+        // re-compute number of modulated payload symbols
+        div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
+        _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+        printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
+
     }
 }
 
@@ -411,6 +423,49 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                                  float complex * _X)
 {
     printf("  ofdmflexframesync extracting payload...\n");
+
+    // demodulate paylod symbols
+    unsigned int i;
+    int sctype;
+    for (i=0; i<_q->M; i++) {
+        //
+        sctype = _q->p[i];
+
+        // ignore pilot and null subcarriers
+        if (sctype == OFDMFRAME_SCTYPE_DATA) {
+            // unload payload symbols
+            unsigned int sym;
+            modem_demodulate(_q->mod_payload, _X[i], &sym);
+
+            // pack decoded symbol into array
+            liquid_pack_array(_q->payload_enc,
+                              _q->payload_enc_len,
+                              _q->payload_buffer_index,
+                              _q->bps_payload,
+                              sym);
+
+            // increment...
+            _q->payload_buffer_index += _q->bps_payload;
+
+            // increment symbol counter
+            _q->payload_symbol_index++;
+
+            if (_q->payload_symbol_index == _q->payload_mod_len) {
+                printf("  ***** payload extracted!\n");
+
+                // decode payload
+                int payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
+                printf("  payload valid ? %s\n", payload_valid ? "YES" : "NO");
+
+                // TODO : invoke callback function
+
+                // reset object...
+                printf("  ... resetting ofdmflexframesync object...\n");
+                ofdmflexframesync_reset(_q);
+                break;
+            }
+        }
+    }
 }
 
 
