@@ -60,8 +60,20 @@ struct ofdmflexframesync_s {
     unsigned char header_enc[24];       // header data (encoded)
     unsigned char header_mod[96];       // header symbols
 
+    // header properties
+    modulation_scheme ms_payload;       // payload modulation scheme
+    unsigned int bps_payload;           // payload modulation depth (bits/symbol)
+    unsigned int payload_len;           // payload length (number of bytes)
+    crc_scheme check;                   // payload validity check
+    fec_scheme fec0;                    // payload FEC (inner)
+    fec_scheme fec1;                    // payload FEC (outer)
+
     // payload
-    // ...
+    packetizer p_payload;               // payload packetizer
+    modem mod_payload;                  // payload demodulator
+    unsigned char * payload_enc;        // payload data (encoded bytes)
+    unsigned char * payload_dec;        // payload data (decoded bytes)
+    unsigned int payload_enc_len;       // length of encoded payload
 
     // internal...
     ofdmframesync fs;       // internal OFDM frame synchronizer
@@ -122,6 +134,22 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->p_header   = packetizer_create(14, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
     assert(packetizer_get_enc_msg_len(q->p_header)==24);
 
+    // frame properties (default values to be overwritten when frame
+    // header is received and properly decoded)
+    q->ms_payload   = LIQUID_MODEM_QPSK;
+    q->bps_payload  = 2;
+    q->payload_len  = 1;
+    q->check        = LIQUID_CRC_NONE;
+    q->fec0         = LIQUID_FEC_NONE;
+    q->fec1         = LIQUID_FEC_NONE;
+
+    // create payload objects (initally QPSK, etc but overridden by received properties)
+    q->mod_payload = modem_create(q->ms_payload, q->bps_payload);
+    q->p_payload   = packetizer_create(q->payload_len, q->check, q->fec0, q->fec1);
+    q->payload_enc_len = packetizer_get_enc_msg_len(q->p_payload);
+    q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
+    q->payload_dec = (unsigned char*) malloc(q->payload_len*sizeof(unsigned char));
+
     // reset state
     ofdmflexframesync_reset(q);
 
@@ -135,8 +163,13 @@ void ofdmflexframesync_destroy(ofdmflexframesync _q)
     ofdmframesync_destroy(_q->fs);
     packetizer_destroy(_q->p_header);
     modem_destroy(_q->mod_header);
-    //packetizer_destroy(_q->p_payload);
-    //modem_destroy(_q->mod_payload);
+    packetizer_destroy(_q->p_payload);
+    modem_destroy(_q->mod_payload);
+
+    // free internal buffers/arrays
+    free(_q->p);
+    free(_q->payload_enc);
+    free(_q->payload_dec);
 
     // free main object memory
     free(_q);
@@ -315,14 +348,17 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     if (check >= LIQUID_CRC_NUM_SCHEMES) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded CRC exceeds available\n");
         check = LIQUID_CRC_UNKNOWN;
+        header_valid = 0;
     }
     if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
         fec0 = LIQUID_FEC_UNKNOWN;
+        header_valid = 0;
     }
     if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
         fec1 = LIQUID_FEC_UNKNOWN;
+        header_valid = 0;
     }
 
     // print results
@@ -335,7 +371,39 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     printf("      * payload length  :   %u bytes\n", payload_len);
 #endif
 
-    // TODO : configure payload receiver
+    // configure payload receiver
+    if (header_valid) {
+        // configure modem
+        if (mod_scheme != _q->ms_payload || mod_depth != _q->bps_payload) {
+            // set new properties
+            _q->ms_payload  = mod_scheme;
+            _q->bps_payload = mod_depth;
+
+            // recreate modem (destroy/create)
+            modem_destroy(_q->mod_payload);
+            _q->mod_payload = modem_create(_q->ms_payload, _q->bps_payload);
+        }
+
+        // set new packetizer properties
+        _q->payload_len = payload_len;
+        _q->check       = check;
+        _q->fec0        = fec0;
+        _q->fec1        = fec1;
+        
+        // recreate packetizer object
+        _q->p_payload = packetizer_recreate(_q->p_payload,
+                                            _q->payload_len,
+                                            _q->check,
+                                            _q->fec0,
+                                            _q->fec1);
+
+        // re-compute payload encoded message length
+        _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
+
+        // re-allocate buffers accordingly
+        _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
+        _q->payload_dec = (unsigned char*) realloc(_q->payload_dec, _q->payload_len*sizeof(unsigned char));
+    }
 }
 
 // receive payload data

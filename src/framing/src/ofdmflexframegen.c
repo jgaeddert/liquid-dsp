@@ -155,9 +155,9 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->num_symbols_header = d.quot + (d.rem ? 1 : 0);
 
     // initial memory allocation for payload
-    q->p_payload = packetizer_create(0, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
     q->payload_enc_len = 1;
     q->payload_enc = (unsigned char*) malloc(q->payload_enc_len*sizeof(unsigned char));
+    q->p_payload = packetizer_create(q->payload_enc_len, LIQUID_CRC_NONE, LIQUID_FEC_NONE, LIQUID_FEC_NONE);
 
     q->payload_mod_len = 1;
     q->payload_mod = (unsigned char*) malloc(q->payload_mod_len*sizeof(unsigned char));
