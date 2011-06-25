@@ -992,10 +992,19 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
 //
 
 // internal callback
-int ofdmflexframesync_internal_callback(float complex *_x,
-                                        unsigned int * _p,
-                                        unsigned int _M,
+int ofdmflexframesync_internal_callback(float complex * _X,
+                                        unsigned int  * _p,
+                                        unsigned int    _M,
                                         void * _userdata);
+
+// receive header data
+void ofdmflexframesync_rxheader(ofdmflexframesync _q,
+                                float complex * _X);
+
+// receive payload data
+void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
+                                float complex * _X);
+
 
 //
 // interleaver
