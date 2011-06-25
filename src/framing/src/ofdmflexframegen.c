@@ -417,7 +417,7 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
     // first 8 bytes user data
 
     // add payload length
-    unsigned int payload_len = 0;
+    unsigned int payload_len = _q->props.payload_len;
     _q->header[8] = (payload_len >> 8) & 0xff;
     _q->header[9] = (payload_len     ) & 0xff;
 
@@ -438,11 +438,26 @@ void ofdmflexframegen_encode_header(ofdmflexframegen _q)
     // last byte is for expansion/version validation
     _q->header[13] = OFDMFLEXFRAME_VERSION;
 
-    // scramble header
-    scramble_data(_q->header, 14);
-
     // run packet encoder
     packetizer_encode(_q->p_header, _q->header, _q->header_enc);
+
+    // scramble header
+    scramble_data(_q->header_enc, 24);
+
+#if 0
+    // print header (decoded)
+    unsigned int i;
+    printf("header tx (dec) : ");
+    for (i=0; i<14; i++)
+        printf("%.2X ", _q->header[i]);
+    printf("\n");
+
+    // print header (encoded)
+    printf("header tx (enc) : ");
+    for (i=0; i<24; i++)
+        printf("%.2X ", _q->header_enc[i]);
+    printf("\n");
+#endif
 }
 
 // modulate header

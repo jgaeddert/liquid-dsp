@@ -231,21 +231,111 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
         // ignore pilot and null subcarriers
         if (sctype == OFDMFRAME_SCTYPE_DATA) {
             // unload header symbols
+            //printf("  extracting symbol %u / %u\n", _q->header_symbol_index, 96);
+            // modulate header symbol onto data subcarrier
+            unsigned int sym;
+            modem_demodulate(_q->mod_header, _X[i], &sym);
+            _q->header_mod[_q->header_symbol_index++] = sym;
+
             if (_q->header_symbol_index == 96) {
                 printf("  ***** header extracted!\n");
+                ofdmflexframesync_decode_header(_q);
                 // TODO : break
                 _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
                 break;
-            } else {
-                printf("  extracting symbol %u / %u\n", _q->header_symbol_index, 96);
-                // modulate header symbol onto data subcarrier
-                unsigned int sym;
-                modem_demodulate(_q->mod_header, _X[i], &sym);
-                _q->header_mod[_q->header_symbol_index++] = sym;
             }
         }
     }
     printf("returning from header decoding\n");
+}
+
+// decode header
+void ofdmflexframesync_decode_header(ofdmflexframesync _q)
+{
+    unsigned int i;
+
+    // pack 96 2-bit header symbols into 24 8-bit bytes
+    for (i=0; i<24; i++) {
+        _q->header_enc[i] = 0x00;
+        _q->header_enc[i] |= (_q->header_mod[4*i+0] << 6) & 0xc0;
+        _q->header_enc[i] |= (_q->header_mod[4*i+1] << 4) & 0x30;
+        _q->header_enc[i] |= (_q->header_mod[4*i+2] << 2) & 0x0c;
+        _q->header_enc[i] |= (_q->header_mod[4*i+3]     ) & 0x03;
+    }
+
+    // unscramble header
+    unscramble_data(_q->header_enc, 24);
+
+    // run packet decoder
+    int header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header);
+
+#if 0
+    // print header
+    printf("header rx (enc) : ");
+    for (i=0; i<24; i++)
+        printf("%.2X ", _q->header_enc[i]);
+    printf("\n");
+
+    // print header
+    printf("header rx (dec) : ");
+    for (i=0; i<14; i++)
+        printf("%.2X ", _q->header[i]);
+    printf("\n");
+
+    printf("header valid ? %s\n", header_valid ? "YES" : "NO");
+#endif
+
+    // TODO : return if header is invalid
+
+    // strip off payload length
+    unsigned int payload_len = (_q->header[8] << 8) | (_q->header[9]);
+    //_q->payload_len = payload_len;
+
+    // strip off modulation scheme/depth
+    //  mod. scheme : most-significant five bits
+    //  mod. depth  : least-significant three bits (+1)
+    unsigned int mod_scheme = ( _q->header[10] >> 3) & 0x1f;
+    unsigned int mod_depth  = ((_q->header[10]     ) & 0x07)+1;
+
+    // strip off CRC, forward error-correction schemes
+    //  CRC     : most-significant 3 bits of [11]
+    //  fec0    : least-significant 5 bits of [11]
+    //  fec1    : least-significant 5 bits of [12]
+    unsigned int check = (_q->header[11] >> 5 ) & 0x07;
+    unsigned int fec0  = (_q->header[11]      ) & 0x1f;
+    unsigned int fec1  = (_q->header[12]      ) & 0x1f;
+
+    // last byte is for expansion/version validation
+    if (_q->header[13] != OFDMFLEXFRAME_VERSION) {
+        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid framing version\n");
+        header_valid = 0;
+    }
+
+    // validate properties
+    if (check >= LIQUID_CRC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded CRC exceeds available\n");
+        check = LIQUID_CRC_UNKNOWN;
+    }
+    if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
+        fec0 = LIQUID_FEC_UNKNOWN;
+    }
+    if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
+        fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
+        fec1 = LIQUID_FEC_UNKNOWN;
+    }
+
+    // print results
+#if DEBUG_OFDMFLEXFRAMESYNC
+    printf("    properties:\n");
+    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[mod_scheme][1], mod_depth);
+    printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
+    printf("      * fec (outer)     :   %s\n", fec_scheme_str[fec1][1]);
+    printf("      * CRC scheme      :   %s\n", crc_scheme_str[check][1]);
+    printf("      * payload length  :   %u bytes\n", payload_len);
+#endif
+
+    // TODO : configure payload receiver
 }
 
 // receive payload data

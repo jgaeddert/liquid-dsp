@@ -65,10 +65,13 @@ int main(int argc, char*argv[]) {
     ofdmflexframesync_print(fs);
 
     // initialize header, payload
-    unsigned char header[1];
+    unsigned char header[8];
     unsigned char payload[payload_len];
 
     unsigned int i;
+
+    for (i=0; i<8; i++)
+        header[i] = i & 0xff;
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
 

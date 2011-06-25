@@ -1001,6 +1001,9 @@ int ofdmflexframesync_internal_callback(float complex * _X,
 void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                                 float complex * _X);
 
+// decode header
+void ofdmflexframesync_decode_header(ofdmflexframesync _q);
+
 // receive payload data
 void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                                 float complex * _X);
