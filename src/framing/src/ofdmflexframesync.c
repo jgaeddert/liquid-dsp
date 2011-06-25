@@ -226,7 +226,9 @@ int ofdmflexframesync_internal_callback(float complex * _X,
 
     _q->symbol_counter++;
 
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
     printf("received symbol %u\n", _q->symbol_counter);
+#endif
 
     // extract symbols
     switch (_q->state) {
@@ -249,7 +251,9 @@ int ofdmflexframesync_internal_callback(float complex * _X,
 void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                                 float complex * _X)
 {
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
     printf("  ofdmflexframesync extracting header...\n");
+#endif
 
 #if 0
     // header (QPSK) REFERENCE
@@ -277,7 +281,7 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             _q->header_mod[_q->header_symbol_index++] = sym;
 
             if (_q->header_symbol_index == 96) {
-                printf("  ***** header extracted!\n");
+                //printf("  ***** header extracted!\n");
                 ofdmflexframesync_decode_header(_q);
                 // TODO : break
                 _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
@@ -319,9 +323,8 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     for (i=0; i<14; i++)
         printf("%.2X ", _q->header[i]);
     printf("\n");
-
-    printf("header valid ? %s\n", header_valid ? "YES" : "NO");
 #endif
+    printf("****** header extracted [%s]\n", header_valid ? "valid" : "INVALID!");
 
     // TODO : return if header is invalid
 
@@ -367,7 +370,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     }
 
     // print results
-#if DEBUG_OFDMFLEXFRAMESYNC
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
     printf("    properties:\n");
     printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[mod_scheme][1], mod_depth);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
@@ -404,7 +407,9 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 
         // re-compute payload encoded message length
         _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
         printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
+#endif
 
         // re-allocate buffers accordingly
         _q->payload_enc = (unsigned char*) realloc(_q->payload_enc, _q->payload_enc_len*sizeof(unsigned char));
@@ -413,8 +418,9 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         // re-compute number of modulated payload symbols
         div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
         _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
         printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
-
+#endif
     }
 }
 
@@ -422,7 +428,9 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                                  float complex * _X)
 {
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
     printf("  ofdmflexframesync extracting payload...\n");
+#endif
 
     // demodulate paylod symbols
     unsigned int i;
@@ -451,16 +459,18 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
             _q->payload_symbol_index++;
 
             if (_q->payload_symbol_index == _q->payload_mod_len) {
-                printf("  ***** payload extracted!\n");
+                // payload extracted
 
                 // decode payload
                 int payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
-                printf("  payload valid ? %s\n", payload_valid ? "YES" : "NO");
+                printf("****** payload extracted [%s]\n", payload_valid ? "valid" : "INVALID!");
 
                 // TODO : invoke callback function
 
                 // reset object...
+#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
                 printf("  ... resetting ofdmflexframesync object...\n");
+#endif
                 ofdmflexframesync_reset(_q);
                 break;
             }

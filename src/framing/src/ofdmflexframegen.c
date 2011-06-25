@@ -32,7 +32,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFLEXFRAMEGEN            1
+#define DEBUG_OFDMFLEXFRAMEGEN            0
 
 // default ofdmflexframegen properties
 static ofdmflexframegenprops_s ofdmflexframegenprops_default = {
@@ -386,7 +386,9 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
 
     if (_q->frame_complete) {
         // reset framing object
+#if DEBUG_OFDMFLEXFRAMEGEN
         printf(" ...resetting...\n");
+#endif
         ofdmflexframegen_reset(_q);
         return 1;
     }
@@ -479,7 +481,9 @@ void ofdmflexframegen_write_S0(ofdmflexframegen _q,
                                float complex * _buffer,
                                unsigned int * _num_written)
 {
+#if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing S0 symbol\n");
+#endif
 
     // write S0 symbol into front of buffer
     ofdmframegen_write_S0(_q->fg, _buffer);
@@ -499,7 +503,9 @@ void ofdmflexframegen_write_S1(ofdmflexframegen _q,
                                float complex * _buffer,
                                unsigned int * _num_written)
 {
+#if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing S1 symbol\n");
+#endif
 
     // write S1 symbol into end of buffer
     ofdmframegen_write_S1(_q->fg, &_buffer[_q->cp_len]);
@@ -522,7 +528,9 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
                                    float complex * _buffer,
                                    unsigned int * _num_written)
 {
+#if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing header symbol\n");
+#endif
 
     // load data onto data subcarriers
     unsigned int i;
@@ -567,7 +575,9 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
                                     float complex * _buffer,
                                     unsigned int * _num_written)
 {
+#if DEBUG_OFDMFLEXFRAMEGEN
     printf("writing payload symbol\n");
+#endif
 
     // load data onto data subcarriers
     unsigned int i;
