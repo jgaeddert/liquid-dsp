@@ -2495,6 +2495,9 @@ typedef enum {
 // Modulation scheme string for printing purposes
 extern const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2];
 
+// Print compact list of existing and available modulation schemes
+void liquid_print_modulation_schemes();
+
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
 
