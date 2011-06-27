@@ -19,6 +19,7 @@ local_src	:=			\
 	compand_cf_example.c		\
 	complementary_codes_example.c	\
 	crc_example.c			\
+	cgsolve_example.c		\
 	cvsd_example.c			\
 	decim_crcf_example.c		\
 	decim_rrrf_example.c		\
@@ -74,6 +75,7 @@ local_src	:=			\
 	nyquist_filter_example.c	\
 	ofdmframe64gen_example.c	\
 	ofdmframe64sync_example.c	\
+	ofdmflexframesync_example.c	\
 	ofdmframesync_example.c		\
 	ofdmoqam_example.c		\
 	ofdmoqam_firpfbch_example.c	\
@@ -92,6 +94,7 @@ local_src	:=			\
 	resamp2_crcf_example.c		\
 	resamp2_crcf_decim_example.c	\
 	resamp2_crcf_filter_example.c	\
+	resamp2_crcf_filterbank_example.c	\
 	resamp2_crcf_interp_example.c	\
 	resamp2_crcf_interp_recreate_example.c	\
 	scramble_example.c		\

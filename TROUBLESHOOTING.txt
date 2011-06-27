@@ -1,0 +1,51 @@
+=========================================================================
+ Troubleshooting
+=========================================================================
+
+Here is a list of common problems and potential solutions.
+
+=========================================================================
+ Q1     When I try to compile I get an error like
+        "internal compiler error: in gimplify_expr, at gimplify.c:7153"
+
+ A1(a)  This is a bug with gcc v4.5.1 and v4.5.2 dealing with complex
+        data type, e.g. "float complex"
+        (see: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=47150).
+        The best option is to update your compiler to a more recent
+        version, revert to an older version, or apply a patch.
+      
+ A1(b)  Alternatively, if you are observing this error with ellip.c you
+        can probably comment out the offending lines; however this will
+        render the elliptic filter generator in liquid-dsp useless. This
+        is probably the fastest solution if you aren't concerned with
+        generating elliptic filters.
+
+=========================================================================
+ Q2     When compiling I get linker errors:
+        /liquid-dsp/src/fec/src/fec_conv.c:210: undefined reference to `create_viterbi27'
+        /liquid-dsp/src/fec/src/fec_conv.c:210: undefined reference to `init_viterbi27'
+        /liquid-dsp/src/fec/src/fec_conv.c:210: undefined reference to `update_viterbi27_blk'
+        ...
+
+ A2     This is because the linker cannot find the libfec library.
+        The 'configure' script checks to make sure that the fec library
+        is available before compiling. If found the additional forward
+        error-correction codecs (e.g. convolutional) will be built and
+        used. If the headers and library are not found, then the
+        liquid-dsp build environment will ignore these. However if, for
+        example, the fec headers are found but the libfec is not, the
+        build script it will try to build the additional forward error-
+        correction codecs without linking to the proper libraries. This
+        is a bug with the current version of liquid-dsp. The quick fix
+        is to run "./configure" and then edit "config.h" to ignore the
+        fec headers.
+
+        Open "config.h" and change the line (approx. 13) from
+          #define HAVE_FEC_H 1
+        to
+          /* #undev HAVE_FEC_H */
+        This will disable building the additional FEC codecs (such as
+        convolutional) but will still build the internal codes (such as
+        the Hamming codes). Now run "make" as normal.
+
+

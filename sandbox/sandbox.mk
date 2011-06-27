@@ -19,6 +19,7 @@ local_src	:=				\
 	firpfbch_analysis_alignment_test.c	\
 	firpfbch_analysis_equivalence_test.c	\
 	firpfbch_synthesis_equivalence_test.c	\
+	householder_test.c			\
 	iirdes_example.c			\
 	levinson_test.c				\
 	matched_filter_test.c			\
@@ -36,7 +37,9 @@ local_src	:=				\
 	ofdmoqam_firpfbch_test.c		\
 	ofdmoqam_firpfbch_cfo_test.c		\
 	quasinewton_test.c			\
+	rkaiser2_test.c				\
 	simplex_test.c				\
+	svd_test.c				\
 	thiran_allpass_iir_test.c		\
 #	firpfbch_analysis_test.c
 

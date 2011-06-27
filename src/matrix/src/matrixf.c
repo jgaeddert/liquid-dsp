@@ -27,11 +27,17 @@
 
 #define MATRIX(name)    LIQUID_CONCAT(matrixf, name)
 #define MATRIX_NAME     "matrixf"
-#define T               float
+
+#define T               float           // general type
+#define TP              float           // primitive type
+#define T_COMPLEX       0               // is type complex?
+
 #define MATRIX_PRINT_ELEMENT(X,R,C,r,c) \
-    printf("%12.8f", matrix_access(X,R,C,r,c));
+    printf("%12.7f", matrix_access(X,R,C,r,c));
 
 #include "matrix.base.c"
+#include "matrix.cgsolve.c"
+#include "matrix.chol.c"
 #include "matrix.gramschmidt.c"
 #include "matrix.inv.c"
 #include "matrix.linsolve.c"

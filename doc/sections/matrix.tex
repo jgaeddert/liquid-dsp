@@ -362,6 +362,14 @@ $\vec{x}$ and $\vec{b}$ are $n \times 1$ vectors.
 The {\tt opts} argument is reserved for future development and can be
 ignored by setting to {\tt NULL}.
 
+\subsubsection{{\tt matrixf\_cgsolve()} (solve linear system of equations)}
+\label{module:matrix:cgsolve}
+The {\tt matrixf\_cgsolve(*A,n,*b,*x,opts)} method solves $Ax = b$
+using the conjugate gradient method
+where $A$ is an $n \times n$ symmetric positive definite matrix.
+The {\tt opts} argument is reserved for future development and can be
+ignored by setting to {\tt NULL}.
+
 
 \subsubsection{{\tt matrixf\_det()} (determinant)}
 \label{module:matrix:det}

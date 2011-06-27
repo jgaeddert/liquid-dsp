@@ -1440,6 +1440,12 @@ void RESAMP2(_filter_execute)(RESAMP2() _q,                     \
                               TI _x,                            \
                               TO * _y0,                         \
                               TO * _y1);                        \
+void RESAMP2(_analyzer_execute)(RESAMP2() _q,                   \
+                                TI * _x,                        \
+                                TO * _y);                       \
+void RESAMP2(_synthesizer_execute)(RESAMP2() _q,                \
+                                   TI * _x,                     \
+                                   TO * _y);                    \
 void RESAMP2(_decim_execute)(RESAMP2() _q,                      \
                              TI * _x,                           \
                              TO * _y);                          \
@@ -1874,6 +1880,105 @@ void bpacketsync_execute_sym(bpacketsync _q,
 // execute one bit at a time
 void bpacketsync_execute_bit(bpacketsync _q,
                              unsigned char _bit);
+
+
+// 
+// OFDM flexframe generator
+//
+
+// ofdm frame generator properties
+typedef struct {
+    unsigned int num_symbols_S0;// number of S0 training symbols
+    unsigned int payload_len;   // length of payload
+    unsigned int check;         // data validity check
+    unsigned int fec0;          // forward error-correction scheme (inner)
+    unsigned int fec1;          // forward error-correction scheme (outer)
+    unsigned int mod_scheme;    // modulation scheme
+    unsigned int mod_bps;       // modulation depth (bits/symbol)
+    //unsigned int block_size;  // framing block size
+} ofdmflexframegenprops_s;
+void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props);
+
+typedef struct ofdmflexframegen_s * ofdmflexframegen;
+
+// create OFDM flexible framing generator object
+//  _M          :   number of subcarriers, >10 typical
+//  _cp_len     :   cyclic prefix length
+//  _p          :   subcarrier allocation (null, pilot, data), [size: _M x 1]
+//  _fgprops    :   frame properties (modulation scheme, etc.)
+ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
+                                         unsigned int  _cp_len,
+                                         unsigned int * _p,
+                                         ofdmflexframegenprops_s * _fgprops);
+                                         //unsigned int  _taper_len);
+
+void ofdmflexframegen_destroy(ofdmflexframegen _q);
+
+void ofdmflexframegen_reset(ofdmflexframegen _q);
+
+void ofdmflexframegen_getprops(ofdmflexframegen _q,
+                               ofdmflexframegenprops_s * _props);
+
+void ofdmflexframegen_setprops(ofdmflexframegen _q,
+                               ofdmflexframegenprops_s * _props);
+
+void ofdmflexframegen_print(ofdmflexframegen _q);
+
+// get length of frame (symbols)
+//  _q              :   OFDM frame generator object
+unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q);
+
+// assemble a frame from an array of data
+//  _q              :   OFDM frame generator object
+//  _header         :   frame header [8 bytes]
+//  _payload        :   payload data
+void ofdmflexframegen_assemble(ofdmflexframegen _q,
+                               unsigned char * _header,
+                               unsigned char * _payload);
+
+// write symbols of assembled frame
+//  _q              :   OFDM frame generator object
+//  _buffer         :   output buffer [size: N+cp_len x 1]
+//  _num_written    :   number written (either N or N+cp_len)
+int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
+                                 liquid_float_complex * _buffer,
+                                 unsigned int * _num_written);
+
+// 
+// OFDM flex frame synchronizer
+//
+
+// callback
+//  _header             :   header data [size: 8 bytes]
+//  _header_valid       :   is header valid? (0:no, 1:yes)
+//  _payload            :   payload data [size: _payload_len]
+//  _payload_len        :   length of payload (bytes)
+//  _payload_valid      :   is payload valid? (0:no, 1:yes)
+//  _stats              :   framing statistics (see above)
+//  _userdata           :   pointer to userdata
+typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
+                                          int              _header_valid,
+                                          unsigned char *  _payload,
+                                          unsigned int     _payload_len,
+                                          int              _payload_valid,
+                                          framesyncstats_s _stats,
+                                          void *           _userdata);
+
+typedef struct ofdmflexframesync_s * ofdmflexframesync;
+ofdmflexframesync ofdmflexframesync_create(unsigned int _num_subcarriers,
+                                           unsigned int  _cp_len,
+                                           unsigned int * _p,
+                                           //unsigned int  _taper_len,
+                                           ofdmflexframesync_callback _callback,
+                                           void * _userdata);
+
+void ofdmflexframesync_destroy(ofdmflexframesync _q);
+void ofdmflexframesync_print(ofdmflexframesync _q);
+void ofdmflexframesync_reset(ofdmflexframesync _q);
+void ofdmflexframesync_execute(ofdmflexframesync _q,
+                               liquid_float_complex * _x,
+                               unsigned int _n);
+
 
 
 
@@ -2413,6 +2518,11 @@ void MATRIX(_linsolve)(T * _A,                                  \
                        T * _b,                                  \
                        T * _x,                                  \
                        void * _opts);                           \
+void MATRIX(_cgsolve)(T * _A,                                   \
+                      unsigned int _r,                          \
+                      T * _b,                                   \
+                      T * _x,                                   \
+                      void * _opts);                            \
 void MATRIX(_ludecomp_crout)(T * _x,                            \
                              unsigned int _rx,                  \
                              unsigned int _cx,                  \
@@ -2434,6 +2544,9 @@ void MATRIX(_qrdecomp_gramschmidt)(T * _x,                      \
                                    unsigned int _cx,            \
                                    T * _Q,                      \
                                    T * _R);                     \
+void MATRIX(_chol)(T * _A,                                      \
+                   unsigned int _n,                             \
+                   T * _L);                                     \
 
 #define matrix_access(X,R,C,r,c) ((X)[(r)*(C)+(c)])
 
@@ -2927,6 +3040,9 @@ void ofdmframesync_execute(ofdmframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
+// get receiver RSSI
+float ofdmframesync_get_rssi(ofdmframesync _q);
+
 
 
 // 
@@ -3264,7 +3380,8 @@ float quantize_dac(unsigned int _s, unsigned int _num_bits);
 // structured quantizer
 
 typedef enum {
-    LIQUID_COMPANDER_LINEAR=0,
+    LIQUID_COMPANDER_NONE=0,
+    LIQUID_COMPANDER_LINEAR,
     LIQUID_COMPANDER_MULAW,
     LIQUID_COMPANDER_ALAW
 } liquid_compander_type;

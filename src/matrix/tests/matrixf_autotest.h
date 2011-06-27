@@ -404,3 +404,138 @@ void autotest_matrixf_gramschmidt()
         CONTEND_DELTA( V[i], V_test[i], tol );
 }
 
+// 
+// test Cholesky decomposition
+//
+void autotest_matrixf_chol()
+{
+    float tol = 1e-4f;  // error tolerance
+
+    // lower triangular matrix with positive values on diagonal
+    float L[16]= {
+        1.01f,  0,      0,      0,
+       -1.42f,  0.50f,  0.00f,  0,
+        0.32f,  2.01f,  0.30f,  0,
+       -1.02f, -0.32f, -1.65f,  1.07f};
+
+    float A[16];    // A = L * L^T
+    float Lp[16];   // output Cholesky decomposition
+
+    unsigned int i;
+
+    // compute A
+    matrixf_mul_transpose(L,4,4,A);
+
+    // run decomposition
+    matrixf_chol(A,4,Lp);
+
+    if (liquid_autotest_verbose) {
+        printf("L :\n");
+        matrixf_print(L,4,4);
+        printf("A :\n");
+        matrixf_print(A,4,4);
+        printf("Lp:\n");
+        matrixf_print(Lp,4,4);
+    }
+
+    for (i=0; i<16; i++)
+        CONTEND_DELTA( L[i], Lp[i], tol );
+}
+
+
+// 
+// AUTOTEST: conjugate gradient solver
+//
+void autotest_matrixf_cgsolve_n3()
+{
+    float tol = 1e-6f;  // error tolerance
+
+    // symmetric positive definite matrx
+    float A[9] = {
+         2.0,   -1.0,    0.0,
+        -1.0,    2.0,   -1.0,
+         0.0,   -1.0,    2.0};
+
+    float x_test[3] = {
+      -0.32889,
+      -0.72798,
+      -1.23532};
+
+    float b[3];
+    float x[3];
+
+    // compute b = A*x_test
+    matrixf_mul(A,      3, 3,
+                x_test, 3, 1,
+                b,      3, 1);
+
+    matrixf_cgsolve(A,3,b,x,NULL);
+
+    if (liquid_autotest_verbose) {
+        printf("A:\n");
+        matrixf_print(A,3,3);
+        printf("b:\n");
+        matrixf_print(b,3,1);
+        printf("x:\n");
+        matrixf_print(x_test,3,1);
+        printf("x (computed):\n");
+        matrixf_print(x,3,1);
+    }
+
+    // run test
+    CONTEND_DELTA( x[0], x_test[0], tol );
+    CONTEND_DELTA( x[1], x_test[1], tol );
+    CONTEND_DELTA( x[2], x_test[2], tol );
+}
+
+// 
+// AUTOTEST: conjugate gradient solver
+//
+void autotest_matrixf_cgsolve_n5()
+{
+    float tol = 1e-3f;  // error tolerance
+
+    // symmetric positive definite matrx
+    float A[25] = {
+      0.20039785,  0.52039748,  0.12896973, -0.24593210, -0.11671682,
+      0.52039748,  2.83168435, -0.02850759, -1.33722734, -0.86435664,
+      0.12896973, -0.02850759,  0.20677096,  0.03188134,  0.00454172,
+     -0.24593210, -1.33722734,  0.03188134,  0.77570134,  0.42975491,
+     -0.11671682, -0.86435664,  0.00454171,  0.42975491,  0.45030650};
+
+    float x_test[5] = {
+     14.14453125,
+     32.79626465,
+    -32.57263184,
+    -84.38003540,
+     29.31457520};
+
+    float b[5];
+    float x[5];
+
+    // compute b = A*x_test
+    matrixf_mul(A,      5, 5,
+                x_test, 5, 1,
+                b,      5, 1);
+
+    matrixf_cgsolve(A,5,b,x,NULL);
+
+    if (liquid_autotest_verbose) {
+        printf("A:\n");
+        matrixf_print(A,5,5);
+        printf("b:\n");
+        matrixf_print(b,5,1);
+        printf("x:\n");
+        matrixf_print(x_test,5,1);
+        printf("x (computed):\n");
+        matrixf_print(x,5,1);
+    }
+
+    // run test
+    CONTEND_DELTA( x[0], x_test[0], tol );
+    CONTEND_DELTA( x[1], x_test[1], tol );
+    CONTEND_DELTA( x[2], x_test[2], tol );
+    CONTEND_DELTA( x[3], x_test[3], tol );
+    CONTEND_DELTA( x[4], x_test[4], tol );
+}
+

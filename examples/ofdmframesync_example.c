@@ -24,7 +24,7 @@ int main(int argc, char*argv[]) {
     unsigned int M = 64;                // number of subcarriers
     unsigned int cp_len = 16;           // cyclic prefix length
     unsigned int num_symbols_S0 = 3;    // number of S0 symbols
-    unsigned int num_symbols_S1 = 1;    // number of S0 symbols
+    unsigned int num_symbols_S1 = 1;    // number of S1 symbols (should be 1, non-negotiable)
     unsigned int num_symbols_data = 8;  // number of data symbols
     unsigned int hc_len = 1;            // channel filter length
     float hc_std = 0.10f;               // channel filter standard deviation
