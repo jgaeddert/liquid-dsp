@@ -59,6 +59,7 @@ struct ofdmflexframesync_s {
     unsigned char header[14];           // header data (uncoded)
     unsigned char header_enc[24];       // header data (encoded)
     unsigned char header_mod[96];       // header symbols
+    int header_valid;                   // valid header flag
 
     // header properties
     modulation_scheme ms_payload;       // payload modulation scheme
@@ -283,8 +284,10 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             if (_q->header_symbol_index == 96) {
                 //printf("  ***** header extracted!\n");
                 ofdmflexframesync_decode_header(_q);
-                // TODO : break
-                _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
+                if (_q->header_valid)
+                    _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
+                else
+                    ofdmflexframesync_reset(_q);
                 break;
             }
         }
@@ -309,7 +312,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     unscramble_data(_q->header_enc, 24);
 
     // run packet decoder
-    int header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header);
+    _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header);
 
 #if 0
     // print header
@@ -324,7 +327,9 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         printf("%.2X ", _q->header[i]);
     printf("\n");
 #endif
-    printf("****** header extracted [%s]\n", header_valid ? "valid" : "INVALID!");
+    printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
+    if (!_q->header_valid)
+        return;
 
     // TODO : return if header is invalid
 
@@ -349,24 +354,24 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     // last byte is for expansion/version validation
     if (_q->header[13] != OFDMFLEXFRAME_VERSION) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid framing version\n");
-        header_valid = 0;
+        _q->header_valid = 0;
     }
 
     // validate properties
     if (check >= LIQUID_CRC_NUM_SCHEMES) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded CRC exceeds available\n");
         check = LIQUID_CRC_UNKNOWN;
-        header_valid = 0;
+        _q->header_valid = 0;
     }
     if (fec0 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (inner) exceeds available\n");
         fec0 = LIQUID_FEC_UNKNOWN;
-        header_valid = 0;
+        _q->header_valid = 0;
     }
     if (fec1 >= LIQUID_FEC_NUM_SCHEMES) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), decoded FEC (outer) exceeds available\n");
         fec1 = LIQUID_FEC_UNKNOWN;
-        header_valid = 0;
+        _q->header_valid = 0;
     }
 
     // print results
@@ -380,7 +385,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 #endif
 
     // configure payload receiver
-    if (header_valid) {
+    if (_q->header_valid) {
         // configure modem
         if (mod_scheme != _q->ms_payload || mod_depth != _q->bps_payload) {
             // set new properties
