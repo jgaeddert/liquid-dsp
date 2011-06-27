@@ -29,9 +29,7 @@ void usage()
         printf("          [%s] %s\n", crc_scheme_str[i][0], crc_scheme_str[i][1]);
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
-    // print all available FEC schemes
-    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
-        printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
+    liquid_print_fec_schemes();
 }
 
 

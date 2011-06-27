@@ -25,10 +25,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  n     : input data size (number of uncoded bytes)\n");
     printf("  c     : coding scheme, (h74 default):\n");
-    // print all available FEC schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
-        printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
+    liquid_print_fec_schemes();
 }
 
 

@@ -480,6 +480,9 @@ typedef enum {
 // pretty names for fec schemes
 extern const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2];
 
+// Print compact list of existing and available FEC schemes
+void liquid_print_fec_schemes();
+
 // returns fec_scheme based on input string
 fec_scheme liquid_getopt_str2fec(const char * _str);
 
