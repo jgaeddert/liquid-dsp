@@ -1943,7 +1943,22 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
 // 
 // OFDM flex frame synchronizer
 //
-typedef int (*ofdmflexframesync_callback)(void * _userdata);
+
+// callback
+//  _header             :   header data [size: 8 bytes]
+//  _header_valid       :   is header valid? (0:no, 1:yes)
+//  _payload            :   payload data [size: _payload_len]
+//  _payload_len        :   length of payload (bytes)
+//  _payload_valid      :   is payload valid? (0:no, 1:yes)
+//  _stats              :   framing statistics (see above)
+//  _userdata           :   pointer to userdata
+typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
+                                          int              _header_valid,
+                                          unsigned char *  _payload,
+                                          unsigned int     _payload_len,
+                                          int              _payload_valid,
+                                          framesyncstats_s _stats,
+                                          void *           _userdata);
 
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 ofdmflexframesync ofdmflexframesync_create(unsigned int _num_subcarriers,

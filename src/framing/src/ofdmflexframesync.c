@@ -78,6 +78,11 @@ struct ofdmflexframesync_s {
     unsigned int payload_mod_len;       // number of payload modem symbols
     int payload_valid;                  // valid payload flag
 
+    // callback
+    ofdmflexframesync_callback callback;// user-defined callback function
+    void * userdata;                    // user-defined data structure
+    framesyncstats_s framestats;        // frame statistic object
+
     // internal...
     ofdmframesync fs;       // internal OFDM frame synchronizer
 
@@ -111,12 +116,10 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
         fprintf(stderr,"error: ofdmflexframesync_create(), cyclic prefix length cannot exceed number of subcarriers\n");
         exit(1);
     }
-    q->M = _M;
-    q->cp_len = _cp_len;
-
-    // TODO : set callback data
-    //q->callback = _callback;
-    //q->userdata = _userdata;
+    q->M        = _M;
+    q->cp_len   = _cp_len;
+    q->callback = _callback;
+    q->userdata = _userdata;
 
     // validate and count subcarrier allocation
     ofdmframe_validate_sctype(_p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
@@ -471,7 +474,31 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 _q->payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
                 printf("****** payload extracted [%s]\n", _q->payload_valid ? "valid" : "INVALID!");
 
-                // TODO : invoke callback function
+                // ignore callback if set to NULL
+                if (_q->callback == NULL) {
+                    ofdmflexframesync_reset(_q);
+                    break;
+                }
+
+                // set framestats internals
+                _q->framestats.rssi             = 0.0f;
+                _q->framestats.framesyms        = NULL;
+                _q->framestats.num_framesyms    = 0;
+                _q->framestats.mod_scheme       = _q->ms_payload;
+                _q->framestats.mod_bps          = _q->bps_payload;
+                _q->framestats.check            = _q->check;
+                _q->framestats.fec0             = _q->fec0;
+                _q->framestats.fec1             = _q->fec1;
+
+                // invoke callback method
+                _q->callback(_q->header,
+                             _q->header_valid,
+                             _q->payload_dec,
+                             _q->payload_len,
+                             _q->payload_valid,
+                             _q->framestats,
+                             _q->userdata);
+
 
                 // reset object...
 #if DEBUG_OFDMFLEXFRAMESYNC_PRINT

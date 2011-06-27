@@ -14,7 +14,13 @@
 
 #define OUTPUT_FILENAME "ofdmframesync_example.m"
 
-static int callback(void * _userdata);
+int callback(unsigned char *  _header,
+             int              _header_valid,
+             unsigned char *  _payload,
+             unsigned int     _payload_len,
+             int              _payload_valid,
+             framesyncstats_s _stats,
+             void *           _userdata);
 
 int main(int argc, char*argv[]) {
     srand(time(NULL));
@@ -113,9 +119,30 @@ int main(int argc, char*argv[]) {
     return 0;
 }
 
-static int callback(void * _userdata)
+int callback(unsigned char *  _header,
+             int              _header_valid,
+             unsigned char *  _payload,
+             unsigned int     _payload_len,
+             int              _payload_valid,
+             framesyncstats_s _stats,
+             void *           _userdata)
 {
     printf("**** callback invoked\n");
+
+    unsigned int i;
+
+    printf("  header rx  :");
+    for (i=0; i<8; i++)
+        printf(" %.2X", _header[i]);
+    printf("\n");
+
+    printf("  payload rx :");
+    for (i=0; i<_payload_len; i++) {
+        printf(" %.2X", _payload[i]);
+        if ( ((i+1)%26)==0 && i !=_payload_len-1 )
+            printf("\n              ");
+    }
+    printf("\n");
 
     return 0;
 }
