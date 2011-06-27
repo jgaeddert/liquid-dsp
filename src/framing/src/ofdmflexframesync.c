@@ -126,9 +126,6 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->callback = _callback;
     q->userdata = _userdata;
 
-    // validate and count subcarrier allocation
-    ofdmframe_validate_sctype(_p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
-
     // allocate memory for subcarrier allocation IDs
     q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
     if (_p == NULL) {
@@ -138,6 +135,9 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
         // copy user-defined subcarrier allocation
         memmove(q->p, _p, q->M*sizeof(unsigned int));
     }
+
+    // validate and count subcarrier allocation
+    ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
 
     // create internal framing object
     q->fs = ofdmframesync_create(_M, _cp_len, _p, ofdmflexframesync_internal_callback, (void*)q);
