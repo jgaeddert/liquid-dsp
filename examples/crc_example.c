@@ -23,10 +23,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  n     : input data size (number of uncoded bytes)\n");
     printf("  v     : checking scheme, (crc32 default):\n");
-    // print all available CRC schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_CRC_NUM_SCHEMES; i++)
-        printf("          [%s] %s\n", crc_scheme_str[i][0], crc_scheme_str[i][1]);
+    liquid_print_crc_schemes();
 }
 
 
