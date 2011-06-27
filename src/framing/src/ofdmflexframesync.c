@@ -32,10 +32,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFLEXFRAMESYNC             1
-#define DEBUG_OFDMFLEXFRAMESYNC_PRINT       0
-#define DEBUG_OFDMFLEXFRAMESYNC_FILENAME    "ofdmflexframesync_internal_debug.m"
-#define DEBUG_OFDMFLEXFRAMESYNC_BUFFER_LEN  (2048)
+#define DEBUG_OFDMFLEXFRAMESYNC 0
 
 #if DEBUG_OFDMFLEXFRAMESYNC
 void ofdmflexframesync_debug_print(ofdmflexframesync _q);
@@ -83,8 +80,8 @@ struct ofdmflexframesync_s {
     void * userdata;                    // user-defined data structure
     framesyncstats_s framestats;        // frame statistic object
 
-    // internal...
-    ofdmframesync fs;       // internal OFDM frame synchronizer
+    // internal synchronizer objects
+    ofdmframesync fs;                   // internal OFDM frame synchronizer
 
     // counters/states
     unsigned int symbol_counter;        // received symbol number
@@ -92,11 +89,17 @@ struct ofdmflexframesync_s {
         OFDMFLEXFRAMESYNC_STATE_HEADER, // extract header
         OFDMFLEXFRAMESYNC_STATE_PAYLOAD // extract payload symbols
     } state;
-    unsigned int header_symbol_index;   //
-    unsigned int payload_symbol_index;  //
-    unsigned int payload_buffer_index;  // bit-level index of payload
+    unsigned int header_symbol_index;   // number of header symbols received
+    unsigned int payload_symbol_index;  // number of payload symbols received
+    unsigned int payload_buffer_index;  // bit-level index of payload (pack array)
 };
 
+// create ofdmflexframesync object
+//  _M          :   number of subcarriers
+//  _cp_len     :   length of cyclic prefix [samples]
+//  _p          :   subcarrier allocation (PILOT/NULL/DATA) [size: _M x 1]
+//  _callback   :   user-defined callback function
+//  _userdata   :   user-defined data structure passed to callback
 ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
                                            unsigned int _cp_len,
                                            unsigned int * _p,
@@ -116,6 +119,8 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
         fprintf(stderr,"error: ofdmflexframesync_create(), cyclic prefix length cannot exceed number of subcarriers\n");
         exit(1);
     }
+
+    // set internal properties
     q->M        = _M;
     q->cp_len   = _cp_len;
     q->callback = _callback;
@@ -191,8 +196,11 @@ void ofdmflexframesync_print(ofdmflexframesync _q)
 
 void ofdmflexframesync_reset(ofdmflexframesync _q)
 {
-    _q->symbol_counter=0;
+    // reset internal state
     _q->state = OFDMFLEXFRAMESYNC_STATE_HEADER;
+
+    // reset internal counters
+    _q->symbol_counter=0;
     _q->header_symbol_index=0;
     _q->payload_symbol_index=0;
     _q->payload_buffer_index=0;
@@ -201,6 +209,7 @@ void ofdmflexframesync_reset(ofdmflexframesync _q)
     ofdmframesync_reset(_q->fs);
 }
 
+// execute synchronizer object on buffer of samples
 void ofdmflexframesync_execute(ofdmflexframesync _q,
                                float complex * _x,
                                unsigned int _n)
@@ -215,15 +224,15 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
 
 // internal callback
 //  _X          :   subcarrier symbols
-//  _p          :
-//  _M          :
-//  _userdata   :
+//  _p          :   subcarrier allocation
+//  _M          :   number of subcarriers
+//  _userdata   :   user-defined data structure
 int ofdmflexframesync_internal_callback(float complex * _X,
                                         unsigned int  * _p,
                                         unsigned int    _M,
                                         void * _userdata)
 {
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
+#if DEBUG_OFDMFLEXFRAMESYNC
     printf("******* ofdmflexframesync callback invoked!\n");
 #endif
     // type-cast userdata as ofdmflexframesync object
@@ -231,7 +240,7 @@ int ofdmflexframesync_internal_callback(float complex * _X,
 
     _q->symbol_counter++;
 
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
+#if DEBUG_OFDMFLEXFRAMESYNC
     printf("received symbol %u\n", _q->symbol_counter);
 #endif
 
@@ -256,24 +265,15 @@ int ofdmflexframesync_internal_callback(float complex * _X,
 void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                                 float complex * _X)
 {
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
+#if DEBUG_OFDMFLEXFRAMESYNC
     printf("  ofdmflexframesync extracting header...\n");
-#endif
-
-#if 0
-    // header (QPSK) REFERENCE
-    modem mod_header;                   // header QPSK modulator
-    packetizer p_header;                // header packetizer
-    unsigned char header[14];           // header data (uncoded)
-    unsigned char header_enc[24];       // header data (encoded)
-    unsigned char header_mod[96];       // header symbols
 #endif
 
     // demodulate header symbols
     unsigned int i;
     int sctype;
     for (i=0; i<_q->M; i++) {
-        //
+        // subcarrier type (PILOT/NULL/DATA)
         sctype = _q->p[i];
 
         // ignore pilot and null subcarriers
@@ -285,9 +285,12 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             _q->header_mod[_q->header_symbol_index++] = sym;
             //printf("  extracting symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, 96, crealf(_X[i]), cimagf(_X[i]));
 
+            // header extracted
             if (_q->header_symbol_index == 96) {
-                //printf("  ***** header extracted!\n");
+                // decode header
                 ofdmflexframesync_decode_header(_q);
+
+                // TODO : invoke callback if header is invalid
                 if (_q->header_valid)
                     _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
                 else
@@ -331,15 +334,15 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         printf("%.2X ", _q->header[i]);
     printf("\n");
 #endif
+
+#if DEBUG_OFDMFLEXFRAMESYNC
     printf("****** header extracted [%s]\n", _q->header_valid ? "valid" : "INVALID!");
+#endif
     if (!_q->header_valid)
         return;
 
-    // TODO : return if header is invalid
-
     // strip off payload length
     unsigned int payload_len = (_q->header[8] << 8) | (_q->header[9]);
-    //_q->payload_len = payload_len;
 
     // strip off modulation scheme/depth
     //  mod. scheme : most-significant five bits
@@ -379,7 +382,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     }
 
     // print results
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
+#if DEBUG_OFDMFLEXFRAMESYNC
     printf("    properties:\n");
     printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[mod_scheme][1], mod_depth);
     printf("      * fec (inner)     :   %s\n", fec_scheme_str[fec0][1]);
@@ -416,7 +419,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 
         // re-compute payload encoded message length
         _q->payload_enc_len = packetizer_get_enc_msg_len(_q->p_payload);
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
+#if DEBUG_OFDMFLEXFRAMESYNC
         printf("      * payload encoded :   %u bytes\n", _q->payload_enc_len);
 #endif
 
@@ -427,7 +430,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
         // re-compute number of modulated payload symbols
         div_t d = div(8*_q->payload_enc_len, _q->bps_payload);
         _q->payload_mod_len = d.quot + (d.rem ? 1 : 0);
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
+#if DEBUG_OFDMFLEXFRAMESYNC
         printf("      * payload mod syms:   %u symbols\n", _q->payload_mod_len);
 #endif
     }
@@ -437,15 +440,11 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                                  float complex * _X)
 {
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
-    printf("  ofdmflexframesync extracting payload...\n");
-#endif
-
     // demodulate paylod symbols
     unsigned int i;
     int sctype;
     for (i=0; i<_q->M; i++) {
-        //
+        // subcarrier type (PILOT/NULL/DATA)
         sctype = _q->p[i];
 
         // ignore pilot and null subcarriers
@@ -472,7 +471,9 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 
                 // decode payload
                 _q->payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
+#if DEBUG_OFDMFLEXFRAMESYNC
                 printf("****** payload extracted [%s]\n", _q->payload_valid ? "valid" : "INVALID!");
+#endif
 
                 // ignore callback if set to NULL
                 if (_q->callback == NULL) {
@@ -481,7 +482,7 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 }
 
                 // set framestats internals
-                _q->framestats.rssi             = 0.0f;
+                _q->framestats.rssi             = 0.0f; // TODO: extract RSSI from ofdmframesync object
                 _q->framestats.framesyms        = NULL;
                 _q->framestats.num_framesyms    = 0;
                 _q->framestats.mod_scheme       = _q->ms_payload;
@@ -500,10 +501,7 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                              _q->userdata);
 
 
-                // reset object...
-#if DEBUG_OFDMFLEXFRAMESYNC_PRINT
-                printf("  ... resetting ofdmflexframesync object...\n");
-#endif
+                // reset object
                 ofdmflexframesync_reset(_q);
                 break;
             }
