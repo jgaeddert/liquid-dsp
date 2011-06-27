@@ -32,10 +32,7 @@ void usage()
     printf("  F     : frequency offset (radians), default: 0.001\n");
     printf("  p     : modulation depth, default: 2 bits/symbol\n");
     printf("  m     : modulation scheme, default: psk\n");
-    // print all available MOD schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i][0]);
+    liquid_print_modulation_schemes();
 }
 
 int main(int argc, char*argv[]) {

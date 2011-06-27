@@ -41,10 +41,7 @@ void usage()
     printf("  n     : number of frames, default: 3\n");
     printf("  p     : modulation depth (default 2 bits/symbol)\n");
     printf("  m     : modulation scheme (psk default)\n");
-    // print all available MOD schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i][0]);
+    liquid_print_modulation_schemes();
 }
 
 // flexframesync callback function
