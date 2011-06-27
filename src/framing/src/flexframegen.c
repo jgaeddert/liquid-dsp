@@ -85,7 +85,7 @@ struct flexframegen_s {
     flexframegenprops_s props;
 
     unsigned int pnsequence_len;        // p/n sequence length
-    unsigned int num_payload_symbols;   // number of paylod symbols
+    unsigned int num_payload_symbols;   // number of payload symbols
     unsigned int frame_len;             // number of frame symbols
 };
 

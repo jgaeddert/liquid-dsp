@@ -38,6 +38,8 @@ local_objects :=				\
 	$(base_dir)/src/framesync64.o		\
 	$(base_dir)/src/flexframegen.o		\
 	$(base_dir)/src/flexframesync.o		\
+	$(base_dir)/src/ofdmflexframegen.o	\
+	$(base_dir)/src/ofdmflexframesync.o	\
 	$(base_dir)/src/packetizer.o		\
 	$(base_dir)/src/interleaver.o		\
 	$(base_dir)/src/interleaver_create.o	\
@@ -69,6 +71,10 @@ $(base_dir)/src/framesync64.o : %.o : %.c $(headers)
 $(base_dir)/src/flexframegen.o : %.o : %.c $(headers)
 
 $(base_dir)/src/flexframesync.o : %.o : %.c $(headers)
+
+$(base_dir)/src/ofdmflexframegen.o : %.o : %.c $(headers)
+
+$(base_dir)/src/ofdmflexframesync.o : %.o : %.c $(headers)
 
 $(base_dir)/src/packetizer.o : %.o : %.c $(headers)
 
