@@ -81,34 +81,37 @@ int main(int argc, char*argv[]) {
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
 
-    // assemble frame
-    ofdmflexframegen_assemble(fg, header, payload);
-
     float nstd = 0.01f;
     float complex noise;
+    unsigned int n;
+    for (n=0; n<2; n++) {
 #if 1
-    // initialize frame synchronizer with noise
-    for (i=0; i<1000; i++) {
-        noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
-        ofdmflexframesync_execute(fs, &noise, 1);
-    }
+        // initialize frame synchronizer with noise
+        for (i=0; i<1000; i++) {
+            noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
+            ofdmflexframesync_execute(fs, &noise, 1);
+        }
 #endif
 
-    // generate frame
-    int last_symbol=0;
-    unsigned int num_written;
-    while (!last_symbol) {
-        // generate symbol
-        last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+        // assemble frame
+        ofdmflexframegen_assemble(fg, header, payload);
 
-        // TODO : apply channel
-        for (i=0; i<num_written; i++) {
-            noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
-            buffer[i] += noise;
+        // generate frame
+        int last_symbol=0;
+        unsigned int num_written;
+        while (!last_symbol) {
+            // generate symbol
+            last_symbol = ofdmflexframegen_writesymbol(fg, buffer, &num_written);
+
+            // TODO : apply channel
+            for (i=0; i<num_written; i++) {
+                noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
+                buffer[i] += noise;
+            }
+
+            // receive symbol
+            ofdmflexframesync_execute(fs, buffer, num_written);
         }
-
-        // receive symbol
-        ofdmflexframesync_execute(fs, buffer, num_written);
     }
 
     // destroy objects

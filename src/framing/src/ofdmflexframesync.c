@@ -279,11 +279,11 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
         // ignore pilot and null subcarriers
         if (sctype == OFDMFRAME_SCTYPE_DATA) {
             // unload header symbols
-            //printf("  extracting symbol %u / %u\n", _q->header_symbol_index, 96);
             // demodulate header symbol
             unsigned int sym;
             modem_demodulate(_q->mod_header, _X[i], &sym);
             _q->header_mod[_q->header_symbol_index++] = sym;
+            //printf("  extracting symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, 96, crealf(_X[i]), cimagf(_X[i]));
 
             if (_q->header_symbol_index == 96) {
                 //printf("  ***** header extracted!\n");

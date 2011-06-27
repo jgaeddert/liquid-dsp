@@ -202,6 +202,10 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
     _q->frame_complete = 0;
     _q->header_symbol_index = 0;
     _q->payload_symbol_index = 0;
+
+    // reset internal OFDM frame generator object
+    // NOTE: this is important for appropriately setting the pilot phases
+    ofdmframegen_reset(_q->fg);
 }
 
 // get ofdmflexframegen properties
@@ -545,6 +549,7 @@ void ofdmflexframegen_write_header(ofdmflexframegen _q,
             if (_q->header_symbol_index < 96) {
                 // modulate header symbol onto data subcarrier
                 modem_modulate(_q->mod_header, _q->header_mod[_q->header_symbol_index++], &_q->X[i]);
+                //printf("  writing symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, 96, crealf(_q->X[i]), cimagf(_q->X[i]));
             } else {
                 //printf("  random header symbol\n");
                 // load random symbol
