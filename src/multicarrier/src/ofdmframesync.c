@@ -353,6 +353,11 @@ void ofdmframesync_execute(ofdmframesync _q,
     } // for (i=0; i<_n; i++)
 } // ofdmframesync_execute()
 
+// get receiver RSSI
+float ofdmframesync_get_rssi(ofdmframesync _q)
+{
+    return 10.0*log10f( agc_crcf_get_signal_level(_q->agc_rx) );
+}
 
 
 //
