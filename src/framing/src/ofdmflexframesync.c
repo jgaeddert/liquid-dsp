@@ -482,7 +482,7 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 }
 
                 // set framestats internals
-                _q->framestats.rssi             = 0.0f; // TODO: extract RSSI from ofdmframesync object
+                _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
                 _q->framestats.framesyms        = NULL;
                 _q->framestats.num_framesyms    = 0;
                 _q->framestats.mod_scheme       = _q->ms_payload;

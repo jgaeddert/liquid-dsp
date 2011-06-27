@@ -181,7 +181,7 @@ int callback(unsigned char *  _header,
              framesyncstats_s _stats,
              void *           _userdata)
 {
-    printf("**** callback invoked\n");
+    printf("**** callback invoked : rssi = %8.3f dB\n", _stats.rssi);
 
     unsigned int i;
 
