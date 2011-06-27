@@ -3036,6 +3036,9 @@ void ofdmframesync_execute(ofdmframesync _q,
                            liquid_float_complex * _x,
                            unsigned int _n);
 
+// get receiver RSSI
+float ofdmframesync_get_rssi(ofdmframesync _q);
+
 
 
 // 
