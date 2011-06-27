@@ -76,6 +76,7 @@ struct ofdmflexframesync_s {
     unsigned char * payload_dec;        // payload data (decoded bytes)
     unsigned int payload_enc_len;       // length of encoded payload
     unsigned int payload_mod_len;       // number of payload modem symbols
+    int payload_valid;                  // valid payload flag
 
     // internal...
     ofdmframesync fs;       // internal OFDM frame synchronizer
@@ -467,8 +468,8 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
                 // payload extracted
 
                 // decode payload
-                int payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
-                printf("****** payload extracted [%s]\n", payload_valid ? "valid" : "INVALID!");
+                _q->payload_valid = packetizer_decode(_q->p_payload, _q->payload_enc, _q->payload_dec);
+                printf("****** payload extracted [%s]\n", _q->payload_valid ? "valid" : "INVALID!");
 
                 // TODO : invoke callback function
 
