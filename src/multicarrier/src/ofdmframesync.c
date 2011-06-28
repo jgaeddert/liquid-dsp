@@ -406,10 +406,11 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
 #if DEBUG_OFDMFRAMESYNC_PRINT
-    printf("     gain   : %12.8f\n", sqrt(g));
-    printf("     rssi   : %12.8f\n", -10*log10(sqrt(g)));
-    printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
-    printf("  tau_hat   :   %12.8f\n", tau_hat);
+    printf(" - gain=%12.3f, rssi=%12.8f, s_hat=%12.4f <%12.8f>, tau_hat=%8.3f\n",
+            sqrt(g),
+            -10*log10(sqrt(g)),
+            cabsf(s_hat), cargf(s_hat),
+            tau_hat);
 #endif
 
     // TODO : allow variable threshold
@@ -425,8 +426,8 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("********** frame detected! ************\n");
-        printf("dt = %5d\n", dt);
-        printf("timer = %u\n", _q->timer);
+        printf("    dt      :   %12d\n", dt);
+        printf("    timer   :   %12u\n", _q->timer);
 #endif
         //printf("exiting prematurely\n");
         //ofdmframesync_destroy(_q);
