@@ -170,7 +170,7 @@ void ofdmframe_init_S1(unsigned int * _p,
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 //
 // key: '.' (null), 'P' (pilot), '+' (data)
-// .+++++++++++++++P.........P+++++++++++++
+// .+++P+++++++P.........P+++++++P+++
 //
 void ofdmframe_init_default_sctype(unsigned int _M,
                                    unsigned int * _p)
@@ -189,13 +189,15 @@ void ofdmframe_init_default_sctype(unsigned int _M,
     // compute upper|lower band-edge
     unsigned int i0 = (_M/2) - g;
     unsigned int i1 = (_M/2) + g;
+    unsigned int pilot_spacing = 8;
 
     for (i=0; i<_M; i++) {
 
-        // TODO : allocate more pilot subcarriers (10%?)
         if (i==0 || (i>i0 && i<i1))
             _p[i] = OFDMFRAME_SCTYPE_NULL;
-        else if (i==i0 || i==i1)
+        //else if (i==i0 || i==i1)
+        //    _p[i] = OFDMFRAME_SCTYPE_PILOT;
+        else if ( (i%pilot_spacing)==0 )
             _p[i] = OFDMFRAME_SCTYPE_PILOT;
         else
             _p[i] = OFDMFRAME_SCTYPE_DATA;
