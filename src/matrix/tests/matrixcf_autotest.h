@@ -308,6 +308,10 @@ void autotest_matrixcf_chol()
     // compute A
     matrixcf_mul_transpose(L,4,4,A);
 
+    // force A to be positive definite
+    for (i=0; i<4; i++)
+        matrix_access(A,4,4,i,i) = creal(matrix_access(A,4,4,i,i));
+
     // run decomposition
     matrixcf_chol(A,4,Lp);
 
