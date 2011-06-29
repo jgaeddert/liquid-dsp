@@ -293,8 +293,29 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 // TODO : invoke callback if header is invalid
                 if (_q->header_valid)
                     _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
-                else
+                else {
+                    //printf("**** header invalid!\n");
+                    // set framestats internals
+                    _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
+                    _q->framestats.framesyms        = NULL;
+                    _q->framestats.num_framesyms    = 0;
+                    _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
+                    _q->framestats.mod_bps          = 0;
+                    _q->framestats.check            = LIQUID_CRC_UNKNOWN;
+                    _q->framestats.fec0             = LIQUID_FEC_UNKNOWN;
+                    _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
+
+                    // invoke callback method
+                    _q->callback(_q->header,
+                                 _q->header_valid,
+                                 NULL,
+                                 0,
+                                 0,
+                                 _q->framestats,
+                                 _q->userdata);
+
                     ofdmflexframesync_reset(_q);
+                }
                 break;
             }
         }
