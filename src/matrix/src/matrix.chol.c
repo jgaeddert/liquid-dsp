@@ -52,14 +52,16 @@ void MATRIX(_chol)(T * _A,
     for (j=0; j<_n; j++) {
         // assert that A_jj is real, positive
         A_jj = matrix_access(_A,_n,_n,j,j);
-#if T_COMPLEX
-        if ( fabs(cimag(A_jj)) > 0.0 || creal(A_jj) < 0.0 ) {
-#else
         if ( creal(A_jj) < 0.0 ) {
-#endif
-            fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite\n");
+            fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite (real{A[%u,%u]} = %12.4e < 0)\n",j,j,creal(A_jj));
             return;
         }
+#if T_COMPLEX
+        if ( fabs(cimag(A_jj)) > 0.0 ) {
+            fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite (|imag{A[%u,%u]}| = %12.4e > 0)\n",j,j,fabs(cimag(A_jj)));
+            return;
+        }
+#endif
 
         // compute L_jj and store it in output matrix
         t0 = 0.0;
@@ -71,9 +73,9 @@ void MATRIX(_chol)(T * _A,
             t0 += L_jk * L_jk;
 #endif
         }
-        // TODO : test to ensure A_jj > t0
+        // test to ensure A_jj > t0
         if ( creal(A_jj) < t0 ) {
-            fprintf(stderr,"warning: matrix_chol(), matrix is not positive-definite\n");
+            fprintf(stderr,"warning: matrix_chol(), matrix is not positive definite (real{A[%u,%u]} = %12.4e < %12.4e)\n",j,j,creal(A_jj),t0);
             return;
         }
         L_jj = sqrt( A_jj - t0 );
