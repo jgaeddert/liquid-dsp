@@ -36,13 +36,12 @@ void modem_modulate(modem _q,
                     unsigned int _symbol_in,
                     float complex * _y)
 {
-#if 0
     // validate input
     if (_symbol_in >= _q->M) {
         fprintf(stderr,"error: modem_modulate(), input symbol exceeds constellation size\n");
         exit(1);
     }
-#endif
+
     _q->modulate_func(_q, _symbol_in, _y);
 }
 
