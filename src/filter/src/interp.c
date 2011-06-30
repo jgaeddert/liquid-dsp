@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2009 Joseph Gaeddert
- * Copyright (c) 2007, 2009 Virginia Polytechnic Institute & State University
+ * Copyright (c) 2007-2011 Joseph Gaeddert
+ * Copyright (c) 2007-2011 Virginia Polytechnic Institute & State University
  *
  * This file is part of liquid.
  *
@@ -33,19 +33,19 @@
 //  TI          input data type
 //  WINDOW()    window macro
 //  DOTPROD()   dotprod macro
-//  PRINTVAL()  print macro
+//  FIRPFB()    polyphase filterbank macro
 
 struct INTERP(_s) {
     TC * h;                 // prototype filter coefficients
     unsigned int h_len;     // prototype filter length
     unsigned int h_sub_len; // sub-filter length
     unsigned int M;         // interpolation factor
-    FIRPFB() filterbank;    // polyphase filterban object
+    FIRPFB() filterbank;    // polyphase filterbank object
 };
 
 // create interpolator
 //  _M      :   interpolation factor
-//  _h      :   filter coefficients array [size: 1 x _h_len]
+//  _h      :   filter coefficients array [size: _h_len x 1]
 //  _h_len  :   filter length
 INTERP() INTERP(_create)(unsigned int _M,
                          TC *_h,
@@ -60,6 +60,7 @@ INTERP() INTERP(_create)(unsigned int _M,
         exit(1);
     }
 
+    // allocate main object memory and set internal parameters
     INTERP() q = (INTERP()) malloc(sizeof(struct INTERP(_s)));
     q->M = _M;
     q->h_len = _h_len;
@@ -105,6 +106,7 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
         exit(1);
     }
 
+    // compute filter coefficients (floating point precision)
     unsigned int h_len = 2*_M*_m + 1;
     float hf[h_len];
     float fc = 0.5f / (float) (_M);
@@ -121,6 +123,7 @@ INTERP() INTERP(_create_prototype)(unsigned int _M,
 }
 
 // create square-root Nyquist interpolator
+//  _type   :   filter type (e.g. LIQUID_RNYQUIST_RRC)
 //  _k      :   samples/symbol _k > 1
 //  _m      :   filter delay (symbols), _m > 0
 //  _beta   :   excess bandwidth factor, 0 < _beta < 1
@@ -172,7 +175,9 @@ void INTERP(_destroy)(INTERP() _q)
 // print interpolator state
 void INTERP(_print)(INTERP() _q)
 {
-    printf("interp() [%u] :\n", _q->M);
+    printf("interp():\n");
+    printf("    M       :   %u\n", _q->M);
+    printf("    h_len   :   %u\n", _q->h_len);
     FIRPFB(_print)(_q->filterbank);
 }
 
