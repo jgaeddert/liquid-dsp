@@ -38,10 +38,6 @@
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
 
-#if DEBUG_OFDMFRAMESYNC
-void ofdmframesync_debug_print(ofdmframesync _q);
-#endif
-
 struct ofdmframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
@@ -235,7 +231,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
 void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
-    ofdmframesync_debug_print(_q);
+    ofdmframesync_debug_print(_q, DEBUG_OFDMFRAMESYNC_FILENAME);
 
     agc_crcf_destroy(_q->agc_rx);
 
@@ -933,15 +929,16 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 }
 
 
-#if DEBUG_OFDMFRAMESYNC
-void ofdmframesync_debug_print(ofdmframesync _q)
+void ofdmframesync_debug_print(ofdmframesync _q,
+                               const char * _filename)
 {
-    FILE * fid = fopen(DEBUG_OFDMFRAMESYNC_FILENAME,"w");
+    FILE * fid = fopen(_filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: ofdmframe_debug_print(), could not open file for writing\n");
+        fprintf(stderr,"error: ofdmframe_debug_print(), could not open '%s' for writing\n", _filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAMESYNC_FILENAME);
+#if DEBUG_OFDMFRAMESYNC
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -1070,10 +1067,12 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
+#else
+    fprintf(fid,"disp('no debugging info available');\n");
+#endif
 
     fclose(fid);
-    printf("ofdmframesync/debug: results written to %s\n", DEBUG_OFDMFRAMESYNC_FILENAME);
+    printf("ofdmframesync/debug: results written to '%s'\n", _filename);
 }
-#endif
 
 
