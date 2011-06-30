@@ -411,6 +411,9 @@ float modem_get_demodulator_evm(modem _demod)
 {
     float r;
     switch (_demod->scheme) {
+    case LIQUID_MODEM_UNKNOWN:
+        fprintf(stderr,"warning: modem_get_demodulator_evm(), unknown scheme\n");
+        return 0.0f;
     case LIQUID_MODEM_PSK:
     case LIQUID_MODEM_BPSK:
     case LIQUID_MODEM_QPSK:
@@ -427,8 +430,8 @@ float modem_get_demodulator_evm(modem _demod)
         _demod->evm = cabsf(_demod->res);
         break;
     default:
-        printf("WARNING: modem_get_demodulator_evm(), unknown scheme\n");
-        break;
+        // nothing special to do
+        ;
     }
     return _demod->evm;
 }
