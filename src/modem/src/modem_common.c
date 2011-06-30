@@ -91,16 +91,19 @@ unsigned int modem_gen_rand_sym(modem _mod)
     return rand() % (_mod->M);
 }
 
+// Get modem depth (bits/symbol)
 unsigned int modem_get_bps(modem _mod)
 {
     return _mod->m;
 }
 
+// gray encoding
 unsigned int gray_encode(unsigned int symbol_in)
 {
     return symbol_in ^ (symbol_in >> 1);
 }
 
+// gray decoding
 unsigned int gray_decode(unsigned int symbol_in)
 {
     unsigned int mask = symbol_in;

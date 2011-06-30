@@ -376,6 +376,7 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
     return NULL;
 }
 
+// create specific APSK-4 modem
 modem modem_create_apsk4()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -397,7 +398,7 @@ modem modem_create_apsk4()
     return mod;
 }
 
-
+// create specific APSK-8 modem
 modem modem_create_apsk8()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -419,6 +420,7 @@ modem modem_create_apsk8()
     return mod;
 }
 
+// create specific APSK-16 modem
 modem modem_create_apsk16()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -440,6 +442,7 @@ modem modem_create_apsk16()
     return mod;
 }
 
+// create specific APSK-32 modem
 modem modem_create_apsk32()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -461,6 +464,7 @@ modem modem_create_apsk32()
     return mod;
 }
 
+// create specific APSK-64 modem
 modem modem_create_apsk64()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -482,6 +486,7 @@ modem modem_create_apsk64()
     return mod;
 }
 
+// create specific APSK-128 modem
 modem modem_create_apsk128()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -503,6 +508,7 @@ modem modem_create_apsk128()
     return mod;
 }
 
+// create specific APSK-256 modem
 modem modem_create_apsk256()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -541,7 +547,7 @@ modem modem_create_arb(unsigned int _bits_per_symbol)
     return mod;
 }
 
-// create a V.29 modem object
+// create a V.29 modem object (4 bits/symbol)
 modem modem_create_V29()
 {
     modem mod = modem_create_arb(4);

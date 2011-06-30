@@ -29,6 +29,7 @@
 #include <assert.h>
 #include "liquid.internal.h"
 
+// approximation to cargf() but faster
 float cargf_demod_approx(float complex _x)
 {
     float theta;
@@ -50,14 +51,15 @@ float cargf_demod_approx(float complex _x)
     return theta;
 }
 
-void modem_demodulate(
-    modem _demod,
-    float complex x,
-    unsigned int *symbol_out)
+// generic demodulation
+void modem_demodulate(modem _demod,
+                      float complex x,
+                      unsigned int *symbol_out)
 {
     _demod->demodulate_func(_demod, x, symbol_out);
 }
 
+// demodulate ASK
 void modem_demodulate_ask(modem _demod,
                           float complex _x,
                           unsigned int * _symbol_out)
@@ -76,6 +78,7 @@ void modem_demodulate_ask(modem _demod,
     _demod->evm = cabsf(_demod->res);
 }
 
+// demodulate QAM
 void modem_demodulate_qam(modem _demod,
                           float complex _x,
                           unsigned int * _symbol_out)
@@ -98,7 +101,7 @@ void modem_demodulate_qam(modem _demod,
     _demod->evm = cabsf(_demod->res);
 }
 
-
+// demodulate PSK
 void modem_demodulate_psk(modem _demod,
                           float complex x,
                           unsigned int *symbol_out)
@@ -120,6 +123,7 @@ void modem_demodulate_psk(modem _demod,
     // phase error computed as residual from demodulator
 }
 
+// demodulate BPSK
 void modem_demodulate_bpsk(modem _demod,
                            float complex _x,
                            unsigned int * _symbol_out)
@@ -137,6 +141,7 @@ void modem_demodulate_bpsk(modem _demod,
     _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
+// demodulate QPSK
 void modem_demodulate_qpsk(modem _demod,
                            float complex _x,
                            unsigned int * _symbol_out)
@@ -155,6 +160,7 @@ void modem_demodulate_qpsk(modem _demod,
     _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
+// demodulate OOK
 void modem_demodulate_ook(modem _demod,
                           float complex _x,
                           unsigned int * _symbol_out)
@@ -305,6 +311,7 @@ void modem_demodulate_dpsk(modem _demod,
     // compute residuals
 }
 
+// demodulate arbitrary modem type
 void modem_demodulate_arb(modem _mod,
                           float complex _x,
                           unsigned int * _symbol_out)
@@ -336,6 +343,7 @@ void modem_demodulate_arb(modem _mod,
     _mod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
 }
 
+// demodulate APSK
 void modem_demodulate_apsk(modem _mod,
                            float complex _x,
                            unsigned int * _symbol_out)

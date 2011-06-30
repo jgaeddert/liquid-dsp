@@ -54,10 +54,10 @@ void modem_modulate_ask(
     *y = (2*(int)symbol_in - (int)(_mod->M) + 1) * _mod->alpha;
 }
 
-void modem_modulate_qam(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// modulate QAM
+void modem_modulate_qam(modem _mod,
+                        unsigned int symbol_in,
+                        float complex *y)
 {
     unsigned int s_i, s_q;
     s_i = symbol_in >> _mod->m_q;
@@ -70,10 +70,10 @@ void modem_modulate_qam(
          (2*(int)s_q - (int)(_mod->M_q) + 1) * _mod->alpha * _Complex_I;
 }
 
-void modem_modulate_psk(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// modulate PSK
+void modem_modulate_psk(modem _mod,
+                        unsigned int symbol_in,
+                        float complex *y)
 {
     symbol_in = gray_decode(symbol_in);
     ///\todo: combine into single statement
@@ -81,18 +81,18 @@ void modem_modulate_psk(
     *y = cexpf(_Complex_I*theta);
 }
 
-void modem_modulate_bpsk(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// modulate BPSK
+void modem_modulate_bpsk(modem _mod,
+                         unsigned int symbol_in,
+                         float complex *y)
 {
     *y = symbol_in ? -1.0f : 1.0f;
 }
 
-void modem_modulate_qpsk(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// modulate QPSK
+void modem_modulate_qpsk(modem _mod,
+                         unsigned int symbol_in,
+                         float complex *y)
 {
     *y  = (symbol_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
           (symbol_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;
@@ -158,10 +158,10 @@ void modem_modulate_sqam128(modem _q,
     *_y = _q->symbol_map[s] * r;
 }
 
-void modem_modulate_dpsk(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// modulate DPSK
+void modem_modulate_dpsk(modem _mod,
+                         unsigned int symbol_in,
+                         float complex *y)
 {
     symbol_in = gray_decode(symbol_in);
     float d_theta = symbol_in * 2 * _mod->alpha;
@@ -174,6 +174,7 @@ void modem_modulate_dpsk(
     //printf("mod: state_theta = %f\n", _mod->state_theta);
 }
 
+// modulate APSK
 void modem_modulate_apsk(modem _mod,
                          unsigned int symbol_in,
                          float complex *y)
@@ -211,10 +212,10 @@ void modem_modulate_apsk(modem _mod,
     *y = r * cexpf(_Complex_I*phi);
 }
 
-void modem_modulate_arb(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// modulate arbitrary modem type
+void modem_modulate_arb(modem _mod,
+                        unsigned int symbol_in,
+                        float complex *y)
 {
     if (symbol_in >= _mod->M) {
         fprintf(stderr,"error: modulate_arb(), input symbol exceeds maximum\n");
