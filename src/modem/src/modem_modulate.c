@@ -94,8 +94,8 @@ void modem_modulate_qpsk(
     unsigned int symbol_in,
     float complex *y)
 {
-    *y  =             (symbol_in & 0x01) ? -0.707106781f : 0.707106781f;
-    *y += _Complex_I*((symbol_in & 0x02) ? -0.707106781f : 0.707106781f);
+    *y  = (symbol_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
+          (symbol_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;
 }
 
 // modulate symbol using on/off keying
@@ -103,7 +103,7 @@ void modem_modulate_ook(modem _q,
                         unsigned int symbol_in,
                         float complex *y)
 {
-    *y = symbol_in ? 0.0f : 1.41421356237310f;
+    *y = symbol_in ? 0.0f : M_SQRT2;
 }
 
 // modulate symbol with 'square' 32-QAM
@@ -111,8 +111,6 @@ void modem_modulate_sqam32(modem _q,
                            unsigned int _symbol_in,
                            float complex * _y)
 {
-    //*y = symbol_in ? 0.0f : 1.41421356237310f;
-
     // strip off most-significant two bits (quadrant)
     unsigned int quad = (_symbol_in >> 3) & 0x03;
     float complex r = 1.0f;
@@ -139,8 +137,6 @@ void modem_modulate_sqam128(modem _q,
                             unsigned int _symbol_in,
                             float complex * _y)
 {
-    //*y = symbol_in ? 0.0f : 1.41421356237310f;
-
     // strip off most-significant two bits (quadrant)
     unsigned int quad = (_symbol_in >> 5) & 0x03;
     float complex r = 1.0f;

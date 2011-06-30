@@ -159,7 +159,7 @@ void modem_demodulate_ook(modem _demod,
                           float complex _x,
                           unsigned int * _symbol_out)
 {
-    *_symbol_out = (crealf(_x) > 0.707106781186548 ) ? 0 : 1;
+    *_symbol_out = (crealf(_x) > M_SQRT1_2 ) ? 0 : 1;
     _demod->state = _x;
 
     // compute residuals
@@ -216,8 +216,6 @@ void modem_demodulate_sqam32(modem _q,
     // add quadrant bits
     *_symbol_out |= (quad << 3);
 
-    //*_symbol_out = (crealf(_x) > 0.707106781186548 ) ? 0 : 1;
-
     _q->state = _x;
 
     // compute residuals
@@ -272,8 +270,6 @@ void modem_demodulate_sqam128(modem _q,
 
     // add quadrant bits
     *_symbol_out |= (quad << 5);
-
-    //*_symbol_out = (crealf(_x) > 0.707106781186548 ) ? 0 : 1;
 
     _q->state = _x;
 
