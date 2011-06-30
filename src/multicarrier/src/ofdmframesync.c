@@ -356,7 +356,7 @@ void ofdmframesync_execute(ofdmframesync _q,
 // get receiver RSSI
 float ofdmframesync_get_rssi(ofdmframesync _q)
 {
-    return 10.0*log10f( agc_crcf_get_signal_level(_q->agc_rx) );
+    return -10.0f*log10(sqrt(_q->g0));
 }
 
 
