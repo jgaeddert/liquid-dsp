@@ -21,9 +21,12 @@ void usage()
     printf("  f     : frame length [bytes], default: 120\n");
     printf("  p     : modulation depth (default 2 bits/symbol)\n");
     printf("  m     : modulation scheme (qpsk default)\n");
+    liquid_print_modulation_schemes();
     printf("  v     : data integrity check: crc32 default\n");
+    liquid_print_crc_schemes();
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
+    liquid_print_fec_schemes();
 }
 
 // callback function

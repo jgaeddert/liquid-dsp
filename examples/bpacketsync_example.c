@@ -32,20 +32,15 @@ int callback(unsigned char * _payload,
 // print usage/help message
 void usage()
 {
-    unsigned int i;
     printf("bpacketsync_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : input data size (number of uncoded bytes): 8 default\n");
     printf("  e     : bit error rate of channel, default: 0\n");
     printf("  v     : data integrity check: crc32 default\n");
-    // print all available CRC schemes
-    for (i=0; i<LIQUID_CRC_NUM_SCHEMES; i++)
-        printf("          [%s] %s\n", crc_scheme_str[i][0], crc_scheme_str[i][1]);
+    liquid_print_crc_schemes();
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
-    // print all available FEC schemes
-    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
-        printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
+    liquid_print_fec_schemes();
 }
 
 

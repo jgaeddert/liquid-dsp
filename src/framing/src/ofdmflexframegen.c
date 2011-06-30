@@ -126,9 +126,6 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->M      = _M;         // number of subcarriers
     q->cp_len = _cp_len;    // cyclic prefix length
 
-    // validate and count subcarrier allocation
-    ofdmframe_validate_sctype(_p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
-
     // allocate memory for transform buffers
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
 
@@ -141,6 +138,9 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
         // copy user-defined subcarrier allocation
         memmove(q->p, _p, q->M*sizeof(unsigned int));
     }
+
+    // validate and count subcarrier allocation
+    ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
 
     // create internal OFDM frame generator object
     q->fg = ofdmframegen_create(q->M, q->cp_len, q->p);

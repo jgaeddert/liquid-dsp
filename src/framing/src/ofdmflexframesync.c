@@ -126,9 +126,6 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->callback = _callback;
     q->userdata = _userdata;
 
-    // validate and count subcarrier allocation
-    ofdmframe_validate_sctype(_p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
-
     // allocate memory for subcarrier allocation IDs
     q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
     if (_p == NULL) {
@@ -138,6 +135,9 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
         // copy user-defined subcarrier allocation
         memmove(q->p, _p, q->M*sizeof(unsigned int));
     }
+
+    // validate and count subcarrier allocation
+    ofdmframe_validate_sctype(q->p, q->M, &q->M_null, &q->M_pilot, &q->M_data);
 
     // create internal framing object
     q->fs = ofdmframesync_create(_M, _cp_len, _p, ofdmflexframesync_internal_callback, (void*)q);
@@ -293,8 +293,29 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
                 // TODO : invoke callback if header is invalid
                 if (_q->header_valid)
                     _q->state = OFDMFLEXFRAMESYNC_STATE_PAYLOAD;
-                else
+                else {
+                    //printf("**** header invalid!\n");
+                    // set framestats internals
+                    _q->framestats.rssi             = ofdmframesync_get_rssi(_q->fs);
+                    _q->framestats.framesyms        = NULL;
+                    _q->framestats.num_framesyms    = 0;
+                    _q->framestats.mod_scheme       = LIQUID_MODEM_UNKNOWN;
+                    _q->framestats.mod_bps          = 0;
+                    _q->framestats.check            = LIQUID_CRC_UNKNOWN;
+                    _q->framestats.fec0             = LIQUID_FEC_UNKNOWN;
+                    _q->framestats.fec1             = LIQUID_FEC_UNKNOWN;
+
+                    // invoke callback method
+                    _q->callback(_q->header,
+                                 _q->header_valid,
+                                 NULL,
+                                 0,
+                                 0,
+                                 _q->framestats,
+                                 _q->userdata);
+
                     ofdmflexframesync_reset(_q);
+                }
                 break;
             }
         }

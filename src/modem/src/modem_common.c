@@ -61,6 +61,29 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
     return LIQUID_MODEM_UNKNOWN;
 }
 
+// Print compact list of existing and available modulation schemes
+void liquid_print_modulation_schemes()
+{
+    unsigned int i;
+    unsigned int len = 10;
+
+    // print all available MOD schemes
+    printf("          ");
+    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++) {
+        printf("%s", modulation_scheme_str[i][0]);
+
+        if (i != LIQUID_MODEM_NUM_SCHEMES-1)
+            printf(", ");
+
+        len += strlen(modulation_scheme_str[i][0]);
+        if (len > 48 && i != LIQUID_MODEM_NUM_SCHEMES-1) {
+            len = 10;
+            printf("\n          ");
+        }
+    }
+    printf("\n");
+}
+
 
 // Generate random symbol
 unsigned int modem_gen_rand_sym(modem _mod)

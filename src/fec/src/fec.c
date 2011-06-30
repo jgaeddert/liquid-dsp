@@ -59,6 +59,30 @@ const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2] = {
     {"rs8",         "Reed-Solomon, 223/255"}
 };
 
+// Print compact list of existing and available fec schemes
+void liquid_print_fec_schemes()
+{
+    unsigned int i;
+    unsigned int len = 10;
+
+    // print all available MOD schemes
+    printf("          ");
+    for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++) {
+        printf("%s", fec_scheme_str[i][0]);
+
+        if (i != LIQUID_FEC_NUM_SCHEMES-1)
+            printf(", ");
+
+        len += strlen(fec_scheme_str[i][0]);
+        if (len > 48 && i != LIQUID_FEC_NUM_SCHEMES-1) {
+            len = 10;
+            printf("\n          ");
+        }
+    }
+    printf("\n");
+}
+
+
 fec_scheme liquid_getopt_str2fec(const char * _str)
 {
     // compare each string to short name
@@ -72,7 +96,6 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
     fprintf(stderr,"warning: liquid_getopt_str2fec(), unknown/unsupported fec scheme : %s\n", _str);
     return LIQUID_FEC_UNKNOWN;
 }
-
 
 // return the encoded message length using a particular error-
 // correction scheme (object-independent method)

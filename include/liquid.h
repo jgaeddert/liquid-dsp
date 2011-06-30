@@ -414,6 +414,9 @@ typedef enum {
 // pretty names for crc schemes
 extern const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2];
 
+// Print compact list of existing and available CRC schemes
+void liquid_print_crc_schemes();
+
 // returns crc_scheme based on input string
 crc_scheme liquid_getopt_str2crc(const char * _str);
 
@@ -479,6 +482,9 @@ typedef enum {
 
 // pretty names for fec schemes
 extern const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2];
+
+// Print compact list of existing and available FEC schemes
+void liquid_print_fec_schemes();
 
 // returns fec_scheme based on input string
 fec_scheme liquid_getopt_str2fec(const char * _str);
@@ -1336,20 +1342,24 @@ LIQUID_FIRPFB_DEFINE_API(FIRPFB_MANGLE_CCCF,
 
 #define LIQUID_INTERP_DEFINE_API(INTERP,TO,TC,TI)               \
 typedef struct INTERP(_s) * INTERP();                           \
+/* create interpolator from external coefficients       */      \
+/*  _M      : interpolation factor                      */      \
+/*  _h      : filter coefficients [size: _h_len x 1]    */      \
+/*  _h_len  : filter length                             */      \
 INTERP() INTERP(_create)(unsigned int _M,                       \
                          TC *_h,                                \
                          unsigned int _h_len);                  \
 /* create interpolator from prototype                   */      \
 /*  _M      : interpolation factor                      */      \
-/*  _m      : symbol delay                              */      \
+/*  _m      : filter delay (symbols)                    */      \
 /*  _As     : stop-band attenuation [dB]                */      \
 INTERP() INTERP(_create_prototype)(unsigned int _M,             \
                                    unsigned int _m,             \
                                    float As);                   \
 /* create square-root Nyquist interpolator              */      \
 /*  _type   : filter type (e.g. LIQUID_RNYQUIST_RRC)    */      \
-/*  _k      : samples/symbol                            */      \
-/*  _m      : symbol delay                              */      \
+/*  _k      : samples/symbol (interpolation factor)     */      \
+/*  _m      : filter delay (symbols)                    */      \
 /*  _beta   : rolloff factor (0 < beta <= 1)            */      \
 /*  _dt     : fractional sample delay                   */      \
 INTERP() INTERP(_create_rnyquist)(int _type,                    \
@@ -2593,6 +2603,9 @@ typedef enum {
 
 // Modulation scheme string for printing purposes
 extern const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2];
+
+// Print compact list of existing and available modulation schemes
+void liquid_print_modulation_schemes();
 
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
