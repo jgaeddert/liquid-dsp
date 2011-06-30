@@ -18,6 +18,8 @@ void usage()
     printf("ofdmflexframesync_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  M     : number of subcarriers (must be even), default: 64\n");
+    printf("  C     : cyclic prefix length, default: 16\n");
     printf("  f     : frame length [bytes], default: 120\n");
     printf("  p     : modulation depth (default 2 bits/symbol)\n");
     printf("  m     : modulation scheme (qpsk default)\n");
@@ -57,11 +59,13 @@ int main(int argc, char*argv[])
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhs:f:p:m:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhs:M:C:f:p:m:v:c:k:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
         case 's': SNRdB = atof(optarg);         break;
+        case 'M': M = atoi(optarg);             break;
+        case 'C': cp_len = atoi(optarg);        break;
         case 'f': payload_len = atol(optarg);   break;
         case 'p': bps = atoi(optarg);           break;
         case 'm':
