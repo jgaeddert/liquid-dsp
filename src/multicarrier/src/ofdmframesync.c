@@ -527,6 +527,9 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     if (_q->timer > 0)
         return;
 
+    // increment number of symbols observed
+    _q->num_symbols++;
+
     // run fft
     float complex * rc;
     windowcf_read(_q->input_buffer, &rc);
@@ -585,6 +588,14 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
         ofdmframesync_destroy(_q);
         exit(1);
 #endif
+    }
+
+    // check if we are stuck searching for the S1 symbol
+    if (_q->num_symbols == 16) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
+        printf("could not find S1 symbol. bailing...\n");
+#endif
+        ofdmframesync_reset(_q);
     }
 
     // 'reset' timer (wait another half symbol)
