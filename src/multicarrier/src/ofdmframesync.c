@@ -95,9 +95,6 @@ struct ofdmframesync_s {
     float squelch_threshold;
     int squelch_enabled;
 
-    //
-    float complex rxx_max;  // maximum auto-correlator output
-
     // timing
     unsigned int timer;         // input sample timer
     unsigned int num_symbols;   // symbol counter
@@ -294,9 +291,6 @@ void ofdmframesync_reset(ofdmframesync _q)
     // reset synchronizer objects
     nco_crcf_reset(_q->nco_rx);
     msequence_reset(_q->ms_pilot);
-
-    // reset internal state variables
-    _q->rxx_max = 0.0f;
 
     // reset timers
     _q->timer = 0;
