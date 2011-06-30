@@ -460,8 +460,8 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
-    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
 #if DEBUG_OFDMFRAMESYNC_PRINT
+    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("********** S0[0] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
@@ -494,8 +494,8 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
-    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
 #if DEBUG_OFDMFRAMESYNC_PRINT
+    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("********** S0[1] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
