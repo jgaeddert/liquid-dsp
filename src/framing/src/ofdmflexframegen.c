@@ -298,6 +298,12 @@ void ofdmflexframegen_print(ofdmflexframegen _q)
     printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
     printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
     printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
+
+    // compute asymptotic spectral efficiency
+    unsigned int num_bits = 8*_q->props.payload_len;
+    unsigned int num_samples = _q->M*_q->props.num_symbols_S0 +
+                               (_q->M+_q->cp_len)*(1 + _q->num_symbols_header + _q->num_symbols_payload);
+    printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
 }
 
 // get length of frame (symbols)
