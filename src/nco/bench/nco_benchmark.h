@@ -38,6 +38,9 @@ void benchmark_nco_sincos(struct rusage *_start,
 
     unsigned int i;
 
+    // increase number of iterations for NCO
+    *_num_iterations *= 100;
+
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
         nco_crcf_sincos(p, &s, &c);
