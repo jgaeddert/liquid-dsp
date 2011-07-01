@@ -83,7 +83,7 @@ int main(int argc, char*argv[]) {
 
     float range = 1.5f;
     if ( (ms == LIQUID_MODEM_QAM && bps > 4 && bps%2) ||
-         (ms == LIQUID_MODEM_ASK && bps > 3) )
+         (ms == LIQUID_MODEM_ASK && bps > 2) )
     {
         range = 1.75f;
     } else if (ms == LIQUID_MODEM_ARB64VT) {
