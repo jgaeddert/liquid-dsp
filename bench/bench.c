@@ -83,8 +83,10 @@ void print_package_results(package_t* _package);
 double calculate_execution_time(struct rusage, struct rusage);
 
 unsigned long int num_trials = 1<<12;
-float runtime=50e-3f;
 float cpu_clock = 1.0f; // cpu clock speed (Hz)
+#if 0
+float runtime=50e-3f;
+#endif
 
 FILE * fid; // output file id
 void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark);
@@ -102,7 +104,9 @@ void usage()
     printf("  -n<num_trials>\n");
     printf("  -p<package_index>\n");
     printf("  -b<benchmark_index>\n");
+#if 0
     printf("  -t<time> minimum execution time (ms)\n");
+#endif
     printf("  -l    : lists available packages\n");
     printf("  -L    : lists all available scripts\n");
     printf("  -s<string>: run all scripts matching search string\n");
@@ -171,13 +175,14 @@ int main(int argc, char *argv[])
                 mode = RUN_SINGLE_PACKAGE;
             }
             break;
+#if 0
         case 't':
             runtime = atof(optarg)*1e-3;
             if (runtime < 1e-3f)    runtime = 1e-3f;
             else if (runtime > 2.f) runtime = 2.0f;
             printf("minimum runtime: %d ms\n", (int) roundf(runtime*1e3));
-
             break;
+#endif
         case 'l':
             // list only packages and exit
             for (i=0; i<NUM_PACKAGES; i++)
@@ -270,7 +275,9 @@ int main(int argc, char *argv[])
         fprintf(fid,"#  autoscale           :   %s\n", autoscale ? "true" : "false");
         fprintf(fid,"#  cpu_clock_detect    :   %s\n", cpu_clock_detect ? "true" : "false");
         fprintf(fid,"#  search string       :   '%s'\n", mode == RUN_SEARCH ? search_string : "");
+#if 0
         fprintf(fid,"#  runtime             :   %e s\n", runtime);
+#endif
         fprintf(fid,"#  cpu_clock           :   %e Hz\n", cpu_clock);
         fprintf(fid,"#  num_trials          :   %lu\n", num_trials);
         fprintf(fid,"#\n");
