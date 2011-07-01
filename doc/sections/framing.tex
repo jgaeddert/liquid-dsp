@@ -736,3 +736,51 @@ A simple way to display the information in an instance of
 {\tt framesyncstats\_s} is to use the {\tt framesyncstats\_print()}
 method.
 
+
+% 
+% OFDM framing
+%
+\subsection{{\tt ofdmflexframe} (OFDM framing structures)}
+\label{module:framing:ofdmflexframe}
+
+The ofdmflexframe family of objects (generator and synchronizer)
+realize a simple way to load data onto an OFDM physical layer
+system. OFDM has several benefits over traditional 'narrowband'
+communications systems.
+These objects allow the user to abstractly specify the number of
+subcarriers, their assignment (null/pilot/data), forward
+error-correction and modulation scheme.
+Furthermore, the framing structure includes a provision for a brief
+user-defined header which can be used for source/destination
+address, packet identifier, etc.
+
+\subsubsection{Operational description}
+Like the {\tt frame64} and {\tt flexframe} structures,
+the {\tt ofdmflexframe} structure consists of three main components:
+the preamble, the header, and the payload.
+    
+\paragraph{Preamble}
+    The preamble consists of two types of phasing symbols: the \Ss and \Sl
+    sequences. The \Ss symbols are necessary for coarse carrier frequency
+    and timing offsets while the \Sl sequence is used for fine timing
+    acquisition and equalizer gain estimation.  The transmitter
+    generates multiple \Ss symbols (minimally 2, but usually 3 or more)
+    and just a single \Sl symbol. This aligns the receiver's timing to
+    that of the transmitter, signalling the start of the header.
+
+\paragraph{Header}
+    The header consists of one or more OFDM symbols; the exact number of
+    OFDM symbols depends on the number of subcarriers allocated and the
+    assignment of these subcarriers (null/pilot/data). The header
+    carries exactly 14 bytes of information, 6 of which are used
+    internally and the remaining 8 are user-defined. The internal data
+    signal the receiver of the modulation, forward error-correction, and
+    data validation schemes of the payload as well as its length in
+    bytes. These data are encoded with a forward error-correction scheme
+    and modulated onto the first several OFDM symbols.
+
+\paragraph{Payload}
+    The payload consists of zero or more OFDM symbols. Like the header,
+    the exact number of OFDM symbols depends on the number of
+    subcarriers allocated and the assignment of these subcarriers.
+
