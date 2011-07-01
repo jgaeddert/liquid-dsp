@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <getopt.h>
+#include <math.h>
+#include <complex.h>
 
 #include "liquid.h"
 #include "liquid.doc.h"
@@ -68,19 +70,15 @@ int main(int argc, char*argv[]) {
         }
     }
 
+    // TODO : validate input
+
     // derived options
     bool plot_labels = (gnuplot_version > 4.1) && (bps < 8);
-    bool plot_long_labels;
+    bool plot_long_labels = false;
 
-    // determine labeling scheme
-    if ( (ms==LIQUID_MODEM_QAM) && (bps%2) && (bps>5) )  plot_long_labels = false;
-    else if ( (ms==LIQUID_MODEM_APSK) && (bps>6) )       plot_long_labels = false;
-    else if ( (ms==LIQUID_MODEM_ASK)  && (bps>3) )       plot_long_labels = false;
-    else if ( (ms==LIQUID_MODEM_PSK)  && (bps>5) )       plot_long_labels = false;
-    else if (  ms==LIQUID_MODEM_ARB64VT          )       plot_long_labels = false;
-    else if (  ms==LIQUID_MODEM_SQAM128          )       plot_long_labels = false;
-    else                                        plot_long_labels = plot_labels;
+    unsigned int i;
 
+    // determine appropriate range
     float range = 1.5f;
     if ( (ms == LIQUID_MODEM_QAM && bps > 4 && bps%2) ||
          (ms == LIQUID_MODEM_ASK && bps > 2) )
@@ -92,6 +90,27 @@ int main(int argc, char*argv[]) {
         range = 1.2f;
     }
 
+    // generate modem, compute constellation, derive plot style accordingly
+    unsigned int M = 1<<bps;
+    float complex constellation[M];
+    modem q = modem_create(ms, bps);
+    for (i=0; i<M; i++)
+        modem_modulate(q, i, &constellation[i]);
+    modem_destroy(q);
+
+    // determine minimum distance between any two points
+    float dmin = 0.0f;
+    for (i=0; i<M; i++) {
+        unsigned int j;
+        for (j=i+1; j<M; j++) {
+            float d = cabsf(constellation[i] - constellation[j]);
+
+            if ( (d < dmin) || (i==0 && j==1) )
+                dmin = d;
+        }
+    }
+    plot_long_labels = dmin < 0.34 ? false : true;
+
     // write output file
     FILE * fid = fopen(output_filename,"w");
     if (fid == NULL) {
@@ -102,7 +121,6 @@ int main(int argc, char*argv[]) {
     // print header
     fprintf(fid,"# %s : auto-generated file (do not edit)\n", output_filename);
     fprintf(fid,"# invoked as :");
-    unsigned int i;
     for (i=0; i<argc; i++)
         fprintf(fid," %s",argv[i]);
     fprintf(fid,"\n");
