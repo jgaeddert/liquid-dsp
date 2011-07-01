@@ -2639,7 +2639,13 @@ unsigned int gray_decode(unsigned int symbol_in);
 typedef struct modem_s * modem;
 
 // create modulation scheme, allocating memory as necessary
-modem modem_create(modulation_scheme, unsigned int _bits_per_symbol);
+modem modem_create(modulation_scheme _scheme,
+                   unsigned int _bits_per_symbol);
+
+// recreate modulation scheme, re-allocating memory as necessary
+modem modem_recreate(modem _q,
+                     modulation_scheme _scheme,
+                     unsigned int _bits_per_symbol);
 
 void modem_destroy(modem _mod);
 void modem_print(modem _mod);

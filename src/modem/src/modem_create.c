@@ -79,6 +79,31 @@ modem modem_create(modulation_scheme _scheme,
     return NULL;
 }
 
+// recreate modulation scheme, re-allocating memory as necessary
+modem modem_recreate(modem _q,
+                     modulation_scheme _scheme,
+                     unsigned int _bits_per_symbol)
+{
+    if (_bits_per_symbol < 1 ) {
+        fprintf(stderr,"error: modem_recreate(), modem must have at least 1 bit/symbol\n");
+        exit(1);
+    } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
+        fprintf(stderr,"error: modem_recreate(), maximum number of bits/symbol (%u) exceeded\n",
+                MAX_MOD_BITS_PER_SYMBOL);
+        exit(1);
+    }
+
+    // TODO : regenerate modem only when truly necessary
+    if (_q->scheme != _scheme || _q->m != _bits_per_symbol) {
+        // destroy and re-create modem
+        modem_destroy(_q);
+        _q = modem_create(_scheme, _bits_per_symbol);
+    }
+
+    // return object
+    return _q;
+}
+
 // destroy a modem object
 void modem_destroy(modem _mod)
 {
