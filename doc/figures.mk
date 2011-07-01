@@ -15,7 +15,8 @@ local_pgffiles :=					\
 	figures.pgf/bpacket_structure.pdf		\
 	figures.pgf/window.pdf				\
 	figures.pgf/framing_structure.pdf		\
-	figures.pgf/nco_pll_diagram.pdf
+	figures.pgf/nco_pll_diagram.pdf			\
+	figures.pgf/ofdmflexframe_structure.pdf		\
 
 $(local_pgffiles) : %.pdf : %.tex
 	$(TEX) -interaction=batchmode -output-directory=figures.pgf $<
