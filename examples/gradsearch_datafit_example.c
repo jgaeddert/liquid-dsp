@@ -59,16 +59,14 @@ int main() {
     }
     struct gsdataset q = {x, y, num_samples};
 
-    gradsearch gs = gradsearch_create_advanced(
-            (void*)&q,
-            v,
-            3,
-            1e-6f,  // delta : gradient approximation step size
-            0.002f, // gamma : vector step size
-            0.1f,   // alpha : momentum parameter
-            0.999f, // mu    : decremental gamma paramter (best if not exactly 1.0)
-            gserror,
-            LIQUID_OPTIM_MINIMIZE);
+    // create gradsearch object
+    gradsearchprops_s gsprops;
+    gsprops.delta = 1e-6f;  // gradient approximation step size
+    gsprops.gamma = 0.002f; // vector step size
+    gsprops.alpha = 0.1f;   // momentum parameter
+    gsprops.mu    = 0.999f; // decremental gamma paramter (best if not exactly 1.0)
+
+    gradsearch gs = gradsearch_create((void*)&q, v, 3, gserror, LIQUID_OPTIM_MINIMIZE, &gsprops);
 
     float rmse;
 
