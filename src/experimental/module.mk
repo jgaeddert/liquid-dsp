@@ -41,9 +41,6 @@ local_objects :=				\
 	$(base_dir)/src/filter_cccf.o		\
 	$(base_dir)/src/gmskframegen.o		\
 	$(base_dir)/src/gmskframesync.o		\
-	$(base_dir)/src/ofdmframe64.common.o	\
-	$(base_dir)/src/ofdmframe64gen.o	\
-	$(base_dir)/src/ofdmframe64sync.o	\
 	$(base_dir)/src/patternset.o		\
 	$(base_dir)/src/awgn_channel.o		\
 	$(base_dir)/src/lognorm_channel.o	\
@@ -92,7 +89,6 @@ local_benchmarks :=					\
 	$(base_dir)/bench/gport_ima_benchmark.h		\
 	$(base_dir)/bench/gport_ima_threaded_benchmark.h	\
 	$(base_dir)/bench/dds_benchmark.h		\
-	$(base_dir)/bench/ofdmframe64sync_benchmark.h		\
 	$(base_dir)/bench/qmfb_benchmark.h		\
 
 
