@@ -23,5 +23,6 @@ plot \
     'data/ber-modem/ber_arb16opt.dat'   using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title '16-QAM (opt)',\
     'data/ber-modem/ber_qam16.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#333333' title '16-QAM',\
     'data/ber-modem/ber_apsk16.dat'     using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#666666' title '16-APSK',\
-    'data/ber-modem/ber_psk16.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#999999' title '16-PSK',\
+    'data/ber-modem/ber_V29.dat'        using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#999999' title 'V.29',\
+    'data/ber-modem/ber_psk16.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#aaaaaa' title '16-PSK',\
     'data/ber-modem/ber_ask16.dat'      using 2:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#cccccc' title '16-ASK'
