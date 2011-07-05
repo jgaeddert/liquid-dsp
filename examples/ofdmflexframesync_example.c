@@ -114,7 +114,7 @@ int main(int argc, char*argv[])
     float gamma = powf(10.0f, (SNRdB + noise_floor)/10.0f);
 
     // allocate memory for header, payload
-    unsigned char header[12];
+    unsigned char header[8];
     unsigned char payload[payload_len];
 
     // initialize subcarrier allocation
@@ -141,7 +141,7 @@ int main(int argc, char*argv[])
     unsigned int i;
 
     // initialize header/payload and assemble frame
-    for (i=0; i<12; i++)
+    for (i=0; i<8; i++)
         header[i] = i & 0xff;
     for (i=0; i<payload_len; i++)
         payload[i] = rand() & 0xff;
@@ -194,7 +194,7 @@ int callback(unsigned char *  _header,
 
     // print header data to standard output
     printf("  header rx  :");
-    for (i=0; i<12; i++)
+    for (i=0; i<8; i++)
         printf(" %.2X", _header[i]);
     printf("\n");
 

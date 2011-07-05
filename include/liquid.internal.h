@@ -959,14 +959,14 @@ void bpacketsync_reconfig(bpacketsync _q);
 #define OFDMFLEXFRAME_VERSION   (101)
 
 // header description
-#define OFDMFLEXFRAME_H_USER    (12)                        // user-defined array
+#define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
 #define OFDMFLEXFRAME_H_DEC     (OFDMFLEXFRAME_H_USER+6)    // decoded length
-#define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_24)             // header CRC
+#define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_16)             // header CRC
 #define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_HAMMING128)     // header FEC
-#define OFDMFLEXFRAME_H_ENC     (32)                        // encoded length
-#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_BPSK)         // modulation scheme
-#define OFDMFLEXFRAME_H_BPS     (1)                         // modulation depth
-#define OFDMFLEXFRAME_H_SYM     (256)                       // number of symbols
+#define OFDMFLEXFRAME_H_ENC     (24)                        // encoded length
+#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_QPSK)         // modulation scheme
+#define OFDMFLEXFRAME_H_BPS     (2)                         // modulation depth
+#define OFDMFLEXFRAME_H_SYM     (96)                        // number of symbols
 
 // 
 // ofdmflexframegen
