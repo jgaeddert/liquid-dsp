@@ -50,12 +50,12 @@ struct ofdmflexframesync_s {
     unsigned int M_S0;      // number of enabled subcarriers in S0
     unsigned int M_S1;      // number of enabled subcarriers in S1
 
-    // header (QPSK)
-    modem mod_header;                   // header QPSK modulator
+    // header
+    modem mod_header;                   // header modulator
     packetizer p_header;                // header packetizer
-    unsigned char header[19];           // header data (uncoded)
-    unsigned char header_enc[32];       // header data (encoded)
-    unsigned char header_mod[256];      // header symbols
+    unsigned char header[OFDMFLEXFRAME_H_DEC];      // header data (uncoded)
+    unsigned char header_enc[OFDMFLEXFRAME_H_ENC];  // header data (encoded)
+    unsigned char header_mod[OFDMFLEXFRAME_H_SYM];  // header symbols
     int header_valid;                   // valid header flag
 
     // header properties
@@ -143,9 +143,12 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->fs = ofdmframesync_create(_M, _cp_len, _p, ofdmflexframesync_internal_callback, (void*)q);
 
     // create header objects
-    q->mod_header = modem_create(LIQUID_MODEM_BPSK, 1);
-    q->p_header   = packetizer_create(19, LIQUID_CRC_16, LIQUID_FEC_HAMMING128, LIQUID_FEC_NONE);
-    assert(packetizer_get_enc_msg_len(q->p_header)==32);
+    q->mod_header = modem_create(OFDMFLEXFRAME_H_MOD, OFDMFLEXFRAME_H_BPS);
+    q->p_header   = packetizer_create(OFDMFLEXFRAME_H_DEC,
+                                      OFDMFLEXFRAME_H_CRC,
+                                      OFDMFLEXFRAME_H_FEC,
+                                      LIQUID_FEC_NONE);
+    assert(packetizer_get_enc_msg_len(q->p_header)==OFDMFLEXFRAME_H_ENC);
 
     // frame properties (default values to be overwritten when frame
     // header is received and properly decoded)
@@ -283,10 +286,10 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             unsigned int sym;
             modem_demodulate(_q->mod_header, _X[i], &sym);
             _q->header_mod[_q->header_symbol_index++] = sym;
-            //printf("  extracting symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, 256, crealf(_X[i]), cimagf(_X[i]));
+            //printf("  extracting symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, OFDMFLEXFRAME_H_SYM, crealf(_X[i]), cimagf(_X[i]));
 
             // header extracted
-            if (_q->header_symbol_index == 256) {
+            if (_q->header_symbol_index == OFDMFLEXFRAME_H_SYM) {
                 // decode header
                 ofdmflexframesync_decode_header(_q);
 
@@ -325,31 +328,15 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
 // decode header
 void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 {
-#if 0
-    unsigned int i;
-
-    // pack 96 2-bit header symbols into 24 8-bit bytes
-    for (i=0; i<24; i++) {
-        _q->header_enc[i] = 0x00;
-        _q->header_enc[i] |= (_q->header_mod[4*i+0] << 6) & 0xc0;
-        _q->header_enc[i] |= (_q->header_mod[4*i+1] << 4) & 0x30;
-        _q->header_enc[i] |= (_q->header_mod[4*i+2] << 2) & 0x0c;
-        _q->header_enc[i] |= (_q->header_mod[4*i+3]     ) & 0x03;
-    }
-
-    // unscramble header
-    unscramble_data(_q->header_enc, 24);
-#else
-    // pack 256 1-bit header symbols into 32 8-bit bytes
+    // pack 1-bit header symbols into 8-bit bytes
     unsigned int num_written;
-    liquid_pack_bytes(_q->header_mod, 256,
-                      _q->header_enc, 32,
-                      &num_written);
-    assert(num_written==32);
+    liquid_repack_bytes(_q->header_mod, OFDMFLEXFRAME_H_BPS, OFDMFLEXFRAME_H_SYM,
+                        _q->header_enc, 8,                   OFDMFLEXFRAME_H_ENC,
+                        &num_written);
+    assert(num_written==OFDMFLEXFRAME_H_ENC);
 
     // unscramble header
-    unscramble_data(_q->header_enc, 32);
-#endif
+    unscramble_data(_q->header_enc, OFDMFLEXFRAME_H_ENC);
 
     // run packet decoder
     _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header);
@@ -357,13 +344,13 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 #if 0
     // print header
     printf("header rx (enc) : ");
-    for (i=0; i<32; i++)
+    for (i=0; i<OFDMFLEXFRAME_H_ENC; i++)
         printf("%.2X ", _q->header_enc[i]);
     printf("\n");
 
     // print header
     printf("header rx (dec) : ");
-    for (i=0; i<14; i++)
+    for (i=0; i<OFDMFLEXFRAME_H_DEC; i++)
         printf("%.2X ", _q->header[i]);
     printf("\n");
 #endif
@@ -374,28 +361,30 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
     if (!_q->header_valid)
         return;
 
+    unsigned int n = OFDMFLEXFRAME_H_USER;
+
     // first byte is for expansion/version validation
-    if (_q->header[12] != OFDMFLEXFRAME_VERSION) {
+    if (_q->header[n+0] != OFDMFLEXFRAME_VERSION) {
         fprintf(stderr,"warning: ofdmflexframesync_decode_header(), invalid framing version\n");
         _q->header_valid = 0;
     }
 
     // strip off payload length
-    unsigned int payload_len = (_q->header[14] << 8) | (_q->header[15]);
+    unsigned int payload_len = (_q->header[n+1] << 8) | (_q->header[n+2]);
 
     // strip off modulation scheme/depth
     //  mod. scheme : most-significant five bits
     //  mod. depth  : least-significant three bits (+1)
-    unsigned int mod_scheme = ( _q->header[16] >> 3) & 0x1f;
-    unsigned int mod_depth  = ((_q->header[16]     ) & 0x07)+1;
+    unsigned int mod_scheme = ( _q->header[n+3] >> 3) & 0x1f;
+    unsigned int mod_depth  = ((_q->header[n+3]     ) & 0x07)+1;
 
     // strip off CRC, forward error-correction schemes
-    //  CRC     : most-significant 3 bits of [17]
-    //  fec0    : least-significant 5 bits of [17]
-    //  fec1    : least-significant 5 bits of [18]
-    unsigned int check = (_q->header[17] >> 5 ) & 0x07;
-    unsigned int fec0  = (_q->header[17]      ) & 0x1f;
-    unsigned int fec1  = (_q->header[18]      ) & 0x1f;
+    //  CRC     : most-significant 3 bits of [n+4]
+    //  fec0    : least-significant 5 bits of [n+4]
+    //  fec1    : least-significant 5 bits of [n+5]
+    unsigned int check = (_q->header[n+4] >> 5 ) & 0x07;
+    unsigned int fec0  = (_q->header[n+4]      ) & 0x1f;
+    unsigned int fec1  = (_q->header[n+5]      ) & 0x1f;
 
     // validate properties
     if (check >= LIQUID_CRC_NUM_SCHEMES) {
