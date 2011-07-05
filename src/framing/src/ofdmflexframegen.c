@@ -414,18 +414,6 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
 // internal
 //
 
-// compute payload length (number of modulation symbols)
-void ofdmflexframegen_compute_payload_len(ofdmflexframegen _q)
-{
-#if 0
-    // compute integer division, keeping track of remainder
-    div_t d = div(8*_q->payload_enc_len, _q->props.mod_bps);
-
-    // extend number of payload symbols if remainder is present
-    _q->num_payload_symbols = d.quot + (d.rem ? 1 : 0);
-#endif
-}
-
 // encode header
 void ofdmflexframegen_encode_header(ofdmflexframegen _q)
 {

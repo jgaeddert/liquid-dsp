@@ -972,9 +972,6 @@ void bpacketsync_reconfig(bpacketsync _q);
 // ofdmflexframegen
 //
 
-// compute payload length (number of modulation symbols)
-void ofdmflexframegen_compute_payload_len(ofdmflexframegen _q);
-
 // encode header
 void ofdmflexframegen_encode_header(ofdmflexframegen _q);
 
