@@ -404,7 +404,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 #endif
 
     // TODO : allow variable threshold
-    if (cabsf(s_hat) > 0.65f) {
+    if (cabsf(s_hat) > 0.6f) {
 
         // save gain
         _q->g0 = g;
@@ -457,6 +457,14 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 #endif
 
+    if (cabsf(s_hat) < 0.4f) {
+        // false alarm
+#if DEBUG_OFDMFRAMESYNC_PRINT
+        printf("false alarm S0[0]\n");
+#endif
+        ofdmframesync_reset(_q);
+        return;
+    }
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT1;
 }
 
@@ -492,6 +500,15 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
 
     printf("**********\n");
 #endif
+
+    if (cabsf(s_hat) < 0.4f) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
+        printf("false alarm S0[1]\n");
+#endif
+        // false alarm
+        ofdmframesync_reset(_q);
+        return;
+    }
 
     float complex g_hat = 0.0f;
     unsigned int i;
@@ -548,7 +565,7 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     // check conditions for g_hat:
     //  1. magnitude should be large (near unity) when aligned
     //  2. phase should be very near zero (time aligned)
-    if (cabsf(g_hat) > 0.5f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
+    if (cabsf(g_hat) > 0.4f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer
         _q->timer = _q->M + _q->cp_len + _q->backoff;
