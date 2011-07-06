@@ -200,6 +200,7 @@ int main(int argc, char *argv[])
             mode = RUN_SEARCH;
             strncpy(search_string, optarg, 128);
             search_string[127] = '\0';
+            break;
         case 'o':
             output_to_file = true;
             strcpy(filename, optarg);
