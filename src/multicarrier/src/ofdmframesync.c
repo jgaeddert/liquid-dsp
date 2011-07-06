@@ -33,7 +33,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFRAMESYNC             1
+#define DEBUG_OFDMFRAMESYNC             0
 #define DEBUG_OFDMFRAMESYNC_PRINT       0
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
@@ -73,6 +73,7 @@ struct ofdmframesync_s {
     float complex * G1;     // complex subcarrier gain estimate, S1[1]
     float complex * G;      // complex subcarrier gain estimate
     float complex * B;      // subcarrier phase rotation due to backoff
+    float complex * R;      // 
 
     // receiver state
     enum {
@@ -174,6 +175,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->G1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G  = (float complex*) malloc((q->M)*sizeof(float complex));
     q->B  = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->R  = (float complex*) malloc((q->M)*sizeof(float complex));
 
 #if 1
     memset(q->G0, 0x00, q->M*sizeof(float complex));
@@ -259,6 +261,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->G1);
     free(_q->G);
     free(_q->B);
+    free(_q->R);
 
     // destroy synchronizer objects
     nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
@@ -589,6 +592,14 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
             poly_order = _q->M_pilot + _q->M_data - 1;
         ofdmframesync_estimate_eqgain_poly(_q, poly_order);
 #endif
+
+#if 1
+        // compute composite gain
+        unsigned int i;
+        for (i=0; i<_q->M; i++)
+            _q->R[i] = _q->B[i] / _q->G[i];
+#endif
+
         return;
 #if 0
         printf("exiting prematurely\n");
@@ -872,10 +883,8 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 {
     // apply gain
     unsigned int i;
-    for (i=0; i<_q->M; i++) {
-        //_q->X[i] *= _q->G[i] * _q->B[i];
-        _q->X[i] *= _q->B[i] / _q->G[i];
-    }
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->R[i];
 
     // polynomial curve-fit
     float x_phase[_q->M_pilot];
@@ -931,9 +940,15 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
 
     // compensate for phase offset
+    // TODO : find more computationally efficient way to do this
     for (i=0; i<_q->M; i++) {
-        float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
-        _q->X[i] *= liquid_cexpjf(-theta);
+        // only apply to data/pilot subcarriers
+        if (_q->p[i] == OFDMFRAME_SCTYPE_NULL) {
+            _q->X[i] = 0.0f;
+        } else {
+            float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
+            _q->X[i] *= liquid_cexpjf(-theta);
+        }
     }
 
     // TODO : adjust NCO frequency based on differential phase
