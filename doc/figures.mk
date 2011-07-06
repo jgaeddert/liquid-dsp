@@ -174,6 +174,7 @@ local_progs :=						\
 	src/agc_transient				\
 	src/audio_cvsd					\
 	src/equalizer_cccf				\
+	src/estimate_snr_test				\
 	src/filter_iirdes				\
 	src/filter_firdespm				\
 	src/filter_firfarrow_crcf			\

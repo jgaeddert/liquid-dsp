@@ -953,13 +953,24 @@ void bpacketsync_decode_payload(bpacketsync _q);
 void bpacketsync_reconfig(bpacketsync _q);
 
 // 
-// ofdmflexframegen
+// ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION 100
+#define OFDMFLEXFRAME_VERSION   (101)
 
-// compute payload length (number of modulation symbols)
-void ofdmflexframegen_compute_payload_len(ofdmflexframegen _q);
+// header description
+#define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
+#define OFDMFLEXFRAME_H_DEC     (OFDMFLEXFRAME_H_USER+6)    // decoded length
+#define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_16)             // header CRC
+#define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_HAMMING128)     // header FEC
+#define OFDMFLEXFRAME_H_ENC     (24)                        // encoded length
+#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_QPSK)         // modulation scheme
+#define OFDMFLEXFRAME_H_BPS     (2)                         // modulation depth
+#define OFDMFLEXFRAME_H_SYM     (96)                        // number of symbols
+
+// 
+// ofdmflexframegen
+//
 
 // encode header
 void ofdmflexframegen_encode_header(ofdmflexframegen _q);

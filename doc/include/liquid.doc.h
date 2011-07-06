@@ -107,5 +107,15 @@ void simulate_per(simulate_per_opts _opts,
                   float _SNRdB,
                   simulate_per_results * _results);
 
+#define ESTIMATE_SNR_BER    0
+#define ESTIMATE_SNR_PER    1
+// find approximate SNR to achieve a particular BER/PER
+//  _opts       :   options
+//  _ber_per    :   use BER or PER?
+//  _error_rate :   target error rate
+float estimate_snr(simulate_per_opts _opts,
+                   int _ber_per,
+                   float _error_rate);
+
 #endif // __LIQUID_DOC_H__
 

@@ -425,8 +425,6 @@ nco_pll_modem_example.c *
     SEE ALSO: nco_example.c
               nco_pll_example.c
 
-ofdmframe64gen_example.c
-ofdmframe64sync_example.c
 ofdmframegen_example.c
 ofdmframesync_example.c
 ofdmoqam_example.c

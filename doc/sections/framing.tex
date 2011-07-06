@@ -760,12 +760,13 @@ the {\tt ofdmflexframe} structure consists of three main components:
 the preamble, the header, and the payload.
     
 \paragraph{Preamble}
-    The preamble consists of two types of phasing symbols: the \Ss and \Sl
-    sequences. The \Ss symbols are necessary for coarse carrier frequency
-    and timing offsets while the \Sl sequence is used for fine timing
+    The preamble consists of two types of phasing symbols: the \Ss\ and
+    \Sl\ sequences.
+    The \Ss\ symbols are necessary for coarse carrier frequency
+    and timing offsets while the \Sl\ sequence is used for fine timing
     acquisition and equalizer gain estimation.  The transmitter
-    generates multiple \Ss symbols (minimally 2, but usually 3 or more)
-    and just a single \Sl symbol. This aligns the receiver's timing to
+    generates multiple \Ss\ symbols (minimally 2, but usually 3 or more)
+    and just a single \Sl\ symbol. This aligns the receiver's timing to
     that of the transmitter, signalling the start of the header.
 
 \paragraph{Header}
