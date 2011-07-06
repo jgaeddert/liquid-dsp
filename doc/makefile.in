@@ -121,6 +121,9 @@ LISTINGS_C = 					\
 	tutorials/framing_basic_tutorial.c	\
 	tutorials/framing_intermediate_tutorial.c	\
 	tutorials/framing_tutorial.c		\
+						\
+	tutorials/ofdmflexframe_init_tutorial.c	\
+	tutorials/ofdmflexframe_tutorial.c	\
 
 # Listings used in this document
 LISTINGS_CC = 					\
@@ -156,6 +159,7 @@ SECTIONS :=					\
 	sections/tutorial_pll.tex		\
 	sections/tutorial_fec.tex		\
 	sections/tutorial_framing.tex		\
+	sections/tutorial_ofdmflexframe.tex	\
 
 lib_sources	:=				\
 	lib/liquid_doc_compute_psd.c		\
@@ -315,6 +319,9 @@ tutorial_progs :=					\
 	tutorials/framing_basic_tutorial		\
 	tutorials/framing_intermediate_tutorial		\
 	tutorials/framing_tutorial			\
+							\
+	tutorials/ofdmflexframe_init_tutorial		\
+	tutorials/ofdmflexframe_tutorial		\
 
 $(tutorial_progs) : % : %.c $(lib_objects) libliquid.a
 
