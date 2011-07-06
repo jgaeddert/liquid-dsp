@@ -1418,7 +1418,7 @@ void modem_demodulate_linear_array_ref(float _v,
 //  _S0                 :   output symbol (freq)
 //  _s0                 :   output symbol (time)
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmframe_init_S0(unsigned int * _p,
+void ofdmframe_init_S0(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S0,
                        float complex * _s0,
@@ -1430,7 +1430,7 @@ void ofdmframe_init_S0(unsigned int * _p,
 //  _S1                 :   output symbol (freq)
 //  _s1                 :   output symbol (time)
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmframe_init_S1(unsigned int * _p,
+void ofdmframe_init_S1(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S1,
                        float complex * _s1,
@@ -1491,7 +1491,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q);
 //  _num_subcarriers    :   total number of subcarriers
 //  _S0                 :   output symbol
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmoqamframe_init_S0(unsigned int * _p,
+void ofdmoqamframe_init_S0(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S0,
                            unsigned int * _M_S0);
@@ -1501,7 +1501,7 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
 //  _num_subcarriers    :   total number of subcarriers
 //  _S1                 :   output symbol
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmoqamframe_init_S1(unsigned int * _p,
+void ofdmoqamframe_init_S1(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S1,
                            unsigned int * _M_S1);

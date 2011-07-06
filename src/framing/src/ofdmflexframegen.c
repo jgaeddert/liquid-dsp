@@ -54,7 +54,7 @@ void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
 struct ofdmflexframegen_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
-    unsigned int * p;       // subcarrier allocation (null, pilot, data)
+    unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
     unsigned int M_null;    // number of null subcarriers
@@ -110,7 +110,7 @@ struct ofdmflexframegen_s {
 // TODO : allow _p to be NULL pointer (and initialize with defaults)
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int _cp_len,
-                                         unsigned int * _p,
+                                         unsigned char * _p,
                                          ofdmflexframegenprops_s * _props)
 {
     // validate input
@@ -130,13 +130,13 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
 
     // allocate memory for subcarrier allocation IDs
-    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
         // initialize default subcarrier allocation
         ofdmframe_init_default_sctype(q->M, q->p);
     } else {
         // copy user-defined subcarrier allocation
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation

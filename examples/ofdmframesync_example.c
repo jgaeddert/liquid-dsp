@@ -13,7 +13,7 @@
 #define OUTPUT_FILENAME "ofdmframesync_example.m"
 
 static int callback(float complex * _X,
-                    unsigned int * _p,
+                    unsigned char * _p,
                     unsigned int _M,
                     void * _userdata);
 
@@ -51,7 +51,7 @@ int main(int argc, char*argv[]) {
     printf("gamma : %f\n", gamma);
 
     // initialize subcarrier allocation
-    unsigned int p[M];
+    unsigned char p[M];
     ofdmframe_init_default_sctype(M, p);
 
     // received symbol buffer
@@ -229,7 +229,7 @@ int main(int argc, char*argv[]) {
 }
 
 static int callback(float complex * _X,
-                    unsigned int * _p,
+                    unsigned char * _p,
                     unsigned int _M,
                     void * _userdata)
 {

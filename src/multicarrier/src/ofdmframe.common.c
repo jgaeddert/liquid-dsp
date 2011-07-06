@@ -37,7 +37,7 @@
 //  _S0                 :   output symbol (freq)
 //  _s0                 :   output symbol (time)
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmframe_init_S0(unsigned int * _p,
+void ofdmframe_init_S0(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S0,
                        float complex * _s0,
@@ -105,7 +105,7 @@ void ofdmframe_init_S0(unsigned int * _p,
 //  _S1                 :   output symbol (freq)
 //  _s1                 :   output symbol (time)
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmframe_init_S1(unsigned int * _p,
+void ofdmframe_init_S1(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S1,
                        float complex * _s1,
@@ -173,7 +173,7 @@ void ofdmframe_init_S1(unsigned int * _p,
 // .+++P+++++++P.........P+++++++P+++
 //
 void ofdmframe_init_default_sctype(unsigned int _M,
-                                   unsigned int * _p)
+                                   unsigned char * _p)
 {
     // validate input
     if (_M < 6) {
@@ -211,7 +211,7 @@ void ofdmframe_init_default_sctype(unsigned int _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmframe_validate_sctype(unsigned int * _p,
+void ofdmframe_validate_sctype(unsigned char * _p,
                                unsigned int _M,
                                unsigned int * _M_null,
                                unsigned int * _M_pilot,

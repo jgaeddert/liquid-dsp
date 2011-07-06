@@ -41,7 +41,7 @@
 struct ofdmframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
-    unsigned int * p;       // subcarrier allocation (null, pilot, data)
+    unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
     unsigned int M_null;    // number of null subcarriers
@@ -112,7 +112,7 @@ struct ofdmframesync_s {
 
 ofdmframesync ofdmframesync_create(unsigned int _M,
                                    unsigned int _cp_len,
-                                   unsigned int * _p,
+                                   unsigned char * _p,
                                    //unsigned int _taper_len,
                                    ofdmframesync_callback _callback,
                                    void * _userdata)
@@ -133,11 +133,11 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->cp_len = _cp_len;
 
     // subcarrier allocation
-    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
         ofdmframe_init_default_sctype(q->M, q->p);
     } else {
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation
