@@ -1228,6 +1228,7 @@ struct modem_s {
 
     float complex state;        // received state vector
     float state_theta;          // received state vector, angle
+    float complex x_hat;        // estimated symbol (demodulator)
 
     float complex res;          // residual error vector
 
