@@ -170,15 +170,20 @@ void modem_modulate_dpsk(modem _mod,
                          unsigned int symbol_in,
                          float complex *y)
 {
+    // 'encode' input symbol (actually gray decoding)
     symbol_in = gray_decode(symbol_in);
-    float d_theta = symbol_in * 2 * _mod->alpha;
-    _mod->state_theta += d_theta;
-    _mod->state_theta -= (_mod->state_theta > 2*M_PI) ? 2*M_PI : 0.0f;
-    ///\todo: combine into single statement
-    *y = cexpf(_Complex_I*(_mod->state_theta));
 
+    // compute phase difference between this symbol and the previous
+    _mod->dpsk_phi += symbol_in * 2 * _mod->alpha;
+
+    // limit phase
+    _mod->dpsk_phi -= (_mod->dpsk_phi > 2*M_PI) ? 2*M_PI : 0.0f;
+    
+    // compute output sample
+    *y = liquid_cexpjf(_mod->dpsk_phi);
+
+    // save symbol state
     _mod->state = *y;
-    //printf("mod: state_theta = %f\n", _mod->state_theta);
 }
 
 // modulate APSK

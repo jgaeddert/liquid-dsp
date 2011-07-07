@@ -127,7 +127,7 @@ void modem_print(modem _mod)
 void modem_reset(modem _mod)
 {
     _mod->state = 1.0f;
-    _mod->state_theta = 0.0f;
+    _mod->dpsk_phi = 0.0f;  // reset differential PSK phase state
 }
 
 // initialize a generic modem object
@@ -155,7 +155,7 @@ void modem_init(modem _mod,
     _mod->modulate_using_map=0; // modulate using map flag
 
     _mod->state = 0.0f;         // symbol state
-    _mod->state_theta = 0.0f;   // phase state
+    _mod->dpsk_phi = 0.0f;      // differential PSK phase state
 
     _mod->res = 0.0f;
 
@@ -412,8 +412,8 @@ modem modem_create_dpsk(unsigned int _bits_per_symbol)
 
     mod->d_phi = M_PI*(1.0f - 1.0f/(float)(mod->M));
 
-    mod->state = 1.0f;
-    mod->state_theta = 0.0f;
+    // reset modem
+    modem_reset(mod);
 
     mod->modulate_func = &modem_modulate_dpsk;
     mod->demodulate_func = &modem_demodulate_dpsk;

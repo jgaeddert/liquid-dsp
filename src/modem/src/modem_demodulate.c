@@ -121,7 +121,6 @@ void modem_demodulate_psk(modem _demod,
     unsigned int s;
     float theta = cargf(x);
     _demod->state = x;
-    _demod->state_theta = theta;
 
     // subtract phase offset, ensuring phase is in [-pi,pi)
     theta -= _demod->d_phi;
@@ -336,9 +335,9 @@ void modem_demodulate_dpsk(modem _demod,
 {
     unsigned int s;
     float theta = cargf(_x);
-    float d_theta = theta - _demod->state_theta;
+    float d_theta = theta - _demod->dpsk_phi;
     _demod->state = _x;
-    _demod->state_theta = theta;
+    _demod->dpsk_phi = theta;
 
     // subtract phase offset, ensuring phase is in [-pi,pi)
     d_theta -= _demod->d_phi;
