@@ -85,7 +85,7 @@ void modem_modulate_psk(modem _mod,
     symbol_in = gray_decode(symbol_in);
 
     // compute output sample
-    *y = cexpf(_Complex_I*( symbol_in * 2 * _mod->alpha ));
+    *y = liquid_cexpjf(symbol_in * 2 * _mod->alpha );
 }
 
 // modulate BPSK
