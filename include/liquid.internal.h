@@ -1207,14 +1207,14 @@ struct modem_s {
     modulation_scheme scheme;
 
     unsigned int m;     // bits per symbol
-    unsigned int M;     // total symbols, M=2^m
+    unsigned int M;     // constellation size, M=2^m
 
     unsigned int m_i;   // bits per symbol, in-phase
-    unsigned int M_i;   // total symbols, in-phase, M_i=2^{m_i}
+    unsigned int M_i;   // in-phase dimension, M_i=2^{m_i}
     unsigned int m_q;   // bits per symbol, quadrature
-    unsigned int M_q;   // total symbols, quadrature, M_q=2^{m_q}
+    unsigned int M_q;   // quadrature dimension, M_q=2^{m_q}
 
-    float alpha;        // scaling factor to ensure E\{|\bar{r}|^2\}=1
+    float alpha;        // scaling factor to ensure unity energy
 
     // Reference vector for demodulating linear arrays
     //
@@ -1225,6 +1225,7 @@ struct modem_s {
 
     // Complete symbol map
     float complex * symbol_map;
+    int modulate_using_map;     // modulate using map (look-up table) flag
 
     float complex state;        // received state vector
     float state_theta;          // received state vector, angle
@@ -1235,7 +1236,8 @@ struct modem_s {
     float phase_error;          // phase error after demodulation
     float evm;                  // error vector magnitude (EVM)
 
-    float d_phi;
+    // PSK/DPSK modem
+    float d_phi;                    // half of phase between symbols
 
     // APSK modem
     unsigned int apsk_num_levels;   // number of levels
@@ -1246,12 +1248,22 @@ struct modem_s {
     unsigned int * apsk_symbol_map; // symbol mapping
 
     // modulate function pointer
-    void (*modulate_func)(modem _mod, unsigned int symbol_in, float complex *y);
+    void (*modulate_func)(modem _mod,
+                          unsigned int _symbol_in,
+                          float complex * _y);
 
     // demodulate function pointer
-    void (*demodulate_func)(modem _demod, float complex x, unsigned int *symbol_out);
+    void (*demodulate_func)(modem _demod,
+                            float complex _x,
+                            unsigned int * _symbol_out);
 };
 
+
+// initialize a generic modem object
+void modem_init(modem _q, unsigned int _bits_per_symbol);
+
+// initialize symbol map for fast modulation
+void modem_init_map(modem _q);
 
 // generic modem create routines
 modem modem_create_ask(unsigned int _bits_per_symbol);
@@ -1286,6 +1298,9 @@ void modem_arb_scale(modem _mod);
 
 // Balance I/Q
 void modem_arb_balance_iq(modem _mod);
+
+// modulate using symbol map (look-up table)
+void modem_modulate_map(modem _q, unsigned int _symbol_in, float complex * _y);
 
 // generic modem modulate routines
 void modem_modulate_ask(modem _mod, unsigned int symbol_in, float complex *y);

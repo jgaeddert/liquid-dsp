@@ -42,13 +42,19 @@ void modem_modulate(modem _q,
         exit(1);
     }
 
-    _q->modulate_func(_q, _symbol_in, _y);
+    if (_q->modulate_using_map) {
+        // modulate simply using map (look-up table)
+        modem_modulate_map(_q, _symbol_in, _y);
+    } else {
+        // invoke method specific to scheme (calculate symbol on the fly)
+        _q->modulate_func(_q, _symbol_in, _y);
+    }
 }
 
-void modem_modulate_ask(
-    modem _mod,
-    unsigned int symbol_in,
-    float complex *y)
+// modulate ASK
+void modem_modulate_ask(modem _mod,
+                        unsigned int symbol_in,
+                        float complex *y)
 {
     symbol_in = gray_decode(symbol_in);
     *y = (2*(int)symbol_in - (int)(_mod->M) + 1) * _mod->alpha;
@@ -75,10 +81,11 @@ void modem_modulate_psk(modem _mod,
                         unsigned int symbol_in,
                         float complex *y)
 {
+    // 'encode' input symbol (actually gray decoding)
     symbol_in = gray_decode(symbol_in);
-    ///\todo: combine into single statement
-    float theta = symbol_in * 2 * _mod->alpha;
-    *y = cexpf(_Complex_I*theta);
+
+    // compute output sample
+    *y = cexpf(_Complex_I*( symbol_in * 2 * _mod->alpha ));
 }
 
 // modulate BPSK
@@ -223,5 +230,21 @@ void modem_modulate_arb(modem _mod,
     }
 
     *y = _mod->symbol_map[symbol_in]; 
+}
+
+// modulate using symbol map (look-up table)
+void modem_modulate_map(modem _q,
+                        unsigned int _symbol_in,
+                        float complex * _y)
+{
+    if (_symbol_in >= _q->M) {
+        fprintf(stderr,"error: modem_modulate_table(), input symbol exceeds maximum\n");
+        exit(1);
+    } else if (_q == NULL) {
+        fprintf(stderr,"error: modem_modulate_table(), symbol table not initialized\n");
+        exit(1);
+    }
+
+    *_y = _q->symbol_map[_symbol_in]; 
 }
 

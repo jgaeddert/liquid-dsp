@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -22,7 +22,7 @@
 //
 // modem_create.c
 //
-// Create and initialize digital modem schemes.
+// Create and initialize linear digital modem schemes.
 //
 
 #include <stdio.h>
@@ -107,7 +107,11 @@ modem modem_recreate(modem _q,
 // destroy a modem object
 void modem_destroy(modem _mod)
 {
-    free(_mod->symbol_map);
+    // free internally-allocated memory
+    if (_mod->symbol_map != NULL)
+        free(_mod->symbol_map);
+
+    // free main object memory
     free(_mod);
 }
 
@@ -148,6 +152,7 @@ void modem_init(modem _mod,
     _mod->alpha = 0.0f;         // scaling factor
 
     _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
+    _mod->modulate_using_map=0; // modulate using map flag
 
     _mod->state = 0.0f;         // symbol state
     _mod->state_theta = 0.0f;   // phase state
@@ -162,6 +167,26 @@ void modem_init(modem _mod,
     // set function pointers initially to NULL
     _mod->modulate_func = NULL;
     _mod->demodulate_func = NULL;
+}
+
+// initialize symbol map for fast modulation
+void modem_init_map(modem _q)
+{
+    // validate input
+    if (_q->symbol_map == NULL) {
+        fprintf(stderr,"error: modem_init_map(), symbol map array has not been allocated\n");
+        exit(1);
+    } else if (_q->M == 0 || _q->M > (1<<MAX_MOD_BITS_PER_SYMBOL)) {
+        fprintf(stderr,"error: modem_init_map(), constellation size is out of range\n");
+        exit(1);
+    } else if (_q->modulate_func == NULL) {
+        fprintf(stderr,"error: modem_init_map(), modulation function has not been initialized\n");
+        exit(1);
+    }
+
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->modulate_func(_q, i, &_q->symbol_map[i]);
 }
 
 // create an ask (amplitude-shift keying) modem object
@@ -260,16 +285,21 @@ modem modem_create_psk(unsigned int _bits_per_symbol)
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = LIQUID_MODEM_PSK;
 
+    // initialize basic modem structure
     modem_init(mod, _bits_per_symbol);
 
+    // compute alpha
     mod->alpha = M_PI/(float)(mod->M);
 
+    // initialize demodulation array reference
     unsigned int k;
     for (k=0; k<(mod->m); k++)
         mod->ref[k] = (1<<k) * mod->alpha;
 
+    // compute phase offset (half of phase difference between symbols)
     mod->d_phi = M_PI*(1.0f - 1.0f/(float)(mod->M));
 
+    // set modulation/demodulation functions
     mod->modulate_func = &modem_modulate_psk;
     mod->demodulate_func = &modem_demodulate_psk;
 
