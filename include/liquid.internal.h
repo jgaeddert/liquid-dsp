@@ -1204,17 +1204,12 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // will change after each symbol.  It is usually good practice to keep
 // separate instances of modulators and demodulators.
 struct modem_s {
-    modulation_scheme scheme;
+    modulation_scheme scheme;       // modulation scheme
 
-    unsigned int m;     // bits per symbol
-    unsigned int M;     // constellation size, M=2^m
+    unsigned int m;                 // bits per symbol (modulation depth)
+    unsigned int M;                 // constellation size, M=2^m
 
-    unsigned int m_i;   // bits per symbol, in-phase
-    unsigned int M_i;   // in-phase dimension, M_i=2^{m_i}
-    unsigned int m_q;   // bits per symbol, quadrature
-    unsigned int M_q;   // quadrature dimension, M_q=2^{m_q}
-
-    float alpha;        // scaling factor to ensure unity energy
+    float alpha;                    // scaling factor to ensure unity energy
 
     // Reference vector for demodulating linear arrays
     //
@@ -1223,13 +1218,19 @@ struct modem_s {
     // approximately 8%.
     float ref[MAX_MOD_BITS_PER_SYMBOL];
 
-    // Complete symbol map
-    float complex * symbol_map;
-    int modulate_using_map;     // modulate using map (look-up table) flag
+    // modulation
+    float complex * symbol_map;     // complete symbol map
+    int modulate_using_map;         // modulate using map (look-up table) flag
 
     // demodulation
     float complex r;                // received state vector
     float complex x_hat;            // estimated symbol (demodulator)
+
+    // QAM modem
+    unsigned int m_i;               // bits per symbol, in-phase
+    unsigned int M_i;               // in-phase dimension, M_i=2^{m_i}
+    unsigned int m_q;               // bits per symbol, quadrature
+    unsigned int M_q;               // quadrature dimension, M_q=2^{m_q}
 
     // PSK/DPSK modem
     float d_phi;                    // half of phase between symbols

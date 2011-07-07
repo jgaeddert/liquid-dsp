@@ -20,7 +20,9 @@
  */
 
 //
+// modem_modulate.c
 //
+// Definitions for linear modulation of symbols.
 //
 
 #include <stdlib.h>
@@ -56,7 +58,10 @@ void modem_modulate_ask(modem _mod,
                         unsigned int symbol_in,
                         float complex *y)
 {
+    // 'encode' input symbol (actually gray decoding)
     symbol_in = gray_decode(symbol_in);
+
+    // modulate symbol
     *y = (2*(int)symbol_in - (int)(_mod->M) + 1) * _mod->alpha;
 }
 
@@ -65,13 +70,16 @@ void modem_modulate_qam(modem _mod,
                         unsigned int symbol_in,
                         float complex *y)
 {
-    unsigned int s_i, s_q;
+    unsigned int s_i;   // in-phase symbol
+    unsigned int s_q;   // quadrature symbol
     s_i = symbol_in >> _mod->m_q;
     s_q = symbol_in & ( (1<<_mod->m_q)-1 );
 
+    // 'encode' symbols (actually gray decoding)
     s_i = gray_decode(s_i);
     s_q = gray_decode(s_q);
 
+    // compute output sample
     *y = (2*(int)s_i - (int)(_mod->M_i) + 1) * _mod->alpha +
          (2*(int)s_q - (int)(_mod->M_q) + 1) * _mod->alpha * _Complex_I;
 }
@@ -93,6 +101,7 @@ void modem_modulate_bpsk(modem _mod,
                          unsigned int symbol_in,
                          float complex *y)
 {
+    // compute output sample directly from input
     *y = symbol_in ? -1.0f : 1.0f;
 }
 
@@ -101,6 +110,7 @@ void modem_modulate_qpsk(modem _mod,
                          unsigned int symbol_in,
                          float complex *y)
 {
+    // compute output sample directly from input
     *y  = (symbol_in & 0x01 ? -M_SQRT1_2 : M_SQRT1_2) +
           (symbol_in & 0x02 ? -M_SQRT1_2 : M_SQRT1_2)*_Complex_I;
 }
@@ -110,6 +120,7 @@ void modem_modulate_ook(modem _q,
                         unsigned int symbol_in,
                         float complex *y)
 {
+    // compute output sample directly from input
     *y = symbol_in ? 0.0f : M_SQRT2;
 }
 
@@ -135,7 +146,7 @@ void modem_modulate_sqam32(modem _q,
     // strip off least-significant 3 bits
     unsigned int s = _symbol_in & 0x07;
     
-    // return symbol...
+    // return symbol appropriately rotated
     *_y = _q->symbol_map[s] * r;
 }
 
@@ -161,7 +172,7 @@ void modem_modulate_sqam128(modem _q,
     // strip off least-significant 5 bits
     unsigned int s = _symbol_in & 0x1f;
     
-    // return symbol...
+    // return symbol appropriately rotated
     *_y = _q->symbol_map[s] * r;
 }
 
@@ -217,11 +228,12 @@ void modem_modulate_apsk(modem _mod,
     printf("  s : %3u -> %3u in level %3u (t = %3u) [symbol %3u / %3u]\n", symbol_in, s, p, t, s0,s1);
 #endif
 
-    // map symbol to constellation point
+    // map symbol to constellation point (radius, angle)
     float r = _mod->apsk_r[p];
     float phi = _mod->apsk_phi[p] + (float)(s0)*2.0f*M_PI / (float)(s1);
 
-    *y = r * cexpf(_Complex_I*phi);
+    // compute output symbol
+    *y = r * liquid_cexpjf(phi);
 }
 
 // modulate arbitrary modem type
@@ -234,6 +246,7 @@ void modem_modulate_arb(modem _mod,
         exit(1);
     }
 
+    // map sample directly to output
     *y = _mod->symbol_map[symbol_in]; 
 }
 
@@ -250,6 +263,7 @@ void modem_modulate_map(modem _q,
         exit(1);
     }
 
+    // map sample directly to output
     *_y = _q->symbol_map[_symbol_in]; 
 }
 

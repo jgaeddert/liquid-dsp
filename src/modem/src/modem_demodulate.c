@@ -20,7 +20,9 @@
  */
 
 //
+// modem_demodulate.c
 //
+// Definitions for linear demodulation of symbols.
 //
 
 #include <stdlib.h>
@@ -56,6 +58,7 @@ void modem_demodulate(modem _demod,
                       float complex x,
                       unsigned int *symbol_out)
 {
+    // invoke method specific to scheme (calculate symbol on the fly)
     _demod->demodulate_func(_demod, x, symbol_out);
 }
 
@@ -64,14 +67,17 @@ void modem_demodulate_ask(modem _demod,
                           float complex _x,
                           unsigned int * _symbol_out)
 {
+    // demodulate on linearly-spaced array
     unsigned int s;
-    _demod->r = _x;
     float res_i;
     modem_demodulate_linear_array_ref(crealf(_x), _demod->m, _demod->ref, &s, &res_i);
+
+    // 'decode' output symbol (actually gray encoding)
     *_symbol_out = gray_encode(s);
 
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_ask(_demod, *_symbol_out, &_demod->x_hat);
+    _demod->r = _x;
 }
 
 // demodulate QAM
@@ -79,17 +85,24 @@ void modem_demodulate_qam(modem _demod,
                           float complex _x,
                           unsigned int * _symbol_out)
 {
-    unsigned int s_i, s_q;
-    _demod->r = _x;
-    float res_i, res_q;
+    // demodulate in-phase component on linearly-spaced array
+    unsigned int s_i;   // in-phase symbol
+    float res_i;        // in-phase residual
     modem_demodulate_linear_array_ref(crealf(_x), _demod->m_i, _demod->ref, &s_i, &res_i);
+
+    // demodulate quadrature component on linearly-spaced array
+    unsigned int s_q;   // quadrature symbol
+    float res_q;        // quadrature residual
     modem_demodulate_linear_array_ref(cimagf(_x), _demod->m_q, _demod->ref, &s_q, &res_q);
+
+    // 'decode' output symbol (actually gray encoding)
     s_i = gray_encode(s_i);
     s_q = gray_encode(s_q);
     *_symbol_out = ( s_i << _demod->m_q ) + s_q;
 
-    // re-modulate symbol
-    modem_modulate_qam(_demod, *_symbol_out, &_demod->x_hat);
+    // re-modulate symbol (subtract residual) and store state
+    _demod->x_hat = _x - (res_i + _Complex_I*res_q);
+    _demod->r = _x;
 }
 
 // demodulate PSK
@@ -97,21 +110,23 @@ void modem_demodulate_psk(modem _demod,
                           float complex x,
                           unsigned int *_symbol_out)
 {
+    // compute angle and subtract phase offset, ensuring phase is in [-pi,pi)
     float theta = cargf(x);
-    _demod->r = x;
-
-    // subtract phase offset, ensuring phase is in [-pi,pi)
     theta -= _demod->d_phi;
     if (theta < -M_PI)
         theta += 2*M_PI;
 
+    // demodulate on linearly-spaced array
     unsigned int s;             // demodulated symbol
     float demod_phase_error;    // demodulation phase error
     modem_demodulate_linear_array_ref(theta, _demod->m, _demod->ref, &s, &demod_phase_error);
+
+    // 'decode' output symbol (actually gray encoding)
     *_symbol_out = gray_encode(s);
 
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_psk(_demod, *_symbol_out, &_demod->x_hat);
+    _demod->r = x;
 }
 
 // demodulate BPSK
@@ -119,15 +134,12 @@ void modem_demodulate_bpsk(modem _demod,
                            float complex _x,
                            unsigned int * _symbol_out)
 {
+    // slice directly to output symbol
     *_symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
-    _demod->r = _x;
 
-    // compute residuals
-    float complex x_hat;
-    modem_modulate_bpsk(_demod, *_symbol_out, &x_hat);
-
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_bpsk(_demod, *_symbol_out, &_demod->x_hat);
+    _demod->r = _x;
 }
 
 // demodulate QPSK
@@ -135,16 +147,13 @@ void modem_demodulate_qpsk(modem _demod,
                            float complex _x,
                            unsigned int * _symbol_out)
 {
-    *_symbol_out  = (crealf(_x) > 0 ) ? 0 : 1;
-    *_symbol_out += (cimagf(_x) > 0 ) ? 0 : 2;
-    _demod->r = _x;
+    // slice directly to output symbol
+    *_symbol_out  = (crealf(_x) > 0 ? 0 : 1) +
+                    (cimagf(_x) > 0 ? 0 : 2);
 
-    // compute residuals
-    float complex x_hat;
-    modem_modulate_qpsk(_demod, *_symbol_out, &x_hat);
-
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_qpsk(_demod, *_symbol_out, &_demod->x_hat);
+    _demod->r = _x;
 }
 
 // demodulate OOK
@@ -152,15 +161,12 @@ void modem_demodulate_ook(modem _demod,
                           float complex _x,
                           unsigned int * _symbol_out)
 {
+    // slice directly to output symbol
     *_symbol_out = (crealf(_x) > M_SQRT1_2 ) ? 0 : 1;
-    _demod->r = _x;
 
-    // compute residuals
-    float complex x_hat;
-    modem_modulate_ook(_demod, *_symbol_out, &x_hat);
-
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_ook(_demod, *_symbol_out, &_demod->x_hat);
+    _demod->r = _x;
 }
 
 // demodulate 'square' 32-QAM
@@ -207,10 +213,9 @@ void modem_demodulate_sqam32(modem _q,
     // add quadrant bits
     *_symbol_out |= (quad << 3);
 
-    _q->r = _x;
-
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_sqam32(_q, *_symbol_out, &_q->x_hat);
+    _q->r = _x;
 }
 
 // demodulate 'square' 128-QAM
@@ -257,19 +262,18 @@ void modem_demodulate_sqam128(modem _q,
     // add quadrant bits
     *_symbol_out |= (quad << 5);
 
-    _q->r = _x;
-
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_sqam128(_q, *_symbol_out, &_q->x_hat);
+    _q->r = _x;
 }
 
 void modem_demodulate_dpsk(modem _demod,
                            float complex _x,
                            unsigned int * _symbol_out)
 {
+    // compute angle differencd
     float theta = cargf(_x);
     float d_theta = cargf(_x) - _demod->dpsk_phi;
-    _demod->r = _x;
     _demod->dpsk_phi = theta;
 
     // subtract phase offset, ensuring phase is in [-pi,pi)
@@ -279,13 +283,18 @@ void modem_demodulate_dpsk(modem _demod,
     else if (d_theta < -M_PI)
         d_theta += 2*M_PI;
 
+    // demodulate on linearly-spaced array
     unsigned int s;             // demodulated symbol
     float demod_phase_error;    // demodulation phase error
     modem_demodulate_linear_array_ref(d_theta, _demod->m, _demod->ref, &s, &demod_phase_error);
+
+    // 'decode' output symbol (actually gray encoding)
     *_symbol_out = gray_encode(s);
 
     // re-modulate symbol (accounting for differential rotation)
+    // and store state
     _demod->x_hat = liquid_cexpjf(theta - demod_phase_error);
+    _demod->r = _x;
 }
 
 // demodulate arbitrary modem type
@@ -295,25 +304,29 @@ void modem_demodulate_arb(modem _mod,
 {
     //printf("modem_demodulate_arb() invoked with I=%d, Q=%d\n", x);
     
-    unsigned int i, s=0;
-    float d, d_min = 1e9;
+    // search for symbol nearest to received sample
+    unsigned int i;
+    unsigned int s=0;
+    float d;            // distance
+    float d_min = 0.0f; // minimum distance
 
     for (i=0; i<_mod->M; i++) {
+        // compute distance from received symbol to constellation point
         d = cabsf(_x - _mod->symbol_map[i]);
 
-        //printf("  d[%u] = %u\n", i, d);
-
-        if ( d < d_min ) {
+        // retain symbol with minimum distance
+        if ( i==0 || d < d_min ) {
             d_min = d;
             s = i;
         }
     }
-    //printf(" > s = %d\n", *symbol_out);
-    _mod->r = _x;
+
+    // set output symbol
     *_symbol_out = s;
 
-    // re-modulate symbol
+    // re-modulate symbol and store state
     modem_modulate_arb(_mod, *_symbol_out, &_mod->x_hat);
+    _mod->r = _x;
 }
 
 // demodulate APSK
@@ -369,10 +382,9 @@ void modem_demodulate_apsk(modem _mod,
 
     *_symbol_out = s_prime;
 
-    // compute resduals
-    // TODO : find better, faster way to compute APSK residuals
-    _mod->r = _x;
+    // re-modulate symbol and store state
     modem_modulate(_mod, s_prime, &_mod->x_hat);
+    _mod->r = _x;
 }
 
 // get demodulator phase error

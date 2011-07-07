@@ -126,7 +126,8 @@ void modem_print(modem _mod)
 // reset a modem object (only an issue with dpsk)
 void modem_reset(modem _mod)
 {
-    _mod->r = 1.0f;
+    _mod->r = 1.0f;         // received sample
+    _mod->x_hat = _mod->r;  // estimated symbol
     _mod->dpsk_phi = 0.0f;  // reset differential PSK phase state
 }
 
@@ -142,6 +143,12 @@ void modem_init(modem _mod,
         exit(1);
     }
 
+    // initialize common elements
+    _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
+    _mod->modulate_using_map=0; // modulate using map flag
+    _mod->alpha = 0.0f;         // scaling factor
+
+    // QAM modem
     _mod->m = _bits_per_symbol; // bits/symbol
     _mod->M = 1 << (_mod->m);   // constellation size (2^m)
     _mod->m_i = 0;              // bits/symbol (in-phase)
@@ -149,19 +156,24 @@ void modem_init(modem _mod,
     _mod->m_q = 0;              // bits/symbol (quadrature-phase)
     _mod->M_q = 0;              // constellation size (quadrature-phase)
 
-    _mod->alpha = 0.0f;         // scaling factor
+    // PSK/DPSK modem
+    _mod->d_phi = 0.0f;         // half of angle between symbols
+    _mod->dpsk_phi = 0.0f;      // angle state for differential PSK
 
-    _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
-    _mod->modulate_using_map=0; // modulate using map flag
-
-    _mod->r = 0.0f;         // symbol state
-    _mod->dpsk_phi = 0.0f;      // differential PSK phase state
-
-    _mod->d_phi = 0.0f;
+    // APSK modem
+    _mod->apsk_num_levels = 0;  // number of levels
+    _mod->apsk_p = NULL;        // number of levels per symbol
+    _mod->apsk_r = NULL;        // number of levels per symbol
+    _mod->apsk_r_slicer = NULL; // radii of levels
+    _mod->apsk_phi = NULL;      // phase offset of levels
+    _mod->apsk_symbol_map=NULL; // symbol mapping
 
     // set function pointers initially to NULL
     _mod->modulate_func = NULL;
     _mod->demodulate_func = NULL;
+
+    // reset object
+    modem_reset(_mod);
 }
 
 // initialize symbol map for fast modulation
@@ -423,13 +435,13 @@ modem modem_create_apsk(unsigned int _bits_per_symbol)
 {
     modem q = NULL;
     switch (_bits_per_symbol) {
-    case 2:     q = modem_create_apsk4();   break;
-    case 3:     q = modem_create_apsk8();   break;
-    case 4:     q = modem_create_apsk16();  break;
-    case 5:     q = modem_create_apsk32();  break;
-    case 6:     q = modem_create_apsk64();  break;
-    case 7:     q = modem_create_apsk128(); break;
-    case 8:     q = modem_create_apsk256(); break;
+    case 2: q = modem_create_apsk4();   break;
+    case 3: q = modem_create_apsk8();   break;
+    case 4: q = modem_create_apsk16();  break;
+    case 5: q = modem_create_apsk32();  break;
+    case 6: q = modem_create_apsk64();  break;
+    case 7: q = modem_create_apsk128(); break;
+    case 8: q = modem_create_apsk256(); break;
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
