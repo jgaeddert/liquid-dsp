@@ -29,6 +29,8 @@
 #include <assert.h>
 #include "liquid.internal.h"
 
+#define MODEM_UNIFIED_DEMODULATE 0
+
 // approximation to cargf() but faster
 float cargf_demod_approx(float complex _x)
 {
@@ -71,11 +73,16 @@ void modem_demodulate_ask(modem _demod,
     _demod->res = res_i + _Complex_I*cimagf(_x);
     *_symbol_out = gray_encode(s);
 
+#if MODEM_UNIFIED_DEMODULATE==0
     // compute residuals
     float complex x_hat = _x + _demod->res;
     //_demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
     _demod->phase_error = cargf_demod_approx(x_hat*conjf(_x));
     _demod->evm = cabsf(_demod->res);
+#else
+    // re-modulate symbol
+    modem_modulate_ask(_demod, *_symbol_out, &_demod->x_hat);
+#endif
 }
 
 // demodulate QAM
@@ -93,18 +100,23 @@ void modem_demodulate_qam(modem _demod,
     s_q = gray_encode(s_q);
     *_symbol_out = ( s_i << _demod->m_q ) + s_q;
 
+#if MODEM_UNIFIED_DEMODULATE==0
     // compute residuals
     float complex x_hat = _x + _demod->res;
     //_demod->phase_error = cabsf(x_hat)*cargf(x_hat*conjf(_x));
     //_demod->phase_error = cimagf(x_hat*conjf(_x));
     _demod->phase_error = cargf_demod_approx(x_hat*conjf(_x));
     _demod->evm = cabsf(_demod->res);
+#else
+    // re-modulate symbol
+    modem_modulate_qam(_demod, *_symbol_out, &_demod->x_hat);
+#endif
 }
 
 // demodulate PSK
 void modem_demodulate_psk(modem _demod,
                           float complex x,
-                          unsigned int *symbol_out)
+                          unsigned int *_symbol_out)
 {
     unsigned int s;
     float theta = cargf(x);
@@ -117,10 +129,15 @@ void modem_demodulate_psk(modem _demod,
         theta += 2*M_PI;
 
     modem_demodulate_linear_array_ref(theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
-    *symbol_out = gray_encode(s);
+    *_symbol_out = gray_encode(s);
 
+#if MODEM_UNIFIED_DEMODULATE==0
     // compute residuals
     // phase error computed as residual from demodulator
+#else
+    // re-modulate symbol
+    modem_modulate_psk(_demod, *_symbol_out, &_demod->x_hat);
+#endif
 }
 
 // demodulate BPSK
@@ -135,10 +152,15 @@ void modem_demodulate_bpsk(modem _demod,
     float complex x_hat;
     modem_modulate_bpsk(_demod, *_symbol_out, &x_hat);
     _demod->res = x_hat - _x;
+#if MODEM_UNIFIED_DEMODULATE==0
     _demod->evm = cabsf(_demod->res);
     //_demod->phase_error = cargf(_x*conjf(x_hat));
     //_demod->phase_error = cimagf(_x*conjf(x_hat));
     _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+#else
+    // re-modulate symbol
+    modem_modulate_bpsk(_demod, *_symbol_out, &_demod->x_hat);
+#endif
 }
 
 // demodulate QPSK
@@ -154,10 +176,15 @@ void modem_demodulate_qpsk(modem _demod,
     float complex x_hat;
     modem_modulate_qpsk(_demod, *_symbol_out, &x_hat);
     _demod->res = x_hat - _x;
+#if MODEM_UNIFIED_DEMODULATE==0
     _demod->evm = cabsf(_demod->res);
     //_demod->phase_error = cargf(_x*conjf(x_hat));
     //_demod->phase_error = cimagf(_x*conjf(x_hat));
     _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+#else
+    // re-modulate symbol
+    modem_modulate_qpsk(_demod, *_symbol_out, &_demod->x_hat);
+#endif
 }
 
 // demodulate OOK
@@ -172,10 +199,15 @@ void modem_demodulate_ook(modem _demod,
     float complex x_hat;
     modem_modulate_ook(_demod, *_symbol_out, &x_hat);
     _demod->res = x_hat - _x;
+#if MODEM_UNIFIED_DEMODULATE==0
     _demod->evm = cabsf(_demod->res);
     //_demod->phase_error = cargf(_x*conjf(x_hat));
     //_demod->phase_error = cimagf(_x*conjf(x_hat));
     _demod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+#else
+    // re-modulate symbol
+    modem_modulate_ook(_demod, *_symbol_out, &_demod->x_hat);
+#endif
 }
 
 // demodulate 'square' 32-QAM
@@ -224,6 +256,7 @@ void modem_demodulate_sqam32(modem _q,
 
     _q->state = _x;
 
+#if MODEM_UNIFIED_DEMODULATE==0
     // compute residuals
     x_hat *= conjf(r);
     _q->res = x_hat - _x;
@@ -231,6 +264,10 @@ void modem_demodulate_sqam32(modem _q,
     //_demod->phase_error = cargf(_x*conjf(x_hat));
     //_demod->phase_error = cimagf(_x*conjf(x_hat));
     _q->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+#else
+    // re-modulate symbol
+    modem_modulate_sqam32(_q, *_symbol_out, &_q->x_hat);
+#endif
 }
 
 // demodulate 'square' 128-QAM
@@ -279,6 +316,7 @@ void modem_demodulate_sqam128(modem _q,
 
     _q->state = _x;
 
+#if MODEM_UNIFIED_DEMODULATE==0
     // compute residuals
     x_hat *= conjf(r);
     _q->res = x_hat - _x;
@@ -286,6 +324,10 @@ void modem_demodulate_sqam128(modem _q,
     //_demod->phase_error = cargf(_x*conjf(x_hat));
     //_demod->phase_error = cimagf(_x*conjf(x_hat));
     _q->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+#else
+    // re-modulate symbol
+    modem_modulate_sqam128(_q, *_symbol_out, &_q->x_hat);
+#endif
 }
 
 void modem_demodulate_dpsk(modem _demod,
@@ -308,7 +350,13 @@ void modem_demodulate_dpsk(modem _demod,
     modem_demodulate_linear_array_ref(d_theta, _demod->m, _demod->ref, &s, &(_demod->phase_error));
     *_symbol_out = gray_encode(s);
 
+#if MODEM_UNIFIED_DEMODULATE==0
     // compute residuals
+#else
+    // re-modulate symbol
+    // TODO : check this line
+    //modem_modulate_psk(_demod, *_symbol_out, &_demod->x_hat);
+#endif
 }
 
 // demodulate arbitrary modem type
@@ -335,12 +383,17 @@ void modem_demodulate_arb(modem _mod,
     _mod->state = _x;
     *_symbol_out = s;
 
+#if MODEM_UNIFIED_DEMODULATE==0
     // compute residuals
     float complex x_hat = _mod->symbol_map[s];
     _mod->res =  x_hat - _x;
     _mod->evm = cabsf(_mod->res);
     //_mod->phase_error = cabsf(x_hat)*cargf(_x*conjf(x_hat));
     _mod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+#else
+    // re-modulate symbol
+    modem_modulate_arb(_mod, *_symbol_out, &_mod->x_hat);
+#endif
 }
 
 // demodulate APSK
@@ -398,25 +451,35 @@ void modem_demodulate_apsk(modem _mod,
 
     // compute resduals
     // TODO : find better, faster way to compute APSK residuals
-    float complex x_hat;
-    modem_modulate_apsk(_mod, s_prime, &x_hat);
+    _mod->state = _x;
+    modem_modulate_apsk(_mod, s_prime, &_mod->x_hat);
 
+#if MODEM_UNIFIED_DEMODULATE==0
     //_mod->phase_error = _mod->apsk_r[p] * cargf(_x*conjf(x_hat));
-    _mod->phase_error = cargf_demod_approx(_x*conjf(x_hat));
+    _mod->phase_error = cargf_demod_approx(_x*conjf(_mod->x_hat));
     //_mod->phase_error *= sqrtf(_mod->M) / (float)(_mod->apsk_p[p]);
 
-    _mod->res = _x - x_hat;
+    _mod->res = _x - _mod->x_hat;
+#endif
 }
 
 // get demodulator phase error
 float modem_get_demodulator_phase_error(modem _demod)
 {
+#if MODEM_UNIFIED_DEMODULATE==0
     return _demod->phase_error;
+#else
+    if (_demod->scheme == LIQUID_MODEM_DPSK) {
+        return _demod->phase_error;
+    }
+    return cimagf(_demod->state*conjf(_demod->x_hat));
+#endif
 }
 
 // get error vector magnitude
 float modem_get_demodulator_evm(modem _demod)
 {
+#if MODEM_UNIFIED_DEMODULATE==0
     float r;
     switch (_demod->scheme) {
     case LIQUID_MODEM_UNKNOWN:
@@ -442,6 +505,16 @@ float modem_get_demodulator_evm(modem _demod)
         ;
     }
     return _demod->evm;
+#else
+    if (_demod->scheme == LIQUID_MODEM_DPSK) {
+        // TODO : figure out more efficient way of calculating evm
+        float r = cabsf(_demod->state);
+        _demod->evm = 1.0f + r*r - 2.0f*r*cos(_demod->phase_error);
+        _demod->evm = sqrtf( fabsf(_demod->evm) );
+        return _demod->evm;
+    }
+    return cabsf(_demod->x_hat - _demod->state);
+#endif
 }
 
 

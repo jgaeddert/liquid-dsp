@@ -28,8 +28,12 @@ int main() {
     fprintf(fid,"close all;\n");
 
     // create gradsearch object
-    gradsearch gs = gradsearch_create(
-        NULL, optimum_vect, num_parameters, &rosenbrock, LIQUID_OPTIM_MINIMIZE);
+    gradsearch gs = gradsearch_create(NULL,
+                                      optimum_vect,
+                                      num_parameters,
+                                      &rosenbrock,
+                                      LIQUID_OPTIM_MINIMIZE,
+                                      NULL);
 
     // execute search
     //optimum_utility = gradsearch_run(gs, num_iterations, -1e-6f);

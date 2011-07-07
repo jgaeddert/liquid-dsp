@@ -1228,6 +1228,7 @@ struct modem_s {
 
     float complex state;        // received state vector
     float state_theta;          // received state vector, angle
+    float complex x_hat;        // estimated symbol (demodulator)
 
     float complex res;          // residual error vector
 
@@ -1589,31 +1590,6 @@ LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,
 int optim_threshold_switch(float _u0,
                            float _u1,
                            int _minimize);
-
-// gradient search algorithm (steepest descent) object
-// \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
-struct gradsearch_s {
-    float* v;           // vector to optimize (externally allocated)
-    unsigned int num_parameters;
-
-    float gamma;        // nominal stepsize
-    float delta;        // differential used to compute (estimate) derivative
-    float mu;           // decremental gamma parameter
-    float gamma_hat;    // step size (decreases each epoch)
-    float* v_prime;     // temporary vector array
-    float* dv;          // vector step
-    float* dv_hat;      // vector step (previous iteration)
-    float alpha;        // filter (feed-forward parameter)
-    float beta;         // filter (feed-back parameter)
-
-    float* gradient;    // gradient approximation
-    float utility;      // current utility
-
-    // External utility function.
-    utility_function get_utility;
-    void * userdata;    // object to optimize (user data)
-    int minimize;       // minimize/maximimze utility (search direction)
-};
 
 // compute the gradient vector (estimate)
 void gradsearch_compute_gradient(gradsearch _g);

@@ -3162,37 +3162,30 @@ typedef float (*utility_function)(void * _userdata,
 
 typedef struct gradsearch_s * gradsearch;
 
-// Create a simple gradsearch object; parameters are specified internally
+// gradient search properties
+typedef struct {
+    float delta;    // gradient approximation step size (default: 1e-6f)
+    float gamma;    // vector step size (default: 0.002f)
+    float alpha;    // momentum parameter (default: 0.1f)
+    float mu;       // decremental gamma parameter (default: 0.99f)
+} gradsearchprops_s;
+
+// initialize default properties
+void gradsearchprops_init_default(gradsearchprops_s * _props);
+
+// Create a gradient search object
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
+//   _props             :   properties (see above)
 gradsearch gradsearch_create(void * _userdata,
                              float * _v,
                              unsigned int _num_parameters,
                              utility_function _u,
-                             int _minmax);
-
-// Create a gradsearch object, specifying search parameters
-//   _userdata          :   user data object pointer
-//   _v                 :   array of parameters to optimize
-//   _num_parameters    :   array length (number of parameters to optimize)
-//   _delta             :   gradient approximation step size (default: 1e-6f)
-//   _gamma             :   vector step size (default: 0.002f)
-//   _alpha             :   momentum parameter (default: 0.1f)
-//   _mu                :   decremental gamma parameter (default: 0.99f)
-//   _u                 :   utility function pointer
-//   _minmax            :   search direction (0:minimize, 1:maximize)
-gradsearch gradsearch_create_advanced(void * _userdata,
-                                      float * _v,
-                                      unsigned int _num_parameters,
-                                      float _delta,
-                                      float _gamma,
-                                      float _alpha,
-                                      float _mu,
-                                      utility_function _u,
-                                      int _minmax);
+                             int _minmax,
+                             gradsearchprops_s * _props);
 
 // Destroy a gradsearch object
 void gradsearch_destroy(gradsearch _g);
