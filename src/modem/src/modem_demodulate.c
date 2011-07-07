@@ -452,7 +452,7 @@ void modem_demodulate_apsk(modem _mod,
     // compute resduals
     // TODO : find better, faster way to compute APSK residuals
     _mod->state = _x;
-    modem_modulate_apsk(_mod, s_prime, &_mod->x_hat);
+    modem_modulate(_mod, s_prime, &_mod->x_hat);
 
 #if MODEM_UNIFIED_DEMODULATE==0
     //_mod->phase_error = _mod->apsk_r[p] * cargf(_x*conjf(x_hat));
