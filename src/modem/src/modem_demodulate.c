@@ -68,7 +68,6 @@ void modem_demodulate_ask(modem _demod,
     _demod->state = _x;
     float res_i;
     modem_demodulate_linear_array_ref(crealf(_x), _demod->m, _demod->ref, &s, &res_i);
-    _demod->res = res_i + _Complex_I*cimagf(_x);
     *_symbol_out = gray_encode(s);
 
     // re-modulate symbol
@@ -85,7 +84,6 @@ void modem_demodulate_qam(modem _demod,
     float res_i, res_q;
     modem_demodulate_linear_array_ref(crealf(_x), _demod->m_i, _demod->ref, &s_i, &res_i);
     modem_demodulate_linear_array_ref(cimagf(_x), _demod->m_q, _demod->ref, &s_q, &res_q);
-    _demod->res = res_i + _Complex_I*res_q;
     s_i = gray_encode(s_i);
     s_q = gray_encode(s_q);
     *_symbol_out = ( s_i << _demod->m_q ) + s_q;
@@ -126,7 +124,6 @@ void modem_demodulate_bpsk(modem _demod,
     // compute residuals
     float complex x_hat;
     modem_modulate_bpsk(_demod, *_symbol_out, &x_hat);
-    _demod->res = x_hat - _x;
 
     // re-modulate symbol
     modem_modulate_bpsk(_demod, *_symbol_out, &_demod->x_hat);
@@ -144,7 +141,6 @@ void modem_demodulate_qpsk(modem _demod,
     // compute residuals
     float complex x_hat;
     modem_modulate_qpsk(_demod, *_symbol_out, &x_hat);
-    _demod->res = x_hat - _x;
 
     // re-modulate symbol
     modem_modulate_qpsk(_demod, *_symbol_out, &_demod->x_hat);
@@ -161,7 +157,6 @@ void modem_demodulate_ook(modem _demod,
     // compute residuals
     float complex x_hat;
     modem_modulate_ook(_demod, *_symbol_out, &x_hat);
-    _demod->res = x_hat - _x;
 
     // re-modulate symbol
     modem_modulate_ook(_demod, *_symbol_out, &_demod->x_hat);

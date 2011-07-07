@@ -157,8 +157,6 @@ void modem_init(modem _mod,
     _mod->state = 0.0f;         // symbol state
     _mod->dpsk_phi = 0.0f;      // differential PSK phase state
 
-    _mod->res = 0.0f;
-
     _mod->d_phi = 0.0f;
 
     // set function pointers initially to NULL

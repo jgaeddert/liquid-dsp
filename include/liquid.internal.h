@@ -1230,8 +1230,6 @@ struct modem_s {
     float complex state;        // received state vector
     float complex x_hat;        // estimated symbol (demodulator)
 
-    float complex res;          // residual error vector
-
     // PSK/DPSK modem
     float d_phi;                    // half of phase between symbols
     float dpsk_phi;                 // angle state for differential PSK
