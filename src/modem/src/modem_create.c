@@ -201,10 +201,12 @@ modem modem_create_ask(unsigned int _bits_per_symbol)
     case 8:     mod->alpha = ASK8_ALPHA;     break;
     case 16:    mod->alpha = ASK16_ALPHA;    break;
     case 32:    mod->alpha = ASK32_ALPHA;    break;
+    case 64:    mod->alpha = ASK64_ALPHA;    break;
+    case 128:   mod->alpha = ASK128_ALPHA;   break;
+    case 256:   mod->alpha = ASK256_ALPHA;   break;
     default:
         // calculate alpha dynamically
-        // NOTE: this is only an approximation
-        mod->alpha = sqrtf(3.0f)/(float)(mod->M);
+        mod->alpha = expf(-0.70735 + 0.63653*mod->m);
     }
 
     unsigned int k;

@@ -1158,9 +1158,6 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // MODULE : modem
 //
 
-// PSK
-#define PSK_ALPHA       (1.)
-
 // 'Square' QAM
 #define QAM4_ALPHA      (1./sqrt(2))
 #define QAM8_ALPHA      (1./sqrt(6))
@@ -1191,6 +1188,9 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define ASK8_ALPHA      (1./sqrt(21))
 #define ASK16_ALPHA     (1./sqrt(85))
 #define ASK32_ALPHA     (1./sqrt(341))
+#define ASK64_ALPHA     (1./sqrt(1365))
+#define ASK128_ALPHA    (1./sqrt(5461))
+#define ASK256_ALPHA    (1./sqrt(21845))
 
 // modem structure used for both modulation and demodulation 
 //
