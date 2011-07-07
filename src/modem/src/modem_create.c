@@ -303,6 +303,11 @@ modem modem_create_psk(unsigned int _bits_per_symbol)
     mod->modulate_func = &modem_modulate_psk;
     mod->demodulate_func = &modem_demodulate_psk;
 
+    // initialize symbol map
+    mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
+    modem_init_map(mod);
+    mod->modulate_using_map = 1;
+
     return mod;
 }
 

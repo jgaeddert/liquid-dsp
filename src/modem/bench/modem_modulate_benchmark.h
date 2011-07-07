@@ -42,7 +42,7 @@ void modem_modulate_bench(struct rusage *_start,
     case LIQUID_MODEM_UNKNOWN:
         fprintf(stderr,"error: modem_modulate_bench(), unknown modem scheme\n");
         exit(1);
-    case LIQUID_MODEM_PSK:      *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_PSK:      *_num_iterations *= 100;    break;
     case LIQUID_MODEM_DPSK:     *_num_iterations *= 1;      break;
     case LIQUID_MODEM_ASK:      *_num_iterations *= 64;     break;
     case LIQUID_MODEM_QAM:      *_num_iterations *= 32;     break;
