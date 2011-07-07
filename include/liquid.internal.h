@@ -1227,13 +1227,13 @@ struct modem_s {
     float complex * symbol_map;
     int modulate_using_map;     // modulate using map (look-up table) flag
 
-    float complex state;        // received state vector
-    float complex x_hat;        // estimated symbol (demodulator)
+    // demodulation
+    float complex r;                // received state vector
+    float complex x_hat;            // estimated symbol (demodulator)
 
     // PSK/DPSK modem
     float d_phi;                    // half of phase between symbols
     float dpsk_phi;                 // angle state for differential PSK
-    float psk_phase_error;          // phase error for PSK/DPSK
 
     // APSK modem
     unsigned int apsk_num_levels;   // number of levels

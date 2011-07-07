@@ -126,7 +126,7 @@ void modem_print(modem _mod)
 // reset a modem object (only an issue with dpsk)
 void modem_reset(modem _mod)
 {
-    _mod->state = 1.0f;
+    _mod->r = 1.0f;
     _mod->dpsk_phi = 0.0f;  // reset differential PSK phase state
 }
 
@@ -154,7 +154,7 @@ void modem_init(modem _mod,
     _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
     _mod->modulate_using_map=0; // modulate using map flag
 
-    _mod->state = 0.0f;         // symbol state
+    _mod->r = 0.0f;         // symbol state
     _mod->dpsk_phi = 0.0f;      // differential PSK phase state
 
     _mod->d_phi = 0.0f;

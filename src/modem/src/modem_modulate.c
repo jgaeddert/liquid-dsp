@@ -183,7 +183,7 @@ void modem_modulate_dpsk(modem _mod,
     *y = liquid_cexpjf(_mod->dpsk_phi);
 
     // save symbol state
-    _mod->state = *y;
+    _mod->r = *y;
 }
 
 // modulate APSK
