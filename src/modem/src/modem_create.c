@@ -159,9 +159,6 @@ void modem_init(modem _mod,
 
     _mod->res = 0.0f;
 
-    _mod->phase_error = 0.0f;
-    _mod->evm = 0.0f;
-
     _mod->d_phi = 0.0f;
 
     // set function pointers initially to NULL

@@ -1232,12 +1232,10 @@ struct modem_s {
 
     float complex res;          // residual error vector
 
-    float phase_error;          // phase error after demodulation
-    float evm;                  // error vector magnitude (EVM)
-
     // PSK/DPSK modem
     float d_phi;                    // half of phase between symbols
     float dpsk_phi;                 // angle state for differential PSK
+    float psk_phase_error;          // phase error for PSK/DPSK
 
     // APSK modem
     unsigned int apsk_num_levels;   // number of levels
