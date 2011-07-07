@@ -276,6 +276,11 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     mod->modulate_func = &modem_modulate_qam;
     mod->demodulate_func = &modem_demodulate_qam;
 
+    // initialize symbol map
+    mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
+    modem_init_map(mod);
+    mod->modulate_using_map = 1;
+
     return mod;
 }
 
@@ -419,21 +424,27 @@ modem modem_create_dpsk(unsigned int _bits_per_symbol)
 // create an apsk (amplitude/phase-shift keying) modem object
 modem modem_create_apsk(unsigned int _bits_per_symbol)
 {
+    modem q = NULL;
     switch (_bits_per_symbol) {
-    case 2:     return modem_create_apsk4();
-    case 3:     return modem_create_apsk8();
-    case 4:     return modem_create_apsk16();
-    case 5:     return modem_create_apsk32();
-    case 6:     return modem_create_apsk64();
-    case 7:     return modem_create_apsk128();
-    case 8:     return modem_create_apsk256();
+    case 2:     q = modem_create_apsk4();   break;
+    case 3:     q = modem_create_apsk8();   break;
+    case 4:     q = modem_create_apsk16();  break;
+    case 5:     q = modem_create_apsk32();  break;
+    case 6:     q = modem_create_apsk64();  break;
+    case 7:     q = modem_create_apsk128(); break;
+    case 8:     q = modem_create_apsk256(); break;
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
         exit(1);
     }
 
-    return NULL;
+    // initialize symbol map
+    q->symbol_map = (float complex*)malloc(q->M*sizeof(float complex));
+    modem_init_map(q);
+    q->modulate_using_map = 1;
+
+    return q;
 }
 
 // create specific APSK-4 modem
