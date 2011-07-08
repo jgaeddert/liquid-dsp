@@ -312,7 +312,6 @@ bench: $(bench_prog)
 # clean up the generated files
 clean-bench:
 	$(RM) $(benchmark_obj)
-	$(RM) bench/benchmarkgen.o bench/main.o bench/benchmarkgen
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
 
 
