@@ -37,7 +37,7 @@ void usage()
 }
 
 // define benchmark_t
-typedef struct {
+struct benchmark_t {
     //unsigned int id;
     char name[64];
     //unsigned int name_len;
@@ -45,10 +45,13 @@ typedef struct {
     //float extime;
     //float rate;
     float cycles_per_trial;
-} benchmark_t;
+
+    // link to other benchmark
+    struct benchmark_t * link;
+};
 
 struct benchlist_s {
-    benchmark_t * benchmarks;
+    struct benchmark_t * benchmarks;
     unsigned int num_benchmarks;
 };
 
@@ -61,6 +64,9 @@ void benchlist_print(benchlist _q);
 void benchlist_append(benchlist _q,
                       char * _name,
                       float _cycles_per_trial);
+
+void benchlist_link(benchlist _q0,
+                    benchlist _q1);
 
 // is line a comment?
 int parse_file(const char * _filename,
@@ -79,8 +85,8 @@ int line_is_comment(char * _buffer);
 
 int main(int argc, char*argv[])
 {
-    char filename_old[256] = "modem.benchmark.new.out";
-    char filename_new[256] = "modem.benchmark.old.out";
+    char filename_old[256] = "modem.benchmark.old.out";
+    char filename_new[256] = "modem.benchmark.new.out";
 
     int dopt;
     while((dopt = getopt(argc,argv,"uh")) != EOF){
@@ -96,11 +102,15 @@ int main(int argc, char*argv[])
     // parse old benchmarks
     benchlist benchmarks_old = benchlist_create();
     parse_file(filename_old, benchmarks_old);
-    benchlist_print(benchmarks_old);
+    //benchlist_print(benchmarks_old);
 
     // parse new benchmarks
     benchlist benchmarks_new = benchlist_create();
     parse_file(filename_new, benchmarks_new);
+    //benchlist_print(benchmarks_new);
+
+    // link benchmarks and print results
+    benchlist_link(benchmarks_old, benchmarks_new);
     benchlist_print(benchmarks_new);
 
     printf("done.\n");
@@ -135,8 +145,14 @@ void benchlist_print(benchlist _q)
     unsigned int i;
     printf("benchlist [%u]:\n", _q->num_benchmarks);
     for (i=0; i<_q->num_benchmarks; i++) {
-        printf("  - %-24s : %12.3f\n", _q->benchmarks[i].name,
-                                       _q->benchmarks[i].cycles_per_trial);
+        printf("  - %-24s : %12.3f", _q->benchmarks[i].name,
+                                     _q->benchmarks[i].cycles_per_trial);
+        if (_q->benchmarks[i].link == NULL) {
+            printf("\n");
+        } else {
+            printf(" : %12.3f\n", _q->benchmarks[i].link->cycles_per_trial);
+        }
+
     }
 }
 
@@ -144,9 +160,18 @@ void benchlist_append(benchlist _q,
                       char * _name,
                       float _cycles_per_trial)
 {
+    // TODO : check for uniqueness
+    unsigned int i;
+    for (i=0; i<_q->num_benchmarks; i++) {
+        if ( strncmp(_q->benchmarks[i].name, _name, 64) == 0) {
+            fprintf(stderr,"warning: cannot append benchmark '%s'; benchmark already exists\n", _name);
+            return;
+        }
+    }
+
     // re-allocate memory array
     _q->num_benchmarks++;
-    _q->benchmarks = (benchmark_t*)realloc(_q->benchmarks, (_q->num_benchmarks)*sizeof(benchmark_t));
+    _q->benchmarks = (struct benchmark_t*)realloc(_q->benchmarks, (_q->num_benchmarks)*sizeof(struct benchmark_t));
 
     //printf("appending '%s' (%f)\n", _name, _cycles_per_trial);
 
@@ -159,7 +184,28 @@ void benchlist_append(benchlist _q,
 
     // copy properties
     _q->benchmarks[_q->num_benchmarks-1].cycles_per_trial = _cycles_per_trial;
+
+    // set link to NULL
+    _q->benchmarks[_q->num_benchmarks-1].link = NULL;
 }
+
+void benchlist_link(benchlist _q0,
+                    benchlist _q1)
+{
+    // link nodes
+    unsigned int i;
+    unsigned int j;
+    for (i=0; i<_q0->num_benchmarks; i++) {
+        for (j=0; j<_q1->num_benchmarks; j++) {
+            if ( strncmp(_q0->benchmarks[i].name, _q1->benchmarks[j].name, 64)==0 ) {
+                // match found; link nodes
+                _q0->benchmarks[i].link = &_q1->benchmarks[j];
+                _q1->benchmarks[j].link = &_q0->benchmarks[i];
+            }
+        }
+    }
+}
+
 
 // is line a comment?
 int parse_file(const char * _filename,
