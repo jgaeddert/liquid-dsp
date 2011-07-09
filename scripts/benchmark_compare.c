@@ -27,13 +27,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 
 // print usage/help message
 void usage()
 {
-    printf("usage...\n");
-    printf("  u/h   : print usage\n");
+    printf("benchmark_compare [old_benchmark] [new_benchmark]\n");
 }
 
 // define benchmark_t
@@ -85,28 +83,19 @@ int line_is_comment(char * _buffer);
 
 int main(int argc, char*argv[])
 {
-    char filename_old[256] = "modem.benchmark.old.out";
-    char filename_new[256] = "modem.benchmark.new.out";
-
-    int dopt;
-    while((dopt = getopt(argc,argv,"uh")) != EOF){
-        switch (dopt) {
-        case 'h':
-        case 'u':   usage(); return 0;
-        default:
-            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
-            exit(-1);
-        }
+    if (argc != 3) {
+        usage();
+        exit(1);
     }
 
     // parse old benchmarks
     benchlist benchmarks_old = benchlist_create();
-    parse_file(filename_old, benchmarks_old);
+    parse_file(argv[1], benchmarks_old);
     //benchlist_print(benchmarks_old);
 
     // parse new benchmarks
     benchlist benchmarks_new = benchlist_create();
-    parse_file(filename_new, benchmarks_new);
+    parse_file(argv[2], benchmarks_new);
     //benchlist_print(benchmarks_new);
 
     // link benchmarks and print results
