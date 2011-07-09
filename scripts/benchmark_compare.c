@@ -111,7 +111,7 @@ int main(int argc, char*argv[])
 
     // link benchmarks and print results
     benchlist_link(benchmarks_old, benchmarks_new);
-    benchlist_print(benchmarks_new);
+    benchlist_print(benchmarks_old);
 
     printf("done.\n");
     return 0;
@@ -150,7 +150,12 @@ void benchlist_print(benchlist _q)
         if (_q->benchmarks[i].link == NULL) {
             printf("\n");
         } else {
-            printf(" : %12.3f\n", _q->benchmarks[i].link->cycles_per_trial);
+            // print delta
+            float cycles_old = _q->benchmarks[i].cycles_per_trial;
+            float cycles_new = _q->benchmarks[i].link->cycles_per_trial;
+            float delta = (cycles_new - cycles_old)/cycles_old;
+
+            printf(" : %12.3f   %8.2f %%\n", cycles_new, 100*delta);
         }
 
     }
