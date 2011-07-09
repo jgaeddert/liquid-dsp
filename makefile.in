@@ -309,11 +309,15 @@ $(bench_prog): $(bench_prog).o $(benchmark_obj) libliquid.a
 bench: $(bench_prog)
 	./$(bench_prog)
 
+# benchmark compare script
+scripts/benchmark_compare : % : %.c
+
 # clean up the generated files
 clean-bench:
 	$(RM) $(benchmark_obj)
 	$(RM) bench/benchmarkgen.o bench/main.o bench/benchmarkgen
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
+	$(RM) scripts/benchmark_compare
 
 
 ## 
