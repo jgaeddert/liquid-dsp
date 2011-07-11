@@ -79,10 +79,8 @@ void benchmark_flexframesync(
     // create interpolator
     unsigned int m=3;
     float beta=0.7f;
-    unsigned int h_len = 2*2*m + 1;
-    float h[h_len];
-    design_rrc_filter(2,m,beta,0,h);
-    interp_crcf interp = interp_crcf_create(2,h,h_len);
+    float dt = 0.0f;
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,2,m,beta,dt);
 
     // create flexframesync object with default properties
     //flexframesyncprops_s fsprops;
