@@ -59,9 +59,9 @@ void benchmark_flexframesync(
     flexframegenprops_init_default(&fgprops);
     fgprops.rampup_len = 16;
     fgprops.phasing_len = 64;
-    fgprops.payload_len = 2;
-    fgprops.mod_scheme = LIQUID_MODEM_PSK;
-    fgprops.mod_bps = 3;
+    fgprops.payload_len = 8;
+    fgprops.mod_scheme = LIQUID_MODEM_QPSK;
+    fgprops.mod_bps = 2;
     fgprops.rampdn_len = 16;
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
