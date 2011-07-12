@@ -1914,7 +1914,7 @@ typedef struct ofdmflexframegen_s * ofdmflexframegen;
 //  _fgprops    :   frame properties (modulation scheme, etc.)
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int  _cp_len,
-                                         unsigned int * _p,
+                                         unsigned char * _p,
                                          ofdmflexframegenprops_s * _fgprops);
                                          //unsigned int  _taper_len);
 
@@ -1973,7 +1973,7 @@ typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 ofdmflexframesync ofdmflexframesync_create(unsigned int _num_subcarriers,
                                            unsigned int  _cp_len,
-                                           unsigned int * _p,
+                                           unsigned char * _p,
                                            //unsigned int  _taper_len,
                                            ofdmflexframesync_callback _callback,
                                            void * _userdata);
@@ -2906,7 +2906,7 @@ void ofdmoqam_execute(ofdmoqam _c,
 //  _M      :   number of subcarriers
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 void ofdmoqamframe_init_default_sctype(unsigned int _M,
-                                       unsigned int * _p);
+                                       unsigned char * _p);
 
 // validate subcarrier type (count number of null, pilot, and data
 // subcarriers in the allocation)
@@ -2915,7 +2915,7 @@ void ofdmoqamframe_init_default_sctype(unsigned int _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmoqamframe_validate_sctype(unsigned int * _p,
+void ofdmoqamframe_validate_sctype(unsigned char * _p,
                                    unsigned int _M,
                                    unsigned int * _M_null,
                                    unsigned int * _M_pilot,
@@ -2936,7 +2936,7 @@ typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
 ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
                                          unsigned int _m,
                                          float _beta,
-                                         unsigned int * _p);
+                                         unsigned char * _p);
 
 // destroy OFDM/OQAM framing generator object
 void ofdmoqamframegen_destroy(ofdmoqamframegen _q);
@@ -2968,7 +2968,7 @@ typedef struct ofdmoqamframesync_s * ofdmoqamframesync;
 ofdmoqamframesync ofdmoqamframesync_create(unsigned int _num_subcarriers,
                                            unsigned int _m,
                                            float _beta,
-                                           unsigned int * _p,
+                                           unsigned char * _p,
                                            ofdmoqamframesync_callback _callback,
                                            void * _userdata);
 void ofdmoqamframesync_destroy(ofdmoqamframesync _q);
@@ -2988,7 +2988,7 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
 //  _M      :   number of subcarriers
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 void ofdmframe_init_default_sctype(unsigned int _M,
-                                   unsigned int * _p);
+                                   unsigned char * _p);
 
 // validate subcarrier type (count number of null, pilot, and data
 // subcarriers in the allocation)
@@ -2997,7 +2997,7 @@ void ofdmframe_init_default_sctype(unsigned int _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmframe_validate_sctype(unsigned int * _p,
+void ofdmframe_validate_sctype(unsigned char * _p,
                                unsigned int _M,
                                unsigned int * _M_null,
                                unsigned int * _M_pilot,
@@ -3015,7 +3015,7 @@ typedef struct ofdmframegen_s * ofdmframegen;
 //  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 ofdmframegen ofdmframegen_create(unsigned int _M,
                                  unsigned int  _cp_len,
-                                 unsigned int * _p);
+                                 unsigned char * _p);
                                  //unsigned int  _taper_len);
 
 void ofdmframegen_destroy(ofdmframegen _q);
@@ -3038,13 +3038,13 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
 // OFDM frame (symbol) synchronizer
 //
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
-                                      unsigned int * _p,
+                                      unsigned char * _p,
                                       unsigned int _M,
                                       void * _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
 ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
                                    unsigned int  _cp_len,
-                                   unsigned int * _p,
+                                   unsigned char * _p,
                                    //unsigned int  _taper_len,
                                    ofdmframesync_callback _callback,
                                    void * _userdata);
