@@ -231,7 +231,7 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
 //  _M          :   number of subcarriers
 //  _userdata   :   user-defined data structure
 int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned int  * _p,
+                                        unsigned char * _p,
                                         unsigned int    _M,
                                         void * _userdata)
 {

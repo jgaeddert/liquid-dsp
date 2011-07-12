@@ -1004,7 +1004,7 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
 
 // internal callback
 int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned int  * _p,
+                                        unsigned char * _p,
                                         unsigned int    _M,
                                         void * _userdata);
 

@@ -95,7 +95,7 @@ ofdmframegen ofdmframegen_create(unsigned int _M,
         ofdmframe_init_default_sctype(q->M, q->p);
     } else {
         // copy user-defined subcarrier allocation
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation
