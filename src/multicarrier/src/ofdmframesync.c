@@ -96,6 +96,8 @@ struct ofdmframesync_s {
     unsigned int timer;         // input sample timer
     unsigned int num_symbols;   // symbol counter
     unsigned int backoff;       // sample timing backoff
+    float complex s_hat_0;      // first S0 symbol metrics estimate
+    float complex s_hat_1;      // second S0 symbol metrics estimate
 
     // callback
     ofdmframesync_callback callback;
@@ -294,6 +296,8 @@ void ofdmframesync_reset(ofdmframesync _q)
     // reset timers
     _q->timer = 0;
     _q->num_symbols = 0;
+    _q->s_hat_0 = 0.0f;
+    _q->s_hat_1 = 0.0f;
 
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
@@ -407,7 +411,7 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 #endif
 
     // TODO : allow variable threshold
-    if (cabsf(s_hat) > 0.6f) {
+    if (cabsf(s_hat) > 0.35f) {
 
         // save gain
         _q->g0 = g;
@@ -415,10 +419,13 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
         int dt = (int)roundf(tau_hat);
         // set timer appropriately...
         _q->timer = (_q->M + dt) % (_q->M / 2);
+        _q->timer += _q->M; // add delay to help ensure good S0 estimate
         _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT0;
 
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("********** frame detected! ************\n");
+        printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
+        printf("  tau_hat   :   %12.8f\n", tau_hat);
         printf("    dt      :   %12d\n", dt);
         printf("    timer   :   %12u\n", _q->timer);
 #endif
@@ -445,6 +452,8 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     float complex * rc;
     windowcf_read(_q->input_buffer, &rc);
 
+    // TODO : re-estimate nominal gain
+
     // estimate S0 gain
     ofdmframesync_estimate_gain_S0(_q, &rc[_q->cp_len], _q->G0);
 
@@ -453,6 +462,8 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
+    _q->s_hat_0 = s_hat;
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("********** S0[0] received ************\n");
@@ -460,7 +471,9 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 #endif
 
-    if (cabsf(s_hat) < 0.4f) {
+#if 0
+    // TODO : also check for phase of s_hat (should be small)
+    if (cabsf(s_hat) < 0.3f) {
         // false alarm
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("false alarm S0[0]\n");
@@ -468,6 +481,7 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
         ofdmframesync_reset(_q);
         return;
     }
+#endif
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT1;
 }
 
@@ -495,16 +509,27 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
+    _q->s_hat_1 = s_hat;
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("********** S0[1] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 
+    // new timing offset estimate
+    tau_hat  = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M) / (2*2*M_PI);
+    printf("  tau_hat * :   %12.8f\n", tau_hat);
+
     printf("**********\n");
 #endif
 
-    if (cabsf(s_hat) < 0.4f) {
+    // re-adjust timer accordingly
+    float tau_prime = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M) / (2*2*M_PI);
+    _q->timer -= (int)roundf(tau_prime);
+
+#if 0
+    if (cabsf(s_hat) < 0.3f) {
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("false alarm S0[1]\n");
 #endif
@@ -512,6 +537,7 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
         ofdmframesync_reset(_q);
         return;
     }
+#endif
 
     float complex g_hat = 0.0f;
     unsigned int i;
@@ -568,7 +594,8 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     // check conditions for g_hat:
     //  1. magnitude should be large (near unity) when aligned
     //  2. phase should be very near zero (time aligned)
-    if (cabsf(g_hat) > 0.4f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
+    if (cabsf(g_hat) > 0.3f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
+        //printf("    acquisition\n");
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer
         _q->timer = _q->M + _q->cp_len + _q->backoff;
@@ -953,7 +980,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 
     // TODO : adjust NCO frequency based on differential phase
 
-#if DEBUG_OFDMFRAMESYNC_PRINT
+#if 0
     for (i=0; i<_q->M_pilot; i++)
         printf("x_phase(%3u) = %12.8f; y_phase(%3u) = %12.8f;\n", i+1, x_phase[i], i+1, y_phase[i]);
     printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
