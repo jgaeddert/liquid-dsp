@@ -1918,17 +1918,25 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          ofdmflexframegenprops_s * _fgprops);
                                          //unsigned int  _taper_len);
 
+// destroy ofdmflexframegen object
 void ofdmflexframegen_destroy(ofdmflexframegen _q);
 
+// print parameters, properties, etc.
+void ofdmflexframegen_print(ofdmflexframegen _q);
+
+// reset ofdmflexframegen object internals
 void ofdmflexframegen_reset(ofdmflexframegen _q);
 
+// is frame assembled?
+int ofdmflexframegen_is_assembled(ofdmflexframegen _q);
+
+// get properties
 void ofdmflexframegen_getprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props);
 
+// set properties
 void ofdmflexframegen_setprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props);
-
-void ofdmflexframegen_print(ofdmflexframegen _q);
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
