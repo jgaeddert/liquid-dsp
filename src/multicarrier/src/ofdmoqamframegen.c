@@ -42,7 +42,7 @@ struct ofdmoqamframegen_s {
     unsigned int M;         // number of subcarriers
     unsigned int m;         // filter delay (symbols)
     float beta;             // filter excess bandwidth factor
-    unsigned int * p;       // subcarrier allocation (null, pilot, data)
+    unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
     unsigned int M_null;    // number of null subcarriers
@@ -74,7 +74,7 @@ struct ofdmoqamframegen_s {
 ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
                                          unsigned int _m,
                                          float _beta,
-                                         unsigned int * _p)
+                                         unsigned char * _p)
 {
     // validate input
     if (_M < 2) {
@@ -105,13 +105,13 @@ ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
                                      0);    // gradient
 
     // allocate memory for subcarrier allocation IDs
-    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
         // initialize default subcarrier allocation
         ofdmoqamframe_init_default_sctype(q->M, q->p);
     } else {
         // copy user-defined subcarrier allocation
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation
