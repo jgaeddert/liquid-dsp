@@ -91,16 +91,19 @@ int main() {
     unsigned int num_iterations = 1000; // number of iterations to run
     float v[2] = {0.0405f, 0.5f};       // 
 
-    gradsearch gs = gradsearch_create_advanced(
-            NULL,
-            v,
-            2,
-            1e-6f,  // delta : gradient approximation step size
-            0.002f, // gamma : vector step size
-            0.1f,   // alpha : momentum parameter
-            0.999f, // mu    : decremental gamma paramter (best if not exactly 1.0)
-            gserror,
-            LIQUID_OPTIM_MINIMIZE);
+    gradsearchprops_s gsprops;
+    gradsearchprops_init_default(&gsprops);
+    gsprops.delta = 1e-6f;  // gradient approximation step size
+    gsprops.gamma = 0.002f; // vector step size
+    gsprops.alpha = 0.1f;   // momentum parameter
+    gsprops.mu    = 0.999f; // decremental gamma paramter (best if not exactly 1.0)
+
+    gradsearch gs = gradsearch_create(NULL,
+                                      v,
+                                      2,
+                                      gserror,
+                                      LIQUID_OPTIM_MINIMIZE,
+                                      &gsprops);
 
     // execute search one iteration at a time
     unsigned int i;
