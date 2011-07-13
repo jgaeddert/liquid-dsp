@@ -18,7 +18,7 @@ int main() {
     unsigned int k=2;       // samples/symbol
     unsigned int m=3;
     float beta = 0.3f;
-    float dt = 0.4f;        // timing offset
+    //float dt = 0.4f;        // timing offset
     unsigned int num_symbols = 256;
     unsigned int hc_len=1;  // channel impulse response length
     unsigned int p=13;      // equalizer filter length
