@@ -26,6 +26,7 @@
 #                            header file(s)
 #    uninstall           :   uninstall the library and header file(s)
 #    clean               :   clean all targets (bench, check, examples, etc)
+#    distclean           :   removes everything except the originally distributed files
 #    check               :   build and run autotest program
 #    bench               :   build and run benchmarking program
 #    examples            :   build all examples
@@ -417,4 +418,40 @@ clean: clean-check clean-bench clean-examples clean-sandbox clean-modules clean-
 	$(RM) libliquid.a
 	$(RM) libliquid.o
 	$(RM) $(SHARED_LIB)
+
+##
+## TARGET : distclean - removes everything except the originally distributed files
+##
+
+distclean:
+	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog) $(autotest_src) $(autotest_obj)
+	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog) $(benchmark_obj)
+	$(RM) examples/*.o $(example_progs)
+	$(RM) sandbox/*.o $(sandbox_progs)
+	$(RM) src/agc/src/*.o          src/agc/bench/*.o          src/agc/tests/*.o
+	$(RM) src/audio/src/*.o        src/audio/bench/*.o        src/audio/tests/*.o
+	$(RM) src/buffer/src/*.o       src/buffer/bench/*.o       src/buffer/tests/*.o
+	$(RM) src/dotprod/src/*.o      src/dotprod/bench/*.o      src/dotprod/tests/*.o
+	$(RM) src/equalization/src/*.o src/equalization/bench/*.o src/equalization/tests/*.o
+	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o
+	$(RM) src/fft/src/*.o          src/fft/bench/*.o          src/fft/tests/*.o
+	$(RM) src/filter/src/*.o       src/filter/bench/*.o       src/filter/tests/*.o
+	$(RM) src/framing/src/*.o      src/framing/bench/*.o      src/framing/tests/*.o
+	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
+	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o
+	$(RM) src/modem/src/*.o        src/modem/bench/*.o        src/modem/tests/*.o
+	$(RM) src/multicarrier/src/*.o src/multicarrier/bench/*.o src/multicarrier/tests/*.o
+	$(RM) src/nco/src/*.o          src/nco/bench/*.o          src/nco/tests/*.o
+	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
+	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
+	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
+	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
+	$(RM) src/experimental/src/*.o src/experimental/bench/*.o src/experimental/tests/*.o
+	$(RM) libliquid.o
+	$(RM) lib*.a
+	$(RM) todolist.txt todolist.html
+	$(RM) scripts/autoscript.o scripts/main.o scripts/autoscript
+	$(RM) $(SHARED_LIB)
+	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
+	$(RM) makefile
 
