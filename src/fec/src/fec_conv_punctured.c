@@ -41,7 +41,7 @@ fec fec_conv_punctured_create(fec_scheme _fs)
     q->rate = fec_get_rate(q->scheme);
 
     q->encode_func = &fec_conv_punctured_encode;
-    q->decode_func = &fec_conv_punctured_decode;
+    q->decode_func = &fec_conv_punctured_decode_hard;
 
     switch (q->scheme) {
     case LIQUID_FEC_CONV_V27P23:   fec_conv_init_v27p23(q);    break;
@@ -152,10 +152,10 @@ void fec_conv_punctured_encode(fec _q,
 }
 
 //unsigned int
-void fec_conv_punctured_decode(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char *_msg_enc,
-                               unsigned char *_msg_dec)
+void fec_conv_punctured_decode_hard(fec _q,
+                                    unsigned int _dec_msg_len,
+                                    unsigned char *_msg_enc,
+                                    unsigned char *_msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_punctured_setlength(_q, _dec_msg_len);
@@ -182,6 +182,60 @@ void fec_conv_punctured_decode(fec _q,
                     n++;
                     byte_in = _msg_enc[n];
                 }
+            } else {
+                // push erasure
+                _q->enc_bits[i+r] = LIQUID_FEC_SOFTBIT_ERASURE;
+            }
+        }
+        p = (p+1) % _q->P;
+    }
+
+#if VERBOSE_FEC_CONV_PUNCTURED
+    unsigned int ii;
+    printf("msg encoded (bits):\n");
+    for (ii=0; ii<num_enc_bits; ii++) {
+        printf("%3u ", _q->enc_bits[ii]);
+        if (((ii+1)%8)==0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    // run decoder
+    _q->init_viterbi(_q->vp,0);
+    // TODO : check to see if this shouldn't be num_enc_bits (punctured)
+    _q->update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+_q->K-1);
+    _q->chainback_viterbi(_q->vp, _msg_dec, 8*_q->num_dec_bytes, 0);
+
+#if VERBOSE_FEC_CONV_PUNCTURED
+    for (ii=0; ii<_dec_msg_len; ii++)
+        printf("%.2x ", _msg_dec[ii]);
+    printf("\n");
+#endif
+}
+
+//unsigned int
+void fec_conv_punctured_decode_soft(fec _q,
+                                    unsigned int _dec_msg_len,
+                                    unsigned char *_msg_enc,
+                                    unsigned char *_msg_dec)
+{
+    // re-allocate resources if necessary
+    fec_conv_punctured_setlength(_q, _dec_msg_len);
+
+    // unpack bytes, adding erasures at punctured indices
+    unsigned int num_dec_bits = _q->num_dec_bytes * 8 + _q->K - 1;
+    unsigned int num_enc_bits = num_dec_bits * _q->R;
+    unsigned int i,r;
+    unsigned int n=0;   // input soft bit index
+    unsigned int p=0;   // puncturing matrix column index
+    unsigned char bit;
+    for (i=0; i<num_enc_bits; i+=_q->R) {
+        //
+        for (r=0; r<_q->R; r++) {
+            if (_q->puncturing_matrix[r*(_q->P)+p]) {
+                // push bit from input
+                _q->enc_bits[i+r] = _msg_enc[n++];
             } else {
                 // push erasure
                 _q->enc_bits[i+r] = LIQUID_FEC_SOFTBIT_ERASURE;

@@ -399,10 +399,14 @@ void fec_conv_punctured_encode(fec _q,
                                unsigned int _dec_msg_len,
                                unsigned char * _msg_dec,
                                unsigned char * _msg_enc);
-void fec_conv_punctured_decode(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char * _msg_enc,
-                               unsigned char * _msg_dec);
+void fec_conv_punctured_decode_hard(fec _q,
+                                    unsigned int _dec_msg_len,
+                                    unsigned char * _msg_enc,
+                                    unsigned char * _msg_dec);
+void fec_conv_punctured_decode_soft(fec _q,
+                                    unsigned int _dec_msg_len,
+                                    unsigned char * _msg_enc,
+                                    unsigned char * _msg_dec);
 void fec_conv_punctured_setlength(fec _q,
                                   unsigned int _dec_msg_len);
 
