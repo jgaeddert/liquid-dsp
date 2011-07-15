@@ -25,7 +25,7 @@ void usage()
     printf("  x     : SNR max [dB], default: 5\n");
     printf("  n     : number of SNR steps, default: 21\n");
     printf("  t     : number of trials, default: 1000\n");
-    printf("  c     : convoluational coding scheme: v27, v29, v39, v615\n");
+    printf("  c     : convoluational coding scheme: v27, v29, v39, v615, punctured\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -52,12 +52,11 @@ int main(int argc, char *argv[]) {
         case 't': num_trials = atoi(optarg);    break;
         case 'c':
             fs = liquid_getopt_str2fec(optarg);
-            if (fs == LIQUID_FEC_UNKNOWN || (fs != LIQUID_FEC_CONV_V27  &&
-                                             fs != LIQUID_FEC_CONV_V29  &&
-                                             fs != LIQUID_FEC_CONV_V39  &&
-                                             fs != LIQUID_FEC_CONV_V615)      )
-            {
-                fprintf(stderr,"error: unknown/unsupported fec scheme \"%s\"\n\n",optarg);
+            if (fs == LIQUID_FEC_UNKNOWN ) {
+                fprintf(stderr,"error: %s, unknown/unsupported fec scheme \"%s\"\n\n",argv[0], optarg);
+                exit(1);
+            } else if ( !fec_scheme_is_convolutional(fs) ) {
+                fprintf(stderr,"error: %s, input fec scheme '%s' is not convolutional\n\n",argv[0], optarg);
                 exit(1);
             }
             break;
@@ -74,6 +73,7 @@ int main(int argc, char *argv[]) {
 
     // create forward error-correction object
     fec q = fec_create(fs, NULL);
+    fec_print(q);
 
     // 
     // data arrays
@@ -129,7 +129,11 @@ int main(int argc, char *argv[]) {
                 msg_org[i] = rand() & 0xff;
 
             // encode
-            fec_conv_encode(q, n, msg_org, msg_enc);
+            if ( fec_scheme_is_punctured(fs) ) {
+                fec_conv_punctured_encode(q, n, msg_org, msg_enc);
+            } else {
+                fec_conv_encode(q, n, msg_org, msg_enc);
+            }
 
             // expand and modulate (BPSK)
             for (i=0; i<k; i++) {
@@ -166,8 +170,13 @@ int main(int argc, char *argv[]) {
             }
 
             // decode using 'soft' algorithm
-            fec_conv_decode_soft(q, n, msg_rec_hard, msg_dec_hard);
-            fec_conv_decode_soft(q, n, msg_rec_soft, msg_dec_soft);
+            if ( fec_scheme_is_punctured(fs) ) {
+                fec_conv_punctured_decode_soft(q, n, msg_rec_hard, msg_dec_hard);
+                fec_conv_punctured_decode_soft(q, n, msg_rec_soft, msg_dec_soft);
+            } else {
+                fec_conv_decode_soft(q, n, msg_rec_hard, msg_dec_hard);
+                fec_conv_decode_soft(q, n, msg_rec_soft, msg_dec_soft);
+            }
             
             // count bit errors and tabulate results
             bit_errors_hard[s] += count_bit_errors_array(msg_org, msg_dec_hard, n);
@@ -177,7 +186,7 @@ int main(int argc, char *argv[]) {
         // print results for this SNR step
         printf("  %8.3f [%6u] %6u %6u\n",
                 SNRdB,
-                n*num_trials,
+                8*n*num_trials,
                 bit_errors_soft[s],
                 bit_errors_hard[s]);
     }
@@ -213,6 +222,7 @@ int main(int argc, char *argv[]) {
     fprintf(fid,"legend('soft','hard',1);\n");
     fprintf(fid,"xlabel('SNR [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
+    fprintf(fid,"title('Bit error rate for %s');\n", fec_scheme_str[fs][1]);
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
