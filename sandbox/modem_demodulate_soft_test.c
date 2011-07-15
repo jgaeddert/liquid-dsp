@@ -12,8 +12,7 @@
 
 #include "liquid.h"
 
-#define OUTPUT_FILENAME "iirdes_example.m"
-
+#define OUTPUT_FILENAME "modem_demodulate_soft_test.m"
 
 int main() {
     srand(time(NULL));
@@ -21,7 +20,7 @@ int main() {
     // options
     modulation_scheme ms = LIQUID_MODEM_QAM;    // modulation scheme
     unsigned int bps = 4;                       // bits/symbol
-    float complex e = 0.1f + _Complex_I*0.1f;   // error
+    float complex e = 0.1f + _Complex_I*0.2f;   // error
 
     unsigned int i;
 
@@ -87,6 +86,47 @@ int main() {
     printf("  soft bits :\n");
     for (k=0; k<bps; k++)
         printf("    %c : %12.8f\n", (sym_in >> (bps-k-1)) & 0x01 ? '1' : '0', soft_bits[k]);
+
+    // 
+    // export results to file
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n\n");
+    fprintf(fid,"m = %u;\n", bps);
+    fprintf(fid,"M = %u;\n", 1<<bps);
+    fprintf(fid,"c = zeros(1,M);\n");
+    fprintf(fid,"i_str = cell(1,M);\n");
+
+    for (i=0; i<M; i++) {
+        // write symbol to output file
+        fprintf(fid,"c(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(c[i]), cimagf(c[i]));
+        fprintf(fid,"i_str{%3u} = '", i+1);
+        unsigned int j;
+        for (j=0; j<bps; j++)
+            fprintf(fid,"%c", (i >> (bps-j-1)) & 0x01 ? '1' : '0');
+        fprintf(fid,"';\n");
+    }
+    fprintf(fid,"x = %12.8f + j*%12.8f;\n", crealf(c[sym_in]), cimagf(c[sym_in]));
+    fprintf(fid,"r = %12.8f + j*%12.8f;\n", crealf(r), cimagf(r));
+
+    // plot results
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(c,'o','MarkerSize',4,r,'rx',[x r]);\n");
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"text(real(c)+0.02, imag(c)+0.02, i_str);\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on;\n");
+    fprintf(fid,"xlabel('in phase');\n");
+    fprintf(fid,"ylabel('quadrature phase');\n");
+
+    fclose(fid);
+    printf("results written to %s.\n", OUTPUT_FILENAME);
+
 
     printf("done.\n");
     return 0;
