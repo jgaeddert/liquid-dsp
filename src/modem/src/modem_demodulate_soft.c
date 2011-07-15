@@ -40,6 +40,7 @@ void modem_demodulate_soft(modem _demod,
     // switch scheme
     switch (_demod->scheme) {
     case LIQUID_MODEM_BPSK:     modem_demodulate_soft_bpsk(_demod, _x, _bits);  return;
+    case LIQUID_MODEM_QPSK:     modem_demodulate_soft_qpsk(_demod, _x, _bits);  return;
     default:;
     }
 
@@ -64,6 +65,22 @@ void modem_demodulate_soft_bpsk(modem _demod,
     // re-modulate symbol and store state
     unsigned int symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
     modem_modulate_bpsk(_demod, symbol_out, &_demod->x_hat);
+    _demod->r = _x;
+}
+
+// demodulate QPSK (soft)
+void modem_demodulate_soft_qpsk(modem _demod,
+                                float complex _x,
+                                unsigned char * _bits_out)
+{
+    // soft output
+    _bits_out[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(crealf(_x))) );
+    _bits_out[1] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(cimagf(_x))) );
+
+    // re-modulate symbol and store state
+    unsigned int symbol_out  = (crealf(_x) > 0 ? 0 : 1) +
+                               (cimagf(_x) > 0 ? 0 : 2);
+    modem_modulate_qpsk(_demod, symbol_out, &_demod->x_hat);
     _demod->r = _x;
 }
 
