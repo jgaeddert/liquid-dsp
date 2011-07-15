@@ -1241,6 +1241,7 @@ sandbox_obj =						\
 	sandbox/minsearch_test.o			\
 	sandbox/minsearch2_test.o			\
 	sandbox/matrix_eig_test.o			\
+	sandbox/modem_demodulate_soft_test.o		\
 	sandbox/ofdmoqam_firpfbch_test.o		\
 	sandbox/ofdmoqam_firpfbch_cfo_test.o		\
 	sandbox/quasinewton_test.o			\
