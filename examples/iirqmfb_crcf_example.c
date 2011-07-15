@@ -9,7 +9,7 @@
 #include <complex.h>
 #include <math.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "iirqmfb_crcf_example.m"
 

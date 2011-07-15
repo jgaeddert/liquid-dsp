@@ -38,8 +38,8 @@ float gsfunc(float _x, float * _v)
 
 int main() {
     // options
-    unsigned int num_samples = 1000;    // number of samples
-    float sig = 0.01f;                  // noise variance
+    unsigned int num_samples = 400;     // number of samples
+    float sig = 0.1f;                   // noise variance
     unsigned int num_iterations = 1000; // number of iterations to run
 
     float v[3] = {1, 1, 1};
@@ -61,6 +61,7 @@ int main() {
 
     // create gradsearch object
     gradsearchprops_s gsprops;
+    gradsearchprops_init_default(&gsprops);
     gsprops.delta = 1e-6f;  // gradient approximation step size
     gsprops.gamma = 0.002f; // vector step size
     gsprops.alpha = 0.1f;   // momentum parameter

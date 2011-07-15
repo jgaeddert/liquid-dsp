@@ -59,8 +59,60 @@ AC_ARG_ENABLE(profile,
 AC_ARG_ENABLE(experimental,
     AS_HELP_STRING([--enable-experimental],[enable experimental modules, objects]),
     [   # experimental option enabled
-        MODULE_EXPERIMENTAL="experimental"          # add 'experimental' module directory to list
-        HEADER_EXPERIMENTAL="liquid.experimental.h" # add 'experimental' header to list
+        EXPERIMENTAL_HEADER="liquid.experimental.h" # add 'experimental' header to list
+        EXPERIMENTAL_MLIBS="src/experimental/src/ann.nodes.o \
+            src/experimental/src/activation_functions.o \
+            src/experimental/src/cpmodem.o \
+            src/experimental/src/kmeans.o \
+            src/experimental/src/layer.o \
+            src/experimental/src/maxnet.o \
+            src/experimental/src/node.o \
+            src/experimental/src/fbasc.o \
+            src/experimental/src/gport.o \
+            src/experimental/src/filter_rrrf.o \
+            src/experimental/src/filter_crcf.o \
+            src/experimental/src/filter_cccf.o \
+            src/experimental/src/gmskframegen.o \
+            src/experimental/src/gmskframesync.o \
+            src/experimental/src/patternset.o \
+            src/experimental/src/awgn_channel.o \
+            src/experimental/src/lognorm_channel.o \
+            src/experimental/src/channel.o \
+            src/experimental/src/pamodel.o \
+            src/experimental/src/ricek_channel.o"
+        EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.h \
+            src/experimental/tests/gport_autotest.h \
+            src/experimental/tests/channel_autotest.h"
+        EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.h \
+            src/experimental/bench/gport_dma_benchmark.h \
+            src/experimental/bench/gport_dma_threaded_benchmark.h \
+            src/experimental/bench/gport_ima_benchmark.h \
+            src/experimental/bench/gport_ima_threaded_benchmark.h \
+            src/experimental/bench/dds_benchmark.h \
+            src/experimental/bench/qmfb_benchmark.h"
+        EXPERIMENTAL_EXAMPLES="examples/ann_bitpattern_example.o \
+            examples/ann_example.o \
+            examples/ann_layer_example.o \
+            examples/ann_maxnet_example.o \
+            examples/ann_node_example.o \
+            examples/ann_xor_example.o \
+            examples/dds_cccf_example.o \
+            examples/fbasc_example.o \
+            examples/gport_dma_example.o \
+            examples/gport_dma_threaded_example.o \
+            examples/gport_ima_example.o \
+            examples/gport_ima_threaded_example.o \
+            examples/gport_mma_threaded_example.o \
+            examples/iirqmfb_crcf_example.o \
+            examples/itqmfb_crcf_example.o \
+            examples/itqmfb_rrrf_example.o \
+            examples/kmeans_example.o \
+            examples/patternset_example.o \
+            examples/prqmfb_crcf_example.o \
+            examples/qmfb_crcf_analysis_example.o \
+            examples/qmfb_crcf_synthesis_example.o \
+            examples/symsync2_crcf_example.o \
+            examples/symsynclp_crcf_example.o"
         AC_DEFINE(LIQUID_EXPERIMENTAL)
         AC_CHECK_HEADERS(pthread.h)
         AC_CHECK_LIB([pthread], [pthread_mutex_init], [],
@@ -68,8 +120,11 @@ AC_ARG_ENABLE(experimental,
                      [])
     ],
     [   # experimental option disabled
-        MODULE_EXPERIMENTAL=""
-        HEADER_EXPERIMENTAL=""
+        EXPERIMENTAL_HEADER=""
+        EXPERIMENTAL_MLIBS=""
+        EXPERIMENTAL_AUTOTESTS=""
+        EXPERIMENTAL_BENCHMARKS=""
+        EXPERIMENTAL_EXAMPLES=""
     ],
 )
 
@@ -184,25 +239,28 @@ esac
 #
 # autoconf variable substitutions
 #
-AC_SUBST(LIBS)              # shared libraries (-lc, -lm, etc.)
-AC_SUBST(MLIBS_DOTPROD)     # 
-AC_SUBST(MODULE_EXPERIMENTAL)# build experimental module?
-AC_SUBST(HEADER_EXPERIMENTAL)# experimental header
+AC_SUBST(LIBS)                      # shared libraries (-lc, -lm, etc.)
+AC_SUBST(MLIBS_DOTPROD)             # 
+AC_SUBST(EXPERIMENTAL_HEADER)       # experimental header
+AC_SUBST(EXPERIMENTAL_MLIBS)        # experimental library objects
+AC_SUBST(EXPERIMENTAL_AUTOTESTS)    # experimental autotests
+AC_SUBST(EXPERIMENTAL_BENCHMARKS)   # experimental benchmarks
+AC_SUBST(EXPERIMENTAL_EXAMPLES)     # experimental examples
 
-AC_SUBST(SH_LIB)            # output shared library target
-AC_SUBST(REBIND)            # rebinding tool (e.g. ldconfig)
-AC_SUBST(ARCH_OPTION)       # compiler architecture option
+AC_SUBST(SH_LIB)                    # output shared library target
+AC_SUBST(REBIND)                    # rebinding tool (e.g. ldconfig)
+AC_SUBST(ARCH_OPTION)               # compiler architecture option
 
-AC_SUBST(DEBUG_OPTION)      # debug option
-AC_SUBST(PROFILE_OPTION)    # profile symbols
-AC_SUBST(CLIB)              # 
+AC_SUBST(DEBUG_OPTION)              # debug option
+AC_SUBST(PROFILE_OPTION)            # profile symbols
+AC_SUBST(CLIB)                      # C library linkage (e.g. '-lc')
 
 # documentation programs
-AC_SUBST(PDFLATEX)          # pdflatex
-AC_SUBST(BIBTEX)            # bibtex
-AC_SUBST(EPSTOPDF)          # epstopdf
-AC_SUBST(GNUPLOT)           # gnuplot
-AC_SUBST(PYGMENTIZE)        # pygmentize
+AC_SUBST(PDFLATEX)                  # pdflatex
+AC_SUBST(BIBTEX)                    # bibtex
+AC_SUBST(EPSTOPDF)                  # epstopdf
+AC_SUBST(GNUPLOT)                   # gnuplot
+AC_SUBST(PYGMENTIZE)                # pygmentize
 
 AC_CONFIG_FILES([makefile doc/makefile])
 AC_OUTPUT

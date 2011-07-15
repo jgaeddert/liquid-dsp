@@ -36,7 +36,7 @@ void usage()
 // simulation data structure
 typedef struct {
     unsigned int num_channels;      // number of subcarriers
-    unsigned int * p;               // subcarrier allocation
+    unsigned char * p;              // subcarrier allocation
     unsigned int M_null;            // number of null subcarriers
     unsigned int M_pilot;           // number of pilot subcarriers
     unsigned int M_data;            // number of data subcarriers
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     simdata.num_symbols_rx = 0;
     simdata.demod = modem_create(ms,bps);
     simdata.data_tx = (unsigned int*)malloc(num_channels*num_symbols_data*sizeof(unsigned int));
-    simdata.p       = (unsigned int*)malloc(num_channels*sizeof(unsigned int));
+    simdata.p       = (unsigned char*)malloc(num_channels*sizeof(unsigned char));
 
     ofdmoqamframe_init_default_sctype(simdata.num_channels, simdata.p);
 

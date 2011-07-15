@@ -41,7 +41,7 @@ void ofdmflexframesync_debug_print(ofdmflexframesync _q);
 struct ofdmflexframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
-    unsigned int * p;       // subcarrier allocation (null, pilot, data)
+    unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
     unsigned int M_null;    // number of null subcarriers
@@ -102,7 +102,7 @@ struct ofdmflexframesync_s {
 //  _userdata   :   user-defined data structure passed to callback
 ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
                                            unsigned int _cp_len,
-                                           unsigned int * _p,
+                                           unsigned char * _p,
                                            //unsigned int _taper_len,
                                            ofdmflexframesync_callback _callback,
                                            void * _userdata)
@@ -127,13 +127,13 @@ ofdmflexframesync ofdmflexframesync_create(unsigned int _M,
     q->userdata = _userdata;
 
     // allocate memory for subcarrier allocation IDs
-    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
         // initialize default subcarrier allocation
         ofdmframe_init_default_sctype(q->M, q->p);
     } else {
         // copy user-defined subcarrier allocation
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation
@@ -231,7 +231,7 @@ void ofdmflexframesync_execute(ofdmflexframesync _q,
 //  _M          :   number of subcarriers
 //  _userdata   :   user-defined data structure
 int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned int  * _p,
+                                        unsigned char * _p,
                                         unsigned int    _M,
                                         void * _userdata)
 {

@@ -54,7 +54,7 @@ void ofdmflexframegenprops_init_default(ofdmflexframegenprops_s * _props)
 struct ofdmflexframegen_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
-    unsigned int * p;       // subcarrier allocation (null, pilot, data)
+    unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
     unsigned int M_null;    // number of null subcarriers
@@ -98,6 +98,7 @@ struct ofdmflexframegen_s {
         OFDMFLEXFRAMEGEN_STATE_HEADER,  // write header symbols
         OFDMFLEXFRAMEGEN_STATE_PAYLOAD  // write payload symbols
     } state;
+    int frame_assembled;                // frame assembled flag
     int frame_complete;                 // frame completed flag
     unsigned int header_symbol_index;   //
     unsigned int payload_symbol_index;  //
@@ -110,7 +111,7 @@ struct ofdmflexframegen_s {
 // TODO : allow _p to be NULL pointer (and initialize with defaults)
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int _cp_len,
-                                         unsigned int * _p,
+                                         unsigned char * _p,
                                          ofdmflexframegenprops_s * _props)
 {
     // validate input
@@ -130,13 +131,13 @@ ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
     q->X = (float complex*) malloc((q->M)*sizeof(float complex));
 
     // allocate memory for subcarrier allocation IDs
-    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
         // initialize default subcarrier allocation
         ofdmframe_init_default_sctype(q->M, q->p);
     } else {
         // copy user-defined subcarrier allocation
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation
@@ -202,6 +203,7 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
     // reset symbol counter and state
     _q->symbol_number = 0;
     _q->state = OFDMFLEXFRAMEGEN_STATE_S0;
+    _q->frame_assembled = 0;
     _q->frame_complete = 0;
     _q->header_symbol_index = 0;
     _q->payload_symbol_index = 0;
@@ -209,6 +211,42 @@ void ofdmflexframegen_reset(ofdmflexframegen _q)
     // reset internal OFDM frame generator object
     // NOTE: this is important for appropriately setting the pilot phases
     ofdmframegen_reset(_q->fg);
+}
+
+// is frame assembled?
+int ofdmflexframegen_is_assembled(ofdmflexframegen _q)
+{
+    return _q->frame_assembled;
+}
+
+void ofdmflexframegen_print(ofdmflexframegen _q)
+{
+    printf("ofdmflexframegen:\n");
+    printf("    num subcarriers     :   %-u\n", _q->M);
+    printf("      * NULL            :   %-u\n", _q->M_null);
+    printf("      * pilot           :   %-u\n", _q->M_pilot);
+    printf("      * data            :   %-u\n", _q->M_data);
+    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
+    printf("    properties:\n");
+    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[_q->props.mod_scheme][1], _q->props.mod_bps);
+    printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
+    printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
+    printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
+    printf("    payload:\n");
+    printf("      * decoded bytes   :   %-u\n", _q->props.payload_len);
+    printf("      * encoded bytes   :   %-u\n", _q->payload_enc_len);
+    printf("      * modulated syms  :   %-u\n", _q->payload_mod_len);
+    printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
+    printf("      * S0 symbols      :   %-u @ %u\n", _q->props.num_symbols_S0, _q->M);
+    printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
+    printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
+    printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
+
+    // compute asymptotic spectral efficiency
+    unsigned int num_bits = 8*_q->props.payload_len;
+    unsigned int num_samples = _q->M*_q->props.num_symbols_S0 +
+                               (_q->M+_q->cp_len)*(1 + _q->num_symbols_header + _q->num_symbols_payload);
+    printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
 }
 
 // get ofdmflexframegen properties
@@ -279,36 +317,6 @@ void ofdmflexframegen_setprops(ofdmflexframegen _q,
     _q->num_symbols_payload = d.quot + (d.rem ? 1 : 0);
 }
 
-void ofdmflexframegen_print(ofdmflexframegen _q)
-{
-    printf("ofdmflexframegen:\n");
-    printf("    num subcarriers     :   %-u\n", _q->M);
-    printf("      * NULL            :   %-u\n", _q->M_null);
-    printf("      * pilot           :   %-u\n", _q->M_pilot);
-    printf("      * data            :   %-u\n", _q->M_data);
-    printf("    cyclic prefix len   :   %-u\n", _q->cp_len);
-    printf("    properties:\n");
-    printf("      * mod scheme      :   %s (%u b/s)\n", modulation_scheme_str[_q->props.mod_scheme][1], _q->props.mod_bps);
-    printf("      * fec (inner)     :   %s\n", fec_scheme_str[_q->props.fec0][1]);
-    printf("      * fec (outer)     :   %s\n", fec_scheme_str[_q->props.fec1][1]);
-    printf("      * CRC scheme      :   %s\n", crc_scheme_str[_q->props.check][1]);
-    printf("    payload:\n");
-    printf("      * decoded bytes   :   %-u\n", _q->props.payload_len);
-    printf("      * encoded bytes   :   %-u\n", _q->payload_enc_len);
-    printf("      * modulated syms  :   %-u\n", _q->payload_mod_len);
-    printf("    total OFDM symbols  :   %-u\n", ofdmflexframegen_getframelen(_q));
-    printf("      * S0 symbols      :   %-u @ %u\n", _q->props.num_symbols_S0, _q->M);
-    printf("      * S1 symbols      :   %-u @ %u\n", 1, _q->M+_q->cp_len);
-    printf("      * header symbols  :   %-u @ %u\n", _q->num_symbols_header,  _q->M+_q->cp_len);
-    printf("      * payload symbols :   %-u @ %u\n", _q->num_symbols_payload, _q->M+_q->cp_len);
-
-    // compute asymptotic spectral efficiency
-    unsigned int num_bits = 8*_q->props.payload_len;
-    unsigned int num_samples = _q->M*_q->props.num_symbols_S0 +
-                               (_q->M+_q->cp_len)*(1 + _q->num_symbols_header + _q->num_symbols_payload);
-    printf("    spectral efficiency :   %-6.4f b/s/Hz\n", (float)num_bits / (float)num_samples);
-}
-
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
 unsigned int ofdmflexframegen_getframelen(ofdmflexframegen _q)
@@ -331,6 +339,9 @@ void ofdmflexframegen_assemble(ofdmflexframegen _q,
                                unsigned char * _header,
                                unsigned char * _payload)
 {
+    // set assembled flag
+    _q->frame_assembled = 1;
+
     // copy user-defined header data
     memmove(_q->header, _header, OFDMFLEXFRAME_H_USER*sizeof(unsigned char));
 
@@ -368,6 +379,13 @@ int ofdmflexframegen_writesymbol(ofdmflexframegen _q,
                                  liquid_float_complex * _buffer,
                                  unsigned int * _num_written)
 {
+    // check if frame is actually assembled
+    if ( !_q->frame_assembled ) {
+        fprintf(stderr,"warning: ofdmflexframegen_writesymbol(), frame not assembled\n");
+        *_num_written = 0;
+        return 1;
+    }
+
     // increment symbol counter
     _q->symbol_number++;
 

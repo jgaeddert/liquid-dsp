@@ -118,7 +118,7 @@ int main(int argc, char*argv[])
     unsigned char payload[payload_len];
 
     // initialize subcarrier allocation
-    unsigned int p[M];
+    unsigned char p[M];
     ofdmframe_init_default_sctype(M, p);
 
     // create frame generator

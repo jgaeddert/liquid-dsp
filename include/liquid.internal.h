@@ -241,6 +241,13 @@ struct fec_s {
                         unsigned char * _msg_dec);
 };
 
+// simple type testing
+int fec_scheme_is_convolutional(fec_scheme _scheme);
+int fec_scheme_is_punctured(fec_scheme _scheme);
+int fec_scheme_is_reedsolomon(fec_scheme _scheme);
+int fec_scheme_is_hamming(fec_scheme _scheme);
+int fec_scheme_is_repeat(fec_scheme _scheme);
+
 // Pass
 fec fec_pass_create(void *_opts);
 void fec_pass_destroy(fec _q);
@@ -1004,7 +1011,7 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
 
 // internal callback
 int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned int  * _p,
+                                        unsigned char * _p,
                                         unsigned int    _M,
                                         void * _userdata);
 
@@ -1431,7 +1438,7 @@ void modem_demodulate_linear_array_ref(float _v,
 //  _S0                 :   output symbol (freq)
 //  _s0                 :   output symbol (time)
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmframe_init_S0(unsigned int * _p,
+void ofdmframe_init_S0(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S0,
                        float complex * _s0,
@@ -1443,7 +1450,7 @@ void ofdmframe_init_S0(unsigned int * _p,
 //  _S1                 :   output symbol (freq)
 //  _s1                 :   output symbol (time)
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmframe_init_S1(unsigned int * _p,
+void ofdmframe_init_S1(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S1,
                        float complex * _s1,
@@ -1504,7 +1511,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q);
 //  _num_subcarriers    :   total number of subcarriers
 //  _S0                 :   output symbol
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmoqamframe_init_S0(unsigned int * _p,
+void ofdmoqamframe_init_S0(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S0,
                            unsigned int * _M_S0);
@@ -1514,7 +1521,7 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
 //  _num_subcarriers    :   total number of subcarriers
 //  _S1                 :   output symbol
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmoqamframe_init_S1(unsigned int * _p,
+void ofdmoqamframe_init_S1(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S1,
                            unsigned int * _M_S1);

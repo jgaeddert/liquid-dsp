@@ -30,6 +30,7 @@
 #    listings-check      :   compile all the listings to ensure code is correct
 #
 #    mostlyclean         :   full clean of all documentation (figures, listings, libs, etc.)
+#    distclean           :   removes everything except the originally distributed files
 #    clean-figures       :   clean all figures and generating files
 #    clean-listings      :   clean all listings
 #
@@ -177,8 +178,11 @@ extra_clean :=
 
 all: liquid.pdf
 
+# copy include file from parent directory
 libliquid.a : ../libliquid.a
 	cp $< $@
+
+extra_clean += libliquid.a
 
 
 ##
@@ -221,6 +225,9 @@ clean-listings-check :
 	$(RM) listings/*.prog.c
 	$(RM) listings/*.prog.cc
 	$(RM) listings/*.o
+	$(RM) tutorials/*.prog.c
+	$(RM) tutorials/*.prog.cc
+	$(RM) tutorials/*.o
 	$(RM) scripts/listings_check
 
 # create listings targets (append '.tex' to each input)
@@ -252,6 +259,7 @@ listings: highlight.sty $(listings_texfiles)
 clean-listings: clean-listings-check
 	$(RM) highlight.sty
 	$(RM) listings/*.tex
+	$(RM) tutorials/*.tex
 
 ##
 ## LIB
@@ -265,7 +273,7 @@ $(lib_objects) : %.o : % include/liquid.doc.h include/liquid.doc.html.h
 lib: $(lib_objects)
 
 clean-lib:
-	$(RM) $(lib_objects)
+	$(RM) lib/*.o
 
 ##
 ## FIGURES
@@ -349,7 +357,7 @@ liquid.pdf: liquid.tex liquid.bbl listings $(SECTIONS)
 	$(TEX) $(TEX_FLAGS) liquid
 	$(TEX) $(TEX_FLAGS) liquid
 
-clean-doc:
+clean-tex:
 	$(RM) *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.bbl *.blg
 	$(RM) liquid.pdf
 
@@ -409,10 +417,18 @@ clean-html:
 
 
 # clean main documents
-clean: clean-doc
+clean: clean-tex
 
 # clean up nearly everything
-mostlyclean: clean-doc clean-figures clean-lib clean-listings clean-html
+mostlyclean: clean-tex clean-figures clean-lib clean-listings clean-html
 	$(RM) $(extra_clean)
 	$(RM) -r src/*.dSYM
+
+# remove everything except the originally distributed files
+distclean: clean-tex clean-figures clean-lib clean-listings clean-html
+	$(RM) $(extra_clean)
+	$(RM) *.m .DS_Store
+	$(RM) -r src/*.dSYM autom4te.cache
+	$(RM) configure config.status config.log
+	$(RM) makefile
 

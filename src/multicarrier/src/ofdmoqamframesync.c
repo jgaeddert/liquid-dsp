@@ -46,7 +46,7 @@ struct ofdmoqamframesync_s {
     unsigned int m;         // filter delay (symbols)
     float beta;             // filter excess bandwidth factor
     int ftype;              // filter prototype (e.g. LIQUID_RNYQUIST_ARKAISER)
-    unsigned int * p;       // subcarrier allocation (null, pilot, data)
+    unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
     unsigned int M2;        // M/2 (time delay)
@@ -117,7 +117,7 @@ struct ofdmoqamframesync_s {
 ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
                                            unsigned int _m,
                                            float _beta,
-                                           unsigned int * _p,
+                                           unsigned char * _p,
                                            ofdmoqamframesync_callback _callback,
                                            void * _userdata)
 {
@@ -142,11 +142,11 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
     q->beta = _beta;
 
     // subcarrier allocation
-    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
         ofdmoqamframe_init_default_sctype(q->M, q->p);
     } else {
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation

@@ -176,15 +176,18 @@ void design_rkaiser_filter2(unsigned int _k,
     q.w1    = 0.5;
 
     // create gradsearch object
-    gradsearch gs = gradsearch_create_advanced(
-            (void*)&q,
-            v, 2,       // vector optimizer
-            1e-6f,      // delta: gradient step size
-            0.0005f,    // gamma: vector step size
-            0.5f,       // alpha: momentum parameter
-            0.90f,      // mu:    decremental gamma parameter
-            gs_utility,
-            LIQUID_OPTIM_MINIMIZE);
+    gradsearchprops_s gsprops;
+    gradsearchprops_init_default(&gsprops);
+    gsprops.delta = 1e-6f;  // gradient approximation step size
+    gsprops.gamma = 0.0005f;// vector step size
+    gsprops.alpha = 0.5f;   // momentum parameter
+    gsprops.mu    = 0.90f;  // decremental gamma paramter (best if not exactly 1.0)
+
+    gradsearch gs = gradsearch_create((void*)&q,
+                                      v, 2,       // vector optimizer
+                                      gs_utility,
+                                      LIQUID_OPTIM_MINIMIZE,
+                                      &gsprops);
 
     // run search
     unsigned int i;
