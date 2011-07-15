@@ -68,6 +68,10 @@ void liquid_print_fec_schemes()
     // print all available MOD schemes
     printf("          ");
     for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++) {
+#if !defined HAVE_LIBFEC || !defined HAVE_FEC_H
+        if ( fec_scheme_is_convolutional(i) || fec_scheme_is_reedsolomon(i) )
+            continue;
+#endif
         printf("%s", fec_scheme_str[i][0]);
 
         if (i != LIQUID_FEC_NUM_SCHEMES-1)
@@ -96,6 +100,100 @@ fec_scheme liquid_getopt_str2fec(const char * _str)
     fprintf(stderr,"warning: liquid_getopt_str2fec(), unknown/unsupported fec scheme : %s\n", _str);
     return LIQUID_FEC_UNKNOWN;
 }
+
+// is scheme convolutional?
+int fec_scheme_is_convolutional(fec_scheme _scheme)
+{
+    switch (_scheme) {
+    // convolutional codes (punctured or otherwise)
+    case LIQUID_FEC_CONV_V27:
+    case LIQUID_FEC_CONV_V29:
+    case LIQUID_FEC_CONV_V39:
+    case LIQUID_FEC_CONV_V615:
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
+
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
+        return 1;
+
+    default:;
+    }
+
+    return 0;
+}
+
+// is scheme punctured?
+int fec_scheme_is_punctured(fec_scheme _scheme)
+{
+    switch (_scheme) {
+    // convolutional codes (punctured)
+    case LIQUID_FEC_CONV_V27P23:
+    case LIQUID_FEC_CONV_V27P34:
+    case LIQUID_FEC_CONV_V27P45:
+    case LIQUID_FEC_CONV_V27P56:
+    case LIQUID_FEC_CONV_V27P67:
+    case LIQUID_FEC_CONV_V27P78:
+
+    case LIQUID_FEC_CONV_V29P23:
+    case LIQUID_FEC_CONV_V29P34:
+    case LIQUID_FEC_CONV_V29P45:
+    case LIQUID_FEC_CONV_V29P56:
+    case LIQUID_FEC_CONV_V29P67:
+    case LIQUID_FEC_CONV_V29P78:
+        return 1;
+
+    default:;
+    }
+
+    return 0;
+}
+
+// is scheme Reed-Solomon?
+int fec_scheme_is_reedsolomon(fec_scheme _scheme)
+{
+    switch (_scheme) {
+    // Reed-Solomon codes
+    case LIQUID_FEC_RS_M8:
+        return 1;
+    default:;
+    }
+    return 0;
+}
+
+// is scheme Hamming?
+int fec_scheme_is_hamming(fec_scheme _scheme)
+{
+    switch (_scheme) {
+    case LIQUID_FEC_HAMMING74:
+    case LIQUID_FEC_HAMMING84:
+    case LIQUID_FEC_HAMMING128:
+        return 1;
+    default:;
+    }
+    return 0;
+}
+
+// is scheme repeat?
+int fec_scheme_is_repeat(fec_scheme _scheme)
+{
+    switch (_scheme) {
+    case LIQUID_FEC_REP3:
+    case LIQUID_FEC_REP5:
+        return 1;
+    default:;
+    }
+    return 0;
+}
+
 
 // return the encoded message length using a particular error-
 // correction scheme (object-independent method)
