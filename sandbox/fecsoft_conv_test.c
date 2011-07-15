@@ -25,6 +25,7 @@ void usage()
     printf("  x     : SNR max [dB], default: 5\n");
     printf("  n     : number of SNR steps, default: 21\n");
     printf("  t     : number of trials, default: 1000\n");
+    printf("  c     : convoluational coding scheme: v27, v29, v39, v615\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -41,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     // get command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhs:x:n:t:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhs:x:n:t:c:")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage(); return 0;
@@ -49,6 +50,17 @@ int main(int argc, char *argv[]) {
         case 'x': SNRdB_max = atof(optarg);     break;
         case 'n': num_snr = atoi(optarg);       break;
         case 't': num_trials = atoi(optarg);    break;
+        case 'c':
+            fs = liquid_getopt_str2fec(optarg);
+            if (fs == LIQUID_FEC_UNKNOWN || (fs != LIQUID_FEC_CONV_V27  &&
+                                             fs != LIQUID_FEC_CONV_V29  &&
+                                             fs != LIQUID_FEC_CONV_V39  &&
+                                             fs != LIQUID_FEC_CONV_V615)      )
+            {
+                fprintf(stderr,"error: unknown/unsupported fec scheme \"%s\"\n\n",optarg);
+                exit(1);
+            }
+            break;
         default:
             printf("error: %s, unknown option\n", argv[0]);
             exit(-1);
