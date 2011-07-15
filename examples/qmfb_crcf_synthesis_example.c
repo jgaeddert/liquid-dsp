@@ -10,7 +10,7 @@
 #include <complex.h>
 #include <math.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "qmfb_crcf_synthesis_example.m"
 

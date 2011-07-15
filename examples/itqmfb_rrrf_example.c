@@ -6,7 +6,7 @@
 #include <complex.h>
 #include <math.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "itqmfb_rrrf_analysis_example.m"
 
