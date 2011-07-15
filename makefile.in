@@ -71,7 +71,7 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h @HEADER_EXPERIMENTAL@
+headers_install	:= liquid.h @EXPERIMENTAL_HEADER@
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
@@ -289,38 +289,36 @@ fft_benchmarks :=					\
 #
 
 filter_objects :=			\
-	src/filter/src/bessel.o	\
-	src/filter/src/butter.o	\
-	src/filter/src/cheby1.o	\
-	src/filter/src/cheby2.o	\
+	src/filter/src/bessel.o		\
+	src/filter/src/butter.o		\
+	src/filter/src/cheby1.o		\
+	src/filter/src/cheby2.o		\
 	src/filter/src/ellip.o		\
 	src/filter/src/filter_rrrf.o	\
 	src/filter/src/filter_crcf.o	\
 	src/filter/src/filter_cccf.o	\
-	src/filter/src/firdes.o	\
+	src/filter/src/firdes.o		\
 	src/filter/src/firdespm.o	\
 	src/filter/src/group_delay.o	\
 	src/filter/src/hM3.o		\
 	src/filter/src/iirdes.pll.o	\
-	src/filter/src/iirdes.o	\
+	src/filter/src/iirdes.o		\
 	src/filter/src/lpc.o		\
 	src/filter/src/rcos.o		\
 	src/filter/src/rkaiser.o	\
 	src/filter/src/rrcos.o		\
-
-#	src/filter/src/nyquist.o
 
 
 # list explicit targets and dependencies here
 filter_includes :=			\
 	src/filter/src/firfarrow.c	\
 	src/filter/src/firfilt.c	\
-	src/filter/src/firpfb.c	\
+	src/filter/src/firpfb.c		\
 	src/filter/src/iirfilt.c	\
 	src/filter/src/iirfiltsos.c	\
-	src/filter/src/interp.c	\
+	src/filter/src/interp.c		\
 	src/filter/src/decim.c		\
-	src/filter/src/resamp.c	\
+	src/filter/src/resamp.c		\
 	src/filter/src/resamp2.c	\
 	src/filter/src/symsync.c	\
 
@@ -361,8 +359,6 @@ src/filter/src/rcos.o : %.o : %.c $(headers)
 src/filter/src/rkaiser.o : %.o : %.c $(headers)
 
 src/filter/src/rrcos.o : %.o : %.c $(headers)
-
-src/filter/src/nyquist.o : %.o : %.c $(headers)
 
 
 filter_autotests :=					\
@@ -415,9 +411,7 @@ framing_objects :=				\
 	src/framing/src/interleaver_permute.o	\
 
 
-# 
 # list explicit targets and dependencies here
-#
 
 src/framing/src/bpacketgen.o : %.o : %.c $(headers)
 
@@ -472,11 +466,11 @@ framing_benchmarks :=					\
 # MODULE : math
 #
 
-math_objects :=				\
+math_objects :=					\
 	src/math/src/poly.o			\
 	src/math/src/polyc.o			\
 	src/math/src/polyf.o			\
-	src/math/src/polycf.o		\
+	src/math/src/polycf.o			\
 	src/math/src/math.o			\
 	src/math/src/math.bessel.o		\
 	src/math/src/math.gamma.o		\
@@ -487,7 +481,7 @@ math_objects :=				\
 poly_includes :=				\
 	src/math/src/poly.common.c		\
 	src/math/src/poly.expand.c		\
-	src/math/src/poly.findroots.c	\
+	src/math/src/poly.findroots.c		\
 	src/math/src/poly.lagrange.c		\
 
 src/math/src/poly.o : %.o : %.c $(headers) $(poly_includes)
@@ -509,13 +503,13 @@ src/math/src/math.complex.o : %.o : %.c $(headers)
 src/math/src/math.trig.o : %.o : %.c $(headers)
 
 
-math_autotests :=					\
+math_autotests :=				\
 	src/math/tests/kbd_autotest.h		\
 	src/math/tests/math_autotest.h		\
 	src/math/tests/math_bessel_autotest.h	\
-	src/math/tests/math_gamma_autotest.h		\
+	src/math/tests/math_gamma_autotest.h	\
 	src/math/tests/math_complex_autotest.h	\
-	src/math/tests/polynomial_autotest.h		\
+	src/math/tests/polynomial_autotest.h	\
 
 
 math_benchmarks :=
@@ -525,7 +519,7 @@ math_benchmarks :=
 #
 
 matrix_objects :=				\
-	src/matrix/src/matrix.o		\
+	src/matrix/src/matrix.o			\
 	src/matrix/src/matrixf.o		\
 	src/matrix/src/matrixc.o		\
 	src/matrix/src/matrixcf.o		\
@@ -533,7 +527,7 @@ matrix_objects :=				\
 
 matrix_includes :=				\
 	src/matrix/src/matrix.base.c		\
-	src/matrix/src/matrix.cgsolve.c	\
+	src/matrix/src/matrix.cgsolve.c		\
 	src/matrix/src/matrix.chol.c		\
 	src/matrix/src/matrix.gramschmidt.c	\
 	src/matrix/src/matrix.inv.c		\
@@ -552,9 +546,9 @@ src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
 
 
 
-matrx_autotests :=					\
-	src/matrix/tests/matrixcf_autotest.h		\
-	src/matrix/tests/matrixf_autotest.h		\
+matrx_autotests :=				\
+	src/matrix/tests/matrixcf_autotest.h	\
+	src/matrix/tests/matrixf_autotest.h	\
 
 
 matrix_benchmarks :=
@@ -565,13 +559,13 @@ matrix_benchmarks :=
 #
 
 modem_objects :=				\
-	src/modem/src/gmskmod.o		\
-	src/modem/src/gmskdem.o		\
-	src/modem/src/modem_arb_const.o	\
+	src/modem/src/gmskmod.o			\
+	src/modem/src/gmskdem.o			\
+	src/modem/src/modem_arb_const.o		\
 	src/modem/src/modem_apsk_const.o	\
 	src/modem/src/modem_create.o		\
 	src/modem/src/modem_common.o		\
-	src/modem/src/modem_modulate.o	\
+	src/modem/src/modem_modulate.o		\
 	src/modem/src/modem_demodulate.o	\
 	src/modem/src/ampmodem.o		\
 	src/modem/src/freqmodem.o		\
@@ -613,16 +607,16 @@ modem_benchmarks :=					\
 # MODULE : multicarrier
 #
 
-multicarrier_objects :=				\
+multicarrier_objects :=					\
 	src/multicarrier/src/firpfbch_crcf.o		\
 	src/multicarrier/src/firpfbch_cccf.o		\
-	src/multicarrier/src/mdctch.o		\
-	src/multicarrier/src/ofdmframe.common.o	\
+	src/multicarrier/src/mdctch.o			\
+	src/multicarrier/src/ofdmframe.common.o		\
 	src/multicarrier/src/ofdmframegen.o		\
 	src/multicarrier/src/ofdmframesync.o		\
-	src/multicarrier/src/ofdmoqam.o		\
+	src/multicarrier/src/ofdmoqam.o			\
 	src/multicarrier/src/ofdmoqamframe.common.o	\
-	src/multicarrier/src/ofdmoqamframegen.o	\
+	src/multicarrier/src/ofdmoqamframegen.o		\
 	src/multicarrier/src/ofdmoqamframesync.o	\
 
 # list explicit targets and dependencies here
@@ -630,7 +624,7 @@ multicarrier_objects :=				\
 # autotests
 multicarrier_autotests :=					\
 	src/multicarrier/tests/firpfbch_synthesizer_autotest.h	\
-	src/multicarrier/tests/firpfbch_analyzer_autotest.h		\
+	src/multicarrier/tests/firpfbch_analyzer_autotest.h	\
 
 #	ofdmoqam_autotest.h
 
@@ -647,7 +641,7 @@ multicarrier_benchmarks :=						\
 
 nco_objects :=				\
 	src/nco/src/nco_crcf.o		\
-	src/nco/src/nco.utilities.o		\
+	src/nco/src/nco.utilities.o	\
 
 
 src/nco/src/nco_crcf.o: %.o : %.c $(headers) src/nco/src/nco.c
@@ -656,7 +650,7 @@ src/nco/src/nco.utilities.o: %.o : %.c $(headers)
 
 
 # autotests
-nco_autotests :=					\
+nco_autotests :=				\
 	src/nco/tests/nco_autotest.h		\
 	src/nco/tests/pll_autotest.h		\
 	src/nco/tests/unwrap_phase_autotest.h	\
@@ -664,7 +658,7 @@ nco_autotests :=					\
 
 
 # benchmarks
-nco_benchmarks :=					\
+nco_benchmarks :=				\
 	src/nco/bench/nco_benchmark.h		\
 	src/nco/bench/vco_benchmark.h		\
 
@@ -706,8 +700,8 @@ optim_benchmarks :=
 
 quantization_objects :=				\
 	src/quantization/src/compand.o		\
-	src/quantization/src/quantizercf.o		\
-	src/quantization/src/quantizerf.o		\
+	src/quantization/src/quantizercf.o	\
+	src/quantization/src/quantizerf.o	\
 	src/quantization/src/quantizer.inline.o	\
 
 
@@ -721,15 +715,15 @@ src/quantization/src/quantizer.inline.o: %.o : %.c $(headers)
 
 
 # autotests
-quantization_autotests :=					\
-	src/quantization/tests/compand_autotest.h		\
-	src/quantization/tests/quantize_autotest.h		\
+quantization_autotests :=				\
+	src/quantization/tests/compand_autotest.h	\
+	src/quantization/tests/quantize_autotest.h	\
 
 
 # benchmarks
-quantization_benchmarks :=					\
-	src/quantization/bench/quantizer_benchmark.h		\
-	src/quantization/bench/compander_benchmark.h		\
+quantization_benchmarks :=				\
+	src/quantization/bench/quantizer_benchmark.h	\
+	src/quantization/bench/compander_benchmark.h	\
 
 # 
 # MODULE : random
@@ -749,15 +743,15 @@ random_objects :=				\
 $(random_objects) : %.o : %.c $(headers)
 
 # autotests
-random_autotests :=					\
-	src/random/tests/scramble_autotest.h		\
+random_autotests :=				\
+	src/random/tests/scramble_autotest.h	\
 
 #	src/random/tests/random_autotest.h
 
 
 # benchmarks
-random_benchmarks :=					\
-	src/random/bench/random_benchmark.h		\
+random_benchmarks :=				\
+	src/random/bench/random_benchmark.h	\
 
 
 # 
@@ -773,10 +767,10 @@ $(sequence_objects) : %.o : %.c $(headers)
 
 
 # autotests
-sequence_autotests :=					\
-	src/sequence/tests/bsequence_autotest.h		\
+sequence_autotests :=						\
+	src/sequence/tests/bsequence_autotest.h			\
 	src/sequence/tests/complementary_codes_autotest.h	\
-	src/sequence/tests/msequence_autotest.h		\
+	src/sequence/tests/msequence_autotest.h			\
 
 # benchmarks
 sequence_benchmarks :=
@@ -785,12 +779,12 @@ sequence_benchmarks :=
 # MODULE : utility
 #
 
-utility_objects :=			\
-	src/utility/src/bshift_array.o	\
-	src/utility/src/count_bits.o	\
-	src/utility/src/msb_index.o	\
-	src/utility/src/pack_bytes.o	\
-	src/utility/src/shift_array.o	\
+utility_objects :=				\
+	src/utility/src/bshift_array.o		\
+	src/utility/src/count_bits.o		\
+	src/utility/src/msb_index.o		\
+	src/utility/src/pack_bytes.o		\
+	src/utility/src/shift_array.o		\
 
 $(utility_objects) : %.o : %.c $(headers)
 
@@ -811,36 +805,13 @@ utility_benchmarks :=
 # MODULE : experimental
 #
 
-experimental_objects :=				\
-	src/experimental/src/ann.nodes.o		\
-	src/experimental/src/activation_functions.o	\
-	src/experimental/src/cpmodem.o		\
-	src/experimental/src/kmeans.o		\
-	src/experimental/src/layer.o			\
-	src/experimental/src/maxnet.o		\
-	src/experimental/src/node.o			\
-	src/experimental/src/fbasc.o			\
-	src/experimental/src/gport.o			\
-	src/experimental/src/filter_rrrf.o		\
-	src/experimental/src/filter_crcf.o		\
-	src/experimental/src/filter_cccf.o		\
-	src/experimental/src/gmskframegen.o		\
-	src/experimental/src/gmskframesync.o		\
-	src/experimental/src/patternset.o		\
-	src/experimental/src/awgn_channel.o		\
-	src/experimental/src/lognorm_channel.o	\
-	src/experimental/src/channel.o		\
-	src/experimental/src/pamodel.o		\
-	src/experimental/src/ricek_channel.o		\
-
-
 # explicit targets and dependencies
 
-experimental_filter_includes :=		\
-	src/experimental/src/iirqmfb.c	\
-	src/experimental/src/itqmfb.c	\
+experimental_filter_includes :=			\
+	src/experimental/src/iirqmfb.c		\
+	src/experimental/src/itqmfb.c		\
 	src/experimental/src/qmfb.c		\
-	src/experimental/src/symsync2.c	\
+	src/experimental/src/symsync2.c		\
 	src/experimental/src/symsynclp.c	\
 
 src/experimental/src/filter_rrrf.o: %.o : %.c $(headers) $(experimental_filter_includes)
@@ -851,53 +822,33 @@ src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_i
 
 
 
-# autotests
-experimental_autotests :=					\
-	src/experimental/tests/ann_autotest.h		\
-	src/experimental/tests/gport_autotest.h		\
-	src/experimental/tests/channel_autotest.h		\
-
-
-# benchmarks
-experimental_benchmarks :=					\
-	src/experimental/bench/fbasc_benchmark.h		\
-	src/experimental/bench/gport_dma_benchmark.h		\
-	src/experimental/bench/gport_dma_threaded_benchmark.h	\
-	src/experimental/bench/gport_ima_benchmark.h		\
-	src/experimental/bench/gport_ima_threaded_benchmark.h	\
-	src/experimental/bench/dds_benchmark.h		\
-	src/experimental/bench/qmfb_benchmark.h		\
-
-
-
-
 
 # Target collection
 #
 # Information about targets for each module is collected
 # in these variables
-objects :=			\
-	$(agc_objects)		\
-	$(audio_objects)	\
-	$(buffer_objects)	\
-	$(dotprod_objects)	\
-	$(equalization_objects)	\
-	$(fec_objects)		\
-	$(fft_objects)		\
-	$(filter_objects)	\
-	$(framing_objects)	\
-	$(math_objects)		\
-	$(matrix_objects)	\
-	$(modem_objects)	\
-	$(multicarrier_objects)	\
-	$(nco_objects)		\
-	$(optim_objects)	\
-	$(quantization_objects)	\
-	$(random_objects)	\
-	$(sequence_objects)	\
-	$(utility_objects)	\
-
-#	$(experimental_objects)	
+objects :=				\
+	$(agc_objects)			\
+	$(audio_objects)		\
+	$(buffer_objects)		\
+	$(dotprod_objects)		\
+	$(equalization_objects)		\
+	$(fec_objects)			\
+	$(fft_objects)			\
+	$(filter_objects)		\
+	$(framing_objects)		\
+	$(math_objects)			\
+	$(matrix_objects)		\
+	$(modem_objects)		\
+	$(multicarrier_objects)		\
+	$(nco_objects)			\
+	$(optim_objects)		\
+	$(quantization_objects)		\
+	$(random_objects)		\
+	$(sequence_objects)		\
+	$(utility_objects)		\
+	@EXPERIMENTAL_MLIBS@
+	
 
 sources			:=
 autotest_headers :=			\
@@ -921,8 +872,8 @@ autotest_headers :=			\
 	$(random_autotests)		\
 	$(sequence_autotests)		\
 	$(utility_autotests)		\
-
-#	$(experimental_autotests)
+	@EXPERIMENTAL_AUTOTESTS@
+	
 
 benchmark_headers :=			\
 	bench/null_benchmark.h		\
@@ -945,8 +896,7 @@ benchmark_headers :=			\
 	$(random_benchmarks)		\
 	$(sequence_benchmarks)		\
 	$(utility_benchmarks)		\
-
-#	$(experimental_benchmarks)
+	@EXPERIMENTAL_BENCHMARKS@
 
 
 
@@ -1227,6 +1177,7 @@ example_obj :=						\
 	examples/symsync_rrrf_example.o			\
 	examples/wdelayf_example.o			\
 	examples/windowf_example.o			\
+	@EXPERIMENTAL_EXAMPLES@
 
 #	examples/metadata_example.o
 #	examples/ofdmframegen_example.o
@@ -1235,33 +1186,6 @@ example_obj :=						\
 #	examples/gmskframe_example.o
 #	examples/fading_generator_example.o
 #	examples/ricek_channel_example.o
-
-# experimental examples
-# TODO : build when configured with '--enable-experimental' option
-example_experimental_objs :=				\
-	examples/ann_bitpattern_example.o		\
-	examples/ann_example.o				\
-	examples/ann_layer_example.o			\
-	examples/ann_maxnet_example.o			\
-	examples/ann_node_example.o			\
-	examples/ann_xor_example.o			\
-	examples/dds_cccf_example.o			\
-	examples/fbasc_example.o			\
-	examples/gport_dma_example.o			\
-	examples/gport_dma_threaded_example.o		\
-	examples/gport_ima_example.o			\
-	examples/gport_ima_threaded_example.o		\
-	examples/gport_mma_threaded_example.o		\
-	examples/iirqmfb_crcf_example.o			\
-	examples/itqmfb_crcf_example.o			\
-	examples/itqmfb_rrrf_example.o			\
-	examples/kmeans_example.o			\
-	examples/patternset_example.o			\
-	examples/prqmfb_crcf_example.o			\
-	examples/qmfb_crcf_analysis_example.o		\
-	examples/qmfb_crcf_synthesis_example.o		\
-	examples/symsync2_crcf_example.o		\
-	examples/symsynclp_crcf_example.o		\
 
 example_progs	= $(patsubst %.o,%,  $(example_obj))
 examples: $(example_progs)
