@@ -1352,6 +1352,9 @@ doc/liquid.pdf : libliquid.a
 clean-doc :
 	cd doc ; make mostlyclean
 
+distclean-doc :
+	cd doc ; make distclean
+
 
 ## 
 ## TARGET : todolist - generate tasks list (todolist.txt)
@@ -1409,7 +1412,7 @@ clean-modules:
 	$(RM) src/experimental/src/*.o src/experimental/bench/*.o src/experimental/tests/*.o
 	$(RM) libliquid.o
 
-clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox
+clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
 
@@ -1417,9 +1420,10 @@ clean: clean-modules clean-autoscript clean-check clean-bench clean-examples cle
 ## TARGET : distclean - removes everything except the originally distributed files
 ##
 
-distclean: clean
+distclean: clean distclean-doc
 	@echo "cleaning distribution..."
 	$(RM) octave-core *.m
 	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
+	$(RM) -r autom4te.cache
 	$(RM) makefile
 
