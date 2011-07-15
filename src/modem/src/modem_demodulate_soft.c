@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010, 2011Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
  * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
@@ -35,12 +35,13 @@
 // generic demodulation
 void modem_demodulate_soft(modem _demod,
                           float complex _x,
-                          unsigned char * _bits)
+                          unsigned int  * _s,
+                          unsigned char * _soft_bits)
 {
     // switch scheme
     switch (_demod->scheme) {
-    case LIQUID_MODEM_BPSK:     modem_demodulate_soft_bpsk(_demod, _x, _bits);  return;
-    case LIQUID_MODEM_QPSK:     modem_demodulate_soft_qpsk(_demod, _x, _bits);  return;
+    case LIQUID_MODEM_BPSK:     modem_demodulate_soft_bpsk(_demod,_x,_s,_soft_bits); return;
+    case LIQUID_MODEM_QPSK:     modem_demodulate_soft_qpsk(_demod,_x,_s,_soft_bits); return;
     default:;
     }
 
@@ -51,37 +52,43 @@ void modem_demodulate_soft(modem _demod,
 
     unsigned int i;
     for (i=0; i<_demod->m; i++)
-        _bits[i] = ((symbol_out >> (_demod->m-i-1)) & 0x0001) ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
+        _soft_bits[i] = ((symbol_out >> (_demod->m-i-1)) & 0x0001) ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
+
+    *_s = symbol_out;
 }
 
 // demodulate BPSK (soft)
 void modem_demodulate_soft_bpsk(modem _demod,
                                 float complex _x,
-                                unsigned char * _bits_out)
+                                unsigned int  * _s,
+                                unsigned char * _soft_bits)
 {
     // soft output
-    _bits_out[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(crealf(_x))) );
+    _soft_bits[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(crealf(_x))) );
 
     // re-modulate symbol and store state
     unsigned int symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
     modem_modulate_bpsk(_demod, symbol_out, &_demod->x_hat);
     _demod->r = _x;
+    *_s = symbol_out;
 }
 
 // demodulate QPSK (soft)
 void modem_demodulate_soft_qpsk(modem _demod,
                                 float complex _x,
-                                unsigned char * _bits_out)
+                                unsigned int  * _s,
+                                unsigned char * _soft_bits)
 {
     // soft output
-    _bits_out[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(crealf(_x))) );
-    _bits_out[1] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(cimagf(_x))) );
+    _soft_bits[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(crealf(_x))) );
+    _soft_bits[1] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(cimagf(_x))) );
 
     // re-modulate symbol and store state
     unsigned int symbol_out  = (crealf(_x) > 0 ? 0 : 1) +
                                (cimagf(_x) > 0 ? 0 : 2);
     modem_modulate_qpsk(_demod, symbol_out, &_demod->x_hat);
     _demod->r = _x;
+    *_s = symbol_out;
 }
 
 

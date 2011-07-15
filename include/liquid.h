@@ -2678,7 +2678,8 @@ void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
 void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
 void modem_demodulate_soft(modem _demod,
                            liquid_float_complex _x,
-                           unsigned char * _bits);
+                           unsigned int  * _s,
+                           unsigned char * _soft_bits);
 float modem_get_demodulator_phase_error(modem _demod);
 float modem_get_demodulator_evm(modem _demod);
 
