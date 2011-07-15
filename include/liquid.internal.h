@@ -241,6 +241,13 @@ struct fec_s {
                         unsigned char * _msg_dec);
 };
 
+// simple type testing
+int fec_scheme_is_convolutional(fec_scheme _scheme);
+int fec_scheme_is_punctured(fec_scheme _scheme);
+int fec_scheme_is_reedsolomon(fec_scheme _scheme);
+int fec_scheme_is_hamming(fec_scheme _scheme);
+int fec_scheme_is_repeat(fec_scheme _scheme);
+
 // Pass
 fec fec_pass_create(void *_opts);
 void fec_pass_destroy(fec _q);
