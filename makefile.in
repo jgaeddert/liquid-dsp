@@ -1146,6 +1146,7 @@ example_obj :=						\
 	examples/mdct_example.o				\
 	examples/modem_arb_example.o			\
 	examples/modem_example.o			\
+	examples/modem_soft_example.o			\
 	examples/msequence_example.o			\
 	examples/nco_example.o				\
 	examples/nco_pll_example.o			\
