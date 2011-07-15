@@ -37,6 +37,12 @@ void modem_demodulate_soft(modem _demod,
                           float complex _x,
                           unsigned char * _bits)
 {
+    // switch scheme
+    switch (_demod->scheme) {
+    case LIQUID_MODEM_BPSK:     modem_demodulate_soft_bpsk(_demod, _x, _bits);  return;
+    default:;
+    }
+
     // for now demodulate normally and simply copy the
     // hard-demodulated bits
     unsigned int symbol_out;
@@ -46,4 +52,19 @@ void modem_demodulate_soft(modem _demod,
     for (i=0; i<_demod->m; i++)
         _bits[i] = ((symbol_out >> (_demod->m-i-1)) & 0x0001) ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
 }
+
+// demodulate BPSK (soft)
+void modem_demodulate_soft_bpsk(modem _demod,
+                                float complex _x,
+                                unsigned char * _bits_out)
+{
+    // soft output
+    _bits_out[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(crealf(_x))) );
+
+    // re-modulate symbol and store state
+    unsigned int symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
+    modem_modulate_bpsk(_demod, symbol_out, &_demod->x_hat);
+    _demod->r = _x;
+}
+
 
