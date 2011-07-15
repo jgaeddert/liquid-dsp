@@ -68,6 +68,10 @@ void liquid_print_fec_schemes()
     // print all available MOD schemes
     printf("          ");
     for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++) {
+#if !defined HAVE_LIBFEC || !defined HAVE_FEC_H
+        if ( fec_scheme_is_convolutional(i) || fec_scheme_is_reedsolomon(i) )
+            continue;
+#endif
         printf("%s", fec_scheme_str[i][0]);
 
         if (i != LIQUID_FEC_NUM_SCHEMES-1)
