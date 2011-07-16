@@ -61,6 +61,87 @@ modulation_scheme liquid_getopt_str2mod(const char * _str)
     return LIQUID_MODEM_UNKNOWN;
 }
 
+// returns modulation_scheme and depth based on input string
+void liquid_getopt_str2modbps(const char * _string,
+                              modulation_scheme * _ms,
+                              unsigned int * _bps)
+{
+    if (_string == NULL) {
+        //fprintf(stderr,"warning: liquid_getopt_str2modbps(), input string is NULL\n");
+        *_ms  = LIQUID_MODEM_UNKNOWN;
+        *_bps = 0;
+    }
+
+    // phase-shift keying
+    else if ( strcmp(_string,"psk2")==0 )   { *_ms = LIQUID_MODEM_PSK; *_bps = 1; return; }
+    else if ( strcmp(_string,"psk4")==0 )   { *_ms = LIQUID_MODEM_PSK; *_bps = 2; return; }
+    else if ( strcmp(_string,"psk8")==0 )   { *_ms = LIQUID_MODEM_PSK; *_bps = 3; return; }
+    else if ( strcmp(_string,"psk16")==0 )  { *_ms = LIQUID_MODEM_PSK; *_bps = 4; return; }
+    else if ( strcmp(_string,"psk32")==0 )  { *_ms = LIQUID_MODEM_PSK; *_bps = 5; return; }
+    else if ( strcmp(_string,"psk64")==0 )  { *_ms = LIQUID_MODEM_PSK; *_bps = 6; return; }
+    else if ( strcmp(_string,"psk128")==0 ) { *_ms = LIQUID_MODEM_PSK; *_bps = 7; return; }
+    else if ( strcmp(_string,"psk256")==0 ) { *_ms = LIQUID_MODEM_PSK; *_bps = 8; return; }
+
+    // differential phase-shift keying
+    else if ( strcmp(_string,"dpsk2")==0 )   { *_ms = LIQUID_MODEM_DPSK; *_bps = 1; return; }
+    else if ( strcmp(_string,"dpsk4")==0 )   { *_ms = LIQUID_MODEM_DPSK; *_bps = 2; return; }
+    else if ( strcmp(_string,"dpsk8")==0 )   { *_ms = LIQUID_MODEM_DPSK; *_bps = 3; return; }
+    else if ( strcmp(_string,"dpsk16")==0 )  { *_ms = LIQUID_MODEM_DPSK; *_bps = 4; return; }
+    else if ( strcmp(_string,"dpsk32")==0 )  { *_ms = LIQUID_MODEM_DPSK; *_bps = 5; return; }
+    else if ( strcmp(_string,"dpsk64")==0 )  { *_ms = LIQUID_MODEM_DPSK; *_bps = 6; return; }
+    else if ( strcmp(_string,"dpsk128")==0 ) { *_ms = LIQUID_MODEM_DPSK; *_bps = 7; return; }
+    else if ( strcmp(_string,"dpsk256")==0 ) { *_ms = LIQUID_MODEM_DPSK; *_bps = 8; return; }
+
+    // amplitude-shift keying
+    else if ( strcmp(_string,"ask2")==0 )   { *_ms = LIQUID_MODEM_ASK; *_bps = 1; return; }
+    else if ( strcmp(_string,"ask4")==0 )   { *_ms = LIQUID_MODEM_ASK; *_bps = 2; return; }
+    else if ( strcmp(_string,"ask8")==0 )   { *_ms = LIQUID_MODEM_ASK; *_bps = 3; return; }
+    else if ( strcmp(_string,"ask16")==0 )  { *_ms = LIQUID_MODEM_ASK; *_bps = 4; return; }
+    else if ( strcmp(_string,"ask32")==0 )  { *_ms = LIQUID_MODEM_ASK; *_bps = 5; return; }
+    else if ( strcmp(_string,"ask64")==0 )  { *_ms = LIQUID_MODEM_ASK; *_bps = 6; return; }
+    else if ( strcmp(_string,"ask128")==0 ) { *_ms = LIQUID_MODEM_ASK; *_bps = 7; return; }
+    else if ( strcmp(_string,"ask256")==0 ) { *_ms = LIQUID_MODEM_ASK; *_bps = 8; return; }
+
+    // quadrature amplitude-shift keying
+    else if ( strcmp(_string,"qam4")==0 )   { *_ms = LIQUID_MODEM_QAM; *_bps = 2; return; }
+    else if ( strcmp(_string,"qam8")==0 )   { *_ms = LIQUID_MODEM_QAM; *_bps = 3; return; }
+    else if ( strcmp(_string,"qam16")==0 )  { *_ms = LIQUID_MODEM_QAM; *_bps = 4; return; }
+    else if ( strcmp(_string,"qam32")==0 )  { *_ms = LIQUID_MODEM_QAM; *_bps = 5; return; }
+    else if ( strcmp(_string,"qam64")==0 )  { *_ms = LIQUID_MODEM_QAM; *_bps = 6; return; }
+    else if ( strcmp(_string,"qam128")==0 ) { *_ms = LIQUID_MODEM_QAM; *_bps = 7; return; }
+    else if ( strcmp(_string,"qam256")==0 ) { *_ms = LIQUID_MODEM_QAM; *_bps = 8; return; }
+
+    // amplitude/phase-shift keying
+    else if ( strcmp(_string,"apsk4")==0 )   { *_ms = LIQUID_MODEM_APSK; *_bps = 2; return; }
+    else if ( strcmp(_string,"apsk8")==0 )   { *_ms = LIQUID_MODEM_APSK; *_bps = 3; return; }
+    else if ( strcmp(_string,"apsk16")==0 )  { *_ms = LIQUID_MODEM_APSK; *_bps = 4; return; }
+    else if ( strcmp(_string,"apsk32")==0 )  { *_ms = LIQUID_MODEM_APSK; *_bps = 5; return; }
+    else if ( strcmp(_string,"apsk64")==0 )  { *_ms = LIQUID_MODEM_APSK; *_bps = 6; return; }
+    else if ( strcmp(_string,"apsk128")==0 ) { *_ms = LIQUID_MODEM_APSK; *_bps = 7; return; }
+    else if ( strcmp(_string,"apsk256")==0 ) { *_ms = LIQUID_MODEM_APSK; *_bps = 8; return; }
+
+    // arbitrary modem (unavailble)
+
+    // specific modem types
+    else if ( strcmp(_string,"bpsk")==0 )     { *_ms = LIQUID_MODEM_BPSK;     *_bps = 1; return; }
+    else if ( strcmp(_string,"qpsk")==0 )     { *_ms = LIQUID_MODEM_QPSK;     *_bps = 2; return; }
+    else if ( strcmp(_string,"ook")==0 )      { *_ms = LIQUID_MODEM_OOK;      *_bps = 1; return; }
+    else if ( strcmp(_string,"sqam32")==0 )   { *_ms = LIQUID_MODEM_SQAM32;   *_bps = 5; return; }
+    else if ( strcmp(_string,"sqam128")==0 )  { *_ms = LIQUID_MODEM_SQAM128;  *_bps = 7; return; }
+    else if ( strcmp(_string,"V29")==0 )      { *_ms = LIQUID_MODEM_V29;      *_bps = 4; return; }
+    else if ( strcmp(_string,"arb16opt")==0 ) { *_ms = LIQUID_MODEM_ARB16OPT; *_bps = 4; return; }
+    else if ( strcmp(_string,"arb32opt")==0 ) { *_ms = LIQUID_MODEM_ARB32OPT; *_bps = 5; return; }
+    else if ( strcmp(_string,"arb64vt")==0 )  { *_ms = LIQUID_MODEM_ARB64VT;  *_bps = 6; return; }
+
+    // unknown schme
+    else {
+        //fprintf(stderr,"warning: liquid_getopt_str2modbps(), unknown scheme '%s'\n", _string);
+        *_ms  = LIQUID_MODEM_UNKNOWN;
+        *_bps = 0;
+    }
+}
+
+
 // Print compact list of existing and available modulation schemes
 void liquid_print_modulation_schemes()
 {
