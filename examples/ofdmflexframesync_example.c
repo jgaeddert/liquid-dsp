@@ -21,7 +21,6 @@ void usage()
     printf("  M     : number of subcarriers (must be even), default: 64\n");
     printf("  C     : cyclic prefix length, default: 16\n");
     printf("  f     : frame length [bytes], default: 120\n");
-    printf("  p     : modulation depth (default 2 bits/symbol)\n");
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
     printf("  v     : data integrity check: crc32 default\n");
@@ -59,7 +58,7 @@ int main(int argc, char*argv[])
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhs:M:C:f:p:m:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhs:M:C:f:m:v:c:k:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
@@ -67,9 +66,8 @@ int main(int argc, char*argv[])
         case 'M': M = atoi(optarg);             break;
         case 'C': cp_len = atoi(optarg);        break;
         case 'f': payload_len = atol(optarg);   break;
-        case 'p': bps = atoi(optarg);           break;
         case 'm':
-            ms = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported mod. scheme: %s\n", argv[0], optarg);
                 exit(-1);
