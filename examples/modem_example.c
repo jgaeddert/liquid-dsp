@@ -21,7 +21,7 @@ void usage()
 {
     printf("modem_example [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  m     : modulation scheme (psk default)\n");
+    printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
 
@@ -30,10 +30,10 @@ int main(int argc, char*argv[])
 {
     // create mod/demod objects
     unsigned int bps=2;
-    modulation_scheme ms = LIQUID_MODEM_PSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhm:p:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':

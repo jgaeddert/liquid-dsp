@@ -2583,7 +2583,8 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES  16
+#define LIQUID_MODEM_NUM_SCHEMES      (16)  // generic schemes (e.g. 'qam')
+#define LIQUID_MODEM_NUM_FULL_SCHEMES (48)  // specific schemes (e.g. 'qam256')
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
 
