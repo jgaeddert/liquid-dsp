@@ -47,7 +47,7 @@ int main() {
     modulation_scheme ms = LIQUID_MODEM_QAM;    // modulation scheme
     unsigned int bps = 4;                       // bits/symbol
     unsigned int p = 4;                         // number of 'nearest symbols'
-    float complex e = 0.1f + _Complex_I*0.2f;   // error
+    float complex e = 0.1f + _Complex_I*0.15f;  // error
 
     unsigned int i;
     unsigned int j;
@@ -55,7 +55,11 @@ int main() {
 
     // derived values
     unsigned int M = 1 << bps;  // constellation size
-    if (p > (M-1)) p = M-1;     // ensure number of nearest symbols is not too large
+    // ensure number of nearest symbols is not too large
+    if (p > (M-1)) {
+        fprintf(stderr,"error: requesting too many neighbors\n");
+        exit(1);
+    }
     float sig = 0.2f;           // noise standard deviation
 
     // generate constellation
@@ -155,7 +159,6 @@ int main() {
         for (k=0; k<p; k++) {
             printf("%4u", cp[i*p+k]);
             if (k != p-1) printf(",");
-            else          printf("");
         }
         if (i != M-1) {
             printf(",   // ");
