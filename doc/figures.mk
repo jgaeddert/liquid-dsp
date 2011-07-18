@@ -124,6 +124,11 @@ local_pdffiles :=					\
 	figures.gen/modem_arb32opt.pdf			\
 	figures.gen/modem_arb64vt.pdf			\
 							\
+	figures.gen/modem_demodsoft_b0.pdf		\
+	figures.gen/modem_demodsoft_b1.pdf		\
+	figures.gen/modem_demodsoft_b2.pdf		\
+	figures.gen/modem_demodsoft_b3.pdf		\
+							\
 	figures.gen/modem_ber_ebn0_psk.pdf		\
 	figures.gen/modem_ber_ebn0_apsk.pdf		\
 	figures.gen/modem_ber_ebn0_ask.pdf		\
@@ -189,6 +194,7 @@ local_progs :=						\
 	src/interleaver_scatterplot			\
 	src/math_poly_examples				\
 	src/math_window					\
+	src/modem_demodsoft				\
 	src/modem.genplot				\
 	src/modem.gendata				\
 	src/nco_pll					\
@@ -566,6 +572,21 @@ figures.gen/modem_arb32opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m
 
 figures.gen/modem_arb64vt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb64vt -p 6
 figures.gen/modem_arb64vt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb64vt -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+# 
+# soft demodulation example
+#
+
+modem_demodsoft_gnufiles :=			\
+	figures.gen/modem_demodsoft_b0.gnu	\
+	figures.gen/modem_demodsoft_b1.gnu	\
+	figures.gen/modem_demodsoft_b2.gnu	\
+	figures.gen/modem_demodsoft_b3.gnu	\
+
+modem_demodsoft_epsfiles := $(patsubst %.gnu,%.eps,$(modem_demodsoft_gnufiles))
+
+$(modem_demodsoft_gnufiles) : % : src/modem_demodsoft figures.gen/modem_16qam.dat
+	./$<
 
 #
 # modem BER data
