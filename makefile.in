@@ -603,7 +603,8 @@ modem_autotests :=					\
 modem_benchmarks :=					\
 	src/modem/bench/gmskmodem_benchmark.h		\
 	src/modem/bench/modem_modulate_benchmark.h	\
-	src/modem/bench/modem_demodulate_benchmark.h
+	src/modem/bench/modem_demodulate_benchmark.h	\
+	src/modem/bench/modem_demodsoft_benchmark.h	\
 
 # 
 # MODULE : multicarrier
