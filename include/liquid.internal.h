@@ -1365,6 +1365,7 @@ void modem_demodulate_soft_table(modem _demod, float complex _x, unsigned int * 
 // specific modem soft demodulate routines
 void modem_demodulate_soft_bpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
 void modem_demodulate_soft_qpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
+void modem_demodulate_soft_arb(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
 
 // specific modem definitions
 extern const liquid_float_complex modem_arb_sqam32[8];   // 'square' 32-qam (first quadrant)

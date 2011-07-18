@@ -42,6 +42,7 @@ void modem_demodulate_soft(modem _demod,
 {
     // switch scheme
     switch (_demod->scheme) {
+    case LIQUID_MODEM_ARB:      modem_demodulate_soft_arb( _demod,_x,_s,_soft_bits); return;
     case LIQUID_MODEM_BPSK:     modem_demodulate_soft_bpsk(_demod,_x,_s,_soft_bits); return;
     case LIQUID_MODEM_QPSK:     modem_demodulate_soft_qpsk(_demod,_x,_s,_soft_bits); return;
     default:;
@@ -170,6 +171,72 @@ void modem_demodulate_soft_table(modem _demod,
 }
 
 
+
+// demodulate arbitrary modem type (soft)
+void modem_demodulate_soft_arb(modem _demod,
+                               float complex _r,
+                               unsigned int  * _s,
+                               unsigned char * _soft_bits)
+{
+    unsigned int bps = _demod->m;
+    unsigned int M   = _demod->M;
+
+    // TODO : compute sig based on minimum distance between symbols
+    float sig = 0.2f;
+
+    unsigned int s=0;       // hard decision output
+    unsigned int k;         // bit index
+    unsigned int i;         // symbol index
+    float d;                // distance for this symbol
+    float complex x_hat;    // re-modulated symbol
+
+    float dmin_0[bps];
+    float dmin_1[bps];
+    for (k=0; k<bps; k++) {
+        dmin_0[k] = 4.0f;
+        dmin_1[k] = 4.0f;
+    }
+    float dmin = 0.0f;
+
+    for (i=0; i<M; i++) {
+        // compute distance from received symbol
+        x_hat = _demod->symbol_map[i];
+        d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
+
+        // set hard-decision...
+        if (d < dmin || i==0) {
+            s = i;
+            dmin = d;
+        }
+
+        for (k=0; k<bps; k++) {
+            // strip bit
+            if ( (s >> (bps-k-1)) & 0x01 ) {
+                if (d < dmin_1[k]) dmin_1[k] = d;
+            } else {
+                if (d < dmin_0[k]) dmin_0[k] = d;
+            }
+        }
+    }
+
+    // make assignments
+    for (k=0; k<bps; k++) {
+        int soft_bit = ((-dmin_1[k]/(2.0f*sig*sig)) - (-dmin_0[k]/(2.0f*sig*sig)))*16 + 127;
+        if (soft_bit > 255) soft_bit = 255;
+        if (soft_bit <   0) soft_bit = 0;
+        _soft_bits[k] = (unsigned char)soft_bit;
+    }
+
+    // hard decision
+
+    // set hard output symbol
+    *_s = s;
+
+    // re-modulate symbol and store state
+    modem_modulate_arb(_demod, *_s, &_demod->x_hat);
+    _demod->r = _r;
+}
+
 // demodulate BPSK (soft)
 void modem_demodulate_soft_bpsk(modem _demod,
                                 float complex _x,
@@ -203,5 +270,4 @@ void modem_demodulate_soft_qpsk(modem _demod,
     _demod->r = _x;
     *_s = symbol_out;
 }
-
 
