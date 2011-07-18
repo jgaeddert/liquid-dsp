@@ -146,6 +146,22 @@ int main() {
         printf("\n");
     }
 
+    // print c-type array
+    printf("\n");
+    printf("// %s%u soft demodulation nearest neighbors (p=%u)\n", modulation_scheme_str[ms][0], M, p);
+    printf("const unsigned char %s%u_demod_soft_neighbors[%u] = {\n", modulation_scheme_str[ms][0], M, p*M);
+    printf("    ");
+    for (i=0; i<M; i++) {
+        for (k=0; k<p; k++) {
+            printf("%4u", cp[i*p+k]);
+            if (k != p-1)
+                printf(",");
+        }
+        if (i != M-1)
+            printf(",\n    ");
+    }
+    printf("};\n\n");
+
     // select input symbol and compute received symbol
     unsigned int sym_in = rand() % M;
     if (ms == LIQUID_MODEM_QAM && bps == 4)
