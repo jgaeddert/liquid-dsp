@@ -511,7 +511,7 @@ modem modem_create_apsk4()
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = LIQUID_MODEM_APSK;
 
-    modem_init(mod, 3);
+    modem_init(mod, 2);
     
     // set internals
     mod->apsk_num_levels = apsk4_num_levels;
