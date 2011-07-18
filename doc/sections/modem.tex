@@ -811,3 +811,43 @@ Section~\ref{module:modem:digital:interface}).
 \subsubsection{Soft Demodulation}
 \label{module:modem:digital:soft}
 Log-likelihood ratio...
+%
+%-------------------- FIGURE: MODEM DEMOD SOFT--------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[bit 0]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b0}
+      \label{fig:modem:demodsoft:b0}
+    } \quad
+  \subfigure[bit 1]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b1}
+      \label{fig:modem:demodsoft:b1}
+    } \quad
+}
+\mbox{
+  \subfigure[bit 2]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b2}
+      \label{fig:modem:demodsoft:b2}
+    } \quad
+  \subfigure[bit 3]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b3}
+      \label{fig:modem:demodsoft:b3}
+    } \quad
+}
+% trim = left bottom right top
+\caption{
+    Soft demodulation example.
+    Each plot depicts the soft demodulation of each of the 4 bits where
+    the $\times$ denotes the received sample and the lines connect it to
+    the nearest symbol with each of a {\tt 0} and {\tt 1} bit. %REWORD
+}
+\label{fig:modem:demodsoft}
+\end{figure}
+%
+Figure~\ref{fig:modem:demodsoft} depicts...
+%
