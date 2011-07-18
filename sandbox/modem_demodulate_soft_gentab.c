@@ -257,6 +257,16 @@ int main() {
     fprintf(fid,"figure;\n");
     fprintf(fid,"plot(c,'o','MarkerSize',4,r,'rx',[x r]);\n");
     fprintf(fid,"hold on;\n");
+    // print lines to 'nearest neighbor' points
+    fprintf(fid,"plot(");
+    for (i=0; i<p; i++) {
+        float complex x_hat = c[ cp[sym_out_tab*p+i] ];
+        fprintf(fid,"[%12.8f %12.8f],[%12.8f %12.8f],'Color',[1 1 1]*0.8",
+                crealf(r), crealf(x_hat),
+                cimagf(r), cimagf(x_hat));
+        if (i == p-1) fprintf(fid,");\n");
+        else          fprintf(fid,",...\n     ");
+    }
     fprintf(fid,"text(real(c)+0.02, imag(c)+0.02, i_str);\n");
     fprintf(fid,"hold off;\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
