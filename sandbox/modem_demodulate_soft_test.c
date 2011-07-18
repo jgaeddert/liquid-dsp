@@ -84,8 +84,14 @@ int main() {
     printf(" {%12.8f, %12.8f}\n", crealf(c[sym_in]), cimagf(c[sym_in]));
 
     printf("  soft bits :\n");
-    for (k=0; k<bps; k++)
-        printf("    %c : %12.8f\n", (sym_in >> (bps-k-1)) & 0x01 ? '1' : '0', soft_bits[k]);
+    for (k=0; k<bps; k++) {
+        printf("    %1u : ", (sym_in >> (bps-k-1)) & 0x01);
+        printf("%12.8f > ", soft_bits[k]);
+        int soft_bit = (soft_bits[k]*16 + 127);
+        if (soft_bit > 255) soft_bit = 255;
+        if (soft_bit <   0) soft_bit =   0;
+        printf("%5d > %1u\n", soft_bit, soft_bit & 0x80 ? 1 : 0);
+    }
 
     // 
     // export results to file
