@@ -154,13 +154,19 @@ int main() {
     for (i=0; i<M; i++) {
         for (k=0; k<p; k++) {
             printf("%4u", cp[i*p+k]);
-            if (k != p-1)
-                printf(",");
+            if (k != p-1) printf(",");
+            else          printf("");
         }
-        if (i != M-1)
-            printf(",\n    ");
+        if (i != M-1) {
+            printf(",   // ");
+            print_bitstring(i,bps);
+            printf("\n    ");
+        } else {
+            printf("};  // ");
+            print_bitstring(i,bps);
+            printf("\n\n");
+        }
     }
-    printf("};\n\n");
 
     // select input symbol and compute received symbol
     unsigned int sym_in = rand() % M;
