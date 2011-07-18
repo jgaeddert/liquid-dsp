@@ -232,6 +232,18 @@ modem modem_create_ask(unsigned int _bits_per_symbol)
     mod->modulate_func = &modem_modulate_ask;
     mod->demodulate_func = &modem_demodulate_ask;
 
+    // soft demodulation
+    if (mod->m == 2) {
+        mod->demod_soft_neighbors = (unsigned char*) ask4_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 3) {
+        mod->demod_soft_neighbors = (unsigned char*) ask8_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 4) {
+        mod->demod_soft_neighbors = (unsigned char*) ask16_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    }
+
     return mod;
 }
 
@@ -295,8 +307,23 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     mod->modulate_using_map = 1;
 
     // soft demodulation
-    if (mod->m == 4) {
+    if (mod->m == 3) {
+        mod->demod_soft_neighbors = (unsigned char*) qam8_demod_soft_neighbors;
+        mod->demod_soft_p         = 3;
+    } else if (mod->m == 4) {
         mod->demod_soft_neighbors = (unsigned char*) qam16_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 5) {
+        mod->demod_soft_neighbors = (unsigned char*) qam32_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 6) {
+        mod->demod_soft_neighbors = (unsigned char*) qam64_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 7) {
+        mod->demod_soft_neighbors = (unsigned char*) qam128_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 8) {
+        mod->demod_soft_neighbors = (unsigned char*) qam256_demod_soft_neighbors;
         mod->demod_soft_p         = 4;
     }
 
@@ -331,6 +358,18 @@ modem modem_create_psk(unsigned int _bits_per_symbol)
     mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
     modem_init_map(mod);
     mod->modulate_using_map = 1;
+
+    // soft demodulation
+    if (mod->m == 3) {
+        mod->demod_soft_neighbors = (unsigned char*) psk8_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 4) {
+        mod->demod_soft_neighbors = (unsigned char*) psk16_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 4) {
+        mod->demod_soft_neighbors = (unsigned char*) psk32_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    }
 
     return mod;
 }

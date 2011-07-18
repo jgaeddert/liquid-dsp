@@ -1424,7 +1424,21 @@ extern const float apsk256_r_slicer[6];
 extern const unsigned int apsk256_symbol_map[256];
 
 // soft demodulation arrays
+extern const unsigned char psk4_demod_soft_neighbors[8];
+extern const unsigned char psk8_demod_soft_neighbors[16];
+extern const unsigned char psk16_demod_soft_neighbors[32];
+extern const unsigned char psk32_demod_soft_neighbors[64];
+
+extern const unsigned char ask4_demod_soft_neighbors[8];
+extern const unsigned char ask8_demod_soft_neighbors[16];
+extern const unsigned char ask16_demod_soft_neighbors[32];
+
+extern const unsigned char qam8_demod_soft_neighbors[24];
 extern const unsigned char qam16_demod_soft_neighbors[64];
+extern const unsigned char qam32_demod_soft_neighbors[128];
+extern const unsigned char qam64_demod_soft_neighbors[256];
+extern const unsigned char qam128_demod_soft_neighbors[512];
+extern const unsigned char qam256_demod_soft_neighbors[1024];
 
 // demodulator helper functions
 
