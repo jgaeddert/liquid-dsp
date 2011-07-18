@@ -42,9 +42,9 @@ void modem_demodulate_soft(modem _demod,
 {
     // switch scheme
     switch (_demod->scheme) {
-    case LIQUID_MODEM_ARB:      modem_demodulate_soft_arb( _demod,_x,_s,_soft_bits); return;
-    case LIQUID_MODEM_BPSK:     modem_demodulate_soft_bpsk(_demod,_x,_s,_soft_bits); return;
-    case LIQUID_MODEM_QPSK:     modem_demodulate_soft_qpsk(_demod,_x,_s,_soft_bits); return;
+    case LIQUID_MODEM_ARB:  modem_demodulate_soft_arb( _demod,_x,_s,_soft_bits); return;
+    case LIQUID_MODEM_BPSK: modem_demodulate_soft_bpsk(_demod,_x,_s,_soft_bits); return;
+    case LIQUID_MODEM_QPSK: modem_demodulate_soft_qpsk(_demod,_x,_s,_soft_bits); return;
     default:;
     }
 
@@ -72,7 +72,7 @@ void modem_demodulate_soft(modem _demod,
 #if DEBUG_DEMODULATE_SOFT
 // print a string of bits to the standard output
 void print_bitstring_demod_soft(unsigned int _x,
-                     unsigned int _n)
+                                unsigned int _n)
 {
     unsigned int i;
     for (i=0; i<_n; i++)
@@ -90,77 +90,69 @@ void modem_demodulate_soft_table(modem _demod,
                                  unsigned int * _s,
                                  unsigned char * _soft_bits)
 {
-#if DEBUG_DEMODULATE_SOFT
-    printf("\nmodem_demodulate_soft_table() invoked\n");
-#endif
     // run hard demodulation; this will store re-modulated sample
     // as internal variable x_hat
     unsigned int s;
     modem_demodulate(_demod, _r, &s);
-#if DEBUG_DEMODULATE_SOFT
-    printf("  hard demod    :   %3u\n", *_s);
-#endif
 
     unsigned int bps = modem_get_bps(_demod);
 
+    // TODO : compute sig based on minimum distance between symbols
     float sig = 0.2f;
 
-    unsigned int k;
+    // set and initialize minimum bit values
     unsigned int i;
+    unsigned int k;
+    float dmin_0[bps];
+    float dmin_1[bps];
+    for (k=0; k<bps; k++) {
+        dmin_0[k] = 8.0f;
+        dmin_1[k] = 8.0f;
+    }
+
     unsigned int bit;
     float d;
     float complex x_hat;    // re-modulated symbol
     unsigned char * softab = _demod->demod_soft_neighbors;
     unsigned int p = _demod->demod_soft_p;
+
+    // check hard demodulation
+    d = crealf( (_r-_demod->x_hat)*conjf(_r-_demod->x_hat) );
     for (k=0; k<bps; k++) {
-        // initialize soft bit value
-        _soft_bits[k] = 127;
-
-        // find nearest 0 and nearest 1
-        float dmin_0 = 1.0f;
-        float dmin_1 = 1.0f;
-
-        // check bit of hard demodulation
-        d = crealf( (_r-_demod->x_hat)*conjf(_r-_demod->x_hat) );
         bit = (s >> (bps-k-1)) & 0x01;
-        if (bit) dmin_1 = d;
-        else     dmin_0 = d;
+        if (bit) dmin_1[k] = d;
+        else     dmin_0[k] = d;
+    }
 
-        // check symbols in table
-#if DEBUG_DEMODULATE_SOFT
-        printf("  index %2u : ", k);
-#endif
-        for (i=0; i<p; i++) {
-            bit = (softab[s*p+i] >> (bps-k-1)) & 0x01;
+    // parse all 'nearest neighbors' and find minimum distance for each bit
+    for (i=0; i<p; i++) {
+        // remodulate symbol
+        if (_demod->modulate_using_map)
+            x_hat = _demod->symbol_map[ softab[s*p + i] ];
+        else
+            modem_modulate(_demod, softab[s*p+i], &x_hat);
 
-#if DEBUG_DEMODULATE_SOFT
-            print_bitstring_demod_soft(softab[s*p+i],bps);
-            printf("[%1u]", bit);
-#endif
+        // compute magnitude squared of Euclidean distance
+        //d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
+        // (same as above, but faster)
+        float complex e = _r - x_hat;
+        d = crealf(e)*crealf(e) + cimagf(e)*cimagf(e);
 
-            // compute distance by re-modulating symbol...
-            if (_demod->modulate_using_map)
-                x_hat = _demod->symbol_map[ softab[s*p + i] ];
-            else
-                modem_modulate(_demod, softab[s*p+i], &x_hat);
-            d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
-#if DEBUG_DEMODULATE_SOFT
-            printf("(%8.6f) ", d);
-#endif
-            if (bit) {
-                if (d < dmin_1) dmin_1 = d;
+        // look at each bit in 'nearest neighbor' and update minimum
+        for (k=0; k<bps; k++) {
+            // strip bit
+            unsigned int bit = (softab[s*p+i] >> (bps-k-1)) & 0x01;
+            if ( bit ) {
+                if (d < dmin_1[k]) dmin_1[k] = d;
             } else {
-                if (d < dmin_0) dmin_0 = d;
+                if (d < dmin_0[k]) dmin_0[k] = d;
             }
         }
-#if DEBUG_DEMODULATE_SOFT
-        printf("\n");
-        printf("  dmin_0 : %12.8f\n", dmin_0);
-        printf("  dmin_1 : %12.8f\n", dmin_1);
-#endif
+    }
 
-        // make assignments
-        int soft_bit = ((-dmin_1/(2.0f*sig*sig)) - (-dmin_0/(2.0f*sig*sig)))*16 + 127;
+    // make soft bit assignments
+    for (k=0; k<bps; k++) {
+        int soft_bit = ((-dmin_1[k]/(2.0f*sig*sig)) - (-dmin_0[k]/(2.0f*sig*sig)))*16 + 127;
         if (soft_bit > 255) soft_bit = 255;
         if (soft_bit <   0) soft_bit = 0;
         _soft_bits[k] = (unsigned char)soft_bit;
