@@ -229,7 +229,6 @@ void fec_conv_punctured_decode_soft(fec _q,
     unsigned int i,r;
     unsigned int n=0;   // input soft bit index
     unsigned int p=0;   // puncturing matrix column index
-    unsigned char bit;
     for (i=0; i<num_enc_bits; i+=_q->R) {
         //
         for (r=0; r<_q->R; r++) {
