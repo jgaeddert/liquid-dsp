@@ -87,6 +87,9 @@ int main(int argc, char*argv[])
         // demodulate, including soft decision
         modem_demodulate_soft(demod, x, &s, soft_bits);
 
+        // re-pack soft bits to hard decision
+        liquid_pack_soft_bits(soft_bits, bps, &s);
+
         // print results
         printf("  ");
         print_bitstring(i,bps);

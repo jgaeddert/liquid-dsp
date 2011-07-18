@@ -61,12 +61,10 @@ void modem_demodulate_soft(modem _demod,
     // hard-demodulated bits
     unsigned int symbol_out;
     _demod->demodulate_func(_demod, _x, &symbol_out);
-
-    unsigned int i;
-    for (i=0; i<_demod->m; i++)
-        _soft_bits[i] = ((symbol_out >> (_demod->m-i-1)) & 0x0001) ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
-
     *_s = symbol_out;
+
+    // unpack soft bits
+    liquid_unpack_soft_bits(symbol_out, _demod->m, _soft_bits);
 }
 
 #if DEBUG_DEMODULATE_SOFT
