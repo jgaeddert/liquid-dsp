@@ -597,7 +597,8 @@ src/modem/src/freqmodem.o: %.o : %.c $(headers)
 
 modem_autotests :=					\
 	src/modem/tests/modem_autotest.h		\
-	src/modem/tests/modem_phase_error_autotest.h
+	src/modem/tests/modem_demodsoft_autotest.h	\
+	src/modem/tests/modem_phase_error_autotest.h	\
 
 
 modem_benchmarks :=					\
