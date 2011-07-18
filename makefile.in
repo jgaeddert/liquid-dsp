@@ -568,6 +568,7 @@ modem_objects :=				\
 	src/modem/src/modem_modulate.o		\
 	src/modem/src/modem_demodulate.o	\
 	src/modem/src/modem_demodulate_soft.o	\
+	src/modem/src/modem_demod_soft_const.o	\
 	src/modem/src/ampmodem.o		\
 	src/modem/src/freqmodem.o		\
 

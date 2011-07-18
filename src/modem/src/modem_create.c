@@ -172,6 +172,10 @@ void modem_init(modem _mod,
     _mod->modulate_func = NULL;
     _mod->demodulate_func = NULL;
 
+    // soft demodulation
+    _mod->demod_soft_neighbors = NULL;
+    _mod->demod_soft_p = 0;
+
     // reset object
     modem_reset(_mod);
 }
@@ -289,6 +293,12 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
     modem_init_map(mod);
     mod->modulate_using_map = 1;
+
+    // soft demodulation
+    if (mod->m == 4) {
+        mod->demod_soft_neighbors = (unsigned char*) qam16_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    }
 
     return mod;
 }

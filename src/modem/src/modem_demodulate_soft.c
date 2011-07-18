@@ -32,6 +32,8 @@
 
 #include "liquid.internal.h"
 
+#define DEBUG_DEMODULATE_SOFT 0
+
 // generic demodulation
 void modem_demodulate_soft(modem _demod,
                           float complex _x,
@@ -45,6 +47,15 @@ void modem_demodulate_soft(modem _demod,
     default:;
     }
 
+    // check if...
+    if (_demod->demod_soft_neighbors != NULL && _demod->demod_soft_p != 0) {
+        // demodulate using approximate log-likelihood method with
+        // look-up table for nearest neighbors
+        modem_demodulate_soft_table(_demod, _x, _s, _soft_bits);
+
+        return;
+    }
+
     // for now demodulate normally and simply copy the
     // hard-demodulated bits
     unsigned int symbol_out;
@@ -56,6 +67,108 @@ void modem_demodulate_soft(modem _demod,
 
     *_s = symbol_out;
 }
+
+#if DEBUG_DEMODULATE_SOFT
+// print a string of bits to the standard output
+void print_bitstring_demod_soft(unsigned int _x,
+                     unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        printf("%1u", (_x >> (_n-i-1)) & 1);
+}
+#endif
+
+// generic soft demodulation using look-up table...
+//  _demod      :   demodulator object
+//  _r          :   received sample
+//  _s          :   hard demodulator output
+//  _soft_bits  :   soft bit ouput (approximate log-likelihood ratio)
+void modem_demodulate_soft_table(modem _demod,
+                                 float complex _r,
+                                 unsigned int * _s,
+                                 unsigned char * _soft_bits)
+{
+#if DEBUG_DEMODULATE_SOFT
+    printf("\nmodem_demodulate_soft_table() invoked\n");
+#endif
+    // run hard demodulation; this will store re-modulated sample
+    // as internal variable x_hat
+    unsigned int s;
+    modem_demodulate(_demod, _r, &s);
+#if DEBUG_DEMODULATE_SOFT
+    printf("  hard demod    :   %3u\n", *_s);
+#endif
+
+    unsigned int bps = modem_get_bps(_demod);
+
+    float sig = 0.2f;
+
+    unsigned int k;
+    unsigned int i;
+    unsigned int bit;
+    float d;
+    float complex x_hat;    // re-modulated symbol
+    unsigned char * softab = _demod->demod_soft_neighbors;
+    unsigned int p = _demod->demod_soft_p;
+    for (k=0; k<bps; k++) {
+        // initialize soft bit value
+        _soft_bits[k] = 127;
+
+        // find nearest 0 and nearest 1
+        float dmin_0 = 1.0f;
+        float dmin_1 = 1.0f;
+
+        // check bit of hard demodulation
+        d = crealf( (_r-_demod->x_hat)*conjf(_r-_demod->x_hat) );
+        bit = (s >> (bps-k-1)) & 0x01;
+        if (bit) dmin_1 = d;
+        else     dmin_0 = d;
+
+        // check symbols in table
+#if DEBUG_DEMODULATE_SOFT
+        printf("  index %2u : ", k);
+#endif
+        for (i=0; i<p; i++) {
+            bit = (softab[s*p+i] >> (bps-k-1)) & 0x01;
+
+#if DEBUG_DEMODULATE_SOFT
+            print_bitstring_demod_soft(softab[s*p+i],bps);
+            printf("[%1u]", bit);
+#endif
+
+            // compute distance by re-modulating symbol...
+            if (_demod->modulate_using_map)
+                x_hat = _demod->symbol_map[ softab[s*p + i] ];
+            else
+                modem_modulate(_demod, softab[s*p+i], &x_hat);
+            d = crealf( (_r-x_hat)*conjf(_r-x_hat) );
+#if DEBUG_DEMODULATE_SOFT
+            printf("(%8.6f) ", d);
+#endif
+            if (bit) {
+                if (d < dmin_1) dmin_1 = d;
+            } else {
+                if (d < dmin_0) dmin_0 = d;
+            }
+        }
+#if DEBUG_DEMODULATE_SOFT
+        printf("\n");
+        printf("  dmin_0 : %12.8f\n", dmin_0);
+        printf("  dmin_1 : %12.8f\n", dmin_1);
+#endif
+
+        // make assignments
+        int soft_bit = ((-dmin_1/(2.0f*sig*sig)) - (-dmin_0/(2.0f*sig*sig)))*16 + 127;
+        if (soft_bit > 255) soft_bit = 255;
+        if (soft_bit <   0) soft_bit = 0;
+        _soft_bits[k] = (unsigned char)soft_bit;
+    }
+
+    // set hard output symbol
+    *_s = s;
+}
+
 
 // demodulate BPSK (soft)
 void modem_demodulate_soft_bpsk(modem _demod,

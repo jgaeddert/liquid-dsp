@@ -1270,6 +1270,12 @@ struct modem_s {
     void (*demodulate_func)(modem _demod,
                             float complex _x,
                             unsigned int * _symbol_out);
+
+    // soft demodulation
+    //int demodulate_soft;    // soft demodulation flag
+    // neighbors array
+    unsigned char * demod_soft_neighbors;   // array of nearest neighbors
+    unsigned int demod_soft_p;              // number of neighbors in array
 };
 
 
@@ -1353,6 +1359,9 @@ void modem_demodulate_ook(modem _demod, float complex x, unsigned int *symbol_ou
 void modem_demodulate_sqam32(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_sqam128(modem _demod, float complex x, unsigned int *symbol_out);
 
+// generic soft demodulation routine using nearest-neighbors look-up table
+void modem_demodulate_soft_table(modem _demod, float complex _x, unsigned int * _s, unsigned char * _soft_bits);
+
 // specific modem soft demodulate routines
 void modem_demodulate_soft_bpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
 void modem_demodulate_soft_qpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
@@ -1413,6 +1422,9 @@ extern const float apsk256_r[7];
 extern const float apsk256_phi[7];
 extern const float apsk256_r_slicer[6];
 extern const unsigned int apsk256_symbol_map[256];
+
+// soft demodulation arrays
+extern const unsigned char qam16_demod_soft_neighbors[64];
 
 // demodulator helper functions
 
