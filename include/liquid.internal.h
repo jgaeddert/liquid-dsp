@@ -1440,6 +1440,14 @@ extern const unsigned char qam64_demod_soft_neighbors[256];
 extern const unsigned char qam128_demod_soft_neighbors[512];
 extern const unsigned char qam256_demod_soft_neighbors[1024];
 
+extern const unsigned char apsk4_demod_soft_neighbors[12];      // p=3
+extern const unsigned char apsk8_demod_soft_neighbors[24];      // p=3
+extern const unsigned char apsk16_demod_soft_neighbors[64];     // p=4
+extern const unsigned char apsk32_demod_soft_neighbors[128];    // p=4
+extern const unsigned char apsk64_demod_soft_neighbors[256];    // p=4
+extern const unsigned char apsk128_demod_soft_neighbors[640];   // p=5
+extern const unsigned char apsk256_demod_soft_neighbors[1280];  // p=5
+
 // demodulator helper functions
 
 // Demodulate a linear symbol constellation using dynamic threshold calculation
