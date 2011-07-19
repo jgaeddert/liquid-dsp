@@ -810,7 +810,55 @@ Section~\ref{module:modem:digital:interface}).
 
 \subsubsection{Soft Demodulation}
 \label{module:modem:digital:soft}
-Log-likelihood ratio...
+When using the output of the demodulator in conjuction with forward
+error-correction coding, the soft bit information can improve the error
+detection and correction capabilities of certain codes.
+%
+Let us represent the received signal as...
+%
+\begin{equation}
+\label{eqn:modem:digital:soft:received_signal}
+    r = s + n
+\end{equation}
+%
+where $s$ is the transmitted symbol
+and $n$ is a zero-mean complex Gauss random variable with
+a variance $\sigma_n^2 = E\{n n^*\}$.
+Let the transmitted symbols be {\em i.i.d.} and drawn from a $M$-point
+constellation, each with $m$ bits of information (thus $M=2^m$)
+such that the symbols belong to a set of constellation points
+$s \in \{s_0,s_1,\ldots,s_{M-1}\}$ and $E\{s s^*\}=1$.
+Each point is represented by the binary string
+$\{c_0,c_1,\ldots,c_{m-1}\}$.
+%
+Assuming perfect channel knowledge, timing, and carrier offset recovery,
+the log-likelihood ratio of each bit $b_k$ is shown to be
+\cite[Eq.~(8)]{LeGoff:1994}
+the ratio of the two conditional {\em a posteriori} probabilities
+%
+\[
+    \Lambda(b_k) =
+        \ln \frac{
+            P\left(b_k=1 | \text{observation} \right)
+        }{
+            P\left(b_k=0 | \text{observation} \right)
+        }
+\]
+%
+Assuming that the channel is memoryless the ``observation'' is simply
+the received sample $r$ in
+(\ref{eqn:modem:digital:soft:received_signal}).
+%Furthermore, by assuming that the transmitted symbols are equally
+%probable and that the noise follows a Gauss distribution,
+%the conditional probabilities can be written as
+%\cite{Qiang:2003}
+...
+%
+\[
+    \Lambda(b_k) =
+        \ln \sum_{s^+\in \{s:b_k=1\}} { \exp\left\{|r-s^+|_2^2 / 2 \sigma_n^2\right\} }
+       -\ln \sum_{s^-\in \{s:b_k=0\}} { \exp\left\{|r-s^-|_2^2 / 2 \sigma_n^2\right\} }
+\]
 %
 %-------------------- FIGURE: MODEM DEMOD SOFT--------------------
 \begin{figure}
