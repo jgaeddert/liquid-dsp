@@ -854,34 +854,50 @@ the received sample $r$ in
 %\cite{Qiang:2003}
 ...
 %
-\[
+\begin{equation}
+\label{eqn:modem:digital:soft:LLR}
     \Lambda(b_k) =
         \ln \sum_{s^+\in \{s:b_k=1\}} { \exp\left\{|r-s^+|_2^2 / 2 \sigma_n^2\right\} }
        -\ln \sum_{s^-\in \{s:b_k=0\}} { \exp\left\{|r-s^-|_2^2 / 2 \sigma_n^2\right\} }
-\]
+\end{equation}
+%
+As shown in \cite{Qiang:2003} a sub-optimal simplified LLR expression
+can be obtained by replacing...
+$\ln \sum_j {e^{z_j}} \approx \max_j \ln (e^{z_j}) = \max_j z_j$
+which is tight as long as the sum is dominated by its largest component.
+%
+\begin{equation}
+\label{eqn:modem:digital:soft:LLR_approx}
+    \tilde{\Lambda}(b_k) =
+        \frac{1}{2\sigma_n^2}
+        \Bigl\{
+            \underset{s^+\in \{s:b_k=0\}}{\min} \|r-s^+\|_2^2 -
+            \underset{s^-\in \{s:b_k=1\}}{\min} \|r-s^+\|_2^2
+        \Bigr\}
+\end{equation}
 %
 %-------------------- FIGURE: MODEM DEMOD SOFT--------------------
 \begin{figure}
 \centering
 \mbox{
-  \subfigure[$\tilde{\Lambda}(b_0) = 11.19$]
+  \subfigure[$\tilde{\Lambda}(b_0) = -10.55$]
     {
       \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b0}
       \label{fig:modem:demodsoft:b0}
     } \quad
-  \subfigure[$\tilde{\Lambda}(b_1) = 0.59$]
+  \subfigure[$\tilde{\Lambda}(b_1) = -0.28$]
     {
       \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b1}
       \label{fig:modem:demodsoft:b1}
     } \quad
 }
 \mbox{
-  \subfigure[$\tilde{\Lambda}(b_2) = 7.43$]
+  \subfigure[$\tilde{\Lambda}(b_2) = -7.43$]
     {
       \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b2}
       \label{fig:modem:demodsoft:b2}
     } \quad
-  \subfigure[$\tilde{\Lambda}(b_3) = -2.57$]
+  \subfigure[$\tilde{\Lambda}(b_3) = 2.57$]
     {
       \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b3}
       \label{fig:modem:demodsoft:b3}
@@ -898,4 +914,20 @@ the received sample $r$ in
 \end{figure}
 %
 Figure~\ref{fig:modem:demodsoft} depicts...
+%
+
+One major drawback of computing
+(\ref{eqn:modem:digital:soft:LLR_approx}) is that finding the maximum
+requires searching over all constellation points to find the one which
+minimizes $|r-s_k|$
+(where $s_k \in \{s:b_k\}$) is particularly time-consuming.
+% TODO : explain in more detail
+To circumvent this, \liquid\ only searches over a few points (typically
+four) nearest to the hard-demodulated symbol.
+This can be done quickly because the hard-demodulated symbol can be
+found systematically for most modulation schemes
+(e.g. for {\tt LIQUID\_MODEM\_QAM} only $\log_2 M$ comparisons are
+needed to make a hard decision).
+If no symbols are found within this set where $s_k \in {s:b_k=...}$ then
+the ... % reword
 %

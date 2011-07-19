@@ -17,7 +17,7 @@ int main(int argc, char*argv[])
     modulation_scheme ms = LIQUID_MODEM_QAM;    // modulation scheme
     unsigned int bps=4;                         // bits/symbol
     //float complex r = -0.22 + 0.05*_Complex_I;  // received sample
-    float complex r = -0.67 - 0.47*_Complex_I;  // received sample
+    float complex r = -0.65 - 0.47*_Complex_I;  // received sample
     float gnuplot_version = 4.2;                // gnuplot version
     float sig = 0.20f;                          // noise standard deviation
     char label_filename[] = "figures.gen/modem_demodsoft_labels.dat";
@@ -67,7 +67,7 @@ int main(int argc, char*argv[])
         }
     }
     for (k=0; k<bps; k++) {
-        float LLR_hat = (dmin_1[k] - dmin_0[k]) / (2.0f * sig * sig);
+        float LLR_hat = (dmin_0[k] - dmin_1[k]) / (2.0f * sig * sig);
         printf("bit %1u : {%3u, %12.8f} {%3u, %12.8f} LLR : %12.8f\n",
                 k,
                 smin_0[k], dmin_0[k],
