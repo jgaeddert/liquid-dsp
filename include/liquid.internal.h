@@ -157,17 +157,17 @@ LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
 
 // checksum / cyclic redundancy check (crc)
 
-#define CRC8_POLY 0x07
+// byte reversal and manipulation
+extern const unsigned char liquid_reverse_byte[256];
 unsigned char reverse_byte(unsigned char _x);
-
-#define CRC16_POLY 0x8005
 unsigned int reverse_uint16(unsigned int _x);
-
-#define CRC24_POLY 0x5D6DCB
 unsigned int reverse_uint24(unsigned int _x);
-
-#define CRC32_POLY 0x04C11DB7
 unsigned int reverse_uint32(unsigned int _x);
+
+#define CRC8_POLY 0x07
+#define CRC16_POLY 0x8005
+#define CRC24_POLY 0x5D6DCB
+#define CRC32_POLY 0x04C11DB7
 
 unsigned int checksum_generate_key(unsigned char * _msg, unsigned int _msg_len);
 unsigned int crc8_generate_key(unsigned char * _msg, unsigned int _msg_len);
