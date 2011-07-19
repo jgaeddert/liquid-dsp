@@ -585,8 +585,10 @@ modem_demodsoft_gnufiles :=			\
 
 modem_demodsoft_epsfiles := $(patsubst %.gnu,%.eps,$(modem_demodsoft_gnufiles))
 
-$(modem_demodsoft_gnufiles) : % : src/modem_demodsoft figures.gen/modem_16qam.dat
+$(modem_demodsoft_gnufiles) figures.gen/modem_demodsoft_labels.dat : src/modem_demodsoft
 	./$<
+
+$(modem_demodsoft_epsfiles) : %.eps : %.gnu figures.gen/modem_demodsoft_labels.dat
 
 #
 # modem BER data

@@ -16,9 +16,11 @@ int main(int argc, char*argv[])
     // create mod/demod objects
     modulation_scheme ms = LIQUID_MODEM_QAM;    // modulation scheme
     unsigned int bps=4;                         // bits/symbol
-    float complex r = 0.4 + 0.25*_Complex_I;   // received sample
+    //float complex r = -0.22 + 0.05*_Complex_I;  // received sample
+    float complex r = -0.67 - 0.47*_Complex_I;  // received sample
     float gnuplot_version = 4.2;                // gnuplot version
-    char input_filename[] = "figures.gen/modem_16qam.dat";
+    float sig = 0.20f;                          // noise standard deviation
+    char label_filename[] = "figures.gen/modem_demodsoft_labels.dat";
 
     unsigned int i;
     unsigned int k;
@@ -26,7 +28,6 @@ int main(int argc, char*argv[])
     // 
     unsigned int M = 1<<bps;    // constellation size
     float complex c[M];         // constellation map
-    char filename[256];         // filename placeholder
 
     // generate symbol table
     modem q = modem_create(ms, bps);
@@ -66,10 +67,12 @@ int main(int argc, char*argv[])
         }
     }
     for (k=0; k<bps; k++) {
-        printf("bit %1u : {%3u, %12.8f} {%3u, %12.8f}\n",
+        float LLR_hat = (dmin_1[k] - dmin_0[k]) / (2.0f * sig * sig);
+        printf("bit %1u : {%3u, %12.8f} {%3u, %12.8f} LLR : %12.8f\n",
                 k,
                 smin_0[k], dmin_0[k],
-                smin_1[k], dmin_1[k]);
+                smin_1[k], dmin_1[k],
+                LLR_hat);
     }
 
     // 
@@ -77,9 +80,57 @@ int main(int argc, char*argv[])
     //
 
     int plot_labels = (gnuplot_version > 4.1) && (bps < 8);
-    int plot_long_labels = 1;
 
+    // 
+    // generate labels file
+    //
+    if (plot_labels) {
+        // generate output labels file
+        FILE * fid = fopen(label_filename,"w");
+        if (fid == NULL) {
+            fprintf(stderr,"error: %s, could not open file \"%s\" for writing.\n", argv[0], label_filename);
+            exit(1);
+        }
+        fprintf(fid,"# %s : auto-generated file (do not edit)\n", label_filename);
+        fprintf(fid,"# invoked as :");
+        for (i=0; i<argc; i++)
+            fprintf(fid," %s",argv[i]);
+        fprintf(fid,"\n");
+
+        char symbol_str[bps+1];
+        unsigned int j;
+        for (i=0; i<M; i++) {
+            // generate binary symbol string
+            for (j=0; j<bps; j++)
+                symbol_str[j] = ((i>>(bps-j-1)) & 1) ? '1' : '0';
+            symbol_str[j] = '\0';   // terminate with null character
+
+            fprintf(fid,"%12.4e %12.4e \"%s\"  ", crealf(c[i]), cimagf(c[i]), symbol_str);
+
+            // now print all bits highlighted...
+            for (k=0; k<bps; k++) {
+                for (j=0; j<bps; j++) {
+                    if (j==k) symbol_str[j] = ((i>>(bps-j-1)) & 1) ? '1' : '0';
+                    else      symbol_str[j] = ' ';
+                }
+                symbol_str[j] = '\0';   // terminate with null character
+
+                fprintf(fid," \"%s\"", symbol_str);
+            }
+            fprintf(fid,"\n");
+        }
+
+        // close output file
+        fclose(fid);
+
+        printf("results written to '%s'\n", label_filename);
+
+    }
+
+    // 
     // generate plot for each bit
+    //
+    char filename[256];         // filename placeholder
     for (k=0; k<bps; k++) {
         // generate gnuplot file
         sprintf(filename,"figures.gen/modem_demodsoft_b%u.gnu", k);
@@ -101,22 +152,29 @@ int main(int argc, char*argv[])
         fprintf(fid,"set yrange [-1.2:1.2]\n");
         fprintf(fid,"set size square\n");
         //fprintf(fid,"set title \"%s\"\n", figure_title);
-        fprintf(fid,"set xlabel \"I\"\n");
-        fprintf(fid,"set ylabel \"Q\"\n");
+        fprintf(fid,"set xlabel \"In Phase\"\n");
+        fprintf(fid,"set ylabel \"Quadrature\"\n");
         fprintf(fid,"set nokey # disable legned\n");
-        fprintf(fid,"set grid xtics ytics\n");
+        fprintf(fid,"set xtics -1.5811,1.5811,1.5811 # major xtics: -5/sqrt(10):5/sqrt(10)\n");
+        fprintf(fid,"set ytics -1.5811,1.5811,1.5811 # major ytics: -5/sqrt(10):5/sqrt(10)\n");
+        fprintf(fid,"set mxtics 5\n");
+        fprintf(fid,"set mytics 5\n");
+        fprintf(fid,"set grid xtics ytics mxtics mytics\n");
         fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
         fprintf(fid,"set pointsize 1.0\n");
         if (!plot_labels) {
             // do not print labels
-            fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080',\\\n",input_filename);
+            fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080',\\\n",label_filename);
         } else {
             // print labels
-            fprintf(fid,"xoffset = %8.6f\n", plot_long_labels ? 0.0 : 0.06f);
-            fprintf(fid,"yoffset = %8.6f\n", 0.06f);
-            unsigned int label_line = plot_long_labels ? 3 : 4;
-            fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080',\\\n",input_filename);
-            fprintf(fid,"     '%s' using ($1+xoffset):($2+yoffset):%u with labels font 'arial,10',\\\n", input_filename,label_line);
+            fprintf(fid,"xoffset = 0.0\n");
+            fprintf(fid,"yoffset = 0.06\n");
+            fprintf(fid,"plot '%s' using 1:2 with points pointtype 7 linecolor rgb '#004080',\\\n",label_filename);
+            unsigned int j;
+            for (j=0; j<bps; j++) {
+                if (j==k) fprintf(fid,"     '%s' using ($1+xoffset):($2+yoffset):%u with labels font 'Courier Bold,10',\\\n", label_filename, 4+j);
+                else      fprintf(fid,"     '%s' using ($1+xoffset):($2+yoffset):%u with labels font 'Courier,10',\\\n",      label_filename, 4+j);
+            }
         }
         // add received point and connecting lines
         fprintf(fid,"    '-' using 1:2 with lines linewidth 2 linetype 1 linecolor rgb '#000000',\\\n");
