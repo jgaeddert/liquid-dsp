@@ -233,6 +233,7 @@ fec_autotests :=				\
 
 # benchmarks
 fec_benchmarks :=				\
+	src/fec/bench/crc_benchmark.h		\
 	src/fec/bench/fec_encode_benchmark.h	\
 	src/fec/bench/fec_decode_benchmark.h	\
 
