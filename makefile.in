@@ -801,8 +801,21 @@ utility_objects :=				\
 	src/utility/src/msb_index.o		\
 	src/utility/src/pack_bytes.o		\
 	src/utility/src/shift_array.o		\
+	src/utility/gentab/count_ones.o		\
 
 $(utility_objects) : %.o : %.c $(headers)
+
+# auto-generated tables
+src/utility/gentab/count_ones_gentab : % : %.c
+
+src/utility/gentab/count_ones.c : src/utility/gentab/count_ones_gentab
+	./$< > $@
+
+# add auto-generated files to extra_clean list
+extra_clean +=					\
+	src/utility/gentab/count_ones_gentab	\
+	src/utility/gentab/count_ones.c		\
+	src/utility/gentab/count_ones.o		\
 
 
 # autotests

@@ -1773,8 +1773,22 @@ extern struct msequence_s msequence_default[16];
 //
 
 
-// number of 1's in byte
-extern unsigned int liquid_c_ones[256];
+// number of ones in a byte
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   2
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   6
+//  127 0111 1111   :   7
+//  128 1000 0000   :   1
+//  129 1000 0001   :   2
+//  ...
+//  253 1111 1101   :   7
+//  254 1111 1110   :   7
+//  255 1111 1111   :   8
+extern const unsigned char liquid_c_ones[256];
 
 // Count the number of ones in an integer, inline insertion
 #define liquid_count_ones_uint16(x) (           \
@@ -1788,8 +1802,22 @@ extern unsigned int liquid_c_ones[256];
     liquid_c_ones[ ((x)>>24) & 0xff ])
 
 
-// number of 1's in a byte modulo 2
-extern unsigned char liquid_c_ones_mod2[256];
+// number of ones in a byte, modulo 2
+//  0   0000 0000   :   0
+//  1   0000 0001   :   1
+//  2   0000 0010   :   1
+//  3   0000 0011   :   0
+//  4   0000 0100   :   1
+//  ...
+//  126 0111 1110   :   0
+//  127 0111 1111   :   1
+//  128 1000 0000   :   1
+//  129 1000 0001   :   0
+//  ...
+//  253 1111 1101   :   1
+//  254 1111 1110   :   1
+//  255 1111 1111   :   0
+extern const unsigned char liquid_c_ones_mod2[256];
 
 // Count the number of ones in an integer modulo 2, inline insertion
 #define liquid_count_ones_mod2_uint16(x) ((         \

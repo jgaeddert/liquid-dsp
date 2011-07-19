@@ -35,6 +35,7 @@ octave-core
 
 # gentab programs
 src/fec/gentab/*_gentab
+src/utility/gentab/*_gentab
 
 # sandbox
 sandbox/*_test
