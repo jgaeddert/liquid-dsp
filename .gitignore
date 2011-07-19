@@ -33,6 +33,9 @@ octave-core
 *.tar
 *.gz
 
+# gentab programs
+src/fec/gentab/*_gentab
+
 # sandbox
 sandbox/*_test
 sandbox/*_example

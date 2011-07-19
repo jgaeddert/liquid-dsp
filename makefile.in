@@ -82,6 +82,9 @@ include_headers	:= $(addprefix include/,$(headers))
 
 all:
 
+# additional targets to clean
+extra_clean :=
+
 #
 # MODULE : agc - automatic gain control
 #
@@ -213,11 +216,23 @@ fec_objects :=				\
 	src/fec/src/fec_rep3.o		\
 	src/fec/src/fec_rep5.o		\
 	src/fec/src/fec_rs.o		\
+	src/fec/gentab/reverse_byte.o	\
 
 
 # list explicit targets and dependencies here
 $(fec_objects) : %.o : %.c $(headers)
 
+# auto-generated tables
+src/fec/gentab/reverse_byte_gentab : % : %.c
+
+src/fec/gentab/reverse_byte.c : src/fec/gentab/reverse_byte_gentab
+	./$< > $@
+
+# add auto-generated files to extra_clean list
+extra_clean +=					\
+	src/fec/gentab/reverse_byte_gentab	\
+	src/fec/gentab/reverse_byte.c		\
+	src/fec/gentab/reverse_byte.o		\
 
 # autotests
 fec_autotests :=				\
@@ -1338,6 +1353,7 @@ clean-modules:
 	$(RM) libliquid.o
 
 clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc
+	$(RM) $(extra_clean)
 	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
 
