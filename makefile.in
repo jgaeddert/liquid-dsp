@@ -1100,9 +1100,13 @@ $(bench_prog): $(bench_prog).o $(benchmark_obj) libliquid.a
 bench: $(bench_prog)
 	./$(bench_prog)
 
+# benchmark compare script
+scripts/benchmark_compare : % : %.c
+
 # clean up the generated files
 clean-bench:
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
+	$(RM) scripts/benchmark_compare
 	$(RM) $(benchmark_obj)
 
 
@@ -1244,6 +1248,7 @@ sandbox_obj =						\
 	sandbox/fec_hamming128_example.o		\
 	sandbox/fec_hamming74_gentab.o			\
 	sandbox/fec_hamming84_gentab.o			\
+	sandbox/fec_hamming_test.o			\
 	sandbox/fec_rep3_test.o				\
 	sandbox/fec_rep5_test.o				\
 	sandbox/fft_r2r_test.o				\

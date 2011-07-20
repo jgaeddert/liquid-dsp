@@ -26,8 +26,7 @@ void usage()
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
     liquid_print_fec_schemes();
-    printf("  p     : modulation depth (default 2 bits/symbol)\n");
-    printf("  m     : modulation scheme (psk default)\n");
+    printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
 
@@ -55,12 +54,12 @@ int main(int argc, char*argv[])
     unsigned long int max_trials = 0;
 
     unsigned int bps=2;
-    modulation_scheme ms = LIQUID_MODEM_PSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
     fec_scheme fec0 = LIQUID_FEC_NONE;  // inner code
     fec_scheme fec1 = LIQUID_FEC_NONE;  // outer code
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqBPe:n:x:c:k:m:p:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqBPe:n:x:c:k:m:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();                    return 0;
@@ -88,14 +87,11 @@ int main(int argc, char*argv[])
             }
             break;
         case 'm':
-            ms = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: modem_example, unknown/unsupported modulation scheme \"%s\"\n", optarg);
                 return 1;
             }
-            break;
-        case 'p':
-            bps = atoi(optarg);
             break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);

@@ -2583,7 +2583,8 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES  16
+#define LIQUID_MODEM_NUM_SCHEMES      (16)  // generic schemes (e.g. 'qam')
+#define LIQUID_MODEM_NUM_FULL_SCHEMES (48)  // specific schemes (e.g. 'qam256')
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
 
@@ -2618,6 +2619,11 @@ void liquid_print_modulation_schemes();
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
 
+// returns modulation_scheme and depth based on input string
+void liquid_getopt_str2modbps(const char * _str,
+                              modulation_scheme * _ms,
+                              unsigned int * _bps);
+
 // useful functions
 
 // counts the number of different bits between two symbols
@@ -2646,7 +2652,7 @@ unsigned int gray_decode(unsigned int symbol_in);
 // define struct pointer
 typedef struct modem_s * modem;
 
-// create modulation scheme, allocating memory as necessary
+// create digital modem object, allocating memory as necessary
 modem modem_create(modulation_scheme _scheme,
                    unsigned int _bits_per_symbol);
 
