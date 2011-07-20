@@ -872,7 +872,7 @@ which is tight as long as the sum is dominated by its largest component.
         \frac{1}{2\sigma_n^2}
         \Bigl\{
             \underset{s^+\in \{s:b_k=0\}}{\min} \|r-s^+\|_2^2 -
-            \underset{s^-\in \{s:b_k=1\}}{\min} \|r-s^+\|_2^2
+            \underset{s^-\in \{s:b_k=1\}}{\min} \|r-s^-\|_2^2
         \Bigr\}
 \end{equation}
 %
@@ -905,17 +905,52 @@ which is tight as long as the sum is dominated by its largest component.
 }
 % trim = left bottom right top
 \caption{
-    Soft demodulation example.
+    Soft demodulation example of a 16-QAM sample.
     Each plot depicts the soft demodulation of each of the 4 bits where
     the $\times$ denotes the received sample and the lines connect it to
     the nearest symbol with each of a {\tt 0} and {\tt 1} bit. %REWORD
+    The noise standard deviation is $\sigma_n=0.2$.
 }
 \label{fig:modem:demodsoft}
 \end{figure}
 %
-Figure~\ref{fig:modem:demodsoft} depicts...
+Figure~\ref{fig:modem:demodsoft} depicts the soft bit demodulation
+algorithm for a received 16-QAM signal point, corrupted by noise.
+The received sample is $r = -0.65 - j0.47$ which results in a hard
+demodulation of {\tt 0001}.
+The subfigures depict each of the four bits in the symbol 
+$\{b_0,b_1,b_2,b_3\}$
+for which the
+soft bit output is given, and show the nearest symbol for which a
+{\tt 0} and a {\tt 1} at that particular bit index occurs.
+For example, Figure~\ref{fig:modem:demodsoft:b2} shows that
+the nearest symbol containing a {\tt 0} at bit index 2
+is $s_1=${\tt 0001} (the hard decision demodulation)
+at $-3/\sqrt{10} - j/\sqrt{10}$
+while
+the nearest symbol containing a {\tt 1} at bit index 2
+is $s_3=${\tt 0011}
+at $-3/\sqrt{10} + j/\sqrt{10}$.
+Plugging $s^-=s_1$ and $s^+=s_3$ into
+(\ref{eqn:modem:digital:soft:LLR_approx})
+and evaluating for $\sigma_n=0.2$ gives an approximate LLR for $b_2$
+equal to -7.43.
+Because this number is largely negative, it is very likely that the
+transmitted bit $b_2$ was {\tt 0}.
+This can be verified by Figure~\ref{fig:modem:demodsoft:b2} which shows
+that the distance from $r$ to $s^-$ is much shorter than that of $s^+$.
+
+Conversely, Figure~\ref{fig:modem:demodsoft:b1} shows that $b_1$ cannot
+be demodulated with such certainty;
+the distances from $r$ to each of $s^+$ and $s^-$ are about the same.
+This is reflected in the relatively small LLR value of
+$\tilde{\Lambda}(b_1)=-0.28$ which suggests a high uncertainty in the
+demodulation of $b_1$.
 %
 
+% 
+% specific implementation
+%
 One major drawback of computing
 (\ref{eqn:modem:digital:soft:LLR_approx}) is that finding the maximum
 requires searching over all constellation points to find the one which
@@ -929,5 +964,7 @@ found systematically for most modulation schemes
 (e.g. for {\tt LIQUID\_MODEM\_QAM} only $\log_2 M$ comparisons are
 needed to make a hard decision).
 If no symbols are found within this set where $s_k \in {s:b_k=...}$ then
-the ... % reword
+the magnitude of $\Lambda(b_k)$ is sufficiently large
+and contains little soft bit information.
 %
+
