@@ -397,7 +397,7 @@ filter_benchmarks :=					\
 	src/filter/bench/decim_benchmark.h		\
 	src/filter/bench/firhilb_benchmark.h		\
 	src/filter/bench/firfilt_crcf_benchmark.h	\
-	src/filter/bench/iirfilt_benchmark.h		\
+	src/filter/bench/iirfilt_crcf_benchmark.h	\
 	src/filter/bench/interp_benchmark.h		\
 	src/filter/bench/resamp_benchmark.h		\
 	src/filter/bench/resamp2_benchmark.h		\
