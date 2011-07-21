@@ -22,3 +22,5 @@ trials, errors, etc. listed for each simulation. Also included are the
 effective Eb/N0 value (bit energy to noise ratio), packet errors, and
 packet error probability.
 
+Also included is "modem_snr.dat" which includes the required SNR (and
+Eb/N0) for each modulation scheme to reach a bit error rate of 10^-5.
