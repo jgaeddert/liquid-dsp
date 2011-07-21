@@ -10,8 +10,8 @@
 #include "liquid.h"
 #include "liquid.doc.h"
 
-#define OUTPUT_FILENAME  "figures.gen/filter_resamp_crcf.gnu"
-#define OUTPUT_FILENAME2 "figures.gen/filter_resamp_crcf_psd.gnu"
+#define OUTPUT_FILENAME_TIME "figures.gen/filter_resamp_crcf_time.gnu"
+#define OUTPUT_FILENAME_FREQ "figures.gen/filter_resamp_crcf_freq.gnu"
 
 int main() {
     // options
@@ -63,8 +63,8 @@ int main() {
     resamp_crcf_destroy(f);
 
     // open/initialize output file
-    FILE*fid = fopen(OUTPUT_FILENAME,"w");
-    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME);
+    FILE*fid = fopen(OUTPUT_FILENAME_TIME,"w");
+    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_TIME);
     fprintf(fid,"reset\n");
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
@@ -119,7 +119,7 @@ int main() {
     fclose(fid);
 
 
-    fid = fopen(OUTPUT_FILENAME2,"w");
+    fid = fopen(OUTPUT_FILENAME_FREQ,"w");
     unsigned int nfft = 512;
     float complex X[nfft];
     float complex Y[nfft];
@@ -129,7 +129,7 @@ int main() {
     fft_shift(Y,nfft);
     float scaling_factor = 20*log10f(nfft);
 
-    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME2);
+    fprintf(fid,"# %s: auto-generated file\n\n", OUTPUT_FILENAME_FREQ);
     fprintf(fid,"reset\n");
     // TODO : switch terminal types here
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");

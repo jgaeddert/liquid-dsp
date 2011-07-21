@@ -79,8 +79,8 @@ local_pdffiles :=					\
 	figures.gen/filter_interp_crcf.pdf		\
 	figures.gen/filter_kaiser_time.pdf		\
 	figures.gen/filter_kaiser_freq.pdf		\
-	figures.gen/filter_resamp_crcf.pdf		\
-	figures.gen/filter_resamp_crcf_psd.pdf		\
+	figures.gen/filter_resamp_crcf_time.pdf		\
+	figures.gen/filter_resamp_crcf_freq.pdf		\
 	figures.gen/interleaver_scatterplot_i0.pdf	\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
@@ -402,8 +402,8 @@ figures.gen/filter_kaiser_freq.gnu : src/filter_kaiser
 # 
 # resamp_crcf
 #
-figures.gen/filter_resamp_crcf.gnu \
-figures.gen/filter_resamp_crcf_psd.gnu: src/filter_resamp_crcf
+figures.gen/filter_resamp_crcf_time.gnu \
+figures.gen/filter_resamp_crcf_freq.gnu: src/filter_resamp_crcf
 	./$<
 
 # 
