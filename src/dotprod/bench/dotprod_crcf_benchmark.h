@@ -29,17 +29,17 @@ void dotprod_crcf_bench(struct rusage *_start,
                         unsigned int _n)
 {
     // normalize number of iterations
-    *_num_iterations *= 8;
+    *_num_iterations *= 100;
     *_num_iterations /= _n;
     if (*_num_iterations < 1) *_num_iterations = 1;
 
     float complex x[_n];
     float h[_n];
-    float complex y;
+    float complex y[8];
     unsigned int i;
     for (i=0; i<_n; i++) {
-        x[i] = 1.0f + _Complex_I*1.0f;
-        h[i] = 1.0f;
+        x[i] = randnf() + _Complex_I*randnf();
+        h[i] = randnf();
     }
 
     // create dotprod structure;
@@ -48,13 +48,17 @@ void dotprod_crcf_bench(struct rusage *_start,
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        dotprod_crcf_execute(dp, x, &y);
-        dotprod_crcf_execute(dp, x, &y);
-        dotprod_crcf_execute(dp, x, &y);
-        dotprod_crcf_execute(dp, x, &y);
+        dotprod_crcf_execute(dp, x, &y[0]);
+        dotprod_crcf_execute(dp, x, &y[1]);
+        dotprod_crcf_execute(dp, x, &y[2]);
+        dotprod_crcf_execute(dp, x, &y[3]);
+        dotprod_crcf_execute(dp, x, &y[4]);
+        dotprod_crcf_execute(dp, x, &y[5]);
+        dotprod_crcf_execute(dp, x, &y[6]);
+        dotprod_crcf_execute(dp, x, &y[7]);
     }
     getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    *_num_iterations *= 8;
 
     // clean up objects
     dotprod_crcf_destroy(dp);
