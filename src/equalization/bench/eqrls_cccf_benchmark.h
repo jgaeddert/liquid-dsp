@@ -18,53 +18,57 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_EQRLS_CCCF_BENCHMARK_H__
-#define __LIQUID_EQRLS_CCCF_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <math.h>
 #include "liquid.h"
 
-#define EQRLS_CCCF_TRAIN_BENCH_API(N) \
-(   struct rusage *_start, \
-    struct rusage *_finish, \
+#define EQRLS_CCCF_TRAIN_BENCH_API(N)   \
+(   struct rusage *_start,              \
+    struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
 { eqrls_cccf_train_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
-void eqrls_cccf_train_bench(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations,
-    unsigned int _h_len)
+void eqrls_cccf_train_bench(struct rusage *_start,
+                            struct rusage *_finish,
+                            unsigned long int *_num_iterations,
+                            unsigned int _h_len)
 {
+    // scale number of iterations appropriately
+    // log(cycles/trial) ~ 5.57 + 2.74*log(_h_len)
+    *_num_iterations *= 2400;
+    *_num_iterations /= (unsigned int) expf(5.57f + 2.64f*logf(_h_len));
+    *_num_iterations = (*_num_iterations < 4) ? 4 : *_num_iterations;
+
     eqrls_cccf eq = eqrls_cccf_create(NULL,_h_len);
     
     unsigned long int i;
 
-    float complex y;
-    float complex d;
-    float complex z;
+    // set up initial arrays to 'randomize' inputs/outputs
+    float complex y[11];
+    for (i=0; i<11; i++)
+        y[i] = randnf() + _Complex_I*randnf();
 
-    // reduce number of iterations relative to speed (keeps execution
-    // time from exploding)
-    *_num_iterations /= _h_len * _h_len;
-    *_num_iterations = (*_num_iterations < 4) ? 4 : *_num_iterations;
+    float complex d[13];
+    for (i=0; i<13; i++)
+        d[i] = randnf() + _Complex_I*randnf();
+
+    unsigned int iy=0;
+    unsigned int id=0;
+
+    float complex z;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        // periodically initializing the input and training sequence
-        // to a random number helps prevent the RLS algorithm's
-        // internal matrices don't explode, and adds negligible time
-        // to the benchmark
-        crandnf(&y);
-        crandnf(&d);
+        eqrls_cccf_push(eq, y[iy]);     // push input into equalizer
+        eqrls_cccf_execute(eq, &z);     // compute equalizer output
+        eqrls_cccf_step(eq, d[id], z);  // step equalizer internals
 
-        eqrls_cccf_push(eq, y);
-        eqrls_cccf_execute(eq, &z);
-        eqrls_cccf_step(eq, d, z);
+        // update counters
+        iy = (iy+1)%11;
+        id = (id+1)%13;
     }
     getrusage(RUSAGE_SELF, _finish);
 
@@ -77,6 +81,4 @@ void benchmark_eqrls_cccf_n8    EQRLS_CCCF_TRAIN_BENCH_API(8)
 void benchmark_eqrls_cccf_n16   EQRLS_CCCF_TRAIN_BENCH_API(16)
 void benchmark_eqrls_cccf_n32   EQRLS_CCCF_TRAIN_BENCH_API(32)
 void benchmark_eqrls_cccf_n64   EQRLS_CCCF_TRAIN_BENCH_API(64)
-
-#endif // __LIQUID_EQRLS_CCCF_BENCHMARK_H__
 
