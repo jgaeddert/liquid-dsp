@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007, 2008, 2009, 2010 Joseph Gaeddert
- * Copyright (c) 2007, 2008, 2009, 2010 Virginia Polytechnic
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Joseph Gaeddert
+ * Copyright (c) 2007, 2008, 2009, 2010, 2011 Virginia Polytechnic
  *                                      Institute & State University
  *
  * This file is part of liquid.
@@ -22,7 +22,7 @@
 //
 // modem_create.c
 //
-// Create and initialize digital modem schemes.
+// Create and initialize linear digital modem schemes.
 //
 
 #include <stdio.h>
@@ -79,10 +79,39 @@ modem modem_create(modulation_scheme _scheme,
     return NULL;
 }
 
+// recreate modulation scheme, re-allocating memory as necessary
+modem modem_recreate(modem _q,
+                     modulation_scheme _scheme,
+                     unsigned int _bits_per_symbol)
+{
+    if (_bits_per_symbol < 1 ) {
+        fprintf(stderr,"error: modem_recreate(), modem must have at least 1 bit/symbol\n");
+        exit(1);
+    } else if (_bits_per_symbol > MAX_MOD_BITS_PER_SYMBOL) {
+        fprintf(stderr,"error: modem_recreate(), maximum number of bits/symbol (%u) exceeded\n",
+                MAX_MOD_BITS_PER_SYMBOL);
+        exit(1);
+    }
+
+    // TODO : regenerate modem only when truly necessary
+    if (_q->scheme != _scheme || _q->m != _bits_per_symbol) {
+        // destroy and re-create modem
+        modem_destroy(_q);
+        _q = modem_create(_scheme, _bits_per_symbol);
+    }
+
+    // return object
+    return _q;
+}
+
 // destroy a modem object
 void modem_destroy(modem _mod)
 {
-    free(_mod->symbol_map);
+    // free internally-allocated memory
+    if (_mod->symbol_map != NULL)
+        free(_mod->symbol_map);
+
+    // free main object memory
     free(_mod);
 }
 
@@ -97,8 +126,9 @@ void modem_print(modem _mod)
 // reset a modem object (only an issue with dpsk)
 void modem_reset(modem _mod)
 {
-    _mod->state = 1.0f;
-    _mod->state_theta = 0.0f;
+    _mod->r = 1.0f;         // received sample
+    _mod->x_hat = _mod->r;  // estimated symbol
+    _mod->dpsk_phi = 0.0f;  // reset differential PSK phase state
 }
 
 // initialize a generic modem object
@@ -113,6 +143,12 @@ void modem_init(modem _mod,
         exit(1);
     }
 
+    // initialize common elements
+    _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
+    _mod->modulate_using_map=0; // modulate using map flag
+    _mod->alpha = 0.0f;         // scaling factor
+
+    // QAM modem
     _mod->m = _bits_per_symbol; // bits/symbol
     _mod->M = 1 << (_mod->m);   // constellation size (2^m)
     _mod->m_i = 0;              // bits/symbol (in-phase)
@@ -120,23 +156,44 @@ void modem_init(modem _mod,
     _mod->m_q = 0;              // bits/symbol (quadrature-phase)
     _mod->M_q = 0;              // constellation size (quadrature-phase)
 
-    _mod->alpha = 0.0f;         // scaling factor
+    // PSK/DPSK modem
+    _mod->d_phi = 0.0f;         // half of angle between symbols
+    _mod->dpsk_phi = 0.0f;      // angle state for differential PSK
 
-    _mod->symbol_map = NULL;    // symbol map (LIQUID_MODEM_ARB only)
-
-    _mod->state = 0.0f;         // symbol state
-    _mod->state_theta = 0.0f;   // phase state
-
-    _mod->res = 0.0f;
-
-    _mod->phase_error = 0.0f;
-    _mod->evm = 0.0f;
-
-    _mod->d_phi = 0.0f;
+    // APSK modem
+    _mod->apsk_num_levels = 0;  // number of levels
+    _mod->apsk_p = NULL;        // number of levels per symbol
+    _mod->apsk_r = NULL;        // number of levels per symbol
+    _mod->apsk_r_slicer = NULL; // radii of levels
+    _mod->apsk_phi = NULL;      // phase offset of levels
+    _mod->apsk_symbol_map=NULL; // symbol mapping
 
     // set function pointers initially to NULL
     _mod->modulate_func = NULL;
     _mod->demodulate_func = NULL;
+
+    // reset object
+    modem_reset(_mod);
+}
+
+// initialize symbol map for fast modulation
+void modem_init_map(modem _q)
+{
+    // validate input
+    if (_q->symbol_map == NULL) {
+        fprintf(stderr,"error: modem_init_map(), symbol map array has not been allocated\n");
+        exit(1);
+    } else if (_q->M == 0 || _q->M > (1<<MAX_MOD_BITS_PER_SYMBOL)) {
+        fprintf(stderr,"error: modem_init_map(), constellation size is out of range\n");
+        exit(1);
+    } else if (_q->modulate_func == NULL) {
+        fprintf(stderr,"error: modem_init_map(), modulation function has not been initialized\n");
+        exit(1);
+    }
+
+    unsigned int i;
+    for (i=0; i<_q->M; i++)
+        _q->modulate_func(_q, i, &_q->symbol_map[i]);
 }
 
 // create an ask (amplitude-shift keying) modem object
@@ -156,10 +213,12 @@ modem modem_create_ask(unsigned int _bits_per_symbol)
     case 8:     mod->alpha = ASK8_ALPHA;     break;
     case 16:    mod->alpha = ASK16_ALPHA;    break;
     case 32:    mod->alpha = ASK32_ALPHA;    break;
+    case 64:    mod->alpha = ASK64_ALPHA;    break;
+    case 128:   mod->alpha = ASK128_ALPHA;   break;
+    case 256:   mod->alpha = ASK256_ALPHA;   break;
     default:
         // calculate alpha dynamically
-        // NOTE: this is only an approximation
-        mod->alpha = sqrtf(3.0f)/(float)(mod->M);
+        mod->alpha = expf(-0.70735 + 0.63653*mod->m);
     }
 
     unsigned int k;
@@ -226,6 +285,11 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     mod->modulate_func = &modem_modulate_qam;
     mod->demodulate_func = &modem_demodulate_qam;
 
+    // initialize symbol map
+    mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
+    modem_init_map(mod);
+    mod->modulate_using_map = 1;
+
     return mod;
 }
 
@@ -235,18 +299,28 @@ modem modem_create_psk(unsigned int _bits_per_symbol)
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = LIQUID_MODEM_PSK;
 
+    // initialize basic modem structure
     modem_init(mod, _bits_per_symbol);
 
+    // compute alpha
     mod->alpha = M_PI/(float)(mod->M);
 
+    // initialize demodulation array reference
     unsigned int k;
     for (k=0; k<(mod->m); k++)
         mod->ref[k] = (1<<k) * mod->alpha;
 
+    // compute phase offset (half of phase difference between symbols)
     mod->d_phi = M_PI*(1.0f - 1.0f/(float)(mod->M));
 
+    // set modulation/demodulation functions
     mod->modulate_func = &modem_modulate_psk;
     mod->demodulate_func = &modem_demodulate_psk;
+
+    // initialize symbol map
+    mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
+    modem_init_map(mod);
+    mod->modulate_using_map = 1;
 
     return mod;
 }
@@ -347,8 +421,8 @@ modem modem_create_dpsk(unsigned int _bits_per_symbol)
 
     mod->d_phi = M_PI*(1.0f - 1.0f/(float)(mod->M));
 
-    mod->state = 1.0f;
-    mod->state_theta = 0.0f;
+    // reset modem
+    modem_reset(mod);
 
     mod->modulate_func = &modem_modulate_dpsk;
     mod->demodulate_func = &modem_demodulate_dpsk;
@@ -359,23 +433,30 @@ modem modem_create_dpsk(unsigned int _bits_per_symbol)
 // create an apsk (amplitude/phase-shift keying) modem object
 modem modem_create_apsk(unsigned int _bits_per_symbol)
 {
+    modem q = NULL;
     switch (_bits_per_symbol) {
-    case 2:     return modem_create_apsk4();
-    case 3:     return modem_create_apsk8();
-    case 4:     return modem_create_apsk16();
-    case 5:     return modem_create_apsk32();
-    case 6:     return modem_create_apsk64();
-    case 7:     return modem_create_apsk128();
-    case 8:     return modem_create_apsk256();
+    case 2: q = modem_create_apsk4();   break;
+    case 3: q = modem_create_apsk8();   break;
+    case 4: q = modem_create_apsk16();  break;
+    case 5: q = modem_create_apsk32();  break;
+    case 6: q = modem_create_apsk64();  break;
+    case 7: q = modem_create_apsk128(); break;
+    case 8: q = modem_create_apsk256(); break;
     default:
         fprintf(stderr,"error: modem_create_apsk(), unsupported modulation level (%u)\n",
                 _bits_per_symbol);
         exit(1);
     }
 
-    return NULL;
+    // initialize symbol map
+    q->symbol_map = (float complex*)malloc(q->M*sizeof(float complex));
+    modem_init_map(q);
+    q->modulate_using_map = 1;
+
+    return q;
 }
 
+// create specific APSK-4 modem
 modem modem_create_apsk4()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -397,7 +478,7 @@ modem modem_create_apsk4()
     return mod;
 }
 
-
+// create specific APSK-8 modem
 modem modem_create_apsk8()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -419,6 +500,7 @@ modem modem_create_apsk8()
     return mod;
 }
 
+// create specific APSK-16 modem
 modem modem_create_apsk16()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -440,6 +522,7 @@ modem modem_create_apsk16()
     return mod;
 }
 
+// create specific APSK-32 modem
 modem modem_create_apsk32()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -461,6 +544,7 @@ modem modem_create_apsk32()
     return mod;
 }
 
+// create specific APSK-64 modem
 modem modem_create_apsk64()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -482,6 +566,7 @@ modem modem_create_apsk64()
     return mod;
 }
 
+// create specific APSK-128 modem
 modem modem_create_apsk128()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -503,6 +588,7 @@ modem modem_create_apsk128()
     return mod;
 }
 
+// create specific APSK-256 modem
 modem modem_create_apsk256()
 {
     modem mod = (modem) malloc( sizeof(struct modem_s) );
@@ -541,7 +627,7 @@ modem modem_create_arb(unsigned int _bits_per_symbol)
     return mod;
 }
 
-// create a V.29 modem object
+// create a V.29 modem object (4 bits/symbol)
 modem modem_create_V29()
 {
     modem mod = modem_create_arb(4);

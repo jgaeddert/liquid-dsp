@@ -105,13 +105,15 @@ their default values:
 \end{itemize}
 %
 \begin{description}
-\item[{\tt gradsearch\_create(*userdata,*v,n,utility,min/max)}]
+\item[{\tt gradsearch\_create(*userdata,*v,n,utility,min/max,*props)}]
     creates a gradient search object designed to optimize an $n$-point
     vector $\vec{v}$.
     The user-defined utility function and userdata structures define the
     search, as well as the {\tt min/max} flag which can be either
     {\tt LIQUID\_OPTIM\_MINIMIZE} or
     {\tt LIQUID\_OPTIM\_MAXIMIZE}.
+    Finally, the search is parameterized by the {\tt props} structure;
+    if set to {\tt NULL} the defaults will be used.
     When run the {\tt gradsearch} object will update the ``optimal''
     value in the input vector $\vec{v}$ specified during
     {\tt create()}.

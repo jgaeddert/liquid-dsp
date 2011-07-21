@@ -3,6 +3,7 @@
 # ignore programs, object
 *.o
 autoscript
+benchmark_compare
 
 # ignore auto-generated (test) files
 autotest_test.h

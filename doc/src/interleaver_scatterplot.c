@@ -119,12 +119,12 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"set terminal postscript eps enhanced color solid rounded\n");
     fprintf(fid,"set size square\n");
     //fprintf(fid,"set title \"%s\"\n", figure_title);
-    fprintf(fid,"set xrange [0:1]\n");
-    fprintf(fid,"set yrange [0:1]\n");
-    fprintf(fid,"set xtics (0,0.5,1) axis\n");
-    fprintf(fid,"set ytics (0,0.5,1) axis\n");
-    fprintf(fid,"set xlabel 'input index'\n");
-    fprintf(fid,"set ylabel 'output index'\n");
+    fprintf(fid,"set xrange [0:%u]\n", 8*n);
+    fprintf(fid,"set yrange [0:%u]\n", 8*n);
+    fprintf(fid,"set xtics 0,%u,%u axis\n",2*n,8*n);
+    fprintf(fid,"set ytics 0,%u,%u axis\n",2*n,8*n);
+    fprintf(fid,"set xlabel 'Input bit index'\n");
+    fprintf(fid,"set ylabel 'Output bit index'\n");
     fprintf(fid,"set nokey # disable legned\n");
     //fprintf(fid,"set grid xtics ytics\n");
     fprintf(fid,"set grid linetype 1 linecolor rgb '%s' linewidth 1\n",LIQUID_DOC_COLOR_GRID);
@@ -132,9 +132,8 @@ int main(int argc, char*argv[]) {
     fprintf(fid,"plot '-' using 1:2 with points pointtype 7 linecolor rgb '%s'\n", LIQUID_DOC_COLOR_PURPLE);
 
     // export data to file
-    float g = 1.0f / (float)(8*n);
     for (i=0; i<8*n; i++)
-        fprintf(fid,"  %12.4e    %12.4e\n", i*g, index[i]*g);
+        fprintf(fid,"  %8u    %8u\n", i, index[i]);
     fprintf(fid,"e\n");
 
     // close it up

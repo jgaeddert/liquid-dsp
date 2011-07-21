@@ -18,12 +18,16 @@ void usage()
     printf("ofdmflexframesync_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  s     : signal-to-noise ratio [dB], default: 30\n");
+    printf("  M     : number of subcarriers (must be even), default: 64\n");
+    printf("  C     : cyclic prefix length, default: 16\n");
     printf("  f     : frame length [bytes], default: 120\n");
-    printf("  p     : modulation depth (default 2 bits/symbol)\n");
     printf("  m     : modulation scheme (qpsk default)\n");
+    liquid_print_modulation_schemes();
     printf("  v     : data integrity check: crc32 default\n");
+    liquid_print_crc_schemes();
     printf("  c     : coding scheme (inner): h74 default\n");
     printf("  k     : coding scheme (outer): none default\n");
+    liquid_print_fec_schemes();
 }
 
 // callback function
@@ -54,15 +58,16 @@ int main(int argc, char*argv[])
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhs:f:p:m:v:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhs:M:C:f:m:v:c:k:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
         case 's': SNRdB = atof(optarg);         break;
+        case 'M': M = atoi(optarg);             break;
+        case 'C': cp_len = atoi(optarg);        break;
         case 'f': payload_len = atol(optarg);   break;
-        case 'p': bps = atoi(optarg);           break;
         case 'm':
-            ms = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported mod. scheme: %s\n", argv[0], optarg);
                 exit(-1);
@@ -111,7 +116,7 @@ int main(int argc, char*argv[])
     unsigned char payload[payload_len];
 
     // initialize subcarrier allocation
-    unsigned int p[M];
+    unsigned char p[M];
     ofdmframe_init_default_sctype(M, p);
 
     // create frame generator

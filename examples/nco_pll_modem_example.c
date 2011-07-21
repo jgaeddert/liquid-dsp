@@ -30,12 +30,8 @@ void usage()
     printf("  n     : number of symbols, default: 256\n");
     printf("  P     : phase offset (radians), default: pi/10 ~ 0.3146\n");
     printf("  F     : frequency offset (radians), default: 0.001\n");
-    printf("  p     : modulation depth, default: 2 bits/symbol\n");
-    printf("  m     : modulation scheme, default: psk\n");
-    // print all available MOD schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i][0]);
+    printf("  m     : modulation scheme, default: qpsk\n");
+    liquid_print_modulation_schemes();
 }
 
 int main(int argc, char*argv[]) {
@@ -45,12 +41,12 @@ int main(int argc, char*argv[]) {
     float frequency_offset = 0.001f;
     float SNRdB = 30.0f;
     float pll_bandwidth = 0.02f;
-    modulation_scheme ms = LIQUID_MODEM_PSK;
+    modulation_scheme ms = LIQUID_MODEM_QPSK;
     unsigned int bps = 2;
     unsigned int n=256;     // number of iterations
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhs:b:n:P:F:p:m:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhs:b:n:P:F:m:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();    return 0;
@@ -61,7 +57,7 @@ int main(int argc, char*argv[]) {
         case 'F':   frequency_offset= atof(optarg); break;
         case 'p':   bps = atoi(optarg);             break;
         case 'm':
-            ms = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme \"%s\"\n", argv[0], optarg);
                 return 1;

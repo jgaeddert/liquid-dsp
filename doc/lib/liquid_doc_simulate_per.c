@@ -144,7 +144,7 @@ void simulate_per(simulate_per_opts _opts,
         // check stopping criteria
         //
 
-        // have we reached out minimum errors and minimum trials criteria?
+        // have we reached the minimum errors and minimum trials criteria?
         if (num_packet_errors >= min_packet_errors  && 
             num_bit_errors    >= min_bit_errors     &&
             num_packet_trials >= min_packet_trials  &&

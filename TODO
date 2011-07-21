@@ -1,11 +1,18 @@
 TODO list
 
+build:
   * update license
-  * quasinewton_search -> qnsearch
   * c++: wrap library with namespace::liquid
   * remove any trace of Doxygen from code
-  * build: clean up make-included dependencies
+  * specify liquid-dsp library in fprintf(stderr...) messages
+doc:
+  * full flexframe tutorial (configuration, expectations, etc.)
+framing:
+  * fix flexframesync_setprops() to actually set properties of objects
+    - need to create objects first
+    - otherwise bad things happen
+matrix:
   * add method to compute r^T * r of [N x 1] vector
-  * add method to compute Cholesky factor, R, of positive-definite
-    matrix A, where R^T * R = A
-  * validate modem_modulate() input symbol size
+  * fix matrix_pivot() function (see sandbox/simplex_test.c)
+optim:
+  * quasinewton_search -> qnsearch

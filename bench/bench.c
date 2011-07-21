@@ -72,7 +72,6 @@ typedef struct {
 #include "benchmark_include.h"
 
 // helper functions:
-void print_help();
 void estimate_cpu_clock(void);
 void set_num_trials_from_cpu_speed(void);
 void execute_benchmark(benchmark_t* _benchmark, bool _verbose);
@@ -84,11 +83,35 @@ void print_package_results(package_t* _package);
 double calculate_execution_time(struct rusage, struct rusage);
 
 unsigned long int num_trials = 1<<12;
-float runtime=50e-3f;
 float cpu_clock = 1.0f; // cpu clock speed (Hz)
+#if 0
+float runtime=50e-3f;
+#endif
 
 FILE * fid; // output file id
 void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark);
+
+void usage()
+{
+    // help
+    printf("liquid autoscript version %s\n\n", AUTOSCRIPT_VERSION);
+    printf("bench options:\n");
+    printf("  -u/h  : print this help file\n");
+    printf("  -v    : verbose\n");
+    printf("  -q    : quiet\n");
+    printf("  -e    : estimate cpu clock frequency and exit\n");
+    printf("  -c    : set cpu clock frequency (Hz)\n");
+    printf("  -n<num_trials>\n");
+    printf("  -p<package_index>\n");
+    printf("  -b<benchmark_index>\n");
+#if 0
+    printf("  -t<time> minimum execution time (ms)\n");
+#endif
+    printf("  -l    : lists available packages\n");
+    printf("  -L    : lists all available scripts\n");
+    printf("  -s<string>: run all scripts matching search string\n");
+    printf("  -o<output filename>\n");
+}
 
 // main function
 int main(int argc, char *argv[])
@@ -113,8 +136,12 @@ int main(int argc, char *argv[])
 
     // get input options
     int d;
-    while((d = getopt(argc,argv,"ec:n:b:p:t:lLhs:vqo:")) != EOF){
+    while((d = getopt(argc,argv,"uhvqec:n:b:p:t:lLs:o:")) != EOF){
         switch (d) {
+        case 'u':
+        case 'h':   usage();            return 0;
+        case 'v':   verbose = true;     break;
+        case 'q':   verbose = false;    break;
         case 'e':
             estimate_cpu_clock();
             return 0;
@@ -148,13 +175,14 @@ int main(int argc, char *argv[])
                 mode = RUN_SINGLE_PACKAGE;
             }
             break;
+#if 0
         case 't':
             runtime = atof(optarg)*1e-3;
             if (runtime < 1e-3f)    runtime = 1e-3f;
             else if (runtime > 2.f) runtime = 2.0f;
             printf("minimum runtime: %d ms\n", (int) roundf(runtime*1e3));
-
             break;
+#endif
         case 'l':
             // list only packages and exit
             for (i=0; i<NUM_PACKAGES; i++)
@@ -172,21 +200,13 @@ int main(int argc, char *argv[])
             mode = RUN_SEARCH;
             strncpy(search_string, optarg, 128);
             search_string[127] = '\0';
-        case 'v':
-            verbose = true;
-            break;
-        case 'q':
-            verbose = false;
             break;
         case 'o':
             output_to_file = true;
             strcpy(filename, optarg);
             break;
-        case 'h':
-            print_help();
-            return 0;
         default:
-            print_help();
+            usage();
             return 0;
         }
     }
@@ -242,34 +262,39 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        for (i=0; i<NUM_AUTOSCRIPTS; i++)
-            output_benchmark_to_file(fid, &scripts[i]);
+        // print header
+        fprintf(fid,"# %s : auto-generated file (autoscript version %s)\n", filename, AUTOSCRIPT_VERSION);
+        fprintf(fid,"#\n");
+        fprintf(fid,"# invoked as:\n");
+        fprintf(fid,"#   ");
+        for (i=0; i<argc; i++)
+            fprintf(fid," %s", argv[i]);
+        fprintf(fid,"\n");
+        fprintf(fid,"#\n");
+        fprintf(fid,"# properties:\n");
+        fprintf(fid,"#  verbose             :   %s\n", verbose ? "true" : "false");
+        fprintf(fid,"#  autoscale           :   %s\n", autoscale ? "true" : "false");
+        fprintf(fid,"#  cpu_clock_detect    :   %s\n", cpu_clock_detect ? "true" : "false");
+        fprintf(fid,"#  search string       :   '%s'\n", mode == RUN_SEARCH ? search_string : "");
+#if 0
+        fprintf(fid,"#  runtime             :   %e s\n", runtime);
+#endif
+        fprintf(fid,"#  cpu_clock           :   %e Hz\n", cpu_clock);
+        fprintf(fid,"#  num_trials          :   %lu\n", num_trials);
+        fprintf(fid,"#\n");
+        fprintf(fid,"# %-5s %-30s %12s %12s %12s %12s\n",
+                "id", "name", "num trials", "ex.time [s]", "rate [t/s]", "[cycles/t]");
+
+        for (i=0; i<NUM_AUTOSCRIPTS; i++) {
+            if (scripts[i].num_trials > 0)
+                output_benchmark_to_file(fid, &scripts[i]);
+        }
 
         fclose(fid);
         printf("results written to %s\n", filename);
     }
 
     return 0;
-}
-
-void print_help()
-{
-    // help
-    printf("liquid autoscript version %s\n\n", AUTOSCRIPT_VERSION);
-    printf("bench options:\n");
-    printf("  -h : prints this help file\n");
-    printf("  -e : estimate cpu clock frequency and exit\n");
-    printf("  -c : set cpu clock frequency (Hz)\n");
-    printf("  -n<num_trials>\n");
-    printf("  -p<package_index>\n");
-    printf("  -b<benchmark_index>\n");
-    printf("  -t<time> minimum execution time (ms)\n");
-    printf("  -l : lists available packages\n");
-    printf("  -L : lists all available scripts\n");
-    printf("  -s<string>: run all scripts matching search string\n");
-    printf("  -v : verbose\n");
-    printf("  -q : quiet\n");
-    printf("  -o<output filename>\n");
 }
 
 // run basic benchmark to estimate CPU clock frequency
@@ -406,7 +431,7 @@ double calculate_execution_time(struct rusage _start, struct rusage _finish)
 
 void output_benchmark_to_file(FILE * _fid, benchmark_t * _benchmark)
 {
-    fprintf(_fid,"%-5u %-30s %12u %12.4e %12.4e %12.4e\n",
+    fprintf(_fid,"  %-5u %-30s %12u %12.4e %12.4e %12.4e\n",
                  _benchmark->id,
                  _benchmark->name,
                  _benchmark->num_trials,

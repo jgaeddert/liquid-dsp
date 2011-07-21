@@ -39,12 +39,8 @@ void usage()
     printf("  e     : equalizer taps, default: 0\n");
     printf("  f     : frame length [bytes], default: 64\n");
     printf("  n     : number of frames, default: 3\n");
-    printf("  p     : modulation depth (default 2 bits/symbol)\n");
-    printf("  m     : modulation scheme (psk default)\n");
-    // print all available MOD schemes
-    unsigned int i;
-    for (i=0; i<LIQUID_MODEM_NUM_SCHEMES; i++)
-        printf("          %s\n", modulation_scheme_str[i][0]);
+    printf("  m     : modulation scheme (qpsk default)\n");
+    liquid_print_modulation_schemes();
 }
 
 // flexframesync callback function
@@ -77,8 +73,8 @@ int main(int argc, char *argv[]) {
     unsigned int m = 3;     // filter delay
     float beta = 0.7f;      // filter excess bandwidth
     float noise_floor = -30.0f;
-    modulation_scheme mod_scheme = LIQUID_MODEM_PSK;
-    unsigned int bps = 1;
+    modulation_scheme mod_scheme = LIQUID_MODEM_QPSK;
+    unsigned int bps = 2;
     unsigned int packet_len = 64;
     unsigned int num_frames = 3;
     unsigned int hc_len = 1;        // multi-path channel taps
@@ -86,7 +82,7 @@ int main(int argc, char *argv[]) {
 
     // get options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhvqs:c:e:f:m:p:n:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhvqs:c:e:f:m:n:")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();                      return 0;
@@ -97,17 +93,15 @@ int main(int argc, char *argv[]) {
         case 'e': eq_len = atoi(optarg);        break;
         case 'f': packet_len = atol(optarg);    break;
         case 'n': num_frames = atoi(optarg);    break;
-        case 'p': bps = atoi(optarg);           break;
         case 'm':
-            mod_scheme = liquid_getopt_str2mod(optarg);
+            liquid_getopt_str2modbps(optarg, &mod_scheme, &bps);
             if (mod_scheme == LIQUID_MODEM_UNKNOWN) {
-                printf("error: unknown/unsupported mod. scheme: %s\n", optarg);
-                usage();
+                fprintf(stderr,"error: %s, unknown/unsupported mod. scheme: %s\n", argv[0], optarg);
                 exit(-1);
             }
             break;
         default:
-            printf("error: unknown option\n");
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
             exit(-1);
         }

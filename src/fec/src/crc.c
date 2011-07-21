@@ -42,6 +42,30 @@ const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2] = {
     {"crc32",       "CRC (32-bit)"}
 };
 
+
+// Print compact list of existing and available crc schemes
+void liquid_print_crc_schemes()
+{
+    unsigned int i;
+    unsigned int len = 10;
+
+    // print all available MOD schemes
+    printf("          ");
+    for (i=0; i<LIQUID_CRC_NUM_SCHEMES; i++) {
+        printf("%s", crc_scheme_str[i][0]);
+
+        if (i != LIQUID_CRC_NUM_SCHEMES-1)
+            printf(", ");
+
+        len += strlen(crc_scheme_str[i][0]);
+        if (len > 48 && i != LIQUID_CRC_NUM_SCHEMES-1) {
+            len = 10;
+            printf("\n          ");
+        }
+    }
+    printf("\n");
+}
+
 crc_scheme liquid_getopt_str2crc(const char * _str)
 {
     // compare each string to short name

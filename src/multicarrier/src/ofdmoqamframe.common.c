@@ -35,7 +35,7 @@
 //  _num_subcarriers    :   total number of subcarriers
 //  _S0                 :   output symbol
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmoqamframe_init_S0(unsigned int * _p,
+void ofdmoqamframe_init_S0(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S0,
                            unsigned int * _M_S0)
@@ -93,7 +93,7 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
 //  _num_subcarriers    :   total number of subcarriers
 //  _S1                 :   output symbol
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmoqamframe_init_S1(unsigned int * _p,
+void ofdmoqamframe_init_S1(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S1,
                            unsigned int * _M_S1)
@@ -155,7 +155,7 @@ void ofdmoqamframe_init_S1(unsigned int * _p,
 // .+++++++++++++++P.........P+++++++++++++
 //
 void ofdmoqamframe_init_default_sctype(unsigned int _M,
-                                       unsigned int * _p)
+                                       unsigned char * _p)
 {
     // validate input
     if (_M < 6) {
@@ -191,7 +191,7 @@ void ofdmoqamframe_init_default_sctype(unsigned int _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmoqamframe_validate_sctype(unsigned int * _p,
+void ofdmoqamframe_validate_sctype(unsigned char * _p,
                                    unsigned int _M,
                                    unsigned int * _M_null,
                                    unsigned int * _M_pilot,

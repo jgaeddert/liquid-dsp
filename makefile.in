@@ -26,11 +26,13 @@
 #                            header file(s)
 #    uninstall           :   uninstall the library and header file(s)
 #    clean               :   clean all targets (bench, check, examples, etc)
+#    distclean           :   removes everything except the originally distributed files
 #    check               :   build and run autotest program
 #    bench               :   build and run benchmarking program
 #    examples            :   build all examples
 #    todolist            :   generate list of todos (text file)
 #    todolist.html       :   generate list of todos (html file)
+#    world               :   build absolutely everything (but don't install)
 #
 #    clean-[modulename]  :   clean module [modulename]
 #    clean-modules       :   clean all modules
@@ -69,70 +71,834 @@ PATHSEP		= /
 # 
 # liquid headers
 #
-headers_install	:= liquid.h @HEADER_EXPERIMENTAL@
+headers_install	:= liquid.h @EXPERIMENTAL_HEADER@
 headers		:= $(headers_install) liquid.internal.h
 include_headers	:= $(addprefix include/,$(headers))
 
-# liquid modules
+
+## 
+## liquid-dsp modules
+##
+
+all:
+
 #
-# Each processing library is held in a module containing
-# its own makefile 'module.mk' included by this top-level
-# makefile.
+# MODULE : agc - automatic gain control
 #
-# Each module's 'module.mk' contains the following:
-#    local_dir     : local directory, e.g. $(modulesdir)/mymodule
-#    local_lib     : local library, e.g. libmymodule.a
-#    local_s_files : source files e.g. '.c'
-#    local_t_files : autotest script headers
-#    local_b_files : benchmark script headers
-modules		:=	\
-	agc		\
-	audio		\
-	buffer		\
-	dotprod		\
-	equalization	\
-	fec		\
-	fft		\
-	filter		\
-	framing		\
-	math		\
-	matrix		\
-	modem 		\
-	multicarrier	\
-	nco 		\
-	optim		\
-	quantization	\
-	random		\
-	sequence	\
-	utility		\
-	@MODULE_EXPERIMENTAL@
+
+# object files
+agc_objects =				\
+	src/agc/src/agc_crcf.o		\
+	src/agc/src/agc_rrrf.o		\
+
+# explicit targets and dependencies
+
+src/agc/src/agc_crcf.o : %.o : %.c src/agc/src/agc.c $(headers)
+
+src/agc/src/agc_rrrf.o : %.o : %.c src/agc/src/agc.c $(headers)
+
+# autotests
+agc_autotests :=			\
+	src/agc/tests/agc_autotest.h
+
+# benchmarks
+agc_benchmarks :=			\
+	src/agc/bench/agc_benchmark.h
+
+#
+# MODULE : audio
+#
+
+# described below
+audio_objects :=			\
+	src/audio/src/cvsd.o		\
+
+src/cvsd/src/cvsd.o : %.o : %.c $(headers)
 
 
-# target-specific libraries
-mlibs_dotprod := @MLIBS_DOTPROD@
+audio_autotests :=			\
+	src/audio/tests/cvsd_autotest.h
+
+audio_benchmarks :=
+
+
+# 
+# MODULE : buffer
+# 
+
+buffer_objects :=			\
+	src/buffer/src/bufferf.o	\
+	src/buffer/src/buffercf.o
+
+#	src/buffer/src/bufferui.c	\
+
+src/buffer/src/bufferf.o : %.o : %.c $(headers)
+
+src/buffer/src/buffercf.o : %.o : %.c $(headers)
+
+src/buffer/src/bufferui.o : %.o : %.c $(headers)
+
+
+buffer_autotests :=				\
+	src/buffer/tests/cbuffer_autotest.h	\
+	src/buffer/tests/sbuffer_autotest.h	\
+	src/buffer/tests/wdelay_autotest.h	\
+	src/buffer/tests/window_autotest.h	\
+
+buffer_benchmarks :=				\
+	src/buffer/bench/window_benchmark.h	\
+
+# 
+# MODULE : dotprod
+#
+dotprod_objects :=				\
+	@MLIBS_DOTPROD@				\
+
+src/dotprod/src/dotprod_cccf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
+
+src/dotprod/src/dotprod_crcf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
+
+src/dotprod/src/dotprod_rrrf.o : %.o : %.c $(headers) src/dotprod/src/dotprod.c
+
+# specific machine architectures
+
+src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
+
+src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
+
+dotprod_autotests :=					\
+	src/dotprod/tests/dotprod_rrrf_autotest.h	\
+	src/dotprod/tests/dotprod_crcf_autotest.h	\
+
+dotprod_benchmarks :=					\
+	src/dotprod/bench/dotprod_cccf_benchmark.h	\
+	src/dotprod/bench/dotprod_crcf_benchmark.h	\
+	src/dotprod/bench/dotprod_rrrf_benchmark.h	\
+
+# 
+# MODULE : equalization
+#
+equalization_objects :=				\
+	src/equalization/src/equalizer_cccf.o	\
+	src/equalization/src/equalizer_rrrf.o	\
+
+
+$(equalization_objects) : %.o : %.c $(headers) src/equalization/src/eqlms.c src/equalization/src/eqrls.c
+
+
+# autotests
+equalization_autotests :=				\
+	src/equalization/tests/eqrls_rrrf_autotest.h	\
+
+
+# benchmarks
+equalization_benchmarks :=				\
+	src/equalization/bench/eqlms_cccf_benchmark.h	\
+	src/equalization/bench/eqrls_cccf_benchmark.h	\
+
+# 
+# MODULE : fec - forward error-correction
+#
+fec_objects :=				\
+	src/fec/src/crc.o			\
+	src/fec/src/fec.o			\
+	src/fec/src/fec_conv.o		\
+	src/fec/src/fec_conv_poly.o		\
+	src/fec/src/fec_conv_pmatrix.o	\
+	src/fec/src/fec_conv_punctured.o	\
+	src/fec/src/fec_hamming74.o		\
+	src/fec/src/fec_hamming84.o		\
+	src/fec/src/fec_hamming128.o	\
+	src/fec/src/fec_pass.o		\
+	src/fec/src/fec_rep3.o		\
+	src/fec/src/fec_rep5.o		\
+	src/fec/src/fec_rs.o		\
+
+
+# list explicit targets and dependencies here
+$(fec_objects) : %.o : %.c $(headers)
+
+
+# autotests
+fec_autotests :=				\
+	src/fec/tests/crc_autotest.h		\
+	src/fec/tests/fec_autotest.h		\
+	src/fec/tests/fec_hamming74_autotest.h	\
+	src/fec/tests/fec_hamming84_autotest.h	\
+	src/fec/tests/fec_hamming128_autotest.h	\
+	src/fec/tests/fec_reedsolomon_autotest.h	\
+	src/fec/tests/fec_rep3_autotest.h		\
+	src/fec/tests/fec_rep5_autotest.h		\
+
+
+# benchmarks
+fec_benchmarks :=				\
+	src/fec/bench/fec_encode_benchmark.h	\
+	src/fec/bench/fec_decode_benchmark.h	\
+
+# 
+# MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
+#
+
+fft_objects :=				\
+	src/fft/src/asgram.o		\
+	src/fft/src/dct.o			\
+	src/fft/src/fftf.o			\
+	src/fft/src/fft_common.o		\
+	src/fft/src/mdct.o			\
+
+
+# explicit targets and dependencies
+fft_includes :=					\
+	src/fft/src/fft_create_plan.c	\
+	src/fft/src/fct_execute.c		\
+	src/fft/src/dct_execute.c		\
+	src/fft/src/dst_execute.c		\
+	src/fft/src/mdct_execute.c		\
+	src/fft/src/imdct_execute.c		\
+	src/fft/src/fft_execute.c		\
+	src/fft/src/fft.common.c		\
+
+
+src/fft/src/fftf.o : %.o : %.c $(headers) $(fft_includes)
+
+src/fft/src/asgram.o : %.o : %.c $(headers)
+
+src/fft/src/dct.o : %.o : %.c $(headers)
+
+src/fft/src/fftf.o : %.o : %.c $(headers)
+
+src/fft/src/fft_common.o : %.o : %.c $(headers)
+
+src/fft/src/mdct.o : %.o : %.c $(headers)
+
+
+fft_autotests :=					\
+	src/fft/tests/fft_autotest.h		\
+	src/fft/tests/fft_r2r_autotest.h		\
+	src/fft/tests/fft_shift_autotest.h		\
+
+
+fft_benchmarks :=					\
+	src/fft/bench/mdct_benchmark.h		\
+	src/fft/bench/fft_benchmark.h		\
+	src/fft/bench/fft_r2r_benchmark.h		\
+
+#
+# MODULE : filter
+#
+
+filter_objects :=			\
+	src/filter/src/bessel.o		\
+	src/filter/src/butter.o		\
+	src/filter/src/cheby1.o		\
+	src/filter/src/cheby2.o		\
+	src/filter/src/ellip.o		\
+	src/filter/src/filter_rrrf.o	\
+	src/filter/src/filter_crcf.o	\
+	src/filter/src/filter_cccf.o	\
+	src/filter/src/firdes.o		\
+	src/filter/src/firdespm.o	\
+	src/filter/src/group_delay.o	\
+	src/filter/src/hM3.o		\
+	src/filter/src/iirdes.pll.o	\
+	src/filter/src/iirdes.o		\
+	src/filter/src/lpc.o		\
+	src/filter/src/rcos.o		\
+	src/filter/src/rkaiser.o	\
+	src/filter/src/rrcos.o		\
+
+
+# list explicit targets and dependencies here
+filter_includes :=			\
+	src/filter/src/firfarrow.c	\
+	src/filter/src/firfilt.c	\
+	src/filter/src/firpfb.c		\
+	src/filter/src/iirfilt.c	\
+	src/filter/src/iirfiltsos.c	\
+	src/filter/src/interp.c		\
+	src/filter/src/decim.c		\
+	src/filter/src/resamp.c		\
+	src/filter/src/resamp2.c	\
+	src/filter/src/symsync.c	\
+
+src/filter/src/bessel.o : %.o : %.c $(headers)
+
+src/filter/src/bessel.o : %.o : %.c $(headers)
+
+src/filter/src/butter.o : %.o : %.c $(headers)
+
+src/filter/src/cheby1.o : %.o : %.c $(headers)
+
+src/filter/src/cheby2.o : %.o : %.c $(headers)
+
+src/filter/src/ellip.o : %.o : %.c $(headers)
+
+src/filter/src/filter_rrrf.o : %.o : %.c $(headers) $(filter_includes)
+
+src/filter/src/filter_crcf.o : %.o : %.c $(headers) $(filter_includes)
+
+src/filter/src/filter_cccf.o : %.o : %.c $(headers) $(filter_includes)
+
+src/filter/src/firdes.o : %.o : %.c $(headers)
+
+src/filter/src/firdespm.o : %.o : %.c $(headers)
+
+src/filter/src/group_delay.o : %.o : %.c $(headers)
+
+src/filter/src/hM3.o : %.o : %.c $(headers)
+
+src/filter/src/iirdes.pll.o : %.o : %.c $(headers)
+
+src/filter/src/iirdes.o : %.o : %.c $(headers)
+
+src/filter/src/lpc.o : %.o : %.c $(headers)
+
+src/filter/src/rcos.o : %.o : %.c $(headers)
+
+src/filter/src/rkaiser.o : %.o : %.c $(headers)
+
+src/filter/src/rrcos.o : %.o : %.c $(headers)
+
+
+filter_autotests :=					\
+	src/filter/tests/decim_autotest.h		\
+	src/filter/tests/firdes_autotest.h		\
+	src/filter/tests/firdespm_autotest.h		\
+	src/filter/tests/firfilt_rrrf_autotest.h	\
+	src/filter/tests/firfilt_crcf_autotest.h	\
+	src/filter/tests/firhilb_autotest.h		\
+	src/filter/tests/firpfb_autotest.h		\
+	src/filter/tests/groupdelay_autotest.h		\
+	src/filter/tests/iirdes_autotest.h		\
+	src/filter/tests/iirfilt_rrrf_autotest.h	\
+	src/filter/tests/iirfilt_crcf_autotest.h	\
+	src/filter/tests/iirfiltsos_rrrf_autotest.h	\
+	src/filter/tests/interp_autotest.h		\
+
+
+filter_benchmarks :=					\
+	src/filter/bench/decim_benchmark.h		\
+	src/filter/bench/firhilb_benchmark.h		\
+	src/filter/bench/firfilt_rrrf_benchmark.h	\
+	src/filter/bench/iirfilt_benchmark.h		\
+	src/filter/bench/interp_benchmark.h		\
+	src/filter/bench/resamp_benchmark.h		\
+	src/filter/bench/resamp2_benchmark.h		\
+	src/filter/bench/symsync_benchmark.h		\
+
+# 
+# MODULE : framing
+#
+
+framing_objects :=				\
+	src/framing/src/bpacketgen.o		\
+	src/framing/src/bpacketsync.o		\
+	src/framing/src/bsync_rrrf.o		\
+	src/framing/src/bsync_crcf.o		\
+	src/framing/src/bsync_cccf.o		\
+	src/framing/src/framesyncprops.o	\
+	src/framing/src/framesyncstats.o	\
+	src/framing/src/framegen64.o		\
+	src/framing/src/framesync64.o		\
+	src/framing/src/flexframegen.o		\
+	src/framing/src/flexframesync.o		\
+	src/framing/src/ofdmflexframegen.o	\
+	src/framing/src/ofdmflexframesync.o	\
+	src/framing/src/packetizer.o		\
+	src/framing/src/interleaver.o		\
+	src/framing/src/interleaver_create.o	\
+	src/framing/src/interleaver_permute.o	\
+
+
+# list explicit targets and dependencies here
+
+src/framing/src/bpacketgen.o : %.o : %.c $(headers)
+
+src/framing/src/bpacketsync.o : %.o : %.c $(headers)
+
+src/framing/src/bsync_rrrf.o : %.o : %.c $(headers) src/framing/src/bsync.c
+
+src/framing/src/bsync_crcf.o : %.o : %.c $(headers) src/framing/src/bsync.c
+
+src/framing/src/bsync_cccf.o : %.o : %.c $(headers) src/framing/src/bsync.c
+
+src/framing/src/framesyncprops.o : %.o : %.c $(headers)
+
+src/framing/src/framesyncstats.o : %.o : %.c $(headers)
+
+src/framing/src/framegen64.o : %.o : %.c $(headers)
+
+src/framing/src/framesync64.o : %.o : %.c $(headers)
+
+src/framing/src/flexframegen.o : %.o : %.c $(headers)
+
+src/framing/src/flexframesync.o : %.o : %.c $(headers)
+
+src/framing/src/ofdmflexframegen.o : %.o : %.c $(headers)
+
+src/framing/src/ofdmflexframesync.o : %.o : %.c $(headers)
+
+src/framing/src/packetizer.o : %.o : %.c $(headers)
+
+src/framing/src/interleaver.o : %.o : %.c $(headers)
+
+src/framing/src/interleaver_create.o : %.o : %.c $(headers)
+
+src/framing/src/interleaver_permute.o : %.o : %.c $(headers)
+
+
+framing_autotests :=					\
+	src/framing/tests/bpacketsync_autotest.h	\
+	src/framing/tests/bsync_autotest.h		\
+	src/framing/tests/flexframe_autotest.h		\
+	src/framing/tests/packetizer_autotest.h		\
+	src/framing/tests/interleaver_autotest.h	\
+
+
+framing_benchmarks :=					\
+	src/framing/bench/bpacketsync_benchmark.h	\
+	src/framing/bench/flexframesync_benchmark.h	\
+	src/framing/bench/interleaver_benchmark.h	\
+
+
+# 
+# MODULE : math
+#
+
+math_objects :=					\
+	src/math/src/poly.o			\
+	src/math/src/polyc.o			\
+	src/math/src/polyf.o			\
+	src/math/src/polycf.o			\
+	src/math/src/math.o			\
+	src/math/src/math.bessel.o		\
+	src/math/src/math.gamma.o		\
+	src/math/src/math.complex.o		\
+	src/math/src/math.trig.o		\
+
+
+poly_includes :=				\
+	src/math/src/poly.common.c		\
+	src/math/src/poly.expand.c		\
+	src/math/src/poly.findroots.c		\
+	src/math/src/poly.lagrange.c		\
+
+src/math/src/poly.o : %.o : %.c $(headers) $(poly_includes)
+
+src/math/src/polyc.o : %.o : %.c $(headers) $(poly_includes)
+
+src/math/src/polyf.o : %.o : %.c $(headers) $(poly_includes)
+
+src/math/src/polycf.o : %.o : %.c $(headers) $(poly_includes)
+
+src/math/src/math.o : %.o : %.c $(headers)
+
+src/math/src/math.bessel.o : %.o : %.c $(headers)
+
+src/math/src/math.gamma.o : %.o : %.c $(headers)
+
+src/math/src/math.complex.o : %.o : %.c $(headers)
+
+src/math/src/math.trig.o : %.o : %.c $(headers)
+
+
+math_autotests :=				\
+	src/math/tests/kbd_autotest.h		\
+	src/math/tests/math_autotest.h		\
+	src/math/tests/math_bessel_autotest.h	\
+	src/math/tests/math_gamma_autotest.h	\
+	src/math/tests/math_complex_autotest.h	\
+	src/math/tests/polynomial_autotest.h	\
+
+
+math_benchmarks :=
+
+#
+# MODULE : matrix
+#
+
+matrix_objects :=				\
+	src/matrix/src/matrix.o			\
+	src/matrix/src/matrixf.o		\
+	src/matrix/src/matrixc.o		\
+	src/matrix/src/matrixcf.o		\
+
+
+matrix_includes :=				\
+	src/matrix/src/matrix.base.c		\
+	src/matrix/src/matrix.cgsolve.c		\
+	src/matrix/src/matrix.chol.c		\
+	src/matrix/src/matrix.gramschmidt.c	\
+	src/matrix/src/matrix.inv.c		\
+	src/matrix/src/matrix.linsolve.c	\
+	src/matrix/src/matrix.ludecomp.c	\
+	src/matrix/src/matrix.qrdecomp.c	\
+	src/matrix/src/matrix.math.c		\
+
+src/matrix/src/matrix.o : %.o : %.c $(headers) $(matrix_includes)
+
+src/matrix/src/matrixc.o : %.o : %.c $(headers) $(matrix_includes)
+
+src/matrix/src/matrixf.o : %.o : %.c $(headers) $(matrix_includes)
+
+src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
+
+
+
+matrx_autotests :=				\
+	src/matrix/tests/matrixcf_autotest.h	\
+	src/matrix/tests/matrixf_autotest.h	\
+
+
+matrix_benchmarks :=
+
+
+# 
+# MODULE : modem
+#
+
+modem_objects :=				\
+	src/modem/src/gmskmod.o			\
+	src/modem/src/gmskdem.o			\
+	src/modem/src/modem_arb_const.o		\
+	src/modem/src/modem_apsk_const.o	\
+	src/modem/src/modem_create.o		\
+	src/modem/src/modem_common.o		\
+	src/modem/src/modem_modulate.o		\
+	src/modem/src/modem_demodulate.o	\
+	src/modem/src/ampmodem.o		\
+	src/modem/src/freqmodem.o		\
+
+
+src/modem/src/gmskmod.o: %.o : %.c $(headers)
+
+src/modem/src/gmskdem.o: %.o : %.c $(headers)
+
+src/modem/src/modem_arb_const.o: %.o : %.c $(headers)
+
+src/modem/src/modem_apsk_const.o: %.o : %.c $(headers)
+
+src/modem/src/modem_create.o: %.o : %.c $(headers)
+
+src/modem/src/modem_common.o: %.o : %.c $(headers)
+
+src/modem/src/modem_modulate.o: %.o : %.c $(headers)
+
+src/modem/src/modem_demodulate.o: %.o : %.c $(headers)
+
+src/modem/src/ampmodem.o: %.o : %.c $(headers)
+
+src/modem/src/freqmodem.o: %.o : %.c $(headers)
+
+
+
+modem_autotests :=					\
+	src/modem/tests/modem_autotest.h		\
+	src/modem/tests/modem_phase_error_autotest.h
+
+
+modem_benchmarks :=					\
+	src/modem/bench/gmskmodem_benchmark.h		\
+	src/modem/bench/modem_modulate_benchmark.h	\
+	src/modem/bench/modem_demodulate_benchmark.h
+
+# 
+# MODULE : multicarrier
+#
+
+multicarrier_objects :=					\
+	src/multicarrier/src/firpfbch_crcf.o		\
+	src/multicarrier/src/firpfbch_cccf.o		\
+	src/multicarrier/src/mdctch.o			\
+	src/multicarrier/src/ofdmframe.common.o		\
+	src/multicarrier/src/ofdmframegen.o		\
+	src/multicarrier/src/ofdmframesync.o		\
+	src/multicarrier/src/ofdmoqam.o			\
+	src/multicarrier/src/ofdmoqamframe.common.o	\
+	src/multicarrier/src/ofdmoqamframegen.o		\
+	src/multicarrier/src/ofdmoqamframesync.o	\
+
+# list explicit targets and dependencies here
+
+# autotests
+multicarrier_autotests :=					\
+	src/multicarrier/tests/firpfbch_synthesizer_autotest.h	\
+	src/multicarrier/tests/firpfbch_analyzer_autotest.h	\
+
+#	ofdmoqam_autotest.h
+
+# benchmarks
+multicarrier_benchmarks :=						\
+	src/multicarrier/bench/firpfbch_benchmark.h			\
+	src/multicarrier/bench/ofdmframesync_acquire_benchmark.h	\
+	src/multicarrier/bench/ofdmframesync_rxsymbol_benchmark.h	\
+	src/multicarrier/bench/ofdmoqam_benchmark.h			\
+
+# 
+# MODULE : nco - numerically-controlled oscillator
+#
+
+nco_objects :=				\
+	src/nco/src/nco_crcf.o		\
+	src/nco/src/nco.utilities.o	\
+
+
+src/nco/src/nco_crcf.o: %.o : %.c $(headers) src/nco/src/nco.c
+
+src/nco/src/nco.utilities.o: %.o : %.c $(headers)
+
+
+# autotests
+nco_autotests :=				\
+	src/nco/tests/nco_autotest.h		\
+	src/nco/tests/pll_autotest.h		\
+	src/nco/tests/unwrap_phase_autotest.h	\
+	src/nco/tests/vco_autotest.h
+
+
+# benchmarks
+nco_benchmarks :=				\
+	src/nco/bench/nco_benchmark.h		\
+	src/nco/bench/vco_benchmark.h		\
+
+# 
+# MODULE : optim - optimization
+#
+
+optim_objects :=				\
+	src/optim/src/chromosome.o		\
+	src/optim/src/gasearch.o		\
+	src/optim/src/gradsearch.o		\
+	src/optim/src/optim.common.o		\
+	src/optim/src/quasinewton_search.o	\
+	src/optim/src/rosenbrock.o		\
+
+
+src/optim/src/chromosome.o : %.o : %.c $(headers)
+
+src/optim/src/gasearch.o : %.o : %.c $(headers)
+
+src/optim/src/gradsearch.o : %.o : %.c $(headers)
+
+src/optim/src/optim.common.o : %.o : %.c $(headers)
+
+src/optim/src/quasinewton_search.o : %.o : %.c $(headers)
+
+src/optim/src/rosenbrock.o : %.o : %.c $(headers)
+
+# autotests
+optim_autotests :=
+
+# benchmarks
+optim_benchmarks :=
+
+
+# 
+# MODULE : quantization
+#
+
+quantization_objects :=				\
+	src/quantization/src/compand.o		\
+	src/quantization/src/quantizercf.o	\
+	src/quantization/src/quantizerf.o	\
+	src/quantization/src/quantizer.inline.o	\
+
+
+src/quantization/src/compand.o: %.o : %.c $(headers)
+
+src/quantization/src/quantizercf.o: %.o : %.c $(headers) src/quantization/src/quantizer.c
+
+src/quantization/src/quantizerf.o: %.o : %.c $(headers) src/quantization/src/quantizer.c
+
+src/quantization/src/quantizer.inline.o: %.o : %.c $(headers)
+
+
+# autotests
+quantization_autotests :=				\
+	src/quantization/tests/compand_autotest.h	\
+	src/quantization/tests/quantize_autotest.h	\
+
+
+# benchmarks
+quantization_benchmarks :=				\
+	src/quantization/bench/quantizer_benchmark.h	\
+	src/quantization/bench/compander_benchmark.h	\
+
+# 
+# MODULE : random
+#
+
+random_objects :=				\
+	src/random/src/rand.o			\
+	src/random/src/randn.o			\
+	src/random/src/randexp.o		\
+	src/random/src/randweib.o		\
+	src/random/src/randgamma.o		\
+	src/random/src/randnakm.o		\
+	src/random/src/randricek.o		\
+	src/random/src/scramble.o		\
+
+
+$(random_objects) : %.o : %.c $(headers)
+
+# autotests
+random_autotests :=				\
+	src/random/tests/scramble_autotest.h	\
+
+#	src/random/tests/random_autotest.h
+
+
+# benchmarks
+random_benchmarks :=				\
+	src/random/bench/random_benchmark.h	\
+
+
+# 
+# MODULE : sequence
+#
+
+sequence_objects :=				\
+	src/sequence/src/bsequence.o		\
+	src/sequence/src/msequence.o		\
+
+
+$(sequence_objects) : %.o : %.c $(headers)
+
+
+# autotests
+sequence_autotests :=						\
+	src/sequence/tests/bsequence_autotest.h			\
+	src/sequence/tests/complementary_codes_autotest.h	\
+	src/sequence/tests/msequence_autotest.h			\
+
+# benchmarks
+sequence_benchmarks :=
+
+# 
+# MODULE : utility
+#
+
+utility_objects :=				\
+	src/utility/src/bshift_array.o		\
+	src/utility/src/count_bits.o		\
+	src/utility/src/msb_index.o		\
+	src/utility/src/pack_bytes.o		\
+	src/utility/src/shift_array.o		\
+
+$(utility_objects) : %.o : %.c $(headers)
+
+
+# autotests
+utility_autotests :=					\
+	src/utility/tests/bshift_array_autotest.h	\
+	src/utility/tests/count_bits_autotest.h		\
+	src/utility/tests/pack_bytes_autotest.h		\
+	src/utility/tests/shift_array_autotest.h	\
+
+
+# benchmarks
+utility_benchmarks :=
+
+
+# 
+# MODULE : experimental
+#
+
+# explicit targets and dependencies
+
+experimental_filter_includes :=			\
+	src/experimental/src/iirqmfb.c		\
+	src/experimental/src/itqmfb.c		\
+	src/experimental/src/qmfb.c		\
+	src/experimental/src/symsync2.c		\
+	src/experimental/src/symsynclp.c	\
+
+src/experimental/src/filter_rrrf.o: %.o : %.c $(headers) $(experimental_filter_includes)
+
+src/experimental/src/filter_crcf.o: %.o : %.c $(headers) $(experimental_filter_includes)
+
+src/experimental/src/filter_cccf.o: %.o : %.c $(headers) $(experimental_filter_includes)
+
+
+
 
 # Target collection
 #
 # Information about targets for each module is collected
 # in these variables
-programs		:=
+objects :=				\
+	$(agc_objects)			\
+	$(audio_objects)		\
+	$(buffer_objects)		\
+	$(dotprod_objects)		\
+	$(equalization_objects)		\
+	$(fec_objects)			\
+	$(fft_objects)			\
+	$(filter_objects)		\
+	$(framing_objects)		\
+	$(math_objects)			\
+	$(matrix_objects)		\
+	$(modem_objects)		\
+	$(multicarrier_objects)		\
+	$(nco_objects)			\
+	$(optim_objects)		\
+	$(quantization_objects)		\
+	$(random_objects)		\
+	$(sequence_objects)		\
+	$(utility_objects)		\
+	@EXPERIMENTAL_MLIBS@
+	
+
 sources			:=
-objects			:=
-libraries		:=
-extra_clean		:=
-autotest_headers	:= autotest/null_autotest.h
-benchmark_headers	:= bench/null_benchmark.h
+autotest_headers :=			\
+	autotest/null_autotest.h	\
+	$(agc_autotests)		\
+	$(audio_autotests)		\
+	$(buffer_autotests)		\
+	$(dotprod_autotests)		\
+	$(equalization_autotests)	\
+	$(fec_autotests)		\
+	$(fft_autotests)		\
+	$(filter_autotests)		\
+	$(framing_autotests)		\
+	$(math_autotests)		\
+	$(matrix_autotests)		\
+	$(modem_autotests)		\
+	$(multicarrier_autotests)	\
+	$(nco_autotests)		\
+	$(optim_autotests)		\
+	$(quantization_autotests)	\
+	$(random_autotests)		\
+	$(sequence_autotests)		\
+	$(utility_autotests)		\
+	@EXPERIMENTAL_AUTOTESTS@
+	
 
-all:
+benchmark_headers :=			\
+	bench/null_benchmark.h		\
+	$(agc_benchmarks)		\
+	$(audio_benchmarks)		\
+	$(buffer_benchmarks)		\
+	$(dotprod_benchmarks)		\
+	$(equalization_benchmarks)	\
+	$(fec_benchmarks)		\
+	$(fft_benchmarks)		\
+	$(filter_benchmarks)		\
+	$(framing_benchmarks)		\
+	$(math_benchmarks)		\
+	$(matrix_benchmarks)		\
+	$(modem_benchmarks)		\
+	$(multicarrier_benchmarks)	\
+	$(nco_benchmarks)		\
+	$(optim_benchmarks)		\
+	$(quantization_benchmarks)	\
+	$(random_benchmarks)		\
+	$(sequence_benchmarks)		\
+	$(utility_benchmarks)		\
+	@EXPERIMENTAL_BENCHMARKS@
 
 
-# Include module.mk
-#
-# Generate list of module.mk includes from $(modules), e.g.
-#    include $(modulesdir)/utility/module.mk
-#    include $(modulesdir)/modem/module.mk
-#
-include $(patsubst %,$(modulesdir)/%/module.mk,$(modules))
 
 # additional sources
 extra_sources := libliquid.c
@@ -143,17 +909,12 @@ sources += $(extra_sources)
 ##
 ## TARGET : all - build shared library (default)
 ##
+.PHONY: all
 
 # Shared library
 SHARED_LIB	= @SH_LIB@
-.PHONY: all
-all: libliquid.a $(SHARED_LIB)
-
-.PHONY: libraries
-libraries: $(libraries)
 
 # liquid library definition
-# TODO: link from module libraries, not object files (for compactness)
 libliquid.a: $(objects)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
@@ -165,8 +926,10 @@ libliquid.dylib: $(objects)
 	$(CC) $(LDFLAGS) -dynamiclib -install_name $@ -o $@ $^
 
 # linux, et al
-libliquid.so: $(libraries)
+libliquid.so: libliquid.a
 	$(CC) $(LDFLAGS) -shared -Xlinker -soname=$@ -o $@ -Wl,-whole-archive $^ -Wl,-no-whole-archive
+
+all: libliquid.a $(SHARED_LIB)
 
 ##
 ## TARGET : help - print list of targets (see documentation for more)
@@ -269,7 +1032,6 @@ check: $(autotest_prog)
 # clean the generated files
 clean-check:
 	$(RM) autotest_include.h $(autotest_prog).o $(autotest_prog)
-	$(RM) $(autotest_src)
 	$(RM) $(autotest_obj)
 
 
@@ -309,25 +1071,132 @@ $(bench_prog): $(bench_prog).o $(benchmark_obj) libliquid.a
 bench: $(bench_prog)
 	./$(bench_prog)
 
+# benchmark compare script
+scripts/benchmark_compare : % : %.c
+
 # clean up the generated files
 clean-bench:
-	$(RM) $(benchmark_obj)
-	$(RM) bench/benchmarkgen.o bench/main.o bench/benchmarkgen
 	$(RM) benchmark_include.h $(bench_prog).o $(bench_prog)
+	$(RM) scripts/benchmark_compare
+	$(RM) $(benchmark_obj)
 
 
 ## 
 ## TARGET : examples - build all examples binaries
 ##
 .PHONY: examples
-include examples/examples.mk
-example_objs	= $(patsubst %.c,%.o,$(example_src))
-example_progs	= $(patsubst %.c,%,  $(example_src))
+example_obj :=						\
+	examples/agc_example.o				\
+	examples/agc_qpsk_example.o			\
+	examples/agc_squelch_example.o			\
+	examples/ampmodem_example.o			\
+	examples/asgram_example.o			\
+	examples/autocorr_cccf_example.o		\
+	examples/bpacketsync_example.o			\
+	examples/bsequence_example.o			\
+	examples/bufferf_example.o			\
+	examples/chromosome_example.o			\
+	examples/compand_example.o			\
+	examples/compand_cf_example.o			\
+	examples/complementary_codes_example.o		\
+	examples/crc_example.o				\
+	examples/cgsolve_example.o			\
+	examples/cvsd_example.o				\
+	examples/decim_crcf_example.o			\
+	examples/decim_rrrf_example.o			\
+	examples/dotprod_rrrf_example.o			\
+	examples/dotprod_cccf_example.o			\
+	examples/eqlms_cccf_example.o			\
+	examples/eqrls_cccf_example.o			\
+	examples/fec_example.o				\
+	examples/fct_example.o				\
+	examples/fft_example.o				\
+	examples/firfarrow_rrrf_example.o		\
+	examples/firfarrow_rrrf_sine_example.o		\
+	examples/firfilt_rrrf_example.o			\
+	examples/firfilt_rrrf_recreate_example.o	\
+	examples/firdes_kaiser_example.o		\
+	examples/firdespm_example.o			\
+	examples/firhilb_example.o			\
+	examples/firhilb_decim_example.o		\
+	examples/firhilb_interp_example.o		\
+	examples/firpfb_rrrf_example.o			\
+	examples/firpfbch_example.o			\
+	examples/firpfbch_analysis_example.o		\
+	examples/firpfbch_synthesis_example.o		\
+	examples/flexframesync_example.o		\
+	examples/flexframesync_advanced_example.o	\
+	examples/flexframesync_reconfig_example.o	\
+	examples/framesync64_example.o			\
+	examples/freqmodem_example.o			\
+	examples/gasearch_example.o			\
+	examples/gasearch_knapsack_example.o		\
+	examples/gmskmodem_example.o			\
+	examples/gradsearch_datafit_example.o		\
+	examples/gradsearch_example.o			\
+	examples/interleaver_example.o			\
+	examples/interleaver_scatterplot_example.o	\
+	examples/iirdes_example.o			\
+	examples/iirdes_analog_example.o		\
+	examples/iirdes_pll_example.o			\
+	examples/iirfilt_crcf_example.o			\
+	examples/interp_crcf_example.o			\
+	examples/kbd_window_example.o			\
+	examples/lpc_example.o				\
+	examples/matched_filter_example.o		\
+	examples/matrix_example.o			\
+	examples/math_lngamma_example.o			\
+	examples/mdct_example.o				\
+	examples/modem_arb_example.o			\
+	examples/modem_example.o			\
+	examples/msequence_example.o			\
+	examples/nco_example.o				\
+	examples/nco_pll_example.o			\
+	examples/nco_pll_modem_example.o		\
+	examples/nyquist_filter_example.o		\
+	examples/ofdmflexframesync_example.o		\
+	examples/ofdmframesync_example.o		\
+	examples/ofdmoqam_example.o			\
+	examples/ofdmoqam_firpfbch_example.o		\
+	examples/ofdmoqamframesync_example.o		\
+	examples/packetizer_example.o			\
+	examples/pll_example.o				\
+	examples/polyfit_example.o			\
+	examples/polyfit_lagrange_example.o		\
+	examples/poly_findroots_example.o		\
+	examples/quantize_example.o			\
+	examples/quasinewton_search_example.o		\
+	examples/random_example.o			\
+	examples/random_histogram_example.o		\
+	examples/repack_bytes_example.o			\
+	examples/resamp_crcf_example.o			\
+	examples/resamp2_crcf_example.o			\
+	examples/resamp2_crcf_decim_example.o		\
+	examples/resamp2_crcf_filter_example.o		\
+	examples/resamp2_crcf_filterbank_example.o	\
+	examples/resamp2_crcf_interp_example.o		\
+	examples/resamp2_crcf_interp_recreate_example.o	\
+	examples/scramble_example.o			\
+	examples/symsync_crcf_example.o			\
+	examples/symsync_rrrf_example.o			\
+	examples/wdelayf_example.o			\
+	examples/windowf_example.o			\
+	@EXPERIMENTAL_EXAMPLES@
+
+#	examples/metadata_example.o
+#	examples/ofdmframegen_example.o
+#	examples/ofdmoqamframe64gen_example.o
+#	examples/ofdmoqamframe64sync_example.o
+#	examples/gmskframe_example.o
+#	examples/fading_generator_example.o
+#	examples/ricek_channel_example.o
+
+example_progs	= $(patsubst %.o,%,  $(example_obj))
 examples: $(example_progs)
 EXAMPLES_LDFLAGS = $(LDFLAGS)
 
 # NOTE: linked libraries must come _after_ the target program
-$(example_objs): %.o : %.c libliquid.a
+$(example_objs): %.o : %.c
 
 $(example_progs): % : %.o libliquid.a
 
@@ -342,14 +1211,54 @@ clean-examples:
 
 # NOTE: sandbox _requires_ fftw3 to build
 .PHONY: sandbox
-include sandbox/sandbox.mk
-sandbox_objs	= $(patsubst %.c,%.o,$(sandbox_src))
-sandbox_progs	= $(patsubst %.c,%,  $(sandbox_src))
+sandbox_obj =						\
+	sandbox/crc_gentab.o				\
+	sandbox/ellip_func_test.o			\
+	sandbox/ellip_test.o				\
+	sandbox/eqlms_cccf_test.o			\
+	sandbox/fec_hamming128_example.o		\
+	sandbox/fec_hamming74_gentab.o			\
+	sandbox/fec_hamming84_gentab.o			\
+	sandbox/fec_hamming_test.o			\
+	sandbox/fec_rep3_test.o				\
+	sandbox/fec_rep5_test.o				\
+	sandbox/fft_r2r_test.o				\
+	sandbox/firdes_energy_test.o			\
+	sandbox/firdes_length_test.o			\
+	sandbox/firpfbch_analysis_alignment_test.o	\
+	sandbox/firpfbch_analysis_equivalence_test.o	\
+	sandbox/firpfbch_synthesis_equivalence_test.o	\
+	sandbox/householder_test.o			\
+	sandbox/iirdes_example.o			\
+	sandbox/levinson_test.o				\
+	sandbox/matched_filter_test.o			\
+	sandbox/matched_filter_cfo_test.o		\
+	sandbox/math_lngamma_test.o			\
+	sandbox/math_cacosf_test.o			\
+	sandbox/math_casinf_test.o			\
+	sandbox/math_catanf_test.o			\
+	sandbox/math_cexpf_test.o			\
+	sandbox/math_clogf_test.o			\
+	sandbox/math_csqrtf_test.o			\
+	sandbox/minsearch_test.o			\
+	sandbox/minsearch2_test.o			\
+	sandbox/matrix_eig_test.o			\
+	sandbox/ofdmoqam_firpfbch_test.o		\
+	sandbox/ofdmoqam_firpfbch_cfo_test.o		\
+	sandbox/quasinewton_test.o			\
+	sandbox/rkaiser2_test.o				\
+	sandbox/simplex_test.o				\
+	sandbox/svd_test.o				\
+	sandbox/thiran_allpass_iir_test.o		\
+#	firpfbch_analysis_test.o
+
+
+sandbox_progs	= $(patsubst %.o,%, $(sandbox_obj))
 sandbox: $(sandbox_progs)
 SANDBOX_LDFLAGS = $(LDFLAGS) -lfftw3f
 
 # NOTE: linked libraries must come _after_ the target program
-$(sandbox_objs): %.o : %.c libliquid.a
+$(sandbox_obj): %.o : %.c
 
 $(sandbox_progs): % : %.o libliquid.a
 	$(CC) $(SANDBOX_LDFLAGS) $^ -o $@
@@ -372,12 +1281,14 @@ doc/liquid.pdf : libliquid.a
 clean-doc :
 	cd doc ; make mostlyclean
 
+distclean-doc :
+	cd doc ; make distclean
+
 
 ## 
 ## TARGET : todolist - generate tasks list (todolist.txt)
 ##
 todolist_sources = 		\
-	$(sources)		\
 	$(include_headers)	\
 	$(autotest_headers)	\
 	$(benchmark_headers)
@@ -393,29 +1304,55 @@ todolist.html : scripts/todolistgen.py $(todolist_sources)
 todolist : todolist.txt
 
 clean-todolist:
-	$(RM) todolist.txt
-	$(RM) todolist.html
+	$(RM) todolist.txt todolist.html
 
 # Clean
 .PHONY: clean
 
 ##
+## TARGET : world - build absolutely everything
+##
+world : all check bench examples sandbox todolist todolist.html doc
+
+##
 ## TARGET : clean - clean build (objects, dependencies, libraries, etc.)
 ##
 
-# clean modules
-# NOTE: $(patsubst clean-%,%,$@) strips "clean-" from target
-clean-modules: $(addprefix clean-,$(modules))
-
-$(addprefix clean-,$(modules)):
-	@echo cleaning module $(patsubst clean-%,%,$@)
-	$(RM) $(modulesdir)/$(patsubst clean-%,%,$@)/src/*.o
-
-clean: clean-check clean-bench clean-examples clean-sandbox clean-modules clean-todolist clean-autoscript
-	$(RM) $(programs)
-	$(RM) $(libraries)
-	$(RM) $(extra_clean)
-	$(RM) libliquid.a
+clean-modules:
+	@echo "cleaning modules..."
+	$(RM) src/agc/src/*.o          src/agc/bench/*.o          src/agc/tests/*.o
+	$(RM) src/audio/src/*.o        src/audio/bench/*.o        src/audio/tests/*.o
+	$(RM) src/buffer/src/*.o       src/buffer/bench/*.o       src/buffer/tests/*.o
+	$(RM) src/dotprod/src/*.o      src/dotprod/bench/*.o      src/dotprod/tests/*.o
+	$(RM) src/equalization/src/*.o src/equalization/bench/*.o src/equalization/tests/*.o
+	$(RM) src/fec/src/*.o          src/fec/bench/*.o          src/fec/tests/*.o
+	$(RM) src/fft/src/*.o          src/fft/bench/*.o          src/fft/tests/*.o
+	$(RM) src/filter/src/*.o       src/filter/bench/*.o       src/filter/tests/*.o
+	$(RM) src/framing/src/*.o      src/framing/bench/*.o      src/framing/tests/*.o
+	$(RM) src/math/src/*.o         src/math/bench/*.o         src/math/tests/*.o
+	$(RM) src/matrix/src/*.o       src/matrix/bench/*.o       src/matrix/tests/*.o
+	$(RM) src/modem/src/*.o        src/modem/bench/*.o        src/modem/tests/*.o
+	$(RM) src/multicarrier/src/*.o src/multicarrier/bench/*.o src/multicarrier/tests/*.o
+	$(RM) src/nco/src/*.o          src/nco/bench/*.o          src/nco/tests/*.o
+	$(RM) src/optim/src/*.o        src/optim/bench/*.o        src/optim/tests/*.o
+	$(RM) src/quantization/src/*.o src/quantization/bench/*.o src/quantization/tests/*.o
+	$(RM) src/random/src/*.o       src/random/bench/*.o       src/random/tests/*.o
+	$(RM) src/utility/src/*.o      src/utility/bench/*.o      src/utility/tests/*.o
+	$(RM) src/experimental/src/*.o src/experimental/bench/*.o src/experimental/tests/*.o
 	$(RM) libliquid.o
+
+clean: clean-modules clean-autoscript clean-check clean-bench clean-examples clean-sandbox clean-doc
+	$(RM) libliquid.a
 	$(RM) $(SHARED_LIB)
+
+##
+## TARGET : distclean - removes everything except the originally distributed files
+##
+
+distclean: clean distclean-doc
+	@echo "cleaning distribution..."
+	$(RM) octave-core *.m
+	$(RM) configure config.h config.h.in config.h.in~ config.log config.status
+	$(RM) -r autom4te.cache
+	$(RM) makefile
 

@@ -241,6 +241,13 @@ struct fec_s {
                         unsigned char * _msg_dec);
 };
 
+// simple type testing
+int fec_scheme_is_convolutional(fec_scheme _scheme);
+int fec_scheme_is_punctured(fec_scheme _scheme);
+int fec_scheme_is_reedsolomon(fec_scheme _scheme);
+int fec_scheme_is_hamming(fec_scheme _scheme);
+int fec_scheme_is_repeat(fec_scheme _scheme);
+
 // Pass
 fec fec_pass_create(void *_opts);
 void fec_pass_destroy(fec _q);
@@ -953,13 +960,24 @@ void bpacketsync_decode_payload(bpacketsync _q);
 void bpacketsync_reconfig(bpacketsync _q);
 
 // 
-// ofdmflexframegen
+// ofdmflexframe
 //
 
-#define OFDMFLEXFRAME_VERSION 100
+#define OFDMFLEXFRAME_VERSION   (101)
 
-// compute payload length (number of modulation symbols)
-void ofdmflexframegen_compute_payload_len(ofdmflexframegen _q);
+// header description
+#define OFDMFLEXFRAME_H_USER    (8)                         // user-defined array
+#define OFDMFLEXFRAME_H_DEC     (OFDMFLEXFRAME_H_USER+6)    // decoded length
+#define OFDMFLEXFRAME_H_CRC     (LIQUID_CRC_16)             // header CRC
+#define OFDMFLEXFRAME_H_FEC     (LIQUID_FEC_HAMMING128)     // header FEC
+#define OFDMFLEXFRAME_H_ENC     (24)                        // encoded length
+#define OFDMFLEXFRAME_H_MOD     (LIQUID_MODEM_QPSK)         // modulation scheme
+#define OFDMFLEXFRAME_H_BPS     (2)                         // modulation depth
+#define OFDMFLEXFRAME_H_SYM     (96)                        // number of symbols
+
+// 
+// ofdmflexframegen
+//
 
 // encode header
 void ofdmflexframegen_encode_header(ofdmflexframegen _q);
@@ -993,7 +1011,7 @@ void ofdmflexframegen_write_payload(ofdmflexframegen _q,
 
 // internal callback
 int ofdmflexframesync_internal_callback(float complex * _X,
-                                        unsigned int  * _p,
+                                        unsigned char * _p,
                                         unsigned int    _M,
                                         void * _userdata);
 
@@ -1147,9 +1165,6 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // MODULE : modem
 //
 
-// PSK
-#define PSK_ALPHA       (1.)
-
 // 'Square' QAM
 #define QAM4_ALPHA      (1./sqrt(2))
 #define QAM8_ALPHA      (1./sqrt(6))
@@ -1180,6 +1195,9 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define ASK8_ALPHA      (1./sqrt(21))
 #define ASK16_ALPHA     (1./sqrt(85))
 #define ASK32_ALPHA     (1./sqrt(341))
+#define ASK64_ALPHA     (1./sqrt(1365))
+#define ASK128_ALPHA    (1./sqrt(5461))
+#define ASK256_ALPHA    (1./sqrt(21845))
 
 // modem structure used for both modulation and demodulation 
 //
@@ -1193,17 +1211,12 @@ LIQUID_MATRIX_DEFINE_INTERNAL_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 // will change after each symbol.  It is usually good practice to keep
 // separate instances of modulators and demodulators.
 struct modem_s {
-    modulation_scheme scheme;
+    modulation_scheme scheme;       // modulation scheme
 
-    unsigned int m;     // bits per symbol
-    unsigned int M;     // total symbols, M=2^m
+    unsigned int m;                 // bits per symbol (modulation depth)
+    unsigned int M;                 // constellation size, M=2^m
 
-    unsigned int m_i;   // bits per symbol, in-phase
-    unsigned int M_i;   // total symbols, in-phase, M_i=2^{m_i}
-    unsigned int m_q;   // bits per symbol, quadrature
-    unsigned int M_q;   // total symbols, quadrature, M_q=2^{m_q}
-
-    float alpha;        // scaling factor to ensure E\{|\bar{r}|^2\}=1
+    float alpha;                    // scaling factor to ensure unity energy
 
     // Reference vector for demodulating linear arrays
     //
@@ -1212,18 +1225,23 @@ struct modem_s {
     // approximately 8%.
     float ref[MAX_MOD_BITS_PER_SYMBOL];
 
-    // Complete symbol map
-    float complex * symbol_map;
+    // modulation
+    float complex * symbol_map;     // complete symbol map
+    int modulate_using_map;         // modulate using map (look-up table) flag
 
-    float complex state;        // received state vector
-    float state_theta;          // received state vector, angle
+    // demodulation
+    float complex r;                // received state vector
+    float complex x_hat;            // estimated symbol (demodulator)
 
-    float complex res;          // residual error vector
+    // QAM modem
+    unsigned int m_i;               // bits per symbol, in-phase
+    unsigned int M_i;               // in-phase dimension, M_i=2^{m_i}
+    unsigned int m_q;               // bits per symbol, quadrature
+    unsigned int M_q;               // quadrature dimension, M_q=2^{m_q}
 
-    float phase_error;          // phase error after demodulation
-    float evm;                  // error vector magnitude (EVM)
-
-    float d_phi;
+    // PSK/DPSK modem
+    float d_phi;                    // half of phase between symbols
+    float dpsk_phi;                 // angle state for differential PSK
 
     // APSK modem
     unsigned int apsk_num_levels;   // number of levels
@@ -1234,12 +1252,22 @@ struct modem_s {
     unsigned int * apsk_symbol_map; // symbol mapping
 
     // modulate function pointer
-    void (*modulate_func)(modem _mod, unsigned int symbol_in, float complex *y);
+    void (*modulate_func)(modem _mod,
+                          unsigned int _symbol_in,
+                          float complex * _y);
 
     // demodulate function pointer
-    void (*demodulate_func)(modem _demod, float complex x, unsigned int *symbol_out);
+    void (*demodulate_func)(modem _demod,
+                            float complex _x,
+                            unsigned int * _symbol_out);
 };
 
+
+// initialize a generic modem object
+void modem_init(modem _q, unsigned int _bits_per_symbol);
+
+// initialize symbol map for fast modulation
+void modem_init_map(modem _q);
 
 // generic modem create routines
 modem modem_create_ask(unsigned int _bits_per_symbol);
@@ -1274,6 +1302,9 @@ void modem_arb_scale(modem _mod);
 
 // Balance I/Q
 void modem_arb_balance_iq(modem _mod);
+
+// modulate using symbol map (look-up table)
+void modem_modulate_map(modem _q, unsigned int _symbol_in, float complex * _y);
 
 // generic modem modulate routines
 void modem_modulate_ask(modem _mod, unsigned int symbol_in, float complex *y);
@@ -1407,7 +1438,7 @@ void modem_demodulate_linear_array_ref(float _v,
 //  _S0                 :   output symbol (freq)
 //  _s0                 :   output symbol (time)
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmframe_init_S0(unsigned int * _p,
+void ofdmframe_init_S0(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S0,
                        float complex * _s0,
@@ -1419,7 +1450,7 @@ void ofdmframe_init_S0(unsigned int * _p,
 //  _S1                 :   output symbol (freq)
 //  _s1                 :   output symbol (time)
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmframe_init_S1(unsigned int * _p,
+void ofdmframe_init_S1(unsigned char * _p,
                        unsigned int _num_subcarriers,
                        float complex * _S1,
                        float complex * _s1,
@@ -1480,7 +1511,7 @@ void ofdmframesync_rxsymbol(ofdmframesync _q);
 //  _num_subcarriers    :   total number of subcarriers
 //  _S0                 :   output symbol
 //  _M_S0               :   total number of enabled subcarriers in S0
-void ofdmoqamframe_init_S0(unsigned int * _p,
+void ofdmoqamframe_init_S0(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S0,
                            unsigned int * _M_S0);
@@ -1490,7 +1521,7 @@ void ofdmoqamframe_init_S0(unsigned int * _p,
 //  _num_subcarriers    :   total number of subcarriers
 //  _S1                 :   output symbol
 //  _M_S1               :   total number of enabled subcarriers in S1
-void ofdmoqamframe_init_S1(unsigned int * _p,
+void ofdmoqamframe_init_S1(unsigned char * _p,
                            unsigned int _num_subcarriers,
                            float complex * _S1,
                            unsigned int * _M_S1);
@@ -1578,31 +1609,6 @@ LIQUID_NCO_DEFINE_INTERNAL_API(NCO_MANGLE_FLOAT,
 int optim_threshold_switch(float _u0,
                            float _u1,
                            int _minimize);
-
-// gradient search algorithm (steepest descent) object
-// \f[ \bar{x}_{n+1} = \bar{x}_n - \gamma \nabla f(\bar{x}_n) \f]
-struct gradsearch_s {
-    float* v;           // vector to optimize (externally allocated)
-    unsigned int num_parameters;
-
-    float gamma;        // nominal stepsize
-    float delta;        // differential used to compute (estimate) derivative
-    float mu;           // decremental gamma parameter
-    float gamma_hat;    // step size (decreases each epoch)
-    float* v_prime;     // temporary vector array
-    float* dv;          // vector step
-    float* dv_hat;      // vector step (previous iteration)
-    float alpha;        // filter (feed-forward parameter)
-    float beta;         // filter (feed-back parameter)
-
-    float* gradient;    // gradient approximation
-    float utility;      // current utility
-
-    // External utility function.
-    utility_function get_utility;
-    void * userdata;    // object to optimize (user data)
-    int minimize;       // minimize/maximimze utility (search direction)
-};
 
 // compute the gradient vector (estimate)
 void gradsearch_compute_gradient(gradsearch _g);

@@ -49,13 +49,14 @@ int main() {
 
     matrixf_print(A,m,n);
 
+#if 0
+    // compute Householder reflections
     // arrays
+    float Ah[m*n];
     float P[m*n];
     float Q[m*n];
-    float Ah[m*n];
-
-    // compute Householder reflections
-    //matrixf_householder(A,m,n,P,Ah,Q);
+    matrixf_householder(A,m,n,P,Ah,Q);
+#endif
 
     // internal data structures
     float A0[m*n];  // A^(k)

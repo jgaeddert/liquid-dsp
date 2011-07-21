@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -42,19 +43,21 @@ void modem_demodulate_bench(struct rusage *_start,
     case LIQUID_MODEM_UNKNOWN:
         fprintf(stderr,"error: modem_modulate_bench(), unknown modem scheme\n");
         exit(1);
-    case LIQUID_MODEM_PSK:      *_num_iterations *= 10;     break;
-    case LIQUID_MODEM_DPSK:     *_num_iterations *= 10;     break;
-    case LIQUID_MODEM_ASK:      *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_QAM:      *_num_iterations *= 2;      break;
-    case LIQUID_MODEM_APSK:     *_num_iterations /= 2;      break;
-    case LIQUID_MODEM_ARB:      *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_BPSK:     *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_QPSK:     *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_OOK:      *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_SQAM32:   *_num_iterations /= 4;      break;
-    case LIQUID_MODEM_SQAM128:  *_num_iterations /= 8;      break;
-    case LIQUID_MODEM_ARB16OPT: *_num_iterations /= 1;      break;
-    case LIQUID_MODEM_ARB64VT:  *_num_iterations /= 1;      break;
+    case LIQUID_MODEM_PSK:      *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_DPSK:     *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_ASK:      *_num_iterations /= 3;      break;
+    case LIQUID_MODEM_QAM:      *_num_iterations /= 4;      break;
+    case LIQUID_MODEM_APSK:     *_num_iterations /= 5;      break;
+    case LIQUID_MODEM_ARB:      *_num_iterations /= 10;     break;
+    case LIQUID_MODEM_BPSK:     *_num_iterations /= 4;      break;
+    case LIQUID_MODEM_QPSK:     *_num_iterations /= 4;      break;
+    case LIQUID_MODEM_OOK:      *_num_iterations /= 4;      break;
+    case LIQUID_MODEM_SQAM32:   *_num_iterations /= 40;     break;
+    case LIQUID_MODEM_SQAM128:  *_num_iterations /= 80;     break;
+    case LIQUID_MODEM_V29:      *_num_iterations /= 16;     break;
+    case LIQUID_MODEM_ARB16OPT: *_num_iterations /= 16;     break;
+    case LIQUID_MODEM_ARB32OPT: *_num_iterations /= 32;     break;
+    case LIQUID_MODEM_ARB64VT:  *_num_iterations /= 64;     break;
     default:;
     }
     if (*_num_iterations < 1) *_num_iterations = 1;
@@ -63,21 +66,41 @@ void modem_demodulate_bench(struct rusage *_start,
     // initialize modulator
     modem demod = modem_create(_ms, _bps);
 
-    float complex x = 1.0f;
-    unsigned int symbol_out;
-    
     unsigned long int i;
+
+    // generate input vector to demodulate (spiral)
+    float complex x[20];
+    for (i=0; i<20; i++)
+        x[i] = 0.07 * i * cexpf(_Complex_I*2*M_PI*0.1*i);
+
+    unsigned int symbol_out;
 
     // start trials
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        modem_demodulate(demod, x, &symbol_out);
-        modem_demodulate(demod, x, &symbol_out);
-        modem_demodulate(demod, x, &symbol_out);
-        modem_demodulate(demod, x, &symbol_out);
+        modem_demodulate(demod, x[ 0], &symbol_out);
+        modem_demodulate(demod, x[ 1], &symbol_out);
+        modem_demodulate(demod, x[ 2], &symbol_out);
+        modem_demodulate(demod, x[ 3], &symbol_out);
+        modem_demodulate(demod, x[ 4], &symbol_out);
+        modem_demodulate(demod, x[ 5], &symbol_out);
+        modem_demodulate(demod, x[ 6], &symbol_out);
+        modem_demodulate(demod, x[ 7], &symbol_out);
+        modem_demodulate(demod, x[ 8], &symbol_out);
+        modem_demodulate(demod, x[ 9], &symbol_out);
+        modem_demodulate(demod, x[10], &symbol_out);
+        modem_demodulate(demod, x[11], &symbol_out);
+        modem_demodulate(demod, x[12], &symbol_out);
+        modem_demodulate(demod, x[13], &symbol_out);
+        modem_demodulate(demod, x[14], &symbol_out);
+        modem_demodulate(demod, x[15], &symbol_out);
+        modem_demodulate(demod, x[16], &symbol_out);
+        modem_demodulate(demod, x[17], &symbol_out);
+        modem_demodulate(demod, x[18], &symbol_out);
+        modem_demodulate(demod, x[19], &symbol_out);
     }
     getrusage(RUSAGE_SELF, _finish);
-    *_num_iterations *= 4;
+    *_num_iterations *= 20;
 
     modem_destroy(demod);
 }
@@ -128,4 +151,10 @@ void benchmark_demodulate_apsk32   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK,
 void benchmark_demodulate_apsk64   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 6)
 void benchmark_demodulate_apsk128  MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 7)
 void benchmark_demodulate_apsk256  MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_APSK, 8)
+
+// ARB
+void benchmark_demodulate_arbV29    MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_V29,     4);
+void benchmark_demodulate_arb16opt  MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_ARB16OPT,4);
+void benchmark_demodulate_arb32opt  MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_ARB32OPT,5);
+void benchmark_demodulate_arb64vt   MODEM_DEMODULATE_BENCH_API(LIQUID_MODEM_ARB64VT, 6);
 

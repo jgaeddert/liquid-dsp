@@ -414,6 +414,9 @@ typedef enum {
 // pretty names for crc schemes
 extern const char * crc_scheme_str[LIQUID_CRC_NUM_SCHEMES][2];
 
+// Print compact list of existing and available CRC schemes
+void liquid_print_crc_schemes();
+
 // returns crc_scheme based on input string
 crc_scheme liquid_getopt_str2crc(const char * _str);
 
@@ -479,6 +482,9 @@ typedef enum {
 
 // pretty names for fec schemes
 extern const char * fec_scheme_str[LIQUID_FEC_NUM_SCHEMES][2];
+
+// Print compact list of existing and available FEC schemes
+void liquid_print_fec_schemes();
 
 // returns fec_scheme based on input string
 fec_scheme liquid_getopt_str2fec(const char * _str);
@@ -1908,21 +1914,29 @@ typedef struct ofdmflexframegen_s * ofdmflexframegen;
 //  _fgprops    :   frame properties (modulation scheme, etc.)
 ofdmflexframegen ofdmflexframegen_create(unsigned int _M,
                                          unsigned int  _cp_len,
-                                         unsigned int * _p,
+                                         unsigned char * _p,
                                          ofdmflexframegenprops_s * _fgprops);
                                          //unsigned int  _taper_len);
 
+// destroy ofdmflexframegen object
 void ofdmflexframegen_destroy(ofdmflexframegen _q);
 
+// print parameters, properties, etc.
+void ofdmflexframegen_print(ofdmflexframegen _q);
+
+// reset ofdmflexframegen object internals
 void ofdmflexframegen_reset(ofdmflexframegen _q);
 
+// is frame assembled?
+int ofdmflexframegen_is_assembled(ofdmflexframegen _q);
+
+// get properties
 void ofdmflexframegen_getprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props);
 
+// set properties
 void ofdmflexframegen_setprops(ofdmflexframegen _q,
                                ofdmflexframegenprops_s * _props);
-
-void ofdmflexframegen_print(ofdmflexframegen _q);
 
 // get length of frame (symbols)
 //  _q              :   OFDM frame generator object
@@ -1967,7 +1981,7 @@ typedef int (*ofdmflexframesync_callback)(unsigned char *  _header,
 typedef struct ofdmflexframesync_s * ofdmflexframesync;
 ofdmflexframesync ofdmflexframesync_create(unsigned int _num_subcarriers,
                                            unsigned int  _cp_len,
-                                           unsigned int * _p,
+                                           unsigned char * _p,
                                            //unsigned int  _taper_len,
                                            ofdmflexframesync_callback _callback,
                                            void * _userdata);
@@ -2569,7 +2583,8 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES  16
+#define LIQUID_MODEM_NUM_SCHEMES      (16)  // generic schemes (e.g. 'qam')
+#define LIQUID_MODEM_NUM_FULL_SCHEMES (48)  // specific schemes (e.g. 'qam256')
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
 
@@ -2598,8 +2613,16 @@ typedef enum {
 // Modulation scheme string for printing purposes
 extern const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2];
 
+// Print compact list of existing and available modulation schemes
+void liquid_print_modulation_schemes();
+
 // returns modulation_scheme based on input string
 modulation_scheme liquid_getopt_str2mod(const char * _str);
+
+// returns modulation_scheme and depth based on input string
+void liquid_getopt_str2modbps(const char * _str,
+                              modulation_scheme * _ms,
+                              unsigned int * _bps);
 
 // useful functions
 
@@ -2629,8 +2652,14 @@ unsigned int gray_decode(unsigned int symbol_in);
 // define struct pointer
 typedef struct modem_s * modem;
 
-// create modulation scheme, allocating memory as necessary
-modem modem_create(modulation_scheme, unsigned int _bits_per_symbol);
+// create digital modem object, allocating memory as necessary
+modem modem_create(modulation_scheme _scheme,
+                   unsigned int _bits_per_symbol);
+
+// recreate modulation scheme, re-allocating memory as necessary
+modem modem_recreate(modem _q,
+                     modulation_scheme _scheme,
+                     unsigned int _bits_per_symbol);
 
 void modem_destroy(modem _mod);
 void modem_print(modem _mod);
@@ -2891,7 +2920,7 @@ void ofdmoqam_execute(ofdmoqam _c,
 //  _M      :   number of subcarriers
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 void ofdmoqamframe_init_default_sctype(unsigned int _M,
-                                       unsigned int * _p);
+                                       unsigned char * _p);
 
 // validate subcarrier type (count number of null, pilot, and data
 // subcarriers in the allocation)
@@ -2900,7 +2929,7 @@ void ofdmoqamframe_init_default_sctype(unsigned int _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmoqamframe_validate_sctype(unsigned int * _p,
+void ofdmoqamframe_validate_sctype(unsigned char * _p,
                                    unsigned int _M,
                                    unsigned int * _M_null,
                                    unsigned int * _M_pilot,
@@ -2921,7 +2950,7 @@ typedef struct ofdmoqamframegen_s * ofdmoqamframegen;
 ofdmoqamframegen ofdmoqamframegen_create(unsigned int _M,
                                          unsigned int _m,
                                          float _beta,
-                                         unsigned int * _p);
+                                         unsigned char * _p);
 
 // destroy OFDM/OQAM framing generator object
 void ofdmoqamframegen_destroy(ofdmoqamframegen _q);
@@ -2953,7 +2982,7 @@ typedef struct ofdmoqamframesync_s * ofdmoqamframesync;
 ofdmoqamframesync ofdmoqamframesync_create(unsigned int _num_subcarriers,
                                            unsigned int _m,
                                            float _beta,
-                                           unsigned int * _p,
+                                           unsigned char * _p,
                                            ofdmoqamframesync_callback _callback,
                                            void * _userdata);
 void ofdmoqamframesync_destroy(ofdmoqamframesync _q);
@@ -2973,7 +3002,7 @@ void ofdmoqamframesync_execute(ofdmoqamframesync _q,
 //  _M      :   number of subcarriers
 //  _p      :   output subcarrier allocation array, [size: _M x 1]
 void ofdmframe_init_default_sctype(unsigned int _M,
-                                   unsigned int * _p);
+                                   unsigned char * _p);
 
 // validate subcarrier type (count number of null, pilot, and data
 // subcarriers in the allocation)
@@ -2982,7 +3011,7 @@ void ofdmframe_init_default_sctype(unsigned int _M,
 //  _M_null     :   output number of null subcarriers
 //  _M_pilot    :   output number of pilot subcarriers
 //  _M_data     :   output number of data subcarriers
-void ofdmframe_validate_sctype(unsigned int * _p,
+void ofdmframe_validate_sctype(unsigned char * _p,
                                unsigned int _M,
                                unsigned int * _M_null,
                                unsigned int * _M_pilot,
@@ -3000,7 +3029,7 @@ typedef struct ofdmframegen_s * ofdmframegen;
 //  _p      :   subcarrier allocation (null, pilot, data), [size: _M x 1]
 ofdmframegen ofdmframegen_create(unsigned int _M,
                                  unsigned int  _cp_len,
-                                 unsigned int * _p);
+                                 unsigned char * _p);
                                  //unsigned int  _taper_len);
 
 void ofdmframegen_destroy(ofdmframegen _q);
@@ -3023,17 +3052,18 @@ void ofdmframegen_writesymbol(ofdmframegen _q,
 // OFDM frame (symbol) synchronizer
 //
 typedef int (*ofdmframesync_callback)(liquid_float_complex * _y,
-                                      unsigned int * _p,
+                                      unsigned char * _p,
                                       unsigned int _M,
                                       void * _userdata);
 typedef struct ofdmframesync_s * ofdmframesync;
 ofdmframesync ofdmframesync_create(unsigned int _num_subcarriers,
                                    unsigned int  _cp_len,
-                                   unsigned int * _p,
+                                   unsigned char * _p,
                                    //unsigned int  _taper_len,
                                    ofdmframesync_callback _callback,
                                    void * _userdata);
 void ofdmframesync_destroy(ofdmframesync _q);
+void ofdmframesync_debug_print(ofdmframesync _q, const char * _filename);
 void ofdmframesync_print(ofdmframesync _q);
 void ofdmframesync_reset(ofdmframesync _q);
 void ofdmframesync_execute(ofdmframesync _q,
@@ -3146,37 +3176,30 @@ typedef float (*utility_function)(void * _userdata,
 
 typedef struct gradsearch_s * gradsearch;
 
-// Create a simple gradsearch object; parameters are specified internally
+// gradient search properties
+typedef struct {
+    float delta;    // gradient approximation step size (default: 1e-6f)
+    float gamma;    // vector step size (default: 0.002f)
+    float alpha;    // momentum parameter (default: 0.1f)
+    float mu;       // decremental gamma parameter (default: 0.99f)
+} gradsearchprops_s;
+
+// initialize default properties
+void gradsearchprops_init_default(gradsearchprops_s * _props);
+
+// Create a gradient search object
 //   _userdata          :   user data object pointer
 //   _v                 :   array of parameters to optimize
 //   _num_parameters    :   array length (number of parameters to optimize)
 //   _u                 :   utility function pointer
 //   _minmax            :   search direction (0:minimize, 1:maximize)
+//   _props             :   properties (see above)
 gradsearch gradsearch_create(void * _userdata,
                              float * _v,
                              unsigned int _num_parameters,
                              utility_function _u,
-                             int _minmax);
-
-// Create a gradsearch object, specifying search parameters
-//   _userdata          :   user data object pointer
-//   _v                 :   array of parameters to optimize
-//   _num_parameters    :   array length (number of parameters to optimize)
-//   _delta             :   gradient approximation step size (default: 1e-6f)
-//   _gamma             :   vector step size (default: 0.002f)
-//   _alpha             :   momentum parameter (default: 0.1f)
-//   _mu                :   decremental gamma parameter (default: 0.99f)
-//   _u                 :   utility function pointer
-//   _minmax            :   search direction (0:minimize, 1:maximize)
-gradsearch gradsearch_create_advanced(void * _userdata,
-                                      float * _v,
-                                      unsigned int _num_parameters,
-                                      float _delta,
-                                      float _gamma,
-                                      float _alpha,
-                                      float _mu,
-                                      utility_function _u,
-                                      int _minmax);
+                             int _minmax,
+                             gradsearchprops_s * _props);
 
 // Destroy a gradsearch object
 void gradsearch_destroy(gradsearch _g);

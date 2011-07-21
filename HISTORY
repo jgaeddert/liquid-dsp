@@ -6,11 +6,23 @@ Major improvements since 1.0.0
     - firdes: adding Nyquist prototyping design method
     - interp: porting to efficient polyphase filterbank implementation,
       adding prototype create() method
+  * framing
+    - adding ofdmflexframe family of objects capable of defining which
+      subcarriers are nulls/pilots/data, and easily loading data into
+      frames. Very similar to 'flexframe' in usage.
+  * matrix
+    - adding Cholesky factorization A = R^T * R (for positive definite
+      matrices)
+    - adding conjugate gradient solver (for positive definite matrices)
   * modem
     - adding simple on/off keying (OOK) type
-    - adding 256-APSK type
+    - adding 256-APSK type (6,18,32,36,46,54,64)
     - adding 'square' (cross) 32-, 128-QAM types
+    - improved speed of most schemes' modulate/demodulate
+      implementations
   * multicarrier
     - ofdmframe: improving synchronization and reliability in
       interference environments, enabling squelch, improving
       equalization
+  * optim
+    - simplified interface to gradient search

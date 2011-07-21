@@ -42,19 +42,21 @@ void modem_modulate_bench(struct rusage *_start,
     case LIQUID_MODEM_UNKNOWN:
         fprintf(stderr,"error: modem_modulate_bench(), unknown modem scheme\n");
         exit(1);
-    case LIQUID_MODEM_PSK:      *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_DPSK:     *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_PSK:      *_num_iterations *= 100;    break;
+    case LIQUID_MODEM_DPSK:     *_num_iterations *= 16;     break;
     case LIQUID_MODEM_ASK:      *_num_iterations *= 64;     break;
     case LIQUID_MODEM_QAM:      *_num_iterations *= 32;     break;
-    case LIQUID_MODEM_APSK:     *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_APSK:     *_num_iterations *= 100;    break;
     case LIQUID_MODEM_ARB:      *_num_iterations *= 1;      break;
     case LIQUID_MODEM_BPSK:     *_num_iterations *= 64;     break;
     case LIQUID_MODEM_QPSK:     *_num_iterations *= 64;     break;
     case LIQUID_MODEM_OOK:      *_num_iterations *= 64;     break;
     case LIQUID_MODEM_SQAM32:   *_num_iterations *= 16;     break;
     case LIQUID_MODEM_SQAM128:  *_num_iterations *= 16;     break;
-    case LIQUID_MODEM_ARB16OPT: *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_ARB64VT:  *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_V29:      *_num_iterations *= 100;    break;
+    case LIQUID_MODEM_ARB16OPT: *_num_iterations *= 100;    break;
+    case LIQUID_MODEM_ARB32OPT: *_num_iterations *= 100;    break;
+    case LIQUID_MODEM_ARB64VT:  *_num_iterations *= 100;    break;
     default:;
     }
     if (*_num_iterations < 1) *_num_iterations = 1;
@@ -128,4 +130,10 @@ void benchmark_modulate_apsk32  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  5)
 void benchmark_modulate_apsk64  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  6)
 void benchmark_modulate_apsk128 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  7)
 void benchmark_modulate_apsk256 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  8)
+
+// ARB
+void benchmark_modulate_arbV29   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_V29,      4);
+void benchmark_modulate_arb16opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB16OPT, 4);
+void benchmark_modulate_arb32opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB32OPT, 5);
+void benchmark_modulate_arb64vt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB64VT,  6);
 

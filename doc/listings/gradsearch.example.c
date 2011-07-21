@@ -25,7 +25,8 @@ int main() {
                                       v,
                                       num_parameters,
                                       &myutility,
-                                      LIQUID_OPTIM_MINIMIZE);
+                                      LIQUID_OPTIM_MINIMIZE,
+                                      NULL);
 
     // execute batch search
     gradsearch_execute(gs, num_iterations, target_utility);

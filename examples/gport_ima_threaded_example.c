@@ -12,7 +12,7 @@
 #include <pthread.h>    // POSIX Threads
 #include <string.h>     // String handling
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 // prototype for thread routines
 void producer_handler ( void *ptr );

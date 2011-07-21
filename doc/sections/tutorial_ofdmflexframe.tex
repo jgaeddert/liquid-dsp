@@ -1,0 +1,97 @@
+% 
+% TUTORIAL : ofdmflexframe
+%
+
+\newpage
+\section{Tutorial: OFDM}
+\label{tutorial:ofdmflexframe}
+
+In the previous tutorials we have created only the basic building blocks
+for wireless communication.
+We have also used the basic {\tt framegen64} and {\tt framesync64}
+objects to transmit and receive simple framing data.
+This tutorial extends...
+
+
+%
+% SUBSECTION : problem statement
+%
+\subsection{Problem Statement}
+\label{tutorial:ofdmflexframe:problem}
+
+
+
+%
+% SUBSECTION : 
+%
+\subsection{Setting up the Environment}
+\label{tutorial:ofdmflexframe:environment}
+
+As with the other tutorials I assume that you are using {\tt gcc} to
+compile your programs and link to appripriate libraries.
+Create a new file {\tt ofdmflexframe.c} and include the headers
+{\tt stdio.h},
+{\tt stdlib.h},
+{\tt math.h},
+{\tt complex.h}, and
+{\tt liquid/liquid.h}.
+Add the {\tt int main()} definition so that your program looks like
+this:
+%
+\input{tutorials/ofdmflexframe_init_tutorial.c.tex}
+%
+Compile and link the program using {\tt gcc}:
+%
+\begin{Verbatim}[fontsize=\small]
+    $ gcc -Wall -o ofdmflexframe -lm -lc -lliquid ofdmflexframe.c
+\end{Verbatim}
+%
+The flag ``{\tt -Wall}'' tells the compiler to print all warnings
+(unused and uninitialized variables, etc.),
+``{\tt -o ofdmflexframe}'' specifies the name of the output program is
+``{\tt ofdmflexframe}'', and
+``{\tt -lm -lc -lliquid}'' tells the linker to link the binary against
+the math, standard C, and \liquid\ DSP libraries, respectively.
+Notice that the above command invokes both the compiler and the linker
+collectively.
+%While it is usually preferred to build an intermediate object...
+%
+If the compiler did not give any errors, the output executable
+{\tt ofdmflexframe} is created which can be run as
+%
+\begin{Verbatim}[fontsize=\small]
+    $ ./ofdmflexframe
+\end{Verbatim}
+%
+and should simply print ``{\tt done.}'' to the screen.
+You are now ready to add functionality to your program.
+
+
+
+%
+% SUBSECTION : frame generator
+%
+\subsection{Creating the Frame Generator}
+\label{tutorial:ofdmflexframe:framegen}
+
+%
+% SUBSECTION : frame synchronizer
+%
+\subsection{Creating the Frame Synchronizer}
+\label{tutorial:ofdmflexframe:framesync}
+
+%
+% SUBSECTION : 
+%
+\subsection{Putting it All Together}
+\label{tutorial:ofdmflexframe:xxx}
+
+%
+% SUBSECTION : 
+%
+\subsection{Final Program}
+\label{tutorial:ofdmflexframe:completed}
+
+%
+\input{tutorials/ofdmflexframe_tutorial.c.tex}
+%

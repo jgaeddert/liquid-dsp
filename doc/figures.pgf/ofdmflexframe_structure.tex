@@ -1,0 +1,143 @@
+% 
+% figures.pgf/ofdmflexframe_structure.tex
+%
+% Author: Joseph D. Gaeddert
+%                                        header                 payload
+%                               |<------------------>|<-------------------------->|
+%   |    _______________________|____________________|____________________________|
+%   |    |    |    |    |//|    |//|    |//|    |    |//|    |//|    |    |//|    |
+%   |    |    |    |    |//|    |//|    |//|    |    |//|    |//|    |    |//|    |
+%   |    | S0 | S0 | .. |//| S1 |//| H0 |//| H1 | .. |//| P0 |//| P1 | .. |//| Px |
+%   |    |    |    |    |//|    |//|    |//|    |    |//|    |//|    |    |//|    |
+%   |____|____|____|____|//|____|//|____|//|____|____|//|____|//|____|____|//|____|___
+%        |    |    |    |  |    |  |    |  |    |    |  |    |  |    |    |  |    | 
+%       tSa  tSb  tSc  tSd |   tHa |   tHc |   tHe  tPa |   tPc |   tPe  tPf |   tPh
+%                         tSe     tHb     tHd          tPb     tPd          tPg
+
+\documentclass[a4paper,landscape]{article}
+
+\usepackage{pgf,tikz}
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{calc,arrows,positioning}
+\usetikzlibrary{decorations.pathmorphing} % random steps (noise floor)
+\usetikzlibrary{patterns}
+
+\usepackage{amsmath}
+\usepackage[left=1cm,right=1cm]{geometry}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{tikzpicture}[scale=6,>=latex];
+    \def\dt{0.30}       % default symbol time
+    \def\dcp{0.06}      % cyclic prefix length
+    \def\dsym{\dt+\dcp} % default symbol time
+    \def\dd{0.12}       % delay in "..."
+    \def\ds{0.02}       % default signal level vertical line extensions
+    \def\dS{0.1}        % default signal level vertical line extensions
+    \def\height{0.3}    % peak height of signal
+
+    \def\tstart{0.1}    % beginning of frame
+
+    % S0, S1 symbols
+    \def\tSa{\tstart}   % start first S0 symbol
+    \def\tSb{\tSa+\dt}  % end of first S0 symbol
+    \def\tSc{\tSb+\dt}  % end of second S0 symbol
+    \def\tSd{\tSc+\dd}  % start of S1
+    \def\tSe{\tSd+\dcp} % CP of S1
+
+    % header symbols
+    \def\tHa{\tSe+\dt}  % start first header symbol
+    \def\tHb{\tHa+\dcp} % CP of first header symbol
+    \def\tHc{\tHb+\dt}  % start of second header symbol
+    \def\tHd{\tHc+\dcp} % CP of second header symbol
+    \def\tHe{\tHd+\dt}  % end of second header symbol
+
+    % payload symbols
+    \def\tPa{\tHe+\dd}  % start first payload symbol
+    \def\tPb{\tPa+\dcp} % CP of first payload symbol
+    \def\tPc{\tPb+\dt}  % start second payload symbol
+    \def\tPd{\tPc+\dcp} % CP of second payload symbol
+    \def\tPe{\tPd+\dt}  % end of second payload symbol
+    % ...
+    \def\tPf{\tPe+\dd}  % start of last payload symbol
+    \def\tPg{\tPf+\dcp} % CP of last payload symbol
+    \def\tPh{\tPg+\dt}  % end of last payload symbol
+
+    \def\tstop{\tPh}    % CP of first payload symbol
+
+    %\draw[step=2.5mm,help lines] (0,0) grid (3,1);
+
+    % draw x-axis 
+    \draw[very thick, black,->] (-0.02, 0.0 ) -- (\tstop+0.1,0)
+        node[anchor=south] {{\it time}};
+
+    % draw y-axis
+    %\draw[very thick, black,->] ( 0.0, -0.02) -- (0,1.2*\height)
+    %    node[left=7pt,rotate=90] {{\it signal level}};
+
+    % draw curve
+    \draw[very thick, black]
+        (0,         0) --
+        (\tstart,   0) --
+        (\tstart,   \height) --
+        (\tstop,    \height) --
+        (\tstop,    0);
+
+    % overlay hash marks
+    \draw[double distance=2pt] (\tSc+0.5*\dd-0.01,\height-0.02) -- (\tSc+0.5*\dd+0.01,\height+0.02);
+    \draw[double distance=2pt] (\tHe+0.5*\dd-0.01,\height-0.02) -- (\tHe+0.5*\dd+0.01,\height+0.02);
+    \draw[double distance=2pt] (\tPe+0.5*\dd-0.01,\height-0.02) -- (\tPe+0.5*\dd+0.01,\height+0.02);
+
+    % intersection lines
+    \draw[thin,gray]   (\tSb,  -\ds)   --  (\tSb,   \height+\ds);
+    \draw[thin,gray]   (\tSc,  -\ds)   --  (\tSc,   \height+\ds);
+    \draw[thin,gray]   (\tSd,  -\ds)   --  (\tSd,   \height+\ds);
+
+    \draw[thick,black] (\tHa,  -\ds)   --  (\tHa,   \height+\dS);
+    \draw[thin,gray]   (\tHc,  -\ds)   --  (\tHc,   \height+\ds);
+    \draw[thin,gray]   (\tHe,  -\ds)   --  (\tHe,   \height+\ds);
+
+    \draw[thick,black] (\tPa,  -\ds)   --  (\tPa,   \height+\dS);
+    \draw[thin,gray]   (\tPc,  -\ds)   --  (\tPc,   \height+\ds);
+    \draw[thin,gray]   (\tPe,  -\ds)   --  (\tPe,   \height+\ds);
+    \draw[thin,gray]   (\tPf,  -\ds)   --  (\tPf,   \height+\ds);
+
+    \draw[thick,black] (\tPh,  -\ds)   --  (\tPh,   \height+\dS);
+
+    % add cyclic extension boxes
+    \draw[pattern=north east lines, pattern color=gray] (\tSd,  0) rectangle  (\tSe,   \height);
+    \draw[pattern=north east lines, pattern color=gray] (\tHa,  0) rectangle  (\tHb,   \height);
+    \draw[pattern=north east lines, pattern color=gray] (\tHc,  0) rectangle  (\tHd,   \height);
+    \draw[pattern=north east lines, pattern color=gray] (\tPa,  0) rectangle  (\tPb,   \height);
+    \draw[pattern=north east lines, pattern color=gray] (\tPc,  0) rectangle  (\tPd,   \height);
+    \draw[pattern=north east lines, pattern color=gray] (\tPf,  0) rectangle  (\tPg,   \height);
+
+    % add text labels
+    \draw (\tSa, 0.8*\height) node[anchor=west] {\footnotesize\sf S0};
+    \draw (\tSb, 0.8*\height) node[anchor=west] {\footnotesize\sf S0};
+    \draw (\tSc+0.5*\dd, 0.5*\height) node[anchor=center] {...};
+    \draw (\tSe, 0.8*\height) node[anchor=west] {\footnotesize\sf S1};
+    \draw (\tHb, 0.8*\height) node[anchor=west] {\footnotesize\sf H0};
+    \draw (\tHd, 0.8*\height) node[anchor=west] {\footnotesize\sf H1};
+    \draw (\tHe+0.5*\dd, 0.5*\height) node[anchor=center] {...};
+    \draw (\tPb, 0.8*\height) node[anchor=west] {\footnotesize\sf P0};
+    \draw (\tPd, 0.8*\height) node[anchor=west] {\footnotesize\sf P1};
+    \draw (\tPe+0.5*\dd, 0.5*\height) node[anchor=center] {...};
+    \draw (\tPg, 0.8*\height) node[anchor=west] {\footnotesize\sf P(n-1)};
+
+    % range lines (arrows):     |<---- header ---->|<---- payload ---->|
+    \draw[thick,black,<->] (\tHa, \height+0.7*\dS) -- (\tPa, \height+0.7*\dS);
+    \draw[thick,black,<->] (\tPa, \height+0.7*\dS) -- (\tPh, \height+0.7*\dS);
+
+    \draw (\tHd, \height+\dS) node[anchor=west] {\footnotesize\em header};
+    \draw (\tPe, \height+\dS) node[anchor=center] {\footnotesize\em payload};
+
+\end{tikzpicture}
+
+\end{document}
+

@@ -17,7 +17,7 @@
 #include <complex.h>
 #include <math.h>
 
-#include "liquid.h"
+#include "liquid.experimental.h"
 
 #define OUTPUT_FILENAME "dds_cccf_example.m"
 

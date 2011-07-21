@@ -20,8 +20,9 @@ http://ganymede.ece.vt.edu/downloads/liquid.pdf
  Installation and Dependencies
 =========================================================================
 
-liquid-dsp only relies on libc (standard C) and libm (math) libraries to
-run, however takes advantage of other packages if they are available.
+liquid-dsp only relies on libc (standard C) and libm (standard math)
+libraries to run, however takes advantage of other packages (such as
+FFTW [fftw:web]) if they are available.
 
 Mac OS X:
     $ sudo port install fftw-3-single
@@ -49,45 +50,59 @@ EXAMPLES: Nearly all signal processing elements have a corresponding
           [octave:web].
     $ make examples
     -- or --
-    $ make examples/specific_example
+    $ make examples/some_specific_example
 
 BENCHMARK:
     $ make bench
 
-Modules: description
-    agc: automatic gain control, squelch, rssi
-    audio: source audio encoders/decoders: cvsd, filterbanks...
-    buffer: internal buffering, circular/static, ports (threaded)
-    dotprod: dot products (real, complex)
-    equalization: adaptive equalizers: LMS, RLS, blind...
-    fec: forward error correction (basic), checksum, crc, etc.
-    fft: fast Fourier transform (basic), simple implementation
-    filter: fir, iir, polyphase, hilbert, interp, decim, design,
-      resampling, symbol timing recovery
-    framing: packet framing, encoding, synchronization, interleaving
-    math: transcendental functions not in the C standard library (gamma,
-      besseli, etc.), polynomial operations (roots, etc.)
-    matrix: basic math, lu_decomp, inv, gauss_elim, 
-    modem: modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
-    multicarrier: channelizers, OFDM/OQAM, OFDM...
-    nco: numerically-controlled oscillator: mix, pll
-    optim: newton_raphson, ga, gradient
-    quantization: analog/digital converters, companding...
-    random: random number generators
-    sequence: lfsr, complementary_code
-    utility: useful miscellany
-    experimental: artificial neural networks, communications channel
-      modeling, threaded ports, filterbank audio synthesizer,
-      continuous-phase modulation, direct digital synthesis, quadrature
-      mirror filterbanks, advanced symbol timing recovery
+=========================================================================
+ Available Modules
+=========================================================================
+  * agc: automatic gain control, squelch, rssi
+  * audio: source audio encoders/decoders: cvsd, filterbanks...
+  * buffer: internal buffering, circular/static, ports (threaded)
+  * dotprod: dot products (real, complex)
+  * equalization: adaptive equalizers: LMS, RLS, blind...
+  * fec: forward error correction (basic), checksum, crc, etc.
+  * fft: fast Fourier transform (basic), discrete sine/cosine
+    transforms, simple implementations
+  * filter: finite/infinite impulse response, polyphase, hilbert,
+    interpolation, decimation, filter design, resampling, symbol timing
+    recovery
+  * framing: packet framing, encoding, synchronization, interleaving
+  * math: transcendental functions not in the C standard library (gamma,
+    besseli, etc.), polynomial operations (curve-fitting, root-finding,
+    etc.)
+  * matrix: basic math, LU/QR/Cholesky factorization, matrix inversion,
+    Gauss elimination, Gram-Schmidt decomposition, linear solver
+  * modem: modulate, demodulate, psk, dpsk, qam, oqam, aqam, msk, fsk
+  * multicarrier: filterbank channelizers, OFDM/OQAM, OFDM
+  * nco: numerically-controlled oscillator: mixing, frequency synthesis,
+    phase-locked loops
+  * optim (non-linear optimization): Newton-Raphson, evoluationary
+    algorithms, gradient descent
+  * quantization: analog/digital converters, compression/expansion
+  * random (random number generators): uniform, exponential, gamma,
+    Nakagami-m, Gauss, Rice-K, Weibull
+  * sequence: linear feedback shift registers, complementary codes
+  * utility: useful miscellany, mostly bit manipulation (shifting,
+    packing, and unpacking of arrays)
+  * experimental: artificial neural networks, communications channel
+    modeling, threaded ports, filterbank audio synthesizer,
+    continuous-phase modulation, direct digital synthesis, quadrature
+    mirror filterbanks, advanced symbol timing recovery
 
 Additional:
-    benchmarking tool
-    automatic test scripts
-    full documentation (NOT doxygen)
+  * benchmarking tool ('make bench') for testing execution speed of most
+    algorithms
+  * automatic test scripts ('make check') for validating the code's
+    functionality
+  * full documentation ('make doc') complete with tutorials, code
+  * examples, and interface descriptions
 
 =========================================================================
  References
 =========================================================================
+    [fftw:web] FFTW website, http://www.fftw.org/
     [octave:web] GNU Octave website, http://www.gnu.org/software/octave/
 

@@ -33,8 +33,6 @@ liquid/
         liquid.experimental.h   <-- experimental header
     src/
         module1/
-            module.mk           <-- top-level included makefile for
-                                    building this specific module
             README
             src/                <-- module source directory
             tests/              <-- autotest scripts

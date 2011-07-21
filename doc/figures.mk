@@ -15,7 +15,8 @@ local_pgffiles :=					\
 	figures.pgf/bpacket_structure.pdf		\
 	figures.pgf/window.pdf				\
 	figures.pgf/framing_structure.pdf		\
-	figures.pgf/nco_pll_diagram.pdf
+	figures.pgf/nco_pll_diagram.pdf			\
+	figures.pgf/ofdmflexframe_structure.pdf		\
 
 $(local_pgffiles) : %.pdf : %.tex
 	$(TEX) -interaction=batchmode -output-directory=figures.pgf $<
@@ -173,6 +174,7 @@ local_progs :=						\
 	src/agc_transient				\
 	src/audio_cvsd					\
 	src/equalizer_cccf				\
+	src/estimate_snr_test				\
 	src/filter_iirdes				\
 	src/filter_firdespm				\
 	src/filter_firfarrow_crcf			\

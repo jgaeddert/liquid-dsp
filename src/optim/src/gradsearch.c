@@ -27,47 +27,76 @@
 
 #define LIQUID_gradsearch_GAMMA_MIN 0.000001
 
-// default parameters
-#define LIQUID_gradsearch_DEFAULT_DELTA    (1e-6f)
-#define LIQUID_gradsearch_DEFAULT_GAMMA    (0.002f)
-#define LIQUID_gradsearch_DEFAULT_ALPHA    (0.1f)
-#define LIQUID_gradsearch_DEFAULT_MU       (0.99f)
+// default gradsearch properties
+static gradsearchprops_s gradsearchprops_default = {
+    1e-6f,  // delta
+    0.002f, // gamma
+    0.1f,   // alpha
+    0.99f   // mu
+};
 
+void gradsearchprops_init_default(gradsearchprops_s * _props)
+{
+    memmove(_props, &gradsearchprops_default, sizeof(gradsearchprops_s));
+}
+
+// gradient search algorithm (steepest descent) object
+struct gradsearch_s {
+    float* v;           // vector to optimize (externally allocated)
+    unsigned int num_parameters;
+
+    // properties
+    gradsearchprops_s props;
+
+    float gamma;        // nominal step size
+    float delta;        // differential used to compute (estimate) derivative
+    float alpha;        // momentum constant
+    float mu;           // decremental gamma parameter
+
+    float gamma_hat;    // step size (decreases each epoch)
+    float* v_prime;     // temporary vector array
+    float* dv;          // vector step
+    float* dv_hat;      // vector step (previous iteration)
+
+    float* gradient;    // gradient approximation
+    float utility;      // current utility
+
+    // External utility function.
+    utility_function get_utility;
+    void * userdata;    // object to optimize (user data)
+    int minimize;       // minimize/maximimze utility (search direction)
+};
+
+// create a gradient search object
+//   _userdata          :   user data object pointer
+//   _v                 :   array of parameters to optimize
+//   _num_parameters    :   array length (number of parameters to optimize)
+//   _u                 :   utility function pointer
+//   _minmax            :   search direction (0:minimize, 1:maximize)
+//   _props             :   properties (see above)
 gradsearch gradsearch_create(void * _userdata,
                              float * _v,
                              unsigned int _num_parameters,
                              utility_function _u,
-                             int _minmax)
-{
-    return gradsearch_create_advanced(_userdata,
-                                      _v,
-                                      _num_parameters,
-                                      LIQUID_gradsearch_DEFAULT_DELTA,
-                                      LIQUID_gradsearch_DEFAULT_GAMMA,
-                                      LIQUID_gradsearch_DEFAULT_ALPHA,
-                                      LIQUID_gradsearch_DEFAULT_MU,
-                                      _u,
-                                      _minmax);
-}
-
-gradsearch gradsearch_create_advanced(void * _userdata,
-                                      float * _v,
-                                      unsigned int _num_parameters,
-                                      float _delta,
-                                      float _gamma,
-                                      float _alpha,
-                                      float _mu,
-                                      utility_function _u,
-                                      int _minmax)
+                             int _minmax,
+                             gradsearchprops_s * _props)
 {
     gradsearch gs = (gradsearch) malloc( sizeof(struct gradsearch_s) );
 
-    // initialize public values
-    gs->delta = _delta;
-    gs->gamma = _gamma;
-    gs->mu    = _mu;
+    // initialize properties
+    if (_props != NULL) {
+        gs->delta = _props->delta;
+        gs->gamma = _props->gamma;
+        gs->mu    = _props->mu;
+        gs->alpha = _props->alpha;
+    } else {
+        gs->delta = gradsearchprops_default.delta;
+        gs->gamma = gradsearchprops_default.gamma;
+        gs->mu    = gradsearchprops_default.mu;
+        gs->alpha = gradsearchprops_default.alpha;
+    }
+
     gs->gamma_hat = gs->gamma;
-    gs->alpha = _alpha;
 
     gs->userdata = _userdata;
     gs->v = _v;

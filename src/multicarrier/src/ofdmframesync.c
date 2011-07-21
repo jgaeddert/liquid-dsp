@@ -33,19 +33,15 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_OFDMFRAMESYNC             1
+#define DEBUG_OFDMFRAMESYNC             0
 #define DEBUG_OFDMFRAMESYNC_PRINT       0
 #define DEBUG_OFDMFRAMESYNC_FILENAME    "ofdmframesync_internal_debug.m"
 #define DEBUG_OFDMFRAMESYNC_BUFFER_LEN  (2048)
 
-#if DEBUG_OFDMFRAMESYNC
-void ofdmframesync_debug_print(ofdmframesync _q);
-#endif
-
 struct ofdmframesync_s {
     unsigned int M;         // number of subcarriers
     unsigned int cp_len;    // cyclic prefix length
-    unsigned int * p;       // subcarrier allocation (null, pilot, data)
+    unsigned char * p;      // subcarrier allocation (null, pilot, data)
 
     // constants
     unsigned int M_null;    // number of null subcarriers
@@ -77,6 +73,7 @@ struct ofdmframesync_s {
     float complex * G1;     // complex subcarrier gain estimate, S1[1]
     float complex * G;      // complex subcarrier gain estimate
     float complex * B;      // subcarrier phase rotation due to backoff
+    float complex * R;      // 
 
     // receiver state
     enum {
@@ -95,13 +92,12 @@ struct ofdmframesync_s {
     float squelch_threshold;
     int squelch_enabled;
 
-    //
-    float complex rxx_max;  // maximum auto-correlator output
-
     // timing
     unsigned int timer;         // input sample timer
     unsigned int num_symbols;   // symbol counter
     unsigned int backoff;       // sample timing backoff
+    float complex s_hat_0;      // first S0 symbol metrics estimate
+    float complex s_hat_1;      // second S0 symbol metrics estimate
 
     // callback
     ofdmframesync_callback callback;
@@ -119,7 +115,7 @@ struct ofdmframesync_s {
 
 ofdmframesync ofdmframesync_create(unsigned int _M,
                                    unsigned int _cp_len,
-                                   unsigned int * _p,
+                                   unsigned char * _p,
                                    //unsigned int _taper_len,
                                    ofdmframesync_callback _callback,
                                    void * _userdata)
@@ -140,11 +136,11 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->cp_len = _cp_len;
 
     // subcarrier allocation
-    q->p = (unsigned int*) malloc((q->M)*sizeof(unsigned int));
+    q->p = (unsigned char*) malloc((q->M)*sizeof(unsigned char));
     if (_p == NULL) {
         ofdmframe_init_default_sctype(q->M, q->p);
     } else {
-        memmove(q->p, _p, q->M*sizeof(unsigned int));
+        memmove(q->p, _p, q->M*sizeof(unsigned char));
     }
 
     // validate and count subcarrier allocation
@@ -181,6 +177,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
     q->G1 = (float complex*) malloc((q->M)*sizeof(float complex));
     q->G  = (float complex*) malloc((q->M)*sizeof(float complex));
     q->B  = (float complex*) malloc((q->M)*sizeof(float complex));
+    q->R  = (float complex*) malloc((q->M)*sizeof(float complex));
 
 #if 1
     memset(q->G0, 0x00, q->M*sizeof(float complex));
@@ -238,7 +235,7 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
 void ofdmframesync_destroy(ofdmframesync _q)
 {
 #if DEBUG_OFDMFRAMESYNC
-    ofdmframesync_debug_print(_q);
+    ofdmframesync_debug_print(_q, DEBUG_OFDMFRAMESYNC_FILENAME);
 
     agc_crcf_destroy(_q->agc_rx);
 
@@ -266,6 +263,7 @@ void ofdmframesync_destroy(ofdmframesync _q)
     free(_q->G1);
     free(_q->G);
     free(_q->B);
+    free(_q->R);
 
     // destroy synchronizer objects
     nco_crcf_destroy(_q->nco_rx);           // numerically-controlled oscillator
@@ -295,12 +293,11 @@ void ofdmframesync_reset(ofdmframesync _q)
     nco_crcf_reset(_q->nco_rx);
     msequence_reset(_q->ms_pilot);
 
-    // reset internal state variables
-    _q->rxx_max = 0.0f;
-
     // reset timers
     _q->timer = 0;
     _q->num_symbols = 0;
+    _q->s_hat_0 = 0.0f;
+    _q->s_hat_1 = 0.0f;
 
     // reset state
     _q->state = OFDMFRAMESYNC_STATE_SEEKPLCP;
@@ -356,7 +353,7 @@ void ofdmframesync_execute(ofdmframesync _q,
 // get receiver RSSI
 float ofdmframesync_get_rssi(ofdmframesync _q)
 {
-    return 10.0*log10f( agc_crcf_get_signal_level(_q->agc_rx) );
+    return -10.0f*log10(sqrt(_q->g0));
 }
 
 
@@ -406,14 +403,15 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
 
     float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
 #if DEBUG_OFDMFRAMESYNC_PRINT
-    printf("     gain   : %12.8f\n", sqrt(g));
-    printf("     rssi   : %12.8f\n", -10*log10(sqrt(g)));
-    printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
-    printf("  tau_hat   :   %12.8f\n", tau_hat);
+    printf(" - gain=%12.3f, rssi=%12.8f, s_hat=%12.4f <%12.8f>, tau_hat=%8.3f\n",
+            sqrt(g),
+            -10*log10(sqrt(g)),
+            cabsf(s_hat), cargf(s_hat),
+            tau_hat);
 #endif
 
     // TODO : allow variable threshold
-    if (cabsf(s_hat) > 0.65f) {
+    if (cabsf(s_hat) > 0.35f) {
 
         // save gain
         _q->g0 = g;
@@ -421,12 +419,15 @@ void ofdmframesync_execute_seekplcp(ofdmframesync _q)
         int dt = (int)roundf(tau_hat);
         // set timer appropriately...
         _q->timer = (_q->M + dt) % (_q->M / 2);
+        _q->timer += _q->M; // add delay to help ensure good S0 estimate
         _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT0;
 
 #if DEBUG_OFDMFRAMESYNC_PRINT
         printf("********** frame detected! ************\n");
-        printf("dt = %5d\n", dt);
-        printf("timer = %u\n", _q->timer);
+        printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
+        printf("  tau_hat   :   %12.8f\n", tau_hat);
+        printf("    dt      :   %12d\n", dt);
+        printf("    timer   :   %12u\n", _q->timer);
 #endif
         //printf("exiting prematurely\n");
         //ofdmframesync_destroy(_q);
@@ -451,6 +452,8 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     float complex * rc;
     windowcf_read(_q->input_buffer, &rc);
 
+    // TODO : re-estimate nominal gain
+
     // estimate S0 gain
     ofdmframesync_estimate_gain_S0(_q, &rc[_q->cp_len], _q->G0);
 
@@ -459,13 +462,26 @@ void ofdmframesync_execute_plcpshort0(ofdmframesync _q)
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
-    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+    _q->s_hat_0 = s_hat;
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
+    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("********** S0[0] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 #endif
 
+#if 0
+    // TODO : also check for phase of s_hat (should be small)
+    if (cabsf(s_hat) < 0.3f) {
+        // false alarm
+#if DEBUG_OFDMFRAMESYNC_PRINT
+        printf("false alarm S0[0]\n");
+#endif
+        ofdmframesync_reset(_q);
+        return;
+    }
+#endif
     _q->state = OFDMFRAMESYNC_STATE_PLCPSHORT1;
 }
 
@@ -493,13 +509,34 @@ void ofdmframesync_execute_plcpshort1(ofdmframesync _q)
     //float g = agc_crcf_get_gain(_q->agc_rx);
     s_hat *= _q->g0;
 
-    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
+    _q->s_hat_1 = s_hat;
+
 #if DEBUG_OFDMFRAMESYNC_PRINT
+    float tau_hat  = cargf(s_hat) * (float)(_q->M) / (2*2*M_PI);
     printf("********** S0[1] received ************\n");
     printf("    s_hat   :   %12.8f <%12.8f>\n", cabsf(s_hat), cargf(s_hat));
     printf("  tau_hat   :   %12.8f\n", tau_hat);
 
+    // new timing offset estimate
+    tau_hat  = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M) / (2*2*M_PI);
+    printf("  tau_hat * :   %12.8f\n", tau_hat);
+
     printf("**********\n");
+#endif
+
+    // re-adjust timer accordingly
+    float tau_prime = cargf(_q->s_hat_0 + _q->s_hat_1) * (float)(_q->M) / (2*2*M_PI);
+    _q->timer -= (int)roundf(tau_prime);
+
+#if 0
+    if (cabsf(s_hat) < 0.3f) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
+        printf("false alarm S0[1]\n");
+#endif
+        // false alarm
+        ofdmframesync_reset(_q);
+        return;
+    }
 #endif
 
     float complex g_hat = 0.0f;
@@ -525,6 +562,9 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
 
     if (_q->timer > 0)
         return;
+
+    // increment number of symbols observed
+    _q->num_symbols++;
 
     // run fft
     float complex * rc;
@@ -554,7 +594,8 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
     // check conditions for g_hat:
     //  1. magnitude should be large (near unity) when aligned
     //  2. phase should be very near zero (time aligned)
-    if (cabsf(g_hat) > 0.5f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
+    if (cabsf(g_hat) > 0.3f && fabsf(cargf(g_hat)) < 0.1f*M_PI ) {
+        //printf("    acquisition\n");
         _q->state = OFDMFRAMESYNC_STATE_RXSYMBOLS;
         // reset timer
         _q->timer = _q->M + _q->cp_len + _q->backoff;
@@ -578,12 +619,28 @@ void ofdmframesync_execute_plcplong(ofdmframesync _q)
             poly_order = _q->M_pilot + _q->M_data - 1;
         ofdmframesync_estimate_eqgain_poly(_q, poly_order);
 #endif
+
+#if 1
+        // compute composite gain
+        unsigned int i;
+        for (i=0; i<_q->M; i++)
+            _q->R[i] = _q->B[i] / _q->G[i];
+#endif
+
         return;
 #if 0
         printf("exiting prematurely\n");
         ofdmframesync_destroy(_q);
         exit(1);
 #endif
+    }
+
+    // check if we are stuck searching for the S1 symbol
+    if (_q->num_symbols == 16) {
+#if DEBUG_OFDMFRAMESYNC_PRINT
+        printf("could not find S1 symbol. bailing...\n");
+#endif
+        ofdmframesync_reset(_q);
     }
 
     // 'reset' timer (wait another half symbol)
@@ -853,10 +910,8 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 {
     // apply gain
     unsigned int i;
-    for (i=0; i<_q->M; i++) {
-        //_q->X[i] *= _q->G[i] * _q->B[i];
-        _q->X[i] *= _q->B[i] / _q->G[i];
-    }
+    for (i=0; i<_q->M; i++)
+        _q->X[i] *= _q->R[i];
 
     // polynomial curve-fit
     float x_phase[_q->M_pilot];
@@ -912,14 +967,20 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
     polyf_fit(x_phase, y_phase, _q->M_pilot, p_phase, 2);
 
     // compensate for phase offset
+    // TODO : find more computationally efficient way to do this
     for (i=0; i<_q->M; i++) {
-        float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
-        _q->X[i] *= liquid_cexpjf(-theta);
+        // only apply to data/pilot subcarriers
+        if (_q->p[i] == OFDMFRAME_SCTYPE_NULL) {
+            _q->X[i] = 0.0f;
+        } else {
+            float theta = polyf_val(p_phase, 2, (float)(i)-0.5f*(float)(_q->M));
+            _q->X[i] *= liquid_cexpjf(-theta);
+        }
     }
 
     // TODO : adjust NCO frequency based on differential phase
 
-#if DEBUG_OFDMFRAMESYNC_PRINT
+#if 0
     for (i=0; i<_q->M_pilot; i++)
         printf("x_phase(%3u) = %12.8f; y_phase(%3u) = %12.8f;\n", i+1, x_phase[i], i+1, y_phase[i]);
     printf("poly : p0=%12.8f, p1=%12.8f\n", p_phase[0], p_phase[1]);
@@ -927,15 +988,16 @@ void ofdmframesync_rxsymbol(ofdmframesync _q)
 }
 
 
-#if DEBUG_OFDMFRAMESYNC
-void ofdmframesync_debug_print(ofdmframesync _q)
+void ofdmframesync_debug_print(ofdmframesync _q,
+                               const char * _filename)
 {
-    FILE * fid = fopen(DEBUG_OFDMFRAMESYNC_FILENAME,"w");
+    FILE * fid = fopen(_filename,"w");
     if (!fid) {
-        fprintf(stderr,"error: ofdmframe_debug_print(), could not open file for writing\n");
+        fprintf(stderr,"error: ofdmframe_debug_print(), could not open '%s' for writing\n", _filename);
         return;
     }
     fprintf(fid,"%% %s : auto-generated file\n", DEBUG_OFDMFRAMESYNC_FILENAME);
+#if DEBUG_OFDMFRAMESYNC
     fprintf(fid,"close all;\n");
     fprintf(fid,"clear all;\n");
     fprintf(fid,"n = %u;\n", DEBUG_OFDMFRAMESYNC_BUFFER_LEN);
@@ -1064,10 +1126,12 @@ void ofdmframesync_debug_print(ofdmframesync _q)
     fprintf(fid,"axis([-1 1 -1 1]*1.6);\n");
     fprintf(fid,"axis square;\n");
     fprintf(fid,"grid on;\n");
+#else
+    fprintf(fid,"disp('no debugging info available');\n");
+#endif
 
     fclose(fid);
-    printf("ofdmframesync/debug: results written to %s\n", DEBUG_OFDMFRAMESYNC_FILENAME);
+    printf("ofdmframesync/debug: results written to '%s'\n", _filename);
 }
-#endif
 
 

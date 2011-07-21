@@ -59,9 +59,9 @@ void benchmark_flexframesync(
     flexframegenprops_init_default(&fgprops);
     fgprops.rampup_len = 16;
     fgprops.phasing_len = 64;
-    fgprops.payload_len = 2;
-    fgprops.mod_scheme = LIQUID_MODEM_PSK;
-    fgprops.mod_bps = 3;
+    fgprops.payload_len = 8;
+    fgprops.mod_scheme = LIQUID_MODEM_QPSK;
+    fgprops.mod_bps = 2;
     fgprops.rampdn_len = 16;
     flexframegen fg = flexframegen_create(&fgprops);
     flexframegen_print(fg);
@@ -79,10 +79,8 @@ void benchmark_flexframesync(
     // create interpolator
     unsigned int m=3;
     float beta=0.7f;
-    unsigned int h_len = 2*2*m + 1;
-    float h[h_len];
-    design_rrc_filter(2,m,beta,0,h);
-    interp_crcf interp = interp_crcf_create(2,h,h_len);
+    float dt = 0.0f;
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,2,m,beta,dt);
 
     // create flexframesync object with default properties
     //flexframesyncprops_s fsprops;
