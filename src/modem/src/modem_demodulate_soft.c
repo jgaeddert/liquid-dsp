@@ -234,7 +234,21 @@ void modem_demodulate_soft_bpsk(modem _demod,
                                 unsigned char * _soft_bits)
 {
     // soft output
-    _soft_bits[0] = (unsigned char) ( 255*(0.5 - 0.5*tanhf(crealf(_x))) );
+    float sig = 0.2f;
+    float gamma = 1.0f / (2.0f*sig*sig);
+
+    // compute distance from received signal to both constellation points
+    float complex e0 = _x - 1.0f;
+    float complex e1 = _x + 1.0f;
+    float d0 = crealf(e0)*crealf(e0) + cimagf(e0)*cimagf(e0);
+    float d1 = crealf(e1)*crealf(e1) + cimagf(e1)*cimagf(e1);
+
+    // approximate log-likelihood ratio
+    float LLR = (d0-d1) * gamma;
+    int soft_bit = LLR*16 + 127;
+    if (soft_bit > 255) soft_bit = 255;
+    if (soft_bit <   0) soft_bit = 0;
+    _soft_bits[0] = (unsigned char) ( soft_bit );
 
     // re-modulate symbol and store state
     unsigned int symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
@@ -250,14 +264,48 @@ void modem_demodulate_soft_qpsk(modem _demod,
                                 unsigned char * _soft_bits)
 {
     // soft output
-    _soft_bits[0] = (unsigned char) ( 255*(0.5 - 0.5*tanhf(1.4142*cimagf(_x))) );
-    _soft_bits[1] = (unsigned char) ( 255*(0.5 - 0.5*tanhf(1.4142*crealf(_x))) );
+    float sig = 0.2f;
+    float gamma = 1.0f / (2.0f*sig*sig);
+
+    // compute distance from received signal to all constellation points
+    float complex e0 = _x - ( M_SQRT1_2 + M_SQRT1_2*_Complex_I);
+    float complex e1 = _x - (-M_SQRT1_2 + M_SQRT1_2*_Complex_I);
+    float complex e2 = _x - ( M_SQRT1_2 - M_SQRT1_2*_Complex_I);
+    float complex e3 = _x - (-M_SQRT1_2 - M_SQRT1_2*_Complex_I);
+
+    float d0 = crealf(e0)*crealf(e0) + cimagf(e0)*cimagf(e0);
+    float d1 = crealf(e1)*crealf(e1) + cimagf(e1)*cimagf(e1);
+    float d2 = crealf(e2)*crealf(e2) + cimagf(e2)*cimagf(e2);
+    float d3 = crealf(e3)*crealf(e3) + cimagf(e3)*cimagf(e3);
+
+    // approximate log-likelihood ratio
+    float dmin_0;
+    float dmin_1;
+    float LLR;
+    int soft_bit;
+    
+    // compute soft value for first bit
+    dmin_0 = (d0 < d1) ? d0 : d1;
+    dmin_1 = (d2 < d3) ? d2 : d3;
+    LLR = (dmin_0 - dmin_1) * gamma;
+    soft_bit = LLR*16 + 127;
+    if (soft_bit > 255) soft_bit = 255;
+    if (soft_bit <   0) soft_bit = 0;
+    _soft_bits[0] = (unsigned char) ( soft_bit );
+
+    // compute soft value for second bit
+    dmin_0 = (d0 < d2) ? d0 : d2;
+    dmin_1 = (d1 < d3) ? d1 : d3;
+    LLR = (dmin_0 - dmin_1) * gamma;
+    soft_bit = LLR*16 + 127;
+    if (soft_bit > 255) soft_bit = 255;
+    if (soft_bit <   0) soft_bit = 0;
+    _soft_bits[1] = (unsigned char) ( soft_bit );
 
     // re-modulate symbol and store state
-    unsigned int symbol_out  = (crealf(_x) > 0 ? 0 : 1) +
-                               (cimagf(_x) > 0 ? 0 : 2);
-    modem_modulate_qpsk(_demod, symbol_out, &_demod->x_hat);
+    *_s  = (crealf(_x) > 0 ? 0 : 1) +
+           (cimagf(_x) > 0 ? 0 : 2);
+    modem_modulate_qpsk(_demod, *_s, &_demod->x_hat);
     _demod->r = _x;
-    *_s = symbol_out;
 }
 
