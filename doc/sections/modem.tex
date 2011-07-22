@@ -1051,3 +1051,15 @@ because $s_k$ must be in either $\mathcal{S}_{b_j=0}$ or
 $\mathcal{S}_{b_j=1}$.
 %
 
+% 
+% soft bit representation
+%
+Soft bit information is stored in \liquid\ as type {\tt unsigned char}
+with a value of {\tt 255} representing a {\em very likely {\tt 1}},
+and a value of {\tt 0} representing a {\em very likely {\tt 0}}.
+The {\em erasure} condition is {\tt 127}.
+%
+\begin{Verbatim}[fontsize=\small]
+soft bit value:  [0 1 2 3      ...   64 65   ...  127  ...  192 193   ...  253 254 255]
+interpretation:  very likely '0'   likely '0'   erasure   likely '1'    very likely '1'
+\end{Verbatim}
