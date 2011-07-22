@@ -211,18 +211,19 @@ strictly one-to-one and is independent of any pulse shaping, or interpolation.
 %integrated into the modem itself.
 
 In general, linear modems demodulate by finding the closest of $M$
-symbols in the set $\mathcal{S}_M$ to the received symbol $r$, viz
+symbols in the set $\mathcal{S}_M = \{s_0,s_1,\ldots,s_{M-1}\}$ 
+to the received symbol $r$, viz
 %
 \begin{equation}
 \label{eqn:modem:demod}
-    \underset{k \in \mathcal{S}_M}{\arg\min}
+    \underset{s_k \in \mathcal{S}_M}{\arg\min}
     \bigl\{
         \| r - s_k \|
     \bigr\}
 \end{equation}
 %
 For arbitrary modulation schemes a linear search over all symbols in
-$\mathcal{S}$ is required which has a complexity of $\ord(M^2)$, however one may
+$\mathcal{S}_M$ is required which has a complexity of $\ord(M^2)$, however one may
 take advantage of symmetries in certain constellations to reduce this.
 %For example, $M$-ary PSK distributes its symbols evenly throughout the phase
 %of the transmitted signal...
@@ -236,7 +237,7 @@ take advantage of symmetries in certain constellations to reduce this.
 \begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}ll}
 \toprule
 {\it scheme} &
-{\it depth range} &
+{\it depth range (bits/symbol)} &
 {\it description}\\\otoprule
 %
 {\tt LIQUID\_MODEM\_UNKNOWN}    & -     & unknown/unsupported scheme\\
