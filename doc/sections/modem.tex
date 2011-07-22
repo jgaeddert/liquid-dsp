@@ -832,18 +832,18 @@ Each symbol represents the string of $m$ bits
 $s_k = \{b_0,b_1,\ldots,b_{m-1}\}$.
 %
 Assuming perfect channel knowledge, timing, and carrier offset recovery,
-the log-likelihood ratio (LLR) of each bit $b_k$ is shown to be
+the log-likelihood ratio (LLR) of each bit $b_j$ is shown to be
 \cite[Eq.~(8)]{LeGoff:1994}
 the ratio of the two conditional {\em a posteriori} probabilities of
 each bit having been transmitted, viz.
 %
 \begin{equation}
 \label{eqn:modem:digital:soft:LLR_true}
-    \Lambda(b_k) =
+    \Lambda(b_j) =
         \ln \frac{
-            P\left(b_k=1 | {observation} \right)
+            P\left(b_j=1 | {observation} \right)
         }{
-            P\left(b_k=0 | {observation} \right)
+            P\left(b_j=0 | {observation} \right)
         }
 \end{equation}
 %
@@ -851,7 +851,7 @@ Assuming that the channel is memoryless the ``observation'' is simply
 the received sample $r$ in
 (\ref{eqn:modem:digital:soft:received_signal})
 and does not depend on previous symbols; therefore
-$P\left(b_k=t|{observation}\right) = P\left(b_k=t|r(n)\right)$
+$P\left(b_j=t|{observation}\right) = P\left(b_j=t|r(n)\right)$
 and $t \in {0,1}$.
 Furthermore, by assuming that the transmitted symbols are equally
 probable and that the noise follows a Gauss distribution
@@ -860,12 +860,12 @@ the LLR reduces to
 %
 \begin{equation}
 \label{eqn:modem:digital:soft:LLR}
-    \Lambda(b_k) =
+    \Lambda(b_j) =
         \ln \Biggl(
-            \sum_{s^+\in \{s:b_k=1\}} { \exp\Bigl\{\|r-s^+\|_2^2 / 2 \sigma_n^2\Bigr\} }
+            \sum_{s^+\in \mathcal{S}_{b_j=1}} { \exp\Bigl\{\|r-s^+\|_2^2 / 2 \sigma_n^2\Bigr\} }
         \Biggr)
        -\ln \Biggl(
-            \sum_{s^-\in \{s:b_k=0\}} { \exp\Bigl\{\|r-s^-\|_2^2 / 2 \sigma_n^2\Bigr\} }
+            \sum_{s^-\in \mathcal{S}_{b_j=0}} { \exp\Bigl\{\|r-s^-\|_2^2 / 2 \sigma_n^2\Bigr\} }
         \Biggr)
 \end{equation}
 %
@@ -879,11 +879,11 @@ The approximate LLR becomes
 %
 \begin{equation}
 \label{eqn:modem:digital:soft:LLR_approx}
-    \tilde{\Lambda}(b_k) =
+    \tilde{\Lambda}(b_j) =
         \frac{1}{2\sigma_n^2}
         \Bigl\{
-            \underset{s^+\in \{s:b_k=0\}}{\min} \|r-s^+\|_2^2 -
-            \underset{s^-\in \{s:b_k=1\}}{\min} \|r-s^-\|_2^2
+            \underset{s^+\in \mathcal{S}_{b_j=0}}{\min} \|r-s^+\|_2^2 -
+            \underset{s^-\in \mathcal{S}_{b_j=1}}{\min} \|r-s^-\|_2^2
         \Bigr\}
 \end{equation}
 %
@@ -970,7 +970,7 @@ One major drawback of computing
 (\ref{eqn:modem:digital:soft:LLR_approx}) is that finding the maximum
 requires searching over all constellation points to find the one which
 minimizes $\|r-s_k\|$
-(where $s_k \in \{s:b_k\}$) is particularly time-consuming.
+(where $s_k \in \mathcal{S}_{b_j=t}$) is particularly time-consuming.
 % TODO : explain in more detail
 To circumvent this, \liquid\ only searches over a subset
 $\mathcal{S}_k \subset \mathcal{S}_M$ nearest to the
@@ -981,8 +981,46 @@ found systematically for most modulation schemes
 (e.g. for {\tt LIQUID\_MODEM\_QAM} only $\ord(\log_2 M)$ comparisons are
 needed to make a hard decision).
 If no symbols are found within $\mathcal{S}_k$ such that
-$\mathcal{S}_k \cup \mathcal{S}_{b_j=t} = \emptyset$
-then the magnitude of $\Lambda(b_k)$ is sufficiently large
+$\mathcal{S}_k \cap \mathcal{S}_{b_j=t} = \emptyset$
+then the magnitude of $\Lambda(b_j)$ is sufficiently large
 and contains little soft bit information.
 %
 
+Nomenclature:
+\begin{itemize}
+\item $M=2^m$ are the number of points in the constellation
+      (constellation size)
+\item $m=\log_2(M)$ are the number of bits per symbol in the
+      constellation (modulation depth)
+\item $s_k$ is the symbol at index $k$ on the complex plane;
+      $k \in \{0,1,2,\ldots,M-1\}$.
+\item $\{b_0,b_1,\ldots,b_{m-1}\}$ is the encoded bit string of $s_k$
+      and is simply $k$ in binary-coded decimal
+\item $b_j$ is the bit at index $j$;
+      $b_j \in \{0,1\}$ and $j \in \{0,1,\ldots,m-1\}$.
+\item $\mathcal{S}_M = \{s_0,s_1,\ldots,s_{M-1}\}$ is the set of all
+      symbols in the constellation where
+      $1/M \sum_k \|s_k\|_2^2 = 1$.
+\item $\mathcal{S}_{b_j=t}$ is the subset of $\mathcal{S}_M$
+      where the bit at index $j$ is equal to $t \in \{0,1\}$.
+\item $\mathcal{S}_k$ is the subset of $\mathcal{S}_M$
+      nearest to the symbol $s_k$.
+\end{itemize}
+%
+A few key points:
+\begin{itemize}
+\item $\mathcal{S}_{b_j=0} \cap \mathcal{S}_{b_j=1} = \emptyset,     \, \forall_j$.
+\item $\mathcal{S}_{b_j=0} \cup \mathcal{S}_{b_j=1} = \mathcal{S}_M, \, \forall_j$.
+\end{itemize}
+%
+For example, let the modulation scheme be
+the generic 4-PSK with the constellation map defined in Figure~\ref{fig:modem:psk:4}
+which has $m=2$, $M=4$, and
+$\mathcal{S}_M = \{s_0=1, s_1=j, s_2=-j, s_3=-1\}$.
+Subsets:
+\begin{itemize}
+\item $\mathcal{S}_{b_0=0} = \{s_0= 1, s_2=-j\}$ (right-most bit is {\tt 0})
+\item $\mathcal{S}_{b_0=1} = \{s_1= j, s_3=-1\}$ (right-most bit is {\tt 1})
+\item $\mathcal{S}_{b_1=0} = \{s_0= 1, s_1= j\}$ (left-most bit is {\tt 0})
+\item $\mathcal{S}_{b_1=1} = \{s_2=-j, s_3=-1\}$ (left-most bit is {\tt 1})
+\end{itemize}
