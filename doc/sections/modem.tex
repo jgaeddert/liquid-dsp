@@ -814,57 +814,68 @@ When using the output of the demodulator in conjuction with forward
 error-correction coding, the soft bit information can improve the error
 detection and correction capabilities of certain codes.
 %
-Let us represent the received signal as...
+Let us represent the received signal at a sampling instant $n$ as
 %
 \begin{equation}
 \label{eqn:modem:digital:soft:received_signal}
-    r = s + n
+    r(n) = s(n) + w(n)
 \end{equation}
 %
 where $s$ is the transmitted symbol
-and $n$ is a zero-mean complex Gauss random variable with
+and $w$ is a zero-mean complex Gauss random variable with
 a variance $\sigma_n^2 = E\{n n^*\}$.
 Let the transmitted symbols be {\em i.i.d.} and drawn from a $M$-point
 constellation, each with $m$ bits of information (thus $M=2^m$)
 such that the symbols belong to a set of constellation points
-$s \in \{s_0,s_1,\ldots,s_{M-1}\}$ and $E\{s s^*\}=1$.
-Each point is represented by the binary string
-$\{c_0,c_1,\ldots,c_{m-1}\}$.
+$s_k \in \mathcal{S}_M = \{s_0,s_1,\ldots,s_{M-1}\}$ and $E\{s s^*\}=1$.
+Each symbol represents the string of $m$ bits
+$s_k = \{b_0,b_1,\ldots,b_{m-1}\}$.
 %
 Assuming perfect channel knowledge, timing, and carrier offset recovery,
-the log-likelihood ratio of each bit $b_k$ is shown to be
+the log-likelihood ratio (LLR) of each bit $b_k$ is shown to be
 \cite[Eq.~(8)]{LeGoff:1994}
-the ratio of the two conditional {\em a posteriori} probabilities
+the ratio of the two conditional {\em a posteriori} probabilities of
+each bit having been transmitted, viz.
 %
-\[
+\begin{equation}
+\label{eqn:modem:digital:soft:LLR_true}
     \Lambda(b_k) =
         \ln \frac{
-            P\left(b_k=1 | \text{observation} \right)
+            P\left(b_k=1 | {observation} \right)
         }{
-            P\left(b_k=0 | \text{observation} \right)
+            P\left(b_k=0 | {observation} \right)
         }
-\]
+\end{equation}
 %
 Assuming that the channel is memoryless the ``observation'' is simply
 the received sample $r$ in
-(\ref{eqn:modem:digital:soft:received_signal}).
-%Furthermore, by assuming that the transmitted symbols are equally
-%probable and that the noise follows a Gauss distribution,
-%the conditional probabilities can be written as
-%\cite{Qiang:2003}
-...
+(\ref{eqn:modem:digital:soft:received_signal})
+and does not depend on previous symbols; therefore
+$P\left(b_k=t|{observation}\right) = P\left(b_k=t|r(n)\right)$
+and $t \in {0,1}$.
+Furthermore, by assuming that the transmitted symbols are equally
+probable and that the noise follows a Gauss distribution
+\cite{Qiang:2003}
+the LLR reduces to
 %
 \begin{equation}
 \label{eqn:modem:digital:soft:LLR}
     \Lambda(b_k) =
-        \ln \sum_{s^+\in \{s:b_k=1\}} { \exp\left\{|r-s^+|_2^2 / 2 \sigma_n^2\right\} }
-       -\ln \sum_{s^-\in \{s:b_k=0\}} { \exp\left\{|r-s^-|_2^2 / 2 \sigma_n^2\right\} }
+        \ln \Biggl(
+            \sum_{s^+\in \{s:b_k=1\}} { \exp\Bigl\{\|r-s^+\|_2^2 / 2 \sigma_n^2\Bigr\} }
+        \Biggr)
+       -\ln \Biggl(
+            \sum_{s^-\in \{s:b_k=0\}} { \exp\Bigl\{\|r-s^-\|_2^2 / 2 \sigma_n^2\Bigr\} }
+        \Biggr)
 \end{equation}
 %
 As shown in \cite{Qiang:2003} a sub-optimal simplified LLR expression
-can be obtained by replacing...
-$\ln \sum_j {e^{z_j}} \approx \max_j \ln (e^{z_j}) = \max_j z_j$
-which is tight as long as the sum is dominated by its largest component.
+can be obtained by replacing the summations in
+(\ref{eqn:modem:digital:soft:LLR}) with the single largest component of
+each: $\ln \sum_j {e^{z_j}} \approx \max_j \ln (e^{z_j}) = \max_j z_j$.
+This approximation provides a tight bound as long as the sum is
+dominated by its largest component.
+The approximate LLR becomes
 %
 \begin{equation}
 \label{eqn:modem:digital:soft:LLR_approx}
@@ -875,6 +886,10 @@ which is tight as long as the sum is dominated by its largest component.
             \underset{s^-\in \{s:b_k=1\}}{\min} \|r-s^-\|_2^2
         \Bigr\}
 \end{equation}
+%
+Conveniently, the noise variance becomes a scaling factor and is only
+used to influence the reliability of the obtained LLR.
+
 %
 %-------------------- FIGURE: MODEM DEMOD SOFT--------------------
 \begin{figure}
@@ -926,15 +941,15 @@ soft bit output is given, and show the nearest symbol for which a
 For example, Figure~\ref{fig:modem:demodsoft:b2} shows that
 the nearest symbol containing a {\tt 0} at bit index 2
 is $s_1=${\tt 0001} (the hard decision demodulation)
-at $-3/\sqrt{10} - j/\sqrt{10}$
+at $(-3 - j)/\sqrt{10}$
 while
 the nearest symbol containing a {\tt 1} at bit index 2
 is $s_3=${\tt 0011}
-at $-3/\sqrt{10} + j/\sqrt{10}$.
+at $(-3 + j)/\sqrt{10}$.
 Plugging $s^-=s_1$ and $s^+=s_3$ into
 (\ref{eqn:modem:digital:soft:LLR_approx})
-and evaluating for $\sigma_n=0.2$ gives an approximate LLR for $b_2$
-equal to -7.43.
+and evaluating for $\sigma_n=0.2$ gives
+$\tilde{\Lambda}(b_2) = -7.43$.
 Because this number is largely negative, it is very likely that the
 transmitted bit $b_2$ was {\tt 0}.
 This can be verified by Figure~\ref{fig:modem:demodsoft:b2} which shows
@@ -954,17 +969,20 @@ demodulation of $b_1$.
 One major drawback of computing
 (\ref{eqn:modem:digital:soft:LLR_approx}) is that finding the maximum
 requires searching over all constellation points to find the one which
-minimizes $|r-s_k|$
+minimizes $\|r-s_k\|$
 (where $s_k \in \{s:b_k\}$) is particularly time-consuming.
 % TODO : explain in more detail
-To circumvent this, \liquid\ only searches over a few points (typically
-four) nearest to the hard-demodulated symbol.
+To circumvent this, \liquid\ only searches over a subset
+$\mathcal{S}_k \subset \mathcal{S}_M$ nearest to the
+hard-demodulated symbol
+($\mathcal{S}_k$ will typically only have about four values).
 This can be done quickly because the hard-demodulated symbol can be
 found systematically for most modulation schemes
-(e.g. for {\tt LIQUID\_MODEM\_QAM} only $\log_2 M$ comparisons are
+(e.g. for {\tt LIQUID\_MODEM\_QAM} only $\ord(\log_2 M)$ comparisons are
 needed to make a hard decision).
-If no symbols are found within this set where $s_k \in {s:b_k=...}$ then
-the magnitude of $\Lambda(b_k)$ is sufficiently large
+If no symbols are found within $\mathcal{S}_k$ such that
+$\mathcal{S}_k \cup \mathcal{S}_{b_j=t} = \emptyset$
+then the magnitude of $\Lambda(b_k)$ is sufficiently large
 and contains little soft bit information.
 %
 
