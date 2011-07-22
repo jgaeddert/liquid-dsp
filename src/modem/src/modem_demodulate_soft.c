@@ -234,7 +234,7 @@ void modem_demodulate_soft_bpsk(modem _demod,
                                 unsigned char * _soft_bits)
 {
     // soft output
-    _soft_bits[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(crealf(_x))) );
+    _soft_bits[0] = (unsigned char) ( 255*(0.5 - 0.5*tanhf(crealf(_x))) );
 
     // re-modulate symbol and store state
     unsigned int symbol_out = (crealf(_x) > 0 ) ? 0 : 1;
@@ -250,8 +250,8 @@ void modem_demodulate_soft_qpsk(modem _demod,
                                 unsigned char * _soft_bits)
 {
     // soft output
-    _soft_bits[0] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(1.4142*crealf(_x))) );
-    _soft_bits[1] = (unsigned char) ( 255*(0.5 + 0.5*tanhf(1.4142*cimagf(_x))) );
+    _soft_bits[0] = (unsigned char) ( 255*(0.5 - 0.5*tanhf(1.4142*cimagf(_x))) );
+    _soft_bits[1] = (unsigned char) ( 255*(0.5 - 0.5*tanhf(1.4142*crealf(_x))) );
 
     // re-modulate symbol and store state
     unsigned int symbol_out  = (crealf(_x) > 0 ? 0 : 1) +

@@ -37,6 +37,7 @@ void modem_test_demodsoft(modulation_scheme _ms, unsigned int _bps)
 
     // run the test
     unsigned int i, s, M=1<<bps;
+    unsigned int sym_soft;
     unsigned char soft_bits[bps];
     float complex x;
     
@@ -51,8 +52,8 @@ void modem_test_demodsoft(modulation_scheme _ms, unsigned int _bps)
         CONTEND_EQUALITY(s, i);
 
         // check soft bits
-        liquid_pack_soft_bits(soft_bits, bps, &s);
-        CONTEND_EQUALITY(s, i);
+        liquid_pack_soft_bits(soft_bits, bps, &sym_soft);
+        CONTEND_EQUALITY(sym_soft, i);
 
         // check phase error, evm, etc.
         //CONTEND_DELTA( modem_get_demodulator_phase_error(demod), 0.0f, 1e-3f);
