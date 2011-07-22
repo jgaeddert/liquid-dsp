@@ -42,14 +42,14 @@ void modem_demodulate_soft_bench(struct rusage *_start,
     case LIQUID_MODEM_UNKNOWN:
         fprintf(stderr,"error: modem_modulate_bench(), unknown modem scheme\n");
         exit(1);
-    case LIQUID_MODEM_PSK:      *_num_iterations *= 1;      break;
-    case LIQUID_MODEM_DPSK:     *_num_iterations *= 1;      break;
+    case LIQUID_MODEM_PSK:      *_num_iterations /= 3;      break;
+    case LIQUID_MODEM_DPSK:     *_num_iterations /= 3;      break;
     case LIQUID_MODEM_ASK:      *_num_iterations /= 3;      break;
     case LIQUID_MODEM_QAM:      *_num_iterations /= 4;      break;
-    case LIQUID_MODEM_APSK:     *_num_iterations /= 5;      break;
+    case LIQUID_MODEM_APSK:     *_num_iterations /= 7;      break;
     case LIQUID_MODEM_ARB:      *_num_iterations /= 10;     break;
-    case LIQUID_MODEM_BPSK:     *_num_iterations /= 4;      break;
-    case LIQUID_MODEM_QPSK:     *_num_iterations /= 4;      break;
+    case LIQUID_MODEM_BPSK:     *_num_iterations /= 1;      break;
+    case LIQUID_MODEM_QPSK:     *_num_iterations /= 1;      break;
     case LIQUID_MODEM_OOK:      *_num_iterations /= 4;      break;
     case LIQUID_MODEM_SQAM32:   *_num_iterations /= 40;     break;
     case LIQUID_MODEM_SQAM128:  *_num_iterations /= 80;     break;
