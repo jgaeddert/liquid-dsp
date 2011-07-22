@@ -95,8 +95,8 @@ void modem_demodulate_soft_table(modem _demod,
 
     unsigned int bps = modem_get_bps(_demod);
 
-    // TODO : compute sig based on minimum distance between symbols
-    float sig = 0.2f;
+    // gamma = 1/(2*sigma^2), approximate for constellation size
+    float gamma = 1.2f*_demod->M;
 
     // set and initialize minimum bit values
     unsigned int i;
@@ -150,7 +150,7 @@ void modem_demodulate_soft_table(modem _demod,
 
     // make soft bit assignments
     for (k=0; k<bps; k++) {
-        int soft_bit = ((-dmin_1[k]/(2.0f*sig*sig)) - (-dmin_0[k]/(2.0f*sig*sig)))*16 + 127;
+        int soft_bit = ((dmin_0[k] - dmin_1[k])*gamma)*16 + 127;
         if (soft_bit > 255) soft_bit = 255;
         if (soft_bit <   0) soft_bit = 0;
         _soft_bits[k] = (unsigned char)soft_bit;
@@ -171,8 +171,8 @@ void modem_demodulate_soft_arb(modem _demod,
     unsigned int bps = _demod->m;
     unsigned int M   = _demod->M;
 
-    // TODO : compute sig based on minimum distance between symbols
-    float sig = 0.2f;
+    // gamma = 1/(2*sigma^2), approximate for constellation size
+    float gamma = 1.2f*_demod->M;
 
     unsigned int s=0;       // hard decision output
     unsigned int k;         // bit index
@@ -211,7 +211,7 @@ void modem_demodulate_soft_arb(modem _demod,
 
     // make assignments
     for (k=0; k<bps; k++) {
-        int soft_bit = ((-dmin_1[k]/(2.0f*sig*sig)) - (-dmin_0[k]/(2.0f*sig*sig)))*16 + 127;
+        int soft_bit = ((dmin_0[k] - dmin_1[k])*gamma)*16 + 127;
         if (soft_bit > 255) soft_bit = 255;
         if (soft_bit <   0) soft_bit = 0;
         _soft_bits[k] = (unsigned char)soft_bit;
@@ -233,9 +233,8 @@ void modem_demodulate_soft_bpsk(modem _demod,
                                 unsigned int  * _s,
                                 unsigned char * _soft_bits)
 {
-    // soft output
-    float sig = 0.2f;
-    float gamma = 1.0f / (2.0f*sig*sig);
+    // gamma = 1/(2*sigma^2), approximate for constellation size
+    float gamma = 1.2f*_demod->M;
 
     // compute distance from received signal to both constellation points
     float complex e0 = _x - 1.0f;
@@ -263,9 +262,8 @@ void modem_demodulate_soft_qpsk(modem _demod,
                                 unsigned int  * _s,
                                 unsigned char * _soft_bits)
 {
-    // soft output
-    float sig = 0.2f;
-    float gamma = 1.0f / (2.0f*sig*sig);
+    // gamma = 1/(2*sigma^2), approximate for constellation size
+    float gamma = 1.2f*_demod->M;
 
     // compute distance from received signal to all constellation points
     float complex e0 = _x - ( M_SQRT1_2 + M_SQRT1_2*_Complex_I);
