@@ -366,7 +366,7 @@ modem modem_create_psk(unsigned int _bits_per_symbol)
     } else if (mod->m == 4) {
         mod->demod_soft_neighbors = (unsigned char*) psk16_demod_soft_neighbors;
         mod->demod_soft_p         = 2;
-    } else if (mod->m == 4) {
+    } else if (mod->m == 5) {
         mod->demod_soft_neighbors = (unsigned char*) psk32_demod_soft_neighbors;
         mod->demod_soft_p         = 2;
     }
