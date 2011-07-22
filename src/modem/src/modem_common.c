@@ -144,6 +144,7 @@ void liquid_pack_soft_bits(unsigned char * _soft_bits,
         s <<= 1;
         s |= _soft_bits[i] > LIQUID_FEC_SOFTBIT_ERASURE ? 1 : 0;
     }
+    *_sym_out = s;
 }
 
 // unpack soft bits into symbol
