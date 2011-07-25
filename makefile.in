@@ -1226,6 +1226,7 @@ sandbox_obj =						\
 	sandbox/firpfbch_synthesis_equivalence_test.o	\
 	sandbox/householder_test.o			\
 	sandbox/iirdes_example.o			\
+	sandbox/ldpc_genmatrix_test.o			\
 	sandbox/ldpc_test.o				\
 	sandbox/levinson_test.o				\
 	sandbox/matched_filter_test.o			\
