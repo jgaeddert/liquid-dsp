@@ -257,38 +257,21 @@ void modem_demodulate_soft_qpsk(modem _demod,
                                 unsigned char * _soft_bits)
 {
     // gamma = 1/(2*sigma^2), approximate for constellation size
-    float gamma = 1.2f*_demod->M;
+    float gamma = 5.8f;
 
-    // compute distance from received signal to all constellation points
-    float complex e0 = _x - ( M_SQRT1_2 + M_SQRT1_2*_Complex_I);
-    float complex e1 = _x - (-M_SQRT1_2 + M_SQRT1_2*_Complex_I);
-    float complex e2 = _x - ( M_SQRT1_2 - M_SQRT1_2*_Complex_I);
-    float complex e3 = _x - (-M_SQRT1_2 - M_SQRT1_2*_Complex_I);
-
-    float d0 = crealf(e0)*crealf(e0) + cimagf(e0)*cimagf(e0);
-    float d1 = crealf(e1)*crealf(e1) + cimagf(e1)*cimagf(e1);
-    float d2 = crealf(e2)*crealf(e2) + cimagf(e2)*cimagf(e2);
-    float d3 = crealf(e3)*crealf(e3) + cimagf(e3)*cimagf(e3);
-
-    // approximate log-likelihood ratio
-    float dmin_0;
-    float dmin_1;
+    // approximate log-likelihood ratios
     float LLR;
     int soft_bit;
     
     // compute soft value for first bit
-    dmin_0 = (d0 < d1) ? d0 : d1;
-    dmin_1 = (d2 < d3) ? d2 : d3;
-    LLR = (dmin_0 - dmin_1) * gamma;
+    LLR = -2.0f * cimagf(_x) * gamma;
     soft_bit = LLR*16 + 127;
     if (soft_bit > 255) soft_bit = 255;
     if (soft_bit <   0) soft_bit = 0;
     _soft_bits[0] = (unsigned char) ( soft_bit );
 
-    // compute soft value for second bit
-    dmin_0 = (d0 < d2) ? d0 : d2;
-    dmin_1 = (d1 < d3) ? d1 : d3;
-    LLR = (dmin_0 - dmin_1) * gamma;
+    // compute soft value for first bit
+    LLR = -2.0f * crealf(_x) * gamma;
     soft_bit = LLR*16 + 127;
     if (soft_bit > 255) soft_bit = 255;
     if (soft_bit <   0) soft_bit = 0;
