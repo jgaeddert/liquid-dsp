@@ -234,16 +234,10 @@ void modem_demodulate_soft_bpsk(modem _demod,
                                 unsigned char * _soft_bits)
 {
     // gamma = 1/(2*sigma^2), approximate for constellation size
-    float gamma = 1.2f*_demod->M;
-
-    // compute distance from received signal to both constellation points
-    float complex e0 = _x - 1.0f;
-    float complex e1 = _x + 1.0f;
-    float d0 = crealf(e0)*crealf(e0) + cimagf(e0)*cimagf(e0);
-    float d1 = crealf(e1)*crealf(e1) + cimagf(e1)*cimagf(e1);
+    float gamma = 4.0f;
 
     // approximate log-likelihood ratio
-    float LLR = (d0-d1) * gamma;
+    float LLR = -2.0f * crealf(_x) * gamma;
     int soft_bit = LLR*16 + 127;
     if (soft_bit > 255) soft_bit = 255;
     if (soft_bit <   0) soft_bit = 0;
