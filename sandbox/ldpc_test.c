@@ -8,7 +8,11 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define DEBUG_LDPC_TEST (0)
+
+#if DEBUG_LDPC_TEST
 #include <liquid.h>
+#endif
 
 //
 float phi(float _x) { return -logf(tanhf(_x/2.0f + 1e-12)); }
@@ -63,14 +67,18 @@ int main(int argc, char*argv[])
             Lq[j*n+i] = H[j*n+i] ? Lc[i] : 0.0f;
         }
     }
+#if DEBUG_LDPC_TEST
     // print Lc
     matrixf_print(Lc,1,n);
+#endif
 
     // TODO : run multiple iterations
     while (continue_running) {
+#if DEBUG_LDPC_TEST
         //
         printf("\n");
         printf("************* iteration %u ****************\n", num_iterations);
+#endif
 
         // compute Lr
         for (i=0; i<n; i++) {
@@ -89,11 +97,13 @@ int main(int argc, char*argv[])
             }
         }
 
+#if DEBUG_LDPC_TEST
         // print Lq
         matrixf_print(Lq,m,n);
 
         // print Lr
         matrixf_print(Lr,m,n);
+#endif
 
         // compute next iteration of Lq
         for (i=0; i<n; i++) {
@@ -108,8 +118,10 @@ int main(int argc, char*argv[])
             }
         }
 
+#if DEBUG_LDPC_TEST
         // print Lq
         matrixf_print(Lq,m,n);
+#endif
 
         // compute LQ
         for (i=0; i<n; i++) {
@@ -121,18 +133,14 @@ int main(int argc, char*argv[])
             }
         }
 
+#if DEBUG_LDPC_TEST
         // print LQ
         matrixf_print(LQ,1,n);
+#endif
 
         // compute hard-decoded value
         for (i=0; i<n; i++)
             c_hat[i] = LQ[i] < 0.0f ? 1 : 0;
-
-        // print hard-decision output
-        printf("c hat  :");
-        for (i=0; i<n; i++)
-            printf(" %1u", c_hat[i]);
-        printf("\n");
 
         // compute parity check: p = H*c_hat
         for (j=0; j<m; j++) {
@@ -146,19 +154,25 @@ int main(int argc, char*argv[])
             parity[j] %= 2;
         }
 
-        // print parity
-        printf("parity :");
-        for (j=0; j<m; j++)
-            printf(" %1u", parity[j]);
-        printf("\n");
-
         // check parity
         parity_pass = 1;
         for (j=0; j<m; j++) {
             if (parity[j]) parity_pass = 0;
         }
 
-        printf("parity : %s\n", parity_pass ? "pass" : "FAIL");
+        // print hard-decision output
+        printf("%3u : c hat = [", num_iterations);
+        for (i=0; i<n; i++)
+            printf(" %1u", c_hat[i]);
+        printf(" ],  ");
+
+        // print parity
+        printf("parity = [");
+        for (j=0; j<m; j++)
+            printf(" %1u", parity[j]);
+        printf(" ],  ");
+
+        printf(" (%s)\n", parity_pass ? "pass" : "FAIL");
 
         // update...
         num_iterations++;
