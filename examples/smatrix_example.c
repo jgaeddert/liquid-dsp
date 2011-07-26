@@ -15,7 +15,11 @@ int main(int argc, char*argv[]) {
 
     smatrix q = smatrix_create(M,N);
 
+    printf("\ncompact form:\n");
     smatrix_print(q);
+
+    printf("\nexpanded form:\n");
+    smatrix_print_expanded(q);
 
     smatrix_destroy(q);
 

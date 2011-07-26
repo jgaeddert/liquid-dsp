@@ -113,6 +113,25 @@ void smatrix_print(smatrix _q)
 // print expanded form
 void smatrix_print_expanded(smatrix _q)
 {
+    unsigned int i;
+    unsigned int j;
+    unsigned int t;
+
+    // print in expanded 'regular' form
+    for (i=0; i<_q->M; i++) {
+        // reset counter
+        t = 0;
+        for (j=0; j<_q->N; j++) {
+            if (t == _q->num_mlist[i])
+                printf(" 0");
+            else if (_q->mlist[i][t] == j) {
+                printf(" 1");
+                t++;
+            } else
+                printf(" 0");
+        }
+        printf("\n");
+    }
 }
 
 // zero all elements
