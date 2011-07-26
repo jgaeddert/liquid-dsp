@@ -239,6 +239,12 @@ struct fec_s {
                         unsigned int _dec_msg_len,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec);
+
+    // decode function pointer (soft decision)
+    void (*decode_soft_func)(fec _q,
+                             unsigned int _dec_msg_len,
+                             unsigned char * _msg_enc,
+                             unsigned char * _msg_dec);
 };
 
 // simple type testing

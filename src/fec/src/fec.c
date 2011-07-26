@@ -602,4 +602,40 @@ void fec_decode(fec _q,
     _q->decode_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
 }
 
+// decode a block of data using a fec scheme
+//  _q              :   fec object
+//  _dec_msg_len    :   decoded message length
+//  _msg_enc        :   encoded message
+//  _msg_dec        :   decoded message
+void fec_decode_soft(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char * _msg_enc,
+                     unsigned char * _msg_dec)
+{
+    if (_q->decode_soft_func != NULL) {
+        // call internal decoding method
+        _q->decode_soft_func(_q, _dec_msg_len, _msg_enc, _msg_dec);
+    } else {
+        // pack bytes and use hard-decision decoding
+        unsigned enc_msg_len = fec_get_enc_msg_length(_q->scheme, _dec_msg_len);
+        unsigned char msg_enc_hard[enc_msg_len];
+        unsigned int i;
+        for (i=0; i<enc_msg_len; i++) {
+            // TODO : use pack bytes
+            msg_enc_hard[i] = 0;
+            msg_enc_hard[i] |= (_msg_enc[8*i+0] >> 0) & 0x80;
+            msg_enc_hard[i] |= (_msg_enc[8*i+1] >> 1) & 0x40;
+            msg_enc_hard[i] |= (_msg_enc[8*i+2] >> 2) & 0x20;
+            msg_enc_hard[i] |= (_msg_enc[8*i+3] >> 3) & 0x10;
+            msg_enc_hard[i] |= (_msg_enc[8*i+4] >> 4) & 0x08;
+            msg_enc_hard[i] |= (_msg_enc[8*i+5] >> 5) & 0x04;
+            msg_enc_hard[i] |= (_msg_enc[8*i+6] >> 6) & 0x02;
+            msg_enc_hard[i] |= (_msg_enc[8*i+7] >> 7) & 0x01;
+        }
+
+        // use hard-decoding method
+        fec_decode(_q, _dec_msg_len, msg_enc_hard, _msg_dec);
+    }
+}
+
 

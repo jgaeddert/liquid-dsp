@@ -148,8 +148,9 @@ fec fec_hamming128_create(void * _opts)
     q->rate = fec_get_rate(q->scheme);
 
     // set internal function pointers
-    q->encode_func = &fec_hamming128_encode;
-    q->decode_func = &fec_hamming128_decode;
+    q->encode_func      = &fec_hamming128_encode;
+    q->decode_func      = &fec_hamming128_decode;
+    q->decode_soft_func = NULL;
 
     return q;
 }

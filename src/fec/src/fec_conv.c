@@ -40,8 +40,9 @@ fec fec_conv_create(fec_scheme _fs)
     q->scheme = _fs;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_conv_encode;
-    q->decode_func = &fec_conv_decode_hard; // default to hard-decision decoding
+    q->encode_func      = &fec_conv_encode;
+    q->decode_func      = &fec_conv_decode_hard; // default to hard-decision decoding
+    q->decode_soft_func = &fec_conv_decode_soft;
 
     switch (q->scheme) {
     case LIQUID_FEC_CONV_V27:  fec_conv_init_v27(q);   break;

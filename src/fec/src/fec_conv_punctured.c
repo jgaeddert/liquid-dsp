@@ -40,8 +40,9 @@ fec fec_conv_punctured_create(fec_scheme _fs)
     q->scheme = _fs;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_conv_punctured_encode;
-    q->decode_func = &fec_conv_punctured_decode_hard;
+    q->encode_func      = &fec_conv_punctured_encode;
+    q->decode_func      = &fec_conv_punctured_decode_hard;
+    q->decode_soft_func = &fec_conv_punctured_decode_soft;
 
     switch (q->scheme) {
     case LIQUID_FEC_CONV_V27P23:   fec_conv_init_v27p23(q);    break;

@@ -62,8 +62,9 @@ fec fec_hamming74_create(void * _opts)
     q->rate = fec_get_rate(q->scheme);
 
     // set internal function pointers
-    q->encode_func = &fec_hamming74_encode;
-    q->decode_func = &fec_hamming74_decode;
+    q->encode_func      = &fec_hamming74_encode;
+    q->decode_func      = &fec_hamming74_decode;
+    q->decode_soft_func = NULL;
 
     return q;
 }

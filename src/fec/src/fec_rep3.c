@@ -36,8 +36,9 @@ fec fec_rep3_create(void * _opts)
     q->scheme = LIQUID_FEC_REP3;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_rep3_encode;
-    q->decode_func = &fec_rep3_decode;
+    q->encode_func      = &fec_rep3_encode;
+    q->decode_func      = &fec_rep3_decode;
+    q->decode_soft_func = NULL;
 
     return q;
 }

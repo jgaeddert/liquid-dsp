@@ -543,6 +543,16 @@ void fec_decode(fec _q,
                 unsigned char * _msg_enc,
                 unsigned char * _msg_dec);
 
+// decode a block of data using a fec scheme (soft decision)
+//  _q              :   fec object
+//  _dec_msg_len    :   decoded message length
+//  _msg_enc        :   encoded message (soft bits)
+//  _msg_dec        :   decoded message
+void fec_decode_soft(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char * _msg_enc,
+                     unsigned char * _msg_dec);
+
 
 //
 // MODULE : fft (fast Fourier transform)
