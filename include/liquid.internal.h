@@ -459,6 +459,35 @@ void fec_rs_decode(fec _q,
                    unsigned char * _msg_enc,
                    unsigned char * _msg_dec);
 
+// sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
+typedef struct smatrix_s * smatrix;
+struct smatrix_s {
+    unsigned int M;                 // number of rows
+    unsigned int N;                 // number of columns
+    unsigned short int ** mlist;    // list of non-zero elements in each row
+    unsigned short int ** nlist;    // list of non-zero elements in each col
+    unsigned int * num_mlist;       // weight of each row, m
+    unsigned int * num_nlist;       // weight of each row, n
+    unsigned int max_num_mlist;     // maximum of num_mlist
+    unsigned int max_num_nlist;     // maximum of num_nlist
+};
+
+// create _M x _N matrix, initialized with zeros
+smatrix smatrix_create(unsigned int _M,
+                       unsigned int _N);
+
+// destroy object
+void smatrix_destroy(smatrix _q);
+
+// print compact form
+void smatrix_print(smatrix _q);
+
+// print expanded form
+void smatrix_print_expanded(smatrix _q);
+
+// initialize to identity matrix
+void smatrix_eye(smatrix _q);
+
 
 //
 // MODULE : fft (fast discrete Fourier transform)

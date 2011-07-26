@@ -213,6 +213,7 @@ fec_objects :=				\
 	src/fec/src/fec_rep3.o		\
 	src/fec/src/fec_rep5.o		\
 	src/fec/src/fec_rs.o		\
+	src/fec/src/smatrix.o			\
 
 
 # list explicit targets and dependencies here
@@ -1085,6 +1086,7 @@ example_obj :=						\
 	examples/agc_example.o				\
 	examples/agc_qpsk_example.o			\
 	examples/agc_squelch_example.o			\
+	examples/smatrix_example.o			\
 	examples/ampmodem_example.o			\
 	examples/asgram_example.o			\
 	examples/autocorr_cccf_example.o		\
