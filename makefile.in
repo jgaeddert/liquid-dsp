@@ -224,6 +224,7 @@ $(fec_objects) : %.o : %.c $(headers)
 fec_autotests :=				\
 	src/fec/tests/crc_autotest.h		\
 	src/fec/tests/fec_autotest.h		\
+	src/fec/tests/fec_soft_autotest.h		\
 	src/fec/tests/fec_hamming74_autotest.h	\
 	src/fec/tests/fec_hamming84_autotest.h	\
 	src/fec/tests/fec_hamming128_autotest.h	\
