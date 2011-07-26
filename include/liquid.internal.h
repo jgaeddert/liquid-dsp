@@ -496,6 +496,14 @@ void smatrix_clear(smatrix _q, unsigned int _m, unsigned int _n);
 // initialize to identity matrix
 void smatrix_eye(smatrix _q);
 
+// multiply by vector (modulo 2)
+//  _q  :   sparse matrix
+//  _x  :   input vector [size: _N x 1]
+//  _y  :   output vector [size: _M x 1]
+void smatrix_vmul(smatrix _q,
+                  unsigned char * _x,
+                  unsigned char * _y);
+
 
 //
 // MODULE : fft (fast discrete Fourier transform)

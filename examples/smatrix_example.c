@@ -35,6 +35,25 @@ int main(int argc, char*argv[]) {
     printf("  A[%2u,%2u] = %1u\n", 1, 1, smatrix_get(q,1,1));
     printf("  A[%2u,%2u] = %1u\n", 1, 2, smatrix_get(q,1,2));
 
+    // generate vectors
+    unsigned char x[N];
+    unsigned char y[M];
+    unsigned int i;
+    unsigned int j;
+    for (j=0; j<N; j++)
+        x[j] = rand() % 2 ? 1 : 0;
+
+    smatrix_vmul(q,x,y);
+
+    // print results
+    printf("x = [");
+    for (j=0; j<N; j++) printf("%2u", x[j]);
+    printf(" ];\n");
+
+    printf("y = [");
+    for (i=0; i<M; i++) printf("%2u", y[i]);
+    printf(" ];\n");
+
     smatrix_destroy(q);
 
     printf("done.\n");

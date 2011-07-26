@@ -266,3 +266,27 @@ void smatrix_eye(smatrix _q)
         smatrix_set(_q, i, i);
 }
 
+// multiply by vector (modulo 2)
+//  _q  :   sparse matrix
+//  _x  :   input vector [size: _N x 1]
+//  _y  :   output vector [size: _M x 1]
+void smatrix_vmul(smatrix _q,
+                  unsigned char * _x,
+                  unsigned char * _y)
+{
+    unsigned int i;
+    unsigned int j;
+    
+    // initialize to zero
+    for (i=0; i<_q->M; i++)
+        _y[i] = 0;
+
+    // only flip necessary bits
+    for (j=0; j<_q->N; j++) {
+        if (_x[j]) {
+            for (i=0; i<_q->num_nlist[j]; i++)
+                _y[ _q->nlist[j][i] ] ^= 1; // add 1 (modulo 2)
+        }
+    }
+}
+
