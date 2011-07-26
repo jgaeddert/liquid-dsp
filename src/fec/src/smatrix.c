@@ -246,16 +246,11 @@ void smatrix_clear(smatrix _q,
     _q->nlist[_n] = (unsigned short int*) realloc(_q->nlist[_n], _q->num_nlist[_n]*sizeof(unsigned short int));
 
     // reset maxima
-    _q->max_num_mlist = 0;
-    for (j=0; j<_q->num_mlist[_m]; j++) {
-        if (_q->num_mlist[j] > _q->max_num_mlist)
-            _q->max_num_mlist = _q->num_mlist[j];
-    }
-    _q->max_num_nlist = 0;
-    for (i=0; i<_q->num_nlist[_n]; i++) {
-        if (_q->num_nlist[i] > _q->max_num_nlist)
-            _q->max_num_nlist = _q->num_nlist[i];
-    }
+    if (_q->max_num_mlist == _q->num_mlist[_m]+1)
+        smatrix_reset_max_mlist(_q);
+
+    if (_q->max_num_nlist == _q->num_nlist[_n]+1)
+        smatrix_reset_max_nlist(_q);
 }
 
 // initialize to identity matrix
@@ -295,3 +290,29 @@ void smatrix_vmul(smatrix _q,
     }
 }
 
+// semi-internal methods
+
+
+// find maximum mlist length
+void smatrix_reset_max_mlist(smatrix _q)
+{
+    unsigned int i;
+
+    _q->max_num_mlist = 0;
+    for (i=0; i<_q->M; i++) {
+        if (_q->num_mlist[i] > _q->max_num_mlist)
+            _q->max_num_mlist = _q->num_mlist[i];
+    }
+}
+
+// find maximum nlist length
+void smatrix_reset_max_nlist(smatrix _q)
+{
+    unsigned int j;
+
+    _q->max_num_nlist = 0;
+    for (j=0; j<_q->N; j++) {
+        if (_q->num_nlist[j] > _q->max_num_nlist)
+            _q->max_num_nlist = _q->num_nlist[j];
+    }
+}

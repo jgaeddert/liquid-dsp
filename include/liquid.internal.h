@@ -504,6 +504,11 @@ void smatrix_vmul(smatrix _q,
                   unsigned char * _x,
                   unsigned char * _y);
 
+// semi-internal methods
+
+void smatrix_reset_max_mlist(smatrix _q);
+void smatrix_reset_max_nlist(smatrix _q);
+
 
 //
 // MODULE : fft (fast discrete Fourier transform)
