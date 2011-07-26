@@ -488,6 +488,11 @@ void smatrix_print_expanded(smatrix _q);
 // zero all elements
 void smatrix_zero(smatrix _q);
 
+// get/set/clear element at index
+unsigned char smatrix_get(smatrix _q, unsigned int _m, unsigned int _n);
+void smatrix_set(smatrix _q, unsigned int _m, unsigned int _n);
+void smatrix_clear(smatrix _q, unsigned int _m, unsigned int _n);
+
 // initialize to identity matrix
 void smatrix_eye(smatrix _q);
 

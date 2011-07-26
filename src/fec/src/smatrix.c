@@ -84,29 +84,33 @@ void smatrix_destroy(smatrix _q)
 // print compact form
 void smatrix_print(smatrix _q)
 {
-    printf("%u %u\n", _q->M, _q->N);
-    printf("%u %u\n", _q->max_num_mlist, _q->max_num_nlist);
+    printf("dims : %u %u\n", _q->M, _q->N);
+    printf("max  : %u %u\n", _q->max_num_mlist, _q->max_num_nlist);
     unsigned int i;
     unsigned int j;
-    for (i=0; i<_q->M; i++) printf("%u ", _q->num_mlist[i]);
+    printf("rows :");
+    for (i=0; i<_q->M; i++) printf(" %u", _q->num_mlist[i]);
     printf("\n");
-    for (j=0; j<_q->N; j++) printf("%u ", _q->num_nlist[j]);
+    printf("cols :");
+    for (j=0; j<_q->N; j++) printf(" %u", _q->num_nlist[j]);
     printf("\n");
 
     // print mlist
+    printf("row indices:\n");
     for (i=0; i<_q->M; i++) {
+        printf("  %3u :", i);
         for (j=0; j<_q->num_mlist[i]; j++)
-            printf("%u ", _q->mlist[i][j]);
-        if (_q->num_mlist[i] > 0)
-            printf("\n");
+            printf(" %u", _q->mlist[i][j]);
+        printf("\n");
     }
 
     // print nlist
+    printf("column indices:\n");
     for (j=0; j<_q->N; j++) {
+        printf("  %3u :", j);
         for (i=0; i<_q->num_nlist[j]; i++)
-            printf("%u ", _q->nlist[j][i]);
-        if (_q->num_nlist[j] > 0)
-            printf("\n");
+            printf(" %u", _q->nlist[j][i]);
+        printf("\n");
     }
 }
 
@@ -146,8 +150,119 @@ void smatrix_zero(smatrix _q)
     _q->max_num_nlist = 0;
 }
 
+// query element at index
+unsigned char smatrix_get(smatrix _q,
+                          unsigned int _m,
+                          unsigned int _n)
+{
+    // validate input
+    if (_m > _q->M || _n > _q->N) {
+        fprintf(stderr,"error: smatrix_get(), index exceeds matrix dimension\n");
+        exit(1);
+    }
+
+    unsigned int j;
+    for (j=0; j<_q->num_mlist[_m]; j++) {
+        if (_q->mlist[_m][j] == _n)
+            return 1;
+    }
+    return 0;
+}
+
+// set element at index
+void smatrix_set(smatrix _q,
+                 unsigned int _m,
+                 unsigned int _n)
+{
+    // validate input
+    if (_m > _q->M || _n > _q->N) {
+        fprintf(stderr,"error: smatrix_set(), index exceeds matrix dimension\n");
+        exit(1);
+    }
+
+    // check to see if element is already set
+    if (smatrix_get(_q,_m,_n))
+        return;
+
+    // increment list sizes
+    _q->num_mlist[_m]++;
+    _q->num_nlist[_n]++;
+
+    // reallocate lists at this index
+    _q->mlist[_m] = (unsigned short int*) realloc(_q->mlist[_m], _q->num_mlist[_m]*sizeof(unsigned short int));
+    _q->nlist[_n] = (unsigned short int*) realloc(_q->nlist[_n], _q->num_nlist[_n]*sizeof(unsigned short int));
+
+    // append index to end of list
+    // TODO : insert index at appropriate point
+    _q->mlist[_m][_q->num_mlist[_m]-1] = _n;
+    _q->nlist[_n][_q->num_nlist[_n]-1] = _m;
+
+    // update maximum
+    if (_q->num_mlist[_m] > _q->max_num_mlist) _q->max_num_mlist = _q->num_mlist[_m];
+    if (_q->num_nlist[_n] > _q->max_num_nlist) _q->max_num_nlist = _q->num_nlist[_n];
+}
+
+// clear element at index
+void smatrix_clear(smatrix _q,
+                   unsigned int _m,
+                   unsigned int _n)
+{
+    // validate input
+    if (_m > _q->M || _n > _q->N) {
+        fprintf(stderr,"error: smatrix_clear(), index exceeds matrix dimension\n");
+        exit(1);
+    }
+
+    // check to see if element is already set
+    if (!smatrix_get(_q,_m,_n))
+        return;
+
+    // remove value from mlist (shift left)
+    unsigned int i;
+    unsigned int j;
+    unsigned int t=0;
+    for (j=0; j<_q->num_mlist[_m]; j++) {
+        if (_q->mlist[_m][j] == _n)
+            t = j;
+    }
+    for (j=t; j<_q->num_mlist[_m]-1; j++)
+        _q->mlist[_m][j] = _q->mlist[_m][j+1];
+
+    // remove value from nlist (shift left)
+    t = 0;
+    for (i=0; i<_q->num_nlist[_n]; i++) {
+        if (_q->nlist[_n][i] == _m)
+            t = i;
+    }
+    for (i=t; i<_q->num_nlist[_n]-1; i++)
+        _q->nlist[_n][i] = _q->nlist[_n][i+1];
+
+    // reduce sizes
+    _q->num_mlist[_m]--;
+    _q->num_nlist[_n]--;
+
+    // reallocate
+    _q->mlist[_m] = (unsigned short int*) realloc(_q->mlist[_m], _q->num_mlist[_m]*sizeof(unsigned short int));
+    _q->nlist[_n] = (unsigned short int*) realloc(_q->nlist[_n], _q->num_nlist[_n]*sizeof(unsigned short int));
+
+#if 0
+    // TODO : reset maximum
+    _q->max_num_mlist[_m] = 0;
+    for (j=0; j<_q->num_mlist[_m]; j++) {
+        if (_q->max_num_mlist[_m]
+#endif
+}
+
 // initialize to identity matrix
 void smatrix_eye(smatrix _q)
 {
+    // zero all elements
+    smatrix_zero(_q);
+
+    // set values along diagonal
+    unsigned int i;
+    unsigned int dmin = _q->M < _q->N ? _q->M : _q->N;
+    for (i=0; i<dmin; i++)
+        smatrix_set(_q, i, i);
 }
 
