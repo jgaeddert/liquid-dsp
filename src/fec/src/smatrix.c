@@ -115,6 +115,18 @@ void smatrix_print_expanded(smatrix _q)
 {
 }
 
+// zero all elements
+void smatrix_zero(smatrix _q)
+{
+    unsigned int i;
+    unsigned int j;
+    for (i=0; i<_q->M; i++) _q->num_mlist[i] = 0;
+    for (j=0; j<_q->N; j++) _q->num_nlist[j] = 0;
+
+    _q->max_num_mlist = 0;
+    _q->max_num_nlist = 0;
+}
+
 // initialize to identity matrix
 void smatrix_eye(smatrix _q)
 {

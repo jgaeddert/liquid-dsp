@@ -485,6 +485,9 @@ void smatrix_print(smatrix _q);
 // print expanded form
 void smatrix_print_expanded(smatrix _q);
 
+// zero all elements
+void smatrix_zero(smatrix _q);
+
 // initialize to identity matrix
 void smatrix_eye(smatrix _q);
 
