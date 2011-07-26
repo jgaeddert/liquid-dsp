@@ -1108,6 +1108,7 @@ example_obj :=						\
 	examples/eqlms_cccf_example.o			\
 	examples/eqrls_cccf_example.o			\
 	examples/fec_example.o				\
+	examples/fec_soft_example.o			\
 	examples/fct_example.o				\
 	examples/fft_example.o				\
 	examples/firfarrow_rrrf_example.o		\
