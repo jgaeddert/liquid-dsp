@@ -64,7 +64,7 @@ fec fec_hamming74_create(void * _opts)
     // set internal function pointers
     q->encode_func      = &fec_hamming74_encode;
     q->decode_func      = &fec_hamming74_decode;
-    q->decode_soft_func = NULL;
+    q->decode_soft_func = &fec_hamming74_decode_soft;
 
     return q;
 }
@@ -154,3 +154,70 @@ void fec_hamming74_decode(fec _q,
     //return num_errors;
 }
 
+// decode block of data using Hamming(7,4) soft decoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_enc        :   encoded message [size: 8*_enc_msg_len x 1]
+//  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
+//
+//unsigned int
+void fec_hamming74_decode_soft(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char *_msg_enc,
+                               unsigned char *_msg_dec)
+{
+    unsigned int i;
+    unsigned int k=0;       // array bit index
+
+    // compute encoded message length
+    unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,4,7);
+
+    // decoded 4-bit symbols
+    unsigned char s0;
+    unsigned char s1;
+
+    //unsigned char num_errors=0;
+    for (i=0; i<_dec_msg_len; i++) {
+        s0 = fecsoft_hamming74_decode(&_msg_enc[k  ]);
+        s1 = fecsoft_hamming74_decode(&_msg_enc[k+7]);
+        k += 14;
+
+        // pack two 4-bit symbols into one 8-bit byte
+        _msg_dec[i] = (s0 << 4) | s1;
+
+        //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
+    }
+    //return num_errors;
+}
+
+// 
+// internal methods
+//
+
+// soft decoding of one symbol
+unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits)
+{
+    // find symbol with minimum distance from all 2^4 possible
+    //unsigned int dmin = 0;
+    unsigned char c = 0;    // estimated transmitted symbol
+
+    unsigned int i;
+#if 0
+    for (i=0; i<16; i++) {
+
+    }
+#else
+    // pack symbols into hard bits
+    c = 0x00;
+    c |= (_soft_bits[i+0] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x40 : 0;
+    c |= (_soft_bits[i+1] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x20 : 0;
+    c |= (_soft_bits[i+2] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x10 : 0;
+    c |= (_soft_bits[i+3] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x08 : 0;
+    c |= (_soft_bits[i+4] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x04 : 0;
+    c |= (_soft_bits[i+5] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x02 : 0;
+    c |= (_soft_bits[i+6] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x01 : 0;
+#endif
+
+    return hamming74_dec_gentab[c];
+}
