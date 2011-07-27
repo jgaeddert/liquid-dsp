@@ -150,7 +150,7 @@ fec fec_hamming128_create(void * _opts)
     // set internal function pointers
     q->encode_func      = &fec_hamming128_encode;
     q->decode_func      = &fec_hamming128_decode;
-    q->decode_soft_func = NULL;
+    q->decode_soft_func = &fec_hamming128_decode_soft;
 
     return q;
 }
@@ -272,3 +272,78 @@ void fec_hamming128_decode(fec _q,
 }
 
 
+// decode block of data using Hamming(12,8) soft decoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_enc        :   encoded message [size: 8*_enc_msg_len x 1]
+//  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
+//
+//unsigned int
+void fec_hamming128_decode_soft(fec _q,
+                                unsigned int _dec_msg_len,
+                                unsigned char *_msg_enc,
+                                unsigned char *_msg_dec)
+{
+    unsigned int i;
+    unsigned int k=0;       // array bit index
+
+    // compute encoded message length
+    unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,8,12);
+
+    unsigned char s;    // decoded 8-bit symbol
+
+    //unsigned char num_errors=0;
+    for (i=0; i<_dec_msg_len; i++) {
+        s = fecsoft_hamming128_decode(&_msg_enc[k]);
+        k += 12;
+
+        _msg_dec[i] = (unsigned char)(s & 0xff);
+
+        //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
+    }
+    assert(k == 8*enc_msg_len);
+    //return num_errors;
+}
+
+// 
+// internal methods
+//
+
+// soft decoding of one symbol
+// TODO : use faster decoding algorithm
+unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits)
+{
+    // find symbol with minimum distance from all 2^4 possible
+    unsigned int d;             // distance metric
+    unsigned int dmin = 0;      // minimum distance
+    unsigned int s_hat = 0;     // estimated transmitted symbol
+    unsigned int c;             // encoded symbol
+
+    unsigned int s;
+    for (s=0; s<256; s++) {
+        // encode symbol
+        c = fec_hamming128_encode_symbol(s);
+
+        // compute distance metric
+        d = 0;
+        d += (c & 0x0800) ? 255 - _soft_bits[ 0] : _soft_bits[ 0];
+        d += (c & 0x0400) ? 255 - _soft_bits[ 1] : _soft_bits[ 1];
+        d += (c & 0x0200) ? 255 - _soft_bits[ 2] : _soft_bits[ 2];
+        d += (c & 0x0100) ? 255 - _soft_bits[ 3] : _soft_bits[ 3];
+        d += (c & 0x0080) ? 255 - _soft_bits[ 4] : _soft_bits[ 4];
+        d += (c & 0x0040) ? 255 - _soft_bits[ 5] : _soft_bits[ 5];
+        d += (c & 0x0020) ? 255 - _soft_bits[ 6] : _soft_bits[ 6];
+        d += (c & 0x0010) ? 255 - _soft_bits[ 7] : _soft_bits[ 7];
+        d += (c & 0x0008) ? 255 - _soft_bits[ 8] : _soft_bits[ 8];
+        d += (c & 0x0004) ? 255 - _soft_bits[ 9] : _soft_bits[ 9];
+        d += (c & 0x0002) ? 255 - _soft_bits[10] : _soft_bits[10];
+        d += (c & 0x0001) ? 255 - _soft_bits[11] : _soft_bits[11];
+
+        if (d < dmin || s==0) {
+            s_hat = s;
+            dmin = d;
+        }
+    }
+    return s_hat;
+}
