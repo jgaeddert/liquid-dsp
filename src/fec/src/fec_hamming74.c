@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -188,6 +189,7 @@ void fec_hamming74_decode_soft(fec _q,
 
         //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
     }
+    assert(k == 8*enc_msg_len);
     //return num_errors;
 }
 
@@ -199,25 +201,30 @@ void fec_hamming74_decode_soft(fec _q,
 unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits)
 {
     // find symbol with minimum distance from all 2^4 possible
-    //unsigned int dmin = 0;
-    unsigned char c = 0;    // estimated transmitted symbol
+    unsigned int d;             // distance metric
+    unsigned int dmin = 0;      // minimum distance
+    unsigned char s_hat = 0;    // estimated transmitted symbol
+    unsigned char c;            // encoded symbol
 
-    unsigned int i;
-#if 0
-    for (i=0; i<16; i++) {
+    unsigned char s;
+    for (s=0; s<16; s++) {
+        // encode symbol
+        c = hamming74_enc_gentab[s];
 
+        // compute distance metric
+        d = 0;
+        d += (c & 0x40) ? 255 - _soft_bits[0] : _soft_bits[0];
+        d += (c & 0x20) ? 255 - _soft_bits[1] : _soft_bits[1];
+        d += (c & 0x10) ? 255 - _soft_bits[2] : _soft_bits[2];
+        d += (c & 0x08) ? 255 - _soft_bits[3] : _soft_bits[3];
+        d += (c & 0x04) ? 255 - _soft_bits[4] : _soft_bits[4];
+        d += (c & 0x02) ? 255 - _soft_bits[5] : _soft_bits[5];
+        d += (c & 0x01) ? 255 - _soft_bits[6] : _soft_bits[6];
+
+        if (d < dmin || s==0) {
+            s_hat = s;
+            dmin = d;
+        }
     }
-#else
-    // pack symbols into hard bits
-    c = 0x00;
-    c |= (_soft_bits[i+0] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x40 : 0;
-    c |= (_soft_bits[i+1] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x20 : 0;
-    c |= (_soft_bits[i+2] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x10 : 0;
-    c |= (_soft_bits[i+3] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x08 : 0;
-    c |= (_soft_bits[i+4] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x04 : 0;
-    c |= (_soft_bits[i+5] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x02 : 0;
-    c |= (_soft_bits[i+6] > LIQUID_FEC_SOFTBIT_ERASURE) ? 0x01 : 0;
-#endif
-
-    return hamming74_dec_gentab[c];
+    return s_hat;
 }

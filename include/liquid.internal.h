@@ -294,6 +294,8 @@ void fec_rep5_decode(fec _q,
                      unsigned char * _msg_dec);
 
 // Hamming(7,4)
+extern unsigned char hamming74_enc_gentab[16];
+extern unsigned char hamming74_dec_gentab[128];
 fec fec_hamming74_create(void *_opts);
 void fec_hamming74_destroy(fec _q);
 void fec_hamming74_print(fec _q);

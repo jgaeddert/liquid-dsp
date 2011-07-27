@@ -19,7 +19,7 @@
  */
 
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 //
 // AUTOTEST: Hamming (7,4) codec
@@ -62,5 +62,38 @@ void autotest_hamming74_codec()
 
     // clean up objects
     fec_destroy(q);
+}
+
+//
+// AUTOTEST: Hamming (7,4) codec (soft decoding)
+//
+void autotest_hamming74_codec_soft()
+{
+    // generate each of the 2^4=16 symbols, encode, and decode
+    // using soft decoding algorithm
+    unsigned char s;            // original 4-bit symbol
+    unsigned char c;            // encoded 7-bit symbol
+    unsigned char c_soft[7];    // soft bits
+    unsigned char s_hat;        // decoded symbol
+
+    for (s=0; s<16; s++) {
+        // encode using look-up table
+        c = hamming74_enc_gentab[s];
+
+        // expand soft bits
+        c_soft[0] = (c & 0x40) ? 255 : 0;
+        c_soft[1] = (c & 0x20) ? 255 : 0;
+        c_soft[2] = (c & 0x10) ? 255 : 0;
+        c_soft[3] = (c & 0x08) ? 255 : 0;
+        c_soft[4] = (c & 0x04) ? 255 : 0;
+        c_soft[5] = (c & 0x02) ? 255 : 0;
+        c_soft[6] = (c & 0x01) ? 255 : 0;
+
+        // decode using internal soft decoding method
+        s_hat = fecsoft_hamming74_decode(c_soft);
+
+        // contend that data are the same
+        CONTEND_EQUALITY(s, s_hat);
+    }
 }
 
