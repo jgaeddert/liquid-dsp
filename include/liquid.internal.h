@@ -357,6 +357,8 @@ void fec_hamming128_decode_soft(fec _q,
                                 unsigned char * _msg_dec);
 // soft decoding of one symbol
 unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits);
+extern unsigned char fecsoft_hamming128_n3[256][17];
+unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits);
 
 
 // Convolutional: r1/2 K=7

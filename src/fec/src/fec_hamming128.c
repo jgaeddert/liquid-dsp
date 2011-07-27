@@ -296,7 +296,8 @@ void fec_hamming128_decode_soft(fec _q,
 
     //unsigned char num_errors=0;
     for (i=0; i<_dec_msg_len; i++) {
-        s = fecsoft_hamming128_decode(&_msg_enc[k]);
+        //s = fecsoft_hamming128_decode(&_msg_enc[k]);
+        s = fecsoft_hamming128_decode_n3(&_msg_enc[k]);
         k += 12;
 
         _msg_dec[i] = (unsigned char)(s & 0xff);
@@ -313,7 +314,9 @@ void fec_hamming128_decode_soft(fec _q,
 //
 
 // soft decoding of one symbol
-// TODO : use faster decoding algorithm
+// NOTE : because this method compares the received symbol to every
+//        possible (256) encoded symbols, it is painfully slow to
+//        run.
 unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits)
 {
     // find symbol with minimum distance from all 2^4 possible
@@ -349,3 +352,80 @@ unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits)
     }
     return s_hat;
 }
+
+// soft decoding of one symbol using nearest neighbors
+unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits)
+{
+    // find symbol with minimum distance from all 2^4 possible
+    unsigned int d;             // distance metric
+    unsigned int dmin = 0;      // minimum distance
+    unsigned int s_hat = 0;     // estimated transmitted symbol
+    unsigned int c;             // encoded symbol
+
+    // compute hard-decoded symbol
+    c = 0x0000;
+    c |= ((_soft_bits[ 0] >> 7) & 0x01) ? 0x0800 : 0;
+    c |= ((_soft_bits[ 1] >> 7) & 0x01) ? 0x0400 : 0;
+    c |= ((_soft_bits[ 2] >> 7) & 0x01) ? 0x0200 : 0;
+    c |= ((_soft_bits[ 3] >> 7) & 0x01) ? 0x0100 : 0;
+    c |= ((_soft_bits[ 4] >> 7) & 0x01) ? 0x0080 : 0;
+    c |= ((_soft_bits[ 5] >> 7) & 0x01) ? 0x0040 : 0;
+    c |= ((_soft_bits[ 6] >> 7) & 0x01) ? 0x0020 : 0;
+    c |= ((_soft_bits[ 7] >> 7) & 0x01) ? 0x0010 : 0;
+    c |= ((_soft_bits[ 8] >> 7) & 0x01) ? 0x0008 : 0;
+    c |= ((_soft_bits[ 9] >> 7) & 0x01) ? 0x0004 : 0;
+    c |= ((_soft_bits[10] >> 7) & 0x01) ? 0x0002 : 0;
+    c |= ((_soft_bits[11] >> 7) & 0x01) ? 0x0001 : 0;
+
+    // compute distance metric
+    d = 0;
+    d += (c & 0x0800) ? 255 - _soft_bits[ 0] : _soft_bits[ 0];
+    d += (c & 0x0400) ? 255 - _soft_bits[ 1] : _soft_bits[ 1];
+    d += (c & 0x0200) ? 255 - _soft_bits[ 2] : _soft_bits[ 2];
+    d += (c & 0x0100) ? 255 - _soft_bits[ 3] : _soft_bits[ 3];
+    d += (c & 0x0080) ? 255 - _soft_bits[ 4] : _soft_bits[ 4];
+    d += (c & 0x0040) ? 255 - _soft_bits[ 5] : _soft_bits[ 5];
+    d += (c & 0x0020) ? 255 - _soft_bits[ 6] : _soft_bits[ 6];
+    d += (c & 0x0010) ? 255 - _soft_bits[ 7] : _soft_bits[ 7];
+    d += (c & 0x0008) ? 255 - _soft_bits[ 8] : _soft_bits[ 8];
+    d += (c & 0x0004) ? 255 - _soft_bits[ 9] : _soft_bits[ 9];
+    d += (c & 0x0002) ? 255 - _soft_bits[10] : _soft_bits[10];
+    d += (c & 0x0001) ? 255 - _soft_bits[11] : _soft_bits[11];
+
+    s_hat = fec_hamming128_decode_symbol(c);
+    dmin = d;
+
+    // search over 17 nearest neighbors
+    unsigned int s;
+    unsigned int i;
+    for (i=0; i<17; i++) {
+        // use look-up table for nearest neighbors
+        s = fecsoft_hamming128_n3[s_hat][i];
+
+        // encode symbol
+        c = fec_hamming128_encode_symbol(s);
+
+        // compute distance metric
+        d = 0;
+        d += (c & 0x0800) ? 255 - _soft_bits[ 0] : _soft_bits[ 0];
+        d += (c & 0x0400) ? 255 - _soft_bits[ 1] : _soft_bits[ 1];
+        d += (c & 0x0200) ? 255 - _soft_bits[ 2] : _soft_bits[ 2];
+        d += (c & 0x0100) ? 255 - _soft_bits[ 3] : _soft_bits[ 3];
+        d += (c & 0x0080) ? 255 - _soft_bits[ 4] : _soft_bits[ 4];
+        d += (c & 0x0040) ? 255 - _soft_bits[ 5] : _soft_bits[ 5];
+        d += (c & 0x0020) ? 255 - _soft_bits[ 6] : _soft_bits[ 6];
+        d += (c & 0x0010) ? 255 - _soft_bits[ 7] : _soft_bits[ 7];
+        d += (c & 0x0008) ? 255 - _soft_bits[ 8] : _soft_bits[ 8];
+        d += (c & 0x0004) ? 255 - _soft_bits[ 9] : _soft_bits[ 9];
+        d += (c & 0x0002) ? 255 - _soft_bits[10] : _soft_bits[10];
+        d += (c & 0x0001) ? 255 - _soft_bits[11] : _soft_bits[11];
+
+        if (d < dmin) {
+            s_hat = s;
+            dmin = d;
+        }
+    }
+
+    return s_hat;
+}
+

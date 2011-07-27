@@ -209,6 +209,7 @@ fec_objects :=				\
 	src/fec/src/fec_hamming74.o		\
 	src/fec/src/fec_hamming84.o		\
 	src/fec/src/fec_hamming128.o	\
+	src/fec/src/fec_hamming128_gentab.o	\
 	src/fec/src/fec_pass.o		\
 	src/fec/src/fec_rep3.o		\
 	src/fec/src/fec_rep5.o		\
@@ -1224,6 +1225,7 @@ sandbox_obj =						\
 	sandbox/fec_rep3_test.o				\
 	sandbox/fec_rep5_test.o				\
 	sandbox/fecsoft_conv_test.o			\
+	sandbox/fecsoft_hamming128_gentab.o		\
 	sandbox/fft_r2r_test.o				\
 	sandbox/firdes_energy_test.o			\
 	sandbox/firdes_length_test.o			\
