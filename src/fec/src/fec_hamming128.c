@@ -188,11 +188,11 @@ void fec_hamming128_encode(fec _q,
         m0 = fec_hamming128_encode_symbol(s0);
         m1 = fec_hamming128_encode_symbol(s1);
 
-        // append both 12-bit symbols to output (three 8-bit bytes)
-        _msg_enc[j+0] = m0 & 0xff;              // lower 8 bits of m0
-        _msg_enc[j+1] = m1 & 0xff;              // lower 8 bits of m1
-        _msg_enc[j+2] = ((m0 & 0x0f00) >> 8) |  // upper 4 bits of m0
-                        ((m1 & 0x0f00) >> 4);   // upper 4 bits of m1
+        // append both 12-bit symbols to output (three 8-bit bytes),
+        // retaining order of bits in output
+        _msg_enc[j+0] =  (m0 >> 4) & 0xff;
+        _msg_enc[j+1] = ((m0 << 4) & 0xf0) | ((m1 >> 8) & 0x0f);
+        _msg_enc[j+2] =  (m1     ) & 0xff;
 
         j += 3;
     }
@@ -206,8 +206,8 @@ void fec_hamming128_encode(fec _q,
         m0 = fec_hamming128_encode_symbol(s0);
 
         // append to output
-        _msg_enc[j+0] = m0 & 0xff;  // lower 8 bits of m0
-        _msg_enc[j+1] = m0 >> 8;    // upper 4 bits of m0
+        _msg_enc[j+0] = ( m0 & 0x0ff0 ) >> 4;
+        _msg_enc[j+1] = ( m0 & 0x000f ) << 4;
 
         j += 2;
     }
@@ -240,8 +240,8 @@ void fec_hamming128_decode(fec _q,
         r2 = _msg_enc[j+2];
 
         // combine three 8-bit symbols into two 12-bit symbols
-        m0 = r0 | ((r2 & 0x0f) << 8);
-        m1 = r1 | ((r2 & 0xf0) << 4);
+        m0 = ((r0 << 4) & 0x0ff0) | ((r1 >> 4) & 0x000f);
+        m1 = ((r1 << 8) & 0x0f00) | ((r2     ) & 0x00ff);
 
         // decode each symbol into an 8-bit byte
         _msg_dec[i+0] = fec_hamming128_decode_symbol(m0);
@@ -258,7 +258,7 @@ void fec_hamming128_decode(fec _q,
         r1 = _msg_enc[j+1];
 
         // pack into 12-bit symbol
-        m0 = r0 | ((r1 & 0x0f) << 8);
+        m0 = ((r0 << 4) & 0x0ff0) | ((r1 >> 4) & 0x000f);
 
         // decode symbol into an 8-bit byte
         _msg_dec[i++] = fec_hamming128_decode_symbol(m0);
@@ -287,9 +287,10 @@ void fec_hamming128_decode_soft(fec _q,
 {
     unsigned int i;
     unsigned int k=0;       // array bit index
+    unsigned int r = _dec_msg_len % 2;
 
     // compute encoded message length
-    unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,8,12);
+    unsigned int enc_msg_len = (3*_dec_msg_len)/2 + r;
 
     unsigned char s;    // decoded 8-bit symbol
 
@@ -302,6 +303,7 @@ void fec_hamming128_decode_soft(fec _q,
 
         //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
     }
+    k += r*4;   // for assert method
     assert(k == 8*enc_msg_len);
     //return num_errors;
 }
