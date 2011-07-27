@@ -12,8 +12,9 @@
 // print usage/help message
 void usage()
 {
-    printf("fec_example [options]\n");
+    printf("fecsoft_example [options]\n");
     printf("  u/h   : print usage\n");
+    printf("  v/q   : verbose/queit (print soft bits?)\n");
     printf("  n     : input data size (number of uncoded bytes)\n");
     printf("  c     : coding scheme, (h74 default):\n");
     liquid_print_fec_schemes();
@@ -26,12 +27,15 @@ int main(int argc, char*argv[])
     unsigned int n = 4;                     // data length (bytes)
     unsigned int nmax = 2048;               // maximum data length
     fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme
+    int verbose = 1;                        // verbose?
 
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:c:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhvqn:c:")) != EOF){
         switch (dopt) {
         case 'h':
-        case 'u': usage(); return 0;
+        case 'u': usage();          return 0;
+        case 'v': verbose = 1;      break;
+        case 'q': verbose = 0;      break;
         case 'n': n = atoi(optarg); break;
         case 'c':
             fs = liquid_getopt_str2fec(optarg);
@@ -53,10 +57,11 @@ int main(int argc, char*argv[])
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
     printf("dec msg len : %u\n", n);
     printf("enc msg len : %u\n", n_enc);
-    unsigned char data[n];          // original data message
-    unsigned char msg_enc[n_enc];   // encoded data message
-    unsigned char msg_cor[8*n_enc]; // corrupted data message (soft bits)
-    unsigned char msg_dec[n];       // decoded data message
+    unsigned char data[n];               // original data message
+    unsigned char msg_enc[n_enc];        // encoded data message
+    unsigned char msg_cor_soft[8*n_enc]; // corrupted data message (soft bits)
+    unsigned char msg_cor_hard[n_enc];   // corrupted data message (hard bits)
+    unsigned char msg_dec[n];            // decoded data message
 
     // create object
     fec q = fec_create(fs,NULL);
@@ -73,29 +78,43 @@ int main(int argc, char*argv[])
 
     // convert to soft bits and add 'noise'
     for (i=0; i<n_enc; i++) {
-        msg_cor[8*i+0] = (msg_enc[i] & 0x80) ? 255 : 0;
-        msg_cor[8*i+1] = (msg_enc[i] & 0x40) ? 255 : 0;
-        msg_cor[8*i+2] = (msg_enc[i] & 0x20) ? 255 : 0;
-        msg_cor[8*i+3] = (msg_enc[i] & 0x10) ? 255 : 0;
-        msg_cor[8*i+4] = (msg_enc[i] & 0x08) ? 255 : 0;
-        msg_cor[8*i+5] = (msg_enc[i] & 0x04) ? 255 : 0;
-        msg_cor[8*i+6] = (msg_enc[i] & 0x02) ? 255 : 0;
-        msg_cor[8*i+7] = (msg_enc[i] & 0x01) ? 255 : 0;
+        msg_cor_soft[8*i+0] = (msg_enc[i] & 0x80) ? 255 : 0;
+        msg_cor_soft[8*i+1] = (msg_enc[i] & 0x40) ? 255 : 0;
+        msg_cor_soft[8*i+2] = (msg_enc[i] & 0x20) ? 255 : 0;
+        msg_cor_soft[8*i+3] = (msg_enc[i] & 0x10) ? 255 : 0;
+        msg_cor_soft[8*i+4] = (msg_enc[i] & 0x08) ? 255 : 0;
+        msg_cor_soft[8*i+5] = (msg_enc[i] & 0x04) ? 255 : 0;
+        msg_cor_soft[8*i+6] = (msg_enc[i] & 0x02) ? 255 : 0;
+        msg_cor_soft[8*i+7] = (msg_enc[i] & 0x01) ? 255 : 0;
     }
 
-    // flip first bit
-    msg_cor[0] = 255 - msg_cor[0];
+    // flip first bit (ensure error)
+    msg_cor_soft[0] = 255 - msg_cor_soft[0];
 
-    // add noise
+    // add noise (but not so much that it would cause a bit error)
     for (i=0; i<8*n_enc; i++) {
-        int soft_bit = 0.7*msg_cor[i] + (int)(100*randf());
+        int soft_bit = 0.8*msg_cor_soft[i] + (int)(20*randnf());
         if (soft_bit > 255) soft_bit = 255;
         if (soft_bit <   0) soft_bit = 0;
-        msg_cor[i] = soft_bit;
+        msg_cor_soft[i] = soft_bit;
+    }
+
+    // convert to hard bits (printing purposes)
+    for (i=0; i<n_enc; i++) {
+        msg_cor_hard[i] = 0x00;
+
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+0] >> 0) & 0x80;
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+1] >> 1) & 0x40;
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+2] >> 2) & 0x20;
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+3] >> 3) & 0x10;
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+4] >> 4) & 0x08;
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+5] >> 5) & 0x04;
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+6] >> 6) & 0x02;
+        msg_cor_hard[i] |=(msg_cor_soft[8*i+7] >> 7) & 0x01;
     }
 
     // decode message
-    fec_decode_soft(q, n, msg_cor, msg_dec);
+    fec_decode_soft(q, n, msg_cor_soft, msg_dec);
 
     printf("original message:  [%3u] ",n);
     for (i=0; i<n; i++)
@@ -107,36 +126,26 @@ int main(int argc, char*argv[])
         printf(" %.2X", (unsigned int) (msg_enc[i]));
     printf("\n");
 
-#if 0
-    printf("corrupted message: [%3u]\n",n_enc);
-    // print each soft bit value
-    for (i=0; i<8*n_enc; i++) {
-        if ( (i%8)==0 ) printf("%u:\n", i);
-
-        div_t d = div(i,8);
-        unsigned int bit_enc = (msg_enc[d.quot] >> (8-d.rem-1)) & 0x01;
-        unsigned int bit_rec = (msg_cor[i] > 127) ? 1 : 0;
-        printf("  %1u %3u (%1u) %c\n", bit_enc, msg_cor[i], bit_rec, bit_enc != bit_rec ? '*' : ' ');
-    }
-#else
+    // print compact result
     printf("corrupted message: [%3u] ",n_enc);
-    // print compact bits
-    for (i=0; i<n_enc; i++) {
-        unsigned char byte = 0x00;
-
-        byte |= (msg_cor[8*i+0] >> 0) & 0x80;
-        byte |= (msg_cor[8*i+1] >> 1) & 0x40;
-        byte |= (msg_cor[8*i+2] >> 2) & 0x20;
-        byte |= (msg_cor[8*i+3] >> 3) & 0x10;
-        byte |= (msg_cor[8*i+4] >> 4) & 0x08;
-        byte |= (msg_cor[8*i+5] >> 5) & 0x04;
-        byte |= (msg_cor[8*i+6] >> 6) & 0x02;
-        byte |= (msg_cor[8*i+7] >> 7) & 0x01;
-
-        printf("%c%.2X", byte==msg_enc[i] ? ' ' : '*', (unsigned int) (byte));
-    }
-#endif
+    for (i=0; i<n_enc; i++)
+        printf("%c%.2X", msg_cor_hard[i]==msg_enc[i] ? ' ' : '*', (unsigned int) (msg_cor_hard[i]));
     printf("\n");
+
+    if (verbose) {
+        // print expanded result (print each soft bit value)
+        for (i=0; i<n_enc; i++) {
+            printf("%5u: ", i);
+            unsigned int j;
+            for (j=0; j<8; j++) {
+                unsigned int bit_enc = (msg_enc[i] >> (8-j-1)) & 0x01;
+                unsigned int bit_rec = (msg_cor_soft[8*i+j] > 127) ? 1 : 0;
+                //printf("%1u %3u (%1u) %c", bit_enc, msg_cor_soft[i], bit_rec, bit_enc != bit_rec ? '*' : ' ');
+                printf("%4u%c", msg_cor_soft[8*i+j], bit_enc != bit_rec ? '*' : ' ');
+            }
+            printf("  :  %c%.2X\n", msg_cor_hard[i]==msg_enc[i] ? ' ' : '*', (unsigned int) (msg_cor_hard[i]));
+        }
+    } // verbose
 
     printf("decoded message:   [%3u] ",n);
     for (i=0; i<n; i++)
