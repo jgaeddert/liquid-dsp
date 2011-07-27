@@ -339,6 +339,7 @@ unsigned char fecsoft_hamming84_decode(unsigned char * _soft_bits);
 
 unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec);
 unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc);
+extern unsigned short int hamming128_enc_gentab[256];   // encoding table
 
 fec fec_hamming128_create(void *_opts);
 void fec_hamming128_destroy(fec _q);

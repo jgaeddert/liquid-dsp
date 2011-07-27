@@ -36,7 +36,8 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FEC_HAMMING128 0
+#define DEBUG_FEC_HAMMING128        0   // debugging flag
+#define FEC_HAMMING128_ENC_GENTAB   1   // use look-up table for encoding?
 
 // parity bit coverage mask for encoder (collapsed version of figure
 // above, stripping out parity bits P1, P2, P4, P8 and only including
@@ -185,8 +186,13 @@ void fec_hamming128_encode(fec _q,
         s1 = _msg_dec[i+1];
 
         // encode each byte into 12-bit symbols
+#if FEC_HAMMING128_ENC_GENTAB
+        m0 = hamming128_enc_gentab[s0];
+        m1 = hamming128_enc_gentab[s1];
+#else
         m0 = fec_hamming128_encode_symbol(s0);
         m1 = fec_hamming128_encode_symbol(s1);
+#endif
 
         // append both 12-bit symbols to output (three 8-bit bytes),
         // retaining order of bits in output
@@ -203,7 +209,11 @@ void fec_hamming128_encode(fec _q,
         s0 = _msg_dec[_dec_msg_len-1];
 
         // encode into 12-bit symbol
+#if FEC_HAMMING128_ENC_GENTAB
+        m0 = hamming128_enc_gentab[s0];
+#else
         m0 = fec_hamming128_encode_symbol(s0);
+#endif
 
         // append to output
         _msg_enc[j+0] = ( m0 & 0x0ff0 ) >> 4;
@@ -328,7 +338,11 @@ unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits)
     unsigned int s;
     for (s=0; s<256; s++) {
         // encode symbol
+#if FEC_HAMMING128_ENC_GENTAB
+        c = hamming128_enc_gentab[s];
+#else
         c = fec_hamming128_encode_symbol(s);
+#endif
 
         // compute distance metric
         d = 0;
@@ -403,7 +417,11 @@ unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits)
         s = fecsoft_hamming128_n3[s_hat][i];
 
         // encode symbol
+#if FEC_HAMMING128_ENC_GENTAB
+        c = hamming128_enc_gentab[s];
+#else
         c = fec_hamming128_encode_symbol(s);
+#endif
 
         // compute distance metric
         d = 0;
