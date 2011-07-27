@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "liquid.internal.h"
 
@@ -80,7 +81,7 @@ fec fec_hamming84_create(void * _opts)
     // set internal function pointers
     q->encode_func      = &fec_hamming84_encode;
     q->decode_func      = &fec_hamming84_decode;
-    q->decode_soft_func = NULL;
+    q->decode_soft_func = &fec_hamming84_decode_soft;
 
     return q;
 }
@@ -142,3 +143,77 @@ void fec_hamming84_decode(fec _q,
     //return num_errors;
 }
 
+// decode block of data using Hamming(8,4) soft decoder
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_enc        :   encoded message [size: 8*_enc_msg_len x 1]
+//  _msg_dec        :   decoded message [size: _dec_msg_len x 1]
+//
+//unsigned int
+void fec_hamming84_decode_soft(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char *_msg_enc,
+                               unsigned char *_msg_dec)
+{
+    unsigned int i;
+    unsigned int k=0;       // array bit index
+
+    // compute encoded message length
+    unsigned int enc_msg_len = fec_block_get_enc_msg_len(_dec_msg_len,4,8);
+
+    // decoded 4-bit symbols
+    unsigned char s0;
+    unsigned char s1;
+
+    //unsigned char num_errors=0;
+    for (i=0; i<_dec_msg_len; i++) {
+        s0 = fecsoft_hamming84_decode(&_msg_enc[k  ]);
+        s1 = fecsoft_hamming84_decode(&_msg_enc[k+8]);
+        k += 16;
+
+        // pack two 4-bit symbols into one 8-bit byte
+        _msg_dec[i] = (s0 << 4) | s1;
+
+        //printf("  %3u : 0x%.2x > 0x%.2x,  0x%.2x > 0x%.2x (k=%u)\n", i, r0, s0, r1, s1, k);
+    }
+    assert(k == 8*enc_msg_len);
+    //return num_errors;
+}
+
+// 
+// internal methods
+//
+
+// soft decoding of one symbol
+unsigned char fecsoft_hamming84_decode(unsigned char * _soft_bits)
+{
+    // find symbol with minimum distance from all 2^4 possible
+    unsigned int d;             // distance metric
+    unsigned int dmin = 0;      // minimum distance
+    unsigned char s_hat = 0;    // estimated transmitted symbol
+    unsigned char c;            // encoded symbol
+
+    unsigned char s;
+    for (s=0; s<16; s++) {
+        // encode symbol
+        c = hamming84_enc_gentab[s];
+
+        // compute distance metric
+        d = 0;
+        d += (c & 0x80) ? 255 - _soft_bits[0] : _soft_bits[0];
+        d += (c & 0x40) ? 255 - _soft_bits[1] : _soft_bits[1];
+        d += (c & 0x20) ? 255 - _soft_bits[2] : _soft_bits[2];
+        d += (c & 0x10) ? 255 - _soft_bits[3] : _soft_bits[3];
+        d += (c & 0x08) ? 255 - _soft_bits[4] : _soft_bits[4];
+        d += (c & 0x04) ? 255 - _soft_bits[5] : _soft_bits[5];
+        d += (c & 0x02) ? 255 - _soft_bits[6] : _soft_bits[6];
+        d += (c & 0x01) ? 255 - _soft_bits[7] : _soft_bits[7];
+
+        if (d < dmin || s==0) {
+            s_hat = s;
+            dmin = d;
+        }
+    }
+    return s_hat;
+}

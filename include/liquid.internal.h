@@ -315,6 +315,8 @@ void fec_hamming74_decode_soft(fec _q,
 unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits);
 
 // Hamming(8,4)
+extern unsigned char hamming84_enc_gentab[16];
+extern unsigned char hamming84_dec_gentab[256];
 fec fec_hamming84_create(void *_opts);
 void fec_hamming84_destroy(fec _q);
 void fec_hamming84_print(fec _q);
@@ -326,6 +328,12 @@ void fec_hamming84_decode(fec _q,
                           unsigned int _dec_msg_len,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
+void fec_hamming84_decode_soft(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char * _msg_enc,
+                               unsigned char * _msg_dec);
+// soft decoding of one symbol
+unsigned char fecsoft_hamming84_decode(unsigned char * _soft_bits);
 
 // Hamming(12,8)
 
