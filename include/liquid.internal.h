@@ -279,6 +279,10 @@ void fec_rep3_decode(fec _q,
                      unsigned int _dec_msg_len,
                      unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
+void fec_rep3_decode_soft(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
 
 // Repeat (5)
 fec fec_rep5_create(void *_opts);
