@@ -29,6 +29,7 @@ void usage()
     printf("  p     : modulation depth (default 2 bits/symbol)\n");
     printf("  m     : modulation scheme (psk default)\n");
     liquid_print_modulation_schemes();
+    printf("  S/H   :   soft/hard decoding, default: hard\n");
 }
 
 typedef struct {
@@ -58,9 +59,10 @@ int main(int argc, char*argv[])
     modulation_scheme ms = LIQUID_MODEM_PSK;
     fec_scheme fec0 = LIQUID_FEC_NONE;  // inner code
     fec_scheme fec1 = LIQUID_FEC_NONE;  // outer code
+    int soft_decoding = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqBPe:n:x:c:k:m:p:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqBPe:n:x:c:k:m:p:SH")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();                    return 0;
@@ -70,7 +72,7 @@ int main(int argc, char*argv[])
         case 'P':   which = ESTIMATE_SNR_PER;   break;
         case 'e':   error_rate = atof(optarg);  break;
         case 'n':   frame_len = atoi(optarg);   break;
-        case 'x':   max_trials = atoi(optarg);   break;
+        case 'x':   max_trials = atoi(optarg);  break;
         case 'c':
             // inner FEC scheme
             fec0 = liquid_getopt_str2fec(optarg);
@@ -97,6 +99,8 @@ int main(int argc, char*argv[])
         case 'p':
             bps = atoi(optarg);
             break;
+        case 'S': soft_decoding = 1;                    break;
+        case 'H': soft_decoding = 0;                    break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             return 1;
@@ -132,6 +136,7 @@ int main(int argc, char*argv[])
     opts.fec0   = fec0;
     opts.fec1   = fec1;
     opts.dec_msg_len = frame_len;
+    opts.soft_decoding = soft_decoding;
 
     // minimum number of errors to simulate
     opts.min_packet_errors  = which==ESTIMATE_SNR_PER ? 10      : 0;

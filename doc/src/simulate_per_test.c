@@ -14,6 +14,8 @@
 
 #include "liquid.h"
 #include "liquid.doc.h"
+    
+#define OUTPUT_FILENAME "simulate_per_test.m"
 
 // print usage/help message
 void usage()
@@ -34,6 +36,7 @@ void usage()
     // print all available FEC schemes
     for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
+    printf("  S/H   : soft/hard decoding: default: hard\n");
 }
 
 
@@ -47,6 +50,7 @@ int main(int argc, char*argv[]) {
     opts.fec0 = LIQUID_FEC_NONE;
     opts.fec1 = LIQUID_FEC_NONE;
     opts.dec_msg_len = 1024;
+    opts.soft_decoding = 1;
 
     opts.min_packet_errors  = 5;
     opts.min_bit_errors     = 10;
@@ -58,7 +62,7 @@ int main(int argc, char*argv[]) {
 
     // read command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhn:p:m:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhn:p:m:c:k:SH")) != EOF){
         switch (dopt) {
         case 'h':
         case 'u': usage();                          return 0;
@@ -87,6 +91,8 @@ int main(int argc, char*argv[]) {
                 exit(-1);
             }
             break;
+        case 'S': opts.soft_decoding = 1;   break;
+        case 'H': opts.soft_decoding = 0;   break;
         default:
             fprintf(stderr,"error: unknown/invalid option\n");
             exit(-1);
@@ -108,6 +114,9 @@ int main(int argc, char*argv[]) {
     // generate results structure
     simulate_per_results results;
 
+    // array for BER
+    float BER[num_steps];
+
     unsigned int i;
     for (i=0; i<num_steps; i++) {
         SNRdB = SNRdB_min + i*SNRdB_step;
@@ -120,7 +129,39 @@ int main(int argc, char*argv[]) {
                 SNRdB,
                 results.num_bit_errors,     results.num_bit_trials,     results.BER,
                 results.num_packet_errors,  results.num_packet_trials,  results.PER*100.0f);
+
+        // save BER in array
+        BER[i] = results.BER;
     }
+
+    // 
+    // export data
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    if (!fid) {
+        fprintf(stderr,"error: %s, could not open '%s' for writing\n", argv[0], OUTPUT_FILENAME);
+        exit(1);
+    }
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    for (i=0; i<num_steps; i++) {
+        fprintf(fid,"SNRdB(%3u) = %12.8f;\n", i+1, SNRdB_min + i*SNRdB_step);
+        fprintf(fid,"BER(%3u)   = %12.4e;\n", i+1, BER[i]);
+    }
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"semilogy(SNRdB, 0.5*erfc(sqrt(10.^[SNRdB/10]))+1e-12,'-x',\n");
+    fprintf(fid,"         SNRdB, BER + 1e-12,  '-x');\n");
+    fprintf(fid,"axis([%f %f 1e-6 1]);\n", SNRdB_min, SNRdB_max);
+    fprintf(fid,"xlabel('SNR [dB]');\n");
+    fprintf(fid,"ylabel('Bit Error Rate');\n");
+    fprintf(fid,"legend('uncoded BPSK','modem: %s (M=%u) // fec: %s',1);\n",
+            modulation_scheme_str[opts.ms][0], 1<<opts.bps, fec_scheme_str[opts.fec0][0]);
+    fprintf(fid,"grid on;\n");
+
+    fclose(fid);
+    printf("results written to '%s'\n", OUTPUT_FILENAME);
 
     printf("done.\n");
     return 0;

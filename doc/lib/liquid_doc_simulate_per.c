@@ -30,6 +30,12 @@ void simulate_per(simulate_per_opts _opts,
     fec_scheme fec0                 = _opts.fec0;
     fec_scheme fec1                 = _opts.fec1;
     unsigned int dec_msg_len        = _opts.dec_msg_len;
+    int soft_decoding               = _opts.soft_decoding;
+
+    if (fec1 != LIQUID_FEC_NONE) {
+        fprintf(stderr,"warning: simulate_per(), forcing fec1 to be 'none'\n");
+        fec1 = LIQUID_FEC_NONE;
+    }
 
     // stopping criteria
     unsigned long int min_packet_errors  = _opts.min_packet_errors;
@@ -40,15 +46,15 @@ void simulate_per(simulate_per_opts _opts,
     unsigned long int max_bit_trials     = _opts.max_bit_trials;
 
     // create objects
-    crc_scheme crc = LIQUID_CRC_32;
-    packetizer p = packetizer_create(dec_msg_len,crc,fec0,fec1);
+    //crc_scheme crc = LIQUID_CRC_32;
+    fec p = fec_create(fec0, NULL);
 
     // create modem
     modem mod   = modem_create(ms, bps);
     modem demod = modem_create(ms, bps);
 
     // derived values
-    unsigned int enc_msg_len = packetizer_get_enc_msg_len(p);
+    unsigned int enc_msg_len = fec_get_enc_msg_length(fec0,dec_msg_len);
     // modulated data
     div_t d;
     // ensure msg_length is long enough
@@ -68,12 +74,13 @@ void simulate_per(simulate_per_opts _opts,
     int success = 1;
 
     // data arrays
-    unsigned char msg_org[dec_msg_len];     // original message
-    unsigned char msg_enc[enc_msg_len];     // encoded message
-    unsigned char msg_mod[num_symbols];     // modulated message (symbols)
-    unsigned char msg_dem[num_symbols];     // demodulatd message (symbols)
-    unsigned char msg_rec[enc_msg_len+8];   // received message (with padding)
-    unsigned char msg_dec[dec_msg_len];     // decoded message
+    unsigned char msg_org[dec_msg_len];         // original message
+    unsigned char msg_enc[enc_msg_len];         // encoded message
+    unsigned char msg_mod[num_symbols];         // modulated message (symbols)
+    unsigned char msg_dem[num_symbols];         // demodulated message (symbols)
+    unsigned char msg_dem_soft[8*num_symbols];  // demodulated message (soft bits)
+    unsigned char msg_rec[enc_msg_len+8];       // received message (with padding)
+    unsigned char msg_dec[dec_msg_len];         // decoded message
 
     //
     // ---------- BEGIN TRIALS ----------
@@ -92,7 +99,7 @@ void simulate_per(simulate_per_opts _opts,
             msg_org[i] = rand() & 0xff;
 
         // 2. encode data
-        packetizer_encode(p, msg_org, msg_enc);
+        fec_encode(p, dec_msg_len, msg_org, msg_enc);
 
         // 3. format encoded data into symbols
         //memset(msg, 0, msg_len*sizeof(unsigned char));
@@ -111,28 +118,37 @@ void simulate_per(simulate_per_opts _opts,
 
             // demodulate
             unsigned int demod_sym;
-            modem_demodulate(demod, s, &demod_sym);
+            if (soft_decoding) {
+                modem_demodulate_soft(demod, s, &demod_sym, &msg_dem_soft[bps*i]);
+            } else {
+                modem_demodulate(demod, s, &demod_sym);
+            }
             msg_dem[i] = (unsigned char)demod_sym;
 
             //msg_dem[i] = msg_mod[i];
         }
 
-        // 7. unpack demodulated symbols
-        liquid_repack_bytes(msg_dem,   bps,    num_symbols,
-                            msg_rec,   8,      enc_msg_len+8, // with padding
-                            &num_written);
+        // 7. unpack demodulated symbols (hard decoding)
+        if (!soft_decoding) {
+            liquid_repack_bytes(msg_dem,   bps,    num_symbols,
+                                msg_rec,   8,      enc_msg_len+8, // with padding
+                                &num_written);
+        }
         
         // 8. decode
-        //fec_decode(codec, framebytes, rx_enc_data, dec_data);
-        int crc_pass =
-        packetizer_decode(p, msg_rec, msg_dec);
+        if (soft_decoding) {
+            //fec_decode(codec, framebytes, rx_enc_data, dec_data);
+            fec_decode_soft(p, dec_msg_len, msg_dem_soft, msg_dec);
+        } else {
+            //fec_decode(codec, framebytes, rx_enc_data, dec_data);
+            fec_decode(p, dec_msg_len, msg_rec, msg_dec);
+        }
 
         // 9. count errors
         unsigned int num_trial_bit_errors = 0;
-        for (i=0; i<dec_msg_len; i++) {
-            num_trial_bit_errors += count_bit_errors(msg_org[i], msg_dec[i]);
-        }
+        num_trial_bit_errors = count_bit_errors_array(msg_org, msg_dec, dec_msg_len);
         //printf("num errors: %u / %u\n", num_trial_bit_errors, 8*framebytes);
+        int crc_pass = (num_trial_bit_errors > 0) ? 0 : 1;
 
         num_bit_errors += num_trial_bit_errors;
         num_bit_trials += 8*dec_msg_len;
@@ -167,7 +183,7 @@ void simulate_per(simulate_per_opts _opts,
     } while (continue_trials);
 
     // clean up objects
-    packetizer_destroy(p);
+    fec_destroy(p);
     modem_destroy(mod);
     modem_destroy(demod);
 
