@@ -21,10 +21,10 @@ void usage()
     printf("  Simulates soft decoding\n");
     printf("options:\n");
     printf("  u/h   : print usage/help\n");
-    printf("  s     : SNR start [dB], default: -5\n");
-    printf("  x     : SNR max [dB], default: 5\n");
-    printf("  n     : number of SNR steps, default: 21\n");
-    printf("  t     : number of trials, default: 500\n");
+    printf("  s     : SNR start [dB], default: -2\n");
+    printf("  x     : SNR max [dB], default: 13\n");
+    printf("  n     : number of SNR steps, default: 16\n");
+    printf("  t     : number of trials, default: 800\n");
     printf("  f     : frame size, default: 64\n");
     printf("  c     : coding scheme, (h74 default):\n");
     liquid_print_fec_schemes();
@@ -36,10 +36,10 @@ int main(int argc, char *argv[]) {
 
     // options
     unsigned int n = 64;                    // frame size (bytes)
-    float SNRdB_min = -5.0f;                // signal-to-noise ratio (minimum)
-    float SNRdB_max =  5.0f;                // signal-to-noise ratio (maximum)
-    unsigned int num_snr = 21;              // number of SNR steps
-    unsigned int num_trials=500;            // number of trials
+    float SNRdB_min = -2.0f;                // signal-to-noise ratio (minimum)
+    float SNRdB_max = 13.0f;                // signal-to-noise ratio (maximum)
+    unsigned int num_snr = 16;              // number of SNR steps
+    unsigned int num_trials=800;            // number of trials
     fec_scheme fs = LIQUID_FEC_HAMMING74;   // error-correcting scheme
 
     // get command-line options
@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
     unsigned int n_enc = fec_get_enc_msg_length(fs,n);
     printf("dec msg len : %u\n", n);
     printf("enc msg len : %u\n", n_enc);
+    float rate = (float)n / (float)n_enc;
     unsigned char msg_org[n];            // original data message
     unsigned char msg_enc[n_enc];        // encoded data message
     float complex sym_rec[8*n_enc];      // received BPSK symbols
@@ -96,12 +97,13 @@ int main(int argc, char *argv[]) {
     // start trials
     //
     
-    printf("  %8s [%8s] %8s %8s\n", "SNR [dB]", "trials", "soft", "hard");
+    printf("  %8s %8s [%8s] %8s %12s %8s %12s %12s\n",
+            "SNR [dB]", "Eb/N0", "trials", "soft", "(BER)", "hard", "(BER)", "uncoded");
     unsigned int s;
     for (s=0; s<num_snr; s++) {
         // compute SNR for this level
-        float SNRdB = SNRdB_min + s*SNRdB_step;
-        float nstd = powf(10.0f, -SNRdB/10.0f);
+        float SNRdB = SNRdB_min + s*SNRdB_step; // SNR in dB for this round
+        float nstd = powf(10.0f, -SNRdB/20.0f); // noise standard deviation
 
         // reset results
         bit_errors_soft[s] = 0;
@@ -130,7 +132,7 @@ int main(int argc, char *argv[]) {
 
             // add noise
             for (i=0; i<8*n_enc; i++)
-                sym_rec[i] += nstd*randnf()*cexpf(_Complex_I*2*M_PI*randf());
+                sym_rec[i] += nstd*(randnf() + _Complex_I*randf())*M_SQRT1_2;
 
             // demodulate using LLR
             for (i=0; i<8*n_enc; i++) {
@@ -145,18 +147,18 @@ int main(int argc, char *argv[]) {
             for (i=0; i<n_enc; i++) {
                 msg_cor_hard[i] = 0x00;
 
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+0] >> 0) & 0x80;
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+1] >> 1) & 0x40;
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+2] >> 2) & 0x20;
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+3] >> 3) & 0x10;
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+4] >> 4) & 0x08;
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+5] >> 5) & 0x04;
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+6] >> 6) & 0x02;
-                msg_cor_hard[i] |=(msg_cor_soft[8*i+7] >> 7) & 0x01;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+0]) > 0.0f ? 0x80 : 0x00;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+1]) > 0.0f ? 0x40 : 0x00;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+2]) > 0.0f ? 0x20 : 0x00;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+3]) > 0.0f ? 0x10 : 0x00;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+4]) > 0.0f ? 0x08 : 0x00;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+5]) > 0.0f ? 0x04 : 0x00;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+6]) > 0.0f ? 0x02 : 0x00;
+                msg_cor_hard[i] |= crealf(sym_rec[8*i+7]) > 0.0f ? 0x01 : 0x00;
             }
 
             // decode
-            fec_decode(q, n, msg_cor_hard, msg_dec_hard);
+            fec_decode(     q, n, msg_cor_hard, msg_dec_hard);
             fec_decode_soft(q, n, msg_cor_soft, msg_dec_soft);
             
             // tabulate results
@@ -165,11 +167,13 @@ int main(int argc, char *argv[]) {
         }
 
         // print results for this SNR step
-        printf("  %8.3f [%8u] %8u %8u\n",
+        printf("  %8.3f %8.3f [%8u] %8u %12.4e %8u %12.4e %12.4e\n",
                 SNRdB,
+                SNRdB - 10*log10f(rate),
                 8*n*num_trials,
-                bit_errors_soft[s],
-                bit_errors_hard[s]);
+                bit_errors_soft[s], (float)(bit_errors_soft[s]) / (float)(num_trials*n*8),
+                bit_errors_hard[s], (float)(bit_errors_hard[s]) / (float)(num_trials*n*8),
+                0.5f*erfcf(1.0f/nstd));
     }
 
     // clean up objects
@@ -183,23 +187,41 @@ int main(int argc, char *argv[]) {
     fprintf(fid,"\n\n");
     fprintf(fid,"clear all\n");
     fprintf(fid,"close all\n");
-    fprintf(fid,"n = %u;\n", 4);
-    fprintf(fid,"k = %u;\n", 7);
+    fprintf(fid,"n = %u;    %% frame size [bytes]\n", n);
+    fprintf(fid,"k = %u;    %% encoded frame size [bytes]\n", n_enc);
+    fprintf(fid,"r = n / k; %% true rate\n");
     fprintf(fid,"num_snr = %u;\n", num_snr);
     fprintf(fid,"num_trials = %u;\n", num_trials);
+    fprintf(fid,"num_bit_trials = num_trials*n*8;\n");
     for (i=0; i<num_snr; i++) {
         fprintf(fid,"SNRdB(%4u) = %12.8f;\n",i+1, SNRdB_min + i*SNRdB_step);
         fprintf(fid,"bit_errors_soft(%6u) = %u;\n", i+1, bit_errors_soft[i]);
         fprintf(fid,"bit_errors_hard(%6u) = %u;\n", i+1, bit_errors_hard[i]);
     }
+    fprintf(fid,"EbN0dB = SNRdB - 10*log10(r);\n");
+    fprintf(fid,"EbN0dB_bpsk = -15:0.5:40;\n");
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
-    fprintf(fid,"semilogy(SNRdB, bit_errors_soft / (n*num_trials) + 1e-12,\n");
-    fprintf(fid,"         SNRdB, bit_errors_hard / (n*num_trials) + 1e-12);\n");
-    fprintf(fid,"axis([%f %f 1e-4 1]);\n", SNRdB_min, SNRdB_max);
-    fprintf(fid,"legend('soft','hard',1);\n");
+    fprintf(fid,"semilogy(EbN0dB_bpsk, 0.5*erfc(sqrt(10.^[EbN0dB_bpsk/10]))+1e-12,'-x',\n");
+    fprintf(fid,"         EbN0dB,      bit_errors_soft / num_bit_trials + 1e-12,  '-x',\n");
+    fprintf(fid,"         EbN0dB,      bit_errors_hard / num_bit_trials + 1e-12,  '-x');\n");
+    fprintf(fid,"axis([%f (%f-10*log10(r)) 1e-6 1]);\n", SNRdB_min, SNRdB_max);
+    fprintf(fid,"legend('uncoded','soft','hard',1);\n");
+    fprintf(fid,"xlabel('E_b/N_0 [dB]');\n");
+    fprintf(fid,"ylabel('Bit Error Rate');\n");
+    fprintf(fid,"title('BER vs. E_b/N_0 for %s');\n", fec_scheme_str[fs][1]);
+    fprintf(fid,"grid on;\n");
+
+    fprintf(fid,"\n\n");
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"semilogy(EbN0dB_bpsk, 0.5*erfc(sqrt(10.^[EbN0dB_bpsk/10]))+1e-12,'-x',\n");
+    fprintf(fid,"         SNRdB,       bit_errors_soft / num_bit_trials + 1e-12,  '-x',\n");
+    fprintf(fid,"         SNRdB,       bit_errors_hard / num_bit_trials + 1e-12,  '-x');\n");
+    fprintf(fid,"axis([%f %f 1e-6 1]);\n", SNRdB_min, SNRdB_max);
+    fprintf(fid,"legend('uncoded','soft','hard',1);\n");
     fprintf(fid,"xlabel('SNR [dB]');\n");
     fprintf(fid,"ylabel('Bit Error Rate');\n");
+    fprintf(fid,"title('BER vs. SNR for %s');\n", fec_scheme_str[fs][1]);
     fprintf(fid,"grid on;\n");
 
     fclose(fid);
