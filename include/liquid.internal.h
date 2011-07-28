@@ -1360,6 +1360,12 @@ struct modem_s {
     void (*demodulate_func)(modem _demod,
                             float complex _x,
                             unsigned int * _symbol_out);
+
+    // soft demodulation
+    //int demodulate_soft;    // soft demodulation flag
+    // neighbors array
+    unsigned char * demod_soft_neighbors;   // array of nearest neighbors
+    unsigned int demod_soft_p;              // number of neighbors in array
 };
 
 
@@ -1443,6 +1449,14 @@ void modem_demodulate_ook(modem _demod, float complex x, unsigned int *symbol_ou
 void modem_demodulate_sqam32(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_sqam128(modem _demod, float complex x, unsigned int *symbol_out);
 
+// generic soft demodulation routine using nearest-neighbors look-up table
+void modem_demodulate_soft_table(modem _demod, float complex _x, unsigned int * _s, unsigned char * _soft_bits);
+
+// specific modem soft demodulate routines
+void modem_demodulate_soft_bpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
+void modem_demodulate_soft_qpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
+void modem_demodulate_soft_arb(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
+
 // specific modem definitions
 extern const liquid_float_complex modem_arb_sqam32[8];   // 'square' 32-qam (first quadrant)
 extern const liquid_float_complex modem_arb_sqam128[32]; // 'square' 128-qam (first quadrant)
@@ -1499,6 +1513,31 @@ extern const float apsk256_r[7];
 extern const float apsk256_phi[7];
 extern const float apsk256_r_slicer[6];
 extern const unsigned int apsk256_symbol_map[256];
+
+// soft demodulation arrays
+extern const unsigned char psk4_demod_soft_neighbors[8];
+extern const unsigned char psk8_demod_soft_neighbors[16];
+extern const unsigned char psk16_demod_soft_neighbors[32];
+extern const unsigned char psk32_demod_soft_neighbors[64];
+
+extern const unsigned char ask4_demod_soft_neighbors[8];
+extern const unsigned char ask8_demod_soft_neighbors[16];
+extern const unsigned char ask16_demod_soft_neighbors[32];
+
+extern const unsigned char qam8_demod_soft_neighbors[24];
+extern const unsigned char qam16_demod_soft_neighbors[64];
+extern const unsigned char qam32_demod_soft_neighbors[128];
+extern const unsigned char qam64_demod_soft_neighbors[256];
+extern const unsigned char qam128_demod_soft_neighbors[512];
+extern const unsigned char qam256_demod_soft_neighbors[1024];
+
+extern const unsigned char apsk4_demod_soft_neighbors[12];      // p=3
+extern const unsigned char apsk8_demod_soft_neighbors[24];      // p=3
+extern const unsigned char apsk16_demod_soft_neighbors[64];     // p=4
+extern const unsigned char apsk32_demod_soft_neighbors[128];    // p=4
+extern const unsigned char apsk64_demod_soft_neighbors[256];    // p=4
+extern const unsigned char apsk128_demod_soft_neighbors[640];   // p=5
+extern const unsigned char apsk256_demod_soft_neighbors[1280];  // p=5
 
 // demodulator helper functions
 

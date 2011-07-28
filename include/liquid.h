@@ -2648,6 +2648,22 @@ unsigned int gray_encode(unsigned int symbol_in);
 // converts a gray-encoded symbol to binary-coded decimal (BCD)
 unsigned int gray_decode(unsigned int symbol_in);
 
+// pack soft bits into symbol
+//  _soft_bits  :   soft input bits [size: _bps x 1]
+//  _bps        :   bits per symbol
+//  _sym_out    :   output symbol, value in [0,2^_bps)
+void liquid_pack_soft_bits(unsigned char * _soft_bits,
+                           unsigned int _bps,
+                           unsigned int * _sym_out);
+
+// unpack soft bits into symbol
+//  _sym_in     :   input symbol, value in [0,2^_bps)
+//  _bps        :   bits per symbol
+//  _soft_bits  :   soft output bits [size: _bps x 1]
+void liquid_unpack_soft_bits(unsigned int _sym_in,
+                             unsigned int _bps,
+                             unsigned char * _soft_bits);
+
 
 //
 // Linear modem
@@ -2686,6 +2702,10 @@ unsigned int modem_get_bps(modem _mod);
 void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
 
 void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
+void modem_demodulate_soft(modem _demod,
+                           liquid_float_complex _x,
+                           unsigned int  * _s,
+                           unsigned char * _soft_bits);
 float modem_get_demodulator_phase_error(modem _demod);
 float modem_get_demodulator_evm(modem _demod);
 

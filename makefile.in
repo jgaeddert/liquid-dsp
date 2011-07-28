@@ -572,6 +572,8 @@ modem_objects :=				\
 	src/modem/src/modem_common.o		\
 	src/modem/src/modem_modulate.o		\
 	src/modem/src/modem_demodulate.o	\
+	src/modem/src/modem_demodulate_soft.o	\
+	src/modem/src/modem_demod_soft_const.o	\
 	src/modem/src/ampmodem.o		\
 	src/modem/src/freqmodem.o		\
 
@@ -600,13 +602,15 @@ src/modem/src/freqmodem.o: %.o : %.c $(headers)
 
 modem_autotests :=					\
 	src/modem/tests/modem_autotest.h		\
-	src/modem/tests/modem_phase_error_autotest.h
+	src/modem/tests/modem_demodsoft_autotest.h	\
+	src/modem/tests/modem_phase_error_autotest.h	\
 
 
 modem_benchmarks :=					\
 	src/modem/bench/gmskmodem_benchmark.h		\
 	src/modem/bench/modem_modulate_benchmark.h	\
-	src/modem/bench/modem_demodulate_benchmark.h
+	src/modem/bench/modem_demodulate_benchmark.h	\
+	src/modem/bench/modem_demodsoft_benchmark.h	\
 
 # 
 # MODULE : multicarrier
@@ -1152,6 +1156,7 @@ example_obj :=						\
 	examples/mdct_example.o				\
 	examples/modem_arb_example.o			\
 	examples/modem_example.o			\
+	examples/modem_soft_example.o			\
 	examples/msequence_example.o			\
 	examples/nco_example.o				\
 	examples/nco_pll_example.o			\
@@ -1251,6 +1256,8 @@ sandbox_obj =						\
 	sandbox/minsearch_test.o			\
 	sandbox/minsearch2_test.o			\
 	sandbox/matrix_eig_test.o			\
+	sandbox/modem_demodulate_soft_test.o		\
+	sandbox/modem_demodulate_soft_gentab.o		\
 	sandbox/ofdmoqam_firpfbch_test.o		\
 	sandbox/ofdmoqam_firpfbch_cfo_test.o		\
 	sandbox/quasinewton_test.o			\

@@ -124,3 +124,46 @@ unsigned int gray_decode(unsigned int symbol_in)
     return symbol_out;
 }
 
+// pack soft bits into symbol
+//  _soft_bits  :   soft input bits [size: _bps x 1]
+//  _bps        :   bits per symbol
+//  _sym_out    :   output symbol, value in [0,2^_bps)
+void liquid_pack_soft_bits(unsigned char * _soft_bits,
+                           unsigned int _bps,
+                           unsigned int * _sym_out)
+{
+    // validate input
+    if (_bps > MAX_MOD_BITS_PER_SYMBOL) {
+        fprintf(stderr,"error: liquid_unpack_soft_bits(), bits/symbol exceeds maximum (%u)\n", MAX_MOD_BITS_PER_SYMBOL);
+        exit(1);
+    }
+
+    unsigned int i;
+    unsigned int s=0;
+    for (i=0; i<_bps; i++) {
+        s <<= 1;
+        s |= _soft_bits[i] > LIQUID_FEC_SOFTBIT_ERASURE ? 1 : 0;
+    }
+    *_sym_out = s;
+}
+
+// unpack soft bits into symbol
+//  _sym_in     :   input symbol, value in [0,2^_bps)
+//  _bps        :   bits per symbol
+//  _soft_bits  :   soft output bits [size: _bps x 1]
+void liquid_unpack_soft_bits(unsigned int _sym_in,
+                             unsigned int _bps,
+                             unsigned char * _soft_bits)
+{
+    // validate input
+    if (_bps > MAX_MOD_BITS_PER_SYMBOL) {
+        fprintf(stderr,"error: liquid_unpack_soft_bits(), bits/symbol exceeds maximum (%u)\n", MAX_MOD_BITS_PER_SYMBOL);
+        exit(1);
+    }
+
+    unsigned int i;
+    for (i=0; i<_bps; i++)
+        _soft_bits[i] = ((_sym_in >> (_bps-i-1)) & 0x0001) ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
+}
+
+
