@@ -378,18 +378,28 @@ unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits)
 
     // compute hard-decoded symbol
     c = 0x0000;
-    c |= ((_soft_bits[ 0] >> 7) & 0x01) ? 0x0800 : 0;
-    c |= ((_soft_bits[ 1] >> 7) & 0x01) ? 0x0400 : 0;
-    c |= ((_soft_bits[ 2] >> 7) & 0x01) ? 0x0200 : 0;
-    c |= ((_soft_bits[ 3] >> 7) & 0x01) ? 0x0100 : 0;
-    c |= ((_soft_bits[ 4] >> 7) & 0x01) ? 0x0080 : 0;
-    c |= ((_soft_bits[ 5] >> 7) & 0x01) ? 0x0040 : 0;
-    c |= ((_soft_bits[ 6] >> 7) & 0x01) ? 0x0020 : 0;
-    c |= ((_soft_bits[ 7] >> 7) & 0x01) ? 0x0010 : 0;
-    c |= ((_soft_bits[ 8] >> 7) & 0x01) ? 0x0008 : 0;
-    c |= ((_soft_bits[ 9] >> 7) & 0x01) ? 0x0004 : 0;
-    c |= ((_soft_bits[10] >> 7) & 0x01) ? 0x0002 : 0;
-    c |= ((_soft_bits[11] >> 7) & 0x01) ? 0x0001 : 0;
+    c |= (_soft_bits[ 0] > 127) ? 0x0800 : 0;
+    c |= (_soft_bits[ 1] > 127) ? 0x0400 : 0;
+    c |= (_soft_bits[ 2] > 127) ? 0x0200 : 0;
+    c |= (_soft_bits[ 3] > 127) ? 0x0100 : 0;
+    c |= (_soft_bits[ 4] > 127) ? 0x0080 : 0;
+    c |= (_soft_bits[ 5] > 127) ? 0x0040 : 0;
+    c |= (_soft_bits[ 6] > 127) ? 0x0020 : 0;
+    c |= (_soft_bits[ 7] > 127) ? 0x0010 : 0;
+    c |= (_soft_bits[ 8] > 127) ? 0x0008 : 0;
+    c |= (_soft_bits[ 9] > 127) ? 0x0004 : 0;
+    c |= (_soft_bits[10] > 127) ? 0x0002 : 0;
+    c |= (_soft_bits[11] > 127) ? 0x0001 : 0;
+
+    // decode symbol
+    s_hat = fec_hamming128_decode_symbol(c);
+
+    // re-encode and compute distance
+#if FEC_HAMMING128_ENC_GENTAB
+    c = hamming128_enc_gentab[s_hat];
+#else
+    c = fec_hamming128_encode_symbol(s_hat);
+#endif
 
     // compute distance metric
     d = 0;
@@ -406,7 +416,6 @@ unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits)
     d += (c & 0x0002) ? 255 - _soft_bits[10] : _soft_bits[10];
     d += (c & 0x0001) ? 255 - _soft_bits[11] : _soft_bits[11];
 
-    s_hat = fec_hamming128_decode_symbol(c);
     dmin = d;
 
     // search over 17 nearest neighbors
