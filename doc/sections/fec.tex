@@ -239,6 +239,8 @@ All convolutional and Reed-Solomon codes are available only if {\tt
 libfec} is installed \cite{libfec:web}.
 
 % ------------ TABLE: FEC CODING SCHEMES ------------
+% TODO : add (approximate) performance improvement (hard/soft) over
+%        uncoded BPSK in terms of Eb/N0
 \begin{table*}
 \caption{Forward error-correction codecs available in \liquid}
 \label{tab:fec:codecs}
@@ -288,6 +290,20 @@ libfec} is installed \cite{libfec:web}.
 \end{table*}%
 % ------------------------
 
+\subsubsection{Soft Decoding}
+\label{module:fec:soft}
+\liquid\ supports soft decoding of most error-correcting schemes
+(with the exception of the Reed-Solomon codes).
+Soft decoding for all codes requires the log-likelihood ratio (LLR)
+output of the demodulator which can be achieved with the appropriate
+call: {\tt modem\_demodulate\_soft()}
+(see Section~\ref{module:modem:digital:soft} for details).
+The performance improvement for soft decoding varies for both the
+modulation and FEC scheme used;
+however in general one can expect to see an improvement of approximately
+1.5~dB $E_b/N_0$ over hard-decision decoding.
+
+% TODO : describe in more detail
 
 \subsection{Performance}
 \label{module:fec:performance}
