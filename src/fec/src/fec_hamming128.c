@@ -306,8 +306,15 @@ void fec_hamming128_decode_soft(fec _q,
 
     //unsigned char num_errors=0;
     for (i=0; i<_dec_msg_len; i++) {
-        //s = fecsoft_hamming128_decode(&_msg_enc[k]);
+#if 0
+        // use true ML soft decoding: about 1.45 dB improvement in Eb/N_0 for a BER of 10^-5
+        // with a decoding complexity of 1.43M cycles/trial (64-byte block)
+        s = fecsoft_hamming128_decode(&_msg_enc[k]);
+#else
+        // use n-3 nearest neighbors: about 0.54 dB improvement in Eb/N_0 for a BER of 10^-5
+        // with a decoding complexity of 124k cycles/trial (64-byte block)
         s = fecsoft_hamming128_decode_n3(&_msg_enc[k]);
+#endif
         k += 12;
 
         _msg_dec[i] = (unsigned char)(s & 0xff);
