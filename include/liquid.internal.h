@@ -499,6 +499,46 @@ void fec_rs_decode(fec _q,
                    unsigned char * _msg_enc,
                    unsigned char * _msg_dec);
 
+// phi(x) = -logf( tanhf( x/2 ) )
+float sumproduct_phi(float _x);
+
+// iterate over the sum-product algorithm:
+// returns 1 if parity checks, 0 otherwise
+//  _H          :   parity check matrix [size: _m x _n]
+//  _m          :   rows
+//  _n          :   cols
+//  _LLR        :   received signal (soft bits, LLR) [size: _n x 1]
+//  _c_hat      :   estimated transmitted signal [size: _n x 1]
+//  _max_steps  :   maximum number of steps before bailing
+int fec_sumproduct(unsigned char * _H,
+                   unsigned int _m,
+                   unsigned int _n,
+                   float * _LLR,
+                   unsigned char * _c_hat,
+                   unsigned int _max_steps);
+
+// sum-product algorithm, returns 1 if parity checks, 0 otherwise
+//  _H      :   parity check matrix [size: _m x _n]
+//  _m      :   rows
+//  _n      :   cols
+//  _c_hat  :   estimated transmitted signal [size: _n x 1]
+//
+// internal state arrays
+//  _Lq     :   [size: _m x _n]
+//  _Lr     :   [size: _m x _n]
+//  _Lc     :   [size: _n x 1]
+//  _LQ     :   [size: _n x 1]
+//  _parity :   _H * _c_hat [size: _m x 1]
+int fec_sumproduct_step(unsigned char * _H,
+                        unsigned int _m,
+                        unsigned int _n,
+                        unsigned char * _c_hat,
+                        float * _Lq,
+                        float * _Lr,
+                        float * _Lc,
+                        float * _LQ,
+                        unsigned char * _parity);
+
 // sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
 typedef struct smatrix_s * smatrix;
 struct smatrix_s {
