@@ -1233,6 +1233,7 @@ sandbox_obj =						\
 	sandbox/fec_rep3_test.o				\
 	sandbox/fec_rep5_test.o				\
 	sandbox/fecsoft_conv_test.o			\
+	sandbox/fecsoft_golay_test.o			\
 	sandbox/fecsoft_hamming128_gentab.o		\
 	sandbox/fec_sumproduct_test.o			\
 	sandbox/fft_r2r_test.o				\
