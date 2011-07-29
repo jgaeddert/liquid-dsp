@@ -413,8 +413,6 @@ framing_objects :=				\
 	src/framing/src/ofdmflexframesync.o	\
 	src/framing/src/packetizer.o		\
 	src/framing/src/interleaver.o		\
-	src/framing/src/interleaver_create.o	\
-	src/framing/src/interleaver_permute.o	\
 
 
 # list explicit targets and dependencies here

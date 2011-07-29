@@ -20,27 +20,240 @@
  */
 
 //
-// interleaver.c
+// interleaver_create.c
 //
-// basic interleaver methods:
-//  interleaver_print()
-//  interleaver_debug_print()
-//  interleaver_encode()
-//  interleaver_decode()
+// Create and initialize interleaver objects
 //
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <math.h> // debug_print
+#include <math.h>
 
 #include "liquid.internal.h"
+
+interleaver interleaver_create(unsigned int _n,
+                               interleaver_type _type)
+{
+    interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
+    q->n = _n;
+
+    // m = floor( log2(_n+1) )
+    unsigned int m = liquid_nextpow2(q->n+1)/2;
+
+    q->M = 1<<(m/2);    // M ~ sqrt(L)
+    //if (q->M>1) q->M--; // help ensure M is not exactly sqrt(L)
+
+    if (q->M==0) {
+        fprintf(stderr,"warning: interleaver_init_block(), M=0\n");
+        q->M = 1;
+    }
+
+    q->N = q->n / q->M;
+    while (q->n >= (q->M*q->N)) q->N++;  // ensures M*N >= n
+
+    return q;
+}
+
+// destroy interleaver object
+void interleaver_destroy(interleaver _q)
+{
+    free(_q);
+}
 
 // print interleaver internals
 void interleaver_print(interleaver _q)
 {
     printf("interleaver [%u] :\n", _q->n);
+    printf("    M   :   %u\n", _q->M);
+    printf("    N   :   %u\n", _q->N);
+}
+
+// execute forward interleaver (encoder)
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode(interleaver _q,
+                        unsigned char * _msg_dec,
+                        unsigned char * _msg_enc)
+{
+    interleaver_permute_forward(_msg_dec, _msg_enc, _q->n, _q->M, _q->N);
+}
+
+// execute reverse interleaver (decoder)
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode(interleaver _q,
+                        unsigned char * _msg_enc,
+                        unsigned char * _msg_dec)
+{
+    interleaver_permute_reverse(_msg_dec, _msg_enc, _q->n, _q->M, _q->N);
+}
+
+// initialize block interleaver
+void interleaver_init_block(interleaver _q)
+{
+    unsigned int i,M=0,N,L=_q->n;
+    // decompose into [M x N]
+    L = _q->n;
+    for (i=0; i<8*sizeof(unsigned int); i++) {
+        if (L & 1)
+            M = i;
+        L >>= 1;
+    }
+    L = _q->n;
+
+    M = 1<<(M/2);   // M ~ sqrt(L)
+    if (M>1) M--;   // help ensure M is not exactly sqrt(L)
+
+    if (M==0)
+        fprintf(stderr,"warning: interleaver_init_block(), M=0\n");
+
+    N = L / M;
+    N += (L > (M*N)) ? 1 : 0; // ensures m*n >= _q->n
+
+    //printf("len : %u, M=%u N=%u\n", _q->n, M, N);
+
+    unsigned int j, m=0,n=0;
+    for (i=0; i<L; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*N + n; // output
+            m++;
+            if (m==M) {
+                n = (n+1)%N;
+                m=0;
+            }
+        } while (j>=L);
+        
+        //_q->p[i] = j;
+        //printf("%u, ", j);
+    }
+    //printf("\n");
+
+}
+
+// set number of internal iterations
+void interleaver_set_num_iterations(interleaver _q,
+                                    unsigned int _n)
+{
+}
+
+
+// permute forward one iteration
+void interleaver_permute_forward(unsigned char * _x,
+                                 unsigned char * _y,
+                                 unsigned int _n,
+                                 unsigned int _M,
+                                 unsigned int _N)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int m=0;
+    unsigned int n=0;
+    for (i=0; i<_n; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=_n);
+        
+        //printf("%6u  <  %6u\n", i, j);
+        _y[i] = _x[j];
+    }
+    //printf("\n");
+}
+
+// permute forward one iteration
+void interleaver_permute_reverse(unsigned char * _x,
+                                 unsigned char * _y,
+                                 unsigned int _n,
+                                 unsigned int _M,
+                                 unsigned int _N)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int m=0;
+    unsigned int n=0;
+    for (i=0; i<_n; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=_n);
+        
+        //printf("%6u  >  %6u\n", j, i);
+        _x[j] = _y[i];
+    }
+    //printf("\n");
+}
+
+
+// permute forward one iteration with byte mask
+//  _x      :   input/output data array, [size: _n x 1]
+//  _n      :   array size
+//  _mask   :   byte mask
+void interleaver_permute_forward_mask(unsigned char * _x,
+                                      unsigned int _n,
+                                      unsigned char _mask)
+{
+}
+
+// permute reverse one iteration with byte mask
+//  _x      :   input/output data array, [size: _n x 1]
+//  _n      :   array size
+//  _mask   :   byte mask
+void interleaver_permute_reverse_mask(unsigned char * _x,
+                                      unsigned int _n,
+                                      unsigned char _mask)
+{
+}
+
+
+// compute bit permutation for interleaver
+//  _q      :   interleaver object
+//  _p      :   output permutation index array, [size: 8*_n x 1]
+void interleaver_compute_bit_permutation(interleaver _q,
+                                         unsigned int * _p)
+{
+    unsigned int i, j;
+    unsigned char x[_q->n], y[_q->n];
+
+    for (i=0; i<_q->n; i++)
+        x[i] = 0;
+
+    for (i=0; i<_q->n; i++) {
+        for (j=0; j<8; j++) {
+            x[i] = 1<<j;
+            interleaver_encode(_q, x, y);
+            // find where the bit went!
+            // look for byte containing bit
+            unsigned int k;
+            for (k=0; k<_q->n; k++) {
+                if (y[k] > 0)
+                    break;
+            }
+            // find bit position
+            unsigned char v = y[k];
+            unsigned int r;
+            for (r=0; r<8; r++) {
+                if (v & 1)
+                    break;
+                v >>= 1;
+            }
+            _p[8*i + j] = 8*k + r;
+        }
+        x[i] = 0;
+    }
 }
 
 // print interleaver internals with debugging info
@@ -104,27 +317,5 @@ void interleaver_debug_print(interleaver _q)
     }
     printf("\n");
     printf("  dmin: %8.2f, dmean: %8.2f\n", dmin, dmean);
-}
-
-// execute forward interleaver (encoder)
-//  _q          :   interleaver object
-//  _msg_dec    :   decoded (un-interleaved) message
-//  _msg_enc    :   encoded (interleaved) message
-void interleaver_encode(interleaver _q,
-                        unsigned char * _msg_dec,
-                        unsigned char * _msg_enc)
-{
-    memcpy(_msg_enc, _msg_dec, _q->n);
-}
-
-// execute reverse interleaver (decoder)
-//  _q          :   interleaver object
-//  _msg_enc    :   encoded (interleaved) message
-//  _msg_dec    :   decoded (un-interleaved) message
-void interleaver_decode(interleaver _q,
-                        unsigned char * _msg_enc,
-                        unsigned char * _msg_dec)
-{
-    memcpy(_msg_dec, _msg_enc, _q->n);
 }
 

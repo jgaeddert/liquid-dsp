@@ -44,11 +44,9 @@ int main() {
 
     // print, compute errors
     unsigned int num_errors=0;
-    printf("x\ty\tz\n");
+    printf("%6s %6s %6s\n", "x", "y", "z");
     for (i=0; i<n; i++) {
-        printf("%u\t%u\t%u\n", (unsigned int) (x[i]),
-                               (unsigned int) (y[i]),
-                               (unsigned int) (z[i]));
+        printf("%6u %6u %6u\n", x[i], y[i], z[i]);
         //printf("y[%u] = %u\n", i, (unsigned int) (y[i]));
         //printf("y[%u] = %#0x\n", i, (unsigned int) (y[i]));
         num_errors += (x[i]==z[i]) ? 0 : 1;
