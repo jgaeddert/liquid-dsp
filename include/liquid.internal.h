@@ -1173,18 +1173,16 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 
 // structured interleaver object
 struct interleaver_s {
-    unsigned int * p;   // byte permutation
-    unsigned int len;   // number of bytes
+    unsigned int n;     // number of bytes
 
-    unsigned char * t;  // temporary buffer
+    unsigned int M;     //
+    unsigned int N;     //
+    unsigned int L;     //
 
     // number of iterations (permutations) beyond
     // initial block interleaving
     unsigned int num_iterations;
 };
-
-#define LIQUID_INTERLEAVER_NUM_MASKS (4)
-extern const unsigned char interleaver_mask[LIQUID_INTERLEAVER_NUM_MASKS];
 
 // initialize block interleaver
 void interleaver_init_block(interleaver _q);
@@ -1205,37 +1203,29 @@ void interleaver_compute_bit_permutation(interleaver _q,
 
 // permute forward one iteration
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 void interleaver_permute_forward(unsigned char * _x,
-                                 unsigned int * _p,
                                  unsigned int _n);
 
 // permute reverse one iteration
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 void interleaver_permute_reverse(unsigned char * _x,
-                                 unsigned int * _p,
                                  unsigned int _n);
 
 // permute forward one iteration with byte mask
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 //  _mask   :   byte mask
 void interleaver_permute_forward_mask(unsigned char * _x,
-                                      unsigned int * _p,
                                       unsigned int _n,
                                       unsigned char _mask);
 
 // permute reverse one iteration with byte mask
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 //  _mask   :   byte mask
 void interleaver_permute_reverse_mask(unsigned char * _x,
-                                      unsigned int * _p,
                                       unsigned int _n,
                                       unsigned char _mask);
 

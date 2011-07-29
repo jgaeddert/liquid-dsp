@@ -33,73 +33,39 @@
 
 // permute forward one iteration
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 void interleaver_permute_forward(unsigned char * _x,
-                                 unsigned int * _p,
                                  unsigned int _n)
 {
-    if (_n==0) return;
-    unsigned char tmp[_n];
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        tmp[i] = _x[_p[i]];
-    }
-    memcpy(_x, tmp, _n);
 }
 
 // permute reverse one iteration
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 void interleaver_permute_reverse(unsigned char * _x,
-                                 unsigned int * _p,
                                  unsigned int _n)
 {
-    if (_n==0) return;
-    unsigned char tmp[_n];
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        tmp[_p[i]] = _x[i];
-    memcpy(_x, tmp, _n);
 }
 
 
 // permute forward one iteration with byte mask
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 //  _mask   :   byte mask
 void interleaver_permute_forward_mask(unsigned char * _x,
-                                      unsigned int * _p,
                                       unsigned int _n,
                                       unsigned char _mask)
 {
-    if (_n==0) return;
-    unsigned char tmp[_n];
-    unsigned int i;
-    for (i=0; i<_n; i++) {
-        tmp[i] = (_x[_p[i]]&_mask) | (_x[i] &(~_mask));
-    }
-    memcpy(_x, tmp, _n);
 }
 
 // permute reverse one iteration with byte mask
 //  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
 //  _n      :   array size
 //  _mask   :   byte mask
 void interleaver_permute_reverse_mask(unsigned char * _x,
-                                      unsigned int * _p,
                                       unsigned int _n,
                                       unsigned char _mask)
 {
-    if (_n==0) return;
-    unsigned char tmp[_n];
-    unsigned int i;
-    for (i=0; i<_n; i++)
-        tmp[_p[i]] = (_x[i]&_mask) | (_x[_p[i]] &(~_mask));
-    memcpy(_x, tmp, _n);
 }
 
 
@@ -110,19 +76,19 @@ void interleaver_compute_bit_permutation(interleaver _q,
                                          unsigned int * _p)
 {
     unsigned int i, j;
-    unsigned char x[_q->len], y[_q->len];
+    unsigned char x[_q->n], y[_q->n];
 
-    for (i=0; i<_q->len; i++)
+    for (i=0; i<_q->n; i++)
         x[i] = 0;
 
-    for (i=0; i<_q->len; i++) {
+    for (i=0; i<_q->n; i++) {
         for (j=0; j<8; j++) {
             x[i] = 1<<j;
             interleaver_encode(_q, x, y);
             // find where the bit went!
             // look for byte containing bit
             unsigned int k;
-            for (k=0; k<_q->len; k++) {
+            for (k=0; k<_q->n; k++) {
                 if (y[k] > 0)
                     break;
             }
