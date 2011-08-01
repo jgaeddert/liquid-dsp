@@ -3794,6 +3794,10 @@ unsigned int liquid_count_leading_zeros(unsigned int _x);
 // Most-significant bit index
 unsigned int liquid_msb_index(unsigned int _x);
 
+// Print string of bits to stdout
+void liquid_print_bitstring(unsigned int _x,
+                            unsigned int _n);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */

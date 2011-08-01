@@ -108,3 +108,11 @@ unsigned int count_bit_errors_array(unsigned char * _msg0,
 }
 
 
+void liquid_print_bitstring(unsigned int _x,
+                            unsigned int _n)
+{
+    unsigned int i;
+    for (i=0; i<_n; i++)
+        printf("%1u", (_x >> (_n-i-1)) & 1);
+}
+
