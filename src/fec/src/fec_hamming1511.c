@@ -24,7 +24,7 @@
 
 #include "liquid.internal.h"
 
-#define DEBUG_FEC_HAMMING1511 1
+#define DEBUG_FEC_HAMMING1511 0
 
 //
 // Hamming(15,11) code
@@ -38,7 +38,7 @@
 //              P4  .   x   x   x   .   .   .   x   x   x   x   = .011 1000 1111
 //              P8  .   .   .   .   x   x   x   x   x   x   x   = .000 0111 1111
 
-#define HAMMING_M1   0x0d65     // .110 1101 0101
+#define HAMMING_M1   0x06d5     // .110 1101 0101
 #define HAMMING_M2   0x05b3     // .101 1011 0011
 #define HAMMING_M4   0x038f     // .011 1000 1111
 #define HAMMING_M8   0x007f     // .000 0111 1111
