@@ -243,6 +243,8 @@ fec_autotests :=				\
 	src/fec/tests/fec_hamming74_autotest.h	\
 	src/fec/tests/fec_hamming84_autotest.h	\
 	src/fec/tests/fec_hamming128_autotest.h	\
+	src/fec/tests/fec_hamming1511_autotest.h	\
+	src/fec/tests/fec_hamming3126_autotest.h	\
 	src/fec/tests/fec_reedsolomon_autotest.h	\
 	src/fec/tests/fec_rep3_autotest.h		\
 	src/fec/tests/fec_rep5_autotest.h		\
