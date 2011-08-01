@@ -18,6 +18,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  v|q   : verbose|quiet, default: verbose\n");
     printf("  B|P   : simulate for BER|PER, default: PER\n");
+    printf("  S|E   : estimate SNR|Eb/N0, default: SNR\n");
     printf("  e     : target error rate, default: 0.05\n");
     printf("  n     : frame length [bytes], default: 1024\n");
     //printf("  m         : minimum number of errors\n");
@@ -48,7 +49,8 @@ int main(int argc, char*argv[])
 
     // options
     int verbose = 1;
-    int which = ESTIMATE_SNR_BER;
+    int which_ber_per  = ESTIMATE_SNR_BER;
+    int which_snr_ebn0 = ESTIMATE_SNR;
     float error_rate = 1e-3f;
     unsigned int frame_len = 1024;
     unsigned long int max_trials = 0;
@@ -59,14 +61,16 @@ int main(int argc, char*argv[])
     fec_scheme fec1 = LIQUID_FEC_NONE;  // outer code
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqBPe:n:x:c:k:m:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqBPSEe:n:x:c:k:m:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h':   usage();                    return 0;
         case 'v':   verbose = 1;                break;
         case 'q':   verbose = 0;                break;
-        case 'B':   which = ESTIMATE_SNR_BER;   break;
-        case 'P':   which = ESTIMATE_SNR_PER;   break;
+        case 'B':   which_ber_per = ESTIMATE_SNR_BER;   break;
+        case 'P':   which_ber_per = ESTIMATE_SNR_PER;   break;
+        case 'S':   which_snr_ebn0 = ESTIMATE_SNR;      break;
+        case 'E':   which_snr_ebn0 = ESTIMATE_EBN0;     break;
         case 'e':   error_rate = atof(optarg);  break;
         case 'n':   frame_len = atoi(optarg);   break;
         case 'x':   max_trials = atoi(optarg);   break;
@@ -106,7 +110,7 @@ int main(int argc, char*argv[])
     } else if (frame_len == 0 || frame_len > 10000) {
         fprintf(stderr,"error: frame length must be in [1, 10,000]\n");
         exit(1);
-    } else if (which == ESTIMATE_SNR_BER && error_rate >= 0.5) {
+    } else if (which_ber_per == ESTIMATE_SNR_BER && error_rate >= 0.5) {
         fprintf(stderr,"error: error rate must be less than 0.5 when simulating BER\n");
         exit(1);
     } else if (error_rate >= 1.0f) {
@@ -116,7 +120,7 @@ int main(int argc, char*argv[])
 
     if (max_trials == 0) {
         // unspecified: use defaults
-        if (which == ESTIMATE_SNR_BER)
+        if (which_ber_per == ESTIMATE_SNR_BER)
             max_trials = 800000;
         else
             max_trials = 200;
@@ -130,37 +134,47 @@ int main(int argc, char*argv[])
     opts.dec_msg_len = frame_len;
 
     // minimum number of errors to simulate
-    opts.min_packet_errors  = which==ESTIMATE_SNR_PER ? 10      : 0;
-    opts.min_bit_errors     = which==ESTIMATE_SNR_BER ? 50      : 0;
+    opts.min_packet_errors  = which_ber_per==ESTIMATE_SNR_PER ? 10      : 0;
+    opts.min_bit_errors     = which_ber_per==ESTIMATE_SNR_BER ? 50      : 0;
 
     // minimum number of trials to simulate
-    opts.min_packet_trials  = which==ESTIMATE_SNR_PER ? 500     : 0;
-    opts.min_bit_trials     = which==ESTIMATE_SNR_BER ? 5000    : 0;
+    opts.min_packet_trials  = which_ber_per==ESTIMATE_SNR_PER ? 500     : 0;
+    opts.min_bit_trials     = which_ber_per==ESTIMATE_SNR_BER ? 5000    : 0;
 
     // maximum number of trials to simulate (before bailing and
     // deeming simulation unsuccessful)
-    opts.max_packet_trials  = which==ESTIMATE_SNR_PER ? max_trials : -1; 
-    opts.max_bit_trials     = which==ESTIMATE_SNR_BER ? max_trials : -1; 
+    opts.max_packet_trials  = which_ber_per==ESTIMATE_SNR_PER ? max_trials : -1; 
+    opts.max_bit_trials     = which_ber_per==ESTIMATE_SNR_BER ? max_trials : -1; 
 
     // estimate SNR for a specific PER
     printf("%u-%s // %s // %s (%s: %e)\n", 1<<opts.bps,
                                            modulation_scheme_str[opts.ms][0],
                                            fec_scheme_str[opts.fec0][0],
                                            fec_scheme_str[opts.fec1][0],
-                                           which == ESTIMATE_SNR_BER ? "BER" : "PER",
+                                           which_ber_per == ESTIMATE_SNR_BER ? "BER" : "PER",
                                            error_rate);
 
     // run estimation
-    float SNRdB_hat = estimate_snr(opts, which, error_rate);
+    float x_hat = estimate_snr(opts, which_ber_per, which_snr_ebn0, error_rate);
 
     // compute rate [b/s/Hz]
     float rate = opts.bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
 
+    // set estimated values
+    float SNRdB_hat;
+    float EbN0dB_hat;
+    if (which_snr_ebn0==ESTIMATE_SNR) {
+        SNRdB_hat = x_hat;
+        EbN0dB_hat = SNRdB_hat - 10*log10f(rate);
+    } else {
+        SNRdB_hat = x_hat + 10*log10f(rate);
+        EbN0dB_hat = x_hat;
+    }
     if (verbose) {
         printf("++ SNR (est) : %8.4fdB (Eb/N0 = %8.4fdB) for %s: %12.4e\n",
                 SNRdB_hat,
-                SNRdB_hat - 10*log10f(rate),
-                which == ESTIMATE_SNR_BER ? "BER" : "PER",
+                EbN0dB_hat,
+                which_ber_per == ESTIMATE_SNR_BER ? "BER" : "PER",
                 error_rate);
     }
 
