@@ -330,6 +330,15 @@ void fec_hamming128_decode(fec _q,
                            unsigned char * _msg_enc,
                            unsigned char * _msg_dec);
 
+// Hamming(15,11)
+unsigned int fec_hamming1511_encode_symbol(unsigned int _sym_dec);
+unsigned int fec_hamming1511_decode_symbol(unsigned int _sym_enc);
+
+// Hamming(31,26)
+unsigned int fec_hamming3126_encode_symbol(unsigned int _sym_dec);
+unsigned int fec_hamming3126_decode_symbol(unsigned int _sym_enc);
+
+
 // Convolutional: r1/2 K=7
 //                r1/2 K=9
 //                r1/3 K=9

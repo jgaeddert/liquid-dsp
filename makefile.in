@@ -212,6 +212,8 @@ fec_objects :=				\
 	src/fec/src/fec_hamming74.o		\
 	src/fec/src/fec_hamming84.o		\
 	src/fec/src/fec_hamming128.o	\
+	src/fec/src/fec_hamming1511.o	\
+	src/fec/src/fec_hamming3126.o	\
 	src/fec/src/fec_pass.o		\
 	src/fec/src/fec_rep3.o		\
 	src/fec/src/fec_rep5.o		\
