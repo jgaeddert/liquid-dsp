@@ -158,7 +158,7 @@ unsigned int fec_hamming_encode_symbol(unsigned int _sym_dec)
     unsigned int sym_enc = ((_sym_dec & 0x00007fff) << 0) | //  ..00 0000 0000 0111 1111 1111 1111
                            ((_sym_dec & 0x003F8000) << 1) | //  ..00 0011 1111 1000 0000 0000 0000
                            ((_sym_dec & 0x01C00000) << 2) | //  ..01 1100 0000 0000 0000 0000 0000
-                           ((_sym_dec & 0x20000000) << 3) | //  ..10 0000 0000 0000 0000 0000 0000
+                           ((_sym_dec & 0x02000000) << 3) | //  ..10 0000 0000 0000 0000 0000 0000
                            ( p1  << 30 ) |  // 30 = 31 - 1  (position of P1)
                            ( p2  << 29 ) |  // 29 = 31 - 2  (position of P2)
                            ( p4  << 27 ) |  // 27 = 31 - 4  (position of P4)
