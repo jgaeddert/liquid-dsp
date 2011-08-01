@@ -1245,6 +1245,7 @@ sandbox_obj =						\
 	sandbox/ellip_func_test.o			\
 	sandbox/ellip_test.o				\
 	sandbox/eqlms_cccf_test.o			\
+	sandbox/fec_hamming3126_example.o		\
 	sandbox/fec_hamming128_example.o		\
 	sandbox/fec_hamming74_gentab.o			\
 	sandbox/fec_hamming84_gentab.o			\
