@@ -1209,6 +1209,14 @@ void interleaver_permute(unsigned char * _x,
                          unsigned int _N,
                          int _dir);
 
+// permute one iteration (soft bit input)
+void interleaver_permute_soft(unsigned char * _x,
+                              unsigned char * _y,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N,
+                              int _dir);
+
 // permute forward one iteration with byte mask
 //  _x      :   input/output data array, [size: _n x 1]
 //  _n      :   array size

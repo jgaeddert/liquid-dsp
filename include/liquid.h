@@ -2166,6 +2166,14 @@ void interleaver_encode(interleaver _q,
                         unsigned char * _msg_dec,
                         unsigned char * _msg_enc);
 
+// execute forward interleaver (encoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode_soft(interleaver _q,
+                             unsigned char * _msg_dec,
+                             unsigned char * _msg_enc);
+
 // execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
@@ -2173,6 +2181,14 @@ void interleaver_encode(interleaver _q,
 void interleaver_decode(interleaver _q,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec);
+
+// execute reverse interleaver (decoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode_soft(interleaver _q,
+                             unsigned char * _msg_enc,
+                             unsigned char * _msg_dec);
 
 // print internal debugging information
 void interleaver_debug_print(interleaver _q);

@@ -1141,6 +1141,7 @@ example_obj :=						\
 	examples/gradsearch_datafit_example.o		\
 	examples/gradsearch_example.o			\
 	examples/interleaver_example.o			\
+	examples/interleaver_soft_example.o		\
 	examples/interleaver_scatterplot_example.o	\
 	examples/iirdes_example.o			\
 	examples/iirdes_analog_example.o		\
