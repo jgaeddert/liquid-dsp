@@ -1179,6 +1179,9 @@ struct interleaver_s {
     unsigned int N;     //
     unsigned int L;     //
 
+    unsigned char * buffer_0;   //
+    unsigned char * buffer_1;   //
+
     // number of iterations (permutations) beyond
     // initial block interleaving
     unsigned int num_iterations;
@@ -1195,19 +1198,16 @@ void interleaver_compute_bit_permutation(interleaver _q,
 // permutation functions
 //
 
-// permute forward one iteration
-void interleaver_permute_forward(unsigned char * _x,
-                                 unsigned char * _y,
-                                 unsigned int _n,
-                                 unsigned int _M,
-                                 unsigned int _N);
+#define INTERLEAVE_FORWARD (0)
+#define INTERLEAVE_REVERSE (1)
 
-// permute reverse one iteration
-void interleaver_permute_reverse(unsigned char * _x,
-                                 unsigned char * _y,
-                                 unsigned int _n,
-                                 unsigned int _M,
-                                 unsigned int _N);
+// permute one iteration
+void interleaver_permute(unsigned char * _x,
+                         unsigned char * _y,
+                         unsigned int _n,
+                         unsigned int _M,
+                         unsigned int _N,
+                         int _dir);
 
 // permute forward one iteration with byte mask
 //  _x      :   input/output data array, [size: _n x 1]

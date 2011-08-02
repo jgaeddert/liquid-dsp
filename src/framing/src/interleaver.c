@@ -37,9 +37,14 @@ interleaver interleaver_create(unsigned int _n,
 {
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
     q->n = _n;
+    q->num_iterations = 1;
+
+    // allocate memory for buffers
+    q->buffer_0 = (unsigned char*)malloc(q->n*sizeof(unsigned char));
+    q->buffer_1 = (unsigned char*)malloc(q->n*sizeof(unsigned char));
 
     // m = floor( log2(_n+1) )
-    unsigned int m = liquid_nextpow2(q->n+1)/2;
+    unsigned int m = liquid_nextpow2(q->n+1);
 
     q->M = 1<<(m/2);    // M ~ sqrt(L)
     //if (q->M>1) q->M--; // help ensure M is not exactly sqrt(L)
@@ -58,6 +63,11 @@ interleaver interleaver_create(unsigned int _n,
 // destroy interleaver object
 void interleaver_destroy(interleaver _q)
 {
+    // free buffers
+    free(_q->buffer_0);
+    free(_q->buffer_1);
+
+    // free main object memory
     free(_q);
 }
 
@@ -77,7 +87,32 @@ void interleaver_encode(interleaver _q,
                         unsigned char * _msg_dec,
                         unsigned char * _msg_enc)
 {
-    interleaver_permute_forward(_msg_dec, _msg_enc, _q->n, _q->M, _q->N);
+#if 0
+    // single iteration
+    interleaver_permute(_msg_dec, _msg_enc, _q->n, _q->M, _q->N, INTERLEAVE_FORWARD);
+#else
+    // buffer pointers
+    unsigned char * b0 = _q->buffer_0;  // input buffer
+    unsigned char * b1 = _q->buffer_1;  // output buffer
+
+    // copy to input
+    memmove(b0, _msg_dec, _q->n);
+
+    // run loop
+    unsigned int i;
+    for (i=0; i<_q->num_iterations; i++) {
+        // flip buffer pointers
+        interleaver_permute(b0, b1, _q->n, _q->M, _q->N, INTERLEAVE_FORWARD);
+
+        // swap buffers
+        unsigned char * tmp = b0;
+        b0 = b1;
+        b1 = tmp;
+    }
+
+    // copy to output
+    memmove(_msg_enc, b0, _q->n);
+#endif
 }
 
 // execute reverse interleaver (decoder)
@@ -88,7 +123,33 @@ void interleaver_decode(interleaver _q,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec)
 {
-    interleaver_permute_reverse(_msg_dec, _msg_enc, _q->n, _q->M, _q->N);
+#if 0
+    // single iteration
+    interleaver_permute(_msg_enc, _msg_dec, _q->n, _q->M, _q->N, INTERLEAVE_REVERSE);
+#else
+    // buffer pointers
+    unsigned char * b0 = _q->buffer_0;  // input buffer
+    unsigned char * b1 = _q->buffer_1;  // output buffer
+
+    // copy to input
+    memmove(b0, _msg_enc, _q->n);
+
+    // run loop
+    unsigned int i;
+    for (i=0; i<_q->num_iterations; i++) {
+        // flip buffer pointers
+        //interleaver_permute_forward(b0, b1, _q->n, _q->M, _q->N);
+        interleaver_permute(b0, b1, _q->n, _q->M, _q->N, INTERLEAVE_REVERSE);
+
+        // swap buffers
+        unsigned char * tmp = b0;
+        b0 = b1;
+        b1 = tmp;
+    }
+
+    // copy to output
+    memmove(_msg_dec, b0, _q->n);
+#endif
 }
 
 // initialize block interleaver
@@ -141,12 +202,13 @@ void interleaver_set_num_iterations(interleaver _q,
 }
 
 
-// permute forward one iteration
-void interleaver_permute_forward(unsigned char * _x,
-                                 unsigned char * _y,
-                                 unsigned int _n,
-                                 unsigned int _M,
-                                 unsigned int _N)
+// permute one iteration
+void interleaver_permute(unsigned char * _x,
+                         unsigned char * _y,
+                         unsigned int _n,
+                         unsigned int _M,
+                         unsigned int _N,
+                         int _dir)
 {
     unsigned int i;
     unsigned int j;
@@ -162,37 +224,11 @@ void interleaver_permute_forward(unsigned char * _x,
                 m=0;
             }
         } while (j>=_n);
-        
-        //printf("%6u  <  %6u\n", i, j);
-        _y[i] = _x[j];
-    }
-    //printf("\n");
-}
-
-// permute forward one iteration
-void interleaver_permute_reverse(unsigned char * _x,
-                                 unsigned char * _y,
-                                 unsigned int _n,
-                                 unsigned int _M,
-                                 unsigned int _N)
-{
-    unsigned int i;
-    unsigned int j;
-    unsigned int m=0;
-    unsigned int n=0;
-    for (i=0; i<_n; i++) {
-        //j = m*N + n; // input
-        do {
-            j = m*_N + n; // output
-            m++;
-            if (m == _M) {
-                n = (n+1) % (_N);
-                m=0;
-            }
-        } while (j>=_n);
-        
-        //printf("%6u  >  %6u\n", j, i);
-        _x[j] = _y[i];
+    
+        if (_dir == INTERLEAVE_FORWARD)
+            _y[i] = _x[j];
+        else
+            _y[j] = _x[i];
     }
     //printf("\n");
 }
