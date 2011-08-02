@@ -311,6 +311,12 @@ figures.gen/fec_ber_ebn0_conv.eps \
 figures.gen/fec_ber_esn0_convpunc.eps \
 figures.gen/fec_ber_ebn0_convpunc.eps : %.eps : %.gnu $(fec_ber_data)
 
+# 
+# Required Eb/N0, SNR for 10^-5
+#
+
+data/ber/fec_snr_req.dat : src/estimate_snr_fec
+	./$< -o$@ -B -e1e-5 -n1024 -x4000000
 
 
 ##
@@ -663,6 +669,13 @@ $(modem_ber_gnufiles) : figures.gen/%.gnu : data/%.gnu
 # add ber simulation data files as dependencies
 $(modem_ber_epsfiles) : %.eps : %.gnu $(modem_ber_data)
 
+
+# 
+# Required Eb/N0, SNR for 10^-5
+#
+
+data/ber-modem/modem_snr_req.dat : src/estimate_snr_modem
+	./$< -o$@ -B -e1e-5 -n1024 -x8000000
 
 
 ##
