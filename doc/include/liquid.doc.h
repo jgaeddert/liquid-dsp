@@ -122,5 +122,8 @@ float estimate_snr(simulate_per_opts _opts,
                    int _snr_ebn0,
                    float _error_rate);
 
+// solve for SNR (Eb/N0) for BPSK for a given BER
+float estimate_snr_bpsk(float _error_rate);
+
 #endif // __LIQUID_DOC_H__
 

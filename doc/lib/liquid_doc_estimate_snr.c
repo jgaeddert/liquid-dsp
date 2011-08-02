@@ -149,3 +149,73 @@ float estimate_snr(simulate_per_opts _opts,
     return x_hat;
 }
 
+// solve for SNR (Eb/N0) for BPSK for a given BER
+float estimate_snr_bpsk(float _error_rate)
+{
+    // validate input
+    if (_error_rate <= 0.0f) {
+        fprintf(stderr,"error: estimate_snr_bpsk(), error rate must be greater than 0\n");
+        exit(1);
+    } else if (_error_rate >= 0.5f) {
+        fprintf(stderr,"error: estimate_snr_bpsk(), error rate must be less than 0.5\n");
+        exit(1);
+    }
+
+    // lower bound
+    float EbN0dB_0 = -20;
+    float BER_0 = 0.5f*erfcf(powf(10.0f,EbN0dB_0/20.0f));
+
+    // upper bound
+    float EbN0dB_1 =  20;
+    float BER_1 = 0.5f*erfcf(powf(10.0f,EbN0dB_1/20.0f));
+
+    // estimate
+    float EbN0dB;
+    float BER;
+
+    unsigned int i;
+    for (i=0; i<10; i++) {
+#if 0
+        printf("  Eb/N0 : [%12.4f %12.4f], error rate : [%12.4e %12.4e]\n",
+                EbN0dB_0,
+                EbN0dB_1,
+                BER_0,
+                BER_1);
+#endif
+        // split the difference and compute error rate
+        EbN0dB = 0.5f*(EbN0dB_0 + EbN0dB_1);
+        BER = 0.5f*erfcf(powf(10.0f,EbN0dB/20.0f));
+
+        if (BER > _error_rate) {
+            EbN0dB_0 = EbN0dB;
+            BER_0    = BER;
+        } else {
+            EbN0dB_1 = EbN0dB;
+            BER_1    = BER;
+        }
+    }
+
+    // apply linear fit to log of error rate
+    //  (y-y0) = m*(x-x0)
+    //  m = (y0-y1)/(x0-x1)
+    //  x = (y-y0)/m + x0
+    //
+    //  x : SNR
+    //  y : BER
+    float EbN0dB_hat;
+    float x0 = EbN0dB_0;
+    float x1 = EbN0dB_1;
+    float y0=0, y1=0;
+    float eps = 1e-16f; // small, insignificant number to ensure no log(0)
+
+    y0 = logf(BER_0 + eps);
+    y1 = logf(BER_1 + eps);
+    float m = (y0 - y1) / (x0 - x1);
+    EbN0dB_hat = (logf(_error_rate) - y0)/m + x0;
+#if 0
+    printf("  Eb/N0 : [%12.4f %12.4f], error rate : [%12.4e %12.4e]\n",
+            EbN0dB_0, EbN0dB_1, expf(y0), expf(y1));
+#endif
+
+    return EbN0dB_hat;
+}
