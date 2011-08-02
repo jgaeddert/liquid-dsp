@@ -152,7 +152,7 @@ void autotest_agc_rssi_noise() {
     float complex x, y;
     for (i=0; i<1024; i++) {
         // generate sample (circular complex noise)
-        x = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
+        x = nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
         // execute agc
         agc_crcf_execute(q, x, &y);

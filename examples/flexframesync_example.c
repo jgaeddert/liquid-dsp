@@ -101,8 +101,8 @@ int main(int argc, char *argv[]) {
         y[1] *= gamma;
 
         // add noise
-        y[0] += randnf() * cexpf(_Complex_I*M_PI*randf()) * nstd;
-        y[1] += randnf() * cexpf(_Complex_I*M_PI*randf()) * nstd;
+        y[0] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
+        y[1] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
         // push interpolated samples through synchronizer
         flexframesync_execute(fs, y, 2);

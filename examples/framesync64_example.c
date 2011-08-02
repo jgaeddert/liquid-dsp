@@ -93,7 +93,7 @@ int main() {
     for (i=0; i<1280; i++) {
         frame_rx[i] *= cexpf(_Complex_I*phi);
         frame_rx[i] *= gamma;
-        frame_rx[i] += randnf() * cexpf(_Complex_I*M_PI*randf()) * nstd;
+        frame_rx[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
         nco_crcf_mix_up(nco_channel, frame_rx[i], &frame_rx[i]);
 
         nco_crcf_step(nco_channel);

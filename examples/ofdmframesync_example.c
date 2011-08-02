@@ -120,7 +120,7 @@ int main(int argc, char*argv[]) {
     firfilt_cccf fc = firfilt_cccf_create(hc,hc_len);
     // fill with noise
     for (i=0; i<hc_len; i++)
-        firfilt_cccf_push(fc, nstd*randnf()*cexpf(_Complex_I*2*M_PI*randf()));
+        firfilt_cccf_push(fc, nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2);
 
     // add noise, carrier offset
     for (i=0; i<num_samples; i++) {
@@ -132,14 +132,14 @@ int main(int argc, char*argv[]) {
         y[i] *= cexpf(_Complex_I*(phi + dphi*i));
 
         // add noise
-        y[i] += nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
+        y[i] += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
     firfilt_cccf_destroy(fc);
 
     // push noise into synchronizer
     unsigned int d=8;
     for (i=0; i<d; i++) {
-        float complex z = nstd*randnf()*cexp(_Complex_I*2*M_PI*randf());
+        float complex z = nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
         ofdmframesync_execute(fs,&z,1);
     }

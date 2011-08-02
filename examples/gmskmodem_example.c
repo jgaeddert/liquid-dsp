@@ -83,7 +83,7 @@ int main(int argc, char*argv[]) {
     // TODO : compensate for over-sampling rate?
     float nstd = powf(10.0f,-SNRdB*0.1f);
     for (i=0; i<num_samples; i++)
-        y[i] = x[i]*cexpf(_Complex_I*(phi + i*dphi)) + nstd*randnf()*cexpf(_Complex_I*2*M_PI*randf());
+        y[i] = x[i]*cexpf(_Complex_I*(phi + i*dphi)) + nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
     // demodulate signal
     for (i=0; i<num_symbols; i++)

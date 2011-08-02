@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
         z[i] *= 1.0f*cexpf(_Complex_I*(phi + i*dphi));
 
         // add noise
-        z[i] += nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
+        z[i] += nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
         fprintf(fid,"y(%3u)  = %12.4e + j*%12.4e;\n", n+1, crealf(y[i]), cimagf(y[i]));
         fprintf(fid,"z(%3u)  = %12.4e + j*%12.4e;\n", n+1, crealf(z[i]), cimagf(z[i]));

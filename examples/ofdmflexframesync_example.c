@@ -147,7 +147,7 @@ int main(int argc, char*argv[])
 
     // initialize frame synchronizer with noise
     for (i=0; i<1000; i++) {
-        float complex noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
+        float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
         ofdmflexframesync_execute(fs, &noise, 1);
     }
 
@@ -160,7 +160,7 @@ int main(int argc, char*argv[])
 
         // apply channel
         for (i=0; i<num_written; i++) {
-            float complex noise = nstd * randnf() * cexpf(_Complex_I*2*M_PI*randf());
+            float complex noise = nstd*( randnf() + _Complex_I*randnf())*M_SQRT1_2;
             buffer[i] *= gamma;
             buffer[i] += noise;
         }
