@@ -51,7 +51,7 @@ interleaver interleaver_create(unsigned int _n,
     //if (q->M>1) q->M--; // help ensure M is not exactly sqrt(L)
 
     if (q->M==0) {
-        fprintf(stderr,"warning: interleaver_init_block(), M=0\n");
+        fprintf(stderr,"warning: interleaver_create(), M=0\n");
         q->M = 1;
     }
 
@@ -175,49 +175,6 @@ void interleaver_decode_soft(interleaver _q,
 {
     // single iteration
     interleaver_permute_soft(_msg_enc, _msg_dec, _q->n, _q->M, _q->N, INTERLEAVE_REVERSE);
-}
-
-// initialize block interleaver
-void interleaver_init_block(interleaver _q)
-{
-    unsigned int i,M=0,N,L=_q->n;
-    // decompose into [M x N]
-    L = _q->n;
-    for (i=0; i<8*sizeof(unsigned int); i++) {
-        if (L & 1)
-            M = i;
-        L >>= 1;
-    }
-    L = _q->n;
-
-    M = 1<<(M/2);   // M ~ sqrt(L)
-    if (M>1) M--;   // help ensure M is not exactly sqrt(L)
-
-    if (M==0)
-        fprintf(stderr,"warning: interleaver_init_block(), M=0\n");
-
-    N = L / M;
-    N += (L > (M*N)) ? 1 : 0; // ensures m*n >= _q->n
-
-    //printf("len : %u, M=%u N=%u\n", _q->n, M, N);
-
-    unsigned int j, m=0,n=0;
-    for (i=0; i<L; i++) {
-        //j = m*N + n; // input
-        do {
-            j = m*N + n; // output
-            m++;
-            if (m==M) {
-                n = (n+1)%N;
-                m=0;
-            }
-        } while (j>=L);
-        
-        //_q->p[i] = j;
-        //printf("%u, ", j);
-    }
-    //printf("\n");
-
 }
 
 // set number of internal iterations
