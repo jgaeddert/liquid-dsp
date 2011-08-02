@@ -818,62 +818,71 @@ Section~\ref{module:modem:digital:interface}).
 \label{tab:modem:performance}
 \centering
 {\footnotesize
-\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}ll}
+\begin{tabular*}{0.65\textwidth}{l@{\extracolsep{\fill}}lr}
 \toprule
 {\it schemes} &
 {\it $E_s/N_0$} &
 {\it $E_b/N_0$}\\\otoprule
 %
 \multicolumn{3}{c}{$M=2$}\\
-BPSK, 2-ASK         & - & - \\
-DBPSK               & - & - \\
-OOK                 & - & - \\
+\midrule
+BPSK, 2-ASK         &  9.59 &  9.59 \\
+DBPSK               & 10.46 & 10.46 \\
+OOK                 & 12.61 & 12.61 \\
 %
-\multicolumn{3}{c}{$M=4$} \\\midrule
-QPSK, 4-QAM         & - & - \\
-4-APSK              & - & - \\
-DQPSK               & - & - \\
-4-ASK               & - & - \\
+\midrule
+\multicolumn{3}{c}{$M=4$} \\
+\midrule
+QPSK, 4-QAM         & 12.59 &  9.59 \\
+4-APSK              & 14.76 & 11.75 \\
+DQPSK               & 14.93 & 11.92 \\
+4-ASK               & 16.59 & 13.58 \\
 %
+\midrule
 \multicolumn{3}{c}{$M=8$} \\\midrule
-8-PSK               & - & - \\
-8-APSK              & - & - \\
-8-QAM               & - & - \\
-8-DPSK              & - & - \\
-8-ASK               & - & - \\
+8-APSK              & 16.12 & 11.35 \\
+8-QAM               & 17.28 & 12.51 \\
+8-PSK               & 17.84 & 13.07 \\
+8-DPSK              & 20.62 & 15.85 \\
+8-ASK               & 22.61 & 17.84 \\
 %
+\midrule
 \multicolumn{3}{c}{$M=16$} \\\midrule
-16-PSK              & - & - \\
-16-DPSK             & - & - \\
-16-APSK             & - & - \\
-16-QAM              & - & - \\
-16-ASK              & - & - \\
-V.29                & - & - \\
-ARB-16-OPT          & - & - \\
+ARB-16-OPT          & 19.15 & 13.13 \\
+16-QAM              & 19.57 & 13.55 \\
+16-APSK             & 19.92 & 13.90 \\
+V.29                & 20.48 & 14.45 \\
+16-PSK              & 23.43 & 17.41 \\
+16-DPSK             & 26.43 & 20.41 \\
+16-ASK              & 28.54 & 22.52 \\
 %
+\midrule
 \multicolumn{3}{c}{$M=32$} \\\midrule
-ARB-32-OPT          & - & - \\
-32-APSK             & - & - \\
-32-SQAM             & - & - \\
-32-QAM              & - & - \\
-32-PSK              & - & - \\
-32-DPSK             & - & - \\
+ARB-32-OPT          & 22.11 & 15.12 \\
+32-SQAM             & 22.56 & 15.57 \\
+32-APSK             & 23.43 & 16.44 \\
+32-QAM              & 23.59 & 16.60 \\
+32-PSK              & 29.38 & 22.38 \\
+32-DPSK             & 32.38 & 25.39 \\
 %
+\midrule
 \multicolumn{3}{c}{$M=64$} \\\midrule
-64-QAM              & - & - \\
-64-APSK             & - & - \\
-64-PSK              & - & - \\
-64-DPSK             & - & - \\
-ARB-64-VT           & - & - \\
+64-QAM              & 25.50 & 17.71 \\
+64-APSK             & 27.06 & 19.28 \\
+ARB-64-VT           & 31.67 & 23.89 \\
+64-PSK              & 35.32 & 27.38 \\
+64-DPSK             & 38.28 & 30.50 \\
 %
+\midrule
 \multicolumn{3}{c}{$M=128$} \\\midrule
-128-APSK            & - & - \\
-128-SQAM            & - & - \\
-128-QAM             & - & - \\
+128-SQAM            & 28.42 & 19.97 \\
+128-QAM             & 29.60 & 21.15 \\
+128-APSK            & 30.55 & 22.10 \\
 %
+\midrule
 \multicolumn{3}{c}{$M=256$} \\\midrule
-256-QAM             & - & - \\
-256-APSK            & - & - \\\bottomrule
+256-QAM             & 31.56 & 22.53 \\
+256-APSK            & 33.10 & 24.06 \\\bottomrule
 %
 \end{tabular*}
 }
