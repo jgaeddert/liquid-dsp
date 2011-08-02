@@ -65,7 +65,7 @@ int main() {
     for (i=0; i<1280; i++) {
         y[i] *= gamma;
         y[i] *= cexpf(_Complex_I*(phase_offset + i*frequency_offset));
-        y[i] += nstd * randnf()*cexpf(_Complex_I*M_PI*randf());
+        y[i] += nstd * (randnf() + _Complex_I*randnf())*M_SQRT1_2;
     }
 
     // EXECUTE synchronizer and receive the frame one sample at a time

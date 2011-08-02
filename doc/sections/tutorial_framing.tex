@@ -562,7 +562,7 @@ a loop that modifies each sample of the generated frame by introducing
 the channel impairments.
 %
 \[
-    y_i \leftarrow \gamma y_i e^{j(\theta + i\omega)} + \sigma n e^{j \pi u}
+    y_i \leftarrow \gamma y_i e^{j(\theta + i\omega)} + \sigma n
 \]
 %
 where
@@ -571,16 +571,16 @@ $\gamma$ is the channel gain defined above ({\tt gamma}),
 $\theta$ is the carrier phase offset ({\tt phase\_offset}),
 $\omega$ is the carrier frequency offset ({\tt frequency\_offset}),
 $\sigma$ is the noise standard deviation defined above ({\tt nstd}), and
-$n$ and $u$ are random variables to represent noise with
-normal and uniform distributions, repectively.
-\liquid\ provides the {\tt randnf()} and {\tt randf()} methods to
-generate real random numbers with Gauss and uniform distributions
-respectively.
+$n$ is a circular Gauss random variable.
+\liquid\ provides the {\tt randnf()} methods to
+generate real random numbers with a Gauss distribution;
+a circular Gauss random variable can be generated from two regular Gauss
+random variables $n_i$ and $n_q$ as $n = (n_i + jn_q)/\sqrt{2}$.
 %
 \begin{Verbatim}[fontsize=\small]
     y[i] *= gamma;
     y[i] *= cexpf(_Complex_I*(phase_offset + i*frequency_offset));
-    y[i] += nstd * randnf() * cexpf(_Complex_I*M_PI*randf());
+    y[i] += nstd * (randnf() + _Complex_I*randnf())*0.7071;
 \end{Verbatim}
 %
 Check the program listed below if you need help.

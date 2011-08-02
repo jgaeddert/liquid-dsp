@@ -33,7 +33,7 @@ int main() {
         modem_modulate(mod, s0, &x);
 
         // add noise
-        x += nstd*randnf()*cexpf(_Complex_I*2*M_PI*randf());
+        x += nstd*(randnf() + _Complex_I*randnf())*M_SQRT1_2;
 
         modem_demodulate(demod, x, &s1);
 
