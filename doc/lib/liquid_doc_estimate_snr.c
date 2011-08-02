@@ -24,7 +24,7 @@ float estimate_snr(simulate_per_opts _opts,
     // number of bisections
     // NOTE : this number shouldn't be too high, lest limited
     //        accuracy corrupt the linear curve fit
-    unsigned int num_iterations = (_ber_per == ESTIMATE_SNR_BER) ? 6 : 8;
+    unsigned int num_iterations = 8;
 
     // reduce number of iterations for v615 codec
     if (_opts.fec0 == LIQUID_FEC_CONV_V615 || _opts.fec1 == LIQUID_FEC_CONV_V615) {

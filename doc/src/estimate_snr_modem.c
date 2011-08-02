@@ -197,13 +197,21 @@ int main(int argc, char*argv[])
                                                error_rate);
 
         // run estimation
-        float SNRdB_hat = estimate_snr(opts, which_ber_per, which_snr_ebn0, error_rate);
+        float x_hat = estimate_snr(opts, which_ber_per, which_snr_ebn0, error_rate);
 
         // compute rate [b/s/Hz]
         float rate = opts.bps * fec_get_rate(opts.fec0) * fec_get_rate(opts.fec1);
 
-        // compute Eb/N0
-        float EbN0dB_hat = SNRdB_hat - 10*log10f(rate);
+        // set estimated values
+        float SNRdB_hat;
+        float EbN0dB_hat;
+        if (which_snr_ebn0==ESTIMATE_SNR) {
+            SNRdB_hat = x_hat;
+            EbN0dB_hat = SNRdB_hat - 10*log10f(rate);
+        } else {
+            SNRdB_hat = x_hat + 10*log10f(rate);
+            EbN0dB_hat = x_hat;
+        }
 
         if (verbose) {
             printf("++ SNR (est) : %8.4fdB (Eb/N0 = %8.4fdB) for %s: %12.4e\n",
