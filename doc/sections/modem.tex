@@ -809,3 +809,75 @@ no two points overlap
 (see {\tt modem\_arb\_init()} and {\tt modem\_arb\_init\_file()} in
 Section~\ref{module:modem:digital:interface}).
 
+\subsubsection{Performance}
+\label{module:modem:digital:performance}
+
+% ------------ TABLE: LINEAR MODULATION SCHEMES ------------
+\begin{table*}
+\caption{Performance of linear modulation schemes, $\hat{P}_b=10^{-5}$}
+\label{tab:modem:performance}
+\centering
+{\footnotesize
+\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}ll}
+\toprule
+{\it schemes} &
+{\it $E_s/N_0$} &
+{\it $E_b/N_0$}\\\otoprule
+%
+\multicolumn{3}{c}{$M=2$}\\
+BPSK, 2-ASK         & - & - \\
+DBPSK               & - & - \\
+OOK                 & - & - \\
+%
+\multicolumn{3}{c}{$M=4$} \\\midrule
+QPSK, 4-QAM         & - & - \\
+4-APSK              & - & - \\
+DQPSK               & - & - \\
+4-ASK               & - & - \\
+%
+\multicolumn{3}{c}{$M=8$} \\\midrule
+8-PSK               & - & - \\
+8-APSK              & - & - \\
+8-QAM               & - & - \\
+8-DPSK              & - & - \\
+8-ASK               & - & - \\
+%
+\multicolumn{3}{c}{$M=16$} \\\midrule
+16-PSK              & - & - \\
+16-DPSK             & - & - \\
+16-APSK             & - & - \\
+16-QAM              & - & - \\
+16-ASK              & - & - \\
+V.29                & - & - \\
+ARB-16-OPT          & - & - \\
+%
+\multicolumn{3}{c}{$M=32$} \\\midrule
+ARB-32-OPT          & - & - \\
+32-APSK             & - & - \\
+32-SQAM             & - & - \\
+32-QAM              & - & - \\
+32-PSK              & - & - \\
+32-DPSK             & - & - \\
+%
+\multicolumn{3}{c}{$M=64$} \\\midrule
+64-QAM              & - & - \\
+64-APSK             & - & - \\
+64-PSK              & - & - \\
+64-DPSK             & - & - \\
+ARB-64-VT           & - & - \\
+%
+\multicolumn{3}{c}{$M=128$} \\\midrule
+128-APSK            & - & - \\
+128-SQAM            & - & - \\
+128-QAM             & - & - \\
+%
+\multicolumn{3}{c}{$M=256$} \\\midrule
+256-QAM             & - & - \\
+256-APSK            & - & - \\\bottomrule
+%
+\end{tabular*}
+}
+\end{table*}%
+% ------------------------
+
+
