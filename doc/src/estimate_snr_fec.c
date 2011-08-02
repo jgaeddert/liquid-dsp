@@ -108,6 +108,9 @@ int main(int argc, char*argv[])
     opts.fec1   = LIQUID_FEC_NONE;
     opts.dec_msg_len = frame_len;
 
+    // compute Eb/N0 required for uncoded BPSK
+    float EbN0dB_bpsk = estimate_snr_bpsk(error_rate);
+
     // try to open output file
     FILE * fid = fopen(filename,"w");
     if (!fid) {
@@ -130,11 +133,12 @@ int main(int argc, char*argv[])
     fprintf(fid,"#  estimate on BER|PER :   %s\n", which_ber_per  == ESTIMATE_SNR_BER ? "BER" : "PER");
     fprintf(fid,"#  estimate SNR|Eb/N0  :   %s\n", which_snr_ebn0 == ESTIMATE_SNR ? "SNR" : "Eb/N0");
     fprintf(fid,"#  target error rate   :   %-12.4e\n", error_rate);
+    fprintf(fid,"#  BPSK Eb/N0 for BER  :   %-12.8f\n", EbN0dB_bpsk);
     fprintf(fid,"#  frame length        :   %u bytes\n", opts.dec_msg_len);
     fprintf(fid,"#  fec (inner)         :   %s\n", fec_scheme_str[opts.fec0][0]);
     fprintf(fid,"#  fec (outer)         :   %s\n", fec_scheme_str[opts.fec1][0]);
     fprintf(fid,"#\n");
-    fprintf(fid,"# %-12s %4s %12s %12s %12s\n", "scheme", "id", "rate [b/s]", "SNR [dB]", "Eb/N0 [dB]");
+    fprintf(fid,"# %-12s %4s %12s %12s %12s %12s\n", "scheme", "id", "rate [b/s]", "SNR [dB]", "Eb/N0 [dB]", "BPSK gain");
 
     for (i=1; i<LIQUID_FEC_NUM_SCHEMES; i++) {
         // set up options
@@ -170,11 +174,12 @@ int main(int argc, char*argv[])
             fprintf(fid," ");
 
         // save to output file
-        fprintf(fid," %4u %12.6f %12.6f %12.6f\n",
+        fprintf(fid," %4u %12.6f %12.6f %12.6f %12.6f\n",
                 opts.fec0,
                 rate,
                 SNRdB_hat,
-                EbN0dB_hat);
+                EbN0dB_hat,
+                EbN0dB_bpsk - EbN0dB_hat);
     }
 
     fclose(fid);
