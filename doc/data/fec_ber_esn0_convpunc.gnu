@@ -18,9 +18,12 @@ set key bottom left nobox
 
 set pointsize 0.5
 
+# theoretical uncoded BPSK error curve
+ber_bpsk(x) = 0.5*erfc(10**(x/20))
+
 set grid linetype 1 linecolor rgb '#cccccc' lw 1
 plot \
-    'data/ber/ber_none.dat'     using 1:3 with linespoints linewidth 2.0 pointtype 6 linecolor rgb '#000000' title 'Uncoded',\
+    ber_bpsk(x)                 with lines linetype 1 linewidth 2.0 linecolor rgb '#000000' title 'Uncoded',\
     'data/ber/ber_v27.dat'      using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#871288' title 'conv. r1/2, K=7',\
     'data/ber/ber_v27p23.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#774298' title 'conv. r2/3, K=7',\
     'data/ber/ber_v27p34.dat'   using 1:3 with linespoints linewidth 1.2 pointtype 6 linecolor rgb '#6752a8' title 'conv. r3/4, K=7',\
