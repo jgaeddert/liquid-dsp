@@ -88,6 +88,7 @@ LISTINGS_C = 					\
 	listings/firhilb.example.c		\
 	listings/freqmodem.example.c		\
 	listings/gasearch.example.c		\
+	listings/gmskmodem.example.c		\
 	listings/gradsearch.example.c		\
 	listings/gport.direct.example.c		\
 	listings/gport.indirect.example.c	\

@@ -193,7 +193,7 @@ analog frequency modulation/demodulation.
 
 
 %
-% DIGITAL MODEMS
+% LINEAR DIGITAL MODEMS
 %
 
 \subsection{Linear digital modulation schemes}
@@ -1145,3 +1145,19 @@ The {\em erasure} condition is {\tt 127}.
 soft bit value:  [0 1 2 3      ...   64 65   ...  127  ...  192 193   ...  253 254 255]
 interpretation:  very likely '0'   likely '0'   erasure   likely '1'    very likely '1'
 \end{Verbatim}
+
+%
+% CONTINUOUS PHASE MODEMS
+%
+
+\subsection{Continuous phase digital modulation schemes}
+\label{module:modem:cpm}
+
+\subsubsection{{\tt gmskmod} (Gauss minimum-shift keying)}
+\label{module:modem:cpm:gmskmod}
+
+Two objects: {\tt gmksmod} (GMSK modulator), {\tt gmskdem} (GMSK
+demodulator).
+%
+\input{listings/gmskmodem.example.c.tex}
+%
