@@ -180,7 +180,7 @@ void interleaver_permute_soft(unsigned char * _x,
     unsigned int m=0;
     unsigned int n=0;
     unsigned int n2=_n/2;
-    unsigned char tmp;
+    unsigned char tmp[8];
     for (i=0; i<n2; i++) {
         //j = m*N + n; // input
         do {
@@ -192,13 +192,10 @@ void interleaver_permute_soft(unsigned char * _x,
             }
         } while (j>=n2);
     
-        // swap indices
-        unsigned int k;
-        for (k=0; k<8; k++) {
-            tmp = _x[8*(2*j+1)+k];
-            _x[8*(2*j+1)+k] = _x[8*(2*i+0)+k];
-            _x[8*(2*i+0)+k] = tmp;
-        }
+        // swap soft bits at indices
+        memmove( tmp,            &_x[8*(2*j+1)], 8);
+        memmove( &_x[8*(2*j+1)], &_x[8*(2*i+0)], 8);
+        memmove( &_x[8*(2*i+0)], tmp,            8);
     }
     //printf("\n");
 }
