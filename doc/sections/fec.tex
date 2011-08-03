@@ -247,44 +247,42 @@ libfec} is installed \cite{libfec:web}.
 \label{tab:fec:codecs}
 \centering
 {\small
-\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}rrl}
+\begin{tabular*}{0.95\textwidth}{l@{\extracolsep{\fill}}rrrl}
 \toprule
-{\it scheme} &
-{\it asymptotic rate} &
-{\it $\gamma_b$} [dB] &
-{\it description}\\\otoprule
+             & {\it asymptotic} & {\it $\gamma_b$} [dB] & {\it $\gamma_b$} [dB] & \\
+{\it scheme} & {\it rate}       & (hard)                & (soft)                & {\it description}\\\otoprule
 %
-{\tt LIQUID\_FEC\_UNKNOWN}      & -         &     - & unknown/unsupported scheme\\
-{\tt LIQUID\_FEC\_NONE}         & 1         &  9.59 & no error-correction\\
-{\tt LIQUID\_FEC\_REP3}         & 1/3       & 11.08 & simple repeat code\\
-{\tt LIQUID\_FEC\_REP5}         & 1/5       & 11.39 & simple repeat code\\
-{\tt LIQUID\_FEC\_HAMMING74}    & 4/7       &  9.15 & Hamming (7,4) block code\\
-{\tt LIQUID\_FEC\_HAMMING84}    & 1/2       &  9.63 & Hamming (7,4) with extra parity bit\\
-{\tt LIQUID\_FEC\_HAMMING128}   & 2/3       &  8.82 & Hamming (12,8) block code\\\midrule
+{\tt LIQUID\_FEC\_UNKNOWN}      & -       &     - &     - & unknown/unsupported scheme\\
+{\tt LIQUID\_FEC\_NONE}         & 1       &  9.59 &  9.59 & no error-correction\\
+{\tt LIQUID\_FEC\_REP3}         & 1/3     & 11.08 &  9.56 & simple repeat code\\
+{\tt LIQUID\_FEC\_REP5}         & 1/5     & 11.39 &  9.64 & simple repeat code\\
+{\tt LIQUID\_FEC\_HAMMING74}    & 4/7     &  9.15 &  7.79 & Hamming (7,4) block code\\
+{\tt LIQUID\_FEC\_HAMMING84}    & 1/2     &  9.63 &  7.38 & Hamming (7,4) with extra parity bit\\
+{\tt LIQUID\_FEC\_HAMMING128}   & 2/3     &  8.82 &  8.13 & Hamming (12,8) block code\\\midrule
 %
 % codecs not defined internally (see http://www.ka9q.net/code/fec/)
-{\tt LIQUID\_FEC\_CONV\_V27}    & 1/2       &  6.44 & $K=7$, $d_{free}=10$\\
-{\tt LIQUID\_FEC\_CONV\_V29}    & 1/2       &  5.79 & $K=9$, $d_{free}=12$\\
-{\tt LIQUID\_FEC\_CONV\_V39}    & 1/3       &  5.41 & $K=9$, $d_{free}=18$\\
-{\tt LIQUID\_FEC\_CONV\_V615}   & 1/6       &  3.81 & $K=15$, $d_{free}<=57$ (Heller 1968)\\\midrule
+{\tt LIQUID\_FEC\_CONV\_V27}    & 1/2     &  6.44 & 4.29 & $K=7$, $d_{free}=10$\\
+{\tt LIQUID\_FEC\_CONV\_V29}    & 1/2     &  5.79 & 3.78 & $K=9$, $d_{free}=12$\\
+{\tt LIQUID\_FEC\_CONV\_V39}    & 1/3     &  5.41 & 3.59 & $K=9$, $d_{free}=18$\\
+{\tt LIQUID\_FEC\_CONV\_V615}   & 1/6     &  3.81 & 2.00 & $K=15$, $d_{free}<=57$ (Heller 1968)\\\midrule
 %
 % punctured (perforated) codes
-{\tt LIQUID\_FEC\_CONV\_V27P23} & 2/3       &  6.86 & $K=7$, $d_{free}=6$\\
-{\tt LIQUID\_FEC\_CONV\_V27P34} & 3/4       &  7.33 & $K=7$, $d_{free}=5$\\
-{\tt LIQUID\_FEC\_CONV\_V27P45} & 4/5       &  7.73 & $K=7$, $d_{free}=4$\\
-{\tt LIQUID\_FEC\_CONV\_V27P56} & 5/6       &  8.35 & $K=7$, $d_{free}=4$\\
-{\tt LIQUID\_FEC\_CONV\_V27P67} & 6/7       &  8.21 & $K=7$, $d_{free}=3$\\
-{\tt LIQUID\_FEC\_CONV\_V27P78} & 7/8       &  8.38 & $K=7$, $d_{free}=3$\\\midrule
+{\tt LIQUID\_FEC\_CONV\_V27P23} & 2/3     &  6.86 & 4.65 & $K=7$, $d_{free}=6$\\
+{\tt LIQUID\_FEC\_CONV\_V27P34} & 3/4     &  7.33 & 5.29 & $K=7$, $d_{free}=5$\\
+{\tt LIQUID\_FEC\_CONV\_V27P45} & 4/5     &  7.73 & 5.50 & $K=7$, $d_{free}=4$\\
+{\tt LIQUID\_FEC\_CONV\_V27P56} & 5/6     &  8.35 & 5.72 & $K=7$, $d_{free}=4$\\
+{\tt LIQUID\_FEC\_CONV\_V27P67} & 6/7     &  8.21 & 5.91 & $K=7$, $d_{free}=3$\\
+{\tt LIQUID\_FEC\_CONV\_V27P78} & 7/8     &  8.38 & 5.97 & $K=7$, $d_{free}=3$\\\midrule
 %
-{\tt LIQUID\_FEC\_CONV\_V29P23} & 2/3       &  6.38 & $K=9$, $d_{free}=7$\\
-{\tt LIQUID\_FEC\_CONV\_V29P34} & 3/4       &  6.72 & $K=9$, $d_{free}=6$\\
-{\tt LIQUID\_FEC\_CONV\_V29P45} & 4/5       &  7.60 & $K=9$, $d_{free}=5$\\
-{\tt LIQUID\_FEC\_CONV\_V29P56} & 5/6       &  7.69 & $K=9$, $d_{free}=5$\\
-{\tt LIQUID\_FEC\_CONV\_V29P67} & 6/7       &  8.93 & $K=9$, $d_{free}=4$\\
-{\tt LIQUID\_FEC\_CONV\_V29P78} & 7/8       &  7.87 & $K=9$, $d_{free}=4$\\\midrule
+{\tt LIQUID\_FEC\_CONV\_V29P23} & 2/3     &  6.38 & 4.36 & $K=9$, $d_{free}=7$\\
+{\tt LIQUID\_FEC\_CONV\_V29P34} & 3/4     &  6.72 & 4.78 & $K=9$, $d_{free}=6$\\
+{\tt LIQUID\_FEC\_CONV\_V29P45} & 4/5     &  7.60 & 4.95 & $K=9$, $d_{free}=5$\\
+{\tt LIQUID\_FEC\_CONV\_V29P56} & 5/6     &  7.69 & 5.72 & $K=9$, $d_{free}=5$\\
+{\tt LIQUID\_FEC\_CONV\_V29P67} & 6/7     &  8.93 & 6.92 & $K=9$, $d_{free}=4$\\
+{\tt LIQUID\_FEC\_CONV\_V29P78} & 7/8     &  7.87 & 6.03 & $K=9$, $d_{free}=4$\\\midrule
 % 
 % Reed-Solomon codes
-{\tt LIQUID\_FEC\_RS\_M8}       & 223/255   &  6.14 & Reed-Solomon block code, $m=8$\\\bottomrule
+{\tt LIQUID\_FEC\_RS\_M8}       & 223/255 &  6.14 & 5.96 & Reed-Solomon block code, $m=8$\\\bottomrule
 
 
 \end{tabular*}
