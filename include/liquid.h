@@ -2128,6 +2128,16 @@ int  packetizer_decode(packetizer _p,
                        unsigned char * _pkt,
                        unsigned char * _msg);
 
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded soft bits)
+//  _msg    :   decoded output message
+int  packetizer_decode_soft(packetizer _p,
+                            unsigned char * _pkt,
+                            unsigned char * _msg);
+
 
 //
 // interleaver

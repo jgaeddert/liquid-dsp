@@ -1164,6 +1164,7 @@ example_obj :=						\
 	examples/ofdmoqam_firpfbch_example.o		\
 	examples/ofdmoqamframesync_example.o		\
 	examples/packetizer_example.o			\
+	examples/packetizer_soft_example.o		\
 	examples/pll_example.o				\
 	examples/polyfit_example.o			\
 	examples/polyfit_lagrange_example.o		\

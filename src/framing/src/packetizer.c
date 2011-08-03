@@ -98,10 +98,10 @@ packetizer packetizer_create(unsigned int _n,
     p->check        = _crc;
     p->crc_length   = crc_get_length(p->check);
 
-    // allocate memory for buffers
+    // allocate memory for buffers (scale by 8 for soft decoding)
     p->buffer_len = p->packet_len;
-    p->buffer_0 = (unsigned char*) malloc(p->buffer_len);
-    p->buffer_1 = (unsigned char*) malloc(p->buffer_len);
+    p->buffer_0 = (unsigned char*) malloc(8*p->buffer_len);
+    p->buffer_1 = (unsigned char*) malloc(8*p->buffer_len);
 
     // create plan
     p->plan_len = 2;
@@ -287,6 +287,68 @@ int packetizer_decode(packetizer _p,
 
     // strip crc, validate message
     unsigned int key = 0;
+    for (i=0; i<_p->crc_length; i++) {
+        key <<= 8;
+
+        key |= _p->buffer_0[_p->msg_len+i];
+    }
+
+    // copy result to output
+    memmove(_msg, _p->buffer_0, _p->msg_len);
+
+    // return crc validity
+    return crc_validate_message(_p->check,
+                                _p->buffer_0,
+                                _p->msg_len,
+                                key);
+}
+
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded soft bits)
+//  _msg    :   decoded output message
+int packetizer_decode_soft(packetizer _p,
+                           unsigned char * _pkt,
+                           unsigned char * _msg)
+{
+    // copy coded message to internal buffer[0]
+    memmove(_p->buffer_0, _pkt, 8*_p->packet_len);
+
+    // 
+    // decode outer level using soft decoding
+    //
+
+    // run the de-interleaver: buffer[0] > buffer[1]
+    interleaver_decode_soft(_p->plan[1].q,
+                            _p->buffer_0,
+                            _p->buffer_1);
+
+    // run the decoder: buffer[1] > buffer[0]
+    fec_decode_soft(_p->plan[1].f,
+                    _p->plan[1].dec_msg_len,
+                    _p->buffer_1,
+                    _p->buffer_0);
+
+    // 
+    // decode inner level using hard decoding
+    //
+
+    // run the de-interleaver: buffer[0] > buffer[1]
+    interleaver_decode(_p->plan[0].q,
+                       _p->buffer_0,
+                       _p->buffer_1);
+
+    // run the decoder: buffer[1] > buffer[0]
+    fec_decode(_p->plan[0].f,
+               _p->plan[0].dec_msg_len,
+               _p->buffer_1,
+               _p->buffer_0);
+
+    // strip crc, validate message
+    unsigned int key = 0;
+    unsigned int i;
     for (i=0; i<_p->crc_length; i++) {
         key <<= 8;
 
