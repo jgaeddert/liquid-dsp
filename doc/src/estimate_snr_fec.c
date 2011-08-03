@@ -18,7 +18,8 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  v|q   : verbose|quiet, default: verbose\n");
     printf("  B|P   : simulate for BER|PER, default: BER\n");
-    printf("  e     : target error rate, default: 1e-5\n");
+    printf("  S|H   : soft/hard decoding, default: hard\n");
+    printf("  E     : target error rate, default: 1e-5\n");
     printf("  n     : frame length [bytes], default: 1024\n");
     printf("  x     : maximum number of trials, default: 10,000 (BER) or 100 (PER)\n");
     printf("  o     : output filename\n");
@@ -35,21 +36,24 @@ int main(int argc, char*argv[])
     float error_rate = 1e-5f;
     unsigned int frame_len = 1024;
     unsigned long int max_trials = 0;
+    int soft_decoding = 0;
 
     char filename[256] = "estimate_snr_fec.out";
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqBPe:n:x:o:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqBPSHE:n:x:o:")) != EOF) {
         switch (dopt) {
         case 'u':
-        case 'h':   usage();                    return 0;
-        case 'v':   verbose = 1;                break;
-        case 'q':   verbose = 0;                break;
-        case 'B':   which_ber_per = ESTIMATE_SNR_BER;   break;
-        case 'P':   which_ber_per = ESTIMATE_SNR_PER;   break;
-        case 'e':   error_rate = atof(optarg);  break;
-        case 'n':   frame_len = atoi(optarg);   break;
-        case 'x':   max_trials = atoi(optarg);  break;
+        case 'h': usage();                          return 0;
+        case 'v': verbose = 1;                      break;
+        case 'q': verbose = 0;                      break;
+        case 'B': which_ber_per = ESTIMATE_SNR_BER; break;
+        case 'P': which_ber_per = ESTIMATE_SNR_PER; break;
+        case 'S': soft_decoding = 1;                break;
+        case 'H': soft_decoding = 0;                break;
+        case 'E': error_rate = atof(optarg);        break;
+        case 'n': frame_len = atoi(optarg);         break;
+        case 'x': max_trials = atoi(optarg);        break;
         case 'o':
             strncpy(filename, optarg, 255);
             filename[255] = '\0';
@@ -107,6 +111,7 @@ int main(int argc, char*argv[])
     opts.fec0   = LIQUID_FEC_NONE;
     opts.fec1   = LIQUID_FEC_NONE;
     opts.dec_msg_len = frame_len;
+    opts.soft_decoding = soft_decoding;
 
     // compute Eb/N0 required for uncoded BPSK
     float EbN0dB_bpsk = estimate_snr_bpsk(error_rate);

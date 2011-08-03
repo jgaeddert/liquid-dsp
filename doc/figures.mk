@@ -370,8 +370,11 @@ figures.gen/fec_ber_ebn0_convpunc.eps : %.eps : %.gnu $(data_ber_fec_hard)
 # Required Eb/N0, SNR for 10^-5
 #
 
-data/ber/fec_snr_req.dat : src/estimate_snr_fec
-	./$< -o$@ -B -e1e-5 -n1024 -x4000000
+data/ber-fec-hard/fec_snr_req.dat : src/estimate_snr_fec
+	./$< -o$@ -B -H -E1e-5 -n1024 -x4000000
+
+data/ber-fec-soft/fec_snr_req.dat : src/estimate_snr_fec
+	./$< -o$@ -B -S -E1e-5 -n1024 -x4000000
 
 
 ##
@@ -745,7 +748,7 @@ $(modem_ber_epsfiles) : %.eps : %.gnu $(modem_ber_data)
 #
 
 data/ber-modem/modem_snr_req.dat : src/estimate_snr_modem
-	./$< -o$@ -B -e1e-5 -n1024 -x8000000
+	./$< -o$@ -B -E1e-5 -n1024 -x8000000
 
 
 ##

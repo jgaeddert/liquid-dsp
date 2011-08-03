@@ -18,7 +18,7 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  v|q   : verbose|quiet, default: verbose\n");
     printf("  B|P   : simulate for BER|PER, default: BER\n");
-    printf("  e     : target error rate, default: 1e-5\n");
+    printf("  E     : target error rate, default: 1e-5\n");
     printf("  n     : frame length [bytes], default: 1024\n");
     printf("  x     : maximum number of trials, default: 10,000 (BER) or 100 (PER)\n");
     printf("  o     : output filename\n");
@@ -83,17 +83,17 @@ int main(int argc, char*argv[])
     char filename[256] = "estimate_snr_modem.out";
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqBPe:n:x:o:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqBPE:n:x:o:")) != EOF) {
         switch (dopt) {
         case 'u':
-        case 'h':   usage();                    return 0;
-        case 'v':   verbose = 1;                break;
-        case 'q':   verbose = 0;                break;
-        case 'B':   which_ber_per = ESTIMATE_SNR_BER;   break;
-        case 'P':   which_ber_per = ESTIMATE_SNR_PER;   break;
-        case 'e':   error_rate = atof(optarg);  break;
-        case 'n':   frame_len = atoi(optarg);   break;
-        case 'x':   max_trials = atoi(optarg);  break;
+        case 'h': usage();                          return 0;
+        case 'v': verbose = 1;                      break;
+        case 'q': verbose = 0;                      break;
+        case 'B': which_ber_per = ESTIMATE_SNR_BER; break;
+        case 'P': which_ber_per = ESTIMATE_SNR_PER; break;
+        case 'E': error_rate = atof(optarg);        break;
+        case 'n': frame_len = atoi(optarg);         break;
+        case 'x': max_trials = atoi(optarg);        break;
         case 'o':
             strncpy(filename, optarg, 255);
             filename[255] = '\0';
@@ -149,6 +149,7 @@ int main(int argc, char*argv[])
     opts.fec0   = LIQUID_FEC_NONE;
     opts.fec1   = LIQUID_FEC_NONE;
     opts.dec_msg_len = frame_len;
+    opts.soft_decoding = 0;
 
     // try to open output file
     FILE * fid = fopen(filename,"w");

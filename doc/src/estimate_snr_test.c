@@ -18,8 +18,9 @@ void usage()
     printf("  u/h   : print usage\n");
     printf("  v|q   : verbose|quiet, default: verbose\n");
     printf("  B|P   : simulate for BER|PER, default: PER\n");
-    printf("  S|E   : estimate SNR|Eb/N0, default: SNR\n");
-    printf("  e     : target error rate, default: 0.05\n");
+    printf("  s|e   : estimate SNR|Eb/N0, default: SNR\n");
+    printf("  S|H   :   soft/hard decoding, default: hard\n");
+    printf("  E     : target error rate, default: 0.05\n");
     printf("  n     : frame length [bytes], default: 1024\n");
     //printf("  m         : minimum number of errors\n");
     //printf("  t         : minimum number of trials\n");
@@ -29,7 +30,6 @@ void usage()
     liquid_print_fec_schemes();
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
-    printf("  S|H   :   soft/hard decoding, default: hard\n");
 }
 
 typedef struct {
@@ -63,32 +63,26 @@ int main(int argc, char*argv[])
     int soft_decoding = 0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhvqBPSEe:n:x:c:k:m:SH")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhvqBPseSHE:n:x:c:k:m:")) != EOF) {
         switch (dopt) {
         case 'u':
-        case 'h':   usage();                    return 0;
-        case 'v':   verbose = 1;                break;
-        case 'q':   verbose = 0;                break;
-        case 'B':   which_ber_per = ESTIMATE_SNR_BER;   break;
-        case 'P':   which_ber_per = ESTIMATE_SNR_PER;   break;
-        case 'S':   which_snr_ebn0 = ESTIMATE_SNR;      break;
-        case 'E':   which_snr_ebn0 = ESTIMATE_EBN0;     break;
-        case 'e':   error_rate = atof(optarg);  break;
-        case 'n':   frame_len = atoi(optarg);   break;
-        case 'x':   max_trials = atoi(optarg);  break;
+        case 'h': usage();                          return 0;
+        case 'v': verbose = 1;                      break;
+        case 'q': verbose = 0;                      break;
+        case 'B': which_ber_per = ESTIMATE_SNR_BER; break;
+        case 'P': which_ber_per = ESTIMATE_SNR_PER; break;
+        case 's': which_snr_ebn0 = ESTIMATE_SNR;    break;
+        case 'e': which_snr_ebn0 = ESTIMATE_EBN0;   break;
+        case 'S': soft_decoding = 1;                break;
+        case 'H': soft_decoding = 0;                break;
+        case 'E': error_rate = atof(optarg);        break;
+        case 'n': frame_len = atoi(optarg);         break;
+        case 'x': max_trials = atoi(optarg);        break;
         case 'c':
-            // inner FEC scheme
+            // FEC scheme
             fec0 = liquid_getopt_str2fec(optarg);
             if (fec0 == LIQUID_FEC_UNKNOWN) {
                 fprintf(stderr,"error: unknown/unsupported inner FEC scheme \"%s\"\n\n",optarg);
-                exit(1);
-            }
-            break;
-        case 'k':
-            // outer FEC scheme
-            fec1 = liquid_getopt_str2fec(optarg);
-            if (fec1 == LIQUID_FEC_UNKNOWN) {
-                fprintf(stderr,"error: unknown/unsupported outer FEC scheme \"%s\"\n\n",optarg);
                 exit(1);
             }
             break;
@@ -99,8 +93,6 @@ int main(int argc, char*argv[])
                 return 1;
             }
             break;
-        case 'S': soft_decoding = 1;                    break;
-        case 'H': soft_decoding = 0;                    break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             return 1;
