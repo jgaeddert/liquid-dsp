@@ -1198,9 +1198,6 @@ void interleaver_compute_bit_permutation(interleaver _q,
 // permutation functions
 //
 
-#define INTERLEAVE_FORWARD (0)
-#define INTERLEAVE_REVERSE (1)
-
 // permute one iteration
 void interleaver_permute(unsigned char * _x,
                          unsigned int _n,
@@ -1209,11 +1206,9 @@ void interleaver_permute(unsigned char * _x,
 
 // permute one iteration (soft bit input)
 void interleaver_permute_soft(unsigned char * _x,
-                              unsigned char * _y,
                               unsigned int _n,
                               unsigned int _M,
-                              unsigned int _N,
-                              int _dir);
+                              unsigned int _N);
 
 // permute forward one iteration with byte mask
 //  _x      :   input/output data array, [size: _n x 1]

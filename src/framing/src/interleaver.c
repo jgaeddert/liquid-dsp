@@ -102,7 +102,8 @@ void interleaver_encode_soft(interleaver _q,
                              unsigned char * _msg_enc)
 {
     // single iteration
-    interleaver_permute_soft(_msg_dec, _msg_enc, _q->n, _q->M, _q->N, INTERLEAVE_FORWARD);
+    memmove(_msg_enc, _msg_dec, 8*_q->n);
+    interleaver_permute_soft(_msg_enc, _q->n, _q->M, _q->N);
 }
 
 // execute reverse interleaver (decoder)
@@ -127,7 +128,8 @@ void interleaver_decode_soft(interleaver _q,
                              unsigned char * _msg_dec)
 {
     // single iteration
-    interleaver_permute_soft(_msg_enc, _msg_dec, _q->n, _q->M, _q->N, INTERLEAVE_REVERSE);
+    memmove(_msg_dec, _msg_enc, 8*_q->n);
+    interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
 }
 
 // set number of internal iterations
@@ -169,17 +171,17 @@ void interleaver_permute(unsigned char * _x,
 
 // permute one iteration (soft bit input)
 void interleaver_permute_soft(unsigned char * _x,
-                              unsigned char * _y,
                               unsigned int _n,
                               unsigned int _M,
-                              unsigned int _N,
-                              int _dir)
+                              unsigned int _N)
 {
     unsigned int i;
     unsigned int j;
     unsigned int m=0;
     unsigned int n=0;
-    for (i=0; i<_n; i++) {
+    unsigned int n2=_n/2;
+    unsigned char tmp;
+    for (i=0; i<n2; i++) {
         //j = m*N + n; // input
         do {
             j = m*_N + n; // output
@@ -188,26 +190,14 @@ void interleaver_permute_soft(unsigned char * _x,
                 n = (n+1) % (_N);
                 m=0;
             }
-        } while (j>=_n);
+        } while (j>=n2);
     
-        if (_dir == INTERLEAVE_FORWARD) {
-            _y[8*i  ] = _x[8*j  ];
-            _y[8*i+1] = _x[8*j+1];
-            _y[8*i+2] = _x[8*j+2];
-            _y[8*i+3] = _x[8*j+3];
-            _y[8*i+4] = _x[8*j+4];
-            _y[8*i+5] = _x[8*j+5];
-            _y[8*i+6] = _x[8*j+6];
-            _y[8*i+7] = _x[8*j+7];
-        } else {
-            _y[8*j  ] = _x[8*i  ];
-            _y[8*j+1] = _x[8*i+1];
-            _y[8*j+2] = _x[8*i+2];
-            _y[8*j+3] = _x[8*i+3];
-            _y[8*j+4] = _x[8*i+4];
-            _y[8*j+5] = _x[8*i+5];
-            _y[8*j+6] = _x[8*i+6];
-            _y[8*j+7] = _x[8*i+7];
+        // swap indices
+        unsigned int k;
+        for (k=0; k<8; k++) {
+            tmp = _x[8*(2*j+1)+k];
+            _x[8*(2*j+1)+k] = _x[8*(2*i+0)+k];
+            _x[8*(2*i+0)+k] = tmp;
         }
     }
     //printf("\n");
