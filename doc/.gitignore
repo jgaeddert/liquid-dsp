@@ -21,6 +21,7 @@ src/agc_transient
 src/audio_cvsd
 src/doc-html-gen
 src/equalizer_cccf
+src/estimate_snr_fec
 src/estimate_snr_modem
 src/estimate_snr_test
 src/filter_decim_crcf
@@ -37,6 +38,7 @@ src/filter_rnyquist
 src/interleaver_scatterplot
 src/math_poly_examples
 src/math_window
+src/modem_demodsoft
 src/modem.gendata
 src/modem.genplot
 src/nco_pll
