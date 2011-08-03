@@ -1207,21 +1207,19 @@ void interleaver_permute_soft(unsigned char * _x,
                               unsigned int _M,
                               unsigned int _N);
 
-// permute forward one iteration with byte mask
-//  _x      :   input/output data array, [size: _n x 1]
-//  _n      :   array size
-//  _mask   :   byte mask
-void interleaver_permute_forward_mask(unsigned char * _x,
-                                      unsigned int _n,
-                                      unsigned char _mask);
+// permute one iteration with mask
+void interleaver_permute_mask(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N,
+                              unsigned char _mask);
 
-// permute reverse one iteration with byte mask
-//  _x      :   input/output data array, [size: _n x 1]
-//  _n      :   array size
-//  _mask   :   byte mask
-void interleaver_permute_reverse_mask(unsigned char * _x,
-                                      unsigned int _n,
-                                      unsigned char _mask);
+// permute one iteration (soft bit input) with mask
+void interleaver_permute_mask_soft(unsigned char * _x,
+                                   unsigned int _n,
+                                   unsigned int _M,
+                                   unsigned int _N,
+                                   unsigned char _mask);
 
 
 

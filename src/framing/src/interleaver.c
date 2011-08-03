@@ -73,7 +73,8 @@ void interleaver_encode(interleaver _q,
 {
     // single iteration
     memmove(_msg_enc, _msg_dec, _q->n);
-    interleaver_permute(_msg_enc, _q->n, _q->M, _q->N);
+    //interleaver_permute(_msg_enc, _q->n, _q->M, _q->N);
+    interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N, 0x55);
 }
 
 // execute forward interleaver (encoder) on soft bits
@@ -86,7 +87,8 @@ void interleaver_encode_soft(interleaver _q,
 {
     // single iteration
     memmove(_msg_enc, _msg_dec, 8*_q->n);
-    interleaver_permute_soft(_msg_enc, _q->n, _q->M, _q->N);
+    //interleaver_permute_soft(_msg_enc, _q->n, _q->M, _q->N);
+    interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N, 0x55);
 }
 
 // execute reverse interleaver (decoder)
@@ -99,7 +101,8 @@ void interleaver_decode(interleaver _q,
 {
     // single iteration
     memmove(_msg_dec, _msg_enc, _q->n);
-    interleaver_permute(_msg_dec, _q->n, _q->M, _q->N);
+    //interleaver_permute(_msg_dec, _q->n, _q->M, _q->N);
+    interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N, 0x55);
 }
 
 // execute reverse interleaver (decoder) on soft bits
@@ -112,7 +115,8 @@ void interleaver_decode_soft(interleaver _q,
 {
     // single iteration
     memmove(_msg_dec, _msg_enc, 8*_q->n);
-    interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
+    //interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
+    interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N, 0x55);
 }
 
 // set number of internal iterations
@@ -184,24 +188,74 @@ void interleaver_permute_soft(unsigned char * _x,
 }
 
 
-// permute forward one iteration with byte mask
-//  _x      :   input/output data array, [size: _n x 1]
-//  _n      :   array size
-//  _mask   :   byte mask
-void interleaver_permute_forward_mask(unsigned char * _x,
-                                      unsigned int _n,
-                                      unsigned char _mask)
+// permute one iteration with mask
+void interleaver_permute_mask(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N,
+                              unsigned char _mask)
 {
+    unsigned int i;
+    unsigned int j;
+    unsigned int m=0;
+    unsigned int n=0;
+    unsigned int n2=_n/2;
+    unsigned char tmp0;
+    unsigned char tmp1;
+    for (i=0; i<n2; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=n2);
+
+        // swap indices, applying mask
+        tmp0 = (_x[2*i+0] & (~_mask)) | (_x[2*j+1] & ( _mask));
+        tmp1 = (_x[2*i+0] & ( _mask)) | (_x[2*j+1] & (~_mask));
+        _x[2*i+0] = tmp0;
+        _x[2*j+1] = tmp1;
+    }
 }
 
-// permute reverse one iteration with byte mask
-//  _x      :   input/output data array, [size: _n x 1]
-//  _n      :   array size
-//  _mask   :   byte mask
-void interleaver_permute_reverse_mask(unsigned char * _x,
-                                      unsigned int _n,
-                                      unsigned char _mask)
+// permute one iteration (soft bit input)
+void interleaver_permute_mask_soft(unsigned char * _x,
+                                   unsigned int _n,
+                                   unsigned int _M,
+                                   unsigned int _N,
+                                   unsigned char _mask)
 {
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+    unsigned int m=0;
+    unsigned int n=0;
+    unsigned int n2=_n/2;
+    unsigned char tmp;
+    for (i=0; i<n2; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=n2);
+
+        // swap bits matching the mask
+        for (k=0; k<8; k++) {
+            if ( (_mask >> (8-k-1)) & 0x01 ) {
+                tmp = _x[8*(2*j+1)+k];
+                _x[8*(2*j+1)+k] = _x[8*(2*i+0)+k];
+                _x[8*(2*i+0)+k] = tmp;
+            }
+        }
+    }
+    //printf("\n");
 }
 
 
