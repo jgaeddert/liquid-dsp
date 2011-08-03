@@ -2152,11 +2152,11 @@ void interleaver_destroy(interleaver _q);
 // print interleaver object internals
 void interleaver_print(interleaver _q);
 
-// set number of internal iterations
+// set depth (number of internal iterations)
 //  _q      :   interleaver object
-//  _n      :   number of iterations
-void interleaver_set_num_iterations(interleaver _q,
-                                    unsigned int _n);
+//  _depth  :   depth
+void interleaver_set_depth(interleaver _q,
+                           unsigned int _depth);
 
 // execute forward interleaver (encoder)
 //  _q          :   interleaver object

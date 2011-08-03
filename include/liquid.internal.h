@@ -1181,7 +1181,7 @@ struct interleaver_s {
 
     // number of iterations (permutations) beyond
     // initial block interleaving
-    unsigned int num_iterations;
+    unsigned int depth;
 };
 
 // compute bit permutation for interleaver

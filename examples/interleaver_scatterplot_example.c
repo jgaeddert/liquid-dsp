@@ -20,7 +20,7 @@ void usage()
     printf("interleaver_scatterplot_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : number of bytes, default: 8\n");
-    printf("  i     : number of iterations, default: 0\n");
+    printf("  d     : interleaver depth, default: 0\n");
     printf("  t     : interleaver type, 'sequence' or 'block'\n");
 }
 
@@ -31,16 +31,16 @@ unsigned int interleaver_find_bit(unsigned char * _x,
 int main(int argc, char*argv[]) {
     // options
     unsigned int n=8; // message length
-    unsigned int num_iterations = 0;
+    unsigned int depth = 4;
     interleaver_type type = LIQUID_INTERLEAVER_SEQUENCE; // interleaver type
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:i:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhn:d:t:")) != EOF) {
         switch (dopt) {
         case 'u':
-        case 'h': usage();                          return 0;
-        case 'n': n = atoi(optarg);                 break;
-        case 'i': num_iterations = atoi(optarg);    break;
+        case 'h': usage();              return 0;
+        case 'n': n = atoi(optarg);     break;
+        case 'd': depth = atoi(optarg); break;
         case 't':
             if ( strcmp(optarg,"sequence")==0 ) {
                 type = LIQUID_INTERLEAVER_SEQUENCE;
@@ -62,7 +62,7 @@ int main(int argc, char*argv[]) {
 
     // create the interleaver
     interleaver q = interleaver_create(n, type);
-    interleaver_set_num_iterations(q, num_iterations);
+    interleaver_set_depth(q, depth);
 
     // create arrays
     unsigned char x[n]; // original message data

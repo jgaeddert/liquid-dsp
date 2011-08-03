@@ -37,11 +37,12 @@ void interleaver_bench(struct rusage *_start,
                        interleaver_type _type)
 {
     // scale number of iterations by block size
-    // cycles/trial ~ exp( -0.883 + 0.708*log(_n) )
+    // iterations = 4: cycles/trial ~ exp( -0.883 + 0.708*log(_n) )
     *_num_iterations /= 0.7f*expf( -0.883 + 0.708*logf(_n) );
 
     // initialize interleaver
     interleaver q = interleaver_create(_n, _type);
+    interleaver_set_depth(q, 4);
 
     unsigned char x[_n];
     unsigned char y[_n];

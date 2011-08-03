@@ -37,7 +37,9 @@ interleaver interleaver_create(unsigned int _n,
 {
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
     q->n = _n;
-    q->num_iterations = 1;
+
+    // set internal properties
+    q->depth = 4;   // default depth to maximum 
 
     // compute block dimensions
     q->M = 1 + (unsigned int) floorf(sqrtf(q->n));
@@ -71,12 +73,13 @@ void interleaver_encode(interleaver _q,
                         unsigned char * _msg_dec,
                         unsigned char * _msg_enc)
 {
-    // single iteration
+    // copy data to output
     memmove(_msg_enc, _msg_dec, _q->n);
-    interleaver_permute(_msg_enc, _q->n, _q->M, _q->N);
-    interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+2, 0x55);
-    interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+4, 0x33);
-    interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+8, 0x0f);
+
+    if (_q->depth > 0) interleaver_permute(_msg_enc, _q->n, _q->M, _q->N);
+    if (_q->depth > 1) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 2) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 3) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+8, 0x33);
 }
 
 // execute forward interleaver (encoder) on soft bits
@@ -87,12 +90,13 @@ void interleaver_encode_soft(interleaver _q,
                              unsigned char * _msg_dec,
                              unsigned char * _msg_enc)
 {
-    // single iteration
+    // copy data to output
     memmove(_msg_enc, _msg_dec, 8*_q->n);
-    interleaver_permute_soft(_msg_enc, _q->n, _q->M, _q->N);
-    interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+2, 0x55);
-    interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+4, 0x33);
-    interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+8, 0x0f);
+
+    if (_q->depth > 0) interleaver_permute_soft(_msg_enc, _q->n, _q->M, _q->N);
+    if (_q->depth > 1) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 2) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 3) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+8, 0x33);
 }
 
 // execute reverse interleaver (decoder)
@@ -103,12 +107,13 @@ void interleaver_decode(interleaver _q,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec)
 {
-    // single iteration
+    // copy data to output
     memmove(_msg_dec, _msg_enc, _q->n);
-    interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+8, 0x0f);
-    interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+4, 0x33);
-    interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+2, 0x55);
-    interleaver_permute(_msg_dec, _q->n, _q->M, _q->N);
+
+    if (_q->depth > 3) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+8, 0x33);
+    if (_q->depth > 2) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 1) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 0) interleaver_permute(_msg_dec, _q->n, _q->M, _q->N);
 }
 
 // execute reverse interleaver (decoder) on soft bits
@@ -119,18 +124,19 @@ void interleaver_decode_soft(interleaver _q,
                              unsigned char * _msg_enc,
                              unsigned char * _msg_dec)
 {
-    // single iteration
+    // copy data to output
     memmove(_msg_dec, _msg_enc, 8*_q->n);
-    interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+8, 0x0f);
-    interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+4, 0x33);
-    interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+2, 0x55);
-    interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
+
+    if (_q->depth > 3) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+8, 0x33);
+    if (_q->depth > 2) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 1) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 0) interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
 }
 
-// set number of internal iterations
-void interleaver_set_num_iterations(interleaver _q,
-                                    unsigned int _n)
+// set depth (number of internal iterations)
+void interleaver_set_depth(interleaver _q, unsigned int _depth)
 {
+    _q->depth = _depth;
 }
 
 

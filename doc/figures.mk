@@ -482,16 +482,16 @@ figures.gen/filter_rnyquist.gnu : src/filter_rnyquist
 scatterplot_opts := -n 64 -t block
 
 figures.gen/interleaver_scatterplot_i0.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i0.gnu $(scatterplot_opts) -i0
+	./$< -f figures.gen/interleaver_scatterplot_i0.gnu $(scatterplot_opts) -d0
 
 figures.gen/interleaver_scatterplot_i1.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i1.gnu $(scatterplot_opts) -i1
+	./$< -f figures.gen/interleaver_scatterplot_i1.gnu $(scatterplot_opts) -d1
 
 figures.gen/interleaver_scatterplot_i2.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i2.gnu $(scatterplot_opts) -i2
+	./$< -f figures.gen/interleaver_scatterplot_i2.gnu $(scatterplot_opts) -d2
 
 figures.gen/interleaver_scatterplot_i3.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i3.gnu $(scatterplot_opts) -i3
+	./$< -f figures.gen/interleaver_scatterplot_i3.gnu $(scatterplot_opts) -d3
 
 ##
 ## MODULE : math

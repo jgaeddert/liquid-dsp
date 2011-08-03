@@ -23,9 +23,8 @@ int main() {
 
     // create the interleaver
     interleaver q = interleaver_create(n, type);
+    interleaver_set_depth(q, 4);
     interleaver_print(q);
-    if (n<10)
-        interleaver_debug_print(q);
 
     // create arrays
     unsigned char x[n]; // original message data
