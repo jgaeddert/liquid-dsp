@@ -88,32 +88,9 @@ void interleaver_encode(interleaver _q,
                         unsigned char * _msg_dec,
                         unsigned char * _msg_enc)
 {
-#if 1
     // single iteration
-    interleaver_permute(_msg_dec, _msg_enc, _q->n, _q->M, _q->N, INTERLEAVE_FORWARD);
-#else
-    // buffer pointers
-    unsigned char * b0 = _q->buffer_0;  // input buffer
-    unsigned char * b1 = _q->buffer_1;  // output buffer
-
-    // copy to input
-    memmove(b0, _msg_dec, _q->n);
-
-    // run loop
-    unsigned int i;
-    for (i=0; i<_q->num_iterations; i++) {
-        // flip buffer pointers
-        interleaver_permute(b0, b1, _q->n, _q->M, _q->N, INTERLEAVE_FORWARD);
-
-        // swap buffers
-        unsigned char * tmp = b0;
-        b0 = b1;
-        b1 = tmp;
-    }
-
-    // copy to output
-    memmove(_msg_enc, b0, _q->n);
-#endif
+    memmove(_msg_enc, _msg_dec, _q->n);
+    interleaver_permute(_msg_enc, _q->n, _q->M, _q->N);
 }
 
 // execute forward interleaver (encoder) on soft bits
@@ -136,33 +113,9 @@ void interleaver_decode(interleaver _q,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec)
 {
-#if 1
     // single iteration
-    interleaver_permute(_msg_enc, _msg_dec, _q->n, _q->M, _q->N, INTERLEAVE_REVERSE);
-#else
-    // buffer pointers
-    unsigned char * b0 = _q->buffer_0;  // input buffer
-    unsigned char * b1 = _q->buffer_1;  // output buffer
-
-    // copy to input
-    memmove(b0, _msg_enc, _q->n);
-
-    // run loop
-    unsigned int i;
-    for (i=0; i<_q->num_iterations; i++) {
-        // flip buffer pointers
-        //interleaver_permute_forward(b0, b1, _q->n, _q->M, _q->N);
-        interleaver_permute(b0, b1, _q->n, _q->M, _q->N, INTERLEAVE_REVERSE);
-
-        // swap buffers
-        unsigned char * tmp = b0;
-        b0 = b1;
-        b1 = tmp;
-    }
-
-    // copy to output
-    memmove(_msg_dec, b0, _q->n);
-#endif
+    memmove(_msg_dec, _msg_enc, _q->n);
+    interleaver_permute(_msg_dec, _q->n, _q->M, _q->N);
 }
 
 // execute reverse interleaver (decoder) on soft bits
@@ -186,17 +139,17 @@ void interleaver_set_num_iterations(interleaver _q,
 
 // permute one iteration
 void interleaver_permute(unsigned char * _x,
-                         unsigned char * _y,
                          unsigned int _n,
                          unsigned int _M,
-                         unsigned int _N,
-                         int _dir)
+                         unsigned int _N)
 {
     unsigned int i;
     unsigned int j;
     unsigned int m=0;
     unsigned int n=0;
-    for (i=0; i<_n; i++) {
+    unsigned int n2=_n/2;
+    unsigned char tmp;
+    for (i=0; i<n2; i++) {
         //j = m*N + n; // input
         do {
             j = m*_N + n; // output
@@ -205,14 +158,13 @@ void interleaver_permute(unsigned char * _x,
                 n = (n+1) % (_N);
                 m=0;
             }
-        } while (j>=_n);
-    
-        if (_dir == INTERLEAVE_FORWARD)
-            _y[i] = _x[j];
-        else
-            _y[j] = _x[i];
+        } while (j>=n2);
+
+        // swap indices
+        tmp = _x[2*j+1];
+        _x[2*j+1] = _x[2*i+0];
+        _x[2*i+0] = tmp;
     }
-    //printf("\n");
 }
 
 // permute one iteration (soft bit input)
