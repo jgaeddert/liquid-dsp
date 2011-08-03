@@ -26,7 +26,7 @@
 // 
 // AUTOTESTS: interleave/deinterleave
 //
-void intlv_test(unsigned int _n)
+void interleaver_test_hard(unsigned int _n)
 {
     unsigned int i;
     unsigned char x[_n];
@@ -44,13 +44,34 @@ void intlv_test(unsigned int _n)
     CONTEND_SAME_DATA(x, z, _n);
 }
 
-void autotest_interleaver_block_8()         { intlv_test(8     ); }
-void autotest_interleaver_block_16()        { intlv_test(16    ); }
-void autotest_interleaver_block_64()        { intlv_test(64    ); }
-void autotest_interleaver_block_256()       { intlv_test(256   ); }
+// 
+// AUTOTESTS: interleave/deinterleave (soft)
+//
+void interleaver_test_soft(unsigned int _n)
+{
+    unsigned int i;
+    unsigned char x[8*_n];
+    unsigned char y[8*_n];
+    unsigned char z[8*_n];
 
-void autotest_interleaver_sequence_8()      { intlv_test(8     ); }
-void autotest_interleaver_sequence_16()     { intlv_test(16    ); }
-void autotest_interleaver_sequence_64()     { intlv_test(64    ); }
-void autotest_interleaver_sequence_256()    { intlv_test(256   ); }
+    for (i=0; i<8*_n; i++)
+        x[i] = rand() & 0xFF;
+
+    interleaver q = interleaver_create(_n);
+
+    interleaver_encode_soft(q,x,y);
+    interleaver_decode_soft(q,y,z);
+
+    CONTEND_SAME_DATA(x, z, 8*_n);
+}
+
+void autotest_interleaver_hard_8()      { interleaver_test_hard(8   ); }
+void autotest_interleaver_hard_16()     { interleaver_test_hard(16  ); }
+void autotest_interleaver_hard_64()     { interleaver_test_hard(64  ); }
+void autotest_interleaver_hard_256()    { interleaver_test_hard(256 ); }
+
+void autotest_interleaver_soft_8()      { interleaver_test_soft(8   ); }
+void autotest_interleaver_soft_16()     { interleaver_test_soft(16  ); }
+void autotest_interleaver_soft_64()     { interleaver_test_soft(64  ); }
+void autotest_interleaver_soft_256()    { interleaver_test_soft(256 ); }
 
