@@ -1174,21 +1174,12 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 struct interleaver_s {
     unsigned int n;     // number of bytes
 
-    unsigned int M;     //
-    unsigned int N;     //
-    unsigned int L;     //
+    unsigned int M;     // row dimension
+    unsigned int N;     // col dimension
 
-    // number of iterations (permutations) beyond
-    // initial block interleaving
+    // interleaving depth (number of permutations)
     unsigned int depth;
 };
-
-// compute bit permutation for interleaver
-//  _q      :   interleaver object
-//  _p      :   output permutation index array, [size: 8*_n x 1]
-void interleaver_compute_bit_permutation(interleaver _q,
-                                         unsigned int *_p);
-
 
 // 
 // permutation functions

@@ -2182,9 +2182,6 @@ void interleaver_decode_soft(interleaver _q,
                              unsigned char * _msg_enc,
                              unsigned char * _msg_dec);
 
-// print internal debugging information
-void interleaver_debug_print(interleaver _q);
-
 
 //
 // MODULE : math
