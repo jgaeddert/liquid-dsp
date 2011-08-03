@@ -36,8 +36,9 @@ fec fec_rep3_create(void * _opts)
     q->scheme = LIQUID_FEC_REP3;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_rep3_encode;
-    q->decode_func = &fec_rep3_decode;
+    q->encode_func      = &fec_rep3_encode;
+    q->decode_func      = &fec_rep3_decode;
+    q->decode_soft_func = &fec_rep3_decode_soft;
 
     return q;
 }
@@ -108,3 +109,38 @@ void fec_rep3_decode(fec _q,
     //return num_errors;
 }
 
+// decode block of data using rep3 decoder (soft metrics)
+//
+//  _q              :   encoder/decoder object
+//  _dec_msg_len    :   decoded message length (number of bytes)
+//  _msg_enc        :   encoded message [size: 1 x 3*_dec_msg_len]
+//  _msg_dec        :   decoded message [size: 1 x _dec_msg_len]
+void fec_rep3_decode_soft(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec)
+{
+    unsigned char s0, s1, s2;
+    unsigned int i;
+    unsigned int j;
+    unsigned int s_hat;
+    //unsigned int num_errors=0;
+    for (i=0; i<_dec_msg_len; i++) {
+
+        // clear decoded message
+        _msg_dec[i] = 0x00;
+
+        for (j=0; j<8; j++) {
+            s0 = _msg_enc[8*i                    + j];
+            s1 = _msg_enc[8*(i +   _dec_msg_len) + j];
+            s2 = _msg_enc[8*(i + 2*_dec_msg_len) + j];
+
+            // average three symbols and make decision
+            s_hat = (s0 + s1 + s2)/3;
+
+            _msg_dec[i] |= (s_hat > LIQUID_FEC_SOFTBIT_ERASURE) ? (1 << (8-j-1)) : 0x00;
+            
+        }
+
+    }
+}

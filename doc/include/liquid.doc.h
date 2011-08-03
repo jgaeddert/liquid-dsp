@@ -74,6 +74,7 @@ typedef struct {
     fec_scheme fec0;                // FEC codec (inner)
     fec_scheme fec1;                // FEC codec (outer)
     unsigned int dec_msg_len;       // (decoded) message length (bytes)
+    int soft_decoding;              // soft bit decoding?
 
     unsigned long int min_packet_errors;    // minimum number of packet errors
     unsigned long int min_bit_errors;       // minimum number of bit errors

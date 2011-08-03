@@ -21,8 +21,7 @@ void usage()
     printf("  g     : specify gnuplot version\n");
     printf("  f     : output gnuplot filename\n");
     printf("  n     : number of bytes, default: 8\n");
-    printf("  i     : number of iterations, default: 0\n");
-    printf("  t     : interleaver type, 'sequence' or 'block'\n");
+    printf("  d     : number of iterations, default: 0\n");
 }
 
 // find most significant bit in array (starting from left)
@@ -32,32 +31,19 @@ unsigned int interleaver_find_bit(unsigned char * _x,
 int main(int argc, char*argv[]) {
     // options
     unsigned int n=8; // message length
-    unsigned int num_iterations = 0;
-    interleaver_type type = LIQUID_INTERLEAVER_SEQUENCE; // interleaver type
+    unsigned int depth = 0;
     char filename[256] = "";
     float gnuplot_version=0.0;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhg:f:n:i:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhg:f:n:d:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();                          return 0;
         case 'g': gnuplot_version = atof(optarg);   break;
         case 'f': strncpy(filename,optarg,256);     break;
         case 'n': n = atoi(optarg);                 break;
-        case 'i': num_iterations = atoi(optarg);    break;
-        case 't':
-            if ( strcmp(optarg,"sequence")==0 ) {
-                type = LIQUID_INTERLEAVER_SEQUENCE;
-                break;
-            } else if ( strcmp(optarg,"block")==0 ) {
-                type = LIQUID_INTERLEAVER_BLOCK;
-                break;
-            } else {
-                fprintf(stderr,"error: %s, unsupported type '%s'\n", argv[0], optarg);
-                usage();
-                return 1;
-            }
+        case 'd': depth = atoi(optarg);    break;
         default:
             fprintf(stderr,"error: %s, unknown/unsupported option '%c'\n", argv[0], dopt);
             usage();
@@ -66,8 +52,8 @@ int main(int argc, char*argv[]) {
     }
 
     // create the interleaver
-    interleaver q = interleaver_create(n, type);
-    interleaver_set_num_iterations(q, num_iterations);
+    interleaver q = interleaver_create(n);
+    interleaver_set_depth(q, depth);
 
     // create arrays
     unsigned char x[n]; // original message data

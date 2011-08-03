@@ -543,6 +543,16 @@ void fec_decode(fec _q,
                 unsigned char * _msg_enc,
                 unsigned char * _msg_dec);
 
+// decode a block of data using a fec scheme (soft decision)
+//  _q              :   fec object
+//  _dec_msg_len    :   decoded message length
+//  _msg_enc        :   encoded message (soft bits)
+//  _msg_dec        :   decoded message
+void fec_decode_soft(fec _q,
+                     unsigned int _dec_msg_len,
+                     unsigned char * _msg_enc,
+                     unsigned char * _msg_dec);
+
 
 //
 // MODULE : fft (fast Fourier transform)
@@ -2118,23 +2128,25 @@ int  packetizer_decode(packetizer _p,
                        unsigned char * _pkt,
                        unsigned char * _msg);
 
+// Execute the packetizer to decode an input message, return validity
+// check of resulting data
+//
+//  _p      :   packetizer object
+//  _pkt    :   input message (coded soft bits)
+//  _msg    :   decoded output message
+int  packetizer_decode_soft(packetizer _p,
+                            unsigned char * _pkt,
+                            unsigned char * _msg);
+
 
 //
 // interleaver
 //
 typedef struct interleaver_s * interleaver;
 
-// interleaver type
-typedef enum {
-    LIQUID_INTERLEAVER_BLOCK=0,
-    LIQUID_INTERLEAVER_SEQUENCE
-} interleaver_type;
-
 // create interleaver
 //   _n     : number of bytes
-//   _type  : type of re-ordering
-interleaver interleaver_create(unsigned int _n,
-                               interleaver_type _type);
+interleaver interleaver_create(unsigned int _n);
 
 // destroy interleaver object
 void interleaver_destroy(interleaver _q);
@@ -2142,11 +2154,11 @@ void interleaver_destroy(interleaver _q);
 // print interleaver object internals
 void interleaver_print(interleaver _q);
 
-// set number of internal iterations
+// set depth (number of internal iterations)
 //  _q      :   interleaver object
-//  _n      :   number of iterations
-void interleaver_set_num_iterations(interleaver _q,
-                                    unsigned int _n);
+//  _depth  :   depth
+void interleaver_set_depth(interleaver _q,
+                           unsigned int _depth);
 
 // execute forward interleaver (encoder)
 //  _q          :   interleaver object
@@ -2156,6 +2168,14 @@ void interleaver_encode(interleaver _q,
                         unsigned char * _msg_dec,
                         unsigned char * _msg_enc);
 
+// execute forward interleaver (encoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode_soft(interleaver _q,
+                             unsigned char * _msg_dec,
+                             unsigned char * _msg_enc);
+
 // execute reverse interleaver (decoder)
 //  _q          :   interleaver object
 //  _msg_enc    :   encoded (interleaved) message
@@ -2164,8 +2184,13 @@ void interleaver_decode(interleaver _q,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec);
 
-// print internal debugging information
-void interleaver_debug_print(interleaver _q);
+// execute reverse interleaver (decoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode_soft(interleaver _q,
+                             unsigned char * _msg_enc,
+                             unsigned char * _msg_dec);
 
 
 //
@@ -2644,6 +2669,22 @@ unsigned int gray_encode(unsigned int symbol_in);
 // converts a gray-encoded symbol to binary-coded decimal (BCD)
 unsigned int gray_decode(unsigned int symbol_in);
 
+// pack soft bits into symbol
+//  _soft_bits  :   soft input bits [size: _bps x 1]
+//  _bps        :   bits per symbol
+//  _sym_out    :   output symbol, value in [0,2^_bps)
+void liquid_pack_soft_bits(unsigned char * _soft_bits,
+                           unsigned int _bps,
+                           unsigned int * _sym_out);
+
+// unpack soft bits into symbol
+//  _sym_in     :   input symbol, value in [0,2^_bps)
+//  _bps        :   bits per symbol
+//  _soft_bits  :   soft output bits [size: _bps x 1]
+void liquid_unpack_soft_bits(unsigned int _sym_in,
+                             unsigned int _bps,
+                             unsigned char * _soft_bits);
+
 
 //
 // Linear modem
@@ -2682,6 +2723,10 @@ unsigned int modem_get_bps(modem _mod);
 void modem_modulate(modem _mod, unsigned int _s, liquid_float_complex *_y);
 
 void modem_demodulate(modem _demod, liquid_float_complex _x, unsigned int *_s);
+void modem_demodulate_soft(modem _demod,
+                           liquid_float_complex _x,
+                           unsigned int  * _s,
+                           unsigned char * _soft_bits);
 float modem_get_demodulator_phase_error(modem _demod);
 float modem_get_demodulator_evm(modem _demod);
 

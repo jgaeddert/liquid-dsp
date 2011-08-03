@@ -42,8 +42,9 @@ fec fec_rs_create(fec_scheme _fs)
     q->scheme = _fs;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_rs_encode;
-    q->decode_func = &fec_rs_decode;
+    q->encode_func      = &fec_rs_encode;
+    q->decode_func      = &fec_rs_decode;
+    q->decode_soft_func = NULL;
 
     switch (q->scheme) {
     case LIQUID_FEC_RS_M8: fec_rs_init_p8(q);   break;

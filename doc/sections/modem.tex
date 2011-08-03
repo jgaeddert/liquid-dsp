@@ -890,3 +890,258 @@ ARB-64-VT           & 31.67 & 23.89 \\
 % ------------------------
 
 
+\subsubsection{Soft Demodulation}
+\label{module:modem:digital:soft}
+Unlike hard demodulation which seeks the most likely transmitted
+{\em symbol} for a given received sample,
+the goal of soft demodulation is to derive a probability metric for each
+{\em bit} for the received sample.
+When using the output of the demodulator in conjuction with forward
+error-correction coding, the soft bit information can improve the error
+detection and correction capabilities of most decoders,
+usually by about 1.5~dB.
+This soft bit information provides a clue to the decoder as to the
+confidence that each bit was received correctly.
+For turbo-product codes \cite{Berrou:1993} and
+low-density parity check (LDPC) codes \cite{Gallager:1962},
+this soft bit information is nearly a requirement.
+
+% ...
+Before we continue, let us define some nomenclature:
+%
+\begin{itemize}
+\item $M=2^m$ are the number of points in the constellation
+      (constellation size).
+\item $m=\log_2(M)$ are the number of bits per symbol in the
+      constellation (modulation depth).
+\item $s_k$ is the symbol at index $k$ on the complex plane;
+      $k \in \{0,1,2,\ldots,M-1\}$.
+\item $\{b_0,b_1,\ldots,b_{m-1}\}$ is the encoded bit string of $s_k$
+      and is simply the value of $k$ in binary-coded decimal.
+\item $b_j$ is the bit at index $j$;
+      $b_j \in \{0,1\}$ and $j \in \{0,1,\ldots,m-1\}$.
+\item $\mathcal{S}_M = \{s_0,s_1,\ldots,s_{M-1}\}$ is the set of all
+      symbols in the constellation where
+      $1/M \sum_k \|s_k\|_2^2 = 1$.
+\item $\mathcal{S}_{b_j=t}$ is the subset of $\mathcal{S}_M$
+      where the bit at index $j$ is equal to $t \in \{0,1\}$.
+\end{itemize}
+%
+For example, let the modulation scheme be
+the generic 4-PSK with the constellation map defined in Figure~\ref{fig:modem:psk:4}
+which has $m=2$, $M=4$, and
+$\mathcal{S}_M = \{s_0=1, s_1=j, s_2=-j, s_3=-1\}$.
+Subsets:
+\begin{itemize}
+\item $\mathcal{S}_{b_0=0} = \{s_0= 1, s_2=-j\}$ (right-most bit is {\tt 0})
+\item $\mathcal{S}_{b_0=1} = \{s_1= j, s_3=-1\}$ (right-most bit is {\tt 1})
+\item $\mathcal{S}_{b_1=0} = \{s_0= 1, s_1= j\}$ (left-most bit is {\tt 0})
+\item $\mathcal{S}_{b_1=1} = \{s_2=-j, s_3=-1\}$ (left-most bit is {\tt 1})
+\end{itemize}
+%
+A few key points:
+\begin{itemize}
+\item $\mathcal{S}_{b_j=0} \cap \mathcal{S}_{b_j=1} = \emptyset,     \, \forall_j$.
+\item $\mathcal{S}_{b_j=0} \cup \mathcal{S}_{b_j=1} = \mathcal{S}_M, \, \forall_j$.
+\end{itemize}
+%
+
+%
+Let us represent the received signal at a sampling instant $n$ as
+%
+\begin{equation}
+\label{eqn:modem:digital:soft:received_signal}
+    r(n) = s(n) + w(n)
+\end{equation}
+%
+where $s$ is the transmitted symbol
+and $w$ is a zero-mean complex Gauss random variable with
+a variance $\sigma_n^2 = E\{n n^*\}$.
+Let the transmitted symbols be {\em i.i.d.} and drawn from a $M$-point
+constellation, each with $m$ bits of information
+such that the symbols belong to a set of constellation points
+$s_k \in \mathcal{S}_M$ and $E\{s_k s_k^*\}=1$.
+%
+Assuming perfect channel knowledge, timing, and carrier offset recovery,
+the log-likelihood ratio (LLR) of each bit $b_j$ is shown to be
+\cite[Eq.~(8)]{LeGoff:1994}
+the ratio of the two conditional {\em a posteriori} probabilities of
+each bit having been transmitted, viz.
+%
+\begin{equation}
+\label{eqn:modem:digital:soft:LLR_true}
+    \Lambda(b_j) =
+        \ln \frac{
+            P\left(b_j=1 | {observation} \right)
+        }{
+            P\left(b_j=0 | {observation} \right)
+        }
+\end{equation}
+%
+Assuming that the channel is memoryless the ``observation'' is simply
+the received sample $r$ in
+(\ref{eqn:modem:digital:soft:received_signal})
+and does not depend on previous symbols; therefore
+$P\left(b_j=t|{observation}\right) = P\left(b_j=t|r(n)\right)$
+and $t \in \{0,1\}$.
+Furthermore, by assuming that the transmitted symbols are equally
+probable and that the noise follows a Gauss distribution
+\cite{Qiang:2003}
+the LLR reduces to
+%
+\begin{equation}
+\label{eqn:modem:digital:soft:LLR}
+    \Lambda(b_j) =
+        \ln \Biggl(
+            \sum_{s^+\in \mathcal{S}_{b_j=1}} { \exp\Bigl\{\|r-s^+\|_2^2 / 2 \sigma_n^2\Bigr\} }
+        \Biggr)
+       -\ln \Biggl(
+            \sum_{s^-\in \mathcal{S}_{b_j=0}} { \exp\Bigl\{\|r-s^-\|_2^2 / 2 \sigma_n^2\Bigr\} }
+        \Biggr)
+\end{equation}
+%
+As shown in \cite{Qiang:2003} a sub-optimal simplified LLR expression
+can be obtained by replacing the summations in
+(\ref{eqn:modem:digital:soft:LLR}) with the single largest component of
+each: $\ln \sum_j {e^{z_j}} \approx \max_j \ln (e^{z_j}) = \max_j z_j$.
+This approximation provides a tight bound as long as the sum is
+dominated by its largest component.
+The approximate LLR becomes
+%
+\begin{equation}
+\label{eqn:modem:digital:soft:LLR_approx}
+    \tilde{\Lambda}(b_j) =
+        \frac{1}{2\sigma_n^2}
+        \Bigl\{
+            \underset{s^+\in \mathcal{S}_{b_j=0}}{\min} \|r-s^+\|_2^2 -
+            \underset{s^-\in \mathcal{S}_{b_j=1}}{\min} \|r-s^-\|_2^2
+        \Bigr\}
+\end{equation}
+%
+Conveniently, both the exponential and logarithm operations disappear;
+furthermore, the noise variance becomes a scaling factor and is only
+used to influence the reliability of the obtained LLR.
+
+%
+%-------------------- FIGURE: MODEM DEMOD SOFT--------------------
+\begin{figure}
+\centering
+\mbox{
+  \subfigure[$\tilde{\Lambda}(b_0) = -10.55$]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b0}
+      \label{fig:modem:demodsoft:b0}
+    } \quad
+  \subfigure[$\tilde{\Lambda}(b_1) = -0.28$]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b1}
+      \label{fig:modem:demodsoft:b1}
+    } \quad
+}
+\mbox{
+  \subfigure[$\tilde{\Lambda}(b_2) = -7.43$]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b2}
+      \label{fig:modem:demodsoft:b2}
+    } \quad
+  \subfigure[$\tilde{\Lambda}(b_3) = 2.57$]
+    {
+      \includegraphics[trim = 18mm 0mm 15mm 0mm, clip, width=8cm]{figures.gen/modem_demodsoft_b3}
+      \label{fig:modem:demodsoft:b3}
+    } \quad
+}
+% trim = left bottom right top
+\caption{
+    Soft demodulation example of a 16-QAM sample.
+    Each plot depicts the soft demodulation of each of the 4 bits where
+    the $\times$ denotes the received sample and the lines connect it to
+    the nearest symbol with each of a {\tt 0} and {\tt 1} bit. %REWORD
+    The noise standard deviation is $\sigma_n=0.2$.
+}
+\label{fig:modem:demodsoft}
+\end{figure}
+%
+Figure~\ref{fig:modem:demodsoft} depicts the soft bit demodulation
+algorithm for a received 16-QAM signal point, corrupted by noise.
+The received sample is $r = -0.65 - j0.47$ which results in a hard
+demodulation of {\tt 0001}.
+The subfigures depict each of the four bits in the symbol 
+$\{b_0,b_1,b_2,b_3\}$
+for which the
+soft bit output is given, and show the nearest symbol for which a
+{\tt 0} and a {\tt 1} at that particular bit index occurs.
+For example, Figure~\ref{fig:modem:demodsoft:b2} shows that
+the nearest symbol containing a {\tt 0} at bit index 2
+is $s_1=${\tt 0001} (the hard decision demodulation)
+at $(-3 - j)/\sqrt{10}$
+while
+the nearest symbol containing a {\tt 1} at bit index 2
+is $s_3=${\tt 0011}
+at $(-3 + j)/\sqrt{10}$.
+Plugging $s^-=s_1$ and $s^+=s_3$ into
+(\ref{eqn:modem:digital:soft:LLR_approx})
+and evaluating for $\sigma_n=0.2$ gives
+$\tilde{\Lambda}(b_2) = -7.43$.
+Because this number is largely negative, it is very likely that the
+transmitted bit $b_2$ was {\tt 0}.
+This can be verified by Figure~\ref{fig:modem:demodsoft:b2} which shows
+that the distance from $r$ to $s^-$ is much shorter than that of $s^+$.
+
+Conversely, Figure~\ref{fig:modem:demodsoft:b1} shows that $b_1$ cannot
+be demodulated with such certainty;
+the distances from $r$ to each of $s^+$ and $s^-$ are about the same.
+This is reflected in the relatively small LLR value of
+$\tilde{\Lambda}(b_1)=-0.28$ which suggests a high uncertainty in the
+demodulation of $b_1$.
+%
+
+% 
+% specific implementation
+%
+One major drawback of computing
+(\ref{eqn:modem:digital:soft:LLR_approx}) is that finding the maximum
+requires searching over all constellation points to find the one which
+minimizes $\|r-s_k\|$
+(where $s_k \in \mathcal{S}_{b_j=t}$) is particularly time-consuming.
+% TODO : explain in more detail
+To circumvent this, \liquid\ only searches over a subset
+$\mathcal{S}_k \subset \mathcal{S}_M$ nearest to the
+hard-demodulated symbol
+% $\mathcal{S}_k$ is the subset of $\mathcal{S}_M$
+%  nearest to the symbol $s_k$.
+($\mathcal{S}_k$ will typically only have about four values).
+This can be done quickly because the hard-demodulated symbol can be
+found systematically for most modulation schemes
+(e.g. for {\tt LIQUID\_MODEM\_QAM} only $\ord(\log_2 M)$ comparisons are
+needed to make a hard decision).
+%
+If no symbols are found within $\mathcal{S}_k$ for a given bit value
+such that $\mathcal{S}_k \cap \mathcal{S}_{b_j=t} = \emptyset$
+then the magnitude of $\Lambda(b_j)$ is sufficiently large
+and contains little soft bit information;
+that is
+$\tilde{\Lambda}(b_j) \gg 0$ when $\mathcal{S}_k \cap \mathcal{S}_{b_j=0} = \emptyset$
+and
+$\tilde{\Lambda}(b_j) \ll 0$ when $\mathcal{S}_k \cap \mathcal{S}_{b_j=1} = \emptyset$.
+%
+It is guaranteed that
+$   \left( \mathcal{S}_k \cap \mathcal{S}_{b_j=0}\right)
+        \cup
+    \left( \mathcal{S}_k \cap \mathcal{S}_{b_j=1}\right)
+    \neq \emptyset $
+because $s_k$ must be in either $\mathcal{S}_{b_j=0}$ or
+$\mathcal{S}_{b_j=1}$.
+%
+
+% 
+% soft bit representation
+%
+Soft bit information is stored in \liquid\ as type {\tt unsigned char}
+with a value of {\tt 255} representing a {\em very likely {\tt 1}},
+and a value of {\tt 0} representing a {\em very likely {\tt 0}}.
+The {\em erasure} condition is {\tt 127}.
+%
+\begin{Verbatim}[fontsize=\small]
+soft bit value:  [0 1 2 3      ...   64 65   ...  127  ...  192 193   ...  253 254 255]
+interpretation:  very likely '0'   likely '0'   erasure   likely '1'    very likely '1'
+\end{Verbatim}

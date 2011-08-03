@@ -214,11 +214,14 @@ fec_objects :=				\
 	src/fec/src/fec_hamming128.o	\
 	src/fec/src/fec_hamming1511.o	\
 	src/fec/src/fec_hamming3126.o	\
+	src/fec/src/fec_hamming128_gentab.o	\
 	src/fec/src/fec_pass.o		\
 	src/fec/src/fec_rep3.o		\
 	src/fec/src/fec_rep5.o		\
 	src/fec/src/fec_rs.o		\
 	src/fec/gentab/reverse_byte.o	\
+	src/fec/src/smatrix.o			\
+	src/fec/src/sumproduct.o		\
 
 
 # list explicit targets and dependencies here
@@ -240,6 +243,7 @@ extra_clean +=					\
 fec_autotests :=				\
 	src/fec/tests/crc_autotest.h		\
 	src/fec/tests/fec_autotest.h		\
+	src/fec/tests/fec_soft_autotest.h		\
 	src/fec/tests/fec_hamming74_autotest.h	\
 	src/fec/tests/fec_hamming84_autotest.h	\
 	src/fec/tests/fec_hamming128_autotest.h	\
@@ -248,6 +252,7 @@ fec_autotests :=				\
 	src/fec/tests/fec_reedsolomon_autotest.h	\
 	src/fec/tests/fec_rep3_autotest.h		\
 	src/fec/tests/fec_rep5_autotest.h		\
+	src/fec/tests/smatrix_autotest.h		\
 
 
 # benchmarks
@@ -255,6 +260,7 @@ fec_benchmarks :=				\
 	src/fec/bench/crc_benchmark.h		\
 	src/fec/bench/fec_encode_benchmark.h	\
 	src/fec/bench/fec_decode_benchmark.h	\
+	src/fec/bench/fecsoft_decode_benchmark.h	\
 
 # 
 # MODULE : fft - fast Fourier transforms, discrete sine/cosine transforms, etc.
@@ -427,8 +433,6 @@ framing_objects :=				\
 	src/framing/src/ofdmflexframesync.o	\
 	src/framing/src/packetizer.o		\
 	src/framing/src/interleaver.o		\
-	src/framing/src/interleaver_create.o	\
-	src/framing/src/interleaver_permute.o	\
 
 
 # list explicit targets and dependencies here
@@ -462,10 +466,6 @@ src/framing/src/ofdmflexframesync.o : %.o : %.c $(headers)
 src/framing/src/packetizer.o : %.o : %.c $(headers)
 
 src/framing/src/interleaver.o : %.o : %.c $(headers)
-
-src/framing/src/interleaver_create.o : %.o : %.c $(headers)
-
-src/framing/src/interleaver_permute.o : %.o : %.c $(headers)
 
 
 framing_autotests :=					\
@@ -587,6 +587,8 @@ modem_objects :=				\
 	src/modem/src/modem_common.o		\
 	src/modem/src/modem_modulate.o		\
 	src/modem/src/modem_demodulate.o	\
+	src/modem/src/modem_demodulate_soft.o	\
+	src/modem/src/modem_demod_soft_const.o	\
 	src/modem/src/ampmodem.o		\
 	src/modem/src/freqmodem.o		\
 
@@ -615,13 +617,15 @@ src/modem/src/freqmodem.o: %.o : %.c $(headers)
 
 modem_autotests :=					\
 	src/modem/tests/modem_autotest.h		\
-	src/modem/tests/modem_phase_error_autotest.h
+	src/modem/tests/modem_demodsoft_autotest.h	\
+	src/modem/tests/modem_phase_error_autotest.h	\
 
 
 modem_benchmarks :=					\
 	src/modem/bench/gmskmodem_benchmark.h		\
 	src/modem/bench/modem_modulate_benchmark.h	\
-	src/modem/bench/modem_demodulate_benchmark.h
+	src/modem/bench/modem_demodulate_benchmark.h	\
+	src/modem/bench/modem_demodsoft_benchmark.h	\
 
 # 
 # MODULE : multicarrier
@@ -1122,6 +1126,7 @@ example_obj :=						\
 	examples/agc_example.o				\
 	examples/agc_qpsk_example.o			\
 	examples/agc_squelch_example.o			\
+	examples/smatrix_example.o			\
 	examples/ampmodem_example.o			\
 	examples/asgram_example.o			\
 	examples/autocorr_cccf_example.o		\
@@ -1142,6 +1147,7 @@ example_obj :=						\
 	examples/eqlms_cccf_example.o			\
 	examples/eqrls_cccf_example.o			\
 	examples/fec_example.o				\
+	examples/fec_soft_example.o			\
 	examples/fct_example.o				\
 	examples/fft_example.o				\
 	examples/firfarrow_rrrf_example.o		\
@@ -1168,6 +1174,7 @@ example_obj :=						\
 	examples/gradsearch_datafit_example.o		\
 	examples/gradsearch_example.o			\
 	examples/interleaver_example.o			\
+	examples/interleaver_soft_example.o		\
 	examples/interleaver_scatterplot_example.o	\
 	examples/iirdes_example.o			\
 	examples/iirdes_analog_example.o		\
@@ -1182,6 +1189,7 @@ example_obj :=						\
 	examples/mdct_example.o				\
 	examples/modem_arb_example.o			\
 	examples/modem_example.o			\
+	examples/modem_soft_example.o			\
 	examples/msequence_example.o			\
 	examples/nco_example.o				\
 	examples/nco_pll_example.o			\
@@ -1193,6 +1201,7 @@ example_obj :=						\
 	examples/ofdmoqam_firpfbch_example.o		\
 	examples/ofdmoqamframesync_example.o		\
 	examples/packetizer_example.o			\
+	examples/packetizer_soft_example.o		\
 	examples/pll_example.o				\
 	examples/polyfit_example.o			\
 	examples/polyfit_lagrange_example.o		\
@@ -1249,13 +1258,19 @@ sandbox_obj =						\
 	sandbox/ellip_func_test.o			\
 	sandbox/ellip_test.o				\
 	sandbox/eqlms_cccf_test.o			\
+	sandbox/fecsoft_ber_test.o			\
 	sandbox/fec_hamming3126_example.o		\
+	sandbox/fec_hamming128_gentab.o			\
 	sandbox/fec_hamming128_example.o		\
 	sandbox/fec_hamming74_gentab.o			\
 	sandbox/fec_hamming84_gentab.o			\
 	sandbox/fec_hamming_test.o			\
 	sandbox/fec_rep3_test.o				\
 	sandbox/fec_rep5_test.o				\
+	sandbox/fecsoft_conv_test.o			\
+	sandbox/fecsoft_golay_test.o			\
+	sandbox/fecsoft_hamming128_gentab.o		\
+	sandbox/fec_sumproduct_test.o			\
 	sandbox/fft_r2r_test.o				\
 	sandbox/firdes_energy_test.o			\
 	sandbox/firdes_length_test.o			\
@@ -1264,6 +1279,8 @@ sandbox_obj =						\
 	sandbox/firpfbch_synthesis_equivalence_test.o	\
 	sandbox/householder_test.o			\
 	sandbox/iirdes_example.o			\
+	sandbox/ldpc_genmatrix_test.o			\
+	sandbox/ldpc_test.o				\
 	sandbox/levinson_test.o				\
 	sandbox/matched_filter_test.o			\
 	sandbox/matched_filter_cfo_test.o		\
@@ -1277,6 +1294,8 @@ sandbox_obj =						\
 	sandbox/minsearch_test.o			\
 	sandbox/minsearch2_test.o			\
 	sandbox/matrix_eig_test.o			\
+	sandbox/modem_demodulate_soft_test.o		\
+	sandbox/modem_demodulate_soft_gentab.o		\
 	sandbox/ofdmoqam_firpfbch_test.o		\
 	sandbox/ofdmoqam_firpfbch_cfo_test.o		\
 	sandbox/quasinewton_test.o			\

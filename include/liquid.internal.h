@@ -239,6 +239,12 @@ struct fec_s {
                         unsigned int _dec_msg_len,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec);
+
+    // decode function pointer (soft decision)
+    void (*decode_soft_func)(fec _q,
+                             unsigned int _dec_msg_len,
+                             unsigned char * _msg_enc,
+                             unsigned char * _msg_dec);
 };
 
 // simple type testing
@@ -273,6 +279,10 @@ void fec_rep3_decode(fec _q,
                      unsigned int _dec_msg_len,
                      unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
+void fec_rep3_decode_soft(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
 
 // Repeat (5)
 fec fec_rep5_create(void *_opts);
@@ -286,8 +296,14 @@ void fec_rep5_decode(fec _q,
                      unsigned int _dec_msg_len,
                      unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
+void fec_rep5_decode_soft(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
 
 // Hamming(7,4)
+extern unsigned char hamming74_enc_gentab[16];
+extern unsigned char hamming74_dec_gentab[128];
 fec fec_hamming74_create(void *_opts);
 void fec_hamming74_destroy(fec _q);
 void fec_hamming74_print(fec _q);
@@ -299,8 +315,16 @@ void fec_hamming74_decode(fec _q,
                           unsigned int _dec_msg_len,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
+void fec_hamming74_decode_soft(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char * _msg_enc,
+                               unsigned char * _msg_dec);
+// soft decoding of one symbol
+unsigned char fecsoft_hamming74_decode(unsigned char * _soft_bits);
 
 // Hamming(8,4)
+extern unsigned char hamming84_enc_gentab[16];
+extern unsigned char hamming84_dec_gentab[256];
 fec fec_hamming84_create(void *_opts);
 void fec_hamming84_destroy(fec _q);
 void fec_hamming84_print(fec _q);
@@ -312,11 +336,18 @@ void fec_hamming84_decode(fec _q,
                           unsigned int _dec_msg_len,
                           unsigned char * _msg_enc,
                           unsigned char * _msg_dec);
+void fec_hamming84_decode_soft(fec _q,
+                               unsigned int _dec_msg_len,
+                               unsigned char * _msg_enc,
+                               unsigned char * _msg_dec);
+// soft decoding of one symbol
+unsigned char fecsoft_hamming84_decode(unsigned char * _soft_bits);
 
 // Hamming(12,8)
 
 unsigned int fec_hamming128_encode_symbol(unsigned int _sym_dec);
 unsigned int fec_hamming128_decode_symbol(unsigned int _sym_enc);
+extern unsigned short int hamming128_enc_gentab[256];   // encoding table
 
 fec fec_hamming128_create(void *_opts);
 void fec_hamming128_destroy(fec _q);
@@ -329,6 +360,15 @@ void fec_hamming128_decode(fec _q,
                            unsigned int _dec_msg_len,
                            unsigned char * _msg_enc,
                            unsigned char * _msg_dec);
+void fec_hamming128_decode_soft(fec _q,
+                                unsigned int _dec_msg_len,
+                                unsigned char * _msg_enc,
+                                unsigned char * _msg_dec);
+// soft decoding of one symbol
+unsigned int fecsoft_hamming128_decode(unsigned char * _soft_bits);
+extern unsigned char fecsoft_hamming128_n3[256][17];
+unsigned int fecsoft_hamming128_decode_n3(unsigned char * _soft_bits);
+
 
 // Hamming(15,11)
 unsigned int fec_hamming1511_encode_symbol(unsigned int _sym_dec);
@@ -388,9 +428,15 @@ void fec_conv_encode(fec _q,
                      unsigned int _dec_msg_len,
                      unsigned char * _msg_dec,
                      unsigned char * _msg_enc);
+void fec_conv_decode_hard(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
+void fec_conv_decode_soft(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char * _msg_enc,
+                          unsigned char * _msg_dec);
 void fec_conv_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char * _msg_enc,
                      unsigned char * _msg_dec);
 void fec_conv_setlength(fec _q,
                         unsigned int _dec_msg_len);
@@ -409,10 +455,14 @@ void fec_conv_punctured_encode(fec _q,
                                unsigned int _dec_msg_len,
                                unsigned char * _msg_dec,
                                unsigned char * _msg_enc);
-void fec_conv_punctured_decode(fec _q,
-                               unsigned int _dec_msg_len,
-                               unsigned char * _msg_enc,
-                               unsigned char * _msg_dec);
+void fec_conv_punctured_decode_hard(fec _q,
+                                    unsigned int _dec_msg_len,
+                                    unsigned char * _msg_enc,
+                                    unsigned char * _msg_dec);
+void fec_conv_punctured_decode_soft(fec _q,
+                                    unsigned int _dec_msg_len,
+                                    unsigned char * _msg_enc,
+                                    unsigned char * _msg_dec);
 void fec_conv_punctured_setlength(fec _q,
                                   unsigned int _dec_msg_len);
 
@@ -457,6 +507,96 @@ void fec_rs_decode(fec _q,
                    unsigned int _dec_msg_len,
                    unsigned char * _msg_enc,
                    unsigned char * _msg_dec);
+
+// phi(x) = -logf( tanhf( x/2 ) )
+float sumproduct_phi(float _x);
+
+// iterate over the sum-product algorithm:
+// returns 1 if parity checks, 0 otherwise
+//  _H          :   parity check matrix [size: _m x _n]
+//  _m          :   rows
+//  _n          :   cols
+//  _LLR        :   received signal (soft bits, LLR) [size: _n x 1]
+//  _c_hat      :   estimated transmitted signal [size: _n x 1]
+//  _max_steps  :   maximum number of steps before bailing
+int fec_sumproduct(unsigned char * _H,
+                   unsigned int _m,
+                   unsigned int _n,
+                   float * _LLR,
+                   unsigned char * _c_hat,
+                   unsigned int _max_steps);
+
+// sum-product algorithm, returns 1 if parity checks, 0 otherwise
+//  _H      :   parity check matrix [size: _m x _n]
+//  _m      :   rows
+//  _n      :   cols
+//  _c_hat  :   estimated transmitted signal [size: _n x 1]
+//
+// internal state arrays
+//  _Lq     :   [size: _m x _n]
+//  _Lr     :   [size: _m x _n]
+//  _Lc     :   [size: _n x 1]
+//  _LQ     :   [size: _n x 1]
+//  _parity :   _H * _c_hat [size: _m x 1]
+int fec_sumproduct_step(unsigned char * _H,
+                        unsigned int _m,
+                        unsigned int _n,
+                        unsigned char * _c_hat,
+                        float * _Lq,
+                        float * _Lr,
+                        float * _Lc,
+                        float * _LQ,
+                        unsigned char * _parity);
+
+// sparse 'alist' matrix type (similar to MacKay, Davey Lafferty convention)
+typedef struct smatrix_s * smatrix;
+struct smatrix_s {
+    unsigned int M;                 // number of rows
+    unsigned int N;                 // number of columns
+    unsigned short int ** mlist;    // list of non-zero elements in each row
+    unsigned short int ** nlist;    // list of non-zero elements in each col
+    unsigned int * num_mlist;       // weight of each row, m
+    unsigned int * num_nlist;       // weight of each row, n
+    unsigned int max_num_mlist;     // maximum of num_mlist
+    unsigned int max_num_nlist;     // maximum of num_nlist
+};
+
+// create _M x _N matrix, initialized with zeros
+smatrix smatrix_create(unsigned int _M,
+                       unsigned int _N);
+
+// destroy object
+void smatrix_destroy(smatrix _q);
+
+// print compact form
+void smatrix_print(smatrix _q);
+
+// print expanded form
+void smatrix_print_expanded(smatrix _q);
+
+// zero all elements
+void smatrix_zero(smatrix _q);
+
+// get/set/clear element at index
+unsigned char smatrix_get(smatrix _q, unsigned int _m, unsigned int _n);
+void smatrix_set(smatrix _q, unsigned int _m, unsigned int _n);
+void smatrix_clear(smatrix _q, unsigned int _m, unsigned int _n);
+
+// initialize to identity matrix
+void smatrix_eye(smatrix _q);
+
+// multiply by vector (modulo 2)
+//  _q  :   sparse matrix
+//  _x  :   input vector [size: _N x 1]
+//  _y  :   output vector [size: _M x 1]
+void smatrix_vmul(smatrix _q,
+                  unsigned char * _x,
+                  unsigned char * _y);
+
+// semi-internal methods
+
+void smatrix_reset_max_mlist(smatrix _q);
+void smatrix_reset_max_nlist(smatrix _q);
 
 
 //
@@ -924,7 +1064,6 @@ struct fecintlv_plan {
     fec f;
 
     // interleaver
-    unsigned int intlv_scheme;
     interleaver q;
 };
 
@@ -1042,71 +1181,44 @@ void ofdmflexframesync_rxpayload(ofdmflexframesync _q,
 
 // structured interleaver object
 struct interleaver_s {
-    unsigned int * p;   // byte permutation
-    unsigned int len;   // number of bytes
+    unsigned int n;     // number of bytes
 
-    unsigned char * t;  // temporary buffer
+    unsigned int M;     // row dimension
+    unsigned int N;     // col dimension
 
-    // number of iterations (permutations) beyond
-    // initial block interleaving
-    unsigned int num_iterations;
+    // interleaving depth (number of permutations)
+    unsigned int depth;
 };
-
-#define LIQUID_INTERLEAVER_NUM_MASKS (4)
-extern const unsigned char interleaver_mask[LIQUID_INTERLEAVER_NUM_MASKS];
-
-// initialize block interleaver
-void interleaver_init_block(interleaver _q);
-
-// initialize m-sequence interleaver
-void interleaver_init_sequence(interleaver _q);
-
-// compute bit permutation for interleaver
-//  _q      :   interleaver object
-//  _p      :   output permutation index array, [size: 8*_n x 1]
-void interleaver_compute_bit_permutation(interleaver _q,
-                                         unsigned int *_p);
-
 
 // 
 // permutation functions
 //
 
-// permute forward one iteration
-//  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
-//  _n      :   array size
-void interleaver_permute_forward(unsigned char * _x,
-                                 unsigned int * _p,
-                                 unsigned int _n);
+// permute one iteration
+void interleaver_permute(unsigned char * _x,
+                         unsigned int _n,
+                         unsigned int _M,
+                         unsigned int _N);
 
-// permute reverse one iteration
-//  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
-//  _n      :   array size
-void interleaver_permute_reverse(unsigned char * _x,
-                                 unsigned int * _p,
-                                 unsigned int _n);
+// permute one iteration (soft bit input)
+void interleaver_permute_soft(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N);
 
-// permute forward one iteration with byte mask
-//  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
-//  _n      :   array size
-//  _mask   :   byte mask
-void interleaver_permute_forward_mask(unsigned char * _x,
-                                      unsigned int * _p,
-                                      unsigned int _n,
-                                      unsigned char _mask);
+// permute one iteration with mask
+void interleaver_permute_mask(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N,
+                              unsigned char _mask);
 
-// permute reverse one iteration with byte mask
-//  _x      :   input/output data array, [size: _n x 1]
-//  _p      :   permutation index array, [size: _n x 1]
-//  _n      :   array size
-//  _mask   :   byte mask
-void interleaver_permute_reverse_mask(unsigned char * _x,
-                                      unsigned int * _p,
-                                      unsigned int _n,
-                                      unsigned char _mask);
+// permute one iteration (soft bit input) with mask
+void interleaver_permute_mask_soft(unsigned char * _x,
+                                   unsigned int _n,
+                                   unsigned int _M,
+                                   unsigned int _N,
+                                   unsigned char _mask);
 
 
 
@@ -1269,6 +1381,12 @@ struct modem_s {
     void (*demodulate_func)(modem _demod,
                             float complex _x,
                             unsigned int * _symbol_out);
+
+    // soft demodulation
+    //int demodulate_soft;    // soft demodulation flag
+    // neighbors array
+    unsigned char * demod_soft_neighbors;   // array of nearest neighbors
+    unsigned int demod_soft_p;              // number of neighbors in array
 };
 
 
@@ -1352,6 +1470,14 @@ void modem_demodulate_ook(modem _demod, float complex x, unsigned int *symbol_ou
 void modem_demodulate_sqam32(modem _demod, float complex x, unsigned int *symbol_out);
 void modem_demodulate_sqam128(modem _demod, float complex x, unsigned int *symbol_out);
 
+// generic soft demodulation routine using nearest-neighbors look-up table
+void modem_demodulate_soft_table(modem _demod, float complex _x, unsigned int * _s, unsigned char * _soft_bits);
+
+// specific modem soft demodulate routines
+void modem_demodulate_soft_bpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
+void modem_demodulate_soft_qpsk(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
+void modem_demodulate_soft_arb(modem _demod, float complex _x, unsigned int * _s, unsigned char * _bits_out);
+
 // specific modem definitions
 extern const liquid_float_complex modem_arb_sqam32[8];   // 'square' 32-qam (first quadrant)
 extern const liquid_float_complex modem_arb_sqam128[32]; // 'square' 128-qam (first quadrant)
@@ -1408,6 +1534,31 @@ extern const float apsk256_r[7];
 extern const float apsk256_phi[7];
 extern const float apsk256_r_slicer[6];
 extern const unsigned int apsk256_symbol_map[256];
+
+// soft demodulation arrays
+extern const unsigned char psk4_demod_soft_neighbors[8];
+extern const unsigned char psk8_demod_soft_neighbors[16];
+extern const unsigned char psk16_demod_soft_neighbors[32];
+extern const unsigned char psk32_demod_soft_neighbors[64];
+
+extern const unsigned char ask4_demod_soft_neighbors[8];
+extern const unsigned char ask8_demod_soft_neighbors[16];
+extern const unsigned char ask16_demod_soft_neighbors[32];
+
+extern const unsigned char qam8_demod_soft_neighbors[24];
+extern const unsigned char qam16_demod_soft_neighbors[64];
+extern const unsigned char qam32_demod_soft_neighbors[128];
+extern const unsigned char qam64_demod_soft_neighbors[256];
+extern const unsigned char qam128_demod_soft_neighbors[512];
+extern const unsigned char qam256_demod_soft_neighbors[1024];
+
+extern const unsigned char apsk4_demod_soft_neighbors[12];      // p=3
+extern const unsigned char apsk8_demod_soft_neighbors[24];      // p=3
+extern const unsigned char apsk16_demod_soft_neighbors[64];     // p=4
+extern const unsigned char apsk32_demod_soft_neighbors[128];    // p=4
+extern const unsigned char apsk64_demod_soft_neighbors[256];    // p=4
+extern const unsigned char apsk128_demod_soft_neighbors[640];   // p=5
+extern const unsigned char apsk256_demod_soft_neighbors[1280];  // p=5
 
 // demodulator helper functions
 

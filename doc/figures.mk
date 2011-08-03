@@ -124,6 +124,11 @@ local_pdffiles :=					\
 	figures.gen/modem_arb32opt.pdf			\
 	figures.gen/modem_arb64vt.pdf			\
 							\
+	figures.gen/modem_demodsoft_b0.pdf		\
+	figures.gen/modem_demodsoft_b1.pdf		\
+	figures.gen/modem_demodsoft_b2.pdf		\
+	figures.gen/modem_demodsoft_b3.pdf		\
+							\
 	figures.gen/modem_ber_ebn0_psk.pdf		\
 	figures.gen/modem_ber_ebn0_apsk.pdf		\
 	figures.gen/modem_ber_ebn0_ask.pdf		\
@@ -191,6 +196,7 @@ local_progs :=						\
 	src/interleaver_scatterplot			\
 	src/math_poly_examples				\
 	src/math_window					\
+	src/modem_demodsoft				\
 	src/modem.genplot				\
 	src/modem.gendata				\
 	src/nco_pll					\
@@ -252,47 +258,96 @@ figures.gen/equalizer_example2_taps.gnu	: src/equalizer_cccf
 ## MODULE : fec
 ##
 
-fec_ber_data :=				\
-	data/ber/ber_none.dat		\
-	data/ber/ber_r3.dat		\
-	data/ber/ber_r5.dat		\
-	data/ber/ber_h128.dat		\
-	data/ber/ber_h74.dat		\
-	data/ber/ber_h84.dat		\
-	data/ber/ber_v27.dat		\
-	data/ber/ber_v29.dat		\
-	data/ber/ber_v39.dat		\
-	data/ber/ber_v615.dat		\
-	data/ber/ber_v27p23.dat		\
-	data/ber/ber_v27p34.dat		\
-	data/ber/ber_v27p45.dat		\
-	data/ber/ber_v27p56.dat		\
-	data/ber/ber_v27p67.dat		\
-	data/ber/ber_v27p78.dat		\
-#	data/ber/ber_rs8.dat
+
+# 
+# hard-decision decoding
+#
+data_ber_fec_hard :=				\
+	data/ber-fec-hard/ber_none.dat		\
+	data/ber-fec-hard/ber_r3.dat		\
+	data/ber-fec-hard/ber_r5.dat		\
+	data/ber-fec-hard/ber_h128.dat		\
+	data/ber-fec-hard/ber_h74.dat		\
+	data/ber-fec-hard/ber_h84.dat		\
+	data/ber-fec-hard/ber_v27.dat		\
+	data/ber-fec-hard/ber_v29.dat		\
+	data/ber-fec-hard/ber_v39.dat		\
+	data/ber-fec-hard/ber_v615.dat		\
+	data/ber-fec-hard/ber_v27p23.dat	\
+	data/ber-fec-hard/ber_v27p34.dat	\
+	data/ber-fec-hard/ber_v27p45.dat	\
+	data/ber-fec-hard/ber_v27p56.dat	\
+	data/ber-fec-hard/ber_v27p67.dat	\
+	data/ber-fec-hard/ber_v27p78.dat	\
+#	data/ber-fec-hard/ber_rs8.dat
 
 # re-simulate BER data
-fecber_opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
-resimulate-ber-data : src/simulate_ber
+ber-fec-hard-opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
+resimulate-data-fec-ber-hard : src/simulate_ber
 	@echo "re-simulating ber data..."
-	./src/simulate_ber -c none   $(fecber_opts) -o data/ber/ber_none.dat
-	./src/simulate_ber -c r3     $(fecber_opts) -o data/ber/ber_r3.dat
-	./src/simulate_ber -c r5     $(fecber_opts) -o data/ber/ber_r5.dat
-	./src/simulate_ber -c h128   $(fecber_opts) -o data/ber/ber_h128.dat
-	./src/simulate_ber -c h84    $(fecber_opts) -o data/ber/ber_h84.dat
-	./src/simulate_ber -c h74    $(fecber_opts) -o data/ber/ber_h74.dat
-	./src/simulate_ber -c v27    $(fecber_opts) -o data/ber/ber_v27.dat
-	./src/simulate_ber -c v29    $(fecber_opts) -o data/ber/ber_v29.dat
-	./src/simulate_ber -c v39    $(fecber_opts) -o data/ber/ber_v39.dat
-	./src/simulate_ber -c v27p23 $(fecber_opts) -o data/ber/ber_v27p23.dat
-	./src/simulate_ber -c v27p34 $(fecber_opts) -o data/ber/ber_v27p34.dat
-	./src/simulate_ber -c v27p45 $(fecber_opts) -o data/ber/ber_v27p45.dat
-	./src/simulate_ber -c v27p56 $(fecber_opts) -o data/ber/ber_v27p56.dat
-	./src/simulate_ber -c v27p67 $(fecber_opts) -o data/ber/ber_v27p67.dat
-	./src/simulate_ber -c v27p78 $(fecber_opts) -o data/ber/ber_v27p78.dat
-	./src/simulate_ber -c v615 -s-9.75 -d0.25 -e50 -n50000 -t3000000 -o data/ber/ber_v615.dat
+	./src/simulate_ber -H -c none   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_none.dat
+	./src/simulate_ber -H -c r3     $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_r3.dat
+	./src/simulate_ber -H -c r5     $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_r5.dat
+	./src/simulate_ber -H -c h128   $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h128.dat
+	./src/simulate_ber -H -c h84    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h84.dat
+	./src/simulate_ber -H -c h74    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_h74.dat
+	./src/simulate_ber -H -c v27    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27.dat
+	./src/simulate_ber -H -c v29    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v29.dat
+	./src/simulate_ber -H -c v39    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v39.dat
+	./src/simulate_ber -H -c v27p23 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p23.dat
+	./src/simulate_ber -H -c v27p34 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p34.dat
+	./src/simulate_ber -H -c v27p45 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p45.dat
+	./src/simulate_ber -H -c v27p56 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p56.dat
+	./src/simulate_ber -H -c v27p67 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p67.dat
+	./src/simulate_ber -H -c v27p78 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p78.dat
+	./src/simulate_ber -H -c v615 -s-9.75 -d0.25 -e50 -n50000 -t3000000 -o data/ber-fec-hard/ber_v615.dat
 
-#	./src/simulate_ber -c rs8    $(fecber_opts) -o data/ber/ber_rs8.dat
+#	./src/simulate_ber -H -c rs8    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_rs8.dat
+
+
+# 
+# soft-decision decoding
+#
+data_ber_fec_soft :=				\
+	data/ber-fec-soft/ber_none.dat		\
+	data/ber-fec-soft/ber_r3.dat		\
+	data/ber-fec-soft/ber_r5.dat		\
+	data/ber-fec-soft/ber_h128.dat		\
+	data/ber-fec-soft/ber_h74.dat		\
+	data/ber-fec-soft/ber_h84.dat		\
+	data/ber-fec-soft/ber_v27.dat		\
+	data/ber-fec-soft/ber_v29.dat		\
+	data/ber-fec-soft/ber_v39.dat		\
+	data/ber-fec-soft/ber_v615.dat		\
+	data/ber-fec-soft/ber_v27p23.dat	\
+	data/ber-fec-soft/ber_v27p34.dat	\
+	data/ber-fec-soft/ber_v27p45.dat	\
+	data/ber-fec-soft/ber_v27p56.dat	\
+	data/ber-fec-soft/ber_v27p67.dat	\
+	data/ber-fec-soft/ber_v27p78.dat	\
+#	data/ber-fec-soft/ber_rs8.dat
+
+# re-simulate BER data
+ber-fec-soft-opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
+resimulate-data-fec-ber-soft : src/simulate_ber
+	./src/simulate_ber -S -c none   $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_none.dat
+	./src/simulate_ber -S -c r3     $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_r3.dat
+	./src/simulate_ber -S -c r5     $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_r5.dat
+	./src/simulate_ber -S -c h128   $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_h128.dat
+	./src/simulate_ber -S -c h84    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_h84.dat
+	./src/simulate_ber -S -c h74    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_h74.dat
+	./src/simulate_ber -S -c v27    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27.dat
+	./src/simulate_ber -S -c v29    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v29.dat
+	./src/simulate_ber -S -c v39    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v39.dat
+	./src/simulate_ber -S -c v27p23 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p23.dat
+	./src/simulate_ber -S -c v27p34 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p34.dat
+	./src/simulate_ber -S -c v27p45 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p45.dat
+	./src/simulate_ber -S -c v27p56 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p56.dat
+	./src/simulate_ber -S -c v27p67 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p67.dat
+	./src/simulate_ber -S -c v27p78 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p78.dat
+	./src/simulate_ber -S -c v615 -s-9.75 -d0.25 -e50 -n50000 -t3000000 -o data/ber-fec-soft/ber_v615.dat
+
+#	./src/simulate_ber -S -c rs8    $(ber-fec-soft-opts) -o data/ber-fec-hard/ber_rs8.dat
 
 # copy gnuplot file
 figures.gen/fec_ber_esn0_hamming.gnu \
@@ -309,7 +364,7 @@ figures.gen/fec_ber_ebn0_hamming.eps \
 figures.gen/fec_ber_esn0_conv.eps \
 figures.gen/fec_ber_ebn0_conv.eps \
 figures.gen/fec_ber_esn0_convpunc.eps \
-figures.gen/fec_ber_ebn0_convpunc.eps : %.eps : %.gnu $(fec_ber_data)
+figures.gen/fec_ber_ebn0_convpunc.eps : %.eps : %.gnu $(data_ber_fec_hard)
 
 # 
 # Required Eb/N0, SNR for 10^-5
@@ -432,19 +487,17 @@ figures.gen/filter_rnyquist.gnu : src/filter_rnyquist
 # interleaver scatterplot
 # 
 
-scatterplot_opts := -n 64 -t block
-
 figures.gen/interleaver_scatterplot_i0.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i0.gnu $(scatterplot_opts) -i0
+	./$< -f figures.gen/interleaver_scatterplot_i0.gnu -n64 -d0
 
 figures.gen/interleaver_scatterplot_i1.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i1.gnu $(scatterplot_opts) -i1
+	./$< -f figures.gen/interleaver_scatterplot_i1.gnu -n64 -d1
 
 figures.gen/interleaver_scatterplot_i2.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i2.gnu $(scatterplot_opts) -i2
+	./$< -f figures.gen/interleaver_scatterplot_i2.gnu -n64 -d2
 
 figures.gen/interleaver_scatterplot_i3.gnu : src/interleaver_scatterplot
-	./$< -f figures.gen/interleaver_scatterplot_i3.gnu $(scatterplot_opts) -i3
+	./$< -f figures.gen/interleaver_scatterplot_i3.gnu -n64 -d3
 
 ##
 ## MODULE : math
@@ -574,6 +627,23 @@ figures.gen/modem_arb32opt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m
 
 figures.gen/modem_arb64vt.dat : %.dat : src/modem.gendata ; ./$< -f $@ -m arb64vt -p 6
 figures.gen/modem_arb64vt.gnu : %.gnu : src/modem.genplot %.dat;  ./$< -f $@ -m arb64vt -p 6 -t eps -d $*.dat -g $(GNUPLOT_VERSION)
+
+# 
+# soft demodulation example
+#
+
+modem_demodsoft_gnufiles :=			\
+	figures.gen/modem_demodsoft_b0.gnu	\
+	figures.gen/modem_demodsoft_b1.gnu	\
+	figures.gen/modem_demodsoft_b2.gnu	\
+	figures.gen/modem_demodsoft_b3.gnu	\
+
+modem_demodsoft_epsfiles := $(patsubst %.gnu,%.eps,$(modem_demodsoft_gnufiles))
+
+$(modem_demodsoft_gnufiles) figures.gen/modem_demodsoft_labels.dat : src/modem_demodsoft
+	./$<
+
+$(modem_demodsoft_epsfiles) : %.eps : %.gnu figures.gen/modem_demodsoft_labels.dat
 
 #
 # modem BER data

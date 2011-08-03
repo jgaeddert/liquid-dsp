@@ -40,8 +40,9 @@ fec fec_conv_create(fec_scheme _fs)
     q->scheme = _fs;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_conv_encode;
-    q->decode_func = &fec_conv_decode;
+    q->encode_func      = &fec_conv_encode;
+    q->decode_func      = &fec_conv_decode_hard; // default to hard-decision decoding
+    q->decode_soft_func = &fec_conv_decode_soft;
 
     switch (q->scheme) {
     case LIQUID_FEC_CONV_V27:  fec_conv_init_v27(q);   break;
@@ -126,10 +127,10 @@ void fec_conv_encode(fec _q,
 }
 
 //unsigned int
-void fec_conv_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_enc,
-                     unsigned char *_msg_dec)
+void fec_conv_decode_hard(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char *_msg_enc,
+                          unsigned char *_msg_dec)
 {
     // re-allocate resources if necessary
     fec_conv_setlength(_q, _dec_msg_len);
@@ -158,6 +159,32 @@ void fec_conv_decode(fec _q,
     for (k=0; k<8*_q->num_enc_bytes; k++)
         _q->enc_bits[k] = _q->enc_bits[k] ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
 
+    // run internal decoder
+    fec_conv_decode(_q, _msg_dec);
+}
+
+//unsigned int
+void fec_conv_decode_soft(fec _q,
+                          unsigned int _dec_msg_len,
+                          unsigned char *_msg_enc,
+                          unsigned char *_msg_dec)
+{
+    // re-allocate resources if necessary
+    fec_conv_setlength(_q, _dec_msg_len);
+
+    // copy soft input bits
+    unsigned int k;
+    for (k=0; k<8*_q->num_enc_bytes; k++)
+        _q->enc_bits[k] = _msg_enc[k];
+
+    // run internal decoder
+    fec_conv_decode(_q, _msg_dec);
+}
+
+//unsigned int
+void fec_conv_decode(fec _q,
+                     unsigned char *_msg_dec)
+{
     // run decoder
     _q->init_viterbi(_q->vp,0);
     _q->update_viterbi_blk(_q->vp, _q->enc_bits, 8*_q->num_dec_bytes+_q->K-1);

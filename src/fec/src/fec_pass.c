@@ -34,8 +34,9 @@ fec fec_pass_create(void * _opts)
     q->scheme = LIQUID_FEC_NONE;
     q->rate = fec_get_rate(q->scheme);
 
-    q->encode_func = &fec_pass_encode;
-    q->decode_func = &fec_pass_decode;
+    q->encode_func      = &fec_pass_encode;
+    q->decode_func      = &fec_pass_decode;
+    q->decode_soft_func = NULL;
 
     return q;
 }

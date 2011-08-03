@@ -20,94 +20,48 @@
  */
 
 //
-// interleaver.c
+// interleaver_create.c
 //
-// basic interleaver methods:
-//  interleaver_print()
-//  interleaver_debug_print()
-//  interleaver_encode()
-//  interleaver_decode()
+// Create and initialize interleaver objects
 //
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <math.h> // debug_print
+#include <math.h>
 
 #include "liquid.internal.h"
 
-const unsigned char interleaver_mask[LIQUID_INTERLEAVER_NUM_MASKS] = {
-    0x33, 0x55, 0x17, 0x6c};
+interleaver interleaver_create(unsigned int _n)
+{
+    interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
+    q->n = _n;
+
+    // set internal properties
+    q->depth = 4;   // default depth to maximum 
+
+    // compute block dimensions
+    q->M = 1 + (unsigned int) floorf(sqrtf(q->n));
+
+    q->N = q->n / q->M;
+    while (q->n >= (q->M*q->N)) q->N++;  // ensures M*N >= n
+
+    return q;
+}
+
+// destroy interleaver object
+void interleaver_destroy(interleaver _q)
+{
+    // free main object memory
+    free(_q);
+}
 
 // print interleaver internals
 void interleaver_print(interleaver _q)
 {
-    unsigned int i;
-    printf("interleaver [%u] :\n", _q->len);
-    for (i=0; i<_q->len; i++)
-        printf("  p[%u] : %u\n", i, _q->p[i]);
-}
-
-// print interleaver internals with debugging info
-void interleaver_debug_print(interleaver _q)
-{
-    unsigned int n = (_q->len)*sizeof(unsigned char)*8;
-    if (n>80) {
-        printf("interleaver_debug_print(), too large to print debug info\n");
-        return;
-    }
-
-    unsigned int t[n];
-    interleaver_compute_bit_permutation(_q, t);
-
-    unsigned int i,j,k;
-
-    // compute permutation metrics: distance between bits
-    float dtmp, dki, dmin=(float)n, dmean=0.0f;
-    j = 0;
-    for (k=1; k<3; k++) {
-        //printf("==== k : %d\n", k);
-        for (i=0; i<(n-k); i++) {
-            dki = fabsf((float)(t[i]) - (float)(t[i+k]));
-            dtmp = dki + (float)(k-1);
-            //printf("    d(%u,%u) : %f\n", i, i+k, dki);
-
-            dmean += dki;
-            dmin = (dtmp < dmin) ? dki : dmin;
-            j++;
-        }
-    }
-    dmean /= j;
-
-    printf("   ");
-    j=0;
-    for (i=0; i<n; i++) {
-        if ((i%10)==0)  printf("%1u", j++);
-        else            printf(" ");
-    }
-    printf("\n");
-
-    for (i=0; i<n; i++) {
-        printf("%2u ", i);
-        for (j=0; j<n; j++) {
-            if (j==t[i])
-                printf("*");
-            else if ((j%10)==0 && ((i%10)==0))
-                printf("+");
-            else if ((j%10)==0)
-                printf("|");
-            else if ((i%10)==0)
-                printf("-");
-            else if (j==i)
-                printf("\\");
-            else
-                printf(" ");
-        }
-        printf("\n");
-    }
-    printf("\n");
-    printf("  dmin: %8.2f, dmean: %8.2f\n", dmin, dmean);
+    printf("interleaver [%u] :\n", _q->n);
+    printf("    M   :   %u\n", _q->M);
+    printf("    N   :   %u\n", _q->N);
 }
 
 // execute forward interleaver (encoder)
@@ -118,24 +72,30 @@ void interleaver_encode(interleaver _q,
                         unsigned char * _msg_dec,
                         unsigned char * _msg_enc)
 {
-    memcpy(_msg_enc, _msg_dec, _q->len);
+    // copy data to output
+    memmove(_msg_enc, _msg_dec, _q->n);
 
-    // first iteration operates just on bytes
-    if (_q->num_iterations > 0)
-        interleaver_permute_forward(_msg_enc, _q->p, _q->len);
+    if (_q->depth > 0) interleaver_permute(_msg_enc, _q->n, _q->M, _q->N);
+    if (_q->depth > 1) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 2) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 3) interleaver_permute_mask(_msg_enc, _q->n, _q->M, _q->N+8, 0x33);
+}
 
-    unsigned int i;
-    unsigned char mask=0x00;
-    for (i=1; i<_q->num_iterations; i++) {
-        unsigned int mask_id = i-1;
-        mask = interleaver_mask[mask_id];
+// execute forward interleaver (encoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_dec    :   decoded (un-interleaved) message
+//  _msg_enc    :   encoded (interleaved) message
+void interleaver_encode_soft(interleaver _q,
+                             unsigned char * _msg_dec,
+                             unsigned char * _msg_enc)
+{
+    // copy data to output
+    memmove(_msg_enc, _msg_dec, 8*_q->n);
 
-        // circular bit-wise array shift
-        liquid_lbcircshift(_msg_enc, _q->len, 4);
-
-        // permute forward with mask
-        interleaver_permute_forward_mask(_msg_enc, _q->p, _q->len, mask);
-    }
+    if (_q->depth > 0) interleaver_permute_soft(_msg_enc, _q->n, _q->M, _q->N);
+    if (_q->depth > 1) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 2) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 3) interleaver_permute_mask_soft(_msg_enc, _q->n, _q->M, _q->N+8, 0x33);
 }
 
 // execute reverse interleaver (decoder)
@@ -146,23 +106,168 @@ void interleaver_decode(interleaver _q,
                         unsigned char * _msg_enc,
                         unsigned char * _msg_dec)
 {
-    memcpy(_msg_dec, _msg_enc, _q->len);
+    // copy data to output
+    memmove(_msg_dec, _msg_enc, _q->n);
 
+    if (_q->depth > 3) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+8, 0x33);
+    if (_q->depth > 2) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 1) interleaver_permute_mask(_msg_dec, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 0) interleaver_permute(_msg_dec, _q->n, _q->M, _q->N);
+}
+
+// execute reverse interleaver (decoder) on soft bits
+//  _q          :   interleaver object
+//  _msg_enc    :   encoded (interleaved) message
+//  _msg_dec    :   decoded (un-interleaved) message
+void interleaver_decode_soft(interleaver _q,
+                             unsigned char * _msg_enc,
+                             unsigned char * _msg_dec)
+{
+    // copy data to output
+    memmove(_msg_dec, _msg_enc, 8*_q->n);
+
+    if (_q->depth > 3) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+8, 0x33);
+    if (_q->depth > 2) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+4, 0x55);
+    if (_q->depth > 1) interleaver_permute_mask_soft(_msg_dec, _q->n, _q->M, _q->N+2, 0x0f);
+    if (_q->depth > 0) interleaver_permute_soft(_msg_dec, _q->n, _q->M, _q->N);
+}
+
+// set depth (number of internal iterations)
+void interleaver_set_depth(interleaver _q, unsigned int _depth)
+{
+    _q->depth = _depth;
+}
+
+
+// permute one iteration
+void interleaver_permute(unsigned char * _x,
+                         unsigned int _n,
+                         unsigned int _M,
+                         unsigned int _N)
+{
     unsigned int i;
-    unsigned char mask=0x00;
-    for (i=1; i<_q->num_iterations; i++) {
-        unsigned int mask_id = _q->num_iterations-i-1;
-        mask = interleaver_mask[mask_id];
+    unsigned int j;
+    unsigned int m=0;
+    unsigned int n=_n/3;
+    unsigned int n2=_n/2;
+    unsigned char tmp;
+    for (i=0; i<n2; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=n2);
 
-        // permute reverse with mask
-        interleaver_permute_reverse_mask(_msg_dec, _q->p, _q->len, mask);
-
-        // circular bit-wise array shift
-        liquid_rbcircshift(_msg_dec, _q->len, 4);
+        // swap indices
+        tmp = _x[2*j+1];
+        _x[2*j+1] = _x[2*i+0];
+        _x[2*i+0] = tmp;
     }
+}
 
-    // first iteration operates just on bytes
-    if (_q->num_iterations > 0)
-        interleaver_permute_reverse(_msg_dec, _q->p, _q->len);
+// permute one iteration (soft bit input)
+void interleaver_permute_soft(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int m=0;
+    unsigned int n=_n/3;
+    unsigned int n2=_n/2;
+    unsigned char tmp[8];
+    for (i=0; i<n2; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=n2);
+    
+        // swap soft bits at indices
+        memmove( tmp,            &_x[8*(2*j+1)], 8);
+        memmove( &_x[8*(2*j+1)], &_x[8*(2*i+0)], 8);
+        memmove( &_x[8*(2*i+0)], tmp,            8);
+    }
+    //printf("\n");
+}
+
+
+// permute one iteration with mask
+void interleaver_permute_mask(unsigned char * _x,
+                              unsigned int _n,
+                              unsigned int _M,
+                              unsigned int _N,
+                              unsigned char _mask)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int m=0;
+    unsigned int n=_n/3;
+    unsigned int n2=_n/2;
+    unsigned char tmp0;
+    unsigned char tmp1;
+    for (i=0; i<n2; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=n2);
+
+        // swap indices, applying mask
+        tmp0 = (_x[2*i+0] & (~_mask)) | (_x[2*j+1] & ( _mask));
+        tmp1 = (_x[2*i+0] & ( _mask)) | (_x[2*j+1] & (~_mask));
+        _x[2*i+0] = tmp0;
+        _x[2*j+1] = tmp1;
+    }
+}
+
+// permute one iteration (soft bit input)
+void interleaver_permute_mask_soft(unsigned char * _x,
+                                   unsigned int _n,
+                                   unsigned int _M,
+                                   unsigned int _N,
+                                   unsigned char _mask)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+    unsigned int m=0;
+    unsigned int n=_n/3;
+    unsigned int n2=_n/2;
+    unsigned char tmp;
+    for (i=0; i<n2; i++) {
+        //j = m*N + n; // input
+        do {
+            j = m*_N + n; // output
+            m++;
+            if (m == _M) {
+                n = (n+1) % (_N);
+                m=0;
+            }
+        } while (j>=n2);
+
+        // swap bits matching the mask
+        for (k=0; k<8; k++) {
+            if ( (_mask >> (8-k-1)) & 0x01 ) {
+                tmp = _x[8*(2*j+1)+k];
+                _x[8*(2*j+1)+k] = _x[8*(2*i+0)+k];
+                _x[8*(2*i+0)+k] = tmp;
+            }
+        }
+    }
+    //printf("\n");
 }
 

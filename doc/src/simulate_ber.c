@@ -39,7 +39,7 @@ void usage()
     unsigned int i;
     for (i=0; i<LIQUID_FEC_NUM_SCHEMES; i++)
         printf("          [%s] %s\n", fec_scheme_str[i][0], fec_scheme_str[i][1]);
-
+    printf("  S/H   :   soft/hard decoding, default: hard\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -58,12 +58,13 @@ int main(int argc, char *argv[]) {
     unsigned int bps = 1;
     fec_scheme fec0 = LIQUID_FEC_NONE;
     fec_scheme fec1 = LIQUID_FEC_NONE;
+    int soft_decoding = 0;
     const char * filename = OUTPUT_FILENAME;
     int verbose = 1;
 
     // get command-line options
     int dopt;
-    while((dopt = getopt(argc,argv,"uhvqo:s:d:x:b:t:n:e:f:m:p:c:k:")) != EOF){
+    while((dopt = getopt(argc,argv,"uhvqo:s:d:x:b:t:n:e:f:m:p:c:k:SH")) != EOF){
         switch (dopt) {
         case 'u':
         case 'h': usage();      return 0;
@@ -88,8 +89,10 @@ int main(int argc, char *argv[]) {
             }
             break;
         case 'p': bps = atoi(optarg); break;
-        case 'c': fec0 = liquid_getopt_str2fec(optarg);   break;
-        case 'k': fec1 = liquid_getopt_str2fec(optarg);   break;
+        case 'c': fec0 = liquid_getopt_str2fec(optarg); break;
+        case 'k': fec1 = liquid_getopt_str2fec(optarg); break;
+        case 'S': soft_decoding = 1;                    break;
+        case 'H': soft_decoding = 0;                    break;
         default:
             printf("error: unknown option\n");
             exit(-1);
@@ -118,6 +121,7 @@ int main(int argc, char *argv[]) {
     opts.fec0 = fec0;
     opts.fec1 = fec1;
     opts.dec_msg_len = frame_len;
+    opts.soft_decoding = soft_decoding;
 
     // minimum number of errors to simulate
     opts.min_packet_errors  = 0;

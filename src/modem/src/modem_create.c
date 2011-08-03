@@ -172,6 +172,10 @@ void modem_init(modem _mod,
     _mod->modulate_func = NULL;
     _mod->demodulate_func = NULL;
 
+    // soft demodulation
+    _mod->demod_soft_neighbors = NULL;
+    _mod->demod_soft_p = 0;
+
     // reset object
     modem_reset(_mod);
 }
@@ -227,6 +231,18 @@ modem modem_create_ask(unsigned int _bits_per_symbol)
 
     mod->modulate_func = &modem_modulate_ask;
     mod->demodulate_func = &modem_demodulate_ask;
+
+    // soft demodulation
+    if (mod->m == 2) {
+        mod->demod_soft_neighbors = (unsigned char*) ask4_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 3) {
+        mod->demod_soft_neighbors = (unsigned char*) ask8_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 4) {
+        mod->demod_soft_neighbors = (unsigned char*) ask16_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    }
 
     return mod;
 }
@@ -290,6 +306,27 @@ modem modem_create_qam(unsigned int _bits_per_symbol)
     modem_init_map(mod);
     mod->modulate_using_map = 1;
 
+    // soft demodulation
+    if (mod->m == 3) {
+        mod->demod_soft_neighbors = (unsigned char*) qam8_demod_soft_neighbors;
+        mod->demod_soft_p         = 3;
+    } else if (mod->m == 4) {
+        mod->demod_soft_neighbors = (unsigned char*) qam16_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 5) {
+        mod->demod_soft_neighbors = (unsigned char*) qam32_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 6) {
+        mod->demod_soft_neighbors = (unsigned char*) qam64_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 7) {
+        mod->demod_soft_neighbors = (unsigned char*) qam128_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    } else if (mod->m == 8) {
+        mod->demod_soft_neighbors = (unsigned char*) qam256_demod_soft_neighbors;
+        mod->demod_soft_p         = 4;
+    }
+
     return mod;
 }
 
@@ -321,6 +358,18 @@ modem modem_create_psk(unsigned int _bits_per_symbol)
     mod->symbol_map = (float complex*)malloc(mod->M*sizeof(float complex));
     modem_init_map(mod);
     mod->modulate_using_map = 1;
+
+    // soft demodulation
+    if (mod->m == 3) {
+        mod->demod_soft_neighbors = (unsigned char*) psk8_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 4) {
+        mod->demod_soft_neighbors = (unsigned char*) psk16_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    } else if (mod->m == 5) {
+        mod->demod_soft_neighbors = (unsigned char*) psk32_demod_soft_neighbors;
+        mod->demod_soft_p         = 2;
+    }
 
     return mod;
 }
@@ -462,7 +511,7 @@ modem modem_create_apsk4()
     modem mod = (modem) malloc( sizeof(struct modem_s) );
     mod->scheme = LIQUID_MODEM_APSK;
 
-    modem_init(mod, 3);
+    modem_init(mod, 2);
     
     // set internals
     mod->apsk_num_levels = apsk4_num_levels;
@@ -474,6 +523,9 @@ modem modem_create_apsk4()
 
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;
+
+    mod->demod_soft_neighbors = (unsigned char*) apsk4_demod_soft_neighbors;
+    mod->demod_soft_p         = 3;
 
     return mod;
 }
@@ -497,6 +549,9 @@ modem modem_create_apsk8()
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;
 
+    mod->demod_soft_neighbors = (unsigned char*) apsk8_demod_soft_neighbors;
+    mod->demod_soft_p         = 3;
+
     return mod;
 }
 
@@ -518,6 +573,9 @@ modem modem_create_apsk16()
 
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;
+
+    mod->demod_soft_neighbors = (unsigned char*) apsk16_demod_soft_neighbors;
+    mod->demod_soft_p         = 4;
 
     return mod;
 }
@@ -541,6 +599,9 @@ modem modem_create_apsk32()
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;
 
+    mod->demod_soft_neighbors = (unsigned char*) apsk32_demod_soft_neighbors;
+    mod->demod_soft_p         = 4;
+
     return mod;
 }
 
@@ -562,6 +623,9 @@ modem modem_create_apsk64()
 
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;
+
+    mod->demod_soft_neighbors = (unsigned char*) apsk64_demod_soft_neighbors;
+    mod->demod_soft_p         = 4;
 
     return mod;
 }
@@ -585,6 +649,9 @@ modem modem_create_apsk128()
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;
 
+    mod->demod_soft_neighbors = (unsigned char*) apsk128_demod_soft_neighbors;
+    mod->demod_soft_p         = 5;
+
     return mod;
 }
 
@@ -606,6 +673,9 @@ modem modem_create_apsk256()
 
     mod->modulate_func = &modem_modulate_apsk;
     mod->demodulate_func = &modem_demodulate_apsk;
+
+    mod->demod_soft_neighbors = (unsigned char*) apsk256_demod_soft_neighbors;
+    mod->demod_soft_p         = 5;
 
     return mod;
 }
