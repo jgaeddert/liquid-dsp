@@ -447,10 +447,6 @@ src/framing/src/packetizer.o : %.o : %.c $(headers)
 
 src/framing/src/interleaver.o : %.o : %.c $(headers)
 
-src/framing/src/interleaver_create.o : %.o : %.c $(headers)
-
-src/framing/src/interleaver_permute.o : %.o : %.c $(headers)
-
 
 framing_autotests :=					\
 	src/framing/tests/bpacketsync_autotest.h	\
