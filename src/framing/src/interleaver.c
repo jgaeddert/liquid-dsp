@@ -44,16 +44,7 @@ interleaver interleaver_create(unsigned int _n,
     q->buffer_0 = (unsigned char*)malloc(q->n*sizeof(unsigned char));
     q->buffer_1 = (unsigned char*)malloc(q->n*sizeof(unsigned char));
 
-    // m = floor( log2(_n+1) )
-    unsigned int m = liquid_nextpow2(q->n+1);
-
-    q->M = 1<<(m/2);    // M ~ sqrt(L)
-    //if (q->M>1) q->M--; // help ensure M is not exactly sqrt(L)
-
-    if (q->M==0) {
-        fprintf(stderr,"warning: interleaver_create(), M=0\n");
-        q->M = 1;
-    }
+    q->M = 1 + (unsigned int) floorf(sqrtf(q->n));
 
     q->N = q->n / q->M;
     while (q->n >= (q->M*q->N)) q->N++;  // ensures M*N >= n
