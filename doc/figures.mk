@@ -85,6 +85,7 @@ local_pdffiles :=					\
 	figures.gen/interleaver_scatterplot_i1.pdf	\
 	figures.gen/interleaver_scatterplot_i2.pdf	\
 	figures.gen/interleaver_scatterplot_i3.pdf	\
+	figures.gen/interleaver_scatterplot_i4.pdf	\
 	figures.gen/math_window.pdf			\
 							\
 	figures.gen/modem_bpsk.pdf			\
@@ -501,6 +502,9 @@ figures.gen/interleaver_scatterplot_i2.gnu : src/interleaver_scatterplot
 
 figures.gen/interleaver_scatterplot_i3.gnu : src/interleaver_scatterplot
 	./$< -f figures.gen/interleaver_scatterplot_i3.gnu -n64 -d3
+
+figures.gen/interleaver_scatterplot_i4.gnu : src/interleaver_scatterplot
+	./$< -f figures.gen/interleaver_scatterplot_i4.gnu -n64 -d4
 
 ##
 ## MODULE : math

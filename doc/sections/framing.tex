@@ -87,39 +87,15 @@ Therefore, in addition to index permutation, \liquid\ also applies masks to
 the data while permuting.
 % TODO : explain more
 
-Two options are available in \liquid\ for shuffling bits:
-{\tt LIQUID\_INTERLEAVER\_BLOCK} and {\tt LIQUID\_INTERLEAVER\_SEQUENCE}.
-These two methods are described here.
-
-\subsubsection{{\tt LIQUID\_INTERLEAVER\_BLOCK} (block interleaving)}
-\label{module:framing:interleaver:block}
-The block interleaver observes the block data as a matrix:
-samples are read in by rows and out by columns.
-
-% TODO : explain more...
-
-\subsubsection{{\tt LIQUID\_INTERLEAVER\_SEQUENCE} ($m$-sequence interleaving)}
-\label{module:framing:interleaver:sequence}
-This type of interleaving uses a special linear feedback shift register called
-an $m$-sequence in order to compute its permutations.
-The $m$-sequence has the special property that each symbol in the register is
-both unique and pseudo-random.
-
-% TODO : explain more...
-
-See also {\tt msequence} (section~\ref{module:sequence}).
-
 \subsubsection{Interface}
 \label{module:framing:interleaver:interface}
 The {\tt interleaver} object operates like most objects in \liquid\ with
 typical {\tt create()}, {\tt destroy()}, and {\tt execute()} methods.
 
 \begin{description}
-\item[{\tt interleaver\_create(n,type)}]
+\item[{\tt interleaver\_create(n)}]
     creates an interleaver object accepting $n$ bytes,
-    with either a {\tt LIQUID\_INTERLEAVER\_BLOCK} or
-    {\tt LIQUID\_INTERLEAVER\_SEQUENCE} type, and 
-    defaulting to 2 iterations.
+    and defaulting to 2 iterations.
 \item[{\tt interleaver\_destroy(q)}]
     destroys the interleaver object, freeing all internally-allocated
     memory arrays.
@@ -170,6 +146,13 @@ This listing gives a basic demonstration to the interface to the
     {
       \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i3}
       \label{fig:interleaver:scatterplot:3}
+    } \quad
+}
+\mbox{
+  \subfigure[$i=4$]
+    {
+      \includegraphics[trim = 15mm 0mm 15mm 0mm, clip, height=6cm]{figures.gen/interleaver_scatterplot_i4}
+      \label{fig:interleaver:scatterplot:4}
     } \quad
 }
 \caption{{\tt interleaver} (block) demonstration of a 64-byte (512-bit) array
