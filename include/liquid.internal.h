@@ -1179,9 +1179,6 @@ struct interleaver_s {
     unsigned int N;     //
     unsigned int L;     //
 
-    unsigned char * buffer_0;   //
-    unsigned char * buffer_1;   //
-
     // number of iterations (permutations) beyond
     // initial block interleaving
     unsigned int num_iterations;

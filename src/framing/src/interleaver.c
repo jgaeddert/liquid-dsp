@@ -39,11 +39,7 @@ interleaver interleaver_create(unsigned int _n,
     q->n = _n;
     q->num_iterations = 1;
 
-    // allocate memory for buffers
-    // TODO : allocate more memory for soft bit encoding/decoding
-    q->buffer_0 = (unsigned char*)malloc(q->n*sizeof(unsigned char));
-    q->buffer_1 = (unsigned char*)malloc(q->n*sizeof(unsigned char));
-
+    // compute block dimensions
     q->M = 1 + (unsigned int) floorf(sqrtf(q->n));
 
     q->N = q->n / q->M;
@@ -55,10 +51,6 @@ interleaver interleaver_create(unsigned int _n,
 // destroy interleaver object
 void interleaver_destroy(interleaver _q)
 {
-    // free buffers
-    free(_q->buffer_0);
-    free(_q->buffer_1);
-
     // free main object memory
     free(_q);
 }
