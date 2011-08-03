@@ -113,7 +113,6 @@ packetizer packetizer_create(unsigned int _n,
     for (i=0; i<p->plan_len; i++) {
         // set schemes
         p->plan[i].fs = (i==0) ? _fec0 : _fec1;
-        p->plan[i].intlv_scheme = LIQUID_INTERLEAVER_BLOCK;
 
         // compute lengths
         p->plan[i].dec_msg_len = n0;
@@ -122,8 +121,7 @@ packetizer packetizer_create(unsigned int _n,
 
         // create objects
         p->plan[i].f = fec_create(p->plan[i].fs, NULL);
-        p->plan[i].q = interleaver_create(p->plan[i].enc_msg_len,
-                                          p->plan[i].intlv_scheme);
+        p->plan[i].q = interleaver_create(p->plan[i].enc_msg_len);
 
         // update length
         n0 = p->plan[i].enc_msg_len;

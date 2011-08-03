@@ -32,8 +32,7 @@
 
 #include "liquid.internal.h"
 
-interleaver interleaver_create(unsigned int _n,
-                               interleaver_type _type)
+interleaver interleaver_create(unsigned int _n)
 {
     interleaver q = (interleaver) malloc(sizeof(struct interleaver_s));
     q->n = _n;

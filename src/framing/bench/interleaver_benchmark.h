@@ -23,25 +23,24 @@
 #include <sys/resource.h>
 #include "liquid.h"
 
-#define INTERLEAVER_BENCH_API(N,T)      \
+#define INTERLEAVER_BENCH_API(N)        \
 (   struct rusage *_start,              \
     struct rusage *_finish,             \
     unsigned long int *_num_iterations) \
-{ interleaver_bench(_start, _finish, _num_iterations, N, T); }
+{ interleaver_bench(_start, _finish, _num_iterations, N); }
 
 // Helper function to keep code base small
 void interleaver_bench(struct rusage *_start,
                        struct rusage *_finish,
                        unsigned long int *_num_iterations,
-                       unsigned int _n,
-                       interleaver_type _type)
+                       unsigned int _n)
 {
     // scale number of iterations by block size
     // iterations = 4: cycles/trial ~ exp( -0.883 + 0.708*log(_n) )
     *_num_iterations /= 0.7f*expf( -0.883 + 0.708*logf(_n) );
 
     // initialize interleaver
-    interleaver q = interleaver_create(_n, _type);
+    interleaver q = interleaver_create(_n);
     interleaver_set_depth(q, 4);
 
     unsigned char x[_n];
@@ -66,8 +65,8 @@ void interleaver_bench(struct rusage *_start,
     interleaver_destroy(q);
 }
 
-void benchmark_interleaver_8    INTERLEAVER_BENCH_API(8,    LIQUID_INTERLEAVER_BLOCK)
-void benchmark_interleaver_16   INTERLEAVER_BENCH_API(16,   LIQUID_INTERLEAVER_BLOCK)
-void benchmark_interleaver_64   INTERLEAVER_BENCH_API(64,   LIQUID_INTERLEAVER_BLOCK)
-void benchmark_interleaver_256  INTERLEAVER_BENCH_API(256,  LIQUID_INTERLEAVER_BLOCK)
+void benchmark_interleaver_8    INTERLEAVER_BENCH_API(8     )
+void benchmark_interleaver_16   INTERLEAVER_BENCH_API(16    )
+void benchmark_interleaver_64   INTERLEAVER_BENCH_API(64    )
+void benchmark_interleaver_256  INTERLEAVER_BENCH_API(256   )
 

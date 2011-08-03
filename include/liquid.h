@@ -2134,17 +2134,9 @@ int  packetizer_decode(packetizer _p,
 //
 typedef struct interleaver_s * interleaver;
 
-// interleaver type
-typedef enum {
-    LIQUID_INTERLEAVER_BLOCK=0,
-    LIQUID_INTERLEAVER_SEQUENCE
-} interleaver_type;
-
 // create interleaver
 //   _n     : number of bytes
-//   _type  : type of re-ordering
-interleaver interleaver_create(unsigned int _n,
-                               interleaver_type _type);
+interleaver interleaver_create(unsigned int _n);
 
 // destroy interleaver object
 void interleaver_destroy(interleaver _q);

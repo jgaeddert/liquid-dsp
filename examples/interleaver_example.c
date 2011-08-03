@@ -19,10 +19,9 @@
 int main() {
     // options
     unsigned int n=9; // message length
-    interleaver_type type = LIQUID_INTERLEAVER_SEQUENCE; // interleaver type
 
     // create the interleaver
-    interleaver q = interleaver_create(n, type);
+    interleaver q = interleaver_create(n);
     interleaver_set_depth(q, 4);
     interleaver_print(q);
 

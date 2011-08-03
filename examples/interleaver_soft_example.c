@@ -10,10 +10,9 @@
 int main() {
     // options
     unsigned int n=9; // message length (bits)
-    interleaver_type type = LIQUID_INTERLEAVER_SEQUENCE; // interleaver type
 
     // create the interleaver
-    interleaver q = interleaver_create(n, type);
+    interleaver q = interleaver_create(n);
     interleaver_print(q);
 
     // create arrays

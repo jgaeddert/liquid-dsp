@@ -1055,7 +1055,6 @@ struct fecintlv_plan {
     fec f;
 
     // interleaver
-    unsigned int intlv_scheme;
     interleaver q;
 };
 

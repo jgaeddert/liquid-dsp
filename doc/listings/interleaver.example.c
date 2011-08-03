@@ -6,7 +6,8 @@ int main() {
     unsigned int n=9; // message length (bytes)
 
     // create the interleaver
-    interleaver q = interleaver_create(n, LIQUID_INTERLEAVER_SEQUENCE);
+    interleaver q = interleaver_create(n);
+    interleaver_set_depth(q,3);
 
     // create arrays
     unsigned char msg_org[n];   // original message data

@@ -20,8 +20,7 @@ void usage()
     printf("interleaver_scatterplot_example [options]\n");
     printf("  u/h   : print usage\n");
     printf("  n     : number of bytes, default: 8\n");
-    printf("  d     : interleaver depth, default: 0\n");
-    printf("  t     : interleaver type, 'sequence' or 'block'\n");
+    printf("  d     : interleaver depth, default: 4\n");
 }
 
 // find most significant bit in array (starting from left)
@@ -32,27 +31,14 @@ int main(int argc, char*argv[]) {
     // options
     unsigned int n=8; // message length
     unsigned int depth = 4;
-    interleaver_type type = LIQUID_INTERLEAVER_SEQUENCE; // interleaver type
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhn:d:t:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhn:d:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage();              return 0;
         case 'n': n = atoi(optarg);     break;
         case 'd': depth = atoi(optarg); break;
-        case 't':
-            if ( strcmp(optarg,"sequence")==0 ) {
-                type = LIQUID_INTERLEAVER_SEQUENCE;
-                break;
-            } else if ( strcmp(optarg,"block")==0 ) {
-                type = LIQUID_INTERLEAVER_BLOCK;
-                break;
-            } else {
-                fprintf(stderr,"error: %s, unsupported type '%s'\n", argv[0], optarg);
-                usage();
-                return 1;
-            }
         default:
             fprintf(stderr,"error: %s, unknown/unsupported option '%c'\n", argv[0], dopt);
             usage();
@@ -61,7 +47,7 @@ int main(int argc, char*argv[]) {
     }
 
     // create the interleaver
-    interleaver q = interleaver_create(n, type);
+    interleaver q = interleaver_create(n);
     interleaver_set_depth(q, depth);
 
     // create arrays
