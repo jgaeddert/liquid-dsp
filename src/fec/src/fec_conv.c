@@ -157,7 +157,7 @@ void fec_conv_decode_hard(fec _q,
     // invoke hard-decision scaling
     unsigned int k;
     for (k=0; k<8*_q->num_enc_bytes; k++)
-        _q->enc_bits[k] = _q->enc_bits[k] ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
+        _q->enc_bits[k] = _q->enc_bits[k] ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
 
     // run internal decoder
     fec_conv_decode(_q, _msg_dec);

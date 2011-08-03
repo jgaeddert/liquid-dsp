@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
             // 'demodulate' hard/soft
             for (i=0; i<8*k; i++) {
                 // hard decision
-                msg_rec_hard[i] = ( crealf(mod_sym[i]) > 0.0f ) ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
+                msg_rec_hard[i] = ( crealf(mod_sym[i]) > 0.0f ) ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
 
                 // soft decision
 #if 0

@@ -150,11 +150,6 @@ LIQUID_DOTPROD_DEFINE_INTERNAL_API(DOTPROD_MANGLE_CRCF,
 // MODULE : fec (forward error-correction)
 //
 
-// define soft bit values
-#define LIQUID_FEC_SOFTBIT_0        (0)
-#define LIQUID_FEC_SOFTBIT_1        (255)
-#define LIQUID_FEC_SOFTBIT_ERASURE  (127)
-
 // checksum / cyclic redundancy check (crc)
 
 // byte reversal and manipulation

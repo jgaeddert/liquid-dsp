@@ -244,7 +244,7 @@ void liquid_pack_soft_bits(unsigned char * _soft_bits,
     unsigned int s=0;
     for (i=0; i<_bps; i++) {
         s <<= 1;
-        s |= _soft_bits[i] > LIQUID_FEC_SOFTBIT_ERASURE ? 1 : 0;
+        s |= _soft_bits[i] > LIQUID_SOFTBIT_ERASURE ? 1 : 0;
     }
     *_sym_out = s;
 }
@@ -265,7 +265,7 @@ void liquid_unpack_soft_bits(unsigned int _sym_in,
 
     unsigned int i;
     for (i=0; i<_bps; i++)
-        _soft_bits[i] = ((_sym_in >> (_bps-i-1)) & 0x0001) ? LIQUID_FEC_SOFTBIT_1 : LIQUID_FEC_SOFTBIT_0;
+        _soft_bits[i] = ((_sym_in >> (_bps-i-1)) & 0x0001) ? LIQUID_SOFTBIT_1 : LIQUID_SOFTBIT_0;
 }
 
 

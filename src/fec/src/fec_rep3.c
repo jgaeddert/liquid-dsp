@@ -138,7 +138,7 @@ void fec_rep3_decode_soft(fec _q,
             // average three symbols and make decision
             s_hat = (s0 + s1 + s2)/3;
 
-            _msg_dec[i] |= (s_hat > LIQUID_FEC_SOFTBIT_ERASURE) ? (1 << (8-j-1)) : 0x00;
+            _msg_dec[i] |= (s_hat > LIQUID_SOFTBIT_ERASURE) ? (1 << (8-j-1)) : 0x00;
             
         }
 

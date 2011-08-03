@@ -398,6 +398,10 @@ LIQUID_EQRLS_DEFINE_API(EQRLS_MANGLE_CCCF, liquid_float_complex);
 // MODULE : fec (forward error-correction)
 //
 
+// soft bit values
+#define LIQUID_SOFTBIT_0        (0)
+#define LIQUID_SOFTBIT_1        (255)
+#define LIQUID_SOFTBIT_ERASURE  (127)
 
 // available CRC schemes
 #define LIQUID_CRC_NUM_SCHEMES  7
