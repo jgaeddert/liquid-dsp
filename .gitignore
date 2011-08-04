@@ -23,8 +23,6 @@ config.h.in~
 config.log
 config.status
 makefile
-todolist.txt
-todolist.html
 xautotest
 *.m
 

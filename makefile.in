@@ -30,8 +30,6 @@
 #    check               :   build and run autotest program
 #    bench               :   build and run benchmarking program
 #    examples            :   build all examples
-#    todolist            :   generate list of todos (text file)
-#    todolist.html       :   generate list of todos (html file)
 #    world               :   build absolutely everything (but don't install)
 #
 #    clean-[modulename]  :   clean module [modulename]
@@ -1339,34 +1337,13 @@ distclean-doc :
 	cd doc ; make distclean
 
 
-## 
-## TARGET : todolist - generate tasks list (todolist.txt)
-##
-todolist_sources = 		\
-	$(include_headers)	\
-	$(autotest_headers)	\
-	$(benchmark_headers)
-
-# .txt
-todolist.txt : scripts/todolistgen.py $(todolist_sources)
-	python scripts/todolistgen.py -o $@ $(todolist_sources)
-
-# .html
-todolist.html : scripts/todolistgen.py $(todolist_sources)
-	python scripts/todolistgen.py -o $@ $(todolist_sources)
-
-todolist : todolist.txt
-
-clean-todolist:
-	$(RM) todolist.txt todolist.html
-
 # Clean
 .PHONY: clean
 
 ##
 ## TARGET : world - build absolutely everything
 ##
-world : all check bench examples sandbox todolist todolist.html doc
+world : all check bench examples sandbox doc
 
 ##
 ## TARGET : clean - clean build (objects, dependencies, libraries, etc.)
