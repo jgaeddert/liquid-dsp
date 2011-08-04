@@ -19,43 +19,49 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "autotest/autotest.h"
-#include "liquid.h"
+#include "liquid.internal.h"
 
 //
 // AUTOTEST: Hamming (12,8) codec
 //
 void autotest_hamming128_codec()
 {
-    unsigned int n=4;
-    unsigned char msg_org[] = {0x25, 0x62, 0x3F, 0x52};
-    fec_scheme fs = LIQUID_FEC_HAMMING128;
+    unsigned int n=8;   //
+    unsigned int k=12;  //
+    unsigned int i;     // index of bit to corrupt
 
-    // create arrays
-    unsigned int n_enc = fec_get_enc_msg_length(fs,n);
-    unsigned char msg_dec[n];
-    unsigned char msg_enc[n_enc];
+    for (i=0; i<k; i++) {
+        // generate symbol
+        unsigned int sym_org = rand() % (1<<n);
 
-    // create object
-    fec q = fec_create(fs,NULL);
-    if (liquid_autotest_verbose)
-        fec_print(q);
+        // encoded symbol
+        unsigned int sym_enc = fec_hamming128_encode_symbol(sym_org);
 
-    // encode message
-    fec_encode(q, n, msg_org, msg_enc);
-    
-    // corrupt encoded message
-    msg_enc[0] ^= 0x04;
-    msg_enc[4] ^= 0x04;
+        // received symbol
+        unsigned int sym_rec = sym_enc ^ (1<<(k-i-1));
 
-    // decode message
-    fec_decode(q, n, msg_enc, msg_dec);
+        // decoded symbol
+        unsigned int sym_dec = fec_hamming128_decode_symbol(sym_rec);
 
-    // validate data are the same
-    CONTEND_SAME_DATA(msg_org, msg_dec, n);
+        if (liquid_autotest_verbose) {
+            printf("error index : %u\n", i);
+            // print results
+            printf("    sym org     :   "); liquid_print_bitstring(sym_org, n); printf("\n");
+            printf("    sym enc     :   "); liquid_print_bitstring(sym_enc, k); printf("\n");
+            printf("    sym rec     :   "); liquid_print_bitstring(sym_rec, k); printf("\n");
+            printf("    sym dec     :   "); liquid_print_bitstring(sym_dec, n); printf("\n");
 
-    // clean up objects
-    fec_destroy(q);
+            // print number of bit errors
+            printf("    bit errors  :   %u\n", count_bit_errors(sym_org, sym_dec));
+        }
+
+        // validate data are the same
+        CONTEND_EQUALITY(sym_org, sym_dec);
+    }
 }
 
 //
