@@ -18,6 +18,8 @@ void usage()
 {
     printf("sandbox/modem_demodulate_arb_gentab [options]\n");
     printf("  u/h   : print usage\n");
+    printf("  p     : reference constellation size, fixed at 16\n");
+    printf("  s     : number of associated points per reference, default: 12\n");
     printf("  m     : modulation scheme (qpsk default)\n");
     liquid_print_modulation_schemes();
 }
@@ -53,10 +55,12 @@ int main(int argc, char*argv[])
     unsigned int s=12;  // number of points per reference
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhp:s:m:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage(); return 0;
+        case 'p': /* p = atoi(optarg); */   break;
+        case 's': s = atoi(optarg);         break;
         case 'm':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
@@ -76,14 +80,14 @@ int main(int argc, char*argv[])
     unsigned int i;
     unsigned int j;
 
-#if 0
+#if 1
     // generate the constellation
     modem q = modem_create(ms, bps);
     bps = modem_get_bps(q);
-    float complex constellation[M];
     unsigned int M = 1 << bps;
+    float complex constellation[M];
     for (i=0; i<M; i++)
-        modem_modulate(q, i, &c[i]);
+        modem_modulate(q, i, &constellation[i]);
     modem_destroy(q);
 #else
     // initialize constellation (spiral)
