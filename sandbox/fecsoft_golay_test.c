@@ -98,7 +98,8 @@ int main(int argc, char*argv[])
     unsigned int s;
 
     // data arrays
-    unsigned int num_errors[num_steps];
+    unsigned int num_bit_errors[num_steps];
+    unsigned int num_sym_errors[num_steps];
 
     printf("  %8s [%8s] %8s %12s %12s\n", "SNR [dB]", "trials", "# errs", "(BER)", "uncoded");
     for (s=0; s<num_steps; s++) {
@@ -109,7 +110,8 @@ int main(int argc, char*argv[])
         float sigma = powf(10.0f, -SNRdB/20.0f);
 
         // reset error counter
-        num_errors[s] = 0;
+        num_bit_errors[s] = 0;
+        num_sym_errors[s] = 0;
 
         for (t=0; t<num_trials; t++) {
             // generate original message signal
@@ -140,14 +142,17 @@ int main(int argc, char*argv[])
 
             // compute errors in decoded message signal
             for (i=0; i<m; i++)
-                num_errors[s] += (x_hat[i] == x[i]) ? 0 : 1;
+                num_bit_errors[s] += (x_hat[i] == x[i]) ? 0 : 1;
+
+            // compute number of symbol errors
+            num_sym_errors[s] += parity_pass ? 0 : 1;
         }
 
         // print results for this SNR step
         printf("  %8.3f [%8u] %8u %12.4e %12.4e\n",
                 SNRdB,
                 m*num_trials,
-                num_errors[s], (float)(num_errors[s]) / (float)(num_trials*m),
+                num_bit_errors[s], (float)(num_bit_errors[s]) / (float)(num_trials*m),
                 0.5f*erfcf(1.0f/sigma));
     }
 
@@ -167,14 +172,15 @@ int main(int argc, char*argv[])
     fprintf(fid,"num_bit_trials = num_trials*m;\n");
     for (i=0; i<num_steps; i++) {
         fprintf(fid,"SNRdB(%4u) = %12.8f;\n",i+1, SNRdB_min + i*SNRdB_step);
-        fprintf(fid,"num_errors(%6u) = %u;\n", i+1, num_errors[i]);
+        fprintf(fid,"num_bit_errors(%6u) = %u;\n", i+1, num_bit_errors[i]);
+        fprintf(fid,"num_sym_errors(%6u) = %u;\n", i+1, num_sym_errors[i]);
     }
     fprintf(fid,"EbN0dB = SNRdB - 10*log10(r);\n");
     fprintf(fid,"EbN0dB_bpsk = -15:0.5:40;\n");
     fprintf(fid,"\n\n");
     fprintf(fid,"figure;\n");
     fprintf(fid,"semilogy(EbN0dB_bpsk, 0.5*erfc(sqrt(10.^[EbN0dB_bpsk/10]))+1e-12,'-x',\n");
-    fprintf(fid,"         EbN0dB,      num_errors / num_bit_trials + 1e-12,  '-x');\n");
+    fprintf(fid,"         EbN0dB,      num_bit_errors / num_bit_trials + 1e-12,  '-x');\n");
     fprintf(fid,"axis([%f (%f-10*log10(r)) 1e-6 1]);\n", SNRdB_min, SNRdB_max);
     fprintf(fid,"legend('uncoded','Golay(24,12)',1);\n");
     fprintf(fid,"xlabel('E_b/N_0 [dB]');\n");
