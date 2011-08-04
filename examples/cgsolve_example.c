@@ -1,6 +1,10 @@
 // 
 // cgsolve_example.c
 //
+// Solve linear system of equations A*x = b using the conjugate-
+// gradient method where A is a symmetric positive-definite matrix.
+// Compare speed to matrixf_linsolve() for same system.
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,32 +24,25 @@ int main() {
     float x[n];
     float x_hat[n];
 
-    // generate symmetric positive-definite matrix
-#if 0
-    // (use Hilbert matrix)
-    unsigned int j;
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++)
-            matrix_access(A,n,n,i,j) = 1.0 / ( (float)(i+j+1) );
-    }
-#else
-    // generate upper triangular matrix R, compute A = R'*R
-    float R[n*n];
+    // generate symmetric positive-definite matrix by first generating
+    // lower triangular matrix L and computing A = L*L'
+    float L[n*n];
     unsigned int j;
     for (i=0; i<n; i++) {
         for (j=0; j<n; j++) {
 #if 0
-            matrix_access(R,n,n,i,j) = (j < i) ? 0.0 : randnf();
+            // sparse matrix
+            if (j > i)              matrix_access(L,n,n,i,j) = 0.0;
+            else if (j == i)        matrix_access(L,n,n,i,j) = randnf();
+            else if ((rand()%4)==0) matrix_access(L,n,n,i,j) = randnf();
+            else                    matrix_access(L,n,n,i,j) = 0.0;
 #else
-            if (j < i)       matrix_access(R,n,n,i,j) = 0.0;
-            else if (j == i) matrix_access(R,n,n,i,j) = randnf();
-            else if ((rand()%4)==0) matrix_access(R,n,n,i,j) = randnf();
-            else             matrix_access(R,n,n,i,j) = 0.0;
+            // full matrix
+            matrix_access(L,n,n,i,j) = (j < i) ? 0.0 : randnf();
 #endif
         }
     }
-    matrixf_transpose_mul(R, n, n, A);
-#endif
+    matrixf_mul_transpose(L, n, n, A);
 
     // generate random solution
     for (i=0; i<n; i++)

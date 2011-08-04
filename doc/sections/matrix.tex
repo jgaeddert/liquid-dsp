@@ -366,10 +366,33 @@ ignored by setting to {\tt NULL}.
 \label{module:matrix:cgsolve}
 The {\tt matrixf\_cgsolve(*A,n,*b,*x,opts)} method solves $Ax = b$
 using the conjugate gradient method
-where $A$ is an $n \times n$ symmetric positive definite matrix.
+where $A$ is an $n \times n$ symmetric positive-definite matrix.
 The {\tt opts} argument is reserved for future development and can be
 ignored by setting to {\tt NULL}.
-
+%
+Listed below is a basic example:
+%
+\begin{Verbatim}[fontsize=\small]
+    A = 
+      2.9002075   0.1722705   1.3046706   1.8082311
+      0.1722705   1.0730995   0.2497573   0.1470398
+      1.3046706   0.2497573   0.8930279   1.1471686
+      1.8082311   0.1470398   1.1471686   1.5155975
+    b =
+     11.7622252
+     -1.0541668
+      5.7372437
+      8.1291904
+    matrixf_cgsolve(A,4,4, x_hat, NULL)
+    x_hat =
+      2.8664699
+     -1.8786657
+      1.1224079
+      1.2764599
+\end{Verbatim}
+%
+For a more complete example, see {\tt examples/cgsolve\_example.c}
+located under the main project directory.
 
 \subsubsection{{\tt matrixf\_det()} (determinant)}
 \label{module:matrix:det}
