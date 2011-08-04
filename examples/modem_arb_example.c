@@ -146,5 +146,8 @@ int main(int argc, char*argv[])
     fprintf(fid,"grid on;\n");
     fclose(fid);
 
+    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("done.\n");
+
     return 0;
 }

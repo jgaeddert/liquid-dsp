@@ -1,0 +1,304 @@
+// 
+// modem_demodulate_arb_gentab.c
+//
+// Generate fast demodulation tables for arbitrary modems
+//
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <getopt.h>
+#include "liquid.h"
+
+#define OUTPUT_FILENAME "modem_demodulate_arb_gentab.m"
+
+// print usage/help message
+void usage()
+{
+    printf("sandbox/modem_demodulate_arb_gentab [options]\n");
+    printf("  u/h   : print usage\n");
+    printf("  m     : modulation scheme (qpsk default)\n");
+    liquid_print_modulation_schemes();
+}
+
+// search for nearest constellation points to reference points
+void modem_arbref_search(float complex * _c,
+                         unsigned int _M,
+                         float complex * _cref,
+                         unsigned int _p,
+                         unsigned char * _index,
+                         unsigned int _s);
+
+// search for nearest constellation points to single reference point
+void modem_arbref_search_point(float complex * _c,
+                               unsigned int _M,
+                               float complex _cref,
+                               unsigned char * _index,
+                               unsigned int _s);
+
+// find unassigned constellation points
+unsigned int modem_arbref_search_unassigned(unsigned char * _index,
+                                            unsigned int _M,
+                                            unsigned int _p,
+                                            unsigned int _s,
+                                            unsigned char * _assigned);
+
+int main(int argc, char*argv[])
+{
+    // create mod/demod objects
+    unsigned int bps=6;
+    modulation_scheme ms = LIQUID_MODEM_ARB64VT;
+    unsigned int p=16;  // reference constellation size
+    unsigned int s=12;  // number of points per reference
+
+    int dopt;
+    while ((dopt = getopt(argc,argv,"uhm:")) != EOF) {
+        switch (dopt) {
+        case 'u':
+        case 'h': usage(); return 0;
+        case 'm':
+            liquid_getopt_str2modbps(optarg, &ms, &bps);
+            if (ms == LIQUID_MODEM_UNKNOWN) {
+                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
+                return 1;
+            }
+            break;
+        default:
+            fprintf(stderr,"error: %s, unknown option\n", argv[0]);
+            usage();
+            return 1;
+        }
+    }
+
+    // validate input
+
+    unsigned int i;
+    unsigned int j;
+
+#if 0
+    // generate the constellation
+    modem q = modem_create(ms, bps);
+    bps = modem_get_bps(q);
+    float complex constellation[M];
+    unsigned int M = 1 << bps;
+    for (i=0; i<M; i++)
+        modem_modulate(q, i, &c[i]);
+    modem_destroy(q);
+#else
+    // initialize constellation (spiral)
+    unsigned int M = 1 << bps;
+    float complex constellation[M];
+    float gamma = 0.0f;     // scaling factor
+    for (i=0; i<M; i++) {
+        float r   = (float)i / logf((float)M) + 4.0f;
+        float phi = (float)i / logf((float)M);
+        constellation[i] = r * cexpf(_Complex_I*phi);
+
+        gamma += r*r;
+    }
+    // normalize constellation to unity energy
+    gamma = 1.0f / (float)sqrtf(gamma/M);
+    for (i=0; i<M; i++)
+        constellation[i] *= gamma;
+#endif
+
+    // initialize reference points
+    // use 16-QAM
+    modem qref = modem_create(LIQUID_MODEM_QAM, 4);
+    float complex cref[16];
+    for (i=0; i<16; i++)
+        modem_modulate(qref, i, &cref[i]);
+    modem_destroy(qref);
+
+    // perform search
+    unsigned char link[p*s];
+
+    // search for nearest constellation points to reference points
+    modem_arbref_search(constellation, M, cref, p, link, s);
+
+    // find unassigned constellation points
+    unsigned char unassigned[M];
+    unsigned int num_unassigned = modem_arbref_search_unassigned(link,M,p,s,unassigned);
+    printf("number of unassigned points: %u / %u\n", num_unassigned, M);
+
+    // print table
+    printf("\n");
+    printf("unsigned char modem_demodulate_gentab[%u][%u] = {\n", p, s);
+    for (i=0; i<p; i++) {
+        printf("    {");
+        for (j=0; j<s; j++) {
+            printf("%3u%s", link[i*s+j], j==(s-1) ? "" : ",");
+        }
+        printf("}%s", i==(p-1) ? "};\n" : ",\n");
+    }
+
+    // 
+    // export output file
+    //
+    FILE * fid = fopen(OUTPUT_FILENAME,"w");
+    fprintf(fid,"%% %s : auto-generated file\n", OUTPUT_FILENAME);
+    fprintf(fid,"clear all;\n");
+    fprintf(fid,"close all;\n");
+    fprintf(fid,"bps = %u;\n", bps);
+    fprintf(fid,"M = %u;\n", M);
+    fprintf(fid,"p = %u;\n", p);
+    fprintf(fid,"s = %u;\n", s);
+
+    // save constellation points
+    for (i=0; i<M; i++) {
+        fprintf(fid,"c(%3u) = %12.4e + j*%12.4e;\n", i+1,
+                                                     crealf(constellation[i]),
+                                                     cimagf(constellation[i]));
+    }
+
+    // save reference points
+    for (i=0; i<16; i++)
+        fprintf(fid,"cref(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(cref[i]), cimagf(cref[i]));
+
+    // save reference matrix
+    fprintf(fid,"link = zeros(p,s);\n");
+    for (i=0; i<p; i++) {
+        for (j=0; j<s; j++) {
+            fprintf(fid,"link(%3u,%3u) = %u;\n", i+1, j+1, link[i*s+j]+1);
+        }
+    }
+
+    // plot results
+    fprintf(fid,"figure;\n");
+    fprintf(fid,"plot(real(c),    imag(c),   'bx',\n");
+    fprintf(fid,"     real(cref), imag(cref),'or');\n");
+
+    // draw lines between reference points and associated constellation points
+    fprintf(fid,"hold on;\n");
+    fprintf(fid,"  for i=1:p,\n");
+    fprintf(fid,"    for j=1:s,\n");
+    fprintf(fid,"      plot([real(cref(i)) real(c(link(i,j)))], [imag(cref(i)) imag(c(link(i,j)))], '-', 'Color', 0.8*[1 1 1]);\n");
+    fprintf(fid,"    end;\n");
+    fprintf(fid,"  end;\n");
+    fprintf(fid,"hold off;\n");
+    fprintf(fid,"xlabel('in-phase');\n");
+    fprintf(fid,"ylabel('quadrature phase');\n");
+    fprintf(fid,"title(['Arbitrary ' num2str(M) '-QAM']);\n");
+    fprintf(fid,"axis([-1 1 -1 1]*1.9);\n");
+    fprintf(fid,"axis square;\n");
+    fprintf(fid,"grid on;\n");
+    fclose(fid);
+
+    printf("results written to '%s'\n", OUTPUT_FILENAME);
+    printf("done.\n");
+
+    return 0;
+}
+
+// search for nearest constellation points to reference points
+//  _c      :   input constellation [size: _M x 1]
+//  _M      :   input constellation size
+//  _cref   :   reference points [size: _p x 1]
+//  _p      :   reference points size
+//  _index  :   indices of nearest constellation points [size: _p x _s]
+//  _s      :   number of nearest constellation points
+void modem_arbref_search(float complex * _c,
+                         unsigned int _M,
+                         float complex * _cref,
+                         unsigned int _p,
+                         unsigned char * _index,
+                         unsigned int _s)
+{
+    // validate input
+    if (_M < 2) {
+        fprintf(stderr,"error: modem_arbref_search(), input constellation size too small\n");
+        exit(1);
+    } else if (_p > _M) {
+        fprintf(stderr,"error: modem_arbref_search(), number of reference points exceeds constellation size\n");
+        exit(1);
+    } else if (_s > _M) {
+        fprintf(stderr,"error: modem_arbref_search(), index size exceeds constellation size\n");
+        exit(1);
+    }
+
+    //
+    unsigned int i;
+    for (i=0; i<_p; i++)
+        modem_arbref_search_point(_c, _M, _cref[i], &_index[_s*i], _s);
+}
+
+// search for nearest constellation points to single reference point
+void modem_arbref_search_point(float complex * _c,
+                               unsigned int _M,
+                               float complex _cref,
+                               unsigned char * _index,
+                               unsigned int _s)
+{
+    printf("searching neighbors to (%8.3f,%8.3f)\n", crealf(_cref), cimagf(_cref));
+    // initialize array of selected element flags
+    unsigned char selected[_M];
+    memset(selected, 0x00, _M);
+
+    unsigned int i;
+    unsigned int n;
+    
+    for (n=0; n<_s; n++) {
+        int min_found = 0;
+        float d;
+        float dmin = 0.0f;
+        unsigned int index_min = 0;
+        for (i=0; i<_M; i++) {
+            // ignore constellation point if it has already been
+            // selected
+            if (selected[i]==1)
+                continue;
+
+            // compute distance
+            d = crealf( (_c[i]-_cref)*conjf(_c[i]-_cref) );
+            if ( d < dmin || !min_found ) {
+                dmin = d;
+                index_min = i;
+                min_found = 1;
+            }
+        }
+
+        // save minimum index
+        _index[n] = index_min;
+
+        // flag point as 'selected'
+        selected[index_min] = 1;
+
+        printf("%6u (%8.3f,%8.3f)\n", index_min, crealf(_c[index_min]), cimagf(_c[index_min]));
+    }
+}
+
+// find unassigned constellation points
+unsigned int modem_arbref_search_unassigned(unsigned char * _index,
+                                            unsigned int _M,
+                                            unsigned int _p,
+                                            unsigned int _s,
+                                            unsigned char * _assigned)
+{
+    unsigned int num_unassigned = 0;
+
+    //
+    unsigned int i;
+    for (i=0; i<_M; i++) {
+        // initialized 'assigned' flag to false
+        _assigned[i] = 0;
+
+        unsigned int j;
+        for (j=0; j<_p; j++) {
+
+            // see if this constellation point has been assigned
+            // to this reference
+            unsigned int k;
+            for (k=0; k<_s; k++) {
+                if (_index[j*_s+k] == i)
+                    _assigned[i] = 1;
+            }
+        }
+
+        if (!_assigned[i])
+            num_unassigned++;
+    }
+
+    return num_unassigned;
+}
+

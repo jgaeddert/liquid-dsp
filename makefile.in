@@ -1294,6 +1294,7 @@ sandbox_obj =						\
 	sandbox/minsearch_test.o			\
 	sandbox/minsearch2_test.o			\
 	sandbox/matrix_eig_test.o			\
+	sandbox/modem_demodulate_arb_gentab.o		\
 	sandbox/modem_demodulate_soft_test.o		\
 	sandbox/modem_demodulate_soft_gentab.o		\
 	sandbox/ofdmoqam_firpfbch_test.o		\
