@@ -1,6 +1,14 @@
 //
 // packetizer_soft_example.c
 //
+// This example demonstrates the functionality of the packetizer object
+// for soft-decision decoding.  Data are encoded using two forward error-
+// correction schemes (an inner and outer code) before noise and data
+// errors are added. The decoder then tries to recover the original data
+// message. Only the outer code uses soft-decision decoding.
+//
+// SEE ALSO: fec_soft_example.c
+//           packetizer_example.c
 
 #include <stdio.h>
 #include <stdlib.h>

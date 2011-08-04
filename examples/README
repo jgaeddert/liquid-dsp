@@ -5,8 +5,7 @@
 ==============================================================================
 
 This directory contains all the examples for interfacing the liquid modules.
-Some examples permit command-line options.  These scripts are denoted with an
-asterisk (*).
+The examples marked with an asterisk (*) permit command-line options.
 Some examples are only available when configured with the option
 '--enable-experimental' are are denoted with [EXPERIMENTAL].
 
@@ -99,6 +98,11 @@ bsequence_example.c
 
 bufferf_example.c
 
+cgsolve_example.c
+// Solve linear system of equations A*x = b using the conjugate-
+// gradient method where A is a symmetric positive-definite matrix.
+// Compare speed to matrixf_linsolve() for same system.
+
 chromosome_example.c
 
 compand_cf_example.c
@@ -183,6 +187,17 @@ fec_example.c *
     SEE ALSO: crc_example.c
               checksum_example.c
               packetizer_example.c
+
+fec_soft_example.c *
+    This example demonstrates the interface for forward error-correction
+    (FEC) codes with soft-decision decoding.  A buffer of data bytes is
+    encoded before the data are corrupted with at least one error and
+    noise. The decoder then attempts to recover the original data set
+    from the soft input bits.  The user may select the FEC scheme from
+    the command-line interface.
+
+    SEE ALSO: fec_example.c
+              packetizer_soft_example.c
 
 fft_example.c
     This example demonstrates the interface to the fast discrete Fourier
@@ -364,7 +379,7 @@ interp_crcf_example.c *
 itqmfb_crcf_example.c [EXPERIMENTAL]
 itqmfb_rrrf_example.c [EXPERIMENTAL]
 kbd_window_example.c
-kmeans_example.c
+kmeans_example.c [EXPERIMENTAL]
 matched_filter_example.c
 
 math_lngamma_example.c
@@ -390,6 +405,10 @@ modem_example.c *
     via the command-line interface.
 
     SEE ALSO: modem_arb_example.c
+
+modem_soft_example.c *
+// This example demonstates soft demodulation of linear
+// modulation schemes.
 
 msequence_example.c
     This example demonstrates the auto-correlation properties of a
@@ -425,10 +444,16 @@ nco_pll_modem_example.c *
     SEE ALSO: nco_example.c
               nco_pll_example.c
 
+nyquist_filter_example.c
+ofdmflexframesync_example.c
 ofdmframegen_example.c
 ofdmframesync_example.c
 ofdmoqam_example.c
 ofdmoqam_firpfbch_example.c
+ofdmoqamframe64gen_example.c
+ofdmoqamframe64sync_example.c
+ofdmoqamframesync_example.c
+
 packetizer_example.c *
     Demonstrates the functionality of the packetizer object.  Data are encoded
     using two forward error-correction schemes (an inner and outer code)
@@ -437,6 +462,16 @@ packetizer_example.c *
 
     SEE ALSO: fec_example.c
               crc_example.c
+
+packetizer_soft_example.c *
+    This example demonstrates the functionality of the packetizer object
+    for soft-decision decoding.  Data are encoded using two forward error-
+    correction schemes (an inner and outer code) before noise and data
+    errors are added. The decoder then tries to recover the original data
+    message. Only the outer code uses soft-decision decoding.
+
+    SEE ALSO: fec_soft_example.c
+              packetizer_example.c
 
 patternset_example.c [EXPERIMENTAL]
     This example demonstrates the functionality of the patternset
@@ -478,8 +513,6 @@ repack_bytes_example.c
     in the input is 9 and not evenly divisible by 2, the last of the 5
     output symbols has a zero explicitly padded to the end.
 
-resamp2_crcf_example.c
-
 resamp2_crcf_decim_example.c
     Halfband decimator.  This example demonstrates the interface to the
     decimating halfband resampler.  A low-frequency input sinusoid is
@@ -488,6 +521,9 @@ resamp2_crcf_decim_example.c
 
     SEE ALSO: resamp2_crcf_interp_example.c
               decim_rrrf_example.c
+
+resamp2_crcf_example.c
+resamp2_crcf_filterbank_example.c
 
 resamp2_crcf_filter_example.c
     Halfband (two-channel) filterbank example. This example demonstrates
@@ -498,8 +534,6 @@ resamp2_crcf_filter_example.c
           significant amount of distortion occurs in the transition band
           of the half-band filters. See the 'qmfb' (quadrature mirror
           filterbank) object in the experimental section.
-
-resamp2_crcf_filterbank_example.c
 
 resamp2_crcf_interp_example.c
     Halfband interpolator.  This example demonstrates the interface to the
@@ -524,6 +558,7 @@ scramble_example.c
     'whiten' the data sequence with a bit mask in order to achieve maximum
     entropy.  This example demonstrates the interface.
 
+smatrix_example.c
 symsync2_crcf_example.c [EXPERIMENTAL]
 symsync_crcf_example.c
 symsync_rrrf_example.c
