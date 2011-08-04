@@ -225,7 +225,9 @@ int main() {
     // test Cholesky decomposition
     //
 
-    // generate 
+    printf("\n");
+    printf("testing Cholesky decomposition\n");
+    // generate  input matrix
     float complex Lp[9] = { 1.0,                   0.0,                   0.0,
                            -3.1 + 0.2*_Complex_I,  0.3,                   0.0,
                             1.7 + 0.5*_Complex_I, -0.6 - 0.3*_Complex_I,  2.9};

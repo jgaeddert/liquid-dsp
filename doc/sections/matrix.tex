@@ -496,6 +496,34 @@ $\vec{X}$, the Q/R factorization is
       0.00000000  0.00000000  0.00000000  4.25430155
 \end{Verbatim}
 
+\subsubsection{{\tt matrixf\_chol()}
+               (Cholesky Decomposition)}
+\label{module:matrix:chol}
+Compute Cholesky decomposition of an $n \times n$ symmetric/Hermitian
+positive-definite matrix as $\vec{A} = \vec{L}\vec{L}^T$
+where $\vec{L}$ is $n \times n$ and lower triangular.
+An $n \times n$ matrix is positive definite if
+$\Re\{v^T \vec{A} v\} > 0$ for all non-zero vectors $v$.
+Note that $\vec{A}$ can be either complex or real.
+%
+Shown below is an example of the Cholesky decomposition of a
+$4 \times 4$ positive definite real matrix.
+%
+\begin{Verbatim}[fontsize=\small]
+    A =
+      1.0201000  -1.4341999   0.3232000  -1.0302000
+     -1.4341999   2.2663999   0.5506001   1.2883999
+      0.3232000   0.5506001   4.2325001  -1.4646000
+     -1.0302000   1.2883999  -1.4646000   5.0101995
+    matrixf_chol(A,4,Lp)
+      1.0100000   0.0000000   0.0000000   0.0000000
+     -1.4200000   0.5000000   0.0000000   0.0000000
+      0.3200000   2.0100000   0.3000003   0.0000000
+     -1.0200000  -0.3199999  -1.6499993   1.0700010
+\end{Verbatim}
+
+
+
 \subsubsection{{\tt matrixf\_gjelim()} (Gauss-Jordan Elimination)}
 \label{module:matrix:gjelim}
 The {\tt matrixf\_gjelim(*X,m,n)} method in \liquid\
