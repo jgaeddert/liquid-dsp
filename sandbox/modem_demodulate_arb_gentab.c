@@ -1,7 +1,14 @@
 // 
 // modem_demodulate_arb_gentab.c
 //
-// Generate fast demodulation tables for arbitrary modems
+// Generate fast demodulation tables for arbitrary modems; use existing
+// modulation scheme with fast decoding (e.g. 16-QAM) and associate
+// these constellation points with the arbitrary constellation points.
+// The goal is to allow the demodulator to first demodulate the
+// received point using the fast demodulator and then perform a search
+// over only the set of nearby points. This script computes the look-up
+// table for these nearby points and stores them as an array of
+// indices.
 //
 
 #include <stdlib.h>
@@ -18,9 +25,9 @@ void usage()
 {
     printf("sandbox/modem_demodulate_arb_gentab [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  p     : reference constellation size, fixed at 16\n");
     printf("  s     : number of associated points per reference, default: 12\n");
-    printf("  m     : modulation scheme (qpsk default)\n");
+    printf("  m     : input modulation scheme (arb64vt default)\n");
+    printf("  r     : reference modulation scheme (qam16 default)\n");
     liquid_print_modulation_schemes();
 }
 
@@ -49,21 +56,28 @@ unsigned int modem_arbref_search_unassigned(unsigned char * _index,
 int main(int argc, char*argv[])
 {
     // create mod/demod objects
-    unsigned int bps=6;
     modulation_scheme ms = LIQUID_MODEM_ARB64VT;
-    unsigned int p=16;  // reference constellation size
+    unsigned int bps=6;
+    modulation_scheme mref = LIQUID_MODEM_QAM;
+    unsigned int kref=4;
     unsigned int s=12;  // number of points per reference
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhp:s:m:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhp:s:m:r:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage(); return 0;
-        case 'p': /* p = atoi(optarg); */   break;
         case 's': s = atoi(optarg);         break;
         case 'm':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
+                fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
+                return 1;
+            }
+            break;
+        case 'r':
+            liquid_getopt_str2modbps(optarg, &mref, &kref);
+            if (mref == LIQUID_MODEM_UNKNOWN) {
                 fprintf(stderr,"error: %s, unknown/unsupported modulation scheme '%s'\n", argv[0], optarg);
                 return 1;
             }
@@ -80,7 +94,15 @@ int main(int argc, char*argv[])
     unsigned int i;
     unsigned int j;
 
-#if 1
+    // initialize reference points
+    modem qref = modem_create(mref, kref);
+    kref = modem_get_bps(qref);
+    unsigned int p = 1 << kref;
+    float complex cref[p];
+    for (i=0; i<p; i++)
+        modem_modulate(qref, i, &cref[i]);
+    modem_destroy(qref);
+
     // generate the constellation
     modem q = modem_create(ms, bps);
     bps = modem_get_bps(q);
@@ -89,36 +111,9 @@ int main(int argc, char*argv[])
     for (i=0; i<M; i++)
         modem_modulate(q, i, &constellation[i]);
     modem_destroy(q);
-#else
-    // initialize constellation (spiral)
-    unsigned int M = 1 << bps;
-    float complex constellation[M];
-    float gamma = 0.0f;     // scaling factor
-    for (i=0; i<M; i++) {
-        float r   = (float)i / logf((float)M) + 4.0f;
-        float phi = (float)i / logf((float)M);
-        constellation[i] = r * cexpf(_Complex_I*phi);
-
-        gamma += r*r;
-    }
-    // normalize constellation to unity energy
-    gamma = 1.0f / (float)sqrtf(gamma/M);
-    for (i=0; i<M; i++)
-        constellation[i] *= gamma;
-#endif
-
-    // initialize reference points
-    // use 16-QAM
-    modem qref = modem_create(LIQUID_MODEM_QAM, 4);
-    float complex cref[16];
-    for (i=0; i<16; i++)
-        modem_modulate(qref, i, &cref[i]);
-    modem_destroy(qref);
-
-    // perform search
-    unsigned char link[p*s];
 
     // search for nearest constellation points to reference points
+    unsigned char link[p*s];
     modem_arbref_search(constellation, M, cref, p, link, s);
 
     // find unassigned constellation points
@@ -157,7 +152,7 @@ int main(int argc, char*argv[])
     }
 
     // save reference points
-    for (i=0; i<16; i++)
+    for (i=0; i<p; i++)
         fprintf(fid,"cref(%3u) = %12.4e + j*%12.4e;\n", i+1, crealf(cref[i]), cimagf(cref[i]));
 
     // save reference matrix
