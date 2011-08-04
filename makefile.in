@@ -566,7 +566,7 @@ src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
 
 
 
-matrx_autotests :=				\
+matrix_autotests :=				\
 	src/matrix/tests/matrixcf_autotest.h	\
 	src/matrix/tests/matrixf_autotest.h	\
 
