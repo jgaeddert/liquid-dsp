@@ -280,7 +280,7 @@ data_ber_fec_hard :=				\
 	data/ber-fec-hard/ber_v27p56.dat	\
 	data/ber-fec-hard/ber_v27p67.dat	\
 	data/ber-fec-hard/ber_v27p78.dat	\
-#	data/ber-fec-hard/ber_rs8.dat
+	data/ber-fec-hard/ber_rs8.dat		\
 
 # re-simulate BER data
 ber-fec-hard-opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
@@ -302,8 +302,7 @@ resimulate-data-fec-ber-hard : src/simulate_ber
 	./src/simulate_ber -H -c v27p67 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p67.dat
 	./src/simulate_ber -H -c v27p78 $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_v27p78.dat
 	./src/simulate_ber -H -c v615 -s-9.75 -d0.25 -e50 -n50000 -t3000000 -o data/ber-fec-hard/ber_v615.dat
-
-#	./src/simulate_ber -H -c rs8    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_rs8.dat
+	./src/simulate_ber -H -c rs8    $(ber-fec-hard-opts) -o data/ber-fec-hard/ber_rs8.dat
 
 
 # 
@@ -326,7 +325,7 @@ data_ber_fec_soft :=				\
 	data/ber-fec-soft/ber_v27p56.dat	\
 	data/ber-fec-soft/ber_v27p67.dat	\
 	data/ber-fec-soft/ber_v27p78.dat	\
-#	data/ber-fec-soft/ber_rs8.dat
+	data/ber-fec-soft/ber_rs8.dat		\
 
 # re-simulate BER data
 ber-fec-soft-opts      := -b1e-5 -e 500 -n80000 -t200000000 -s-9 -d0.5 -x40
@@ -347,8 +346,7 @@ resimulate-data-fec-ber-soft : src/simulate_ber
 	./src/simulate_ber -S -c v27p67 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p67.dat
 	./src/simulate_ber -S -c v27p78 $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_v27p78.dat
 	./src/simulate_ber -S -c v615 -s-9.75 -d0.25 -e50 -n50000 -t3000000 -o data/ber-fec-soft/ber_v615.dat
-
-#	./src/simulate_ber -S -c rs8    $(ber-fec-soft-opts) -o data/ber-fec-hard/ber_rs8.dat
+	./src/simulate_ber -S -c rs8    $(ber-fec-soft-opts) -o data/ber-fec-soft/ber_rs8.dat
 
 # copy gnuplot file
 figures.gen/fec_ber_esn0_hamming.gnu \
