@@ -19,13 +19,13 @@
 #include "liquid.h"
 
 #define OUTPUT_FILENAME "modem_demodulate_arb_gentab.m"
+#define DEBUG 0
 
 // print usage/help message
 void usage()
 {
     printf("sandbox/modem_demodulate_arb_gentab [options]\n");
     printf("  u/h   : print usage\n");
-    printf("  s     : number of associated points per reference, default: 12\n");
     printf("  m     : input modulation scheme (arb64vt default)\n");
     printf("  r     : reference modulation scheme (qam16 default)\n");
     liquid_print_modulation_schemes();
@@ -60,14 +60,12 @@ int main(int argc, char*argv[])
     unsigned int bps=6;
     modulation_scheme mref = LIQUID_MODEM_QAM;
     unsigned int kref=4;
-    unsigned int s=12;  // number of points per reference
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhp:s:m:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhp:m:r:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage(); return 0;
-        case 's': s = atoi(optarg);         break;
         case 'm':
             liquid_getopt_str2modbps(optarg, &ms, &bps);
             if (ms == LIQUID_MODEM_UNKNOWN) {
@@ -112,14 +110,27 @@ int main(int argc, char*argv[])
         modem_modulate(q, i, &constellation[i]);
     modem_destroy(q);
 
-    // search for nearest constellation points to reference points
-    unsigned char link[p*s];
-    modem_arbref_search(constellation, M, cref, p, link, s);
-
-    // find unassigned constellation points
+    // perform search
+    unsigned char * link = NULL;
+    unsigned int num_unassigned=M;
     unsigned char unassigned[M];
-    unsigned int num_unassigned = modem_arbref_search_unassigned(link,M,p,s,unassigned);
-    printf("number of unassigned points: %u / %u\n", num_unassigned, M);
+    unsigned int s=0;  // number of points per reference
+
+    // run search until all points are found
+    do {
+        // increment number of points per reference
+        s++;
+
+        // reallocte memory for links
+        link = (unsigned char*) realloc(link, p*s);
+
+        // search for nearest constellation points to reference points
+        modem_arbref_search(constellation, M, cref, p, link, s);
+
+        // find unassigned constellation points
+        num_unassigned = modem_arbref_search_unassigned(link,M,p,s,unassigned);
+        printf("%3u : number of unassigned points: %3u / %3u\n", s, num_unassigned, M);
+    } while (num_unassigned > 0);
 
     // print table
     printf("\n");
@@ -178,6 +189,7 @@ int main(int argc, char*argv[])
     fprintf(fid,"hold off;\n");
     fprintf(fid,"xlabel('in-phase');\n");
     fprintf(fid,"ylabel('quadrature phase');\n");
+    fprintf(fid,"%%legend('constellation','reference','links',0);\n");
     fprintf(fid,"title(['Arbitrary ' num2str(M) '-QAM']);\n");
     fprintf(fid,"axis([-1 1 -1 1]*1.9);\n");
     fprintf(fid,"axis square;\n");
@@ -208,9 +220,6 @@ void modem_arbref_search(float complex * _c,
     if (_M < 2) {
         fprintf(stderr,"error: modem_arbref_search(), input constellation size too small\n");
         exit(1);
-    } else if (_p > _M) {
-        fprintf(stderr,"error: modem_arbref_search(), number of reference points exceeds constellation size\n");
-        exit(1);
     } else if (_s > _M) {
         fprintf(stderr,"error: modem_arbref_search(), index size exceeds constellation size\n");
         exit(1);
@@ -229,7 +238,9 @@ void modem_arbref_search_point(float complex * _c,
                                unsigned char * _index,
                                unsigned int _s)
 {
+#if DEBUG
     printf("searching neighbors to (%8.3f,%8.3f)\n", crealf(_cref), cimagf(_cref));
+#endif
     // initialize array of selected element flags
     unsigned char selected[_M];
     memset(selected, 0x00, _M);
@@ -263,7 +274,9 @@ void modem_arbref_search_point(float complex * _c,
         // flag point as 'selected'
         selected[index_min] = 1;
 
+#if DEBUG
         printf("%6u (%8.3f,%8.3f)\n", index_min, crealf(_c[index_min]), cimagf(_c[index_min]));
+#endif
     }
 }
 
