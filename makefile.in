@@ -587,6 +587,7 @@ modem_objects :=				\
 	src/modem/src/modem_demodulate.o	\
 	src/modem/src/modem_demodulate_soft.o	\
 	src/modem/src/modem_demod_soft_const.o	\
+	src/modem/src/modem_optqam_const.o	\
 	src/modem/src/ampmodem.o		\
 	src/modem/src/freqmodem.o		\
 
@@ -606,6 +607,8 @@ src/modem/src/modem_common.o: %.o : %.c $(headers)
 src/modem/src/modem_modulate.o: %.o : %.c $(headers)
 
 src/modem/src/modem_demodulate.o: %.o : %.c $(headers)
+
+src/modem/src/modem_optqam_const.o: %.o : %.c $(headers)
 
 src/modem/src/ampmodem.o: %.o : %.c $(headers)
 

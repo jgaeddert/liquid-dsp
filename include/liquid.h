@@ -2612,8 +2612,8 @@ LIQUID_MATRIX_DEFINE_API(MATRIX_MANGLE_CDOUBLE, liquid_double_complex)
 #define MAX_MOD_BITS_PER_SYMBOL 8
 
 // Modulation schemes available
-#define LIQUID_MODEM_NUM_SCHEMES      (16)  // generic schemes (e.g. 'qam')
-#define LIQUID_MODEM_NUM_FULL_SCHEMES (48)  // specific schemes (e.g. 'qam256')
+#define LIQUID_MODEM_NUM_SCHEMES      (19)  // generic schemes (e.g. 'qam')
+#define LIQUID_MODEM_NUM_FULL_SCHEMES (51)  // specific schemes (e.g. 'qam256')
 typedef enum {
     LIQUID_MODEM_UNKNOWN=0, // Unknown modulation scheme
 
@@ -2636,6 +2636,9 @@ typedef enum {
     LIQUID_MODEM_V29,       // V.29 star constellation
     LIQUID_MODEM_ARB16OPT,  // optimal 16-QAM
     LIQUID_MODEM_ARB32OPT,  // optimal 32-QAM
+    LIQUID_MODEM_ARB64OPT,  // optimal 64-QAM
+    LIQUID_MODEM_ARB128OPT, // optimal 128-QAM
+    LIQUID_MODEM_ARB256OPT, // optimal 256-QAM
     LIQUID_MODEM_ARB64VT    // Virginia Tech logo
 } modulation_scheme;
 

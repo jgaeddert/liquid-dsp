@@ -1417,6 +1417,9 @@ modem modem_create_apsk256(void);
 modem modem_create_V29(void);
 modem modem_create_arb16opt(void);
 modem modem_create_arb32opt(void);
+modem modem_create_arb64opt(void);
+modem modem_create_arb128opt(void);
+modem modem_create_arb256opt(void);
 modem modem_create_arb64vt(void);
 
 // Scale arbitrary modem energy to unity
@@ -1479,6 +1482,9 @@ extern const liquid_float_complex modem_arb_sqam128[32]; // 'square' 128-qam (fi
 extern const liquid_float_complex modem_arb_V29[16];    // V.29
 extern const liquid_float_complex modem_arb_opt16[16];  // optimal 16-QAM
 extern const liquid_float_complex modem_arb_opt32[32];  // optimal 32-QAM
+extern const liquid_float_complex modem_arb_opt64[64];  // optimal 64-QAM
+extern const liquid_float_complex modem_arb_opt128[128];// optimal 128-QAM
+extern const liquid_float_complex modem_arb_opt256[256];// optimal 256-QAM
 extern const liquid_float_complex modem_arb_vt64[64];   // Virginia Tech logo
 
 extern const unsigned int apsk4_num_levels;

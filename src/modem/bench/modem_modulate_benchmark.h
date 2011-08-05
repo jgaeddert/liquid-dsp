@@ -56,6 +56,9 @@ void modem_modulate_bench(struct rusage *_start,
     case LIQUID_MODEM_V29:      *_num_iterations *= 100;    break;
     case LIQUID_MODEM_ARB16OPT: *_num_iterations *= 100;    break;
     case LIQUID_MODEM_ARB32OPT: *_num_iterations *= 100;    break;
+    case LIQUID_MODEM_ARB64OPT: *_num_iterations *= 100;    break;
+    case LIQUID_MODEM_ARB128OPT: *_num_iterations *= 100;   break;
+    case LIQUID_MODEM_ARB256OPT: *_num_iterations *= 100;   break;
     case LIQUID_MODEM_ARB64VT:  *_num_iterations *= 100;    break;
     default:;
     }
@@ -132,8 +135,11 @@ void benchmark_modulate_apsk128 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  7)
 void benchmark_modulate_apsk256 MODEM_MODULATE_BENCH_API(LIQUID_MODEM_APSK,  8)
 
 // ARB
-void benchmark_modulate_arbV29   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_V29,      4);
-void benchmark_modulate_arb16opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB16OPT, 4);
-void benchmark_modulate_arb32opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB32OPT, 5);
-void benchmark_modulate_arb64vt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB64VT,  6);
+void benchmark_modulate_arbV29    MODEM_MODULATE_BENCH_API(LIQUID_MODEM_V29,       4);
+void benchmark_modulate_arb16opt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB16OPT,  4);
+void benchmark_modulate_arb32opt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB32OPT,  5);
+void benchmark_modulate_arb64opt  MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB64OPT,  6);
+void benchmark_modulate_arb128opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB128OPT, 7);
+void benchmark_modulate_arb256opt MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB256OPT, 8);
+void benchmark_modulate_arb64vt   MODEM_MODULATE_BENCH_API(LIQUID_MODEM_ARB64VT,   6);
 

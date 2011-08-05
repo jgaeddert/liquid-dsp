@@ -46,6 +46,9 @@ const char* modulation_scheme_str[LIQUID_MODEM_NUM_SCHEMES][2] = {
     {"V29",         "V.29"},
     {"arb16opt",    "arb16opt (optimal 16-qam)"},
     {"arb32opt",    "arb32opt (optimal 32-qam)"},
+    {"arb64opt",    "arb64opt (optimal 64-qam)"},
+    {"arb128opt",   "arb128opt (optimal 128-qam)"},
+    {"arb256opt",   "arb256opt (optimal 256-qam)"},
     {"arb64vt",     "arb64vt (64-qam vt logo)"}
 };
 
@@ -119,6 +122,9 @@ const struct modulation_type_s modulation_types[LIQUID_MODEM_NUM_FULL_SCHEMES] =
     {"V29",      LIQUID_MODEM_V29,      4},
     {"arb16opt", LIQUID_MODEM_ARB16OPT, 4},
     {"arb32opt", LIQUID_MODEM_ARB32OPT, 5},
+    {"arb64opt", LIQUID_MODEM_ARB64OPT, 6},
+    {"arb128opt",LIQUID_MODEM_ARB128OPT,7},
+    {"arb256opt",LIQUID_MODEM_ARB256OPT,8},
     {"arb64vt",  LIQUID_MODEM_ARB64VT,  6}
 };
 

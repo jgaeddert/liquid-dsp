@@ -117,4 +117,7 @@ void autotest_mod_demod_apsk256(){  modem_test_mod_demod(LIQUID_MODEM_APSK,8);  
 void autotest_mod_demod_arbV29()    { modem_test_mod_demod(LIQUID_MODEM_V29,4);         }
 void autotest_mod_demod_arb16opt()  { modem_test_mod_demod(LIQUID_MODEM_ARB16OPT,4);    }
 void autotest_mod_demod_arb32opt()  { modem_test_mod_demod(LIQUID_MODEM_ARB32OPT,5);    }
+void autotest_mod_demod_arb64opt()  { modem_test_mod_demod(LIQUID_MODEM_ARB64OPT,6);    }
+void autotest_mod_demod_arb128opt() { modem_test_mod_demod(LIQUID_MODEM_ARB128OPT,7);   }
+void autotest_mod_demod_arb256opt() { modem_test_mod_demod(LIQUID_MODEM_ARB256OPT,8);   }
 void autotest_mod_demod_arb64vt()   { modem_test_mod_demod(LIQUID_MODEM_ARB64VT,6);     }
