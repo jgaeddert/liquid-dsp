@@ -389,7 +389,9 @@ void AGC(_estimate_input_energy)(AGC() _q,
 {
     // compute instantaneous signal energy
 #if TC_COMPLEX
-    _q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+    //_q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+    // same as above, but faster since we are throwing away imaginary component
+    _q->e = crealf(_x)*crealf(_x) + cimagf(_x)*cimagf(_x);
 #else
     _q->e = _x*_x;
 #endif
@@ -459,7 +461,8 @@ void AGC(_estimate_gain_true)(AGC() _q,
                               TC _x)
 {
     // compute |_x|^2
-    float x2 = creal(_x*conj(_x));
+    //float x2 = creal(_x*conj(_x));
+    float x2 = creal(_x)*creal(_x) + cimag(_x)*cimag(_x);
 
     // increment sum by _x^2
     _q->x2_sum += x2;
@@ -468,7 +471,7 @@ void AGC(_estimate_gain_true)(AGC() _q,
     _q->x2_sum -= _q->x2[ _q->ix2 ];
 
     // push sample into buffer
-    _q->x2[_q->ix2] = creal(_x*conj(_x));
+    _q->x2[_q->ix2] = x2;
 
     // increment index
     _q->ix2 = (_q->ix2 + 1) % _q->nx2;
