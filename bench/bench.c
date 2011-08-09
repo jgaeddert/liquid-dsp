@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
     case RUN_SINGLE_BENCH:
         execute_benchmark( &scripts[benchmark_id], verbose );
         //print_benchmark_results( &scripts[benchmark_id] );
-        return 0;
+        break;
     case RUN_SINGLE_PACKAGE:
         execute_package( &packages[package_id], verbose );
         //print_package_results( &packages[package_id] );
