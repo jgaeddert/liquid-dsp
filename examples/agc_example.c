@@ -32,10 +32,10 @@ int main(int argc, char*argv[])
 {
     // options
     float etarget=1.0f;                 // target level
-    float noise_floor = -25.0f;         // noise floor [dB]
+    float noise_floor = -40.0f;         // noise floor [dB]
     float SNRdB = 25.0f;                // signal-to-noise ratio [dB]
-    float bt=0.01f;                     // agc loop bandwidth
-    unsigned int D = 4;                 // AGC internal decimation factor
+    float bt=0.001f;                    // agc loop bandwidth
+    unsigned int D = 1;                 // AGC internal decimation factor
     unsigned int num_samples = 2048;    // number of samples
     unsigned int d=num_samples/32;      // print every d iterations
 
@@ -68,7 +68,7 @@ int main(int argc, char*argv[])
     }
 
     // derived values
-    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f);   // channel gain
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f);   // channel gain
 
     // create objects
     agc_crcf p = agc_crcf_create();
@@ -104,9 +104,9 @@ int main(int argc, char*argv[])
     while (n < num_samples) x[n++] *= 0.0f;
 
     // add noise
-    float noise_std = powf(10.0f, noise_floor / 10.0f) / sqrtf(2.0f);
+    float noise_std = powf(10.0f, noise_floor / 20.0f);
     for (i=0; i<num_samples; i++)
-        x[i] += noise_std*(randnf() + _Complex_I*randnf());
+        x[i] += noise_std*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
 
     // run agc
     float complex y;
@@ -152,10 +152,10 @@ int main(int argc, char*argv[])
     for (i=0; i<num_samples; i+=d) {
         printf("%4u : %8.2f %8.2f %8.2f %8.2f\n",
             i,
-            10*log10f(rssi_default[i]),
-            10*log10f(rssi_log[i]),
-            10*log10f(rssi_exp[i]),
-            10*log10f(rssi_true[i]));
+            20*log10f(rssi_default[i]),
+            20*log10f(rssi_log[i]),
+            20*log10f(rssi_exp[i]),
+            20*log10f(rssi_true[i]));
     }
 
     // open output file
@@ -174,10 +174,10 @@ int main(int argc, char*argv[])
 
     fprintf(fid,"\n\n");
     fprintf(fid,"t = 0:(n-1);\n");
-    fprintf(fid,"plot(t,10*log10(rssi_default),'-','LineWidth',1,...\n");
-    fprintf(fid,"     t,10*log10(rssi_log),    '-','LineWidth',1,...\n");
-    fprintf(fid,"     t,10*log10(rssi_exp),    '-','LineWidth',1,...\n");
-    fprintf(fid,"     t,10*log10(rssi_true),   '-','LineWidth',1);");
+    fprintf(fid,"plot(t,20*log10(rssi_default),'-','LineWidth',1,...\n");
+    fprintf(fid,"     t,20*log10(rssi_log),    '-','LineWidth',1,...\n");
+    fprintf(fid,"     t,20*log10(rssi_exp),    '-','LineWidth',1,...\n");
+    fprintf(fid,"     t,20*log10(rssi_true),   '-','LineWidth',1);");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('rssi [dB]');\n");
