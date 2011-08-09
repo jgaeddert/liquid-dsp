@@ -3568,6 +3568,7 @@ float randricekf_pdf(float _x, float _K, float _omega);
 // Data scrambler : whiten data sequence
 void scramble_data(unsigned char * _x, unsigned int _len);
 void unscramble_data(unsigned char * _x, unsigned int _len);
+void unscramble_data_soft(unsigned char * _x, unsigned int _len);
 
 //
 // MODULE : sequence

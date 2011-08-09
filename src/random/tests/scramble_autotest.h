@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_SCRAMBLE_AUTOTEST_H__
-#define __LIQUID_SCRAMBLE_AUTOTEST_H__
-
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -76,6 +73,46 @@ void liquid_scramble_test(unsigned int _n)
     CONTEND_EXPRESSION( H > 0.8f );
 }
 
+
+// test unscrambling of soft bits (helper function to keep code base small)
+void liquid_scramble_soft_test(unsigned int _n)
+{
+    unsigned char msg_org[_n];      // input data
+    unsigned char msg_enc[_n];      // scrambled data 
+    unsigned char msg_soft[8*_n];   // scrambled data (soft bits)
+    unsigned char msg_dec[_n];      // unscrambled data
+
+    unsigned int i;
+
+    // initialize data array (random)
+    for (i=0; i<_n; i++)
+        msg_org[i] = rand() & 0xff;
+
+    // scramble input
+    memmove(msg_enc, msg_org, _n);
+    scramble_data(msg_enc,_n);
+
+    // convert to soft bits
+    for (i=0; i<_n; i++)
+        liquid_unpack_soft_bits(msg_enc[i], 8, &msg_soft[8*i]);
+
+    // unscramble result
+    unscramble_data_soft(msg_soft, _n);
+
+    // unpack soft bits
+    for (i=0; i<_n; i++) {
+        unsigned int sym_out;
+        liquid_pack_soft_bits(&msg_soft[8*i], 8, &sym_out);
+        msg_dec[i] = sym_out;
+    }
+
+    // ensure data are equivalent
+    CONTEND_SAME_DATA(msg_org, msg_dec, _n);
+}
+
+//
+// AUTOTESTS : simple data scrambling
+//
 void autotest_scramble_n16()     { liquid_scramble_test(16);  };
 void autotest_scramble_n64()     { liquid_scramble_test(64);  };
 void autotest_scramble_n256()    { liquid_scramble_test(256); };
@@ -84,5 +121,15 @@ void autotest_scramble_n11()     { liquid_scramble_test(11);  };
 void autotest_scramble_n33()     { liquid_scramble_test(33);  };
 void autotest_scramble_n277()    { liquid_scramble_test(277); };
 
-#endif // __LIQUID_SCRAMBLE_AUTOTEST_H__
+//
+// AUTOTESTS : soft data scrambling
+//
+void autotest_scramble_soft_n16()     { liquid_scramble_soft_test(16);  };
+void autotest_scramble_soft_n64()     { liquid_scramble_soft_test(64);  };
+void autotest_scramble_soft_n256()    { liquid_scramble_soft_test(256); };
+
+void autotest_scramble_soft_n11()     { liquid_scramble_soft_test(11);  };
+void autotest_scramble_soft_n33()     { liquid_scramble_soft_test(33);  };
+void autotest_scramble_soft_n277()    { liquid_scramble_soft_test(277); };
+
 
