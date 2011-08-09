@@ -34,6 +34,8 @@
 
 #define DEBUG_OFDMFLEXFRAMESYNC 0
 
+#define OFDMFLEXFRAME_H_SOFT (0)
+
 #if DEBUG_OFDMFLEXFRAMESYNC
 void ofdmflexframesync_debug_print(ofdmflexframesync _q);
 #endif
@@ -54,8 +56,13 @@ struct ofdmflexframesync_s {
     modem mod_header;                   // header modulator
     packetizer p_header;                // header packetizer
     unsigned char header[OFDMFLEXFRAME_H_DEC];      // header data (uncoded)
+#if OFDMFLEXFRAME_H_SOFT
+    unsigned char header_enc[8*OFDMFLEXFRAME_H_ENC];  // header data (encoded, soft bits)
+    unsigned char header_mod[OFDMFLEXFRAME_H_BPS*OFDMFLEXFRAME_H_SYM];  // header symbols (soft bits)
+#else
     unsigned char header_enc[OFDMFLEXFRAME_H_ENC];  // header data (encoded)
     unsigned char header_mod[OFDMFLEXFRAME_H_SYM];  // header symbols
+#endif
     int header_valid;                   // valid header flag
 
     // header properties
@@ -284,8 +291,13 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
             // unload header symbols
             // demodulate header symbol
             unsigned int sym;
+#if OFDMFLEXFRAME_H_SOFT
+            modem_demodulate_soft(_q->mod_header, _X[i], &sym, &_q->header_mod[OFDMFLEXFRAME_H_BPS*_q->header_symbol_index]);
+#else
             modem_demodulate(_q->mod_header, _X[i], &sym);
-            _q->header_mod[_q->header_symbol_index++] = sym;
+            _q->header_mod[_q->header_symbol_index] = sym;
+#endif
+            _q->header_symbol_index++;
             //printf("  extracting symbol %3u / %3u (x = %8.5f + j%8.5f)\n", _q->header_symbol_index, OFDMFLEXFRAME_H_SYM, crealf(_X[i]), cimagf(_X[i]));
 
             // header extracted
@@ -328,6 +340,23 @@ void ofdmflexframesync_rxheader(ofdmflexframesync _q,
 // decode header
 void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 {
+#if OFDMFLEXFRAME_H_SOFT
+#  if 0
+    unsigned int i;
+    // copy soft bits
+    for (i=0; i<8*OFDMFLEXFRAME_H_ENC; i++)
+        _q->header_enc[i] = _q->header_mod[i];
+#  else
+    // TODO: ensure lengths are the same
+    memmove(_q->header_enc, _q->header_mod, 8*OFDMFLEXFRAME_H_ENC);
+#  endif
+
+    // unscramble header using soft bits
+    unscramble_data_soft(_q->header_enc, OFDMFLEXFRAME_H_ENC);
+
+    // run packet decoder
+    _q->header_valid = packetizer_decode_soft(_q->p_header, _q->header_enc, _q->header);
+#else
     // pack 1-bit header symbols into 8-bit bytes
     unsigned int num_written;
     liquid_repack_bytes(_q->header_mod, OFDMFLEXFRAME_H_BPS, OFDMFLEXFRAME_H_SYM,
@@ -340,6 +369,7 @@ void ofdmflexframesync_decode_header(ofdmflexframesync _q)
 
     // run packet decoder
     _q->header_valid = packetizer_decode(_q->p_header, _q->header_enc, _q->header);
+#endif
 
 #if 0
     // print header
