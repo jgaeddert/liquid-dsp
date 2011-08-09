@@ -105,10 +105,10 @@ AGC() AGC(_create)(void)
     _q->sqrt_nx2 = sqrtf(_q->nx2);
     _q->x2 = (float*) malloc((_q->nx2)*sizeof(float));
     _q->ix2 = 0;
-    _q->x2_sum = 0.0;
+    _q->x2_sum = (float)(_q->nx2);
     unsigned int i;
     for (i=0; i<_q->nx2; i++)
-        _q->x2[i] = 0.0f;
+        _q->x2[i] = 1.0f;
 
     // squelch
     _q->squelch_headroom = 0.39811f;    // roughly 4dB
@@ -142,10 +142,10 @@ void AGC(_reset)(AGC() _q)
     _q->g       = 1.0f;
 
     _q->ix2 = 0;
-    _q->x2_sum = 0.0;
+    _q->x2_sum = (float)(_q->nx2);
     unsigned int i;
     for (i=0; i<_q->nx2; i++)
-        _q->x2[i] = 0.0f;
+        _q->x2[i] = 1.0f;
 
     AGC(_unlock)(_q);
 }
