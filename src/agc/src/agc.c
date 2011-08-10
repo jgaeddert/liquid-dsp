@@ -79,8 +79,6 @@ AGC() AGC(_create)(void)
     _q->gamma_hat = 1.0f;
 
     // set default gain variables
-    _q->g_hat   = 1.0f;
-    _q->g       = 1.0f;
     _q->g_min   = 1e-6f;
     _q->g_max   = 1e+6f;
 
@@ -94,11 +92,6 @@ AGC() AGC(_create)(void)
     _q->buffer_len = 16;
     _q->sqrt_buffer_len = sqrtf(_q->buffer_len);
     _q->buffer = (float*) malloc((_q->buffer_len)*sizeof(float));
-    _q->buffer_index = 0;
-    _q->buffer_sum = (float)(_q->buffer_len);
-    unsigned int i;
-    for (i=0; i<_q->buffer_len; i++)
-        _q->buffer[i] = 1.0f;
 
     // squelch
     _q->squelch_headroom = 0.39811f;    // roughly 4dB
@@ -106,6 +99,9 @@ AGC() AGC(_create)(void)
     AGC(_squelch_set_threshold)(_q, -30.0f);
     AGC(_squelch_set_timeout)(_q, 32);
     AGC(_squelch_deactivate)(_q);
+
+    // reset object
+    AGC(_reset)(_q);
 
     // return object
     return _q;
@@ -130,6 +126,8 @@ void AGC(_print)(AGC() _q)
 // reset agc object
 void AGC(_reset)(AGC() _q)
 {
+    _q->decim_timer = 0;
+
     _q->gamma_hat   = 1.0f;
     _q->g_hat       = 1.0f;
     _q->g           = 1.0f;
@@ -371,6 +369,9 @@ void AGC(_estimate_input_energy)(AGC() _q,
 
     // increment index
     _q->buffer_index = (_q->buffer_index + 1) % _q->buffer_len;
+
+    // ensure buffer_sum is non-negative
+    if (_q->buffer_sum < 0) _q->buffer_sum = 0;
 
     // filter energy estimate
     _q->gamma_hat = sqrtf(_q->buffer_sum);
