@@ -57,7 +57,7 @@ int main() {
     for (i=0; i<num_samples; i++) {
         agc_crcf_execute(p, x[i], &y[i]);
         if ( ((i+1)%d) == 0 )
-            printf("%4u: %8.3f\n", i+1, agc_crcf_get_signal_level(p));
+            printf("%4u: %8.3f\n", i+1, agc_crcf_get_rssi(p));
 
         fprintf(fid,"   x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"   y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));

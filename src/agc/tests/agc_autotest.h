@@ -151,7 +151,7 @@ void autotest_agc_rssi_noise() {
     }
 
     // get received signal strength indication
-    float rssi = 20*log10( agc_crcf_get_signal_level(q) );
+    float rssi = agc_crcf_get_rssi(q);
 
     if (liquid_autotest_verbose)
         printf("gamma : %12.8f, rssi : %12.8f\n", gamma, rssi);

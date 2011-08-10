@@ -280,10 +280,16 @@ void AGC(_execute)(AGC() _q,
         AGC(_execute_squelch)(_q);
 }
 
-// get estimated signal level
+// get estimated signal level (linear)
 T AGC(_get_signal_level)(AGC() _q)
 {
     return (1.0 / _q->g);
+}
+
+// get estimated signal level (dB)
+T AGC(_get_rssi)(AGC() _q)
+{
+    return -20.0*log10(_q->g);
 }
 
 // get internal gain

@@ -123,10 +123,13 @@ void AGC(_unlock)(AGC() _q);                                    \
 /* Apply gain to input, update tracking loop */                 \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
-/* Return signal level (linear) relative to target energy */    \
+/* Return signal level (linear) relative to unity energy */     \
 T AGC(_get_signal_level)(AGC() _q);                             \
                                                                 \
-/* Return gain value (linear) relative to target energy */      \
+/* Return signal level (dB) relative to unity energy */         \
+T AGC(_get_rssi)(AGC() _q);                                     \
+                                                                \
+/* Return gain value (linear) relative to unity energy */       \
 T AGC(_get_gain)(AGC() _q);                                     \
                                                                 \
 /* squelch */                                                   \

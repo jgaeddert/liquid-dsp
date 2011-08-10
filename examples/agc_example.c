@@ -110,7 +110,7 @@ int main(int argc, char*argv[])
     agc_crcf_reset(p);
     for (i=0; i<num_samples; i++) {
         agc_crcf_execute(p, x[i], &y);
-        rssi[i] = agc_crcf_get_signal_level(p);
+        rssi[i] = agc_crcf_get_rssi(p);
     }
 
     // destroy AGC object
@@ -119,7 +119,7 @@ int main(int argc, char*argv[])
     // print results to screen
     printf("received signal strength indication (rssi):\n");
     for (i=0; i<num_samples; i+=d)
-        printf("%4u : %8.2f\n", i, 20*log10f(rssi[i]));
+        printf("%4u : %8.2f\n", i, rssi[i]);
 
     // open output file
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
@@ -134,7 +134,7 @@ int main(int argc, char*argv[])
 
     fprintf(fid,"\n\n");
     fprintf(fid,"t = 0:(n-1);\n");
-    fprintf(fid,"plot(t,20*log10(rssi),'-','LineWidth',1);\n");
+    fprintf(fid,"plot(t,rssi,'-','LineWidth',1);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('rssi [dB]');\n");
