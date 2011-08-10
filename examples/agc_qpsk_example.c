@@ -19,22 +19,18 @@ int main() {
     unsigned int num_symbols=100;     // number of iterations
     unsigned int d=5;       // print every d iterations
 
-    unsigned int k=2;
-    unsigned int m=3;
-    float beta=0.3f;
+    unsigned int k=2;       // interpolation factor (samples/symbol)
+    unsigned int m=3;       // filter delay (symbols)
+    float beta=0.3f;        // filter excess bandwidth factor
+    float dt = 0.0f;        // filter fractional sample delay
 
     // create objects
     modem mod = modem_create(LIQUID_MODEM_QPSK,2);
-    unsigned int h_len = 2*k*m+1;
-    float h[h_len];
-    design_rrc_filter(k,m,beta,0,h);
-    interp_crcf interp = interp_crcf_create(k,h,h_len);
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
     agc_crcf p = agc_crcf_create();
     agc_crcf_set_bandwidth(p, bt);
 
     unsigned int i;
-    for (i=0; i<h_len; i++)
-        printf("h(%4u) = %8.4f;\n", i+1, h[i]);
 
     // print info
     printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
