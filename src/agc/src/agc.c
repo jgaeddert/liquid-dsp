@@ -35,6 +35,7 @@
 // agc structure object
 struct AGC(_s) {
     // gain variables
+    T g_hat;        // instantaneous gain estimate
     T g;            // current gain value
     T g_min;        // minimum gain value
     T g_max;        // maximum gain value
@@ -45,9 +46,8 @@ struct AGC(_s) {
     T beta;         // feed-forward gain
 
     // signal energy estimate iir filter state variables
-    T e;            // instantaneous estimated signal energy
-    T e_hat;        // filtered (average) energy estimate
-    T e_prime;      // previous energy estimate
+    T e_hat;        // instantaneous estimated signal energy
+    T gamma_hat;    // filtered (average) signal level estimate
 
     // is agc locked?
     int is_locked;
@@ -55,11 +55,11 @@ struct AGC(_s) {
     unsigned int decim_timeout;
 
     // 'true' agc method
-    float * x2;         // buffered x^2 values (LIQUID_AGC_TRUE)
-    float x2_sum;       // accumulated sum of buffer
-    unsigned int nx2;   // size of x^2 buffer
-    unsigned int ix2;   // write index of x^2 buffer
-    float sqrt_nx2;     // sqrt(nx2)
+    float * buffer;                 // buffered |input values|^2
+    float buffer_sum;               // accumulated sum of buffer
+    unsigned int buffer_len;        // size of input buffer
+    unsigned int buffer_index;      // write index of input buffer
+    float sqrt_buffer_len;          // sqrt(buffer_len)
 
     // squelch
     int squelch_activated;          // squelch activated/deactivated?
@@ -79,13 +79,13 @@ AGC() AGC(_create)(void)
     AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
 
     // initialize loop filter state variables
-    _q->e_prime = 1.0f;
-    _q->e_hat = 1.0f;
+    _q->gamma_hat = 1.0f;
 
     // set default gain variables
-    _q->g = 1.0f;
-    _q->g_min = 1e-6f;
-    _q->g_max = 1e+6f;
+    _q->g_hat   = 1.0f;
+    _q->g       = 1.0f;
+    _q->g_min   = 1e-6f;
+    _q->g_max   = 1e+6f;
 
     AGC(_set_bandwidth)(_q, 0.0);
 
@@ -93,15 +93,15 @@ AGC() AGC(_create)(void)
     _q->decim_timer = 0;
     AGC(_set_decim)(_q, 1);
 
-    // create x^2 buffer, initialize with zeros
-    _q->nx2 = 16;
-    _q->sqrt_nx2 = sqrtf(_q->nx2);
-    _q->x2 = (float*) malloc((_q->nx2)*sizeof(float));
-    _q->ix2 = 0;
-    _q->x2_sum = (float)(_q->nx2);
+    // create input buffer, initialize with zeros
+    _q->buffer_len = 16;
+    _q->sqrt_buffer_len = sqrtf(_q->buffer_len);
+    _q->buffer = (float*) malloc((_q->buffer_len)*sizeof(float));
+    _q->buffer_index = 0;
+    _q->buffer_sum = (float)(_q->buffer_len);
     unsigned int i;
-    for (i=0; i<_q->nx2; i++)
-        _q->x2[i] = 1.0f;
+    for (i=0; i<_q->buffer_len; i++)
+        _q->buffer[i] = 1.0f;
 
     // squelch
     _q->squelch_headroom = 0.39811f;    // roughly 4dB
@@ -117,7 +117,7 @@ AGC() AGC(_create)(void)
 // destroy agc object, freeing all internally-allocated memory
 void AGC(_destroy)(AGC() _q)
 {
-    free(_q->x2);
+    free(_q->buffer);
     free(_q);
 }
 
@@ -130,15 +130,15 @@ void AGC(_print)(AGC() _q)
 // reset agc object
 void AGC(_reset)(AGC() _q)
 {
-    _q->e_prime = 1.0f;
-    _q->e_hat   = 1.0f;
+    _q->gamma_hat   = 1.0f;
+    _q->g_hat   = 1.0f;
     _q->g       = 1.0f;
 
-    _q->ix2 = 0;
-    _q->x2_sum = (float)(_q->nx2);
+    _q->buffer_index = 0;
+    _q->buffer_sum = (float)(_q->buffer_len);
     unsigned int i;
-    for (i=0; i<_q->nx2; i++)
-        _q->x2[i] = 1.0f;
+    for (i=0; i<_q->buffer_len; i++)
+        _q->buffer[i] = 1.0f;
 
     AGC(_unlock)(_q);
 }
@@ -266,7 +266,14 @@ void AGC(_execute)(AGC() _q,
         exit(-1);
     }
 #else
-    AGC(_estimate_gain_true)(_q,_x);
+    // compute input energy estimate
+    AGC(_estimate_input_energy)(_q, _x);
+
+    // compute instantaneous gain
+    _q->g_hat = _q->sqrt_buffer_len / (_q->gamma_hat + 1e-12f);
+
+    // update gain according to recursive filter
+    _q->g = (_q->beta)*(_q->g) + (_q->alpha)*_q->g_hat;
 #endif
 
     // limit gain
@@ -368,16 +375,27 @@ void AGC(_estimate_input_energy)(AGC() _q,
 {
     // compute instantaneous signal energy
 #if TC_COMPLEX
-    //_q->e = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
+    //_q->e_hat = crealf(_x * conj(_x)); // NOTE: crealf used for roundoff error
     // same as above, but faster since we are throwing away imaginary component
-    _q->e = crealf(_x)*crealf(_x) + cimagf(_x)*cimagf(_x);
+    _q->e_hat = crealf(_x)*crealf(_x) + cimagf(_x)*cimagf(_x);
 #else
-    _q->e = _x*_x;
+    _q->e_hat = _x*_x;
 #endif
 
+    // increment sum by |_x|^2
+    _q->buffer_sum += _q->e_hat;
+
+    // decrement sum by buffer value
+    _q->buffer_sum -= _q->buffer[ _q->buffer_index ];
+
+    // push sample into buffer
+    _q->buffer[_q->buffer_index] = _q->e_hat;
+
+    // increment index
+    _q->buffer_index = (_q->buffer_index + 1) % _q->buffer_len;
+
     // filter energy estimate
-    _q->e_prime = (_q->e)*LIQUID_AGC_ZETA + (_q->e_prime)*(1.0 - LIQUID_AGC_ZETA);
-    _q->e_hat = sqrtf(_q->e_prime);
+    _q->gamma_hat = sqrtf(_q->buffer_sum);
 }
 
 // estimate necessary agc gain (default method)
@@ -386,11 +404,11 @@ void AGC(_estimate_input_energy)(AGC() _q,
 void AGC(_estimate_gain_default)(AGC() _q,
                                  TC _x)
 {
-    // estimate input energy, result is in _q->e_hat
+    // estimate input energy, result is in _q->gamma_hat
     AGC(_estimate_input_energy)(_q, _x);
 
     // ideal gain
-    T g = 1.0 / _q->e_hat;
+    T g = 1.0 / _q->gamma_hat;
 
     // accumulated gain
     _q->g = (_q->beta)*(_q->g) + (_q->alpha)*g;
@@ -402,11 +420,11 @@ void AGC(_estimate_gain_default)(AGC() _q,
 void AGC(_estimate_gain_log)(AGC() _q,
                              TC _x)
 {
-    // estimate input energy, result is in _q->e_hat
+    // estimate input energy, result is in _q->gamma_hat
     AGC(_estimate_input_energy)(_q, _x);
 
     // loop filter : compute gain error
-    T gain_error = 1.0 / (_q->e_hat * _q->g);
+    T gain_error = 1.0 / (_q->gamma_hat * _q->g);
 
     // adjust gain proportional to log of error
     _q->g *= powf(gain_error, _q->alpha);
@@ -418,11 +436,11 @@ void AGC(_estimate_gain_log)(AGC() _q,
 void AGC(_estimate_gain_exp)(AGC() _q,
                              TC _x)
 {
-    // estimate input energy, result is in _q->e_hat
+    // estimate input energy, result is in _q->gamma_hat
     AGC(_estimate_input_energy)(_q, _x);
 
     // compute estimate of output signal level
-    T e_out = _q->e_hat * _q->g;
+    T e_out = _q->gamma_hat * _q->g;
 
     if (e_out > 1.0) {
         // decrease gain proportional to energy difference
@@ -439,24 +457,14 @@ void AGC(_estimate_gain_exp)(AGC() _q,
 void AGC(_estimate_gain_true)(AGC() _q,
                               TC _x)
 {
-    // compute |_x|^2
-    //float x2 = creal(_x*conj(_x));
-    float x2 = creal(_x)*creal(_x) + cimag(_x)*cimag(_x);
+    // compute input energy estimate
+    AGC(_estimate_input_energy)(_q, _x);
 
-    // increment sum by _x^2
-    _q->x2_sum += x2;
+    // compute instantaneous gain
+    _q->g_hat = _q->sqrt_buffer_len / (_q->gamma_hat + 1e-12f);
 
-    // decrement sum by buffer value
-    _q->x2_sum -= _q->x2[ _q->ix2 ];
-
-    // push sample into buffer
-    _q->x2[_q->ix2] = x2;
-
-    // increment index
-    _q->ix2 = (_q->ix2 + 1) % _q->nx2;
-
-    // set gain accordingly
-    _q->g = _q->sqrt_nx2 / sqrtf(_q->x2_sum + 1e-12f);
+    // update gain according to recursive filter
+    _q->g = (_q->beta)*(_q->g) + (_q->alpha)*_q->g_hat;
 }
 
 // limit gain

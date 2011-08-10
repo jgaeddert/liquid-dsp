@@ -33,7 +33,7 @@ int main(int argc, char*argv[])
     // options
     float noise_floor = -40.0f;         // noise floor [dB]
     float SNRdB = 25.0f;                // signal-to-noise ratio [dB]
-    float bt=0.001f;                    // agc loop bandwidth
+    float bt=0.01f;                     // agc loop bandwidth
     unsigned int D = 1;                 // AGC internal decimation factor
     unsigned int num_samples = 2048;    // number of samples
     unsigned int d=num_samples/32;      // print every d iterations
