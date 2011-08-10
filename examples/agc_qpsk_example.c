@@ -14,32 +14,26 @@
 
 int main() {
     // options
-    float etarget=1.0f;     // target energy
     float gamma=0.01f;      // channel gain
     float bt=1e-2f;         // loop bandwidth
     unsigned int num_symbols=100;     // number of iterations
     unsigned int d=5;       // print every d iterations
 
-    unsigned int k=2;
-    unsigned int m=3;
-    float beta=0.3f;
+    unsigned int k=2;       // interpolation factor (samples/symbol)
+    unsigned int m=3;       // filter delay (symbols)
+    float beta=0.3f;        // filter excess bandwidth factor
+    float dt = 0.0f;        // filter fractional sample delay
 
     // create objects
     modem mod = modem_create(LIQUID_MODEM_QPSK,2);
-    unsigned int h_len = 2*k*m+1;
-    float h[h_len];
-    design_rrc_filter(k,m,beta,0,h);
-    interp_crcf interp = interp_crcf_create(k,h,h_len);
+    interp_crcf interp = interp_crcf_create_rnyquist(LIQUID_RNYQUIST_RRC,k,m,beta,dt);
     agc_crcf p = agc_crcf_create();
-    agc_crcf_set_target(p, etarget);
     agc_crcf_set_bandwidth(p, bt);
 
     unsigned int i;
-    for (i=0; i<h_len; i++)
-        printf("h(%4u) = %8.4f;\n", i+1, h[i]);
 
     // print info
-    printf("automatic gain control // target: %8.4f, loop bandwidth: %4.2e\n",etarget,bt);
+    printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);
@@ -63,7 +57,7 @@ int main() {
     for (i=0; i<num_samples; i++) {
         agc_crcf_execute(p, x[i], &y[i]);
         if ( ((i+1)%d) == 0 )
-            printf("%4u: %8.3f\n", i+1, agc_crcf_get_signal_level(p));
+            printf("%4u: %8.3f\n", i+1, agc_crcf_get_rssi(p));
 
         fprintf(fid,"   x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
         fprintf(fid,"   y(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(y[i]), cimagf(y[i]));

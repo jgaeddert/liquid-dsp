@@ -31,11 +31,10 @@ void usage()
 int main(int argc, char*argv[])
 {
     // options
-    float etarget=1.0f;                 // target level
-    float noise_floor = -25.0f;         // noise floor [dB]
+    float noise_floor = -40.0f;         // noise floor [dB]
     float SNRdB = 25.0f;                // signal-to-noise ratio [dB]
     float bt=0.01f;                     // agc loop bandwidth
-    unsigned int D = 4;                 // AGC internal decimation factor
+    unsigned int D = 1;                 // AGC internal decimation factor
     unsigned int num_samples = 2048;    // number of samples
     unsigned int d=num_samples/32;      // print every d iterations
 
@@ -68,11 +67,10 @@ int main(int argc, char*argv[])
     }
 
     // derived values
-    float gamma = powf(10.0f, (SNRdB+noise_floor)/10.0f);   // channel gain
+    float gamma = powf(10.0f, (SNRdB+noise_floor)/20.0f);   // channel gain
 
     // create objects
     agc_crcf p = agc_crcf_create();
-    agc_crcf_set_target(p, etarget);
     agc_crcf_set_decim(p, D);
     agc_crcf_set_bandwidth(p, bt);
 
@@ -81,13 +79,10 @@ int main(int argc, char*argv[])
 
     unsigned int i;
     float complex x[num_samples];
-    float rssi_default[num_samples];
-    float rssi_log[num_samples];
-    float rssi_exp[num_samples];
-    float rssi_true[num_samples];
+    float rssi[num_samples];
 
     // print info
-    printf("automatic gain control // target: %8.4f, loop bandwidth: %4.2e\n",etarget,bt);
+    printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
     // generate signal
     for (i=0; i<num_samples; i++)
@@ -104,59 +99,27 @@ int main(int argc, char*argv[])
     while (n < num_samples) x[n++] *= 0.0f;
 
     // add noise
-    float noise_std = powf(10.0f, noise_floor / 10.0f) / sqrtf(2.0f);
+    float noise_std = powf(10.0f, noise_floor / 20.0f);
     for (i=0; i<num_samples; i++)
-        x[i] += noise_std*(randnf() + _Complex_I*randnf());
+        x[i] += noise_std*(randnf() + _Complex_I*randnf()) * M_SQRT1_2;
 
     // run agc
     float complex y;
 
     // default
     agc_crcf_reset(p);
-    agc_crcf_set_type(p,LIQUID_AGC_DEFAULT);
     for (i=0; i<num_samples; i++) {
         agc_crcf_execute(p, x[i], &y);
-        rssi_default[i] = agc_crcf_get_signal_level(p);
+        rssi[i] = agc_crcf_get_rssi(p);
     }
 
-    // 
-    agc_crcf_reset(p);
-    agc_crcf_set_type(p,LIQUID_AGC_LOG);
-    for (i=0; i<num_samples; i++) {
-        agc_crcf_execute(p, x[i], &y);
-        rssi_log[i] = agc_crcf_get_signal_level(p);
-    }
-
-    // default
-    agc_crcf_reset(p);
-    agc_crcf_set_type(p,LIQUID_AGC_EXP);
-    for (i=0; i<num_samples; i++) {
-        agc_crcf_execute(p, x[i], &y);
-        rssi_exp[i] = agc_crcf_get_signal_level(p);
-    }
-
-    // true
-    agc_crcf_reset(p);
-    agc_crcf_set_type(p,LIQUID_AGC_TRUE);
-    for (i=0; i<num_samples; i++) {
-        agc_crcf_execute(p, x[i], &y);
-        rssi_true[i] = agc_crcf_get_signal_level(p);
-    }
-
+    // destroy AGC object
     agc_crcf_destroy(p);
 
     // print results to screen
     printf("received signal strength indication (rssi):\n");
-    printf("   i    default      log      exp     true\n");
-    printf("----   -------- -------- -------- --------\n");
-    for (i=0; i<num_samples; i+=d) {
-        printf("%4u : %8.2f %8.2f %8.2f %8.2f\n",
-            i,
-            10*log10f(rssi_default[i]),
-            10*log10f(rssi_log[i]),
-            10*log10f(rssi_exp[i]),
-            10*log10f(rssi_true[i]));
-    }
+    for (i=0; i<num_samples; i+=d)
+        printf("%4u : %8.2f\n", i, rssi[i]);
 
     // open output file
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
@@ -166,22 +129,15 @@ int main(int argc, char*argv[])
 
     for (i=0; i<num_samples; i++) {
         //fprintf(fid,"x(%4u) = %12.4e + j*%12.4e;\n", i+1, crealf(x[i]), cimagf(x[i]));
-        fprintf(fid,"rssi_default(%4u)  = %12.4e;\n", i+1, rssi_default[i]);
-        fprintf(fid,"rssi_log(%4u)      = %12.4e;\n", i+1, rssi_log[i]);
-        fprintf(fid,"rssi_exp(%4u)      = %12.4e;\n", i+1, rssi_exp[i]);
-        fprintf(fid,"rssi_true(%4u)     = %12.4e;\n", i+1, rssi_true[i]);
+        fprintf(fid,"rssi(%4u)  = %12.4e;\n", i+1, rssi[i]);
     }
 
     fprintf(fid,"\n\n");
     fprintf(fid,"t = 0:(n-1);\n");
-    fprintf(fid,"plot(t,10*log10(rssi_default),'-','LineWidth',1,...\n");
-    fprintf(fid,"     t,10*log10(rssi_log),    '-','LineWidth',1,...\n");
-    fprintf(fid,"     t,10*log10(rssi_exp),    '-','LineWidth',1,...\n");
-    fprintf(fid,"     t,10*log10(rssi_true),   '-','LineWidth',1);");
+    fprintf(fid,"plot(t,rssi,'-','LineWidth',1);\n");
     fprintf(fid,"grid on;\n");
     fprintf(fid,"xlabel('sample index');\n");
     fprintf(fid,"ylabel('rssi [dB]');\n");
-    fprintf(fid,"legend('AGC\\_DEFAULT','AGC\\_LOG','AGC\\_EXP','AGC\\_TRUE',1);\n");
     fclose(fid);
     printf("results written to %s\n", OUTPUT_FILENAME);
 

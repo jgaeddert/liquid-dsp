@@ -82,13 +82,6 @@ LIQUID_DEFINE_COMPLEX(double, liquid_double_complex);
 // MODULE : agc (automatic gain control)
 //
 
-typedef enum {
-    LIQUID_AGC_DEFAULT=0,   // default gain attack/release
-    LIQUID_AGC_LOG,         // logarithmic gain attack/release
-    LIQUID_AGC_EXP,         // exponential gain attack/release
-    LIQUID_AGC_TRUE         // buffered x^2 values
-} liquid_agc_type;
-
 // agc squelch status codes
 enum {
     LIQUID_AGC_SQUELCH_ENABLED=0,   // squelch enabled
@@ -114,12 +107,6 @@ void AGC(_destroy)(AGC() _q);                                   \
 void AGC(_print)(AGC() _q);                                     \
 void AGC(_reset)(AGC() _q);                                     \
                                                                 \
-/* Set type */                                                  \
-void AGC(_set_type)(AGC() _q, liquid_agc_type _type);           \
-                                                                \
-/* Set target energy */                                         \
-void AGC(_set_target)(AGC() _q, T _e_target);                   \
-                                                                \
 /* set gain limits */                                           \
 void AGC(_set_gain_limits)(AGC() _q, T _gmin, T _gmax);         \
                                                                 \
@@ -136,10 +123,13 @@ void AGC(_unlock)(AGC() _q);                                    \
 /* Apply gain to input, update tracking loop */                 \
 void AGC(_execute)(AGC() _q, TC _x, TC *_y);                    \
                                                                 \
-/* Return signal level (linear) relative to target energy */    \
+/* Return signal level (linear) relative to unity energy */     \
 T AGC(_get_signal_level)(AGC() _q);                             \
                                                                 \
-/* Return gain value (linear) relative to target energy */      \
+/* Return signal level (dB) relative to unity energy */         \
+T AGC(_get_rssi)(AGC() _q);                                     \
+                                                                \
+/* Return gain value (linear) relative to unity energy */       \
 T AGC(_get_gain)(AGC() _q);                                     \
                                                                 \
 /* squelch */                                                   \

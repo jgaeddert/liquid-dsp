@@ -217,7 +217,6 @@ ofdmframesync ofdmframesync_create(unsigned int _M,
 #if DEBUG_OFDMFRAMESYNC
     // agc, rssi, squelch
     q->agc_rx = agc_crcf_create();
-    agc_crcf_set_target(q->agc_rx, 1.0f);
     agc_crcf_set_bandwidth(q->agc_rx,  1e-2f);
     agc_crcf_set_gain_limits(q->agc_rx, 1e-5f, 1e5f);
 
