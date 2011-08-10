@@ -27,91 +27,61 @@
 void agc_crcf_unlocked_bench(struct rusage *_start,
                              struct rusage *_finish,
                              unsigned long int *_num_iterations,
-                             liquid_agc_type _type,
                              unsigned int _D,
-                             int _squelch)
+                             int _squelch,
+                             int _locked)
 {
+    // scale by decimation rate
     *_num_iterations *= _D;
 
+    // scale if locked
+    if (_locked) *_num_iterations *= 8;
+
     unsigned int i;
 
     // initialize AGC object
-    agc_crcf g = agc_crcf_create();
-    agc_crcf_set_type(g,_type);
-    agc_crcf_set_target(g,1.0f);
-    agc_crcf_set_decim(g,_D);
-    agc_crcf_set_bandwidth(g,0.05f);
+    agc_crcf q = agc_crcf_create();
+    agc_crcf_set_decim(q,_D);
+    agc_crcf_set_bandwidth(q,0.05f);
 
-    // squelch
-    if (_squelch) agc_crcf_squelch_activate(g);
-    else          agc_crcf_squelch_deactivate(g);
+    // squelch?
+    if (_squelch) agc_crcf_squelch_activate(q);
+    else          agc_crcf_squelch_deactivate(q);
 
-    float complex x=1.0f, y;
+    // locked?
+    if (_locked)  agc_crcf_lock(q);
+    else          agc_crcf_unlock(q);
+
+    float complex x = 1e-6f;    // input sample
+    float complex y;            // output sample
 
     getrusage(RUSAGE_SELF, _start);
     for (i=0; i<(*_num_iterations); i++) {
-        agc_crcf_execute(g, x, &y);
-        agc_crcf_execute(g, x, &y);
-        agc_crcf_execute(g, x, &y);
-        agc_crcf_execute(g, x, &y);
+        agc_crcf_execute(q, x, &y);
+        agc_crcf_execute(q, x, &y);
+        agc_crcf_execute(q, x, &y);
+        agc_crcf_execute(q, x, &y);
+        agc_crcf_execute(q, x, &y);
+        agc_crcf_execute(q, x, &y);
+        agc_crcf_execute(q, x, &y);
+        agc_crcf_execute(q, x, &y);
     }
     getrusage(RUSAGE_SELF, _finish);
 
-    *_num_iterations *= 4;
+    *_num_iterations *= 8;
 
-    agc_crcf_destroy(g);
+    // destroy object
+    agc_crcf_destroy(q);
 }
 
-#define AGC_CRCF_BENCHMARK_API(TYPE,D,SQUELCH)  \
-(   struct rusage *_start,                      \
-    struct rusage *_finish,                     \
-    unsigned long int *_num_iterations)         \
-{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, TYPE, D, SQUELCH); }
+#define AGC_CRCF_BENCHMARK_API(D,SQUELCH,LOCKED)    \
+(   struct rusage *_start,                          \
+    struct rusage *_finish,                         \
+    unsigned long int *_num_iterations)             \
+{ agc_crcf_unlocked_bench(_start, _finish, _num_iterations, D, SQUELCH, LOCKED); }
 
 // undecimated benchmarks (D=1)
-void benchmark_agc_crcf_default         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  1, 0)
-void benchmark_agc_crcf_log             AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      1, 0)
-void benchmark_agc_crcf_exp             AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      1, 0)
-void benchmark_agc_crcf_true            AGC_CRCF_BENCHMARK_API(LIQUID_AGC_TRUE,     1, 0)
-
-// decimated benchmarks (D=4)
-void benchmark_agc_crcf_default_D4      AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  4, 0)
-void benchmark_agc_crcf_log_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_LOG,      4, 0)
-void benchmark_agc_crcf_exp_D4          AGC_CRCF_BENCHMARK_API(LIQUID_AGC_EXP,      4, 0)
-void benchmark_agc_crcf_true_D4         AGC_CRCF_BENCHMARK_API(LIQUID_AGC_TRUE,     4, 0)
-
-// default agc type with squelch enabled
-void benchmark_agc_crcf_default_sq      AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  1, 1)
-void benchmark_agc_crcf_default_sq_D4   AGC_CRCF_BENCHMARK_API(LIQUID_AGC_DEFAULT,  4, 1)
-
-// locked AGC
-void benchmark_agc_crcf_locked(
-    struct rusage *_start,
-    struct rusage *_finish,
-    unsigned long int *_num_iterations)
-{
-    unsigned int i;
-
-    // initialize AGC object
-    agc_crcf g = agc_crcf_create();
-    agc_crcf_set_target(g,1.0f);
-    agc_crcf_set_bandwidth(g,0.05f);
-    agc_crcf_lock(g);
-
-    float complex x=1.0f, y;
-
-    getrusage(RUSAGE_SELF, _start);
-    *_num_iterations *= 4;
-    for (i=0; i<(*_num_iterations); i++) {
-        agc_crcf_execute(g, x, &y);
-        agc_crcf_execute(g, x, &y);
-        agc_crcf_execute(g, x, &y);
-        agc_crcf_execute(g, x, &y);
-    }
-    getrusage(RUSAGE_SELF, _finish);
-
-    *_num_iterations *= 4;
-
-    agc_crcf_destroy(g);
-}
+void benchmark_agc_crcf                 AGC_CRCF_BENCHMARK_API(1, 0, 0)
+void benchmark_agc_crcf_squelch         AGC_CRCF_BENCHMARK_API(1, 1, 0)
+void benchmark_agc_crcf_locked          AGC_CRCF_BENCHMARK_API(1, 0, 1)
 

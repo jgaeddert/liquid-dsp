@@ -14,7 +14,6 @@
 
 int main() {
     // options
-    float etarget=1.0f;     // target energy
     float gamma=0.01f;      // channel gain
     float bt=1e-2f;         // loop bandwidth
     unsigned int num_symbols=100;     // number of iterations
@@ -31,7 +30,6 @@ int main() {
     design_rrc_filter(k,m,beta,0,h);
     interp_crcf interp = interp_crcf_create(k,h,h_len);
     agc_crcf p = agc_crcf_create();
-    agc_crcf_set_target(p, etarget);
     agc_crcf_set_bandwidth(p, bt);
 
     unsigned int i;
@@ -39,7 +37,7 @@ int main() {
         printf("h(%4u) = %8.4f;\n", i+1, h[i]);
 
     // print info
-    printf("automatic gain control // target: %8.4f, loop bandwidth: %4.2e\n",etarget,bt);
+    printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
     FILE* fid = fopen(OUTPUT_FILENAME,"w");
     fprintf(fid,"%% %s: auto-generated file\n\n",OUTPUT_FILENAME);

@@ -16,7 +16,6 @@
 
 int main() {
     // options
-    float etarget=1.0f;         // target level
     float gamma=1.0f;           // channel gain
     float noise_floor = -25.0f; // noise floor [dB]
     float bt=0.10f;             // agc loop bandwidth
@@ -25,7 +24,6 @@ int main() {
 
     // create objects
     agc_crcf p = agc_crcf_create();
-    agc_crcf_set_target(p, etarget);
     agc_crcf_set_bandwidth(p, bt);
 
     // squelch
@@ -42,7 +40,7 @@ int main() {
     float rssi[num_samples];
 
     // print info
-    printf("automatic gain control // target: %8.4f, loop bandwidth: %4.2e\n",etarget,bt);
+    printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
     for (i=0; i<num_samples; i++) {
         x[i] = gamma * cexpf(_Complex_I*2*M_PI*0.093f*i);

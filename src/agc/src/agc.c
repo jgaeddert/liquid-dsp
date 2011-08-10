@@ -34,11 +34,6 @@
 
 // agc structure object
 struct AGC(_s) {
-    // automatic gain control type
-    liquid_agc_type type;
-
-    T e_target;     // target signal energy
-
     // gain variables
     T g;            // current gain value
     T g_min;        // minimum gain value
@@ -82,7 +77,6 @@ AGC() AGC(_create)(void)
 {
     // create object and initialize to default parameters
     AGC() _q = (AGC()) malloc(sizeof(struct AGC(_s)));
-    _q->type = LIQUID_AGC_DEFAULT;
 
     // initialize loop filter state variables
     _q->e_prime = 1.0f;
@@ -93,7 +87,6 @@ AGC() AGC(_create)(void)
     _q->g_min = 1e-6f;
     _q->g_max = 1e+6f;
 
-    AGC(_set_target)(_q, 1.0);
     AGC(_set_bandwidth)(_q, 0.0);
 
     _q->is_locked = 0;
@@ -131,7 +124,7 @@ void AGC(_destroy)(AGC() _q)
 // print agc object internals
 void AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4fdB]:\n", 10*log10(_q->e_target / _q->g));
+    printf("agc [rssi: %12.4fdB]:\n", -20*log10(_q->g));
 }
 
 // reset agc object
@@ -148,30 +141,6 @@ void AGC(_reset)(AGC() _q)
         _q->x2[i] = 1.0f;
 
     AGC(_unlock)(_q);
-}
-
-// set agc type
-//  _q      :   agc object
-//  _type   :   gain update type (e.g. LIQUID_AGC_DEFAULT)
-void AGC(_set_type)(AGC() _q,
-                    liquid_agc_type _type)
-{
-    _q->type = _type;
-}
-
-// set agc target signal level
-//  _q          :   agc object
-//  _e_target   :   target signal level (RMS)
-void AGC(_set_target)(AGC() _q,
-                      T _e_target)
-{
-    // validate input; check to ensure _e_target is reasonable
-    if (_e_target <= 0.0f) {
-        fprintf(stderr,"error: agc_xxxt_set_target(), target energy must be greater than 0\n");
-        exit(-1);
-    }
-
-    _q->e_target = _e_target;
 }
 
 // set agc gain limits
@@ -276,6 +245,7 @@ void AGC(_execute)(AGC() _q,
         return;
     }
 
+#if 0
     // execute type-specific gain estimation
     switch (_q->type) {
     case LIQUID_AGC_DEFAULT:
@@ -295,6 +265,9 @@ void AGC(_execute)(AGC() _q,
         fprintf(stderr,"error: agc_xxxt_execute(), invalid agc type\n");
         exit(-1);
     }
+#else
+    AGC(_estimate_gain_true)(_q,_x);
+#endif
 
     // limit gain
     AGC(_limit_gain)(_q);
@@ -310,7 +283,7 @@ void AGC(_execute)(AGC() _q,
 // get estimated signal level
 T AGC(_get_signal_level)(AGC() _q)
 {
-    return (_q->e_target / _q->g);
+    return (1.0 / _q->g);
 }
 
 // get internal gain
@@ -411,7 +384,7 @@ void AGC(_estimate_gain_default)(AGC() _q,
     AGC(_estimate_input_energy)(_q, _x);
 
     // ideal gain
-    T g = _q->e_target / _q->e_hat;
+    T g = 1.0 / _q->e_hat;
 
     // accumulated gain
     _q->g = (_q->beta)*(_q->g) + (_q->alpha)*g;
@@ -427,7 +400,7 @@ void AGC(_estimate_gain_log)(AGC() _q,
     AGC(_estimate_input_energy)(_q, _x);
 
     // loop filter : compute gain error
-    T gain_error = _q->e_target / (_q->e_hat * _q->g);
+    T gain_error = 1.0 / (_q->e_hat * _q->g);
 
     // adjust gain proportional to log of error
     _q->g *= powf(gain_error, _q->alpha);
@@ -445,12 +418,12 @@ void AGC(_estimate_gain_exp)(AGC() _q,
     // compute estimate of output signal level
     T e_out = _q->e_hat * _q->g;
 
-    if (e_out > _q->e_target) {
+    if (e_out > 1.0) {
         // decrease gain proportional to energy difference
-        _q->g *= 1.0f - _q->alpha * (e_out - _q->e_target) / e_out;
+        _q->g *= 1.0f - _q->alpha * (e_out - 1.0) / e_out;
     } else {
         // increase gain proportional to energy difference
-        _q->g *= 1.0f - _q->alpha * (e_out - _q->e_target) / _q->e_target;
+        _q->g *= 1.0f - _q->alpha * (e_out - 1.0);
     }
 }
 

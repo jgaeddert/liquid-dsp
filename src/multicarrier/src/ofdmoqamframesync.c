@@ -211,7 +211,6 @@ ofdmoqamframesync ofdmoqamframesync_create(unsigned int _M,
 
     // agc, rssi, squelch
     q->agc_rx = agc_crcf_create();
-    agc_crcf_set_target(q->agc_rx, 1.0f);
     agc_crcf_set_bandwidth(q->agc_rx,  1e-3f);
     agc_crcf_set_gain_limits(q->agc_rx, 1e-3f, 1e4f);
 

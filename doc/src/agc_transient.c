@@ -16,7 +16,6 @@
 
 int main() {
     // options
-    float etarget=1.0f;                 // target level
     float bt=1e-2f;                     // agc loop bandwidth
     float fc=0.019f;                    // sinusoid frequency
     float gmin = 0.1f;                  // agc minimum gain
@@ -25,7 +24,6 @@ int main() {
 
     // create objects
     agc_crcf p = agc_crcf_create();
-    agc_crcf_set_target(p, etarget);
     agc_crcf_set_bandwidth(p, bt);
     agc_crcf_set_gain_limits(p, gmin, gmax);
 
@@ -39,7 +37,7 @@ int main() {
     float rssi[num_samples];
 
     // print info
-    printf("automatic gain control // target: %8.4f, loop bandwidth: %4.2e\n",etarget,bt);
+    printf("automatic gain control // loop bandwidth: %4.2e\n",bt);
 
     // generate signal
     for (i=0; i<num_samples; i++)
@@ -71,7 +69,6 @@ int main() {
 
     // run agc
     agc_crcf_reset(p);
-    agc_crcf_set_type(p,LIQUID_AGC_DEFAULT);
     for (i=0; i<num_samples; i++) {
         agc_crcf_execute(p, x[i], &y[i]);
         rssi[i] = agc_crcf_get_signal_level(p);

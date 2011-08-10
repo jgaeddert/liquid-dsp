@@ -143,7 +143,6 @@ framesync64 framesync64_create(framesyncprops_s * _props,
 
     // agc, rssi, squelch
     fs->agc_rx = agc_crcf_create();
-    agc_crcf_set_target(fs->agc_rx, 1.0f);
     agc_crcf_set_bandwidth(fs->agc_rx, fs->props.agc_bw0);
     agc_crcf_set_gain_limits(fs->agc_rx, fs->props.agc_gmin, fs->props.agc_gmax);
 
