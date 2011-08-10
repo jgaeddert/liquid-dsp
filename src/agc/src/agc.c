@@ -29,9 +29,6 @@
 
 #include "liquid.internal.h"
 
-// signal level estimate feedback
-#define LIQUID_AGC_ZETA (0.5)
-
 // agc structure object
 struct AGC(_s) {
     // gain variables
@@ -87,8 +84,8 @@ AGC() AGC(_create)(void)
     _q->g_min   = 1e-6f;
     _q->g_max   = 1e+6f;
 
+    // initialize internals
     AGC(_set_bandwidth)(_q, 0.0);
-
     _q->is_locked = 0;
     _q->decim_timer = 0;
     AGC(_set_decim)(_q, 1);
@@ -117,22 +114,25 @@ AGC() AGC(_create)(void)
 // destroy agc object, freeing all internally-allocated memory
 void AGC(_destroy)(AGC() _q)
 {
+    // free internal buffer
     free(_q->buffer);
+
+    // free main object memory
     free(_q);
 }
 
 // print agc object internals
 void AGC(_print)(AGC() _q)
 {
-    printf("agc [rssi: %12.4fdB]:\n", -20*log10(_q->g));
+    printf("agc [rssi: %12.4fdB]:\n", AGC(_get_rssi)(_q));
 }
 
 // reset agc object
 void AGC(_reset)(AGC() _q)
 {
     _q->gamma_hat   = 1.0f;
-    _q->g_hat   = 1.0f;
-    _q->g       = 1.0f;
+    _q->g_hat       = 1.0f;
+    _q->g           = 1.0f;
 
     _q->buffer_index = 0;
     _q->buffer_sum = (float)(_q->buffer_len);
@@ -245,27 +245,6 @@ void AGC(_execute)(AGC() _q,
         return;
     }
 
-#if 0
-    // execute type-specific gain estimation
-    switch (_q->type) {
-    case LIQUID_AGC_DEFAULT:
-        AGC(_estimate_gain_default)(_q,_x);
-        break;
-    case LIQUID_AGC_LOG:
-        AGC(_estimate_gain_log)(_q,_x);
-        break;
-    case LIQUID_AGC_EXP:
-        AGC(_estimate_gain_exp)(_q,_x);
-        break;
-    case LIQUID_AGC_TRUE:
-        AGC(_estimate_gain_true)(_q,_x);
-        break;
-    default:
-        // should never get to this condition
-        fprintf(stderr,"error: agc_xxxt_execute(), invalid agc type\n");
-        exit(-1);
-    }
-#else
     // compute input energy estimate
     AGC(_estimate_input_energy)(_q, _x);
 
@@ -274,7 +253,6 @@ void AGC(_execute)(AGC() _q,
 
     // update gain according to recursive filter
     _q->g = (_q->beta)*(_q->g) + (_q->alpha)*_q->g_hat;
-#endif
 
     // limit gain
     AGC(_limit_gain)(_q);
@@ -396,75 +374,6 @@ void AGC(_estimate_input_energy)(AGC() _q,
 
     // filter energy estimate
     _q->gamma_hat = sqrtf(_q->buffer_sum);
-}
-
-// estimate necessary agc gain (default method)
-//  _q      :   agc object
-//  _x      :   input sample
-void AGC(_estimate_gain_default)(AGC() _q,
-                                 TC _x)
-{
-    // estimate input energy, result is in _q->gamma_hat
-    AGC(_estimate_input_energy)(_q, _x);
-
-    // ideal gain
-    T g = 1.0 / _q->gamma_hat;
-
-    // accumulated gain
-    _q->g = (_q->beta)*(_q->g) + (_q->alpha)*g;
-}
-
-// estimate necessary agc gain (logarithmic method)
-//  _q      :   agc object
-//  _x      :   input sample
-void AGC(_estimate_gain_log)(AGC() _q,
-                             TC _x)
-{
-    // estimate input energy, result is in _q->gamma_hat
-    AGC(_estimate_input_energy)(_q, _x);
-
-    // loop filter : compute gain error
-    T gain_error = 1.0 / (_q->gamma_hat * _q->g);
-
-    // adjust gain proportional to log of error
-    _q->g *= powf(gain_error, _q->alpha);
-}
-
-// estimate necessary agc gain (exponential method)
-//  _q      :   agc object
-//  _x      :   input sample
-void AGC(_estimate_gain_exp)(AGC() _q,
-                             TC _x)
-{
-    // estimate input energy, result is in _q->gamma_hat
-    AGC(_estimate_input_energy)(_q, _x);
-
-    // compute estimate of output signal level
-    T e_out = _q->gamma_hat * _q->g;
-
-    if (e_out > 1.0) {
-        // decrease gain proportional to energy difference
-        _q->g *= 1.0f - _q->alpha * (e_out - 1.0) / e_out;
-    } else {
-        // increase gain proportional to energy difference
-        _q->g *= 1.0f - _q->alpha * (e_out - 1.0);
-    }
-}
-
-// estimate necessary agc gain ('true' method)
-//  _q      :   agc object
-//  _x      :   input sample
-void AGC(_estimate_gain_true)(AGC() _q,
-                              TC _x)
-{
-    // compute input energy estimate
-    AGC(_estimate_input_energy)(_q, _x);
-
-    // compute instantaneous gain
-    _q->g_hat = _q->sqrt_buffer_len / (_q->gamma_hat + 1e-12f);
-
-    // update gain according to recursive filter
-    _q->g = (_q->beta)*(_q->g) + (_q->alpha)*_q->g_hat;
 }
 
 // limit gain
