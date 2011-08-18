@@ -290,20 +290,5 @@ void fec_conv_destroy(fec _q)
 {
 }
 
-void fec_conv_encode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_dec,
-                     unsigned char *_msg_enc)
-{
-}
-
-//unsigned int
-void fec_conv_decode(fec _q,
-                     unsigned int _dec_msg_len,
-                     unsigned char *_msg_enc,
-                     unsigned char *_msg_dec)
-{
-}
-
 #endif  // HAVE_FEC_H (config.h)
 
