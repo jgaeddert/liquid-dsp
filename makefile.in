@@ -100,7 +100,7 @@ src/agc/src/agc_rrrf.o : %.o : %.c src/agc/src/agc.c $(headers)
 
 # autotests
 agc_autotests :=						\
-	src/agc/tests/agc_autotest.h				\
+	src/agc/tests/agc_autotest.c				\
 
 # benchmarks
 agc_benchmarks :=						\
@@ -118,7 +118,7 @@ src/cvsd/src/cvsd.o : %.o : %.c $(headers)
 
 
 audio_autotests :=						\
-	src/audio/tests/cvsd_autotest.h				\
+	src/audio/tests/cvsd_autotest.c				\
 
 audio_benchmarks :=
 
@@ -141,10 +141,10 @@ src/buffer/src/bufferui.o : %.o : %.c $(headers)
 
 
 buffer_autotests :=						\
-	src/buffer/tests/cbuffer_autotest.h			\
-	src/buffer/tests/sbuffer_autotest.h			\
-	src/buffer/tests/wdelay_autotest.h			\
-	src/buffer/tests/window_autotest.h			\
+	src/buffer/tests/cbuffer_autotest.c			\
+	src/buffer/tests/sbuffer_autotest.c			\
+	src/buffer/tests/wdelay_autotest.c			\
+	src/buffer/tests/window_autotest.c			\
 
 buffer_benchmarks :=						\
 	src/buffer/bench/window_benchmark.h			\
@@ -168,8 +168,8 @@ src/dotprod/src/dotprod_rrrf.av.o : %.o : %.c $(headers)
 src/dotprod/src/dotprod_rrrf.mmx.o : %.o : %.c $(headers)
 
 dotprod_autotests :=						\
-	src/dotprod/tests/dotprod_rrrf_autotest.h		\
-	src/dotprod/tests/dotprod_crcf_autotest.h		\
+	src/dotprod/tests/dotprod_rrrf_autotest.c		\
+	src/dotprod/tests/dotprod_crcf_autotest.c		\
 
 dotprod_benchmarks :=						\
 	src/dotprod/bench/dotprod_cccf_benchmark.h		\
@@ -189,7 +189,7 @@ $(equalization_objects) : %.o : %.c $(headers) src/equalization/src/eqlms.c src/
 
 # autotests
 equalization_autotests :=					\
-	src/equalization/tests/eqrls_rrrf_autotest.h		\
+	src/equalization/tests/eqrls_rrrf_autotest.c		\
 
 
 # benchmarks
@@ -239,18 +239,18 @@ extra_clean +=							\
 
 # autotests
 fec_autotests :=						\
-	src/fec/tests/crc_autotest.h				\
-	src/fec/tests/fec_autotest.h				\
-	src/fec/tests/fec_soft_autotest.h			\
-	src/fec/tests/fec_hamming74_autotest.h			\
-	src/fec/tests/fec_hamming84_autotest.h			\
-	src/fec/tests/fec_hamming128_autotest.h			\
-	src/fec/tests/fec_hamming1511_autotest.h		\
-	src/fec/tests/fec_hamming3126_autotest.h		\
-	src/fec/tests/fec_reedsolomon_autotest.h		\
-	src/fec/tests/fec_rep3_autotest.h			\
-	src/fec/tests/fec_rep5_autotest.h			\
-	src/fec/tests/smatrix_autotest.h			\
+	src/fec/tests/crc_autotest.c				\
+	src/fec/tests/fec_autotest.c				\
+	src/fec/tests/fec_soft_autotest.c			\
+	src/fec/tests/fec_hamming74_autotest.c			\
+	src/fec/tests/fec_hamming84_autotest.c			\
+	src/fec/tests/fec_hamming128_autotest.c			\
+	src/fec/tests/fec_hamming1511_autotest.c		\
+	src/fec/tests/fec_hamming3126_autotest.c		\
+	src/fec/tests/fec_reedsolomon_autotest.c		\
+	src/fec/tests/fec_rep3_autotest.c			\
+	src/fec/tests/fec_rep5_autotest.c			\
+	src/fec/tests/smatrix_autotest.c			\
 
 
 # benchmarks
@@ -298,9 +298,9 @@ src/fft/src/mdct.o : %.o : %.c $(headers)
 
 
 fft_autotests :=						\
-	src/fft/tests/fft_autotest.h				\
-	src/fft/tests/fft_r2r_autotest.h			\
-	src/fft/tests/fft_shift_autotest.h			\
+	src/fft/tests/fft_autotest.c				\
+	src/fft/tests/fft_r2r_autotest.c			\
+	src/fft/tests/fft_shift_autotest.c			\
 
 
 fft_benchmarks :=						\
@@ -386,19 +386,19 @@ src/filter/src/rrcos.o : %.o : %.c $(headers)
 
 
 filter_autotests :=						\
-	src/filter/tests/decim_autotest.h			\
-	src/filter/tests/firdes_autotest.h			\
-	src/filter/tests/firdespm_autotest.h			\
-	src/filter/tests/firfilt_rrrf_autotest.h		\
-	src/filter/tests/firfilt_crcf_autotest.h		\
-	src/filter/tests/firhilb_autotest.h			\
-	src/filter/tests/firpfb_autotest.h			\
-	src/filter/tests/groupdelay_autotest.h			\
-	src/filter/tests/iirdes_autotest.h			\
-	src/filter/tests/iirfilt_rrrf_autotest.h		\
-	src/filter/tests/iirfilt_crcf_autotest.h		\
-	src/filter/tests/iirfiltsos_rrrf_autotest.h		\
-	src/filter/tests/interp_autotest.h			\
+	src/filter/tests/decim_autotest.c			\
+	src/filter/tests/firdes_autotest.c			\
+	src/filter/tests/firdespm_autotest.c			\
+	src/filter/tests/firfilt_rrrf_autotest.c		\
+	src/filter/tests/firfilt_crcf_autotest.c		\
+	src/filter/tests/firhilb_autotest.c			\
+	src/filter/tests/firpfb_autotest.c			\
+	src/filter/tests/groupdelay_autotest.c			\
+	src/filter/tests/iirdes_autotest.c			\
+	src/filter/tests/iirfilt_rrrf_autotest.c		\
+	src/filter/tests/iirfilt_crcf_autotest.c		\
+	src/filter/tests/iirfiltsos_rrrf_autotest.c		\
+	src/filter/tests/interp_autotest.c			\
 
 
 filter_benchmarks :=						\
@@ -467,11 +467,11 @@ src/framing/src/interleaver.o : %.o : %.c $(headers)
 
 
 framing_autotests :=						\
-	src/framing/tests/bpacketsync_autotest.h		\
-	src/framing/tests/bsync_autotest.h			\
-	src/framing/tests/flexframe_autotest.h			\
-	src/framing/tests/packetizer_autotest.h			\
-	src/framing/tests/interleaver_autotest.h		\
+	src/framing/tests/bpacketsync_autotest.c		\
+	src/framing/tests/bsync_autotest.c			\
+	src/framing/tests/flexframe_autotest.c			\
+	src/framing/tests/packetizer_autotest.c			\
+	src/framing/tests/interleaver_autotest.c		\
 
 
 framing_benchmarks :=						\
@@ -522,12 +522,12 @@ src/math/src/math.trig.o : %.o : %.c $(headers)
 
 
 math_autotests :=						\
-	src/math/tests/kbd_autotest.h				\
-	src/math/tests/math_autotest.h				\
-	src/math/tests/math_bessel_autotest.h			\
-	src/math/tests/math_gamma_autotest.h			\
-	src/math/tests/math_complex_autotest.h			\
-	src/math/tests/polynomial_autotest.h			\
+	src/math/tests/kbd_autotest.c				\
+	src/math/tests/math_autotest.c				\
+	src/math/tests/math_bessel_autotest.c			\
+	src/math/tests/math_gamma_autotest.c			\
+	src/math/tests/math_complex_autotest.c			\
+	src/math/tests/polynomial_autotest.c			\
 
 
 math_benchmarks :=
@@ -565,8 +565,8 @@ src/matrix/src/matrixcf.o : %.o : %.c $(headers) $(matrix_includes)
 
 
 matrix_autotests :=						\
-	src/matrix/tests/matrixcf_autotest.h			\
-	src/matrix/tests/matrixf_autotest.h			\
+	src/matrix/tests/matrixcf_autotest.c			\
+	src/matrix/tests/matrixf_autotest.c			\
 
 
 matrix_benchmarks :=
@@ -614,9 +614,9 @@ src/modem/src/freqmodem.o: %.o : %.c $(headers)
 
 
 modem_autotests :=						\
-	src/modem/tests/modem_autotest.h			\
-	src/modem/tests/modem_demodsoft_autotest.h		\
-	src/modem/tests/modem_phase_error_autotest.h		\
+	src/modem/tests/modem_autotest.c			\
+	src/modem/tests/modem_demodsoft_autotest.c		\
+	src/modem/tests/modem_phase_error_autotest.c		\
 
 
 modem_benchmarks :=						\
@@ -645,10 +645,10 @@ multicarrier_objects :=						\
 
 # autotests
 multicarrier_autotests :=					\
-	src/multicarrier/tests/firpfbch_synthesizer_autotest.h	\
-	src/multicarrier/tests/firpfbch_analyzer_autotest.h	\
+	src/multicarrier/tests/firpfbch_synthesizer_autotest.c	\
+	src/multicarrier/tests/firpfbch_analyzer_autotest.c	\
 
-#	ofdmoqam_autotest.h
+#	ofdmoqam_autotest.c
 
 # benchmarks
 multicarrier_benchmarks :=					\
@@ -673,10 +673,10 @@ src/nco/src/nco.utilities.o: %.o : %.c $(headers)
 
 # autotests
 nco_autotests :=						\
-	src/nco/tests/nco_autotest.h				\
-	src/nco/tests/pll_autotest.h				\
-	src/nco/tests/unwrap_phase_autotest.h			\
-	src/nco/tests/vco_autotest.h				\
+	src/nco/tests/nco_autotest.c				\
+	src/nco/tests/pll_autotest.c				\
+	src/nco/tests/unwrap_phase_autotest.c			\
+	src/nco/tests/vco_autotest.c				\
 
 
 # benchmarks
@@ -738,8 +738,8 @@ src/quantization/src/quantizer.inline.o: %.o : %.c $(headers)
 
 # autotests
 quantization_autotests :=					\
-	src/quantization/tests/compand_autotest.h		\
-	src/quantization/tests/quantize_autotest.h		\
+	src/quantization/tests/compand_autotest.c		\
+	src/quantization/tests/quantize_autotest.c		\
 
 
 # benchmarks
@@ -766,9 +766,9 @@ $(random_objects) : %.o : %.c $(headers)
 
 # autotests
 random_autotests :=						\
-	src/random/tests/scramble_autotest.h			\
+	src/random/tests/scramble_autotest.c			\
 
-#	src/random/tests/random_autotest.h
+#	src/random/tests/random_autotest.c
 
 
 # benchmarks
@@ -790,9 +790,9 @@ $(sequence_objects) : %.o : %.c $(headers)
 
 # autotests
 sequence_autotests :=						\
-	src/sequence/tests/bsequence_autotest.h			\
-	src/sequence/tests/complementary_codes_autotest.h	\
-	src/sequence/tests/msequence_autotest.h			\
+	src/sequence/tests/bsequence_autotest.c			\
+	src/sequence/tests/complementary_codes_autotest.c	\
+	src/sequence/tests/msequence_autotest.c			\
 
 # benchmarks
 sequence_benchmarks :=
@@ -826,10 +826,10 @@ extra_clean +=							\
 
 # autotests
 utility_autotests :=						\
-	src/utility/tests/bshift_array_autotest.h		\
-	src/utility/tests/count_bits_autotest.h			\
-	src/utility/tests/pack_bytes_autotest.h			\
-	src/utility/tests/shift_array_autotest.h		\
+	src/utility/tests/bshift_array_autotest.c		\
+	src/utility/tests/count_bits_autotest.c			\
+	src/utility/tests/pack_bytes_autotest.c			\
+	src/utility/tests/shift_array_autotest.c		\
 
 
 # benchmarks
@@ -886,8 +886,8 @@ objects :=							\
 	
 
 sources			:=
-autotest_headers :=						\
-	autotest/null_autotest.h				\
+autotest_sources :=						\
+	autotest/null_autotest.c				\
 	$(agc_autotests)					\
 	$(audio_autotests)					\
 	$(buffer_autotests)					\
@@ -1036,16 +1036,16 @@ clean-autoscript :
 autotest_prog	= xautotest
 
 # run the autotest generator script to create autotest_include.h
-autotest_include.h : scripts/autoscript $(autotest_headers) $(include_headers)
-	./scripts/autoscript $(PATHSEP) autotest $(autotest_headers) > $@
+autotest_include.h : scripts/autoscript $(autotest_sources) $(include_headers)
+	./scripts/autoscript $(PATHSEP) autotest $(autotest_sources) > $@
 
 # autotest objects
 # NOTE: by default, gcc compiles any file with a '.h' extension as a 'pre-compiled
 #       header' so we need to explicity tell it to compile as a c source file with
 #       the '-x c' flag
-autotest_obj = $(patsubst %.h,%.o,$(autotest_headers))
-$(autotest_obj) : %.o : %.h $(include_headers)
-	$(CC) $(CFLAGS) -x c $< -c -o $@
+autotest_obj = $(patsubst %.c,%.o,$(autotest_sources))
+$(autotest_obj) : %.o : %.c $(include_headers)
+	$(CC) $(CFLAGS) $< -c -o $@
 
 # compile the autotest internal library functions without linking
 autotest/autotestlib.o : autotest/autotestlib.c autotest/autotest.h

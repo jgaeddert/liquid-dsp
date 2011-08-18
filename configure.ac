@@ -80,9 +80,9 @@ AC_ARG_ENABLE(experimental,
             src/experimental/src/channel.o \
             src/experimental/src/pamodel.o \
             src/experimental/src/ricek_channel.o"
-        EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.h \
-            src/experimental/tests/gport_autotest.h \
-            src/experimental/tests/channel_autotest.h"
+        EXPERIMENTAL_AUTOTESTS="src/experimental/tests/ann_autotest.c \
+            src/experimental/tests/gport_autotest.c \
+            src/experimental/tests/channel_autotest.c"
         EXPERIMENTAL_BENCHMARKS="src/experimental/bench/fbasc_benchmark.h \
             src/experimental/bench/gport_dma_benchmark.h \
             src/experimental/bench/gport_dma_threaded_benchmark.h \
