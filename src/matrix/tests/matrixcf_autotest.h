@@ -291,7 +291,7 @@ void autotest_matrixcf_qrdecomp()
 //
 void autotest_matrixcf_chol()
 {
-    float tol = 1e-4f;  // error tolerance
+    float tol = 1e-3f;  // error tolerance
 
     // lower triangular matrix with positive values on diagonal
     float complex L[16]= {
