@@ -29,6 +29,7 @@ void usage()
     printf("  m     : input modulation scheme (arb64vt default)\n");
     printf("  r     : reference modulation scheme (qam16 default)\n");
     liquid_print_modulation_schemes();
+    printf("  a     : alpha (reference scheme gain), default: 1.0\n");
 }
 
 // search for nearest constellation points to reference points
@@ -60,9 +61,10 @@ int main(int argc, char*argv[])
     unsigned int bps=6;
     modulation_scheme mref = LIQUID_MODEM_QAM;
     unsigned int kref=4;
+    float alpha = 1.0f;
 
     int dopt;
-    while ((dopt = getopt(argc,argv,"uhp:m:r:")) != EOF) {
+    while ((dopt = getopt(argc,argv,"uhp:m:r:a:")) != EOF) {
         switch (dopt) {
         case 'u':
         case 'h': usage(); return 0;
@@ -80,6 +82,7 @@ int main(int argc, char*argv[])
                 return 1;
             }
             break;
+        case 'a': alpha = atof(optarg); break;
         default:
             fprintf(stderr,"error: %s, unknown option\n", argv[0]);
             usage();
@@ -97,8 +100,10 @@ int main(int argc, char*argv[])
     kref = modem_get_bps(qref);
     unsigned int p = 1 << kref;
     float complex cref[p];
-    for (i=0; i<p; i++)
+    for (i=0; i<p; i++) {
         modem_modulate(qref, i, &cref[i]);
+        cref[i] *= alpha;
+    }
     modem_destroy(qref);
 
     // generate the constellation
