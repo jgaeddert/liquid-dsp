@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_OFDMOQAMFRAME64SYNC_BENCH_H__
-#define __LIQUID_OFDMOQAMFRAME64SYNC_BENCH_H__
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -102,7 +99,4 @@ void benchmark_ofdmoqamframe64sync(
     ofdmoqamframe64sync_destroy(fs);
     modem_destroy(mod);
 }
-
-
-#endif // __LIQUID_OFDMOQAMFRAME64SYNC_BENCH_H__
 

@@ -20,14 +20,11 @@
  */
 
 // 
-// gport_dma_threaded_benchmark.h
+// gport_dma_threaded_benchmark.c
 //
 // Run gport (generic data port) using direct memory
 // access benchmark with threads
 //
-
-#ifndef __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
-#define __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -149,6 +146,4 @@ void benchmark_gport_dma_threaded_n4    GPORT_DMA_THREADED_BENCH_API(4)
 void benchmark_gport_dma_threaded_n16   GPORT_DMA_THREADED_BENCH_API(16)
 void benchmark_gport_dma_threaded_n64   GPORT_DMA_THREADED_BENCH_API(64)
 void benchmark_gport_dma_threaded_n256  GPORT_DMA_THREADED_BENCH_API(256)
-
-#endif // __LIQUID_GPORT_DMA_THREADED_BENCHMARK_H__
 

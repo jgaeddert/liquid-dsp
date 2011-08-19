@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_RESAMP_BENCHMARK_H__
-#define __LIQUID_RESAMP_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -74,6 +71,4 @@ void benchmark_resamp_crcf_h13   RESAMP_CRCF_BENCHMARK_API(13)
 void benchmark_resamp_crcf_h21   RESAMP_CRCF_BENCHMARK_API(21)
 void benchmark_resamp_crcf_h37   RESAMP_CRCF_BENCHMARK_API(37)
 void benchmark_resamp_crcf_h53   RESAMP_CRCF_BENCHMARK_API(53)
-
-#endif // __LIQUID_RESAMP_BENCHMARK_H__
 

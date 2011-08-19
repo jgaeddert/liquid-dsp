@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_QMFB_BENCHMARK_H__
-#define __LIQUID_QMFB_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.experimental.h"
 
@@ -65,6 +62,4 @@ void benchmark_qmfb_crcf_h8     QMFB_CRCF_BENCHMARK_API(8)
 void benchmark_qmfb_crcf_h16    QMFB_CRCF_BENCHMARK_API(16)
 void benchmark_qmfb_crcf_h32    QMFB_CRCF_BENCHMARK_API(32)
 void benchmark_qmfb_crcf_h64    QMFB_CRCF_BENCHMARK_API(64)
-
-#endif // __LIQUID_BENCH_BENCHMARK_H__
 

@@ -18,8 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __LIQUID_WINDOW_BENCHMARK_H__
-#define __LIQUID_WINDOW_BENCHMARK_H__
 
 #include <sys/resource.h>
 #include "liquid.h"
@@ -67,6 +65,4 @@ void benchmark_windowcf_n32     WINDOW_BENCH_API(32)
 void benchmark_windowcf_n64     WINDOW_BENCH_API(64)
 void benchmark_windowcf_n128    WINDOW_BENCH_API(128)
 void benchmark_windowcf_n256    WINDOW_BENCH_API(256)
-
-#endif // __LIQUID_WINDOW_BENCHMARK_H__
 

@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_OFDMOQAM_BENCH_H__
-#define __LIQUID_OFDMOQAM_BENCH_H__
-
 #include <sys/resource.h>
 #include <math.h>
 #include "liquid.h"
@@ -72,6 +69,4 @@ void benchmark_ofdmoqam_execute_n4      OFDMOQAM_EXECUTE_BENCH_API(4,   2,  LIQU
 void benchmark_ofdmoqam_execute_n16     OFDMOQAM_EXECUTE_BENCH_API(16,  2,  LIQUID_ANALYZER)
 void benchmark_ofdmoqam_execute_n64     OFDMOQAM_EXECUTE_BENCH_API(64,  2,  LIQUID_ANALYZER)
 void benchmark_ofdmoqam_execute_n256    OFDMOQAM_EXECUTE_BENCH_API(256, 2,  LIQUID_ANALYZER)
-
-#endif // __LIQUID_OFDMOQAM_BENCH_H__
 

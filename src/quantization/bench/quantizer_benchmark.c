@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_QUANTIZER_BENCHMARK_H__
-#define __LIQUID_QUANTIZER_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -71,6 +68,4 @@ void benchmark_quantize_dac(
     getrusage(RUSAGE_SELF, _finish);
     *_num_iterations *= 4;
 }
-
-#endif // __LIQUID_QUANTIZER_BENCHMARK_H__
 

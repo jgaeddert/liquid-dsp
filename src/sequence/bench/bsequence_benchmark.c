@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_BSEQUENCE_BENCHMARK_H__
-#define __LIQUID_BSEQUENCE_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -70,6 +67,4 @@ void benchmark_bsequence_xcorr_n16      BSEQUENCE_BENCHMARK_API(16)
 void benchmark_bsequence_xcorr_n64      BSEQUENCE_BENCHMARK_API(64)
 void benchmark_bsequence_xcorr_n256     BSEQUENCE_BENCHMARK_API(256)
 void benchmark_bsequence_xcorr_n1024    BSEQUENCE_BENCHMARK_API(1024)
-
-#endif // __LIQUID_BSEQUENCE_BENCHMARK_H__
 

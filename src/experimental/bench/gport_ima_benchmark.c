@@ -20,14 +20,11 @@
  */
 
 // 
-// gport_ima_benchmark.h
+// gport_ima_benchmark.c
 //
 // Run gport (generic data port) using indirect memory
 // access benchmark
 //
-
-#ifndef __LIQUID_GPORT_IMA_BENCHMARK_H__
-#define __LIQUID_GPORT_IMA_BENCHMARK_H__
 
 #include <sys/resource.h>
 #include "liquid.experimental.h"
@@ -74,6 +71,4 @@ void benchmark_gport_ima_n4    GPORT_IMA_BENCH_API(4)
 void benchmark_gport_ima_n16   GPORT_IMA_BENCH_API(16)
 void benchmark_gport_ima_n64   GPORT_IMA_BENCH_API(64)
 void benchmark_gport_ima_n256  GPORT_IMA_BENCH_API(256)
-
-#endif // __LIQUID_GPORT_IMA_BENCHMARK_H__
 

@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FBASC_BENCHMARK_H__
-#define __LIQUID_FBASC_BENCHMARK_H__
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -93,6 +90,4 @@ void benchmark_fbasc_encoder_n64_s512   FBASC_BENCHMARK_API(64,  512, 100, FBASC
 void benchmark_fbasc_decoder_n64_s128   FBASC_BENCHMARK_API(64,  128, 100, FBASC_DECODER);
 void benchmark_fbasc_decoder_n64_s256   FBASC_BENCHMARK_API(64,  256, 100, FBASC_DECODER);
 void benchmark_fbasc_decoder_n64_s512   FBASC_BENCHMARK_API(64,  512, 100, FBASC_DECODER);
-
-#endif // __LIQUID_FBASC_BENCHMARK_H__
 

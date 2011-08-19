@@ -19,9 +19,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_NCO_BENCHMARK_H__
-#define __LIQUID_NCO_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include <string.h>
 
@@ -100,6 +97,4 @@ void benchmark_nco_mix_block_up(struct rusage *_start,
     *_num_iterations *= 16;
     nco_crcf_destroy(p);
 }
-
-#endif // __LIQUID_NCO_BENCHMARK_H__
 

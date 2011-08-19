@@ -18,9 +18,6 @@
  * along with liquid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIQUID_FFT_BENCHMARK_H__
-#define __LIQUID_FFT_BENCHMARK_H__
-
 #include <sys/resource.h>
 #include "liquid.h"
 
@@ -78,6 +75,4 @@ void benchmark_fft_128      FFT_BENCH_API(128,      FFT_FORWARD)
 // Non radix-2
 void benchmark_fft_10       FFT_BENCH_API(10,       FFT_FORWARD)
 //void xbenchmark_fft_100      FFT_BENCH_API(100,      FFT_FORWARD)
-
-#endif // __LIQUID_FFT_BENCHMARK_H__
 

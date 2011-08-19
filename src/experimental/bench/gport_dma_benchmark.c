@@ -20,14 +20,11 @@
  */
 
 // 
-// gport_dma_benchmark.h
+// gport_dma_benchmark.c
 //
 // Run gport (generic data port) using direct memory
 // access benchmark
 //
-
-#ifndef __LIQUID_GPORT_DMA_BENCHMARK_H__
-#define __LIQUID_GPORT_DMA_BENCHMARK_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,6 +75,4 @@ void benchmark_gport_dma_n4     GPORT_DMA_BENCH_API(4)
 void benchmark_gport_dma_n16    GPORT_DMA_BENCH_API(16)
 void benchmark_gport_dma_n64    GPORT_DMA_BENCH_API(64)
 void benchmark_gport_dma_n256   GPORT_DMA_BENCH_API(256)
-
-#endif // __LIQUID_GPORT_DMA_BENCHMARK_H__
 
